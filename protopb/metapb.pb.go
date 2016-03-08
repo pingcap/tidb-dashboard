@@ -34,7 +34,6 @@ It has these top-level messages:
 	Request
 	Response
 	BootstrappedError
-	NotLeaderError
 	Error
 */
 package protopb

@@ -78,6 +78,8 @@ func (c *conn) run() {
 			return
 		}
 
+		// TODO: if not leader, return not leader response.
+
 		request := &protopb.Request{}
 		err = proto.Unmarshal(body, request)
 		if err != nil {

@@ -61,9 +61,8 @@ func deleteRoot(c *C, client *clientv3.Client, rootPath string) {
 var _ = Suite(&testLeaderServerSuite{})
 
 type testLeaderServerSuite struct {
-	client   *clientv3.Client
-	svrs     map[string]*Server
-	rootPath string
+	client *clientv3.Client
+	svrs   map[string]*Server
 }
 
 func (s *testLeaderServerSuite) getRootPath() string {

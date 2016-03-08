@@ -7,6 +7,7 @@ import (
 	"net"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/juju/errors"
 	"github.com/ngaut/log"
 
 	"github.com/pingcap/pd/protopb"
@@ -47,6 +48,10 @@ func (c *conn) run() {
 	defer func() {
 		c.s.wg.Done()
 		c.Close()
+
+		c.s.connsLock.Lock()
+		delete(c.s.conns, c)
+		c.s.connsLock.Unlock()
 	}()
 
 	for {
@@ -113,15 +118,15 @@ func (c *conn) run() {
 		binary.BigEndian.PutUint32(header[4:8], uint32(len(body)))
 		binary.BigEndian.PutUint64(header[8:16], msgID)
 
-		_, err = c.wb.Write(header)
-		if err != nil {
-			log.Errorf("write msg header err %s", err)
-			return
-		}
+		// we can skip checking write error, because if any fails,
+		// the final Flush will return this error, so we can check
+		// error in Flush only.
+		c.wb.Write(header)
+		c.wb.Write(body)
 
-		_, err = c.wb.Write(body)
+		err = c.wb.Flush()
 		if err != nil {
-			log.Errorf("write msg body err %s", err)
+			log.Errorf("write response err %s", err)
 			return
 		}
 	}
@@ -145,11 +150,14 @@ func updateResponse(req *protopb.Request, resp *protopb.Response) {
 
 func (c *conn) Close() {
 	c.conn.Close()
-	c.s.connsLock.Lock()
-	delete(c.s.conns, c)
-	c.s.connsLock.Unlock()
 }
 
 func (c *conn) handleRequest(req *protopb.Request) (*protopb.Response, error) {
+	switch req.GetCmdType() {
+	case protopb.CommandType_Tso:
+		return c.handleTso(req)
+	default:
+		return nil, errors.Errorf("unsupported command %s", req)
+	}
 	return nil, nil
 }

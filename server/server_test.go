@@ -22,10 +22,11 @@ var (
 
 func newTestServer(c *C, rootPath string) *Server {
 	cfg := &Config{
-		Addr:        "127.0.0.1:0",
-		EtcdAddrs:   strings.Split(*test_etcd, ","),
-		RootPath:    rootPath,
-		LeaderLease: 1,
+		Addr:            "127.0.0.1:0",
+		EtcdAddrs:       strings.Split(*test_etcd, ","),
+		RootPath:        rootPath,
+		LeaderLease:     1,
+		TsoSaveInterval: 500,
 	}
 
 	svr, err := NewServer(cfg)

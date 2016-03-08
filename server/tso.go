@@ -97,7 +97,7 @@ func (s *Server) syncTimestamp() error {
 		}
 
 		// TODO: can we speed up this?
-		if wait := 2*s.cfg.LeaderLease*1e3 - since; wait > 0 {
+		if wait := 2*s.cfg.TsoSaveInterval - since; wait > 0 {
 			log.Warnf("wait %d milliseconds to guarantee valid generated timestamp", wait)
 			time.Sleep(time.Duration(wait) * time.Millisecond)
 			continue
@@ -135,7 +135,7 @@ func (s *Server) updateTimestamp() error {
 		return nil
 	}
 
-	if now.Sub(s.lastSavedTime).Nanoseconds()/1e6 > s.cfg.LeaderLease*1e3 {
+	if now.Sub(s.lastSavedTime).Nanoseconds()/1e6 > s.cfg.TsoSaveInterval {
 		if err := s.saveTimestamp(now); err != nil {
 			return errors.Trace(err)
 		}
@@ -156,7 +156,7 @@ func (s *Server) getRespTS() *protopb.Timestamp {
 	for i := 0; i < maxRetryNum; i++ {
 		current, ok := s.ts.Load().(*atomicObject)
 		if !ok {
-			log.Errorf("we haven't synced timestamp ok, wait  and retry")
+			log.Errorf("we haven't synced timestamp ok, wait and retry")
 			time.Sleep(200 * time.Millisecond)
 			continue
 		}

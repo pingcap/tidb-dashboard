@@ -40,6 +40,8 @@ type Server struct {
 }
 
 func NewServer(cfg *Config) (*Server, error) {
+	cfg.Adjust()
+
 	log.Infof("create etcd v3 client with endpoints %v", cfg.EtcdAddrs)
 	client, err := clientv3.New(clientv3.Config{
 		Endpoints:   cfg.EtcdAddrs,

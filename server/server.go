@@ -120,6 +120,7 @@ func (s *Server) closeAllConnections() {
 	s.connsLock.Lock()
 	defer s.connsLock.Unlock()
 
+	// TODO: should we send an error message before close?
 	for conn, _ := range s.conns {
 		conn.Close()
 	}

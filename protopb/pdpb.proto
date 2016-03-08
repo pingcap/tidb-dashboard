@@ -139,12 +139,7 @@ message BootstrappedError {
     
 }
 
-message NotLeaderError {
-    
-}
-
 message Error {
     optional string message                 = 1;
-    optional NotLeaderError not_leader      = 2;
-    optional BootstrappedError bootstrapped = 3;
+    optional BootstrappedError bootstrapped = 2;
 }

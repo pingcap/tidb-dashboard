@@ -81,25 +81,13 @@ func (s *Server) leaderLoop() {
 
 // GetLeader gets server leader from etcd.
 func GetLeader(c *clientv3.Client, leaderPath string) (*Leader, error) {
-	kv := clientv3.NewKV(c)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	resp, err := kv.Get(ctx, leaderPath)
-	cancel()
-
-	if err != nil {
+	value, err := getValue(c, leaderPath)
+	if err != nil || value == nil {
 		return nil, errors.Trace(err)
 	}
 
-	if n := len(resp.Kvs); n == 0 {
-		// no leader key
-		return nil, nil
-	} else if n > 1 {
-		return nil, errors.Errorf("invalid get leader resp %v, must only one", resp.Kvs)
-	}
-
 	leader := Leader{}
-	err = json.Unmarshal(resp.Kvs[0].Value, &leader)
+	err = json.Unmarshal(value, &leader)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

@@ -37,6 +37,11 @@ type Server struct {
 	// for tso
 	ts            atomic.Value
 	lastSavedTime time.Time
+
+	// for id allocator, we can use one allocator for
+	// node, store, region and peer, because we just need
+	// a unique ID.
+	idAlloc *idAllocator
 }
 
 func NewServer(cfg *Config) (*Server, error) {
@@ -67,6 +72,8 @@ func NewServer(cfg *Config) (*Server, error) {
 		conns:    make(map[*conn]struct{}),
 		closed:   0,
 	}
+
+	s.idAlloc = &idAllocator{s: s}
 
 	return s, nil
 }

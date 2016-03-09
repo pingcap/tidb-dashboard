@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/binary"
 	"path"
 	"sync/atomic"
 	"time"
@@ -31,37 +30,23 @@ func getTimestampPath(rootPath string) string {
 }
 
 func (s *Server) loadTimestamp() (int64, error) {
-	kv := clientv3.NewKV(s.client)
+	data, err := getValue(s.client, getTimestampPath(s.cfg.RootPath))
+	if err != nil || data == nil {
+		return 0, errors.Trace(err)
+	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	resp, err := kv.Get(ctx, getTimestampPath(s.cfg.RootPath))
-	cancel()
-
+	ts, err := bytesToUint64(data)
 	if err != nil {
 		return 0, errors.Trace(err)
 	}
 
-	if n := len(resp.Kvs); n == 0 {
-		// no timestamp key
-		return 0, nil
-	} else if n > 1 {
-		return 0, errors.Errorf("invalid get leader resp %v, must only one", resp.Kvs)
-	}
-	data := resp.Kvs[0].Value
-
-	if len(data) != 8 {
-		return 0, errors.Errorf("invalid timestamp data, must 8 bytes, but %d", len(data))
-	}
-
-	return int64(binary.BigEndian.Uint64(data)), nil
+	return int64(ts), nil
 }
 
 // save timestamp, if lastTs is 0, we think the timestamp doesn't exist, so create it,
 // otherwise, update it.
 func (s *Server) saveTimestamp(now time.Time) error {
-	data := make([]byte, 8)
-	binary.BigEndian.PutUint64(data, uint64(now.UnixNano()))
-
+	data := uint64ToBytes(uint64(now.UnixNano()))
 	key := getTimestampPath(s.cfg.RootPath)
 
 	resp, err := s.client.Txn(context.TODO()).

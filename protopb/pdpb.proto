@@ -43,7 +43,7 @@ message IsBootstrappedRequest {
 }
 
 message IsBootstrappedResponse {
-    
+    optional bool bootstrapped = 1;
 }
 
 enum MetaType {
@@ -55,11 +55,10 @@ enum MetaType {
 }
 
 message AllocIdRequest {
-    optional MetaType meta_type   = 1;
+
 }
 
 message AllocIdResponse {
-    optional MetaType meta_type   = 1;
     optional uint64 id            = 2;
 }
 

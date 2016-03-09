@@ -94,6 +94,7 @@ func (s *testAllocIDSuite) TestCommand(c *C) {
 		sendRequest(c, conn, msgID, req)
 		msgID, resp := recvResponse(c, conn)
 		c.Assert(msgID, Equals, msgID)
+		c.Assert(resp.AllocId.GetMetaType(), Equals, protopb.MetaType_NodeType)
 		c.Assert(resp.AllocId, NotNil)
 		c.Assert(resp.AllocId.GetId(), Greater, last)
 		last = resp.AllocId.GetId()

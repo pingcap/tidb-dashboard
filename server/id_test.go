@@ -81,9 +81,7 @@ func (s *testAllocIDSuite) TestCommand(c *C) {
 	c.Assert(err, IsNil)
 	defer conn.Close()
 
-	idReq := &protopb.AllocIdRequest{
-		MetaType: protopb.MetaType_NodeType.Enum(),
-	}
+	idReq := &protopb.AllocIdRequest{}
 
 	req := &protopb.Request{
 		CmdType: protopb.CommandType_AllocId.Enum(),
@@ -96,7 +94,6 @@ func (s *testAllocIDSuite) TestCommand(c *C) {
 		sendRequest(c, conn, msgID, req)
 		msgID, resp := recvResponse(c, conn)
 		c.Assert(msgID, Equals, msgID)
-		c.Assert(resp.AllocId.GetMetaType(), Equals, protopb.MetaType_NodeType)
 		c.Assert(resp.AllocId, NotNil)
 		c.Assert(resp.AllocId.GetId(), Greater, last)
 		last = resp.AllocId.GetId()

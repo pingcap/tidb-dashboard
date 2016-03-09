@@ -42,8 +42,7 @@ func (c *conn) handleAllocID(req *protopb.Request) (*protopb.Response, error) {
 	}
 
 	idResp := &protopb.AllocIdResponse{
-		MetaType: request.MetaType,
-		Id:       proto.Uint64(id),
+		Id: proto.Uint64(id),
 	}
 
 	return &protopb.Response{

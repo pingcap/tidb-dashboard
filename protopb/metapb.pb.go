@@ -31,6 +31,10 @@ It has these top-level messages:
 	PutMetaResponse
 	DeleteMetaRequest
 	DeleteMetaResponse
+	AskChangePeerRequest
+	AskChangePeerResponse
+	AskSplitRequest
+	AskSplitResponse
 	RequestHeader
 	ResponseHeader
 	Request

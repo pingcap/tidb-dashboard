@@ -16,6 +16,7 @@ import (
 	"github.com/ngaut/log"
 )
 
+// TODO: define Leader in proto.
 type Leader struct {
 	Addr string `json:"addr"`
 	PID  int    `json:"pid"`
@@ -119,7 +120,7 @@ func (s *Server) marshalLeader() string {
 	data, err := json.Marshal(leader)
 	if err != nil {
 		// can't fail, so panic here.
-		panic(err)
+		log.Fatalf("marshal leader %v err %v", leader, err)
 	}
 
 	return string(data)

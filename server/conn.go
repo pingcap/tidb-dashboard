@@ -156,8 +156,9 @@ func (c *conn) handleRequest(req *protopb.Request) (*protopb.Response, error) {
 	switch req.GetCmdType() {
 	case protopb.CommandType_Tso:
 		return c.handleTso(req)
+	case protopb.CommandType_AllocId:
+		return c.handleAllocID(req)
 	default:
 		return nil, errors.Errorf("unsupported command %s", req)
 	}
-	return nil, nil
 }

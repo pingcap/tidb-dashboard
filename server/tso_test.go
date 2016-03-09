@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/golang/protobuf/proto"
@@ -106,14 +107,22 @@ func (s *testTsoSuite) testGetTimestamp(c *C, conn net.Conn, n int) {
 	}
 }
 
-func (s *testTsoSuite) TestTso(c *C) {
-	for {
-		leader, err := GetLeader(s.client, GetLeaderPath(s.getRootPath()))
+func mustGetLeader(c *C, client *clientv3.Client, rootPath string) *Leader {
+	for i := 0; i < 10; i++ {
+		leader, err := GetLeader(client, GetLeaderPath(rootPath))
 		c.Assert(err, IsNil)
 		if leader != nil {
-			break
+			return leader
 		}
+		time.Sleep(time.Second)
 	}
+
+	c.Fatal("get leader error")
+	return nil
+}
+
+func (s *testTsoSuite) TestTso(c *C) {
+	leader := mustGetLeader(c, s.client, s.getRootPath())
 
 	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {
@@ -121,7 +130,7 @@ func (s *testTsoSuite) TestTso(c *C) {
 		go func() {
 			defer wg.Done()
 
-			conn, err := net.Dial("tcp", s.svr.ListeningAddr())
+			conn, err := net.Dial("tcp", leader.Addr)
 			c.Assert(err, IsNil)
 			defer conn.Close()
 

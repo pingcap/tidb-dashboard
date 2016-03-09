@@ -1,11 +1,13 @@
 package server
 
 import (
-	"path"
+	"math/rand"
+	"net"
 	"sync"
 
 	"github.com/coreos/etcd/clientv3"
 	. "github.com/pingcap/check"
+	"github.com/pingcap/pd/protopb"
 )
 
 var _ = Suite(&testAllocIDSuite{})
@@ -13,6 +15,7 @@ var _ = Suite(&testAllocIDSuite{})
 type testAllocIDSuite struct {
 	client *clientv3.Client
 	alloc  *idAllocator
+	svr    *Server
 }
 
 func (s *testAllocIDSuite) getRootPath() string {
@@ -20,11 +23,15 @@ func (s *testAllocIDSuite) getRootPath() string {
 }
 
 func (s *testAllocIDSuite) SetUpSuite(c *C) {
+	s.svr = newTestServer(c, s.getRootPath())
+
 	s.client = newEtcdClient(c)
 
-	s.alloc = newIDAllocator(s.client, path.Join(s.getRootPath(), "test_id"))
+	s.alloc = s.svr.idAlloc
 
 	deleteRoot(c, s.client, s.getRootPath())
+
+	go s.svr.Run()
 }
 
 func (s *testAllocIDSuite) TearDownSuite(c *C) {
@@ -32,10 +39,12 @@ func (s *testAllocIDSuite) TearDownSuite(c *C) {
 }
 
 func (s *testAllocIDSuite) TestID(c *C) {
+	var last uint64
 	for i := uint64(0); i < allocStep; i++ {
 		id, err := s.alloc.Alloc()
 		c.Assert(err, IsNil)
-		c.Assert(id, Equals, uint64(i+1))
+		c.Assert(id, Greater, last)
+		last = id
 	}
 
 	var wg sync.WaitGroup
@@ -61,4 +70,32 @@ func (s *testAllocIDSuite) TestID(c *C) {
 	}
 
 	wg.Wait()
+}
+
+func (s *testAllocIDSuite) TestCommand(c *C) {
+	leader := mustGetLeader(c, s.client, s.getRootPath())
+
+	conn, err := net.Dial("tcp", leader.Addr)
+	c.Assert(err, IsNil)
+	defer conn.Close()
+
+	idReq := &protopb.AllocIdRequest{
+		MetaType: protopb.MetaType_NodeType.Enum(),
+	}
+
+	req := &protopb.Request{
+		CmdType: protopb.CommandType_AllocId.Enum(),
+		AllocId: idReq,
+	}
+
+	var last uint64
+	for i := uint64(0); i < 2*allocStep; i++ {
+		msgID := uint64(rand.Int63())
+		sendRequest(c, conn, msgID, req)
+		msgID, resp := recvResponse(c, conn)
+		c.Assert(msgID, Equals, msgID)
+		c.Assert(resp.AllocId, NotNil)
+		c.Assert(resp.AllocId.GetId(), Greater, last)
+		last = resp.AllocId.GetId()
+	}
 }

@@ -2,6 +2,7 @@ package server
 
 import (
 	"net"
+	"path"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -37,6 +38,11 @@ type Server struct {
 	// for tso
 	ts            atomic.Value
 	lastSavedTime time.Time
+
+	// for id allocator, we can use one allocator for
+	// node, store, region and peer, because we just need
+	// a unique ID.
+	idAlloc *idAllocator
 }
 
 func NewServer(cfg *Config) (*Server, error) {
@@ -66,6 +72,8 @@ func NewServer(cfg *Config) (*Server, error) {
 		isLeader: 0,
 		conns:    make(map[*conn]struct{}),
 		closed:   0,
+
+		idAlloc: newIDAllocator(client, path.Join(cfg.RootPath, "id_alloc")),
 	}
 
 	return s, nil

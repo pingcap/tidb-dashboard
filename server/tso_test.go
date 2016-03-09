@@ -107,7 +107,7 @@ func (s *testTsoSuite) testGetTimestamp(c *C, conn net.Conn, n int) {
 	}
 }
 
-func mustGetLeader(c *C, client *clientv3.Client, rootPath string) *Leader {
+func mustGetLeader(c *C, client *clientv3.Client, rootPath string) *protopb.Leader {
 	for i := 0; i < 10; i++ {
 		leader, err := GetLeader(client, GetLeaderPath(rootPath))
 		c.Assert(err, IsNil)
@@ -130,7 +130,7 @@ func (s *testTsoSuite) TestTso(c *C) {
 		go func() {
 			defer wg.Done()
 
-			conn, err := net.Dial("tcp", leader.Addr)
+			conn, err := net.Dial("tcp", leader.GetAddr())
 			c.Assert(err, IsNil)
 			defer conn.Close()
 

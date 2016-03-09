@@ -105,13 +105,13 @@ func (s *testLeaderServerSuite) TestLeader(c *C) {
 		}
 
 		// The leader key is not expired, retry again.
-		svr, ok := s.svrs[leader.Addr]
+		svr, ok := s.svrs[leader.GetAddr()]
 		if !ok {
 			time.Sleep(time.Second)
 			continue
 		}
 
-		delete(s.svrs, leader.Addr)
+		delete(s.svrs, leader.GetAddr())
 		svr.Close()
 
 		time.Sleep(time.Second)

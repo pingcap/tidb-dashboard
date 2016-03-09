@@ -2,7 +2,6 @@ package server
 
 import (
 	"net"
-	"path"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -72,9 +71,9 @@ func NewServer(cfg *Config) (*Server, error) {
 		isLeader: 0,
 		conns:    make(map[*conn]struct{}),
 		closed:   0,
-
-		idAlloc: newIDAllocator(client, path.Join(cfg.RootPath, "id_alloc")),
 	}
+
+	s.idAlloc = &idAllocator{s: s}
 
 	return s, nil
 }

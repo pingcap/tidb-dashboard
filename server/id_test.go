@@ -39,6 +39,8 @@ func (s *testAllocIDSuite) TearDownSuite(c *C) {
 }
 
 func (s *testAllocIDSuite) TestID(c *C) {
+	mustGetLeader(c, s.client, s.getRootPath())
+
 	var last uint64
 	for i := uint64(0); i < allocStep; i++ {
 		id, err := s.alloc.Alloc()

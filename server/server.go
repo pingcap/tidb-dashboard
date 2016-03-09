@@ -23,6 +23,9 @@ type Server struct {
 	client *clientv3.Client
 
 	isLeader int64
+	// leader value saved in etcd leader key.
+	// Every write will use this to check leader validation.
+	leaderValue string
 
 	wg sync.WaitGroup
 
@@ -30,9 +33,15 @@ type Server struct {
 	conns     map[*conn]struct{}
 
 	closed int64
+
+	// for tso
+	ts            atomic.Value
+	lastSavedTime time.Time
 }
 
 func NewServer(cfg *Config) (*Server, error) {
+	cfg.Adjust()
+
 	log.Infof("create etcd v3 client with endpoints %v", cfg.EtcdAddrs)
 	client, err := clientv3.New(clientv3.Config{
 		Endpoints:   cfg.EtcdAddrs,
@@ -69,6 +78,8 @@ func (s *Server) Close() {
 		return
 	}
 
+	log.Info("closing server")
+
 	s.closeAllConnections()
 
 	if s.listener != nil {
@@ -93,6 +104,10 @@ func (s *Server) ListeningAddr() string {
 }
 
 func (s *Server) Run() error {
+	// We use "127.0.0.1:0" for test and will set correct listening
+	// address before run, so we set leader value here.
+	s.leaderValue = s.marshalLeader()
+
 	s.wg.Add(1)
 	go s.leaderLoop()
 

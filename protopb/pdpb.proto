@@ -20,8 +20,8 @@ message TsoRequest {
 }
 
 message Timestamp {
-    optional uint64 physical = 1;
-    optional uint64 logical  = 2;
+    optional int64 physical = 1;
+    optional int64 logical  = 2;
 }
 
 message TsoResponse {

@@ -22,10 +22,11 @@ var (
 
 func newTestServer(c *C, rootPath string) *Server {
 	cfg := &Config{
-		Addr:        "127.0.0.1:0",
-		EtcdAddrs:   strings.Split(*test_etcd, ","),
-		RootPath:    rootPath,
-		LeaderLease: 1,
+		Addr:            "127.0.0.1:0",
+		EtcdAddrs:       strings.Split(*test_etcd, ","),
+		RootPath:        rootPath,
+		LeaderLease:     1,
+		TsoSaveInterval: 500,
 	}
 
 	svr, err := NewServer(cfg)
@@ -61,9 +62,8 @@ func deleteRoot(c *C, client *clientv3.Client, rootPath string) {
 var _ = Suite(&testLeaderServerSuite{})
 
 type testLeaderServerSuite struct {
-	client   *clientv3.Client
-	svrs     map[string]*Server
-	rootPath string
+	client *clientv3.Client
+	svrs   map[string]*Server
 }
 
 func (s *testLeaderServerSuite) getRootPath() string {

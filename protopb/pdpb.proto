@@ -18,6 +18,8 @@ enum CommandType {
     GetMeta        = 5;
     PutMeta        = 6;
     DeleteMeta     = 7;
+    AskChangePeer  = 8;
+    AskSplit       = 9;
 }
 
 message TsoRequest {
@@ -102,6 +104,23 @@ message DeleteMetaResponse {
     optional MetaType meta_type = 1;
 }
 
+message AskChangePeerRequest {
+    optional metapb.Region region = 1;
+}
+
+message AskChangePeerResponse {
+    
+}
+
+message AskSplitRequest {
+    optional metapb.Region region = 1;
+    optional bytes split_key      = 2;
+}
+
+message AskSplitResponse {
+    
+}
+
 message RequestHeader {
     // 16 bytes, to distinguish request.  
     optional bytes uuid                = 1;
@@ -125,6 +144,8 @@ message Request {
     optional GetMetaRequest get_meta               = 7;
     optional PutMetaRequest put_meta               = 8;
     optional DeleteMetaRequest delete_meta         = 9;
+    optional AskChangePeerRequest ask_change_peer  = 10;
+    optional AskSplitRequest ask_split             = 11;
 }
 
 message Response {
@@ -137,6 +158,8 @@ message Response {
     optional GetMetaResponse get_meta               = 7;
     optional PutMetaResponse put_meta               = 8;
     optional DeleteMetaResponse delete_meta         = 9;
+    optional AskChangePeerResponse ask_change_peer  = 10;
+    optional AskSplitResponse ask_split             = 11;
 }
 
 message BootstrappedError {

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"os"
 	"path"
 	"sync/atomic"
@@ -12,15 +11,11 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/lease"
 	storagepb "github.com/coreos/etcd/storage/storagepb"
+	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
+	"github.com/pingcap/pd/protopb"
 )
-
-// TODO: define Leader in proto.
-type Leader struct {
-	Addr string `json:"addr"`
-	PID  int    `json:"pid"`
-}
 
 // IsLeader returns whether server is leader or not.
 func (s *Server) IsLeader() bool {
@@ -80,14 +75,14 @@ func (s *Server) leaderLoop() {
 }
 
 // GetLeader gets server leader from etcd.
-func GetLeader(c *clientv3.Client, leaderPath string) (*Leader, error) {
+func GetLeader(c *clientv3.Client, leaderPath string) (*protopb.Leader, error) {
 	value, err := getValue(c, leaderPath)
 	if err != nil || value == nil {
 		return nil, errors.Trace(err)
 	}
 
-	leader := Leader{}
-	err = json.Unmarshal(value, &leader)
+	leader := protopb.Leader{}
+	err = proto.Unmarshal(value, &leader)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -95,17 +90,17 @@ func GetLeader(c *clientv3.Client, leaderPath string) (*Leader, error) {
 	return &leader, nil
 }
 
-func (s *Server) getLeader() (*Leader, error) {
+func (s *Server) getLeader() (*protopb.Leader, error) {
 	return GetLeader(s.client, s.getLeaderPath())
 }
 
 func (s *Server) marshalLeader() string {
-	leader := Leader{
-		Addr: s.cfg.Addr,
-		PID:  os.Getpid(),
+	leader := &protopb.Leader{
+		Addr: proto.String(s.cfg.Addr),
+		Pid:  proto.Int64(int64(os.Getpid())),
 	}
 
-	data, err := json.Marshal(leader)
+	data, err := proto.Marshal(leader)
 	if err != nil {
 		// can't fail, so panic here.
 		log.Fatalf("marshal leader %v err %v", leader, err)

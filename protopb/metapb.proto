@@ -2,6 +2,14 @@ syntax = "proto2";
 package metapb;
 option go_package = "protopb";
 
+message Cluster {
+    optional uint64 cluster_id     = 1;
+    // max peer number for a region.
+    // pd will do the auto-balance if region peer number mismatches.
+    optional uint32 max_peer_number = 2; 
+    // more attributes......
+}
+
 message Node {
     optional uint64 node_id = 1;
     optional string address = 2;

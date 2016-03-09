@@ -77,7 +77,7 @@ func (s *testAllocIDSuite) TestID(c *C) {
 func (s *testAllocIDSuite) TestCommand(c *C) {
 	leader := mustGetLeader(c, s.client, s.getRootPath())
 
-	conn, err := net.Dial("tcp", leader.Addr)
+	conn, err := net.Dial("tcp", leader.GetAddr())
 	c.Assert(err, IsNil)
 	defer conn.Close()
 

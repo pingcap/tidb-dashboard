@@ -4,6 +4,11 @@ option go_package = "protopb";
 
 import "metapb.proto";
 
+message Leader {
+    optional string addr  = 1;
+    optional int64 pid    = 2;
+}
+
 enum CommandType {
     Invalid        = 0;
     Tso            = 1;

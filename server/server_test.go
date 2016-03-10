@@ -17,13 +17,13 @@ func TestServer(t *testing.T) {
 }
 
 var (
-	test_etcd = flag.String("etcd", "127.0.0.1:2378", "Etcd gPRC endpoints, separated by comma")
+	testEtcd = flag.String("etcd", "127.0.0.1:2378", "Etcd gPRC endpoints, separated by comma")
 )
 
 func newTestServer(c *C, rootPath string) *Server {
 	cfg := &Config{
 		Addr:            "127.0.0.1:0",
-		EtcdAddrs:       strings.Split(*test_etcd, ","),
+		EtcdAddrs:       strings.Split(*testEtcd, ","),
 		RootPath:        rootPath,
 		LeaderLease:     1,
 		TsoSaveInterval: 500,
@@ -41,7 +41,7 @@ func newTestServer(c *C, rootPath string) *Server {
 
 func newEtcdClient(c *C) *clientv3.Client {
 	client, err := clientv3.New(clientv3.Config{
-		Endpoints:   strings.Split(*test_etcd, ","),
+		Endpoints:   strings.Split(*testEtcd, ","),
 		DialTimeout: time.Second,
 	})
 

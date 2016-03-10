@@ -15,6 +15,7 @@ const (
 	etcdTimeout = time.Second * 3
 )
 
+// Server is the pd server.
 type Server struct {
 	cfg *Config
 
@@ -44,8 +45,9 @@ type Server struct {
 	idAlloc *idAllocator
 }
 
+// NewServer creates the pd server with given configuration.
 func NewServer(cfg *Config) (*Server, error) {
-	cfg.Adjust()
+	cfg.adjust()
 
 	log.Infof("create etcd v3 client with endpoints %v", cfg.EtcdAddrs)
 	client, err := clientv3.New(clientv3.Config{
@@ -110,6 +112,7 @@ func (s *Server) ListeningAddr() string {
 	return s.listener.Addr().String()
 }
 
+// Run runs the pd server.
 func (s *Server) Run() error {
 	// We use "127.0.0.1:0" for test and will set correct listening
 	// address before run, so we set leader value here.
@@ -143,7 +146,7 @@ func (s *Server) closeAllConnections() {
 	defer s.connsLock.Unlock()
 
 	// TODO: should we send an error message before close?
-	for conn, _ := range s.conns {
+	for conn := range s.conns {
 		conn.Close()
 	}
 

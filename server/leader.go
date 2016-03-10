@@ -165,8 +165,6 @@ func (s *Server) campaignLeader() error {
 			}
 		}
 	}
-
-	return nil
 }
 
 func (s *Server) watchLeader() {

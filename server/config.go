@@ -5,6 +5,7 @@ const (
 	defaultTsoSaveInterval = 2000
 )
 
+// Config is the pd server configuration.
 type Config struct {
 	// Server listening address.
 	Addr string
@@ -26,7 +27,7 @@ type Config struct {
 	TsoSaveInterval int64
 }
 
-func (c *Config) Adjust() {
+func (c *Config) adjust() {
 	if c.LeaderLease <= 0 {
 		c.LeaderLease = defaultLeaderLease
 	}

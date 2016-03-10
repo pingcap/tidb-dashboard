@@ -49,7 +49,7 @@ func (alloc *idAllocator) generate() (uint64, error) {
 
 	var (
 		cmp clientv3.Cmp
-		end uint64 = 0
+		end uint64
 	)
 
 	if value == nil {
@@ -74,7 +74,7 @@ func (alloc *idAllocator) generate() (uint64, error) {
 	if err != nil {
 		return 0, errors.Trace(err)
 	} else if !resp.Succeeded {
-		return 0, errors.New("generate id failed, we may not leader.")
+		return 0, errors.New("generate id failed, we may not leader")
 	}
 
 	return end, nil

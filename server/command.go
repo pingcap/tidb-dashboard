@@ -49,3 +49,50 @@ func (c *conn) handleAllocID(req *protopb.Request) (*protopb.Response, error) {
 		AllocId: idResp,
 	}, nil
 }
+
+func (c *conn) handleIsBootstrapped(req *protopb.Request) (*protopb.Response, error) {
+	request := req.GetIsBootstrapped()
+	if request == nil {
+		return nil, errors.Errorf("invalid is bootstrapped command, but %v", req)
+	}
+
+	clusterID := req.GetHeader().GetClusterId()
+	cluster, err := c.s.getCluster(clusterID)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	resp := &protopb.IsBootstrappedResponse{
+		Bootstrapped: proto.Bool(cluster != nil),
+	}
+
+	return &protopb.Response{
+		IsBootstrapped: resp,
+	}, nil
+}
+
+func (c *conn) handleBootstrap(req *protopb.Request) (*protopb.Response, error) {
+	request := req.GetBootstrap()
+	if request == nil {
+		return nil, errors.Errorf("invalid bootstrap command, but %v", req)
+	}
+
+	clusterID := req.GetHeader().GetClusterId()
+	cluster, err := c.s.getCluster(clusterID)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	if cluster != nil {
+		return protopb.NewBootstrappedError(), nil
+	}
+
+	if err = c.s.bootstrapCluster(clusterID, request); err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	return &protopb.Response{
+		Bootstrap: &protopb.BootstrapResponse{},
+	}, nil
+
+}

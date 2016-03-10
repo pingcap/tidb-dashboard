@@ -158,6 +158,10 @@ func (c *conn) handleRequest(req *protopb.Request) (*protopb.Response, error) {
 		return c.handleTso(req)
 	case protopb.CommandType_AllocId:
 		return c.handleAllocID(req)
+	case protopb.CommandType_Bootstrap:
+		return c.handleBootstrap(req)
+	case protopb.CommandType_IsBootstrapped:
+		return c.handleIsBootstrapped(req)
 	default:
 		return nil, errors.Errorf("unsupported command %s", req)
 	}

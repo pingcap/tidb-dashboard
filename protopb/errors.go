@@ -23,3 +23,17 @@ func NewError(err error) *Response {
 func NewErrorf(format string, args ...interface{}) *Response {
 	return NewError(fmt.Errorf(format, args...))
 }
+
+// NewBootstrappedError returns a BootstrappedError response.
+func NewBootstrappedError() *Response {
+	r := &Response{
+		Header: &ResponseHeader{},
+	}
+
+	r.Header.Error = &Error{
+		Message:      proto.String("cluster is already bootstrapped"),
+		Bootstrapped: &BootstrappedError{},
+	}
+
+	return r
+}

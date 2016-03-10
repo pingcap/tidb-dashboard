@@ -43,6 +43,10 @@ type Server struct {
 	// node, store, region and peer, because we just need
 	// a unique ID.
 	idAlloc *idAllocator
+
+	// for raft cluster
+	clusterLock sync.RWMutex
+	clusters    map[uint64]*raftCluster
 }
 
 // NewServer creates the pd server with given configuration.
@@ -73,6 +77,7 @@ func NewServer(cfg *Config) (*Server, error) {
 		isLeader: 0,
 		conns:    make(map[*conn]struct{}),
 		closed:   0,
+		clusters: make(map[uint64]*raftCluster),
 	}
 
 	s.idAlloc = &idAllocator{s: s}

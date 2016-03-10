@@ -397,3 +397,69 @@ func (c *raftCluster) GetRegion(regionKey []byte) (*protopb.Region, error) {
 
 	return nil, errors.Errorf("invalid searched region %v for key %q", region, regionKey)
 }
+
+func (c *raftCluster) PutNode(node *protopb.Node) error {
+	if node == nil || node.GetNodeId() == 0 {
+		return errors.Errorf("invalid put node %v", node)
+	}
+
+	nodeValue, err := proto.Marshal(node)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	nodePath := makeNodeKey(c.clusterRoot, node.GetNodeId())
+
+	mu := &c.mu
+	mu.Lock()
+	defer mu.Unlock()
+
+	resp, err := c.s.client.Txn(context.TODO()).
+		If(c.s.leaderCmp()).
+		Then(clientv3.OpPut(nodePath, string(nodeValue))).
+		Commit()
+	if err != nil {
+		return errors.Trace(err)
+	} else if !resp.Succeeded {
+		return errors.Errorf("put node %v fail", node)
+	}
+
+	mu.nodes[node.GetNodeId()] = *node
+
+	return nil
+}
+
+func (c *raftCluster) PutStore(store *protopb.Store) error {
+	if store == nil || store.GetStoreId() == 0 {
+		return errors.Errorf("invalid put store %v", store)
+	}
+
+	storeValue, err := proto.Marshal(store)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	storePath := makeStoreKey(c.clusterRoot, store.GetStoreId())
+
+	// The associated node must exist.
+	nodePath := makeNodeKey(c.clusterRoot, store.GetNodeId())
+
+	mu := &c.mu
+	mu.Lock()
+	defer mu.Unlock()
+
+	nodeCreatedCmp := clientv3.Compare(clientv3.CreatedRevision(nodePath), ">", 0)
+	resp, err := c.s.client.Txn(context.TODO()).
+		If(c.s.leaderCmp(), nodeCreatedCmp).
+		Then(clientv3.OpPut(storePath, string(storeValue))).
+		Commit()
+	if err != nil {
+		return errors.Trace(err)
+	} else if !resp.Succeeded {
+		return errors.Errorf("put store %v fail", store)
+	}
+
+	mu.stores[store.GetStoreId()] = *store
+
+	return nil
+}

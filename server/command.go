@@ -94,5 +94,63 @@ func (c *conn) handleBootstrap(req *protopb.Request) (*protopb.Response, error) 
 	return &protopb.Response{
 		Bootstrap: &protopb.BootstrapResponse{},
 	}, nil
+}
 
+func (c *conn) getCluster(req *protopb.Request) (*raftCluster, error) {
+	clusterID := req.GetHeader().GetClusterId()
+	cluster, err := c.s.getCluster(clusterID)
+	if err != nil {
+		return nil, errors.Trace(err)
+	} else if cluster == nil {
+		return nil, errors.Trace(errClusterNotBootstrapped)
+	}
+	return cluster, nil
+}
+
+func (c *conn) handleGetMeta(req *protopb.Request) (*protopb.Response, error) {
+	request := req.GetGetMeta()
+	if request == nil {
+		return nil, errors.Errorf("invalid get meta command, but %v", req)
+	}
+
+	cluster, err := c.getCluster(req)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	resp := &protopb.GetMetaResponse{
+		MetaType: request.MetaType,
+	}
+
+	switch request.GetMetaType() {
+	case protopb.MetaType_NodeType:
+		nodeID := request.GetNodeId()
+		node, err := cluster.GetNode(nodeID)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		// Node may be nil, should we return an error instead of none result?
+		resp.Node = node
+	case protopb.MetaType_StoreType:
+		storeID := request.GetStoreId()
+		store, err := cluster.GetStore(storeID)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		// Store may be nil, should we return an error instead of none result?
+		resp.Store = store
+	case protopb.MetaType_RegionType:
+		key := request.GetRegionKey()
+		region, err := cluster.GetRegion(key)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		resp.Region = region
+	default:
+		return nil, errors.Errorf("invalid meta type %v", request.GetMetaType())
+	}
+
+	return &protopb.Response{
+		GetMeta: resp,
+	}, nil
 }

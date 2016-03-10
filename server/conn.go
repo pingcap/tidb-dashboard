@@ -94,7 +94,7 @@ func (c *conn) run() {
 
 		response, err := c.handleRequest(request)
 		if err != nil {
-			log.Errorf("handle request %s err %v", request, err)
+			log.Errorf("handle request %s err %v", request, errors.ErrorStack(err))
 			response = protopb.NewError(err)
 		}
 
@@ -162,6 +162,8 @@ func (c *conn) handleRequest(req *protopb.Request) (*protopb.Response, error) {
 		return c.handleBootstrap(req)
 	case protopb.CommandType_IsBootstrapped:
 		return c.handleIsBootstrapped(req)
+	case protopb.CommandType_GetMeta:
+		return c.handleGetMeta(req)
 	default:
 		return nil, errors.Errorf("unsupported command %s", req)
 	}

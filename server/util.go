@@ -5,16 +5,22 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
+	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"golang.org/x/net/context"
 )
 
+const (
+	requestTimeout = 3 * time.Second
+)
+
 // a helper function to get value with key from etcd.
-func getValue(c *clientv3.Client, key string) ([]byte, error) {
+// TODO: return the value revision for outer use.
+func getValue(c *clientv3.Client, key string, opts ...clientv3.OpOption) ([]byte, error) {
 	kv := clientv3.NewKV(c)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	resp, err := kv.Get(ctx, key)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := kv.Get(ctx, key, opts...)
 	cancel()
 
 	if err != nil {
@@ -28,6 +34,21 @@ func getValue(c *clientv3.Client, key string) ([]byte, error) {
 	}
 
 	return resp.Kvs[0].Value, nil
+}
+
+// return boolean to indicate whether the key exists or not.
+// TODO: return the value revision for outer use.
+func getProtoMsg(c *clientv3.Client, key string, msg proto.Message, opts ...clientv3.OpOption) (bool, error) {
+	value, err := getValue(c, key, opts...)
+	if err != nil || value == nil {
+		return false, errors.Trace(err)
+	}
+
+	if err = proto.Unmarshal(value, msg); err != nil {
+		return false, errors.Trace(err)
+	}
+
+	return true, nil
 }
 
 func bytesToUint64(b []byte) (uint64, error) {

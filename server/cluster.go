@@ -1,9 +1,11 @@
 package server
 
 import (
+	"bytes"
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 
 	"golang.org/x/net/context"
 
@@ -43,23 +45,31 @@ var (
 type raftCluster struct {
 	s *Server
 
-	meta        protopb.Cluster
 	clusterRoot string
 
-	// node cache
-	nodes map[uint64]protopb.Node
-	// store cache
-	stores map[uint64]protopb.Store
+	mu struct {
+		sync.RWMutex
+		// TODO: keep meta revision
+		// cluster meta cache
+		meta protopb.Cluster
+
+		// node cache
+		nodes map[uint64]protopb.Node
+		// store cache
+		stores map[uint64]protopb.Store
+	}
 }
 
 func (s *Server) newCluster(clusterID uint64, meta protopb.Cluster) *raftCluster {
 	c := &raftCluster{
 		s:           s,
-		meta:        meta,
 		clusterRoot: s.getClusterRootPath(clusterID),
-		nodes:       make(map[uint64]protopb.Node),
-		stores:      make(map[uint64]protopb.Store),
 	}
+
+	mu := &c.mu
+	mu.meta = meta
+	mu.nodes = make(map[uint64]protopb.Node)
+	mu.stores = make(map[uint64]protopb.Store)
 
 	return c
 }
@@ -276,12 +286,114 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *protopb.BootstrapReques
 	}
 
 	c := s.newCluster(clusterID, clusterMeta)
-	c.nodes[req.GetNode().GetNodeId()] = *req.GetNode()
+
+	mu := &c.mu
+	mu.Lock()
+	defer mu.Unlock()
+	mu.nodes[req.GetNode().GetNodeId()] = *req.GetNode()
 	for _, storeMeta := range req.GetStores() {
-		c.stores[storeMeta.GetStoreId()] = *storeMeta
+		mu.stores[storeMeta.GetStoreId()] = *storeMeta
 	}
 
 	s.clusters[clusterID] = c
 
 	return nil
+}
+
+func (c *raftCluster) GetNode(nodeID uint64) (*protopb.Node, error) {
+	if nodeID == 0 {
+		return nil, errors.Errorf("invalid zero node id")
+	}
+
+	mu := &c.mu
+	mu.RLock()
+	node, ok := mu.nodes[nodeID]
+	mu.RUnlock()
+	if ok {
+		return &node, nil
+	}
+
+	// try to find in etcd
+	node = protopb.Node{}
+	if ok, err := getProtoMsg(c.s.client, makeNodeKey(c.clusterRoot, nodeID), &node); err != nil || !ok {
+		return nil, errors.Trace(err)
+	}
+
+	mu.Lock()
+	defer mu.Unlock()
+	if n, ok := mu.nodes[nodeID]; ok {
+		// another goroutine may call GetNode/PutNode and already update it.
+		return &n, nil
+	}
+
+	mu.nodes[nodeID] = node
+
+	return &node, nil
+}
+
+func (c *raftCluster) GetStore(storeID uint64) (*protopb.Store, error) {
+	if storeID == 0 {
+		return nil, errors.Errorf("invalid zero store id")
+	}
+
+	mu := &c.mu
+	mu.RLock()
+	store, ok := mu.stores[storeID]
+	mu.RUnlock()
+	if ok {
+		return &store, nil
+	}
+
+	// try to find in etcd
+	store = protopb.Store{}
+	if ok, err := getProtoMsg(c.s.client, makeStoreKey(c.clusterRoot, storeID), &store); err != nil || !ok {
+		return nil, errors.Trace(err)
+	}
+
+	mu.Lock()
+	defer mu.Unlock()
+	if s, ok := mu.stores[storeID]; ok {
+		// another goroutine may call GetStore/PutStore and already update it.
+		return &s, nil
+	}
+
+	mu.stores[storeID] = store
+
+	return &store, nil
+}
+
+func (c *raftCluster) GetRegion(regionKey []byte) (*protopb.Region, error) {
+	if len(regionKey) == 0 {
+		return nil, errors.Errorf("invalid empty region key")
+	}
+
+	// We must use the next region key for search,
+	// e,g, we have two regions 1, 2, and key ranges are ["", "abc"), ["abc", +infinite),
+	// if we use "abc" to search the region, the first key >= "abc" may be
+	// region 1, not region 2. So we use the next region key for search.
+	//
+	nextRegionKey := append(regionKey, 0x00)
+	searchKey := makeRegionSearchKey(c.clusterRoot, nextRegionKey)
+
+	// Etcd range search is for range [searchKey, endKey), if we want to get
+	// the latest region, we should use next max end key for search range.
+	// TODO: we can generate these keys in initialization.
+	maxEndKey := makeRegionSearchKey(c.clusterRoot, []byte{})
+	maxSearchEndKey := maxEndKey + "\x00"
+
+	// Find the first region with end key >= searchKey
+	region := protopb.Region{}
+	ok, err := getProtoMsg(c.s.client, searchKey, &region, clientv3.WithRange(string(maxSearchEndKey)), clientv3.WithLimit(1))
+	if err != nil {
+		return nil, errors.Trace(err)
+	} else if !ok {
+		return nil, errors.Errorf("we must find a region for %q but fail, a serious bug", regionKey)
+	}
+
+	if bytes.Compare(regionKey, region.GetStartKey()) >= 0 &&
+		(len(region.GetEndKey()) == 0 || bytes.Compare(regionKey, region.GetEndKey()) < 0) {
+		return &region, nil
+	}
+
+	return nil, errors.Errorf("invalid searched region %v for key %q", region, regionKey)
 }

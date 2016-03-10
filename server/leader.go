@@ -76,14 +76,9 @@ func (s *Server) leaderLoop() {
 
 // GetLeader gets server leader from etcd.
 func GetLeader(c *clientv3.Client, leaderPath string) (*protopb.Leader, error) {
-	value, err := getValue(c, leaderPath)
-	if err != nil || value == nil {
-		return nil, errors.Trace(err)
-	}
-
 	leader := protopb.Leader{}
-	err = proto.Unmarshal(value, &leader)
-	if err != nil {
+	ok, err := getProtoMsg(c, leaderPath, &leader)
+	if err != nil || !ok {
 		return nil, errors.Trace(err)
 	}
 

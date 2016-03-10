@@ -1,6 +1,7 @@
 package server
 
 const (
+	defaultRootPath        = "pd"
 	defaultLeaderLease     = 3
 	defaultTsoSaveInterval = 2000
 )
@@ -13,6 +14,7 @@ type Config struct {
 	// Etcd endpoints
 	EtcdAddrs []string
 
+	// RootPath in Etcd as the prefix for all keys. If not set, use default "pd".
 	RootPath string
 
 	// LeaderLease time, if leader doesn't update its TTL
@@ -28,6 +30,11 @@ type Config struct {
 }
 
 func (c *Config) adjust() {
+	if len(c.RootPath) == 0 {
+		c.RootPath = defaultRootPath
+	}
+	// TODO: Maybe we should do more check for root path, only allow letters?
+
 	if c.LeaderLease <= 0 {
 		c.LeaderLease = defaultLeaderLease
 	}

@@ -29,7 +29,7 @@ var (
 // node 1 -> /raft/1/n/1, value is metapb.Node
 // store 1 -> /raft/1/s/1, value is metapb.Store
 // region 1 -> /raft/1/r/1, value is encoded_region_key
-// region search key map -> /raft/1/rk/encoded_region_key, value is metapb.Region
+// region search key map -> /raft/1/k/encoded_region_key, value is metapb.Region
 //
 // Operation list, pd can only handle operations like auto-balance, split,
 // merge sequentially, and every operation will be assigned a unique incremental ID.
@@ -128,7 +128,7 @@ func getClusterRegionKey(clusterRootPath string, regionID uint64) string {
 }
 
 func getClusterRegionSearchKey(clusterRootPath string, endKey []byte) string {
-	return strings.Join([]string{clusterRootPath, "rs", encodeRegionSearchKey(endKey)}, "/")
+	return strings.Join([]string{clusterRootPath, "k", encodeRegionSearchKey(endKey)}, "/")
 }
 
 func checkBootstrapRequest(clusterID uint64, req *protopb.BootstrapRequest) error {

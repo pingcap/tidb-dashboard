@@ -1,8 +1,9 @@
 package server
 
 import (
+	"path"
+	"strconv"
 	"strings"
-	"sync"
 
 	"golang.org/x/net/context"
 
@@ -40,8 +41,6 @@ var (
 //  2, other region end key is not empty, the encode key is \z end_key
 
 type raftCluster struct {
-	sync.Mutex
-
 	s *Server
 
 	meta        protopb.Cluster
@@ -66,9 +65,7 @@ func (s *Server) newCluster(clusterID uint64, meta protopb.Cluster) *raftCluster
 }
 
 func (s *Server) getClusterRootPath(clusterID uint64) string {
-	return strings.Join(
-		[]string{s.cfg.RootPath, "raft", string(uint64ToBytes(clusterID))},
-		"/")
+	return path.Join(s.cfg.RootPath, "raft", strconv.FormatUint(clusterID, 10))
 }
 
 func (s *Server) getCluster(clusterID uint64) (*raftCluster, error) {
@@ -115,19 +112,19 @@ func encodeRegionSearchKey(endKey []byte) string {
 	return string(append([]byte{'z'}, endKey...))
 }
 
-func getClusterNodeKey(clusterRootPath string, nodeID uint64) string {
-	return strings.Join([]string{clusterRootPath, "n", string(uint64ToBytes(nodeID))}, "/")
+func makeNodeKey(clusterRootPath string, nodeID uint64) string {
+	return strings.Join([]string{clusterRootPath, "n", strconv.FormatUint(nodeID, 10)}, "/")
 }
 
-func getClusterStoreKey(clusterRootPath string, storeID uint64) string {
-	return strings.Join([]string{clusterRootPath, "s", string(uint64ToBytes(storeID))}, "/")
+func makeStoreKey(clusterRootPath string, storeID uint64) string {
+	return strings.Join([]string{clusterRootPath, "s", strconv.FormatUint(storeID, 10)}, "/")
 }
 
-func getClusterRegionKey(clusterRootPath string, regionID uint64) string {
-	return strings.Join([]string{clusterRootPath, "r", string(uint64ToBytes(regionID))}, "/")
+func makeRegionKey(clusterRootPath string, regionID uint64) string {
+	return strings.Join([]string{clusterRootPath, "r", strconv.FormatUint(regionID, 10)}, "/")
 }
 
-func getClusterRegionSearchKey(clusterRootPath string, endKey []byte) string {
+func makeRegionSearchKey(clusterRootPath string, endKey []byte) string {
 	return strings.Join([]string{clusterRootPath, "k", encodeRegionSearchKey(endKey)}, "/")
 }
 
@@ -209,8 +206,6 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *protopb.BootstrapReques
 		return errors.Trace(err)
 	}
 
-	var ops []clientv3.Op
-
 	clusterMeta := protopb.Cluster{
 		ClusterId:     proto.Uint64(clusterID),
 		MaxPeerNumber: proto.Uint32(defaultMaxPeerNumber),
@@ -222,10 +217,12 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *protopb.BootstrapReques
 		return errors.Trace(err)
 	}
 	clusterRootPath := s.getClusterRootPath(clusterID)
+
+	var ops []clientv3.Op
 	ops = append(ops, clientv3.OpPut(clusterRootPath, string(clusterValue)))
 
 	// Set node meta
-	nodePath := getClusterNodeKey(clusterRootPath, req.GetNode().GetNodeId())
+	nodePath := makeNodeKey(clusterRootPath, req.GetNode().GetNodeId())
 	nodeValue, err := proto.Marshal(req.GetNode())
 	if err != nil {
 		return errors.Trace(err)
@@ -234,7 +231,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *protopb.BootstrapReques
 
 	// Set store meta
 	for _, storeMeta := range req.GetStores() {
-		storePath := getClusterStoreKey(clusterRootPath, storeMeta.GetStoreId())
+		storePath := makeStoreKey(clusterRootPath, storeMeta.GetStoreId())
 		storeValue, err1 := proto.Marshal(storeMeta)
 		if err1 != nil {
 			return errors.Trace(err)
@@ -243,11 +240,11 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *protopb.BootstrapReques
 	}
 
 	// Set region id -> search key
-	regionPath := getClusterRegionKey(clusterRootPath, req.GetRegion().GetRegionId())
+	regionPath := makeRegionKey(clusterRootPath, req.GetRegion().GetRegionId())
 	ops = append(ops, clientv3.OpPut(regionPath, encodeRegionSearchKey(req.GetRegion().GetEndKey())))
 
 	// Set region meta with search key
-	regionSearchPath := getClusterRegionSearchKey(clusterRootPath, req.GetRegion().GetEndKey())
+	regionSearchPath := makeRegionSearchKey(clusterRootPath, req.GetRegion().GetEndKey())
 	regionValue, err := proto.Marshal(req.GetRegion())
 	if err != nil {
 		return errors.Trace(err)
@@ -271,8 +268,10 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *protopb.BootstrapReques
 	defer s.clusterLock.Unlock()
 
 	if _, ok := s.clusters[clusterID]; ok {
-		// We have bootstrapped cluster ok, and another goroutine quickly requests use this
-		// so we create the cluster object.
+		// We have bootstrapped cluster ok, and another goroutine quickly requests to
+		// use this cluster and we create the cluster object for it.
+		// But can this really happen?
+		log.Errorf("cluster object %d already exists", clusterID)
 		return nil
 	}
 

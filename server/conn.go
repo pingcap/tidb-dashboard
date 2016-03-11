@@ -9,8 +9,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-
-	"github.com/pingcap/pd/protopb"
+	"github.com/pingcap/kvproto/pkg/pdpb"
 )
 
 const (
@@ -85,7 +84,7 @@ func (c *conn) run() {
 
 		// TODO: if not leader, return not leader response.
 
-		request := &protopb.Request{}
+		request := &pdpb.Request{}
 		err = proto.Unmarshal(body, request)
 		if err != nil {
 			log.Errorf("decode msg body err %s", err)
@@ -95,7 +94,7 @@ func (c *conn) run() {
 		response, err := c.handleRequest(request)
 		if err != nil {
 			log.Errorf("handle request %s err %v", request, errors.ErrorStack(err))
-			response = protopb.NewError(err)
+			response = NewError(err)
 		}
 
 		if response == nil {
@@ -132,7 +131,7 @@ func (c *conn) run() {
 	}
 }
 
-func updateResponse(req *protopb.Request, resp *protopb.Response) {
+func updateResponse(req *pdpb.Request, resp *pdpb.Response) {
 	// We can use request field directly here.
 	resp.CmdType = req.CmdType
 
@@ -141,7 +140,7 @@ func updateResponse(req *protopb.Request, resp *protopb.Response) {
 	}
 
 	if resp.Header == nil {
-		resp.Header = &protopb.ResponseHeader{}
+		resp.Header = &pdpb.ResponseHeader{}
 	}
 
 	resp.Header.Uuid = req.Header.Uuid
@@ -152,19 +151,19 @@ func (c *conn) Close() {
 	c.conn.Close()
 }
 
-func (c *conn) handleRequest(req *protopb.Request) (*protopb.Response, error) {
+func (c *conn) handleRequest(req *pdpb.Request) (*pdpb.Response, error) {
 	switch req.GetCmdType() {
-	case protopb.CommandType_Tso:
+	case pdpb.CommandType_Tso:
 		return c.handleTso(req)
-	case protopb.CommandType_AllocId:
+	case pdpb.CommandType_AllocId:
 		return c.handleAllocID(req)
-	case protopb.CommandType_Bootstrap:
+	case pdpb.CommandType_Bootstrap:
 		return c.handleBootstrap(req)
-	case protopb.CommandType_IsBootstrapped:
+	case pdpb.CommandType_IsBootstrapped:
 		return c.handleIsBootstrapped(req)
-	case protopb.CommandType_GetMeta:
+	case pdpb.CommandType_GetMeta:
 		return c.handleGetMeta(req)
-	case protopb.CommandType_PutMeta:
+	case pdpb.CommandType_PutMeta:
 		return c.handlePutMeta(req)
 	default:
 		return nil, errors.Errorf("unsupported command %s", req)

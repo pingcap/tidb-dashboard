@@ -11,7 +11,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"github.com/pingcap/pd/protopb"
+	"github.com/pingcap/kvproto/pkg/pdpb"
 )
 
 const (
@@ -136,8 +136,8 @@ func (s *Server) updateTimestamp() error {
 
 const maxRetryNum = 100
 
-func (s *Server) getRespTS() *protopb.Timestamp {
-	resp := &protopb.Timestamp{}
+func (s *Server) getRespTS() *pdpb.Timestamp {
+	resp := &pdpb.Timestamp{}
 	for i := 0; i < maxRetryNum; i++ {
 		current, ok := s.ts.Load().(*atomicObject)
 		if !ok {

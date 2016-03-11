@@ -12,6 +12,5 @@ test:
 check:
 	go tool vet . 
 	go tool vet --shadow . 
-	# skip protopb lint check.
-	golint ./... | grep -vE 'protopb/' | awk '{print} END{if(NR>0) {exit 1}}'
+	golint ./... 
 	gofmt -s -l .

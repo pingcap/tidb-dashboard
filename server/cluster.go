@@ -13,7 +13,8 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"github.com/pingcap/pd/protopb"
+	"github.com/pingcap/kvproto/pkg/metapb"
+	"github.com/pingcap/kvproto/pkg/pdpb"
 )
 
 const (
@@ -51,16 +52,16 @@ type raftCluster struct {
 		sync.RWMutex
 		// TODO: keep meta revision
 		// cluster meta cache
-		meta protopb.Cluster
+		meta metapb.Cluster
 
 		// node cache
-		nodes map[uint64]protopb.Node
+		nodes map[uint64]metapb.Node
 		// store cache
-		stores map[uint64]protopb.Store
+		stores map[uint64]metapb.Store
 	}
 }
 
-func (s *Server) newCluster(clusterID uint64, meta protopb.Cluster) *raftCluster {
+func (s *Server) newCluster(clusterID uint64, meta metapb.Cluster) *raftCluster {
 	c := &raftCluster{
 		s:           s,
 		clusterRoot: s.getClusterRootPath(clusterID),
@@ -68,8 +69,8 @@ func (s *Server) newCluster(clusterID uint64, meta protopb.Cluster) *raftCluster
 
 	mu := &c.mu
 	mu.meta = meta
-	mu.nodes = make(map[uint64]protopb.Node)
-	mu.stores = make(map[uint64]protopb.Store)
+	mu.nodes = make(map[uint64]metapb.Node)
+	mu.stores = make(map[uint64]metapb.Store)
 
 	return c
 }
@@ -95,7 +96,7 @@ func (s *Server) getCluster(clusterID uint64) (*raftCluster, error) {
 		return nil, nil
 	}
 
-	m := protopb.Cluster{}
+	m := metapb.Cluster{}
 	if err = proto.Unmarshal(value, &m); err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -138,7 +139,7 @@ func makeRegionSearchKey(clusterRootPath string, endKey []byte) string {
 	return strings.Join([]string{clusterRootPath, "k", encodeRegionSearchKey(endKey)}, "/")
 }
 
-func checkBootstrapRequest(clusterID uint64, req *protopb.BootstrapRequest) error {
+func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 	// TODO: do more check for request fields validation.
 
 	nodeMeta := req.GetNode()
@@ -209,14 +210,14 @@ func checkBootstrapRequest(clusterID uint64, req *protopb.BootstrapRequest) erro
 	return nil
 }
 
-func (s *Server) bootstrapCluster(clusterID uint64, req *protopb.BootstrapRequest) error {
+func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) error {
 	log.Infof("try to bootstrap cluster %d with %v", clusterID, req)
 
 	if err := checkBootstrapRequest(clusterID, req); err != nil {
 		return errors.Trace(err)
 	}
 
-	clusterMeta := protopb.Cluster{
+	clusterMeta := metapb.Cluster{
 		ClusterId:     proto.Uint64(clusterID),
 		MaxPeerNumber: proto.Uint32(defaultMaxPeerNumber),
 	}
@@ -300,7 +301,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *protopb.BootstrapReques
 	return nil
 }
 
-func (c *raftCluster) GetNode(nodeID uint64) (*protopb.Node, error) {
+func (c *raftCluster) GetNode(nodeID uint64) (*metapb.Node, error) {
 	if nodeID == 0 {
 		return nil, errors.Errorf("invalid zero node id")
 	}
@@ -314,7 +315,7 @@ func (c *raftCluster) GetNode(nodeID uint64) (*protopb.Node, error) {
 	}
 
 	// try to find in etcd
-	node = protopb.Node{}
+	node = metapb.Node{}
 	if ok, err := getProtoMsg(c.s.client, makeNodeKey(c.clusterRoot, nodeID), &node); err != nil || !ok {
 		return nil, errors.Trace(err)
 	}
@@ -331,7 +332,7 @@ func (c *raftCluster) GetNode(nodeID uint64) (*protopb.Node, error) {
 	return &node, nil
 }
 
-func (c *raftCluster) GetStore(storeID uint64) (*protopb.Store, error) {
+func (c *raftCluster) GetStore(storeID uint64) (*metapb.Store, error) {
 	if storeID == 0 {
 		return nil, errors.Errorf("invalid zero store id")
 	}
@@ -345,7 +346,7 @@ func (c *raftCluster) GetStore(storeID uint64) (*protopb.Store, error) {
 	}
 
 	// try to find in etcd
-	store = protopb.Store{}
+	store = metapb.Store{}
 	if ok, err := getProtoMsg(c.s.client, makeStoreKey(c.clusterRoot, storeID), &store); err != nil || !ok {
 		return nil, errors.Trace(err)
 	}
@@ -362,7 +363,7 @@ func (c *raftCluster) GetStore(storeID uint64) (*protopb.Store, error) {
 	return &store, nil
 }
 
-func (c *raftCluster) GetRegion(regionKey []byte) (*protopb.Region, error) {
+func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {
 	if len(regionKey) == 0 {
 		return nil, errors.Errorf("invalid empty region key")
 	}
@@ -382,7 +383,7 @@ func (c *raftCluster) GetRegion(regionKey []byte) (*protopb.Region, error) {
 	maxSearchEndKey := maxEndKey + "\x00"
 
 	// Find the first region with end key >= searchKey
-	region := protopb.Region{}
+	region := metapb.Region{}
 	ok, err := getProtoMsg(c.s.client, searchKey, &region, clientv3.WithRange(string(maxSearchEndKey)), clientv3.WithLimit(1))
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -398,7 +399,7 @@ func (c *raftCluster) GetRegion(regionKey []byte) (*protopb.Region, error) {
 	return nil, errors.Errorf("invalid searched region %v for key %q", region, regionKey)
 }
 
-func (c *raftCluster) PutNode(node *protopb.Node) error {
+func (c *raftCluster) PutNode(node *metapb.Node) error {
 	if node == nil || node.GetNodeId() == 0 {
 		return errors.Errorf("invalid put node %v", node)
 	}
@@ -429,7 +430,7 @@ func (c *raftCluster) PutNode(node *protopb.Node) error {
 	return nil
 }
 
-func (c *raftCluster) PutStore(store *protopb.Store) error {
+func (c *raftCluster) PutStore(store *metapb.Store) error {
 	if store == nil || store.GetStoreId() == 0 {
 		return errors.Errorf("invalid put store %v", store)
 	}

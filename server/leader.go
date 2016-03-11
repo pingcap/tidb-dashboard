@@ -14,7 +14,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"github.com/pingcap/pd/protopb"
+	"github.com/pingcap/kvproto/pkg/pdpb"
 )
 
 // IsLeader returns whether server is leader or not.
@@ -75,8 +75,8 @@ func (s *Server) leaderLoop() {
 }
 
 // GetLeader gets server leader from etcd.
-func GetLeader(c *clientv3.Client, leaderPath string) (*protopb.Leader, error) {
-	leader := protopb.Leader{}
+func GetLeader(c *clientv3.Client, leaderPath string) (*pdpb.Leader, error) {
+	leader := pdpb.Leader{}
 	ok, err := getProtoMsg(c, leaderPath, &leader)
 	if err != nil || !ok {
 		return nil, errors.Trace(err)
@@ -85,12 +85,12 @@ func GetLeader(c *clientv3.Client, leaderPath string) (*protopb.Leader, error) {
 	return &leader, nil
 }
 
-func (s *Server) getLeader() (*protopb.Leader, error) {
+func (s *Server) getLeader() (*pdpb.Leader, error) {
 	return GetLeader(s.client, s.getLeaderPath())
 }
 
 func (s *Server) marshalLeader() string {
-	leader := &protopb.Leader{
+	leader := &pdpb.Leader{
 		Addr: proto.String(s.cfg.Addr),
 		Pid:  proto.Int64(int64(os.Getpid())),
 	}

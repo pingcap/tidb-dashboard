@@ -6,7 +6,8 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/gogo/protobuf/proto"
 	. "github.com/pingcap/check"
-	"github.com/pingcap/pd/protopb"
+	"github.com/pingcap/kvproto/pkg/metapb"
+	"github.com/pingcap/kvproto/pkg/pdpb"
 )
 
 var _ = Suite(&testClusterSuite{})
@@ -41,36 +42,36 @@ func (s *testClusterSuite) allocID(c *C) uint64 {
 	return id
 }
 
-func newRequestHeader(clusterID uint64) *protopb.RequestHeader {
-	return &protopb.RequestHeader{
+func newRequestHeader(clusterID uint64) *pdpb.RequestHeader {
+	return &pdpb.RequestHeader{
 		ClusterId: proto.Uint64(clusterID),
 	}
 }
 
-func (s *testClusterSuite) newNode(c *C, nodeID uint64, addr string) *protopb.Node {
+func (s *testClusterSuite) newNode(c *C, nodeID uint64, addr string) *metapb.Node {
 	if nodeID == 0 {
 		nodeID = s.allocID(c)
 	}
 
-	return &protopb.Node{
+	return &metapb.Node{
 		NodeId:  proto.Uint64(nodeID),
 		Address: proto.String(addr),
 	}
 }
 
-func (s *testClusterSuite) newStore(c *C, nodeID uint64, storeID uint64) *protopb.Store {
+func (s *testClusterSuite) newStore(c *C, nodeID uint64, storeID uint64) *metapb.Store {
 	if storeID == 0 {
 		storeID = s.allocID(c)
 	}
 
 	c.Assert(nodeID, Greater, uint64(0))
-	return &protopb.Store{
+	return &metapb.Store{
 		NodeId:  proto.Uint64(nodeID),
 		StoreId: proto.Uint64(storeID),
 	}
 }
 
-func (s *testClusterSuite) newPeer(c *C, nodeID uint64, storeID uint64, peerID uint64) *protopb.Peer {
+func (s *testClusterSuite) newPeer(c *C, nodeID uint64, storeID uint64, peerID uint64) *metapb.Peer {
 	c.Assert(nodeID, Greater, uint64(0))
 	c.Assert(storeID, Greater, uint64(0))
 
@@ -78,14 +79,14 @@ func (s *testClusterSuite) newPeer(c *C, nodeID uint64, storeID uint64, peerID u
 		peerID = s.allocID(c)
 	}
 
-	return &protopb.Peer{
+	return &metapb.Peer{
 		NodeId:  proto.Uint64(nodeID),
 		StoreId: proto.Uint64(storeID),
 		PeerId:  proto.Uint64(peerID),
 	}
 }
 
-func (s *testClusterSuite) newRegion(c *C, regionID uint64, startKey []byte, endKey []byte, peers []*protopb.Peer) *protopb.Region {
+func (s *testClusterSuite) newRegion(c *C, regionID uint64, startKey []byte, endKey []byte, peers []*metapb.Peer) *metapb.Region {
 	if regionID == 0 {
 		regionID = s.allocID(c)
 	}
@@ -99,7 +100,7 @@ func (s *testClusterSuite) newRegion(c *C, regionID uint64, startKey []byte, end
 		}
 	}
 
-	return &protopb.Region{
+	return &metapb.Region{
 		RegionId:  proto.Uint64(regionID),
 		StartKey:  startKey,
 		EndKey:    endKey,
@@ -118,10 +119,10 @@ func (s *testClusterSuite) TestBootstrap(c *C) {
 	clusterID := uint64(0)
 
 	// IsBootstrapped returns false.
-	req := &protopb.Request{
+	req := &pdpb.Request{
 		Header:         newRequestHeader(clusterID),
-		CmdType:        protopb.CommandType_IsBootstrapped.Enum(),
-		IsBootstrapped: &protopb.IsBootstrappedRequest{},
+		CmdType:        pdpb.CommandType_IsBootstrapped.Enum(),
+		IsBootstrapped: &pdpb.IsBootstrappedRequest{},
 	}
 
 	sendRequest(c, conn, 0, req)
@@ -133,13 +134,13 @@ func (s *testClusterSuite) TestBootstrap(c *C) {
 	node := s.newNode(c, 0, "127.0.0.1:20163")
 	store := s.newStore(c, node.GetNodeId(), 0)
 	peer := s.newPeer(c, node.GetNodeId(), store.GetStoreId(), 0)
-	region := s.newRegion(c, 0, []byte{}, []byte{}, []*protopb.Peer{peer})
-	req = &protopb.Request{
+	region := s.newRegion(c, 0, []byte{}, []byte{}, []*metapb.Peer{peer})
+	req = &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
-		CmdType: protopb.CommandType_Bootstrap.Enum(),
-		Bootstrap: &protopb.BootstrapRequest{
+		CmdType: pdpb.CommandType_Bootstrap.Enum(),
+		Bootstrap: &pdpb.BootstrapRequest{
 			Node:   node,
-			Stores: []*protopb.Store{store},
+			Stores: []*metapb.Store{store},
 			Region: region,
 		},
 	}
@@ -148,10 +149,10 @@ func (s *testClusterSuite) TestBootstrap(c *C) {
 	c.Assert(resp.Bootstrap, NotNil)
 
 	// IsBootstrapped returns true.
-	req = &protopb.Request{
+	req = &pdpb.Request{
 		Header:         newRequestHeader(clusterID),
-		CmdType:        protopb.CommandType_IsBootstrapped.Enum(),
-		IsBootstrapped: &protopb.IsBootstrappedRequest{},
+		CmdType:        pdpb.CommandType_IsBootstrapped.Enum(),
+		IsBootstrapped: &pdpb.IsBootstrappedRequest{},
 	}
 
 	sendRequest(c, conn, 0, req)
@@ -160,12 +161,12 @@ func (s *testClusterSuite) TestBootstrap(c *C) {
 	c.Assert(resp.IsBootstrapped.GetBootstrapped(), IsTrue)
 
 	// check bootstrapped error.
-	req = &protopb.Request{
+	req = &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
-		CmdType: protopb.CommandType_Bootstrap.Enum(),
-		Bootstrap: &protopb.BootstrapRequest{
+		CmdType: pdpb.CommandType_Bootstrap.Enum(),
+		Bootstrap: &pdpb.BootstrapRequest{
 			Node:   node,
-			Stores: []*protopb.Store{store},
+			Stores: []*metapb.Store{store},
 			Region: region,
 		},
 	}
@@ -181,13 +182,13 @@ func (s *testClusterSuite) bootstrapCluster(c *C, conn net.Conn, clusterID uint6
 	node := s.newNode(c, 0, nodeAddr)
 	store := s.newStore(c, node.GetNodeId(), 0)
 	peer := s.newPeer(c, node.GetNodeId(), store.GetStoreId(), 0)
-	region := s.newRegion(c, 0, []byte{}, []byte{}, []*protopb.Peer{peer})
-	req := &protopb.Request{
+	region := s.newRegion(c, 0, []byte{}, []byte{}, []*metapb.Peer{peer})
+	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
-		CmdType: protopb.CommandType_Bootstrap.Enum(),
-		Bootstrap: &protopb.BootstrapRequest{
+		CmdType: pdpb.CommandType_Bootstrap.Enum(),
+		Bootstrap: &pdpb.BootstrapRequest{
 			Node:   node,
-			Stores: []*protopb.Store{store},
+			Stores: []*metapb.Store{store},
 			Region: region,
 		},
 	}
@@ -196,54 +197,54 @@ func (s *testClusterSuite) bootstrapCluster(c *C, conn net.Conn, clusterID uint6
 	c.Assert(resp.Bootstrap, NotNil)
 }
 
-func (s *testClusterSuite) getNode(c *C, conn net.Conn, clusterID uint64, nodeID uint64) *protopb.Node {
-	req := &protopb.Request{
+func (s *testClusterSuite) getNode(c *C, conn net.Conn, clusterID uint64, nodeID uint64) *metapb.Node {
+	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
-		CmdType: protopb.CommandType_GetMeta.Enum(),
-		GetMeta: &protopb.GetMetaRequest{
-			MetaType: protopb.MetaType_NodeType.Enum(),
+		CmdType: pdpb.CommandType_GetMeta.Enum(),
+		GetMeta: &pdpb.GetMetaRequest{
+			MetaType: pdpb.MetaType_NodeType.Enum(),
 			NodeId:   proto.Uint64(nodeID),
 		},
 	}
 	sendRequest(c, conn, 0, req)
 	_, resp := recvResponse(c, conn)
 	c.Assert(resp.GetMeta, NotNil)
-	c.Assert(resp.GetMeta.GetMetaType(), Equals, protopb.MetaType_NodeType)
+	c.Assert(resp.GetMeta.GetMetaType(), Equals, pdpb.MetaType_NodeType)
 	c.Assert(resp.GetMeta.GetNode().GetNodeId(), Equals, uint64(nodeID))
 
 	return resp.GetMeta.GetNode()
 }
 
-func (s *testClusterSuite) getStore(c *C, conn net.Conn, clusterID uint64, storeID uint64) *protopb.Store {
-	req := &protopb.Request{
+func (s *testClusterSuite) getStore(c *C, conn net.Conn, clusterID uint64, storeID uint64) *metapb.Store {
+	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
-		CmdType: protopb.CommandType_GetMeta.Enum(),
-		GetMeta: &protopb.GetMetaRequest{
-			MetaType: protopb.MetaType_StoreType.Enum(),
+		CmdType: pdpb.CommandType_GetMeta.Enum(),
+		GetMeta: &pdpb.GetMetaRequest{
+			MetaType: pdpb.MetaType_StoreType.Enum(),
 			StoreId:  proto.Uint64(storeID),
 		},
 	}
 	sendRequest(c, conn, 0, req)
 	_, resp := recvResponse(c, conn)
 	c.Assert(resp.GetMeta, NotNil)
-	c.Assert(resp.GetMeta.GetMetaType(), Equals, protopb.MetaType_StoreType)
+	c.Assert(resp.GetMeta.GetMetaType(), Equals, pdpb.MetaType_StoreType)
 	c.Assert(resp.GetMeta.GetStore().GetStoreId(), Equals, uint64(storeID))
 	return resp.GetMeta.GetStore()
 }
 
-func (s *testClusterSuite) getRegion(c *C, conn net.Conn, clusterID uint64, regionKey []byte) *protopb.Region {
-	req := &protopb.Request{
+func (s *testClusterSuite) getRegion(c *C, conn net.Conn, clusterID uint64, regionKey []byte) *metapb.Region {
+	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
-		CmdType: protopb.CommandType_GetMeta.Enum(),
-		GetMeta: &protopb.GetMetaRequest{
-			MetaType:  protopb.MetaType_RegionType.Enum(),
+		CmdType: pdpb.CommandType_GetMeta.Enum(),
+		GetMeta: &pdpb.GetMetaRequest{
+			MetaType:  pdpb.MetaType_RegionType.Enum(),
 			RegionKey: regionKey,
 		},
 	}
 	sendRequest(c, conn, 0, req)
 	_, resp := recvResponse(c, conn)
 	c.Assert(resp.GetMeta, NotNil)
-	c.Assert(resp.GetMeta.GetMetaType(), Equals, protopb.MetaType_RegionType)
+	c.Assert(resp.GetMeta.GetMetaType(), Equals, pdpb.MetaType_RegionType)
 	c.Assert(resp.GetMeta.GetRegion(), NotNil)
 
 	return resp.GetMeta.GetRegion()
@@ -278,28 +279,28 @@ func (s *testClusterSuite) TestGetPutMeta(c *C) {
 
 	// Update node
 	nodeAddr = "127.0.0.1:1"
-	req := &protopb.Request{
+	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
-		CmdType: protopb.CommandType_PutMeta.Enum(),
-		PutMeta: &protopb.PutMetaRequest{
-			MetaType: protopb.MetaType_NodeType.Enum(),
+		CmdType: pdpb.CommandType_PutMeta.Enum(),
+		PutMeta: &pdpb.PutMetaRequest{
+			MetaType: pdpb.MetaType_NodeType.Enum(),
 			Node:     s.newNode(c, nodeID, nodeAddr),
 		},
 	}
 	sendRequest(c, conn, 0, req)
 	_, resp := recvResponse(c, conn)
 	c.Assert(resp.PutMeta, NotNil)
-	c.Assert(resp.PutMeta.GetMetaType(), Equals, protopb.MetaType_NodeType)
+	c.Assert(resp.PutMeta.GetMetaType(), Equals, pdpb.MetaType_NodeType)
 
 	node = s.getNode(c, conn, clusterID, nodeID)
 	c.Assert(node.GetAddress(), Equals, nodeAddr)
 
 	// Add another store
-	req = &protopb.Request{
+	req = &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
-		CmdType: protopb.CommandType_PutMeta.Enum(),
-		PutMeta: &protopb.PutMetaRequest{
-			MetaType: protopb.MetaType_StoreType.Enum(),
+		CmdType: pdpb.CommandType_PutMeta.Enum(),
+		PutMeta: &pdpb.PutMetaRequest{
+			MetaType: pdpb.MetaType_StoreType.Enum(),
 			Store:    s.newStore(c, nodeID, 0),
 		},
 	}
@@ -307,17 +308,17 @@ func (s *testClusterSuite) TestGetPutMeta(c *C) {
 	sendRequest(c, conn, 0, req)
 	_, resp = recvResponse(c, conn)
 	c.Assert(resp.PutMeta, NotNil)
-	c.Assert(resp.PutMeta.GetMetaType(), Equals, protopb.MetaType_StoreType)
+	c.Assert(resp.PutMeta.GetMetaType(), Equals, pdpb.MetaType_StoreType)
 	store = s.getStore(c, conn, clusterID, storeID)
 	c.Assert(store.GetNodeId(), Equals, uint64(nodeID))
 
 	// Add a new store but we don't add node before, must error
 	nodeID = s.allocID(c)
-	req = &protopb.Request{
+	req = &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
-		CmdType: protopb.CommandType_PutMeta.Enum(),
-		PutMeta: &protopb.PutMetaRequest{
-			MetaType: protopb.MetaType_StoreType.Enum(),
+		CmdType: pdpb.CommandType_PutMeta.Enum(),
+		PutMeta: &pdpb.PutMetaRequest{
+			MetaType: pdpb.MetaType_StoreType.Enum(),
 			Store:    s.newStore(c, nodeID, 0),
 		},
 	}

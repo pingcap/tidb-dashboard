@@ -7,7 +7,7 @@ import (
 
 	"github.com/coreos/etcd/clientv3"
 	. "github.com/pingcap/check"
-	"github.com/pingcap/pd/protopb"
+	"github.com/pingcap/kvproto/pkg/pdpb"
 )
 
 var _ = Suite(&testAllocIDSuite{})
@@ -81,10 +81,10 @@ func (s *testAllocIDSuite) TestCommand(c *C) {
 	c.Assert(err, IsNil)
 	defer conn.Close()
 
-	idReq := &protopb.AllocIdRequest{}
+	idReq := &pdpb.AllocIdRequest{}
 
-	req := &protopb.Request{
-		CmdType: protopb.CommandType_AllocId.Enum(),
+	req := &pdpb.Request{
+		CmdType: pdpb.CommandType_AllocId.Enum(),
 		AllocId: idReq,
 	}
 

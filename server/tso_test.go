@@ -11,7 +11,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/golang/protobuf/proto"
 	. "github.com/pingcap/check"
-	"github.com/pingcap/pd/protopb"
+	"github.com/pingcap/kvproto/pkg/pdpb"
 )
 
 var _ = Suite(&testTsoSuite{})
@@ -40,7 +40,7 @@ func (s *testTsoSuite) TearDownSuite(c *C) {
 	s.client.Close()
 }
 
-func sendRequest(c *C, conn net.Conn, msgID uint64, request *protopb.Request) {
+func sendRequest(c *C, conn net.Conn, msgID uint64, request *pdpb.Request) {
 	body, err := proto.Marshal(request)
 	c.Assert(err, IsNil)
 
@@ -58,7 +58,7 @@ func sendRequest(c *C, conn net.Conn, msgID uint64, request *protopb.Request) {
 	c.Assert(err, IsNil)
 }
 
-func recvResponse(c *C, conn net.Conn) (uint64, *protopb.Response) {
+func recvResponse(c *C, conn net.Conn) (uint64, *pdpb.Response) {
 	header := make([]byte, msgHeaderSize)
 	_, err := io.ReadFull(conn, header)
 	c.Assert(err, IsNil)
@@ -71,7 +71,7 @@ func recvResponse(c *C, conn net.Conn) (uint64, *protopb.Response) {
 	_, err = io.ReadFull(conn, body)
 	c.Assert(err, IsNil)
 
-	resp := &protopb.Response{}
+	resp := &pdpb.Response{}
 	err = proto.Unmarshal(body, resp)
 	c.Assert(err, IsNil)
 
@@ -79,12 +79,12 @@ func recvResponse(c *C, conn net.Conn) (uint64, *protopb.Response) {
 }
 
 func (s *testTsoSuite) testGetTimestamp(c *C, conn net.Conn, n int) {
-	tso := &protopb.TsoRequest{
+	tso := &pdpb.TsoRequest{
 		Number: proto.Uint32(uint32(n)),
 	}
 
-	req := &protopb.Request{
-		CmdType: protopb.CommandType_Tso.Enum(),
+	req := &pdpb.Request{
+		CmdType: pdpb.CommandType_Tso.Enum(),
 		Tso:     tso,
 	}
 
@@ -96,7 +96,7 @@ func (s *testTsoSuite) testGetTimestamp(c *C, conn net.Conn, n int) {
 	c.Assert(len(resp.Tso.Timestamps), Equals, n)
 
 	res := resp.Tso.Timestamps
-	last := protopb.Timestamp{}
+	last := pdpb.Timestamp{}
 	for i := 0; i < n; i++ {
 		c.Assert(res[i].GetPhysical(), GreaterEqual, last.GetPhysical())
 		if res[i].GetPhysical() == last.GetPhysical() {
@@ -107,7 +107,7 @@ func (s *testTsoSuite) testGetTimestamp(c *C, conn net.Conn, n int) {
 	}
 }
 
-func mustGetLeader(c *C, client *clientv3.Client, rootPath string) *protopb.Leader {
+func mustGetLeader(c *C, client *clientv3.Client, rootPath string) *pdpb.Leader {
 	for i := 0; i < 10; i++ {
 		leader, err := GetLeader(client, GetLeaderPath(rootPath))
 		c.Assert(err, IsNil)

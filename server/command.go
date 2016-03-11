@@ -154,3 +154,38 @@ func (c *conn) handleGetMeta(req *protopb.Request) (*protopb.Response, error) {
 		GetMeta: resp,
 	}, nil
 }
+
+func (c *conn) handlePutMeta(req *protopb.Request) (*protopb.Response, error) {
+	request := req.GetPutMeta()
+	if request == nil {
+		return nil, errors.Errorf("invalid put meta command, but %v", req)
+	}
+
+	cluster, err := c.getCluster(req)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	switch request.GetMetaType() {
+	case protopb.MetaType_NodeType:
+		node := request.GetNode()
+		if err = cluster.PutNode(node); err != nil {
+			return nil, errors.Trace(err)
+		}
+	case protopb.MetaType_StoreType:
+		store := request.GetStore()
+		if err = cluster.PutStore(store); err != nil {
+			return nil, errors.Trace(err)
+		}
+	default:
+		return nil, errors.Errorf("invalid meta type %v", request.GetMetaType())
+	}
+
+	resp := &protopb.PutMetaResponse{
+		MetaType: request.MetaType,
+	}
+
+	return &protopb.Response{
+		PutMeta: resp,
+	}, nil
+}

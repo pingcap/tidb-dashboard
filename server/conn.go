@@ -164,6 +164,8 @@ func (c *conn) handleRequest(req *protopb.Request) (*protopb.Response, error) {
 		return c.handleIsBootstrapped(req)
 	case protopb.CommandType_GetMeta:
 		return c.handleGetMeta(req)
+	case protopb.CommandType_PutMeta:
+		return c.handlePutMeta(req)
 	default:
 		return nil, errors.Errorf("unsupported command %s", req)
 	}

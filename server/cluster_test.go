@@ -196,24 +196,48 @@ func (s *testClusterSuite) bootstrapCluster(c *C, conn net.Conn, clusterID uint6
 	c.Assert(resp.Bootstrap, NotNil)
 }
 
-func (s *testClusterSuite) TestGetMeta(c *C) {
-	leader := mustGetLeader(c, s.client, s.getRootPath())
+func (s *testClusterSuite) getNode(c *C, conn net.Conn, clusterID uint64, nodeID uint64) *protopb.Node {
+	req := &protopb.Request{
+		Header:  newRequestHeader(clusterID),
+		CmdType: protopb.CommandType_GetMeta.Enum(),
+		GetMeta: &protopb.GetMetaRequest{
+			MetaType: protopb.MetaType_NodeType.Enum(),
+			NodeId:   proto.Uint64(nodeID),
+		},
+	}
+	sendRequest(c, conn, 0, req)
+	_, resp := recvResponse(c, conn)
+	c.Assert(resp.GetMeta, NotNil)
+	c.Assert(resp.GetMeta.GetMetaType(), Equals, protopb.MetaType_NodeType)
+	c.Assert(resp.GetMeta.GetNode().GetNodeId(), Equals, uint64(nodeID))
 
-	conn, err := net.Dial("tcp", leader.GetAddr())
-	c.Assert(err, IsNil)
-	defer conn.Close()
+	return resp.GetMeta.GetNode()
+}
 
-	clusterID := uint64(1)
+func (s *testClusterSuite) getStore(c *C, conn net.Conn, clusterID uint64, storeID uint64) *protopb.Store {
+	req := &protopb.Request{
+		Header:  newRequestHeader(clusterID),
+		CmdType: protopb.CommandType_GetMeta.Enum(),
+		GetMeta: &protopb.GetMetaRequest{
+			MetaType: protopb.MetaType_StoreType.Enum(),
+			StoreId:  proto.Uint64(storeID),
+		},
+	}
+	sendRequest(c, conn, 0, req)
+	_, resp := recvResponse(c, conn)
+	c.Assert(resp.GetMeta, NotNil)
+	c.Assert(resp.GetMeta.GetMetaType(), Equals, protopb.MetaType_StoreType)
+	c.Assert(resp.GetMeta.GetStore().GetStoreId(), Equals, uint64(storeID))
+	return resp.GetMeta.GetStore()
+}
 
-	s.bootstrapCluster(c, conn, clusterID, "127.0.0.1:0")
-
-	// Get region
+func (s *testClusterSuite) getRegion(c *C, conn net.Conn, clusterID uint64, regionKey []byte) *protopb.Region {
 	req := &protopb.Request{
 		Header:  newRequestHeader(clusterID),
 		CmdType: protopb.CommandType_GetMeta.Enum(),
 		GetMeta: &protopb.GetMetaRequest{
 			MetaType:  protopb.MetaType_RegionType.Enum(),
-			RegionKey: []byte("abc"),
+			RegionKey: regionKey,
 		},
 	}
 	sendRequest(c, conn, 0, req)
@@ -222,38 +246,83 @@ func (s *testClusterSuite) TestGetMeta(c *C) {
 	c.Assert(resp.GetMeta.GetMetaType(), Equals, protopb.MetaType_RegionType)
 	c.Assert(resp.GetMeta.GetRegion(), NotNil)
 
-	region := resp.GetMeta.GetRegion()
+	return resp.GetMeta.GetRegion()
+}
+
+func (s *testClusterSuite) TestGetPutMeta(c *C) {
+	leader := mustGetLeader(c, s.client, s.getRootPath())
+
+	conn, err := net.Dial("tcp", leader.GetAddr())
+	c.Assert(err, IsNil)
+	defer conn.Close()
+
+	clusterID := uint64(1)
+
+	nodeAddr := "127.0.0.1:0"
+	s.bootstrapCluster(c, conn, clusterID, nodeAddr)
+
+	// Get region
+	region := s.getRegion(c, conn, clusterID, []byte("abc"))
 	c.Assert(region.GetPeers(), HasLen, 1)
 	peer := region.GetPeers()[0]
 
 	// Get node
-	req = &protopb.Request{
-		Header:  newRequestHeader(clusterID),
-		CmdType: protopb.CommandType_GetMeta.Enum(),
-		GetMeta: &protopb.GetMetaRequest{
-			MetaType: protopb.MetaType_NodeType.Enum(),
-			NodeId:   proto.Uint64(peer.GetNodeId()),
-		},
-	}
-	sendRequest(c, conn, 0, req)
-	_, resp = recvResponse(c, conn)
-	c.Assert(resp.GetMeta, NotNil)
-	c.Assert(resp.GetMeta.GetMetaType(), Equals, protopb.MetaType_NodeType)
-	c.Assert(resp.GetMeta.GetNode().GetNodeId(), Equals, uint64(peer.GetNodeId()))
+	nodeID := peer.GetNodeId()
+	node := s.getNode(c, conn, clusterID, nodeID)
+	c.Assert(node.GetAddress(), Equals, nodeAddr)
 
 	// Get store
+	storeID := peer.GetStoreId()
+	store := s.getStore(c, conn, clusterID, storeID)
+	c.Assert(store.GetNodeId(), Equals, uint64(nodeID))
+
+	// Update node
+	nodeAddr = "127.0.0.1:1"
+	req := &protopb.Request{
+		Header:  newRequestHeader(clusterID),
+		CmdType: protopb.CommandType_PutMeta.Enum(),
+		PutMeta: &protopb.PutMetaRequest{
+			MetaType: protopb.MetaType_NodeType.Enum(),
+			Node:     s.newNode(c, nodeID, nodeAddr),
+		},
+	}
+	sendRequest(c, conn, 0, req)
+	_, resp := recvResponse(c, conn)
+	c.Assert(resp.PutMeta, NotNil)
+	c.Assert(resp.PutMeta.GetMetaType(), Equals, protopb.MetaType_NodeType)
+
+	node = s.getNode(c, conn, clusterID, nodeID)
+	c.Assert(node.GetAddress(), Equals, nodeAddr)
+
+	// Add another store
 	req = &protopb.Request{
 		Header:  newRequestHeader(clusterID),
-		CmdType: protopb.CommandType_GetMeta.Enum(),
-		GetMeta: &protopb.GetMetaRequest{
+		CmdType: protopb.CommandType_PutMeta.Enum(),
+		PutMeta: &protopb.PutMetaRequest{
 			MetaType: protopb.MetaType_StoreType.Enum(),
-			StoreId:  proto.Uint64(peer.GetStoreId()),
+			Store:    s.newStore(c, nodeID, 0),
+		},
+	}
+	storeID = req.PutMeta.Store.GetStoreId()
+	sendRequest(c, conn, 0, req)
+	_, resp = recvResponse(c, conn)
+	c.Assert(resp.PutMeta, NotNil)
+	c.Assert(resp.PutMeta.GetMetaType(), Equals, protopb.MetaType_StoreType)
+	store = s.getStore(c, conn, clusterID, storeID)
+	c.Assert(store.GetNodeId(), Equals, uint64(nodeID))
+
+	// Add a new store but we don't add node before, must error
+	nodeID = s.allocID(c)
+	req = &protopb.Request{
+		Header:  newRequestHeader(clusterID),
+		CmdType: protopb.CommandType_PutMeta.Enum(),
+		PutMeta: &protopb.PutMetaRequest{
+			MetaType: protopb.MetaType_StoreType.Enum(),
+			Store:    s.newStore(c, nodeID, 0),
 		},
 	}
 	sendRequest(c, conn, 0, req)
 	_, resp = recvResponse(c, conn)
-	c.Assert(resp.GetMeta, NotNil)
-	c.Assert(resp.GetMeta.GetMetaType(), Equals, protopb.MetaType_StoreType)
-	c.Assert(resp.GetMeta.GetStore().GetStoreId(), Equals, uint64(peer.GetStoreId()))
-	c.Assert(resp.GetMeta.GetStore().GetNodeId(), Equals, uint64(peer.GetNodeId()))
+	c.Assert(resp.PutMeta, IsNil)
+	c.Assert(resp.Header.GetError(), NotNil)
 }

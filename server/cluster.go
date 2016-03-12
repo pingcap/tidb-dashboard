@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"fmt"
 	"path"
 	"strconv"
 	"strings"
@@ -20,6 +21,7 @@ import (
 const (
 	// defaultMaxPeerNumber is the default max peer number for a region.
 	defaultMaxPeerNumber = uint32(3)
+	askJobChannelSize    = 1024
 )
 
 var (
@@ -35,9 +37,9 @@ var (
 // region 1 -> /raft/1/r/1, value is encoded_region_key
 // region search key map -> /raft/1/k/encoded_region_key, value is metapb.Region
 //
-// Operation list, pd can only handle operations like auto-balance, split,
+// Operation queue, pd can only handle operations like auto-balance, split,
 // merge sequentially, and every operation will be assigned a unique incremental ID.
-// pending list -> /raft/1/j/1, /raft/1/j/2, value is operation job.
+// pending queue -> /raft/1/j/1, /raft/1/j/2, value is operation job.
 //
 // Encode region search key:
 //  1, the maximum end region key is empty, so the encode key is \xFF
@@ -47,6 +49,12 @@ type raftCluster struct {
 	s *Server
 
 	clusterRoot string
+
+	wg sync.WaitGroup
+
+	quitCh chan struct{}
+
+	askJobCh chan struct{}
 
 	mu struct {
 		sync.RWMutex
@@ -61,18 +69,37 @@ type raftCluster struct {
 	}
 }
 
-func (s *Server) newCluster(clusterID uint64, meta metapb.Cluster) *raftCluster {
+func (s *Server) newCluster(clusterID uint64, meta metapb.Cluster) (*raftCluster, error) {
 	c := &raftCluster{
 		s:           s,
 		clusterRoot: s.getClusterRootPath(clusterID),
+		askJobCh:    make(chan struct{}, askJobChannelSize),
+		quitCh:      make(chan struct{}),
 	}
+
+	// Force checking the pending job.
+	c.askJobCh <- struct{}{}
 
 	mu := &c.mu
 	mu.meta = meta
-	mu.nodes = make(map[uint64]metapb.Node)
-	mu.stores = make(map[uint64]metapb.Store)
 
-	return c
+	if err := c.cacheAllNodes(); err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	if err := c.cacheAllStores(); err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	c.wg.Add(1)
+	go c.onJobWorker()
+
+	return c, nil
+}
+
+func (c *raftCluster) Close() {
+	close(c.quitCh)
+	c.wg.Wait()
 }
 
 func (s *Server) getClusterRootPath(clusterID uint64) string {
@@ -110,9 +137,28 @@ func (s *Server) getCluster(clusterID uint64) (*raftCluster, error) {
 		return c, nil
 	}
 
-	c = s.newCluster(clusterID, m)
+	c, err = s.newCluster(clusterID, m)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
 	s.clusters[clusterID] = c
 	return c, nil
+}
+
+func (s *Server) closeClusters() {
+	s.clusterLock.Lock()
+	defer s.clusterLock.Unlock()
+
+	if len(s.clusters) == 0 {
+		return
+	}
+
+	for _, cluster := range s.clusters {
+		cluster.Close()
+	}
+
+	s.clusters = make(map[uint64]*raftCluster)
 }
 
 func encodeRegionSearchKey(endKey []byte) string {
@@ -137,6 +183,21 @@ func makeRegionKey(clusterRootPath string, regionID uint64) string {
 
 func makeRegionSearchKey(clusterRootPath string, endKey []byte) string {
 	return strings.Join([]string{clusterRootPath, "k", encodeRegionSearchKey(endKey)}, "/")
+}
+
+func makeJobKey(clusterRootPath string, jobID uint64) string {
+	// We must guarantee the job handling order, so use %020d to format the job key,
+	// use etcd range get to get the first job and then handle it.
+	// Should we use a 8 bytes binary BigEndian instead of 20 bytes string?
+	return strings.Join([]string{clusterRootPath, "j", fmt.Sprintf("%020d", jobID)}, "/")
+}
+
+func makeNodeKeyPrefix(clusterRootPath string) string {
+	return strings.Join([]string{clusterRootPath, "n", ""}, "/")
+}
+
+func makeStoreKeyPrefix(clusterRootPath string) string {
+	return strings.Join([]string{clusterRootPath, "s", ""}, "/")
 }
 
 func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
@@ -286,7 +347,10 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 		return nil
 	}
 
-	c := s.newCluster(clusterID, clusterMeta)
+	c, err := s.newCluster(clusterID, clusterMeta)
+	if err != nil {
+		return errors.Trace(err)
+	}
 
 	mu := &c.mu
 	mu.Lock()
@@ -297,6 +361,66 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	}
 
 	s.clusters[clusterID] = c
+
+	return nil
+}
+
+func (c *raftCluster) cacheAllNodes() error {
+	mu := &c.mu
+	mu.Lock()
+	defer mu.Unlock()
+
+	kv := clientv3.NewKV(c.s.client)
+
+	key := makeNodeKeyPrefix(c.clusterRoot)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := kv.Get(ctx, key, clientv3.WithPrefix())
+	cancel()
+
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	mu.nodes = make(map[uint64]metapb.Node)
+	for _, kv := range resp.Kvs {
+		node := metapb.Node{}
+		if err = proto.Unmarshal(kv.Value, &node); err != nil {
+			return errors.Trace(err)
+		}
+
+		nodeID := node.GetNodeId()
+		mu.nodes[nodeID] = node
+	}
+
+	return nil
+}
+
+func (c *raftCluster) cacheAllStores() error {
+	mu := &c.mu
+	mu.Lock()
+	defer mu.Unlock()
+
+	kv := clientv3.NewKV(c.s.client)
+
+	key := makeStoreKeyPrefix(c.clusterRoot)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := kv.Get(ctx, key, clientv3.WithPrefix())
+	cancel()
+
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	mu.stores = make(map[uint64]metapb.Store)
+	for _, kv := range resp.Kvs {
+		store := metapb.Store{}
+		if err = proto.Unmarshal(kv.Value, &store); err != nil {
+			return errors.Trace(err)
+		}
+
+		storeID := store.GetStoreId()
+		mu.stores[storeID] = store
+	}
 
 	return nil
 }
@@ -463,4 +587,12 @@ func (c *raftCluster) PutStore(store *metapb.Store) error {
 	mu.stores[store.GetStoreId()] = *store
 
 	return nil
+}
+
+func (c *raftCluster) GetClusterMeta() metapb.Cluster {
+	mu := &c.mu
+	mu.RLock()
+	defer mu.RUnlock()
+
+	return mu.meta
 }

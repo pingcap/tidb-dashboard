@@ -29,6 +29,15 @@ func (s *Server) enableLeader(b bool) {
 	}
 
 	atomic.StoreInt64(&s.isLeader, value)
+
+	if !b {
+		// if we lost leader, we may:
+		//	1, close all client connections
+		//	2, close all running raft clusters
+		s.closeAllConnections()
+
+		s.closeClusters()
+	}
 }
 
 // GetLeaderPath returns the leader path.
@@ -68,9 +77,6 @@ func (s *Server) leaderLoop() {
 		if err = s.campaignLeader(); err != nil {
 			log.Errorf("campaign leader err %s", err)
 		}
-
-		// here means we are not leader, close all connections
-		s.closeAllConnections()
 	}
 }
 
@@ -129,6 +135,7 @@ func (s *Server) campaignLeader() error {
 
 	log.Debug("campaign leader ok")
 	s.enableLeader(true)
+	defer s.enableLeader(false)
 
 	// keeps the leader
 	ch, err := lessor.KeepAlive(s.client.Ctx(), lease.LeaseID(leaseResp.ID))
@@ -142,10 +149,7 @@ func (s *Server) campaignLeader() error {
 	}
 
 	tsTicker := time.NewTicker(time.Duration(updateTimestampStep) * time.Millisecond)
-	defer func() {
-		s.enableLeader(false)
-		tsTicker.Stop()
-	}()
+	defer tsTicker.Stop()
 
 	for {
 		select {

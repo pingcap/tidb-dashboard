@@ -189,3 +189,53 @@ func (c *conn) handlePutMeta(req *pdpb.Request) (*pdpb.Response, error) {
 		PutMeta: resp,
 	}, nil
 }
+
+func (c *conn) handleAskChangePeer(req *pdpb.Request) (*pdpb.Response, error) {
+	request := req.GetAskChangePeer()
+	if request == nil {
+		return nil, errors.Errorf("invalid ask change peer command, but %v", req)
+	} else if request.Region == nil {
+		return nil, errors.Errorf("missing region for change peer")
+	} else if request.Leader == nil {
+		return nil, errors.Errorf("missing leader for change peer")
+	}
+
+	cluster, err := c.getCluster(req)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	if err = cluster.HandleAskChangePeer(request); err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	return &pdpb.Response{
+		AskChangePeer: &pdpb.AskChangePeerResponse{},
+	}, nil
+}
+
+func (c *conn) handleAskSplit(req *pdpb.Request) (*pdpb.Response, error) {
+	request := req.GetAskSplit()
+	if request == nil {
+		return nil, errors.Errorf("invalid ask split command, but %v", req)
+	} else if request.Region == nil {
+		return nil, errors.Errorf("missing region for split")
+	} else if request.Leader == nil {
+		return nil, errors.Errorf("missing leader for split")
+	} else if request.SplitKey == nil {
+		return nil, errors.Errorf("missing split key for split")
+	}
+
+	cluster, err := c.getCluster(req)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	if err = cluster.HandleAskSplit(request); err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	return &pdpb.Response{
+		AskSplit: &pdpb.AskSplitResponse{},
+	}, nil
+}

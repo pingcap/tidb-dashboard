@@ -181,7 +181,7 @@ func (c *raftCluster) handleJob(job *pd_jobpd.Job) error {
 	}
 }
 
-func (c *raftCluster) handleChangeAddPeer(region *metapb.Region) (*metapb.Peer, error) {
+func (c *raftCluster) handleAskChangeAddPeer(region *metapb.Region) (*metapb.Peer, error) {
 	peerID, err := c.s.idAlloc.Alloc()
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -246,7 +246,7 @@ func (c *raftCluster) handleChangeAddPeer(region *metapb.Region) (*metapb.Peer, 
 }
 
 // If leader is nil, we can remove any peer in the region, or else we can only remove none leader peer.
-func (c *raftCluster) handleChangeRemovePeer(region *metapb.Region, leader *metapb.Peer) (*metapb.Peer, error) {
+func (c *raftCluster) handleAskChangeRemovePeer(region *metapb.Region, leader *metapb.Peer) (*metapb.Peer, error) {
 	if len(region.Peers) <= 1 {
 		return nil, errors.Errorf("can not remove peer for region %v", region)
 	}
@@ -284,13 +284,13 @@ func (c *raftCluster) HandleAskChangePeer(request *pdpb.AskChangePeerRequest) er
 	} else if peerNumber < maxPeerNumber {
 		log.Infof("region %d peer number %d < %d, need to add peer", regionID, peerNumber, maxPeerNumber)
 		changeType = raftpb.ConfChangeType_AddNode
-		if peer, err = c.handleChangeAddPeer(region); err != nil {
+		if peer, err = c.handleAskChangeAddPeer(region); err != nil {
 			return errors.Trace(err)
 		}
 	} else if peerNumber > maxPeerNumber {
 		log.Infof("region %d peer number %d > %d, need to remove peer", regionID, peerNumber, maxPeerNumber)
 		changeType = raftpb.ConfChangeType_RemoveNode
-		if peer, err = c.handleChangeRemovePeer(region, request.Leader); err != nil {
+		if peer, err = c.handleAskChangeRemovePeer(region, request.Leader); err != nil {
 			return errors.Trace(err)
 		}
 	}

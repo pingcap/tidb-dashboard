@@ -40,6 +40,11 @@ func (c *raftCluster) onJobWorker() {
 		case <-c.quitCh:
 			return
 		case <-c.askJobCh:
+			if !c.s.IsLeader() {
+				log.Warnf("we are not leader, no need to handle job")
+				continue
+			}
+
 			job, err := c.getFirstJob()
 			if err != nil {
 				log.Errorf("get first job err %v", err)
@@ -49,13 +54,18 @@ func (c *raftCluster) onJobWorker() {
 			}
 			if err = c.handleJob(job); err != nil {
 				log.Errorf("handle job %v err %v, retry", job, err)
+				// wait and force retry
 				time.Sleep(time.Second)
+				asyncNotify(c.askJobCh)
 				continue
 			}
 
 			if err = c.popFirstJob(job); err != nil {
 				log.Errorf("pop job %v err %v", job, err)
 			}
+
+			// Notify to job again.
+			asyncNotify(c.askJobCh)
 		case <-ticker.C:
 			// Try to check job regularly.
 			asyncNotify(c.askJobCh)

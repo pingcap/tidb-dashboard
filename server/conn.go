@@ -2,22 +2,16 @@ package server
 
 import (
 	"bufio"
-	"encoding/binary"
-	"io"
 	"net"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/pdpb"
 )
 
 const (
-	readBufferSize         = 8 * 1024
-	writeBufferSize        = 8 * 1024
-	msgHeaderSize          = 16
-	msgVersion      uint16 = 1
-	msgMagic        uint16 = 0xdaf4
+	readBufferSize  = 8 * 1024
+	writeBufferSize = 8 * 1024
 )
 
 type conn struct {
@@ -54,40 +48,10 @@ func (c *conn) run() {
 	}()
 
 	for {
-		// The RPC format is header + protocol buffer body
-		// Header is 16 bytes, format:
-		//  | 0xdaf4(2 bytes magic value) | 0x01(version 2 bytes) | msg_len(4 bytes) | msg_id(8 bytes) |,
-		// all use bigendian.
-		header := make([]byte, msgHeaderSize)
-		_, err := io.ReadFull(c.rb, header)
-		if err != nil {
-			log.Errorf("read msg header err %s", err)
-			return
-		}
-
-		if magic := binary.BigEndian.Uint16(header[0:2]); magic != msgMagic {
-			log.Errorf("mismatch header magic %x != %x", magic, msgMagic)
-			return
-		}
-
-		// skip version now.
-
-		msgLen := binary.BigEndian.Uint32(header[4:8])
-		msgID := binary.BigEndian.Uint64(header[8:])
-
-		body := make([]byte, msgLen)
-		_, err = io.ReadFull(c.rb, body)
-		if err != nil {
-			log.Errorf("read msg body err %s", err)
-			return
-		}
-
-		// TODO: if not leader, return not leader response.
-
 		request := &pdpb.Request{}
-		err = proto.Unmarshal(body, request)
+		msgID, err := readMessage(c.rb, request)
 		if err != nil {
-			log.Errorf("decode msg body err %s", err)
+			log.Errorf("read request message err %v", err)
 			return
 		}
 
@@ -106,26 +70,13 @@ func (c *conn) run() {
 
 		updateResponse(request, response)
 
-		body, err = proto.Marshal(response)
-		if err != nil {
-			log.Errorf("encode response err %s, close connection", err)
+		if err = writeMessage(c.wb, msgID, response); err != nil {
+			log.Errorf("write response message err %v", err)
 			return
 		}
 
-		binary.BigEndian.PutUint16(header[0:2], msgMagic)
-		binary.BigEndian.PutUint16(header[2:4], msgVersion)
-		binary.BigEndian.PutUint32(header[4:8], uint32(len(body)))
-		binary.BigEndian.PutUint64(header[8:16], msgID)
-
-		// we can skip checking write error, because if any fails,
-		// the final Flush will return this error, so we can check
-		// error in Flush only.
-		c.wb.Write(header)
-		c.wb.Write(body)
-
-		err = c.wb.Flush()
-		if err != nil {
-			log.Errorf("write response err %s", err)
+		if err = c.wb.Flush(); err != nil {
+			log.Errorf("flush response message err %v", err)
 			return
 		}
 	}

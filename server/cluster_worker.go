@@ -45,7 +45,7 @@ func (c *raftCluster) onJobWorker() {
 				continue
 			}
 
-			job, err := c.getFirstJob()
+			job, err := c.getJob()
 			if err != nil {
 				log.Errorf("get first job err %v", err)
 			} else if job == nil {
@@ -60,7 +60,7 @@ func (c *raftCluster) onJobWorker() {
 				continue
 			}
 
-			if err = c.popFirstJob(job); err != nil {
+			if err = c.popJob(job); err != nil {
 				log.Errorf("pop job %v err %v", job, err)
 			}
 
@@ -117,7 +117,7 @@ func (c *raftCluster) postJob(req *raft_cmdpb.RaftCommandRequest) error {
 	return nil
 }
 
-func (c *raftCluster) getFirstJob() (*pd_jobpd.Job, error) {
+func (c *raftCluster) getJob() (*pd_jobpd.Job, error) {
 	job := pd_jobpd.Job{}
 
 	jobKey := makeJobKey(c.clusterRoot, 0)
@@ -134,7 +134,7 @@ func (c *raftCluster) getFirstJob() (*pd_jobpd.Job, error) {
 	return &job, nil
 }
 
-func (c *raftCluster) popFirstJob(job *pd_jobpd.Job) error {
+func (c *raftCluster) popJob(job *pd_jobpd.Job) error {
 	jobKey := makeJobKey(c.clusterRoot, job.GetJobId())
 	resp, err := c.s.client.Txn(context.TODO()).
 		If(c.s.leaderCmp()).
@@ -189,7 +189,20 @@ func (c *raftCluster) handleJob(job *pd_jobpd.Job) error {
 	}
 }
 
-func (c *raftCluster) handleAskChangeAddPeer(region *metapb.Region) (*metapb.Peer, error) {
+func (c *raftCluster) chooseStore(bestStores []metapb.Store, matchStores []metapb.Store) metapb.Store {
+	var store metapb.Store
+	// Select the store randomly, later we will do more better choice.
+
+	if len(bestStores) > 0 {
+		store = bestStores[rand.Intn(len(bestStores))]
+	} else {
+		store = matchStores[rand.Intn(len(matchStores))]
+	}
+
+	return store
+}
+
+func (c *raftCluster) handleAddPeerReq(region *metapb.Region) (*metapb.Peer, error) {
 	peerID, err := c.s.idAlloc.Alloc()
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -237,13 +250,7 @@ func (c *raftCluster) handleAskChangeAddPeer(region *metapb.Region) (*metapb.Pee
 		return nil, errors.Errorf("find no store to add peer for region %v", region)
 	}
 
-	var store metapb.Store
-	// Select the store randomly, later we will do more better choice.
-	if len(bestStores) > 0 {
-		store = bestStores[rand.Intn(len(bestStores))]
-	} else {
-		store = matchStores[rand.Intn(len(matchStores))]
-	}
+	store := c.chooseStore(bestStores, matchStores)
 
 	peer := &metapb.Peer{
 		NodeId:  proto.Uint64(store.GetNodeId()),
@@ -255,7 +262,7 @@ func (c *raftCluster) handleAskChangeAddPeer(region *metapb.Region) (*metapb.Pee
 }
 
 // If leader is nil, we can remove any peer in the region, or else we can only remove none leader peer.
-func (c *raftCluster) handleAskChangeRemovePeer(region *metapb.Region, leader *metapb.Peer) (*metapb.Peer, error) {
+func (c *raftCluster) handleRemovePeerReq(region *metapb.Region, leader *metapb.Peer) (*metapb.Peer, error) {
 	if len(region.Peers) <= 1 {
 		return nil, errors.Errorf("can not remove peer for region %v", region)
 	}
@@ -296,13 +303,13 @@ func (c *raftCluster) HandleAskChangePeer(request *pdpb.AskChangePeerRequest) er
 	} else if peerNumber < maxPeerNumber {
 		log.Infof("region %d peer number %d < %d, need to add peer", regionID, peerNumber, maxPeerNumber)
 		changeType = raftpb.ConfChangeType_AddNode
-		if peer, err = c.handleAskChangeAddPeer(region); err != nil {
+		if peer, err = c.handleAddPeerReq(region); err != nil {
 			return errors.Trace(err)
 		}
 	} else if peerNumber > maxPeerNumber {
 		log.Infof("region %d peer number %d > %d, need to remove peer", regionID, peerNumber, maxPeerNumber)
 		changeType = raftpb.ConfChangeType_RemoveNode
-		if peer, err = c.handleAskChangeRemovePeer(region, request.Leader); err != nil {
+		if peer, err = c.handleRemovePeerReq(region, request.Leader); err != nil {
 			return errors.Trace(err)
 		}
 	}

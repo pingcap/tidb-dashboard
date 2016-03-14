@@ -193,7 +193,7 @@ func makeJobKey(clusterRootPath string, jobID uint64) string {
 	// We must guarantee the job handling order, so use %020d to format the job key,
 	// use etcd range get to get the first job and then handle it.
 	// Should we use a 8 bytes binary BigEndian instead of 20 bytes string?
-	return strings.Join([]string{clusterRootPath, "j", fmt.Sprintf("%020d", jobID)}, "/")
+	return strings.Join([]string{clusterRootPath, "job", fmt.Sprintf("%020d", jobID)}, "/")
 }
 
 func makeNodeKeyPrefix(clusterRootPath string) string {
@@ -429,14 +429,14 @@ func (c *raftCluster) cacheAllStores() error {
 	return nil
 }
 
-func (c *raftCluster) GetAllNodes() ([]*metapb.Node, error) {
+func (c *raftCluster) GetAllNodes() ([]metapb.Node, error) {
 	mu := &c.mu
 	mu.RLock()
 	defer mu.RUnlock()
 
-	nodes := make([]*metapb.Node, 0, len(mu.nodes))
+	nodes := make([]metapb.Node, 0, len(mu.nodes))
 	for _, node := range mu.nodes {
-		nodes = append(nodes, &node)
+		nodes = append(nodes, node)
 	}
 
 	return nodes, nil
@@ -463,14 +463,14 @@ func (c *raftCluster) GetNode(nodeID uint64) (*metapb.Node, error) {
 	return nil, errors.Errorf("invalid node ID %d, not found", nodeID)
 }
 
-func (c *raftCluster) GetAllStores() ([]*metapb.Store, error) {
+func (c *raftCluster) GetAllStores() ([]metapb.Store, error) {
 	mu := &c.mu
 	mu.RLock()
 	defer mu.RUnlock()
 
-	stores := make([]*metapb.Store, 0, len(mu.stores))
+	stores := make([]metapb.Store, 0, len(mu.stores))
 	for _, store := range mu.stores {
-		stores = append(stores, &store)
+		stores = append(stores, store)
 	}
 
 	return stores, nil

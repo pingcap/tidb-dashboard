@@ -206,9 +206,9 @@ func (c *conn) handleAskChangePeer(req *pdpb.Request) (*pdpb.Response, error) {
 	if request == nil {
 		return nil, errors.Errorf("invalid ask change peer command, but %v", req)
 	} else if request.Region == nil {
-		return nil, errors.Errorf("missing region for change peer")
+		return nil, errors.Errorf("missing region for changing peer")
 	} else if request.Leader == nil {
-		return nil, errors.Errorf("missing leader for change peer")
+		return nil, errors.Errorf("missing leader for changing peer")
 	}
 
 	cluster, err := c.getCluster(req)

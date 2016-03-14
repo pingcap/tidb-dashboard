@@ -1,8 +1,6 @@
 package server
 
 import (
-	"encoding/binary"
-	"io"
 	"math/rand"
 	"net"
 	"sync"
@@ -41,40 +39,14 @@ func (s *testTsoSuite) TearDownSuite(c *C) {
 }
 
 func sendRequest(c *C, conn net.Conn, msgID uint64, request *pdpb.Request) {
-	body, err := proto.Marshal(request)
-	c.Assert(err, IsNil)
-
-	header := make([]byte, msgHeaderSize)
-
-	binary.BigEndian.PutUint16(header[0:2], msgMagic)
-	binary.BigEndian.PutUint16(header[2:4], msgVersion)
-	binary.BigEndian.PutUint32(header[4:8], uint32(len(body)))
-	binary.BigEndian.PutUint64(header[8:16], msgID)
-
-	_, err = conn.Write(header)
-	c.Assert(err, IsNil)
-
-	_, err = conn.Write(body)
+	err := writeMessage(conn, msgID, request)
 	c.Assert(err, IsNil)
 }
 
 func recvResponse(c *C, conn net.Conn) (uint64, *pdpb.Response) {
-	header := make([]byte, msgHeaderSize)
-	_, err := io.ReadFull(conn, header)
-	c.Assert(err, IsNil)
-	c.Assert(binary.BigEndian.Uint16(header[0:2]), Equals, msgMagic)
-
-	msgLen := binary.BigEndian.Uint32(header[4:8])
-	msgID := binary.BigEndian.Uint64(header[8:])
-
-	body := make([]byte, msgLen)
-	_, err = io.ReadFull(conn, body)
-	c.Assert(err, IsNil)
-
 	resp := &pdpb.Response{}
-	err = proto.Unmarshal(body, resp)
+	msgID, err := readMessage(conn, resp)
 	c.Assert(err, IsNil)
-
 	return msgID, resp
 }
 

@@ -48,6 +48,7 @@ var (
 type raftCluster struct {
 	s *Server
 
+	clusterID   uint64
 	clusterRoot string
 
 	wg sync.WaitGroup
@@ -72,6 +73,7 @@ type raftCluster struct {
 func (s *Server) newCluster(clusterID uint64, meta metapb.Cluster) (*raftCluster, error) {
 	c := &raftCluster{
 		s:           s,
+		clusterID:   clusterID,
 		clusterRoot: s.getClusterRootPath(clusterID),
 		askJobCh:    make(chan struct{}, askJobChannelSize),
 		quitCh:      make(chan struct{}),
@@ -83,6 +85,9 @@ func (s *Server) newCluster(clusterID uint64, meta metapb.Cluster) (*raftCluster
 	mu := &c.mu
 	mu.meta = meta
 
+	// Cache all nodes/stores when start the cluster. We don't have
+	// many nodes/stores, so it is OK to cache them all.
+	// And we should use these cache for later ChangePeer too.
 	if err := c.cacheAllNodes(); err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -137,8 +142,7 @@ func (s *Server) getCluster(clusterID uint64) (*raftCluster, error) {
 		return c, nil
 	}
 
-	c, err = s.newCluster(clusterID, m)
-	if err != nil {
+	if c, err = s.newCluster(clusterID, m); err != nil {
 		return nil, errors.Trace(err)
 	}
 
@@ -425,6 +429,19 @@ func (c *raftCluster) cacheAllStores() error {
 	return nil
 }
 
+func (c *raftCluster) GetAllNodes() ([]*metapb.Node, error) {
+	mu := &c.mu
+	mu.RLock()
+	defer mu.RUnlock()
+
+	nodes := make([]*metapb.Node, 0, len(mu.nodes))
+	for _, node := range mu.nodes {
+		nodes = append(nodes, &node)
+	}
+
+	return nodes, nil
+}
+
 func (c *raftCluster) GetNode(nodeID uint64) (*metapb.Node, error) {
 	if nodeID == 0 {
 		return nil, errors.Errorf("invalid zero node id")
@@ -432,28 +449,31 @@ func (c *raftCluster) GetNode(nodeID uint64) (*metapb.Node, error) {
 
 	mu := &c.mu
 	mu.RLock()
+	defer mu.RUnlock()
+
+	// We cache all nodes when start the cluster, and PutNode can also
+	// update the cache, so we can use this cache to get directly.
+
 	node, ok := mu.nodes[nodeID]
-	mu.RUnlock()
+
 	if ok {
 		return &node, nil
 	}
 
-	// try to find in etcd
-	node = metapb.Node{}
-	if ok, err := getProtoMsg(c.s.client, makeNodeKey(c.clusterRoot, nodeID), &node); err != nil || !ok {
-		return nil, errors.Trace(err)
+	return nil, errors.Errorf("invalid node ID %d, not found", nodeID)
+}
+
+func (c *raftCluster) GetAllStores() ([]*metapb.Store, error) {
+	mu := &c.mu
+	mu.RLock()
+	defer mu.RUnlock()
+
+	stores := make([]*metapb.Store, 0, len(mu.stores))
+	for _, store := range mu.stores {
+		stores = append(stores, &store)
 	}
 
-	mu.Lock()
-	defer mu.Unlock()
-	if n, ok := mu.nodes[nodeID]; ok {
-		// another goroutine may call GetNode/PutNode and already update it.
-		return &n, nil
-	}
-
-	mu.nodes[nodeID] = node
-
-	return &node, nil
+	return stores, nil
 }
 
 func (c *raftCluster) GetStore(storeID uint64) (*metapb.Store, error) {
@@ -463,28 +483,18 @@ func (c *raftCluster) GetStore(storeID uint64) (*metapb.Store, error) {
 
 	mu := &c.mu
 	mu.RLock()
+	defer mu.RUnlock()
+
+	// We cache all stores when start the cluster, and PutStore can also
+	// update the cache, so we can use this cache to get directly.
+
 	store, ok := mu.stores[storeID]
-	mu.RUnlock()
+
 	if ok {
 		return &store, nil
 	}
 
-	// try to find in etcd
-	store = metapb.Store{}
-	if ok, err := getProtoMsg(c.s.client, makeStoreKey(c.clusterRoot, storeID), &store); err != nil || !ok {
-		return nil, errors.Trace(err)
-	}
-
-	mu.Lock()
-	defer mu.Unlock()
-	if s, ok := mu.stores[storeID]; ok {
-		// another goroutine may call GetStore/PutStore and already update it.
-		return &s, nil
-	}
-
-	mu.stores[storeID] = store
-
-	return &store, nil
+	return nil, errors.Errorf("invalid store ID %d, not found", storeID)
 }
 
 func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {
@@ -589,10 +599,39 @@ func (c *raftCluster) PutStore(store *metapb.Store) error {
 	return nil
 }
 
-func (c *raftCluster) GetClusterMeta() metapb.Cluster {
+func (c *raftCluster) GetMeta() (*metapb.Cluster, error) {
 	mu := &c.mu
 	mu.RLock()
 	defer mu.RUnlock()
 
-	return mu.meta
+	meta := mu.meta
+	return &meta, nil
+}
+
+func (c *raftCluster) PutMeta(meta *metapb.Cluster) error {
+	if meta.GetClusterId() != c.clusterID {
+		return errors.Errorf("invalid cluster %v, mismatch cluster id %d", meta, c.clusterID)
+	}
+
+	metaValue, err := proto.Marshal(meta)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	mu := &c.mu
+	mu.Lock()
+	defer mu.Unlock()
+
+	resp, err := c.s.client.Txn(context.TODO()).
+		If(c.s.leaderCmp()).
+		Then(clientv3.OpPut(c.clusterRoot, string(metaValue))).
+		Commit()
+	if err != nil {
+		return errors.Trace(err)
+	} else if !resp.Succeeded {
+		return errors.Errorf("put cluster meta %v error", meta)
+	}
+
+	mu.meta = *meta
+	return nil
 }

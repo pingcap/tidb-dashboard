@@ -4,7 +4,7 @@ import (
 	"net"
 
 	"github.com/coreos/etcd/clientv3"
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 	. "github.com/pingcap/check"
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
@@ -177,12 +177,12 @@ func (s *testClusterSuite) TestBootstrap(c *C) {
 	c.Assert(resp.Header.Error.Bootstrapped, NotNil)
 }
 
-// helper function to check and bootstrap
-func (s *testClusterSuite) bootstrapCluster(c *C, conn net.Conn, clusterID uint64, nodeAddr string) {
+func (s *testClusterSuite) newBootstrapRequest(c *C, clusterID uint64, nodeAddr string) *pdpb.Request {
 	node := s.newNode(c, 0, nodeAddr)
 	store := s.newStore(c, node.GetNodeId(), 0)
 	peer := s.newPeer(c, node.GetNodeId(), store.GetStoreId(), 0)
 	region := s.newRegion(c, 0, []byte{}, []byte{}, []*metapb.Peer{peer})
+
 	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
 		CmdType: pdpb.CommandType_Bootstrap.Enum(),
@@ -192,6 +192,12 @@ func (s *testClusterSuite) bootstrapCluster(c *C, conn net.Conn, clusterID uint6
 			Region: region,
 		},
 	}
+	return req
+}
+
+// helper function to check and bootstrap
+func (s *testClusterSuite) bootstrapCluster(c *C, conn net.Conn, clusterID uint64, nodeAddr string) {
+	req := s.newBootstrapRequest(c, clusterID, nodeAddr)
 	sendRequest(c, conn, 0, req)
 	_, resp := recvResponse(c, conn)
 	c.Assert(resp.Bootstrap, NotNil)
@@ -248,6 +254,25 @@ func (s *testClusterSuite) getRegion(c *C, conn net.Conn, clusterID uint64, regi
 	c.Assert(resp.GetMeta.GetRegion(), NotNil)
 
 	return resp.GetMeta.GetRegion()
+}
+
+func (s *testClusterSuite) getMeta(c *C, conn net.Conn, clusterID uint64) *metapb.Cluster {
+	req := &pdpb.Request{
+		Header:  newRequestHeader(clusterID),
+		CmdType: pdpb.CommandType_GetMeta.Enum(),
+		GetMeta: &pdpb.GetMetaRequest{
+			MetaType:  pdpb.MetaType_ClusterType.Enum(),
+			ClusterId: proto.Uint64(clusterID),
+		},
+	}
+
+	sendRequest(c, conn, 0, req)
+	_, resp := recvResponse(c, conn)
+	c.Assert(resp.GetMeta, NotNil)
+	c.Assert(resp.GetMeta.GetMetaType(), Equals, pdpb.MetaType_ClusterType)
+	c.Assert(resp.GetMeta.GetCluster(), NotNil)
+
+	return resp.GetMeta.GetCluster()
 }
 
 func (s *testClusterSuite) TestGetPutMeta(c *C) {
@@ -326,4 +351,83 @@ func (s *testClusterSuite) TestGetPutMeta(c *C) {
 	_, resp = recvResponse(c, conn)
 	c.Assert(resp.PutMeta, IsNil)
 	c.Assert(resp.Header.GetError(), NotNil)
+
+	// update cluster meta
+	req = &pdpb.Request{
+		Header:  newRequestHeader(clusterID),
+		CmdType: pdpb.CommandType_PutMeta.Enum(),
+		PutMeta: &pdpb.PutMetaRequest{
+			MetaType: pdpb.MetaType_ClusterType.Enum(),
+			Cluster: &metapb.Cluster{
+				ClusterId:     proto.Uint64(clusterID),
+				MaxPeerNumber: proto.Uint32(5),
+			},
+		},
+	}
+	sendRequest(c, conn, 0, req)
+	_, resp = recvResponse(c, conn)
+	c.Assert(resp.PutMeta, NotNil)
+	c.Assert(resp.PutMeta.GetMetaType(), Equals, pdpb.MetaType_ClusterType)
+	meta := s.getMeta(c, conn, clusterID)
+	c.Assert(meta.GetMaxPeerNumber(), Equals, uint32(5))
+}
+
+func (s *testClusterSuite) TestCache(c *C) {
+	clusterID := uint64(2)
+
+	req := s.newBootstrapRequest(c, clusterID, "127.0.0.1:1")
+	node1 := req.Bootstrap.Node
+	store1 := req.Bootstrap.Stores[0]
+
+	s.svr.bootstrapCluster(clusterID, req.Bootstrap)
+
+	cluster, err := s.svr.getCluster(clusterID)
+	c.Assert(err, IsNil)
+
+	// add another 2 nodes
+	node2 := s.newNode(c, 0, "127.0.0.1:2")
+	err = cluster.PutNode(node2)
+	c.Assert(err, IsNil)
+	store2 := s.newStore(c, node2.GetNodeId(), 0)
+	err = cluster.PutStore(store2)
+	c.Assert(err, IsNil)
+
+	node3 := s.newNode(c, 0, "127.0.0.1:3")
+	err = cluster.PutNode(node3)
+	c.Assert(err, IsNil)
+
+	nodes := map[uint64]*metapb.Node{
+		node1.GetNodeId(): node1,
+		node2.GetNodeId(): node2,
+		node3.GetNodeId(): node3,
+	}
+
+	stores := map[uint64]*metapb.Store{
+		store1.GetStoreId(): store1,
+		store2.GetStoreId(): store2,
+	}
+
+	s.svr.clusterLock.Lock()
+	delete(s.svr.clusters, cluster.clusterID)
+	cluster.Close()
+	s.svr.clusterLock.Unlock()
+
+	cluster, err = s.svr.getCluster(clusterID)
+	c.Assert(err, IsNil)
+
+	allNodes, err := cluster.GetAllNodes()
+	c.Assert(err, IsNil)
+	c.Assert(allNodes, HasLen, 3)
+	for _, node := range allNodes {
+		_, ok := nodes[node.GetNodeId()]
+		c.Assert(ok, IsTrue)
+	}
+
+	allStores, err := cluster.GetAllStores()
+	c.Assert(err, IsNil)
+	c.Assert(allStores, HasLen, 2)
+	for _, store := range allStores {
+		_, ok := stores[store.GetStoreId()]
+		c.Assert(ok, IsTrue)
+	}
 }

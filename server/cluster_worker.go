@@ -277,15 +277,18 @@ func (c *raftCluster) handleAskChangeRemovePeer(region *metapb.Region, leader *m
 }
 
 func (c *raftCluster) HandleAskChangePeer(request *pdpb.AskChangePeerRequest) error {
+	clusterMeta, err := c.GetMeta()
+	if err != nil {
+		return errors.Trace(err)
+	}
+
 	var (
-		clusterMeta   = c.GetClusterMeta()
 		maxPeerNumber = int(clusterMeta.GetMaxPeerNumber())
 		region        = request.GetRegion()
 		regionID      = region.GetRegionId()
 		peerNumber    = len(region.GetPeers())
 		changeType    raftpb.ConfChangeType
 		peer          *metapb.Peer
-		err           error
 	)
 
 	if peerNumber == maxPeerNumber {

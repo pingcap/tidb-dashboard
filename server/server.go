@@ -94,7 +94,7 @@ func (s *Server) Close() {
 
 	log.Info("closing server")
 
-	s.closeAllConnections()
+	s.enableLeader(false)
 
 	if s.listener != nil {
 		s.listener.Close()
@@ -149,6 +149,10 @@ func (s *Server) Run() error {
 func (s *Server) closeAllConnections() {
 	s.connsLock.Lock()
 	defer s.connsLock.Unlock()
+
+	if len(s.conns) == 0 {
+		return
+	}
 
 	// TODO: should we send an error message before close?
 	for conn := range s.conns {

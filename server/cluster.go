@@ -46,6 +46,7 @@ var (
 type raftCluster struct {
 	s *Server
 
+	clusterID   uint64
 	clusterRoot string
 
 	mu struct {
@@ -61,18 +62,32 @@ type raftCluster struct {
 	}
 }
 
-func (s *Server) newCluster(clusterID uint64, meta metapb.Cluster) *raftCluster {
+func (s *Server) newCluster(clusterID uint64, meta metapb.Cluster) (*raftCluster, error) {
 	c := &raftCluster{
 		s:           s,
+		clusterID:   clusterID,
 		clusterRoot: s.getClusterRootPath(clusterID),
 	}
 
 	mu := &c.mu
 	mu.meta = meta
-	mu.nodes = make(map[uint64]metapb.Node)
-	mu.stores = make(map[uint64]metapb.Store)
 
-	return c
+	// Cache all nodes/stores when start the cluster. We don't have
+	// many nodes/stores, so it is OK to cache them all.
+	// And we should use these cache for later ChangePeer too.
+	if err := c.cacheAllNodes(); err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	if err := c.cacheAllStores(); err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	return c, nil
+}
+
+func (c *raftCluster) Close() {
+	// Do close later after we introduce ask job worker.
 }
 
 func (s *Server) getClusterRootPath(clusterID uint64) string {
@@ -110,9 +125,27 @@ func (s *Server) getCluster(clusterID uint64) (*raftCluster, error) {
 		return c, nil
 	}
 
-	c = s.newCluster(clusterID, m)
+	if c, err = s.newCluster(clusterID, m); err != nil {
+		return nil, errors.Trace(err)
+	}
+
 	s.clusters[clusterID] = c
 	return c, nil
+}
+
+func (s *Server) closeClusters() {
+	s.clusterLock.Lock()
+	defer s.clusterLock.Unlock()
+
+	if len(s.clusters) == 0 {
+		return
+	}
+
+	for _, cluster := range s.clusters {
+		cluster.Close()
+	}
+
+	s.clusters = make(map[uint64]*raftCluster)
 }
 
 func encodeRegionSearchKey(endKey []byte) string {
@@ -137,6 +170,14 @@ func makeRegionKey(clusterRootPath string, regionID uint64) string {
 
 func makeRegionSearchKey(clusterRootPath string, endKey []byte) string {
 	return strings.Join([]string{clusterRootPath, "k", encodeRegionSearchKey(endKey)}, "/")
+}
+
+func makeNodeKeyPrefix(clusterRootPath string) string {
+	return strings.Join([]string{clusterRootPath, "n", ""}, "/")
+}
+
+func makeStoreKeyPrefix(clusterRootPath string) string {
+	return strings.Join([]string{clusterRootPath, "s", ""}, "/")
 }
 
 func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
@@ -286,7 +327,10 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 		return nil
 	}
 
-	c := s.newCluster(clusterID, clusterMeta)
+	c, err := s.newCluster(clusterID, clusterMeta)
+	if err != nil {
+		return errors.Trace(err)
+	}
 
 	mu := &c.mu
 	mu.Lock()
@@ -301,6 +345,79 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	return nil
 }
 
+func (c *raftCluster) cacheAllNodes() error {
+	mu := &c.mu
+	mu.Lock()
+	defer mu.Unlock()
+
+	kv := clientv3.NewKV(c.s.client)
+
+	key := makeNodeKeyPrefix(c.clusterRoot)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := kv.Get(ctx, key, clientv3.WithPrefix())
+	cancel()
+
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	mu.nodes = make(map[uint64]metapb.Node)
+	for _, kv := range resp.Kvs {
+		node := metapb.Node{}
+		if err = proto.Unmarshal(kv.Value, &node); err != nil {
+			return errors.Trace(err)
+		}
+
+		nodeID := node.GetNodeId()
+		mu.nodes[nodeID] = node
+	}
+
+	return nil
+}
+
+func (c *raftCluster) cacheAllStores() error {
+	mu := &c.mu
+	mu.Lock()
+	defer mu.Unlock()
+
+	kv := clientv3.NewKV(c.s.client)
+
+	key := makeStoreKeyPrefix(c.clusterRoot)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := kv.Get(ctx, key, clientv3.WithPrefix())
+	cancel()
+
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	mu.stores = make(map[uint64]metapb.Store)
+	for _, kv := range resp.Kvs {
+		store := metapb.Store{}
+		if err = proto.Unmarshal(kv.Value, &store); err != nil {
+			return errors.Trace(err)
+		}
+
+		storeID := store.GetStoreId()
+		mu.stores[storeID] = store
+	}
+
+	return nil
+}
+
+func (c *raftCluster) GetAllNodes() ([]*metapb.Node, error) {
+	mu := &c.mu
+	mu.RLock()
+	defer mu.RUnlock()
+
+	nodes := make([]*metapb.Node, 0, len(mu.nodes))
+	for _, node := range mu.nodes {
+		nodes = append(nodes, &node)
+	}
+
+	return nodes, nil
+}
+
 func (c *raftCluster) GetNode(nodeID uint64) (*metapb.Node, error) {
 	if nodeID == 0 {
 		return nil, errors.Errorf("invalid zero node id")
@@ -308,28 +425,31 @@ func (c *raftCluster) GetNode(nodeID uint64) (*metapb.Node, error) {
 
 	mu := &c.mu
 	mu.RLock()
+	defer mu.RUnlock()
+
+	// We cache all nodes when start the cluster, and PutNode can also
+	// update the cache, so we can use this cache to get directly.
+
 	node, ok := mu.nodes[nodeID]
-	mu.RUnlock()
+
 	if ok {
 		return &node, nil
 	}
 
-	// try to find in etcd
-	node = metapb.Node{}
-	if ok, err := getProtoMsg(c.s.client, makeNodeKey(c.clusterRoot, nodeID), &node); err != nil || !ok {
-		return nil, errors.Trace(err)
+	return nil, errors.Errorf("invalid node ID %d, not found", nodeID)
+}
+
+func (c *raftCluster) GetAllStores() ([]*metapb.Store, error) {
+	mu := &c.mu
+	mu.RLock()
+	defer mu.RUnlock()
+
+	stores := make([]*metapb.Store, 0, len(mu.stores))
+	for _, store := range mu.stores {
+		stores = append(stores, &store)
 	}
 
-	mu.Lock()
-	defer mu.Unlock()
-	if n, ok := mu.nodes[nodeID]; ok {
-		// another goroutine may call GetNode/PutNode and already update it.
-		return &n, nil
-	}
-
-	mu.nodes[nodeID] = node
-
-	return &node, nil
+	return stores, nil
 }
 
 func (c *raftCluster) GetStore(storeID uint64) (*metapb.Store, error) {
@@ -339,28 +459,18 @@ func (c *raftCluster) GetStore(storeID uint64) (*metapb.Store, error) {
 
 	mu := &c.mu
 	mu.RLock()
+	defer mu.RUnlock()
+
+	// We cache all stores when start the cluster, and PutStore can also
+	// update the cache, so we can use this cache to get directly.
+
 	store, ok := mu.stores[storeID]
-	mu.RUnlock()
+
 	if ok {
 		return &store, nil
 	}
 
-	// try to find in etcd
-	store = metapb.Store{}
-	if ok, err := getProtoMsg(c.s.client, makeStoreKey(c.clusterRoot, storeID), &store); err != nil || !ok {
-		return nil, errors.Trace(err)
-	}
-
-	mu.Lock()
-	defer mu.Unlock()
-	if s, ok := mu.stores[storeID]; ok {
-		// another goroutine may call GetStore/PutStore and already update it.
-		return &s, nil
-	}
-
-	mu.stores[storeID] = store
-
-	return &store, nil
+	return nil, errors.Errorf("invalid store ID %d, not found", storeID)
 }
 
 func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {

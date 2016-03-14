@@ -218,6 +218,7 @@ func (c *raftCluster) handleAskChangeAddPeer(region *metapb.Region) (*metapb.Pee
 		existStore := false
 		for _, peer := range region.Peers {
 			if peer.GetStoreId() == storeID {
+				// we can't add peer in the same store.
 				existStore = true
 				break
 			} else if peer.GetNodeId() == nodeID {
@@ -239,8 +240,8 @@ func (c *raftCluster) handleAskChangeAddPeer(region *metapb.Region) (*metapb.Pee
 	}
 
 	var store metapb.Store
+	// Select the store randomly, later we will do more better choice.
 	if len(bestStores) > 0 {
-		// select a best store randomly.
 		store = bestStores[rand.Intn(len(bestStores))]
 	} else {
 		store = matchStores[rand.Intn(len(matchStores))]
@@ -346,8 +347,7 @@ func (c *raftCluster) handleChangePeer(job *pd_jobpd.Job) error {
 	regionSearchPath := makeRegionSearchKey(c.clusterRoot, region.GetEndKey())
 	regionValue, err := proto.Marshal(region)
 	if err != nil {
-		// very serious, panic directly
-		log.Fatalf("encode region %v failed %v, panic", region, err)
+		return errors.Trace(err)
 	}
 
 	resp, err := c.s.client.Txn(context.TODO()).
@@ -418,14 +418,12 @@ func (c *raftCluster) handleSplit(job *pd_jobpd.Job) error {
 
 	leftValue, err := proto.Marshal(left)
 	if err != nil {
-		// very serious, panic directly
-		log.Fatalf("encode left region %v failed %v, panic", left, err)
+		return errors.Trace(err)
 	}
 
 	rightValue, err := proto.Marshal(right)
 	if err != nil {
-		// very serious, panic directly
-		log.Fatalf("encode right region %v failed %v, panic", left, err)
+		return errors.Trace(err)
 	}
 
 	var ops []clientv3.Op

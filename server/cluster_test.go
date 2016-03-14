@@ -4,7 +4,7 @@ import (
 	"net"
 
 	"github.com/coreos/etcd/clientv3"
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 	. "github.com/pingcap/check"
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
@@ -256,6 +256,25 @@ func (s *testClusterSuite) getRegion(c *C, conn net.Conn, clusterID uint64, regi
 	return resp.GetMeta.GetRegion()
 }
 
+func (s *testClusterSuite) getMeta(c *C, conn net.Conn, clusterID uint64) *metapb.Cluster {
+	req := &pdpb.Request{
+		Header:  newRequestHeader(clusterID),
+		CmdType: pdpb.CommandType_GetMeta.Enum(),
+		GetMeta: &pdpb.GetMetaRequest{
+			MetaType:  pdpb.MetaType_ClusterType.Enum(),
+			ClusterId: proto.Uint64(clusterID),
+		},
+	}
+
+	sendRequest(c, conn, 0, req)
+	_, resp := recvResponse(c, conn)
+	c.Assert(resp.GetMeta, NotNil)
+	c.Assert(resp.GetMeta.GetMetaType(), Equals, pdpb.MetaType_ClusterType)
+	c.Assert(resp.GetMeta.GetCluster(), NotNil)
+
+	return resp.GetMeta.GetCluster()
+}
+
 func (s *testClusterSuite) TestGetPutMeta(c *C) {
 	leader := mustGetLeader(c, s.client, s.getRootPath())
 
@@ -332,6 +351,25 @@ func (s *testClusterSuite) TestGetPutMeta(c *C) {
 	_, resp = recvResponse(c, conn)
 	c.Assert(resp.PutMeta, IsNil)
 	c.Assert(resp.Header.GetError(), NotNil)
+
+	// update cluster meta
+	req = &pdpb.Request{
+		Header:  newRequestHeader(clusterID),
+		CmdType: pdpb.CommandType_PutMeta.Enum(),
+		PutMeta: &pdpb.PutMetaRequest{
+			MetaType: pdpb.MetaType_ClusterType.Enum(),
+			Cluster: &metapb.Cluster{
+				ClusterId:     proto.Uint64(clusterID),
+				MaxPeerNumber: proto.Uint32(5),
+			},
+		},
+	}
+	sendRequest(c, conn, 0, req)
+	_, resp = recvResponse(c, conn)
+	c.Assert(resp.PutMeta, NotNil)
+	c.Assert(resp.PutMeta.GetMetaType(), Equals, pdpb.MetaType_ClusterType)
+	meta := s.getMeta(c, conn, clusterID)
+	c.Assert(meta.GetMaxPeerNumber(), Equals, uint32(5))
 }
 
 func (s *testClusterSuite) TestCache(c *C) {

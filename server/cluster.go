@@ -574,3 +574,40 @@ func (c *raftCluster) PutStore(store *metapb.Store) error {
 
 	return nil
 }
+
+func (c *raftCluster) GetMeta() (*metapb.Cluster, error) {
+	mu := &c.mu
+	mu.RLock()
+	defer mu.RUnlock()
+
+	meta := mu.meta
+	return &meta, nil
+}
+
+func (c *raftCluster) PutMeta(meta *metapb.Cluster) error {
+	if meta.GetClusterId() != c.clusterID {
+		return errors.Errorf("invalid cluster %v, mismatch cluster id %d", meta, c.clusterID)
+	}
+
+	metaValue, err := proto.Marshal(meta)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	mu := &c.mu
+	mu.Lock()
+	defer mu.Unlock()
+
+	resp, err := c.s.client.Txn(context.TODO()).
+		If(c.s.leaderCmp()).
+		Then(clientv3.OpPut(c.clusterRoot, string(metaValue))).
+		Commit()
+	if err != nil {
+		return errors.Trace(err)
+	} else if !resp.Succeeded {
+		return errors.Errorf("put cluster meta %v error", meta)
+	}
+
+	mu.meta = *meta
+	return nil
+}

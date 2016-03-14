@@ -146,6 +146,12 @@ func (c *conn) handleGetMeta(req *pdpb.Request) (*pdpb.Response, error) {
 			return nil, errors.Trace(err)
 		}
 		resp.Region = region
+	case pdpb.MetaType_ClusterType:
+		meta, err := cluster.GetMeta()
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		resp.Cluster = meta
 	default:
 		return nil, errors.Errorf("invalid meta type %v", request.GetMetaType())
 	}
@@ -175,6 +181,11 @@ func (c *conn) handlePutMeta(req *pdpb.Request) (*pdpb.Response, error) {
 	case pdpb.MetaType_StoreType:
 		store := request.GetStore()
 		if err = cluster.PutStore(store); err != nil {
+			return nil, errors.Trace(err)
+		}
+	case pdpb.MetaType_ClusterType:
+		meta := request.GetCluster()
+		if err = cluster.PutMeta(meta); err != nil {
 			return nil, errors.Trace(err)
 		}
 	default:

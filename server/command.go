@@ -200,3 +200,27 @@ func (c *conn) handlePutMeta(req *pdpb.Request) (*pdpb.Response, error) {
 		PutMeta: resp,
 	}, nil
 }
+
+func (c *conn) handleAskChangePeer(req *pdpb.Request) (*pdpb.Response, error) {
+	request := req.GetAskChangePeer()
+	if request == nil {
+		return nil, errors.Errorf("invalid ask change peer command, but %v", req)
+	} else if request.Region == nil {
+		return nil, errors.Errorf("missing region for changing peer")
+	} else if request.Leader == nil {
+		return nil, errors.Errorf("missing leader for changing peer")
+	}
+
+	cluster, err := c.getCluster(req)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	if err = cluster.HandleAskChangePeer(request); err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	return &pdpb.Response{
+		AskChangePeer: &pdpb.AskChangePeerResponse{},
+	}, nil
+}

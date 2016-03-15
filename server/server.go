@@ -47,6 +47,8 @@ type Server struct {
 	// for raft cluster
 	clusterLock sync.RWMutex
 	clusters    map[uint64]*raftCluster
+
+	msgID uint64
 }
 
 // NewServer creates the pd server with given configuration.

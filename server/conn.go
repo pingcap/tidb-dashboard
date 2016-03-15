@@ -116,6 +116,8 @@ func (c *conn) handleRequest(req *pdpb.Request) (*pdpb.Response, error) {
 		return c.handleGetMeta(req)
 	case pdpb.CommandType_PutMeta:
 		return c.handlePutMeta(req)
+	case pdpb.CommandType_AskChangePeer:
+		return c.handleAskChangePeer(req)
 	default:
 		return nil, errors.Errorf("unsupported command %s", req)
 	}

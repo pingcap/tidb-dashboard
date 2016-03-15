@@ -12,9 +12,13 @@ import (
 
 var _ = Suite(&testClusterSuite{})
 
-type testClusterSuite struct {
+type testClusterBaseSuite struct {
 	client *clientv3.Client
 	svr    *Server
+}
+
+type testClusterSuite struct {
+	testClusterBaseSuite
 }
 
 func (s *testClusterSuite) getRootPath() string {
@@ -36,7 +40,7 @@ func (s *testClusterSuite) TearDownSuite(c *C) {
 	s.client.Close()
 }
 
-func (s *testClusterSuite) allocID(c *C) uint64 {
+func (s *testClusterBaseSuite) allocID(c *C) uint64 {
 	id, err := s.svr.idAlloc.Alloc()
 	c.Assert(err, IsNil)
 	return id
@@ -48,7 +52,7 @@ func newRequestHeader(clusterID uint64) *pdpb.RequestHeader {
 	}
 }
 
-func (s *testClusterSuite) newNode(c *C, nodeID uint64, addr string) *metapb.Node {
+func (s *testClusterBaseSuite) newNode(c *C, nodeID uint64, addr string) *metapb.Node {
 	if nodeID == 0 {
 		nodeID = s.allocID(c)
 	}
@@ -59,7 +63,7 @@ func (s *testClusterSuite) newNode(c *C, nodeID uint64, addr string) *metapb.Nod
 	}
 }
 
-func (s *testClusterSuite) newStore(c *C, nodeID uint64, storeID uint64) *metapb.Store {
+func (s *testClusterBaseSuite) newStore(c *C, nodeID uint64, storeID uint64) *metapb.Store {
 	if storeID == 0 {
 		storeID = s.allocID(c)
 	}
@@ -71,7 +75,7 @@ func (s *testClusterSuite) newStore(c *C, nodeID uint64, storeID uint64) *metapb
 	}
 }
 
-func (s *testClusterSuite) newPeer(c *C, nodeID uint64, storeID uint64, peerID uint64) *metapb.Peer {
+func (s *testClusterBaseSuite) newPeer(c *C, nodeID uint64, storeID uint64, peerID uint64) *metapb.Peer {
 	c.Assert(nodeID, Greater, uint64(0))
 	c.Assert(storeID, Greater, uint64(0))
 
@@ -86,7 +90,7 @@ func (s *testClusterSuite) newPeer(c *C, nodeID uint64, storeID uint64, peerID u
 	}
 }
 
-func (s *testClusterSuite) newRegion(c *C, regionID uint64, startKey []byte, endKey []byte, peers []*metapb.Peer) *metapb.Region {
+func (s *testClusterBaseSuite) newRegion(c *C, regionID uint64, startKey []byte, endKey []byte, peers []*metapb.Peer) *metapb.Region {
 	if regionID == 0 {
 		regionID = s.allocID(c)
 	}
@@ -177,7 +181,7 @@ func (s *testClusterSuite) TestBootstrap(c *C) {
 	c.Assert(resp.Header.Error.Bootstrapped, NotNil)
 }
 
-func (s *testClusterSuite) newBootstrapRequest(c *C, clusterID uint64, nodeAddr string) *pdpb.Request {
+func (s *testClusterBaseSuite) newBootstrapRequest(c *C, clusterID uint64, nodeAddr string) *pdpb.Request {
 	node := s.newNode(c, 0, nodeAddr)
 	store := s.newStore(c, node.GetNodeId(), 0)
 	peer := s.newPeer(c, node.GetNodeId(), store.GetStoreId(), 0)
@@ -196,14 +200,14 @@ func (s *testClusterSuite) newBootstrapRequest(c *C, clusterID uint64, nodeAddr 
 }
 
 // helper function to check and bootstrap
-func (s *testClusterSuite) bootstrapCluster(c *C, conn net.Conn, clusterID uint64, nodeAddr string) {
+func (s *testClusterBaseSuite) bootstrapCluster(c *C, conn net.Conn, clusterID uint64, nodeAddr string) {
 	req := s.newBootstrapRequest(c, clusterID, nodeAddr)
 	sendRequest(c, conn, 0, req)
 	_, resp := recvResponse(c, conn)
 	c.Assert(resp.Bootstrap, NotNil)
 }
 
-func (s *testClusterSuite) getNode(c *C, conn net.Conn, clusterID uint64, nodeID uint64) *metapb.Node {
+func (s *testClusterBaseSuite) getNode(c *C, conn net.Conn, clusterID uint64, nodeID uint64) *metapb.Node {
 	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
 		CmdType: pdpb.CommandType_GetMeta.Enum(),
@@ -221,7 +225,7 @@ func (s *testClusterSuite) getNode(c *C, conn net.Conn, clusterID uint64, nodeID
 	return resp.GetMeta.GetNode()
 }
 
-func (s *testClusterSuite) getStore(c *C, conn net.Conn, clusterID uint64, storeID uint64) *metapb.Store {
+func (s *testClusterBaseSuite) getStore(c *C, conn net.Conn, clusterID uint64, storeID uint64) *metapb.Store {
 	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
 		CmdType: pdpb.CommandType_GetMeta.Enum(),
@@ -238,7 +242,7 @@ func (s *testClusterSuite) getStore(c *C, conn net.Conn, clusterID uint64, store
 	return resp.GetMeta.GetStore()
 }
 
-func (s *testClusterSuite) getRegion(c *C, conn net.Conn, clusterID uint64, regionKey []byte) *metapb.Region {
+func (s *testClusterBaseSuite) getRegion(c *C, conn net.Conn, clusterID uint64, regionKey []byte) *metapb.Region {
 	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
 		CmdType: pdpb.CommandType_GetMeta.Enum(),
@@ -256,7 +260,7 @@ func (s *testClusterSuite) getRegion(c *C, conn net.Conn, clusterID uint64, regi
 	return resp.GetMeta.GetRegion()
 }
 
-func (s *testClusterSuite) getMeta(c *C, conn net.Conn, clusterID uint64) *metapb.Cluster {
+func (s *testClusterBaseSuite) getMeta(c *C, conn net.Conn, clusterID uint64) *metapb.Cluster {
 	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
 		CmdType: pdpb.CommandType_GetMeta.Enum(),

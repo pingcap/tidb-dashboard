@@ -267,11 +267,6 @@ func (c *raftCluster) handleRemovePeerReq(region *metapb.Region, leader *metapb.
 		return nil, errors.Errorf("can not remove peer for region %v", region)
 	}
 
-	// Now we only remove the first peer, later we will do more better choice.
-	if leader == nil {
-		return region.Peers[0], nil
-	}
-
 	for _, peer := range region.Peers {
 		if peer.GetPeerId() != leader.GetPeerId() {
 			return peer, nil

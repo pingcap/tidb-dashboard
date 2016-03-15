@@ -183,6 +183,8 @@ func (c *raftCluster) handleJob(job *pd_jobpd.Job) error {
 	switch req.AdminRequest.GetCmdType() {
 	case raft_cmdpb.AdminCommandType_ChangePeer:
 		return c.handleChangePeer(job)
+	case raft_cmdpb.AdminCommandType_Split:
+		return c.handleSplit(job)
 	default:
 		log.Errorf("invalid job command %v, ignore", req)
 		return nil
@@ -358,6 +360,100 @@ func (c *raftCluster) handleChangePeer(job *pd_jobpd.Job) error {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {
 		return errors.New("update change peer region failed")
+	}
+
+	return nil
+}
+
+func (c *raftCluster) HandleAskSplit(request *pdpb.AskSplitRequest) error {
+	newRegionID, err := c.s.idAlloc.Alloc()
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	peerIDs := make([]uint64, len(request.Region.Peers))
+	for i := 0; i < len(peerIDs); i++ {
+		if peerIDs[i], err = c.s.idAlloc.Alloc(); err != nil {
+			return errors.Trace(err)
+		}
+	}
+
+	split := &raft_cmdpb.AdminRequest{
+		CmdType: raft_cmdpb.AdminCommandType_Split.Enum(),
+		Split: &raft_cmdpb.SplitRequest{
+			NewRegionId: proto.Uint64(newRegionID),
+			NewPeerIds:  peerIDs,
+			SplitKey:    request.SplitKey,
+		},
+	}
+
+	req := &raft_cmdpb.RaftCommandRequest{
+		Header: &raft_cmdpb.RaftRequestHeader{
+			RegionId: request.Region.RegionId,
+			Peer:     request.Leader,
+		},
+		AdminRequest: split,
+	}
+
+	return c.postJob(req)
+}
+
+func (c *raftCluster) handleSplit(job *pd_jobpd.Job) error {
+	response, err := c.sendRaftCommand(job.Request)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	if response.Header != nil && response.Header.Error != nil {
+		log.Errorf("handle %v but failed with response %v, cancel it", job.Request, response.Header.Error)
+		return nil
+	}
+
+	// Must be split response here
+	// TODO: check this error later.
+	left := response.AdminResponse.Split.Left
+	right := response.AdminResponse.Split.Right
+
+	// Update region
+	leftSearchPath := makeRegionSearchKey(c.clusterRoot, left.GetEndKey())
+	rightSearchPath := makeRegionSearchKey(c.clusterRoot, right.GetEndKey())
+
+	leftValue, err := proto.Marshal(left)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	rightValue, err := proto.Marshal(right)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	var ops []clientv3.Op
+
+	leftPath := makeRegionKey(c.clusterRoot, left.GetRegionId())
+	rightPath := makeRegionKey(c.clusterRoot, right.GetRegionId())
+
+	ops = append(ops, clientv3.OpPut(leftPath, encodeRegionSearchKey(left.GetEndKey())))
+	ops = append(ops, clientv3.OpPut(rightPath, encodeRegionSearchKey(right.GetEndKey())))
+	ops = append(ops, clientv3.OpPut(leftSearchPath, string(leftValue)))
+	ops = append(ops, clientv3.OpPut(rightSearchPath, string(rightValue)))
+
+	var cmps []clientv3.Cmp
+	cmps = append(cmps, c.s.leaderCmp())
+	// new left search path must not exist
+	cmps = append(cmps, clientv3.Compare(clientv3.CreatedRevision(leftSearchPath), "=", 0))
+	// new right search path must exist, because it is the same as origin split path.
+	cmps = append(cmps, clientv3.Compare(clientv3.CreatedRevision(rightSearchPath), ">", 0))
+	cmps = append(cmps, clientv3.Compare(clientv3.CreatedRevision(rightPath), "=", 0))
+
+	resp, err := c.s.client.Txn(context.TODO()).
+		If(cmps...).
+		Then(ops...).
+		Commit()
+	if err != nil {
+		return errors.Trace(err)
+	} else if !resp.Succeeded {
+		return errors.New("update split region failed")
 	}
 
 	return nil

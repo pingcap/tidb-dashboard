@@ -95,21 +95,16 @@ func (s *testClusterBaseSuite) newRegion(c *C, regionID uint64, startKey []byte,
 		regionID = s.allocID(c)
 	}
 
-	maxPeerID := uint64(0)
 	for _, peer := range peers {
 		peerID := peer.GetPeerId()
 		c.Assert(peerID, Greater, uint64(0))
-		if peerID > maxPeerID {
-			maxPeerID = peerID
-		}
 	}
 
 	return &metapb.Region{
-		RegionId:  proto.Uint64(regionID),
-		StartKey:  startKey,
-		EndKey:    endKey,
-		Peers:     peers,
-		MaxPeerId: proto.Uint64(maxPeerID),
+		RegionId: proto.Uint64(regionID),
+		StartKey: startKey,
+		EndKey:   endKey,
+		Peers:    peers,
 	}
 }
 

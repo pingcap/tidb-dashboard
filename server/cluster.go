@@ -236,10 +236,7 @@ func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 
 	peer := peers[0]
 
-	if regionMeta.GetMaxPeerId() < peer.GetPeerId() {
-		return errors.Errorf("invalid max peer id %d < peer %d for bootstrap %d",
-			regionMeta.GetMaxPeerId(), peer.GetPeerId(), clusterID)
-	} else if peer.GetNodeId() != nodeMeta.GetNodeId() {
+	if peer.GetNodeId() != nodeMeta.GetNodeId() {
 		return errors.Errorf("invalid peer node id %d != %d for bootstrap %d", peer.GetNodeId(), nodeMeta.GetNodeId(), clusterID)
 	} else if peer.GetPeerId() == 0 {
 		return errors.New("invalid zero peer id")

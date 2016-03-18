@@ -174,24 +174,80 @@ func (c *raftCluster) updateJobStatus(job *pd_jobpd.Job, status pd_jobpd.JobStat
 func (c *raftCluster) handleJob(job *pd_jobpd.Job) error {
 	log.Debugf("begin to handle job %v", job)
 
+	firstRunning := false
+
 	// TODO: if the job status is running, check this job whether
 	// finished or not in raft server.
 	if job.GetStatus() == pd_jobpd.JobStatus_Pending {
+		firstRunning = true
 		if err := c.updateJobStatus(job, pd_jobpd.JobStatus_Running); err != nil {
 			return errors.Trace(err)
 		}
 	}
 
-	req := job.GetRequest()
-	switch req.AdminRequest.GetCmdType() {
+	resp, err := c.processJob(job, firstRunning)
+	if err != nil || resp == nil {
+		return errors.Trace(err)
+	}
+
+	switch resp.GetCmdType() {
 	case raft_cmdpb.AdminCommandType_ChangePeer:
-		return c.handleChangePeer(job)
+		return c.handleChangePeerOK(resp.ChangePeer)
 	case raft_cmdpb.AdminCommandType_Split:
-		return c.handleSplit(job)
+		return c.handleSplitOK(resp.Split)
 	default:
-		log.Errorf("invalid job command %v, ignore", req)
+		log.Errorf("invalid admin response %v, ignore", resp)
 		return nil
 	}
+}
+
+func (c *raftCluster) processJob(job *pd_jobpd.Job, firstRunning bool) (*raft_cmdpb.AdminResponse, error) {
+	var (
+		request = job.Request
+		// must administrator request, check later.
+		adminRequest = request.AdminRequest
+		region       *metapb.Region
+
+		checkOKFunc func(*raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error)
+	)
+
+	switch adminRequest.GetCmdType() {
+	case raft_cmdpb.AdminCommandType_Split:
+		region = adminRequest.Split.Region
+		checkOKFunc = c.checkSplitOK
+	case raft_cmdpb.AdminCommandType_ChangePeer:
+		region = adminRequest.ChangePeer.Region
+		checkOKFunc = c.checkChangePeerOK
+	default:
+		return nil, errors.Errorf("unsupported request %v", adminRequest)
+	}
+
+	response, err := c.sendRaftCommand(request, region)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	if response.Header != nil && response.Header.Error != nil {
+		// If the job is first run, not retired, we can safely cancel it.
+		if firstRunning {
+			log.Errorf("handle %v but failed with response %v, cancel it", job.Request, response.Header.Error)
+			return nil, nil
+		}
+
+		log.Errorf("handle %v but failed with response %v, check in raft server", job.Request, response.Header.Error)
+
+		adminResponse, err := checkOKFunc(job.Request)
+		if err != nil {
+			return nil, errors.Trace(err)
+		} else if adminResponse == nil {
+			log.Warnf("raft server doesn't execute %v, cancel it", job.Request)
+			return nil, nil
+		}
+		return adminResponse, nil
+	}
+
+	// must administrator response, check later.
+	return response.AdminResponse, nil
 }
 
 func (c *raftCluster) chooseStore(bestStores []metapb.Store, matchStores []metapb.Store) metapb.Store {
@@ -334,30 +390,7 @@ func (c *raftCluster) HandleAskChangePeer(request *pdpb.AskChangePeerRequest) er
 	return c.postJob(req)
 }
 
-func (c *raftCluster) handleChangePeer(job *pd_jobpd.Job) error {
-	request := job.Request
-	response, err := c.sendRaftCommand(request, request.AdminRequest.ChangePeer.Region)
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	var changePeer *raft_cmdpb.ChangePeerResponse
-
-	if response.Header != nil && response.Header.Error != nil {
-		log.Errorf("handle %v but failed with response %v, check in raft server", job.Request, response.Header.Error)
-		changePeer, err = c.checkChangePeerOK(job.Request)
-		if err != nil {
-			return errors.Trace(err)
-		} else if changePeer == nil {
-			log.Warnf("raft server doesn't execute %v, cancel it", job.Request)
-			return nil
-		}
-	} else {
-		// Must be change peer response here
-		// TODO: check this error later.
-		changePeer = response.AdminResponse.ChangePeer
-	}
-
+func (c *raftCluster) handleChangePeerOK(changePeer *raft_cmdpb.ChangePeerResponse) error {
 	region := changePeer.Region
 
 	// Update region
@@ -380,7 +413,7 @@ func (c *raftCluster) handleChangePeer(job *pd_jobpd.Job) error {
 	return nil
 }
 
-func (c *raftCluster) checkChangePeerOK(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.ChangePeerResponse, error) {
+func (c *raftCluster) checkChangePeerOK(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error) {
 	// TODO: check region conf change version later.
 	regionID := request.Header.GetRegionId()
 	leader := request.Header.Peer
@@ -403,8 +436,11 @@ func (c *raftCluster) checkChangePeerOK(request *raft_cmdpb.RaftCommandRequest) 
 	// been already applied, for remove peer, the peer is not in region now.
 	if (changeType == raftpb.ConfChangeType_AddNode && found) ||
 		(changeType == raftpb.ConfChangeType_RemoveNode && !found) {
-		return &raft_cmdpb.ChangePeerResponse{
-			Region: detail.Region,
+		return &raft_cmdpb.AdminResponse{
+			CmdType: raft_cmdpb.AdminCommandType_ChangePeer.Enum(),
+			ChangePeer: &raft_cmdpb.ChangePeerResponse{
+				Region: detail.Region,
+			},
 		}, nil
 	}
 
@@ -446,29 +482,7 @@ func (c *raftCluster) HandleAskSplit(request *pdpb.AskSplitRequest) error {
 	return c.postJob(req)
 }
 
-func (c *raftCluster) handleSplit(job *pd_jobpd.Job) error {
-	request := job.Request
-	response, err := c.sendRaftCommand(request, request.AdminRequest.Split.Region)
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	var split *raft_cmdpb.SplitResponse
-	if response.Header != nil && response.Header.Error != nil {
-		log.Errorf("handle %v but failed with response %v, check in raft server", job.Request, response.Header.Error)
-		split, err = c.checkSplitOK(job.Request)
-		if err != nil {
-			return errors.Trace(err)
-		} else if split == nil {
-			log.Warnf("raft server doesn't execute %v, cancel it", job.Request)
-			return nil
-		}
-	} else {
-		// Must be split response here
-		// TODO: check this error later.
-		split = response.AdminResponse.Split
-	}
-
+func (c *raftCluster) handleSplitOK(split *raft_cmdpb.SplitResponse) error {
 	left := split.Left
 	right := split.Right
 
@@ -517,7 +531,7 @@ func (c *raftCluster) handleSplit(job *pd_jobpd.Job) error {
 	return nil
 }
 
-func (c *raftCluster) checkSplitOK(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.SplitResponse, error) {
+func (c *raftCluster) checkSplitOK(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error) {
 	// TODO: check region version later.
 	split := request.AdminRequest.Split
 	region := split.Region
@@ -539,12 +553,13 @@ func (c *raftCluster) checkSplitOK(request *raft_cmdpb.RaftCommandRequest) (*raf
 		return nil, errors.Trace(err)
 	}
 
-	resp := &raft_cmdpb.SplitResponse{
-		Left:  leftDetail.Region,
-		Right: rightDetail.Region,
-	}
-
-	return resp, nil
+	return &raft_cmdpb.AdminResponse{
+		CmdType: raft_cmdpb.AdminCommandType_Split.Enum(),
+		Split: &raft_cmdpb.SplitResponse{
+			Left:  leftDetail.Region,
+			Right: rightDetail.Region,
+		},
+	}, nil
 }
 
 func (c *raftCluster) sendRaftCommand(request *raft_cmdpb.RaftCommandRequest, region *metapb.Region) (*raft_cmdpb.RaftCommandResponse, error) {

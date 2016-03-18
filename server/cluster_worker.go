@@ -83,19 +83,15 @@ func asyncNotify(ch chan struct{}) {
 	}
 }
 
-func (c *raftCluster) postJob(req *raft_cmdpb.RaftCommandRequest) error {
+func (c *raftCluster) postJob(job *pd_jobpd.Job) error {
 	jobID, err := c.s.idAlloc.Alloc()
 	if err != nil {
 		return errors.Trace(err)
 	}
 
-	req.Header.Uuid = uuid.NewV4().Bytes()
-
-	job := &pd_jobpd.Job{
-		JobId:   proto.Uint64(jobID),
-		Status:  pd_jobpd.JobStatus_Pending.Enum(),
-		Request: req,
-	}
+	job.JobId = proto.Uint64(jobID)
+	job.Request.Header.Uuid = uuid.NewV4().Bytes()
+	job.Status = pd_jobpd.JobStatus_Pending.Enum()
 
 	jobValue, err := proto.Marshal(job)
 	if err != nil {
@@ -206,23 +202,20 @@ func (c *raftCluster) processJob(job *pd_jobpd.Job, firstRunning bool) (*raft_cm
 		request = job.Request
 		// must administrator request, check later.
 		adminRequest = request.AdminRequest
-		region       *metapb.Region
 
 		checkOKFunc func(*raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error)
 	)
 
 	switch adminRequest.GetCmdType() {
 	case raft_cmdpb.AdminCommandType_Split:
-		region = adminRequest.Split.Region
 		checkOKFunc = c.checkSplitOK
 	case raft_cmdpb.AdminCommandType_ChangePeer:
-		region = adminRequest.ChangePeer.Region
 		checkOKFunc = c.checkChangePeerOK
 	default:
 		return nil, errors.Errorf("unsupported request %v", adminRequest)
 	}
 
-	response, err := c.sendRaftCommand(request, region)
+	response, err := c.sendRaftCommand(request, job.Region)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -387,7 +380,12 @@ func (c *raftCluster) HandleAskChangePeer(request *pdpb.AskChangePeerRequest) er
 		AdminRequest: changePeer,
 	}
 
-	return c.postJob(req)
+	job := &pd_jobpd.Job{
+		Request: req,
+		Region:  request.Region,
+	}
+
+	return c.postJob(job)
 }
 
 func (c *raftCluster) handleChangePeerOK(changePeer *raft_cmdpb.ChangePeerResponse) error {
@@ -479,7 +477,12 @@ func (c *raftCluster) HandleAskSplit(request *pdpb.AskSplitRequest) error {
 		AdminRequest: split,
 	}
 
-	return c.postJob(req)
+	job := &pd_jobpd.Job{
+		Request: req,
+		Region:  request.Region,
+	}
+
+	return c.postJob(job)
 }
 
 func (c *raftCluster) handleSplitOK(split *raft_cmdpb.SplitResponse) error {

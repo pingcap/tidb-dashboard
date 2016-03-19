@@ -93,7 +93,6 @@ RECONNECT:
 			return
 		}
 	}
-	defer conn.Close()
 
 	reader := bufio.NewReaderSize(deadline.NewDeadlineReader(conn, netIOTimeout), readBufferSize)
 	writer := bufio.NewWriterSize(deadline.NewDeadlineWriter(conn, netIOTimeout), writeBufferSize)
@@ -114,9 +113,11 @@ RECONNECT:
 				}
 			}
 			if ok := w.handleRequests(pending, readwriter); !ok {
+				conn.Close()
 				goto RECONNECT
 			}
 		case <-w.quit:
+			conn.Close()
 			return
 		}
 	}

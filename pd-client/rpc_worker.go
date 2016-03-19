@@ -13,6 +13,7 @@ import (
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
+	"github.com/pingcap/pd/util"
 	"github.com/twinj/uuid"
 )
 
@@ -176,12 +177,12 @@ func (w *rpcWorker) getTSFromRemote(conn *bufio.ReadWriter, n int) ([]*pdpb.Time
 			Number: proto.Uint32(uint32(n)),
 		},
 	}
-	if err := writeMessage(conn, newMsgID(), &req); err != nil {
+	if err := util.WriteMessage(conn, newMsgID(), &req); err != nil {
 		return nil, errors.Errorf("[pd] rpc failed: %v", err)
 	}
 	conn.Flush()
 	var rsp pdpb.Response
-	if _, err := readMessage(conn, &rsp); err != nil {
+	if _, err := util.ReadMessage(conn, &rsp); err != nil {
 		return nil, errors.Errorf("[pd] rpc failed: %v", err)
 	}
 	if rsp.GetTso() == nil {
@@ -206,12 +207,12 @@ func (w *rpcWorker) getRegionFromRemote(conn *bufio.ReadWriter, key []byte) (*me
 			RegionKey: key,
 		},
 	}
-	if err := writeMessage(conn, newMsgID(), &req); err != nil {
+	if err := util.WriteMessage(conn, newMsgID(), &req); err != nil {
 		return nil, errors.Errorf("[pd] rpc failed: %v", err)
 	}
 	conn.Flush()
 	var rsp pdpb.Response
-	if _, err := readMessage(conn, &rsp); err != nil {
+	if _, err := util.ReadMessage(conn, &rsp); err != nil {
 		return nil, errors.Errorf("[pd] rpc failed: %v", err)
 	}
 	if rsp.GetGetMeta() == nil {

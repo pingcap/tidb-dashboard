@@ -17,6 +17,7 @@ import (
 	"github.com/pingcap/kvproto/pkg/raft_cmdpb"
 	"github.com/pingcap/kvproto/pkg/raft_serverpb"
 	"github.com/pingcap/kvproto/pkg/raftpb"
+	"github.com/pingcap/pd/util"
 	"github.com/twinj/uuid"
 	"golang.org/x/net/context"
 )
@@ -482,12 +483,12 @@ func (c *raftCluster) sendRaftCommand(request *raft_cmdpb.RaftCommandRequest) (*
 	}
 
 	msgID := atomic.AddUint64(&c.s.msgID, 1)
-	if err = writeMessage(conn, msgID, msg); err != nil {
+	if err = util.WriteMessage(conn, msgID, msg); err != nil {
 		return nil, errors.Trace(err)
 	}
 
 	msg.Reset()
-	if _, err = readMessage(conn, msg); err != nil {
+	if _, err = util.ReadMessage(conn, msg); err != nil {
 		return nil, errors.Trace(err)
 	} else if msg.GetMsgType() != raft_serverpb.MessageType_CommandResp {
 		return nil, errors.Errorf("need command resp but got %v", msg)

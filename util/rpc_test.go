@@ -1,4 +1,4 @@
-package server
+package util
 
 import (
 	"bytes"
@@ -21,11 +21,11 @@ func (s *testRPCSuite) TestCodec(c *C) {
 		StoreId: proto.Uint64(2),
 	}
 
-	err := writeMessage(&buf, 1, &store)
+	err := WriteMessage(&buf, 1, &store)
 	c.Assert(err, IsNil)
 
 	newStore := metapb.Store{}
-	msgID, err := readMessage(&buf, &newStore)
+	msgID, err := ReadMessage(&buf, &newStore)
 	c.Assert(err, IsNil)
 	c.Assert(msgID, Equals, uint64(1))
 	c.Assert(newStore, DeepEquals, store)

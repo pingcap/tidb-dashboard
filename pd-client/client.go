@@ -111,7 +111,6 @@ WATCH:
 			c.worker = newRPCWorker(leaderAddr, c.clusterID)
 			c.workerMutex.Unlock()
 			revision = rev
-			continue WATCH
 		case <-c.quit:
 			return
 		}

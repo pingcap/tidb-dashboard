@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"math"
 	"math/rand"
 	"net"
@@ -8,7 +9,7 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/metapb"
@@ -27,6 +28,8 @@ const (
 	connectTimeout = 3 * time.Second
 	readTimeout    = 3 * time.Second
 	writeTimeout   = 3 * time.Second
+
+	maxSendRetry = 10
 )
 
 func (c *raftCluster) onJobWorker() {
@@ -55,7 +58,7 @@ func (c *raftCluster) onJobWorker() {
 			if err = c.handleJob(job); err != nil {
 				log.Errorf("handle job %v err %v, retry", job, err)
 				// wait and force retry
-				time.Sleep(time.Second)
+				time.Sleep(c.s.cfg.nextRetryDelay)
 				asyncNotify(c.askJobCh)
 				continue
 			}
@@ -80,19 +83,15 @@ func asyncNotify(ch chan struct{}) {
 	}
 }
 
-func (c *raftCluster) postJob(req *raft_cmdpb.RaftCommandRequest) error {
+func (c *raftCluster) postJob(job *pd_jobpd.Job) error {
 	jobID, err := c.s.idAlloc.Alloc()
 	if err != nil {
 		return errors.Trace(err)
 	}
 
-	req.Header.Uuid = uuid.NewV4().Bytes()
-
-	job := &pd_jobpd.Job{
-		JobId:   proto.Uint64(jobID),
-		Status:  pd_jobpd.JobStatus_Pending.Enum(),
-		Request: req,
-	}
+	job.JobId = proto.Uint64(jobID)
+	job.Request.Header.Uuid = uuid.NewV4().Bytes()
+	job.Status = pd_jobpd.JobStatus_Pending.Enum()
 
 	jobValue, err := proto.Marshal(job)
 	if err != nil {
@@ -171,24 +170,77 @@ func (c *raftCluster) updateJobStatus(job *pd_jobpd.Job, status pd_jobpd.JobStat
 func (c *raftCluster) handleJob(job *pd_jobpd.Job) error {
 	log.Debugf("begin to handle job %v", job)
 
+	firstRunning := false
+
 	// TODO: if the job status is running, check this job whether
 	// finished or not in raft server.
 	if job.GetStatus() == pd_jobpd.JobStatus_Pending {
+		firstRunning = true
 		if err := c.updateJobStatus(job, pd_jobpd.JobStatus_Running); err != nil {
 			return errors.Trace(err)
 		}
 	}
 
-	req := job.GetRequest()
-	switch req.AdminRequest.GetCmdType() {
+	resp, err := c.processJob(job, firstRunning)
+	if err != nil || resp == nil {
+		return errors.Trace(err)
+	}
+
+	switch resp.GetCmdType() {
 	case raft_cmdpb.AdminCommandType_ChangePeer:
-		return c.handleChangePeer(job)
+		return c.handleChangePeerOK(resp.ChangePeer)
 	case raft_cmdpb.AdminCommandType_Split:
-		return c.handleSplit(job)
+		return c.handleSplitOK(resp.Split)
 	default:
-		log.Errorf("invalid job command %v, ignore", req)
+		log.Errorf("invalid admin response %v, ignore", resp)
 		return nil
 	}
+}
+
+func (c *raftCluster) processJob(job *pd_jobpd.Job, firstRunning bool) (*raft_cmdpb.AdminResponse, error) {
+	var (
+		request = job.Request
+		// must administrator request, check later.
+		adminRequest = request.AdminRequest
+
+		checkOKFunc func(*raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error)
+	)
+
+	switch adminRequest.GetCmdType() {
+	case raft_cmdpb.AdminCommandType_Split:
+		checkOKFunc = c.checkSplitOK
+	case raft_cmdpb.AdminCommandType_ChangePeer:
+		checkOKFunc = c.checkChangePeerOK
+	default:
+		return nil, errors.Errorf("unsupported request %v", adminRequest)
+	}
+
+	response, err := c.sendRaftCommand(request, job.Region)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	if response.Header != nil && response.Header.Error != nil {
+		// If the job is first run, not retired, we can safely cancel it.
+		if firstRunning {
+			log.Errorf("handle %v but failed with response %v, cancel it", job.Request, response.Header.Error)
+			return nil, nil
+		}
+
+		log.Errorf("handle %v but failed with response %v, check in raft server", job.Request, response.Header.Error)
+
+		adminResponse, err := checkOKFunc(job.Request)
+		if err != nil {
+			return nil, errors.Trace(err)
+		} else if adminResponse == nil {
+			log.Warnf("raft server doesn't execute %v, cancel it", job.Request)
+			return nil, nil
+		}
+		return adminResponse, nil
+	}
+
+	// must administrator response, check later.
+	return response.AdminResponse, nil
 }
 
 func (c *raftCluster) chooseStore(bestStores []metapb.Store, matchStores []metapb.Store) metapb.Store {
@@ -316,6 +368,7 @@ func (c *raftCluster) HandleAskChangePeer(request *pdpb.AskChangePeerRequest) er
 		ChangePeer: &raft_cmdpb.ChangePeerRequest{
 			ChangeType: changeType.Enum(),
 			Peer:       peer,
+			Region:     region,
 		},
 	}
 
@@ -327,23 +380,16 @@ func (c *raftCluster) HandleAskChangePeer(request *pdpb.AskChangePeerRequest) er
 		AdminRequest: changePeer,
 	}
 
-	return c.postJob(req)
+	job := &pd_jobpd.Job{
+		Request: req,
+		Region:  request.Region,
+	}
+
+	return c.postJob(job)
 }
 
-func (c *raftCluster) handleChangePeer(job *pd_jobpd.Job) error {
-	response, err := c.sendRaftCommand(job.Request)
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	if response.Header != nil && response.Header.Error != nil {
-		log.Errorf("handle %v but failed with response %v, cancel it", job.Request, response.Header.Error)
-		return nil
-	}
-
-	// Must be change peer response here
-	// TODO: check this error later.
-	region := response.AdminResponse.ChangePeer.Region
+func (c *raftCluster) handleChangePeerOK(changePeer *raft_cmdpb.ChangePeerResponse) error {
+	region := changePeer.Region
 
 	// Update region
 	regionSearchPath := makeRegionSearchKey(c.clusterRoot, region.GetEndKey())
@@ -365,6 +411,41 @@ func (c *raftCluster) handleChangePeer(job *pd_jobpd.Job) error {
 	return nil
 }
 
+func (c *raftCluster) checkChangePeerOK(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error) {
+	// TODO: check region conf change version later.
+	regionID := request.Header.GetRegionId()
+	leader := request.Header.Peer
+	detail, err := c.getRegionDetail(regionID, leader)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	changePeer := request.AdminRequest.ChangePeer
+	found := false
+	for _, peer := range detail.Region.Peers {
+		if peer.GetPeerId() == changePeer.Peer.GetPeerId() {
+			found = true
+			break
+		}
+	}
+
+	changeType := changePeer.GetChangeType()
+	// For add peer, if change peer is already in raft server region, we can think the command has
+	// been already applied, for remove peer, the peer is not in region now.
+	if (changeType == raftpb.ConfChangeType_AddNode && found) ||
+		(changeType == raftpb.ConfChangeType_RemoveNode && !found) {
+		return &raft_cmdpb.AdminResponse{
+			CmdType: raft_cmdpb.AdminCommandType_ChangePeer.Enum(),
+			ChangePeer: &raft_cmdpb.ChangePeerResponse{
+				Region: detail.Region,
+			},
+		}, nil
+	}
+
+	// Here means the raft server doesn't execute this change peer command.
+	return nil, nil
+}
+
 func (c *raftCluster) HandleAskSplit(request *pdpb.AskSplitRequest) error {
 	newRegionID, err := c.s.idAlloc.Alloc()
 	if err != nil {
@@ -384,6 +465,7 @@ func (c *raftCluster) HandleAskSplit(request *pdpb.AskSplitRequest) error {
 			NewRegionId: proto.Uint64(newRegionID),
 			NewPeerIds:  peerIDs,
 			SplitKey:    request.SplitKey,
+			Region:      request.Region,
 		},
 	}
 
@@ -395,24 +477,17 @@ func (c *raftCluster) HandleAskSplit(request *pdpb.AskSplitRequest) error {
 		AdminRequest: split,
 	}
 
-	return c.postJob(req)
+	job := &pd_jobpd.Job{
+		Request: req,
+		Region:  request.Region,
+	}
+
+	return c.postJob(job)
 }
 
-func (c *raftCluster) handleSplit(job *pd_jobpd.Job) error {
-	response, err := c.sendRaftCommand(job.Request)
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	if response.Header != nil && response.Header.Error != nil {
-		log.Errorf("handle %v but failed with response %v, cancel it", job.Request, response.Header.Error)
-		return nil
-	}
-
-	// Must be split response here
-	// TODO: check this error later.
-	left := response.AdminResponse.Split.Left
-	right := response.AdminResponse.Split.Right
+func (c *raftCluster) handleSplitOK(split *raft_cmdpb.SplitResponse) error {
+	left := split.Left
+	right := split.Right
 
 	// Update region
 	leftSearchPath := makeRegionSearchKey(c.clusterRoot, left.GetEndKey())
@@ -459,7 +534,90 @@ func (c *raftCluster) handleSplit(job *pd_jobpd.Job) error {
 	return nil
 }
 
-func (c *raftCluster) sendRaftCommand(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.RaftCommandResponse, error) {
+func (c *raftCluster) checkSplitOK(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error) {
+	// TODO: check region version later.
+	split := request.AdminRequest.Split
+	region := split.Region
+	leftRegionID := region.GetRegionId()
+	rightRegionID := split.GetNewRegionId()
+	leader := request.Header.Peer
+	leftDetail, err := c.getRegionDetail(leftRegionID, leader)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	if !bytes.Equal(leftDetail.Region.GetEndKey(), split.SplitKey) {
+		// The region is not split
+		return nil, nil
+	}
+
+	rightDetail, err := c.getRegionDetail(rightRegionID, leader)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	return &raft_cmdpb.AdminResponse{
+		CmdType: raft_cmdpb.AdminCommandType_Split.Enum(),
+		Split: &raft_cmdpb.SplitResponse{
+			Left:  leftDetail.Region,
+			Right: rightDetail.Region,
+		},
+	}, nil
+}
+
+func (c *raftCluster) sendRaftCommand(request *raft_cmdpb.RaftCommandRequest, region *metapb.Region) (*raft_cmdpb.RaftCommandResponse, error) {
+	originPeer := request.Header.Peer
+
+RETRY:
+	for i := 0; i < maxSendRetry; i++ {
+		resp, err := c.callCommand(request)
+		if err != nil {
+			// We may meet some error, maybe network broken, node down, etc.
+			// We can check later next time.
+			return nil, errors.Trace(err)
+		}
+
+		if resp.Header.Error != nil && resp.Header.Error.NotLeader != nil {
+			log.Warnf("peer %v is not leader, we got %v", request.Header.Peer, resp.Header.Error)
+
+			leader := resp.Header.Error.NotLeader.Leader
+			if leader != nil {
+				// The origin peer is not leader and we get the new leader,
+				// send this message to the new leader again.
+				request.Header.Peer = leader
+				continue
+			}
+
+			regionID := region.GetRegionId()
+			// The origin peer is not leader, but we can't get the leader now,
+			// so we try to get the leader in other region peers.
+			for _, peer := range region.Peers {
+				if peer.GetPeerId() == originPeer.GetPeerId() {
+					continue
+				}
+
+				leader, err := c.getRegionLeader(regionID, peer)
+				if err != nil {
+					log.Errorf("get region %d leader err %v", regionID, err)
+					continue
+				} else if leader == nil {
+					log.Infof("can not get leader for region %d in peer %v", regionID, peer)
+					continue
+				}
+
+				// We get leader here.
+				request.Header.Peer = leader
+				continue RETRY
+			}
+		}
+
+		return resp, nil
+	}
+
+	return nil, errors.Errorf("send raft command %v failed", request)
+}
+
+func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.RaftCommandResponse, error) {
 	nodeID := request.Header.Peer.GetNodeId()
 
 	node, err := c.GetNode(nodeID)
@@ -489,17 +647,62 @@ func (c *raftCluster) sendRaftCommand(request *raft_cmdpb.RaftCommandRequest) (*
 	msg.Reset()
 	if _, err = readMessage(conn, msg); err != nil {
 		return nil, errors.Trace(err)
-	} else if msg.GetMsgType() != raft_serverpb.MessageType_CommandResp {
-		return nil, errors.Errorf("need command resp but got %v", msg)
-	} else if msg.CmdResp == nil {
+	}
+
+	if msg.CmdResp == nil {
+		// This is a very serious bug, should we panic here?
 		return nil, errors.Errorf("invalid command response message but %v", msg)
 	}
 
-	response := msg.CmdResp
+	return msg.CmdResp, nil
+}
 
-	// TODO: check not leader error. if not leader, we should find the leader
-	// and re-send the raft command again.
+func (c *raftCluster) getRegionLeader(regionID uint64, peer *metapb.Peer) (*metapb.Peer, error) {
+	request := &raft_cmdpb.RaftCommandRequest{
+		Header: &raft_cmdpb.RaftRequestHeader{
+			Uuid:     uuid.NewV4().Bytes(),
+			RegionId: proto.Uint64(regionID),
+			Peer:     peer,
+		},
+		StatusRequest: &raft_cmdpb.StatusRequest{
+			CmdType:      raft_cmdpb.StatusCommandType_RegionLeader.Enum(),
+			RegionLeader: &raft_cmdpb.RegionLeaderRequest{},
+		},
+	}
 
-	return response, nil
+	resp, err := c.callCommand(request)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
 
+	if resp.StatusResponse != nil && resp.StatusResponse.RegionLeader != nil {
+		return resp.StatusResponse.RegionLeader.Leader, nil
+	}
+
+	return nil, errors.Errorf("get region %d leader failed, got resp %v", regionID, resp)
+}
+
+func (c *raftCluster) getRegionDetail(regionID uint64, peer *metapb.Peer) (*raft_cmdpb.RegionDetailResponse, error) {
+	request := &raft_cmdpb.RaftCommandRequest{
+		Header: &raft_cmdpb.RaftRequestHeader{
+			Uuid:     uuid.NewV4().Bytes(),
+			RegionId: proto.Uint64(regionID),
+			Peer:     peer,
+		},
+		StatusRequest: &raft_cmdpb.StatusRequest{
+			CmdType:      raft_cmdpb.StatusCommandType_RegionDetail.Enum(),
+			RegionDetail: &raft_cmdpb.RegionDetailRequest{},
+		},
+	}
+
+	resp, err := c.callCommand(request)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	if resp.StatusResponse != nil && resp.StatusResponse.RegionDetail != nil {
+		return resp.StatusResponse.RegionDetail, nil
+	}
+
+	return nil, errors.Errorf("get region %d detail failed, got resp %v", regionID, resp)
 }

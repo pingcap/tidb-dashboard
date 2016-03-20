@@ -1,6 +1,8 @@
 package server
 
 import (
+	"bytes"
+	"math/rand"
 	"net"
 	"sync"
 	"time"
@@ -168,6 +170,24 @@ func (s *testClusterWorkerSuite) broadcastRaftMsg(c *C, leader *mockRaftPeer,
 	}
 }
 
+func (s *testClusterWorkerSuite) clearRegionLeader(c *C, regionID uint64) {
+	s.regionLeaderLock.Lock()
+	defer s.regionLeaderLock.Unlock()
+
+	delete(s.regionLeaders, regionID)
+}
+
+func (s *testClusterWorkerSuite) chooseRegionLeader(c *C, region *metapb.Region) *metapb.Peer {
+	// randomly select a peer in the region as the leader
+	peer := region.Peers[rand.Intn(len(region.Peers))]
+
+	s.regionLeaderLock.Lock()
+	defer s.regionLeaderLock.Unlock()
+
+	s.regionLeaders[region.GetRegionId()] = *peer
+	return peer
+}
+
 func (n *mockRaftNode) addStore(c *C, s *metapb.Store) *mockRaftStore {
 	n.Lock()
 	defer n.Unlock()
@@ -247,8 +267,14 @@ func (n *mockRaftNode) runCmd(c *C) {
 			CmdResp: resp,
 		}
 
-		err = writeMessage(conn, msgID, respMsg)
-		c.Assert(err, IsNil)
+		if rand.Intn(2) == 1 && resp.StatusResponse == nil {
+			// randomly close the connection to force
+			// cluster work retry
+			conn.Close()
+		} else {
+			err = writeMessage(conn, msgID, respMsg)
+			c.Assert(err, IsNil)
+		}
 	}
 }
 
@@ -331,12 +357,16 @@ func (n *mockRaftNode) proposeCommand(c *C, req *raft_cmdpb.RaftCommandRequest) 
 	defer n.s.regionLeaderLock.Unlock()
 
 	leader, ok := n.s.regionLeaders[regionID]
-	if ok && leader.GetPeerId() != peer.peer.GetPeerId() {
+	if !ok || leader.GetPeerId() != peer.peer.GetPeerId() {
 		resp := newErrorCmdResponse(errors.New("peer not leader"))
 		resp.Header.Error.NotLeader = &errorpb.NotLeaderError{
 			RegionId: proto.Uint64(regionID),
-			Leader:   &leader,
 		}
+
+		if ok {
+			resp.Header.Error.NotLeader.Leader = &leader
+		}
+
 		return resp
 	}
 
@@ -358,8 +388,42 @@ func (s *mockRaftStore) handleWriteCommand(c *C, req *raft_cmdpb.RaftCommandRequ
 }
 
 func (s *mockRaftStore) handleStatusRequest(c *C, req *raft_cmdpb.RaftCommandRequest) *raft_cmdpb.RaftCommandResponse {
-	// TODO later
-	return newErrorCmdResponse(errors.Errorf("unsupported request %v", req))
+	regionID := req.Header.GetRegionId()
+	status := req.StatusRequest
+
+	peer := s.peers[regionID]
+
+	var leader *metapb.Peer
+	s.s.regionLeaderLock.Lock()
+	l, ok := s.s.regionLeaders[regionID]
+	s.s.regionLeaderLock.Unlock()
+	if ok {
+		leader = &l
+	}
+
+	switch status.GetCmdType() {
+	case raft_cmdpb.StatusCommandType_RegionLeader:
+		return &raft_cmdpb.RaftCommandResponse{
+			StatusResponse: &raft_cmdpb.StatusResponse{
+				CmdType: raft_cmdpb.StatusCommandType_RegionLeader.Enum(),
+				RegionLeader: &raft_cmdpb.RegionLeaderResponse{
+					Leader: leader,
+				},
+			},
+		}
+	case raft_cmdpb.StatusCommandType_RegionDetail:
+		return &raft_cmdpb.RaftCommandResponse{
+			StatusResponse: &raft_cmdpb.StatusResponse{
+				CmdType: raft_cmdpb.StatusCommandType_RegionDetail.Enum(),
+				RegionDetail: &raft_cmdpb.RegionDetailResponse{
+					Leader: leader,
+					Region: proto.Clone(&peer.region).(*metapb.Region),
+				},
+			},
+		}
+	default:
+		return newErrorCmdResponse(errors.Errorf("unsupported request %v", req))
+	}
 }
 
 func (s *mockRaftStore) handleAdminRequest(c *C, req *raft_cmdpb.RaftCommandRequest) *raft_cmdpb.RaftCommandResponse {
@@ -392,9 +456,7 @@ func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCommandReques
 				return newErrorCmdResponse(errors.Errorf("add duplicated peer %v for region %v", peer, region))
 			}
 		}
-		c.Assert(peer.GetPeerId(), Greater, region.GetMaxPeerId())
 		region.Peers = append(region.Peers, peer)
-		region.MaxPeerId = proto.Uint64(peer.GetPeerId())
 		raftPeer.region = region
 	} else {
 		foundIndex := -1
@@ -439,6 +501,10 @@ func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCommandRequest) *r
 
 	c.Assert(newPeerIDs, HasLen, len(region.Peers))
 
+	if bytes.Equal(splitKey, region.GetEndKey()) {
+		return newErrorCmdResponse(errors.Errorf("region %v is already split for key %q", region, splitKey))
+	}
+
 	c.Assert(string(splitKey), Greater, string(region.GetStartKey()))
 	if len(region.GetEndKey()) > 0 {
 		c.Assert(string(splitKey), Less, string(region.GetEndKey()))
@@ -453,7 +519,6 @@ func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCommandRequest) *r
 
 	var newPeer metapb.Peer
 
-	maxPeerID := uint64(0)
 	for i, id := range newPeerIDs {
 		peer := *region.Peers[i]
 		peer.PeerId = proto.Uint64(id)
@@ -462,13 +527,9 @@ func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCommandRequest) *r
 			newPeer = peer
 		}
 
-		if id > maxPeerID {
-			maxPeerID = id
-		}
 		newRegion.Peers[i] = &peer
 	}
 
-	newRegion.MaxPeerId = proto.Uint64(maxPeerID)
 	region.EndKey = append([]byte(nil), splitKey...)
 
 	raftPeer.region = region
@@ -494,6 +555,7 @@ func (s *testClusterWorkerSuite) SetUpSuite(c *C) {
 	s.nodes = make(map[uint64]*mockRaftNode)
 
 	s.svr = newTestServer(c, s.getRootPath())
+	s.svr.cfg.nextRetryDelay = 50 * time.Millisecond
 
 	s.client = newEtcdClient(c)
 
@@ -601,8 +663,6 @@ func (s *testClusterWorkerSuite) TestChangePeer(c *C) {
 
 	c.Assert(region.Peers, HasLen, 1)
 
-	// Now we treat the first peer in region as leader.
-	leaderPeer := *region.Peers[0]
 	leaderPd := mustGetLeader(c, s.client, s.getRootPath())
 
 	conn, err := net.Dial("tcp", leaderPd.GetAddr())
@@ -611,14 +671,23 @@ func (s *testClusterWorkerSuite) TestChangePeer(c *C) {
 
 	// add another 4 peers.
 	for i := 0; i < 4; i++ {
+		leaderPeer := s.chooseRegionLeader(c, region)
+
 		askChangePeer := &pdpb.Request{
 			Header:  newRequestHeader(s.clusterID),
 			CmdType: pdpb.CommandType_AskChangePeer.Enum(),
 			AskChangePeer: &pdpb.AskChangePeerRequest{
-				Leader: &leaderPeer,
+				Leader: leaderPeer,
 				Region: region,
 			},
 		}
+
+		if rand.Intn(2) == 1 {
+			// randomly change leader
+			s.clearRegionLeader(c, region.GetRegionId())
+			s.chooseRegionLeader(c, region)
+		}
+
 		sendRequest(c, conn, 0, askChangePeer)
 		_, resp := recvResponse(c, conn)
 		c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_AskChangePeer)
@@ -644,11 +713,13 @@ func (s *testClusterWorkerSuite) TestChangePeer(c *C) {
 
 	// remove 2 peers
 	for i := 0; i < 2; i++ {
+		leaderPeer := s.chooseRegionLeader(c, region)
+
 		askChangePeer := &pdpb.Request{
 			Header:  newRequestHeader(s.clusterID),
 			CmdType: pdpb.CommandType_AskChangePeer.Enum(),
 			AskChangePeer: &pdpb.AskChangePeerRequest{
-				Leader: &leaderPeer,
+				Leader: leaderPeer,
 				Region: region,
 			},
 		}
@@ -689,57 +760,66 @@ func (s *testClusterWorkerSuite) TestSplit(c *C) {
 	cluster, err := s.svr.getCluster(s.clusterID)
 	c.Assert(err, IsNil)
 
-	regionKey := []byte("a")
-	region, err := cluster.GetRegion(regionKey)
-	c.Assert(err, IsNil)
-	c.Assert(region.GetStartKey(), BytesEquals, []byte(""))
-	c.Assert(region.GetEndKey(), BytesEquals, []byte(""))
-
-	// Now we treat the first peer in region as leader.
-	leaderPeer := *region.Peers[0]
 	leaderPd := mustGetLeader(c, s.client, s.getRootPath())
-
 	conn, err := net.Dial("tcp", leaderPd.GetAddr())
 	c.Assert(err, IsNil)
 	defer conn.Close()
 
-	askSplit := &pdpb.Request{
-		Header:  newRequestHeader(s.clusterID),
-		CmdType: pdpb.CommandType_AskSplit.Enum(),
-		AskSplit: &pdpb.AskSplitRequest{
-			Region:   region,
-			Leader:   &leaderPeer,
-			SplitKey: []byte("b"),
-		},
+	tbl := []struct {
+		searchKey string
+		startKey  string
+		endKey    string
+		splitKey  string
+	}{
+		{"a", "", "", "b"},
+		{"c", "b", "", "d"},
+		{"e", "d", "", "f"},
 	}
 
-	sendRequest(c, conn, 0, askSplit)
-	_, resp := recvResponse(c, conn)
-	c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_AskSplit)
+	for _, t := range tbl {
+		regionKey := []byte(t.searchKey)
+		region, err := cluster.GetRegion(regionKey)
+		c.Assert(err, IsNil)
+		c.Assert(region.GetStartKey(), BytesEquals, []byte(t.startKey))
+		c.Assert(region.GetEndKey(), BytesEquals, []byte(t.endKey))
 
-	time.Sleep(500 * time.Millisecond)
-	left, err := cluster.GetRegion([]byte("a"))
-	c.Assert(err, IsNil)
-	c.Assert(left.GetStartKey(), BytesEquals, []byte(""))
-	c.Assert(left.GetEndKey(), BytesEquals, []byte("b"))
-	c.Assert(left.GetRegionId(), Equals, region.GetRegionId())
+		// Now we treat the first peer in region as leader.
+		leaderPeer := s.chooseRegionLeader(c, region)
+		if rand.Intn(2) == 1 {
+			// randomly change leader
+			s.clearRegionLeader(c, region.GetRegionId())
+			s.chooseRegionLeader(c, region)
+		}
 
-	for _, peer := range left.Peers {
-		ok := s.regionPeerExisted(c, left.GetRegionId(), peer)
-		c.Assert(ok, IsTrue)
-	}
+		askSplit := &pdpb.Request{
+			Header:  newRequestHeader(s.clusterID),
+			CmdType: pdpb.CommandType_AskSplit.Enum(),
+			AskSplit: &pdpb.AskSplitRequest{
+				Region:   region,
+				Leader:   leaderPeer,
+				SplitKey: []byte(t.splitKey),
+			},
+		}
 
-	right, err := cluster.GetRegion([]byte("b"))
-	c.Assert(err, IsNil)
-	c.Assert(right.GetStartKey(), BytesEquals, []byte("b"))
-	c.Assert(right.GetEndKey(), BytesEquals, []byte(""))
+		sendRequest(c, conn, 0, askSplit)
+		_, resp := recvResponse(c, conn)
+		c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_AskSplit)
 
-	region, err = cluster.GetRegion([]byte("c"))
-	c.Assert(err, IsNil)
-	c.Assert(region.GetRegionId(), Equals, right.GetRegionId())
+		time.Sleep(500 * time.Millisecond)
+		left, err := cluster.GetRegion([]byte(t.searchKey))
+		c.Assert(err, IsNil)
+		c.Assert(left.GetStartKey(), BytesEquals, []byte(t.startKey))
+		c.Assert(left.GetEndKey(), BytesEquals, []byte(t.splitKey))
+		c.Assert(left.GetRegionId(), Equals, region.GetRegionId())
 
-	for _, peer := range right.Peers {
-		ok := s.regionPeerExisted(c, right.GetRegionId(), peer)
-		c.Assert(ok, IsTrue)
+		for _, peer := range left.Peers {
+			ok := s.regionPeerExisted(c, left.GetRegionId(), peer)
+			c.Assert(ok, IsTrue)
+		}
+
+		right, err := cluster.GetRegion([]byte(t.splitKey))
+		c.Assert(err, IsNil)
+		c.Assert(right.GetStartKey(), BytesEquals, []byte(t.splitKey))
+		c.Assert(right.GetEndKey(), BytesEquals, []byte(t.endKey))
 	}
 }

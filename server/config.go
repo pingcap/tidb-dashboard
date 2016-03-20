@@ -1,9 +1,12 @@
 package server
 
+import "time"
+
 const (
 	defaultRootPath        = "pd"
 	defaultLeaderLease     = 3
 	defaultTsoSaveInterval = 2000
+	defaultNextRetryDelay  = time.Second
 )
 
 // Config is the pd server configuration.
@@ -27,6 +30,9 @@ type Config struct {
 	// When the leader begins to run, it first loads the saved timestamp from etcd, e.g, T1,
 	// and the leader must guarantee that the next timestamp must be > T1 + 2 * TsoSaveInterval.
 	TsoSaveInterval int64
+
+	// Only test can change it.
+	nextRetryDelay time.Duration
 }
 
 func (c *Config) adjust() {
@@ -41,5 +47,9 @@ func (c *Config) adjust() {
 
 	if c.TsoSaveInterval <= 0 {
 		c.TsoSaveInterval = defaultTsoSaveInterval
+	}
+
+	if c.nextRetryDelay == 0 {
+		c.nextRetryDelay = defaultNextRetryDelay
 	}
 }

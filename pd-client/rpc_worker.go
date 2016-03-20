@@ -141,7 +141,7 @@ func (w *rpcWorker) handleRequests(requests []interface{}, conn *bufio.ReadWrite
 				r.done <- nil
 			}
 		default:
-			log.Error("[pd] invalid request %v", r)
+			log.Errorf("[pd] invalid request %v", r)
 		}
 	}
 	ts, err := w.getTSFromRemote(conn, len(tsoRequests))

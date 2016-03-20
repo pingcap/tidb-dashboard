@@ -16,6 +16,7 @@ import (
 	"github.com/pingcap/kvproto/pkg/raft_cmdpb"
 	"github.com/pingcap/kvproto/pkg/raft_serverpb"
 	"github.com/pingcap/kvproto/pkg/raftpb"
+	"github.com/pingcap/pd/util"
 )
 
 var _ = Suite(&testClusterWorkerSuite{})
@@ -250,7 +251,7 @@ func (n *mockRaftNode) runCmd(c *C) {
 		}
 
 		msg := &raft_serverpb.Message{}
-		msgID, err := readMessage(conn, msg)
+		msgID, err := util.ReadMessage(conn, msg)
 		c.Assert(err, IsNil)
 
 		req := msg.GetCmdReq()
@@ -272,7 +273,7 @@ func (n *mockRaftNode) runCmd(c *C) {
 			// cluster work retry
 			conn.Close()
 		} else {
-			err = writeMessage(conn, msgID, respMsg)
+			err = util.WriteMessage(conn, msgID, respMsg)
 			c.Assert(err, IsNil)
 		}
 	}

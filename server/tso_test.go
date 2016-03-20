@@ -10,6 +10,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	. "github.com/pingcap/check"
 	"github.com/pingcap/kvproto/pkg/pdpb"
+	"github.com/pingcap/pd/util"
 )
 
 var _ = Suite(&testTsoSuite{})
@@ -39,13 +40,13 @@ func (s *testTsoSuite) TearDownSuite(c *C) {
 }
 
 func sendRequest(c *C, conn net.Conn, msgID uint64, request *pdpb.Request) {
-	err := writeMessage(conn, msgID, request)
+	err := util.WriteMessage(conn, msgID, request)
 	c.Assert(err, IsNil)
 }
 
 func recvResponse(c *C, conn net.Conn) (uint64, *pdpb.Response) {
 	resp := &pdpb.Response{}
-	msgID, err := readMessage(conn, resp)
+	msgID, err := util.ReadMessage(conn, resp)
 	c.Assert(err, IsNil)
 	return msgID, resp
 }

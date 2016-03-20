@@ -19,6 +19,7 @@ const (
 //  | 0xdaf4(2 bytes magic value) | 0x01(version 2 bytes) | msg_len(4 bytes) | msg_id(8 bytes) |,
 // all use bigendian.
 
+// WriteMessage writes a protocol buffer message to writer.
 func WriteMessage(w io.Writer, msgID uint64, msg proto.Message) error {
 	body, err := proto.Marshal(msg)
 	if err != nil {
@@ -39,6 +40,7 @@ func WriteMessage(w io.Writer, msgID uint64, msg proto.Message) error {
 	return errors.Trace(err)
 }
 
+// ReadMessage reads a protocol buffer message from reader.
 func ReadMessage(r io.Reader, msg proto.Message) (uint64, error) {
 	var header [msgHeaderSize]byte
 	_, err := io.ReadFull(r, header[:])

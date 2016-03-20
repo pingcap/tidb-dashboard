@@ -1,4 +1,4 @@
-package server
+package util
 
 import (
 	"encoding/binary"
@@ -19,7 +19,7 @@ const (
 //  | 0xdaf4(2 bytes magic value) | 0x01(version 2 bytes) | msg_len(4 bytes) | msg_id(8 bytes) |,
 // all use bigendian.
 
-func writeMessage(w io.Writer, msgID uint64, msg proto.Message) error {
+func WriteMessage(w io.Writer, msgID uint64, msg proto.Message) error {
 	body, err := proto.Marshal(msg)
 	if err != nil {
 		return errors.Trace(err)
@@ -39,7 +39,7 @@ func writeMessage(w io.Writer, msgID uint64, msg proto.Message) error {
 	return errors.Trace(err)
 }
 
-func readMessage(r io.Reader, msg proto.Message) (uint64, error) {
+func ReadMessage(r io.Reader, msg proto.Message) (uint64, error) {
 	var header [msgHeaderSize]byte
 	_, err := io.ReadFull(r, header[:])
 	if err != nil {

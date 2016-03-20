@@ -7,6 +7,7 @@ import (
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/pdpb"
+	"github.com/pingcap/pd/util"
 )
 
 const (
@@ -49,7 +50,7 @@ func (c *conn) run() {
 
 	for {
 		request := &pdpb.Request{}
-		msgID, err := readMessage(c.rb, request)
+		msgID, err := util.ReadMessage(c.rb, request)
 		if err != nil {
 			log.Errorf("read request message err %v", err)
 			return
@@ -70,7 +71,7 @@ func (c *conn) run() {
 
 		updateResponse(request, response)
 
-		if err = writeMessage(c.wb, msgID, response); err != nil {
+		if err = util.WriteMessage(c.wb, msgID, response); err != nil {
 			log.Errorf("write response message err %v", err)
 			return
 		}

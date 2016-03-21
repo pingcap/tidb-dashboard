@@ -10,6 +10,11 @@ import (
 	"github.com/pingcap/kvproto/pkg/pdpb"
 )
 
+const (
+	initEpochVersion uint64 = 1
+	initEpochConfVer uint64 = 1
+)
+
 var _ = Suite(&testClusterSuite{})
 
 type testClusterBaseSuite struct {
@@ -90,9 +95,17 @@ func (s *testClusterBaseSuite) newPeer(c *C, nodeID uint64, storeID uint64, peer
 	}
 }
 
-func (s *testClusterBaseSuite) newRegion(c *C, regionID uint64, startKey []byte, endKey []byte, peers []*metapb.Peer) *metapb.Region {
+func (s *testClusterBaseSuite) newRegion(c *C, regionID uint64, startKey []byte,
+	endKey []byte, peers []*metapb.Peer, epoch *metapb.RegionEpoch) *metapb.Region {
 	if regionID == 0 {
 		regionID = s.allocID(c)
+	}
+
+	if epoch == nil {
+		epoch = &metapb.RegionEpoch{
+			ConfVer: proto.Uint64(initEpochConfVer),
+			Version: proto.Uint64(initEpochVersion),
+		}
 	}
 
 	for _, peer := range peers {
@@ -101,10 +114,11 @@ func (s *testClusterBaseSuite) newRegion(c *C, regionID uint64, startKey []byte,
 	}
 
 	return &metapb.Region{
-		RegionId: proto.Uint64(regionID),
-		StartKey: startKey,
-		EndKey:   endKey,
-		Peers:    peers,
+		RegionId:    proto.Uint64(regionID),
+		StartKey:    startKey,
+		EndKey:      endKey,
+		Peers:       peers,
+		RegionEpoch: epoch,
 	}
 }
 
@@ -133,7 +147,7 @@ func (s *testClusterSuite) TestBootstrap(c *C) {
 	node := s.newNode(c, 0, "127.0.0.1:20163")
 	store := s.newStore(c, node.GetNodeId(), 0)
 	peer := s.newPeer(c, node.GetNodeId(), store.GetStoreId(), 0)
-	region := s.newRegion(c, 0, []byte{}, []byte{}, []*metapb.Peer{peer})
+	region := s.newRegion(c, 0, []byte{}, []byte{}, []*metapb.Peer{peer}, nil)
 	req = &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
 		CmdType: pdpb.CommandType_Bootstrap.Enum(),
@@ -180,7 +194,7 @@ func (s *testClusterBaseSuite) newBootstrapRequest(c *C, clusterID uint64, nodeA
 	node := s.newNode(c, 0, nodeAddr)
 	store := s.newStore(c, node.GetNodeId(), 0)
 	peer := s.newPeer(c, node.GetNodeId(), store.GetStoreId(), 0)
-	region := s.newRegion(c, 0, []byte{}, []byte{}, []*metapb.Peer{peer})
+	region := s.newRegion(c, 0, []byte{}, []byte{}, []*metapb.Peer{peer}, nil)
 
 	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),

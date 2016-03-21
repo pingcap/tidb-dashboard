@@ -451,6 +451,11 @@ func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCommandReques
 	region := raftPeer.region
 	c.Assert(region.GetRegionId(), Equals, req.Header.GetRegionId())
 
+	if region.RegionEpoch.GetConfVer() > changePeer.RegionEpoch.GetConfVer() {
+		return newErrorCmdResponse(errors.Errorf("stale message with epoch %v < %v",
+			region.RegionEpoch, changePeer.RegionEpoch))
+	}
+
 	if confType == raftpb.ConfChangeType_AddNode {
 		for _, p := range region.Peers {
 			if p.GetPeerId() == peer.GetPeerId() || p.GetStoreId() == peer.GetStoreId() {
@@ -481,6 +486,8 @@ func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCommandReques
 		}
 	}
 
+	region.RegionEpoch.ConfVer = proto.Uint64(region.RegionEpoch.GetConfVer() + 1)
+
 	resp := &raft_cmdpb.RaftCommandResponse{
 		AdminResponse: &raft_cmdpb.AdminResponse{
 			ChangePeer: &raft_cmdpb.ChangePeerResponse{
@@ -502,6 +509,12 @@ func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCommandRequest) *r
 
 	c.Assert(newPeerIDs, HasLen, len(region.Peers))
 
+	version := region.RegionEpoch.GetVersion()
+	if version > split.RegionEpoch.GetVersion() {
+		return newErrorCmdResponse(errors.Errorf("stale message with epoch %v < %v",
+			region.RegionEpoch, split.RegionEpoch))
+	}
+
 	if bytes.Equal(splitKey, region.GetEndKey()) {
 		return newErrorCmdResponse(errors.Errorf("region %v is already split for key %q", region, splitKey))
 	}
@@ -511,11 +524,16 @@ func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCommandRequest) *r
 		c.Assert(string(splitKey), Less, string(region.GetEndKey()))
 	}
 
+	region.RegionEpoch.Version = proto.Uint64(version + 1)
 	newRegion := &metapb.Region{
 		RegionId: proto.Uint64(newRegionID),
 		Peers:    make([]*metapb.Peer, len(newPeerIDs)),
 		StartKey: splitKey,
 		EndKey:   append([]byte(nil), region.GetEndKey()...),
+		RegionEpoch: &metapb.RegionEpoch{
+			Version: proto.Uint64(version + 1),
+			ConfVer: proto.Uint64(region.RegionEpoch.GetConfVer()),
+		},
 	}
 
 	var newPeer metapb.Peer

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes"
 	"math"
 	"math/rand"
 	"net"
@@ -367,9 +366,9 @@ func (c *raftCluster) HandleAskChangePeer(request *pdpb.AskChangePeerRequest) er
 	changePeer := &raft_cmdpb.AdminRequest{
 		CmdType: raft_cmdpb.AdminCommandType_ChangePeer.Enum(),
 		ChangePeer: &raft_cmdpb.ChangePeerRequest{
-			ChangeType: changeType.Enum(),
-			Peer:       peer,
-			Region:     region,
+			ChangeType:  changeType.Enum(),
+			Peer:        peer,
+			RegionEpoch: region.RegionEpoch,
 		},
 	}
 
@@ -422,19 +421,9 @@ func (c *raftCluster) checkChangePeerOK(request *raft_cmdpb.RaftCommandRequest) 
 	}
 
 	changePeer := request.AdminRequest.ChangePeer
-	found := false
-	for _, peer := range detail.Region.Peers {
-		if peer.GetPeerId() == changePeer.Peer.GetPeerId() {
-			found = true
-			break
-		}
-	}
-
-	changeType := changePeer.GetChangeType()
-	// For add peer, if change peer is already in raft server region, we can think the command has
-	// been already applied, for remove peer, the peer is not in region now.
-	if (changeType == raftpb.ConfChangeType_AddNode && found) ||
-		(changeType == raftpb.ConfChangeType_RemoveNode && !found) {
+	// If leader's conf version changed, we can think ChangePeerOK,
+	// else we can think the raft server doesn't execute this change peer command.
+	if detail.Region.RegionEpoch.GetConfVer() > changePeer.RegionEpoch.GetConfVer() {
 		return &raft_cmdpb.AdminResponse{
 			CmdType: raft_cmdpb.AdminCommandType_ChangePeer.Enum(),
 			ChangePeer: &raft_cmdpb.ChangePeerResponse{
@@ -443,7 +432,6 @@ func (c *raftCluster) checkChangePeerOK(request *raft_cmdpb.RaftCommandRequest) 
 		}, nil
 	}
 
-	// Here means the raft server doesn't execute this change peer command.
 	return nil, nil
 }
 
@@ -466,7 +454,7 @@ func (c *raftCluster) HandleAskSplit(request *pdpb.AskSplitRequest) error {
 			NewRegionId: proto.Uint64(newRegionID),
 			NewPeerIds:  peerIDs,
 			SplitKey:    request.SplitKey,
-			Region:      request.Region,
+			RegionEpoch: request.Region.RegionEpoch,
 		},
 	}
 
@@ -538,8 +526,7 @@ func (c *raftCluster) handleSplitOK(split *raft_cmdpb.SplitResponse) error {
 func (c *raftCluster) checkSplitOK(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error) {
 	// TODO: check region version later.
 	split := request.AdminRequest.Split
-	region := split.Region
-	leftRegionID := region.GetRegionId()
+	leftRegionID := request.Header.GetRegionId()
 	rightRegionID := split.GetNewRegionId()
 	leader := request.Header.Peer
 	leftDetail, err := c.getRegionDetail(leftRegionID, leader)
@@ -547,8 +534,9 @@ func (c *raftCluster) checkSplitOK(request *raft_cmdpb.RaftCommandRequest) (*raf
 		return nil, errors.Trace(err)
 	}
 
-	if !bytes.Equal(leftDetail.Region.GetEndKey(), split.SplitKey) {
-		// The region is not split
+	// If leader's version changed, we can think SplitOK,
+	// else we can think the raft server doesn't execute this split command.
+	if leftDetail.Region.RegionEpoch.GetVersion() <= split.RegionEpoch.GetVersion() {
 		return nil, nil
 	}
 

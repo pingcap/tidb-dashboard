@@ -9,7 +9,6 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/lease"
 	storagepb "github.com/coreos/etcd/storage/storagepb"
 	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
@@ -67,7 +66,7 @@ func (s *Server) leaderLoop() {
 			log.Errorf("get leader err %v", err)
 			continue
 		} else if leader != nil {
-			log.Debugf("leader is %#v, watch it", leader)
+			log.Debugf("leader is %s, watch it", leader)
 
 			s.watchLeader()
 
@@ -104,7 +103,7 @@ func (s *Server) marshalLeader() string {
 	data, err := proto.Marshal(leader)
 	if err != nil {
 		// can't fail, so panic here.
-		log.Fatalf("marshal leader %v err %v", leader, err)
+		log.Fatalf("marshal leader %s err %v", leader, err)
 	}
 
 	return string(data)
@@ -128,7 +127,7 @@ func (s *Server) campaignLeader() error {
 	ctx, cancel = context.WithTimeout(context.Background(), requestTimeout)
 	resp, err := s.client.Txn(ctx).
 		If(clientv3.Compare(clientv3.CreatedRevision(leaderKey), "=", 0)).
-		Then(clientv3.OpPut(leaderKey, s.leaderValue, clientv3.WithLease(lease.LeaseID(leaseResp.ID)))).
+		Then(clientv3.OpPut(leaderKey, s.leaderValue, clientv3.WithLease(clientv3.LeaseID(leaseResp.ID)))).
 		Commit()
 	cancel()
 	if err != nil {
@@ -142,7 +141,7 @@ func (s *Server) campaignLeader() error {
 	defer s.enableLeader(false)
 
 	// keeps the leader
-	ch, err := lessor.KeepAlive(s.client.Ctx(), lease.LeaseID(leaseResp.ID))
+	ch, err := lessor.KeepAlive(s.client.Ctx(), clientv3.LeaseID(leaseResp.ID))
 	if err != nil {
 		return errors.Trace(err)
 	}

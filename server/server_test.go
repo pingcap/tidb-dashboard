@@ -17,7 +17,7 @@ func TestServer(t *testing.T) {
 }
 
 var (
-	testEtcd = flag.String("etcd", "127.0.0.1:2378", "Etcd gPRC endpoints, separated by comma")
+	testEtcd = flag.String("etcd", "127.0.0.1:2379", "Etcd endpoints, separated by comma")
 )
 
 func newTestServer(c *C, rootPath string) *Server {
@@ -100,21 +100,19 @@ func (s *testLeaderServerSuite) TestLeader(c *C) {
 		c.Assert(err, IsNil)
 
 		if leader == nil {
-			time.Sleep(time.Second)
+			time.Sleep(500 * time.Millisecond)
 			continue
 		}
 
 		// The leader key is not expired, retry again.
 		svr, ok := s.svrs[leader.GetAddr()]
 		if !ok {
-			time.Sleep(time.Second)
+			time.Sleep(500 * time.Millisecond)
 			continue
 		}
 
 		delete(s.svrs, leader.GetAddr())
 		svr.Close()
-
-		time.Sleep(time.Second)
 	}
 
 	c.Assert(s.svrs, HasLen, 0)

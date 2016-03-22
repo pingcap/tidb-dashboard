@@ -16,7 +16,7 @@ func TestClient(t *testing.T) {
 }
 
 var (
-	testEtcd = flag.String("etcd", "127.0.0.1:2378", "Etcd gPRC endpoints, separated by comma")
+	testEtcd = flag.String("etcd", "127.0.0.1:2379", "Etcd endpoints, separated by comma")
 )
 
 var _ = Suite(&testClientSuite{})

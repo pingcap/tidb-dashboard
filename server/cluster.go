@@ -325,10 +325,12 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	ops = append(ops, clientv3.OpPut(regionSearchPath, string(regionValue)))
 
 	bootstrapCmp := clientv3.Compare(clientv3.CreatedRevision(clusterRootPath), "=", 0)
-	resp, err := s.client.Txn(context.TODO()).
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := s.client.Txn(ctx).
 		If(s.leaderCmp(), bootstrapCmp).
 		Then(ops...).
 		Commit()
+	cancel()
 	if err != nil {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {
@@ -546,10 +548,12 @@ func (c *raftCluster) PutNode(node *metapb.Node) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	resp, err := c.s.client.Txn(context.TODO()).
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := c.s.client.Txn(ctx).
 		If(c.s.leaderCmp()).
 		Then(clientv3.OpPut(nodePath, string(nodeValue))).
 		Commit()
+	cancel()
 	if err != nil {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {
@@ -581,10 +585,12 @@ func (c *raftCluster) PutStore(store *metapb.Store) error {
 	defer mu.Unlock()
 
 	nodeCreatedCmp := clientv3.Compare(clientv3.CreatedRevision(nodePath), ">", 0)
-	resp, err := c.s.client.Txn(context.TODO()).
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := c.s.client.Txn(ctx).
 		If(c.s.leaderCmp(), nodeCreatedCmp).
 		Then(clientv3.OpPut(storePath, string(storeValue))).
 		Commit()
+	cancel()
 	if err != nil {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {
@@ -619,10 +625,12 @@ func (c *raftCluster) PutMeta(meta *metapb.Cluster) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	resp, err := c.s.client.Txn(context.TODO()).
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := c.s.client.Txn(ctx).
 		If(c.s.leaderCmp()).
 		Then(clientv3.OpPut(c.clusterRoot, string(metaValue))).
 		Commit()
+	cancel()
 	if err != nil {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {

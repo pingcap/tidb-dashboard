@@ -116,17 +116,21 @@ func (s *Server) campaignLeader() error {
 	lessor := clientv3.NewLease(s.client)
 	defer lessor.Close()
 
-	leaseResp, err := lessor.Create(context.TODO(), s.cfg.LeaderLease)
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	leaseResp, err := lessor.Create(ctx, s.cfg.LeaderLease)
 	if err != nil {
 		return errors.Trace(err)
 	}
+	cancel()
 
 	leaderKey := s.getLeaderPath()
 	// The leader key must not exist, so the CreatedRevision is 0.
-	resp, err := s.client.Txn(context.TODO()).
+	ctx, cancel = context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := s.client.Txn(ctx).
 		If(clientv3.Compare(clientv3.CreatedRevision(leaderKey), "=", 0)).
 		Then(clientv3.OpPut(leaderKey, s.leaderValue, clientv3.WithLease(lease.LeaseID(leaseResp.ID)))).
 		Commit()
+	cancel()
 	if err != nil {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {

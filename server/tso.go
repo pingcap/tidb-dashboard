@@ -49,10 +49,12 @@ func (s *Server) saveTimestamp(now time.Time) error {
 	data := uint64ToBytes(uint64(now.UnixNano()))
 	key := getTimestampPath(s.cfg.RootPath)
 
-	resp, err := s.client.Txn(context.TODO()).
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := s.client.Txn(ctx).
 		If(s.leaderCmp()).
 		Then(clientv3.OpPut(key, string(data))).
 		Commit()
+	cancel()
 	if err != nil {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {

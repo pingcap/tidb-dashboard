@@ -412,7 +412,6 @@ func (c *raftCluster) handleChangePeerOK(changePeer *raft_cmdpb.ChangePeerRespon
 }
 
 func (c *raftCluster) checkChangePeerOK(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error) {
-	// TODO: check region conf change version later.
 	regionID := request.Header.GetRegionId()
 	leader := request.Header.Peer
 	detail, err := c.getRegionDetail(regionID, leader)
@@ -524,7 +523,6 @@ func (c *raftCluster) handleSplitOK(split *raft_cmdpb.SplitResponse) error {
 }
 
 func (c *raftCluster) checkSplitOK(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error) {
-	// TODO: check region version later.
 	split := request.AdminRequest.Split
 	leftRegionID := request.Header.GetRegionId()
 	rightRegionID := split.GetNewRegionId()

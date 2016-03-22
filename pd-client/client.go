@@ -57,8 +57,9 @@ func NewClient(etcdAddrs []string, leaderPath string, clusterID uint64) (*Client
 // Close stops the client.
 func (c *Client) Close() {
 	close(c.quit)
-	c.worker.stop(errors.New("[pd] pd-client closing"))
+	// Must wait watchLeader done.
 	c.wg.Wait()
+	c.worker.stop(errors.New("[pd] pd-client closing"))
 }
 
 // GetTS get a timestamp from PD.

@@ -118,10 +118,10 @@ func (s *Server) campaignLeader() error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	leaseResp, err := lessor.Create(ctx, s.cfg.LeaderLease)
+	cancel()
 	if err != nil {
 		return errors.Trace(err)
 	}
-	cancel()
 
 	leaderKey := s.getLeaderPath()
 	// The leader key must not exist, so the CreatedRevision is 0.

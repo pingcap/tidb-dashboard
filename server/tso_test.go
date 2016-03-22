@@ -87,7 +87,7 @@ func mustGetLeader(c *C, client *clientv3.Client, rootPath string) *pdpb.Leader 
 		if leader != nil {
 			return leader
 		}
-		time.Sleep(time.Second)
+		time.Sleep(500 * time.Millisecond)
 	}
 
 	c.Fatal("get leader error")

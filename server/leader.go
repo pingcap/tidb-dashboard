@@ -67,7 +67,7 @@ func (s *Server) leaderLoop() {
 			log.Errorf("get leader err %v", err)
 			continue
 		} else if leader != nil {
-			log.Debugf("leader is %#v, watch it", leader)
+			log.Debugf("leader is %s, watch it", leader.String())
 
 			s.watchLeader()
 

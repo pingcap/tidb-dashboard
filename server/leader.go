@@ -9,7 +9,6 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/lease"
 	storagepb "github.com/coreos/etcd/storage/storagepb"
 	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
@@ -125,7 +124,7 @@ func (s *Server) campaignLeader() error {
 	// The leader key must not exist, so the CreatedRevision is 0.
 	resp, err := s.client.Txn(context.TODO()).
 		If(clientv3.Compare(clientv3.CreatedRevision(leaderKey), "=", 0)).
-		Then(clientv3.OpPut(leaderKey, s.leaderValue, clientv3.WithLease(lease.LeaseID(leaseResp.ID)))).
+		Then(clientv3.OpPut(leaderKey, s.leaderValue, clientv3.WithLease(clientv3.LeaseID(leaseResp.ID)))).
 		Commit()
 	if err != nil {
 		return errors.Trace(err)
@@ -138,7 +137,7 @@ func (s *Server) campaignLeader() error {
 	defer s.enableLeader(false)
 
 	// keeps the leader
-	ch, err := lessor.KeepAlive(s.client.Ctx(), lease.LeaseID(leaseResp.ID))
+	ch, err := lessor.KeepAlive(s.client.Ctx(), clientv3.LeaseID(leaseResp.ID))
 	if err != nil {
 		return errors.Trace(err)
 	}

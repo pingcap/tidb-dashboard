@@ -11,7 +11,6 @@ import (
 	"github.com/juju/errors"
 	"github.com/ngaut/deadline"
 	"github.com/ngaut/log"
-	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/pd/util"
 	"github.com/twinj/uuid"
@@ -35,10 +34,10 @@ type tsoRequest struct {
 	logical  int64
 }
 
-type regionRequest struct {
-	key    []byte
+type metaRequest struct {
+	pbReq  *pdpb.GetMetaRequest
 	done   chan error
-	region *metapb.Region
+	pbResp *pdpb.GetMetaResponse
 }
 
 type rpcWorker struct {
@@ -71,7 +70,7 @@ func (w *rpcWorker) stop(err error) {
 		switch r := req.(type) {
 		case *tsoRequest:
 			r.done <- err
-		case *regionRequest:
+		case *metaRequest:
 			r.done <- err
 		}
 	}
@@ -130,14 +129,14 @@ func (w *rpcWorker) handleRequests(requests []interface{}, conn *bufio.ReadWrite
 		switch r := req.(type) {
 		case *tsoRequest:
 			tsoRequests = append(tsoRequests, r)
-		case *regionRequest:
-			region, err := w.getRegionFromRemote(conn, r.key)
+		case *metaRequest:
+			metaResp, err := w.getMetaFromRemote(conn, r.pbReq)
 			if err != nil {
 				ok = false
 				log.Error(err)
 				r.done <- err
 			} else {
-				r.region = region
+				r.pbResp = metaResp
 				r.done <- nil
 			}
 		default:
@@ -186,6 +185,9 @@ func (w *rpcWorker) getTSFromRemote(conn *bufio.ReadWriter, n int) ([]*pdpb.Time
 	if _, err := util.ReadMessage(conn, &rsp); err != nil {
 		return nil, errors.Errorf("[pd] rpc failed: %v", err)
 	}
+	if err := w.checkResponse(&rsp); err != nil {
+		return nil, errors.Trace(err)
+	}
 	if rsp.GetTso() == nil {
 		return nil, errors.New("[pd] tso filed in rpc response not set")
 	}
@@ -196,17 +198,14 @@ func (w *rpcWorker) getTSFromRemote(conn *bufio.ReadWriter, n int) ([]*pdpb.Time
 	return timestamps, nil
 }
 
-func (w *rpcWorker) getRegionFromRemote(conn *bufio.ReadWriter, key []byte) (*metapb.Region, error) {
+func (w *rpcWorker) getMetaFromRemote(conn *bufio.ReadWriter, metaReq *pdpb.GetMetaRequest) (*pdpb.GetMetaResponse, error) {
 	req := pdpb.Request{
 		Header: &pdpb.RequestHeader{
 			Uuid:      uuid.NewV4().Bytes(),
 			ClusterId: proto.Uint64(w.clusterID),
 		},
 		CmdType: pdpb.CommandType_GetMeta.Enum(),
-		GetMeta: &pdpb.GetMetaRequest{
-			MetaType:  pdpb.MetaType_RegionType.Enum(),
-			RegionKey: key,
-		},
+		GetMeta: metaReq,
 	}
 	if err := util.WriteMessage(conn, newMsgID(), &req); err != nil {
 		return nil, errors.Errorf("[pd] rpc failed: %v", err)
@@ -216,12 +215,22 @@ func (w *rpcWorker) getRegionFromRemote(conn *bufio.ReadWriter, key []byte) (*me
 	if _, err := util.ReadMessage(conn, &rsp); err != nil {
 		return nil, errors.Errorf("[pd] rpc failed: %v", err)
 	}
+	if err := w.checkResponse(&rsp); err != nil {
+		return nil, errors.Trace(err)
+	}
 	if rsp.GetGetMeta() == nil {
 		return nil, errors.New("[pd] GetMeta filed in rpc response not set")
 	}
-	region := rsp.GetGetMeta().GetRegion()
-	if region == nil {
-		return nil, errors.New("[pd] Region filed in rpc response not set")
+	return rsp.GetGetMeta(), nil
+}
+
+func (w *rpcWorker) checkResponse(resp *pdpb.Response) error {
+	header := resp.GetHeader()
+	if header == nil {
+		return errors.New("[pd] rpc response header not set")
 	}
-	return region, nil
+	if err := header.GetError(); err != nil {
+		return errors.Errorf("[pd] rpc response with error: %v", err)
+	}
+	return nil
 }

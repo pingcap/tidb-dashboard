@@ -70,7 +70,7 @@ func (c *Client) Close() {
 	c.worker.stop(errors.New("[pd] pd-client closing"))
 }
 
-// GetTS get a timestamp from PD.
+// GetTS gets a timestamp from PD.
 func (c *Client) GetTS() (int64, int64, error) {
 	req := &tsoRequest{
 		done: make(chan error),
@@ -82,19 +82,54 @@ func (c *Client) GetTS() (int64, int64, error) {
 	return req.physical, req.logical, err
 }
 
-// GetRegion get a region from PD by key.
+// GetRegion gets a region from PD by key.
 // The region may expire after split. Caller is responsible for caching and
-// take care of region change.
+// taking care of region change.
 func (c *Client) GetRegion(key []byte) (*metapb.Region, error) {
-	req := &regionRequest{
-		key:  key,
+	req := &metaRequest{
+		pbReq: &pdpb.GetMetaRequest{
+			MetaType:  pdpb.MetaType_RegionType.Enum(),
+			RegionKey: key,
+		},
 		done: make(chan error),
 	}
 	c.workerMutex.RLock()
 	c.worker.requests <- req
 	c.workerMutex.RUnlock()
 	err := <-req.done
-	return req.region, err
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	region := req.pbResp.GetRegion()
+	if region == nil {
+		return nil, errors.New("[pd] region field in rpc response not set")
+	}
+	return region, nil
+}
+
+// GetNode gets a node from PD by node id.
+// The node may expire later. Caller is responsible for caching and taking care
+// of node change.
+func (c *Client) GetNode(nodeID uint64) (*metapb.Node, error) {
+	req := &metaRequest{
+		pbReq: &pdpb.GetMetaRequest{
+			MetaType: pdpb.MetaType_NodeType.Enum(),
+			NodeId:   proto.Uint64(nodeID),
+		},
+		done: make(chan error),
+	}
+	c.workerMutex.RLock()
+	c.worker.requests <- req
+	c.workerMutex.RUnlock()
+	err := <-req.done
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	node := req.pbResp.GetNode()
+	if node == nil {
+		return nil, errors.New("[pd] node field in rpc response not set")
+	}
+	return node, nil
 }
 
 func (c *Client) watchLeader(leaderPath string, revision int64) {
@@ -116,7 +151,7 @@ WATCH:
 			}
 			log.Infof("[pd] found new pd-server leader addr: %v", leaderAddr)
 			c.workerMutex.Lock()
-			c.worker.stop(errors.Errorf("[pd] leader change"))
+			c.worker.stop(errors.New("[pd] leader change"))
 			c.worker = newRPCWorker(leaderAddr, c.clusterID)
 			c.workerMutex.Unlock()
 			revision = rev

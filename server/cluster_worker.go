@@ -100,10 +100,12 @@ func (c *raftCluster) postJob(job *pd_jobpd.Job) error {
 
 	jobPath := makeJobKey(c.clusterRoot, jobID)
 
-	resp, err := c.s.client.Txn(context.TODO()).
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := c.s.client.Txn(ctx).
 		If(c.s.leaderCmp()).
 		Then(clientv3.OpPut(jobPath, string(jobValue))).
 		Commit()
+	cancel()
 	if err != nil {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {
@@ -135,10 +137,12 @@ func (c *raftCluster) getJob() (*pd_jobpd.Job, error) {
 
 func (c *raftCluster) popJob(job *pd_jobpd.Job) error {
 	jobKey := makeJobKey(c.clusterRoot, job.GetJobId())
-	resp, err := c.s.client.Txn(context.TODO()).
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := c.s.client.Txn(ctx).
 		If(c.s.leaderCmp()).
 		Then(clientv3.OpDelete(jobKey)).
 		Commit()
+	cancel()
 	if err != nil {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {
@@ -155,10 +159,12 @@ func (c *raftCluster) updateJobStatus(job *pd_jobpd.Job, status pd_jobpd.JobStat
 		return errors.Trace(err)
 	}
 
-	resp, err := c.s.client.Txn(context.TODO()).
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := c.s.client.Txn(ctx).
 		If(c.s.leaderCmp()).
 		Then(clientv3.OpPut(jobKey, string(jobValue))).
 		Commit()
+	cancel()
 	if err != nil {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {
@@ -398,10 +404,12 @@ func (c *raftCluster) handleChangePeerOK(changePeer *raft_cmdpb.ChangePeerRespon
 		return errors.Trace(err)
 	}
 
-	resp, err := c.s.client.Txn(context.TODO()).
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := c.s.client.Txn(ctx).
 		If(c.s.leaderCmp()).
 		Then(clientv3.OpPut(regionSearchPath, string(regionValue))).
 		Commit()
+	cancel()
 	if err != nil {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {
@@ -509,10 +517,12 @@ func (c *raftCluster) handleSplitOK(split *raft_cmdpb.SplitResponse) error {
 	cmps = append(cmps, clientv3.Compare(clientv3.CreatedRevision(rightSearchPath), ">", 0))
 	cmps = append(cmps, clientv3.Compare(clientv3.CreatedRevision(rightPath), "=", 0))
 
-	resp, err := c.s.client.Txn(context.TODO()).
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := c.s.client.Txn(ctx).
 		If(cmps...).
 		Then(ops...).
 		Commit()
+	cancel()
 	if err != nil {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {

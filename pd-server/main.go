@@ -14,7 +14,7 @@ import (
 
 var (
 	addr        = flag.String("addr", "127.0.0.1:1234", "server listening address")
-	etcdAddrs   = flag.String("etcd", "127.0.0.1:2378", "Etcd gPRC endpoints, separated by comma")
+	etcdAddrs   = flag.String("etcd", "127.0.0.1:2379", "Etcd endpoints, separated by comma")
 	rootPath    = flag.String("root", "/pd", "pd root path in etcd")
 	leaderLease = flag.Int64("lease", 3, "Leader lease time (second)")
 	logLevel    = flag.String("L", "debug", "log level: info, debug, warn, error, fatal")

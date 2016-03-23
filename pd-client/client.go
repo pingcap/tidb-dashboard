@@ -1,6 +1,7 @@
 package pd
 
 import (
+	"path"
 	"sync"
 	"time"
 
@@ -26,8 +27,12 @@ type Client struct {
 	quit        chan struct{}
 }
 
+func getLeaderPath(rootPath string) string {
+	return path.Join(rootPath, "leader")
+}
+
 // NewClient creates a PD client.
-func NewClient(etcdAddrs []string, leaderPath string, clusterID uint64) (*Client, error) {
+func NewClient(etcdAddrs []string, rootPath string, clusterID uint64) (*Client, error) {
 	log.Infof("[pd] create etcd client with endpoints %v", etcdAddrs)
 	etcdClient, err := clientv3.New(clientv3.Config{
 		Endpoints:   etcdAddrs,
@@ -36,6 +41,7 @@ func NewClient(etcdAddrs []string, leaderPath string, clusterID uint64) (*Client
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
+	leaderPath := getLeaderPath(rootPath)
 	leaderAddr, revision, err := getLeader(etcdClient, leaderPath)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -56,6 +62,8 @@ func NewClient(etcdAddrs []string, leaderPath string, clusterID uint64) (*Client
 
 // Close stops the client.
 func (c *Client) Close() {
+	c.etcdClient.Close()
+
 	close(c.quit)
 	// Must wait watchLeader done.
 	c.wg.Wait()

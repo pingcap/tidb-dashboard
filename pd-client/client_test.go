@@ -3,12 +3,18 @@ package pd
 import (
 	"flag"
 	"fmt"
+	"net"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/golang/protobuf/proto"
 	. "github.com/pingcap/check"
+	"github.com/pingcap/kvproto/pkg/metapb"
+	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/pd/server"
+	"github.com/pingcap/pd/util"
+	"github.com/twinj/uuid"
 )
 
 func TestClient(t *testing.T) {
@@ -21,14 +27,62 @@ var (
 
 var _ = Suite(&testClientSuite{})
 
+var (
+	// Note: IDs below are entirely arbitrary. They are only for checking
+	// whether GetRegion/GetNode works.
+	// If we alloc ID in client in the future, these IDs must be updated.
+	clusterID = uint64(time.Now().Unix())
+	node      = &metapb.Node{
+		NodeId:  proto.Uint64(1),
+		Address: proto.String("localhost"),
+	}
+	store = &metapb.Store{
+		StoreId: proto.Uint64(2),
+		NodeId:  proto.Uint64(node.GetNodeId()),
+	}
+	peer = &metapb.Peer{
+		PeerId:  proto.Uint64(3),
+		NodeId:  proto.Uint64(node.GetNodeId()),
+		StoreId: proto.Uint64(store.GetStoreId()),
+	}
+	region = &metapb.Region{
+		RegionId: proto.Uint64(4),
+		RegionEpoch: &metapb.RegionEpoch{
+			ConfVer: proto.Uint64(1),
+			Version: proto.Uint64(1),
+		},
+		Peers: []*metapb.Peer{peer},
+	}
+)
+
 type testClientSuite struct {
+	srv    *server.Server
+	client *Client
 }
 
-func newServer(c *C, port int) *server.Server {
+func (s *testClientSuite) SetUpSuite(c *C) {
+	s.srv = newServer(c, 1234, "/pd-test")
+
+	// wait for srv to become leader
+	time.Sleep(time.Second * 3)
+
+	bootstrapServer(c, 1234)
+
+	var err error
+	s.client, err = NewClient(strings.Split(*testEtcd, ","), "/pd-test", clusterID)
+	c.Assert(err, IsNil)
+}
+
+func (s *testClientSuite) TearDownSuite(c *C) {
+	s.client.Close()
+	s.srv.Close()
+}
+
+func newServer(c *C, port int, root string) *server.Server {
 	cfg := &server.Config{
 		Addr:        fmt.Sprintf("127.0.0.1:%d", port),
 		EtcdAddrs:   strings.Split(*testEtcd, ","),
-		RootPath:    "/pd",
+		RootPath:    root,
 		LeaderLease: 1,
 	}
 	s, err := server.NewServer(cfg)
@@ -38,20 +92,34 @@ func newServer(c *C, port int) *server.Server {
 	return s
 }
 
-func (s *testClientSuite) TestTSO(c *C) {
-	srv := newServer(c, 1234)
-	defer srv.Close()
+func bootstrapServer(c *C, port int) {
+	req := pdpb.Request{
+		Header: &pdpb.RequestHeader{
+			Uuid:      uuid.NewV4().Bytes(),
+			ClusterId: proto.Uint64(clusterID),
+		},
+		CmdType: pdpb.CommandType_Bootstrap.Enum(),
+		Bootstrap: &pdpb.BootstrapRequest{
+			Node:   node,
+			Stores: []*metapb.Store{store},
+			Region: region,
+		},
+	}
 
-	// wait for srv to become leader
-	time.Sleep(time.Second)
-
-	client, err := NewClient(strings.Split(*testEtcd, ","), "/pd", 1)
+	conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", port))
 	c.Assert(err, IsNil)
-	defer client.Close()
+	err = util.WriteMessage(conn, 0, &req)
+	c.Assert(err, IsNil)
 
+	var rsp pdpb.Response
+	_, err = util.ReadMessage(conn, &rsp)
+	c.Assert(err, IsNil)
+}
+
+func (s *testClientSuite) TestTSO(c *C) {
 	var tss []int64
 	for i := 0; i < 100; i++ {
-		p, l, err := client.GetTS()
+		p, l, err := s.client.GetTS()
 		c.Assert(err, IsNil)
 		tss = append(tss, p<<18+l)
 	}
@@ -63,32 +131,14 @@ func (s *testClientSuite) TestTSO(c *C) {
 	}
 }
 
-func (s *testClientSuite) TestTSOSwitchLeader(c *C) {
-	srv1 := newServer(c, 1235)
-
-	// wait for srv1 to become leader
-	time.Sleep(time.Second * 5)
-
-	client, err := NewClient(strings.Split(*testEtcd, ","), "/pd", 1)
+func (s *testClientSuite) TestGetRegion(c *C) {
+	r, err := s.client.GetRegion([]byte("a"))
 	c.Assert(err, IsNil)
-	defer client.Close()
-
-	p1, l1, err := client.GetTS()
-	c.Assert(err, IsNil)
-
-	srv2 := newServer(c, 1236)
-	defer srv2.Close()
-
-	// stop srv1, wait for srv2 to become leader..
-	srv1.Close()
-	time.Sleep(time.Second * 5)
-
-	p2, l2, err := client.GetTS()
-	c.Assert(err, IsNil)
-	c.Assert(p1<<8+l1, Less, p2<<8+l2)
-
+	c.Assert(r, DeepEquals, region)
 }
 
-func (s *testClientSuite) TestRegion(c *C) {
-	// TODO
+func (s *testClientSuite) TestGetNode(c *C) {
+	n, err := s.client.GetNode(node.GetNodeId())
+	c.Assert(err, IsNil)
+	c.Assert(n, DeepEquals, node)
 }

@@ -45,7 +45,7 @@ func (s *testClientSuite) TestTSO(c *C) {
 	// wait for srv to become leader
 	time.Sleep(time.Second)
 
-	client, err := NewClient(strings.Split(*testEtcd, ","), "/pd/leader", 1)
+	client, err := NewClient(strings.Split(*testEtcd, ","), "/pd", 1)
 	c.Assert(err, IsNil)
 	defer client.Close()
 
@@ -69,7 +69,7 @@ func (s *testClientSuite) TestTSOSwitchLeader(c *C) {
 	// wait for srv1 to become leader
 	time.Sleep(time.Second * 5)
 
-	client, err := NewClient(strings.Split(*testEtcd, ","), "/pd/leader", 1)
+	client, err := NewClient(strings.Split(*testEtcd, ","), "/pd", 1)
 	c.Assert(err, IsNil)
 	defer client.Close()
 

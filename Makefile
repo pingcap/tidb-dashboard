@@ -1,7 +1,7 @@
 all: build check test 
 
 build:
-	go build ./...
+	go build -o bin/pd-server pd-server/main.go
 
 install:
 	go install ./...

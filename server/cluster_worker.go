@@ -193,9 +193,9 @@ func (c *raftCluster) handleJob(job *pd_jobpd.Job) error {
 	}
 
 	switch resp.GetCmdType() {
-	case raft_cmdpb.AdminCommandType_ChangePeer:
+	case raft_cmdpb.AdminCmdType_ChangePeer:
 		return c.handleChangePeerOK(resp.ChangePeer)
-	case raft_cmdpb.AdminCommandType_Split:
+	case raft_cmdpb.AdminCmdType_Split:
 		return c.handleSplitOK(resp.Split)
 	default:
 		log.Errorf("invalid admin response %v, ignore", resp)
@@ -209,13 +209,13 @@ func (c *raftCluster) processJob(job *pd_jobpd.Job, firstRunning bool) (*raft_cm
 		// must administrator request, check later.
 		adminRequest = request.AdminRequest
 
-		checkOKFunc func(*raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error)
+		checkOKFunc func(*raft_cmdpb.RaftCmdRequest) (*raft_cmdpb.AdminResponse, error)
 	)
 
 	switch adminRequest.GetCmdType() {
-	case raft_cmdpb.AdminCommandType_Split:
+	case raft_cmdpb.AdminCmdType_Split:
 		checkOKFunc = c.checkSplitOK
-	case raft_cmdpb.AdminCommandType_ChangePeer:
+	case raft_cmdpb.AdminCmdType_ChangePeer:
 		checkOKFunc = c.checkChangePeerOK
 	default:
 		return nil, errors.Errorf("unsupported request %v", adminRequest)
@@ -370,7 +370,7 @@ func (c *raftCluster) HandleAskChangePeer(request *pdpb.AskChangePeerRequest) er
 	}
 
 	changePeer := &raft_cmdpb.AdminRequest{
-		CmdType: raft_cmdpb.AdminCommandType_ChangePeer.Enum(),
+		CmdType: raft_cmdpb.AdminCmdType_ChangePeer.Enum(),
 		ChangePeer: &raft_cmdpb.ChangePeerRequest{
 			ChangeType:  changeType.Enum(),
 			Peer:        peer,
@@ -378,7 +378,7 @@ func (c *raftCluster) HandleAskChangePeer(request *pdpb.AskChangePeerRequest) er
 		},
 	}
 
-	req := &raft_cmdpb.RaftCommandRequest{
+	req := &raft_cmdpb.RaftCmdRequest{
 		Header: &raft_cmdpb.RaftRequestHeader{
 			RegionId: proto.Uint64(regionID),
 			Peer:     request.Leader,
@@ -419,7 +419,7 @@ func (c *raftCluster) handleChangePeerOK(changePeer *raft_cmdpb.ChangePeerRespon
 	return nil
 }
 
-func (c *raftCluster) checkChangePeerOK(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error) {
+func (c *raftCluster) checkChangePeerOK(request *raft_cmdpb.RaftCmdRequest) (*raft_cmdpb.AdminResponse, error) {
 	regionID := request.Header.GetRegionId()
 	leader := request.Header.Peer
 	detail, err := c.getRegionDetail(regionID, leader)
@@ -432,7 +432,7 @@ func (c *raftCluster) checkChangePeerOK(request *raft_cmdpb.RaftCommandRequest) 
 	// else we can think the raft server doesn't execute this change peer command.
 	if detail.Region.RegionEpoch.GetConfVer() > changePeer.RegionEpoch.GetConfVer() {
 		return &raft_cmdpb.AdminResponse{
-			CmdType: raft_cmdpb.AdminCommandType_ChangePeer.Enum(),
+			CmdType: raft_cmdpb.AdminCmdType_ChangePeer.Enum(),
 			ChangePeer: &raft_cmdpb.ChangePeerResponse{
 				Region: detail.Region,
 			},
@@ -456,7 +456,7 @@ func (c *raftCluster) HandleAskSplit(request *pdpb.AskSplitRequest) error {
 	}
 
 	split := &raft_cmdpb.AdminRequest{
-		CmdType: raft_cmdpb.AdminCommandType_Split.Enum(),
+		CmdType: raft_cmdpb.AdminCmdType_Split.Enum(),
 		Split: &raft_cmdpb.SplitRequest{
 			NewRegionId: proto.Uint64(newRegionID),
 			NewPeerIds:  peerIDs,
@@ -465,7 +465,7 @@ func (c *raftCluster) HandleAskSplit(request *pdpb.AskSplitRequest) error {
 		},
 	}
 
-	req := &raft_cmdpb.RaftCommandRequest{
+	req := &raft_cmdpb.RaftCmdRequest{
 		Header: &raft_cmdpb.RaftRequestHeader{
 			RegionId: request.Region.RegionId,
 			Peer:     request.Leader,
@@ -532,7 +532,7 @@ func (c *raftCluster) handleSplitOK(split *raft_cmdpb.SplitResponse) error {
 	return nil
 }
 
-func (c *raftCluster) checkSplitOK(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.AdminResponse, error) {
+func (c *raftCluster) checkSplitOK(request *raft_cmdpb.RaftCmdRequest) (*raft_cmdpb.AdminResponse, error) {
 	split := request.AdminRequest.Split
 	leftRegionID := request.Header.GetRegionId()
 	rightRegionID := split.GetNewRegionId()
@@ -554,7 +554,7 @@ func (c *raftCluster) checkSplitOK(request *raft_cmdpb.RaftCommandRequest) (*raf
 	}
 
 	return &raft_cmdpb.AdminResponse{
-		CmdType: raft_cmdpb.AdminCommandType_Split.Enum(),
+		CmdType: raft_cmdpb.AdminCmdType_Split.Enum(),
 		Split: &raft_cmdpb.SplitResponse{
 			Left:  leftDetail.Region,
 			Right: rightDetail.Region,
@@ -562,7 +562,7 @@ func (c *raftCluster) checkSplitOK(request *raft_cmdpb.RaftCommandRequest) (*raf
 	}, nil
 }
 
-func (c *raftCluster) sendRaftCommand(request *raft_cmdpb.RaftCommandRequest, region *metapb.Region) (*raft_cmdpb.RaftCommandResponse, error) {
+func (c *raftCluster) sendRaftCommand(request *raft_cmdpb.RaftCmdRequest, region *metapb.Region) (*raft_cmdpb.RaftCmdResponse, error) {
 	originPeer := request.Header.Peer
 
 RETRY:
@@ -614,7 +614,7 @@ RETRY:
 	return nil, errors.Errorf("send raft command %v failed", request)
 }
 
-func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCommandRequest) (*raft_cmdpb.RaftCommandResponse, error) {
+func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCmdRequest) (*raft_cmdpb.RaftCmdResponse, error) {
 	nodeID := request.Header.Peer.GetNodeId()
 
 	node, err := c.GetNode(nodeID)
@@ -632,7 +632,7 @@ func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCommandRequest) (*raft
 	defer conn.Close()
 
 	msg := &raft_serverpb.Message{
-		MsgType: raft_serverpb.MessageType_Command.Enum(),
+		MsgType: raft_serverpb.MessageType_Cmd.Enum(),
 		CmdReq:  request,
 	}
 
@@ -655,14 +655,14 @@ func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCommandRequest) (*raft
 }
 
 func (c *raftCluster) getRegionLeader(regionID uint64, peer *metapb.Peer) (*metapb.Peer, error) {
-	request := &raft_cmdpb.RaftCommandRequest{
+	request := &raft_cmdpb.RaftCmdRequest{
 		Header: &raft_cmdpb.RaftRequestHeader{
 			Uuid:     uuid.NewV4().Bytes(),
 			RegionId: proto.Uint64(regionID),
 			Peer:     peer,
 		},
 		StatusRequest: &raft_cmdpb.StatusRequest{
-			CmdType:      raft_cmdpb.StatusCommandType_RegionLeader.Enum(),
+			CmdType:      raft_cmdpb.StatusCmdType_RegionLeader.Enum(),
 			RegionLeader: &raft_cmdpb.RegionLeaderRequest{},
 		},
 	}
@@ -680,14 +680,14 @@ func (c *raftCluster) getRegionLeader(regionID uint64, peer *metapb.Peer) (*meta
 }
 
 func (c *raftCluster) getRegionDetail(regionID uint64, peer *metapb.Peer) (*raft_cmdpb.RegionDetailResponse, error) {
-	request := &raft_cmdpb.RaftCommandRequest{
+	request := &raft_cmdpb.RaftCmdRequest{
 		Header: &raft_cmdpb.RaftRequestHeader{
 			Uuid:     uuid.NewV4().Bytes(),
 			RegionId: proto.Uint64(regionID),
 			Peer:     peer,
 		},
 		StatusRequest: &raft_cmdpb.StatusRequest{
-			CmdType:      raft_cmdpb.StatusCommandType_RegionDetail.Enum(),
+			CmdType:      raft_cmdpb.StatusCmdType_RegionDetail.Enum(),
 			RegionDetail: &raft_cmdpb.RegionDetailRequest{},
 		},
 	}

@@ -57,7 +57,7 @@ type mockRaftStore struct {
 type mockRaftMsg struct {
 	peer   metapb.Peer
 	region metapb.Region
-	req    *raft_cmdpb.RaftCommandRequest
+	req    *raft_cmdpb.RaftCmdRequest
 }
 
 type mockRaftNode struct {
@@ -142,7 +142,7 @@ func (s *testClusterWorkerSuite) sendRaftMsg(c *C, msg *mockRaftMsg) {
 }
 
 func (s *testClusterWorkerSuite) broadcastRaftMsg(c *C, leader *mockRaftPeer,
-	req *raft_cmdpb.RaftCommandRequest) {
+	req *raft_cmdpb.RaftCmdRequest) {
 	region := leader.region
 	for _, peer := range region.Peers {
 		if peer.GetPeerId() != leader.peer.GetPeerId() {
@@ -264,7 +264,7 @@ func (n *mockRaftNode) runCmd(c *C) {
 		resp.Header.Uuid = req.Header.Uuid
 
 		respMsg := &raft_serverpb.Message{
-			MsgType: raft_serverpb.MessageType_CommandResp.Enum(),
+			MsgType: raft_serverpb.MessageType_CmdResp.Enum(),
 			CmdResp: resp,
 		}
 
@@ -316,8 +316,8 @@ func (n *mockRaftNode) handleRaftMsg(c *C, msg *mockRaftMsg) {
 	store.handleWriteCommand(c, msg.req)
 }
 
-func newErrorCmdResponse(err error) *raft_cmdpb.RaftCommandResponse {
-	resp := &raft_cmdpb.RaftCommandResponse{
+func newErrorCmdResponse(err error) *raft_cmdpb.RaftCmdResponse {
+	resp := &raft_cmdpb.RaftCmdResponse{
 		Header: &raft_cmdpb.RaftResponseHeader{
 			Error: &errorpb.Error{
 				Message: proto.String(err.Error()),
@@ -327,7 +327,7 @@ func newErrorCmdResponse(err error) *raft_cmdpb.RaftCommandResponse {
 	return resp
 }
 
-func (n *mockRaftNode) proposeCommand(c *C, req *raft_cmdpb.RaftCommandRequest) *raft_cmdpb.RaftCommandResponse {
+func (n *mockRaftNode) proposeCommand(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_cmdpb.RaftCmdResponse {
 	storeID := req.Header.Peer.GetStoreId()
 	n.Lock()
 	store, ok := n.stores[storeID]
@@ -381,14 +381,14 @@ func (n *mockRaftNode) proposeCommand(c *C, req *raft_cmdpb.RaftCommandRequest) 
 	return resp
 }
 
-func (s *mockRaftStore) handleWriteCommand(c *C, req *raft_cmdpb.RaftCommandRequest) *raft_cmdpb.RaftCommandResponse {
+func (s *mockRaftStore) handleWriteCommand(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_cmdpb.RaftCmdResponse {
 	if req.AdminRequest != nil {
 		return s.handleAdminRequest(c, req)
 	}
 	return newErrorCmdResponse(errors.Errorf("unsupported request %v", req))
 }
 
-func (s *mockRaftStore) handleStatusRequest(c *C, req *raft_cmdpb.RaftCommandRequest) *raft_cmdpb.RaftCommandResponse {
+func (s *mockRaftStore) handleStatusRequest(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_cmdpb.RaftCmdResponse {
 	regionID := req.Header.GetRegionId()
 	status := req.StatusRequest
 
@@ -403,19 +403,19 @@ func (s *mockRaftStore) handleStatusRequest(c *C, req *raft_cmdpb.RaftCommandReq
 	}
 
 	switch status.GetCmdType() {
-	case raft_cmdpb.StatusCommandType_RegionLeader:
-		return &raft_cmdpb.RaftCommandResponse{
+	case raft_cmdpb.StatusCmdType_RegionLeader:
+		return &raft_cmdpb.RaftCmdResponse{
 			StatusResponse: &raft_cmdpb.StatusResponse{
-				CmdType: raft_cmdpb.StatusCommandType_RegionLeader.Enum(),
+				CmdType: raft_cmdpb.StatusCmdType_RegionLeader.Enum(),
 				RegionLeader: &raft_cmdpb.RegionLeaderResponse{
 					Leader: leader,
 				},
 			},
 		}
-	case raft_cmdpb.StatusCommandType_RegionDetail:
-		return &raft_cmdpb.RaftCommandResponse{
+	case raft_cmdpb.StatusCmdType_RegionDetail:
+		return &raft_cmdpb.RaftCmdResponse{
 			StatusResponse: &raft_cmdpb.StatusResponse{
-				CmdType: raft_cmdpb.StatusCommandType_RegionDetail.Enum(),
+				CmdType: raft_cmdpb.StatusCmdType_RegionDetail.Enum(),
 				RegionDetail: &raft_cmdpb.RegionDetailResponse{
 					Leader: leader,
 					Region: proto.Clone(&peer.region).(*metapb.Region),
@@ -427,12 +427,12 @@ func (s *mockRaftStore) handleStatusRequest(c *C, req *raft_cmdpb.RaftCommandReq
 	}
 }
 
-func (s *mockRaftStore) handleAdminRequest(c *C, req *raft_cmdpb.RaftCommandRequest) *raft_cmdpb.RaftCommandResponse {
-	var resp *raft_cmdpb.RaftCommandResponse
+func (s *mockRaftStore) handleAdminRequest(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_cmdpb.RaftCmdResponse {
+	var resp *raft_cmdpb.RaftCmdResponse
 	switch req.AdminRequest.GetCmdType() {
-	case raft_cmdpb.AdminCommandType_ChangePeer:
+	case raft_cmdpb.AdminCmdType_ChangePeer:
 		resp = s.handleChangePeer(c, req)
-	case raft_cmdpb.AdminCommandType_Split:
+	case raft_cmdpb.AdminCmdType_Split:
 		resp = s.handleSplit(c, req)
 	}
 
@@ -442,7 +442,7 @@ func (s *mockRaftStore) handleAdminRequest(c *C, req *raft_cmdpb.RaftCommandRequ
 	return resp
 }
 
-func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCommandRequest) *raft_cmdpb.RaftCommandResponse {
+func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_cmdpb.RaftCmdResponse {
 	changePeer := req.AdminRequest.ChangePeer
 	confType := changePeer.GetChangeType()
 	peer := changePeer.Peer
@@ -488,7 +488,7 @@ func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCommandReques
 
 	region.RegionEpoch.ConfVer = proto.Uint64(region.RegionEpoch.GetConfVer() + 1)
 
-	resp := &raft_cmdpb.RaftCommandResponse{
+	resp := &raft_cmdpb.RaftCmdResponse{
 		AdminResponse: &raft_cmdpb.AdminResponse{
 			ChangePeer: &raft_cmdpb.ChangePeerResponse{
 				Region: &region,
@@ -498,7 +498,7 @@ func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCommandReques
 	return resp
 }
 
-func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCommandRequest) *raft_cmdpb.RaftCommandResponse {
+func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_cmdpb.RaftCmdResponse {
 	split := req.AdminRequest.Split
 	raftPeer := s.peers[req.Header.GetRegionId()]
 	splitKey := split.SplitKey
@@ -557,7 +557,7 @@ func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCommandRequest) *r
 		region: *newRegion,
 	}
 
-	resp := &raft_cmdpb.RaftCommandResponse{
+	resp := &raft_cmdpb.RaftCmdResponse{
 		AdminResponse: &raft_cmdpb.AdminResponse{
 			Split: &raft_cmdpb.SplitResponse{
 				Left:  &region,

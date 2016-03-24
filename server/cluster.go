@@ -324,7 +324,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	}
 	ops = append(ops, clientv3.OpPut(regionSearchPath, string(regionValue)))
 
-	bootstrapCmp := clientv3.Compare(clientv3.CreatedRevision(clusterRootPath), "=", 0)
+	bootstrapCmp := clientv3.Compare(clientv3.CreateRevision(clusterRootPath), "=", 0)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	resp, err := s.client.Txn(ctx).
 		If(s.leaderCmp(), bootstrapCmp).
@@ -584,7 +584,7 @@ func (c *raftCluster) PutStore(store *metapb.Store) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	nodeCreatedCmp := clientv3.Compare(clientv3.CreatedRevision(nodePath), ">", 0)
+	nodeCreatedCmp := clientv3.Compare(clientv3.CreateRevision(nodePath), ">", 0)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	resp, err := c.s.client.Txn(ctx).
 		If(c.s.leaderCmp(), nodeCreatedCmp).

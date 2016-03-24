@@ -27,11 +27,16 @@ func (s *testLeaderChangeSuite) TestLeaderChange(c *C) {
 	srv2 := newServer(c, 1236, "/pd-leader-change")
 	defer srv2.Close()
 
-	// stop srv1, wait for srv2 to become leader..
+	// stop srv1, srv2 will become leader
 	srv1.Close()
-	time.Sleep(time.Second * 5)
 
-	p2, l2, err := client.GetTS()
-	c.Assert(err, IsNil)
-	c.Assert(p1<<8+l1, Less, p2<<8+l2)
+	for i := 0; i < 10; i++ {
+		p2, l2, err := client.GetTS()
+		if err == nil {
+			c.Assert(p1<<18+l1, Less, p2<<18+l2)
+			return
+		}
+		time.Sleep(time.Second)
+	}
+	c.Error("failed getTS from new leader after 10 seconds")
 }

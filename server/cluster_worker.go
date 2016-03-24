@@ -173,23 +173,55 @@ func (c *raftCluster) updateJobStatus(job *pd_jobpd.Job, status pd_jobpd.JobStat
 	return nil
 }
 
+type checkOKFunc func(*raft_cmdpb.RaftCmdRequest) (*raft_cmdpb.AdminResponse, error)
+
 func (c *raftCluster) handleJob(job *pd_jobpd.Job) error {
 	log.Debugf("begin to handle job %v", job)
 
-	firstRunning := false
+	var (
+		request = job.Request
+		// must administrator request, check later.
+		adminRequest = request.AdminRequest
 
-	// TODO: if the job status is running, check this job whether
-	// finished or not in raft server.
+		checkOK checkOKFunc
+
+		resp *raft_cmdpb.AdminResponse
+		err  error
+	)
+
+	switch adminRequest.GetCmdType() {
+	case raft_cmdpb.AdminCmdType_Split:
+		checkOK = c.checkSplitOK
+	case raft_cmdpb.AdminCmdType_ChangePeer:
+		checkOK = c.checkChangePeerOK
+	default:
+		log.Errorf("unsupported request %v, ignore", request)
+		return nil
+	}
+
 	if job.GetStatus() == pd_jobpd.JobStatus_Pending {
-		firstRunning = true
-		if err := c.updateJobStatus(job, pd_jobpd.JobStatus_Running); err != nil {
+		if err = c.updateJobStatus(job, pd_jobpd.JobStatus_Running); err != nil {
+			return errors.Trace(err)
+		}
+		// If the job is first running, no need to check whether the job
+		// is finished OK.
+		checkOK = nil
+	} else {
+		// Here means the job is not first running, we can first check whether
+		// the job is finished OK.
+		// The got response != nil means we have already executed the job and
+		// the region version/conf version is changed, so we don't need to process
+		// the job again.
+		if resp, err = checkOK(request); err != nil {
 			return errors.Trace(err)
 		}
 	}
 
-	resp, err := c.processJob(job, firstRunning)
-	if err != nil || resp == nil {
-		return errors.Trace(err)
+	if resp == nil {
+		resp, err = c.processJob(job, checkOK)
+		if err != nil || resp == nil {
+			return errors.Trace(err)
+		}
 	}
 
 	switch resp.GetCmdType() {
@@ -203,23 +235,8 @@ func (c *raftCluster) handleJob(job *pd_jobpd.Job) error {
 	}
 }
 
-func (c *raftCluster) processJob(job *pd_jobpd.Job, firstRunning bool) (*raft_cmdpb.AdminResponse, error) {
-	var (
-		request = job.Request
-		// must administrator request, check later.
-		adminRequest = request.AdminRequest
-
-		checkOKFunc func(*raft_cmdpb.RaftCmdRequest) (*raft_cmdpb.AdminResponse, error)
-	)
-
-	switch adminRequest.GetCmdType() {
-	case raft_cmdpb.AdminCmdType_Split:
-		checkOKFunc = c.checkSplitOK
-	case raft_cmdpb.AdminCmdType_ChangePeer:
-		checkOKFunc = c.checkChangePeerOK
-	default:
-		return nil, errors.Errorf("unsupported request %v", adminRequest)
-	}
+func (c *raftCluster) processJob(job *pd_jobpd.Job, checkOK checkOKFunc) (*raft_cmdpb.AdminResponse, error) {
+	request := job.Request
 
 	response, err := c.sendRaftCommand(request, job.Region)
 	if err != nil {
@@ -227,15 +244,16 @@ func (c *raftCluster) processJob(job *pd_jobpd.Job, firstRunning bool) (*raft_cm
 	}
 
 	if response.Header != nil && response.Header.Error != nil {
-		// If the job is first run, not retired, we can safely cancel it.
-		if firstRunning {
+		// If we don't supply check ok function, it means that the job is
+		// first running, not retried, we can safely cancel it.
+		if checkOK == nil {
 			log.Errorf("handle %v but failed with response %v, cancel it", job.Request, response.Header.Error)
 			return nil, nil
 		}
 
 		log.Errorf("handle %v but failed with response %v, check in raft server", job.Request, response.Header.Error)
 
-		adminResponse, err := checkOKFunc(job.Request)
+		adminResponse, err := checkOK(job.Request)
 		if err != nil {
 			return nil, errors.Trace(err)
 		} else if adminResponse == nil {

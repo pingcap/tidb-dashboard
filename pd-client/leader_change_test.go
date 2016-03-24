@@ -33,7 +33,7 @@ func (s *testLeaderChangeSuite) TestLeaderChange(c *C) {
 	for i := 0; i < 10; i++ {
 		p2, l2, err := client.GetTS()
 		if err == nil {
-			c.Assert(p1<<8+l1, Less, p2<<8+l2)
+			c.Assert(p1<<18+l1, Less, p2<<18+l2)
 			return
 		}
 		time.Sleep(time.Second)

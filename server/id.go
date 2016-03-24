@@ -54,7 +54,7 @@ func (alloc *idAllocator) generate() (uint64, error) {
 
 	if value == nil {
 		// create the key
-		cmp = clientv3.Compare(clientv3.CreatedRevision(key), "=", 0)
+		cmp = clientv3.Compare(clientv3.CreateRevision(key), "=", 0)
 	} else {
 		// update the key
 		end, err = bytesToUint64(value)

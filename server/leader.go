@@ -123,10 +123,10 @@ func (s *Server) campaignLeader() error {
 	}
 
 	leaderKey := s.getLeaderPath()
-	// The leader key must not exist, so the CreatedRevision is 0.
+	// The leader key must not exist, so the CreateRevision is 0.
 	ctx, cancel = context.WithTimeout(context.Background(), requestTimeout)
 	resp, err := s.client.Txn(ctx).
-		If(clientv3.Compare(clientv3.CreatedRevision(leaderKey), "=", 0)).
+		If(clientv3.Compare(clientv3.CreateRevision(leaderKey), "=", 0)).
 		Then(clientv3.OpPut(leaderKey, s.leaderValue, clientv3.WithLease(clientv3.LeaseID(leaseResp.ID)))).
 		Commit()
 	cancel()

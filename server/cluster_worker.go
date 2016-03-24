@@ -512,10 +512,10 @@ func (c *raftCluster) handleSplitOK(split *raft_cmdpb.SplitResponse) error {
 	var cmps []clientv3.Cmp
 	cmps = append(cmps, c.s.leaderCmp())
 	// new left search path must not exist
-	cmps = append(cmps, clientv3.Compare(clientv3.CreatedRevision(leftSearchPath), "=", 0))
+	cmps = append(cmps, clientv3.Compare(clientv3.CreateRevision(leftSearchPath), "=", 0))
 	// new right search path must exist, because it is the same as origin split path.
-	cmps = append(cmps, clientv3.Compare(clientv3.CreatedRevision(rightSearchPath), ">", 0))
-	cmps = append(cmps, clientv3.Compare(clientv3.CreatedRevision(rightPath), "=", 0))
+	cmps = append(cmps, clientv3.Compare(clientv3.CreateRevision(rightSearchPath), ">", 0))
+	cmps = append(cmps, clientv3.Compare(clientv3.CreateRevision(rightPath), "=", 0))
 
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	resp, err := c.s.client.Txn(ctx).

@@ -333,7 +333,8 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	cancel()
 	if err != nil {
 		return errors.Trace(err)
-	} else if !resp.Succeeded {
+	}
+	if !resp.Succeeded {
 		return errors.Errorf("bootstrap cluster %d fail, we may be not leader", clusterID)
 	}
 
@@ -554,7 +555,8 @@ func (c *raftCluster) PutNode(node *metapb.Node) error {
 	cancel()
 	if err != nil {
 		return errors.Trace(err)
-	} else if !resp.Succeeded {
+	}
+	if !resp.Succeeded {
 		return errors.Errorf("put node %v fail", node)
 	}
 
@@ -591,7 +593,8 @@ func (c *raftCluster) PutStore(store *metapb.Store) error {
 	cancel()
 	if err != nil {
 		return errors.Trace(err)
-	} else if !resp.Succeeded {
+	}
+	if !resp.Succeeded {
 		return errors.Errorf("put store %v fail", store)
 	}
 
@@ -631,7 +634,8 @@ func (c *raftCluster) PutMeta(meta *metapb.Cluster) error {
 	cancel()
 	if err != nil {
 		return errors.Trace(err)
-	} else if !resp.Succeeded {
+	}
+	if !resp.Succeeded {
 		return errors.Errorf("put cluster meta %v error", meta)
 	}
 

@@ -60,7 +60,8 @@ func (s *Server) saveTimestamp(now time.Time) error {
 	cancel()
 	if err != nil {
 		return errors.Trace(err)
-	} else if !resp.Succeeded {
+	}
+	if !resp.Succeeded {
 		return errors.New("save timestamp failed, maybe we lost leader")
 	}
 

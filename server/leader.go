@@ -132,7 +132,8 @@ func (s *Server) campaignLeader() error {
 	cancel()
 	if err != nil {
 		return errors.Trace(err)
-	} else if !resp.Succeeded {
+	}
+	if !resp.Succeeded {
 		return errors.New("campaign leader failed, other server may campaign ok")
 	}
 

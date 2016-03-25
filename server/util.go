@@ -40,8 +40,11 @@ func getValue(c *clientv3.Client, key string, opts ...clientv3.OpOption) ([]byte
 // TODO: return the value revision for outer use.
 func getProtoMsg(c *clientv3.Client, key string, msg proto.Message, opts ...clientv3.OpOption) (bool, error) {
 	value, err := getValue(c, key, opts...)
-	if err != nil || value == nil {
+	if err != nil {
 		return false, errors.Trace(err)
+	}
+	if value == nil {
+		return false, nil
 	}
 
 	if err = proto.Unmarshal(value, msg); err != nil {

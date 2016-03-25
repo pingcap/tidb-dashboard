@@ -65,7 +65,7 @@ func (c *conn) run() {
 		if response == nil {
 			// we don't need to response, maybe error?
 			// if error, we will return an error response later.
-			log.Warnf("empty response")
+			log.Warn("empty response")
 			continue
 		}
 

@@ -60,7 +60,6 @@ func NewServer(cfg *Config) (*Server, error) {
 		Endpoints:   cfg.EtcdAddrs,
 		DialTimeout: etcdTimeout,
 	})
-
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

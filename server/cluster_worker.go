@@ -44,7 +44,7 @@ func (c *raftCluster) onJobWorker() {
 			return
 		case <-c.askJobCh:
 			if !c.s.IsLeader() {
-				log.Warnf("we are not leader, no need to handle job")
+				log.Warn("we are not leader, no need to handle job")
 				continue
 			}
 
@@ -108,7 +108,8 @@ func (c *raftCluster) postJob(job *pd_jobpd.Job) error {
 	cancel()
 	if err != nil {
 		return errors.Trace(err)
-	} else if !resp.Succeeded {
+	}
+	if !resp.Succeeded {
 		return errors.Errorf("post job %v fail", job)
 	}
 
@@ -128,7 +129,8 @@ func (c *raftCluster) getJob() (*pd_jobpd.Job, error) {
 	ok, err := getProtoMsg(c.s.client, jobKey, &job, clientv3.WithRange(maxJobKey), clientv3.WithLimit(1), sortOpt)
 	if err != nil {
 		return nil, errors.Trace(err)
-	} else if !ok {
+	}
+	if !ok {
 		return nil, nil
 	}
 
@@ -145,8 +147,9 @@ func (c *raftCluster) popJob(job *pd_jobpd.Job) error {
 	cancel()
 	if err != nil {
 		return errors.Trace(err)
-	} else if !resp.Succeeded {
-		return errors.Errorf("pop first job failed")
+	}
+	if !resp.Succeeded {
+		return errors.New("pop first job failed")
 	}
 	return nil
 }
@@ -167,8 +170,9 @@ func (c *raftCluster) updateJobStatus(job *pd_jobpd.Job, status pd_jobpd.JobStat
 	cancel()
 	if err != nil {
 		return errors.Trace(err)
-	} else if !resp.Succeeded {
-		return errors.Errorf("pop first job failed")
+	}
+	if !resp.Succeeded {
+		return errors.New("pop first job failed")
 	}
 	return nil
 }
@@ -430,7 +434,8 @@ func (c *raftCluster) handleChangePeerOK(changePeer *raft_cmdpb.ChangePeerRespon
 	cancel()
 	if err != nil {
 		return errors.Trace(err)
-	} else if !resp.Succeeded {
+	}
+	if !resp.Succeeded {
 		return errors.New("update change peer region failed")
 	}
 
@@ -543,7 +548,8 @@ func (c *raftCluster) handleSplitOK(split *raft_cmdpb.SplitResponse) error {
 	cancel()
 	if err != nil {
 		return errors.Trace(err)
-	} else if !resp.Succeeded {
+	}
+	if !resp.Succeeded {
 		return errors.New("update split region failed")
 	}
 

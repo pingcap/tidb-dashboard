@@ -70,7 +70,7 @@ func (s *Server) leaderLoop() {
 
 			s.watchLeader()
 
-			log.Debugf("leader changed, try to campaign leader")
+			log.Debug("leader changed, try to campaign leader")
 		}
 
 		if err = s.campaignLeader(); err != nil {
@@ -158,7 +158,7 @@ func (s *Server) campaignLeader() error {
 		select {
 		case _, ok := <-ch:
 			if !ok {
-				log.Infof("keep alive channel is closed")
+				log.Info("keep alive channel is closed")
 				return nil
 			}
 		case <-tsTicker.C:
@@ -182,7 +182,7 @@ func (s *Server) watchLeader() {
 
 			for _, ev := range wresp.Events {
 				if ev.Type == storagepb.EXPIRE || ev.Type == storagepb.DELETE {
-					log.Infof("leader is expired or deleted")
+					log.Info("leader is expired or deleted")
 					return
 				}
 			}

@@ -44,7 +44,7 @@ func (c *raftCluster) onJobWorker() {
 			return
 		case <-c.askJobCh:
 			if !c.s.IsLeader() {
-				log.Warnf("we are not leader, no need to handle job")
+				log.Warn("we are not leader, no need to handle job")
 				continue
 			}
 
@@ -128,7 +128,8 @@ func (c *raftCluster) getJob() (*pd_jobpd.Job, error) {
 	ok, err := getProtoMsg(c.s.client, jobKey, &job, clientv3.WithRange(maxJobKey), clientv3.WithLimit(1), sortOpt)
 	if err != nil {
 		return nil, errors.Trace(err)
-	} else if !ok {
+	}
+	if !ok {
 		return nil, nil
 	}
 

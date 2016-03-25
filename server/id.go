@@ -4,10 +4,9 @@ import (
 	"path"
 	"sync"
 
-	"golang.org/x/net/context"
-
 	"github.com/coreos/etcd/clientv3"
 	"github.com/juju/errors"
+	"golang.org/x/net/context"
 )
 
 const (
@@ -75,7 +74,8 @@ func (alloc *idAllocator) generate() (uint64, error) {
 	cancel()
 	if err != nil {
 		return 0, errors.Trace(err)
-	} else if !resp.Succeeded {
+	}
+	if !resp.Succeeded {
 		return 0, errors.New("generate id failed, we may not leader")
 	}
 

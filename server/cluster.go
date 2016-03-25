@@ -8,14 +8,13 @@ import (
 	"strings"
 	"sync"
 
-	"golang.org/x/net/context"
-
 	"github.com/coreos/etcd/clientv3"
 	"github.com/gogo/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
+	"golang.org/x/net/context"
 )
 
 const (
@@ -124,7 +123,8 @@ func (s *Server) getCluster(clusterID uint64) (*raftCluster, error) {
 	value, err := getValue(s.client, s.getClusterRootPath(clusterID))
 	if err != nil {
 		return nil, errors.Trace(err)
-	} else if value == nil {
+	}
+	if value == nil {
 		return nil, nil
 	}
 
@@ -231,7 +231,7 @@ func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 
 	peers := regionMeta.GetPeers()
 	if len(peers) != 1 {
-		return errors.Errorf("invalid first region peer number %d, must 1 for bootstrap %d", len(peers), clusterID)
+		return errors.Errorf("invalid first region peer number %d, must be 1 for bootstrap %d", len(peers), clusterID)
 	}
 
 	peer := peers[0]
@@ -307,7 +307,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 		storePath := makeStoreKey(clusterRootPath, storeMeta.GetStoreId())
 		storeValue, err1 := proto.Marshal(storeMeta)
 		if err1 != nil {
-			return errors.Trace(err)
+			return errors.Trace(err1)
 		}
 		ops = append(ops, clientv3.OpPut(storePath, string(storeValue)))
 	}
@@ -334,7 +334,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	if err != nil {
 		return errors.Trace(err)
 	} else if !resp.Succeeded {
-		return errors.Errorf("bootstrap cluster %d fail, we may not leader", clusterID)
+		return errors.Errorf("bootstrap cluster %d fail, we may be not leader", clusterID)
 	}
 
 	log.Infof("bootstrap cluster %d ok", clusterID)
@@ -443,7 +443,7 @@ func (c *raftCluster) GetAllNodes() ([]metapb.Node, error) {
 
 func (c *raftCluster) GetNode(nodeID uint64) (*metapb.Node, error) {
 	if nodeID == 0 {
-		return nil, errors.Errorf("invalid zero node id")
+		return nil, errors.New("invalid zero node id")
 	}
 
 	mu := &c.mu
@@ -454,7 +454,6 @@ func (c *raftCluster) GetNode(nodeID uint64) (*metapb.Node, error) {
 	// update the cache, so we can use this cache to get directly.
 
 	node, ok := mu.nodes[nodeID]
-
 	if ok {
 		return &node, nil
 	}
@@ -477,7 +476,7 @@ func (c *raftCluster) GetAllStores() ([]metapb.Store, error) {
 
 func (c *raftCluster) GetStore(storeID uint64) (*metapb.Store, error) {
 	if storeID == 0 {
-		return nil, errors.Errorf("invalid zero store id")
+		return nil, errors.New("invalid zero store id")
 	}
 
 	mu := &c.mu
@@ -488,7 +487,6 @@ func (c *raftCluster) GetStore(storeID uint64) (*metapb.Store, error) {
 	// update the cache, so we can use this cache to get directly.
 
 	store, ok := mu.stores[storeID]
-
 	if ok {
 		return &store, nil
 	}
@@ -498,14 +496,13 @@ func (c *raftCluster) GetStore(storeID uint64) (*metapb.Store, error) {
 
 func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {
 	if len(regionKey) == 0 {
-		return nil, errors.Errorf("invalid empty region key")
+		return nil, errors.New("invalid empty region key")
 	}
 
 	// We must use the next region key for search,
 	// e,g, we have two regions 1, 2, and key ranges are ["", "abc"), ["abc", +infinite),
 	// if we use "abc" to search the region, the first key >= "abc" may be
 	// region 1, not region 2. So we use the next region key for search.
-	//
 	nextRegionKey := append(regionKey, 0x00)
 	searchKey := makeRegionSearchKey(c.clusterRoot, nextRegionKey)
 
@@ -520,7 +517,8 @@ func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {
 	ok, err := getProtoMsg(c.s.client, searchKey, &region, clientv3.WithRange(string(maxSearchEndKey)), clientv3.WithLimit(1))
 	if err != nil {
 		return nil, errors.Trace(err)
-	} else if !ok {
+	}
+	if !ok {
 		return nil, errors.Errorf("we must find a region for %q but fail, a serious bug", regionKey)
 	}
 

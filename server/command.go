@@ -18,7 +18,7 @@ func (c *conn) handleTso(req *pdpb.Request) (*pdpb.Response, error) {
 	for i := uint32(0); i < count; i++ {
 		ts := c.s.getRespTS()
 		if ts == nil {
-			return nil, errors.Errorf("can not get timestamp")
+			return nil, errors.New("can not get timestamp")
 		}
 
 		tso.Timestamps = append(tso.Timestamps, ts)
@@ -82,7 +82,6 @@ func (c *conn) handleBootstrap(req *pdpb.Request) (*pdpb.Response, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-
 	if cluster != nil {
 		return NewBootstrappedError(), nil
 	}
@@ -101,7 +100,8 @@ func (c *conn) getCluster(req *pdpb.Request) (*raftCluster, error) {
 	cluster, err := c.s.getCluster(clusterID)
 	if err != nil {
 		return nil, errors.Trace(err)
-	} else if cluster == nil {
+	}
+	if cluster == nil {
 		return nil, errors.Trace(errClusterNotBootstrapped)
 	}
 	return cluster, nil

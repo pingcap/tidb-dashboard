@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -34,7 +33,7 @@ func main() {
 
 	svr, err := server.NewServer(cfg)
 	if err != nil {
-		fmt.Printf("create pd server err %s\n", err)
+		log.Errorf("create pd server err %s\n", err)
 		return
 	}
 

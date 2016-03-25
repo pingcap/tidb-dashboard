@@ -31,8 +31,11 @@ func getTimestampPath(rootPath string) string {
 
 func (s *Server) loadTimestamp() (int64, error) {
 	data, err := getValue(s.client, getTimestampPath(s.cfg.RootPath))
-	if err != nil || data == nil {
+	if err != nil {
 		return 0, errors.Trace(err)
+	}
+	if data == nil {
+		return 0, nil
 	}
 
 	ts, err := bytesToUint64(data)

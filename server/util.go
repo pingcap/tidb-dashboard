@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	requestTimeout = 3 * time.Second
+	requestTimeout = 30 * time.Second
 )
 
 // a helper function to get value with key from etcd.

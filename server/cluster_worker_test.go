@@ -343,7 +343,7 @@ func (n *mockRaftNode) proposeCommand(c *C, req *raft_cmdpb.RaftCmdRequest) *raf
 	peer, ok := store.peers[regionID]
 	if !ok {
 		resp := newErrorCmdResponse(errors.New("region not found"))
-		resp.Header.Error.RegionNotFound = &errorpb.RegionNotFoundError{
+		resp.Header.Error.RegionNotFound = &errorpb.RegionNotFound{
 			RegionId: proto.Uint64(req.Header.GetRegionId()),
 		}
 		return resp
@@ -360,7 +360,7 @@ func (n *mockRaftNode) proposeCommand(c *C, req *raft_cmdpb.RaftCmdRequest) *raf
 	leader, ok := n.s.regionLeaders[regionID]
 	if !ok || leader.GetPeerId() != peer.peer.GetPeerId() {
 		resp := newErrorCmdResponse(errors.New("peer not leader"))
-		resp.Header.Error.NotLeader = &errorpb.NotLeaderError{
+		resp.Header.Error.NotLeader = &errorpb.NotLeader{
 			RegionId: proto.Uint64(regionID),
 		}
 

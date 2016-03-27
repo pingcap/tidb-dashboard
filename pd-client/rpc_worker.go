@@ -64,8 +64,7 @@ func (w *rpcWorker) stop(err error) {
 	close(w.quit)
 	w.wg.Wait()
 
-	len := len(w.requests)
-	for i := 0; i < len; i++ {
+	for i := 0; i < len(w.requests); i++ {
 		req := <-w.requests
 		switch r := req.(type) {
 		case *tsoRequest:
@@ -86,7 +85,7 @@ RECONNECT:
 		log.Warnf("[pd] failed connect pd server: %v, will retry later", err)
 
 		select {
-		case <-time.After(time.Second):
+		case <-time.After(netIOTimeout):
 			goto RECONNECT
 		case <-w.quit:
 			return
@@ -143,20 +142,25 @@ func (w *rpcWorker) handleRequests(requests []interface{}, conn *bufio.ReadWrite
 			log.Errorf("[pd] invalid request %v", r)
 		}
 	}
-	ts, err := w.getTSFromRemote(conn, len(tsoRequests))
-	if err != nil {
-		ok = false
-		log.Error(err)
-	}
-	for i, req := range tsoRequests {
+
+	// Check whether we have tso requests to process.
+	if len(tsoRequests) > 0 {
+		ts, err := w.getTSFromRemote(conn, len(tsoRequests))
 		if err != nil {
-			req.done <- err
-		} else {
-			req.physical = ts[i].GetPhysical()
-			req.logical = ts[i].GetLogical()
-			req.done <- nil
+			ok = false
+			log.Error(err)
+		}
+		for i, req := range tsoRequests {
+			if err != nil {
+				req.done <- err
+			} else {
+				req.physical = ts[i].GetPhysical()
+				req.logical = ts[i].GetLogical()
+				req.done <- nil
+			}
 		}
 	}
+
 	return ok
 }
 

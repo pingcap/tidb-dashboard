@@ -51,10 +51,12 @@ func (c *raftCluster) onJobWorker() {
 			job, err := c.getJob()
 			if err != nil {
 				log.Errorf("get first job err %v", err)
-			} else if job == nil {
+			}
+			if job == nil {
 				// no job now, wait
 				continue
 			}
+
 			if err = c.handleJob(job); err != nil {
 				log.Errorf("handle job %v err %v, retry", job, err)
 				// wait and force retry
@@ -184,7 +186,7 @@ func (c *raftCluster) handleJob(job *pd_jobpd.Job) error {
 
 	var (
 		request = job.Request
-		// must administrator request, check later.
+		// must be administrator request, check later.
 		adminRequest = request.AdminRequest
 
 		checkOK checkOKFunc
@@ -570,7 +572,7 @@ func (c *raftCluster) checkSplitOK(request *raft_cmdpb.RaftCmdRequest) (*raft_cm
 		return nil, errors.Trace(err)
 	}
 
-	// If leader's version changed, we can think SplitOK,
+	// If leader's version has changed, we can think SplitOK,
 	// else we can think the raft server doesn't execute this split command.
 	if leftDetail.Region.RegionEpoch.GetVersion() <= split.RegionEpoch.GetVersion() {
 		return nil, nil

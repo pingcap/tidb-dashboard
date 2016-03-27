@@ -120,13 +120,13 @@ func (c *raftCluster) postJob(job *pd_jobpd.Job) error {
 }
 
 func (c *raftCluster) getJob() (*pd_jobpd.Job, error) {
-	job := pd_jobpd.Job{}
+	job := &pd_jobpd.Job{}
 
 	jobKey := makeJobKey(c.clusterRoot, 0)
 	maxJobKey := makeJobKey(c.clusterRoot, math.MaxUint64)
 
 	sortOpt := clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend)
-	ok, err := getProtoMsg(c.s.client, jobKey, &job, clientv3.WithRange(maxJobKey), clientv3.WithLimit(1), sortOpt)
+	ok, err := getProtoMsg(c.s.client, jobKey, job, clientv3.WithRange(maxJobKey), clientv3.WithLimit(1), sortOpt)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -134,7 +134,7 @@ func (c *raftCluster) getJob() (*pd_jobpd.Job, error) {
 		return nil, nil
 	}
 
-	return &job, nil
+	return job, nil
 }
 
 func (c *raftCluster) popJob(job *pd_jobpd.Job) error {
@@ -172,7 +172,7 @@ func (c *raftCluster) updateJobStatus(job *pd_jobpd.Job, status pd_jobpd.JobStat
 		return errors.Trace(err)
 	}
 	if !resp.Succeeded {
-		return errors.New("pop first job failed")
+		return errors.New("update job status failed")
 	}
 	return nil
 }
@@ -223,8 +223,11 @@ func (c *raftCluster) handleJob(job *pd_jobpd.Job) error {
 
 	if resp == nil {
 		resp, err = c.processJob(job, checkOK)
-		if err != nil || resp == nil {
+		if err != nil {
 			return errors.Trace(err)
+		}
+		if resp == nil {
+			return nil
 		}
 	}
 
@@ -260,7 +263,8 @@ func (c *raftCluster) processJob(job *pd_jobpd.Job, checkOK checkOKFunc) (*raft_
 		adminResponse, err := checkOK(job.Request)
 		if err != nil {
 			return nil, errors.Trace(err)
-		} else if adminResponse == nil {
+		}
+		if adminResponse == nil {
 			log.Warnf("raft server doesn't execute %v, cancel it", job.Request)
 			return nil, nil
 		}
@@ -383,7 +387,7 @@ func (c *raftCluster) HandleAskChangePeer(request *pdpb.AskChangePeerRequest) er
 		if peer, err = c.handleAddPeerReq(region); err != nil {
 			return errors.Trace(err)
 		}
-	} else if peerNumber > maxPeerNumber {
+	} else {
 		log.Infof("region %d peer number %d > %d, need to remove peer", regionID, peerNumber, maxPeerNumber)
 		changeType = raftpb.ConfChangeType_RemoveNode
 		if peer, err = c.handleRemovePeerReq(region, request.Leader); err != nil {
@@ -451,7 +455,7 @@ func (c *raftCluster) checkChangePeerOK(request *raft_cmdpb.RaftCmdRequest) (*ra
 	}
 
 	changePeer := request.AdminRequest.ChangePeer
-	// If leader's conf version changed, we can think ChangePeerOK,
+	// If leader's conf version has changed, we can think ChangePeerOK,
 	// else we can think the raft server doesn't execute this change peer command.
 	if detail.Region.RegionEpoch.GetConfVer() > changePeer.RegionEpoch.GetConfVer() {
 		return &raft_cmdpb.AdminResponse{
@@ -621,7 +625,8 @@ RETRY:
 				if err != nil {
 					log.Errorf("get region %d leader err %v", regionID, err)
 					continue
-				} else if leader == nil {
+				}
+				if leader == nil {
 					log.Infof("can not get leader for region %d in peer %v", regionID, peer)
 					continue
 				}
@@ -652,7 +657,6 @@ func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCmdRequest) (*raft_cmd
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-
 	defer conn.Close()
 
 	msg := &raft_serverpb.Message{

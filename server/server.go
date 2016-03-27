@@ -49,6 +49,9 @@ type Server struct {
 	clusters    map[uint64]*raftCluster
 
 	msgID uint64
+
+	// for node conns
+	nodeConns *nodeConns
 }
 
 // NewServer creates the pd server with given configuration.
@@ -72,13 +75,14 @@ func NewServer(cfg *Config) (*Server, error) {
 	}
 
 	s := &Server{
-		cfg:      cfg,
-		listener: l,
-		client:   client,
-		isLeader: 0,
-		conns:    make(map[*conn]struct{}),
-		closed:   0,
-		clusters: make(map[uint64]*raftCluster),
+		cfg:       cfg,
+		listener:  l,
+		client:    client,
+		isLeader:  0,
+		conns:     make(map[*conn]struct{}),
+		closed:    0,
+		clusters:  make(map[uint64]*raftCluster),
+		nodeConns: newNodeConns(),
 	}
 
 	s.idAlloc = &idAllocator{s: s}
@@ -147,7 +151,7 @@ func (s *Server) Run() error {
 	return nil
 }
 
-func (s *Server) closeAllConnections() {
+func (s *Server) closeClientConnections() {
 	s.connsLock.Lock()
 	defer s.connsLock.Unlock()
 
@@ -155,10 +159,18 @@ func (s *Server) closeAllConnections() {
 		return
 	}
 
-	// TODO: should we send an error message before close?
 	for conn := range s.conns {
-		conn.Close()
+		err := conn.Close()
+		if err != nil {
+			log.Warnf("Close node conn failed - %v", err)
+		}
 	}
 
 	s.conns = make(map[*conn]struct{})
+}
+
+func (s *Server) closeAllConnections() {
+	s.closeClientConnections()
+
+	s.nodeConns.Close()
 }

@@ -3,7 +3,6 @@ package server
 import (
 	"math"
 	"math/rand"
-	"net"
 	"sync/atomic"
 	"time"
 
@@ -25,9 +24,8 @@ import (
 const (
 	checkJobInterval = 10 * time.Second
 
-	connectTimeout = 3 * time.Second
-	readTimeout    = 3 * time.Second
-	writeTimeout   = 3 * time.Second
+	readTimeout  = 3 * time.Second
+	writeTimeout = 3 * time.Second
 
 	maxSendRetry = 10
 )
@@ -653,13 +651,10 @@ func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCmdRequest) (*raft_cmd
 		return nil, errors.Trace(err)
 	}
 
-	// Connect the node.
-	// TODO: use connection pool
-	conn, err := net.DialTimeout("tcp", node.GetAddress(), connectTimeout)
+	nc, err := c.s.nodeConns.GetConn(node.GetAddress())
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	defer conn.Close()
 
 	msg := &raft_serverpb.Message{
 		MsgType: raft_serverpb.MessageType_Cmd.Enum(),
@@ -667,12 +662,12 @@ func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCmdRequest) (*raft_cmd
 	}
 
 	msgID := atomic.AddUint64(&c.s.msgID, 1)
-	if err = util.WriteMessage(conn, msgID, msg); err != nil {
+	if err = util.WriteMessage(nc.conn, msgID, msg); err != nil {
 		return nil, errors.Trace(err)
 	}
 
 	msg.Reset()
-	if _, err = util.ReadMessage(conn, msg); err != nil {
+	if _, err = util.ReadMessage(nc.conn, msg); err != nil {
 		return nil, errors.Trace(err)
 	}
 

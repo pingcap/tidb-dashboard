@@ -663,11 +663,13 @@ func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCmdRequest) (*raft_cmd
 
 	msgID := atomic.AddUint64(&c.s.msgID, 1)
 	if err = util.WriteMessage(nc.conn, msgID, msg); err != nil {
+		c.s.nodeConns.RemoveConn(node.GetAddress())
 		return nil, errors.Trace(err)
 	}
 
 	msg.Reset()
 	if _, err = util.ReadMessage(nc.conn, msg); err != nil {
+		c.s.nodeConns.RemoveConn(node.GetAddress())
 		return nil, errors.Trace(err)
 	}
 

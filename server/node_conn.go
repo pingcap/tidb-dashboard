@@ -87,6 +87,23 @@ func (ncs *nodeConns) GetConn(addr string) (*nodeConn, error) {
 	return conn, nil
 }
 
+// RemoveConn removes the conn by addr.
+func (ncs *nodeConns) RemoveConn(addr string) {
+	ncs.m.Lock()
+	defer ncs.m.Unlock()
+
+	conn, ok := ncs.conns[addr]
+	if !ok {
+		return
+	}
+
+	err := conn.close()
+	if err != nil {
+		log.Warnf("close node conn failed - %v", err)
+	}
+	delete(ncs.conns, addr)
+}
+
 // Close closes the conns.
 func (ncs *nodeConns) Close() {
 	ncs.m.Lock()
@@ -95,7 +112,7 @@ func (ncs *nodeConns) Close() {
 	for _, conn := range ncs.conns {
 		err := conn.close()
 		if err != nil {
-			log.Warnf("Close node conn failed - %v", err)
+			log.Warnf("close node conn failed - %v", err)
 		}
 	}
 

@@ -82,9 +82,10 @@ func NewServer(cfg *Config) (*Server, error) {
 		conns:     make(map[*conn]struct{}),
 		closed:    0,
 		clusters:  make(map[uint64]*raftCluster),
-		nodeConns: newNodeConns(),
+		nodeConns: newNodeConns(defaultConnFunc),
 	}
 
+	s.nodeConns.SetIdleTimeout(idleTimeout)
 	s.idAlloc = &idAllocator{s: s}
 
 	return s, nil

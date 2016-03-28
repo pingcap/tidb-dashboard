@@ -12,6 +12,7 @@ import (
 
 const (
 	connectTimeout = 3 * time.Second
+	idleTimeout    = 30 * time.Second
 )
 
 type nodeConn struct {
@@ -34,22 +35,30 @@ func newNodeConn(addr string) (*nodeConn, error) {
 		touchedTime: time.Now()}, nil
 }
 
+type createConnFunc func(addr string) (*nodeConn, error)
+
+var defaultConnFunc = func(addr string) (*nodeConn, error) {
+	return newNodeConn(addr)
+}
+
 type nodeConns struct {
 	m           sync.Mutex
 	conns       map[string]*nodeConn
 	idleTimeout sync2.AtomicDuration
+	f           createConnFunc
 }
 
 // newNodeConns creates a new node conns.
-func newNodeConns() *nodeConns {
+func newNodeConns(f createConnFunc) *nodeConns {
 	ncs := new(nodeConns)
+	ncs.f = f
 	ncs.conns = make(map[string]*nodeConn)
 	return ncs
 }
 
 // This function is not thread-safed.
 func (ncs *nodeConns) createNewConn(addr string) (*nodeConn, error) {
-	conn, err := newNodeConn(addr)
+	conn, err := ncs.f(addr)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

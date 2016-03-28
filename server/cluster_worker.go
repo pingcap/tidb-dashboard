@@ -556,6 +556,21 @@ func (c *raftCluster) handleSplitOK(split *raft_cmdpb.SplitResponse) error {
 		return errors.Trace(err)
 	}
 	if !resp.Succeeded {
+		// The transaction may be retried, so certainly can't be OK, we should
+		// check whether split regions in Etcd or not here.
+		// Now we only use whether leftSearchPath exists to check, maybe we should
+		// do more check later.
+		v, err := getValue(c.s.client, leftSearchPath)
+		if err != nil {
+			return errors.Trace(err)
+		}
+
+		if v != nil {
+			// We can find the left region with the new end key, so we can
+			// think we have already executed this transaction successfully.
+			return nil
+		}
+
 		return errors.New("update split region failed")
 	}
 

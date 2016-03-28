@@ -163,7 +163,7 @@ func (s *Server) closeClientConnections() {
 	for conn := range s.conns {
 		err := conn.Close()
 		if err != nil {
-			log.Warnf("Close node conn failed - %v", err)
+			log.Warnf("close node conn failed - %v", err)
 		}
 	}
 

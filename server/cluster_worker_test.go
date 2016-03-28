@@ -451,9 +451,9 @@ func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCmdRequest) *
 	region := raftPeer.region
 	c.Assert(region.GetRegionId(), Equals, req.Header.GetRegionId())
 
-	if region.RegionEpoch.GetConfVer() > changePeer.RegionEpoch.GetConfVer() {
+	if region.RegionEpoch.GetConfVer() > req.Header.RegionEpoch.GetConfVer() {
 		return newErrorCmdResponse(errors.Errorf("stale message with epoch %v < %v",
-			region.RegionEpoch, changePeer.RegionEpoch))
+			region.RegionEpoch, req.Header.RegionEpoch))
 	}
 
 	if confType == raftpb.ConfChangeType_AddNode {
@@ -510,9 +510,9 @@ func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_
 	c.Assert(newPeerIDs, HasLen, len(region.Peers))
 
 	version := region.RegionEpoch.GetVersion()
-	if version > split.RegionEpoch.GetVersion() {
+	if version > req.Header.RegionEpoch.GetVersion() {
 		return newErrorCmdResponse(errors.Errorf("stale message with epoch %v < %v",
-			region.RegionEpoch, split.RegionEpoch))
+			region.RegionEpoch, req.Header.RegionEpoch))
 	}
 
 	if bytes.Equal(splitKey, region.GetEndKey()) {

@@ -52,10 +52,10 @@ func newEtcdClient(c *C) *clientv3.Client {
 func deleteRoot(c *C, client *clientv3.Client, rootPath string) {
 	kv := clientv3.NewKV(client)
 
-	_, err := kv.Delete(context.TODO(), rootPath+"/", clientv3.WithPrefix())
+	_, err := kv.Delete(context.Background(), rootPath+"/", clientv3.WithPrefix())
 	c.Assert(err, IsNil)
 
-	_, err = kv.Delete(context.TODO(), rootPath)
+	_, err = kv.Delete(context.Background(), rootPath)
 	c.Assert(err, IsNil)
 }
 

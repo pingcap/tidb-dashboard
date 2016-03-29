@@ -344,7 +344,7 @@ func (n *mockRaftNode) proposeCommand(c *C, req *raft_cmdpb.RaftCmdRequest) *raf
 	if !ok {
 		resp := newErrorCmdResponse(errors.New("region not found"))
 		resp.Header.Error.RegionNotFound = &errorpb.RegionNotFound{
-			RegionId: proto.Uint64(req.Header.GetRegionId()),
+			RegionId: proto.Uint64(regionID),
 		}
 		return resp
 	}

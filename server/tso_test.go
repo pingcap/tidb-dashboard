@@ -61,12 +61,12 @@ func (s *testTsoSuite) testGetTimestamp(c *C, conn net.Conn, n int) {
 		Tso:     tso,
 	}
 
-	msgID := uint64(rand.Int63())
-	sendRequest(c, conn, msgID, req)
+	rawMsgID := uint64(rand.Int63())
+	sendRequest(c, conn, rawMsgID, req)
 	msgID, resp := recvResponse(c, conn)
-	c.Assert(msgID, Equals, msgID)
+	c.Assert(rawMsgID, Equals, msgID)
 	c.Assert(resp.Tso, NotNil)
-	c.Assert(len(resp.Tso.Timestamps), Equals, n)
+	c.Assert(resp.Tso.Timestamps, HasLen, n)
 
 	res := resp.Tso.Timestamps
 	last := pdpb.Timestamp{}

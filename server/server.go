@@ -136,6 +136,7 @@ func (s *Server) Run() error {
 
 		if !s.IsLeader() {
 			log.Infof("server %s is not leader, close connection directly", s.cfg.Addr)
+			conn.Close()
 			continue
 		}
 

@@ -49,9 +49,6 @@ type Server struct {
 	clusters    map[uint64]*raftCluster
 
 	msgID uint64
-
-	// for node conns
-	nodeConns *nodeConns
 }
 
 // NewServer creates the pd server with given configuration.
@@ -75,17 +72,15 @@ func NewServer(cfg *Config) (*Server, error) {
 	}
 
 	s := &Server{
-		cfg:       cfg,
-		listener:  l,
-		client:    client,
-		isLeader:  0,
-		conns:     make(map[*conn]struct{}),
-		closed:    0,
-		clusters:  make(map[uint64]*raftCluster),
-		nodeConns: newNodeConns(defaultConnFunc),
+		cfg:      cfg,
+		listener: l,
+		client:   client,
+		isLeader: 0,
+		conns:    make(map[*conn]struct{}),
+		closed:   0,
+		clusters: make(map[uint64]*raftCluster),
 	}
 
-	s.nodeConns.SetIdleTimeout(idleTimeout)
 	s.idAlloc = &idAllocator{s: s}
 
 	return s, nil
@@ -152,7 +147,7 @@ func (s *Server) Run() error {
 	return nil
 }
 
-func (s *Server) closeClientConnections() {
+func (s *Server) closeAllConnections() {
 	s.connsLock.Lock()
 	defer s.connsLock.Unlock()
 
@@ -163,15 +158,9 @@ func (s *Server) closeClientConnections() {
 	for conn := range s.conns {
 		err := conn.Close()
 		if err != nil {
-			log.Warnf("close node conn failed - %v", err)
+			log.Warnf("close conn failed - %v", err)
 		}
 	}
 
 	s.conns = make(map[*conn]struct{})
-}
-
-func (s *Server) closeAllConnections() {
-	s.closeClientConnections()
-
-	s.nodeConns.Close()
 }

@@ -37,9 +37,7 @@ func newNodeConn(addr string) (*nodeConn, error) {
 
 type createConnFunc func(addr string) (*nodeConn, error)
 
-var defaultConnFunc = func(addr string) (*nodeConn, error) {
-	return newNodeConn(addr)
-}
+var defaultConnFunc = newNodeConn
 
 type nodeConns struct {
 	m           sync.Mutex

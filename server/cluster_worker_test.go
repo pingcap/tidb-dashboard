@@ -119,7 +119,7 @@ func (s *testClusterWorkerSuite) newMockRaftNode(c *C, n *metapb.Node) *mockRaft
 	s.nodeLock.Lock()
 	defer s.nodeLock.Unlock()
 
-	s.nodes[n.GetNodeId()] = node
+	s.nodes[n.GetId()] = node
 
 	return node
 }
@@ -146,7 +146,7 @@ func (s *testClusterWorkerSuite) broadcastRaftMsg(c *C, leader *mockRaftPeer,
 	req *raft_cmdpb.RaftCmdRequest) {
 	region := leader.region
 	for _, peer := range region.Peers {
-		if peer.GetPeerId() != leader.peer.GetPeerId() {
+		if peer.GetId() != leader.peer.GetId() {
 			msg := &mockRaftMsg{
 				peer:   *peer,
 				region: *proto.Clone(&region).(*metapb.Region),
@@ -161,7 +161,7 @@ func (s *testClusterWorkerSuite) broadcastRaftMsg(c *C, leader *mockRaftPeer,
 	if req.AdminRequest != nil && req.AdminRequest.ChangePeer != nil {
 		changePeer := req.AdminRequest.ChangePeer
 		if changePeer.GetChangeType() == raftpb.ConfChangeType_AddNode {
-			c.Assert(changePeer.Peer.GetPeerId(), Not(Equals), leader.peer.GetPeerId())
+			c.Assert(changePeer.Peer.GetId(), Not(Equals), leader.peer.GetId())
 			msg := &mockRaftMsg{
 				peer:   *changePeer.Peer,
 				region: *proto.Clone(&region).(*metapb.Region),
@@ -186,7 +186,7 @@ func (s *testClusterWorkerSuite) chooseRegionLeader(c *C, region *metapb.Region)
 	s.regionLeaderLock.Lock()
 	defer s.regionLeaderLock.Unlock()
 
-	s.regionLeaders[region.GetRegionId()] = *peer
+	s.regionLeaders[region.GetId()] = *peer
 	return peer
 }
 
@@ -195,22 +195,22 @@ func (n *mockRaftNode) addStore(c *C, s *metapb.Store) *mockRaftStore {
 	defer n.Unlock()
 
 	if s == nil {
-		s = n.s.newStore(c, n.node.GetNodeId(), 0)
+		s = n.s.newStore(c, n.node.GetId(), 0)
 	} else {
-		c.Assert(s.GetNodeId(), Equals, n.node.GetNodeId())
+		c.Assert(s.GetNodeId(), Equals, n.node.GetId())
 	}
 
 	store := &mockRaftStore{
 		s: n.s,
 		storeIdent: raft_serverpb.StoreIdent{
 			ClusterId: proto.Uint64(n.s.clusterID),
-			NodeId:    proto.Uint64(n.node.GetNodeId()),
-			StoreId:   proto.Uint64(s.GetStoreId()),
+			NodeId:    proto.Uint64(n.node.GetId()),
+			StoreId:   proto.Uint64(s.GetId()),
 		},
 		peers: make(map[uint64]*mockRaftPeer),
 	}
 
-	n.stores[s.GetStoreId()] = store
+	n.stores[s.GetId()] = store
 
 	cluster, err := n.s.svr.getCluster(n.s.clusterID)
 	c.Assert(err, IsNil)
@@ -237,7 +237,7 @@ func (s *mockRaftStore) addRegion(c *C, region *metapb.Region) {
 		}
 	}
 	c.Assert(found, IsTrue)
-	s.peers[region.GetRegionId()] = &mockRaftPeer{
+	s.peers[region.GetId()] = &mockRaftPeer{
 		peer:   peer,
 		region: *proto.Clone(region).(*metapb.Region),
 	}
@@ -313,7 +313,7 @@ func (n *mockRaftNode) handleRaftMsg(c *C, msg *mockRaftMsg) {
 	store.Lock()
 	defer store.Unlock()
 
-	regionID := msg.region.GetRegionId()
+	regionID := msg.region.GetId()
 	_, ok = store.peers[regionID]
 	if !ok {
 		// No peer, create it.
@@ -369,7 +369,7 @@ func (n *mockRaftNode) proposeCommand(c *C, req *raft_cmdpb.RaftCmdRequest) *raf
 	defer n.s.regionLeaderLock.Unlock()
 
 	leader, ok := n.s.regionLeaders[regionID]
-	if !ok || leader.GetPeerId() != peer.peer.GetPeerId() {
+	if !ok || leader.GetId() != peer.peer.GetId() {
 		resp := newErrorCmdResponse(errors.New("peer not leader"))
 		resp.Header.Error.NotLeader = &errorpb.NotLeader{
 			RegionId: proto.Uint64(regionID),
@@ -460,7 +460,7 @@ func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCmdRequest) *
 
 	raftPeer := s.peers[req.Header.GetRegionId()]
 	region := raftPeer.region
-	c.Assert(region.GetRegionId(), Equals, req.Header.GetRegionId())
+	c.Assert(region.GetId(), Equals, req.Header.GetRegionId())
 
 	if region.RegionEpoch.GetConfVer() > req.Header.RegionEpoch.GetConfVer() {
 		return newErrorCmdResponse(errors.Errorf("stale message with epoch %v < %v",
@@ -469,7 +469,7 @@ func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCmdRequest) *
 
 	if confType == raftpb.ConfChangeType_AddNode {
 		for _, p := range region.Peers {
-			if p.GetPeerId() == peer.GetPeerId() || p.GetStoreId() == peer.GetStoreId() {
+			if p.GetId() == peer.GetId() || p.GetStoreId() == peer.GetStoreId() {
 				return newErrorCmdResponse(errors.Errorf("add duplicated peer %v for region %v", peer, region))
 			}
 		}
@@ -478,7 +478,7 @@ func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCmdRequest) *
 	} else {
 		foundIndex := -1
 		for i, p := range region.Peers {
-			if p.GetPeerId() == peer.GetPeerId() {
+			if p.GetId() == peer.GetId() {
 				foundIndex = i
 				break
 			}
@@ -493,7 +493,7 @@ func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCmdRequest) *
 
 		// remove itself
 		if peer.GetStoreId() == s.storeIdent.GetStoreId() {
-			delete(s.peers, region.GetRegionId())
+			delete(s.peers, region.GetId())
 		}
 	}
 
@@ -537,7 +537,7 @@ func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_
 
 	region.RegionEpoch.Version = proto.Uint64(version + 1)
 	newRegion := &metapb.Region{
-		RegionId: proto.Uint64(newRegionID),
+		Id:       proto.Uint64(newRegionID),
 		Peers:    make([]*metapb.Peer, len(newPeerIDs)),
 		StartKey: splitKey,
 		EndKey:   append([]byte(nil), region.GetEndKey()...),
@@ -551,7 +551,7 @@ func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_
 
 	for i, id := range newPeerIDs {
 		peer := *region.Peers[i]
-		peer.PeerId = proto.Uint64(id)
+		peer.Id = proto.Uint64(id)
 
 		if peer.GetStoreId() == s.storeIdent.GetStoreId() {
 			newPeer = peer
@@ -614,7 +614,7 @@ func (s *testClusterWorkerSuite) SetUpSuite(c *C) {
 	cluster, err := s.svr.getCluster(s.clusterID)
 	c.Assert(err, IsNil)
 	cluster.PutMeta(&metapb.Cluster{
-		ClusterId:     proto.Uint64(s.clusterID),
+		Id:            proto.Uint64(s.clusterID),
 		MaxPeerNumber: proto.Uint32(5),
 	})
 
@@ -675,7 +675,7 @@ func (s *testClusterWorkerSuite) regionPeerExisted(c *C, regionID uint64, peer *
 		return false
 	}
 
-	c.Assert(p.peer.GetPeerId(), Equals, peer.GetPeerId())
+	c.Assert(p.peer.GetId(), Equals, peer.GetId())
 	return true
 }
 
@@ -714,7 +714,7 @@ func (s *testClusterWorkerSuite) TestChangePeer(c *C) {
 
 		if rand.Intn(2) == 1 {
 			// randomly change leader
-			s.clearRegionLeader(c, region.GetRegionId())
+			s.clearRegionLeader(c, region.GetId())
 			s.chooseRegionLeader(c, region)
 		}
 
@@ -727,14 +727,14 @@ func (s *testClusterWorkerSuite) TestChangePeer(c *C) {
 
 	region = s.checkRegionPeerNumber(c, regionKey, 5)
 
-	regionID := region.GetRegionId()
+	regionID := region.GetId()
 	for _, peer := range region.Peers {
 		ok := s.regionPeerExisted(c, regionID, peer)
 		c.Assert(ok, IsTrue)
 	}
 
 	err = cluster.PutMeta(&metapb.Cluster{
-		ClusterId:     proto.Uint64(s.clusterID),
+		Id:            proto.Uint64(s.clusterID),
 		MaxPeerNumber: proto.Uint32(3),
 	})
 	c.Assert(err, IsNil)
@@ -771,7 +771,7 @@ func (s *testClusterWorkerSuite) TestChangePeer(c *C) {
 	for _, oldPeer := range oldRegion.Peers {
 		found := false
 		for _, peer := range region.Peers {
-			if oldPeer.GetPeerId() == peer.GetPeerId() {
+			if oldPeer.GetId() == peer.GetId() {
 				found = true
 				break
 			}
@@ -817,7 +817,7 @@ func (s *testClusterWorkerSuite) TestSplit(c *C) {
 		leaderPeer := s.chooseRegionLeader(c, region)
 		if rand.Intn(2) == 1 {
 			// randomly change leader
-			s.clearRegionLeader(c, region.GetRegionId())
+			s.clearRegionLeader(c, region.GetId())
 			s.chooseRegionLeader(c, region)
 		}
 
@@ -840,10 +840,10 @@ func (s *testClusterWorkerSuite) TestSplit(c *C) {
 		c.Assert(err, IsNil)
 		c.Assert(left.GetStartKey(), BytesEquals, []byte(t.startKey))
 		c.Assert(left.GetEndKey(), BytesEquals, []byte(t.splitKey))
-		c.Assert(left.GetRegionId(), Equals, region.GetRegionId())
+		c.Assert(left.GetId(), Equals, region.GetId())
 
 		for _, peer := range left.Peers {
-			ok := s.regionPeerExisted(c, left.GetRegionId(), peer)
+			ok := s.regionPeerExisted(c, left.GetId(), peer)
 			c.Assert(ok, IsTrue)
 		}
 

@@ -33,20 +33,20 @@ var (
 	// If we alloc ID in client in the future, these IDs must be updated.
 	clusterID = uint64(time.Now().Unix())
 	node      = &metapb.Node{
-		NodeId:  proto.Uint64(1),
+		Id:      proto.Uint64(1),
 		Address: proto.String("localhost"),
 	}
 	store = &metapb.Store{
-		StoreId: proto.Uint64(2),
-		NodeId:  proto.Uint64(node.GetNodeId()),
+		Id:     proto.Uint64(2),
+		NodeId: proto.Uint64(node.GetId()),
 	}
 	peer = &metapb.Peer{
-		PeerId:  proto.Uint64(3),
-		NodeId:  proto.Uint64(node.GetNodeId()),
-		StoreId: proto.Uint64(store.GetStoreId()),
+		Id:      proto.Uint64(3),
+		NodeId:  proto.Uint64(node.GetId()),
+		StoreId: proto.Uint64(store.GetId()),
 	}
 	region = &metapb.Region{
-		RegionId: proto.Uint64(4),
+		Id: proto.Uint64(4),
 		RegionEpoch: &metapb.RegionEpoch{
 			ConfVer: proto.Uint64(1),
 			Version: proto.Uint64(1),
@@ -138,7 +138,7 @@ func (s *testClientSuite) TestGetRegion(c *C) {
 }
 
 func (s *testClientSuite) TestGetNode(c *C) {
-	n, err := s.client.GetNode(node.GetNodeId())
+	n, err := s.client.GetNode(node.GetId())
 	c.Assert(err, IsNil)
 	c.Assert(n, DeepEquals, node)
 }

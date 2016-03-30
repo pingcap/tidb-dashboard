@@ -63,7 +63,7 @@ func (s *testClusterBaseSuite) newNode(c *C, nodeID uint64, addr string) *metapb
 	}
 
 	return &metapb.Node{
-		NodeId:  proto.Uint64(nodeID),
+		Id:      proto.Uint64(nodeID),
 		Address: proto.String(addr),
 	}
 }
@@ -75,8 +75,8 @@ func (s *testClusterBaseSuite) newStore(c *C, nodeID uint64, storeID uint64) *me
 
 	c.Assert(nodeID, Greater, uint64(0))
 	return &metapb.Store{
-		NodeId:  proto.Uint64(nodeID),
-		StoreId: proto.Uint64(storeID),
+		NodeId: proto.Uint64(nodeID),
+		Id:     proto.Uint64(storeID),
 	}
 }
 
@@ -91,7 +91,7 @@ func (s *testClusterBaseSuite) newPeer(c *C, nodeID uint64, storeID uint64, peer
 	return &metapb.Peer{
 		NodeId:  proto.Uint64(nodeID),
 		StoreId: proto.Uint64(storeID),
-		PeerId:  proto.Uint64(peerID),
+		Id:      proto.Uint64(peerID),
 	}
 }
 
@@ -109,12 +109,12 @@ func (s *testClusterBaseSuite) newRegion(c *C, regionID uint64, startKey []byte,
 	}
 
 	for _, peer := range peers {
-		peerID := peer.GetPeerId()
+		peerID := peer.GetId()
 		c.Assert(peerID, Greater, uint64(0))
 	}
 
 	return &metapb.Region{
-		RegionId:    proto.Uint64(regionID),
+		Id:          proto.Uint64(regionID),
 		StartKey:    startKey,
 		EndKey:      endKey,
 		Peers:       peers,
@@ -170,8 +170,8 @@ func (s *testClusterBaseSuite) newIsBootstrapRequest(clusterID uint64) *pdpb.Req
 
 func (s *testClusterBaseSuite) newBootstrapRequest(c *C, clusterID uint64, nodeAddr string) *pdpb.Request {
 	node := s.newNode(c, 0, nodeAddr)
-	store := s.newStore(c, node.GetNodeId(), 0)
-	peer := s.newPeer(c, node.GetNodeId(), store.GetStoreId(), 0)
+	store := s.newStore(c, node.GetId(), 0)
+	peer := s.newPeer(c, node.GetId(), store.GetId(), 0)
 	region := s.newRegion(c, 0, []byte{}, []byte{}, []*metapb.Peer{peer}, nil)
 
 	req := &pdpb.Request{
@@ -209,7 +209,7 @@ func (s *testClusterBaseSuite) getNode(c *C, conn net.Conn, clusterID uint64, no
 	_, resp := recvResponse(c, conn)
 	c.Assert(resp.GetMeta, NotNil)
 	c.Assert(resp.GetMeta.GetMetaType(), Equals, pdpb.MetaType_NodeType)
-	c.Assert(resp.GetMeta.GetNode().GetNodeId(), Equals, uint64(nodeID))
+	c.Assert(resp.GetMeta.GetNode().GetId(), Equals, uint64(nodeID))
 
 	return resp.GetMeta.GetNode()
 }
@@ -228,7 +228,7 @@ func (s *testClusterBaseSuite) getStore(c *C, conn net.Conn, clusterID uint64, s
 	_, resp := recvResponse(c, conn)
 	c.Assert(resp.GetMeta, NotNil)
 	c.Assert(resp.GetMeta.GetMetaType(), Equals, pdpb.MetaType_StoreType)
-	c.Assert(resp.GetMeta.GetStore().GetStoreId(), Equals, uint64(storeID))
+	c.Assert(resp.GetMeta.GetStore().GetId(), Equals, uint64(storeID))
 
 	return resp.GetMeta.GetStore()
 }
@@ -326,7 +326,7 @@ func (s *testClusterSuite) TestGetPutMeta(c *C) {
 			Store:    s.newStore(c, nodeID, 0),
 		},
 	}
-	storeID = req.PutMeta.Store.GetStoreId()
+	storeID = req.PutMeta.Store.GetId()
 	sendRequest(c, conn, 0, req)
 	_, resp = recvResponse(c, conn)
 	c.Assert(resp.PutMeta, NotNil)
@@ -356,7 +356,7 @@ func (s *testClusterSuite) TestGetPutMeta(c *C) {
 		PutMeta: &pdpb.PutMetaRequest{
 			MetaType: pdpb.MetaType_ClusterType.Enum(),
 			Cluster: &metapb.Cluster{
-				ClusterId:     proto.Uint64(clusterID),
+				Id:            proto.Uint64(clusterID),
 				MaxPeerNumber: proto.Uint32(5),
 			},
 		},
@@ -385,7 +385,7 @@ func (s *testClusterSuite) TestCache(c *C) {
 	node2 := s.newNode(c, 0, "127.0.0.1:2")
 	err = cluster.PutNode(node2)
 	c.Assert(err, IsNil)
-	store2 := s.newStore(c, node2.GetNodeId(), 0)
+	store2 := s.newStore(c, node2.GetId(), 0)
 	err = cluster.PutStore(store2)
 	c.Assert(err, IsNil)
 
@@ -394,14 +394,14 @@ func (s *testClusterSuite) TestCache(c *C) {
 	c.Assert(err, IsNil)
 
 	nodes := map[uint64]*metapb.Node{
-		node1.GetNodeId(): node1,
-		node2.GetNodeId(): node2,
-		node3.GetNodeId(): node3,
+		node1.GetId(): node1,
+		node2.GetId(): node2,
+		node3.GetId(): node3,
 	}
 
 	stores := map[uint64]*metapb.Store{
-		store1.GetStoreId(): store1,
-		store2.GetStoreId(): store2,
+		store1.GetId(): store1,
+		store2.GetId(): store2,
 	}
 
 	s.svr.clusterLock.Lock()
@@ -416,7 +416,7 @@ func (s *testClusterSuite) TestCache(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(allNodes, HasLen, 3)
 	for _, node := range allNodes {
-		_, ok := nodes[node.GetNodeId()]
+		_, ok := nodes[node.GetId()]
 		c.Assert(ok, IsTrue)
 	}
 
@@ -424,7 +424,7 @@ func (s *testClusterSuite) TestCache(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(allStores, HasLen, 2)
 	for _, store := range allStores {
-		_, ok := stores[store.GetStoreId()]
+		_, ok := stores[store.GetId()]
 		c.Assert(ok, IsTrue)
 	}
 }

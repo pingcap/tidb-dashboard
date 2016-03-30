@@ -11,10 +11,10 @@ import (
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/metapb"
+	"github.com/pingcap/kvproto/pkg/msgpb"
 	"github.com/pingcap/kvproto/pkg/pd_jobpb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/kvproto/pkg/raft_cmdpb"
-	"github.com/pingcap/kvproto/pkg/raft_serverpb"
 	"github.com/pingcap/kvproto/pkg/raftpb"
 	"github.com/pingcap/pd/util"
 	"github.com/twinj/uuid"
@@ -670,8 +670,8 @@ func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCmdRequest) (*raft_cmd
 		return nil, errors.Trace(err)
 	}
 
-	msg := &raft_serverpb.Message{
-		MsgType: raft_serverpb.MessageType_Cmd.Enum(),
+	msg := &msgpb.Message{
+		MsgType: msgpb.MessageType_Cmd.Enum(),
 		CmdReq:  request,
 	}
 

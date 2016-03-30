@@ -90,10 +90,10 @@ func (s *testAllocIDSuite) TestCommand(c *C) {
 
 	var last uint64
 	for i := uint64(0); i < 2*allocStep; i++ {
-		msgID := uint64(rand.Int63())
-		sendRequest(c, conn, msgID, req)
+		rawMsgID := uint64(rand.Int63())
+		sendRequest(c, conn, rawMsgID, req)
 		msgID, resp := recvResponse(c, conn)
-		c.Assert(msgID, Equals, msgID)
+		c.Assert(rawMsgID, Equals, msgID)
 		c.Assert(resp.AllocId, NotNil)
 		c.Assert(resp.AllocId.GetId(), Greater, last)
 		last = resp.AllocId.GetId()

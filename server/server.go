@@ -156,9 +156,11 @@ func (s *Server) closeAllConnections() {
 		return
 	}
 
-	// TODO: should we send an error message before close?
 	for conn := range s.conns {
-		conn.Close()
+		err := conn.Close()
+		if err != nil {
+			log.Warnf("close conn failed - %v", err)
+		}
 	}
 
 	s.conns = make(map[*conn]struct{})

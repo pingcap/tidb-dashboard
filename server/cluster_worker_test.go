@@ -250,32 +250,42 @@ func (n *mockRaftNode) runCmd(c *C) {
 			return
 		}
 
-		msg := &raft_serverpb.Message{}
-		msgID, err := util.ReadMessage(conn, msg)
-		c.Assert(err, IsNil)
+		go func() {
+			for {
+				msg := &raft_serverpb.Message{}
+				msgID, err := util.ReadMessage(conn, msg)
+				if err != nil {
+					c.Log(err)
+					return
+				}
 
-		req := msg.GetCmdReq()
-		c.Assert(req, NotNil)
+				req := msg.GetCmdReq()
+				c.Assert(req, NotNil)
 
-		resp := n.proposeCommand(c, req)
-		if resp.Header == nil {
-			resp.Header = &raft_cmdpb.RaftResponseHeader{}
-		}
-		resp.Header.Uuid = req.Header.Uuid
+				resp := n.proposeCommand(c, req)
+				if resp.Header == nil {
+					resp.Header = &raft_cmdpb.RaftResponseHeader{}
+				}
+				resp.Header.Uuid = req.Header.Uuid
 
-		respMsg := &raft_serverpb.Message{
-			MsgType: raft_serverpb.MessageType_CmdResp.Enum(),
-			CmdResp: resp,
-		}
+				respMsg := &raft_serverpb.Message{
+					MsgType: raft_serverpb.MessageType_CmdResp.Enum(),
+					CmdResp: resp,
+				}
 
-		if rand.Intn(2) == 1 && resp.StatusResponse == nil {
-			// randomly close the connection to force
-			// cluster work retry
-			conn.Close()
-		} else {
-			err = util.WriteMessage(conn, msgID, respMsg)
-			c.Assert(err, IsNil)
-		}
+				if rand.Intn(2) == 1 && resp.StatusResponse == nil {
+					// randomly close the connection to force
+					// cluster work retry
+					conn.Close()
+					return
+				}
+
+				err = util.WriteMessage(conn, msgID, respMsg)
+				if err != nil {
+					c.Log(err)
+				}
+			}
+		}()
 	}
 }
 

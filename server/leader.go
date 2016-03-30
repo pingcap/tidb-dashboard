@@ -6,14 +6,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/coreos/etcd/clientv3"
 	storagepb "github.com/coreos/etcd/storage/storagepb"
 	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/pdpb"
+	"golang.org/x/net/context"
 )
 
 // IsLeader returns whether server is leader or not.

@@ -99,8 +99,8 @@ func updateResponse(req *pdpb.Request, resp *pdpb.Response) {
 	resp.Header.ClusterId = req.Header.ClusterId
 }
 
-func (c *conn) Close() {
-	c.conn.Close()
+func (c *conn) Close() error {
+	return errors.Trace(c.conn.Close())
 }
 
 func (c *conn) handleRequest(req *pdpb.Request) (*pdpb.Response, error) {

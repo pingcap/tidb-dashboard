@@ -57,7 +57,7 @@ var (
 
 type testClientSuite struct {
 	srv    *server.Server
-	client *Client
+	client Client
 }
 
 func (s *testClientSuite) SetUpSuite(c *C) {

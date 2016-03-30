@@ -18,7 +18,22 @@ const requestTimeout = 3 * time.Second
 
 // Client is a PD (Placement Driver) client.
 // It should not be used after calling Close().
-type Client struct {
+type Client interface {
+	// GetTS gets a timestamp from PD.
+	GetTS() (int64, int64, error)
+	// GetRegion gets a region from PD by key.
+	// The region may expire after split. Caller is responsible for caching and
+	// taking care of region change.
+	GetRegion(key []byte) (*metapb.Region, error)
+	// GetNode gets a node from PD by node id.
+	// The node may expire later. Caller is responsible for caching and taking care
+	// of node change.
+	GetNode(nodeID uint64) (*metapb.Node, error)
+	// Close closes the client.
+	Close()
+}
+
+type client struct {
 	clusterID   uint64
 	etcdClient  *clientv3.Client
 	workerMutex sync.RWMutex
@@ -32,7 +47,7 @@ func getLeaderPath(rootPath string) string {
 }
 
 // NewClient creates a PD client.
-func NewClient(etcdAddrs []string, rootPath string, clusterID uint64) (*Client, error) {
+func NewClient(etcdAddrs []string, rootPath string, clusterID uint64) (Client, error) {
 	log.Infof("[pd] create etcd client with endpoints %v", etcdAddrs)
 	etcdClient, err := clientv3.New(clientv3.Config{
 		Endpoints:   etcdAddrs,
@@ -47,7 +62,7 @@ func NewClient(etcdAddrs []string, rootPath string, clusterID uint64) (*Client, 
 		return nil, errors.Trace(err)
 	}
 
-	client := &Client{
+	client := &client{
 		clusterID:  clusterID,
 		etcdClient: etcdClient,
 		worker:     newRPCWorker(leaderAddr, clusterID),
@@ -60,8 +75,7 @@ func NewClient(etcdAddrs []string, rootPath string, clusterID uint64) (*Client, 
 	return client, nil
 }
 
-// Close stops the client.
-func (c *Client) Close() {
+func (c *client) Close() {
 	c.etcdClient.Close()
 
 	close(c.quit)
@@ -70,8 +84,7 @@ func (c *Client) Close() {
 	c.worker.stop(errors.New("[pd] pd-client closing"))
 }
 
-// GetTS gets a timestamp from PD.
-func (c *Client) GetTS() (int64, int64, error) {
+func (c *client) GetTS() (int64, int64, error) {
 	req := &tsoRequest{
 		done: make(chan error),
 	}
@@ -82,10 +95,7 @@ func (c *Client) GetTS() (int64, int64, error) {
 	return req.physical, req.logical, err
 }
 
-// GetRegion gets a region from PD by key.
-// The region may expire after split. Caller is responsible for caching and
-// taking care of region change.
-func (c *Client) GetRegion(key []byte) (*metapb.Region, error) {
+func (c *client) GetRegion(key []byte) (*metapb.Region, error) {
 	req := &metaRequest{
 		pbReq: &pdpb.GetMetaRequest{
 			MetaType:  pdpb.MetaType_RegionType.Enum(),
@@ -107,10 +117,7 @@ func (c *Client) GetRegion(key []byte) (*metapb.Region, error) {
 	return region, nil
 }
 
-// GetNode gets a node from PD by node id.
-// The node may expire later. Caller is responsible for caching and taking care
-// of node change.
-func (c *Client) GetNode(nodeID uint64) (*metapb.Node, error) {
+func (c *client) GetNode(nodeID uint64) (*metapb.Node, error) {
 	req := &metaRequest{
 		pbReq: &pdpb.GetMetaRequest{
 			MetaType: pdpb.MetaType_NodeType.Enum(),
@@ -132,7 +139,7 @@ func (c *Client) GetNode(nodeID uint64) (*metapb.Node, error) {
 	return node, nil
 }
 
-func (c *Client) watchLeader(leaderPath string, revision int64) {
+func (c *client) watchLeader(leaderPath string, revision int64) {
 	defer c.wg.Done()
 WATCH:
 	for {

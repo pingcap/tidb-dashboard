@@ -12,6 +12,7 @@ import (
 	. "github.com/pingcap/check"
 	"github.com/pingcap/kvproto/pkg/errorpb"
 	"github.com/pingcap/kvproto/pkg/metapb"
+	"github.com/pingcap/kvproto/pkg/msgpb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/kvproto/pkg/raft_cmdpb"
 	"github.com/pingcap/kvproto/pkg/raft_serverpb"
@@ -252,7 +253,7 @@ func (n *mockRaftNode) runCmd(c *C) {
 
 		go func() {
 			for {
-				msg := &raft_serverpb.Message{}
+				msg := &msgpb.Message{}
 				msgID, err := util.ReadMessage(conn, msg)
 				if err != nil {
 					c.Log(err)
@@ -268,8 +269,8 @@ func (n *mockRaftNode) runCmd(c *C) {
 				}
 				resp.Header.Uuid = req.Header.Uuid
 
-				respMsg := &raft_serverpb.Message{
-					MsgType: raft_serverpb.MessageType_CmdResp.Enum(),
+				respMsg := &msgpb.Message{
+					MsgType: msgpb.MessageType_CmdResp.Enum(),
 					CmdResp: resp,
 				}
 

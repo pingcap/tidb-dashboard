@@ -89,7 +89,7 @@ func (c *raftCluster) postJob(job *pd_jobpd.Job) error {
 		return errors.Trace(err)
 	}
 
-	job.JobId = proto.Uint64(jobID)
+	job.Id = proto.Uint64(jobID)
 	job.Request.Header.Uuid = uuid.NewV4().Bytes()
 	job.Status = pd_jobpd.JobStatus_Pending.Enum()
 
@@ -138,7 +138,7 @@ func (c *raftCluster) getJob() (*pd_jobpd.Job, error) {
 }
 
 func (c *raftCluster) popJob(job *pd_jobpd.Job) error {
-	jobKey := makeJobKey(c.clusterRoot, job.GetJobId())
+	jobKey := makeJobKey(c.clusterRoot, job.GetId())
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	resp, err := c.s.client.Txn(ctx).
 		If(c.s.leaderCmp()).
@@ -155,7 +155,7 @@ func (c *raftCluster) popJob(job *pd_jobpd.Job) error {
 }
 
 func (c *raftCluster) updateJobStatus(job *pd_jobpd.Job, status pd_jobpd.JobStatus) error {
-	jobKey := makeJobKey(c.clusterRoot, job.GetJobId())
+	jobKey := makeJobKey(c.clusterRoot, job.GetId())
 	job.Status = status.Enum()
 	jobValue, err := proto.Marshal(job)
 	if err != nil {
@@ -308,7 +308,7 @@ func (c *raftCluster) handleAddPeerReq(region *metapb.Region) (*metapb.Peer, err
 
 	// Find a proper store which the region has not in.
 	for _, store := range mu.stores {
-		storeID := store.GetStoreId()
+		storeID := store.GetId()
 		nodeID := store.GetNodeId()
 
 		existNode := false
@@ -340,8 +340,8 @@ func (c *raftCluster) handleAddPeerReq(region *metapb.Region) (*metapb.Peer, err
 
 	peer := &metapb.Peer{
 		NodeId:  proto.Uint64(store.GetNodeId()),
-		StoreId: proto.Uint64(store.GetStoreId()),
-		PeerId:  proto.Uint64(peerID),
+		StoreId: proto.Uint64(store.GetId()),
+		Id:      proto.Uint64(peerID),
 	}
 
 	return peer, nil
@@ -354,7 +354,7 @@ func (c *raftCluster) handleRemovePeerReq(region *metapb.Region, leader *metapb.
 	}
 
 	for _, peer := range region.Peers {
-		if peer.GetPeerId() != leader.GetPeerId() {
+		if peer.GetId() != leader.GetId() {
 			return peer, nil
 		}
 	}
@@ -372,7 +372,7 @@ func (c *raftCluster) HandleAskChangePeer(request *pdpb.AskChangePeerRequest) er
 	var (
 		maxPeerNumber = int(clusterMeta.GetMaxPeerNumber())
 		region        = request.GetRegion()
-		regionID      = region.GetRegionId()
+		regionID      = region.GetId()
 		peerNumber    = len(region.GetPeers())
 		changeType    raftpb.ConfChangeType
 		peer          *metapb.Peer
@@ -492,7 +492,7 @@ func (c *raftCluster) HandleAskSplit(request *pdpb.AskSplitRequest) error {
 
 	req := &raft_cmdpb.RaftCmdRequest{
 		Header: &raft_cmdpb.RaftRequestHeader{
-			RegionId:    request.Region.RegionId,
+			RegionId:    request.Region.Id,
 			Peer:        request.Leader,
 			RegionEpoch: request.Region.RegionEpoch,
 		},
@@ -527,8 +527,8 @@ func (c *raftCluster) handleSplitOK(split *raft_cmdpb.SplitResponse) error {
 
 	var ops []clientv3.Op
 
-	leftPath := makeRegionKey(c.clusterRoot, left.GetRegionId())
-	rightPath := makeRegionKey(c.clusterRoot, right.GetRegionId())
+	leftPath := makeRegionKey(c.clusterRoot, left.GetId())
+	rightPath := makeRegionKey(c.clusterRoot, right.GetId())
 
 	ops = append(ops, clientv3.OpPut(leftPath, encodeRegionSearchKey(left.GetEndKey())))
 	ops = append(ops, clientv3.OpPut(rightPath, encodeRegionSearchKey(right.GetEndKey())))
@@ -627,11 +627,11 @@ RETRY:
 				continue
 			}
 
-			regionID := region.GetRegionId()
+			regionID := region.GetId()
 			// The origin peer is not leader, but we can't get the leader now,
 			// so we try to get the leader in other region peers.
 			for _, peer := range region.Peers {
-				if peer.GetPeerId() == originPeer.GetPeerId() {
+				if peer.GetId() == originPeer.GetId() {
 					continue
 				}
 

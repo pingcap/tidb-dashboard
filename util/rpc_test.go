@@ -17,8 +17,8 @@ func (s *testRPCSuite) TestCodec(c *C) {
 	var buf bytes.Buffer
 
 	store := metapb.Store{
-		NodeId:  proto.Uint64(1),
-		StoreId: proto.Uint64(2),
+		NodeId: proto.Uint64(1),
+		Id:     proto.Uint64(2),
 	}
 
 	err := WriteMessage(&buf, 1, &store)

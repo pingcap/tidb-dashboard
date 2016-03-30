@@ -218,7 +218,7 @@ func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 	nodeMeta := req.GetNode()
 	if nodeMeta == nil {
 		return errors.Errorf("missing node meta for bootstrap %d", clusterID)
-	} else if nodeMeta.GetNodeId() == 0 {
+	} else if nodeMeta.GetId() == 0 {
 		return errors.New("invalid zero node id")
 	}
 
@@ -233,7 +233,7 @@ func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 	} else if len(regionMeta.GetStartKey()) > 0 || len(regionMeta.GetEndKey()) > 0 {
 		// first region start/end key must be empty
 		return errors.Errorf("invalid first region key range, must all be empty for bootstrap %d", clusterID)
-	} else if regionMeta.GetRegionId() == 0 {
+	} else if regionMeta.GetId() == 0 {
 		return errors.New("invalid zero region id")
 	}
 
@@ -244,16 +244,16 @@ func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 
 	peer := peers[0]
 
-	if peer.GetNodeId() != nodeMeta.GetNodeId() {
-		return errors.Errorf("invalid peer node id %d != %d for bootstrap %d", peer.GetNodeId(), nodeMeta.GetNodeId(), clusterID)
-	} else if peer.GetPeerId() == 0 {
+	if peer.GetNodeId() != nodeMeta.GetId() {
+		return errors.Errorf("invalid peer node id %d != %d for bootstrap %d", peer.GetNodeId(), nodeMeta.GetId(), clusterID)
+	} else if peer.GetId() == 0 {
 		return errors.New("invalid zero peer id")
 	}
 
 	found := false
 	storeIDs := make(map[uint64]struct{})
 	for _, storeMeta := range storesMeta {
-		storeID := storeMeta.GetStoreId()
+		storeID := storeMeta.GetId()
 		if storeID == 0 {
 			return errors.New("invalid zero store id")
 		}
@@ -264,8 +264,8 @@ func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 		}
 		storeIDs[storeID] = struct{}{}
 
-		if storeMeta.GetNodeId() != nodeMeta.GetNodeId() {
-			return errors.Errorf("invalid store node id %d != %d for bootstrap %d", storeMeta.GetNodeId(), nodeMeta.GetNodeId(), clusterID)
+		if storeMeta.GetNodeId() != nodeMeta.GetId() {
+			return errors.Errorf("invalid store node id %d != %d for bootstrap %d", storeMeta.GetNodeId(), nodeMeta.GetId(), clusterID)
 		}
 
 		if storeID == peer.GetStoreId() {
@@ -288,7 +288,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	}
 
 	clusterMeta := metapb.Cluster{
-		ClusterId:     proto.Uint64(clusterID),
+		Id:            proto.Uint64(clusterID),
 		MaxPeerNumber: proto.Uint32(defaultMaxPeerNumber),
 	}
 
@@ -303,7 +303,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	ops = append(ops, clientv3.OpPut(clusterRootPath, string(clusterValue)))
 
 	// Set node meta
-	nodePath := makeNodeKey(clusterRootPath, req.GetNode().GetNodeId())
+	nodePath := makeNodeKey(clusterRootPath, req.GetNode().GetId())
 	nodeValue, err := proto.Marshal(req.GetNode())
 	if err != nil {
 		return errors.Trace(err)
@@ -312,7 +312,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 
 	// Set store meta
 	for _, storeMeta := range req.GetStores() {
-		storePath := makeStoreKey(clusterRootPath, storeMeta.GetStoreId())
+		storePath := makeStoreKey(clusterRootPath, storeMeta.GetId())
 		storeValue, err1 := proto.Marshal(storeMeta)
 		if err1 != nil {
 			return errors.Trace(err1)
@@ -321,7 +321,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	}
 
 	// Set region id -> search key
-	regionPath := makeRegionKey(clusterRootPath, req.GetRegion().GetRegionId())
+	regionPath := makeRegionKey(clusterRootPath, req.GetRegion().GetId())
 	ops = append(ops, clientv3.OpPut(regionPath, encodeRegionSearchKey(req.GetRegion().GetEndKey())))
 
 	// Set region meta with search key
@@ -368,9 +368,9 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	mu := &c.mu
 	mu.Lock()
 	defer mu.Unlock()
-	mu.nodes[req.GetNode().GetNodeId()] = *req.GetNode()
+	mu.nodes[req.GetNode().GetId()] = *req.GetNode()
 	for _, storeMeta := range req.GetStores() {
-		mu.stores[storeMeta.GetStoreId()] = *storeMeta
+		mu.stores[storeMeta.GetId()] = *storeMeta
 	}
 
 	s.clusters[clusterID] = c
@@ -401,7 +401,7 @@ func (c *raftCluster) cacheAllNodes() error {
 			return errors.Trace(err)
 		}
 
-		nodeID := node.GetNodeId()
+		nodeID := node.GetId()
 		mu.nodes[nodeID] = node
 	}
 
@@ -431,7 +431,7 @@ func (c *raftCluster) cacheAllStores() error {
 			return errors.Trace(err)
 		}
 
-		storeID := store.GetStoreId()
+		storeID := store.GetId()
 		mu.stores[storeID] = store
 	}
 
@@ -541,7 +541,7 @@ func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {
 }
 
 func (c *raftCluster) PutNode(node *metapb.Node) error {
-	if node == nil || node.GetNodeId() == 0 {
+	if node == nil || node.GetId() == 0 {
 		return errors.Errorf("invalid put node %v", node)
 	}
 
@@ -550,7 +550,7 @@ func (c *raftCluster) PutNode(node *metapb.Node) error {
 		return errors.Trace(err)
 	}
 
-	nodePath := makeNodeKey(c.clusterRoot, node.GetNodeId())
+	nodePath := makeNodeKey(c.clusterRoot, node.GetId())
 
 	mu := &c.mu
 	mu.Lock()
@@ -569,13 +569,13 @@ func (c *raftCluster) PutNode(node *metapb.Node) error {
 		return errors.Errorf("put node %v fail", node)
 	}
 
-	mu.nodes[node.GetNodeId()] = *node
+	mu.nodes[node.GetId()] = *node
 
 	return nil
 }
 
 func (c *raftCluster) PutStore(store *metapb.Store) error {
-	if store == nil || store.GetStoreId() == 0 {
+	if store == nil || store.GetId() == 0 {
 		return errors.Errorf("invalid put store %v", store)
 	}
 
@@ -584,7 +584,7 @@ func (c *raftCluster) PutStore(store *metapb.Store) error {
 		return errors.Trace(err)
 	}
 
-	storePath := makeStoreKey(c.clusterRoot, store.GetStoreId())
+	storePath := makeStoreKey(c.clusterRoot, store.GetId())
 
 	// The associated node must exist.
 	nodePath := makeNodeKey(c.clusterRoot, store.GetNodeId())
@@ -607,7 +607,7 @@ func (c *raftCluster) PutStore(store *metapb.Store) error {
 		return errors.Errorf("put store %v fail", store)
 	}
 
-	mu.stores[store.GetStoreId()] = *store
+	mu.stores[store.GetId()] = *store
 
 	return nil
 }
@@ -622,7 +622,7 @@ func (c *raftCluster) GetMeta() (*metapb.Cluster, error) {
 }
 
 func (c *raftCluster) PutMeta(meta *metapb.Cluster) error {
-	if meta.GetClusterId() != c.clusterID {
+	if meta.GetId() != c.clusterID {
 		return errors.Errorf("invalid cluster %v, mismatch cluster id %d", meta, c.clusterID)
 	}
 

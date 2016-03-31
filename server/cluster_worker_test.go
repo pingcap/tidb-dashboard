@@ -15,7 +15,6 @@ import (
 	"github.com/pingcap/kvproto/pkg/msgpb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/kvproto/pkg/raft_cmdpb"
-	"github.com/pingcap/kvproto/pkg/raft_serverpb"
 	"github.com/pingcap/kvproto/pkg/raftpb"
 	"github.com/pingcap/pd/util"
 )
@@ -27,8 +26,8 @@ type testClusterWorkerSuite struct {
 
 	clusterID uint64
 
-	nodeLock sync.Mutex
-	nodes    map[uint64]*mockRaftNode
+	storeLock sync.Mutex
+	stores    map[uint64]*mockRaftStore
 
 	regionLeaderLock sync.Mutex
 	regionLeaders    map[uint64]metapb.Peer
@@ -45,98 +44,86 @@ type mockRaftPeer struct {
 	region metapb.Region
 }
 
-type mockRaftStore struct {
-	sync.Mutex
-
-	s *testClusterWorkerSuite
-
-	storeIdent raft_serverpb.StoreIdent
-
-	peers map[uint64]*mockRaftPeer
-}
-
 type mockRaftMsg struct {
 	peer   metapb.Peer
 	region metapb.Region
 	req    *raft_cmdpb.RaftCmdRequest
 }
 
-type mockRaftNode struct {
+type mockRaftStore struct {
 	sync.Mutex
 
 	s *testClusterWorkerSuite
 
-	node metapb.Node
-
 	listener net.Listener
 
-	stores map[uint64]*mockRaftStore
+	store *metapb.Store
+
+	peers map[uint64]*mockRaftPeer
 
 	raftMsgCh chan *mockRaftMsg
 }
 
-func (s *testClusterWorkerSuite) bootstrap(c *C) *mockRaftNode {
+func (s *testClusterWorkerSuite) bootstrap(c *C) *mockRaftStore {
 	req := s.newBootstrapRequest(c, s.clusterID, "127.0.0.1:0")
-	node := req.Bootstrap.Node
-	store := req.Bootstrap.Stores[0]
+	store := req.Bootstrap.Store
 	region := req.Bootstrap.Region
 
 	err := s.svr.bootstrapCluster(s.clusterID, req.Bootstrap)
 	c.Assert(err, IsNil)
 
-	raftNode := s.newMockRaftNode(c, node)
-	raftStore := raftNode.addStore(c, store)
+	raftStore := s.newMockRaftStore(c, store)
 	raftStore.addRegion(c, region)
-	return raftNode
+	return raftStore
 }
 
-func (s *testClusterWorkerSuite) newMockRaftNode(c *C, n *metapb.Node) *mockRaftNode {
-	if n == nil {
-		n = s.newNode(c, 0, "127.0.0.1:0")
+func (s *testClusterWorkerSuite) newMockRaftStore(c *C, metaStore *metapb.Store) *mockRaftStore {
+	if metaStore == nil {
+		metaStore = s.newStore(c, 0, "127.0.0.1:0")
 	}
 
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	c.Assert(err, IsNil)
 
 	addr := l.Addr().String()
-	n.Address = proto.String(addr)
-	node := &mockRaftNode{
+	metaStore.Address = proto.String(addr)
+	store := &mockRaftStore{
 		s:         s,
-		node:      *n,
 		listener:  l,
-		stores:    make(map[uint64]*mockRaftStore),
 		raftMsgCh: make(chan *mockRaftMsg, 1024),
+		store:     metaStore,
+		peers:     make(map[uint64]*mockRaftPeer),
 	}
 
-	go node.runCmd(c)
-	go node.runRaft(c)
+	go store.runCmd(c)
+	go store.runRaft(c)
 
 	cluster, err := s.svr.getCluster(s.clusterID)
 	c.Assert(err, IsNil)
 
-	cluster.PutNode(&node.node)
+	cluster.PutStore(metaStore)
 
-	s.nodeLock.Lock()
-	defer s.nodeLock.Unlock()
+	s.storeLock.Lock()
+	defer s.storeLock.Unlock()
 
-	s.nodes[n.GetId()] = node
+	s.stores[metaStore.GetId()] = store
 
-	return node
+	return store
 }
 
 func (s *testClusterWorkerSuite) sendRaftMsg(c *C, msg *mockRaftMsg) {
-	nodeID := msg.peer.GetNodeId()
+	storeID := msg.peer.GetStoreId()
 
-	s.nodeLock.Lock()
-	defer s.nodeLock.Unlock()
+	s.storeLock.Lock()
+	defer s.storeLock.Unlock()
 
-	node, ok := s.nodes[nodeID]
+	store, ok := s.stores[storeID]
 	if !ok {
 		return
 	}
 
 	select {
-	case node.raftMsgCh <- msg:
+	case store.raftMsgCh <- msg:
 	default:
 		c.Logf("can not send msg to %v", msg.peer)
 	}
@@ -190,40 +177,11 @@ func (s *testClusterWorkerSuite) chooseRegionLeader(c *C, region *metapb.Region)
 	return peer
 }
 
-func (n *mockRaftNode) addStore(c *C, s *metapb.Store) *mockRaftStore {
-	n.Lock()
-	defer n.Unlock()
-
-	if s == nil {
-		s = n.s.newStore(c, n.node.GetId(), 0)
-	} else {
-		c.Assert(s.GetNodeId(), Equals, n.node.GetId())
-	}
-
-	store := &mockRaftStore{
-		s: n.s,
-		storeIdent: raft_serverpb.StoreIdent{
-			ClusterId: proto.Uint64(n.s.clusterID),
-			NodeId:    proto.Uint64(n.node.GetId()),
-			StoreId:   proto.Uint64(s.GetId()),
-		},
-		peers: make(map[uint64]*mockRaftPeer),
-	}
-
-	n.stores[s.GetId()] = store
-
-	cluster, err := n.s.svr.getCluster(n.s.clusterID)
-	c.Assert(err, IsNil)
-	cluster.PutStore(s)
-
-	return store
-}
-
 func (s *mockRaftStore) addRegion(c *C, region *metapb.Region) {
 	s.Lock()
 	defer s.Unlock()
 
-	storeID := s.storeIdent.GetStoreId()
+	storeID := s.store.GetId()
 	var (
 		peer  metapb.Peer
 		found = false
@@ -243,9 +201,9 @@ func (s *mockRaftStore) addRegion(c *C, region *metapb.Region) {
 	}
 }
 
-func (n *mockRaftNode) runCmd(c *C) {
+func (s *mockRaftStore) runCmd(c *C) {
 	for {
-		conn, err := n.listener.Accept()
+		conn, err := s.listener.Accept()
 		if err != nil {
 			c.Logf("accept err %v", err)
 			return
@@ -263,7 +221,7 @@ func (n *mockRaftNode) runCmd(c *C) {
 				req := msg.GetCmdReq()
 				c.Assert(req, NotNil)
 
-				resp := n.proposeCommand(c, req)
+				resp := s.proposeCommand(c, req)
 				if resp.Header == nil {
 					resp.Header = &raft_cmdpb.RaftResponseHeader{}
 				}
@@ -290,41 +248,33 @@ func (n *mockRaftNode) runCmd(c *C) {
 	}
 }
 
-func (n *mockRaftNode) runRaft(c *C) {
+func (s *mockRaftStore) runRaft(c *C) {
 	for {
 		select {
-		case msg := <-n.raftMsgCh:
-			n.handleRaftMsg(c, msg)
-		case <-n.s.quitCh:
+		case msg := <-s.raftMsgCh:
+			s.handleRaftMsg(c, msg)
+		case <-s.s.quitCh:
 			return
 		}
 	}
 }
 
-func (n *mockRaftNode) handleRaftMsg(c *C, msg *mockRaftMsg) {
-	storeID := msg.peer.GetStoreId()
-	n.Lock()
-	store, ok := n.stores[storeID]
-	n.Unlock()
-	if !ok {
-		return
-	}
-
-	store.Lock()
-	defer store.Unlock()
+func (s *mockRaftStore) handleRaftMsg(c *C, msg *mockRaftMsg) {
+	s.Lock()
+	defer s.Unlock()
 
 	regionID := msg.region.GetId()
-	_, ok = store.peers[regionID]
+	_, ok := s.peers[regionID]
 	if !ok {
 		// No peer, create it.
-		store.peers[regionID] = &mockRaftPeer{
+		s.peers[regionID] = &mockRaftPeer{
 			peer:   msg.peer,
 			region: msg.region,
 		}
 	}
 
-	// TODO: all nodes must have same response, check later.
-	store.handleWriteCommand(c, msg.req)
+	// TODO: all stores must have same response, check later.
+	s.handleWriteCommand(c, msg.req)
 }
 
 func newErrorCmdResponse(err error) *raft_cmdpb.RaftCmdResponse {
@@ -338,20 +288,12 @@ func newErrorCmdResponse(err error) *raft_cmdpb.RaftCmdResponse {
 	return resp
 }
 
-func (n *mockRaftNode) proposeCommand(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_cmdpb.RaftCmdResponse {
-	storeID := req.Header.Peer.GetStoreId()
-	n.Lock()
-	store, ok := n.stores[storeID]
-	n.Unlock()
-	if !ok {
-		return newErrorCmdResponse(errors.Errorf("store %d is not found", storeID))
-	}
-
-	store.Lock()
-	defer store.Unlock()
+func (s *mockRaftStore) proposeCommand(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_cmdpb.RaftCmdResponse {
+	s.Lock()
+	defer s.Unlock()
 
 	regionID := req.Header.GetRegionId()
-	peer, ok := store.peers[regionID]
+	peer, ok := s.peers[regionID]
 	if !ok {
 		resp := newErrorCmdResponse(errors.New("region not found"))
 		resp.Header.Error.RegionNotFound = &errorpb.RegionNotFound{
@@ -361,14 +303,14 @@ func (n *mockRaftNode) proposeCommand(c *C, req *raft_cmdpb.RaftCmdRequest) *raf
 	}
 
 	if req.StatusRequest != nil {
-		return store.handleStatusRequest(c, req)
+		return s.handleStatusRequest(c, req)
 	}
 
 	// lock leader to prevent outer test change it.
-	n.s.regionLeaderLock.Lock()
-	defer n.s.regionLeaderLock.Unlock()
+	s.s.regionLeaderLock.Lock()
+	defer s.s.regionLeaderLock.Unlock()
 
-	leader, ok := n.s.regionLeaders[regionID]
+	leader, ok := s.s.regionLeaders[regionID]
 	if !ok || leader.GetId() != peer.peer.GetId() {
 		resp := newErrorCmdResponse(errors.New("peer not leader"))
 		resp.Header.Error.NotLeader = &errorpb.NotLeader{
@@ -383,11 +325,11 @@ func (n *mockRaftNode) proposeCommand(c *C, req *raft_cmdpb.RaftCmdRequest) *raf
 	}
 
 	// send the request to other peers.
-	n.s.broadcastRaftMsg(c, peer, req)
-	resp := store.handleWriteCommand(c, req)
+	s.s.broadcastRaftMsg(c, peer, req)
+	resp := s.handleWriteCommand(c, req)
 
 	// update the region leader.
-	n.s.regionLeaders[regionID] = peer.peer
+	s.s.regionLeaders[regionID] = peer.peer
 
 	return resp
 }
@@ -492,7 +434,7 @@ func (s *mockRaftStore) handleChangePeer(c *C, req *raft_cmdpb.RaftCmdRequest) *
 		raftPeer.region = region
 
 		// remove itself
-		if peer.GetStoreId() == s.storeIdent.GetStoreId() {
+		if peer.GetStoreId() == s.store.GetId() {
 			delete(s.peers, region.GetId())
 		}
 	}
@@ -553,7 +495,7 @@ func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_
 		peer := *region.Peers[i]
 		peer.Id = proto.Uint64(id)
 
-		if peer.GetStoreId() == s.storeIdent.GetStoreId() {
+		if peer.GetStoreId() == s.store.GetId() {
 			newPeer = peer
 		}
 
@@ -582,7 +524,7 @@ func (s *mockRaftStore) handleSplit(c *C, req *raft_cmdpb.RaftCmdRequest) *raft_
 func (s *testClusterWorkerSuite) SetUpSuite(c *C) {
 	s.clusterID = 1
 
-	s.nodes = make(map[uint64]*mockRaftNode)
+	s.stores = make(map[uint64]*mockRaftStore)
 
 	s.svr = newTestServer(c, s.getRootPath())
 	s.svr.cfg.nextRetryDelay = 50 * time.Millisecond
@@ -599,17 +541,12 @@ func (s *testClusterWorkerSuite) SetUpSuite(c *C) {
 
 	mustGetLeader(c, s.client, s.getRootPath())
 
-	// Construct the raft cluster, 3 nodes, n1, n2, and n3
-	// and 5 stores, s11, s12 in n1, s21, s22 in n2 and s31 in n3.
-	raftNode1 := s.bootstrap(c)
-	raftNode1.addStore(c, nil)
-
-	raftNode2 := s.newMockRaftNode(c, nil)
-	raftNode2.addStore(c, nil)
-	raftNode2.addStore(c, nil)
-
-	raftNode3 := s.newMockRaftNode(c, nil)
-	raftNode3.addStore(c, nil)
+	// Construct the raft cluster 5 stores.
+	s.bootstrap(c)
+	s.newMockRaftStore(c, nil)
+	s.newMockRaftStore(c, nil)
+	s.newMockRaftStore(c, nil)
+	s.newMockRaftStore(c, nil)
 
 	cluster, err := s.svr.getCluster(s.clusterID)
 	c.Assert(err, IsNil)
@@ -617,10 +554,6 @@ func (s *testClusterWorkerSuite) SetUpSuite(c *C) {
 		Id:            proto.Uint64(s.clusterID),
 		MaxPeerNumber: proto.Uint32(5),
 	})
-
-	nodes, err := cluster.GetAllNodes()
-	c.Assert(err, IsNil)
-	c.Assert(nodes, HasLen, 3)
 
 	stores, err := cluster.GetAllStores()
 	c.Assert(err, IsNil)
@@ -653,17 +586,10 @@ func (s *testClusterWorkerSuite) checkRegionPeerNumber(c *C, regionKey []byte, e
 }
 
 func (s *testClusterWorkerSuite) regionPeerExisted(c *C, regionID uint64, peer *metapb.Peer) bool {
-	s.nodeLock.Lock()
-	defer s.nodeLock.Unlock()
+	s.storeLock.Lock()
+	defer s.storeLock.Unlock()
 
-	node, ok := s.nodes[peer.GetNodeId()]
-	if !ok {
-		return false
-	}
-
-	node.Lock()
-	defer node.Unlock()
-	store, ok := node.stores[peer.GetStoreId()]
+	store, ok := s.stores[peer.GetStoreId()]
 	if !ok {
 		return false
 	}

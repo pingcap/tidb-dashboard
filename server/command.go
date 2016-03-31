@@ -123,14 +123,6 @@ func (c *conn) handleGetMeta(req *pdpb.Request) (*pdpb.Response, error) {
 	}
 
 	switch request.GetMetaType() {
-	case pdpb.MetaType_NodeType:
-		nodeID := request.GetNodeId()
-		node, err := cluster.GetNode(nodeID)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		// Node may be nil, should we return an error instead of none result?
-		resp.Node = node
 	case pdpb.MetaType_StoreType:
 		storeID := request.GetStoreId()
 		store, err := cluster.GetStore(storeID)
@@ -173,11 +165,6 @@ func (c *conn) handlePutMeta(req *pdpb.Request) (*pdpb.Response, error) {
 	}
 
 	switch request.GetMetaType() {
-	case pdpb.MetaType_NodeType:
-		node := request.GetNode()
-		if err = cluster.PutNode(node); err != nil {
-			return nil, errors.Trace(err)
-		}
 	case pdpb.MetaType_StoreType:
 		store := request.GetStore()
 		if err = cluster.PutStore(store); err != nil {

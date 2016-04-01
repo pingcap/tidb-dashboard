@@ -65,8 +65,8 @@ type raftCluster struct {
 		stores map[uint64]metapb.Store
 	}
 
-	// for node conns
-	nodeConns *nodeConns
+	// for store conns
+	storeConns *storeConns
 }
 
 func (s *Server) newCluster(clusterID uint64, meta metapb.Cluster) (*raftCluster, error) {
@@ -76,10 +76,10 @@ func (s *Server) newCluster(clusterID uint64, meta metapb.Cluster) (*raftCluster
 		clusterRoot: s.getClusterRootPath(clusterID),
 		askJobCh:    make(chan struct{}, askJobChannelSize),
 		quitCh:      make(chan struct{}),
-		nodeConns:   newNodeConns(defaultConnFunc),
+		storeConns:  newStoreConns(defaultConnFunc),
 	}
 
-	c.nodeConns.SetIdleTimeout(idleTimeout)
+	c.storeConns.SetIdleTimeout(idleTimeout)
 
 	// Force checking the pending job.
 	c.askJobCh <- struct{}{}
@@ -104,7 +104,7 @@ func (c *raftCluster) Close() {
 	close(c.quitCh)
 	c.wg.Wait()
 
-	c.nodeConns.Close()
+	c.storeConns.Close()
 }
 
 func (s *Server) getClusterRootPath(clusterID uint64) string {

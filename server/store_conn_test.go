@@ -7,10 +7,10 @@ import (
 	. "github.com/pingcap/check"
 )
 
-type testNodeConnSuite struct {
+type testStoreConnSuite struct {
 }
 
-var _ = Suite(&testNodeConnSuite{})
+var _ = Suite(&testStoreConnSuite{})
 
 type testConn struct {
 }
@@ -24,14 +24,14 @@ func (c *testConn) SetDeadline(t time.Time) error      { return nil }
 func (c *testConn) SetReadDeadline(t time.Time) error  { return nil }
 func (c *testConn) SetWriteDeadline(t time.Time) error { return nil }
 
-func testNodeConn(addr string) (*nodeConn, error) {
-	return &nodeConn{
+func testStoreConn(addr string) (*storeConn, error) {
+	return &storeConn{
 		conn:        &testConn{},
 		touchedTime: time.Now()}, nil
 }
 
-func (s *testNodeConnSuite) TestNodeConns(c *C) {
-	conns := newNodeConns(testNodeConn)
+func (s *testStoreConnSuite) TestStoreConns(c *C) {
+	conns := newStoreConns(testStoreConn)
 	c.Assert(conns.conns, HasLen, 0)
 
 	addr1 := "127.0.0.1:1"

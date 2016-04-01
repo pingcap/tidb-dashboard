@@ -29,24 +29,19 @@ var _ = Suite(&testClientSuite{})
 
 var (
 	// Note: IDs below are entirely arbitrary. They are only for checking
-	// whether GetRegion/GetNode works.
+	// whether GetRegion/GetStore works.
 	// If we alloc ID in client in the future, these IDs must be updated.
 	clusterID = uint64(time.Now().Unix())
-	node      = &metapb.Node{
+	store     = &metapb.Store{
 		Id:      proto.Uint64(1),
 		Address: proto.String("localhost"),
 	}
-	store = &metapb.Store{
-		Id:     proto.Uint64(2),
-		NodeId: proto.Uint64(node.GetId()),
-	}
 	peer = &metapb.Peer{
-		Id:      proto.Uint64(3),
-		NodeId:  proto.Uint64(node.GetId()),
+		Id:      proto.Uint64(2),
 		StoreId: proto.Uint64(store.GetId()),
 	}
 	region = &metapb.Region{
-		Id: proto.Uint64(4),
+		Id: proto.Uint64(3),
 		RegionEpoch: &metapb.RegionEpoch{
 			ConfVer: proto.Uint64(1),
 			Version: proto.Uint64(1),
@@ -100,8 +95,7 @@ func bootstrapServer(c *C, port int) {
 		},
 		CmdType: pdpb.CommandType_Bootstrap.Enum(),
 		Bootstrap: &pdpb.BootstrapRequest{
-			Node:   node,
-			Stores: []*metapb.Store{store},
+			Store:  store,
 			Region: region,
 		},
 	}
@@ -137,8 +131,8 @@ func (s *testClientSuite) TestGetRegion(c *C) {
 	c.Assert(r, DeepEquals, region)
 }
 
-func (s *testClientSuite) TestGetNode(c *C) {
-	n, err := s.client.GetNode(node.GetId())
+func (s *testClientSuite) TestGetStore(c *C) {
+	n, err := s.client.GetStore(store.GetId())
 	c.Assert(err, IsNil)
-	c.Assert(n, DeepEquals, node)
+	c.Assert(n, DeepEquals, store)
 }

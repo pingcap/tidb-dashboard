@@ -2,7 +2,6 @@ package server
 
 import (
 	"math"
-	"math/rand"
 	"sync/atomic"
 	"time"
 
@@ -275,72 +274,54 @@ func (c *raftCluster) processJob(job *pd_jobpd.Job, checkOK checkOKFunc) (*raft_
 	return response.AdminResponse, nil
 }
 
-func (c *raftCluster) chooseStore(bestStores []metapb.Store, matchStores []metapb.Store) metapb.Store {
-	var store metapb.Store
-	// Select the store randomly, later we will do more better choice.
-
-	if len(bestStores) > 0 {
-		store = bestStores[rand.Intn(len(bestStores))]
-	} else {
-		store = matchStores[rand.Intn(len(matchStores))]
-	}
-
-	return store
-}
-
 func (c *raftCluster) handleAddPeerReq(region *metapb.Region) (*metapb.Peer, error) {
 	peerID, err := c.s.idAlloc.Alloc()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 
-	var (
-		// The best stores are that the region has not in.
-		bestStores []metapb.Store
-		// The match stores are that region has not in these stores
-		// but in the same node.
-		matchStores []metapb.Store
-	)
-
 	mu := &c.mu
 	mu.RLock()
 	defer mu.RUnlock()
 
 	// Find a proper store which the region has not in.
+	// Now we just choose the first store. Later we will do
+	// a better choice.
+	//
+	// TODO:
+	// 1, The stores may be in same machine, so we should choose the best
+	// store which the region's current stores are not in. We can use IP to
+	// check this.
+	// 2, We can check the store statistics and find a low load store.
+	// 3, more algorithms...
+	var matchStore *metapb.Store
 	for _, store := range mu.stores {
 		storeID := store.GetId()
-		nodeID := store.GetNodeId()
 
-		existNode := false
 		existStore := false
 		for _, peer := range region.Peers {
 			if peer.GetStoreId() == storeID {
 				// we can't add peer in the same store.
 				existStore = true
 				break
-			} else if peer.GetNodeId() == nodeID {
-				existNode = true
 			}
 		}
 
 		if existStore {
 			continue
-		} else if existNode {
-			matchStores = append(matchStores, store)
-		} else {
-			bestStores = append(bestStores, store)
 		}
+
+		matchStore = &store
+
+		break
 	}
 
-	if len(bestStores) == 0 && len(matchStores) == 0 {
+	if matchStore == nil {
 		return nil, errors.Errorf("find no store to add peer for region %v", region)
 	}
 
-	store := c.chooseStore(bestStores, matchStores)
-
 	peer := &metapb.Peer{
-		NodeId:  proto.Uint64(store.GetNodeId()),
-		StoreId: proto.Uint64(store.GetId()),
+		StoreId: proto.Uint64(matchStore.GetId()),
 		Id:      proto.Uint64(peerID),
 	}
 
@@ -658,14 +639,14 @@ RETRY:
 }
 
 func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCmdRequest) (*raft_cmdpb.RaftCmdResponse, error) {
-	nodeID := request.Header.Peer.GetNodeId()
+	storeID := request.Header.Peer.GetStoreId()
 
-	node, err := c.GetNode(nodeID)
+	store, err := c.GetStore(storeID)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 
-	nc, err := c.nodeConns.GetConn(node.GetAddress())
+	nc, err := c.nodeConns.GetConn(store.GetAddress())
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -677,13 +658,13 @@ func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCmdRequest) (*raft_cmd
 
 	msgID := atomic.AddUint64(&c.s.msgID, 1)
 	if err = util.WriteMessage(nc.conn, msgID, msg); err != nil {
-		c.nodeConns.RemoveConn(node.GetAddress())
+		c.nodeConns.RemoveConn(store.GetAddress())
 		return nil, errors.Trace(err)
 	}
 
 	msg.Reset()
 	if _, err = util.ReadMessage(nc.conn, msg); err != nil {
-		c.nodeConns.RemoveConn(node.GetAddress())
+		c.nodeConns.RemoveConn(store.GetAddress())
 		return nil, errors.Trace(err)
 	}
 

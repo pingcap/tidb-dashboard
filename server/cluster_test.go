@@ -57,31 +57,18 @@ func newRequestHeader(clusterID uint64) *pdpb.RequestHeader {
 	}
 }
 
-func (s *testClusterBaseSuite) newNode(c *C, nodeID uint64, addr string) *metapb.Node {
-	if nodeID == 0 {
-		nodeID = s.allocID(c)
-	}
-
-	return &metapb.Node{
-		Id:      proto.Uint64(nodeID),
-		Address: proto.String(addr),
-	}
-}
-
-func (s *testClusterBaseSuite) newStore(c *C, nodeID uint64, storeID uint64) *metapb.Store {
+func (s *testClusterBaseSuite) newStore(c *C, storeID uint64, addr string) *metapb.Store {
 	if storeID == 0 {
 		storeID = s.allocID(c)
 	}
 
-	c.Assert(nodeID, Greater, uint64(0))
 	return &metapb.Store{
-		NodeId: proto.Uint64(nodeID),
-		Id:     proto.Uint64(storeID),
+		Id:      proto.Uint64(storeID),
+		Address: proto.String(addr),
 	}
 }
 
-func (s *testClusterBaseSuite) newPeer(c *C, nodeID uint64, storeID uint64, peerID uint64) *metapb.Peer {
-	c.Assert(nodeID, Greater, uint64(0))
+func (s *testClusterBaseSuite) newPeer(c *C, storeID uint64, peerID uint64) *metapb.Peer {
 	c.Assert(storeID, Greater, uint64(0))
 
 	if peerID == 0 {
@@ -89,7 +76,6 @@ func (s *testClusterBaseSuite) newPeer(c *C, nodeID uint64, storeID uint64, peer
 	}
 
 	return &metapb.Peer{
-		NodeId:  proto.Uint64(nodeID),
 		StoreId: proto.Uint64(storeID),
 		Id:      proto.Uint64(peerID),
 	}
@@ -139,8 +125,8 @@ func (s *testClusterSuite) TestBootstrap(c *C) {
 	c.Assert(resp.IsBootstrapped.GetBootstrapped(), IsFalse)
 
 	// Bootstrap the cluster.
-	nodeAddr := "127.0.0.1:0"
-	s.bootstrapCluster(c, conn, clusterID, nodeAddr)
+	storeAddr := "127.0.0.1:0"
+	s.bootstrapCluster(c, conn, clusterID, storeAddr)
 
 	// IsBootstrapped returns true.
 	req = s.newIsBootstrapRequest(clusterID)
@@ -150,7 +136,7 @@ func (s *testClusterSuite) TestBootstrap(c *C) {
 	c.Assert(resp.IsBootstrapped.GetBootstrapped(), IsTrue)
 
 	// check bootstrapped error.
-	req = s.newBootstrapRequest(c, clusterID, nodeAddr)
+	req = s.newBootstrapRequest(c, clusterID, storeAddr)
 	sendRequest(c, conn, 0, req)
 	_, resp = recvResponse(c, conn)
 	c.Assert(resp.Bootstrap, IsNil)
@@ -168,18 +154,16 @@ func (s *testClusterBaseSuite) newIsBootstrapRequest(clusterID uint64) *pdpb.Req
 	return req
 }
 
-func (s *testClusterBaseSuite) newBootstrapRequest(c *C, clusterID uint64, nodeAddr string) *pdpb.Request {
-	node := s.newNode(c, 0, nodeAddr)
-	store := s.newStore(c, node.GetId(), 0)
-	peer := s.newPeer(c, node.GetId(), store.GetId(), 0)
+func (s *testClusterBaseSuite) newBootstrapRequest(c *C, clusterID uint64, storeAddr string) *pdpb.Request {
+	store := s.newStore(c, 0, storeAddr)
+	peer := s.newPeer(c, store.GetId(), 0)
 	region := s.newRegion(c, 0, []byte{}, []byte{}, []*metapb.Peer{peer}, nil)
 
 	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
 		CmdType: pdpb.CommandType_Bootstrap.Enum(),
 		Bootstrap: &pdpb.BootstrapRequest{
-			Node:   node,
-			Stores: []*metapb.Store{store},
+			Store:  store,
 			Region: region,
 		},
 	}
@@ -188,30 +172,11 @@ func (s *testClusterBaseSuite) newBootstrapRequest(c *C, clusterID uint64, nodeA
 }
 
 // helper function to check and bootstrap.
-func (s *testClusterBaseSuite) bootstrapCluster(c *C, conn net.Conn, clusterID uint64, nodeAddr string) {
-	req := s.newBootstrapRequest(c, clusterID, nodeAddr)
+func (s *testClusterBaseSuite) bootstrapCluster(c *C, conn net.Conn, clusterID uint64, storeAddr string) {
+	req := s.newBootstrapRequest(c, clusterID, storeAddr)
 	sendRequest(c, conn, 0, req)
 	_, resp := recvResponse(c, conn)
 	c.Assert(resp.Bootstrap, NotNil)
-}
-
-func (s *testClusterBaseSuite) getNode(c *C, conn net.Conn, clusterID uint64, nodeID uint64) *metapb.Node {
-	req := &pdpb.Request{
-		Header:  newRequestHeader(clusterID),
-		CmdType: pdpb.CommandType_GetMeta.Enum(),
-		GetMeta: &pdpb.GetMetaRequest{
-			MetaType: pdpb.MetaType_NodeType.Enum(),
-			NodeId:   proto.Uint64(nodeID),
-		},
-	}
-
-	sendRequest(c, conn, 0, req)
-	_, resp := recvResponse(c, conn)
-	c.Assert(resp.GetMeta, NotNil)
-	c.Assert(resp.GetMeta.GetMetaType(), Equals, pdpb.MetaType_NodeType)
-	c.Assert(resp.GetMeta.GetNode().GetId(), Equals, uint64(nodeID))
-
-	return resp.GetMeta.GetNode()
 }
 
 func (s *testClusterBaseSuite) getStore(c *C, conn net.Conn, clusterID uint64, storeID uint64) *metapb.Store {
@@ -280,74 +245,37 @@ func (s *testClusterSuite) TestGetPutMeta(c *C) {
 
 	clusterID := uint64(1)
 
-	nodeAddr := "127.0.0.1:0"
-	s.bootstrapCluster(c, conn, clusterID, nodeAddr)
+	storeAddr := "127.0.0.1:0"
+	s.bootstrapCluster(c, conn, clusterID, storeAddr)
 
 	// Get region.
 	region := s.getRegion(c, conn, clusterID, []byte("abc"))
 	c.Assert(region.GetPeers(), HasLen, 1)
 	peer := region.GetPeers()[0]
 
-	// Get node.
-	nodeID := peer.GetNodeId()
-	node := s.getNode(c, conn, clusterID, nodeID)
-	c.Assert(node.GetAddress(), Equals, nodeAddr)
-
 	// Get store.
 	storeID := peer.GetStoreId()
 	store := s.getStore(c, conn, clusterID, storeID)
-	c.Assert(store.GetNodeId(), Equals, uint64(nodeID))
+	c.Assert(store.GetAddress(), Equals, storeAddr)
 
-	// Update node.
-	nodeAddr = "127.0.0.1:1"
+	// Update store.
+	storeAddr = "127.0.0.1:1"
 	req := &pdpb.Request{
 		Header:  newRequestHeader(clusterID),
 		CmdType: pdpb.CommandType_PutMeta.Enum(),
 		PutMeta: &pdpb.PutMetaRequest{
-			MetaType: pdpb.MetaType_NodeType.Enum(),
-			Node:     s.newNode(c, nodeID, nodeAddr),
+			MetaType: pdpb.MetaType_StoreType.Enum(),
+			Store:    s.newStore(c, storeID, storeAddr),
 		},
 	}
 
 	sendRequest(c, conn, 0, req)
 	_, resp := recvResponse(c, conn)
 	c.Assert(resp.PutMeta, NotNil)
-	c.Assert(resp.PutMeta.GetMetaType(), Equals, pdpb.MetaType_NodeType)
-
-	node = s.getNode(c, conn, clusterID, nodeID)
-	c.Assert(node.GetAddress(), Equals, nodeAddr)
-
-	// Add another store.
-	req = &pdpb.Request{
-		Header:  newRequestHeader(clusterID),
-		CmdType: pdpb.CommandType_PutMeta.Enum(),
-		PutMeta: &pdpb.PutMetaRequest{
-			MetaType: pdpb.MetaType_StoreType.Enum(),
-			Store:    s.newStore(c, nodeID, 0),
-		},
-	}
-	storeID = req.PutMeta.Store.GetId()
-	sendRequest(c, conn, 0, req)
-	_, resp = recvResponse(c, conn)
-	c.Assert(resp.PutMeta, NotNil)
 	c.Assert(resp.PutMeta.GetMetaType(), Equals, pdpb.MetaType_StoreType)
-	store = s.getStore(c, conn, clusterID, storeID)
-	c.Assert(store.GetNodeId(), Equals, uint64(nodeID))
 
-	// Add a new store but we don't add node before, must be error.
-	nodeID = s.allocID(c)
-	req = &pdpb.Request{
-		Header:  newRequestHeader(clusterID),
-		CmdType: pdpb.CommandType_PutMeta.Enum(),
-		PutMeta: &pdpb.PutMetaRequest{
-			MetaType: pdpb.MetaType_StoreType.Enum(),
-			Store:    s.newStore(c, nodeID, 0),
-		},
-	}
-	sendRequest(c, conn, 0, req)
-	_, resp = recvResponse(c, conn)
-	c.Assert(resp.PutMeta, IsNil)
-	c.Assert(resp.Header.GetError(), NotNil)
+	store = s.getStore(c, conn, clusterID, storeID)
+	c.Assert(store.GetAddress(), Equals, storeAddr)
 
 	// Update cluster meta.
 	req = &pdpb.Request{
@@ -373,31 +301,17 @@ func (s *testClusterSuite) TestCache(c *C) {
 	clusterID := uint64(2)
 
 	req := s.newBootstrapRequest(c, clusterID, "127.0.0.1:1")
-	node1 := req.Bootstrap.Node
-	store1 := req.Bootstrap.Stores[0]
+	store1 := req.Bootstrap.Store
 
 	s.svr.bootstrapCluster(clusterID, req.Bootstrap)
 
 	cluster, err := s.svr.getCluster(clusterID)
 	c.Assert(err, IsNil)
 
-	// Add another 2 nodes.
-	node2 := s.newNode(c, 0, "127.0.0.1:2")
-	err = cluster.PutNode(node2)
-	c.Assert(err, IsNil)
-	store2 := s.newStore(c, node2.GetId(), 0)
+	// Add another store.
+	store2 := s.newStore(c, 0, "127.0.0.1:2")
 	err = cluster.PutStore(store2)
 	c.Assert(err, IsNil)
-
-	node3 := s.newNode(c, 0, "127.0.0.1:3")
-	err = cluster.PutNode(node3)
-	c.Assert(err, IsNil)
-
-	nodes := map[uint64]*metapb.Node{
-		node1.GetId(): node1,
-		node2.GetId(): node2,
-		node3.GetId(): node3,
-	}
 
 	stores := map[uint64]*metapb.Store{
 		store1.GetId(): store1,
@@ -411,14 +325,6 @@ func (s *testClusterSuite) TestCache(c *C) {
 
 	cluster, err = s.svr.getCluster(clusterID)
 	c.Assert(err, IsNil)
-
-	allNodes, err := cluster.GetAllNodes()
-	c.Assert(err, IsNil)
-	c.Assert(allNodes, HasLen, 3)
-	for _, node := range allNodes {
-		_, ok := nodes[node.GetId()]
-		c.Assert(ok, IsTrue)
-	}
 
 	allStores, err := cluster.GetAllStores()
 	c.Assert(err, IsNil)

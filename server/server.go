@@ -40,7 +40,7 @@ type Server struct {
 	lastSavedTime time.Time
 
 	// for id allocator, we can use one allocator for
-	// node, store, region and peer, because we just need
+	// store, region and peer, because we just need
 	// a unique ID.
 	idAlloc *idAllocator
 

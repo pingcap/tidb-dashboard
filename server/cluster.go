@@ -31,7 +31,6 @@ var (
 // cluster 1 -> /raft/1, value is metapb.Cluster
 // cluster 2 -> /raft/2
 // For cluster 1
-// node 1 -> /raft/1/n/1, value is metapb.Node
 // store 1 -> /raft/1/s/1, value is metapb.Store
 // region 1 -> /raft/1/r/1, value is encoded_region_key
 // region search key map -> /raft/1/k/encoded_region_key, value is metapb.Region
@@ -62,8 +61,6 @@ type raftCluster struct {
 		// cluster meta cache
 		meta metapb.Cluster
 
-		// node cache
-		nodes map[uint64]metapb.Node
 		// store cache
 		stores map[uint64]metapb.Store
 	}
@@ -90,13 +87,9 @@ func (s *Server) newCluster(clusterID uint64, meta metapb.Cluster) (*raftCluster
 	mu := &c.mu
 	mu.meta = meta
 
-	// Cache all nodes/stores when start the cluster. We don't have
-	// many nodes/stores, so it is OK to cache them all.
+	// Cache all stores when start the cluster. We don't have
+	// many stores, so it is OK to cache them all.
 	// And we should use these cache for later ChangePeer too.
-	if err := c.cacheAllNodes(); err != nil {
-		return nil, errors.Trace(err)
-	}
-
 	if err := c.cacheAllStores(); err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -181,10 +174,6 @@ func encodeRegionSearchKey(endKey []byte) string {
 	return string(append([]byte{'z'}, endKey...))
 }
 
-func makeNodeKey(clusterRootPath string, nodeID uint64) string {
-	return strings.Join([]string{clusterRootPath, "n", strconv.FormatUint(nodeID, 10)}, "/")
-}
-
 func makeStoreKey(clusterRootPath string, storeID uint64) string {
 	return strings.Join([]string{clusterRootPath, "s", strconv.FormatUint(storeID, 10)}, "/")
 }
@@ -204,10 +193,6 @@ func makeJobKey(clusterRootPath string, jobID uint64) string {
 	return strings.Join([]string{clusterRootPath, "job", fmt.Sprintf("%020d", jobID)}, "/")
 }
 
-func makeNodeKeyPrefix(clusterRootPath string) string {
-	return strings.Join([]string{clusterRootPath, "n", ""}, "/")
-}
-
 func makeStoreKeyPrefix(clusterRootPath string) string {
 	return strings.Join([]string{clusterRootPath, "s", ""}, "/")
 }
@@ -215,16 +200,11 @@ func makeStoreKeyPrefix(clusterRootPath string) string {
 func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 	// TODO: do more check for request fields validation.
 
-	nodeMeta := req.GetNode()
-	if nodeMeta == nil {
-		return errors.Errorf("missing node meta for bootstrap %d", clusterID)
-	} else if nodeMeta.GetId() == 0 {
-		return errors.New("invalid zero node id")
-	}
-
-	storesMeta := req.GetStores()
-	if storesMeta == nil || len(storesMeta) == 0 {
-		return errors.Errorf("missing stores meta for bootstrap %d", clusterID)
+	storeMeta := req.GetStore()
+	if storeMeta == nil {
+		return errors.Errorf("missing store meta for bootstrap %d", clusterID)
+	} else if storeMeta.GetId() == 0 {
+		return errors.New("invalid zero store id")
 	}
 
 	regionMeta := req.GetRegion()
@@ -244,37 +224,10 @@ func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 
 	peer := peers[0]
 
-	if peer.GetNodeId() != nodeMeta.GetId() {
-		return errors.Errorf("invalid peer node id %d != %d for bootstrap %d", peer.GetNodeId(), nodeMeta.GetId(), clusterID)
+	if peer.GetStoreId() != storeMeta.GetId() {
+		return errors.Errorf("invalid peer store id %d != %d for bootstrap %d", peer.GetStoreId(), storeMeta.GetId(), clusterID)
 	} else if peer.GetId() == 0 {
 		return errors.New("invalid zero peer id")
-	}
-
-	found := false
-	storeIDs := make(map[uint64]struct{})
-	for _, storeMeta := range storesMeta {
-		storeID := storeMeta.GetId()
-		if storeID == 0 {
-			return errors.New("invalid zero store id")
-		}
-
-		_, ok := storeIDs[storeID]
-		if ok {
-			return errors.Errorf("duplicated store id in %v for bootstrap %d", storesMeta, clusterID)
-		}
-		storeIDs[storeID] = struct{}{}
-
-		if storeMeta.GetNodeId() != nodeMeta.GetId() {
-			return errors.Errorf("invalid store node id %d != %d for bootstrap %d", storeMeta.GetNodeId(), nodeMeta.GetId(), clusterID)
-		}
-
-		if storeID == peer.GetStoreId() {
-			found = true
-		}
-	}
-
-	if !found {
-		return errors.Errorf("invalid peer store id %d, not in %v for bootstrap %d", peer.GetStoreId(), storesMeta, clusterID)
 	}
 
 	return nil
@@ -302,23 +255,14 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	var ops []clientv3.Op
 	ops = append(ops, clientv3.OpPut(clusterRootPath, string(clusterValue)))
 
-	// Set node meta
-	nodePath := makeNodeKey(clusterRootPath, req.GetNode().GetId())
-	nodeValue, err := proto.Marshal(req.GetNode())
+	// Set store meta
+	storeMeta := req.GetStore()
+	storePath := makeStoreKey(clusterRootPath, storeMeta.GetId())
+	storeValue, err := proto.Marshal(storeMeta)
 	if err != nil {
 		return errors.Trace(err)
 	}
-	ops = append(ops, clientv3.OpPut(nodePath, string(nodeValue)))
-
-	// Set store meta
-	for _, storeMeta := range req.GetStores() {
-		storePath := makeStoreKey(clusterRootPath, storeMeta.GetId())
-		storeValue, err1 := proto.Marshal(storeMeta)
-		if err1 != nil {
-			return errors.Trace(err1)
-		}
-		ops = append(ops, clientv3.OpPut(storePath, string(storeValue)))
-	}
+	ops = append(ops, clientv3.OpPut(storePath, string(storeValue)))
 
 	// Set region id -> search key
 	regionPath := makeRegionKey(clusterRootPath, req.GetRegion().GetId())
@@ -368,42 +312,10 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	mu := &c.mu
 	mu.Lock()
 	defer mu.Unlock()
-	mu.nodes[req.GetNode().GetId()] = *req.GetNode()
-	for _, storeMeta := range req.GetStores() {
-		mu.stores[storeMeta.GetId()] = *storeMeta
-	}
+
+	mu.stores[storeMeta.GetId()] = *storeMeta
 
 	s.clusters[clusterID] = c
-
-	return nil
-}
-
-func (c *raftCluster) cacheAllNodes() error {
-	mu := &c.mu
-	mu.Lock()
-	defer mu.Unlock()
-
-	kv := clientv3.NewKV(c.s.client)
-
-	key := makeNodeKeyPrefix(c.clusterRoot)
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	resp, err := kv.Get(ctx, key, clientv3.WithPrefix())
-	cancel()
-
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	mu.nodes = make(map[uint64]metapb.Node)
-	for _, kv := range resp.Kvs {
-		node := metapb.Node{}
-		if err = proto.Unmarshal(kv.Value, &node); err != nil {
-			return errors.Trace(err)
-		}
-
-		nodeID := node.GetId()
-		mu.nodes[nodeID] = node
-	}
 
 	return nil
 }
@@ -436,39 +348,6 @@ func (c *raftCluster) cacheAllStores() error {
 	}
 
 	return nil
-}
-
-func (c *raftCluster) GetAllNodes() ([]metapb.Node, error) {
-	mu := &c.mu
-	mu.RLock()
-	defer mu.RUnlock()
-
-	nodes := make([]metapb.Node, 0, len(mu.nodes))
-	for _, node := range mu.nodes {
-		nodes = append(nodes, node)
-	}
-
-	return nodes, nil
-}
-
-func (c *raftCluster) GetNode(nodeID uint64) (*metapb.Node, error) {
-	if nodeID == 0 {
-		return nil, errors.New("invalid zero node id")
-	}
-
-	mu := &c.mu
-	mu.RLock()
-	defer mu.RUnlock()
-
-	// We cache all nodes when start the cluster, and PutNode can also
-	// update the cache, so we can use this cache to get directly.
-
-	node, ok := mu.nodes[nodeID]
-	if ok {
-		return &node, nil
-	}
-
-	return nil, errors.Errorf("invalid node ID %d, not found", nodeID)
 }
 
 func (c *raftCluster) GetAllStores() ([]metapb.Store, error) {
@@ -540,40 +419,6 @@ func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {
 	return nil, errors.Errorf("invalid searched region %v for key %q", region, regionKey)
 }
 
-func (c *raftCluster) PutNode(node *metapb.Node) error {
-	if node == nil || node.GetId() == 0 {
-		return errors.Errorf("invalid put node %v", node)
-	}
-
-	nodeValue, err := proto.Marshal(node)
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	nodePath := makeNodeKey(c.clusterRoot, node.GetId())
-
-	mu := &c.mu
-	mu.Lock()
-	defer mu.Unlock()
-
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	resp, err := c.s.client.Txn(ctx).
-		If(c.s.leaderCmp()).
-		Then(clientv3.OpPut(nodePath, string(nodeValue))).
-		Commit()
-	cancel()
-	if err != nil {
-		return errors.Trace(err)
-	}
-	if !resp.Succeeded {
-		return errors.Errorf("put node %v fail", node)
-	}
-
-	mu.nodes[node.GetId()] = *node
-
-	return nil
-}
-
 func (c *raftCluster) PutStore(store *metapb.Store) error {
 	if store == nil || store.GetId() == 0 {
 		return errors.Errorf("invalid put store %v", store)
@@ -586,17 +431,13 @@ func (c *raftCluster) PutStore(store *metapb.Store) error {
 
 	storePath := makeStoreKey(c.clusterRoot, store.GetId())
 
-	// The associated node must exist.
-	nodePath := makeNodeKey(c.clusterRoot, store.GetNodeId())
-
 	mu := &c.mu
 	mu.Lock()
 	defer mu.Unlock()
 
-	nodeCreatedCmp := clientv3.Compare(clientv3.CreateRevision(nodePath), ">", 0)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	resp, err := c.s.client.Txn(ctx).
-		If(c.s.leaderCmp(), nodeCreatedCmp).
+		If(c.s.leaderCmp()).
 		Then(clientv3.OpPut(storePath, string(storeValue))).
 		Commit()
 	cancel()

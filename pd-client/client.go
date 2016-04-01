@@ -25,10 +25,10 @@ type Client interface {
 	// The region may expire after split. Caller is responsible for caching and
 	// taking care of region change.
 	GetRegion(key []byte) (*metapb.Region, error)
-	// GetNode gets a node from PD by node id.
-	// The node may expire later. Caller is responsible for caching and taking care
-	// of node change.
-	GetNode(nodeID uint64) (*metapb.Node, error)
+	// GetStore gets a store from PD by store id.
+	// The store may expire later. Caller is responsible for caching and taking care
+	// of store change.
+	GetStore(storeID uint64) (*metapb.Store, error)
 	// Close closes the client.
 	Close()
 }
@@ -117,11 +117,11 @@ func (c *client) GetRegion(key []byte) (*metapb.Region, error) {
 	return region, nil
 }
 
-func (c *client) GetNode(nodeID uint64) (*metapb.Node, error) {
+func (c *client) GetStore(storeID uint64) (*metapb.Store, error) {
 	req := &metaRequest{
 		pbReq: &pdpb.GetMetaRequest{
-			MetaType: pdpb.MetaType_NodeType.Enum(),
-			NodeId:   proto.Uint64(nodeID),
+			MetaType: pdpb.MetaType_StoreType.Enum(),
+			StoreId:  proto.Uint64(storeID),
 		},
 		done: make(chan error),
 	}
@@ -132,11 +132,11 @@ func (c *client) GetNode(nodeID uint64) (*metapb.Node, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	node := req.pbResp.GetNode()
-	if node == nil {
-		return nil, errors.New("[pd] node field in rpc response not set")
+	store := req.pbResp.GetStore()
+	if store == nil {
+		return nil, errors.New("[pd] store field in rpc response not set")
 	}
-	return node, nil
+	return store, nil
 }
 
 func (c *client) watchLeader(leaderPath string, revision int64) {

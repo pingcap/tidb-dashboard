@@ -144,7 +144,7 @@ func (c *client) watchLeader(leaderPath string, revision int64) {
 WATCH:
 	for {
 		log.Infof("[pd] start watch pd leader on path %v, revision %v", leaderPath, revision)
-		rch := c.etcdClient.Watch(context.Background(), leaderPath)
+		rch := c.etcdClient.Watch(context.Background(), leaderPath, clientv3.WithRev(revision))
 		select {
 		case resp := <-rch:
 			if resp.Canceled {

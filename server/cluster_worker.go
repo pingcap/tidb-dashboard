@@ -646,7 +646,7 @@ func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCmdRequest) (*raft_cmd
 		return nil, errors.Trace(err)
 	}
 
-	nc, err := c.nodeConns.GetConn(store.GetAddress())
+	nc, err := c.storeConns.GetConn(store.GetAddress())
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -658,13 +658,13 @@ func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCmdRequest) (*raft_cmd
 
 	msgID := atomic.AddUint64(&c.s.msgID, 1)
 	if err = util.WriteMessage(nc.conn, msgID, msg); err != nil {
-		c.nodeConns.RemoveConn(store.GetAddress())
+		c.storeConns.RemoveConn(store.GetAddress())
 		return nil, errors.Trace(err)
 	}
 
 	msg.Reset()
 	if _, err = util.ReadMessage(nc.conn, msg); err != nil {
-		c.nodeConns.RemoveConn(store.GetAddress())
+		c.storeConns.RemoveConn(store.GetAddress())
 		return nil, errors.Trace(err)
 	}
 

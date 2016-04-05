@@ -12,9 +12,9 @@ RUN go get -d github.com/pingcap/pd/server && \
 
 EXPOSE 2379 2380 4001 7001 1234
 
-COPY docker/start.sh /start.sh
+COPY docker/start_pd.sh /start_pd.sh
 
-RUN chmod +x /start.sh
+RUN chmod +x /start_pd.sh
 
 # For Etcd, see https://github.com/coreos/etcd/blob/master/Documentation/configuration.md
 ENV ETCD_NAME="default"
@@ -27,5 +27,5 @@ ENV ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
 ENV PD_ETCD_ENDPOINTS=
 ENV PD_ADVERTISE_ADDR=
 
-ENTRYPOINT ["/start.sh"]
+ENTRYPOINT ["/start_pd.sh"]
 

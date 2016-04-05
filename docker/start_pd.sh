@@ -3,11 +3,9 @@
 pkill -9 -f etcd
 pkill -9 -f pd-server
 
-args=(--listen-peer-urls="http://0.0.0.0:2380,http://0.0.0.0:7001" \
+etcd --listen-peer-urls="http://0.0.0.0:2380,http://0.0.0.0:7001" \
     --listen-client-urls="http://0.0.0.0:2379,http://0.0.0.0:4001" \
-    --initial-cluster-state="new")
-
-etcd ${args[@]} &
+    --initial-cluster-state="new" &
 
 ret=1
 # Wait for Etcd to start.

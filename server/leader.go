@@ -95,7 +95,7 @@ func (s *Server) getLeader() (*pdpb.Leader, error) {
 
 func (s *Server) marshalLeader() string {
 	leader := &pdpb.Leader{
-		Addr: proto.String(s.cfg.Addr),
+		Addr: proto.String(s.cfg.AdvertiseAddr),
 		Pid:  proto.Int64(int64(os.Getpid())),
 	}
 

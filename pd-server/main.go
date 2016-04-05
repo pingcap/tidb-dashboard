@@ -12,11 +12,12 @@ import (
 )
 
 var (
-	addr        = flag.String("addr", "127.0.0.1:1234", "server listening address")
-	etcdAddrs   = flag.String("etcd", "127.0.0.1:2379", "Etcd endpoints, separated by comma")
-	rootPath    = flag.String("root", "/pd", "pd root path in etcd")
-	leaderLease = flag.Int64("lease", 3, "Leader lease time (second)")
-	logLevel    = flag.String("L", "debug", "log level: info, debug, warn, error, fatal")
+	addr          = flag.String("addr", "127.0.0.1:1234", "server listening address")
+	advertiseAddr = flag.String("advertise-addr", "", "server advertise listening address [127.0.0.1:1234] for client communication")
+	etcdAddrs     = flag.String("etcd", "127.0.0.1:2379", "Etcd endpoints, separated by comma")
+	rootPath      = flag.String("root", "/pd", "pd root path in etcd")
+	leaderLease   = flag.Int64("lease", 3, "Leader lease time (second)")
+	logLevel      = flag.String("L", "debug", "log level: info, debug, warn, error, fatal")
 )
 
 func main() {
@@ -25,10 +26,11 @@ func main() {
 	log.SetLevelByString(*logLevel)
 
 	cfg := &server.Config{
-		Addr:        *addr,
-		EtcdAddrs:   strings.Split(*etcdAddrs, ","),
-		RootPath:    *rootPath,
-		LeaderLease: *leaderLease,
+		Addr:          *addr,
+		AdvertiseAddr: *advertiseAddr,
+		EtcdAddrs:     strings.Split(*etcdAddrs, ","),
+		RootPath:      *rootPath,
+		LeaderLease:   *leaderLease,
 	}
 
 	svr, err := server.NewServer(cfg)

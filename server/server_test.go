@@ -32,10 +32,6 @@ func newTestServer(c *C, rootPath string) *Server {
 	svr, err := NewServer(cfg)
 	c.Assert(err, IsNil)
 
-	// We use 127.0.0.1:0, here force reset real listening addr
-	// in configuration.
-	svr.cfg.Addr = svr.ListeningAddr()
-
 	return svr
 }
 
@@ -75,7 +71,7 @@ func (s *testLeaderServerSuite) SetUpSuite(c *C) {
 
 	for i := 0; i < 3; i++ {
 		svr := newTestServer(c, s.getRootPath())
-		s.svrs[svr.cfg.Addr] = svr
+		s.svrs[svr.cfg.AdvertiseAddr] = svr
 	}
 
 	s.client = newEtcdClient(c)

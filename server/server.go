@@ -71,6 +71,11 @@ func NewServer(cfg *Config) (*Server, error) {
 		return nil, errors.Trace(err)
 	}
 
+	// If advertise addr not set, using default listening address.
+	if len(cfg.AdvertiseAddr) == 0 {
+		cfg.AdvertiseAddr = l.Addr().String()
+	}
+
 	s := &Server{
 		cfg:      cfg,
 		listener: l,

@@ -14,6 +14,10 @@ type Config struct {
 	// Server listening address.
 	Addr string
 
+	// Server advertise listening address for outer client communication.
+	// If not set, using default Addr instead.
+	AdvertiseAddr string
+
 	// Etcd endpoints
 	EtcdAddrs []string
 

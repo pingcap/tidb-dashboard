@@ -1,5 +1,6 @@
-# pd
-placement driver
+# pd [![Build Status](https://travis-ci.org/pingcap/pd.svg?branch=master)](https://travis-ci.org/pingcap/pd)
+
+Pd is the abbreviate for placement driver.
 
 ## Docker
 

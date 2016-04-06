@@ -280,7 +280,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	bootstrapCmp := clientv3.Compare(clientv3.CreateRevision(clusterRootPath), "=", 0)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	resp, err := s.client.Txn(ctx).
-		If(s.leaderCmp(), bootstrapCmp).
+		If(bootstrapCmp).
 		Then(ops...).
 		Commit()
 	cancel()
@@ -288,7 +288,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 		return errors.Trace(err)
 	}
 	if !resp.Succeeded {
-		return errors.Errorf("bootstrap cluster %d fail, we may be not leader", clusterID)
+		return nil
 	}
 
 	log.Infof("bootstrap cluster %d ok", clusterID)

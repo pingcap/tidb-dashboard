@@ -1,0 +1,13 @@
+language: go
+
+go:
+  - 1.6
+
+before_script:
+  - git clone https://github.com/coreos/etcd.git $GOPATH/src/github.com/coreos/etcd
+  - cd $GOPATH/src/github.com/coreos/etcd
+  - ./build
+  - ./bin/etcd &
+  - cd $TRAVIS_BUILD_DIR
+
+script: make deps && make

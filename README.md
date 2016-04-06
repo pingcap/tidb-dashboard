@@ -59,4 +59,4 @@ docker run -d -p 2379:2379 -p 2380:2380 -p 4001:4001 -p 1234:1234 --name pd \
     pingcap/pd
 ```
 
-A simple script [run_cluster](./run_cluster) can help you run these in local.
+A simple script [run_cluster.sh](./run_cluster.sh) can help you run these in local.

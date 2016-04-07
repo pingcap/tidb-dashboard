@@ -16,7 +16,7 @@ import (
 	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/kvproto/pkg/raft_cmdpb"
 	"github.com/pingcap/kvproto/pkg/raftpb"
-	"github.com/pingcap/pd/util"
+	"github.com/pingcap/kvproto/pkg/util"
 )
 
 var _ = Suite(&testClusterWorkerSuite{})

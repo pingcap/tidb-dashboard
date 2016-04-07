@@ -12,8 +12,8 @@ import (
 	. "github.com/pingcap/check"
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
+	"github.com/pingcap/kvproto/pkg/util"
 	"github.com/pingcap/pd/server"
-	"github.com/pingcap/pd/util"
 	"github.com/twinj/uuid"
 )
 

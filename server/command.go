@@ -86,13 +86,7 @@ func (c *conn) handleBootstrap(req *pdpb.Request) (*pdpb.Response, error) {
 		return NewBootstrappedError(), nil
 	}
 
-	if err = c.s.bootstrapCluster(clusterID, request); err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	return &pdpb.Response{
-		Bootstrap: &pdpb.BootstrapResponse{},
-	}, nil
+	return c.s.bootstrapCluster(clusterID, request)
 }
 
 func (c *conn) getCluster(req *pdpb.Request) (*raftCluster, error) {

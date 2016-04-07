@@ -233,11 +233,11 @@ func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 	return nil
 }
 
-func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) error {
+func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) (*pdpb.Response, error) {
 	log.Infof("try to bootstrap cluster %d with %v", clusterID, req)
 
 	if err := checkBootstrapRequest(clusterID, req); err != nil {
-		return errors.Trace(err)
+		return nil, errors.Trace(err)
 	}
 
 	clusterMeta := metapb.Cluster{
@@ -248,7 +248,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	// Set cluster meta
 	clusterValue, err := proto.Marshal(&clusterMeta)
 	if err != nil {
-		return errors.Trace(err)
+		return nil, errors.Trace(err)
 	}
 	clusterRootPath := s.getClusterRootPath(clusterID)
 
@@ -260,7 +260,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	storePath := makeStoreKey(clusterRootPath, storeMeta.GetId())
 	storeValue, err := proto.Marshal(storeMeta)
 	if err != nil {
-		return errors.Trace(err)
+		return nil, errors.Trace(err)
 	}
 	ops = append(ops, clientv3.OpPut(storePath, string(storeValue)))
 
@@ -272,7 +272,7 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	regionSearchPath := makeRegionSearchKey(clusterRootPath, req.GetRegion().GetEndKey())
 	regionValue, err := proto.Marshal(req.GetRegion())
 	if err != nil {
-		return errors.Trace(err)
+		return nil, errors.Trace(err)
 	}
 	ops = append(ops, clientv3.OpPut(regionSearchPath, string(regionValue)))
 
@@ -280,15 +280,16 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 	bootstrapCmp := clientv3.Compare(clientv3.CreateRevision(clusterRootPath), "=", 0)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	resp, err := s.client.Txn(ctx).
-		If(s.leaderCmp(), bootstrapCmp).
+		If(bootstrapCmp).
 		Then(ops...).
 		Commit()
 	cancel()
 	if err != nil {
-		return errors.Trace(err)
+		return nil, errors.Trace(err)
 	}
 	if !resp.Succeeded {
-		return errors.Errorf("bootstrap cluster %d fail, we may be not leader", clusterID)
+		log.Warnf("cluster %d already bootstrapped", clusterID)
+		return NewBootstrappedError(), nil
 	}
 
 	log.Infof("bootstrap cluster %d ok", clusterID)
@@ -300,13 +301,15 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 		// We have bootstrapped cluster ok, and another goroutine quickly requests to
 		// use this cluster and we create the cluster object for it.
 		// But can this really happen?
-		log.Errorf("cluster object %d already exists", clusterID)
-		return nil
+		log.Warnf("cluster object %d already exists", clusterID)
+		return &pdpb.Response{
+			Bootstrap: &pdpb.BootstrapResponse{},
+		}, nil
 	}
 
 	c, err := s.newCluster(clusterID, clusterMeta)
 	if err != nil {
-		return errors.Trace(err)
+		return nil, errors.Trace(err)
 	}
 
 	mu := &c.mu
@@ -317,7 +320,9 @@ func (s *Server) bootstrapCluster(clusterID uint64, req *pdpb.BootstrapRequest) 
 
 	s.clusters[clusterID] = c
 
-	return nil
+	return &pdpb.Response{
+		Bootstrap: &pdpb.BootstrapResponse{},
+	}, nil
 }
 
 func (c *raftCluster) cacheAllStores() error {

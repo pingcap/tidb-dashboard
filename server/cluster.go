@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/coreos/etcd/clientv3"
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/metapb"

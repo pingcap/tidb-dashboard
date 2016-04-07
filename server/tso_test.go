@@ -10,7 +10,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	. "github.com/pingcap/check"
 	"github.com/pingcap/kvproto/pkg/pdpb"
-	"github.com/pingcap/pd/util"
+	"github.com/pingcap/kvproto/pkg/util"
 )
 
 var _ = Suite(&testTsoSuite{})

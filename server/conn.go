@@ -7,7 +7,7 @@ import (
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/pdpb"
-	"github.com/pingcap/pd/util"
+	"github.com/pingcap/kvproto/pkg/util"
 )
 
 const (

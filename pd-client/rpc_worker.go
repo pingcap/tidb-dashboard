@@ -12,7 +12,7 @@ import (
 	"github.com/ngaut/deadline"
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/pdpb"
-	"github.com/pingcap/pd/util"
+	"github.com/pingcap/kvproto/pkg/util"
 	"github.com/twinj/uuid"
 )
 

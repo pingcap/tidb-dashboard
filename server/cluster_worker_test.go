@@ -69,7 +69,7 @@ func (s *testClusterWorkerSuite) bootstrap(c *C) *mockRaftStore {
 	store := req.Bootstrap.Store
 	region := req.Bootstrap.Region
 
-	err := s.svr.bootstrapCluster(s.clusterID, req.Bootstrap)
+	_, err := s.svr.bootstrapCluster(s.clusterID, req.Bootstrap)
 	c.Assert(err, IsNil)
 
 	raftStore := s.newMockRaftStore(c, store)

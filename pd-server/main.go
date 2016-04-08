@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"strings"
@@ -18,12 +20,17 @@ var (
 	rootPath      = flag.String("root", "/pd", "pd root path in etcd")
 	leaderLease   = flag.Int64("lease", 3, "Leader lease time (second)")
 	logLevel      = flag.String("L", "debug", "log level: info, debug, warn, error, fatal")
+	pprofAddr     = flag.String("pprof", ":6060", "pprof HTTP listening address")
 )
 
 func main() {
 	flag.Parse()
 
 	log.SetLevelByString(*logLevel)
+
+	go func() {
+		http.ListenAndServe(*pprofAddr, nil)
+	}()
 
 	cfg := &server.Config{
 		Addr:          *addr,

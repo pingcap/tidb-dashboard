@@ -732,6 +732,8 @@ func (s *testClusterWorkerSuite) TestSplit(c *C) {
 		{"e", "d", "", "f"},
 	}
 
+	firstRegionStartKey := tbl[0].startKey
+	firstRegionEndKey := tbl[0].splitKey
 	for _, t := range tbl {
 		regionKey := []byte(t.searchKey)
 		region, err := cluster.GetRegion(regionKey)
@@ -777,5 +779,12 @@ func (s *testClusterWorkerSuite) TestSplit(c *C) {
 		c.Assert(err, IsNil)
 		c.Assert(right.GetStartKey(), BytesEquals, []byte(t.splitKey))
 		c.Assert(right.GetEndKey(), BytesEquals, []byte(t.endKey))
+
+		// Test get first region.
+		regionKey = []byte{}
+		region, err = cluster.GetRegion(regionKey)
+		c.Assert(err, IsNil)
+		c.Assert(region.GetStartKey(), BytesEquals, []byte(firstRegionStartKey))
+		c.Assert(region.GetEndKey(), BytesEquals, []byte(firstRegionEndKey))
 	}
 }

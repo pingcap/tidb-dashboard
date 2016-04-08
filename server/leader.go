@@ -115,7 +115,7 @@ func (s *Server) campaignLeader() error {
 	defer lessor.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	leaseResp, err := lessor.Create(ctx, s.cfg.LeaderLease)
+	leaseResp, err := lessor.Grant(ctx, s.cfg.LeaderLease)
 	cancel()
 	if err != nil {
 		return errors.Trace(err)

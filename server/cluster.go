@@ -389,10 +389,6 @@ func (c *raftCluster) GetStore(storeID uint64) (*metapb.Store, error) {
 }
 
 func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {
-	if len(regionKey) == 0 {
-		return nil, errors.New("invalid empty region key")
-	}
-
 	// We must use the next region key for search,
 	// e,g, we have two regions 1, 2, and key ranges are ["", "abc"), ["abc", +infinite),
 	// if we use "abc" to search the region, the first key >= "abc" may be

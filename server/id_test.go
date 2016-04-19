@@ -24,9 +24,7 @@ func (s *testAllocIDSuite) getRootPath() string {
 
 func (s *testAllocIDSuite) SetUpSuite(c *C) {
 	s.svr = newTestServer(c, s.getRootPath())
-
 	s.client = newEtcdClient(c)
-
 	s.alloc = s.svr.idAlloc
 
 	deleteRoot(c, s.client, s.getRootPath())
@@ -39,7 +37,7 @@ func (s *testAllocIDSuite) TearDownSuite(c *C) {
 }
 
 func (s *testAllocIDSuite) TestID(c *C) {
-	mustGetLeader(c, s.client, s.getRootPath())
+	mustGetLeader(c, s.client, s.svr.getLeaderPath())
 
 	var last uint64
 	for i := uint64(0); i < allocStep; i++ {
@@ -75,7 +73,7 @@ func (s *testAllocIDSuite) TestID(c *C) {
 }
 
 func (s *testAllocIDSuite) TestCommand(c *C) {
-	leader := mustGetLeader(c, s.client, s.getRootPath())
+	leader := mustGetLeader(c, s.client, s.svr.getLeaderPath())
 
 	conn, err := net.Dial("tcp", leader.GetAddr())
 	c.Assert(err, IsNil)

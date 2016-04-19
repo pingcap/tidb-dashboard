@@ -1,6 +1,7 @@
 language: go
 
 go:
+  - 1.5
   - 1.6
 
 before_script:
@@ -10,4 +11,4 @@ before_script:
   - ./bin/etcd &
   - cd $TRAVIS_BUILD_DIR
 
-script: make deps && make
+script: make test

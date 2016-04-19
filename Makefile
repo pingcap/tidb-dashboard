@@ -1,26 +1,20 @@
 all: build check test 
 
+GO=GO15VENDOREXPERIMENT="1" go
+
 build:
-	go build -o bin/pd-server pd-server/main.go
+	$(GO) build -o bin/pd-server pd-server/main.go
 
 install:
-	go install ./...
+	$(GO) install ./...
 
 test:
-	go test --race ./...
+	$(GO) test --race ./...
 
 check:
 	go get github.com/golang/lint/golint
 
-	go tool vet . 
-	go tool vet --shadow . 
-	golint ./... 
-	gofmt -s -l .
-
-deps:
-	go list -f '{{range .Deps}}{{printf "%s\n" .}}{{end}}{{range .TestImports}}{{printf "%s\n" .}}{{end}}' ./... | \
-		sort | uniq | grep -E '[^/]+\.[^/]+/' |grep -v "pingcap/pd" | \
-		awk 'BEGIN{ print "#!/bin/bash" }{ printf("go get -d %s\n", $$1) }' > deps.sh
-	chmod +x deps.sh
-	bash deps.sh
-	rm -f deps.sh
+	go tool vet . 2>&1 | grep -vE 'vendor' | awk '{print} END{if(NR>0) {exit 1}}'
+	go tool vet --shadow . 2>&1 | grep -vE 'vendor' | awk '{print} END{if(NR>0) {exit 1}}'
+	golint ./... 2>&1 | grep -vE 'vendor' | awk '{print} END{if(NR>0) {exit 1}}'
+	gofmt -s -l . 2>&1 | grep -vE 'vendor' | awk '{print} END{if(NR>0) {exit 1}}'

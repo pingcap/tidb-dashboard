@@ -2,6 +2,12 @@
 
 Pd is the abbreviate for placement driver.
 
+## Usage
+
++ Install [*Go*](https://golang.org/), (version 1.5+ is required).
++ `make build`
++ `./bin/pd-server --etcd=127.0.0.1:2379`
+
 ## Docker
 
 ### Build

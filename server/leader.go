@@ -58,13 +58,12 @@ func (s *Server) leaderLoop() {
 		leader, err := s.getLeader()
 		if err != nil {
 			log.Errorf("get leader err %v", err)
+			time.Sleep(200 * time.Millisecond)
 			continue
 		} else if leader != nil {
-			log.Debugf("leader is %s, watch it", leader)
-
+			log.Infof("leader is %s, watch it", leader)
 			s.watchLeader()
-
-			log.Debug("leader changed, try to campaign leader")
+			log.Info("leader changed, try to campaign leader")
 		}
 
 		if err = s.campaignLeader(); err != nil {

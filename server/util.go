@@ -14,7 +14,7 @@ const (
 	requestTimeout = 10 * time.Second
 )
 
-// a helper function to get value with key from etcd.
+// A helper function to get value with key from etcd.
 // TODO: return the value revision for outer use.
 func getValue(c *clientv3.Client, key string, opts ...clientv3.OpOption) ([]byte, error) {
 	kv := clientv3.NewKV(c)
@@ -36,7 +36,7 @@ func getValue(c *clientv3.Client, key string, opts ...clientv3.OpOption) ([]byte
 	return resp.Kvs[0].Value, nil
 }
 
-// return boolean to indicate whether the key exists or not.
+// Return boolean to indicate whether the key exists or not.
 // TODO: return the value revision for outer use.
 func getProtoMsg(c *clientv3.Client, key string, msg proto.Message, opts ...clientv3.OpOption) (bool, error) {
 	value, err := getValue(c, key, opts...)

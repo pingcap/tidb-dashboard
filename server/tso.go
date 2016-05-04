@@ -5,13 +5,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/coreos/etcd/clientv3"
 	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/pdpb"
+	"golang.org/x/net/context"
 )
 
 const (
@@ -72,7 +71,6 @@ func (s *Server) saveTimestamp(now time.Time) error {
 
 func (s *Server) syncTimestamp() error {
 	last, err := s.loadTimestamp()
-
 	if err != nil {
 		return errors.Trace(err)
 	}

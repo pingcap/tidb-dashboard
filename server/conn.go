@@ -23,7 +23,7 @@ type conn struct {
 	conn net.Conn
 }
 
-func newConn(s *Server, netConn net.Conn) *conn {
+func newConn(s *Server, netConn net.Conn) (*conn, error) {
 	c := &conn{
 		s:    s,
 		rb:   bufio.NewReaderSize(netConn, readBufferSize),
@@ -32,10 +32,15 @@ func newConn(s *Server, netConn net.Conn) *conn {
 	}
 
 	s.connsLock.Lock()
-	s.conns[c] = struct{}{}
-	s.connsLock.Unlock()
+	defer s.connsLock.Unlock()
 
-	return c
+	if !s.IsLeader() {
+		return nil, errors.Errorf("server %s is not leader, cannot create new connection", s.cfg.Addr)
+	}
+
+	s.conns[c] = struct{}{}
+
+	return c, nil
 }
 
 func (c *conn) run() {

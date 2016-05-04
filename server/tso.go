@@ -147,7 +147,7 @@ func (s *Server) getRespTS() *pdpb.Timestamp {
 	for i := 0; i < maxRetryNum; i++ {
 		current, ok := s.ts.Load().(*atomicObject)
 		if !ok {
-			log.Errorf("we haven't synced timestamp ok, wait and retry")
+			log.Errorf("we haven't synced timestamp ok, wait and retry, retry number %d", i)
 			time.Sleep(200 * time.Millisecond)
 			continue
 		}
@@ -155,7 +155,7 @@ func (s *Server) getRespTS() *pdpb.Timestamp {
 		resp.Physical = proto.Int64(int64(current.physical.UnixNano()) / 1e6)
 		resp.Logical = proto.Int64(atomic.AddInt64(&current.logical, 1))
 		if *resp.Logical >= maxLogical {
-			log.Errorf("logical part outside of max logical interval %v, please check ntp time", resp)
+			log.Errorf("logical part outside of max logical interval %v, please check ntp time, retry number %d", resp, i)
 			time.Sleep(50 * time.Millisecond)
 			continue
 		}

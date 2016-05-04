@@ -24,6 +24,7 @@ type idAllocator struct {
 func (alloc *idAllocator) Alloc() (uint64, error) {
 	alloc.mu.Lock()
 	defer alloc.mu.Unlock()
+
 	if alloc.base == alloc.end {
 		end, err := alloc.generate()
 		if err != nil {

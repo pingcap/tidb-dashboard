@@ -72,7 +72,6 @@ func (s *Server) saveTimestamp(now time.Time) error {
 
 func (s *Server) syncTimestamp() error {
 	last, err := s.loadTimestamp()
-
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -115,7 +114,6 @@ func (s *Server) updateTimestamp() error {
 	prev := s.ts.Load().(*atomicObject)
 	now := time.Now()
 
-	// ms
 	since := now.Sub(prev.physical).Nanoseconds() / 1e6
 	if since > 2*updateTimestampStep {
 		log.Warnf("clock offset: %v, prev: %v, now %v", since, prev.physical, now)

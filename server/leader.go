@@ -60,7 +60,8 @@ func (s *Server) leaderLoop() {
 			log.Errorf("get leader err %v", err)
 			time.Sleep(200 * time.Millisecond)
 			continue
-		} else if leader != nil {
+		}
+		if leader != nil {
 			log.Infof("leader is %s, watch it", leader)
 			s.watchLeader()
 			log.Info("leader changed, try to campaign leader")
@@ -74,13 +75,16 @@ func (s *Server) leaderLoop() {
 
 // GetLeader gets server leader from etcd.
 func GetLeader(c *clientv3.Client, leaderPath string) (*pdpb.Leader, error) {
-	leader := pdpb.Leader{}
-	ok, err := getProtoMsg(c, leaderPath, &leader)
-	if err != nil || !ok {
+	leader := &pdpb.Leader{}
+	ok, err := getProtoMsg(c, leaderPath, leader)
+	if err != nil {
 		return nil, errors.Trace(err)
 	}
+	if !ok {
+		return nil, nil
+	}
 
-	return &leader, nil
+	return leader, nil
 }
 
 func (s *Server) getLeader() (*pdpb.Leader, error) {

@@ -151,7 +151,7 @@ func (s *Server) Run() error {
 
 		c, err := newConn(s, conn)
 		if err != nil {
-			log.Warn(errors.ErrorStack(err))
+			log.Warn(err)
 			conn.Close()
 			continue
 		}

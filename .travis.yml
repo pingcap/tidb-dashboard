@@ -9,6 +9,7 @@ before_script:
   - cd $GOPATH/src/github.com/coreos/etcd
   - ./build
   - ./bin/etcd &
+  - sleep 1s
   - cd $TRAVIS_BUILD_DIR
 
 script: make test

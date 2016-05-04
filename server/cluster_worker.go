@@ -194,10 +194,10 @@ func (c *raftCluster) handleJob(job *pd_jobpd.Job) error {
 	)
 
 	switch adminRequest.GetCmdType() {
-	case raft_cmdpb.AdminCmdType_Split:
-		checkOK = c.checkSplitOK
 	case raft_cmdpb.AdminCmdType_ChangePeer:
 		checkOK = c.checkChangePeerOK
+	case raft_cmdpb.AdminCmdType_Split:
+		checkOK = c.checkSplitOK
 	default:
 		log.Errorf("unsupported request %v, ignore", request)
 		return nil
@@ -254,7 +254,7 @@ func (c *raftCluster) processJob(job *pd_jobpd.Job, checkOK checkOKFunc) (*raft_
 		// If we don't supply check ok function, it means that the job is
 		// first running, not retried, we can safely cancel it.
 		if checkOK == nil {
-			log.Errorf("handle %v but failed with response %v, cancel it", job.Request, response.Header.Error)
+			log.Warnf("handle %v but failed with response %v, cancel it", job.Request, response.Header.Error)
 			return nil, nil
 		}
 
@@ -527,7 +527,6 @@ func (c *raftCluster) handleSplitOK(split *raft_cmdpb.SplitResponse) error {
 		if err != nil {
 			return errors.Trace(err)
 		}
-
 		if v != nil {
 			// We can find the left region with the new end key, so we can
 			// think we have already executed this transaction successfully.

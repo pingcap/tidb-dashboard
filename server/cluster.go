@@ -84,8 +84,8 @@ func (c *raftCluster) Start(meta metapb.Cluster) error {
 
 	c.askJobCh = make(chan struct{}, askJobChannelSize)
 	c.quitCh = make(chan struct{})
-	c.storeConns = newStoreConns(defaultConnFunc)
 
+	c.storeConns = newStoreConns(defaultConnFunc)
 	c.storeConns.SetIdleTimeout(idleTimeout)
 
 	// Force checking the pending job.
@@ -148,12 +148,12 @@ func (s *Server) getRaftCluster() (*raftCluster, error) {
 		return nil, nil
 	}
 
-	m := metapb.Cluster{}
-	if err = proto.Unmarshal(value, &m); err != nil {
+	clusterMeta := metapb.Cluster{}
+	if err = proto.Unmarshal(value, &clusterMeta); err != nil {
 		return nil, errors.Trace(err)
 	}
 
-	if err = s.cluster.Start(m); err != nil {
+	if err = s.cluster.Start(clusterMeta); err != nil {
 		return nil, errors.Trace(err)
 	}
 
@@ -217,7 +217,6 @@ func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 	}
 
 	storeID := storeIDs[0]
-
 	if storeID != storeMeta.GetId() {
 		return errors.Errorf("invalid peer store id %d != %d for bootstrap %d", storeID, storeMeta.GetId(), clusterID)
 	} else if storeID == 0 {
@@ -272,7 +271,7 @@ func (s *Server) bootstrapCluster(req *pdpb.BootstrapRequest) (*pdpb.Response, e
 	}
 	ops = append(ops, clientv3.OpPut(regionSearchPath, string(regionValue)))
 
-	// TODO: we must figure out a better to handle bootstrap failed, maybe intervene manually.
+	// TODO: we must figure out a better way to handle bootstrap failed, maybe intervene manually.
 	bootstrapCmp := clientv3.Compare(clientv3.CreateRevision(clusterRootPath), "=", 0)
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	resp, err := s.client.Txn(ctx).
@@ -310,7 +309,6 @@ func (c *raftCluster) cacheAllStores() error {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	resp, err := kv.Get(ctx, key, clientv3.WithPrefix())
 	cancel()
-
 	if err != nil {
 		return errors.Trace(err)
 	}

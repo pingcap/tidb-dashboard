@@ -61,7 +61,6 @@ func (c *conn) run() {
 			log.Errorf("handle request %s err %v", request, errors.ErrorStack(err))
 			response = NewError(err)
 		}
-
 		if response == nil {
 			// we don't need to response, maybe error?
 			// if error, we will return an error response later.

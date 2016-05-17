@@ -186,19 +186,21 @@ func (c *conn) handleRegionHeartbeat(req *pdpb.Request) (*pdpb.Response, error) 
 		return nil, errors.Trace(err)
 	}
 
+	// Check whether need to update etcd meta info.
 	ops := append(splitOps, changePeerOps...)
-
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	resp, err := c.s.client.Txn(ctx).
-		If(c.s.leaderCmp()).
-		Then(ops...).
-		Commit()
-	cancel()
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	if !resp.Succeeded {
-		return nil, errors.New("handle region heartbeat failed")
+	if len(ops) > 0 {
+		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+		resp, err := c.s.client.Txn(ctx).
+			If(c.s.leaderCmp()).
+			Then(ops...).
+			Commit()
+		cancel()
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		if !resp.Succeeded {
+			return nil, errors.New("handle region heartbeat failed")
+		}
 	}
 
 	return &pdpb.Response{

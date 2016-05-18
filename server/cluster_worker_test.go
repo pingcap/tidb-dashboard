@@ -28,25 +28,49 @@ type mockRaftStore struct {
 	peers map[uint64]*metapb.Peer
 }
 
-func (s *mockRaftStore) addPeer(c *C, region *metapb.Region) {
+func (s *mockRaftStore) addPeer(c *C, peer *metapb.Peer) {
 	s.Lock()
 	defer s.Unlock()
 
-	storeID := s.store.GetId()
-	var (
-		peer  *metapb.Peer
-		found = false
-	)
+	c.Assert(s.peers, Not(HasKey), peer.GetId())
+	s.peers[peer.GetId()] = peer
+}
 
+func (s *mockRaftStore) removePeer(c *C, peer *metapb.Peer) {
+	s.Lock()
+	defer s.Unlock()
+
+	c.Assert(s.peers, HasKey, peer.GetId())
+	delete(s.peers, peer.GetId())
+}
+
+func addRegionPeer(c *C, region *metapb.Region, peer *metapb.Peer) {
+	found := false
 	for _, p := range region.Peers {
-		if p.GetStoreId() == storeID {
-			peer = p
+		if p.GetId() == peer.GetId() {
 			found = true
 			break
 		}
 	}
+
+	c.Assert(found, IsFalse)
+	region.Peers = append(region.Peers, peer)
+}
+
+func removeRegionPeer(c *C, region *metapb.Region, peer *metapb.Peer) {
+	found := false
+	peers := make([]*metapb.Peer, 0, len(region.Peers))
+	for _, p := range region.Peers {
+		if p.GetId() == peer.GetId() {
+			found = true
+			continue
+		}
+
+		peers = append(peers, p)
+	}
+
 	c.Assert(found, IsTrue)
-	s.peers[peer.GetId()] = peer
+	region.Peers = peers
 }
 
 type testClusterWorkerSuite struct {
@@ -90,7 +114,8 @@ func (s *testClusterWorkerSuite) bootstrap(c *C) *mockRaftStore {
 	c.Assert(err, IsNil)
 
 	raftStore := s.newMockRaftStore(c, store)
-	raftStore.addPeer(c, region)
+	c.Assert(region.Peers, HasLen, 1)
+	raftStore.addPeer(c, region.Peers[0])
 	return raftStore
 }
 
@@ -179,7 +204,7 @@ func (s *testClusterWorkerSuite) checkRegionPeerNumber(c *C, regionKey []byte, e
 	return region
 }
 
-func (s *testClusterWorkerSuite) processChangePeerRes(c *C, res *pdpb.RegionHeartbeatResponse, tp raftpb.ConfChangeType, region *metapb.Region) {
+func (s *testClusterWorkerSuite) checkChangePeerRes(c *C, res *pdpb.RegionHeartbeatResponse, tp raftpb.ConfChangeType, region *metapb.Region) {
 	changePeer := res.GetChangePeer()
 	c.Assert(changePeer, NotNil)
 	c.Assert(changePeer.GetChangeType(), Equals, tp)
@@ -188,20 +213,21 @@ func (s *testClusterWorkerSuite) processChangePeerRes(c *C, res *pdpb.RegionHear
 
 	store, ok := s.stores[peer.GetStoreId()]
 	c.Assert(ok, IsTrue)
-	c.Assert(store.peers, Not(HasKey), peer.GetId())
-	c.Logf("peer: %v", peer)
 
 	if tp == raftpb.ConfChangeType_AddNode {
-		region.Peers = append(region.Peers, peer)
-		store.addPeer(c, region)
+		c.Assert(store.peers, Not(HasKey), peer.GetId())
+		store.addPeer(c, peer)
+		addRegionPeer(c, region, peer)
 	} else if tp == raftpb.ConfChangeType_RemoveNode {
-
+		c.Assert(store.peers, HasKey, peer.GetId())
+		store.removePeer(c, peer)
+		removeRegionPeer(c, region, peer)
 	} else {
 		c.Fatalf("invalid conf change type, %v", tp)
 	}
 }
 
-func (s *testClusterWorkerSuite) TestChangePeer(c *C) {
+func (s *testClusterWorkerSuite) TestHeartbeatChangePeer(c *C) {
 	cluster, err := s.svr.getRaftCluster()
 	c.Assert(err, IsNil)
 
@@ -221,32 +247,74 @@ func (s *testClusterWorkerSuite) TestChangePeer(c *C) {
 	c.Assert(err, IsNil)
 	defer conn.Close()
 
-	// Test 1: add a new peer.
 	leaderPeer := s.chooseRegionLeader(c, region)
+	c.Logf("[leaderPeer]:%v, [region]:%v", leaderPeer, region)
 
-	changePeerHeartbeatReq := &pdpb.Request{
-		Header:  newRequestHeader(s.clusterID),
-		CmdType: pdpb.CommandType_RegionHeartbeat.Enum(),
-		RegionHeartbeat: &pdpb.RegionHeartbeatRequest{
-			Leader: leaderPeer,
-			Region: region,
-		},
+	// Add 4 peers.
+	for i := 0; i < 4; i++ {
+		changePeerHeartbeatReq := &pdpb.Request{
+			Header:  newRequestHeader(s.clusterID),
+			CmdType: pdpb.CommandType_RegionHeartbeat.Enum(),
+			RegionHeartbeat: &pdpb.RegionHeartbeatRequest{
+				Leader: leaderPeer,
+				Region: region,
+			},
+		}
+
+		sendRequest(c, conn, 0, changePeerHeartbeatReq)
+		_, resp := recvResponse(c, conn)
+		c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_RegionHeartbeat)
+
+		// Check RegionHeartbeat response.
+		s.checkChangePeerRes(c, resp.GetRegionHeartbeat(), raftpb.ConfChangeType_AddNode, region)
+		c.Logf("[add peer][region]:%v", region)
+
+		// Update region epoch and check region info.
+		region.RegionEpoch.ConfVer = proto.Uint64(region.GetRegionEpoch().GetConfVer() + 1)
+		sendRequest(c, conn, 0, changePeerHeartbeatReq)
+		_, resp = recvResponse(c, conn)
+		c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_RegionHeartbeat)
+
+		// Check region peer number.
+		region = s.checkRegionPeerNumber(c, regionKey, i+2)
 	}
 
-	sendRequest(c, conn, 0, changePeerHeartbeatReq)
-	_, resp := recvResponse(c, conn)
-	c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_RegionHeartbeat)
+	region = s.checkRegionPeerNumber(c, regionKey, 5)
 
-	// Check Test 1: check RegionHeartbeat response.
-	regionHeartbeatRes := resp.GetRegionHeartbeat()
-	s.processChangePeerRes(c, regionHeartbeatRes, raftpb.ConfChangeType_AddNode, region)
+	// Remove 2 peers.
+	err = cluster.PutConfig(&metapb.Cluster{
+		Id:            proto.Uint64(s.clusterID),
+		MaxPeerNumber: proto.Uint32(3),
+	})
+	c.Assert(err, IsNil)
 
-	// Test 1: update region epoch and check region info.
-	region.RegionEpoch.ConfVer = proto.Uint64(region.GetRegionEpoch().GetConfVer() + 1)
-	sendRequest(c, conn, 0, changePeerHeartbeatReq)
-	_, resp = recvResponse(c, conn)
-	c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_RegionHeartbeat)
+	// Remove 2 peers
+	for i := 0; i < 2; i++ {
+		changePeerHeartbeatReq := &pdpb.Request{
+			Header:  newRequestHeader(s.clusterID),
+			CmdType: pdpb.CommandType_RegionHeartbeat.Enum(),
+			RegionHeartbeat: &pdpb.RegionHeartbeatRequest{
+				Leader: leaderPeer,
+				Region: region,
+			},
+		}
 
-	// check region peer number.
-	region = s.checkRegionPeerNumber(c, regionKey, 2)
+		sendRequest(c, conn, 0, changePeerHeartbeatReq)
+		_, resp := recvResponse(c, conn)
+		c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_RegionHeartbeat)
+
+		// Check RegionHeartbeat response.
+		s.checkChangePeerRes(c, resp.GetRegionHeartbeat(), raftpb.ConfChangeType_RemoveNode, region)
+
+		// Update region epoch and check region info.
+		region.RegionEpoch.ConfVer = proto.Uint64(region.GetRegionEpoch().GetConfVer() + 1)
+		sendRequest(c, conn, 0, changePeerHeartbeatReq)
+		_, resp = recvResponse(c, conn)
+		c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_RegionHeartbeat)
+
+		// Check region peer number.
+		region = s.checkRegionPeerNumber(c, regionKey, 4-i)
+	}
+
+	region = s.checkRegionPeerNumber(c, regionKey, 3)
 }

@@ -104,20 +104,124 @@ func (c *raftCluster) handleRemovePeerReq(region *metapb.Region, leader *metapb.
 	return nil, errors.Errorf("find no proper peer to remove for region %v", region)
 }
 
+func (c *raftCluster) handleChangePeerReq(region *metapb.Region, leader *metapb.Peer) (*pdpb.ChangePeer, error) {
+	clusterMeta, err := c.GetConfig()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	var (
+		maxPeerNumber = int(clusterMeta.GetMaxPeerNumber())
+		regionID      = region.GetId()
+		peerNumber    = len(region.GetPeers())
+		changeType    raftpb.ConfChangeType
+		peer          *metapb.Peer
+	)
+
+	if peerNumber == maxPeerNumber {
+		log.Infof("region %d peer number equals %d, no need to change peer", regionID, maxPeerNumber)
+		return nil, nil
+	} else if peerNumber < maxPeerNumber {
+		log.Infof("region %d peer number %d < %d, need to add peer", regionID, peerNumber, maxPeerNumber)
+		changeType = raftpb.ConfChangeType_AddNode
+		if peer, err = c.handleAddPeerReq(region); err != nil {
+			return nil, errors.Trace(err)
+		}
+	} else {
+		log.Infof("region %d peer number %d > %d, need to remove peer", regionID, peerNumber, maxPeerNumber)
+		changeType = raftpb.ConfChangeType_RemoveNode
+		if peer, err = c.handleRemovePeerReq(region, leader); err != nil {
+			return nil, errors.Trace(err)
+		}
+	}
+
+	changePeer := &pdpb.ChangePeer{
+		ChangeType: changeType.Enum(),
+		Peer:       peer,
+	}
+
+	return changePeer, nil
+}
+
+func (c *raftCluster) maybeChangePeer(request *pdpb.RegionHeartbeatRequest, reqRegion *metapb.Region,
+	region *metapb.Region) ([]clientv3.Op, *pdpb.ChangePeer, error) {
+	leader := request.GetLeader()
+	if leader == nil {
+		return nil, nil, errors.Errorf("invalid request leader, %v", request)
+	}
+
+	regionEpoch := region.GetRegionEpoch()
+	reqRegionEpoch := reqRegion.GetRegionEpoch()
+
+	if reqRegionEpoch.GetConfVer() < regionEpoch.GetConfVer() {
+		// If the request epoch configure version is less than the current one, return an error.
+		return nil, nil, errors.Errorf("invalid region epoch, request: %v, currenrt: %v", reqRegionEpoch, regionEpoch)
+	} else if reqRegionEpoch.GetConfVer() > regionEpoch.GetConfVer() {
+		// If the request epoch configure version is greater than the current one, update region meta.
+		regionSearchPath := makeRegionSearchKey(c.clusterRoot, reqRegion.GetEndKey())
+		regionValue, err := proto.Marshal(reqRegion)
+		if err != nil {
+			return nil, nil, errors.Trace(err)
+		}
+
+		var ops []clientv3.Op
+		ops = append(ops, clientv3.OpPut(regionSearchPath, string(regionValue)))
+		return ops, nil, nil
+	}
+
+	// If the request epoch configure version is equal to the current one, handle change peer request.
+	changePeer, err := c.handleChangePeerReq(reqRegion, leader)
+	if err != nil {
+		return nil, nil, errors.Trace(err)
+	}
+
+	return nil, changePeer, nil
+}
+
+func (c *raftCluster) HandleAskSplit(request *pdpb.AskSplitRequest) (*pdpb.AskSplitResponse, error) {
+	reqRegion := request.GetRegion()
+	startKey := reqRegion.GetStartKey()
+	region, err := c.GetRegion(startKey)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	// If the request epoch is less than current region epoch, then returns an error.
+	reqRegionEpoch := reqRegion.GetRegionEpoch()
+	regionEpoch := region.GetRegionEpoch()
+	if reqRegionEpoch.GetVersion() < regionEpoch.GetVersion() ||
+		reqRegionEpoch.GetConfVer() < regionEpoch.GetConfVer() {
+		return nil, errors.Errorf("invalid region epoch, request: %v, currenrt: %v", reqRegionEpoch, regionEpoch)
+	}
+
+	newRegionID, err := c.s.idAlloc.Alloc()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	peerIDs := make([]uint64, len(request.Region.Peers))
+	for i := 0; i < len(peerIDs); i++ {
+		if peerIDs[i], err = c.s.idAlloc.Alloc(); err != nil {
+			return nil, errors.Trace(err)
+		}
+	}
+
+	split := &pdpb.AskSplitResponse{
+		NewRegionId: proto.Uint64(newRegionID),
+		NewPeerIds:  peerIDs,
+	}
+
+	return split, nil
+}
+
 func (c *raftCluster) maybeSplit(request *pdpb.RegionHeartbeatRequest, reqRegion *metapb.Region,
 	region *metapb.Region) ([]clientv3.Op, error) {
 	// For split, we should handle heartbeat carefully.
 	// E.g, for region 1 [a, c) -> 1 [a, b) + 2 [b, c).
 	// after split, region 1 and 2 will do heartbeat independently.
 	// We can know that now 1 can be found by region id but 2 is not.
-	// When 1 comes, 1 can be found, we can meet two cases with the search key.
-	// 1). get region 1 [a, c), delete c -> 1 first and set b -> 1. Lost range [b, c).
-	// 2). get region 2 [b, c) if 2 reports first, set b -> 1.
-	// When 2 comes, 2 can't be found, we can meet two cases here with
-	// end key c,
-	// 1), get region 1 [a, c) if region 1 doesn't report before, set c -> 2.
-	// Lost range [a, b).
-	// 2), get None if 1 reports before, and must get 1 with b.
+	// So we must process the region range overlapped problem.
+
 	// If the request epoch is less than current region epoch, then returns an error.
 	reqRegionEpoch := reqRegion.GetRegionEpoch()
 	regionEpoch := region.GetRegionEpoch()
@@ -164,116 +268,6 @@ func (c *raftCluster) maybeSplit(request *pdpb.RegionHeartbeatRequest, reqRegion
 	}
 
 	return ops, nil
-}
-
-func (c *raftCluster) maybeChangePeer(request *pdpb.RegionHeartbeatRequest, reqRegion *metapb.Region,
-	region *metapb.Region) ([]clientv3.Op, *pdpb.ChangePeer, error) {
-	leader := request.GetLeader()
-	if leader == nil {
-		return nil, nil, errors.Errorf("invalid request leader, %v", request)
-	}
-
-	regionEpoch := region.GetRegionEpoch()
-	reqRegionEpoch := reqRegion.GetRegionEpoch()
-
-	if reqRegionEpoch.GetConfVer() < regionEpoch.GetConfVer() {
-		// If the request epoch configure version is less than the current one, return an error.
-		return nil, nil, errors.Errorf("invalid region epoch, request: %v, currenrt: %v", reqRegionEpoch, regionEpoch)
-	} else if reqRegionEpoch.GetConfVer() > regionEpoch.GetConfVer() {
-		// If the request epoch configure version is greater than the current one, update region meta.
-		regionSearchPath := makeRegionSearchKey(c.clusterRoot, reqRegion.GetEndKey())
-		regionValue, err := proto.Marshal(reqRegion)
-		if err != nil {
-			return nil, nil, errors.Trace(err)
-		}
-
-		var ops []clientv3.Op
-		ops = append(ops, clientv3.OpPut(regionSearchPath, string(regionValue)))
-		return ops, nil, nil
-	}
-
-	// If the request epoch configure version is equal to the current one, handle change peer request.
-	changePeer, err := c.handleChangePeerReq(reqRegion, leader)
-	if err != nil {
-		return nil, nil, errors.Trace(err)
-	}
-
-	return nil, changePeer, nil
-}
-
-func (c *raftCluster) handleChangePeerReq(region *metapb.Region, leader *metapb.Peer) (*pdpb.ChangePeer, error) {
-	clusterMeta, err := c.GetConfig()
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	var (
-		maxPeerNumber = int(clusterMeta.GetMaxPeerNumber())
-		regionID      = region.GetId()
-		peerNumber    = len(region.GetPeers())
-		changeType    raftpb.ConfChangeType
-		peer          *metapb.Peer
-	)
-
-	if peerNumber == maxPeerNumber {
-		log.Infof("region %d peer number equals %d, no need to change peer", regionID, maxPeerNumber)
-		return nil, nil
-	} else if peerNumber < maxPeerNumber {
-		log.Infof("region %d peer number %d < %d, need to add peer", regionID, peerNumber, maxPeerNumber)
-		changeType = raftpb.ConfChangeType_AddNode
-		if peer, err = c.handleAddPeerReq(region); err != nil {
-			return nil, errors.Trace(err)
-		}
-	} else {
-		log.Infof("region %d peer number %d > %d, need to remove peer", regionID, peerNumber, maxPeerNumber)
-		changeType = raftpb.ConfChangeType_RemoveNode
-		if peer, err = c.handleRemovePeerReq(region, leader); err != nil {
-			return nil, errors.Trace(err)
-		}
-	}
-
-	changePeer := &pdpb.ChangePeer{
-		ChangeType: changeType.Enum(),
-		Peer:       peer,
-	}
-
-	return changePeer, nil
-}
-
-func (c *raftCluster) HandleAskSplit(request *pdpb.AskSplitRequest) (*pdpb.AskSplitResponse, error) {
-	reqRegion := request.GetRegion()
-	startKey := reqRegion.GetStartKey()
-	region, err := c.GetRegion(startKey)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	// If the request epoch is less than current region epoch, then returns an error.
-	reqRegionEpoch := reqRegion.GetRegionEpoch()
-	regionEpoch := region.GetRegionEpoch()
-	if reqRegionEpoch.GetVersion() < regionEpoch.GetVersion() ||
-		reqRegionEpoch.GetConfVer() < regionEpoch.GetConfVer() {
-		return nil, errors.Errorf("invalid region epoch, request: %v, currenrt: %v", reqRegionEpoch, regionEpoch)
-	}
-
-	newRegionID, err := c.s.idAlloc.Alloc()
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	peerIDs := make([]uint64, len(request.Region.Peers))
-	for i := 0; i < len(peerIDs); i++ {
-		if peerIDs[i], err = c.s.idAlloc.Alloc(); err != nil {
-			return nil, errors.Trace(err)
-		}
-	}
-
-	split := &pdpb.AskSplitResponse{
-		NewRegionId: proto.Uint64(newRegionID),
-		NewPeerIds:  peerIDs,
-	}
-
-	return split, nil
 }
 
 func (c *raftCluster) sendRaftCommand(request *raft_cmdpb.RaftCmdRequest, region *metapb.Region) (*raft_cmdpb.RaftCmdResponse, error) {

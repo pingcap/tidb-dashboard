@@ -1,8 +1,6 @@
 package server
 
 import (
-	"bytes"
-
 	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/pingcap/kvproto/pkg/pdpb"
@@ -154,13 +152,6 @@ func (c *conn) handleRegionHeartbeat(req *pdpb.Request) (*pdpb.Response, error) 
 		return nil, errors.Errorf("invalid region heartbeat command, but %v", request)
 	}
 
-	reqRegion := request.GetRegion()
-	reqRegionStartKey := reqRegion.GetStartKey()
-	reqRegionEndKey := reqRegion.GetEndKey()
-	if bytes.Compare(reqRegionStartKey, reqRegionEndKey) >= 0 {
-		return nil, errors.Errorf("invalid region keys, but %v", request)
-	}
-
 	// Handle split/merge region.
 	// For split, we should handle heartbeat carefully.
 	// E.g, for region 1 [a, c) -> 1 [a, b) + 2 [b, c).
@@ -170,6 +161,8 @@ func (c *conn) handleRegionHeartbeat(req *pdpb.Request) (*pdpb.Response, error) 
 		return nil, errors.Trace(err)
 	}
 
+	reqRegion := request.GetRegion()
+	reqRegionStartKey := reqRegion.GetStartKey()
 	searchRegion, err := cluster.GetRegion(reqRegionStartKey)
 	if err != nil {
 		return nil, errors.Trace(err)

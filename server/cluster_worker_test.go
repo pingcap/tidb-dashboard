@@ -204,11 +204,10 @@ func (s *testClusterWorkerSuite) checkRegionPeerNumber(c *C, regionKey []byte, e
 	return region
 }
 
-func (s *testClusterWorkerSuite) checkChangePeerRes(c *C, res *pdpb.RegionHeartbeatResponse, tp raftpb.ConfChangeType, region *metapb.Region) {
-	changePeer := res.GetChangePeer()
-	c.Assert(changePeer, NotNil)
-	c.Assert(changePeer.GetChangeType(), Equals, tp)
-	peer := changePeer.GetPeer()
+func (s *testClusterWorkerSuite) checkChangePeerRes(c *C, res *pdpb.ChangePeer, tp raftpb.ConfChangeType, region *metapb.Region) {
+	c.Assert(res, NotNil)
+	c.Assert(res.GetChangeType(), Equals, tp)
+	peer := res.GetPeer()
 	c.Assert(peer, NotNil)
 
 	store, ok := s.stores[peer.GetStoreId()]
@@ -225,6 +224,136 @@ func (s *testClusterWorkerSuite) checkChangePeerRes(c *C, res *pdpb.RegionHeartb
 	} else {
 		c.Fatalf("invalid conf change type, %v", tp)
 	}
+}
+
+func (s *testClusterWorkerSuite) askSplit(c *C, conn net.Conn, msgID uint64, r *metapb.Region) (uint64, []uint64) {
+	req := &pdpb.Request{
+		Header:  newRequestHeader(s.clusterID),
+		CmdType: pdpb.CommandType_AskSplit.Enum(),
+		AskSplit: &pdpb.AskSplitRequest{
+			Region: r,
+		},
+	}
+	sendRequest(c, conn, msgID, req)
+	_, resp := recvResponse(c, conn)
+	c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_AskSplit)
+	askResp := resp.GetAskSplit()
+	c.Assert(askResp, NotNil)
+	c.Assert(askResp.GetNewRegionId(), Not(Equals), 0)
+	c.Assert(askResp.GetNewPeerIds(), HasLen, len(r.Peers))
+	return askResp.GetNewRegionId(), askResp.GetNewPeerIds()
+}
+
+func updateRegionRange(r *metapb.Region, start, end []byte) {
+	r.StartKey = start
+	r.EndKey = end
+	r.RegionEpoch = &metapb.RegionEpoch{
+		ConfVer: proto.Uint64(r.GetRegionEpoch().GetConfVer()),
+		Version: proto.Uint64(r.GetRegionEpoch().GetVersion() + 1),
+	}
+}
+
+func splitRegion(c *C, old *metapb.Region, splitKey []byte, newRegionID uint64, newPeerIDs []uint64) *metapb.Region {
+	var peers []*metapb.Peer
+	c.Assert(len(old.Peers), Equals, len(newPeerIDs))
+	for i, peer := range old.Peers {
+		peers = append(peers, &metapb.Peer{
+			Id:      proto.Uint64(newPeerIDs[i]),
+			StoreId: proto.Uint64(peer.GetStoreId()),
+		})
+	}
+	newRegion := &metapb.Region{
+		Id:          proto.Uint64(newRegionID),
+		RegionEpoch: proto.Clone(old.RegionEpoch).(*metapb.RegionEpoch),
+		Peers:       peers,
+	}
+	updateRegionRange(newRegion, splitKey, old.EndKey)
+	updateRegionRange(old, old.StartKey, splitKey)
+	return newRegion
+}
+
+func (s *testClusterWorkerSuite) heartbeatRegion(c *C, conn net.Conn, msgID uint64, region *metapb.Region, leader *metapb.Peer) *pdpb.ChangePeer {
+	req := &pdpb.Request{
+		Header:  newRequestHeader(s.clusterID),
+		CmdType: pdpb.CommandType_RegionHeartbeat.Enum(),
+		RegionHeartbeat: &pdpb.RegionHeartbeatRequest{
+			Leader: leader,
+			Region: region,
+		},
+	}
+	sendRequest(c, conn, msgID, req)
+	_, resp := recvResponse(c, conn)
+	c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_RegionHeartbeat)
+	return resp.GetRegionHeartbeat().GetChangePeer()
+}
+
+func (s *testClusterWorkerSuite) TestSplit(c *C) {
+	cluster, err := s.svr.getRaftCluster()
+	c.Assert(err, IsNil)
+
+	meta, err := cluster.GetConfig()
+	c.Assert(err, IsNil)
+	meta.MaxPeerNumber = proto.Uint32(1)
+	err = cluster.PutConfig(meta)
+	c.Assert(err, IsNil)
+
+	leaderPD := mustGetLeader(c, s.client, s.svr.getLeaderPath())
+	conn, err := net.Dial("tcp", leaderPD.GetAddr())
+	c.Assert(err, IsNil)
+	defer conn.Close()
+
+	// split 1 to 1: [nil, m) 2: [m, nil), sync 1 first
+	r1, err := cluster.GetRegion([]byte("a"))
+	c.Assert(err, IsNil)
+	c.Assert(r1.Peers, HasLen, 1)
+
+	r2ID, r2PeerIDs := s.askSplit(c, conn, 0, r1)
+	r2 := splitRegion(c, r1, []byte("m"), r2ID, r2PeerIDs)
+
+	leaderPeer1 := s.chooseRegionLeader(c, r1)
+
+	resp := s.heartbeatRegion(c, conn, 0, r1, leaderPeer1)
+	c.Assert(resp, IsNil)
+
+	r, err := cluster.GetRegion([]byte("a"))
+	c.Assert(err, IsNil)
+	c.Assert(r, DeepEquals, r1)
+
+	// [m, nil) is missing before r2's heartbeat.
+	r, err = cluster.GetRegion([]byte("z"))
+	c.Assert(err, IsNil)
+	c.Assert(r, IsNil)
+
+	leaderPeer2 := s.chooseRegionLeader(c, r2)
+	resp = s.heartbeatRegion(c, conn, 0, r2, leaderPeer2)
+	c.Assert(resp, IsNil)
+	r, err = cluster.GetRegion([]byte("z"))
+	c.Assert(err, IsNil)
+	c.Assert(r, DeepEquals, r2)
+
+	// split 2 to 2: [m, q) 3: [q, nil), sync 3 first
+	r3ID, r3PeerIDs := s.askSplit(c, conn, 0, r2)
+	r3 := splitRegion(c, r2, []byte("q"), r3ID, r3PeerIDs)
+
+	leaderPeer3 := s.chooseRegionLeader(c, r3)
+
+	resp = s.heartbeatRegion(c, conn, 0, r3, leaderPeer3)
+	c.Assert(resp, IsNil)
+
+	r, err = cluster.GetRegion([]byte("z"))
+	c.Assert(err, IsNil)
+	c.Assert(r, DeepEquals, r3)
+
+	// [m, q) is missing before r2's heartbeat.
+	r, err = cluster.GetRegion([]byte("n"))
+	c.Assert(err, IsNil)
+	c.Assert(r, IsNil)
+
+	resp = s.heartbeatRegion(c, conn, 0, r2, leaderPeer2)
+	c.Assert(resp, IsNil)
+	r, err = cluster.GetRegion([]byte("n"))
+	c.Assert(err, IsNil)
+	c.Assert(r, DeepEquals, r2)
 }
 
 func (s *testClusterWorkerSuite) TestHeartbeatChangePeer(c *C) {
@@ -252,29 +381,15 @@ func (s *testClusterWorkerSuite) TestHeartbeatChangePeer(c *C) {
 
 	// Add 4 peers.
 	for i := 0; i < 4; i++ {
-		changePeerHeartbeatReq := &pdpb.Request{
-			Header:  newRequestHeader(s.clusterID),
-			CmdType: pdpb.CommandType_RegionHeartbeat.Enum(),
-			RegionHeartbeat: &pdpb.RegionHeartbeatRequest{
-				Leader: leaderPeer,
-				Region: region,
-			},
-		}
-
-		sendRequest(c, conn, 0, changePeerHeartbeatReq)
-		_, resp := recvResponse(c, conn)
-		c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_RegionHeartbeat)
-
+		resp := s.heartbeatRegion(c, conn, 0, region, leaderPeer)
 		// Check RegionHeartbeat response.
-		s.checkChangePeerRes(c, resp.GetRegionHeartbeat(), raftpb.ConfChangeType_AddNode, region)
+		s.checkChangePeerRes(c, resp, raftpb.ConfChangeType_AddNode, region)
 		c.Logf("[add peer][region]:%v", region)
 
 		// Update region epoch and check region info.
 		region.RegionEpoch.ConfVer = proto.Uint64(region.GetRegionEpoch().GetConfVer() + 1)
-		sendRequest(c, conn, 0, changePeerHeartbeatReq)
-		_, resp = recvResponse(c, conn)
-		c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_RegionHeartbeat)
-
+		resp = s.heartbeatRegion(c, conn, 0, region, leaderPeer)
+		c.Assert(resp, IsNil)
 		// Check region peer number.
 		region = s.checkRegionPeerNumber(c, regionKey, i+2)
 	}
@@ -290,27 +405,14 @@ func (s *testClusterWorkerSuite) TestHeartbeatChangePeer(c *C) {
 
 	// Remove 2 peers
 	for i := 0; i < 2; i++ {
-		changePeerHeartbeatReq := &pdpb.Request{
-			Header:  newRequestHeader(s.clusterID),
-			CmdType: pdpb.CommandType_RegionHeartbeat.Enum(),
-			RegionHeartbeat: &pdpb.RegionHeartbeatRequest{
-				Leader: leaderPeer,
-				Region: region,
-			},
-		}
-
-		sendRequest(c, conn, 0, changePeerHeartbeatReq)
-		_, resp := recvResponse(c, conn)
-		c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_RegionHeartbeat)
-
+		resp := s.heartbeatRegion(c, conn, 0, region, leaderPeer)
 		// Check RegionHeartbeat response.
-		s.checkChangePeerRes(c, resp.GetRegionHeartbeat(), raftpb.ConfChangeType_RemoveNode, region)
+		s.checkChangePeerRes(c, resp, raftpb.ConfChangeType_RemoveNode, region)
 
 		// Update region epoch and check region info.
 		region.RegionEpoch.ConfVer = proto.Uint64(region.GetRegionEpoch().GetConfVer() + 1)
-		sendRequest(c, conn, 0, changePeerHeartbeatReq)
-		_, resp = recvResponse(c, conn)
-		c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_RegionHeartbeat)
+		resp = s.heartbeatRegion(c, conn, 0, region, leaderPeer)
+		c.Assert(resp, IsNil)
 
 		// Check region peer number.
 		region = s.checkRegionPeerNumber(c, regionKey, 4-i)

@@ -291,12 +291,6 @@ func (s *testClusterWorkerSuite) TestSplit(c *C) {
 	cluster, err := s.svr.getRaftCluster()
 	c.Assert(err, IsNil)
 
-	meta, err := cluster.GetConfig()
-	c.Assert(err, IsNil)
-	meta.MaxPeerNumber = proto.Uint32(1)
-	err = cluster.PutConfig(meta)
-	c.Assert(err, IsNil)
-
 	leaderPD := mustGetLeader(c, s.client, s.svr.getLeaderPath())
 	conn, err := net.Dial("tcp", leaderPD.GetAddr())
 	c.Assert(err, IsNil)
@@ -305,7 +299,6 @@ func (s *testClusterWorkerSuite) TestSplit(c *C) {
 	// split 1 to 1: [nil, m) 2: [m, nil), sync 1 first
 	r1, err := cluster.GetRegion([]byte("a"))
 	c.Assert(err, IsNil)
-	c.Assert(r1.Peers, HasLen, 1)
 
 	r2ID, r2PeerIDs := s.askSplit(c, conn, 0, r1)
 	r2 := splitRegion(c, r1, []byte("m"), r2ID, r2PeerIDs)

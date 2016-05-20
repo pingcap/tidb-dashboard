@@ -40,71 +40,37 @@ func (c *raftCluster) handleAddPeerReq(region *metapb.Region) (*metapb.Peer, err
 	// check this.
 	// 2, We can check the store statistics and find a low load store.
 	// 3, more algorithms...
-	var matchStore *metapb.Store
+L:
 	for _, store := range mu.stores {
-		storeID := store.GetId()
-
-		existStore := false
+		// we can't add peer in the same store.
 		for _, peer := range region.Peers {
-			if peer.GetStoreId() == storeID {
-				// we can't add peer in the same store.
-				existStore = true
-				break
+			if peer.GetStoreId() == store.GetId() {
+				continue L
 			}
 		}
-
-		if existStore {
-			continue
-		}
-
-		matchStore = &store
-
-		break
+		return &metapb.Peer{
+			Id:      proto.Uint64(peerID),
+			StoreId: proto.Uint64(store.GetId()),
+		}, nil
 	}
-
-	if matchStore == nil {
-		return nil, errors.Errorf("find no store to add peer for region %v", region)
-	}
-
-	peer := &metapb.Peer{
-		StoreId: proto.Uint64(matchStore.GetId()),
-		Id:      proto.Uint64(peerID),
-	}
-
-	region.Peers = append(region.Peers, peer)
-
-	return peer, nil
+	return nil, errors.Errorf("find no store to add peer for region %v", region)
 }
 
 // If leader is nil, we will return an error, or else we can remove none leader peer.
-func (c *raftCluster) handleRemovePeerReq(region *metapb.Region, leader *metapb.Peer) (*metapb.Peer, error) {
+func (c *raftCluster) handleRemovePeerReq(region *metapb.Region, leaderID uint64) (*metapb.Peer, error) {
 	if len(region.Peers) <= 1 {
 		return nil, errors.Errorf("can not remove peer for region %v", region)
 	}
-	if leader == nil {
-		return nil, errors.Errorf("invalid leader for region %v", region)
-	}
-
-	found, idx := false, 0
-	for i, peer := range region.Peers {
-		if peer.GetId() != leader.GetId() {
-			found = true
-			idx = i
-			break
+	for _, peer := range region.Peers {
+		if peer.GetId() != leaderID {
+			return peer, nil
 		}
 	}
-
-	if found {
-		peer := region.Peers[idx]
-		region.Peers = append(region.Peers[:idx], region.Peers[idx+1:]...)
-		return peer, nil
-	}
-
 	// Maybe we can't enter here.
 	return nil, errors.Errorf("find no proper peer to remove for region %v", region)
 }
 
-func (c *raftCluster) handleChangePeerReq(region *metapb.Region, leader *metapb.Peer) (*pdpb.ChangePeer, error) {
+func (c *raftCluster) handleChangePeerReq(region *metapb.Region, leaderID uint64) (*pdpb.ChangePeer, error) {
 	clusterMeta, err := c.GetConfig()
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -130,7 +96,7 @@ func (c *raftCluster) handleChangePeerReq(region *metapb.Region, leader *metapb.
 	} else {
 		log.Infof("region %d peer number %d > %d, need to remove peer", regionID, peerNumber, maxPeerNumber)
 		changeType = raftpb.ConfChangeType_RemoveNode
-		if peer, err = c.handleRemovePeerReq(region, leader); err != nil {
+		if peer, err = c.handleRemovePeerReq(region, leaderID); err != nil {
 			return nil, errors.Trace(err)
 		}
 	}
@@ -170,7 +136,7 @@ func (c *raftCluster) maybeChangePeer(request *pdpb.RegionHeartbeatRequest, reqR
 	}
 
 	// If the request epoch configure version is equal to the current one, handle change peer request.
-	changePeer, err := c.handleChangePeerReq(reqRegion, leader)
+	changePeer, err := c.handleChangePeerReq(reqRegion, leader.GetId())
 	if err != nil {
 		return nil, nil, errors.Trace(err)
 	}

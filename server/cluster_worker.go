@@ -253,7 +253,6 @@ func (c *raftCluster) maybeSplit(request *pdpb.RegionHeartbeatRequest, reqRegion
 		return nil, nil
 	}
 
-
 	regionEncStartKey := encodeRegionStartKey(region.GetStartKey())
 	regionEncEndKey := encodeRegionSearchKey(region.GetEndKey())
 
@@ -262,8 +261,6 @@ func (c *raftCluster) maybeSplit(request *pdpb.RegionHeartbeatRequest, reqRegion
 		// Seems there is something wrong? Do nothing.
 	} else if regionEncStartKey >= reqRegionEncEndKey {
 		// No range [start, end) in region now, insert directly.
-		reqRegionPath := makeRegionKey(c.clusterRoot, reqRegion.GetId())
-		reqSearchKey := makeRegionSearchKey(c.clusterRoot, reqRegion.GetEndKey())
 		ops = append(ops, clientv3.OpPut(reqRegionPath, reqRegionEncEndKey))
 		ops = append(ops, clientv3.OpPut(reqSearchKey, string(regionValue)))
 	} else {

@@ -115,6 +115,9 @@ func (c *raftCluster) maybeChangePeer(request *pdpb.RegionHeartbeatRequest, reqR
 	if leader == nil {
 		return nil, nil, errors.Errorf("invalid request leader, %v", request)
 	}
+	if region == nil {
+		return nil, nil, nil
+	}
 
 	regionEpoch := region.GetRegionEpoch()
 	reqRegionEpoch := reqRegion.GetRegionEpoch()
@@ -188,6 +191,23 @@ func (c *raftCluster) maybeSplit(request *pdpb.RegionHeartbeatRequest, reqRegion
 	// We can know that now 1 can be found by region id but 2 is not.
 	// So we must process the region range overlapped problem.
 
+	var ops []clientv3.Op
+	regionValue, err := proto.Marshal(reqRegion)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	reqRegionEncStartKey := encodeRegionStartKey(reqRegion.GetStartKey())
+	reqRegionEncEndKey := encodeRegionSearchKey(reqRegion.GetEndKey())
+	reqRegionPath := makeRegionKey(c.clusterRoot, reqRegion.GetId())
+	reqSearchKey := makeRegionSearchKey(c.clusterRoot, reqRegion.GetEndKey())
+
+	if region == nil {
+		// Find no range after start key, insert directly.
+		ops = append(ops, clientv3.OpPut(reqRegionPath, reqRegionEncEndKey))
+		ops = append(ops, clientv3.OpPut(reqSearchKey, string(regionValue)))
+		return ops, nil
+	}
+
 	// If the request epoch is less than current region epoch, then returns an error.
 	reqRegionEpoch := reqRegion.GetRegionEpoch()
 	regionEpoch := region.GetRegionEpoch()
@@ -199,24 +219,14 @@ func (c *raftCluster) maybeSplit(request *pdpb.RegionHeartbeatRequest, reqRegion
 		return nil, nil
 	}
 
-	var ops []clientv3.Op
-
-	regionValue, err := proto.Marshal(reqRegion)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	regionEncStartKey := encodeRegionSearchKey(region.GetStartKey())
+	regionEncStartKey := encodeRegionStartKey(region.GetStartKey())
 	regionEncEndKey := encodeRegionSearchKey(region.GetEndKey())
-	reqRegionEncStartKey := encodeRegionSearchKey(reqRegion.GetStartKey())
-	reqRegionEncEndKey := encodeRegionSearchKey(reqRegion.GetEndKey())
+
 	if reqRegionEncStartKey == regionEncStartKey &&
 		reqRegionEncEndKey == regionEncEndKey {
 		// Seems there is something wrong? Do nothing.
-	} else if regionEncStartKey > reqRegionEncEndKey {
+	} else if regionEncStartKey >= reqRegionEncEndKey {
 		// No range [start, end) in region now, insert directly.
-		reqRegionPath := makeRegionKey(c.clusterRoot, reqRegion.GetId())
-		reqSearchKey := makeRegionSearchKey(c.clusterRoot, reqRegion.GetEndKey())
 		ops = append(ops, clientv3.OpPut(reqRegionPath, reqRegionEncEndKey))
 		ops = append(ops, clientv3.OpPut(reqSearchKey, string(regionValue)))
 	} else {
@@ -225,10 +235,12 @@ func (c *raftCluster) maybeSplit(request *pdpb.RegionHeartbeatRequest, reqRegion
 		// is overlapped with origin [a, c).
 		regionPath := makeRegionKey(c.clusterRoot, region.GetId())
 		regionSearchKey := makeRegionSearchKey(c.clusterRoot, region.GetEndKey())
-		ops = append(ops, clientv3.OpDelete(regionPath))
-		ops = append(ops, clientv3.OpDelete(regionSearchKey))
-		reqRegionPath := makeRegionKey(c.clusterRoot, reqRegion.GetId())
-		reqSearchKey := makeRegionSearchKey(c.clusterRoot, reqRegion.GetEndKey())
+		if regionPath != reqRegionPath {
+			ops = append(ops, clientv3.OpDelete(regionPath))
+		}
+		if regionSearchKey != reqSearchKey {
+			ops = append(ops, clientv3.OpDelete(regionSearchKey))
+		}
 		ops = append(ops, clientv3.OpPut(reqRegionPath, reqRegionEncEndKey))
 		ops = append(ops, clientv3.OpPut(reqSearchKey, string(regionValue)))
 	}

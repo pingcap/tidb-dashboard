@@ -148,6 +148,10 @@ func encodeRegionSearchKey(endKey []byte) string {
 	return string(append([]byte{'z'}, endKey...))
 }
 
+func encodeRegionStartKey(startKey []byte) string {
+	return string(append([]byte{'z'}, startKey...))
+}
+
 func makeStoreKey(clusterRootPath string, storeID uint64) string {
 	return strings.Join([]string{clusterRootPath, "s", strconv.FormatUint(storeID, 10)}, "/")
 }
@@ -355,7 +359,7 @@ func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {
 		return nil, errors.Trace(err)
 	}
 	if !ok {
-		return nil, errors.Errorf("we must find a region for %q but fail, a serious bug", regionKey)
+		return nil, nil
 	}
 
 	if bytes.Compare(regionKey, region.GetStartKey()) >= 0 &&
@@ -363,7 +367,7 @@ func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {
 		return &region, nil
 	}
 
-	return nil, errors.Errorf("invalid searched region %v for key %q", region, regionKey)
+	return nil, nil
 }
 
 func (c *raftCluster) PutStore(store *metapb.Store) error {

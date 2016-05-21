@@ -152,7 +152,7 @@ func (s *testClusterWorkerSuite) getRootPath() string {
 	return "test_cluster_worker"
 }
 
-func (s *testClusterWorkerSuite) SetUpSuite(c *C) {
+func (s *testClusterWorkerSuite) SetUpTest(c *C) {
 	s.clusterID = 0
 
 	s.stores = make(map[uint64]*mockRaftStore)
@@ -189,7 +189,7 @@ func (s *testClusterWorkerSuite) SetUpSuite(c *C) {
 	c.Assert(stores, HasLen, 5)
 }
 
-func (s *testClusterWorkerSuite) TearDownSuite(c *C) {
+func (s *testClusterWorkerSuite) TearDownTest(c *C) {
 	s.svr.Close()
 	s.client.Close()
 }
@@ -287,8 +287,14 @@ func (s *testClusterWorkerSuite) heartbeatRegion(c *C, conn net.Conn, msgID uint
 	return resp.GetRegionHeartbeat().GetChangePeer()
 }
 
-func (s *testClusterWorkerSuite) TestSplit(c *C) {
+func (s *testClusterWorkerSuite) TestHeartbeatSplit(c *C) {
 	cluster, err := s.svr.getRaftCluster()
+	c.Assert(err, IsNil)
+
+	meta, err := cluster.GetConfig()
+	c.Assert(err, IsNil)
+	meta.MaxPeerNumber = proto.Uint32(1)
+	err = cluster.PutConfig(meta)
 	c.Assert(err, IsNil)
 
 	leaderPD := mustGetLeader(c, s.client, s.svr.getLeaderPath())
@@ -336,6 +342,10 @@ func (s *testClusterWorkerSuite) TestSplit(c *C) {
 	r, err = cluster.GetRegion([]byte("z"))
 	c.Assert(err, IsNil)
 	c.Assert(r, DeepEquals, r3)
+
+	r, err = cluster.GetRegion([]byte("a"))
+	c.Assert(err, IsNil)
+	c.Assert(r, DeepEquals, r1)
 
 	// [m, q) is missing before r2's heartbeat.
 	r, err = cluster.GetRegion([]byte("n"))
@@ -412,4 +422,49 @@ func (s *testClusterWorkerSuite) TestHeartbeatChangePeer(c *C) {
 	}
 
 	region = s.checkRegionPeerNumber(c, regionKey, 3)
+}
+
+func (s *testClusterWorkerSuite) TestHeartbeatSplitAddPeer(c *C) {
+	cluster, err := s.svr.getRaftCluster()
+	c.Assert(err, IsNil)
+
+	meta, err := cluster.GetConfig()
+	c.Assert(err, IsNil)
+	meta.MaxPeerNumber = proto.Uint32(2)
+	err = cluster.PutConfig(meta)
+	c.Assert(err, IsNil)
+
+	leaderPD := mustGetLeader(c, s.client, s.svr.getLeaderPath())
+	conn, err := net.Dial("tcp", leaderPD.GetAddr())
+	c.Assert(err, IsNil)
+	defer conn.Close()
+
+	r1, err := cluster.GetRegion([]byte("a"))
+	c.Assert(err, IsNil)
+	leaderPeer1 := s.chooseRegionLeader(c, r1)
+
+	// First sync, pd-server will return a AddPeer.
+	resp := s.heartbeatRegion(c, conn, 0, r1, leaderPeer1)
+	// Apply the AddPeer ConfChange, but with no sync.
+	s.checkChangePeerRes(c, resp, raftpb.ConfChangeType_AddNode, r1)
+	// Split 1 to 1: [nil, m) 2: [m, nil).
+	r2ID, r2PeerIDs := s.askSplit(c, conn, 0, r1)
+	r2 := splitRegion(c, r1, []byte("m"), r2ID, r2PeerIDs)
+
+	// Sync r1 with both ConfVer and Version updated.
+	resp = s.heartbeatRegion(c, conn, 0, r1, leaderPeer1)
+	c.Assert(resp, IsNil)
+
+	r, err := cluster.GetRegion([]byte("a"))
+	c.Assert(err, IsNil)
+	c.Assert(r, DeepEquals, r1)
+
+	r, err = cluster.GetRegion([]byte("z"))
+	c.Assert(err, IsNil)
+	c.Assert(r, IsNil)
+
+	// Sync r2.
+	leaderPeer2 := s.chooseRegionLeader(c, r2)
+	resp = s.heartbeatRegion(c, conn, 0, r2, leaderPeer2)
+	c.Assert(resp, IsNil)
 }

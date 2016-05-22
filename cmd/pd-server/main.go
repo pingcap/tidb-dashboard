@@ -22,7 +22,7 @@ var (
 	logLevel      = flag.String("L", "debug", "log level: info, debug, warn, error, fatal")
 	pprofAddr     = flag.String("pprof", ":6060", "pprof HTTP listening address")
 	clusterID     = flag.Uint64("cluster-id", 0, "cluster ID")
-	maxPeerNumber = flag.Uint("max-peer-num", 3, "max peer number for the region")
+	maxPeerCount  = flag.Uint("max-peer-count", 3, "max peer count for the region")
 )
 
 func main() {
@@ -45,7 +45,7 @@ func main() {
 		RootPath:      *rootPath,
 		LeaderLease:   *leaderLease,
 		ClusterID:     *clusterID,
-		MaxPeerNumber: uint32(*maxPeerNumber),
+		MaxPeerCount:  uint32(*maxPeerCount),
 	}
 
 	svr, err := server.NewServer(cfg)

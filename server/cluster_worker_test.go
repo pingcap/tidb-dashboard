@@ -194,13 +194,13 @@ func (s *testClusterWorkerSuite) TearDownTest(c *C) {
 	s.client.Close()
 }
 
-func (s *testClusterWorkerSuite) checkRegionPeerNumber(c *C, regionKey []byte, expectNumber int) *metapb.Region {
+func (s *testClusterWorkerSuite) checkRegionPeerCount(c *C, regionKey []byte, expectCount int) *metapb.Region {
 	cluster, err := s.svr.getRaftCluster()
 	c.Assert(err, IsNil)
 
 	region, err := cluster.GetRegion(regionKey)
 	c.Assert(err, IsNil)
-	c.Assert(region.Peers, HasLen, expectNumber)
+	c.Assert(region.Peers, HasLen, expectCount)
 	return region
 }
 
@@ -393,11 +393,11 @@ func (s *testClusterWorkerSuite) TestHeartbeatChangePeer(c *C) {
 		region.RegionEpoch.ConfVer = proto.Uint64(region.GetRegionEpoch().GetConfVer() + 1)
 		resp = s.heartbeatRegion(c, conn, 0, region, leaderPeer)
 		c.Assert(resp, IsNil)
-		// Check region peer number.
-		region = s.checkRegionPeerNumber(c, regionKey, i+2)
+		// Check region peer count.
+		region = s.checkRegionPeerCount(c, regionKey, i+2)
 	}
 
-	region = s.checkRegionPeerNumber(c, regionKey, 5)
+	region = s.checkRegionPeerCount(c, regionKey, 5)
 
 	// Remove 2 peers.
 	err = cluster.PutConfig(&metapb.Cluster{
@@ -417,11 +417,11 @@ func (s *testClusterWorkerSuite) TestHeartbeatChangePeer(c *C) {
 		resp = s.heartbeatRegion(c, conn, 0, region, leaderPeer)
 		c.Assert(resp, IsNil)
 
-		// Check region peer number.
-		region = s.checkRegionPeerNumber(c, regionKey, 4-i)
+		// Check region peer count.
+		region = s.checkRegionPeerCount(c, regionKey, 4-i)
 	}
 
-	region = s.checkRegionPeerNumber(c, regionKey, 3)
+	region = s.checkRegionPeerCount(c, regionKey, 3)
 }
 
 func (s *testClusterWorkerSuite) TestHeartbeatSplitAddPeer(c *C) {

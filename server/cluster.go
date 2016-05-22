@@ -190,7 +190,7 @@ func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 
 	peers := regionMeta.GetPeers()
 	if len(peers) != 1 {
-		return errors.Errorf("invalid first region peer number %d, must be 1 for bootstrap %d", len(peers), clusterID)
+		return errors.Errorf("invalid first region peer count %d, must be 1 for bootstrap %d", len(peers), clusterID)
 	}
 
 	peer := peers[0]
@@ -215,7 +215,7 @@ func (s *Server) bootstrapCluster(req *pdpb.BootstrapRequest) (*pdpb.Response, e
 
 	clusterMeta := metapb.Cluster{
 		Id:            proto.Uint64(clusterID),
-		MaxPeerNumber: proto.Uint32(s.cfg.MaxPeerNumber),
+		MaxPeerNumber: proto.Uint32(s.cfg.MaxPeerCount),
 	}
 
 	// Set cluster meta

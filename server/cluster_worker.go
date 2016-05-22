@@ -40,12 +40,12 @@ func (c *raftCluster) handleAddPeerReq(region *metapb.Region) (*metapb.Peer, err
 	// check this.
 	// 2, We can check the store statistics and find a low load store.
 	// 3, more algorithms...
-L:
+LOOP:
 	for _, store := range mu.stores {
 		// we can't add peer in the same store.
 		for _, peer := range region.Peers {
 			if peer.GetStoreId() == store.GetId() {
-				continue L
+				continue LOOP
 			}
 		}
 		return &metapb.Peer{
@@ -77,24 +77,24 @@ func (c *raftCluster) handleChangePeerReq(region *metapb.Region, leaderID uint64
 	}
 
 	var (
-		maxPeerNumber = int(clusterMeta.GetMaxPeerNumber())
-		regionID      = region.GetId()
-		peerNumber    = len(region.GetPeers())
-		changeType    raftpb.ConfChangeType
-		peer          *metapb.Peer
+		maxPeerCount = int(clusterMeta.GetMaxPeerNumber())
+		regionID     = region.GetId()
+		peerCount    = len(region.GetPeers())
+		changeType   raftpb.ConfChangeType
+		peer         *metapb.Peer
 	)
 
-	if peerNumber == maxPeerNumber {
-		log.Infof("region %d peer number equals %d, no need to change peer", regionID, maxPeerNumber)
+	if peerCount == maxPeerCount {
+		log.Infof("region %d peer count equals %d, no need to change peer", regionID, maxPeerCount)
 		return nil, nil
-	} else if peerNumber < maxPeerNumber {
-		log.Infof("region %d peer number %d < %d, need to add peer", regionID, peerNumber, maxPeerNumber)
+	} else if peerCount < maxPeerCount {
+		log.Infof("region %d peer count %d < %d, need to add peer", regionID, peerCount, maxPeerCount)
 		changeType = raftpb.ConfChangeType_AddNode
 		if peer, err = c.handleAddPeerReq(region); err != nil {
 			return nil, errors.Trace(err)
 		}
 	} else {
-		log.Infof("region %d peer number %d > %d, need to remove peer", regionID, peerNumber, maxPeerNumber)
+		log.Infof("region %d peer count %d > %d, need to remove peer", regionID, peerCount, maxPeerCount)
 		changeType = raftpb.ConfChangeType_RemoveNode
 		if peer, err = c.handleRemovePeerReq(region, leaderID); err != nil {
 			return nil, errors.Trace(err)

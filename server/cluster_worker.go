@@ -13,11 +13,6 @@ import (
 	"github.com/pingcap/kvproto/pkg/raft_cmdpb"
 	"github.com/pingcap/kvproto/pkg/raftpb"
 	"github.com/pingcap/kvproto/pkg/util"
-	"github.com/twinj/uuid"
-)
-
-const (
-	maxSendRetry = 10
 )
 
 func (c *raftCluster) handleAddPeerReq(region *metapb.Region) (*metapb.Peer, error) {
@@ -248,59 +243,6 @@ func (c *raftCluster) maybeSplit(request *pdpb.RegionHeartbeatRequest, reqRegion
 	return ops, nil
 }
 
-func (c *raftCluster) sendRaftCommand(request *raft_cmdpb.RaftCmdRequest, region *metapb.Region) (*raft_cmdpb.RaftCmdResponse, error) {
-	originPeer := request.Header.Peer
-
-RETRY:
-	for i := 0; i < maxSendRetry; i++ {
-		resp, err := c.callCommand(request)
-		if err != nil {
-			// We may meet some error, maybe network broken, node down, etc.
-			// We can check later next time.
-			return nil, errors.Trace(err)
-		}
-
-		if resp.Header.Error != nil && resp.Header.Error.NotLeader != nil {
-			log.Warnf("peer %v is not leader, we got %v", request.Header.Peer, resp.Header.Error)
-
-			leader := resp.Header.Error.NotLeader.Leader
-			if leader != nil {
-				// The origin peer is not leader and we get the new leader,
-				// send this message to the new leader again.
-				request.Header.Peer = leader
-				continue
-			}
-
-			regionID := region.GetId()
-			// The origin peer is not leader, but we can't get the leader now,
-			// so we try to get the leader in other region peers.
-			for _, peer := range region.Peers {
-				if peer.GetId() == originPeer.GetId() {
-					continue
-				}
-
-				leader, err := c.getRegionLeader(regionID, peer)
-				if err != nil {
-					log.Errorf("get region %d leader err %v", regionID, err)
-					continue
-				}
-				if leader == nil {
-					log.Infof("can not get leader for region %d in peer %v", regionID, peer)
-					continue
-				}
-
-				// We get leader here.
-				request.Header.Peer = leader
-				continue RETRY
-			}
-		}
-
-		return resp, nil
-	}
-
-	return nil, errors.Errorf("send raft command %v failed", request)
-}
-
 func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCmdRequest) (*raft_cmdpb.RaftCmdResponse, error) {
 	storeID := request.Header.Peer.GetStoreId()
 	store, err := c.GetStore(storeID)
@@ -336,54 +278,4 @@ func (c *raftCluster) callCommand(request *raft_cmdpb.RaftCmdRequest) (*raft_cmd
 	}
 
 	return msg.CmdResp, nil
-}
-
-func (c *raftCluster) getRegionDetail(regionID uint64, peer *metapb.Peer) (*raft_cmdpb.RegionDetailResponse, error) {
-	request := &raft_cmdpb.RaftCmdRequest{
-		Header: &raft_cmdpb.RaftRequestHeader{
-			Uuid:     uuid.NewV4().Bytes(),
-			RegionId: proto.Uint64(regionID),
-			Peer:     peer,
-		},
-		StatusRequest: &raft_cmdpb.StatusRequest{
-			CmdType:      raft_cmdpb.StatusCmdType_RegionDetail.Enum(),
-			RegionDetail: &raft_cmdpb.RegionDetailRequest{},
-		},
-	}
-
-	resp, err := c.callCommand(request)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	if resp.StatusResponse != nil && resp.StatusResponse.RegionDetail != nil {
-		return resp.StatusResponse.RegionDetail, nil
-	}
-
-	return nil, errors.Errorf("get region %d detail failed, got resp %v", regionID, resp)
-}
-
-func (c *raftCluster) getRegionLeader(regionID uint64, peer *metapb.Peer) (*metapb.Peer, error) {
-	request := &raft_cmdpb.RaftCmdRequest{
-		Header: &raft_cmdpb.RaftRequestHeader{
-			Uuid:     uuid.NewV4().Bytes(),
-			RegionId: proto.Uint64(regionID),
-			Peer:     peer,
-		},
-		StatusRequest: &raft_cmdpb.StatusRequest{
-			CmdType:      raft_cmdpb.StatusCmdType_RegionLeader.Enum(),
-			RegionLeader: &raft_cmdpb.RegionLeaderRequest{},
-		},
-	}
-
-	resp, err := c.callCommand(request)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	if resp.StatusResponse != nil && resp.StatusResponse.RegionLeader != nil {
-		return resp.StatusResponse.RegionLeader.Leader, nil
-	}
-
-	return nil, errors.Errorf("get region %d leader failed, got resp %v", regionID, resp)
 }

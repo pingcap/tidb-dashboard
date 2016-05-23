@@ -4,6 +4,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/pingcap/kvproto/pkg/pdpb"
+	"golang.org/x/net/context"
 )
 
 func (c *conn) handleTso(req *pdpb.Request) (*pdpb.Response, error) {
@@ -145,6 +146,63 @@ func (c *conn) handleGetRegion(req *pdpb.Request) (*pdpb.Response, error) {
 	}, nil
 }
 
+func (c *conn) handleRegionHeartbeat(req *pdpb.Request) (*pdpb.Response, error) {
+	request := req.GetRegionHeartbeat()
+	if request == nil {
+		return nil, errors.Errorf("invalid region heartbeat command, but %v", request)
+	}
+
+	// Handle split/merge region.
+	// For split, we should handle heartbeat carefully.
+	// E.g, for region 1 [a, c) -> 1 [a, b) + 2 [b, c).
+	// after split, region 1 and 2 will do heartbeat independently.
+	cluster, err := c.getRaftCluster()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	reqRegion := request.GetRegion()
+	reqRegionStartKey := reqRegion.GetStartKey()
+	searchRegion, err := cluster.GetRegion(reqRegionStartKey)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	splitOps, err := cluster.maybeSplit(request, reqRegion, searchRegion)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	// Handle change peer for region.
+	changePeerOps, changePeer, err := cluster.maybeChangePeer(request, reqRegion, searchRegion)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	// Check whether need to update etcd meta info.
+	ops := append(splitOps, changePeerOps...)
+	if len(ops) > 0 {
+		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+		resp, err := c.s.client.Txn(ctx).
+			If(c.s.leaderCmp()).
+			Then(ops...).
+			Commit()
+		cancel()
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		if !resp.Succeeded {
+			return nil, errors.New("handle region heartbeat failed")
+		}
+	}
+
+	return &pdpb.Response{
+		RegionHeartbeat: &pdpb.RegionHeartbeatResponse{
+			ChangePeer: changePeer,
+		},
+	}, nil
+}
+
 func (c *conn) handleGetClusterConfig(req *pdpb.Request) (*pdpb.Response, error) {
 	request := req.GetGetClusterConfig()
 	if request == nil {
@@ -209,39 +267,10 @@ func (c *conn) handlePutStore(req *pdpb.Request) (*pdpb.Response, error) {
 	}, nil
 }
 
-func (c *conn) handleAskChangePeer(req *pdpb.Request) (*pdpb.Response, error) {
-	request := req.GetAskChangePeer()
-	if request.GetRegion() == nil {
-		return nil, errors.New("missing region for changing peer")
-	}
-	if request.GetLeader() == nil {
-		return nil, errors.New("missing leader for changing peer")
-	}
-
-	cluster, err := c.getRaftCluster()
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	if err = cluster.HandleAskChangePeer(request); err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	return &pdpb.Response{
-		AskChangePeer: &pdpb.AskChangePeerResponse{},
-	}, nil
-}
-
 func (c *conn) handleAskSplit(req *pdpb.Request) (*pdpb.Response, error) {
 	request := req.GetAskSplit()
-	if request.GetRegion() == nil {
-		return nil, errors.New("missing region for split")
-	}
-	if request.GetLeader() == nil {
-		return nil, errors.New("missing leader for split")
-	}
-	if request.GetSplitKey() == nil {
-		return nil, errors.New("missing split key for split")
+	if request.GetRegion().GetStartKey() == nil {
+		return nil, errors.New("missing region start key for split")
 	}
 
 	cluster, err := c.getRaftCluster()
@@ -249,11 +278,12 @@ func (c *conn) handleAskSplit(req *pdpb.Request) (*pdpb.Response, error) {
 		return nil, errors.Trace(err)
 	}
 
-	if err = cluster.HandleAskSplit(request); err != nil {
+	split, err := cluster.HandleAskSplit(request)
+	if err != nil {
 		return nil, errors.Trace(err)
 	}
 
 	return &pdpb.Response{
-		AskSplit: &pdpb.AskSplitResponse{},
+		AskSplit: split,
 	}, nil
 }

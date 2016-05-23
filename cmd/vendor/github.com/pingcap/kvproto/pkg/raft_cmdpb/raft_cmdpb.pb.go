@@ -463,6 +463,7 @@ func (m *Response) GetSnap() *SnapResponse {
 }
 
 type ChangePeerRequest struct {
+	// This can be only called in internal RaftStore now.
 	ChangeType       *raftpb.ConfChangeType `protobuf:"varint,1,opt,name=change_type,enum=raftpb.ConfChangeType" json:"change_type,omitempty"`
 	Peer             *metapb.Peer           `protobuf:"bytes,2,opt,name=peer" json:"peer,omitempty"`
 	XXX_unrecognized []byte                 `json:"-"`
@@ -505,6 +506,7 @@ func (m *ChangePeerResponse) GetRegion() *metapb.Region {
 }
 
 type SplitRequest struct {
+	// This can be only called in internal RaftStore now.
 	// The split_key must be in the been splitting region.
 	// If the split_key is none, we will choose a proper key
 	// to split the region in half.

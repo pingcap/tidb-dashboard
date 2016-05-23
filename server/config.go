@@ -7,7 +7,7 @@ const (
 	defaultLeaderLease     = 3
 	defaultTsoSaveInterval = 2000
 	defaultNextRetryDelay  = time.Second
-	defaultMaxPeerNumber   = uint32(3)
+	defaultMaxPeerCount    = uint32(3)
 )
 
 // Config is the pd server configuration.
@@ -39,8 +39,8 @@ type Config struct {
 	// ClusterID is the cluster ID communicating with other services.
 	ClusterID uint64
 
-	// MaxPeerNumber for a region. default is 3.
-	MaxPeerNumber uint32
+	// MaxPeerCount for a region. default is 3.
+	MaxPeerCount uint32
 
 	// Only test can change it.
 	nextRetryDelay time.Duration
@@ -64,7 +64,7 @@ func (c *Config) adjust() {
 		c.nextRetryDelay = defaultNextRetryDelay
 	}
 
-	if c.MaxPeerNumber == 0 {
-		c.MaxPeerNumber = defaultMaxPeerNumber
+	if c.MaxPeerCount == 0 {
+		c.MaxPeerCount = defaultMaxPeerCount
 	}
 }

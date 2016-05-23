@@ -2,7 +2,6 @@ package server
 
 import (
 	"bytes"
-	"fmt"
 	"path"
 	"strconv"
 	"strings"
@@ -17,10 +16,6 @@ import (
 	"golang.org/x/net/context"
 )
 
-const (
-	askJobChannelSize = 1024
-)
-
 var (
 	errClusterNotBootstrapped = errors.New("cluster is not bootstrapped")
 )
@@ -32,10 +27,6 @@ var (
 // store 1 -> /1/raft/s/1, value is metapb.Store
 // region 1 -> /1/raft/r/1, value is encoded_region_key
 // region search key map -> /1/raft/k/encoded_region_key, value is metapb.Region
-//
-// Operation queue, pd can only handle operations like auto-balance, split,
-// merge sequentially, and every operation will be assigned a unique incremental ID.
-// pending queue -> /1/raft/j/1, /1/raft/j/2, value is operation job.
 //
 // Encode region search key:
 //  1, the maximum end region key is empty, so the encode key is \xFF
@@ -50,12 +41,6 @@ type raftCluster struct {
 
 	clusterID   uint64
 	clusterRoot string
-
-	wg sync.WaitGroup
-
-	quitCh chan struct{}
-
-	askJobCh chan struct{}
 
 	mu struct {
 		sync.RWMutex
@@ -82,14 +67,8 @@ func (c *raftCluster) Start(meta metapb.Cluster) error {
 
 	c.running = true
 
-	c.askJobCh = make(chan struct{}, askJobChannelSize)
-	c.quitCh = make(chan struct{})
-
 	c.storeConns = newStoreConns(defaultConnFunc)
 	c.storeConns.SetIdleTimeout(idleTimeout)
-
-	// Force checking the pending job.
-	c.askJobCh <- struct{}{}
 
 	mu := &c.mu
 	mu.meta = meta
@@ -101,9 +80,6 @@ func (c *raftCluster) Start(meta metapb.Cluster) error {
 		return errors.Trace(err)
 	}
 
-	c.wg.Add(1)
-	go c.onJobWorker()
-
 	return nil
 }
 
@@ -114,9 +90,6 @@ func (c *raftCluster) Stop() {
 	if !c.running {
 		return
 	}
-
-	close(c.quitCh)
-	c.wg.Wait()
 
 	c.storeConns.Close()
 
@@ -175,6 +148,10 @@ func encodeRegionSearchKey(endKey []byte) string {
 	return string(append([]byte{'z'}, endKey...))
 }
 
+func encodeRegionStartKey(startKey []byte) string {
+	return string(append([]byte{'z'}, startKey...))
+}
+
 func makeStoreKey(clusterRootPath string, storeID uint64) string {
 	return strings.Join([]string{clusterRootPath, "s", strconv.FormatUint(storeID, 10)}, "/")
 }
@@ -185,13 +162,6 @@ func makeRegionKey(clusterRootPath string, regionID uint64) string {
 
 func makeRegionSearchKey(clusterRootPath string, endKey []byte) string {
 	return strings.Join([]string{clusterRootPath, "k", encodeRegionSearchKey(endKey)}, "/")
-}
-
-func makeJobKey(clusterRootPath string, jobID uint64) string {
-	// We must guarantee the job handling order, so use %020d to format the job key,
-	// use etcd range get to get the first job and then handle it.
-	// Should we use a 8 bytes binary BigEndian instead of 20 bytes string?
-	return strings.Join([]string{clusterRootPath, "job", fmt.Sprintf("%020d", jobID)}, "/")
 }
 
 func makeStoreKeyPrefix(clusterRootPath string) string {
@@ -220,7 +190,7 @@ func checkBootstrapRequest(clusterID uint64, req *pdpb.BootstrapRequest) error {
 
 	peers := regionMeta.GetPeers()
 	if len(peers) != 1 {
-		return errors.Errorf("invalid first region peer number %d, must be 1 for bootstrap %d", len(peers), clusterID)
+		return errors.Errorf("invalid first region peer count %d, must be 1 for bootstrap %d", len(peers), clusterID)
 	}
 
 	peer := peers[0]
@@ -245,7 +215,7 @@ func (s *Server) bootstrapCluster(req *pdpb.BootstrapRequest) (*pdpb.Response, e
 
 	clusterMeta := metapb.Cluster{
 		Id:            proto.Uint64(clusterID),
-		MaxPeerNumber: proto.Uint32(s.cfg.MaxPeerNumber),
+		MaxPeerNumber: proto.Uint32(s.cfg.MaxPeerCount),
 	}
 
 	// Set cluster meta
@@ -389,7 +359,7 @@ func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {
 		return nil, errors.Trace(err)
 	}
 	if !ok {
-		return nil, errors.Errorf("we must find a region for %q but fail, a serious bug", regionKey)
+		return nil, nil
 	}
 
 	if bytes.Compare(regionKey, region.GetStartKey()) >= 0 &&
@@ -397,11 +367,11 @@ func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {
 		return &region, nil
 	}
 
-	return nil, errors.Errorf("invalid searched region %v for key %q", region, regionKey)
+	return nil, nil
 }
 
 func (c *raftCluster) PutStore(store *metapb.Store) error {
-	if store == nil || store.GetId() == 0 {
+	if store.GetId() == 0 {
 		return errors.Errorf("invalid put store %v", store)
 	}
 

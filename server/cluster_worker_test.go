@@ -47,7 +47,7 @@ func (s *mockRaftStore) removePeer(c *C, peer *metapb.Peer) {
 func addRegionPeer(c *C, region *metapb.Region, peer *metapb.Peer) {
 	found := false
 	for _, p := range region.Peers {
-		if p.GetId() == peer.GetId() && p.GetStoreId() == peer.GetStoreId() {
+		if p.GetId() == peer.GetId() || p.GetStoreId() == peer.GetStoreId() {
 			found = true
 			break
 		}
@@ -61,7 +61,8 @@ func removeRegionPeer(c *C, region *metapb.Region, peer *metapb.Peer) {
 	found := false
 	peers := make([]*metapb.Peer, 0, len(region.Peers))
 	for _, p := range region.Peers {
-		if p.GetId() == peer.GetId() && p.GetStoreId() == peer.GetStoreId() {
+		if p.GetId() == peer.GetId() {
+			c.Assert(p.GetStoreId(), Equals, peer.GetStoreId())
 			found = true
 			continue
 		}

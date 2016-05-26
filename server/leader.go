@@ -43,17 +43,12 @@ func (s *Server) getLeaderPath() string {
 }
 
 func (s *Server) leaderLoop() {
-	defer func() {
-		s.wg.Done()
-		s.enableLeader(false)
-	}()
+	defer s.wg.Done()
 
 	for {
 		if s.IsClosed() {
 			return
 		}
-
-		s.enableLeader(false)
 
 		leader, err := s.getLeader()
 		if err != nil {

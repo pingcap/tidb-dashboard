@@ -149,13 +149,13 @@ func (s *Server) Run() error {
 			break
 		}
 
-		if !s.IsLeader() {
-			log.Infof("server %s is not leader, close connection directly", s.cfg.Addr)
+		c, err := newConn(s, conn)
+		if err != nil {
+			log.Warn(err)
 			conn.Close()
 			continue
 		}
 
-		c := newConn(s, conn)
 		s.wg.Add(1)
 		go c.run()
 	}

@@ -33,6 +33,7 @@ func (s *testAllocIDSuite) SetUpSuite(c *C) {
 }
 
 func (s *testAllocIDSuite) TearDownSuite(c *C) {
+	s.svr.Close()
 	s.client.Close()
 }
 

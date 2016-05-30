@@ -288,6 +288,20 @@ func (s *testClusterWorkerSuite) heartbeatRegion(c *C, conn net.Conn, msgID uint
 	return resp.GetRegionHeartbeat().GetChangePeer()
 }
 
+func (s *testClusterWorkerSuite) heartbeatStore(c *C, conn net.Conn, msgID uint64, stats *pdpb.StoreStats) *pdpb.StoreHeartbeatResponse {
+	req := &pdpb.Request{
+		Header:  newRequestHeader(s.clusterID),
+		CmdType: pdpb.CommandType_StoreHeartbeat.Enum(),
+		StoreHeartbeat: &pdpb.StoreHeartbeatRequest{
+			Stats: stats,
+		},
+	}
+	sendRequest(c, conn, msgID, req)
+	_, resp := recvResponse(c, conn)
+	c.Assert(resp.GetCmdType(), Equals, pdpb.CommandType_StoreHeartbeat)
+	return resp.GetStoreHeartbeat()
+}
+
 func mustGetRegion(c *C, cluster *raftCluster, key []byte, expect *metapb.Region) {
 	r, err := cluster.GetRegion(key)
 	c.Assert(err, IsNil)
@@ -496,4 +510,29 @@ func (s *testClusterWorkerSuite) TestHeartbeatSplitAddPeer(c *C) {
 	leaderPeer2 := s.chooseRegionLeader(c, r2)
 	resp = s.heartbeatRegion(c, conn, 0, r2, leaderPeer2)
 	c.Assert(resp, IsNil)
+}
+
+func (s *testClusterWorkerSuite) TestStoreHeartbeat(c *C) {
+	cluster, err := s.svr.getRaftCluster()
+	c.Assert(err, IsNil)
+
+	stores, err := cluster.GetAllStores()
+	c.Assert(err, IsNil)
+	c.Assert(stores, HasLen, 5)
+
+	leaderPd := mustGetLeader(c, s.client, s.svr.getLeaderPath())
+	conn, err := net.Dial("tcp", leaderPd.GetAddr())
+	c.Assert(err, IsNil)
+	defer conn.Close()
+
+	// Mock a store stats.
+	stats := &pdpb.StoreStats{
+		StoreId:     proto.Uint64(stores[0].GetId()),
+		Capacity:    proto.Uint64(100),
+		Available:   proto.Uint64(50),
+		RegionCount: proto.Uint32(1),
+	}
+
+	resp := s.heartbeatStore(c, conn, 0, stats)
+	c.Assert(resp, NotNil)
 }

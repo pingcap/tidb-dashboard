@@ -203,6 +203,18 @@ func (c *conn) handleRegionHeartbeat(req *pdpb.Request) (*pdpb.Response, error) 
 	}, nil
 }
 
+func (c *conn) handleStoreHeartbeat(req *pdpb.Request) (*pdpb.Response, error) {
+	// TODO: finish it.
+	request := req.GetStoreHeartbeat()
+	if request.GetStats() == nil {
+		return nil, errors.Errorf("invalid store heartbeat command, but %v", request)
+	}
+
+	return &pdpb.Response{
+		StoreHeartbeat: &pdpb.StoreHeartbeatResponse{},
+	}, nil
+}
+
 func (c *conn) handleGetClusterConfig(req *pdpb.Request) (*pdpb.Response, error) {
 	request := req.GetGetClusterConfig()
 	if request == nil {

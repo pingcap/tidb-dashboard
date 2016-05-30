@@ -144,6 +144,8 @@ func (c *conn) handleRequest(req *pdpb.Request) (*pdpb.Response, error) {
 		return c.handleGetRegion(req)
 	case pdpb.CommandType_RegionHeartbeat:
 		return c.handleRegionHeartbeat(req)
+	case pdpb.CommandType_StoreHeartbeat:
+		return c.handleStoreHeartbeat(req)
 	case pdpb.CommandType_GetClusterConfig:
 		return c.handleGetClusterConfig(req)
 	case pdpb.CommandType_PutClusterConfig:

@@ -56,7 +56,10 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 
 	cacheStore := cluster.cachedCluster.getStore(store1.GetId())
 	c.Assert(cacheStore.store, DeepEquals, store1)
-	c.Assert(cluster.cachedCluster.regions.leaderRegions, HasLen, 0)
+	c.Assert(cluster.cachedCluster.regions.regions, HasLen, 1)
+	c.Assert(cluster.cachedCluster.regions.searchRegions.Len(), Equals, 1)
+	c.Assert(cluster.cachedCluster.regions.leaders.storeRegions, HasLen, 0)
+	c.Assert(cluster.cachedCluster.regions.leaders.regionStores, HasLen, 0)
 
 	// Add another store.
 	store2 := s.newStore(c, 0, "127.0.0.1:2")
@@ -73,13 +76,19 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 	c.Assert(cacheStore.store, DeepEquals, store2)
 	cacheStores := cluster.cachedCluster.getStores()
 	c.Assert(cacheStores, HasLen, 2)
-	c.Assert(cluster.cachedCluster.regions.leaderRegions, HasLen, 0)
+	c.Assert(cluster.cachedCluster.regions.regions, HasLen, 1)
 
 	// There is only one region now, directly use it for test.
 	regionKey := []byte("a")
 	region, err := cluster.GetRegion(regionKey)
 	c.Assert(err, IsNil)
 	c.Assert(region.Peers, HasLen, 1)
+
+	cacheRegions := cluster.cachedCluster.regions
+	c.Assert(cacheRegions.regions, HasLen, 1)
+	c.Assert(cacheRegions.searchRegions.Len(), Equals, 1)
+	c.Assert(cacheRegions.leaders.storeRegions, HasLen, 0)
+	c.Assert(cacheRegions.leaders.regionStores, HasLen, 0)
 
 	leaderPeer := region.GetPeers()[0]
 	res := heartbeatRegion(c, conn, clusterID, 0, region, leaderPeer)
@@ -88,10 +97,15 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 
 	cacheStores = cluster.cachedCluster.getStores()
 	c.Assert(cacheStores, HasLen, 2)
-	c.Assert(cluster.cachedCluster.regions.leaderRegions, HasLen, 1)
+	c.Assert(cacheRegions.regions, HasLen, 1)
+	cacheRegion := cacheRegions.regions[region.GetId()]
+	c.Assert(cacheRegion, DeepEquals, region)
 
-	cacheRegion := cluster.cachedCluster.regions.leaderRegions[region.GetId()]
-	c.Assert(cacheRegion.region, DeepEquals, region)
+	c.Assert(cacheRegions.leaders.storeRegions, HasKey, store1.GetId())
+	c.Assert(cacheRegions.leaders.storeRegions, Not(HasKey), store2.GetId())
+
+	c.Assert(cacheRegions.leaders.storeRegions[store1.GetId()], HasKey, region.GetId())
+	c.Assert(cacheRegions.leaders.regionStores[region.GetId()], Equals, store1.GetId())
 
 	// Add another peer.
 	region.Peers = append(region.Peers, res.GetPeer())
@@ -99,19 +113,20 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 	res = heartbeatRegion(c, conn, clusterID, 0, region, leaderPeer)
 	c.Assert(res, IsNil)
 
-	c.Assert(cluster.cachedCluster.regions.leaderRegions, HasLen, 1)
+	c.Assert(cluster.cachedCluster.regions.regions, HasLen, 1)
 
 	oldRegionID := region.GetId()
-	cacheRegion = cluster.cachedCluster.regions.leaderRegions[oldRegionID]
+	cacheRegion = cacheRegions.regions[oldRegionID]
 	region, err = cluster.GetRegion(regionKey)
 	c.Assert(err, IsNil)
 	c.Assert(region.GetPeers(), HasLen, 2)
-	c.Assert(cacheRegion.region, DeepEquals, region)
+	c.Assert(cacheRegion, DeepEquals, region)
 
-	cacheStoreRegions, ok := cluster.cachedCluster.regions.storeLeaderRegions[store1.GetId()]
-	c.Assert(ok, IsTrue)
-	_, ok = cacheStoreRegions[region.GetId()]
-	c.Assert(ok, IsTrue)
+	c.Assert(cacheRegions.leaders.storeRegions, HasKey, store1.GetId())
+	c.Assert(cacheRegions.leaders.storeRegions, Not(HasKey), store2.GetId())
+
+	c.Assert(cacheRegions.leaders.storeRegions[store1.GetId()], HasKey, region.GetId())
+	c.Assert(cacheRegions.leaders.regionStores[region.GetId()], Equals, store1.GetId())
 
 	// Test change leader peer.
 	newLeaderPeer := region.GetPeers()[1]
@@ -124,18 +139,19 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 	region, err = cluster.GetRegion(regionKey)
 	c.Assert(err, IsNil)
 	c.Assert(region.GetPeers(), HasLen, 2)
-	c.Assert(cacheRegion.region, DeepEquals, region)
-
-	c.Assert(cluster.cachedCluster.regions.leaderRegions, HasLen, 1)
+	c.Assert(cacheRegion, DeepEquals, region)
 
 	c.Assert(cluster.cachedCluster.stores, HasLen, 2)
-	cacheStoreRegions, ok = cluster.cachedCluster.regions.storeLeaderRegions[store1.GetId()]
-	c.Assert(ok, IsFalse)
-	cacheStoreRegions, ok = cluster.cachedCluster.regions.storeLeaderRegions[store2.GetId()]
-	c.Assert(ok, IsTrue)
-	c.Assert(cacheStoreRegions, HasLen, 1)
-	_, ok = cacheStoreRegions[region.GetId()]
-	c.Assert(ok, IsTrue)
+	c.Assert(cacheRegions.regions, HasLen, 1)
+	c.Assert(cacheRegions.leaders.storeRegions, Not(HasKey), store1.GetId())
+	c.Assert(cacheRegions.leaders.storeRegions, HasKey, store2.GetId())
+
+	c.Assert(cacheRegions.leaders.storeRegions[store2.GetId()], HasKey, region.GetId())
+	c.Assert(cacheRegions.leaders.regionStores[region.GetId()], Equals, store2.GetId())
+
+	region, err = cluster.GetRegion(regionKey)
+	c.Assert(err, IsNil)
+	c.Assert(cacheRegion, DeepEquals, region)
 
 	s.svr.cluster.Stop()
 

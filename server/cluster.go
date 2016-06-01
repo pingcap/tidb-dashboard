@@ -1,11 +1,12 @@
 package server
 
 import (
-	"bytes"
+	"fmt"
+	"math"
 	"path"
-	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/golang/protobuf/proto"
@@ -20,17 +21,16 @@ var (
 	errClusterNotBootstrapped = errors.New("cluster is not bootstrapped")
 )
 
+const (
+	maxBatchRegionCount = 10000
+)
+
 // Raft cluster key format:
 // cluster 1 -> /1/raft, value is metapb.Cluster
 // cluster 2 -> /2/raft
 // For cluster 1
 // store 1 -> /1/raft/s/1, value is metapb.Store
-// region 1 -> /1/raft/r/1, value is encoded_region_key
-// region search key map -> /1/raft/k/encoded_region_key, value is metapb.Region
-//
-// Encode region search key:
-//  1, the maximum end region key is empty, so the encode key is \xFF
-//  2, other region end key is not empty, the encode key is \z end_key
+// region 1 -> /1/raft/r/1, value is metapb.Region
 
 type raftCluster struct {
 	sync.RWMutex
@@ -63,13 +63,17 @@ func (c *raftCluster) Start(meta metapb.Cluster) error {
 	c.storeConns = newStoreConns(defaultConnFunc)
 	c.storeConns.SetIdleTimeout(idleTimeout)
 
-	c.cachedCluster = newClusterInfo()
+	c.cachedCluster = newClusterInfo(c.clusterRoot)
 	c.cachedCluster.setMeta(&meta)
 
 	// Cache all stores when start the cluster. We don't have
 	// many stores, so it is OK to cache them all.
 	// And we should use these cache for later ChangePeer too.
 	if err := c.cacheAllStores(); err != nil {
+		return errors.Trace(err)
+	}
+
+	if err := c.cacheAllRegions(); err != nil {
 		return errors.Trace(err)
 	}
 
@@ -133,28 +137,12 @@ func (s *Server) createRaftCluster() error {
 	return nil
 }
 
-func encodeRegionSearchKey(endKey []byte) string {
-	if len(endKey) == 0 {
-		return "\xFF"
-	}
-
-	return string(append([]byte{'z'}, endKey...))
-}
-
-func encodeRegionStartKey(startKey []byte) string {
-	return string(append([]byte{'z'}, startKey...))
-}
-
 func makeStoreKey(clusterRootPath string, storeID uint64) string {
-	return strings.Join([]string{clusterRootPath, "s", strconv.FormatUint(storeID, 10)}, "/")
+	return strings.Join([]string{clusterRootPath, "s", fmt.Sprintf("%020d", storeID)}, "/")
 }
 
 func makeRegionKey(clusterRootPath string, regionID uint64) string {
-	return strings.Join([]string{clusterRootPath, "r", strconv.FormatUint(regionID, 10)}, "/")
-}
-
-func makeRegionSearchKey(clusterRootPath string, endKey []byte) string {
-	return strings.Join([]string{clusterRootPath, "k", encodeRegionSearchKey(endKey)}, "/")
+	return strings.Join([]string{clusterRootPath, "r", fmt.Sprintf("%020d", regionID)}, "/")
 }
 
 func makeStoreKeyPrefix(clusterRootPath string) string {
@@ -230,17 +218,14 @@ func (s *Server) bootstrapCluster(req *pdpb.BootstrapRequest) (*pdpb.Response, e
 	}
 	ops = append(ops, clientv3.OpPut(storePath, string(storeValue)))
 
-	// Set region id -> search key
-	regionPath := makeRegionKey(clusterRootPath, req.GetRegion().GetId())
-	ops = append(ops, clientv3.OpPut(regionPath, encodeRegionSearchKey(req.GetRegion().GetEndKey())))
-
-	// Set region meta with search key
-	regionSearchPath := makeRegionSearchKey(clusterRootPath, req.GetRegion().GetEndKey())
 	regionValue, err := proto.Marshal(req.GetRegion())
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	ops = append(ops, clientv3.OpPut(regionSearchPath, string(regionValue)))
+
+	// Set region meta with region id.
+	regionPath := makeRegionKey(clusterRootPath, req.GetRegion().GetId())
+	ops = append(ops, clientv3.OpPut(regionPath, string(regionValue)))
 
 	// TODO: we must figure out a better way to handle bootstrap failed, maybe intervene manually.
 	bootstrapCmp := clientv3.Compare(clientv3.CreateRevision(clusterRootPath), "=", 0)
@@ -270,6 +255,7 @@ func (s *Server) bootstrapCluster(req *pdpb.BootstrapRequest) (*pdpb.Response, e
 }
 
 func (c *raftCluster) cacheAllStores() error {
+	start := time.Now()
 	kv := clientv3.NewKV(c.s.client)
 
 	key := makeStoreKeyPrefix(c.clusterRoot)
@@ -288,7 +274,46 @@ func (c *raftCluster) cacheAllStores() error {
 
 		c.cachedCluster.addStore(store)
 	}
+	log.Infof("cache all %d stores cost %s", len(resp.Kvs), time.Now().Sub(start))
+	return nil
+}
 
+func (c *raftCluster) cacheAllRegions() error {
+	start := time.Now()
+	kv := clientv3.NewKV(c.s.client)
+
+	nextID := uint64(0)
+	endRegionKey := makeRegionKey(c.clusterRoot, math.MaxUint64)
+
+	c.cachedCluster.regions.Lock()
+	defer c.cachedCluster.regions.Unlock()
+
+	for {
+		key := makeRegionKey(c.clusterRoot, nextID)
+		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+		resp, err := kv.Get(ctx, key, clientv3.WithRange(endRegionKey))
+		cancel()
+		if err != nil {
+			return errors.Trace(err)
+		}
+
+		if len(resp.Kvs) == 0 {
+			// No more data
+			break
+		}
+
+		for _, kv := range resp.Kvs {
+			region := &metapb.Region{}
+			if err = proto.Unmarshal(kv.Value, region); err != nil {
+				return errors.Trace(err)
+			}
+
+			nextID = region.GetId() + 1
+			c.cachedCluster.regions.addRegion(region)
+		}
+	}
+
+	log.Infof("cache all %d regions cost %s", len(c.cachedCluster.regions.regions), time.Now().Sub(start))
 	return nil
 }
 
@@ -301,44 +326,16 @@ func (c *raftCluster) GetStore(storeID uint64) (*metapb.Store, error) {
 		return nil, errors.New("invalid zero store id")
 	}
 
-	s := c.cachedCluster.getStore(storeID)
-	if s == nil {
+	store := c.cachedCluster.getStore(storeID)
+	if store == nil {
 		return nil, errors.Errorf("invalid store ID %d, not found", storeID)
 	}
 
-	return s.store, nil
+	return store.store, nil
 }
 
 func (c *raftCluster) GetRegion(regionKey []byte) (*metapb.Region, error) {
-	// We must use the next region key for search,
-	// e,g, we have two regions 1, 2, and key ranges are ["", "abc"), ["abc", +infinite),
-	// if we use "abc" to search the region, the first key >= "abc" may be
-	// region 1, not region 2. So we use the next region key for search.
-	nextRegionKey := append(regionKey, 0x00)
-	searchKey := makeRegionSearchKey(c.clusterRoot, nextRegionKey)
-
-	// Etcd range search is for range [searchKey, endKey), if we want to get
-	// the latest region, we should use next max end key for search range.
-	// TODO: we can generate these keys in initialization.
-	maxEndKey := makeRegionSearchKey(c.clusterRoot, []byte{})
-	maxSearchEndKey := maxEndKey + "\x00"
-
-	// Find the first region with end key >= searchKey
-	region := metapb.Region{}
-	ok, err := getProtoMsg(c.s.client, searchKey, &region, clientv3.WithRange(string(maxSearchEndKey)), clientv3.WithLimit(1))
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	if !ok {
-		return nil, nil
-	}
-
-	if bytes.Compare(regionKey, region.GetStartKey()) >= 0 &&
-		(len(region.GetEndKey()) == 0 || bytes.Compare(regionKey, region.GetEndKey()) < 0) {
-		return &region, nil
-	}
-
-	return nil, nil
+	return c.cachedCluster.regions.GetRegion(regionKey), nil
 }
 
 func (c *raftCluster) PutStore(store *metapb.Store) error {

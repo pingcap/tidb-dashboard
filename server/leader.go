@@ -180,8 +180,8 @@ func (s *Server) watchLeader() {
 			}
 
 			for _, ev := range wresp.Events {
-				if ev.Type == mvccpb.EXPIRE || ev.Type == mvccpb.DELETE {
-					log.Info("leader is expired or deleted")
+				if ev.Type == mvccpb.DELETE {
+					log.Info("leader is deleted")
 					return
 				}
 			}

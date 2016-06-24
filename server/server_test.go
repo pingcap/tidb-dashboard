@@ -19,10 +19,9 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/coreos/etcd/clientv3"
 	. "github.com/pingcap/check"
+	"golang.org/x/net/context"
 )
 
 func TestServer(t *testing.T) {
@@ -109,7 +108,7 @@ func (s *testLeaderServerSuite) TestLeader(c *C) {
 	}
 
 	for i := 0; i < 100 && len(s.svrs) > 0; i++ {
-		leader, err := GetLeader(s.client, s.leaderPath)
+		leader, err := getLeader(s.client, s.leaderPath)
 		c.Assert(err, IsNil)
 
 		if leader == nil {

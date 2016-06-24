@@ -15,6 +15,7 @@ package server
 
 import (
 	"net"
+	"sync/atomic"
 
 	"github.com/golang/protobuf/proto"
 	. "github.com/pingcap/check"
@@ -76,7 +77,7 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 
 	// Add another store.
 	store2 := s.newStore(c, 0, "127.0.0.1:2")
-	err = cluster.PutStore(store2)
+	err = cluster.putStore(store2)
 	c.Assert(err, IsNil)
 
 	// Check cachedCluster.
@@ -93,7 +94,7 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 
 	// There is only one region now, directly use it for test.
 	regionKey := []byte("a")
-	region, err := cluster.GetRegion(regionKey)
+	region, err := cluster.getRegion(regionKey)
 	c.Assert(err, IsNil)
 	c.Assert(region.Peers, HasLen, 1)
 
@@ -130,7 +131,7 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 
 	oldRegionID := region.GetId()
 	cacheRegion = cacheRegions.regions[oldRegionID]
-	region, err = cluster.GetRegion(regionKey)
+	region, err = cluster.getRegion(regionKey)
 	c.Assert(err, IsNil)
 	c.Assert(region.GetPeers(), HasLen, 2)
 	c.Assert(cacheRegion, DeepEquals, region)
@@ -149,7 +150,7 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 	res = heartbeatRegion(c, conn, clusterID, 0, region, newLeaderPeer)
 	c.Assert(res, IsNil)
 
-	region, err = cluster.GetRegion(regionKey)
+	region, err = cluster.getRegion(regionKey)
 	c.Assert(err, IsNil)
 	c.Assert(region.GetPeers(), HasLen, 2)
 	c.Assert(cacheRegion, DeepEquals, region)
@@ -162,11 +163,11 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 	c.Assert(cacheRegions.leaders.storeRegions[store2.GetId()], HasKey, region.GetId())
 	c.Assert(cacheRegions.leaders.regionStores[region.GetId()], Equals, store2.GetId())
 
-	region, err = cluster.GetRegion(regionKey)
+	region, err = cluster.getRegion(regionKey)
 	c.Assert(err, IsNil)
 	c.Assert(cacheRegion, DeepEquals, region)
 
-	s.svr.cluster.Stop()
+	s.svr.cluster.stop()
 
 	// Check GetAllStores.
 	stores := map[uint64]*metapb.Store{
@@ -178,10 +179,34 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(cluster, IsNil)
 
-	allStores, err := s.svr.cluster.GetAllStores()
+	allStores, err := s.svr.cluster.getAllStores()
 	c.Assert(err, IsNil)
 	c.Assert(allStores, HasLen, 2)
 	for _, store := range allStores {
 		c.Assert(stores, HasKey, store.GetId())
 	}
+}
+
+// mockIDAllocator mocks IDAllocator and it is only used for test.
+type mockIDAllocator struct {
+	base uint64
+}
+
+func newMockIDAllocator() *mockIDAllocator {
+	return &mockIDAllocator{
+		base: 0,
+	}
+}
+
+func (alloc *mockIDAllocator) Alloc() (uint64, error) {
+	return atomic.AddUint64(&alloc.base, 1), nil
+}
+
+func (s *testClusterCacheSuite) TestIDAlloc(c *C) {
+	cluster := newClusterInfo("/pd")
+	cluster.idAlloc = newMockIDAllocator()
+
+	id, err := cluster.idAlloc.Alloc()
+	c.Assert(err, IsNil)
+	c.Assert(id, Greater, uint64(0))
 }

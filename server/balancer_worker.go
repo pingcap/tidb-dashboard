@@ -26,7 +26,8 @@ const (
 	// We can allow BalanceCount regions to do balance at same time.
 	defaultBalanceCount = 16
 
-	maxRetryBalanceNumber = 10
+	maxRetryBalanceNumber  = 10
+	maxBalanceCountPerLoop = 3
 )
 
 type balancerWorker struct {
@@ -41,14 +42,16 @@ type balancerWorker struct {
 	balanceOperators map[uint64]*balanceOperator
 	balanceCount     int
 
-	balancer Balancer
+	balancer *resourceBalancer
 
-	regionCache *expireRegionCache
+	regionCache      *expireRegionCache
+	historyOperators *lruCache
+	events           *fifoCache
 
 	quit chan struct{}
 }
 
-func newBalancerWorker(cluster *clusterInfo, balancer Balancer, interval time.Duration) *balancerWorker {
+func newBalancerWorker(cluster *clusterInfo, balancer *resourceBalancer, interval time.Duration) *balancerWorker {
 	bw := &balancerWorker{
 		interval:         interval,
 		cluster:          cluster,
@@ -56,6 +59,8 @@ func newBalancerWorker(cluster *clusterInfo, balancer Balancer, interval time.Du
 		balanceCount:     defaultBalanceCount,
 		balancer:         balancer,
 		regionCache:      newExpireRegionCache(interval, 2*interval),
+		historyOperators: newLRUCache(100),
+		events:           newFifoCache(10000),
 		quit:             make(chan struct{}),
 	}
 
@@ -114,8 +119,10 @@ func (bw *balancerWorker) addBalanceOperator(regionID uint64, op *balanceOperato
 
 	// TODO: should we check allowBalance again here?
 
-	op.start = time.Now()
+	op.Start = time.Now()
 	bw.balanceOperators[regionID] = op
+
+	bw.historyOperators.add(regionID, op)
 
 	return true
 }
@@ -127,13 +134,15 @@ func (bw *balancerWorker) removeBalanceOperator(regionID uint64) {
 	// Log balancer information.
 	op, ok := bw.balanceOperators[regionID]
 	if ok {
-		op.end = time.Now()
+		op.End = time.Now()
 		log.Infof("balancer operator finished - %s", op)
 	} else {
 		log.Errorf("balancer operator is empty to remove - %d", regionID)
 	}
 
 	delete(bw.balanceOperators, regionID)
+
+	bw.historyOperators.add(regionID, op)
 }
 
 func (bw *balancerWorker) addRegionCache(regionID uint64) {
@@ -149,6 +158,31 @@ func (bw *balancerWorker) getBalanceOperator(regionID uint64) *balanceOperator {
 	defer bw.RUnlock()
 
 	return bw.balanceOperators[regionID]
+}
+
+func (bw *balancerWorker) getBalanceOperators() map[uint64]Operator {
+	bw.RLock()
+	defer bw.RUnlock()
+
+	balanceOperators := make(map[uint64]Operator, len(bw.balanceOperators))
+	for key, value := range bw.balanceOperators {
+		balanceOperators[key] = value
+	}
+
+	return balanceOperators
+}
+
+func (bw *balancerWorker) getHistoryOperators() []Operator {
+	bw.RLock()
+	defer bw.RUnlock()
+
+	elems := bw.historyOperators.elems()
+	operators := make([]Operator, 0, len(elems))
+	for _, elem := range elems {
+		operators = append(operators, elem.value.(Operator))
+	}
+
+	return operators
 }
 
 // allowBalance indicates that whether we can add more balance operator or not.
@@ -170,7 +204,12 @@ func (bw *balancerWorker) allowBalance() bool {
 func (bw *balancerWorker) doBalance() error {
 	stats := bw.cluster.stats
 
+	balanceCount := 0
 	for i := 0; i < maxRetryBalanceNumber; i++ {
+		if balanceCount >= maxBalanceCountPerLoop {
+			return nil
+		}
+
 		if !bw.allowBalance() {
 			return nil
 		}
@@ -191,7 +230,8 @@ func (bw *balancerWorker) doBalance() error {
 		if bw.addBalanceOperator(regionID, balanceOperator) {
 			bw.addRegionCache(regionID)
 			stats.Increment("balance.select.success")
-			return nil
+			balanceCount++
+			continue
 		}
 
 		stats.Increment("balance.select.fail")
@@ -202,4 +242,8 @@ func (bw *balancerWorker) doBalance() error {
 
 	log.Info("find no proper region for balance, retry later")
 	return nil
+}
+
+func (bw *balancerWorker) storeScore(store *storeInfo, regionCount int) int {
+	return bw.balancer.score(store, regionCount)
 }

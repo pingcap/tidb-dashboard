@@ -91,8 +91,7 @@ func (rb *resourceBalancer) filterToStore(store *storeInfo, args ...interface{})
 func (rb *resourceBalancer) score(store *storeInfo, regionCount int) int {
 	usedRatioScore := store.usedRatioScore()
 	leaderScore := store.leaderScore(regionCount)
-	score := int(float64(usedRatioScore)*0.6 + float64(leaderScore)*0.4)
-	return score
+	return int(float64(usedRatioScore)*0.6 + float64(leaderScore)*0.4)
 }
 
 // checkScore checks whether the new store score and old store score are valid.
@@ -273,9 +272,10 @@ func (rb *resourceBalancer) doLeaderBalance(cluster *clusterInfo, stores []*stor
 		return nil, nil
 	}
 
-	leaderTransferOperator := newTransferLeaderOperator(leader, newLeader, maxWaitCount)
-	addPeerOperator := newAddPeerOperator(newPeer)
-	removePeerOperator := newRemovePeerOperator(leader)
+	regionID := region.GetId()
+	leaderTransferOperator := newTransferLeaderOperator(regionID, leader, newLeader, maxWaitCount)
+	addPeerOperator := newAddPeerOperator(regionID, newPeer)
+	removePeerOperator := newRemovePeerOperator(regionID, leader)
 
 	return newBalanceOperator(region, leaderTransferOperator, addPeerOperator, removePeerOperator), nil
 }
@@ -285,8 +285,8 @@ func (rb *resourceBalancer) doFollowerBalance(cluster *clusterInfo, stores []*st
 		return nil, nil
 	}
 
-	addPeerOperator := newAddPeerOperator(newPeer)
-	removePeerOperator := newRemovePeerOperator(follower)
+	addPeerOperator := newAddPeerOperator(region.GetId(), newPeer)
+	removePeerOperator := newRemovePeerOperator(region.GetId(), follower)
 	return newBalanceOperator(region, addPeerOperator, removePeerOperator), nil
 }
 
@@ -357,7 +357,7 @@ func (db *defaultBalancer) addPeer(cluster *clusterInfo) (*balanceOperator, erro
 		return nil, nil
 	}
 
-	addPeerOperator := newAddPeerOperator(peer)
+	addPeerOperator := newAddPeerOperator(db.region.GetId(), peer)
 	return newBalanceOperator(db.region, newOnceOperator(addPeerOperator)), nil
 }
 
@@ -381,7 +381,7 @@ func (db *defaultBalancer) removePeer(cluster *clusterInfo) (*balanceOperator, e
 		return nil, nil
 	}
 
-	removePeerOperator := newRemovePeerOperator(peer)
+	removePeerOperator := newRemovePeerOperator(db.region.GetId(), peer)
 	return newBalanceOperator(db.region, newOnceOperator(removePeerOperator)), nil
 }
 

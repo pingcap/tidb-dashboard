@@ -22,8 +22,10 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/juju/errors"
 	"github.com/ngaut/log"
 	"github.com/pingcap/pd/server"
+	"github.com/pingcap/pd/server/api"
 )
 
 var (
@@ -33,6 +35,7 @@ var (
 	rootPath        = flag.String("root", "/pd", "pd root path in etcd")
 	leaderLease     = flag.Int64("lease", 3, "leader lease time (second)")
 	logLevel        = flag.String("L", "debug", "log level: info, debug, warn, error, fatal")
+	httpAddr        = flag.String("http-addr", ":9090", "http server listening address")
 	pprofAddr       = flag.String("pprof", ":6060", "pprof HTTP listening address")
 	clusterID       = flag.Uint64("cluster-id", 0, "cluster ID")
 	maxPeerCount    = flag.Uint("max-peer-count", 3, "max peer count for the region")
@@ -57,6 +60,7 @@ func main() {
 
 	cfg := &server.Config{
 		Addr:                 *addr,
+		HTTPAddr:             *httpAddr,
 		AdvertiseAddr:        *advertiseAddr,
 		EtcdAddrs:            strings.Split(*etcdAddrs, ","),
 		RootPath:             *rootPath,
@@ -89,5 +93,15 @@ func main() {
 		os.Exit(0)
 	}()
 
-	svr.Run()
+	go func() {
+		err = api.ServeHTTP(cfg.HTTPAddr, svr)
+		if err != nil {
+			log.Fatalf("serve http failed - %v", errors.Trace(err))
+		}
+	}()
+
+	err = svr.Run()
+	if err != nil {
+		log.Fatalf("server run failed - %v", errors.Trace(err))
+	}
 }

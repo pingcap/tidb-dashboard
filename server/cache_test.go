@@ -61,7 +61,7 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 	_, err = s.svr.bootstrapCluster(req.Bootstrap)
 	c.Assert(err, IsNil)
 
-	cluster, err := s.svr.getRaftCluster()
+	cluster, err := s.svr.GetRaftCluster()
 	c.Assert(err, IsNil)
 
 	// Check cachedCluster.
@@ -121,9 +121,22 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 	c.Assert(cacheRegions.leaders.storeRegions[store1.GetId()], HasKey, region.GetId())
 	c.Assert(cacheRegions.leaders.regionStores[region.GetId()], Equals, store1.GetId())
 
+	oldRegion := cloneRegion(region)
+	changePeer := cacheRegions.getChangePeer(oldRegion, region)
+	c.Assert(changePeer, IsNil)
+
 	// Add another peer.
 	region.Peers = append(region.Peers, res.GetPeer())
 	region.RegionEpoch.ConfVer = proto.Uint64(region.GetRegionEpoch().GetConfVer() + 1)
+
+	changePeer = cacheRegions.getChangePeer(oldRegion, region)
+	c.Assert(changePeer.GetChangeType(), Equals, raftpb.ConfChangeType_AddNode)
+	c.Assert(changePeer.GetPeer(), DeepEquals, res.GetPeer())
+
+	changePeer = cacheRegions.getChangePeer(region, oldRegion)
+	c.Assert(changePeer.GetChangeType(), Equals, raftpb.ConfChangeType_RemoveNode)
+	c.Assert(changePeer.GetPeer(), DeepEquals, res.GetPeer())
+
 	res = heartbeatRegion(c, conn, clusterID, 0, region, leaderPeer)
 	c.Assert(res, IsNil)
 
@@ -169,18 +182,17 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 
 	s.svr.cluster.stop()
 
-	// Check GetAllStores.
+	// Check GetStores.
 	stores := map[uint64]*metapb.Store{
 		store1.GetId(): store1,
 		store2.GetId(): store2,
 	}
 
-	cluster, err = s.svr.getRaftCluster()
+	cluster, err = s.svr.GetRaftCluster()
 	c.Assert(err, IsNil)
 	c.Assert(cluster, IsNil)
 
-	allStores, err := s.svr.cluster.getAllStores()
-	c.Assert(err, IsNil)
+	allStores := s.svr.cluster.GetStores()
 	c.Assert(allStores, HasLen, 2)
 	for _, store := range allStores {
 		c.Assert(stores, HasKey, store.GetId())

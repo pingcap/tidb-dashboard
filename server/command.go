@@ -19,6 +19,7 @@ import (
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/pdpb"
+	"github.com/pingcap/kvproto/pkg/raftpb"
 	"golang.org/x/net/context"
 )
 
@@ -72,7 +73,7 @@ func (c *conn) handleIsBootstrapped(req *pdpb.Request) (*pdpb.Response, error) {
 		return nil, errors.Errorf("invalid is bootstrapped command, but %v", req)
 	}
 
-	cluster, err := c.s.getRaftCluster()
+	cluster, err := c.s.GetRaftCluster()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -92,7 +93,7 @@ func (c *conn) handleBootstrap(req *pdpb.Request) (*pdpb.Response, error) {
 		return nil, errors.Errorf("invalid bootstrap command, but %v", req)
 	}
 
-	cluster, err := c.s.getRaftCluster()
+	cluster, err := c.s.GetRaftCluster()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -103,8 +104,8 @@ func (c *conn) handleBootstrap(req *pdpb.Request) (*pdpb.Response, error) {
 	return c.s.bootstrapCluster(request)
 }
 
-func (c *conn) getRaftCluster() (*raftCluster, error) {
-	cluster, err := c.s.getRaftCluster()
+func (c *conn) getRaftCluster() (*RaftCluster, error) {
+	cluster, err := c.s.GetRaftCluster()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -126,7 +127,7 @@ func (c *conn) handleGetStore(req *pdpb.Request) (*pdpb.Response, error) {
 	}
 
 	storeID := request.GetStoreId()
-	store, err := cluster.getStore(storeID)
+	store, _, err := cluster.GetStore(storeID)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -182,7 +183,7 @@ func (c *conn) handleRegionHeartbeat(req *pdpb.Request) (*pdpb.Response, error) 
 		return nil, errors.Errorf("invalid request region, %v", request)
 	}
 
-	resp, err := cluster.cachedCluster.regions.heartbeat(region, leader)
+	resp, changePeer, err := cluster.cachedCluster.regions.heartbeat(region, leader)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -227,6 +228,17 @@ func (c *conn) handleRegionHeartbeat(req *pdpb.Request) (*pdpb.Response, error) 
 		}
 	}
 
+	if changePeer != nil {
+		var op Operator
+		if changePeer.GetChangeType() == raftpb.ConfChangeType_AddNode {
+			op = newAddPeerOperator(region.GetId(), changePeer.GetPeer())
+		} else {
+			op = newRemovePeerOperator(region.GetId(), changePeer.GetPeer())
+		}
+
+		cluster.balancerWorker.postEvent(op, evtEnd)
+	}
+
 	return &pdpb.Response{
 		RegionHeartbeat: res,
 	}, nil
@@ -265,11 +277,7 @@ func (c *conn) handleGetClusterConfig(req *pdpb.Request) (*pdpb.Response, error)
 		return nil, errors.Trace(err)
 	}
 
-	conf, err := cluster.getConfig()
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-
+	conf := cluster.GetConfig()
 	return &pdpb.Response{
 		GetClusterConfig: &pdpb.GetClusterConfigResponse{
 			Cluster: conf,
@@ -341,5 +349,26 @@ func (c *conn) handleAskSplit(req *pdpb.Request) (*pdpb.Response, error) {
 
 	return &pdpb.Response{
 		AskSplit: split,
+	}, nil
+}
+
+func (c *conn) handleReportSplit(req *pdpb.Request) (*pdpb.Response, error) {
+	request := req.GetReportSplit()
+	if request == nil {
+		return nil, errors.Errorf("invalid report split command, but %v", req)
+	}
+
+	cluster, err := c.getRaftCluster()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	split, err := cluster.handleReportSplit(request)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	return &pdpb.Response{
+		ReportSplit: split,
 	}, nil
 }

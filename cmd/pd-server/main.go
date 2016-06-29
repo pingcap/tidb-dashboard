@@ -29,49 +29,82 @@ import (
 )
 
 var (
-	addr            = flag.String("addr", "127.0.0.1:1234", "server listening address")
-	advertiseAddr   = flag.String("advertise-addr", "", "server advertise listening address [127.0.0.1:1234] for client communication")
-	etcdAddrs       = flag.String("etcd", "127.0.0.1:2379", "Etcd endpoints, separated by comma")
-	rootPath        = flag.String("root", "/pd", "pd root path in etcd")
-	leaderLease     = flag.Int64("lease", 3, "leader lease time (second)")
-	logLevel        = flag.String("L", "debug", "log level: info, debug, warn, error, fatal")
-	httpAddr        = flag.String("http-addr", ":9090", "http server listening address")
-	pprofAddr       = flag.String("pprof", ":6060", "pprof HTTP listening address")
-	clusterID       = flag.Uint64("cluster-id", 0, "cluster ID")
-	maxPeerCount    = flag.Uint("max-peer-count", 3, "max peer count for the region")
-	metricAddr      = flag.String("metric-addr", "", "StatsD metric address")
-	metricPrefix    = flag.String("metric-prefix", "pd", "metric prefix")
-	minCapUsedRatio = flag.Float64("min-capacity-used-ratio", 0.4, "min capacity used ratio for choosing store in balance")
-	maxCapUsedRatio = flag.Float64("max-capacity-used-ratio", 0.9, "max capacity used ratio for choosing store in balance")
+	config                 = flag.String("c", "", "config file")
+	addr                   = flag.String("addr", "127.0.0.1:1234", "server listening address")
+	advertiseAddr          = flag.String("advertise-addr", "", "server advertise listening address [127.0.0.1:1234] for client communication")
+	etcdAddrs              = flag.String("etcd-addrs", "127.0.0.1:2379", "Etcd endpoints, separated by comma")
+	httpAddr               = flag.String("http-addr", ":9090", "http server listening address")
+	pprofAddr              = flag.String("pprof-addr", ":6060", "pprof HTTP listening address")
+	rootPath               = flag.String("root", "/pd", "pd root path in etcd")
+	leaderLease            = flag.Int64("lease", 3, "leader lease time (second)")
+	logLevel               = flag.String("log-level", "debug", "log level: info, debug, warn, error, fatal")
+	tsoSaveInterval        = flag.Int64("tso-save-interval", 2000, "the interval time (ms) to save timestamp")
+	clusterID              = flag.Uint64("cluster-id", 0, "cluster ID")
+	maxPeerCount           = flag.Uint64("max-peer-count", 3, "max peer count for the region")
+	metricAddr             = flag.String("metric-addr", "", "StatsD metric address")
+	metricPrefix           = flag.String("metric-prefix", "pd", "metric prefix")
+	minCapUsedRatio        = flag.Float64("min-capacity-used-ratio", 0.4, "min capacity used ratio for choosing store in balance")
+	maxCapUsedRatio        = flag.Float64("max-capacity-used-ratio", 0.9, "max capacity used ratio for choosing store in balance")
+	maxSnapSendCount       = flag.Uint64("max-snap-sending-count", 3, "max sending snapshot count for choosing store in balance")
+	maxSnapRecvCount       = flag.Uint64("max-snap-receiving-count", 3, "max receiving snapshot count for choosing store in balance")
+	maxDiffScoreFrac       = flag.Float64("max-diff-score-fraction", 0.1, "max diff score fraction for choosing store in balance")
+	balanceInterval        = flag.Uint64("balance-interval", 30, "the interval time (s) to do balance")
+	maxBalanceCount        = flag.Uint64("max-balance-count", 16, "the max region count to balance at the same time")
+	maxBalanceRetryPerLoop = flag.Uint64("max-balance-retry-per-loop", 10, "the max retry count to balance in a balance schedule")
+	maxBalanceCountPerLoop = flag.Uint64("max-balance-count-per-loop", 3, "the max region count to balance in a balance schedule")
 )
+
+func setCmdArgs(cfg *server.Config) {
+	flag.Visit(func(flag *flag.Flag) {
+		flagArgs[flag.Name] = true
+	})
+
+	setStringFlagConfig(&cfg.Addr, "addr", *addr)
+	setStringFlagConfig(&cfg.AdvertiseAddr, "advertise-addr", *advertiseAddr)
+	setStringSliceFlagConfig(&cfg.EtcdAddrs, "etcd-addrs", *etcdAddrs)
+	setStringFlagConfig(&cfg.HTTPAddr, "http-addr", *httpAddr)
+	setStringFlagConfig(&cfg.PprofAddr, "pprof-addr", *pprofAddr)
+	setStringFlagConfig(&cfg.RootPath, "root", *rootPath)
+	setIntFlagConfig(&cfg.LeaderLease, "lease", *leaderLease)
+	setStringFlagConfig(&cfg.LogLevel, "log-level", *logLevel)
+	setIntFlagConfig(&cfg.TsoSaveInterval, "tso-save-interval", *tsoSaveInterval)
+	setUintFlagConfig(&cfg.ClusterID, "cluster-id", *clusterID)
+	setUintFlagConfig(&cfg.MaxPeerCount, "max-peer-count", *maxPeerCount)
+	setStringFlagConfig(&cfg.MetricAddr, "metric-addr", *metricAddr)
+	setFloatFlagConfig(&cfg.BalanceCfg.MinCapacityUsedRatio, "min-capacity-used-ratio", *minCapUsedRatio)
+	setFloatFlagConfig(&cfg.BalanceCfg.MaxCapacityUsedRatio, "max-capacity-used-ratio", *maxCapUsedRatio)
+	setUintFlagConfig(&cfg.BalanceCfg.MaxSnapSendingCount, "max-snap-sending-count", *maxSnapSendCount)
+	setUintFlagConfig(&cfg.BalanceCfg.MaxSnapReceivingCount, "max-snap-receiving-count", *maxSnapRecvCount)
+	setFloatFlagConfig(&cfg.BalanceCfg.MaxDiffScoreFraction, "max-diff-score-fraction", *maxDiffScoreFrac)
+	setUintFlagConfig(&cfg.BalanceCfg.BalanceInterval, "balance-interval", *balanceInterval)
+	setUintFlagConfig(&cfg.BalanceCfg.MaxBalanceCount, "max-balance-count", *maxBalanceCount)
+	setUintFlagConfig(&cfg.BalanceCfg.MaxBalanceRetryPerLoop, "max-balance-retry-per-loop", *maxBalanceRetryPerLoop)
+	setUintFlagConfig(&cfg.BalanceCfg.MaxBalanceCountPerLoop, "max-balance-count-per-loop", *maxBalanceCountPerLoop)
+}
 
 func main() {
 	flag.Parse()
 
-	if *clusterID == 0 {
-		log.Warn("cluster id is 0, don't use it in production")
+	cfg := &server.Config{}
+
+	if *config != "" {
+		if err := cfg.LoadFromFile(*config); err != nil {
+			log.Fatalf("load config failed - %s", err)
+		}
+
+		log.Infof("PD init config - %v", cfg)
 	}
 
-	log.SetLevelByString(*logLevel)
+	setCmdArgs(cfg)
+
+	log.SetLevelByString(cfg.LogLevel)
+	log.SetHighlighting(false)
+
+	log.Infof("PD config - %v", cfg)
 
 	go func() {
-		http.ListenAndServe(*pprofAddr, nil)
+		http.ListenAndServe(cfg.PprofAddr, nil)
 	}()
-
-	cfg := &server.Config{
-		Addr:                 *addr,
-		HTTPAddr:             *httpAddr,
-		AdvertiseAddr:        *advertiseAddr,
-		EtcdAddrs:            strings.Split(*etcdAddrs, ","),
-		RootPath:             *rootPath,
-		LeaderLease:          *leaderLease,
-		ClusterID:            *clusterID,
-		MaxPeerCount:         uint32(*maxPeerCount),
-		MetricAddr:           *metricAddr,
-		MetricPrefix:         *metricPrefix,
-		MinCapacityUsedRatio: *minCapUsedRatio,
-		MaxCapacityUsedRatio: *maxCapUsedRatio,
-	}
 
 	svr, err := server.NewServer(cfg)
 	if err != nil {
@@ -103,5 +136,37 @@ func main() {
 	err = svr.Run()
 	if err != nil {
 		log.Fatalf("server run failed - %v", errors.Trace(err))
+	}
+}
+
+var flagArgs = map[string]bool{}
+
+func setStringFlagConfig(dest *string, name string, value string) {
+	if flagArgs[name] {
+		*dest = value
+	}
+}
+
+func setStringSliceFlagConfig(dest *[]string, name string, value string) {
+	if flagArgs[name] {
+		*dest = append([]string{}, strings.Split(value, ",")...)
+	}
+}
+
+func setIntFlagConfig(dest *int64, name string, value int64) {
+	if flagArgs[name] {
+		*dest = value
+	}
+}
+
+func setUintFlagConfig(dest *uint64, name string, value uint64) {
+	if flagArgs[name] {
+		*dest = value
+	}
+}
+
+func setFloatFlagConfig(dest *float64, name string, value float64) {
+	if flagArgs[name] {
+		*dest = value
 	}
 }

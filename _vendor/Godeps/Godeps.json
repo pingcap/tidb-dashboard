@@ -94,43 +94,43 @@
 		},
 		{
 			"ImportPath": "github.com/pingcap/kvproto/pkg/coprocessor",
-			"Rev": "f084a576853dae48bdc15e277ec5e208978c7285"
+			"Rev": "538778d641c5f8db5f9467423dbd86403e1c4a0b"
 		},
 		{
 			"ImportPath": "github.com/pingcap/kvproto/pkg/errorpb",
-			"Rev": "f084a576853dae48bdc15e277ec5e208978c7285"
+			"Rev": "538778d641c5f8db5f9467423dbd86403e1c4a0b"
 		},
 		{
 			"ImportPath": "github.com/pingcap/kvproto/pkg/kvrpcpb",
-			"Rev": "f084a576853dae48bdc15e277ec5e208978c7285"
+			"Rev": "538778d641c5f8db5f9467423dbd86403e1c4a0b"
 		},
 		{
 			"ImportPath": "github.com/pingcap/kvproto/pkg/metapb",
-			"Rev": "f084a576853dae48bdc15e277ec5e208978c7285"
+			"Rev": "538778d641c5f8db5f9467423dbd86403e1c4a0b"
 		},
 		{
 			"ImportPath": "github.com/pingcap/kvproto/pkg/msgpb",
-			"Rev": "f084a576853dae48bdc15e277ec5e208978c7285"
+			"Rev": "538778d641c5f8db5f9467423dbd86403e1c4a0b"
 		},
 		{
 			"ImportPath": "github.com/pingcap/kvproto/pkg/pdpb",
-			"Rev": "f084a576853dae48bdc15e277ec5e208978c7285"
+			"Rev": "538778d641c5f8db5f9467423dbd86403e1c4a0b"
 		},
 		{
 			"ImportPath": "github.com/pingcap/kvproto/pkg/raft_cmdpb",
-			"Rev": "f084a576853dae48bdc15e277ec5e208978c7285"
+			"Rev": "538778d641c5f8db5f9467423dbd86403e1c4a0b"
 		},
 		{
 			"ImportPath": "github.com/pingcap/kvproto/pkg/raft_serverpb",
-			"Rev": "f084a576853dae48bdc15e277ec5e208978c7285"
+			"Rev": "538778d641c5f8db5f9467423dbd86403e1c4a0b"
 		},
 		{
 			"ImportPath": "github.com/pingcap/kvproto/pkg/raftpb",
-			"Rev": "f084a576853dae48bdc15e277ec5e208978c7285"
+			"Rev": "538778d641c5f8db5f9467423dbd86403e1c4a0b"
 		},
 		{
 			"ImportPath": "github.com/pingcap/kvproto/pkg/util",
-			"Rev": "f084a576853dae48bdc15e277ec5e208978c7285"
+			"Rev": "538778d641c5f8db5f9467423dbd86403e1c4a0b"
 		},
 		{
 			"ImportPath": "github.com/twinj/uuid",

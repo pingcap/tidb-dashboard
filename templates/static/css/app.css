@@ -36,3 +36,7 @@ li {
 .list-item.ng-leave.ng-leave-active {
     max-height: 0;
 }
+
+.fa-green {
+    color: #00EE00;
+}

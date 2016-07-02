@@ -2,40 +2,35 @@
 <html>
 <head>
     <title>pd events</title>
-    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://bootflat.github.io/bootflat/css/bootflat.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootflat.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
     <link rel="stylesheet" href="css/colors.min.css">
     <link rel="stylesheet" href="css/app.css">
 
-    <script src="https://code.angularjs.org/1.5.7/angular.min.js"></script>
-    <script src="https://code.angularjs.org/1.5.7/angular-animate.min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <script src="js/angular-animate.min.js"></script>
     <script src="js/app.js"></script>
 </head>
 
 <body ng-app="dashboardApp">
 <div class="container document">
-    <h1> Placement Driver Events </h1>
+    <h2> Placement Driver Events </h2>
     <hr/>
     <div class="row" ng-controller="LogEventController"
         ng-init="init('[[.]]')">
 
         <!-- log template -->                
         <li class="list-item" ng-repeat="log in logs" ng-animate="'wave'"> 
-        <event-row event="log" colors="colors"></event-row>
+            <event-row event="log"></event-row>
         </li>
 
     </div>
 </div>
 
 <!-- Bootstrap -->
-<script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
-<script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
-
-<!-- Bootflat's JS files.-->
-<script src="https://bootflat.github.io/bootflat/js/icheck.min.js"></script>
-<script src="https://bootflat.github.io/bootflat/js/jquery.fs.selecter.min.js"></script>
-<script src="https://bootflat.github.io/bootflat/js/jquery.fs.stepper.min.js"></script>
+<script src="js/jquery-1.11.0.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
 
 </body>
 </html>

@@ -14,6 +14,8 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/pingcap/pd/server"
 	"github.com/unrolled/render"
@@ -21,7 +23,10 @@ import (
 
 func createRouter(svr *server.Server) *mux.Router {
 	rd := render.New(render.Options{
+		Directory:  "templates",
+		Extensions: []string{".html"},
 		IndentJSON: true,
+		Delims:     render.Delims{"[[", "]]"},
 	})
 
 	router := mux.NewRouter()
@@ -35,6 +40,11 @@ func createRouter(svr *server.Server) *mux.Router {
 	router.Handle("/api/v1/region/{id}", newRegionHandler(svr, rd)).Methods("GET")
 	router.Handle("/api/v1/regions", newRegionsHandler(svr, rd)).Methods("GET")
 	router.Handle("/api/v1/version", newVersionHandler(rd)).Methods("GET")
+
+	router.Handle("/", newHomeHandler(rd)).Methods("GET")
+	router.Handle("/ws", newWSHandler(svr))
+
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("templates/static/")))
 
 	return router
 }

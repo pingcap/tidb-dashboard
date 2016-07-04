@@ -116,7 +116,7 @@ func (c *client) Close() {
 
 func (c *client) GetTS() (int64, int64, error) {
 	req := &tsoRequest{
-		done: make(chan error),
+		done: make(chan error, 1),
 	}
 	c.workerMutex.RLock()
 	c.worker.requests <- req
@@ -130,7 +130,7 @@ func (c *client) GetRegion(key []byte) (*metapb.Region, error) {
 		pbReq: &pdpb.GetRegionRequest{
 			RegionKey: key,
 		},
-		done: make(chan error),
+		done: make(chan error, 1),
 	}
 	c.workerMutex.RLock()
 	c.worker.requests <- req
@@ -151,7 +151,7 @@ func (c *client) GetStore(storeID uint64) (*metapb.Store, error) {
 		pbReq: &pdpb.GetStoreRequest{
 			StoreId: proto.Uint64(storeID),
 		},
-		done: make(chan error),
+		done: make(chan error, 1),
 	}
 	c.workerMutex.RLock()
 	c.worker.requests <- req

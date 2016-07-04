@@ -29,20 +29,14 @@ func (c *conn) handleTso(req *pdpb.Request) (*pdpb.Response, error) {
 		return nil, errors.Errorf("invalid tso command, but %v", req)
 	}
 
-	tso := &pdpb.TsoResponse{}
-
 	count := request.GetCount()
-	for i := uint32(0); i < count; i++ {
-		ts := c.s.getRespTS()
-		if ts == nil {
-			return nil, errors.New("can not get timestamp")
-		}
-
-		tso.Timestamps = append(tso.Timestamps, ts)
+	ts := c.s.getRespTS(count)
+	if ts == nil {
+		return nil, errors.New("can not get timestamp")
 	}
 
 	return &pdpb.Response{
-		Tso: tso,
+		Tso: &pdpb.TsoResponse{Timestamp: ts, Count: &count},
 	}, nil
 }
 

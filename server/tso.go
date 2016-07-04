@@ -152,7 +152,7 @@ func (s *Server) updateTimestamp() error {
 
 const maxRetryCount = 100
 
-func (s *Server) getRespTS() *pdpb.Timestamp {
+func (s *Server) getRespTS(count uint32) *pdpb.Timestamp {
 	resp := &pdpb.Timestamp{}
 	for i := 0; i < maxRetryCount; i++ {
 		current, ok := s.ts.Load().(*atomicObject)
@@ -163,7 +163,7 @@ func (s *Server) getRespTS() *pdpb.Timestamp {
 		}
 
 		resp.Physical = proto.Int64(int64(current.physical.UnixNano()) / 1e6)
-		resp.Logical = proto.Int64(atomic.AddInt64(&current.logical, 1))
+		resp.Logical = proto.Int64(atomic.AddInt64(&current.logical, int64(count)))
 		if *resp.Logical >= maxLogical {
 			log.Errorf("logical part outside of max logical interval %v, please check ntp time, retry count %d", resp, i)
 			time.Sleep(50 * time.Millisecond)

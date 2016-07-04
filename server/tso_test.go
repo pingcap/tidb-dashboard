@@ -84,18 +84,10 @@ func (s *testTsoSuite) testGetTimestamp(c *C, conn net.Conn, n int) {
 	msgID, resp := recvResponse(c, conn)
 	c.Assert(rawMsgID, Equals, msgID)
 	c.Assert(resp.Tso, NotNil)
-	c.Assert(resp.Tso.Timestamps, HasLen, n)
+	c.Assert(resp.Tso.GetCount(), Equals, uint32(n))
 
-	res := resp.Tso.Timestamps
-	last := pdpb.Timestamp{}
-	for i := 0; i < n; i++ {
-		c.Assert(res[i].GetPhysical(), GreaterEqual, last.GetPhysical())
-		if res[i].GetPhysical() == last.GetPhysical() {
-			c.Assert(res[i].GetLogical(), Greater, last.GetLogical())
-		}
-
-		last = *res[i]
-	}
+	res := resp.Tso.Timestamp
+	c.Assert(res.GetLogical(), Greater, int64(0))
 }
 
 func mustGetLeader(c *C, client *clientv3.Client, leaderPath string) *pdpb.Leader {

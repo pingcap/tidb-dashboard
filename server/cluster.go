@@ -327,13 +327,13 @@ func (c *RaftCluster) cacheAllRegions() error {
 	return nil
 }
 
-func (c *RaftCluster) getRegion(regionKey []byte) (*metapb.Region, error) {
-	return c.cachedCluster.regions.getRegion(regionKey), nil
+func (c *RaftCluster) getRegion(regionKey []byte) (*metapb.Region, *metapb.Peer) {
+	return c.cachedCluster.regions.getRegion(regionKey)
 }
 
-// GetRegionAndLeader gets region and leader peer by regionID from cluster.
-func (c *RaftCluster) GetRegionAndLeader(regionID uint64) (*metapb.Region, *metapb.Peer) {
-	return c.cachedCluster.regions.getRegionAndLeader(regionID)
+// GetRegionByID gets region and leader peer by regionID from cluster.
+func (c *RaftCluster) GetRegionByID(regionID uint64) (*metapb.Region, *metapb.Peer) {
+	return c.cachedCluster.regions.getRegionByID(regionID)
 }
 
 // GetRegions gets regions from cluster.

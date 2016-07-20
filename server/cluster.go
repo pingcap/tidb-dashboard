@@ -115,6 +115,22 @@ func (c *RaftCluster) isRunning() bool {
 	return c.running
 }
 
+// GetConfig gets config information.
+func (s *Server) GetConfig() *Config {
+	s.cfgLock.RLock()
+	defer s.cfgLock.RUnlock()
+
+	return s.cfg.clone()
+}
+
+// SetConfig sets the config information.
+func (s *Server) SetConfig(cfg *Config) {
+	s.cfgLock.Lock()
+	defer s.cfgLock.Unlock()
+
+	s.cfg.setCfg(cfg)
+}
+
 func (s *Server) getClusterRootPath() string {
 	return path.Join(s.rootPath, "raft")
 }
@@ -432,15 +448,14 @@ func (c *RaftCluster) GetHistoryOperators() []Operator {
 	return c.balancerWorker.getHistoryOperators()
 }
 
-// GetScore gets store score from balancer.
-func (c *RaftCluster) GetScore(store *metapb.Store, status *StoreStatus) int {
+// GetScores gets store scores from balancer.
+func (c *RaftCluster) GetScores(store *metapb.Store, status *StoreStatus) []int {
 	storeInfo := &storeInfo{
 		store: store,
 		stats: status,
 	}
 
-	regionCount := c.cachedCluster.regions.regionCount()
-	return c.balancerWorker.storeScore(storeInfo, regionCount)
+	return c.balancerWorker.storeScores(storeInfo)
 }
 
 // FetchEvents fetches the operator events.

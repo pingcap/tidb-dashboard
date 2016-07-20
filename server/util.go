@@ -127,3 +127,33 @@ func convertName(str string) string {
 
 	return string(name)
 }
+
+func sliceClone(strs []string) []string {
+	data := make([]string, 0, len(strs))
+	for _, str := range strs {
+		data = append(data, str)
+	}
+
+	return data
+}
+
+func mapClone(m map[uint64]struct{}) map[uint64]struct{} {
+	data := make(map[uint64]struct{}, len(m))
+	for k := range m {
+		data[k] = struct{}{}
+	}
+
+	return data
+}
+
+func mergeMap(m1 map[uint64]struct{}, m2 map[uint64]struct{}) map[uint64]struct{} {
+	data := make(map[uint64]struct{}, len(m1)+len(m2))
+	for k := range m1 {
+		data[k] = struct{}{}
+	}
+	for k := range m2 {
+		data[k] = struct{}{}
+	}
+
+	return data
+}

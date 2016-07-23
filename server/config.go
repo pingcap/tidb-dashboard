@@ -15,9 +15,14 @@ package server
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/coreos/etcd/embed"
 	"github.com/juju/errors"
 )
 
@@ -30,16 +35,11 @@ type Config struct {
 	// If not set, using default Addr instead.
 	AdvertiseAddr string `toml:"advertise-addr" json:"advertise-addr"`
 
-	// Etcd endpoints
-	EtcdAddrs []string `toml:"etcd-addrs" json:"etcd-addrs"`
-
 	// HTTP server listening address.
 	HTTPAddr string `toml:"http-addr" json:"http-addr"`
 
-	// Pprof listening address.
-	PprofAddr string `toml:"pprof-addr" json:"pprof-addr"`
-
 	// RootPath in Etcd as the prefix for all keys. If not set, use default "pd".
+	// Deprecated and will be removed later.
 	RootPath string `toml:"root" json:"root"`
 
 	// LeaderLease time, if leader doesn't update its TTL
@@ -69,12 +69,15 @@ type Config struct {
 
 	// Only test can change it.
 	nextRetryDelay time.Duration
+
+	EtcdCfg *EtcdConfig `toml:"etcd" json:"etcd"`
 }
 
 // NewConfig creates a new config.
 func NewConfig() *Config {
 	return &Config{
 		BalanceCfg: newBalanceConfig(),
+		EtcdCfg:    newEtcdConfig(),
 	}
 }
 
@@ -118,8 +121,8 @@ func (c *Config) adjust() {
 func (c *Config) clone() *Config {
 	cfg := &Config{}
 	*cfg = *c
-	cfg.EtcdAddrs = sliceClone(cfg.EtcdAddrs)
 	cfg.BalanceCfg = cfg.BalanceCfg.clone()
+	cfg.EtcdCfg = cfg.EtcdCfg.clone()
 	return cfg
 }
 
@@ -128,9 +131,13 @@ func (c *Config) setCfg(cfg *Config) {
 	cfg.adjust()
 
 	bc := c.BalanceCfg
+	ec := c.EtcdCfg
 	*c = *cfg
 	c.BalanceCfg = bc
 	*c.BalanceCfg = *cfg.BalanceCfg
+
+	c.EtcdCfg = ec
+	*c.EtcdCfg = *cfg.EtcdCfg
 }
 
 func (c *Config) String() string {
@@ -268,4 +275,160 @@ func (c *BalanceConfig) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("BalanceConfig(%+v)", *c)
+}
+
+// EtcdConfig is for etcd configuration.
+type EtcdConfig struct {
+	Name                string `toml:"name" json:"name"`
+	DataDir             string `toml:"data-dir" json:"data-dir"`
+	WalDir              string `toml:"wal-dir" json:"wal-dir"`
+	ListenPeerURL       string `toml:"listen-peer-url" json:"listen-peer-url"`
+	ListenClientURL     string `toml:"listen-client-url" json:"listen-client-url"`
+	AdvertisePeerURL    string `toml:"advertise-peer-url" json:"advertise-peer-url"`
+	AdvertiseClientURL  string `toml:"advertise-client-url" json:"advertise-client-url"`
+	InitialCluster      string `toml:"initial-cluster" json:"initial-cluster"`
+	InitialClusterState string `toml:"initial-cluster-state" json:"initial-cluster-state"`
+}
+
+const (
+	defaultEtcdName               = "default"
+	defaultEtcdDataDir            = "default.pd"
+	defaultEtcdWalDir             = ""
+	defaultEtcdListenPeerURL      = "http://localhost:2380"
+	defaultEtcdListenClientURL    = "http://localhost:2379"
+	defaultEtcdAdvertisePeerURL   = "http://localhost:2380"
+	defaultEtcdAdvertiseClientURL = "http://localhost:2379"
+	defaultEtcdInitialCluster     = "default=http://localhost:2380"
+)
+
+func newEtcdConfig() *EtcdConfig {
+	return &EtcdConfig{
+		Name:                defaultEtcdName,
+		DataDir:             defaultEtcdDataDir,
+		WalDir:              defaultEtcdWalDir,
+		ListenPeerURL:       defaultEtcdListenPeerURL,
+		ListenClientURL:     defaultEtcdListenClientURL,
+		AdvertisePeerURL:    defaultEtcdAdvertisePeerURL,
+		AdvertiseClientURL:  defaultEtcdAdvertiseClientURL,
+		InitialCluster:      defaultEtcdInitialCluster,
+		InitialClusterState: embed.ClusterStateFlagNew,
+	}
+}
+
+func (c *EtcdConfig) clone() *EtcdConfig {
+	if c == nil {
+		return nil
+	}
+
+	ec := &EtcdConfig{}
+	*ec = *c
+	return ec
+}
+
+// String implements fmt.Stringer interface.
+func (c *EtcdConfig) String() string {
+	if c == nil {
+		return "<nil>"
+	}
+
+	return fmt.Sprintf("EtcdConfig(%+v)", *c)
+}
+
+// generates a configuration for embedded etcd.
+func (c *Config) genEmbedEtcdConfig() (*embed.Config, error) {
+	cfg := embed.NewConfig()
+	cfg.Name = c.EtcdCfg.Name
+	cfg.Dir = c.EtcdCfg.DataDir
+	cfg.WalDir = c.EtcdCfg.WalDir
+	cfg.InitialCluster = c.EtcdCfg.InitialCluster
+	// Use unique cluster id as the etcd cluster token too.
+	cfg.InitialClusterToken = fmt.Sprintf("pd-%d", c.ClusterID)
+	cfg.ClusterState = embed.ClusterStateFlagNew
+	cfg.EnablePprof = true
+
+	u, err := url.Parse(c.EtcdCfg.ListenPeerURL)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	cfg.LPUrls = []url.URL{*u}
+
+	u, err = url.Parse(c.EtcdCfg.ListenClientURL)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	cfg.LCUrls = []url.URL{*u}
+
+	u, err = url.Parse(c.EtcdCfg.AdvertisePeerURL)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	cfg.APUrls = []url.URL{*u}
+
+	u, err = url.Parse(c.EtcdCfg.AdvertiseClientURL)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	cfg.ACUrls = []url.URL{*u}
+
+	return cfg, nil
+}
+
+// Generate a unique port for etcd usage. This is only used for test.
+// Because initializing etcd must assign certain address.
+func freePort() int {
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		panic(err)
+	}
+
+	defer l.Close()
+
+	return l.Addr().(*net.TCPAddr).Port
+}
+
+// NewTestSingleEtcdConfig is only for test to create one etcd configuration.
+// Because pd-client also needs this, so export here.
+func NewTestSingleEtcdConfig() *EtcdConfig {
+	cfg := newEtcdConfig()
+	cfg.DataDir, _ = ioutil.TempDir("/tmp", "test_pd")
+	cfg.Name = "default"
+
+	clientPort := freePort()
+	peerPort := freePort()
+
+	cfg.ListenClientURL = fmt.Sprintf("http://localhost:%d", clientPort)
+	cfg.ListenPeerURL = fmt.Sprintf("http://localhost:%d", peerPort)
+
+	cfg.AdvertiseClientURL = cfg.ListenClientURL
+	cfg.AdvertisePeerURL = cfg.ListenPeerURL
+	cfg.InitialCluster = fmt.Sprintf("default=http://localhost:%d", peerPort)
+
+	return cfg
+}
+
+// NewTestMultiEtcdConfig is only for test to create multiple etcd configurations.
+// Because pd-client also needs this, so export here.
+func NewTestMultiEtcdConfig(count int) []*EtcdConfig {
+	cfgs := make([]*EtcdConfig, count)
+
+	clusters := []string{}
+	for i := 1; i <= count; i++ {
+		cfg := NewTestSingleEtcdConfig()
+		cfg.Name = fmt.Sprintf("etcd%d", i)
+
+		clusters = append(clusters, fmt.Sprintf("%s=%s", cfg.Name, cfg.ListenPeerURL))
+
+		cfgs[i-1] = cfg
+	}
+
+	initialCluster := strings.Join(clusters, ",")
+	for _, cfg := range cfgs {
+		cfg.InitialCluster = initialCluster
+	}
+
+	return cfgs
 }

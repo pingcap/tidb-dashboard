@@ -15,8 +15,6 @@ package main
 
 import (
 	"flag"
-	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"strings"
@@ -32,14 +30,12 @@ var (
 	config                 = flag.String("c", "", "config file")
 	addr                   = flag.String("addr", "127.0.0.1:1234", "server listening address")
 	advertiseAddr          = flag.String("advertise-addr", "", "server advertise listening address [127.0.0.1:1234] for client communication")
-	etcdAddrs              = flag.String("etcd", "127.0.0.1:2379", "Etcd endpoints, separated by comma")
 	httpAddr               = flag.String("http-addr", ":9090", "http server listening address")
-	pprofAddr              = flag.String("pprof", ":6060", "pprof HTTP listening address")
 	rootPath               = flag.String("root", "/pd", "pd root path in etcd")
 	leaderLease            = flag.Int64("lease", 3, "leader lease time (second)")
 	logLevel               = flag.String("L", "debug", "log level: info, debug, warn, error, fatal")
 	tsoSaveInterval        = flag.Int64("tso-save-interval", 2000, "the interval time (ms) to save timestamp")
-	clusterID              = flag.Uint64("cluster-id", 0, "cluster ID")
+	clusterID              = flag.Uint64("cluster-id", 0, "initial cluster ID for the pd cluster")
 	maxPeerCount           = flag.Uint64("max-peer-count", 3, "max peer count for the region")
 	metricAddr             = flag.String("metric-addr", "", "metric address")
 	maxLeaderCount         = flag.Uint64("max-leader-count", 10, "the max leader region count for choosing store in balance")
@@ -53,6 +49,17 @@ var (
 	maxBalanceRetryPerLoop = flag.Uint64("max-balance-retry-per-loop", 10, "the max retry count to balance in a balance schedule")
 	maxBalanceCountPerLoop = flag.Uint64("max-balance-count-per-loop", 3, "the max region count to balance in a balance schedule")
 	maxTransferWaitCount   = flag.Uint64("max-transfer-wait-count", 3, "the max heartbeat count to wait leader transfer to finish")
+
+	// For etcd
+	etcdName                = flag.String("etcd-name", "default", "Etcd: human-readable name for this member")
+	etcdDataDir             = flag.String("etcd-data-dir", "default.pd", "Etcd: path to the data directory")
+	etcdWalDir              = flag.String("etcd-wal-dir", "", "Etcd: path to the dedicated wal directory")
+	etcdListenPeerURL       = flag.String("etcd-listen-peer-url", "http://localhost:2380", "Etcd: URL to listen on for peer traffic")
+	etcdListenClientURL     = flag.String("etcd-listen-client-url", "http://localhost:2379", "Etcd: URL to listen on for client traffic")
+	etcdAdvertisePeerURL    = flag.String("etcd-advertise-peer-url", "http://localhost:2380", "Etcd: peer URL to advertise to the rest of the cluster")
+	etcdAdvertiseClientURL  = flag.String("etcd-advertise-client-url", "http://localhost:2379", "Etcd: client URL to advertise to the public")
+	etcdInitialCluster      = flag.String("etcd-initial-cluster", "default=http://localhost:2380", "Etcd: initial cluster configuration for bootstrapping")
+	etcdInitialClusterState = flag.String("etcd-initial-cluster-state", "new", "Etcd: initial cluster state ('new' or 'existing')")
 )
 
 func setCmdArgs(cfg *server.Config) {
@@ -62,9 +69,7 @@ func setCmdArgs(cfg *server.Config) {
 
 	setStringFlagConfig(&cfg.Addr, "addr", *addr)
 	setStringFlagConfig(&cfg.AdvertiseAddr, "advertise-addr", *advertiseAddr)
-	setStringSliceFlagConfig(&cfg.EtcdAddrs, "etcd", *etcdAddrs)
 	setStringFlagConfig(&cfg.HTTPAddr, "http-addr", *httpAddr)
-	setStringFlagConfig(&cfg.PprofAddr, "pprof", *pprofAddr)
 	setStringFlagConfig(&cfg.RootPath, "root", *rootPath)
 	setIntFlagConfig(&cfg.LeaderLease, "lease", *leaderLease)
 	setStringFlagConfig(&cfg.LogLevel, "L", *logLevel)
@@ -72,6 +77,7 @@ func setCmdArgs(cfg *server.Config) {
 	setUintFlagConfig(&cfg.ClusterID, "cluster-id", *clusterID)
 	setUintFlagConfig(&cfg.MaxPeerCount, "max-peer-count", *maxPeerCount)
 	setStringFlagConfig(&cfg.MetricAddr, "metric-addr", *metricAddr)
+
 	setUintFlagConfig(&cfg.BalanceCfg.MaxLeaderCount, "max-leader-count", *maxLeaderCount)
 	setFloatFlagConfig(&cfg.BalanceCfg.MinCapacityUsedRatio, "min-capacity-used-ratio", *minCapUsedRatio)
 	setFloatFlagConfig(&cfg.BalanceCfg.MaxCapacityUsedRatio, "max-capacity-used-ratio", *maxCapUsedRatio)
@@ -83,6 +89,16 @@ func setCmdArgs(cfg *server.Config) {
 	setUintFlagConfig(&cfg.BalanceCfg.MaxBalanceRetryPerLoop, "max-balance-retry-per-loop", *maxBalanceRetryPerLoop)
 	setUintFlagConfig(&cfg.BalanceCfg.MaxBalanceCountPerLoop, "max-balance-count-per-loop", *maxBalanceCountPerLoop)
 	setUintFlagConfig(&cfg.BalanceCfg.MaxTransferWaitCount, "max-transfer-wait-count", *maxTransferWaitCount)
+
+	setStringFlagConfig(&cfg.EtcdCfg.Name, "etcd-name", *etcdName)
+	setStringFlagConfig(&cfg.EtcdCfg.DataDir, "etcd-data-dir", *etcdDataDir)
+	setStringFlagConfig(&cfg.EtcdCfg.WalDir, "etcd-wal-dir", *etcdWalDir)
+	setStringFlagConfig(&cfg.EtcdCfg.ListenPeerURL, "etcd-listen-peer-url", *etcdListenPeerURL)
+	setStringFlagConfig(&cfg.EtcdCfg.ListenClientURL, "etcd-listen-client-url", *etcdListenClientURL)
+	setStringFlagConfig(&cfg.EtcdCfg.AdvertisePeerURL, "etcd-advertise-peer-url", *etcdAdvertisePeerURL)
+	setStringFlagConfig(&cfg.EtcdCfg.AdvertiseClientURL, "etcd-advertise-client-url", *etcdAdvertiseClientURL)
+	setStringFlagConfig(&cfg.EtcdCfg.InitialCluster, "etcd-initial-cluster", *etcdInitialCluster)
+	setStringFlagConfig(&cfg.EtcdCfg.InitialClusterState, "etcd-initial-cluster-state", *etcdInitialClusterState)
 }
 
 func main() {
@@ -105,10 +121,6 @@ func main() {
 	log.SetHighlighting(false)
 
 	log.Infof("PD config - %v", cfg)
-
-	go func() {
-		http.ListenAndServe(cfg.PprofAddr, nil)
-	}()
 
 	svr, err := server.NewServer(cfg)
 	if err != nil {

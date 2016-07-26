@@ -26,15 +26,7 @@ func TestServer(t *testing.T) {
 }
 
 func newTestServer(c *C, rootPath string) *Server {
-	cfg := &Config{
-		Addr:            "127.0.0.1:0",
-		RootPath:        rootPath,
-		LeaderLease:     1,
-		TsoSaveInterval: 500,
-		// We use cluster 0 for all tests.
-		ClusterID: 0,
-		EtcdCfg:   NewTestSingleEtcdConfig(),
-	}
+	cfg := NewTestSingleConfig()
 
 	svr, err := NewServer(cfg)
 	c.Assert(err, IsNil)
@@ -57,18 +49,11 @@ func (s *testLeaderServerSuite) getRootPath() string {
 func (s *testLeaderServerSuite) SetUpSuite(c *C) {
 	s.svrs = make(map[string]*Server)
 
-	etcdCfgs := NewTestMultiEtcdConfig(3)
+	cfgs := NewTestMultiConfig(3)
 
 	ch := make(chan *Server, 3)
 	for i := 0; i < 3; i++ {
-		cfg := &Config{
-			Addr:            "127.0.0.1:0",
-			RootPath:        s.getRootPath(),
-			LeaderLease:     1,
-			TsoSaveInterval: 500,
-			ClusterID:       0,
-			EtcdCfg:         etcdCfgs[i],
-		}
+		cfg := cfgs[i]
 
 		go func() {
 			svr, err := NewServer(cfg)

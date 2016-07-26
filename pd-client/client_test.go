@@ -79,7 +79,7 @@ func (s *testClientSuite) SetUpSuite(c *C) {
 
 	bootstrapServer(c, s.port)
 
-	s.client, err = NewClient(s.srv.GetEndpoints(), "/pd", clusterID)
+	s.client, err = NewClient(s.srv.GetEndpoints(), clusterID)
 	c.Assert(err, IsNil)
 }
 

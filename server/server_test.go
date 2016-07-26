@@ -25,7 +25,7 @@ func TestServer(t *testing.T) {
 	TestingT(t)
 }
 
-func newTestServer(c *C, rootPath string) *Server {
+func newTestServer(c *C) *Server {
 	cfg := NewTestSingleConfig()
 
 	svr, err := NewServer(cfg)
@@ -40,10 +40,6 @@ type testLeaderServerSuite struct {
 	client     *clientv3.Client
 	svrs       map[string]*Server
 	leaderPath string
-}
-
-func (s *testLeaderServerSuite) getRootPath() string {
-	return "test_leader"
 }
 
 func (s *testLeaderServerSuite) SetUpSuite(c *C) {

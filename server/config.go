@@ -70,10 +70,6 @@ type Config struct {
 	// Host:Port
 	AdvertiseAddr string
 
-	// RootPath in Etcd as the prefix for all keys. If not set, use default "pd".
-	// Deprecated and will be removed later.
-	RootPath string `toml:"root" json:"root"`
-
 	// Only test can change it.
 	nextRetryDelay time.Duration
 }
@@ -85,8 +81,10 @@ func NewConfig() *Config {
 	}
 }
 
+// PdRootPath for all pd servers.
+const PdRootPath = "/pd"
+
 const (
-	defaultRootPath        = "/pd"
 	defaultLeaderLease     = int64(3)
 	defaultTsoSaveInterval = int64(2000)
 	defaultMaxPeerCount    = uint64(3)
@@ -138,7 +136,6 @@ func (c *Config) adjust() {
 	adjustString(&c.InitialCluster, fmt.Sprintf("%s=http://%s:%d", c.Name, c.Host, c.AdvertisePeerPort))
 	adjustString(&c.InitialClusterState, embed.ClusterStateFlagNew)
 
-	adjustString(&c.RootPath, defaultRootPath)
 	adjustUint64(&c.MaxPeerCount, defaultMaxPeerCount)
 
 	if c.LeaderLease <= 0 {

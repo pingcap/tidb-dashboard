@@ -31,12 +31,8 @@ type testClusterCacheSuite struct {
 	testClusterBaseSuite
 }
 
-func (s *testClusterCacheSuite) getRootPath() string {
-	return "test_cluster_cache"
-}
-
 func (s *testClusterCacheSuite) SetUpSuite(c *C) {
-	s.svr = newTestServer(c, s.getRootPath())
+	s.svr = newTestServer(c)
 	s.client = s.svr.client
 
 	go s.svr.Run()

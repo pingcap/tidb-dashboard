@@ -35,12 +35,8 @@ type testTsoSuite struct {
 	svr    *Server
 }
 
-func (s *testTsoSuite) getRootPath() string {
-	return "test_tso"
-}
-
 func (s *testTsoSuite) SetUpSuite(c *C) {
-	s.svr = newTestServer(c, s.getRootPath())
+	s.svr = newTestServer(c)
 	s.client = s.svr.client
 
 	go s.svr.Run()

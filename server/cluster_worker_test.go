@@ -175,16 +175,12 @@ func (s *testClusterWorkerSuite) newMockRaftStore(c *C, metaStore *metapb.Store)
 	return store
 }
 
-func (s *testClusterWorkerSuite) getRootPath() string {
-	return "test_cluster_worker"
-}
-
 func (s *testClusterWorkerSuite) SetUpTest(c *C) {
 	s.clusterID = 0
 
 	s.stores = make(map[uint64]*mockRaftStore)
 
-	s.svr = newTestServer(c, s.getRootPath())
+	s.svr = newTestServer(c)
 	s.svr.cfg.nextRetryDelay = 50 * time.Millisecond
 
 	s.client = s.svr.client

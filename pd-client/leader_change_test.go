@@ -27,23 +27,16 @@ var _ = Suite(&testLeaderChangeSuite{})
 type testLeaderChangeSuite struct{}
 
 func (s *testLeaderChangeSuite) TestLeaderChange(c *C) {
-	etcdCfgs := server.NewTestMultiEtcdConfig(3)
+	cfgs := server.NewTestMultiConfig(3)
 
 	ch := make(chan *server.Server, 3)
-	rootPath := "/pd-leader-change"
+	rootPath := "/pd"
 
 	dirs := make([]string, 0, 3)
 	for i := 0; i < 3; i++ {
-		cfg := &server.Config{
-			Addr:            "127.0.0.1:0",
-			RootPath:        rootPath,
-			LeaderLease:     1,
-			TsoSaveInterval: 500,
-			ClusterID:       0,
-			EtcdCfg:         etcdCfgs[i],
-		}
+		cfg := cfgs[i]
 
-		dirs = append(dirs, cfg.EtcdCfg.DataDir)
+		dirs = append(dirs, cfg.DataDir)
 
 		go func() {
 			svr, err := server.NewServer(cfg)

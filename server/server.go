@@ -25,7 +25,6 @@ import (
 	"github.com/coreos/etcd/embed"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"golang.org/x/net/context"
 )
 
 const (
@@ -231,10 +230,14 @@ func (s *Server) closeAllConnections() {
 	s.conns = make(map[*conn]struct{})
 }
 
-func (s *Server) slowLogTxn(ctx context.Context) clientv3.Txn {
-	txn := s.client.Txn(ctx)
+// txn returns an etcd client transaction wrapper.
+// The wrapper will set a request timeout to the context and log slow transactions.
+func (s *Server) txn() clientv3.Txn {
+	return newSlowLogTxn(s.client)
+}
 
-	return &slowLogTxn{
-		Txn: txn,
-	}
+// leaderTxn returns txn() with a leader comparison to guarantee that
+// the transaction can be executed only if the server is leader.
+func (s *Server) leaderTxn(cs ...clientv3.Cmp) clientv3.Txn {
+	return s.txn().If(append(cs, s.leaderCmp())...)
 }

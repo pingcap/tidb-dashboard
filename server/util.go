@@ -33,7 +33,7 @@ func kvGet(c *clientv3.Client, key string, opts ...clientv3.OpOption) (*clientv3
 	kv := clientv3.NewKV(c)
 
 	start := time.Now()
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	ctx, cancel := context.WithTimeout(c.Ctx(), requestTimeout)
 	resp, err := kv.Get(ctx, key, opts...)
 	cancel()
 
@@ -96,15 +96,47 @@ func uint64ToBytes(v uint64) []byte {
 // slowLogTxn wraps etcd transaction and log slow one.
 type slowLogTxn struct {
 	clientv3.Txn
+	cancel context.CancelFunc
+}
+
+func newSlowLogTxn(client *clientv3.Client) clientv3.Txn {
+	ctx, cancel := context.WithTimeout(client.Ctx(), requestTimeout)
+	return &slowLogTxn{
+		Txn:    client.Txn(ctx),
+		cancel: cancel,
+	}
+}
+
+func (t *slowLogTxn) If(cs ...clientv3.Cmp) clientv3.Txn {
+	return &slowLogTxn{
+		Txn:    t.Txn.If(cs...),
+		cancel: t.cancel,
+	}
+}
+
+func (t *slowLogTxn) Then(ops ...clientv3.Op) clientv3.Txn {
+	return &slowLogTxn{
+		Txn:    t.Txn.Then(ops...),
+		cancel: t.cancel,
+	}
 }
 
 // Commit implements Txn Commit interface.
 func (t *slowLogTxn) Commit() (*clientv3.TxnResponse, error) {
 	start := time.Now()
 	resp, err := t.Txn.Commit()
-	if cost := time.Now().Sub(start); cost > slowRequestTime {
+	t.cancel()
+
+	cost := time.Now().Sub(start)
+	if cost > slowRequestTime {
 		log.Warnf("txn runs too slow, resp: %v, err: %v, cost: %s", resp, err, cost)
 	}
+	label := "success"
+	if err != nil {
+		label = "failed"
+	}
+	txnCounter.WithLabelValues(label).Inc()
+	txnDuration.WithLabelValues(label).Observe(cost.Seconds())
 
 	return resp, errors.Trace(err)
 }
@@ -142,7 +174,7 @@ func endpointStatus(c *clientv3.Client, endpoint string) (*clientv3.StatusRespon
 	m := clientv3.NewMaintenance(c)
 
 	start := time.Now()
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	ctx, cancel := context.WithTimeout(c.Ctx(), requestTimeout)
 	resp, err := m.Status(ctx, endpoint)
 	cancel()
 

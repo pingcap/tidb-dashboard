@@ -44,7 +44,7 @@ var (
 	initialCluster      = flag.String("initial-cluster", "", "initial cluster configuration for bootstrapping (default 'pd=http://127.0.0.1:2380')")
 	initialClusterState = flag.String("initial-cluster-state", "new", "initial cluster state ('new' or 'existing')")
 
-	logLevel = flag.String("L", "debug", "log level: info, debug, warn, error, fatal")
+	logLevel = flag.String("L", "info", "log level: info, debug, warn, error, fatal")
 
 	maxLeaderCount         = flag.Uint64("max-leader-count", 10, "the max leader region count for choosing store in balance")
 	minCapUsedRatio        = flag.Float64("min-capacity-used-ratio", 0.4, "min capacity used ratio for choosing store in balance")

@@ -9,7 +9,6 @@ export HostIP="192.168.199.105"
 # Start pd1
 pd-server --cluster-id=1 \
           --host=${HostIP} \
-          --cluster-id=1 \
           --name=pd1 \
           --port=11234 \
           --http-port=19090 \
@@ -21,7 +20,6 @@ pd-server --cluster-id=1 \
 # Start pd2
 pd-server --cluster-id=1 \
           --host=${HostIP} \
-          --cluster-id=1 \
           --name=pd2 \
           --port=21234 \
           --http-port=29090 \
@@ -32,7 +30,6 @@ pd-server --cluster-id=1 \
 # Start pd3
 pd-server --cluster-id=1 \
           --host=${HostIP} \
-          --cluster-id=1 \
           --name=pd3 \
           --port=31234 \
           --http-port=39090 \

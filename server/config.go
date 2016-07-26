@@ -377,9 +377,13 @@ func freePort() uint64 {
 		panic(err)
 	}
 
-	defer l.Close()
+	port := uint64(l.Addr().(*net.TCPAddr).Port)
+	l.Close()
 
-	return uint64(l.Addr().(*net.TCPAddr).Port)
+	// wait a little to avoid using binding address.
+	time.Sleep(50 * time.Millisecond)
+
+	return port
 }
 
 // NewTestSingleConfig is only for test to create one pd.

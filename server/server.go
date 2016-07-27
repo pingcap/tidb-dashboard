@@ -123,7 +123,7 @@ func NewServer(cfg *Config) (*Server, error) {
 		isLeaderValue: 0,
 		conns:         make(map[*conn]struct{}),
 		closed:        0,
-		rootPath:      path.Join(cfg.RootPath, strconv.FormatUint(cfg.ClusterID, 10)),
+		rootPath:      path.Join(PdRootPath, strconv.FormatUint(cfg.ClusterID, 10)),
 		id:            uint64(etcd.Server.ID()),
 	}
 

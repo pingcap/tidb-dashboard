@@ -40,12 +40,8 @@ type testClusterSuite struct {
 	testClusterBaseSuite
 }
 
-func (s *testClusterSuite) getRootPath() string {
-	return "test_cluster"
-}
-
 func (s *testClusterSuite) SetUpSuite(c *C) {
-	s.svr = newTestServer(c, s.getRootPath())
+	s.svr = newTestServer(c)
 	s.client = s.svr.client
 
 	go s.svr.Run()

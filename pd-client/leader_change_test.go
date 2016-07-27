@@ -30,7 +30,6 @@ func (s *testLeaderChangeSuite) TestLeaderChange(c *C) {
 	cfgs := server.NewTestMultiConfig(3)
 
 	ch := make(chan *server.Server, 3)
-	rootPath := "/pd"
 
 	dirs := make([]string, 0, 3)
 	for i := 0; i < 3; i++ {
@@ -75,14 +74,14 @@ func (s *testLeaderChangeSuite) TestLeaderChange(c *C) {
 
 	defaultWatchLeaderTimeout = 500 * time.Millisecond
 
-	cli, err := NewClient(endpoints, rootPath, 0)
+	cli, err := NewClient(endpoints, 0)
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
 	p1, l1, err := cli.GetTS()
 	c.Assert(err, IsNil)
 
-	leaderPath := getLeaderPath(0, rootPath)
+	leaderPath := getLeaderPath(0)
 
 	etcdClient, err := clientv3.New(clientv3.Config{
 		Endpoints:   endpoints,

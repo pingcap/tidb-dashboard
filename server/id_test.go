@@ -32,12 +32,8 @@ type testAllocIDSuite struct {
 	svr    *Server
 }
 
-func (s *testAllocIDSuite) getRootPath() string {
-	return "test_alloc_id"
-}
-
 func (s *testAllocIDSuite) SetUpSuite(c *C) {
-	s.svr = newTestServer(c, s.getRootPath())
+	s.svr = newTestServer(c)
 	s.client = s.svr.client
 	s.alloc = s.svr.idAlloc
 

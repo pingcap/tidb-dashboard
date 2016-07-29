@@ -1,6 +1,8 @@
 GO=GO15VENDOREXPERIMENT="1" go
 
-all: build
+default: build
+
+all: dev install
 
 dev: build check test
 

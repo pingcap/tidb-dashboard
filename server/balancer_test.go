@@ -104,7 +104,7 @@ func (s *testBalancerSuite) updateStore(c *C, clusterInfo *clusterInfo, storeID 
 }
 
 func (s *testBalancerSuite) addRegionPeer(c *C, clusterInfo *clusterInfo, storeID uint64, region *metapb.Region, leader *metapb.Peer) {
-	db := newDefaultBalancer(region, leader, s.cfg)
+	db := newReplicaBalancer(region, leader, nil, s.cfg)
 	_, bop, err := db.Balance(clusterInfo)
 	c.Assert(err, IsNil)
 
@@ -118,53 +118,6 @@ func (s *testBalancerSuite) addRegionPeer(c *C, clusterInfo *clusterInfo, storeI
 	addRegionPeer(c, region, peer)
 
 	clusterInfo.regions.updateRegion(region)
-}
-
-func (s *testBalancerSuite) TestDefaultBalancer(c *C) {
-	clusterInfo := s.newClusterInfo(c)
-	c.Assert(clusterInfo, NotNil)
-
-	region, _ := clusterInfo.regions.getRegion([]byte("a"))
-	c.Assert(region.GetPeers(), HasLen, 1)
-
-	// The store id will be 1,2,3,4.
-	s.updateStore(c, clusterInfo, 1, 100, 10, 0, 0)
-	s.updateStore(c, clusterInfo, 2, 100, 20, 0, 0)
-	s.updateStore(c, clusterInfo, 3, 100, 30, 0, 0)
-	s.updateStore(c, clusterInfo, 4, 100, 40, 0, 0)
-
-	// Get leader peer.
-	leader := region.GetPeers()[0]
-
-	// Test add peer.
-	s.addRegionPeer(c, clusterInfo, 4, region, leader)
-
-	// Test add another peer.
-	s.addRegionPeer(c, clusterInfo, 3, region, leader)
-
-	// Now peers count equals to max peer count, so there is nothing to do.
-	db := newDefaultBalancer(region, leader, s.cfg)
-	_, bop, err := db.Balance(clusterInfo)
-	c.Assert(err, IsNil)
-	c.Assert(bop, IsNil)
-
-	// Mock add one more peer.
-	id, err := clusterInfo.idAlloc.Alloc()
-	c.Assert(err, IsNil)
-
-	newPeer := s.newPeer(c, uint64(2), id)
-	region.Peers = append(region.Peers, newPeer)
-
-	// Test remove peer.
-	db = newDefaultBalancer(region, leader, s.cfg)
-	_, bop, err = db.Balance(clusterInfo)
-	c.Assert(err, IsNil)
-
-	// Now we cannot remove leader peer, so the result is peer in store 2.
-	op, ok := bop.Ops[0].(*onceOperator).Op.(*changePeerOperator)
-	c.Assert(ok, IsTrue)
-	c.Assert(op.ChangePeer.GetChangeType(), Equals, raftpb.ConfChangeType_RemoveNode)
-	c.Assert(op.ChangePeer.GetPeer().GetStoreId(), Equals, uint64(2))
 }
 
 func (s *testBalancerSuite) TestCapacityBalancer(c *C) {
@@ -354,7 +307,7 @@ func (s *testBalancerSuite) TestDownStore(c *C) {
 	testCfg.adjust()
 	testCfg.MinCapacityUsedRatio = 0.1
 	testCfg.MaxCapacityUsedRatio = 0.9
-	testCfg.MaxStoreDownDuration = 1
+	testCfg.MaxStoreDownDuration.Duration = 1 * time.Second
 	cb := newCapacityBalancer(testCfg)
 
 	// The store id will be 1,2,3,4.
@@ -404,4 +357,133 @@ func (s *testBalancerSuite) TestDownStore(c *C) {
 		c.Assert(err, IsNil)
 		c.Assert(bop, IsNil)
 	}
+}
+
+func (s *testBalancerSuite) TestReplicaBalancer(c *C) {
+	clusterInfo := s.newClusterInfo(c)
+	c.Assert(clusterInfo, NotNil)
+
+	region, _ := clusterInfo.regions.getRegion([]byte("a"))
+	c.Assert(region.GetPeers(), HasLen, 1)
+
+	// The store id will be 1,2,3,4.
+	s.updateStore(c, clusterInfo, 1, 100, 10, 0, 0)
+	s.updateStore(c, clusterInfo, 2, 100, 20, 0, 0)
+	s.updateStore(c, clusterInfo, 3, 100, 30, 0, 0)
+	s.updateStore(c, clusterInfo, 4, 100, 40, 0, 0)
+
+	// Get leader peer.
+	leader := region.GetPeers()[0]
+
+	// Test add peer.
+	s.addRegionPeer(c, clusterInfo, 4, region, leader)
+
+	// Test add another peer.
+	s.addRegionPeer(c, clusterInfo, 3, region, leader)
+
+	// Now peers count equals to max peer count, so there is nothing to do.
+	db := newReplicaBalancer(region, leader, nil, s.cfg)
+	_, bop, err := db.Balance(clusterInfo)
+	c.Assert(err, IsNil)
+	c.Assert(bop, IsNil)
+
+	// Mock add one more peer.
+	id, err := clusterInfo.idAlloc.Alloc()
+	c.Assert(err, IsNil)
+
+	newPeer := s.newPeer(c, uint64(2), id)
+	region.Peers = append(region.Peers, newPeer)
+
+	// Test remove peer.
+	db = newReplicaBalancer(region, leader, nil, s.cfg)
+	_, bop, err = db.Balance(clusterInfo)
+	c.Assert(err, IsNil)
+
+	// Now we cannot remove leader peer, so the result is peer in store 2.
+	op, ok := bop.Ops[0].(*onceOperator).Op.(*changePeerOperator)
+	c.Assert(ok, IsTrue)
+	c.Assert(op.ChangePeer.GetChangeType(), Equals, raftpb.ConfChangeType_RemoveNode)
+	c.Assert(op.ChangePeer.GetPeer().GetStoreId(), Equals, uint64(2))
+}
+
+func (s *testBalancerSuite) TestReplicaBalancerWithDownPeers(c *C) {
+	clusterInfo := s.newClusterInfo(c)
+	c.Assert(clusterInfo, NotNil)
+
+	region, _ := clusterInfo.regions.getRegion([]byte("a"))
+	c.Assert(region.GetPeers(), HasLen, 1)
+
+	// The store id will be 1,2,3,4.
+	s.updateStore(c, clusterInfo, 1, 100, 10, 0, 0)
+	s.updateStore(c, clusterInfo, 2, 100, 20, 0, 0)
+	s.updateStore(c, clusterInfo, 3, 100, 30, 0, 0)
+	s.updateStore(c, clusterInfo, 4, 100, 40, 0, 0)
+
+	// Get leader peer.
+	leader := region.GetPeers()[0]
+
+	// Test add peer.
+	s.addRegionPeer(c, clusterInfo, 4, region, leader)
+
+	// Test add another peer.
+	s.addRegionPeer(c, clusterInfo, 3, region, leader)
+
+	downPeers := []*pdpb.PeerStats{
+		{
+			Peer:        region.GetPeers()[1],
+			DownSeconds: new(uint64),
+		},
+	}
+
+	// DownSeconds < s.cfg.MaxPeerDownDuration, so there is nothing to do.
+	*downPeers[0].DownSeconds = 100
+	rb := newReplicaBalancer(region, leader, downPeers, s.cfg)
+	_, bop, err := rb.Balance(clusterInfo)
+	c.Assert(err, IsNil)
+	c.Assert(bop, IsNil)
+
+	// Make store 4 down.
+	s.cfg.MaxStoreDownDuration.Duration = 1 * time.Second
+	time.Sleep(600 * time.Millisecond)
+	s.updateStore(c, clusterInfo, 1, 100, 10, 0, 0)
+	s.updateStore(c, clusterInfo, 2, 100, 20, 0, 0)
+	s.updateStore(c, clusterInfo, 3, 100, 30, 0, 0)
+	time.Sleep(600 * time.Millisecond)
+
+	// DownSeconds < s.cfg.MaxPeerDownDuration, but store 4 is down, add replica to store 2.
+	rb = newReplicaBalancer(region, leader, downPeers, s.cfg)
+	_, bop, err = rb.Balance(clusterInfo)
+	c.Assert(err, IsNil)
+	c.Assert(bop.Ops, HasLen, 1)
+
+	op, ok := bop.Ops[0].(*onceOperator).Op.(*changePeerOperator)
+	c.Assert(ok, IsTrue)
+	c.Assert(op.ChangePeer.GetChangeType(), Equals, raftpb.ConfChangeType_AddNode)
+	c.Assert(op.ChangePeer.GetPeer().GetStoreId(), Equals, uint64(2))
+
+	// DownSeconds >= s.cfg.MaxPeerDownDuration, add a replica to store 2.
+	*downPeers[0].DownSeconds = 60 * 60
+	rb = newReplicaBalancer(region, leader, downPeers, s.cfg)
+	_, bop, err = rb.Balance(clusterInfo)
+	c.Assert(err, IsNil)
+	c.Assert(bop.Ops, HasLen, 1)
+
+	op, ok = bop.Ops[0].(*onceOperator).Op.(*changePeerOperator)
+	c.Assert(ok, IsTrue)
+	c.Assert(op.ChangePeer.GetChangeType(), Equals, raftpb.ConfChangeType_AddNode)
+	c.Assert(op.ChangePeer.GetPeer().GetStoreId(), Equals, uint64(2))
+
+	// Now we have enough active replicas, we can remove the down peer in store 4.
+	addRegionPeer(c, region, op.ChangePeer.GetPeer())
+	clusterInfo.regions.updateRegion(region)
+
+	rb = newReplicaBalancer(region, leader, downPeers, s.cfg)
+	_, bop, err = rb.Balance(clusterInfo)
+	c.Assert(err, IsNil)
+	c.Assert(bop.Ops, HasLen, 1)
+
+	op, ok = bop.Ops[0].(*onceOperator).Op.(*changePeerOperator)
+	c.Assert(ok, IsTrue)
+	c.Assert(op.ChangePeer.GetChangeType(), Equals, raftpb.ConfChangeType_RemoveNode)
+	c.Assert(op.ChangePeer.GetPeer().GetStoreId(), Equals, uint64(4))
 }

@@ -567,6 +567,10 @@ func (s *storeInfo) usedRatio() float64 {
 	return float64(s.stats.Stats.GetCapacity()-s.stats.Stats.GetAvailable()) / float64(s.stats.Stats.GetCapacity())
 }
 
+func (s *storeInfo) downSeconds() uint64 {
+	return uint64(time.Since(s.stats.LastHeartbeatTS).Seconds())
+}
+
 // clusterInfo is cluster cache info.
 type clusterInfo struct {
 	sync.RWMutex

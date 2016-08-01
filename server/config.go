@@ -42,6 +42,9 @@ type Config struct {
 	InitialCluster      string `toml:"initial-cluster" json:"initial-cluster"`
 	InitialClusterState string `toml:"initial-cluster-state" json:"initial-cluster-state"`
 
+	// Join to an existing pd cluster, a string of endpoints.
+	Join string `toml:"join" json:"join"`
+
 	// LeaderLease time, if leader doesn't update its TTL
 	// in etcd after lease time, etcd will expire the leader key
 	// and other servers can campaign the leader again.
@@ -95,7 +98,7 @@ func NewConfig() *Config {
 	fs.StringVar(&cfg.PeerUrls, "peer-urls", defaultPeerUrls, "url for peer traffic")
 	fs.StringVar(&cfg.AdvertisePeerUrls, "advertise-peer-urls", "", "advertise url for peer traffic (default '${peer-urls}')")
 	fs.StringVar(&cfg.InitialCluster, "initial-cluster", "", "initial cluster configuration for bootstrapping, e,g. pd=http://127.0.0.1:2380")
-	fs.StringVar(&cfg.InitialClusterState, "initial-cluster-state", defualtInitialClusterState, "initial cluster state ('new' or 'existing')")
+	fs.StringVar(&cfg.Join, "join", "", "join to an existing cluster (usage: cluster's '${advertise-client-urls}'")
 
 	fs.StringVar(&cfg.LogLevel, "L", "info", "log level: debug, info, warn, error, fatal")
 
@@ -114,7 +117,7 @@ const (
 	defaultClientUrls          = "http://127.0.0.1:2379"
 	defaultPeerUrls            = "http://127.0.0.1:2380"
 	defaultHTTPAddr            = "0.0.0.0:9090"
-	defualtInitialClusterState = "new"
+	defualtInitialClusterState = embed.ClusterStateFlagNew
 )
 
 func adjustString(v *string, defValue string) {
@@ -176,7 +179,18 @@ func (c *Config) Parse(arguments []string) error {
 	return nil
 }
 
-func (c *Config) adjust() {
+func (c *Config) validate() error {
+	if c.Join != "" && c.InitialCluster != "" {
+		return errors.New("-initial-cluster and -join can not be provided at the same time")
+	}
+	return nil
+}
+
+func (c *Config) adjust() error {
+	if err := c.validate(); err != nil {
+		return errors.Trace(err)
+	}
+
 	adjustString(&c.Name, defaultName)
 	adjustString(&c.DataDir, fmt.Sprintf("default.%s", c.Name))
 
@@ -188,6 +202,15 @@ func (c *Config) adjust() {
 	adjustString(&c.Addr, defaultAddr)
 	adjustString(&c.AdvertiseAddr, c.Addr)
 	adjustString(&c.HTTPAddr, defaultHTTPAddr)
+
+	if c.Join != "" {
+		initialCluster, err := c.prepareJoinCluster()
+		if err != nil {
+			return errors.Trace(err)
+		}
+		c.InitialCluster = initialCluster
+		c.InitialClusterState = embed.ClusterStateFlagExisting
+	}
 
 	if len(c.InitialCluster) == 0 {
 		// The advertise peer urls may be http://127.0.0.1:2380,http://127.0.0.1:2381
@@ -218,6 +241,7 @@ func (c *Config) adjust() {
 	}
 
 	c.BalanceCfg.adjust()
+	return nil
 }
 
 func (c *Config) clone() *Config {
@@ -383,7 +407,7 @@ func (c *Config) genEmbedEtcdConfig() (*embed.Config, error) {
 	cfg.InitialCluster = c.InitialCluster
 	// Use unique cluster id as the etcd cluster token too.
 	cfg.InitialClusterToken = fmt.Sprintf("pd-%d", c.ClusterID)
-	cfg.ClusterState = defualtInitialClusterState
+	cfg.ClusterState = c.InitialClusterState
 	cfg.EnablePprof = true
 
 	var err error

@@ -77,7 +77,10 @@ type Server struct {
 
 // NewServer creates the pd server with given configuration.
 func NewServer(cfg *Config) (*Server, error) {
-	cfg.adjust()
+	if err := cfg.adjust(); err != nil {
+		return nil, errors.Trace(err)
+	}
+
 	log.Infof("PD config - %v", cfg)
 
 	etcdCfg, err := cfg.genEmbedEtcdConfig()

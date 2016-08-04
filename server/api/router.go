@@ -16,11 +16,10 @@ package api
 import (
 	"github.com/gorilla/mux"
 	"github.com/pingcap/pd/server"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/unrolled/render"
 )
 
-func createRouter(svr *server.Server) *mux.Router {
+func createRouter(prefix string, svr *server.Server) *mux.Router {
 	rd := render.New(render.Options{
 		Directory:  "templates",
 		Extensions: []string{".html"},
@@ -28,7 +27,7 @@ func createRouter(svr *server.Server) *mux.Router {
 		Delims:     render.Delims{"[[", "]]"},
 	})
 
-	router := mux.NewRouter()
+	router := mux.NewRouter().PathPrefix(prefix).Subrouter()
 	router.Handle("/api/v1/balancers", newBalancerHandler(svr, rd)).Methods("GET")
 	router.Handle("/api/v1/cluster", newClusterHandler(svr, rd)).Methods("GET")
 
@@ -48,7 +47,6 @@ func createRouter(svr *server.Server) *mux.Router {
 	router.Handle("/api/v1/members", newMemberListHandler(svr, rd)).Methods("GET")
 
 	router.Handle("/", newHomeHandler(rd)).Methods("GET")
-	router.Handle("/metrics", prometheus.Handler()).Methods("GET")
 	router.Handle("/ws", newWSHandler(svr))
 
 	return router

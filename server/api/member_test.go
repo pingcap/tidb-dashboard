@@ -15,6 +15,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -133,4 +134,59 @@ func (s *testMemberAPISuite) TestMemberList(c *C) {
 		c.Assert(err, IsNil)
 		checkListResponse(c, buf, cfgs)
 	}
+}
+
+func (s *testMemberAPISuite) TestMemberDelete(c *C) {
+	cfgs, _, clean := mustNewCluster(c, 3)
+	defer clean()
+
+	target := rand.Intn(len(cfgs))
+	newCfgs := append(cfgs[:target], cfgs[target+1:]...)
+
+	var table = []struct {
+		name    string
+		addr    string
+		checker Checker
+		status  int
+	}{
+		{
+			// delete a nonexistent pd
+			name:    fmt.Sprintf("pd%d", rand.Int63()),
+			addr:    cfgs[rand.Intn(len(cfgs))].ClientUrls,
+			checker: Equals,
+			status:  http.StatusNotFound,
+		},
+		{
+			// delete a pd randomly
+			name:    cfgs[target].Name,
+			addr:    cfgs[rand.Intn(len(cfgs))].ClientUrls,
+			checker: Equals,
+			status:  http.StatusOK,
+		},
+		{
+			// delete it again
+			name:    cfgs[target].Name,
+			addr:    newCfgs[rand.Intn(len(newCfgs))].ClientUrls,
+			checker: Not(Equals),
+			status:  http.StatusOK,
+		},
+	}
+
+	for _, t := range table {
+		parts := []string{t.addr, apiPrefix, "/api/v1/members/", t.name}
+		req, err := http.NewRequest("DELETE", strings.Join(parts, ""), nil)
+		c.Assert(err, IsNil)
+		resp, err := s.hc.Do(req)
+		c.Assert(err, IsNil)
+		defer resp.Body.Close()
+		c.Assert(resp.StatusCode, t.checker, t.status)
+	}
+
+	parts := []string{cfgs[rand.Intn(len(newCfgs))].ClientUrls, apiPrefix, "/api/v1/members"}
+	resp, err := s.hc.Get(strings.Join(parts, ""))
+	c.Assert(err, IsNil)
+	defer resp.Body.Close()
+	buf, err := ioutil.ReadAll(resp.Body)
+	c.Assert(err, IsNil)
+	checkListResponse(c, buf, newCfgs)
 }

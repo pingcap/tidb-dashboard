@@ -15,11 +15,14 @@ package server
 
 import (
 	"encoding/binary"
+	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
+	"github.com/coreos/pkg/capnslog"
 	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
@@ -234,4 +237,56 @@ func rpcConnect(addr string) (net.Conn, error) {
 	}
 
 	return nil, errors.Errorf("connect to %s failed", addr)
+}
+
+type redirectFormatter struct{}
+
+// Format turns capnslog logs to ngaut logs.
+// TODO: remove ngaut log caller stack, "util.go:xxx"
+func (rf *redirectFormatter) Format(pkg string, level capnslog.LogLevel, depth int, entries ...interface{}) {
+	if pkg != "" {
+		pkg = fmt.Sprint(pkg, ": ")
+	}
+
+	logStr := fmt.Sprint(level.Char(), " | ", pkg, entries)
+
+	switch level {
+	case capnslog.CRITICAL:
+		log.Fatalf(logStr)
+	case capnslog.ERROR:
+		log.Errorf(logStr)
+	case capnslog.WARNING:
+		log.Warningf(logStr)
+	case capnslog.NOTICE:
+		log.Infof(logStr)
+	case capnslog.INFO:
+		log.Infof(logStr)
+	case capnslog.DEBUG:
+		log.Debugf(logStr)
+	case capnslog.TRACE:
+		log.Debugf(logStr)
+	}
+}
+
+// Flush only for implementing Formatter.
+func (rf *redirectFormatter) Flush() {}
+
+// SetLogOutput sets output path for all logs.
+func SetLogOutput(path string) error {
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	// PD log.
+	log.SetOutput(f)
+	log.SetRotateByDay()
+
+	// Make sure turns off highlighting.
+	log.SetHighlighting(false)
+
+	// ETCD log.
+	capnslog.SetFormatter(&redirectFormatter{})
+
+	return nil
 }

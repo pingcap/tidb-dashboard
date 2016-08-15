@@ -19,8 +19,9 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
+	"github.com/coreos/etcd/embed"
+	"github.com/coreos/etcd/wal"
 	"github.com/juju/errors"
-	"github.com/ngaut/log"
 	"golang.org/x/net/context"
 )
 
@@ -29,7 +30,7 @@ import (
 const defaultDialTimeout = 30 * time.Second
 
 // TODO: support HTTPS
-func (cfg *Config) genClientV3Config() clientv3.Config {
+func genClientV3Config(cfg *Config) clientv3.Config {
 	endpoints := strings.Split(cfg.Join, ",")
 	return clientv3.Config{
 		Endpoints:   endpoints,
@@ -37,28 +38,119 @@ func (cfg *Config) genClientV3Config() clientv3.Config {
 	}
 }
 
-// prepareJoinCluster send MemberAdd command to pd cluster,
-// returns pd initial cluster configuration.
-func (cfg *Config) prepareJoinCluster() (string, error) {
+func memberAdd(client *clientv3.Client, urls []string) (*clientv3.MemberAddResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultDialTimeout)
 	defer cancel()
 
-	client, err := clientv3.New(cfg.genClientV3Config())
+	return client.MemberAdd(ctx, urls)
+}
+
+func memberList(client *clientv3.Client) (*clientv3.MemberListResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultDialTimeout)
+	defer cancel()
+
+	return client.MemberList(ctx)
+}
+
+// prepareJoinCluster sends MemberAdd command to PD cluster,
+// and returns the initial configuration of the PD cluster.
+//
+// TL;TR: The join functionality is safe. With data, join does nothing, w/o data
+//        and it is not a member of cluster, join does MemberAdd, otherwise
+//        return an error.
+//
+// Etcd automatically re-joins the cluster if there is a data directory. So
+// first it checks if there is a data directory or not. If there is, it returns
+// an empty string (etcd will get the correct configurations from the data
+// directory.)
+//
+// If there is no data directory, there are following cases:
+//
+//  - A new PD joins an existing cluster.
+//      What join does: MemberAdd, MemberList, then generate initial-cluster.
+//
+//  - A new PD joins itself.
+//      What join does: nothing.
+//
+//  - A failed PD re-joins the previous cluster.
+//      What join does: return an error. (etcd reports: raft log corrupted,
+//                      truncated, or lost?)
+//
+//  - A PD starts with join itself and fails, it is restarted with the same
+//    arguments while other peers try to connect to it.
+//      What join does: nothing. (join cannot detect whether it is in a cluster
+//                      or not, however, etcd will handle it safey, if there is
+//                      no data in the cluster the restarted PD will join the
+//                      cluster, otherwise, PD will shutdown as soon as other
+//                      peers connect to it. etcd reports: raft log corrupted,
+//                      truncated, or lost?)
+//
+//  - A deleted PD joins to previous cluster.
+//      What join does: MemberAdd, MemberList, then generate initial-cluster.
+//                      (it is not in the member list and there is no data, so
+//                       we can treat it as a new PD.)
+//
+// If there is a data directory, there are following special cases:
+//
+//  - A failed PD tries to join the previous cluster but it has been deleted
+//    during its downtime.
+//      What join does: return "" (etcd will connect to other peers and find
+//                      that the PD itself has been removed.)
+//
+//  - A deleted PD joins the previous cluster.
+//      What join does: return "" (as etcd will read data directory and find
+//                      that the PD itself has been removed, so an empty string
+//                      is fine.)
+func (cfg *Config) prepareJoinCluster() (string, string, error) {
+	initialCluster := ""
+	// Cases with data directory.
+	if wal.Exist(cfg.DataDir) {
+		return initialCluster, embed.ClusterStateFlagExisting, nil
+	}
+
+	// Below are cases without data directory.
+
+	// - A new PD joins itself.
+	// - A PD starts with join itself and fails, it is restarted with the same
+	//   arguments while other peers try to connect to it.
+	if cfg.Join == cfg.AdvertiseClientUrls {
+		initialCluster = fmt.Sprintf("%s=%s", cfg.Name, cfg.AdvertisePeerUrls)
+		return initialCluster, embed.ClusterStateFlagNew, nil
+	}
+
+	client, err := clientv3.New(genClientV3Config(cfg))
 	if err != nil {
-		return "", errors.Trace(err)
+		return "", "", errors.Trace(err)
 	}
 	defer client.Close()
 
-	addResp, err := client.MemberAdd(ctx, []string{cfg.AdvertisePeerUrls})
+	listResp, err := memberList(client)
 	if err != nil {
-		return "", errors.Trace(err)
+		return "", "", errors.Trace(err)
 	}
 
-	log.Infof("Member %16x added to cluster %16x\n", addResp.Member.ID, addResp.Header.ClusterId)
+	existed := false
+	for _, m := range listResp.Members {
+		if m.Name == cfg.Name {
+			existed = true
+		}
+	}
 
-	listResp, err := client.MemberList(ctx)
+	// - A failed PD re-joins the previous cluster.
+	if existed {
+		return "", "", errors.New("missing data or join a duplicated pd")
+	}
+
+	// - A new PD joins an existing cluster.
+	// - A deleted PD joins to previous cluster.
+	addResp, err := memberAdd(client, []string{cfg.AdvertisePeerUrls})
 	if err != nil {
-		return "", errors.Trace(err)
+		return "", "", errors.Trace(err)
+	}
+
+	listResp, err = memberList(client)
+	if err != nil {
+		return "", "", errors.Trace(err)
 	}
 
 	pds := []string{}
@@ -71,6 +163,7 @@ func (cfg *Config) prepareJoinCluster() (string, error) {
 			pds = append(pds, fmt.Sprintf("%s=%s", n, m))
 		}
 	}
+	initialCluster = strings.Join(pds, ",")
 
-	return strings.Join(pds, ","), nil
+	return initialCluster, embed.ClusterStateFlagExisting, nil
 }

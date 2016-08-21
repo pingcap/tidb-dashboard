@@ -14,6 +14,7 @@
 package server
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -32,6 +33,53 @@ func newTestServer(c *C) *Server {
 	c.Assert(err, IsNil)
 
 	return svr
+}
+
+type cleanupFunc func()
+
+func newMultiTestServers(c *C, count int) ([]*Server, cleanupFunc) {
+	svrs := make([]*Server, 0, count)
+	cfgs := NewTestMultiConfig(count)
+
+	ch := make(chan *Server, count)
+	for i := 0; i < count; i++ {
+		cfg := cfgs[i]
+		go func() {
+			svr, err := NewServer(cfg)
+			c.Assert(err, IsNil)
+			ch <- svr
+		}()
+	}
+
+	for i := 0; i < count; i++ {
+		svr := <-ch
+		go svr.Run()
+		svrs = append(svrs, svr)
+	}
+
+	mustWaitLeader(c, svrs)
+
+	cleanup := func() {
+		for _, svr := range svrs {
+			svr.Close()
+			os.RemoveAll(svr.cfg.DataDir)
+		}
+	}
+
+	return svrs, cleanup
+}
+
+func mustWaitLeader(c *C, svrs []*Server) *Server {
+	for i := 0; i < 100; i++ {
+		for _, s := range svrs {
+			if s.IsLeader() {
+				return s
+			}
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	c.Fatal("no leader")
+	return nil
 }
 
 var _ = Suite(&testLeaderServerSuite{})

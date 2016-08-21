@@ -28,10 +28,8 @@ import (
 	"golang.org/x/net/context"
 )
 
-const checkEtcdLeaderInterval = time.Second
-
-// isLeader returns whether server is leader or not.
-func (s *Server) isLeader() bool {
+// IsLeader returns whether server is leader or not.
+func (s *Server) IsLeader() bool {
 	return atomic.LoadInt64(&s.isLeaderValue) == 1
 }
 
@@ -43,14 +41,9 @@ func (s *Server) enableLeader(b bool) {
 
 	atomic.StoreInt64(&s.isLeaderValue, value)
 
-	if !b {
-		// if we lost leader, we may:
-		//	1, close all client connections
-		//	2, close all running raft clusters
-		s.closeAllConnections()
-
-		s.cluster.stop()
-	}
+	// Reset connections and cluster.
+	s.closeAllConnections()
+	s.cluster.stop()
 }
 
 func (s *Server) getLeaderPath() string {
@@ -87,13 +80,6 @@ func (s *Server) leaderLoop() {
 				s.watchLeader()
 				log.Info("leader changed, try to campaign leader")
 			}
-		}
-
-		if !s.isEtcdLeader() {
-			// we should put pd leader and etcd leader together
-			log.Infof("pd's etcd %s is not leader, leader is %s", s.etcd.Server.ID(), s.etcd.Server.Leader())
-			time.Sleep(checkEtcdLeaderInterval)
-			continue
 		}
 
 		if err = s.campaignLeader(); err != nil {
@@ -138,10 +124,6 @@ func (s *Server) marshalLeader() string {
 	}
 
 	return string(data)
-}
-
-func (s *Server) isEtcdLeader() bool {
-	return s.etcd.Server.ID() == s.etcd.Server.Leader()
 }
 
 func (s *Server) campaignLeader() error {
@@ -200,9 +182,6 @@ func (s *Server) campaignLeader() error {
 	tsTicker := time.NewTicker(time.Duration(updateTimestampStep) * time.Millisecond)
 	defer tsTicker.Stop()
 
-	leaderTicker := time.NewTicker(checkEtcdLeaderInterval)
-	defer leaderTicker.Stop()
-
 	for {
 		select {
 		case _, ok := <-ch:
@@ -213,10 +192,6 @@ func (s *Server) campaignLeader() error {
 		case <-tsTicker.C:
 			if err = s.updateTimestamp(); err != nil {
 				return errors.Trace(err)
-			}
-		case <-leaderTicker.C:
-			if !s.isEtcdLeader() {
-				return errors.New("current etcd member is not leader")
 			}
 		case <-s.client.Ctx().Done():
 			return errors.New("server closed")

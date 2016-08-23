@@ -42,6 +42,8 @@ func main() {
 		log.Fatalf("initalize logger err %s\n", err)
 	}
 
+	server.PrintPDInfo()
+
 	svr, err := server.CreateServer(cfg)
 	if err != nil {
 		log.Errorf("create pd server err %s\n", err)

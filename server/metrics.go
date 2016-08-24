@@ -88,6 +88,15 @@ var (
 			Help:      "Bucketed histogram of processing time (s) of handled txns.",
 			Buckets:   prometheus.ExponentialBuckets(0.0005, 2, 13),
 		}, []string{"result"})
+
+	randRegionDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: "pd",
+			Subsystem: "cache",
+			Name:      "random_region_seconds",
+			Help:      "Bucketed histogram of processing time (s) of random regions.",
+			Buckets:   prometheus.ExponentialBuckets(0.0005, 2, 13),
+		}, []string{"role"})
 )
 
 func init() {
@@ -98,4 +107,5 @@ func init() {
 	prometheus.MustRegister(balancerCounter)
 	prometheus.MustRegister(txnCounter)
 	prometheus.MustRegister(txnDuration)
+	prometheus.MustRegister(randRegionDuration)
 }

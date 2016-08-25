@@ -15,6 +15,7 @@ package server
 
 import (
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -26,16 +27,34 @@ func TestServer(t *testing.T) {
 	TestingT(t)
 }
 
-func newTestServer(c *C) *Server {
+type cleanupFunc func()
+
+func newTestServer(c *C) (*Server, cleanUpFunc) {
 	cfg := NewTestSingleConfig()
 
 	svr, err := NewServer(cfg)
 	c.Assert(err, IsNil)
 
-	return svr
+	cleanup := func() {
+		svr.Close()
+		cleanServer(svr.cfg)
+	}
+
+	return svr, cleanup
 }
 
-type cleanupFunc func()
+var stripUnix = strings.NewReplacer("unix://", "")
+
+func cleanServer(cfg *Config) {
+	// Clean data directory
+	os.RemoveAll(cfg.DataDir)
+
+	// Clean unix sockets
+	os.Remove(stripUnix.Replace(cfg.PeerUrls))
+	os.Remove(stripUnix.Replace(cfg.ClientUrls))
+	os.Remove(stripUnix.Replace(cfg.AdvertisePeerUrls))
+	os.Remove(stripUnix.Replace(cfg.AdvertiseClientUrls))
+}
 
 func newMultiTestServers(c *C, count int) ([]*Server, cleanupFunc) {
 	svrs := make([]*Server, 0, count)
@@ -44,6 +63,7 @@ func newMultiTestServers(c *C, count int) ([]*Server, cleanupFunc) {
 	ch := make(chan *Server, count)
 	for i := 0; i < count; i++ {
 		cfg := cfgs[i]
+
 		go func() {
 			svr, err := NewServer(cfg)
 			c.Assert(err, IsNil)
@@ -62,7 +82,10 @@ func newMultiTestServers(c *C, count int) ([]*Server, cleanupFunc) {
 	cleanup := func() {
 		for _, svr := range svrs {
 			svr.Close()
-			os.RemoveAll(svr.cfg.DataDir)
+		}
+
+		for _, cfg := range cfgs {
+			cleanServer(cfg)
 		}
 	}
 
@@ -116,10 +139,12 @@ func (s *testLeaderServerSuite) SetUpSuite(c *C) {
 }
 
 func (s *testLeaderServerSuite) TearDownSuite(c *C) {
+	s.client.Close()
+
 	for _, svr := range s.svrs {
 		svr.Close()
+		cleanServer(svr.cfg)
 	}
-	s.client.Close()
 }
 
 func (s *testLeaderServerSuite) setUpClient(c *C) {

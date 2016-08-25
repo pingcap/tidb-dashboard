@@ -14,7 +14,6 @@
 package pd
 
 import (
-	"os"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -31,11 +30,8 @@ func (s *testLeaderChangeSuite) TestLeaderChange(c *C) {
 
 	ch := make(chan *server.Server, 3)
 
-	dirs := make([]string, 0, 3)
 	for i := 0; i < 3; i++ {
 		cfg := cfgs[i]
-
-		dirs = append(dirs, cfg.DataDir)
 
 		go func() {
 			svr, err := server.NewServer(cfg)
@@ -43,12 +39,6 @@ func (s *testLeaderChangeSuite) TestLeaderChange(c *C) {
 			ch <- svr
 		}()
 	}
-
-	defer func() {
-		for _, dir := range dirs {
-			os.RemoveAll(dir)
-		}
-	}()
 
 	endpoints := make([]string, 0, 3)
 
@@ -69,6 +59,9 @@ func (s *testLeaderChangeSuite) TestLeaderChange(c *C) {
 	defer func() {
 		for _, svr := range svrs {
 			svr.Close()
+		}
+		for _, cfg := range cfgs {
+			cleanServer(cfg)
 		}
 	}()
 

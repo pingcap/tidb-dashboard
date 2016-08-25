@@ -15,6 +15,7 @@ package pd
 
 import (
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -56,13 +57,29 @@ var (
 	}
 )
 
+var stripUnix = strings.NewReplacer("unix://", "")
+
+func cleanServer(cfg *server.Config) {
+	// Clean data directory
+	os.RemoveAll(cfg.DataDir)
+
+	// Clean unix sockets
+	os.Remove(stripUnix.Replace(cfg.PeerUrls))
+	os.Remove(stripUnix.Replace(cfg.ClientUrls))
+	os.Remove(stripUnix.Replace(cfg.AdvertisePeerUrls))
+	os.Remove(stripUnix.Replace(cfg.AdvertiseClientUrls))
+}
+
+type cleanupFunc func()
+
 type testClientSuite struct {
-	srv    *server.Server
-	client Client
+	srv     *server.Server
+	client  Client
+	cleanup cleanupFunc
 }
 
 func (s *testClientSuite) SetUpSuite(c *C) {
-	s.srv = newServer(c, clusterID)
+	s.srv, s.cleanup = newServer(c, clusterID)
 
 	// wait for srv to become leader
 	time.Sleep(time.Second * 3)
@@ -75,12 +92,12 @@ func (s *testClientSuite) SetUpSuite(c *C) {
 }
 
 func (s *testClientSuite) TearDownSuite(c *C) {
-	s.srv.Close()
 	s.client.Close()
-	os.RemoveAll(s.srv.GetConfig().DataDir)
+
+	s.cleanup()
 }
 
-func newServer(c *C, clusterID uint64) *server.Server {
+func newServer(c *C, clusterID uint64) (*server.Server, cleanupFunc) {
 	cfg := server.NewTestSingleConfig()
 	cfg.ClusterID = clusterID
 
@@ -88,7 +105,14 @@ func newServer(c *C, clusterID uint64) *server.Server {
 	c.Assert(err, IsNil)
 
 	go s.Run()
-	return s
+
+	cleanup := func() {
+		s.Close()
+
+		cleanServer(cfg)
+	}
+
+	return s, cleanup
 }
 
 func bootstrapServer(c *C, addr string) {

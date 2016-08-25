@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -47,17 +48,27 @@ func mustUnixAddrToHTTPAddr(c *C, addr string) string {
 	return u.String()
 }
 
+var stripUnix = strings.NewReplacer("unix://", "")
+
+func cleanServer(cfg *server.Config) {
+	// Clean data directory
+	os.RemoveAll(cfg.DataDir)
+
+	// Clean unix sockets
+	os.Remove(stripUnix.Replace(cfg.PeerUrls))
+	os.Remove(stripUnix.Replace(cfg.ClientUrls))
+	os.Remove(stripUnix.Replace(cfg.AdvertisePeerUrls))
+	os.Remove(stripUnix.Replace(cfg.AdvertiseClientUrls))
+}
+
 type cleanUpFunc func()
 
 func mustNewCluster(c *C, num int) ([]*server.Config, []*server.Server, cleanUpFunc) {
-	dirs := make([]string, 0, num)
 	svrs := make([]*server.Server, 0, num)
 	cfgs := server.NewTestMultiConfig(num)
 
 	ch := make(chan *server.Server, num)
 	for _, cfg := range cfgs {
-		dirs = append(dirs, cfg.DataDir)
-
 		go func(cfg *server.Config) {
 			s, e := server.CreateServer(cfg)
 			c.Assert(e, IsNil)
@@ -82,8 +93,8 @@ func mustNewCluster(c *C, num int) ([]*server.Config, []*server.Server, cleanUpF
 		for _, s := range svrs {
 			s.Close()
 		}
-		for _, dir := range dirs {
-			os.RemoveAll(dir)
+		for _, cfg := range cfgs {
+			cleanServer(cfg)
 		}
 	}
 

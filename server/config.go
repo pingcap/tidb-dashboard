@@ -57,10 +57,8 @@ type Config struct {
 	// Log file.
 	LogFile string `toml:"log-file" json:"log-file"`
 
-	// TsoSaveInterval is the interval time (ms) to save timestamp.
-	// When the leader begins to run, it first loads the saved timestamp from etcd, e.g, T1,
-	// and the leader must guarantee that the next timestamp must be > T1 + 2 * TsoSaveInterval.
-	TsoSaveInterval int64 `toml:"tso-save-interval" json:"tso-save-interval"`
+	// TsoSaveInterval is the interval to save timestamp.
+	TsoSaveInterval duration `toml:"tso-save-interval" json:"tso-save-interval"`
 
 	// ClusterID is the cluster ID communicating with other services.
 	ClusterID uint64 `toml:"cluster-id" json:"cluster-id"`
@@ -102,10 +100,9 @@ func NewConfig() *Config {
 }
 
 const (
-	defaultLeaderLease     = int64(3)
-	defaultTsoSaveInterval = int64(2000)
-	defaultMaxPeerCount    = uint64(3)
-	defaultNextRetryDelay  = time.Second
+	defaultLeaderLease    = int64(3)
+	defaultMaxPeerCount   = uint64(3)
+	defaultNextRetryDelay = time.Second
 
 	defaultName                = "pd"
 	defaultClientUrls          = "http://127.0.0.1:2379"
@@ -217,13 +214,9 @@ func (c *Config) adjust() error {
 
 	adjustUint64(&c.MaxPeerCount, defaultMaxPeerCount)
 
-	if c.LeaderLease <= 0 {
-		c.LeaderLease = defaultLeaderLease
-	}
+	adjustInt64(&c.LeaderLease, defaultLeaderLease)
 
-	if c.TsoSaveInterval <= 0 {
-		c.TsoSaveInterval = defaultTsoSaveInterval
-	}
+	adjustDuration(&c.TsoSaveInterval, time.Duration(defaultLeaderLease)*time.Second)
 
 	if c.nextRetryDelay == 0 {
 		c.nextRetryDelay = defaultNextRetryDelay
@@ -265,6 +258,18 @@ type duration struct {
 
 func (d *duration) Seconds() uint64 {
 	return uint64(d.Duration.Seconds())
+}
+
+func (d *duration) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, d.String())), nil
+}
+
+func (d *duration) UnmarshalJSON(text []byte) error {
+	duration, err := time.ParseDuration(string(text))
+	if err == nil {
+		d.Duration = duration
+	}
+	return errors.Trace(err)
 }
 
 func (d *duration) UnmarshalText(text []byte) error {
@@ -446,7 +451,7 @@ func NewTestSingleConfig() *Config {
 		InitialClusterState: embed.ClusterStateFlagNew,
 
 		LeaderLease:     1,
-		TsoSaveInterval: 500,
+		TsoSaveInterval: duration{Duration: 200 * time.Millisecond},
 	}
 
 	cfg.DataDir, _ = ioutil.TempDir("/tmp", "test_pd")

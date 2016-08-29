@@ -282,6 +282,35 @@ func (s *testClusterSuite) TestGetPutConfig(c *C) {
 	store = s.getStore(c, conn, clusterID, storeID)
 	c.Assert(store.GetAddress(), Equals, storeAddr)
 
+	// Update store again.
+	storeAddr = "127.0.0.1:1"
+	req = &pdpb.Request{
+		Header:  newRequestHeader(clusterID),
+		CmdType: pdpb.CommandType_PutStore,
+		PutStore: &pdpb.PutStoreRequest{
+			Store: s.newStore(c, storeID, storeAddr),
+		},
+	}
+
+	sendRequest(c, conn, 0, req)
+	_, resp = recvResponse(c, conn)
+	c.Assert(resp.PutStore, NotNil)
+
+	// Put store with a duplicated address.
+	storeAddr = "127.0.0.1:1"
+	req = &pdpb.Request{
+		Header:  newRequestHeader(clusterID),
+		CmdType: pdpb.CommandType_PutStore,
+		PutStore: &pdpb.PutStoreRequest{
+			// Allocate a new store Id.
+			Store: s.newStore(c, 0, storeAddr),
+		},
+	}
+
+	sendRequest(c, conn, 0, req)
+	_, resp = recvResponse(c, conn)
+	c.Assert(resp.PutStore, IsNil)
+
 	// Update cluster config.
 	req = &pdpb.Request{
 		Header:  newRequestHeader(clusterID),

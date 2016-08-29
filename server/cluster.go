@@ -374,6 +374,18 @@ func (c *RaftCluster) putStore(store *metapb.Store) error {
 	}
 
 	storePath := makeStoreKey(c.clusterRoot, store.GetId())
+
+	// Fix #287, check duplicated store address first.
+	stores := c.cachedCluster.getStores()
+	for _, s := range stores {
+		if s.store.GetAddress() == store.GetAddress() {
+			if s.store.GetId() == store.GetId() {
+				return nil
+			}
+			return errors.Errorf("duplicated store address: %s, already registered by id: %d", store.GetAddress(), store.GetId())
+		}
+	}
+
 	resp, err := c.s.leaderTxn().Then(clientv3.OpPut(storePath, string(storeValue))).Commit()
 	if err != nil {
 		return errors.Trace(err)

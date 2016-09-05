@@ -7,7 +7,12 @@ default: build
 
 all: dev install
 
-dev: build check test
+dev: build-fe build check test
+
+build-fe:
+	go get github.com/jteeuwen/go-bindata/...
+	go get github.com/elazarl/go-bindata-assetfs/...
+	cd server/api && go-bindata-assetfs -pkg api templates/... && cd -
 
 build:
 	rm -rf vendor && ln -s _vendor/vendor vendor
@@ -27,10 +32,10 @@ test:
 check:
 	go get github.com/golang/lint/golint
 
-	go tool vet . 2>&1 | grep -vE 'vendor|render.Delims' | awk '{print} END{if(NR>0) {exit 1}}'
-	go tool vet --shadow . 2>&1 | grep -vE 'vendor' | awk '{print} END{if(NR>0) {exit 1}}'
-	golint ./... 2>&1 | grep -vE 'vendor' | awk '{print} END{if(NR>0) {exit 1}}'
-	gofmt -s -l . 2>&1 | grep -vE 'vendor' | awk '{print} END{if(NR>0) {exit 1}}'
+	go tool vet . 2>&1 | grep -vE 'vendor|render.Delims|bindata_assetfs' | awk '{print} END{if(NR>0) {exit 1}}'
+	go tool vet --shadow . 2>&1 | grep -vE 'vendor|bindata_assetfs' | awk '{print} END{if(NR>0) {exit 1}}'
+	golint ./... 2>&1 | grep -vE 'vendor|bindata_assetfs' | awk '{print} END{if(NR>0) {exit 1}}'
+	gofmt -s -l . 2>&1 | grep -vE 'vendor|bindata_assetfs' | awk '{print} END{if(NR>0) {exit 1}}'
 
 update:
 	which glide >/dev/null || curl https://glide.sh/get | sh

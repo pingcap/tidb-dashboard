@@ -68,8 +68,9 @@ type Config struct {
 
 	BalanceCfg BalanceConfig `toml:"balance" json:"balance"`
 
-	// Only test can change it.
-	nextRetryDelay time.Duration
+	// Only test can change them.
+	nextRetryDelay             time.Duration
+	disableStrictReconfigCheck bool
 
 	configFile string
 }
@@ -405,6 +406,7 @@ func (c *Config) genEmbedEtcdConfig() (*embed.Config, error) {
 	cfg.InitialClusterToken = fmt.Sprintf("pd-%d", c.ClusterID)
 	cfg.ClusterState = c.InitialClusterState
 	cfg.EnablePprof = true
+	cfg.StrictReconfigCheck = !c.disableStrictReconfigCheck
 
 	var err error
 
@@ -458,6 +460,7 @@ func NewTestSingleConfig() *Config {
 	cfg.AdvertisePeerUrls = cfg.PeerUrls
 	cfg.DataDir, _ = ioutil.TempDir("/tmp", "test_pd")
 	cfg.InitialCluster = fmt.Sprintf("pd=%s", cfg.PeerUrls)
+	cfg.disableStrictReconfigCheck = true
 
 	return cfg
 }

@@ -44,38 +44,42 @@ func newTestMultiJoinConfig(count int) []*Config {
 	return cfgs
 }
 
-func waitMembers(svr *Server, c int) error {
+func waitMembers(svrs []*Server, c int) error {
 	// maxRetryTime * waitInterval = 5s
 	maxRetryCount := 10
 	waitInterval := 500 * time.Millisecond
+
 	ctx, cancel := context.WithTimeout(context.Background(), defaultDialTimeout)
 	defer cancel()
 
-	client := svr.GetClient()
-	for ; maxRetryCount != 0; maxRetryCount-- {
-		listResp, err := client.MemberList(ctx)
-		if err != nil {
-			continue
-		}
-
-		count := 0
-		for _, memb := range listResp.Members {
-			if len(memb.Name) == 0 {
-				// unstarted, see:
-				// https://github.com/coreos/etcd/blob/master/etcdctl/ctlv3/command/printer.go#L60
-				// https://coreos.com/etcd/docs/latest/runtime-configuration.html#add-a-new-member
+Outloop:
+	for _, svr := range svrs {
+		client := svr.GetClient()
+		for retryCount := maxRetryCount; retryCount != 0; retryCount-- {
+			time.Sleep(waitInterval)
+			listResp, err := client.MemberList(ctx)
+			if err != nil {
 				continue
 			}
-			count++
-		}
 
-		if count >= c {
-			return nil
-		}
+			count := 0
+			for _, memb := range listResp.Members {
+				if len(memb.Name) == 0 {
+					// unstarted, see:
+					// https://github.com/coreos/etcd/blob/master/etcdctl/ctlv3/command/printer.go#L60
+					// https://coreos.com/etcd/docs/latest/runtime-configuration.html#add-a-new-member
+					continue
+				}
+				count++
+			}
 
-		time.Sleep(waitInterval)
+			if count >= c {
+				continue Outloop
+			}
+		}
+		return errors.New("waitMembers Timeout")
 	}
-	return errors.New("waitMembers Timeout")
+	return nil
 }
 
 // Notice: cfg has changed.
@@ -134,7 +138,7 @@ func mustNewJoinCluster(c *C, num int) ([]*Config, []*Server, cleanUpFunc) {
 		svr, err := startPdWith(cfg)
 		c.Assert(err, IsNil)
 		svrs = append(svrs, svr)
-		waitMembers(svrs[0], i+1)
+		waitMembers(svrs, i+1)
 	}
 
 	// Clean up.
@@ -200,7 +204,7 @@ func (s *testJoinServerSuite) TestNewPDJoinsExistingCluster(c *C) {
 	_, svrs, clean := mustNewJoinCluster(c, 3)
 	defer clean()
 
-	err := waitMembers(svrs[0], 3)
+	err := waitMembers(svrs, 3)
 	c.Assert(err, IsNil)
 }
 

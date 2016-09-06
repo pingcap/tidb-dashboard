@@ -7,7 +7,7 @@ default: build
 
 all: dev install
 
-dev: build-fe build check test
+dev: build check test
 
 build-fe:
 	go get github.com/jteeuwen/go-bindata/...

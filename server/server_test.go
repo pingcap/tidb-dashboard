@@ -183,9 +183,21 @@ func (s *testLeaderServerSuite) TestLeader(c *C) {
 	svr.Close()
 	delete(s.svrs, leader1.GetAddr())
 
+	// Create a client without the leader1's endpoints.
+	endpoints := make([]string, 0, 2)
+	for _, svr := range s.svrs {
+		endpoints = append(endpoints, svr.GetEndpoints()...)
+	}
+	client, err := clientv3.New(clientv3.Config{
+		Endpoints:   endpoints,
+		DialTimeout: 3 * time.Second,
+	})
+	c.Assert(err, IsNil)
+	defer client.Close()
+
 	// wait leader changes
 	for i := 0; i < 50; i++ {
-		leader, _ := getLeader(s.client, s.leaderPath)
+		leader, _ := getLeader(client, s.leaderPath)
 		if leader != nil && leader.GetAddr() != leader1.GetAddr() {
 			break
 		}
@@ -193,6 +205,6 @@ func (s *testLeaderServerSuite) TestLeader(c *C) {
 		time.Sleep(500 * time.Millisecond)
 	}
 
-	leader2 := mustGetLeader(c, s.client, s.leaderPath)
+	leader2 := mustGetLeader(c, client, s.leaderPath)
 	c.Assert(leader1.GetAddr(), Not(Equals), leader2.GetAddr())
 }

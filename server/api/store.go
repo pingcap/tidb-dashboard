@@ -86,12 +86,19 @@ func (h *storeHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	storeIDStr := vars["id"]
 	storeID, err := strconv.ParseUint(storeIDStr, 10, 64)
 	if err != nil {
-		h.rd.JSON(w, http.StatusInternalServerError, err)
+		h.rd.JSON(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	if err := cluster.RemoveStore(storeID); err != nil {
-		h.rd.JSON(w, http.StatusInternalServerError, err)
+	_, force := r.URL.Query()["force"]
+	if force {
+		err = cluster.BuryStore(storeID, force)
+	} else {
+		err = cluster.RemoveStore(storeID)
+	}
+
+	if err != nil {
+		h.rd.JSON(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 

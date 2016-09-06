@@ -43,9 +43,9 @@ update:
 	rm -r vendor && mv _vendor/vendor vendor || true
 	rm -rf _vendor
 ifdef PKG
-	glide --verbose get --strip-vendor --skip-test ${PKG}
+	glide get --strip-vendor --skip-test ${PKG}
 else
-	glide --verbose update --strip-vendor --skip-test
+	glide update --strip-vendor --skip-test
 endif
 	@echo "removing test files"
 	glide vc --only-code --no-tests

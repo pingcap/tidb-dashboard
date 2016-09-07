@@ -15,21 +15,22 @@ package api
 
 import (
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net"
-	"net/http"
 
 	"github.com/juju/errors"
 )
 
-func fromBody(r *http.Request, data interface{}) error {
-	body, err := ioutil.ReadAll(r.Body)
+func readJSON(r io.ReadCloser, data interface{}) error {
+	defer r.Close()
+
+	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return errors.Trace(err)
 	}
-	defer r.Body.Close()
 
-	err = json.Unmarshal(body, data)
+	err = json.Unmarshal(b, data)
 	if err != nil {
 		return errors.Trace(err)
 	}

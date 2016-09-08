@@ -23,6 +23,7 @@ import (
 	"github.com/pingcap/kvproto/pkg/msgpb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/kvproto/pkg/util"
+	"github.com/pingcap/pd/pkg/metrics"
 )
 
 const (
@@ -80,11 +81,7 @@ func (c *conn) run() {
 
 		start := time.Now()
 		request := msg.GetPdReq()
-		requestCmdName := request.GetCmdType().String()
-		label, ok := cmds[requestCmdName]
-		if !ok {
-			label = convertName(requestCmdName)
-		}
+		label := metrics.GetCmdLabel(request)
 
 		var response *pdpb.Response
 
@@ -100,12 +97,15 @@ func (c *conn) run() {
 				log.Errorf("handle request %s err %v", request, errors.ErrorStack(err))
 				response = newError(err)
 
-				cmdFailedCounter.WithLabelValues(label).Inc()
-				cmdFailedDuration.WithLabelValues(label).Observe(time.Since(start).Seconds())
 			}
+		}
 
+		if err == nil {
 			cmdCounter.WithLabelValues(label).Inc()
 			cmdDuration.WithLabelValues(label).Observe(time.Since(start).Seconds())
+		} else {
+			cmdFailedCounter.WithLabelValues(label).Inc()
+			cmdFailedDuration.WithLabelValues(label).Observe(time.Since(start).Seconds())
 		}
 
 		if response == nil {
@@ -131,6 +131,8 @@ func (c *conn) run() {
 			log.Errorf("flush response message err %v", err)
 			return
 		}
+
+		cmdCompletedDuration.WithLabelValues(label).Observe(time.Since(start).Seconds())
 	}
 }
 

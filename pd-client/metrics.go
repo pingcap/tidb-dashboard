@@ -11,14 +11,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package pd
 
 import "github.com/prometheus/client_golang/prometheus"
 
 var (
 	cmdCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Namespace: "pd",
+			Namespace: "pd_client",
 			Subsystem: "cmd",
 			Name:      "cmds_total",
 			Help:      "Counter of cmds.",
@@ -26,7 +26,7 @@ var (
 
 	cmdFailedCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Namespace: "pd",
+			Namespace: "pd_client",
 			Subsystem: "cmd",
 			Name:      "cmds_failed_total",
 			Help:      "Counter of failed cmds.",
@@ -34,7 +34,7 @@ var (
 
 	cmdDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Namespace: "pd",
+			Namespace: "pd_client",
 			Subsystem: "cmd",
 			Name:      "handle_cmds_duration_seconds",
 			Help:      "Bucketed histogram of processing time (s) of handled success cmds.",
@@ -43,55 +43,12 @@ var (
 
 	cmdFailedDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Namespace: "pd",
+			Namespace: "pd_client",
 			Subsystem: "cmd",
 			Name:      "handle_failed_cmds_duration_seconds",
 			Help:      "Bucketed histogram of processing time (s) of failed handled cmds.",
 			Buckets:   prometheus.ExponentialBuckets(0.0005, 2, 13),
 		}, []string{"type"})
-
-	cmdCompletedDuration = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: "pd",
-			Subsystem: "cmd",
-			Name:      "handle_completed_cmds_duration_seconds",
-			Help:      "Bucketed histogram of processing time (s) of completed cmds.",
-			Buckets:   prometheus.ExponentialBuckets(0.0005, 2, 13),
-		}, []string{"type"})
-
-	balancerCounter = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: "pd",
-			Subsystem: "balancer",
-			Name:      "balancers_count",
-			Help:      "Counter of balancers.",
-		}, []string{"result"})
-
-	txnCounter = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: "pd",
-			Subsystem: "txn",
-			Name:      "txns_count",
-			Help:      "Counter of txns.",
-		}, []string{"result"})
-
-	txnDuration = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: "pd",
-			Subsystem: "txn",
-			Name:      "handle_txns_duration_seconds",
-			Help:      "Bucketed histogram of processing time (s) of handled txns.",
-			Buckets:   prometheus.ExponentialBuckets(0.0005, 2, 13),
-		}, []string{"result"})
-
-	randRegionDuration = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: "pd",
-			Subsystem: "cache",
-			Name:      "random_region_seconds",
-			Help:      "Bucketed histogram of processing time (s) of random regions.",
-			Buckets:   prometheus.ExponentialBuckets(0.0005, 2, 13),
-		}, []string{"role"})
 )
 
 func init() {
@@ -99,9 +56,4 @@ func init() {
 	prometheus.MustRegister(cmdFailedCounter)
 	prometheus.MustRegister(cmdDuration)
 	prometheus.MustRegister(cmdFailedDuration)
-	prometheus.MustRegister(cmdCompletedDuration)
-	prometheus.MustRegister(balancerCounter)
-	prometheus.MustRegister(txnCounter)
-	prometheus.MustRegister(txnDuration)
-	prometheus.MustRegister(randRegionDuration)
 }

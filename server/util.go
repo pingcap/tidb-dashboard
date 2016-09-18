@@ -29,6 +29,7 @@ import (
 	"github.com/pingcap/kvproto/pkg/msgpb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/kvproto/pkg/util"
+	"github.com/pingcap/pd/pkg/metrics"
 	"golang.org/x/net/context"
 )
 
@@ -49,6 +50,22 @@ func PrintPDInfo() {
 	log.Infof("Version:")
 	log.Infof("Git Commit Hash: %s", PDGitHash)
 	log.Infof("UTC Build Time:  %s", PDBuildTS)
+}
+
+const zeroDuration = time.Duration(0)
+
+// PushMetric pushs metircs in background.
+func PushMetric(cfg *Config) {
+	metircCfg := cfg.MetricCfg
+	if metircCfg.PushInterval.Duration == zeroDuration || len(metircCfg.PushAddress) == 0 {
+		log.Info("disable Prometheus push client")
+		return
+	}
+
+	log.Info("start Prometheus push client")
+
+	interval := metircCfg.PushInterval.Duration
+	go metrics.PrometheusPushClient(cfg.Name, metircCfg.PushAddress, interval)
 }
 
 func kvGet(c *clientv3.Client, key string, opts ...clientv3.OpOption) (*clientv3.GetResponse, error) {

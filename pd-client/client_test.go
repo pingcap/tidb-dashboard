@@ -21,9 +21,8 @@ import (
 
 	. "github.com/pingcap/check"
 	"github.com/pingcap/kvproto/pkg/metapb"
-	"github.com/pingcap/kvproto/pkg/msgpb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
-	"github.com/pingcap/kvproto/pkg/util"
+	"github.com/pingcap/pd/pkg/testutil"
 	"github.com/pingcap/pd/server"
 	"github.com/twinj/uuid"
 )
@@ -81,7 +80,7 @@ type testClientSuite struct {
 func (s *testClientSuite) SetUpSuite(c *C) {
 	s.srv, s.cleanup = newServer(c, clusterID)
 
-	mustWaitLeader(c, []*server.Server{s.srv})
+	mustWaitLeader(c, map[string]*server.Server{s.srv.GetAddr(): s.srv})
 	bootstrapServer(c, s.srv.GetAddr())
 
 	var err error
@@ -113,7 +112,7 @@ func newServer(c *C, clusterID uint64) (*server.Server, cleanupFunc) {
 	return s, cleanup
 }
 
-func mustWaitLeader(c *C, svrs []*server.Server) *server.Server {
+func mustWaitLeader(c *C, svrs map[string]*server.Server) *server.Server {
 	for i := 0; i < 500; i++ {
 		for _, s := range svrs {
 			if s.IsLeader() {
@@ -138,18 +137,7 @@ func bootstrapServer(c *C, addr string) {
 			Region: region,
 		},
 	}
-	msg := &msgpb.Message{
-		MsgType: msgpb.MessageType_PdReq,
-		PdReq:   req,
-	}
-
-	conn, err := rpcConnect(addr)
-	c.Assert(err, IsNil)
-	err = util.WriteMessage(conn, 0, msg)
-	c.Assert(err, IsNil)
-
-	_, err = util.ReadMessage(conn, msg)
-	c.Assert(err, IsNil)
+	testutil.MustRPCRequest(c, addr, req)
 }
 
 func heartbeatRegion(c *C, addr string) {
@@ -164,18 +152,7 @@ func heartbeatRegion(c *C, addr string) {
 			Leader: peer,
 		},
 	}
-	msg := &msgpb.Message{
-		MsgType: msgpb.MessageType_PdReq,
-		PdReq:   req,
-	}
-
-	conn, err := rpcConnect(addr)
-	c.Assert(err, IsNil)
-	err = util.WriteMessage(conn, 0, msg)
-	c.Assert(err, IsNil)
-
-	_, err = util.ReadMessage(conn, msg)
-	c.Assert(err, IsNil)
+	testutil.MustRPCRequest(c, addr, req)
 }
 
 func (s *testClientSuite) TestTSO(c *C) {

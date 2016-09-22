@@ -19,6 +19,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	. "github.com/pingcap/check"
 	"github.com/pingcap/pd/server"
+	"github.com/pingcap/pd/server/api"
 )
 
 var _ = Suite(&testLeaderChangeSuite{})
@@ -42,7 +43,9 @@ func (s *testLeaderChangeSuite) TestLeaderChange(c *C) {
 		cfg := cfgs[i]
 
 		go func() {
-			svr, err := server.NewServer(cfg)
+			svr, err := server.CreateServer(cfg)
+			c.Assert(err, IsNil)
+			err = svr.StartEtcd(api.NewHandler(svr))
 			c.Assert(err, IsNil)
 			ch <- svr
 		}()
@@ -54,12 +57,13 @@ func (s *testLeaderChangeSuite) TestLeaderChange(c *C) {
 		svrs[svr.GetAddr()] = svr
 	}
 
+	endpoints := make([]string, 0, 3)
 	for _, svr := range svrs {
 		go svr.Run()
+		endpoints = append(endpoints, svr.GetEndpoints()...)
 	}
 
-	// wait etcds start ok.
-	time.Sleep(5 * time.Second)
+	mustWaitLeader(c, svrs)
 
 	defer func() {
 		for _, svr := range svrs {
@@ -70,40 +74,32 @@ func (s *testLeaderChangeSuite) TestLeaderChange(c *C) {
 		}
 	}()
 
-	defaultWatchLeaderTimeout = 500 * time.Millisecond
-
-	etcdClient := mustGetEtcdClient(c, svrs)
-	cli, err := NewClient(etcdClient.Endpoints(), 0)
+	cli, err := NewClient(endpoints, 0)
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
 	p1, l1, err := cli.GetTS()
 	c.Assert(err, IsNil)
 
-	leaderPath := getLeaderPath(0)
-
-	leaderAddr, _, err := getLeader(etcdClient, leaderPath)
+	leader, err := getLeader(endpoints)
 	c.Assert(err, IsNil)
-	svrs[leaderAddr].Close()
-	delete(svrs, leaderAddr)
+	mustConnectLeader(c, endpoints, leader.GetAddr())
 
-	etcdClient = mustGetEtcdClient(c, svrs)
+	svrs[leader.GetAddr()].Close()
+	delete(svrs, leader.GetAddr())
 
 	// wait leader changes
 	changed := false
 	for i := 0; i < 20; i++ {
-		leaderAddr1, _, _ := getLeader(etcdClient, leaderPath)
-		if len(leaderAddr1) != 0 && leaderAddr1 != leaderAddr {
+		newLeader, _ := getLeader(endpoints)
+		if newLeader != nil && newLeader.GetAddr() != leader.GetAddr() {
+			mustConnectLeader(c, endpoints, newLeader.GetAddr())
 			changed = true
 			break
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
 	c.Assert(changed, IsTrue)
-
-	cli, err = NewClient(etcdClient.Endpoints(), 0)
-	c.Assert(err, IsNil)
-	defer cli.Close()
 
 	for i := 0; i < 20; i++ {
 		p2, l2, err := cli.GetTS()
@@ -114,4 +110,39 @@ func (s *testLeaderChangeSuite) TestLeaderChange(c *C) {
 		time.Sleep(500 * time.Millisecond)
 	}
 	c.Error("failed getTS from new leader after 10 seconds")
+}
+
+func mustConnectLeader(c *C, urls []string, leaderAddr string) {
+	connCh := make(chan *conn)
+	go func() {
+		conn := mustNewConn(urls, nil)
+		connCh <- conn
+	}()
+
+	var conn *conn
+	select {
+	case conn = <-connCh:
+		addr := conn.RemoteAddr()
+		c.Assert(addr.Network()+"://"+addr.String(), Equals, leaderAddr)
+	case <-time.After(time.Second * 10):
+		c.Fatal("failed to connect to pd")
+	}
+	defer conn.Close()
+
+	conn.wg.Add(1)
+	go conn.connectLeader(urls, time.Second)
+
+	select {
+	case leaderConn := <-conn.ConnChan:
+		addr := leaderConn.RemoteAddr()
+		c.Assert(addr.Network()+"://"+addr.String(), Equals, leaderAddr)
+	case <-time.After(time.Second * 10):
+		c.Fatal("failed to connect to leader")
+	}
+
+	// Create another goroutine and return to close the connection.
+	// Make sure it will not block forever.
+	conn.wg.Add(1)
+	go conn.connectLeader(urls, time.Second)
+	time.Sleep(time.Second * 3)
 }

@@ -59,14 +59,6 @@ var (
 			Buckets:   prometheus.ExponentialBuckets(0.0005, 2, 13),
 		}, []string{"type"})
 
-	balancerCounter = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: "pd",
-			Subsystem: "balancer",
-			Name:      "balancers_count",
-			Help:      "Counter of balancers.",
-		}, []string{"result"})
-
 	txnCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: "pd",
@@ -84,6 +76,22 @@ var (
 			Buckets:   prometheus.ExponentialBuckets(0.0005, 2, 13),
 		}, []string{"result"})
 
+	balancerCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: "pd",
+			Subsystem: "balancer",
+			Name:      "balancers_count",
+			Help:      "Counter of balancers.",
+		}, []string{"type"})
+
+	balancerGauge = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: "pd",
+			Subsystem: "balancer",
+			Name:      "number_of_operators",
+			Help:      "Current number of operators in the balancer.",
+		}, []string{"type"})
+
 	randRegionDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: "pd",
@@ -92,6 +100,14 @@ var (
 			Help:      "Bucketed histogram of processing time (s) of random regions.",
 			Buckets:   prometheus.ExponentialBuckets(0.0005, 2, 13),
 		}, []string{"role"})
+
+	clusterStatusGauge = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: "pd",
+			Subsystem: "cluster",
+			Name:      "status",
+			Help:      "Status of the cluster.",
+		}, []string{"type"})
 )
 
 func init() {
@@ -100,8 +116,10 @@ func init() {
 	prometheus.MustRegister(cmdDuration)
 	prometheus.MustRegister(cmdFailedDuration)
 	prometheus.MustRegister(cmdCompletedDuration)
-	prometheus.MustRegister(balancerCounter)
 	prometheus.MustRegister(txnCounter)
 	prometheus.MustRegister(txnDuration)
+	prometheus.MustRegister(balancerCounter)
+	prometheus.MustRegister(balancerGauge)
 	prometheus.MustRegister(randRegionDuration)
+	prometheus.MustRegister(clusterStatusGauge)
 }

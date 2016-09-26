@@ -121,6 +121,8 @@ func (bw *balancerWorker) addBalanceOperator(regionID uint64, op *balanceOperato
 
 	// TODO: should we check allowBalance again here?
 
+	collectBalancerCounterMetrics(op)
+
 	op.Start = time.Now()
 	bw.balanceOperators[regionID] = op
 	bw.historyOperators.add(regionID, op)
@@ -202,6 +204,8 @@ func (bw *balancerWorker) allowBalance() bool {
 }
 
 func (bw *balancerWorker) doBalance() error {
+	collectBalancerGaugeMetrics(bw.getBalanceOperators())
+
 	balanceCount := uint64(0)
 	for i := uint64(0); i < bw.cfg.MaxBalanceRetryPerLoop; i++ {
 		if balanceCount >= bw.cfg.MaxBalanceCountPerLoop {
@@ -212,8 +216,6 @@ func (bw *balancerWorker) doBalance() error {
 			return nil
 		}
 
-		balancerCounter.WithLabelValues("total").Inc()
-
 		scores := make([]*score, 0, len(bw.balancers))
 		bops := make([]*balanceOperator, 0, len(bw.balancers))
 
@@ -221,7 +223,6 @@ func (bw *balancerWorker) doBalance() error {
 		for _, balancer := range bw.balancers {
 			score, balanceOperator, err := balancer.Balance(bw.cluster)
 			if err != nil {
-				balancerCounter.WithLabelValues("failed").Inc()
 				return errors.Trace(err)
 			}
 			if balanceOperator == nil {
@@ -235,7 +236,6 @@ func (bw *balancerWorker) doBalance() error {
 		// Calculate the priority of candidates score.
 		idx, score := priorityScore(bw.cfg, scores)
 		if score == nil {
-			balancerCounter.WithLabelValues("none").Inc()
 			continue
 		}
 
@@ -243,7 +243,6 @@ func (bw *balancerWorker) doBalance() error {
 		regionID := bop.getRegionID()
 		if bw.addBalanceOperator(regionID, bop) {
 			bw.addRegionCache(regionID)
-			balancerCounter.WithLabelValues("successed").Inc()
 			balanceCount++
 		}
 	}
@@ -274,4 +273,51 @@ func (bw *balancerWorker) storeScores(store *storeInfo) []int {
 	}
 
 	return scores
+}
+
+func collectOperatorMetrics(bop *balanceOperator) map[string]uint64 {
+	metrics := make(map[string]uint64)
+	prefix := ""
+	switch bop.Type {
+	case adminOP:
+		prefix = "admin_"
+	case replicaOP:
+		prefix = "replica_"
+	case balanceOP:
+		prefix = "balance_"
+	}
+	for _, op := range bop.Ops {
+		if _, ok := op.(*onceOperator); ok {
+			op = op.(*onceOperator).Op
+		}
+		switch o := op.(type) {
+		case *changePeerOperator:
+			metrics[prefix+o.Name]++
+		case *transferLeaderOperator:
+			metrics[prefix+o.Name]++
+		}
+	}
+	return metrics
+}
+
+func collectBalancerCounterMetrics(bop *balanceOperator) {
+	metrics := collectOperatorMetrics(bop)
+	for label, value := range metrics {
+		balancerCounter.WithLabelValues(label).Add(float64(value))
+	}
+}
+
+func collectBalancerGaugeMetrics(ops map[uint64]Operator) {
+	metrics := make(map[string]uint64)
+	for _, op := range ops {
+		if bop, ok := op.(*balanceOperator); ok {
+			values := collectOperatorMetrics(bop)
+			for label, value := range values {
+				metrics[label] += value
+			}
+		}
+	}
+	for label, value := range metrics {
+		balancerGauge.WithLabelValues(label).Set(float64(value))
+	}
 }

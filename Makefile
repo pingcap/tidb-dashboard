@@ -45,6 +45,15 @@ check:
 	@echo "gofmt"
 	@ gofmt -s -l . 2>&1 | $(GOCHECKER)
 
+travis_coverage:
+ifeq ("$(TRAVIS_COVERAGE)", "1")
+	rm -rf vendor && ln -s _vendor/vendor vendor
+	$(HOME)/gopath/bin/goveralls -service=travis-ci
+	rm -rf vendor
+else
+	@echo "coverage only runs in travis."
+endif
+
 update:
 	which glide >/dev/null || curl https://glide.sh/get | sh
 	which glide-vc || go get -v -u github.com/sgotti/glide-vc

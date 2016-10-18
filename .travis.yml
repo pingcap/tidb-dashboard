@@ -2,6 +2,18 @@ language: go
 
 go:
   - 1.6
-  - 1.7
 
-script: make check && make test
+script:
+  - make dev
+
+matrix:
+  include:
+  - go: 1.7
+    install:
+      - go get github.com/mattn/goveralls
+    env:
+      - TRAVIS_COVERAGE=1
+    script:
+      - make dev
+    after_success:
+      - make travis_coverage

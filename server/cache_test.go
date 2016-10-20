@@ -41,7 +41,7 @@ func (s *testClusterCacheSuite) TearDownSuite(c *C) {
 }
 
 func (s *testClusterCacheSuite) TestCache(c *C) {
-	leaderPd := mustGetLeader(c, s.svr)
+	leaderPd := mustGetLeader(c, s.client, s.svr.getLeaderPath())
 
 	conn, err := rpcConnect(leaderPd.GetAddr())
 	c.Assert(err, IsNil)

@@ -45,7 +45,10 @@ type Server struct {
 
 	rootPath string
 
-	lessor atomic.Value
+	isLeaderValue int64
+	// leader value saved in etcd leader key.
+	// Every write will use this to check leader validation.
+	leaderValue string
 
 	wg sync.WaitGroup
 
@@ -90,10 +93,11 @@ func CreateServer(cfg *Config) (*Server, error) {
 	log.Infof("PD config - %v", cfg)
 
 	s := &Server{
-		cfg:      cfg,
-		conns:    make(map[*conn]struct{}),
-		closed:   1,
-		rootPath: path.Join(pdRootPath, strconv.FormatUint(cfg.ClusterID, 10)),
+		cfg:           cfg,
+		isLeaderValue: 0,
+		conns:         make(map[*conn]struct{}),
+		closed:        1,
+		rootPath:      path.Join(pdRootPath, strconv.FormatUint(cfg.ClusterID, 10)),
 	}
 
 	s.idAlloc = &idAllocator{s: s}
@@ -160,7 +164,7 @@ func (s *Server) Close() {
 
 	log.Info("closing server")
 
-	s.resignLeader()
+	s.enableLeader(false)
 
 	if s.client != nil {
 		s.client.Close()
@@ -175,24 +179,23 @@ func (s *Server) Close() {
 	log.Info("close server")
 }
 
-// IsClosed checks whether server is closed or not.
-func (s *Server) IsClosed() bool {
+// isClosed checks whether server is closed or not.
+func (s *Server) isClosed() bool {
 	return atomic.LoadInt64(&s.closed) == 1
 }
 
 // Run runs the pd server.
 func (s *Server) Run() {
+	// We use "127.0.0.1:0" for test and will set correct listening
+	// address before run, so we set leader value here.
+	s.leaderValue = s.marshalLeader()
+
 	s.wg.Add(1)
 	s.leaderLoop()
 }
 
 // ServeHTTP hijack the HTTP connection and switch to RPC.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if s.IsClosed() {
-		log.Errorf("server is closed: conn %v", w)
-		return
-	}
-
 	hj, ok := w.(http.Hijacker)
 	if !ok {
 		log.Errorf("server doesn't support hijacking: conn %v", w)
@@ -264,4 +267,16 @@ func (s *Server) closeAllConnections() {
 	}
 
 	s.conns = make(map[*conn]struct{})
+}
+
+// txn returns an etcd client transaction wrapper.
+// The wrapper will set a request timeout to the context and log slow transactions.
+func (s *Server) txn() clientv3.Txn {
+	return newSlowLogTxn(s.client)
+}
+
+// leaderTxn returns txn() with a leader comparison to guarantee that
+// the transaction can be executed only if the server is leader.
+func (s *Server) leaderTxn(cs ...clientv3.Cmp) clientv3.Txn {
+	return s.txn().If(append(cs, s.leaderCmp())...)
 }

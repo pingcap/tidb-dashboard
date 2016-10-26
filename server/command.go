@@ -389,3 +389,22 @@ func (c *conn) handleReportSplit(req *pdpb.Request) (*pdpb.Response, error) {
 		ReportSplit: split,
 	}, nil
 }
+
+func (c *conn) handleGetPDMembers(req *pdpb.Request) (*pdpb.Response, error) {
+	request := req.GetGetPdMembers()
+	if request == nil {
+		return nil, errors.Errorf("invalid get members command, but %v", req)
+	}
+
+	client := c.s.GetClient()
+	members, err := GetPDMembers(client)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	return &pdpb.Response{
+		GetPdMembers: &pdpb.GetPDMembersResponse{
+			Members: members,
+		},
+	}, nil
+}

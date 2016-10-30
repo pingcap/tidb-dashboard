@@ -28,6 +28,12 @@ import (
 func main() {
 	cfg := server.NewConfig()
 	err := cfg.Parse(os.Args[1:])
+
+	if cfg.Version {
+		server.PrintPDInfo()
+		os.Exit(0)
+	}
+
 	switch errors.Cause(err) {
 	case nil:
 	case flag.ErrHelp:
@@ -42,7 +48,7 @@ func main() {
 		log.Fatalf("initalize logger err %s\n", err)
 	}
 
-	server.PrintPDInfo()
+	server.LogPDInfo()
 
 	server.PushMetric(cfg)
 

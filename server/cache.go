@@ -32,6 +32,48 @@ var (
 	}
 )
 
+type storesInfo struct {
+	stores map[uint64]*storeInfo
+}
+
+func newStoresInfo() *storesInfo {
+	return &storesInfo{
+		stores: make(map[uint64]*storeInfo),
+	}
+}
+
+func (s *storesInfo) getStore(storeID uint64) *storeInfo {
+	store, ok := s.stores[storeID]
+	if !ok {
+		return nil
+	}
+	return store.clone()
+}
+
+func (s *storesInfo) setStore(store *storeInfo) {
+	s.stores[store.GetId()] = store
+}
+
+func (s *storesInfo) getStores() []*storeInfo {
+	stores := make([]*storeInfo, 0, len(s.stores))
+	for _, store := range s.stores {
+		stores = append(stores, store.clone())
+	}
+	return stores
+}
+
+func (s *storesInfo) getMetaStores() []*metapb.Store {
+	stores := make([]*metapb.Store, 0, len(s.stores))
+	for _, store := range s.stores {
+		stores = append(stores, proto.Clone(store.Store).(*metapb.Store))
+	}
+	return stores
+}
+
+func (s *storesInfo) getStoreCount() int {
+	return len(s.stores)
+}
+
 func containPeer(region *metapb.Region, peer *metapb.Peer) bool {
 	for _, p := range region.GetPeers() {
 		if p.GetId() == peer.GetId() {
@@ -344,14 +386,14 @@ func (r *regionsInfo) getStoreRegionCount(storeID uint64) uint64 {
 	return r.storeRegionCount[storeID]
 }
 
-func (r *regionsInfo) leaderRegionCount(storeID uint64) int {
+func (r *regionsInfo) getStoreLeaderCount(storeID uint64) int {
 	r.RLock()
 	defer r.RUnlock()
 
 	return len(r.leaders.storeRegions[storeID])
 }
 
-func (r *regionsInfo) regionCount() int {
+func (r *regionsInfo) getRegionCount() int {
 	r.RLock()
 	defer r.RUnlock()
 
@@ -433,7 +475,7 @@ type clusterInfo struct {
 	sync.RWMutex
 
 	meta    *metapb.Cluster
-	stores  map[uint64]*storeInfo
+	stores  *storesInfo
 	regions *regionsInfo
 
 	idAlloc IDAllocator
@@ -441,7 +483,7 @@ type clusterInfo struct {
 
 func newClusterInfo(idAlloc IDAllocator) *clusterInfo {
 	return &clusterInfo{
-		stores:  make(map[uint64]*storeInfo),
+		stores:  newStoresInfo(),
 		regions: newRegionsInfo(),
 		idAlloc: idAlloc,
 	}
@@ -462,43 +504,31 @@ func (c *clusterInfo) setMeta(meta *metapb.Cluster) {
 func (c *clusterInfo) getStore(storeID uint64) *storeInfo {
 	c.RLock()
 	defer c.RUnlock()
-
-	store, ok := c.stores[storeID]
-	if !ok {
-		return nil
-	}
-
-	return store.clone()
+	return c.stores.getStore(storeID)
 }
 
 func (c *clusterInfo) setStore(store *storeInfo) {
 	c.Lock()
 	defer c.Unlock()
-	c.stores[store.GetId()] = store
+	c.stores.setStore(store.clone())
 }
 
 func (c *clusterInfo) getStores() []*storeInfo {
 	c.RLock()
 	defer c.RUnlock()
-
-	stores := make([]*storeInfo, 0, len(c.stores))
-	for _, store := range c.stores {
-		stores = append(stores, store.clone())
-	}
-
-	return stores
+	return c.stores.getStores()
 }
 
 func (c *clusterInfo) getMetaStores() []*metapb.Store {
 	c.RLock()
 	defer c.RUnlock()
+	return c.stores.getMetaStores()
+}
 
-	stores := make([]*metapb.Store, 0, len(c.stores))
-	for _, store := range c.stores {
-		stores = append(stores, proto.Clone(store.Store).(*metapb.Store))
-	}
-
-	return stores
+func (c *clusterInfo) getStoreCount() int {
+	c.RLock()
+	defer c.RUnlock()
+	return c.stores.getStoreCount()
 }
 
 func (c *clusterInfo) getRegion(regionID uint64) *regionInfo {
@@ -522,6 +552,10 @@ func (c *clusterInfo) updateRegion(region *regionInfo) {
 	c.regions.updateRegion(region.Region)
 }
 
+func (c *clusterInfo) getRegionCount() int {
+	return c.regions.getRegionCount()
+}
+
 func (c *clusterInfo) randLeaderRegion(storeID uint64) *regionInfo {
 	region := c.regions.randLeaderRegion(storeID)
 	if region == nil {
@@ -542,17 +576,23 @@ func (c *clusterInfo) randFollowerRegion(storeID uint64) *regionInfo {
 	return newRegionInfo(region, leader)
 }
 
+// handleStoreHeartbeat updates the store status.
 func (c *clusterInfo) handleStoreHeartbeat(stats *pdpb.StoreStats) error {
 	c.Lock()
 	defer c.Unlock()
 
 	storeID := stats.GetStoreId()
-	store, ok := c.stores[storeID]
-	if !ok {
+	store := c.stores.getStore(storeID)
+	if store == nil {
 		return errors.Trace(errStoreNotFound(storeID))
 	}
 
-	store.stats.update(stats, c.regions.regionCount(), c.regions.leaderRegionCount(storeID))
+	store.stats.StoreStats = stats
+	store.stats.LastHeartbeatTS = time.Now()
+	store.stats.TotalRegionCount = c.regions.getRegionCount()
+	store.stats.LeaderRegionCount = c.regions.getStoreLeaderCount(storeID)
+
+	c.stores.setStore(store)
 	return nil
 }
 

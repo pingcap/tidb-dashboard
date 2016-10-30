@@ -23,6 +23,109 @@ import (
 	"github.com/pingcap/kvproto/pkg/pdpb"
 )
 
+var _ = Suite(&testStoresInfoSuite{})
+
+type testStoresInfoSuite struct{}
+
+// Create n stores (0..n).
+func newTestStores(n uint64) []*storeInfo {
+	stores := make([]*storeInfo, 0, n)
+	for i := uint64(0); i < n; i++ {
+		store := &metapb.Store{
+			Id: i,
+		}
+		stores = append(stores, newStoreInfo(store))
+	}
+	return stores
+}
+
+func (s *testStoresInfoSuite) Test(c *C) {
+	n := uint64(10)
+	cache := newStoresInfo()
+	stores := newTestStores(n)
+
+	for i := uint64(0); i < n; i++ {
+		c.Assert(cache.getStore(i), IsNil)
+		cache.setStore(stores[i])
+		c.Assert(cache.getStore(i), DeepEquals, stores[i])
+		c.Assert(cache.getStoreCount(), Equals, int(i+1))
+	}
+
+	for _, store := range cache.getStores() {
+		c.Assert(store, DeepEquals, stores[store.GetId()])
+	}
+	for _, store := range cache.getMetaStores() {
+		c.Assert(store, DeepEquals, stores[store.GetId()].Store)
+	}
+
+	c.Assert(cache.getStoreCount(), Equals, int(n))
+}
+
+// Create n regions (0..n) of n stores (0..n).
+// Each region contains np peers, the first peer is the leader.
+func newTestRegions(n, np uint64) []*regionInfo {
+	regions := make([]*regionInfo, 0, n)
+	for i := uint64(0); i < n; i++ {
+		peers := make([]*metapb.Peer, 0, np)
+		for j := uint64(0); j < np; j++ {
+			peer := &metapb.Peer{
+				Id: i*np + j,
+			}
+			peer.StoreId = (i + j) % n
+			peers = append(peers, peer)
+		}
+		region := &metapb.Region{
+			Id:       i,
+			Peers:    peers,
+			StartKey: []byte{byte(i)},
+			EndKey:   []byte{byte(i + 1)},
+		}
+		regions = append(regions, newRegionInfo(region, peers[0]))
+	}
+	return regions
+}
+
+var _ = Suite(&testClusterInfoSuite{})
+
+type testClusterInfoSuite struct{}
+
+func (s *testClusterInfoSuite) TestStoreHeartbeat(c *C) {
+	n, np := uint64(3), uint64(3)
+	cache := newClusterInfo(newMockIDAllocator())
+	stores := newTestStores(n)
+	regions := newTestRegions(n, np)
+
+	for _, region := range regions {
+		cache.addRegion(region)
+	}
+	c.Assert(cache.getRegionCount(), Equals, int(n))
+
+	for i, store := range stores {
+		storeStats := &pdpb.StoreStats{StoreId: store.GetId()}
+		c.Assert(cache.handleStoreHeartbeat(storeStats), NotNil)
+
+		cache.setStore(store)
+		c.Assert(cache.getStoreCount(), Equals, int(i+1))
+
+		stats := store.stats
+		startTS := stats.StartTS
+		c.Assert(stats.StartTS.IsZero(), IsFalse)
+		c.Assert(stats.LastHeartbeatTS.IsZero(), IsTrue)
+		c.Assert(stats.TotalRegionCount, Equals, 0)
+		c.Assert(stats.LeaderRegionCount, Equals, 0)
+
+		c.Assert(cache.handleStoreHeartbeat(storeStats), IsNil)
+
+		stats = cache.getStore(store.GetId()).stats
+		c.Assert(stats.StartTS, Equals, startTS)
+		c.Assert(stats.LastHeartbeatTS.IsZero(), IsFalse)
+		c.Assert(stats.TotalRegionCount, Equals, int(n))
+		c.Assert(stats.LeaderRegionCount, Equals, 1)
+	}
+
+	c.Assert(cache.getStoreCount(), Equals, int(n))
+}
+
 var _ = Suite(&testClusterCacheSuite{})
 
 type testClusterCacheSuite struct {
@@ -170,7 +273,7 @@ func (s *testClusterCacheSuite) TestCache(c *C) {
 	c.Assert(region.GetPeers(), HasLen, 2)
 	c.Assert(cacheRegion, DeepEquals, region)
 
-	c.Assert(cluster.cachedCluster.stores, HasLen, 2)
+	c.Assert(cluster.cachedCluster.getStoreCount(), Equals, 2)
 	c.Assert(cacheRegions.regions, HasLen, 1)
 	c.Assert(cacheRegions.leaders.storeRegions, Not(HasKey), store1.GetId())
 	c.Assert(cacheRegions.leaders.storeRegions, HasKey, store2.GetId())

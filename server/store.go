@@ -99,13 +99,6 @@ func (s *StoreStatus) clone() *StoreStatus {
 	}
 }
 
-func (s *StoreStatus) update(stats *pdpb.StoreStats, totalRegionCount, leaderRegionCount int) {
-	s.StoreStats = stats
-	s.LastHeartbeatTS = time.Now()
-	s.TotalRegionCount = totalRegionCount
-	s.LeaderRegionCount = leaderRegionCount
-}
-
 // GetUptime returns the uptime of the store.
 func (s *StoreStatus) GetUptime() time.Duration {
 	uptime := s.LastHeartbeatTS.Sub(s.StartTS)

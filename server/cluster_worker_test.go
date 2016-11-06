@@ -340,10 +340,10 @@ func mustGetRegion(c *C, cluster *RaftCluster, key []byte, expect *metapb.Region
 
 func checkSearchRegions(c *C, cluster *RaftCluster, keys ...[]byte) {
 	cacheRegions := cluster.cachedCluster.regions
-	c.Assert(cacheRegions.searchRegions.length(), Equals, len(keys))
+	c.Assert(cacheRegions.tree.length(), Equals, len(keys))
 
 	for _, key := range keys {
-		getItem := cacheRegions.searchRegions.search(key)
+		getItem := cacheRegions.tree.search(key)
 		c.Assert(getItem, NotNil)
 	}
 }

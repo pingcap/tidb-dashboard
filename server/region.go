@@ -15,7 +15,6 @@ package server
 
 import (
 	"bytes"
-	"log"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/google/btree"
@@ -128,43 +127,59 @@ func (t *regionTree) length() int {
 	return t.tree.Len()
 }
 
-func (t *regionTree) insert(region *metapb.Region) {
-	item := &regionItem{
-		region: region,
-	}
-
-	oldItem := t.tree.ReplaceOrInsert(item)
-	if oldItem != nil {
-		log.Panicf("insert existed region: %v", region)
-	}
-}
-
+// update updates the tree with the region.
+// It finds and deletes all the overlapped regions first, and then
+// insert the region.
 func (t *regionTree) update(region *metapb.Region) {
-	item := &regionItem{
-		region: region,
+	item := &regionItem{region: region}
+
+	result := t.find(region)
+	if result == nil {
+		result = item
 	}
 
-	oldItem := t.tree.ReplaceOrInsert(item)
-	if oldItem == nil {
-		log.Panicf("update non exist region: %v", region)
+	var overlaps []*regionItem
+	t.tree.DescendLessOrEqual(result, func(i btree.Item) bool {
+		over := i.(*regionItem)
+		if len(region.EndKey) > 0 && bytes.Compare(region.EndKey, over.region.StartKey) <= 0 {
+			return false
+		}
+		overlaps = append(overlaps, over)
+		return true
+	})
+
+	for _, item := range overlaps {
+		t.tree.Delete(item)
 	}
+
+	t.tree.ReplaceOrInsert(item)
 }
 
+// remove removes a region if the region is in the tree.
+// It will do nothing if it cannot find the region or the found region
+// is not the same with the region.
 func (t *regionTree) remove(region *metapb.Region) {
-	item := &regionItem{
-		region: region,
+	result := t.find(region)
+	if result == nil || result.region.GetId() != region.GetId() {
+		return
 	}
 
-	oldItem := t.tree.Delete(item)
-	if oldItem == nil {
-		log.Panicf("remove non exist region: %v", region)
-	}
+	t.tree.Delete(result)
 }
 
+// search returns a region that contains the key.
 func (t *regionTree) search(regionKey []byte) *metapb.Region {
-	item := &regionItem{
-		region: &metapb.Region{StartKey: regionKey},
+	region := &metapb.Region{StartKey: regionKey}
+	result := t.find(region)
+	if result == nil {
+		return nil
 	}
+	return result.region
+}
+
+// This is a helper function to find an item.
+func (t *regionTree) find(region *metapb.Region) *regionItem {
+	item := &regionItem{region: region}
 
 	var result *regionItem
 	t.tree.AscendGreaterOrEqual(item, func(i btree.Item) bool {
@@ -172,9 +187,9 @@ func (t *regionTree) search(regionKey []byte) *metapb.Region {
 		return false
 	})
 
-	if result == nil || !result.Contains(regionKey) {
+	if result == nil || !result.Contains(region.StartKey) {
 		return nil
 	}
 
-	return result.region
+	return result
 }

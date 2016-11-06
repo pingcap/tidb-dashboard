@@ -184,7 +184,7 @@ func (c *conn) handleRegionHeartbeat(req *pdpb.Request) (*pdpb.Response, error) 
 		return nil, errors.Errorf("invalid request leader, %v", request)
 	}
 
-	resp, err := cluster.cachedCluster.handleRegionHeartbeat(region)
+	updated, err := cluster.cachedCluster.handleRegionHeartbeat(region)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -194,28 +194,15 @@ func (c *conn) handleRegionHeartbeat(req *pdpb.Request) (*pdpb.Response, error) 
 		return nil, errors.Trace(err)
 	}
 
-	var ops []clientv3.Op
-	if resp.putRegion != nil {
-		regionValue, err := resp.putRegion.Marshal()
+	if updated {
+		regionValue, err := region.Marshal()
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-		regionPath := makeRegionKey(cluster.clusterRoot, resp.putRegion.GetId())
-		ops = append(ops, clientv3.OpPut(regionPath, string(regionValue)))
-	}
+		regionPath := makeRegionKey(cluster.clusterRoot, region.GetId())
 
-	if resp.removeRegion != nil && resp.removeRegion.GetId() != resp.putRegion.GetId() {
-		// Well, we meet overlap and remove and then put the same region id,
-		// so here we ignore the remove operation here.
-		// The heartbeat will guarantee that if RemoveRegion exists, PutRegion can't
-		// be nil, if not, we will panic.
-		regionPath := makeRegionKey(cluster.clusterRoot, resp.removeRegion.GetId())
-		ops = append(ops, clientv3.OpDelete(regionPath))
-	}
-
-	// TODO: we can update in etcd asynchronously later.
-	if len(ops) > 0 {
-		resp, err := c.s.leaderTxn().Then(ops...).Commit()
+		op := clientv3.OpPut(regionPath, string(regionValue))
+		resp, err := c.s.leaderTxn().Then(op).Commit()
 		if err != nil {
 			return nil, errors.Trace(err)
 		}

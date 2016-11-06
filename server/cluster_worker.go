@@ -16,6 +16,7 @@ package server
 import (
 	"bytes"
 
+	"github.com/gogo/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
 	"github.com/pingcap/kvproto/pkg/metapb"
@@ -118,7 +119,7 @@ func (c *RaftCluster) handleReportSplit(request *pdpb.ReportSplitRequest) (*pdpb
 	}
 
 	// Build origin region by using left and right.
-	originRegion := cloneRegion(left)
+	originRegion := proto.Clone(left).(*metapb.Region)
 	originRegion.RegionEpoch = nil
 	originRegion.EndKey = right.GetEndKey()
 

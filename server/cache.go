@@ -242,6 +242,34 @@ func newClusterInfo(id IDAllocator) *clusterInfo {
 	}
 }
 
+// Return nil if cluster is not bootstrapped.
+func loadClusterInfo(id IDAllocator, kv *kv) (*clusterInfo, error) {
+	c := newClusterInfo(id)
+
+	c.meta = &metapb.Cluster{}
+	ok, err := kv.loadMeta(c.meta)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	if !ok {
+		return nil, nil
+	}
+
+	start := time.Now()
+	if err := kv.loadStores(c.stores, kvRangeLimit); err != nil {
+		return nil, errors.Trace(err)
+	}
+	log.Infof("load %v stores cost %v", c.getStoreCount(), time.Since(start))
+
+	start = time.Now()
+	if err := kv.loadRegions(c.regions, kvRangeLimit); err != nil {
+		return nil, errors.Trace(err)
+	}
+	log.Infof("load %v regions cost %v", c.getRegionCount(), time.Since(start))
+
+	return c, nil
+}
+
 func (c *clusterInfo) allocID() (uint64, error) {
 	return c.id.Alloc()
 }

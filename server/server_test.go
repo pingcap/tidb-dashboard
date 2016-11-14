@@ -48,6 +48,13 @@ func newTestServer(c *C) (*Server, cleanUpFunc) {
 	return svr, cleanup
 }
 
+func mustRunTestServer(c *C) (*Server, cleanUpFunc) {
+	server, cleanup := newTestServer(c)
+	go server.Run()
+	mustWaitLeader(c, []*Server{server})
+	return server, cleanup
+}
+
 var stripUnix = strings.NewReplacer("unix://", "")
 
 func cleanServer(cfg *Config) {

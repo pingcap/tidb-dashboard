@@ -15,7 +15,6 @@ package server
 
 import (
 	"fmt"
-	"math"
 	"path"
 	"strings"
 	"sync"
@@ -72,7 +71,7 @@ func newRaftCluster(s *Server, clusterID uint64) *RaftCluster {
 	}
 }
 
-func (c *RaftCluster) start(meta metapb.Cluster) error {
+func (c *RaftCluster) start() error {
 	c.Lock()
 	defer c.Unlock()
 
@@ -81,19 +80,14 @@ func (c *RaftCluster) start(meta metapb.Cluster) error {
 		return nil
 	}
 
-	c.cachedCluster = newClusterInfo(c.s.idAlloc)
-	c.cachedCluster.setMeta(&meta)
-
-	// Cache all stores when start the cluster. We don't have
-	// many stores, so it is OK to cache them all.
-	// And we should use these cache for later ChangePeer too.
-	if err := c.cacheAllStores(); err != nil {
+	cluster, err := loadClusterInfo(c.s.idAlloc, c.s.kv)
+	if err != nil {
 		return errors.Trace(err)
 	}
-
-	if err := c.cacheAllRegions(); err != nil {
-		return errors.Trace(err)
+	if cluster == nil {
+		return nil
 	}
+	c.cachedCluster = cluster
 
 	c.balancerWorker = newBalancerWorker(c.cachedCluster, &c.s.cfg.BalanceCfg)
 	c.balancerWorker.run()
@@ -158,24 +152,7 @@ func (s *Server) createRaftCluster() error {
 		return nil
 	}
 
-	value, err := getValue(s.client, s.getClusterRootPath())
-	if err != nil {
-		return errors.Trace(err)
-	}
-	if value == nil {
-		return nil
-	}
-
-	clusterMeta := metapb.Cluster{}
-	if err = clusterMeta.Unmarshal(value); err != nil {
-		return errors.Trace(err)
-	}
-
-	if err = s.cluster.start(clusterMeta); err != nil {
-		return errors.Trace(err)
-	}
-
-	return nil
+	return s.cluster.start()
 }
 
 func makeStoreKey(clusterRootPath string, storeID uint64) string {
@@ -281,67 +258,13 @@ func (s *Server) bootstrapCluster(req *pdpb.BootstrapRequest) (*pdpb.Response, e
 
 	log.Infof("bootstrap cluster %d ok", clusterID)
 
-	if err = s.cluster.start(clusterMeta); err != nil {
+	if err := s.cluster.start(); err != nil {
 		return nil, errors.Trace(err)
 	}
 
 	return &pdpb.Response{
 		Bootstrap: &pdpb.BootstrapResponse{},
 	}, nil
-}
-
-func (c *RaftCluster) cacheAllStores() error {
-	start := time.Now()
-
-	key := makeStoreKeyPrefix(c.clusterRoot)
-	resp, err := kvGet(c.s.client, key, clientv3.WithPrefix())
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	for _, kv := range resp.Kvs {
-		store := &metapb.Store{}
-		if err = store.Unmarshal(kv.Value); err != nil {
-			return errors.Trace(err)
-		}
-
-		c.cachedCluster.setStore(newStoreInfo(store))
-	}
-	log.Infof("cache all %d stores cost %s", len(resp.Kvs), time.Now().Sub(start))
-	return nil
-}
-
-func (c *RaftCluster) cacheAllRegions() error {
-	start := time.Now()
-
-	nextID := uint64(0)
-	endRegionKey := makeRegionKey(c.clusterRoot, math.MaxUint64)
-
-	for {
-		key := makeRegionKey(c.clusterRoot, nextID)
-		resp, err := kvGet(c.s.client, key, clientv3.WithRange(endRegionKey))
-		if err != nil {
-			return errors.Trace(err)
-		}
-
-		if len(resp.Kvs) == 0 {
-			// No more data
-			break
-		}
-
-		for _, kv := range resp.Kvs {
-			region := &metapb.Region{}
-			if err = region.Unmarshal(kv.Value); err != nil {
-				return errors.Trace(err)
-			}
-
-			nextID = region.GetId() + 1
-			c.cachedCluster.setRegion(newRegionInfo(region, nil))
-		}
-	}
-
-	log.Infof("cache all %d regions cost %s", c.cachedCluster.getRegionCount(), time.Now().Sub(start))
-	return nil
 }
 
 func (c *RaftCluster) getRegion(regionKey []byte) (*metapb.Region, *metapb.Peer) {

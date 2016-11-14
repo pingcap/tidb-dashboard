@@ -75,21 +75,6 @@ func PushMetric(cfg *Config) {
 	go metrics.PrometheusPushClient(cfg.Name, metircCfg.PushAddress, interval)
 }
 
-func kvGet(c *clientv3.Client, key string, opts ...clientv3.OpOption) (*clientv3.GetResponse, error) {
-	kv := clientv3.NewKV(c)
-
-	start := time.Now()
-	ctx, cancel := context.WithTimeout(c.Ctx(), requestTimeout)
-	resp, err := kv.Get(ctx, key, opts...)
-	cancel()
-
-	if cost := time.Now().Sub(start); cost > slowRequestTime {
-		log.Warnf("kv gets %s too slow, resp: %v, err: %v, cost: %s", key, resp, err, cost)
-	}
-
-	return resp, errors.Trace(err)
-}
-
 // A helper function to get value with key from etcd.
 // TODO: return the value revision for outer use.
 func getValue(c *clientv3.Client, key string, opts ...clientv3.OpOption) ([]byte, error) {

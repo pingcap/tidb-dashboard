@@ -182,6 +182,40 @@ var _ = Suite(&testClusterInfoSuite{})
 
 type testClusterInfoSuite struct{}
 
+func (s *testClusterInfoSuite) TestLoadClusterInfo(c *C) {
+	server, cleanup := mustRunTestServer(c)
+	defer cleanup()
+
+	kv := server.kv
+
+	// Cluster is not bootstrapped.
+	cluster, err := loadClusterInfo(server.idAlloc, kv)
+	c.Assert(err, IsNil)
+	c.Assert(cluster, IsNil)
+
+	// Save meta, stores and regions.
+	n := 10
+	meta := &metapb.Cluster{Id: 123}
+	c.Assert(kv.saveMeta(meta), IsNil)
+	stores := mustSaveStores(c, kv, n)
+	regions := mustSaveRegions(c, kv, n)
+
+	cluster, err = loadClusterInfo(server.idAlloc, kv)
+	c.Assert(err, IsNil)
+	c.Assert(cluster, NotNil)
+
+	// Check meta, stores, and regions.
+	c.Assert(cluster.getMeta(), DeepEquals, meta)
+	c.Assert(cluster.getStoreCount(), Equals, n)
+	for _, store := range cluster.getMetaStores() {
+		c.Assert(store, DeepEquals, stores[store.GetId()])
+	}
+	c.Assert(cluster.getRegionCount(), Equals, n)
+	for _, region := range cluster.getMetaRegions() {
+		c.Assert(region, DeepEquals, regions[region.GetId()])
+	}
+}
+
 func (s *testClusterInfoSuite) TestStoreHeartbeat(c *C) {
 	n, np := uint64(3), uint64(3)
 	cache := newClusterInfo(newMockIDAllocator())

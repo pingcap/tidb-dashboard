@@ -70,6 +70,9 @@ type Server struct {
 	// a unique ID.
 	idAlloc *idAllocator
 
+	// for kv operation.
+	kv *kv
+
 	// for raft cluster
 	clusterLock sync.RWMutex
 	cluster     *RaftCluster
@@ -157,6 +160,7 @@ func (s *Server) StartEtcd(apiHandler http.Handler) error {
 
 	s.rootPath = path.Join(pdRootPath, strconv.FormatUint(s.clusterID, 10))
 	s.idAlloc = &idAllocator{s: s}
+	s.kv = newKV(s)
 	s.cluster = newRaftCluster(s, s.clusterID)
 
 	// Server has started.

@@ -14,7 +14,6 @@
 package server
 
 import (
-	"github.com/coreos/etcd/clientv3"
 	"github.com/golang/protobuf/proto"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
@@ -184,7 +183,7 @@ func (c *conn) handleRegionHeartbeat(req *pdpb.Request) (*pdpb.Response, error) 
 		return nil, errors.Errorf("invalid request leader, %v", request)
 	}
 
-	updated, err := cluster.cachedCluster.handleRegionHeartbeat(region)
+	err = cluster.cachedCluster.handleRegionHeartbeat(region)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -192,23 +191,6 @@ func (c *conn) handleRegionHeartbeat(req *pdpb.Request) (*pdpb.Response, error) 
 	res, err := cluster.handleRegionHeartbeat(region)
 	if err != nil {
 		return nil, errors.Trace(err)
-	}
-
-	if updated {
-		regionValue, err := region.Marshal()
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		regionPath := makeRegionKey(cluster.clusterRoot, region.GetId())
-
-		op := clientv3.OpPut(regionPath, string(regionValue))
-		resp, err := c.s.leaderTxn().Then(op).Commit()
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		if !resp.Succeeded {
-			return nil, errors.New("handle region heartbeat failed")
-		}
 	}
 
 	return &pdpb.Response{

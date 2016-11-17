@@ -229,6 +229,7 @@ type clusterInfo struct {
 	sync.RWMutex
 
 	id      IDAllocator
+	kv      *kv
 	meta    *metapb.Cluster
 	stores  *storesInfo
 	regions *regionsInfo
@@ -245,6 +246,7 @@ func newClusterInfo(id IDAllocator) *clusterInfo {
 // Return nil if cluster is not bootstrapped.
 func loadClusterInfo(id IDAllocator, kv *kv) (*clusterInfo, error) {
 	c := newClusterInfo(id)
+	c.kv = kv
 
 	c.meta = &metapb.Cluster{}
 	ok, err := kv.loadMeta(c.meta)
@@ -259,13 +261,13 @@ func loadClusterInfo(id IDAllocator, kv *kv) (*clusterInfo, error) {
 	if err := kv.loadStores(c.stores, kvRangeLimit); err != nil {
 		return nil, errors.Trace(err)
 	}
-	log.Infof("load %v stores cost %v", c.getStoreCount(), time.Since(start))
+	log.Infof("load %v stores cost %v", c.stores.getStoreCount(), time.Since(start))
 
 	start = time.Now()
 	if err := kv.loadRegions(c.regions, kvRangeLimit); err != nil {
 		return nil, errors.Trace(err)
 	}
-	log.Infof("load %v regions cost %v", c.getRegionCount(), time.Since(start))
+	log.Infof("load %v regions cost %v", c.regions.getRegionCount(), time.Since(start))
 
 	return c, nil
 }
@@ -292,10 +294,20 @@ func (c *clusterInfo) getMeta() *metapb.Cluster {
 	return proto.Clone(c.meta).(*metapb.Cluster)
 }
 
-func (c *clusterInfo) setMeta(meta *metapb.Cluster) {
+func (c *clusterInfo) putMeta(meta *metapb.Cluster) error {
 	c.Lock()
 	defer c.Unlock()
+	return c.putMetaLocked(proto.Clone(meta).(*metapb.Cluster))
+}
+
+func (c *clusterInfo) putMetaLocked(meta *metapb.Cluster) error {
+	if c.kv != nil {
+		if err := c.kv.saveMeta(meta); err != nil {
+			return errors.Trace(err)
+		}
+	}
 	c.meta = meta
+	return nil
 }
 
 func (c *clusterInfo) getStore(storeID uint64) *storeInfo {
@@ -304,10 +316,20 @@ func (c *clusterInfo) getStore(storeID uint64) *storeInfo {
 	return c.stores.getStore(storeID)
 }
 
-func (c *clusterInfo) setStore(store *storeInfo) {
+func (c *clusterInfo) putStore(store *storeInfo) error {
 	c.Lock()
 	defer c.Unlock()
-	c.stores.setStore(store.clone())
+	return c.putStoreLocked(store.clone())
+}
+
+func (c *clusterInfo) putStoreLocked(store *storeInfo) error {
+	if c.kv != nil {
+		if err := c.kv.saveStore(store.Store); err != nil {
+			return errors.Trace(err)
+		}
+	}
+	c.stores.setStore(store)
+	return nil
 }
 
 func (c *clusterInfo) getStores() []*storeInfo {
@@ -340,10 +362,20 @@ func (c *clusterInfo) searchRegion(regionKey []byte) *regionInfo {
 	return c.regions.searchRegion(regionKey)
 }
 
-func (c *clusterInfo) setRegion(region *regionInfo) {
+func (c *clusterInfo) putRegion(region *regionInfo) error {
 	c.Lock()
 	defer c.Unlock()
-	c.regions.setRegion(region.clone())
+	return c.putRegionLocked(region.clone())
+}
+
+func (c *clusterInfo) putRegionLocked(region *regionInfo) error {
+	if c.kv != nil {
+		if err := c.kv.saveRegion(region.Region); err != nil {
+			return errors.Trace(err)
+		}
+	}
+	c.regions.setRegion(region)
+	return nil
 }
 
 func (c *clusterInfo) getRegions() []*regionInfo {
@@ -389,7 +421,6 @@ func (c *clusterInfo) randFollowerRegion(storeID uint64) *regionInfo {
 }
 
 // handleStoreHeartbeat updates the store status.
-// It returns an error if the store is not found.
 func (c *clusterInfo) handleStoreHeartbeat(stats *pdpb.StoreStats) error {
 	c.Lock()
 	defer c.Unlock()
@@ -410,9 +441,7 @@ func (c *clusterInfo) handleStoreHeartbeat(stats *pdpb.StoreStats) error {
 }
 
 // handleRegionHeartbeat updates the region information.
-// It returns true if the region meta is updated (or added).
-// It returns an error if any error occurs.
-func (c *clusterInfo) handleRegionHeartbeat(region *regionInfo) (bool, error) {
+func (c *clusterInfo) handleRegionHeartbeat(region *regionInfo) error {
 	c.Lock()
 	defer c.Unlock()
 
@@ -421,8 +450,7 @@ func (c *clusterInfo) handleRegionHeartbeat(region *regionInfo) (bool, error) {
 
 	// Region does not exist, add it.
 	if origin == nil {
-		c.regions.setRegion(region)
-		return true, nil
+		return c.putRegionLocked(region)
 	}
 
 	r := region.GetRegionEpoch()
@@ -430,16 +458,15 @@ func (c *clusterInfo) handleRegionHeartbeat(region *regionInfo) (bool, error) {
 
 	// Region meta is stale, return an error.
 	if r.GetVersion() < o.GetVersion() || r.GetConfVer() < o.GetConfVer() {
-		return false, errors.Trace(errRegionIsStale(region.Region, origin.Region))
+		return errors.Trace(errRegionIsStale(region.Region, origin.Region))
 	}
 
-	// Region meta is updated, update region and return true.
+	// Region meta is updated, update kv and cache.
 	if r.GetVersion() > o.GetVersion() || r.GetConfVer() > o.GetConfVer() {
-		c.regions.setRegion(region)
-		return true, nil
+		return c.putRegionLocked(region)
 	}
 
-	// Region meta is the same, update region and return false.
+	// Region meta is the same, update cache only.
 	c.regions.setRegion(region)
-	return false, nil
+	return nil
 }

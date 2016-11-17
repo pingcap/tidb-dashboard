@@ -48,7 +48,7 @@ func (s *testBalancerSuite) newClusterInfo(c *C) *clusterInfo {
 		Id:           0,
 		MaxPeerCount: 3,
 	}
-	clusterInfo.setMeta(meta)
+	clusterInfo.putMeta(meta)
 
 	var (
 		id   uint64
@@ -63,7 +63,7 @@ func (s *testBalancerSuite) newClusterInfo(c *C) *clusterInfo {
 
 		addr := fmt.Sprintf("127.0.0.1:%d", i)
 		store := s.newStore(c, id, addr)
-		clusterInfo.setStore(newStoreInfo(store))
+		clusterInfo.putStore(newStoreInfo(store))
 	}
 
 	// Add 1 peer, id will be 5.
@@ -76,7 +76,7 @@ func (s *testBalancerSuite) newClusterInfo(c *C) *clusterInfo {
 	c.Assert(err, IsNil)
 
 	region := s.newRegion(c, id, []byte{}, []byte{}, []*metapb.Peer{peer}, nil)
-	clusterInfo.setRegion(newRegionInfo(region, peer))
+	clusterInfo.putRegion(newRegionInfo(region, peer))
 
 	stores := clusterInfo.getStores()
 	c.Assert(stores, HasLen, 4)
@@ -101,7 +101,7 @@ func (s *testBalancerSuite) updateStore(c *C, clusterInfo *clusterInfo, storeID 
 func (s *testBalancerSuite) updateStoreState(c *C, clusterInfo *clusterInfo, storeID uint64, state metapb.StoreState) {
 	store := clusterInfo.getStore(storeID)
 	store.State = state
-	clusterInfo.setStore(store)
+	clusterInfo.putStore(store)
 }
 
 func (s *testBalancerSuite) addRegionPeer(c *C, clusterInfo *clusterInfo, storeID uint64, region *regionInfo) {
@@ -118,7 +118,7 @@ func (s *testBalancerSuite) addRegionPeer(c *C, clusterInfo *clusterInfo, storeI
 
 	addRegionPeer(c, region.Region, peer)
 
-	clusterInfo.setRegion(region)
+	clusterInfo.putRegion(region)
 }
 
 func (s *testBalancerSuite) TestCapacityBalancer(c *C) {
@@ -252,7 +252,7 @@ func (s *testBalancerSuite) TestCapacityBalancer(c *C) {
 		Id:           0,
 		MaxPeerCount: 1,
 	}
-	clusterInfo.setMeta(meta)
+	clusterInfo.putMeta(meta)
 
 	testCfg.MinCapacityUsedRatio = 0.3
 	testCfg.MaxCapacityUsedRatio = 0.9
@@ -264,7 +264,7 @@ func (s *testBalancerSuite) TestCapacityBalancer(c *C) {
 	// Set region peers to one peer.
 	peers := region.GetPeers()
 	region.Peers = []*metapb.Peer{leader}
-	clusterInfo.setRegion(region)
+	clusterInfo.putRegion(region)
 
 	cb = newCapacityBalancer(testCfg)
 	_, bop, err = cb.Balance(clusterInfo)
@@ -291,10 +291,10 @@ func (s *testBalancerSuite) TestCapacityBalancer(c *C) {
 	c.Assert(bop, IsNil)
 
 	// Reset cluster config and region peers.
-	clusterInfo.setMeta(oldMeta)
+	clusterInfo.putMeta(oldMeta)
 
 	region.Peers = peers
-	clusterInfo.setRegion(region)
+	clusterInfo.putRegion(region)
 }
 
 // TODO: Refactor these tests, they are quite ugly now.
@@ -468,7 +468,7 @@ func (s *testBalancerSuite) TestReplicaBalancerWithDownPeers(c *C) {
 
 	// Now we have enough active replicas, we can remove the down peer in store 4.
 	addRegionPeer(c, region.Region, op.ChangePeer.GetPeer())
-	clusterInfo.setRegion(region)
+	clusterInfo.putRegion(region)
 
 	rb = newReplicaBalancer(region, s.cfg)
 	_, bop, err = rb.Balance(clusterInfo)

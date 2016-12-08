@@ -32,7 +32,7 @@ var (
 )
 
 const (
-	maxBatchRegionCount = 10000
+	backgroundJobInterval = time.Minute
 )
 
 // RaftCluster is used for cluster config management.
@@ -55,8 +55,7 @@ type RaftCluster struct {
 	// cached cluster info
 	cachedCluster *clusterInfo
 
-	// balancer worker
-	balancerWorker *balancerWorker
+	coordinator *coordinator
 
 	wg   sync.WaitGroup
 	quit chan struct{}
@@ -89,12 +88,12 @@ func (c *RaftCluster) start() error {
 	}
 	c.cachedCluster = cluster
 
-	c.balancerWorker = newBalancerWorker(c.cachedCluster, &c.s.cfg.BalanceCfg)
-	c.balancerWorker.run()
+	c.coordinator = newCoordinator(c.cachedCluster, c.s.scheduleOpt)
+	c.coordinator.run()
 
 	c.wg.Add(1)
 	c.quit = make(chan struct{})
-	go c.runBackgroundJobs(c.s.cfg.BalanceCfg.BalanceInterval)
+	go c.runBackgroundJobs(backgroundJobInterval)
 
 	c.running = true
 
@@ -114,7 +113,7 @@ func (c *RaftCluster) stop() {
 	close(c.quit)
 	c.wg.Wait()
 
-	c.balancerWorker.stop()
+	c.coordinator.stop()
 }
 
 func (c *RaftCluster) isRunning() bool {
@@ -129,9 +128,10 @@ func (s *Server) GetConfig() *Config {
 	return s.cfg.clone()
 }
 
-// SetBalanceConfig sets the balance config information.
-func (s *Server) SetBalanceConfig(cfg BalanceConfig) {
-	s.cfg.setBalanceConfig(cfg)
+// SetScheduleConfig sets the balance config information.
+func (s *Server) SetScheduleConfig(cfg ScheduleConfig) {
+	s.cfg.setScheduleConfig(cfg)
+	s.scheduleOpt.store(&cfg)
 }
 
 func (s *Server) getClusterRootPath() string {
@@ -318,27 +318,25 @@ func (c *RaftCluster) putStore(store *metapb.Store) error {
 
 	cluster := c.cachedCluster
 
-	// There are 3 cases here:
-	// Case 1: store id exists with the same address - do nothing;
-	// Case 2: store id exists with different address - update address;
-	if s := cluster.getStore(store.GetId()); s != nil {
-		if s.GetAddress() == store.GetAddress() {
-			return nil
-		}
-		s.Address = store.Address
-		return cluster.putStore(s)
-	}
-
-	// Case 3: store id does not exist, check duplicated address.
+	// Store address can not be the same as other stores.
 	for _, s := range cluster.getStores() {
 		// It's OK to start a new store on the same address if the old store has been removed.
 		if s.isTombstone() {
 			continue
 		}
-		if s.GetAddress() == store.GetAddress() {
+		if s.GetId() != store.GetId() && s.GetAddress() == store.GetAddress() {
 			return errors.Errorf("duplicated store address: %v, already registered by %v", store, s.Store)
 		}
 	}
+
+	// Store exists, update store meta.
+	if s := cluster.getStore(store.GetId()); s != nil {
+		s.Address = store.Address
+		s.Labels = store.Labels
+		return cluster.putStore(s)
+	}
+
+	// Store does not exist, add a new store.
 	return cluster.putStore(newStoreInfo(store))
 }
 
@@ -426,8 +424,8 @@ func (c *RaftCluster) collectMetrics() {
 	regionTotalCount := 0
 	storageSize := uint64(0)
 	storageCapacity := uint64(0)
-	minUsedRatio, maxUsedRatio := float64(1.0), float64(0.0)
 	minLeaderRatio, maxLeaderRatio := float64(1.0), float64(0.0)
+	minStorageRatio, maxStorageRatio := float64(1.0), float64(0.0)
 
 	for _, s := range cluster.getStores() {
 		// Store state.
@@ -442,7 +440,7 @@ func (c *RaftCluster) collectMetrics() {
 		if s.isTombstone() {
 			continue
 		}
-		if s.downTime() >= c.balancerWorker.cfg.MaxStoreDownDuration.Duration {
+		if s.downTime() >= c.coordinator.opt.GetMaxStoreDownTime() {
 			storeDownCount++
 		}
 
@@ -454,17 +452,17 @@ func (c *RaftCluster) collectMetrics() {
 		}
 
 		// Balance.
-		if minUsedRatio > s.usedRatio() {
-			minUsedRatio = s.usedRatio()
-		}
-		if maxUsedRatio < s.usedRatio() {
-			maxUsedRatio = s.usedRatio()
-		}
 		if minLeaderRatio > s.leaderRatio() {
 			minLeaderRatio = s.leaderRatio()
 		}
 		if maxLeaderRatio < s.leaderRatio() {
 			maxLeaderRatio = s.leaderRatio()
+		}
+		if minStorageRatio > s.storageRatio() {
+			minStorageRatio = s.storageRatio()
+		}
+		if maxStorageRatio < s.storageRatio() {
+			maxStorageRatio = s.storageRatio()
 		}
 	}
 
@@ -476,18 +474,18 @@ func (c *RaftCluster) collectMetrics() {
 	metrics["region_total_count"] = float64(regionTotalCount)
 	metrics["storage_size"] = float64(storageSize)
 	metrics["storage_capacity"] = float64(storageCapacity)
-	metrics["store_max_diff_used_ratio"] = maxUsedRatio - minUsedRatio
 	metrics["store_max_diff_leader_ratio"] = maxLeaderRatio - minLeaderRatio
+	metrics["store_max_diff_storage_ratio"] = maxStorageRatio - minStorageRatio
 
 	for label, value := range metrics {
 		clusterStatusGauge.WithLabelValues(label).Set(value)
 	}
 }
 
-func (c *RaftCluster) runBackgroundJobs(interval uint64) {
+func (c *RaftCluster) runBackgroundJobs(interval time.Duration) {
 	defer c.wg.Done()
 
-	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {
@@ -516,32 +514,28 @@ func (c *RaftCluster) putConfig(meta *metapb.Cluster) error {
 // NewAddPeerOperator creates an operator to add a peer to the region.
 // If storeID is 0, it will be chosen according to the balance rules.
 func (c *RaftCluster) NewAddPeerOperator(regionID uint64, storeID uint64) (Operator, error) {
-	region := c.cachedCluster.getRegion(regionID)
+	cluster := c.cachedCluster
+
+	region := cluster.getRegion(regionID)
 	if region == nil {
 		return nil, errRegionNotFound(regionID)
 	}
 
-	var (
-		peer *metapb.Peer
-		err  error
-	)
-
-	cluster := c.cachedCluster
-	if storeID == 0 {
-		cb := newCapacityBalancer(&c.s.cfg.BalanceCfg)
-		peer, err = cb.selectAddPeer(cluster, cluster.getStores(), region.GetStoreIds())
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
+	var target *storeInfo
+	if storeID != 0 {
+		target = cluster.getStore(storeID)
 	} else {
-		_, _, err = c.GetStore(storeID)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		peer, err = cluster.allocPeer(storeID)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
+		cb := newStorageBalancer(c.s.scheduleOpt)
+		filter := newExcludedFilter(nil, region.GetStoreIds())
+		target = cb.selector.SelectTarget(cluster.getStores(), filter)
+	}
+	if target == nil {
+		return nil, errors.New("No store available")
+	}
+
+	peer, err := cluster.allocPeer(target.GetId())
+	if err != nil {
+		return nil, errors.Trace(err)
 	}
 
 	return newAddPeerOperator(regionID, peer), nil
@@ -569,18 +563,18 @@ func (c *RaftCluster) SetAdminOperator(regionID uint64, ops []Operator) error {
 		return errRegionNotFound(regionID)
 	}
 	bop := newBalanceOperator(region, adminOP, ops...)
-	c.balancerWorker.addBalanceOperator(regionID, bop)
+	c.coordinator.setOperator(storageKind, bop)
 	return nil
 }
 
 // GetBalanceOperators gets the balance operators from cluster.
 func (c *RaftCluster) GetBalanceOperators() map[uint64]Operator {
-	return c.balancerWorker.getBalanceOperators()
+	return c.coordinator.getOperators()
 }
 
 // GetHistoryOperators gets the history operators from cluster.
 func (c *RaftCluster) GetHistoryOperators() []Operator {
-	return c.balancerWorker.getHistoryOperators()
+	return c.coordinator.getHistories()
 }
 
 // GetScores gets store scores from balancer.
@@ -589,11 +583,10 @@ func (c *RaftCluster) GetScores(store *metapb.Store, status *StoreStatus) []int 
 		Store: store,
 		stats: status,
 	}
-
-	return c.balancerWorker.storeScores(storeInfo)
+	return storeInfo.resourceScores()
 }
 
 // FetchEvents fetches the operator events.
 func (c *RaftCluster) FetchEvents(key uint64, all bool) []LogEvent {
-	return c.balancerWorker.fetchEvents(key, all)
+	return c.coordinator.fetchEvents(key, all)
 }

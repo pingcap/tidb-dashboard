@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -67,9 +68,12 @@ type Config struct {
 	// MaxPeerCount for a region. default is 3.
 	MaxPeerCount uint64 `toml:"max-peer-count" json:"max-peer-count"`
 
-	BalanceCfg BalanceConfig `toml:"balance" json:"balance"`
+	ScheduleCfg ScheduleConfig `toml:"schedule" json:"schedule"`
 
 	MetricCfg metricutil.MetricConfig `toml:"metric" json:"metric"`
+
+	ConstraintCfg []ConstraintConfig `toml:"constraints" json:"constraints"`
+	constraints   *Constraints
 
 	// Only test can change them.
 	nextRetryDelay             time.Duration
@@ -243,8 +247,8 @@ func (c *Config) adjust() error {
 
 	adjustString(&c.MetricCfg.PushJob, c.Name)
 
-	c.BalanceCfg.adjust()
-	return nil
+	c.ScheduleCfg.adjust()
+	return c.parseConstraints()
 }
 
 func (c *Config) clone() *Config {
@@ -253,11 +257,11 @@ func (c *Config) clone() *Config {
 	return cfg
 }
 
-func (c *Config) setBalanceConfig(cfg BalanceConfig) {
+func (c *Config) setScheduleConfig(cfg ScheduleConfig) {
 	// TODO: add more check for cfg set.
 	cfg.adjust()
 
-	c.BalanceCfg = cfg
+	c.ScheduleCfg = cfg
 }
 
 func (c *Config) String() string {
@@ -273,108 +277,177 @@ func (c *Config) configFromFile(path string) error {
 	return errors.Trace(err)
 }
 
-// BalanceConfig is the balance configuration.
-type BalanceConfig struct {
-	// For capacity balance.
-	// If the used ratio of one store is less than this value,
-	// it will never be used as a from store.
-	MinCapacityUsedRatio float64 `toml:"min-capacity-used-ratio" json:"min-capacity-used-ratio"`
-	// If the used ratio of one store is greater than this value,
-	// it will never be used as a to store.
-	MaxCapacityUsedRatio float64 `toml:"max-capacity-used-ratio" json:"max-capacity-used-ratio"`
+// ScheduleConfig is the schedule configuration.
+type ScheduleConfig struct {
+	// If the region count of one store is less than this value,
+	// it will never be used as a source store.
+	MinRegionCount uint64 `toml:"min-region-count" json:"min-region-count"`
 
-	// For leader balance.
-	// If the leader region count of one store is less than this value,
-	// it will never be used as a from store.
-	MaxLeaderCount uint64 `toml:"max-leader-count" json:"max-leader-count"`
+	// If the leader count of one store is less than this value,
+	// it will never be used as a source store.
+	MinLeaderCount uint64 `toml:"min-leader-count" json:"min-leader-count"`
 
-	// For capacity balance.
-	// If the sending snapshot count of one store is greater than this value,
-	// it will never be used as a from store.
-	MaxSendingSnapCount uint64 `toml:"max-sending-snap-count" json:"max-sending-snap-count"`
-	// If the receiving snapshot count of one store is greater than this value,
-	// it will never be used as a to store.
-	MaxReceivingSnapCount uint64 `toml:"max-receiving-snap-count" json:"max-receiving-snap-count"`
-	// If the applying snapshot count of one store is greater than this value,
-	// it will never be used as a to store.
-	MaxApplyingSnapCount uint64 `toml:"max-applying-snap-count" json:"max-applying-snap-count"`
+	// If the snapshot count of one store is greater than this value,
+	// it will never be used as a source or target store.
+	MaxSnapshotCount uint64 `toml:"max-snapshot-count" json:"max-snapshot-count"`
 
-	// If the new store and old store's diff scores are not beyond this value,
-	// the balancer will do nothing.
-	MaxDiffScoreFraction float64 `toml:"max-diff-score-fraction" json:"max-diff-score-fraction"`
-
-	// Balance loop interval time (seconds).
-	BalanceInterval uint64 `toml:"balance-interval" json:"balance-interval"`
-
-	// MaxBalanceCount is the max region count to balance at the same time.
-	MaxBalanceCount uint64 `toml:"max-balance-count" json:"max-balance-count"`
-
-	// MaxBalanceRetryPerLoop is the max retry count to balance in a balance schedule.
-	MaxBalanceRetryPerLoop uint64 `toml:"max-balance-retry-per-loop" json:"max-balance-retry-per-loop"`
-
-	// MaxBalanceCountPerLoop is the max region count to balance in a balance schedule.
-	MaxBalanceCountPerLoop uint64 `toml:"max-balance-count-per-loop" json:"max-balance-count-per-loop"`
-
-	// MaxTransferWaitCount is the max heartbeat count to wait leader transfer to finish.
-	MaxTransferWaitCount uint64 `toml:"max-transfer-wait-count" json:"max-transfer-wait-count"`
-
-	// MaxPeerDownDuration is the max duration at which
-	// a peer will be considered to be down if its leader reports it.
-	MaxPeerDownDuration timeutil.Duration `toml:"max-peer-down-duration" json:"max-peer-down-duration"`
+	// If the source and target store's diff score is less than this value,
+	// the schedule will be canceled.
+	MinBalanceDiffRatio float64 `toml:"min-balance-diff-ratio" json:"min-balance-diff-ratio"`
 
 	// MaxStoreDownDuration is the max duration at which
 	// a store will be considered to be down if it hasn't reported heartbeats.
 	MaxStoreDownDuration timeutil.Duration `toml:"max-store-down-duration" json:"max-store-down-duration"`
-}
 
-func newBalanceConfig() *BalanceConfig {
-	return &BalanceConfig{}
+	// LeaderScheduleLimit is the max coexist leader schedules.
+	LeaderScheduleLimit uint64 `toml:"leader-schedule-limit" json:"leader-schedule-limit"`
+	// LeaderScheduleInterval is the interval to schedule leader.
+	LeaderScheduleInterval timeutil.Duration `toml:"leader-schedule-interval" json:"leader-schedule-interval"`
+
+	// StorageScheduleLimit is the max coexist storage schedules.
+	StorageScheduleLimit uint64 `toml:"storage-schedule-limit" json:"storage-schedule-limit"`
+	// StorageScheduleInterval is the interval to schedule storage.
+	StorageScheduleInterval timeutil.Duration `toml:"storage-schedule-interval" json:"storage-schedule-interval"`
 }
 
 const (
-	defaultMinCapacityUsedRatio   = float64(0.1)
-	defaultMaxCapacityUsedRatio   = float64(0.9)
-	defaultMaxLeaderCount         = uint64(10)
-	defaultMaxSendingSnapCount    = uint64(3)
-	defaultMaxReceivingSnapCount  = uint64(3)
-	defaultMaxApplyingSnapCount   = uint64(3)
-	defaultMaxDiffScoreFraction   = float64(0.1)
-	defaultMaxBalanceCount        = uint64(16)
-	defaultBalanceInterval        = uint64(30)
-	defaultMaxBalanceRetryPerLoop = uint64(10)
-	defaultMaxBalanceCountPerLoop = uint64(3)
-	defaultMaxTransferWaitCount   = uint64(3)
-	defaultMaxPeerDownDuration    = 30 * time.Minute
-	defaultMaxStoreDownDuration   = 10 * time.Minute
+	defaultMinRegionCount          = uint64(10)
+	defaultMinLeaderCount          = uint64(10)
+	defaultMaxSnapshotCount        = uint64(3)
+	defaultMinBalanceDiffRatio     = float64(0.01)
+	defaultMaxStoreDownDuration    = 30 * time.Minute
+	defaultLeaderScheduleLimit     = 4
+	defaultLeaderScheduleInterval  = 30 * time.Second
+	defaultStorageScheduleLimit    = 4
+	defaultStorageScheduleInterval = 30 * time.Second
 )
 
-func (c *BalanceConfig) adjust() {
-	adjustFloat64(&c.MinCapacityUsedRatio, defaultMinCapacityUsedRatio)
-	adjustFloat64(&c.MaxCapacityUsedRatio, defaultMaxCapacityUsedRatio)
-
-	adjustUint64(&c.MaxLeaderCount, defaultMaxLeaderCount)
-	adjustUint64(&c.MaxSendingSnapCount, defaultMaxSendingSnapCount)
-	adjustUint64(&c.MaxReceivingSnapCount, defaultMaxReceivingSnapCount)
-	adjustUint64(&c.MaxApplyingSnapCount, defaultMaxApplyingSnapCount)
-
-	adjustFloat64(&c.MaxDiffScoreFraction, defaultMaxDiffScoreFraction)
-
-	adjustUint64(&c.BalanceInterval, defaultBalanceInterval)
-	adjustUint64(&c.MaxBalanceCount, defaultMaxBalanceCount)
-	adjustUint64(&c.MaxBalanceRetryPerLoop, defaultMaxBalanceRetryPerLoop)
-	adjustUint64(&c.MaxBalanceCountPerLoop, defaultMaxBalanceCountPerLoop)
-
-	adjustUint64(&c.MaxTransferWaitCount, defaultMaxTransferWaitCount)
-
-	adjustDuration(&c.MaxPeerDownDuration, defaultMaxPeerDownDuration)
-	adjustDuration(&c.MaxStoreDownDuration, defaultMaxStoreDownDuration)
+func newScheduleConfig() *ScheduleConfig {
+	return &ScheduleConfig{}
 }
 
-func (c *BalanceConfig) String() string {
-	if c == nil {
-		return "<nil>"
+func (c *ScheduleConfig) adjust() {
+	adjustUint64(&c.MinRegionCount, defaultMinRegionCount)
+	adjustUint64(&c.MinLeaderCount, defaultMinLeaderCount)
+	adjustUint64(&c.MaxSnapshotCount, defaultMaxSnapshotCount)
+	adjustFloat64(&c.MinBalanceDiffRatio, defaultMinBalanceDiffRatio)
+	adjustDuration(&c.MaxStoreDownDuration, defaultMaxStoreDownDuration)
+	adjustUint64(&c.LeaderScheduleLimit, defaultLeaderScheduleLimit)
+	adjustDuration(&c.LeaderScheduleInterval, defaultLeaderScheduleInterval)
+	adjustUint64(&c.StorageScheduleLimit, defaultStorageScheduleLimit)
+	adjustDuration(&c.StorageScheduleInterval, defaultStorageScheduleInterval)
+}
+
+// scheduleOption is a wrapper to access the configuration safely.
+type scheduleOption struct {
+	v           atomic.Value
+	constraints *Constraints
+}
+
+func newScheduleOption(cfg *Config) *scheduleOption {
+	o := &scheduleOption{}
+	o.store(&cfg.ScheduleCfg)
+	o.constraints = cfg.constraints
+	return o
+}
+
+func (o *scheduleOption) load() *ScheduleConfig {
+	return o.v.Load().(*ScheduleConfig)
+}
+
+func (o *scheduleOption) store(cfg *ScheduleConfig) {
+	o.v.Store(cfg)
+}
+
+func (o *scheduleOption) GetConstraints() *Constraints {
+	return o.constraints
+}
+
+func (o *scheduleOption) GetMinRegionCount() uint64 {
+	return o.load().MinRegionCount
+}
+
+func (o *scheduleOption) GetMinLeaderCount() uint64 {
+	return o.load().MinLeaderCount
+}
+
+func (o *scheduleOption) GetMaxSnapshotCount() uint64 {
+	return o.load().MaxSnapshotCount
+}
+
+func (o *scheduleOption) GetMinBalanceDiffRatio() float64 {
+	return o.load().MinBalanceDiffRatio
+}
+
+func (o *scheduleOption) GetMaxStoreDownTime() time.Duration {
+	return o.load().MaxStoreDownDuration.Duration
+}
+
+func (o *scheduleOption) GetLeaderScheduleLimit() uint64 {
+	return o.load().LeaderScheduleLimit
+}
+
+func (o *scheduleOption) GetLeaderScheduleInterval() time.Duration {
+	return o.load().LeaderScheduleInterval.Duration
+}
+
+func (o *scheduleOption) GetStorageScheduleLimit() uint64 {
+	return o.load().StorageScheduleLimit
+}
+
+func (o *scheduleOption) GetStorageScheduleInterval() time.Duration {
+	return o.load().StorageScheduleInterval.Duration
+}
+
+// ConstraintConfig is the replica constraint configuration to place replicas.
+type ConstraintConfig struct {
+	Labels   []string `toml:"labels" json:"labels"`
+	Replicas int      `toml:"replicas" json:"replicas"`
+}
+
+var validLabel = regexp.MustCompile(`^[a-z0-9]([a-z0-9-._]*[a-z0-9])?$`)
+
+func parseConstraint(cfg *ConstraintConfig) (*Constraint, error) {
+	if cfg.Replicas == 0 {
+		return nil, errors.New("constraint replicas must > 0")
 	}
-	return fmt.Sprintf("BalanceConfig(%+v)", *c)
+	labels := make(map[string]string)
+	for _, label := range cfg.Labels {
+		kv := strings.Split(strings.ToLower(label), "=")
+		if len(kv) != 2 {
+			return nil, errors.Errorf("invalid label %q", label)
+		}
+		k, v := kv[0], kv[1]
+		if !validLabel.MatchString(k) {
+			return nil, errors.Errorf("invalid label key %q, must match %s", k, validLabel)
+		}
+		if !validLabel.MatchString(v) {
+			return nil, errors.Errorf("invalid label value %q, must match %s", k, validLabel)
+		}
+		if _, ok := labels[k]; ok {
+			return nil, errors.Errorf("duplicated label %q", label)
+		}
+		labels[k] = v
+	}
+	return &Constraint{
+		Labels:   labels,
+		Replicas: cfg.Replicas,
+	}, nil
+}
+
+func (c *Config) parseConstraints() error {
+	var constraints []*Constraint
+	for _, cfg := range c.ConstraintCfg {
+		constraint, err := parseConstraint(&cfg)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		constraints = append(constraints, constraint)
+	}
+
+	var err error
+	c.constraints, err = newConstraints(int(c.MaxPeerCount), constraints)
+	return errors.Trace(err)
 }
 
 // ParseUrls parse a string into multiple urls.

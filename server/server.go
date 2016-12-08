@@ -14,6 +14,7 @@
 package server
 
 import (
+	"math/rand"
 	"net/http"
 	"path"
 	"strconv"
@@ -39,7 +40,8 @@ const (
 
 // Server is the pd server.
 type Server struct {
-	cfg *Config
+	cfg         *Config
+	scheduleOpt *scheduleOption
 
 	etcd *embed.Etcd
 
@@ -73,6 +75,9 @@ type Server struct {
 	// for kv operation.
 	kv *kv
 
+	// for API operation.
+	handler *Handler
+
 	// for raft cluster
 	clusterLock sync.RWMutex
 	cluster     *RaftCluster
@@ -94,14 +99,17 @@ func NewServer(cfg *Config) (*Server, error) {
 // CreateServer creates the UNINITIALIZED pd server with given configuration.
 func CreateServer(cfg *Config) (*Server, error) {
 	log.Infof("PD config - %v", cfg)
+	rand.Seed(time.Now().UnixNano())
 
 	s := &Server{
 		cfg:           cfg,
+		scheduleOpt:   newScheduleOption(cfg),
 		isLeaderValue: 0,
 		conns:         make(map[*conn]struct{}),
 		closed:        1,
 	}
 
+	s.handler = newHandler(s)
 	return s, nil
 }
 
@@ -273,6 +281,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // GetAddr returns the server urls for clients.
 func (s *Server) GetAddr() string {
 	return s.cfg.AdvertiseClientUrls
+}
+
+// GetHandler returns the handler for API.
+func (s *Server) GetHandler() *Handler {
+	return s.handler
 }
 
 // GetEndpoints returns the etcd endpoints for outer use.

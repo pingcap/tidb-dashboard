@@ -353,6 +353,16 @@ func (s *testClusterInfoSuite) testRegionHeartbeat(c *C, cache *clusterInfo) {
 		c.Assert(region, DeepEquals, regions[region.GetId()].Region)
 	}
 
+	for _, region := range regions {
+		for _, store := range cache.getRegionStores(region) {
+			c.Assert(region.GetStorePeer(store.GetId()), NotNil)
+		}
+		for _, store := range cache.getFollowerStores(region) {
+			peer := region.GetStorePeer(store.GetId())
+			c.Assert(peer.GetId(), Not(Equals), region.Leader.GetId())
+		}
+	}
+
 	// Test with kv.
 	if kv := cache.kv; kv != nil {
 		for _, region := range regions {

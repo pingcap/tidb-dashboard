@@ -257,13 +257,6 @@ func (c *Config) clone() *Config {
 	return cfg
 }
 
-func (c *Config) setScheduleConfig(cfg ScheduleConfig) {
-	// TODO: add more check for cfg set.
-	cfg.adjust()
-
-	c.ScheduleCfg = cfg
-}
-
 func (c *Config) String() string {
 	if c == nil {
 		return "<nil>"
@@ -316,8 +309,8 @@ const (
 	defaultMaxSnapshotCount        = uint64(3)
 	defaultMinBalanceDiffRatio     = float64(0.01)
 	defaultMaxStoreDownDuration    = 30 * time.Minute
-	defaultLeaderScheduleLimit     = 4
-	defaultLeaderScheduleInterval  = 30 * time.Second
+	defaultLeaderScheduleLimit     = 8
+	defaultLeaderScheduleInterval  = 10 * time.Second
 	defaultStorageScheduleLimit    = 4
 	defaultStorageScheduleInterval = 30 * time.Second
 )

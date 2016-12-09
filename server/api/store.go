@@ -15,9 +15,11 @@ package api
 
 import (
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/juju/errors"
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/pd/pkg/timeutil"
 	"github.com/pingcap/pd/server"
@@ -139,10 +141,16 @@ func (h *storesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	stores := cluster.GetStores()
 	storesInfo := &storesInfo{
-		Count:  len(stores),
 		Stores: make([]*storeInfo, 0, len(stores)),
 	}
 
+	urlFilter, err := newStoreStateFilter(r.URL)
+	if err != nil {
+		h.rd.JSON(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	stores = urlFilter.filter(cluster.GetStores())
 	for _, s := range stores {
 		store, status, err := cluster.GetStore(s.GetId())
 		if err != nil {
@@ -153,6 +161,52 @@ func (h *storesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		storeInfo := newStoreInfo(store, status, cluster.GetScores(store, status))
 		storesInfo.Stores = append(storesInfo.Stores, storeInfo)
 	}
+	storesInfo.Count = len(storesInfo.Stores)
 
 	h.rd.JSON(w, http.StatusOK, storesInfo)
+}
+
+type storeStateFilter struct {
+	accepts []metapb.StoreState
+}
+
+func newStoreStateFilter(u *url.URL) (*storeStateFilter, error) {
+	var acceptStates []metapb.StoreState
+	if v, ok := u.Query()["state"]; ok {
+		for _, s := range v {
+			state, err := strconv.Atoi(s)
+			if err != nil {
+				return nil, errors.Trace(err)
+			}
+
+			storeState := metapb.StoreState(state)
+			switch storeState {
+			case metapb.StoreState_Up, metapb.StoreState_Offline, metapb.StoreState_Tombstone:
+				acceptStates = append(acceptStates, storeState)
+			default:
+				return nil, errors.Errorf("unknown StoreState: %v", storeState)
+			}
+		}
+	} else {
+		// Accepts Up and Offline by default.
+		acceptStates = []metapb.StoreState{metapb.StoreState_Up, metapb.StoreState_Offline}
+	}
+
+	return &storeStateFilter{
+		accepts: acceptStates,
+	}, nil
+}
+
+func (filter *storeStateFilter) filter(stores []*metapb.Store) []*metapb.Store {
+	ret := make([]*metapb.Store, 0, len(stores))
+	for _, s := range stores {
+		state := s.GetState()
+		for _, accept := range filter.accepts {
+			if state == accept {
+				ret = append(ret, s)
+				break
+			}
+		}
+	}
+	return ret
 }

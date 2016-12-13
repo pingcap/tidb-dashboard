@@ -1,4 +1,4 @@
-// Copyright 2016 The etcd Authors
+// Copyright 2016 PingCAP, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -8,10 +8,27 @@
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package concurrency implements concurrency operations on top of
-// etcd such as distributed locks, barriers, and elections.
-package concurrency
+package command
+
+import (
+	"os"
+
+	"github.com/spf13/cobra"
+)
+
+// NewExitCommand New a exit subcommand of the rootCmd
+func NewExitCommand() *cobra.Command {
+	conf := &cobra.Command{
+		Use:   "exit",
+		Short: "exit pdctl",
+		Run:   exitCommandF,
+	}
+	return conf
+}
+
+func exitCommandF(cmd *cobra.Command, args []string) {
+	os.Exit(0)
+}

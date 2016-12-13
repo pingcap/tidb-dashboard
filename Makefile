@@ -27,6 +27,7 @@ build-fe:
 build:
 	rm -rf vendor && ln -s _vendor/vendor vendor
 	$(GO) build -ldflags '$(LDFLAGS)' -o bin/pd-server cmd/pd-server/main.go
+	$(GO) build  -o bin/pd-ctl cmd/pd-ctl/main.go
 	rm -rf vendor
 
 install:

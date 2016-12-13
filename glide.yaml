@@ -200,6 +200,6 @@ import:
   version: 9495bc009a56819bdb0ddbc1a373e29c140bc674
   repo: https://github.com/spf13/cobra.git
   vcs: git
-- package: github.com/bobappleyard/readline
-  version: 7e300e02d38ee8b418c0b4841877f1845d392328
+- package: github.com/chzyer/readline
+  version: c914be64f07d9998f52bf0d598ec26d457168c0f 
 - package: github.com/elazarl/go-bindata-assetfs

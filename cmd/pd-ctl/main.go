@@ -21,7 +21,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/bobappleyard/readline"
+	"github.com/chzyer/readline"
 	"github.com/pingcap/pd/pdctl"
 )
 
@@ -43,7 +43,6 @@ func main() {
 	go func() {
 		sig := <-sc
 		fmt.Printf("\nGot signal [%v] to exit.\n", sig)
-		readline.Cleanup()
 		switch sig {
 		case syscall.SIGTERM:
 			os.Exit(0)
@@ -56,17 +55,27 @@ func main() {
 }
 
 func loop() {
+	l, err := readline.NewEx(&readline.Config{
+		Prompt:            "\033[31m»\033[0m ",
+		HistoryFile:       "/tmp/readline.tmp",
+		InterruptPrompt:   "^C",
+		EOFPrompt:         "exit",
+		HistorySearchFold: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer l.Close()
+
 	for {
-		line, err := readline.String("> ")
+		line, err := l.Readline()
 		if err != nil {
+			if err == readline.ErrInterrupt {
+				break
+			}
 			continue
 		}
 
-		if line == "exit" {
-			os.Exit(0)
-		}
-
-		readline.AddHistory(line)
 		args := strings.Split(line, " ")
 		args = append(args, "-u", url)
 		usage, err := pdctl.Start(args)

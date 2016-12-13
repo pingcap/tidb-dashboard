@@ -1,16 +1,16 @@
-hash: 5e3ef8c039500f191bf172d9bcf751c4924ac2e6a55e38686f9dfce13e3eb31c
-updated: 2016-12-12T10:31:07.41387807+08:00
+hash: 767ea2354fc19670607d437d2739fb285bdf8626c9861eed888708c4a5b089ea
+updated: 2016-12-13T18:54:06.851481096+08:00
 imports:
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
   subpackages:
   - quantile
-- name: github.com/bobappleyard/readline
-  version: 7e300e02d38ee8b418c0b4841877f1845d392328
 - name: github.com/boltdb/bolt
   version: acc803f0ced151102ed51bf824f8709ebd6602bc
 - name: github.com/BurntSushi/toml
   version: bbd5bb678321a0d6e58f1099321dfa73391c1b6f
+- name: github.com/chzyer/readline
+  version: c914be64f07d9998f52bf0d598ec26d457168c0f
 - name: github.com/cloudfoundry-incubator/candiedyaml
   version: 5cef21e2e4f0fd147973b558d4db7395176bcd95
 - name: github.com/cockroachdb/cmux

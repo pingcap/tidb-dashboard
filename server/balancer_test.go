@@ -119,6 +119,10 @@ func (c *testClusterInfo) updateSnapshotCount(storeID uint64, snapshotCount int)
 func newTestScheduleConfig() (*ScheduleConfig, *scheduleOption) {
 	cfg := NewConfig()
 	cfg.adjust()
+	cfg.ScheduleCfg.MinLeaderCount = 1
+	cfg.ScheduleCfg.MinRegionCount = 1
+	cfg.ScheduleCfg.LeaderScheduleInterval.Duration = 10 * time.Millisecond
+	cfg.ScheduleCfg.StorageScheduleInterval.Duration = 10 * time.Millisecond
 	opt := newScheduleOption(cfg)
 	return &cfg.ScheduleCfg, opt
 }
@@ -219,9 +223,7 @@ func (s *testStorageBalancerSuite) TestConstraints(c *C) {
 	cluster := newClusterInfo(newMockIDAllocator())
 	tc := newTestClusterInfo(cluster)
 
-	cfg, opt := newTestScheduleConfig()
-	cfg.MinRegionCount = 1
-	cfg.MinBalanceDiffRatio = 0.01
+	_, opt := newTestScheduleConfig()
 	opt.constraints, _ = newConstraints(1, []*Constraint{
 		{
 			Labels:   map[string]string{"zone": "cn"},
@@ -319,9 +321,7 @@ func (s *testReplicaCheckerSuite) TestConstraints(c *C) {
 	cluster := newClusterInfo(newMockIDAllocator())
 	tc := newTestClusterInfo(cluster)
 
-	cfg, opt := newTestScheduleConfig()
-	cfg.MinRegionCount = 1
-	cfg.MinBalanceDiffRatio = 0.01
+	_, opt := newTestScheduleConfig()
 	opt.constraints, _ = newConstraints(3, []*Constraint{
 		{
 			Labels:   map[string]string{"zone": "us"},

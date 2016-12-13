@@ -206,19 +206,23 @@ func (r *regionsInfo) getStoreFollowerCount(storeID uint64) int {
 }
 
 func (r *regionsInfo) randLeaderRegion(storeID uint64) *regionInfo {
-	for _, region := range r.leaders[storeID] {
-		if region.Leader == nil {
-			log.Fatalf("rand leader region without leader: store %v region %v", storeID, region)
-		}
-		return region.clone()
-	}
-	return nil
+	return randRegion(r.leaders[storeID])
 }
 
 func (r *regionsInfo) randFollowerRegion(storeID uint64) *regionInfo {
-	for _, region := range r.followers[storeID] {
+	return randRegion(r.followers[storeID])
+}
+
+func randRegion(regions map[uint64]*regionInfo) *regionInfo {
+	for _, region := range regions {
 		if region.Leader == nil {
-			log.Fatalf("rand follower region without leader: store %v region %v", storeID, region)
+			log.Fatalf("rand region without leader: region %v", region)
+		}
+		if len(region.DownPeers) > 0 {
+			continue
+		}
+		if len(region.PendingPeers) > 0 {
+			continue
 		}
 		return region.clone()
 	}

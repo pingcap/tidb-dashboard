@@ -46,7 +46,7 @@ func NewShowConfigCommand() *cobra.Command {
 	sc := &cobra.Command{
 		Use:   "show",
 		Short: "show config of PD",
-		Run:   showConfigCommandF,
+		Run:   showConfigCommandFunc,
 	}
 	return sc
 }
@@ -56,12 +56,12 @@ func NewSetConfigCommand() *cobra.Command {
 	sc := &cobra.Command{
 		Use:   "set <option> <value>",
 		Short: "set the option with value",
-		Run:   setConfigCommandF,
+		Run:   setConfigCommandFunc,
 	}
 	return sc
 }
 
-func showConfigCommandF(cmd *cobra.Command, args []string) {
+func showConfigCommandFunc(cmd *cobra.Command, args []string) {
 	url := getAddressFromCmd(cmd, schedulePrefix)
 	r, err := http.Get(url)
 	if err != nil {
@@ -70,14 +70,14 @@ func showConfigCommandF(cmd *cobra.Command, args []string) {
 	}
 	defer r.Body.Close()
 	if r.StatusCode != http.StatusOK {
-		fmt.Println(r.StatusCode, "error")
+		printResponseError(r)
 		return
 	}
 
 	io.Copy(os.Stdout, r.Body)
 }
 
-func setConfigCommandF(cmd *cobra.Command, args []string) {
+func setConfigCommandFunc(cmd *cobra.Command, args []string) {
 	if len(args) != 2 {
 		fmt.Println(cmd.UsageString())
 		return
@@ -93,8 +93,8 @@ func setConfigCommandF(cmd *cobra.Command, args []string) {
 		return
 	}
 	if r.StatusCode != http.StatusOK {
+		printResponseError(r)
 		r.Body.Close()
-		fmt.Printf("Failed with error code[%d]\n", r.StatusCode)
 		return
 	}
 
@@ -121,6 +121,6 @@ func setConfigCommandF(cmd *cobra.Command, args []string) {
 	if r.StatusCode == http.StatusOK {
 		fmt.Println("Success!")
 	} else {
-		fmt.Printf("Failed with error code[%d]\n", r.StatusCode)
+		printResponseError(r)
 	}
 }

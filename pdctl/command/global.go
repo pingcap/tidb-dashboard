@@ -15,6 +15,8 @@ package command
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"os"
 
@@ -22,7 +24,7 @@ import (
 )
 
 func getAddressFromCmd(cmd *cobra.Command, prefix string) string {
-	p, err := cmd.Flags().GetString("pd_url")
+	p, err := cmd.Flags().GetString("pd")
 	if err != nil {
 		fmt.Println("Get pd address error,should set flag with '-u'")
 		os.Exit(1)
@@ -37,6 +39,11 @@ func getAddressFromCmd(cmd *cobra.Command, prefix string) string {
 	}
 	s := fmt.Sprintf("%s/%s", u, prefix)
 	return s
+}
+
+func printResponseError(r *http.Response) {
+	fmt.Printf("[%d]:", r.StatusCode)
+	io.Copy(os.Stdout, r.Body)
 }
 
 // UsageTemplate will used to generate a help information

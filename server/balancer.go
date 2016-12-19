@@ -184,12 +184,12 @@ func (r *replicaChecker) addPeer(region *regionInfo, constraint *Constraint) *ba
 	}
 
 	addPeer := newAddPeerOperator(region.GetId(), peer)
-	return newBalanceOperator(region, replicaOP, newOnceOperator(addPeer))
+	return newBalanceOperator(region, replicaOP, addPeer)
 }
 
 func (r *replicaChecker) removePeer(region *regionInfo, peer *metapb.Peer) *balanceOperator {
 	removePeer := newRemovePeerOperator(region.GetId(), peer)
-	return newBalanceOperator(region, replicaOP, newOnceOperator(removePeer))
+	return newBalanceOperator(region, replicaOP, removePeer)
 }
 
 func (r *replicaChecker) collectBadPeers(region *regionInfo) map[uint64]*metapb.Peer {
@@ -210,9 +210,14 @@ func (r *replicaChecker) collectDownPeers(region *regionInfo) map[uint64]*metapb
 		if peer == nil {
 			continue
 		}
-		if stats.GetDownSeconds() > uint64(r.opt.GetMaxStoreDownTime().Seconds()) {
-			downPeers[peer.GetStoreId()] = peer
+		store := r.cluster.getStore(peer.GetStoreId())
+		if store.downTime() < r.opt.GetMaxStoreDownTime() {
+			continue
 		}
+		if stats.GetDownSeconds() < uint64(r.opt.GetMaxStoreDownTime().Seconds()) {
+			continue
+		}
+		downPeers[peer.GetStoreId()] = peer
 	}
 	return downPeers
 }

@@ -23,9 +23,10 @@ import (
 )
 
 const (
-	regionCacheTTL     = 2 * time.Minute
+	regionCacheTTL     = time.Minute
 	historiesCacheSize = 1000
 	eventsCacheSize    = 1000
+	maxScheduleRetries = 10
 )
 
 type coordinator struct {
@@ -37,7 +38,7 @@ type coordinator struct {
 
 	cluster *clusterInfo
 	opt     *scheduleOption
-	checker *replicaChecker
+	checker *replicaCheckController
 
 	schedulers map[string]*ScheduleController
 	operators  map[ResourceKind]map[uint64]*balanceOperator
@@ -51,7 +52,6 @@ func newCoordinator(cluster *clusterInfo, opt *scheduleOption) *coordinator {
 	c := &coordinator{
 		cluster:     cluster,
 		opt:         opt,
-		checker:     newReplicaChecker(cluster, opt),
 		schedulers:  make(map[string]*ScheduleController),
 		regionCache: newExpireRegionCache(regionCacheTTL, regionCacheTTL),
 		histories:   newLRUCache(historiesCacheSize),
@@ -60,6 +60,7 @@ func newCoordinator(cluster *clusterInfo, opt *scheduleOption) *coordinator {
 
 	c.ctx, c.cancel = context.WithCancel(context.TODO())
 
+	c.checker = newReplicaCheckController(c)
 	c.operators = make(map[ResourceKind]map[uint64]*balanceOperator)
 	c.operators[leaderKind] = make(map[uint64]*balanceOperator)
 	c.operators[storageKind] = make(map[uint64]*balanceOperator)
@@ -68,10 +69,9 @@ func newCoordinator(cluster *clusterInfo, opt *scheduleOption) *coordinator {
 }
 
 func (c *coordinator) dispatch(region *regionInfo) *pdpb.RegionHeartbeatResponse {
+	c.checker.Check(region)
+
 	op := c.getOperator(region.GetId())
-	if op == nil {
-		op = c.checker.Check(region)
-	}
 	if op == nil {
 		return nil
 	}
@@ -150,8 +150,14 @@ func (c *coordinator) runScheduler(s *ScheduleController) {
 			if !s.AllowSchedule() {
 				continue
 			}
-			if op := s.Schedule(c.cluster); op != nil {
-				c.addOperator(s.GetResourceKind(), op)
+			for i := 0; i < maxScheduleRetries; i++ {
+				op := s.Schedule(c.cluster)
+				if op == nil {
+					continue
+				}
+				if c.addOperator(s.GetResourceKind(), op) {
+					break
+				}
 			}
 		case <-s.Ctx().Done():
 			log.Infof("%v stopped: %v", s.GetName(), s.Ctx().Err())
@@ -160,20 +166,21 @@ func (c *coordinator) runScheduler(s *ScheduleController) {
 	}
 }
 
-func (c *coordinator) addOperator(kind ResourceKind, op *balanceOperator) {
+func (c *coordinator) addOperator(kind ResourceKind, op *balanceOperator) bool {
 	c.Lock()
 	defer c.Unlock()
 
 	regionID := op.Region.GetId()
 	if c.getOperatorLocked(regionID) != nil {
-		return
+		return false
 	}
 	if _, ok := c.regionCache.get(regionID); ok {
-		return
+		return false
 	}
 
 	collectOperatorCounterMetrics(op)
 	c.operators[kind][op.Region.GetId()] = op
+	return true
 }
 
 func (c *coordinator) setOperator(kind ResourceKind, op *balanceOperator) {
@@ -328,6 +335,40 @@ func newStorageScheduleController(c *coordinator, s Scheduler) *ScheduleControll
 	}
 }
 
+type replicaCheckController struct {
+	c        *coordinator
+	opt      *scheduleOption
+	checker  *replicaChecker
+	lastTime time.Time
+}
+
+func newReplicaCheckController(c *coordinator) *replicaCheckController {
+	return &replicaCheckController{
+		c:       c,
+		opt:     c.opt,
+		checker: newReplicaChecker(c.cluster, c.opt),
+	}
+}
+
+func (r *replicaCheckController) Check(region *regionInfo) {
+	// Check limit and interval.
+	if time.Since(r.lastTime) < r.opt.GetReplicaScheduleInterval() {
+		return
+	}
+	if r.c.getOperatorCount(storageKind) >= int(r.opt.GetReplicaScheduleLimit()) {
+		return
+	}
+
+	op := r.checker.Check(region)
+	if op == nil {
+		return
+	}
+
+	if r.c.addOperator(storageKind, op) {
+		r.lastTime = time.Now()
+	}
+}
+
 func collectOperatorCounterMetrics(bop *balanceOperator) {
 	metrics := make(map[string]uint64)
 	prefix := ""
@@ -340,9 +381,6 @@ func collectOperatorCounterMetrics(bop *balanceOperator) {
 		prefix = "balance_"
 	}
 	for _, op := range bop.Ops {
-		if _, ok := op.(*onceOperator); ok {
-			op = op.(*onceOperator).Op
-		}
 		switch o := op.(type) {
 		case *changePeerOperator:
 			metrics[prefix+o.Name]++

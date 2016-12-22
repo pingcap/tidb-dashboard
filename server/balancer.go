@@ -124,20 +124,24 @@ func newReplicaChecker(cluster *clusterInfo, opt *scheduleOption) *replicaChecke
 }
 
 func (r *replicaChecker) Check(region *regionInfo) *balanceOperator {
-	var stores []*storeInfo
+	// If we have bad peer, we remove it first.
+	for _, peer := range r.collectBadPeers(region) {
+		return r.removePeer(region, peer)
+	}
 
-	// Filter bad stores.
-	badPeers := r.collectBadPeers(region)
-	for _, store := range r.cluster.getRegionStores(region) {
-		if _, ok := badPeers[store.GetId()]; !ok {
-			stores = append(stores, store)
+	stores := r.cluster.getRegionStores(region)
+	result := r.opt.GetConstraints().Match(stores)
+
+	// If we have redundant replicas, we can remove unmatched peers.
+	if len(stores) > r.opt.GetMaxReplicas() {
+		for _, store := range stores {
+			if _, ok := result.stores[store.GetId()]; !ok {
+				return r.removePeer(region, region.GetStorePeer(store.GetId()))
+			}
 		}
 	}
 
-	constraints := r.opt.GetConstraints()
-
 	// Make sure all constraints will be satisfied.
-	result := constraints.Match(stores)
 	for _, matched := range result.constraints {
 		if len(matched.stores) < matched.constraint.Replicas {
 			if op := r.addPeer(region, matched.constraint); op != nil {
@@ -145,24 +149,10 @@ func (r *replicaChecker) Check(region *regionInfo) *balanceOperator {
 			}
 		}
 	}
-	if len(stores) < constraints.MaxReplicas {
+	if len(stores) < r.opt.GetMaxReplicas() {
 		// No matter whether we can satisfy all constraints or not,
 		// we should at least ensure that the region has enough replicas.
 		return r.addPeer(region, nil)
-	}
-
-	// Now we can remove bad peers.
-	for _, peer := range badPeers {
-		return r.removePeer(region, peer)
-	}
-
-	// Now we have redundant replicas, we can remove unmatched peers.
-	if len(stores) > constraints.MaxReplicas {
-		for _, store := range stores {
-			if _, ok := result.stores[store.GetId()]; !ok {
-				return r.removePeer(region, region.GetStorePeer(store.GetId()))
-			}
-		}
 	}
 
 	return nil

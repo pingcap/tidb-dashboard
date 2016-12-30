@@ -50,7 +50,7 @@ func main() {
 
 	server.LogPDInfo()
 
-	metricutil.Push(&cfg.MetricCfg)
+	metricutil.Push(&cfg.Metric)
 
 	svr := server.CreateServer(cfg)
 	err = svr.StartEtcd(api.NewHandler(svr))

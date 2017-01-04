@@ -98,6 +98,15 @@ func (s *storeInfo) resourceScores() []int {
 	return scores
 }
 
+func (s *storeInfo) getLabelValue(key string) string {
+	for _, label := range s.GetLabels() {
+		if label.GetKey() == key {
+			return label.GetValue()
+		}
+	}
+	return ""
+}
+
 // StoreStatus contains information about a store's status.
 type StoreStatus struct {
 	*pdpb.StoreStats

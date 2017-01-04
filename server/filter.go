@@ -61,6 +61,22 @@ func (f *excludedFilter) FilterTarget(store *storeInfo) bool {
 	return ok
 }
 
+type cacheFilter struct {
+	cache *idCache
+}
+
+func newCacheFilter(cache *idCache) *cacheFilter {
+	return &cacheFilter{cache: cache}
+}
+
+func (f *cacheFilter) FilterSource(store *storeInfo) bool {
+	return f.cache.get(store.GetId())
+}
+
+func (f *cacheFilter) FilterTarget(store *storeInfo) bool {
+	return false
+}
+
 type stateFilter struct {
 	opt *scheduleOption
 }
@@ -139,4 +155,54 @@ func (f *snapshotCountFilter) FilterSource(store *storeInfo) bool {
 
 func (f *snapshotCountFilter) FilterTarget(store *storeInfo) bool {
 	return f.filter(store)
+}
+
+// storageThresholdFilter ensures that we will not use an almost full store as a target.
+type storageThresholdFilter struct{}
+
+const storageRatioThreshold = 0.8
+
+func newStorageThresholdFilter(opt *scheduleOption) *storageThresholdFilter {
+	return &storageThresholdFilter{}
+}
+
+func (f *storageThresholdFilter) FilterSource(store *storeInfo) bool {
+	return false
+}
+
+func (f *storageThresholdFilter) FilterTarget(store *storeInfo) bool {
+	return store.storageRatio() > storageRatioThreshold
+}
+
+// replicationFilter ensures that the target store will not break the replication constraints.
+type replicationFilter struct {
+	rep        *Replication
+	stores     []*storeInfo
+	worstStore *storeInfo
+	worstScore float64
+}
+
+func newReplicationFilter(rep *Replication, stores []*storeInfo, worstStore *storeInfo) *replicationFilter {
+	for i, s := range stores {
+		if s.GetId() == worstStore.GetId() {
+			stores = append(stores[:i], stores[i+1:]...)
+			break
+		}
+	}
+
+	return &replicationFilter{
+		rep:        rep,
+		stores:     stores,
+		worstStore: worstStore,
+		worstScore: rep.GetReplicaScore(stores, worstStore),
+	}
+}
+
+func (f *replicationFilter) FilterSource(store *storeInfo) bool {
+	return false
+}
+
+func (f *replicationFilter) FilterTarget(store *storeInfo) bool {
+	score := f.rep.GetReplicaScore(f.stores, store)
+	return compareStoreScore(store, score, f.worstStore, f.worstScore) < 0
 }

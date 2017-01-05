@@ -25,8 +25,10 @@ import (
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/embed"
+	"github.com/coreos/etcd/pkg/types"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
+	"github.com/pingcap/pd/pkg/etcdutil"
 )
 
 const (
@@ -131,6 +133,15 @@ func (s *Server) StartEtcd(apiHandler http.Handler) error {
 
 	etcd, err := embed.StartEtcd(etcdCfg)
 	if err != nil {
+		return errors.Trace(err)
+	}
+
+	// Check cluster ID
+	urlmap, err := types.NewURLsMap(s.cfg.InitialCluster)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	if err := etcdutil.CheckClusterID(etcd.Server.Cluster().ID(), urlmap); err != nil {
 		return errors.Trace(err)
 	}
 

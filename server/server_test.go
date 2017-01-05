@@ -295,3 +295,35 @@ func (s *testServerSuite) TestUpdateAdvertiseUrls(c *C) {
 		c.Assert(svr.cfg.AdvertisePeerUrls, Equals, svr.cfg.PeerUrls)
 	}
 }
+
+func (s *testServerSuite) TestCheckClusterID(c *C) {
+	cfgs := NewTestMultiConfig(2)
+	for i, cfg := range cfgs {
+		cfg.DataDir = fmt.Sprintf("/tmp/test_pd_check_clusterID_%d", i)
+		// Clean up before testing.
+		cleanServer(cfg)
+	}
+	originInitial := cfgs[0].InitialCluster
+	for _, cfg := range cfgs {
+		cfg.InitialCluster = fmt.Sprintf("%s=%s", cfg.Name, cfg.PeerUrls)
+	}
+
+	cfgA, cfgB := cfgs[0], cfgs[1]
+	// Start a standalone cluster
+	// TODO: clean up. For now tests failed because:
+	//    etcdserver: failed to purge snap file ...
+	svrsA, _ := newTestServersWithCfgs(c, []*Config{cfgA})
+	// Close it.
+	for _, svr := range svrsA {
+		svr.Close()
+	}
+
+	// Start another cluster.
+	_, cleanB := newTestServersWithCfgs(c, []*Config{cfgB})
+	defer cleanB()
+
+	// Start pervious cluster, expect an error.
+	cfgA.InitialCluster = originInitial
+	_, err := NewServer(cfgA)
+	c.Assert(err, NotNil)
+}

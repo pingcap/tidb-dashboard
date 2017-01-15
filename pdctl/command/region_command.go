@@ -14,12 +14,15 @@
 package command
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
 
+	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/spf13/cobra"
 )
 
@@ -28,6 +31,11 @@ var (
 	regionPrefix  = "pd/api/v1/region/%s"
 )
 
+type regionInfo struct {
+	Region *metapb.Region `json:"region"`
+	Leader *metapb.Peer   `json:"leader"`
+}
+
 // NewRegionCommand return a region subcommand of rootCmd
 func NewRegionCommand() *cobra.Command {
 	r := &cobra.Command{
@@ -35,6 +43,7 @@ func NewRegionCommand() *cobra.Command {
 		Short: "show the region status",
 		Run:   showRegionCommandFunc,
 	}
+	r.AddCommand(NewRegionWithKeyCommand())
 	return r
 }
 
@@ -61,4 +70,69 @@ func showRegionCommandFunc(cmd *cobra.Command, args []string) {
 	}
 
 	io.Copy(os.Stdout, r.Body)
+}
+
+// NewRegionWithKeyCommand return a region with key subcommand of regionCmd
+func NewRegionWithKeyCommand() *cobra.Command {
+	r := &cobra.Command{
+		Use:   "key <key>",
+		Short: "show the region with key",
+		Run:   showRegionWithTableCommandFunc,
+	}
+	return r
+}
+
+func showRegionWithTableCommandFunc(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		fmt.Println(cmd.UsageString())
+		return
+	}
+	key, err := decodeProtobufText(args[0])
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
+	client, err := getClient()
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
+	region, leader, err := client.GetRegion(key)
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
+
+	r := &regionInfo{
+		Region: region,
+		Leader: leader,
+	}
+	infos, err := json.MarshalIndent(r, "", "  ")
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
+	fmt.Println(string(infos))
+}
+
+func decodeProtobufText(text string) ([]byte, error) {
+	var buf []byte
+	r := bytes.NewBuffer([]byte(text))
+	for {
+		c, err := r.ReadByte()
+		if err != nil {
+			if err != io.EOF {
+				return nil, err
+			}
+			break
+		}
+		if c == '\\' {
+			_, err := fmt.Sscanf(string(r.Next(3)), "%03o", &c)
+			if err != nil {
+				return nil, err
+			}
+		}
+		buf = append(buf, c)
+	}
+	return buf, nil
 }

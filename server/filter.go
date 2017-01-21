@@ -86,13 +86,7 @@ func newStateFilter(opt *scheduleOption) *stateFilter {
 }
 
 func (f *stateFilter) filter(store *storeInfo) bool {
-	if !store.isUp() {
-		return true
-	}
-	if store.stats.GetIsBusy() {
-		return true
-	}
-	return store.downTime() > f.opt.GetMaxStoreDownTime()
+	return !store.isUp()
 }
 
 func (f *stateFilter) FilterSource(store *storeInfo) bool {
@@ -100,6 +94,29 @@ func (f *stateFilter) FilterSource(store *storeInfo) bool {
 }
 
 func (f *stateFilter) FilterTarget(store *storeInfo) bool {
+	return f.filter(store)
+}
+
+type healthFilter struct {
+	opt *scheduleOption
+}
+
+func newHealthFilter(opt *scheduleOption) *healthFilter {
+	return &healthFilter{opt: opt}
+}
+
+func (f *healthFilter) filter(store *storeInfo) bool {
+	if store.stats.GetIsBusy() {
+		return true
+	}
+	return store.downTime() > f.opt.GetMaxStoreDownTime()
+}
+
+func (f *healthFilter) FilterSource(store *storeInfo) bool {
+	return f.filter(store)
+}
+
+func (f *healthFilter) FilterTarget(store *storeInfo) bool {
 	return f.filter(store)
 }
 
@@ -174,35 +191,33 @@ func (f *storageThresholdFilter) FilterTarget(store *storeInfo) bool {
 	return store.storageRatio() > storageRatioThreshold
 }
 
-// replicationFilter ensures that the target store will not break the replication constraints.
-type replicationFilter struct {
-	rep        *Replication
-	stores     []*storeInfo
-	worstStore *storeInfo
-	worstScore float64
+// distinctScoreFilter ensures that distinct score will not decrease.
+type distinctScoreFilter struct {
+	rep       *Replication
+	stores    []*storeInfo
+	safeScore float64
 }
 
-func newReplicationFilter(rep *Replication, stores []*storeInfo, worstStore *storeInfo) *replicationFilter {
-	for i, s := range stores {
-		if s.GetId() == worstStore.GetId() {
-			stores = append(stores[:i], stores[i+1:]...)
-			break
+func newDistinctScoreFilter(rep *Replication, stores []*storeInfo, source *storeInfo) *distinctScoreFilter {
+	newStores := make([]*storeInfo, 0, len(stores)-1)
+	for _, s := range stores {
+		if s.GetId() == source.GetId() {
+			continue
 		}
+		newStores = append(newStores, s)
 	}
 
-	return &replicationFilter{
-		rep:        rep,
-		stores:     stores,
-		worstStore: worstStore,
-		worstScore: rep.GetReplicaScore(stores, worstStore),
+	return &distinctScoreFilter{
+		rep:       rep,
+		stores:    newStores,
+		safeScore: rep.GetDistinctScore(newStores, source),
 	}
 }
 
-func (f *replicationFilter) FilterSource(store *storeInfo) bool {
+func (f *distinctScoreFilter) FilterSource(store *storeInfo) bool {
 	return false
 }
 
-func (f *replicationFilter) FilterTarget(store *storeInfo) bool {
-	score := f.rep.GetReplicaScore(f.stores, store)
-	return compareStoreScore(store, score, f.worstStore, f.worstScore) < 0
+func (f *distinctScoreFilter) FilterTarget(store *storeInfo) bool {
+	return f.rep.GetDistinctScore(f.stores, store) < f.safeScore
 }

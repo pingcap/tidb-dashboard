@@ -38,13 +38,6 @@ func (c *testClusterInfo) setStoreUp(storeID uint64) {
 	c.putStore(store)
 }
 
-func (c *testClusterInfo) setStoreBusy(storeID uint64) {
-	store := c.getStore(storeID)
-	store.stats.IsBusy = true
-	store.stats.LastHeartbeatTS = time.Time{}
-	c.putStore(store)
-}
-
 func (c *testClusterInfo) setStoreDown(storeID uint64) {
 	store := c.getStore(storeID)
 	store.State = metapb.StoreState_Up
@@ -55,6 +48,13 @@ func (c *testClusterInfo) setStoreDown(storeID uint64) {
 func (c *testClusterInfo) setStoreOffline(storeID uint64) {
 	store := c.getStore(storeID)
 	store.State = metapb.StoreState_Offline
+	c.putStore(store)
+}
+
+func (c *testClusterInfo) setStoreBusy(storeID uint64, busy bool) {
+	store := c.getStore(storeID)
+	store.stats.IsBusy = busy
+	store.stats.LastHeartbeatTS = time.Now()
 	c.putStore(store)
 }
 
@@ -164,7 +164,7 @@ func (s *testLeaderBalancerSuite) TestBalance(c *C) {
 	checkTransferLeader(c, lb.Schedule(cluster), 4, 2)
 	// If store 2 is busy, it will be filtered,
 	// store 3 becomes the store with least leaders.
-	tc.setStoreBusy(2)
+	tc.setStoreBusy(2, true)
 	checkTransferLeader(c, lb.Schedule(cluster), 4, 3)
 
 	// Test MinBalanceDiffRatio.
@@ -226,7 +226,7 @@ func (s *testStorageBalancerSuite) TestBalance(c *C) {
 	c.Assert(sb.Schedule(cluster), IsNil)
 }
 
-func (s *testStorageBalancerSuite) TestReplicaScore(c *C) {
+func (s *testStorageBalancerSuite) TestReplicas3(c *C) {
 	cluster := newClusterInfo(newMockIDAllocator())
 	tc := newTestClusterInfo(cluster)
 
@@ -247,7 +247,7 @@ func (s *testStorageBalancerSuite) TestReplicaScore(c *C) {
 	c.Assert(sb.cache.get(1), IsTrue)
 
 	// Store 4 has smaller storage ratio than store 2.
-	tc.addLabelsStore(4, 1, 0.1, map[string]string{"zone": "z1", "rack": "r2", "host": "h3"})
+	tc.addLabelsStore(4, 1, 0.1, map[string]string{"zone": "z1", "rack": "r2", "host": "h1"})
 	checkTransferPeer(c, sb.Schedule(cluster), 2, 4)
 
 	// Store 5 has smaller storage ratio than store 1.
@@ -255,21 +255,76 @@ func (s *testStorageBalancerSuite) TestReplicaScore(c *C) {
 	sb.cache.delete(1) // Delete store 1 from cache, or it will be skipped.
 	checkTransferPeer(c, sb.Schedule(cluster), 1, 5)
 
-	// Store 6 has smaller storage ratio than store 5 and different rack with other stores.
-	tc.addLabelsStore(6, 1, 0.1, map[string]string{"zone": "z1", "rack": "r1", "host": "h2"})
+	// Store 6 has smaller storage ratio than store 5.
+	tc.addLabelsStore(6, 1, 0.1, map[string]string{"zone": "z1", "rack": "r1", "host": "h1"})
 	checkTransferPeer(c, sb.Schedule(cluster), 1, 6)
 
-	// Take down 4,5,6
+	// Store 7 has the same storage ratio with store 6, but in a different host.
+	tc.addLabelsStore(7, 1, 0.2, map[string]string{"zone": "z1", "rack": "r1", "host": "h2"})
+	checkTransferPeer(c, sb.Schedule(cluster), 1, 7)
+
+	// If store 7 is not available, we wait.
+	tc.setStoreDown(7)
+	c.Assert(sb.Schedule(cluster), IsNil)
+	c.Assert(sb.cache.get(1), IsTrue)
+	tc.setStoreUp(7)
+	checkTransferPeer(c, sb.Schedule(cluster), 2, 7)
+	sb.cache.delete(1)
+	checkTransferPeer(c, sb.Schedule(cluster), 1, 7)
+
+	// Store 8 has smaller storage ratio than store 7, but the distinct score decrease.
+	tc.addLabelsStore(8, 1, 0.1, map[string]string{"zone": "z1", "rack": "r2", "host": "h3"})
+	checkTransferPeer(c, sb.Schedule(cluster), 1, 7)
+
+	// Take down 4,5,6,7
 	tc.setStoreDown(4)
 	tc.setStoreDown(5)
 	tc.setStoreDown(6)
+	tc.setStoreDown(7)
 	c.Assert(sb.Schedule(cluster), IsNil)
 	c.Assert(sb.cache.get(1), IsTrue)
 	sb.cache.delete(1)
 
 	// Store 7 has different zone with other stores but larger storage ratio than store 1.
-	tc.addLabelsStore(7, 1, 0.7, map[string]string{"zone": "z2", "rack": "r1", "host": "h1"})
+	tc.addLabelsStore(9, 1, 0.6, map[string]string{"zone": "z2", "rack": "r1", "host": "h1"})
 	c.Assert(sb.Schedule(cluster), IsNil)
+}
+
+func (s *testStorageBalancerSuite) TestReplicas5(c *C) {
+	cluster := newClusterInfo(newMockIDAllocator())
+	tc := newTestClusterInfo(cluster)
+
+	_, opt := newTestScheduleConfig()
+	opt.rep = newTestReplication(5, "zone", "rack", "host")
+
+	sb := newStorageBalancer(opt)
+
+	tc.addLabelsStore(1, 1, 0.1, map[string]string{"zone": "z1", "rack": "r1", "host": "h1"})
+	tc.addLabelsStore(2, 1, 0.2, map[string]string{"zone": "z2", "rack": "r1", "host": "h1"})
+	tc.addLabelsStore(3, 1, 0.3, map[string]string{"zone": "z3", "rack": "r1", "host": "h1"})
+	tc.addLabelsStore(4, 1, 0.4, map[string]string{"zone": "z4", "rack": "r1", "host": "h1"})
+	tc.addLabelsStore(5, 1, 0.5, map[string]string{"zone": "z5", "rack": "r1", "host": "h1"})
+
+	tc.addLeaderRegion(1, 1, 2, 3, 4, 5)
+
+	// Store 6 has smaller ratio.
+	tc.addLabelsStore(6, 1, 0.3, map[string]string{"zone": "z5", "rack": "r2", "host": "h1"})
+	checkTransferPeer(c, sb.Schedule(cluster), 5, 6)
+
+	// Store 7 has smaller ratio and higher score.
+	tc.addLabelsStore(7, 1, 0.4, map[string]string{"zone": "z6", "rack": "r1", "host": "h1"})
+	checkTransferPeer(c, sb.Schedule(cluster), 5, 7)
+
+	// Store 1 has smaller ratio and higher score.
+	tc.addLeaderRegion(1, 2, 3, 4, 5, 6)
+	checkTransferPeer(c, sb.Schedule(cluster), 5, 1)
+
+	// Store 6 has smaller ratio and higher score.
+	tc.addLabelsStore(11, 1, 0.9, map[string]string{"zone": "z1", "rack": "r2", "host": "h1"})
+	tc.addLabelsStore(12, 1, 0.8, map[string]string{"zone": "z2", "rack": "r2", "host": "h1"})
+	tc.addLabelsStore(13, 1, 0.7, map[string]string{"zone": "z3", "rack": "r2", "host": "h1"})
+	tc.addLeaderRegion(1, 2, 3, 11, 12, 13)
+	checkTransferPeer(c, sb.Schedule(cluster), 11, 6)
 }
 
 var _ = Suite(&testReplicaCheckerSuite{})
@@ -288,18 +343,20 @@ func (s *testReplicaCheckerSuite) TestBasic(c *C) {
 	// Add stores 1,2,3,4.
 	tc.addRegionStore(1, 4, 0.4)
 	tc.addRegionStore(2, 3, 0.3)
-	tc.addRegionStore(3, 2, 0.1)
-	tc.addRegionStore(4, 1, 0.2)
+	tc.addRegionStore(3, 2, 0.2)
+	tc.addRegionStore(4, 1, 0.1)
 	// Add region 1 with leader in store 1 and follower in store 2.
 	tc.addLeaderRegion(1, 1, 2)
 
 	// Region has 2 peers, we need to add a new peer.
 	region := cluster.getRegion(1)
-	checkAddPeer(c, rc.Check(region), 3)
+	checkAddPeer(c, rc.Check(region), 4)
 
-	// Test stateFilter.
-	// If store 3 is down, we can add to store 4.
-	tc.setStoreDown(3)
+	// Test healthFilter.
+	// If store 4 is down, we wait.
+	tc.setStoreDown(4)
+	c.Assert(rc.Check(region), IsNil)
+	tc.setStoreUp(4)
 	checkAddPeer(c, rc.Check(region), 4)
 
 	// Test snapshotCountFilter.
@@ -310,13 +367,20 @@ func (s *testReplicaCheckerSuite) TestBasic(c *C) {
 	tc.updateSnapshotCount(4, 1)
 	checkAddPeer(c, rc.Check(region), 4)
 
+	// Test storageThresholdFilter.
+	// If storage ratio > storageRatioThreshold, we can not add peer.
+	tc.addRegionStore(4, 1, 0.9)
+	checkAddPeer(c, rc.Check(region), 3)
+	// If storage ratio < storageRatioThreshold, we can add peer again.
+	tc.addRegionStore(4, 1, 0.1)
+	checkAddPeer(c, rc.Check(region), 4)
+
 	// Add peer in store 4, and we have enough replicas.
 	peer4, _ := cluster.allocPeer(4)
 	region.Peers = append(region.Peers, peer4)
 	c.Assert(rc.Check(region), IsNil)
 
 	// Add peer in store 3, and we have redundant replicas.
-	tc.setStoreUp(3)
 	peer3, _ := cluster.allocPeer(3)
 	region.Peers = append(region.Peers, peer3)
 	checkRemovePeer(c, rc.Check(region), 1)
@@ -338,7 +402,57 @@ func (s *testReplicaCheckerSuite) TestBasic(c *C) {
 	checkTransferPeer(c, rc.Check(region), 3, 1)
 }
 
-func (s *testReplicaCheckerSuite) TestReplicaScore(c *C) {
+func (s *testReplicaCheckerSuite) TestOffline(c *C) {
+	cluster := newClusterInfo(newMockIDAllocator())
+	tc := newTestClusterInfo(cluster)
+
+	_, opt := newTestScheduleConfig()
+	opt.rep = newTestReplication(3, "zone", "rack", "host")
+
+	rc := newReplicaChecker(opt, cluster)
+
+	tc.addLabelsStore(1, 1, 0.3, map[string]string{"zone": "z1", "rack": "r1", "host": "h1"})
+	tc.addLabelsStore(2, 1, 0.4, map[string]string{"zone": "z2", "rack": "r1", "host": "h1"})
+	tc.addLabelsStore(3, 1, 0.5, map[string]string{"zone": "z3", "rack": "r1", "host": "h1"})
+	tc.addLabelsStore(4, 1, 0.6, map[string]string{"zone": "z3", "rack": "r2", "host": "h1"})
+
+	tc.addLeaderRegion(1, 1)
+	region := cluster.getRegion(1)
+
+	// Store 2 has different zone and smallest storage ratio.
+	checkAddPeer(c, rc.Check(region), 2)
+	peer2, _ := cluster.allocPeer(2)
+	region.Peers = append(region.Peers, peer2)
+
+	// Store 3 has different zone and smallest storage ratio.
+	checkAddPeer(c, rc.Check(region), 3)
+	peer3, _ := cluster.allocPeer(3)
+	region.Peers = append(region.Peers, peer3)
+
+	// Store 4 has the same zone with store 3 and larger storage ratio.
+	peer4, _ := cluster.allocPeer(4)
+	region.Peers = append(region.Peers, peer4)
+	checkRemovePeer(c, rc.Check(region), 4)
+
+	// Test healthFilter.
+	tc.setStoreBusy(4, true)
+	c.Assert(rc.Check(region), IsNil)
+	tc.setStoreBusy(4, false)
+	checkRemovePeer(c, rc.Check(region), 4)
+	region.RemoveStorePeer(4)
+
+	// Transfer peer to store 4.
+	tc.setStoreOffline(3)
+	checkTransferPeer(c, rc.Check(region), 3, 4)
+
+	// Store 5 has a different zone, we can keep it safe.
+	tc.addLabelsStore(5, 1, 0.7, map[string]string{"zone": "z4", "rack": "r1", "host": "h1"})
+	checkTransferPeer(c, rc.Check(region), 3, 5)
+	tc.updateSnapshotCount(5, 10)
+	c.Assert(rc.Check(region), IsNil)
+}
+
+func (s *testReplicaCheckerSuite) TestDistinctScore(c *C) {
 	cluster := newClusterInfo(newMockIDAllocator())
 	tc := newTestClusterInfo(cluster)
 
@@ -361,7 +475,7 @@ func (s *testReplicaCheckerSuite) TestReplicaScore(c *C) {
 	tc.addLabelsStore(3, 1, 0.5, map[string]string{"zone": "z1", "rack": "r1", "host": "h1"})
 	checkAddPeer(c, rc.Check(region), 3)
 
-	// Store 4 has the same zone, rack, and host, but smaller storage ratio.
+	// Store 4 has smaller storage ratio.
 	tc.addLabelsStore(4, 1, 0.4, map[string]string{"zone": "z1", "rack": "r1", "host": "h1"})
 	checkAddPeer(c, rc.Check(region), 4)
 
@@ -377,7 +491,13 @@ func (s *testReplicaCheckerSuite) TestReplicaScore(c *C) {
 	tc.addLabelsStore(7, 1, 0.5, map[string]string{"zone": "z2", "rack": "r1", "host": "h1"})
 	checkAddPeer(c, rc.Check(region), 7)
 
-	// Add peer to store 7 first because it has a different zone.
+	// Test stateFilter.
+	tc.setStoreOffline(7)
+	checkAddPeer(c, rc.Check(region), 6)
+	tc.setStoreUp(7)
+	checkAddPeer(c, rc.Check(region), 7)
+
+	// Add peer to store 7.
 	peer7, _ := cluster.allocPeer(7)
 	region.Peers = append(region.Peers, peer7)
 
@@ -400,7 +520,7 @@ func (s *testReplicaCheckerSuite) TestReplicaScore(c *C) {
 	c.Assert(rc.Check(region), IsNil)
 
 	// Store 10 has a different zone.
-	// Store 2 and 6 have the same replica score, but store 2 has larger storage ratio.
+	// Store 2 and 6 have the same distinct score, but store 2 has larger storage ratio.
 	// So replace peer in store 2 with store 10.
 	tc.addLabelsStore(10, 1, 0.5, map[string]string{"zone": "z3", "rack": "r1", "host": "h1"})
 	checkTransferPeer(c, rc.Check(region), 2, 10)
@@ -411,7 +531,7 @@ func (s *testReplicaCheckerSuite) TestReplicaScore(c *C) {
 	c.Assert(rc.Check(region), IsNil)
 }
 
-func (s *testReplicaCheckerSuite) TestReplicaScore2(c *C) {
+func (s *testReplicaCheckerSuite) TestDistinctScore2(c *C) {
 	cluster := newClusterInfo(newMockIDAllocator())
 	tc := newTestClusterInfo(cluster)
 

@@ -27,7 +27,7 @@ import (
 	"github.com/juju/errors"
 	"github.com/pingcap/pd/pkg/metricutil"
 	"github.com/pingcap/pd/pkg/testutil"
-	"github.com/pingcap/pd/pkg/timeutil"
+	"github.com/pingcap/pd/pkg/typeutil"
 )
 
 // Config is the pd server configuration.
@@ -62,7 +62,7 @@ type Config struct {
 	LogFile string `toml:"log-file" json:"log-file"`
 
 	// TsoSaveInterval is the interval to save timestamp.
-	TsoSaveInterval timeutil.Duration `toml:"tso-save-interval" json:"tso-save-interval"`
+	TsoSaveInterval typeutil.Duration `toml:"tso-save-interval" json:"tso-save-interval"`
 
 	Metric metricutil.MetricConfig `toml:"metric" json:"metric"`
 
@@ -148,7 +148,7 @@ func adjustFloat64(v *float64, defValue float64) {
 	}
 }
 
-func adjustDuration(v *timeutil.Duration, defValue time.Duration) {
+func adjustDuration(v *typeutil.Duration, defValue time.Duration) {
 	if v.Duration == 0 {
 		v.Duration = defValue
 	}
@@ -284,10 +284,10 @@ type ScheduleConfig struct {
 
 	// MaxStoreDownDuration is the max duration at which
 	// a store will be considered to be down if it hasn't reported heartbeats.
-	MaxStoreDownDuration timeutil.Duration `toml:"max-store-down-duration" json:"max-store-down-duration"`
+	MaxStoreDownDuration typeutil.Duration `toml:"max-store-down-duration" json:"max-store-down-duration"`
 
 	// ScheduleInterval is the interval to schedule.
-	ScheduleInterval timeutil.Duration `toml:"schedule-interval" json:"schedule-interval"`
+	ScheduleInterval typeutil.Duration `toml:"schedule-interval" json:"schedule-interval"`
 	// LeaderScheduleLimit is the max coexist leader schedules.
 	LeaderScheduleLimit uint64 `toml:"leader-schedule-limit" json:"leader-schedule-limit"`
 	// RegionScheduleLimit is the max coexist region schedules.
@@ -472,7 +472,7 @@ func NewTestSingleConfig() *Config {
 		InitialClusterState: embed.ClusterStateFlagNew,
 
 		LeaderLease:     1,
-		TsoSaveInterval: timeutil.NewDuration(200 * time.Millisecond),
+		TsoSaveInterval: typeutil.NewDuration(200 * time.Millisecond),
 	}
 
 	cfg.AdvertiseClientUrls = cfg.ClientUrls

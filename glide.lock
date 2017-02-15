@@ -1,5 +1,5 @@
-hash: 9447debe3277ee199d0f0457838071672ba4414d42c9b3d0724fede41fa42c08
-updated: 2017-02-15T16:10:29.243368411+08:00
+hash: 76265ce7d49d84dd357a583a75fb5f23c3455d93c24185a90446ba1ed4851fda
+updated: 2017-02-15T17:25:46.565099361+08:00
 imports:
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
@@ -85,6 +85,8 @@ imports:
   version: 3ac0863d7acf3bc44daf49afef8919af12f704ef
   subpackages:
   - capnslog
+- name: github.com/dustin/go-humanize
+  version: 7a41df006ff9af79a29f0ffa9c5f21fbe6314a2d
 - name: github.com/elazarl/go-bindata-assetfs
   version: 9a6736ed45b44bf3835afeebb3034b57ed329f3e
 - name: github.com/ghodss/yaml

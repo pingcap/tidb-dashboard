@@ -1,4 +1,4 @@
-GO=GO15VENDOREXPERIMENT="1" go
+GO=GO15VENDOREXPERIMENT="1" CGO_ENABLED=0 go
 
 PACKAGES := $$(go list ./...| grep -vE 'vendor|pd-server')
 

@@ -70,6 +70,13 @@ type Config struct {
 
 	Replication ReplicationConfig `toml:"replication" json:"replication"`
 
+	// QuotaBackendBytes Raise alarms when backend size exceeds the given quota. 0 means use the default quota.
+	// the default size is 2GB, the maximum is 8GB.
+	QuotaBackendBytes typeutil.ByteSize `toml:"quota-backend-bytes" json:"quota-backend-bytes"`
+	// AutoCompactionRetention for mvcc key value store in hour. 0 means disable auto compaction.
+	// the default retention is 1 hour
+	AutoCompactionRetention int `toml:"auto-compaction-retention" json:"auto-compaction-retention"`
+
 	// Only test can change them.
 	nextRetryDelay             time.Duration
 	disableStrictReconfigCheck bool
@@ -107,8 +114,9 @@ func NewConfig() *Config {
 }
 
 const (
-	defaultLeaderLease    = int64(3)
-	defaultNextRetryDelay = time.Second
+	defaultLeaderLease             = int64(3)
+	defaultNextRetryDelay          = time.Second
+	defaultAutoCompactionRetention = 1
 
 	defaultName                = "pd"
 	defaultClientUrls          = "http://127.0.0.1:2379"
@@ -233,6 +241,9 @@ func (c *Config) adjust() error {
 
 	if c.nextRetryDelay == 0 {
 		c.nextRetryDelay = defaultNextRetryDelay
+	}
+	if c.AutoCompactionRetention == 0 {
+		c.AutoCompactionRetention = defaultAutoCompactionRetention
 	}
 
 	adjustUint64(&c.tickMs, defaultTickMs)
@@ -404,6 +415,8 @@ func (c *Config) genEmbedEtcdConfig() (*embed.Config, error) {
 	cfg.StrictReconfigCheck = !c.disableStrictReconfigCheck
 	cfg.TickMs = uint(c.tickMs)
 	cfg.ElectionMs = uint(c.electionMs)
+	cfg.AutoCompactionRetention = c.AutoCompactionRetention
+	cfg.QuotaBackendBytes = int64(c.QuotaBackendBytes)
 
 	var err error
 

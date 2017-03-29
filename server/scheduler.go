@@ -15,6 +15,7 @@ package server
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
@@ -312,24 +313,49 @@ func scheduleRemovePeer(cluster *clusterInfo, s Selector, filters ...Filter) (*r
 
 // scheduleTransferLeader schedules a region to transfer leader to the peer.
 func scheduleTransferLeader(cluster *clusterInfo, s Selector, filters ...Filter) (*regionInfo, *metapb.Peer) {
-	sourceStores := cluster.getStores()
-
-	source := s.SelectSource(sourceStores, filters...)
-	if source == nil {
+	stores := cluster.getStores()
+	if len(stores) == 0 {
 		return nil, nil
 	}
 
-	region := cluster.randLeaderRegion(source.GetId())
+	var averageLeader float64
+	for _, s := range stores {
+		averageLeader += float64(s.leaderScore()) / float64(len(stores))
+	}
+
+	mostLeaderStore := s.SelectSource(stores, filters...)
+	leastLeaderStore := s.SelectTarget(stores, filters...)
+
+	var mostLeaderDistance, leastLeaderDistance float64
+	if mostLeaderStore != nil {
+		mostLeaderDistance = math.Abs(mostLeaderStore.leaderScore() - averageLeader)
+	}
+	if leastLeaderStore != nil {
+		leastLeaderDistance = math.Abs(leastLeaderStore.leaderScore() - averageLeader)
+	}
+	if mostLeaderDistance == 0 && leastLeaderDistance == 0 {
+		return nil, nil
+	}
+
+	if mostLeaderDistance > leastLeaderDistance {
+		// Transfer a leader out of mostLeaderStore.
+		region := cluster.randLeaderRegion(mostLeaderStore.GetId())
+		if region == nil {
+			return nil, nil
+		}
+		targetStores := cluster.getFollowerStores(region)
+		target := s.SelectTarget(targetStores)
+		if target == nil {
+			return nil, nil
+		}
+
+		return region, region.GetStorePeer(target.GetId())
+	}
+
+	// Transfer a leader into leastLeaderStore.
+	region := cluster.randFollowerRegion(leastLeaderStore.GetId())
 	if region == nil {
 		return nil, nil
 	}
-
-	targetStores := cluster.getFollowerStores(region)
-
-	target := s.SelectTarget(targetStores)
-	if target == nil {
-		return nil, nil
-	}
-
-	return region, region.GetStorePeer(target.GetId())
+	return region, region.GetStorePeer(leastLeaderStore.GetId())
 }

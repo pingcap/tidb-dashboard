@@ -30,16 +30,16 @@ const (
 type Operator interface {
 	GetRegionID() uint64
 	GetResourceKind() ResourceKind
-	Do(region *regionInfo) (*pdpb.RegionHeartbeatResponse, bool)
+	Do(region *RegionInfo) (*pdpb.RegionHeartbeatResponse, bool)
 }
 
 type adminOperator struct {
-	Region *regionInfo `json:"region"`
+	Region *RegionInfo `json:"region"`
 	Start  time.Time   `json:"start"`
 	Ops    []Operator  `json:"ops"`
 }
 
-func newAdminOperator(region *regionInfo, ops ...Operator) *adminOperator {
+func newAdminOperator(region *RegionInfo, ops ...Operator) *adminOperator {
 	return &adminOperator{
 		Region: region,
 		Start:  time.Now(),
@@ -59,7 +59,7 @@ func (op *adminOperator) GetResourceKind() ResourceKind {
 	return adminKind
 }
 
-func (op *adminOperator) Do(region *regionInfo) (*pdpb.RegionHeartbeatResponse, bool) {
+func (op *adminOperator) Do(region *RegionInfo) (*pdpb.RegionHeartbeatResponse, bool) {
 	// Update region.
 	op.Region = region.clone()
 
@@ -75,7 +75,7 @@ func (op *adminOperator) Do(region *regionInfo) (*pdpb.RegionHeartbeatResponse, 
 }
 
 type regionOperator struct {
-	Region *regionInfo  `json:"region"`
+	Region *RegionInfo  `json:"region"`
 	Start  time.Time    `json:"start"`
 	End    time.Time    `json:"end"`
 	Index  int          `json:"index"`
@@ -83,7 +83,7 @@ type regionOperator struct {
 	Kind   ResourceKind `json:"kind"`
 }
 
-func newRegionOperator(region *regionInfo, kind ResourceKind, ops ...Operator) *regionOperator {
+func newRegionOperator(region *RegionInfo, kind ResourceKind, ops ...Operator) *regionOperator {
 	// Do some check here, just fatal because it must be bug.
 	if len(ops) == 0 {
 		log.Fatalf("[region %d] new region operator with no ops", region.GetId())
@@ -109,7 +109,7 @@ func (op *regionOperator) GetResourceKind() ResourceKind {
 	return op.Kind
 }
 
-func (op *regionOperator) Do(region *regionInfo) (*pdpb.RegionHeartbeatResponse, bool) {
+func (op *regionOperator) Do(region *RegionInfo) (*pdpb.RegionHeartbeatResponse, bool) {
 	if time.Since(op.Start) > maxOperatorWaitTime {
 		log.Errorf("[region %d] Operator timeout:%s", region.GetId(), op)
 		return nil, true
@@ -171,7 +171,7 @@ func (op *changePeerOperator) GetResourceKind() ResourceKind {
 	return regionKind
 }
 
-func (op *changePeerOperator) Do(region *regionInfo) (*pdpb.RegionHeartbeatResponse, bool) {
+func (op *changePeerOperator) Do(region *RegionInfo) (*pdpb.RegionHeartbeatResponse, bool) {
 	// Check if operator is finished.
 	peer := op.ChangePeer.GetPeer()
 	switch op.ChangePeer.GetChangeType() {
@@ -227,7 +227,7 @@ func (op *transferLeaderOperator) GetResourceKind() ResourceKind {
 	return leaderKind
 }
 
-func (op *transferLeaderOperator) Do(region *regionInfo) (*pdpb.RegionHeartbeatResponse, bool) {
+func (op *transferLeaderOperator) Do(region *RegionInfo) (*pdpb.RegionHeartbeatResponse, bool) {
 	// Check if operator is finished.
 	if region.Leader.GetId() == op.NewLeader.GetId() {
 		return nil, true

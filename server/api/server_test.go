@@ -189,6 +189,18 @@ func mustPutStore(c *C, s *server.Server, store *metapb.Store) {
 	c.Assert(resp.GetHeader().GetError().GetType(), Equals, pdpb.ErrorType_OK)
 }
 
+func mustRegionHeartBeat(c *C, s *server.Server, region *server.RegionInfo) {
+	grpcPDClient := mustNewGrpcClient(c, s.GetAddr())
+	req := &pdpb.RegionHeartbeatRequest{
+		Header: newRequestHeader(s.ClusterID()),
+		Region: region.Region,
+		Leader: region.Leader,
+	}
+	resp, err := grpcPDClient.RegionHeartbeat(context.Background(), req)
+	c.Assert(err, IsNil)
+	c.Assert(resp.GetHeader().GetError().GetType(), Equals, pdpb.ErrorType_OK)
+}
+
 func readJSONWithURL(url string, data interface{}) error {
 	resp, err := unixClient.Get(url)
 	defer resp.Body.Close()

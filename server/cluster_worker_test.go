@@ -218,7 +218,7 @@ func (s *testClusterWorkerSuite) checkRegionPeerCount(c *C, regionKey []byte, ex
 	cluster := s.svr.GetRaftCluster()
 	c.Assert(cluster, NotNil)
 
-	region, _ := cluster.getRegion(regionKey)
+	region, _ := cluster.GetRegionByKey(regionKey)
 	c.Assert(region.Peers, HasLen, expectCount)
 	return region
 }
@@ -318,7 +318,7 @@ func (s *testClusterWorkerSuite) reportSplit(c *C, msgID uint64, left *metapb.Re
 }
 
 func mustGetRegion(c *C, cluster *RaftCluster, key []byte, expect *metapb.Region) {
-	r, _ := cluster.getRegion(key)
+	r, _ := cluster.GetRegionByKey(key)
 	c.Assert(r, DeepEquals, expect)
 }
 
@@ -337,7 +337,7 @@ func (s *testClusterWorkerSuite) TestHeartbeatSplit(c *C) {
 	c.Assert(cluster, NotNil)
 
 	// split 1 to 1: [nil, m) 2: [m, nil), sync 1 first
-	r1, _ := cluster.getRegion([]byte("a"))
+	r1, _ := cluster.GetRegionByKey([]byte("a"))
 	checkSearchRegions(c, cluster, []byte{})
 
 	r2ID, r2PeerIDs := s.askSplit(c, 0, r1)
@@ -384,7 +384,7 @@ func (s *testClusterWorkerSuite) TestHeartbeatSplit2(c *C) {
 	cluster := s.svr.GetRaftCluster()
 	c.Assert(cluster, NotNil)
 
-	r1, _ := cluster.getRegion([]byte("a"))
+	r1, _ := cluster.GetRegionByKey([]byte("a"))
 	//	leaderPd := mustGetLeader(c, s.client, s.svr.getLeaderPath())
 	leaderPeer := s.chooseRegionLeader(c, r1)
 
@@ -428,7 +428,7 @@ func (s *testClusterWorkerSuite) TestHeartbeatChangePeer(c *C) {
 
 	// There is only one region now, directly use it for test.
 	regionKey := []byte("a")
-	region, _ := cluster.getRegion(regionKey)
+	region, _ := cluster.GetRegionByKey(regionKey)
 	c.Assert(region.Peers, HasLen, 1)
 
 	//	leaderPd := mustGetLeader(c, s.client, s.svr.getLeaderPath())
@@ -488,7 +488,7 @@ func (s *testClusterWorkerSuite) TestHeartbeatSplitAddPeer(c *C) {
 	cluster := s.svr.GetRaftCluster()
 	c.Assert(cluster, NotNil)
 
-	r1, _ := cluster.getRegion([]byte("a"))
+	r1, _ := cluster.GetRegionByKey([]byte("a"))
 	leaderPeer1 := s.chooseRegionLeader(c, r1)
 
 	// First sync, pd-server will return a AddPeer.

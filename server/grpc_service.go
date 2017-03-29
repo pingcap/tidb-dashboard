@@ -303,7 +303,7 @@ func (s *Server) GetRegion(ctx context.Context, request *pdpb.GetRegionRequest) 
 	if cluster == nil {
 		return &pdpb.GetRegionResponse{Header: s.notBootstrappedHeader()}, nil
 	}
-	region, leader := cluster.getRegion(request.GetRegionKey())
+	region, leader := cluster.GetRegionByKey(request.GetRegionKey())
 	return &pdpb.GetRegionResponse{
 		Header: s.header(),
 		Region: region,

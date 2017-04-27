@@ -1,5 +1,5 @@
-hash: 46f235ac2fe8d8d5e5f3b4a11ecb2f0382254edf988463de160b3da3cdb813bf
-updated: 2017-04-12T02:17:53.324092921+08:00
+hash: 61b8015b522ecd33b57763e3acb4ce7f23bce6a12e7577fc1bc7ab8e1158cb38
+updated: 2017-04-27T15:52:15.019482024+08:00
 imports:
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
@@ -16,7 +16,7 @@ imports:
 - name: github.com/cockroachdb/cmux
   version: 112f0506e7743d64a6eb8fedbcff13d9979bbf92
 - name: github.com/coreos/etcd
-  version: 9ca7f22e84f58deb40ea0de78b350c0fe3eaf77b
+  version: 8bad78cb98739eed7bbf1f94b218a7fa5dc5611a
   subpackages:
   - alarm
   - auth
@@ -33,12 +33,17 @@ imports:
   - etcdserver/api/v2http
   - etcdserver/api/v2http/httptypes
   - etcdserver/api/v3client
+  - etcdserver/api/v3election
+  - etcdserver/api/v3election/v3electionpb
+  - etcdserver/api/v3election/v3electionpb/gw
   - etcdserver/api/v3lock
   - etcdserver/api/v3lock/v3lockpb
+  - etcdserver/api/v3lock/v3lockpb/gw
   - etcdserver/api/v3rpc
   - etcdserver/api/v3rpc/rpctypes
   - etcdserver/auth
   - etcdserver/etcdserverpb
+  - etcdserver/etcdserverpb/gw
   - etcdserver/membership
   - etcdserver/stats
   - lease
@@ -52,6 +57,7 @@ imports:
   - pkg/cors
   - pkg/cpuutil
   - pkg/crc
+  - pkg/debugutil
   - pkg/fileutil
   - pkg/httputil
   - pkg/idutil
@@ -177,7 +183,7 @@ imports:
   repo: https://github.com/spf13/cobra.git
   vcs: git
 - name: github.com/spf13/pflag
-  version: 9a906f17374922ed0f74e1b2f593d3723f2ffb00
+  version: 314c91c3e94238576bab29cbcdd44b57ab8e0d39
 - name: github.com/twinj/uuid
   version: 70cac2bcd273ef6a371bb96cde363d28b68734c3
 - name: github.com/ugorji/go
@@ -230,5 +236,5 @@ imports:
 - name: gopkg.in/natefinch/lumberjack.v2
   version: dd45e6a67c53f673bb49ca8a001fd3a63ceb640e
 - name: gopkg.in/yaml.v2
-  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
+  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports: []

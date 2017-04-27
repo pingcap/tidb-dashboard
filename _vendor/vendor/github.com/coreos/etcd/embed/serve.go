@@ -20,17 +20,20 @@ import (
 	defaultLog "log"
 	"net"
 	"net/http"
-	"net/http/pprof"
 	"strings"
 	"time"
 
 	"github.com/coreos/etcd/etcdserver"
 	"github.com/coreos/etcd/etcdserver/api/v3client"
+	"github.com/coreos/etcd/etcdserver/api/v3election"
+	"github.com/coreos/etcd/etcdserver/api/v3election/v3electionpb"
+	v3electiongw "github.com/coreos/etcd/etcdserver/api/v3election/v3electionpb/gw"
 	"github.com/coreos/etcd/etcdserver/api/v3lock"
 	"github.com/coreos/etcd/etcdserver/api/v3lock/v3lockpb"
+	v3lockgw "github.com/coreos/etcd/etcdserver/api/v3lock/v3lockpb/gw"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc"
-	pb "github.com/coreos/etcd/etcdserver/etcdserverpb"
-	"github.com/coreos/etcd/pkg/transport"
+	etcdservergw "github.com/coreos/etcd/etcdserver/etcdserverpb/gw"
+	"github.com/coreos/etcd/pkg/debugutil"
 
 	"github.com/cockroachdb/cmux"
 	gw "github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -39,8 +42,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
-
-const pprofPrefix = "/debug/pprof"
 
 type serveCtx struct {
 	l        net.Listener
@@ -52,11 +53,14 @@ type serveCtx struct {
 
 	userHandlers    map[string]http.Handler
 	serviceRegister func(*grpc.Server)
+	grpcServerC     chan *grpc.Server
 }
 
 func newServeCtx() *serveCtx {
 	ctx, cancel := context.WithCancel(context.Background())
-	return &serveCtx{ctx: ctx, cancel: cancel, userHandlers: make(map[string]http.Handler)}
+	return &serveCtx{ctx: ctx, cancel: cancel, userHandlers: make(map[string]http.Handler),
+		grpcServerC: make(chan *grpc.Server, 2), // in case sctx.insecure,sctx.secure true
+	}
 }
 
 // serve accepts incoming connections on the listener l,
@@ -68,10 +72,15 @@ func (sctx *serveCtx) serve(s *etcdserver.EtcdServer, tlscfg *tls.Config, handle
 	plog.Info("ready to serve client requests")
 
 	m := cmux.New(sctx.l)
+	v3c := v3client.New(s)
+	servElection := v3election.NewElectionServer(v3c)
+	servLock := v3lock.NewLockServer(v3c)
 
 	if sctx.insecure {
 		gs := v3rpc.Server(s, nil)
-		v3lockpb.RegisterLockServer(gs, v3lock.NewLockServer(v3client.New(s)))
+		sctx.grpcServerC <- gs
+		v3electionpb.RegisterElectionServer(gs, servElection)
+		v3lockpb.RegisterLockServer(gs, servLock)
 		if sctx.serviceRegister != nil {
 			sctx.serviceRegister(gs)
 		}
@@ -99,13 +108,15 @@ func (sctx *serveCtx) serve(s *etcdserver.EtcdServer, tlscfg *tls.Config, handle
 
 	if sctx.secure {
 		gs := v3rpc.Server(s, tlscfg)
-		v3lockpb.RegisterLockServer(gs, v3lock.NewLockServer(v3client.New(s)))
+		sctx.grpcServerC <- gs
+		v3electionpb.RegisterElectionServer(gs, servElection)
+		v3lockpb.RegisterLockServer(gs, servLock)
 		if sctx.serviceRegister != nil {
 			sctx.serviceRegister(gs)
 		}
 		handler = grpcHandlerFunc(gs, handler)
 
-		dtls := transport.ShallowCopyTLSConfig(tlscfg)
+		dtls := tlscfg.Clone()
 		// trust local server
 		dtls.InsecureSkipVerify = true
 		creds := credentials.NewTLS(dtls)
@@ -129,6 +140,7 @@ func (sctx *serveCtx) serve(s *etcdserver.EtcdServer, tlscfg *tls.Config, handle
 		plog.Infof("serving client requests on %s", sctx.l.Addr().String())
 	}
 
+	close(sctx.grpcServerC)
 	return m.Serve()
 }
 
@@ -160,34 +172,27 @@ func servePeerHTTP(l net.Listener, handler http.Handler) error {
 	return srv.Serve(l)
 }
 
+type registerHandlerFunc func(context.Context, *gw.ServeMux, string, []grpc.DialOption) error
+
 func (sctx *serveCtx) registerGateway(opts []grpc.DialOption) (*gw.ServeMux, error) {
 	ctx := sctx.ctx
 	addr := sctx.l.Addr().String()
 	gwmux := gw.NewServeMux()
 
-	err := pb.RegisterKVHandlerFromEndpoint(ctx, gwmux, addr, opts)
-	if err != nil {
-		return nil, err
+	handlers := []registerHandlerFunc{
+		etcdservergw.RegisterKVHandlerFromEndpoint,
+		etcdservergw.RegisterWatchHandlerFromEndpoint,
+		etcdservergw.RegisterLeaseHandlerFromEndpoint,
+		etcdservergw.RegisterClusterHandlerFromEndpoint,
+		etcdservergw.RegisterMaintenanceHandlerFromEndpoint,
+		etcdservergw.RegisterAuthHandlerFromEndpoint,
+		v3lockgw.RegisterLockHandlerFromEndpoint,
+		v3electiongw.RegisterElectionHandlerFromEndpoint,
 	}
-	err = pb.RegisterWatchHandlerFromEndpoint(ctx, gwmux, addr, opts)
-	if err != nil {
-		return nil, err
-	}
-	err = pb.RegisterLeaseHandlerFromEndpoint(ctx, gwmux, addr, opts)
-	if err != nil {
-		return nil, err
-	}
-	err = pb.RegisterClusterHandlerFromEndpoint(ctx, gwmux, addr, opts)
-	if err != nil {
-		return nil, err
-	}
-	err = pb.RegisterMaintenanceHandlerFromEndpoint(ctx, gwmux, addr, opts)
-	if err != nil {
-		return nil, err
-	}
-	err = pb.RegisterAuthHandlerFromEndpoint(ctx, gwmux, addr, opts)
-	if err != nil {
-		return nil, err
+	for _, h := range handlers {
+		if err := h(ctx, gwmux, addr, opts); err != nil {
+			return nil, err
+		}
 	}
 	return gwmux, nil
 }
@@ -214,16 +219,9 @@ func (sctx *serveCtx) registerUserHandler(s string, h http.Handler) {
 }
 
 func (sctx *serveCtx) registerPprof() {
-	sctx.registerUserHandler(pprofPrefix+"/", http.HandlerFunc(pprof.Index))
-	sctx.registerUserHandler(pprofPrefix+"/profile", http.HandlerFunc(pprof.Profile))
-	sctx.registerUserHandler(pprofPrefix+"/symbol", http.HandlerFunc(pprof.Symbol))
-	sctx.registerUserHandler(pprofPrefix+"/cmdline", http.HandlerFunc(pprof.Cmdline))
-	sctx.registerUserHandler(pprofPrefix+"/trace", http.HandlerFunc(pprof.Trace))
-
-	sctx.registerUserHandler(pprofPrefix+"/heap", pprof.Handler("heap"))
-	sctx.registerUserHandler(pprofPrefix+"/goroutine", pprof.Handler("goroutine"))
-	sctx.registerUserHandler(pprofPrefix+"/threadcreate", pprof.Handler("threadcreate"))
-	sctx.registerUserHandler(pprofPrefix+"/block", pprof.Handler("block"))
+	for p, h := range debugutil.PProfHandlers() {
+		sctx.registerUserHandler(p, h)
+	}
 }
 
 func (sctx *serveCtx) registerTrace() {

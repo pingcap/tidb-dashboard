@@ -312,6 +312,7 @@ func (cfg *Config) Validate() error {
 
 // PeerURLsMapAndToken sets up an initial peer URLsMap and cluster token for bootstrap or discovery.
 func (cfg *Config) PeerURLsMapAndToken(which string) (urlsmap types.URLsMap, token string, err error) {
+	token = cfg.InitialClusterToken
 	switch {
 	case cfg.Durl != "":
 		urlsmap = types.URLsMap{}
@@ -321,7 +322,7 @@ func (cfg *Config) PeerURLsMapAndToken(which string) (urlsmap types.URLsMap, tok
 		token = cfg.Durl
 	case cfg.DNSCluster != "":
 		var clusterStr string
-		clusterStr, token, err = discovery.SRVGetCluster(cfg.Name, cfg.DNSCluster, cfg.InitialClusterToken, cfg.APUrls)
+		clusterStr, err = discovery.SRVGetCluster(cfg.Name, cfg.DNSCluster, cfg.APUrls)
 		if err != nil {
 			return nil, "", err
 		}
@@ -339,7 +340,6 @@ func (cfg *Config) PeerURLsMapAndToken(which string) (urlsmap types.URLsMap, tok
 	default:
 		// We're statically configured, and cluster has appropriately been set.
 		urlsmap, err = types.NewURLsMap(cfg.InitialCluster)
-		token = cfg.InitialClusterToken
 	}
 	return urlsmap, token, err
 }
@@ -387,7 +387,7 @@ func (cfg *Config) UpdateDefaultClusterFromName(defaultInitialCluster string) (s
 	}
 
 	used := false
-	pip, pport, _ := net.SplitHostPort(cfg.LPUrls[0].Host)
+	pip, pport := cfg.LPUrls[0].Hostname(), cfg.LPUrls[0].Port()
 	if cfg.defaultPeerHost() && pip == "0.0.0.0" {
 		cfg.APUrls[0] = url.URL{Scheme: cfg.APUrls[0].Scheme, Host: fmt.Sprintf("%s:%s", defaultHostname, pport)}
 		used = true
@@ -397,7 +397,7 @@ func (cfg *Config) UpdateDefaultClusterFromName(defaultInitialCluster string) (s
 		cfg.InitialCluster = cfg.InitialClusterFromName(cfg.Name)
 	}
 
-	cip, cport, _ := net.SplitHostPort(cfg.LCUrls[0].Host)
+	cip, cport := cfg.LCUrls[0].Hostname(), cfg.LCUrls[0].Port()
 	if cfg.defaultClientHost() && cip == "0.0.0.0" {
 		cfg.ACUrls[0] = url.URL{Scheme: cfg.ACUrls[0].Scheme, Host: fmt.Sprintf("%s:%s", defaultHostname, cport)}
 		used = true

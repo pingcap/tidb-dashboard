@@ -787,23 +787,25 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 		return
 	}
 	if len(flag.Shorthand) > 1 {
-		fmt.Fprintf(f.out(), "%s shorthand more than ASCII character: %s\n", f.name, flag.Shorthand)
-		panic("shorthand is more than one character")
+		msg := fmt.Sprintf("%q shorthand is more than one ASCII character", flag.Shorthand)
+		fmt.Fprintf(f.out(), msg)
+		panic(msg)
 	}
 	if f.shorthands == nil {
 		f.shorthands = make(map[byte]*Flag)
 	}
 	c := flag.Shorthand[0]
-	old, alreadyThere := f.shorthands[c]
+	used, alreadyThere := f.shorthands[c]
 	if alreadyThere {
-		fmt.Fprintf(f.out(), "%s shorthand reused: %q for %s already used for %s\n", f.name, c, flag.Name, old.Name)
-		panic(fmt.Sprintf("unable to redefine %q shorthand", c))
+		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", c, f.name, used.Name)
+		fmt.Fprintf(f.out(), msg)
+		panic(msg)
 	}
 	f.shorthands[c] = flag
 }
 
 // AddFlagSet adds one FlagSet to another. If a flag is already present in f
-// the flag from newSet will be ignored
+// the flag from newSet will be ignored.
 func (f *FlagSet) AddFlagSet(newSet *FlagSet) {
 	if newSet == nil {
 		return

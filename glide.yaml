@@ -73,7 +73,7 @@ import:
   subpackages:
   - semver
 - package: github.com/coreos/go-systemd
-  version: v14 
+  version: v14
   subpackages:
   - journal
 - package: github.com/coreos/pkg
@@ -118,7 +118,7 @@ import:
 - package: github.com/pingcap/check
   version: ce8a2f822ab1e245a4eefcef2996531c79c943f1
 - package: github.com/pingcap/kvproto
-  version: 0811f27579a1070546c4d5496bf3f6fa62cec750
+  version: ebe86abfa6519ffefdf2946fba762a894fe88256
   subpackages:
   - pkg/coprocessor
   - pkg/eraftpb
@@ -166,7 +166,7 @@ import:
   - bcrypt
   - blowfish
 - package: golang.org/x/net
-  version: d1e1b351919c6738fdeb9893d5c998b161464f0c 
+  version: d1e1b351919c6738fdeb9893d5c998b161464f0c
   repo: https://github.com/golang/net.git
   vcs: git
   subpackages:

@@ -234,67 +234,91 @@ func (s *Server) StoreHeartbeat(ctx context.Context, request *pdpb.StoreHeartbea
 }
 
 // RegionHeartbeat implements gRPC PDServer.
-func (s *Server) RegionHeartbeat(ctx context.Context, request *pdpb.RegionHeartbeatRequest) (*pdpb.RegionHeartbeatResponse, error) {
-	if err := s.validateRequest(request.GetHeader()); err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	cluster := s.GetRaftCluster()
-	if cluster == nil {
-		return &pdpb.RegionHeartbeatResponse{Header: s.notBootstrappedHeader()}, nil
-	}
-
-	resp := &pdpb.RegionHeartbeatResponse{}
-	region := newRegionInfo(request.GetRegion(), request.GetLeader())
-	region.DownPeers = request.GetDownPeers()
-	region.PendingPeers = request.GetPendingPeers()
-	region.WrittenBytes = request.GetBytesWritten()
-	if region.GetId() == 0 {
-		pberr := &pdpb.Error{
-			Type:    pdpb.ErrorType_UNKNOWN,
-			Message: fmt.Sprintf("invalid request region, %v", request),
+func (s *Server) RegionHeartbeat(server pdpb.PD_RegionHeartbeatServer) error {
+	for {
+		request, err := server.Recv()
+		if err == io.EOF {
+			return nil
 		}
-		resp.Header = s.errorHeader(pberr)
-
-		return resp, nil
-	}
-	if region.Leader == nil {
-		pberr := &pdpb.Error{
-			Type:    pdpb.ErrorType_UNKNOWN,
-			Message: fmt.Sprintf("invalid request leader, %v", request),
+		if err != nil {
+			return errors.Trace(err)
 		}
-		resp.Header = s.errorHeader(pberr)
 
-		return resp, nil
-	}
-
-	err := cluster.cachedCluster.handleRegionHeartbeat(region)
-	if err != nil {
-		pberr := &pdpb.Error{
-			Type:    pdpb.ErrorType_UNKNOWN,
-			Message: errors.Trace(err).Error(),
+		if err := s.validateRequest(request.GetHeader()); err != nil {
+			// TODO: How to close this stream?
+			return errors.Trace(err)
 		}
-		resp.Header = s.errorHeader(pberr)
 
-		return resp, nil
-	}
-
-	resp, err = cluster.handleRegionHeartbeat(region)
-	if err != nil {
-		pberr := &pdpb.Error{
-			Type:    pdpb.ErrorType_UNKNOWN,
-			Message: errors.Trace(err).Error(),
+		cluster := s.GetRaftCluster()
+		if cluster == nil {
+			msg := "cluster is not bootstrapped"
+			err = sendErrorRegionHeartbeatResponse(server, s.clusterID, pdpb.ErrorType_NOT_BOOTSTRAPPED, msg)
+			if err != nil {
+				return errors.Trace(err)
+			}
+			continue
 		}
-		resp.Header = s.errorHeader(pberr)
 
-		return resp, nil
-	}
-	if resp == nil {
-		return &pdpb.RegionHeartbeatResponse{Header: s.header()}, nil
-	}
+		region := newRegionInfo(request.GetRegion(), request.GetLeader())
+		region.DownPeers = request.GetDownPeers()
+		region.PendingPeers = request.GetPendingPeers()
+		region.WrittenBytes = request.GetBytesWritten()
+		if region.GetId() == 0 {
+			msg := fmt.Sprintf("invalid request region, %v", request)
+			err = sendErrorRegionHeartbeatResponse(server, s.clusterID, pdpb.ErrorType_UNKNOWN, msg)
+			if err != nil {
+				return errors.Trace(err)
+			}
+			continue
+		}
+		if region.Leader == nil {
+			msg := fmt.Sprintf("invalid request leader, %v", request)
+			err = sendErrorRegionHeartbeatResponse(server, s.clusterID, pdpb.ErrorType_UNKNOWN, msg)
+			if err != nil {
+				return errors.Trace(err)
+			}
+			continue
+		}
 
-	resp.Header = s.header()
-	return resp, nil
+		err = cluster.cachedCluster.handleRegionHeartbeat(region)
+		if err != nil {
+			msg := errors.Trace(err).Error()
+			err = sendErrorRegionHeartbeatResponse(server, s.clusterID, pdpb.ErrorType_UNKNOWN, msg)
+			if err != nil {
+				return errors.Trace(err)
+			}
+			continue
+		}
+
+		var resp *pdpb.RegionHeartbeatResponse
+		resp, err = cluster.handleRegionHeartbeat(region)
+		if err != nil {
+			msg := errors.Trace(err).Error()
+			err = sendErrorRegionHeartbeatResponse(server, s.clusterID, pdpb.ErrorType_UNKNOWN, msg)
+			if err != nil {
+				return errors.Trace(err)
+			}
+			continue
+		}
+		if resp == nil {
+			if s.cfg.regionHeartbeatUnaryMode {
+				// A workaround for passing tests, remove it ASAP.
+				resp = new(pdpb.RegionHeartbeatResponse)
+			} else {
+				// No operations, skip.
+				continue
+			}
+		}
+
+		resp.Header = s.header()
+		resp.RegionId = request.Region.Id
+		resp.RegionEpoch = request.Region.RegionEpoch
+		resp.TargetPeer = request.Leader
+
+		if err := server.Send(resp); err != nil {
+			return errors.Trace(err)
+		}
+	}
 }
 
 // GetRegion implements gRPC PDServer.
@@ -448,4 +472,20 @@ func (s *Server) notBootstrappedHeader() *pdpb.ResponseHeader {
 		Type:    pdpb.ErrorType_NOT_BOOTSTRAPPED,
 		Message: "cluster is not bootstrapped",
 	})
+}
+
+func sendErrorRegionHeartbeatResponse(server pdpb.PD_RegionHeartbeatServer, clusterID uint64, ty pdpb.ErrorType, msg string) error {
+	pberr := &pdpb.Error{
+		Type:    ty,
+		Message: msg,
+	}
+	resp := &pdpb.RegionHeartbeatResponse{}
+	resp.Header = &pdpb.ResponseHeader{
+		ClusterId: clusterID,
+		Error:     pberr,
+	}
+	if err := server.Send(resp); err != nil {
+		return errors.Trace(err)
+	}
+	return nil
 }

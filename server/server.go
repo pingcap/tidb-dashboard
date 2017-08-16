@@ -82,6 +82,8 @@ type Server struct {
 	// for raft cluster
 	cluster *RaftCluster
 
+	resignCh chan struct{}
+
 	msgID uint64
 
 	id uint64
@@ -112,6 +114,7 @@ func CreateServer(cfg *Config) *Server {
 		scheduleOpt:   newScheduleOption(cfg),
 		isLeaderValue: 0,
 		closed:        1,
+		resignCh:      make(chan struct{}),
 	}
 
 	s.handler = newHandler(s)

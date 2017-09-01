@@ -30,11 +30,15 @@ type StoreInfo struct {
 	LeaderCount     int
 	RegionCount     int
 	LastHeartbeatTS time.Time
+	LeaderWeight    float64
+	RegionWeight    float64
 }
 
 func newStoreInfo(store *metapb.Store) *StoreInfo {
 	return &StoreInfo{
-		Store: store,
+		Store:        store,
+		LeaderWeight: 1.0,
+		RegionWeight: 1.0,
 	}
 }
 
@@ -46,6 +50,8 @@ func (s *StoreInfo) clone() *StoreInfo {
 		LeaderCount:     s.LeaderCount,
 		RegionCount:     s.RegionCount,
 		LastHeartbeatTS: s.LastHeartbeatTS,
+		LeaderWeight:    s.LeaderWeight,
+		RegionWeight:    s.RegionWeight,
 	}
 }
 
@@ -81,19 +87,26 @@ func (s *StoreInfo) leaderCount() uint64 {
 	return uint64(s.LeaderCount)
 }
 
-func (s *StoreInfo) leaderScore() float64 {
-	return float64(s.LeaderCount)
+const minWeight = 1e-6
+
+// LeaderScore returns the store's leader score: leaderCount / leaderWeight.
+func (s *StoreInfo) LeaderScore() float64 {
+	if s.LeaderWeight <= 0 {
+		return float64(s.LeaderCount) / minWeight
+	}
+	return float64(s.LeaderCount) / s.LeaderWeight
 }
 
 func (s *StoreInfo) regionCount() uint64 {
 	return uint64(s.RegionCount)
 }
 
-func (s *StoreInfo) regionScore() float64 {
-	if s.Stats.GetCapacity() == 0 {
-		return 0
+// RegionScore returns the store's region score: regionCount / regionWeight.
+func (s *StoreInfo) RegionScore() float64 {
+	if s.RegionWeight <= 0 {
+		return float64(s.RegionCount) / minWeight
 	}
-	return float64(s.RegionCount) / float64(s.Stats.GetCapacity())
+	return float64(s.RegionCount) / s.RegionWeight
 }
 
 func (s *StoreInfo) storageSize() uint64 {
@@ -121,9 +134,9 @@ func (s *StoreInfo) resourceCount(kind ResourceKind) uint64 {
 func (s *StoreInfo) resourceScore(kind ResourceKind) float64 {
 	switch kind {
 	case LeaderKind:
-		return s.leaderScore()
+		return s.LeaderScore()
 	case RegionKind:
-		return s.regionScore()
+		return s.RegionScore()
 	default:
 		return 0
 	}

@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package schedule
 
 import (
 	"math/rand"
@@ -30,7 +30,9 @@ type balanceSelector struct {
 	filters []Filter
 }
 
-func newBalanceSelector(kind core.ResourceKind, filters []Filter) *balanceSelector {
+// NewBalanceSelector creates a Selector that select source/target store by their
+// resource scores.
+func NewBalanceSelector(kind core.ResourceKind, filters []Filter) Selector {
 	return &balanceSelector{
 		kind:    kind,
 		filters: filters,
@@ -42,7 +44,7 @@ func (s *balanceSelector) SelectSource(stores []*core.StoreInfo, filters ...Filt
 
 	var result *core.StoreInfo
 	for _, store := range stores {
-		if filterSource(store, filters) {
+		if FilterSource(store, filters) {
 			continue
 		}
 		if result == nil || result.ResourceScore(s.kind) < store.ResourceScore(s.kind) {
@@ -57,7 +59,7 @@ func (s *balanceSelector) SelectTarget(stores []*core.StoreInfo, filters ...Filt
 
 	var result *core.StoreInfo
 	for _, store := range stores {
-		if filterTarget(store, filters) {
+		if FilterTarget(store, filters) {
 			continue
 		}
 		if result == nil || result.ResourceScore(s.kind) > store.ResourceScore(s.kind) {
@@ -69,14 +71,16 @@ func (s *balanceSelector) SelectTarget(stores []*core.StoreInfo, filters ...Filt
 
 type replicaSelector struct {
 	regionStores []*core.StoreInfo
-	rep          *Replication
+	labels       []string
 	filters      []Filter
 }
 
-func newReplicaSelector(regionStores []*core.StoreInfo, rep *Replication, filters ...Filter) Selector {
+// NewReplicaSelector creates a Selector that select source/target store by their
+// distinct scores based on a region's peer stores.
+func NewReplicaSelector(regionStores []*core.StoreInfo, labels []string, filters ...Filter) Selector {
 	return &replicaSelector{
 		regionStores: regionStores,
-		rep:          rep,
+		labels:       labels,
 		filters:      filters,
 	}
 }
@@ -87,15 +91,15 @@ func (s *replicaSelector) SelectSource(stores []*core.StoreInfo, filters ...Filt
 		bestScore float64
 	)
 	for _, store := range stores {
-		if filterSource(store, filters) {
+		if FilterSource(store, filters) {
 			continue
 		}
-		score := s.rep.GetDistinctScore(s.regionStores, store)
+		score := DistinctScore(s.labels, s.regionStores, store)
 		if best == nil || compareStoreScore(store, score, best, bestScore) < 0 {
 			best, bestScore = store, score
 		}
 	}
-	if best == nil || filterSource(best, s.filters) {
+	if best == nil || FilterSource(best, s.filters) {
 		return nil
 	}
 	return best
@@ -107,15 +111,15 @@ func (s *replicaSelector) SelectTarget(stores []*core.StoreInfo, filters ...Filt
 		bestScore float64
 	)
 	for _, store := range stores {
-		if filterTarget(store, filters) {
+		if FilterTarget(store, filters) {
 			continue
 		}
-		score := s.rep.GetDistinctScore(s.regionStores, store)
+		score := DistinctScore(s.labels, s.regionStores, store)
 		if best == nil || compareStoreScore(store, score, best, bestScore) > 0 {
 			best, bestScore = store, score
 		}
 	}
-	if best == nil || filterTarget(best, s.filters) {
+	if best == nil || FilterTarget(best, s.filters) {
 		return nil
 	}
 	return best
@@ -125,7 +129,8 @@ type randomSelector struct {
 	filters []Filter
 }
 
-func newRandomSelector(filters []Filter) *randomSelector {
+// NewRandomSelector creates a selector that select store randomly.
+func NewRandomSelector(filters []Filter) Selector {
 	return &randomSelector{filters: filters}
 }
 
@@ -141,7 +146,7 @@ func (s *randomSelector) SelectSource(stores []*core.StoreInfo, filters ...Filte
 
 	var candidates []*core.StoreInfo
 	for _, store := range stores {
-		if filterSource(store, filters) {
+		if FilterSource(store, filters) {
 			continue
 		}
 		candidates = append(candidates, store)
@@ -154,7 +159,7 @@ func (s *randomSelector) SelectTarget(stores []*core.StoreInfo, filters ...Filte
 
 	var candidates []*core.StoreInfo
 	for _, store := range stores {
-		if filterTarget(store, filters) {
+		if FilterTarget(store, filters) {
 			continue
 		}
 		candidates = append(candidates, store)

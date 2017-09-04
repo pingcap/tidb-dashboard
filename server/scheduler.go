@@ -21,6 +21,7 @@ import (
 	"github.com/juju/errors"
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/pd/server/core"
+	"github.com/pingcap/pd/server/schedule"
 )
 
 // Scheduler is an interface to schedule resources.
@@ -83,20 +84,20 @@ type evictLeaderScheduler struct {
 	opt      *scheduleOption
 	name     string
 	storeID  uint64
-	selector Selector
+	selector schedule.Selector
 }
 
 func newEvictLeaderScheduler(opt *scheduleOption, storeID uint64) *evictLeaderScheduler {
-	filters := []Filter{
-		newStateFilter(opt),
-		newHealthFilter(opt),
+	filters := []schedule.Filter{
+		schedule.NewStateFilter(opt),
+		schedule.NewHealthFilter(opt),
 	}
 
 	return &evictLeaderScheduler{
 		opt:      opt,
 		name:     fmt.Sprintf("evict-leader-scheduler-%d", storeID),
 		storeID:  storeID,
-		selector: newRandomSelector(filters),
+		selector: schedule.NewRandomSelector(filters),
 	}
 }
 
@@ -138,19 +139,19 @@ func (s *evictLeaderScheduler) Schedule(cluster *clusterInfo) Operator {
 
 type shuffleLeaderScheduler struct {
 	opt      *scheduleOption
-	selector Selector
+	selector schedule.Selector
 	selected *metapb.Peer
 }
 
 func newShuffleLeaderScheduler(opt *scheduleOption) *shuffleLeaderScheduler {
-	filters := []Filter{
-		newStateFilter(opt),
-		newHealthFilter(opt),
+	filters := []schedule.Filter{
+		schedule.NewStateFilter(opt),
+		schedule.NewHealthFilter(opt),
 	}
 
 	return &shuffleLeaderScheduler{
 		opt:      opt,
-		selector: newRandomSelector(filters),
+		selector: schedule.NewRandomSelector(filters),
 	}
 }
 
@@ -206,18 +207,18 @@ func (s *shuffleLeaderScheduler) Schedule(cluster *clusterInfo) Operator {
 
 type shuffleRegionScheduler struct {
 	opt      *scheduleOption
-	selector Selector
+	selector schedule.Selector
 }
 
 func newShuffleRegionScheduler(opt *scheduleOption) *shuffleRegionScheduler {
-	filters := []Filter{
-		newStateFilter(opt),
-		newHealthFilter(opt),
+	filters := []schedule.Filter{
+		schedule.NewStateFilter(opt),
+		schedule.NewHealthFilter(opt),
 	}
 
 	return &shuffleRegionScheduler{
 		opt:      opt,
-		selector: newRandomSelector(filters),
+		selector: schedule.NewRandomSelector(filters),
 	}
 }
 
@@ -245,7 +246,7 @@ func (s *shuffleRegionScheduler) Schedule(cluster *clusterInfo) Operator {
 		return nil
 	}
 
-	excludedFilter := newExcludedFilter(nil, region.GetStoreIds())
+	excludedFilter := schedule.NewExcludedFilter(nil, region.GetStoreIds())
 	newPeer := scheduleAddPeer(cluster, s.selector, excludedFilter)
 	if newPeer == nil {
 		schedulerCounter.WithLabelValues(s.GetName(), "no_new_peer").Inc()
@@ -298,7 +299,7 @@ func newTransferLeader(region *core.RegionInfo, newLeader *metapb.Peer) Operator
 }
 
 // scheduleAddPeer schedules a new peer.
-func scheduleAddPeer(cluster *clusterInfo, s Selector, filters ...Filter) *metapb.Peer {
+func scheduleAddPeer(cluster *clusterInfo, s schedule.Selector, filters ...schedule.Filter) *metapb.Peer {
 	stores := cluster.getStores()
 
 	target := s.SelectTarget(stores, filters...)
@@ -316,7 +317,7 @@ func scheduleAddPeer(cluster *clusterInfo, s Selector, filters ...Filter) *metap
 }
 
 // scheduleRemovePeer schedules a region to remove the peer.
-func scheduleRemovePeer(cluster *clusterInfo, schedulerName string, s Selector, filters ...Filter) (*core.RegionInfo, *metapb.Peer) {
+func scheduleRemovePeer(cluster *clusterInfo, schedulerName string, s schedule.Selector, filters ...schedule.Filter) (*core.RegionInfo, *metapb.Peer) {
 	stores := cluster.getStores()
 
 	source := s.SelectSource(stores, filters...)
@@ -338,7 +339,7 @@ func scheduleRemovePeer(cluster *clusterInfo, schedulerName string, s Selector, 
 }
 
 // scheduleTransferLeader schedules a region to transfer leader to the peer.
-func scheduleTransferLeader(cluster *clusterInfo, schedulerName string, s Selector, filters ...Filter) (*core.RegionInfo, *metapb.Peer) {
+func scheduleTransferLeader(cluster *clusterInfo, schedulerName string, s schedule.Selector, filters ...schedule.Filter) (*core.RegionInfo, *metapb.Peer) {
 	stores := cluster.getStores()
 	if len(stores) == 0 {
 		schedulerCounter.WithLabelValues(schedulerName, "no_store").Inc()

@@ -23,8 +23,10 @@ import (
 	"github.com/pingcap/pd/server/cache"
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/server/schedule"
-	"github.com/pingcap/pd/server/schedulers"
+	_ "github.com/pingcap/pd/server/schedulers" // Register schedulers for tests.
 )
+
+// TODO: move tests to schedulers directory.
 
 type testClusterInfo struct {
 	*clusterInfo
@@ -271,7 +273,9 @@ func (s *testBalanceLeaderSchedulerSuite) SetUpTest(c *C) {
 	s.cluster = newClusterInfo(newMockIDAllocator())
 	s.tc = newTestClusterInfo(s.cluster)
 	_, opt := newTestScheduleConfig()
-	s.lb = schedulers.NewBalanceLeaderScheduler(opt)
+	lb, err := schedule.CreateScheduler("balanceLeader", opt)
+	c.Assert(err, IsNil)
+	s.lb = lb
 }
 
 func (s *testBalanceLeaderSchedulerSuite) schedule() schedule.Operator {
@@ -403,7 +407,8 @@ func (s *testBalanceRegionSchedulerSuite) TestBalance(c *C) {
 	tc := newTestClusterInfo(cluster)
 
 	_, opt := newTestScheduleConfig()
-	sb := schedulers.NewBalanceRegionScheduler(opt)
+	sb, err := schedule.CreateScheduler("balanceRegion", opt)
+	c.Assert(err, IsNil)
 
 	opt.SetMaxReplicas(1)
 
@@ -441,7 +446,8 @@ func (s *testBalanceRegionSchedulerSuite) TestReplicas3(c *C) {
 	_, opt := newTestScheduleConfig()
 	opt.rep = newTestReplication(3, "zone", "rack", "host")
 
-	sb := schedulers.NewBalanceRegionScheduler(opt)
+	sb, err := schedule.CreateScheduler("balanceRegion", opt)
+	c.Assert(err, IsNil)
 
 	// Store 1 has the largest region score, so the balancer try to replace peer in store 1.
 	tc.addLabelsStore(1, 6, map[string]string{"zone": "z1", "rack": "r1", "host": "h1"})
@@ -505,7 +511,8 @@ func (s *testBalanceRegionSchedulerSuite) TestReplicas5(c *C) {
 	_, opt := newTestScheduleConfig()
 	opt.rep = newTestReplication(5, "zone", "rack", "host")
 
-	sb := schedulers.NewBalanceRegionScheduler(opt)
+	sb, err := schedule.CreateScheduler("balanceRegion", opt)
+	c.Assert(err, IsNil)
 
 	tc.addLabelsStore(1, 4, map[string]string{"zone": "z1", "rack": "r1", "host": "h1"})
 	tc.addLabelsStore(2, 5, map[string]string{"zone": "z2", "rack": "r1", "host": "h1"})
@@ -540,7 +547,8 @@ func (s *testBalanceRegionSchedulerSuite) TestStoreWeight(c *C) {
 	tc := newTestClusterInfo(cluster)
 
 	_, opt := newTestScheduleConfig()
-	sb := schedulers.NewBalanceRegionScheduler(opt)
+	sb, err := schedule.CreateScheduler("balanceRegion", opt)
+	c.Assert(err, IsNil)
 	opt.SetMaxReplicas(1)
 
 	tc.addRegionStore(1, 10)
@@ -907,7 +915,8 @@ func (s *testBalanceHotRegionSchedulerSuite) TestBalance(c *C) {
 	tc := newTestClusterInfo(cluster)
 
 	_, opt := newTestScheduleConfig()
-	hb := schedulers.NewBalanceHotRegionScheduler(opt)
+	hb, err := schedule.CreateScheduler("hotRegion", opt)
+	c.Assert(err, IsNil)
 
 	// Add stores 1, 2, 3, 4, 5 with region counts 3, 2, 2, 2, 0.
 	tc.addRegionStore(1, 3)

@@ -34,9 +34,6 @@ const (
 	historiesCacheSize        = 1000
 	eventsCacheSize           = 1000
 	maxScheduleRetries        = 10
-	maxScheduleInterval       = time.Minute
-	minScheduleInterval       = time.Millisecond * 10
-	minSlowScheduleInterval   = time.Second * 3
 	scheduleIntervalFactor    = 1.3
 
 	statCacheMaxLen               = 1000
@@ -135,14 +132,20 @@ func (c *coordinator) run() {
 		}
 	}
 	log.Info("coordinator: Run scheduler")
-	s, _ := schedule.CreateScheduler("balanceLeader", c.opt)
-	c.addScheduler(s, minScheduleInterval)
-	s, _ = schedule.CreateScheduler("balanceRegion", c.opt)
-	c.addScheduler(s, minScheduleInterval)
-	s, _ = schedule.CreateScheduler("hotWriteRegion", c.opt)
-	c.addScheduler(s, minSlowScheduleInterval)
-	s, _ = schedule.CreateScheduler("hotReadRegion", c.opt)
-	c.addScheduler(s, minSlowScheduleInterval)
+
+	for name := range c.opt.GetSchedulers() {
+		// note: CreateScheduler just needs specific scheduler config
+		// so schedulers(a map of scheduler configs) wrapped by c.opt has redundant configs
+		s, err := schedule.CreateScheduler(name, c.opt)
+		if err != nil {
+			log.Errorf("can not create scheduler %s: %v", name, err)
+		} else {
+			log.Infof("create scheduler %s", name)
+			if err := c.addScheduler(s, s.GetInterval()); err != nil {
+				log.Errorf("can not add scheduler %s: %v", name, err)
+			}
+		}
+	}
 }
 
 func (c *coordinator) stop() {
@@ -521,7 +524,7 @@ func (s *scheduleController) Schedule(cluster *clusterInfo) *schedule.Operator {
 	}
 
 	// If we have no schedule, increase the interval exponentially.
-	s.nextInterval = minDuration(time.Duration(float64(s.nextInterval)*scheduleIntervalFactor), maxScheduleInterval)
+	s.nextInterval = minDuration(time.Duration(float64(s.nextInterval)*scheduleIntervalFactor), schedule.MaxScheduleInterval)
 
 	return nil
 }

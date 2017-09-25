@@ -20,6 +20,8 @@ import (
 	"sync"
 	"time"
 
+	"regexp"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/juju/errors"
@@ -637,4 +639,70 @@ func (c *RaftCluster) putConfig(meta *metapb.Cluster) error {
 		return errors.Errorf("invalid cluster %v, mismatch cluster id %d", meta, c.clusterID)
 	}
 	return c.cachedCluster.putMeta(meta)
+}
+
+// GetNamespaces returns all the namespace in etc.d
+func (c *RaftCluster) GetNamespaces() []*Namespace {
+	return c.cachedCluster.getNamespaces()
+}
+
+// CreateNamespace creates a new Namespace
+func (c *RaftCluster) CreateNamespace(name string) error {
+	c.Lock()
+	defer c.Unlock()
+
+	r := regexp.MustCompile(`^\w+$`)
+	matched := r.MatchString(name)
+	if !matched {
+		return errors.New("Name should be 0-9, a-z or A-Z")
+	}
+
+	cachedCluster := c.cachedCluster
+	if _, ok := cachedCluster.namespacesInfo.namespaces[name]; ok {
+		return errors.New("Duplicate namespace Name")
+	}
+
+	id, err := c.s.idAlloc.Alloc()
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	ns := NewNamespace(id, name)
+	return cachedCluster.putNamespace(ns)
+}
+
+// AddNamespaceTableID adds table ID to namespace
+func (c *RaftCluster) AddNamespaceTableID(name string, tableID int64) error {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.cachedCluster.namespacesInfo.IsTableIDExist(tableID) {
+		return errors.New("Table ID already exists in this cluster")
+	}
+
+	namespace := c.cachedCluster.getNamespace(name)
+	if namespace == nil {
+		return errors.Errorf("invalid namespace Name %s, nod found", name)
+	}
+
+	namespace.AddTableID(tableID)
+	return c.cachedCluster.putNamespace(namespace)
+}
+
+// AddNamespaceStoreID adds store ID to namespace
+func (c *RaftCluster) AddNamespaceStoreID(name string, storeID uint64) error {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.cachedCluster.namespacesInfo.IsStoreIDExist(storeID) {
+		return errors.New("Store ID already exists in this namespace")
+	}
+
+	namespace := c.cachedCluster.getNamespace(name)
+	if namespace == nil {
+		return errors.Errorf("invalid namespace Name %s, not found", name)
+	}
+
+	namespace.AddStoreID(storeID)
+	return c.cachedCluster.putNamespace(namespace)
 }

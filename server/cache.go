@@ -345,6 +345,8 @@ type clusterInfo struct {
 	stores  *storesInfo
 	regions *regionsInfo
 
+	namespacesInfo *namespacesInfo
+
 	activeRegions   int
 	writeStatistics cache.Cache
 }
@@ -354,6 +356,7 @@ func newClusterInfo(id IDAllocator) *clusterInfo {
 		id:              id,
 		stores:          newStoresInfo(),
 		regions:         newRegionsInfo(),
+		namespacesInfo:  newNamespacesInfo(),
 		writeStatistics: cache.NewDefaultCache(writeStatCacheMaxLen),
 	}
 }
@@ -383,6 +386,12 @@ func loadClusterInfo(id IDAllocator, kv *kv) (*clusterInfo, error) {
 		return nil, errors.Trace(err)
 	}
 	log.Infof("load %v regions cost %v", c.regions.getRegionCount(), time.Since(start))
+
+	start = time.Now()
+	if err := kv.loadNamespaces(c.namespacesInfo, kvRangeLimit); err != nil {
+		return nil, errors.Trace(err)
+	}
+	log.Infof("load %v namespacesInfo cost %v", c.namespacesInfo.getNamespaceCount(), time.Since(start))
 
 	return c, nil
 }
@@ -444,6 +453,34 @@ func (c *clusterInfo) putStore(store *core.StoreInfo) error {
 	c.Lock()
 	defer c.Unlock()
 	return c.putStoreLocked(store.Clone())
+}
+
+func (c *clusterInfo) putNamespace(ns *Namespace) error {
+	c.Lock()
+	defer c.Unlock()
+	return c.putNamespaceLocked(ns)
+}
+
+func (c *clusterInfo) putNamespaceLocked(ns *Namespace) error {
+	if c.kv != nil {
+		if err := c.kv.saveNamespace(ns); err != nil {
+			return errors.Trace(err)
+		}
+	}
+	c.namespacesInfo.setNamespace(ns)
+	return nil
+}
+
+func (c *clusterInfo) getNamespaces() []*Namespace {
+	c.RLock()
+	defer c.RUnlock()
+	return c.namespacesInfo.getNamespaces()
+}
+
+func (c *clusterInfo) getNamespace(name string) *Namespace {
+	c.RLock()
+	defer c.RUnlock()
+	return c.namespacesInfo.getNamespaceByName(name)
 }
 
 func (c *clusterInfo) putStoreLocked(store *core.StoreInfo) error {

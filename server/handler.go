@@ -16,6 +16,7 @@ package server
 import (
 	"strconv"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/juju/errors"
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/server/schedule"
@@ -53,7 +54,7 @@ func (h *Handler) GetSchedulers() ([]string, error) {
 	return c.getSchedulers(), nil
 }
 
-// GetHotWriteRegions gets all hot regions status
+// GetHotWriteRegions gets all hot write regions status
 func (h *Handler) GetHotWriteRegions() *core.StoreHotRegionInfos {
 	c, err := h.getCoordinator()
 	if err != nil {
@@ -62,18 +63,37 @@ func (h *Handler) GetHotWriteRegions() *core.StoreHotRegionInfos {
 	return c.getHotWriteRegions()
 }
 
+// GetHotReadRegions gets all hot read regions status
+func (h *Handler) GetHotReadRegions() *core.StoreHotRegionInfos {
+	c, err := h.getCoordinator()
+	if err != nil {
+		return nil
+	}
+	return c.getHotReadRegions()
+}
+
 // GetHotWriteStores gets all hot write stores status
 func (h *Handler) GetHotWriteStores() map[uint64]uint64 {
 	return h.s.cluster.cachedCluster.getStoresWriteStat()
 }
 
+// GetHotReadStores gets all hot write stores status
+func (h *Handler) GetHotReadStores() map[uint64]uint64 {
+	return h.s.cluster.cachedCluster.getStoresReadStat()
+}
+
 // AddScheduler adds a scheduler.
-func (h *Handler) AddScheduler(s schedule.Scheduler) error {
+func (h *Handler) AddScheduler(s schedule.Scheduler, args ...string) error {
 	c, err := h.getCoordinator()
 	if err != nil {
 		return errors.Trace(err)
 	}
-	return errors.Trace(c.addScheduler(s, minScheduleInterval))
+	if err = c.addScheduler(s, s.GetInterval(), args...); err != nil {
+		log.Errorf("can not add scheduler %v: %v", s.GetName(), err)
+	} else if err = c.opt.persist(c.kv); err != nil {
+		log.Errorf("can not persist scheduler config: %v", err)
+	}
+	return errors.Trace(err)
 }
 
 // RemoveScheduler removes a scheduler by name.
@@ -82,51 +102,61 @@ func (h *Handler) RemoveScheduler(name string) error {
 	if err != nil {
 		return errors.Trace(err)
 	}
-	return errors.Trace(c.removeScheduler(name))
+	if err = c.removeScheduler(name); err != nil {
+		log.Errorf("can not remove scheduler %v: %v", name, err)
+	} else if err = c.opt.persist(c.kv); err != nil {
+		log.Errorf("can not persist scheduler config: %v", err)
+	}
+	return errors.Trace(err)
 }
 
 // AddBalanceLeaderScheduler adds a balance-leader-scheduler.
 func (h *Handler) AddBalanceLeaderScheduler() error {
-	s, err := schedule.CreateScheduler("balanceLeader", h.opt)
+	s, err := schedule.CreateScheduler("balance-leader", h.opt)
 	if err != nil {
 		return errors.Trace(err)
 	}
+	log.Infof("create scheduler %s", s.GetName())
 	return h.AddScheduler(s)
 }
 
 // AddGrantLeaderScheduler adds a grant-leader-scheduler.
 func (h *Handler) AddGrantLeaderScheduler(storeID uint64) error {
-	s, err := schedule.CreateScheduler("grantLeader", h.opt, strconv.FormatUint(storeID, 10))
+	s, err := schedule.CreateScheduler("grant-leader", h.opt, strconv.FormatUint(storeID, 10))
 	if err != nil {
 		return errors.Trace(err)
 	}
-	return h.AddScheduler(s)
+	log.Infof("create scheduler %s", s.GetName())
+	return h.AddScheduler(s, strconv.FormatUint(storeID, 10))
 }
 
 // AddEvictLeaderScheduler adds an evict-leader-scheduler.
 func (h *Handler) AddEvictLeaderScheduler(storeID uint64) error {
-	s, err := schedule.CreateScheduler("evictLeader", h.opt, strconv.FormatUint(storeID, 10))
+	s, err := schedule.CreateScheduler("evict-leader", h.opt, strconv.FormatUint(storeID, 10))
 	if err != nil {
 		return errors.Trace(err)
 	}
-	return h.AddScheduler(s)
+	log.Infof("create scheduler %s", s.GetName())
+	return h.AddScheduler(s, strconv.FormatUint(storeID, 10))
 }
 
 // AddShuffleLeaderScheduler adds a shuffle-leader-scheduler.
 func (h *Handler) AddShuffleLeaderScheduler() error {
-	s, err := schedule.CreateScheduler("shuffleLeader", h.opt)
+	s, err := schedule.CreateScheduler("shuffle-leader", h.opt)
 	if err != nil {
 		return errors.Trace(err)
 	}
+	log.Infof("create scheduler %s", s.GetName())
 	return h.AddScheduler(s)
 }
 
 // AddShuffleRegionScheduler adds a shuffle-region-scheduler.
 func (h *Handler) AddShuffleRegionScheduler() error {
-	s, err := schedule.CreateScheduler("shuffleRegion", h.opt)
+	s, err := schedule.CreateScheduler("shuffle-region", h.opt)
 	if err != nil {
 		return errors.Trace(err)
 	}
+	log.Infof("create scheduler %s", s.GetName())
 	return h.AddScheduler(s)
 }
 
@@ -257,7 +287,7 @@ func (h *Handler) AddTransferRegionOperator(regionID uint64, storeIDs map[uint64
 	// Add missing peers.
 	for id := range storeIDs {
 		if c.cluster.GetStore(id) == nil {
-			return errStoreNotFound(id)
+			return core.ErrStoreNotFound(id)
 		}
 		if region.GetStorePeer(id) != nil {
 			continue
@@ -300,7 +330,7 @@ func (h *Handler) AddTransferPeerOperator(regionID uint64, fromStoreID, toStoreI
 	}
 
 	if c.cluster.GetStore(toStoreID) == nil {
-		return errStoreNotFound(toStoreID)
+		return core.ErrStoreNotFound(toStoreID)
 	}
 	newPeer, err := c.cluster.AllocPeer(toStoreID)
 	if err != nil {

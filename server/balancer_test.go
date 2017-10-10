@@ -274,7 +274,7 @@ func (s *testBalanceLeaderSchedulerSuite) SetUpTest(c *C) {
 	s.cluster = newClusterInfo(newMockIDAllocator())
 	s.tc = newTestClusterInfo(s.cluster)
 	_, opt := newTestScheduleConfig()
-	lb, err := schedule.CreateScheduler("balanceLeader", opt)
+	lb, err := schedule.CreateScheduler("balance-leader", opt)
 	c.Assert(err, IsNil)
 	s.lb = lb
 }
@@ -408,7 +408,7 @@ func (s *testBalanceRegionSchedulerSuite) TestBalance(c *C) {
 	tc := newTestClusterInfo(cluster)
 
 	_, opt := newTestScheduleConfig()
-	sb, err := schedule.CreateScheduler("balanceRegion", opt)
+	sb, err := schedule.CreateScheduler("balance-region", opt)
 	c.Assert(err, IsNil)
 
 	opt.SetMaxReplicas(1)
@@ -447,7 +447,7 @@ func (s *testBalanceRegionSchedulerSuite) TestReplicas3(c *C) {
 	_, opt := newTestScheduleConfig()
 	opt.rep = newTestReplication(3, "zone", "rack", "host")
 
-	sb, err := schedule.CreateScheduler("balanceRegion", opt)
+	sb, err := schedule.CreateScheduler("balance-region", opt)
 	c.Assert(err, IsNil)
 
 	// Store 1 has the largest region score, so the balancer try to replace peer in store 1.
@@ -512,7 +512,7 @@ func (s *testBalanceRegionSchedulerSuite) TestReplicas5(c *C) {
 	_, opt := newTestScheduleConfig()
 	opt.rep = newTestReplication(5, "zone", "rack", "host")
 
-	sb, err := schedule.CreateScheduler("balanceRegion", opt)
+	sb, err := schedule.CreateScheduler("balance-region", opt)
 	c.Assert(err, IsNil)
 
 	tc.addLabelsStore(1, 4, map[string]string{"zone": "z1", "rack": "r1", "host": "h1"})
@@ -548,7 +548,7 @@ func (s *testBalanceRegionSchedulerSuite) TestStoreWeight(c *C) {
 	tc := newTestClusterInfo(cluster)
 
 	_, opt := newTestScheduleConfig()
-	sb, err := schedule.CreateScheduler("balanceRegion", opt)
+	sb, err := schedule.CreateScheduler("balance-region", opt)
 	c.Assert(err, IsNil)
 	opt.SetMaxReplicas(1)
 
@@ -870,16 +870,16 @@ func checkTransferLeaderFrom(c *C, op *schedule.Operator, sourceID uint64) {
 	c.Assert(op.Step(0).(schedule.TransferLeader).FromStore, Equals, sourceID)
 }
 
-var _ = Suite(&testBalanceHotRegionSchedulerSuite{})
+var _ = Suite(&testBalanceHotWriteRegionSchedulerSuite{})
 
-type testBalanceHotRegionSchedulerSuite struct{}
+type testBalanceHotWriteRegionSchedulerSuite struct{}
 
-func (s *testBalanceHotRegionSchedulerSuite) TestBalance(c *C) {
+func (s *testBalanceHotWriteRegionSchedulerSuite) TestBalance(c *C) {
 	cluster := newClusterInfo(newMockIDAllocator())
 	tc := newTestClusterInfo(cluster)
 
 	_, opt := newTestScheduleConfig()
-	hb, err := schedule.CreateScheduler("hotRegion", opt)
+	hb, err := schedule.CreateScheduler("hot-write-region", opt)
 	c.Assert(err, IsNil)
 
 	// Add stores 1, 2, 3, 4, 5 with region counts 3, 2, 2, 2, 0.
@@ -929,4 +929,82 @@ func (s *testBalanceHotRegionSchedulerSuite) TestBalance(c *C) {
 	// We can find that the leader of all hot regions are on store 1,
 	// so one of the leader will transfer to another store.
 	checkTransferLeaderFrom(c, hb.Schedule(cluster), 1)
+}
+
+func (c *testClusterInfo) updateStorageReadBytes(storeID uint64, BytesRead uint64) {
+	store := c.GetStore(storeID)
+	store.Stats.BytesRead = BytesRead
+	c.putStore(store)
+}
+
+func (c *testClusterInfo) addLeaderRegionWithReadInfo(regionID uint64, leaderID uint64, readBytes uint64, followerIds ...uint64) {
+	region := &metapb.Region{Id: regionID}
+	leader, _ := c.AllocPeer(leaderID)
+	region.Peers = []*metapb.Peer{leader}
+	for _, id := range followerIds {
+		peer, _ := c.AllocPeer(id)
+		region.Peers = append(region.Peers, peer)
+	}
+	r := core.NewRegionInfo(region, leader)
+	r.ReadBytes = readBytes
+	c.updateReadStatus(r)
+	c.putRegion(r)
+}
+
+var _ = Suite(&testBalanceHotReadRegionSchedulerSuite{})
+
+type testBalanceHotReadRegionSchedulerSuite struct{}
+
+func (s *testBalanceHotReadRegionSchedulerSuite) TestBalance(c *C) {
+	cluster := newClusterInfo(newMockIDAllocator())
+	tc := newTestClusterInfo(cluster)
+
+	_, opt := newTestScheduleConfig()
+	hb, err := schedule.CreateScheduler("hot-read-region", opt)
+	c.Assert(err, IsNil)
+
+	// Add stores 1, 2, 3, 4, 5 with region counts 3, 2, 2, 2, 0.
+	tc.addRegionStore(1, 3)
+	tc.addRegionStore(2, 2)
+	tc.addRegionStore(3, 2)
+	tc.addRegionStore(4, 2)
+	tc.addRegionStore(5, 0)
+
+	// Report store read bytes.
+	tc.updateStorageReadBytes(1, 75*1024*1024)
+	tc.updateStorageReadBytes(2, 45*1024*1024)
+	tc.updateStorageReadBytes(3, 45*1024*1024)
+	tc.updateStorageReadBytes(4, 60*1024*1024)
+	tc.updateStorageReadBytes(5, 0)
+
+	// Region 1, 2 and 3 are hot regions.
+	//| region_id | leader_sotre | follower_store | follower_store |   read_bytes  |
+	//|-----------|--------------|----------------|----------------|---------------|
+	//|     1     |       1      |        2       |       3        |      512KB    |
+	//|     2     |       2      |        1       |       3        |      512KB    |
+	//|     3     |       1      |        2       |       3        |      512KB    |
+	tc.addLeaderRegionWithReadInfo(1, 1, 512*1024*regionHeartBeatReportInterval, 2, 3)
+	tc.addLeaderRegionWithReadInfo(2, 2, 512*1024*regionHeartBeatReportInterval, 1, 3)
+	tc.addLeaderRegionWithReadInfo(3, 1, 512*1024*regionHeartBeatReportInterval, 2, 3)
+	hotRegionLowThreshold = 0
+
+	// Will transfer a hot region leader from store 1 to store 3, because the total count of peers
+	// which is hot for store 1 is more larger than other stores.
+	checkTransferLeader(c, hb.Schedule(cluster), 1, 3)
+	// assume handle the operator
+	tc.addLeaderRegionWithReadInfo(3, 3, 512*1024*regionHeartBeatReportInterval, 1, 2)
+
+	// After transfer a hot region leader from store 1 to store 3
+	// the tree region leader will be evenly distributed in three stores
+	tc.updateStorageReadBytes(1, 60*1024*1024)
+	tc.updateStorageReadBytes(2, 30*1024*1024)
+	tc.updateStorageReadBytes(3, 60*1024*1024)
+	tc.updateStorageReadBytes(4, 30*1024*1024)
+	tc.updateStorageReadBytes(5, 30*1024*1024)
+	tc.addLeaderRegionWithReadInfo(4, 1, 512*1024*regionHeartBeatReportInterval, 2, 3)
+	tc.addLeaderRegionWithReadInfo(5, 4, 512*1024*regionHeartBeatReportInterval, 2, 5)
+
+	// Now appear two read hot region in store 1 and 4
+	// We will Transfer peer from 1 to 5
+	checkTransferPeerWithLeaderTransfer(c, hb.Schedule(cluster), 1, 5)
 }

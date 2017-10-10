@@ -35,13 +35,11 @@ const (
 	historiesCacheSize        = 1000
 	eventsCacheSize           = 1000
 	maxScheduleRetries        = 10
-	maxScheduleInterval       = time.Minute
-	minScheduleInterval       = time.Millisecond * 10
-	minSlowScheduleInterval   = time.Second * 3
 	scheduleIntervalFactor    = 1.3
 
-	writeStatCacheMaxLen          = 1000
-	hotRegionMinWriteRate         = 16 * 1024
+	statCacheMaxLen               = 1000
+	hotWriteRegionMinFlowRate     = 16 * 1024
+	hotReadRegionMinFlowRate      = 128 * 1024
 	regionHeartBeatReportInterval = 60
 	regionheartbeatSendChanCap    = 1024
 	storeHeartBeatReportInterval  = 10
@@ -63,6 +61,7 @@ type coordinator struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
+<<<<<<< HEAD
 	cluster          *clusterInfo
 	opt              *scheduleOption
 	limiter          *scheduleLimiter
@@ -90,6 +89,33 @@ func newCoordinator(cluster *clusterInfo, opt *scheduleOption, hbStreams *heartb
 		classifier:       classifier,
 		histories:        cache.NewDefaultCache(historiesCacheSize),
 		hbStreams:        hbStreams,
+=======
+	cluster    *clusterInfo
+	opt        *scheduleOption
+	limiter    *scheduleLimiter
+	checker    *schedule.ReplicaChecker
+	operators  map[uint64]*schedule.Operator
+	schedulers map[string]*scheduleController
+	histories  cache.Cache
+	hbStreams  *heartbeatStreams
+	kv         *core.KV
+}
+
+func newCoordinator(cluster *clusterInfo, opt *scheduleOption, hbStreams *heartbeatStreams, kv *core.KV) *coordinator {
+	ctx, cancel := context.WithCancel(context.Background())
+	return &coordinator{
+		ctx:        ctx,
+		cancel:     cancel,
+		cluster:    cluster,
+		opt:        opt,
+		limiter:    newScheduleLimiter(),
+		checker:    schedule.NewReplicaChecker(opt, cluster),
+		operators:  make(map[uint64]*schedule.Operator),
+		schedulers: make(map[string]*scheduleController),
+		histories:  cache.NewDefaultCache(historiesCacheSize),
+		hbStreams:  hbStreams,
+		kv:         kv,
+>>>>>>> master
 	}
 }
 
@@ -143,12 +169,33 @@ func (c *coordinator) run() {
 		}
 	}
 	log.Info("coordinator: Run scheduler")
-	s, _ := schedule.CreateScheduler("balanceLeader", c.opt)
-	c.addScheduler(s, minScheduleInterval)
-	s, _ = schedule.CreateScheduler("balanceRegion", c.opt)
-	c.addScheduler(s, minScheduleInterval)
-	s, _ = schedule.CreateScheduler("hotRegion", c.opt)
-	c.addScheduler(s, minSlowScheduleInterval)
+
+	k := 0
+	scheduleCfg := c.opt.load()
+	for _, schedulerCfg := range scheduleCfg.Schedulers {
+		s, err := schedule.CreateScheduler(schedulerCfg.Type, c.opt, schedulerCfg.Args...)
+		if err != nil {
+			log.Errorf("can not create scheduler %s: %v", schedulerCfg.Type, err)
+		} else {
+			log.Infof("create scheduler %s", s.GetName())
+			if err = c.addScheduler(s, s.GetInterval(), schedulerCfg.Args...); err != nil {
+				log.Errorf("can not add scheduler %s: %v", s.GetName(), err)
+			}
+		}
+
+		// only record valid scheduler config
+		if err == nil {
+			scheduleCfg.Schedulers[k] = schedulerCfg
+			k++
+		}
+	}
+
+	// remove invalid scheduler config and persist
+	scheduleCfg.Schedulers = scheduleCfg.Schedulers[:k]
+	if err := c.opt.persist(c.kv); err != nil {
+		log.Errorf("can't persist schedule config: %v", err)
+	}
+
 }
 
 func (c *coordinator) stop() {
@@ -159,7 +206,8 @@ func (c *coordinator) stop() {
 // Hack to retrive info from scheduler.
 // TODO: remove it.
 type hasHotStatus interface {
-	GetStatus() *core.StoreHotRegionInfos
+	GetHotReadStatus() *core.StoreHotRegionInfos
+	GetHotWriteStatus() *core.StoreHotRegionInfos
 }
 
 func (c *coordinator) getHotWriteRegions() *core.StoreHotRegionInfos {
@@ -170,7 +218,20 @@ func (c *coordinator) getHotWriteRegions() *core.StoreHotRegionInfos {
 		return nil
 	}
 	if h, ok := s.Scheduler.(hasHotStatus); ok {
-		return h.GetStatus()
+		return h.GetHotWriteStatus()
+	}
+	return nil
+}
+
+func (c *coordinator) getHotReadRegions() *core.StoreHotRegionInfos {
+	c.RLock()
+	defer c.RUnlock()
+	s, ok := c.schedulers[hotRegionScheduleName]
+	if !ok {
+		return nil
+	}
+	if h, ok := s.Scheduler.(hasHotStatus); ok {
+		return h.GetHotReadStatus()
 	}
 	return nil
 }
@@ -204,14 +265,15 @@ func (c *coordinator) collectSchedulerMetrics() {
 func (c *coordinator) collectHotSpotMetrics() {
 	c.RLock()
 	defer c.RUnlock()
+	// collect hot write region metrics
 	s, ok := c.schedulers[hotRegionScheduleName]
 	if !ok {
 		return
 	}
-	status := s.Scheduler.(hasHotStatus).GetStatus()
+	status := s.Scheduler.(hasHotStatus).GetHotWriteStatus()
 	for storeID, stat := range status.AsPeer {
 		store := fmt.Sprintf("store_%d", storeID)
-		totalWriteBytes := float64(stat.WrittenBytes)
+		totalWriteBytes := float64(stat.TotalFlowBytes)
 		hotWriteRegionCount := float64(stat.RegionsCount)
 
 		hotSpotStatusGauge.WithLabelValues(store, "total_written_bytes_as_peer").Set(totalWriteBytes)
@@ -219,11 +281,22 @@ func (c *coordinator) collectHotSpotMetrics() {
 	}
 	for storeID, stat := range status.AsLeader {
 		store := fmt.Sprintf("store_%d", storeID)
-		totalWriteBytes := float64(stat.WrittenBytes)
+		totalWriteBytes := float64(stat.TotalFlowBytes)
 		hotWriteRegionCount := float64(stat.RegionsCount)
 
 		hotSpotStatusGauge.WithLabelValues(store, "total_written_bytes_as_leader").Set(totalWriteBytes)
 		hotSpotStatusGauge.WithLabelValues(store, "hot_write_region_as_leader").Set(hotWriteRegionCount)
+	}
+
+	// collect hot read region metrics
+	status = s.Scheduler.(hasHotStatus).GetHotReadStatus()
+	for storeID, stat := range status.AsLeader {
+		store := fmt.Sprintf("store_%d", storeID)
+		totalReadBytes := float64(stat.TotalFlowBytes)
+		hotReadRegionCount := float64(stat.RegionsCount)
+
+		hotSpotStatusGauge.WithLabelValues(store, "total_read_bytes_as_leader").Set(totalReadBytes)
+		hotSpotStatusGauge.WithLabelValues(store, "hot_read_region_as_leader").Set(hotReadRegionCount)
 	}
 }
 
@@ -231,7 +304,7 @@ func (c *coordinator) shouldRun() bool {
 	return c.cluster.isPrepared()
 }
 
-func (c *coordinator) addScheduler(scheduler schedule.Scheduler, interval time.Duration) error {
+func (c *coordinator) addScheduler(scheduler schedule.Scheduler, interval time.Duration, args ...string) error {
 	c.Lock()
 	defer c.Unlock()
 
@@ -247,6 +320,8 @@ func (c *coordinator) addScheduler(scheduler schedule.Scheduler, interval time.D
 	c.wg.Add(1)
 	go c.runScheduler(s)
 	c.schedulers[s.GetName()] = s
+	c.opt.AddSchedulerCfg(s.GetType(), args)
+
 	return nil
 }
 
@@ -261,6 +336,11 @@ func (c *coordinator) removeScheduler(name string) error {
 
 	s.Stop()
 	delete(c.schedulers, name)
+
+	if err := c.opt.RemoveSchedulerCfg(name); err != nil {
+		return errors.Trace(err)
+	}
+
 	return nil
 }
 
@@ -296,6 +376,8 @@ func (c *coordinator) addOperator(op *schedule.Operator) bool {
 
 	log.Infof("[region %v] add operator: %s", regionID, op)
 
+	// If the new operator passed in has higher priorities than the old one,
+	// then replace the old operator.
 	if old, ok := c.operators[regionID]; ok {
 		if !isHigherPriorityOperator(op, old) {
 			log.Infof("[region %v] cancel add operator, old: %s", regionID, old)
@@ -500,7 +582,7 @@ func (s *scheduleController) Schedule(cluster schedule.Cluster) *schedule.Operat
 	}
 
 	// If we have no schedule, increase the interval exponentially.
-	s.nextInterval = minDuration(time.Duration(float64(s.nextInterval)*scheduleIntervalFactor), maxScheduleInterval)
+	s.nextInterval = minDuration(time.Duration(float64(s.nextInterval)*scheduleIntervalFactor), schedule.MaxScheduleInterval)
 
 	return nil
 }

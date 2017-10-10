@@ -17,6 +17,7 @@ import (
 	"flag"
 	"fmt"
 	"net/url"
+	"reflect"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -27,6 +28,8 @@ import (
 	"github.com/pingcap/pd/pkg/logutil"
 	"github.com/pingcap/pd/pkg/metricutil"
 	"github.com/pingcap/pd/pkg/typeutil"
+	"github.com/pingcap/pd/server/core"
+	"github.com/pingcap/pd/server/schedule"
 )
 
 // Config is the pd server configuration.
@@ -173,6 +176,12 @@ func adjustDuration(v *typeutil.Duration, defValue time.Duration) {
 	}
 }
 
+func adjustSchedulers(v *SchedulerConfigs, defValue SchedulerConfigs) {
+	if len(*v) == 0 {
+		*v = defValue
+	}
+}
+
 // Parse parses flag definitions from the argument list.
 func (c *Config) Parse(arguments []string) error {
 	// Parse first to get config file.
@@ -303,6 +312,30 @@ type ScheduleConfig struct {
 	RegionScheduleLimit uint64 `toml:"region-schedule-limit,omitempty" json:"region-schedule-limit"`
 	// ReplicaScheduleLimit is the max coexist replica schedules.
 	ReplicaScheduleLimit uint64 `toml:"replica-schedule-limit,omitempty" json:"replica-schedule-limit"`
+	// Schedulers support for loding customized schedulers
+	Schedulers SchedulerConfigs `toml:"schedulers,omitempty" json:"schedulers-v2"` // json v2 is for the sake of compatible upgrade
+}
+
+func (c *ScheduleConfig) clone() *ScheduleConfig {
+	schedulers := make(SchedulerConfigs, len(c.Schedulers))
+	copy(schedulers, c.Schedulers)
+	return &ScheduleConfig{
+		MaxSnapshotCount:     c.MaxSnapshotCount,
+		MaxStoreDownTime:     c.MaxStoreDownTime,
+		LeaderScheduleLimit:  c.LeaderScheduleLimit,
+		RegionScheduleLimit:  c.RegionScheduleLimit,
+		ReplicaScheduleLimit: c.ReplicaScheduleLimit,
+		Schedulers:           schedulers,
+	}
+}
+
+// SchedulerConfigs is a slice of customized scheduler configuration.
+type SchedulerConfigs []SchedulerConfig
+
+// SchedulerConfig is customized scheduler configuration
+type SchedulerConfig struct {
+	Type string   `toml:"type" json:"type"`
+	Args []string `toml:"args,omitempty" json:"args"`
 }
 
 const (
@@ -314,12 +347,19 @@ const (
 	defaultReplicaScheduleLimit = 16
 )
 
+var defaultSchedulers = SchedulerConfigs{
+	{Type: "balance-region"},
+	{Type: "balance-leader"},
+	{Type: "hot-region"},
+}
+
 func (c *ScheduleConfig) adjust() {
 	adjustUint64(&c.MaxSnapshotCount, defaultMaxSnapshotCount)
 	adjustDuration(&c.MaxStoreDownTime, defaultMaxStoreDownTime)
 	adjustUint64(&c.LeaderScheduleLimit, defaultLeaderScheduleLimit)
 	adjustUint64(&c.RegionScheduleLimit, defaultRegionScheduleLimit)
 	adjustUint64(&c.ReplicaScheduleLimit, defaultReplicaScheduleLimit)
+	adjustSchedulers(&c.Schedulers, defaultSchedulers)
 }
 
 // ReplicationConfig is the replication configuration.
@@ -335,7 +375,7 @@ type ReplicationConfig struct {
 }
 
 func (c *ReplicationConfig) clone() *ReplicationConfig {
-	locationLabels := make(typeutil.StringSlice, 0, len(c.LocationLabels))
+	locationLabels := make(typeutil.StringSlice, len(c.LocationLabels))
 	copy(locationLabels, c.LocationLabels)
 	return &ReplicationConfig{
 		MaxReplicas:    c.MaxReplicas,
@@ -404,8 +444,67 @@ func (o *scheduleOption) GetReplicaScheduleLimit() uint64 {
 	return o.load().ReplicaScheduleLimit
 }
 
-func (o *scheduleOption) persist(kv *kv) error {
-	return kv.saveScheduleOption(o)
+func (o *scheduleOption) GetSchedulers() SchedulerConfigs {
+	return o.load().Schedulers
+}
+
+func (o *scheduleOption) AddSchedulerCfg(tp string, args []string) error {
+	c := o.load()
+	v := c.clone()
+	for _, schedulerCfg := range v.Schedulers {
+		// comparing args is to cover the case that there are schedulers in same type but not with same name
+		// such as two schedulers of type "evict-leader",
+		// one name is "evict-leader-scheduler-1" and the other is "evict-leader-scheduler-2"
+		if reflect.DeepEqual(schedulerCfg, SchedulerConfig{tp, args}) {
+			return nil
+		}
+	}
+	v.Schedulers = append(v.Schedulers, SchedulerConfig{Type: tp, Args: args})
+	o.store(v)
+	return nil
+}
+
+func (o *scheduleOption) RemoveSchedulerCfg(name string) error {
+	c := o.load()
+	v := c.clone()
+	for i, schedulerCfg := range v.Schedulers {
+		// To create a temporary scheduler is just used to get scheduler's name
+		tmp, err := schedule.CreateScheduler(schedulerCfg.Type, o, schedulerCfg.Args...)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		if tmp.GetName() == name {
+			v.Schedulers = append(v.Schedulers[:i], v.Schedulers[i+1:]...)
+			o.store(v)
+			return nil
+		}
+	}
+	return nil
+}
+
+func (o *scheduleOption) persist(kv *core.KV) error {
+	cfg := &Config{
+		Schedule:    *o.load(),
+		Replication: *o.rep.load(),
+	}
+	err := kv.SaveConfig(cfg)
+	return errors.Trace(err)
+}
+
+func (o *scheduleOption) reload(kv *core.KV) error {
+	cfg := &Config{
+		Schedule:    *o.load(),
+		Replication: *o.rep.load(),
+	}
+	isExist, err := kv.LoadConfig(cfg)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	if isExist {
+		o.store(&cfg.Schedule)
+		o.rep.store(&cfg.Replication)
+	}
+	return nil
 }
 
 func (o *scheduleOption) GetHotRegionLowThreshold() int {

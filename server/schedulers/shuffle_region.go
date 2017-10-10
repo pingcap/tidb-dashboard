@@ -14,12 +14,14 @@
 package schedulers
 
 import (
+	"time"
+
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/server/schedule"
 )
 
 func init() {
-	schedule.RegisterScheduler("shuffleRegion", func(opt schedule.Options, args []string) (schedule.Scheduler, error) {
+	schedule.RegisterScheduler("shuffle-region", func(opt schedule.Options, args []string) (schedule.Scheduler, error) {
 		return newShuffleRegionScheduler(opt), nil
 	})
 }
@@ -45,6 +47,14 @@ func newShuffleRegionScheduler(opt schedule.Options) schedule.Scheduler {
 
 func (s *shuffleRegionScheduler) GetName() string {
 	return "shuffle-region-scheduler"
+}
+
+func (s *shuffleRegionScheduler) GetType() string {
+	return "shuffle-region"
+}
+
+func (s *shuffleRegionScheduler) GetInterval() time.Duration {
+	return schedule.MinScheduleInterval
 }
 
 func (s *shuffleRegionScheduler) GetResourceKind() core.ResourceKind {
@@ -75,5 +85,5 @@ func (s *shuffleRegionScheduler) Schedule(cluster schedule.Cluster) *schedule.Op
 	}
 
 	schedulerCounter.WithLabelValues(s.GetName(), "new_operator").Inc()
-	return schedule.CreateMovePeerOperator("shuffleRegion", region, core.RegionKind, oldPeer.GetStoreId(), newPeer.GetStoreId(), newPeer.GetId())
+	return schedule.CreateMovePeerOperator("shuffle-region", region, core.RegionKind, oldPeer.GetStoreId(), newPeer.GetStoreId(), newPeer.GetId())
 }

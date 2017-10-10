@@ -15,10 +15,18 @@ package schedule
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/juju/errors"
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/pd/server/core"
+)
+
+// options for interval of schedulers
+const (
+	MaxScheduleInterval     = time.Minute
+	MinScheduleInterval     = time.Millisecond * 10
+	MinSlowScheduleInterval = time.Second * 3
 )
 
 // Cluster provides an overview of a cluster's regions distribution.
@@ -38,6 +46,7 @@ type Cluster interface {
 
 	IsRegionHot(id uint64) bool
 	RegionWriteStats() []*core.RegionStat
+	RegionReadStats() []*core.RegionStat
 
 	// TODO: it should be removed. Schedulers don't need to know anything
 	// about peers.
@@ -47,6 +56,9 @@ type Cluster interface {
 // Scheduler is an interface to schedule resources.
 type Scheduler interface {
 	GetName() string
+	// GetType should in accordance with the name passing to schedule.RegisterScheduler()
+	GetType() string
+	GetInterval() time.Duration
 	GetResourceKind() core.ResourceKind
 	GetResourceLimit() uint64
 	Prepare(cluster Cluster) error

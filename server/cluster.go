@@ -83,13 +83,20 @@ func newRaftCluster(s *Server, clusterID uint64) *RaftCluster {
 }
 
 func (c *RaftCluster) loadClusterStatus() error {
-	status := &ClusterStatus{}
-	t, err := c.s.kv.getRaftClusterBootstrapTime()
+	data, err := c.s.kv.Load((c.s.kv.ClusterStatePath("raft_bootstrap_time")))
 	if err != nil {
 		return errors.Trace(err)
 	}
-	status.RaftBootstrapTime = t
-	c.status = status
+	if len(data) == 0 {
+		return nil
+	}
+	t, err := parseTimestamp([]byte(data))
+	if err != nil {
+		return errors.Trace(err)
+	}
+	c.status = &ClusterStatus{
+		RaftBootstrapTime: t,
+	}
 	return nil
 }
 
@@ -110,6 +117,7 @@ func (c *RaftCluster) start() error {
 		return nil
 	}
 	c.cachedCluster = cluster
+<<<<<<< HEAD
 	var classifier namespace.Classifier
 	if c.s.cfg.EnableNamespace {
 		log.Infoln("use namespace classifier.")
@@ -119,6 +127,9 @@ func (c *RaftCluster) start() error {
 		classifier = namespace.DefaultClassifier
 	}
 	c.coordinator = newCoordinator(c.cachedCluster, c.s.scheduleOpt, c.s.hbStreams, classifier)
+=======
+	c.coordinator = newCoordinator(c.cachedCluster, c.s.scheduleOpt, c.s.hbStreams, c.s.kv)
+>>>>>>> master
 	c.quit = make(chan struct{})
 
 	c.wg.Add(2)
@@ -477,7 +488,7 @@ func (c *RaftCluster) RemoveStore(storeID uint64) error {
 
 	store := cluster.GetStore(storeID)
 	if store == nil {
-		return errors.Trace(errStoreNotFound(storeID))
+		return errors.Trace(core.ErrStoreNotFound(storeID))
 	}
 
 	// Remove an offline store should be OK, nothing to do.
@@ -506,7 +517,7 @@ func (c *RaftCluster) BuryStore(storeID uint64, force bool) error {
 
 	store := cluster.GetStore(storeID)
 	if store == nil {
-		return errors.Trace(errStoreNotFound(storeID))
+		return errors.Trace(core.ErrStoreNotFound(storeID))
 	}
 
 	// Bury a tombstone store should be OK, nothing to do.
@@ -526,6 +537,23 @@ func (c *RaftCluster) BuryStore(storeID uint64, force bool) error {
 	return cluster.putStore(store)
 }
 
+// SetStoreState sets up a store's state.
+func (c *RaftCluster) SetStoreState(storeID uint64, state metapb.StoreState) error {
+	c.Lock()
+	defer c.Unlock()
+
+	cluster := c.cachedCluster
+
+	store := cluster.GetStore(storeID)
+	if store == nil {
+		return errors.Trace(core.ErrStoreNotFound(storeID))
+	}
+
+	store.State = state
+	log.Warnf("[store %d] set state to %v", storeID, state.String())
+	return cluster.putStore(store)
+}
+
 // SetStoreWeight sets up a store's leader/region balance weight.
 func (c *RaftCluster) SetStoreWeight(storeID uint64, leader, region float64) error {
 	c.Lock()
@@ -533,10 +561,10 @@ func (c *RaftCluster) SetStoreWeight(storeID uint64, leader, region float64) err
 
 	store := c.cachedCluster.GetStore(storeID)
 	if store == nil {
-		return errors.Trace(errStoreNotFound(storeID))
+		return errors.Trace(core.ErrStoreNotFound(storeID))
 	}
 
-	if err := c.s.kv.saveStoreWeight(storeID, leader, region); err != nil {
+	if err := c.s.kv.SaveStoreWeight(storeID, leader, region); err != nil {
 		return errors.Trace(err)
 	}
 
@@ -550,7 +578,7 @@ func (c *RaftCluster) checkStores() {
 		if store.GetState() != metapb.StoreState_Offline {
 			continue
 		}
-		if cluster.getStoreRegionCount(store.GetId()) == 0 {
+		if c.storeIsEmpty(store.GetId()) {
 			err := c.BuryStore(store.GetId(), false)
 			if err != nil {
 				log.Errorf("bury store %v failed: %v", store, err)
@@ -561,13 +589,34 @@ func (c *RaftCluster) checkStores() {
 	}
 }
 
+func (c *RaftCluster) storeIsEmpty(storeID uint64) bool {
+	cluster := c.cachedCluster
+	if cluster.getStoreRegionCount(storeID) > 0 {
+		return false
+	}
+	// If pd-server is started recently, or becomes leader recently, the check may
+	// happen before any heartbeat from tikv. So we need to check region metas to
+	// verify no region's peer is on the store.
+	regions := cluster.getMetaRegions()
+	for _, region := range regions {
+		for _, p := range region.GetPeers() {
+			if p.GetStoreId() == storeID {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 func (c *RaftCluster) collectMetrics() {
 	cluster := c.cachedCluster
 
 	storeUpCount := 0
+	storeDisconnectedCount := 0
 	storeDownCount := 0
 	storeOfflineCount := 0
 	storeTombstoneCount := 0
+	storeLowSpaceCount := 0
 	storageSize := uint64(0)
 	storageCapacity := uint64(0)
 	minLeaderScore, maxLeaderScore := math.MaxFloat64, float64(0.0)
@@ -577,7 +626,13 @@ func (c *RaftCluster) collectMetrics() {
 		// Store state.
 		switch s.GetState() {
 		case metapb.StoreState_Up:
-			storeUpCount++
+			if s.DownTime() >= c.coordinator.opt.GetMaxStoreDownTime() {
+				storeDownCount++
+			} else if s.IsDisconnected() {
+				storeDisconnectedCount++
+			} else {
+				storeUpCount++
+			}
 		case metapb.StoreState_Offline:
 			storeOfflineCount++
 		case metapb.StoreState_Tombstone:
@@ -586,8 +641,8 @@ func (c *RaftCluster) collectMetrics() {
 		if s.IsTombstone() {
 			continue
 		}
-		if s.DownTime() >= c.coordinator.opt.GetMaxStoreDownTime() {
-			storeDownCount++
+		if s.IsLowSpace() {
+			storeLowSpaceCount++
 		}
 
 		// Store stats.
@@ -603,9 +658,11 @@ func (c *RaftCluster) collectMetrics() {
 
 	metrics := make(map[string]float64)
 	metrics["store_up_count"] = float64(storeUpCount)
+	metrics["store_disconnected_count"] = float64(storeDisconnectedCount)
 	metrics["store_down_count"] = float64(storeDownCount)
 	metrics["store_offline_count"] = float64(storeOfflineCount)
 	metrics["store_tombstone_count"] = float64(storeTombstoneCount)
+	metrics["store_low_space_count"] = float64(storeLowSpaceCount)
 	metrics["region_count"] = float64(cluster.getRegionCount())
 	metrics["storage_size"] = float64(storageSize)
 	metrics["storage_capacity"] = float64(storageCapacity)

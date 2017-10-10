@@ -16,6 +16,7 @@ package schedulers
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/juju/errors"
 	"github.com/pingcap/pd/server/core"
@@ -23,9 +24,9 @@ import (
 )
 
 func init() {
-	schedule.RegisterScheduler("grantLeader", func(opt schedule.Options, args []string) (schedule.Scheduler, error) {
+	schedule.RegisterScheduler("grant-leader", func(opt schedule.Options, args []string) (schedule.Scheduler, error) {
 		if len(args) != 1 {
-			return nil, errors.New("grantLeader needs 1 argument")
+			return nil, errors.New("grant-leader needs 1 argument")
 		}
 		id, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
@@ -34,6 +35,8 @@ func init() {
 		return newGrantLeaderScheduler(opt, id), nil
 	})
 }
+
+const scheduleInterval = time.Millisecond * 10
 
 // grantLeaderScheduler transfers all leaders to peers in the store.
 type grantLeaderScheduler struct {
@@ -54,6 +57,14 @@ func newGrantLeaderScheduler(opt schedule.Options, storeID uint64) schedule.Sche
 
 func (s *grantLeaderScheduler) GetName() string {
 	return s.name
+}
+
+func (s *grantLeaderScheduler) GetType() string {
+	return "grant-leader"
+}
+
+func (s *grantLeaderScheduler) GetInterval() time.Duration {
+	return schedule.MinScheduleInterval
 }
 
 func (s *grantLeaderScheduler) GetResourceKind() core.ResourceKind {
@@ -81,5 +92,5 @@ func (s *grantLeaderScheduler) Schedule(cluster schedule.Cluster) *schedule.Oper
 	}
 	schedulerCounter.WithLabelValues(s.GetName(), "new_operator").Inc()
 	step := schedule.TransferLeader{FromStore: region.Leader.GetStoreId(), ToStore: s.storeID}
-	return schedule.NewOperator("grantLeader", region.GetId(), core.LeaderKind, step)
+	return schedule.NewOperator("grant-leader", region.GetId(), core.LeaderKind, step)
 }

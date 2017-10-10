@@ -23,7 +23,7 @@ import (
 )
 
 func init() {
-	schedule.RegisterScheduler("balanceRegion", func(opt schedule.Options, args []string) (schedule.Scheduler, error) {
+	schedule.RegisterScheduler("balance-region", func(opt schedule.Options, args []string) (schedule.Scheduler, error) {
 		return newBalanceRegionScheduler(opt), nil
 	})
 }
@@ -40,9 +40,15 @@ type balanceRegionScheduler struct {
 // newBalanceRegionScheduler creates a scheduler that tends to keep regions on
 // each store balanced.
 func newBalanceRegionScheduler(opt schedule.Options) schedule.Scheduler {
+<<<<<<< HEAD
 	cached := cache.NewIDTTL(storeCacheInterval, 4*storeCacheInterval)
 	filters := []schedule.Filter{
 		schedule.NewCacheFilter(cached),
+=======
+	ttlCache := cache.NewIDTTL(storeCacheInterval, 4*storeCacheInterval)
+	filters := []schedule.Filter{
+		schedule.NewCacheFilter(ttlCache),
+>>>>>>> master
 		schedule.NewStateFilter(opt),
 		schedule.NewHealthFilter(opt),
 		schedule.NewSnapshotCountFilter(opt),
@@ -51,7 +57,11 @@ func newBalanceRegionScheduler(opt schedule.Options) schedule.Scheduler {
 
 	return &balanceRegionScheduler{
 		opt:      opt,
+<<<<<<< HEAD
 		cache:    cached,
+=======
+		cache:    ttlCache,
+>>>>>>> master
 		limit:    1,
 		selector: schedule.NewBalanceSelector(core.RegionKind, filters),
 	}
@@ -59,6 +69,14 @@ func newBalanceRegionScheduler(opt schedule.Options) schedule.Scheduler {
 
 func (s *balanceRegionScheduler) GetName() string {
 	return "balance-region-scheduler"
+}
+
+func (s *balanceRegionScheduler) GetType() string {
+	return "balance-region"
+}
+
+func (s *balanceRegionScheduler) GetInterval() time.Duration {
+	return schedule.MinScheduleInterval
 }
 
 func (s *balanceRegionScheduler) GetResourceKind() core.ResourceKind {
@@ -123,7 +141,7 @@ func (s *balanceRegionScheduler) transferPeer(cluster schedule.Cluster, region *
 	}
 	s.limit = adjustBalanceLimit(cluster, s.GetResourceKind())
 
-	return schedule.CreateMovePeerOperator("balanceRegion", region, core.RegionKind, oldPeer.GetStoreId(), newPeer.GetStoreId(), newPeer.GetId())
+	return schedule.CreateMovePeerOperator("balance-region", region, core.RegionKind, oldPeer.GetStoreId(), newPeer.GetStoreId(), newPeer.GetId())
 }
 
 // GetCache returns interval id cache in the scheduler. This is for test only.

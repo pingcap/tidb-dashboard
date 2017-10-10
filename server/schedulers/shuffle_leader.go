@@ -14,13 +14,15 @@
 package schedulers
 
 import (
+	"time"
+
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/server/schedule"
 )
 
 func init() {
-	schedule.RegisterScheduler("shuffleLeader", func(opt schedule.Options, args []string) (schedule.Scheduler, error) {
+	schedule.RegisterScheduler("shuffle-leader", func(opt schedule.Options, args []string) (schedule.Scheduler, error) {
 		return newShuffleLeaderScheduler(opt), nil
 	})
 }
@@ -47,6 +49,14 @@ func newShuffleLeaderScheduler(opt schedule.Options) schedule.Scheduler {
 
 func (s *shuffleLeaderScheduler) GetName() string {
 	return "shuffle-leader-scheduler"
+}
+
+func (s *shuffleLeaderScheduler) GetType() string {
+	return "shuffle-leader"
+}
+
+func (s *shuffleLeaderScheduler) GetInterval() time.Duration {
+	return schedule.MinScheduleInterval
 }
 
 func (s *shuffleLeaderScheduler) GetResourceKind() core.ResourceKind {
@@ -79,7 +89,7 @@ func (s *shuffleLeaderScheduler) Schedule(cluster schedule.Cluster) *schedule.Op
 		s.selected = region.Leader
 		schedulerCounter.WithLabelValues(s.GetName(), "new_operator").Inc()
 		step := schedule.TransferLeader{FromStore: region.Leader.GetStoreId(), ToStore: newLeader.GetStoreId()}
-		return schedule.NewOperator("shuffleLeader", region.GetId(), core.LeaderKind, step)
+		return schedule.NewOperator("shuffle-leader", region.GetId(), core.LeaderKind, step)
 	}
 
 	// Reset the selected store.

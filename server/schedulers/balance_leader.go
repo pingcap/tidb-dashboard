@@ -14,12 +14,14 @@
 package schedulers
 
 import (
+	"time"
+
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/server/schedule"
 )
 
 func init() {
-	schedule.RegisterScheduler("balanceLeader", func(opt schedule.Options, args []string) (schedule.Scheduler, error) {
+	schedule.RegisterScheduler("balance-leader", func(opt schedule.Options, args []string) (schedule.Scheduler, error) {
 		return newBalanceLeaderScheduler(opt), nil
 	})
 }
@@ -47,6 +49,14 @@ func newBalanceLeaderScheduler(opt schedule.Options) schedule.Scheduler {
 
 func (l *balanceLeaderScheduler) GetName() string {
 	return "balance-leader-scheduler"
+}
+
+func (l *balanceLeaderScheduler) GetType() string {
+	return "balance-leader"
+}
+
+func (l *balanceLeaderScheduler) GetInterval() time.Duration {
+	return schedule.MinScheduleInterval
 }
 
 func (l *balanceLeaderScheduler) GetResourceKind() core.ResourceKind {
@@ -83,5 +93,5 @@ func (l *balanceLeaderScheduler) Schedule(cluster schedule.Cluster) *schedule.Op
 	l.limit = adjustBalanceLimit(cluster, l.GetResourceKind())
 	schedulerCounter.WithLabelValues(l.GetName(), "new_opeartor").Inc()
 	step := schedule.TransferLeader{FromStore: region.Leader.GetStoreId(), ToStore: newLeader.GetStoreId()}
-	return schedule.NewOperator("balanceLeader", region.GetId(), core.LeaderKind, step)
+	return schedule.NewOperator("balance-leader", region.GetId(), core.LeaderKind, step)
 }

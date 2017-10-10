@@ -17,10 +17,9 @@ import (
 	"fmt"
 	"math"
 	"path"
+	"regexp"
 	"sync"
 	"time"
-
-	"regexp"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/coreos/etcd/clientv3"
@@ -120,7 +119,11 @@ func (c *RaftCluster) start() error {
 	var classifier namespace.Classifier
 	if c.s.cfg.EnableNamespace {
 		log.Infoln("use namespace classifier.")
-		classifier = newTableNamespaceClassifier(c.cachedCluster.namespacesInfo, core.DefaultTableIDDecoder)
+		nsInfo := c.cachedCluster.namespacesInfo
+		if err := nsInfo.loadNamespaces(c.s.kv, kvRangeLimit); err != nil {
+			return errors.Trace(err)
+		}
+		classifier = newTableNamespaceClassifier(nsInfo, core.DefaultTableIDDecoder)
 	} else {
 		log.Infoln("use default classifier.")
 		classifier = namespace.DefaultClassifier

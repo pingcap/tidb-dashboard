@@ -14,6 +14,14 @@
 package server
 
 import (
+	"encoding/json"
+	"fmt"
+	"math"
+	"path"
+	"time"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/juju/errors"
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/server/namespace"
 )
@@ -196,4 +204,45 @@ func (namespaceInfo *namespacesInfo) IsStoreIDExist(storeID uint64) bool {
 		}
 	}
 	return false
+}
+
+func (namespaceInfo *namespacesInfo) namespacePath(nsID uint64) string {
+	return path.Join("namespace", fmt.Sprintf("%20d", nsID))
+}
+
+func (namespaceInfo *namespacesInfo) saveNamespace(kv *core.KV, ns *Namespace) error {
+	value, err := json.Marshal(ns)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	err = kv.Save(namespaceInfo.namespacePath(ns.GetID()), string(value))
+	return errors.Trace(err)
+}
+
+func (namespaceInfo *namespacesInfo) loadNamespaces(kv *core.KV, rangeLimit int) error {
+	start := time.Now()
+
+	nextID := uint64(0)
+	endKey := namespaceInfo.namespacePath(math.MaxUint64)
+
+	for {
+		key := namespaceInfo.namespacePath(nextID)
+		res, err := kv.LoadRange(key, endKey, rangeLimit)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		for _, s := range res {
+			ns := &Namespace{}
+			if err := json.Unmarshal([]byte(s), ns); err != nil {
+				return errors.Trace(err)
+			}
+			nextID = ns.GetID() + 1
+			namespaceInfo.setNamespace(ns)
+		}
+
+		if len(res) < rangeLimit {
+			log.Infof("load %v namespacesInfo cost %v", namespaceInfo.getNamespaceCount(), time.Since(start))
+			return nil
+		}
+	}
 }

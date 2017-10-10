@@ -86,12 +86,6 @@ func loadClusterInfo(id IDAllocator, kv *core.KV) (*clusterInfo, error) {
 	}
 	log.Infof("load %v regions cost %v", c.regions.GetRegionCount(), time.Since(start))
 
-	start = time.Now()
-	if err := kv.loadNamespaces(c.namespacesInfo, kvRangeLimit); err != nil {
-		return nil, errors.Trace(err)
-	}
-	log.Infof("load %v namespacesInfo cost %v", c.namespacesInfo.getNamespaceCount(), time.Since(start))
-
 	return c, nil
 }
 
@@ -162,7 +156,7 @@ func (c *clusterInfo) putNamespace(ns *Namespace) error {
 
 func (c *clusterInfo) putNamespaceLocked(ns *Namespace) error {
 	if c.kv != nil {
-		if err := c.kv.saveNamespace(ns); err != nil {
+		if err := c.namespacesInfo.saveNamespace(c.kv, ns); err != nil {
 			return errors.Trace(err)
 		}
 	}

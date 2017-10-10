@@ -40,15 +40,9 @@ type balanceRegionScheduler struct {
 // newBalanceRegionScheduler creates a scheduler that tends to keep regions on
 // each store balanced.
 func newBalanceRegionScheduler(opt schedule.Options) schedule.Scheduler {
-<<<<<<< HEAD
-	cached := cache.NewIDTTL(storeCacheInterval, 4*storeCacheInterval)
-	filters := []schedule.Filter{
-		schedule.NewCacheFilter(cached),
-=======
 	ttlCache := cache.NewIDTTL(storeCacheInterval, 4*storeCacheInterval)
 	filters := []schedule.Filter{
 		schedule.NewCacheFilter(ttlCache),
->>>>>>> master
 		schedule.NewStateFilter(opt),
 		schedule.NewHealthFilter(opt),
 		schedule.NewSnapshotCountFilter(opt),
@@ -57,11 +51,7 @@ func newBalanceRegionScheduler(opt schedule.Options) schedule.Scheduler {
 
 	return &balanceRegionScheduler{
 		opt:      opt,
-<<<<<<< HEAD
-		cache:    cached,
-=======
 		cache:    ttlCache,
->>>>>>> master
 		limit:    1,
 		selector: schedule.NewBalanceSelector(core.RegionKind, filters),
 	}

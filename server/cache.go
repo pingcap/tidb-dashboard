@@ -38,14 +38,12 @@ var (
 type clusterInfo struct {
 	sync.RWMutex
 
-	id      IDAllocator
-	kv      *core.KV
-	meta    *metapb.Cluster
-	stores  *core.StoresInfo
-	regions *core.RegionsInfo
-
-	namespacesInfo *namespacesInfo
-
+	id              IDAllocator
+	kv              *core.KV
+	meta            *metapb.Cluster
+	stores          *core.StoresInfo
+	regions         *core.RegionsInfo
+	namespacesInfo  *namespacesInfo
 	activeRegions   int
 	writeStatistics cache.Cache
 	readStatistics  cache.Cache
@@ -54,17 +52,11 @@ type clusterInfo struct {
 func newClusterInfo(id IDAllocator) *clusterInfo {
 	return &clusterInfo{
 		id:              id,
-<<<<<<< HEAD
-		stores:          newStoresInfo(),
-		regions:         newRegionsInfo(),
-		namespacesInfo:  newNamespacesInfo(),
-		writeStatistics: cache.NewDefaultCache(writeStatCacheMaxLen),
-=======
 		stores:          core.NewStoresInfo(),
 		regions:         core.NewRegionsInfo(),
-		readStatistics:  cache.NewCache(statCacheMaxLen, cache.TwoQueueCache),
+		namespacesInfo:  newNamespacesInfo(),
 		writeStatistics: cache.NewCache(statCacheMaxLen, cache.TwoQueueCache),
->>>>>>> master
+		readStatistics:  cache.NewCache(statCacheMaxLen, cache.TwoQueueCache),
 	}
 }
 

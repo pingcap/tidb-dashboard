@@ -61,7 +61,6 @@ type coordinator struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-<<<<<<< HEAD
 	cluster          *clusterInfo
 	opt              *scheduleOption
 	limiter          *scheduleLimiter
@@ -72,9 +71,10 @@ type coordinator struct {
 	classifier       namespace.Classifier
 	histories        cache.Cache
 	hbStreams        *heartbeatStreams
+	kv               *core.KV
 }
 
-func newCoordinator(cluster *clusterInfo, opt *scheduleOption, hbStreams *heartbeatStreams, classifier namespace.Classifier) *coordinator {
+func newCoordinator(cluster *clusterInfo, opt *scheduleOption, hbStreams *heartbeatStreams, kv *core.KV, classifier namespace.Classifier) *coordinator {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &coordinator{
 		ctx:              ctx,
@@ -89,33 +89,7 @@ func newCoordinator(cluster *clusterInfo, opt *scheduleOption, hbStreams *heartb
 		classifier:       classifier,
 		histories:        cache.NewDefaultCache(historiesCacheSize),
 		hbStreams:        hbStreams,
-=======
-	cluster    *clusterInfo
-	opt        *scheduleOption
-	limiter    *scheduleLimiter
-	checker    *schedule.ReplicaChecker
-	operators  map[uint64]*schedule.Operator
-	schedulers map[string]*scheduleController
-	histories  cache.Cache
-	hbStreams  *heartbeatStreams
-	kv         *core.KV
-}
-
-func newCoordinator(cluster *clusterInfo, opt *scheduleOption, hbStreams *heartbeatStreams, kv *core.KV) *coordinator {
-	ctx, cancel := context.WithCancel(context.Background())
-	return &coordinator{
-		ctx:        ctx,
-		cancel:     cancel,
-		cluster:    cluster,
-		opt:        opt,
-		limiter:    newScheduleLimiter(),
-		checker:    schedule.NewReplicaChecker(opt, cluster),
-		operators:  make(map[uint64]*schedule.Operator),
-		schedulers: make(map[string]*scheduleController),
-		histories:  cache.NewDefaultCache(historiesCacheSize),
-		hbStreams:  hbStreams,
-		kv:         kv,
->>>>>>> master
+		kv:               kv,
 	}
 }
 

@@ -117,7 +117,6 @@ func (c *RaftCluster) start() error {
 		return nil
 	}
 	c.cachedCluster = cluster
-<<<<<<< HEAD
 	var classifier namespace.Classifier
 	if c.s.cfg.EnableNamespace {
 		log.Infoln("use namespace classifier.")
@@ -126,10 +125,7 @@ func (c *RaftCluster) start() error {
 		log.Infoln("use default classifier.")
 		classifier = namespace.DefaultClassifier
 	}
-	c.coordinator = newCoordinator(c.cachedCluster, c.s.scheduleOpt, c.s.hbStreams, classifier)
-=======
-	c.coordinator = newCoordinator(c.cachedCluster, c.s.scheduleOpt, c.s.hbStreams, c.s.kv)
->>>>>>> master
+	c.coordinator = newCoordinator(c.cachedCluster, c.s.scheduleOpt, c.s.hbStreams, c.s.kv, classifier)
 	c.quit = make(chan struct{})
 
 	c.wg.Add(2)

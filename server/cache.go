@@ -339,6 +339,7 @@ func (c *clusterInfo) handleStoreHeartbeat(stats *pdpb.StoreStats) error {
 func (c *clusterInfo) updateStoreStatus(id uint64) {
 	c.Stores.SetLeaderCount(id, c.Regions.GetStoreLeaderCount(id))
 	c.Stores.SetRegionCount(id, c.Regions.GetStoreRegionCount(id))
+	c.Stores.SetPendingPeerCount(id, c.Regions.GetStorePendingPeerCount(id))
 }
 
 // handleRegionHeartbeat updates the region information.
@@ -410,6 +411,7 @@ func (c *clusterInfo) handleRegionHeartbeat(region *core.RegionInfo) error {
 		for _, p := range region.Peers {
 			c.updateStoreStatus(p.GetStoreId())
 		}
+
 	}
 
 	c.BasicCluster.UpdateWriteStatus(region)

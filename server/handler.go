@@ -120,6 +120,26 @@ func (h *Handler) AddBalanceLeaderScheduler() error {
 	return h.AddScheduler(s)
 }
 
+// AddBalanceRegionScheduler adds a balance-region-scheduler.
+func (h *Handler) AddBalanceRegionScheduler() error {
+	s, err := schedule.CreateScheduler("balance-region", h.opt)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	log.Infof("create scheduler %s", s.GetName())
+	return h.AddScheduler(s)
+}
+
+// AddBalanceHotRegionScheduler adds a balance-hot-region-scheduler.
+func (h *Handler) AddBalanceHotRegionScheduler() error {
+	s, err := schedule.CreateScheduler("hot-region", h.opt)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	log.Infof("create scheduler %s", s.GetName())
+	return h.AddScheduler(s)
+}
+
 // AddGrantLeaderScheduler adds a grant-leader-scheduler.
 func (h *Handler) AddGrantLeaderScheduler(storeID uint64) error {
 	s, err := schedule.CreateScheduler("grant-leader", h.opt, strconv.FormatUint(storeID, 10))

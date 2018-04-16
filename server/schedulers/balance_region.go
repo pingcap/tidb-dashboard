@@ -75,15 +75,13 @@ func (s *balanceRegionScheduler) Schedule(cluster schedule.Cluster, opInfluence 
 
 	stores := cluster.GetStores()
 
-	// source is the store with highest leade score in the list that can be selected as balance source.
+	// source is the store with highest region score in the list that can be selected as balance source.
 	source := s.selector.SelectSource(cluster, stores)
 	if source == nil {
 		schedulerCounter.WithLabelValues(s.GetName(), "no_store").Inc()
-		// When the cluster is balanced, all stores will be added to the cache once
-		// all of them have been selected. This will cause the scheduler to not adapt
-		// to sudden change of a store's leader. Here we clear the taint cache and
-		// re-iterate.
-		s.taintStores.Clear()
+		// Unlike the balanceLeaderScheduler, we don't need to clear the taintCache
+		// here. Because normally region score won't change rapidly, and the region
+		// balance requires lower sensitivity compare to leader balance.
 		return nil
 	}
 
@@ -137,13 +135,13 @@ func (s *balanceRegionScheduler) transferPeer(cluster schedule.Cluster, region *
 	scoreGuard := schedule.NewDistinctScoreFilter(cluster.GetLocationLabels(), stores, source)
 
 	checker := schedule.NewReplicaChecker(cluster, nil)
-	newPeer := checker.SelectBestReplacedPeerToAddReplica(region, oldPeer, scoreGuard)
-	if newPeer == nil {
-		schedulerCounter.WithLabelValues(s.GetName(), "no_peer").Inc()
+	storeID, _ := checker.SelectBestReplacementStore(region, oldPeer, scoreGuard)
+	if storeID == 0 {
+		schedulerCounter.WithLabelValues(s.GetName(), "no_store").Inc()
 		return nil
 	}
 
-	target := cluster.GetStore(newPeer.GetStoreId())
+	target := cluster.GetStore(storeID)
 	log.Debugf("[region %d] source store id is %v, target store id is %v", region.GetId(), source.GetId(), target.GetId())
 
 	sourceSize := source.RegionSize + int64(opInfluence.GetStoreInfluence(source.GetId()).RegionSize)
@@ -152,6 +150,11 @@ func (s *balanceRegionScheduler) transferPeer(cluster schedule.Cluster, region *
 	if !shouldBalance(sourceSize, source.RegionWeight, targetSize, target.RegionWeight, regionSize) {
 		log.Debugf("[%s] skip balance region%d, source size: %v, source weight: %v, target size: %v, target weight: %v, region size: %v", s.GetName(), region.GetId(), sourceSize, source.RegionWeight, targetSize, target.RegionWeight, region.ApproximateSize)
 		schedulerCounter.WithLabelValues(s.GetName(), "skip").Inc()
+		return nil
+	}
+	newPeer, err := cluster.AllocPeer(storeID)
+	if err != nil {
+		schedulerCounter.WithLabelValues(s.GetName(), "no_peer").Inc()
 		return nil
 	}
 

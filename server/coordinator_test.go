@@ -65,8 +65,8 @@ func (c *testClusterInfo) addRegionStore(storeID uint64, regionCount int) {
 	store.LastHeartbeatTS = time.Now()
 	store.RegionCount = regionCount
 	store.RegionSize = int64(regionCount) * 10
-	store.Stats.Capacity = uint64(1024)
-	store.Stats.Available = store.Stats.Capacity
+	store.Stats.Capacity = 1000 * (1 << 20)
+	store.Stats.Available = store.Stats.Capacity - uint64(store.RegionSize)
 	c.putStore(store)
 }
 
@@ -479,6 +479,14 @@ func (s *testCoordinatorSuite) TestPersistScheduler(c *C) {
 	c.Assert(newOpt.GetSchedulers(), HasLen, 7)
 	tc.clusterInfo.opt = newOpt
 
+	co = newCoordinator(tc.clusterInfo, hbStreams, namespace.DefaultClassifier)
+	co.run()
+	c.Assert(co.schedulers, HasLen, 3)
+	co.stop()
+	// suppose restart PD again
+	_, newOpt = newTestScheduleConfig()
+	newOpt.reload(tc.kv)
+	tc.clusterInfo.opt = newOpt
 	co = newCoordinator(tc.clusterInfo, hbStreams, namespace.DefaultClassifier)
 	co.run()
 	c.Assert(co.schedulers, HasLen, 3)

@@ -139,7 +139,7 @@ func NewConfig() *Config {
 	fs.StringVar(&cfg.Log.Level, "L", "", "log level: debug, info, warn, error, fatal (default 'info')")
 	fs.StringVar(&cfg.Log.File.Filename, "log-file", "", "log file path")
 	fs.BoolVar(&cfg.Log.File.LogRotate, "log-rotate", true, "rotate log")
-	fs.StringVar(&cfg.NamespaceClassifier, "namespace-classifier", "default", "namespace classifier (default 'default')")
+	fs.StringVar(&cfg.NamespaceClassifier, "namespace-classifier", "table", "namespace classifier (default 'table')")
 
 	fs.StringVar(&cfg.Security.CAPath, "cacert", "", "Path of file that contains list of trusted TLS CAs")
 	fs.StringVar(&cfg.Security.CertPath, "cert", "", "Path of file that contains X509 certificate in PEM format")
@@ -321,7 +321,7 @@ func (c *Config) adjust() error {
 	adjustDuration(&c.TickInterval, defaultTickInterval)
 	adjustDuration(&c.ElectionInterval, defaultElectionInterval)
 
-	adjustString(&c.NamespaceClassifier, "default")
+	adjustString(&c.NamespaceClassifier, "table")
 
 	adjustString(&c.Metric.PushJob, c.Name)
 
@@ -422,7 +422,7 @@ const (
 	defaultMaxReplicas          = 3
 	defaultMaxSnapshotCount     = 3
 	defaultMaxPendingPeerCount  = 16
-	defaultMaxMergeRegionSize   = 0
+	defaultMaxMergeRegionSize   = 20
 	defaultSplitMergeInterval   = 1 * time.Hour
 	defaultMaxStoreDownTime     = 30 * time.Minute
 	defaultLeaderScheduleLimit  = 4

@@ -334,6 +334,16 @@ func (mc *MockCluster) ApplyOperator(op *Operator) {
 					IsLearner: true,
 				}
 				region.AddPeer(peer)
+			case PromoteLearner:
+				if region.GetStoreLearner(s.ToStore) == nil {
+					panic("promote peer that doesn't exist")
+				}
+				region.RemoveStorePeer(s.ToStore)
+				peer := &metapb.Peer{
+					Id:      s.PeerID,
+					StoreId: s.ToStore,
+				}
+				region.AddPeer(peer)
 			default:
 				panic("Unknown operator step")
 			}
@@ -421,7 +431,7 @@ type MockSchedulerOptions struct {
 	TolerantSizeRatio     float64
 	LowSpaceRatio         float64
 	HighSpaceRatio        float64
-	EnableRaftLearner     bool
+	DisableLearner        bool
 	LabelProperties       map[string][]*metapb.StoreLabel
 }
 
@@ -527,5 +537,5 @@ func (mso *MockSchedulerOptions) SetMaxReplicas(replicas int) {
 
 // IsRaftLearnerEnabled mock method
 func (mso *MockSchedulerOptions) IsRaftLearnerEnabled() bool {
-	return mso.EnableRaftLearner
+	return !mso.DisableLearner
 }

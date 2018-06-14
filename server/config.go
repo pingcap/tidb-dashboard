@@ -94,6 +94,11 @@ type Config struct {
 	TickInterval typeutil.Duration `toml:"tick-interval"`
 	// ElectionInterval is the interval for etcd Raft election.
 	ElectionInterval typeutil.Duration `toml:"election-interval"`
+	// Prevote is true to enable Raft Pre-Vote.
+	// If enabled, Raft runs an additional election phase
+	// to check whether it would get enough votes to win
+	// an election, thus minimizing disruptions.
+	PreVote bool `toml:"enable-prevote"`
 
 	Security SecurityConfig `toml:"security" json:"security"`
 
@@ -220,8 +225,9 @@ func (c *Config) Parse(arguments []string) error {
 	}
 
 	// Load config file if specified.
+	var meta *toml.MetaData
 	if c.configFile != "" {
-		err = c.configFromFile(c.configFile)
+		meta, err = c.configFromFile(c.configFile)
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -249,7 +255,7 @@ func (c *Config) Parse(arguments []string) error {
 		return errors.Errorf("'%s' is an invalid flag", c.FlagSet.Arg(0))
 	}
 
-	err = c.adjust()
+	err = c.adjust(meta)
 	return errors.Trace(err)
 }
 
@@ -276,7 +282,7 @@ func (c *Config) validate() error {
 	return nil
 }
 
-func (c *Config) adjust() error {
+func (c *Config) adjust(meta *toml.MetaData) error {
 	adjustString(&c.Name, defaultName)
 	adjustString(&c.DataDir, fmt.Sprintf("default.%s", c.Name))
 
@@ -334,6 +340,11 @@ func (c *Config) adjust() error {
 	adjustDuration(&c.heartbeatStreamBindInterval, defaultHeartbeatStreamRebindInterval)
 
 	adjustDuration(&c.leaderPriorityCheckInterval, defaultLeaderPriorityCheckInterval)
+
+	// enable PreVote by default
+	if meta == nil || !meta.IsDefined("enable-prevote") {
+		c.PreVote = true
+	}
 	return nil
 }
 
@@ -352,9 +363,9 @@ func (c *Config) String() string {
 }
 
 // configFromFile loads config from file.
-func (c *Config) configFromFile(path string) error {
-	_, err := toml.DecodeFile(path, c)
-	return errors.Trace(err)
+func (c *Config) configFromFile(path string) (*toml.MetaData, error) {
+	meta, err := toml.DecodeFile(path, c)
+	return &meta, errors.Trace(err)
 }
 
 // ScheduleConfig is the schedule configuration.
@@ -636,6 +647,7 @@ func (c *Config) genEmbedEtcdConfig() (*embed.Config, error) {
 	cfg.InitialCluster = c.InitialCluster
 	cfg.ClusterState = c.InitialClusterState
 	cfg.EnablePprof = true
+	cfg.PreVote = c.PreVote
 	cfg.StrictReconfigCheck = !c.disableStrictReconfigCheck
 	cfg.TickMs = uint(c.TickInterval.Duration / time.Millisecond)
 	cfg.ElectionMs = uint(c.ElectionInterval.Duration / time.Millisecond)

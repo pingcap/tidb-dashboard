@@ -556,6 +556,9 @@ type TSFuture interface {
 }
 
 func (req *tsoRequest) Wait() (int64, int64, error) {
+	// If tso command duration is observed very high, the reason could be it
+	// takes too long for Wait() be called.
+	cmdDuration.WithLabelValues("tso_async_wait").Observe(time.Since(req.start).Seconds())
 	select {
 	case err := <-req.done:
 		defer tsoReqPool.Put(req)

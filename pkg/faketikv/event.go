@@ -14,23 +14,27 @@
 package faketikv
 
 import (
+	"github.com/pingcap/kvproto/pkg/metapb"
+	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/pd/pkg/faketikv/cases"
 	"github.com/pingcap/pd/pkg/faketikv/simutil"
+	"github.com/pingcap/pd/server/core"
 )
 
-// Event that affect the status of the cluster
+// Event affects the status of the cluster.
 type Event interface {
-	Run(driver *Driver) bool
+	Run(raft *RaftEngine, tickCount int64) bool
 }
 
-// EventRunner includes all events
+// EventRunner includes all events.
 type EventRunner struct {
-	events []Event
+	events     []Event
+	raftEngine *RaftEngine
 }
 
-// NewEventRunner news a event runner
-func NewEventRunner(events []cases.EventInner) *EventRunner {
-	er := &EventRunner{events: make([]Event, 0, len(events))}
+// NewEventRunner creates an event runner.
+func NewEventRunner(events []cases.EventInner, raftEngine *RaftEngine) *EventRunner {
+	er := &EventRunner{events: make([]Event, 0, len(events)), raftEngine: raftEngine}
 	for _, e := range events {
 		event := parserEvent(e)
 		if event != nil {
@@ -48,8 +52,8 @@ func parserEvent(e cases.EventInner) Event {
 		return &WriteFlowOnRegion{in: v}
 	case *cases.ReadFlowOnRegionInner:
 		return &ReadFlowOnRegion{in: v}
-	case *cases.AddNodesDynamicInner:
-		return &AddNodesDynamic{in: v}
+	case *cases.AddNodesInner:
+		return &AddNodes{in: v}
 	case *cases.DeleteNodesInner:
 		return &DeleteNodes{in: v}
 	}
@@ -57,10 +61,10 @@ func parserEvent(e cases.EventInner) Event {
 }
 
 // Tick ticks the event run
-func (er *EventRunner) Tick(driver *Driver) {
+func (er *EventRunner) Tick(tickCount int64) {
 	var finishedIndex int
 	for i, e := range er.events {
-		isFinished := e.Run(driver)
+		isFinished := e.Run(er.raftEngine, tickCount)
 		if isFinished {
 			er.events[i], er.events[finishedIndex] = er.events[finishedIndex], er.events[i]
 			finishedIndex++
@@ -69,15 +73,14 @@ func (er *EventRunner) Tick(driver *Driver) {
 	er.events = er.events[finishedIndex:]
 }
 
-// WriteFlowOnSpot writes bytes in some range
+// WriteFlowOnSpot writes bytes in some range.
 type WriteFlowOnSpot struct {
 	in *cases.WriteFlowOnSpotInner
 }
 
-// Run implements the event interface
-func (w *WriteFlowOnSpot) Run(driver *Driver) bool {
-	raft := driver.raftEngine
-	res := w.in.Step(driver.tickCount)
+// Run implements the event interface.
+func (w *WriteFlowOnSpot) Run(raft *RaftEngine, tickCount int64) bool {
+	res := w.in.Step(tickCount)
 	for key, size := range res {
 		region := raft.SearchRegion([]byte(key))
 		if region == nil {
@@ -89,15 +92,14 @@ func (w *WriteFlowOnSpot) Run(driver *Driver) bool {
 	return false
 }
 
-// WriteFlowOnRegion writes bytes in some region
+// WriteFlowOnRegion writes bytes in some region.
 type WriteFlowOnRegion struct {
 	in *cases.WriteFlowOnRegionInner
 }
 
-// Run implements the event interface
-func (w *WriteFlowOnRegion) Run(driver *Driver) bool {
-	raft := driver.raftEngine
-	res := w.in.Step(driver.tickCount)
+// Run implements the event interface.
+func (w *WriteFlowOnRegion) Run(raft *RaftEngine, tickCount int64) bool {
+	res := w.in.Step(tickCount)
 	for id, bytes := range res {
 		region := raft.GetRegion(id)
 		if region == nil {
@@ -114,39 +116,81 @@ type ReadFlowOnRegion struct {
 	in *cases.ReadFlowOnRegionInner
 }
 
-// Run implements the event interface
-func (w *ReadFlowOnRegion) Run(driver *Driver) bool {
-	res := w.in.Step(driver.tickCount)
-	driver.raftEngine.updateRegionReadBytes(res)
+// Run implements the event interface.
+func (w *ReadFlowOnRegion) Run(raft *RaftEngine, tickCount int64) bool {
+	res := w.in.Step(tickCount)
+	raft.updateRegionReadBytes(res)
 	return false
 }
 
-// AddNodesDynamic adds nodes dynamically.
-type AddNodesDynamic struct {
-	in *cases.AddNodesDynamicInner
+// AddNodes adds nodes.
+type AddNodes struct {
+	in *cases.AddNodesInner
 }
 
 // Run implements the event interface.
-func (w *AddNodesDynamic) Run(driver *Driver) bool {
-	res := w.in.Step(driver.tickCount)
-	if res == 0 {
+func (w *AddNodes) Run(raft *RaftEngine, tickCount int64) bool {
+	id := w.in.Step(tickCount)
+	if id == 0 {
 		return false
 	}
-	driver.AddNode(res)
+
+	if _, ok := raft.conn.Nodes[id]; ok {
+		simutil.Logger.Infof("Node %d already existed", id)
+		return false
+	}
+	s := &cases.Store{
+		ID:        id,
+		Status:    metapb.StoreState_Up,
+		Capacity:  1 * cases.TB,
+		Available: 1 * cases.TB,
+		Version:   "2.1.0",
+	}
+	n, err := NewNode(s, raft.conn.pdAddr)
+	if err != nil {
+		simutil.Logger.Errorf("Add node %d failed: %v", id, err)
+		return false
+	}
+	raft.conn.Nodes[id] = n
+	n.raftEngine = raft
+	err = n.Start()
+	if err != nil {
+		simutil.Logger.Errorf("Start node %d failed: %v", id, err)
+	}
 	return false
 }
 
-// DeleteNodes deletes nodes randomly
+// DeleteNodes deletes nodes.
 type DeleteNodes struct {
 	in *cases.DeleteNodesInner
 }
 
-// Run implements the event interface
-func (w *DeleteNodes) Run(driver *Driver) bool {
-	res := w.in.Step(driver.tickCount)
-	if res == 0 {
+// Run implements the event interface.
+func (w *DeleteNodes) Run(raft *RaftEngine, tickCount int64) bool {
+	id := w.in.Step(tickCount)
+	if id == 0 {
 		return false
 	}
-	driver.DeleteNode(res)
+
+	node := raft.conn.Nodes[id]
+	if node == nil {
+		simutil.Logger.Errorf("Node %d not existed", id)
+		return false
+	}
+	delete(raft.conn.Nodes, id)
+	node.Stop()
+
+	regions := raft.GetRegions()
+	for _, region := range regions {
+		storeIDs := region.GetStoreIds()
+		if _, ok := storeIDs[id]; ok {
+			downPeer := &pdpb.PeerStats{
+				Peer:        region.GetStorePeer(id),
+				DownSeconds: 24 * 60 * 60,
+			}
+			region = region.Clone(core.WithDownPeers(append(region.GetDownPeers(), downPeer)))
+			raft.SetRegion(region)
+		}
+	}
 	return false
 }

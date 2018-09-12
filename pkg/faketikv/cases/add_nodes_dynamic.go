@@ -54,7 +54,7 @@ func newAddNodesDynamic() *Conf {
 	conf.MaxID = id.maxID
 
 	numNodes := 8
-	e := &AddNodesDynamicInner{}
+	e := &AddNodesInner{}
 	e.Step = func(tick int64) uint64 {
 		if tick%100 == 0 && numNodes < 16 {
 			numNodes++

@@ -13,57 +13,57 @@
 
 package cases
 
-// EventInner is a detail template for custom events
+// EventInner is a detail template for custom events.
 type EventInner interface {
 	Type() string
 }
 
-// WriteFlowOnSpotInner writes bytes in some range
+// WriteFlowOnSpotInner writes bytes in some range.
 type WriteFlowOnSpotInner struct {
 	Step func(tick int64) map[string]int64
 }
 
-// Type implements the EventInner interface
+// Type implements the EventInner interface.
 func (w *WriteFlowOnSpotInner) Type() string {
 	return "write-flow-on-spot"
 }
 
-// WriteFlowOnRegionInner writes bytes in some region
+// WriteFlowOnRegionInner writes bytes in some region.
 type WriteFlowOnRegionInner struct {
 	Step func(tick int64) map[uint64]int64
 }
 
-// Type implements the EventInner interface
+// Type implements the EventInner interface.
 func (w *WriteFlowOnRegionInner) Type() string {
 	return "write-flow-on-region"
 }
 
-// ReadFlowOnRegionInner reads bytes in some region
+// ReadFlowOnRegionInner reads bytes in some region.
 type ReadFlowOnRegionInner struct {
 	Step func(tick int64) map[uint64]int64
 }
 
-// Type implements the EventInner interface
+// Type implements the EventInner interface.
 func (w *ReadFlowOnRegionInner) Type() string {
 	return "read-flow-on-region"
 }
 
-// AddNodesDynamicInner adds nodes dynamically
-type AddNodesDynamicInner struct {
+// AddNodesInner adds nodes.
+type AddNodesInner struct {
 	Step func(tick int64) uint64
 }
 
-// Type implements the EventInner interface
-func (w *AddNodesDynamicInner) Type() string {
-	return "add-nodes-dynamic"
+// Type implements the EventInner interface.
+func (w *AddNodesInner) Type() string {
+	return "add-nodes"
 }
 
-// DeleteNodesInner removes nodes randomly.
+// DeleteNodesInner removes nodes.
 type DeleteNodesInner struct {
 	Step func(tick int64) uint64
 }
 
-// Type implements the EventInner interface
+// Type implements the EventInner interface.
 func (w *DeleteNodesInner) Type() string {
 	return "delete-nodes"
 }

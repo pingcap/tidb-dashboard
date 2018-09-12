@@ -25,17 +25,6 @@ import (
 	"github.com/pingcap/pd/pkg/faketikv/simutil"
 )
 
-// NodeState node's state.
-type NodeState int
-
-// some state
-const (
-	Up NodeState = iota
-	Down
-	LossConnect
-	Block
-)
-
 const (
 	storeHeartBeatPeriod  = 10
 	regionHeartBeatPeriod = 60
@@ -53,7 +42,6 @@ type Node struct {
 	receiveRegionHeartbeatCh <-chan *pdpb.RegionHeartbeatResponse
 	ctx                      context.Context
 	cancel                   context.CancelFunc
-	state                    NodeState
 	raftEngine               *RaftEngine
 	ioRate                   int64
 }
@@ -65,6 +53,8 @@ func NewNode(s *cases.Store, pdAddr string) (*Node, error) {
 		Id:      s.ID,
 		Address: fmt.Sprintf("mock:://tikv-%d", s.ID),
 		Version: s.Version,
+		Labels:  s.Labels,
+		State:   s.Status,
 	}
 	stats := &pdpb.StoreStats{
 		StoreId:   s.ID,
@@ -85,7 +75,6 @@ func NewNode(s *cases.Store, pdAddr string) (*Node, error) {
 		ctx:                      ctx,
 		cancel:                   cancel,
 		tasks:                    make(map[uint64]Task),
-		state:                    Down,
 		receiveRegionHeartbeatCh: receiveRegionHeartbeatCh,
 		// FIXME: This value should be adjusted to a appropriate one.
 		ioRate: 40 * 1000 * 1000,
@@ -102,7 +91,7 @@ func (n *Node) Start() error {
 	}
 	n.wg.Add(1)
 	go n.receiveRegionHeartbeat()
-	n.state = Up
+	n.Store.State = metapb.StoreState_Up
 	return nil
 }
 
@@ -123,7 +112,7 @@ func (n *Node) receiveRegionHeartbeat() {
 
 // Tick steps node status change.
 func (n *Node) Tick() {
-	if n.state != Up {
+	if n.GetState() != metapb.StoreState_Up {
 		return
 	}
 	n.stepHeartBeat()
@@ -132,8 +121,8 @@ func (n *Node) Tick() {
 }
 
 // GetState returns current node state.
-func (n *Node) GetState() NodeState {
-	return n.state
+func (n *Node) GetState() metapb.StoreState {
+	return n.Store.State
 }
 
 func (n *Node) stepTask() {
@@ -158,7 +147,7 @@ func (n *Node) stepHeartBeat() {
 }
 
 func (n *Node) storeHeartBeat() {
-	if n.state != Up {
+	if n.GetState() != metapb.StoreState_Up {
 		return
 	}
 	ctx, cancel := context.WithTimeout(n.ctx, pdTimeout)
@@ -170,7 +159,7 @@ func (n *Node) storeHeartBeat() {
 }
 
 func (n *Node) regionHeartBeat() {
-	if n.state != Up {
+	if n.GetState() != metapb.StoreState_Up {
 		return
 	}
 	regions := n.raftEngine.GetRegions()
@@ -187,7 +176,7 @@ func (n *Node) regionHeartBeat() {
 }
 
 func (n *Node) reportRegionChange() {
-	for _, regionID := range n.raftEngine.regionchange[n.Id] {
+	for _, regionID := range n.raftEngine.regionChange[n.Id] {
 		region := n.raftEngine.GetRegion(regionID)
 		ctx, cancel := context.WithTimeout(n.ctx, pdTimeout)
 		err := n.client.RegionHeartbeat(ctx, region)
@@ -196,7 +185,7 @@ func (n *Node) reportRegionChange() {
 		}
 		cancel()
 	}
-	delete(n.raftEngine.regionchange, n.Id)
+	delete(n.raftEngine.regionChange, n.Id)
 }
 
 // AddTask adds task in this node.

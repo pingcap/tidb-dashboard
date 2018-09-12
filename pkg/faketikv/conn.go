@@ -13,24 +13,40 @@
 
 package faketikv
 
-// Conn records the informations of connection among nodes.
-type Conn struct {
-	Nodes map[uint64]*Node
+import (
+	"github.com/pingcap/kvproto/pkg/metapb"
+	"github.com/pingcap/pd/pkg/faketikv/cases"
+)
+
+// Connection records the informations of connection among nodes.
+type Connection struct {
+	pdAddr string
+	Nodes  map[uint64]*Node
 }
 
-// NewConn returns a conn.
-func NewConn(nodes map[uint64]*Node) (*Conn, error) {
-	conn := &Conn{
-		Nodes: nodes,
+// NewConnection creates nodes according to the configuration and returns the connection among nodes.
+func NewConnection(conf *cases.Conf, pdAddr string) (*Connection, error) {
+	conn := &Connection{
+		pdAddr: pdAddr,
+		Nodes:  make(map[uint64]*Node),
 	}
+
+	for _, store := range conf.Stores {
+		node, err := NewNode(store, pdAddr)
+		if err != nil {
+			return nil, err
+		}
+		conn.Nodes[store.ID] = node
+	}
+
 	return conn, nil
 }
 
-func (c *Conn) nodeHealth(storeID uint64) bool {
+func (c *Connection) nodeHealth(storeID uint64) bool {
 	n, ok := c.Nodes[storeID]
 	if !ok {
 		return false
 	}
 
-	return n.GetState() == Up
+	return n.GetState() == metapb.StoreState_Up
 }

@@ -138,8 +138,12 @@ func initRaftLogger() {
 
 func simStart(pdAddr string, confName string, tickInterval time.Duration, clean ...server.CleanupFunc) {
 	start := time.Now()
-	driver := faketikv.NewDriver(pdAddr, confName)
-	err := driver.Prepare()
+	driver, err := faketikv.NewDriver(pdAddr, confName)
+	if err != nil {
+		simutil.Logger.Fatal("create driver error:", err)
+	}
+
+	err = driver.Prepare()
 	if err != nil {
 		simutil.Logger.Fatal("simulator prepare error:", err)
 	}

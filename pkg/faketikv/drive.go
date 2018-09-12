@@ -17,7 +17,6 @@ import (
 	"context"
 
 	"github.com/pingcap/kvproto/pkg/metapb"
-	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/pd/pkg/faketikv/cases"
 	"github.com/pingcap/pd/pkg/faketikv/simutil"
 	"github.com/pingcap/pd/server/core"
@@ -26,58 +25,44 @@ import (
 
 // Driver promotes the cluster status change.
 type Driver struct {
-	addr        string
-	confName    string
+	pdAddr      string
 	conf        *cases.Conf
-	clusterInfo *ClusterInfo
 	client      Client
 	tickCount   int64
 	eventRunner *EventRunner
 	raftEngine  *RaftEngine
+	conn        *Connection
 }
 
 // NewDriver returns a driver.
-func NewDriver(addr string, confName string) *Driver {
-	return &Driver{
-		addr:     addr,
-		confName: confName,
+func NewDriver(pdAddr string, confName string) (*Driver, error) {
+	conf := cases.NewConf(confName)
+	if conf == nil {
+		return nil, errors.Errorf("failed to create conf %s", confName)
 	}
+	return &Driver{
+		pdAddr: pdAddr,
+		conf:   conf,
+	}, nil
 }
 
 // Prepare initializes cluster information, bootstraps cluster and starts nodes.
 func (d *Driver) Prepare() error {
-	d.conf = cases.NewConf(d.confName)
-	if d.conf == nil {
-		return errors.Errorf("failed to create conf %s", d.confName)
-	}
-
-	clusterInfo, err := NewClusterInfo(d.addr, d.conf)
+	conn, err := NewConnection(d.conf, d.pdAddr)
 	if err != nil {
 		return err
 	}
-	d.clusterInfo = clusterInfo
+	d.conn = conn
 
-	conn, err := NewConn(d.clusterInfo.Nodes)
-	if err != nil {
-		return err
-	}
-
-	raftEngine, err := NewRaftEngine(d.conf, conn)
-	if err != nil {
-		return err
-	}
-	d.raftEngine = raftEngine
-
-	for _, node := range d.clusterInfo.Nodes {
-		node.raftEngine = raftEngine
-	}
+	d.raftEngine = NewRaftEngine(d.conf, d.conn)
+	d.eventRunner = NewEventRunner(d.conf.Events, d.raftEngine)
 
 	// Bootstrap.
-	store, region, err := clusterInfo.GetBootstrapInfo(d.raftEngine)
+	store, region, err := d.GetBootstrapInfo(d.raftEngine)
 	if err != nil {
 		return err
 	}
-	d.client = clusterInfo.Nodes[store.GetId()].client
+	d.client = d.conn.Nodes[store.GetId()].client
 
 	ctx, cancel := context.WithTimeout(context.Background(), pdTimeout)
 	err = d.client.Bootstrap(ctx, store, region)
@@ -90,7 +75,8 @@ func (d *Driver) Prepare() error {
 
 	// Setup alloc id.
 	for {
-		id, err := d.client.AllocID(context.Background())
+		var id uint64
+		id, err = d.client.AllocID(context.Background())
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -99,22 +85,20 @@ func (d *Driver) Prepare() error {
 		}
 	}
 
-	for _, n := range d.clusterInfo.Nodes {
-		err := n.Start()
-		if err != nil {
-			return err
-		}
+	err = d.Start()
+	if err != nil {
+		return err
 	}
-	d.eventRunner = NewEventRunner(d.conf.Events)
+
 	return nil
 }
 
 // Tick invokes nodes' Tick.
 func (d *Driver) Tick() {
 	d.tickCount++
-	d.raftEngine.stepRegions(d.clusterInfo)
-	d.eventRunner.Tick(d)
-	for _, n := range d.clusterInfo.Nodes {
+	d.raftEngine.stepRegions()
+	d.eventRunner.Tick(d.tickCount)
+	for _, n := range d.conn.Nodes {
 		n.reportRegionChange()
 		n.Tick()
 	}
@@ -130,9 +114,20 @@ func (d *Driver) PrintStatistics() {
 	d.raftEngine.schedulerStats.PrintStatistics()
 }
 
+// Start starts all nodes.
+func (d *Driver) Start() error {
+	for _, n := range d.conn.Nodes {
+		err := n.Start()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Stop stops all nodes.
 func (d *Driver) Stop() {
-	for _, n := range d.clusterInfo.Nodes {
+	for _, n := range d.conn.Nodes {
 		n.Stop()
 	}
 }
@@ -142,52 +137,25 @@ func (d *Driver) TickCount() int64 {
 	return d.tickCount
 }
 
-// AddNode adds a new node.
-func (d *Driver) AddNode(id uint64) {
-	if _, ok := d.clusterInfo.Nodes[id]; ok {
-		simutil.Logger.Infof("Node %d already existed", id)
-		return
+// GetBootstrapInfo returns a valid bootstrap store and region.
+func (d *Driver) GetBootstrapInfo(r *RaftEngine) (*metapb.Store, *metapb.Region, error) {
+	origin := r.RandRegion()
+	if origin == nil {
+		return nil, nil, errors.New("no region found for bootstrap")
 	}
-	s := &cases.Store{
-		ID:        id,
-		Status:    metapb.StoreState_Up,
-		Capacity:  1 * cases.TB,
-		Available: 1 * cases.TB,
-		Version:   "2.1.0",
+	region := origin.Clone(
+		core.WithStartKey([]byte("")),
+		core.WithEndKey([]byte("")),
+		core.SetRegionConfVer(1),
+		core.SetRegionVersion(1),
+		core.SetPeers([]*metapb.Peer{origin.GetLeader()}),
+	)
+	if region.GetLeader() == nil {
+		return nil, nil, errors.New("bootstrap region has no leader")
 	}
-	n, err := NewNode(s, d.addr)
-	if err != nil {
-		simutil.Logger.Errorf("Add node %d failed: %v", id, err)
-		return
+	store := d.conn.Nodes[region.GetLeader().GetStoreId()]
+	if store == nil {
+		return nil, nil, errors.Errorf("bootstrap store %v not found", region.GetLeader().GetStoreId())
 	}
-	d.clusterInfo.Nodes[id] = n
-	n.raftEngine = d.raftEngine
-	err = n.Start()
-	if err != nil {
-		simutil.Logger.Errorf("Start node %d failed: %v", id, err)
-	}
-}
-
-// DeleteNode deletes a node.
-func (d *Driver) DeleteNode(id uint64) {
-	node := d.clusterInfo.Nodes[id]
-	if node == nil {
-		simutil.Logger.Errorf("Node %d not existed", id)
-		return
-	}
-	delete(d.clusterInfo.Nodes, id)
-	node.Stop()
-
-	regions := d.raftEngine.GetRegions()
-	for _, region := range regions {
-		storeIDs := region.GetStoreIds()
-		if _, ok := storeIDs[id]; ok {
-			downPeer := &pdpb.PeerStats{
-				Peer:        region.GetStorePeer(id),
-				DownSeconds: 24 * 60 * 60,
-			}
-			region = region.Clone(core.WithDownPeers(append(region.GetDownPeers(), downPeer)))
-			d.raftEngine.SetRegion(region)
-		}
-	}
+	return store.Store, region.GetMeta(), nil
 }

@@ -22,7 +22,7 @@ import (
 type Store struct {
 	ID           uint64
 	Status       metapb.StoreState
-	Labels       []metapb.StoreLabel
+	Labels       []*metapb.StoreLabel
 	Capacity     uint64
 	Available    uint64
 	LeaderWeight float32
@@ -91,16 +91,4 @@ func NewConf(name string) *Conf {
 		return f()
 	}
 	return nil
-}
-
-// NeedSplit checks whether the region need to split according it's size
-// and number of keys.
-func (c *Conf) NeedSplit(size, rows int64) bool {
-	if c.RegionSplitSize != 0 && size >= c.RegionSplitSize {
-		return true
-	}
-	if c.RegionSplitKeys != 0 && rows >= c.RegionSplitKeys {
-		return true
-	}
-	return false
 }

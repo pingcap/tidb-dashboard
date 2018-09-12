@@ -14,6 +14,7 @@
 package faketikv
 
 import (
+	"context"
 	"math/rand"
 	"sort"
 	"sync"
@@ -22,24 +23,29 @@ import (
 	"github.com/pingcap/pd/pkg/faketikv/cases"
 	"github.com/pingcap/pd/pkg/faketikv/simutil"
 	"github.com/pingcap/pd/server/core"
+	"github.com/pkg/errors"
 )
 
 // RaftEngine records all raft infomations.
 type RaftEngine struct {
 	sync.RWMutex
-	regionsInfo    *core.RegionsInfo
-	conn           *Conn
-	regionchange   map[uint64][]uint64
-	schedulerStats *schedulerStatistics
+	regionsInfo     *core.RegionsInfo
+	conn            *Connection
+	regionChange    map[uint64][]uint64
+	schedulerStats  *schedulerStatistics
+	regionSplitSize int64
+	regionSplitKeys int64
 }
 
 // NewRaftEngine creates the initialized raft with the configuration.
-func NewRaftEngine(conf *cases.Conf, conn *Conn) (*RaftEngine, error) {
+func NewRaftEngine(conf *cases.Conf, conn *Connection) *RaftEngine {
 	r := &RaftEngine{
-		regionsInfo:    core.NewRegionsInfo(),
-		conn:           conn,
-		regionchange:   make(map[uint64][]uint64),
-		schedulerStats: newSchedulerStatistics(),
+		regionsInfo:     core.NewRegionsInfo(),
+		conn:            conn,
+		regionChange:    make(map[uint64][]uint64),
+		schedulerStats:  newSchedulerStatistics(),
+		regionSplitSize: conf.RegionSplitSize,
+		regionSplitKeys: conf.RegionSplitKeys,
 	}
 
 	splitKeys := generateKeys(len(conf.Regions) - 1)
@@ -69,14 +75,18 @@ func NewRaftEngine(conf *cases.Conf, conn *Conn) (*RaftEngine, error) {
 		}
 	}
 
-	return r, nil
+	for _, node := range conn.Nodes {
+		node.raftEngine = r
+	}
+
+	return r
 }
 
-func (r *RaftEngine) stepRegions(c *ClusterInfo) {
+func (r *RaftEngine) stepRegions() {
 	regions := r.GetRegions()
 	for _, region := range regions {
 		r.stepLeader(region)
-		r.stepSplit(region, c)
+		r.stepSplit(region)
 	}
 }
 
@@ -96,17 +106,17 @@ func (r *RaftEngine) stepLeader(region *core.RegionInfo) {
 	r.recordRegionChange(newRegion)
 }
 
-func (r *RaftEngine) stepSplit(region *core.RegionInfo, c *ClusterInfo) {
+func (r *RaftEngine) stepSplit(region *core.RegionInfo) {
 	if region.GetLeader() == nil {
 		return
 	}
-	if !c.conf.NeedSplit(region.GetApproximateSize(), region.GetApproximateKeys()) {
+	if !r.NeedSplit(region.GetApproximateSize(), region.GetApproximateKeys()) {
 		return
 	}
 	ids := make([]uint64, 1+len(region.GetPeers()))
 	for i := range ids {
 		var err error
-		ids[i], err = c.allocID(region.GetLeader().GetStoreId())
+		ids[i], err = r.allocID(region.GetLeader().GetStoreId())
 		if err != nil {
 			simutil.Logger.Infof("alloc id failed: %s", err)
 			return
@@ -137,9 +147,21 @@ func (r *RaftEngine) stepSplit(region *core.RegionInfo, c *ClusterInfo) {
 	r.recordRegionChange(right)
 }
 
+// NeedSplit checks whether the region needs to split according its size
+// and number of keys.
+func (r *RaftEngine) NeedSplit(size, rows int64) bool {
+	if r.regionSplitSize != 0 && size >= r.regionSplitSize {
+		return true
+	}
+	if r.regionSplitKeys != 0 && rows >= r.regionSplitKeys {
+		return true
+	}
+	return false
+}
+
 func (r *RaftEngine) recordRegionChange(region *core.RegionInfo) {
 	n := region.GetLeader().GetStoreId()
-	r.regionchange[n] = append(r.regionchange[n], region.GetID())
+	r.regionChange[n] = append(r.regionChange[n], region.GetID())
 }
 
 func (r *RaftEngine) updateRegionStore(region *core.RegionInfo, size int64) {
@@ -223,6 +245,15 @@ func (r *RaftEngine) RandRegion() *core.RegionInfo {
 	r.RLock()
 	defer r.RUnlock()
 	return r.regionsInfo.RandRegion()
+}
+
+func (r *RaftEngine) allocID(storeID uint64) (uint64, error) {
+	node, ok := r.conn.Nodes[storeID]
+	if !ok {
+		return 0, errors.Errorf("node %d not found", storeID)
+	}
+	id, err := node.client.AllocID(context.Background())
+	return id, errors.WithStack(err)
 }
 
 const (

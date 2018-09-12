@@ -101,7 +101,6 @@ endif
 
 simulator:
 	CGO_ENABLED=0 go build -o bin/simulator cmd/simulator/main.go
-	bin/simulator
 
 gofail-enable:
 	# Converting gofail failpoints...

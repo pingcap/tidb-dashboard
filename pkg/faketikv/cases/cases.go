@@ -18,7 +18,7 @@ import (
 	"github.com/pingcap/pd/server/core"
 )
 
-// Store is the config to simulate tikv.
+// Store is used to simulate tikv.
 type Store struct {
 	ID           uint64
 	Status       metapb.StoreState
@@ -30,7 +30,7 @@ type Store struct {
 	Version      string
 }
 
-// Region is the config to simulate a region.
+// Region is used to simulate a region.
 type Region struct {
 	ID     uint64
 	Peers  []*metapb.Peer
@@ -42,8 +42,8 @@ type Region struct {
 // CheckerFunc checks if the scheduler is finished.
 type CheckerFunc func(*core.RegionsInfo) bool
 
-// Conf represents a test suite for simulator.
-type Conf struct {
+// Case represents a test suite for simulator.
+type Case struct {
 	Stores          []*Store
 	Regions         []Region
 	MaxID           uint64
@@ -72,8 +72,8 @@ func (a *idAllocator) nextID() uint64 {
 	return a.maxID
 }
 
-// ConfMap is a mapping of the cases to the their corresponding initialize functions.
-var ConfMap = map[string]func() *Conf{
+// CaseMap is a mapping of the cases to the their corresponding initialize functions.
+var CaseMap = map[string]func() *Case{
 	"balance-leader":       newBalanceLeader,
 	"add-nodes":            newAddNodes,
 	"add-nodes-dynamic":    newAddNodesDynamic,
@@ -85,9 +85,9 @@ var ConfMap = map[string]func() *Conf{
 	"makeup-down-replicas": newMakeupDownReplicas,
 }
 
-// NewConf creates a config to initialize simulator cluster.
-func NewConf(name string) *Conf {
-	if f, ok := ConfMap[name]; ok {
+// NewCase creates a new case.
+func NewCase(name string) *Case {
+	if f, ok := CaseMap[name]; ok {
 		return f()
 	}
 	return nil

@@ -21,12 +21,12 @@ import (
 	"github.com/pingcap/pd/server/core"
 )
 
-func newHotRead() *Conf {
-	var conf Conf
+func newHotRead() *Case {
+	var simCase Case
 	var id idAllocator
 	// Initialize the cluster
 	for i := 1; i <= 5; i++ {
-		conf.Stores = append(conf.Stores, &Store{
+		simCase.Stores = append(simCase.Stores, &Store{
 			ID:        id.nextID(),
 			Status:    metapb.StoreState_Up,
 			Capacity:  1 * TB,
@@ -42,7 +42,7 @@ func newHotRead() *Conf {
 			{Id: id.nextID(), StoreId: uint64(storeIDs[1] + 1)},
 			{Id: id.nextID(), StoreId: uint64(storeIDs[2] + 1)},
 		}
-		conf.Regions = append(conf.Regions, Region{
+		simCase.Regions = append(simCase.Regions, Region{
 			ID:     id.nextID(),
 			Peers:  peers,
 			Leader: peers[0],
@@ -50,12 +50,12 @@ func newHotRead() *Conf {
 			Keys:   960000,
 		})
 	}
-	conf.MaxID = id.maxID
+	simCase.MaxID = id.maxID
 
 	// Events description
 	// select 20 regions on store 1 as hot read regions.
 	readFlow := make(map[uint64]int64, 20)
-	for _, r := range conf.Regions {
+	for _, r := range simCase.Regions {
 		if r.Leader.GetStoreId() == 1 {
 			readFlow[r.ID] = 128 * MB
 			if len(readFlow) == 20 {
@@ -67,9 +67,9 @@ func newHotRead() *Conf {
 	e.Step = func(tick int64) map[uint64]int64 {
 		return readFlow
 	}
-	conf.Events = []EventInner{e}
+	simCase.Events = []EventInner{e}
 	// Checker description
-	conf.Checker = func(regions *core.RegionsInfo) bool {
+	simCase.Checker = func(regions *core.RegionsInfo) bool {
 		var leaderCount [5]int
 		for id := range readFlow {
 			leaderStore := regions.GetRegion(id).GetLeader().GetStoreId()
@@ -90,5 +90,5 @@ func newHotRead() *Conf {
 		return leaderCount[max]-leaderCount[min] < 2
 	}
 
-	return &conf
+	return &simCase
 }

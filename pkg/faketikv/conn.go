@@ -25,14 +25,14 @@ type Connection struct {
 }
 
 // NewConnection creates nodes according to the configuration and returns the connection among nodes.
-func NewConnection(conf *cases.Conf, pdAddr string) (*Connection, error) {
+func NewConnection(simCase *cases.Case, pdAddr string, storeConfig *SimConfig) (*Connection, error) {
 	conn := &Connection{
 		pdAddr: pdAddr,
 		Nodes:  make(map[uint64]*Node),
 	}
 
-	for _, store := range conf.Stores {
-		node, err := NewNode(store, pdAddr)
+	for _, store := range simCase.Stores {
+		node, err := NewNode(store, pdAddr, storeConfig.StoreIOMBPerSecond)
 		if err != nil {
 			return nil, err
 		}

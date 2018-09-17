@@ -19,11 +19,11 @@ import (
 	"github.com/pingcap/pd/server/core"
 )
 
-func newRegionSplit() *Conf {
-	var conf Conf
+func newRegionSplit() *Case {
+	var simCase Case
 	// Initialize the cluster
 	for i := 1; i <= 3; i++ {
-		conf.Stores = append(conf.Stores, &Store{
+		simCase.Stores = append(simCase.Stores, &Store{
 			ID:        uint64(i),
 			Status:    metapb.StoreState_Up,
 			Capacity:  1 * TB,
@@ -34,16 +34,16 @@ func newRegionSplit() *Conf {
 	peers := []*metapb.Peer{
 		{Id: 4, StoreId: 1},
 	}
-	conf.Regions = append(conf.Regions, Region{
+	simCase.Regions = append(simCase.Regions, Region{
 		ID:     5,
 		Peers:  peers,
 		Leader: peers[0],
 		Size:   1 * MB,
 		Keys:   10000,
 	})
-	conf.MaxID = 5
-	conf.RegionSplitSize = 128 * MB
-	conf.RegionSplitKeys = 10000
+	simCase.MaxID = 5
+	simCase.RegionSplitSize = 128 * MB
+	simCase.RegionSplitKeys = 10000
 	// Events description
 	e := &WriteFlowOnSpotInner{}
 	e.Step = func(tick int64) map[string]int64 {
@@ -51,15 +51,15 @@ func newRegionSplit() *Conf {
 			"foobar": 8 * MB,
 		}
 	}
-	conf.Events = []EventInner{e}
+	simCase.Events = []EventInner{e}
 
 	// Checker description
-	conf.Checker = func(regions *core.RegionsInfo) bool {
+	simCase.Checker = func(regions *core.RegionsInfo) bool {
 		count1 := regions.GetStoreRegionCount(1)
 		count2 := regions.GetStoreRegionCount(2)
 		count3 := regions.GetStoreRegionCount(3)
 		simutil.Logger.Infof("region counts: %v %v %v", count1, count2, count3)
 		return count1 > 5 && count2 > 5 && count3 > 5
 	}
-	return &conf
+	return &simCase
 }

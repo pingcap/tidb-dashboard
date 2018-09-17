@@ -22,6 +22,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	etcdlogutil "github.com/coreos/etcd/pkg/logutil"
 	"github.com/coreos/etcd/raft"
 	"github.com/pingcap/pd/pkg/faketikv"
@@ -42,7 +43,8 @@ import (
 
 var (
 	pdAddr         = flag.String("pd", "", "pd address")
-	confName       = flag.String("conf", "", "config name")
+	configFile     = flag.String("config", "", "config file")
+	caseName       = flag.String("case", "", "case name")
 	serverLogLevel = flag.String("serverLog", "fatal", "pd server log level.")
 	simLogLevel    = flag.String("simLog", "fatal", "simulator log level.")
 )
@@ -54,22 +56,29 @@ func main() {
 	simutil.InitLogger(*simLogLevel)
 	schedule.Simulating = true
 
-	if *confName == "" {
+	if *caseName == "" {
 		if *pdAddr != "" {
 			simutil.Logger.Fatal("need to specify one config name")
 		}
-		for conf := range cases.ConfMap {
-			run(conf)
+		for simCase := range cases.CaseMap {
+			run(simCase)
 		}
 	} else {
-		run(*confName)
+		run(*caseName)
 	}
 }
 
-func run(confName string) {
+func run(simCase string) {
+	simConfig := faketikv.NewSimConfig()
+	if *configFile != "" {
+		if _, err := toml.DecodeFile(*configFile, simConfig); err != nil {
+			simutil.Logger.Fatal(err)
+		}
+	}
+	simConfig.Adjust()
+
 	if *pdAddr != "" {
-		tickInterval := 1 * time.Second
-		simStart(*pdAddr, confName, tickInterval)
+		simStart(*pdAddr, simCase, simConfig)
 	} else {
 		_, local, clean := NewSingleServer()
 		err := local.Run(context.Background())
@@ -82,8 +91,7 @@ func run(confName string) {
 			}
 			time.Sleep(100 * time.Millisecond)
 		}
-		tickInterval := 100 * time.Millisecond
-		simStart(local.GetAddr(), confName, tickInterval, clean)
+		simStart(local.GetAddr(), simCase, simConfig, clean)
 	}
 }
 
@@ -136,9 +144,9 @@ func initRaftLogger() {
 	raft.SetLogger(lg)
 }
 
-func simStart(pdAddr string, confName string, tickInterval time.Duration, clean ...server.CleanupFunc) {
+func simStart(pdAddr string, simCase string, simConfig *faketikv.SimConfig, clean ...server.CleanupFunc) {
 	start := time.Now()
-	driver, err := faketikv.NewDriver(pdAddr, confName)
+	driver, err := faketikv.NewDriver(pdAddr, simCase, simConfig)
 	if err != nil {
 		simutil.Logger.Fatal("create driver error:", err)
 	}
@@ -147,6 +155,19 @@ func simStart(pdAddr string, confName string, tickInterval time.Duration, clean 
 	if err != nil {
 		simutil.Logger.Fatal("simulator prepare error:", err)
 	}
+
+	var runInternal bool
+	if len(clean) != 0 {
+		runInternal = true
+	}
+
+	var tickInterval time.Duration
+	if runInternal {
+		tickInterval = simConfig.SimTickInterval.Duration
+	} else {
+		tickInterval = simConfig.NormTickInterval.Duration
+	}
+
 	tick := time.NewTicker(tickInterval)
 	defer tick.Stop()
 	sc := make(chan os.Signal, 1)
@@ -173,11 +194,11 @@ EXIT:
 	}
 
 	driver.Stop()
-	if len(clean) != 0 {
+	if runInternal {
 		clean[0]()
 	}
 
-	fmt.Printf("%s [%s] total iteration: %d, time cost: %v\n", simResult, confName, driver.TickCount(), time.Since(start))
+	fmt.Printf("%s [%s] total iteration: %d, time cost: %v\n", simResult, simCase, driver.TickCount(), time.Since(start))
 	driver.PrintStatistics()
 
 	if simResult != "OK" {

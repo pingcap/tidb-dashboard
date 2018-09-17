@@ -21,12 +21,12 @@ import (
 	"github.com/pingcap/pd/server/core"
 )
 
-func newHotWrite() *Conf {
-	var conf Conf
+func newHotWrite() *Case {
+	var simCase Case
 	var id idAllocator
 	// Initialize the cluster
 	for i := 1; i <= 10; i++ {
-		conf.Stores = append(conf.Stores, &Store{
+		simCase.Stores = append(simCase.Stores, &Store{
 			ID:        id.nextID(),
 			Status:    metapb.StoreState_Up,
 			Capacity:  1 * TB,
@@ -42,7 +42,7 @@ func newHotWrite() *Conf {
 			{Id: id.nextID(), StoreId: uint64(storeIDs[1] + 1)},
 			{Id: id.nextID(), StoreId: uint64(storeIDs[2] + 1)},
 		}
-		conf.Regions = append(conf.Regions, Region{
+		simCase.Regions = append(simCase.Regions, Region{
 			ID:     id.nextID(),
 			Peers:  peers,
 			Leader: peers[0],
@@ -50,12 +50,12 @@ func newHotWrite() *Conf {
 			Keys:   960000,
 		})
 	}
-	conf.MaxID = id.maxID
+	simCase.MaxID = id.maxID
 
 	// Events description
 	// select 5 regions on store 1 as hot write regions.
 	writeFlow := make(map[uint64]int64, 5)
-	for _, r := range conf.Regions {
+	for _, r := range simCase.Regions {
 		if r.Leader.GetStoreId() == 1 {
 			writeFlow[r.ID] = 2 * MB
 			if len(writeFlow) == 5 {
@@ -68,10 +68,10 @@ func newHotWrite() *Conf {
 		return writeFlow
 	}
 
-	conf.Events = []EventInner{e}
+	simCase.Events = []EventInner{e}
 
 	// Checker description
-	conf.Checker = func(regions *core.RegionsInfo) bool {
+	simCase.Checker = func(regions *core.RegionsInfo) bool {
 		var leaderCount, peerCount [10]int
 		for id := range writeFlow {
 			region := regions.GetRegion(id)
@@ -101,5 +101,5 @@ func newHotWrite() *Conf {
 		return leaderCount[maxLeader]-leaderCount[minLeader] <= 2 && peerCount[maxPeer]-peerCount[minPeer] <= 2
 	}
 
-	return &conf
+	return &simCase
 }

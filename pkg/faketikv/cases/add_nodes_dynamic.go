@@ -18,12 +18,12 @@ import (
 	"github.com/pingcap/pd/server/core"
 )
 
-func newAddNodesDynamic() *Conf {
-	var conf Conf
+func newAddNodesDynamic() *Case {
+	var simCase Case
 	var id idAllocator
 
 	for i := 1; i <= 8; i++ {
-		conf.Stores = append(conf.Stores, &Store{
+		simCase.Stores = append(simCase.Stores, &Store{
 			ID:        id.nextID(),
 			Status:    metapb.StoreState_Up,
 			Capacity:  1 * TB,
@@ -43,7 +43,7 @@ func newAddNodesDynamic() *Conf {
 			{Id: id.nextID(), StoreId: uint64(i+1)%8 + 1},
 			{Id: id.nextID(), StoreId: uint64(i+2)%8 + 1},
 		}
-		conf.Regions = append(conf.Regions, Region{
+		simCase.Regions = append(simCase.Regions, Region{
 			ID:     id.nextID(),
 			Peers:  peers,
 			Leader: peers[0],
@@ -51,7 +51,7 @@ func newAddNodesDynamic() *Conf {
 			Keys:   960000,
 		})
 	}
-	conf.MaxID = id.maxID
+	simCase.MaxID = id.maxID
 
 	numNodes := 8
 	e := &AddNodesInner{}
@@ -64,9 +64,9 @@ func newAddNodesDynamic() *Conf {
 		}
 		return 0
 	}
-	conf.Events = []EventInner{e}
+	simCase.Events = []EventInner{e}
 
-	conf.Checker = func(regions *core.RegionsInfo) bool {
+	simCase.Checker = func(regions *core.RegionsInfo) bool {
 		res := true
 		leaderCounts := make([]int, 0, numNodes)
 		regionCounts := make([]int, 0, numNodes)
@@ -87,5 +87,5 @@ func newAddNodesDynamic() *Conf {
 		simutil.Logger.Infof("region counts: %v", regionCounts)
 		return res
 	}
-	return &conf
+	return &simCase
 }

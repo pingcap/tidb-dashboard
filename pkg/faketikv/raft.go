@@ -35,10 +35,11 @@ type RaftEngine struct {
 	schedulerStats  *schedulerStatistics
 	regionSplitSize int64
 	regionSplitKeys int64
+	storeConfig     *SimConfig
 }
 
 // NewRaftEngine creates the initialized raft with the configuration.
-func NewRaftEngine(conf *cases.Conf, conn *Connection) *RaftEngine {
+func NewRaftEngine(conf *cases.Case, conn *Connection, storeConfig *SimConfig) *RaftEngine {
 	r := &RaftEngine{
 		regionsInfo:     core.NewRegionsInfo(),
 		conn:            conn,
@@ -46,6 +47,7 @@ func NewRaftEngine(conf *cases.Conf, conn *Connection) *RaftEngine {
 		schedulerStats:  newSchedulerStatistics(),
 		regionSplitSize: conf.RegionSplitSize,
 		regionSplitKeys: conf.RegionSplitKeys,
+		storeConfig:     storeConfig,
 	}
 
 	splitKeys := generateKeys(len(conf.Regions) - 1)

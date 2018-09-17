@@ -19,12 +19,12 @@ import (
 	"github.com/pingcap/pd/server/core"
 )
 
-func newBalanceLeader() *Conf {
-	var conf Conf
+func newBalanceLeader() *Case {
+	var simCase Case
 	var id idAllocator
 
 	for i := 1; i <= 3; i++ {
-		conf.Stores = append(conf.Stores, &Store{
+		simCase.Stores = append(simCase.Stores, &Store{
 			ID:        id.nextID(),
 			Status:    metapb.StoreState_Up,
 			Capacity:  1 * TB,
@@ -39,7 +39,7 @@ func newBalanceLeader() *Conf {
 			{Id: id.nextID(), StoreId: 2},
 			{Id: id.nextID(), StoreId: 3},
 		}
-		conf.Regions = append(conf.Regions, Region{
+		simCase.Regions = append(simCase.Regions, Region{
 			ID:     id.nextID(),
 			Peers:  peers,
 			Leader: peers[0],
@@ -47,8 +47,8 @@ func newBalanceLeader() *Conf {
 			Keys:   960000,
 		})
 	}
-	conf.MaxID = id.maxID
-	conf.Checker = func(regions *core.RegionsInfo) bool {
+	simCase.MaxID = id.maxID
+	simCase.Checker = func(regions *core.RegionsInfo) bool {
 		count1 := regions.GetStoreLeaderCount(1)
 		count2 := regions.GetStoreLeaderCount(2)
 		count3 := regions.GetStoreLeaderCount(3)
@@ -58,5 +58,5 @@ func newBalanceLeader() *Conf {
 			count2 >= 300 &&
 			count3 >= 300
 	}
-	return &conf
+	return &simCase
 }

@@ -26,36 +26,38 @@ import (
 // Driver promotes the cluster status change.
 type Driver struct {
 	pdAddr      string
-	conf        *cases.Conf
+	simCase     *cases.Case
 	client      Client
 	tickCount   int64
 	eventRunner *EventRunner
 	raftEngine  *RaftEngine
 	conn        *Connection
+	simConfig   *SimConfig
 }
 
 // NewDriver returns a driver.
-func NewDriver(pdAddr string, confName string) (*Driver, error) {
-	conf := cases.NewConf(confName)
-	if conf == nil {
-		return nil, errors.Errorf("failed to create conf %s", confName)
+func NewDriver(pdAddr string, caseName string, simConfig *SimConfig) (*Driver, error) {
+	simCase := cases.NewCase(caseName)
+	if simCase == nil {
+		return nil, errors.Errorf("failed to create case %s", caseName)
 	}
 	return &Driver{
-		pdAddr: pdAddr,
-		conf:   conf,
+		pdAddr:    pdAddr,
+		simCase:   simCase,
+		simConfig: simConfig,
 	}, nil
 }
 
 // Prepare initializes cluster information, bootstraps cluster and starts nodes.
 func (d *Driver) Prepare() error {
-	conn, err := NewConnection(d.conf, d.pdAddr)
+	conn, err := NewConnection(d.simCase, d.pdAddr, d.simConfig)
 	if err != nil {
 		return err
 	}
 	d.conn = conn
 
-	d.raftEngine = NewRaftEngine(d.conf, d.conn)
-	d.eventRunner = NewEventRunner(d.conf.Events, d.raftEngine)
+	d.raftEngine = NewRaftEngine(d.simCase, d.conn, d.simConfig)
+	d.eventRunner = NewEventRunner(d.simCase.Events, d.raftEngine)
 
 	// Bootstrap.
 	store, region, err := d.GetBootstrapInfo(d.raftEngine)
@@ -80,7 +82,7 @@ func (d *Driver) Prepare() error {
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		if id > d.conf.MaxID {
+		if id > d.simCase.MaxID {
 			break
 		}
 	}
@@ -106,7 +108,7 @@ func (d *Driver) Tick() {
 
 // Check checks if the simulation is completed.
 func (d *Driver) Check() bool {
-	return d.conf.Checker(d.raftEngine.regionsInfo)
+	return d.simCase.Checker(d.raftEngine.regionsInfo)
 }
 
 // PrintStatistics prints the statistics of the scheduler.

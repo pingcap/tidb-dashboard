@@ -18,12 +18,12 @@ import (
 	"github.com/pingcap/pd/server/core"
 )
 
-func newMakeupDownReplicas() *Conf {
-	var conf Conf
+func newMakeupDownReplicas() *Case {
+	var simCase Case
 	var id idAllocator
 
 	for i := 1; i <= 4; i++ {
-		conf.Stores = append(conf.Stores, &Store{
+		simCase.Stores = append(simCase.Stores, &Store{
 			ID:        id.nextID(),
 			Status:    metapb.StoreState_Up,
 			Capacity:  1 * TB,
@@ -38,7 +38,7 @@ func newMakeupDownReplicas() *Conf {
 			{Id: id.nextID(), StoreId: uint64(i+1)%4 + 1},
 			{Id: id.nextID(), StoreId: uint64(i+2)%4 + 1},
 		}
-		conf.Regions = append(conf.Regions, Region{
+		simCase.Regions = append(simCase.Regions, Region{
 			ID:     id.nextID(),
 			Peers:  peers,
 			Leader: peers[0],
@@ -46,7 +46,7 @@ func newMakeupDownReplicas() *Conf {
 			Keys:   960000,
 		})
 	}
-	conf.MaxID = id.maxID
+	simCase.MaxID = id.maxID
 
 	numNodes := 4
 	down := false
@@ -61,9 +61,9 @@ func newMakeupDownReplicas() *Conf {
 		}
 		return 0
 	}
-	conf.Events = []EventInner{e}
+	simCase.Events = []EventInner{e}
 
-	conf.Checker = func(regions *core.RegionsInfo) bool {
+	simCase.Checker = func(regions *core.RegionsInfo) bool {
 		sum := 0
 		regionCounts := make([]int, 0, 3)
 		for i := 1; i <= 4; i++ {
@@ -89,5 +89,5 @@ func newMakeupDownReplicas() *Conf {
 		}
 		return true
 	}
-	return &conf
+	return &simCase
 }

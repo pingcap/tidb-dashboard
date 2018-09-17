@@ -18,12 +18,12 @@ import (
 	"github.com/pingcap/pd/server/core"
 )
 
-func newAddNodes() *Conf {
-	var conf Conf
+func newAddNodes() *Case {
+	var simCase Case
 	var id idAllocator
 
 	for i := 1; i <= 8; i++ {
-		conf.Stores = append(conf.Stores, &Store{
+		simCase.Stores = append(simCase.Stores, &Store{
 			ID:        id.nextID(),
 			Status:    metapb.StoreState_Up,
 			Capacity:  1 * TB,
@@ -38,7 +38,7 @@ func newAddNodes() *Conf {
 			{Id: id.nextID(), StoreId: uint64(i+1)%4 + 1},
 			{Id: id.nextID(), StoreId: uint64(i+2)%4 + 1},
 		}
-		conf.Regions = append(conf.Regions, Region{
+		simCase.Regions = append(simCase.Regions, Region{
 			ID:     id.nextID(),
 			Peers:  peers,
 			Leader: peers[0],
@@ -46,9 +46,9 @@ func newAddNodes() *Conf {
 			Keys:   960000,
 		})
 	}
-	conf.MaxID = id.maxID
+	simCase.MaxID = id.maxID
 
-	conf.Checker = func(regions *core.RegionsInfo) bool {
+	simCase.Checker = func(regions *core.RegionsInfo) bool {
 		res := true
 		leaderCounts := make([]int, 0, 8)
 		regionCounts := make([]int, 0, 8)
@@ -69,5 +69,5 @@ func newAddNodes() *Conf {
 		simutil.Logger.Infof("region counts: %v", regionCounts)
 		return res
 	}
-	return &conf
+	return &simCase
 }

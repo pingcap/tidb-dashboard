@@ -79,8 +79,8 @@ type WriteFlowOnSpot struct {
 }
 
 // Run implements the event interface.
-func (w *WriteFlowOnSpot) Run(raft *RaftEngine, tickCount int64) bool {
-	res := w.in.Step(tickCount)
+func (e *WriteFlowOnSpot) Run(raft *RaftEngine, tickCount int64) bool {
+	res := e.in.Step(tickCount)
 	for key, size := range res {
 		region := raft.SearchRegion([]byte(key))
 		if region == nil {
@@ -98,8 +98,8 @@ type WriteFlowOnRegion struct {
 }
 
 // Run implements the event interface.
-func (w *WriteFlowOnRegion) Run(raft *RaftEngine, tickCount int64) bool {
-	res := w.in.Step(tickCount)
+func (e *WriteFlowOnRegion) Run(raft *RaftEngine, tickCount int64) bool {
+	res := e.in.Step(tickCount)
 	for id, bytes := range res {
 		region := raft.GetRegion(id)
 		if region == nil {
@@ -117,8 +117,8 @@ type ReadFlowOnRegion struct {
 }
 
 // Run implements the event interface.
-func (w *ReadFlowOnRegion) Run(raft *RaftEngine, tickCount int64) bool {
-	res := w.in.Step(tickCount)
+func (e *ReadFlowOnRegion) Run(raft *RaftEngine, tickCount int64) bool {
+	res := e.in.Step(tickCount)
 	raft.updateRegionReadBytes(res)
 	return false
 }
@@ -129,8 +129,8 @@ type AddNodes struct {
 }
 
 // Run implements the event interface.
-func (w *AddNodes) Run(raft *RaftEngine, tickCount int64) bool {
-	id := w.in.Step(tickCount)
+func (e *AddNodes) Run(raft *RaftEngine, tickCount int64) bool {
+	id := e.in.Step(tickCount)
 	if id == 0 {
 		return false
 	}
@@ -139,14 +139,16 @@ func (w *AddNodes) Run(raft *RaftEngine, tickCount int64) bool {
 		simutil.Logger.Infof("Node %d already existed", id)
 		return false
 	}
+
+	config := raft.storeConfig
 	s := &cases.Store{
 		ID:        id,
 		Status:    metapb.StoreState_Up,
-		Capacity:  1 * cases.TB,
-		Available: 1 * cases.TB,
-		Version:   "2.1.0",
+		Capacity:  config.StoreCapacityGB * cases.GB,
+		Available: config.StoreAvailableGB * cases.GB,
+		Version:   config.StoreVersion,
 	}
-	n, err := NewNode(s, raft.conn.pdAddr)
+	n, err := NewNode(s, raft.conn.pdAddr, config.StoreIOMBPerSecond)
 	if err != nil {
 		simutil.Logger.Errorf("Add node %d failed: %v", id, err)
 		return false
@@ -166,8 +168,8 @@ type DeleteNodes struct {
 }
 
 // Run implements the event interface.
-func (w *DeleteNodes) Run(raft *RaftEngine, tickCount int64) bool {
-	id := w.in.Step(tickCount)
+func (e *DeleteNodes) Run(raft *RaftEngine, tickCount int64) bool {
+	id := e.in.Step(tickCount)
 	if id == 0 {
 		return false
 	}

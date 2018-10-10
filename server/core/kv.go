@@ -19,6 +19,7 @@ import (
 	"math"
 	"path"
 	"strconv"
+	"sync/atomic"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/pingcap/kvproto/pkg/metapb"
@@ -40,6 +41,8 @@ const (
 // KV wraps all kv operations, keep it stateless.
 type KV struct {
 	KVBase
+	regionKV    *RegionKV
+	useRegionKV int32
 }
 
 // NewKV creates KV instance with KVBase.
@@ -49,11 +52,27 @@ func NewKV(base KVBase) *KV {
 	}
 }
 
+// SetRegionKV sets the region storage.
+func (kv *KV) SetRegionKV(regionKV *RegionKV) *KV {
+	kv.regionKV = regionKV
+	return kv
+}
+
+// SwitchToRegionStorage switches to the region storage.
+func (kv *KV) SwitchToRegionStorage() {
+	atomic.StoreInt32(&kv.useRegionKV, 1)
+}
+
+// SwitchToDefaultStorage switches to the to default storage.
+func (kv *KV) SwitchToDefaultStorage() {
+	atomic.StoreInt32(&kv.useRegionKV, 0)
+}
+
 func (kv *KV) storePath(storeID uint64) string {
 	return path.Join(clusterPath, "s", fmt.Sprintf("%020d", storeID))
 }
 
-func (kv *KV) regionPath(regionID uint64) string {
+func regionPath(regionID uint64) string {
 	return path.Join(clusterPath, "r", fmt.Sprintf("%020d", regionID))
 }
 
@@ -72,37 +91,54 @@ func (kv *KV) storeRegionWeightPath(storeID uint64) string {
 
 // LoadMeta loads cluster meta from KV store.
 func (kv *KV) LoadMeta(meta *metapb.Cluster) (bool, error) {
-	return kv.loadProto(clusterPath, meta)
+	return loadProto(kv.KVBase, clusterPath, meta)
 }
 
 // SaveMeta save cluster meta to KV store.
 func (kv *KV) SaveMeta(meta *metapb.Cluster) error {
-	return kv.saveProto(clusterPath, meta)
+	return saveProto(kv.KVBase, clusterPath, meta)
 }
 
 // LoadStore loads one store from KV.
 func (kv *KV) LoadStore(storeID uint64, store *metapb.Store) (bool, error) {
-	return kv.loadProto(kv.storePath(storeID), store)
+	return loadProto(kv.KVBase, kv.storePath(storeID), store)
 }
 
 // SaveStore saves one store to KV.
 func (kv *KV) SaveStore(store *metapb.Store) error {
-	return kv.saveProto(kv.storePath(store.GetId()), store)
+	return saveProto(kv.KVBase, kv.storePath(store.GetId()), store)
 }
 
 // LoadRegion loads one regoin from KV.
 func (kv *KV) LoadRegion(regionID uint64, region *metapb.Region) (bool, error) {
-	return kv.loadProto(kv.regionPath(regionID), region)
+	if atomic.LoadInt32(&kv.useRegionKV) > 0 {
+		return loadProto(kv.regionKV, regionPath(regionID), region)
+	}
+	return loadProto(kv.KVBase, regionPath(regionID), region)
+}
+
+// LoadRegions loads all regions from KV to RegionsInfo.
+func (kv *KV) LoadRegions(regions *RegionsInfo) error {
+	if atomic.LoadInt32(&kv.useRegionKV) > 0 {
+		return loadRegions(kv.regionKV, regions)
+	}
+	return loadRegions(kv.KVBase, regions)
 }
 
 // SaveRegion saves one region to KV.
 func (kv *KV) SaveRegion(region *metapb.Region) error {
-	return kv.saveProto(kv.regionPath(region.GetId()), region)
+	if atomic.LoadInt32(&kv.useRegionKV) > 0 {
+		return kv.regionKV.SaveRegion(region)
+	}
+	return saveProto(kv.KVBase, regionPath(region.GetId()), region)
 }
 
 // DeleteRegion deletes one region from KV.
 func (kv *KV) DeleteRegion(region *metapb.Region) error {
-	return kv.Delete(kv.regionPath(region.GetId()))
+	if atomic.LoadInt32(&kv.useRegionKV) > 0 {
+		return deleteRegion(kv.regionKV, region)
+	}
+	return deleteRegion(kv.KVBase, region)
 }
 
 // SaveConfig stores marshalable cfg to the configPath.
@@ -191,45 +227,20 @@ func (kv *KV) loadFloatWithDefaultValue(path string, def float64) (float64, erro
 	return val, nil
 }
 
-// LoadRegions loads all regions from KV to RegionsInfo.
-func (kv *KV) LoadRegions(regions *RegionsInfo) error {
-	nextID := uint64(0)
-	endKey := kv.regionPath(math.MaxUint64)
-
-	// Since the region key may be very long, using a larger rangeLimit will cause
-	// the message packet to exceed the grpc message size limit (4MB). Here we use
-	// a variable rangeLimit to work around.
-	rangeLimit := maxKVRangeLimit
-
-	for {
-		key := kv.regionPath(nextID)
-		res, err := kv.LoadRange(key, endKey, rangeLimit)
-		if err != nil {
-			if rangeLimit /= 2; rangeLimit >= minKVRangeLimit {
-				continue
-			}
-			return err
-		}
-
-		for _, s := range res {
-			region := &metapb.Region{}
-			if err := region.Unmarshal([]byte(s)); err != nil {
-				return errors.WithStack(err)
-			}
-
-			nextID = region.GetId() + 1
-			overlaps := regions.SetRegion(NewRegionInfo(region, nil))
-			for _, item := range overlaps {
-				if err := kv.DeleteRegion(item); err != nil {
-					return err
-				}
-			}
-		}
-
-		if len(res) < rangeLimit {
-			return nil
-		}
+// Flush flushes the dirty region to storage.
+func (kv *KV) Flush() error {
+	if kv.regionKV != nil {
+		kv.regionKV.FlushRegion()
 	}
+	return nil
+}
+
+// Close closes the kv.
+func (kv *KV) Close() error {
+	if kv.regionKV != nil {
+		return kv.regionKV.Close()
+	}
+	return nil
 }
 
 // SaveGCSafePoint saves new GC safe point to KV.
@@ -256,7 +267,7 @@ func (kv *KV) LoadGCSafePoint() (uint64, error) {
 	return safePoint, nil
 }
 
-func (kv *KV) loadProto(key string, msg proto.Message) (bool, error) {
+func loadProto(kv KVBase, key string, msg proto.Message) (bool, error) {
 	value, err := kv.Load(key)
 	if err != nil {
 		return false, err
@@ -268,7 +279,7 @@ func (kv *KV) loadProto(key string, msg proto.Message) (bool, error) {
 	return true, errors.WithStack(err)
 }
 
-func (kv *KV) saveProto(key string, msg proto.Message) error {
+func saveProto(kv KVBase, key string, msg proto.Message) error {
 	value, err := proto.Marshal(msg)
 	if err != nil {
 		return errors.WithStack(err)

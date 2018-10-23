@@ -126,9 +126,11 @@ func (c *RaftCluster) start() error {
 
 func (c *RaftCluster) runCoordinator() {
 	defer logutil.LogPanic()
-
+	defer c.wg.Done()
+	defer c.coordinator.wg.Wait()
 	c.coordinator.run()
-	c.wg.Done()
+	<-c.coordinator.ctx.Done()
+	log.Info("coordinator: Stopped coordinator")
 }
 
 func (c *RaftCluster) stop() {

@@ -165,6 +165,12 @@ func (s *testServer) GetEtcdClient() *clientv3.Client {
 	return s.server.GetClient()
 }
 
+func (s *testServer) GetStores() []*metapb.Store {
+	s.RLock()
+	defer s.RUnlock()
+	return s.server.GetRaftCluster().GetStores()
+}
+
 func (s *testServer) CheckHealth(members []*pdpb.Member) map[uint64]*pdpb.Member {
 	s.RLock()
 	defer s.RUnlock()

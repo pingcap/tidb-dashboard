@@ -68,7 +68,7 @@ check-fail:
 	  $$($(PACKAGE_DIRECTORIES))
 	CGO_ENABLED=0 ./scripts/retool do gosec $$($(PACKAGE_DIRECTORIES))
 
-check-all: static lint
+check-all: static lint tidy
 	@echo "checking"
 
 retool-setup: export GO111MODULE=off
@@ -92,6 +92,11 @@ static:
 lint:
 	@echo "linting"
 	CGO_ENABLED=0 ./scripts/retool do revive -formatter friendly -config revive.toml $$($(PACKAGES))
+
+tidy:
+	@echo "go mod tidy"
+	GO111MODULE=on go mod tidy
+	git diff --quiet
 
 travis_coverage: export GO111MODULE=on
 travis_coverage:
@@ -121,4 +126,4 @@ gofail-disable:
 	# Restoring gofail failpoints...
 	@$(GOFAIL_DISABLE)
 
-.PHONY: all ci vendor clean-test
+.PHONY: all ci vendor clean-test tidy

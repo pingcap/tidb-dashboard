@@ -615,6 +615,7 @@ func (s *integrationTestSuite) TestConfig(c *C) {
 	leaderServer := cluster.GetServer(cluster.GetLeader())
 	s.bootstrapCluster(leaderServer, c)
 	mustPutStore(c, leaderServer.server, store.Id, store.State, store.Labels)
+	defer cluster.Destroy()
 
 	// config show
 	args := []string{"-u", pdAddr, "config", "show"}
@@ -732,6 +733,125 @@ func (s *integrationTestSuite) TestConfig(c *C) {
 	scheduleCfg = server.ScheduleConfig{}
 	json.Unmarshal(output, &scheduleCfg)
 	c.Assert(scheduleCfg.DisableLearner, Equals, leaderServer.server.GetScheduleConfig().DisableLearner)
+}
+
+func (s *integrationTestSuite) TestLog(c *C) {
+	c.Parallel()
+
+	cluster, err := newTestCluster(1)
+	c.Assert(err, IsNil)
+	err = cluster.RunInitialServers()
+	c.Assert(err, IsNil)
+	cluster.WaitLeader()
+	pdAddr := cluster.config.GetClientURLs()
+	cmd := initCommand()
+
+	store := metapb.Store{
+		Id:    1,
+		State: metapb.StoreState_Up,
+	}
+	leaderServer := cluster.GetServer(cluster.GetLeader())
+	s.bootstrapCluster(leaderServer, c)
+	mustPutStore(c, leaderServer.server, store.Id, store.State, store.Labels)
+	defer cluster.Destroy()
+
+	var testCases = []struct {
+		cmd    []string
+		expect string
+	}{
+		// log [fatal|error|warn|info|debug]
+		{
+			cmd:    []string{"-u", pdAddr, "log", "fatal"},
+			expect: "fatal",
+		},
+		{
+			cmd:    []string{"-u", pdAddr, "log", "error"},
+			expect: "error",
+		},
+		{
+			cmd:    []string{"-u", pdAddr, "log", "warn"},
+			expect: "warn",
+		},
+		{
+			cmd:    []string{"-u", pdAddr, "log", "info"},
+			expect: "info",
+		},
+		{
+			cmd:    []string{"-u", pdAddr, "log", "debug"},
+			expect: "debug",
+		},
+	}
+
+	for _, testCase := range testCases {
+		_, _, err = executeCommandC(cmd, testCase.cmd...)
+		c.Assert(err, IsNil)
+		c.Assert(leaderServer.server.GetConfig().Log.Level, Equals, testCase.expect)
+	}
+}
+
+func (s *integrationTestSuite) TestTableNS(c *C) {
+	c.Parallel()
+
+	cluster, err := newTestCluster(1)
+	c.Assert(err, IsNil)
+	err = cluster.RunInitialServers()
+	c.Assert(err, IsNil)
+	cluster.WaitLeader()
+	pdAddr := cluster.config.GetClientURLs()
+	cmd := initCommand()
+
+	store := metapb.Store{
+		Id:    1,
+		State: metapb.StoreState_Up,
+	}
+	leaderServer := cluster.GetServer(cluster.GetLeader())
+	s.bootstrapCluster(leaderServer, c)
+	mustPutStore(c, leaderServer.server, store.Id, store.State, store.Labels)
+	classifier := leaderServer.server.GetClassifier()
+	defer cluster.Destroy()
+
+	// table_ns create <namespace>
+	c.Assert(leaderServer.server.IsNamespaceExist("ts1"), IsFalse)
+	args := []string{"-u", pdAddr, "table_ns", "create", "ts1"}
+	_, _, err = executeCommandC(cmd, args...)
+	c.Assert(err, IsNil)
+	c.Assert(leaderServer.server.IsNamespaceExist("ts1"), IsTrue)
+
+	// table_ns add <name> <table_id>
+	args = []string{"-u", pdAddr, "table_ns", "add", "ts1", "1"}
+	_, _, err = executeCommandC(cmd, args...)
+	c.Assert(err, IsNil)
+	c.Assert(classifier.IsTableIDExist(1), IsTrue)
+
+	// table_ns remove <name> <table_id>
+	args = []string{"-u", pdAddr, "table_ns", "remove", "ts1", "1"}
+	_, _, err = executeCommandC(cmd, args...)
+	c.Assert(err, IsNil)
+	c.Assert(classifier.IsTableIDExist(1), IsFalse)
+
+	// table_ns set_meta <namespace>
+	args = []string{"-u", pdAddr, "table_ns", "set_meta", "ts1"}
+	_, _, err = executeCommandC(cmd, args...)
+	c.Assert(err, IsNil)
+	c.Assert(classifier.IsMetaExist(), IsTrue)
+
+	// table_ns rm_meta <namespace>
+	args = []string{"-u", pdAddr, "table_ns", "rm_meta", "ts1"}
+	_, _, err = executeCommandC(cmd, args...)
+	c.Assert(err, IsNil)
+	c.Assert(classifier.IsMetaExist(), IsFalse)
+
+	// table_ns set_store <store_id> <namespace>
+	args = []string{"-u", pdAddr, "table_ns", "set_store", "1", "ts1"}
+	_, _, err = executeCommandC(cmd, args...)
+	c.Assert(err, IsNil)
+	c.Assert(classifier.IsStoreIDExist(1), IsTrue)
+
+	// table_ns rm_store <store_id> <namespace>
+	args = []string{"-u", pdAddr, "table_ns", "rm_store", "1", "ts1"}
+	_, _, err = executeCommandC(cmd, args...)
+	c.Assert(err, IsNil)
+	c.Assert(classifier.IsStoreIDExist(1), IsFalse)
 }
 
 func initCommand() *cobra.Command {

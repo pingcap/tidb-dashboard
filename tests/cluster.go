@@ -106,6 +106,13 @@ func (s *TestServer) Destroy() error {
 	return nil
 }
 
+// ResignLeader resigns the leader of the server.
+func (s *TestServer) ResignLeader() error {
+	s.Lock()
+	defer s.Unlock()
+	return s.server.ResignLeader("")
+}
+
 // State returns the current TestServer's state.
 func (s *TestServer) State() int32 {
 	s.RLock()
@@ -360,6 +367,15 @@ func (c *TestCluster) WaitLeader() string {
 		time.Sleep(500 * time.Millisecond)
 	}
 	return ""
+}
+
+// ResignLeader resigns the leader of the cluster.
+func (c *TestCluster) ResignLeader() error {
+	leader := c.GetLeader()
+	if len(leader) != 0 {
+		return c.servers[leader].ResignLeader()
+	}
+	return errors.New("no leader")
 }
 
 // GetCluster returns PD cluster.

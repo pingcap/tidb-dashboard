@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/juju/ratelimit"
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/pd/server/core"
@@ -30,6 +31,8 @@ import (
 
 const (
 	msgSize                  = 8 * 1024 * 1024
+	defaultBucketRate        = 20 * 1024 * 1024 // 20MB/s
+	defaultBucketCapacity    = 20 * 1024 * 1024 // 20MB
 	maxSyncRegionBatchSize   = 100
 	syncerKeepAliveInterval  = 10 * time.Second
 	defaultHistoryBufferSize = 10000
@@ -54,6 +57,7 @@ type Server interface {
 	GetLeader() *pdpb.Member
 	GetStorage() *core.KV
 	Name() string
+	GetMetaRegions() []*metapb.Region
 }
 
 // RegionSyncer is used to sync the region information without raft.
@@ -66,6 +70,7 @@ type RegionSyncer struct {
 	closed  chan struct{}
 	wg      sync.WaitGroup
 	history *historyBuffer
+	limit   *ratelimit.Bucket
 }
 
 // NewRegionSyncer returns a region syncer.
@@ -79,6 +84,7 @@ func NewRegionSyncer(s Server) *RegionSyncer {
 		server:  s,
 		closed:  make(chan struct{}),
 		history: newHistoryBuffer(defaultHistoryBufferSize, s.GetStorage().GetRegionKV()),
+		limit:   ratelimit.NewBucketWithRate(defaultBucketRate, defaultBucketCapacity),
 	}
 }
 
@@ -153,9 +159,31 @@ func (s *RegionSyncer) syncHistoryRegion(request *pdpb.SyncRegionRequest, stream
 			log.Infof("%s already in sync with %s, the last index is %d", name, s.server.Name(), startIndex)
 			return nil
 		}
+		// do full synchronization
+		if startIndex == 0 {
+			regions := s.server.GetMetaRegions()
+			lastIndex := 0
+			start := time.Now()
+			res := make([]*metapb.Region, 0, maxSyncRegionBatchSize)
+			for syncedIndex, r := range regions {
+				res = append(res, r)
+				if len(res) < maxSyncRegionBatchSize && syncedIndex < len(regions)-1 {
+					continue
+				}
+				resp := &pdpb.SyncRegionResponse{
+					Header:     &pdpb.ResponseHeader{ClusterId: s.server.ClusterID()},
+					Regions:    res,
+					StartIndex: uint64(lastIndex),
+				}
+				s.limit.Wait(int64(resp.Size()))
+				lastIndex += len(res)
+				stream.Send(resp)
+				res = res[:0]
+			}
+			log.Infof("%s has completed full synchronization with %s, spend %v", name, s.server.Name(), time.Since(start))
+			return nil
+		}
 		log.Warnf("no history regions from index %d, the leader maybe restarted", startIndex)
-		// TODO: Full synchronization
-		// if startIndex == 0 {}
 		return nil
 	}
 	log.Infof("sync the history regions with %s from index: %d, own last index: %d, got records length: %d",

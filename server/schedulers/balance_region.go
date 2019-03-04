@@ -14,9 +14,6 @@
 package schedulers
 
 import (
-	"fmt"
-	"strconv"
-
 	"github.com/pingcap/kvproto/pkg/metapb"
 	log "github.com/pingcap/log"
 	"github.com/pingcap/pd/server/cache"
@@ -87,8 +84,8 @@ func (s *balanceRegionScheduler) Schedule(cluster schedule.Cluster) []*schedule.
 	}
 
 	log.Debug("store has the max region score", zap.String("scheduler", s.GetName()), zap.Uint64("store-id", source.GetID()))
-	sourceLabel := strconv.FormatUint(source.GetID(), 10)
-	balanceRegionCounter.WithLabelValues("source_store", sourceLabel).Inc()
+	sourceAddress := source.GetAddress()
+	balanceRegionCounter.WithLabelValues("source_store", sourceAddress).Inc()
 
 	opInfluence := s.opController.GetOpInfluence(cluster)
 	var hasPotentialTarget bool
@@ -134,7 +131,7 @@ func (s *balanceRegionScheduler) Schedule(cluster schedule.Cluster) []*schedule.
 	if !hasPotentialTarget {
 		// If no potential target store can be found for the selected store, ignore it for a while.
 		log.Debug("no operator created for selected store", zap.String("scheduler", s.GetName()), zap.Uint64("store-id", source.GetID()))
-		balanceRegionCounter.WithLabelValues("add_taint", sourceLabel).Inc()
+		balanceRegionCounter.WithLabelValues("add_taint", sourceAddress).Inc()
 		s.taintStores.Put(source.GetID())
 	}
 
@@ -175,8 +172,8 @@ func (s *balanceRegionScheduler) transferPeer(cluster schedule.Cluster, region *
 		schedulerCounter.WithLabelValues(s.GetName(), "no_peer").Inc()
 		return nil
 	}
-	balanceRegionCounter.WithLabelValues("move_peer", fmt.Sprintf("store%d-out", source.GetID())).Inc()
-	balanceRegionCounter.WithLabelValues("move_peer", fmt.Sprintf("store%d-in", target.GetID())).Inc()
+	balanceRegionCounter.WithLabelValues("move_peer", source.GetAddress()+"-out").Inc()
+	balanceRegionCounter.WithLabelValues("move_peer", target.GetAddress()+"-in").Inc()
 	return schedule.CreateMovePeerOperator("balance-region", cluster, region, schedule.OpBalance, oldPeer.GetStoreId(), newPeer.GetStoreId(), newPeer.GetId())
 }
 

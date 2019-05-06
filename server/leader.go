@@ -197,10 +197,13 @@ func (s *Server) memberInfo() (member *pdpb.Member, marshalStr string) {
 }
 
 func (s *Server) campaignLeader() error {
-	log.Debugf("begin to campaign leader %s", s.Name())
+	log.Infof("start to campaign leader %s", s.Name())
 
 	lessor := clientv3.NewLease(s.client)
-	defer lessor.Close()
+	defer func() {
+		lessor.Close()
+		log.Info("exit campaign leader")
+	}()
 
 	start := time.Now()
 	ctx, cancel := context.WithTimeout(s.client.Ctx(), requestTimeout)
@@ -225,7 +228,7 @@ func (s *Server) campaignLeader() error {
 		return errors.WithStack(err)
 	}
 	if !resp.Succeeded {
-		return errors.New("campaign leader failed, other server may campaign ok")
+		return errors.New("failed to campaign leader, other server may campaign ok")
 	}
 
 	// Make the leader keepalived.
@@ -236,7 +239,7 @@ func (s *Server) campaignLeader() error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	log.Debugf("campaign leader ok %s", s.Name())
+	log.Infof("campaign leader ok %s", s.Name())
 
 	err = s.scheduleOpt.reload(s.kv)
 	if err != nil {
@@ -276,6 +279,7 @@ func (s *Server) campaignLeader() error {
 			}
 		case <-tsTicker.C:
 			if err = s.updateTimestamp(); err != nil {
+				log.Info("failed to update timestamp")
 				return err
 			}
 			etcdLeader := s.GetEtcdLeader()

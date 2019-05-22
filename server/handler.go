@@ -62,6 +62,16 @@ func newHandler(s *Server) *Handler {
 	return &Handler{s: s, opt: s.scheduleOpt}
 }
 
+// GetRaftCluster returns RaftCluster.
+func (h *Handler) GetRaftCluster() *RaftCluster {
+	return h.s.GetRaftCluster()
+}
+
+// GetScheduleConfig returns ScheduleConfig.
+func (h *Handler) GetScheduleConfig() *ScheduleConfig {
+	return h.s.GetScheduleConfig()
+}
+
 func (h *Handler) getCoordinator() (*coordinator, error) {
 	cluster := h.s.GetRaftCluster()
 	if cluster == nil {
@@ -346,6 +356,35 @@ func (h *Handler) GetHistory(start time.Time) ([]schedule.OperatorHistory, error
 		return nil, err
 	}
 	return c.opController.GetHistory(start), nil
+}
+
+// SetAllStoresLimit is used to set limit of all stores.
+func (h *Handler) SetAllStoresLimit(rate float64) error {
+	c, err := h.getCoordinator()
+	if err != nil {
+		return err
+	}
+	c.opController.SetAllStoresLimit(rate)
+	return nil
+}
+
+// GetAllStoresLimit is used to get limit of all stores.
+func (h *Handler) GetAllStoresLimit() (map[uint64]float64, error) {
+	c, err := h.getCoordinator()
+	if err != nil {
+		return nil, err
+	}
+	return c.opController.GetAllStoresLimit(), nil
+}
+
+// SetStoreLimit is used to set the limit of a store.
+func (h *Handler) SetStoreLimit(storeID uint64, rate float64) error {
+	c, err := h.getCoordinator()
+	if err != nil {
+		return err
+	}
+	c.opController.SetStoreLimit(storeID, rate)
+	return nil
 }
 
 // AddTransferLeaderOperator adds an operator to transfer leader to the store.

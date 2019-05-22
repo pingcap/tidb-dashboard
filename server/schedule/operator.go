@@ -35,6 +35,8 @@ const (
 	// RegionOperatorWaitTime is the duration that when a region operator lives
 	// longer than it, the operator will be considered timeout.
 	RegionOperatorWaitTime = 10 * time.Minute
+	// RegionInfluence represents the influence of a operator step, which is used by ratelimit.
+	RegionInfluence int64 = 1000
 )
 
 // OperatorStep describes the basic scheduling steps that can not be subdivided.
@@ -96,6 +98,7 @@ func (ap AddPeer) Influence(opInfluence OpInfluence, region *core.RegionInfo) {
 
 	to.RegionSize += region.GetApproximateSize()
 	to.RegionCount++
+	to.StepCost += RegionInfluence
 }
 
 // AddLearner is an OperatorStep that adds a region learner peer.
@@ -125,6 +128,7 @@ func (al AddLearner) Influence(opInfluence OpInfluence, region *core.RegionInfo)
 
 	to.RegionSize += region.GetApproximateSize()
 	to.RegionCount++
+	to.StepCost += RegionInfluence
 }
 
 // PromoteLearner is an OperatorStep that promotes a region learner peer to normal voter.
@@ -375,12 +379,19 @@ func (o *Operator) IsTimeout() bool {
 	return false
 }
 
-// Influence calculates the store difference which unfinished operator steps make
-func (o *Operator) Influence(opInfluence OpInfluence, region *core.RegionInfo) {
+// UnfinishedInfluence calculates the store difference which unfinished operator steps make
+func (o *Operator) UnfinishedInfluence(opInfluence OpInfluence, region *core.RegionInfo) {
 	for step := atomic.LoadInt32(&o.currentStep); int(step) < len(o.steps); step++ {
 		if !o.steps[int(step)].IsFinish(region) {
 			o.steps[int(step)].Influence(opInfluence, region)
 		}
+	}
+}
+
+// TotalInfluence calculates the store difference which whole operator steps make
+func (o *Operator) TotalInfluence(opInfluence OpInfluence, region *core.RegionInfo) {
+	for step := 0; step < len(o.steps); step++ {
+		o.steps[int(step)].Influence(opInfluence, region)
 	}
 }
 

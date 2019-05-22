@@ -28,6 +28,7 @@ type Cluster interface {
 	RandFollowerRegion(storeID uint64, opts ...core.RegionOption) *core.RegionInfo
 	RandLeaderRegion(storeID uint64, opts ...core.RegionOption) *core.RegionInfo
 	GetAverageRegionSize() int64
+	GetStoreRegionCount(storeID uint64) int
 
 	GetStores() []*core.StoreInfo
 	GetStore(id uint64) *core.StoreInfo
@@ -40,6 +41,9 @@ type Cluster interface {
 
 	BlockStore(id uint64) error
 	UnblockStore(id uint64)
+
+	SetStoreOverload(id uint64)
+	ResetStoreOverload(id uint64)
 
 	IsRegionHot(id uint64) bool
 	RegionWriteStats() []*core.RegionStat

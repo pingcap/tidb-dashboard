@@ -37,6 +37,7 @@ type ReplicaChecker struct {
 // NewReplicaChecker creates a replica checker.
 func NewReplicaChecker(cluster Cluster, classifier namespace.Classifier) *ReplicaChecker {
 	filters := []Filter{
+		NewOverloadFilter(),
 		NewHealthFilter(),
 		NewSnapshotCountFilter(),
 	}

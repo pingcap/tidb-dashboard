@@ -91,7 +91,9 @@ func (a *adjacentState) len() int {
 // newBalanceAdjacentRegionScheduler creates a scheduler that tends to disperse adjacent region
 // on each store.
 func newBalanceAdjacentRegionScheduler(opController *schedule.OperatorController, args ...uint64) schedule.Scheduler {
-	filters := []schedule.Filter{schedule.StoreStateFilter{TransferLeader: true, MoveRegion: true}}
+	filters := []schedule.Filter{
+		schedule.StoreStateFilter{TransferLeader: true, MoveRegion: true},
+	}
 	base := newBaseScheduler(opController)
 	s := &balanceAdjacentRegionScheduler{
 		baseScheduler: base,

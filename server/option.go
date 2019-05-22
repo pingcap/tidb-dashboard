@@ -168,6 +168,10 @@ func (o *scheduleOption) GetHotRegionScheduleLimit(name string) uint64 {
 	return o.load().HotRegionScheduleLimit
 }
 
+func (o *scheduleOption) GetStoreBalanceRate() float64 {
+	return o.load().StoreBalanceRate
+}
+
 func (o *scheduleOption) GetTolerantSizeRatio() float64 {
 	return o.load().TolerantSizeRatio
 }

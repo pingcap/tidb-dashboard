@@ -449,7 +449,7 @@ func (s *testClusterInfoSuite) TestRegionHeartbeat(c *C) {
 		}
 	}
 	for id, count := range regionCounts {
-		c.Assert(cluster.getStoreRegionCount(id), Equals, count)
+		c.Assert(cluster.GetStoreRegionCount(id), Equals, count)
 	}
 
 	for _, region := range cluster.getRegions() {

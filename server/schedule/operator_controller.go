@@ -17,9 +17,11 @@ import (
 	"container/heap"
 	"container/list"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
+	"github.com/juju/ratelimit"
 	"github.com/pingcap/kvproto/pkg/eraftpb"
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
@@ -52,12 +54,14 @@ type HeartbeatStreams interface {
 // OperatorController is used to limit the speed of scheduling.
 type OperatorController struct {
 	sync.RWMutex
-	cluster         Cluster
-	operators       map[uint64]*Operator
-	hbStreams       HeartbeatStreams
-	histories       *list.List
-	counts          map[OperatorKind]uint64
-	opRecords       *OperatorRecords
+	cluster   Cluster
+	operators map[uint64]*Operator
+	hbStreams HeartbeatStreams
+	histories *list.List
+	counts    map[OperatorKind]uint64
+	opRecords *OperatorRecords
+	// TODO: Need to clean up the unused store ID.
+	storesLimit     map[uint64]*ratelimit.Bucket
 	opNotifierQueue operatorQueue
 }
 
@@ -70,6 +74,7 @@ func NewOperatorController(cluster Cluster, hbStreams HeartbeatStreams) *Operato
 		histories:       list.New(),
 		counts:          make(map[OperatorKind]uint64),
 		opRecords:       NewOperatorRecords(),
+		storesLimit:     make(map[uint64]*ratelimit.Bucket),
 		opNotifierQueue: make(operatorQueue, 0),
 	}
 }
@@ -163,12 +168,12 @@ func (oc *OperatorController) AddOperator(ops ...*Operator) bool {
 	oc.Lock()
 	defer oc.Unlock()
 
-	for _, op := range ops {
-		if !oc.checkAddOperator(op) {
+	if oc.exceedStoreLimit(ops...) || !oc.checkAddOperator(ops...) {
+		for _, op := range ops {
 			operatorCounter.WithLabelValues(op.Desc(), "canceled").Inc()
 			oc.opRecords.Put(op, pdpb.OperatorStatus_CANCEL)
-			return false
 		}
+		return false
 	}
 	for _, op := range ops {
 		oc.addOperatorLocked(op)
@@ -181,19 +186,21 @@ func (oc *OperatorController) AddOperator(ops ...*Operator) bool {
 // - There is no such region in the cluster
 // - The epoch of the operator and the epoch of the corresponding region are no longer consistent.
 // - The region already has a higher priority or same priority operator.
-func (oc *OperatorController) checkAddOperator(op *Operator) bool {
-	region := oc.cluster.GetRegion(op.RegionID())
-	if region == nil {
-		log.Debug("region not found, cancel add operator", zap.Uint64("region-id", op.RegionID()))
-		return false
-	}
-	if region.GetRegionEpoch().GetVersion() != op.RegionEpoch().GetVersion() || region.GetRegionEpoch().GetConfVer() != op.RegionEpoch().GetConfVer() {
-		log.Debug("region epoch not match, cancel add operator", zap.Uint64("region-id", op.RegionID()), zap.Reflect("old", region.GetRegionEpoch()), zap.Reflect("new", op.RegionEpoch()))
-		return false
-	}
-	if old := oc.operators[op.RegionID()]; old != nil && !isHigherPriorityOperator(op, old) {
-		log.Debug("already have operator, cancel add operator", zap.Uint64("region-id", op.RegionID()), zap.Reflect("old", old))
-		return false
+func (oc *OperatorController) checkAddOperator(ops ...*Operator) bool {
+	for _, op := range ops {
+		region := oc.cluster.GetRegion(op.RegionID())
+		if region == nil {
+			log.Debug("region not found, cancel add operator", zap.Uint64("region-id", op.RegionID()))
+			return false
+		}
+		if region.GetRegionEpoch().GetVersion() != op.RegionEpoch().GetVersion() || region.GetRegionEpoch().GetConfVer() != op.RegionEpoch().GetConfVer() {
+			log.Debug("region epoch not match, cancel add operator", zap.Uint64("region-id", op.RegionID()), zap.Reflect("old", region.GetRegionEpoch()), zap.Reflect("new", op.RegionEpoch()))
+			return false
+		}
+		if old := oc.operators[op.RegionID()]; old != nil && !isHigherPriorityOperator(op, old) {
+			log.Debug("already have operator, cancel add operator", zap.Uint64("region-id", op.RegionID()), zap.Reflect("old", old))
+			return false
+		}
 	}
 	return true
 }
@@ -217,6 +224,15 @@ func (oc *OperatorController) addOperatorLocked(op *Operator) bool {
 	}
 
 	oc.operators[regionID] = op
+	opInfluence := NewTotalOpInfluence([]*Operator{op}, oc.cluster)
+	for storeID := range opInfluence.storesInfluence {
+		stepCost := opInfluence.GetStoreInfluence(storeID).StepCost
+		if stepCost == 0 {
+			continue
+		}
+		storeLimit.WithLabelValues(strconv.FormatUint(storeID, 10), "take").Set(float64(stepCost) / float64(RegionInfluence))
+		oc.storesLimit[storeID].Take(stepCost)
+	}
 	oc.updateCounts(oc.operators)
 
 	var step OperatorStep
@@ -262,6 +278,16 @@ func (oc *OperatorController) GetOperatorStatus(id uint64) *OperatorWithStatus {
 func (oc *OperatorController) removeOperatorLocked(op *Operator) {
 	regionID := op.RegionID()
 	delete(oc.operators, regionID)
+	opInfluence := NewTotalOpInfluence([]*Operator{op}, oc.cluster)
+	for storeID := range opInfluence.storesInfluence {
+		if opInfluence.GetStoreInfluence(storeID).StepCost == 0 {
+			continue
+		}
+		if oc.cluster.GetStore(storeID).IsOverloaded() &&
+			oc.storesLimit[storeID].Available() >= RegionInfluence {
+			oc.cluster.ResetStoreOverload(storeID)
+		}
+	}
 	oc.updateCounts(oc.operators)
 	operatorCounter.WithLabelValues(op.Desc(), "remove").Inc()
 }
@@ -442,24 +468,38 @@ func (oc *OperatorController) GetOpInfluence(cluster Cluster) OpInfluence {
 			}
 		}
 	}
-	return NewOpInfluence(res, cluster)
+	return NewUnfinishedOpInfluence(res, cluster)
 }
 
-// NewOpInfluence creates a OpInfluence.
-func NewOpInfluence(operators []*Operator, cluster Cluster) OpInfluence {
+// NewTotalOpInfluence creates a OpInfluence.
+func NewTotalOpInfluence(operators []*Operator, cluster Cluster) OpInfluence {
 	influence := OpInfluence{
-		storesInfluence:  make(map[uint64]*StoreInfluence),
-		regionsInfluence: make(map[uint64]*Operator),
+		storesInfluence: make(map[uint64]*StoreInfluence),
+	}
+
+	for _, op := range operators {
+		region := cluster.GetRegion(op.RegionID())
+		if region != nil {
+			op.TotalInfluence(influence, region)
+		}
+	}
+
+	return influence
+}
+
+// NewUnfinishedOpInfluence creates a OpInfluence.
+func NewUnfinishedOpInfluence(operators []*Operator, cluster Cluster) OpInfluence {
+	influence := OpInfluence{
+		storesInfluence: make(map[uint64]*StoreInfluence),
 	}
 
 	for _, op := range operators {
 		if !op.IsTimeout() && !op.IsFinish() {
 			region := cluster.GetRegion(op.RegionID())
 			if region != nil {
-				op.Influence(influence, region)
+				op.UnfinishedInfluence(influence, region)
 			}
 		}
-		influence.regionsInfluence[op.RegionID()] = op
 	}
 
 	return influence
@@ -467,8 +507,7 @@ func NewOpInfluence(operators []*Operator, cluster Cluster) OpInfluence {
 
 // OpInfluence records the influence of the cluster.
 type OpInfluence struct {
-	storesInfluence  map[uint64]*StoreInfluence
-	regionsInfluence map[uint64]*Operator
+	storesInfluence map[uint64]*StoreInfluence
 }
 
 // GetStoreInfluence get storeInfluence of specific store.
@@ -481,17 +520,13 @@ func (m OpInfluence) GetStoreInfluence(id uint64) *StoreInfluence {
 	return storeInfluence
 }
 
-// GetRegionsInfluence gets regionInfluence of specific region.
-func (m OpInfluence) GetRegionsInfluence() map[uint64]*Operator {
-	return m.regionsInfluence
-}
-
 // StoreInfluence records influences that pending operators will make.
 type StoreInfluence struct {
 	RegionSize  int64
 	RegionCount int64
 	LeaderSize  int64
 	LeaderCount int64
+	StepCost    int64
 }
 
 // ResourceSize returns delta size of leader/region by influence.
@@ -555,4 +590,66 @@ func (o *OperatorRecords) Put(op *Operator, status pdpb.OperatorStatus) {
 		Status: status,
 	}
 	o.ttl.Put(id, record)
+}
+
+// exceedStoreLimit returns true if the store exceeds the cost limit after adding the operator. Otherwise, returns false.
+func (oc *OperatorController) exceedStoreLimit(ops ...*Operator) bool {
+	opInfluence := NewTotalOpInfluence(ops, oc.cluster)
+	for storeID := range opInfluence.storesInfluence {
+		if oc.storesLimit[storeID] == nil {
+			rate := oc.cluster.GetStoreBalanceRate()
+			oc.newStoreLimit(storeID, rate)
+		}
+		stepCost := opInfluence.GetStoreInfluence(storeID).StepCost
+		if stepCost == 0 {
+			continue
+		}
+		available := oc.storesLimit[storeID].Available()
+		storeLimit.WithLabelValues(strconv.FormatUint(storeID, 10), "available").Set(float64(available) / float64(RegionInfluence))
+		if available < stepCost {
+			oc.cluster.SetStoreOverload(storeID)
+			return true
+		}
+	}
+	return false
+}
+
+// SetAllStoresLimit is used to set limit of all stores.
+func (oc *OperatorController) SetAllStoresLimit(rate float64) {
+	oc.Lock()
+	defer oc.Unlock()
+	for storeID := range oc.storesLimit {
+		oc.newStoreLimit(storeID, rate)
+	}
+}
+
+// SetStoreLimit is used to set the limit of a store.
+func (oc *OperatorController) SetStoreLimit(storeID uint64, rate float64) {
+	oc.Lock()
+	defer oc.Unlock()
+	oc.newStoreLimit(storeID, rate)
+}
+
+// newStoreLimit is used to create the limit of a store.
+func (oc *OperatorController) newStoreLimit(storeID uint64, rate float64) {
+	capacity := RegionInfluence
+	if rate > 1 {
+		capacity = int64(rate * float64(RegionInfluence))
+	}
+	rate *= float64(RegionInfluence)
+	oc.storesLimit[storeID] = ratelimit.NewBucketWithRate(rate, capacity)
+}
+
+// GetAllStoresLimit is used to get limit of all stores.
+func (oc *OperatorController) GetAllStoresLimit() map[uint64]float64 {
+	oc.RLock()
+	defer oc.RUnlock()
+	ret := make(map[uint64]float64)
+	for storeID, limit := range oc.storesLimit {
+		store := oc.cluster.GetStore(storeID)
+		if !store.IsTombstone() {
+			ret[storeID] = limit.Rate() / float64(RegionInfluence)
+		}
+	}
+	return ret
 }

@@ -32,6 +32,7 @@ func (t *testOperatorControllerSuite) TestGetOpInfluence(c *C) {
 	opt := NewMockSchedulerOptions()
 	tc := NewMockCluster(opt)
 	oc := NewOperatorController(tc, nil)
+	tc.AddLeaderStore(2, 1)
 	tc.AddLeaderRegion(1, 1, 2)
 	tc.AddLeaderRegion(2, 1, 2)
 	steps := []OperatorStep{

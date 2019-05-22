@@ -233,6 +233,20 @@ func (c *clusterInfo) UnblockStore(storeID uint64) {
 	c.core.UnblockStore(storeID)
 }
 
+// SetStoreOverload stops balancer from selecting the store.
+func (c *clusterInfo) SetStoreOverload(storeID uint64) {
+	c.Lock()
+	defer c.Unlock()
+	c.core.SetStoreOverload(storeID)
+}
+
+// ResetStoreOverload allows balancer to select the store.
+func (c *clusterInfo) ResetStoreOverload(storeID uint64) {
+	c.Lock()
+	defer c.Unlock()
+	c.core.ResetStoreOverload(storeID)
+}
+
 // GetStores returns all stores in the cluster.
 func (c *clusterInfo) GetStores() []*core.StoreInfo {
 	c.RLock()
@@ -381,7 +395,7 @@ func (c *clusterInfo) dropRegion(id uint64) {
 	}
 }
 
-func (c *clusterInfo) getStoreRegionCount(storeID uint64) int {
+func (c *clusterInfo) GetStoreRegionCount(storeID uint64) int {
 	c.RLock()
 	defer c.RUnlock()
 	return c.core.Regions.GetStoreRegionCount(storeID)
@@ -685,6 +699,10 @@ func (c *clusterInfo) GetMergeScheduleLimit() uint64 {
 
 func (c *clusterInfo) GetHotRegionScheduleLimit() uint64 {
 	return c.opt.GetHotRegionScheduleLimit(namespace.DefaultNamespace)
+}
+
+func (c *clusterInfo) GetStoreBalanceRate() float64 {
+	return c.opt.GetStoreBalanceRate()
 }
 
 func (c *clusterInfo) GetTolerantSizeRatio() float64 {

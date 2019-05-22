@@ -65,6 +65,14 @@ var (
 			Help:      "Bucketed histogram of processing time (s) of finished operator.",
 			Buckets:   prometheus.ExponentialBuckets(0.01, 2, 16),
 		}, []string{"type"})
+
+	storeLimit = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: "pd",
+			Subsystem: "schedule",
+			Name:      "store_limit",
+			Help:      "Limit of store.",
+		}, []string{"store", "type"})
 )
 
 func init() {
@@ -74,4 +82,5 @@ func init() {
 	prometheus.MustRegister(filterCounter)
 	prometheus.MustRegister(operatorCounter)
 	prometheus.MustRegister(operatorDuration)
+	prometheus.MustRegister(storeLimit)
 }

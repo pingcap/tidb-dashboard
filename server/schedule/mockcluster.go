@@ -48,16 +48,21 @@ func (mc *MockCluster) allocID() (uint64, error) {
 	return mc.Alloc()
 }
 
-// ScanRegions scan region with start key, until number greater than limit.
+// ScanRegions scans region with start key, until number greater than limit.
 func (mc *MockCluster) ScanRegions(startKey []byte, limit int) []*core.RegionInfo {
 	return mc.Regions.ScanRange(startKey, limit)
 }
 
-// LoadRegion put region info without leader
+// LoadRegion puts region info without leader
 func (mc *MockCluster) LoadRegion(regionID uint64, followerIds ...uint64) {
 	//  regions load from etcd will have no leader
 	r := mc.newMockRegionInfo(regionID, 0, followerIds...).Clone(core.WithLeader(nil))
 	mc.PutRegion(r)
+}
+
+// GetStoreRegionCount gets region count with a given store.
+func (mc *MockCluster) GetStoreRegionCount(storeID uint64) int {
+	return mc.Regions.GetStoreRegionCount(storeID)
 }
 
 // IsRegionHot checks if the region is hot
@@ -501,6 +506,7 @@ const (
 	defaultReplicaScheduleLimit        = 8
 	defaultMergeScheduleLimit          = 8
 	defaultHotRegionScheduleLimit      = 2
+	defaultStoreBalanceRate            = 1
 	defaultTolerantSizeRatio           = 2.5
 	defaultLowSpaceRatio               = 0.8
 	defaultHighSpaceRatio              = 0.6
@@ -515,6 +521,7 @@ type MockSchedulerOptions struct {
 	ReplicaScheduleLimit         uint64
 	MergeScheduleLimit           uint64
 	HotRegionScheduleLimit       uint64
+	StoreBalanceRate             float64
 	MaxSnapshotCount             uint64
 	MaxPendingPeerCount          uint64
 	MaxMergeRegionSize           uint64
@@ -545,6 +552,7 @@ func NewMockSchedulerOptions() *MockSchedulerOptions {
 	mso.ReplicaScheduleLimit = defaultReplicaScheduleLimit
 	mso.MergeScheduleLimit = defaultMergeScheduleLimit
 	mso.HotRegionScheduleLimit = defaultHotRegionScheduleLimit
+	mso.StoreBalanceRate = defaultStoreBalanceRate
 	mso.MaxSnapshotCount = defaultMaxSnapshotCount
 	mso.MaxMergeRegionSize = defaultMaxMergeRegionSize
 	mso.MaxMergeRegionKeys = defaultMaxMergeRegionKeys
@@ -582,6 +590,11 @@ func (mso *MockSchedulerOptions) GetMergeScheduleLimit(name string) uint64 {
 // GetHotRegionScheduleLimit mock method
 func (mso *MockSchedulerOptions) GetHotRegionScheduleLimit(name string) uint64 {
 	return mso.HotRegionScheduleLimit
+}
+
+// GetStoreBalanceRate mock method
+func (mso *MockSchedulerOptions) GetStoreBalanceRate() float64 {
+	return mso.StoreBalanceRate
 }
 
 // GetMaxSnapshotCount mock method

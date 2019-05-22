@@ -37,6 +37,7 @@ func newTestOperator(regionID uint64, regionEpoch *metapb.RegionEpoch, kind sche
 
 func newTestScheduleConfig() (*ScheduleConfig, *scheduleOption, error) {
 	cfg := NewConfig()
+	cfg.Schedule.TolerantSizeRatio = 5
 	if err := cfg.Adjust(nil); err != nil {
 		return nil, nil, err
 	}

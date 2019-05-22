@@ -74,8 +74,10 @@ func NewRegionScatterer(cluster Cluster, classifier namespace.Classifier) *Regio
 	return &RegionScatterer{
 		cluster:    cluster,
 		classifier: classifier,
-		filters:    []Filter{StoreStateFilter{}},
-		selected:   newSelectedStores(),
+		filters: []Filter{
+			StoreStateFilter{},
+		},
+		selected: newSelectedStores(),
 	}
 }
 

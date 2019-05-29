@@ -69,8 +69,9 @@ func newStoreStaticstics() *storeStatistics {
 type balanceHotRegionsScheduler struct {
 	*baseScheduler
 	sync.RWMutex
-	limit uint64
-	types []BalanceType
+	leaderLimit uint64
+	peerLimit   uint64
+	types       []BalanceType
 
 	// store id -> hot regions statistics as the role of leader
 	stats *storeStatistics
@@ -81,7 +82,8 @@ func newBalanceHotRegionsScheduler(limiter *schedule.Limiter) *balanceHotRegions
 	base := newBaseScheduler(limiter)
 	return &balanceHotRegionsScheduler{
 		baseScheduler: base,
-		limit:         1,
+		leaderLimit:   1,
+		peerLimit:     1,
 		stats:         newStoreStaticstics(),
 		types:         []BalanceType{hotWriteRegionBalance, hotReadRegionBalance},
 		r:             rand.New(rand.NewSource(time.Now().UnixNano())),
@@ -92,7 +94,8 @@ func newBalanceHotReadRegionsScheduler(limiter *schedule.Limiter) *balanceHotReg
 	base := newBaseScheduler(limiter)
 	return &balanceHotRegionsScheduler{
 		baseScheduler: base,
-		limit:         1,
+		leaderLimit:   1,
+		peerLimit:     1,
 		stats:         newStoreStaticstics(),
 		types:         []BalanceType{hotReadRegionBalance},
 		r:             rand.New(rand.NewSource(time.Now().UnixNano())),
@@ -103,7 +106,8 @@ func newBalanceHotWriteRegionsScheduler(limiter *schedule.Limiter) *balanceHotRe
 	base := newBaseScheduler(limiter)
 	return &balanceHotRegionsScheduler{
 		baseScheduler: base,
-		limit:         1,
+		leaderLimit:   1,
+		peerLimit:     1,
 		stats:         newStoreStaticstics(),
 		types:         []BalanceType{hotWriteRegionBalance},
 		r:             rand.New(rand.NewSource(time.Now().UnixNano())),
@@ -122,14 +126,20 @@ func (h *balanceHotRegionsScheduler) IsScheduleAllowed(cluster schedule.Cluster)
 	return h.allowBalanceLeader(cluster) || h.allowBalanceRegion(cluster)
 }
 
+func min(a, b uint64) uint64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func (h *balanceHotRegionsScheduler) allowBalanceLeader(cluster schedule.Cluster) bool {
-	return h.limiter.OperatorCount(schedule.OpHotRegion) < h.limit &&
+	return h.limiter.OperatorCount(schedule.OpHotRegion) < min(h.leaderLimit, cluster.GetHotRegionScheduleLimit()) &&
 		h.limiter.OperatorCount(schedule.OpLeader) < cluster.GetLeaderScheduleLimit()
 }
 
 func (h *balanceHotRegionsScheduler) allowBalanceRegion(cluster schedule.Cluster) bool {
-	return h.limiter.OperatorCount(schedule.OpHotRegion) < h.limit &&
-		h.limiter.OperatorCount(schedule.OpRegion) < cluster.GetRegionScheduleLimit()
+	return h.limiter.OperatorCount(schedule.OpHotRegion) < min(h.peerLimit, cluster.GetHotRegionScheduleLimit())
 }
 
 func (h *balanceHotRegionsScheduler) Schedule(cluster schedule.Cluster, opInfluence schedule.OpInfluence) []*schedule.Operator {
@@ -158,7 +168,9 @@ func (h *balanceHotRegionsScheduler) balanceHotReadRegions(cluster schedule.Clus
 	if srcRegion != nil {
 		schedulerCounter.WithLabelValues(h.GetName(), "move_leader").Inc()
 		step := schedule.TransferLeader{FromStore: srcRegion.GetLeader().GetStoreId(), ToStore: newLeader.GetStoreId()}
-		return []*schedule.Operator{schedule.NewOperator("transferHotReadLeader", srcRegion.GetID(), srcRegion.GetRegionEpoch(), schedule.OpHotRegion|schedule.OpLeader, step)}
+		op := schedule.NewOperator("transferHotReadLeader", srcRegion.GetID(), srcRegion.GetRegionEpoch(), schedule.OpHotRegion|schedule.OpLeader, step)
+		op.SetPriorityLevel(core.HighPriority)
+		return []*schedule.Operator{op}
 	}
 
 	// balance by peer
@@ -169,6 +181,7 @@ func (h *balanceHotRegionsScheduler) balanceHotReadRegions(cluster schedule.Clus
 			schedulerCounter.WithLabelValues(h.GetName(), "create_operator_fail").Inc()
 			return nil
 		}
+		op.SetPriorityLevel(core.HighPriority)
 		schedulerCounter.WithLabelValues(h.GetName(), "move_peer").Inc()
 		return []*schedule.Operator{op}
 	}
@@ -191,6 +204,7 @@ func (h *balanceHotRegionsScheduler) balanceHotWriteRegions(cluster schedule.Clu
 					schedulerCounter.WithLabelValues(h.GetName(), "create_operator_fail").Inc()
 					return nil
 				}
+				op.SetPriorityLevel(core.HighPriority)
 				schedulerCounter.WithLabelValues(h.GetName(), "move_peer").Inc()
 				return []*schedule.Operator{op}
 			}
@@ -200,11 +214,12 @@ func (h *balanceHotRegionsScheduler) balanceHotWriteRegions(cluster schedule.Clu
 			if srcRegion != nil {
 				schedulerCounter.WithLabelValues(h.GetName(), "move_leader").Inc()
 				step := schedule.TransferLeader{FromStore: srcRegion.GetLeader().GetStoreId(), ToStore: newLeader.GetStoreId()}
-				return []*schedule.Operator{schedule.NewOperator("transferHotWriteLeader", srcRegion.GetID(), srcRegion.GetRegionEpoch(), schedule.OpHotRegion|schedule.OpLeader, step)}
+				op := schedule.NewOperator("transferHotWriteLeader", srcRegion.GetID(), srcRegion.GetRegionEpoch(), schedule.OpHotRegion|schedule.OpLeader, step)
+				op.SetPriorityLevel(core.HighPriority)
+				return []*schedule.Operator{op}
 			}
 		}
 	}
-
 	schedulerCounter.WithLabelValues(h.GetName(), "skip").Inc()
 	return nil
 }
@@ -212,7 +227,10 @@ func (h *balanceHotRegionsScheduler) balanceHotWriteRegions(cluster schedule.Clu
 func (h *balanceHotRegionsScheduler) calcScore(items []*core.RegionStat, cluster schedule.Cluster, kind core.ResourceKind) core.StoreHotRegionsStat {
 	stats := make(core.StoreHotRegionsStat)
 	for _, r := range items {
-		if r.HotDegree < cluster.GetHotRegionLowThreshold() {
+		// HotDegree is the update times on the hot cache. If the heartbeat report
+		// the flow of the region exceeds the threshold, the scheduler will update the region in
+		// the hot cache and the hotdegree of the region will increase.
+		if r.HotDegree < cluster.GetHotRegionCacheHitsThreshold() {
 			continue
 		}
 
@@ -295,7 +313,7 @@ func (h *balanceHotRegionsScheduler) balanceByPeer(cluster schedule.Cluster, sto
 
 		destStoreID = h.selectDestStore(destStoreIDs, rs.FlowBytes, srcStoreID, storesStat)
 		if destStoreID != 0 {
-			h.adjustBalanceLimit(srcStoreID, storesStat)
+			h.peerLimit = h.adjustBalanceLimit(srcStoreID, storesStat)
 
 			srcPeer := srcRegion.GetStorePeer(srcStoreID)
 			if srcPeer == nil {
@@ -352,7 +370,8 @@ func (h *balanceHotRegionsScheduler) balanceByLeader(cluster schedule.Cluster, s
 
 		destPeer := srcRegion.GetStoreVoter(destStoreID)
 		if destPeer != nil {
-			h.adjustBalanceLimit(srcStoreID, storesStat)
+			h.leaderLimit = h.adjustBalanceLimit(srcStoreID, storesStat)
+
 			return srcRegion, destPeer
 		}
 	}
@@ -411,7 +430,7 @@ func (h *balanceHotRegionsScheduler) selectDestStore(candidateStoreIDs []uint64,
 	return
 }
 
-func (h *balanceHotRegionsScheduler) adjustBalanceLimit(storeID uint64, storesStat core.StoreHotRegionsStat) {
+func (h *balanceHotRegionsScheduler) adjustBalanceLimit(storeID uint64, storesStat core.StoreHotRegionsStat) uint64 {
 	srcStoreStatistics := storesStat[storeID]
 
 	var hotRegionTotalCount float64
@@ -421,8 +440,7 @@ func (h *balanceHotRegionsScheduler) adjustBalanceLimit(storeID uint64, storesSt
 
 	avgRegionCount := hotRegionTotalCount / float64(len(storesStat))
 	// Multiplied by hotRegionLimitFactor to avoid transfer back and forth
-	limit := uint64((float64(srcStoreStatistics.RegionsStat.Len()) - avgRegionCount) * hotRegionLimitFactor)
-	h.limit = maxUint64(1, limit)
+	return uint64(math.Max((float64(srcStoreStatistics.RegionsStat.Len())-avgRegionCount)*hotRegionLimitFactor, 1))
 }
 
 func (h *balanceHotRegionsScheduler) GetHotReadStatus() *core.StoreHotRegionInfos {

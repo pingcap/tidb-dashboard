@@ -74,7 +74,7 @@ static:
 
 	CGO_ENABLED=0 ./hack/retool do gometalinter.v2 --disable-all --deadline 120s \
 	  --enable misspell \
-	  --enable megacheck \
+	  --enable staticcheck \
 	  --enable ineffassign \
 	  $$($(PACKAGE_DIRECTORIES))
 

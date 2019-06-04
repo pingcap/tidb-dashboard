@@ -934,6 +934,8 @@ func (s *testBalanceHotWriteRegionSchedulerSuite) TestBalance(c *C) {
 	hb.Schedule(tc, schedule.NewOpInfluence(nil, tc))
 }
 
+var _ = Suite(&testBalanceHotReadRegionSchedulerSuite{})
+
 type testBalanceHotReadRegionSchedulerSuite struct{}
 
 func (s *testBalanceHotReadRegionSchedulerSuite) TestBalance(c *C) {

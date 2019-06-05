@@ -1,5 +1,12 @@
 # PD Change Log
 
+## v2.1.11
+- Fix the issue that hots Region may fail to be scheduled due to `balance-region` [#1551](https://github.com/pingcap/pd/pull/1551)
+- Set hotspot related scheduling priorities to high [#1551](https://github.com/pingcap/pd/pull/1551)
+- Add two configuration items [#1551](https://github.com/pingcap/pd/pull/1551)
+    - `hot-region-schedule-limit` to control the maximum number of concurrent hotspot scheduling tasks
+    - `hot-region-cache-hits-threshold` to identify a hot Region
+
 ## v2.1.10
 - Fix the issue that the priority of the leader does not take effect [#1533](https://github.com/pingcap/pd/pull/1533)
 

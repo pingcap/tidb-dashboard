@@ -48,8 +48,8 @@ type Cluster interface {
 	ResetStoreOverload(id uint64)
 
 	IsRegionHot(id uint64) bool
-	RegionWriteStats() []*core.RegionStat
-	RegionReadStats() []*core.RegionStat
+	RegionWriteStats() []*statistics.RegionStat
+	RegionReadStats() []*statistics.RegionStat
 	RandHotRegionFromStore(store uint64, kind statistics.FlowKind) *core.RegionInfo
 
 	// get config methods

@@ -30,7 +30,6 @@ import (
 
 var (
 	dialClient = &http.Client{}
-
 	pingPrefix = "pd/ping"
 )
 
@@ -46,9 +45,11 @@ func InitHTTPSClient(CAPath, CertPath, KeyPath string) error {
 		return errors.WithStack(err)
 	}
 
-	dialClient = &http.Client{Transport: &http.Transport{
-		TLSClientConfig: tlsConfig,
-	}}
+	dialClient = &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: tlsConfig,
+		},
+	}
 
 	return nil
 }

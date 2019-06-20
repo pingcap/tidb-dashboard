@@ -240,18 +240,11 @@ func (c *clusterInfo) UnblockStore(storeID uint64) {
 	c.core.UnblockStore(storeID)
 }
 
-// SetStoreOverload stops balancer from selecting the store.
-func (c *clusterInfo) SetStoreOverload(storeID uint64) {
+// AttachOverloadStatus attaches the overload status to a store.
+func (c *clusterInfo) AttachOverloadStatus(storeID uint64, f func() bool) {
 	c.Lock()
 	defer c.Unlock()
-	c.core.SetStoreOverload(storeID)
-}
-
-// ResetStoreOverload allows balancer to select the store.
-func (c *clusterInfo) ResetStoreOverload(storeID uint64) {
-	c.Lock()
-	defer c.Unlock()
-	c.core.ResetStoreOverload(storeID)
+	c.core.AttachOverloadStatus(storeID, f)
 }
 
 // GetStores returns all stores in the cluster.

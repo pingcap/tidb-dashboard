@@ -44,6 +44,8 @@ var (
 	fastNotifyInterval = 2 * time.Second
 	// PushOperatorTickInterval is the interval try to push the operator.
 	PushOperatorTickInterval = 500 * time.Millisecond
+	// StoreBalanceBaseTime represents the base time of balance rate.
+	StoreBalanceBaseTime float64 = 60
 )
 
 // HeartbeatStreams is an interface of async region heartbeat.
@@ -660,7 +662,7 @@ func (oc *OperatorController) newStoreLimit(storeID uint64, rate float64) {
 // getOrCreateStoreLimit is used to get or create the limit of a store.
 func (oc *OperatorController) getOrCreateStoreLimit(storeID uint64) *ratelimit.Bucket {
 	if oc.storesLimit[storeID] == nil {
-		rate := oc.cluster.GetStoreBalanceRate()
+		rate := oc.cluster.GetStoreBalanceRate() / StoreBalanceBaseTime
 		oc.newStoreLimit(storeID, rate)
 		oc.cluster.AttachOverloadStatus(storeID, func() bool {
 			oc.RLock()

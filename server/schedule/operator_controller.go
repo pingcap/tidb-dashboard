@@ -278,16 +278,6 @@ func (oc *OperatorController) GetOperatorStatus(id uint64) *OperatorWithStatus {
 func (oc *OperatorController) removeOperatorLocked(op *Operator) {
 	regionID := op.RegionID()
 	delete(oc.operators, regionID)
-	opInfluence := NewTotalOpInfluence([]*Operator{op}, oc.cluster)
-	for storeID := range opInfluence.storesInfluence {
-		if opInfluence.GetStoreInfluence(storeID).StepCost == 0 {
-			continue
-		}
-		if oc.cluster.GetStore(storeID).IsOverloaded() &&
-			oc.storesLimit[storeID].Available() >= RegionInfluence {
-			oc.cluster.ResetStoreOverload(storeID)
-		}
-	}
 	oc.updateCounts(oc.operators)
 	operatorCounter.WithLabelValues(op.Desc(), "remove").Inc()
 }
@@ -627,18 +617,14 @@ func (o *OperatorRecords) Put(op *Operator, status pdpb.OperatorStatus) {
 func (oc *OperatorController) exceedStoreLimit(ops ...*Operator) bool {
 	opInfluence := NewTotalOpInfluence(ops, oc.cluster)
 	for storeID := range opInfluence.storesInfluence {
-		if oc.storesLimit[storeID] == nil {
-			rate := oc.cluster.GetStoreBalanceRate()
-			oc.newStoreLimit(storeID, rate)
-		}
 		stepCost := opInfluence.GetStoreInfluence(storeID).StepCost
 		if stepCost == 0 {
 			continue
 		}
-		available := oc.storesLimit[storeID].Available()
+
+		available := oc.getOrCreateStoreLimit(storeID).Available()
 		storeLimit.WithLabelValues(strconv.FormatUint(storeID, 10), "available").Set(float64(available) / float64(RegionInfluence))
 		if available < stepCost {
-			oc.cluster.SetStoreOverload(storeID)
 			return true
 		}
 	}
@@ -669,6 +655,20 @@ func (oc *OperatorController) newStoreLimit(storeID uint64, rate float64) {
 	}
 	rate *= float64(RegionInfluence)
 	oc.storesLimit[storeID] = ratelimit.NewBucketWithRate(rate, capacity)
+}
+
+// getOrCreateStoreLimit is used to get or create the limit of a store.
+func (oc *OperatorController) getOrCreateStoreLimit(storeID uint64) *ratelimit.Bucket {
+	if oc.storesLimit[storeID] == nil {
+		rate := oc.cluster.GetStoreBalanceRate()
+		oc.newStoreLimit(storeID, rate)
+		oc.cluster.AttachOverloadStatus(storeID, func() bool {
+			oc.RLock()
+			defer oc.RUnlock()
+			return oc.storesLimit[storeID].Available() < RegionInfluence
+		})
+	}
+	return oc.storesLimit[storeID]
 }
 
 // GetAllStoresLimit is used to get limit of all stores.

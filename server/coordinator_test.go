@@ -31,8 +31,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func newTestOperator(regionID uint64, regionEpoch *metapb.RegionEpoch, kind schedule.OperatorKind) *schedule.Operator {
-	return schedule.NewOperator("test", regionID, regionEpoch, kind)
+func newTestOperator(regionID uint64, regionEpoch *metapb.RegionEpoch, kind schedule.OperatorKind, steps ...schedule.OperatorStep) *schedule.Operator {
+	return schedule.NewOperator("test", regionID, regionEpoch, kind, steps...)
 }
 
 func newTestScheduleConfig() (*ScheduleConfig, *scheduleOption, error) {
@@ -790,6 +790,62 @@ func (s *testOperatorControllerSuite) TestOperatorCount(c *C) {
 	oc.AddOperator(op2)
 	c.Assert(oc.OperatorCount(schedule.OpRegion), Equals, uint64(2)) // 1:region 2:region
 	c.Assert(oc.OperatorCount(schedule.OpLeader), Equals, uint64(0))
+}
+
+func (s *testOperatorControllerSuite) TestStoreOverloaded(c *C) {
+	_, opt, err := newTestScheduleConfig()
+	c.Assert(err, IsNil)
+	tc := newTestClusterInfo(opt)
+	hbStreams := getHeartBeatStreams(c, tc)
+	defer hbStreams.Close()
+	oc := schedule.NewOperatorController(tc.clusterInfo, hbStreams)
+	lb, err := schedule.CreateScheduler("balance-region", oc)
+	c.Assert(err, IsNil)
+
+	c.Assert(tc.addRegionStore(4, 40), IsNil)
+	c.Assert(tc.addRegionStore(3, 40), IsNil)
+	c.Assert(tc.addRegionStore(2, 40), IsNil)
+	c.Assert(tc.addRegionStore(1, 10), IsNil)
+	c.Assert(tc.addLeaderRegion(1, 2, 3, 4), IsNil)
+	op1 := lb.Schedule(tc)[0]
+	c.Assert(op1, NotNil)
+	c.Assert(oc.AddOperator(op1), IsTrue)
+	for i := 0; i < 10; i++ {
+		c.Assert(lb.Schedule(tc), IsNil)
+	}
+	oc.RemoveOperator(op1)
+	time.Sleep(1 * time.Second)
+	for i := 0; i < 100; i++ {
+		c.Assert(lb.Schedule(tc), NotNil)
+	}
+}
+
+func (s *testOperatorControllerSuite) TestStoreOverloadedWithReplace(c *C) {
+	_, opt, err := newTestScheduleConfig()
+	c.Assert(err, IsNil)
+	tc := newTestClusterInfo(opt)
+	hbStreams := getHeartBeatStreams(c, tc)
+	defer hbStreams.Close()
+	oc := schedule.NewOperatorController(tc.clusterInfo, hbStreams)
+	lb, err := schedule.CreateScheduler("balance-region", oc)
+	c.Assert(err, IsNil)
+
+	c.Assert(tc.addRegionStore(4, 40), IsNil)
+	c.Assert(tc.addRegionStore(3, 40), IsNil)
+	c.Assert(tc.addRegionStore(2, 40), IsNil)
+	c.Assert(tc.addRegionStore(1, 10), IsNil)
+	c.Assert(tc.addLeaderRegion(1, 2, 3, 4), IsNil)
+	c.Assert(tc.addLeaderRegion(2, 1, 3, 4), IsNil)
+	op1 := newTestOperator(1, tc.GetRegion(1).GetRegionEpoch(), schedule.OpRegion, schedule.AddPeer{ToStore: 1, PeerID: 1})
+	c.Assert(oc.AddOperator(op1), IsTrue)
+	op2 := newTestOperator(1, tc.GetRegion(1).GetRegionEpoch(), schedule.OpRegion, schedule.AddPeer{ToStore: 2, PeerID: 2})
+	op2.SetPriorityLevel(core.HighPriority)
+	c.Assert(oc.AddOperator(op2), IsTrue)
+	op3 := newTestOperator(1, tc.GetRegion(2).GetRegionEpoch(), schedule.OpRegion, schedule.AddPeer{ToStore: 1, PeerID: 3})
+	c.Assert(oc.AddOperator(op3), IsFalse)
+	c.Assert(lb.Schedule(tc), IsNil)
+	time.Sleep(1 * time.Second)
+	c.Assert(lb.Schedule(tc), NotNil)
 }
 
 var _ = Suite(&testScheduleControllerSuite{})

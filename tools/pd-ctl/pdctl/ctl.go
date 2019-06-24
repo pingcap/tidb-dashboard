@@ -67,9 +67,6 @@ func Start(args []string) {
 
 	rootCmd.SetArgs(args)
 	rootCmd.SilenceErrors = true
-	if err := rootCmd.ParseFlags(args); err != nil {
-		rootCmd.Println(err)
-	}
 	rootCmd.SetUsageTemplate(command.UsageTemplate)
 	rootCmd.SetOutput(os.Stdout)
 
@@ -81,6 +78,6 @@ func Start(args []string) {
 	}
 
 	if err := rootCmd.Execute(); err != nil {
-		rootCmd.Println(rootCmd.UsageString())
+		rootCmd.Println(err)
 	}
 }

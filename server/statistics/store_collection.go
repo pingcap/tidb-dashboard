@@ -1,4 +1,4 @@
-// Copyright 2017 PingCAP, Inc.
+// Copyright 2018 PingCAP, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,11 +11,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package statistics
 
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/pd/server/core"
@@ -27,8 +28,27 @@ const (
 	labelType = "label"
 )
 
+// ScheduleOptions is an interface to access configurations.
+type ScheduleOptions interface {
+	GetLocationLabels() []string
+	GetMaxStoreDownTime() time.Duration
+	GetLowSpaceRatio() float64
+	GetHighSpaceRatio() float64
+	GetTolerantSizeRatio() float64
+	GetLeaderScheduleLimit(name string) uint64
+	GetRegionScheduleLimit(name string) uint64
+	GetReplicaScheduleLimit(name string) uint64
+	GetMergeScheduleLimit(name string) uint64
+	GetMaxReplicas(name string) int
+	IsRaftLearnerEnabled() bool
+	IsMakeUpReplicaEnabled() bool
+	IsRemoveExtraReplicaEnabled() bool
+	IsRemoveDownReplicaEnabled() bool
+	IsReplaceOfflineReplicaEnabled() bool
+}
+
 type storeStatistics struct {
-	opt             *scheduleOption
+	opt             ScheduleOptions
 	namespace       string
 	Up              int
 	Disconnect      int
@@ -44,7 +64,7 @@ type storeStatistics struct {
 	LabelCounter    map[string]int
 }
 
-func newStoreStatistics(opt *scheduleOption, namespace string) *storeStatistics {
+func newStoreStatistics(opt ScheduleOptions, namespace string) *storeStatistics {
 	return &storeStatistics{
 		opt:          opt,
 		namespace:    namespace,
@@ -52,7 +72,7 @@ func newStoreStatistics(opt *scheduleOption, namespace string) *storeStatistics 
 	}
 }
 
-func (s *storeStatistics) Observe(store *core.StoreInfo) {
+func (s *storeStatistics) Observe(store *core.StoreInfo, stats *StoresStats) {
 	for _, k := range s.opt.GetLocationLabels() {
 		v := store.GetLabelValue(k)
 		if v == "" {
@@ -103,7 +123,7 @@ func (s *storeStatistics) Observe(store *core.StoreInfo) {
 	storeStatusGauge.WithLabelValues(s.namespace, storeAddress, id, "store_capacity").Set(float64(store.GetCapacity()))
 
 	// Store flows.
-	storeFlowStats := store.GetRollingStoreStats()
+	storeFlowStats := stats.GetRollingStoreStats(store.GetID())
 	storeWriteRateBytes, storeReadRateBytes := storeFlowStats.GetBytesRate()
 	storeStatusGauge.WithLabelValues(s.namespace, storeAddress, id, "store_write_rate_bytes").Set(float64(storeWriteRateBytes))
 	storeStatusGauge.WithLabelValues(s.namespace, storeAddress, id, "store_read_rate_bytes").Set(float64(storeReadRateBytes))
@@ -186,12 +206,13 @@ func (s *storeStatistics) resetStoreStatistics(storeAddress string, id string) {
 }
 
 type storeStatisticsMap struct {
-	opt        *scheduleOption
+	opt        ScheduleOptions
 	classifier namespace.Classifier
 	stats      map[string]*storeStatistics
 }
 
-func newStoreStatisticsMap(opt *scheduleOption, classifier namespace.Classifier) *storeStatisticsMap {
+// NewStoreStatisticsMap creates a new storeStatisticsMap.
+func NewStoreStatisticsMap(opt ScheduleOptions, classifier namespace.Classifier) *storeStatisticsMap {
 	return &storeStatisticsMap{
 		opt:        opt,
 		classifier: classifier,
@@ -199,14 +220,14 @@ func newStoreStatisticsMap(opt *scheduleOption, classifier namespace.Classifier)
 	}
 }
 
-func (m *storeStatisticsMap) Observe(store *core.StoreInfo) {
+func (m *storeStatisticsMap) Observe(store *core.StoreInfo, stats *StoresStats) {
 	namespace := m.classifier.GetStoreNamespace(store)
 	stat, ok := m.stats[namespace]
 	if !ok {
 		stat = newStoreStatistics(m.opt, namespace)
 		m.stats[namespace] = stat
 	}
-	stat.Observe(store)
+	stat.Observe(store, stats)
 }
 
 func (m *storeStatisticsMap) Collect() {

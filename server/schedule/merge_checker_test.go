@@ -18,6 +18,8 @@ import (
 
 	. "github.com/pingcap/check"
 	"github.com/pingcap/kvproto/pkg/metapb"
+	"github.com/pingcap/pd/pkg/mock/mockcluster"
+	"github.com/pingcap/pd/pkg/mock/mockoption"
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/server/namespace"
 )
@@ -25,17 +27,17 @@ import (
 var _ = Suite(&testMergeCheckerSuite{})
 
 type testMergeCheckerSuite struct {
-	cluster *MockCluster
+	cluster *mockcluster.Cluster
 	mc      *MergeChecker
 	regions []*core.RegionInfo
 }
 
 func (s *testMergeCheckerSuite) SetUpTest(c *C) {
-	cfg := NewMockSchedulerOptions()
+	cfg := mockoption.NewScheduleOptions()
 	cfg.MaxMergeRegionSize = 2
 	cfg.MaxMergeRegionKeys = 2
 	cfg.EnableTwoWayMerge = true
-	s.cluster = NewMockCluster(cfg)
+	s.cluster = mockcluster.NewCluster(cfg)
 	s.regions = []*core.RegionInfo{
 		core.NewRegionInfo(
 			&metapb.Region{
@@ -104,7 +106,7 @@ func (s *testMergeCheckerSuite) SetUpTest(c *C) {
 }
 
 func (s *testMergeCheckerSuite) TestBasic(c *C) {
-	s.cluster.MockSchedulerOptions.SplitMergeInterval = time.Hour
+	s.cluster.ScheduleOptions.SplitMergeInterval = time.Hour
 
 	// should with same peer count
 	ops := s.mc.Check(s.regions[0])
@@ -115,9 +117,10 @@ func (s *testMergeCheckerSuite) TestBasic(c *C) {
 	ops = s.mc.Check(s.regions[2])
 	c.Assert(ops, NotNil)
 	for _, op := range ops {
-		op.createTime = op.createTime.Add(-LeaderOperatorWaitTime - time.Second)
+		op.startTime = time.Now()
+		op.startTime = op.startTime.Add(-LeaderOperatorWaitTime - time.Second)
 		c.Assert(op.IsTimeout(), IsFalse)
-		op.createTime = op.createTime.Add(-RegionOperatorWaitTime - time.Second)
+		op.startTime = op.startTime.Add(-RegionOperatorWaitTime - time.Second)
 		c.Assert(op.IsTimeout(), IsTrue)
 	}
 

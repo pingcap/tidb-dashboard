@@ -24,6 +24,7 @@ import (
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/server/namespace"
 	"github.com/pingcap/pd/server/schedule"
+	"github.com/pingcap/pd/server/statistics"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -158,12 +159,8 @@ func (c *coordinator) checkRegion(region *core.RegionInfo) bool {
 		if region.GetPendingLearner(p.GetId()) != nil {
 			continue
 		}
-		step := schedule.PromoteLearner{
-			ToStore: p.GetStoreId(),
-			PeerID:  p.GetId(),
-		}
-		op := schedule.NewOperator("promote-learner", region.GetID(), region.GetRegionEpoch(), schedule.OpRegion, step)
-		if opController.AddOperator(op) {
+		op := schedule.CreatePromoteLearnerOperator("promote-learner", region, p)
+		if opController.AddWaitingOperator(op) {
 			return true
 		}
 	}
@@ -172,7 +169,7 @@ func (c *coordinator) checkRegion(region *core.RegionInfo) bool {
 		opController.OperatorCount(schedule.OpRegion) < c.cluster.GetRegionScheduleLimit() &&
 		opController.OperatorCount(schedule.OpReplica) < c.cluster.GetReplicaScheduleLimit() {
 		if op := c.namespaceChecker.Check(region); op != nil {
-			if opController.AddOperator(op) {
+			if opController.AddWaitingOperator(op) {
 				return true
 			}
 		}
@@ -180,7 +177,7 @@ func (c *coordinator) checkRegion(region *core.RegionInfo) bool {
 
 	if opController.OperatorCount(schedule.OpReplica) < c.cluster.GetReplicaScheduleLimit() {
 		if op := c.replicaChecker.Check(region); op != nil {
-			if opController.AddOperator(op) {
+			if opController.AddWaitingOperator(op) {
 				return true
 			}
 		}
@@ -188,7 +185,7 @@ func (c *coordinator) checkRegion(region *core.RegionInfo) bool {
 	if c.cluster.IsFeatureSupported(RegionMerge) && opController.OperatorCount(schedule.OpMerge) < c.cluster.GetMergeScheduleLimit() {
 		if ops := c.mergeChecker.Check(region); ops != nil {
 			// It makes sure that two operators can be added successfully altogether.
-			if opController.AddOperator(ops...) {
+			if opController.AddWaitingOperator(ops...) {
 				return true
 			}
 		}
@@ -260,11 +257,11 @@ func (c *coordinator) stop() {
 // Hack to retrieve info from scheduler.
 // TODO: remove it.
 type hasHotStatus interface {
-	GetHotReadStatus() *core.StoreHotRegionInfos
-	GetHotWriteStatus() *core.StoreHotRegionInfos
+	GetHotReadStatus() *statistics.StoreHotRegionInfos
+	GetHotWriteStatus() *statistics.StoreHotRegionInfos
 }
 
-func (c *coordinator) getHotWriteRegions() *core.StoreHotRegionInfos {
+func (c *coordinator) getHotWriteRegions() *statistics.StoreHotRegionInfos {
 	c.RLock()
 	defer c.RUnlock()
 	s, ok := c.schedulers[hotRegionScheduleName]
@@ -277,7 +274,7 @@ func (c *coordinator) getHotWriteRegions() *core.StoreHotRegionInfos {
 	return nil
 }
 
-func (c *coordinator) getHotReadRegions() *core.StoreHotRegionInfos {
+func (c *coordinator) getHotReadRegions() *statistics.StoreHotRegionInfos {
 	c.RLock()
 	defer c.RUnlock()
 	s, ok := c.schedulers[hotRegionScheduleName]
@@ -432,7 +429,7 @@ func (c *coordinator) runScheduler(s *scheduleController) {
 				continue
 			}
 			if op := s.Schedule(); op != nil {
-				c.opController.AddOperator(op...)
+				c.opController.AddWaitingOperator(op...)
 			}
 
 		case <-s.Ctx().Done():

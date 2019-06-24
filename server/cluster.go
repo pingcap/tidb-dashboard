@@ -29,6 +29,7 @@ import (
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/server/namespace"
 	syncer "github.com/pingcap/pd/server/region_syncer"
+	"github.com/pingcap/pd/server/statistics"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -142,7 +143,7 @@ func (c *RaftCluster) start() error {
 
 	c.cachedCluster = cluster
 	c.coordinator = newCoordinator(c.cachedCluster, c.s.hbStreams, c.s.classifier)
-	c.cachedCluster.regionStats = newRegionStatistics(c.s.scheduleOpt, c.s.classifier)
+	c.cachedCluster.regionStats = statistics.NewRegionStatistics(c.s.scheduleOpt, c.s.classifier)
 	c.quit = make(chan struct{})
 
 	c.wg.Add(3)
@@ -326,10 +327,17 @@ func (c *RaftCluster) GetStoreRegions(storeID uint64) []*core.RegionInfo {
 }
 
 // GetRegionStats returns region statistics from cluster.
-func (c *RaftCluster) GetRegionStats(startKey, endKey []byte) *core.RegionStats {
+func (c *RaftCluster) GetRegionStats(startKey, endKey []byte) *statistics.RegionStats {
 	c.RLock()
 	defer c.RUnlock()
 	return c.cachedCluster.getRegionStats(startKey, endKey)
+}
+
+// GetStoresStats returns stores' statistics from cluster.
+func (c *RaftCluster) GetStoresStats() *statistics.StoresStats {
+	c.RLock()
+	defer c.RUnlock()
+	return c.cachedCluster.storesStats
 }
 
 // DropCacheRegion removes a region from the cache.
@@ -650,9 +658,9 @@ func (c *RaftCluster) checkOperators() {
 
 func (c *RaftCluster) collectMetrics() {
 	cluster := c.cachedCluster
-	statsMap := newStoreStatisticsMap(c.cachedCluster.opt, c.GetNamespaceClassifier())
+	statsMap := statistics.NewStoreStatisticsMap(c.cachedCluster.opt, c.GetNamespaceClassifier())
 	for _, s := range cluster.GetStores() {
-		statsMap.Observe(s)
+		statsMap.Observe(s, cluster.storesStats)
 	}
 	statsMap.Collect()
 

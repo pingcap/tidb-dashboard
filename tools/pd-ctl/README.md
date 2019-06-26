@@ -120,8 +120,9 @@ Usage:
     "max-store-down-time": "30m0s",
     "merge-schedule-limit": 8,
     "patrol-region-interval": "100ms",
-    "region-schedule-limit": 4,
-    "replica-schedule-limit": 8,
+    "region-schedule-limit": 64,
+    "replica-schedule-limit": 64,
+    "scheduler-max-waiting-operator": 3,
     "schedulers-v2": [
       {
         "args": null,
@@ -146,7 +147,7 @@ Usage:
     ],
     "split-merge-interval": "1h0m0s",
     "store-balance-rate": 1,
-    "tolerant-size-ratio": 5
+    "tolerant-size-ratio": 0
   }
 }
 >> config show all                            // Display all config information
@@ -196,10 +197,10 @@ Usage:
     >> config set split-merge-interval 24h  // Set the interval between `split` and `merge` to one day
     ```
 
-- `enable-two-way-merge` controls the merge scheduler behavior. This means a Region can be merged into left or right. Set it to true may help improving merge speed.
+- `enable-one-way-merge` controls the merge scheduler behavior. This means a Region can only be merged into left.
 
     ```bash
-    >> config set enable-two-way-merge true  // Enable two way merge.
+    >> config set enable-one-way-merge true  // Enable one way merge.
     ```
 
 - `patrol-region-interval` controls the execution frequency that `replicaChecker` checks the health status of Regions. A shorter interval indicates a higher execution frequency. Generally, you do not need to adjust it.

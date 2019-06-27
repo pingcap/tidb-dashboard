@@ -120,8 +120,9 @@ Usage:
     "max-store-down-time": "30m0s",
     "merge-schedule-limit": 8,
     "patrol-region-interval": "100ms",
-    "region-schedule-limit": 4,
-    "replica-schedule-limit": 8,
+    "region-schedule-limit": 64,
+    "replica-schedule-limit": 64,
+    "scheduler-max-waiting-operator": 3,
     "schedulers-v2": [
       {
         "args": null,
@@ -146,7 +147,7 @@ Usage:
     ],
     "split-merge-interval": "1h0m0s",
     "store-balance-rate": 1,
-    "tolerant-size-ratio": 5
+    "tolerant-size-ratio": 0
   }
 }
 >> config show all                            // Display all config information
@@ -169,7 +170,7 @@ Usage:
 - `max-snapshot-count` controls the maximum number of snapshots that a single store receives or sends out at the same time. The scheduler is restricted by this configuration to avoid taking up normal application resources. When you need to improve the speed of adding replicas or balancing, increase this value.
 
     ```bash
-    >> config set max-snapshort-count 16  // Set the maximum number of snapshots to 16
+    >> config set max-snapshot-count 16  // Set the maximum number of snapshots to 16
     ```
 
 - `max-pending-peer-count` controls the maximum number of pending peers in a single store. The scheduler is restricted by this configuration to avoid producing a large number of Regions without the latest log in some nodes. When you need to improve the speed of adding replicas or balancing, increase this value. Setting it to 0 indicates no limit.

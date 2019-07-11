@@ -5,6 +5,10 @@
 + Fix the issue about the limit of the hot region [#1552](https://github.com/pingcap/pd/pull/1552)
 + Add a option about grpc gateway [#1596](https://github.com/pingcap/pd/pull/1596)
 + Add the missing schedule config items [#1601](https://github.com/pingcap/pd/pull/1601)
++ Fix the issue about checking the number of replicas before scheduling for hot region scheduler [#1609](https://github.com/pingcap/pd/pull/1609)
++ Set influence for the operator according to the region size [#1613](https://github.com/pingcap/pd/pull/1613)
++ Enlarge the default limit of the hot region scheduler [#1616](https://github.com/pingcap/pd/pull/1616)
++ Fix the issue about ignoring the pending peer when balancing regions [#1617](https://github.com/pingcap/pd/pull/1617)
 
 ## v3.0.0
 

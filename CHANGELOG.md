@@ -9,6 +9,7 @@
 + Set influence for the operator according to the region size [#1613](https://github.com/pingcap/pd/pull/1613)
 + Enlarge the default limit of the hot region scheduler [#1616](https://github.com/pingcap/pd/pull/1616)
 + Fix the issue about ignoring the pending peer when balancing regions [#1617](https://github.com/pingcap/pd/pull/1617)
++ Fix the issue about `random-merge` and `admin-merge-region` cannot be added [#1633](https://github.com/pingcap/pd/pull/1633)
 
 ## v3.0.0
 

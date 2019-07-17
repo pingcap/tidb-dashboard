@@ -22,8 +22,9 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/etcdserver"
 	"github.com/coreos/etcd/pkg/types"
+	log "github.com/pingcap/log"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 const (
@@ -59,7 +60,7 @@ func CheckClusterID(localClusterID types.ID, um types.URLsMap, tlsConfig *tls.Co
 		trp.CloseIdleConnections()
 		if gerr != nil {
 			// Do not return error, because other members may be not ready.
-			log.Error(gerr)
+			log.Error("failed to get cluster from remote", zap.Error(gerr))
 			continue
 		}
 

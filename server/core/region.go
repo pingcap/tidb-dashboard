@@ -15,6 +15,7 @@ package core
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"math/rand"
 	"reflect"
@@ -880,19 +881,68 @@ func DiffRegionPeersInfo(origin *RegionInfo, other *RegionInfo) string {
 func DiffRegionKeyInfo(origin *RegionInfo, other *RegionInfo) string {
 	var ret []string
 	if !bytes.Equal(origin.meta.StartKey, other.meta.StartKey) {
-		originKey := &metapb.Region{StartKey: origin.meta.StartKey}
-		otherKey := &metapb.Region{StartKey: other.meta.StartKey}
-		ret = append(ret, fmt.Sprintf("StartKey Changed:{%s} -> {%s}", originKey, otherKey))
+		ret = append(ret, fmt.Sprintf("StartKey Changed:%s -> %s", HexRegionKey(origin.meta.StartKey), HexRegionKey(other.meta.StartKey)))
 	} else {
-		ret = append(ret, fmt.Sprintf("StartKey:{%s}", &metapb.Region{StartKey: origin.meta.StartKey}))
+		ret = append(ret, fmt.Sprintf("StartKey:%s", HexRegionKey(origin.meta.StartKey)))
 	}
 	if !bytes.Equal(origin.meta.EndKey, other.meta.EndKey) {
-		originKey := &metapb.Region{EndKey: origin.meta.EndKey}
-		otherKey := &metapb.Region{EndKey: other.meta.EndKey}
-		ret = append(ret, fmt.Sprintf("EndKey Changed:{%s} -> {%s}", originKey, otherKey))
+		ret = append(ret, fmt.Sprintf("EndKey Changed:%s -> %s", HexRegionKey(origin.meta.EndKey), HexRegionKey(other.meta.EndKey)))
 	} else {
-		ret = append(ret, fmt.Sprintf("EndKey:{%s}", &metapb.Region{EndKey: origin.meta.EndKey}))
+		ret = append(ret, fmt.Sprintf("EndKey:%s", HexRegionKey(origin.meta.EndKey)))
 	}
 
 	return strings.Join(ret, ", ")
+}
+
+// HexRegionKey converts region key to hex format. Used for formating region in
+// logs.
+func HexRegionKey(key []byte) []byte {
+	return []byte(strings.ToUpper(hex.EncodeToString(key)))
+}
+
+// RegionToHexMeta converts a region meta's keys to hex format. Used for formating
+// region in logs.
+func RegionToHexMeta(meta *metapb.Region) HexRegionMeta {
+	if meta == nil {
+		return HexRegionMeta{}
+	}
+	meta = proto.Clone(meta).(*metapb.Region)
+	meta.StartKey = HexRegionKey(meta.StartKey)
+	meta.EndKey = HexRegionKey(meta.EndKey)
+	return HexRegionMeta{meta}
+}
+
+// HexRegionMeta is a region meta in the hex format. Used for formating region in logs.
+type HexRegionMeta struct {
+	*metapb.Region
+}
+
+func (h HexRegionMeta) String() string {
+	return strings.TrimSpace(proto.CompactTextString(h.Region))
+}
+
+// RegionsToHexMeta converts regions' meta keys to hex format. Used for formating
+// region in logs.
+func RegionsToHexMeta(regions []*metapb.Region) HexRegionsMeta {
+	hexRegionMetas := make([]*metapb.Region, len(regions))
+	for i, region := range regions {
+		meta := proto.Clone(region).(*metapb.Region)
+		meta.StartKey = HexRegionKey(meta.StartKey)
+		meta.EndKey = HexRegionKey(meta.EndKey)
+
+		hexRegionMetas[i] = meta
+	}
+	return HexRegionsMeta(hexRegionMetas)
+}
+
+// HexRegionsMeta is a slice of regions' meta in the hex format. Used for formating
+// region in logs.
+type HexRegionsMeta []*metapb.Region
+
+func (h HexRegionsMeta) String() string {
+	var b strings.Builder
+	for _, r := range h {
+		b.WriteString(proto.CompactTextString(r))
+	}
+	return strings.TrimSpace(b.String())
 }

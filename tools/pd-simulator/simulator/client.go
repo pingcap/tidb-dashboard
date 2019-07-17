@@ -24,6 +24,7 @@ import (
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/tools/pd-simulator/simulator/simutil"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -65,7 +66,7 @@ type client struct {
 
 // NewClient creates a PD client.
 func NewClient(pdAddr string, tag string) (Client, <-chan *pdpb.RegionHeartbeatResponse, error) {
-	simutil.Logger.Infof("[%s][pd] create pd client with endpoints %v", tag, pdAddr)
+	simutil.Logger.Info("create pd client with endpoints", zap.String("tag", tag), zap.String("pd-address", pdAddr))
 	ctx, cancel := context.WithCancel(context.Background())
 	c := &client{
 		url:                      pdAddr,
@@ -83,7 +84,7 @@ func NewClient(pdAddr string, tag string) (Client, <-chan *pdpb.RegionHeartbeatR
 	if err := c.initClusterID(); err != nil {
 		return nil, nil, err
 	}
-	simutil.Logger.Infof("[%s][pd] init cluster id %v", tag, c.clusterID)
+	simutil.Logger.Info("init cluster id", zap.String("tag", c.tag), zap.Uint64("cluster-id", c.clusterID))
 	c.wg.Add(1)
 	go c.heartbeatStreamLoop()
 
@@ -100,7 +101,7 @@ func (c *client) initClusterID() error {
 	for i := 0; i < maxInitClusterRetries; i++ {
 		members, err := c.getMembers(ctx)
 		if err != nil || members.GetHeader() == nil {
-			simutil.Logger.Errorf("[%s][pd] failed to get cluster id: %v", c.tag, err)
+			simutil.Logger.Error("fail to get cluster id", zap.String("tag", c.tag), zap.Error(err))
 			continue
 		}
 		c.clusterID = members.GetHeader().GetClusterId()
@@ -137,7 +138,7 @@ func (c *client) createHeartbeatStream() (pdpb.PD_RegionHeartbeatClient, context
 		ctx, cancel = context.WithCancel(c.ctx)
 		stream, err = c.pdClient().RegionHeartbeat(ctx)
 		if err != nil {
-			simutil.Logger.Errorf("[%s][pd] create region heartbeat stream error: %v", c.tag, err)
+			simutil.Logger.Error("create region heartbeat stream error", zap.String("tag", c.tag), zap.Error(err))
 			cancel()
 			select {
 			case <-time.After(time.Second):
@@ -166,7 +167,7 @@ func (c *client) heartbeatStreamLoop() {
 		go c.receiveRegionHeartbeat(ctx, stream, errCh, wg)
 		select {
 		case err := <-errCh:
-			simutil.Logger.Infof("[%s][pd] heartbeat stream get error: %s ", c.tag, err)
+			simutil.Logger.Error("heartbeat stream get error", zap.String("tag", c.tag), zap.Error(err))
 			cancel()
 		case <-c.ctx.Done():
 			simutil.Logger.Info("cancel heartbeat stream loop")
@@ -211,7 +212,7 @@ func (c *client) reportRegionHeartbeat(ctx context.Context, stream pdpb.PD_Regio
 			err := stream.Send(request)
 			if err != nil {
 				errCh <- err
-				simutil.Logger.Errorf("[%s][pd] report regionHeartbeat error: %v", c.tag, err)
+				simutil.Logger.Error("report regionHeartbeat error", zap.String("tag", c.tag), zap.Error(err))
 			}
 		case <-ctx.Done():
 			return
@@ -224,7 +225,7 @@ func (c *client) Close() {
 	c.wg.Wait()
 
 	if err := c.clientConn.Close(); err != nil {
-		simutil.Logger.Errorf("[%s][pd] failed close grpc clientConn: %v", c.tag, err)
+		simutil.Logger.Error("fail to close grpc client connection", zap.String("tag", c.tag), zap.Error(err))
 	}
 }
 
@@ -281,7 +282,7 @@ func (c *client) PutStore(ctx context.Context, store *metapb.Store) error {
 		return err
 	}
 	if resp.Header.GetError() != nil {
-		simutil.Logger.Info(resp.Header.GetError())
+		simutil.Logger.Error("put store error", zap.Reflect("error", resp.Header.GetError()))
 		return nil
 	}
 	return nil
@@ -298,7 +299,7 @@ func (c *client) StoreHeartbeat(ctx context.Context, stats *pdpb.StoreStats) err
 		return err
 	}
 	if resp.Header.GetError() != nil {
-		simutil.Logger.Info(resp.Header.GetError())
+		simutil.Logger.Error("store heartbeat error", zap.Reflect("error", resp.Header.GetError()))
 		return nil
 	}
 	return nil

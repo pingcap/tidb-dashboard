@@ -19,12 +19,15 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/coreos/etcd/embed"
+	"github.com/pingcap/log"
 	"github.com/pingcap/pd/pkg/tempurl"
 	"github.com/pingcap/pd/pkg/typeutil"
 	"github.com/pingcap/pd/server/schedule"
+	"go.uber.org/zap"
 
 	// Register namespace classifiers.
 	_ "github.com/pingcap/pd/table"
@@ -56,6 +59,8 @@ func NewTestServer() (*Config, *Server, CleanupFunc, error) {
 	return cfg, s, cleanup, nil
 }
 
+var zapLogOnce sync.Once
+
 // NewTestSingleConfig is only for test to create one pd.
 // Because PD client also needs this, so export here.
 func NewTestSingleConfig() *Config {
@@ -78,6 +83,13 @@ func NewTestSingleConfig() *Config {
 	cfg.TickInterval = typeutil.NewDuration(100 * time.Millisecond)
 	cfg.ElectionInterval = typeutil.NewDuration(3000 * time.Millisecond)
 	cfg.leaderPriorityCheckInterval = typeutil.NewDuration(100 * time.Millisecond)
+	err := cfg.SetupLogger()
+	if err != nil {
+		log.Fatal("setup logger failed", zap.Error(err))
+	}
+	zapLogOnce.Do(func() {
+		log.ReplaceGlobals(cfg.GetZapLogger(), cfg.GetZapLogProperties())
+	})
 
 	cfg.Adjust(nil)
 

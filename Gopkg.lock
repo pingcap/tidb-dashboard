@@ -326,6 +326,14 @@
   revision = "eec48234540b323cdfc3e92c4341d667fa245178"
 
 [[projects]]
+  branch = "master"
+  digest = "1:fa93713f641c5eba4afa18d139504c08d956b47cb5901bbd791c3bff69b4af7e"
+  name = "github.com/pingcap/log"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "479153f07ebdcbb42a14c99d9c16cefbe531071d"
+
+[[projects]]
   digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
   name = "github.com/pkg/errors"
   packages = ["."]
@@ -467,7 +475,7 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:25531f2a1f9e75b832a945c670bf84f8caf5bd0fe8d8ad5bab5f13e162680922"
+  digest = "1:4af5a022f8c5c97734c3c6fad58fdce078e2322ddc98d3102b225a729f03916e"
   name = "go.uber.org/zap"
   packages = [
     ".",
@@ -478,8 +486,8 @@
     "zapcore",
   ]
   pruneopts = "NUT"
-  revision = "eeedf312bc6c57391d84767a4cd413f02a917974"
-  version = "v1.8.0"
+  revision = "27376062155ad36be76b0f12cf1572a221d3a48c"
+  version = "v1.10.0"
 
 [[projects]]
   branch = "master"
@@ -622,7 +630,6 @@
     "github.com/coreos/etcd/embed",
     "github.com/coreos/etcd/etcdserver",
     "github.com/coreos/etcd/mvcc/mvccpb",
-    "github.com/coreos/etcd/pkg/logutil",
     "github.com/coreos/etcd/pkg/transport",
     "github.com/coreos/etcd/pkg/types",
     "github.com/coreos/etcd/raft",
@@ -643,6 +650,7 @@
     "github.com/pingcap/kvproto/pkg/eraftpb",
     "github.com/pingcap/kvproto/pkg/metapb",
     "github.com/pingcap/kvproto/pkg/pdpb",
+    "github.com/pingcap/log",
     "github.com/pkg/errors",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/push",
@@ -652,6 +660,7 @@
     "github.com/unrolled/render",
     "github.com/urfave/negroni",
     "go.uber.org/zap",
+    "go.uber.org/zap/zapcore",
     "golang.org/x/net/context",
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",

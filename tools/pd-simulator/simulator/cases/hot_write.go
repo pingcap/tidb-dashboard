@@ -19,6 +19,7 @@ import (
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/tools/pd-simulator/simulator/simutil"
+	"go.uber.org/zap"
 )
 
 func newHotWrite() *Case {
@@ -80,7 +81,7 @@ func newHotWrite() *Case {
 				peerCount[int(p.GetStoreId()-1)]++
 			}
 		}
-		simutil.Logger.Infof("hot region leader count: %v, peer count: %v", leaderCount, peerCount)
+		simutil.Logger.Info("current hot region counts", zap.Reflect("leader", leaderCount), zap.Reflect("peer", peerCount))
 
 		// check count diff <= 2.
 		var minLeader, maxLeader, minPeer, maxPeer int

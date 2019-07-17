@@ -22,6 +22,7 @@ import (
 	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/tools/pd-simulator/simulator/simutil"
+	"go.uber.org/zap"
 )
 
 // Task running in node.
@@ -239,7 +240,7 @@ func (a *addPeer) Step(r *RaftEngine) {
 	snapshotSize := region.GetApproximateSize()
 	sendNode := r.conn.Nodes[region.GetLeader().GetStoreId()]
 	if sendNode == nil {
-		simutil.Logger.Errorf("failed to sent snapshot: node %d has been deleted", sendNode.Id)
+		simutil.Logger.Error("failed to sent snapshot, node has been deleted", zap.Uint64("node-id", sendNode.Id))
 		a.finished = true
 		return
 	}
@@ -250,7 +251,7 @@ func (a *addPeer) Step(r *RaftEngine) {
 
 	recvNode := r.conn.Nodes[a.peer.GetStoreId()]
 	if recvNode == nil {
-		simutil.Logger.Errorf("failed to receive snapshot: node %d has been deleted", recvNode.Id)
+		simutil.Logger.Error("failed to receive snapshot: node has been deleted", zap.Uint64("node-id", recvNode.Id))
 		a.finished = true
 		return
 	}

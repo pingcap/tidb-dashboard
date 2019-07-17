@@ -21,6 +21,7 @@ import (
 	"github.com/pingcap/pd/tools/pd-simulator/simulator/cases"
 	"github.com/pingcap/pd/tools/pd-simulator/simulator/simutil"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 // Driver promotes the cluster status change.
@@ -70,9 +71,9 @@ func (d *Driver) Prepare() error {
 	err = d.client.Bootstrap(ctx, store, region)
 	cancel()
 	if err != nil {
-		simutil.Logger.Fatal("bootstrapped error: ", err)
+		simutil.Logger.Fatal("bootstrap error", zap.Error(err))
 	} else {
-		simutil.Logger.Debug("Bootstrap success")
+		simutil.Logger.Debug("bootstrap success")
 	}
 
 	// Setup alloc id.

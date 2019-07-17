@@ -15,14 +15,14 @@ package server
 
 import (
 	"bytes"
-	"fmt"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/kvproto/pkg/pdpb"
+	log "github.com/pingcap/log"
 	"github.com/pingcap/pd/server/core"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // HandleRegionHeartbeat processes RegionInfo reports from client.
@@ -33,8 +33,8 @@ func (c *RaftCluster) HandleRegionHeartbeat(region *core.RegionInfo) error {
 
 	// If the region peer count is 0, then we should not handle this.
 	if len(region.GetPeers()) == 0 {
-		log.Warnf("invalid region, zero region peer count - %v", region)
-		return errors.Errorf("invalid region, zero region peer count - %v", region)
+		log.Warn("invalid region, zero region peer count", zap.Stringer("region-meta", core.RegionToHexMeta(region.GetMeta())))
+		return errors.Errorf("invalid region, zero region peer count: %v", core.RegionToHexMeta(region.GetMeta()))
 	}
 
 	c.coordinator.dispatch(region)
@@ -76,7 +76,7 @@ func (c *RaftCluster) validRequestRegion(reqRegion *metapb.Region) error {
 	startKey := reqRegion.GetStartKey()
 	region, _ := c.GetRegionByKey(startKey)
 	if region == nil {
-		return errors.Errorf("region not found, request region: %v", reqRegion)
+		return errors.Errorf("region not found, request region: %v", core.RegionToHexMeta(reqRegion))
 	}
 	// If the request epoch is less than current region epoch, then returns an error.
 	reqRegionEpoch := reqRegion.GetRegionEpoch()
@@ -164,7 +164,10 @@ func (c *RaftCluster) handleReportSplit(request *pdpb.ReportSplitRequest) (*pdpb
 
 	err := c.checkSplitRegion(left, right)
 	if err != nil {
-		log.Warnf("report split region is invalid - %v, %v", request, fmt.Sprintf("%+v", err))
+		log.Warn("report split region is invalid",
+			zap.Stringer("left-region", core.RegionToHexMeta(left)),
+			zap.Stringer("right-region", core.RegionToHexMeta(right)),
+			zap.Error(err))
 		return nil, err
 	}
 
@@ -172,20 +175,29 @@ func (c *RaftCluster) handleReportSplit(request *pdpb.ReportSplitRequest) (*pdpb
 	originRegion := proto.Clone(right).(*metapb.Region)
 	originRegion.RegionEpoch = nil
 	originRegion.StartKey = left.GetStartKey()
-	log.Infof("[region %d] region split, generate new region: %v", originRegion.GetId(), left)
+	log.Info("region split, generate new region",
+		zap.Uint64("region-id", originRegion.GetId()),
+		zap.Stringer("region-meta", core.RegionToHexMeta(left)))
 	return &pdpb.ReportSplitResponse{}, nil
 }
 
 func (c *RaftCluster) handleBatchReportSplit(request *pdpb.ReportBatchSplitRequest) (*pdpb.ReportBatchSplitResponse, error) {
 	regions := request.GetRegions()
 
+	hrm := core.RegionsToHexMeta(regions)
 	err := c.checkSplitRegions(regions)
 	if err != nil {
-		log.Warnf("report batch split region is invalid - %v, %v", request, fmt.Sprintf("%+v", err))
+		log.Warn("report batch split region is invalid",
+			zap.Stringer("region-meta", hrm),
+			zap.Error(err))
 		return nil, err
 	}
 	last := len(regions) - 1
 	originRegion := proto.Clone(regions[last]).(*metapb.Region)
-	log.Infof("[region %d] region split, generate %d new regions: %v", originRegion.GetId(), last, regions[:last])
+	hrm = core.RegionsToHexMeta(regions[:last])
+	log.Info("region batch split, generate new regions",
+		zap.Uint64("region-id", originRegion.GetId()),
+		zap.Stringer("origin", hrm),
+		zap.Int("total", last))
 	return &pdpb.ReportBatchSplitResponse{}, nil
 }

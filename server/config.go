@@ -27,11 +27,13 @@ import (
 	"github.com/coreos/etcd/embed"
 	"github.com/coreos/etcd/pkg/transport"
 	"github.com/coreos/go-semver/semver"
-	"github.com/pingcap/pd/pkg/logutil"
+	"github.com/pingcap/log"
 	"github.com/pingcap/pd/pkg/metricutil"
 	"github.com/pingcap/pd/pkg/typeutil"
 	"github.com/pingcap/pd/server/namespace"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Config is the pd server configuration.
@@ -61,7 +63,7 @@ type Config struct {
 	LeaderLease int64 `toml:"lease" json:"lease"`
 
 	// Log related config.
-	Log logutil.LogConfig `toml:"log" json:"log"`
+	Log log.Config `toml:"log" json:"log"`
 
 	// Backward compatibility.
 	LogFileDeprecated  string `toml:"log-file" json:"log-file"`
@@ -123,6 +125,9 @@ type Config struct {
 	heartbeatStreamBindInterval typeutil.Duration
 
 	leaderPriorityCheckInterval typeutil.Duration
+
+	logger   *zap.Logger
+	logProps *log.ZapProperties
 }
 
 // NewConfig creates a new config.
@@ -181,6 +186,8 @@ const (
 	defaultHeartbeatStreamRebindInterval = time.Minute
 
 	defaultLeaderPriorityCheckInterval = time.Minute
+
+	defaultDisableErrorVerbose = true
 )
 
 func adjustString(v *string, defValue string) {
@@ -390,6 +397,8 @@ func (c *Config) Adjust(meta *toml.MetaData) error {
 		return err
 	}
 
+	c.adjustLog(configMetaData.Child("log"))
+
 	adjustDuration(&c.heartbeatStreamBindInterval, defaultHeartbeatStreamRebindInterval)
 
 	adjustDuration(&c.leaderPriorityCheckInterval, defaultLeaderPriorityCheckInterval)
@@ -398,6 +407,12 @@ func (c *Config) Adjust(meta *toml.MetaData) error {
 		c.PreVote = true
 	}
 	return nil
+}
+
+func (c *Config) adjustLog(meta *configMetaData) {
+	if !meta.IsDefined("disable-error-verbose") {
+		c.Log.DisableErrorVerbose = defaultDisableErrorVerbose
+	}
 }
 
 func (c *Config) clone() *Config {
@@ -756,6 +771,27 @@ func ParseUrls(s string) ([]url.URL, error) {
 	return urls, nil
 }
 
+// SetupLogger setup the logger.
+func (c *Config) SetupLogger() error {
+	lg, p, err := log.InitLogger(&c.Log, zap.AddStacktrace(zapcore.FatalLevel))
+	if err != nil {
+		return err
+	}
+	c.logger = lg
+	c.logProps = p
+	return nil
+}
+
+// GetZapLogger gets the created zap logger.
+func (c *Config) GetZapLogger() *zap.Logger {
+	return c.logger
+}
+
+// GetZapLogProperties gets properties of the zap logger.
+func (c *Config) GetZapLogProperties() *log.ZapProperties {
+	return c.logProps
+}
+
 // generates a configuration for embedded etcd.
 func (c *Config) genEmbedEtcdConfig() (*embed.Config, error) {
 	cfg := embed.NewConfig()
@@ -780,7 +816,9 @@ func (c *Config) genEmbedEtcdConfig() (*embed.Config, error) {
 	cfg.PeerTLSInfo.TrustedCAFile = c.Security.CAPath
 	cfg.PeerTLSInfo.CertFile = c.Security.CertPath
 	cfg.PeerTLSInfo.KeyFile = c.Security.KeyPath
-
+	// TODO: update etcd
+	// cfg.ZapLoggerBuilder = embed.NewZapCoreLoggerBuilder(c.logger, c.logger.Core(), c.logSyncer)
+	// cfg.Logger = "zap"
 	var err error
 
 	cfg.LPUrls, err = ParseUrls(c.PeerUrls)

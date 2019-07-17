@@ -23,7 +23,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var (
@@ -214,27 +216,11 @@ func showRegionWithTableCommandFunc(cmd *cobra.Command, args []string) {
 		fmt.Println(cmd.UsageString())
 		return
 	}
-
-	var (
-		key string
-		err error
-	)
-
-	format := cmd.Flags().Lookup("format").Value.String()
-	switch format {
-	case "raw":
-		key = args[0]
-	case "encode":
-		key, err = decodeKey(args[0])
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return
-		}
-	default:
-		fmt.Println("Error: unknown format")
+	key, err := parseKey(cmd.Flags(), args[0])
+	if err != nil {
+		fmt.Println("Error: ", err)
 		return
 	}
-
 	key = url.QueryEscape(key)
 	prefix := regionKeyPrefix + "/" + key
 	r, err := doRequest(cmd, prefix, http.MethodGet)
@@ -245,6 +231,16 @@ func showRegionWithTableCommandFunc(cmd *cobra.Command, args []string) {
 	fmt.Println(r)
 }
 
+func parseKey(flags *pflag.FlagSet, key string) (string, error) {
+	switch flags.Lookup("format").Value.String() {
+	case "raw":
+		return key, nil
+	case "encode":
+		return decodeKey(key)
+	}
+	return "", errors.New("unknown format")
+}
+
 func decodeKey(text string) (string, error) {
 	var buf []byte
 	r := bytes.NewBuffer([]byte(text))
@@ -252,7 +248,7 @@ func decodeKey(text string) (string, error) {
 		c, err := r.ReadByte()
 		if err != nil {
 			if err != io.EOF {
-				return "", err
+				return "", errors.WithStack(err)
 			}
 			break
 		}
@@ -278,7 +274,7 @@ func decodeKey(text string) (string, error) {
 			n = append(n, r.Next(2)...)
 			_, err := fmt.Sscanf(string(n), "%03o", &c)
 			if err != nil {
-				return "", err
+				return "", errors.WithStack(err)
 			}
 			buf = append(buf, c)
 		}

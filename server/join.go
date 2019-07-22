@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/pingcap/failpoint"
-	log "github.com/pingcap/log"
+	"github.com/pingcap/log"
 	"github.com/pingcap/pd/pkg/etcdutil"
 	"github.com/pkg/errors"
 	"go.etcd.io/etcd/clientv3"

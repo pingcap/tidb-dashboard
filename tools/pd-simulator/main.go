@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	log "github.com/pingcap/log"
+	"github.com/pingcap/log"
 	"github.com/pingcap/pd/pkg/logutil"
 	"github.com/pingcap/pd/server"
 	"github.com/pingcap/pd/server/api"

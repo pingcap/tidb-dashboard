@@ -79,7 +79,7 @@ func (s *Server) Tso(stream pdpb.PD_TsoServer) error {
 			return err
 		}
 		count := request.GetCount()
-		ts, err := s.getRespTS(count)
+		ts, err := s.tso.GetRespTS(count)
 		if err != nil {
 			return status.Errorf(codes.Unknown, err.Error())
 		}

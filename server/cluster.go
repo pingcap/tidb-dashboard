@@ -26,6 +26,7 @@ import (
 	"github.com/pingcap/kvproto/pkg/pdpb"
 	"github.com/pingcap/log"
 	"github.com/pingcap/pd/pkg/logutil"
+	"github.com/pingcap/pd/pkg/typeutil"
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/server/namespace"
 	syncer "github.com/pingcap/pd/server/region_syncer"
@@ -85,7 +86,7 @@ func (c *RaftCluster) loadClusterStatus() (*ClusterStatus, error) {
 		return nil, err
 	}
 	var isInitialized bool
-	if bootstrapTime != zeroTime {
+	if bootstrapTime != typeutil.ZeroTime {
 		isInitialized = c.isInitialized()
 	}
 	return &ClusterStatus{
@@ -116,7 +117,7 @@ func (c *RaftCluster) loadBootstrapTime() (time.Time, error) {
 	if data == "" {
 		return t, nil
 	}
-	return parseTimestamp([]byte(data))
+	return typeutil.ParseTimestamp([]byte(data))
 }
 
 func (c *RaftCluster) start() error {

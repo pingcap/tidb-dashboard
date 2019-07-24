@@ -26,6 +26,7 @@ import (
 	"github.com/pingcap/pd/pkg/etcdutil"
 	"github.com/pingcap/pd/pkg/logutil"
 	"github.com/pingcap/pd/server/kv"
+	"github.com/pingcap/pd/server/tso"
 	"github.com/pkg/errors"
 	"go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/mvcc/mvccpb"
@@ -269,12 +270,10 @@ func (s *Server) campaignLeader() error {
 	defer s.stopRaftCluster()
 
 	log.Debug("sync timestamp for tso")
-	if err = s.syncTimestamp(); err != nil {
+	if err = s.tso.SyncTimestamp(); err != nil {
 		return err
 	}
-	defer s.ts.Store(&atomicObject{
-		physical: zeroTime,
-	})
+	defer s.tso.ResetTimestamp()
 
 	s.enableLeader()
 	defer s.disableLeader()
@@ -282,7 +281,7 @@ func (s *Server) campaignLeader() error {
 	CheckPDVersion(s.scheduleOpt)
 	log.Info("PD cluster leader is ready to serve", zap.String("leader-name", s.Name()))
 
-	tsTicker := time.NewTicker(updateTimestampStep)
+	tsTicker := time.NewTicker(tso.UpdateTimestampStep)
 	defer tsTicker.Stop()
 
 	for {
@@ -293,7 +292,7 @@ func (s *Server) campaignLeader() error {
 				return nil
 			}
 		case <-tsTicker.C:
-			if err = s.updateTimestamp(); err != nil {
+			if err = s.tso.UpdateTimestamp(); err != nil {
 				log.Info("failed to update timestamp")
 				return err
 			}

@@ -38,6 +38,7 @@ import (
 	"github.com/pingcap/pd/server/id"
 	"github.com/pingcap/pd/server/kv"
 	"github.com/pingcap/pd/server/namespace"
+	"github.com/pingcap/pd/server/tso"
 	"github.com/pkg/errors"
 	"go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/embed"
@@ -94,13 +95,12 @@ type Server struct {
 	idAllocator *id.AllocatorImpl
 	// for storage operation.
 	storage *core.Storage
+	// for tso.
+	tso *tso.TimestampOracle
 	// for namespace.
 	classifier namespace.Classifier
 	// for raft cluster
 	cluster *RaftCluster
-	// For tso, set after pd becomes leader.
-	ts            atomic.Value
-	lastSavedTime time.Time
 	// For async region heartbeat.
 	hbStreams *heartbeatStreams
 	// Zap logger
@@ -223,6 +223,7 @@ func (s *Server) startServer() error {
 	s.member, s.memberValue = s.memberInfo()
 
 	s.idAllocator = id.NewAllocatorImpl(s.client, s.rootPath, s.memberValue)
+	s.tso = tso.NewTimestampOracle(s.client, s.rootPath, s.memberValue, s.cfg.TsoSaveInterval.Duration)
 	kvBase := kv.NewEtcdKVBase(s.client, s.rootPath)
 	path := filepath.Join(s.cfg.DataDir, "region-meta")
 	regionStorage, err := core.NewRegionStorage(path)
@@ -235,7 +236,6 @@ func (s *Server) startServer() error {
 	if s.classifier, err = namespace.CreateClassifier(s.cfg.NamespaceClassifier, s.storage, s.idAllocator); err != nil {
 		return err
 	}
-
 	// Server has started.
 	atomic.StoreInt64(&s.isServing, 1)
 	return nil

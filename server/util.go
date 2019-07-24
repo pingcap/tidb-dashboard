@@ -146,19 +146,6 @@ func GetMembers(etcdClient *clientv3.Client) ([]*pdpb.Member, error) {
 	return members, nil
 }
 
-func parseTimestamp(data []byte) (time.Time, error) {
-	nano, err := typeutil.BytesToUint64(data)
-	if err != nil {
-		return zeroTime, err
-	}
-
-	return time.Unix(0, int64(nano)), nil
-}
-
-func subTimeByWallClock(after time.Time, before time.Time) time.Duration {
-	return time.Duration(after.UnixNano() - before.UnixNano())
-}
-
 // InitHTTPClient initials a http client.
 func InitHTTPClient(svr *Server) error {
 	tlsConfig, err := svr.GetSecurityConfig().ToTLSConfig()

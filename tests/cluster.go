@@ -28,6 +28,7 @@ import (
 	"github.com/pingcap/pd/server/config"
 	"github.com/pingcap/pd/server/core"
 	"github.com/pingcap/pd/server/id"
+	"github.com/pingcap/pd/server/join"
 	"github.com/pkg/errors"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
@@ -61,7 +62,7 @@ func NewTestServer(cfg *config.Config) (*TestServer, error) {
 	zapLogOnce.Do(func() {
 		log.ReplaceGlobals(cfg.GetZapLogger(), cfg.GetZapLogProperties())
 	})
-	err = server.PrepareJoinCluster(cfg)
+	err = join.PrepareJoinCluster(cfg)
 	if err != nil {
 		return nil, err
 	}

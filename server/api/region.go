@@ -99,7 +99,7 @@ func (h *regionHandler) GetRegionByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	regionInfo := cluster.GetRegionInfoByID(regionID)
+	regionInfo := cluster.GetRegion(regionID)
 	h.rd.JSON(w, http.StatusOK, NewRegionInfo(regionInfo))
 }
 
@@ -261,7 +261,7 @@ func (h *regionsHandler) GetRegionSiblings(w http.ResponseWriter, r *http.Reques
 		h.rd.JSON(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	region := cluster.GetRegionInfoByID(uint64(id))
+	region := cluster.GetRegion(uint64(id))
 	if region == nil {
 		h.rd.JSON(w, http.StatusNotFound, server.ErrRegionNotFound(uint64(id)).Error())
 		return

@@ -192,6 +192,22 @@ func (c *clusterInfo) putStoreLocked(store *core.StoreInfo) error {
 	return c.core.PutStore(store)
 }
 
+func (c *clusterInfo) deleteStore(store *core.StoreInfo) error {
+	c.Lock()
+	defer c.Unlock()
+	return c.deleteStoreLocked(store)
+}
+
+func (c *clusterInfo) deleteStoreLocked(store *core.StoreInfo) error {
+	if c.kv != nil {
+		if err := c.kv.DeleteStore(store.Store); err != nil {
+			return err
+		}
+	}
+	c.core.DeleteStore(store)
+	return nil
+}
+
 // BlockStore stops balancer from selecting the store.
 func (c *clusterInfo) BlockStore(storeID uint64) error {
 	c.Lock()

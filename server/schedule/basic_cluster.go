@@ -199,6 +199,11 @@ func (bc *BasicCluster) PutStore(store *core.StoreInfo) error {
 	return nil
 }
 
+// DeleteStore deletes a store
+func (bc *BasicCluster) DeleteStore(store *core.StoreInfo) {
+	bc.Stores.DeleteStore(store)
+}
+
 // PutRegion put a region
 func (bc *BasicCluster) PutRegion(region *core.RegionInfo) error {
 	bc.Regions.SetRegion(region)

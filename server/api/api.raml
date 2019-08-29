@@ -650,6 +650,16 @@ types:
       500:
         description: PD server failed to proceed the request.
 
+  /remove-tombstone:
+  description: Remove all tombstone stores.
+  delete:
+    description: Remove all tombstone stores.
+    responses:
+      200:
+        description: All tombstone stores are removed.
+      500:
+        description: PD server failed to proceed the request.
+
 /store/{storeId}:
   description: A specific store.
   uriParameters:

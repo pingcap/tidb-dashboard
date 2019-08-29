@@ -412,7 +412,12 @@ func (s *StoresInfo) GetMetaStores() []*metapb.Store {
 	return stores
 }
 
-// GetStoreCount return the total count of storeInfo
+// DeleteStore deletes tombstone record form store
+func (s *StoresInfo) DeleteStore(store *StoreInfo) {
+	delete(s.stores, store.GetId())
+}
+
+// GetStoreCount returns the total count of storeInfo
 func (s *StoresInfo) GetStoreCount() int {
 	return len(s.stores)
 }

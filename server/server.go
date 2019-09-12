@@ -156,7 +156,7 @@ func (s *Server) startEtcd(ctx context.Context) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	tlsConfig, err := s.cfg.Security.ToTLSConfig()
+	tlsConfig, err := ToTLSConfig(s.cfg.Security.ConvertToMap())
 	if err != nil {
 		return err
 	}
@@ -726,9 +726,9 @@ func (s *Server) GetClusterVersion() semver.Version {
 	return s.scheduleOpt.loadClusterVersion()
 }
 
-// GetSecurityConfig get the security config.
-func (s *Server) GetSecurityConfig() *SecurityConfig {
-	return &s.cfg.Security
+// GetSecurityConfig get paths of the security config.
+func (s *Server) GetSecurityConfig() map[string]string {
+	return s.cfg.Security.ConvertToMap()
 }
 
 // IsNamespaceExist returns whether the namespace exists.

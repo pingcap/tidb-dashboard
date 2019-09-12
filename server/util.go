@@ -281,7 +281,7 @@ func subTimeByWallClock(after time.Time, before time.Time) time.Duration {
 
 // InitHTTPClient initials a http client.
 func InitHTTPClient(svr *Server) error {
-	tlsConfig, err := svr.GetSecurityConfig().ToTLSConfig()
+	tlsConfig, err := ToTLSConfig(svr.GetSecurityConfig())
 	if err != nil {
 		return err
 	}

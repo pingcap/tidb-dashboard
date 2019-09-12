@@ -775,15 +775,23 @@ type SecurityConfig struct {
 	KeyPath string `toml:"key-path" json:"key-path"`
 }
 
+// ConvertToMap is used to convert SecurityConfig to a map.
+func (s *SecurityConfig) ConvertToMap() map[string]string {
+	return map[string]string{
+		"caPath":   s.CAPath,
+		"certPath": s.CertPath,
+		"keyPath":  s.KeyPath}
+}
+
 // ToTLSConfig generatres tls config.
-func (s SecurityConfig) ToTLSConfig() (*tls.Config, error) {
-	if len(s.CertPath) == 0 && len(s.KeyPath) == 0 {
+func ToTLSConfig(config map[string]string) (*tls.Config, error) {
+	if len(config["certPath"]) == 0 && len(config["keyPath"]) == 0 {
 		return nil, nil
 	}
 	tlsInfo := transport.TLSInfo{
-		CertFile:      s.CertPath,
-		KeyFile:       s.KeyPath,
-		TrustedCAFile: s.CAPath,
+		CertFile:      config["certPath"],
+		KeyFile:       config["keyPath"],
+		TrustedCAFile: config["caPath"],
 	}
 	tlsConfig, err := tlsInfo.ClientConfig()
 	if err != nil {

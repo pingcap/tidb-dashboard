@@ -108,7 +108,7 @@ func PrepareJoinCluster(cfg *Config) error {
 	}
 
 	// Below are cases without data directory.
-	tlsConfig, err := cfg.Security.ToTLSConfig()
+	tlsConfig, err := ToTLSConfig(cfg.Security.ConvertToMap())
 	if err != nil {
 		return err
 	}

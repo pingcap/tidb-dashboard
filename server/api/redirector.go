@@ -14,10 +14,12 @@
 package api
 
 import (
+	"crypto/tls"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 
 	log "github.com/pingcap/log"
 	"github.com/pingcap/pd/server"
@@ -32,6 +34,8 @@ const (
 	errRedirectFailed      = "redirect failed"
 	errRedirectToNotLeader = "redirect to not leader"
 )
+
+var initHTTPClientOnce sync.Once
 
 type redirector struct {
 	s *server.Server
@@ -67,7 +71,20 @@ func (h *redirector) ServeHTTP(w http.ResponseWriter, r *http.Request, next http
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	initHTTPClientOnce.Do(func() {
+		var tlsConfig *tls.Config
+		tlsConfig, err = server.ToTLSConfig(h.s.GetSecurityConfig())
+		dialClient = &http.Client{
+			Transport: &http.Transport{
+				DisableKeepAlives: true,
+				TLSClientConfig:   tlsConfig,
+			},
+		}
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	newCustomReverseProxies(urls).ServeHTTP(w, r)
 }
 

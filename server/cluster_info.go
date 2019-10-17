@@ -629,7 +629,7 @@ func (c *clusterInfo) handleRegionHeartbeat(region *core.RegionInfo) error {
 			if c.regionStats != nil {
 				c.regionStats.ClearDefunctRegion(item.GetId())
 			}
-			c.labelLevelStats.ClearDefunctRegion(item.GetId())
+			c.labelLevelStats.ClearDefunctRegion(item.GetId(), c.GetLocationLabels())
 		}
 
 		// Update related stores.
@@ -675,6 +675,18 @@ func (c *clusterInfo) collectMetrics() {
 	c.labelLevelStats.Collect()
 	// collect hot cache metrics
 	c.hotSpotCache.CollectMetrics(c.storesStats)
+}
+
+func (c *clusterInfo) resetClusterMetrics() {
+	if c.regionStats == nil {
+		return
+	}
+	c.RLock()
+	defer c.RUnlock()
+	c.regionStats.Reset()
+	c.labelLevelStats.Reset()
+	// reset hot spot cache metrics
+	c.hotSpotCache.ResetMetrics()
 }
 
 func (c *clusterInfo) GetRegionStatsByType(typ statistics.RegionStatisticType) []*core.RegionInfo {

@@ -249,3 +249,8 @@ func (w *HotSpotCache) IsRegionHot(id uint64, hotThreshold int) bool {
 	}
 	return false
 }
+
+// ResetMetrics resets the hot cache metrics.
+func (w *HotSpotCache) ResetMetrics() {
+	hotCacheStatusGauge.Reset()
+}

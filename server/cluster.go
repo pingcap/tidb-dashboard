@@ -195,7 +195,6 @@ func (c *RaftCluster) stop() {
 func (c *RaftCluster) isRunning() bool {
 	c.RLock()
 	defer c.RUnlock()
-
 	return c.running
 }
 

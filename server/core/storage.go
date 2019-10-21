@@ -151,7 +151,7 @@ func (s *Storage) LoadRegion(regionID uint64, region *metapb.Region) (bool, erro
 }
 
 // LoadRegions loads all regions from storage to RegionsInfo.
-func (s *Storage) LoadRegions(f func(region *RegionInfo) []*metapb.Region) error {
+func (s *Storage) LoadRegions(f func(region *RegionInfo) []*RegionInfo) error {
 	if atomic.LoadInt32(&s.useRegionStorage) > 0 {
 		return loadRegions(s.regionStorage, f)
 	}

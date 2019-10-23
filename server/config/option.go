@@ -157,7 +157,7 @@ func (o *ScheduleOption) GetSplitMergeInterval() time.Duration {
 	return o.Load().SplitMergeInterval.Duration
 }
 
-// SetSplitMergeInterval to set the interval between finishing split and starting to merge.
+// SetSplitMergeInterval to set the interval between finishing split and starting to merge. It's only used to test.
 func (o *ScheduleOption) SetSplitMergeInterval(splitMergeInterval time.Duration) {
 	o.Load().SplitMergeInterval = typeutil.Duration{Duration: splitMergeInterval}
 }
@@ -207,11 +207,6 @@ func (o *ScheduleOption) GetMergeScheduleLimit(name string) uint64 {
 		return n.GetMergeScheduleLimit()
 	}
 	return o.Load().MergeScheduleLimit
-}
-
-// SetMergeScheduleLimit to set the limit for merge schedule.
-func (o *ScheduleOption) SetMergeScheduleLimit(mergeScheduleLimit uint64) {
-	o.Load().MergeScheduleLimit = mergeScheduleLimit
 }
 
 // GetHotRegionScheduleLimit returns the limit for hot region schedule.

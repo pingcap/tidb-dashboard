@@ -386,10 +386,7 @@ func (s *testBalanceLeaderSchedulerSuite) TestBalanceSelector(c *C) {
 	s.tc.AddLeaderStore(2, 2)
 	s.tc.AddLeaderRegion(1, 3, 2, 4)
 	s.tc.AddLeaderRegion(2, 1, 2, 3)
-	// No leader in store16, no follower in store1. No operator is created.
-	c.Assert(s.schedule(), IsNil)
-	// store4 and store1 are marked taint.
-	// Now source and target are store3 and store2.
+	// No leader in store16, no follower in store1. Now source and target are store3 and store2.
 	testutil.CheckTransferLeader(c, s.schedule()[0], operator.OpBalance, 3, 2)
 
 	// Stores:     1    2    3    4
@@ -403,8 +400,8 @@ func (s *testBalanceLeaderSchedulerSuite) TestBalanceSelector(c *C) {
 	s.tc.AddLeaderRegion(1, 4, 2, 3)
 	s.tc.AddLeaderRegion(2, 1, 2, 3)
 	// The cluster is balanced.
-	c.Assert(s.schedule(), IsNil) // store1, store4 are marked taint.
-	c.Assert(s.schedule(), IsNil) // store2, store3 are marked taint.
+	c.Assert(s.schedule(), IsNil)
+	c.Assert(s.schedule(), IsNil)
 
 	// store3's leader drops:
 	// Stores:     1    2    3    4
@@ -415,8 +412,7 @@ func (s *testBalanceLeaderSchedulerSuite) TestBalanceSelector(c *C) {
 	s.tc.AddLeaderStore(2, 13)
 	s.tc.AddLeaderStore(3, 0)
 	s.tc.AddLeaderStore(4, 16)
-	c.Assert(s.schedule(), IsNil)                                              // All stores are marked taint.
-	testutil.CheckTransferLeader(c, s.schedule()[0], operator.OpBalance, 4, 3) // The taint store will be clear.
+	testutil.CheckTransferLeader(c, s.schedule()[0], operator.OpBalance, 4, 3)
 }
 
 var _ = Suite(&testBalanceRegionSchedulerSuite{})
@@ -483,16 +479,8 @@ func (s *testBalanceRegionSchedulerSuite) TestReplicas3(c *C) {
 	tc.AddLabelsStore(3, 14, map[string]string{"zone": "z1", "rack": "r2", "host": "h2"})
 
 	tc.AddLeaderRegion(1, 1, 2, 3)
-	// This schedule try to replace peer in store 1, but we have no other stores,
-	// so store 1 will be set in the cache and skipped next schedule.
+	// This schedule try to replace peer in store 1, but we have no other stores.
 	c.Assert(sb.Schedule(tc), IsNil)
-	for i := 0; i <= hitsStoreCountThreshold/balanceRegionRetryLimit; i++ {
-		sb.Schedule(tc)
-	}
-	hit := sb.(*balanceRegionScheduler).hitsCounter
-	c.Assert(hit.buildSourceFilter(sb.GetName(), tc).Source(tc, tc.GetStore(1)), IsTrue)
-	c.Assert(hit.buildSourceFilter(sb.GetName(), tc).Source(tc, tc.GetStore(2)), IsFalse)
-	c.Assert(hit.buildSourceFilter(sb.GetName(), tc).Source(tc, tc.GetStore(3)), IsFalse)
 
 	// Store 4 has smaller region score than store 2.
 	tc.AddLabelsStore(4, 2, map[string]string{"zone": "z1", "rack": "r2", "host": "h1"})
@@ -500,7 +488,6 @@ func (s *testBalanceRegionSchedulerSuite) TestReplicas3(c *C) {
 
 	// Store 5 has smaller region score than store 1.
 	tc.AddLabelsStore(5, 2, map[string]string{"zone": "z1", "rack": "r1", "host": "h1"})
-	hit.remove(tc.GetStore(1), nil)
 	testutil.CheckTransferPeer(c, sb.Schedule(tc)[0], operator.OpBalance, 1, 5)
 
 	// Store 6 has smaller region score than store 5.
@@ -525,11 +512,6 @@ func (s *testBalanceRegionSchedulerSuite) TestReplicas3(c *C) {
 	tc.SetStoreDown(6)
 	tc.SetStoreDown(7)
 	tc.SetStoreDown(8)
-	for i := 0; i <= hitsStoreCountThreshold/balanceRegionRetryLimit; i++ {
-		c.Assert(sb.Schedule(tc), IsNil)
-	}
-	c.Assert(hit.buildSourceFilter(sb.GetName(), tc).Source(tc, tc.GetStore(1)), IsTrue)
-	hit.remove(tc.GetStore(1), nil)
 
 	// Store 9 has different zone with other stores but larger region score than store 1.
 	tc.AddLabelsStore(9, 20, map[string]string{"zone": "z2", "rack": "r1", "host": "h1"})
@@ -622,14 +604,9 @@ func (s *testBalanceRegionSchedulerSuite) TestBalance1(c *C) {
 	store5 := origin.Clone(core.SetStoreStats(stats))
 	tc.PutStore(store5)
 
-	// the scheduler always pick store 1 as source store,
+	// the scheduler first picks store 1 as source store,
 	// and store 5 as target store, but cannot pass `shouldBalance`.
-	c.Assert(sb.Schedule(tc), IsNil)
-	// hits the store many times
-	for i := 0; i < 1000; i++ {
-		sb.Schedule(tc)
-	}
-	// now filter the store 5, and can transfer store 1 to store 4
+	// Then it will try store4.
 	testutil.CheckTransferPeer(c, sb.Schedule(tc)[0], operator.OpBalance, 1, 4)
 }
 

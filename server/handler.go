@@ -84,6 +84,19 @@ func (h *Handler) GetRaftCluster() *RaftCluster {
 	return h.s.GetRaftCluster()
 }
 
+// IsSchedulerPaused returns whether scheduler is paused.
+func (h *Handler) IsSchedulerPaused(name string) (bool, error) {
+	c, err := h.getCoordinator()
+	if err != nil {
+		return true, err
+	}
+	sc, ok := c.schedulers[name]
+	if !ok {
+		return true, errors.Errorf("scheduler %v not found", name)
+	}
+	return sc.isPaused(), nil
+}
+
 // GetScheduleConfig returns ScheduleConfig.
 func (h *Handler) GetScheduleConfig() *config.ScheduleConfig {
 	return h.s.GetScheduleConfig()
@@ -209,6 +222,24 @@ func (h *Handler) RemoveScheduler(name string) error {
 	}
 	if err = c.removeScheduler(name); err != nil {
 		log.Error("can not remove scheduler", zap.String("scheduler-name", name), zap.Error(err))
+	}
+	return err
+}
+
+// PauseOrResumeScheduler pasues a scheduler for delay seconds or resume a paused scheduler.
+// t == 0 : resume scheduler.
+// t > 0 : scheduler delays t seconds.
+func (h *Handler) PauseOrResumeScheduler(name string, t int64) error {
+	c, err := h.getCoordinator()
+	if err != nil {
+		return err
+	}
+	if err = c.pauseOrResumeScheduler(name, t); err != nil {
+		if t == 0 {
+			log.Error("can not resume scheduler", zap.String("scheduler-name", name), zap.Error(err))
+		} else {
+			log.Error("can not pause scheduler", zap.String("scheduler-name", name), zap.Error(err))
+		}
 	}
 	return err
 }

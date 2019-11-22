@@ -40,8 +40,39 @@ func NewSchedulerCommand() *cobra.Command {
 	c.AddCommand(NewShowSchedulerCommand())
 	c.AddCommand(NewAddSchedulerCommand())
 	c.AddCommand(NewRemoveSchedulerCommand())
+	c.AddCommand(NewPauseSchedulerCommand())
+	c.AddCommand(NewResumeSchedulerCommand())
 	c.AddCommand(NewConfigSchedulerCommand())
 	return c
+}
+
+// NewPauseSchedulerCommand returns a command to pause a scheduler.
+func NewPauseSchedulerCommand() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "pause <scheduler> <delay>",
+		Short: "pause a scheduler",
+		Run:   pauseOrResumeSchedulerCommandFunc,
+	}
+	return c
+}
+
+func pauseOrResumeSchedulerCommandFunc(cmd *cobra.Command, args []string) {
+	if len(args) != 2 && len(args) != 1 {
+		cmd.Usage()
+		return
+	}
+	path := schedulersPrefix + "/" + args[0]
+	input := make(map[string]interface{})
+	input["delay"] = 0
+	if len(args) == 2 {
+		dealy, err := strconv.Atoi(args[1])
+		if err != nil {
+			cmd.Usage()
+			return
+		}
+		input["delay"] = dealy
+	}
+	postJSON(cmd, path, input)
 }
 
 // NewShowSchedulerCommand returns a command to show schedulers.
@@ -50,6 +81,16 @@ func NewShowSchedulerCommand() *cobra.Command {
 		Use:   "show",
 		Short: "show schedulers",
 		Run:   showSchedulerCommandFunc,
+	}
+	return c
+}
+
+// NewResumeSchedulerCommand returns a command to resume a scheduler.
+func NewResumeSchedulerCommand() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "resume <scheduler>",
+		Short: "resume a scheduler",
+		Run:   pauseOrResumeSchedulerCommandFunc,
 	}
 	return c
 }

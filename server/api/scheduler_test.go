@@ -16,6 +16,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	. "github.com/pingcap/check"
 	"github.com/pingcap/kvproto/pkg/metapb"
@@ -137,12 +138,108 @@ func (s *testScheduleSuite) TestAPI(c *C) {
 		}
 		body, err := json.Marshal(input)
 		c.Assert(err, IsNil)
-		s.testAddAndRemoveScheduler(ca.name, ca.createdName, body, ca.extraTestFunc, c)
+		s.testPauseOrResume(ca.name, ca.createdName, body, ca.extraTestFunc, c)
+	}
+
+	// test pause and resume all schedulers.
+
+	// add schedulers.
+	cases = cases[:3]
+	for _, ca := range cases {
+		input := make(map[string]interface{})
+		input["name"] = ca.name
+		for _, a := range ca.args {
+			input[a.opt] = a.value
+		}
+		body, err := json.Marshal(input)
+		c.Assert(err, IsNil)
+		s.addScheduler(ca.name, ca.createdName, body, ca.extraTestFunc, c)
+	}
+
+	// test pause all schedulers.
+	input := make(map[string]interface{})
+	input["delay"] = 30
+	pauseArgs, err := json.Marshal(input)
+	c.Assert(err, IsNil)
+	err = postJSON(s.urlPrefix+"/all", pauseArgs)
+	c.Assert(err, IsNil)
+	handler := s.svr.GetHandler()
+	for _, ca := range cases {
+		createdName := ca.createdName
+		if createdName == "" {
+			createdName = ca.name
+		}
+		isPaused, err := handler.IsSchedulerPaused(createdName)
+		c.Assert(err, IsNil)
+		c.Assert(isPaused, Equals, true)
+	}
+	input["delay"] = 1
+	pauseArgs, err = json.Marshal(input)
+	c.Assert(err, IsNil)
+	err = postJSON(s.urlPrefix+"/all", pauseArgs)
+	c.Assert(err, IsNil)
+	time.Sleep(time.Second)
+	for _, ca := range cases {
+		createdName := ca.createdName
+		if createdName == "" {
+			createdName = ca.name
+		}
+		isPaused, err := handler.IsSchedulerPaused(createdName)
+		c.Assert(err, IsNil)
+		c.Assert(isPaused, Equals, false)
+	}
+
+	// test resume all schedulers.
+	input["delay"] = 30
+	pauseArgs, err = json.Marshal(input)
+	c.Assert(err, IsNil)
+	err = postJSON(s.urlPrefix+"/all", pauseArgs)
+	c.Assert(err, IsNil)
+	input["delay"] = 0
+	pauseArgs, err = json.Marshal(input)
+	c.Assert(err, IsNil)
+	err = postJSON(s.urlPrefix+"/all", pauseArgs)
+	c.Assert(err, IsNil)
+	for _, ca := range cases {
+		createdName := ca.createdName
+		if createdName == "" {
+			createdName = ca.name
+		}
+		isPaused, err := handler.IsSchedulerPaused(createdName)
+		c.Assert(err, IsNil)
+		c.Assert(isPaused, Equals, false)
+	}
+
+	// delete schedulers.
+	for _, ca := range cases {
+		createdName := ca.createdName
+		if createdName == "" {
+			createdName = ca.name
+		}
+		s.deleteScheduler(createdName, c)
 	}
 
 }
 
-func (s *testScheduleSuite) testAddAndRemoveScheduler(name, createdName string, body []byte, extraTest func(string, *C), c *C) {
+func (s *testScheduleSuite) addScheduler(name, createdName string, body []byte, extraTest func(string, *C), c *C) {
+	if createdName == "" {
+		createdName = name
+	}
+	err := postJSON(s.urlPrefix, body)
+	c.Assert(err, IsNil)
+
+	if extraTest != nil {
+		extraTest(createdName, c)
+	}
+}
+
+func (s *testScheduleSuite) deleteScheduler(createdName string, c *C) {
+	deleteURL := fmt.Sprintf("%s/%s", s.urlPrefix, createdName)
+	err := doDelete(deleteURL)
+	c.Assert(err, IsNil)
+}
+
+func (s *testScheduleSuite) testPauseOrResume(name, createdName string, body []byte, extraTest func(string, *C), c *C) {
 	if createdName == "" {
 		createdName = name
 	}
@@ -153,11 +250,45 @@ func (s *testScheduleSuite) testAddAndRemoveScheduler(name, createdName string, 
 	c.Assert(err, IsNil)
 	c.Assert(sches[0], Equals, createdName)
 
+	// test pause.
+	input := make(map[string]interface{})
+	input["delay"] = 30
+	pauseArgs, err := json.Marshal(input)
+	c.Assert(err, IsNil)
+	err = postJSON(s.urlPrefix+"/"+createdName, pauseArgs)
+	c.Assert(err, IsNil)
+	isPaused, err := handler.IsSchedulerPaused(createdName)
+	c.Assert(err, IsNil)
+	c.Assert(isPaused, Equals, true)
+	input["delay"] = 1
+	pauseArgs, err = json.Marshal(input)
+	c.Assert(err, IsNil)
+	err = postJSON(s.urlPrefix+"/"+createdName, pauseArgs)
+	c.Assert(err, IsNil)
+	time.Sleep(time.Second)
+	isPaused, err = handler.IsSchedulerPaused(createdName)
+	c.Assert(err, IsNil)
+	c.Assert(isPaused, Equals, false)
+
+	// test resume.
+	input = make(map[string]interface{})
+	input["delay"] = 30
+	pauseArgs, err = json.Marshal(input)
+	c.Assert(err, IsNil)
+	err = postJSON(s.urlPrefix+"/"+createdName, pauseArgs)
+	c.Assert(err, IsNil)
+	input["delay"] = 0
+	pauseArgs, err = json.Marshal(input)
+	c.Assert(err, IsNil)
+	err = postJSON(s.urlPrefix+"/"+createdName, pauseArgs)
+	c.Assert(err, IsNil)
+	isPaused, err = handler.IsSchedulerPaused(createdName)
+	c.Assert(err, IsNil)
+	c.Assert(isPaused, Equals, false)
+
 	if extraTest != nil {
 		extraTest(createdName, c)
 	}
 
-	deleteURL := fmt.Sprintf("%s/%s", s.urlPrefix, createdName)
-	err = doDelete(deleteURL)
-	c.Assert(err, IsNil)
+	s.deleteScheduler(createdName, c)
 }

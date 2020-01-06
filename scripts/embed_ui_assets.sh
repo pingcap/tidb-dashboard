@@ -15,6 +15,8 @@ cd $PROJECT_DIR
 export GOBIN=$PROJECT_DIR/bin
 export PATH=$GOBIN:$PATH
 
+: "${BUILD_TAG:=ui_server}"
+
 echo "+ Preflight check"
 if [ ! -d "ui/build" ]; then
   echo "  - Error: UI assets must be built first"
@@ -26,7 +28,7 @@ go install github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
 go install github.com/go-bindata/go-bindata/go-bindata
 
 echo "+ Embed UI assets"
-go-bindata-assetfs -pkg uiserver -prefix ui -tags ui_server ui/build/...
+go-bindata-assetfs -pkg uiserver -prefix ui -tags $BUILD_TAG ui/build/...
 HANDLER_PATH=pkg/uiserver/embedded_assets_handler.go
 mv bindata_assetfs.go $HANDLER_PATH
 echo "  - Assets handler written to $HANDLER_PATH"

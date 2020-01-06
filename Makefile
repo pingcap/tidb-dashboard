@@ -1,4 +1,6 @@
-.PHONY: tidy ui server run
+.PHONY: tidy swagger_spec yarn_dependencies swagger_client ui server run
+
+DASHBOARD_API ?=
 
 BUILD_TAGS ?=
 
@@ -20,16 +22,16 @@ swagger_spec:
 	scripts/generate_swagger_spec.sh
 
 yarn_dependencies:
-	cd ui && yarn install --frozen-lockfile
+	cd ui &&\
+	yarn install --frozen-lockfile
 
 swagger_client: swagger_spec yarn_dependencies
-	cd ui && npm run build_api_client
+	cd ui &&\
+	npm run build_api_client
 
 ui: swagger_client
-	cd ui && REACT_APP_DASHBOARD_API_URL="" npm run build
-
-ui_for_pd: swagger_client
-	cd ui && REACT_APP_DASHBOARD_API_URL="/dashboard" npm run build
+	cd ui &&\
+	REACT_APP_DASHBOARD_API_URL="${DASHBOARD_API}" npm run build
 
 server:
 ifeq ($(SWAGGER),1)

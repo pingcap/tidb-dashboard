@@ -35,7 +35,7 @@ jobs:
             ${{ runner.os }}-go-
       - name: Build UI
         run: |
-          make ui_for_pd
+          DASHBOARD_API="/dashboard" make ui
       - name: Pack UI asset release
         working-directory: ui/build
         run: |
@@ -66,7 +66,7 @@ jobs:
           asset_content_type: application/zip
       - name: Generate embedded assets
         run: |
-          scripts/embed_ui_assets.sh
+          BUILD_TAG="dashboard_ui" scripts/embed_ui_assets.sh
           cp pkg/uiserver/embedded_assets_handler.go embedded_assets_handler.go
       - name: Pack embedded assets
         run: |

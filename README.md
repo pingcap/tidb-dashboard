@@ -1,14 +1,12 @@
 # TiDB Dashboard
 
-TiDB Dashboard is a GUI interface to control a TiDB cluster via PD HTTP APIs.
+TiDB Dashboard is a GUI interface to control a TiDB cluster via PD HTTP APIs. TiDB Dashboard can be integrated into PD, as follows:
 
-This repository contains both back-end service implementation in `pkg/` directory and front-end
-implementation in `ui/` directory.
+![](etc/arch_overview.svg)
 
-## Architecture
+This repository contains both Dashboard HTTP API and Dashboard UI. Dashboard HTTP API is placed in `pkg/` directory, written in Golang. Dashboard UI is placed in `ui/` directory, powered by React.
 
-TiDB Dashboard back-end is provided as a Golang package, imported directly by PD. TiDB Dashboard front-end can be compiled into a React web app and being served by a simple HTTP
-server. See `ui/` directory for details.
+TiDB Dashboard can also live as a standalone binary for development.
 
 ## Getting Started
 
@@ -18,10 +16,10 @@ server. See `ui/` directory for details.
 - Optional: [Node.js](https://nodejs.org/) 12+ and [yarn](https://yarnpkg.com/) if you want to build
   the UI.
 
-### Build Dashboard Server
+### Build Standalone Dashboard Server
 
-Dashboard Server can be integrated into [pd](https://github.com/pingcap/pd), as well as compiled
-into a standalone binary. The following steps describes how to build the standalone TiDB Dashboard binary.
+**NOTE**: Dashboard Server can be integrated into [pd](https://github.com/pingcap/pd), as well as compiled
+into a standalone binary. The following steps describes how to build **the standalone TiDB Dashboard binary**.
 
 Standalone Dashboard Server contains the following components:
 
@@ -31,12 +29,15 @@ Standalone Dashboard Server contains the following components:
 
 #### Minimal Build: API Only
 
+![](etc/arch_dashboard_api_only.svg)
+
 To build a dashboard server that only serves Dashboard API:
 
 ```sh
 make server
 # make run
 ```
+
 
 #### API + Swagger API UI
 
@@ -50,6 +51,8 @@ make # or more verbose: SWAGGER=1 make server
 You can visit the Swagger API UI via http://127.0.0.1:12333/api/swagger.
 
 #### Full Featured Build: API + Swagger API UI + Dashboard UI
+
+![](etc/arch_dashboard_standalone.svg)
 
 Note: You need Node.js and yarn installed in order to build a full-featured dashboard server. See
 Requirements section for details.
@@ -65,9 +68,19 @@ You can omit the `make ui` step if the UI part is unchanged.
 
 You can visit the Dashboard UI via http://127.0.0.1:12333.
 
-### UI Development
+## PD Integration
 
-For front-end developers, the recommended workflow is as follows:
+![](etc/arch_pd_integration.svg)
+
+TODO
+
+## Development
+
+### For Dashboard UI Developer
+
+![](etc/arch_dashboard_ui_server.svg)
+
+If you want to develop Dashboard UI, the recommended workflow is as follows:
 
 1. Build Dashboard API Client
 
@@ -84,7 +97,7 @@ For front-end developers, the recommended workflow is as follows:
 
 2. Build and Run Dashboard API Server
 
-   Please refer to the Build Dashboard Server section. You must keep the Dashboard API backend
+   Please refer to the Build Standalone Dashboard Server section. You must keep the Dashboard API backend
    server running for UI to work.
 
 3. Start React Development Server
@@ -105,6 +118,14 @@ For front-end developers, the recommended workflow is as follows:
    manually rebuild the Dashboard API Client if back-end code is updated (for example, you pulled
    latest change from the repository).
 
-## PD Integration
+### For Dashboard Backend Developer
+
+Since Dashboard is imported into PD as a GitHub module directly, it may not be very convenient if
+you frequently change the Dashboard backend implementation and rebuild the PD after each change.
+The recommended workflow is to build a standalone Dashboard binary as follows:
+
+TODO
+
+### For PD Developer
 
 TODO

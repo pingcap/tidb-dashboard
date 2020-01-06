@@ -4,6 +4,8 @@ DASHBOARD_API ?=
 
 BUILD_TAGS ?=
 
+SKIP_YARN_INSTALL ?=
+
 ifeq ($(SWAGGER),1)
 BUILD_TAGS += swagger_server
 endif
@@ -22,8 +24,10 @@ swagger_spec:
 	scripts/generate_swagger_spec.sh
 
 yarn_dependencies:
+ifneq ($(SKIP_YARN_INSTALL), 1)
 	cd ui &&\
 	yarn install --frozen-lockfile
+endif
 
 swagger_client: swagger_spec yarn_dependencies
 	cd ui &&\

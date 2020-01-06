@@ -57,6 +57,8 @@ You can visit the Swagger API UI via http://127.0.0.1:12333/api/swagger.
 Note: You need Node.js and yarn installed in order to build a full-featured dashboard server. See
 Requirements section for details.
 
+To install the packages from GitHub Packages, you need to config the `~/.npmrc` to set the auth token for GitHub registry, see README from [pd-client-js](https://github.com/pingcap-incubator/pd-client-js#install) for details.
+
 ```sh
 make ui  # Build UI from source
 SWAGGER=1 UI=1 make server

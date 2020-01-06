@@ -1,7 +1,7 @@
 on:
   push:
     paths:
-    - 'ui/.github_release_version'
+      - 'ui/.github_release_version'
 
 name: Release UI Assets
 
@@ -15,6 +15,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '12.x'
+          registry-url: 'https://npm.pkg.github.com'
       - uses: actions/setup-go@v1
         with:
           go-version: '1.13.5'
@@ -33,9 +34,14 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      # Skip post-install scripts here, as a malicious
+      # script could steal NODE_AUTH_TOKEN.
+      - run: cd ui && yarn install --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build UI
         run: |
-          DASHBOARD_API="/dashboard" make ui
+          SKIP_YARN_INSTALL=1 DASHBOARD_API="/dashboard" make ui
       - name: Pack UI asset release
         working-directory: ui/build
         run: |

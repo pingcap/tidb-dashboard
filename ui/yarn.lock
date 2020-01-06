@@ -1112,6 +1112,11 @@
   resolved "https://registry.yarnpkg.com/@openapitools/openapi-generator-cli/-/openapi-generator-cli-1.0.8-4.2.2.tgz#60a680a092138ff244318cafca5c6be188ba5880"
   integrity sha512-K14xUl5Cc2Epm5hoclvi1KGANy9SCSWddEZCLk9Ij0v0ujbLtK1bMOkrjCOz0ADxdb0Vfsc6T6EE3G3lmBrOCQ==
 
+"@pingcap-incubator/pd-client-js@^0.1.5":
+  version "0.1.5"
+  resolved "https://npm.pkg.github.com/download/@pingcap-incubator/pd-client-js/0.1.5/acedeadce7d625873d68373797956b23015bf22e478cc56840f5339f79e0d4cd#"
+  integrity sha512-Vm6zD17pJzy6WVUMO/lsnhFzcBIfFPUENXFS6uAcSPEENthbueZ5QRAtrLtV50ToKFXr8QCzYyqDnEEjzBBuKA==
+
 "@sheerun/mutationobserver-shim@^0.3.2":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@sheerun/mutationobserver-shim/-/mutationobserver-shim-0.3.2.tgz#8013f2af54a2b7d735f71560ff360d3a8176a87b"

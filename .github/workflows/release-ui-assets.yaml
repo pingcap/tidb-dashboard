@@ -15,6 +15,9 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '12.x'
+      - uses: actions/setup-go@v1
+        with:
+          go-version: '1.13.5'
       - name: Lookup yarn cache
         id: yarn_cache
         run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -24,24 +27,19 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      - name: Install dependencies
-        working-directory: ui
+      - name: Build UI
         run: |
-          yarn install --frozen-lockfile
-      - name: Build project
-        working-directory: ui
-        run: |
-          yarn build
-      - name: Pack release assets
+          make ui_for_pd
+      - name: Pack UI asset release
         working-directory: ui/build
         run: |
           zip -r ../static-assets.zip .
-      - name: Lookup release version
+      - name: Lookup asset release version
         id: lookup_release_version
         working-directory: ui
         run: |
           echo "::set-output name=release_version::$(grep -v '^#' .github_release_version)"
-      - name: Create release
+      - name: Create asset release
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -51,7 +49,7 @@ jobs:
           release_name: UI Release ${{ steps.lookup_release_version.outputs.release_version }}
           draft: false
           prerelease: false
-      - name: Upload release assets
+      - name: Upload asset release
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -59,4 +57,20 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./ui/static-assets.zip
           asset_name: static-assets.zip
+          asset_content_type: application/zip
+      - name: Generate embedded assets
+        run: |
+          scripts/embed_ui_assets.sh
+          cp pkg/uiserver/embedded_assets_handler.go embedded_assets_handler.go
+      - name: Pack embedded assets
+        run: |
+          zip -r embedded-assets-golang.zip ./embedded_assets_handler.go
+      - name: Upload embedded asset release
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./embedded-assets-golang.zip
+          asset_name: embedded-assets-golang.zip
           asset_content_type: application/zip

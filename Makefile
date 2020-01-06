@@ -16,18 +16,24 @@ default:
 tidy:
 	go mod tidy
 
-swagger:
-	scripts/generate_swagger.sh
+swagger_spec:
+	scripts/generate_swagger_spec.sh
 
-swagger_client: swagger
-	cd ui && yarn && npm run build_api_client
+yarn_dependencies:
+	cd ui && yarn install --frozen-lockfile
+
+swagger_client: swagger_spec yarn_dependencies
+	cd ui && npm run build_api_client
 
 ui: swagger_client
-	cd ui && yarn && REACT_APP_DASHBOARD_API_URL="" npm run build
+	cd ui && REACT_APP_DASHBOARD_API_URL="" npm run build
+
+ui_for_pd: swagger_client
+	cd ui && REACT_APP_DASHBOARD_API_URL="/dashboard" npm run build
 
 server:
 ifeq ($(SWAGGER),1)
-	make swagger
+	make swagger_spec
 endif
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh

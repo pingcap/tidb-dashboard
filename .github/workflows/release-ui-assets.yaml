@@ -1,7 +1,9 @@
 on:
   push:
+    branches:
+      - master
     paths:
-    - 'ui/.github_release_version'
+      - 'ui/.github_release_version'
 
 name: Release UI Assets
 

@@ -19,6 +19,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logs"
 )
 
 func Handler(prefix string) http.Handler {
@@ -30,6 +31,7 @@ func Handler(prefix string) http.Handler {
 	endpoint := r.Group(prefix)
 
 	foo.RegisterService(endpoint)
+	logs.RegisterService(endpoint)
 
 	return r
 }

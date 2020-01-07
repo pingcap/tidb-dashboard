@@ -26,15 +26,15 @@ import (
 // @version 1.0
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @BasePath /api
+// @BasePath /dashboard/api
 
 func main() {
 	addr := ":12333"
 
 	mux := http.NewServeMux()
-	mux.Handle("/", uiserver.Handler())
-	mux.Handle("/api/", apiserver.Handler("/api"))
-	mux.Handle("/api/swagger/", swaggerserver.Handler())
+	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
+	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api"))
+	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 
 	log.Println("Dashboard server listen on", addr)
 	log.Fatal(http.ListenAndServe(addr, mux))

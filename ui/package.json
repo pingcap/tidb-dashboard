@@ -27,6 +27,7 @@
     "eject": "react-scripts eject",
     "build_api_client": "openapi-generator generate -i ../docs/swagger.yaml -g typescript-axios -o src/utils/dashboard_client"
   },
+  "homepage": "/dashboard",
   "eslintConfig": {
     "extends": "react-app"
   },

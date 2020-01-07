@@ -16,6 +16,9 @@ TiDB Dashboard can also live as a standalone binary for development.
 - Optional: [Node.js](https://nodejs.org/) 12+ and [yarn](https://yarnpkg.com/) if you want to build
   the UI.
 
+  **IMPORTANT**: TiDB Dashboard uses packages from GitHub Packages. You need to [configure the `~/.npmrc`](https://github.com/pingcap-incubator/pd-client-js#install)
+  in order to install these packages.
+
 ### Build Standalone Dashboard Server
 
 **NOTE**: Dashboard Server can be integrated into [pd](https://github.com/pingcap/pd), as well as compiled
@@ -38,7 +41,6 @@ make server
 # make run
 ```
 
-
 #### API + Swagger API UI
 
 To build a dashboard server that serves both API and the Swagger API UI:
@@ -48,7 +50,7 @@ make # or more verbose: SWAGGER=1 make server
 # make run
 ```
 
-You can visit the Swagger API UI via http://127.0.0.1:12333/api/swagger.
+You can visit the Swagger API UI via http://127.0.0.1:12333/dashboard/api/swagger.
 
 #### Full Featured Build: API + Swagger API UI + Dashboard UI
 
@@ -56,8 +58,6 @@ You can visit the Swagger API UI via http://127.0.0.1:12333/api/swagger.
 
 Note: You need Node.js and yarn installed in order to build a full-featured dashboard server. See
 Requirements section for details.
-
-To install the packages from GitHub Packages, you need to config the `~/.npmrc` to set the auth token for GitHub registry, see README from [pd-client-js](https://github.com/pingcap-incubator/pd-client-js#install) for details.
 
 ```sh
 make ui  # Build UI from source
@@ -68,7 +68,7 @@ SWAGGER=1 UI=1 make server
 This will build a production-ready Dashboard server, which includes everything in a single binary.
 You can omit the `make ui` step if the UI part is unchanged.
 
-You can visit the Dashboard UI via http://127.0.0.1:12333.
+You can visit the Dashboard UI via http://127.0.0.1:12333/dashboard.
 
 ## PD Integration
 

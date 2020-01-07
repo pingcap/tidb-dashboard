@@ -34,9 +34,10 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      # Skip post-install scripts here, as a malicious
-      # script could steal NODE_AUTH_TOKEN.
-      - run: cd ui && yarn install --ignore-scripts
+      # Skip post-install scripts by `--ignore-scripts` here,
+      # as a malicious script could steal NODE_AUTH_TOKEN.
+      - name: Yarn install from private registry
+        run: make yarn_dependencies
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build UI

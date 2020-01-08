@@ -1,7 +1,5 @@
 .PHONY: tidy swagger_spec yarn_dependencies swagger_client ui server run
 
-DASHBOARD_API ?=
-
 BUILD_TAGS ?=
 
 SKIP_YARN_INSTALL ?=
@@ -24,12 +22,8 @@ swagger_spec:
 	scripts/generate_swagger_spec.sh
 
 yarn_dependencies:
-ifneq ($(SKIP_YARN_INSTALL), 1)
-	# Skip post-install scripts by `--ignore-scripts` here,
-	# as a malicious script could steal NODE_AUTH_TOKEN.
 	cd ui &&\
-	yarn install --ignore-scripts
-endif
+	yarn install --frozen-lockfile
 
 swagger_client: swagger_spec yarn_dependencies
 	cd ui &&\
@@ -37,7 +31,7 @@ swagger_client: swagger_spec yarn_dependencies
 
 ui: swagger_client
 	cd ui &&\
-	REACT_APP_DASHBOARD_API_URL="${DASHBOARD_API}" npm run build
+	REACT_APP_DASHBOARD_API_URL="" npm run build
 
 server:
 ifeq ($(SWAGGER),1)

@@ -14,9 +14,23 @@
 package foo
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
+
+type Service struct {
+}
+
+func NewService(config *config.Config) *Service {
+	return &Service{}
+}
+
+func (s *Service) Register(r *gin.RouterGroup) {
+	endpoint := r.Group("/foo")
+	endpoint.GET("/:name", s.greetHandler)
+}
 
 // @Summary Greet
 // @Description Hello world!
@@ -25,12 +39,7 @@ import (
 // @Param name path string true "Name"
 // @Success 200 {string} string
 // @Router /foo/{name} [get]
-func greetHandler(c *gin.Context) {
+func (s *Service) greetHandler(c *gin.Context) {
 	name := c.Param("name")
 	c.String(http.StatusOK, "Hello %s", name)
-}
-
-func RegisterService(r *gin.RouterGroup) {
-	endpoint := r.Group("/foo")
-	endpoint.GET("/:name", greetHandler)
 }

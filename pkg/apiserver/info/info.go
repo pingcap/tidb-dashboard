@@ -25,18 +25,26 @@ type Info struct {
 	PDEndPoint string `json:"pd_end_point"`
 }
 
+type Service struct {
+	config *config.Config
+}
+
+func NewService(config *config.Config) *Service {
+	return &Service{config: config}
+}
+
+func (s *Service) Register(r *gin.RouterGroup) {
+	endpoint := r.Group("/info")
+	endpoint.GET("/", s.infoHandler)
+}
+
 // @Summary Dashboard info
 // @Description Get information about the dashboard service.
 // @Produce json
 // @Success 200 {object} Info
 // @Router /info [get]
-func infoHandler(c *gin.Context) {
+func (s *Service) infoHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, Info{
-		PDEndPoint: config.GetGlobalConfig().PDEndPoint,
+		PDEndPoint: s.config.PDEndPoint,
 	})
-}
-
-func RegisterService(r *gin.RouterGroup) {
-	endpoint := r.Group("/info")
-	endpoint.GET("/", infoHandler)
 }

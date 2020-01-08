@@ -15,6 +15,7 @@ package apiserver
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -23,18 +24,21 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
-func Handler(apiPrefix string, coreConfig *config.Config) http.Handler {
-	config.SetGlobalConfig(coreConfig)
+var once sync.Once
 
-	gin.SetMode(gin.ReleaseMode)
+func Handler(apiPrefix string, config *config.Config) http.Handler {
+	once.Do(func() {
+		// These global modification will be effective only for the first invoke.
+		gin.SetMode(gin.ReleaseMode)
+	})
 
 	r := gin.New()
 	r.Use(cors.Default())
 	r.Use(gin.Recovery())
 	endpoint := r.Group(apiPrefix)
 
-	foo.RegisterService(endpoint)
-	info.RegisterService(endpoint)
+	foo.NewService(config).Register(endpoint)
+	info.NewService(config).Register(endpoint)
 
 	return r
 }

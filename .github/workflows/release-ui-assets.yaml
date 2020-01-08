@@ -80,7 +80,7 @@ jobs:
           asset_content_type: application/zip
       - name: Generate embedded assets
         run: |
-          BUILD_TAG="dashboard_ui" scripts/embed_ui_assets.sh
+          NO_ASSET_BUILD_TAG=1 scripts/embed_ui_assets.sh
           cp pkg/uiserver/embedded_assets_handler.go embedded_assets_handler.go
       - name: Pack embedded assets
         if: github.event_name == 'push'

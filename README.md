@@ -12,7 +12,7 @@ TiDB Dashboard can also live as a standalone binary for development.
 
 ![](etc/arch_pd_integration.svg)
 
-The easist way to use or play with TiDB Dashboard is to build [PD](https://github.com/pingcap/pd)
+The easiest way to use or play with TiDB Dashboard is to build [PD](https://github.com/pingcap/pd)
 which integrates a recent TiDB Dashboard inside.
 
 ### Requirements
@@ -27,17 +27,17 @@ which integrates a recent TiDB Dashboard inside.
    git clone https://github.com/pingcap/pd
    ```
 
-2. Build PD server bulit-in with TiDB Dashboard:
+2. Build PD server (which includes TiDB Dashboard by default):
 
    ```sh
    cd pd
-   WITH_DASHBOARD=1 make pd-server
+   make pd-server
    ```
 
-3. Start PD server
+3. Start PD server with TiDB Dashboard enabled (both UI and API):
 
    ```sh
-   bin/pd-server
+   bin/pd-server --enable-dashboard
    ```
 
 4. Dashboard UI is available at http://127.0.0.1:2379/dashboard.

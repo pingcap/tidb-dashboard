@@ -11,30 +11,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package apiserver
+package info
 
 import (
 	"net/http"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
-func Handler(apiPrefix string, coreConfig *config.Config) http.Handler {
-	config.SetGlobalConfig(coreConfig)
+type Info struct {
+	Version    string `json:"version"`
+	PDEndPoint string `json:"pd_end_point"`
+}
 
-	gin.SetMode(gin.ReleaseMode)
+// @Summary Dashboard info
+// @Description Get information about the dashboard service.
+// @Produce json
+// @Success 200 {object} Info
+// @Router /info [get]
+func infoHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, Info{
+		PDEndPoint: config.GetGlobalConfig().PDEndPoint,
+	})
+}
 
-	r := gin.New()
-	r.Use(cors.Default())
-	r.Use(gin.Recovery())
-	endpoint := r.Group(apiPrefix)
-
-	foo.RegisterService(endpoint)
-	info.RegisterService(endpoint)
-
-	return r
+func RegisterService(r *gin.RouterGroup) {
+	endpoint := r.Group("/info")
+	endpoint.GET("/", infoHandler)
 }

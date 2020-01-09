@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Icon } from 'antd';
+import { Menu } from 'antd';
 import { HashRouter as Router, Switch, Route, Link } from 'react-router-dom';
 
 const App = () => (

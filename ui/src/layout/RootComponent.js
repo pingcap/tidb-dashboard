@@ -1,13 +1,13 @@
 import React from 'react';
 
 import { Layout, Menu, Icon } from 'antd';
-import { HashRouter as Router, Redirect, Link } from 'react-router-dom';
+import { HashRouter as Router, Redirect } from 'react-router-dom';
 import styles from './RootComponent.module.less';
 
 class App extends React.PureComponent {
   state = {
     collapsed: false,
-    activeAppName: null,
+    activeAppId: null,
   };
 
   toggle = () => {
@@ -17,9 +17,12 @@ class App extends React.PureComponent {
   };
 
   handleRouting = () => {
-    this.setState({
-      activeAppName: this.props.registry.getActiveApp().id,
-    });
+    const activeApp = this.props.registry.getActiveApp();
+    if (activeApp) {
+      this.setState({
+        activeAppId: activeApp.id,
+      });
+    }
   }
 
   componentDidMount() {
@@ -46,7 +49,7 @@ class App extends React.PureComponent {
           <Menu
             mode="inline"
             theme="dark"
-            selectedKeys={[this.state.activeAppName]}
+            selectedKeys={[this.state.activeAppId]}
           >
             {this.props.registry.renderAppMenuItem('home')}
             {this.props.registry.renderAppMenuItem('demo')}

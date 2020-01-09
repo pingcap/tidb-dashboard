@@ -1,13 +1,17 @@
 import React from 'react';
 import { Button } from 'antd';
-import './App.css';
+import { Link } from 'react-router-dom';
+import { HashRouter as Router } from 'react-router-dom';
 
-import client from './utils/client';
+import client from '@/utils/client';
 
 const App = () => (
-  <div className="App">
+  <Router>
     <Button type="primary" onClick={handleClick}>Button</Button>
-  </div>
+    <Link to="/home">
+      <Button type="primary">Go To Home</Button>
+    </Link>
+  </Router>
 );
 
 async function handleClick() {

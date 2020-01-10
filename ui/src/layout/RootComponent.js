@@ -61,8 +61,6 @@ class App extends React.PureComponent {
             defaultOpenKeys={['sub1']}
           >
             {this.props.registry.renderAppMenuItem('keyvis')}
-            {this.props.registry.renderAppMenuItem('home')}
-            {this.props.registry.renderAppMenuItem('demo')}
             {this.props.registry.renderAppMenuItem('statement')}
             <Menu.SubMenu
               key="sub1"

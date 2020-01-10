@@ -10,9 +10,17 @@ class App extends React.PureComponent {
     activeAppId: null,
   };
 
+  triggerResizeEvent = () => {
+    const event = document.createEvent('HTMLEvents');
+    event.initEvent('resize', true, false);
+    window.dispatchEvent(event);
+  };
+
   toggle = () => {
     this.setState({
       collapsed: !this.state.collapsed,
+    }, () => {
+      this.triggerResizeEvent();
     });
   };
 
@@ -50,21 +58,20 @@ class App extends React.PureComponent {
             mode="inline"
             theme="dark"
             selectedKeys={[this.state.activeAppId]}
+            defaultOpenKeys={['sub1']}
           >
-            {this.props.registry.renderAppMenuItem('home')}
-            {this.props.registry.renderAppMenuItem('demo')}
+            {this.props.registry.renderAppMenuItem('keyvis')}
             <Menu.SubMenu
               key="sub1"
               title={
                 <span>
                   <Icon type="user" />
-                  <span>User</span>
+                  <span>Demos</span>
                 </span>
               }
             >
-              <Menu.Item key="3">Tom</Menu.Item>
-              <Menu.Item key="4">Bill</Menu.Item>
-              <Menu.Item key="5">Alex</Menu.Item>
+              {this.props.registry.renderAppMenuItem('home')}
+              {this.props.registry.renderAppMenuItem('demo')}
             </Menu.SubMenu>
           </Menu>
         </Layout.Sider>

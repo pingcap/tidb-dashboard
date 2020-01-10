@@ -31,6 +31,7 @@ swagger_client: swagger_spec yarn_dependencies
 
 ui: swagger_client
 	cd ui &&\
+	src/apps/keyvis/download_dummydata.sh &&\
 	REACT_APP_DASHBOARD_API_URL="" npm run build
 
 server:

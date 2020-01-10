@@ -6,6 +6,7 @@ import * as singleSpa from 'single-spa';
 import * as LayoutSPA from '@/layout';
 import './index.css';
 
+import AppKeyVis from '@/apps/keyvis';
 import AppHome from '@/apps/home';
 import AppDemo from '@/apps/demo';
 import AppStatement from '@/apps/statement';
@@ -92,6 +93,7 @@ const registry = new AppRegistry();
 
 singleSpa.registerApplication('layout', LayoutSPA, () => true, { registry });
 registry
+  .register(AppKeyVis)
   .register(AppHome)
   .register(AppDemo)
   .register(AppStatement)

@@ -9,6 +9,7 @@ import './index.css';
 import AppKeyVis from '@/apps/keyvis';
 import AppHome from '@/apps/home';
 import AppDemo from '@/apps/demo';
+import AppStatement from '@/apps/statement';
 
 // TODO: This part might be better in TS.
 class AppRegistry {
@@ -95,6 +96,7 @@ registry
   .register(AppKeyVis)
   .register(AppHome)
   .register(AppDemo)
+  .register(AppStatement)
 ;
 singleSpa.start();
 

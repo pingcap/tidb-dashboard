@@ -8,6 +8,7 @@ import './index.css';
 
 import AppHome from '@/apps/home';
 import AppDemo from '@/apps/demo';
+import AppStatement from '@/apps/statement';
 
 // TODO: This part might be better in TS.
 class AppRegistry {
@@ -93,6 +94,7 @@ singleSpa.registerApplication('layout', LayoutSPA, () => true, { registry });
 registry
   .register(AppHome)
   .register(AppDemo)
+  .register(AppStatement)
 ;
 singleSpa.start();
 

@@ -18,19 +18,19 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 )
 
 const defaultSearchLogDuration = 24 * time.Hour
 
-// @Summary GetLogs
-// @Description Get logs from TiDB, TiKV, PD
+// @Summary fetch logs
+// @Description fetch logs from TiDB, TiKV, PD
 // @Accept json
 // @Produce json
-// @Param serverType path string true "Server type"
 // @Success 200 {string} string
-// @Router /logs/{serverType} [get]
-func fetchHandler(c *gin.Context) {
+// @Router /logs [get]
+func (s *Service) fetchHandler(c *gin.Context) {
 	// TODO: using parameters provided by client
 	endTime := time.Now().UnixNano() / int64(time.Millisecond)
 	startTime := int64(0)
@@ -58,7 +58,7 @@ func fetchHandler(c *gin.Context) {
 	c.String(http.StatusOK, taskGroupID)
 }
 
-func listAllTasksHandler(c *gin.Context) {
+func (s *Service) listAllTasksHandler(c *gin.Context) {
 	tasks, err := controller.getAllTasks()
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -67,7 +67,7 @@ func listAllTasksHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, tasks)
 }
 
-func cancelTaskGroupHandler(c *gin.Context) {
+func (s *Service) cancelTaskGroupHandler(c *gin.Context) {
 	taskGroupID := c.Query("taskGroupID")
 	err := controller.stopTaskGroup(taskGroupID, false)
 	if err != nil {
@@ -77,7 +77,7 @@ func cancelTaskGroupHandler(c *gin.Context) {
 	c.String(http.StatusOK, "")
 }
 
-func cancelTaskHandler(c *gin.Context) {
+func (s *Service) cancelTaskHandler(c *gin.Context) {
 	taskID := c.Query("taskID")
 	err := controller.stopTask(taskID, false)
 	if err != nil {
@@ -87,7 +87,7 @@ func cancelTaskHandler(c *gin.Context) {
 	c.String(http.StatusOK, "")
 }
 
-func deleteTaskGroupHandler(c *gin.Context) {
+func (s *Service) deleteTaskGroupHandler(c *gin.Context) {
 	taskGroupID := c.Query("taskGroupID")
 	err := controller.stopTaskGroup(taskGroupID, true)
 	if err != nil {
@@ -97,7 +97,7 @@ func deleteTaskGroupHandler(c *gin.Context) {
 	c.String(http.StatusOK, "")
 }
 
-func deleteTaskHandler(c *gin.Context) {
+func (s *Service) deleteTaskHandler(c *gin.Context) {
 	taskID := c.Query("taskID")
 	err := controller.stopTask(taskID, true)
 	if err != nil {
@@ -107,7 +107,7 @@ func deleteTaskHandler(c *gin.Context) {
 	c.String(http.StatusOK, "")
 }
 
-func previewHandler(c *gin.Context) {
+func (s *Service) previewHandler(c *gin.Context) {
 	taskID := c.Query("taskID")
 	if taskID == "" {
 		c.String(http.StatusBadRequest, "no taskID provided")
@@ -121,7 +121,7 @@ func previewHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, lines)
 }
 
-func downloadHandler(c *gin.Context) {
+func (s *Service) downloadHandler(c *gin.Context) {
 	var err error
 	taskGroupID := c.Query("taskGroupID")
 	taskID := c.Query("taskID")
@@ -140,14 +140,22 @@ func downloadHandler(c *gin.Context) {
 	}
 }
 
-func RegisterService(r *gin.RouterGroup) {
+type Service struct {
+	config *config.Config
+}
+
+func NewService(config *config.Config) *Service {
+	return &Service{config: config}
+}
+
+func (s *Service) Register(r *gin.RouterGroup) {
 	endpoint := r.Group("/logs")
-	endpoint.GET("/fetch", fetchHandler)
-	endpoint.GET("/listAllTasks", listAllTasksHandler)
-	endpoint.GET("/cancelTaskGroup", cancelTaskGroupHandler)
-	endpoint.GET("/cancelTask", cancelTaskHandler)
-	endpoint.GET("/deleteTaskGroup", deleteTaskGroupHandler)
-	endpoint.GET("/deleteTask", deleteTaskHandler)
-	endpoint.GET("/preview", previewHandler)
-	endpoint.GET("/download", downloadHandler)
+	endpoint.GET("/fetch", s.fetchHandler)
+	endpoint.GET("/listAllTasks", s.listAllTasksHandler)
+	endpoint.GET("/cancelTaskGroup", s.cancelTaskGroupHandler)
+	endpoint.GET("/cancelTask", s.cancelTaskHandler)
+	endpoint.GET("/deleteTaskGroup", s.deleteTaskGroupHandler)
+	endpoint.GET("/deleteTask", s.deleteTaskHandler)
+	endpoint.GET("/preview", s.previewHandler)
+	endpoint.GET("/download", s.downloadHandler)
 }

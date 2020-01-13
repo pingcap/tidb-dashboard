@@ -53,7 +53,7 @@ func (c *DBClient) queryTaskByID(taskID string) (*TaskInfo, error) {
 }
 
 func (c *DBClient) queryTasksWithSQL(sql string) ([]*TaskInfo, error) {
-	tasks := make([]*TaskInfo, 3)
+	var tasks []*TaskInfo
 	rows, err := c.db.Query(sql)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (c *DBClient) queryAllUnfinishedTasks() ([]*TaskInfo, error) {
 }
 
 func (c *DBClient) queryTasks(taskGroupID string) ([]TaskInfo, error) {
-	taskInfos := make([]TaskInfo, 3)
+	var taskInfos []TaskInfo
 	rows, err := c.db.Query("select id, state, saved_path from task where task_group_id = ?", taskGroupID)
 	if err != nil {
 		return nil, err

@@ -141,9 +141,10 @@ func (c *Controller) dumpClusterLogs(taskGroupID string, w http.ResponseWriter) 
 			return err
 		}
 		err = tw.WriteHeader(&tar.Header{
-			Name: path.Base(task.SavedPath),
-			Mode: 0777,
-			Size: fi.Size(),
+			Name:    path.Base(task.SavedPath),
+			Mode:    int64(fi.Mode()),
+			ModTime: fi.ModTime(),
+			Size:    fi.Size(),
 		})
 		if err != nil {
 			return err

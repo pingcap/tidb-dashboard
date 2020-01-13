@@ -11,31 +11,56 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
-
-import (
-	"log"
-	"net/http"
-
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
-)
-
 // @title Dashboard API
 // @version 1.0
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @BasePath /api
+// @BasePath /dashboard/api
+
+package main
+
+import (
+	"flag"
+	"fmt"
+	"log"
+	"net"
+	"net/http"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
+)
+
+type DashboardCLIConfig struct {
+	listenHost string
+	listenPort int
+}
 
 func main() {
-	addr := ":12333"
+	cliConfig := &DashboardCLIConfig{}
+	coreConfig := &config.Config{}
+
+	flag.StringVar(&cliConfig.listenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
+	flag.IntVar(&cliConfig.listenPort, "port", 12333, "The listen port of the Dashboard Server")
+	flag.StringVar(&coreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
+	flag.StringVar(&coreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
+	flag.Parse()
 
 	mux := http.NewServeMux()
-	mux.Handle("/", uiserver.Handler())
-	mux.Handle("/api/", apiserver.Handler("/api"))
-	mux.Handle("/api/swagger/", swaggerserver.Handler())
+	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
+	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api", coreConfig))
+	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 
-	log.Println("Dashboard server listen on", addr)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	listenAddr := fmt.Sprintf("%s:%d", cliConfig.listenHost, cliConfig.listenPort)
+	listener, err := net.Listen("tcp", listenAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Dashboard server is listening at %s\n", listenAddr)
+	log.Printf("UI:      http://127.0.0.1:%d/dashboard/\n", cliConfig.listenPort)
+	log.Printf("API:     http://127.0.0.1:%d/dashboard/api/\n", cliConfig.listenPort)
+	log.Printf("Swagger: http://127.0.0.1:%d/dashboard/api/swagger/\n", cliConfig.listenPort)
+	log.Fatal(http.Serve(listener, mux))
 }

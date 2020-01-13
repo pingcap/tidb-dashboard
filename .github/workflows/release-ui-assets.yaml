@@ -1,7 +1,12 @@
 on:
   push:
+    branches:
+      - master
     paths:
-    - 'ui/.github_release_version'
+      - 'ui/.github_release_version'
+  pull_request:
+    branches:
+      - master
 
 name: Release UI Assets
 
@@ -15,6 +20,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '12.x'
+          registry-url: 'https://npm.pkg.github.com'
       - uses: actions/setup-go@v1
         with:
           go-version: '1.13.5'
@@ -33,19 +39,26 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - name: Yarn install from Github package
+        run: make yarn_dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build UI
         run: |
-          DASHBOARD_API="/dashboard" make ui
+          make ui
       - name: Pack UI asset release
+        if: github.event_name == 'push'
         working-directory: ui/build
         run: |
           zip -r ../static-assets.zip .
       - name: Lookup asset release version
+        if: github.event_name == 'push'
         id: lookup_release_version
         working-directory: ui
         run: |
           echo "::set-output name=release_version::$(grep -v '^#' .github_release_version)"
       - name: Create asset release
+        if: github.event_name == 'push'
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -56,6 +69,7 @@ jobs:
           draft: false
           prerelease: false
       - name: Upload asset release
+        if: github.event_name == 'push'
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -66,12 +80,14 @@ jobs:
           asset_content_type: application/zip
       - name: Generate embedded assets
         run: |
-          BUILD_TAG="dashboard_ui" scripts/embed_ui_assets.sh
+          NO_ASSET_BUILD_TAG=1 scripts/embed_ui_assets.sh
           cp pkg/uiserver/embedded_assets_handler.go embedded_assets_handler.go
       - name: Pack embedded assets
+        if: github.event_name == 'push'
         run: |
           zip -r embedded-assets-golang.zip ./embedded_assets_handler.go
       - name: Upload embedded asset release
+        if: github.event_name == 'push'
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

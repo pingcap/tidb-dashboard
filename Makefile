@@ -1,8 +1,8 @@
 .PHONY: tidy swagger_spec yarn_dependencies swagger_client ui server run
 
-DASHBOARD_API ?=
-
 BUILD_TAGS ?=
+
+SKIP_YARN_INSTALL ?=
 
 ifeq ($(SWAGGER),1)
 BUILD_TAGS += swagger_server
@@ -31,7 +31,8 @@ swagger_client: swagger_spec yarn_dependencies
 
 ui: swagger_client
 	cd ui &&\
-	REACT_APP_DASHBOARD_API_URL="${DASHBOARD_API}" npm run build
+	src/apps/keyvis/download_dummydata.sh &&\
+	REACT_APP_DASHBOARD_API_URL="" npm run build
 
 server:
 ifeq ($(SWAGGER),1)

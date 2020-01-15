@@ -20,12 +20,12 @@ import (
 
 func Handler() http.Handler {
 	fs := assetFS()
-	if fs == nil {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			_, _ = io.WriteString(w, "Dashboard UI is not built. Use `UI=1 make`.\n")
-		})
-	} else {
-		fileServer := http.FileServer(assetFS())
+	if fs != nil {
+		fileServer := http.FileServer(fs)
 		return fileServer
 	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.WriteString(w, "Dashboard UI is not built. Use `UI=1 make`.\n")
+	})
 }

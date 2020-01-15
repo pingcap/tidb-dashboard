@@ -32,10 +32,9 @@ func init() {
 }
 
 type Controller struct {
-	dbPath       string
-	db           *DBClient
-	taskGroups   TaskGroups
-	taskGroupIDs []string
+	dbPath     string
+	db         *DBClient
+	taskGroups TaskGroups
 }
 
 func NewController(dbPath string) *Controller {
@@ -55,7 +54,11 @@ func (c *Controller) init() error {
 	if err != nil {
 		return err
 	}
-	return c.cleanUnfinishedTask()
+	err = c.cleanUnfinishedTask()
+	if err != nil {
+		return err
+	}
+	return c.loadFinishedTask()
 }
 
 func (c *Controller) getAllTasks() ([]*TaskInfo, error) {
@@ -69,7 +72,7 @@ func (c *Controller) cleanUnfinishedTask() error {
 	}
 	for _, t := range tasks {
 		os.RemoveAll(t.SavedPath)
-		err = c.db.cleanTaskByID(t.ID)
+		err = c.db.cleanTask(t.ID)
 		if err != nil {
 			return err
 		}
@@ -92,33 +95,34 @@ func (c *Controller) RunTaskGroup(id string) error {
 	return nil
 }
 
-func (c *Controller) stopTask(taskID string, needDelete bool) error {
+func (c *Controller) stopTask(taskID string) error {
 	for _, taskGroup := range c.taskGroups {
 		for id, task := range taskGroup.tasks {
 			if id == taskID {
-				if needDelete {
-					task.needDeleted = true
-				}
-				task.Abort()
-				return nil
+				return task.Abort()
 			}
 		}
 	}
 	return fmt.Errorf("task <%s> not found", taskID)
 }
 
-func (c *Controller) stopTaskGroup(taskGroupID string, needDelete bool) error {
-	for id, taskGroup := range c.taskGroups {
-		if id != taskGroupID {
-			continue
-		}
-		for _, task := range taskGroup.tasks {
-			if needDelete {
-				task.needDeleted = true
+func (c *Controller) cleanTask(task *TaskInfo) {
+	os.RemoveAll(task.SavedPath)
+	controller.db.cleanTask(task.ID)
+}
+
+func (c *Controller) stopTaskGroup(taskGroupID string) error {
+	tasks, err := c.db.queryTasks(taskGroupID)
+	if err != nil {
+		return err
+	}
+	for _, task := range tasks {
+		err := c.stopTask(task.ID)
+		if err != nil {
+			if _, ok := err.(TaskNotRunningError); ok {
+				controller.cleanTask(task)
 			}
-			task.Abort()
 		}
-		return nil
 	}
 	return fmt.Errorf("task group <%s> not found", taskGroupID)
 }
@@ -179,6 +183,31 @@ func (c *Controller) dumpLog(taskID string, w http.ResponseWriter) error {
 	_, err = io.Copy(w, f)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (c *Controller) loadFinishedTask() error {
+	tasks, err := c.db.queryAllFinishedTask()
+	if err != nil {
+		return err
+	}
+	for _, task := range tasks {
+		taskGroup, ok := c.taskGroups[task.TaskGroupID]
+		if !ok {
+			taskGroup = &TaskGroup{
+				tasks: make(Tasks),
+				id:    task.TaskGroupID,
+				db:    c.db,
+			}
+			c.taskGroups[task.TaskGroupID] = taskGroup
+		}
+		taskGroup.tasks[task.ID] = &Task{
+			db:          c.db,
+			id:          task.ID,
+			taskGroupID: task.TaskGroupID,
+			savedPath:   task.SavedPath,
+		}
 	}
 	return nil
 }

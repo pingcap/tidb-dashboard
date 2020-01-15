@@ -24,10 +24,9 @@ import (
 type TaskGroups map[string]*TaskGroup
 
 type TaskGroup struct {
-	tasks    Tasks
-	id       string
-	db       *DBClient
-	finished bool
+	tasks Tasks
+	id    string
+	db    *DBClient
 }
 
 func NewTaskGroup(reqs []*ReqInfo, db *DBClient) *TaskGroup {
@@ -41,12 +40,6 @@ func NewTaskGroup(reqs []*ReqInfo, db *DBClient) *TaskGroup {
 		tasks: tasks,
 		id:    taskGroupID,
 		db:    db,
-	}
-}
-
-func (tg *TaskGroup) Abort() {
-	for _, task := range tg.tasks {
-		task.Abort()
 	}
 }
 

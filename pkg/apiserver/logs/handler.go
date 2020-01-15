@@ -14,6 +14,7 @@
 package logs
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -69,42 +70,77 @@ func (s *Service) listAllTasksHandler(c *gin.Context) {
 
 func (s *Service) cancelTaskGroupHandler(c *gin.Context) {
 	taskGroupID := c.Query("taskGroupID")
-	err := controller.stopTaskGroup(taskGroupID, false)
+	tasks, err := controller.db.queryTasks(taskGroupID)
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	c.String(http.StatusOK, "")
+	var res string
+	for _, task := range tasks {
+		if task.State != StateRunning {
+			res += fmt.Sprintf("task [%s] has been %s\n", task.ID, task.State)
+			continue
+		}
+		err := controller.stopTask(task.ID)
+		if err != nil {
+			res += fmt.Sprintf("stop task [%s] failed: err=%s\n", task.ID, err.Error())
+		}
+	}
+	c.String(http.StatusOK, res)
 }
 
 func (s *Service) cancelTaskHandler(c *gin.Context) {
 	taskID := c.Query("taskID")
-	err := controller.stopTask(taskID, false)
+	err := controller.stopTask(taskID)
+	task, err := controller.db.queryTaskByID(taskID)
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	c.String(http.StatusOK, "")
+	if task.State != StateRunning {
+		c.String(http.StatusOK, "task [%s] has been %s", taskID, task.State)
+	}
+	err = controller.stopTask(taskID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.String(http.StatusOK, "task [%s] canceled", taskID)
 }
 
 func (s *Service) deleteTaskGroupHandler(c *gin.Context) {
 	taskGroupID := c.Query("taskGroupID")
-	err := controller.stopTaskGroup(taskGroupID, true)
+	tasks, err := controller.db.queryTasks(taskGroupID)
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	c.String(http.StatusOK, "")
+	var res string
+	for _, task := range tasks {
+		if task.State == StateRunning {
+			res += fmt.Sprintf("cannot delete task [%s], task is running\n", task.ID)
+			continue
+		}
+		controller.cleanTask(task)
+		res += fmt.Sprintf("task [%s] deleted\n", task.ID)
+	}
+	c.String(http.StatusOK, res)
 }
 
 func (s *Service) deleteTaskHandler(c *gin.Context) {
+	var task *TaskInfo
 	taskID := c.Query("taskID")
-	err := controller.stopTask(taskID, true)
+	task, err := controller.db.queryTaskByID(taskID)
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	c.String(http.StatusOK, "")
+	if task.State == StateRunning {
+		c.String(http.StatusOK, "cannot delete task [%s], task is running", taskID)
+		return
+	}
+	controller.cleanTask(task)
+	c.String(http.StatusOK, "task [%s] deleted", taskID)
 }
 
 func (s *Service) previewHandler(c *gin.Context) {

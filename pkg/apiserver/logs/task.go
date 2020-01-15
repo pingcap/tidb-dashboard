@@ -61,7 +61,6 @@ type Task struct {
 	zw          *zip.Writer
 	err         error
 	cancel      context.CancelFunc
-	needDeleted bool
 }
 
 func NewTask(reqInfo *ReqInfo, db *DBClient, taskGroupID string) *Task {
@@ -73,58 +72,62 @@ func NewTask(reqInfo *ReqInfo, db *DBClient, taskGroupID string) *Task {
 	}
 }
 
-func (t *Task) Abort() {
-	t.cancel()
+type TaskNotRunningError struct {
+	id string
+}
+
+func (e TaskNotRunningError) Error() string {
+	return fmt.Sprintf("task [%s] is not running", e.id)
+}
+
+func (t *Task) Abort() error {
+	if t.cancel != nil {
+		t.cancel()
+		return nil
+	}
+	return TaskNotRunningError{t.id}
 }
 
 func (t *Task) close() {
-	t.zw.Close()
-	t.file.Close()
-
+	//fmt.Printf("task [%s] stoped, err=%s", t.id, t.err.Error())
 	if t.err != nil {
 		fmt.Printf("task [%s] stoped, err=%s", t.id, t.err.Error())
 		os.RemoveAll(t.savedPath)
-		if t.needDeleted {
-			t.db.cleanTaskByID(t.id)
-			// TODO: notify client fetch task deleted
-		} else {
-			t.db.cancelTask(t.id)
-			// TODO: notify client fetch task canceled
-		}
+		t.db.cancelTask(t.id)
+		// TODO: notify client fetch task canceled
 		return
 	}
 	t.db.finishTask(t.id)
 	// TODO: notify client fetch task finished
 }
 
-func (t *Task) CreateFile() error {
+func (t *Task) CreateFile() (*os.File, *zip.Writer, error) {
 	dir := os.TempDir()
 	dir = path.Join(dir, "dashboard-logs", t.taskGroupID)
 	err := os.MkdirAll(dir, 0777)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	savedPath := path.Join(dir, t.zipFilename())
 	f, err := os.Create(savedPath)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	zw := zip.NewWriter(f)
 	writer, err := zw.Create(t.logFilename())
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	t.writer = writer
-	t.file = f
-	t.zw = zw
 	t.savedPath = savedPath
-	return nil
+	return f, zw, nil
 }
 
 const PreviewLogLinesLimit = 100
 
 func (t *Task) run(ctx context.Context) {
 	defer t.close()
+	ctx, t.cancel = context.WithCancel(ctx)
 	opt := grpc.WithInsecure()
 
 	conn, err := grpc.Dial(t.address(), opt)
@@ -134,18 +137,19 @@ func (t *Task) run(ctx context.Context) {
 	}
 	defer conn.Close()
 	cli := diagnosticspb.NewDiagnosticsClient(conn)
-	ctx, t.cancel = context.WithCancel(ctx)
 	stream, err := cli.SearchLog(ctx, t.req)
 	if err != nil {
 		t.err = err
 		return
 	}
 
-	err = t.CreateFile()
+	f, zw, err := t.CreateFile()
 	if err != nil {
 		t.err = err
 		return
 	}
+	defer f.Close()
+	defer zw.Close()
 	err = t.db.startTask(t.id, t.savedPath, t.taskGroupID)
 	if err != nil {
 		t.err = err

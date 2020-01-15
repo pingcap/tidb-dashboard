@@ -16,7 +16,6 @@ package logs
 import (
 	"database/sql"
 	"fmt"
-
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 )
@@ -76,17 +75,17 @@ func (c *DBClient) queryAllTasks() ([]*TaskInfo, error) {
 }
 
 func (c *DBClient) queryAllFinishedTask() ([]*TaskInfo, error) {
-	sqlStr := fmt.Sprintf("select id, saved_path from task where state = ?", StateFinished)
+	sqlStr := fmt.Sprintf(`select id, saved_path, state, task_group_id from task where state = "%s";`, StateFinished)
 	return c.queryTasksWithSQL(sqlStr)
 }
 
 func (c *DBClient) queryAllUnfinishedTasks() ([]*TaskInfo, error) {
-	sqlStr := fmt.Sprintf("select id, saved_path from task where state != ?", StateFinished)
+	sqlStr := fmt.Sprintf(`select id, saved_path, state, task_group_id from task where state != "%s";`, StateFinished)
 	return c.queryTasksWithSQL(sqlStr)
 }
 
-func (c *DBClient) queryTasks(taskGroupID string) ([]TaskInfo, error) {
-	var taskInfos []TaskInfo
+func (c *DBClient) queryTasks(taskGroupID string) ([]*TaskInfo, error) {
+	var taskInfos []*TaskInfo
 	rows, err := c.db.Query("select id, state, saved_path from task where task_group_id = ?", taskGroupID)
 	if err != nil {
 		return nil, err
@@ -147,7 +146,7 @@ func (c *DBClient) previewTask(taskID string) ([]*diagnosticspb.LogMessage, erro
 	return lines, nil
 }
 
-func (c *DBClient) cleanTaskByID(taskID string) error {
+func (c *DBClient) cleanTask(taskID string) error {
 	_, err := c.db.Exec("delete from task where id == ?", taskID)
 	if err != nil {
 		return err

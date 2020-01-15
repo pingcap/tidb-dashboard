@@ -37,7 +37,7 @@ which integrates a recent TiDB Dashboard inside.
 3. Start PD server with TiDB Dashboard enabled (both UI and API):
 
    ```sh
-   bin/pd-server --enable-dashboard
+   bin/pd-server
    ```
 
 4. Dashboard UI is available at http://127.0.0.1:2379/dashboard.

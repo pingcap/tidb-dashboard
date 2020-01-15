@@ -1,0 +1,137 @@
+.PD-KeyVis {
+  font-family: 'Poppins';
+  font-size: 14px;
+  width: 100%;
+  height: calc(100vh - 170px);
+
+  .ui.dropdown .menu {
+    z-index: 9999;
+  }
+
+  .PD-KeyVis-Toolbar {
+    display: flex;
+    flex-wrap: wrap-reverse;
+
+    .PD-Cluster-Legend {
+      width: 410px;
+      position: relative;
+      height: 30px;
+      margin: 10px 0px;
+
+      p.unit {
+        font-family: 'Poppins';
+        font-size: 12px;
+        color: #333;
+        margin-top: 5px;
+      }
+    }
+
+    .group-icons-btn {
+      border: 0;
+      margin-top: -7px;
+      .button {
+        border-left: 0 !important;
+      }
+
+      .icon {
+        color: #1b1c1d;
+      }
+    }
+  }
+
+  svg,
+  button {
+    user-select: none;
+  }
+
+  g.tick text {
+    font-family: 'Poppins';
+    font-size: 12px;
+    text-anchor: start;
+  }
+
+  .tooltip {
+    padding: 10px;
+    color: #eee;
+    background-color: #333;
+    box-shadow: 5px 5px 10px rgba(black, 0.5);
+
+    div:not(:first-child) {
+      margin-top: 8px;
+    }
+
+    div.value {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      p.value {
+        margin: 0px;
+        text-align: center;
+        padding: 7px;
+        width: fit-content;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 5px;
+      }
+
+      p.unit {
+        padding: 3px;
+        font-weight: 500;
+        font-size: 12px;
+        color: #999;
+      }
+    }
+
+    div.time {
+      display: flex;
+      // justify-content: space-around;
+      white-space: pre-wrap;
+    }
+
+    button {
+      background-color: transparent;
+      border: transparent solid 1px;
+      border-radius: 4px;
+      outline: none;
+      padding: 3px;
+      text-align: left;
+      color: #fff;
+      font-family: unset;
+      font-size: 13px;
+      transition: background-color ease-in 100ms;
+
+      &:hover {
+        border: #888 solid 1px;
+        cursor: pointer;
+      }
+
+      &:active {
+        background-color: #888;
+        transition: none;
+      }
+    }
+
+    button.time {
+      color: #aaa;
+      line-height: 125%;
+      width: 100%;
+      &:not(:first-child) {
+        margin-left: 20px;
+      }
+    }
+
+    button.key {
+      color: #aaa;
+    }
+
+    button.label {
+      font-size: 14px;
+    }
+  }
+
+  .heatmap {
+    width: 100%;
+    height: 100%;
+  }
+}

@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package foo
+package info
 
 import (
 	"net/http"
@@ -20,26 +20,31 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
+type Info struct {
+	Version    string `json:"version"`
+	PDEndPoint string `json:"pd_end_point"`
+}
+
 type Service struct {
+	config *config.Config
 }
 
 func NewService(config *config.Config) *Service {
-	return &Service{}
+	return &Service{config: config}
 }
 
 func (s *Service) Register(r *gin.RouterGroup) {
-	endpoint := r.Group("/foo")
-	endpoint.GET("/:name", s.greetHandler)
+	endpoint := r.Group("/info")
+	endpoint.GET("/", s.infoHandler)
 }
 
-// @Summary Greet
-// @Description Hello world!
-// @Accept json
+// @Summary Dashboard info
+// @Description Get information about the dashboard service.
 // @Produce json
-// @Param name path string true "Name"
-// @Success 200 {string} string
-// @Router /foo/{name} [get]
-func (s *Service) greetHandler(c *gin.Context) {
-	name := c.Param("name")
-	c.String(http.StatusOK, "Hello %s", name)
+// @Success 200 {object} Info
+// @Router /info [get]
+func (s *Service) infoHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, Info{
+		PDEndPoint: s.config.PDEndPoint,
+	})
 }

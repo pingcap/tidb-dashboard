@@ -1,6 +1,7 @@
 {
+  "extends": "./tsconfig.paths.json",
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "lib": [
       "dom",
       "dom.iterable",
@@ -8,6 +9,8 @@
     ],
     "allowJs": true,
     "skipLibCheck": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,

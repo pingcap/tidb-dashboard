@@ -11,6 +11,7 @@
   .PD-KeyVis-Toolbar {
     display: flex;
     flex-wrap: wrap-reverse;
+    align-items: center;
 
     .PD-Cluster-Legend {
       width: 410px;
@@ -36,6 +37,39 @@
       .icon {
         color: #1b1c1d;
       }
+    }
+
+    .space {
+      flex: 1;
+    }
+
+    .PD-Action-Icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 68px;
+      padding-top: 12px;
+
+      &.clickable {
+        cursor: pointer;
+        margin-left: 12px;
+      }
+
+      .ant-select-selection {
+        border: none;
+        background-color: transparent;
+        line-height: 1;
+        color: black;
+      }
+
+      & > span {
+        margin-top: 5px;
+        height: 27px;
+      }
+    }
+    .PD-Action-Icon:last-child {
+      margin-right: 40px;
     }
   }
 

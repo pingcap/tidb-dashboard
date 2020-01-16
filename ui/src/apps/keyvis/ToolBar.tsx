@@ -1,5 +1,4 @@
-import { Loader, Dropdown, Icon, Menu, MenuItemProps, Button, DropdownProps } from 'semantic-ui-react'
-import { Slider } from 'antd'
+import { Slider, Spin, Icon, Select } from 'antd'
 import React, { Component } from 'react'
 
 export interface IKeyVisToolBarProps {
@@ -18,11 +17,11 @@ export interface IKeyVisToolBarProps {
 }
 
 const DateRangeOptions = [
-  { key: 0, text: '1 Hour', value: 3600 },
-  { key: 1, text: '6 Hours', value: 3600 * 6 },
-  { key: 2, text: '12 Hours', value: 3600 * 12 },
-  { key: 3, text: '1 Day', value: 3600 * 24 },
-  { key: 4, text: '7 Days', value: 3600 * 24 * 7 }
+  { text: '1 Hour', value: 3600 },
+  { text: '6 Hours', value: 3600 * 6 },
+  { text: '12 Hours', value: 3600 * 12 },
+  { text: '1 Day', value: 3600 * 24 },
+  { text: '7 Days', value: 3600 * 24 * 7 }
 ]
 
 const MetricOptions = [
@@ -34,33 +33,17 @@ const MetricOptions = [
 ]
 
 export default class KeyVisToolBar extends Component<IKeyVisToolBarProps> {
-  handleAutoFetch = (_, { name }: MenuItemProps) => {
+  handleAutoFetch = () => {
     this.props.onToggleAutoFetch()
   }
 
-  handleDateRange = (e, { value }: DropdownProps) => {
+  handleDateRange = value => {
     this.props.onChangeDateRange(value)
   }
 
-  handleMetricChange = (e, { value }: DropdownProps) => {
+  handleMetricChange = value => {
     this.props.onChangeMetric(value)
   }
-
-  // handleBrightLevelChange = (type: 'up' | 'down' | 'reset') => {
-  //   let newBrightLevel
-  //   switch (type) {
-  //     case 'up':
-  //       newBrightLevel = this.props.brightLevel * 2
-  //       break
-  //     case 'down':
-  //       newBrightLevel = this.props.brightLevel / 2
-  //       break
-  //     case 'reset':
-  //       newBrightLevel = 1
-  //       break
-  //   }
-  //   this.props.onChangeBrightLevel(newBrightLevel)
-  // }
 
   handleBrightLevel = (exp: number) => {
     this.props.onChangeBrightLevel(1 * Math.pow(2, exp))
@@ -70,81 +53,67 @@ export default class KeyVisToolBar extends Component<IKeyVisToolBarProps> {
     const { isAutoFetch, dateRange, isOnBrush, metricType } = this.props
 
     return (
-      <>
-        <Menu icon="labeled" size="small" compact text fluid className="PD-KeyVis-Toolbar">
-          <div className="PD-Cluster-Legend" />
-          <Menu.Menu position="right">
-            <Menu.Item name="loading">
-              <Loader active={this.props.isLoading} inline />
-            </Menu.Item>
-
-            {/* <Menu.Item> */}
-            <div style={{width: '200px'}}>
-              <Slider defaultValue={0} min={-6} max={6} step={0.1} onChange={(value) => this.handleBrightLevel(value as number)} />
-            </div>
-              {/* <Button.Group basic className="group-icons-btn">
-                <Button
-                  icon="minus"
-                  className={this.props.brightLevel < 1 / 64 ? 'disabled' : ''}
-                  onClick={() => {
-                    this.handleBrightLevelChange('down')
-                  }}
-                />
-                <Button
-                  icon="adjust"
-                  onClick={() => {
-                    this.handleBrightLevelChange('reset')
-                  }}
-                />
-                <Button
-                  icon="plus"
-                  className={this.props.brightLevel > 64 ? 'disabled' : ''}
-                  onClick={() => {
-                    this.handleBrightLevelChange('up')
-                  }}
-                />
-              </Button.Group>
-              Set Brightness */}
-            {/* </Menu.Item> */}
-
-            <Menu.Item name="resetZoom" onClick={this.props.onResetZoom}>
-              <Icon name="zoom-out" />
-              Reset Zoom
-            </Menu.Item>
-
-            <Menu.Item name="toogleBrush" color="green" onClick={this.props.onToggleBrush} active={isOnBrush}>
-              <Icon name="zoom-in" />
-              Zoom In
-            </Menu.Item>
-
-            <Menu.Item name="autoUpdate" color="green" active={isAutoFetch} onClick={this.handleAutoFetch}>
-              <Icon name="refresh" />
-              Auto Update
-            </Menu.Item>
-
-            <Menu.Item>
-              <Icon name="clock outline" />
-
-              <Dropdown
-                placeholder="Quick range"
-                onChange={this.handleDateRange}
-                options={DateRangeOptions}
-                value={dateRange}
-              />
-            </Menu.Item>
-
-            <Menu.Item>
-              <Icon name="chart area" />
-              <Dropdown
-                placeholder="Metric"
-                onChange={this.handleMetricChange}
-                options={MetricOptions}
-                value={metricType}
-              />
-            </Menu.Item>
-          </Menu.Menu>
-        </Menu>
-      </>
+      <div className="PD-KeyVis-Toolbar">
+        <div className="PD-Cluster-Legend" />
+        <div style={{ width: 150, marginLeft: 48 }}>
+          <Slider
+            defaultValue={0}
+            min={-6}
+            max={6}
+            step={0.1}
+            onChange={value => this.handleBrightLevel(value as number)}
+          />
+        </div>
+        <div className="space" />
+        {this.props.isLoading && (
+          <Spin
+            indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />}
+          />
+        )}
+        <div
+          onClick={this.props.onResetZoom}
+          className="PD-Action-Icon clickable"
+        >
+          <Icon type="zoom-out" style={{ fontSize: 24 }} />
+          <span>Reset Zoom</span>
+        </div>
+        <div
+          onClick={this.props.onToggleBrush}
+          className="PD-Action-Icon clickable"
+          style={{ color: isOnBrush ? 'green' : 'black' }}
+        >
+          <Icon type="zoom-in" style={{ fontSize: 24 }} />
+          <span>Zoom In</span>
+        </div>
+        <div
+          onClick={this.handleAutoFetch}
+          className="PD-Action-Icon clickable"
+          style={{ color: isAutoFetch ? 'green' : 'black' }}
+        >
+          <Icon type="sync" style={{ fontSize: 24 }} />
+          <span>Auto Update</span>
+        </div>
+        <div className="PD-Action-Icon">
+          <Icon type="clock-circle" style={{ fontSize: 24 }} />
+          <Select onChange={this.handleDateRange} value={dateRange}>
+            {DateRangeOptions.map(option => (
+              <Select.Option key={option.text} value={option.value}>
+                {option.text}
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
+        <div className="PD-Action-Icon">
+          <Icon type="area-chart" style={{ fontSize: 24 }} />
+          <Select onChange={this.handleMetricChange} value={metricType}>
+            {MetricOptions.map(option => (
+              <Select.Option key={option.text} value={option.value}>
+                {option.text}
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
+      </div>
     )
   }
 }

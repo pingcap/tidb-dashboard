@@ -1,8 +1,12 @@
 .PHONY: tidy swagger_spec yarn_dependencies swagger_client ui server run
 
+DASHBOARD_PKG := github.com/pingcap-incubator/tidb-dashboard
+
 BUILD_TAGS ?=
 
 SKIP_YARN_INSTALL ?=
+
+LDFLAGS ?=
 
 ifeq ($(SWAGGER),1)
 BUILD_TAGS += swagger_server
@@ -11,6 +15,11 @@ endif
 ifeq ($(UI),1)
 BUILD_TAGS += ui_server
 endif
+
+LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.ReleaseVersion=$(shell git describe --tags --dirty)"
+LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.BuildTS=$(shell date -u '+%Y-%m-%d %I:%M:%S')"
+LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.GitHash=$(shell git rev-parse HEAD)"
+LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.GitBranch=$(shell git rev-parse --abbrev-ref HEAD)"
 
 default:
 	SWAGGER=1 make server
@@ -41,7 +50,7 @@ endif
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh
 endif
-	go build -o bin/tidb-dashboard -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
+	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 
 run:
 	bin/tidb-dashboard

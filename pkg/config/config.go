@@ -13,17 +13,31 @@
 
 package config
 
-var globalConfig *Config = nil
+import (
+	"context"
+	"sync"
+	"sync/atomic"
+)
 
 type Config struct {
+	Ctx        context.Context
+	Wg         sync.WaitGroup
+	Version    string
 	DataDir    string
 	PDEndPoint string
 }
 
-func SetGlobalConfig(config *Config) {
-	globalConfig = config
+var globalConfig atomic.Value
+
+func init() {
+	var cfg *Config = nil
+	SetGlobalConfig(cfg)
+}
+
+func SetGlobalConfig(cfg *Config) {
+	globalConfig.Store(cfg)
 }
 
 func GetGlobalConfig() *Config {
-	return globalConfig
+	return globalConfig.Load().(*Config)
 }

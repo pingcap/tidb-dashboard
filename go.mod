@@ -15,8 +15,10 @@ require (
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/mailru/easyjson v0.7.0 // indirect
 	github.com/mattn/go-isatty v0.0.11 // indirect
+	github.com/pingcap/log v0.0.0-20191012051959-b742a5d432e9
 	github.com/swaggo/http-swagger v0.0.0-20200103000832-0e9263c4b516
 	github.com/swaggo/swag v1.6.4
+	go.uber.org/zap v1.9.1
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect
 	golang.org/x/sys v0.0.0-20200103143344-a1369afcdac7 // indirect
 	golang.org/x/tools v0.0.0-20200103221440-774c71fcf114 // indirect

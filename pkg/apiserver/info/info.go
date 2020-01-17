@@ -45,6 +45,7 @@ func (s *Service) Register(r *gin.RouterGroup) {
 // @Router /info [get]
 func (s *Service) infoHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, Info{
+		Version:    s.config.Version,
 		PDEndPoint: s.config.PDEndPoint,
 	})
 }

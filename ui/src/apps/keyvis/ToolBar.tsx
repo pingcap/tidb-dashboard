@@ -1,4 +1,4 @@
-import { Slider, Spin, Icon, Select } from 'antd'
+import { Slider, Spin, Icon, Select, Dropdown, Button, Input } from 'antd'
 import React, { Component } from 'react'
 
 export interface IKeyVisToolBarProps {
@@ -17,22 +17,27 @@ export interface IKeyVisToolBarProps {
 }
 
 const DateRangeOptions = [
-  { text: '1 Hour', value: 3600 },
-  { text: '6 Hours', value: 3600 * 6 },
-  { text: '12 Hours', value: 3600 * 12 },
-  { text: '1 Day', value: 3600 * 24 },
-  { text: '7 Days', value: 3600 * 24 * 7 }
+  { text: '1 小时', value: 3600 },
+  { text: '6 小时', value: 3600 * 6 },
+  { text: '12 小时', value: 3600 * 12 },
+  { text: '1 天', value: 3600 * 24 },
+  { text: '7 天', value: 3600 * 24 * 7 }
 ]
 
 const MetricOptions = [
-  { text: 'Read Bytes', value: 'read_bytes' },
-  { text: 'Write Bytes', value: 'written_bytes' },
-  { text: 'Read Keys', value: 'read_keys' },
-  { text: 'Write Keys', value: 'written_keys' },
-  { text: 'All', value: 'integration' }
+  { text: '读取字节量', value: 'read_bytes' },
+  { text: '写入字节量', value: 'written_bytes' },
+  { text: '读取 keys', value: 'read_keys' },
+  { text: '写入 keys', value: 'written_keys' },
+  { text: '所有', value: 'integration' }
 ]
 
 export default class KeyVisToolBar extends Component<IKeyVisToolBarProps> {
+  state = {
+    brightnessDropdownVisible: false,
+    exp: 0
+  }
+
   handleAutoFetch = () => {
     this.props.onToggleAutoFetch()
   }
@@ -47,6 +52,12 @@ export default class KeyVisToolBar extends Component<IKeyVisToolBarProps> {
 
   handleBrightLevel = (exp: number) => {
     this.props.onChangeBrightLevel(1 * Math.pow(2, exp))
+    this.setState({ exp })
+  }
+
+  handleBrightnessDropdown = (visible: boolean) => {
+    this.setState({ brightnessDropdownVisible: visible })
+    this.props.onChangeBrightLevel(1 * Math.pow(2, this.state.exp))
   }
 
   render() {
@@ -54,65 +65,98 @@ export default class KeyVisToolBar extends Component<IKeyVisToolBarProps> {
 
     return (
       <div className="PD-KeyVis-Toolbar">
-        <div className="PD-Cluster-Legend" />
-        <div style={{ width: 150, marginLeft: 48 }}>
-          <Slider
-            defaultValue={0}
-            min={-6}
-            max={6}
-            step={0.1}
-            onChange={value => this.handleBrightLevel(value as number)}
-          />
-        </div>
+        <Dropdown
+          overlay={
+            <div id="brightness-overlay">
+              <div className="PD-Cluster-Legend" />
+              <Slider
+                style={{ width: 360 }}
+                defaultValue={0}
+                min={-6}
+                max={6}
+                step={0.1}
+                onChange={value => this.handleBrightLevel(value as number)}
+              />
+            </div>
+          }
+          trigger={['click']}
+          onVisibleChange={this.handleBrightnessDropdown}
+          visible={this.state.brightnessDropdownVisible}
+        >
+          <Button icon="bulb">
+            调整亮度
+            <Icon type="down" />
+          </Button>
+        </Dropdown>
+
         <div className="space" />
-        {this.props.isLoading && (
-          <Spin
-            indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />}
-          />
-        )}
-        <div
-          onClick={this.props.onResetZoom}
-          className="PD-Action-Icon clickable"
-        >
-          <Icon type="zoom-out" style={{ fontSize: 24 }} />
-          <span>Reset Zoom</span>
-        </div>
-        <div
-          onClick={this.props.onToggleBrush}
-          className="PD-Action-Icon clickable"
-          style={{ color: isOnBrush ? 'green' : 'black' }}
-        >
-          <Icon type="zoom-in" style={{ fontSize: 24 }} />
-          <span>Zoom In</span>
-        </div>
-        <div
+
+        <Button.Group>
+          <Button
+            onClick={this.props.onToggleBrush}
+            icon="arrows-alt"
+            type={isOnBrush ? 'primary' : 'default'}
+          >
+            框选
+          </Button>
+          <Button onClick={this.props.onResetZoom}>重置</Button>
+        </Button.Group>
+
+        <div className="space" />
+
+        <Button
           onClick={this.handleAutoFetch}
-          className="PD-Action-Icon clickable"
-          style={{ color: isAutoFetch ? 'green' : 'black' }}
+          icon="sync"
+          type={isAutoFetch ? 'primary' : 'default'}
         >
-          <Icon type="sync" style={{ fontSize: 24 }} />
-          <span>Auto Update</span>
-        </div>
-        <div className="PD-Action-Icon">
-          <Icon type="clock-circle" style={{ fontSize: 24 }} />
-          <Select onChange={this.handleDateRange} value={dateRange}>
+          自动刷新
+        </Button>
+
+        <div className="space" />
+
+        <Input.Group compact style={{ width: 142 }}>
+          <div className="select-icon">
+            <Icon type="clock-circle" />
+          </div>
+          <Select
+            onChange={this.handleDateRange}
+            value={dateRange}
+            style={{ width: 110 }}
+          >
             {DateRangeOptions.map(option => (
               <Select.Option key={option.text} value={option.value}>
                 {option.text}
               </Select.Option>
             ))}
           </Select>
-        </div>
-        <div className="PD-Action-Icon">
-          <Icon type="area-chart" style={{ fontSize: 24 }} />
-          <Select onChange={this.handleMetricChange} value={metricType}>
+        </Input.Group>
+
+        <div className="space" />
+
+        <Input.Group compact style={{ width: 142 }}>
+          <div className="select-icon">
+            <Icon type="area-chart" />
+          </div>
+          <Select
+            onChange={this.handleMetricChange}
+            value={metricType}
+            style={{ width: 110 }}
+          >
             {MetricOptions.map(option => (
               <Select.Option key={option.text} value={option.value}>
                 {option.text}
               </Select.Option>
             ))}
           </Select>
-        </div>
+        </Input.Group>
+
+        <div className="space" />
+
+        {this.props.isLoading && (
+          <Spin
+            indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />}
+          />
+        )}
       </div>
     )
   }

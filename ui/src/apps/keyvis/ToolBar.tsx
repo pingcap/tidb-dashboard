@@ -1,5 +1,4 @@
-import { Loader, Dropdown, Icon, Menu, MenuItemProps, Button, DropdownProps } from 'semantic-ui-react'
-import { Slider } from 'antd'
+import { Slider, Spin, Icon, Select, Dropdown, Button, Input } from 'antd'
 import React, { Component } from 'react'
 
 export interface IKeyVisToolBarProps {
@@ -18,133 +17,137 @@ export interface IKeyVisToolBarProps {
 }
 
 const DateRangeOptions = [
-  { key: 0, text: '1 Hour', value: 3600 },
-  { key: 1, text: '6 Hours', value: 3600 * 6 },
-  { key: 2, text: '12 Hours', value: 3600 * 12 },
-  { key: 3, text: '1 Day', value: 3600 * 24 },
-  { key: 4, text: '7 Days', value: 3600 * 24 * 7 }
+  { text: '1 小时', value: 3600 },
+  { text: '6 小时', value: 3600 * 6 },
+  { text: '12 小时', value: 3600 * 12 },
+  { text: '1 天', value: 3600 * 24 },
+  { text: '7 天', value: 3600 * 24 * 7 }
 ]
 
 const MetricOptions = [
-  { text: 'Read Bytes', value: 'read_bytes' },
-  { text: 'Write Bytes', value: 'written_bytes' },
-  { text: 'Read Keys', value: 'read_keys' },
-  { text: 'Write Keys', value: 'written_keys' },
-  { text: 'All', value: 'integration' }
+  { text: '读取字节量', value: 'read_bytes' },
+  { text: '写入字节量', value: 'written_bytes' },
+  { text: '读取 keys', value: 'read_keys' },
+  { text: '写入 keys', value: 'written_keys' },
+  { text: '所有', value: 'integration' }
 ]
 
 export default class KeyVisToolBar extends Component<IKeyVisToolBarProps> {
-  handleAutoFetch = (_, { name }: MenuItemProps) => {
+  state = {
+    brightnessDropdownVisible: false,
+    exp: 0
+  }
+
+  handleAutoFetch = () => {
     this.props.onToggleAutoFetch()
   }
 
-  handleDateRange = (e, { value }: DropdownProps) => {
+  handleDateRange = value => {
     this.props.onChangeDateRange(value)
   }
 
-  handleMetricChange = (e, { value }: DropdownProps) => {
+  handleMetricChange = value => {
     this.props.onChangeMetric(value)
   }
 
-  // handleBrightLevelChange = (type: 'up' | 'down' | 'reset') => {
-  //   let newBrightLevel
-  //   switch (type) {
-  //     case 'up':
-  //       newBrightLevel = this.props.brightLevel * 2
-  //       break
-  //     case 'down':
-  //       newBrightLevel = this.props.brightLevel / 2
-  //       break
-  //     case 'reset':
-  //       newBrightLevel = 1
-  //       break
-  //   }
-  //   this.props.onChangeBrightLevel(newBrightLevel)
-  // }
-
   handleBrightLevel = (exp: number) => {
     this.props.onChangeBrightLevel(1 * Math.pow(2, exp))
+    this.setState({ exp })
+  }
+
+  handleBrightnessDropdown = (visible: boolean) => {
+    this.setState({ brightnessDropdownVisible: visible })
+    this.props.onChangeBrightLevel(1 * Math.pow(2, this.state.exp))
   }
 
   render() {
     const { isAutoFetch, dateRange, isOnBrush, metricType } = this.props
 
     return (
-      <>
-        <Menu icon="labeled" size="small" compact text fluid className="PD-KeyVis-Toolbar">
-          <div className="PD-Cluster-Legend" />
-          <Menu.Menu position="right">
-            <Menu.Item name="loading">
-              <Loader active={this.props.isLoading} inline />
-            </Menu.Item>
-
-            {/* <Menu.Item> */}
-            <div style={{width: '200px'}}>
-              <Slider defaultValue={0} min={-6} max={6} step={0.1} onChange={(value) => this.handleBrightLevel(value as number)} />
+      <div className="PD-KeyVis-Toolbar">
+        <Dropdown
+          overlay={
+            <div id="PD-KeyVis-Brightness-Overlay">
+              <div className="PD-Cluster-Legend" />
+              <Slider
+                style={{ width: 360 }}
+                defaultValue={0}
+                min={-6}
+                max={6}
+                step={0.1}
+                onChange={value => this.handleBrightLevel(value as number)}
+              />
             </div>
-              {/* <Button.Group basic className="group-icons-btn">
-                <Button
-                  icon="minus"
-                  className={this.props.brightLevel < 1 / 64 ? 'disabled' : ''}
-                  onClick={() => {
-                    this.handleBrightLevelChange('down')
-                  }}
-                />
-                <Button
-                  icon="adjust"
-                  onClick={() => {
-                    this.handleBrightLevelChange('reset')
-                  }}
-                />
-                <Button
-                  icon="plus"
-                  className={this.props.brightLevel > 64 ? 'disabled' : ''}
-                  onClick={() => {
-                    this.handleBrightLevelChange('up')
-                  }}
-                />
-              </Button.Group>
-              Set Brightness */}
-            {/* </Menu.Item> */}
+          }
+          trigger={['click']}
+          onVisibleChange={this.handleBrightnessDropdown}
+          visible={this.state.brightnessDropdownVisible}
+        >
+          <Button icon="bulb">
+            调整亮度
+            <Icon type="down" />
+          </Button>
+        </Dropdown>
 
-            <Menu.Item name="resetZoom" onClick={this.props.onResetZoom}>
-              <Icon name="zoom-out" />
-              Reset Zoom
-            </Menu.Item>
+        <div className="space" />
 
-            <Menu.Item name="toogleBrush" color="green" onClick={this.props.onToggleBrush} active={isOnBrush}>
-              <Icon name="zoom-in" />
-              Zoom In
-            </Menu.Item>
+        <Button.Group>
+          <Button
+            onClick={this.props.onToggleBrush}
+            icon="arrows-alt"
+            type={isOnBrush ? 'primary' : 'default'}
+          >
+            框选
+          </Button>
+          <Button onClick={this.props.onResetZoom}>重置</Button>
+        </Button.Group>
 
-            <Menu.Item name="autoUpdate" color="green" active={isAutoFetch} onClick={this.handleAutoFetch}>
-              <Icon name="refresh" />
-              Auto Update
-            </Menu.Item>
+        <div className="space" />
 
-            <Menu.Item>
-              <Icon name="clock outline" />
+        <Button
+          onClick={this.handleAutoFetch}
+          icon="sync"
+          type={isAutoFetch ? 'primary' : 'default'}
+        >
+          自动刷新
+        </Button>
 
-              <Dropdown
-                placeholder="Quick range"
-                onChange={this.handleDateRange}
-                options={DateRangeOptions}
-                value={dateRange}
-              />
-            </Menu.Item>
+        <div className="space" />
 
-            <Menu.Item>
-              <Icon name="chart area" />
-              <Dropdown
-                placeholder="Metric"
-                onChange={this.handleMetricChange}
-                options={MetricOptions}
-                value={metricType}
-              />
-            </Menu.Item>
-          </Menu.Menu>
-        </Menu>
-      </>
+        <Select onChange={this.handleDateRange} value={dateRange}>
+          {DateRangeOptions.map(option => (
+            <Select.Option
+              key={option.text}
+              value={option.value}
+              className="PD-KeyVis-Select-Option"
+            >
+              <Icon type="clock-circle" /> {option.text}
+            </Select.Option>
+          ))}
+        </Select>
+
+        <div className="space" />
+
+        <Select onChange={this.handleMetricChange} value={metricType}>
+          {MetricOptions.map(option => (
+            <Select.Option
+              key={option.text}
+              value={option.value}
+              className="PD-KeyVis-Select-Option"
+            >
+              <Icon type="area-chart" /> {option.text}
+            </Select.Option>
+          ))}
+        </Select>
+
+        <div className="space" />
+
+        {this.props.isLoading && (
+          <Spin
+            indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />}
+          />
+        )}
+      </div>
     )
   }
 }

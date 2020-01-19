@@ -67,7 +67,7 @@ export default class KeyVisToolBar extends Component<IKeyVisToolBarProps> {
       <div className="PD-KeyVis-Toolbar">
         <Dropdown
           overlay={
-            <div id="brightness-overlay">
+            <div id="PD-KeyVis-Brightness-Overlay">
               <div className="PD-Cluster-Legend" />
               <Slider
                 style={{ width: 360 }}
@@ -114,41 +114,31 @@ export default class KeyVisToolBar extends Component<IKeyVisToolBarProps> {
 
         <div className="space" />
 
-        <Input.Group compact style={{ width: 142 }}>
-          <div className="select-icon">
-            <Icon type="clock-circle" />
-          </div>
-          <Select
-            onChange={this.handleDateRange}
-            value={dateRange}
-            style={{ width: 110 }}
-          >
-            {DateRangeOptions.map(option => (
-              <Select.Option key={option.text} value={option.value}>
-                {option.text}
-              </Select.Option>
-            ))}
-          </Select>
-        </Input.Group>
+        <Select onChange={this.handleDateRange} value={dateRange}>
+          {DateRangeOptions.map(option => (
+            <Select.Option
+              key={option.text}
+              value={option.value}
+              className="PD-KeyVis-Select-Option"
+            >
+              <Icon type="clock-circle" /> {option.text}
+            </Select.Option>
+          ))}
+        </Select>
 
         <div className="space" />
 
-        <Input.Group compact style={{ width: 142 }}>
-          <div className="select-icon">
-            <Icon type="area-chart" />
-          </div>
-          <Select
-            onChange={this.handleMetricChange}
-            value={metricType}
-            style={{ width: 110 }}
-          >
-            {MetricOptions.map(option => (
-              <Select.Option key={option.text} value={option.value}>
-                {option.text}
-              </Select.Option>
-            ))}
-          </Select>
-        </Input.Group>
+        <Select onChange={this.handleMetricChange} value={metricType}>
+          {MetricOptions.map(option => (
+            <Select.Option
+              key={option.text}
+              value={option.value}
+              className="PD-KeyVis-Select-Option"
+            >
+              <Icon type="area-chart" /> {option.text}
+            </Select.Option>
+          ))}
+        </Select>
 
         <div className="space" />
 

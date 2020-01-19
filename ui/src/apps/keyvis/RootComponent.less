@@ -1,3 +1,5 @@
+@import '~antd/es/style/themes/default.less';
+
 .PD-KeyVis {
   // font-family: 'Poppins';
   font-size: 14px;
@@ -44,13 +46,6 @@
 
     .space {
       width: 12px;
-    }
-
-    .select-icon {
-      border: 1px solid #ccc;
-      height: 32px;
-      width: 32px;
-      padding: 4px 8px;
     }
   }
 
@@ -151,7 +146,7 @@
   }
 }
 
-#brightness-overlay {
+#PD-KeyVis-Brightness-Overlay {
   background-color: white;
   padding: 8px;
   border: 1px solid #ccc;
@@ -161,5 +156,9 @@
   flex-direction: column;
   align-items: center;
 
-  box-shadow: 0 100px 80px rgba(0, 0, 0, 0.12);
+  box-shadow: @box-shadow-base;
+}
+
+.PD-KeyVis-Select-Option .anticon {
+  display: none;
 }

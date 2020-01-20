@@ -17,6 +17,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 )

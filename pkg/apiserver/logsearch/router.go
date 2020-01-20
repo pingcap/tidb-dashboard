@@ -4,14 +4,15 @@ import (
 	"archive/tar"
 	"database/sql"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 	"io"
 	"net/http"
 	"os"
 	"path"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 )
 
 type Service struct {

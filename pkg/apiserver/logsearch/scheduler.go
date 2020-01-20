@@ -2,8 +2,9 @@ package logsearch
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 type Scheduler struct {

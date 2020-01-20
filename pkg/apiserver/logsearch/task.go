@@ -4,15 +4,16 @@ import (
 	"archive/zip"
 	"context"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/pingcap/kvproto/pkg/diagnosticspb"
-	"github.com/pingcap/sysutil"
-	"google.golang.org/grpc"
 	"io"
 	"os"
 	"path"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/pingcap/kvproto/pkg/diagnosticspb"
+	"github.com/pingcap/sysutil"
+	"google.golang.org/grpc"
 )
 
 type ReqInfo struct {

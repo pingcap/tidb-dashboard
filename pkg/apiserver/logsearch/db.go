@@ -125,7 +125,7 @@ func (c *DBClient) insertLineToPreview(taskID string, l *diagnosticspb.LogMessag
 }
 
 func (c *DBClient) previewTask(taskID string) ([]*diagnosticspb.LogMessage, error) {
-	lines := make([]*diagnosticspb.LogMessage, PreviewLogLinesLimit)
+	lines := make([]*diagnosticspb.LogMessage, 0, PreviewLogLinesLimit)
 	rows, err := c.db.Query("select time, level, message from preview where id = ?", taskID)
 	if err != nil {
 		return nil, err

@@ -113,7 +113,7 @@ func (s *Service) MultipleTaskPreview(c *gin.Context) {
 }
 
 func getPreviews(ids []string) ([]*LogPreview, error) {
-	previews := make([]*LogPreview, len(ids))
+	previews := make([]*LogPreview, 0, len(ids))
 	for _, taskID := range ids {
 		task, err := db.queryTaskByID(taskID)
 		if err != nil {
@@ -147,6 +147,20 @@ func (s *Service) TaskGroupCreate(c *gin.Context) {
 			IP:         "127.0.0.1",
 			Port:       "4000",
 			StatusPort: "10080",
+			Request:    searchLogReq,
+		},
+		{
+			ServerType: "tikv",
+			IP:         "127.0.0.1",
+			Port:       "20160",
+			StatusPort: "20160",
+			Request:    searchLogReq,
+		},
+		{
+			ServerType: "pd",
+			IP:         "127.0.0.1",
+			Port:       "2379",
+			StatusPort: "2379",
 			Request:    searchLogReq,
 		},
 	}
@@ -213,7 +227,7 @@ func (s *Service) TaskDownload(c *gin.Context) {
 
 func (s *Service) MultipleTaskDownload(c *gin.Context) {
 	ids := c.QueryArray("id")
-	tasks := make([]*Task, len(ids))
+	tasks := make([]*Task, 0, len(ids))
 	for _, taskID := range ids {
 		task, err := db.queryTaskByID(taskID)
 		if err != nil {
@@ -237,29 +251,37 @@ func dumpLogs(tasks []*Task, w http.ResponseWriter) error {
 	tw := tar.NewWriter(w)
 	defer tw.Close()
 	for _, task := range tasks {
-		f, err := os.Open(task.SavedPath)
+		err := dumpLog(task.SavedPath, tw)
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
 
-		fi, err := f.Stat()
-		if err != nil {
-			return err
-		}
-		err = tw.WriteHeader(&tar.Header{
-			Name:    path.Base(task.SavedPath),
-			Mode:    int64(fi.Mode()),
-			ModTime: fi.ModTime(),
-			Size:    fi.Size(),
-		})
-		if err != nil {
-			return err
-		}
+func dumpLog(savedPath string, tw *tar.Writer) error {
+	f, err := os.Open(savedPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	fi, err := f.Stat()
+	if err != nil {
+		return err
+	}
+	err = tw.WriteHeader(&tar.Header{
+		Name:    path.Base(savedPath),
+		Mode:    int64(fi.Mode()),
+		ModTime: fi.ModTime(),
+		Size:    fi.Size(),
+	})
+	if err != nil {
+		return err
+	}
 
-		_, err = io.Copy(tw, f)
-		if err != nil {
-			return err
-		}
+	_, err = io.Copy(tw, f)
+	if err != nil {
+		return err
 	}
 	return nil
 }

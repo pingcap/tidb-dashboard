@@ -21,7 +21,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logs"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
@@ -40,7 +40,7 @@ func Handler(apiPrefix string, config *config.Config) http.Handler {
 
 	foo.NewService(config).Register(endpoint)
 	info.NewService(config).Register(endpoint)
-	logs.NewService(config).Register(endpoint)
+	logsearch.NewService(config).Register(endpoint)
 
 	return r
 }

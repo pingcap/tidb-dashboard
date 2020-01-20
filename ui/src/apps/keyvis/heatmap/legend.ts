@@ -13,6 +13,9 @@ export default function(colorScheme: ColorScheme, dataTag: DataTag) {
   let innerHeight = 26
   let tickCount = 5
 
+  if (document.querySelector('.PD-Cluster-Legend') === null) {
+    return
+  }
   let contaiiner = (d3 as any).select('.PD-Cluster-Legend')
 
   let xScale = (d3 as any)

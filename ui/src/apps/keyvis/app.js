@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import singleSpaReact from 'single-spa-react';
 import RootComponent from './RootComponent.tsx';
-import 'semantic-ui-css/semantic.min.css';
 
 const reactLifecycles = singleSpaReact({
   React,

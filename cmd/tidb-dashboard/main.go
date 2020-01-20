@@ -20,47 +20,114 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
+	_ "net/http/pprof" //nolint:gosec
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 )
 
 type DashboardCLIConfig struct {
-	listenHost string
-	listenPort int
+	Version    bool
+	ListenHost string
+	ListenPort int
+	CoreConfig *config.Config
+}
+
+// NewCLIConfig generates the configuration of the dashboard in standalone mode.
+func NewCLIConfig() *DashboardCLIConfig {
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		sc := make(chan os.Signal, 1)
+		signal.Notify(sc,
+			syscall.SIGHUP,
+			syscall.SIGINT,
+			syscall.SIGTERM,
+			syscall.SIGQUIT)
+		<-sc
+		cancel()
+	}()
+
+	cfg := &DashboardCLIConfig{
+		CoreConfig: &config.Config{
+			Ctx:     ctx,
+			Version: utils.ReleaseVersion,
+		},
+	}
+
+	flag.BoolVar(&cfg.Version, "V", false, "Print version information and exit")
+	flag.BoolVar(&cfg.Version, "version", false, "Print version information and exit")
+	flag.StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
+	flag.IntVar(&cfg.ListenPort, "port", 32619, "The listen port of the Dashboard Server")
+	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
+	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
+	flag.Parse()
+
+	if cfg.Version {
+		utils.PrintInfo()
+		exit(0)
+	}
+
+	return cfg
 }
 
 func main() {
-	cliConfig := &DashboardCLIConfig{}
-	coreConfig := &config.Config{}
+	cliConfig := NewCLIConfig()
 
-	flag.StringVar(&cliConfig.listenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
-	flag.IntVar(&cliConfig.listenPort, "port", 12333, "The listen port of the Dashboard Server")
-	flag.StringVar(&coreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
-	flag.StringVar(&coreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
-	flag.Parse()
+	// Flushing any buffered log entries
+	defer log.Sync() //nolint:errcheck
 
-	mux := http.NewServeMux()
+	mux := http.DefaultServeMux
 	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
-	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api", coreConfig))
+	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api", cliConfig.CoreConfig))
 	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 
-	listenAddr := fmt.Sprintf("%s:%d", cliConfig.listenHost, cliConfig.listenPort)
+	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Can not listen at", zap.String("addr", listenAddr), zap.Error(err))
+		exit(1)
 	}
 
-	log.Printf("Dashboard server is listening at %s\n", listenAddr)
-	log.Printf("UI:      http://127.0.0.1:%d/dashboard/\n", cliConfig.listenPort)
-	log.Printf("API:     http://127.0.0.1:%d/dashboard/api/\n", cliConfig.listenPort)
-	log.Printf("Swagger: http://127.0.0.1:%d/dashboard/api/swagger/\n", cliConfig.listenPort)
-	log.Fatal(http.Serve(listener, mux))
+	utils.LogInfo()
+	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
+	log.Info(fmt.Sprintf("UI:      http://127.0.0.1:%d/dashboard/", cliConfig.ListenPort))
+	log.Info(fmt.Sprintf("API:     http://127.0.0.1:%d/dashboard/api/", cliConfig.ListenPort))
+	log.Info(fmt.Sprintf("Swagger: http://127.0.0.1:%d/dashboard/api/swagger/", cliConfig.ListenPort))
+
+	srv := &http.Server{Handler: mux}
+	cliConfig.CoreConfig.Wg.Add(1)
+	go func() {
+		if err := srv.Serve(listener); err != http.ErrServerClosed {
+			log.Fatal("Can not stop server", zap.Error(err))
+		}
+		cliConfig.CoreConfig.Wg.Done()
+	}()
+
+	<-cliConfig.CoreConfig.Ctx.Done()
+	if err := srv.Shutdown(context.Background()); err != nil {
+		log.Fatal("Can not stop server", zap.Error(err))
+	}
+
+	// waiting for other goroutines
+	cliConfig.CoreConfig.Wg.Wait()
+
+	log.Info("Stop dashboard server")
+}
+
+func exit(code int) {
+	log.Sync() //nolint:errcheck
+	os.Exit(code)
 }

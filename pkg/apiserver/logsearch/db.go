@@ -41,11 +41,11 @@ func NewDBClient(db *sql.DB) *DBClient {
 }
 
 func (c *DBClient) init() error {
-	_, err := c.db.Exec("create table if not exists task(id text primary key, saved_path text, state text, task_group_id text, request_info text, error text, create_time text, start_time text, stop_time text)")
+	_, err := c.db.Exec("CREATE TABLE IF NOT EXISTS task(id TEXT PRIMARY KEY, saved_path TEXT, state TEXT, task_group_id TEXT, request_info TEXT, error TEXT, create_time TEXT, start_time TEXT, stop_time TEXT)")
 	if err != nil {
 		return err
 	}
-	_, err = c.db.Exec("create table if not exists preview(id text, time interger, level interger, message text)")
+	_, err = c.db.Exec("CREATE TABLE IF NOT EXISTS preview(id TEXT, time INTERGER, level INTERGER, message TEXT)")
 	return err
 }
 
@@ -54,7 +54,7 @@ func (c *DBClient) ReplaceTask(task *Task) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.db.Exec("replace into task values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+	_, err = c.db.Exec("REPLACE INTO task VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		task.ID,
 		task.SavedPath,
 		task.State,
@@ -71,7 +71,7 @@ func (c *DBClient) ReplaceTask(task *Task) error {
 func (c *DBClient) queryTaskByID(taskID string) (*Task, error) {
 	task := &Task{}
 	var requestJSON string
-	rows := c.db.QueryRow("select id, state, saved_path, task_group_id, request_info, error, create_time, start_time, stop_time from task where id = ?", taskID)
+	rows := c.db.QueryRow("SELECT id, state, saved_path, task_group_id, request_info, error, create_time, start_time, stop_time FROM task WHERE id = ?", taskID)
 	err := rows.Scan(&task.ID, &task.State, &task.SavedPath, &task.TaskGroupID, &requestJSON, &task.Error, &task.CreateTime, &task.StartTime, &task.StopTime)
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func (c *DBClient) queryTaskByID(taskID string) (*Task, error) {
 
 func (c *DBClient) queryTasksWithCondition(condition string) ([]*Task, error) {
 	var tasks []*Task
-	rows, err := c.db.Query("select id, state, saved_path, task_group_id, request_info, error, create_time, start_time, stop_time from task " + condition)
+	rows, err := c.db.Query("SELECT id, state, saved_path, task_group_id, request_info, error, create_time, start_time, stop_time FROM task " + condition)
 	if err != nil {
 		return nil, err
 	}
@@ -111,22 +111,22 @@ func (c *DBClient) queryAllTasks() ([]*Task, error) {
 }
 
 func (c *DBClient) cleanAllUnfinishedTasks() error {
-	_, err := c.db.Exec("delete from task where state != ?;", StateFinished)
+	_, err := c.db.Exec("DELETE FROM task WHERE state != ?;", StateFinished)
 	return err
 }
 
 func (c *DBClient) queryTasks(taskGroupID string) ([]*Task, error) {
-	return c.queryTasksWithCondition(fmt.Sprintf(`where task_group_id = "%s"`, taskGroupID))
+	return c.queryTasksWithCondition(fmt.Sprintf(`WHERE task_group_id = "%s"`, taskGroupID))
 }
 
 func (c *DBClient) insertLineToPreview(taskID string, l *diagnosticspb.LogMessage) error {
-	_, err := c.db.Exec("insert into preview(id, time, level, message) values (?, ?, ?, ?)", taskID, l.Time, l.Level, l.Message)
+	_, err := c.db.Exec("INSERT INTO preview(id, time, level, message) VALUES (?, ?, ?, ?)", taskID, l.Time, l.Level, l.Message)
 	return err
 }
 
 func (c *DBClient) previewTask(taskID string) ([]*diagnosticspb.LogMessage, error) {
 	lines := make([]*diagnosticspb.LogMessage, 0, PreviewLogLinesLimit)
-	rows, err := c.db.Query("select time, level, message from preview where id = ?", taskID)
+	rows, err := c.db.Query("SELECT time, level, message FROM preview WHERE id = ?", taskID)
 	if err != nil {
 		return nil, err
 	}
@@ -144,11 +144,11 @@ func (c *DBClient) previewTask(taskID string) ([]*diagnosticspb.LogMessage, erro
 }
 
 func (c *DBClient) cleanPreview(taskID string) error {
-	_, err := c.db.Exec("delete from preview where id = ?", taskID)
+	_, err := c.db.Exec("DELETE FROM preview WHERE id = ?", taskID)
 	return err
 }
 
 func (c *DBClient) cleanTask(taskID string) error {
-	_, err := c.db.Exec("delete from task where id = ?", taskID)
+	_, err := c.db.Exec("DELETE FROM task WHERE id = ?", taskID)
 	return err
 }

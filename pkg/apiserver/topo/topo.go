@@ -171,10 +171,6 @@ func (s *Service) etcdLoad(key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if resp == nil {
-		return "", nil
-	}
-
 	if len(resp.Kvs) == 0 {
 		return "", nil
 	}

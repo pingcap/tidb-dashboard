@@ -1,12 +1,22 @@
-import React from 'react'
+import React, { useMemo } from 'react'
+import _ from 'lodash'
+import { Link } from 'react-router-dom'
 import { Table } from 'antd'
+import { HorizontalBar } from './HorizontalBar'
 import { Statement } from './statement-types'
 
-const tableColumns = [
+const tableColumns = (
+  maxTotalTimes: number,
+  maxAvgDuration: number,
+  maxCostMem: number
+) => [
   {
     title: 'SQL 类别',
     dataIndex: 'sql_category',
-    key: 'sql_category'
+    key: 'sql_category',
+    render: text => (
+      <Link to={`/statement/detail?sql_category=${text}`}>{text}</Link>
+    )
   },
   {
     title: '总时长',
@@ -17,7 +27,16 @@ const tableColumns = [
   {
     title: '总次数',
     dataIndex: 'total_times',
-    key: 'total_times'
+    key: 'total_times',
+    render: text => (
+      <div>
+        {text}
+        <HorizontalBar
+          factor={text / maxTotalTimes}
+          color="rgba(73, 169, 238, 1)"
+        />
+      </div>
+    )
   },
   {
     title: '平均影响行数',
@@ -27,12 +46,30 @@ const tableColumns = [
   {
     title: '平均时长',
     dataIndex: 'avg_duration',
-    key: 'avg_duration'
+    key: 'avg_duration',
+    render: text => (
+      <div>
+        {text}
+        <HorizontalBar
+          factor={text / maxAvgDuration}
+          color="rgba(73, 169, 238, 1)"
+        />
+      </div>
+    )
   },
   {
     title: '平均消耗内存',
     dataIndex: 'avg_cost_mem',
-    key: 'avg_cost_mem'
+    key: 'avg_cost_mem',
+    render: text => (
+      <div>
+        {text}
+        <HorizontalBar
+          factor={text / maxCostMem}
+          color="rgba(255, 102, 51, 1)"
+        />
+      </div>
+    )
   }
 ]
 
@@ -42,9 +79,24 @@ interface Props {
 }
 
 export default function StatementsTable({ statements, loading }: Props) {
+  const maxTotalTimes = useMemo(
+    () => _.max(statements.map(s => s.total_times)),
+    [statements]
+  )
+  const maxAvgDuration = useMemo(
+    () => _.max(statements.map(s => s.avg_duration)),
+    [statements]
+  )
+  const maxCostMem = useMemo(() => _.max(statements.map(s => s.avg_cost_mem)), [
+    statements
+  ])
+  const columns = useMemo(
+    () => tableColumns(maxTotalTimes!, maxAvgDuration!, maxCostMem!),
+    [maxAvgDuration, maxCostMem, maxTotalTimes]
+  )
   return (
     <Table
-      columns={tableColumns}
+      columns={columns}
       dataSource={statements}
       loading={loading}
       rowKey="sql_category"

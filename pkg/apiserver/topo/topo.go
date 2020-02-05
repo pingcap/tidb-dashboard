@@ -19,6 +19,7 @@ package topo
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -70,6 +71,7 @@ func (s *Service) Register(r *gin.RouterGroup) {
 func (s *Service) topologyHandler(c *gin.Context) {
 
 	dataMap := sync.Map{}
+	errMap := sync.Map{}
 	wg := sync.WaitGroup{}
 
 	namespace := "/topo/"
@@ -79,7 +81,14 @@ func (s *Service) topologyHandler(c *gin.Context) {
 		wg.Add(1)
 		go func(k string) {
 			defer wg.Done()
-			dataMap.Store(k, s.etcdLoad(namespace+k))
+			v, err := s.etcdLoad(namespace + k)
+			if err != nil {
+				errMap.Store(k, err)
+				return
+			}
+			if v != "" {
+				dataMap.Store(k, v)
+			}
 		}(key)
 	}
 
@@ -87,41 +96,65 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	var pdAddresses []string
 	var kvAddresses []string
 
-	wg.Add(1)
+	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		pdAddresses = s.pdLoad()
+		var err error
+		pdAddresses, err = s.pdLoad()
+		if err != nil {
+			errMap.Store("pd", err)
+		}
 	}()
 
 	go func() {
 		defer wg.Done()
-		kvAddresses = s.tikvLoad()
+		var err error
+		kvAddresses, err = s.pdLoad()
+		if err != nil {
+			errMap.Store("tikv", err)
+		}
 	}()
 
 	wg.Wait()
 
+	for _, v := range etcdPoints {
+		e, exists := errMap.Load(v)
+		if !exists {
+			continue
+		}
+		err, ok := e.(error)
+		if !ok {
+			continue
+		}
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+
 	c.JSON(http.StatusOK, Topology{
-		Grafana:      must(dataMap.Load("grafana")),
-		Alertmanager: must(dataMap.Load("alertmanager")),
+		Grafana:      convert(dataMap.Load("grafana")),
+		Alertmanager: convert(dataMap.Load("alertmanager")),
 		TiKV:         pdAddresses,
-		TiDB:         parseArray(must(dataMap.Load("tidb"))),
+		TiDB:         parseArray(convert(dataMap.Load("tidb"))),
 		PD:           kvAddresses,
 	})
 }
 
-func must(value interface{}, ok bool) string {
+func convert(value interface{}, ok bool) string {
 	if !ok {
-		panic("")
+		return ""
 	}
 	v, ok := value.(string)
 	if !ok {
-		panic("")
+		// maybe we should return err
+		return ""
 	}
 	return v
 }
 
 // parseArray will parse addresses like "address1, address2, ..., addressN"
 // to array [address1, address2, ..., addressN].
+// If input is "", it will return [""]
 func parseArray(input string) []string {
 	array := make([]string, 0)
 	for _, s := range strings.Split(input, ",") {
@@ -130,19 +163,25 @@ func parseArray(input string) []string {
 	return array
 }
 
-func (s *Service) etcdLoad(key string) string {
+// etcdLoad load key like "/topo/tidb" from pd's embedded etcd.
+// If the key doesn't exists, it will just return "", nil.
+// Otherwise, it will return value, nil.
+func (s *Service) etcdLoad(key string) (string, error) {
 	resp, err := s.etcd.Get(context.TODO(), key)
 	if err != nil {
-
+		return "", err
 	}
 	if resp == nil {
-		// TODO: should not panic
-		panic("resp == nil")
+		return "", nil
 	}
-	return string(resp.Kvs[0].Value)
+
+	if len(resp.Kvs) == 0 {
+		return "", nil
+	}
+	return string(resp.Kvs[0].Value), nil
 }
 
-func (s *Service) tikvLoad() []string {
+func (s *Service) tikvLoad() ([]string, error) {
 	stores := struct {
 		Count  int
 		Stores []struct {
@@ -154,42 +193,59 @@ func (s *Service) tikvLoad() []string {
 
 	resp, err := http.Get(s.config.PDEndPoint + "/pd/api/v1/members")
 	if err != nil {
-
+		return nil, err
 	}
+
+	if resp.StatusCode != 200 {
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		if resp.StatusCode == 500 && strings.Contains(string(b), "please start TiKV first") {
+			return []string{}, nil
+		}
+		return nil, errors.New(string(b))
+	}
+
+	defer resp.Body.Close()
+
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-
+		return nil, err
 	}
 
 	err = json.Unmarshal(data, &stores)
 	if err != nil {
-
+		return nil, err
 	}
 	address := make([]string, stores.Count, stores.Count)
 	for i, kv := range stores.Stores {
 		address[i] = kv.Store.Address
 	}
 
-	return address
+	return address, nil
 }
 
-func (s *Service) pdLoad() []string {
+func (s *Service) pdLoad() ([]string, error) {
 	resp, err := http.Get(s.config.PDEndPoint + "/pd/api/v1/members")
 	if err != nil {
-
+		return nil, err
 	}
 	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
 
+	if err != nil {
+		return nil, err
 	}
+
 	ds := struct {
 		Members struct {
 			ClientUrls []string
 		}
 	}{}
+
 	err = json.Unmarshal(data, &ds)
 	if err != nil {
-
+		return nil, err
 	}
-	return ds.Members.ClientUrls
+	return ds.Members.ClientUrls, nil
 }

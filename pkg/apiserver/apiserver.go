@@ -19,8 +19,10 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/topo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
@@ -39,6 +41,7 @@ func Handler(apiPrefix string, config *config.Config) http.Handler {
 
 	foo.NewService(config).Register(endpoint)
 	info.NewService(config).Register(endpoint)
+	topo.NewService(config).Register(endpoint)
 
 	return r
 }

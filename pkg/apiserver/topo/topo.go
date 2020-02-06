@@ -69,7 +69,6 @@ func (s *Service) Register(r *gin.RouterGroup) {
 // @Success 200 {object} Topology
 // @Router /topo [get]
 func (s *Service) topologyHandler(c *gin.Context) {
-
 	dataMap := sync.Map{}
 	errMap := sync.Map{}
 	wg := sync.WaitGroup{}
@@ -97,6 +96,7 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	var kvAddresses []string
 
 	wg.Add(2)
+
 	go func() {
 		defer wg.Done()
 		var err error
@@ -109,7 +109,7 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	go func() {
 		defer wg.Done()
 		var err error
-		kvAddresses, err = s.pdLoad()
+		kvAddresses, err = s.tikvLoad()
 		if err != nil {
 			errMap.Store("tikv", err)
 		}
@@ -130,13 +130,12 @@ func (s *Service) topologyHandler(c *gin.Context) {
 		return
 	}
 
-
 	c.JSON(http.StatusOK, Topology{
 		Grafana:      convert(dataMap.Load("grafana")),
 		Alertmanager: convert(dataMap.Load("alertmanager")),
-		TiKV:         pdAddresses,
+		TiKV:         kvAddresses,
 		TiDB:         parseArray(convert(dataMap.Load("tidb"))),
-		PD:           kvAddresses,
+		PD:           pdAddresses,
 	})
 }
 
@@ -178,16 +177,7 @@ func (s *Service) etcdLoad(key string) (string, error) {
 }
 
 func (s *Service) tikvLoad() ([]string, error) {
-	stores := struct {
-		Count  int
-		Stores []struct {
-			Store struct {
-				Address string
-			}
-		}
-	}{}
-
-	resp, err := http.Get(s.config.PDEndPoint + "/pd/api/v1/members")
+	resp, err := http.Get(s.config.PDEndPoint + "/pd/api/v1/stores")
 	if err != nil {
 		return nil, err
 	}
@@ -210,6 +200,15 @@ func (s *Service) tikvLoad() ([]string, error) {
 		return nil, err
 	}
 
+	stores := struct {
+		Count  int `json:"count"`
+		Stores []struct {
+			Store struct {
+				Address string `json:"address"`
+			} `json:"store"`
+		}
+	}{}
+
 	err = json.Unmarshal(data, &stores)
 	if err != nil {
 		return nil, err
@@ -227,6 +226,9 @@ func (s *Service) pdLoad() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode != 200 {
+		// TODO: add handling logic
+	}
 	data, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
@@ -234,14 +236,18 @@ func (s *Service) pdLoad() ([]string, error) {
 	}
 
 	ds := struct {
-		Members struct {
-			ClientUrls []string
-		}
+		Members []struct {
+			ClientUrls []string `json:"client_urls"`
+		} `json:"members"`
 	}{}
 
 	err = json.Unmarshal(data, &ds)
 	if err != nil {
 		return nil, err
 	}
-	return ds.Members.ClientUrls, nil
+	rets := make([]string, 0)
+	for _, ds := range ds.Members {
+		rets = append(rets, ds.ClientUrls...)
+	}
+	return rets, nil
 }

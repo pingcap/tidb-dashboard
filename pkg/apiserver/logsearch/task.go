@@ -29,43 +29,47 @@ import (
 	"google.golang.org/grpc"
 )
 
-type ReqInfo struct {
-	ServerType string                          `json:"server_type"`
-	IP         string                          `json:"ip"`
-	Port       string                          `json:"port"`
-	StatusPort string                          `json:"status_port"`
-	Request    *diagnosticspb.SearchLogRequest `json:"request"`
-}
-
-func (r *ReqInfo) address() string {
-	port := r.Port
-	if r.ServerType == "tidb" {
-		port = r.StatusPort
+func (c *Component) address() string {
+	port := c.Port
+	if c.ServerType == "tidb" {
+		port = c.StatusPort
 	}
-	return fmt.Sprintf("%s:%s", r.IP, port)
+	return fmt.Sprintf("%s:%s", c.IP, port)
 }
 
-func (r *ReqInfo) zipFilename() string {
-	return fmt.Sprintf("%s-%s.zip", r.IP, r.Port)
+func (c *Component) zipFilename() string {
+	return fmt.Sprintf("%s-%s.zip", c.IP, c.Port)
 }
 
-func (r *ReqInfo) logFilename() string {
-	return fmt.Sprintf("%s.log", r.ServerType)
+func (c *Component) logFilename() string {
+	return fmt.Sprintf("%s.log", c.ServerType)
 }
 
 type Task struct {
-	*ReqInfo    `json:"request_info"`
-	ID          string    `json:"id"`
-	State       TaskState `json:"state"`
-	SavedPath   string    `json:"saved_path"`
-	TaskGroupID string    `json:"task_group_id"`
-	Error       string    `json:"error"`
-	CreateTime  int64     `json:"create_time"`
-	StartTime   int64     `json:"start_time"`
-	StopTime    int64     `json:"stop_time"`
-	mu          sync.Mutex
-	cancel      context.CancelFunc
-	doneCh      chan struct{}
+	*TaskModel
+	mu     sync.Mutex
+	cancel context.CancelFunc
+	doneCh chan struct{}
+}
+
+func NewTask(component *Component, taskGroupID string, req *SearchLogRequest) *Task {
+	return &Task{
+		TaskModel: &TaskModel{
+			Component:   component,
+			Request:     req,
+			TaskGroupID: taskGroupID,
+			TaskID:      uuid.New().String(),
+			CreateTime:  time.Now().Unix(),
+		},
+		mu: sync.Mutex{},
+	}
+}
+
+func ToTask(t *TaskModel) *Task {
+	return &Task{
+		TaskModel: t,
+		mu:        sync.Mutex{},
+	}
 }
 
 func (t *Task) Abort() error {
@@ -77,15 +81,6 @@ func (t *Task) Abort() error {
 		return nil
 	}
 	return fmt.Errorf("task [%s] is not running", t.ID)
-}
-
-func NewTask(reqInfo *ReqInfo, taskGroupID string) *Task {
-	return &Task{
-		ReqInfo:     reqInfo,
-		ID:          uuid.New().String(),
-		TaskGroupID: taskGroupID,
-		CreateTime:  time.Now().Unix(),
-	}
 }
 
 func (t *Task) done() {
@@ -102,14 +97,14 @@ func (t *Task) close() {
 		t.StopTime = time.Now().Unix()
 		t.mu.Lock()
 		t.State = StateCanceled
-		db.ReplaceTask(t)
+		d.updateTask(t.TaskModel)
 		t.mu.Unlock()
 		return
 	}
 	t.StopTime = time.Now().Unix()
 	t.mu.Lock()
 	t.State = StateFinished
-	db.ReplaceTask(t)
+	d.updateTask(t.TaskModel)
 	t.mu.Unlock()
 }
 
@@ -121,7 +116,7 @@ func (t *Task) clean() error {
 			return err
 		}
 	}
-	err = db.cleanPreview(t.ID)
+	d.cleanPreview(t.TaskID)
 	return err
 }
 
@@ -133,14 +128,14 @@ func (t *Task) run() {
 	ctx, t.cancel = context.WithCancel(context.Background())
 	opt := grpc.WithInsecure()
 
-	conn, err := grpc.Dial(t.address(), opt)
+	conn, err := grpc.Dial(t.Component.address(), opt)
 	if err != nil {
 		t.Error = err.Error()
 		return
 	}
 	defer conn.Close()
 	cli := diagnosticspb.NewDiagnosticsClient(conn)
-	stream, err := cli.SearchLog(ctx, t.Request)
+	stream, err := cli.SearchLog(ctx, (*diagnosticspb.SearchLogRequest)(t.Request))
 	if err != nil {
 		t.Error = err.Error()
 		return
@@ -152,7 +147,7 @@ func (t *Task) run() {
 		t.Error = err.Error()
 		return
 	}
-	savedPath := path.Join(dir, t.zipFilename())
+	savedPath := path.Join(dir, t.Component.zipFilename())
 	f, err := os.Create(savedPath)
 	if err != nil {
 		t.Error = err.Error()
@@ -161,7 +156,7 @@ func (t *Task) run() {
 	defer f.Close()
 	zw := zip.NewWriter(f)
 	defer zw.Close()
-	writer, err := zw.Create(t.logFilename())
+	writer, err := zw.Create(t.Component.logFilename())
 	if err != nil {
 		t.Error = err.Error()
 		return
@@ -175,7 +170,8 @@ func (t *Task) run() {
 	t.StartTime = time.Now().Unix()
 	t.mu.Lock()
 	t.State = StateRunning
-	err = db.ReplaceTask(t)
+	d.deleteTask(t.TaskModel)
+	d.createTask(t.TaskModel)
 	t.mu.Unlock()
 	if err != nil {
 		t.Error = err.Error()
@@ -200,11 +196,7 @@ func (t *Task) run() {
 				return
 			}
 			if previewLogLinesCount < PreviewLogLinesLimit {
-				err = db.insertLineToPreview(t.ID, msg)
-				if err != nil {
-					t.Error = err.Error()
-					return
-				}
+				d.newPreview(t.TaskID, msg)
 				previewLogLinesCount++
 			}
 		}

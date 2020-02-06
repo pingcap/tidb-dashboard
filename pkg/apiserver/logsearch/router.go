@@ -15,7 +15,6 @@ package logsearch
 
 import (
 	"archive/tar"
-	"database/sql"
 	"fmt"
 	"io"
 	"net/http"
@@ -24,6 +23,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 )
@@ -37,15 +37,12 @@ var logsSavePath string
 func NewService(config *config.Config) *Service {
 	logsSavePath = path.Join(config.DataDir, "logs")
 	os.MkdirAll(logsSavePath, 0777)
-	sqlDB, err := sql.Open("sqlite3", path.Join(config.DataDir, "dashboard.sqlite.db"))
+	sqlDB, err := gorm.Open("sqlite3", path.Join(config.DataDir, "dashboard.sqlite.db"))
 	if err != nil {
 		panic(err)
 	}
-	db = NewDBClient(sqlDB)
-	err = db.init()
-	if err != nil {
-		panic(err)
-	}
+	d = D{sqlDB}
+	d.init()
 	scheduler = NewScheduler()
 	err = scheduler.loadTasksFromDB()
 	if err != nil {
@@ -63,43 +60,46 @@ func (s *Service) Register(r *gin.RouterGroup) {
 	endpoint.POST("/tasks", s.TaskGroupCreate)
 	endpoint.POST("/tasks/run/:id", s.TaskRun)
 	endpoint.GET("/tasks/download/:id", s.TaskDownload)
-	endpoint.GET("/download", s.MultipleTaskDownload)
+	endpoint.GET("/tasks/download", s.MultipleTaskDownload)
 	endpoint.POST("/tasks/cancel/:id", s.TaskCancel)
 	endpoint.DELETE("/tasks/:id", s.TaskDelete)
 }
 
+// @Summary List tasks
+// @Description list all log search tasks
+// @Produce json
+// @Success 200 {array} TaskModel
+// @Failure 400 {object} HTTPError
+// @Router /tasks [get]
 func (s *Service) TaskGetList(c *gin.Context) {
-	tasks, err := db.queryAllTasks()
+	tasks, err := d.queryAllTasks()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusBadRequest, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"msg":  "success",
-		"data": tasks,
-	})
+	c.JSON(http.StatusOK, tasks)
 }
 
+// @Summary Preview logs by task ID
+// @Description preview fetched logs in a task
+// @Produce json
+// @Param id path string true "task id"
+// @Success 200 {array} PreviewModel
+// @Failure 400 {object} HTTPError
+// @Router /tasks/preview/{id} [get]
 func (s *Service) TaskPreview(c *gin.Context) {
 	taskID := c.Param("id")
-	lines, err := db.previewTask(taskID)
+	lines, err := d.previewTask(taskID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusBadRequest, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"msg":  "success",
-		"data": lines,
-	})
+	c.JSON(http.StatusOK, lines)
 }
 
 type LogPreview struct {
-	task    *Task
-	preview []*diagnosticspb.LogMessage
+	task    TaskModel
+	preview []PreviewModel
 }
 
 type LinePreview struct {
@@ -109,30 +109,32 @@ type LinePreview struct {
 	Message    *diagnosticspb.LogMessage `json:"message"`
 }
 
+// @Summary Preview logs by task IDs
+// @Description preview fetched logs in multiple tasks
+// @Produce json
+// @Param id query string true "task id"
+// @Success 200 {array} LinePreview
+// @Failure 400 {object} HTTPError
+// @Router /tasks/preview/ [get]
 func (s *Service) MultipleTaskPreview(c *gin.Context) {
 	ids := c.QueryArray("id")
 	previews, err := getPreviews(ids)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusBadRequest, err)
 		return
 	}
 	res := mergeLines(previews)
-	c.JSON(http.StatusOK, gin.H{
-		"msg":  "success",
-		"data": res,
-	})
+	c.JSON(http.StatusOK, res)
 }
 
 func getPreviews(ids []string) ([]*LogPreview, error) {
 	previews := make([]*LogPreview, 0, len(ids))
 	for _, taskID := range ids {
-		task, err := db.queryTaskByID(taskID)
+		task, err := d.queryTaskByID(taskID)
 		if err != nil {
 			return nil, err
 		}
-		lines, err := db.previewTask(taskID)
+		lines, err := d.previewTask(taskID)
 		if err != nil {
 			return nil, err
 		}
@@ -144,45 +146,34 @@ func getPreviews(ids []string) ([]*LogPreview, error) {
 	return previews, nil
 }
 
+// @Summary Create task group
+// @Description create and run a task group
+// @Produce json
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /tasks [post]
 func (s *Service) TaskGroupCreate(c *gin.Context) {
 	// TODO: using parameters provided by client
 	endTime := time.Now().UnixNano() / int64(time.Millisecond)
 	startTime := int64(0)
-	var searchLogReq = &diagnosticspb.SearchLogRequest{
+	var searchLogReq = &SearchLogRequest{
 		StartTime: startTime,
 		EndTime:   endTime,
 		Levels:    nil,
 		Patterns:  nil,
 	}
-	var args = []*ReqInfo{
+	var components = []*Component{
 		{
 			ServerType: "tidb",
 			IP:         "127.0.0.1",
 			Port:       "4000",
 			StatusPort: "10080",
-			Request:    searchLogReq,
-		},
-		{
-			ServerType: "tikv",
-			IP:         "127.0.0.1",
-			Port:       "20160",
-			StatusPort: "20160",
-			Request:    searchLogReq,
-		},
-		{
-			ServerType: "pd",
-			IP:         "127.0.0.1",
-			Port:       "2379",
-			StatusPort: "2379",
-			Request:    searchLogReq,
 		},
 	}
-	taskGroupID := scheduler.addTasks(args)
+	taskGroupID := scheduler.addTasks(components, searchLogReq)
 	err := scheduler.runTaskGroup(taskGroupID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -190,20 +181,25 @@ func (s *Service) TaskGroupCreate(c *gin.Context) {
 	})
 }
 
+// @Summary Run task
+// @Description run task by task id
+// @Produce json
+// @Param id path string true "task id"
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /tasks/run/{id} [get]
 func (s *Service) TaskRun(c *gin.Context) {
 	taskID := c.Param("id")
-	task, err := db.queryTaskByID(taskID)
+	taskModel, err := d.queryTaskByID(taskID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusBadRequest, err)
 		return
 	}
+	// TODO: fix this
+	task := ToTask(&taskModel)
 	err = scheduler.deleteTask(task)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusInternalServerError, err)
 		return
 	}
 	scheduler.storeTask(task)
@@ -213,54 +209,57 @@ func (s *Service) TaskRun(c *gin.Context) {
 	})
 }
 
+// @Summary Download logs by task ID
+// @Description download logs by task id
+// @Produce application/zip
+// @Param id path string true "task id"
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /tasks/download/{id} [get]
 func (s *Service) TaskDownload(c *gin.Context) {
 	taskID := c.Param("id")
-	task, err := db.queryTaskByID(taskID)
+	task, err := d.queryTaskByID(taskID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusBadRequest, err)
 		return
 	}
 	f, err := os.Open(task.SavedPath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusInternalServerError, err)
 		return
 	}
 	_, err = io.Copy(c.Writer, f)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusInternalServerError, err)
 		return
 	}
 }
 
+// @Summary Download logs by task IDs
+// @Description download logs by multiple task IDs
+// @Produce application/x-tar
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /tasks/download [get]
 func (s *Service) MultipleTaskDownload(c *gin.Context) {
 	ids := c.QueryArray("id")
-	tasks := make([]*Task, 0, len(ids))
+	tasks := make([]*TaskModel, 0, len(ids))
 	for _, taskID := range ids {
-		task, err := db.queryTaskByID(taskID)
+		task, err := d.queryTaskByID(taskID)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"msg": err.Error(),
-			})
+			NewError(c, http.StatusBadRequest, err)
 			return
 		}
-		tasks = append(tasks, task)
+		tasks = append(tasks, &task)
 	}
 	err := dumpLogs(tasks, c.Writer)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusInternalServerError, err)
 		return
 	}
 }
 
-func dumpLogs(tasks []*Task, w http.ResponseWriter) error {
+func dumpLogs(tasks []*TaskModel, w http.ResponseWriter) error {
 	tw := tar.NewWriter(w)
 	defer tw.Close()
 	for _, task := range tasks {
@@ -299,26 +298,29 @@ func dumpLog(savedPath string, tw *tar.Writer) error {
 	return nil
 }
 
+// @Summary Cancel task
+// @Description cancel task by task ID
+// @Produce json
+// @Param id path string true "task id"
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /tasks/cancel/{id} [post]
 func (s *Service) TaskCancel(c *gin.Context) {
 	taskID := c.Param("id")
-	task, err := db.queryTaskByID(taskID)
+	task, err := d.queryTaskByID(taskID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusBadRequest, err)
 		return
 	}
 	if task.State != StateRunning {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": fmt.Sprintf("task [%s] has been %s", taskID, task.State),
-		})
+		NewError(c, http.StatusInternalServerError,
+			fmt.Errorf("task [%s] has been %s", taskID, task.State),
+		)
 		return
 	}
 	err = scheduler.abortTaskByID(taskID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -326,20 +328,23 @@ func (s *Service) TaskCancel(c *gin.Context) {
 	})
 }
 
+// @Summary Delete task
+// @Description delete task by task ID
+// @Produce json
+// @Param id path string true "task id"
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /tasks/{id} [delete]
 func (s *Service) TaskDelete(c *gin.Context) {
 	taskID := c.Param("id")
-	task, err := db.queryTaskByID(taskID)
+	taskModel, err := d.queryTaskByID(taskID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusBadRequest, err)
 		return
 	}
-	err = scheduler.deleteTask(task)
+	err = scheduler.deleteTask(ToTask(&taskModel))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": err.Error(),
-		})
+		NewError(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{

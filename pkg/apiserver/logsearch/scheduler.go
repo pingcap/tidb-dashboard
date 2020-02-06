@@ -33,16 +33,16 @@ func NewScheduler() *Scheduler {
 var scheduler *Scheduler
 
 func (s *Scheduler) loadTasksFromDB() error {
-	err := db.cleanAllUnfinishedTasks()
+	err := d.cleanAllUnfinishedTasks()
 	if err != nil {
 		return err
 	}
-	tasks, err := db.queryAllTasks()
+	tasks, err := d.queryAllTasks()
 	if err != nil {
 		return err
 	}
-	for _, task := range tasks {
-		s.storeTask(task)
+	for _, taskModel := range tasks {
+		s.storeTask(ToTask(&taskModel))
 	}
 	return nil
 }
@@ -74,7 +74,7 @@ func (s *Scheduler) storeTask(task *Task) {
 func (s *Scheduler) deleteTask(task *Task) error {
 	var err error
 	if task.State == StateRunning {
-		err = s.abortTaskByID(task.ID)
+		err = s.abortTaskByID(task.TaskID)
 		if err != nil {
 			return err
 		}
@@ -83,17 +83,17 @@ func (s *Scheduler) deleteTask(task *Task) error {
 	if err != nil {
 		return err
 	}
-	err = db.cleanTask(task.ID)
+	err = d.cleanTask(task.TaskID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Scheduler) addTasks(infos []*ReqInfo) string {
+func (s *Scheduler) addTasks(components []*Component, req *SearchLogRequest) string {
 	taskGroupID := uuid.New().String()
-	for _, info := range infos {
-		task := NewTask(info, taskGroupID)
+	for _, component := range components {
+		task := NewTask(component, taskGroupID, req)
 		s.storeTask(task)
 	}
 	return taskGroupID

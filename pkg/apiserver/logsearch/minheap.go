@@ -18,6 +18,7 @@ type Ni struct {
 	node  *LinePreview
 	value int64
 }
+
 type minHeap struct {
 	size    int
 	maxsize int
@@ -67,10 +68,10 @@ func (m *minHeap) pop(currIndies []int, lists []*LogPreview) *LinePreview {
 	i := temp.from
 	if currIndies[i] < len(lists[i].preview) {
 		node := &LinePreview{
-			TaskID:     lists[i].task.ID,
-			ServerType: lists[i].task.ServerType,
-			Address:    lists[i].task.address(),
-			Message:    lists[i].preview[currIndies[i]],
+			TaskID:     lists[i].task.TaskID,
+			ServerType: lists[i].task.Component.ServerType,
+			Address:    lists[i].task.Component.address(),
+			Message:    lists[i].preview[currIndies[i]].Message,
 		}
 		m.heap[0] = Ni{i, node, node.Message.Time}
 		currIndies[temp.from]++
@@ -95,10 +96,10 @@ func mergeLines(lists []*LogPreview) []*LinePreview {
 		if currIndies[i] < len(lists[i].preview) {
 			m.maxsize++
 			node := &LinePreview{
-				TaskID:     lists[i].task.ID,
-				ServerType: lists[i].task.ServerType,
-				Address:    lists[i].task.address(),
-				Message:    lists[i].preview[currIndies[i]],
+				TaskID:     lists[i].task.TaskID,
+				ServerType: lists[i].task.Component.ServerType,
+				Address:    lists[i].task.Component.address(),
+				Message:    lists[i].preview[currIndies[i]].Message,
 			}
 			m.add(Ni{i, node, node.Message.Time})
 			currIndies[i]++

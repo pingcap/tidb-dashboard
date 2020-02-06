@@ -12,11 +12,12 @@ require (
 	github.com/go-openapi/swag v0.19.6 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/google/uuid v1.1.1
+	github.com/jinzhu/gorm v1.9.12
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/mailru/easyjson v0.7.0 // indirect
 	github.com/mattn/go-isatty v0.0.11 // indirect
-	github.com/mattn/go-sqlite3 v2.0.2+incompatible
+	github.com/mattn/go-sqlite3 v2.0.2+incompatible // indirect
 	github.com/pingcap/kvproto v0.0.0-20200116032135-1082c388cb01
 	github.com/pingcap/log v0.0.0-20191012051959-b742a5d432e9
 	github.com/pingcap/sysutil v0.0.0-20191224141017-8c3e56fbc8b7

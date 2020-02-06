@@ -15,8 +15,11 @@ package config
 
 import (
 	"context"
+	"crypto/tls"
 	"sync"
 	"sync/atomic"
+
+	keyvisualconfig "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/config"
 )
 
 type Config struct {
@@ -25,6 +28,17 @@ type Config struct {
 	Version    string
 	DataDir    string
 	PDEndPoint string
+	TLSConfig  *tls.Config
+
+	KeyVisualConfig *keyvisualconfig.Config
+}
+
+func NewConfig(ctx context.Context, version string) *Config {
+	return &Config{
+		Ctx:             ctx,
+		Version:         version,
+		KeyVisualConfig: keyvisualconfig.NewConfig(),
+	}
 }
 
 var globalConfig atomic.Value

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Spin } from 'antd'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import StatementDetailTable from './StatementDetailTable'
 import StatementSummaryTable from './StatementSummaryTable'
@@ -10,10 +11,14 @@ import styles from './StatementDetail.module.css'
 function StatisCard({ detail: { statis } }: { detail: StatementDetailInfo }) {
   return (
     <div className={styles.statement_statis}>
-      <p>总时长：{statis.total_duration}</p>
-      <p>总次数：{statis.total_times}</p>
-      <p>平均影响行数：{statis.avg_affect_lines}</p>
-      <p>平均扫描行数：{statis.avg_scan_lines}</p>
+      <p>总时长：{getValueFormat('s')(statis.total_duration, 2, null)}</p>
+      <p>总次数：{getValueFormat('short')(statis.total_times, 0, 0)}</p>
+      <p>
+        平均影响行数：{getValueFormat('short')(statis.avg_affect_lines, 0, 0)}
+      </p>
+      <p>
+        平均扫描行数：{getValueFormat('short')(statis.avg_scan_lines, 0, 0)}
+      </p>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import _ from 'lodash'
 import { Table } from 'antd'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementDetailInfo, StatementNode } from './statement-types'
 import { HorizontalBar } from './HorizontalBar'
@@ -20,12 +21,14 @@ const tableColumns = (
     dataIndex: 'total_duration',
     key: 'total_duration',
     sorter: (a: StatementNode, b: StatementNode) =>
-      a.total_duration - b.total_duration
+      a.total_duration - b.total_duration,
+    render: text => getValueFormat('s')(text, 2, null)
   },
   {
     title: '总次数',
     dataIndex: 'total_times',
-    key: 'total_times'
+    key: 'total_times',
+    render: text => getValueFormat('short')(text, 0, 0)
   },
   {
     title: '平均时长',
@@ -33,7 +36,7 @@ const tableColumns = (
     key: 'avg_duration',
     render: text => (
       <div>
-        {text}
+        {getValueFormat('ms')(text, 2, null)}
         <HorizontalBar
           factor={text / maxAvgDuration}
           color="rgba(73, 169, 238, 1)"
@@ -47,7 +50,7 @@ const tableColumns = (
     key: 'max_duration',
     render: text => (
       <div>
-        {text}
+        {getValueFormat('ms')(text, 2, null)}
         <HorizontalBar
           factor={text / maxMaxDuration}
           color="rgba(73, 169, 238, 1)"
@@ -61,7 +64,7 @@ const tableColumns = (
     key: 'avg_cost_mem',
     render: text => (
       <div>
-        {text}
+        {getValueFormat('mbytes')(text, 2, null)}
         <HorizontalBar
           factor={text / maxCostMem}
           color="rgba(245, 154, 35, 1)"
@@ -72,7 +75,8 @@ const tableColumns = (
   {
     title: 'back_off 重试次数',
     dataIndex: 'back_off_times',
-    key: 'back_off_times'
+    key: 'back_off_times',
+    render: text => getValueFormat('short')(text, 0, 0)
   }
 ]
 

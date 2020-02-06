@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
 import { Table } from 'antd'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 import { HorizontalBar } from './HorizontalBar'
 import { Statement } from './statement-types'
 
@@ -22,7 +23,8 @@ const tableColumns = (
     title: '总时长',
     dataIndex: 'total_duration',
     key: 'total_duration',
-    sorter: (a: Statement, b: Statement) => a.total_duration - b.total_duration
+    sorter: (a: Statement, b: Statement) => a.total_duration - b.total_duration,
+    render: text => getValueFormat('s')(text, 2, null)
   },
   {
     title: '总次数',
@@ -30,7 +32,7 @@ const tableColumns = (
     key: 'total_times',
     render: text => (
       <div>
-        {text}
+        {getValueFormat('short')(text, 0, 0)}
         <HorizontalBar
           factor={text / maxTotalTimes}
           color="rgba(73, 169, 238, 1)"
@@ -41,7 +43,8 @@ const tableColumns = (
   {
     title: '平均影响行数',
     dataIndex: 'avg_affect_lines',
-    key: 'avg_affect_lines'
+    key: 'avg_affect_lines',
+    render: text => getValueFormat('short')(text, 0, 0)
   },
   {
     title: '平均时长',
@@ -49,7 +52,7 @@ const tableColumns = (
     key: 'avg_duration',
     render: text => (
       <div>
-        {text}
+        {getValueFormat('ms')(text, 2, null)}
         <HorizontalBar
           factor={text / maxAvgDuration}
           color="rgba(73, 169, 238, 1)"
@@ -63,7 +66,7 @@ const tableColumns = (
     key: 'avg_cost_mem',
     render: text => (
       <div>
-        {text}
+        {getValueFormat('mbytes')(text, 2, null)}
         <HorizontalBar
           factor={text / maxCostMem}
           color="rgba(255, 102, 51, 1)"

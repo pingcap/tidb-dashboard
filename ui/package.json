@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@baurine/grafana-value-formats":"^0.1.1",
     "@pingcap-incubator/pd-client-js": "^0.1.5",
     "@types/lodash": "^4.14.149",
     "antd": "^3.26.5",

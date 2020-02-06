@@ -1001,6 +1001,11 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
+"@baurine/grafana-value-formats@^0.1.1":
+  version "0.1.1"
+  resolved "https://npm.pkg.github.com/download/@baurine/grafana-value-formats/0.1.1/35ae41f50724009ae383412b6d39fb7e87620b3b17c2467bdfbf5d72c60e636e#ee5dabfc2bb59e148e6304e5d272c2f40fecbefc"
+  integrity sha512-TpdWQmjlIvHPAx5lWwr6CAgPfOCM+oTVv2zn1hNKriBbM4KpHbiMqkXpzxMbC9XvgtCjHJWSJh+YNCNWPibunw==
+
 "@cnakazawa/watch@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.3.tgz#099139eaec7ebf07a27c1786a3ff64f39464d2ef"

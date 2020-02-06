@@ -18,5 +18,6 @@ echo "+ Install swagger tools"
 go install github.com/swaggo/swag/cmd/swag
 
 echo "+ Generate swagger spec"
+swag init -g cmd/tidb-dashboard/main.go
 go mod vendor
 swag init --parseVendor -g cmd/tidb-dashboard/main.go

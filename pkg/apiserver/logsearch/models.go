@@ -19,6 +19,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/store"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 )
 
@@ -71,77 +72,70 @@ type TaskGroupModel struct {
 
 type PreviewModel struct {
 	gorm.Model `json:"-"`
-	TaskID     string
-	Message    *diagnosticspb.LogMessage
+	TaskID     string                    `json:"task_id"`
+	Message    *diagnosticspb.LogMessage `json:"message" gorm:"embedded"`
 }
 
-type D struct {
-	db *gorm.DB
+type DBClient struct {
+	db *store.DB
 }
 
-var d D
+var dbClient DBClient
 
-func NewDB() *gorm.DB {
-	db, err := gorm.Open("sqlite3", "test.db")
-	if err != nil {
-		panic(err)
-	}
-	return db
-}
-
-func (d *D) init() {
+func (d *DBClient) initModel() {
 	d.db.AutoMigrate(&TaskModel{})
+	d.db.AutoMigrate(&TaskGroupModel{})
 	d.db.AutoMigrate(&PreviewModel{})
 }
 
-func (d *D) createTask(task *TaskModel) error {
+func (d *DBClient) createTask(task *TaskModel) error {
 	return d.db.Create(task).Error
 }
 
-func (d *D) updateTask(task *TaskModel) error {
+func (d *DBClient) updateTask(task *TaskModel) error {
 	return d.db.Save(task).Error
 }
 
-func (d *D) deleteTask(task *TaskModel) error {
+func (d *DBClient) deleteTask(task *TaskModel) error {
 	return d.db.Delete(task).Error
 }
 
-func (d *D) queryTaskByID(taskID string) (task TaskModel, err error) {
+func (d *DBClient) queryTaskByID(taskID string) (task TaskModel, err error) {
 	err = d.db.First(&task, "task_id = ?", taskID).Error
 	return
 }
 
-func (d *D) queryTasks(taskGroupID string) (tasks []TaskModel, err error) {
-	err = d.db.Where("task_group_id = ?", taskGroupID).Find(tasks).Error
+func (d *DBClient) queryTasks(taskGroupID string) (tasks []TaskModel, err error) {
+	err = d.db.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
 	return
 }
 
-func (d *D) queryAllTasks() (tasks []TaskModel, err error) {
+func (d *DBClient) queryAllTasks() (tasks []TaskModel, err error) {
 	err = d.db.Find(&tasks).Error
 	return
 }
 
-func (d *D) cleanAllUnfinishedTasks() error {
+func (d *DBClient) cleanAllUnfinishedTasks() error {
 	return d.db.Where("state != ?", StateFinished).Delete(&TaskModel{}).Error
 }
 
-func (d *D) previewTask(taskID string) (previews []PreviewModel, err error) {
-	err = d.db.Where("task_id = ?", taskID).Find(previews).Error
+func (d *DBClient) previewTask(taskID string) (previews []PreviewModel, err error) {
+	err = d.db.Where("task_id = ?", taskID).Find(&previews).Error
 	return
 }
 
-func (d *D) newPreview(taskID string, msg *diagnosticspb.LogMessage) {
+func (d *DBClient) newPreview(taskID string, msg *diagnosticspb.LogMessage) {
 	preview := PreviewModel{
 		TaskID:  taskID,
 		Message: msg,
 	}
-	d.db.NewRecord(preview)
+	d.db.Create(&preview)
 }
 
-func (d *D) cleanPreview(taskID string) error {
+func (d *DBClient) cleanPreview(taskID string) error {
 	return d.db.Delete(PreviewModel{}, "task_id = ?", taskID).Error
 }
 
-func (d *D) cleanTask(taskID string) error {
+func (d *DBClient) cleanTask(taskID string) error {
 	return d.db.Delete(TaskModel{}, "task_id = ?", taskID).Error
 }

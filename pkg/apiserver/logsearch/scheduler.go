@@ -33,11 +33,11 @@ func NewScheduler() *Scheduler {
 var scheduler *Scheduler
 
 func (s *Scheduler) loadTasksFromDB() error {
-	err := d.cleanAllUnfinishedTasks()
+	err := dbClient.cleanAllUnfinishedTasks()
 	if err != nil {
 		return err
 	}
-	tasks, err := d.queryAllTasks()
+	tasks, err := dbClient.queryAllTasks()
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (s *Scheduler) deleteTask(task *Task) error {
 	if err != nil {
 		return err
 	}
-	err = d.cleanTask(task.TaskID)
+	err = dbClient.cleanTask(task.TaskID)
 	if err != nil {
 		return err
 	}

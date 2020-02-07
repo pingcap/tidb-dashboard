@@ -80,7 +80,7 @@ func (t *Task) Abort() error {
 		<-t.doneCh
 		return nil
 	}
-	return fmt.Errorf("task [%s] is not running", t.ID)
+	return fmt.Errorf("task [%s] is not running", t.TaskID)
 }
 
 func (t *Task) done() {
@@ -92,19 +92,19 @@ func (t *Task) done() {
 func (t *Task) close() {
 	defer t.done()
 	if t.Error != "" {
-		fmt.Printf("task [%s] stoped, err=%s", t.ID, t.Error)
+		fmt.Printf("task [%s] stoped, err=%s", t.TaskID, t.Error)
 		t.clean()
 		t.StopTime = time.Now().Unix()
 		t.mu.Lock()
 		t.State = StateCanceled
-		d.updateTask(t.TaskModel)
+		dbClient.updateTask(t.TaskModel)
 		t.mu.Unlock()
 		return
 	}
 	t.StopTime = time.Now().Unix()
 	t.mu.Lock()
 	t.State = StateFinished
-	d.updateTask(t.TaskModel)
+	dbClient.updateTask(t.TaskModel)
 	t.mu.Unlock()
 }
 
@@ -116,7 +116,7 @@ func (t *Task) clean() error {
 			return err
 		}
 	}
-	d.cleanPreview(t.TaskID)
+	dbClient.cleanPreview(t.TaskID)
 	return err
 }
 
@@ -170,8 +170,8 @@ func (t *Task) run() {
 	t.StartTime = time.Now().Unix()
 	t.mu.Lock()
 	t.State = StateRunning
-	d.deleteTask(t.TaskModel)
-	d.createTask(t.TaskModel)
+	dbClient.deleteTask(t.TaskModel)
+	dbClient.createTask(t.TaskModel)
 	t.mu.Unlock()
 	if err != nil {
 		t.Error = err.Error()
@@ -196,7 +196,7 @@ func (t *Task) run() {
 				return
 			}
 			if previewLogLinesCount < PreviewLogLinesLimit {
-				d.newPreview(t.TaskID, msg)
+				dbClient.newPreview(t.TaskID, msg)
 				previewLogLinesCount++
 			}
 		}

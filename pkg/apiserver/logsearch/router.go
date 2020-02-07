@@ -23,8 +23,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/store"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 )
 
@@ -34,17 +34,15 @@ type Service struct {
 
 var logsSavePath string
 
-func NewService(config *config.Config) *Service {
+func NewService(config *config.Config, db *store.DB) *Service {
 	logsSavePath = path.Join(config.DataDir, "logs")
 	os.MkdirAll(logsSavePath, 0777)
-	sqlDB, err := gorm.Open("sqlite3", path.Join(config.DataDir, "dashboard.sqlite.db"))
-	if err != nil {
-		panic(err)
-	}
-	d = D{sqlDB}
-	d.init()
+
+	dbClient = DBClient{db}
+	dbClient.initModel()
+
 	scheduler = NewScheduler()
-	err = scheduler.loadTasksFromDB()
+	err := scheduler.loadTasksFromDB()
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +70,7 @@ func (s *Service) Register(r *gin.RouterGroup) {
 // @Failure 400 {object} HTTPError
 // @Router /tasks [get]
 func (s *Service) TaskGetList(c *gin.Context) {
-	tasks, err := d.queryAllTasks()
+	tasks, err := dbClient.queryAllTasks()
 	if err != nil {
 		NewError(c, http.StatusBadRequest, err)
 		return
@@ -89,7 +87,7 @@ func (s *Service) TaskGetList(c *gin.Context) {
 // @Router /tasks/preview/{id} [get]
 func (s *Service) TaskPreview(c *gin.Context) {
 	taskID := c.Param("id")
-	lines, err := d.previewTask(taskID)
+	lines, err := dbClient.previewTask(taskID)
 	if err != nil {
 		NewError(c, http.StatusBadRequest, err)
 		return
@@ -130,11 +128,11 @@ func (s *Service) MultipleTaskPreview(c *gin.Context) {
 func getPreviews(ids []string) ([]*LogPreview, error) {
 	previews := make([]*LogPreview, 0, len(ids))
 	for _, taskID := range ids {
-		task, err := d.queryTaskByID(taskID)
+		task, err := dbClient.queryTaskByID(taskID)
 		if err != nil {
 			return nil, err
 		}
-		lines, err := d.previewTask(taskID)
+		lines, err := dbClient.previewTask(taskID)
 		if err != nil {
 			return nil, err
 		}
@@ -190,7 +188,7 @@ func (s *Service) TaskGroupCreate(c *gin.Context) {
 // @Router /tasks/run/{id} [get]
 func (s *Service) TaskRun(c *gin.Context) {
 	taskID := c.Param("id")
-	taskModel, err := d.queryTaskByID(taskID)
+	taskModel, err := dbClient.queryTaskByID(taskID)
 	if err != nil {
 		NewError(c, http.StatusBadRequest, err)
 		return
@@ -218,7 +216,7 @@ func (s *Service) TaskRun(c *gin.Context) {
 // @Router /tasks/download/{id} [get]
 func (s *Service) TaskDownload(c *gin.Context) {
 	taskID := c.Param("id")
-	task, err := d.queryTaskByID(taskID)
+	task, err := dbClient.queryTaskByID(taskID)
 	if err != nil {
 		NewError(c, http.StatusBadRequest, err)
 		return
@@ -245,7 +243,7 @@ func (s *Service) MultipleTaskDownload(c *gin.Context) {
 	ids := c.QueryArray("id")
 	tasks := make([]*TaskModel, 0, len(ids))
 	for _, taskID := range ids {
-		task, err := d.queryTaskByID(taskID)
+		task, err := dbClient.queryTaskByID(taskID)
 		if err != nil {
 			NewError(c, http.StatusBadRequest, err)
 			return
@@ -307,7 +305,7 @@ func dumpLog(savedPath string, tw *tar.Writer) error {
 // @Router /tasks/cancel/{id} [post]
 func (s *Service) TaskCancel(c *gin.Context) {
 	taskID := c.Param("id")
-	task, err := d.queryTaskByID(taskID)
+	task, err := dbClient.queryTaskByID(taskID)
 	if err != nil {
 		NewError(c, http.StatusBadRequest, err)
 		return
@@ -337,7 +335,7 @@ func (s *Service) TaskCancel(c *gin.Context) {
 // @Router /tasks/{id} [delete]
 func (s *Service) TaskDelete(c *gin.Context) {
 	taskID := c.Param("id")
-	taskModel, err := d.queryTaskByID(taskID)
+	taskModel, err := dbClient.queryTaskByID(taskID)
 	if err != nil {
 		NewError(c, http.StatusBadRequest, err)
 		return

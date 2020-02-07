@@ -23,6 +23,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/store"
 )
 
 var once sync.Once
@@ -33,6 +34,8 @@ func Handler(apiPrefix string, config *config.Config) http.Handler {
 		gin.SetMode(gin.ReleaseMode)
 	})
 
+	db := store.NewDB(config)
+
 	r := gin.New()
 	r.Use(cors.Default())
 	r.Use(gin.Recovery())
@@ -40,7 +43,7 @@ func Handler(apiPrefix string, config *config.Config) http.Handler {
 
 	foo.NewService(config).Register(endpoint)
 	info.NewService(config).Register(endpoint)
-	logsearch.NewService(config).Register(endpoint)
+	logsearch.NewService(config, db).Register(endpoint)
 
 	return r
 }

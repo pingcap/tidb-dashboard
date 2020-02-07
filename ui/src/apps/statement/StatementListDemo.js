@@ -40,13 +40,13 @@ export default function StatementListDemo() {
         total_duration: 99,
         total_times: 10000,
         avg_affect_lines: 13748,
-        avg_duration: 20,
-        avg_cost_mem: 20
+        avg_duration: 10,
+        avg_cost_mem: 10
       },
       {
         sql_category: 'update table1',
         total_duration: 98,
-        total_times: 10000,
+        total_times: 8000,
         avg_affect_lines: 13748,
         avg_duration: 20,
         avg_cost_mem: 20
@@ -54,7 +54,7 @@ export default function StatementListDemo() {
       {
         sql_category: 'select from table3',
         total_duration: 100,
-        total_times: 10000,
+        total_times: 1000,
         avg_affect_lines: 13748,
         avg_duration: 20,
         avg_cost_mem: 20

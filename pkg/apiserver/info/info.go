@@ -18,7 +18,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/storage"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
 type Info struct {
@@ -28,11 +28,11 @@ type Info struct {
 
 type Service struct {
 	config *config.Config
-	store  *storage.Store
+	db     *dbstore.DB
 }
 
-func NewService(config *config.Config, store *storage.Store) *Service {
-	return &Service{config: config, store: store}
+func NewService(config *config.Config, db *dbstore.DB) *Service {
+	return &Service{config: config, db: db}
 }
 
 func (s *Service) Register(r *gin.RouterGroup) {

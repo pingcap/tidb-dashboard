@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package storage
+package dbstore
 
 import (
 	"os"
@@ -24,11 +24,11 @@ import (
 	"go.uber.org/zap"
 )
 
-type Store struct {
+type DB struct {
 	*gorm.DB
 }
 
-func MustOpenDBStore(config *config.Config) *Store {
+func MustOpenDBStore(config *config.Config) *DB {
 	err := os.MkdirAll(config.DataDir, 0777)
 	if err != nil {
 		log.Fatal("Failed to create Dashboard storage directory", zap.Error(err))
@@ -39,5 +39,5 @@ func MustOpenDBStore(config *config.Config) *Store {
 		log.Fatal("Failed to open Dashboard storage file", zap.Error(err))
 		return nil
 	}
-	return &Store{db}
+	return &DB{db}
 }

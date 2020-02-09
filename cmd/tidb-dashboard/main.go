@@ -86,7 +86,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 
 func main() {
 	cliConfig := NewCLIConfig()
-	store := storage.MustOpenDBStore(cliConfig.CoreConfig)
+	store := dbstore.MustOpenDBStore(cliConfig.CoreConfig)
 	defer store.Close() //nolint:errcheck
 
 	// Flushing any buffered log entries

@@ -100,7 +100,7 @@ func main() {
 	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		log.Fatal("Can not listen at", zap.String("addr", listenAddr), zap.Error(err))
+		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 		store.Close() //nolint:errcheck
 		exit(1)
 	}

@@ -20,6 +20,8 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 )
 
 type Store struct {
@@ -29,11 +31,13 @@ type Store struct {
 func MustOpenDBStore(config *config.Config) *Store {
 	err := os.MkdirAll(config.DataDir, 0777)
 	if err != nil {
-		panic(err)
+		log.Fatal("Failed to create Dashboard storage directory", zap.Error(err))
+		return nil
 	}
 	db, err := gorm.Open("sqlite3", path.Join(config.DataDir, "dashboard.sqlite.db"))
 	if err != nil {
-		panic(err)
+		log.Fatal("Failed to open Dashboard storage file", zap.Error(err))
+		return nil
 	}
 	return &Store{db}
 }

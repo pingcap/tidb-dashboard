@@ -23,9 +23,9 @@ import (
 // Matrix is the front end displays the required data.
 type Matrix struct {
 	Keys     []string              `json:"-"`
-	DataMap  map[string][][]uint64 `json:"data"`
-	KeyAxis  []decorator.LabelKey  `json:"keyAxis"`
-	TimeAxis []int64               `json:"timeAxis"`
+	DataMap  map[string][][]uint64 `json:"data" binding:"required"`
+	KeyAxis  []decorator.LabelKey  `json:"keyAxis" binding:"required"`
+	TimeAxis []int64               `json:"timeAxis" binding:"required"`
 }
 
 // CreateMatrix uses the specified times and keys to build an initial matrix with no data.

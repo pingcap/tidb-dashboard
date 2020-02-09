@@ -16,8 +16,8 @@ package decorator
 
 // LabelKey is the decoration key.
 type LabelKey struct {
-	Key    string   `json:"key"`
-	Labels []string `json:"labels"`
+	Key    string   `json:"key" binding:"required"`
+	Labels []string `json:"labels" binding:"required"`
 }
 
 // LabelStrategy requires cross-border determination and key decoration scheme.

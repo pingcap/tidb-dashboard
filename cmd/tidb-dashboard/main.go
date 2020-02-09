@@ -32,6 +32,7 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/storage"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
@@ -85,19 +86,22 @@ func NewCLIConfig() *DashboardCLIConfig {
 
 func main() {
 	cliConfig := NewCLIConfig()
+	store := storage.MustOpenDBStore(cliConfig.CoreConfig)
+	defer store.Close() //nolint:errcheck
 
 	// Flushing any buffered log entries
 	defer log.Sync() //nolint:errcheck
 
 	mux := http.DefaultServeMux
 	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
-	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api", cliConfig.CoreConfig))
+	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api", cliConfig.CoreConfig, store))
 	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 
 	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
 		log.Fatal("Can not listen at", zap.String("addr", listenAddr), zap.Error(err))
+		store.Close() //nolint:errcheck
 		exit(1)
 	}
 

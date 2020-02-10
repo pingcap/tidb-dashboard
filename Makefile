@@ -1,6 +1,5 @@
 .PHONY: swagger_spec yarn_dependencies swagger_client ui server run dev lint
 
-ALL_PKG := go list ./... | grep -v 'tidb-dashboard/pkg/uiserver' | grep -v 'tidb-dashboard/docs'
 DASHBOARD_PKG := github.com/pingcap-incubator/tidb-dashboard
 
 BUILD_TAGS ?=

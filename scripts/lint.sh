@@ -13,17 +13,8 @@ LINT_BIN=./bin/golangci-lint
 REQUIRED_VERSION=1.23.3
 NEED_DOWNLOAD=true
 
-echo "+ Check golangci-lint binary"
-if [[ -f "${LINT_BIN}" ]]; then
-  if ${LINT_BIN} --version | grep -qF ${REQUIRED_VERSION}; then
-    NEED_DOWNLOAD=false
-  fi
-fi
-
-if [ "${NEED_DOWNLOAD}" = true ]; then
-  echo "  - Download golangci-lint binary"
-  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v${REQUIRED_VERSION}
-fi
+echo "+ Clean up go mod"
+go mod tidy
 
 echo "+ Run lints"
 ${LINT_BIN} run --fix

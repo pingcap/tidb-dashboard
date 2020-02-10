@@ -33,10 +33,6 @@ if [ ! -d "ui/build" ]; then
   exit 1
 fi
 
-echo "+ Install bindata tools"
-go install github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
-go install github.com/go-bindata/go-bindata/go-bindata
-
 echo "+ Clean up go mod"
 go mod tidy
 

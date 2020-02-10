@@ -10,15 +10,9 @@ require (
 	github.com/gin-contrib/cors v1.3.0
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/gin v1.5.0
-	github.com/go-bindata/go-bindata v3.1.2+incompatible
 	github.com/go-openapi/spec v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.6 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
-	github.com/gogo/protobuf v1.2.1 // indirect
-	github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef // indirect
-	github.com/google/btree v1.0.0 // indirect
-	github.com/gorilla/websocket v1.4.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway v1.9.0 // indirect
 	github.com/jinzhu/gorm v1.9.12
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
@@ -41,7 +35,6 @@ require (
 	golang.org/x/sys v0.0.0-20200103143344-a1369afcdac7 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	golang.org/x/tools v0.0.0-20200103221440-774c71fcf114 // indirect
-	google.golang.org/grpc v1.21.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/yaml.v2 v2.2.7 // indirect

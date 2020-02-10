@@ -1,0 +1,21 @@
+{
+  "Tools": [
+    {
+      "Repository": "github.com/swaggo/swag/cmd/swag",
+      "Commit": "f150c139699a0333974d879a76a1ee1f451e6b51"
+    },
+    {
+      "Repository": "github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs",
+      "Commit": "d0111fe6fb11d467f8aa090457c2edaa4a2d7bab"
+    },
+    {
+      "Repository": "github.com/go-bindata/go-bindata/go-bindata",
+      "Commit": "8639be0519b3f65dc77b41e3e1df0e54b71fc57e"
+    },
+    {
+      "Repository": "github.com/golangci/golangci-lint/cmd/golangci-lint",
+      "Commit": "4ba2155996359eabd8800d1fbf3e3a9777c80490"
+    }
+  ],
+  "RetoolVersion": "1.3.7"
+}

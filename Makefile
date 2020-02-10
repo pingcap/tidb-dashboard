@@ -24,10 +24,15 @@ LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.GitBranch=$(shell git rev-parse --abbr
 default:
 	SWAGGER=1 make server
 
-lint:
+lint: retool-setup
 	scripts/lint.sh
 
 dev: lint default
+
+retool-setup: export GO111MODULE=off
+retool-setup:
+	@which retool >/dev/null 2>&1 || go get github.com/twitchtv/retool
+	@./scripts/retool sync
 
 swagger_spec:
 	scripts/generate_swagger_spec.sh
@@ -45,7 +50,7 @@ ui: swagger_client
 	src/apps/keyvis/download_dummydata.sh &&\
 	REACT_APP_DASHBOARD_API_URL="" npm run build
 
-server:
+server: retool-setup
 ifeq ($(SWAGGER),1)
 	make swagger_spec
 endif

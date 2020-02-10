@@ -43,7 +43,7 @@ func Handler(apiPrefix string, config *config.Config, db *dbstore.DB) http.Handl
 
 	foo.NewService(config).Register(endpoint)
 	info.NewService(config, db).Register(endpoint)
-	keyvisual.NewService(config).Register(endpoint)
+	keyvisual.NewService(config, db).Register(endpoint)
 
 	return r
 }

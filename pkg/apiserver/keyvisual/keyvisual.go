@@ -27,6 +27,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/matrix"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/storage"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 )
@@ -54,11 +55,11 @@ type Service struct {
 	strategy matrix.Strategy
 }
 
-func NewService(cfg *config.Config) *Service {
+func NewService(cfg *config.Config, db *dbstore.DB) *Service {
 	in := input.NewStatInput(cfg)
 	labelStrategy := decorator.TiDBLabelStrategy(cfg)
-	strategy := matrix.DistanceStrategy(cfg.Ctx, &cfg.Wg, labelStrategy, 1.0/math.Phi, 15, 50)
-	stat := storage.NewStat(cfg.Ctx, &cfg.Wg, defaultStatConfig, strategy, in.GetStartTime())
+	strategy := matrix.DistanceStrategy(cfg, labelStrategy, 1.0/math.Phi, 15, 50)
+	stat := storage.NewStat(cfg, db, defaultStatConfig, strategy, in.GetStartTime())
 
 	cfg.Wg.Add(2)
 	go func() {

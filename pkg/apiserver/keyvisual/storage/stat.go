@@ -22,6 +22,8 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/matrix"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
 // LayerConfig is the configuration of layerStat.
@@ -170,7 +172,7 @@ type Stat struct {
 }
 
 // NewStat generates a Stat based on the configuration.
-func NewStat(ctx context.Context, wg *sync.WaitGroup, conf StatConfig, strategy matrix.Strategy, startTime time.Time) *Stat {
+func NewStat(cfg *config.Config, db *dbstore.DB, conf StatConfig, strategy matrix.Strategy, startTime time.Time) *Stat {
 	layers := make([]*layerStat, len(conf.LayersConfig))
 	for i, c := range conf.LayersConfig {
 		layers[i] = newLayerStat(c, strategy, startTime)
@@ -183,10 +185,10 @@ func NewStat(ctx context.Context, wg *sync.WaitGroup, conf StatConfig, strategy 
 		strategy: strategy,
 	}
 
-	wg.Add(1)
+	cfg.Wg.Add(1)
 	go func() {
-		s.rebuildRegularly(ctx)
-		wg.Done()
+		s.rebuildRegularly(cfg.Ctx)
+		cfg.Wg.Done()
 	}()
 
 	return s

@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"sync"
 	"testing"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	. "github.com/pingcap/check"
 )
 
@@ -78,8 +78,8 @@ func BenchmarkGenerateScale(b *testing.B) {
 	keymap.SaveKeys(data.Keys)
 
 	ctx, cancel := context.WithCancel(context.TODO())
-	var wg sync.WaitGroup
-	strategy := DistanceStrategy(ctx, &wg, NaiveLabelStrategy{}, 1.0/math.Phi, 15, 50).(*distanceStrategy)
+	cfg := config.NewConfig(ctx, "keyvisual matrix distance bench")
+	strategy := DistanceStrategy(cfg, NaiveLabelStrategy{}, 1.0/math.Phi, 15, 50).(*distanceStrategy)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
@@ -89,5 +89,5 @@ func BenchmarkGenerateScale(b *testing.B) {
 	}
 	b.StopTimer()
 	cancel()
-	wg.Wait()
+	cfg.Wg.Wait()
 }

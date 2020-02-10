@@ -23,6 +23,7 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
@@ -44,6 +45,7 @@ func Handler(apiPrefix string, config *config.Config, db *dbstore.DB) http.Handl
 
 	foo.NewService(config).Register(endpoint)
 	info.NewService(config, db).Register(endpoint)
+	keyvisual.NewService(config, db).Register(endpoint)
 	logsearch.NewService(config, db).Register(endpoint)
 
 	return r

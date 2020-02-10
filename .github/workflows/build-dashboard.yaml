@@ -29,4 +29,4 @@ jobs:
           make dev
       - name: Check uncommitted lint changes
         run: |
-          git diff-index --quiet HEAD --
+          git diff --exit-code

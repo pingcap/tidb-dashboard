@@ -7,17 +7,15 @@ set -euo pipefail
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PROJECT_DIR="$(dirname "$DIR")"
 
+# See https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
+
 cd $PROJECT_DIR
 
-LINT_BIN=./bin/golangci-lint
-REQUIRED_VERSION=1.23.3
-NEED_DOWNLOAD=true
+export GOBIN=$PROJECT_DIR/bin
+export PATH=$GOBIN:$PATH
 
 echo "+ Clean up go mod"
 go mod tidy
 
 echo "+ Run lints"
-${LINT_BIN} run --fix
-
-echo "+ Clean up go mod"
-go mod tidy
+golangci-lint run --fix

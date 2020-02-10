@@ -1,5 +1,6 @@
 /bin
-/docs
+/docs/*
+!/docs/.gitkeep
 
 # Binaries for programs and plugins
 *.exe

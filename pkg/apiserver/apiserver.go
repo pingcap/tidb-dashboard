@@ -24,11 +24,12 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
 var once sync.Once
 
-func Handler(apiPrefix string, config *config.Config) http.Handler {
+func Handler(apiPrefix string, config *config.Config, db *dbstore.DB) http.Handler {
 	once.Do(func() {
 		// These global modification will be effective only for the first invoke.
 		gin.SetMode(gin.ReleaseMode)
@@ -41,7 +42,7 @@ func Handler(apiPrefix string, config *config.Config) http.Handler {
 	endpoint := r.Group(apiPrefix)
 
 	foo.NewService(config).Register(endpoint)
-	info.NewService(config).Register(endpoint)
+	info.NewService(config, db).Register(endpoint)
 	keyvisual.NewService(config).Register(endpoint)
 
 	return r

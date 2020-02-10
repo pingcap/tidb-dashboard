@@ -18,4 +18,5 @@ import (
 	_ "github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs"
 	_ "github.com/go-bindata/go-bindata/go-bindata"
 	_ "github.com/swaggo/swag/cmd/swag"
+	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
 )

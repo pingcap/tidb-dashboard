@@ -30,13 +30,16 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/input"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
 )
 
 type DashboardCLIConfig struct {
@@ -61,18 +64,20 @@ func NewCLIConfig() *DashboardCLIConfig {
 	}()
 
 	cfg := &DashboardCLIConfig{
-		CoreConfig: &config.Config{
-			Ctx:     ctx,
-			Version: utils.ReleaseVersion,
-		},
+		CoreConfig: config.NewConfig(ctx, utils.ReleaseVersion),
 	}
 
 	flag.BoolVar(&cfg.Version, "V", false, "Print version information and exit")
 	flag.BoolVar(&cfg.Version, "version", false, "Print version information and exit")
 	flag.StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
-	flag.IntVar(&cfg.ListenPort, "port", 32619, "The listen port of the Dashboard Server")
+	flag.IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
 	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
+	// debug for keyvisual
+	// TODO: Hide help information
+	flag.Int64Var(&cfg.CoreConfig.KeyVisualConfig.FileStartTime, "keyvis-file-start", 0, "(debug) start time for file range in file mode")
+	flag.Int64Var(&cfg.CoreConfig.KeyVisualConfig.FileEndTime, "keyvis-file-end", 0, "(debug) end time for file range in file mode")
+
 	flag.Parse()
 
 	if cfg.Version {
@@ -80,24 +85,40 @@ func NewCLIConfig() *DashboardCLIConfig {
 		exit(0)
 	}
 
+	// keyvisual
+	startTime := cfg.CoreConfig.KeyVisualConfig.FileStartTime
+	endTime := cfg.CoreConfig.KeyVisualConfig.FileEndTime
+	if startTime != 0 || endTime != 0 {
+		// file mode for debug
+		if startTime == 0 || endTime == 0 || startTime >= endTime {
+			panic("keyvis-file-start must be smaller than keyvis-file-end, and none of them are 0")
+		}
+	} else {
+		// api mode for dashboard
+		cfg.CoreConfig.KeyVisualConfig.PeriodicGetter = input.NewAPIPeriodicGetter(cfg.CoreConfig.PDEndPoint)
+	}
+
 	return cfg
 }
 
 func main() {
 	cliConfig := NewCLIConfig()
+	store := dbstore.MustOpenDBStore(cliConfig.CoreConfig)
+	defer store.Close() //nolint:errcheck
 
 	// Flushing any buffered log entries
 	defer log.Sync() //nolint:errcheck
 
 	mux := http.DefaultServeMux
 	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
-	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api", cliConfig.CoreConfig))
+	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api", cliConfig.CoreConfig, store))
 	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 
 	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		log.Fatal("Can not listen at", zap.String("addr", listenAddr), zap.Error(err))
+		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
+		store.Close() //nolint:errcheck
 		exit(1)
 	}
 

@@ -46,10 +46,11 @@ function normalizeData(d: number[][], maxValue: number) {
   const width = d.length
   const len = width * height
   const normalized = new Uint8Array(len)
+  const logMaxValue = Math.log(maxValue)
   for (let cIdx = 0; cIdx < width; cIdx++) {
     for (let rIdx = 0; rIdx < height; rIdx++) {
       const addr = rIdx * width + cIdx
-      normalized[addr] = d[cIdx][rIdx] / maxValue * rasterizeLevel
+      normalized[addr] = Math.log(d[cIdx][rIdx]) / logMaxValue * rasterizeLevel
     }
   }
   return normalized
@@ -445,7 +446,7 @@ export async function heatmapChart(
       const yEndIdx = Math.min(yLen - 1, Math.ceil(yScale.invert(canvasHeight)))
 
       ctx.shadowColor = '#fff'
-      ctx.shadowBlur = 10 + 1 * (zoomTransform.k - 1)
+      ctx.shadowBlur = 9 + zoomTransform.k // 10 + 1 * (zoomTransform.k - 1)
       ctx.fillStyle = 'blue'
       for (let x = xStartIdx; x < xEndIdx; x++) {
         for (let y = yStartIdx; y < yEndIdx; y++) {
@@ -601,7 +602,7 @@ export async function heatmapChart(
           .merge(valueText)
           .text(withUnit(value))
           .style('color', colorScheme.label(value))
-          .style('background-color', colorScheme.backgroud(value))
+          .style('background-color', colorScheme.background(value))
 
         let unitText = valueDiv.selectAll('p.unit').data([null])
         unitText = unitText

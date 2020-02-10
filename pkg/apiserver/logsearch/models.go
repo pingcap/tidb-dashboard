@@ -19,7 +19,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/store"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 )
 
@@ -77,7 +77,7 @@ type PreviewModel struct {
 }
 
 type DBClient struct {
-	db *store.DB
+	db *dbstore.DB
 }
 
 var dbClient DBClient

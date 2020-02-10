@@ -24,7 +24,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/store"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 )
 
@@ -34,7 +34,7 @@ type Service struct {
 
 var logsSavePath string
 
-func NewService(config *config.Config, db *store.DB) *Service {
+func NewService(config *config.Config, db *dbstore.DB) *Service {
 	logsSavePath = path.Join(config.DataDir, "logs")
 	os.MkdirAll(logsSavePath, 0777)
 

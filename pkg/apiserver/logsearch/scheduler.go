@@ -18,33 +18,35 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
 type Scheduler struct {
 	taskMap sync.Map
+	db      *dbstore.DB
 }
 
-func NewScheduler() *Scheduler {
+func NewScheduler(db *dbstore.DB) *Scheduler {
 	return &Scheduler{
 		taskMap: sync.Map{},
+		db:      db,
 	}
 }
 
 var scheduler *Scheduler
 
-func (s *Scheduler) loadTasksFromDB() error {
-	err := dbClient.cleanAllUnfinishedTasks()
+func loadTasksFromDB(db *dbstore.DB) ([]*Task, error) {
+	var taskModels []TaskModel
+	err := db.Find(&taskModels).Error
 	if err != nil {
-		return err
+		return nil, err
 	}
-	tasks, err := dbClient.queryAllTasks()
-	if err != nil {
-		return err
+	tasks := make([]*Task, 0)
+	for _, taskModel := range taskModels {
+		tasks = append(tasks, toTask(taskModel, db))
 	}
-	for _, taskModel := range tasks {
-		s.storeTask(ToTask(&taskModel))
-	}
-	return nil
+	return tasks, nil
 }
 
 func (s *Scheduler) abortTaskByID(taskID string) error {
@@ -83,7 +85,7 @@ func (s *Scheduler) deleteTask(task *Task) error {
 	if err != nil {
 		return err
 	}
-	err = dbClient.cleanTask(task.TaskID)
+	err = s.db.Delete(TaskModel{}, "task_id = ?", task.TaskID).Error
 	if err != nil {
 		return err
 	}
@@ -93,7 +95,7 @@ func (s *Scheduler) deleteTask(task *Task) error {
 func (s *Scheduler) addTasks(components []*Component, req *SearchLogRequest) string {
 	taskGroupID := uuid.New().String()
 	for _, component := range components {
-		task := NewTask(component, taskGroupID, req)
+		task := NewTask(s.db, component, taskGroupID, req)
 		s.storeTask(task)
 	}
 	return taskGroupID

@@ -27,6 +27,8 @@ import (
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 	"github.com/pingcap/sysutil"
 	"google.golang.org/grpc"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
 func (c *Component) address() string {
@@ -47,12 +49,13 @@ func (c *Component) logFilename() string {
 
 type Task struct {
 	*TaskModel
+	db     *dbstore.DB
 	mu     sync.Mutex
 	cancel context.CancelFunc
 	doneCh chan struct{}
 }
 
-func NewTask(component *Component, taskGroupID string, req *SearchLogRequest) *Task {
+func NewTask(db *dbstore.DB, component *Component, taskGroupID string, req *SearchLogRequest) *Task {
 	return &Task{
 		TaskModel: &TaskModel{
 			Component:   component,
@@ -61,13 +64,15 @@ func NewTask(component *Component, taskGroupID string, req *SearchLogRequest) *T
 			TaskID:      uuid.New().String(),
 			CreateTime:  time.Now().Unix(),
 		},
+		db: db,
 		mu: sync.Mutex{},
 	}
 }
 
-func ToTask(t *TaskModel) *Task {
+func toTask(t TaskModel, db *dbstore.DB) *Task {
 	return &Task{
-		TaskModel: t,
+		TaskModel: &t,
+		db:        db,
 		mu:        sync.Mutex{},
 	}
 }
@@ -93,18 +98,18 @@ func (t *Task) close() {
 	defer t.done()
 	if t.Error != "" {
 		fmt.Printf("task [%s] stoped, err=%s", t.TaskID, t.Error)
-		t.clean()
+		t.clean() //nolint:errcheck
 		t.StopTime = time.Now().Unix()
 		t.mu.Lock()
 		t.State = StateCanceled
-		dbClient.updateTask(t.TaskModel)
+		t.db.Save(t.TaskModel)
 		t.mu.Unlock()
 		return
 	}
 	t.StopTime = time.Now().Unix()
 	t.mu.Lock()
 	t.State = StateFinished
-	dbClient.updateTask(t.TaskModel)
+	t.db.Save(t.TaskModel)
 	t.mu.Unlock()
 }
 
@@ -116,7 +121,7 @@ func (t *Task) clean() error {
 			return err
 		}
 	}
-	dbClient.cleanPreview(t.TaskID)
+	t.db.Delete(PreviewModel{}, "task_id = ?", t.TaskID)
 	return err
 }
 
@@ -170,8 +175,8 @@ func (t *Task) run() {
 	t.StartTime = time.Now().Unix()
 	t.mu.Lock()
 	t.State = StateRunning
-	dbClient.deleteTask(t.TaskModel)
-	dbClient.createTask(t.TaskModel)
+	t.db.Delete(t.TaskModel)
+	t.db.Create(t.TaskModel)
 	t.mu.Unlock()
 	if err != nil {
 		t.Error = err.Error()
@@ -196,7 +201,10 @@ func (t *Task) run() {
 				return
 			}
 			if previewLogLinesCount < PreviewLogLinesLimit {
-				dbClient.newPreview(t.TaskID, msg)
+				t.db.Create(&PreviewModel{
+					TaskID:  t.TaskID,
+					Message: msg,
+				})
 				previewLogLinesCount++
 			}
 		}

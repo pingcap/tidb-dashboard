@@ -15,7 +15,21 @@ package logsearch
 
 import (
 	"container/heap"
+
+	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 )
+
+type LogPreview struct {
+	task    TaskModel
+	preview []PreviewModel
+}
+
+type LinePreview struct {
+	TaskID     string                    `json:"task_id"`
+	ServerType string                    `json:"server_type"`
+	Address    string                    `json:"address"`
+	Message    *diagnosticspb.LogMessage `json:"message"`
+}
 
 type Node struct {
 	from  int

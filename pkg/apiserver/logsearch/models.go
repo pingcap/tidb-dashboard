@@ -18,17 +18,17 @@ import (
 	"encoding/json"
 
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
 type TaskState string
 
 const (
 	StateRunning  TaskState = "running"
-	StateCanceled           = "canceled"
-	StateFinished           = "finished"
+	StateCanceled TaskState = "canceled"
+	StateFinished TaskState = "finished"
 )
 
 type SearchLogRequest diagnosticspb.SearchLogRequest
@@ -67,7 +67,7 @@ type TaskGroupModel struct {
 	gorm.Model  `json:"-"`
 	TaskGroupID string
 	Request     *SearchLogRequest `json:"request" gorm:"type:text"`
-	state       TaskState
+	//state       TaskState
 }
 
 type PreviewModel struct {
@@ -76,66 +76,8 @@ type PreviewModel struct {
 	Message    *diagnosticspb.LogMessage `json:"message" gorm:"embedded"`
 }
 
-type DBClient struct {
-	db *dbstore.DB
-}
-
-var dbClient DBClient
-
-func (d *DBClient) initModel() {
-	d.db.AutoMigrate(&TaskModel{})
-	d.db.AutoMigrate(&TaskGroupModel{})
-	d.db.AutoMigrate(&PreviewModel{})
-}
-
-func (d *DBClient) createTask(task *TaskModel) error {
-	return d.db.Create(task).Error
-}
-
-func (d *DBClient) updateTask(task *TaskModel) error {
-	return d.db.Save(task).Error
-}
-
-func (d *DBClient) deleteTask(task *TaskModel) error {
-	return d.db.Delete(task).Error
-}
-
-func (d *DBClient) queryTaskByID(taskID string) (task TaskModel, err error) {
-	err = d.db.First(&task, "task_id = ?", taskID).Error
-	return
-}
-
-func (d *DBClient) queryTasks(taskGroupID string) (tasks []TaskModel, err error) {
-	err = d.db.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
-	return
-}
-
-func (d *DBClient) queryAllTasks() (tasks []TaskModel, err error) {
-	err = d.db.Find(&tasks).Error
-	return
-}
-
-func (d *DBClient) cleanAllUnfinishedTasks() error {
-	return d.db.Where("state != ?", StateFinished).Delete(&TaskModel{}).Error
-}
-
-func (d *DBClient) previewTask(taskID string) (previews []PreviewModel, err error) {
-	err = d.db.Where("task_id = ?", taskID).Find(&previews).Error
-	return
-}
-
-func (d *DBClient) newPreview(taskID string, msg *diagnosticspb.LogMessage) {
-	preview := PreviewModel{
-		TaskID:  taskID,
-		Message: msg,
-	}
-	d.db.Create(&preview)
-}
-
-func (d *DBClient) cleanPreview(taskID string) error {
-	return d.db.Delete(PreviewModel{}, "task_id = ?", taskID).Error
-}
-
-func (d *DBClient) cleanTask(taskID string) error {
-	return d.db.Delete(TaskModel{}, "task_id = ?", taskID).Error
+func initModel(db *dbstore.DB) {
+	db.AutoMigrate(&TaskModel{})
+	db.AutoMigrate(&TaskGroupModel{})
+	db.AutoMigrate(&PreviewModel{})
 }

@@ -37,9 +37,9 @@ func Handler(apiPrefix string, config *config.Config, db *dbstore.DB) http.Handl
 	})
 
 	r := gin.New()
-	r.Use(cors.Default(),
-		gin.Recovery(),
-		gzip.Gzip(gzip.BestSpeed))
+	r.Use(cors.Default())
+	r.Use(gin.Recovery())
+	r.Use(gzip.Gzip(gzip.BestSpeed))
 	endpoint := r.Group(apiPrefix)
 
 	foo.NewService(config).Register(endpoint)

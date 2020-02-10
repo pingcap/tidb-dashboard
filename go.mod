@@ -12,6 +12,7 @@ require (
 	github.com/go-openapi/spec v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.6 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
+	github.com/golangci/golangci-lint v1.23.3
 	github.com/jinzhu/gorm v1.9.12
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
@@ -23,10 +24,9 @@ require (
 	github.com/swaggo/http-swagger v0.0.0-20200103000832-0e9263c4b516
 	github.com/swaggo/swag v1.6.4
 	go.etcd.io/etcd v0.0.0-20190320044326-77d4b742cdbf
-	go.uber.org/zap v1.9.1
+	go.uber.org/zap v1.10.0
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect
 	golang.org/x/sys v0.0.0-20200103143344-a1369afcdac7 // indirect
 	golang.org/x/tools v0.0.0-20200103221440-774c71fcf114 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
-	gopkg.in/yaml.v2 v2.2.7 // indirect
 )

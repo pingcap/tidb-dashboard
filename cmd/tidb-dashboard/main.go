@@ -30,6 +30,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/input"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
@@ -37,8 +40,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
 )
 
 type DashboardCLIConfig struct {

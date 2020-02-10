@@ -37,6 +37,9 @@ echo "+ Install bindata tools"
 go install github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
 go install github.com/go-bindata/go-bindata/go-bindata
 
+echo "+ Clean up go mod"
+go mod tidy
+
 echo "+ Embed UI assets"
 
 go-bindata-assetfs -pkg uiserver -prefix ui $BUILD_TAG_PARAMETER ui/build/...

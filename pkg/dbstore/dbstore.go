@@ -18,10 +18,12 @@ import (
 	"path"
 
 	"github.com/jinzhu/gorm"
+	// Sqlite3 driver used by gorm
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
 type DB struct {

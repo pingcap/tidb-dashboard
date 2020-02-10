@@ -17,9 +17,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/storage"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/storage"
 )
 
 type fileInput struct {

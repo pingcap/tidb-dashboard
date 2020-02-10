@@ -22,8 +22,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	. "github.com/pingcap/check"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
 var _ = Suite(&testDistanceSuite{})

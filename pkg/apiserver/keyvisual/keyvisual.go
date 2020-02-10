@@ -21,6 +21,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/decorator"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/input"
@@ -28,8 +31,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/storage"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
 )
 
 const (

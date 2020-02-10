@@ -20,10 +20,11 @@ import (
 	"sync"
 	"time"
 
+	"go.etcd.io/etcd/clientv3"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/codec"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"go.etcd.io/etcd/clientv3"
 )
 
 type tableDetail struct {

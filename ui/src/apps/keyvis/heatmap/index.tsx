@@ -1,6 +1,13 @@
-import React, { useRef, useCallback, useEffect } from 'react'
+import React, { useRef, useEffect } from 'react'
 import * as d3 from 'd3'
 import { heatmapChart } from './chart'
+import { DecoratorLabelKey, MatrixMatrix } from '@/utils/dashboard_client'
+
+export type KeyAxisEntry = DecoratorLabelKey
+
+export type HeatmapData = MatrixMatrix
+
+export type DataTag = 'integration' | 'written_bytes' | 'read_bytes' | 'written_keys' | 'read_keys'
 
 export type HeatmapRange = {
   starttime?: number
@@ -8,25 +15,6 @@ export type HeatmapRange = {
   startkey?: string
   endkey?: string
 }
-
-export type KeyAxisEntry = {
-  key: string
-  labels: string[]
-}
-
-export type HeatmapData = {
-  timeAxis: number[]
-  keyAxis: KeyAxisEntry[]
-  data: {
-    integration: number[][]
-    read_bytes: number[][]
-    written_bytes: number[][]
-    read_keys: number[][]
-    written_keys: number[][]
-  }
-}
-
-export type DataTag = 'integration' | 'written_bytes' | 'read_bytes' | 'written_keys' | 'read_keys'
 
 export function tagUnit(tag: DataTag): string {
   switch (tag) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Heatmap, HeatmapData, HeatmapRange, DataTag } from './heatmap'
-import { fetchDummyHeatmap } from './api'
+import { fetchHeatmap } from './api'
 import './RootComponent.less'
 
 import ToolBar from './ToolBar'
@@ -19,38 +19,38 @@ class HeatmapCache {
   latestFetchIdx = 0
 
   async fetch(range: number | HeatmapRange, metricType: DataTag): Promise<HeatmapData | undefined> {
-    return fetchDummyHeatmap()
-    // let selection
-    // if (typeof range === 'number') {
-    //   const endTime = Math.ceil(new Date().getTime() / 1000)
-    //   this.cache = this.cache.filter(entry => entry.expireTime > endTime)
-    //   const entry = this.cache.find(entry => entry.dateRange === range && entry.metricType === metricType)
-    //   if (entry) {
-    //     return entry.data
-    //   } else {
-    //     selection = {
-    //       starttime: endTime - range,
-    //       endtime: endTime
-    //     }
-    //   }
-    // } else {
-    //   selection = range
-    // }
+    // return fetchDummyHeatmap()
+    let selection
+    if (typeof range === 'number') {
+      const endTime = Math.ceil(new Date().getTime() / 1000)
+      this.cache = this.cache.filter(entry => entry.expireTime > endTime)
+      const entry = this.cache.find(entry => entry.dateRange === range && entry.metricType === metricType)
+      if (entry) {
+        return entry.data
+      } else {
+        selection = {
+          starttime: endTime - range,
+          endtime: endTime
+        }
+      }
+    } else {
+      selection = range
+    }
 
-    // this.latestFetchIdx += 1
-    // const fetchIdx = this.latestFetchIdx
-    // const data = await fetchHeatmap(selection, metricType)
-    // if (fetchIdx === this.latestFetchIdx) {
-    //   if (typeof range === 'number') {
-    //     this.cache.push({
-    //       dateRange: range,
-    //       metricType: metricType,
-    //       expireTime: new Date().getTime() / 1000 + CACHE_EXPRIE_SECS,
-    //       data: data
-    //     })
-    //   }
-    //   return data
-    // }
+    this.latestFetchIdx += 1
+    const fetchIdx = this.latestFetchIdx
+    const data = await fetchHeatmap(selection, metricType)
+    if (fetchIdx === this.latestFetchIdx) {
+      if (typeof range === 'number') {
+        this.cache.push({
+          dateRange: range,
+          metricType: metricType,
+          expireTime: new Date().getTime() / 1000 + CACHE_EXPRIE_SECS,
+          data: data
+        })
+      }
+      return data
+    }
   }
 }
 
@@ -80,13 +80,6 @@ const KeyVis = props => {
   const [metricType, setMetricType] = useState<DataTag>('written_bytes')
 
   console.log('Keyvis Init')
-
-  useEffect(() => {
-    const load = async () => {
-      if (!chartState) setChartState({ heatmapData: await fetchDummyHeatmap(), metricType: metricType })
-    }
-    load()
-  }, [])
 
   useEffect(() => {
     console.log('side effect in keyvis')

@@ -1,0 +1,33 @@
+run:
+  skip-dirs:
+    - docs
+    - pkg/uiserver
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/pingcap-incubator/tidb-dashboard
+  golint:
+    min-confidence: 0
+
+linters:
+  disable-all: true
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - structcheck
+    - varcheck
+    - ineffassign
+    - deadcode
+    - typecheck
+    - golint
+    - gosec
+    - unconvert
+    - goimports
+    - depguard
+    - prealloc
+    - scopelint
+    - gocritic
+    - whitespace

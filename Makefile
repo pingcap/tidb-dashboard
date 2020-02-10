@@ -1,4 +1,4 @@
-.PHONY: tidy swagger_spec yarn_dependencies swagger_client ui server run
+.PHONY: swagger_spec yarn_dependencies swagger_client ui server run dev lint
 
 DASHBOARD_PKG := github.com/pingcap-incubator/tidb-dashboard
 
@@ -24,8 +24,10 @@ LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.GitBranch=$(shell git rev-parse --abbr
 default:
 	SWAGGER=1 make server
 
-tidy:
-	go mod tidy
+lint:
+	scripts/lint.sh
+
+dev: lint default
 
 swagger_spec:
 	scripts/generate_swagger_spec.sh

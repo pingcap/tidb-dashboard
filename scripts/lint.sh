@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script generates API client from the swagger annotation in the Golang server code.
+# This script run lints.
 
 set -euo pipefail
 
@@ -14,11 +14,11 @@ cd $PROJECT_DIR
 export GOBIN=$PROJECT_DIR/bin
 export PATH=$GOBIN:$PATH
 
-echo "+ Install swagger tools"
-go install github.com/swaggo/swag/cmd/swag
+echo "+ Install golangci-lint"
+go install github.com/golangci/golangci-lint/cmd/golangci-lint
 
 echo "+ Clean up go mod"
 go mod tidy
 
-echo "+ Generate swagger spec"
-swag init -g cmd/tidb-dashboard/main.go
+echo "+ Run lints"
+golangci-lint run --fix

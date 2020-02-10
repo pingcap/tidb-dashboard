@@ -10,13 +10,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// +build tools
 
-package tools
+// This file only ensures `docs` package exist even if swagger is not enabled. This is required for `go mod tidy`.
 
-import (
-	_ "github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs"
-	_ "github.com/go-bindata/go-bindata/go-bindata"
-	_ "github.com/swaggo/swag/cmd/swag"
-	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
-)
+package docs

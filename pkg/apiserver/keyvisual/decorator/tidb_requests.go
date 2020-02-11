@@ -82,6 +82,7 @@ func (s *tidbLabelStrategy) updateAddress() {
 		}
 		if len(tidbAddress) > 0 {
 			s.TidbAddress = tidbAddress
+			break
 		}
 	}
 }

@@ -17,8 +17,8 @@ package input
 import (
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/storage"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/storage"
 )
 
 // StatInput is the interface that different data inputs need to implement.

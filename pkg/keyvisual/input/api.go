@@ -21,7 +21,7 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/info"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/info"
 )
 
 // RegionInfo records detail region info for api usage.

@@ -17,7 +17,7 @@ package matrix
 import (
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/decorator"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
 )
 
 // Matrix is the front end displays the required data.

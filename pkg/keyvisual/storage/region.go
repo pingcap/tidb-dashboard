@@ -17,8 +17,8 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/info"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/matrix"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/info"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
 )
 
 // Source data pre processing parameters.

@@ -14,7 +14,7 @@
 package config
 
 import (
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/info"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/info"
 )
 
 type Config struct {

@@ -22,9 +22,9 @@ import (
 
 	"go.etcd.io/etcd/clientv3"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/codec"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/info"
 )
 
 type tableDetail struct {

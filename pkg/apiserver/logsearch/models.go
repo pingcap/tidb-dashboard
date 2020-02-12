@@ -18,9 +18,8 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/pingcap/kvproto/pkg/diagnosticspb"
-
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 )
 
 type TaskState string

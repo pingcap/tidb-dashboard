@@ -24,11 +24,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 	"github.com/pingcap/sysutil"
 	"google.golang.org/grpc"
-
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
 func (c *Component) address() string {
@@ -221,5 +220,5 @@ func (t *Task) run() {
 
 func toLine(msg *diagnosticspb.LogMessage) string {
 	timeStr := time.Unix(0, msg.Time*int64(time.Millisecond)).Format(sysutil.TimeStampLayout)
-	return fmt.Sprintf("[%s] [%s] %s\n", timeStr, diagnosticspb.LogLevel_name[int32(msg.Level)], msg.Message)
+	return fmt.Sprintf("[%s] [%s] %s\n", timeStr, msg.Level.String(), msg.Message)
 }

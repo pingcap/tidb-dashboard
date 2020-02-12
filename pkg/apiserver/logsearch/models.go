@@ -16,8 +16,8 @@ package logsearch
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"os"
 
-	"github.com/jinzhu/gorm"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
@@ -50,34 +50,69 @@ type Component struct {
 }
 
 type TaskModel struct {
-	gorm.Model  `json:"-"`
-	TaskID      string            `json:"task_id" gorm:"unique_index"`
+	ID          string            `json:"task_id" gorm:"primary_key type:char(36)"`
+	TaskGroupID string            `json:"task_group_id" gorm:"type:char(36)"`
 	Component   *Component        `json:"component" gorm:"embedded"`
 	Request     *SearchLogRequest `json:"request" gorm:"type:text"`
 	State       TaskState         `json:"state"`
-	SavedPath   string            `json:"saved_path"`
-	TaskGroupID string            `json:"task_group_id"`
-	Error       string            `json:"error"`
+	SavedPath   string            `json:"saved_path" gorm:"type:text"`
+	Error       string            `json:"error" gorm:"type:text"`
 	CreateTime  int64             `json:"create_time"`
 	StartTime   int64             `json:"start_time"`
 	StopTime    int64             `json:"stop_time"`
 }
 
+func (TaskModel) TableName() string {
+	return "log_search_tasks"
+}
+
 type TaskGroupModel struct {
-	gorm.Model  `json:"-"`
-	TaskGroupID string
-	Request     *SearchLogRequest `json:"request" gorm:"type:text"`
-	//state       TaskState
+	ID      string            `json:"task_group_id" gorm:"primary_key;type:char(36)"`
+	Request *SearchLogRequest `json:"request" gorm:"type:text"`
+	State   TaskState         `json:"state"`
+}
+
+func (TaskGroupModel) TableName() string {
+	return "log_search_task_groups"
 }
 
 type PreviewModel struct {
-	gorm.Model `json:"-"`
-	TaskID     string                    `json:"task_id"`
-	Message    *diagnosticspb.LogMessage `json:"message" gorm:"embedded"`
+	ID          uint                   `json:"-" grom:"primary_key"`
+	TaskID      string                 `json:"task_id" gorm:"index;type:char(36)"`
+	TaskGroupID string                 `json:"task_group_id" gorm:"index;type:char(36)"`
+	Time        int64                  `json:"time" gorm:"index"`
+	Level       diagnosticspb.LogLevel `json:"level" gorm:"type:integer"`
+	Message     string                 `json:"message" gorm:"type:text"`
 }
 
-func initModel(db *dbstore.DB) {
-	db.AutoMigrate(&TaskModel{})
-	db.AutoMigrate(&TaskGroupModel{})
-	db.AutoMigrate(&PreviewModel{})
+func (PreviewModel) TableName() string {
+	return "log_previews"
+}
+
+func autoMigrate(db *dbstore.DB) {
+	err := db.AutoMigrate(&TaskModel{}).Error
+	if err != nil {
+		panic(err)
+	}
+	err = db.AutoMigrate(&TaskGroupModel{}).Error
+	if err != nil {
+		panic(err)
+	}
+	err = db.AutoMigrate(&PreviewModel{}).Error
+	if err != nil {
+		panic(err)
+	}
+}
+
+func cleanRunningTasks(db *dbstore.DB) {
+	db.Model(&TaskGroupModel{}).Where("state = ?", StateRunning).Update("state", StateCanceled)
+	db.Model(&TaskModel{}).Where("state = ?", StateRunning).Update("state", StateCanceled)
+	var tasks []TaskModel
+	db.Where("state != ?", StateFinished).Find(&tasks)
+	for _, task := range tasks {
+		if task.SavedPath != "" {
+			os.RemoveAll(task.SavedPath) //nolint:errcheck
+		}
+		db.Where("task_id = ?", task.ID).Delete(&PreviewModel{})
+	}
 }

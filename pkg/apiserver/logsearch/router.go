@@ -40,19 +40,13 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 	logsSavePath = path.Join(config.DataDir, "logs")
 	os.MkdirAll(logsSavePath, 0777) //nolint:errcheck
 
-	initModel(db)
+	autoMigrate(db)
+	cleanRunningTasks(db)
 
-	// TODO: delete unfinished tasks in preview_model table
-	db.Where("state != ?", StateFinished).Delete(&TaskModel{})
+	taskGroup := loadLatestTaskGroup(db)
+	scheduler = NewScheduler(taskGroup, db)
+	scheduler.fillTasks(taskGroup)
 
-	scheduler = NewScheduler(db)
-	tasks, err := loadTasksFromDB(db)
-	if err != nil {
-		panic(err)
-	}
-	for _, task := range tasks {
-		scheduler.storeTask(task)
-	}
 	return &Service{
 		config: config,
 		db:     db,
@@ -63,22 +57,23 @@ func (s *Service) Register(r *gin.RouterGroup) {
 	endpoint := r.Group("/logs")
 
 	endpoint.GET("/tasks", s.TaskGetList)
-	endpoint.GET("/tasks/preview/:id", s.TaskPreview)
-	endpoint.GET("/tasks/preview", s.MultipleTaskPreview)
+	endpoint.GET("/tasks/:id/preview", s.TaskPreview)
 	endpoint.POST("/tasks", s.TaskGroupCreate)
-	endpoint.POST("/tasks/run/:id", s.TaskRun)
-	endpoint.GET("/tasks/download/:id", s.TaskDownload)
-	endpoint.GET("/tasks/download", s.MultipleTaskDownload)
-	endpoint.POST("/tasks/cancel/:id", s.TaskCancel)
-	endpoint.DELETE("/tasks/:id", s.TaskDelete)
+	endpoint.GET("/tasks/:id/download", s.TaskDownload)
+	endpoint.GET("/download", s.MultipleTaskDownload)
+	endpoint.POST("/tasks/retry", s.TaskRetry)
+	endpoint.POST("/tasks/cancel", s.TaskCancel)
+	endpoint.GET("/taskgroups/:id", s.TaskGroupGet)
+	endpoint.GET("/taskgroups/:id/preview", s.TaskGroupPreview)
+	endpoint.DELETE("/taskgroups/:id", s.TaskGroupDelete)
 }
 
-// @Summary List tasks
+// @Summary List all tasks
 // @Description list all log search tasks
 // @Produce json
 // @Success 200 {array} TaskModel
 // @Failure 400 {object} httputil.HTTPError
-// @Router /tasks [get]
+// @Router /logs/tasks [get]
 func (s *Service) TaskGetList(c *gin.Context) {
 	var tasks []TaskModel
 	err := s.db.Find(&tasks).Error
@@ -89,13 +84,13 @@ func (s *Service) TaskGetList(c *gin.Context) {
 	c.JSON(http.StatusOK, tasks)
 }
 
-// @Summary Preview logs by task ID
-// @Description preview fetched logs in a task
+// @Summary Preview logs in a task
+// @Description preview fetched logs in a task by providing task ID
 // @Produce json
 // @Param id path string true "task id"
 // @Success 200 {array} PreviewModel
 // @Failure 400 {object} httputil.HTTPError
-// @Router /tasks/preview/{id} [get]
+// @Router /logs/tasks/{id}/preview [get]
 func (s *Service) TaskPreview(c *gin.Context) {
 	taskID := c.Param("id")
 	var lines []PreviewModel
@@ -107,50 +102,13 @@ func (s *Service) TaskPreview(c *gin.Context) {
 	c.JSON(http.StatusOK, lines)
 }
 
-// @Summary Preview logs by task IDs
-// @Description preview fetched logs in multiple tasks
-// @Produce json
-// @Param id query string true "task id"
-// @Success 200 {array} LinePreview
-// @Failure 400 {object} httputil.HTTPError
-// @Router /tasks/preview/ [get]
-func (s *Service) MultipleTaskPreview(c *gin.Context) {
-	ids := c.QueryArray("id")
-	previews, err := s.getPreviews(ids)
-	if err != nil {
-		httputil.NewError(c, http.StatusBadRequest, err)
-		return
-	}
-	res := mergeLines(previews)
-	c.JSON(http.StatusOK, res)
-}
-
-func (s *Service) getPreviews(ids []string) ([]*LogPreview, error) {
-	previews := make([]*LogPreview, 0, len(ids))
-	for _, taskID := range ids {
-		task, err := s.queryTaskByID(taskID)
-		if err != nil {
-			return nil, err
-		}
-		var lines []PreviewModel
-		err = s.db.Where("task_id = ?", taskID).Find(&previews).Error
-		if err != nil {
-			return nil, err
-		}
-		previews = append(previews, &LogPreview{
-			task,
-			lines,
-		})
-	}
-	return previews, nil
-}
-
-// @Summary Create task group
+// @Summary Create a task group
 // @Description create and run a task group
 // @Produce json
+// @Success 200 {object} httputil.HTTPSuccess
 // @Failure 400 {object} httputil.HTTPError
 // @Failure 500 {object} httputil.HTTPError
-// @Router /tasks [post]
+// @Router /logs/tasks [post]
 func (s *Service) TaskGroupCreate(c *gin.Context) {
 	// TODO: using parameters provided by client
 	endTime := time.Now().UnixNano() / int64(time.Millisecond)
@@ -169,43 +127,13 @@ func (s *Service) TaskGroupCreate(c *gin.Context) {
 			StatusPort: "10080",
 		},
 	}
-	taskGroupID := scheduler.addTasks(components, searchLogReq)
-	err := scheduler.runTaskGroup(taskGroupID)
+	scheduler.addTasks(components, searchLogReq)
+	err := scheduler.runTaskGroup(false)
 	if err != nil {
 		httputil.NewError(c, http.StatusInternalServerError, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"msg": "success",
-	})
-}
-
-// @Summary Run task
-// @Description run task by task id
-// @Produce json
-// @Param id path string true "task id"
-// @Failure 400 {object} httputil.HTTPError
-// @Failure 500 {object} httputil.HTTPError
-// @Router /tasks/run/{id} [get]
-func (s *Service) TaskRun(c *gin.Context) {
-	taskID := c.Param("id")
-	taskModel, err := s.queryTaskByID(taskID)
-	if err != nil {
-		httputil.NewError(c, http.StatusBadRequest, err)
-		return
-	}
-	// TODO: fix this
-	task := toTask(taskModel, s.db)
-	err = scheduler.deleteTask(task)
-	if err != nil {
-		httputil.NewError(c, http.StatusInternalServerError, err)
-		return
-	}
-	scheduler.storeTask(task)
-	go task.run()
-	c.JSON(http.StatusOK, gin.H{
-		"msg": "success",
-	})
+	httputil.Success(c)
 }
 
 // @Summary Download logs by task ID
@@ -214,7 +142,7 @@ func (s *Service) TaskRun(c *gin.Context) {
 // @Param id path string true "task id"
 // @Failure 400 {object} httputil.HTTPError
 // @Failure 500 {object} httputil.HTTPError
-// @Router /tasks/download/{id} [get]
+// @Router /logs/tasks/{id}/download [get]
 func (s *Service) TaskDownload(c *gin.Context) {
 	taskID := c.Param("id")
 	task, err := s.queryTaskByID(taskID)
@@ -234,12 +162,18 @@ func (s *Service) TaskDownload(c *gin.Context) {
 	}
 }
 
+func (s *Service) queryTaskByID(taskID string) (task TaskModel, err error) {
+	err = s.db.First(&task, "task_id = ?", taskID).Error
+	return
+}
+
 // @Summary Download logs by task IDs
 // @Description download logs by multiple task IDs
 // @Produce application/x-tar
+// @Param id query string false "task id"
 // @Failure 400 {object} httputil.HTTPError
 // @Failure 500 {object} httputil.HTTPError
-// @Router /tasks/download [get]
+// @Router /logs/download [get]
 func (s *Service) MultipleTaskDownload(c *gin.Context) {
 	ids := c.QueryArray("id")
 	tasks := make([]*TaskModel, 0, len(ids))
@@ -297,61 +231,117 @@ func dumpLog(savedPath string, tw *tar.Writer) error {
 	return nil
 }
 
-// @Summary Cancel task
-// @Description cancel task by task ID
+// @Summary Retry failed tasks
+// @Description retry tasks that has been failed
 // @Produce json
-// @Param id path string true "task id"
-// @Failure 400 {object} httputil.HTTPError
+// @Success 200 {object} httputil.HTTPSuccess
 // @Failure 500 {object} httputil.HTTPError
-// @Router /tasks/cancel/{id} [post]
+// @Router /logs/tasks/retry [post]
+func (s *Service) TaskRetry(c *gin.Context) {
+	err := scheduler.runTaskGroup(true)
+	if err != nil {
+		httputil.NewError(c, http.StatusInternalServerError, err)
+		return
+	}
+	httputil.Success(c)
+}
+
+// @Summary Cancel running tasks
+// @Description cancel all running tasks
+// @Produce json
+// @Success 200 {object} httputil.HTTPSuccess
+// @Failure 500 {object} httputil.HTTPError
+// @Router /logs/tasks/cancel [post]
 func (s *Service) TaskCancel(c *gin.Context) {
-	taskID := c.Param("id")
-	task, err := s.queryTaskByID(taskID)
-	if err != nil {
-		httputil.NewError(c, http.StatusBadRequest, err)
-		return
-	}
-	if task.State != StateRunning {
-		httputil.NewError(c, http.StatusInternalServerError,
-			fmt.Errorf("task [%s] has been %s", taskID, task.State),
-		)
-		return
-	}
-	err = scheduler.abortTaskByID(taskID)
+	err := scheduler.abortRunningTasks()
 	if err != nil {
 		httputil.NewError(c, http.StatusInternalServerError, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"msg": "success",
-	})
+	httputil.Success(c)
 }
 
-// @Summary Delete task
-// @Description delete task by task ID
+// @Summary List tasks in a task group
+// @Description list all log search tasks in a task group by providing task group ID
 // @Produce json
-// @Param id path string true "task id"
+// @Param id path string true "task group id"
+// @Success 200 {array} TaskModel
 // @Failure 400 {object} httputil.HTTPError
-// @Failure 500 {object} httputil.HTTPError
-// @Router /tasks/{id} [delete]
-func (s *Service) TaskDelete(c *gin.Context) {
-	taskID := c.Param("id")
-	taskModel, err := s.queryTaskByID(taskID)
+// @Router /logs/taskgroups/{id} [get]
+func (s *Service) TaskGroupGet(c *gin.Context) {
+	taskGroupID := c.Param("id")
+	var tasks []TaskModel
+	err := s.db.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
 	if err != nil {
 		httputil.NewError(c, http.StatusBadRequest, err)
 		return
 	}
-	err = scheduler.deleteTask(toTask(taskModel, s.db))
+	c.JSON(http.StatusOK, tasks)
+}
+
+// @Summary Preview logs in a task group
+// @Description preview fetched logs in a task group by providing task group ID
+// @Produce json
+// @Param id query string true "task group id"
+// @Success 200 {array} PreviewModel
+// @Failure 400 {object} httputil.HTTPError
+// @Router /logs/taskgroups/{id}/preview/ [get]
+func (s *Service) TaskGroupPreview(c *gin.Context) {
+	taskGroupID := c.Param("id")
+	var lines []PreviewModel
+	err := s.db.
+		Where("task_group_id = ?", taskGroupID).
+		Order("time asc").
+		Limit(PreviewLogLinesLimit).
+		Find(&lines).Error
+	if err != nil {
+		httputil.NewError(c, http.StatusBadRequest, err)
+		return
+	}
+
+	httputil.Success(c)
+}
+
+// @Summary Delete task group
+// @Description delete a task group by providing task group ID
+// @Produce json
+// @Param id path string true "task group id"
+// @Success 200 {object} httputil.HTTPSuccess
+// @Failure 500 {object} httputil.HTTPError
+// @Router /logs/taskgroups/{id} [delete]
+func (s *Service) TaskGroupDelete(c *gin.Context) {
+	taskGroupID := c.Param("id")
+	err := s.deleteTasks(taskGroupID)
 	if err != nil {
 		httputil.NewError(c, http.StatusInternalServerError, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"msg": "success",
-	})
+	httputil.Success(c)
 }
 
-func (s *Service) queryTaskByID(taskID string) (task TaskModel, err error) {
-	err = s.db.First(&task, "task_id = ?", taskID).Error
-	return
+// deleteTasks delete all things belong a task group
+// include temporary files, and data in sqlite database
+func (s *Service) deleteTasks(taskGroupID string) error {
+	taskGroupModel := TaskGroupModel{}
+	err := s.db.Find("task_group_id = ?", taskGroupID).Find(&taskGroupModel).Error
+	if err != nil {
+		return err
+	}
+	if taskGroupModel.State == StateRunning {
+		return fmt.Errorf("failed to delete, task group [%s] is running", taskGroupID)
+	}
+	os.RemoveAll(path.Join(logsSavePath, taskGroupID))
+	err = s.db.Where("task_group_id = ?", taskGroupID).Delete(&PreviewModel{}).Error
+	if err != nil {
+		return err
+	}
+	err = s.db.Where("task_group_id = ?", taskGroupID).Delete(&TaskModel{}).Error
+	if err != nil {
+		return err
+	}
+	err = s.db.Where("id = ?", taskGroupID).Delete(&TaskGroupModel{}).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

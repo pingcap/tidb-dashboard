@@ -61,7 +61,7 @@ func NewTask(db *dbstore.DB, component *Component, taskGroupID string, req *Sear
 			Component:   component,
 			Request:     req,
 			TaskGroupID: taskGroupID,
-			TaskID:      uuid.New().String(),
+			ID:          uuid.New().String(),
 			CreateTime:  time.Now().Unix(),
 		},
 		db: db,
@@ -85,7 +85,7 @@ func (t *Task) Abort() error {
 		<-t.doneCh
 		return nil
 	}
-	return fmt.Errorf("task [%s] is not running", t.TaskID)
+	return fmt.Errorf("task [%s] is not running", t.ID)
 }
 
 func (t *Task) done() {
@@ -97,7 +97,7 @@ func (t *Task) done() {
 func (t *Task) close() {
 	defer t.done()
 	if t.Error != "" {
-		fmt.Printf("task [%s] stoped, err=%s", t.TaskID, t.Error)
+		fmt.Printf("task [%s] stoped, err=%s", t.ID, t.Error)
 		t.clean() //nolint:errcheck
 		t.StopTime = time.Now().Unix()
 		t.mu.Lock()
@@ -121,7 +121,7 @@ func (t *Task) clean() error {
 			return err
 		}
 	}
-	t.db.Delete(PreviewModel{}, "task_id = ?", t.TaskID)
+	t.db.Delete(PreviewModel{}, "task_id = ?", t.ID)
 	return err
 }
 
@@ -202,8 +202,11 @@ func (t *Task) run() {
 			}
 			if previewLogLinesCount < PreviewLogLinesLimit {
 				t.db.Create(&PreviewModel{
-					TaskID:  t.TaskID,
-					Message: msg,
+					TaskID:      t.ID,
+					TaskGroupID: t.TaskGroupID,
+					Time:        msg.Time,
+					Level:       msg.Level,
+					Message:     msg.Message,
 				})
 				previewLogLinesCount++
 			}

@@ -18,47 +18,49 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
-
+	"github.com/jinzhu/gorm"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
-type Scheduler struct {
-	taskMap sync.Map
-	db      *dbstore.DB
-}
-
-func NewScheduler(db *dbstore.DB) *Scheduler {
-	return &Scheduler{
-		taskMap: sync.Map{},
-		db:      db,
-	}
-}
-
 var scheduler *Scheduler
 
-func loadTasksFromDB(db *dbstore.DB) ([]*Task, error) {
-	var taskModels []TaskModel
-	err := db.Find(&taskModels).Error
-	if err != nil {
-		return nil, err
-	}
-	tasks := make([]*Task, 0)
-	for _, taskModel := range taskModels {
-		tasks = append(tasks, toTask(taskModel, db))
-	}
-	return tasks, nil
+type Scheduler struct {
+	taskGroup *TaskGroupModel
+	taskMap   sync.Map
+	db        *dbstore.DB
 }
 
-func (s *Scheduler) abortTaskByID(taskID string) error {
-	t := scheduler.loadTask(taskID)
-	if t == nil {
-		return fmt.Errorf("task [%s] not found", taskID)
+func NewScheduler(taskGroup *TaskGroupModel, db *dbstore.DB) *Scheduler {
+	return &Scheduler{
+		taskGroup: taskGroup,
+		taskMap:   sync.Map{},
+		db:        db,
 	}
-	err := t.Abort()
-	if err != nil {
-		return err
+}
+
+func loadLatestTaskGroup(db *dbstore.DB) *TaskGroupModel {
+	var task TaskModel
+	var taskGroup TaskGroupModel
+	err := db.Order("create_time desc").First(&task).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil
 	}
-	return nil
+	err = db.Where("id = ?", task.TaskGroupID).First(&taskGroup).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil
+	}
+	return &taskGroup
+}
+
+func (s *Scheduler) fillTasks(taskGroup *TaskGroupModel) {
+	if taskGroup == nil {
+		return
+	}
+	var taskModels []TaskModel
+	s.db.Where("task_group_id = ?", taskGroup.ID).Find(&taskModels)
+	for _, taskModel := range taskModels {
+		s.storeTask(toTask(taskModel, s.db))
+	}
 }
 
 func (s *Scheduler) loadTask(id string) *Task {
@@ -73,43 +75,85 @@ func (s *Scheduler) storeTask(task *Task) {
 	s.taskMap.Store(task.ID, task)
 }
 
-func (s *Scheduler) deleteTask(task *Task) error {
-	var err error
-	if task.State == StateRunning {
-		err = s.abortTaskByID(task.TaskID)
-		if err != nil {
-			return err
-		}
-	}
-	err = task.clean()
-	if err != nil {
-		return err
-	}
-	err = s.db.Delete(TaskModel{}, "task_id = ?", task.TaskID).Error
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *Scheduler) addTasks(components []*Component, req *SearchLogRequest) string {
+func (s *Scheduler) addTasks(components []*Component, req *SearchLogRequest) {
 	taskGroupID := uuid.New().String()
+	s.taskMap = sync.Map{}
+	s.taskGroup = &TaskGroupModel{
+		ID:      taskGroupID,
+		Request: req,
+	}
 	for _, component := range components {
 		task := NewTask(s.db, component, taskGroupID, req)
 		s.storeTask(task)
 	}
-	return taskGroupID
 }
 
-func (s *Scheduler) runTaskGroup(id string) (err error) {
+func (s *Scheduler) runTaskGroup(retryFailedTasks bool) (err error) {
+	if s.taskGroup == nil {
+		err = fmt.Errorf("no task group in scheduler")
+		return
+	}
+	var taskGroupModel TaskGroupModel
+	if retryFailedTasks {
+		if s.taskGroup.State != StateCanceled {
+			err = fmt.Errorf("cannot retry, task group is %s", s.taskGroup.State)
+			return
+		}
+		s.taskGroup.State = StateRunning
+		s.db.Save(s.taskGroup)
+	} else {
+		if s.taskGroup.State != "" {
+			err = fmt.Errorf("cannot start, task group is %s", s.taskGroup.State)
+			return
+		}
+		s.taskGroup.State = StateRunning
+		s.db.Create(s.taskGroup)
+	}
+	go func() {
+		wg := sync.WaitGroup{}
+		s.taskMap.Range(func(key, value interface{}) bool {
+			task, ok := value.(*Task)
+			if !ok {
+				err = fmt.Errorf("cannot load %+v as *Task", value)
+				return false
+			}
+			if task.TaskGroupID != s.taskGroup.ID {
+				err = fmt.Errorf("cannot start, task [%s] is belong to taskGroup [%s], not taskGroup [%s]", task.ID, task.TaskGroupID, s.taskGroup.ID)
+				return false
+			}
+			if retryFailedTasks {
+				if task.State != StateCanceled {
+					return true
+				}
+			} else {
+				if task.State != "" {
+					return true
+				}
+			}
+			wg.Add(1)
+			go func() {
+				task.run()
+				wg.Done()
+			}()
+			return true
+		})
+		wg.Wait()
+		taskGroupModel.State = StateFinished
+		s.db.Save(&taskGroupModel)
+	}()
+	return
+}
+
+// abortRunningTasks abort all running tasks
+func (s *Scheduler) abortRunningTasks() (err error) {
 	s.taskMap.Range(func(key, value interface{}) bool {
 		task, ok := value.(*Task)
 		if !ok {
 			err = fmt.Errorf("cannot load %+v as *Task", value)
-			return false
+			return true
 		}
-		if task.TaskGroupID == id {
-			go task.run()
+		if task.State == StateRunning {
+			task.Abort() //nolint:errcheck
 		}
 		return true
 	})

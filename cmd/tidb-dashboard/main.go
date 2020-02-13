@@ -76,6 +76,16 @@ func NewCLIConfig() *DashboardCLIConfig {
 		exit(0)
 	}
 
+	// keyvisual
+	startTime := cfg.KVFileStartTime
+	endTime := cfg.KVFileEndTime
+	if startTime != 0 || endTime != 0 {
+		// file mode (debug)
+		if startTime == 0 || endTime == 0 || startTime >= endTime {
+			panic("keyvis-file-start must be smaller than keyvis-file-end, and none of them are 0")
+		}
+	}
+
 	return cfg
 }
 

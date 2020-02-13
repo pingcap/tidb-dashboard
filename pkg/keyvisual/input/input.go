@@ -15,9 +15,10 @@
 package input
 
 import (
+	"context"
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/storage"
 )
 
@@ -27,11 +28,11 @@ type StatInput interface {
 	Background(stat *storage.Stat)
 }
 
-func NewStatInput(cfg *config.Config) StatInput {
-	if cfg.KeyVisualConfig.PeriodicGetter != nil {
-		return PeriodicInput(cfg.Ctx, cfg.KeyVisualConfig.PeriodicGetter)
+func NewStatInput(ctx context.Context, provider *region.PDDataProvider) StatInput {
+	if provider.FileStartTime == 0 && provider.FileEndTime == 0 {
+		return PeriodicInput(ctx, provider.PeriodicGetter)
 	}
-	startTime := time.Unix(cfg.KeyVisualConfig.FileStartTime, 0)
-	endTime := time.Unix(cfg.KeyVisualConfig.FileEndTime, 0)
+	startTime := time.Unix(provider.FileStartTime, 0)
+	endTime := time.Unix(provider.FileEndTime, 0)
 	return FileInput(startTime, endTime)
 }

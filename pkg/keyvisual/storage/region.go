@@ -17,8 +17,8 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/info"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/matrix"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 )
 
 // Source data pre processing parameters.
@@ -31,15 +31,15 @@ const (
 )
 
 // CreateStorageAxis converts the RegionsInfo to a StorageAxis.
-func CreateStorageAxis(regions info.RegionsInfo, strategy matrix.Strategy) matrix.Axis {
+func CreateStorageAxis(regions region.RegionsInfo, strategy matrix.Strategy) matrix.Axis {
 	regionsLen := regions.Len()
 	if regionsLen <= 0 {
 		panic("At least one RegionInfo")
 	}
 
 	keys := regions.GetKeys()
-	valuesList := make([][]uint64, len(info.ResponseTags))
-	for i, tag := range info.ResponseTags {
+	valuesList := make([][]uint64, len(region.ResponseTags))
+	for i, tag := range region.ResponseTags {
 		valuesList[i] = regions.GetValues(tag)
 	}
 
@@ -61,9 +61,9 @@ func IntoStorageAxis(responseAxis matrix.Axis, strategy matrix.Strategy) matrix.
 }
 
 // IntoResponseAxis converts StorageAxis to ResponseAxis.
-func IntoResponseAxis(storageAxis matrix.Axis, baseTag info.StatTag) matrix.Axis {
+func IntoResponseAxis(storageAxis matrix.Axis, baseTag region.StatTag) matrix.Axis {
 	// add integration values
-	valuesList := make([][]uint64, 1, len(info.ResponseTags))
+	valuesList := make([][]uint64, 1, len(region.ResponseTags))
 	writtenBytes := storageAxis.ValuesList[0]
 	readBytes := storageAxis.ValuesList[1]
 	integration := make([]uint64, len(writtenBytes))
@@ -73,7 +73,7 @@ func IntoResponseAxis(storageAxis matrix.Axis, baseTag info.StatTag) matrix.Axis
 	valuesList[0] = integration
 	valuesList = append(valuesList, storageAxis.ValuesList...)
 	// swap baseTag
-	for i, tag := range info.ResponseTags {
+	for i, tag := range region.ResponseTags {
 		if tag == baseTag {
 			valuesList[0], valuesList[i] = valuesList[i], valuesList[0]
 			return matrix.CreateAxis(storageAxis.Keys, valuesList)
@@ -86,7 +86,7 @@ func IntoResponseAxis(storageAxis matrix.Axis, baseTag info.StatTag) matrix.Axis
 func wash(axis *matrix.Axis) {
 	for i, value := range axis.ValuesList[0] {
 		if value >= dirtyValue {
-			for j := range info.ResponseTags {
+			for j := range region.ResponseTags {
 				axis.ValuesList[j][i] = 0
 			}
 		}

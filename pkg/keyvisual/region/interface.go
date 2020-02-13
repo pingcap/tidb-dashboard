@@ -11,7 +11,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package info
+package region
+
+import (
+	"go.etcd.io/etcd/clientv3"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+)
 
 type RegionsInfo interface {
 	Len() int
@@ -20,3 +26,15 @@ type RegionsInfo interface {
 }
 
 type RegionsInfoGenerator func() (RegionsInfo, error)
+
+type PDDataProvider struct {
+	// File mode (debug)
+	FileStartTime int64
+	FileEndTime   int64
+	// API or Core mode
+	// This item takes effect only when both FileStartTime and FileEndTime are 0.
+	PeriodicGetter RegionsInfoGenerator
+
+	GetEtcdClient func() *clientv3.Client
+	Store         *dbstore.DB
+}

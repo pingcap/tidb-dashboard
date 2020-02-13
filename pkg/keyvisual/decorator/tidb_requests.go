@@ -22,11 +22,8 @@ import (
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
-)
 
-const (
-	etcdTimeout               = time.Second * 3
-	tidbServerInformationPath = "/tidb/server/info"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
 type serverInfo struct {
@@ -60,22 +57,25 @@ type tableInfo struct {
 }
 
 func (s *tidbLabelStrategy) updateAddress() {
-	cli := s.EtcdClient
+	cli := s.Provider.GetEtcdClient()
+	if cli == nil {
+		return
+	}
 	var info serverInfo
 	for i := 0; i < retryCnt; i++ {
 		var tidbAddress []string
 		ectx, cancel := context.WithTimeout(s.Ctx, etcdGetTimeout)
-		resp, err := cli.Get(ectx, tidbServerInformationPath, clientv3.WithPrefix())
+		resp, err := cli.Get(ectx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
 		cancel()
 		if err != nil {
-			log.Warn("get key failed", zap.String("key", tidbServerInformationPath), zap.Error(err))
+			log.Warn("get key failed", zap.String("key", pd.TiDBServerInformationPath), zap.Error(err))
 			time.Sleep(200 * time.Millisecond)
 			continue
 		}
 		for _, kv := range resp.Kvs {
 			err = json.Unmarshal(kv.Value, &info)
 			if err != nil {
-				log.Warn("get key failed", zap.String("key", tidbServerInformationPath), zap.Error(err))
+				log.Warn("get key failed", zap.String("key", pd.TiDBServerInformationPath), zap.Error(err))
 				continue
 			}
 			tidbAddress = append(tidbAddress, fmt.Sprintf("%s:%d", info.IP, info.StatusPort))

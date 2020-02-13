@@ -14,23 +14,24 @@
 package keyvisual
 
 import (
+	"context"
 	"encoding/hex"
 	"math"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/decorator"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/info"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/input"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/matrix"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/storage"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/storage"
 )
 
 const (
@@ -50,33 +51,40 @@ var (
 )
 
 type Service struct {
-	config *config.Config
+	wg       *sync.WaitGroup
+	config   *config.Config
+	provider *region.PDDataProvider
 
+	in       input.StatInput
 	stat     *storage.Stat
 	strategy matrix.Strategy
 }
 
-func NewService(cfg *config.Config, db *dbstore.DB) *Service {
-	in := input.NewStatInput(cfg)
-	labelStrategy := decorator.TiDBLabelStrategy(cfg)
-	strategy := matrix.DistanceStrategy(cfg, labelStrategy, 1.0/math.Phi, 15, 50)
-	stat := storage.NewStat(cfg, db, defaultStatConfig, strategy, in.GetStartTime())
-
-	cfg.Wg.Add(2)
-	go func() {
-		labelStrategy.Background()
-		cfg.Wg.Done()
-	}()
-	go func() {
-		in.Background(stat)
-		cfg.Wg.Done()
-	}()
-
+func NewService(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider) *Service {
+	in := input.NewStatInput(ctx, provider)
+	labelStrategy := decorator.TiDBLabelStrategy(ctx, provider)
+	strategy := matrix.DistanceStrategy(ctx, wg, labelStrategy, 1.0/math.Phi, 15, 50)
+	stat := storage.NewStat(ctx, wg, provider, defaultStatConfig, strategy, in.GetStartTime())
 	return &Service{
+		wg:       wg,
 		config:   cfg,
+		provider: provider,
+		in:       in,
 		stat:     stat,
 		strategy: strategy,
 	}
+}
+
+func (s *Service) Start() {
+	s.wg.Add(2)
+	go func() {
+		s.strategy.Background()
+		s.wg.Done()
+	}()
+	go func() {
+		s.in.Background(s.stat)
+		s.wg.Done()
+	}()
 }
 
 func (s *Service) Register(r *gin.RouterGroup) {
@@ -146,9 +154,9 @@ func (s *Service) heatmapsHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "bad request")
 		return
 	}
-	baseTag := info.IntoTag(typ)
+	baseTag := region.IntoTag(typ)
 	plane := s.stat.Range(startTime, endTime, startKey, endKey, baseTag)
-	resp := plane.Pixel(s.strategy, maxDisplayY, info.GetDisplayTags(baseTag))
+	resp := plane.Pixel(s.strategy, maxDisplayY, region.GetDisplayTags(baseTag))
 	resp.Range(startKey, endKey)
 	// TODO: An expedient to reduce data transmission, which needs to be deleted later.
 	resp.DataMap = map[string][][]uint64{

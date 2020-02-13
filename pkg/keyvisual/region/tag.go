@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package info
+package region
 
 // StatTag is a tag for statistics of different dimensions.
 type StatTag int

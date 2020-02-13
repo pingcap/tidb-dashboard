@@ -22,8 +22,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
-var scheduler *Scheduler
-
 type Scheduler struct {
 	taskGroup *TaskGroupModel
 	taskMap   sync.Map
@@ -138,13 +136,14 @@ func (s *Scheduler) runTaskGroup(retryFailedTasks bool) (err error) {
 			return true
 		})
 		wg.Wait()
-		taskGroupModel.State = StateFinished
+		s.taskGroup.State = StateFinished
 		s.db.Save(&taskGroupModel)
 	}()
 	return
 }
 
 // abortRunningTasks abort all running tasks
+// This function waits util all tasked aborted, and then return
 func (s *Scheduler) abortRunningTasks() (err error) {
 	s.taskMap.Range(func(key, value interface{}) bool {
 		task, ok := value.(*Task)

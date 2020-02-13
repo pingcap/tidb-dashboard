@@ -29,8 +29,9 @@ import (
 )
 
 type Service struct {
-	config *config.Config
-	db     *dbstore.DB
+	config    *config.Config
+	db        *dbstore.DB
+	scheduler *Scheduler
 }
 
 var logsSavePath string
@@ -43,12 +44,13 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 	cleanRunningTasks(db)
 
 	taskGroup := loadLatestTaskGroup(db)
-	scheduler = NewScheduler(taskGroup, db)
+	scheduler := NewScheduler(taskGroup, db)
 	scheduler.fillTasks(taskGroup)
 
 	return &Service{
-		config: config,
-		db:     db,
+		config:    config,
+		db:        db,
+		scheduler: scheduler,
 	}
 }
 
@@ -57,11 +59,11 @@ func (s *Service) Register(r *gin.RouterGroup) {
 
 	endpoint.GET("/tasks", s.TaskGetList)
 	endpoint.GET("/tasks/:id/preview", s.TaskPreview)
-	endpoint.POST("/tasks", s.TaskGroupCreate)
 	endpoint.GET("/tasks/:id/download", s.TaskDownload)
 	endpoint.GET("/download", s.MultipleTaskDownload)
 	endpoint.POST("/tasks/retry", s.TaskRetry)
 	endpoint.POST("/tasks/cancel", s.TaskCancel)
+	endpoint.POST("/taskgroups", s.TaskGroupCreate)
 	endpoint.GET("/taskgroups/:id", s.TaskGroupGet)
 	endpoint.GET("/taskgroups/:id/preview", s.TaskGroupPreview)
 	endpoint.DELETE("/taskgroups/:id", s.TaskGroupDelete)
@@ -107,7 +109,7 @@ func (s *Service) TaskPreview(c *gin.Context) {
 // @Success 200 {object} httputil.HTTPSuccess
 // @Failure 400 {object} httputil.HTTPError
 // @Failure 500 {object} httputil.HTTPError
-// @Router /logs/tasks [post]
+// @Router /logs/taskgroups [post]
 func (s *Service) TaskGroupCreate(c *gin.Context) {
 	// TODO: using parameters provided by client
 	endTime := time.Now().UnixNano() / int64(time.Millisecond)
@@ -126,8 +128,13 @@ func (s *Service) TaskGroupCreate(c *gin.Context) {
 			StatusPort: "10080",
 		},
 	}
-	scheduler.addTasks(components, searchLogReq)
-	err := scheduler.runTaskGroup(false)
+	if s.scheduler.taskGroup != nil && s.scheduler.taskGroup.State == StateRunning {
+		httputil.NewError(c, http.StatusInternalServerError,
+			fmt.Errorf("cannot start, task group is %s", StateRunning))
+		return
+	}
+	s.scheduler.addTasks(components, searchLogReq)
+	err := s.scheduler.runTaskGroup(false)
 	if err != nil {
 		httputil.NewError(c, http.StatusInternalServerError, err)
 		return
@@ -237,7 +244,7 @@ func dumpLog(savedPath string, tw *tar.Writer) error {
 // @Failure 500 {object} httputil.HTTPError
 // @Router /logs/tasks/retry [post]
 func (s *Service) TaskRetry(c *gin.Context) {
-	err := scheduler.runTaskGroup(true)
+	err := s.scheduler.runTaskGroup(true)
 	if err != nil {
 		httputil.NewError(c, http.StatusInternalServerError, err)
 		return
@@ -252,7 +259,7 @@ func (s *Service) TaskRetry(c *gin.Context) {
 // @Failure 500 {object} httputil.HTTPError
 // @Router /logs/tasks/cancel [post]
 func (s *Service) TaskCancel(c *gin.Context) {
-	err := scheduler.abortRunningTasks()
+	err := s.scheduler.abortRunningTasks()
 	if err != nil {
 		httputil.NewError(c, http.StatusInternalServerError, err)
 		return
@@ -322,7 +329,7 @@ func (s *Service) TaskGroupDelete(c *gin.Context) {
 // include temporary files, and data in sqlite database
 func (s *Service) deleteTasks(taskGroupID string) error {
 	taskGroupModel := TaskGroupModel{}
-	err := s.db.Find("task_group_id = ?", taskGroupID).Find(&taskGroupModel).Error
+	err := s.db.Where("id = ?", taskGroupID).Find(&taskGroupModel).Error
 	if err != nil {
 		return err
 	}

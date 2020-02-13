@@ -21,10 +21,10 @@ import (
 
 // Success example
 func Success(ctx *gin.Context) {
-	er := HTTPSuccess{
+	msg := HTTPSuccess{
 		Message: "success",
 	}
-	ctx.JSON(http.StatusOK, er)
+	ctx.JSON(http.StatusOK, msg)
 }
 
 // HTTPSuccess example

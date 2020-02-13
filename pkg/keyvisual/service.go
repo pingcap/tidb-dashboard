@@ -75,7 +75,7 @@ func NewService(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config, pro
 	}
 }
 
-func (s *Service) Run() {
+func (s *Service) Start() {
 	s.wg.Add(2)
 	go func() {
 		s.strategy.Background()

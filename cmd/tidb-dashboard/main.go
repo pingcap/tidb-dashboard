@@ -32,11 +32,16 @@ import (
 	"syscall"
 
 	"github.com/pingcap/log"
+	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
+	keyvisualInput "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
+	keyvisualRegion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
@@ -115,9 +120,28 @@ func main() {
 	store := dbstore.MustOpenDBStore(cliConfig.CoreConfig)
 	defer store.Close() //nolint:errcheck
 
+	etcdClient := pd.NewEtcdClient(cliConfig.CoreConfig)
+
+	// key visual
+	remoteDataProvider := &keyvisualRegion.PDDataProvider{
+		FileStartTime:  cliConfig.KVFileStartTime,
+		FileEndTime:    cliConfig.KVFileEndTime,
+		PeriodicGetter: keyvisualInput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint),
+		GetEtcdClient: func() *clientv3.Client {
+			return etcdClient
+		},
+		Store: store,
+	}
+	keyvisualService := keyvisual.NewService(ctx, wg, cliConfig.CoreConfig, remoteDataProvider)
+	keyvisualService.Start()
+
+	services := &apiserver.Services{
+		Store:     store,
+		KeyVisual: keyvisualService,
+	}
 	mux := http.DefaultServeMux
 	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
-	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api", cliConfig.CoreConfig, store))
+	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api", cliConfig.CoreConfig, services))
 	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 
 	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)

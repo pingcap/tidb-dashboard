@@ -23,7 +23,7 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/etcdclient"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
 type serverInfo struct {
@@ -65,17 +65,17 @@ func (s *tidbLabelStrategy) updateAddress() {
 	for i := 0; i < retryCnt; i++ {
 		var tidbAddress []string
 		ectx, cancel := context.WithTimeout(s.Ctx, etcdGetTimeout)
-		resp, err := cli.Get(ectx, etcdclient.TiDBServerInformationPath, clientv3.WithPrefix())
+		resp, err := cli.Get(ectx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
 		cancel()
 		if err != nil {
-			log.Warn("get key failed", zap.String("key", etcdclient.TiDBServerInformationPath), zap.Error(err))
+			log.Warn("get key failed", zap.String("key", pd.TiDBServerInformationPath), zap.Error(err))
 			time.Sleep(200 * time.Millisecond)
 			continue
 		}
 		for _, kv := range resp.Kvs {
 			err = json.Unmarshal(kv.Value, &info)
 			if err != nil {
-				log.Warn("get key failed", zap.String("key", etcdclient.TiDBServerInformationPath), zap.Error(err))
+				log.Warn("get key failed", zap.String("key", pd.TiDBServerInformationPath), zap.Error(err))
 				continue
 			}
 			tidbAddress = append(tidbAddress, fmt.Sprintf("%s:%d", info.IP, info.StatusPort))

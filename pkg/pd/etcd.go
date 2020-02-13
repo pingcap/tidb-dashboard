@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package etcdclient
+package pd
 
 import (
 	"time"
@@ -24,14 +24,14 @@ import (
 )
 
 const (
-	Timeout                   = time.Second * 3
+	EtcdTimeout               = time.Second * 3
 	TiDBServerInformationPath = "/tidb/server/region"
 )
 
-func NewClient(cfg config.Config) *clientv3.Client {
+func NewEtcdClient(cfg *config.Config) *clientv3.Client {
 	client, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{cfg.PDEndPoint},
-		DialTimeout: Timeout,
+		DialTimeout: EtcdTimeout,
 		TLS:         cfg.TLSConfig,
 	})
 	if err != nil {

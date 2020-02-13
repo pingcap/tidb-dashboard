@@ -21,7 +21,7 @@ import (
 	"net/http"
 	"sort"
 
-	regionPKG "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+	regionpkg "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 )
 
 // RegionInfo records detail region info for api usage.
@@ -57,26 +57,26 @@ func (rs *RegionsInfo) GetKeys() []string {
 	return keys
 }
 
-func (rs *RegionsInfo) GetValues(tag regionPKG.StatTag) []uint64 {
+func (rs *RegionsInfo) GetValues(tag regionpkg.StatTag) []uint64 {
 	values := make([]uint64, rs.Count)
 	switch tag {
-	case regionPKG.WrittenBytes:
+	case regionpkg.WrittenBytes:
 		for i, region := range rs.Regions {
 			values[i] = region.WrittenBytes
 		}
-	case regionPKG.ReadBytes:
+	case regionpkg.ReadBytes:
 		for i, region := range rs.Regions {
 			values[i] = region.ReadBytes
 		}
-	case regionPKG.WrittenKeys:
+	case regionpkg.WrittenKeys:
 		for i, region := range rs.Regions {
 			values[i] = region.WrittenKeys
 		}
-	case regionPKG.ReadKeys:
+	case regionpkg.ReadKeys:
 		for i, region := range rs.Regions {
 			values[i] = region.ReadKeys
 		}
-	case regionPKG.Integration:
+	case regionpkg.Integration:
 		for i, region := range rs.Regions {
 			values[i] = region.WrittenBytes + region.ReadBytes
 		}
@@ -102,8 +102,8 @@ func read(stream io.ReadCloser) (*RegionsInfo, error) {
 			if err != nil {
 				break
 			}
-			region.StartKey = regionPKG.String(startBytes)
-			region.EndKey = regionPKG.String(endBytes)
+			region.StartKey = regionpkg.String(startBytes)
+			region.EndKey = regionpkg.String(endBytes)
 		}
 	}
 	if err == nil {
@@ -114,9 +114,9 @@ func read(stream io.ReadCloser) (*RegionsInfo, error) {
 	return regions, err
 }
 
-func NewAPIPeriodicGetter(pdAddr string) regionPKG.RegionsInfoGenerator {
+func NewAPIPeriodicGetter(pdAddr string) regionpkg.RegionsInfoGenerator {
 	addr := fmt.Sprintf("%s/pd/api/v1/regions", pdAddr)
-	return func() (regionsInfo regionPKG.RegionsInfo, err error) {
+	return func() (regionsInfo regionpkg.RegionsInfo, err error) {
 		resp, err := http.Get(addr) //nolint:bodyclose,gosec
 		if err == nil {
 			return read(resp.Body)

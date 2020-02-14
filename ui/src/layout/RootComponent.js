@@ -54,7 +54,6 @@ class App extends React.PureComponent {
           collapsible
           collapsed={this.state.collapsed}
         >
-          <Redirect exact from="/" to={this.props.registry.getDefaultRouter()} />
           <Menu
             mode="inline"
             theme="dark"

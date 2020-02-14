@@ -97,6 +97,12 @@ registry
   .register(AppDemo)
   .register(AppStatement)
 ;
+
 singleSpa.start();
+
+const hash = window.location.hash;
+if (hash === '' || hash === '#' || hash === '#/') {
+  singleSpa.navigateToUrl('#' + registry.getDefaultRouter());
+}
 
 document.getElementById('dashboard_page_spinner').remove();

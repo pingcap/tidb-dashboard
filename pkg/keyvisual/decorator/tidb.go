@@ -20,11 +20,8 @@ import (
 	"sync"
 	"time"
 
-	"go.etcd.io/etcd/clientv3"
-
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/codec"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 )
 
 type tableDetail struct {
@@ -35,26 +32,18 @@ type tableDetail struct {
 }
 
 type tidbLabelStrategy struct {
-	Ctx context.Context
+	Ctx      context.Context
+	Provider *region.PDDataProvider
 
 	TableMap    sync.Map
 	TidbAddress []string
-	EtcdClient  *clientv3.Client
 }
 
 // TiDBLabelStrategy implements the LabelStrategy interface. Get Label Information from TiDB.
-func TiDBLabelStrategy(cfg *config.Config) LabelStrategy {
-	client, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{cfg.PDEndPoint},
-		DialTimeout: etcdTimeout,
-		TLS:         cfg.TLSConfig,
-	})
-	if err != nil {
-		panic(err)
-	}
+func TiDBLabelStrategy(ctx context.Context, provider *region.PDDataProvider) LabelStrategy {
 	s := &tidbLabelStrategy{
-		Ctx:        cfg.Ctx,
-		EtcdClient: client,
+		Ctx:      ctx,
+		Provider: provider,
 	}
 	return s
 }
@@ -75,7 +64,7 @@ func (s *tidbLabelStrategy) Background() {
 
 // CrossBorder does not allow cross tables or cross indexes within a table.
 func (s *tidbLabelStrategy) CrossBorder(startKey, endKey string) bool {
-	startBytes, endBytes := codec.Key(info.Bytes(startKey)), codec.Key(info.Bytes(endKey))
+	startBytes, endBytes := codec.Key(region.Bytes(startKey)), codec.Key(region.Bytes(endKey))
 	startIsMeta, startTableID := startBytes.MetaOrTable()
 	endIsMeta, endTableID := endBytes.MetaOrTable()
 	if startIsMeta || endIsMeta {
@@ -91,7 +80,7 @@ func (s *tidbLabelStrategy) CrossBorder(startKey, endKey string) bool {
 
 // Label will parse the ID information of the table and index.
 func (s *tidbLabelStrategy) Label(key string) (label LabelKey) {
-	keyBytes := info.Bytes(key)
+	keyBytes := region.Bytes(key)
 	label.Key = hex.EncodeToString(keyBytes)
 	decodeKey := codec.Key(keyBytes)
 	isMeta, TableID := decodeKey.MetaOrTable()

@@ -23,30 +23,35 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
 )
 
 var once sync.Once
 
-func Handler(apiPrefix string, config *config.Config, db *dbstore.DB) http.Handler {
+type Services struct {
+	Store     *dbstore.DB
+	KeyVisual *keyvisual.Service
+}
+
+func Handler(apiPrefix string, config *config.Config, services *Services) http.Handler {
 	once.Do(func() {
 		// These global modification will be effective only for the first invoke.
 		gin.SetMode(gin.ReleaseMode)
 	})
 
 	r := gin.New()
-	r.Use(cors.Default(),
-		gin.Recovery(),
-		gzip.Gzip(gzip.BestSpeed))
+	r.Use(cors.Default())
+	r.Use(gin.Recovery())
+	r.Use(gzip.Gzip(gzip.BestSpeed))
 	endpoint := r.Group(apiPrefix)
 
 	foo.NewService(config).Register(endpoint)
-	info.NewService(config, db).Register(endpoint)
-	keyvisual.NewService(config, db).Register(endpoint)
-	logsearch.NewService(config, db).Register(endpoint)
+	info.NewService(config, services.Store).Register(endpoint)
+	logsearch.NewService(config, services.Store).Register(endpoint)
+	services.KeyVisual.Register(endpoint)
 
 	return r
 }

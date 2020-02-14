@@ -14,13 +14,13 @@
 package matrix
 
 import (
+	"context"
 	"math"
 	"runtime"
 	"sort"
 	"sync"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/decorator"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
 )
 
 // TODO:
@@ -45,7 +45,7 @@ type distanceStrategy struct {
 
 // DistanceStrategy adopts the strategy that the closer the split time is to the current time, the more traffic is
 // allocated, when buckets are split.
-func DistanceStrategy(cfg *config.Config, label decorator.LabelStrategy, ratio float64, level int, count int) Strategy {
+func DistanceStrategy(ctx context.Context, wg *sync.WaitGroup, label decorator.LabelStrategy, ratio float64, level int, count int) Strategy {
 	pow := make([]float64, level)
 	for i := range pow {
 		pow[i] = math.Pow(ratio, float64(i))
@@ -58,9 +58,9 @@ func DistanceStrategy(cfg *config.Config, label decorator.LabelStrategy, ratio f
 		SplitRatioPow: pow,
 		ScaleWorkers:  make([]chan *scaleTask, workerCount),
 	}
-	s.StartWorkers(&cfg.Wg)
+	s.StartWorkers(wg)
 	go func() {
-		<-cfg.Ctx.Done()
+		<-ctx.Done()
 		s.StopWorkers()
 	}()
 	return s

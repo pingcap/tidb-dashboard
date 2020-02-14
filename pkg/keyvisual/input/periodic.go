@@ -20,16 +20,16 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/info"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/storage"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/storage"
 )
 
 type periodicInput struct {
 	Ctx            context.Context
-	PeriodicGetter info.RegionsInfoGenerator
+	PeriodicGetter region.RegionsInfoGenerator
 }
 
-func PeriodicInput(ctx context.Context, periodicGetter info.RegionsInfoGenerator) StatInput {
+func PeriodicInput(ctx context.Context, periodicGetter region.RegionsInfoGenerator) StatInput {
 	return &periodicInput{
 		Ctx:            ctx,
 		PeriodicGetter: periodicGetter,

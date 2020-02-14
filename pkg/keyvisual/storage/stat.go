@@ -20,10 +20,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/info"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/keyvisual/matrix"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 )
 
 // LayerConfig is the configuration of layerStat.
@@ -89,7 +87,7 @@ func (s *layerStat) Reduce() {
 
 	plane := matrix.CreatePlane(times, axes)
 	newAxis := plane.Compact(s.Strategy)
-	newAxis = IntoResponseAxis(newAxis, info.Integration)
+	newAxis = IntoResponseAxis(newAxis, region.Integration)
 	newAxis = IntoStorageAxis(newAxis, s.Strategy)
 	newAxis.Shrink(uint64(s.Ratio))
 	s.Next.Append(newAxis, s.StartTime)
@@ -169,12 +167,14 @@ type Stat struct {
 
 	keyMap   matrix.KeyMap
 	strategy matrix.Strategy
+
+	provider *region.PDDataProvider
 }
 
 // NewStat generates a Stat based on the configuration.
-func NewStat(cfg *config.Config, db *dbstore.DB, conf StatConfig, strategy matrix.Strategy, startTime time.Time) *Stat {
-	layers := make([]*layerStat, len(conf.LayersConfig))
-	for i, c := range conf.LayersConfig {
+func NewStat(ctx context.Context, wg *sync.WaitGroup, provider *region.PDDataProvider, cfg StatConfig, strategy matrix.Strategy, startTime time.Time) *Stat {
+	layers := make([]*layerStat, len(cfg.LayersConfig))
+	for i, c := range cfg.LayersConfig {
 		layers[i] = newLayerStat(c, strategy, startTime)
 		if i > 0 {
 			layers[i-1].Next = layers[i]
@@ -183,12 +183,13 @@ func NewStat(cfg *config.Config, db *dbstore.DB, conf StatConfig, strategy matri
 	s := &Stat{
 		layers:   layers,
 		strategy: strategy,
+		provider: provider,
 	}
 
-	cfg.Wg.Add(1)
+	wg.Add(1)
 	go func() {
-		s.rebuildRegularly(cfg.Ctx)
-		cfg.Wg.Done()
+		s.rebuildRegularly(ctx)
+		wg.Done()
 	}()
 
 	return s
@@ -225,7 +226,7 @@ func (s *Stat) rebuildRegularly(ctx context.Context) {
 }
 
 // Append adds the latest full statistics.
-func (s *Stat) Append(regions info.RegionsInfo, endTime time.Time) {
+func (s *Stat) Append(regions region.RegionsInfo, endTime time.Time) {
 	if regions.Len() == 0 {
 		return
 	}
@@ -247,7 +248,7 @@ func (s *Stat) rangeRoot(startTime, endTime time.Time) ([]time.Time, []matrix.Ax
 }
 
 // Range returns a sub Plane with specified range.
-func (s *Stat) Range(startTime, endTime time.Time, startKey, endKey string, baseTag info.StatTag) matrix.Plane {
+func (s *Stat) Range(startTime, endTime time.Time, startKey, endKey string, baseTag region.StatTag) matrix.Plane {
 	s.keyMap.RLock()
 	defer s.keyMap.RUnlock()
 	s.keyMap.SaveKey(&startKey)
@@ -256,7 +257,7 @@ func (s *Stat) Range(startTime, endTime time.Time, startKey, endKey string, base
 	times, axes := s.rangeRoot(startTime, endTime)
 
 	if len(times) <= 1 {
-		return matrix.CreateEmptyPlane(startTime, endTime, startKey, endKey, len(info.ResponseTags))
+		return matrix.CreateEmptyPlane(startTime, endTime, startKey, endKey, len(region.ResponseTags))
 	}
 
 	for i, axis := range axes {

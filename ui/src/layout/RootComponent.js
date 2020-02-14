@@ -43,6 +43,7 @@ class App extends React.PureComponent {
 
   render() {
     const siderWidth = 260;
+    const isDev = process.env.NODE_ENV === 'development';
 
     return (
       <Router><Layout className={styles.container}>
@@ -53,7 +54,6 @@ class App extends React.PureComponent {
           collapsible
           collapsed={this.state.collapsed}
         >
-          <Redirect exact from="/" to={this.props.registry.getDefaultRouter()} />
           <Menu
             mode="inline"
             theme="dark"
@@ -61,7 +61,8 @@ class App extends React.PureComponent {
             defaultOpenKeys={['sub1']}
           >
             {this.props.registry.renderAppMenuItem('keyvis')}
-            {this.props.registry.renderAppMenuItem('statement')}
+            {isDev ? this.props.registry.renderAppMenuItem('statement') : null}
+            {isDev ?
             <Menu.SubMenu
               key="sub1"
               title={
@@ -74,6 +75,7 @@ class App extends React.PureComponent {
               {this.props.registry.renderAppMenuItem('home')}
               {this.props.registry.renderAppMenuItem('demo')}
             </Menu.SubMenu>
+          : null }
           </Menu>
         </Layout.Sider>
         <Layout>

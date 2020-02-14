@@ -17,9 +17,9 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	cors "github.com/rs/cors/wrapper/gin"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
@@ -42,9 +42,10 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	})
 
 	r := gin.New()
-	r.Use(cors.Default())
+	r.Use(cors.AllowAll())
 	r.Use(gin.Recovery())
 	r.Use(gzip.Gzip(gzip.BestSpeed))
+
 	endpoint := r.Group(apiPrefix)
 
 	foo.NewService(config).Register(endpoint)

@@ -74,6 +74,7 @@ A standalone TiDB Dashboard Server contains the following components:
 To build a dashboard server that only serves Dashboard API:
 
 ```sh
+# under Dashboard directory:
 make server
 # make run
 ```
@@ -83,6 +84,7 @@ make server
 To build a dashboard server that serves both API and the Swagger API UI:
 
 ```sh
+# under Dashboard directory:
 make # or more verbose: SWAGGER=1 make server
 # make run
 ```
@@ -97,6 +99,7 @@ Note: You need Node.js and yarn installed in order to build a full-featured dash
 Requirements section for details.
 
 ```sh
+# under Dashboard directory:
 make ui  # Build UI from source
 SWAGGER=1 UI=1 make server
 # make run
@@ -120,6 +123,7 @@ If you want to develop Dashboard UI, the recommended workflow is as follows:
    first time (or backend interface has been changed), you need to build or rebuild the API client:
 
    ```bash
+   # under Dashboard directory:
    make swagger_client
    ```
 
@@ -134,6 +138,7 @@ If you want to develop Dashboard UI, the recommended workflow is as follows:
 3. Start React Development Server
 
    ```sh
+   # under Dashboard directory:
    cd ui
    npm start
    ```

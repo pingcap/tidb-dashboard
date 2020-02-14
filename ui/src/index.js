@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 
 import * as singleSpa from 'single-spa';
 import * as LayoutSPA from '@/layout';
-import './index.css';
 
 import AppKeyVis from '@/apps/keyvis';
 import AppHome from '@/apps/home';
@@ -98,6 +97,12 @@ registry
   .register(AppDemo)
   .register(AppStatement)
 ;
+
 singleSpa.start();
+
+const hash = window.location.hash;
+if (hash === '' || hash === '#' || hash === '#/') {
+  singleSpa.navigateToUrl('#' + registry.getDefaultRouter());
+}
 
 document.getElementById('dashboard_page_spinner').remove();

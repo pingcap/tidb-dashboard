@@ -1,4 +1,4 @@
-import { Slider, Spin, Icon, Select, Dropdown, Button, Input } from 'antd'
+import { Slider, Spin, Icon, Select, Dropdown, Button } from 'antd'
 import React, { Component } from 'react'
 
 export interface IKeyVisToolBarProps {
@@ -27,8 +27,8 @@ const DateRangeOptions = [
 const MetricOptions = [
   { text: '读取字节量', value: 'read_bytes' },
   { text: '写入字节量', value: 'written_bytes' },
-  { text: '读取 keys', value: 'read_keys' },
-  { text: '写入 keys', value: 'written_keys' },
+  { text: '读取次数', value: 'read_keys' },
+  { text: '写入次数', value: 'written_keys' },
   { text: '所有', value: 'integration' }
 ]
 
@@ -57,7 +57,9 @@ export default class KeyVisToolBar extends Component<IKeyVisToolBarProps> {
 
   handleBrightnessDropdown = (visible: boolean) => {
     this.setState({ brightnessDropdownVisible: visible })
-    this.props.onChangeBrightLevel(1 * Math.pow(2, this.state.exp))
+    setTimeout(() => {
+      this.handleBrightLevel(this.state.exp);
+    }, 0)
   }
 
   render() {
@@ -114,7 +116,7 @@ export default class KeyVisToolBar extends Component<IKeyVisToolBarProps> {
 
         <div className="space" />
 
-        <Select onChange={this.handleDateRange} value={dateRange}>
+        <Select onChange={this.handleDateRange} value={dateRange} style={{ width: 120 }}>
           {DateRangeOptions.map(option => (
             <Select.Option
               key={option.text}
@@ -128,7 +130,7 @@ export default class KeyVisToolBar extends Component<IKeyVisToolBarProps> {
 
         <div className="space" />
 
-        <Select onChange={this.handleMetricChange} value={metricType}>
+        <Select onChange={this.handleMetricChange} value={metricType} style={{ width: 160 }}>
           {MetricOptions.map(option => (
             <Select.Option
               key={option.text}

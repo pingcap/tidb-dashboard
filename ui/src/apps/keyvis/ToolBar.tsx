@@ -57,7 +57,9 @@ export default class KeyVisToolBar extends Component<IKeyVisToolBarProps> {
 
   handleBrightnessDropdown = (visible: boolean) => {
     this.setState({ brightnessDropdownVisible: visible })
-    this.props.onChangeBrightLevel(1 * Math.pow(2, this.state.exp))
+    setTimeout(() => {
+      this.handleBrightLevel(this.state.exp);
+    }, 0)
   }
 
   render() {

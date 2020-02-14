@@ -70,7 +70,6 @@ let cache = new HeatmapCache()
 
 const KeyVis = props => {
   const [chartState, setChartState] = useState<ChartState>()
-
   const [selection, setSelection] = useState<HeatmapRange | null>(null)
   const [isLoading, setLoading] = useState(false)
   const [isAutoFetch, setAutoFetch] = useState(false)
@@ -79,11 +78,7 @@ const KeyVis = props => {
   const [brightLevel, setBrightLevel] = useState(1)
   const [metricType, setMetricType] = useState<DataTag>('written_bytes')
 
-  console.log('Keyvis Init')
-
   useEffect(() => {
-    console.log('side effect in keyvis')
-
     const timerId =
       isAutoFetch &&
       setInterval(() => {
@@ -91,7 +86,6 @@ const KeyVis = props => {
       }, DEFAULT_INTERVAL)
 
     return () => {
-      console.log('side effect in keyvis cleanup')
       // _chart = null
       timerId && clearInterval(timerId)
     }
@@ -106,17 +100,13 @@ const KeyVis = props => {
     setOnBrush(false)
     const data = await cache.fetch(selection || dateRange, metricType)
     setChartState({ heatmapData: data!, metricType: metricType })
+    setLoading(false)
   }
 
   const onChangeBrightLevel = val => {
     if (!_chart) return
     setBrightLevel(val)
-    const update = async () => {
-      await _chart.brightness(val)
-      setLoading(false)
-    }
-    setLoading(true)
-    update()
+    _chart.brightness(val)
   }
 
   const onToggleAutoFetch = (enable: Boolean | undefined) => {
@@ -140,6 +130,7 @@ const KeyVis = props => {
       _chart = chart
       setLoading(false)
       setBrightLevel(1)
+      _chart.brightness(1)
     },
     [props]
   )

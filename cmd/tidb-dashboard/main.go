@@ -39,8 +39,8 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
-	keyvisualInput "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
-	keyvisualRegion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+	keyvisualinput "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
+	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
@@ -123,10 +123,10 @@ func main() {
 	etcdClient := pd.NewEtcdClient(cliConfig.CoreConfig)
 
 	// key visual
-	remoteDataProvider := &keyvisualRegion.PDDataProvider{
+	remoteDataProvider := &keyvisualregion.PDDataProvider{
 		FileStartTime:  cliConfig.KVFileStartTime,
 		FileEndTime:    cliConfig.KVFileEndTime,
-		PeriodicGetter: keyvisualInput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint),
+		PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint),
 		GetEtcdClient: func() *clientv3.Client {
 			return etcdClient
 		},

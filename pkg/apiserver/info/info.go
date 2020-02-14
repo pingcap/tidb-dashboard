@@ -38,17 +38,18 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 
 func (s *Service) Register(r *gin.RouterGroup) {
 	endpoint := r.Group("/info")
-	endpoint.GET("/", s.infoHandler)
+	endpoint.GET("/info", s.infoHandler)
 }
 
 // @Summary Dashboard info
 // @Description Get information about the dashboard service.
 // @Produce json
 // @Success 200 {object} Info
-// @Router /info [get]
+// @Router /info/info [get]
 func (s *Service) infoHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, Info{
+	info := Info{
 		Version:    s.config.Version,
 		PDEndPoint: s.config.PDEndPoint,
-	})
+	}
+	c.JSON(http.StatusOK, info)
 }

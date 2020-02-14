@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 
 import * as singleSpa from 'single-spa';
 import * as LayoutSPA from '@/layout';
-import './index.css';
 
 import AppKeyVis from '@/apps/keyvis';
 import AppHome from '@/apps/home';

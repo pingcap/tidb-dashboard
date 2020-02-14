@@ -4,5 +4,4 @@ module.exports = {
   routerPrefix: '/demo',
   icon: 'pie-chart',
   menuTitle: 'Demo 2', // TODO: I18N
-  isDefaultRouter: true,
 }

@@ -54,11 +54,11 @@ type Task struct {
 	doneCh chan struct{}
 }
 
-func NewTask(db *dbstore.DB, component *Component, taskGroupID string, req *SearchLogRequest) *Task {
+func NewTask(db *dbstore.DB, component Component, taskGroupID string, req SearchLogRequest) *Task {
 	return &Task{
 		TaskModel: &TaskModel{
-			Component:   component,
-			Request:     req,
+			Component:   &component,
+			Request:     &req,
 			TaskGroupID: taskGroupID,
 			ID:          uuid.New().String(),
 			CreateTime:  time.Now().Unix(),

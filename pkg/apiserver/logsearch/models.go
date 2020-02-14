@@ -49,7 +49,7 @@ type Component struct {
 }
 
 type TaskModel struct {
-	ID          string            `json:"task_id" gorm:"primary_key type:char(36)"`
+	ID          string            `json:"task_id" gorm:"type:char(36);primary_key"`
 	TaskGroupID string            `json:"task_group_id" gorm:"type:char(36)"`
 	Component   *Component        `json:"component" gorm:"embedded"`
 	Request     *SearchLogRequest `json:"request" gorm:"type:text"`
@@ -66,7 +66,7 @@ func (TaskModel) TableName() string {
 }
 
 type TaskGroupModel struct {
-	ID      string            `json:"task_group_id" gorm:"primary_key;type:char(36)"`
+	ID      string            `json:"task_group_id" gorm:"type:char(36);primary_key"`
 	Request *SearchLogRequest `json:"request" gorm:"type:text"`
 	State   TaskState         `json:"state"`
 }

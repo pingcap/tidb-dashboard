@@ -18,44 +18,24 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
-	"github.com/jinzhu/gorm"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
 type Scheduler struct {
-	taskGroup *TaskGroupModel
-	taskMap   sync.Map
-	db        *dbstore.DB
+	taskMap sync.Map
+	db      *dbstore.DB
 }
 
-func NewScheduler(taskGroup *TaskGroupModel, db *dbstore.DB) *Scheduler {
+func NewScheduler(db *dbstore.DB) *Scheduler {
 	return &Scheduler{
-		taskGroup: taskGroup,
-		taskMap:   sync.Map{},
-		db:        db,
+		taskMap: sync.Map{},
+		db:      db,
 	}
 }
 
-func loadLatestTaskGroup(db *dbstore.DB) *TaskGroupModel {
-	var task TaskModel
-	var taskGroup TaskGroupModel
-	err := db.Order("create_time desc").First(&task).Error
-	if err == gorm.ErrRecordNotFound {
-		return nil
-	}
-	err = db.Where("id = ?", task.TaskGroupID).First(&taskGroup).Error
-	if err == gorm.ErrRecordNotFound {
-		return nil
-	}
-	return &taskGroup
-}
-
-func (s *Scheduler) fillTasks(taskGroup *TaskGroupModel) {
-	if taskGroup == nil {
-		return
-	}
-	var taskModels []TaskModel
-	s.db.Where("task_group_id = ?", taskGroup.ID).Find(&taskModels)
+func (s *Scheduler) fillTasks() {
+	taskModels := make([]TaskModel, 0)
+	s.db.Find(&taskModels)
 	for _, taskModel := range taskModels {
 		s.storeTask(toTask(taskModel, s.db))
 	}
@@ -73,39 +53,34 @@ func (s *Scheduler) storeTask(task *Task) {
 	s.taskMap.Store(task.ID, task)
 }
 
-func (s *Scheduler) addTasks(components []*Component, req *SearchLogRequest) {
+func (s *Scheduler) addTasks(components []Component, req SearchLogRequest) *TaskGroupModel {
 	taskGroupID := uuid.New().String()
-	s.taskMap = sync.Map{}
-	s.taskGroup = &TaskGroupModel{
+	taskGroup := &TaskGroupModel{
 		ID:      taskGroupID,
-		Request: req,
+		Request: &req,
 	}
 	for _, component := range components {
 		task := NewTask(s.db, component, taskGroupID, req)
 		s.storeTask(task)
 	}
+	return taskGroup
 }
 
-func (s *Scheduler) runTaskGroup(retryFailedTasks bool) (err error) {
-	if s.taskGroup == nil {
-		err = fmt.Errorf("no task group in scheduler")
-		return
-	}
-	var taskGroupModel TaskGroupModel
+func (s *Scheduler) runTaskGroup(taskGroup *TaskGroupModel, retryFailedTasks bool) (err error) {
 	if retryFailedTasks {
-		if s.taskGroup.State != StateCanceled {
-			err = fmt.Errorf("cannot retry, task group is %s", s.taskGroup.State)
+		if taskGroup.State != StateCanceled {
+			err = fmt.Errorf("cannot retry, task group is %s", taskGroup.State)
 			return
 		}
-		s.taskGroup.State = StateRunning
-		s.db.Save(s.taskGroup)
+		taskGroup.State = StateRunning
+		s.db.Save(taskGroup)
 	} else {
-		if s.taskGroup.State != "" {
-			err = fmt.Errorf("cannot start, task group is %s", s.taskGroup.State)
+		if taskGroup.State != "" {
+			err = fmt.Errorf("cannot start, task group is %s", taskGroup.State)
 			return
 		}
-		s.taskGroup.State = StateRunning
-		s.db.Create(s.taskGroup)
+		taskGroup.State = StateRunning
+		s.db.Create(taskGroup)
 	}
 	go func() {
 		wg := sync.WaitGroup{}
@@ -115,9 +90,8 @@ func (s *Scheduler) runTaskGroup(retryFailedTasks bool) (err error) {
 				err = fmt.Errorf("cannot load %+v as *Task", value)
 				return false
 			}
-			if task.TaskGroupID != s.taskGroup.ID {
-				err = fmt.Errorf("cannot start, task [%s] is belong to taskGroup [%s], not taskGroup [%s]", task.ID, task.TaskGroupID, s.taskGroup.ID)
-				return false
+			if task.TaskGroupID != taskGroup.ID {
+				return true
 			}
 			if retryFailedTasks {
 				if task.State != StateCanceled {
@@ -136,19 +110,22 @@ func (s *Scheduler) runTaskGroup(retryFailedTasks bool) (err error) {
 			return true
 		})
 		wg.Wait()
-		s.taskGroup.State = StateFinished
-		s.db.Save(&taskGroupModel)
+		taskGroup.State = StateFinished
+		s.db.Save(taskGroup)
 	}()
 	return
 }
 
-// abortRunningTasks abort all running tasks
+// abortTaskGroup abort all running tasks in a task group
 // This function waits util all tasked aborted, and then return
-func (s *Scheduler) abortRunningTasks() (err error) {
+func (s *Scheduler) abortTaskGroup(taskGroupID string) (err error) {
 	s.taskMap.Range(func(key, value interface{}) bool {
 		task, ok := value.(*Task)
 		if !ok {
 			err = fmt.Errorf("cannot load %+v as *Task", value)
+			return true
+		}
+		if task.TaskGroupID != taskGroupID {
 			return true
 		}
 		if task.State == StateRunning {

@@ -14,18 +14,17 @@
 package logsearch
 
 import (
-	"archive/tar"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/httputil"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap/log"
 )
 
 type Service struct {
@@ -43,9 +42,8 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 	autoMigrate(db)
 	cleanRunningTasks(db)
 
-	taskGroup := loadLatestTaskGroup(db)
-	scheduler := NewScheduler(taskGroup, db)
-	scheduler.fillTasks(taskGroup)
+	scheduler := NewScheduler(db)
+	scheduler.fillTasks()
 
 	return &Service{
 		config:    config,
@@ -57,15 +55,15 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 func (s *Service) Register(r *gin.RouterGroup) {
 	endpoint := r.Group("/logs")
 
-	endpoint.GET("/tasks", s.TaskGetList)
+	endpoint.GET("/tasks", s.GetTasks)
 	endpoint.GET("/tasks/:id/preview", s.TaskPreview)
 	endpoint.GET("/tasks/:id/download", s.TaskDownload)
 	endpoint.GET("/download", s.MultipleTaskDownload)
-	endpoint.POST("/tasks/retry", s.TaskRetry)
-	endpoint.POST("/tasks/cancel", s.TaskCancel)
 	endpoint.POST("/taskgroups", s.TaskGroupCreate)
 	endpoint.GET("/taskgroups/:id", s.TaskGroupGet)
 	endpoint.GET("/taskgroups/:id/preview", s.TaskGroupPreview)
+	endpoint.POST("/taskgroups/:id/retry", s.TaskRetry)
+	endpoint.POST("/taskgroups/:id/cancel", s.TaskCancel)
 	endpoint.DELETE("/taskgroups/:id", s.TaskGroupDelete)
 }
 
@@ -75,7 +73,7 @@ func (s *Service) Register(r *gin.RouterGroup) {
 // @Success 200 {array} TaskModel
 // @Failure 400 {object} httputil.HTTPError
 // @Router /logs/tasks [get]
-func (s *Service) TaskGetList(c *gin.Context) {
+func (s *Service) GetTasks(c *gin.Context) {
 	var tasks []TaskModel
 	err := s.db.Find(&tasks).Error
 	if err != nil {
@@ -95,7 +93,7 @@ func (s *Service) TaskGetList(c *gin.Context) {
 func (s *Service) TaskPreview(c *gin.Context) {
 	taskID := c.Param("id")
 	var lines []PreviewModel
-	err := s.db.Where("task_id = ?", taskID).Find(&lines).Error
+	err := s.db.Where("task_id = ?", taskID).Order("time").Find(&lines).Error
 	if err != nil {
 		httputil.NewError(c, http.StatusBadRequest, err)
 		return
@@ -103,38 +101,28 @@ func (s *Service) TaskPreview(c *gin.Context) {
 	c.JSON(http.StatusOK, lines)
 }
 
+type TaskGroupCreateCommand struct {
+	Request    SearchLogRequest `json:"request"`
+	Components []Component      `json:"components"`
+}
+
 // @Summary Create a task group
 // @Description create and run a task group
 // @Produce json
+// @Param command body TaskGroupCreateCommand true "request body"
 // @Success 200 {object} httputil.HTTPSuccess
 // @Failure 400 {object} httputil.HTTPError
 // @Failure 500 {object} httputil.HTTPError
 // @Router /logs/taskgroups [post]
 func (s *Service) TaskGroupCreate(c *gin.Context) {
-	// TODO: using parameters provided by client
-	endTime := time.Now().UnixNano() / int64(time.Millisecond)
-	startTime := int64(0)
-	var searchLogReq = &SearchLogRequest{
-		StartTime: startTime,
-		EndTime:   endTime,
-		Levels:    nil,
-		Patterns:  nil,
-	}
-	var components = []*Component{
-		{
-			ServerType: "tidb",
-			IP:         "127.0.0.1",
-			Port:       "4000",
-			StatusPort: "10080",
-		},
-	}
-	if s.scheduler.taskGroup != nil && s.scheduler.taskGroup.State == StateRunning {
-		httputil.NewError(c, http.StatusInternalServerError,
-			fmt.Errorf("cannot start, task group is %s", StateRunning))
+	var command TaskGroupCreateCommand
+	err := c.BindJSON(&command)
+	if err != nil {
+		httputil.NewError(c, http.StatusBadRequest, err)
 		return
 	}
-	s.scheduler.addTasks(components, searchLogReq)
-	err := s.scheduler.runTaskGroup(false)
+	taskGroup := s.scheduler.addTasks(command.Components, command.Request)
+	err = s.scheduler.runTaskGroup(taskGroup, false)
 	if err != nil {
 		httputil.NewError(c, http.StatusInternalServerError, err)
 		return
@@ -161,15 +149,21 @@ func (s *Service) TaskDownload(c *gin.Context) {
 		httputil.NewError(c, http.StatusInternalServerError, err)
 		return
 	}
-	_, err = io.Copy(c.Writer, f)
+	stat, err := f.Stat()
 	if err != nil {
 		httputil.NewError(c, http.StatusInternalServerError, err)
 		return
 	}
+	contentLength := stat.Size()
+	contentType := "application/zip"
+	extraHeaders := map[string]string{
+		"Content-Disposition": fmt.Sprintf(`attachment; filename="%s"`, stat.Name()),
+	}
+	c.DataFromReader(http.StatusOK, contentLength, contentType, f, extraHeaders)
 }
 
 func (s *Service) queryTaskByID(taskID string) (task TaskModel, err error) {
-	err = s.db.First(&task, "task_id = ?", taskID).Error
+	err = s.db.Where("id = ?", taskID).First(&task).Error
 	return
 }
 
@@ -191,80 +185,20 @@ func (s *Service) MultipleTaskDownload(c *gin.Context) {
 		}
 		tasks = append(tasks, &task)
 	}
-	err := dumpLogs(tasks, c.Writer)
-	if err != nil {
-		httputil.NewError(c, http.StatusInternalServerError, err)
-		return
-	}
-}
-
-func dumpLogs(tasks []*TaskModel, w http.ResponseWriter) error {
-	tw := tar.NewWriter(w)
-	defer tw.Close()
-	for _, task := range tasks {
-		err := dumpLog(task.SavedPath, tw)
+	reader, writer := io.Pipe()
+	go func() {
+		err := packLogsAsTarball(tasks, writer)
+		defer writer.Close() //nolint:errcheck
 		if err != nil {
-			return err
+			log.Warn(fmt.Sprintf("failed to pack logs as tarball: error=%s", err))
 		}
+	}()
+	contentLength := int64(-1) // Note: we don't know the content length
+	contentType := "application/tar"
+	extraHeaders := map[string]string{
+		"Content-Disposition": `attachment; filename="logs.tar"`,
 	}
-	return nil
-}
-
-func dumpLog(savedPath string, tw *tar.Writer) error {
-	f, err := os.Open(savedPath)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	fi, err := f.Stat()
-	if err != nil {
-		return err
-	}
-	err = tw.WriteHeader(&tar.Header{
-		Name:    path.Base(savedPath),
-		Mode:    int64(fi.Mode()),
-		ModTime: fi.ModTime(),
-		Size:    fi.Size(),
-	})
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(tw, f)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// @Summary Retry failed tasks
-// @Description retry tasks that has been failed
-// @Produce json
-// @Success 200 {object} httputil.HTTPSuccess
-// @Failure 500 {object} httputil.HTTPError
-// @Router /logs/tasks/retry [post]
-func (s *Service) TaskRetry(c *gin.Context) {
-	err := s.scheduler.runTaskGroup(true)
-	if err != nil {
-		httputil.NewError(c, http.StatusInternalServerError, err)
-		return
-	}
-	httputil.Success(c)
-}
-
-// @Summary Cancel running tasks
-// @Description cancel all running tasks
-// @Produce json
-// @Success 200 {object} httputil.HTTPSuccess
-// @Failure 500 {object} httputil.HTTPError
-// @Router /logs/tasks/cancel [post]
-func (s *Service) TaskCancel(c *gin.Context) {
-	err := s.scheduler.abortRunningTasks()
-	if err != nil {
-		httputil.NewError(c, http.StatusInternalServerError, err)
-		return
-	}
-	httputil.Success(c)
+	c.DataFromReader(http.StatusOK, contentLength, contentType, reader, extraHeaders)
 }
 
 // @Summary List tasks in a task group
@@ -297,7 +231,7 @@ func (s *Service) TaskGroupPreview(c *gin.Context) {
 	var lines []PreviewModel
 	err := s.db.
 		Where("task_group_id = ?", taskGroupID).
-		Order("time asc").
+		Order("time").
 		Limit(PreviewLogLinesLimit).
 		Find(&lines).Error
 	if err != nil {
@@ -305,6 +239,58 @@ func (s *Service) TaskGroupPreview(c *gin.Context) {
 		return
 	}
 
+	httputil.Success(c)
+}
+
+// @Summary Retry failed tasks
+// @Description retry tasks that has been failed in a task group
+// @Produce json
+// @Param id path string true "task group id"
+// @Success 200 {object} httputil.HTTPSuccess
+// @Failure 400 {object} httputil.HTTPError
+// @Failure 500 {object} httputil.HTTPError
+// @Router /logs/taskgroups/{id}/retry [post]
+func (s *Service) TaskRetry(c *gin.Context) {
+	taskGroupID := c.Param("id")
+	taskGroup := TaskGroupModel{}
+	err := s.db.Where("id = ", taskGroupID).First(&taskGroup).Error
+	if err != nil {
+		httputil.NewError(c, http.StatusBadRequest, err)
+		return
+	}
+	err = s.scheduler.runTaskGroup(&taskGroup, true)
+	if err != nil {
+		httputil.NewError(c, http.StatusInternalServerError, err)
+		return
+	}
+	httputil.Success(c)
+}
+
+// @Summary Cancel running tasks
+// @Description cancel all running tasks in a task group
+// @Produce json
+// @Param id path string true "task group id"
+// @Success 200 {object} httputil.HTTPSuccess
+// @Failure 400 {object} httputil.HTTPError
+// @Failure 500 {object} httputil.HTTPError
+// @Router /logs/taskgroups/{id}/cancel [post]
+func (s *Service) TaskCancel(c *gin.Context) {
+	taskGroupID := c.Param("id")
+	taskGroup := TaskGroupModel{}
+	err := s.db.Where("id = ", taskGroupID).First(&taskGroup).Error
+	if err != nil {
+		httputil.NewError(c, http.StatusBadRequest, err)
+		return
+	}
+	if taskGroup.State != StateRunning {
+		httputil.NewError(c, http.StatusBadRequest, fmt.Errorf("failed to cancel, task group is %s", taskGroup.State))
+		return
+	}
+	err = s.scheduler.abortTaskGroup(taskGroupID)
+	if err != nil {
+		httputil.NewError(c, http.StatusInternalServerError, err)
+		return
+	}
 	httputil.Success(c)
 }
 

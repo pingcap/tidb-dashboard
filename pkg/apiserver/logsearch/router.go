@@ -223,7 +223,7 @@ func (s *Service) TaskGroupGet(c *gin.Context) {
 // @Summary Preview logs in a task group
 // @Description preview fetched logs in a task group by providing task group ID
 // @Produce json
-// @Param id query string true "task group id"
+// @Param id path string true "task group id"
 // @Success 200 {array} PreviewModel
 // @Failure 400 {object} httputil.HTTPError
 // @Router /logs/taskgroups/{id}/preview/ [get]

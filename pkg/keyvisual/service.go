@@ -134,7 +134,7 @@ func (s *Service) heatmapsHandler(c *gin.Context) {
 		return
 	}
 
-	log.Info("Request matrix",
+	log.Debug("Request matrix",
 		zap.Time("start-time", startTime),
 		zap.Time("end-time", endTime),
 		zap.String("start-key", startKey),

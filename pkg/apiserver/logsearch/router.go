@@ -21,10 +21,11 @@ import (
 	"path"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pingcap/log"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/httputil"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
-	"github.com/pingcap/log"
 )
 
 type Service struct {

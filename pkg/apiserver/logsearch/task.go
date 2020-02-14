@@ -24,10 +24,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 	"github.com/pingcap/sysutil"
 	"google.golang.org/grpc"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
 func (c *Component) address() string {

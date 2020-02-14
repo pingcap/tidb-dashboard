@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
@@ -39,14 +40,6 @@ func (s *Scheduler) fillTasks() {
 	for _, taskModel := range taskModels {
 		s.storeTask(toTask(taskModel, s.db))
 	}
-}
-
-func (s *Scheduler) loadTask(id string) *Task {
-	value, ok := s.taskMap.Load(id)
-	if !ok {
-		return nil
-	}
-	return value.(*Task)
 }
 
 func (s *Scheduler) storeTask(task *Task) {

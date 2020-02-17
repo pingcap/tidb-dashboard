@@ -44,7 +44,6 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 	cleanRunningTasks(db)
 
 	scheduler := NewScheduler(db)
-	scheduler.fillTasks()
 
 	return &Service{
 		config:    config,
@@ -254,11 +253,12 @@ func (s *Service) TaskGroupPreview(c *gin.Context) {
 func (s *Service) TaskRetry(c *gin.Context) {
 	taskGroupID := c.Param("id")
 	taskGroup := TaskGroupModel{}
-	err := s.db.Where("id = ", taskGroupID).First(&taskGroup).Error
+	err := s.db.Where("id = ?", taskGroupID).First(&taskGroup).Error
 	if err != nil {
 		httputil.NewError(c, http.StatusBadRequest, err)
 		return
 	}
+	s.scheduler.loadFailedTasks(taskGroupID)
 	err = s.scheduler.runTaskGroup(&taskGroup, true)
 	if err != nil {
 		httputil.NewError(c, http.StatusInternalServerError, err)
@@ -273,12 +273,11 @@ func (s *Service) TaskRetry(c *gin.Context) {
 // @Param id path string true "task group id"
 // @Success 200 {object} httputil.HTTPSuccess
 // @Failure 400 {object} httputil.HTTPError
-// @Failure 500 {object} httputil.HTTPError
 // @Router /logs/taskgroups/{id}/cancel [post]
 func (s *Service) TaskCancel(c *gin.Context) {
 	taskGroupID := c.Param("id")
 	taskGroup := TaskGroupModel{}
-	err := s.db.Where("id = ", taskGroupID).First(&taskGroup).Error
+	err := s.db.Where("id = ?", taskGroupID).First(&taskGroup).Error
 	if err != nil {
 		httputil.NewError(c, http.StatusBadRequest, err)
 		return
@@ -287,11 +286,7 @@ func (s *Service) TaskCancel(c *gin.Context) {
 		httputil.NewError(c, http.StatusBadRequest, fmt.Errorf("failed to cancel, task group is %s", taskGroup.State))
 		return
 	}
-	err = s.scheduler.abortTaskGroup(taskGroupID)
-	if err != nil {
-		httputil.NewError(c, http.StatusInternalServerError, err)
-		return
-	}
+	s.scheduler.abortTaskGroup(taskGroupID)
 	httputil.Success(c)
 }
 

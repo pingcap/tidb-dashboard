@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+	"github.com/pingcap/log"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
@@ -34,16 +35,22 @@ func NewScheduler(db *dbstore.DB) *Scheduler {
 	}
 }
 
-func (s *Scheduler) fillTasks() {
-	taskModels := make([]TaskModel, 0)
-	s.db.Find(&taskModels)
-	for _, taskModel := range taskModels {
-		s.storeTask(toTask(taskModel, s.db))
-	}
+func (s *Scheduler) deleteTask(taskID string) {
+	s.taskMap.Delete(taskID)
 }
 
 func (s *Scheduler) storeTask(task *Task) {
 	s.taskMap.Store(task.ID, task)
+}
+
+func (s *Scheduler) loadFailedTasks(taskGroupID string) {
+	taskModels := make([]TaskModel, 0)
+	s.db.Where("task_group_id = ?", taskGroupID).Find(&taskModels)
+	for _, taskModel := range taskModels {
+		if taskModel.State == StateCanceled {
+			s.storeTask(toTask(taskModel, s.db))
+		}
+	}
 }
 
 func (s *Scheduler) addTasks(components []Component, req SearchLogRequest) *TaskGroupModel {
@@ -59,18 +66,32 @@ func (s *Scheduler) addTasks(components []Component, req SearchLogRequest) *Task
 	return taskGroup
 }
 
-func (s *Scheduler) runTaskGroup(taskGroup *TaskGroupModel, retryFailedTasks bool) (err error) {
+// deleteTasks delete all tasks in a taskGroups
+func (s *Scheduler) deleteTasks(taskGroupID string) {
+	s.taskMap.Range(func(key, value interface{}) bool {
+		task, ok := value.(*Task)
+		if !ok {
+			log.Warn(fmt.Sprintf("cannot load %+v as *Task", value))
+			return true
+		}
+		if task.TaskGroupID != taskGroupID {
+			return true
+		}
+		s.deleteTask(task.ID)
+		return true
+	})
+}
+
+func (s *Scheduler) runTaskGroup(taskGroup *TaskGroupModel, retryFailedTasks bool) error {
 	if retryFailedTasks {
 		if taskGroup.State != StateCanceled {
-			err = fmt.Errorf("cannot retry, task group is %s", taskGroup.State)
-			return
+			return fmt.Errorf("cannot retry, task group is %s", taskGroup.State)
 		}
 		taskGroup.State = StateRunning
 		s.db.Save(taskGroup)
 	} else {
 		if taskGroup.State != "" {
-			err = fmt.Errorf("cannot start, task group is %s", taskGroup.State)
-			return
+			return fmt.Errorf("cannot start, task group is %s", taskGroup.State)
 		}
 		taskGroup.State = StateRunning
 		s.db.Create(taskGroup)
@@ -80,8 +101,8 @@ func (s *Scheduler) runTaskGroup(taskGroup *TaskGroupModel, retryFailedTasks boo
 		s.taskMap.Range(func(key, value interface{}) bool {
 			task, ok := value.(*Task)
 			if !ok {
-				err = fmt.Errorf("cannot load %+v as *Task", value)
-				return false
+				log.Warn(fmt.Sprintf("cannot load %+v as *Task", value))
+				return true
 			}
 			if task.TaskGroupID != taskGroup.ID {
 				return true
@@ -105,17 +126,18 @@ func (s *Scheduler) runTaskGroup(taskGroup *TaskGroupModel, retryFailedTasks boo
 		wg.Wait()
 		taskGroup.State = StateFinished
 		s.db.Save(taskGroup)
+		s.deleteTasks(taskGroup.ID)
 	}()
-	return
+	return nil
 }
 
 // abortTaskGroup abort all running tasks in a task group
 // This function waits util all tasked aborted, and then return
-func (s *Scheduler) abortTaskGroup(taskGroupID string) (err error) {
+func (s *Scheduler) abortTaskGroup(taskGroupID string) {
 	s.taskMap.Range(func(key, value interface{}) bool {
 		task, ok := value.(*Task)
 		if !ok {
-			err = fmt.Errorf("cannot load %+v as *Task", value)
+			log.Warn(fmt.Sprintf("cannot load %+v as *Task", value))
 			return true
 		}
 		if task.TaskGroupID != taskGroupID {
@@ -126,5 +148,4 @@ func (s *Scheduler) abortTaskGroup(taskGroupID string) (err error) {
 		}
 		return true
 	})
-	return
 }

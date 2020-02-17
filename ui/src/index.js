@@ -10,6 +10,7 @@ import AppKeyVis from '@/apps/keyvis';
 import AppHome from '@/apps/home';
 import AppDemo from '@/apps/demo';
 import AppStatement from '@/apps/statement';
+import AppLogSearching from '@/apps/logsearch';
 
 // TODO: This part might be better in TS.
 class AppRegistry {
@@ -97,6 +98,7 @@ registry
   .register(AppHome)
   .register(AppDemo)
   .register(AppStatement)
+  .register(AppLogSearching)
 ;
 singleSpa.start();
 

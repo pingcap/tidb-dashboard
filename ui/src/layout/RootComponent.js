@@ -62,6 +62,7 @@ class App extends React.PureComponent {
           >
             {this.props.registry.renderAppMenuItem('keyvis')}
             {this.props.registry.renderAppMenuItem('statement')}
+            {this.props.registry.renderAppMenuItem('logsearch')}
             <Menu.SubMenu
               key="sub1"
               title={

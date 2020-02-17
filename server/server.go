@@ -144,7 +144,7 @@ type Server struct {
 }
 
 // HandlerBuilder builds a server HTTP handler.
-type HandlerBuilder func(context.Context, *Server) (http.Handler, ServiceGroup)
+type HandlerBuilder func(context.Context, *Server) (http.Handler, ServiceGroup, func())
 
 // ServiceGroup used to register the service.
 type ServiceGroup struct {
@@ -161,19 +161,32 @@ const (
 	ExtensionsPath = "/pd/apis"
 )
 
-func combineBuilderServerHTTPService(svr *Server, serviceBuilders ...HandlerBuilder) (map[string]http.Handler, error) {
+type lazyHandler struct {
+	options []func()
+	engine  *negroni.Negroni
+}
+
+func (lazy *lazyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	for _, f := range lazy.options {
+		f()
+	}
+
+	lazy.engine.ServeHTTP(w, r)
+}
+
+func combineBuilderServerHTTPService(ctx context.Context, svr *Server, serviceBuilders ...HandlerBuilder) (map[string]http.Handler, error) {
 	userHandlers := make(map[string]http.Handler)
-	registerMap := make(map[string]struct{})
 
 	apiService := negroni.New()
 	recovery := negroni.NewRecovery()
 	apiService.Use(recovery)
 	router := mux.NewRouter()
-
+	registerMap := make(map[string]struct{})
+	var options []func()
 	for _, build := range serviceBuilders {
-		handler, info := build(svr.ctx, svr)
-		if !info.IsCore && len(info.PathPrefix) == 0 && (len(info.Name) == 0 || len(info.Version) == 0) {
-			return nil, errors.Errorf("invalid API information, group %s version %s", info.Name, info.Version)
+		handler, info, f := build(ctx, svr)
+		if f != nil {
+			options = append(options, f)
 		}
 		var pathPrefix string
 		if len(info.PathPrefix) != 0 {
@@ -207,7 +220,11 @@ func combineBuilderServerHTTPService(svr *Server, serviceBuilders ...HandlerBuil
 		}
 	}
 	apiService.UseHandler(router)
-	userHandlers[pdAPIPrefix] = apiService
+	userHandlers[pdAPIPrefix] = &lazyHandler{
+		engine:  apiService,
+		options: options,
+	}
+
 	return userHandlers, nil
 }
 
@@ -234,7 +251,7 @@ func CreateServer(ctx context.Context, cfg *config.Config, serviceBuilders ...Ha
 		return nil, err
 	}
 	if len(serviceBuilders) != 0 {
-		userHandlers, err := combineBuilderServerHTTPService(s, serviceBuilders...)
+		userHandlers, err := combineBuilderServerHTTPService(ctx, s, serviceBuilders...)
 		if err != nil {
 			return nil, err
 		}
@@ -713,6 +730,19 @@ func (s *Server) GetConfig() *config.Config {
 func (s *Server) GetScheduleConfig() *config.ScheduleConfig {
 	cfg := &config.ScheduleConfig{}
 	*cfg = *s.scheduleOpt.Load()
+	storage := s.GetStorage()
+	if storage == nil {
+		return cfg
+	}
+	sches, configs, err := storage.LoadAllScheduleConfig()
+	if err != nil {
+		return cfg
+	}
+	payload := make(map[string]string)
+	for i, sche := range sches {
+		payload[sche] = configs[i]
+	}
+	cfg.SchedulersPayload = payload
 	return cfg
 }
 
@@ -1215,9 +1245,14 @@ func (s *Server) getComponentConfig(ctx context.Context, version *configpb.Versi
 	}
 	var config string
 	switch status.GetCode() {
+	case configpb.StatusCode_OK:
 	case configpb.StatusCode_WRONG_VERSION:
 		config = cfg
 		s.setConfigVersion(v)
+	case configpb.StatusCode_COMPONENT_ID_NOT_FOUND:
+		return "", errors.Errorf("component ID not found: %v", componentID)
+	case configpb.StatusCode_COMPONENT_NOT_FOUND:
+		return "", errors.Errorf("component not found: %v", Component)
 	case configpb.StatusCode_UNKNOWN:
 		return "", errors.Errorf("unknown error: %v", status.GetMessage())
 	}
@@ -1232,10 +1267,16 @@ func (s *Server) updateComponentConfig(cfg string) error {
 	}
 	var err error
 	if !reflect.DeepEqual(s.GetScheduleConfig(), &new.Schedule) {
+		if err = new.Schedule.Validate(); err != nil {
+			return err
+		}
 		err = s.SetScheduleConfig(new.Schedule)
 	}
 
 	if !reflect.DeepEqual(s.GetReplicationConfig(), &new.Replication) {
+		if err = new.Replication.Validate(); err != nil {
+			return err
+		}
 		err = s.SetReplicationConfig(new.Replication)
 	}
 

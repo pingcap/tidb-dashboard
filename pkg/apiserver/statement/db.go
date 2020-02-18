@@ -21,7 +21,7 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // init mysql
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )

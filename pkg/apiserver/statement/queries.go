@@ -19,9 +19,9 @@ import (
 	"strings"
 )
 
-func QuerySchemas(DB *sql.DB) ([]string, error) {
+func QuerySchemas(db *sql.DB) ([]string, error) {
 	sql := `show databases`
-	rows, err := DB.Query(sql)
+	rows, err := db.Query(sql)
 	schemas := []string{}
 
 	defer func() {
@@ -45,12 +45,12 @@ func QuerySchemas(DB *sql.DB) ([]string, error) {
 	return schemas, nil
 }
 
-func QueryTimeRanges(DB *sql.DB) ([]*TimeRange, error) {
+func QueryTimeRanges(db *sql.DB) ([]*TimeRange, error) {
 	sql := `select
 	distinct summary_begin_time,summary_end_time
 	from cluster_events_statements_summary_by_digest_history
 	order by summary_begin_time desc`
-	rows, err := DB.Query(sql)
+	rows, err := db.Query(sql)
 	timeRanges := []*TimeRange{}
 
 	defer func() {
@@ -78,7 +78,7 @@ func QueryTimeRanges(DB *sql.DB) ([]*TimeRange, error) {
 // schemas: ["tpcc", "test"]
 // beginTime: "2020-02-13 10:30:00"
 // endTime: "2020-02-13 11:00:00"
-func QueryStatementsOverview(DB *sql.DB, schemas []string, beginTime, endTime string) ([]*StatementOverview, error) {
+func QueryStatementsOverview(db *sql.DB, schemas []string, beginTime, endTime string) ([]*Overview, error) {
 	var schemaWhereClause string
 	if len(schemas) > 0 {
 		schemaWhereClause = "and schema_name in ('" + strings.Join(schemas, "','") + "')"
@@ -97,9 +97,9 @@ func QueryStatementsOverview(DB *sql.DB, schemas []string, beginTime, endTime st
 	and summary_end_time=?
 	%s
 	group by schema_name,digest,digest_text`, schemaWhereClause)
-	rows, err := DB.Query(sql, beginTime, endTime)
+	rows, err := db.Query(sql, beginTime, endTime)
 
-	overviews := []*StatementOverview{}
+	overviews := []*Overview{}
 
 	defer func() {
 		if rows != nil {
@@ -112,7 +112,7 @@ func QueryStatementsOverview(DB *sql.DB, schemas []string, beginTime, endTime st
 	}
 
 	for rows.Next() {
-		overview := new(StatementOverview)
+		overview := new(Overview)
 		err = rows.Scan(
 			&overview.SchemaName,
 			&overview.Digest,
@@ -136,7 +136,7 @@ func QueryStatementsOverview(DB *sql.DB, schemas []string, beginTime, endTime st
 // beginTime: "2020-02-13 10:30:00"
 // endTime: "2020-02-13 11:00:00"
 // digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
-func QueryStatementDetail(DB *sql.DB, schema, beginTime, endTime, digest string) (*StatementDetail, error) {
+func QueryStatementDetail(db *sql.DB, schema, beginTime, endTime, digest string) (*Detail, error) {
 	sql := `select
 	schema_name,
 	digest,
@@ -151,9 +151,9 @@ func QueryStatementDetail(DB *sql.DB, schema, beginTime, endTime, digest string)
 	and summary_end_time=?
 	and digest=?
 	group by schema_name,digest,digest_text`
-	row := DB.QueryRow(sql, schema, beginTime, endTime, digest)
+	row := db.QueryRow(sql, schema, beginTime, endTime, digest)
 
-	detail := new(StatementDetail)
+	detail := new(Detail)
 	if err := row.Scan(
 		&detail.SchemaName,
 		&detail.Digest,
@@ -175,7 +175,7 @@ func QueryStatementDetail(DB *sql.DB, schema, beginTime, endTime, digest string)
 	and digest=?
 	order by last_seen desc
 	limit 1`
-	row = DB.QueryRow(sql, schema, beginTime, endTime, digest)
+	row = db.QueryRow(sql, schema, beginTime, endTime, digest)
 	if err := row.Scan(&detail.QuerySampleText, &detail.LastSeen); err != nil {
 		return detail, err
 	}
@@ -187,7 +187,7 @@ func QueryStatementDetail(DB *sql.DB, schema, beginTime, endTime, digest string)
 // beginTime: "2020-02-13 10:30:00"
 // endTime: "2020-02-13 11:00:00"
 // digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
-func QueryStatementNodes(DB *sql.DB, schema, beginTime, endTime, digest string) ([]*StatementNode, error) {
+func QueryStatementNodes(db *sql.DB, schema, beginTime, endTime, digest string) ([]*Node, error) {
 	sql := `select
 	address,sum_latency,exec_count,avg_latency,max_latency,avg_mem,sum_backoff_times
 	from cluster_events_statements_summary_by_digest_history
@@ -195,8 +195,8 @@ func QueryStatementNodes(DB *sql.DB, schema, beginTime, endTime, digest string) 
 	and summary_begin_time=?
 	and summary_end_time=?
 	and digest=?`
-	rows, err := DB.Query(sql, schema, beginTime, endTime, digest)
-	nodes := []*StatementNode{}
+	rows, err := db.Query(sql, schema, beginTime, endTime, digest)
+	nodes := []*Node{}
 
 	defer func() {
 		if rows != nil {
@@ -209,7 +209,7 @@ func QueryStatementNodes(DB *sql.DB, schema, beginTime, endTime, digest string) 
 	}
 
 	for rows.Next() {
-		node := new(StatementNode)
+		node := new(Node)
 		err = rows.Scan(
 			&node.Address,
 			&node.SumLatency,

@@ -77,7 +77,7 @@ func (s *Service) timeRangesHandler(c *gin.Context) {
 // @Param schemas query string false "Target schemas"
 // @Param begin_time query string true "Statement begin time"
 // @Param end_time query string true "Statement end time"
-// @Success 200 {array} statement.StatementOverview
+// @Success 200 {array} statement.Overview
 // @Router /statements/overviews [get]
 func (s *Service) overviewsHandler(c *gin.Context) {
 	schemas := []string{}
@@ -106,7 +106,7 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 // @Param begin_time query string true "Statement begin time"
 // @Param end_time query string true "Statement end time"
 // @Param digest query string true "Statement digest"
-// @Success 200 {object} statement.StatementDetail
+// @Success 200 {object} statement.Detail
 // @Router /statements/detail [get]
 func (s *Service) detailHandler(c *gin.Context) {
 	schema := c.Query("schema")
@@ -128,7 +128,7 @@ func (s *Service) detailHandler(c *gin.Context) {
 // @Param begin_time query string true "Statement begin time"
 // @Param end_time query string true "Statement end time"
 // @Param digest query string true "Statement digest"
-// @Success 200 {array} statement.StatementDetail
+// @Success 200 {array} statement.Node
 // @Router /statements/nodes [get]
 func (s *Service) nodesHandler(c *gin.Context) {
 	schema := c.Query("schema")
@@ -144,5 +144,5 @@ func (s *Service) nodesHandler(c *gin.Context) {
 }
 
 func handleError(c *gin.Context, err error) {
-	c.JSON(http.StatusBadRequest, map[string]string{"message": err.Error()})
+	c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 }

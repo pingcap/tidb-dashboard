@@ -19,8 +19,8 @@ type TimeRange struct {
 	EndTime   string `json:"end_time"`
 }
 
-// StatementOverview represents the overview of a statement
-type StatementOverview struct {
+// Overview represents the overview of a statement
+type Overview struct {
 	SchemaName      string `json:"schema_name"`
 	Digest          string `json:"digest"`
 	DigestText      string `json:"digest_text"`
@@ -31,8 +31,8 @@ type StatementOverview struct {
 	AvgMem          int    `json:"avg_mem"`
 }
 
-// StatementDetail represents the detail of a statement
-type StatementDetail struct {
+// Detail represents the detail of a statement
+type Detail struct {
 	SchemaName      string `json:"schema_name"`
 	Digest          string `json:"digest"`
 	DigestText      string `json:"digest_text"`
@@ -45,8 +45,8 @@ type StatementDetail struct {
 	LastSeen        string `json:"last_seen"`
 }
 
-// StatementNode represents the statement in each node
-type StatementNode struct {
+// Node represents the statement in each node
+type Node struct {
 	Address         string `json:"address"`
 	SumLatency      int    `json:"sum_latency"`
 	ExecCount       int    `json:"exec_count"`

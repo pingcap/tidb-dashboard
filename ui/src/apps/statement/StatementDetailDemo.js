@@ -10,9 +10,7 @@ function fakeReq(res) {
 }
 
 export default function StatementDetailDemo() {
-  const sqlCategory = new URLSearchParams(useLocation().search).get(
-    'sql_category'
-  )
+  const diegst = new URLSearchParams(useLocation().search).get('digest')
 
   function queryDetail(sqlCategory) {
     const res = {
@@ -80,8 +78,8 @@ export default function StatementDetailDemo() {
     return fakeReq(res)
   }
 
-  return sqlCategory ? (
-    <StatementDetail onFetchDetail={queryDetail} sqlCategory={sqlCategory} />
+  return diegst ? (
+    <StatementDetail onFetchDetail={queryDetail} digest={diegst} />
   ) : (
     <p>No sql_category</p>
   )

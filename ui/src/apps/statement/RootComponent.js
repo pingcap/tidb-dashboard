@@ -9,8 +9,10 @@ import {
 } from 'react-router-dom'
 import { Breadcrumb } from 'antd'
 
-import StatementListDemo from './StatementListDemo'
-import StatementDetailDemo from './StatementDetailDemo'
+// import StatementListDemo from './StatementListDemo'
+// import StatementDetailDemo from './StatementDetailDemo'
+import StatementListPage from './StatementListPage'
+import StatementDetailPage from './StatementDetailPage'
 
 const App = withRouter(props => {
   const { location } = props
@@ -31,10 +33,10 @@ const App = withRouter(props => {
       <div style={{ margin: 12 }}>
         <Switch>
           <Route path="/statement/list">
-            <StatementListDemo />
+            <StatementListPage />
           </Route>
           <Route path="/statement/detail">
-            <StatementDetailDemo />
+            <StatementDetailPage />
           </Route>
           <Redirect exact from="/statement" to="/statement/list" />
         </Switch>

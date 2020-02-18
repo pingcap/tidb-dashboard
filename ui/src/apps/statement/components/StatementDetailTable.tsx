@@ -3,42 +3,42 @@ import _ from 'lodash'
 import { Table } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import { StatementDetailInfo, StatementNode } from './statement-types'
+import { StatementNode } from './statement-types'
 import { HorizontalBar } from './HorizontalBar'
 
 const tableColumns = (
-  maxAvgDuration: number,
-  maxMaxDuration: number,
-  maxCostMem: number
+  maxAvgLatency: number,
+  maxMaxLatency: number,
+  maxAvgMem: number
 ) => [
   {
     title: 'node',
-    dataIndex: 'node',
-    key: 'node'
+    dataIndex: 'address',
+    key: 'address'
   },
   {
     title: '总时长',
-    dataIndex: 'total_duration',
-    key: 'total_duration',
+    dataIndex: 'sum_latency',
+    key: 'sum_latency',
     sorter: (a: StatementNode, b: StatementNode) =>
-      a.total_duration - b.total_duration,
-    render: text => getValueFormat('s')(text, 2, null)
+      a.sum_latency - b.sum_latency,
+    render: text => getValueFormat('ns')(text, 2, null)
   },
   {
     title: '总次数',
-    dataIndex: 'total_times',
-    key: 'total_times',
+    dataIndex: 'exec_count',
+    key: 'exec_count',
     render: text => getValueFormat('short')(text, 0, 0)
   },
   {
     title: '平均时长',
-    dataIndex: 'avg_duration',
-    key: 'avg_duration',
+    dataIndex: 'avg_latency',
+    key: 'avg_latency',
     render: text => (
       <div>
-        {getValueFormat('ms')(text, 2, null)}
+        {getValueFormat('ns')(text, 2, null)}
         <HorizontalBar
-          factor={text / maxAvgDuration}
+          factor={text / maxAvgLatency}
           color="rgba(73, 169, 238, 1)"
         />
       </div>
@@ -46,13 +46,13 @@ const tableColumns = (
   },
   {
     title: '最大时长',
-    dataIndex: 'max_duration',
-    key: 'max_duration',
+    dataIndex: 'max_latency',
+    key: 'max_latency',
     render: text => (
       <div>
-        {getValueFormat('ms')(text, 2, null)}
+        {getValueFormat('ns')(text, 2, null)}
         <HorizontalBar
-          factor={text / maxMaxDuration}
+          factor={text / maxMaxLatency}
           color="rgba(73, 169, 238, 1)"
         />
       </div>
@@ -60,13 +60,13 @@ const tableColumns = (
   },
   {
     title: '平均消耗内存',
-    dataIndex: 'avg_cost_mem',
-    key: 'avg_cost_mem',
+    dataIndex: 'avg_mem',
+    key: 'avg_mem',
     render: text => (
       <div>
-        {getValueFormat('mbytes')(text, 2, null)}
+        {getValueFormat('bytes')(text, 2, null)}
         <HorizontalBar
-          factor={text / maxCostMem}
+          factor={text / maxAvgMem}
           color="rgba(245, 154, 35, 1)"
         />
       </div>
@@ -74,36 +74,38 @@ const tableColumns = (
   },
   {
     title: 'back_off 重试次数',
-    dataIndex: 'back_off_times',
-    key: 'back_off_times',
+    dataIndex: 'sum_backoff_times',
+    key: 'sum_backoff_times',
     render: text => getValueFormat('short')(text, 0, 0)
   }
 ]
 
 export default function StatementDetailTable({
-  detail: { nodes }
+  nodes
 }: {
-  detail: StatementDetailInfo
+  nodes: StatementNode[]
 }) {
-  const maxAvgDuration = useMemo(() => _.max(nodes.map(n => n.avg_duration)), [
-    nodes
-  ])
-  const maxMaxDuration = useMemo(() => _.max(nodes.map(n => n.max_duration)), [
-    nodes
-  ])
-  const maxCostMem = useMemo(() => _.max(nodes.map(n => n.avg_cost_mem)), [
+  const maxAvgLatency = useMemo(
+    () => _.max(nodes.map(n => n.avg_latency)) || 1,
+    [nodes]
+  )
+  const maxMaxLatency = useMemo(
+    () => _.max(nodes.map(n => n.max_latency)) || 1,
+    [nodes]
+  )
+  const maxAvgMem = useMemo(() => _.max(nodes.map(n => n.avg_mem)) || 1, [
     nodes
   ])
   const columns = useMemo(
-    () => tableColumns(maxAvgDuration!, maxMaxDuration!, maxCostMem!),
-    [maxAvgDuration, maxCostMem, maxMaxDuration]
+    () => tableColumns(maxAvgLatency!, maxMaxLatency!, maxAvgMem!),
+    [maxAvgLatency, maxAvgMem, maxMaxLatency]
   )
 
   return (
     <Table
       columns={columns}
       dataSource={nodes}
-      rowKey="node"
+      rowKey={(record: StatementNode, index) => `${record.address}_${index}`}
       pagination={false}
     />
   )

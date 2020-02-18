@@ -7,28 +7,29 @@ import {
   StatementStatus,
   StatementConfig,
   Instance,
-  Statement
+  StatementOverview,
+  StatementTimeRange
 } from './statement-types'
 const { Option } = Select
 
 interface State {
   curInstance: string | undefined
-  curSchema: string[]
-  curTimeRange: string | undefined
+  curSchemas: string[]
+  curTimeRange: StatementTimeRange | undefined
 
   statementStatus: StatementStatus
 
   instances: Instance[]
   schemas: string[]
-  timeRanges: string[]
+  timeRanges: StatementTimeRange[]
 
   statementsLoading: boolean
-  statements: Statement[]
+  statements: StatementOverview[]
 }
 
 const initState: State = {
   curInstance: undefined,
-  curSchema: [],
+  curSchemas: [],
   curTimeRange: undefined,
 
   statementStatus: 'unknown',
@@ -47,9 +48,9 @@ type Action =
   | { type: 'change_statement_status'; payload: StatementStatus }
   | { type: 'save_schemas'; payload: string[] }
   | { type: 'change_schema'; payload: string[] }
-  | { type: 'save_time_ranges'; payload: string[] }
-  | { type: 'change_time_range'; payload: string | undefined }
-  | { type: 'save_statements'; payload: Statement[] }
+  | { type: 'save_time_ranges'; payload: StatementTimeRange[] }
+  | { type: 'change_time_range'; payload: StatementTimeRange | undefined }
+  | { type: 'save_statements'; payload: StatementOverview[] }
   | { type: 'set_statements_loading' }
 
 function reducer(state: State, action: Action): State {
@@ -63,7 +64,7 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         curInstance: action.payload,
-        curSchema: [],
+        curSchemas: [],
         curTimeRange: undefined,
         statementStatus: 'unknown',
         schemas: [],
@@ -83,9 +84,7 @@ function reducer(state: State, action: Action): State {
     case 'change_schema':
       return {
         ...state,
-        curSchema: action.payload,
-        curTimeRange: undefined,
-        timeRanges: [],
+        curSchemas: action.payload,
         statements: []
       }
     case 'save_time_ranges':
@@ -119,14 +118,14 @@ interface Props {
   onFetchInstances: () => Promise<Instance[] | undefined>
   onFetchSchemas: (instanceId: string) => Promise<string[] | undefined>
   onFetchTimeRanges: (
-    instanceId: string,
-    schemas: string[]
-  ) => Promise<string[] | undefined>
+    instanceId: string
+  ) => Promise<StatementTimeRange[] | undefined>
   onFetchStatements: (
     instanceId: string,
     schemas: string[],
-    timeRange: string | undefined
-  ) => Promise<Statement[] | undefined>
+    beginTime: string,
+    endTime: string
+  ) => Promise<StatementOverview[] | undefined>
 
   onGetStatementStatus: (instanceId: string) => Promise<any>
   onSetStatementStatus: (
@@ -167,22 +166,108 @@ export default function StatementList({
         type: 'save_instances',
         payload: res || []
       })
+      if (res?.length === 1) {
+        dispatch({
+          type: 'change_instance',
+          payload: res[0].uuid
+        })
+      }
     }
+
     queryInstances()
   }, [onFetchInstances])
+
+  useEffect(() => {
+    async function queryStatementStatus() {
+      if (state.curInstance) {
+        const res = await onGetStatementStatus(state.curInstance)
+        if (res !== undefined) {
+          // TODO: set on or off according res
+          // dispatch({
+          //   type: 'change_statement_status',
+          //   payload: 'on'
+          // })
+        }
+      }
+    }
+
+    async function querySchemas() {
+      if (state.curInstance) {
+        const res = await onFetchSchemas(state.curInstance)
+        dispatch({
+          type: 'save_schemas',
+          payload: res || []
+        })
+      }
+    }
+
+    async function queryTimeRanges() {
+      if (state.curInstance) {
+        const res = await onFetchTimeRanges(state.curInstance)
+        dispatch({
+          type: 'save_time_ranges',
+          payload: res || []
+        })
+        if (res && res.length > 0) {
+          dispatch({
+            type: 'change_time_range',
+            payload: res[0]
+          })
+        }
+      }
+    }
+
+    queryStatementStatus()
+    querySchemas()
+    queryTimeRanges()
+  }, [
+    state.curInstance,
+    onGetStatementStatus,
+    onFetchSchemas,
+    onFetchTimeRanges
+  ])
+
+  useEffect(() => {
+    async function queryStatementList() {
+      // console.log('cur time range:', state.curTimeRange)
+      if (state.curInstance === undefined) {
+        return
+      }
+      if (state.curTimeRange === undefined) {
+        dispatch({
+          type: 'save_statements',
+          payload: []
+        })
+        return
+      }
+      dispatch({
+        type: 'set_statements_loading'
+      })
+      const res = await onFetchStatements(
+        state.curInstance,
+        state.curSchemas,
+        state.curTimeRange.begin_time,
+        state.curTimeRange.end_time
+      )
+      dispatch({
+        type: 'save_statements',
+        payload: res || []
+      })
+    }
+
+    queryStatementList()
+  }, [
+    state.curInstance,
+    state.curSchemas,
+    state.curTimeRange,
+    onFetchStatements
+  ])
 
   function handleInstanceChange(val: string | undefined) {
     dispatch({
       type: 'change_instance',
       payload: val
     })
-    if (val === undefined) {
-      return
-    }
-    queryStatementStatus()
-    querySchemas()
-    queryTimeRanges()
-    queryStatementList()
   }
 
   function handleSchemaChange(val: string[]) {
@@ -190,57 +275,13 @@ export default function StatementList({
       type: 'change_schema',
       payload: val
     })
-    queryTimeRanges()
-    queryStatementList()
   }
 
   function handleTimeRangeChange(val: string | undefined) {
+    const timeRange = state.timeRanges.find(item => item.begin_time === val)
     dispatch({
       type: 'change_time_range',
-      payload: val
-    })
-    queryStatementList()
-  }
-
-  async function queryStatementStatus() {
-    const res = await onGetStatementStatus(state.curInstance!)
-    if (res !== undefined) {
-      // TODO: set on or off according res
-      dispatch({
-        type: 'change_statement_status',
-        payload: 'on'
-      })
-    }
-  }
-
-  async function querySchemas() {
-    const res = await onFetchSchemas(state.curInstance!)
-    dispatch({
-      type: 'save_schemas',
-      payload: res || []
-    })
-  }
-
-  async function queryTimeRanges() {
-    const res = await onFetchTimeRanges(state.curInstance!, state.curSchema)
-    dispatch({
-      type: 'save_time_ranges',
-      payload: res || []
-    })
-  }
-
-  async function queryStatementList() {
-    dispatch({
-      type: 'set_statements_loading'
-    })
-    const res = await onFetchStatements(
-      state.curInstance!,
-      state.curSchema,
-      state.curTimeRange
-    )
-    dispatch({
-      type: 'save_statements',
-      payload: res || []
+      payload: timeRange
     })
   }
 
@@ -274,7 +315,7 @@ export default function StatementList({
         <Select
           value={state.curInstance}
           allowClear
-          placeholder='选择集群实例'
+          placeholder="选择集群实例"
           style={{ width: 200, marginRight: 12 }}
           onChange={handleInstanceChange}
         >
@@ -285,9 +326,9 @@ export default function StatementList({
           ))}
         </Select>
         <Select
-          mode='multiple'
+          mode="multiple"
           allowClear
-          placeholder='选择 schema'
+          placeholder="选择 schema"
           style={{ minWidth: 200, marginRight: 12 }}
           onChange={handleSchemaChange}
         >
@@ -298,29 +339,28 @@ export default function StatementList({
           ))}
         </Select>
         <Select
-          value={state.curTimeRange}
-          allowClear
-          placeholder='选择时间'
-          style={{ width: 200, marginRight: 12 }}
+          value={state.curTimeRange?.begin_time}
+          placeholder="选择时间"
+          style={{ width: 340, marginRight: 12 }}
           onChange={handleTimeRangeChange}
         >
           {state.timeRanges.map(item => (
-            <Option value={item} key={item}>
-              {item}
+            <Option value={item.begin_time} key={item.begin_time}>
+              {item.begin_time} ~ {item.end_time}
             </Option>
           ))}
         </Select>
         {state.statementStatus === 'on' && (
           <div>
             <Button
-              type='primary'
+              type="primary"
               style={{ backgroundColor: 'rgba(0,128,0,1)', marginRight: 12 }}
               onClick={() => toggleStatementStatus(false)}
             >
               已开启
             </Button>
             <Button
-              type='primary'
+              type="primary"
               onClick={() => setStatementSettingModalVisible(true)}
             >
               设置
@@ -328,7 +368,7 @@ export default function StatementList({
           </div>
         )}
         {state.statementStatus === 'off' && (
-          <Button type='danger' onClick={() => toggleStatementStatus(true)}>
+          <Button type="danger" onClick={() => toggleStatementStatus(true)}>
             已关闭
           </Button>
         )}
@@ -357,6 +397,7 @@ export default function StatementList({
       <StatementsTable
         statements={state.statements}
         loading={state.statementsLoading}
+        timeRange={state.curTimeRange!}
       />
     </div>
   )

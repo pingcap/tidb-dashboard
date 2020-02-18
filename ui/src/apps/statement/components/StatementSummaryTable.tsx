@@ -9,7 +9,8 @@ const columns = [
     title: 'kind',
     dataIndex: 'kind',
     key: 'kind',
-    align: 'center' as align
+    align: 'center' as align,
+    width: 160
   },
   {
     title: 'content',
@@ -20,26 +21,26 @@ const columns = [
 ]
 
 export default function StatementSummaryTable({
-  detail: { summary }
+  detail
 }: {
   detail: StatementDetailInfo
 }) {
   const dataSource = [
     {
+      kind: 'Schema',
+      content: detail.schema_name
+    },
+    {
       kind: 'SQL 类别',
-      content: summary.sql_category
+      content: detail.digest_text
     },
     {
       kind: '最后出现 SQL 语句',
-      content: summary.last_sql
+      content: detail.query_sample_text
     },
     {
       kind: '最后出现时间',
-      content: summary.last_time
-    },
-    {
-      kind: 'Schema',
-      content: summary.schemas.join(',')
+      content: detail.last_seen
     }
   ]
 

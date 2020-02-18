@@ -4,37 +4,51 @@ import { Link } from 'react-router-dom'
 import { Table } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { HorizontalBar } from './HorizontalBar'
-import { Statement } from './statement-types'
+import { StatementOverview, StatementTimeRange } from './statement-types'
 
 const tableColumns = (
-  maxTotalTimes: number,
-  maxAvgDuration: number,
-  maxCostMem: number
+  timeRange: StatementTimeRange,
+  maxExecCount: number,
+  maxAvgLatency: number,
+  maxAvgMem: number
 ) => [
   {
+    title: 'Schema',
+    dataIndex: 'schema_name',
+    key: 'schema_name'
+  },
+  {
     title: 'SQL 类别',
-    dataIndex: 'sql_category',
-    key: 'sql_category',
-    render: text => (
-      <Link to={`/statement/detail?sql_category=${text}`}>{text}</Link>
+    dataIndex: 'digest_text',
+    key: 'digest_text',
+    width: 400,
+    render: (text, record: StatementOverview) => (
+      <Link
+        to={`/statement/detail?digest=${record.digest}&schema=${record.schema_name}&begin_time=${timeRange.begin_time}&end_time=${timeRange.end_time}`}
+      >
+        {text}
+      </Link>
     )
   },
   {
     title: '总时长',
-    dataIndex: 'total_duration',
-    key: 'total_duration',
-    sorter: (a: Statement, b: Statement) => a.total_duration - b.total_duration,
-    render: text => getValueFormat('s')(text, 2, null)
+    dataIndex: 'sum_latency',
+    key: 'sum_latency',
+    sorter: (a: StatementOverview, b: StatementOverview) =>
+      a.sum_latency - b.sum_latency,
+    render: text => getValueFormat('ns')(text, 2, null)
   },
   {
     title: '总次数',
-    dataIndex: 'total_times',
-    key: 'total_times',
+    dataIndex: 'exec_count',
+    key: 'exec_count',
+    sorter: (a: StatementOverview, b: StatementOverview) =>
+      a.exec_count - b.exec_count,
     render: text => (
       <div>
         {getValueFormat('short')(text, 0, 0)}
         <HorizontalBar
-          factor={text / maxTotalTimes}
+          factor={text / maxExecCount}
           color="rgba(73, 169, 238, 1)"
         />
       </div>
@@ -42,19 +56,23 @@ const tableColumns = (
   },
   {
     title: '平均影响行数',
-    dataIndex: 'avg_affect_lines',
-    key: 'avg_affect_lines',
+    dataIndex: 'avg_affected_rows',
+    key: 'avg_affected_rows',
+    sorter: (a: StatementOverview, b: StatementOverview) =>
+      a.avg_affected_rows - b.avg_affected_rows,
     render: text => getValueFormat('short')(text, 0, 0)
   },
   {
     title: '平均时长',
-    dataIndex: 'avg_duration',
-    key: 'avg_duration',
+    dataIndex: 'avg_latency',
+    key: 'avg_latency',
+    sorter: (a: StatementOverview, b: StatementOverview) =>
+      a.avg_latency - b.avg_latency,
     render: text => (
       <div>
-        {getValueFormat('ms')(text, 2, null)}
+        {getValueFormat('ns')(text, 2, null)}
         <HorizontalBar
-          factor={text / maxAvgDuration}
+          factor={text / maxAvgLatency}
           color="rgba(73, 169, 238, 1)"
         />
       </div>
@@ -62,13 +80,15 @@ const tableColumns = (
   },
   {
     title: '平均消耗内存',
-    dataIndex: 'avg_cost_mem',
-    key: 'avg_cost_mem',
+    dataIndex: 'avg_mem',
+    key: 'avg_mem',
+    sorter: (a: StatementOverview, b: StatementOverview) =>
+      a.avg_mem - b.avg_mem,
     render: text => (
       <div>
-        {getValueFormat('mbytes')(text, 2, null)}
+        {getValueFormat('bytes')(text, 2, null)}
         <HorizontalBar
-          factor={text / maxCostMem}
+          factor={text / maxAvgMem}
           color="rgba(255, 102, 51, 1)"
         />
       </div>
@@ -77,32 +97,37 @@ const tableColumns = (
 ]
 
 interface Props {
-  statements: Statement[]
+  statements: StatementOverview[]
   loading: boolean
+  timeRange: StatementTimeRange
 }
 
-export default function StatementsTable({ statements, loading }: Props) {
-  const maxTotalTimes = useMemo(
-    () => _.max(statements.map(s => s.total_times)),
+export default function StatementsTable({
+  statements,
+  loading,
+  timeRange
+}: Props) {
+  const maxExecCount = useMemo(
+    () => _.max(statements.map(s => s.exec_count)) || 1,
     [statements]
   )
-  const maxAvgDuration = useMemo(
-    () => _.max(statements.map(s => s.avg_duration)),
+  const maxAvgLatency = useMemo(
+    () => _.max(statements.map(s => s.avg_latency)) || 1,
     [statements]
   )
-  const maxCostMem = useMemo(() => _.max(statements.map(s => s.avg_cost_mem)), [
+  const maxAvgMem = useMemo(() => _.max(statements.map(s => s.avg_mem)) || 1, [
     statements
   ])
   const columns = useMemo(
-    () => tableColumns(maxTotalTimes!, maxAvgDuration!, maxCostMem!),
-    [maxAvgDuration, maxCostMem, maxTotalTimes]
+    () => tableColumns(timeRange, maxExecCount!, maxAvgLatency!, maxAvgMem!),
+    [maxAvgLatency, maxAvgMem, maxExecCount]
   )
   return (
     <Table
       columns={columns}
       dataSource={statements}
       loading={loading}
-      rowKey="sql_category"
+      rowKey={(record: StatementOverview, index) => `${record.digest}_${index}`}
       pagination={false}
     />
   )

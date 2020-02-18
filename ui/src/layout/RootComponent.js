@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Layout, Menu, Icon } from 'antd';
-import { HashRouter as Router, Redirect } from 'react-router-dom';
+import { HashRouter as Router } from 'react-router-dom';
 import styles from './RootComponent.module.less';
 
 class App extends React.PureComponent {
@@ -17,11 +17,14 @@ class App extends React.PureComponent {
   };
 
   toggle = () => {
-    this.setState({
-      collapsed: !this.state.collapsed,
-    }, () => {
-      this.triggerResizeEvent();
-    });
+    this.setState(
+      {
+        collapsed: !this.state.collapsed,
+      },
+      () => {
+        this.triggerResizeEvent();
+      }
+    );
   };
 
   handleRouting = () => {
@@ -31,7 +34,7 @@ class App extends React.PureComponent {
         activeAppId: activeApp.id,
       });
     }
-  }
+  };
 
   componentDidMount() {
     window.addEventListener('single-spa:routing-event', this.handleRouting);
@@ -46,55 +49,67 @@ class App extends React.PureComponent {
     const isDev = process.env.NODE_ENV === 'development';
 
     return (
-      <Router><Layout className={styles.container}>
-        <Layout.Sider
-          className={styles.sider}
-          width={siderWidth}
-          trigger={null}
-          collapsible
-          collapsed={this.state.collapsed}
-        >
-          <Menu
-            mode="inline"
-            theme="dark"
-            selectedKeys={[this.state.activeAppId]}
-            defaultOpenKeys={['sub1']}
+      <Router>
+        <Layout className={styles.container}>
+          <Layout.Sider
+            className={styles.sider}
+            width={siderWidth}
+            trigger={null}
+            collapsible
+            collapsed={this.state.collapsed}
           >
-            {this.props.registry.renderAppMenuItem('keyvis')}
-            {isDev ? this.props.registry.renderAppMenuItem('statement') : null}
-            {isDev ?
-            <Menu.SubMenu
-              key="sub1"
-              title={
-                <span>
-                  <Icon type="user" />
-                  <span>Demos</span>
-                </span>
-              }
+            <Menu
+              mode="inline"
+              theme="dark"
+              selectedKeys={[this.state.activeAppId]}
+              defaultOpenKeys={['sub1']}
             >
-              {this.props.registry.renderAppMenuItem('home')}
-              {this.props.registry.renderAppMenuItem('demo')}
-            </Menu.SubMenu>
-          : null }
-          </Menu>
-        </Layout.Sider>
-        <Layout>
-          <Layout.Header
-            className={styles.header}
-            style={{ width: `calc(100% - ${this.state.collapsed ? 80 : siderWidth}px)` }}
-          >
-            <span className={styles.siderTrigger} onClick={this.toggle}>
-              <Icon type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'} />
-            </span>
-          </Layout.Header>
-          <Layout.Content
-            className={styles.content}
-            style={{ paddingLeft: `${this.state.collapsed ? 80 : siderWidth}px` }}
-          >
-            <div id="__spa_content__"></div>
-          </Layout.Content>
+              {this.props.registry.renderAppMenuItem('keyvis')}
+              {isDev
+                ? this.props.registry.renderAppMenuItem('statement')
+                : null}
+              {isDev ? (
+                <Menu.SubMenu
+                  key="sub1"
+                  title={
+                    <span>
+                      <Icon type="user" />
+                      <span>Demos</span>
+                    </span>
+                  }
+                >
+                  {this.props.registry.renderAppMenuItem('home')}
+                  {this.props.registry.renderAppMenuItem('demo')}
+                </Menu.SubMenu>
+              ) : null}
+            </Menu>
+          </Layout.Sider>
+          <Layout>
+            <Layout.Header
+              className={styles.header}
+              style={{
+                width: `calc(100% - ${
+                  this.state.collapsed ? 80 : siderWidth
+                }px)`,
+              }}
+            >
+              <span className={styles.siderTrigger} onClick={this.toggle}>
+                <Icon
+                  type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
+                />
+              </span>
+            </Layout.Header>
+            <Layout.Content
+              className={styles.content}
+              style={{
+                paddingLeft: `${this.state.collapsed ? 80 : siderWidth}px`,
+              }}
+            >
+              <div id="__spa_content__"></div>
+            </Layout.Content>
+          </Layout>
         </Layout>
-      </Layout></Router>
+      </Router>
     );
   }
 }

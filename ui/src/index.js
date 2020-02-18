@@ -1,10 +1,11 @@
 import React from 'react';
 import { Menu, Icon } from 'antd';
 import { Link } from 'react-router-dom';
-
 import * as singleSpa from 'single-spa';
-import * as LayoutSPA from '@/layout';
 
+import i18n from './utils/i18n';
+
+import * as LayoutSPA from '@/layout';
 import AppKeyVis from '@/apps/keyvis';
 import AppHome from '@/apps/home';
 import AppDemo from '@/apps/demo';
@@ -34,9 +35,21 @@ class AppRegistry {
    * }} app
    */
   register(app) {
-    singleSpa.registerApplication(app.id, app.loader, (location) => {
-      return location.hash.indexOf('#' + app.routerPrefix) === 0;
-    });
+    if (app.translations) {
+      i18n.loadResource(app.translations);
+    }
+
+    singleSpa.registerApplication(
+      app.id,
+      app.loader,
+      location => {
+        return location.hash.indexOf('#' + app.routerPrefix) === 0;
+      },
+      {
+        registry: this,
+        app,
+      }
+    );
     if (!app.indexRoute) {
       app.indexRoute = app.routerPrefix;
     }
@@ -80,7 +93,7 @@ class AppRegistry {
     return (
       <Menu.Item key={appId}>
         <Link to={app.indexRoute}>
-          { app.icon ? <Icon type={app.icon} /> : null }
+          {app.icon ? <Icon type={app.icon} /> : null}
           <span>{app.menuTitle}</span>
         </Link>
       </Menu.Item>
@@ -95,8 +108,9 @@ registry
   .register(AppKeyVis)
   .register(AppHome)
   .register(AppDemo)
-  .register(AppStatement)
-;
+  .register(AppStatement);
+
+i18n.initFromResources();
 
 singleSpa.start();
 

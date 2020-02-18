@@ -74,7 +74,6 @@ let _chart;
 let cache = new HeatmapCache();
 
 const KeyVis = props => {
-  console.log(props);
   const [chartState, setChartState] = useState<ChartState>();
   const [selection, setSelection] = useState<HeatmapRange | null>(null);
   const [isLoading, setLoading] = useState(false);

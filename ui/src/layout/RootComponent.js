@@ -1,8 +1,20 @@
 import React from 'react';
-
 import { Layout, Menu, Icon } from 'antd';
 import { HashRouter as Router } from 'react-router-dom';
+import LangDropdown from './LangDropdown';
+
 import styles from './RootComponent.module.less';
+
+class NavRight extends React.PureComponent {
+  render() {
+    return (
+      <>
+        <div style={{ flex: 1 }}></div>
+        <div className={styles.navRight}>{this.props.children}</div>
+      </>
+    );
+  }
+}
 
 class App extends React.PureComponent {
   state = {
@@ -86,7 +98,7 @@ class App extends React.PureComponent {
           </Layout.Sider>
           <Layout>
             <Layout.Header
-              className={styles.header}
+              className={styles.nav}
               style={{
                 width: `calc(100% - ${
                   this.state.collapsed ? 80 : siderWidth
@@ -98,6 +110,9 @@ class App extends React.PureComponent {
                   type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
                 />
               </span>
+              <NavRight>
+                <LangDropdown />
+              </NavRight>
             </Layout.Header>
             <Layout.Content
               className={styles.content}

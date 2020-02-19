@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/clusterinfo/info"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -31,15 +30,16 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
 
 type ClusterInfo struct {
-	Tidb         info.TiDB
-	Tikv         info.TiKV
-	Pd           info.PD
-	Grafana      info.Grafana
-	AlertManager info.AlertManager
-	Prom         info.Prometheus
+	TiDB         []clusterinfo.TiDB
+	Tikv         clusterinfo.TiKV
+	Pd           clusterinfo.PD
+	Grafana      clusterinfo.Grafana
+	AlertManager clusterinfo.AlertManager
+	Prom         clusterinfo.Prometheus
 }
 
 type Service struct {

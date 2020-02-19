@@ -1,4 +1,4 @@
-package info
+package clusterinfo
 
 type PD struct {
 	Common

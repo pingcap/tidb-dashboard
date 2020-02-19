@@ -1,4 +1,4 @@
-package info
+package clusterinfo
 
 type TiKV struct {
 	Common

@@ -1,4 +1,4 @@
-package info
+package clusterinfo
 
 // ServerVersionInfo is the server version and git_hash.
 type ServerVersionInfo struct {

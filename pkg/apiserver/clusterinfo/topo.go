@@ -34,12 +34,12 @@ import (
 )
 
 type ClusterInfo struct {
-	tidb         info.TiDB
-	tikv         info.TiKV
-	pd           info.PD
-	grafana      info.Grafana
-	alertManager info.AlertManager
-	prom         info.Prometheus
+	Tidb         info.TiDB
+	Tikv         info.TiKV
+	Pd           info.PD
+	Grafana      info.Grafana
+	AlertManager info.AlertManager
+	Prom         info.Prometheus
 }
 
 type Service struct {
@@ -76,17 +76,24 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	var returnObject ClusterInfo
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	//ctx, cancelFunc := context.WithCancel(ctx)
 	defer cancel()
 
 	fetchers := []Fetcher{
 		FetchEtcd{},
+		TiKVFetcher{},
+		PDFetcher{},
 	}
 
 	for _, fetcher := range fetchers {
-		go func() {
-			fetcher.Fetch(ctx, &returnObject, s)
-		}()
+		wg.Add(1)
+		go func(f Fetcher) {
+			defer wg.Done()
+			f.Fetch(ctx, &returnObject, s)
+		}(fetcher)
 	}
+
+	wg.Wait()
 
 	c.JSON(http.StatusOK, returnObject)
 }
@@ -112,20 +119,6 @@ func parseArray(input string) []string {
 		array = append(array, strings.Trim(s, " "))
 	}
 	return array
-}
-
-// etcdLoad load key like "/topo/tidb" from pd's embedded etcd.
-// If the key doesn't exists, it will just return "", nil.
-// Otherwise, it will return value, nil.
-func (s *Service) etcdLoad(key string) (string, error) {
-	resp, err := s.etcd.Get(context.TODO(), key)
-	if err != nil {
-		return "", err
-	}
-	if len(resp.Kvs) == 0 {
-		return "", nil
-	}
-	return string(resp.Kvs[0].Value), nil
 }
 
 func (s *Service) tikvLoad() ([]string, error) {

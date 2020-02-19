@@ -3,32 +3,30 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import _ from 'lodash';
 
-const resources = {
-  en: {
-    translation: {},
-  },
-  zh_CN: {
-    translation: {},
-  },
-};
+const resources = {};
+const languages = ['en', 'zh_CN'];
 
 function loadResource(res) {
-  _.merge(resources, {
-    en: {
-      translation: res.en,
-    },
-    zh_CN: {
-      translation: res.zh_CN,
-    },
+  languages.forEach(lang => {
+    _.merge(resources, { [lang]: { translation: res[lang] } });
   });
 }
 
 function initFromResources() {
+  // Resource languages are like `zh_CN` for easier writing.
+  // However we need to change them to `zh-CN` to follow IETF language codes.
+  const r = _(resources)
+    .toPairs()
+    .map(([key, value]) => [key.replace(/_/g, '-'), value])
+    .fromPairs()
+    .value();
+
   i18n
     .use(LanguageDetector)
     .use(initReactI18next)
     .init({
-      resources,
+      resources: r,
+      fallbackLng: 'en',
       interpolation: {
         escapeValue: false,
       },

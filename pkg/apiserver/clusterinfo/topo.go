@@ -14,12 +14,13 @@
 // topo is a directory for TopoServer, which could load topology from pd
 // using Etcd v3 interface and pd interface.
 
-package topo
+package clusterinfo
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/clusterinfo/info"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -32,17 +33,18 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
-type Topology struct {
-	Grafana      string   `json:"grafana"`
-	Alertmanager string   `json:"alertmanager"`
-	TiKV         []string `json:"tikv"`
-	TiDB         []string `json:"tidb"`
-	PD           []string `json:"pd"`
+type ClusterInfo struct {
+	tidb         info.TiDB
+	tikv         info.TiKV
+	pd           info.PD
+	grafana      info.Grafana
+	alertManager info.AlertManager
+	prom         info.Prometheus
 }
 
 type Service struct {
-	config *config.Config
-	etcd   *etcdclientv3.Client
+	config  *config.Config
+	etcdCli *etcdclientv3.Client
 }
 
 func NewService(config *config.Config) *Service {
@@ -55,11 +57,11 @@ func NewService(config *config.Config) *Service {
 		return nil
 	}
 
-	return &Service{etcd: cli, config: config}
+	return &Service{etcdCli: cli, config: config}
 }
 
 func (s *Service) Register(r *gin.RouterGroup) {
-	endpoint := r.Group("/topo")
+	endpoint := r.Group("/topology")
 	endpoint.GET("/", s.topologyHandler)
 }
 
@@ -69,74 +71,24 @@ func (s *Service) Register(r *gin.RouterGroup) {
 // @Success 200 {object} Topology
 // @Router /topo [get]
 func (s *Service) topologyHandler(c *gin.Context) {
-	dataMap := sync.Map{}
-	errMap := sync.Map{}
 	wg := sync.WaitGroup{}
 
-	namespace := "/topo/"
-	etcdPoints := []string{"alertmanager", "tidb", "grafana"}
+	var returnObject ClusterInfo
 
-	for _, key := range etcdPoints {
-		wg.Add(1)
-		go func(k string) {
-			defer wg.Done()
-			v, err := s.etcdLoad(namespace + k)
-			if err != nil {
-				errMap.Store(k, err)
-				return
-			}
-			if v != "" {
-				dataMap.Store(k, v)
-			}
-		}(key)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	fetchers := []Fetcher{
+		FetchEtcd{},
 	}
 
-	// using pd http api to load pd peers and tikv peers
-	var pdAddresses []string
-	var kvAddresses []string
-
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		var err error
-		pdAddresses, err = s.pdLoad()
-		if err != nil {
-			errMap.Store("pd", err)
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-		var err error
-		kvAddresses, err = s.tikvLoad()
-		if err != nil {
-			errMap.Store("tikv", err)
-		}
-	}()
-
-	wg.Wait()
-
-	for _, v := range etcdPoints {
-		e, exists := errMap.Load(v)
-		if !exists {
-			continue
-		}
-		err, ok := e.(error)
-		if !ok {
-			continue
-		}
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+	for _, fetcher := range fetchers {
+		go func() {
+			fetcher.Fetch(ctx, &returnObject, s)
+		}()
 	}
 
-	c.JSON(http.StatusOK, Topology{
-		Grafana:      convert(dataMap.Load("grafana")),
-		Alertmanager: convert(dataMap.Load("alertmanager")),
-		TiKV:         kvAddresses,
-		TiDB:         parseArray(convert(dataMap.Load("tidb"))),
-		PD:           pdAddresses,
-	})
+	c.JSON(http.StatusOK, returnObject)
 }
 
 func convert(value interface{}, ok bool) string {

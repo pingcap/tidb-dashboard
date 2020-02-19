@@ -14,7 +14,7 @@ type Common struct {
 }
 
 type DeployCommon struct {
-	IP         string
-	Port       string
+	IP         string `json:"ip"`
+	Port       string `json:"port"`
 	BinaryPath string `json:"binary_path"`
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/pingcap/log"
@@ -70,11 +71,18 @@ func (P PDFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Servic
 		//return nil, err
 	}
 	for _, ds := range ds.Members {
+		u, err := url.Parse(ds.ClientUrls[0])
+		if err != nil {
+
+		}
+
 		info.Pd = append(info.Pd, clusterinfo.PD{
-			ClientUrls: ds.ClientUrls,
-			BinaryPath: ds.DeployPath,
-			Version:    ds.BinaryVersion,
-			// Note: this field need to be parse from /health
+			DeployCommon: clusterinfo.DeployCommon{
+				IP:         u.Hostname(),
+				Port:       u.Port(),
+				BinaryPath: ds.DeployPath,
+			},
+			Version:      ds.BinaryVersion,
 			ServerStatus: "",
 		})
 	}

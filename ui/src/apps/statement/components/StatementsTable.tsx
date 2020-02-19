@@ -120,7 +120,7 @@ export default function StatementsTable({
   ])
   const columns = useMemo(
     () => tableColumns(timeRange, maxExecCount!, maxAvgLatency!, maxAvgMem!),
-    [maxAvgLatency, maxAvgMem, maxExecCount]
+    [timeRange, maxAvgLatency, maxAvgMem, maxExecCount]
   )
   return (
     <Table

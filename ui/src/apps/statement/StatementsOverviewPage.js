@@ -1,5 +1,5 @@
 import React from 'react'
-import { StatementList } from './components'
+import { StatementsOverview } from './components'
 import client from '../../utils/client'
 
 function fakeReq(res) {
@@ -8,7 +8,7 @@ function fakeReq(res) {
   })
 }
 
-export default function StatementListPage() {
+export default function StatementsOverviewPage() {
   function queryInstance() {
     return Promise.resolve([{ uuid: 'current', name: 'current cluster' }])
   }
@@ -46,7 +46,7 @@ export default function StatementListPage() {
   const updateConfig = () => fakeReq('ok')
 
   return (
-    <StatementList
+    <StatementsOverview
       onFetchInstances={queryInstance}
       onFetchSchemas={querySchemas}
       onFetchTimeRanges={queryTimeRanges}

@@ -1,5 +1,6 @@
 import React from 'react'
 import { Table } from 'antd'
+import moment from 'moment'
 import { StatementDetailInfo } from './statement-types'
 
 type align = 'left' | 'right' | 'center'
@@ -20,15 +21,25 @@ const columns = [
   }
 ]
 
-export default function StatementSummaryTable({
-  detail
-}: {
+type Props = {
   detail: StatementDetailInfo
-}) {
+  beginTime: string
+  endTime: string
+}
+
+export default function StatementSummaryTable({
+  detail,
+  beginTime,
+  endTime
+}: Props) {
   const dataSource = [
     {
       kind: 'Schema',
       content: detail.schema_name
+    },
+    {
+      kind: 'Time Range',
+      content: `${beginTime} ~ ${endTime}`
     },
     {
       kind: 'SQL 类别',
@@ -40,7 +51,7 @@ export default function StatementSummaryTable({
     },
     {
       kind: '最后出现时间',
-      content: detail.last_seen
+      content: moment(detail.last_seen).format('YYYY-MM-DD HH:mm:ss')
     }
   ]
 

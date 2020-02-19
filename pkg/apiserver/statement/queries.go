@@ -16,6 +16,7 @@ package statement
 import (
 	"database/sql"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -40,8 +41,9 @@ func QuerySchemas(db *sql.DB) ([]string, error) {
 		if err != nil {
 			return schemas, err
 		}
-		schemas = append(schemas, dbName)
+		schemas = append(schemas, strings.ToLower(dbName))
 	}
+	sort.Strings(schemas)
 	return schemas, nil
 }
 
@@ -82,6 +84,8 @@ func QueryStatementsOverview(db *sql.DB, schemas []string, beginTime, endTime st
 	var schemaWhereClause string
 	if len(schemas) > 0 {
 		schemaWhereClause = "and schema_name in ('" + strings.Join(schemas, "','") + "')"
+		// to fix the issue that 'mysql' will be stored as empty in the schema_name column
+		schemaWhereClause = strings.ReplaceAll(schemaWhereClause, "'mysql'", "''")
 	}
 	sql := fmt.Sprintf(`select
 	schema_name,

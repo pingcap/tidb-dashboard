@@ -1,5 +1,5 @@
 import React from 'react'
-import { StatementList } from './components'
+import { StatementsOverview } from './components'
 
 function fakeReq(res) {
   return new Promise((resolve, reject) => {
@@ -7,7 +7,7 @@ function fakeReq(res) {
   })
 }
 
-export default function StatementListDemo() {
+export default function StatementsOverviewDemo() {
   function queryInstance() {
     return fakeReq([
       { uuid: 'ins-1', name: 'ins-1' },
@@ -81,7 +81,7 @@ export default function StatementListDemo() {
   const updateConfig = () => fakeReq('ok')
 
   return (
-    <StatementList
+    <StatementsOverview
       onFetchInstances={queryInstance}
       onFetchSchemas={querySchemas}
       onFetchTimeRanges={queryTimeRanges}

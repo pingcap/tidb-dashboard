@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { Spin } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import StatementDetailTable from './StatementDetailTable'
+import StatementNodesTable from './StatementNodesTable'
 import StatementSummaryTable from './StatementSummaryTable'
 import { StatementDetailInfo, StatementNode } from './statement-types'
 
-import styles from './StatementDetail.module.css'
+import styles from './styles.module.css'
 
 function StatisCard({ detail }: { detail: StatementDetailInfo }) {
   return (
@@ -84,12 +84,16 @@ export default function StatementDetail({
         <>
           <div className={styles.statement_summary}>
             <div className={styles.table_wrapper}>
-              <StatementSummaryTable detail={detail} />
+              <StatementSummaryTable
+                detail={detail}
+                beginTime={beginTime}
+                endTime={endTime}
+              />
             </div>
             <StatisCard detail={detail} />
           </div>
           <div className={styles.table_wrapper}>
-            <StatementDetailTable nodes={nodes} />
+            <StatementNodesTable nodes={nodes} />
           </div>
         </>
       )}

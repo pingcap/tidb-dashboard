@@ -10,6 +10,7 @@ import {
   StatementOverview,
   StatementTimeRange
 } from './statement-types'
+import styles from './styles.module.css'
 const { Option } = Select
 
 interface State {
@@ -137,7 +138,7 @@ interface Props {
   onUpdateConfig: (instanceId: string, config: StatementConfig) => Promise<any>
 }
 
-export default function StatementList({
+export default function StatementsOverview({
   onFetchInstances,
   onFetchSchemas,
   onFetchTimeRanges,
@@ -312,16 +313,30 @@ export default function StatementList({
   return (
     <div>
       <div style={{ display: 'flex', marginBottom: 12 }}>
+        {false && (
+          <Select
+            value={state.curInstance}
+            allowClear
+            placeholder="选择集群实例"
+            style={{ width: 200, marginRight: 12 }}
+            onChange={handleInstanceChange}
+          >
+            {state.instances.map(item => (
+              <Option value={item.uuid} key={item.uuid}>
+                {item.name}
+              </Option>
+            ))}
+          </Select>
+        )}
         <Select
-          value={state.curInstance}
-          allowClear
-          placeholder="选择集群实例"
-          style={{ width: 200, marginRight: 12 }}
-          onChange={handleInstanceChange}
+          value={state.curTimeRange?.begin_time}
+          placeholder="选择时间"
+          style={{ width: 340, marginRight: 12 }}
+          onChange={handleTimeRangeChange}
         >
-          {state.instances.map(item => (
-            <Option value={item.uuid} key={item.uuid}>
-              {item.name}
+          {state.timeRanges.map(item => (
+            <Option value={item.begin_time} key={item.begin_time}>
+              {item.begin_time} ~ {item.end_time}
             </Option>
           ))}
         </Select>
@@ -335,18 +350,6 @@ export default function StatementList({
           {state.schemas.map(item => (
             <Option value={item} key={item}>
               {item}
-            </Option>
-          ))}
-        </Select>
-        <Select
-          value={state.curTimeRange?.begin_time}
-          placeholder="选择时间"
-          style={{ width: 340, marginRight: 12 }}
-          onChange={handleTimeRangeChange}
-        >
-          {state.timeRanges.map(item => (
-            <Option value={item.begin_time} key={item.begin_time}>
-              {item.begin_time} ~ {item.end_time}
             </Option>
           ))}
         </Select>
@@ -394,11 +397,13 @@ export default function StatementList({
           onUpdateConfig={onUpdateConfig}
         />
       )}
-      <StatementsTable
-        statements={state.statements}
-        loading={state.statementsLoading}
-        timeRange={state.curTimeRange!}
-      />
+      <div className={styles.table_wrapper}>
+        <StatementsTable
+          statements={state.statements}
+          loading={state.statementsLoading}
+          timeRange={state.curTimeRange!}
+        />
+      </div>
     </div>
   )
 }

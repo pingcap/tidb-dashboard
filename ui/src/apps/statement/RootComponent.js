@@ -9,9 +9,9 @@ import {
 } from 'react-router-dom'
 import { Breadcrumb } from 'antd'
 
-// import StatementListDemo from './StatementListDemo'
+// import StatementsOverviewDemo from './StatementsOverviewDemo'
 // import StatementDetailDemo from './StatementDetailDemo'
-import StatementListPage from './StatementListPage'
+import StatementsOverviewPage from './StatementsOverviewPage'
 import StatementDetailPage from './StatementDetailPage'
 
 const App = withRouter(props => {
@@ -23,7 +23,7 @@ const App = withRouter(props => {
       <div style={{ margin: 12 }}>
         <Breadcrumb>
           <Breadcrumb.Item>
-            <Link to="/statement/list">Statement List</Link>
+            <Link to="/statement/overview">Statements Overview</Link>
           </Breadcrumb.Item>
           {page === 'detail' && (
             <Breadcrumb.Item>Statement Detail</Breadcrumb.Item>
@@ -32,13 +32,13 @@ const App = withRouter(props => {
       </div>
       <div style={{ margin: 12 }}>
         <Switch>
-          <Route path="/statement/list">
-            <StatementListPage />
+          <Route path="/statement/overview">
+            <StatementsOverviewPage />
           </Route>
           <Route path="/statement/detail">
             <StatementDetailPage />
           </Route>
-          <Redirect exact from="/statement" to="/statement/list" />
+          <Redirect exact from="/statement" to="/statement/overview" />
         </Switch>
       </div>
     </div>

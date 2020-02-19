@@ -12,7 +12,7 @@ const tableColumns = (
   maxAvgMem: number
 ) => [
   {
-    title: 'node',
+    title: 'Node',
     dataIndex: 'address',
     key: 'address'
   },
@@ -28,12 +28,15 @@ const tableColumns = (
     title: '总次数',
     dataIndex: 'exec_count',
     key: 'exec_count',
+    sorter: (a: StatementNode, b: StatementNode) => a.exec_count - b.exec_count,
     render: text => getValueFormat('short')(text, 0, 0)
   },
   {
     title: '平均时长',
     dataIndex: 'avg_latency',
     key: 'avg_latency',
+    sorter: (a: StatementNode, b: StatementNode) =>
+      a.avg_latency - b.avg_latency,
     render: text => (
       <div>
         {getValueFormat('ns')(text, 2, null)}
@@ -48,6 +51,8 @@ const tableColumns = (
     title: '最大时长',
     dataIndex: 'max_latency',
     key: 'max_latency',
+    sorter: (a: StatementNode, b: StatementNode) =>
+      a.max_latency - b.max_latency,
     render: text => (
       <div>
         {getValueFormat('ns')(text, 2, null)}
@@ -62,6 +67,7 @@ const tableColumns = (
     title: '平均消耗内存',
     dataIndex: 'avg_mem',
     key: 'avg_mem',
+    sorter: (a: StatementNode, b: StatementNode) => a.avg_mem - b.avg_mem,
     render: text => (
       <div>
         {getValueFormat('bytes')(text, 2, null)}
@@ -76,11 +82,13 @@ const tableColumns = (
     title: 'back_off 重试次数',
     dataIndex: 'sum_backoff_times',
     key: 'sum_backoff_times',
+    sorter: (a: StatementNode, b: StatementNode) =>
+      a.sum_backoff_times - b.sum_backoff_times,
     render: text => getValueFormat('short')(text, 0, 0)
   }
 ]
 
-export default function StatementDetailTable({
+export default function StatementNodesTable({
   nodes
 }: {
   nodes: StatementNode[]

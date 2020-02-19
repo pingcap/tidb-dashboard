@@ -8,13 +8,13 @@ type ServerVersionInfo struct {
 
 type Common struct {
 	DeployCommon
-	ServerStatus string
 	// This field is copied from tidb.
 	ServerVersionInfo
+	ServerStatus string `json:"server_status"`
 }
 
 type DeployCommon struct {
 	IP         string
-	Port       uint64
-	BinaryPath string
+	Port       string
+	BinaryPath string `json:"binary_path"`
 }

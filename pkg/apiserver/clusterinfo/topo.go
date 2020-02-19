@@ -18,16 +18,13 @@ package clusterinfo
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
-	"io/ioutil"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
 	etcdclientv3 "github.com/coreos/etcd/clientv3"
 	"github.com/gin-gonic/gin"
+	pdclient "github.com/pingcap/pd/client"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
@@ -35,8 +32,8 @@ import (
 
 type ClusterInfo struct {
 	TiDB         []clusterinfo.TiDB
-	Tikv         clusterinfo.TiKV
-	Pd           clusterinfo.PD
+	TiKV         []clusterinfo.TiKV
+	Pd           []clusterinfo.PD
 	Grafana      clusterinfo.Grafana
 	AlertManager clusterinfo.AlertManager
 	Prom         clusterinfo.Prometheus
@@ -45,19 +42,23 @@ type ClusterInfo struct {
 type Service struct {
 	config  *config.Config
 	etcdCli *etcdclientv3.Client
+	pdCli   pdclient.Client
 }
 
 func NewService(config *config.Config) *Service {
+	peers := []string{config.PDEndPoint}
 	cli, err := etcdclientv3.New(etcdclientv3.Config{
-		Endpoints:   []string{config.PDEndPoint},
+		Endpoints:   peers,
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
 		// handle error!
 		return nil
 	}
+	// TODO: adding security later.
+	pdcli, err := pdclient.NewClient(peers, pdclient.SecurityOption{})
 
-	return &Service{etcdCli: cli, config: config}
+	return &Service{etcdCli: cli, config: config, pdCli: pdcli}
 }
 
 func (s *Service) Register(r *gin.RouterGroup) {
@@ -85,6 +86,8 @@ func (s *Service) topologyHandler(c *gin.Context) {
 		PDFetcher{},
 	}
 
+	// Note: if here we want to check healthy, we can support to generate fetcher in the
+	// sub goroutine.
 	for _, fetcher := range fetchers {
 		wg.Add(1)
 		go func(f Fetcher) {
@@ -96,103 +99,4 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	wg.Wait()
 
 	c.JSON(http.StatusOK, returnObject)
-}
-
-func convert(value interface{}, ok bool) string {
-	if !ok {
-		return ""
-	}
-	v, ok := value.(string)
-	if !ok {
-		// maybe we should return err
-		return ""
-	}
-	return v
-}
-
-// parseArray will parse addresses like "address1, address2, ..., addressN"
-// to array [address1, address2, ..., addressN].
-// If input is "", it will return [""]
-func parseArray(input string) []string {
-	array := make([]string, 0)
-	for _, s := range strings.Split(input, ",") {
-		array = append(array, strings.Trim(s, " "))
-	}
-	return array
-}
-
-func (s *Service) tikvLoad() ([]string, error) {
-	resp, err := http.Get(s.config.PDEndPoint + "/pd/api/v1/stores")
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != 200 {
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		if resp.StatusCode == 500 && strings.Contains(string(b), "please start TiKV first") {
-			return []string{}, nil
-		}
-		return nil, errors.New(string(b))
-	}
-
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	stores := struct {
-		Count  int `json:"count"`
-		Stores []struct {
-			Store struct {
-				Address string `json:"address"`
-			} `json:"store"`
-		}
-	}{}
-
-	err = json.Unmarshal(data, &stores)
-	if err != nil {
-		return nil, err
-	}
-	address := make([]string, stores.Count, stores.Count)
-	for i, kv := range stores.Stores {
-		address[i] = kv.Store.Address
-	}
-
-	return address, nil
-}
-
-func (s *Service) pdLoad() ([]string, error) {
-	resp, err := http.Get(s.config.PDEndPoint + "/pd/api/v1/members")
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != 200 {
-		// TODO: add handling logic
-	}
-	data, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-		return nil, err
-	}
-
-	ds := struct {
-		Members []struct {
-			ClientUrls []string `json:"client_urls"`
-		} `json:"members"`
-	}{}
-
-	err = json.Unmarshal(data, &ds)
-	if err != nil {
-		return nil, err
-	}
-	rets := make([]string, 0)
-	for _, ds := range ds.Members {
-		rets = append(rets, ds.ClientUrls...)
-	}
-	return rets, nil
 }

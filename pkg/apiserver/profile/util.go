@@ -17,12 +17,9 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
-
-	"github.com/pkg/errors"
 )
 
 func goCmd() string {
@@ -37,57 +34,61 @@ func goCmd() string {
 	return "go"
 }
 
-func createTarball(fileName string, filePaths []string) (*os.File, error) {
-	file, err := ioutil.TempFile("", fileName)
-	if err != nil {
-		return nil, errors.Errorf("Could not create tarball file, got error '%s'", err.Error())
-	}
-	defer file.Close()
-
-	gzipWriter := gzip.NewWriter(file)
-	defer gzipWriter.Close()
-
-	tarWriter := tar.NewWriter(gzipWriter)
-	defer tarWriter.Close()
-
-	for _, filePath := range filePaths {
-		err := addFileToTarWriter(filePath, tarWriter)
+func createTarball(d *os.File, files []string) error {
+	gw := gzip.NewWriter(d)
+	defer gw.Close()
+	tw := tar.NewWriter(gw)
+	defer tw.Close()
+	for _, file := range files {
+		f, err := os.Open(file)
 		if err != nil {
-			return nil, errors.Errorf("Could not add file '%s', to tarball, got error '%s'", filePath, err.Error())
+			return err
+		}
+		defer f.Close()
+		err = compress(f, "", tw)
+		if err != nil {
+			return err
 		}
 	}
-
-	return file, nil
+	return nil
 }
 
-func addFileToTarWriter(filePath string, tarWriter *tar.Writer) error {
-	file, err := os.Open(filePath)
+func compress(file *os.File, prefix string, tw *tar.Writer) error {
+	info, err := file.Stat()
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-
-	stat, err := file.Stat()
-	if err != nil {
-		return err
+	if info.IsDir() {
+		prefix = prefix + "/" + info.Name()
+		fileInfos, err := file.Readdir(-1)
+		if err != nil {
+			return err
+		}
+		for _, fi := range fileInfos {
+			f, err := os.Open(file.Name() + "/" + fi.Name())
+			if err != nil {
+				return err
+			}
+			err = compress(f, prefix, tw)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		header, err := tar.FileInfoHeader(info, "")
+		header.Name = prefix + "/" + header.Name
+		if err != nil {
+			return err
+		}
+		err = tw.WriteHeader(header)
+		if err != nil {
+			return err
+		}
+		_, err = io.Copy(tw, file)
+		file.Close()
+		if err != nil {
+			return err
+		}
 	}
-
-	header := &tar.Header{
-		Name:    filePath,
-		Size:    stat.Size(),
-		Mode:    int64(stat.Mode()),
-		ModTime: stat.ModTime(),
-	}
-
-	err = tarWriter.WriteHeader(header)
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(tarWriter, file)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }

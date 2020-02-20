@@ -25,6 +25,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// the default time interval of profiling.
 const grabInterval = 30
 
 func fetchSvg(ctx context.Context, t, addr, filePrefix string) (string, error) {
@@ -36,7 +37,7 @@ func fetchSvg(ctx context.Context, t, addr, filePrefix string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	req.WithContext(ctx)
+	req = req.WithContext(ctx)
 	if t == pd {
 		// Forbidden PD follower proxy
 		req.Header.Add("PD-Allow-follower-handle", "true")
@@ -97,7 +98,7 @@ func getSvgFilePath(t, filePrefix string, body io.ReadCloser) (string, error) {
 		return "", err
 	}
 	svgFilePath := tmpfile.Name() + ".svg"
-	if _, err := exec.Command(goCmd(), "tool", "pprof", "-svg", "-output", svgFilePath, tmpfile.Name()).CombinedOutput(); err != nil {
+	if _, err := exec.Command(goCmd(), "tool", "pprof", "-svg", "-output", svgFilePath, tmpfile.Name()).CombinedOutput(); err != nil { //nolint:gosec
 		return "", err
 	}
 	return svgFilePath, nil

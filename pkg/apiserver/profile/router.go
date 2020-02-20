@@ -17,6 +17,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
@@ -40,11 +41,10 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/profile")
 	endpoint.Use(auth.MWAuthRequired())
 	// support something like "/start?tikv=[]&tidb=[]&pd=[]"
-	endpoint.GET("/start", s.startHandler)
-	endpoint.GET("/status/:groupId", s.statusHandler)
-	endpoint.POST("/cancel/:groupId", s.cancelGroupHandler)
-	endpoint.POST("/cancel/:taskId", s.cancelHandler)
-	endpoint.GET("/download/:groupId", s.downloadGroupHandler)
-	endpoint.GET("/download/:taskId", s.downloadHandler)
-	endpoint.POST("/delete/:groupId", s.deleteHandler)
+	endpoint.GET("/group/start", s.startHandler)
+	endpoint.GET("/group/status/:groupId", s.statusHandler)
+	endpoint.POST("/group/cancel/:groupId", s.cancelGroupHandler)
+	endpoint.POST("/single/cancel/:taskId", s.cancelHandler)
+	endpoint.GET("/group/download/:groupId", s.downloadGroupHandler)
+	endpoint.GET("/single/download/:taskId", s.downloadHandler)
 }

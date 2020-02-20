@@ -20,6 +20,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
@@ -74,20 +77,23 @@ func autoMigrate(db *dbstore.DB) {
 // Task is the unit to fetch profiling information.
 type Task struct {
 	*TaskModel
+	db     *dbstore.DB
 	mu     sync.Mutex
 	cancel context.CancelFunc
 }
 
 // NewTask create a new profiling task.
-func NewTask(component, addr string) *Task {
+func NewTask(db *dbstore.DB, component, addr, id string) *Task {
 	return &Task{
 		TaskModel: &TaskModel{
-			ID:         uuid.New().String(),
-			State:      Create,
-			Addr:       addr,
-			Component:  component,
-			CreateTime: time.Now().Unix(),
+			ID:          uuid.New().String(),
+			TaskGroupID: id,
+			State:       Create,
+			Addr:        addr,
+			Component:   component,
+			CreateTime:  time.Now().Unix(),
 		},
+		db: db,
 		mu: sync.Mutex{},
 	}
 }
@@ -97,6 +103,7 @@ func (t *Task) run(updateCh chan struct{}) {
 	t.cancel = cancel
 	t.mu.Lock()
 	t.State = Running
+	t.db.Save(t.TaskModel)
 	t.mu.Unlock()
 	filePrefix := fmt.Sprintf("profile_%s_%s_%s", t.Component, t.Addr, t.ID)
 	svgFilePath, err := fetchSvg(ctx, t.Component, t.Addr, filePrefix)
@@ -104,6 +111,7 @@ func (t *Task) run(updateCh chan struct{}) {
 	case <-ctx.Done():
 		t.mu.Lock()
 		t.State = Cancel
+		t.db.Save(t.TaskModel)
 		t.mu.Unlock()
 		return
 	default:
@@ -113,12 +121,14 @@ func (t *Task) run(updateCh chan struct{}) {
 	if err != nil {
 		t.Error = err.Error()
 		t.State = Error
+		t.db.Save(t.TaskModel)
 		updateCh <- struct{}{}
 		return
 	}
 	t.FilePath = svgFilePath
 	t.State = Finish
 	t.FinishTime = time.Now().Unix()
+	t.db.Save(t.TaskModel)
 	updateCh <- struct{}{}
 }
 
@@ -128,6 +138,7 @@ func (t *Task) stop() {
 	defer t.mu.Unlock()
 	if t.State != Finish {
 		t.State = Cancel
+		t.db.Save(t.TaskModel)
 	}
 }
 
@@ -152,6 +163,7 @@ func (tg *TaskGroup) trackTasks(db *dbstore.DB, taskTacker *sync.Map) {
 	trackTicker := time.NewTicker(TrackTickInterval)
 	defer trackTicker.Stop()
 
+	log.Info("start to track tasks", zap.Int("total", tg.RunningTasks))
 	for {
 		select {
 		case <-tg.updateCh:
@@ -159,7 +171,7 @@ func (tg *TaskGroup) trackTasks(db *dbstore.DB, taskTacker *sync.Map) {
 		case <-trackTicker.C:
 			if tg.RunningTasks == 0 {
 				tg.State = Finish
-				db.Save(tg)
+				db.Save(tg.TaskGroupModel)
 				close(tg.updateCh)
 				return
 			}

@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useEffect } from 'react'
+import React, { useState, useReducer, useEffect, useContext } from 'react'
 import { Select, Button, Modal } from 'antd'
 import StatementEnableModal from './StatementEnableModal'
 import StatementSettingModal from './StatementSettingModal'
@@ -11,6 +11,7 @@ import {
   StatementTimeRange
 } from './statement-types'
 import styles from './styles.module.css'
+import { SearchContext } from './search-options-context'
 const { Option } = Select
 
 interface State {
@@ -150,7 +151,12 @@ export default function StatementsOverview({
   onFetchConfig,
   onUpdateConfig
 }: Props) {
-  const [state, dispatch] = useReducer(reducer, initState)
+  const { searchOptions, setSearchOptions } = useContext(SearchContext)
+  // combine the context to state
+  const [state, dispatch] = useReducer(reducer, {
+    ...initState,
+    ...searchOptions
+  })
   const [
     enableStatementModalVisible,
     setEnableStatementModalVisible
@@ -167,7 +173,7 @@ export default function StatementsOverview({
         type: 'save_instances',
         payload: res || []
       })
-      if (res?.length === 1) {
+      if (res?.length === 1 && !state.curInstance) {
         dispatch({
           type: 'change_instance',
           payload: res[0].uuid
@@ -176,7 +182,8 @@ export default function StatementsOverview({
     }
 
     queryInstances()
-  }, [onFetchInstances])
+  }, [])
+  // empty dependency represents only run this effect once at the begining time
 
   useEffect(() => {
     async function queryStatementStatus() {
@@ -209,7 +216,7 @@ export default function StatementsOverview({
           type: 'save_time_ranges',
           payload: res || []
         })
-        if (res && res.length > 0) {
+        if (res && res.length > 0 && !state.curTimeRange) {
           dispatch({
             type: 'change_time_range',
             payload: res[0]
@@ -221,24 +228,14 @@ export default function StatementsOverview({
     queryStatementStatus()
     querySchemas()
     queryTimeRanges()
-  }, [
-    state.curInstance,
-    onGetStatementStatus,
-    onFetchSchemas,
-    onFetchTimeRanges
-  ])
+  }, [state.curInstance])
+  // don't add the dependent functions likes onFetchTimeRanges into the dependency array
+  // it will cause the infinite loop
+  // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
 
   useEffect(() => {
     async function queryStatementList() {
-      // console.log('cur time range:', state.curTimeRange)
-      if (state.curInstance === undefined) {
-        return
-      }
-      if (state.curTimeRange === undefined) {
-        dispatch({
-          type: 'save_statements',
-          payload: []
-        })
+      if (!state.curInstance || !state.curTimeRange) {
         return
       }
       dispatch({
@@ -257,12 +254,16 @@ export default function StatementsOverview({
     }
 
     queryStatementList()
-  }, [
-    state.curInstance,
-    state.curSchemas,
-    state.curTimeRange,
-    onFetchStatements
-  ])
+    // update context
+    setSearchOptions({
+      curInstance: state.curInstance,
+      curSchemas: state.curSchemas,
+      curTimeRange: state.curTimeRange
+    })
+  }, [state.curInstance, state.curSchemas, state.curTimeRange])
+  // don't add the dependent functions likes onFetchStatements into the dependency array
+  // it will cause the infinite loop
+  // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
 
   function handleInstanceChange(val: string | undefined) {
     dispatch({
@@ -341,6 +342,7 @@ export default function StatementsOverview({
           ))}
         </Select>
         <Select
+          value={state.curSchemas}
           mode="multiple"
           allowClear
           placeholder="选择 schema"

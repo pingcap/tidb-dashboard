@@ -74,7 +74,10 @@ export default function StatementDetail({
       setLoading(false)
     }
     query()
-  }, [digest, schemaName, beginTime, endTime, onFetchDetail, onFetchNodes])
+  }, [digest, schemaName, beginTime, endTime])
+  // don't add the dependent functions likes onFetchDetail into the dependency array
+  // it will cause the infinite loop if use context inside it in the future
+  // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
 
   return (
     <div className={styles.statement_detail}>

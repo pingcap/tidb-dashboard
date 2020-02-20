@@ -21,7 +21,7 @@ export default function StatementsOverviewPage() {
     return client.dashboard.statementsTimeRangesGet().then(res => res.data)
   }
 
-  function queryStatements(instanceId, schemas, beginTime, endTime) {
+  function queryStatements(_instanceId, schemas, beginTime, endTime) {
     return client.dashboard
       .statementsOverviewsGet(beginTime, endTime, schemas.join(','))
       .then(res => res.data)

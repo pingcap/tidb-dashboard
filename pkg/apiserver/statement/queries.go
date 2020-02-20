@@ -91,7 +91,7 @@ func QueryStatementsOverview(db *sql.DB, schemas []string, beginTime, endTime st
 	schema_name,
 	digest,
 	digest_text,
-	sum(sum_latency),
+	sum(sum_latency) as total_latency,
 	sum(exec_count),
 	round(sum(exec_count*avg_affected_rows)/sum(exec_count)),
 	round(sum(exec_count*avg_latency)/sum(exec_count)),
@@ -100,7 +100,9 @@ func QueryStatementsOverview(db *sql.DB, schemas []string, beginTime, endTime st
 	where summary_begin_time=?
 	and summary_end_time=?
 	%s
-	group by schema_name,digest,digest_text`, schemaWhereClause)
+	group by schema_name,digest,digest_text
+	order by total_latency desc`,
+		schemaWhereClause)
 	rows, err := db.Query(sql, beginTime, endTime)
 
 	overviews := []*Overview{}
@@ -198,7 +200,8 @@ func QueryStatementNodes(db *sql.DB, schema, beginTime, endTime, digest string) 
 	where schema_name=?
 	and summary_begin_time=?
 	and summary_end_time=?
-	and digest=?`
+	and digest=?
+	order by sum_latency desc`
 	rows, err := db.Query(sql, schema, beginTime, endTime, digest)
 	nodes := []*Node{}
 

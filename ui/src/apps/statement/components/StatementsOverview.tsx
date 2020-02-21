@@ -12,6 +12,7 @@ import {
 } from './statement-types'
 import styles from './styles.module.css'
 import { SearchContext } from './search-options-context'
+import { useTranslation } from 'react-i18next'
 const { Option } = Select
 
 interface State {
@@ -165,6 +166,7 @@ export default function StatementsOverview({
     statementSettingModalVisible,
     setStatementSettingModalVisible
   ] = useState(false)
+  const { t } = useTranslation()
 
   useEffect(() => {
     async function queryInstances() {
@@ -182,6 +184,7 @@ export default function StatementsOverview({
     }
 
     queryInstances()
+  // eslint-disable-next-line
   }, [])
   // empty dependency represents only run this effect once at the begining time
 
@@ -228,6 +231,7 @@ export default function StatementsOverview({
     queryStatementStatus()
     querySchemas()
     queryTimeRanges()
+  // eslint-disable-next-line
   }, [state.curInstance])
   // don't add the dependent functions likes onFetchTimeRanges into the dependency array
   // it will cause the infinite loop
@@ -260,6 +264,7 @@ export default function StatementsOverview({
       curSchemas: state.curSchemas,
       curTimeRange: state.curTimeRange
     })
+  // eslint-disable-next-line
   }, [state.curInstance, state.curSchemas, state.curTimeRange])
   // don't add the dependent functions likes onFetchStatements into the dependency array
   // it will cause the infinite loop
@@ -331,7 +336,7 @@ export default function StatementsOverview({
         )}
         <Select
           value={state.curTimeRange?.begin_time}
-          placeholder="选择时间"
+          placeholder={t('statement.filters.select_time')}
           style={{ width: 340, marginRight: 12 }}
           onChange={handleTimeRangeChange}
         >
@@ -345,7 +350,7 @@ export default function StatementsOverview({
           value={state.curSchemas}
           mode="multiple"
           allowClear
-          placeholder="选择 schema"
+          placeholder={t('statement.filters.select_schemas')}
           style={{ minWidth: 200, marginRight: 12 }}
           onChange={handleSchemaChange}
         >

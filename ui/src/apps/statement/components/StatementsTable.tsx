@@ -5,20 +5,22 @@ import { Table } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { HorizontalBar } from './HorizontalBar'
 import { StatementOverview, StatementTimeRange } from './statement-types'
+import { useTranslation } from 'react-i18next'
 
 const tableColumns = (
   timeRange: StatementTimeRange,
   maxExecCount: number,
   maxAvgLatency: number,
-  maxAvgMem: number
+  maxAvgMem: number,
+  t: (string) => string
 ) => [
   {
-    title: 'Schema',
+    title: t('statement.common.schema'),
     dataIndex: 'schema_name',
     key: 'schema_name'
   },
   {
-    title: 'SQL 类别',
+    title: t('statement.common.digest_text'),
     dataIndex: 'digest_text',
     key: 'digest_text',
     width: 400,
@@ -31,7 +33,7 @@ const tableColumns = (
     )
   },
   {
-    title: '总时长',
+    title: t('statement.common.sum_latency'),
     dataIndex: 'sum_latency',
     key: 'sum_latency',
     sorter: (a: StatementOverview, b: StatementOverview) =>
@@ -39,7 +41,7 @@ const tableColumns = (
     render: text => getValueFormat('ns')(text, 2, null)
   },
   {
-    title: '总次数',
+    title: t('statement.common.exec_count'),
     dataIndex: 'exec_count',
     key: 'exec_count',
     sorter: (a: StatementOverview, b: StatementOverview) =>
@@ -55,7 +57,7 @@ const tableColumns = (
     )
   },
   {
-    title: '平均影响行数',
+    title: t('statement.common.avg_affected_rows'),
     dataIndex: 'avg_affected_rows',
     key: 'avg_affected_rows',
     sorter: (a: StatementOverview, b: StatementOverview) =>
@@ -63,7 +65,7 @@ const tableColumns = (
     render: text => getValueFormat('short')(text, 0, 0)
   },
   {
-    title: '平均时长',
+    title: t('statement.common.avg_latency'),
     dataIndex: 'avg_latency',
     key: 'avg_latency',
     sorter: (a: StatementOverview, b: StatementOverview) =>
@@ -79,7 +81,7 @@ const tableColumns = (
     )
   },
   {
-    title: '平均消耗内存',
+    title: t('statement.common.avg_mem'),
     dataIndex: 'avg_mem',
     key: 'avg_mem',
     sorter: (a: StatementOverview, b: StatementOverview) =>
@@ -107,6 +109,7 @@ export default function StatementsTable({
   loading,
   timeRange
 }: Props) {
+  const {t} = useTranslation()
   const maxExecCount = useMemo(
     () => _.max(statements.map(s => s.exec_count)) || 1,
     [statements]
@@ -119,8 +122,8 @@ export default function StatementsTable({
     statements
   ])
   const columns = useMemo(
-    () => tableColumns(timeRange, maxExecCount!, maxAvgLatency!, maxAvgMem!),
-    [timeRange, maxAvgLatency, maxAvgMem, maxExecCount]
+    () => tableColumns(timeRange, maxExecCount!, maxAvgLatency!, maxAvgMem!, t),
+    [timeRange, maxExecCount, maxAvgLatency, maxAvgMem, t]
   )
   return (
     <Table

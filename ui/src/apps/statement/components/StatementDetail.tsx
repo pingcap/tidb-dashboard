@@ -7,17 +7,28 @@ import StatementSummaryTable from './StatementSummaryTable'
 import { StatementDetailInfo, StatementNode } from './statement-types'
 
 import styles from './styles.module.css'
+import { useTranslation } from 'react-i18next'
 
 function StatisCard({ detail }: { detail: StatementDetailInfo }) {
+  const { t } = useTranslation()
+
   return (
     <div className={styles.statement_statis}>
-      <p>总时长：{getValueFormat('ns')(detail.sum_latency, 2, null)}</p>
-      <p>总次数：{getValueFormat('short')(detail.exec_count, 0, 0)}</p>
       <p>
-        平均影响行数：{getValueFormat('short')(detail.avg_affected_rows, 0, 0)}
+        {t('statement.common.sum_latency')}:{' '}
+        {getValueFormat('ns')(detail.sum_latency, 2, null)}
       </p>
       <p>
-        平均扫描行数：{getValueFormat('short')(detail.avg_total_keys, 0, 0)}
+        {t('statement.common.exec_count')}:{' '}
+        {getValueFormat('short')(detail.exec_count, 0, 0)}
+      </p>
+      <p>
+        {t('statement.common.avg_affected_rows')}:{' '}
+        {getValueFormat('short')(detail.avg_affected_rows, 0, 0)}
+      </p>
+      <p>
+        {t('statement.common.avg_total_keys')}:{' '}
+        {getValueFormat('short')(detail.avg_total_keys, 0, 0)}
       </p>
     </div>
   )
@@ -74,6 +85,7 @@ export default function StatementDetail({
       setLoading(false)
     }
     query()
+  // eslint-disable-next-line
   }, [digest, schemaName, beginTime, endTime])
   // don't add the dependent functions likes onFetchDetail into the dependency array
   // it will cause the infinite loop if use context inside it in the future

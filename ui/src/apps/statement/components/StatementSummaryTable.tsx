@@ -2,6 +2,7 @@ import React from 'react'
 import { Table } from 'antd'
 import moment from 'moment'
 import { StatementDetailInfo } from './statement-types'
+import { useTranslation } from 'react-i18next'
 
 type align = 'left' | 'right' | 'center'
 
@@ -32,25 +33,27 @@ export default function StatementSummaryTable({
   beginTime,
   endTime
 }: Props) {
+  const { t } = useTranslation()
+
   const dataSource = [
     {
-      kind: 'Schema',
+      kind: t('statement.common.schema'),
       content: detail.schema_name
     },
     {
-      kind: 'Time Range',
+      kind: t('statement.detail.time_range'),
       content: `${beginTime} ~ ${endTime}`
     },
     {
-      kind: 'SQL 类别',
+      kind: t('statement.common.digest_text'),
       content: detail.digest_text
     },
     {
-      kind: '最后出现 SQL 语句',
+      kind: t('statement.detail.query_sample_text'),
       content: detail.query_sample_text
     },
     {
-      kind: '最后出现时间',
+      kind: t('statement.detail.last_seen'),
       content: moment(detail.last_seen).format('YYYY-MM-DD HH:mm:ss')
     }
   ]

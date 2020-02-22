@@ -1,5 +1,6 @@
 import React from 'react';
 import { Layout, Menu, Icon } from 'antd';
+import { Link } from 'react-router-dom';
 import { HashRouter as Router } from 'react-router-dom';
 import LangDropdown from './LangDropdown';
 
@@ -56,6 +57,22 @@ class App extends React.PureComponent {
     window.removeEventListener('single-spa:routing-event', this.handleRouting);
   }
 
+  renderAppMenuItem = appId => {
+    const registry = this.props.registry;
+    const app = registry.apps[appId];
+    if (!app) {
+      return null;
+    }
+    return (
+      <Menu.Item key={appId}>
+        <Link to={app.indexRoute}>
+          {app.icon ? <Icon type={app.icon} /> : null}
+          <span>{app.menuTitle}</span>
+        </Link>
+      </Menu.Item>
+    );
+  };
+
   render() {
     const siderWidth = 260;
     const isDev = process.env.NODE_ENV === 'development';
@@ -76,10 +93,8 @@ class App extends React.PureComponent {
               selectedKeys={[this.state.activeAppId]}
               defaultOpenKeys={['sub1']}
             >
-              {this.props.registry.renderAppMenuItem('keyvis')}
-              {isDev
-                ? this.props.registry.renderAppMenuItem('statement')
-                : null}
+              {this.renderAppMenuItem('keyvis')}
+              {isDev ? this.renderAppMenuItem('statement') : null}
               {isDev ? (
                 <Menu.SubMenu
                   key="sub1"
@@ -90,8 +105,8 @@ class App extends React.PureComponent {
                     </span>
                   }
                 >
-                  {this.props.registry.renderAppMenuItem('home')}
-                  {this.props.registry.renderAppMenuItem('demo')}
+                  {this.renderAppMenuItem('home')}
+                  {this.renderAppMenuItem('demo')}
                 </Menu.SubMenu>
               ) : null}
             </Menu>

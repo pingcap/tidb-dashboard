@@ -11,14 +11,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package tidb
 
 import (
-	"crypto/tls"
+	"github.com/joomcode/errorx"
 )
 
-type Config struct {
-	DataDir    string
-	PDEndPoint string
-	TLSConfig  *tls.Config
-}
+var (
+	ErrorNS           = errorx.NewNamespace("error.tidb")
+	ErrPDAccessFailed = ErrorNS.NewType("pd_access_failed")
+	ErrNoAliveTiDB    = ErrorNS.NewType("no_alive_tidb")
+	ErrTiDBConnFailed = ErrorNS.NewType("tidb_conn_failed")
+	ErrTiDBAuthFailed = ErrorNS.NewType("tidb_auth_failed")
+)

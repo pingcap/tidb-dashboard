@@ -1,0 +1,24 @@
+error:
+  message:
+    network: Network connection error
+    unauthorized: Session is expired. Please sign in again.
+  tidb:
+    no_alive_tidb: No alive TiDB instance in the cluster
+    pd_access_failed: Failed to access PD node
+    tidb_conn_failed: Failed to connect to TiDB
+    tidb_auth_failed: TiDB authentication failed
+  api:
+    other: Other error
+signin:
+  message:
+    error: 'Sign in failed: {{ msg }}'
+    success: Sign in successfully
+  form:
+    username: Username
+    password: Password
+    button: Sign In
+    tidb_auth:
+      message: You can sign in using TiDB SQL user if TiDB instance is started in the cluster.
+      title: TiDB User
+      check:
+        message: Username is required

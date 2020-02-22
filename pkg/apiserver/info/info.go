@@ -17,39 +17,70 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
+	utils2 "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
 type Info struct {
-	Version    string `json:"version"`
-	PDEndPoint string `json:"pd_end_point"`
+	Version    utils2.VersionInfo `json:"version"`
+	PDEndPoint string             `json:"pd_end_point"`
 }
 
 type Service struct {
-	config *config.Config
-	db     *dbstore.DB
+	config        *config.Config
+	db            *dbstore.DB
+	tidbForwarder *tidb.Forwarder
 }
 
-func NewService(config *config.Config, db *dbstore.DB) *Service {
-	return &Service{config: config, db: db}
+func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB) *Service {
+	return &Service{config: config, db: db, tidbForwarder: tidbForwarder}
 }
 
-func (s *Service) Register(r *gin.RouterGroup) {
+func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/info")
+	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/info", s.infoHandler)
+	endpoint.GET("/databases", utils.MWConnectTiDB(s.tidbForwarder), s.databasesHandler)
 }
 
 // @Summary Dashboard info
 // @Description Get information about the dashboard service.
+// @ID getInfo
 // @Produce json
 // @Success 200 {object} Info
 // @Router /info/info [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
 	info := Info{
-		Version:    s.config.Version,
+		Version:    utils2.GetVersionInfo(),
 		PDEndPoint: s.config.PDEndPoint,
 	}
 	c.JSON(http.StatusOK, info)
+}
+
+type DatabaseResponse = []string
+
+// @Summary Example: Get all databases
+// @Description Get all databases.
+// @Produce json
+// @Success 200 {object} DatabaseResponse
+// @Router /info/databases [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) databasesHandler(c *gin.Context) {
+	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
+	var result DatabaseResponse
+	err := db.Raw("show databases").Pluck("Databases", &result).Error
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, result)
 }

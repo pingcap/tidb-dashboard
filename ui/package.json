@@ -25,7 +25,7 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "build_api_client": "openapi-generator generate -i ../docs/swagger.yaml -g typescript-axios -o src/utils/dashboard_client"
+    "build_api_client": "openapi-generator generate -i ../docs/swagger.yaml -g typescript-axios -c .openapi_config.yaml -o src/utils/dashboard_client"
   },
   "homepage": "/dashboard",
   "eslintConfig": {
@@ -44,6 +44,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.8.3",
     "@openapitools/openapi-generator-cli": "^1.0.8-4.2.2",
     "@types/d3": "^5.7.2",
     "@types/node": "^13.1.5",

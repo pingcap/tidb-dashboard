@@ -23,16 +23,20 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
 
 var once sync.Once
 
 type Services struct {
-	Store     *dbstore.DB
-	KeyVisual *keyvisual.Service
+	Store         *dbstore.DB
+	TiDBForwarder *tidb.Forwarder
+	KeyVisual     *keyvisual.Service
 }
 
 func Handler(apiPrefix string, config *config.Config, services *Services) http.Handler {
@@ -45,12 +49,16 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	r.Use(cors.AllowAll())
 	r.Use(gin.Recovery())
 	r.Use(gzip.Gzip(gzip.BestSpeed))
+	r.Use(utils.MWHandleErrors())
 
 	endpoint := r.Group(apiPrefix)
 
-	foo.NewService(config).Register(endpoint)
-	info.NewService(config, services.Store).Register(endpoint)
-	services.KeyVisual.Register(endpoint)
+	auth := user.NewAuthService(services.TiDBForwarder)
+	auth.Register(endpoint)
+
+	foo.NewService(config).Register(endpoint, auth)
+	info.NewService(config, services.TiDBForwarder, services.Store).Register(endpoint, auth)
+	services.KeyVisual.Register(endpoint, auth)
 
 	return r
 }

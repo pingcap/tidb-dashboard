@@ -164,6 +164,10 @@ func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
 			if user == nil {
 				return false
 			}
+			// Currently we don't support privileges, so only root user is allowed to sign in.
+			if user.TiDBUsername != "root" {
+				return false
+			}
 			return true
 		},
 		HTTPStatusMessageFunc: func(e error, c *gin.Context) string {

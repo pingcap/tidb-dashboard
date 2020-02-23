@@ -69,6 +69,7 @@ class Nav extends React.PureComponent {
             <Dropdown overlay={userMenu} placement="bottomRight">
               <NavAction>
                 {this.state.login ? this.state.login.username : '...'}
+                <Icon type="down" style={{ marginLeft: '5px' }} />
               </NavAction>
             </Dropdown>
           </div>

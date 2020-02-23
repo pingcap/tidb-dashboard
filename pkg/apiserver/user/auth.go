@@ -21,7 +21,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/appleboy/gin-jwt/v2"
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
@@ -64,14 +64,13 @@ func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder) (*utils.S
 	if err != nil {
 		if errorx.Cast(err) == nil {
 			return nil, ErrSignInOther.WrapWithNoMessage(err)
-		} else {
-			// Possible errors could be:
-			// tidb.ErrNoAliveTiDB
-			// tidb.ErrPDAccessFailed
-			// tidb.ErrTiDBConnFailed
-			// tidb.ErrTiDBAuthFailed
-			return nil, err
 		}
+		// Possible errors could be:
+		// tidb.ErrNoAliveTiDB
+		// tidb.ErrPDAccessFailed
+		// tidb.ErrTiDBConnFailed
+		// tidb.ErrTiDBAuthFailed
+		return nil, err
 	}
 	defer db.Close() //nolint:errcheck
 
@@ -87,13 +86,14 @@ func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
-	if len(secretStr) == 0 {
+	switch len(secretStr) {
+	case 0:
 		secret = cryptopasta.NewEncryptionKey()
-	} else if len(secretStr) == 32 {
+	case 32:
 		log.Info("DASHBOARD_SESSION_SECRET is overridden from env var")
 		secret = &[32]byte{}
 		copy(secret[:], secretStr)
-	} else {
+	default:
 		log.Warn("DASHBOARD_SESSION_SECRET does not meet the 32 byte size requirement, ignored")
 		secret = cryptopasta.NewEncryptionKey()
 	}

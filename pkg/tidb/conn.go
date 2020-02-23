@@ -20,6 +20,8 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+
+	// MySQL driver used by gorm
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 

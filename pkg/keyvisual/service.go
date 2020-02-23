@@ -27,6 +27,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
+	// Import for swag go doc
 	_ "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"

@@ -64,18 +64,7 @@ export async function heatmapChart(
   onZoom: () => void
 ) {
   const maxValue = d3.max(data.data[dataTag].map(array => d3.max(array)!)) || 0
-  // const normalizedData = data.data[dataTag].map(row => {
-  //   const r2 = new Float32Array(row.length);
-  //   let l = row.length;
-  //   for (let i = 0; i < l; i++) {
-  //     r2[i] = row[i] / maxValue;
-  //   }
-  //   return r2;
-  // });
-  // Normalize data to [0, 255]
-  console.time('normalize')
   const normalizedData = normalizeData(data.data[dataTag], maxValue)
-  console.timeEnd('normalize')
 
   let colorScheme: ColorScheme
   let brightness = 1
@@ -89,9 +78,9 @@ export async function heatmapChart(
   let canvasWidth = 0
   let canvasHeight = 0
 
-  heatmapChart.brightness = async function(val: number) {
+  heatmapChart.brightness = function(val: number) {
     brightness = val
-    await updateBuffer()
+    updateBuffer()
     heatmapChart()
   }
 
@@ -126,7 +115,7 @@ export async function heatmapChart(
     heatmapChart()
   }
 
-  async function updateBuffer() {
+  function updateBuffer() {
     const d = data.data[dataTag]
     const height = d.length > 0 ? d[0].length : 0
     const width = d.length
@@ -140,7 +129,7 @@ export async function heatmapChart(
     colorScheme = newColorScheme
   }
 
-  await updateBuffer()
+  updateBuffer()
   heatmapChart()
 
   function heatmapChart() {
@@ -412,7 +401,7 @@ export async function heatmapChart(
     function render() {
       renderHeatmap()
       // renderHighlight()
-      rednerAxis()
+      renderAxis()
       renderBrush()
       renderTooltip()
       renderCross()
@@ -434,42 +423,42 @@ export async function heatmapChart(
       )
     }
 
-    function renderHighlight() {
-      const selectedData = data.data[dataTag]
-      const xLen = selectedData.length
-      const yLen = selectedData[0].length
-      const xRescale = zoomTransform.rescaleX(xScale)
-      const yRescale = zoomTransform.rescaleY(yScale)
-      const xStartIdx = Math.max(0, Math.floor(xScale.invert(0)))
-      const xEndIdx = Math.min(xLen - 1, Math.ceil(xScale.invert(canvasWidth)))
-      const yStartIdx = Math.max(0, Math.floor(yScale.invert(0)))
-      const yEndIdx = Math.min(yLen - 1, Math.ceil(yScale.invert(canvasHeight)))
+    // function renderHighlight() {
+    //   const selectedData = data.data[dataTag]
+    //   const xLen = selectedData.length
+    //   const yLen = selectedData[0].length
+    //   const xRescale = zoomTransform.rescaleX(xScale)
+    //   const yRescale = zoomTransform.rescaleY(yScale)
+    //   const xStartIdx = Math.max(0, Math.floor(xScale.invert(0)))
+    //   const xEndIdx = Math.min(xLen - 1, Math.ceil(xScale.invert(canvasWidth)))
+    //   const yStartIdx = Math.max(0, Math.floor(yScale.invert(0)))
+    //   const yEndIdx = Math.min(yLen - 1, Math.ceil(yScale.invert(canvasHeight)))
 
-      ctx.shadowColor = '#fff'
-      ctx.shadowBlur = 9 + zoomTransform.k // 10 + 1 * (zoomTransform.k - 1)
-      ctx.fillStyle = 'blue'
-      for (let x = xStartIdx; x < xEndIdx; x++) {
-        for (let y = yStartIdx; y < yEndIdx; y++) {
-          if (selectedData[x][y] > maxValue / 2) {
-            const left = xRescale(x)
-            const top = yRescale(y)
-            const right = xRescale(x + 1)
-            const bottom = yRescale(y + 1)
-            const width = right - left
-            const height = bottom - top
-            const xPadding = ((0.8 + 0.5 * (1 - 1 / zoomTransform.k)) * width) / height
-            const yPadding = ((0.8 + 0.5 * (1 - 1 / zoomTransform.k)) * height) / width
-            ctx.beginPath()
-            ctx.shadowOffsetX = (left + 1000) * heatmapCanvasPixelRatio
-            ctx.shadowOffsetY = (top + 1000) * heatmapCanvasPixelRatio
-            ctx.fillRect(-1000 - xPadding, -1000 - yPadding, right - left + xPadding * 2, bottom - top + yPadding * 2)
-            ctx.closePath()
-          }
-        }
-      }
-    }
+    //   ctx.shadowColor = '#fff'
+    //   ctx.shadowBlur = 9 + zoomTransform.k // 10 + 1 * (zoomTransform.k - 1)
+    //   ctx.fillStyle = 'blue'
+    //   for (let x = xStartIdx; x < xEndIdx; x++) {
+    //     for (let y = yStartIdx; y < yEndIdx; y++) {
+    //       if (selectedData[x][y] > maxValue / 2) {
+    //         const left = xRescale(x)
+    //         const top = yRescale(y)
+    //         const right = xRescale(x + 1)
+    //         const bottom = yRescale(y + 1)
+    //         const width = right - left
+    //         const height = bottom - top
+    //         const xPadding = ((0.8 + 0.5 * (1 - 1 / zoomTransform.k)) * width) / height
+    //         const yPadding = ((0.8 + 0.5 * (1 - 1 / zoomTransform.k)) * height) / width
+    //         ctx.beginPath()
+    //         ctx.shadowOffsetX = (left + 1000) * heatmapCanvasPixelRatio
+    //         ctx.shadowOffsetY = (top + 1000) * heatmapCanvasPixelRatio
+    //         ctx.fillRect(-1000 - xPadding, -1000 - yPadding, right - left + xPadding * 2, bottom - top + yPadding * 2)
+    //         ctx.closePath()
+    //       }
+    //     }
+    //   }
+    // }
 
-    function rednerAxis() {
+    function renderAxis() {
       const xRescale = zoomTransform.rescaleX(xScale)
       const yRescale = zoomTransform.rescaleY(yScale)
       histogramAxis(

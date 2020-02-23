@@ -1,0 +1,17 @@
+keyvis:
+  nav_title: 热点可视化
+  toolbar:
+    brightness: 调整亮度
+    zoom:
+      select: 框选
+      reset: 重置
+    auto_refresh: 自动刷新
+    date_range:
+      hour: '{{n}} 小时'
+      day: '{{n}} 天'
+    view_type:
+      read_bytes: 读取字节量
+      write_bytes: 写入字节量
+      read_keys: 读取次数
+      write_keys: 写入次数
+      all: 所有

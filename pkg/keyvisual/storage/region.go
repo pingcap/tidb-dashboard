@@ -47,7 +47,7 @@ func CreateStorageAxis(regions region.RegionsInfo, strategy matrix.Strategy) mat
 	wash(&preAxis)
 
 	axis := IntoStorageAxis(preAxis, strategy)
-	log.Info("New StorageAxis", zap.Int("region length", regionsLen), zap.Int("focus keys length", len(axis.Keys)))
+	log.Debug("New StorageAxis", zap.Int("region length", regionsLen), zap.Int("focus keys length", len(axis.Keys)))
 	return axis
 }
 

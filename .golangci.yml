@@ -29,5 +29,4 @@ linters:
     - depguard
     - prealloc
     - scopelint
-    - gocritic
     - whitespace

@@ -1,9 +1,13 @@
 import React from 'react';
-
 import { Layout, Menu, Icon } from 'antd';
-import { HashRouter as Router, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { HashRouter as Router } from 'react-router-dom';
+import { withTranslation } from 'react-i18next';
+import Nav from './Nav';
+
 import styles from './RootComponent.module.less';
 
+@withTranslation()
 class App extends React.PureComponent {
   state = {
     collapsed: false,
@@ -16,12 +20,15 @@ class App extends React.PureComponent {
     window.dispatchEvent(event);
   };
 
-  toggle = () => {
-    this.setState({
-      collapsed: !this.state.collapsed,
-    }, () => {
-      this.triggerResizeEvent();
-    });
+  handleToggle = () => {
+    this.setState(
+      {
+        collapsed: !this.state.collapsed,
+      },
+      () => {
+        this.triggerResizeEvent();
+      }
+    );
   };
 
   handleRouting = () => {
@@ -31,9 +38,9 @@ class App extends React.PureComponent {
         activeAppId: activeApp.id,
       });
     }
-  }
+  };
 
-  componentDidMount() {
+  async componentDidMount() {
     window.addEventListener('single-spa:routing-event', this.handleRouting);
   }
 
@@ -41,58 +48,78 @@ class App extends React.PureComponent {
     window.removeEventListener('single-spa:routing-event', this.handleRouting);
   }
 
+  renderAppMenuItem = appId => {
+    const registry = this.props.registry;
+    const app = registry.apps[appId];
+    if (!app) {
+      return null;
+    }
+    return (
+      <Menu.Item key={appId}>
+        <Link to={app.indexRoute}>
+          {app.icon ? <Icon type={app.icon} /> : null}
+          <span>{this.props.t(`${appId}.nav_title`)}</span>
+        </Link>
+      </Menu.Item>
+    );
+  };
+
   render() {
     const siderWidth = 260;
+    const isDev = process.env.NODE_ENV === 'development';
 
     return (
-      <Router><Layout className={styles.container}>
-        <Layout.Sider
-          className={styles.sider}
-          width={siderWidth}
-          trigger={null}
-          collapsible
-          collapsed={this.state.collapsed}
-        >
-          <Redirect exact from="/" to={this.props.registry.getDefaultRouter()} />
-          <Menu
-            mode="inline"
-            theme="dark"
-            selectedKeys={[this.state.activeAppId]}
-            defaultOpenKeys={['sub1']}
+      <Router>
+        <Layout className={styles.container}>
+          <Layout.Sider
+            className={styles.sider}
+            width={siderWidth}
+            trigger={null}
+            collapsible
+            collapsed={this.state.collapsed}
           >
-            {this.props.registry.renderAppMenuItem('keyvis')}
-            {this.props.registry.renderAppMenuItem('statement')}
-            <Menu.SubMenu
-              key="sub1"
-              title={
-                <span>
-                  <Icon type="user" />
-                  <span>Demos</span>
-                </span>
-              }
+            <Menu
+              mode="inline"
+              theme="dark"
+              selectedKeys={[this.state.activeAppId]}
+              defaultOpenKeys={['sub1']}
             >
-              {this.props.registry.renderAppMenuItem('home')}
-              {this.props.registry.renderAppMenuItem('demo')}
-            </Menu.SubMenu>
-          </Menu>
-        </Layout.Sider>
-        <Layout>
-          <Layout.Header
-            className={styles.header}
-            style={{ width: `calc(100% - ${this.state.collapsed ? 80 : siderWidth}px)` }}
-          >
-            <span className={styles.siderTrigger} onClick={this.toggle}>
-              <Icon type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'} />
-            </span>
-          </Layout.Header>
-          <Layout.Content
-            className={styles.content}
-            style={{ paddingLeft: `${this.state.collapsed ? 80 : siderWidth}px` }}
-          >
-            <div id="__spa_content__"></div>
-          </Layout.Content>
+              {this.renderAppMenuItem('keyvis')}
+              {isDev ? this.renderAppMenuItem('statement') : null}
+              {isDev ? (
+                <Menu.SubMenu
+                  key="sub1"
+                  title={
+                    <span>
+                      <Icon type="user" />
+                      <span>Demos</span>
+                    </span>
+                  }
+                >
+                  {this.renderAppMenuItem('home')}
+                  {this.renderAppMenuItem('demo')}
+                </Menu.SubMenu>
+              ) : null}
+            </Menu>
+          </Layout.Sider>
+          <Layout>
+            <Nav
+              siderWidth={siderWidth}
+              siderWidthCollapsed={80}
+              collapsed={this.state.collapsed}
+              onToggle={this.handleToggle}
+            />
+            <Layout.Content
+              className={styles.content}
+              style={{
+                paddingLeft: `${this.state.collapsed ? 80 : siderWidth}px`,
+              }}
+            >
+              <div id="__spa_content__"></div>
+            </Layout.Content>
+          </Layout>
         </Layout>
-      </Layout></Router>
+      </Router>
     );
   }
 }

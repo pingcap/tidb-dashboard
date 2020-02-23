@@ -4,8 +4,7 @@
   "private": true,
   "dependencies": {
     "@baurine/grafana-value-formats": "^0.1.1",
-    "@pingcap-incubator/pd-client-js": "^0.1.5",
-    "@types/lodash": "^4.14.149",
+    "@g07cha/flexbox-react": "^5.0.0",
     "antd": "^3.26.5",
     "axios": "^0.19.0",
     "classnames": "^2.2.6",
@@ -25,7 +24,7 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "build_api_client": "openapi-generator generate -i ../docs/swagger.yaml -g typescript-axios -o src/utils/dashboard_client"
+    "build_api_client": "openapi-generator generate -i ../docs/swagger.yaml -g typescript-axios -c .openapi_config.yaml -o src/utils/dashboard_client"
   },
   "homepage": "/dashboard",
   "eslintConfig": {
@@ -44,10 +43,12 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.8.3",
     "@openapitools/openapi-generator-cli": "^1.0.8-4.2.2",
     "@types/d3": "^5.7.2",
+    "@types/lodash": "^4.14.149",
     "@types/node": "^13.1.5",
-    "@types/react": "^16.9.17",
+    "@types/react": "^16.9.22",
     "@types/react-router-dom": "^5.1.3",
     "antd-dayjs-webpack-plugin": "^0.0.8",
     "babel-plugin-import": "^1.13.0",

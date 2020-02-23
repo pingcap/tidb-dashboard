@@ -1,21 +1,13 @@
 import React from 'react';
 import { Layout, Menu, Icon } from 'antd';
+import { Link } from 'react-router-dom';
 import { HashRouter as Router } from 'react-router-dom';
-import LangDropdown from './LangDropdown';
+import { withTranslation } from 'react-i18next';
+import Nav from './Nav';
 
 import styles from './RootComponent.module.less';
 
-class NavRight extends React.PureComponent {
-  render() {
-    return (
-      <>
-        <div style={{ flex: 1 }}></div>
-        <div className={styles.navRight}>{this.props.children}</div>
-      </>
-    );
-  }
-}
-
+@withTranslation()
 class App extends React.PureComponent {
   state = {
     collapsed: false,
@@ -28,7 +20,7 @@ class App extends React.PureComponent {
     window.dispatchEvent(event);
   };
 
-  toggle = () => {
+  handleToggle = () => {
     this.setState(
       {
         collapsed: !this.state.collapsed,
@@ -48,13 +40,29 @@ class App extends React.PureComponent {
     }
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     window.addEventListener('single-spa:routing-event', this.handleRouting);
   }
 
   componentWillUnmount() {
     window.removeEventListener('single-spa:routing-event', this.handleRouting);
   }
+
+  renderAppMenuItem = appId => {
+    const registry = this.props.registry;
+    const app = registry.apps[appId];
+    if (!app) {
+      return null;
+    }
+    return (
+      <Menu.Item key={appId}>
+        <Link to={app.indexRoute}>
+          {app.icon ? <Icon type={app.icon} /> : null}
+          <span>{this.props.t(`${appId}.nav_title`)}</span>
+        </Link>
+      </Menu.Item>
+    );
+  };
 
   render() {
     const siderWidth = 260;
@@ -76,10 +84,8 @@ class App extends React.PureComponent {
               selectedKeys={[this.state.activeAppId]}
               defaultOpenKeys={['sub1']}
             >
-              {this.props.registry.renderAppMenuItem('keyvis')}
-              {isDev
-                ? this.props.registry.renderAppMenuItem('statement')
-                : null}
+              {this.renderAppMenuItem('keyvis')}
+              {isDev ? this.renderAppMenuItem('statement') : null}
               {isDev ? (
                 <Menu.SubMenu
                   key="sub1"
@@ -90,30 +96,19 @@ class App extends React.PureComponent {
                     </span>
                   }
                 >
-                  {this.props.registry.renderAppMenuItem('home')}
-                  {this.props.registry.renderAppMenuItem('demo')}
+                  {this.renderAppMenuItem('home')}
+                  {this.renderAppMenuItem('demo')}
                 </Menu.SubMenu>
               ) : null}
             </Menu>
           </Layout.Sider>
           <Layout>
-            <Layout.Header
-              className={styles.nav}
-              style={{
-                width: `calc(100% - ${
-                  this.state.collapsed ? 80 : siderWidth
-                }px)`,
-              }}
-            >
-              <span className={styles.siderTrigger} onClick={this.toggle}>
-                <Icon
-                  type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
-                />
-              </span>
-              <NavRight>
-                <LangDropdown />
-              </NavRight>
-            </Layout.Header>
+            <Nav
+              siderWidth={siderWidth}
+              siderWidthCollapsed={80}
+              collapsed={this.state.collapsed}
+              onToggle={this.handleToggle}
+            />
             <Layout.Content
               className={styles.content}
               style={{

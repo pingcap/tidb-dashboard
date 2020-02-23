@@ -5,6 +5,7 @@ const {
   addLessLoader,
   addWebpackResolve,
   addWebpackPlugin,
+  addDecoratorsLegacy,
 } = require('customize-cra');
 const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
 const addYaml = require('react-app-rewire-yaml');
@@ -35,6 +36,7 @@ module.exports = override(
   addWebpackResolve({
     alias: { '@': path.resolve(__dirname, 'src') },
   }),
+  addDecoratorsLegacy(),
   enableEslintIgnore(),
   addYaml
 );

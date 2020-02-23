@@ -1,5 +1,5 @@
 import * as singleSpa from 'single-spa';
-import i18n from '@/utils/i18n';
+import * as i18nUtil from '@/utils/i18n';
 import * as routingUtil from '@/utils/routing';
 
 // TODO: This part might be better in TS.
@@ -27,7 +27,7 @@ export default class AppRegistry {
    */
   register(app) {
     if (app.translations) {
-      i18n.loadResource(app.translations);
+      i18nUtil.loadResourceFromRequireContext(app.translations);
     }
 
     singleSpa.registerApplication(
@@ -52,7 +52,7 @@ export default class AppRegistry {
   }
 
   finish() {
-    i18n.initFromResources();
+    i18nUtil.initFromResources();
   }
 
   /**

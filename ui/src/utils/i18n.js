@@ -4,15 +4,20 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import _ from 'lodash';
 
 const resources = {};
-const languages = ['en', 'zh_CN'];
 
-function loadResource(res) {
-  languages.forEach(lang => {
-    _.merge(resources, { [lang]: { translation: res[lang] } });
+export function loadResourceFromRequireContext(requireContext) {
+  const keys = requireContext.keys();
+  keys.map(key => {
+    const m = key.match(/\/(.+)\.yaml/);
+    if (!m) {
+      return;
+    }
+    const lang = m[1];
+    _.merge(resources, { [lang]: { translation: requireContext(key) } });
   });
 }
 
-function initFromResources() {
+export function initFromResources() {
   // Resource languages are like `zh_CN` for easier writing.
   // However we need to change them to `zh-CN` to follow IETF language codes.
   const r = _(resources)
@@ -32,8 +37,3 @@ function initFromResources() {
       },
     });
 }
-
-export default {
-  loadResource,
-  initFromResources,
-};

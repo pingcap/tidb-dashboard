@@ -3,7 +3,7 @@ import * as singleSpa from 'single-spa';
 import AppRegistry from '@/utils/registry';
 import * as routingUtil from '@/utils/routing';
 import * as authUtil from '@/utils/auth';
-import i18n from '@/utils/i18n';
+import * as i18nUtil from '@/utils/i18n';
 import client from '@/utils/client';
 
 import * as LayoutMain from '@/layout';
@@ -34,10 +34,9 @@ async function main() {
     { registry }
   );
 
-  i18n.loadResource({
-    en: require('@/layout/translations/en.yaml'),
-    zh_CN: require('@/layout/translations/zh_CN.yaml'),
-  });
+  i18nUtil.loadResourceFromRequireContext(
+    require.context('@/layout/translations/', false, /\.yaml$/)
+  );
 
   registry
     .register(AppKeyVis)
@@ -47,7 +46,10 @@ async function main() {
     .finish();
 
   try {
-    console.log(await client.dashboard.getInfo());
+    const infoResp = await client.dashboard.getInfo();
+    if (infoResp.data) {
+      console.log(infoResp.data);
+    }
     if (routingUtil.isLocationMatch('/')) {
       singleSpa.navigateToUrl('#' + registry.getDefaultRouter());
     }

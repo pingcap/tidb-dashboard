@@ -27,11 +27,6 @@ import (
 	utils2 "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
-type Info struct {
-	Version    utils2.VersionInfo `json:"version"`
-	PDEndPoint string             `json:"pd_end_point"`
-}
-
 type Service struct {
 	config        *config.Config
 	db            *dbstore.DB
@@ -46,23 +41,46 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/info")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/info", s.infoHandler)
+	endpoint.GET("/whoami", s.whoamiHandler)
 	endpoint.GET("/databases", utils.MWConnectTiDB(s.tidbForwarder), s.databasesHandler)
+}
+
+type InfoResponse struct { //nolint:golint
+	Version    utils2.VersionInfo `json:"version"`
+	PDEndPoint string             `json:"pd_end_point"`
 }
 
 // @Summary Dashboard info
 // @Description Get information about the dashboard service.
 // @ID getInfo
 // @Produce json
-// @Success 200 {object} Info
+// @Success 200 {object} InfoResponse
 // @Router /info/info [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
-	info := Info{
+	resp := InfoResponse{
 		Version:    utils2.GetVersionInfo(),
 		PDEndPoint: s.config.PDEndPoint,
 	}
-	c.JSON(http.StatusOK, info)
+	c.JSON(http.StatusOK, resp)
+}
+
+type WhoAmIResponse struct {
+	Username string `json:"username"`
+}
+
+// @Summary Current login
+// @Description Get current login session
+// @Produce json
+// @Success 200 {object} WhoAmIResponse
+// @Router /info/whoami [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) whoamiHandler(c *gin.Context) {
+	sessionUser := c.MustGet(utils.SessionUserKey).(*utils.SessionUser)
+	resp := WhoAmIResponse{Username: sessionUser.TiDBUsername}
+	c.JSON(http.StatusOK, resp)
 }
 
 type DatabaseResponse = []string

@@ -22,3 +22,6 @@ signin:
       title: TiDB User
       check:
         message: Username is required
+nav:
+  user:
+    signout: Sign Out

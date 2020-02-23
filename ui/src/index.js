@@ -1,10 +1,8 @@
-import { Modal } from 'antd';
 import * as singleSpa from 'single-spa';
 import AppRegistry from '@/utils/registry';
 import * as routingUtil from '@/utils/routing';
 import * as authUtil from '@/utils/auth';
 import * as i18nUtil from '@/utils/i18n';
-import client from '@/utils/client';
 
 import * as LayoutMain from '@/layout';
 import * as LayoutSignIn from '@/layout/signin';
@@ -45,26 +43,8 @@ async function main() {
     .register(AppStatement)
     .finish();
 
-  try {
-    const infoResp = await client.dashboard.getInfo();
-    if (infoResp.data) {
-      console.log(infoResp.data);
-    }
-    if (routingUtil.isLocationMatch('/')) {
-      singleSpa.navigateToUrl('#' + registry.getDefaultRouter());
-    }
-  } catch (e) {
-    console.error(e);
-    if (!e.handled) {
-      Modal.error({
-        title: 'Oops',
-        content: 'Failure: ' + e.message,
-        okText: 'Reload',
-        onOk() {
-          window.location.reload();
-        },
-      });
-    }
+  if (routingUtil.isLocationMatch('/')) {
+    singleSpa.navigateToUrl('#' + registry.getDefaultRouter());
   }
 
   window.addEventListener('single-spa:app-change', () => {

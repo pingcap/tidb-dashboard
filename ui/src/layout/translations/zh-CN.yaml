@@ -22,3 +22,6 @@ signin:
       title: TiDB 用户
       check:
         message: 请输入用户名
+nav:
+  user:
+    signout: 登出

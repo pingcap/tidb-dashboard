@@ -1,0 +1,30 @@
+@import '~antd/es/style/themes/default.less';
+
+.siderTrigger {
+  display: inline-block;
+  height: @layout-header-height;
+  padding: 0 24px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s, padding 0s;
+  &:hover {
+    color: @primary-color;
+  }
+}
+
+.nav {
+  position: fixed;
+  right: 0;
+  z-index: 10;
+  padding: 0;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  width: 100%;
+  transition: width 0.2s;
+}
+
+.navRight {
+  float: right;
+  margin-left: auto;
+  overflow: hidden;
+}

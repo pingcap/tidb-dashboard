@@ -1,6 +1,7 @@
 import { Slider, Spin, Icon, Select, Dropdown, Button } from 'antd';
 import React, { Component } from 'react';
 import { withTranslation, WithTranslation } from 'react-i18next';
+import Flexbox from '@g07cha/flexbox-react';
 
 export interface IKeyVisToolBarProps {
   isLoading: boolean;
@@ -19,7 +20,6 @@ export interface IKeyVisToolBarProps {
 
 class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
   state = {
-    brightnessDropdownVisible: false,
     exp: 0,
   };
 
@@ -40,8 +40,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
     this.setState({ exp });
   };
 
-  handleBrightnessDropdown = (visible: boolean) => {
-    this.setState({ brightnessDropdownVisible: visible });
+  handleBrightnessDropdown = () => {
     setTimeout(() => {
       this.handleBrightLevel(this.state.exp);
     }, 0);
@@ -89,20 +88,27 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
         <Dropdown
           overlay={
             <div id="PD-KeyVis-Brightness-Overlay">
-              <div className="PD-Cluster-Legend" />
-              <Slider
-                style={{ width: 360 }}
-                defaultValue={0}
-                min={-6}
-                max={6}
-                step={0.1}
-                onChange={value => this.handleBrightLevel(value as number)}
-              />
+              <div
+                onClick={e => {
+                  e.stopPropagation();
+                }}
+              >
+                <Flexbox flexDirection="column" alignItems="center">
+                  <div className="PD-Cluster-Legend" />
+                  <Slider
+                    style={{ width: 360 }}
+                    defaultValue={0}
+                    min={-6}
+                    max={6}
+                    step={0.1}
+                    onChange={value => this.handleBrightLevel(value as number)}
+                  />
+                </Flexbox>
+              </div>
             </div>
           }
           trigger={['click']}
           onVisibleChange={this.handleBrightnessDropdown}
-          visible={this.state.brightnessDropdownVisible}
         >
           <Button icon="bulb">
             {t('keyvis.toolbar.brightness')}

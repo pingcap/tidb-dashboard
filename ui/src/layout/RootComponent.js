@@ -2,21 +2,9 @@ import React from 'react';
 import { Layout, Menu, Icon } from 'antd';
 import { Link } from 'react-router-dom';
 import { HashRouter as Router } from 'react-router-dom';
-import NavAction from './NavAction';
-import LanguageDropdown from '@/components/LanguageDropdown';
+import Nav from './Nav';
 
 import styles from './RootComponent.module.less';
-
-class NavRight extends React.PureComponent {
-  render() {
-    return (
-      <>
-        <div style={{ flex: 1 }}></div>
-        <div className={styles.navRight}>{this.props.children}</div>
-      </>
-    );
-  }
-}
 
 class App extends React.PureComponent {
   state = {
@@ -30,7 +18,7 @@ class App extends React.PureComponent {
     window.dispatchEvent(event);
   };
 
-  toggle = () => {
+  handleToggle = () => {
     this.setState(
       {
         collapsed: !this.state.collapsed,
@@ -50,7 +38,7 @@ class App extends React.PureComponent {
     }
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     window.addEventListener('single-spa:routing-event', this.handleRouting);
   }
 
@@ -113,27 +101,12 @@ class App extends React.PureComponent {
             </Menu>
           </Layout.Sider>
           <Layout>
-            <Layout.Header
-              className={styles.nav}
-              style={{
-                width: `calc(100% - ${
-                  this.state.collapsed ? 80 : siderWidth
-                }px)`,
-              }}
-            >
-              <span className={styles.siderTrigger} onClick={this.toggle}>
-                <Icon
-                  type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
-                />
-              </span>
-              <NavRight>
-                <LanguageDropdown>
-                  <NavAction>
-                    <Icon type="global" />
-                  </NavAction>
-                </LanguageDropdown>
-              </NavRight>
-            </Layout.Header>
+            <Nav
+              siderWidth={siderWidth}
+              siderWidthCollapsed={80}
+              collapsed={this.state.collapsed}
+              onToggle={this.handleToggle}
+            />
             <Layout.Content
               className={styles.content}
               style={{

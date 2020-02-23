@@ -22,12 +22,11 @@ export default class AppRegistry {
    *  indexRoute: string,
    *  isDefaultRouter: boolean,
    *  icon: string,
-   *  menuTitle: string,
    * }} app
    */
   register(app) {
     if (app.translations) {
-      i18nUtil.loadResourceFromRequireContext(app.translations);
+      i18nUtil.addTranslations(app.translations);
     }
 
     singleSpa.registerApplication(
@@ -49,10 +48,6 @@ export default class AppRegistry {
     }
     this.apps[app.id] = app;
     return this;
-  }
-
-  finish() {
-    i18nUtil.initFromResources();
   }
 
   /**

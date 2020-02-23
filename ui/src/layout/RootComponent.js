@@ -2,10 +2,12 @@ import React from 'react';
 import { Layout, Menu, Icon } from 'antd';
 import { Link } from 'react-router-dom';
 import { HashRouter as Router } from 'react-router-dom';
+import { withTranslation } from 'react-i18next';
 import Nav from './Nav';
 
 import styles from './RootComponent.module.less';
 
+@withTranslation()
 class App extends React.PureComponent {
   state = {
     collapsed: false,
@@ -56,7 +58,7 @@ class App extends React.PureComponent {
       <Menu.Item key={appId}>
         <Link to={app.indexRoute}>
           {app.icon ? <Icon type={app.icon} /> : null}
-          <span>{app.menuTitle}</span>
+          <span>{this.props.t(`${appId}.nav_title`)}</span>
         </Link>
       </Menu.Item>
     );

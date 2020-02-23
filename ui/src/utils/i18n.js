@@ -1,11 +1,8 @@
-import i18n from 'i18next';
+import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import _ from 'lodash';
 
-const resources = {};
-
-export function loadResourceFromRequireContext(requireContext) {
+export function addTranslations(requireContext) {
   const keys = requireContext.keys();
   keys.forEach(key => {
     const m = key.match(/\/(.+)\.yaml/);
@@ -13,16 +10,17 @@ export function loadResourceFromRequireContext(requireContext) {
       return;
     }
     const lang = m[1];
-    _.merge(resources, { [lang]: { translation: requireContext(key) } });
+    const translations = requireContext(key);
+    i18next.addResourceBundle(lang, 'translation', translations, true, false);
   });
 }
 
-export function initFromResources() {
-  i18n
+export function init() {
+  i18next
     .use(LanguageDetector)
     .use(initReactI18next)
     .init({
-      resources,
+      resources: {},
       fallbackLng: 'en',
       interpolation: {
         escapeValue: false,

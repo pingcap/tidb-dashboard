@@ -32,7 +32,8 @@ async function main() {
     { registry }
   );
 
-  i18nUtil.loadResourceFromRequireContext(
+  i18nUtil.init();
+  i18nUtil.addTranslations(
     require.context('@/layout/translations/', false, /\.yaml$/)
   );
 
@@ -40,8 +41,7 @@ async function main() {
     .register(AppKeyVis)
     .register(AppHome)
     .register(AppDemo)
-    .register(AppStatement)
-    .finish();
+    .register(AppStatement);
 
   if (routingUtil.isLocationMatch('/')) {
     singleSpa.navigateToUrl('#' + registry.getDefaultRouter());

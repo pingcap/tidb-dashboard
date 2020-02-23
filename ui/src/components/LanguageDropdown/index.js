@@ -6,7 +6,7 @@ import { withTranslation } from 'react-i18next';
 @withTranslation()
 class LanguageDropdown extends React.PureComponent {
   handleClick = e => {
-    console.log('Changing language to', e.key);
+    console.log('Change language to', e.key);
     this.props.i18n.changeLanguage(e.key);
   };
 

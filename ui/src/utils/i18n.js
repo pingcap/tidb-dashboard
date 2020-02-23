@@ -7,7 +7,7 @@ const resources = {};
 
 export function loadResourceFromRequireContext(requireContext) {
   const keys = requireContext.keys();
-  keys.map(key => {
+  keys.forEach(key => {
     const m = key.match(/\/(.+)\.yaml/);
     if (!m) {
       return;

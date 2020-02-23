@@ -1,7 +1,9 @@
 import * as singleSpa from 'single-spa';
 import React from 'react';
 import { Form, Icon, Input, Button, Tabs, Alert, message } from 'antd';
+import Flexbox from '@g07cha/flexbox-react';
 import { withTranslation } from 'react-i18next';
+import LanguageDropdown from '@/components/LanguageDropdown';
 import client from '@/utils/client';
 import * as authUtil from '@/utils/auth';
 
@@ -103,16 +105,25 @@ class App extends React.PureComponent {
   render() {
     const { t, registry } = this.props;
     return (
-      <div className={styles.dialog}>
-        <h1>TiDB Dashboard</h1>
-        <Tabs defaultActiveKey="tidb_signin">
-          <Tabs.TabPane
-            tab={t('signin.form.tidb_auth.title')}
-            key="tidb_signin"
-          >
-            <TiDBSignInForm registry={registry} />
-          </Tabs.TabPane>
-        </Tabs>
+      <div className={styles.container}>
+        <div className={styles.dialog}>
+          <Flexbox justifyContent="space-between" alignItems="center">
+            <h1 style={{ margin: 0 }}>TiDB Dashboard</h1>
+            <LanguageDropdown>
+              <a href="javascript:;">
+                <Icon type="global" />
+              </a>
+            </LanguageDropdown>
+          </Flexbox>
+          <Tabs defaultActiveKey="tidb_signin" style={{ marginTop: '10px' }}>
+            <Tabs.TabPane
+              tab={t('signin.form.tidb_auth.title')}
+              key="tidb_signin"
+            >
+              <TiDBSignInForm registry={registry} />
+            </Tabs.TabPane>
+          </Tabs>
+        </div>
       </div>
     );
   }

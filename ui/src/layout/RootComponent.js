@@ -2,7 +2,8 @@ import React from 'react';
 import { Layout, Menu, Icon } from 'antd';
 import { Link } from 'react-router-dom';
 import { HashRouter as Router } from 'react-router-dom';
-import LangDropdown from './LangDropdown';
+import NavAction from './NavAction';
+import LanguageDropdown from '@/components/LanguageDropdown';
 
 import styles from './RootComponent.module.less';
 
@@ -126,7 +127,11 @@ class App extends React.PureComponent {
                 />
               </span>
               <NavRight>
-                <LangDropdown />
+                <LanguageDropdown>
+                  <NavAction>
+                    <Icon type="global" />
+                  </NavAction>
+                </LanguageDropdown>
               </NavRight>
             </Layout.Header>
             <Layout.Content

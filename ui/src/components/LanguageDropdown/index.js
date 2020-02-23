@@ -1,10 +1,10 @@
 import React from 'react';
-import { Menu, Icon, Dropdown } from 'antd';
+import { Menu, Dropdown } from 'antd';
 import _ from 'lodash';
 import { withTranslation } from 'react-i18next';
-import NavAction from './NavAction';
 
-class LangDropdown extends React.PureComponent {
+@withTranslation()
+class LanguageDropdown extends React.PureComponent {
   handleClick = e => {
     console.log('Changing language to', e.key);
     this.props.i18n.changeLanguage(e.key);
@@ -12,12 +12,15 @@ class LangDropdown extends React.PureComponent {
 
   render() {
     const languages = {
-      zh_CN: '简体中文',
+      'zh-CN': '简体中文',
       en: 'English',
     };
 
     const menu = (
-      <Menu onClick={this.handleClick}>
+      <Menu
+        onClick={this.handleClick}
+        selectedKeys={[this.props.i18n.language]}
+      >
         {_.map(languages, (name, key) => {
           return <Menu.Item key={key}>{name}</Menu.Item>;
         })}
@@ -26,12 +29,10 @@ class LangDropdown extends React.PureComponent {
 
     return (
       <Dropdown overlay={menu} placement="bottomRight">
-        <NavAction>
-          <Icon type="global" />
-        </NavAction>
+        {this.props.children}
       </Dropdown>
     );
   }
 }
 
-export default withTranslation()(LangDropdown);
+export default LanguageDropdown;

@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pingcap/kvproto/pkg/metapb"
+
 	"github.com/pingcap/log"
 
 	"github.com/pkg/errors"
@@ -29,9 +31,9 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
 
-// Fetcher is an interface for concurrently fetch data and store it in `info`.
+// fetcher is an interface for concurrently fetch data and store it in `info`.
 type fetcher interface {
-	// Fetch fetches the data, and if any unrecoverable error exists, it will return error.
+	// fetch fetches the data, and if any unrecoverable error exists, it will return error.
 	fetch(ctx context.Context, info *ClusterInfo, service *Service) error
 }
 
@@ -56,7 +58,36 @@ func (f etcdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Serv
 type pdFetcher struct {
 }
 
-func (P pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
+func (p pdFetcher) buildHealthMap(pdEndPoint string) (map[string]struct{}, error) {
+	// health member set
+	healthMember := map[string]struct{}{}
+
+	resp, err := http.Get(pdEndPoint + "/pd/api/v1/health")
+	if err != nil {
+		return nil, err
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var healths []struct {
+		MemberID json.Number `json:"member_id"`
+	}
+
+	err = json.Unmarshal(data, &healths)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range healths {
+		healthMember[v.MemberID.String()] = struct{}{}
+	}
+	return healthMember, nil
+}
+
+func (p pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
 	resp, err := http.Get(service.config.PDEndPoint + "/pd/api/v1/members")
 	if err != nil {
 		return err
@@ -73,9 +104,10 @@ func (P pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Servic
 	ds := struct {
 		Count   int `json:"count"`
 		Members []struct {
-			ClientUrls    []string `json:"client_urls"`
-			DeployPath    string   `json:"deploy_path"`
-			BinaryVersion string   `json:"binary_version"`
+			ClientUrls    []string    `json:"client_urls"`
+			DeployPath    string      `json:"deploy_path"`
+			BinaryVersion string      `json:"binary_version"`
+			MemberID      json.Number `json:"member_id"`
 		} `json:"members"`
 	}{}
 
@@ -83,10 +115,23 @@ func (P pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Servic
 	if err != nil {
 		return err
 	}
+	healthMap, err := p.buildHealthMap(service.config.PDEndPoint)
+
+	if err != nil {
+		return err
+	}
+
 	for _, ds := range ds.Members {
 		u, err := url.Parse(ds.ClientUrls[0])
 		if err != nil {
 			return err
+		}
+
+		var storeStatus clusterinfo.ServerStatus
+		if _, ok := healthMap[ds.MemberID.String()]; ok {
+			storeStatus = clusterinfo.Up
+		} else {
+			storeStatus = clusterinfo.Offline
 		}
 
 		info.Pd = append(info.Pd, clusterinfo.PD{
@@ -96,13 +141,13 @@ func (P pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Servic
 				BinaryPath: ds.DeployPath,
 			},
 			Version:      ds.BinaryVersion,
-			ServerStatus: clusterinfo.Unknown,
+			ServerStatus: storeStatus,
 		})
 	}
 	return nil
 }
 
-// TiKVFetcher using the PDClient to fetch tikv(store) information from pd endpoint.
+// tikvFetcher using the PDClient to fetch tikv(store) information from pd endpoint.
 type tikvFetcher struct {
 }
 
@@ -127,7 +172,7 @@ func (t tikvFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Serv
 				Port:       port,
 				BinaryPath: v.BinaryPath,
 			},
-			ServerStatus: clusterinfo.Unknown,
+			ServerStatus: storeStateToStatus(v.GetState()),
 			StatusPort:   statusPort,
 			Labels:       map[string]string{},
 		}
@@ -166,4 +211,17 @@ func parsePort(port string) uint {
 		return 0
 	}
 	return uint(statusPort)
+}
+
+func storeStateToStatus(state metapb.StoreState) clusterinfo.ServerStatus {
+	switch state {
+	case metapb.StoreState_Up:
+		return clusterinfo.Up
+	case metapb.StoreState_Offline:
+		return clusterinfo.Offline
+	case metapb.StoreState_Tombstone:
+		return clusterinfo.Tombstone
+	default:
+		return clusterinfo.Unknown
+	}
 }

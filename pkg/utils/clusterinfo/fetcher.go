@@ -76,7 +76,7 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 			db := dbMap[port]
 
 			if keyParts[3] == "ttl" {
-				db.ServerStatus = Alive
+				db.ServerStatus = Up
 			} else {
 				// keyParts[3] == "info"
 				if err = json.Unmarshal(kvs.Value, db); err != nil {
@@ -90,8 +90,8 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 
 	// Note: it means this TiDB has non-ttl key, but ttl-key not exists.
 	for _, v := range dbMap {
-		if v.ServerStatus != Alive {
-			v.ServerStatus = Down
+		if v.ServerStatus != Up {
+			v.ServerStatus = Offline
 		}
 		dbList = append(dbList, *v)
 	}

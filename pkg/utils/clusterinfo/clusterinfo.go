@@ -16,9 +16,10 @@ package clusterinfo
 type ServerStatus uint
 
 const (
-	Alive   ServerStatus = 0
-	Down    ServerStatus = 1
-	Unknown ServerStatus = 2
+	Up        ServerStatus = 0
+	Offline   ServerStatus = 1
+	Tombstone ServerStatus = 2
+	Unknown   ServerStatus = 3
 )
 
 // ServerVersionInfo is the server version and git_hash.

@@ -16,6 +16,9 @@
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @BasePath /dashboard/api
+// @securityDefinitions.apikey JwtAuth
+// @in header
+// @name Authorization
 
 package main
 
@@ -28,26 +31,74 @@ import (
 	_ "net/http/pprof" //nolint:gosec
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
+
+	"github.com/joho/godotenv"
+	"github.com/pingcap/log"
+	"go.etcd.io/etcd/clientv3"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
+	keyvisualinput "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
+	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
 )
 
 type DashboardCLIConfig struct {
-	Version    bool
 	ListenHost string
 	ListenPort int
 	CoreConfig *config.Config
+	// key-visual file mode for debug
+	KVFileStartTime int64
+	KVFileEndTime   int64
 }
 
 // NewCLIConfig generates the configuration of the dashboard in standalone mode.
 func NewCLIConfig() *DashboardCLIConfig {
+	cfg := &DashboardCLIConfig{}
+	cfg.CoreConfig = &config.Config{}
+
+	var showVersion bool
+	flag.BoolVar(&showVersion, "v", false, "Print version information and exit")
+	flag.BoolVar(&showVersion, "version", false, "Print version information and exit")
+	flag.StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
+	flag.IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
+	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
+	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
+	// debug for keyvisual
+	// TODO: Hide help information
+	flag.Int64Var(&cfg.KVFileStartTime, "keyvis-file-start", 0, "(debug) start time for file range in file mode")
+	flag.Int64Var(&cfg.KVFileEndTime, "keyvis-file-end", 0, "(debug) end time for file range in file mode")
+
+	flag.Parse()
+
+	if showVersion {
+		utils.PrintInfo()
+		exit(0)
+	}
+
+	// keyvisual
+	startTime := cfg.KVFileStartTime
+	endTime := cfg.KVFileEndTime
+	if startTime != 0 || endTime != 0 {
+		// file mode (debug)
+		if startTime == 0 || endTime == 0 || startTime >= endTime {
+			panic("keyvis-file-start must be smaller than keyvis-file-end, and none of them are 0")
+		}
+	}
+
+	return cfg
+}
+
+func getContext() (context.Context, *sync.WaitGroup) {
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		sc := make(chan os.Signal, 1)
@@ -59,46 +110,56 @@ func NewCLIConfig() *DashboardCLIConfig {
 		<-sc
 		cancel()
 	}()
-
-	cfg := &DashboardCLIConfig{
-		CoreConfig: &config.Config{
-			Ctx:     ctx,
-			Version: utils.ReleaseVersion,
-		},
-	}
-
-	flag.BoolVar(&cfg.Version, "V", false, "Print version information and exit")
-	flag.BoolVar(&cfg.Version, "version", false, "Print version information and exit")
-	flag.StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
-	flag.IntVar(&cfg.ListenPort, "port", 32619, "The listen port of the Dashboard Server")
-	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
-	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
-	flag.Parse()
-
-	if cfg.Version {
-		utils.PrintInfo()
-		exit(0)
-	}
-
-	return cfg
+	wg := &sync.WaitGroup{}
+	return ctx, wg
 }
 
 func main() {
-	cliConfig := NewCLIConfig()
+	_ = godotenv.Load()
 
 	// Flushing any buffered log entries
 	defer log.Sync() //nolint:errcheck
 
+	cliConfig := NewCLIConfig()
+	ctx, wg := getContext()
+
+	store := dbstore.MustOpenDBStore(cliConfig.CoreConfig)
+	defer store.Close() //nolint:errcheck
+
+	etcdClient := pd.NewEtcdClient(cliConfig.CoreConfig)
+	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(), etcdClient)
+	// FIXME: Handle open error
+	tidbForwarder.Open()        //nolint:errcheck
+	defer tidbForwarder.Close() //nolint:errcheck
+
+	// key visual
+	remoteDataProvider := &keyvisualregion.PDDataProvider{
+		FileStartTime:  cliConfig.KVFileStartTime,
+		FileEndTime:    cliConfig.KVFileEndTime,
+		PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint),
+		GetEtcdClient: func() *clientv3.Client {
+			return etcdClient
+		},
+		Store: store,
+	}
+	keyvisualService := keyvisual.NewService(ctx, wg, cliConfig.CoreConfig, remoteDataProvider)
+	keyvisualService.Start()
+
+	services := &apiserver.Services{
+		Store:         store,
+		KeyVisual:     keyvisualService,
+		TiDBForwarder: tidbForwarder,
+	}
 	mux := http.DefaultServeMux
 	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
-	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api", cliConfig.CoreConfig))
+	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api", cliConfig.CoreConfig, services))
 	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 
 	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		log.Fatal("Can not listen at", zap.String("addr", listenAddr), zap.Error(err))
-		exit(1)
+		store.Close() //nolint:errcheck
+		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
 	utils.LogInfo()
@@ -108,21 +169,21 @@ func main() {
 	log.Info(fmt.Sprintf("Swagger: http://127.0.0.1:%d/dashboard/api/swagger/", cliConfig.ListenPort))
 
 	srv := &http.Server{Handler: mux}
-	cliConfig.CoreConfig.Wg.Add(1)
+	wg.Add(1)
 	go func() {
 		if err := srv.Serve(listener); err != http.ErrServerClosed {
-			log.Fatal("Can not stop server", zap.Error(err))
+			log.Fatal("Can not run server", zap.Error(err))
 		}
-		cliConfig.CoreConfig.Wg.Done()
+		wg.Done()
 	}()
 
-	<-cliConfig.CoreConfig.Ctx.Done()
+	<-ctx.Done()
 	if err := srv.Shutdown(context.Background()); err != nil {
 		log.Fatal("Can not stop server", zap.Error(err))
 	}
 
 	// waiting for other goroutines
-	cliConfig.CoreConfig.Wg.Wait()
+	wg.Wait()
 
 	log.Info("Stop dashboard server")
 }

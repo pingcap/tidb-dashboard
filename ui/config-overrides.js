@@ -1,6 +1,14 @@
 const path = require('path');
-const { override, fixBabelImports, addLessLoader, addWebpackResolve, addWebpackPlugin } = require('customize-cra');
+const {
+  override,
+  fixBabelImports,
+  addLessLoader,
+  addWebpackResolve,
+  addWebpackPlugin,
+  addDecoratorsLegacy,
+} = require('customize-cra');
 const AntdDayjsWebpackPlugin = require('antd-dayjs-webpack-plugin');
+const addYaml = require('react-app-rewire-yaml');
 
 const enableEslintIgnore = () => config => {
   const eslintRule = config.module.rules.filter(
@@ -8,7 +16,7 @@ const enableEslintIgnore = () => config => {
   )[0];
   eslintRule.use[0].options.ignore = true;
   return config;
-}
+};
 
 module.exports = override(
   fixBabelImports('import', {
@@ -28,5 +36,7 @@ module.exports = override(
   addWebpackResolve({
     alias: { '@': path.resolve(__dirname, 'src') },
   }),
+  addDecoratorsLegacy(),
   enableEslintIgnore(),
+  addYaml
 );

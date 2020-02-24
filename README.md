@@ -74,6 +74,7 @@ A standalone TiDB Dashboard Server contains the following components:
 To build a dashboard server that only serves Dashboard API:
 
 ```sh
+# under Dashboard directory:
 make server
 # make run
 ```
@@ -83,6 +84,7 @@ make server
 To build a dashboard server that serves both API and the Swagger API UI:
 
 ```sh
+# under Dashboard directory:
 make # or more verbose: SWAGGER=1 make server
 # make run
 ```
@@ -97,6 +99,7 @@ Note: You need Node.js and yarn installed in order to build a full-featured dash
 Requirements section for details.
 
 ```sh
+# under Dashboard directory:
 make ui  # Build UI from source
 SWAGGER=1 UI=1 make server
 # make run
@@ -120,6 +123,7 @@ If you want to develop Dashboard UI, the recommended workflow is as follows:
    first time (or backend interface has been changed), you need to build or rebuild the API client:
 
    ```bash
+   # under Dashboard directory:
    make swagger_client
    ```
 
@@ -134,6 +138,7 @@ If you want to develop Dashboard UI, the recommended workflow is as follows:
 3. Start React Development Server
 
    ```sh
+   # under Dashboard directory:
    cd ui
    npm start
    ```
@@ -148,3 +153,33 @@ If you want to develop Dashboard UI, the recommended workflow is as follows:
    Currently the development server will not watch for Golang code changes, which means you must
    manually rebuild the Dashboard API Client if back-end code is updated (for example, you pulled
    latest change from the repository).
+
+## For Developers How To ...
+
+### Keep session valid after rebooting the server
+
+By default, the session secret key is generated dynamically when the server starts. This results in invalidating
+your previously acquired session token. For easier development, you can supply a fixed session secret key by
+setting `DASHBOARD_SESSION_SECRET` in the environment variable or in `.env` file like:
+
+```env
+DASHBOARD_SESSION_SECRET=aaaaaaaaaabbbbbbbbbbccccccccccdd
+```
+
+The supplied secret key must be 32 bytes, otherwise it will not be effective.
+
+Note: the maximum lifetime of a token is 24 hours by default, so you still need to acquire token every 24 hours.
+
+### Supply session token in the Swagger UI
+
+1. Acquire a token first through `/user/login` in the Swagger UI.
+
+2. Click the "Authorize" button in the Swagger UI, set value to `Bearer xxxx` where `xxxx` is the token you acquired
+   in step 1.
+
+   <img src="etc/readme_howto_swagger_session.jpg" width="400">
+
+### Release new UI assets
+
+Simply modify `ui/.github_release_version`. The assets will be released automatically after your change is merged
+to master.

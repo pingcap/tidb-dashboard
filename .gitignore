@@ -1,5 +1,5 @@
+.env
 /bin
-/docs
 
 # Binaries for programs and plugins
 *.exe
@@ -33,6 +33,9 @@ cmake-build-*/
 
 # IntelliJ
 out/
+
+# VSCode
+.vscode/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/

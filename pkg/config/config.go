@@ -14,30 +14,11 @@
 package config
 
 import (
-	"context"
-	"sync"
-	"sync/atomic"
+	"crypto/tls"
 )
 
 type Config struct {
-	Ctx        context.Context
-	Wg         sync.WaitGroup
-	Version    string
 	DataDir    string
 	PDEndPoint string
-}
-
-var globalConfig atomic.Value
-
-func init() {
-	var cfg *Config = nil
-	SetGlobalConfig(cfg)
-}
-
-func SetGlobalConfig(cfg *Config) {
-	globalConfig.Store(cfg)
-}
-
-func GetGlobalConfig() *Config {
-	return globalConfig.Load().(*Config)
+	TLSConfig  *tls.Config
 }

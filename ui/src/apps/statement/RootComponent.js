@@ -4,34 +4,49 @@ import {
   Switch,
   Route,
   Redirect,
-  Link
+  Link,
+  withRouter
 } from 'react-router-dom'
-import { Menu } from 'antd'
+import { Breadcrumb } from 'antd'
 
 import StatementListDemo from './StatementListDemo'
+import StatementDetailDemo from './StatementDetailDemo'
 
-const App = () => (
-  <Router>
-    <Menu mode='horizontal'>
-      <Menu.Item>
-        <Link to='/statement/list'>Statement/List</Link>
-      </Menu.Item>
-      <Menu.Item>
-        <Link to='/statement/detail'>Statement/Detail</Link>
-      </Menu.Item>
-    </Menu>
-    <div style={{ margin: 12 }}>
-      <Switch>
-        <Route path='/statement/list'>
-          <StatementListDemo />
-        </Route>
-        <Route path='/statement/detail'>
-          <p>Statement Detail: TODO</p>
-        </Route>
-        <Redirect exact from='/statement' to='/statement/list' />
-      </Switch>
+const App = withRouter(props => {
+  const { location } = props
+  const page = location.pathname.split('/').pop()
+
+  return (
+    <div>
+      <div style={{ margin: 12 }}>
+        <Breadcrumb>
+          <Breadcrumb.Item>
+            <Link to="/statement/list">Statement List</Link>
+          </Breadcrumb.Item>
+          {page === 'detail' && (
+            <Breadcrumb.Item>Statement Detail</Breadcrumb.Item>
+          )}
+        </Breadcrumb>
+      </div>
+      <div style={{ margin: 12 }}>
+        <Switch>
+          <Route path="/statement/list">
+            <StatementListDemo />
+          </Route>
+          <Route path="/statement/detail">
+            <StatementDetailDemo />
+          </Route>
+          <Redirect exact from="/statement" to="/statement/list" />
+        </Switch>
+      </div>
     </div>
-  </Router>
-)
+  )
+})
 
-export default App
+export default function() {
+  return (
+    <Router>
+      <App />
+    </Router>
+  )
+}

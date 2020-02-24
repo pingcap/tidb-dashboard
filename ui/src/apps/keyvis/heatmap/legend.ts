@@ -36,7 +36,7 @@ export default function(colorScheme: ColorScheme, dataTag: DataTag) {
   const ctx: CanvasRenderingContext2D = canvas.node().getContext('2d')
 
   for (let x = 0; x < innerWidth; x++) {
-    ctx.fillStyle = colorScheme.backgroud(xScale.invert(x)).toString()
+    ctx.fillStyle = colorScheme.background(xScale.invert(x)).toString()
     ctx.fillRect(x, 0, 1, innerHeight)
   }
 

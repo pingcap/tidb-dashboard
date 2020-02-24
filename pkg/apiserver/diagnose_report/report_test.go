@@ -29,9 +29,46 @@ func (t *testReportSuite) TestReport(c *C) {
 	cli := t.getDBCli(c, "", "127.0.0.1:4000", "test")
 	startTime := "2020-02-23 10:55:00"
 	endTime := "2020-02-23 11:05:00"
-	table, err := diagnose_report.GetTotalTimeTableData(startTime, endTime, cli)
+	var table *diagnose_report.TableDef
+	var err error
+	table, err = diagnose_report.GetTotalTimeTableData(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
+
+	table, err = diagnose_report.GetTotalCount(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetTxnTotalCountTableData(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+}
+
+func (t *testReportSuite) TestRoundFloatString(c *C) {
+	cases := []struct {
+		in  string
+		out string
+	}{
+		{"0", "0"},
+		{"1", "1"},
+		{"0.8", "0.8"},
+		{"0.99", "0.99"},
+		{"1.12345", "1.12"},
+		{"1.1256", "1.13"},
+		{"12345678.1256", "12345678.13"},
+		{"0.1256", "0.13"},
+		{"0.00234", "0.002"},
+		{"0.00254", "0.003"},
+		{"0.000000056", "0.00000006"},
+		{"0.00000000000000054", "0.0000000000000005"},
+		{"0.00000000000000056", "0.0000000000000006"},
+		{"65.20832000000001", "65.21"},
+	}
+	for _, cas := range cases {
+		result := diagnose_report.RoundFloatString(cas.in)
+		c.Assert(result, Equals, cas.out)
+	}
 }
 
 func printRows(t *diagnose_report.TableDef) {
@@ -40,10 +77,10 @@ func printRows(t *diagnose_report.TableDef) {
 	}
 
 	fieldLen := t.ColumnWidth()
-	fmt.Println(fieldLen)
-	for _, row := range t.Rows {
+	//fmt.Println(fieldLen)
+	printLine := func(values []string) {
 		line := ""
-		for i, s := range row.Values {
+		for i, s := range values {
 			for k := len(s); k < fieldLen[i]; k++ {
 				s += " "
 			}
@@ -53,19 +90,15 @@ func printRows(t *diagnose_report.TableDef) {
 			line += s
 		}
 		fmt.Println(line)
+	}
 
+	fmt.Println(t.Title)
+	printLine(t.Column)
+
+	for _, row := range t.Rows {
+		printLine(row.Values)
 		for i := range row.SubValues {
-			line := ""
-			for j, s := range row.SubValues[i] {
-				for k := len(s); k < fieldLen[j]; k++ {
-					s += " "
-				}
-				if j > 0 {
-					line += "    |    "
-				}
-				line += s
-			}
-			fmt.Println(line)
+			printLine(row.SubValues[i])
 		}
 	}
 	fmt.Println("")

@@ -19,8 +19,11 @@ package clusterinfo
 import (
 	"context"
 	"net/http"
-	"sync"
 	"time"
+
+	"github.com/pingcap/log"
+
+	"golang.org/x/sync/errgroup"
 
 	etcdclientv3 "github.com/coreos/etcd/clientv3"
 	"github.com/gin-gonic/gin"
@@ -36,7 +39,6 @@ type ClusterInfo struct {
 	Pd           []clusterinfo.PD
 	Grafana      clusterinfo.Grafana
 	AlertManager clusterinfo.AlertManager
-	Prom         clusterinfo.Prometheus
 }
 
 type Service struct {
@@ -69,15 +71,13 @@ func (s *Service) Register(r *gin.RouterGroup) {
 // @Summary Dashboard info
 // @Description Get information about the dashboard service.
 // @Produce json
-// @Success 200 {object} Topology
-// @Router /topo [get]
+// @Success 200 {object} ClusterInfo
+// @Router /topology [get]
 func (s *Service) topologyHandler(c *gin.Context) {
-	wg := sync.WaitGroup{}
-
+	log.Info("topologyHandler was called")
 	var returnObject ClusterInfo
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	//ctx, cancelFunc := context.WithCancel(ctx)
 	defer cancel()
 
 	fetchers := []Fetcher{
@@ -86,17 +86,24 @@ func (s *Service) topologyHandler(c *gin.Context) {
 		PDFetcher{},
 	}
 
+	errs, ctx := errgroup.WithContext(ctx)
+
 	// Note: if here we want to check healthy, we can support to generate fetcher in the
 	// sub goroutine.
 	for _, fetcher := range fetchers {
-		wg.Add(1)
-		go func(f Fetcher) {
-			defer wg.Done()
-			f.Fetch(ctx, &returnObject, s)
-		}(fetcher)
+		currentFetcher := fetcher
+		errs.Go(func() error {
+			return currentFetcher.Fetch(ctx, &returnObject, s)
+		})
 	}
 
-	wg.Wait()
+	err := errs.Wait()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, struct {
+			Error string
+		}{Error: err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusOK, returnObject)
 }

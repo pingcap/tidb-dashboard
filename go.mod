@@ -53,6 +53,7 @@ require (
 	go.etcd.io/etcd v3.3.18+incompatible
 	go.uber.org/zap v1.13.0
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	golang.org/x/tools v0.0.0-20200103221440-774c71fcf114 // indirect
 	google.golang.org/grpc v1.27.0 // indirect

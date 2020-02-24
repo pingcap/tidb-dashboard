@@ -9,13 +9,14 @@ import (
 	"strings"
 
 	"github.com/pingcap/log"
+	"github.com/pkg/errors"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/fetcher"
 )
 
 type Fetcher interface {
-	Fetch(ctx context.Context, info *ClusterInfo, service *Service)
+	Fetch(ctx context.Context, info *ClusterInfo, service *Service) error
 }
 
 const prefix = "/topology"
@@ -27,34 +28,32 @@ const prefix = "/topology"
 // * /topology/tidb for tidb
 type FetchEtcd struct{}
 
-func (f FetchEtcd) Fetch(ctx context.Context, info *ClusterInfo, service *Service) {
-	log.Info("Fetch etcd")
+func (f FetchEtcd) Fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
 	tidb, grafana, alertManager, err := fetcher.FetchEtcd(ctx, service.etcdCli)
 	if err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
 	info.TiDB = tidb
 	info.Grafana = grafana
 	info.AlertManager = alertManager
+	return nil
 }
 
 type PDFetcher struct {
 }
 
-func (P PDFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Service) {
-	log.Info("Fetch PD Message")
+func (P PDFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
 	resp, err := http.Get(service.config.PDEndPoint + "/pd/api/v1/members")
 	if err != nil {
-		// TODO: handle error here
-		//return nil, err
+		return err
 	}
 	if resp.StatusCode != 200 {
-		// TODO: add handling logic
+		return errors.New("fetch-failed")
 	}
 	data, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		//return nil, err
+		return err
 	}
 
 	ds := struct {
@@ -68,12 +67,12 @@ func (P PDFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Servic
 
 	err = json.Unmarshal(data, &ds)
 	if err != nil {
-		//return nil, err
+		return err
 	}
 	for _, ds := range ds.Members {
 		u, err := url.Parse(ds.ClientUrls[0])
 		if err != nil {
-
+			return err
 		}
 
 		info.Pd = append(info.Pd, clusterinfo.PD{
@@ -86,18 +85,18 @@ func (P PDFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Servic
 			ServerStatus: "",
 		})
 	}
+	return nil
 }
 
 type TiKVFetcher struct {
 }
 
-func (t TiKVFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Service) {
+func (t TiKVFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
 	log.Info("Fetch TiKV Message")
 
 	stores, err := service.pdCli.GetAllStores(ctx)
 	if err != nil {
-		// TODO: handling using ctx
-		return
+		return err
 	}
 	for _, v := range stores {
 		// parse ip and port
@@ -108,11 +107,12 @@ func (t TiKVFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Serv
 				Version: v.Version,
 				GitHash: v.GitHash,
 			},
-			ServerStatus:  "",
-			IP:            addresses[0],
-			Port:          addresses[1],
-			BinaryPath:    v.BinaryPath,
-			StatusAddress: v.StatusAddress,
+			ServerStatus: "",
+			IP:           addresses[0],
+			Port:         addresses[1],
+			BinaryPath:   v.BinaryPath,
+			StatusPort:   v.StatusAddress,
 		})
 	}
+	return nil
 }

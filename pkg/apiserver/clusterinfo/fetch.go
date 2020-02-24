@@ -1,3 +1,16 @@
+// Copyright 2020 PingCAP, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package clusterinfo
 
 import (
@@ -8,25 +21,25 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/pingcap/log"
 	"github.com/pkg/errors"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/fetcher"
 )
 
-type Fetcher interface {
-	Fetch(ctx context.Context, info *ClusterInfo, service *Service) error
+// Fetcher is an interface for concurrently fetch data and store it in `info`.
+type fetcher interface {
+	// Fetch fetches the data, and if any unrecoverable error exists, it will return error.
+	fetch(ctx context.Context, info *ClusterInfo, service *Service) error
 }
 
-// fetch etcd, and parse the ns below:
+// etcdFetcher fetches etcd, and parses the ns below:
 // * /topology/grafana
 // * /topology/alertmanager
-// * /topology/tidb for tidb
-type EtcdFetcher struct{}
+// * /topology/tidb
+type etcdFetcher struct{}
 
-func (f EtcdFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
-	tidb, grafana, alertManager, err := fetcher.FetchEtcd(ctx, service.etcdCli)
+func (f etcdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
+	tidb, grafana, alertManager, err := clusterinfo.FetchEtcd(ctx, service.etcdCli)
 	if err != nil {
 		return err
 	}
@@ -36,10 +49,11 @@ func (f EtcdFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Serv
 	return nil
 }
 
-type PDFetcher struct {
+// PDFetcher using the http to fetch PDMember information from pd endpoint.
+type pdFetcher struct {
 }
 
-func (P PDFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
+func (P pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
 	resp, err := http.Get(service.config.PDEndPoint + "/pd/api/v1/members")
 	if err != nil {
 		return err
@@ -85,12 +99,11 @@ func (P PDFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Servic
 	return nil
 }
 
-type TiKVFetcher struct {
+// TiKVFetcher using the PDClient to fetch tikv(store) information from pd endpoint.
+type tikvFetcher struct {
 }
 
-func (t TiKVFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
-	log.Info("Fetch TiKV Message")
-
+func (t tikvFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
 	stores, err := service.pdCli.GetAllStores(ctx)
 	if err != nil {
 		return err

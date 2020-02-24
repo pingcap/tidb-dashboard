@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// topo is a directory for TopoServer, which could load topology from pd
+// clusterinfo is a directory for ClusterInfoServer, which could load topology from pd
 // using Etcd v3 interface and pd interface.
 
 package clusterinfo
@@ -84,10 +84,10 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	fetchers := []Fetcher{
-		EtcdFetcher{},
-		TiKVFetcher{},
-		PDFetcher{},
+	fetchers := []fetcher{
+		etcdFetcher{},
+		tikvFetcher{},
+		pdFetcher{},
 	}
 
 	errs, ctx := errgroup.WithContext(ctx)
@@ -97,7 +97,7 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	for _, fetcher := range fetchers {
 		currentFetcher := fetcher
 		errs.Go(func() error {
-			return currentFetcher.Fetch(ctx, &returnObject, s)
+			return currentFetcher.fetch(ctx, &returnObject, s)
 		})
 	}
 

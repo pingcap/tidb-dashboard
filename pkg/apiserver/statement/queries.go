@@ -14,56 +14,47 @@
 package statement
 
 import (
-	"database/sql"
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/jinzhu/gorm"
 )
 
-func QuerySchemas(db *sql.DB) ([]string, error) {
+const (
+	selectPerformanceDB = "use performance_schema"
+)
+
+func QuerySchemas(db *gorm.DB) ([]string, error) {
 	sql := `show databases`
-	rows, err := db.Query(sql)
 	schemas := []string{}
 
-	defer func() {
-		if rows != nil {
-			rows.Close() // close rows which not scan yet
-		}
-	}()
-
+	db.Exec(selectPerformanceDB)
+	err := db.Raw(sql).Pluck("Database", &schemas).Error
 	if err != nil {
 		return schemas, err
 	}
 
-	for rows.Next() {
-		var dbName string
-		err = rows.Scan(&dbName)
-		if err != nil {
-			return schemas, err
-		}
-		schemas = append(schemas, strings.ToLower(dbName))
+	for i, v := range schemas {
+		schemas[i] = strings.ToLower(v)
 	}
 	sort.Strings(schemas)
 	return schemas, nil
 }
 
-func QueryTimeRanges(db *sql.DB) ([]*TimeRange, error) {
+func QueryTimeRanges(db *gorm.DB) ([]*TimeRange, error) {
 	sql := `select
 	distinct summary_begin_time,summary_end_time
 	from cluster_events_statements_summary_by_digest_history
 	order by summary_begin_time desc`
-	rows, err := db.Query(sql)
 	timeRanges := []*TimeRange{}
 
-	defer func() {
-		if rows != nil {
-			rows.Close()
-		}
-	}()
-
+	db.Exec(selectPerformanceDB)
+	rows, err := db.Raw(sql).Rows()
 	if err != nil {
 		return timeRanges, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		timeRange := new(TimeRange)
@@ -80,7 +71,7 @@ func QueryTimeRanges(db *sql.DB) ([]*TimeRange, error) {
 // schemas: ["tpcc", "test"]
 // beginTime: "2020-02-13 10:30:00"
 // endTime: "2020-02-13 11:00:00"
-func QueryStatementsOverview(db *sql.DB, schemas []string, beginTime, endTime string) ([]*Overview, error) {
+func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime string) ([]*Overview, error) {
 	var schemaWhereClause string
 	if len(schemas) > 0 {
 		schemaWhereClause = "and schema_name in ('" + strings.Join(schemas, "','") + "')"
@@ -103,19 +94,14 @@ func QueryStatementsOverview(db *sql.DB, schemas []string, beginTime, endTime st
 	group by schema_name,digest,digest_text
 	order by total_latency desc`,
 		schemaWhereClause)
-	rows, err := db.Query(sql, beginTime, endTime)
-
 	overviews := []*Overview{}
 
-	defer func() {
-		if rows != nil {
-			rows.Close()
-		}
-	}()
-
+	db.Exec(selectPerformanceDB)
+	rows, err := db.Raw(sql, beginTime, endTime).Rows()
 	if err != nil {
 		return overviews, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		overview := new(Overview)
@@ -142,7 +128,7 @@ func QueryStatementsOverview(db *sql.DB, schemas []string, beginTime, endTime st
 // beginTime: "2020-02-13 10:30:00"
 // endTime: "2020-02-13 11:00:00"
 // digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
-func QueryStatementDetail(db *sql.DB, schema, beginTime, endTime, digest string) (*Detail, error) {
+func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string) (*Detail, error) {
 	sql := `select
 	schema_name,
 	digest,
@@ -157,9 +143,10 @@ func QueryStatementDetail(db *sql.DB, schema, beginTime, endTime, digest string)
 	and summary_end_time=?
 	and digest=?
 	group by schema_name,digest,digest_text`
-	row := db.QueryRow(sql, schema, beginTime, endTime, digest)
-
 	detail := new(Detail)
+
+	db.Exec(selectPerformanceDB)
+	row := db.Raw(sql, schema, beginTime, endTime, digest).Row()
 	if err := row.Scan(
 		&detail.SchemaName,
 		&detail.Digest,
@@ -181,7 +168,7 @@ func QueryStatementDetail(db *sql.DB, schema, beginTime, endTime, digest string)
 	and digest=?
 	order by last_seen desc
 	limit 1`
-	row = db.QueryRow(sql, schema, beginTime, endTime, digest)
+	row = db.Raw(sql, schema, beginTime, endTime, digest).Row()
 	if err := row.Scan(&detail.QuerySampleText, &detail.LastSeen); err != nil {
 		return detail, err
 	}
@@ -193,7 +180,7 @@ func QueryStatementDetail(db *sql.DB, schema, beginTime, endTime, digest string)
 // beginTime: "2020-02-13 10:30:00"
 // endTime: "2020-02-13 11:00:00"
 // digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
-func QueryStatementNodes(db *sql.DB, schema, beginTime, endTime, digest string) ([]*Node, error) {
+func QueryStatementNodes(db *gorm.DB, schema, beginTime, endTime, digest string) ([]*Node, error) {
 	sql := `select
 	address,sum_latency,exec_count,avg_latency,max_latency,avg_mem,sum_backoff_times
 	from cluster_events_statements_summary_by_digest_history
@@ -202,18 +189,14 @@ func QueryStatementNodes(db *sql.DB, schema, beginTime, endTime, digest string) 
 	and summary_end_time=?
 	and digest=?
 	order by sum_latency desc`
-	rows, err := db.Query(sql, schema, beginTime, endTime, digest)
 	nodes := []*Node{}
 
-	defer func() {
-		if rows != nil {
-			rows.Close()
-		}
-	}()
-
+	db.Exec(selectPerformanceDB)
+	rows, err := db.Raw(sql, schema, beginTime, endTime, digest).Rows()
 	if err != nil {
 		return nodes, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		node := new(Node)

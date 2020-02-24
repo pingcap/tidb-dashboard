@@ -14,28 +14,32 @@
 package statement
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
 
 type Service struct {
-	config *config.Config
-	db     *sql.DB
+	config        *config.Config
+	tidbForwarder *tidb.Forwarder
 }
 
-func NewService(config *config.Config) *Service {
-	db := OpenTiDB(config)
-	return &Service{config: config, db: db}
+func NewService(config *config.Config, tidbForwarder *tidb.Forwarder) *Service {
+	return &Service{config: config, tidbForwarder: tidbForwarder}
 }
 
-func (s *Service) Register(r *gin.RouterGroup) {
+func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/statements")
+	endpoint.Use(auth.MWAuthRequired())
+	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
 	endpoint.GET("/schemas", s.schemasHandler)
 	endpoint.GET("/time_ranges", s.timeRangesHandler)
 	endpoint.GET("/overviews", s.overviewsHandler)
@@ -48,13 +52,16 @@ func (s *Service) Register(r *gin.RouterGroup) {
 // @Produce json
 // @Success 200 {array} string
 // @Router /statements/schemas [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) schemasHandler(c *gin.Context) {
-	schemas, err := QuerySchemas(s.db)
+	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
+	schemas, err := QuerySchemas(db)
 	if err != nil {
-		handleError(c, err)
-	} else {
-		c.JSON(http.StatusOK, schemas)
+		_ = c.Error(err)
+		return
 	}
+	c.JSON(http.StatusOK, schemas)
 }
 
 // @Summary Statement time ranges
@@ -62,13 +69,16 @@ func (s *Service) schemasHandler(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} statement.TimeRange
 // @Router /statements/time_ranges [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) timeRangesHandler(c *gin.Context) {
-	timeRanges, err := QueryTimeRanges(s.db)
+	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
+	timeRanges, err := QueryTimeRanges(db)
 	if err != nil {
-		handleError(c, err)
-	} else {
-		c.JSON(http.StatusOK, timeRanges)
+		_ = c.Error(err)
+		return
 	}
+	c.JSON(http.StatusOK, timeRanges)
 }
 
 // @Summary Statements overview
@@ -79,6 +89,8 @@ func (s *Service) timeRangesHandler(c *gin.Context) {
 // @Param end_time query string true "Statement end time"
 // @Success 200 {array} statement.Overview
 // @Router /statements/overviews [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) overviewsHandler(c *gin.Context) {
 	schemas := []string{}
 	schemasQuery := c.Query("schemas")
@@ -88,15 +100,16 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 	beginTime := c.Query("begin_time")
 	endTime := c.Query("end_time")
 	if beginTime == "" || endTime == "" {
-		handleError(c, errors.New("invalid begin_time or end_time"))
+		_ = c.Error(errors.New("invalid begin_time or end_time"))
 		return
 	}
-	overviews, err := QueryStatementsOverview(s.db, schemas, beginTime, endTime)
+	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
+	overviews, err := QueryStatementsOverview(db, schemas, beginTime, endTime)
 	if err != nil {
-		handleError(c, err)
-	} else {
-		c.JSON(http.StatusOK, overviews)
+		_ = c.Error(err)
+		return
 	}
+	c.JSON(http.StatusOK, overviews)
 }
 
 // @Summary Statement detail
@@ -108,17 +121,20 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 // @Param digest query string true "Statement digest"
 // @Success 200 {object} statement.Detail
 // @Router /statements/detail [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) detailHandler(c *gin.Context) {
+	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
 	schema := c.Query("schema")
 	beginTime := c.Query("begin_time")
 	endTime := c.Query("end_time")
 	digest := c.Query("digest")
-	detail, err := QueryStatementDetail(s.db, schema, beginTime, endTime, digest)
+	detail, err := QueryStatementDetail(db, schema, beginTime, endTime, digest)
 	if err != nil {
-		handleError(c, err)
-	} else {
-		c.JSON(http.StatusOK, detail)
+		_ = c.Error(err)
+		return
 	}
+	c.JSON(http.StatusOK, detail)
 }
 
 // @Summary Statement nodes
@@ -130,19 +146,18 @@ func (s *Service) detailHandler(c *gin.Context) {
 // @Param digest query string true "Statement digest"
 // @Success 200 {array} statement.Node
 // @Router /statements/nodes [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) nodesHandler(c *gin.Context) {
+	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
 	schema := c.Query("schema")
 	beginTime := c.Query("begin_time")
 	endTime := c.Query("end_time")
 	digest := c.Query("digest")
-	nodes, err := QueryStatementNodes(s.db, schema, beginTime, endTime, digest)
+	nodes, err := QueryStatementNodes(db, schema, beginTime, endTime, digest)
 	if err != nil {
-		handleError(c, err)
-	} else {
-		c.JSON(http.StatusOK, nodes)
+		_ = c.Error(err)
+		return
 	}
-}
-
-func handleError(c *gin.Context, err error) {
-	c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	c.JSON(http.StatusOK, nodes)
 }

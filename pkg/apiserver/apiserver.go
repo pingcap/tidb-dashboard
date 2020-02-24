@@ -23,12 +23,9 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
-<<<<<<< HEAD
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
-=======
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/statement"
->>>>>>> statement: api
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
@@ -63,7 +60,7 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	foo.NewService(config).Register(endpoint, auth)
 	info.NewService(config, services.TiDBForwarder, services.Store).Register(endpoint, auth)
 	services.KeyVisual.Register(endpoint, auth)
-	statement.NewService(config).Register(endpoint)
+	statement.NewService(config, services.TiDBForwarder).Register(endpoint, auth)
 
 	return r
 }

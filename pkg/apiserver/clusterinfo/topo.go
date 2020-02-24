@@ -85,7 +85,7 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	defer cancel()
 
 	fetchers := []Fetcher{
-		FetchEtcd{},
+		EtcdFetcher{},
 		TiKVFetcher{},
 		PDFetcher{},
 	}

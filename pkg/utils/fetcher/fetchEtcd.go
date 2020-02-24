@@ -26,9 +26,7 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]clusterinfo.TiD
 	dbList := make([]clusterinfo.TiDB, 0)
 	for _, kvs := range resp.Kvs {
 		key := string(kvs.Key)
-		log.Info("Receive key " + key + " and value " + string(kvs.Value))
 		keyParts := strings.Split(key, "/")
-		log.Info("Keyparts are " + strings.Join(keyParts, " "))
 		if keyParts[0] == "" {
 			log.Info("Sure, it is.")
 			keyParts = keyParts[1:]
@@ -67,12 +65,11 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]clusterinfo.TiD
 			} else {
 				// keyParts[3] == "tidb"
 				// It's ip:port style
-				db.IP = pair[0]
-				db.Port = pair[1]
-
 				if err = json.Unmarshal(kvs.Value, db); err != nil {
 					return nil, clusterinfo.Grafana{}, clusterinfo.AlertManager{}, err
 				}
+				db.IP = pair[0]
+				db.Port = pair[1]
 			}
 		}
 	}

@@ -21,12 +21,11 @@ type Fetcher interface {
 
 // fetch etcd, and parse the ns below:
 // * /topology/grafana
-// * /topology/prometheus
 // * /topology/alertmanager
 // * /topology/tidb for tidb
-type FetchEtcd struct{}
+type EtcdFetcher struct{}
 
-func (f FetchEtcd) Fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
+func (f EtcdFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
 	tidb, grafana, alertManager, err := fetcher.FetchEtcd(ctx, service.etcdCli)
 	if err != nil {
 		return err

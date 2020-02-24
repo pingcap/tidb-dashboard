@@ -45,8 +45,8 @@ const (
 
 // TaskModel is the model definition of task.
 type TaskModel struct {
-	ID          string    `json:"task_id"`
-	TaskGroupID string    `json:"task_group_id"`
+	ID          string    `json:"task_id" gorm:"type:char(36);primary_key"`
+	TaskGroupID string    `json:"task_group_id" gorm:"type:char(36)"`
 	State       TaskState `json:"state"`
 	Addr        string    `json:"address"`
 	FilePath    string    `json:"file_path" gorm:"type:text"`
@@ -58,8 +58,8 @@ type TaskModel struct {
 
 // TaskGroupModel is the model definition of task group.
 type TaskGroupModel struct {
-	ID           string    `json:"task_group_id" `
-	RunningTasks int       `json:"running_tasks" `
+	ID           string    `json:"task_group_id" gorm:"type:char(36);primary_key"`
+	RunningTasks int       `json:"running_tasks"`
 	State        TaskState `json:"state"`
 }
 

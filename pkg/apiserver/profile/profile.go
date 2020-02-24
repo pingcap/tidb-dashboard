@@ -39,7 +39,7 @@ func fetchSvg(ctx context.Context, t, addr, filePrefix string) (string, error) {
 	}
 	req = req.WithContext(ctx)
 	if t == pd {
-		// Forbidden PD follower proxy
+		// forbidden PD follower proxy
 		req.Header.Add("PD-Allow-follower-handle", "true")
 	}
 	resp, err := http.DefaultClient.Do(req)

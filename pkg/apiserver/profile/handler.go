@@ -20,8 +20,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
-
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/httputil"
 )
 
 // Built-in component type
@@ -31,20 +29,34 @@ const (
 	pd   = "pd"
 )
 
+// ProfilingRequest defines the
+type ProfilingRequest struct {
+	Tidb []string `form:"tidb" json:"tidb"`
+	Tikv []string `form:"tikv" json:"tikv"`
+	Pd   []string `form:"pd" json:"pd"`
+}
+
 // @Summary Create a task group
 // @Description create and run a task group
 // @Produce json
-// @Param tikv query string false "tikv"
-// @Param tidb query string false "tidb"
-// @Param pd query string false "pd"
-// @Success 200 {object} httputil.HTTPSuccess
-// @Router /profile/group/start [get]
+// @Param pr query profile.ProfilingRequest true "profiling request"
+// @Success 200 {string} string "group ID"
+// @Failure 400 {object} utils.APIError
+// @Router /profile/group/start [post]
 func (s *Service) startHandler(c *gin.Context) {
+	var pr ProfilingRequest
+	if err := c.ShouldBind(&pr); err != nil {
+		c.Status(400)
+		_ = c.Error(err)
+		return
+	}
+
 	tg := NewTaskGroup()
-	addrs := make(map[string][]string)
-	addrs[tidb] = c.QueryArray(tidb)
-	addrs[tikv] = c.QueryArray(tikv)
-	addrs[pd] = c.QueryArray(pd)
+	addrs := map[string][]string{
+		tidb: pr.Tidb,
+		tikv: pr.Tikv,
+		pd:   pr.Pd,
+	}
 	var count int
 	for component, addrs := range addrs {
 		for _, addr := range addrs {
@@ -54,6 +66,7 @@ func (s *Service) startHandler(c *gin.Context) {
 			count++
 		}
 	}
+
 	s.tasks.Range(func(key, value interface{}) bool {
 		task, ok := value.(*Task)
 		if !ok {
@@ -80,17 +93,18 @@ func (s *Service) startHandler(c *gin.Context) {
 // @Summary List all tasks with a given group ID
 // @Description list all profling tasks with a given group ID
 // @Produce json
-// @Param groupId path string true "group id"
+// @Param groupId path string true "group ID"
 // @Success 200 {array} TaskModel
-// @Failure 400 {object} httputil.HTTPError
+// @Failure 400 {object} utils.APIError
 // @Router /profile/group/status/{groupId} [get]
 func (s *Service) statusHandler(c *gin.Context) {
 	taskGroupID := c.Param("groupId")
 	var tasks []TaskModel
-	s.db.Debug().Find(&tasks)
-	err := s.db.Debug().Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
+	s.db.Find(&tasks)
+	err := s.db.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
 	if err != nil {
-		httputil.NewError(c, http.StatusBadRequest, err)
+		c.Status(400)
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusOK, tasks)
@@ -99,18 +113,20 @@ func (s *Service) statusHandler(c *gin.Context) {
 // @Summary Cancel all tasks with a given group ID
 // @Description Cancel all profling tasks with a given group ID
 // @Produce json
-// @Param groupId path string true "group id"
-// @Success 200 {object} httputil.HTTPSuccess
-// @Failure 400 {object} httputil.HTTPError
+// @Param groupId path string true "group ID"
+// @Success 200 {string} string "success"
+// @Failure 400 {object} utils.APIError
 // @Router /profile/group/cancel/{groupId} [post]
 func (s *Service) cancelGroupHandler(c *gin.Context) {
 	taskGroupID := c.Param("groupId")
 	taskGroup := TaskGroupModel{}
 	err := s.db.Where("id = ?", taskGroupID).First(&taskGroup).Error
 	if err != nil {
-		httputil.NewError(c, http.StatusBadRequest, err)
+		c.Status(400)
+		_ = c.Error(err)
 		return
 	}
+
 	s.tasks.Range(func(key, value interface{}) bool {
 		task, ok := value.(*Task)
 		if !ok {
@@ -127,23 +143,24 @@ func (s *Service) cancelGroupHandler(c *gin.Context) {
 		return true
 	})
 	s.db.Save(&taskGroup)
-	httputil.Success(c)
+	c.JSON(http.StatusOK, "success")
 }
 
 // @Summary Cancel a single task with a given task ID
 // @Description Cancel a single profling task with a given task ID
 // @Produce json
-// @Param taskId path string true "task id"
-// @Success 200 {object} httputil.HTTPSuccess
-// @Failure 400 {object} httputil.HTTPError
-// @Failure 500 {object} httputil.HTTPError
+// @Param taskId path string true "task ID"
+// @Success 200 {string} string "success"
+// @Failure 400 {object} utils.APIError
+// @Failure 500 {object} utils.APIError
 // @Router /profile/single/cancel/{taskId} [post]
 func (s *Service) cancelHandler(c *gin.Context) {
 	taskID := c.Param("taskId")
 	task := TaskModel{}
 	err := s.db.Where("id = ?", taskID).First(&task).Error
 	if err != nil {
-		httputil.NewError(c, http.StatusBadRequest, err)
+		c.Status(400)
+		_ = c.Error(err)
 		return
 	}
 
@@ -152,7 +169,8 @@ func (s *Service) cancelHandler(c *gin.Context) {
 		taskGroup := TaskGroupModel{}
 		err := s.db.Where("id = ?", t.TaskGroupID).First(&taskGroup).Error
 		if err != nil {
-			httputil.NewError(c, http.StatusInternalServerError, err)
+			c.Status(500)
+			_ = c.Error(err)
 			return
 		}
 		if t.State == Running {
@@ -161,24 +179,26 @@ func (s *Service) cancelHandler(c *gin.Context) {
 			s.db.Save(&taskGroup)
 		}
 	}
-	httputil.Success(c)
+	c.JSON(http.StatusOK, "success")
 }
 
 // @Summary Download all results with a given group ID
 // @Description Download all finished profiling results with a given group ID
-// @Produce application/tar
-// @Param groupId path string true "group id"
-// @Failure 400 {object} httputil.HTTPError
-// @Failure 500 {object} httputil.HTTPError
+// @Produce application/x-gzip
+// @Param groupId path string true "group ID"
+// @Failure 400 {object} utils.APIError
+// @Failure 500 {object} utils.APIError
 // @Router /profile/group/download/{groupId} [get]
 func (s *Service) downloadGroupHandler(c *gin.Context) {
 	taskGroupID := c.Param("groupId")
 	taskGroup := TaskGroupModel{}
 	err := s.db.Where("id = ?", taskGroupID).First(&taskGroup).Error
 	if err != nil {
-		httputil.NewError(c, http.StatusBadRequest, err)
+		c.Status(400)
+		_ = c.Error(err)
 		return
 	}
+
 	var filePathes []string
 	s.tasks.Range(func(key, value interface{}) bool {
 		task, ok := value.(*Task)
@@ -197,13 +217,16 @@ func (s *Service) downloadGroupHandler(c *gin.Context) {
 
 	temp, err := ioutil.TempFile("", fmt.Sprintf("taskgroup_%s", taskGroupID))
 	if err != nil {
-		httputil.NewError(c, http.StatusInternalServerError, err)
+		c.Status(500)
+		_ = c.Error(err)
 		return
 	}
+
 	err = createTarball(temp, filePathes)
 	defer temp.Close()
 	if err != nil {
-		httputil.NewError(c, http.StatusInternalServerError, err)
+		c.Status(500)
+		_ = c.Error(err)
 		return
 	}
 
@@ -213,36 +236,80 @@ func (s *Service) downloadGroupHandler(c *gin.Context) {
 
 // @Summary Download all results with a given group ID
 // @Description Download all finished profiling results with a given group ID
-// @Produce application/zip
-// @Param taskId path string true "task id"
-// @Failure 400 {object} httputil.HTTPError
-// @Failure 500 {object} httputil.HTTPError
+// @Produce application/x-gzip
+// @Param taskId path string true "task ID"
+// @Failure 400 {object} utils.APIError
+// @Failure 500 {object} utils.APIError
 // @Router /profile/single/download/{taskId} [get]
 func (s *Service) downloadHandler(c *gin.Context) {
 	taskID := c.Param("taskId")
 	task := TaskModel{}
 	err := s.db.Where("id = ?", taskID).First(&task).Error
 	if err != nil {
-		httputil.NewError(c, http.StatusBadRequest, err)
+		c.Status(400)
+		_ = c.Error(err)
+		return
+	}
+	if task.State != Finish {
+		c.Status(400)
+		_ = c.Error(err)
 		return
 	}
 
-	if task.State != Finish {
-		httputil.NewError(c, http.StatusBadRequest, err)
-		return
-	}
 	temp, err := ioutil.TempFile("", fmt.Sprintf("task_%s", taskID))
 	if err != nil {
-		httputil.NewError(c, http.StatusInternalServerError, err)
+		c.Status(500)
+		_ = c.Error(err)
 		return
 	}
+
 	err = createTarball(temp, []string{task.FilePath})
 	defer temp.Close()
 	if err != nil {
-		httputil.NewError(c, http.StatusInternalServerError, err)
+		c.Status(500)
+		_ = c.Error(err)
 		return
 	}
 
 	fileName := fmt.Sprintf("task_%s.tar.gz", taskID)
 	c.FileAttachment(temp.Name(), fileName)
+}
+
+// @Summary Delete all tasks with a given group ID
+// @Description Delete all finished profiling tasks with a given group ID
+// @Produce json
+// @Param groupId path string true "group ID"
+// @Success 200 {string} string "success"
+// @Failure 400 {object} utils.APIError
+// @Failure 500 {object} utils.APIError
+// @Router /profile/group/delete/{groupId} [delete]
+func (s *Service) deleteHandler(c *gin.Context) {
+	taskGroupID := c.Param("groupId")
+	taskGroup := TaskGroupModel{}
+	err := s.db.Where("id = ?", taskGroupID).Find(&taskGroup).Error
+	if err != nil {
+		c.Status(400)
+		_ = c.Error(err)
+		return
+	}
+	if taskGroup.State == Running {
+		err := fmt.Errorf("failed to delete, task group [%s] is running", taskGroupID)
+		c.Status(400)
+		_ = c.Error(err)
+		return
+	}
+
+	err = s.db.Where("task_group_id = ?", taskGroupID).Delete(&TaskModel{}).Error
+	if err != nil {
+		c.Status(500)
+		_ = c.Error(err)
+		return
+	}
+	err = s.db.Where("id = ?", taskGroupID).Delete(&TaskGroupModel{}).Error
+	if err != nil {
+		c.Status(500)
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, "success")
 }

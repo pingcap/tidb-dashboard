@@ -72,11 +72,20 @@ func QueryTimeRanges(db *gorm.DB) ([]*TimeRange, error) {
 // beginTime: "2020-02-13 10:30:00"
 // endTime: "2020-02-13 11:00:00"
 func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime string) ([]*Overview, error) {
-	var schemaWhereClause string
+	var tableNamesCondition string
+	var tableNamesRegex string
 	if len(schemas) > 0 {
-		schemaWhereClause = "and schema_name in ('" + strings.Join(schemas, "','") + "')"
-		// to fix the issue that 'mysql' will be stored as empty in the schema_name column
-		schemaWhereClause = strings.ReplaceAll(schemaWhereClause, "'mysql'", "''")
+		regexs := []string{}
+		for _, v := range schemas {
+			regexs = append(regexs, fmt.Sprintf("^%s\\.", v))
+			regexs = append(regexs, fmt.Sprintf(",%s\\.", v))
+		}
+		// if schemas = ["aa", "bb"], get "^aa\.|,aa\.|^bb\.|,bb\."
+		tableNamesRegex = strings.Join(regexs, "|")
+		tableNamesCondition = "and table_names regexp ?"
+	} else {
+		tableNamesRegex = "1"
+		tableNamesCondition = "and '1' = ?"
 	}
 	sql := fmt.Sprintf(`select
 	schema_name,
@@ -93,11 +102,11 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime s
 	%s
 	group by schema_name,digest,digest_text
 	order by total_latency desc`,
-		schemaWhereClause)
+		tableNamesCondition)
 	overviews := []*Overview{}
 
 	db.Exec(selectPerformanceDB)
-	rows, err := db.Raw(sql, beginTime, endTime).Rows()
+	rows, err := db.Raw(sql, beginTime, endTime, tableNamesRegex).Rows()
 	if err != nil {
 		return overviews, err
 	}

@@ -9,8 +9,6 @@ import {
 } from 'react-router-dom'
 import { Breadcrumb } from 'antd'
 
-// import StatementsOverviewDemo from './StatementsOverviewDemo'
-// import StatementDetailDemo from './StatementDetailDemo'
 import StatementsOverviewPage from './StatementsOverviewPage'
 import StatementDetailPage from './StatementDetailPage'
 import { SearchContext } from './components'

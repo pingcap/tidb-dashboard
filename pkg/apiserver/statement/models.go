@@ -21,25 +21,25 @@ type TimeRange struct {
 
 // Overview represents the overview of a statement
 type Overview struct {
-	SchemaName      string `json:"schema_name"`
-	Digest          string `json:"digest"`
-	DigestText      string `json:"digest_text"`
-	SumLatency      int    `json:"sum_latency"`
-	ExecCount       int    `json:"exec_count"`
-	AvgAffectedRows int    `json:"avg_affected_rows"`
-	AvgLatency      int    `json:"avg_latency"`
-	AvgMem          int    `json:"avg_mem"`
+	SchemaName         string `json:"schema_name"`
+	Digest             string `json:"digest"`
+	DigestText         string `json:"digest_text"`
+	AggSumLatency      int    `json:"sum_latency"`
+	AggAvgLatency      int    `json:"avg_latency"`
+	AggExecCount       int    `json:"exec_count"`
+	AggAvgAffectedRows int    `json:"avg_affected_rows"`
+	AggAvgMem          int    `json:"avg_mem"`
 }
 
 // Detail represents the detail of a statement
 type Detail struct {
-	SchemaName      string `json:"schema_name"`
-	Digest          string `json:"digest"`
-	DigestText      string `json:"digest_text"`
-	SumLatency      int    `json:"sum_latency"`
-	ExecCount       int    `json:"exec_count"`
-	AvgAffectedRows int    `json:"avg_affected_rows"`
-	AvgTotalKeys    int    `json:"avg_total_keys"`
+	SchemaName         string `json:"schema_name"`
+	Digest             string `json:"digest"`
+	DigestText         string `json:"digest_text"`
+	AggSumLatency      int    `json:"sum_latency"`
+	AggExecCount       int    `json:"exec_count"`
+	AggAvgAffectedRows int    `json:"avg_affected_rows"`
+	AggAvgTotalKeys    int    `json:"avg_total_keys"`
 
 	QuerySampleText string `json:"query_sample_text"`
 	LastSeen        string `json:"last_seen"`

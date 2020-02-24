@@ -60,6 +60,10 @@ func NewService(config *config.Config) *Service {
 	// TODO: adding security later.
 	pdcli, err := pdclient.NewClient(peers, pdclient.SecurityOption{})
 
+	if err != nil {
+		return nil
+	}
+
 	return &Service{etcdCli: cli, config: config, pdCli: pdcli}
 }
 

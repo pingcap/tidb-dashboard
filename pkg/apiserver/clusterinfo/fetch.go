@@ -19,8 +19,6 @@ type Fetcher interface {
 	Fetch(ctx context.Context, info *ClusterInfo, service *Service) error
 }
 
-const prefix = "/topology"
-
 // fetch etcd, and parse the ns below:
 // * /topology/grafana
 // * /topology/prometheus
@@ -102,7 +100,7 @@ func (t TiKVFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Serv
 		// parse ip and port
 		addresses := strings.Split(v.Address, ":")
 
-		info.TiKV = append(info.TiKV, clusterinfo.TiKV{
+		currentInfo := clusterinfo.TiKV{
 			ServerVersionInfo: clusterinfo.ServerVersionInfo{
 				Version: v.Version,
 				GitHash: v.GitHash,
@@ -112,7 +110,12 @@ func (t TiKVFetcher) Fetch(ctx context.Context, info *ClusterInfo, service *Serv
 			Port:         addresses[1],
 			BinaryPath:   v.BinaryPath,
 			StatusPort:   v.StatusAddress,
-		})
+			Labels:       map[string]string{},
+		}
+		for _, v := range v.Labels {
+			currentInfo.Labels[v.Key] = currentInfo.Labels[v.Value]
+		}
+		info.TiKV = append(info.TiKV, currentInfo)
 	}
 	return nil
 }

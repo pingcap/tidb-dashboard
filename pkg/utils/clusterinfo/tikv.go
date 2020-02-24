@@ -8,4 +8,6 @@ type TiKV struct {
 	Port         string
 	BinaryPath   string `json:"binary_path"`
 	StatusPort   string `json:"status_port"`
+
+	Labels map[string]string `json:"labels"`
 }

@@ -18,6 +18,7 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]clusterinfo.TiD
 	resp, err := etcdcli.Get(ctx, prefix, clientv3.WithPrefix())
 	if err != nil {
 		// put error in ctx and return
+		return nil, clusterinfo.Grafana{}, clusterinfo.AlertManager{}, err
 	}
 	dbMap := make(map[string]*clusterinfo.TiDB)
 	var grafana clusterinfo.Grafana

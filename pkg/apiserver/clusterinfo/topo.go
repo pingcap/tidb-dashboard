@@ -18,6 +18,7 @@ package clusterinfo
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -70,6 +71,44 @@ func NewService(config *config.Config) *Service {
 func (s *Service) Register(r *gin.RouterGroup) {
 	endpoint := r.Group("/topology")
 	endpoint.GET("/", s.topologyHandler)
+	endpoint.DELETE("/tidb/:address/", s.deleteDBHandler)
+}
+
+// @Summary Delete tidb ns.
+// @Description Delete TiDB with ip:port
+// @Produce json
+// @Success 204
+// @Failure 404
+// @Router /topology/address [delete]
+func (s *Service) deleteDBHandler(c *gin.Context) {
+	v, exists := c.Params.Get("address")
+	if !exists {
+		c.JSON(500, struct {
+			Error string `json:"error"`
+		}{Error: "parsing error"})
+		return
+	}
+	address := v
+	ttlKey := fmt.Sprintf("/topology/tidb/%v/ttl", address)
+	nonTTLKey := fmt.Sprintf("/topology/tidb/%v/info", address)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	_, err := s.etcdCli.Delete(ctx, ttlKey)
+	if err != nil {
+		c.JSON(500, struct {
+			Error string `json:"error"`
+		}{Error: "etcd delete error: " + err.Error()})
+		return
+	}
+	_, err = s.etcdCli.Delete(ctx, nonTTLKey)
+	if err != nil {
+		c.JSON(500, struct {
+			Error string `json:"error"`
+		}{Error: "etcd delete error: " + err.Error()})
+		return
+	}
+	c.JSON(204, nil)
 }
 
 // @Summary Dashboard info

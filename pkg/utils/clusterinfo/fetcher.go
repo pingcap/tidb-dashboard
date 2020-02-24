@@ -16,6 +16,7 @@ package clusterinfo
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 	"strings"
 
 	"github.com/coreos/etcd/clientv3"
@@ -31,7 +32,7 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 		// put error in ctx and return
 		return nil, Grafana{}, AlertManager{}, err
 	}
-	dbMap := make(map[string]*TiDB)
+	dbMap := make(map[uint64]*TiDB)
 	var grafana Grafana
 	var alertManager AlertManager
 	dbList := make([]TiDB, 0)
@@ -39,7 +40,6 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 		key := string(kvs.Key)
 		keyParts := strings.Split(key, "/")
 		if keyParts[0] == "" {
-			log.Info("Sure, it is.")
 			keyParts = keyParts[1:]
 		}
 		if len(keyParts) < 2 {
@@ -61,33 +61,37 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 				log.Warn("error, should got 4")
 				continue
 			}
+			// parsing ip and port
 			pair := strings.Split(keyParts[2], ":")
 			if len(pair) != 2 {
 				log.Warn("error, should got 2")
 				continue
 			}
-			if _, ok := dbMap[keyParts[2]]; !ok {
-				dbMap[keyParts[2]] = &TiDB{}
+			ip := strings.Trim(pair[0], "")
+			port, _ := strconv.ParseUint(pair[1], 10, 32)
+
+			if _, ok := dbMap[port]; !ok {
+				dbMap[port] = &TiDB{}
 			}
-			db := dbMap[keyParts[2]]
+			db := dbMap[port]
 
 			if keyParts[3] == "ttl" {
-				db.ServerStatus = "alive"
+				db.ServerStatus = Alive
 			} else {
 				// keyParts[3] == "info"
-				// It's ip:port style
 				if err = json.Unmarshal(kvs.Value, db); err != nil {
 					log.Warn("/topology/tidb/ip:port/info key unmarshal errors")
 				}
-				db.IP = pair[0]
-				db.Port = pair[1]
+				db.IP = ip
+				db.Port = uint(port)
 			}
 		}
 	}
 
+	// Note: it means this TiDB has non-ttl key, but ttl-key not exists.
 	for _, v := range dbMap {
-		if v.ServerStatus != "alive" {
-			v.ServerStatus = "dead"
+		if v.ServerStatus != Alive {
+			v.ServerStatus = Down
 		}
 		dbList = append(dbList, *v)
 	}

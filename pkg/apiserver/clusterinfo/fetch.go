@@ -19,7 +19,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
+
+	"github.com/pingcap/log"
 
 	"github.com/pkg/errors"
 
@@ -89,11 +92,11 @@ func (P pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Servic
 		info.Pd = append(info.Pd, clusterinfo.PD{
 			DeployCommon: clusterinfo.DeployCommon{
 				IP:         u.Hostname(),
-				Port:       u.Port(),
+				Port:       parsePort(u.Port()),
 				BinaryPath: ds.DeployPath,
 			},
 			Version:      ds.BinaryVersion,
-			ServerStatus: "",
+			ServerStatus: clusterinfo.Unknown,
 		})
 	}
 	return nil
@@ -111,17 +114,21 @@ func (t tikvFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Serv
 	for _, v := range stores {
 		// parse ip and port
 		addresses := strings.Split(v.Address, ":")
-
+		port := parsePort(addresses[1])
+		// Note: if no err exists, it just return 0.
+		statusPort, _ := parsePortFromAddress(v.StatusAddress)
 		currentInfo := clusterinfo.TiKV{
 			ServerVersionInfo: clusterinfo.ServerVersionInfo{
 				Version: v.Version,
 				GitHash: v.GitHash,
 			},
-			ServerStatus: "",
-			IP:           addresses[0],
-			Port:         addresses[1],
-			BinaryPath:   v.BinaryPath,
-			StatusPort:   v.StatusAddress,
+			DeployCommon: clusterinfo.DeployCommon{
+				IP:         addresses[0],
+				Port:       port,
+				BinaryPath: v.BinaryPath,
+			},
+			ServerStatus: clusterinfo.Unknown,
+			StatusPort:   statusPort,
 			Labels:       map[string]string{},
 		}
 		for _, v := range v.Labels {
@@ -130,4 +137,33 @@ func (t tikvFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Serv
 		info.TiKV = append(info.TiKV, currentInfo)
 	}
 	return nil
+}
+
+func parsePortFromAddress(address string) (uint, error) {
+	var statusPort uint64
+	u, err := url.Parse(address)
+	// https://github.com/golang/go/issues/18824
+	if err != nil {
+		if strings.HasPrefix(address, "//") {
+			log.Warn(err.Error())
+			return 0, err
+		}
+		return parsePortFromAddress("//" + address)
+	}
+	statusPort, err = strconv.ParseUint(u.Port(), 10, 32)
+	if err != nil {
+		log.Warn(err.Error())
+		return 0, err
+	}
+	return uint(statusPort), nil
+}
+
+func parsePort(port string) uint {
+	var statusPort uint64
+	var err error
+	if statusPort, err = strconv.ParseUint(port, 10, 32); err != nil {
+		log.Warn(err.Error())
+		return 0
+	}
+	return uint(statusPort)
 }

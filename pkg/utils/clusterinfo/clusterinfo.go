@@ -13,6 +13,14 @@
 
 package clusterinfo
 
+type ServerStatus uint
+
+const (
+	Alive   ServerStatus = 0
+	Down    ServerStatus = 1
+	Unknown ServerStatus = 2
+)
+
 // ServerVersionInfo is the server version and git_hash.
 type ServerVersionInfo struct {
 	Version string `json:"version"`
@@ -23,12 +31,12 @@ type Common struct {
 	DeployCommon
 	// This field is copied from tidb.
 	ServerVersionInfo
-	ServerStatus string `json:"server_status"`
+	ServerStatus ServerStatus `json:"server_status"`
 }
 
 type DeployCommon struct {
 	IP         string `json:"ip"`
-	Port       string `json:"port"`
+	Port       uint   `json:"port"`
 	BinaryPath string `json:"binary_path"`
 }
 
@@ -40,7 +48,7 @@ type PD struct {
 	DeployCommon
 	Version string `json:"version"`
 	// It will query PD's health interface.
-	ServerStatus string `json:"server_status"`
+	ServerStatus ServerStatus `json:"server_status"`
 }
 
 type Prometheus struct {
@@ -49,19 +57,15 @@ type Prometheus struct {
 
 type TiDB struct {
 	Common
-	StatusPort string `json:"status_port"`
+	StatusPort uint `json:"status_port"`
 }
 
 type TiKV struct {
-	// This field is copied from tidb.
 	ServerVersionInfo
-	ServerStatus string `json:"server_status"`
-	IP           string
-	Port         string
-	BinaryPath   string `json:"binary_path"`
-	StatusPort   string `json:"status_port"`
-
-	Labels map[string]string `json:"labels"`
+	DeployCommon
+	ServerStatus ServerStatus      `json:"server_status"`
+	StatusPort   uint              `json:"status_port"`
+	Labels       map[string]string `json:"labels"`
 }
 
 type AlertManager struct {

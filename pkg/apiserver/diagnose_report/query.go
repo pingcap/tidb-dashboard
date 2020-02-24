@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+type rowQuery interface {
+	queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error)
+}
+
 type queryArg struct {
 	totalTime float64
 	startTime string
@@ -21,12 +25,14 @@ type sumValueQuery struct {
 	label string
 }
 
+// Table schema
 // METRIC_NAME , LABEL  TOTAL_VALUE
-func (def *sumValueQuery) queryRow(startTime, endTime string, db *sql.DB) (*TableRowDef, error) {
+func (def sumValueQuery) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error) {
 	if len(def.name) == 0 {
 		def.name = def.tbl
 	}
-	sql := fmt.Sprintf("select '%v', '', sum(value) from metrics_schema.%v where time >= '%s' and time < '%s'", def.name, def.tbl, startTime, endTime)
+	sql := fmt.Sprintf("select '%v', '', sum(value) from metrics_schema.%v where time >= '%s' and time < '%s'",
+		def.name, def.tbl, arg.startTime, arg.endTime)
 	rows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
@@ -40,7 +46,8 @@ func (def *sumValueQuery) queryRow(startTime, endTime string, db *sql.DB) (*Tabl
 		}, nil
 	}
 
-	sql = fmt.Sprintf("select '%v',`%v`, sum(value) from metrics_schema.%v where time >= '%s' and time < '%s' group by `%[2]v`", def.name, def.label, def.tbl, startTime, endTime)
+	sql = fmt.Sprintf("select '%v',`%v`, sum(value) from metrics_schema.%v where time >= '%s' and time < '%s' group by `%[2]v` order by sum(value) desc",
+		def.name, def.label, def.tbl, arg.startTime, arg.endTime)
 	subRows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
@@ -59,7 +66,7 @@ type totalTimeTableDef struct {
 
 // Table schema
 // METRIC_NAME , LABEL , TIME_RATIO ,  TOTAL_VALUE , TOTAL_COUNT , P999 , P99 , P90 , P80
-func (t totalTimeTableDef) queryRow(arg queryArg, db *sql.DB) (*TableRowDef, error) {
+func (t totalTimeTableDef) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error) {
 	sql := t.genSumarySQLs(arg.totalTime, arg.startTime, arg.endTime, arg.quantiles)
 	rows, err := querySQL(db, sql)
 	if err != nil {
@@ -164,7 +171,7 @@ type totalValueAndTotalCountTableDef struct {
 
 // Table schema
 // METRIC_NAME , LABEL  TOTAL_VALUE , TOTAL_COUNT , P999 , P99 , P90 , P80
-func (t totalValueAndTotalCountTableDef) queryRow(arg queryArg, db *sql.DB) (*TableRowDef, error) {
+func (t totalValueAndTotalCountTableDef) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error) {
 	sql := t.genSumarySQLs(arg.startTime, arg.endTime, arg.quantiles)
 	rows, err := querySQL(db, sql)
 	if err != nil {

@@ -51,7 +51,7 @@ func (t TableDef) ColumnWidth() []int {
 }
 
 func GetTotalTimeTableData(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []totalTimeTableDef{
+	defs1 := []totalTimeTableDef{
 		{name: "tidb_query", tbl: "tidb_query", label: "sql_type"},
 		{name: "tidb_get_token", tbl: "tidb_get_token", label: "instance"},
 		{name: "tidb_parse", tbl: "tidb_parse", label: "sql_type"},
@@ -121,6 +121,11 @@ func GetTotalTimeTableData(startTime, endTime string, db *sql.DB) (*TableDef, er
 		//{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", label: "type"},
 	}
 
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+
 	table := &TableDef{
 		Category:  []string{"Overview"},
 		Title:     "Time Consume",
@@ -129,15 +134,14 @@ func GetTotalTimeTableData(startTime, endTime string, db *sql.DB) (*TableDef, er
 		Column:    []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 
-	resultRows := make([]TableRowDef, 0, len(tables))
+	resultRows := make([]TableRowDef, 0, len(defs))
 	quantiles := []float64{0.999, 0.99, 0.90, 0.80}
-	arg := queryArg{
+	arg := &queryArg{
 		totalTime: 0,
 		startTime: startTime,
 		endTime:   endTime,
 		quantiles: quantiles,
 	}
-
 	specialHandle := func(row []string) []string {
 		name := row[0]
 		if strings.HasSuffix(name, "(us)") {
@@ -174,22 +178,16 @@ func GetTotalTimeTableData(startTime, endTime string, db *sql.DB) (*TableDef, er
 		resultRows = append(resultRows, row)
 	}
 
-	for _, t := range tables {
-		row, err := t.queryRow(arg, db)
-		if err != nil {
-			continue
-		}
-		if row == nil {
-			continue
-		}
-		appendRows(*row)
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
 	}
 	table.Rows = resultRows
 	return table, nil
 }
 
-func GetTxnTotalCountTableData(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	defs := []totalValueAndTotalCountTableDef{
+func GetTotalCountTableData(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []totalValueAndTotalCountTableDef{
 		{name: "tidb_transaction_retry_num", tbl: "tidb_transaction_retry_num", sumTbl: "tidb_transaction_retry_total_num", countTbl: "tidb_transaction_retry_num_total_count", label: "instance"},
 		{name: "tidb_transaction_statement_num", tbl: "tidb_transaction_statement_num", sumTbl: "tidb_transaction_statement_total_num", countTbl: "tidb_transaction_statement_num_total_count", label: "sql_type"},
 		{name: "tidb_txn_region_num", tbl: "tidb_txn_region_num", sumTbl: "tidb_txn_region_total_num", countTbl: "tidb_txn_region_num_total_count", label: "instance"},
@@ -214,6 +212,11 @@ func GetTxnTotalCountTableData(startTime, endTime string, db *sql.DB) (*TableDef
 		{name: "tikv_snapshot_kv_count", tbl: "tikv_snapshot_kv_count", sumTbl: "tikv_snapshot_kv_total_count", countTbl: "tikv_snapshot_kv_count_total_count", label: "instance"},
 		{name: "tikv_snapshot_size", tbl: "tikv_snapshot_size", sumTbl: "tikv_snapshot_total_size", countTbl: "tikv_snapshot_size_total_count", label: "instance"},
 		{name: "tikv_backup_range_size", tbl: "tikv_backup_range_size", sumTbl: "tikv_backup_range_total_size", countTbl: "tikv_backup_range_size_total_count", label: "instance"},
+	}
+
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
 	}
 
 	resultRows := make([]TableRowDef, 0, len(defs))
@@ -245,28 +248,22 @@ func GetTxnTotalCountTableData(startTime, endTime string, db *sql.DB) (*TableDef
 		resultRows = append(resultRows, row)
 	}
 
-	arg := queryArg{
+	arg := &queryArg{
 		startTime: startTime,
 		endTime:   endTime,
 		quantiles: quantiles,
 	}
 
-	for _, def := range defs {
-		row, err := def.queryRow(arg, db)
-		if err != nil {
-			continue
-		}
-		if row == nil {
-			continue
-		}
-		appendRows(*row)
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
 	}
 	table.Rows = resultRows
 	return table, nil
 }
 
 func GetTotalCount(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	defs := []sumValueQuery{
+	defs1 := []sumValueQuery{
 		{tbl: "tidb_binlog_error_total_count", label: "instance"},
 		{tbl: "tidb_handshake_error_total_count", label: "instance"},
 		{tbl: "tidb_transaction_retry_error_total_count", label: "sql_type"},
@@ -284,6 +281,10 @@ func GetTotalCount(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		{tbl: "tikv_backup_errors_total_count", label: "error"},
 		{tbl: "node_network_in_errors_total_count", label: "instance"},
 		{tbl: "node_network_out_errors_total_count", label: "instance"},
+	}
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
 	}
 
 	table := &TableDef{
@@ -309,8 +310,90 @@ func GetTotalCount(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		resultRows = append(resultRows, row)
 	}
 
+	arg := &queryArg{
+		startTime: startTime,
+		endTime:   endTime,
+	}
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	table.Rows = resultRows
+	return table, nil
+}
+
+func GetTxnTotalCountTableData(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []totalValueAndTotalCountTableDef{
+		{name: "tidb_transaction_retry_num", tbl: "tidb_transaction_retry_num", sumTbl: "tidb_transaction_retry_total_num", countTbl: "tidb_transaction_retry_num_total_count", label: "instance"},
+		{name: "tidb_transaction_statement_num", tbl: "tidb_transaction_statement_num", sumTbl: "tidb_transaction_statement_total_num", countTbl: "tidb_transaction_statement_num_total_count", label: "sql_type"},
+		{name: "tidb_txn_region_num", tbl: "tidb_txn_region_num", sumTbl: "tidb_txn_region_total_num", countTbl: "tidb_txn_region_num_total_count", label: "instance"},
+		{name: "tidb_kv_write_num", tbl: "tidb_kv_write_num", sumTbl: "tidb_kv_write_total_num", countTbl: "tidb_kv_write_num_total_count", label: "instance"},
+		{name: "tidb_kv_write_size", tbl: "tidb_kv_write_size", sumTbl: "tidb_kv_write_total_size", countTbl: "tidb_kv_write_size_total_count", label: "instance"},
+	}
+	defs2 := []sumValueQuery{
+		{name: "tidb_load_safepoint_total_num", tbl: "tidb_load_safepoint_total_num", label: "type"},
+		{name: "tidb_lock_resolver_total_num", tbl: "tidb_lock_resolver_total_num", label: "type"},
+	}
+
+	defs := make([]rowQuery, 0, len(defs1)+len(defs2))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+	for i := range defs2 {
+		defs = append(defs, defs2[i])
+	}
+
+	resultRows := make([]TableRowDef, 0, len(defs))
+
+	quantiles := []float64{0.999, 0.99, 0.90, 0.80}
+	table := &TableDef{
+		Category:  []string{"TiDB"},
+		Title:     "Transaction",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
+	}
+
+	specialHandle := func(row []string) []string {
+		for len(row) < 8 {
+			row = append(row, "")
+		}
+
+		for i := 2; i < len(row); i++ {
+			if len(row[i]) == 0 {
+				continue
+			}
+			row[i] = convertFloatToInt(row[i])
+		}
+		return row
+	}
+
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+
+	arg := &queryArg{
+		startTime: startTime,
+		endTime:   endTime,
+		quantiles: quantiles,
+	}
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	table.Rows = resultRows
+	return table, nil
+}
+
+func getTableRows(defs []rowQuery, arg *queryArg, db *sql.DB, appendRows func(def TableRowDef)) error {
 	for _, def := range defs {
-		row, err := def.queryRow(startTime, endTime, db)
+		row, err := def.queryRow(arg, db)
 		if err != nil {
 			continue
 		}
@@ -319,6 +402,5 @@ func GetTotalCount(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		}
 		appendRows(*row)
 	}
-	table.Rows = resultRows
-	return table, nil
+	return nil
 }

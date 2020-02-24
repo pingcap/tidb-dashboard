@@ -55,4 +55,4 @@ endif
 	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 
 run:
-	bin/tidb-dashboard
+	bin/tidb-dashboard -debug

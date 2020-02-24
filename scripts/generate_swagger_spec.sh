@@ -21,4 +21,5 @@ echo "+ Clean up go mod"
 go mod tidy
 
 echo "+ Generate swagger spec"
-swag init -g cmd/tidb-dashboard/main.go
+go mod vendor
+swag init --parseVendor -g cmd/tidb-dashboard/main.go

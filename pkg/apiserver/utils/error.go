@@ -25,6 +25,7 @@ var (
 	ErrOther                 = ErrNS.NewType("other")
 	ErrUnauthorized          = ErrNS.NewType("unauthorized")
 	ErrInsufficientPrivilege = ErrNS.NewType("insufficient_privilege")
+	ErrInvalidRequest        = ErrNS.NewType("invalid_request")
 )
 
 type APIError struct {

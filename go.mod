@@ -10,7 +10,6 @@ require (
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
 	github.com/go-sql-driver/mysql v1.4.1
-	github.com/google/uuid v1.0.0
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
 	github.com/jinzhu/gorm v1.9.12
 	github.com/joho/godotenv v1.3.0

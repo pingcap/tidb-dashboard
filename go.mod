@@ -8,6 +8,7 @@ require (
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
+	github.com/go-sql-driver/mysql v1.4.1
 	github.com/jinzhu/gorm v1.9.12
 	github.com/pingcap/check v0.0.0-20191216031241-8a5a85928f12
 	github.com/pingcap/log v0.0.0-20200117041106-d28c14d3b1cd

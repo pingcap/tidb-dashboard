@@ -20,11 +20,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
-
-	"golang.org/x/sync/errgroup"
 
 	"github.com/gin-gonic/gin"
 	pdclient "github.com/pingcap/pd/client"
@@ -54,7 +53,7 @@ func NewService(config *config.Config, pdClient pdclient.Client, etcdClient *etc
 
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/topology")
-	endpoint.Use(auth.MWAuthRequired())
+	//endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/", s.topologyHandler)
 	endpoint.DELETE("/tidb/:address/", s.deleteDBHandler)
 }
@@ -94,39 +93,79 @@ func (s *Service) deleteDBHandler(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
+type ResponseWithErr struct {
+	TiDB         interface{} `json:"tidb"`
+	TiKV         interface{} `json:"tikv"`
+	Pd           interface{} `json:"pd"`
+	Grafana      interface{} `json:"grafana"`
+	AlertManager interface{} `json:"alert_manager"`
+}
+
 // @Summary Dashboard info
 // @Description Get information about the dashboard service.
 // @Produce json
 // @Success 200 {object} ClusterInfo
 // @Router /topology [get]
 func (s *Service) topologyHandler(c *gin.Context) {
-	var returnObject ClusterInfo
+	var info ClusterInfo
+	var returnObject ResponseWithErr
+	errMap := map[string]error{}
+	var errMutex sync.Mutex
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	fetchers := []fetcher{
-		etcdFetcher{},
+		tidbFetcher{},
 		tikvFetcher{},
 		pdFetcher{},
 	}
 
-	errs, ctx := errgroup.WithContext(ctx)
-
-	// Note: if here we want to check healthy, we can support to generate fetcher in the
-	// sub goroutine.
+	var wg sync.WaitGroup
 	for _, fetcher := range fetchers {
+		wg.Add(1)
 		currentFetcher := fetcher
-		errs.Go(func() error {
-			return currentFetcher.fetch(ctx, &returnObject, s)
-		})
+		go func() {
+			defer wg.Done()
+			err := currentFetcher.fetch(ctx, &info, s)
+			if err != nil {
+				errMutex.Lock()
+				errMap[currentFetcher.name()] = err
+				errMutex.Unlock()
+			}
+		}()
 	}
+	wg.Wait()
+	var exists bool
+	var err error
 
-	err := errs.Wait()
-	if err != nil {
-		c.Status(500)
-		_ = c.Error(err)
-		return
+	if err, exists = errMap["tikv"]; exists {
+		// err must exists and not nil
+		returnObject.TiKV = struct {
+			Error string `json:"error"`
+		}{Error: err.Error()}
+	} else {
+		returnObject.TiKV = info.TiKV
+	}
+	if err, exists = errMap["tidb"]; exists {
+		// err must exists and not nil
+		errStruct := struct {
+			Error string `json:"error"`
+		}{Error: err.Error()}
+		returnObject.TiDB = errStruct
+		returnObject.AlertManager = errStruct
+	} else {
+		returnObject.TiDB = info.TiDB
+		returnObject.AlertManager = info.AlertManager
+		returnObject.Grafana = info.Grafana
+	}
+	if err, exists = errMap["pd"]; exists {
+		// err must exists and not nil
+		returnObject.Pd = struct {
+			Error string `json:"error"`
+		}{Error: err.Error()}
+	} else {
+		returnObject.Pd = info.Pd
 	}
 
 	c.JSON(http.StatusOK, returnObject)

@@ -34,15 +34,20 @@ import (
 type fetcher interface {
 	// fetch fetches the data, and if any unrecoverable error exists, it will return error.
 	fetch(ctx context.Context, info *ClusterInfo, service *Service) error
+	name() string
 }
 
 // etcdFetcher fetches etcd, and parses the ns below:
 // * /topology/grafana
 // * /topology/alertmanager
 // * /topology/tidb
-type etcdFetcher struct{}
+type tidbFetcher struct{}
 
-func (f etcdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
+func (f tidbFetcher) name() string {
+	return "tidb"
+}
+
+func (f tidbFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) error {
 	tidb, grafana, alertManager, err := clusterinfo.FetchEtcd(ctx, service.etcdCli)
 	if err != nil {
 		return err
@@ -55,6 +60,10 @@ func (f etcdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Serv
 
 // PDFetcher using the http to fetch PDMember information from pd endpoint.
 type pdFetcher struct {
+}
+
+func (p pdFetcher) name() string {
+	return "pd"
 }
 
 func (p pdFetcher) buildHealthMap(pdEndPoint string) (map[string]struct{}, error) {
@@ -181,6 +190,10 @@ func (t tikvFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Serv
 		info.TiKV = append(info.TiKV, currentInfo)
 	}
 	return nil
+}
+
+func (t tikvFetcher) name() string {
+	return "tikv"
 }
 
 // parsePortFromAddress receive an address like "127.0.0.1:2379",

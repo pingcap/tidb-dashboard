@@ -14,7 +14,7 @@
 package statement
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -92,7 +92,7 @@ func (s *Service) timeRangesHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) overviewsHandler(c *gin.Context) {
-	schemas := []string{}
+	var schemas []string
 	schemasQuery := c.Query("schemas")
 	if schemasQuery != "" {
 		schemas = strings.Split(schemasQuery, ",")
@@ -100,7 +100,7 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 	beginTime := c.Query("begin_time")
 	endTime := c.Query("end_time")
 	if beginTime == "" || endTime == "" {
-		_ = c.Error(errors.New("invalid begin_time or end_time"))
+		_ = c.Error(fmt.Errorf("invalid begin_time or end_time"))
 		return
 	}
 	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)

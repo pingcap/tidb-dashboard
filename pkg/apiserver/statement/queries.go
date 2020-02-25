@@ -15,24 +15,20 @@ package statement
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
 	"github.com/jinzhu/gorm"
 )
 
-const (
-	selectPerformanceDB = "use performance_schema"
-)
-
 func QuerySchemas(db *gorm.DB) ([]string, error) {
-	sql := `show databases`
-	schemas := []string{}
+	sql := `SHOW DATABASES`
 
-	db.Exec(selectPerformanceDB)
+	var schemas []string
 	err := db.Raw(sql).Pluck("Database", &schemas).Error
 	if err != nil {
-		return schemas, err
+		return nil, err
 	}
 
 	for i, v := range schemas {
@@ -42,94 +38,51 @@ func QuerySchemas(db *gorm.DB) ([]string, error) {
 	return schemas, nil
 }
 
-func QueryTimeRanges(db *gorm.DB) ([]*TimeRange, error) {
-	sql := `select
-	distinct summary_begin_time,summary_end_time
-	from cluster_events_statements_summary_by_digest_history
-	order by summary_begin_time desc`
-	timeRanges := []*TimeRange{}
-
-	db.Exec(selectPerformanceDB)
-	rows, err := db.Raw(sql).Rows()
-	if err != nil {
-		return timeRanges, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		timeRange := new(TimeRange)
-		err = rows.Scan(&timeRange.BeginTime, &timeRange.EndTime)
-		if err != nil {
-			return timeRanges, err
-		}
-		timeRanges = append(timeRanges, timeRange)
-	}
-	return timeRanges, nil
+func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
+	err = db.
+		Select(`
+			DISTINCT
+			summary_begin_time AS begin_time,
+			summary_end_time AS end_time
+		`).
+		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Order("summary_begin_time DESC").
+		Find(&result).Error
+	return result, err
 }
 
 // Sample params:
 // schemas: ["tpcc", "test"]
 // beginTime: "2020-02-13 10:30:00"
 // endTime: "2020-02-13 11:00:00"
-func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime string) ([]*Overview, error) {
-	var tableNamesCondition string
-	var tableNamesRegex string
-	if len(schemas) > 0 {
-		regexs := []string{}
-		for _, v := range schemas {
-			regexs = append(regexs, fmt.Sprintf("^%s\\.", v))
-			regexs = append(regexs, fmt.Sprintf(",%s\\.", v))
-		}
-		// if schemas = ["aa", "bb"], get "^aa\.|,aa\.|^bb\.|,bb\."
-		tableNamesRegex = strings.Join(regexs, "|")
-		tableNamesCondition = "and table_names regexp ?"
-	} else {
-		tableNamesRegex = "1"
-		tableNamesCondition = "and '1' = ?"
-	}
-	sql := fmt.Sprintf(`select
-	schema_name,
-	digest,
-	digest_text,
-	sum(sum_latency) as total_latency,
-	sum(exec_count),
-	round(sum(exec_count*avg_affected_rows)/sum(exec_count)),
-	round(sum(exec_count*avg_latency)/sum(exec_count)),
-	round(sum(exec_count*avg_mem)/sum(exec_count))
-	from cluster_events_statements_summary_by_digest_history
-	where summary_begin_time=?
-	and summary_end_time=?
-	%s
-	group by schema_name,digest,digest_text
-	order by total_latency desc`,
-		tableNamesCondition)
-	overviews := []*Overview{}
+func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime string) (result []*Overview, err error) {
+	query := db.
+		Select(`
+			schema_name,
+			digest,
+			digest_text,
+			sum(sum_latency) AS agg_sum_latency,
+			sum(exec_count) AS agg_exec_count,
+			round(sum(exec_count*avg_affected_rows)/sum(exec_count)) AS agg_avg_affected_rows,
+			round(sum(exec_count*avg_latency)/sum(exec_count)) AS agg_avg_latency,
+			round(sum(exec_count*avg_mem)/sum(exec_count)) AS agg_avg_mem
+		`).
+		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
+		Group("schema_name, digest, digest_text").
+		Order("agg_sum_latency DESC")
 
-	db.Exec(selectPerformanceDB)
-	rows, err := db.Raw(sql, beginTime, endTime, tableNamesRegex).Rows()
-	if err != nil {
-		return overviews, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		overview := new(Overview)
-		err = rows.Scan(
-			&overview.SchemaName,
-			&overview.Digest,
-			&overview.DigestText,
-			&overview.SumLatency,
-			&overview.ExecCount,
-			&overview.AvgAffectedRows,
-			&overview.AvgLatency,
-			&overview.AvgMem,
-		)
-		if err != nil {
-			return overviews, err
+	if schemas != nil && len(schemas) > 0 {
+		regex := make([]string, 0, len(schemas))
+		for _, schema := range schemas {
+			regex = append(regex, fmt.Sprintf("\\b%s\\.", regexp.QuoteMeta(schema)))
 		}
-		overviews = append(overviews, overview)
+		regexAll := strings.Join(regex, "|")
+		query = query.Where("table_names REGEXP ?", regexAll)
 	}
-	return overviews, nil
+
+	err = query.Find(&result).Error
+	return result, err
 }
 
 // Sample params:
@@ -138,50 +91,41 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime s
 // endTime: "2020-02-13 11:00:00"
 // digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
 func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string) (*Detail, error) {
-	sql := `select
-	schema_name,
-	digest,
-	digest_text,
-	sum(sum_latency),
-	sum(exec_count),
-	round(sum(exec_count*avg_affected_rows)/sum(exec_count)),
-	round(sum(exec_count*avg_total_keys)/sum(exec_count))
-	from cluster_events_statements_summary_by_digest_history
-	where schema_name=?
-	and summary_begin_time=?
-	and summary_end_time=?
-	and digest=?
-	group by schema_name,digest,digest_text`
-	detail := new(Detail)
+	result := &Detail{}
 
-	db.Exec(selectPerformanceDB)
-	row := db.Raw(sql, schema, beginTime, endTime, digest).Row()
-	if err := row.Scan(
-		&detail.SchemaName,
-		&detail.Digest,
-		&detail.DigestText,
-		&detail.SumLatency,
-		&detail.ExecCount,
-		&detail.AvgAffectedRows,
-		&detail.AvgTotalKeys,
-	); err != nil {
-		return detail, err
+	query := db.
+		Select(`
+			schema_name,
+			digest,
+			digest_text,
+			sum(sum_latency) AS agg_sum_latency,
+			sum(exec_count) AS agg_exec_count,
+			round(sum(exec_count*avg_affected_rows)/sum(exec_count)) AS agg_avg_affected_rows,
+			round(sum(exec_count*avg_total_keys)/sum(exec_count)) AS agg_avg_total_keys
+		`).
+		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Where("schema_name = ?", schema).
+		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
+		Where("digest = ?", digest).
+		Group("digest, digest_text, schema_name")
+
+	if err := query.Scan(&result).Error; err != nil {
+		return nil, err
 	}
 
-	sql = `select
-	query_sample_text,last_seen
-	from cluster_events_statements_summary_by_digest_history
-	where schema_name=?
-	and summary_begin_time=?
-	and summary_end_time=?
-	and digest=?
-	order by last_seen desc
-	limit 1`
-	row = db.Raw(sql, schema, beginTime, endTime, digest).Row()
-	if err := row.Scan(&detail.QuerySampleText, &detail.LastSeen); err != nil {
-		return detail, err
+	query = db.
+		Select(`query_sample_text, last_seen`).
+		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Where("schema_name = ?", schema).
+		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
+		Where("digest = ?", digest).
+		Order("last_seen DESC")
+
+	if err := query.First(&result).Error; err != nil {
+		return nil, err
 	}
-	return detail, nil
+
+	return result, nil
 }
 
 // Sample params:
@@ -189,39 +133,22 @@ func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string
 // beginTime: "2020-02-13 10:30:00"
 // endTime: "2020-02-13 11:00:00"
 // digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
-func QueryStatementNodes(db *gorm.DB, schema, beginTime, endTime, digest string) ([]*Node, error) {
-	sql := `select
-	address,sum_latency,exec_count,avg_latency,max_latency,avg_mem,sum_backoff_times
-	from cluster_events_statements_summary_by_digest_history
-	where schema_name=?
-	and summary_begin_time=?
-	and summary_end_time=?
-	and digest=?
-	order by sum_latency desc`
-	nodes := []*Node{}
-
-	db.Exec(selectPerformanceDB)
-	rows, err := db.Raw(sql, schema, beginTime, endTime, digest).Rows()
-	if err != nil {
-		return nodes, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		node := new(Node)
-		err = rows.Scan(
-			&node.Address,
-			&node.SumLatency,
-			&node.ExecCount,
-			&node.AvgLatency,
-			&node.MaxLatency,
-			&node.AvgMem,
-			&node.SumBackoffTimes,
-		)
-		if err != nil {
-			return nodes, err
-		}
-		nodes = append(nodes, node)
-	}
-	return nodes, nil
+func QueryStatementNodes(db *gorm.DB, schema, beginTime, endTime, digest string) (result []*Node, err error) {
+	err = db.
+		Select(`
+			address,
+			sum_latency,
+			exec_count,
+			avg_latency,
+			max_latency,
+			avg_mem,
+			sum_backoff_times
+		`).
+		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Where("schema_name = ?", schema).
+		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
+		Where("digest = ?", digest).
+		Order("sum_latency DESC").
+		Find(&result).Error
+	return result, err
 }

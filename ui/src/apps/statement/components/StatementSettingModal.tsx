@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Modal, Form, message, Spin, InputNumber } from 'antd'
 import { StatementConfig } from './statement-types'
 
-import styles from './StatementSettingModal.module.css'
+import styles from './styles.module.css'
 
 interface Props {
   instanceId: string
@@ -61,7 +61,10 @@ function StatementSettingModal({
     }
   }
 
-  function handleConfigChange(configKey: string, configValue: number | undefined) {
+  function handleConfigChange(
+    configKey: string,
+    configValue: number | undefined
+  ) {
     setConfig({
       ...(config as StatementConfig),
       [configKey]: configValue
@@ -77,9 +80,15 @@ function StatementSettingModal({
       confirmLoading={submitting}
       okButtonProps={{ disabled: loading || config === null }}
     >
-      {loading && <Spin size="small" style={{ marginLeft: 8, marginRight: 8 }} />}
+      {loading && (
+        <Spin size="small" style={{ marginLeft: 8, marginRight: 8 }} />
+      )}
       {!loading && config && (
-        <Form labelAlign="left" {...formItemLayout} className={styles.config_form}>
+        <Form
+          labelAlign="left"
+          {...formItemLayout}
+          className={styles.config_form}
+        >
           <Form.Item label="统计间隔">
             <InputNumber
               min={30}

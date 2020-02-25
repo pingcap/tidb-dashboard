@@ -1,6 +1,8 @@
 import React from 'react'
 import { Table } from 'antd'
+import moment from 'moment'
 import { StatementDetailInfo } from './statement-types'
+import { useTranslation } from 'react-i18next'
 
 type align = 'left' | 'right' | 'center'
 
@@ -9,7 +11,8 @@ const columns = [
     title: 'kind',
     dataIndex: 'kind',
     key: 'kind',
-    align: 'center' as align
+    align: 'center' as align,
+    width: 160
   },
   {
     title: 'content',
@@ -19,27 +22,39 @@ const columns = [
   }
 ]
 
-export default function StatementSummaryTable({
-  detail: { summary }
-}: {
+type Props = {
   detail: StatementDetailInfo
-}) {
+  beginTime: string
+  endTime: string
+}
+
+export default function StatementSummaryTable({
+  detail,
+  beginTime,
+  endTime
+}: Props) {
+  const { t } = useTranslation()
+
   const dataSource = [
     {
-      kind: 'SQL 类别',
-      content: summary.sql_category
+      kind: t('statement.common.schema'),
+      content: detail.schema_name
     },
     {
-      kind: '最后出现 SQL 语句',
-      content: summary.last_sql
+      kind: t('statement.detail.time_range'),
+      content: `${beginTime} ~ ${endTime}`
     },
     {
-      kind: '最后出现时间',
-      content: summary.last_time
+      kind: t('statement.common.digest_text'),
+      content: detail.digest_text
     },
     {
-      kind: 'Schema',
-      content: summary.schemas.join(',')
+      kind: t('statement.detail.query_sample_text'),
+      content: detail.query_sample_text
+    },
+    {
+      kind: t('statement.detail.last_seen'),
+      content: moment(detail.last_seen).format('YYYY-MM-DD HH:mm:ss')
     }
   ]
 

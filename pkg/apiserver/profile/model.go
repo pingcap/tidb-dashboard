@@ -19,7 +19,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
@@ -30,24 +29,23 @@ import (
 const TrackTickInterval = 2 * time.Second
 
 // TaskState is used to represent the task/task group state.
-type TaskState string
+type TaskState int
 
 // Built-in task state
 const (
-	Create TaskState = "create"
-	Error  TaskState = "error"
-	Cancel TaskState = "cancel"
+	TaskStateCreate TaskState = iota
+	TaskStateError
+	TaskStateCancel
 
 	// TaskGroup can only have these two states.
-	Running TaskState = "running"
-	Finish  TaskState = "finish"
+	TaskStateRunning
+	TaskStateFinish
 )
 
-// TaskModel is the model definition of task.
 type TaskModel struct {
-	ID          string    `json:"task_id" gorm:"type:char(36);primary_key"`
-	TaskGroupID string    `json:"task_group_id" gorm:"type:char(36)"`
-	State       TaskState `json:"state"`
+	ID          uint      `json:"id" gorm:"primary_key"`
+	TaskGroupID uint      `json:"task_group_id" gorm:"index"`
+	State       TaskState `json:"state" gorm:"index"`
 	Addr        string    `json:"address"`
 	FilePath    string    `json:"file_path" gorm:"type:text"`
 	Component   string    `json:"component"`
@@ -56,22 +54,24 @@ type TaskModel struct {
 	Error       string    `json:"error" gorm:"type:text"`
 }
 
-// TaskGroupModel is the model definition of task group.
-type TaskGroupModel struct {
-	ID           string    `json:"task_group_id" gorm:"type:char(36);primary_key"`
-	RunningTasks int       `json:"running_tasks"`
-	State        TaskState `json:"state"`
+func (TaskModel) TableName() string {
+	return "profiling_tasks"
 }
 
-func autoMigrate(db *dbstore.DB) {
-	err := db.AutoMigrate(&TaskModel{}).Error
-	if err != nil {
-		panic(err)
-	}
-	err = db.AutoMigrate(&TaskGroupModel{}).Error
-	if err != nil {
-		panic(err)
-	}
+type TaskGroupModel struct {
+	ID           uint      `json:"id" gorm:"primary_key"`
+	RunningTasks int       `json:"running_tasks"`
+	State        TaskState `json:"state" gorm:"index"`
+}
+
+func (TaskGroupModel) TableName() string {
+	return "profiling_task_groups"
+}
+
+func autoMigrate(db *dbstore.DB) error {
+	return db.AutoMigrate(&TaskModel{}).
+		AutoMigrate(&TaskGroupModel{}).
+		Error
 }
 
 // Task is the unit to fetch profiling information.
@@ -82,13 +82,12 @@ type Task struct {
 	cancel context.CancelFunc
 }
 
-// NewTask create a new profiling task.
-func NewTask(db *dbstore.DB, component, addr, id string) *Task {
+// NewTask creates a new profiling task.
+func NewTask(db *dbstore.DB, id uint, component, addr string) *Task {
 	return &Task{
 		TaskModel: &TaskModel{
-			ID:          uuid.New().String(),
 			TaskGroupID: id,
-			State:       Create,
+			State:       TaskStateCreate,
 			Addr:        addr,
 			Component:   component,
 			CreateTime:  time.Now().Unix(),
@@ -102,15 +101,15 @@ func (t *Task) run(updateCh chan struct{}) {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.cancel = cancel
 	t.mu.Lock()
-	t.State = Running
+	t.State = TaskStateRunning
 	t.db.Save(t.TaskModel)
 	t.mu.Unlock()
-	filePrefix := fmt.Sprintf("profile_%s_%s_%s", t.Component, t.Addr, t.ID)
+	filePrefix := fmt.Sprintf("profile_group_%d_task%d_%s_%s_", t.TaskGroupID, t.ID, t.Component, t.Addr)
 	svgFilePath, err := fetchSvg(ctx, t.Component, t.Addr, filePrefix)
 	select {
 	case <-ctx.Done():
 		t.mu.Lock()
-		t.State = Cancel
+		t.State = TaskStateCancel
 		t.db.Save(t.TaskModel)
 		t.mu.Unlock()
 		return
@@ -120,13 +119,13 @@ func (t *Task) run(updateCh chan struct{}) {
 	defer t.mu.Unlock()
 	if err != nil {
 		t.Error = err.Error()
-		t.State = Error
+		t.State = TaskStateError
 		t.db.Save(t.TaskModel)
 		updateCh <- struct{}{}
 		return
 	}
 	t.FilePath = svgFilePath
-	t.State = Finish
+	t.State = TaskStateFinish
 	t.FinishTime = time.Now().Unix()
 	t.db.Save(t.TaskModel)
 	updateCh <- struct{}{}
@@ -136,8 +135,8 @@ func (t *Task) stop() {
 	t.cancel()
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	if t.State != Finish {
-		t.State = Cancel
+	if t.State != TaskStateFinish {
+		t.State = TaskStateCancel
 		t.db.Save(t.TaskModel)
 	}
 }
@@ -152,8 +151,7 @@ type TaskGroup struct {
 func NewTaskGroup() *TaskGroup {
 	return &TaskGroup{
 		TaskGroupModel: &TaskGroupModel{
-			ID:    uuid.New().String(),
-			State: Create,
+			State: TaskStateCreate,
 		},
 		updateCh: make(chan struct{}),
 	}
@@ -170,7 +168,7 @@ func (tg *TaskGroup) trackTasks(db *dbstore.DB, taskTacker *sync.Map) {
 			tg.RunningTasks--
 		case <-trackTicker.C:
 			if tg.RunningTasks == 0 {
-				tg.State = Finish
+				tg.State = TaskStateFinish
 				db.Save(tg.TaskGroupModel)
 				close(tg.updateCh)
 				return

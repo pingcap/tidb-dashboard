@@ -35,11 +35,11 @@ import (
 )
 
 type ClusterInfo struct {
-	TiDB         []clusterinfo.TiDB
-	TiKV         []clusterinfo.TiKV
-	Pd           []clusterinfo.PD
-	Grafana      clusterinfo.Grafana
-	AlertManager clusterinfo.AlertManager
+	TiDB         []clusterinfo.TiDB       `json:"tidb"`
+	TiKV         []clusterinfo.TiKV       `json:"tikv"`
+	Pd           []clusterinfo.PD         `json:"pd"`
+	Grafana      clusterinfo.Grafana      `json:"grafana"`
+	AlertManager clusterinfo.AlertManager `json:"alert_manager"`
 }
 
 type Service struct {

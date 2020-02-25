@@ -32,7 +32,7 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 		// put error in ctx and return
 		return nil, Grafana{}, AlertManager{}, err
 	}
-	dbMap := make(map[uint64]*TiDB)
+	dbMap := make(map[string]*TiDB)
 	var grafana Grafana
 	var alertManager AlertManager
 	dbList := make([]TiDB, 0)
@@ -45,7 +45,6 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 		if len(keyParts) < 2 {
 			continue
 		}
-		log.Info(keyParts[1] + "  " + string(kvs.Value))
 		switch keyParts[1] {
 		case "grafana":
 			if err = json.Unmarshal(kvs.Value, &grafana); err != nil {
@@ -58,22 +57,23 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 		case "tidb":
 			// the key should be like /topology/tidb/ip:port/info or /ttl
 			if len(keyParts) != 4 {
-				log.Warn("error, should got 4")
+				log.Warn("error, key under `/topology/tidb` should be like" +
+					" `/topology/tidb/ip:port/info`")
 				continue
 			}
 			// parsing ip and port
 			pair := strings.Split(keyParts[2], ":")
 			if len(pair) != 2 {
-				log.Warn("error, should got 2")
+				log.Warn("the ns under \"/topology/tidb\" should be like ip:port")
 				continue
 			}
 			ip := strings.Trim(pair[0], "")
-			port, _ := strconv.ParseUint(pair[1], 10, 32)
+			port, _ := strconv.Atoi(pair[1])
 
-			if _, ok := dbMap[port]; !ok {
-				dbMap[port] = &TiDB{}
+			if _, ok := dbMap[keyParts[2]]; !ok {
+				dbMap[keyParts[2]] = &TiDB{}
 			}
-			db := dbMap[port]
+			db := dbMap[keyParts[2]]
 
 			if keyParts[3] == "ttl" {
 				db.ServerStatus = Up

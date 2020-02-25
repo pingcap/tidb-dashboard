@@ -16,6 +16,7 @@ package clusterinfo
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -25,8 +26,6 @@ import (
 	"github.com/pingcap/kvproto/pkg/metapb"
 
 	"github.com/pingcap/log"
-
-	"github.com/pkg/errors"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
@@ -93,7 +92,7 @@ func (p pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Servic
 		return err
 	}
 	if resp.StatusCode != 200 {
-		return errors.New("fetch-failed")
+		return fmt.Errorf("fetch PD members got wrong status code")
 	}
 	data, err := ioutil.ReadAll(resp.Body)
 
@@ -105,7 +104,7 @@ func (p pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Servic
 		Count   int `json:"count"`
 		Members []struct {
 			ClientUrls    []string    `json:"client_urls"`
-			DeployPath    string      `json:"deploy_path"`
+			BinaryPath    string      `json:"binary_path"`
 			BinaryVersion string      `json:"binary_version"`
 			MemberID      json.Number `json:"member_id"`
 		} `json:"members"`
@@ -127,7 +126,7 @@ func (p pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Servic
 			return err
 		}
 
-		var storeStatus clusterinfo.ServerStatus
+		var storeStatus clusterinfo.ComponentStatus
 		if _, ok := healthMap[ds.MemberID.String()]; ok {
 			storeStatus = clusterinfo.Up
 		} else {
@@ -138,7 +137,7 @@ func (p pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Servic
 			DeployCommon: clusterinfo.DeployCommon{
 				IP:         u.Hostname(),
 				Port:       parsePort(u.Port()),
-				BinaryPath: ds.DeployPath,
+				BinaryPath: ds.BinaryPath,
 			},
 			Version:      ds.BinaryVersion,
 			ServerStatus: storeStatus,
@@ -163,7 +162,7 @@ func (t tikvFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Serv
 		// Note: if no err exists, it just return 0.
 		statusPort, _ := parsePortFromAddress(v.StatusAddress)
 		currentInfo := clusterinfo.TiKV{
-			ServerVersionInfo: clusterinfo.ServerVersionInfo{
+			ComponentVersionInfo: clusterinfo.ComponentVersionInfo{
 				Version: v.Version,
 				GitHash: v.GitHash,
 			},
@@ -184,6 +183,8 @@ func (t tikvFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Serv
 	return nil
 }
 
+// parsePortFromAddress receive an address like "127.0.0.1:2379",
+// and returns the port number.
 func parsePortFromAddress(address string) (uint, error) {
 	var statusPort uint64
 	u, err := url.Parse(address)
@@ -204,16 +205,16 @@ func parsePortFromAddress(address string) (uint, error) {
 }
 
 func parsePort(port string) uint {
-	var statusPort uint64
+	var statusPort int
 	var err error
-	if statusPort, err = strconv.ParseUint(port, 10, 32); err != nil {
+	if statusPort, err = strconv.Atoi(port); err != nil {
 		log.Warn(err.Error())
 		return 0
 	}
 	return uint(statusPort)
 }
 
-func storeStateToStatus(state metapb.StoreState) clusterinfo.ServerStatus {
+func storeStateToStatus(state metapb.StoreState) clusterinfo.ComponentStatus {
 	switch state {
 	case metapb.StoreState_Up:
 		return clusterinfo.Up

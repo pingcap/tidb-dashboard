@@ -13,17 +13,17 @@
 
 package clusterinfo
 
-type ServerStatus uint
+type ComponentStatus uint
 
 const (
-	Up        ServerStatus = 0
-	Offline   ServerStatus = 1
-	Tombstone ServerStatus = 2
-	Unknown   ServerStatus = 3
+	Up        ComponentStatus = 0
+	Offline   ComponentStatus = 1
+	Tombstone ComponentStatus = 2
+	Unknown   ComponentStatus = 3
 )
 
 // ServerVersionInfo is the server version and git_hash.
-type ServerVersionInfo struct {
+type ComponentVersionInfo struct {
 	Version string `json:"version"`
 	GitHash string `json:"git_hash"`
 }
@@ -31,8 +31,8 @@ type ServerVersionInfo struct {
 type Common struct {
 	DeployCommon
 	// This field is copied from tidb.
-	ServerVersionInfo
-	ServerStatus ServerStatus `json:"server_status"`
+	ComponentVersionInfo
+	ServerStatus ComponentStatus `json:"server_status"`
 }
 
 type DeployCommon struct {
@@ -49,7 +49,7 @@ type PD struct {
 	DeployCommon
 	Version string `json:"version"`
 	// It will query PD's health interface.
-	ServerStatus ServerStatus `json:"server_status"`
+	ServerStatus ComponentStatus `json:"server_status"`
 }
 
 type Prometheus struct {
@@ -62,9 +62,9 @@ type TiDB struct {
 }
 
 type TiKV struct {
-	ServerVersionInfo
+	ComponentVersionInfo
 	DeployCommon
-	ServerStatus ServerStatus      `json:"server_status"`
+	ServerStatus ComponentStatus   `json:"server_status"`
 	StatusPort   uint              `json:"status_port"`
 	Labels       map[string]string `json:"labels"`
 }

@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pingcap/log"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 
 	"golang.org/x/sync/errgroup"
 
@@ -48,28 +48,13 @@ type Service struct {
 	pdCli   pdclient.Client
 }
 
-func NewService(config *config.Config) *Service {
-	peers := []string{config.PDEndPoint}
-	cli, err := etcdclientv3.New(etcdclientv3.Config{
-		Endpoints:   peers,
-		DialTimeout: 5 * time.Second,
-	})
-	if err != nil {
-		// handle error!
-		return nil
-	}
-	// TODO: adding security later.
-	pdcli, err := pdclient.NewClient(peers, pdclient.SecurityOption{})
-
-	if err != nil {
-		return nil
-	}
-
-	return &Service{etcdCli: cli, config: config, pdCli: pdcli}
+func NewService(config *config.Config, pdClient pdclient.Client, etcdClient *etcdclientv3.Client) *Service {
+	return &Service{etcdCli: etcdClient, config: config, pdCli: pdClient}
 }
 
-func (s *Service) Register(r *gin.RouterGroup) {
+func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/topology")
+	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/", s.topologyHandler)
 	endpoint.DELETE("/tidb/:address/", s.deleteDBHandler)
 }
@@ -77,15 +62,14 @@ func (s *Service) Register(r *gin.RouterGroup) {
 // @Summary Delete tidb ns.
 // @Description Delete TiDB with ip:port
 // @Produce json
-// @Success 204
-// @Failure 404
+// @Success 204  Delete successfully and return 204.
+// @Failure 404  The key doesn't exists.
 // @Router /topology/address [delete]
 func (s *Service) deleteDBHandler(c *gin.Context) {
 	v, exists := c.Params.Get("address")
 	if !exists {
-		c.JSON(500, struct {
-			Error string `json:"error"`
-		}{Error: "parsing error"})
+		c.Status(500)
+		c.Error(err)
 		return
 	}
 	address := v
@@ -94,21 +78,20 @@ func (s *Service) deleteDBHandler(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	_, err := s.etcdCli.Delete(ctx, ttlKey)
+	_, err := s.etcdCli.Delete(ctx, nonTTLKey)
 	if err != nil {
-		c.JSON(500, struct {
-			Error string `json:"error"`
-		}{Error: "etcd delete error: " + err.Error()})
+		c.Status(500)
+		c.Error(err)
 		return
 	}
-	_, err = s.etcdCli.Delete(ctx, nonTTLKey)
+	_, err = s.etcdCli.Delete(ctx, ttlKey)
 	if err != nil {
-		c.JSON(500, struct {
-			Error string `json:"error"`
-		}{Error: "etcd delete error: " + err.Error()})
+		c.Status(500)
+		c.Error(err)
 		return
 	}
-	c.JSON(204, nil)
+
+	c.JSON(http.StatusNoContent, nil)
 }
 
 // @Summary Dashboard info
@@ -117,7 +100,6 @@ func (s *Service) deleteDBHandler(c *gin.Context) {
 // @Success 200 {object} ClusterInfo
 // @Router /topology [get]
 func (s *Service) topologyHandler(c *gin.Context) {
-	log.Info("topologyHandler was called")
 	var returnObject ClusterInfo
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -142,9 +124,8 @@ func (s *Service) topologyHandler(c *gin.Context) {
 
 	err := errs.Wait()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, struct {
-			Error string
-		}{Error: err.Error()})
+		c.Status(500)
+		c.Error(err)
 		return
 	}
 

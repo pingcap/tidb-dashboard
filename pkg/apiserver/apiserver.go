@@ -16,6 +16,10 @@ package apiserver
 import (
 	"net/http"
 	"sync"
+	"time"
+
+	etcdclientv3 "github.com/coreos/etcd/clientv3"
+	pdclient "github.com/pingcap/pd/client"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -60,7 +64,22 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 
 	foo.NewService(config).Register(endpoint, auth)
 	info.NewService(config, services.TiDBForwarder, services.Store).Register(endpoint, auth)
-	clusterinfo.NewService(config).Register(endpoint)
+
+	cli, err := etcdclientv3.New(etcdclientv3.Config{
+		Endpoints:   []string{config.PDEndPoint},
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		// handle error!
+		return nil
+	}
+	// TODO: adding security later.
+	pdcli, err := pdclient.NewClient([]string{config.PDEndPoint}, pdclient.SecurityOption{})
+
+	if err != nil {
+		return nil
+	}
+	clusterinfo.NewService(config, pdcli, cli).Register(endpoint, auth)
 
 	services.KeyVisual.Register(endpoint, auth)
 

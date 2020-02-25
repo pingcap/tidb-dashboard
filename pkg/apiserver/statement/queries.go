@@ -72,7 +72,7 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime s
 		Group("schema_name, digest, digest_text").
 		Order("agg_sum_latency DESC")
 
-	if schemas != nil && len(schemas) > 0 {
+	if len(schemas) > 0 {
 		regex := make([]string, 0, len(schemas))
 		for _, schema := range schemas {
 			regex = append(regex, fmt.Sprintf("\\b%s\\.", regexp.QuoteMeta(schema)))

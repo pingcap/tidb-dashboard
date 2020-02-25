@@ -44,7 +44,7 @@ type Services struct {
 func Handler(apiPrefix string, config *config.Config, services *Services) http.Handler {
 	once.Do(func() {
 		// These global modification will be effective only for the first invoke.
-		gin.SetMode(gin.ReleaseMode)
+		// gin.SetMode(gin.ReleaseMode)
 	})
 
 	r := gin.New()
@@ -52,6 +52,8 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	r.Use(gin.Recovery())
 	r.Use(gzip.Gzip(gzip.BestSpeed))
 	r.Use(utils.MWHandleErrors())
+
+	r.LoadHTMLGlob("templates/**/*")
 
 	endpoint := r.Group(apiPrefix)
 

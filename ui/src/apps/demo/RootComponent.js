@@ -15,7 +15,7 @@ const App = () => (
 );
 
 async function handleClick() {
-  const r = await client.dashboard.fooNameGet("abc");
+  const r = await client.dashboard.fooBarNameGet("abc");
   alert(r.data);
 }
 

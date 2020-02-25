@@ -19,6 +19,14 @@ type queryArg struct {
 	quantiles []float64
 }
 
+func newQueryArg(startTime, endTime string) *queryArg {
+	return &queryArg{
+		startTime: startTime,
+		endTime:   endTime,
+		quantiles: []float64{0.999, 0.99, 0.90, 0.80},
+	}
+}
+
 type sumValueQuery struct {
 	name  string
 	tbl   string

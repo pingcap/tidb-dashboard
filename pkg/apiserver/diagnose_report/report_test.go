@@ -27,22 +27,29 @@ func (t *testReportSuite) getDBCli(c *C, passwd, addr, dbName string) *sql.DB {
 
 func (t *testReportSuite) TestReport(c *C) {
 	cli := t.getDBCli(c, "", "127.0.0.1:4000", "test")
-	startTime := "2020-02-23 10:55:00"
-	endTime := "2020-02-23 11:05:00"
+	//startTime := "2020-02-23 10:55:00"
+	//endTime := "2020-02-23 11:05:00"
+
+	startTime := "2020-02-25 13:20:23"
+	endTime := "2020-02-25 13:30:23"
+
 	var table *diagnose_report.TableDef
 	var err error
-	table, err = diagnose_report.GetTotalTimeTableData(startTime, endTime, cli)
+	//table, err = diagnose_report.GetTotalTimeConsumeTable(startTime, endTime, cli)
+	//c.Assert(err, IsNil)
+	//printRows(table)
+
+	//table, err = diagnose_report.GetTotalErrorTable(startTime, endTime, cli)
+	//c.Assert(err, IsNil)
+	//printRows(table)
+	//
+	//table, err = diagnose_report.GetTxnTotalCountTableData(startTime, endTime, cli)
+	//c.Assert(err, IsNil)
+	//printRows(table)
+
+	table, err = diagnose_report.GetTiDBDDLOwner(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
-
-	table, err = diagnose_report.GetTotalCount(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
-	table, err = diagnose_report.GetTxnTotalCountTableData(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
 }
 
 func (t *testReportSuite) TestRoundFloatString(c *C) {
@@ -72,7 +79,14 @@ func (t *testReportSuite) TestRoundFloatString(c *C) {
 }
 
 func printRows(t *diagnose_report.TableDef) {
-	if t == nil || len(t.Rows) == 0 {
+	if t == nil {
+		fmt.Println("table is nil")
+		return
+	}
+	fmt.Println(t.CommentEN)
+
+	if len(t.Rows) == 0 {
+		fmt.Println("table rows is 0")
 		return
 	}
 

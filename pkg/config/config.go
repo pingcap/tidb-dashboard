@@ -18,7 +18,6 @@ import (
 )
 
 type Config struct {
-	Version    string
 	DataDir    string
 	PDEndPoint string
 	TLSConfig  *tls.Config

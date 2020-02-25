@@ -15,195 +15,198 @@ package logsearch
 
 import (
 	"archive/zip"
+	"bufio"
 	"context"
 	"fmt"
 	"io"
 	"os"
 	"path"
+	"strconv"
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
+	"github.com/pingcap/log"
 	"github.com/pingcap/sysutil"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
-
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
-func (c *Component) address() string {
-	port := c.Port
-	if c.ServerType == "tidb" {
-		port = c.StatusPort
+type TaskGroup struct {
+	service                *Service
+	model                  *TaskGroupModel
+	tasks                  []*Task
+	tasksMu                sync.Mutex
+	maxPreviewLinesPerTask int
+}
+
+func (tg *TaskGroup) InitTasks(taskModels []*TaskModel) {
+	// Tasks are assigned after inserting into scheduler, thus it has a chance to run parallel with Abort.
+	tg.tasksMu.Lock()
+	defer tg.tasksMu.Unlock()
+
+	if tg.tasks != nil {
+		panic("LogSearchTaskGroup's task is already initialized")
 	}
-	return fmt.Sprintf("%s:%s", c.IP, port)
+	tg.tasks = make([]*Task, 0, len(taskModels))
+	for _, taskModel := range taskModels {
+		ctx, cancel := context.WithCancel(context.Background())
+		tg.tasks = append(tg.tasks, &Task{
+			taskGroup: tg,
+			model:     taskModel,
+			ctx:       ctx,
+			cancel:    cancel,
+		})
+	}
 }
 
-func (c *Component) zipFilename() string {
-	return fmt.Sprintf("%s-%s.zip", c.IP, c.Port)
+func (tg *TaskGroup) SyncRun() {
+	log.Debug("LogSearchTaskGroup start", zap.Uint("task_group_id", tg.model.ID))
+
+	// Create log directory
+	dir := path.Join(tg.service.logStoreDirectory, strconv.Itoa(int(tg.model.ID)))
+	if err := os.MkdirAll(dir, 0777); err == nil {
+		tg.model.LogStoreDir = &dir
+		tg.service.db.Save(tg.model)
+	}
+
+	wg := sync.WaitGroup{}
+	for _, task := range tg.tasks {
+		wg.Add(1)
+		go func(task *Task) {
+			task.SyncRun()
+			wg.Done()
+		}(task)
+	}
+	wg.Wait()
+
+	log.Debug("LogSearchTaskGroup finished", zap.Uint("task_group_id", tg.model.ID))
+	tg.model.State = TaskGroupStateFinished
+	tg.service.db.Save(tg.model)
 }
 
-func (c *Component) logFilename() string {
-	return fmt.Sprintf("%s.log", c.ServerType)
+// This function is multi-thread safe.
+func (tg *TaskGroup) AbortAll() {
+	log.Debug("LogSearchTaskGroup abort", zap.Uint("task_group_id", tg.model.ID))
+
+	tg.tasksMu.Lock()
+	defer tg.tasksMu.Unlock()
+
+	for _, task := range tg.tasks {
+		task.Abort()
+	}
 }
 
 type Task struct {
-	*TaskModel
-	db     *dbstore.DB
-	mu     sync.Mutex
-	cancel context.CancelFunc
-	doneCh chan struct{}
+	taskGroup *TaskGroup
+	model     *TaskModel
+	ctx       context.Context
+	cancel    context.CancelFunc
 }
 
-func NewTask(db *dbstore.DB, component Component, taskGroupID string, req SearchLogRequest) *Task {
-	return &Task{
-		TaskModel: &TaskModel{
-			Component:   &component,
-			Request:     &req,
-			TaskGroupID: taskGroupID,
-			ID:          uuid.New().String(),
-			CreateTime:  time.Now().Unix(),
-		},
-		db: db,
-		mu: sync.Mutex{},
-	}
+func (t *Task) String() string {
+	return fmt.Sprintf("LogSearchTask { id = %d, target = %s, task_group_id = %d }", t.model.ID, t.model.SearchTarget, t.taskGroup.model.ID)
 }
 
-func toTask(t TaskModel, db *dbstore.DB) *Task {
-	return &Task{
-		TaskModel: &t,
-		db:        db,
-		mu:        sync.Mutex{},
-	}
-}
+// This function is multi-thread safe.
+func (t *Task) Abort() {
+	log.Debug("LogSearchTask abort", zap.Any("task", t))
 
-func (t *Task) Abort() error {
 	if t.cancel != nil {
-		t.doneCh = make(chan struct{})
 		t.cancel()
-		// ensure the task has been aborted
-		<-t.doneCh
-		return nil
-	}
-	return fmt.Errorf("task [%s] is not running", t.ID)
-}
-
-func (t *Task) done() {
-	if t.doneCh != nil {
-		t.doneCh <- struct{}{}
 	}
 }
 
-func (t *Task) close() {
-	defer t.done()
-	if t.Error != "" {
-		fmt.Printf("task [%s] stoped, err=%s", t.ID, t.Error)
-		t.clean() //nolint:errcheck
-		t.StopTime = time.Now().Unix()
-		t.mu.Lock()
-		t.State = StateCanceled
-		t.db.Save(t.TaskModel)
-		t.mu.Unlock()
+func (t *Task) setError(err error) {
+	errStr := err.Error()
+	t.model.Error = &errStr
+}
+
+func (t *Task) SyncRun() {
+	defer func() {
+		if t.model.Error != nil {
+			log.Warn("LogSearchTask stopped with error",
+				zap.Any("task", t),
+				zap.String("err", *t.model.Error),
+			)
+			t.model.RemoveDataAndPreview(t.taskGroup.service.db)
+			t.model.State = TaskStateError
+			t.taskGroup.service.db.Save(t.model)
+			return
+		}
+		t.model.State = TaskStateFinished
+		log.Debug("LogSearchTask finished", zap.Any("task", t))
+		t.taskGroup.service.db.Save(t.model)
+	}()
+
+	log.Debug("LogSearchTask start", zap.Any("task", t))
+
+	if t.taskGroup.model.LogStoreDir == nil {
+		t.setError(fmt.Errorf("failed to create temporary directory"))
 		return
 	}
-	t.StopTime = time.Now().Unix()
-	t.mu.Lock()
-	t.State = StateFinished
-	t.db.Save(t.TaskModel)
-	t.mu.Unlock()
-}
 
-func (t *Task) clean() error {
-	var err error
-	if t.SavedPath != "" {
-		err = os.RemoveAll(t.SavedPath)
-		if err != nil {
-			return err
-		}
-	}
-	t.db.Delete(PreviewModel{}, "task_id = ?", t.ID)
-	return err
-}
-
-const PreviewLogLinesLimit = 500
-
-func (t *Task) run() {
-	defer t.close()
-	var ctx context.Context
-	ctx, t.cancel = context.WithCancel(context.Background())
 	opt := grpc.WithInsecure()
-
-	conn, err := grpc.Dial(t.Component.address(), opt)
+	conn, err := grpc.Dial(t.model.SearchTarget.Address(), opt)
 	if err != nil {
-		t.Error = err.Error()
+		t.setError(err)
 		return
 	}
 	defer conn.Close()
+
 	cli := diagnosticspb.NewDiagnosticsClient(conn)
-	stream, err := cli.SearchLog(ctx, (*diagnosticspb.SearchLogRequest)(t.Request))
+	stream, err := cli.SearchLog(t.ctx, (*diagnosticspb.SearchLogRequest)(t.taskGroup.model.SearchRequest))
 	if err != nil {
-		t.Error = err.Error()
+		t.setError(err)
 		return
 	}
 
-	dir := path.Join(logsSavePath, t.TaskGroupID)
-	err = os.MkdirAll(dir, 0777)
-	if err != nil {
-		t.Error = err.Error()
-		return
-	}
-	savedPath := path.Join(dir, t.Component.zipFilename())
+	// Create zip file for the log in the log directory
+	savedPath := path.Join(*t.taskGroup.model.LogStoreDir, t.model.SearchTarget.FileName()+".zip")
 	f, err := os.Create(savedPath)
 	if err != nil {
-		t.Error = err.Error()
+		t.setError(err)
 		return
 	}
 	defer f.Close()
+
 	zw := zip.NewWriter(f)
 	defer zw.Close()
-	writer, err := zw.Create(t.Component.logFilename())
+	defer zw.Flush()
+
+	writer, err := zw.Create(t.model.SearchTarget.FileName() + ".log")
 	if err != nil {
-		t.Error = err.Error()
-		return
-	}
-	t.SavedPath = savedPath
-	if err != nil {
-		t.Error = err.Error()
+		t.setError(err)
 		return
 	}
 
-	t.StartTime = time.Now().Unix()
-	t.mu.Lock()
-	t.State = StateRunning
-	t.db.Delete(t.TaskModel)
-	t.db.Create(t.TaskModel)
-	t.mu.Unlock()
-	if err != nil {
-		t.Error = err.Error()
-		return
-	}
+	bufWriter := bufio.NewWriterSize(writer, 16*1024*1024) // 16M buffer size
+	defer bufWriter.Flush()
+
+	t.model.LogStorePath = &savedPath
+	t.model.State = TaskStateRunning
 
 	previewLogLinesCount := 0
 	for {
 		res, err := stream.Recv()
 		if err != nil {
 			if err != io.EOF {
-				t.Error = err.Error()
+				t.setError(err)
 			}
 			return
 		}
 		for _, msg := range res.Messages {
-			line := toLine(msg)
+			line := logMessageToString(msg)
 			// TODO: use unsafe here: string -> []byte
-			_, err := writer.Write([]byte(line))
+			_, err := bufWriter.Write([]byte(line))
 			if err != nil {
-				t.Error = err.Error()
+				t.setError(err)
 				return
 			}
-			if previewLogLinesCount < PreviewLogLinesLimit {
-				t.db.Create(&PreviewModel{
-					TaskID:      t.ID,
-					TaskGroupID: t.TaskGroupID,
+			if previewLogLinesCount < t.taskGroup.maxPreviewLinesPerTask {
+				t.taskGroup.service.db.Create(&PreviewModel{
+					TaskID:      t.model.ID,
+					TaskGroupID: t.taskGroup.model.ID,
 					Time:        msg.Time,
 					Level:       msg.Level,
 					Message:     msg.Message,
@@ -211,15 +214,10 @@ func (t *Task) run() {
 				previewLogLinesCount++
 			}
 		}
-		err = zw.Flush()
-		if err != nil {
-			t.Error = err.Error()
-			return
-		}
 	}
 }
 
-func toLine(msg *diagnosticspb.LogMessage) string {
+func logMessageToString(msg *diagnosticspb.LogMessage) string {
 	timeStr := time.Unix(0, msg.Time*int64(time.Millisecond)).Format(sysutil.TimeStampLayout)
 	return fmt.Sprintf("[%s] [%s] %s\n", timeStr, msg.Level.String(), msg.Message)
 }

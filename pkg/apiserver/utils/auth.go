@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package httputil
+package utils
 
 import (
 	"net/http"
@@ -19,15 +19,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Success example
-func Success(ctx *gin.Context) {
-	msg := HTTPSuccess{
-		Message: "success",
-	}
-	ctx.JSON(http.StatusOK, msg)
+type SessionUser struct {
+	IsTiDBAuth   bool
+	TiDBUsername string
+	TiDBPassword string
+	// TODO: Add privilege table fields
 }
 
-// HTTPSuccess example
-type HTTPSuccess struct {
-	Message string `json:"message" example:"success"`
+const (
+	// The key that attached the SessionUser in the gin Context.
+	SessionUserKey = "user"
+)
+
+func MakeUnauthorizedError(c *gin.Context) {
+	_ = c.Error(ErrUnauthorized.NewWithNoMessage())
+	c.Status(http.StatusUnauthorized)
+}
+
+func MakeInsufficientPrivilegeError(c *gin.Context) {
+	_ = c.Error(ErrInsufficientPrivilege.NewWithNoMessage())
+	c.Status(http.StatusForbidden)
 }

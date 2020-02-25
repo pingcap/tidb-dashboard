@@ -14,138 +14,71 @@
 package logsearch
 
 import (
-	"fmt"
 	"sync"
 
-	"github.com/google/uuid"
 	"github.com/pingcap/log"
+	"go.uber.org/zap"
+)
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+const (
+	TaskMaxPreviewLines      = 500
+	TaskGroupMaxPreviewLines = 5000
 )
 
 type Scheduler struct {
-	taskMap sync.Map
-	db      *dbstore.DB
+	runningTaskGroups sync.Map
+	service           *Service
 }
 
-func NewScheduler(db *dbstore.DB) *Scheduler {
+func NewScheduler(service *Service) *Scheduler {
 	return &Scheduler{
-		taskMap: sync.Map{},
-		db:      db,
+		runningTaskGroups: sync.Map{},
+		service:           service,
 	}
 }
 
-func (s *Scheduler) deleteTask(taskID string) {
-	s.taskMap.Delete(taskID)
-}
+func (s *Scheduler) AsyncStart(taskGroupModel *TaskGroupModel, tasksModel []*TaskModel) bool {
+	log.Debug("Scheduler start task group", zap.Uint("task_group_id", taskGroupModel.ID))
 
-func (s *Scheduler) storeTask(task *Task) {
-	s.taskMap.Store(task.ID, task)
-}
-
-func (s *Scheduler) loadFailedTasks(taskGroupID string) {
-	taskModels := make([]TaskModel, 0)
-	s.db.Where("task_group_id = ?", taskGroupID).Find(&taskModels)
-	for _, taskModel := range taskModels {
-		if taskModel.State == StateCanceled {
-			s.storeTask(toTask(taskModel, s.db))
-		}
+	previewsLinesPerTask := TaskGroupMaxPreviewLines / len(tasksModel)
+	if previewsLinesPerTask > TaskMaxPreviewLines {
+		previewsLinesPerTask = TaskMaxPreviewLines
 	}
-}
 
-func (s *Scheduler) addTasks(components []Component, req SearchLogRequest) *TaskGroupModel {
-	taskGroupID := uuid.New().String()
-	taskGroup := &TaskGroupModel{
-		ID:      taskGroupID,
-		Request: &req,
+	taskGroup := &TaskGroup{
+		service:                s.service,
+		model:                  taskGroupModel,
+		tasks:                  nil, // Tasks are created only after successfully adding to the sync map.
+		tasksMu:                sync.Mutex{},
+		maxPreviewLinesPerTask: previewsLinesPerTask,
 	}
-	for _, component := range components {
-		task := NewTask(s.db, component, taskGroupID, req)
-		s.storeTask(task)
+	_, alreadyRunning := s.runningTaskGroups.LoadOrStore(taskGroup.model.ID, taskGroup)
+	if alreadyRunning {
+		log.Warn("Scheduler start task group failed, task group is already running", zap.Uint("task_group_id", taskGroupModel.ID))
+		return false
 	}
-	return taskGroup
-}
 
-// deleteTasks delete all tasks in a taskGroups
-func (s *Scheduler) deleteTasks(taskGroupID string) {
-	s.taskMap.Range(func(key, value interface{}) bool {
-		task, ok := value.(*Task)
-		if !ok {
-			log.Warn(fmt.Sprintf("cannot load %+v as *Task", value))
-			return true
-		}
-		if task.TaskGroupID != taskGroupID {
-			return true
-		}
-		s.deleteTask(task.ID)
-		return true
-	})
-}
+	taskGroup.InitTasks(tasksModel)
 
-func (s *Scheduler) runTaskGroup(taskGroup *TaskGroupModel, retryFailedTasks bool) error {
-	if retryFailedTasks {
-		if taskGroup.State != StateCanceled {
-			return fmt.Errorf("cannot retry, task group is %s", taskGroup.State)
-		}
-		taskGroup.State = StateRunning
-		s.db.Save(taskGroup)
-	} else {
-		if taskGroup.State != "" {
-			return fmt.Errorf("cannot start, task group is %s", taskGroup.State)
-		}
-		taskGroup.State = StateRunning
-		s.db.Create(taskGroup)
-	}
 	go func() {
-		wg := sync.WaitGroup{}
-		s.taskMap.Range(func(key, value interface{}) bool {
-			task, ok := value.(*Task)
-			if !ok {
-				log.Warn(fmt.Sprintf("cannot load %+v as *Task", value))
-				return true
-			}
-			if task.TaskGroupID != taskGroup.ID {
-				return true
-			}
-			if retryFailedTasks {
-				if task.State != StateCanceled {
-					return true
-				}
-			} else {
-				if task.State != "" {
-					return true
-				}
-			}
-			wg.Add(1)
-			go func() {
-				task.run()
-				wg.Done()
-			}()
-			return true
-		})
-		wg.Wait()
-		taskGroup.State = StateFinished
-		s.db.Save(taskGroup)
-		s.deleteTasks(taskGroup.ID)
+		taskGroup.SyncRun()
+		s.runningTaskGroups.Delete(taskGroup.model.ID)
+
+		log.Debug("Scheduler task group finished", zap.Uint("task_group_id", taskGroupModel.ID))
 	}()
-	return nil
+
+	return true
 }
 
-// abortTaskGroup abort all running tasks in a task group
-// This function waits util all tasked aborted, and then return
-func (s *Scheduler) abortTaskGroup(taskGroupID string) {
-	s.taskMap.Range(func(key, value interface{}) bool {
-		task, ok := value.(*Task)
-		if !ok {
-			log.Warn(fmt.Sprintf("cannot load %+v as *Task", value))
-			return true
-		}
-		if task.TaskGroupID != taskGroupID {
-			return true
-		}
-		if task.State == StateRunning {
-			task.Abort() //nolint:errcheck
-		}
-		return true
-	})
+func (s *Scheduler) AsyncAbort(taskGroupID uint) bool {
+	log.Debug("Scheduler abort task group", zap.Uint("task_group_id", taskGroupID))
+
+	v, ok := s.runningTaskGroups.Load(taskGroupID)
+	if !ok {
+		log.Warn("Scheduler abort task group failed, task group is not running", zap.Uint("task_group_id", taskGroupID))
+		return false
+	}
+	taskGroup := v.(*TaskGroup)
+	taskGroup.AbortAll()
+	return true
 }

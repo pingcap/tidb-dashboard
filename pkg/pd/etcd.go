@@ -25,7 +25,7 @@ import (
 
 const (
 	EtcdTimeout               = time.Second * 3
-	TiDBServerInformationPath = "/tidb/server/region"
+	TiDBServerInformationPath = "/tidb/server/info"
 )
 
 func NewEtcdClient(cfg *config.Config) *clientv3.Client {

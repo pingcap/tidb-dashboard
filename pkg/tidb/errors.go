@@ -11,21 +11,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package httputil
+package tidb
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/joomcode/errorx"
+)
 
-// NewError example
-func NewError(ctx *gin.Context, status int, err error) {
-	er := HTTPError{
-		Code:    status,
-		Message: err.Error(),
-	}
-	ctx.JSON(status, er)
-}
-
-// HTTPError example
-type HTTPError struct {
-	Code    int    `json:"code" example:"400"`
-	Message string `json:"message" example:"status bad request"`
-}
+var (
+	ErrorNS           = errorx.NewNamespace("error.tidb")
+	ErrPDAccessFailed = ErrorNS.NewType("pd_access_failed")
+	ErrNoAliveTiDB    = ErrorNS.NewType("no_alive_tidb")
+	ErrTiDBConnFailed = ErrorNS.NewType("tidb_conn_failed")
+	ErrTiDBAuthFailed = ErrorNS.NewType("tidb_auth_failed")
+)

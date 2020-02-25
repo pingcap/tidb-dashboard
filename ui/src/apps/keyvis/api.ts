@@ -11,12 +11,3 @@ export async function fetchHeatmap(selection?: HeatmapRange, type: DataTag = 'wr
   )
   return resp.data
 }
-
-/*
-// Dummy Data
-const dummyData: HeatmapData = require('./dummydata.json')
-
-export async function fetchDummyHeatmap() {
-  return dummyData
-}
-*/

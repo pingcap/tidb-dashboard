@@ -50,7 +50,7 @@ func (input *periodicInput) Background(stat *storage.Stat) {
 		case <-ticker.C:
 			regions, err := input.PeriodicGetter()
 			if err != nil {
-				log.Error("can not get RegionsInfo", zap.Error(err))
+				log.Warn("can not get RegionsInfo", zap.Error(err))
 				continue
 			}
 			endTime := time.Now()

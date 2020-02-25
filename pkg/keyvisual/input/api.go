@@ -18,10 +18,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"sort"
 
+	"github.com/joomcode/errorx"
+
 	regionpkg "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+)
+
+var (
+	ErrNS          = errorx.NewNamespace("error.keyvisual")
+	ErrNSInput     = ErrNS.NewSubNamespace("input")
+	ErrNotOkStatus = ErrNSInput.NewType("not_ok_status")
 )
 
 // RegionInfo records detail region info for api usage.
@@ -118,9 +127,16 @@ func NewAPIPeriodicGetter(pdAddr string) regionpkg.RegionsInfoGenerator {
 	addr := fmt.Sprintf("%s/pd/api/v1/regions", pdAddr)
 	return func() (regionsInfo regionpkg.RegionsInfo, err error) {
 		resp, err := http.Get(addr) //nolint:bodyclose,gosec
-		if err == nil {
-			return read(resp.Body)
+		if err != nil {
+			return nil, err
+		} else if resp.StatusCode != http.StatusOK {
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+			return nil, ErrNotOkStatus.New("http status code: %d, msg: %s", resp.StatusCode, string(body))
 		}
-		return nil, err
+		return read(resp.Body)
 	}
 }

@@ -16,15 +16,31 @@ package pd
 import (
 	"time"
 
+	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
 const (
-	EtcdTimeout               = time.Second * 3
 	TiDBServerInformationPath = "/tidb/server/info"
 )
+
+func newZapEncoder(zapcore.EncoderConfig) (zapcore.Encoder, error) {
+	logCfg := log.Config{
+		Level: "info",
+		File:  log.FileLogConfig{},
+	}
+	return log.NewTextEncoder(&logCfg), nil
+}
+
+func init() {
+	_ = zap.RegisterEncoder("etcd-client", newZapEncoder)
+}
 
 var _ EtcdProvider = (*LocalEtcdProvider)(nil)
 
@@ -38,14 +54,33 @@ type LocalEtcdProvider struct {
 }
 
 func NewLocalEtcdClientProvider(config *config.Config) (*LocalEtcdProvider, error) {
+	// TODO: refactor
+	// Because etcd client does not support setting logger directly,
+	// the configuration of pingcap/log is copied here.
+	zapCfg := zap.NewProductionConfig()
+	zapCfg.Encoding = "etcd-client"
+	zapCfg.OutputPaths = []string{"stderr"}
+	zapCfg.ErrorOutputPaths = []string{"stderr"}
+
 	client, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{config.PDEndPoint},
-		DialTimeout: EtcdTimeout,
-		TLS:         config.TLSConfig,
+		Endpoints:        []string{config.PDEndPoint},
+		AutoSyncInterval: 30 * time.Second,
+		DialTimeout:      5 * time.Second,
+		DialOptions: []grpc.DialOption{
+			grpc.WithBackoffMaxDelay(3 * time.Second),
+			grpc.WithKeepaliveParams(keepalive.ClientParameters{
+				Time:                10 * time.Second,
+				Timeout:             3 * time.Second,
+				PermitWithoutStream: true,
+			}),
+		},
+		TLS:       config.TLSConfig,
+		LogConfig: &zapCfg,
 	})
 	if err != nil {
 		return nil, err
 	}
+
 	return &LocalEtcdProvider{client: client}, nil
 }
 

@@ -69,7 +69,7 @@ func (s *Service) deleteDBHandler(c *gin.Context) {
 	v, exists := c.Params.Get("address")
 	if !exists {
 		c.Status(500)
-		c.Error(err)
+		_ = c.Error(fmt.Errorf("address not exists in path"))
 		return
 	}
 	address := v
@@ -81,13 +81,13 @@ func (s *Service) deleteDBHandler(c *gin.Context) {
 	_, err := s.etcdCli.Delete(ctx, nonTTLKey)
 	if err != nil {
 		c.Status(500)
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 	_, err = s.etcdCli.Delete(ctx, ttlKey)
 	if err != nil {
 		c.Status(500)
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -125,7 +125,7 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	err := errs.Wait()
 	if err != nil {
 		c.Status(500)
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 

@@ -19,8 +19,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/pingcap/log"
+	"go.etcd.io/etcd/clientv3"
 )
 
 const prefix = "/topology"

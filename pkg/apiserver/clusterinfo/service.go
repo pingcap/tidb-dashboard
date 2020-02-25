@@ -26,9 +26,9 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	etcdclientv3 "github.com/coreos/etcd/clientv3"
 	"github.com/gin-gonic/gin"
 	pdclient "github.com/pingcap/pd/client"
+	etcdclientv3 "go.etcd.io/etcd/clientv3"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"

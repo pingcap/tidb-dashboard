@@ -18,8 +18,8 @@ import (
 	"sync"
 	"time"
 
-	etcdclientv3 "github.com/coreos/etcd/clientv3"
 	pdclient "github.com/pingcap/pd/client"
+	etcdclientv3 "go.etcd.io/etcd/clientv3"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"

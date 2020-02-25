@@ -82,6 +82,8 @@ type TaskGroupResponse struct {
 	Tasks     []*TaskModel   `json:"tasks"`
 }
 
+type EmptyResponse struct{}
+
 // @Summary Create and run task group
 // @Description Create and run task group
 // @Produce json
@@ -133,13 +135,10 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-type DownloadTasksRequest = []int
-
 // @Summary Download logs
 // @Description download logs by multiple task IDs
 // @Produce application/x-tar,application/zip
-// @Param id query string false "task id"
-// @Success 200
+// @Param id query []string false "task id"
 // @Failure 400 {object} utils.APIError
 // @Failure 500 {object} utils.APIError
 // @Router /logs/download [get]
@@ -222,7 +221,7 @@ func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 // @Description retry tasks that has been failed in a task group
 // @Produce json
 // @Param id path string true "task group id"
-// @Success 200
+// @Success 200 {object} EmptyResponse
 // @Failure 400 {object} utils.APIError
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroups/{id}/retry [post]
@@ -272,7 +271,7 @@ func (s *Service) RetryTask(c *gin.Context) {
 // @Description cancel all running tasks in a task group
 // @Produce json
 // @Param id path string true "task group id"
-// @Success 200
+// @Success 200 {object} EmptyResponse
 // @Failure 400 {object} utils.APIError
 // @Router /logs/taskgroups/{id}/cancel [post]
 func (s *Service) CancelTask(c *gin.Context) {
@@ -301,7 +300,7 @@ func (s *Service) CancelTask(c *gin.Context) {
 // @Description delete a task group by providing task group ID
 // @Produce json
 // @Param id path string true "task group id"
-// @Success 200
+// @Success 200 {object} EmptyResponse
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroups/{id} [delete]
 func (s *Service) DeleteTaskGroup(c *gin.Context) {

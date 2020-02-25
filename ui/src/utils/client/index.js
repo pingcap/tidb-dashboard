@@ -36,6 +36,9 @@ axios.interceptors.response.use(undefined, function(err) {
   } else if (err.message === 'Network Error') {
     message.error(i18n.t('error.message.network'));
     err.handled = true;
+  } else if (response && response.data) {
+    message.error(response.data.message);
+    err.handled = true;
   }
   return Promise.reject(err);
 });

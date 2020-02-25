@@ -2,49 +2,94 @@ import React, { useState, useEffect } from 'react'
 import { Spin } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import StatementDetailTable from './StatementDetailTable'
+import StatementNodesTable from './StatementNodesTable'
 import StatementSummaryTable from './StatementSummaryTable'
-import { StatementDetailInfo } from './statement-types'
+import { StatementDetailInfo, StatementNode } from './statement-types'
 
-import styles from './StatementDetail.module.css'
+import styles from './styles.module.css'
+import { useTranslation } from 'react-i18next'
 
-function StatisCard({ detail: { statis } }: { detail: StatementDetailInfo }) {
+function StatisCard({ detail }: { detail: StatementDetailInfo }) {
+  const { t } = useTranslation()
+
   return (
     <div className={styles.statement_statis}>
-      <p>总时长：{getValueFormat('s')(statis.total_duration, 2, null)}</p>
-      <p>总次数：{getValueFormat('short')(statis.total_times, 0, 0)}</p>
       <p>
-        平均影响行数：{getValueFormat('short')(statis.avg_affect_lines, 0, 0)}
+        {t('statement.common.sum_latency')}:{' '}
+        {getValueFormat('ns')(detail.sum_latency, 2, null)}
       </p>
       <p>
-        平均扫描行数：{getValueFormat('short')(statis.avg_scan_lines, 0, 0)}
+        {t('statement.common.exec_count')}:{' '}
+        {getValueFormat('short')(detail.exec_count, 0, 0)}
+      </p>
+      <p>
+        {t('statement.common.avg_affected_rows')}:{' '}
+        {getValueFormat('short')(detail.avg_affected_rows, 0, 0)}
+      </p>
+      <p>
+        {t('statement.common.avg_total_keys')}:{' '}
+        {getValueFormat('short')(detail.avg_total_keys, 0, 0)}
       </p>
     </div>
   )
 }
 
 interface Props {
-  sqlCategory: string
-  onFetchDetail: (string) => Promise<StatementDetailInfo | undefined>
+  digest: string
+  schemaName: string
+  beginTime: string
+  endTime: string
+  onFetchDetail: (
+    digest: string,
+    schemaName: string,
+    beginTime: string,
+    endTime: string
+  ) => Promise<StatementDetailInfo | undefined>
+  onFetchNodes: (
+    digest: string,
+    schemaName: string,
+    beginTime: string,
+    endTime: string
+  ) => Promise<StatementNode[] | undefined>
 }
 
-export default function StatementDetail({ sqlCategory, onFetchDetail }: Props) {
+export default function StatementDetail({
+  digest,
+  schemaName,
+  beginTime,
+  endTime,
+  onFetchDetail,
+  onFetchNodes
+}: Props) {
   const [detail, setDetail] = useState<StatementDetailInfo | null>(null)
+  const [nodes, setNodes] = useState<StatementNode[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function query() {
       setLoading(true)
-      const res = await onFetchDetail(sqlCategory)
-      if (res) {
-        setDetail(res)
-      } else {
-        setDetail(null)
-      }
+      const detailRes = await onFetchDetail(
+        digest,
+        schemaName,
+        beginTime,
+        endTime
+      )
+      setDetail(detailRes || null)
+      const nodesRes = await onFetchNodes(
+        digest,
+        schemaName,
+        beginTime,
+        endTime
+      )
+      setNodes(nodesRes || [])
       setLoading(false)
     }
     query()
-  }, [sqlCategory, onFetchDetail])
+  // eslint-disable-next-line
+  }, [digest, schemaName, beginTime, endTime])
+  // don't add the dependent functions likes onFetchDetail into the dependency array
+  // it will cause the infinite loop if use context inside it in the future
+  // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
 
   return (
     <div className={styles.statement_detail}>
@@ -54,12 +99,16 @@ export default function StatementDetail({ sqlCategory, onFetchDetail }: Props) {
         <>
           <div className={styles.statement_summary}>
             <div className={styles.table_wrapper}>
-              <StatementSummaryTable detail={detail} />
+              <StatementSummaryTable
+                detail={detail}
+                beginTime={beginTime}
+                endTime={endTime}
+              />
             </div>
             <StatisCard detail={detail} />
           </div>
           <div className={styles.table_wrapper}>
-            <StatementDetailTable detail={detail} />
+            <StatementNodesTable nodes={nodes} />
           </div>
         </>
       )}

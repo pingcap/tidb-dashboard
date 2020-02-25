@@ -28,6 +28,13 @@ var (
 	GitBranch      = "None"
 )
 
+type VersionInfo struct {
+	ReleaseVersion string `json:"release_version"`
+	BuildTime      string `json:"build_time"`
+	BuildGitHash   string `json:"build_git_hash"`
+	BuildGitBranch string `json:"build_git_branch"`
+}
+
 func LogInfo() {
 	log.Info("Welcome to TiDB Dashboard")
 	log.Info("", zap.String("release-version", ReleaseVersion))
@@ -41,4 +48,13 @@ func PrintInfo() {
 	fmt.Println("Git Commit Hash:", GitHash)
 	fmt.Println("Git Branch:", GitBranch)
 	fmt.Println("UTC Build Time: ", BuildTS)
+}
+
+func GetVersionInfo() VersionInfo {
+	return VersionInfo{
+		ReleaseVersion: ReleaseVersion,
+		BuildTime:      BuildTS,
+		BuildGitHash:   GitHash,
+		BuildGitBranch: GitBranch,
+	}
 }

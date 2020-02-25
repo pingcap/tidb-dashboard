@@ -18,6 +18,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
+	// Import for swag go doc
+	_ "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
@@ -28,8 +31,9 @@ func NewService(config *config.Config) *Service {
 	return &Service{}
 }
 
-func (s *Service) Register(r *gin.RouterGroup) {
+func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/foo")
+	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/:name", s.greetHandler)
 }
 
@@ -40,6 +44,8 @@ func (s *Service) Register(r *gin.RouterGroup) {
 // @Param name path string true "Name"
 // @Success 200 {string} string
 // @Router /foo/{name} [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) greetHandler(c *gin.Context) {
 	name := c.Param("name")
 	c.String(http.StatusOK, "Hello %s", name)

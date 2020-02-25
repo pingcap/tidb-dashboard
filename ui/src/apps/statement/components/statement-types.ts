@@ -12,43 +12,45 @@ export interface StatementConfig {
   max_sql_length: number
 }
 
-export interface Statement {
-  sql_category: string
-  total_duration: number
-  total_times: number
-  avg_affect_lines: number
-  avg_duration: number
-  avg_cost_mem: number
+//////////////////
+
+export interface StatementTimeRange {
+  begin_time: string
+  end_time: string
+}
+
+export interface StatementOverview {
+  schema_name: string
+  digest: string
+  digest_text: string
+  sum_latency: number
+  exec_count: number
+  avg_affected_rows: number
+  avg_latency: number
+  avg_mem: number
 }
 
 //////////////////
 
-export interface StatementSummary {
-  sql_category: string
-  last_sql: string
-  last_time: string
-  schemas: string[]
-}
+export interface StatementDetailInfo {
+  schema_name: string
+  digest: string
+  digest_text: string
+  sum_latency: number
+  exec_count: number
+  avg_affected_rows: number
+  avg_total_keys: number
 
-export interface StatementStatis {
-  total_duration: number
-  total_times: number
-  avg_affect_lines: number
-  avg_scan_lines: number
+  query_sample_text: string
+  last_seen: string
 }
 
 export interface StatementNode {
-  node_name: string
-  total_duration: number
-  total_times: number
-  avg_duration: number
-  max_duration: number
-  avg_cost_mem: number
-  back_off_times: number
-}
-
-export interface StatementDetailInfo {
-  summary: StatementSummary
-  statis: StatementStatis
-  nodes: StatementNode[]
+  address: string
+  sum_latency: number
+  exec_count: number
+  avg_latency: number
+  max_latency: number
+  avg_mem: number
+  sum_backoff_times: number
 }

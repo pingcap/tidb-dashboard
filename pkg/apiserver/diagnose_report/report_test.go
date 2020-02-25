@@ -35,9 +35,9 @@ func (t *testReportSuite) TestReport(c *C) {
 
 	var table *diagnose_report.TableDef
 	var err error
-	//table, err = diagnose_report.GetTotalTimeConsumeTable(startTime, endTime, cli)
-	//c.Assert(err, IsNil)
-	//printRows(table)
+	table, err = diagnose_report.GetTotalTimeConsumeTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
 
 	//table, err = diagnose_report.GetTotalErrorTable(startTime, endTime, cli)
 	//c.Assert(err, IsNil)
@@ -48,6 +48,10 @@ func (t *testReportSuite) TestReport(c *C) {
 	//printRows(table)
 
 	table, err = diagnose_report.GetTiDBDDLOwner(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetDDLInfoTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 }

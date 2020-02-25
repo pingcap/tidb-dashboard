@@ -3,11 +3,9 @@ package diagnose_report
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
-	"strings"
-
 	_ "github.com/go-sql-driver/mysql" // mysql driver
 	"github.com/pingcap/errors"
+	"strconv"
 )
 
 type TableDef struct {
@@ -91,73 +89,73 @@ func GetTableRows(category, table, startTime, endTime string, db *sql.DB) (*Tabl
 }
 
 func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	defs1 := []totalTimeTableDef{
-		{name: "tidb_query", tbl: "tidb_query", label: "sql_type"},
-		{name: "tidb_get_token", tbl: "tidb_get_token", label: "instance"},
-		{name: "tidb_parse", tbl: "tidb_parse", label: "sql_type"},
-		{name: "tidb_compile", tbl: "tidb_compile", label: "sql_type"},
-		{name: "tidb_execute", tbl: "tidb_execute", label: "sql_type"},
-		{name: "tidb_distsql_execution", tbl: "tidb_distsql_execution", label: "type"},
-		{name: "tidb_cop", tbl: "tidb_cop", label: "instance"},
-		{name: "tidb_transaction_local_latch_wait", tbl: "tidb_transaction_local_latch_wait", label: "instance"},
-		{name: "tidb_transaction", tbl: "tidb_transaction", label: "sql_type"},
-		{name: "tidb_kv_backoff", tbl: "tidb_kv_backoff", label: "type"},
-		{name: "tidb_kv_request", tbl: "tidb_kv_request", label: "type"},
+	defs1 := []totalTimeByLabelsTableDef{
+		{name: "tidb_query", tbl: "tidb_query", labels: []string{"sql_type"}},
+		{name: "tidb_get_token(us)", tbl: "tidb_get_token", labels: []string{"instance"}},
+		{name: "tidb_parse", tbl: "tidb_parse", labels: []string{"sql_type"}},
+		{name: "tidb_compile", tbl: "tidb_compile", labels: []string{"sql_type"}},
+		{name: "tidb_execute", tbl: "tidb_execute", labels: []string{"sql_type"}},
+		{name: "tidb_distsql_execution", tbl: "tidb_distsql_execution", labels: []string{"type"}},
+		{name: "tidb_cop", tbl: "tidb_cop", labels: []string{"instance"}},
+		{name: "tidb_transaction_local_latch_wait", tbl: "tidb_transaction_local_latch_wait", labels: []string{"instance"}},
+		{name: "tidb_transaction", tbl: "tidb_transaction", labels: []string{"sql_type"}},
+		{name: "tidb_kv_backoff", tbl: "tidb_kv_backoff", labels: []string{"type"}},
+		{name: "tidb_kv_request", tbl: "tidb_kv_request", labels: []string{"type"}},
 		{name: "tidb_slow_query", tbl: "tidb_slow_query"},
 		{name: "tidb_slow_query_cop_process", tbl: "tidb_slow_query_cop_process"},
 		{name: "tidb_slow_query_cop_wait", tbl: "tidb_slow_query_cop_wait"},
-		{name: "tidb_ddl_batch_add_index", tbl: "tidb_ddl_batch_add_index", label: "type"},
-		{name: "tidb_ddl_deploy_syncer", tbl: "tidb_ddl_deploy_syncer", label: "type"},
-		{name: "tidb_ddl", tbl: "tidb_ddl", label: "type"},
-		{name: "tidb_ddl_update_self_version", tbl: "tidb_ddl_update_self_version", label: "result"},
-		{name: "tidb_ddl_worker", tbl: "tidb_ddl_worker", label: "action"},
-		{name: "tidb_owner_handle_syncer", tbl: "tidb_owner_handle_syncer", label: "type"},
-		{name: "tidb_new_etcd_session", tbl: "tidb_new_etcd_session", label: "type"},
-		{name: "tidb_load_schema", tbl: "tidb_load_schema", label: "instance"},
-		{name: "tidb_meta_operation", tbl: "tidb_meta_operation", label: "type"},
-		{name: "tidb_auto_id_request", tbl: "tidb_auto_id_request", label: "type"},
-		{name: "tidb_statistics_auto_analyze", tbl: "tidb_statistics_auto_analyze", label: "instance"},
-		{name: "tidb_gc_push_task", tbl: "tidb_gc_push_task", label: "type"},
-		{name: "tidb_gc", tbl: "tidb_gc", label: "instance"},
-		{name: "tidb_batch_client_unavailable", tbl: "tidb_batch_client_unavailable", label: "instance"},
-		{name: "tidb_batch_client_wait", tbl: "tidb_batch_client_wait", label: "instance"},
+		{name: "tidb_ddl_handle_job", tbl: "tidb_ddl", labels: []string{"type"}},
+		{name: "tidb_ddl_worker", tbl: "tidb_ddl_worker", labels: []string{"action"}},
+		{name: "tidb_ddl_update_self_version", tbl: "tidb_ddl_update_self_version", labels: []string{"result"}},
+		{name: "tidb_owner_handle_syncer", tbl: "tidb_owner_handle_syncer", labels: []string{"type"}},
+		{name: "tidb_ddl_batch_add_index", tbl: "tidb_ddl_batch_add_index", labels: []string{"type"}},
+		{name: "tidb_ddl_deploy_syncer", tbl: "tidb_ddl_deploy_syncer", labels: []string{"type"}},
+		//{name: "tidb_new_etcd_session", tbl: "tidb_new_etcd_session", labels: []string{"type"}},
+		{name: "tidb_load_schema", tbl: "tidb_load_schema", labels: []string{"instance"}},
+		{name: "tidb_meta_operation", tbl: "tidb_meta_operation", labels: []string{"type"}},
+		{name: "tidb_auto_id_request", tbl: "tidb_auto_id_request", labels: []string{"type"}},
+		{name: "tidb_statistics_auto_analyze", tbl: "tidb_statistics_auto_analyze", labels: []string{"instance"}},
+		{name: "tidb_gc_push_task", tbl: "tidb_gc_push_task", labels: []string{"type"}},
+		{name: "tidb_gc", tbl: "tidb_gc", labels: []string{"instance"}},
+		{name: "tidb_batch_client_unavailable", tbl: "tidb_batch_client_unavailable", labels: []string{"instance"}},
+		{name: "tidb_batch_client_wait", tbl: "tidb_batch_client_wait", labels: []string{"instance"}},
 		// PD
-		{name: "pd_start_tso_wait", tbl: "pd_start_tso_wait", label: "instance"},
-		{name: "pd_tso_rpc", tbl: "pd_tso_rpc", label: "instance"},
-		{name: "pd_tso_wait", tbl: "pd_tso_wait", label: "instance"},
-		{name: "pd_client_cmd", tbl: "pd_client_cmd", label: "type"},
-		{name: "pd_handle_request", tbl: "pd_handle_request", label: "type"},
-		{name: "pd_grpc_completed_commands", tbl: "pd_grpc_completed_commands", label: "grpc_method"},
-		{name: "pd_operator_finish", tbl: "pd_operator_finish", label: "type"},
-		{name: "pd_operator_step_finish", tbl: "pd_operator_step_finish", label: "type"},
-		{name: "pd_handle_transactions", tbl: "pd_handle_transactions", label: "result"},
-		{name: "pd_peer_round_trip", tbl: "pd_peer_round_trip", label: "To"},
-		{name: "pd_region_heartbeat", tbl: "pd_region_heartbeat", label: "address"},
-		{name: "etcd_wal_fsync", tbl: "etcd_wal_fsync", label: "instance"},
+		{name: "pd_start_tso_wait", tbl: "pd_start_tso_wait", labels: []string{"instance"}},
+		{name: "pd_tso_rpc", tbl: "pd_tso_rpc", labels: []string{"instance"}},
+		{name: "pd_tso_wait", tbl: "pd_tso_wait", labels: []string{"instance"}},
+		{name: "pd_client_cmd", tbl: "pd_client_cmd", labels: []string{"type"}},
+		{name: "pd_handle_request", tbl: "pd_handle_request", labels: []string{"type"}},
+		{name: "pd_grpc_completed_commands", tbl: "pd_grpc_completed_commands", labels: []string{"grpc_method"}},
+		{name: "pd_operator_finish", tbl: "pd_operator_finish", labels: []string{"type"}},
+		{name: "pd_operator_step_finish", tbl: "pd_operator_step_finish", labels: []string{"type"}},
+		{name: "pd_handle_transactions", tbl: "pd_handle_transactions", labels: []string{"result"}},
+		{name: "pd_peer_round_trip", tbl: "pd_peer_round_trip", labels: []string{"To"}},
+		{name: "pd_region_heartbeat", tbl: "pd_region_heartbeat", labels: []string{"address"}},
+		{name: "etcd_wal_fsync", tbl: "etcd_wal_fsync", labels: []string{"instance"}},
 		// TiKV
-		{name: "tikv_grpc_messge", tbl: "tikv_grpc_messge", label: "type"},
-		{name: "tikv_append_log", tbl: "tikv_append_log", label: "instance"},
-		{name: "tikv_apply_log", tbl: "tikv_apply_log", label: "instance"},
-		{name: "tikv_apply_wait", tbl: "tikv_apply_wait", label: "instance"},
-		{name: "tikv_check_split", tbl: "tikv_check_split", label: "instance"},
-		{name: "tikv_commit_log", tbl: "tikv_commit_log", label: "instance"},
-		{name: "tikv_cop_handle", tbl: "tikv_cop_handle", label: "req"},
-		{name: "tikv_cop_request", tbl: "tikv_cop_request", label: "req"},
-		{name: "tikv_cop_wait", tbl: "tikv_cop_wait", label: "req"},
-		{name: "tikv_process", tbl: "tikv_process", label: "type"},
-		{name: "tikv_propose_wait", tbl: "tikv_propose_wait", label: "instance"},
-		{name: "tikv_scheduler_command", tbl: "tikv_scheduler_command", label: "type"},
-		{name: "tikv_scheduler_latch_wait", tbl: "tikv_scheduler_latch_wait", label: "type"},
-		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", label: "type"},
-		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", label: "type"},
-		{name: "tikv_lock_manager_deadlock_detect", tbl: "tikv_lock_manager_deadlock_detect", label: "instance"},
-		{name: "tikv_lock_manager_waiter_lifetime", tbl: "tikv_lock_manager_waiter_lifetime", label: "instance"},
-		{name: "tikv_send_snapshot", tbl: "tikv_send_snapshot", label: "instance"},
-		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", label: "type"},
-		{name: "tikv_ingest_sst", tbl: "tikv_ingest_sst", label: "instance"},
-		{name: "tikv_gc_tasks", tbl: "tikv_gc_tasks", label: "task"},
-		{name: "tikv_backup_range", tbl: "tikv_backup_range", label: "type"},
-		{name: "tikv_backup", tbl: "tikv_backup", label: "instance"},
+		{name: "tikv_grpc_messge", tbl: "tikv_grpc_messge", labels: []string{"type"}},
+		{name: "tikv_append_log", tbl: "tikv_append_log", labels: []string{"instance"}},
+		{name: "tikv_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}},
+		{name: "tikv_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}},
+		{name: "tikv_check_split", tbl: "tikv_check_split", labels: []string{"instance"}},
+		{name: "tikv_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}},
+		{name: "tikv_cop_handle", tbl: "tikv_cop_handle", labels: []string{"req"}},
+		{name: "tikv_cop_request", tbl: "tikv_cop_request", labels: []string{"req"}},
+		{name: "tikv_cop_wait", tbl: "tikv_cop_wait", labels: []string{"req"}},
+		{name: "tikv_process", tbl: "tikv_process", labels: []string{"type"}},
+		{name: "tikv_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}},
+		{name: "tikv_scheduler_command", tbl: "tikv_scheduler_command", labels: []string{"type"}},
+		{name: "tikv_scheduler_latch_wait", tbl: "tikv_scheduler_latch_wait", labels: []string{"type"}},
+		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"type"}},
+		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"type"}},
+		{name: "tikv_lock_manager_deadlock_detect", tbl: "tikv_lock_manager_deadlock_detect", labels: []string{"instance"}},
+		{name: "tikv_lock_manager_waiter_lifetime", tbl: "tikv_lock_manager_waiter_lifetime", labels: []string{"instance"}},
+		{name: "tikv_send_snapshot", tbl: "tikv_send_snapshot", labels: []string{"instance"}},
+		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"type"}},
+		{name: "tikv_ingest_sst", tbl: "tikv_ingest_sst", labels: []string{"instance"}},
+		{name: "tikv_gc_tasks", tbl: "tikv_gc_tasks", labels: []string{"task"}},
+		{name: "tikv_backup_range", tbl: "tikv_backup_range", labels: []string{"type"}},
+		{name: "tikv_backup", tbl: "tikv_backup", labels: []string{"instance"}},
 	}
 
 	defs := make([]rowQuery, 0, len(defs1))
@@ -176,25 +174,6 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef,
 	resultRows := make([]TableRowDef, 0, len(defs))
 	arg := newQueryArg(startTime, endTime)
 	specialHandle := func(row []string) []string {
-		name := row[0]
-		if strings.HasSuffix(name, "(us)") {
-			if len(row[3]) == 0 {
-				return row
-			}
-			for i := range []int{2, 3, 5, 6, 7, 8} {
-				v, err := strconv.ParseFloat(row[i], 64)
-				if err == nil {
-					row[i] = fmt.Sprintf("%f", v/10e5)
-				}
-			}
-			row[0] = name[:len(name)-4]
-		}
-		if len(row[4]) > 0 {
-			row[4] = convertFloatToInt(row[4])
-		}
-		for _, i := range []int{2, 3, 5, 6, 7, 8} {
-			row[i] = RoundFloatString(row[i])
-		}
 		if arg.totalTime == 0 && len(row[3]) > 0 {
 			totalTime, err := strconv.ParseFloat(row[3], 64)
 			if err == nil {
@@ -440,6 +419,58 @@ func GetTiDBDDLOwner(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		Column:    []string{"MIN_TIME", "DDL OWNER"},
 		Rows:      rows,
 	}
+	return table, nil
+}
+
+func GetDDLInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []totalTimeByLabelsTableDef{
+		{name: "tidb_ddl_handle_job", tbl: "tidb_ddl", labels: []string{"instance", "type"}},
+		{name: "tidb_ddl_update_self_version", tbl: "tidb_ddl_update_self_version", labels: []string{"instance", "result"}},
+		{name: "tidb_ddl_worker", tbl: "tidb_ddl_worker", labels: []string{"instance", "type", "result", "action"}},
+		{name: "tidb_load_schema", tbl: "tidb_load_schema", labels: []string{"instance"}},
+		{name: "tidb_ddl_batch_add_index", tbl: "tidb_ddl_batch_add_index", labels: []string{"instance", "type"}},
+		{name: "tidb_ddl_deploy_syncer", tbl: "tidb_ddl_deploy_syncer", labels: []string{"instance", "type", "result"}},
+		{name: "tidb_owner_handle_syncer", tbl: "tidb_owner_handle_syncer", labels: []string{"instance", "type", "result"}},
+		{name: "tidb_new_etcd_session", tbl: "tidb_new_etcd_session", labels: []string{"instance", "type", "result"}},
+	}
+
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+
+	table := &TableDef{
+		Category:  []string{"Overview"},
+		Title:     "Time Consume",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
+	}
+
+	resultRows := make([]TableRowDef, 0, len(defs))
+	arg := newQueryArg(startTime, endTime)
+	specialHandle := func(row []string) []string {
+		if arg.totalTime == 0 && len(row[3]) > 0 {
+			totalTime, err := strconv.ParseFloat(row[3], 64)
+			if err == nil {
+				arg.totalTime = totalTime
+			}
+		}
+		return row
+	}
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	table.Rows = resultRows
 	return table, nil
 }
 

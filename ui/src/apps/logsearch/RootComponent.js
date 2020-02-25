@@ -1,21 +1,41 @@
-import React from 'react';
+import React, { useEffect, useReducer } from 'react'
 import {
   HashRouter as Router,
   Switch,
   Route,
+  Redirect,
   Link,
   withRouter
 } from 'react-router-dom'
 import { Breadcrumb } from 'antd'
 
+import client from '@/utils/client';
+
 import LogSearching from './LogSearching'
 import LogSearchingDetail from './LogSearchingDetail'
+
+import {
+  Context, 
+  initialState, 
+  reducer 
+} from './store'
 
 const App = withRouter(props => {
   const { location } = props
   const page = location.pathname.split('/').pop()
 
+  const [store, dispatch] = useReducer(reducer, initialState);
+
+  useEffect(() => {
+    client.dashboard.logsTasksGet().then(res => {
+      // use the last items as current taskGroup
+      const id = res.data?.slice(-1)?.[0]?.task_group_id ?? ''
+      dispatch({type: 'task_group_id', payload: id})
+    })
+  }, [])
+
   return (
+    <Context.Provider value={{store, dispatch}}>
     <div>
       <div style={{ margin: 12 }}>
         <Breadcrumb>
@@ -29,7 +49,7 @@ const App = withRouter(props => {
       </div>
       <div style={{ margin: 12 }}>
         <Switch>
-          <Route path="/logsearch">
+          <Route exact path="/logsearch">
             <LogSearching />
           </Route>
           <Route path="/logsearch/detail">
@@ -38,6 +58,7 @@ const App = withRouter(props => {
         </Switch>
       </div>
     </div>
+    </Context.Provider>
   )
 })
 

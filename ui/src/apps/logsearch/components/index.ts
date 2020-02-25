@@ -1,4 +1,6 @@
 import SearchHeader from './SearchHeader'
+import SearchProgress from './SearchProgress'
+import SearchResult from './SearchResult'
 
-export { SearchHeader }
+export { SearchHeader, SearchProgress, SearchResult }
 

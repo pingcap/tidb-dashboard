@@ -21,7 +21,7 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "build_api_client": "openapi-generator generate -i ../docs/swagger.yaml -g typescript-axios -o src/utils/dashboard_client"
+    "build_api_client": "openapi-generator generate -i ../docs/swagger.yaml -g typescript-axios -o src/utils/dashboard_client --additional-properties=modelPropertyNaming=original"
   },
   "homepage": "/dashboard",
   "eslintConfig": {

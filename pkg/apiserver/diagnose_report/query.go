@@ -57,7 +57,7 @@ func (t sumValueQuery) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error)
 		return t.genRow(rows[0], nil), nil
 	}
 
-	sql = fmt.Sprintf("select '%[1]v',`%[2]v`, sum(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` order by sum(value) desc",
+	sql = fmt.Sprintf("select '%[1]v',`%[2]v`, sum(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` having sum(value) > 0 order by sum(value) desc",
 		t.name, strings.Join(t.labels, "`,`"), t.tbl, condition)
 	subRows, err := querySQL(db, sql)
 	if err != nil {
@@ -208,7 +208,7 @@ func (t totalTimeByLabelsTableDef) genDetailSQLs(totalTime float64, startTime, e
 	}
 	joinSql := "select t0.*,t1.total_count"
 	sqls := []string{
-		fmt.Sprintf("select '%[1]s', `%[6]s`, if(%[2]v>0,sum(value)/%[2]v,1) , sum(value) as total from metrics_schema.%[3]s_total_time where time >= '%[4]s' and time < '%[5]s' group by `%[6]s`",
+		fmt.Sprintf("select '%[1]s', `%[6]s`, if(%[2]v>0,sum(value)/%[2]v,1) , sum(value) as total from metrics_schema.%[3]s_total_time where time >= '%[4]s' and time < '%[5]s' group by `%[6]s` having sum(value) > 0",
 			t.name, totalTime, t.tbl, startTime, endTime, strings.Join(t.labels, "`,`")),
 
 		fmt.Sprintf("select `%[4]s`, sum(value) as total_count from metrics_schema.%[1]s_total_count where time >= '%[2]s' and time < '%[3]s' group by `%[4]s`",
@@ -332,7 +332,7 @@ func (t totalValueAndTotalCountTableDef) genDetailSQLs(startTime, endTime string
 	}
 	joinSql := "select t0.*,t1.count"
 	sqls := []string{
-		fmt.Sprintf("select '%[1]s', `%[5]s` , sum(value) as total from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' group by `%[5]s`",
+		fmt.Sprintf("select '%[1]s', `%[5]s` , sum(value) as total from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' group by `%[5]s` having sum(value) > 0",
 			t.name, t.sumTbl, startTime, endTime, strings.Join(t.labels, "`,`")),
 		fmt.Sprintf("select `%[4]s`, sum(value) as count from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s' group by `%[4]s`",
 			t.countTbl, startTime, endTime, strings.Join(t.labels, "`,`")),

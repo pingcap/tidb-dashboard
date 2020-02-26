@@ -51,9 +51,9 @@ func (t *testReportSuite) TestGetTable(c *C) {
 
 	var table *diagnose_report.TableDef
 	var err error
-	//table, err = diagnose_report.GetTotalTimeConsumeTable(startTime, endTime, cli)
-	//c.Assert(err, IsNil)
-	//printRows(table)
+	table, err = diagnose_report.GetTiKVTotalTimeConsumeTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
 
 	table, err = diagnose_report.GetTiDBGCConfigInfo(startTime, endTime, cli)
 	c.Assert(err, IsNil)

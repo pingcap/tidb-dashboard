@@ -106,7 +106,7 @@ type ErrResp struct {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) topologyHandler(c *gin.Context) {
-	var returnObject clusterinfo.ClusterInfo
+	var returnObject ClusterInfo
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -129,4 +129,28 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	wg.Wait()
 
 	c.JSON(http.StatusOK, returnObject)
+}
+
+type ClusterInfo struct {
+	TiDB struct {
+		Nodes []clusterinfo.TiDB `json:"nodes"`
+		Err   string             `json:"err"`
+	} `json:"tidb"`
+
+	TiKV struct {
+		Nodes []clusterinfo.TiKV `json:"nodes"`
+		Err   string             `json:"err"`
+	} `json:"tikv"`
+	Pd struct {
+		Nodes []clusterinfo.PD `json:"nodes"`
+		Err   string           `json:"err"`
+	} `json:"pd"`
+	Grafana struct {
+		Node *clusterinfo.Grafana `json:"node"`
+		Err  string               `json:"err"`
+	} `json:"grafana"`
+	AlertManager struct {
+		Node *clusterinfo.AlertManager `json:"node"`
+		Err  string                    `json:"err"`
+	} `json:"alertManager"`
 }

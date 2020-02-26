@@ -5,15 +5,11 @@ go 1.13
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/appleboy/gin-jwt/v2 v2.6.3
-	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
-	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/elazarl/go-bindata-assetfs v1.0.0
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
-	github.com/go-sql-driver/mysql v1.5.0
-	github.com/google/uuid v1.1.1 // indirect
-	github.com/gorilla/mux v1.7.4 // indirect
+	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
 	github.com/jinzhu/gorm v1.9.12
 	github.com/joho/godotenv v1.3.0
@@ -27,7 +23,6 @@ require (
 	github.com/pingcap/pd v2.1.19+incompatible
 	github.com/pingcap/sysutil v0.0.0-20200206130906-2bfa6dc40bcd
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.4.1 // indirect
 	github.com/rs/cors v1.7.0
 	github.com/swaggo/http-swagger v0.0.0-20200103000832-0e9263c4b516
 	github.com/swaggo/swag v1.6.5

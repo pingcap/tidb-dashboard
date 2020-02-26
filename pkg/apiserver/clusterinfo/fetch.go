@@ -22,7 +22,7 @@ import (
 // fetcher is an interface for concurrently fetch data and store it in `info`.
 type fetcher interface {
 	// fetch fetches the data, and if any unrecoverable error exists.
-	fetch(ctx context.Context, info *clusterinfo.ClusterInfo, service *Service)
+	fetch(ctx context.Context, info *ClusterInfo, service *Service)
 	name() string
 }
 
@@ -36,17 +36,14 @@ func (f topologyUnderEtcdFetcher) name() string {
 	return "tidb"
 }
 
-func (f topologyUnderEtcdFetcher) fetch(ctx context.Context, info *clusterinfo.ClusterInfo, service *Service) {
+func (f topologyUnderEtcdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) {
 	tidb, grafana, alertManager, err := clusterinfo.GetTopologyUnderEtcd(ctx, service.etcdCli)
 	if err != nil {
 		// Note: GetTopology return error only when fetch etcd failed.
 		// So it's ok to fill all of them err
 		info.TiDB.Err = err.Error()
-		info.TiDB.Error = err
 		info.Grafana.Err = err.Error()
-		info.Grafana.Error = err
 		info.AlertManager.Err = err.Error()
-		info.AlertManager.Error = err
 		return
 	}
 	info.TiDB.Nodes = tidb
@@ -62,11 +59,10 @@ func (p pdFetcher) name() string {
 	return "pd"
 }
 
-func (p pdFetcher) fetch(ctx context.Context, info *clusterinfo.ClusterInfo, service *Service) {
+func (p pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) {
 	pdPeers, err := clusterinfo.GetPDTopology(ctx, service.config.PDEndPoint)
 	if err != nil {
 		info.Pd.Err = err.Error()
-		info.Pd.Error = err
 		return
 	}
 	info.Pd.Nodes = pdPeers
@@ -76,11 +72,10 @@ func (p pdFetcher) fetch(ctx context.Context, info *clusterinfo.ClusterInfo, ser
 type tikvFetcher struct {
 }
 
-func (t tikvFetcher) fetch(ctx context.Context, info *clusterinfo.ClusterInfo, service *Service) {
+func (t tikvFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) {
 	kv, err := clusterinfo.GetTiKVTopology(ctx, service.pdCli)
 	if err != nil {
 		info.TiKV.Err = err.Error()
-		info.TiKV.Error = err
 		return
 	}
 	info.TiKV.Nodes = kv

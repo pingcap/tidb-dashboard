@@ -36,12 +36,12 @@ const prefix = "/topology"
 const RFCTime = "2006-01-02 15:04:05.999999999 -0700 MST"
 
 // GetTopology return error only when fetch etcd failed.
-func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
-	AlertManager, error) {
+func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, *Grafana,
+	*AlertManager, error) {
 	resp, err := etcdcli.Get(ctx, prefix, clientv3.WithPrefix())
 	if err != nil {
 		// put error in ctx and return
-		return nil, Grafana{}, AlertManager{}, err
+		return nil, nil, nil, err
 	}
 	var grafana Grafana
 	var alertManager AlertManager
@@ -80,7 +80,7 @@ func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB
 		}
 	}
 
-	return genDBList(infoMap, ttlMap), grafana, alertManager, nil
+	return genDBList(infoMap, ttlMap), &grafana, &alertManager, nil
 }
 
 func GetTiDBTopology(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, error) {
@@ -117,8 +117,17 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 			return
 		}
 		ipAndPort := strings.Split(address, ":")
+		if len(ipAndPort) < 2 {
+			log.Warn("fillDBMap address parsing format error", zap.Error(err))
+			return
+		}
+		var port int
+		if port, err = strconv.Atoi(ipAndPort[1]); err != nil {
+			log.Warn("fillDBMap address parsing format error", zap.Error(err))
+			return
+		}
 		currentInfo.IP = ipAndPort[0]
-		currentInfo.Port = atoiOrZero(ipAndPort[1])
+		currentInfo.Port = uint(port)
 		infoMap[address] = &currentInfo
 	}
 }
@@ -155,16 +164,24 @@ func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error)
 	for _, v := range stores {
 		// parse ip and port
 		ipAndPort := strings.Split(v.Address, ":")
-		port := atoiOrZero(ipAndPort[1])
-		// Note: if err exists, it just return 0.
-		_, statusPort, _ := parsePortFromAddress(v.StatusAddress)
+		if len(ipAndPort) < 2 {
+			continue
+		}
+		port, err := strconv.Atoi(ipAndPort[1])
+		if err != nil {
+			continue
+		}
+		_, statusPort, err := parsePortFromAddress(v.StatusAddress)
+		if err != nil {
+			continue
+		}
 		currentInfo := TiKV{
 			ComponentVersionInfo: ComponentVersionInfo{
 				Version: v.Version,
 				GitHash: v.GitHash,
 			},
 			IP:           ipAndPort[0],
-			Port:         port,
+			Port:         uint(port),
 			BinaryPath:   v.BinaryPath,
 			ServerStatus: storeStateToStatus(v.GetState()),
 			StatusPort:   statusPort,
@@ -223,7 +240,7 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 	for _, ds := range ds.Members {
 		host, port, err := parsePortFromAddress(ds.ClientUrls[0])
 		if err != nil {
-			return nil, err
+			continue
 		}
 		var storeStatus ComponentStatus
 		if _, ok := healthMap[ds.MemberID.String()]; ok {
@@ -266,16 +283,6 @@ func parsePortFromAddress(address string) (string, uint, error) {
 		return "", 0, err
 	}
 	return u.Host, uint(statusPort), nil
-}
-
-func atoiOrZero(port string) uint {
-	var statusPort int
-	var err error
-	if statusPort, err = strconv.Atoi(port); err != nil {
-		log.Warn("parsePort parsing port error", zap.Error(err))
-		return 0
-	}
-	return uint(statusPort)
 }
 
 func storeStateToStatus(state metapb.StoreState) ComponentStatus {

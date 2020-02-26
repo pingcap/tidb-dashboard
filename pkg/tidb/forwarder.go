@@ -40,9 +40,9 @@ func NewForwarderConfig() *ForwarderConfig {
 }
 
 type Forwarder struct {
-	ctx        context.Context
-	config     *ForwarderConfig
-	etcdClient *clientv3.Client
+	ctx          context.Context
+	config       *ForwarderConfig
+	etcdProvider pd.EtcdProvider
 }
 
 func (f *Forwarder) Open() error {
@@ -57,7 +57,7 @@ func (f *Forwarder) Close() error {
 
 func (f *Forwarder) GetDBConnProp() (host string, port int, err error) {
 	ctx, cancel := context.WithTimeout(f.ctx, f.config.TiDBRetrieveTimeout)
-	resp, err := f.etcdClient.Get(ctx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
+	resp, err := f.etcdProvider.GetEtcdClient().Get(ctx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
 	cancel()
 
 	if err != nil {
@@ -75,10 +75,10 @@ func (f *Forwarder) GetDBConnProp() (host string, port int, err error) {
 	return "", 0, ErrNoAliveTiDB.New("no TiDB is alive")
 }
 
-func NewForwarder(config *ForwarderConfig, etcdClient *clientv3.Client) *Forwarder {
+func NewForwarder(config *ForwarderConfig, etcdProvider pd.EtcdProvider) *Forwarder {
 	return &Forwarder{
-		etcdClient: etcdClient,
-		config:     config,
-		ctx:        context.TODO(),
+		etcdProvider: etcdProvider,
+		config:       config,
+		ctx:          context.TODO(),
 	}
 }

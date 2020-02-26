@@ -36,7 +36,6 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/pingcap/log"
-	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
@@ -129,8 +128,12 @@ func main() {
 	store := dbstore.MustOpenDBStore(cliConfig.CoreConfig)
 	defer store.Close() //nolint:errcheck
 
-	etcdClient := pd.NewEtcdClient(cliConfig.CoreConfig)
-	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(), etcdClient)
+	etcdProvider, err := pd.NewLocalEtcdClientProvider(cliConfig.CoreConfig)
+	if err != nil {
+		_ = store.Close()
+		log.Fatal("Cannot create etcd client", zap.Error(err))
+	}
+	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(), etcdProvider)
 	// FIXME: Handle open error
 	tidbForwarder.Open()        //nolint:errcheck
 	defer tidbForwarder.Close() //nolint:errcheck
@@ -140,10 +143,8 @@ func main() {
 		FileStartTime:  cliConfig.KVFileStartTime,
 		FileEndTime:    cliConfig.KVFileEndTime,
 		PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint),
-		GetEtcdClient: func() *clientv3.Client {
-			return etcdClient
-		},
-		Store: store,
+		EtcdProvider:   etcdProvider,
+		Store:          store,
 	}
 	keyvisualService := keyvisual.NewService(ctx, wg, cliConfig.CoreConfig, remoteDataProvider)
 	keyvisualService.Start()
@@ -161,7 +162,7 @@ func main() {
 	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		store.Close() //nolint:errcheck
+		_ = store.Close()
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
@@ -195,6 +196,6 @@ func main() {
 }
 
 func exit(code int) {
-	log.Sync() //nolint:errcheck
+	_ = log.Sync()
 	os.Exit(code)
 }

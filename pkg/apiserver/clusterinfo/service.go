@@ -29,6 +29,7 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
 
 type Service struct {
@@ -45,7 +46,7 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/topology")
 	//endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/", s.topologyHandler)
-	endpoint.DELETE("/tidb/:address/", s.deleteDBHandler)
+	endpoint.DELETE("/tidb/:address/", s.deleteTiDBTopologyHandler)
 }
 
 // @Summary Delete etcd's tidb key.
@@ -54,7 +55,7 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Success 204 "delete ok"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /topology/address [delete]
-func (s *Service) deleteDBHandler(c *gin.Context) {
+func (s *Service) deleteTiDBTopologyHandler(c *gin.Context) {
 	v, exists := c.Params.Get("address")
 	if !exists {
 		c.Status(400)
@@ -62,6 +63,7 @@ func (s *Service) deleteDBHandler(c *gin.Context) {
 		return
 	}
 	address := v
+	errorChannel := make(chan error, 2)
 	ttlKey := fmt.Sprintf("/topology/tidb/%v/ttl", address)
 	nonTTLKey := fmt.Sprintf("/topology/tidb/%v/info", address)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -72,20 +74,24 @@ func (s *Service) deleteDBHandler(c *gin.Context) {
 		wg.Add(1)
 		go func(toDel string) {
 			defer wg.Done()
-			_, _ = s.etcdCli.Delete(ctx, toDel)
+			if _, err := s.etcdCli.Delete(ctx, toDel); err != nil {
+				errorChannel <- err
+			}
 		}(key)
 	}
 	wg.Wait()
+	var err error
+	select {
+	case err = <-errorChannel:
+	default:
+	}
+	close(errorChannel)
 
-	c.JSON(http.StatusNoContent, nil)
-}
-
-type ResponseWithErr struct {
-	TiDB         interface{} `json:"tidb"`
-	TiKV         interface{} `json:"tikv"`
-	Pd           interface{} `json:"pd"`
-	Grafana      interface{} `json:"grafana"`
-	AlertManager interface{} `json:"alert_manager"`
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
 }
 
 type ErrResp struct {
@@ -100,7 +106,7 @@ type ErrResp struct {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) topologyHandler(c *gin.Context) {
-	var returnObject ResponseWithErr
+	var returnObject clusterinfo.ClusterInfo
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

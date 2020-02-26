@@ -45,15 +45,8 @@ type PD struct {
 	IP         string `json:"ip"`
 	Port       uint   `json:"port"`
 	BinaryPath string `json:"binary_path"`
-	Version    string `json:"version"`
 	// It will query PD's health interface.
 	ServerStatus ComponentStatus `json:"server_status"`
-}
-
-type Prometheus struct {
-	IP         string `json:"ip"`
-	Port       uint   `json:"port"`
-	BinaryPath string `json:"binary_path"`
 }
 
 type TiDB struct {
@@ -82,9 +75,30 @@ type AlertManager struct {
 }
 
 type ClusterInfo struct {
-	TiDB         []TiDB       `json:"tidb"`
-	TiKV         []TiKV       `json:"tikv"`
-	Pd           []PD         `json:"pd"`
-	Grafana      Grafana      `json:"grafana"`
-	AlertManager AlertManager `json:"alert_manager"`
+	TiDB struct {
+		Nodes []TiDB `json:"nodes"`
+		Err   string `json:"err"`
+		Error error  `json:"-"`
+	} `json:"tidb"`
+
+	TiKV struct {
+		Nodes []TiKV `json:"nodes"`
+		Err   string `json:"err"`
+		Error error  `json:"-"`
+	} `json:"tikv"`
+	Pd struct {
+		Nodes []PD   `json:"nodes"`
+		Err   string `json:"err"`
+		Error error  `json:"-"`
+	} `json:"pd"`
+	Grafana struct {
+		Node  Grafana `json:"node"`
+		Err   string  `json:"err"`
+		Error error   `json:"-"`
+	} `json:"grafana"`
+	AlertManager struct {
+		Node  AlertManager `json:"node"`
+		Err   string       `json:"err"`
+		Error error        `json:"-"`
+	} `json:"alertManager"`
 }

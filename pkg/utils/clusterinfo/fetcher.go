@@ -22,7 +22,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/pingcap/kvproto/pkg/metapb"
@@ -36,6 +35,7 @@ import (
 const prefix = "/topology"
 const RFCTime = "2006-01-02 15:04:05.999999999 -0700 MST"
 
+// GetTopology return error only when fetch etcd failed.
 func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 	AlertManager, error) {
 	resp, err := etcdcli.Get(ctx, prefix, clientv3.WithPrefix())
@@ -118,7 +118,7 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 		}
 		ipAndPort := strings.Split(address, ":")
 		currentInfo.IP = ipAndPort[0]
-		currentInfo.Port = mustAtoi(ipAndPort[1])
+		currentInfo.Port = atoiOrZero(ipAndPort[1])
 		infoMap[address] = &currentInfo
 	}
 }
@@ -127,8 +127,8 @@ func genDBList(infoMap map[string]*TiDB, ttlMap map[string][]byte) []TiDB {
 	dbList := []TiDB{}
 	// Note: it means this TiDB has non-ttl key, but ttl-key not exists.
 	for address, info := range infoMap {
-		if timeDur, ok := ttlMap[address]; ok {
-			recTime, err := time.Parse(RFCTime, string(timeDur))
+		if ttlFreshTime, ok := ttlMap[address]; ok {
+			recTime, err := time.Parse(RFCTime, string(ttlFreshTime))
 			if err != nil {
 				info.ServerStatus = Offline
 			} else if time.Since(recTime) > time.Second*30 {
@@ -155,9 +155,9 @@ func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error)
 	for _, v := range stores {
 		// parse ip and port
 		ipAndPort := strings.Split(v.Address, ":")
-		port := mustAtoi(ipAndPort[1])
-		// Note: if no err exists, it just return 0.
-		statusPort, _ := parsePortFromAddress(v.StatusAddress)
+		port := atoiOrZero(ipAndPort[1])
+		// Note: if err exists, it just return 0.
+		_, statusPort, _ := parsePortFromAddress(v.StatusAddress)
 		currentInfo := TiKV{
 			ComponentVersionInfo: ComponentVersionInfo{
 				Version: v.Version,
@@ -181,16 +181,14 @@ func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error)
 
 func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 	pdPeers := make([]PD, 0)
-	var healthMap map[string]struct{}
-	var wg sync.WaitGroup
-	wg.Add(1)
+	healthMapChan := make(chan map[string]struct{})
 	go func() {
-		defer wg.Done()
 		var err error
-		healthMap, err = getPDNodesHealth(pdEndPoint)
+		healthMap, err := getPDNodesHealth(pdEndPoint)
 		if err != nil {
 			healthMap = map[string]struct{}{}
 		}
+		healthMapChan <- healthMap
 	}()
 
 	resp, err := http.Get(pdEndPoint + "/pd/api/v1/members")
@@ -221,13 +219,12 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 		return nil, err
 	}
 
-	wg.Wait()
+	healthMap := <-healthMapChan
 	for _, ds := range ds.Members {
-		u, err := url.Parse(ds.ClientUrls[0])
+		host, port, err := parsePortFromAddress(ds.ClientUrls[0])
 		if err != nil {
 			return nil, err
 		}
-
 		var storeStatus ComponentStatus
 		if _, ok := healthMap[ds.MemberID.String()]; ok {
 			storeStatus = Up
@@ -236,11 +233,12 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 		}
 
 		pdPeers = append(pdPeers, PD{
-
-			IP:           u.Hostname(),
-			Port:         mustAtoi(u.Port()),
+			ComponentVersionInfo: ComponentVersionInfo{
+				Version: ds.BinaryVersion,
+			},
+			IP:           host,
+			Port:         port,
 			BinaryPath:   ds.BinaryPath,
-			Version:      ds.BinaryVersion,
 			ServerStatus: storeStatus,
 		})
 	}
@@ -250,27 +248,27 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 // parsePortFromAddress receive two kind of address
 // 1. ip:port, like "127.0.0.1:2379"
 // 2. protocol://ip:port
-// and returns the port number.
-func parsePortFromAddress(address string) (uint, error) {
+// and returns the (ip, port number).
+func parsePortFromAddress(address string) (string, uint, error) {
 	var statusPort int
 	u, err := url.Parse(address)
 	if err != nil {
 		// https://github.com/golang/go/issues/18824
 		if strings.HasPrefix(address, "//") {
 			log.Warn("parsePortFromAddress parsing address error", zap.Error(err))
-			return 0, err
+			return "", 0, err
 		}
 		return parsePortFromAddress("//" + address)
 	}
 	statusPort, err = strconv.Atoi(u.Port())
 	if err != nil {
 		log.Warn("parsePortFromAddress parsing port error", zap.Error(err))
-		return 0, err
+		return "", 0, err
 	}
-	return uint(statusPort), nil
+	return u.Host, uint(statusPort), nil
 }
 
-func mustAtoi(port string) uint {
+func atoiOrZero(port string) uint {
 	var statusPort int
 	var err error
 	if statusPort, err = strconv.Atoi(port); err != nil {

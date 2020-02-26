@@ -22,7 +22,7 @@ import (
 // fetcher is an interface for concurrently fetch data and store it in `info`.
 type fetcher interface {
 	// fetch fetches the data, and if any unrecoverable error exists.
-	fetch(ctx context.Context, info *ResponseWithErr, service *Service)
+	fetch(ctx context.Context, info *clusterinfo.ClusterInfo, service *Service)
 	name() string
 }
 
@@ -36,18 +36,22 @@ func (f topologyUnderEtcdFetcher) name() string {
 	return "tidb"
 }
 
-func (f topologyUnderEtcdFetcher) fetch(ctx context.Context, info *ResponseWithErr, service *Service) {
+func (f topologyUnderEtcdFetcher) fetch(ctx context.Context, info *clusterinfo.ClusterInfo, service *Service) {
 	tidb, grafana, alertManager, err := clusterinfo.GetTopologyUnderEtcd(ctx, service.etcdCli)
 	if err != nil {
-		errStruct := ErrResp{Error: err.Error()}
-		info.TiDB = errStruct
-		info.Grafana = errStruct
-		info.AlertManager = errStruct
+		// Note: GetTopology return error only when fetch etcd failed.
+		// So it's ok to fill all of them err
+		info.TiDB.Err = err.Error()
+		info.TiDB.Error = err
+		info.Grafana.Err = err.Error()
+		info.Grafana.Error = err
+		info.AlertManager.Err = err.Error()
+		info.AlertManager.Error = err
 		return
 	}
-	info.TiDB = tidb
-	info.Grafana = grafana
-	info.AlertManager = alertManager
+	info.TiDB.Nodes = tidb
+	info.Grafana.Node = grafana
+	info.AlertManager.Node = alertManager
 }
 
 // PDFetcher using the http to fetch PDMember information from pd endpoint.
@@ -58,26 +62,28 @@ func (p pdFetcher) name() string {
 	return "pd"
 }
 
-func (p pdFetcher) fetch(ctx context.Context, info *ResponseWithErr, service *Service) {
+func (p pdFetcher) fetch(ctx context.Context, info *clusterinfo.ClusterInfo, service *Service) {
 	pdPeers, err := clusterinfo.GetPDTopology(ctx, service.config.PDEndPoint)
 	if err != nil {
-		info.Pd = ErrResp{Error: err.Error()}
+		info.Pd.Err = err.Error()
+		info.Pd.Error = err
 		return
 	}
-	info.Pd = pdPeers
+	info.Pd.Nodes = pdPeers
 }
 
 // tikvFetcher using the PDClient to fetch tikv(store) information from pd endpoint.
 type tikvFetcher struct {
 }
 
-func (t tikvFetcher) fetch(ctx context.Context, info *ResponseWithErr, service *Service) {
+func (t tikvFetcher) fetch(ctx context.Context, info *clusterinfo.ClusterInfo, service *Service) {
 	kv, err := clusterinfo.GetTiKVTopology(ctx, service.pdCli)
 	if err != nil {
-		info.TiKV = ErrResp{Error: err.Error()}
+		info.TiKV.Err = err.Error()
+		info.TiKV.Error = err
 		return
 	}
-	info.TiKV = kv
+	info.TiKV.Nodes = kv
 }
 
 func (t tikvFetcher) name() string {

@@ -19,14 +19,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
-
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
-
-// TrackTickInterval is the interval to check the tasks status.
-const TrackTickInterval = 2 * time.Second
 
 // TaskState is used to represent the task/task group state.
 type TaskState int
@@ -59,9 +53,8 @@ func (TaskModel) TableName() string {
 }
 
 type TaskGroupModel struct {
-	ID           uint      `json:"id" gorm:"primary_key"`
-	RunningTasks int       `json:"running_tasks"`
-	State        TaskState `json:"state" gorm:"index"`
+	ID    uint      `json:"id" gorm:"primary_key"`
+	State TaskState `json:"state" gorm:"index"`
 }
 
 func (TaskGroupModel) TableName() string {
@@ -97,7 +90,7 @@ func NewTask(db *dbstore.DB, id uint, component, addr string) *Task {
 	}
 }
 
-func (t *Task) run(updateCh chan struct{}) {
+func (t *Task) run() {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.cancel = cancel
 	t.mu.Lock()
@@ -121,21 +114,19 @@ func (t *Task) run(updateCh chan struct{}) {
 		t.Error = err.Error()
 		t.State = TaskStateError
 		t.db.Save(t.TaskModel)
-		updateCh <- struct{}{}
 		return
 	}
 	t.FilePath = svgFilePath
 	t.State = TaskStateFinish
 	t.FinishTime = time.Now().Unix()
 	t.db.Save(t.TaskModel)
-	updateCh <- struct{}{}
 }
 
 func (t *Task) stop() {
 	t.cancel()
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	if t.State != TaskStateFinish {
+	if t.State != TaskStateFinish && t.State != TaskStateError {
 		t.State = TaskStateCancel
 		t.db.Save(t.TaskModel)
 	}
@@ -144,7 +135,6 @@ func (t *Task) stop() {
 // TaskGroup is the collection of tasks.
 type TaskGroup struct {
 	*TaskGroupModel
-	updateCh chan struct{}
 }
 
 // NewTaskGroup create a new profiling task group.
@@ -153,26 +143,5 @@ func NewTaskGroup() *TaskGroup {
 		TaskGroupModel: &TaskGroupModel{
 			State: TaskStateCreate,
 		},
-		updateCh: make(chan struct{}),
-	}
-}
-
-func (tg *TaskGroup) trackTasks(db *dbstore.DB, taskTacker *sync.Map) {
-	trackTicker := time.NewTicker(TrackTickInterval)
-	defer trackTicker.Stop()
-
-	log.Info("start to track tasks", zap.Int("total", tg.RunningTasks))
-	for {
-		select {
-		case <-tg.updateCh:
-			tg.RunningTasks--
-		case <-trackTicker.C:
-			if tg.RunningTasks == 0 {
-				tg.State = TaskStateFinish
-				db.Save(tg.TaskGroupModel)
-				close(tg.updateCh)
-				return
-			}
-		}
 	}
 }

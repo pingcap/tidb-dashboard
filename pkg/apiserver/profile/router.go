@@ -79,7 +79,7 @@ type ProfilingRequest struct {
 func (s *Service) startHandler(c *gin.Context) {
 	var pr ProfilingRequest
 	if err := c.ShouldBind(&pr); err != nil {
-		c.Status(400)
+		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
@@ -94,44 +94,54 @@ func (s *Service) startHandler(c *gin.Context) {
 		tikv: pr.Tikv,
 		pd:   pr.Pd,
 	}
-	var count int
+
 	for component, addrs := range addrs {
 		for _, addr := range addrs {
 			t := NewTask(s.db, taskGroup.ID, component, addr)
 			s.db.Create(t.TaskModel)
 			s.tasks.Store(t.ID, t)
-			count++
 		}
 	}
+	go func() {
+		var wg sync.WaitGroup
+		s.tasks.Range(func(key, value interface{}) bool {
+			task, ok := value.(*Task)
+			if !ok {
+				log.Warn(fmt.Sprintf("cannot load %+v as *Task", value))
+				return true
+			}
+			if task.TaskGroupID != taskGroup.ID {
+				return true
+			}
 
-	s.tasks.Range(func(key, value interface{}) bool {
-		task, ok := value.(*Task)
-		if !ok {
-			log.Warn(fmt.Sprintf("cannot load %+v as *Task", value))
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				task.run()
+				s.tasks.Delete(task.ID)
+			}()
 			return true
-		}
-		if task.TaskGroupID != taskGroup.ID {
-			return true
-		}
-
-		taskGroup.RunningTasks++
-		go func() {
-			task.run(taskGroup.updateCh)
-		}()
-		return true
-	})
+		})
+		wg.Wait()
+		taskGroup.State = TaskStateFinish
+		s.db.Save(taskGroup.TaskGroupModel)
+	}()
 	taskGroup.State = TaskStateRunning
 	s.db.Save(taskGroup.TaskGroupModel)
 
-	go taskGroup.trackTasks(s.db, &s.tasks)
 	c.JSON(http.StatusOK, taskGroup.ID)
+}
+
+type Status struct {
+	TaskGroup TaskGroupModel `json:"task_group_status"`
+	Tasks     []TaskModel    `json:"tasks_status"`
 }
 
 // @Summary List all tasks with a given group ID
 // @Description list all profling tasks with a given group ID
 // @Produce json
 // @Param groupId path string true "group ID"
-// @Success 200 {array} TaskModel
+// @Success 200 {object} Status
 // @Failure 400 {object} utils.APIError
 // @Router /profile/group/status/{groupId} [get]
 func (s *Service) statusHandler(c *gin.Context) {
@@ -141,15 +151,26 @@ func (s *Service) statusHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	var tasks []TaskModel
-	s.db.Find(&tasks)
-	err = s.db.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
+	var taskGroup TaskGroupModel
+	err = s.db.Where("id = ?", taskGroupID).Find(&taskGroup).Error
 	if err != nil {
-		c.Status(400)
+		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, tasks)
+
+	var tasks []TaskModel
+	err = s.db.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, Status{
+		TaskGroup: taskGroup,
+		Tasks:     tasks,
+	})
 }
 
 // @Summary Cancel all tasks with a given group ID
@@ -166,30 +187,20 @@ func (s *Service) cancelGroupHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	taskGroup := TaskGroupModel{}
-	err = s.db.Where("id = ?", taskGroupID).First(&taskGroup).Error
+	var tasks []TaskModel
+	err = s.db.Where("task_group_id = ? AND state in (?)", taskGroupID, []TaskState{TaskStateCreate, TaskStateRunning}).Find(&tasks).Error
 	if err != nil {
-		c.Status(400)
+		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
 
-	s.tasks.Range(func(key, value interface{}) bool {
-		task, ok := value.(*Task)
-		if !ok {
-			log.Warn(fmt.Sprintf("cannot load %+v as *Task", value))
-			return true
+	for _, task := range tasks {
+		if task, ok := s.tasks.Load(task.ID); ok {
+			t := task.(*Task)
+			t.stop()
 		}
-		if task.TaskGroupID != uint(taskGroupID) {
-			return true
-		}
-		if task.State == TaskStateRunning {
-			task.stop()
-			taskGroup.RunningTasks--
-		}
-		return true
-	})
-	s.db.Save(&taskGroup)
+	}
 	c.JSON(http.StatusOK, "success")
 }
 
@@ -209,27 +220,16 @@ func (s *Service) cancelHandler(c *gin.Context) {
 		return
 	}
 	task := TaskModel{}
-	err = s.db.Where("id = ?", taskID).First(&task).Error
+	err = s.db.Where("id = ? AND state in (?)", taskID, []TaskState{TaskStateCreate, TaskStateRunning}).First(&task).Error
 	if err != nil {
-		c.Status(400)
+		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
 
 	if task, ok := s.tasks.Load(task.ID); ok {
 		t := task.(*Task)
-		taskGroup := TaskGroupModel{}
-		err := s.db.Where("id = ?", t.TaskGroupID).First(&taskGroup).Error
-		if err != nil {
-			c.Status(500)
-			_ = c.Error(err)
-			return
-		}
-		if t.State == TaskStateRunning {
-			t.stop()
-			taskGroup.RunningTasks--
-			s.db.Save(&taskGroup)
-		}
+		t.stop()
 	}
 	c.JSON(http.StatusOK, "success")
 }
@@ -248,33 +248,22 @@ func (s *Service) downloadGroupHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	taskGroup := TaskGroupModel{}
-	err = s.db.Where("id = ?", taskGroupID).First(&taskGroup).Error
+	var tasks []TaskModel
+	err = s.db.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateFinish).Find(&tasks).Error
 	if err != nil {
-		c.Status(400)
+		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
 
-	var filePathes []string
-	s.tasks.Range(func(key, value interface{}) bool {
-		task, ok := value.(*Task)
-		if !ok {
-			log.Warn(fmt.Sprintf("cannot load %+v as *Task", value))
-			return true
-		}
-		if task.TaskGroupID != uint(taskGroupID) {
-			return true
-		}
-		if task.State == TaskStateFinish {
-			filePathes = append(filePathes, task.FilePath)
-		}
-		return true
-	})
+	filePathes := make([]string, len(tasks))
+	for i, task := range tasks {
+		filePathes[i] = task.FilePath
+	}
 
 	temp, err := ioutil.TempFile("", fmt.Sprintf("taskgroup_%d", taskGroupID))
 	if err != nil {
-		c.Status(500)
+		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}
@@ -282,12 +271,12 @@ func (s *Service) downloadGroupHandler(c *gin.Context) {
 	err = createTarball(temp, filePathes)
 	defer temp.Close()
 	if err != nil {
-		c.Status(500)
+		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}
 
-	fileName := fmt.Sprintf("taskgroup_%d.tar.gz", taskGroupID)
+	fileName := fmt.Sprintf("profile_taskgroup_%d.tar.gz", taskGroupID)
 	c.FileAttachment(temp.Name(), fileName)
 }
 
@@ -306,21 +295,16 @@ func (s *Service) downloadHandler(c *gin.Context) {
 		return
 	}
 	task := TaskModel{}
-	err = s.db.Where("id = ?", taskID).First(&task).Error
+	err = s.db.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
 	if err != nil {
-		c.Status(400)
-		_ = c.Error(err)
-		return
-	}
-	if task.State != TaskStateFinish {
-		c.Status(400)
+		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
 
 	temp, err := ioutil.TempFile("", fmt.Sprintf("task_%d", taskID))
 	if err != nil {
-		c.Status(500)
+		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}
@@ -328,12 +312,12 @@ func (s *Service) downloadHandler(c *gin.Context) {
 	err = createTarball(temp, []string{task.FilePath})
 	defer temp.Close()
 	if err != nil {
-		c.Status(500)
+		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}
 
-	fileName := fmt.Sprintf("task_%d.tar.gz", taskID)
+	fileName := fmt.Sprintf("profile_task_%d.tar.gz", taskID)
 	c.FileAttachment(temp.Name(), fileName)
 }
 
@@ -353,28 +337,22 @@ func (s *Service) deleteHandler(c *gin.Context) {
 		return
 	}
 	taskGroup := TaskGroupModel{}
-	err = s.db.Where("id = ?", taskGroupID).Find(&taskGroup).Error
+	err = s.db.Where("id = ? AND state <> ?", taskGroupID, TaskStateRunning).Find(&taskGroup).Error
 	if err != nil {
-		c.Status(400)
-		_ = c.Error(err)
-		return
-	}
-	if taskGroup.State == TaskStateRunning {
-		err := fmt.Errorf("failed to delete, task group [%d] is running", taskGroupID)
-		c.Status(400)
+		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
 
 	err = s.db.Where("task_group_id = ?", taskGroupID).Delete(&TaskModel{}).Error
 	if err != nil {
-		c.Status(500)
+		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}
 	err = s.db.Where("id = ?", taskGroupID).Delete(&TaskGroupModel{}).Error
 	if err != nil {
-		c.Status(500)
+		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}

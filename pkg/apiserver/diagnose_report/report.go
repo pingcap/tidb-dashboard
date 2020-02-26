@@ -57,6 +57,7 @@ const (
 	CategoryTiDB     = "TiDB"
 	CategoryPD       = "PD"
 	CategoryTiKV     = "TiKV"
+	CategoryConfig   = "Config"
 )
 
 func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []error) {
@@ -87,6 +88,9 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 		// Config
 		GetPDConfigInfo,
 		GetTiDBGCConfigInfo,
+		GetTiDBCurrentConfig,
+		GetPDCurrentConfig,
+		GetTiKVCurrentConfig,
 	}
 	tables := make([]*TableDef, 0, len(funcs))
 	errs := make([]error, 0, len(funcs))
@@ -438,7 +442,7 @@ func GetPDConfigInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{CategoryPD},
+		Category:  []string{CategoryConfig},
 		Title:     "Scheduler Config",
 		CommentEN: "PD scheduler config change history",
 		CommentCN: "",
@@ -459,7 +463,7 @@ func GetTiDBGCConfigInfo(startTime, endTime string, db *sql.DB) (*TableDef, erro
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{"PD"},
+		Category:  []string{CategoryConfig},
 		Title:     "Scheduler Config",
 		CommentEN: "PD scheduler config change history",
 		CommentCN: "",
@@ -726,6 +730,57 @@ func GetTiKVErrorTable(startTime, endTime string, db *sql.DB) (*TableDef, error)
 		return nil, err
 	}
 	table.Rows = resultRows
+	return table, nil
+}
+
+func GetTiDBCurrentConfig(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select `key`,`value` from information_schema.CLUSTER_CONFIG where type='tidb' group by `key`,`value` order by `key`;")
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{CategoryConfig},
+		Title:     "TiDB Current Config",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"KEY", "VALUE"},
+		Rows:      rows,
+	}
+	return table, nil
+}
+
+func GetPDCurrentConfig(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select `key`,`value` from information_schema.CLUSTER_CONFIG where type='pd' group by `key`,`value` order by `key`;")
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{CategoryConfig},
+		Title:     "PD Current Config",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"KEY", "VALUE"},
+		Rows:      rows,
+	}
+	return table, nil
+}
+
+func GetTiKVCurrentConfig(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select `key`,`value` from information_schema.CLUSTER_CONFIG where type='tikv' group by `key`,`value` order by `key`;")
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{CategoryConfig},
+		Title:     "TiKV Current Config",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"KEY", "VALUE"},
+		Rows:      rows,
+	}
 	return table, nil
 }
 

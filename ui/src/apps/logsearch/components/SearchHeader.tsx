@@ -1,10 +1,11 @@
 import client from "@/utils/client";
 import { LogsearchCreateTaskGroupRequest, LogsearchSearchTarget } from "@/utils/dashboard_client";
-import { Col, DatePicker, Row, Select, TreeSelect } from "antd";
+import { Col, DatePicker, Form, Row, Select, TreeSelect } from "antd";
 import { RangePickerValue } from "antd/lib/date-picker/interface";
 import Search from "antd/lib/input/Search";
 import moment from 'moment';
 import React, { ChangeEvent, useContext, useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { useHistory } from "react-router-dom";
 import { Context } from "../store";
 import { AllLogLevel, namingMap } from "./util";
@@ -13,7 +14,7 @@ const { SHOW_CHILD } = TreeSelect;
 const { RangePicker } = DatePicker
 const { Option } = Select;
 
-const mockIP = '127.0.0.1'
+const mockIP = '192.168.1.8'
 
 const mockServerMap: Map<string, LogsearchSearchTarget> = new Map([
   [
@@ -77,6 +78,7 @@ function buildTreeData(serverMap: Map<string, LogsearchSearchTarget>) {
 export default function SearchHeader() {
   const { store, dispatch } = useContext(Context)
   const { searchOptions } = store
+  const { t } = useTranslation()
   const history = useHistory()
 
   const [timeRange, setTimeRange] = useState<RangePickerValue>(searchOptions.curTimeRange)
@@ -146,60 +148,64 @@ export default function SearchHeader() {
     createTaskGroup()
   }
 
-  const tProps = {
-    treeData: buildTreeData(serverMap),
-    onChange: handleComponentChange,
-    treeDefaultExpandAll: true,
-    treeCheckable: true,
-    showCheckedStrategy: SHOW_CHILD,
-    style: {
-      width: 500,
-    },
-  }
-
   return (
     <div>
-      <Row gutter={[16, 16]} style={{ margin: 12 }}>
-        <Col span={12}>
-          时间范围：<RangePicker
-            value={timeRange}
-            showTime={{
-              defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('11:59:59', 'HH:mm:ss')],
-            }}
-            format="YYYY-MM-DD HH:mm:ss"
-            style={{ width: 500 }}
-            onChange={handleTimeRangeChange}
-          />
-        </Col>
-        <Col span={12}>日志级别：
-          <Select value={logLevel} style={{ width: 200 }} onChange={handleLogLevelChange}>
-            <Option value={1}>Debug</Option>
-            <Option value={2}>Info</Option>
-            <Option value={3}>Warn</Option>
-            <Option value={4}>Trace</Option>
-            <Option value={5}>Critical</Option>
-            <Option value={6}>Error</Option>
-          </Select>
-        </Col>
-        <Col span={12}>组件选择：
-            <div style={{ display: "inline-block" }}>
-            <TreeSelect value={components} {...tProps} />
-          </div>
-        </Col>
-        <Col span={12}>
-          关键字：
-            <span>
-            <Search
-              value={searchValue}
-              placeholder="可选，关键字以空格分割"
-              enterButton="Search"
-              style={{ width: 500, verticalAlign: "middle" }}
-              onChange={handleSearchPatternChange}
-              onSearch={handleSearch}
-            />
-          </span>
-        </Col>
-      </Row>
+      <Form labelAlign="right">
+        <Row gutter={24}>
+          <Col span={12}>
+            <Form.Item label={t('logs.common.time_range')} labelCol={{ span: 6 }}>
+              <RangePicker
+                value={timeRange}
+                showTime={{
+                  defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('11:59:59', 'HH:mm:ss')],
+                }}
+                format="YYYY-MM-DD HH:mm:ss"
+                style={{ width: 400 }}
+                onChange={handleTimeRangeChange}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label={t('logs.common.log_level')} labelCol={{ span: 6 }}>
+              <Select value={logLevel} style={{ width: 100 }} onChange={handleLogLevelChange}>
+                <Option value={1}>Debug</Option>
+                <Option value={2}>Info</Option>
+                <Option value={3}>Warn</Option>
+                <Option value={4}>Trace</Option>
+                <Option value={5}>Critical</Option>
+                <Option value={6}>Error</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label={t('logs.common.components')} labelCol={{ span: 6 }}
+              validateStatus={components.length > 0 ? "" : "error"}>
+              <TreeSelect
+                value={components}
+                treeData={buildTreeData(serverMap)}
+                placeholder={t('logs.common.components_placeholder')}
+                onChange={handleComponentChange}
+                treeDefaultExpandAll={true}
+                treeCheckable={true}
+                showCheckedStrategy={SHOW_CHILD}
+                style={{ width: 400 }}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label={t('logs.common.keywords')} labelCol={{ span: 6 }}>
+              <Search
+                value={searchValue}
+                placeholder={t('logs.common.keywords_placeholder')}
+                enterButton={t('logs.common.search')}
+                style={{ width: 400 }}
+                onChange={handleSearchPatternChange}
+                onSearch={handleSearch}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
     </div>
   )
 }

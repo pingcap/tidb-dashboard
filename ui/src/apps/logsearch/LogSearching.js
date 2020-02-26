@@ -1,8 +1,10 @@
 import { Col, Empty, Row } from 'antd'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { SearchHeader } from './components'
 
 export default function LogSearchingPage() {
+  const { t } = useTranslation()
   return (
     <div>
       <SearchHeader />
@@ -11,7 +13,7 @@ export default function LogSearchingPage() {
           <Empty
             description={
               <span>
-                点击 <b>Search</b> 预览和下载日志
+                {t('logs.page.intro')}
               </span>
             } />
         </Col>

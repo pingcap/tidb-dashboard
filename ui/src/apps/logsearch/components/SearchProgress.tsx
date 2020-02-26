@@ -3,6 +3,7 @@ import { LogsearchTaskModel } from '@/utils/dashboard_client';
 import { Button, Modal, Tree, Typography } from 'antd';
 import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree';
 import React, { useContext, useEffect, useRef, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Context } from "../store";
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon';
 import styles from './SearchProgress.module.css';
@@ -45,31 +46,6 @@ function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   ))
 }
 
-function progressDescription(tasks: LogsearchTaskModel[]) {
-  const descriptionArray = [
-    '正在运行',
-    '成功',
-    '失败'
-  ]
-
-  const arr = [0, 0, 0]
-  tasks.forEach(task => {
-    const state = task.state
-    if (state !== undefined) {
-      arr[state - 1]++
-    }
-  })
-  const res: string[] = []
-  arr.forEach((count, index) => {
-    if (index < 1 || count <= 0) {
-      return
-    }
-    const str = `${count} ${descriptionArray[index]}`
-    res.push(str)
-  })
-  return res.join('，')
-}
-
 function parentNodeIcon(tasks: LogsearchTaskModel[]) {
   // Running: has at least one task running
   if (tasks.some(task => task.state === TaskState.Running)) {
@@ -88,50 +64,6 @@ function parentNodeCheckable(tasks: LogsearchTaskModel[]) {
   return tasks.some(task => task.state === TaskState.Finished)
 }
 
-
-
-function renderTreeNodes(tasks: LogsearchTaskModel[]) {
-  const servers = {
-    tidb: [],
-    tikv: [],
-    pd: []
-  }
-
-  tasks.forEach(task => {
-    const serverType = task.search_target?.kind ?? ''
-    if (!(serverType in servers)) {
-      return
-    }
-    servers[serverType].push(task)
-  })
-
-  return Object.keys(servers)
-    .filter(key => servers[key].length)
-    .map(key => {
-      const tasks = servers[key]
-      const title = (
-        <span>
-          {namingMap[key]}
-          <span style={{
-            fontSize: "0.8em",
-            marginLeft: 5
-          }}>
-            {progressDescription(tasks)}
-          </span>
-        </span>
-      )
-      return (
-        <TreeNode
-          key={key}
-          title={title}
-          icon={parentNodeIcon(tasks)}
-          disableCheckbox={!parentNodeCheckable(tasks)}
-          children={renderLeafNodes(tasks)}
-        />
-      )
-    }
-    )
-}
 
 function useSetInterval(callback: () => void) {
   const ref = useRef<() => void>(callback);
@@ -160,6 +92,7 @@ export default function SearchProgress() {
   const { store, dispatch } = useContext(Context)
   const { taskGroupID, tasks } = store
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
+  const { t } = useTranslation()
 
   async function getTasks(taskGroupID: number) {
     if (taskGroupID < 0) {
@@ -176,6 +109,74 @@ export default function SearchProgress() {
     getTasks(taskGroupID)
   });
 
+  const descriptionArray = [
+    t('logs.progress.running'),
+    t('logs.progress.success'),
+    t('logs.progress.failed')
+  ]
+
+  function progressDescription(tasks: LogsearchTaskModel[]) {
+    const arr = [0, 0, 0]
+    tasks.forEach(task => {
+      const state = task.state
+      if (state !== undefined) {
+        arr[state - 1]++
+      }
+    })
+    const res: string[] = []
+    arr.forEach((count, index) => {
+      if (index < 1 || count <= 0) {
+        return
+      }
+      const str = `${count} ${descriptionArray[index]}`
+      res.push(str)
+    })
+    return res.join('，')
+  }
+
+  function renderTreeNodes(tasks: LogsearchTaskModel[]) {
+    const servers = {
+      tidb: [],
+      tikv: [],
+      pd: []
+    }
+
+    tasks.forEach(task => {
+      const serverType = task.search_target?.kind ?? ''
+      if (!(serverType in servers)) {
+        return
+      }
+      servers[serverType].push(task)
+    })
+
+    return Object.keys(servers)
+      .filter(key => servers[key].length)
+      .map(key => {
+        const tasks = servers[key]
+        const title = (
+          <span>
+            {namingMap[key]}
+            <span style={{
+              fontSize: "0.8em",
+              marginLeft: 5
+            }}>
+              {progressDescription(tasks)}
+            </span>
+          </span>
+        )
+        return (
+          <TreeNode
+            key={key}
+            title={title}
+            icon={parentNodeIcon(tasks)}
+            disableCheckbox={!parentNodeCheckable(tasks)}
+            children={renderLeafNodes(tasks)}
+          />
+        )
+      }
+      )
+  }
+
   async function handleDownload() {
     if (taskGroupID < 0) {
       return
@@ -186,7 +187,7 @@ export default function SearchProgress() {
         name === key
       )
     )
-    // 手动拼接下载链接 <a> + click 方式下载
+
     const params = keys.map(id => `id=${id}`).join('&')
     const url = `${DASHBOARD_API_URL}/logs/download?${params}`
     downloadFile(url)
@@ -197,7 +198,7 @@ export default function SearchProgress() {
       return
     }
     confirm({
-      title: '确认要取消正在运行的日志搜索任务么？',
+      title: t('logs.confirm.cancel_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdCancelPost(taskGroupID)
       },
@@ -209,7 +210,7 @@ export default function SearchProgress() {
       return
     }
     confirm({
-      title: '确认要重试所有失败的日志搜索任务么？',
+      title: t('logs.confirm.retry_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdRetryPost(taskGroupID)
       },
@@ -222,12 +223,12 @@ export default function SearchProgress() {
 
   return (
     <div>
-      <Title level={3}>搜索进度</Title>
+      <Title level={3}>{t('logs.common.progress')}</Title>
       <div>{progressDescription(tasks)}</div>
       <div className={styles.buttons}>
-        <Button type="primary" onClick={handleDownload}>下载选中日志</Button>
-        <Button type="danger" onClick={handleCancel}>取消搜索</Button>
-        <Button onClick={handleRetry}>重试任务</Button>
+        <Button type="primary" onClick={handleDownload} disabled={checkedKeys.length < 1}>{t('logs.common.download_selected')}</Button>
+        <Button type="danger" onClick={handleCancel} disabled={!tasks.some(task => task.state === TaskState.Running)}>{t('logs.common.cancel')}</Button>
+        <Button onClick={handleRetry} disabled={tasks.some(task => task.state === TaskState.Running) || !tasks.some(task => task.state === TaskState.Error)}>{t('logs.common.retry')}</Button>
       </div>
       <Tree
         checkable

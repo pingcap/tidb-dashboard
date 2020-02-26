@@ -3,6 +3,6 @@ module.exports = {
   loader: () => import('./app.js'),
   routerPrefix: '/logsearch',
   icon: 'pie-chart',
-  menuTitle: 'Log Search', // TODO: I18N
-  isDefaultRouter: true
+  isDefaultRouter: true,
+  translations: require.context('./translations/', false, /\.yaml$/),
 }

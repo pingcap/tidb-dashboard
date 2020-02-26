@@ -2,8 +2,9 @@ import client from '@/utils/client';
 import { Table, Tooltip } from 'antd';
 import moment from 'moment';
 import React, { useContext, useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Context } from "../store";
-import { namingMap, LogLevelMap } from './util';
+import { LogLevelMap, namingMap } from './util';
 
 const { Column } = Table;
 
@@ -27,16 +28,17 @@ export default function SearchResult() {
   const { store } = useContext(Context)
   const [logPreviews, setData] = useState<LogPreview[]>([])
   const { taskGroupID, tasks } = store
+  const { t } = useTranslation()
 
   useEffect(() => {
-    function getCompoentType(id: number | undefined) {
+    function getComponentType(id: number | undefined) {
       const kind = tasks.find(task => {
         return task.id !== undefined && task.id === id
       })?.search_target?.kind
       return kind ? namingMap[kind] : undefined
     }
 
-    async function getLogPreivew() {
+    async function getLogPreview() {
       if (!taskGroupID) {
         return
       }
@@ -47,21 +49,21 @@ export default function SearchResult() {
           key: index,
           time: moment(value.time).format(),
           level: LogLevelMap[value.level ?? 0],
-          component: getCompoentType(value.task_id),
+          component: getComponentType(value.task_id),
           log: value.message,
         }
       }))
     }
 
-    getLogPreivew()
+    getLogPreview()
   }, [taskGroupID, tasks])
 
   return (
     <Table dataSource={logPreviews}>
-      <Column width={220} title="Time" dataIndex="time" key="time" />
-      <Column width={100} title="Level" dataIndex="level" key="level" />
-      <Column width={120} title="Component" dataIndex="component" key="component" />
-      <Column ellipsis title="Log" dataIndex="log" key="log" render={logRender} />
+      <Column width={220} title={t('logs.preview.time')} dataIndex="time" key="time" />
+      <Column width={100} title={t('logs.preview.level')} dataIndex="level" key="level" />
+      <Column width={120} title={t('logs.preview.component')} dataIndex="component" key="component" />
+      <Column ellipsis title={t('logs.preview.log')} dataIndex="log" key="log" render={logRender} />
     </Table>
   )
 }

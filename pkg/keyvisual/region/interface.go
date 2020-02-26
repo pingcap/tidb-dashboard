@@ -14,9 +14,8 @@
 package region
 
 import (
-	"go.etcd.io/etcd/clientv3"
-
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
 type RegionsInfo interface {
@@ -35,6 +34,6 @@ type PDDataProvider struct {
 	// This item takes effect only when both FileStartTime and FileEndTime are 0.
 	PeriodicGetter RegionsInfoGenerator
 
-	GetEtcdClient func() *clientv3.Client
-	Store         *dbstore.DB
+	EtcdProvider pd.EtcdProvider
+	Store        *dbstore.DB
 }

@@ -171,7 +171,7 @@ func (s *Service) DownloadLogs(c *gin.Context) {
 // @Description list all log search tasks in a task group by providing task group ID
 // @Produce json
 // @Param id path string true "Task Group ID"
-// @Success 200 {array} TaskGroupResponse
+// @Success 200 {object} TaskGroupResponse
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroups/{id} [get]
 func (s *Service) GetTaskGroup(c *gin.Context) {

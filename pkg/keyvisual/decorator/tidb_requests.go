@@ -57,7 +57,7 @@ type tableInfo struct {
 }
 
 func (s *tidbLabelStrategy) updateAddress() {
-	cli := s.Provider.GetEtcdClient()
+	cli := s.Provider.EtcdProvider.GetEtcdClient()
 	if cli == nil {
 		return
 	}

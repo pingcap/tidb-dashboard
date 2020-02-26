@@ -41,13 +41,13 @@ func (t *testReportSuite) getDBCli(c *C, passwd, addr, dbName string) *sql.DB {
 }
 
 func (t *testReportSuite) TestGetTable(c *C) {
-	cli := t.getDBCli(c, "", "172.16.5.40:4009", "test")
-	//cli := t.getDBCli(c, "", "127.0.0.1:4000", "test")
+	//cli := t.getDBCli(c, "", "172.16.5.40:4009", "test")
+	cli := t.getDBCli(c, "", "127.0.0.1:4000", "test")
 	//startTime := "2020-02-23 10:55:00"
 	//endTime := "2020-02-23 11:05:00"
 
-	startTime := "2020-02-25 13:20:23"
-	endTime := "2020-02-26 13:30:23"
+	startTime := "2020-02-26 13:20:23"
+	endTime := "2020-02-26 14:30:23"
 
 	var table *diagnose_report.TableDef
 	var err error
@@ -59,7 +59,7 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetTiKVCopInfo(startTime, endTime, cli)
+	table, err = diagnose_report.GetTiKVTotalTimeConsumeTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 }

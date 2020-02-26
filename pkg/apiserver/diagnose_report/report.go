@@ -83,10 +83,10 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 		// TiKV
 		GetTiKVTotalTimeConsumeTable,
 		GetTiKVErrorTable,
-		GetTiKVSchedulerInfo,
-		GetTiKVGCInfo,
 		GetTiKVCopInfo,
-		GetTiKVKVInfo, // delete this.
+		GetTiKVSchedulerInfo,
+		GetTiKVRaftInfo,
+		GetTiKVGCInfo,
 
 		// Config
 		GetPDConfigInfo,
@@ -172,8 +172,6 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef,
 		{name: "tikv_cop_request", tbl: "tikv_cop_request", labels: []string{"req"}},
 		{name: "tikv_cop_handle", tbl: "tikv_cop_handle", labels: []string{"req"}},
 		{name: "tikv_cop_wait", tbl: "tikv_cop_wait", labels: []string{"req"}},
-		{name: "tikv_process", tbl: "tikv_process", labels: []string{"type"}},
-		{name: "tikv_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}},
 		{name: "tikv_scheduler_command", tbl: "tikv_scheduler_command", labels: []string{"type"}},
 		{name: "tikv_scheduler_latch_wait", tbl: "tikv_scheduler_latch_wait", labels: []string{"type"}},
 		{name: "tikv_lock_manager_deadlock_detect", tbl: "tikv_lock_manager_deadlock_detect", labels: []string{"instance"}},
@@ -184,11 +182,14 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef,
 		{name: "tikv_raft_append_log", tbl: "tikv_append_log", labels: []string{"instance"}},
 		{name: "tikv_raft_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}},
 		{name: "tikv_raft_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}},
+		{name: "tikv_raft_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}},
+		{name: "tikv_raft_process", tbl: "tikv_process", labels: []string{"type"}},
 		{name: "tikv_check_split", tbl: "tikv_check_split", labels: []string{"instance"}},
 		{name: "tikv_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}},
 		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"type"}},
 		{name: "tikv_ingest_sst", tbl: "tikv_ingest_sst", labels: []string{"instance"}},
 		{name: "tikv_gc_tasks", tbl: "tikv_gc_tasks", labels: []string{"task"}},
+		{name: "tikv_pd_request", tbl: "tikv_pd_request", labels: []string{"type"}},
 		{name: "tikv_backup_range", tbl: "tikv_backup_range", labels: []string{"type"}},
 		{name: "tikv_backup", tbl: "tikv_backup", labels: []string{"instance"}},
 	}
@@ -565,29 +566,29 @@ func GetPDSchedulerInfo(startTime, endTime string, db *sql.DB) (*TableDef, error
 
 func GetTiKVTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []totalTimeByLabelsTableDef{
-		// TiKV
-		{name: "tikv_grpc_messge", tbl: "tikv_grpc_messge", labels: []string{"type"}},
-		{name: "tikv_cop_request", tbl: "tikv_cop_request", labels: []string{"req"}},
-		{name: "tikv_cop_handle", tbl: "tikv_cop_handle", labels: []string{"req"}},
-		{name: "tikv_cop_wait", tbl: "tikv_cop_wait", labels: []string{"req"}},
-		{name: "tikv_process", tbl: "tikv_process", labels: []string{"type"}},
-		{name: "tikv_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}},
-		{name: "tikv_scheduler_command", tbl: "tikv_scheduler_command", labels: []string{"type"}},
-		{name: "tikv_scheduler_latch_wait", tbl: "tikv_scheduler_latch_wait", labels: []string{"type"}},
+		{name: "tikv_grpc_messge", tbl: "tikv_grpc_messge", labels: []string{"instance", "type"}},
+		{name: "tikv_cop_request", tbl: "tikv_cop_request", labels: []string{"instance", "req"}},
+		{name: "tikv_cop_handle", tbl: "tikv_cop_handle", labels: []string{"instance", "req"}},
+		{name: "tikv_cop_wait", tbl: "tikv_cop_wait", labels: []string{"instance", "req"}},
+		{name: "tikv_scheduler_command", tbl: "tikv_scheduler_command", labels: []string{"instance", "type"}},
+		{name: "tikv_scheduler_latch_wait", tbl: "tikv_scheduler_latch_wait", labels: []string{"instance", "type"}},
 		{name: "tikv_lock_manager_deadlock_detect", tbl: "tikv_lock_manager_deadlock_detect", labels: []string{"instance"}},
 		{name: "tikv_lock_manager_waiter_lifetime", tbl: "tikv_lock_manager_waiter_lifetime", labels: []string{"instance"}},
-		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"type"}},
+		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"instance", "type"}},
 		{name: "tikv_send_snapshot", tbl: "tikv_send_snapshot", labels: []string{"instance"}},
-		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"type"}},
+		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"instance", "type", "status"}},
+		{name: "tikv_raft_process", tbl: "tikv_process", labels: []string{"instance", "type"}},
+		{name: "tikv_raft_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}},
 		{name: "tikv_raft_append_log", tbl: "tikv_append_log", labels: []string{"instance"}},
 		{name: "tikv_raft_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}},
 		{name: "tikv_raft_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}},
 		{name: "tikv_check_split", tbl: "tikv_check_split", labels: []string{"instance"}},
 		{name: "tikv_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}},
-		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"type"}},
+		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"instance", "type"}},
 		{name: "tikv_ingest_sst", tbl: "tikv_ingest_sst", labels: []string{"instance"}},
-		{name: "tikv_gc_tasks", tbl: "tikv_gc_tasks", labels: []string{"task"}},
-		{name: "tikv_backup_range", tbl: "tikv_backup_range", labels: []string{"type"}},
+		{name: "tikv_gc_tasks", tbl: "tikv_gc_tasks", labels: []string{"instance", "task"}},
+		{name: "tikv_pd_request", tbl: "tikv_pd_request", labels: []string{"instance", "type"}},
+		{name: "tikv_backup_range", tbl: "tikv_backup_range", labels: []string{"instance", "type"}},
 		{name: "tikv_backup", tbl: "tikv_backup", labels: []string{"instance"}},
 	}
 
@@ -796,9 +797,11 @@ func GetTiKVCopInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 
 func GetTiKVRaftInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []sumValueQuery{
-		{tbl: "tikv_cop_kv_cursor_total_operations", labels: []string{"instance", "req"}},
-		{tbl: "tikv_cop_total_response_total_size", labels: []string{"instance"}},
-		{tbl: "tikv_cop_scan_details_total", labels: []string{"instance", "req", "tag", "cf"}},
+		{tbl: "tikv_raft_sent_messages_total_num", labels: []string{"instance", "type"}},
+		{tbl: "tikv_flush_messages_total_num", labels: []string{"instance"}},
+		{tbl: "tikv_receive_messages_total_num", labels: []string{"instance"}},
+		{tbl: "tikv_raft_dropped_messages_total", labels: []string{"instance", "type"}},
+		{tbl: "tikv_raft_proposals_total_num", labels: []string{"instance", "type"}},
 	}
 	defs := make([]rowQuery, 0, len(defs1))
 	for i := range defs1 {
@@ -808,9 +811,7 @@ func GetTiKVRaftInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	appendRows := func(row TableRowDef) {
 		resultRows = append(resultRows, row)
 	}
-
 	arg := newQueryArg(startTime, endTime)
-
 	err := getTableRows(defs, arg, db, appendRows)
 	if err != nil {
 		return nil, err
@@ -821,56 +822,6 @@ func GetTiKVRaftInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE"},
-		Rows:      resultRows,
-	}
-	return table, nil
-}
-
-func GetTiKVKVInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	defs1 := []totalValueAndTotalCountTableDef{
-		{name: "tikv_raft_message_batch_size", tbl: "tikv_raft_message_batch_size", sumTbl: "tikv_raft_message_batch_total_size", countTbl: "tikv_raft_message_batch_size_total_count", labels: []string{"instance"}},
-		{name: "tikv_request_batch_size", tbl: "tikv_request_batch_size", sumTbl: "tikv_request_batch_total_size", countTbl: "tikv_request_batch_size_total_count", labels: []string{"type"}},
-		//{name: "tikv_scheduler_keys_read", tbl: "tikv_scheduler_keys_read", sumTbl: "tikv_scheduler_keys_total_read", countTbl: "tikv_scheduler_keys_read_total_count", labels: []string{"type"}},
-		//{name: "tikv_scheduler_keys_written", tbl: "tikv_scheduler_keys_written", sumTbl: "tikv_scheduler_keys_total_written", countTbl: "tikv_scheduler_keys_written_total_count", labels: []string{"type"}},
-		{name: "tikv_snapshot_kv_count", tbl: "tikv_snapshot_kv_count", sumTbl: "tikv_snapshot_kv_total_count", countTbl: "tikv_snapshot_kv_count_total_count", labels: []string{"instance"}},
-		{name: "tikv_snapshot_size", tbl: "tikv_snapshot_size", sumTbl: "tikv_snapshot_total_size", countTbl: "tikv_snapshot_size_total_count", labels: []string{"instance"}},
-	}
-	defs := make([]rowQuery, 0, len(defs1))
-	for i := range defs1 {
-		defs = append(defs, defs1[i])
-	}
-
-	resultRows := make([]TableRowDef, 0, len(defs))
-	specialHandle := func(row []string) []string {
-		for i := 2; i < len(row); i++ {
-			if len(row[i]) == 0 {
-				continue
-			}
-			row[i] = convertFloatToInt(row[i])
-		}
-		return row
-	}
-
-	appendRows := func(row TableRowDef) {
-		row.Values = specialHandle(row.Values)
-		for i := range row.SubValues {
-			row.SubValues[i] = specialHandle(row.SubValues[i])
-		}
-		resultRows = append(resultRows, row)
-	}
-
-	arg := newQueryArg(startTime, endTime)
-
-	err := getTableRows(defs, arg, db, appendRows)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
-		Category:  []string{"TiKV"},
-		Title:     "KV Info",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 		Rows:      resultRows,
 	}
 	return table, nil
@@ -909,7 +860,6 @@ func GetTiKVErrorTable(startTime, endTime string, db *sql.DB) (*TableDef, error)
 		row[2] = convertFloatToInt(row[2])
 		return row
 	}
-
 	appendRows := func(row TableRowDef) {
 		row.Values = specialHandle(row.Values)
 		for i := range row.SubValues {
@@ -922,7 +872,6 @@ func GetTiKVErrorTable(startTime, endTime string, db *sql.DB) (*TableDef, error)
 		startTime: startTime,
 		endTime:   endTime,
 	}
-
 	err := getTableRows(defs, arg, db, appendRows)
 	if err != nil {
 		return nil, err

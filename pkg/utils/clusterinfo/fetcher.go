@@ -237,6 +237,7 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 	}
 
 	healthMap := <-healthMapChan
+	close(healthMapChan)
 	for _, ds := range ds.Members {
 		host, port, err := parsePortFromAddress(ds.ClientUrls[0])
 		if err != nil {

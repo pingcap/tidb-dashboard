@@ -51,13 +51,13 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Summary Delete etcd's tidb key.
 // @Description Delete etcd's TiDB key with ip:port.
 // @Produce json
-// @Success 204
-// @Failure 404
+// @Success 204 "delete ok"
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /topology/address [delete]
 func (s *Service) deleteDBHandler(c *gin.Context) {
 	v, exists := c.Params.Get("address")
 	if !exists {
-		c.Status(500)
+		c.Status(400)
 		_ = c.Error(fmt.Errorf("address not exists in path"))
 		return
 	}

@@ -16,10 +16,6 @@ package apiserver
 import (
 	"net/http"
 	"sync"
-	"time"
-
-	pdclient "github.com/pingcap/pd/client"
-	etcdclientv3 "go.etcd.io/etcd/clientv3"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -34,6 +30,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
 
@@ -65,21 +62,10 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	foo.NewService(config).Register(endpoint, auth)
 	info.NewService(config, services.TiDBForwarder, services.Store).Register(endpoint, auth)
 
-	cli, err := etcdclientv3.New(etcdclientv3.Config{
-		Endpoints:   []string{config.PDEndPoint},
-		DialTimeout: 5 * time.Second,
-	})
-	if err != nil {
-		// handle error!
-		return nil
-	}
-	// TODO: adding security later.
-	pdcli, err := pdclient.NewClient([]string{config.PDEndPoint}, pdclient.SecurityOption{})
+	etcdclient := pd.NewEtcdClient(config)
+	pdcli := pd.NewPDClient(config)
 
-	if err != nil {
-		return nil
-	}
-	clusterinfo.NewService(config, pdcli, cli).Register(endpoint, auth)
+	clusterinfo.NewService(config, pdcli, etcdclient).Register(endpoint, auth)
 
 	services.KeyVisual.Register(endpoint, auth)
 

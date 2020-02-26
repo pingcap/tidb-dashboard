@@ -29,46 +29,42 @@ type ComponentVersionInfo struct {
 }
 
 type Common struct {
-	DeployCommon
-	// This field is copied from tidb.
-	ComponentVersionInfo
-	ServerStatus ComponentStatus `json:"server_status"`
-}
-
-type DeployCommon struct {
 	IP         string `json:"ip"`
 	Port       uint   `json:"port"`
 	BinaryPath string `json:"binary_path"`
 }
 
 type Grafana struct {
-	DeployCommon
+	Common
 }
 
 type PD struct {
-	DeployCommon
+	ComponentVersionInfo
+	Common
 	Version string `json:"version"`
 	// It will query PD's health interface.
 	ServerStatus ComponentStatus `json:"server_status"`
 }
 
 type Prometheus struct {
-	DeployCommon
+	Common
 }
 
 type TiDB struct {
+	ComponentVersionInfo
 	Common
-	StatusPort uint `json:"status_port"`
+	ServerStatus ComponentStatus `json:"server_status"`
+	StatusPort   uint            `json:"status_port"`
 }
 
 type TiKV struct {
 	ComponentVersionInfo
-	DeployCommon
+	Common
 	ServerStatus ComponentStatus   `json:"server_status"`
 	StatusPort   uint              `json:"status_port"`
 	Labels       map[string]string `json:"labels"`
 }
 
 type AlertManager struct {
-	DeployCommon
+	Common
 }

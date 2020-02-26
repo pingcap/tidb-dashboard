@@ -16,8 +16,17 @@ package clusterinfo
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/pingcap/kvproto/pkg/metapb"
+	pdclient "github.com/pingcap/pd/client"
+	"go.uber.org/zap"
 
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
@@ -25,7 +34,7 @@ import (
 
 const prefix = "/topology"
 
-func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
+func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 	AlertManager, error) {
 	resp, err := etcdcli.Get(ctx, prefix, clientv3.WithPrefix())
 	if err != nil {
@@ -38,10 +47,7 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 	dbList := make([]TiDB, 0)
 	for _, kvs := range resp.Kvs {
 		key := string(kvs.Key)
-		keyParts := strings.Split(key, "/")
-		if keyParts[0] == "" {
-			keyParts = keyParts[1:]
-		}
+		keyParts := strings.Split(key, "/")[1:]
 		if len(keyParts) < 2 {
 			continue
 		}
@@ -61,30 +67,8 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 					" `/topology/tidb/ip:port/info`")
 				continue
 			}
-			// parsing ip and port
-			pair := strings.Split(keyParts[2], ":")
-			if len(pair) != 2 {
-				log.Warn("the ns under \"/topology/tidb\" should be like ip:port")
-				continue
-			}
-			ip := strings.Trim(pair[0], "")
-			port, _ := strconv.Atoi(pair[1])
-
-			if _, ok := dbMap[keyParts[2]]; !ok {
-				dbMap[keyParts[2]] = &TiDB{}
-			}
-			db := dbMap[keyParts[2]]
-
-			if keyParts[3] == "ttl" {
-				db.ServerStatus = Up
-			} else {
-				// keyParts[3] == "info"
-				if err = json.Unmarshal(kvs.Value, db); err != nil {
-					log.Warn("/topology/tidb/ip:port/info key unmarshal errors")
-				}
-				db.IP = ip
-				db.Port = uint(port)
-			}
+			address, fieldType := keyParts[2], keyParts[3]
+			fillDBMap(address, fieldType, kvs.Value, dbMap)
 		}
 	}
 
@@ -97,4 +81,241 @@ func FetchEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 	}
 
 	return dbList, grafana, alertManager, nil
+}
+
+func GetTiDBTopologyOnly(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, error) {
+	resp, err := etcdcli.Get(ctx, prefix+"/tidb", clientv3.WithPrefix())
+	if err != nil {
+		return nil, err
+	}
+	dbMap := map[string]*TiDB{}
+	for _, kvs := range resp.Kvs {
+		key := string(kvs.Key)
+
+		keyParts := strings.Split(key, "/")[2:]
+		if len(keyParts) < 2 {
+			continue
+		}
+		address, fieldType := keyParts[0], keyParts[1]
+		fillDBMap(address, fieldType, kvs.Value, dbMap)
+	}
+	var dbList []TiDB
+	// Note: it means this TiDB has non-ttl key, but ttl-key not exists.
+	for _, v := range dbMap {
+		if v.ServerStatus != Up {
+			v.ServerStatus = Offline
+		}
+		dbList = append(dbList, *v)
+	}
+
+	return dbList, nil
+}
+
+// address should be like "ip:port"
+// fieldType should be "ttl" or "info"
+// value is field value.
+func fillDBMap(address, fieldType string, value []byte, dbMap map[string]*TiDB) {
+	// parsing ip and port
+	pair := strings.Split(address, ":")
+	if len(pair) != 2 {
+		log.Warn("the ns under \"/topology/tidb\" should be like ip:port")
+		return
+	}
+	ip := strings.Trim(pair[0], "")
+	port, _ := strconv.Atoi(pair[1])
+
+	if _, ok := dbMap[address]; !ok {
+		dbMap[address] = &TiDB{}
+	}
+	db := dbMap[address]
+
+	if fieldType == "ttl" {
+		refresh, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", string(value))
+		if err != nil {
+			db.ServerStatus = Unknown
+		} else {
+			if time.Since(refresh) <= time.Second*30 {
+				db.ServerStatus = Up
+			} else {
+				db.ServerStatus = Unknown
+			}
+		}
+	} else {
+		if err := json.Unmarshal(value, db); err != nil {
+			log.Warn("/topology/tidb/ip:port/info key unmarshal errors")
+			return
+		}
+		db.IP = ip
+		db.Port = uint(port)
+	}
+}
+
+func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error) {
+	var kvs []TiKV
+	stores, err := pdcli.GetAllStores(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range stores {
+		// parse ip and port
+		addresses := strings.Split(v.Address, ":")
+		port := parsePort(addresses[1])
+		// Note: if no err exists, it just return 0.
+		statusPort, _ := parsePortFromAddress(v.StatusAddress)
+		currentInfo := TiKV{
+			ComponentVersionInfo: ComponentVersionInfo{
+				Version: v.Version,
+				GitHash: v.GitHash,
+			},
+			Common: Common{
+				IP:         addresses[0],
+				Port:       port,
+				BinaryPath: v.BinaryPath,
+			},
+			ServerStatus: storeStateToStatus(v.GetState()),
+			StatusPort:   statusPort,
+			Labels:       map[string]string{},
+		}
+		for _, v := range v.Labels {
+			currentInfo.Labels[v.Key] = currentInfo.Labels[v.Value]
+		}
+		kvs = append(kvs, currentInfo)
+	}
+
+	return kvs, nil
+}
+
+func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
+	var pdPeers []PD
+	resp, err := http.Get(pdEndPoint + "/pd/api/v1/members")
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("fetch PD members got wrong status code")
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	ds := struct {
+		Count   int `json:"count"`
+		Members []struct {
+			ClientUrls    []string    `json:"client_urls"`
+			BinaryPath    string      `json:"binary_path"`
+			BinaryVersion string      `json:"binary_version"`
+			MemberID      json.Number `json:"member_id"`
+		} `json:"members"`
+	}{}
+
+	err = json.Unmarshal(data, &ds)
+	if err != nil {
+		return nil, err
+	}
+	healthMap, err := buildHealthMap(pdEndPoint)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ds := range ds.Members {
+		u, err := url.Parse(ds.ClientUrls[0])
+		if err != nil {
+			return nil, err
+		}
+
+		var storeStatus ComponentStatus
+		if _, ok := healthMap[ds.MemberID.String()]; ok {
+			storeStatus = Up
+		} else {
+			storeStatus = Offline
+		}
+
+		pdPeers = append(pdPeers, PD{
+			Common: Common{
+				IP:         u.Hostname(),
+				Port:       parsePort(u.Port()),
+				BinaryPath: ds.BinaryPath,
+			},
+			Version:      ds.BinaryVersion,
+			ServerStatus: storeStatus,
+		})
+	}
+	return pdPeers, nil
+}
+
+// parsePortFromAddress receive an address like "127.0.0.1:2379",
+// and returns the port number.
+func parsePortFromAddress(address string) (uint, error) {
+	var statusPort int
+	u, err := url.Parse(address)
+	if err != nil {
+		// https://github.com/golang/go/issues/18824
+		if strings.HasPrefix(address, "//") {
+			log.Warn("parsePortFromAddress parsing address error", zap.Error(err))
+			return 0, err
+		}
+		return parsePortFromAddress("//" + address)
+	}
+	statusPort, err = strconv.Atoi(u.Port())
+	if err != nil {
+		log.Warn("parsePortFromAddress parsing port error", zap.Error(err))
+		return 0, err
+	}
+	return uint(statusPort), nil
+}
+
+func parsePort(port string) uint {
+	var statusPort int
+	var err error
+	if statusPort, err = strconv.Atoi(port); err != nil {
+		log.Warn("parsePort parsing port error", zap.Error(err))
+		return 0
+	}
+	return uint(statusPort)
+}
+
+func storeStateToStatus(state metapb.StoreState) ComponentStatus {
+	switch state {
+	case metapb.StoreState_Up:
+		return Up
+	case metapb.StoreState_Offline:
+		return Offline
+	case metapb.StoreState_Tombstone:
+		return Tombstone
+	default:
+		return Unknown
+	}
+}
+
+func buildHealthMap(pdEndPoint string) (map[string]struct{}, error) {
+	// health member set
+	healthMember := map[string]struct{}{}
+
+	resp, err := http.Get(pdEndPoint + "/pd/api/v1/health")
+	if err != nil {
+		return nil, err
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var healths []struct {
+		MemberID json.Number `json:"member_id"`
+	}
+
+	err = json.Unmarshal(data, &healths)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range healths {
+		healthMember[v.MemberID.String()] = struct{}{}
+	}
+	return healthMember, nil
 }

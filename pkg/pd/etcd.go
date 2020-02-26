@@ -21,6 +21,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	pdclient "github.com/pingcap/pd/client"
 )
 
 const (
@@ -36,6 +37,15 @@ func NewEtcdClient(cfg *config.Config) *clientv3.Client {
 	})
 	if err != nil {
 		log.Error("can not get etcd client", zap.Error(err))
+		panic(err)
+	}
+	return client
+}
+
+func NewPDClient(cfg *config.Config) pdclient.Client {
+	client, err := pdclient.NewClient([]string{cfg.PDEndPoint}, pdclient.SecurityOption{})
+	if err != nil {
+		log.Error("can not get pd client", zap.Error(err))
 		panic(err)
 	}
 	return client

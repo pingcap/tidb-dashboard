@@ -23,23 +23,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 
 	"github.com/gin-gonic/gin"
 	pdclient "github.com/pingcap/pd/client"
 	etcdclientv3 "go.etcd.io/etcd/clientv3"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
-
-type ClusterInfo struct {
-	TiDB         []clusterinfo.TiDB       `json:"tidb"`
-	TiKV         []clusterinfo.TiKV       `json:"tikv"`
-	Pd           []clusterinfo.PD         `json:"pd"`
-	Grafana      clusterinfo.Grafana      `json:"grafana"`
-	AlertManager clusterinfo.AlertManager `json:"alert_manager"`
-}
 
 type Service struct {
 	config  *config.Config
@@ -58,8 +50,8 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint.DELETE("/tidb/:address/", s.deleteDBHandler)
 }
 
-// @Summary Delete tidb ns.
-// @Description Delete TiDB with ip:port
+// @Summary Delete etcd's tidb key.
+// @Description Delete etcd's TiDB key with ip:port.
 // @Produce json
 // @Success 204  Delete successfully and return 204.
 // @Failure 404  The key doesn't exists.
@@ -101,16 +93,27 @@ type ResponseWithErr struct {
 	AlertManager interface{} `json:"alert_manager"`
 }
 
-// @Summary Dashboard info
-// @Description Get information about the dashboard service.
+type ClusterInfo struct {
+	TiDB         []clusterinfo.TiDB       `json:"tidb"`
+	TiKV         []clusterinfo.TiKV       `json:"tikv"`
+	Pd           []clusterinfo.PD         `json:"pd"`
+	Grafana      clusterinfo.Grafana      `json:"grafana"`
+	AlertManager clusterinfo.AlertManager `json:"alert_manager"`
+}
+
+type ErrResp struct {
+	Error string `json:"error"`
+}
+
+// @Summary Get all Dashboard topology and liveness.
+// @Description Get information about the dashboard topology.
 // @Produce json
-// @Success 200 {object} ClusterInfo
+// @Success 200 {object} clusterClusterInfo
 // @Router /topology [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) topologyHandler(c *gin.Context) {
-	var info ClusterInfo
 	var returnObject ResponseWithErr
-	errMap := map[string]error{}
-	var errMutex sync.Mutex
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -127,46 +130,10 @@ func (s *Service) topologyHandler(c *gin.Context) {
 		currentFetcher := fetcher
 		go func() {
 			defer wg.Done()
-			err := currentFetcher.fetch(ctx, &info, s)
-			if err != nil {
-				errMutex.Lock()
-				errMap[currentFetcher.name()] = err
-				errMutex.Unlock()
-			}
+			currentFetcher.fetch(ctx, &returnObject, s)
 		}()
 	}
 	wg.Wait()
-	var exists bool
-	var err error
-
-	if err, exists = errMap["tikv"]; exists {
-		// err must exists and not nil
-		returnObject.TiKV = struct {
-			Error string `json:"error"`
-		}{Error: err.Error()}
-	} else {
-		returnObject.TiKV = info.TiKV
-	}
-	if err, exists = errMap["tidb"]; exists {
-		// err must exists and not nil
-		errStruct := struct {
-			Error string `json:"error"`
-		}{Error: err.Error()}
-		returnObject.TiDB = errStruct
-		returnObject.AlertManager = errStruct
-	} else {
-		returnObject.TiDB = info.TiDB
-		returnObject.AlertManager = info.AlertManager
-		returnObject.Grafana = info.Grafana
-	}
-	if err, exists = errMap["pd"]; exists {
-		// err must exists and not nil
-		returnObject.Pd = struct {
-			Error string `json:"error"`
-		}{Error: err.Error()}
-	} else {
-		returnObject.Pd = info.Pd
-	}
 
 	c.JSON(http.StatusOK, returnObject)
 }

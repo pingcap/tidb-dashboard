@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql" // mysql driver
 )
@@ -881,7 +882,6 @@ func GetCPUUsageTable(startTime, endTime string, db *sql.DB) (*TableDef, error) 
 	tables := []CPUUsageTableDef{
 		{tbl: "process_cpu_usage", label: []string{"instance", "job"}},
 	}
-
 	resultRows := make([]TableRowDef, 0, len(tables))
 	table := &TableDef{
 		Category:  []string{"node"},
@@ -1083,9 +1083,9 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *sql.DB) (*TableDef, err
 	tables := []AvgMaxMinTableDef{
 		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", label: "type"},
 		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit", label: "type"},
-		{name: "tikv_block_index_cache_hit", tbl: "tikv_block_index_cache_hit", label: "type"},
-		{name: "tikv_block_filter_cache_hit", tbl: "tikv_block_filter_cache_hit", label: "type"},
-		{name: "tikv_block_data_cache_hit", tbl: "tikv_block_data_cache_hit", label: "type"},
+		{name: "index", tbl: "tikv_block_index_cache_hit", label: "type"},
+		{name: "filter", tbl: "tikv_block_filter_cache_hit", label: "type"},
+		{name: "data", tbl: "tikv_block_data_cache_hit", label: "type"},
 	}
 
 	resultRows := make([]TableRowDef, 0, len(tables))
@@ -1094,11 +1094,17 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *sql.DB) (*TableDef, err
 		Title:     "cache hit",
 		CommentEN: "",
 		CommentCN: "",
-		Column:    []string{"METRIC_NAME", "AVG", "MAX", "MIN"},
+		Column:    []string{"METRIC_NAME", "TPYE", "AVG", "MAX", "MIN"},
 	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select '%[4]s', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s'",
-			t.tbl, startTime, endTime, t.name)
+	for i, t := range tables {
+		sql := ""
+		if i < 2 {
+			sql = fmt.Sprintf("select '%[4]s', '', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s'",
+				t.tbl, startTime, endTime, t.name)
+		} else {
+			sql = fmt.Sprintf("select '', '%[4]s', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s'",
+				t.tbl, startTime, endTime, t.name)
+		}
 		rows, err := querySQL(db, sql)
 		if err != nil {
 			return nil, err
@@ -1147,89 +1153,113 @@ func GetClusterInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, erro
 
 type hardWare struct {
 	instance string
-	Type     string
+	Type     map[string]int
 	cpu      int
 	memory   float64
 	disk     map[string]float64
+	uptime   string
 }
 
-//func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-//	tables := []CPUUsageTableDef{
-//		{tbl: "cluster_info", label: []string{}},
-//	}
-//
-//	resultRows := make([]TableRowDef, 0, len(tables))
-//	table := &TableDef{
-//		Category:  []string{"Header"},
-//		Title:     "cluster hardware",
-//		CommentEN: "",
-//		CommentCN: "",
-//		Column:    []string{"HOST", "INSTANCE", "CPU_CORES", "MEMORY (GB)", "DISK (GB)", "UPTIME"},
-//	}
-//	sql := "SELECT instance,type,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='cpu' and name = 'cpu-physical-cores'"
-//	rows, err := querySQL(db, sql)
-//	if err != nil {
-//		return nil, err
-//	}
-//	m := make(map[string] *hardWare)
-//	var s string
-//	for _,row := range rows {
-//		idx := strings.Index(row[0],":")
-//		s := row[0]
-//		s = s[:idx]
-//		cpuCnt,err := strconv.Atoi(row[2])
-//		if err != nil {
-//			return &TableDef{},err
-//		}
-//		if _,ok := m[s]; ok {
-//			m[s].Type += "," + row[1]
-//			m[s].cpu += cpuCnt
-//		} else {
-//			m[s] = &hardWare{s,row[1],cpuCnt,0,0}
-//		}
-//	}
-//	sql = "SELECT instance,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='memory' and name = 'capacity'"
-//	rows, err = querySQL(db, sql)
-//	for _,row := range rows {
-//		s = row[0][:strings.Index(row[0],":")]
-//		memCnt,err := strconv.ParseFloat(row[1],64)
-//		if err != nil {
-//			return &TableDef{},err
-//		}
-//		if _,ok := m[s]; ok {
-//			m[s].memory += memCnt
-//		} else {
-//			m[s].memory = memCnt
-//		}
-//	}
-//	sql = "SELECT * from `CLUSTER_HARDWARE` where `NAME` = 'total' AND `DEVICE_NAME` LIKE '/dev%' or `DEVICE_NAME` LIKE 'sda%' or`DEVICE_NAME` LIKE 'nvme'"
-//	rows, err = querySQL(db, sql)
-//	for _,row := range rows {
-//		s = row[0][:strings.Index(row[0],":")]
-//		diskCnt,err := strconv.ParseFloat(row[1],64)
-//		if err != nil {
-//			return &TableDef{},err
-//		}
-//		if _,ok := m[s]; ok {
-//			m[s].disk += diskCnt
-//		} else {
-//			m[s].disk.[row[1]] = row[2]
-//		}
-//	}
-//	rows = rows[:0]
-//	for _,v := range m {
-//		row := make([]string,6)
-//		row[0] = v.instance
-//		row[1] = v.Type
-//		row[2] = strconv.Itoa(v.cpu) + "/" + strconv.Itoa(v.cpu * 2)
-//		row[3] = fmt.Sprintf("%f", v.memory/(1024*1024*1024))
-//		row[4] = fmt.Sprintf("%f", v.disk/(1024*1024*1024))
-//		row[5] = ""
-//		rows = append(rows,row)
-//	}
-//	for _,row:= range rows {
-//		resultRows = append(resultRows, NewTableRowDef(row, nil))
-//	}
-//	table.Rows = resultRows
-//	return table, nil
-//}
+func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	tables := []CPUUsageTableDef{
+		{tbl: "cluster_info", label: []string{}},
+	}
+
+	resultRows := make([]TableRowDef, 0, len(tables))
+	table := &TableDef{
+		Category:  []string{"Header"},
+		Title:     "cluster hardware",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"HOST", "INSTANCE", "CPU_CORES", "MEMORY (GB)", "DISK (GB)", "UPTIME"},
+	}
+	sql := "SELECT instance,type,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='cpu' and name = 'cpu-physical-cores'"
+	rows, err := querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string] *hardWare)
+	var s string
+	for _,row := range rows {
+		idx := strings.Index(row[0],":")
+		s := row[0]
+		s = s[:idx]
+		cpuCnt,err := strconv.Atoi(row[2])
+		if err != nil {
+			return &TableDef{},err
+		}
+		if _,ok := m[s]; ok {
+			if _,ok := m[s].Type[row[1]]; ok {
+				m[s].Type[row[1]] += 1
+			} else {
+				m[s].Type[row[1]] = 1
+			}
+			//m[s].Type += "," + row[1]
+			m[s].cpu += cpuCnt
+		} else {
+			m[s] = &hardWare{s,map[string]int{row[1]:1},cpuCnt,0,make(map[string]float64),""}
+		}
+	}
+	sql = "SELECT instance,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='memory' and name = 'capacity'"
+	rows, err = querySQL(db, sql)
+	for _,row := range rows {
+		s = row[0][:strings.Index(row[0],":")]
+		memCnt,err := strconv.ParseFloat(row[1],64)
+		if err != nil {
+			return &TableDef{},err
+		}
+		if _,ok := m[s]; ok {
+			m[s].memory += memCnt
+		} else {
+			m[s].memory = memCnt
+		}
+	}
+	sql = "SELECT `INSTANCE`,`DEVICE_NAME`,`VALUE` from information_schema.CLUSTER_HARDWARE where `NAME` = 'total' AND (`DEVICE_NAME` LIKE '/dev%' or `DEVICE_NAME` LIKE 'sda%' or`DEVICE_NAME` LIKE 'nvme%')"
+	rows, err = querySQL(db, sql)
+	for _,row := range rows {
+		s = row[0][:strings.Index(row[0],":")]
+		diskCnt,err := strconv.ParseFloat(row[2],64)
+		if err != nil {
+			return &TableDef{},err
+		}
+		if _,ok := m[s]; ok {
+			if _,ok := m[s].disk[row[1]]; ok {
+				m[s].disk[row[1]] += diskCnt
+			} else {
+				m[s].disk[row[1]] = diskCnt
+			}
+		} else {
+			m[s].disk = make(map[string] float64)
+		}
+	}
+	sql = fmt.Sprintf("SELECT instance,max(value) FROM metrics_schema.node_uptime  where time >= '%[1]s' and time < '%[2]s' GROUP BY instance", startTime, endTime)
+	rows, err = querySQL(db, sql)
+	for _,row := range rows {
+		s = row[0][:strings.Index(row[0],":")]
+		if err != nil {
+			return &TableDef{},err
+		}
+		m[s].uptime = row[1]
+	}
+	rows = rows[:0]
+	for _,v := range m {
+		row := make([]string,6)
+		row[0] = v.instance
+		//row[1] = v.Type
+		for k,va := range v.Type {
+			row[1] += fmt.Sprintf("%[1]s*%[2]s ",k,strconv.Itoa(va))
+		}
+		row[2] = strconv.Itoa(v.cpu) + "/" + strconv.Itoa(v.cpu * 2)
+		row[3] = fmt.Sprintf("%f", v.memory/(1024*1024*1024))
+		for k,va := range v.disk {
+			row[4] += fmt.Sprintf("%[1]s : %[2]f\n",k,va/(1024*1024*1024))
+		}
+		row[5] = v.uptime
+		rows = append(rows,row)
+	}
+	for _,row:= range rows {
+		resultRows = append(resultRows, NewTableRowDef(row, nil))
+	}
+	table.Rows = resultRows
+	return table, nil
+}

@@ -110,9 +110,9 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	//table, err = diagnose_report.GetTiKVThreadCPUTable(startTime, endTime, cli)
-	//c.Assert(err, IsNil)
-	//printRows(table)
+	table, err = diagnose_report.GetTiKVThreadCPUTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
 
 	table, err = diagnose_report.GetStoreStatusTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
@@ -134,9 +134,9 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	//table, err = diagnose_report.GetClusterHardwareInfoTable(startTime, endTime, cli)
-	//c.Assert(err, IsNil)
-	//printRows(table)
+	table, err = diagnose_report.GetClusterHardwareInfoTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
 }
 
 func (t *testReportSuite) TestRoundFloatString(c *C) {

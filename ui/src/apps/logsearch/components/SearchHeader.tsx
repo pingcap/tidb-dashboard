@@ -1,77 +1,83 @@
-import React, { useState, useContext, useEffect, ChangeEvent } from "react";
-import moment from 'moment';
-import { Row, Col, DatePicker, TreeSelect, Select } from "antd";
-import Search from "antd/lib/input/Search";
-import { RangePickerValue } from "antd/lib/date-picker/interface";
-import { LogsearchComponent, LogsearchTaskGroupCreateCommand } from "@/utils/dashboard_client";
 import client from "@/utils/client";
+import { LogsearchCreateTaskGroupRequest, LogsearchSearchTarget } from "@/utils/dashboard_client";
+import { Col, DatePicker, Row, Select, TreeSelect } from "antd";
+import { RangePickerValue } from "antd/lib/date-picker/interface";
+import Search from "antd/lib/input/Search";
+import moment from 'moment';
+import React, { ChangeEvent, useContext, useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
 import { Context } from "../store";
+import { AllLogLevel, namingMap } from "./util";
 
 const { SHOW_CHILD } = TreeSelect;
 const { RangePicker } = DatePicker
 const { Option } = Select;
 
-const demoComponent: LogsearchComponent = {
-  ip: "192.168.1.8",
-  port: "4000",
-  server_type: "tidb",
-  status_port: "10080"
+const mockIP = '127.0.0.1'
+
+const mockServerMap: Map<string, LogsearchSearchTarget> = new Map([
+  [
+    `${mockIP}:4000`, {
+      ip: mockIP,
+      port: 10080,
+      kind: "tidb"
+    }
+  ],
+  [
+    `${mockIP}:20160`, {
+      ip: mockIP,
+      port: 20160,
+      kind: "tikv"
+    },
+  ],
+  [
+    `${mockIP}:2379`, {
+      ip: mockIP,
+      port: 2379,
+      kind: "pd"
+    }
+  ]
+])
+
+function buildServerMap() {
+  // TODO: parse from topology
+  return mockServerMap
 }
 
-const treeData = [
-  {
-    title: 'TiDB',
-    value: '0-0',
-    key: '0-0',
-    children: [
-      {
-        title: '192.168.199.113:4000',
-        value: '192.168.199.113:4000',
-        key: '0-0-0',
-      },
-    ],
-  },
-  {
-    title: 'PD',
-    value: '0-2',
-    key: '0-2',
-    children: [
-      {
-        title: '192.168.199.113:2379',
-        value: '192.168.199.113:2379',
-        key: '0-2-0',
-      },
-    ],
-  },
-  {
-    title: 'TiKV',
-    value: '0-1',
-    key: '0-1',
-    children: [
-      {
-        title: '192.168.199.114:20160',
-        value: '192.168.199.114:20160',
-        key: '0-1-0',
-      },
-      {
-        title: '192.168.199.115:20160',
-        value: '192.168.199.115:20160',
-        key: '0-1-1',
-      },
-      {
-        title: '192.168.199.116:20160',
-        value: '192.168.199.116:20160',
-        key: '0-1-2',
-      },
-    ],
-  },
-];
+function buildTreeData(serverMap: Map<string, LogsearchSearchTarget>) {
+  // TODO: parse from topology
+  const servers = {
+    tidb: [],
+    tikv: [],
+    pd: []
+  }
 
-const AllLogLevel = [1, 2, 3, 4, 5, 6]
+  serverMap.forEach((target, addr) => {
+    const kind = target.kind ?? ''
+    if (!(kind in servers)) {
+      return
+    }
+    servers[kind].push({
+      title: addr,
+      value: addr,
+      key: addr
+    })
+  })
+
+  return Object.keys(servers)
+    .filter(kind => servers[kind].length)
+    .map(kind => ({
+      title: namingMap[kind],
+      value: kind,
+      key: kind,
+      children: servers[kind]
+    }))
+}
 
 export default function SearchHeader() {
   const { store, dispatch } = useContext(Context)
   const { searchOptions } = store
+  const history = useHistory()
 
   const [timeRange, setTimeRange] = useState<RangePickerValue>(searchOptions.curTimeRange)
   const [logLevel, setLogLevel] = useState<number>(searchOptions.curLogLevel)
@@ -91,16 +97,22 @@ export default function SearchHeader() {
   // don't add the dependent functions likes dispatch into the dependency array
   // it will cause the infinite loop
 
-  function selectComponents(): LogsearchComponent[] {
-    if (components.indexOf('192.168.199.113:4000') > -1) {
-      return [demoComponent]
-    }
-    return []
-  }
+  const serverMap = buildServerMap()
 
   async function createTaskGroup() {
-    let params: LogsearchTaskGroupCreateCommand = {
-      components: selectComponents(),
+    // TODO: 检查必须选择至少一个组件
+
+    const targets: LogsearchSearchTarget[] = []
+    components.forEach(address => {
+      const target = serverMap.get(address)
+      if (!target) {
+        return
+      }
+      targets.push(target)
+    })
+
+    let params: LogsearchCreateTaskGroupRequest = {
+      search_targets: targets,
       request: {
         start_time: timeRange?.[0]?.valueOf(), // unix millionsecond
         end_time: timeRange?.[1]?.valueOf(), // unix millionsecond
@@ -108,9 +120,9 @@ export default function SearchHeader() {
         patterns: searchValue.split(/\s+/), // 'foo boo' => ['foo', 'boo']
       }
     }
-    const result = await client.dashboard.logsTaskgroupsPost(params)
-    // TODO: popup 成功
-    console.log(result.data)
+    const result = await client.dashboard.logsTaskgroupPut(params)
+    dispatch({ type: 'task_group_id', payload: result.data.task_group?.id })
+    history.push('/logsearch/detail')
   }
 
   function handleTimeRangeChange(value: RangePickerValue) {
@@ -135,7 +147,7 @@ export default function SearchHeader() {
   }
 
   const tProps = {
-    treeData,
+    treeData: buildTreeData(serverMap),
     onChange: handleComponentChange,
     treeDefaultExpandAll: true,
     treeCheckable: true,
@@ -176,15 +188,16 @@ export default function SearchHeader() {
         </Col>
         <Col span={12}>
           关键字：
-            <div style={{ display: "inline-block" }}>
+            <span>
             <Search
               value={searchValue}
+              placeholder="可选，关键字以空格分割"
               enterButton="Search"
-              style={{ width: 500 }}
+              style={{ width: 500, verticalAlign: "middle" }}
               onChange={handleSearchPatternChange}
               onSearch={handleSearch}
             />
-          </div>
+          </span>
         </Col>
       </Row>
     </div>

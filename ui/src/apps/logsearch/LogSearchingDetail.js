@@ -1,7 +1,6 @@
+import { Alert, Col, Row } from 'antd'
 import React from 'react'
-import {Row, Col, Alert} from 'antd'
 import { SearchHeader, SearchProgress, SearchResult } from './components'
-
 
 export default function LogSearchingDetail() {
   return (
@@ -13,7 +12,7 @@ export default function LogSearchingDetail() {
             message="预览仅显示前 500 项日志"
             type="info"
             showIcon
-            style={{marginBottom: 14}}
+            style={{ marginBottom: 14 }}
           />
           <SearchResult />
         </Col>

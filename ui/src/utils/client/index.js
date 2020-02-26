@@ -6,13 +6,13 @@ import * as DashboardClient from '@/utils/dashboard_client';
 import * as authUtil from '@/utils/auth';
 import * as routingUtil from '@/utils/routing';
 
-let DASHBOARD_API_URL_PERFIX = 'http://192.168.1.8:12333';
-if (process.env.REACT_APP_DASHBOARD_API_URL !== undefined) {
+let DASHBOARD_API_URL_PERFIX = 'http://127.0.0.1:12333';
+if (process.env.DASHBOARD_API_URL_PERFIX !== undefined) {
   // Accept empty string as dashboard API URL as well.
-  DASHBOARD_API_URL_PERFIX = process.env.REACT_APP_DASHBOARD_API_URL;
+  DASHBOARD_API_URL_PERFIX = process.env.DASHBOARD_API_URL_PERFIX;
 }
 
-const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}/dashboard/api`;
+export const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}/dashboard/api`;
 
 console.log(`Dashboard API URL: ${DASHBOARD_API_URL}`);
 

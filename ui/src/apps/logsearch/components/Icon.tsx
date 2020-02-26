@@ -1,5 +1,5 @@
+import { Icon } from 'antd'
 import React from 'react'
-import {Icon} from 'antd'
 
 export function LoadingIcon() {
   return <Icon type="loading" />

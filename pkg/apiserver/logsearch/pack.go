@@ -88,12 +88,12 @@ func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 		return
 	}
 
-	contentLength := stat.Size()
+	contentType := "application/zip"
 	extraHeaders := map[string]string{
 		"Content-Disposition": fmt.Sprintf(`attachment; filename="%s"`, stat.Name()),
 	}
 
-	c.DataFromReader(http.StatusOK, contentLength, "application/zip", f, extraHeaders)
+	c.DataFromReader(http.StatusOK, -1, contentType, f, extraHeaders)
 }
 
 func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {

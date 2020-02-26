@@ -16,7 +16,6 @@ package profile
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
@@ -27,9 +26,7 @@ type TaskState int
 
 // Built-in task state
 const (
-	TaskStateCreate TaskState = iota
-	TaskStateError
-	TaskStateCancel
+	TaskStateError TaskState = iota
 
 	// TaskGroup can only have these two states.
 	TaskStateRunning
@@ -71,7 +68,6 @@ func autoMigrate(db *dbstore.DB) error {
 type Task struct {
 	*TaskModel
 	db     *dbstore.DB
-	mu     sync.Mutex
 	cancel context.CancelFunc
 }
 
@@ -80,36 +76,20 @@ func NewTask(db *dbstore.DB, id uint, component, addr string) *Task {
 	return &Task{
 		TaskModel: &TaskModel{
 			TaskGroupID: id,
-			State:       TaskStateCreate,
+			State:       TaskStateRunning,
 			Addr:        addr,
 			Component:   component,
 			CreateTime:  time.Now().Unix(),
 		},
 		db: db,
-		mu: sync.Mutex{},
 	}
 }
 
 func (t *Task) run() {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.cancel = cancel
-	t.mu.Lock()
-	t.State = TaskStateRunning
-	t.db.Save(t.TaskModel)
-	t.mu.Unlock()
 	filePrefix := fmt.Sprintf("profile_group_%d_task%d_%s_%s_", t.TaskGroupID, t.ID, t.Component, t.Addr)
 	svgFilePath, err := fetchSvg(ctx, t.Component, t.Addr, filePrefix)
-	select {
-	case <-ctx.Done():
-		t.mu.Lock()
-		t.State = TaskStateCancel
-		t.db.Save(t.TaskModel)
-		t.mu.Unlock()
-		return
-	default:
-	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
 	if err != nil {
 		t.Error = err.Error()
 		t.State = TaskStateError
@@ -124,12 +104,6 @@ func (t *Task) run() {
 
 func (t *Task) stop() {
 	t.cancel()
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	if t.State != TaskStateFinish && t.State != TaskStateError {
-		t.State = TaskStateCancel
-		t.db.Save(t.TaskModel)
-	}
 }
 
 // TaskGroup is the collection of tasks.
@@ -141,7 +115,7 @@ type TaskGroup struct {
 func NewTaskGroup() *TaskGroup {
 	return &TaskGroup{
 		TaskGroupModel: &TaskGroupModel{
-			State: TaskStateCreate,
+			State: TaskStateRunning,
 		},
 	}
 }

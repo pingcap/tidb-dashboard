@@ -126,8 +126,6 @@ func (s *Service) startHandler(c *gin.Context) {
 		taskGroup.State = TaskStateFinish
 		s.db.Save(taskGroup.TaskGroupModel)
 	}()
-	taskGroup.State = TaskStateRunning
-	s.db.Save(taskGroup.TaskGroupModel)
 
 	c.JSON(http.StatusOK, taskGroup.ID)
 }
@@ -188,7 +186,7 @@ func (s *Service) cancelGroupHandler(c *gin.Context) {
 		return
 	}
 	var tasks []TaskModel
-	err = s.db.Where("task_group_id = ? AND state in (?)", taskGroupID, []TaskState{TaskStateCreate, TaskStateRunning}).Find(&tasks).Error
+	err = s.db.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateRunning).Find(&tasks).Error
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
@@ -220,7 +218,7 @@ func (s *Service) cancelHandler(c *gin.Context) {
 		return
 	}
 	task := TaskModel{}
-	err = s.db.Where("id = ? AND state in (?)", taskID, []TaskState{TaskStateCreate, TaskStateRunning}).First(&task).Error
+	err = s.db.Where("id = ? AND state = ?", taskID, TaskStateRunning).First(&task).Error
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)

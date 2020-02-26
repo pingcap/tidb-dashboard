@@ -17,6 +17,8 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
+
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 
@@ -25,12 +27,13 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/clusterinfo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
 
@@ -40,6 +43,8 @@ type Services struct {
 	Store         *dbstore.DB
 	TiDBForwarder *tidb.Forwarder
 	KeyVisual     *keyvisual.Service
+	EtcdProvider  pd.EtcdProvider
+	PDProvider    pd.PDProvider
 }
 
 func Handler(apiPrefix string, config *config.Config, services *Services) http.Handler {
@@ -62,12 +67,12 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	foo.NewService(config).Register(endpoint, auth)
 	info.NewService(config, services.TiDBForwarder, services.Store).Register(endpoint, auth)
 
-	etcdclient := pd.NewEtcdClient(config)
-	pdcli := pd.NewPDClient(config)
-
-	clusterinfo.NewService(config, pdcli, etcdclient).Register(endpoint, auth)
+	clusterinfo.NewService(config, services.PDProvider.GetPDClient(),
+		services.EtcdProvider.GetEtcdClient()).Register(endpoint, auth)
 
 	services.KeyVisual.Register(endpoint, auth)
+	logsearch.NewService(config, services.Store).Register(endpoint, auth)
+	statement.NewService(config, services.TiDBForwarder).Register(endpoint, auth)
 
 	return r
 }

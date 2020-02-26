@@ -36,8 +36,8 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/pingcap/log"
-	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
@@ -53,9 +53,10 @@ import (
 )
 
 type DashboardCLIConfig struct {
-	ListenHost string
-	ListenPort int
-	CoreConfig *config.Config
+	ListenHost     string
+	ListenPort     int
+	EnableDebugLog bool
+	CoreConfig     *config.Config
 	// key-visual file mode for debug
 	KVFileStartTime int64
 	KVFileEndTime   int64
@@ -73,6 +74,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
 	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
+	flag.BoolVar(&cfg.EnableDebugLog, "debug", false, "Enable debug logs")
 	// debug for keyvisual
 	// TODO: Hide help information
 	flag.Int64Var(&cfg.KVFileStartTime, "keyvis-file-start", 0, "(debug) start time for file range in file mode")
@@ -126,8 +128,17 @@ func main() {
 	store := dbstore.MustOpenDBStore(cliConfig.CoreConfig)
 	defer store.Close() //nolint:errcheck
 
-	etcdClient := pd.NewEtcdClient(cliConfig.CoreConfig)
-	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(), etcdClient)
+	etcdProvider, err := pd.NewLocalEtcdClientProvider(cliConfig.CoreConfig)
+	if err != nil {
+		_ = store.Close()
+		log.Fatal("Cannot create etcd client", zap.Error(err))
+	}
+	pdProvider, err := pd.NewLocalPDClientProvider(cliConfig.CoreConfig)
+	if err != nil {
+		_ = store.Close()
+		log.Fatal("Cannot create pd client", zap.Error(err))
+	}
+	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(), etcdProvider)
 	// FIXME: Handle open error
 	tidbForwarder.Open()        //nolint:errcheck
 	defer tidbForwarder.Close() //nolint:errcheck
@@ -137,10 +148,8 @@ func main() {
 		FileStartTime:  cliConfig.KVFileStartTime,
 		FileEndTime:    cliConfig.KVFileEndTime,
 		PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint),
-		GetEtcdClient: func() *clientv3.Client {
-			return etcdClient
-		},
-		Store: store,
+		EtcdProvider:   etcdProvider,
+		Store:          store,
 	}
 	keyvisualService := keyvisual.NewService(ctx, wg, cliConfig.CoreConfig, remoteDataProvider)
 	keyvisualService.Start()
@@ -149,6 +158,8 @@ func main() {
 		Store:         store,
 		KeyVisual:     keyvisualService,
 		TiDBForwarder: tidbForwarder,
+		PDProvider:    pdProvider,
+		EtcdProvider:  etcdProvider,
 	}
 	mux := http.DefaultServeMux
 	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
@@ -158,11 +169,14 @@ func main() {
 	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		store.Close() //nolint:errcheck
+		_ = store.Close()
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
 	utils.LogInfo()
+	if cliConfig.EnableDebugLog {
+		log.SetLevel(zapcore.DebugLevel)
+	}
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
 	log.Info(fmt.Sprintf("UI:      http://127.0.0.1:%d/dashboard/", cliConfig.ListenPort))
 	log.Info(fmt.Sprintf("API:     http://127.0.0.1:%d/dashboard/api/", cliConfig.ListenPort))
@@ -189,6 +203,6 @@ func main() {
 }
 
 func exit(code int) {
-	log.Sync() //nolint:errcheck
+	_ = log.Sync()
 	os.Exit(code)
 }

@@ -58,7 +58,7 @@ class App extends React.PureComponent {
       <Menu.Item key={appId}>
         <Link to={app.indexRoute}>
           {app.icon ? <Icon type={app.icon} /> : null}
-          <span>{this.props.t(`${appId}.nav_title`)}</span>
+          <span>{this.props.t(`${appId}.nav_title`, appId)}</span>
         </Link>
       </Menu.Item>
     );
@@ -85,7 +85,7 @@ class App extends React.PureComponent {
               defaultOpenKeys={['sub1']}
             >
               {this.renderAppMenuItem('keyvis')}
-              {isDev ? this.renderAppMenuItem('statement') : null}
+              {this.renderAppMenuItem('statement')}
               {isDev ? (
                 <Menu.SubMenu
                   key="sub1"

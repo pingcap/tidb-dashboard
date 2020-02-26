@@ -16,9 +16,7 @@ package pd
 import (
 	"time"
 
-	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
-	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	pdclient "github.com/pingcap/pd/client"
@@ -29,24 +27,49 @@ const (
 	TiDBServerInformationPath = "/tidb/server/info"
 )
 
-func NewEtcdClient(cfg *config.Config) *clientv3.Client {
-	client, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{cfg.PDEndPoint},
-		DialTimeout: EtcdTimeout,
-		TLS:         cfg.TLSConfig,
-	})
-	if err != nil {
-		log.Error("can not get etcd client", zap.Error(err))
-		panic(err)
-	}
-	return client
+var _ EtcdProvider = (*LocalEtcdProvider)(nil)
+
+type EtcdProvider interface {
+	GetEtcdClient() *clientv3.Client
 }
 
-func NewPDClient(cfg *config.Config) pdclient.Client {
+type PDProvider interface {
+	GetPDClient() pdclient.Client
+}
+
+// FIXME: We should be able to provide etcd directly. However currently there are problems in PD.
+type LocalEtcdProvider struct {
+	client *clientv3.Client
+}
+
+type LocalPDProvider struct {
+	client pdclient.Client
+}
+
+func NewLocalEtcdClientProvider(config *config.Config) (*LocalEtcdProvider, error) {
+	client, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{config.PDEndPoint},
+		DialTimeout: EtcdTimeout,
+		TLS:         config.TLSConfig,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &LocalEtcdProvider{client: client}, nil
+}
+
+func (p *LocalEtcdProvider) GetEtcdClient() *clientv3.Client {
+	return p.client
+}
+
+func NewLocalPDClientProvider(cfg *config.Config) (*LocalPDProvider, error) {
 	client, err := pdclient.NewClient([]string{cfg.PDEndPoint}, pdclient.SecurityOption{})
 	if err != nil {
-		log.Error("can not get pd client", zap.Error(err))
-		panic(err)
+		return nil, err
 	}
-	return client
+	return &LocalPDProvider{client: client}, nil
+}
+
+func (l *LocalPDProvider) GetPDClient() pdclient.Client {
+	return l.client
 }

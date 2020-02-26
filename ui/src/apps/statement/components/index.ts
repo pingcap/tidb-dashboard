@@ -1,6 +1,8 @@
-import StatementList from './StatementList'
+import StatementsOverview from './StatementsOverview'
 import StatementDetail from './StatementDetail'
 
-export { StatementList, StatementDetail }
+export { StatementsOverview, StatementDetail }
 
 export * from './statement-types'
+
+export * from './search-options-context'

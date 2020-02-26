@@ -22,6 +22,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pingcap/kvproto/pkg/metapb"
@@ -180,6 +181,18 @@ func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error)
 
 func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 	pdPeers := make([]PD, 0)
+	var healthMap map[string]struct{}
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var err error
+		healthMap, err = getPDNodesHealth(pdEndPoint)
+		if err != nil {
+			healthMap = map[string]struct{}{}
+		}
+	}()
+
 	resp, err := http.Get(pdEndPoint + "/pd/api/v1/members")
 	if err != nil {
 		return nil, err
@@ -207,12 +220,8 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 	if err != nil {
 		return nil, err
 	}
-	healthMap, err := getPDNodesHealth(pdEndPoint)
 
-	if err != nil {
-		return nil, err
-	}
-
+	wg.Wait()
 	for _, ds := range ds.Members {
 		u, err := url.Parse(ds.ClientUrls[0])
 		if err != nil {

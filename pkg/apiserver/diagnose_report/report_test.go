@@ -82,6 +82,46 @@ func (t *testReportSuite) TestReport(c *C) {
 	table, err = diagnose_report.GetTiKVErrorTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
+
+	table, err = diagnose_report.GetAvgMaxMinTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetCPUUsageTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetGoroutinesCountTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	//table, err = diagnose_report.GetTiKVThreadCPUTable(startTime, endTime, cli)
+	//c.Assert(err, IsNil)
+	//printRows(table)
+
+	table, err = diagnose_report.GetStoreStatusTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetPDClusterStatusTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetPDEtcdStatusTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetTiKVCacheHitTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetClusterInfoTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	//table, err = diagnose_report.GetClusterHardwareInfoTable(startTime, endTime, cli)
+	//c.Assert(err, IsNil)
+	//printRows(table)
 }
 
 func (t *testReportSuite) TestRoundFloatString(c *C) {

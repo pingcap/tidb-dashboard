@@ -31,27 +31,55 @@ func (t *testReportSuite) TestReport(c *C) {
 	//endTime := "2020-02-23 11:05:00"
 
 	startTime := "2020-02-25 13:20:23"
-	endTime := "2020-02-25 13:30:23"
+	endTime := "2020-02-26 13:30:23"
 
 	var table *diagnose_report.TableDef
 	var err error
 	//table, err = diagnose_report.GetTotalTimeConsumeTable(startTime, endTime, cli)
 	//c.Assert(err, IsNil)
 	//printRows(table)
-	//
-	//table, err = diagnose_report.GetTotalErrorTable(startTime, endTime, cli)
+
+	table, err = diagnose_report.GetTotalErrorTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+	////
+	//table, err = diagnose_report.GetTiDBTxnTableData(startTime, endTime, cli)
+	//c.Assert(err, IsNil)
+	//printRows(table)
+
+	//table, err = diagnose_report.GetTiDBDDLOwner(startTime, endTime, cli)
 	//c.Assert(err, IsNil)
 	//printRows(table)
 	//
-	table, err = diagnose_report.GetTiDBTxnTableData(startTime, endTime, cli)
+	//table, err = diagnose_report.GetDDLInfoTable(startTime, endTime, cli)
+	//c.Assert(err, IsNil)
+	//printRows(table)
+
+	//table, err = diagnose_report.GetPDConfigInfo(startTime, endTime, cli)
+	//c.Assert(err, IsNil)
+	//printRows(table)
+	//
+	//table, err = diagnose_report.GetPDTimeConsumeTable(startTime, endTime, cli)
+	//c.Assert(err, IsNil)
+	//printRows(table)
+	//
+	//table, err = diagnose_report.GetPDSchedulerInfo(startTime, endTime, cli)
+	//c.Assert(err, IsNil)
+	//printRows(table)
+
+	//table, err = diagnose_report.GetTiKVTotalTimeConsumeTable(startTime, endTime, cli)
+	//c.Assert(err, IsNil)
+	//printRows(table)
+	//
+	//table, err = diagnose_report.GetTiKVKVInfo(startTime, endTime, cli)
+	//c.Assert(err, IsNil)
+	//printRows(table)
+
+	table, err = diagnose_report.GetTiDBGCConfigInfo(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetTiDBDDLOwner(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
-	table, err = diagnose_report.GetDDLInfoTable(startTime, endTime, cli)
+	table, err = diagnose_report.GetTiKVErrorTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 }

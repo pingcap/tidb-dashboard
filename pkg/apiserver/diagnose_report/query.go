@@ -28,19 +28,24 @@ func newQueryArg(startTime, endTime string) *queryArg {
 }
 
 type sumValueQuery struct {
-	name  string
-	tbl   string
-	label string
+	name      string
+	tbl       string
+	condition string
+	labels    []string
 }
 
 // Table schema
 // METRIC_NAME , LABEL  TOTAL_VALUE
-func (def sumValueQuery) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error) {
-	if len(def.name) == 0 {
-		def.name = def.tbl
+func (t sumValueQuery) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error) {
+	if len(t.name) == 0 {
+		t.name = t.tbl
 	}
-	sql := fmt.Sprintf("select '%v', '', sum(value) from metrics_schema.%v where time >= '%s' and time < '%s'",
-		def.name, def.tbl, arg.startTime, arg.endTime)
+	condition := fmt.Sprintf("where time >= '%s' and time < '%s' ", arg.startTime, arg.endTime)
+	if len(t.condition) > 0 {
+		condition = condition + "and " + t.condition
+	}
+	sql := fmt.Sprintf("select '%s', '', sum(value) from metrics_schema.%s %s",
+		t.name, t.tbl, condition)
 	rows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
@@ -48,22 +53,44 @@ func (def sumValueQuery) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, erro
 	if len(rows) == 0 {
 		return nil, nil
 	}
-	if len(def.label) == 0 {
-		return &TableRowDef{
-			Values: rows[0],
-		}, nil
+	if len(t.labels) == 0 {
+		return t.genRow(rows[0], nil), nil
 	}
 
-	sql = fmt.Sprintf("select '%v',`%v`, sum(value) from metrics_schema.%v where time >= '%s' and time < '%s' group by `%[2]v` order by sum(value) desc",
-		def.name, def.label, def.tbl, arg.startTime, arg.endTime)
+	sql = fmt.Sprintf("select '%[1]v',`%[2]v`, sum(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` order by sum(value) desc",
+		t.name, strings.Join(t.labels, "`,`"), t.tbl, condition)
 	subRows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
 	}
+	for i := range subRows {
+		row := subRows[i]
+		row[1] = strings.Join(row[1:1+len(t.labels)], ",")
+		newRow := row[:2]
+		newRow = append(newRow, row[1+len(t.labels):]...)
+		subRows[i] = newRow
+	}
+	return t.genRow(rows[0], subRows), nil
+}
+
+func (t sumValueQuery) genRow(values []string, subValues [][]string) *TableRowDef {
+	specialHandle := func(row []string) []string {
+		if len(row) == 0 {
+			return row
+		}
+		row[2] = RoundFloatString(row[2])
+		return row
+	}
+
+	values = specialHandle(values)
+	for i := range subValues {
+		subValues[i] = specialHandle(subValues[i])
+	}
+
 	return &TableRowDef{
-		Values:    rows[0],
-		SubValues: subRows,
-	}, nil
+		Values:    values,
+		SubValues: subValues,
+	}
 }
 
 type totalTimeByLabelsTableDef struct {

@@ -132,26 +132,27 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef,
 		{name: "pd_peer_round_trip", tbl: "pd_peer_round_trip", labels: []string{"To"}},
 		{name: "pd_region_heartbeat", tbl: "pd_region_heartbeat", labels: []string{"address"}},
 		{name: "etcd_wal_fsync", tbl: "etcd_wal_fsync", labels: []string{"instance"}},
+
 		// TiKV
 		{name: "tikv_grpc_messge", tbl: "tikv_grpc_messge", labels: []string{"type"}},
-		{name: "tikv_append_log", tbl: "tikv_append_log", labels: []string{"instance"}},
-		{name: "tikv_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}},
-		{name: "tikv_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}},
-		{name: "tikv_check_split", tbl: "tikv_check_split", labels: []string{"instance"}},
-		{name: "tikv_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}},
-		{name: "tikv_cop_handle", tbl: "tikv_cop_handle", labels: []string{"req"}},
 		{name: "tikv_cop_request", tbl: "tikv_cop_request", labels: []string{"req"}},
+		{name: "tikv_cop_handle", tbl: "tikv_cop_handle", labels: []string{"req"}},
 		{name: "tikv_cop_wait", tbl: "tikv_cop_wait", labels: []string{"req"}},
 		{name: "tikv_process", tbl: "tikv_process", labels: []string{"type"}},
 		{name: "tikv_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}},
 		{name: "tikv_scheduler_command", tbl: "tikv_scheduler_command", labels: []string{"type"}},
 		{name: "tikv_scheduler_latch_wait", tbl: "tikv_scheduler_latch_wait", labels: []string{"type"}},
-		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"type"}},
-		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"type"}},
 		{name: "tikv_lock_manager_deadlock_detect", tbl: "tikv_lock_manager_deadlock_detect", labels: []string{"instance"}},
 		{name: "tikv_lock_manager_waiter_lifetime", tbl: "tikv_lock_manager_waiter_lifetime", labels: []string{"instance"}},
+		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"type"}},
 		{name: "tikv_send_snapshot", tbl: "tikv_send_snapshot", labels: []string{"instance"}},
 		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"type"}},
+		{name: "tikv_append_log", tbl: "tikv_append_log", labels: []string{"instance"}},
+		{name: "tikv_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}},
+		{name: "tikv_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}},
+		{name: "tikv_check_split", tbl: "tikv_check_split", labels: []string{"instance"}},
+		{name: "tikv_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}},
+		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"type"}},
 		{name: "tikv_ingest_sst", tbl: "tikv_ingest_sst", labels: []string{"instance"}},
 		{name: "tikv_gc_tasks", tbl: "tikv_gc_tasks", labels: []string{"task"}},
 		{name: "tikv_backup_range", tbl: "tikv_backup_range", labels: []string{"type"}},
@@ -276,23 +277,24 @@ func GetTotalCountTableData(startTime, endTime string, db *sql.DB) (*TableDef, e
 
 func GetTotalErrorTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []sumValueQuery{
-		{tbl: "tidb_binlog_error_total_count", label: "instance"},
-		{tbl: "tidb_handshake_error_total_count", label: "instance"},
-		{tbl: "tidb_transaction_retry_error_total_count", label: "sql_type"},
-		{tbl: "tidb_kv_region_error_total_count", label: "type"},
-		{tbl: "tidb_schema_lease_error_total_count", label: "instance"},
-		{tbl: "tikv_grpc_error_total_count", label: "type"},
-		{tbl: "tikv_critical_error_total_count", label: "type"},
-		{tbl: "tikv_scheduler_is_busy_total_count", label: "type"},
-		{tbl: "tikv_channel_full_total_count", label: "type"},
-		{tbl: "tikv_coprocessor_is_busy_total_count", label: "instance"},
-		{tbl: "tikv_engine_write_stall", label: "instance"},
-		{tbl: "tikv_server_report_failures_total_count", label: "instance"},
-		{tbl: "tikv_coprocessor_request_error_total_count", label: "reason"},
-		{tbl: "tikv_lock_manager_detect_error_total_count", label: "type"},
-		{tbl: "tikv_backup_errors_total_count", label: "error"},
-		{tbl: "node_network_in_errors_total_count", label: "instance"},
-		{tbl: "node_network_out_errors_total_count", label: "instance"},
+		{tbl: "tidb_binlog_error_total_count", labels: []string{"instance"}},
+		{tbl: "tidb_handshake_error_total_count", labels: []string{"instance"}},
+		{tbl: "tidb_transaction_retry_error_total_count", labels: []string{"sql_type"}},
+		{tbl: "tidb_kv_region_error_total_count", labels: []string{"type"}},
+		{tbl: "tidb_schema_lease_error_total_count", labels: []string{"instance"}},
+		{tbl: "tikv_grpc_error_total_count", labels: []string{"type"}},
+		{tbl: "tikv_critical_error_total_count", labels: []string{"type"}},
+		{tbl: "tikv_scheduler_is_busy_total_count", labels: []string{"type"}},
+		{tbl: "tikv_channel_full_total_count", labels: []string{"type"}},
+		//{tbl: "tikv_coprocessor_is_busy_total_count", labels: []string{"instance"}},
+		{tbl: "tikv_coprocessor_request_error_total_count", labels: []string{"reason"}},
+		{tbl: "tikv_engine_write_stall", labels: []string{"instance"}},
+		{tbl: "tikv_server_report_failures_total_count", labels: []string{"instance"}},
+		{name: "tikv_storage_async_request_error", tbl: "tikv_storage_async_requests_total_count", labels: []string{"type"}, condition: "status not in ('all','success')"},
+		{tbl: "tikv_lock_manager_detect_error_total_count", labels: []string{"type"}},
+		{tbl: "tikv_backup_errors_total_count", labels: []string{"error"}},
+		{tbl: "node_network_in_errors_total_count", labels: []string{"instance"}},
+		{tbl: "node_network_out_errors_total_count", labels: []string{"instance"}},
 	}
 	defs := make([]rowQuery, 0, len(defs1))
 	for i := range defs1 {
@@ -344,8 +346,8 @@ func GetTiDBTxnTableData(startTime, endTime string, db *sql.DB) (*TableDef, erro
 		{name: "tidb_kv_write_size", tbl: "tidb_kv_write_size", sumTbl: "tidb_kv_write_total_size", countTbl: "tidb_kv_write_size_total_count", labels: []string{"instance"}},
 	}
 	defs2 := []sumValueQuery{
-		{name: "tidb_load_safepoint_total_num", tbl: "tidb_load_safepoint_total_num", label: "type"},
-		{name: "tidb_lock_resolver_total_num", tbl: "tidb_lock_resolver_total_num", label: "type"},
+		{name: "tidb_load_safepoint_total_num", tbl: "tidb_load_safepoint_total_num", labels: []string{"type"}},
+		{name: "tidb_lock_resolver_total_num", tbl: "tidb_lock_resolver_total_num", labels: []string{"type"}},
 	}
 
 	defs := make([]rowQuery, 0, len(defs1)+len(defs2))
@@ -464,6 +466,308 @@ func GetDDLInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 			row.SubValues[i] = specialHandle(row.SubValues[i])
 		}
 		resultRows = append(resultRows, row)
+	}
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	table.Rows = resultRows
+	return table, nil
+}
+
+func GetPDConfigInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf(`select t1.*,t2.count from
+		(select min(time),type,value from metrics_schema.pd_scheduler_config where time>='%[1]s' and time<'%[2]s' group by type,value order by type) as t1 join
+		(select type, count(distinct value) as count from metrics_schema.pd_scheduler_config where time>='%[1]s' and time<'%[2]s' group by type order by count desc) as t2 
+		where t1.type=t2.type order by t2.count desc;`, startTime, endTime)
+
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{"PD"},
+		Title:     "Scheduler Config",
+		CommentEN: "PD scheduler config change history",
+		CommentCN: "",
+		Column:    []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
+		Rows:      rows,
+	}
+	return table, nil
+}
+
+func GetTiDBGCConfigInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf(`select t1.*,t2.count from
+		(select min(time),type,value from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' group by type,value order by type) as t1 join
+		(select type, count(distinct value) as count from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' group by type order by count desc) as t2 
+		where t1.type=t2.type order by t2.count desc;`, startTime, endTime)
+
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{"PD"},
+		Title:     "Scheduler Config",
+		CommentEN: "PD scheduler config change history",
+		CommentCN: "",
+		Column:    []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
+		Rows:      rows,
+	}
+	return table, nil
+}
+
+func GetPDTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []totalTimeByLabelsTableDef{
+		{name: "pd_client_cmd", tbl: "pd_client_cmd", labels: []string{"type"}},
+		{name: "pd_grpc_completed_commands", tbl: "pd_grpc_completed_commands", labels: []string{"grpc_method"}},
+		{name: "pd_handle_request", tbl: "pd_handle_request", labels: []string{"type"}},
+		{name: "pd_operator_finish", tbl: "pd_operator_finish", labels: []string{"type"}},
+		{name: "pd_operator_step_finish", tbl: "pd_operator_step_finish", labels: []string{"type"}},
+		{name: "pd_handle_transactions", tbl: "pd_handle_transactions", labels: []string{"result"}},
+		{name: "pd_peer_round_trip", tbl: "pd_peer_round_trip", labels: []string{"To"}},
+		{name: "pd_region_heartbeat", tbl: "pd_region_heartbeat", labels: []string{"address"}},
+		{name: "etcd_wal_fsync", tbl: "etcd_wal_fsync", labels: []string{"instance"}},
+	}
+
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+
+	table := &TableDef{
+		Category:  []string{"Overview"},
+		Title:     "Time Consume",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
+	}
+
+	resultRows := make([]TableRowDef, 0, len(defs))
+	arg := newQueryArg(startTime, endTime)
+	appendRows := func(row TableRowDef) {
+		resultRows = append(resultRows, row)
+		arg.totalTime = 0
+	}
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	table.Rows = resultRows
+	return table, nil
+}
+
+func GetPDSchedulerInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []sumValueQuery{
+		{name: "blance-leader-in", tbl: "pd_scheduler_balance_leader", condition: "type='move-leader' and address like '%-in'", labels: []string{"address"}},
+		{name: "blance-leader-out", tbl: "pd_scheduler_balance_leader", condition: "type='move-leader' and address like '%-out'", labels: []string{"address"}},
+		{name: "blance-region-in", tbl: "pd_scheduler_balance_region", condition: "type='move-peer' and address like '%-in'", labels: []string{"address"}},
+		{name: "blance-region-out", tbl: "pd_scheduler_balance_region", condition: "type='move-peer' and address like '%-out'", labels: []string{"address"}},
+	}
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+
+	table := &TableDef{
+		Category:  []string{"PD"},
+		Title:     "blance leader/region",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},
+	}
+
+	resultRows := make([]TableRowDef, 0, len(defs))
+	specialHandle := func(row []string) []string {
+		row[2] = convertFloatToInt(row[2])
+		return row
+	}
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+
+	arg := &queryArg{
+		startTime: startTime,
+		endTime:   endTime,
+	}
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	table.Rows = resultRows
+	return table, nil
+}
+
+func GetTiKVTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []totalTimeByLabelsTableDef{
+		// TiKV
+		{name: "tikv_grpc_messge", tbl: "tikv_grpc_messge", labels: []string{"type"}},
+		{name: "tikv_cop_request", tbl: "tikv_cop_request", labels: []string{"req"}},
+		{name: "tikv_cop_handle", tbl: "tikv_cop_handle", labels: []string{"req"}},
+		{name: "tikv_cop_wait", tbl: "tikv_cop_wait", labels: []string{"req"}},
+		{name: "tikv_process", tbl: "tikv_process", labels: []string{"type"}},
+		{name: "tikv_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}},
+		{name: "tikv_scheduler_command", tbl: "tikv_scheduler_command", labels: []string{"type"}},
+		{name: "tikv_scheduler_latch_wait", tbl: "tikv_scheduler_latch_wait", labels: []string{"type"}},
+		{name: "tikv_lock_manager_deadlock_detect", tbl: "tikv_lock_manager_deadlock_detect", labels: []string{"instance"}},
+		{name: "tikv_lock_manager_waiter_lifetime", tbl: "tikv_lock_manager_waiter_lifetime", labels: []string{"instance"}},
+		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"type"}},
+		{name: "tikv_send_snapshot", tbl: "tikv_send_snapshot", labels: []string{"instance"}},
+		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"type"}},
+		{name: "tikv_append_log", tbl: "tikv_append_log", labels: []string{"instance"}},
+		{name: "tikv_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}},
+		{name: "tikv_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}},
+		{name: "tikv_check_split", tbl: "tikv_check_split", labels: []string{"instance"}},
+		{name: "tikv_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}},
+		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"type"}},
+		{name: "tikv_ingest_sst", tbl: "tikv_ingest_sst", labels: []string{"instance"}},
+		{name: "tikv_gc_tasks", tbl: "tikv_gc_tasks", labels: []string{"task"}},
+		{name: "tikv_backup_range", tbl: "tikv_backup_range", labels: []string{"type"}},
+		{name: "tikv_backup", tbl: "tikv_backup", labels: []string{"instance"}},
+	}
+
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+
+	table := &TableDef{
+		Category:  []string{"Overview"},
+		Title:     "Time Consume",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
+	}
+
+	resultRows := make([]TableRowDef, 0, len(defs))
+	arg := newQueryArg(startTime, endTime)
+	specialHandle := func(row []string) []string {
+		if arg.totalTime == 0 && len(row[3]) > 0 {
+			totalTime, err := strconv.ParseFloat(row[3], 64)
+			if err == nil {
+				arg.totalTime = totalTime
+			}
+		}
+		return row
+	}
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	table.Rows = resultRows
+	return table, nil
+}
+
+func GetTiKVKVInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []totalValueAndTotalCountTableDef{
+		{name: "tikv_raft_message_batch_size", tbl: "tikv_raft_message_batch_size", sumTbl: "tikv_raft_message_batch_total_size", countTbl: "tikv_raft_message_batch_size_total_count", labels: []string{"instance"}},
+		{name: "tikv_request_batch_size", tbl: "tikv_request_batch_size", sumTbl: "tikv_request_batch_total_size", countTbl: "tikv_request_batch_size_total_count", labels: []string{"type"}},
+		{name: "tikv_scheduler_keys_read", tbl: "tikv_scheduler_keys_read", sumTbl: "tikv_scheduler_keys_total_read", countTbl: "tikv_scheduler_keys_read_total_count", labels: []string{"type"}},
+		{name: "tikv_scheduler_keys_written", tbl: "tikv_scheduler_keys_written", sumTbl: "tikv_scheduler_keys_total_written", countTbl: "tikv_scheduler_keys_written_total_count", labels: []string{"type"}},
+		{name: "tikv_snapshot_kv_count", tbl: "tikv_snapshot_kv_count", sumTbl: "tikv_snapshot_kv_total_count", countTbl: "tikv_snapshot_kv_count_total_count", labels: []string{"instance"}},
+		{name: "tikv_snapshot_size", tbl: "tikv_snapshot_size", sumTbl: "tikv_snapshot_total_size", countTbl: "tikv_snapshot_size_total_count", labels: []string{"instance"}},
+	}
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+
+	resultRows := make([]TableRowDef, 0, len(defs))
+	specialHandle := func(row []string) []string {
+		for i := 2; i < len(row); i++ {
+			if len(row[i]) == 0 {
+				continue
+			}
+			row[i] = convertFloatToInt(row[i])
+		}
+		return row
+	}
+
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+
+	arg := newQueryArg(startTime, endTime)
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{"TiDB"},
+		Title:     "Transaction",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
+		Rows:      resultRows,
+	}
+	return table, nil
+}
+
+func GetTiKVErrorTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []sumValueQuery{
+		{tbl: "tikv_grpc_error_total_count", labels: []string{"instance", "type"}},
+		{tbl: "tikv_critical_error_total_count", labels: []string{"instance", "type"}},
+		{tbl: "tikv_scheduler_is_busy_total_count", labels: []string{"instance", "db", "type", "stage"}},
+		{tbl: "tikv_channel_full_total_count", labels: []string{"instance", "db", "type"}},
+		//{tbl: "tikv_coprocessor_is_busy_total_count", labels: []string{"instance"}},
+		{tbl: "tikv_coprocessor_request_error_total_count", labels: []string{"instance", "reason"}},
+		{tbl: "tikv_engine_write_stall", labels: []string{"instance", "db"}},
+		{tbl: "tikv_server_report_failures_total_count", labels: []string{"instance"}},
+		{name: "tikv_storage_async_request_error", tbl: "tikv_storage_async_requests_total_count", labels: []string{"instance", "status", "type"}, condition: "status not in ('all','success')"},
+		{tbl: "tikv_lock_manager_detect_error_total_count", labels: []string{"instance", "type"}},
+		{tbl: "tikv_backup_errors_total_count", labels: []string{"instance", "error"}},
+	}
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+
+	table := &TableDef{
+		Category:  []string{"TiKV"},
+		Title:     "Error",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},
+	}
+
+	resultRows := make([]TableRowDef, 0, len(defs))
+
+	specialHandle := func(row []string) []string {
+		row[2] = convertFloatToInt(row[2])
+		return row
+	}
+
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+
+	arg := &queryArg{
+		startTime: startTime,
+		endTime:   endTime,
 	}
 
 	err := getTableRows(defs, arg, db, appendRows)

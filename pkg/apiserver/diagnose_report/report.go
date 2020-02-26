@@ -85,6 +85,7 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 		GetTiKVErrorTable,
 		GetTiKVSchedulerInfo,
 		GetTiKVGCInfo,
+		GetTiKVCopInfo,
 		GetTiKVKVInfo, // delete this.
 
 		// Config
@@ -180,9 +181,9 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef,
 		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"type"}},
 		{name: "tikv_send_snapshot", tbl: "tikv_send_snapshot", labels: []string{"instance"}},
 		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"type"}},
-		{name: "tikv_append_log", tbl: "tikv_append_log", labels: []string{"instance"}},
-		{name: "tikv_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}},
-		{name: "tikv_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}},
+		{name: "tikv_raft_append_log", tbl: "tikv_append_log", labels: []string{"instance"}},
+		{name: "tikv_raft_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}},
+		{name: "tikv_raft_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}},
 		{name: "tikv_check_split", tbl: "tikv_check_split", labels: []string{"instance"}},
 		{name: "tikv_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}},
 		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"type"}},
@@ -578,9 +579,9 @@ func GetTiKVTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*Table
 		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"type"}},
 		{name: "tikv_send_snapshot", tbl: "tikv_send_snapshot", labels: []string{"instance"}},
 		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"type"}},
-		{name: "tikv_append_log", tbl: "tikv_append_log", labels: []string{"instance"}},
-		{name: "tikv_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}},
-		{name: "tikv_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}},
+		{name: "tikv_raft_append_log", tbl: "tikv_append_log", labels: []string{"instance"}},
+		{name: "tikv_raft_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}},
+		{name: "tikv_raft_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}},
 		{name: "tikv_check_split", tbl: "tikv_check_split", labels: []string{"instance"}},
 		{name: "tikv_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}},
 		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"type"}},
@@ -756,6 +757,70 @@ func GetTiKVSnapshotInfo(startTime, endTime string, db *sql.DB) (*TableDef, erro
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
+		Rows:      resultRows,
+	}
+	return table, nil
+}
+
+func GetTiKVCopInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []sumValueQuery{
+		{tbl: "tikv_cop_kv_cursor_total_operations", labels: []string{"instance", "req"}},
+		{tbl: "tikv_cop_total_response_total_size", labels: []string{"instance"}},
+		{tbl: "tikv_cop_scan_details_total", labels: []string{"instance", "req", "tag", "cf"}},
+	}
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+	resultRows := make([]TableRowDef, 0, len(defs))
+	appendRows := func(row TableRowDef) {
+		resultRows = append(resultRows, row)
+	}
+
+	arg := newQueryArg(startTime, endTime)
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{CategoryTiKV},
+		Title:     "Snapshot Info",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE"},
+		Rows:      resultRows,
+	}
+	return table, nil
+}
+
+func GetTiKVRaftInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []sumValueQuery{
+		{tbl: "tikv_cop_kv_cursor_total_operations", labels: []string{"instance", "req"}},
+		{tbl: "tikv_cop_total_response_total_size", labels: []string{"instance"}},
+		{tbl: "tikv_cop_scan_details_total", labels: []string{"instance", "req", "tag", "cf"}},
+	}
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+	resultRows := make([]TableRowDef, 0, len(defs))
+	appendRows := func(row TableRowDef) {
+		resultRows = append(resultRows, row)
+	}
+
+	arg := newQueryArg(startTime, endTime)
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{CategoryTiKV},
+		Title:     "Snapshot Info",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE"},
 		Rows:      resultRows,
 	}
 	return table, nil

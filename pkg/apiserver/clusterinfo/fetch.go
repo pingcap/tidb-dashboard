@@ -19,24 +19,11 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
 
-// fetcher is an interface for concurrently fetch data and store it in `info`.
-type fetcher interface {
-	// fetch fetches the data, and if any unrecoverable error exists.
-	fetch(ctx context.Context, info *ClusterInfo, service *Service)
-	name() string
-}
-
-// etcdFetcher fetches etcd, and parses the ns below:
+// fetches etcd, and parses the ns below:
 // * /topology/grafana
 // * /topology/alertmanager
 // * /topology/tidb
-type topologyUnderEtcdFetcher struct{}
-
-func (f topologyUnderEtcdFetcher) name() string {
-	return "tidb"
-}
-
-func (f topologyUnderEtcdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) {
+func getTopologyUnderEtcd(ctx context.Context, info *ClusterInfo, service *Service) {
 	tidb, grafana, alertManager, err := clusterinfo.GetTopologyUnderEtcd(ctx, service.etcdCli)
 	if err != nil {
 		// Note: GetTopology return error only when fetch etcd failed.
@@ -51,15 +38,7 @@ func (f topologyUnderEtcdFetcher) fetch(ctx context.Context, info *ClusterInfo, 
 	info.AlertManager.Node = alertManager
 }
 
-// PDFetcher using the http to fetch PDMember information from pd endpoint.
-type pdFetcher struct {
-}
-
-func (p pdFetcher) name() string {
-	return "pd"
-}
-
-func (p pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) {
+func getPDTopology(ctx context.Context, info *ClusterInfo, service *Service) {
 	pdPeers, err := clusterinfo.GetPDTopology(ctx, service.config.PDEndPoint)
 	if err != nil {
 		info.Pd.Err = err.Error()
@@ -68,19 +47,11 @@ func (p pdFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Servic
 	info.Pd.Nodes = pdPeers
 }
 
-// tikvFetcher using the PDClient to fetch tikv(store) information from pd endpoint.
-type tikvFetcher struct {
-}
-
-func (t tikvFetcher) fetch(ctx context.Context, info *ClusterInfo, service *Service) {
+func getTiKVTopology(ctx context.Context, info *ClusterInfo, service *Service) {
 	kv, err := clusterinfo.GetTiKVTopology(ctx, service.pdCli)
 	if err != nil {
 		info.TiKV.Err = err.Error()
 		return
 	}
 	info.TiKV.Nodes = kv
-}
-
-func (t tikvFetcher) name() string {
-	return "tikv"
 }

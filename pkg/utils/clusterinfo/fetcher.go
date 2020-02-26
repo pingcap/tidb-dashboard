@@ -24,10 +24,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pingcap/kvproto/pkg/metapb"
 	pdclient "github.com/pingcap/pd/client"
-	"go.uber.org/zap"
 
+	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 )
@@ -116,18 +115,12 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 		if err != nil {
 			return
 		}
-		ipAndPort := strings.Split(address, ":")
-		if len(ipAndPort) < 2 {
-			log.Warn("fillDBMap address parsing format error", zap.Error(err))
+		host, port, err := parseHostAndPortFromAddress(address)
+		if err != nil {
 			return
 		}
-		var port int
-		if port, err = strconv.Atoi(ipAndPort[1]); err != nil {
-			log.Warn("fillDBMap address parsing format error", zap.Error(err))
-			return
-		}
-		currentInfo.IP = ipAndPort[0]
-		currentInfo.Port = uint(port)
+		currentInfo.IP = host
+		currentInfo.Port = port
 		infoMap[address] = &currentInfo
 	}
 }
@@ -163,15 +156,11 @@ func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error)
 	}
 	for _, v := range stores {
 		// parse ip and port
-		ipAndPort := strings.Split(v.Address, ":")
-		if len(ipAndPort) < 2 {
-			continue
-		}
-		port, err := strconv.Atoi(ipAndPort[1])
+		host, port, err := parseHostAndPortFromAddress(v.Address)
 		if err != nil {
 			continue
 		}
-		_, statusPort, err := parsePortFromAddress(v.StatusAddress)
+		_, statusPort, err := parseHostAndPortFromAddress(v.StatusAddress)
 		if err != nil {
 			continue
 		}
@@ -180,8 +169,8 @@ func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error)
 				Version: v.Version,
 				GitHash: v.GitHash,
 			},
-			IP:           ipAndPort[0],
-			Port:         uint(port),
+			IP:           host,
+			Port:         port,
 			BinaryPath:   v.BinaryPath,
 			ServerStatus: storeStateToStatus(v.GetState()),
 			StatusPort:   statusPort,
@@ -239,7 +228,7 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 	healthMap := <-healthMapChan
 	close(healthMapChan)
 	for _, ds := range ds.Members {
-		host, port, err := parsePortFromAddress(ds.ClientUrls[0])
+		host, port, err := parseHostAndPortFromAddressURL(ds.ClientUrls[0])
 		if err != nil {
 			continue
 		}
@@ -263,27 +252,32 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 	return pdPeers, nil
 }
 
-// parsePortFromAddress receive two kind of address
-// 1. ip:port, like "127.0.0.1:2379"
-// 2. protocol://ip:port
-// and returns the (ip, port number).
-func parsePortFromAddress(address string) (string, uint, error) {
-	var statusPort int
-	u, err := url.Parse(address)
-	if err != nil {
-		// https://github.com/golang/go/issues/18824
-		if strings.HasPrefix(address, "//") {
-			log.Warn("parsePortFromAddress parsing address error", zap.Error(err))
-			return "", 0, err
-		}
-		return parsePortFromAddress("//" + address)
+// address should be like "ip:port" as "127.0.0.1:2379".
+// return error if string is not like "ip:port".
+func parseHostAndPortFromAddress(address string) (string, uint, error) {
+	addresses := strings.Split(address, "/")
+	if len(addresses) != 2 {
+		log.Warn("parseHostAndPortFromAddress receive format error")
+		return "", 0, fmt.Errorf("format error")
 	}
-	statusPort, err = strconv.Atoi(u.Port())
+	port, err := strconv.Atoi(addresses[1])
 	if err != nil {
-		log.Warn("parsePortFromAddress parsing port error", zap.Error(err))
 		return "", 0, err
 	}
-	return u.Host, uint(statusPort), nil
+	return addresses[0], uint(port), nil
+}
+
+// address should be like "protocol://ip:port" as "http://127.0.0.1:2379".
+func parseHostAndPortFromAddressURL(urlString string) (string, uint, error) {
+	u, err := url.Parse(urlString)
+	if err != nil {
+		return "", 0, err
+	}
+	port, err := strconv.Atoi(u.Port())
+	if err != nil {
+		return "", 0, err
+	}
+	return u.Host, uint(port), nil
 }
 
 func storeStateToStatus(state metapb.StoreState) ComponentStatus {

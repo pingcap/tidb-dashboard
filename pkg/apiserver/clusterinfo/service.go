@@ -38,13 +38,13 @@ type Service struct {
 	pdCli   pdclient.Client
 }
 
-func NewService(config *config.Config, pdClient pdclient.Client, etcdClient *etcdclientv3.Client) *Service {
-	return &Service{etcdCli: etcdClient, config: config, pdCli: pdClient}
+func NewService(config *config.Config, etcdClient *etcdclientv3.Client, pdcli pdclient.Client) *Service {
+	return &Service{etcdCli: etcdClient, config: config, pdCli: pdcli}
 }
 
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/topology")
-	//endpoint.Use(auth.MWAuthRequired())
+	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/", s.topologyHandler)
 	endpoint.DELETE("/tidb/:address/", s.deleteTiDBTopologyHandler)
 }
@@ -56,13 +56,7 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /topology/address [delete]
 func (s *Service) deleteTiDBTopologyHandler(c *gin.Context) {
-	v, exists := c.Params.Get("address")
-	if !exists {
-		c.Status(400)
-		_ = c.Error(fmt.Errorf("address not exists in path"))
-		return
-	}
-	address := v
+	address := c.Param("address")
 	errorChannel := make(chan error, 2)
 	ttlKey := fmt.Sprintf("/topology/tidb/%v/ttl", address)
 	nonTTLKey := fmt.Sprintf("/topology/tidb/%v/info", address)
@@ -94,10 +88,6 @@ func (s *Service) deleteTiDBTopologyHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-type ErrResp struct {
-	Error string `json:"error"`
-}
-
 // @Summary Get all Dashboard topology and liveness.
 // @Description Get information about the dashboard topology.
 // @Produce json
@@ -111,10 +101,10 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	fetchers := []fetcher{
-		topologyUnderEtcdFetcher{},
-		tikvFetcher{},
-		pdFetcher{},
+	fetchers := []func(ctx context.Context, info *ClusterInfo, service *Service){
+		getTopologyUnderEtcd,
+		getTiKVTopology,
+		getPDTopology,
 	}
 
 	var wg sync.WaitGroup
@@ -123,7 +113,7 @@ func (s *Service) topologyHandler(c *gin.Context) {
 		currentFetcher := fetcher
 		go func() {
 			defer wg.Done()
-			currentFetcher.fetch(ctx, &returnObject, s)
+			currentFetcher(ctx, &returnObject, s)
 		}()
 	}
 	wg.Wait()

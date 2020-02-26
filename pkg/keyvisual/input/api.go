@@ -28,9 +28,9 @@ import (
 )
 
 var (
-	ErrNS          = errorx.NewNamespace("error.keyvisual")
-	ErrNSInput     = ErrNS.NewSubNamespace("input")
-	ErrNotOkStatus = ErrNSInput.NewType("not_ok_status")
+	ErrNS                  = errorx.NewNamespace("error.keyvisual")
+	ErrNSInput             = ErrNS.NewSubNamespace("input")
+	ErrPDHTTPRequestFailed = ErrNSInput.NewType("pd_http_request_failed")
 )
 
 // RegionInfo records detail region info for api usage.
@@ -135,7 +135,7 @@ func NewAPIPeriodicGetter(pdAddr string) regionpkg.RegionsInfoGenerator {
 			if err != nil {
 				return nil, err
 			}
-			return nil, ErrNotOkStatus.New("http status code: %d, msg: %s", resp.StatusCode, string(body))
+			return nil, ErrPDHTTPRequestFailed.New("http status code: %d, msg: %s", resp.StatusCode, string(body))
 		}
 		return read(resp.Body)
 	}

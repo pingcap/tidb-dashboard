@@ -30,9 +30,9 @@ const (
 )
 
 var (
-	ErrNS          = errorx.NewNamespace("error.keyvisual")
-	ErrNSDecorator = ErrNS.NewSubNamespace("decorator")
-	ErrNotOkStatus = ErrNSDecorator.NewType("not_ok_status")
+	ErrNS                    = errorx.NewNamespace("error.keyvisual")
+	ErrNSDecorator           = ErrNS.NewSubNamespace("decorator")
+	ErrTiDBHTTPRequestFailed = ErrNSDecorator.NewType("tidb_http_request_failed")
 )
 
 func request(addr string, uri string, v interface{}) error {
@@ -41,7 +41,7 @@ func request(addr string, uri string, v interface{}) error {
 	if err == nil {
 		defer resp.Body.Close()
 		if resp.StatusCode != http.StatusOK {
-			err = ErrNotOkStatus.New("http status code: %d", resp.StatusCode)
+			err = ErrTiDBHTTPRequestFailed.New("http status code: %d", resp.StatusCode)
 		}
 	}
 	if err != nil {

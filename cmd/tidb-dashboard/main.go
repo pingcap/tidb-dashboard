@@ -37,6 +37,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
@@ -52,9 +53,10 @@ import (
 )
 
 type DashboardCLIConfig struct {
-	ListenHost string
-	ListenPort int
-	CoreConfig *config.Config
+	ListenHost     string
+	ListenPort     int
+	EnableDebugLog bool
+	CoreConfig     *config.Config
 	// key-visual file mode for debug
 	KVFileStartTime int64
 	KVFileEndTime   int64
@@ -72,6 +74,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
 	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
+	flag.BoolVar(&cfg.EnableDebugLog, "debug", false, "Enable debug logs")
 	// debug for keyvisual
 	// TODO: Hide help information
 	flag.Int64Var(&cfg.KVFileStartTime, "keyvis-file-start", 0, "(debug) start time for file range in file mode")
@@ -164,6 +167,9 @@ func main() {
 	}
 
 	utils.LogInfo()
+	if cliConfig.EnableDebugLog {
+		log.SetLevel(zapcore.DebugLevel)
+	}
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
 	log.Info(fmt.Sprintf("UI:      http://127.0.0.1:%d/dashboard/", cliConfig.ListenPort))
 	log.Info(fmt.Sprintf("API:     http://127.0.0.1:%d/dashboard/api/", cliConfig.ListenPort))

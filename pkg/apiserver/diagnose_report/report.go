@@ -576,7 +576,7 @@ func GetTiKVTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*Table
 		{name: "tikv_lock_manager_waiter_lifetime", tbl: "tikv_lock_manager_waiter_lifetime", labels: []string{"instance"}},
 		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"instance", "type"}},
 		{name: "tikv_send_snapshot", tbl: "tikv_send_snapshot", labels: []string{"instance"}},
-		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"instance", "type", "status"}},
+		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"instance", "type"}},
 		{name: "tikv_raft_process", tbl: "tikv_process", labels: []string{"instance", "type"}},
 		{name: "tikv_raft_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}},
 		{name: "tikv_raft_append_log", tbl: "tikv_append_log", labels: []string{"instance"}},

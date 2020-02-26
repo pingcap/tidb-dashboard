@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql" // mysql driver
-	"github.com/pingcap/errors"
 	"strconv"
 )
 
@@ -58,34 +57,62 @@ const (
 	CategoryTiDB     = "TiDB"
 	CategoryPD       = "PD"
 	CategoryTiKV     = "TiKV"
-
-	// Table name.
-
-	TableTimeConsume = "time-consume"
-	TableError       = "error"
-	TableTxn         = "transaction"
-	TableDDLOwner    = "DDL-owner"
 )
 
-func GetTableRows(category, table, startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	switch category {
-	case CategoryOverview:
-		switch table {
-		case TableTimeConsume:
-			return GetTotalTimeConsumeTable(startTime, endTime, db)
-		case TableError:
-			return GetTotalErrorTable(startTime, endTime, db)
-		}
-	case CategoryTiDB:
-		switch table {
-		case TableTxn:
-			return GetTiDBTxnTableData(startTime, endTime, db)
-		case TableDDLOwner:
-			return GetTiDBDDLOwner(startTime, endTime, db)
-		}
+func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []error) {
+	funcs := []func(string, string, *sql.DB) (*TableDef, error){
+		// Header
+		GetHeaderTimeTable,
 
+		// Node
+
+		// Overview
+		GetTotalTimeConsumeTable,
+		GetTotalErrorTable,
+
+		// TiDB
+		GetTiDBTxnTableData,
+		GetTiDBDDLOwner,
+		GetTiDBDDLInfoTable,
+
+		// PD
+		GetPDTimeConsumeTable,
+		GetPDSchedulerInfo,
+
+		// TiKV
+		GetTiKVTotalTimeConsumeTable,
+		GetTiKVKVInfo,
+		GetTiKVErrorTable,
+
+		// Config
+		GetPDConfigInfo,
+		GetTiDBGCConfigInfo,
 	}
-	return nil, errors.Errorf("unknow category %v table %v", category, table)
+	tables := make([]*TableDef, 0, len(funcs))
+	errs := make([]error, 0, len(funcs))
+	for _, f := range funcs {
+		tbl, err := f(startTime, endTime, db)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		if tbl != nil {
+			tables = append(tables, tbl)
+		}
+	}
+	return tables, errs
+}
+
+func GetHeaderTimeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	return &TableDef{
+		Category:  []string{CategoryHeader},
+		Title:     "Report Time Range",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"START_TIME", "END_TIME"},
+		Rows: []TableRowDef{
+			{Values: []string{startTime, endTime}},
+		},
+	}, nil
 }
 
 func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
@@ -165,7 +192,7 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef,
 	}
 
 	table := &TableDef{
-		Category:  []string{"Overview"},
+		Category:  []string{CategoryOverview},
 		Title:     "Time Consume",
 		CommentEN: "",
 		CommentCN: "",
@@ -189,82 +216,6 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef,
 			row.SubValues[i] = specialHandle(row.SubValues[i])
 		}
 		resultRows = append(resultRows, row)
-	}
-
-	err := getTableRows(defs, arg, db, appendRows)
-	if err != nil {
-		return nil, err
-	}
-	table.Rows = resultRows
-	return table, nil
-}
-
-func GetTotalCountTableData(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	defs1 := []totalValueAndTotalCountTableDef{
-		{name: "tidb_transaction_retry_num", tbl: "tidb_transaction_retry_num", sumTbl: "tidb_transaction_retry_total_num", countTbl: "tidb_transaction_retry_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_transaction_statement_num", tbl: "tidb_transaction_statement_num", sumTbl: "tidb_transaction_statement_total_num", countTbl: "tidb_transaction_statement_num_total_count", labels: []string{"sql_type"}},
-		{name: "tidb_txn_region_num", tbl: "tidb_txn_region_num", sumTbl: "tidb_txn_region_total_num", countTbl: "tidb_txn_region_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_kv_write_num", tbl: "tidb_kv_write_num", sumTbl: "tidb_kv_write_total_num", countTbl: "tidb_kv_write_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_kv_write_size", tbl: "tidb_kv_write_size", sumTbl: "tidb_kv_write_total_size", countTbl: "tidb_kv_write_size_total_count", labels: []string{"instance"}},
-		{name: "tidb_distsql_partial_num", tbl: "tidb_distsql_partial_num", sumTbl: "tidb_distsql_partial_total_num", countTbl: "tidb_distsql_partial_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_distsql_partial_scan_key_num", tbl: "tidb_distsql_partial_scan_key_num", sumTbl: "tidb_distsql_partial_scan_key_total_num", countTbl: "tidb_distsql_partial_scan_key_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_distsql_scan_key_num", tbl: "tidb_distsql_scan_key_num", sumTbl: "tidb_distsql_scan_key_total_num", countTbl: "tidb_distsql_scan_key_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_statistics_fast_analyze_status", tbl: "tidb_statistics_fast_analyze_status", sumTbl: "tidb_statistics_fast_analyze_total_status", countTbl: "tidb_statistics_fast_analyze_status_total_count", labels: []string{"type"}},
-		{name: "tidb_statistics_stats_inaccuracy_rate", tbl: "tidb_statistics_stats_inaccuracy_rate", sumTbl: "tidb_statistics_stats_inaccuracy_total_rate", countTbl: "tidb_statistics_stats_inaccuracy_rate_total_count", labels: []string{"instance"}},
-
-		{name: "tikv_approximate_region_size", tbl: "tikv_approximate_region_size", sumTbl: "tikv_approximate_region_total_size", countTbl: "tikv_approximate_region_size_total_count", labels: []string{"instance"}},
-		{name: "tikv_cop_kv_cursor_operations", tbl: "tikv_cop_kv_cursor_operations", sumTbl: "tikv_cop_kv_cursor_total_operations", countTbl: "tikv_cop_kv_cursor_operations_total_count", labels: []string{"req"}},
-		{name: "tikv_grpc_req_batch_size", tbl: "tikv_grpc_req_batch_size", sumTbl: "tikv_grpc_req_batch_total_size", countTbl: "tikv_grpc_req_batch_size_total_count", labels: []string{"instance"}},
-		{name: "tikv_grpc_resp_batch_size", tbl: "tikv_grpc_resp_batch_size", sumTbl: "tikv_grpc_resp_batch_total_size", countTbl: "tikv_grpc_resp_batch_size_total_count", labels: []string{"instance"}},
-		{name: "tikv_raft_message_batch_size", tbl: "tikv_raft_message_batch_size", sumTbl: "tikv_raft_message_batch_total_size", countTbl: "tikv_raft_message_batch_size_total_count", labels: []string{"instance"}},
-		{name: "tikv_raft_proposals_per_ready", tbl: "tikv_raft_proposals_per_ready", sumTbl: "tikv_raft_proposals_per_total_ready", countTbl: "tikv_raft_proposals_per_ready_total_count", labels: []string{"instance"}},
-		{name: "tikv_request_batch_ratio", tbl: "tikv_request_batch_ratio", sumTbl: "tikv_request_batch_total_ratio", countTbl: "tikv_request_batch_ratio_total_count", labels: []string{"type"}},
-		{name: "tikv_request_batch_size", tbl: "tikv_request_batch_size", sumTbl: "tikv_request_batch_total_size", countTbl: "tikv_request_batch_size_total_count", labels: []string{"type"}},
-		{name: "tikv_scheduler_keys_read", tbl: "tikv_scheduler_keys_read", sumTbl: "tikv_scheduler_keys_total_read", countTbl: "tikv_scheduler_keys_read_total_count", labels: []string{"type"}},
-		{name: "tikv_scheduler_keys_written", tbl: "tikv_scheduler_keys_written", sumTbl: "tikv_scheduler_keys_total_written", countTbl: "tikv_scheduler_keys_written_total_count", labels: []string{"type"}},
-		{name: "tikv_snapshot_kv_count", tbl: "tikv_snapshot_kv_count", sumTbl: "tikv_snapshot_kv_total_count", countTbl: "tikv_snapshot_kv_count_total_count", labels: []string{"instance"}},
-		{name: "tikv_snapshot_size", tbl: "tikv_snapshot_size", sumTbl: "tikv_snapshot_total_size", countTbl: "tikv_snapshot_size_total_count", labels: []string{"instance"}},
-		{name: "tikv_backup_range_size", tbl: "tikv_backup_range_size", sumTbl: "tikv_backup_range_total_size", countTbl: "tikv_backup_range_size_total_count", labels: []string{"instance"}},
-	}
-
-	defs := make([]rowQuery, 0, len(defs1))
-	for i := range defs1 {
-		defs = append(defs, defs1[i])
-	}
-
-	resultRows := make([]TableRowDef, 0, len(defs))
-
-	quantiles := []float64{0.999, 0.99, 0.90, 0.80}
-	table := &TableDef{
-		Category:  []string{"Overview"},
-		Title:     "Time Consume",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
-	}
-
-	specialHandle := func(row []string) []string {
-		for i := 2; i < len(row); i++ {
-			if len(row[i]) == 0 {
-				continue
-			}
-			row[i] = convertFloatToInt(row[i])
-		}
-		return row
-	}
-
-	appendRows := func(row TableRowDef) {
-		row.Values = specialHandle(row.Values)
-		for i := range row.SubValues {
-			row.SubValues[i] = specialHandle(row.SubValues[i])
-		}
-		resultRows = append(resultRows, row)
-	}
-
-	arg := &queryArg{
-		startTime: startTime,
-		endTime:   endTime,
-		quantiles: quantiles,
 	}
 
 	err := getTableRows(defs, arg, db, appendRows)
@@ -302,7 +253,7 @@ func GetTotalErrorTable(startTime, endTime string, db *sql.DB) (*TableDef, error
 	}
 
 	table := &TableDef{
-		Category:  []string{"Overview"},
+		Category:  []string{CategoryOverview},
 		Title:     "Error",
 		CommentEN: "",
 		CommentCN: "",
@@ -362,7 +313,7 @@ func GetTiDBTxnTableData(startTime, endTime string, db *sql.DB) (*TableDef, erro
 
 	quantiles := []float64{0.999, 0.99, 0.90, 0.80}
 	table := &TableDef{
-		Category:  []string{"TiDB"},
+		Category:  []string{CategoryTiDB},
 		Title:     "Transaction",
 		CommentEN: "",
 		CommentCN: "",
@@ -414,7 +365,7 @@ func GetTiDBDDLOwner(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{"TiDB"},
+		Category:  []string{CategoryTiDB},
 		Title:     "DDL-owner",
 		CommentEN: "DDL Owner info. Attention, if no DDL request has been executed, below owner info maybe null, it doesn't indicate no DDL owner exists.",
 		CommentCN: "",
@@ -424,7 +375,7 @@ func GetTiDBDDLOwner(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	return table, nil
 }
 
-func GetDDLInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+func GetTiDBDDLInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []totalTimeByLabelsTableDef{
 		{name: "tidb_ddl_handle_job", tbl: "tidb_ddl", labels: []string{"instance", "type"}},
 		{name: "tidb_ddl_update_self_version", tbl: "tidb_ddl_update_self_version", labels: []string{"instance", "result"}},
@@ -442,7 +393,7 @@ func GetDDLInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	}
 
 	table := &TableDef{
-		Category:  []string{"Overview"},
+		Category:  []string{CategoryTiDB},
 		Title:     "Time Consume",
 		CommentEN: "",
 		CommentCN: "",
@@ -487,7 +438,7 @@ func GetPDConfigInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{"PD"},
+		Category:  []string{CategoryPD},
 		Title:     "Scheduler Config",
 		CommentEN: "PD scheduler config change history",
 		CommentCN: "",
@@ -713,8 +664,8 @@ func GetTiKVKVInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{"TiDB"},
-		Title:     "Transaction",
+		Category:  []string{"TiKV"},
+		Title:     "KV Info",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},

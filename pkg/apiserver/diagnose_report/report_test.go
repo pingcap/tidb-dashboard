@@ -17,6 +17,21 @@ var _ = Suite(&testReportSuite{})
 
 type testReportSuite struct{}
 
+func (t *testReportSuite) TestReport(c *C) {
+	cli := t.getDBCli(c, "", "127.0.0.1:4000", "test")
+	//startTime := "2020-02-23 10:55:00"
+	//endTime := "2020-02-23 11:05:00"
+
+	startTime := "2020-02-25 13:20:23"
+	endTime := "2020-02-26 13:30:23"
+
+	tables, errs := diagnose_report.GetReportTables(startTime, endTime, cli)
+	for _, tbl := range tables {
+		printRows(tbl)
+	}
+	c.Assert(errs, HasLen, 0)
+}
+
 func (t *testReportSuite) getDBCli(c *C, passwd, addr, dbName string) *sql.DB {
 	dbDSN := fmt.Sprintf("root:%s@tcp(%s)/%s", passwd, addr, dbName)
 	db, err := sql.Open("mysql", dbDSN)
@@ -25,7 +40,7 @@ func (t *testReportSuite) getDBCli(c *C, passwd, addr, dbName string) *sql.DB {
 	return db
 }
 
-func (t *testReportSuite) TestReport(c *C) {
+func (t *testReportSuite) TestGetTable(c *C) {
 	cli := t.getDBCli(c, "", "172.16.5.40:4009", "test")
 	//startTime := "2020-02-23 10:55:00"
 	//endTime := "2020-02-23 11:05:00"

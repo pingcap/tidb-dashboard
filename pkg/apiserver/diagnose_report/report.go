@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	_ "github.com/go-sql-driver/mysql" // mysql driver
+	"strconv"
 	"github.com/pingcap/errors"
 )
 
@@ -59,8 +60,13 @@ const (
 	CategoryTiDB     = "TiDB"
 	CategoryPD       = "PD"
 	CategoryTiKV     = "TiKV"
+	CategoryConfig   = "Config"
+)
 
-	// Table name.
+func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []error) {
+	funcs := []func(string, string, *sql.DB) (*TableDef, error){
+		// Header
+		GetHeaderTimeTable,
 
 	TableTimeConsume     = "time-consume"
 	TableError           = "error"
@@ -77,7 +83,39 @@ const (
 	TableClusterInfo     = "cluster info"
 	TableClusterHardware = "cluster hardware"
 )
+		// Node
 
+		// Overview
+		GetTotalTimeConsumeTable,
+		GetTotalErrorTable,
+
+		// TiDB
+		GetTiDBTxnTableData,
+		GetTiDBDDLOwner,
+		GetTiDBDDLInfoTable,
+
+		// PD
+		GetPDTimeConsumeTable,
+		GetPDSchedulerInfo,
+
+		// TiKV
+		GetTiKVTotalTimeConsumeTable,
+		GetTiKVKVInfo,
+		GetTiKVErrorTable,
+
+		// Config
+		GetPDConfigInfo,
+		GetTiDBGCConfigInfo,
+		GetTiDBCurrentConfig,
+		GetPDCurrentConfig,
+		GetTiKVCurrentConfig,
+	}
+	tables := make([]*TableDef, 0, len(funcs))
+	errs := make([]error, 0, len(funcs))
+	for _, f := range funcs {
+		tbl, err := f(startTime, endTime, db)
+		if err != nil {
+			errs = append(errs, err)
 func GetTableRows(category, table, startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	switch category {
 	case CategoryHeader:
@@ -105,6 +143,8 @@ func GetTableRows(category, table, startTime, endTime string, db *sql.DB) (*Tabl
 		case TableError:
 			return GetTotalErrorTable(startTime, endTime, db)
 		}
+		if tbl != nil {
+			tables = append(tables, tbl)
 	case CategoryPD:
 		switch table {
 		case TableClusterStatus:
@@ -127,7 +167,20 @@ func GetTableRows(category, table, startTime, endTime string, db *sql.DB) (*Tabl
 			return GetTiKVCacheHitTable(startTime, endTime, db)
 		}
 	}
-	return nil, errors.Errorf("unknow category %v table %v", category, table)
+	return tables, errs
+}
+
+func GetHeaderTimeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	return &TableDef{
+		Category:  []string{CategoryHeader},
+		Title:     "Report Time Range",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"START_TIME", "END_TIME"},
+		Rows: []TableRowDef{
+			{Values: []string{startTime, endTime}},
+		},
+	}, nil
 }
 
 func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
@@ -207,7 +260,7 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef,
 	}
 
 	table := &TableDef{
-		Category:  []string{"Overview"},
+		Category:  []string{CategoryOverview},
 		Title:     "Time Consume",
 		CommentEN: "",
 		CommentCN: "",
@@ -231,82 +284,6 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef,
 			row.SubValues[i] = specialHandle(row.SubValues[i])
 		}
 		resultRows = append(resultRows, row)
-	}
-
-	err := getTableRows(defs, arg, db, appendRows)
-	if err != nil {
-		return nil, err
-	}
-	table.Rows = resultRows
-	return table, nil
-}
-
-func GetTotalCountTableData(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	defs1 := []totalValueAndTotalCountTableDef{
-		{name: "tidb_transaction_retry_num", tbl: "tidb_transaction_retry_num", sumTbl: "tidb_transaction_retry_total_num", countTbl: "tidb_transaction_retry_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_transaction_statement_num", tbl: "tidb_transaction_statement_num", sumTbl: "tidb_transaction_statement_total_num", countTbl: "tidb_transaction_statement_num_total_count", labels: []string{"sql_type"}},
-		{name: "tidb_txn_region_num", tbl: "tidb_txn_region_num", sumTbl: "tidb_txn_region_total_num", countTbl: "tidb_txn_region_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_kv_write_num", tbl: "tidb_kv_write_num", sumTbl: "tidb_kv_write_total_num", countTbl: "tidb_kv_write_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_kv_write_size", tbl: "tidb_kv_write_size", sumTbl: "tidb_kv_write_total_size", countTbl: "tidb_kv_write_size_total_count", labels: []string{"instance"}},
-		{name: "tidb_distsql_partial_num", tbl: "tidb_distsql_partial_num", sumTbl: "tidb_distsql_partial_total_num", countTbl: "tidb_distsql_partial_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_distsql_partial_scan_key_num", tbl: "tidb_distsql_partial_scan_key_num", sumTbl: "tidb_distsql_partial_scan_key_total_num", countTbl: "tidb_distsql_partial_scan_key_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_distsql_scan_key_num", tbl: "tidb_distsql_scan_key_num", sumTbl: "tidb_distsql_scan_key_total_num", countTbl: "tidb_distsql_scan_key_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_statistics_fast_analyze_status", tbl: "tidb_statistics_fast_analyze_status", sumTbl: "tidb_statistics_fast_analyze_total_status", countTbl: "tidb_statistics_fast_analyze_status_total_count", labels: []string{"type"}},
-		{name: "tidb_statistics_stats_inaccuracy_rate", tbl: "tidb_statistics_stats_inaccuracy_rate", sumTbl: "tidb_statistics_stats_inaccuracy_total_rate", countTbl: "tidb_statistics_stats_inaccuracy_rate_total_count", labels: []string{"instance"}},
-
-		{name: "tikv_approximate_region_size", tbl: "tikv_approximate_region_size", sumTbl: "tikv_approximate_region_total_size", countTbl: "tikv_approximate_region_size_total_count", labels: []string{"instance"}},
-		{name: "tikv_cop_kv_cursor_operations", tbl: "tikv_cop_kv_cursor_operations", sumTbl: "tikv_cop_kv_cursor_total_operations", countTbl: "tikv_cop_kv_cursor_operations_total_count", labels: []string{"req"}},
-		{name: "tikv_grpc_req_batch_size", tbl: "tikv_grpc_req_batch_size", sumTbl: "tikv_grpc_req_batch_total_size", countTbl: "tikv_grpc_req_batch_size_total_count", labels: []string{"instance"}},
-		{name: "tikv_grpc_resp_batch_size", tbl: "tikv_grpc_resp_batch_size", sumTbl: "tikv_grpc_resp_batch_total_size", countTbl: "tikv_grpc_resp_batch_size_total_count", labels: []string{"instance"}},
-		{name: "tikv_raft_message_batch_size", tbl: "tikv_raft_message_batch_size", sumTbl: "tikv_raft_message_batch_total_size", countTbl: "tikv_raft_message_batch_size_total_count", labels: []string{"instance"}},
-		{name: "tikv_raft_proposals_per_ready", tbl: "tikv_raft_proposals_per_ready", sumTbl: "tikv_raft_proposals_per_total_ready", countTbl: "tikv_raft_proposals_per_ready_total_count", labels: []string{"instance"}},
-		{name: "tikv_request_batch_ratio", tbl: "tikv_request_batch_ratio", sumTbl: "tikv_request_batch_total_ratio", countTbl: "tikv_request_batch_ratio_total_count", labels: []string{"type"}},
-		{name: "tikv_request_batch_size", tbl: "tikv_request_batch_size", sumTbl: "tikv_request_batch_total_size", countTbl: "tikv_request_batch_size_total_count", labels: []string{"type"}},
-		{name: "tikv_scheduler_keys_read", tbl: "tikv_scheduler_keys_read", sumTbl: "tikv_scheduler_keys_total_read", countTbl: "tikv_scheduler_keys_read_total_count", labels: []string{"type"}},
-		{name: "tikv_scheduler_keys_written", tbl: "tikv_scheduler_keys_written", sumTbl: "tikv_scheduler_keys_total_written", countTbl: "tikv_scheduler_keys_written_total_count", labels: []string{"type"}},
-		{name: "tikv_snapshot_kv_count", tbl: "tikv_snapshot_kv_count", sumTbl: "tikv_snapshot_kv_total_count", countTbl: "tikv_snapshot_kv_count_total_count", labels: []string{"instance"}},
-		{name: "tikv_snapshot_size", tbl: "tikv_snapshot_size", sumTbl: "tikv_snapshot_total_size", countTbl: "tikv_snapshot_size_total_count", labels: []string{"instance"}},
-		{name: "tikv_backup_range_size", tbl: "tikv_backup_range_size", sumTbl: "tikv_backup_range_total_size", countTbl: "tikv_backup_range_size_total_count", labels: []string{"instance"}},
-	}
-
-	defs := make([]rowQuery, 0, len(defs1))
-	for i := range defs1 {
-		defs = append(defs, defs1[i])
-	}
-
-	resultRows := make([]TableRowDef, 0, len(defs))
-
-	quantiles := []float64{0.999, 0.99, 0.90, 0.80}
-	table := &TableDef{
-		Category:  []string{"Overview"},
-		Title:     "Time Consume",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
-	}
-
-	specialHandle := func(row []string) []string {
-		for i := 2; i < len(row); i++ {
-			if len(row[i]) == 0 {
-				continue
-			}
-			row[i] = convertFloatToInt(row[i])
-		}
-		return row
-	}
-
-	appendRows := func(row TableRowDef) {
-		row.Values = specialHandle(row.Values)
-		for i := range row.SubValues {
-			row.SubValues[i] = specialHandle(row.SubValues[i])
-		}
-		resultRows = append(resultRows, row)
-	}
-
-	arg := &queryArg{
-		startTime: startTime,
-		endTime:   endTime,
-		quantiles: quantiles,
 	}
 
 	err := getTableRows(defs, arg, db, appendRows)
@@ -344,7 +321,7 @@ func GetTotalErrorTable(startTime, endTime string, db *sql.DB) (*TableDef, error
 	}
 
 	table := &TableDef{
-		Category:  []string{"Overview"},
+		Category:  []string{CategoryOverview},
 		Title:     "Error",
 		CommentEN: "",
 		CommentCN: "",
@@ -404,7 +381,7 @@ func GetTiDBTxnTableData(startTime, endTime string, db *sql.DB) (*TableDef, erro
 
 	quantiles := []float64{0.999, 0.99, 0.90, 0.80}
 	table := &TableDef{
-		Category:  []string{"TiDB"},
+		Category:  []string{CategoryTiDB},
 		Title:     "Transaction",
 		CommentEN: "",
 		CommentCN: "",
@@ -456,7 +433,7 @@ func GetTiDBDDLOwner(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{"TiDB"},
+		Category:  []string{CategoryTiDB},
 		Title:     "DDL-owner",
 		CommentEN: "DDL Owner info. Attention, if no DDL request has been executed, below owner info maybe null, it doesn't indicate no DDL owner exists.",
 		CommentCN: "",
@@ -466,7 +443,7 @@ func GetTiDBDDLOwner(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	return table, nil
 }
 
-func GetDDLInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+func GetTiDBDDLInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []totalTimeByLabelsTableDef{
 		{name: "tidb_ddl_handle_job", tbl: "tidb_ddl", labels: []string{"instance", "type"}},
 		{name: "tidb_ddl_update_self_version", tbl: "tidb_ddl_update_self_version", labels: []string{"instance", "result"}},
@@ -484,7 +461,7 @@ func GetDDLInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	}
 
 	table := &TableDef{
-		Category:  []string{"Overview"},
+		Category:  []string{CategoryTiDB},
 		Title:     "Time Consume",
 		CommentEN: "",
 		CommentCN: "",
@@ -529,7 +506,7 @@ func GetPDConfigInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{"PD"},
+		Category:  []string{CategoryConfig},
 		Title:     "Scheduler Config",
 		CommentEN: "PD scheduler config change history",
 		CommentCN: "",
@@ -550,7 +527,7 @@ func GetTiDBGCConfigInfo(startTime, endTime string, db *sql.DB) (*TableDef, erro
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{"PD"},
+		Category:  []string{CategoryConfig},
 		Title:     "Scheduler Config",
 		CommentEN: "PD scheduler config change history",
 		CommentCN: "",
@@ -755,8 +732,8 @@ func GetTiKVKVInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{"TiDB"},
-		Title:     "Transaction",
+		Category:  []string{"TiKV"},
+		Title:     "KV Info",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
@@ -820,6 +797,57 @@ func GetTiKVErrorTable(startTime, endTime string, db *sql.DB) (*TableDef, error)
 	return table, nil
 }
 
+func GetTiDBCurrentConfig(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select `key`,`value` from information_schema.CLUSTER_CONFIG where type='tidb' group by `key`,`value` order by `key`;")
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{CategoryConfig},
+		Title:     "TiDB Current Config",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"KEY", "VALUE"},
+		Rows:      rows,
+	}
+	return table, nil
+}
+
+func GetPDCurrentConfig(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select `key`,`value` from information_schema.CLUSTER_CONFIG where type='pd' group by `key`,`value` order by `key`;")
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{CategoryConfig},
+		Title:     "PD Current Config",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"KEY", "VALUE"},
+		Rows:      rows,
+	}
+	return table, nil
+}
+
+func GetTiKVCurrentConfig(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select `key`,`value` from information_schema.CLUSTER_CONFIG where type='tikv' group by `key`,`value` order by `key`;")
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{CategoryConfig},
+		Title:     "TiKV Current Config",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"KEY", "VALUE"},
+		Rows:      rows,
+	}
+	return table, nil
+}
+
 func getSQLRows(db *sql.DB, sql string) ([]TableRowDef, error) {
 	rows, err := querySQL(db, sql)
 	if err != nil {
@@ -846,415 +874,3 @@ func getTableRows(defs []rowQuery, arg *queryArg, db *sql.DB, appendRows func(de
 	}
 	return nil
 }
-
-func NewTableRowDef(values []string, subValues [][]string) TableRowDef {
-	return TableRowDef{
-		Values:    values,
-		SubValues: subValues,
-	}
-}
-
-type AvgMaxMinTableDef struct {
-	name  string
-	tbl   string
-	label string
-}
-
-func GetAvgMaxMinTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []AvgMaxMinTableDef{
-		{name: "node_cpu_usage", tbl: "node_cpu_usage", label: "instance"},
-		//{name: "node_mem_usage", tbl: "node_mem_usage", label: "instance"},
-		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", label: "instance"},
-		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance"},
-	}
-	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
-		Category:  []string{"node"},
-		Title:     "hardware usage",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
-	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select '%[4]s', '', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s'",
-			t.tbl, startTime, endTime, t.name)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		sql = fmt.Sprintf("select '', %[1]s, avg(value), max(value), min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' group by %[1]s",
-			t.label, t.tbl, startTime, endTime)
-		subRows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		resultRows = append(resultRows, NewTableRowDef(rows[0], subRows))
-	}
-	table.Rows = resultRows
-	return table, nil
-}
-
-type CPUUsageTableDef struct {
-	tbl   string
-	label []string
-}
-
-func GetCPUUsageTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []CPUUsageTableDef{
-		{tbl: "process_cpu_usage", label: []string{"instance", "job"}},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
-		Category:  []string{"node"},
-		Title:     "process cpu usage",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"instance", "job", "AVG", "MAX", "MIN"},
-	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select %[1]s, %[2]s, avg(value),max(value),min(value) from metrics_schema.%[3]s where time >= '%[4]s' and time < '%[5]s' group by %[1]s, %[2]s order by avg(value) desc",
-			t.label[0], t.label[1], t.tbl, startTime, endTime)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		for _, row := range rows {
-			resultRows = append(resultRows, NewTableRowDef(row, nil))
-		}
-	}
-	table.Rows = resultRows
-	return table, nil
-}
-
-func GetGoroutinesCountTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []CPUUsageTableDef{
-		{tbl: "goroutines_count", label: []string{"instance", "job"}},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
-		Category:  []string{"node"},
-		Title:     "goroutines count",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"instance", "job", "AVG", "MAX", "MIN"},
-	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select %[1]s, %[2]s, avg(value), max(value), min(value) from metrics_schema.%[3]s where %[2]s in ('tidb','pd') and time >= '%[4]s' and time < '%[5]s' group by %[1]s, %[2]s order by avg(value) desc",
-			t.label[0], t.label[1], t.tbl, startTime, endTime)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		for _, row := range rows {
-			resultRows = append(resultRows, NewTableRowDef(row, nil))
-		}
-	}
-	table.Rows = resultRows
-	return table, nil
-}
-
-func GetTiKVThreadCPUTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []AvgMaxMinTableDef{
-		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance"},
-		{name: "apply", tbl: "tikv_thread_cpu", label: "instance"},
-		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance"},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
-		Category:  []string{"node"},
-		Title:     "thread cpu",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
-	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select '%[5]s', '', avg(value), max(value), min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' and name like '%[5]s",
-			t.label, t.tbl, startTime, endTime, t.name) + "%'"
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		sql = fmt.Sprintf("select '', %[1]s, avg(value), max(value) ,min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' and name like '%[5]s",
-			t.label, t.tbl, startTime, endTime, t.name)
-		sql = sql + "%' group by " + t.label + " order by avg(value) desc"
-		subRows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		resultRows = append(resultRows, NewTableRowDef(rows[0], subRows))
-	}
-	table.Rows = resultRows
-	return table, nil
-}
-
-func GetStoreStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []AvgMaxMinTableDef{
-		{name: "region_score", tbl: "pd_scheduler_store_status", label: "address"},
-		{name: "leader_score", tbl: "pd_scheduler_store_status", label: "address"},
-		{name: "region_count", tbl: "pd_scheduler_store_status", label: "address"},
-		{name: "leader_count", tbl: "pd_scheduler_store_status", label: "address"},
-		{name: "region_size", tbl: "pd_scheduler_store_status", label: "address"},
-		{name: "leader_size", tbl: "pd_scheduler_store_status", label: "address"},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
-		Category:  []string{"PD"},
-		Title:     "storage status",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"METRIC_NAME", "address", "AVG", "MAX", "MIN"},
-	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select '%[4]s', '', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s' and type = '%[4]s'",
-			t.tbl, startTime, endTime, t.name)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		sql = fmt.Sprintf("select '', %[1]s, avg(value), max(value), min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' and type = '%[5]s' group by %[1]s",
-			t.label, t.tbl, startTime, endTime, t.name)
-		subRows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		resultRows = append(resultRows, NewTableRowDef(rows[0], subRows))
-	}
-	table.Rows = resultRows
-	return table, nil
-}
-
-func GetPDClusterStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []CPUUsageTableDef{
-		{tbl: "pd_cluster_status", label: []string{"type"}},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
-		Category:  []string{"PD"},
-		Title:     "cluster status",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"TYPE", "MAX", "MIN"},
-	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select %[1]s, max(value), min(value) from metrics_schema.%[2]s group by %[1]s",
-			t.label[0], t.tbl, startTime, endTime)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		for _, row := range rows {
-			resultRows = append(resultRows, NewTableRowDef(row, nil))
-		}
-	}
-	table.Rows = resultRows
-	return table, nil
-}
-
-func GetPDEtcdStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []CPUUsageTableDef{
-		{tbl: "pd_server_etcd_state", label: []string{"type"}},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
-		Category:  []string{"PD"},
-		Title:     "etcd status",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"TYPE", "MAX", "MIN"},
-	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select %[1]s, max(value), min(value) from metrics_schema.%[2]s group by %[1]s",
-			t.label[0], t.tbl, startTime, endTime)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		for _, row := range rows {
-			resultRows = append(resultRows, NewTableRowDef(row, nil))
-		}
-	}
-	table.Rows = resultRows
-	return table, nil
-}
-
-func GetTiKVCacheHitTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []AvgMaxMinTableDef{
-		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", label: "type"},
-		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit", label: "type"},
-		{name: "tikv_block_index_cache_hit", tbl: "tikv_block_index_cache_hit", label: "type"},
-		{name: "tikv_block_filter_cache_hit", tbl: "tikv_block_filter_cache_hit", label: "type"},
-		{name: "tikv_block_data_cache_hit", tbl: "tikv_block_data_cache_hit", label: "type"},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
-		Category:  []string{"TiKV"},
-		Title:     "cache hit",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"METRIC_NAME", "AVG", "MAX", "MIN"},
-	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select '%[4]s', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s'",
-			t.tbl, startTime, endTime, t.name)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		for _, row := range rows {
-			resultRows = append(resultRows, NewTableRowDef(row, nil))
-		}
-	}
-	table.Rows = resultRows
-	return table, nil
-}
-
-func GetClusterInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []CPUUsageTableDef{
-		{tbl: "cluster_info", label: []string{}},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
-		Category:  []string{"header"},
-		Title:     "cluster info",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"TYPE", "INSTANCE", "STATUS_ADDRESS", "VERSION", "GIT_HASH", "START_TIME", "UPTIME"},
-	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select * from information_schema.%[1]s",
-			t.tbl, startTime, endTime)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		for _, row := range rows {
-			resultRows = append(resultRows, NewTableRowDef(row, nil))
-		}
-	}
-	table.Rows = resultRows
-	return table, nil
-}
-
-type hardWare struct {
-	instance string
-	Type     string
-	cpu      int
-	memory   float64
-	disk     map[string]float64
-}
-
-//func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-//	tables := []CPUUsageTableDef{
-//		{tbl: "cluster_info", label: []string{}},
-//	}
-//
-//	resultRows := make([]TableRowDef, 0, len(tables))
-//	table := &TableDef{
-//		Category:  []string{"Header"},
-//		Title:     "cluster hardware",
-//		CommentEN: "",
-//		CommentCN: "",
-//		Column:    []string{"HOST", "INSTANCE", "CPU_CORES", "MEMORY (GB)", "DISK (GB)", "UPTIME"},
-//	}
-//	sql := "SELECT instance,type,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='cpu' and name = 'cpu-physical-cores'"
-//	rows, err := querySQL(db, sql)
-//	if err != nil {
-//		return nil, err
-//	}
-//	m := make(map[string] *hardWare)
-//	var s string
-//	for _,row := range rows {
-//		idx := strings.Index(row[0],":")
-//		s := row[0]
-//		s = s[:idx]
-//		cpuCnt,err := strconv.Atoi(row[2])
-//		if err != nil {
-//			return &TableDef{},err
-//		}
-//		if _,ok := m[s]; ok {
-//			m[s].Type += "," + row[1]
-//			m[s].cpu += cpuCnt
-//		} else {
-//			m[s] = &hardWare{s,row[1],cpuCnt,0,0}
-//		}
-//	}
-//	sql = "SELECT instance,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='memory' and name = 'capacity'"
-//	rows, err = querySQL(db, sql)
-//	for _,row := range rows {
-//		s = row[0][:strings.Index(row[0],":")]
-//		memCnt,err := strconv.ParseFloat(row[1],64)
-//		if err != nil {
-//			return &TableDef{},err
-//		}
-//		if _,ok := m[s]; ok {
-//			m[s].memory += memCnt
-//		} else {
-//			m[s].memory = memCnt
-//		}
-//	}
-//	sql = "SELECT * from `CLUSTER_HARDWARE` where `NAME` = 'total' AND `DEVICE_NAME` LIKE '/dev%' or `DEVICE_NAME` LIKE 'sda%' or`DEVICE_NAME` LIKE 'nvme'"
-//	rows, err = querySQL(db, sql)
-//	for _,row := range rows {
-//		s = row[0][:strings.Index(row[0],":")]
-//		diskCnt,err := strconv.ParseFloat(row[1],64)
-//		if err != nil {
-//			return &TableDef{},err
-//		}
-//		if _,ok := m[s]; ok {
-//			m[s].disk += diskCnt
-//		} else {
-//			m[s].disk.[row[1]] = row[2]
-//		}
-//	}
-//	rows = rows[:0]
-//	for _,v := range m {
-//		row := make([]string,6)
-//		row[0] = v.instance
-//		row[1] = v.Type
-//		row[2] = strconv.Itoa(v.cpu) + "/" + strconv.Itoa(v.cpu * 2)
-//		row[3] = fmt.Sprintf("%f", v.memory/(1024*1024*1024))
-//		row[4] = fmt.Sprintf("%f", v.disk/(1024*1024*1024))
-//		row[5] = ""
-//		rows = append(rows,row)
-//	}
-//	for _,row:= range rows {
-//		resultRows = append(resultRows, NewTableRowDef(row, nil))
-//	}
-//	table.Rows = resultRows
-//	return table, nil
-//}

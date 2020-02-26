@@ -24,7 +24,7 @@
   <p>{{ .CommentEN }}</p>
   {{ end }}
   <table
-    class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth"
+    class="table is-bordered is-hoverable is-narrow is-fullwidth"
   >
     <thead>
       <tr>
@@ -47,8 +47,12 @@
       </tr>
       {{ if gt $len 0 }} {{ range .SubValues }}
       <tr class="subvalues fold" data-row="{{$rowIdx}}">
-        {{ range . }}
-        <td>{{ . }}</td>
+        {{ range $cIdx, $v := . }}
+          {{ if eq $cIdx 0 }}
+          <td>|-- {{ . }}</td>
+          {{ else }}
+          <td>{{ . }}</td>
+          {{ end}}
         {{ end }}
       </tr>
       {{ end }} {{ end }} {{ end }}

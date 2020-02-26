@@ -14,11 +14,15 @@
 package foo
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose_report"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
+
 	// Import for swag go doc
 	_ "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
@@ -70,7 +74,7 @@ type TableRowDef struct {
 }
 
 var (
-	tables = []*TableDef{
+	mockTables = []*TableDef{
 		&TableDef{
 			Category: []string{"Report Header"},
 			Title:    "Report Time Range",
@@ -189,5 +193,37 @@ var (
 )
 
 func (s *Service) sqlDiagnosisHandler(c *gin.Context) {
+	dbDSN := fmt.Sprintf("root:%s@tcp(%s)/%s", "", "172.16.5.40:4009", "test")
+	// dbDSN := fmt.Sprintf("root:%s@tcp(%s)/%s", "", "127.0.0.1:4000", "test")
+	db, err := sql.Open("mysql", dbDSN)
+	if err != nil {
+		c.String(http.StatusBadRequest, "%v", err)
+		return
+	}
+	db.SetMaxOpenConns(10)
+	defer db.Close()
+
+	startTime := "2020-02-25 13:20:23"
+	endTime := "2020-02-26 13:30:23"
+	tables := []*diagnose_report.TableDef{}
+	table, err := diagnose_report.GetTotalErrorTable(startTime, endTime, db)
+	if err != nil {
+		c.String(http.StatusBadRequest, "%v", err)
+		return
+	}
+	tables = append(tables, table)
+	table, err = diagnose_report.GetTiDBGCConfigInfo(startTime, endTime, db)
+	if err != nil {
+		c.String(http.StatusBadRequest, "%v", err)
+		return
+	}
+	tables = append(tables, table)
+	table, err = diagnose_report.GetTiKVErrorTable(startTime, endTime, db)
+	if err != nil {
+		c.String(http.StatusBadRequest, "%v", err)
+		return
+	}
+	tables = append(tables, table)
+
 	c.HTML(http.StatusOK, "sql-diagnosis/index", tables)
 }

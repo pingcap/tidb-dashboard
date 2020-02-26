@@ -13,7 +13,10 @@
       .report-container {
         margin-bottom: 16px;
       }
-      .subvalues.fold {
+      tr.subvalues {
+        background-color: lightcyan;
+      }
+      tr.subvalues.fold {
         display: none;
       }
       .subvalues-toggle {
@@ -26,13 +29,24 @@
     <section class="section">
       <div class="container">
         <h1 class="title is-size-1">TiDB SQL Diagnosis System Report</h1>
+        <div>
+          <button class="button is-link is-light" id="expand-all-btn">
+            Expand All
+          </button>
+          <button class="button is-link is-light" id="fold-all-btn">
+            Fold All
+          </button>
+        </div>
         {{ range . }} {{ template "sql-diagnosis/table" . }} {{ end }}
       </div>
     </section>
 
     <script>
+      const toggleBtns = document.querySelectorAll('.subvalues-toggle')
+      const expandAllBtn = document.querySelector('#expand-all-btn')
+      const foldAllBtn = document.querySelector('#fold-all-btn')
+
       function handleToggleDetail() {
-        const toggleBtns = document.querySelectorAll('.subvalues-toggle')
         toggleBtns.forEach(btn => {
           btn.onclick = function() {
             const curRow = btn.getAttribute('data-row')
@@ -51,6 +65,21 @@
         })
       }
       handleToggleDetail()
+
+      // action: 'expand' or 'fold'
+      function expandOrFoldAll(action) {
+        toggleBtns.forEach(btn => {
+          if (btn.innerHTML === action) {
+            btn.click()
+          }
+        })
+      }
+      expandAllBtn.onclick = function() {
+        expandOrFoldAll('expand')
+      }
+      foldAllBtn.onclick = function() {
+        expandOrFoldAll('fold')
+      }
     </script>
   </body>
 </html>

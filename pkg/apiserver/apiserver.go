@@ -44,7 +44,7 @@ type Services struct {
 	TiDBForwarder *tidb.Forwarder
 	KeyVisual     *keyvisual.Service
 	EtcdProvider  pd.EtcdProvider
-	PDProvider    pd.Provider
+	HTTPClient    *http.Client
 }
 
 func Handler(apiPrefix string, config *config.Config, services *Services) http.Handler {
@@ -67,8 +67,7 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	foo.NewService(config).Register(endpoint, auth)
 	info.NewService(config, services.TiDBForwarder, services.Store).Register(endpoint, auth)
 
-	clusterinfo.NewService(config, services.EtcdProvider.GetEtcdClient(),
-		services.PDProvider.GetPDClient()).Register(endpoint, auth)
+	clusterinfo.NewService(config, services.EtcdProvider.GetEtcdClient(), services.HTTPClient).Register(endpoint, auth)
 
 	services.KeyVisual.Register(endpoint, auth)
 	logsearch.NewService(config, services.Store).Register(endpoint, auth)

@@ -39,7 +39,7 @@ func getTopologyUnderEtcd(ctx context.Context, info *ClusterInfo, service *Servi
 }
 
 func getPDTopology(ctx context.Context, info *ClusterInfo, service *Service) {
-	pdPeers, err := clusterinfo.GetPDTopology(ctx, service.config.PDEndPoint)
+	pdPeers, err := clusterinfo.GetPDTopology(ctx, service.config.PDEndPoint, service.httpClient)
 	if err != nil {
 		info.Pd.Err = err.Error()
 		return
@@ -48,7 +48,7 @@ func getPDTopology(ctx context.Context, info *ClusterInfo, service *Service) {
 }
 
 func getTiKVTopology(ctx context.Context, info *ClusterInfo, service *Service) {
-	kv, err := clusterinfo.GetTiKVTopology(ctx, service.pdCli)
+	kv, err := clusterinfo.GetTiKVTopology(ctx, service.config.PDEndPoint, service.httpClient)
 	if err != nil {
 		info.TiKV.Err = err.Error()
 		return

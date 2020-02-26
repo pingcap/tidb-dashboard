@@ -24,9 +24,6 @@ import (
 	"strings"
 	"time"
 
-	pdclient "github.com/pingcap/pd/client"
-
-	"github.com/pingcap/kvproto/pkg/metapb"
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 )
@@ -129,14 +126,17 @@ func genDBList(infoMap map[string]*TiDB, ttlMap map[string][]byte) []TiDB {
 	dbList := []TiDB{}
 	// Note: it means this TiDB has non-ttl key, but ttl-key not exists.
 	for address, info := range infoMap {
-		if ttlFreshTime, ok := ttlMap[address]; ok {
-			recTime, err := time.Parse(RFCTime, string(ttlFreshTime))
+		if ttlFreshUnixNanoSec, ok := ttlMap[address]; ok {
+			unixDate, err := strconv.ParseInt(string(ttlFreshUnixNanoSec), 10, 64)
 			if err != nil {
 				info.ServerStatus = Offline
-			} else if time.Since(recTime) > time.Second*30 {
-				info.ServerStatus = Offline
 			} else {
-				info.ServerStatus = Up
+				ttlFreshTime := time.Unix(0, unixDate)
+				if time.Since(ttlFreshTime) > time.Second*30 {
+					info.ServerStatus = Offline
+				} else {
+					info.ServerStatus = Up
+				}
 			}
 		} else {
 			info.ServerStatus = Offline
@@ -147,9 +147,54 @@ func genDBList(infoMap map[string]*TiDB, ttlMap map[string][]byte) []TiDB {
 	return dbList
 }
 
-func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error) {
+type store struct {
+	Address string `json:"address"`
+	ID      int    `json:"id"`
+	Labels  []struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	}
+	StateName     string `json:"state_name"`
+	Version       string `json:"version"`
+	StatusAddress string `json:"status_address"`
+	GitHash       string `json:"git_hash"`
+	BinaryPath    string `json:"binary_path"`
+}
+
+func getAllStores(endpoint string, httpClient *http.Client) ([]store, error) {
+	resp, err := httpClient.Get(endpoint + "/pd/api/v1/stores")
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("fetch stores got wrong status code")
+	}
+	defer resp.Body.Close()
+	storeResp := struct {
+		Count  int `json:"count"`
+		Stores []struct {
+			Store store
+		} `json:"stores"`
+	}{}
+	data, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(data, &storeResp)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]store, storeResp.Count)
+	for i, s := range storeResp.Stores {
+		ret[i] = s.Store
+	}
+	return ret, nil
+}
+
+func GetTiKVTopology(ctx context.Context, endpoint string, httpClient *http.Client) ([]TiKV, error) {
 	kvs := make([]TiKV, 0)
-	stores, err := pdcli.GetAllStores(ctx)
+	stores, err := getAllStores(endpoint, httpClient)
 
 	if err != nil {
 		return nil, err
@@ -172,7 +217,7 @@ func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error)
 			IP:           host,
 			Port:         port,
 			BinaryPath:   v.BinaryPath,
-			ServerStatus: storeStateToStatus(v.GetState()),
+			ServerStatus: storeStateToStatus(v.StateName),
 			StatusPort:   statusPort,
 			Labels:       map[string]string{},
 		}
@@ -185,22 +230,23 @@ func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error)
 	return kvs, nil
 }
 
-func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
+func GetPDTopology(ctx context.Context, pdEndPoint string, httpClient *http.Client) ([]PD, error) {
 	pdPeers := make([]PD, 0)
 	healthMapChan := make(chan map[string]struct{})
 	go func() {
 		var err error
-		healthMap, err := getPDNodesHealth(pdEndPoint)
+		healthMap, err := getPDNodesHealth(pdEndPoint, httpClient)
 		if err != nil {
 			healthMap = map[string]struct{}{}
 		}
 		healthMapChan <- healthMap
 	}()
 
-	resp, err := http.Get(pdEndPoint + "/pd/api/v1/members")
+	resp, err := httpClient.Get(pdEndPoint + "/pd/api/v1/members")
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("fetch PD members got wrong status code")
 	}
@@ -228,6 +274,7 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 	healthMap := <-healthMapChan
 	close(healthMapChan)
 	for _, ds := range ds.Members {
+		log.Info(ds.ClientUrls[0])
 		host, port, err := parseHostAndPortFromAddressURL(ds.ClientUrls[0])
 		if err != nil {
 			continue
@@ -255,7 +302,8 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 // address should be like "ip:port" as "127.0.0.1:2379".
 // return error if string is not like "ip:port".
 func parseHostAndPortFromAddress(address string) (string, uint, error) {
-	addresses := strings.Split(address, "/")
+	log.Info(address)
+	addresses := strings.Split(address, ":")
 	if len(addresses) != 2 {
 		log.Warn("parseHostAndPortFromAddress receive format error")
 		return "", 0, fmt.Errorf("format error")
@@ -280,27 +328,28 @@ func parseHostAndPortFromAddressURL(urlString string) (string, uint, error) {
 	return u.Host, uint(port), nil
 }
 
-func storeStateToStatus(state metapb.StoreState) ComponentStatus {
+func storeStateToStatus(state string) ComponentStatus {
+	state = strings.Trim(strings.ToLower(state), "\n ")
 	switch state {
-	case metapb.StoreState_Up:
+	case "up":
 		return Up
-	case metapb.StoreState_Offline:
+	case "offline":
 		return Offline
-	case metapb.StoreState_Tombstone:
+	case "tombstone":
 		return Tombstone
 	default:
 		return Unknown
 	}
 }
 
-func getPDNodesHealth(pdEndPoint string) (map[string]struct{}, error) {
+func getPDNodesHealth(pdEndPoint string, httpClient *http.Client) (map[string]struct{}, error) {
 	// health member set
 	healthMember := map[string]struct{}{}
-
-	resp, err := http.Get(pdEndPoint + "/pd/api/v1/health")
+	resp, err := httpClient.Get(pdEndPoint + "/pd/api/v1/health")
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {

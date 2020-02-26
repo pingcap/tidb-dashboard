@@ -18,8 +18,6 @@ import (
 
 	"go.etcd.io/etcd/clientv3"
 
-	pdclient "github.com/pingcap/pd/client"
-
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
@@ -34,17 +32,9 @@ type EtcdProvider interface {
 	GetEtcdClient() *clientv3.Client
 }
 
-type Provider interface {
-	GetPDClient() pdclient.Client
-}
-
 // FIXME: We should be able to provide etcd directly. However currently there are problems in PD.
 type LocalEtcdProvider struct {
 	client *clientv3.Client
-}
-
-type LocalPDProvider struct {
-	client pdclient.Client
 }
 
 func NewLocalEtcdClientProvider(config *config.Config) (*LocalEtcdProvider, error) {
@@ -61,16 +51,4 @@ func NewLocalEtcdClientProvider(config *config.Config) (*LocalEtcdProvider, erro
 
 func (p *LocalEtcdProvider) GetEtcdClient() *clientv3.Client {
 	return p.client
-}
-
-func NewLocalPDClientProvider(cfg *config.Config) (*LocalPDProvider, error) {
-	client, err := pdclient.NewClient([]string{cfg.PDEndPoint}, pdclient.SecurityOption{})
-	if err != nil {
-		return nil, err
-	}
-	return &LocalPDProvider{client: client}, nil
-}
-
-func (l *LocalPDProvider) GetPDClient() pdclient.Client {
-	return l.client
 }

@@ -14,19 +14,14 @@ require (
 	github.com/jinzhu/gorm v1.9.12
 	github.com/joho/godotenv v1.3.0
 	github.com/joomcode/errorx v1.0.1
-	github.com/montanaflynn/stats v0.6.3 // indirect
-	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/pingcap/check v0.0.0-20191216031241-8a5a85928f12
-	github.com/pingcap/gofail v0.0.0-20181217135706-6a951c1e42c3 // indirect
 	github.com/pingcap/kvproto v0.0.0-20200214064158-62d31900d88e
 	github.com/pingcap/log v0.0.0-20200117041106-d28c14d3b1cd
-	github.com/pingcap/pd v2.1.19+incompatible
 	github.com/pingcap/sysutil v0.0.0-20200206130906-2bfa6dc40bcd
 	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.7.0
 	github.com/swaggo/http-swagger v0.0.0-20200103000832-0e9263c4b516
 	github.com/swaggo/swag v1.6.5
-	github.com/unrolled/render v1.0.2 // indirect
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	go.uber.org/zap v1.13.0
 	google.golang.org/grpc v1.25.1

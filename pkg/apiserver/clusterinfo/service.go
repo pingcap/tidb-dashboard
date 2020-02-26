@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	pdclient "github.com/pingcap/pd/client"
 	etcdclientv3 "go.etcd.io/etcd/clientv3"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
@@ -33,13 +32,13 @@ import (
 )
 
 type Service struct {
-	config  *config.Config
-	etcdCli *etcdclientv3.Client
-	pdCli   pdclient.Client
+	config     *config.Config
+	etcdCli    *etcdclientv3.Client
+	httpClient *http.Client
 }
 
-func NewService(config *config.Config, etcdClient *etcdclientv3.Client, pdcli pdclient.Client) *Service {
-	return &Service{etcdCli: etcdClient, config: config, pdCli: pdcli}
+func NewService(config *config.Config, etcdClient *etcdclientv3.Client, httpClient *http.Client) *Service {
+	return &Service{etcdCli: etcdClient, config: config, httpClient: httpClient}
 }
 
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {

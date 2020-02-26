@@ -23,8 +23,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
-
 	"github.com/gin-gonic/gin"
 	pdclient "github.com/pingcap/pd/client"
 	etcdclientv3 "go.etcd.io/etcd/clientv3"
@@ -69,18 +67,15 @@ func (s *Service) deleteDBHandler(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	_, err := s.etcdCli.Delete(ctx, nonTTLKey)
-	if err != nil {
-		c.Status(500)
-		_ = c.Error(err)
-		return
+	var wg sync.WaitGroup
+	for _, key := range []string{ttlKey, nonTTLKey} {
+		wg.Add(1)
+		go func(toDel string) {
+			defer wg.Done()
+			_, _ = s.etcdCli.Delete(ctx, toDel)
+		}(key)
 	}
-	_, err = s.etcdCli.Delete(ctx, ttlKey)
-	if err != nil {
-		c.Status(500)
-		_ = c.Error(err)
-		return
-	}
+	wg.Wait()
 
 	c.JSON(http.StatusNoContent, nil)
 }
@@ -91,14 +86,6 @@ type ResponseWithErr struct {
 	Pd           interface{} `json:"pd"`
 	Grafana      interface{} `json:"grafana"`
 	AlertManager interface{} `json:"alert_manager"`
-}
-
-type ClusterInfo struct {
-	TiDB         []clusterinfo.TiDB       `json:"tidb"`
-	TiKV         []clusterinfo.TiKV       `json:"tikv"`
-	Pd           []clusterinfo.PD         `json:"pd"`
-	Grafana      clusterinfo.Grafana      `json:"grafana"`
-	AlertManager clusterinfo.AlertManager `json:"alert_manager"`
 }
 
 type ErrResp struct {
@@ -119,7 +106,7 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	defer cancel()
 
 	fetchers := []fetcher{
-		tidbFetcher{},
+		topologyUnderEtcdFetcher{},
 		tikvFetcher{},
 		pdFetcher{},
 	}

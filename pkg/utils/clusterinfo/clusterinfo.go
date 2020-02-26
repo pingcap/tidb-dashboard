@@ -35,36 +35,56 @@ type Common struct {
 }
 
 type Grafana struct {
-	Common
+	IP         string `json:"ip"`
+	Port       uint   `json:"port"`
+	BinaryPath string `json:"binary_path"`
 }
 
 type PD struct {
 	ComponentVersionInfo
-	Common
-	Version string `json:"version"`
+	IP         string `json:"ip"`
+	Port       uint   `json:"port"`
+	BinaryPath string `json:"binary_path"`
+	Version    string `json:"version"`
 	// It will query PD's health interface.
 	ServerStatus ComponentStatus `json:"server_status"`
 }
 
 type Prometheus struct {
-	Common
+	IP         string `json:"ip"`
+	Port       uint   `json:"port"`
+	BinaryPath string `json:"binary_path"`
 }
 
 type TiDB struct {
 	ComponentVersionInfo
-	Common
+	IP           string          `json:"ip"`
+	Port         uint            `json:"port"`
+	BinaryPath   string          `json:"binary_path"`
 	ServerStatus ComponentStatus `json:"server_status"`
 	StatusPort   uint            `json:"status_port"`
 }
 
 type TiKV struct {
 	ComponentVersionInfo
-	Common
+	IP           string            `json:"ip"`
+	Port         uint              `json:"port"`
+	BinaryPath   string            `json:"binary_path"`
 	ServerStatus ComponentStatus   `json:"server_status"`
 	StatusPort   uint              `json:"status_port"`
 	Labels       map[string]string `json:"labels"`
 }
 
 type AlertManager struct {
-	Common
+	IP         string `json:"ip"`
+	Port       uint   `json:"port"`
+	BinaryPath string `json:"binary_path"`
+}
+
+type ClusterInfo struct {
+	TiDB         []TiDB       `json:"tidb"`
+	TiKV         []TiKV       `json:"tikv"`
+	Pd           []PD         `json:"pd"`
+	Grafana      Grafana      `json:"grafana"`
+	AlertManager AlertManager `json:"alert_manager"`
 }

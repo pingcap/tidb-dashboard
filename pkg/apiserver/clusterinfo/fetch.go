@@ -30,13 +30,13 @@ type fetcher interface {
 // * /topology/grafana
 // * /topology/alertmanager
 // * /topology/tidb
-type tidbFetcher struct{}
+type topologyUnderEtcdFetcher struct{}
 
-func (f tidbFetcher) name() string {
+func (f topologyUnderEtcdFetcher) name() string {
 	return "tidb"
 }
 
-func (f tidbFetcher) fetch(ctx context.Context, info *ResponseWithErr, service *Service) {
+func (f topologyUnderEtcdFetcher) fetch(ctx context.Context, info *ResponseWithErr, service *Service) {
 	tidb, grafana, alertManager, err := clusterinfo.GetTopologyUnderEtcd(ctx, service.etcdCli)
 	if err != nil {
 		errStruct := ErrResp{Error: err.Error()}
@@ -78,7 +78,6 @@ func (t tikvFetcher) fetch(ctx context.Context, info *ResponseWithErr, service *
 		return
 	}
 	info.TiKV = kv
-	return
 }
 
 func (t tikvFetcher) name() string {

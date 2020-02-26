@@ -33,6 +33,7 @@ import (
 )
 
 const prefix = "/topology"
+const RFCTime = "2006-01-02 15:04:05.999999999 -0700 MST"
 
 func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, Grafana,
 	AlertManager, error) {
@@ -41,16 +42,22 @@ func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB
 		// put error in ctx and return
 		return nil, Grafana{}, AlertManager{}, err
 	}
-	dbMap := make(map[string]*TiDB)
 	var grafana Grafana
 	var alertManager AlertManager
-	dbList := make([]TiDB, 0)
+	ttlMap := map[string][]byte{}
+	infoMap := map[string]*TiDB{}
 	for _, kvs := range resp.Kvs {
 		key := string(kvs.Key)
+
 		keyParts := strings.Split(key, "/")[1:]
 		if len(keyParts) < 2 {
 			continue
 		}
+		// There can be four kinds of keys:
+		// * /topology/grafana: stores grafana topology info.
+		// * /topology/alertmanager: stores alertmanager topology info.
+		// * /topology/tidb/ip:port/info: stores tidb topology info.
+		// * /topology/tidb/ip:port/ttl : stores tidb last update ttl time.
 		switch keyParts[1] {
 		case "grafana":
 			if err = json.Unmarshal(kvs.Value, &grafana); err != nil {
@@ -68,27 +75,20 @@ func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB
 				continue
 			}
 			address, fieldType := keyParts[2], keyParts[3]
-			fillDBMap(address, fieldType, kvs.Value, dbMap)
+			fillDBMap(address, fieldType, kvs.Value, infoMap, ttlMap)
 		}
 	}
 
-	// Note: it means this TiDB has non-ttl key, but ttl-key not exists.
-	for _, v := range dbMap {
-		if v.ServerStatus != Up {
-			v.ServerStatus = Offline
-		}
-		dbList = append(dbList, *v)
-	}
-
-	return dbList, grafana, alertManager, nil
+	return genDBList(infoMap, ttlMap), grafana, alertManager, nil
 }
 
-func GetTiDBTopologyOnly(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, error) {
+func GetTiDBTopology(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, error) {
 	resp, err := etcdcli.Get(ctx, prefix+"/tidb", clientv3.WithPrefix())
 	if err != nil {
 		return nil, err
 	}
-	dbMap := map[string]*TiDB{}
+	ttlMap := map[string][]byte{}
+	infoMap := map[string]*TiDB{}
 	for _, kvs := range resp.Kvs {
 		key := string(kvs.Key)
 
@@ -97,61 +97,55 @@ func GetTiDBTopologyOnly(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB,
 			continue
 		}
 		address, fieldType := keyParts[0], keyParts[1]
-		fillDBMap(address, fieldType, kvs.Value, dbMap)
-	}
-	var dbList []TiDB
-	// Note: it means this TiDB has non-ttl key, but ttl-key not exists.
-	for _, v := range dbMap {
-		if v.ServerStatus != Up {
-			v.ServerStatus = Offline
-		}
-		dbList = append(dbList, *v)
+		fillDBMap(address, fieldType, kvs.Value, infoMap, ttlMap)
 	}
 
-	return dbList, nil
+	return genDBList(infoMap, ttlMap), nil
 }
 
 // address should be like "ip:port"
 // fieldType should be "ttl" or "info"
 // value is field value.
-func fillDBMap(address, fieldType string, value []byte, dbMap map[string]*TiDB) {
-	// parsing ip and port
-	pair := strings.Split(address, ":")
-	if len(pair) != 2 {
-		log.Warn("the ns under \"/topology/tidb\" should be like ip:port")
-		return
-	}
-	ip := strings.Trim(pair[0], "")
-	port, _ := strconv.Atoi(pair[1])
-
-	if _, ok := dbMap[address]; !ok {
-		dbMap[address] = &TiDB{}
-	}
-	db := dbMap[address]
-
+func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB, ttlMap map[string][]byte) {
 	if fieldType == "ttl" {
-		refresh, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", string(value))
+		ttlMap[address] = value
+	} else if fieldType == "info" {
+		var currentInfo TiDB
+		err := json.Unmarshal(value, &currentInfo)
 		if err != nil {
-			db.ServerStatus = Unknown
-		} else {
-			if time.Since(refresh) <= time.Second*30 {
-				db.ServerStatus = Up
-			} else {
-				db.ServerStatus = Unknown
-			}
-		}
-	} else {
-		if err := json.Unmarshal(value, db); err != nil {
-			log.Warn("/topology/tidb/ip:port/info key unmarshal errors")
 			return
 		}
-		db.IP = ip
-		db.Port = uint(port)
+		ipAndPort := strings.Split(address, ":")
+		currentInfo.IP = ipAndPort[0]
+		currentInfo.Port = mustAtoi(ipAndPort[1])
+		infoMap[address] = &currentInfo
 	}
 }
 
+func genDBList(infoMap map[string]*TiDB, ttlMap map[string][]byte) []TiDB {
+	dbList := []TiDB{}
+	// Note: it means this TiDB has non-ttl key, but ttl-key not exists.
+	for address, info := range infoMap {
+		if timeDur, ok := ttlMap[address]; ok {
+			recTime, err := time.Parse(RFCTime, string(timeDur))
+			if err != nil {
+				info.ServerStatus = Offline
+			} else if time.Since(recTime) > time.Second*30 {
+				info.ServerStatus = Offline
+			} else {
+				info.ServerStatus = Up
+			}
+		} else {
+			info.ServerStatus = Offline
+		}
+		dbList = append(dbList, *info)
+	}
+
+	return dbList
+}
+
 func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error) {
-	var kvs []TiKV
+	kvs := make([]TiKV, 0)
 	stores, err := pdcli.GetAllStores(ctx)
 
 	if err != nil {
@@ -159,8 +153,8 @@ func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error)
 	}
 	for _, v := range stores {
 		// parse ip and port
-		addresses := strings.Split(v.Address, ":")
-		port := parsePort(addresses[1])
+		ipAndPort := strings.Split(v.Address, ":")
+		port := mustAtoi(ipAndPort[1])
 		// Note: if no err exists, it just return 0.
 		statusPort, _ := parsePortFromAddress(v.StatusAddress)
 		currentInfo := TiKV{
@@ -168,11 +162,9 @@ func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error)
 				Version: v.Version,
 				GitHash: v.GitHash,
 			},
-			Common: Common{
-				IP:         addresses[0],
-				Port:       port,
-				BinaryPath: v.BinaryPath,
-			},
+			IP:           ipAndPort[0],
+			Port:         port,
+			BinaryPath:   v.BinaryPath,
 			ServerStatus: storeStateToStatus(v.GetState()),
 			StatusPort:   statusPort,
 			Labels:       map[string]string{},
@@ -187,7 +179,7 @@ func GetTiKVTopology(ctx context.Context, pdcli pdclient.Client) ([]TiKV, error)
 }
 
 func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
-	var pdPeers []PD
+	pdPeers := make([]PD, 0)
 	resp, err := http.Get(pdEndPoint + "/pd/api/v1/members")
 	if err != nil {
 		return nil, err
@@ -215,7 +207,7 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 	if err != nil {
 		return nil, err
 	}
-	healthMap, err := buildHealthMap(pdEndPoint)
+	healthMap, err := getPDNodesHealth(pdEndPoint)
 
 	if err != nil {
 		return nil, err
@@ -235,11 +227,10 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 		}
 
 		pdPeers = append(pdPeers, PD{
-			Common: Common{
-				IP:         u.Hostname(),
-				Port:       parsePort(u.Port()),
-				BinaryPath: ds.BinaryPath,
-			},
+
+			IP:           u.Hostname(),
+			Port:         mustAtoi(u.Port()),
+			BinaryPath:   ds.BinaryPath,
 			Version:      ds.BinaryVersion,
 			ServerStatus: storeStatus,
 		})
@@ -247,7 +238,9 @@ func GetPDTopology(ctx context.Context, pdEndPoint string) ([]PD, error) {
 	return pdPeers, nil
 }
 
-// parsePortFromAddress receive an address like "127.0.0.1:2379",
+// parsePortFromAddress receive two kind of address
+// 1. ip:port, like "127.0.0.1:2379"
+// 2. protocol://ip:port
 // and returns the port number.
 func parsePortFromAddress(address string) (uint, error) {
 	var statusPort int
@@ -268,7 +261,7 @@ func parsePortFromAddress(address string) (uint, error) {
 	return uint(statusPort), nil
 }
 
-func parsePort(port string) uint {
+func mustAtoi(port string) uint {
 	var statusPort int
 	var err error
 	if statusPort, err = strconv.Atoi(port); err != nil {
@@ -291,7 +284,7 @@ func storeStateToStatus(state metapb.StoreState) ComponentStatus {
 	}
 }
 
-func buildHealthMap(pdEndPoint string) (map[string]struct{}, error) {
+func getPDNodesHealth(pdEndPoint string) (map[string]struct{}, error) {
 	// health member set
 	healthMember := map[string]struct{}{}
 

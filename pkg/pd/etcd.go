@@ -18,8 +18,9 @@ import (
 
 	"go.etcd.io/etcd/clientv3"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	pdclient "github.com/pingcap/pd/client"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
 const (
@@ -33,7 +34,7 @@ type EtcdProvider interface {
 	GetEtcdClient() *clientv3.Client
 }
 
-type PDProvider interface {
+type Provider interface {
 	GetPDClient() pdclient.Client
 }
 

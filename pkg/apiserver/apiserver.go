@@ -44,7 +44,7 @@ type Services struct {
 	TiDBForwarder *tidb.Forwarder
 	KeyVisual     *keyvisual.Service
 	EtcdProvider  pd.EtcdProvider
-	PDProvider    pd.PDProvider
+	PDProvider    pd.Provider
 }
 
 func Handler(apiPrefix string, config *config.Config, services *Services) http.Handler {

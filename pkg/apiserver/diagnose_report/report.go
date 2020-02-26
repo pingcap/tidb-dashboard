@@ -808,6 +808,23 @@ func getSQLRows(db *sql.DB, sql string) ([]TableRowDef, error) {
 	return resultRows, nil
 }
 
+func getSQLRoundRows(db *sql.DB, sql string, nums []int) ([]TableRowDef, error) {
+	rows, err := querySQL(db, sql)
+	for _,i := range nums {
+		for _,row := range rows {
+			row[i] = RoundFloatString(row[i])
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	resultRows := make([]TableRowDef, len(rows))
+	for i := range rows {
+		resultRows[i] = TableRowDef{Values: rows[i]}
+	}
+	return resultRows, nil
+}
+
 func getTableRows(defs []rowQuery, arg *queryArg, db *sql.DB, appendRows func(def TableRowDef)) error {
 	for _, def := range defs {
 		row, err := def.queryRow(arg, db)
@@ -836,6 +853,33 @@ type AvgMaxMinTableDef struct {
 	label string
 }
 
+
+func (t *AvgMaxMinTableDef) getTableRowDef (sqls []string, resultRows []TableRowDef, db *sql.DB) ([]TableRowDef, error) {
+	rows, err := querySQL(db, sqls[0])
+	if err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return []TableRowDef{}, nil
+	}
+	for _,i := range []int{2,3,4} {
+		for _,row := range rows {
+			row[i] = RoundFloatString(row[i])
+		}
+	}
+	subRows, err := querySQL(db, sqls[1])
+	if err != nil {
+		return nil, err
+	}
+	for _,i := range []int{2,3,4} {
+		for _,row := range subRows {
+			row[i] = RoundFloatString(row[i])
+		}
+	}
+	resultRows = append(resultRows, NewTableRowDef(rows[0], subRows))
+	return resultRows, nil
+}
+
 func GetAvgMaxMinTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	tables := []AvgMaxMinTableDef{
 		{name: "node_cpu_usage", tbl: "node_cpu_usage", label: "instance"},
@@ -852,90 +896,56 @@ func GetAvgMaxMinTable(startTime, endTime string, db *sql.DB) (*TableDef, error)
 		Column:    []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
 	}
 	for _, t := range tables {
-		sql := fmt.Sprintf("select '%[4]s', '', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s'",
-			t.tbl, startTime, endTime, t.name)
-		rows, err := querySQL(db, sql)
+		sqls := []string{
+			fmt.Sprintf("select '%[4]s', '', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s'",
+			t.tbl, startTime, endTime, t.name),
+			fmt.Sprintf("select '', %[1]s, avg(value), max(value), min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' group by %[1]s",
+			t.label, t.tbl, startTime, endTime),
+		}
+		var err error
+		resultRows, err = t.getTableRowDef(sqls,resultRows,db)
 		if err != nil {
 			return nil, err
 		}
-		if len(rows) == 0 {
-			continue
-		}
-		sql = fmt.Sprintf("select '', %[1]s, avg(value), max(value), min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' group by %[1]s",
-			t.label, t.tbl, startTime, endTime)
-		subRows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		resultRows = append(resultRows, NewTableRowDef(rows[0], subRows))
 	}
 	table.Rows = resultRows
 	return table, nil
 }
 
-type CPUUsageTableDef struct {
-	tbl   string
-	label []string
-}
-
 func GetCPUUsageTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []CPUUsageTableDef{
-		{tbl: "process_cpu_usage", label: []string{"instance", "job"}},
+	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.process_cpu_usage where time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
+		startTime, endTime)
+	rows, err := getSQLRoundRows(db, sql, []int{2,3,4})
+	if err != nil {
+		return nil, err
 	}
-	resultRows := make([]TableRowDef, 0, len(tables))
+
 	table := &TableDef{
-		Category:  []string{"node"},
+		Category:  []string{CategoryNode},
 		Title:     "process cpu usage",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"instance", "job", "AVG", "MAX", "MIN"},
+		Rows:      rows,
 	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select %[1]s, %[2]s, avg(value),max(value),min(value) from metrics_schema.%[3]s where time >= '%[4]s' and time < '%[5]s' group by %[1]s, %[2]s order by avg(value) desc",
-			t.label[0], t.label[1], t.tbl, startTime, endTime)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		for _, row := range rows {
-			resultRows = append(resultRows, NewTableRowDef(row, nil))
-		}
-	}
-	table.Rows = resultRows
 	return table, nil
 }
 
 func GetGoroutinesCountTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []CPUUsageTableDef{
-		{tbl: "goroutines_count", label: []string{"instance", "job"}},
+	sql := fmt.Sprintf("select instance, job, avg(value), max(value), min(value) from metrics_schema.goroutines_count where job in ('tidb','pd') and time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
+		startTime, endTime)
+	rows, err := getSQLRoundRows(db, sql, []int{2,3,4})
+	if err != nil {
+		return nil, err
 	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
 	table := &TableDef{
-		Category:  []string{"node"},
+		Category:  []string{CategoryNode},
 		Title:     "goroutines count",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"instance", "job", "AVG", "MAX", "MIN"},
+		Rows:      rows,
 	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select %[1]s, %[2]s, avg(value), max(value), min(value) from metrics_schema.%[3]s where %[2]s in ('tidb','pd') and time >= '%[4]s' and time < '%[5]s' group by %[1]s, %[2]s order by avg(value) desc",
-			t.label[0], t.label[1], t.tbl, startTime, endTime)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		for _, row := range rows {
-			resultRows = append(resultRows, NewTableRowDef(row, nil))
-		}
-	}
-	table.Rows = resultRows
 	return table, nil
 }
 
@@ -945,7 +955,6 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *sql.DB) (*TableDef, er
 		{name: "apply", tbl: "tikv_thread_cpu", label: "instance"},
 		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance"},
 	}
-
 	resultRows := make([]TableRowDef, 0, len(tables))
 	table := &TableDef{
 		Category:  []string{"node"},
@@ -955,23 +964,17 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *sql.DB) (*TableDef, er
 		Column:    []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
 	}
 	for _, t := range tables {
-		sql := fmt.Sprintf("select '%[5]s', '', avg(value), max(value), min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' and name like '%[5]s",
-			t.label, t.tbl, startTime, endTime, t.name) + "%'"
-		rows, err := querySQL(db, sql)
+		sqls := []string{
+			fmt.Sprintf("select '%[5]s', '', avg(value), max(value), min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' and name like '%[5]s",
+				t.label, t.tbl, startTime, endTime, t.name) + "%'",
+			fmt.Sprintf("select '', %[1]s, avg(value), max(value) ,min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' and name like '%[5]s",
+				t.label, t.tbl, startTime, endTime, t.name) + "%' group by " + t.label + " order by avg(value) desc",
+		}
+		var err error
+		resultRows, err = t.getTableRowDef(sqls,resultRows,db)
 		if err != nil {
 			return nil, err
 		}
-		if len(rows) == 0 {
-			continue
-		}
-		sql = fmt.Sprintf("select '', %[1]s, avg(value), max(value) ,min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' and name like '%[5]s",
-			t.label, t.tbl, startTime, endTime, t.name)
-		sql = sql + "%' group by " + t.label + " order by avg(value) desc"
-		subRows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		resultRows = append(resultRows, NewTableRowDef(rows[0], subRows))
 	}
 	table.Rows = resultRows
 	return table, nil
@@ -996,86 +999,54 @@ func GetStoreStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, erro
 		Column:    []string{"METRIC_NAME", "address", "AVG", "MAX", "MIN"},
 	}
 	for _, t := range tables {
-		sql := fmt.Sprintf("select '%[4]s', '', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s' and type = '%[4]s'",
-			t.tbl, startTime, endTime, t.name)
-		rows, err := querySQL(db, sql)
+		sqls := []string{
+			fmt.Sprintf("select '%[4]s', '', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s' and type = '%[4]s'",
+				t.tbl, startTime, endTime, t.name),
+			fmt.Sprintf("select '', %[1]s, avg(value), max(value), min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' and type = '%[5]s' group by %[1]s",
+			t.label, t.tbl, startTime, endTime, t.name),
+		}
+		var err error
+		resultRows, err = t.getTableRowDef(sqls,resultRows,db)
 		if err != nil {
 			return nil, err
 		}
-		if len(rows) == 0 {
-			continue
-		}
-		sql = fmt.Sprintf("select '', %[1]s, avg(value), max(value), min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' and type = '%[5]s' group by %[1]s",
-			t.label, t.tbl, startTime, endTime, t.name)
-		subRows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		resultRows = append(resultRows, NewTableRowDef(rows[0], subRows))
 	}
 	table.Rows = resultRows
 	return table, nil
 }
 
 func GetPDClusterStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []CPUUsageTableDef{
-		{tbl: "pd_cluster_status", label: []string{"type"}},
+	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_cluster_status where time >= '%s' and time < '%s' group by type",
+		startTime, endTime)
+	rows, err := getSQLRoundRows(db, sql, []int{1,2})
+	if err != nil {
+		return nil, err
 	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
 	table := &TableDef{
 		Category:  []string{"PD"},
 		Title:     "cluster status",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"TYPE", "MAX", "MIN"},
+		Rows:      rows,
 	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select %[1]s, max(value), min(value) from metrics_schema.%[2]s group by %[1]s",
-			t.label[0], t.tbl, startTime, endTime)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		for _, row := range rows {
-			resultRows = append(resultRows, NewTableRowDef(row, nil))
-		}
-	}
-	table.Rows = resultRows
 	return table, nil
 }
 
 func GetPDEtcdStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []CPUUsageTableDef{
-		{tbl: "pd_server_etcd_state", label: []string{"type"}},
+	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_server_etcd_state group by type")
+	rows, err := getSQLRoundRows(db, sql, []int{1,2})
+	if err != nil {
+		return nil, err
 	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
 	table := &TableDef{
 		Category:  []string{"PD"},
 		Title:     "etcd status",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"TYPE", "MAX", "MIN"},
+		Rows:      rows,
 	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select %[1]s, max(value), min(value) from metrics_schema.%[2]s group by %[1]s",
-			t.label[0], t.tbl, startTime, endTime)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		for _, row := range rows {
-			resultRows = append(resultRows, NewTableRowDef(row, nil))
-		}
-	}
-	table.Rows = resultRows
 	return table, nil
 }
 
@@ -1112,6 +1083,11 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *sql.DB) (*TableDef, err
 		if len(rows) == 0 {
 			continue
 		}
+		for _,i := range []int{2,3,4} {
+			for _,row := range rows {
+				row[i] = RoundFloatString(row[i])
+			}
+		}
 		for _, row := range rows {
 			resultRows = append(resultRows, NewTableRowDef(row, nil))
 		}
@@ -1121,33 +1097,20 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *sql.DB) (*TableDef, err
 }
 
 func GetClusterInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []CPUUsageTableDef{
-		{tbl: "cluster_info", label: []string{}},
+	sql := fmt.Sprintf("select * from information_schema.cluster_info")
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return nil, err
 	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
 	table := &TableDef{
 		Category:  []string{"header"},
 		Title:     "cluster info",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"TYPE", "INSTANCE", "STATUS_ADDRESS", "VERSION", "GIT_HASH", "START_TIME", "UPTIME"},
+		Rows:      rows,
 	}
-	for _, t := range tables {
-		sql := fmt.Sprintf("select * from information_schema.%[1]s",
-			t.tbl, startTime, endTime)
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return nil, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		for _, row := range rows {
-			resultRows = append(resultRows, NewTableRowDef(row, nil))
-		}
-	}
-	table.Rows = resultRows
+
 	return table, nil
 }
 
@@ -1161,11 +1124,7 @@ type hardWare struct {
 }
 
 func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []CPUUsageTableDef{
-		{tbl: "cluster_info", label: []string{}},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
+	resultRows := make([]TableRowDef, 0, 1)
 	table := &TableDef{
 		Category:  []string{"Header"},
 		Title:     "cluster hardware",
@@ -1182,8 +1141,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 	var s string
 	for _,row := range rows {
 		idx := strings.Index(row[0],":")
-		s := row[0]
-		s = s[:idx]
+		s := row[0][:idx]
 		cpuCnt,err := strconv.Atoi(row[2])
 		if err != nil {
 			return &TableDef{},err
@@ -1194,7 +1152,6 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 			} else {
 				m[s].Type[row[1]] = 1
 			}
-			//m[s].Type += "," + row[1]
 			m[s].cpu += cpuCnt
 		} else {
 			m[s] = &hardWare{s,map[string]int{row[1]:1},cpuCnt,0,make(map[string]float64),""}

@@ -36,7 +36,6 @@ var (
 	ErrNS                        = errorx.NewNamespace("error.api.user")
 	ErrNSSignIn                  = ErrNS.NewSubNamespace("signin")
 	ErrSignInUnsupportedAuthType = ErrNSSignIn.NewType("unsupported_auth_type")
-	ErrSignInMissingParameter    = ErrNSSignIn.NewType("missing_parameter")
 	ErrSignInOther               = ErrNSSignIn.NewType("other")
 )
 
@@ -45,8 +44,8 @@ type AuthService struct {
 }
 
 type authenticateForm struct {
-	IsTiDBAuth bool   `json:"is_tidb_auth"`
-	Username   string `json:"username"`
+	IsTiDBAuth bool   `json:"is_tidb_auth" binding:"required"`
+	Username   string `json:"username" binding:"required"`
 	Password   string `json:"password"`
 }
 
@@ -107,7 +106,7 @@ func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
 		Authenticator: func(c *gin.Context) (interface{}, error) {
 			var form authenticateForm
 			if err := c.ShouldBindJSON(&form); err != nil {
-				return nil, ErrSignInMissingParameter.WrapWithNoMessage(err)
+				return nil, utils.ErrInvalidRequest.WrapWithNoMessage(err)
 			}
 			u, err := form.Authenticate(tidbForwarder)
 			if err != nil {

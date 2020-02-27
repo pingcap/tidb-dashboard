@@ -55,11 +55,11 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	//c.Assert(err, IsNil)
 	//printRows(table)
 	//
-	table, err = diagnose_report.GetTiDBGCConfigInfo(startTime, endTime, cli)
+	table, err = diagnose_report.GetTotalErrorTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetDiagnoseReport(startTime, endTime, cli)
+	table, err = diagnose_report.GetTiKVTaskInfo(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 }

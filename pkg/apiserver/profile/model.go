@@ -68,6 +68,7 @@ func autoMigrate(db *dbstore.DB) error {
 type Task struct {
 	*TaskModel
 	db     *dbstore.DB
+	ctx    context.Context
 	cancel context.CancelFunc
 }
 
@@ -86,10 +87,8 @@ func NewTask(db *dbstore.DB, id uint, component, addr string) *Task {
 }
 
 func (t *Task) run() {
-	ctx, cancel := context.WithCancel(context.Background())
-	t.cancel = cancel
 	filePrefix := fmt.Sprintf("profile_group_%d_task%d_%s_%s_", t.TaskGroupID, t.ID, t.Component, t.Addr)
-	svgFilePath, err := fetchSvg(ctx, t.Component, t.Addr, filePrefix)
+	svgFilePath, err := fetchSvg(t.ctx, t.Component, t.Addr, filePrefix)
 	if err != nil {
 		t.Error = err.Error()
 		t.State = TaskStateError

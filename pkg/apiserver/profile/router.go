@@ -14,6 +14,7 @@
 package profile
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -54,7 +55,7 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 // Register register the handlers to the service.
 func (s *Service) Register(r *gin.RouterGroup) {
 	endpoint := r.Group("/profile")
-	endpoint.GET("/group/start", s.startHandler)
+	endpoint.POST("/group/start", s.startHandler)
 	endpoint.GET("/group/status/:groupId", s.statusHandler)
 	endpoint.POST("/group/cancel/:groupId", s.cancelGroupHandler)
 	endpoint.POST("/single/cancel/:taskId", s.cancelHandler)
@@ -64,21 +65,21 @@ func (s *Service) Register(r *gin.RouterGroup) {
 }
 
 type ProfilingRequest struct {
-	Tidb []string `form:"tidb" json:"tidb"`
-	Tikv []string `form:"tikv" json:"tikv"`
-	Pd   []string `form:"pd" json:"pd"`
+	Tidb []string `json:"tidb"`
+	Tikv []string `json:"tikv"`
+	Pd   []string `json:"pd"`
 }
 
 // @Summary Create a task group
-// @Description create and run a task group
+// @Description Create and run a task group
 // @Produce json
-// @Param pr query profile.ProfilingRequest true "profiling request"
+// @Param pr body profile.ProfilingRequest true "profiling request"
 // @Success 200 {uint} uint "group ID"
 // @Failure 400 {object} utils.APIError
 // @Router /profile/group/start [post]
 func (s *Service) startHandler(c *gin.Context) {
 	var pr ProfilingRequest
-	if err := c.ShouldBind(&pr); err != nil {
+	if err := c.ShouldBindJSON(&pr); err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
@@ -95,33 +96,28 @@ func (s *Service) startHandler(c *gin.Context) {
 		pd:   pr.Pd,
 	}
 
+	var tasks []*Task
 	for component, addrs := range addrs {
 		for _, addr := range addrs {
 			t := NewTask(s.db, taskGroup.ID, component, addr)
 			s.db.Create(t.TaskModel)
+			ctx, cancel := context.WithCancel(context.Background())
+			t.ctx = ctx
+			t.cancel = cancel
 			s.tasks.Store(t.ID, t)
+			tasks = append(tasks, t)
 		}
 	}
 	go func() {
 		var wg sync.WaitGroup
-		s.tasks.Range(func(key, value interface{}) bool {
-			task, ok := value.(*Task)
-			if !ok {
-				log.Warn(fmt.Sprintf("cannot load %+v as *Task", value))
-				return true
-			}
-			if task.TaskGroupID != taskGroup.ID {
-				return true
-			}
-
+		for i := 0; i < len(tasks); i++ {
 			wg.Add(1)
-			go func() {
+			go func(idx int) {
 				defer wg.Done()
-				task.run()
-				s.tasks.Delete(task.ID)
-			}()
-			return true
-		})
+				tasks[idx].run()
+				s.tasks.Delete(tasks[idx].ID)
+			}(i)
+		}
 		wg.Wait()
 		taskGroup.State = TaskStateFinish
 		s.db.Save(taskGroup.TaskGroupModel)
@@ -136,7 +132,7 @@ type Status struct {
 }
 
 // @Summary List all tasks with a given group ID
-// @Description list all profling tasks with a given group ID
+// @Description List all profling tasks with a given group ID
 // @Produce json
 // @Param groupId path string true "group ID"
 // @Success 200 {object} Status

@@ -1101,6 +1101,7 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *sql.DB) (*TableDef, er
 		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance"},
 		{name: "apply", tbl: "tikv_thread_cpu", label: "instance"},
 		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance"},
+
 	}
 	resultRows := make([]TableRowDef, 0, len(tables))
 	table := &TableDef{
@@ -1204,6 +1205,7 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *sql.DB) (*TableDef, err
 		{name: "index", tbl: "tikv_block_index_cache_hit", label: "type"},
 		{name: "filter", tbl: "tikv_block_filter_cache_hit", label: "type"},
 		{name: "data", tbl: "tikv_block_data_cache_hit", label: "type"},
+		{name: "bloom_prefix", tbl: "tikv_block_bloom_prefix_cache_hit", label: "type"},
 	}
 
 	resultRows := make([]TableRowDef, 0, len(tables))
@@ -1306,6 +1308,9 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 	}
 	sql = "SELECT instance,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='memory' and name = 'capacity'"
 	rows, err = querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
 	for _,row := range rows {
 		s = row[0][:strings.Index(row[0],":")]
 		memCnt,err := strconv.ParseFloat(row[1],64)
@@ -1320,6 +1325,9 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 	}
 	sql = "SELECT `INSTANCE`,`DEVICE_NAME`,`VALUE` from information_schema.CLUSTER_HARDWARE where `NAME` = 'total' AND (`DEVICE_NAME` LIKE '/dev%' or `DEVICE_NAME` LIKE 'sda%' or`DEVICE_NAME` LIKE 'nvme%')"
 	rows, err = querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
 	for _,row := range rows {
 		s = row[0][:strings.Index(row[0],":")]
 		diskCnt,err := strconv.ParseFloat(row[2],64)
@@ -1338,12 +1346,16 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 	}
 	sql = fmt.Sprintf("SELECT instance,max(value) FROM metrics_schema.node_uptime  where time >= '%[1]s' and time < '%[2]s' GROUP BY instance", startTime, endTime)
 	rows, err = querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
 	for _,row := range rows {
 		s = row[0][:strings.Index(row[0],":")]
-		if err != nil {
-			return &TableDef{},err
+		if _,ok := m[s]; ok {
+			m[s].uptime = row[1]
+		} else {
+			m[s] = &hardWare{s,make(map[string]int),0,0,make(map[string]float64),"row[1]"}
 		}
-		m[s].uptime = row[1]
 	}
 	rows = rows[:0]
 	for _,v := range m {

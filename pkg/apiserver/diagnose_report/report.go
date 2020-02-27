@@ -67,11 +67,17 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 	funcs := []func(string, string, *sql.DB) (*TableDef, error){
 		// Header
 		GetHeaderTimeTable,
+        GetClusterHardwareInfoTable,
+		GetClusterInfoTable,
 
 		// Diagnose
 		GetDiagnoseReport,
 
 		// Node
+		GetAvgMaxMinTable,
+		GetCPUUsageTable,
+		GetTiKVThreadCPUTable,
+		GetGoroutinesCountTable,
 
 		// Overview
 		GetTotalTimeConsumeTable,
@@ -85,6 +91,9 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 		// PD
 		GetPDTimeConsumeTable,
 		GetPDSchedulerInfo,
+		GetPDClusterStatusTable,
+		GetStoreStatusTable,
+		GetPDEtcdStatusTable,
 
 		// TiKV
 		GetTiKVTotalTimeConsumeTable,
@@ -963,11 +972,13 @@ func getSQLRows(db *sql.DB, sql string) ([]TableRowDef, error) {
 	return resultRows, nil
 }
 
-func getSQLRoundRows(db *sql.DB, sql string, nums []int) ([]TableRowDef, error) {
+func getSQLRoundRows(db *sql.DB, sql string, nums []int, comment string) ([]TableRowDef, error) {
 	rows, err := querySQL(db, sql)
-	for _,i := range nums {
-		for _,row := range rows {
-			row[i] = RoundFloatString(row[i])
+	if nums != nil {
+		for _,i := range nums {
+			for _,row := range rows {
+				row[i] = RoundFloatString(row[i])
+			}
 		}
 	}
 	if err != nil {
@@ -975,8 +986,9 @@ func getSQLRoundRows(db *sql.DB, sql string, nums []int) ([]TableRowDef, error) 
 	}
 	resultRows := make([]TableRowDef, len(rows))
 	for i := range rows {
-		resultRows[i] = TableRowDef{Values: rows[i]}
+		resultRows[i] = TableRowDef{Values: rows[i], Comment: comment}
 	}
+
 	return resultRows, nil
 }
 
@@ -1056,7 +1068,8 @@ func GetAvgMaxMinTable(startTime, endTime string, db *sql.DB) (*TableDef, error)
 func GetCPUUsageTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.process_cpu_usage where time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
 		startTime, endTime)
-	rows, err := getSQLRoundRows(db, sql, []int{2,3,4})
+	comment := "the cpu usage "
+	rows, err := getSQLRoundRows(db, sql, []int{2,3,4}, comment)
 	if err != nil {
 		return nil, err
 	}
@@ -1075,7 +1088,8 @@ func GetCPUUsageTable(startTime, endTime string, db *sql.DB) (*TableDef, error) 
 func GetGoroutinesCountTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select instance, job, avg(value), max(value), min(value) from metrics_schema.goroutines_count where job in ('tidb','pd') and time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
 		startTime, endTime)
-	rows, err := getSQLRoundRows(db, sql, []int{2,3,4})
+	comment := "The goroutine count of each instance"
+	rows, err := getSQLRoundRows(db, sql, []int{2,3,4}, comment)
 	if err != nil {
 		return nil, err
 	}
@@ -1118,12 +1132,12 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *sql.DB) (*TableDef, er
 
 func GetStoreStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "region_score", tbl: "pd_scheduler_store_status", condition:"type = 'region_score'", label: "address", Comment: ""},
-		{name: "leader_score", tbl: "pd_scheduler_store_status", condition:"type = 'leader_score'", label: "address"},
-		{name: "region_count", tbl: "pd_scheduler_store_status", condition:"type = 'region_count'", label: "address"},
-		{name: "leader_count", tbl: "pd_scheduler_store_status", condition:"type = 'leader_count'", label: "address"},
-		{name: "region_size", tbl: "pd_scheduler_store_status", condition:"type = 'region_size'", label: "address"},
-		{name: "leader_size", tbl: "pd_scheduler_store_status", condition:"type = 'leader_size'", label: "address"},
+		{name: "region_score", tbl: "pd_scheduler_store_status", condition:"type = 'region_score'", label: "address", Comment: "The region score status in PD"},
+		{name: "leader_score", tbl: "pd_scheduler_store_status", condition:"type = 'leader_score'", label: "address", Comment: "The leader score status in PD"},
+		{name: "region_count", tbl: "pd_scheduler_store_status", condition:"type = 'region_count'", label: "address", Comment: "The region count status in PD"},
+		{name: "leader_count", tbl: "pd_scheduler_store_status", condition:"type = 'leader_count'", label: "address", Comment: "The region score status in PD "},
+		{name: "region_size", tbl: "pd_scheduler_store_status", condition:"type = 'region_size'", label: "address", Comment: "The region size status in PD "},
+		{name: "leader_size", tbl: "pd_scheduler_store_status", condition:"type = 'leader_size'", label: "address", Comment: "The leader size status in PD"},
 	}
 	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
 	if err != nil {
@@ -1142,7 +1156,8 @@ func GetStoreStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, erro
 func GetPDClusterStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_cluster_status where time >= '%s' and time < '%s' group by type",
 		startTime, endTime)
-	rows, err := getSQLRoundRows(db, sql, []int{1,2})
+	comment := "The pd cluster status"
+	rows, err := getSQLRoundRows(db, sql, []int{1,2}, comment)
 	if err != nil {
 		return nil, err
 	}
@@ -1158,8 +1173,10 @@ func GetPDClusterStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, 
 }
 
 func GetPDEtcdStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_server_etcd_state group by type")
-	rows, err := getSQLRoundRows(db, sql, []int{1,2})
+	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_server_etcd_state where time >= '%s' and time < '%s' group by type",
+		startTime, endTime)
+	comment := "The pd etcd status"
+	rows, err := getSQLRoundRows(db, sql, []int{1,2}, comment)
 	if err != nil {
 		return nil, err
 	}
@@ -1176,7 +1193,8 @@ func GetPDEtcdStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, err
 
 func GetClusterInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select * from information_schema.cluster_info")
-	rows, err := getSQLRows(db, sql)
+	comment := "The info of each node"
+	rows, err := getSQLRoundRows(db, sql, nil,comment)
 	if err != nil {
 		return nil, err
 	}
@@ -1325,6 +1343,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 	if err != nil {
 		return nil, err
 	}
+
 	for _,row := range rows {
 		s = row[0][:strings.Index(row[0],":")]
 		if _,ok := m[s]; ok {
@@ -1337,7 +1356,6 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 	for _,v := range m {
 		row := make([]string,6)
 		row[0] = v.instance
-		//row[1] = v.Type
 		for k,va := range v.Type {
 			row[1] += fmt.Sprintf("%[1]s*%[2]s ",k,strconv.Itoa(va))
 		}
@@ -1352,6 +1370,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 	for _,row:= range rows {
 		resultRows = append(resultRows, NewTableRowDef(row, nil))
 	}
+	resultRows[0].Comment = "The hardwareInfo of each node"
 	table.Rows = resultRows
 	return table, nil
 }

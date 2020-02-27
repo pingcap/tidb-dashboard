@@ -67,17 +67,11 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 	funcs := []func(string, string, *sql.DB) (*TableDef, error){
 		// Header
 		GetHeaderTimeTable,
-		//GetClusterHardwareInfoTable
-		GetClusterInfoTable,
 
 		// Diagnose
 		GetDiagnoseReport,
 
 		// Node
-		GetAvgMaxMinTable,
-		GetCPUUsageTable,
-		GetTiKVThreadCPUTable,
-		GetGoroutinesCountTable,
 
 		// Overview
 		GetTotalTimeConsumeTable,
@@ -91,9 +85,6 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 		// PD
 		GetPDTimeConsumeTable,
 		GetPDSchedulerInfo,
-		GetPDClusterStatusTable,
-		GetStoreStatusTable,
-		GetPDEtcdStatusTable,
 
 		// TiKV
 		GetTiKVTotalTimeConsumeTable,

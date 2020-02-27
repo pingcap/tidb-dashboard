@@ -147,7 +147,7 @@ func genDBList(infoMap map[string]*TiDB, ttlMap map[string][]byte) []TiDB {
 				info.ServerStatus = Offline
 			} else {
 				ttlFreshTime := time.Unix(0, unixNano)
-				if time.Since(ttlFreshTime) > time.Second*30 {
+				if time.Since(ttlFreshTime) > time.Second*45 {
 					info.ServerStatus = Offline
 				} else {
 					info.ServerStatus = Up

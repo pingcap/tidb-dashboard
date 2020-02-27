@@ -340,7 +340,7 @@ func parseHostAndPortFromAddressURL(urlString string) (string, uint, error) {
 	if err != nil {
 		return "", 0, err
 	}
-	return u.Host, uint(port), nil
+	return u.Hostname(), uint(port), nil
 }
 
 func storeStateToStatus(state string) ComponentStatus {

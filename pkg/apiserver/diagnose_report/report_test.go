@@ -144,7 +144,7 @@ func printRows(t *diagnose_report.TableDef) {
 
 	fieldLen := t.ColumnWidth()
 	//fmt.Println(fieldLen)
-	printLine := func(values []string) {
+	printLine := func(values []string, comment string) {
 		line := ""
 		for i, s := range values {
 			for k := len(s); k < fieldLen[i]; k++ {
@@ -155,16 +155,19 @@ func printRows(t *diagnose_report.TableDef) {
 			}
 			line += s
 		}
+		if len(comment) != 0 {
+			line = line + "    |    " + comment
+		}
 		fmt.Println(line)
 	}
 
 	fmt.Println(t.Title)
-	printLine(t.Column)
+	printLine(t.Column, "")
 
 	for _, row := range t.Rows {
-		printLine(row.Values)
+		printLine(row.Values, row.Comment)
 		for i := range row.SubValues {
-			printLine(row.SubValues[i])
+			printLine(row.SubValues[i], "")
 		}
 	}
 	fmt.Println("")

@@ -691,10 +691,10 @@ func GetTiKVGCInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 
 func GetTiKVTaskInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []sumValueQuery{
-		{tbl: "tikv_worker_handled_tasks_total_num", labels: []string{"instance", "name"}},
-		{tbl: "tikv_worker_pending_tasks_total_num", labels: []string{"instance", "name"}},
-		{tbl: "tikv_futurepool_handled_tasks_total_num", labels: []string{"instance", "name"}},
-		{tbl: "tikv_futurepool_pending_tasks_total_num", labels: []string{"instance", "name"}},
+		{tbl: "tikv_worker_handled_tasks_total_num", labels: []string{"instance", "name"}, Comment: "Total number of tasks handled by worker, the order of label is [instance,worker_name]"},
+		{tbl: "tikv_worker_pending_tasks_total_num", labels: []string{"instance", "name"}, Comment: "Total number of pending and running tasks of worker, the order of label is [instance,worker_name]"},
+		{tbl: "tikv_futurepool_handled_tasks_total_num", labels: []string{"instance", "name"}, Comment: "Total number of tasks handled by future_pool, the order of label is [instance,worker_name]"},
+		{tbl: "tikv_futurepool_pending_tasks_total_num", labels: []string{"instance", "name"}, Comment: "Total pending and running tasks of future_pool, the order of label is [instance,worker_name]"},
 	}
 
 	rows, err := getSumValueTableData(defs1, startTime, endTime, db)

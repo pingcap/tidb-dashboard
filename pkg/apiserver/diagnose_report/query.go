@@ -32,6 +32,7 @@ type sumValueQuery struct {
 	tbl       string
 	condition string
 	labels    []string
+	Comment   string
 }
 
 // Table schema
@@ -86,10 +87,10 @@ func (t sumValueQuery) genRow(values []string, subValues [][]string) *TableRowDe
 	for i := range subValues {
 		subValues[i] = specialHandle(subValues[i])
 	}
-
 	return &TableRowDef{
 		Values:    values,
 		SubValues: subValues,
+		Comment:   t.Comment,
 	}
 }
 

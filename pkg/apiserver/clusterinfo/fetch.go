@@ -19,56 +19,62 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
 
+type ClusterInfo struct {
+	TiDB struct {
+		Nodes []clusterinfo.TiDBInfo `json:"nodes"`
+		Err   *string                `json:"err"`
+	} `json:"tidb"`
+
+	TiKV struct {
+		Nodes []clusterinfo.TiKVInfo `json:"nodes"`
+		Err   *string                `json:"err"`
+	} `json:"tikv"`
+	PD struct {
+		Nodes []clusterinfo.PDInfo `json:"nodes"`
+		Err   *string              `json:"err"`
+	} `json:"pd"`
+	Grafana      *clusterinfo.GrafanaInfo      `json:"grafana"`
+	AlertManager *clusterinfo.AlertManagerInfo `json:"alert_manager"`
+}
+
 // fetches etcd, and parses the ns below:
 // * /topology/grafana
 // * /topology/alertmanager
 // * /topology/tidb
-func getTopologyUnderEtcd(ctx context.Context, info *ClusterInfo, service *Service) {
+func fillTopologyUnderEtcd(ctx context.Context, service *Service, fillTargetInfo *ClusterInfo) {
 	tidb, grafana, alertManager, err := clusterinfo.GetTopologyUnderEtcd(ctx, service.etcdCli)
-	info.AlertManager = new(AlertManagerField)
-	info.Grafana = new(GrafanaField)
 	if err != nil {
 		// Note: GetTopology return error only when fetch etcd failed.
 		// So it's ok to fill all of them err
-		info.TiDB.Err = new(string)
-		*info.TiDB.Err = err.Error()
-
-		info.Grafana.Err = new(string)
-		*info.Grafana.Err = err.Error()
-
-		info.AlertManager.Err = new(string)
-		*info.AlertManager.Err = err.Error()
+		errString := err.Error()
+		fillTargetInfo.TiDB.Err = &errString
 		return
 	}
-	if grafana == nil && info.Grafana.Err == nil {
-		info.Grafana = nil
-	} else {
-		info.Grafana.Node = grafana
+	if grafana != nil {
+		fillTargetInfo.Grafana = grafana
 	}
-	if alertManager == nil && info.AlertManager.Err == nil {
-		info.AlertManager = nil
-	} else {
-		info.AlertManager.Node = alertManager
+	if alertManager != nil {
+		fillTargetInfo.AlertManager = alertManager
 	}
-	info.TiDB.Nodes = tidb
+	fillTargetInfo.TiDB.Nodes = tidb
 }
 
-func getPDTopology(ctx context.Context, info *ClusterInfo, service *Service) {
-	pdPeers, err := clusterinfo.GetPDTopology(ctx, service.config.PDEndPoint, service.httpClient)
+func fillPDTopology(ctx context.Context, service *Service, fillTargetInfo *ClusterInfo) {
+	pdPeers, err := clusterinfo.GetPDTopology(service.config.PDEndPoint, service.httpClient)
 	if err != nil {
-		info.Pd.Err = new(string)
-		*info.Pd.Err = err.Error()
+		errString := err.Error()
+		fillTargetInfo.PD.Err = &errString
 		return
 	}
-	info.Pd.Nodes = pdPeers
+	fillTargetInfo.PD.Nodes = pdPeers
 }
 
-func getTiKVTopology(ctx context.Context, info *ClusterInfo, service *Service) {
-	kv, err := clusterinfo.GetTiKVTopology(ctx, service.config.PDEndPoint, service.httpClient)
+func fillTiKVTopology(ctx context.Context, service *Service, fillTargetInfo *ClusterInfo) {
+	kv, err := clusterinfo.GetTiKVTopology(service.config.PDEndPoint, service.httpClient)
 	if err != nil {
-		info.TiKV.Err = new(string)
-		*info.TiKV.Err = err.Error()
+		errString := err.Error()
+		fillTargetInfo.TiKV.Err = &errString
 		return
 	}
-	info.TiKV.Nodes = kv
+	fillTargetInfo.TiKV.Nodes = kv
 }

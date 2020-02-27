@@ -2,6 +2,7 @@ run:
   skip-dirs:
     - docs
     - pkg/uiserver
+  timeout: 2m
 
 linters-settings:
   goimports:

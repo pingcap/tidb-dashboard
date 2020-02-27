@@ -31,7 +31,6 @@ import (
 )
 
 const prefix = "/topology"
-const RFCTime = "2006-01-02 15:04:05.999999999 -0700 MST"
 
 // GetTopology return error only when fetch etcd failed.
 func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, *Grafana,
@@ -143,11 +142,11 @@ func genDBList(infoMap map[string]*TiDB, ttlMap map[string][]byte) []TiDB {
 	// Note: it means this TiDB has non-ttl key, but ttl-key not exists.
 	for address, info := range infoMap {
 		if ttlFreshUnixNanoSec, ok := ttlMap[address]; ok {
-			unixDate, err := strconv.ParseInt(string(ttlFreshUnixNanoSec), 10, 64)
+			unixNano, err := strconv.ParseInt(string(ttlFreshUnixNanoSec), 10, 64)
 			if err != nil {
 				info.ServerStatus = Offline
 			} else {
-				ttlFreshTime := time.Unix(0, unixDate)
+				ttlFreshTime := time.Unix(0, unixNano)
 				if time.Since(ttlFreshTime) > time.Second*30 {
 					info.ServerStatus = Offline
 				} else {

@@ -42,7 +42,7 @@ func NewService(config *config.Config, etcdClient *etcdclientv3.Client, httpClie
 
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/topology")
-	//endpoint.Use(auth.MWAuthRequired())
+	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/all", s.topologyHandler)
 	endpoint.DELETE("/tidb/:address/", s.deleteTiDBTopologyHandler)
 }

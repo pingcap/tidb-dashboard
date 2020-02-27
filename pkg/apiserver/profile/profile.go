@@ -74,17 +74,22 @@ func getURL(t, addr string) string {
 
 func getSvgFilePath(t, filePrefix string, body io.ReadCloser) (string, error) {
 	if t == tikv {
-		svgFile, err := ioutil.TempFile("", filePrefix)
+		tmpfile, err := ioutil.TempFile("", filePrefix)
 		if err != nil {
 			return "", err
 		}
 
 		// Write the body to .svg file
-		_, err = io.Copy(svgFile, body)
+		_, err = io.Copy(tmpfile, body)
 		if err != nil {
 			return "", err
 		}
-		return svgFile.Name(), nil
+		svgFilePath := tmpfile.Name() + ".svg"
+		err = os.Rename(tmpfile.Name(), svgFilePath)
+		if err != nil {
+			return "", err
+		}
+		return svgFilePath, nil
 	}
 	tmpfile, err := ioutil.TempFile("", filePrefix)
 	if err != nil {

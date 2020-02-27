@@ -1046,10 +1046,10 @@ func getAvgValueTableData(defs1 []AvgMaxMinTableDef, startTime, endTime string, 
 
 func GetAvgMaxMinTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "node_cpu_usage", tbl: "node_cpu_usage", label: "instance", Comment:"the CPU useage in each node"},
+		{name: "node_cpu_usage", tbl: "node_cpu_usage", label: "instance", Comment:"the CPU usage in each node"},
 		//{name: "node_mem_usage", tbl: "node_mem_usage", label: "instance"},
 		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", label: "instance", Comment:"the disk write latency in each node"},
-		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance", Comment:"the node disk read latency in each node"},
+		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance", Comment:"the disk read latency in each node"},
 	}
 	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
 	if err != nil {
@@ -1068,8 +1068,7 @@ func GetAvgMaxMinTable(startTime, endTime string, db *sql.DB) (*TableDef, error)
 func GetCPUUsageTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.process_cpu_usage where time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
 		startTime, endTime)
-	comment := "the cpu usage "
-	rows, err := getSQLRoundRows(db, sql, []int{2,3,4}, comment)
+	rows, err := getSQLRoundRows(db, sql, []int{2,3,4}, "")
 	if err != nil {
 		return nil, err
 	}
@@ -1088,8 +1087,7 @@ func GetCPUUsageTable(startTime, endTime string, db *sql.DB) (*TableDef, error) 
 func GetGoroutinesCountTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select instance, job, avg(value), max(value), min(value) from metrics_schema.goroutines_count where job in ('tidb','pd') and time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
 		startTime, endTime)
-	comment := "The goroutine count of each instance"
-	rows, err := getSQLRoundRows(db, sql, []int{2,3,4}, comment)
+	rows, err := getSQLRoundRows(db, sql, []int{2,3,4}, "The goroutine count of each instance")
 	if err != nil {
 		return nil, err
 	}
@@ -1132,12 +1130,12 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *sql.DB) (*TableDef, er
 
 func GetStoreStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "region_score", tbl: "pd_scheduler_store_status", condition:"type = 'region_score'", label: "address", Comment: "The region score status in PD"},
-		{name: "leader_score", tbl: "pd_scheduler_store_status", condition:"type = 'leader_score'", label: "address", Comment: "The leader score status in PD"},
-		{name: "region_count", tbl: "pd_scheduler_store_status", condition:"type = 'region_count'", label: "address", Comment: "The region count status in PD"},
-		{name: "leader_count", tbl: "pd_scheduler_store_status", condition:"type = 'leader_count'", label: "address", Comment: "The region score status in PD "},
-		{name: "region_size", tbl: "pd_scheduler_store_status", condition:"type = 'region_size'", label: "address", Comment: "The region size status in PD "},
-		{name: "leader_size", tbl: "pd_scheduler_store_status", condition:"type = 'leader_size'", label: "address", Comment: "The leader size status in PD"},
+		{name: "region_score", tbl: "pd_scheduler_store_status", condition:"type = 'region_score'", label: "address", Comment: "The region score status of store"},
+		{name: "leader_score", tbl: "pd_scheduler_store_status", condition:"type = 'leader_score'", label: "address", Comment: "The leader score status of store"},
+		{name: "region_count", tbl: "pd_scheduler_store_status", condition:"type = 'region_count'", label: "address", Comment: "The region count status of store"},
+		{name: "leader_count", tbl: "pd_scheduler_store_status", condition:"type = 'leader_count'", label: "address", Comment: "The region score status of store"},
+		{name: "region_size", tbl: "pd_scheduler_store_status", condition:"type = 'region_size'", label: "address", Comment: "The region size status of store"},
+		{name: "leader_size", tbl: "pd_scheduler_store_status", condition:"type = 'leader_size'", label: "address", Comment: "The leader size status of store"},
 	}
 	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
 	if err != nil {
@@ -1156,8 +1154,7 @@ func GetStoreStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, erro
 func GetPDClusterStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_cluster_status where time >= '%s' and time < '%s' group by type",
 		startTime, endTime)
-	comment := "The pd cluster status"
-	rows, err := getSQLRoundRows(db, sql, []int{1,2}, comment)
+	rows, err := getSQLRoundRows(db, sql, []int{1,2}, "")
 	if err != nil {
 		return nil, err
 	}
@@ -1175,8 +1172,7 @@ func GetPDClusterStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, 
 func GetPDEtcdStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_server_etcd_state where time >= '%s' and time < '%s' group by type",
 		startTime, endTime)
-	comment := "The pd etcd status"
-	rows, err := getSQLRoundRows(db, sql, []int{1,2}, comment)
+	rows, err := getSQLRoundRows(db, sql, []int{1,2}, "")
 	if err != nil {
 		return nil, err
 	}
@@ -1193,8 +1189,7 @@ func GetPDEtcdStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, err
 
 func GetClusterInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select * from information_schema.cluster_info")
-	comment := "The info of each node"
-	rows, err := getSQLRoundRows(db, sql, nil,comment)
+	rows, err := getSQLRoundRows(db, sql, nil, "The info of each node")
 	if err != nil {
 		return nil, err
 	}
@@ -1212,12 +1207,12 @@ func GetClusterInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, erro
 
 func GetTiKVCacheHitTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	tables := []AvgMaxMinTableDef{
-		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", Comment: "The hit rate of memtable",label: "type"},
-		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit", Comment: "The hit rate of all block cache",label: "type"},
-		{name: "index", tbl: "tikv_block_index_cache_hit", Comment: "The hit rate of index block cache",label: "type"},
-		{name: "filter", tbl: "tikv_block_filter_cache_hit", Comment: "The hit rate of filter block cache",label: "type"},
-		{name: "data", tbl: "tikv_block_data_cache_hit", Comment: "The hit rate of data block cache",label: "type"},
-		{name: "bloom_prefix", tbl: "tikv_block_bloom_prefix_cache_hit", Comment: "The hit rate of bloom_prefix block cache",label: "type"},
+		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", label: "type", Comment: "The hit rate of memtable"},
+		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit" ,label: "type", Comment: "The hit rate of all block cache"},
+		{name: "index", tbl: "tikv_block_index_cache_hit", label: "type", Comment: "The hit rate of index block cache"},
+		{name: "filter", tbl: "tikv_block_filter_cache_hit", label: "type", Comment: "The hit rate of filter block cache",},
+		{name: "data", tbl: "tikv_block_data_cache_hit", label: "type", Comment: "The hit rate of data block cache"},
+		{name: "bloom_prefix", tbl: "tikv_block_bloom_prefix_cache_hit", label: "type", Comment: "The hit rate of bloom_prefix block cache"},
 	}
 
 	resultRows := make([]TableRowDef, 0, len(tables))
@@ -1317,7 +1312,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 			m[s].memory = memCnt
 		}
 	}
-	sql = "SELECT `INSTANCE`,`DEVICE_NAME`,`VALUE` from information_schema.CLUSTER_HARDWARE where `NAME` = 'total' AND (`DEVICE_NAME` LIKE '/dev%' or `DEVICE_NAME` LIKE 'sda%' or`DEVICE_NAME` LIKE 'nvme%')"
+	sql = "SELECT `INSTANCE`,`DEVICE_NAME`,`VALUE` from information_schema.CLUSTER_HARDWARE where `NAME` = 'total' AND AND (`DEVICE_NAME` LIKE '/dev%' or `DEVICE_NAME` LIKE 'sda%' or`DEVICE_NAME` LIKE 'nvme%')"
 	rows, err = querySQL(db, sql)
 	if err != nil {
 		return nil, err

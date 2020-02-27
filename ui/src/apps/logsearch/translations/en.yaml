@@ -1,12 +1,12 @@
 logs:
   nav_title: Log searching
   page:
-    intro: Preview and download logs by click Search
+    intro: Preview and download logs by clicking Search
     tip: The preview shows only the first 500 logs
   common:
     time_range: Time Range
     log_level: Log Level
-    components: Selected Components
+    components: Components
     components_placeholder: Select at least one component
     keywords: Keywords
     keywords_placeholder: Optional, separated by spaces

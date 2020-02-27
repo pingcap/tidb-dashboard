@@ -59,11 +59,13 @@ export default function SearchResult() {
   }, [taskGroupID, tasks])
 
   return (
-    <Table dataSource={logPreviews}>
-      <Column width={220} title={t('logs.preview.time')} dataIndex="time" key="time" />
-      <Column width={100} title={t('logs.preview.level')} dataIndex="level" key="level" />
-      <Column width={120} title={t('logs.preview.component')} dataIndex="component" key="component" />
-      <Column ellipsis title={t('logs.preview.log')} dataIndex="log" key="log" render={logRender} />
-    </Table>
+    <div style={{ backgroundColor: "#FFFFFF" }}>
+      <Table dataSource={logPreviews} size="middle" pagination={{ pageSize: 100 }}>
+        <Column width={220} title={t('logs.preview.time')} dataIndex="time" key="time" />
+        <Column width={80} title={t('logs.preview.level')} dataIndex="level" key="level" />
+        <Column width={100} title={t('logs.preview.component')} dataIndex="component" key="component" />
+        <Column ellipsis title={t('logs.preview.log')} dataIndex="log" key="log" render={logRender} />
+      </Table>
+    </div>
   )
 }

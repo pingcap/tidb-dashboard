@@ -14,7 +14,7 @@ export default function LogSearchingDetail() {
             message={t('logs.page.tip')}
             type="info"
             showIcon
-            style={{ marginBottom: 14 }}
+            style={{ marginTop: 14, marginBottom: 14 }}
           />
           <SearchResult />
         </Col>

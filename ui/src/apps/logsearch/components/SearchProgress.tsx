@@ -1,6 +1,6 @@
 import client, { DASHBOARD_API_URL } from '@/utils/client';
 import { LogsearchTaskModel } from '@/utils/dashboard_client';
-import { Button, Modal, Tree, Typography } from 'antd';
+import { Button, Card, Modal, Tree, Typography } from 'antd';
 import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree';
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from 'react-i18next';
@@ -223,21 +223,23 @@ export default function SearchProgress() {
 
   return (
     <div>
-      <Title level={3}>{t('logs.common.progress')}</Title>
-      <div>{progressDescription(tasks)}</div>
-      <div className={styles.buttons}>
-        <Button type="primary" onClick={handleDownload} disabled={checkedKeys.length < 1}>{t('logs.common.download_selected')}</Button>
-        <Button type="danger" onClick={handleCancel} disabled={!tasks.some(task => task.state === TaskState.Running)}>{t('logs.common.cancel')}</Button>
-        <Button onClick={handleRetry} disabled={tasks.some(task => task.state === TaskState.Running) || !tasks.some(task => task.state === TaskState.Error)}>{t('logs.common.retry')}</Button>
-      </div>
-      <Tree
-        checkable
-        expandedKeys={Object.keys(namingMap)}
-        showIcon
-        onCheck={handleCheck}
-      >
-        {renderTreeNodes(store.tasks)}
-      </Tree>
+      <Card>
+        <Title level={3}>{t('logs.common.progress')}</Title>
+        <div>{progressDescription(tasks)}</div>
+        <div className={styles.buttons}>
+          <Button type="primary" onClick={handleDownload} disabled={checkedKeys.length < 1}>{t('logs.common.download_selected')}</Button>
+          <Button type="danger" onClick={handleCancel} disabled={!tasks.some(task => task.state === TaskState.Running)}>{t('logs.common.cancel')}</Button>
+          <Button onClick={handleRetry} disabled={tasks.some(task => task.state === TaskState.Running) || !tasks.some(task => task.state === TaskState.Error)}>{t('logs.common.retry')}</Button>
+        </div>
+        <Tree
+          checkable
+          expandedKeys={Object.keys(namingMap)}
+          showIcon
+          onCheck={handleCheck}
+        >
+          {renderTreeNodes(store.tasks)}
+        </Tree>
+      </Card>
     </div>
   )
 }

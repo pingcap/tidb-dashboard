@@ -21,6 +21,7 @@ import (
 	"github.com/gin-gonic/gin"
 	cors "github.com/rs/cors/wrapper/gin"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose_report"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
@@ -65,6 +66,7 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	services.KeyVisual.Register(endpoint, auth)
 	logsearch.NewService(config, services.Store).Register(endpoint, auth)
 	statement.NewService(config, services.TiDBForwarder).Register(endpoint, auth)
+	diagnose_report.NewService(config, services.TiDBForwarder).Register(endpoint, auth)
 
 	return r
 }

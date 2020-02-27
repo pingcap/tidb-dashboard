@@ -1,0 +1,5 @@
+diagnose:
+  nav_title: SQL Diagnose
+  time_selector:
+    start_time: 'Start Time'
+    end_time: 'End Time'

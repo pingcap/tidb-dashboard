@@ -46,5 +46,6 @@ const dashboardClient = new DashboardClient.DefaultApi({
 });
 
 export default {
+  basePath: DASHBOARD_API_URL,
   dashboard: dashboardClient,
 };

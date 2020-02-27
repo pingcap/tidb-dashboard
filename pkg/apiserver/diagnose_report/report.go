@@ -3,8 +3,9 @@ package diagnose_report
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql" // mysql driver
 	"strconv"
+
+	_ "github.com/go-sql-driver/mysql" // mysql driver
 )
 
 type TableDef struct {

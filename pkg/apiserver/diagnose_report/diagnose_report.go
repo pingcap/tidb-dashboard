@@ -15,43 +15,55 @@ package diagnose_report
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	// "github.com/jinzhu/gorm"
+	"github.com/jinzhu/gorm"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
 
 type Service struct {
 	config        *config.Config
+	db            *dbstore.DB
 	tidbForwarder *tidb.Forwarder
 }
 
-func NewService(config *config.Config, tidbForwarder *tidb.Forwarder) *Service {
-	return &Service{config: config, tidbForwarder: tidbForwarder}
+type ReportRes struct {
+	ReportId uint `json:"report_id"`
+}
+
+type DiagnoseReport struct {
+	gorm.Model
+	Content string
+}
+
+func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB) *Service {
+	db.AutoMigrate(&DiagnoseReport{})
+	return &Service{config: config, db: db, tidbForwarder: tidbForwarder}
 }
 
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/diagnose")
-	// endpoint.Use(auth.MWAuthRequired())
-	// endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
-	endpoint.GET("/report", s.reportHandler)
+	endpoint.POST("/reports", auth.MWAuthRequired(), s.genReportHandler)
+	endpoint.GET("/reports/:id", s.reportHandler)
 }
 
 // @Summary SQL diagnosis report
-// @Description Get sql diagnosis report
+// @Description Generate sql diagnosis report
 // @Produce html
 // @Param start_time query string true "start time of the report"
 // @Param end_time query string true "end time of the report"
-// @Success 200 {string} string
-// @Router /diagnose/report [get]
+// @Success 200 {object} diagnose_report.ReportRes
+// @Router /diagnose/reports [post]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) reportHandler(c *gin.Context) {
+func (s *Service) genReportHandler(c *gin.Context) {
 	dbDSN := fmt.Sprintf("root:%s@tcp(%s)/%s", "", "172.16.5.40:4009", "test")
 	// dbDSN := fmt.Sprintf("root:%s@tcp(%s)/%s", "", "127.0.0.1:4000", "test")
 	db, err := sql.Open("mysql", dbDSN)
@@ -90,5 +102,37 @@ func (s *Service) reportHandler(c *gin.Context) {
 	}
 	tables = append(tables, table)
 
+	content, err := json.Marshal(tables)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	// will remove later
+	// log.Println(string(content))
+	report := DiagnoseReport{Content: string(content)}
+	if err := s.db.Create(&report).Error; err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, ReportRes{ReportId: report.ID})
+}
+
+// @Summary SQL diagnosis report
+// @Description Get sql diagnosis report
+// @Produce html
+// @Param id path string true "report id"
+// @Success 200 {string} string
+// @Router /diagnose/reports/{id} [get]
+func (s *Service) reportHandler(c *gin.Context) {
+	reportId := c.Param("id")
+	var report DiagnoseReport
+	if err := s.db.First(&report, reportId).Error; err != nil {
+		_ = c.Error(err)
+		return
+	}
+	// will remove later
+	// log.Println(report.Content)
+	var tables []*TableDef
+	json.Unmarshal([]byte(report.Content), &tables)
 	c.HTML(http.StatusOK, "sql-diagnosis/index", tables)
 }

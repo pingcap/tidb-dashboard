@@ -1,5 +1,6 @@
 diagnose:
   nav_title: SQL 诊断
   time_selector:
-    start_time: '起始时间'
-    end_time: '结束时间'
+    start_time: 起始时间
+    end_time: 结束时间
+  open_link: 如果浏览器阻拦了打开新 tab，请手动点击此链接

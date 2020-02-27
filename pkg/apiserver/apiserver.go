@@ -66,7 +66,7 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	services.KeyVisual.Register(endpoint, auth)
 	logsearch.NewService(config, services.Store).Register(endpoint, auth)
 	statement.NewService(config, services.TiDBForwarder).Register(endpoint, auth)
-	diagnose_report.NewService(config, services.TiDBForwarder).Register(endpoint, auth)
+	diagnose_report.NewService(config, services.TiDBForwarder, services.Store).Register(endpoint, auth)
 
 	return r
 }

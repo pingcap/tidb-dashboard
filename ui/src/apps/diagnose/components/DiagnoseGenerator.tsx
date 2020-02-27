@@ -5,8 +5,22 @@ import { useTranslation } from 'react-i18next'
 
 const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
-function DiagnoseGenerator({ basePath }: { basePath: string }) {
+interface Props {
+  basePath: string
+  createReport: (
+    startTime: string,
+    endTime: string
+  ) => Promise<ReportRes | undefined>
+}
+
+interface ReportRes {
+  report_id: string
+}
+
+function DiagnoseGenerator({ basePath, createReport }: Props) {
   const [timeRange, setTimeRange] = useState<[string, string]>(['', ''])
+  const [loading, setLoading] = useState(false)
+  const [reportUrl, setReportUrl] = useState('')
   const { t } = useTranslation()
 
   function handleRangeChange(
@@ -24,8 +38,16 @@ function DiagnoseGenerator({ basePath }: { basePath: string }) {
     }
   }
 
-  function reportUrl() {
-    return `${basePath}/diagnose/report?start_time=${timeRange[0]}&end_time=${timeRange[1]}`
+  async function genReport() {
+    setReportUrl('')
+    setLoading(true)
+    const res = await createReport(timeRange[0], timeRange[1])
+    setLoading(false)
+    if (res) {
+      const reportUrl = `${basePath}/diagnose/reports/${res.report_id}`
+      setReportUrl(reportUrl)
+      window.open(reportUrl, '_blank')
+    }
   }
 
   return (
@@ -40,11 +62,21 @@ function DiagnoseGenerator({ basePath }: { basePath: string }) {
         ]}
         onChange={handleRangeChange}
       />
-      <Button disabled={timeRange[0] === ''}>
-        <a href={reportUrl()} target="_blank">
-          Generate Diagnose Report
-        </a>
+      <Button
+        disabled={timeRange[0] === ''}
+        onClick={genReport}
+        loading={loading}
+      >
+        Generate Diagnose Report
       </Button>
+      {reportUrl && (
+        <p style={{ marginTop: 12 }}>
+          {t('diagnose.open_link')}:&nbsp;&nbsp;
+          <a href={reportUrl} target="_blank">
+            {reportUrl}
+          </a>
+        </p>
+      )}
     </div>
   )
 }

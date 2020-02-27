@@ -1,5 +1,6 @@
 diagnose:
   nav_title: SQL Diagnose
   time_selector:
-    start_time: 'Start Time'
-    end_time: 'End Time'
+    start_time: Start Time
+    end_time: End Time
+  open_link: in case the browser block opening the new tab, please open the link manually

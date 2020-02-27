@@ -59,7 +59,7 @@ const (
 	CategoryTiDB     = "TiDB"
 	CategoryPD       = "PD"
 	CategoryTiKV     = "TiKV"
-	CategoryConfig   = "Config"
+	CategoryConfig   = "config"
 )
 
 func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []error) {
@@ -68,6 +68,9 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 		GetHeaderTimeTable,
 		//GetClusterHardwareInfoTable
 		GetClusterInfoTable,
+
+		// Diagnose
+		GetDiagnoseReport,
 
 		// Node
 		GetAvgMaxMinTable,
@@ -98,6 +101,7 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 		GetTiKVSchedulerInfo,
 		GetTiKVRaftInfo,
 		GetTiKVGCInfo,
+		GetTiKVTaskInfo,
 		GetTiKVCacheHitTable,
 
 		// Config
@@ -132,6 +136,23 @@ func GetHeaderTimeTable(startTime, endTime string, db *sql.DB) (*TableDef, error
 			{Values: []string{startTime, endTime}},
 		},
 	}, nil
+}
+
+func GetDiagnoseReport(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select /*+ time_range('%s','%s') */ * from information_schema.INSPECTION_RESULT", startTime, endTime)
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{CategoryDiagnose},
+		Title:     "diagnose",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"RULE", "ITEM", "TYPE", "INSTANCE", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
+		Rows:      rows,
+	}
+	return table, nil
 }
 
 func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
@@ -257,7 +278,6 @@ func GetTotalErrorTable(startTime, endTime string, db *sql.DB) (*TableDef, error
 		{tbl: "tikv_critical_error_total_count", labels: []string{"type"}},
 		{tbl: "tikv_scheduler_is_busy_total_count", labels: []string{"type"}},
 		{tbl: "tikv_channel_full_total_count", labels: []string{"type"}},
-		//{tbl: "tikv_coprocessor_is_busy_total_count", labels: []string{"instance"}},
 		{tbl: "tikv_coprocessor_request_error_total_count", labels: []string{"reason"}},
 		{tbl: "tikv_engine_write_stall", labels: []string{"instance"}},
 		{tbl: "tikv_server_report_failures_total_count", labels: []string{"instance"}},
@@ -267,45 +287,20 @@ func GetTotalErrorTable(startTime, endTime string, db *sql.DB) (*TableDef, error
 		{tbl: "node_network_in_errors_total_count", labels: []string{"instance"}},
 		{tbl: "node_network_out_errors_total_count", labels: []string{"instance"}},
 	}
-	defs := make([]rowQuery, 0, len(defs1))
-	for i := range defs1 {
-		defs = append(defs, defs1[i])
+
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return nil, err
 	}
 
-	table := &TableDef{
+	return &TableDef{
 		Category:  []string{CategoryOverview},
 		Title:     "Error",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(defs))
-
-	specialHandle := func(row []string) []string {
-		row[2] = convertFloatToInt(row[2])
-		return row
-	}
-
-	appendRows := func(row TableRowDef) {
-		row.Values = specialHandle(row.Values)
-		for i := range row.SubValues {
-			row.SubValues[i] = specialHandle(row.SubValues[i])
-		}
-		resultRows = append(resultRows, row)
-	}
-
-	arg := &queryArg{
-		startTime: startTime,
-		endTime:   endTime,
-	}
-
-	err := getTableRows(defs, arg, db, appendRows)
-	if err != nil {
-		return nil, err
-	}
-	table.Rows = resultRows
-	return table, nil
+		Rows:      rows,
+	}, nil
 }
 
 func GetTiDBTxnTableData(startTime, endTime string, db *sql.DB) (*TableDef, error) {
@@ -537,43 +532,20 @@ func GetPDSchedulerInfo(startTime, endTime string, db *sql.DB) (*TableDef, error
 		{name: "blance-region-in", tbl: "pd_scheduler_balance_region", condition: "type='move-peer' and address like '%-in'", labels: []string{"address"}},
 		{name: "blance-region-out", tbl: "pd_scheduler_balance_region", condition: "type='move-peer' and address like '%-out'", labels: []string{"address"}},
 	}
-	defs := make([]rowQuery, 0, len(defs1))
-	for i := range defs1 {
-		defs = append(defs, defs1[i])
+
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return nil, err
 	}
 
-	table := &TableDef{
+	return &TableDef{
 		Category:  []string{CategoryPD},
 		Title:     "blance leader/region",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(defs))
-	specialHandle := func(row []string) []string {
-		row[2] = convertFloatToInt(row[2])
-		return row
-	}
-	appendRows := func(row TableRowDef) {
-		row.Values = specialHandle(row.Values)
-		for i := range row.SubValues {
-			row.SubValues[i] = specialHandle(row.SubValues[i])
-		}
-		resultRows = append(resultRows, row)
-	}
-
-	arg := &queryArg{
-		startTime: startTime,
-		endTime:   endTime,
-	}
-
-	err := getTableRows(defs, arg, db, appendRows)
-	if err != nil {
-		return nil, err
-	}
-	table.Rows = resultRows
-	return table, nil
+		Rows:      rows,
+	}, nil
 }
 
 func GetTiKVTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
@@ -700,30 +672,74 @@ func GetTiKVGCInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		{name: "tidb_gc_worker_action_total_num", tbl: "tidb_gc_worker_action_opm", labels: []string{"instance", "type"}},
 	}
 
-	defs := make([]rowQuery, 0, len(defs1))
-	for i := range defs1 {
-		defs = append(defs, defs1[i])
-	}
-
-	resultRows := make([]TableRowDef, 0, len(defs))
-	appendRows := func(row TableRowDef) {
-		resultRows = append(resultRows, row)
-	}
-
-	arg := newQueryArg(startTime, endTime)
-	err := getTableRows(defs, arg, db, appendRows)
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
 	if err != nil {
 		return nil, err
 	}
+
 	table := &TableDef{
 		Category:  []string{CategoryTiKV},
 		Title:     "GC Info",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE"},
-		Rows:      resultRows,
+		Rows:      rows,
 	}
 	return table, nil
+}
+
+func GetTiKVTaskInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []sumValueQuery{
+		{tbl: "tikv_worker_handled_tasks_total_num", labels: []string{"instance", "name"}},
+		{tbl: "tikv_worker_pending_tasks_total_num", labels: []string{"instance", "name"}},
+		{tbl: "tikv_futurepool_handled_tasks_total_num", labels: []string{"instance", "name"}},
+		{tbl: "tikv_futurepool_pending_tasks_total_num", labels: []string{"instance", "name"}},
+	}
+
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return nil, err
+	}
+
+	table := &TableDef{
+		Category:  []string{CategoryTiKV},
+		Title:     "Task Info",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE"},
+		Rows:      rows,
+	}
+	return table, nil
+}
+
+func getSumValueTableData(defs1 []sumValueQuery, startTime, endTime string, db *sql.DB) ([]TableRowDef, error) {
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+
+	resultRows := make([]TableRowDef, 0, len(defs))
+	specialHandle := func(row []string) []string {
+		for len(row) < 3 {
+			return row
+		}
+		row[2] = convertFloatToInt(row[2])
+		return row
+	}
+
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+	arg := newQueryArg(startTime, endTime)
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	return resultRows, nil
 }
 
 func GetTiKVSnapshotInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {

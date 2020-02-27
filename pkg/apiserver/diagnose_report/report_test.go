@@ -46,8 +46,8 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	//startTime := "2020-02-23 10:55:00"
 	//endTime := "2020-02-23 11:05:00"
 
-	startTime := "2020-02-26 13:20:23"
-	endTime := "2020-02-26 14:30:23"
+	startTime := "2020-02-26 20:00:00"
+	endTime := "2020-02-26 20:05:00"
 
 	var table *diagnose_report.TableDef
 	var err error
@@ -55,11 +55,11 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	//c.Assert(err, IsNil)
 	//printRows(table)
 	//
-	table, err = diagnose_report.GetTiDBGCConfigInfo(startTime, endTime, cli)
+	table, err = diagnose_report.GetTotalErrorTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetTiKVTotalTimeConsumeTable(startTime, endTime, cli)
+	table, err = diagnose_report.GetTiKVTaskInfo(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 

@@ -91,7 +91,7 @@ func (s *Service) deleteTiDBTopologyHandler(c *gin.Context) {
 // @Description Get information about the dashboard topology.
 // @Produce json
 // @Success 200 {object} clusterinfo.ClusterInfo
-// @Router /topology [get]
+// @Router /topology/ [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) topologyHandler(c *gin.Context) {

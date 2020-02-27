@@ -213,6 +213,25 @@ func GetTiKVTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, erro
 	return nodes, nil
 }
 
+// GetTiDBTopologyFromOld get tidb topology under "/tidb/server/info/".
+// It cannot get "binary_path" field.
+func GetTiDBTopologyFromOld(ctx context.Context, etcdclient *clientv3.Client) ([]TiDBInfo, error) {
+	resp, err := etcdclient.Get(ctx, "/tidb/server/info", clientv3.WithPrefix())
+	if err != nil {
+		return nil, err
+	}
+	dbInfo := []TiDBInfo{}
+	for _, v := range resp.Kvs {
+		var currentInfo TiDBInfo
+		if err = json.Unmarshal(v.Value, &currentInfo); err != nil {
+			continue
+		}
+		currentInfo.Status = ComponentStatusUp
+		dbInfo = append(dbInfo, currentInfo)
+	}
+	return dbInfo, nil
+}
+
 func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error) {
 	nodes := make([]PDInfo, 0)
 	healthMapChan := make(chan map[string]struct{})

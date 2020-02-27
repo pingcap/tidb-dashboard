@@ -32,7 +32,7 @@ type sumValueQuery struct {
 	tbl       string
 	condition string
 	labels    []string
-	Comment   string
+	comment   string
 }
 
 // Table schema
@@ -90,14 +90,15 @@ func (t sumValueQuery) genRow(values []string, subValues [][]string) *TableRowDe
 	return &TableRowDef{
 		Values:    values,
 		SubValues: subValues,
-		Comment:   t.Comment,
+		Comment:   genComment(t.comment, t.labels),
 	}
 }
 
 type totalTimeByLabelsTableDef struct {
-	name   string
-	tbl    string
-	labels []string
+	name    string
+	tbl     string
+	labels  []string
+	comment string
 }
 
 // Table schema
@@ -149,7 +150,7 @@ func (t totalTimeByLabelsTableDef) genRow(values []string, subValues [][]string)
 			if len(row[3]) == 0 {
 				return row
 			}
-			for i := range []int{2, 3, 5, 6, 7, 8} {
+			for _, i := range []int{2, 3, 5, 6, 7, 8} {
 				v, err := strconv.ParseFloat(row[i], 64)
 				if err == nil {
 					row[i] = fmt.Sprintf("%f", v/10e5)
@@ -174,6 +175,7 @@ func (t totalTimeByLabelsTableDef) genRow(values []string, subValues [][]string)
 	return &TableRowDef{
 		Values:    values,
 		SubValues: subValues,
+		Comment:   genComment(t.comment, t.labels),
 	}
 }
 
@@ -247,6 +249,7 @@ type totalValueAndTotalCountTableDef struct {
 	sumTbl   string
 	countTbl string
 	labels   []string
+	comment  string
 }
 
 // Table schema
@@ -298,6 +301,7 @@ func (t totalValueAndTotalCountTableDef) genRow(values []string, subValues [][]s
 	return &TableRowDef{
 		Values:    values,
 		SubValues: subValues,
+		Comment:   genComment(t.comment, t.labels),
 	}
 }
 
@@ -456,4 +460,14 @@ func RoundFloatString(s string) string {
 		return str[:len(str)-1]
 	}
 	return str
+}
+
+func genComment(comment string, labels []string) string {
+	if len(labels) > 0 {
+		if len(comment) > 0 {
+			comment += ","
+		}
+		comment = fmt.Sprintf("%s the label is [%s]", comment, strings.Join(labels, ", "))
+	}
+	return comment
 }

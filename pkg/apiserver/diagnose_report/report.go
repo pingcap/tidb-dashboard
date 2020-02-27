@@ -57,13 +57,16 @@ const (
 	CategoryTiDB     = "TiDB"
 	CategoryPD       = "PD"
 	CategoryTiKV     = "TiKV"
-	CategoryConfig   = "Config"
+	CategoryConfig   = "config"
 )
 
 func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []error) {
 	funcs := []func(string, string, *sql.DB) (*TableDef, error){
 		// Header
 		GetHeaderTimeTable,
+
+		// Diagnose
+		GetDiagnoseReport,
 
 		// Node
 
@@ -120,6 +123,23 @@ func GetHeaderTimeTable(startTime, endTime string, db *sql.DB) (*TableDef, error
 			{Values: []string{startTime, endTime}},
 		},
 	}, nil
+}
+
+func GetDiagnoseReport(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select /*+ time_range('%s','%s') */ * from information_schema.INSPECTION_RESULT", startTime, endTime)
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{CategoryDiagnose},
+		Title:     "diagnose",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"RULE", "ITEM", "TYPE", "INSTANCE", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
+		Rows:      rows,
+	}
+	return table, nil
 }
 
 func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {

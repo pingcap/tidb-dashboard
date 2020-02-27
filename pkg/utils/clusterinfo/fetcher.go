@@ -24,6 +24,8 @@ import (
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 )
@@ -41,6 +43,8 @@ func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB
 	}
 	var grafana Grafana
 	var alertManager AlertManager
+	grafanaExists := false
+	amExists := false
 	ttlMap := map[string][]byte{}
 	infoMap := map[string]*TiDB{}
 	for _, kvs := range resp.Kvs {
@@ -58,12 +62,16 @@ func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB
 		switch keyParts[1] {
 		case "grafana":
 			if err = json.Unmarshal(kvs.Value, &grafana); err != nil {
-				log.Warn("/topology/grafana key unmarshal errors")
+				log.Warn("/topology/grafana key unmarshal errors", zap.Error(err))
+				continue
 			}
+			grafanaExists = true
 		case "alertmanager":
 			if err = json.Unmarshal(kvs.Value, &alertManager); err != nil {
-				log.Warn("/topology/alertmanager key unmarshal errors")
+				log.Warn("/topology/alertmanager key unmarshal errors", zap.Error(err))
+				continue
 			}
+			amExists = true
 		case "tidb":
 			// the key should be like /topology/tidb/ip:port/info or /ttl
 			if len(keyParts) != 4 {
@@ -75,8 +83,16 @@ func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB
 			fillDBMap(address, fieldType, kvs.Value, infoMap, ttlMap)
 		}
 	}
+	var grafanaRet *Grafana
+	var alertManagerRet *AlertManager
+	if grafanaExists {
+		grafanaRet = &grafana
+	}
+	if amExists {
+		alertManagerRet = &alertManager
+	}
 
-	return genDBList(infoMap, ttlMap), &grafana, &alertManager, nil
+	return genDBList(infoMap, ttlMap), grafanaRet, alertManagerRet, nil
 }
 
 func GetTiDBTopology(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, error) {

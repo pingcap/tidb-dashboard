@@ -123,23 +123,27 @@ func (s *Service) topologyHandler(c *gin.Context) {
 type ClusterInfo struct {
 	TiDB struct {
 		Nodes []clusterinfo.TiDB `json:"nodes"`
-		Err   string             `json:"err"`
+		Err   *string            `json:"err"`
 	} `json:"tidb"`
 
 	TiKV struct {
 		Nodes []clusterinfo.TiKV `json:"nodes"`
-		Err   string             `json:"err"`
+		Err   *string            `json:"err"`
 	} `json:"tikv"`
 	Pd struct {
 		Nodes []clusterinfo.PD `json:"nodes"`
-		Err   string           `json:"err"`
+		Err   *string          `json:"err"`
 	} `json:"pd"`
-	Grafana struct {
-		Node *clusterinfo.Grafana `json:"node"`
-		Err  string               `json:"err"`
-	} `json:"grafana"`
-	AlertManager struct {
-		Node *clusterinfo.AlertManager `json:"node"`
-		Err  string                    `json:"err"`
-	} `json:"alertManager"`
+	Grafana      *GrafanaField      `json:"grafana"`
+	AlertManager *AlertManagerField `json:"alert_manager"`
+}
+
+type GrafanaField struct {
+	Node *clusterinfo.Grafana `json:"node"`
+	Err  *string              `json:"err"`
+}
+
+type AlertManagerField struct {
+	Node *clusterinfo.AlertManager `json:"node"`
+	Err  *string                   `json:"err"`
 }

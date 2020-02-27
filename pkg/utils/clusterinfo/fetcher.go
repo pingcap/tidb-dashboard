@@ -24,32 +24,19 @@ import (
 	"strings"
 	"time"
 
-	"go.uber.org/zap"
-
-	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 )
 
-const prefix = "/topology"
-
 // GetTopology return error only when fetch etcd failed.
-func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, *Grafana,
-	*AlertManager, error) {
-	resp, err := etcdcli.Get(ctx, prefix, clientv3.WithPrefix())
+func GetTopologyUnderEtcd(ctx context.Context, etcdClient *clientv3.Client) (tidbNodes []TiDBInfo, grafanaNode *GrafanaInfo, alertManagerNode *AlertManagerInfo, e error) {
+	resp, err := etcdClient.Get(ctx, "/topology", clientv3.WithPrefix())
 	if err != nil {
-		// put error in ctx and return
 		return nil, nil, nil, err
 	}
-	var grafana Grafana
-	var alertManager AlertManager
-	grafanaExists := false
-	amExists := false
-	ttlMap := map[string][]byte{}
-	infoMap := map[string]*TiDB{}
-	for _, kvs := range resp.Kvs {
-		key := string(kvs.Key)
-
-		keyParts := strings.Split(key, "/")[1:]
+	tidbTTLMap := map[string][]byte{}
+	tidbEntryMap := map[string]*TiDBInfo{}
+	for _, kv := range resp.Kvs {
+		keyParts := strings.Split(string(kv.Key), "/")[1:]
 		if len(keyParts) < 2 {
 			continue
 		}
@@ -60,70 +47,48 @@ func GetTopologyUnderEtcd(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB
 		// * /topology/tidb/ip:port/ttl : stores tidb last update ttl time.
 		switch keyParts[1] {
 		case "grafana":
-			if err = json.Unmarshal(kvs.Value, &grafana); err != nil {
-				log.Warn("/topology/grafana key unmarshal errors", zap.Error(err))
+			r := GrafanaInfo{}
+			if err = json.Unmarshal(kv.Value, &r); err != nil {
 				continue
 			}
-			grafanaExists = true
+			grafanaNode = &r
 		case "alertmanager":
-			if err = json.Unmarshal(kvs.Value, &alertManager); err != nil {
-				log.Warn("/topology/alertmanager key unmarshal errors", zap.Error(err))
+			r := AlertManagerInfo{}
+			if err = json.Unmarshal(kv.Value, &r); err != nil {
 				continue
 			}
-			amExists = true
+			alertManagerNode = &r
 		case "tidb":
 			// the key should be like /topology/tidb/ip:port/info or /ttl
 			if len(keyParts) != 4 {
-				log.Warn("error, key under `/topology/tidb` should be like" +
-					" `/topology/tidb/ip:port/info`")
 				continue
 			}
 			address, fieldType := keyParts[2], keyParts[3]
-			fillDBMap(address, fieldType, kvs.Value, infoMap, ttlMap)
+			fillDBMap(address, fieldType, kv.Value, tidbEntryMap, tidbTTLMap)
 		}
 	}
-	var grafanaRet *Grafana
-	var alertManagerRet *AlertManager
-	if grafanaExists {
-		grafanaRet = &grafana
-	}
-	if amExists {
-		alertManagerRet = &alertManager
-	}
 
-	return genDBList(infoMap, ttlMap), grafanaRet, alertManagerRet, nil
-}
+	tidbNodes = genDBList(tidbEntryMap, tidbTTLMap)
 
-func GetTiDBTopology(ctx context.Context, etcdcli *clientv3.Client) ([]TiDB, error) {
-	resp, err := etcdcli.Get(ctx, prefix+"/tidb", clientv3.WithPrefix())
-	if err != nil {
-		return nil, err
-	}
-	ttlMap := map[string][]byte{}
-	infoMap := map[string]*TiDB{}
-	for _, kvs := range resp.Kvs {
-		key := string(kvs.Key)
-
-		keyParts := strings.Split(key, "/")[2:]
-		if len(keyParts) < 2 {
-			continue
-		}
-		address, fieldType := keyParts[0], keyParts[1]
-		fillDBMap(address, fieldType, kvs.Value, infoMap, ttlMap)
-	}
-
-	return genDBList(infoMap, ttlMap), nil
+	return tidbNodes, grafanaNode, alertManagerNode, nil
 }
 
 // address should be like "ip:port"
 // fieldType should be "ttl" or "info"
 // value is field value.
-func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB, ttlMap map[string][]byte) {
+func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDBInfo, ttlMap map[string][]byte) {
 	if fieldType == "ttl" {
 		ttlMap[address] = value
 	} else if fieldType == "info" {
-		var currentInfo TiDB
-		err := json.Unmarshal(value, &currentInfo)
+		ds := struct {
+			Version    string `json:"version"`
+			GitHash    string `json:"git_hash"`
+			StatusPort uint   `json:"status_port"`
+			BinaryPath string `json:"binary_path"`
+		}{}
+
+		//var currentInfo TiDB
+		err := json.Unmarshal(value, &ds)
 		if err != nil {
 			return
 		}
@@ -131,38 +96,45 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 		if err != nil {
 			return
 		}
-		currentInfo.IP = host
-		currentInfo.Port = port
-		infoMap[address] = &currentInfo
+
+		infoMap[address] = &TiDBInfo{
+			Version:    ds.Version,
+			IP:         host,
+			Port:       port,
+			BinaryPath: ds.BinaryPath,
+			Status:     ComponentStatusUnreachable,
+			StatusPort: ds.StatusPort,
+		}
 	}
 }
 
-func genDBList(infoMap map[string]*TiDB, ttlMap map[string][]byte) []TiDB {
-	dbList := []TiDB{}
+func genDBList(infoMap map[string]*TiDBInfo, ttlMap map[string][]byte) []TiDBInfo {
+	nodes := make([]TiDBInfo, 0)
+
 	// Note: it means this TiDB has non-ttl key, but ttl-key not exists.
 	for address, info := range infoMap {
 		if ttlFreshUnixNanoSec, ok := ttlMap[address]; ok {
 			unixNano, err := strconv.ParseInt(string(ttlFreshUnixNanoSec), 10, 64)
 			if err != nil {
-				info.ServerStatus = Offline
+				info.Status = ComponentStatusUnreachable
 			} else {
 				ttlFreshTime := time.Unix(0, unixNano)
 				if time.Since(ttlFreshTime) > time.Second*45 {
-					info.ServerStatus = Offline
+					info.Status = ComponentStatusUnreachable
 				} else {
-					info.ServerStatus = Up
+					info.Status = ComponentStatusUp
 				}
 			}
 		} else {
-			info.ServerStatus = Offline
+			info.Status = ComponentStatusUnreachable
 		}
-		dbList = append(dbList, *info)
+		nodes = append(nodes, *info)
 	}
 
-	return dbList
+	return nodes
 }
 
-type store struct {
+type tikvStore struct {
 	Address string `json:"address"`
 	ID      int    `json:"id"`
 	Labels  []struct {
@@ -176,7 +148,7 @@ type store struct {
 	BinaryPath    string `json:"binary_path"`
 }
 
-func getAllStores(endpoint string, httpClient *http.Client) ([]store, error) {
+func getAllTiKVNodes(endpoint string, httpClient *http.Client) ([]tikvStore, error) {
 	resp, err := httpClient.Get(endpoint + "/pd/api/v1/stores")
 	if err != nil {
 		return nil, err
@@ -188,11 +160,10 @@ func getAllStores(endpoint string, httpClient *http.Client) ([]store, error) {
 	storeResp := struct {
 		Count  int `json:"count"`
 		Stores []struct {
-			Store store
+			Store tikvStore
 		} `json:"stores"`
 	}{}
 	data, err := ioutil.ReadAll(resp.Body)
-
 	if err != nil {
 		return nil, err
 	}
@@ -200,16 +171,16 @@ func getAllStores(endpoint string, httpClient *http.Client) ([]store, error) {
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]store, storeResp.Count)
+	ret := make([]tikvStore, storeResp.Count)
 	for i, s := range storeResp.Stores {
 		ret[i] = s.Store
 	}
 	return ret, nil
 }
 
-func GetTiKVTopology(ctx context.Context, endpoint string, httpClient *http.Client) ([]TiKV, error) {
-	kvs := make([]TiKV, 0)
-	stores, err := getAllStores(endpoint, httpClient)
+func GetTiKVTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, error) {
+	nodes := make([]TiKVInfo, 0)
+	stores, err := getAllTiKVNodes(endpoint, httpClient)
 
 	if err != nil {
 		return nil, err
@@ -224,29 +195,26 @@ func GetTiKVTopology(ctx context.Context, endpoint string, httpClient *http.Clie
 		if err != nil {
 			continue
 		}
-		currentInfo := TiKV{
-			ComponentVersionInfo: ComponentVersionInfo{
-				Version: v.Version,
-				GitHash: v.GitHash,
-			},
-			IP:           host,
-			Port:         port,
-			BinaryPath:   v.BinaryPath,
-			ServerStatus: storeStateToStatus(v.StateName),
-			StatusPort:   statusPort,
-			Labels:       map[string]string{},
+		node := TiKVInfo{
+			Version:    v.Version,
+			IP:         host,
+			Port:       port,
+			BinaryPath: v.BinaryPath,
+			Status:     storeStateToStatus(v.StateName),
+			StatusPort: statusPort,
+			Labels:     map[string]string{},
 		}
 		for _, v := range v.Labels {
-			currentInfo.Labels[v.Key] = currentInfo.Labels[v.Value]
+			node.Labels[v.Key] = node.Labels[v.Value]
 		}
-		kvs = append(kvs, currentInfo)
+		nodes = append(nodes, node)
 	}
 
-	return kvs, nil
+	return nodes, nil
 }
 
-func GetPDTopology(ctx context.Context, pdEndPoint string, httpClient *http.Client) ([]PD, error) {
-	pdPeers := make([]PD, 0)
+func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error) {
+	nodes := make([]PDInfo, 0)
 	healthMapChan := make(chan map[string]struct{})
 	go func() {
 		var err error
@@ -289,39 +257,34 @@ func GetPDTopology(ctx context.Context, pdEndPoint string, httpClient *http.Clie
 	healthMap := <-healthMapChan
 	close(healthMapChan)
 	for _, ds := range ds.Members {
-		log.Info(ds.ClientUrls[0])
 		host, port, err := parseHostAndPortFromAddressURL(ds.ClientUrls[0])
 		if err != nil {
 			continue
 		}
 		var storeStatus ComponentStatus
 		if _, ok := healthMap[ds.MemberID.String()]; ok {
-			storeStatus = Up
+			storeStatus = ComponentStatusUp
 		} else {
-			storeStatus = Offline
+			storeStatus = ComponentStatusUnreachable
 		}
 
-		pdPeers = append(pdPeers, PD{
-			ComponentVersionInfo: ComponentVersionInfo{
-				Version: ds.BinaryVersion,
-			},
-			IP:           host,
-			Port:         port,
-			BinaryPath:   ds.BinaryPath,
-			ServerStatus: storeStatus,
+		nodes = append(nodes, PDInfo{
+			Version:    ds.BinaryVersion,
+			IP:         host,
+			Port:       port,
+			BinaryPath: ds.BinaryPath,
+			Status:     storeStatus,
 		})
 	}
-	return pdPeers, nil
+	return nodes, nil
 }
 
 // address should be like "ip:port" as "127.0.0.1:2379".
 // return error if string is not like "ip:port".
 func parseHostAndPortFromAddress(address string) (string, uint, error) {
-	log.Info(address)
 	addresses := strings.Split(address, ":")
 	if len(addresses) != 2 {
-		log.Warn("parseHostAndPortFromAddress receive format error")
-		return "", 0, fmt.Errorf("format error")
+		return "", 0, fmt.Errorf("invalid address %s", address)
 	}
 	port, err := strconv.Atoi(addresses[1])
 	if err != nil {
@@ -340,26 +303,24 @@ func parseHostAndPortFromAddressURL(urlString string) (string, uint, error) {
 	if err != nil {
 		return "", 0, err
 	}
-	return u.Host, uint(port), nil
+	return u.Hostname(), uint(port), nil
 }
 
 func storeStateToStatus(state string) ComponentStatus {
 	state = strings.Trim(strings.ToLower(state), "\n ")
 	switch state {
 	case "up":
-		return Up
-	case "offline":
-		return Offline
+		return ComponentStatusUp
 	case "tombstone":
-		return Tombstone
+		return ComponentStatusTombstone
 	default:
-		return Unknown
+		return ComponentStatusUnreachable
 	}
 }
 
 func getPDNodesHealth(pdEndPoint string, httpClient *http.Client) (map[string]struct{}, error) {
 	// health member set
-	healthMember := map[string]struct{}{}
+	memberHealth := map[string]struct{}{}
 	resp, err := httpClient.Get(pdEndPoint + "/pd/api/v1/health")
 	if err != nil {
 		return nil, err
@@ -381,7 +342,7 @@ func getPDNodesHealth(pdEndPoint string, httpClient *http.Client) (map[string]st
 	}
 
 	for _, v := range healths {
-		healthMember[v.MemberID.String()] = struct{}{}
+		memberHealth[v.MemberID.String()] = struct{}{}
 	}
-	return healthMember, nil
+	return memberHealth, nil
 }

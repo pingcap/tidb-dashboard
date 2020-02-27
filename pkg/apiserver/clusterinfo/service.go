@@ -28,7 +28,6 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
 
 type Service struct {
@@ -44,7 +43,7 @@ func NewService(config *config.Config, etcdClient *etcdclientv3.Client, httpClie
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/topology")
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.GET("/", s.topologyHandler)
+	endpoint.GET("/all", s.topologyHandler)
 	endpoint.DELETE("/tidb/:address/", s.deleteTiDBTopologyHandler)
 }
 
@@ -91,7 +90,7 @@ func (s *Service) deleteTiDBTopologyHandler(c *gin.Context) {
 // @Description Get information about the dashboard topology.
 // @Produce json
 // @Success 200 {object} clusterinfo.ClusterInfo
-// @Router /topology [get]
+// @Router /topology/all [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) topologyHandler(c *gin.Context) {
@@ -100,10 +99,10 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	fetchers := []func(ctx context.Context, info *ClusterInfo, service *Service){
-		getTopologyUnderEtcd,
-		getTiKVTopology,
-		getPDTopology,
+	fetchers := []func(ctx context.Context, service *Service, info *ClusterInfo){
+		fillTopologyUnderEtcd,
+		fillTiKVTopology,
+		fillPDTopology,
 	}
 
 	var wg sync.WaitGroup
@@ -112,38 +111,10 @@ func (s *Service) topologyHandler(c *gin.Context) {
 		currentFetcher := fetcher
 		go func() {
 			defer wg.Done()
-			currentFetcher(ctx, &returnObject, s)
+			currentFetcher(ctx, s, &returnObject)
 		}()
 	}
 	wg.Wait()
 
 	c.JSON(http.StatusOK, returnObject)
-}
-
-type ClusterInfo struct {
-	TiDB struct {
-		Nodes []clusterinfo.TiDB `json:"nodes"`
-		Err   *string            `json:"err"`
-	} `json:"tidb"`
-
-	TiKV struct {
-		Nodes []clusterinfo.TiKV `json:"nodes"`
-		Err   *string            `json:"err"`
-	} `json:"tikv"`
-	Pd struct {
-		Nodes []clusterinfo.PD `json:"nodes"`
-		Err   *string          `json:"err"`
-	} `json:"pd"`
-	Grafana      *GrafanaField      `json:"grafana"`
-	AlertManager *AlertManagerField `json:"alert_manager"`
-}
-
-type GrafanaField struct {
-	Node *clusterinfo.Grafana `json:"node"`
-	Err  *string              `json:"err"`
-}
-
-type AlertManagerField struct {
-	Node *clusterinfo.AlertManager `json:"node"`
-	Err  *string                   `json:"err"`
 }

@@ -21,6 +21,7 @@ type TableDef struct {
 type TableRowDef struct {
 	Values    []string
 	SubValues [][]string // SubValues need fold default.
+	Comment string
 }
 
 func (t TableDef) ColumnWidth() []int {
@@ -776,7 +777,7 @@ func GetTiKVSnapshotInfo(startTime, endTime string, db *sql.DB) (*TableDef, erro
 
 	arg := newQueryArg(startTime, endTime)
 
-	err := getTableRows(defs, arg, db, appendRows)
+	err :=    getTableRows(defs, arg, db, appendRows)
 	if err != nil {
 		return nil, err
 	}
@@ -1010,69 +1011,55 @@ func NewTableRowDef(values []string, subValues [][]string) TableRowDef {
 	}
 }
 
-type AvgMaxMinTableDef struct {
-	name  string
-	tbl   string
-	label string
-}
+func getAvgValueTableData(defs1 []AvgMaxMinTableDef, startTime, endTime string, db *sql.DB) ([]TableRowDef, error) {
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
 
+	resultRows := make([]TableRowDef, 0, len(defs))
+	specialHandle := func(row []string) []string {
+		for len(row) < 3 {
+			return row
+		}
+		row[2] = convertFloatToInt(row[2])
+		return row
+	}
 
-func (t *AvgMaxMinTableDef) getTableRowDef (sqls []string, resultRows []TableRowDef, db *sql.DB) ([]TableRowDef, error) {
-	rows, err := querySQL(db, sqls[0])
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+	arg := newQueryArg(startTime, endTime)
+	err := getTableRows(defs, arg, db, appendRows)
 	if err != nil {
 		return nil, err
 	}
-	if len(rows) == 0 {
-		return []TableRowDef{}, nil
-	}
-	for _,i := range []int{2,3,4} {
-		for _,row := range rows {
-			row[i] = RoundFloatString(row[i])
-		}
-	}
-	subRows, err := querySQL(db, sqls[1])
-	if err != nil {
-		return nil, err
-	}
-	for _,i := range []int{2,3,4} {
-		for _,row := range subRows {
-			row[i] = RoundFloatString(row[i])
-		}
-	}
-	resultRows = append(resultRows, NewTableRowDef(rows[0], subRows))
 	return resultRows, nil
 }
 
 func GetAvgMaxMinTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []AvgMaxMinTableDef{
-		{name: "node_cpu_usage", tbl: "node_cpu_usage", label: "instance"},
+	defs1 := []AvgMaxMinTableDef{
+		{name: "node_cpu_usage", tbl: "node_cpu_usage", label: "instance", Comment:"the CPU useage in each node"},
 		//{name: "node_mem_usage", tbl: "node_mem_usage", label: "instance"},
-		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", label: "instance"},
-		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance"},
+		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", label: "instance", Comment:"the disk write latency in each node"},
+		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance", Comment:"the node disk read latency in each node"},
 	}
-	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
-		Category:  []string{"node"},
-		Title:     "hardware usage",
+	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return nil, err
+	}
+	return &TableDef{
+		Category:  []string{CategoryOverview},
+		Title:     "Error",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
-	}
-	for _, t := range tables {
-		sqls := []string{
-			fmt.Sprintf("select '%[4]s', '', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s'",
-			t.tbl, startTime, endTime, t.name),
-			fmt.Sprintf("select '', %[1]s, avg(value), max(value), min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' group by %[1]s",
-			t.label, t.tbl, startTime, endTime),
-		}
-		var err error
-		resultRows, err = t.getTableRowDef(sqls,resultRows,db)
-		if err != nil {
-			return nil, err
-		}
-	}
-	table.Rows = resultRows
-	return table, nil
+		Rows:      rows,
+	}, nil
 }
 
 func GetCPUUsageTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
@@ -1113,70 +1100,52 @@ func GetGoroutinesCountTable(startTime, endTime string, db *sql.DB) (*TableDef, 
 }
 
 func GetTiKVThreadCPUTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []AvgMaxMinTableDef{
-		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance"},
-		{name: "apply", tbl: "tikv_thread_cpu", label: "instance"},
-		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance"},
-
+	defs1 := []AvgMaxMinTableDef{
+		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'raftstore%'", Comment: "The CPU usage of each TiKV raftstore"},
+		{name: "apply", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'apply%'", Comment: "The CPU usage of each TiKV apply"},
+		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'sched_worker%'", Comment: "The CPU usage of each TiKV sched_worker"},
+		{name: "snap", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'snap%'", Comment: "The CPU usage of each TiKV snapshot"},
+		{name: "cop", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'cop%'", Comment: "The CPU usage of each TiKV coporssesor"},
+		{name: "grpc", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'grpc%'", Comment: "The CPU usage of each TiKV grpc"},
+		{name: "rocksdb", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'rocksdb%'", Comment: "The CPU usage of each TiKV rocksdb"},
+		{name: "gc", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'gc%'", Comment: "The CPU usage of each TiKV gc"},
+		{name: "split_check", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'split_check%'", Comment: "The CPU usage of each TiKV split_check"},
 	}
-	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
-		Category:  []string{"node"},
-		Title:     "thread cpu",
+	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return nil, err
+	}
+	return &TableDef{
+		Category:  []string{CategoryOverview},
+		Title:     "Error",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
-	}
-	for _, t := range tables {
-		sqls := []string{
-			fmt.Sprintf("select '%[5]s', '', avg(value), max(value), min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' and name like '%[5]s",
-				t.label, t.tbl, startTime, endTime, t.name) + "%'",
-			fmt.Sprintf("select '', %[1]s, avg(value), max(value) ,min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' and name like '%[5]s",
-				t.label, t.tbl, startTime, endTime, t.name) + "%' group by " + t.label + " order by avg(value) desc",
-		}
-		var err error
-		resultRows, err = t.getTableRowDef(sqls,resultRows,db)
-		if err != nil {
-			return nil, err
-		}
-	}
-	table.Rows = resultRows
-	return table, nil
+		Rows:      rows,
+	}, nil
 }
 
 func GetStoreStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	tables := []AvgMaxMinTableDef{
-		{name: "region_score", tbl: "pd_scheduler_store_status", label: "address"},
-		{name: "leader_score", tbl: "pd_scheduler_store_status", label: "address"},
-		{name: "region_count", tbl: "pd_scheduler_store_status", label: "address"},
-		{name: "leader_count", tbl: "pd_scheduler_store_status", label: "address"},
-		{name: "region_size", tbl: "pd_scheduler_store_status", label: "address"},
-		{name: "leader_size", tbl: "pd_scheduler_store_status", label: "address"},
+	defs1 := []AvgMaxMinTableDef{
+		{name: "region_score", tbl: "pd_scheduler_store_status", condition:"type = 'region_score'", label: "address", Comment: ""},
+		{name: "leader_score", tbl: "pd_scheduler_store_status", condition:"type = 'leader_score'", label: "address"},
+		{name: "region_count", tbl: "pd_scheduler_store_status", condition:"type = 'region_count'", label: "address"},
+		{name: "leader_count", tbl: "pd_scheduler_store_status", condition:"type = 'leader_count'", label: "address"},
+		{name: "region_size", tbl: "pd_scheduler_store_status", condition:"type = 'region_size'", label: "address"},
+		{name: "leader_size", tbl: "pd_scheduler_store_status", condition:"type = 'leader_size'", label: "address"},
 	}
-
-	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
-		Category:  []string{"PD"},
-		Title:     "storage status",
+	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return nil, err
+	}
+	return &TableDef{
+		Category:  []string{CategoryOverview},
+		Title:     "Error",
 		CommentEN: "",
 		CommentCN: "",
-		Column:    []string{"METRIC_NAME", "address", "AVG", "MAX", "MIN"},
-	}
-	for _, t := range tables {
-		sqls := []string{
-			fmt.Sprintf("select '%[4]s', '', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s' and type = '%[4]s'",
-				t.tbl, startTime, endTime, t.name),
-			fmt.Sprintf("select '', %[1]s, avg(value), max(value), min(value) from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' and type = '%[5]s' group by %[1]s",
-			t.label, t.tbl, startTime, endTime, t.name),
-		}
-		var err error
-		resultRows, err = t.getTableRowDef(sqls,resultRows,db)
-		if err != nil {
-			return nil, err
-		}
-	}
-	table.Rows = resultRows
-	return table, nil
+		Column:    []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
+		Rows:      rows,
+	}, nil
 }
 
 func GetPDClusterStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
@@ -1214,14 +1183,32 @@ func GetPDEtcdStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, err
 	return table, nil
 }
 
+func GetClusterInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select * from information_schema.cluster_info")
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{"header"},
+		Title:     "cluster info",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"TYPE", "INSTANCE", "STATUS_ADDRESS", "VERSION", "GIT_HASH", "START_TIME", "UPTIME"},
+		Rows:      rows,
+	}
+
+	return table, nil
+}
+
 func GetTiKVCacheHitTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	tables := []AvgMaxMinTableDef{
-		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", label: "type"},
-		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit", label: "type"},
-		{name: "index", tbl: "tikv_block_index_cache_hit", label: "type"},
-		{name: "filter", tbl: "tikv_block_filter_cache_hit", label: "type"},
-		{name: "data", tbl: "tikv_block_data_cache_hit", label: "type"},
-		{name: "bloom_prefix", tbl: "tikv_block_bloom_prefix_cache_hit", label: "type"},
+		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", Comment: "The hit rate of memtable",label: "type"},
+		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit", Comment: "The hit rate of all block cache",label: "type"},
+		{name: "index", tbl: "tikv_block_index_cache_hit", Comment: "The hit rate of index block cache",label: "type"},
+		{name: "filter", tbl: "tikv_block_filter_cache_hit", Comment: "The hit rate of filter block cache",label: "type"},
+		{name: "data", tbl: "tikv_block_data_cache_hit", Comment: "The hit rate of data block cache",label: "type"},
+		{name: "bloom_prefix", tbl: "tikv_block_bloom_prefix_cache_hit", Comment: "The hit rate of bloom_prefix block cache",label: "type"},
 	}
 
 	resultRows := make([]TableRowDef, 0, len(tables))
@@ -1258,24 +1245,6 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *sql.DB) (*TableDef, err
 		}
 	}
 	table.Rows = resultRows
-	return table, nil
-}
-
-func GetClusterInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	sql := fmt.Sprintf("select * from information_schema.cluster_info")
-	rows, err := getSQLRows(db, sql)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
-		Category:  []string{"header"},
-		Title:     "cluster info",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"TYPE", "INSTANCE", "STATUS_ADDRESS", "VERSION", "GIT_HASH", "START_TIME", "UPTIME"},
-		Rows:      rows,
-	}
-
 	return table, nil
 }
 

@@ -43,7 +43,7 @@ func NewService(config *config.Config, etcdClient *etcdclientv3.Client, httpClie
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/topology")
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.GET("/", s.topologyHandler)
+	endpoint.GET("/all", s.topologyHandler)
 	endpoint.DELETE("/tidb/:address/", s.deleteTiDBTopologyHandler)
 }
 
@@ -90,7 +90,7 @@ func (s *Service) deleteTiDBTopologyHandler(c *gin.Context) {
 // @Description Get information about the dashboard topology.
 // @Produce json
 // @Success 200 {object} clusterinfo.ClusterInfo
-// @Router /topology/ [get]
+// @Router /topology/all [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) topologyHandler(c *gin.Context) {

@@ -1,5 +1,5 @@
 import client, { DASHBOARD_API_URL } from '@/utils/client';
-import { LogsearchTaskModel } from '@/utils/dashboard_client';
+import { LogsearchSearchTarget, LogsearchTaskModel } from '@/utils/dashboard_client';
 import { Button, Card, Modal, Tree, Typography } from 'antd';
 import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree';
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -35,15 +35,25 @@ function leafNodeProps(state: number | undefined) {
   }
 }
 
-function renderLeafNodes(tasks: LogsearchTaskModel[]) {
-  return tasks.map(task => (
-    <TreeNode
-      key={task.id?.toString()}
-      value={task.id}
-      title={`${task.search_target?.ip}:${task.search_target?.port}`}
-      {...leafNodeProps(task.state)}
-    />
-  ))
+function renderLeafNodes(tasks: LogsearchTaskModel[], serverMap: Map<string, LogsearchSearchTarget>) {
+  return tasks.map(task => {
+    let title = ''
+    for (let [addr, target] of serverMap.entries()) {
+      if (target.ip === task.search_target?.ip
+        && target.port === task.search_target?.port) {
+        title = addr
+        break
+      }
+    }
+    return (
+      <TreeNode
+        key={task.id?.toString()}
+        value={task.id}
+        title={title}
+        {...leafNodeProps(task.state)}
+      />
+    )
+  })
 }
 
 function parentNodeIcon(tasks: LogsearchTaskModel[]) {
@@ -63,7 +73,6 @@ function parentNodeCheckable(tasks: LogsearchTaskModel[]) {
   // Checkable: at least one task has finished
   return tasks.some(task => task.state === TaskState.Finished)
 }
-
 
 function useSetInterval(callback: () => void) {
   const ref = useRef<() => void>(callback);
@@ -134,7 +143,7 @@ export default function SearchProgress() {
     return res.join('，')
   }
 
-  function renderTreeNodes(tasks: LogsearchTaskModel[]) {
+  function renderTreeNodes(tasks: LogsearchTaskModel[], serverMap: Map<string, LogsearchSearchTarget>) {
     const servers = {
       tidb: [],
       tikv: [],
@@ -150,7 +159,7 @@ export default function SearchProgress() {
     })
 
     return Object.keys(servers)
-      .filter(key => servers[key].length)
+      .filter(key => servers[key].length > 0)
       .map(key => {
         const tasks = servers[key]
         const title = (
@@ -170,7 +179,7 @@ export default function SearchProgress() {
             title={title}
             icon={parentNodeIcon(tasks)}
             disableCheckbox={!parentNodeCheckable(tasks)}
-            children={renderLeafNodes(tasks)}
+            children={renderLeafNodes(tasks, serverMap)}
           />
         )
       }
@@ -237,7 +246,7 @@ export default function SearchProgress() {
           showIcon
           onCheck={handleCheck}
         >
-          {renderTreeNodes(store.tasks)}
+          {renderTreeNodes(store.tasks, store.topology)}
         </Tree>
       </Card>
     </div>

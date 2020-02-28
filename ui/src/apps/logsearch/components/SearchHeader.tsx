@@ -15,67 +15,63 @@ const { SHOW_CHILD } = TreeSelect;
 const { RangePicker } = DatePicker
 const { Option } = Select;
 
-const mockIP = '192.168.1.8'
-
-const mockServerMap: Map<string, LogsearchSearchTarget> = new Map([
-  [
-    `${mockIP}:4000`, {
-      ip: mockIP,
-      port: 10080,
-      kind: "tidb"
+// serverMap example:
+// const serverMap: Map<string, LogsearchSearchTarget> = new Map([
+//   [
+//     `127.0.0.1:4000`, {
+//       ip: "127.0.0.1",
+//       port: 10080,
+//       kind: "tidb"
+//     }
+//   ],
+//   [
+//     `127.0.0.1:20160`, {
+//       ip: "127.0.0.1",
+//       port: 20160,
+//       kind: "tikv"
+//     },
+//   ],
+//   [
+//     `127.0.0.1:2379`, {
+//       ip: "127.0.0.1",
+//       port: 2379,
+//       kind: "pd"
+//     }
+//   ]
+// ])
+function buildServerMap(info: ClusterinfoClusterInfo) {
+  const serverMap = new Map<string, LogsearchSearchTarget>()
+  info?.tidb?.nodes?.forEach(tidb => {
+    const addr = `${tidb.ip}:${tidb.port}`
+    const target :LogsearchSearchTarget = {
+      ip: tidb.ip,
+      port: tidb.status_port,
+      kind: 'tidb'
     }
-  ],
-  [
-    `${mockIP}:20160`, {
-      ip: mockIP,
-      port: 20160,
-      kind: "tikv"
-    },
-  ],
-  [
-    `${mockIP}:2379`, {
-      ip: mockIP,
-      port: 2379,
-      kind: "pd"
+    serverMap.set(addr, target)
+  })
+  info?.tikv?.nodes?.forEach(tikv => {
+    const addr = `${tikv.ip}:${tikv.port}`
+    const target :LogsearchSearchTarget = {
+      ip: tikv.ip,
+      port: tikv.port,
+      kind: 'tikv'
     }
-  ]
-])
-
-function buildServerMap() {
-  // TODO: parse from topology
-  // const serverMap = new Map<string, LogsearchSearchTarget>()
-  // info?.tidb?.nodes?.forEach(tidb => {
-  //   const addr = `${tidb.ip}:${tidb.port}`
-  //   const target :LogsearchSearchTarget = {
-  //     ip: tidb.ip,
-  //     port: tidb.status_port,
-  //     kind: 'tidb'
-  //   }
-  //   serverMap.set(addr, target)
-  // })
-  // info?.tikv?.nodes?.forEach(tikv => {
-  //   const addr = `${tikv.ip}:${tikv.port}`
-  //   const target :LogsearchSearchTarget = {
-  //     ip: tikv.ip,
-  //     port: tikv.status_port,
-  //     kind: 'tidb'
-  //   }
-  //   serverMap.set(addr, target)
-  // })
-  // info?.pd?.nodes?.forEach(pd => {
-  //   const addr = `${pd.ip}:${pd.port}`
-  //   const target :LogsearchSearchTarget = {
-  //     ip: pd.ip,
-  //     port: pd.port,
-  //     kind: 'tidb'
-  //   }
-  //   serverMap.set(addr, target)
-  // })
-  return mockServerMap
+    serverMap.set(addr, target)
+  })
+  info?.pd?.nodes?.forEach(pd => {
+    const addr = `${pd.ip}:${pd.port}`
+    const target :LogsearchSearchTarget = {
+      ip: pd.ip,
+      port: pd.port,
+      kind: 'pd'
+    }
+    serverMap.set(addr, target)
+  })
+  return serverMap
 }
 
 function buildTreeData(serverMap: Map<string, LogsearchSearchTarget>) {
-  // TODO: parse from topology
   const servers = {
     tidb: [],
     tikv: [],
@@ -95,7 +91,7 @@ function buildTreeData(serverMap: Map<string, LogsearchSearchTarget>) {
   })
 
   return Object.keys(servers)
-    .filter(kind => servers[kind].length)
+    .filter(kind => servers[kind].length > 0)
     .map(kind => ({
       title: namingMap[kind],
       value: kind,
@@ -106,7 +102,7 @@ function buildTreeData(serverMap: Map<string, LogsearchSearchTarget>) {
 
 export default function SearchHeader() {
   const { store, dispatch } = useContext(Context)
-  const { searchOptions } = store
+  const { searchOptions, topology } = store
   const { t } = useTranslation()
   const history = useHistory()
 
@@ -129,19 +125,22 @@ export default function SearchHeader() {
   // it will cause the infinite loop
 
   useEffect(() => {
-    (async function() {
-      const res = await client.dashboard.topologyGet()
+    async function fetchData() {
+      const res = await client.dashboard.topologyAllGet()
+      const serverMap = buildServerMap(res.data)
+      dispatch({type: 'topology', payload: serverMap})
       console.log(res.data)
-    }())
+      console.log(serverMap)
+    }
+    fetchData()
   }, [])
-  const serverMap = buildServerMap()
 
   async function createTaskGroup() {
-    // TODO: 检查必须选择至少一个组件
+    // TODO: check select at least one component
 
     const targets: LogsearchSearchTarget[] = []
     components.forEach(address => {
-      const target = serverMap.get(address)
+      const target = topology.get(address)
       if (!target) {
         return
       }
@@ -223,7 +222,7 @@ export default function SearchHeader() {
                 validateStatus={components.length > 0 ? "" : "error"}>
                 <TreeSelect
                   value={components}
-                  treeData={buildTreeData(serverMap)}
+                  treeData={buildTreeData(topology)}
                   placeholder={t('logs.common.components_placeholder')}
                   onChange={handleComponentChange}
                   treeDefaultExpandAll={true}

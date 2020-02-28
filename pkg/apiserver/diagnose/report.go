@@ -62,6 +62,25 @@ const (
 	CategoryConfig   = "config"
 )
 
+func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB) ([]*TableDef, []error) {
+	tables, errs := GetReportTables(startTime, endTime, db)
+	lastCategory := ""
+	for _, tbl := range tables {
+		if tbl == nil {
+			continue
+		}
+		category := strings.Join(tbl.Category, ",")
+		if lastCategory == "" {
+			lastCategory = category
+			continue
+		}
+		if category == lastCategory {
+			tbl.Category = []string{""}
+		}
+	}
+	return tables, errs
+}
+
 func GetReportTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []error) {
 	funcs := []func(string, string, *gorm.DB) (*TableDef, error){
 		// Header
@@ -634,7 +653,7 @@ func GetTiKVStoreInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error)
 	}
 
 	return &TableDef{
-		Category:  []string{CategoryPD},
+		Category:  []string{CategoryTiKV},
 		Title:     "blance leader/region",
 		CommentEN: "",
 		CommentCN: "",
@@ -969,7 +988,7 @@ func GetTiKVErrorTable(startTime, endTime string, db *gorm.DB) (*TableDef, error
 	}
 
 	table := &TableDef{
-		Category:  []string{"TiKV"},
+		Category:  []string{CategoryTiKV},
 		Title:     "Error",
 		CommentEN: "",
 		CommentCN: "",
@@ -1149,7 +1168,7 @@ func GetAvgMaxMinTable(startTime, endTime string, db *gorm.DB) (*TableDef, error
 		return nil, err
 	}
 	return &TableDef{
-		Category:  []string{CategoryOverview},
+		Category:  []string{CategoryNode},
 		Title:     "Error",
 		CommentEN: "",
 		CommentCN: "",
@@ -1212,7 +1231,7 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (*TableDef, e
 		return nil, err
 	}
 	return &TableDef{
-		Category:  []string{CategoryOverview},
+		Category:  []string{CategoryNode},
 		Title:     "Error",
 		CommentEN: "",
 		CommentCN: "",
@@ -1235,7 +1254,7 @@ func GetStoreStatusTable(startTime, endTime string, db *gorm.DB) (*TableDef, err
 		return nil, err
 	}
 	return &TableDef{
-		Category:  []string{CategoryOverview},
+		Category:  []string{CategoryPD},
 		Title:     "Error",
 		CommentEN: "",
 		CommentCN: "",
@@ -1252,7 +1271,7 @@ func GetPDClusterStatusTable(startTime, endTime string, db *gorm.DB) (*TableDef,
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{"PD"},
+		Category:  []string{CategoryPD},
 		Title:     "cluster status",
 		CommentEN: "",
 		CommentCN: "",
@@ -1270,7 +1289,7 @@ func GetPDEtcdStatusTable(startTime, endTime string, db *gorm.DB) (*TableDef, er
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{"PD"},
+		Category:  []string{CategoryPD},
 		Title:     "etcd status",
 		CommentEN: "",
 		CommentCN: "",
@@ -1282,12 +1301,12 @@ func GetPDEtcdStatusTable(startTime, endTime string, db *gorm.DB) (*TableDef, er
 
 func GetClusterInfoTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select * from information_schema.cluster_info")
-	rows, err := getSQLRoundRows(db, sql, nil, "The info of each node")
+	rows, err := getSQLRoundRows(db, sql, nil, "")
 	if err != nil {
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{"header"},
+		Category:  []string{CategoryHeader},
 		Title:     "cluster info",
 		CommentEN: "",
 		CommentCN: "",
@@ -1310,7 +1329,7 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *gorm.DB) (*TableDef, er
 
 	resultRows := make([]TableRowDef, 0, len(tables))
 	table := &TableDef{
-		Category:  []string{"TiKV"},
+		Category:  []string{CategoryTiKV},
 		Title:     "cache hit",
 		CommentEN: "",
 		CommentCN: "",
@@ -1357,11 +1376,11 @@ type hardWare struct {
 func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
 	resultRows := make([]TableRowDef, 0, 1)
 	table := &TableDef{
-		Category:  []string{"Header"},
+		Category:  []string{CategoryHeader},
 		Title:     "cluster hardware",
 		CommentEN: "",
 		CommentCN: "",
-		Column:    []string{"HOST", "INSTANCE", "CPU_CORES", "MEMORY (GB)", "DISK (GB)", "UPTIME"},
+		Column:    []string{"HOST", "INSTANCE", "CPU_CORES", "MEMORY (GB)", "DISK (GB)", "UPTIME (DAY)"},
 	}
 	sql := "SELECT instance,type,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='cpu' and name = 'cpu-physical-cores'"
 	rows, err := querySQL(db, sql)
@@ -1426,7 +1445,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 			m[s].disk = make(map[string]float64)
 		}
 	}
-	sql = fmt.Sprintf("SELECT instance,max(value) FROM metrics_schema.node_uptime  where time >= '%[1]s' and time < '%[2]s' GROUP BY instance", startTime, endTime)
+	sql = fmt.Sprintf("SELECT instance,max(value)/60/60/24 FROM metrics_schema.node_uptime  where time >= '%[1]s' and time < '%[2]s' GROUP BY instance", startTime, endTime)
 	rows, err = querySQL(db, sql)
 	if err != nil {
 		return nil, err
@@ -1437,7 +1456,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		if _, ok := m[s]; ok {
 			m[s].uptime = row[1]
 		} else {
-			m[s] = &hardWare{s, make(map[string]int), 0, 0, make(map[string]float64), "row[1]"}
+			m[s] = &hardWare{s, make(map[string]int), 0, 0, make(map[string]float64), ""}
 		}
 	}
 	rows = rows[:0]
@@ -1450,7 +1469,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		row[2] = strconv.Itoa(v.cpu) + "/" + strconv.Itoa(v.cpu*2)
 		row[3] = fmt.Sprintf("%f", v.memory/(1024*1024*1024))
 		for k, va := range v.disk {
-			row[4] += fmt.Sprintf("%[1]s : %[2]f\n", k, va/(1024*1024*1024))
+			row[4] += fmt.Sprintf("%[1]s: %[2]f    ", k, va/(1024*1024*1024))
 		}
 		row[5] = v.uptime
 		rows = append(rows, row)

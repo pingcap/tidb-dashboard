@@ -3,6 +3,7 @@ package diagnose_test
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/jinzhu/gorm"
@@ -27,7 +28,7 @@ func (t *testReportSuite) TestReport(c *C) {
 	startTime := "2020-02-27 19:20:23"
 	endTime := "2020-02-27 21:20:23"
 
-	tables, errs := diagnose.GetReportTables(startTime, endTime, cli)
+	tables, errs := diagnose.GetReportTablesForDisplay(startTime, endTime, cli)
 	for _, tbl := range tables {
 		printRows(tbl)
 	}
@@ -43,7 +44,7 @@ func (t *testReportSuite) getDBCli(c *C, passwd, addr, dbName string) *sql.DB {
 }
 
 func (t *testReportSuite) TestGetTable(c *C) {
-	cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
+	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
@@ -51,46 +52,6 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	endTime := "2020-02-27 21:00:00"
 
 	var table *diagnose.TableDef
-	table, err = diagnose.GetTiKVRegionSizeInfo(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
-	table, err = diagnose.GetAvgMaxMinTable(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
-	table, err = diagnose.GetCPUUsageTable(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
-	table, err = diagnose.GetGoroutinesCountTable(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
-	table, err = diagnose.GetTiKVThreadCPUTable(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
-	table, err = diagnose.GetStoreStatusTable(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
-	table, err = diagnose.GetPDClusterStatusTable(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
-	table, err = diagnose.GetPDEtcdStatusTable(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
-	table, err = diagnose.GetTiKVCacheHitTable(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
-	table, err = diagnose.GetClusterInfoTable(startTime, endTime, cli)
-	c.Assert(err, IsNil)
-	printRows(table)
-
 	table, err = diagnose.GetClusterHardwareInfoTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
@@ -127,7 +88,6 @@ func printRows(t *diagnose.TableDef) {
 		fmt.Println("table is nil")
 		return
 	}
-	fmt.Println(t.CommentEN)
 
 	if len(t.Rows) == 0 {
 		fmt.Println("table rows is 0")
@@ -153,7 +113,9 @@ func printRows(t *diagnose.TableDef) {
 		fmt.Println(line)
 	}
 
+	fmt.Println(strings.Join(t.Category, " - "))
 	fmt.Println(t.Title)
+	fmt.Println(t.CommentEN)
 	printLine(t.Column, "")
 
 	for _, row := range t.Rows {

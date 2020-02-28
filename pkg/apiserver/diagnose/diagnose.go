@@ -99,7 +99,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 	// }
 	// tables = append(tables, table)
 
-	tables, errs := GetReportTables(startTime, endTime, db)
+	tables, errs := GetReportTablesForDisplay(startTime, endTime, db)
 	if len(errs) > 0 {
 		_ = c.Error(errs[0])
 		return

@@ -1481,7 +1481,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		if err != nil {
 			return &TableDef{}, err
 		}
-		if _,ok := m[s].disk[row[1]]; !ok {
+		if _, ok := m[s].disk[row[1]]; !ok {
 			m[s].disk[row[1]] = diskCnt
 		}
 	}

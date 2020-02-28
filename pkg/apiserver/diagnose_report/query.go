@@ -424,6 +424,20 @@ func convertFloatToInt(s string) string {
 	return fmt.Sprintf("%.0f", f)
 }
 
+func convertFloatToSize(s string) string {
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return s
+	}
+	if mb := f / float64(1024*1024); mb > 0 {
+		f = math.Round(mb*1000) / 1000
+		return fmt.Sprintf("%.3f MB", f)
+	}
+	kb := f / float64(1024)
+	f = math.Round(kb*1000) / 1000
+	return fmt.Sprintf("%.3f KB", f)
+}
+
 func RoundFloatString(s string) string {
 	f, err := strconv.ParseFloat(s, 64)
 	if err != nil {

@@ -76,9 +76,9 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 		GetTotalErrorTable,
 
 		// TiDB
+		GetTiDBTimeConsumeTable,
 		GetTiDBTxnTableData,
 		GetTiDBDDLOwner,
-		GetTiDBDDLInfoTable,
 
 		// PD
 		GetPDTimeConsumeTable,
@@ -87,9 +87,12 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 		// TiKV
 		GetTiKVTotalTimeConsumeTable,
 		GetTiKVErrorTable,
+		GetTiKVStoreInfo,
+		GetTiKVRegionSizeInfo,
 		GetTiKVCopInfo,
 		GetTiKVSchedulerInfo,
 		GetTiKVRaftInfo,
+		GetTiKVSnapshotInfo,
 		GetTiKVGCInfo,
 		GetTiKVTaskInfo,
 
@@ -158,8 +161,8 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef,
 		{name: "tidb_kv_backoff", tbl: "tidb_kv_backoff", labels: []string{"type"}, comment: "The time cost of TiDB transaction latch wait time on key value storage"},
 		{name: "tidb_kv_request", tbl: "tidb_kv_request", labels: []string{"type"}, comment: "The time cost of kv requests durations"},
 		{name: "tidb_slow_query", tbl: "tidb_slow_query", labels: []string{"instance"}, comment: "The time cost of TiDB slow query"},
-		{name: "tidb_slow_query_cop_process", tbl: "tidb_slow_query_cop_process", comment: "The time cost of TiDB slow query total cop process time"},
-		{name: "tidb_slow_query_cop_wait", tbl: "tidb_slow_query_cop_wait", comment: "The time cost of TiDB slow query total cop wait time"},
+		{name: "tidb_slow_query_cop_process", tbl: "tidb_slow_query_cop_process", labels: []string{"instance"}, comment: "The time cost of TiDB slow query total cop process time"},
+		{name: "tidb_slow_query_cop_wait", tbl: "tidb_slow_query_cop_wait", labels: []string{"instance"}, comment: "The time cost of TiDB slow query total cop wait time"},
 		{name: "tidb_ddl_handle_job", tbl: "tidb_ddl", labels: []string{"type"}, comment: "The time cost of handle TiDB DDL job"},
 		{name: "tidb_ddl_worker", tbl: "tidb_ddl_worker", labels: []string{"action"}, comment: "The time cost of DDL worker handle job"},
 		{name: "tidb_ddl_update_self_version", tbl: "tidb_ddl_update_self_version", labels: []string{"result"}, comment: "The time cost of TiDB schema syncer version update"},
@@ -290,6 +293,78 @@ func GetTotalErrorTable(startTime, endTime string, db *sql.DB) (*TableDef, error
 	}, nil
 }
 
+func GetTiDBTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []totalTimeByLabelsTableDef{
+		{name: "tidb_query", tbl: "tidb_query", labels: []string{"instance", "sql_type"}, comment: "The time cost of sql query"},
+		{name: "tidb_get_token(us)", tbl: "tidb_get_token", labels: []string{"instance"}, comment: "The time cost of session getting token to execute sql query"},
+		{name: "tidb_parse", tbl: "tidb_parse", labels: []string{"instance", "sql_type"}, comment: "The time cost of parse SQL"},
+		{name: "tidb_compile", tbl: "tidb_compile", labels: []string{"instance", "sql_type"}, comment: "The time cost of building the query plan"},
+		{name: "tidb_execute", tbl: "tidb_execute", labels: []string{"instance", "sql_type"}, comment: "The time cost of executing the SQL which does not include the time to get the results of the query"},
+		{name: "tidb_distsql_execution", tbl: "tidb_distsql_execution", labels: []string{"instance", "type"}, comment: "The time cost of distsql execution"},
+		{name: "tidb_cop", tbl: "tidb_cop", labels: []string{"instance"}, comment: "The time cost of kv storage coprocessor processing"},
+		{name: "tidb_transaction", tbl: "tidb_transaction", labels: []string{"instance", "sql_type", "type"}, comment: "The time cost of transaction execution durations, including retry"},
+		{name: "tidb_transaction_local_latch_wait", tbl: "tidb_transaction_local_latch_wait", labels: []string{"instance"}, comment: "The time cost of "},
+		{name: "tidb_kv_backoff", tbl: "tidb_kv_backoff", labels: []string{"instance", "type"}, comment: "The time cost of TiDB transaction latch wait time on key value storage"},
+		{name: "tidb_kv_request", tbl: "tidb_kv_request", labels: []string{"instance", "store", "type"}, comment: "The time cost of kv requests durations"},
+		{name: "tidb_slow_query", tbl: "tidb_slow_query", labels: []string{"instance"}, comment: "The time cost of TiDB slow query"},
+		{name: "tidb_slow_query_cop_process", tbl: "tidb_slow_query_cop_process", labels: []string{"instance"}, comment: "The time cost of TiDB slow query total cop process time"},
+		{name: "tidb_slow_query_cop_wait", tbl: "tidb_slow_query_cop_wait", labels: []string{"instance"}, comment: "The time cost of TiDB slow query total cop wait time"},
+		{name: "tidb_ddl_handle_job", tbl: "tidb_ddl", labels: []string{"instance", "type"}, comment: "The time cost of handle TiDB DDL job"},
+		{name: "tidb_ddl_worker", tbl: "tidb_ddl_worker", labels: []string{"instance", "type", "result", "action"}, comment: "The time cost of DDL worker handle job"},
+		{name: "tidb_ddl_update_self_version", tbl: "tidb_ddl_update_self_version", labels: []string{"instance", "result"}, comment: "The time cost of TiDB schema syncer version update"},
+		{name: "tidb_owner_handle_syncer", tbl: "tidb_owner_handle_syncer", labels: []string{"instance", "type", "result"}, comment: "The time cost of TiDB DDL owner operations on etcd"},
+		{name: "tidb_ddl_batch_add_index", tbl: "tidb_ddl_batch_add_index", labels: []string{"instance", "type"}, comment: "The time cost of TiDB batch add index"},
+		{name: "tidb_ddl_deploy_syncer", tbl: "tidb_ddl_deploy_syncer", labels: []string{"instance", "type", "result"}, comment: "The time cost of TiDB ddl schema syncer statistics, including init, start, watch, clear"},
+		{name: "tidb_load_schema", tbl: "tidb_load_schema", labels: []string{"instance"}, comment: "The time cost of TiDB loading schema"},
+		{name: "tidb_meta_operation", tbl: "tidb_meta_operation", labels: []string{"instance", "type", "result"}, comment: "The time cost of TiDB meta operations, including get/set schema and ddl jobs"},
+		{name: "tidb_auto_id_request", tbl: "tidb_auto_id_request", labels: []string{"instance", "type"}, comment: "The time cost of TiDB auto id, handle id requests"},
+		{name: "tidb_statistics_auto_analyze", tbl: "tidb_statistics_auto_analyze", labels: []string{"instance"}, comment: "The time cost of TiDB auto analyze"},
+		{name: "tidb_gc", tbl: "tidb_gc", labels: []string{"instance"}, comment: "The time cost of kv storage garbage collection"},
+		{name: "tidb_gc_push_task", tbl: "tidb_gc_push_task", labels: []string{"instance", "type"}, comment: "The time cost of kv storage range worker processing one task"},
+		{name: "tidb_batch_client_unavailable", tbl: "tidb_batch_client_unavailable", labels: []string{"instance"}, comment: "The time cost of kv storage batch processing unvailable"},
+		{name: "tidb_batch_client_wait", tbl: "tidb_batch_client_wait", labels: []string{"instance"}, comment: "The time cost of TiDB kv storage batch client wait request batch"},
+	}
+
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+
+	table := &TableDef{
+		Category:  []string{CategoryTiDB},
+		Title:     "Time Consume",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
+	}
+
+	resultRows := make([]TableRowDef, 0, len(defs))
+	arg := newQueryArg(startTime, endTime)
+	specialHandle := func(row []string) []string {
+		if arg.totalTime == 0 && len(row[3]) > 0 {
+			totalTime, err := strconv.ParseFloat(row[3], 64)
+			if err == nil {
+				arg.totalTime = totalTime
+			}
+		}
+		return row
+	}
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	table.Rows = resultRows
+	return table, nil
+}
+
 func GetTiDBTxnTableData(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []totalValueAndTotalCountTableDef{
 		{name: "tidb_transaction_retry_num", tbl: "tidb_transaction_retry_num", sumTbl: "tidb_transaction_retry_total_num", countTbl: "tidb_transaction_retry_num_total_count", labels: []string{"instance"}},
@@ -374,57 +449,6 @@ func GetTiDBDDLOwner(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		Column:    []string{"MIN_TIME", "DDL OWNER"},
 		Rows:      rows,
 	}
-	return table, nil
-}
-
-func GetTiDBDDLInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	defs1 := []totalTimeByLabelsTableDef{
-		{name: "tidb_ddl_handle_job", tbl: "tidb_ddl", labels: []string{"instance", "type"}, comment: "The time cost of handle TiDB DDL job"},
-		{name: "tidb_ddl_worker", tbl: "tidb_ddl_worker", labels: []string{"instance", "type", "result", "action"}, comment: "The time cost of DDL worker handle job"},
-		{name: "tidb_ddl_update_self_version", tbl: "tidb_ddl_update_self_version", labels: []string{"instance", "result"}, comment: "The time cost of TiDB schema syncer version update"},
-		{name: "tidb_owner_handle_syncer", tbl: "tidb_owner_handle_syncer", labels: []string{"instance", "type", "result"}, comment: "The time cost of TiDB DDL owner operations on etcd"},
-		{name: "tidb_ddl_batch_add_index", tbl: "tidb_ddl_batch_add_index", labels: []string{"instance", "type"}, comment: "The time cost of TiDB batch add index"},
-		{name: "tidb_ddl_deploy_syncer", tbl: "tidb_ddl_deploy_syncer", labels: []string{"instance", "type", "result"}, comment: "The time cost of TiDB ddl schema syncer statistics, including init, start, watch, clear"},
-		{name: "tidb_load_schema", tbl: "tidb_load_schema", labels: []string{"instance"}, comment: "The time cost of TiDB loading schema"},
-	}
-
-	defs := make([]rowQuery, 0, len(defs1))
-	for i := range defs1 {
-		defs = append(defs, defs1[i])
-	}
-
-	table := &TableDef{
-		Category:  []string{CategoryTiDB},
-		Title:     "Time Consume",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(defs))
-	arg := newQueryArg(startTime, endTime)
-	specialHandle := func(row []string) []string {
-		if arg.totalTime == 0 && len(row[3]) > 0 {
-			totalTime, err := strconv.ParseFloat(row[3], 64)
-			if err == nil {
-				arg.totalTime = totalTime
-			}
-		}
-		return row
-	}
-	appendRows := func(row TableRowDef) {
-		row.Values = specialHandle(row.Values)
-		for i := range row.SubValues {
-			row.SubValues[i] = specialHandle(row.SubValues[i])
-		}
-		resultRows = append(resultRows, row)
-	}
-
-	err := getTableRows(defs, arg, db, appendRows)
-	if err != nil {
-		return nil, err
-	}
-	table.Rows = resultRows
 	return table, nil
 }
 
@@ -519,6 +543,80 @@ func GetPDSchedulerInfo(startTime, endTime string, db *sql.DB) (*TableDef, error
 		{name: "blance-region-out", tbl: "pd_scheduler_balance_region", condition: "type='move-peer' and address like '%-out'", labels: []string{"address"}},
 	}
 
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return nil, err
+	}
+
+	return &TableDef{
+		Category:  []string{CategoryPD},
+		Title:     "blance leader/region",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},
+		Rows:      rows,
+	}, nil
+}
+
+func GetTiKVRegionSizeInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []totalValueAndTotalCountTableDef{
+		{name: "Approximate Region size", tbl: "tikv_approximate_region_size", sumTbl: "tikv_approximate_region_total_size", countTbl: "tikv_approximate_region_size_total_count", labels: []string{"instance"}},
+	}
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+	resultRows := make([]TableRowDef, 0, len(defs))
+
+	specialHandle := func(row []string) []string {
+		if len(row) == 8 {
+			// total value and total count is not right.
+			tmpRow := row[:2]
+			tmpRow = append(tmpRow, row[4:]...)
+			row = tmpRow
+		}
+		for i := 2; i < len(row); i++ {
+			if len(row[i]) == 0 {
+				continue
+			}
+			row[i] = convertFloatToSize(row[i])
+		}
+		return row
+	}
+
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+
+	quantiles := []float64{0.99, 0.90, 0.80, 0.50}
+	arg := &queryArg{
+		startTime: startTime,
+		endTime:   endTime,
+		quantiles: quantiles,
+	}
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	return &TableDef{
+		Category:  []string{CategoryTiKV},
+		Title:     "Approximate Region size",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "P99", "P90", "P80", "P50"},
+		Rows:      resultRows,
+	}, nil
+}
+
+func GetTiKVStoreInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []sumValueQuery{
+		{name: "store size", tbl: "tikv_engine_size", labels: []string{"instance", "type"}},
+	}
 	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
 	if err != nil {
 		return nil, err

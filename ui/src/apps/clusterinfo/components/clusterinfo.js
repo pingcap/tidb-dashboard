@@ -72,6 +72,7 @@ function wrapnode(node, comp, id) {
   }
   return {
     key: comp + '-' + id,
+    ip: node.ip,
     port: node.port,
     binary_path: node.binary_path,
     deploy_dir: node.deploy_dir,

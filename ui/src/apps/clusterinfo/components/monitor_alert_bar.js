@@ -1,4 +1,6 @@
 import React from 'react';
+import {Icon} from 'antd';
+import styles from './monitor_alert_bar.module.less';
 
 export default class MonitorAlertBar extends React.Component {
   render() {
@@ -12,13 +14,18 @@ export default class MonitorAlertBar extends React.Component {
       grafana = 'http://' + data.grafana.ip + ':' + data.grafana.port;
     }
     return (
-      <div>
-        <h2>Monitor and alert</h2>
+      <div className={styles.desc}>
+        <h2>MONITOR AND ALERT</h2>
         <a href={grafana}>
-          <p>Grafana</p>
+          <p>View Monitor <Icon type="right" style={{ marginLeft: '5px' }} /> </p>
         </a>
-        <a href={am}>
-          <p>AlertManager</p>
+        <a href={am} className={styles.warn}>
+          <p>View 5 Alerts <Icon type="right" style={{ marginLeft: '5px' }} /> </p>
+        </a>
+
+        <h2>PROBLEMS</h2>
+        <a href={""}>
+          <p>Run Diagnose <Icon type="right" style={{ marginLeft: '5px' }} /> </p>
         </a>
       </div>
     );

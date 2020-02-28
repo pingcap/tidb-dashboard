@@ -6,6 +6,7 @@ import { Component_panel, ComponentPanel, MonitorAlertBar } from './components';
 
 import client from '@/utils/client';
 
+
 const App = () => {
   const [loading, setLoading] = useState(true);
   const [cluster, setCluster] = useState({});
@@ -23,17 +24,22 @@ const App = () => {
 
   return (
     <Router>
-      <Row>
+      <Row style={{
+        background: '#fff',
+        padding: 24,
+        margin: 24,
+        minHeight: 700
+      }}>
         <Col span={16}>
           <Row gutter={[8, 16]}>
             <Col span={8}>
-              <ComponentPanel name={'tikv'} datas={cluster.data.tikv} />
+              <ComponentPanel name={'TIKV'} datas={cluster.data.tikv} />
             </Col>
             <Col span={8}>
-              <ComponentPanel name={'tidb'} datas={cluster.data.tidb} />
+              <ComponentPanel name={'TIDB'} datas={cluster.data.tidb} />
             </Col>
             <Col span={8}>
-              <ComponentPanel name={'pd'} datas={cluster.data.pd} />
+              <ComponentPanel name={'PD'} datas={cluster.data.pd} />
             </Col>
           </Row>
 
@@ -41,7 +47,9 @@ const App = () => {
 
           <Component_panel data={cluster.data} />
         </Col>
-        <Col span={8}>
+        <Col span={8} style={{
+          padding: 20
+        }}>
           <MonitorAlertBar data={cluster.data} />
         </Col>
       </Row>

@@ -1,0 +1,205 @@
+METRIC_NAME                |    instance             |    AVG            |    MAX            |    MIN
+node_cpu_usage             |                         |    12             |    93.58          |    0              |    the CPU useage in each node
+                           |    172.16.5.40:19110    |    12             |    93.58          |    0
+node_disk_write_latency    |                         |    0              |    0.0003         |    0              |    the disk write latency in each node
+                           |    172.16.5.40:19110    |    0              |    0.0003         |    0
+node_disk_read_latency     |                         |                   |                   |                   |    the node disk read latency in each node
+                           |    172.16.5.40:19110    |                   |                   |
+
+
+process cpu usage
+instance             |    job                    |    AVG         |    MAX         |    MIN
+172.16.5.40:24799    |    pd                     |    0.1         |    0.11        |    0.1         |    the cpu usage
+172.16.5.40:24151    |    tikv                   |    0.08        |    0.1         |    0.05        |    the cpu usage
+172.16.5.40:23151    |    tikv                   |    0.08        |    0.1         |    0.04        |    the cpu usage
+172.16.5.40:21151    |    tikv                   |    0.07        |    0.1         |    0.04        |    the cpu usage
+172.16.5.40:20151    |    tikv                   |    0.03        |    0.04        |    0.03        |    the cpu usage
+172.16.5.40:22151    |    tikv                   |    0.03        |    0.03        |    0.03        |    the cpu usage
+172.16.5.40:10089    |    tidb                   |    0.02        |    0.03        |    0.01        |    the cpu usage
+172.16.5.40:19110    |    overwritten-nodes      |    0.02        |    0.02        |    0.01        |    the cpu usage
+172.16.5.40:9099     |    overwritten-cluster    |    0.0008      |    0.001       |    0.0007      |    the cpu usage
+
+
+goroutines count
+instance             |    job         |    AVG         |    MAX         |    MIN
+172.16.5.40:10089    |    tidb        |    496.8       |    498         |    496         |    The goroutine count of each instance
+172.16.5.40:24799    |    pd          |    118         |    118         |    118         |    The goroutine count of each instance
+
+
+Error
+METRIC_NAME     |    instance             |    AVG            |    MAX            |    MIN
+raftstore       |                         |    0              |    0.03           |    0              |    The CPU usage of each TiKV raftstore
+                |    172.16.5.40:23151    |    0              |    0.03           |    0.004
+                |    172.16.5.40:24151    |    0              |    0.03           |    0.004
+                |    172.16.5.40:21151    |    0              |    0.02           |    0.003
+                |    172.16.5.40:20151    |    0              |    0.0002         |    0
+                |    172.16.5.40:22151    |    0              |    0              |    0
+apply           |                         |    0              |    0.0002         |    0              |    The CPU usage of each TiKV apply
+                |    172.16.5.40:21151    |    0              |    0.0002         |    0
+                |    172.16.5.40:24151    |    0              |    0              |    0
+                |    172.16.5.40:20151    |    0              |    0              |    0
+                |    172.16.5.40:22151    |    0              |    0              |    0
+                |    172.16.5.40:23151    |    0              |    0              |    0
+sched_worker    |                         |    0              |    0              |    0              |    The CPU usage of each TiKV sched_worker
+                |    172.16.5.40:24151    |    0              |    0              |    0
+                |    172.16.5.40:20151    |    0              |    0              |    0
+                |    172.16.5.40:21151    |    0              |    0              |    0
+                |    172.16.5.40:22151    |    0              |    0              |    0
+                |    172.16.5.40:23151    |    0              |    0              |    0
+snap            |                         |    0              |    0.0002         |    0              |    The CPU usage of each TiKV snapshot
+                |    172.16.5.40:22151    |    0              |    0.0002         |    0
+                |    172.16.5.40:21151    |    0              |    0.0002         |    0
+                |    172.16.5.40:20151    |    0              |    0.0002         |    0
+                |    172.16.5.40:23151    |    0              |    0.0002         |    0
+                |    172.16.5.40:24151    |    0              |    0              |    0
+cop             |                         |    0              |    0.0007         |    0              |    The CPU usage of each TiKV coporssesor
+                |    172.16.5.40:23151    |    0              |    0.0007         |    0
+                |    172.16.5.40:24151    |    0              |    0.0004         |    0
+                |    172.16.5.40:21151    |    0              |    0.0002         |    0
+                |    172.16.5.40:20151    |    0              |    0              |    0
+                |    172.16.5.40:22151    |    0              |    0              |    0
+grpc            |                         |    0              |    0.007          |    0              |    The CPU usage of each TiKV grpc
+                |    172.16.5.40:24151    |    0              |    0.007          |    0
+                |    172.16.5.40:23151    |    0              |    0.007          |    0
+                |    172.16.5.40:21151    |    0              |    0.007          |    0
+                |    172.16.5.40:20151    |    0              |    0.0009         |    0
+                |    172.16.5.40:22151    |    0              |    0.0007         |    0
+rocksdb         |                         |    0              |    0.0009         |    0              |    The CPU usage of each TiKV rocksdb
+                |    172.16.5.40:23151    |    0              |    0.0009         |    0
+                |    172.16.5.40:22151    |    0              |    0.0007         |    0
+                |    172.16.5.40:24151    |    0              |    0.0009         |    0
+                |    172.16.5.40:20151    |    0              |    0.0007         |    0
+                |    172.16.5.40:21151    |    0              |    0.0007         |    0
+gc              |                         |    0              |    0.007          |    0              |    The CPU usage of each TiKV gc
+                |    172.16.5.40:24151    |    0              |    0.007          |    0
+                |    172.16.5.40:23151    |    0              |    0.001          |    0
+                |    172.16.5.40:21151    |    0              |    0.0009         |    0
+                |    172.16.5.40:20151    |    0              |    0              |    0
+                |    172.16.5.40:22151    |    0              |    0              |    0
+split_check     |                         |    0              |    0              |    0              |    The CPU usage of each TiKV split_check
+                |    172.16.5.40:21151    |    0              |    0              |    0
+                |    172.16.5.40:22151    |    0              |    0              |    0
+                |    172.16.5.40:23151    |    0              |    0              |    0
+                |    172.16.5.40:24151    |    0              |    0              |    0
+                |    172.16.5.40:20151    |    0              |    0              |    0
+
+
+Error
+METRIC_NAME     |    instance             |    AVG            |    MAX             |    MIN
+region_score    |                         |    864690636      |    865520129.64    |    864413319.38    |    The region score status in PD
+                |    172.16.5.40:22150    |    864770349      |    865520129.64    |    864567443.3
+                |    172.16.5.40:20150    |    864757788      |    865507705.66    |    864554948.78
+                |    172.16.5.40:21150    |    864659680      |    865409782.17    |    864456683.81
+                |    172.16.5.40:24150    |    864649093      |    865399212.42    |    864446076.71
+                |    172.16.5.40:23150    |    864616270      |    865366567.43    |    864413319.38
+leader_score    |                         |    376            |    631             |    2               |    The leader score status in PD
+                |    172.16.5.40:23150    |    631            |    631             |    631
+                |    172.16.5.40:21150    |    623            |    623             |    623
+                |    172.16.5.40:24150    |    621            |    621             |    621
+                |    172.16.5.40:20150    |    3              |    3               |    3
+                |    172.16.5.40:22150    |    2              |    2               |    2
+region_count    |                         |    1128           |    1880            |    2               |    The region count status in PD
+                |    172.16.5.40:24150    |    1880           |    1880            |    1880
+                |    172.16.5.40:23150    |    1879           |    1879            |    1879
+                |    172.16.5.40:21150    |    1876           |    1876            |    1876
+                |    172.16.5.40:20150    |    3              |    3               |    3
+                |    172.16.5.40:22150    |    2              |    2               |    2
+leader_count    |                         |    376            |    631             |    2               |    The region score status in PD
+                |    172.16.5.40:23150    |    631            |    631             |    631
+                |    172.16.5.40:21150    |    623            |    623             |    623
+                |    172.16.5.40:24150    |    621            |    621             |    621
+                |    172.16.5.40:20150    |    3              |    3               |    3
+                |    172.16.5.40:22150    |    2              |    2               |    2
+region_size     |                         |    1949           |    3249            |    99              |    The region size status in PD
+                |    172.16.5.40:24150    |    3249           |    3249            |    3249
+                |    172.16.5.40:23150    |    3154           |    3154            |    3154
+                |    172.16.5.40:21150    |    3037           |    3037            |    3037
+                |    172.16.5.40:20150    |    208            |    208             |    208
+                |    172.16.5.40:22150    |    99             |    99              |    99
+leader_size     |                         |    650            |    1094            |    99              |    The leader size status in PD
+                |    172.16.5.40:23150    |    1094           |    1094            |    1094
+                |    172.16.5.40:21150    |    925            |    925             |    925
+                |    172.16.5.40:24150    |    923            |    923             |    923
+                |    172.16.5.40:20150    |    208            |    208             |    208
+                |    172.16.5.40:22150    |    99             |    99              |    99
+
+
+cluster status
+TYPE                        |    MAX              |    MIN
+storage_capacity            |    7866165493760    |    7866165493760    |    The pd cluster status
+storage_size                |    3045989751       |    3045959759       |    The pd cluster status
+store_up_count              |    5                |    5                |    The pd cluster status
+region_count                |    5640             |    5640             |    The pd cluster status
+store_down_count            |    0                |    0                |    The pd cluster status
+store_low_space_count       |    0                |    0                |    The pd cluster status
+store_unhealth_count        |    0                |    0                |    The pd cluster status
+store_offline_count         |    0                |    0                |    The pd cluster status
+store_tombstone_count       |    0                |    0                |    The pd cluster status
+leader_count                |    1880             |    1880             |    The pd cluster status
+store_disconnected_count    |    0                |    0                |    The pd cluster status
+
+
+etcd status
+TYPE              |    MAX       |    MIN
+committedIndex    |    630308    |    630218    |    The pd etcd status
+appliedIndex      |    630308    |    630218    |    The pd etcd status
+term              |    3         |    3         |    The pd etcd status
+
+
+cache hit
+METRIC_NAME                 |    TPYE            |    AVG            |    MAX            |    MIN
+tikv_memtable_hit           |                    |    0.26           |    0.5            |    0
+tikv_block_all_cache_hit    |                    |    0.95           |    1              |    0.71
+                            |    index           |    1              |    1              |    1
+                            |    filter          |    1              |    1              |    1
+                            |    data            |    0.93           |    1              |    0.58
+                            |    bloom_prefix    |    0.66           |    0.98           |    0.5
+
+
+cluster info
+TYPE              |    INSTANCE           |    STATUS_ADDRESS     |    VERSION             |    GIT_HASH                                    |    START_TIME                   |    UPTIME
+tidb              |    0.0.0.0:4000       |    0.0.0.0:10080      |    5.7.25-TiDB-None    |    None                                        |    2020-02-27T20:47:39+08:00    |    2h46m4.864411849s      |    The info of each node
+pd                |    127.0.0.1:2379     |    127.0.0.1:2379     |    4.1.0-alpha         |    3b82b565534411848f7125bd1eeea43f941c9f2b    |    2020-02-27T10:17:02+08:00    |    13h16m41.864415433s    |    The info of each node
+tikv              |    127.0.0.1:20160    |    127.0.0.1:20180    |    4.1.0-alpha         |    2db4974f1ab77f228217a6bebdd0a318a1a7f524    |    2020-02-27T10:17:36+08:00    |    13h16m7.864416906s     |    The info of each node
+
+
+cluster hardware
+HOST           |    INSTANCE        |    CPU_CORES      |    MEMORY (GB)    |    DISK (GB)                                                                                                                                                                                                                                                                                                                                                                                                        |    UPTIME
+0.0.0.0        |    tidb*1          |    1/2            |    3.843548       |    /dev/loop10 : 0.000977
+/dev/loop11 : 0.000977
+/dev/loop15 : 0.003662
+/dev/loop4 : 0.146484
+/dev/loop5 : 0.053223
+/dev/loop8 : 0.086426
+/dev/loop14 : 0.003662
+/dev/loop7 : 0.043945
+/dev/loop0 : 0.014404
+/dev/loop1 : 0.004150
+/dev/loop12 : 0.089233
+/dev/loop13 : 0.053467
+/dev/sda1 : 39.120331
+/dev/loop2 : 0.014404
+/dev/loop3 : 0.041870
+/dev/loop6 : 0.156494
+/dev/loop9 : 0.004028
+                     |                   |    The hardwareInfo of each node
+127.0.0.1      |    pd*1 tikv*1     |    5/10           |    3.847301       |    /dev/loop2 : 0.014404
+/dev/loop4 : 0.146484
+/dev/loop8 : 0.086426
+/dev/sda1 : 39.120331
+/dev/loop1 : 0.004150
+/dev/loop10 : 0.000977
+/dev/loop14 : 0.003662
+/dev/loop15 : 0.003662
+/dev/loop13 : 0.053467
+/dev/loop6 : 0.156494
+/dev/loop0 : 0.014404
+/dev/loop11 : 0.000977
+/dev/loop12 : 0.089233
+/dev/loop3 : 0.041870
+/dev/loop5 : 0.053223
+/dev/loop7 : 0.043945
+/dev/loop9 : 0.004028
+sda1 : 39.120331
+    |
+172.16.5.40    |                    |    0/0            |    0.000000       |

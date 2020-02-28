@@ -1438,7 +1438,6 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		WHERE device_type='cpu'
 		group by instance,type,VALUE,NAME HAVING NAME = 'cpu-physical-cores' 
 		OR NAME = 'cpu-logical-cores' ORDER BY INSTANCE `
-	sql := "SELECT instance,type,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='cpu' and name = 'cpu-physical-cores' group by instance,type,VALUE"
 	rows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err

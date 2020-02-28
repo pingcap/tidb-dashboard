@@ -100,6 +100,7 @@ class App extends React.PureComponent {
                   {this.renderAppMenuItem('demo')}
                 </Menu.SubMenu>
               ) : null}
+              {this.renderAppMenuItem('clusterinfo')}
             </Menu>
           </Layout.Sider>
           <Layout>

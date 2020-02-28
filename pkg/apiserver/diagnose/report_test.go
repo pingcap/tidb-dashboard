@@ -1,9 +1,9 @@
-package diagnose_report_test
+package diagnose_test
 
 import (
 	"database/sql"
 	"fmt"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose_report"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose"
 	. "github.com/pingcap/check"
 	"testing"
 )
@@ -25,7 +25,7 @@ func (t *testReportSuite) TestReport(c *C) {
 	startTime := "2020-02-27 19:20:23"
 	endTime := "2020-02-27 21:20:23"
 
-	tables, errs := diagnose_report.GetReportTables(startTime, endTime, cli)
+	tables, errs := diagnose.GetReportTables(startTime, endTime, cli)
 	for _, tbl := range tables {
 		printRows(tbl)
 	}
@@ -49,49 +49,49 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	startTime := "2020-02-27 20:00:00"
 	endTime := "2020-02-27 21:00:00"
 
-	var table *diagnose_report.TableDef
+	var table *diagnose.TableDef
 	var err error
-	table, err = diagnose_report.GetTiKVRegionSizeInfo(startTime, endTime, cli)
+	table, err = diagnose.GetTiKVRegionSizeInfo(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetAvgMaxMinTable(startTime, endTime, cli)
+	table, err = diagnose.GetAvgMaxMinTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetCPUUsageTable(startTime, endTime, cli)
+	table, err = diagnose.GetCPUUsageTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetGoroutinesCountTable(startTime, endTime, cli)
+	table, err = diagnose.GetGoroutinesCountTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetTiKVThreadCPUTable(startTime, endTime, cli)
+	table, err = diagnose.GetTiKVThreadCPUTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetStoreStatusTable(startTime, endTime, cli)
+	table, err = diagnose.GetStoreStatusTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetPDClusterStatusTable(startTime, endTime, cli)
+	table, err = diagnose.GetPDClusterStatusTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetPDEtcdStatusTable(startTime, endTime, cli)
+	table, err = diagnose.GetPDEtcdStatusTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetTiKVCacheHitTable(startTime, endTime, cli)
+	table, err = diagnose.GetTiKVCacheHitTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetClusterInfoTable(startTime, endTime, cli)
+	table, err = diagnose.GetClusterInfoTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetClusterHardwareInfoTable(startTime, endTime, cli)
+	table, err = diagnose.GetClusterHardwareInfoTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 }
@@ -117,12 +117,12 @@ func (t *testReportSuite) TestRoundFloatString(c *C) {
 		{"65.20832000000001", "65.21"},
 	}
 	for _, cas := range cases {
-		result := diagnose_report.RoundFloatString(cas.in)
+		result := diagnose.RoundFloatString(cas.in)
 		c.Assert(result, Equals, cas.out)
 	}
 }
 
-func printRows(t *diagnose_report.TableDef) {
+func printRows(t *diagnose.TableDef) {
 	if t == nil {
 		fmt.Println("table is nil")
 		return

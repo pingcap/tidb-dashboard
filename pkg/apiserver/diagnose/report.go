@@ -1,4 +1,4 @@
-package diagnose_report
+package diagnose
 
 import (
 	"database/sql"

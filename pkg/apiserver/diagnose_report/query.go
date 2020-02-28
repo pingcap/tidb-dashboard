@@ -32,6 +32,7 @@ type sumValueQuery struct {
 	tbl       string
 	condition string
 	labels    []string
+	comment   string
 }
 
 // Table schema
@@ -57,7 +58,7 @@ func (t sumValueQuery) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error)
 		return t.genRow(rows[0], nil), nil
 	}
 
-	sql = fmt.Sprintf("select '%[1]v',`%[2]v`, sum(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` order by sum(value) desc",
+	sql = fmt.Sprintf("select '%[1]v',`%[2]v`, sum(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` having sum(value) > 0 order by sum(value) desc",
 		t.name, strings.Join(t.labels, "`,`"), t.tbl, condition)
 	subRows, err := querySQL(db, sql)
 	if err != nil {
@@ -86,17 +87,18 @@ func (t sumValueQuery) genRow(values []string, subValues [][]string) *TableRowDe
 	for i := range subValues {
 		subValues[i] = specialHandle(subValues[i])
 	}
-
 	return &TableRowDef{
 		Values:    values,
 		SubValues: subValues,
+		Comment:   genComment(t.comment, t.labels),
 	}
 }
 
 type totalTimeByLabelsTableDef struct {
-	name   string
-	tbl    string
-	labels []string
+	name    string
+	tbl     string
+	labels  []string
+	comment string
 }
 
 // Table schema
@@ -148,7 +150,7 @@ func (t totalTimeByLabelsTableDef) genRow(values []string, subValues [][]string)
 			if len(row[3]) == 0 {
 				return row
 			}
-			for i := range []int{2, 3, 5, 6, 7, 8} {
+			for _, i := range []int{2, 3, 5, 6, 7, 8} {
 				v, err := strconv.ParseFloat(row[i], 64)
 				if err == nil {
 					row[i] = fmt.Sprintf("%f", v/10e5)
@@ -173,6 +175,7 @@ func (t totalTimeByLabelsTableDef) genRow(values []string, subValues [][]string)
 	return &TableRowDef{
 		Values:    values,
 		SubValues: subValues,
+		Comment:   genComment(t.comment, t.labels),
 	}
 }
 
@@ -208,7 +211,7 @@ func (t totalTimeByLabelsTableDef) genDetailSQLs(totalTime float64, startTime, e
 	}
 	joinSql := "select t0.*,t1.total_count"
 	sqls := []string{
-		fmt.Sprintf("select '%[1]s', `%[6]s`, if(%[2]v>0,sum(value)/%[2]v,1) , sum(value) as total from metrics_schema.%[3]s_total_time where time >= '%[4]s' and time < '%[5]s' group by `%[6]s`",
+		fmt.Sprintf("select '%[1]s', `%[6]s`, if(%[2]v>0,sum(value)/%[2]v,1) , sum(value) as total from metrics_schema.%[3]s_total_time where time >= '%[4]s' and time < '%[5]s' group by `%[6]s` having sum(value) > 0",
 			t.name, totalTime, t.tbl, startTime, endTime, strings.Join(t.labels, "`,`")),
 
 		fmt.Sprintf("select `%[4]s`, sum(value) as total_count from metrics_schema.%[1]s_total_count where time >= '%[2]s' and time < '%[3]s' group by `%[4]s`",
@@ -246,6 +249,7 @@ type totalValueAndTotalCountTableDef struct {
 	sumTbl   string
 	countTbl string
 	labels   []string
+	comment  string
 }
 
 // Table schema
@@ -297,6 +301,7 @@ func (t totalValueAndTotalCountTableDef) genRow(values []string, subValues [][]s
 	return &TableRowDef{
 		Values:    values,
 		SubValues: subValues,
+		Comment:   genComment(t.comment, t.labels),
 	}
 }
 
@@ -332,7 +337,7 @@ func (t totalValueAndTotalCountTableDef) genDetailSQLs(startTime, endTime string
 	}
 	joinSql := "select t0.*,t1.count"
 	sqls := []string{
-		fmt.Sprintf("select '%[1]s', `%[5]s` , sum(value) as total from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' group by `%[5]s`",
+		fmt.Sprintf("select '%[1]s', `%[5]s` , sum(value) as total from metrics_schema.%[2]s where time >= '%[3]s' and time < '%[4]s' group by `%[5]s` having sum(value) > 0",
 			t.name, t.sumTbl, startTime, endTime, strings.Join(t.labels, "`,`")),
 		fmt.Sprintf("select `%[4]s`, sum(value) as count from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s' group by `%[4]s`",
 			t.countTbl, startTime, endTime, strings.Join(t.labels, "`,`")),
@@ -455,4 +460,14 @@ func RoundFloatString(s string) string {
 		return str[:len(str)-1]
 	}
 	return str
+}
+
+func genComment(comment string, labels []string) string {
+	if len(labels) > 0 {
+		if len(comment) > 0 {
+			comment += ","
+		}
+		comment = fmt.Sprintf("%s the label is [%s]", comment, strings.Join(labels, ", "))
+	}
+	return comment
 }

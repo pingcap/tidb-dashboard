@@ -34,6 +34,8 @@ import (
 	"sync"
 	"syscall"
 
+	http2 "github.com/pingcap-incubator/tidb-dashboard/pkg/http"
+
 	"github.com/joho/godotenv"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
@@ -133,10 +135,13 @@ func main() {
 		_ = store.Close()
 		log.Fatal("Cannot create etcd client", zap.Error(err))
 	}
+
 	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(), etcdProvider)
 	// FIXME: Handle open error
 	tidbForwarder.Open()        //nolint:errcheck
 	defer tidbForwarder.Close() //nolint:errcheck
+
+	httpcli := http2.NewHTTPClientWithConf(cliConfig.CoreConfig)
 
 	// key visual
 	remoteDataProvider := &keyvisualregion.PDDataProvider{
@@ -153,6 +158,8 @@ func main() {
 		Store:         store,
 		KeyVisual:     keyvisualService,
 		TiDBForwarder: tidbForwarder,
+		EtcdProvider:  etcdProvider,
+		HTTPClient:    httpcli,
 	}
 	mux := http.DefaultServeMux
 	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))

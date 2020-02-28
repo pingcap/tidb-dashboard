@@ -7,9 +7,9 @@ import * as authUtil from '@/utils/auth';
 import * as routingUtil from '@/utils/routing';
 
 let DASHBOARD_API_URL_PERFIX = 'http://127.0.0.1:12333';
-if (process.env.DASHBOARD_API_URL_PERFIX !== undefined) {
+if (process.env.REACT_APP_DASHBOARD_API_URL !== undefined) {
   // Accept empty string as dashboard API URL as well.
-  DASHBOARD_API_URL_PERFIX = process.env.DASHBOARD_API_URL_PERFIX;
+  DASHBOARD_API_URL_PERFIX = process.env.REACT_APP_DASHBOARD_API_URL;
 }
 
 export const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}/dashboard/api`;

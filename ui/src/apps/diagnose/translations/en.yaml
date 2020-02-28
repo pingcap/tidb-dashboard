@@ -4,5 +4,5 @@ diagnose:
     start_time: Start Time
     end_time: End Time
   gen_report: Generate Diagnose Report
-  keep_wait: It takes some time, keep patience
+  keep_wait: It takes some time, keep patient
   open_link: In case the browser blocks opening the new tab, please open the link manually

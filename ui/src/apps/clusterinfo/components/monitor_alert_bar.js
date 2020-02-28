@@ -7,10 +7,10 @@ export default class MonitorAlertBar extends React.Component {
     let grafana = '';
     let am = '';
     const data = this.props.data;
-    if (data.alert_manager !== null && data.alert_manager.err === null) {
+    if (data.alert_manager !== null) {
       am = 'http://' + data.alert_manager.ip + ':' + data.alert_manager.port;
     }
-    if (data.grafana !== null && data.grafana.err === null) {
+    if (data.grafana !== null) {
       grafana = 'http://' + data.grafana.ip + ':' + data.grafana.port;
     }
     return (

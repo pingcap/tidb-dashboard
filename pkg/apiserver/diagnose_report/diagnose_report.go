@@ -23,6 +23,7 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
@@ -50,7 +51,7 @@ func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstor
 
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/diagnose")
-	endpoint.POST("/reports", auth.MWAuthRequired(), s.genReportHandler)
+	endpoint.POST("/reports", auth.MWAuthRequired(), utils.MWConnectTiDB(s.tidbForwarder), s.genReportHandler)
 	endpoint.GET("/reports/:id", s.reportHandler)
 }
 
@@ -64,6 +65,9 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) genReportHandler(c *gin.Context) {
+	// uncomment it to get gorm.DB
+	// db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
+
 	dbDSN := fmt.Sprintf("root:%s@tcp(%s)/%s", "", "172.16.5.40:4009", "test")
 	// dbDSN := fmt.Sprintf("root:%s@tcp(%s)/%s", "", "127.0.0.1:4000", "test")
 	db, err := sql.Open("mysql", dbDSN)

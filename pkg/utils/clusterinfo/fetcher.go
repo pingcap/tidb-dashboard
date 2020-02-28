@@ -222,12 +222,19 @@ func GetTiDBTopologyFromOld(ctx context.Context, etcdclient *clientv3.Client) ([
 	}
 	dbInfo := []TiDBInfo{}
 	for _, v := range resp.Kvs {
-		var currentInfo TiDBInfo
+		var currentInfo TiDBOldInfo
 		if err = json.Unmarshal(v.Value, &currentInfo); err != nil {
 			continue
 		}
 		currentInfo.Status = ComponentStatusUp
-		dbInfo = append(dbInfo, currentInfo)
+		dbInfo = append(dbInfo, TiDBInfo{
+			Version:    currentInfo.Version,
+			IP:         currentInfo.IP,
+			Port:       currentInfo.Port,
+			BinaryPath: "",
+			Status:     ComponentStatusUp,
+			StatusPort: currentInfo.StatusPort,
+		})
 	}
 	return dbInfo, nil
 }

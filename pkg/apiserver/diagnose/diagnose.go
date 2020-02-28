@@ -78,25 +78,32 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		_ = c.Error(fmt.Errorf("invalid begin_time or end_time"))
 		return
 	}
-	tables := []*TableDef{}
-	table, err := GetTotalErrorTable(startTime, endTime, db)
-	if err != nil {
-		_ = c.Error(err)
+
+	// tables := []*TableDef{}
+	// table, err := GetTotalErrorTable(startTime, endTime, db)
+	// if err != nil {
+	// 	_ = c.Error(err)
+	// 	return
+	// }
+	// tables = append(tables, table)
+	// table, err = GetTiDBGCConfigInfo(startTime, endTime, db)
+	// if err != nil {
+	// 	_ = c.Error(err)
+	// 	return
+	// }
+	// tables = append(tables, table)
+	// table, err = GetTiKVErrorTable(startTime, endTime, db)
+	// if err != nil {
+	// 	_ = c.Error(err)
+	// 	return
+	// }
+	// tables = append(tables, table)
+
+	tables, errs := GetReportTables(startTime, endTime, db)
+	if len(errs) > 0 {
+		_ = c.Error(errs[0])
 		return
 	}
-	tables = append(tables, table)
-	table, err = GetTiDBGCConfigInfo(startTime, endTime, db)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	tables = append(tables, table)
-	table, err = GetTiKVErrorTable(startTime, endTime, db)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	tables = append(tables, table)
 
 	content, err := json.Marshal(tables)
 	if err != nil {

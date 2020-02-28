@@ -236,7 +236,7 @@ func GetTiDBTopologyFromOld(ctx context.Context, etcdclient *clientv3.Client) ([
 		dbInfo = append(dbInfo, TiDBInfo{
 			Version:    currentInfo.Version,
 			IP:         currentInfo.IP,
-			Port:       currentInfo.Port,
+			Port:       currentInfo.ListeningPort,
 			BinaryPath: "",
 			Status:     ComponentStatusUp,
 			StatusPort: currentInfo.StatusPort,

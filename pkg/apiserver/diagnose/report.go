@@ -1364,7 +1364,7 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *gorm.DB) (*TableDef, er
 type hardWare struct {
 	instance string
 	Type     map[string]int
-	cpu      int
+	cpu      map[string]int
 	memory   float64
 	disk     map[string]float64
 	uptime   string
@@ -1379,7 +1379,11 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		CommentCN: "",
 		Column:    []string{"HOST", "INSTANCE", "CPU_CORES", "MEMORY (GB)", "DISK (GB)", "UPTIME (DAY)"},
 	}
-	sql := "SELECT instance,type,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='cpu' and name = 'cpu-physical-cores' group by instance,type,VALUE"
+	sql := `SELECT instance,type,NAME,VALUE
+		FROM information_schema.CLUSTER_HARDWARE
+		WHERE device_type='cpu'
+		group by instance,type,VALUE,NAME HAVING NAME = 'cpu-physical-cores' 
+		OR NAME = 'cpu-logical-cores' ORDER BY INSTANCE `
 	rows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
@@ -1389,7 +1393,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 	for _, row := range rows {
 		idx := strings.Index(row[0], ":")
 		s := row[0][:idx]
-		cpuCnt, err := strconv.Atoi(row[2])
+		cpuCnt, err := strconv.Atoi(row[3])
 		if err != nil {
 			return &TableDef{}, err
 		}
@@ -1399,8 +1403,11 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 			} else {
 				m[s].Type[row[1]] = 1
 			}
+			if _, ok := m[s].cpu[row[2]]; !ok {
+				m[s].cpu[row[2]] = cpuCnt
+			}
 		} else {
-			m[s] = &hardWare{s, map[string]int{row[1]: 1}, cpuCnt, 0, make(map[string]float64), ""}
+			m[s] = &hardWare{s, map[string]int{row[1]: 1}, make(map[string]int), 0, make(map[string]float64), ""}
 		}
 	}
 	sql = "SELECT instance,value FROM information_schema.CLUSTER_HARDWARE WHERE device_type='memory' and name = 'capacity' group by instance,value"
@@ -1427,7 +1434,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		if err != nil {
 			return &TableDef{}, err
 		}
-		if _,ok := m[s].disk[row[1]]; !ok {
+		if _, ok := m[s].disk[row[1]]; !ok {
 			m[s].disk[row[1]] = diskCnt
 		}
 	}
@@ -1447,7 +1454,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		if _, ok := m[s]; ok {
 			m[s].uptime = row[1]
 		} else {
-			m[s] = &hardWare{s, make(map[string]int), 0, 0, make(map[string]float64), ""}
+			m[s] = &hardWare{s, make(map[string]int), nil, 0, make(map[string]float64), ""}
 		}
 	}
 	rows = rows[:0]
@@ -1455,9 +1462,9 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		row := make([]string, 6)
 		row[0] = v.instance
 		for k, va := range v.Type {
-			row[1] += fmt.Sprintf("%[1]s*%[2]s ", k, strconv.Itoa(va))
+			row[1] += fmt.Sprintf("%[1]s*%[2]s ", k, strconv.Itoa(va/2))
 		}
-		row[2] = strconv.Itoa(v.cpu) + "/" + strconv.Itoa(v.cpu*2)
+		row[2] = strconv.Itoa(v.cpu["cpu-physical-cores"]) + "/" + strconv.Itoa(v.cpu["cpu-logical-cores"])
 		row[3] = fmt.Sprintf("%f", v.memory/(1024*1024*1024))
 		for k, va := range v.disk {
 			row[4] += fmt.Sprintf("%[1]s: %[2]f    ", k, va/(1024*1024*1024))

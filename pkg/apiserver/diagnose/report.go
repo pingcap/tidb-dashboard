@@ -169,7 +169,7 @@ func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (*TableDef, error
 	table := &TableDef{
 		Category:  []string{CategoryDiagnose},
 		Title:     "diagnose",
-		CommentEN: "",
+		CommentEN: "Automatically diagnose the cluster problem and record the problem in below table.",
 		CommentCN: "",
 		Column:    []string{"RULE", "ITEM", "TYPE", "INSTANCE", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
 		Rows:      rows,
@@ -253,9 +253,19 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*TableDef
 	}
 
 	table := &TableDef{
-		Category:  []string{CategoryOverview},
-		Title:     "Time Consume",
-		CommentEN: "",
+		Category: []string{CategoryOverview},
+		Title:    "Time Consume",
+		CommentEN: `The table contain the event time consume in TiDB/TiKV/PD. 
+METRIC_NAME is the event name; 
+LABEL is the event label, such as instance, event type ...; 
+TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; 
+TOTAL_TIME is the total time cost of this event; 
+TOTAL_COUNT is the total count of this event; 
+P999 is the max time of 0.999 quantile; 
+P99 is the max time of 0.99 quantile; 
+P90 is the max time of 0.90 quantile; 
+P80 is the max time of 0.80 quantile; 
+`,
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
@@ -314,9 +324,13 @@ func GetTotalErrorTable(startTime, endTime string, db *gorm.DB) (*TableDef, erro
 	}
 
 	return &TableDef{
-		Category:  []string{CategoryOverview},
-		Title:     "Error",
-		CommentEN: "",
+		Category: []string{CategoryOverview},
+		Title:    "Error",
+		CommentEN: `The table contain the total count of error event. 
+METRIC_NAME is the error event name; 
+LABEL is the event label, such as instance, event type ...; 
+TOTAL_COUNT is the total count of this event; 
+`,
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},
 		Rows:      rows,
@@ -361,9 +375,19 @@ func GetTiDBTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*TableDef,
 	}
 
 	table := &TableDef{
-		Category:  []string{CategoryTiDB},
-		Title:     "Time Consume",
-		CommentEN: "",
+		Category: []string{CategoryTiDB},
+		Title:    "Time Consume",
+		CommentEN: `The table contain the event time consume in TiDB. 
+METRIC_NAME is the event name; 
+LABEL is the event label, such as instance, event type ...; 
+TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; 
+TOTAL_TIME is the total time cost of this event; 
+TOTAL_COUNT is the total count of this event; 
+P999 is the max time of 0.999 quantile; 
+P99 is the max time of 0.99 quantile; 
+P90 is the max time of 0.90 quantile; 
+P80 is the max time of 0.80 quantile; 
+`,
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
@@ -420,9 +444,18 @@ func GetTiDBTxnTableData(startTime, endTime string, db *gorm.DB) (*TableDef, err
 
 	quantiles := []float64{0.999, 0.99, 0.90, 0.80}
 	table := &TableDef{
-		Category:  []string{CategoryTiDB},
-		Title:     "Transaction",
-		CommentEN: "",
+		Category: []string{CategoryTiDB},
+		Title:    "Transaction",
+		CommentEN: `The table contain the TiDB transaction statistics information. 
+METRIC_NAME is the object name; 
+LABEL is the object label, such as instance, event type ...; 
+TOTAL_VALUE is the total size/value of this object; 
+TOTAL_COUNT is the total count of this object; 
+P999 is the max size/value of 0.999 quantile; 
+P99 is the max size/value of 0.99 quantile; 
+P90 is the max size/value of 0.90 quantile; 
+P80 is the max size/value of 0.80 quantile; 
+`,
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
@@ -495,7 +528,7 @@ func GetPDConfigInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) 
 	table := &TableDef{
 		Category:  []string{CategoryConfig},
 		Title:     "Scheduler Config",
-		CommentEN: "PD scheduler config change history",
+		CommentEN: "PD scheduler config change history. MIN_TIME is the minimum start effective time",
 		CommentCN: "",
 		Column:    []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
 		Rows:      rows,
@@ -514,9 +547,10 @@ func GetTiDBGCConfigInfo(startTime, endTime string, db *gorm.DB) (*TableDef, err
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{CategoryConfig},
-		Title:     "TiDB GC Config",
-		CommentEN: "PD scheduler config change history",
+		Category: []string{CategoryConfig},
+		Title:    "TiDB GC Config",
+		CommentEN: `PD scheduler config change history; 
+MIN_TIME is the minimum start effective time`,
 		CommentCN: "",
 		Column:    []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
 		Rows:      rows,
@@ -543,9 +577,19 @@ func GetPDTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*TableDef, e
 	}
 
 	table := &TableDef{
-		Category:  []string{CategoryPD},
-		Title:     "Time Consume",
-		CommentEN: "",
+		Category: []string{CategoryPD},
+		Title:    "Time Consume",
+		CommentEN: `The table contain the event time consume in PD. 
+METRIC_NAME is the event name; 
+LABEL is the event label, such as instance, event type ...; 
+TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; 
+TOTAL_TIME is the total time cost of this event; 
+TOTAL_COUNT is the total count of this event; 
+P999 is the max time of 0.999 quantile; 
+P99 is the max time of 0.99 quantile; 
+P90 is the max time of 0.90 quantile; 
+P80 is the max time of 0.80 quantile; 
+`,
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
@@ -567,10 +611,10 @@ func GetPDTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*TableDef, e
 
 func GetPDSchedulerInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
 	defs1 := []sumValueQuery{
-		{name: "blance-leader-in", tbl: "pd_scheduler_balance_leader", condition: "type='move-leader' and address like '%-in'", labels: []string{"address"}},
-		{name: "blance-leader-out", tbl: "pd_scheduler_balance_leader", condition: "type='move-leader' and address like '%-out'", labels: []string{"address"}},
-		{name: "blance-region-in", tbl: "pd_scheduler_balance_region", condition: "type='move-peer' and address like '%-in'", labels: []string{"address"}},
-		{name: "blance-region-out", tbl: "pd_scheduler_balance_region", condition: "type='move-peer' and address like '%-out'", labels: []string{"address"}},
+		{name: "blance-leader-in", tbl: "pd_scheduler_balance_leader", condition: "type='move-leader' and address like '%-in'", labels: []string{"address"}, comment: "blance-leader-in is the total count of leader move into the tikv store"},
+		{name: "blance-leader-out", tbl: "pd_scheduler_balance_leader", condition: "type='move-leader' and address like '%-out'", labels: []string{"address"}, comment: "blance-leader-out is the total count of leader move out the tikv store"},
+		{name: "blance-region-in", tbl: "pd_scheduler_balance_region", condition: "type='move-peer' and address like '%-in'", labels: []string{"address"}, comment: "blance-region-in is the total count of region move into the tikv store"},
+		{name: "blance-region-out", tbl: "pd_scheduler_balance_region", condition: "type='move-peer' and address like '%-out'", labels: []string{"address"}, comment: "blance-region-in is the total count of region move into the tikv store"},
 	}
 
 	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
@@ -696,9 +740,19 @@ func GetTiKVTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*Tabl
 	}
 
 	table := &TableDef{
-		Category:  []string{CategoryTiKV},
-		Title:     "Time Consume",
-		CommentEN: "",
+		Category: []string{CategoryTiKV},
+		Title:    "Time Consume",
+		CommentEN: `The table contain the event time consume in TiKV. 
+METRIC_NAME is the event name; 
+LABEL is the event label, such as instance, event type ...; 
+TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; 
+TOTAL_TIME is the total time cost of this event; 
+TOTAL_COUNT is the total count of this event; 
+P999 is the max time of 0.999 quantile; 
+P99 is the max time of 0.99 quantile; 
+P90 is the max time of 0.90 quantile; 
+P80 is the max time of 0.80 quantile; 
+`,
 		CommentCN: "",
 		Column:    []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}

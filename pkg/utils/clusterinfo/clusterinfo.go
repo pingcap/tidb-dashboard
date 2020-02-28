@@ -16,59 +16,45 @@ package clusterinfo
 type ComponentStatus uint
 
 const (
-	Up        ComponentStatus = 0
-	Offline   ComponentStatus = 1
-	Tombstone ComponentStatus = 2
-	Unknown   ComponentStatus = 3
+	ComponentStatusUnreachable ComponentStatus = 0
+	ComponentStatusUp          ComponentStatus = 1
+	ComponentStatusTombstone   ComponentStatus = 2
 )
 
-// ServerVersionInfo is the server version and git_hash.
-type ComponentVersionInfo struct {
-	Version string `json:"version"`
-	GitHash string `json:"git_hash"`
+type PDInfo struct {
+	Version    string          `json:"version"`
+	IP         string          `json:"ip"`
+	Port       uint            `json:"port"`
+	BinaryPath string          `json:"binary_path"`
+	Status     ComponentStatus `json:"status"`
 }
 
-type Common struct {
+type TiDBInfo struct {
+	Version    string          `json:"version"`
+	IP         string          `json:"ip"`
+	Port       uint            `json:"port"`
+	BinaryPath string          `json:"binary_path"`
+	Status     ComponentStatus `json:"status"`
+	StatusPort uint            `json:"status_port"`
+}
+
+type TiKVInfo struct {
+	Version    string            `json:"version"`
+	IP         string            `json:"ip"`
+	Port       uint              `json:"port"`
+	BinaryPath string            `json:"binary_path"`
+	Status     ComponentStatus   `json:"status"`
+	StatusPort uint              `json:"status_port"`
+	Labels     map[string]string `json:"labels"`
+}
+
+type AlertManagerInfo struct {
 	IP         string `json:"ip"`
 	Port       uint   `json:"port"`
 	BinaryPath string `json:"binary_path"`
 }
 
-type Grafana struct {
-	IP         string `json:"ip"`
-	Port       uint   `json:"port"`
-	BinaryPath string `json:"binary_path"`
-}
-
-type PD struct {
-	ComponentVersionInfo
-	IP         string `json:"ip"`
-	Port       uint   `json:"port"`
-	BinaryPath string `json:"binary_path"`
-	// It will query PD's health interface.
-	ServerStatus ComponentStatus `json:"server_status"`
-}
-
-type TiDB struct {
-	ComponentVersionInfo
-	IP           string          `json:"ip"`
-	Port         uint            `json:"port"`
-	BinaryPath   string          `json:"binary_path"`
-	ServerStatus ComponentStatus `json:"server_status"`
-	StatusPort   uint            `json:"status_port"`
-}
-
-type TiKV struct {
-	ComponentVersionInfo
-	IP           string            `json:"ip"`
-	Port         uint              `json:"port"`
-	BinaryPath   string            `json:"binary_path"`
-	ServerStatus ComponentStatus   `json:"server_status"`
-	StatusPort   uint              `json:"status_port"`
-	Labels       map[string]string `json:"labels"`
-}
-
-type AlertManager struct {
+type GrafanaInfo struct {
 	IP         string `json:"ip"`
 	Port       uint   `json:"port"`
 	BinaryPath string `json:"binary_path"`

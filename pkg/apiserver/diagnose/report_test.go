@@ -1,13 +1,11 @@
-package diagnose_test
+package diagnose
 
 import (
-	"database/sql"
 	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/jinzhu/gorm"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose"
 	. "github.com/pingcap/check"
 )
 
@@ -28,19 +26,11 @@ func (t *testReportSuite) TestReport(c *C) {
 	startTime := "2020-02-27 19:20:23"
 	endTime := "2020-02-27 21:20:23"
 
-	tables, errs := diagnose.GetReportTablesForDisplay(startTime, endTime, cli)
+	tables, errs := GetReportTablesForDisplay(startTime, endTime, cli)
 	for _, tbl := range tables {
 		printRows(tbl)
 	}
 	c.Assert(errs, HasLen, 0)
-}
-
-func (t *testReportSuite) getDBCli(c *C, passwd, addr, dbName string) *sql.DB {
-	dbDSN := fmt.Sprintf("root:%s@tcp(%s)/%s", passwd, addr, dbName)
-	db, err := sql.Open("mysql", dbDSN)
-	c.Assert(err, IsNil)
-	db.SetMaxOpenConns(1)
-	return db
 }
 
 func (t *testReportSuite) TestGetTable(c *C) {
@@ -51,8 +41,8 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	startTime := "2020-02-27 20:00:00"
 	endTime := "2020-02-27 21:00:00"
 
-	var table *diagnose.TableDef
-	table, err = diagnose.GetClusterHardwareInfoTable(startTime, endTime, cli)
+	var table *TableDef
+	table, err = GetClusterHardwareInfoTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 }
@@ -78,12 +68,12 @@ func (t *testReportSuite) TestRoundFloatString(c *C) {
 		{"65.20832000000001", "65.21"},
 	}
 	for _, cas := range cases {
-		result := diagnose.RoundFloatString(cas.in)
+		result := RoundFloatString(cas.in)
 		c.Assert(result, Equals, cas.out)
 	}
 }
 
-func printRows(t *diagnose.TableDef) {
+func printRows(t *TableDef) {
 	if t == nil {
 		fmt.Println("table is nil")
 		return

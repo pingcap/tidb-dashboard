@@ -71,7 +71,8 @@ function DiagnoseGenerator({ basePath, createReport }: Props) {
       </Button>
       {reportUrl && (
         <p style={{ marginTop: 12 }}>
-          {t('diagnose.open_link')}:&nbsp;&nbsp;
+          {t('diagnose.open_link')}:
+          <br />
           <a href={reportUrl} target="_blank">
             {reportUrl}
           </a>

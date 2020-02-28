@@ -38,13 +38,13 @@ type ReportRes struct {
 	ReportID uint `json:"report_id"`
 }
 
-type DiagnoseReport struct {
+type Report struct {
 	gorm.Model
 	Content string
 }
 
 func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB) *Service {
-	db.AutoMigrate(&DiagnoseReport{})
+	db.AutoMigrate(&Report{})
 	return &Service{config: config, db: db, tidbForwarder: tidbForwarder}
 }
 
@@ -103,7 +103,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	report := DiagnoseReport{Content: string(content)}
+	report := Report{Content: string(content)}
 	if err := s.db.Create(&report).Error; err != nil {
 		_ = c.Error(err)
 		return
@@ -119,7 +119,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 // @Router /diagnose/reports/{id} [get]
 func (s *Service) reportHandler(c *gin.Context) {
 	reportID := c.Param("id")
-	var report DiagnoseReport
+	var report Report
 	if err := s.db.First(&report, reportID).Error; err != nil {
 		_ = c.Error(err)
 		return

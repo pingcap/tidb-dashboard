@@ -35,7 +35,7 @@ type Service struct {
 }
 
 type ReportRes struct {
-	ReportId uint `json:"report_id"`
+	ReportID uint `json:"report_id"`
 }
 
 type DiagnoseReport struct {
@@ -50,7 +50,10 @@ func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstor
 
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/diagnose")
-	endpoint.POST("/reports", auth.MWAuthRequired(), utils.MWConnectTiDB(s.tidbForwarder), s.genReportHandler)
+	endpoint.POST("/reports",
+		auth.MWAuthRequired(),
+		utils.MWConnectTiDB(s.tidbForwarder),
+		s.genReportHandler)
 	endpoint.GET("/reports/:id", s.reportHandler)
 }
 
@@ -59,14 +62,13 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Produce html
 // @Param start_time query string true "start time of the report"
 // @Param end_time query string true "end time of the report"
-// @Success 200 {object} diagnose_report.ReportRes
+// @Success 200 {object} diagnose.ReportRes
 // @Router /diagnose/reports [post]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) genReportHandler(c *gin.Context) {
 	// uncomment it to get gorm.DB
 	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
-	defer db.Close()
 
 	// startTime := "2020-02-25 13:20:23"
 	// endTime := "2020-02-26 13:30:23"
@@ -101,14 +103,12 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	// will remove later
-	// log.Println(string(content))
 	report := DiagnoseReport{Content: string(content)}
 	if err := s.db.Create(&report).Error; err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, ReportRes{ReportId: report.ID})
+	c.JSON(http.StatusOK, ReportRes{ReportID: report.ID})
 }
 
 // @Summary SQL diagnosis report
@@ -118,15 +118,17 @@ func (s *Service) genReportHandler(c *gin.Context) {
 // @Success 200 {string} string
 // @Router /diagnose/reports/{id} [get]
 func (s *Service) reportHandler(c *gin.Context) {
-	reportId := c.Param("id")
+	reportID := c.Param("id")
 	var report DiagnoseReport
-	if err := s.db.First(&report, reportId).Error; err != nil {
+	if err := s.db.First(&report, reportID).Error; err != nil {
 		_ = c.Error(err)
 		return
 	}
-	// will remove later
-	// log.Println(report.Content)
 	var tables []*TableDef
-	json.Unmarshal([]byte(report.Content), &tables)
+	err := json.Unmarshal([]byte(report.Content), &tables)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 	c.HTML(http.StatusOK, "sql-diagnosis/index", tables)
 }

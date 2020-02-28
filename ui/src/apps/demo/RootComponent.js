@@ -13,14 +13,6 @@ const App = () => (
     <Button type="primary" onClick={handleClick}>
       Button
     </Button>
-    <Button type="primary">
-      <a
-        href="http://127.0.0.1:12333/dashboard/api/foo/sql-diagnosis"
-        target="_blank"
-      >
-        SQL Diagnosis Report
-      </a>
-    </Button>
   </Router>
 );
 

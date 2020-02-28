@@ -1433,7 +1433,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		CommentCN: "",
 		Column:    []string{"HOST", "INSTANCE", "CPU_CORES", "MEMORY (GB)", "DISK (GB)", "UPTIME (DAY)"},
 	}
-	sql := "SELECT instance,type,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='cpu' and name = 'cpu-physical-cores'"
+	sql := "SELECT instance,type,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='cpu' and name = 'cpu-physical-cores' group by instance,type,VALUE"
 	rows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
@@ -1453,12 +1453,11 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 			} else {
 				m[s].Type[row[1]] = 1
 			}
-			m[s].cpu += cpuCnt
 		} else {
 			m[s] = &hardWare{s, map[string]int{row[1]: 1}, cpuCnt, 0, make(map[string]float64), ""}
 		}
 	}
-	sql = "SELECT instance,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='memory' and name = 'capacity'"
+	sql = "SELECT instance,value FROM information_schema.CLUSTER_HARDWARE WHERE device_type='memory' and name = 'capacity' group by instance,value"
 	rows, err = querySQL(db, sql)
 	if err != nil {
 		return nil, err
@@ -1469,13 +1468,9 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		if err != nil {
 			return &TableDef{}, err
 		}
-		if _, ok := m[s]; ok {
-			m[s].memory += memCnt
-		} else {
-			m[s].memory = memCnt
-		}
+		m[s].memory = memCnt
 	}
-	sql = "SELECT `INSTANCE`,`DEVICE_NAME`,`VALUE` from information_schema.CLUSTER_HARDWARE where `NAME` = 'total' AND `DEVICE_TYPE` = 'disk' AND `DEVICE_NAME` NOT LIKE '/dev/loop%' AND (`DEVICE_NAME` LIKE '/dev%' or `DEVICE_NAME` LIKE 'sda%' or`DEVICE_NAME` LIKE 'nvme%')"
+	sql = "SELECT `INSTANCE`,`DEVICE_NAME`,`VALUE` from information_schema.CLUSTER_HARDWARE where `NAME` = 'total' AND `DEVICE_TYPE` = 'disk' AND `DEVICE_NAME` NOT LIKE '/dev/loop%' AND (`DEVICE_NAME` LIKE '/dev%' or `DEVICE_NAME` LIKE 'sda%' or`DEVICE_NAME` LIKE 'nvme%') group by instance,device_name,value"
 	rows, err = querySQL(db, sql)
 	if err != nil {
 		return nil, err
@@ -1486,14 +1481,8 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		if err != nil {
 			return &TableDef{}, err
 		}
-		if _, ok := m[s]; ok {
-			if _, ok := m[s].disk[row[1]]; ok {
-				m[s].disk[row[1]] += diskCnt
-			} else {
-				m[s].disk[row[1]] = diskCnt
-			}
-		} else {
-			m[s].disk = make(map[string]float64)
+		if _,ok := m[s].disk[row[1]]; !ok {
+			m[s].disk[row[1]] = diskCnt
 		}
 	}
 

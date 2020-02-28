@@ -28,11 +28,11 @@ func newQueryArg(startTime, endTime string) *queryArg {
 }
 
 type AvgMaxMinTableDef struct {
-	name  string
-	tbl   string
+	name      string
+	tbl       string
 	condition string
-	label string
-	Comment string
+	label     string
+	Comment   string
 }
 
 // Table schema

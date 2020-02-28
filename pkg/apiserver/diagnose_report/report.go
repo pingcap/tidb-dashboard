@@ -21,7 +21,7 @@ type TableDef struct {
 type TableRowDef struct {
 	Values    []string
 	SubValues [][]string // SubValues need fold default.
-	Comment string
+	Comment   string
 }
 
 func (t TableDef) ColumnWidth() []int {
@@ -67,7 +67,7 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 	funcs := []func(string, string, *sql.DB) (*TableDef, error){
 		// Header
 		GetHeaderTimeTable,
-        GetClusterHardwareInfoTable,
+		GetClusterHardwareInfoTable,
 		GetClusterInfoTable,
 
 		// Diagnose
@@ -872,7 +872,7 @@ func GetTiKVSnapshotInfo(startTime, endTime string, db *sql.DB) (*TableDef, erro
 
 	arg := newQueryArg(startTime, endTime)
 
-	err :=    getTableRows(defs, arg, db, appendRows)
+	err := getTableRows(defs, arg, db, appendRows)
 	if err != nil {
 		return nil, err
 	}
@@ -1069,8 +1069,8 @@ func getSQLRows(db *sql.DB, sql string) ([]TableRowDef, error) {
 func getSQLRoundRows(db *sql.DB, sql string, nums []int, comment string) ([]TableRowDef, error) {
 	rows, err := querySQL(db, sql)
 	if nums != nil {
-		for _,i := range nums {
-			for _,row := range rows {
+		for _, i := range nums {
+			for _, row := range rows {
 				row[i] = RoundFloatString(row[i])
 			}
 		}
@@ -1140,10 +1140,10 @@ func getAvgValueTableData(defs1 []AvgMaxMinTableDef, startTime, endTime string, 
 
 func GetAvgMaxMinTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "node_cpu_usage", tbl: "node_cpu_usage", label: "instance", Comment:"the CPU usage in each node"},
+		{name: "node_cpu_usage", tbl: "node_cpu_usage", label: "instance", Comment: "the CPU usage in each node"},
 		//{name: "node_mem_usage", tbl: "node_mem_usage", label: "instance"},
-		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", label: "instance", Comment:"the disk write latency in each node"},
-		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance", Comment:"the disk read latency in each node"},
+		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", label: "instance", Comment: "the disk write latency in each node"},
+		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance", Comment: "the disk read latency in each node"},
 	}
 	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
 	if err != nil {
@@ -1162,7 +1162,7 @@ func GetAvgMaxMinTable(startTime, endTime string, db *sql.DB) (*TableDef, error)
 func GetCPUUsageTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.process_cpu_usage where time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
 		startTime, endTime)
-	rows, err := getSQLRoundRows(db, sql, []int{2,3,4}, "")
+	rows, err := getSQLRoundRows(db, sql, []int{2, 3, 4}, "")
 	if err != nil {
 		return nil, err
 	}
@@ -1181,7 +1181,7 @@ func GetCPUUsageTable(startTime, endTime string, db *sql.DB) (*TableDef, error) 
 func GetGoroutinesCountTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select instance, job, avg(value), max(value), min(value) from metrics_schema.goroutines_count where job in ('tidb','pd') and time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
 		startTime, endTime)
-	rows, err := getSQLRoundRows(db, sql, []int{2,3,4}, "The goroutine count of each instance")
+	rows, err := getSQLRoundRows(db, sql, []int{2, 3, 4}, "The goroutine count of each instance")
 	if err != nil {
 		return nil, err
 	}
@@ -1198,15 +1198,15 @@ func GetGoroutinesCountTable(startTime, endTime string, db *sql.DB) (*TableDef, 
 
 func GetTiKVThreadCPUTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'raftstore%'", Comment: "The CPU usage of each TiKV raftstore"},
-		{name: "apply", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'apply%'", Comment: "The CPU usage of each TiKV apply"},
-		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'sched_worker%'", Comment: "The CPU usage of each TiKV sched_worker"},
-		{name: "snap", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'snap%'", Comment: "The CPU usage of each TiKV snapshot"},
-		{name: "cop", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'cop%'", Comment: "The CPU usage of each TiKV coporssesor"},
-		{name: "grpc", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'grpc%'", Comment: "The CPU usage of each TiKV grpc"},
-		{name: "rocksdb", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'rocksdb%'", Comment: "The CPU usage of each TiKV rocksdb"},
-		{name: "gc", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'gc%'", Comment: "The CPU usage of each TiKV gc"},
-		{name: "split_check", tbl: "tikv_thread_cpu", label: "instance", condition:"name like 'split_check%'", Comment: "The CPU usage of each TiKV split_check"},
+		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'raftstore%'", Comment: "The CPU usage of each TiKV raftstore"},
+		{name: "apply", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'apply%'", Comment: "The CPU usage of each TiKV apply"},
+		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'sched_worker%'", Comment: "The CPU usage of each TiKV sched_worker"},
+		{name: "snap", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'snap%'", Comment: "The CPU usage of each TiKV snapshot"},
+		{name: "cop", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'cop%'", Comment: "The CPU usage of each TiKV coporssesor"},
+		{name: "grpc", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'grpc%'", Comment: "The CPU usage of each TiKV grpc"},
+		{name: "rocksdb", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'rocksdb%'", Comment: "The CPU usage of each TiKV rocksdb"},
+		{name: "gc", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'gc%'", Comment: "The CPU usage of each TiKV gc"},
+		{name: "split_check", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'split_check%'", Comment: "The CPU usage of each TiKV split_check"},
 	}
 	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
 	if err != nil {
@@ -1224,12 +1224,12 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *sql.DB) (*TableDef, er
 
 func GetStoreStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "region_score", tbl: "pd_scheduler_store_status", condition:"type = 'region_score'", label: "address", Comment: "The region score status of store"},
-		{name: "leader_score", tbl: "pd_scheduler_store_status", condition:"type = 'leader_score'", label: "address", Comment: "The leader score status of store"},
-		{name: "region_count", tbl: "pd_scheduler_store_status", condition:"type = 'region_count'", label: "address", Comment: "The region count status of store"},
-		{name: "leader_count", tbl: "pd_scheduler_store_status", condition:"type = 'leader_count'", label: "address", Comment: "The region score status of store"},
-		{name: "region_size", tbl: "pd_scheduler_store_status", condition:"type = 'region_size'", label: "address", Comment: "The region size status of store"},
-		{name: "leader_size", tbl: "pd_scheduler_store_status", condition:"type = 'leader_size'", label: "address", Comment: "The leader size status of store"},
+		{name: "region_score", tbl: "pd_scheduler_store_status", condition: "type = 'region_score'", label: "address", Comment: "The region score status of store"},
+		{name: "leader_score", tbl: "pd_scheduler_store_status", condition: "type = 'leader_score'", label: "address", Comment: "The leader score status of store"},
+		{name: "region_count", tbl: "pd_scheduler_store_status", condition: "type = 'region_count'", label: "address", Comment: "The region count status of store"},
+		{name: "leader_count", tbl: "pd_scheduler_store_status", condition: "type = 'leader_count'", label: "address", Comment: "The region score status of store"},
+		{name: "region_size", tbl: "pd_scheduler_store_status", condition: "type = 'region_size'", label: "address", Comment: "The region size status of store"},
+		{name: "leader_size", tbl: "pd_scheduler_store_status", condition: "type = 'leader_size'", label: "address", Comment: "The leader size status of store"},
 	}
 	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
 	if err != nil {
@@ -1248,7 +1248,7 @@ func GetStoreStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, erro
 func GetPDClusterStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_cluster_status where time >= '%s' and time < '%s' group by type",
 		startTime, endTime)
-	rows, err := getSQLRoundRows(db, sql, []int{1,2}, "")
+	rows, err := getSQLRoundRows(db, sql, []int{1, 2}, "")
 	if err != nil {
 		return nil, err
 	}
@@ -1266,7 +1266,7 @@ func GetPDClusterStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, 
 func GetPDEtcdStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_server_etcd_state where time >= '%s' and time < '%s' group by type",
 		startTime, endTime)
-	rows, err := getSQLRoundRows(db, sql, []int{1,2}, "")
+	rows, err := getSQLRoundRows(db, sql, []int{1, 2}, "")
 	if err != nil {
 		return nil, err
 	}
@@ -1302,9 +1302,9 @@ func GetClusterInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, erro
 func GetTiKVCacheHitTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	tables := []AvgMaxMinTableDef{
 		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", label: "type", Comment: "The hit rate of memtable"},
-		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit" ,label: "type", Comment: "The hit rate of all block cache"},
+		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit", label: "type", Comment: "The hit rate of all block cache"},
 		{name: "index", tbl: "tikv_block_index_cache_hit", label: "type", Comment: "The hit rate of index block cache"},
-		{name: "filter", tbl: "tikv_block_filter_cache_hit", label: "type", Comment: "The hit rate of filter block cache",},
+		{name: "filter", tbl: "tikv_block_filter_cache_hit", label: "type", Comment: "The hit rate of filter block cache"},
 		{name: "data", tbl: "tikv_block_data_cache_hit", label: "type", Comment: "The hit rate of data block cache"},
 		{name: "bloom_prefix", tbl: "tikv_block_bloom_prefix_cache_hit", label: "type", Comment: "The hit rate of bloom_prefix block cache"},
 	}
@@ -1333,8 +1333,8 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *sql.DB) (*TableDef, err
 		if len(rows) == 0 {
 			continue
 		}
-		for _,i := range []int{2,3,4} {
-			for _,row := range rows {
+		for _, i := range []int{2, 3, 4} {
+			for _, row := range rows {
 				row[i] = RoundFloatString(row[i])
 			}
 		}
@@ -1369,24 +1369,24 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 	if err != nil {
 		return nil, err
 	}
-	m := make(map[string] *hardWare)
+	m := make(map[string]*hardWare)
 	var s string
-	for _,row := range rows {
-		idx := strings.Index(row[0],":")
+	for _, row := range rows {
+		idx := strings.Index(row[0], ":")
 		s := row[0][:idx]
-		cpuCnt,err := strconv.Atoi(row[2])
+		cpuCnt, err := strconv.Atoi(row[2])
 		if err != nil {
-			return &TableDef{},err
+			return &TableDef{}, err
 		}
-		if _,ok := m[s]; ok {
-			if _,ok := m[s].Type[row[1]]; ok {
+		if _, ok := m[s]; ok {
+			if _, ok := m[s].Type[row[1]]; ok {
 				m[s].Type[row[1]] += 1
 			} else {
 				m[s].Type[row[1]] = 1
 			}
 			m[s].cpu += cpuCnt
 		} else {
-			m[s] = &hardWare{s,map[string]int{row[1]:1},cpuCnt,0,make(map[string]float64),""}
+			m[s] = &hardWare{s, map[string]int{row[1]: 1}, cpuCnt, 0, make(map[string]float64), ""}
 		}
 	}
 	sql = "SELECT instance,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='memory' and name = 'capacity'"
@@ -1394,13 +1394,13 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 	if err != nil {
 		return nil, err
 	}
-	for _,row := range rows {
-		s = row[0][:strings.Index(row[0],":")]
-		memCnt,err := strconv.ParseFloat(row[1],64)
+	for _, row := range rows {
+		s = row[0][:strings.Index(row[0], ":")]
+		memCnt, err := strconv.ParseFloat(row[1], 64)
 		if err != nil {
-			return &TableDef{},err
+			return &TableDef{}, err
 		}
-		if _,ok := m[s]; ok {
+		if _, ok := m[s]; ok {
 			m[s].memory += memCnt
 		} else {
 			m[s].memory = memCnt
@@ -1411,20 +1411,20 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 	if err != nil {
 		return nil, err
 	}
-	for _,row := range rows {
-		s = row[0][:strings.Index(row[0],":")]
-		diskCnt,err := strconv.ParseFloat(row[2],64)
+	for _, row := range rows {
+		s = row[0][:strings.Index(row[0], ":")]
+		diskCnt, err := strconv.ParseFloat(row[2], 64)
 		if err != nil {
-			return &TableDef{},err
+			return &TableDef{}, err
 		}
-		if _,ok := m[s]; ok {
-			if _,ok := m[s].disk[row[1]]; ok {
+		if _, ok := m[s]; ok {
+			if _, ok := m[s].disk[row[1]]; ok {
 				m[s].disk[row[1]] += diskCnt
 			} else {
 				m[s].disk[row[1]] = diskCnt
 			}
 		} else {
-			m[s].disk = make(map[string] float64)
+			m[s].disk = make(map[string]float64)
 		}
 	}
 	sql = fmt.Sprintf("SELECT instance,max(value) FROM metrics_schema.node_uptime  where time >= '%[1]s' and time < '%[2]s' GROUP BY instance", startTime, endTime)
@@ -1433,30 +1433,30 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableD
 		return nil, err
 	}
 
-	for _,row := range rows {
-		s = row[0][:strings.Index(row[0],":")]
-		if _,ok := m[s]; ok {
+	for _, row := range rows {
+		s = row[0][:strings.Index(row[0], ":")]
+		if _, ok := m[s]; ok {
 			m[s].uptime = row[1]
 		} else {
-			m[s] = &hardWare{s,make(map[string]int),0,0,make(map[string]float64),"row[1]"}
+			m[s] = &hardWare{s, make(map[string]int), 0, 0, make(map[string]float64), "row[1]"}
 		}
 	}
 	rows = rows[:0]
-	for _,v := range m {
-		row := make([]string,6)
+	for _, v := range m {
+		row := make([]string, 6)
 		row[0] = v.instance
-		for k,va := range v.Type {
-			row[1] += fmt.Sprintf("%[1]s*%[2]s ",k,strconv.Itoa(va))
+		for k, va := range v.Type {
+			row[1] += fmt.Sprintf("%[1]s*%[2]s ", k, strconv.Itoa(va))
 		}
-		row[2] = strconv.Itoa(v.cpu) + "/" + strconv.Itoa(v.cpu * 2)
+		row[2] = strconv.Itoa(v.cpu) + "/" + strconv.Itoa(v.cpu*2)
 		row[3] = fmt.Sprintf("%f", v.memory/(1024*1024*1024))
-		for k,va := range v.disk {
-			row[4] += fmt.Sprintf("%[1]s : %[2]f\n",k,va/(1024*1024*1024))
+		for k, va := range v.disk {
+			row[4] += fmt.Sprintf("%[1]s : %[2]f\n", k, va/(1024*1024*1024))
 		}
 		row[5] = v.uptime
-		rows = append(rows,row)
+		rows = append(rows, row)
 	}
-	for _,row:= range rows {
+	for _, row := range rows {
 		resultRows = append(resultRows, NewTableRowDef(row, nil))
 	}
 	resultRows[0].Comment = "The hardwareInfo of each node"

@@ -85,8 +85,8 @@ class App extends React.PureComponent {
               defaultOpenKeys={['sub1']}
             >
               {this.renderAppMenuItem('keyvis')}
-              {isDev ? this.renderAppMenuItem('statement') : null}
-              {isDev ? this.renderAppMenuItem('logsearch') : null}
+              {this.renderAppMenuItem('statement')}
+              {this.renderAppMenuItem('logsearch')}
               {isDev ? (
                 <Menu.SubMenu
                   key="sub1"

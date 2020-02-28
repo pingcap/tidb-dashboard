@@ -1086,21 +1086,18 @@ func getSQLRows(db *gorm.DB, sql string) ([]TableRowDef, error) {
 
 func getSQLRoundRows(db *gorm.DB, sql string, nums []int, comment string) ([]TableRowDef, error) {
 	rows, err := querySQL(db, sql)
-	if nums != nil {
-		for _, i := range nums {
-			for _, row := range rows {
-				row[i] = RoundFloatString(row[i])
-			}
-		}
-	}
 	if err != nil {
 		return nil, err
+	}
+	for _, i := range nums {
+		for _, row := range rows {
+			row[i] = RoundFloatString(row[i])
+		}
 	}
 	resultRows := make([]TableRowDef, len(rows))
 	for i := range rows {
 		resultRows[i] = TableRowDef{Values: rows[i], Comment: comment}
 	}
-
 	return resultRows, nil
 }
 
@@ -1398,7 +1395,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		}
 		if _, ok := m[s]; ok {
 			if _, ok := m[s].Type[row[1]]; ok {
-				m[s].Type[row[1]] += 1
+				m[s].Type[row[1]]++
 			} else {
 				m[s].Type[row[1]] = 1
 			}
@@ -1445,7 +1442,12 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 			m[s].disk = make(map[string]float64)
 		}
 	}
-	sql = fmt.Sprintf("SELECT instance,max(value)/60/60/24 FROM metrics_schema.node_uptime  where time >= '%[1]s' and time < '%[2]s' GROUP BY instance", startTime, endTime)
+
+	sql = `SELECT instance,max(value)/60/60/24
+	FROM metrics_schema.node_uptime
+	where time >= '%[1]s' and time < '%[2]s'
+	GROUP BY instance`
+	sql = fmt.Sprintf(sql, startTime, endTime)
 	rows, err = querySQL(db, sql)
 	if err != nil {
 		return nil, err

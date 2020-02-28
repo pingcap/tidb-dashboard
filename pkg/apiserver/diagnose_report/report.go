@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql" // mysql driver
 )
@@ -66,33 +67,46 @@ func GetReportTables(startTime, endTime string, db *sql.DB) ([]*TableDef, []erro
 	funcs := []func(string, string, *sql.DB) (*TableDef, error){
 		// Header
 		GetHeaderTimeTable,
+		GetClusterHardwareInfoTable,
+		GetClusterInfoTable,
 
 		// Diagnose
 		GetDiagnoseReport,
 
 		// Node
+		GetAvgMaxMinTable,
+		GetCPUUsageTable,
+		GetTiKVThreadCPUTable,
+		GetGoroutinesCountTable,
 
 		// Overview
 		GetTotalTimeConsumeTable,
 		GetTotalErrorTable,
 
 		// TiDB
+		GetTiDBTimeConsumeTable,
 		GetTiDBTxnTableData,
 		GetTiDBDDLOwner,
-		GetTiDBDDLInfoTable,
 
 		// PD
 		GetPDTimeConsumeTable,
 		GetPDSchedulerInfo,
+		GetPDClusterStatusTable,
+		GetStoreStatusTable,
+		GetPDEtcdStatusTable,
 
 		// TiKV
 		GetTiKVTotalTimeConsumeTable,
 		GetTiKVErrorTable,
+		GetTiKVStoreInfo,
+		GetTiKVRegionSizeInfo,
 		GetTiKVCopInfo,
 		GetTiKVSchedulerInfo,
 		GetTiKVRaftInfo,
+		GetTiKVSnapshotInfo,
 		GetTiKVGCInfo,
 		GetTiKVTaskInfo,
+		GetTiKVCacheHitTable,
 
 		// Config
 		GetPDConfigInfo,
@@ -159,8 +173,8 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef,
 		{name: "tidb_kv_backoff", tbl: "tidb_kv_backoff", labels: []string{"type"}, comment: "The time cost of TiDB transaction latch wait time on key value storage"},
 		{name: "tidb_kv_request", tbl: "tidb_kv_request", labels: []string{"type"}, comment: "The time cost of kv requests durations"},
 		{name: "tidb_slow_query", tbl: "tidb_slow_query", labels: []string{"instance"}, comment: "The time cost of TiDB slow query"},
-		{name: "tidb_slow_query_cop_process", tbl: "tidb_slow_query_cop_process", comment: "The time cost of TiDB slow query total cop process time"},
-		{name: "tidb_slow_query_cop_wait", tbl: "tidb_slow_query_cop_wait", comment: "The time cost of TiDB slow query total cop wait time"},
+		{name: "tidb_slow_query_cop_process", tbl: "tidb_slow_query_cop_process", labels: []string{"instance"}, comment: "The time cost of TiDB slow query total cop process time"},
+		{name: "tidb_slow_query_cop_wait", tbl: "tidb_slow_query_cop_wait", labels: []string{"instance"}, comment: "The time cost of TiDB slow query total cop wait time"},
 		{name: "tidb_ddl_handle_job", tbl: "tidb_ddl", labels: []string{"type"}, comment: "The time cost of handle TiDB DDL job"},
 		{name: "tidb_ddl_worker", tbl: "tidb_ddl_worker", labels: []string{"action"}, comment: "The time cost of DDL worker handle job"},
 		{name: "tidb_ddl_update_self_version", tbl: "tidb_ddl_update_self_version", labels: []string{"result"}, comment: "The time cost of TiDB schema syncer version update"},
@@ -291,6 +305,78 @@ func GetTotalErrorTable(startTime, endTime string, db *sql.DB) (*TableDef, error
 	}, nil
 }
 
+func GetTiDBTimeConsumeTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []totalTimeByLabelsTableDef{
+		{name: "tidb_query", tbl: "tidb_query", labels: []string{"instance", "sql_type"}, comment: "The time cost of sql query"},
+		{name: "tidb_get_token(us)", tbl: "tidb_get_token", labels: []string{"instance"}, comment: "The time cost of session getting token to execute sql query"},
+		{name: "tidb_parse", tbl: "tidb_parse", labels: []string{"instance", "sql_type"}, comment: "The time cost of parse SQL"},
+		{name: "tidb_compile", tbl: "tidb_compile", labels: []string{"instance", "sql_type"}, comment: "The time cost of building the query plan"},
+		{name: "tidb_execute", tbl: "tidb_execute", labels: []string{"instance", "sql_type"}, comment: "The time cost of executing the SQL which does not include the time to get the results of the query"},
+		{name: "tidb_distsql_execution", tbl: "tidb_distsql_execution", labels: []string{"instance", "type"}, comment: "The time cost of distsql execution"},
+		{name: "tidb_cop", tbl: "tidb_cop", labels: []string{"instance"}, comment: "The time cost of kv storage coprocessor processing"},
+		{name: "tidb_transaction", tbl: "tidb_transaction", labels: []string{"instance", "sql_type", "type"}, comment: "The time cost of transaction execution durations, including retry"},
+		{name: "tidb_transaction_local_latch_wait", tbl: "tidb_transaction_local_latch_wait", labels: []string{"instance"}, comment: "The time cost of "},
+		{name: "tidb_kv_backoff", tbl: "tidb_kv_backoff", labels: []string{"instance", "type"}, comment: "The time cost of TiDB transaction latch wait time on key value storage"},
+		{name: "tidb_kv_request", tbl: "tidb_kv_request", labels: []string{"instance", "store", "type"}, comment: "The time cost of kv requests durations"},
+		{name: "tidb_slow_query", tbl: "tidb_slow_query", labels: []string{"instance"}, comment: "The time cost of TiDB slow query"},
+		{name: "tidb_slow_query_cop_process", tbl: "tidb_slow_query_cop_process", labels: []string{"instance"}, comment: "The time cost of TiDB slow query total cop process time"},
+		{name: "tidb_slow_query_cop_wait", tbl: "tidb_slow_query_cop_wait", labels: []string{"instance"}, comment: "The time cost of TiDB slow query total cop wait time"},
+		{name: "tidb_ddl_handle_job", tbl: "tidb_ddl", labels: []string{"instance", "type"}, comment: "The time cost of handle TiDB DDL job"},
+		{name: "tidb_ddl_worker", tbl: "tidb_ddl_worker", labels: []string{"instance", "type", "result", "action"}, comment: "The time cost of DDL worker handle job"},
+		{name: "tidb_ddl_update_self_version", tbl: "tidb_ddl_update_self_version", labels: []string{"instance", "result"}, comment: "The time cost of TiDB schema syncer version update"},
+		{name: "tidb_owner_handle_syncer", tbl: "tidb_owner_handle_syncer", labels: []string{"instance", "type", "result"}, comment: "The time cost of TiDB DDL owner operations on etcd"},
+		{name: "tidb_ddl_batch_add_index", tbl: "tidb_ddl_batch_add_index", labels: []string{"instance", "type"}, comment: "The time cost of TiDB batch add index"},
+		{name: "tidb_ddl_deploy_syncer", tbl: "tidb_ddl_deploy_syncer", labels: []string{"instance", "type", "result"}, comment: "The time cost of TiDB ddl schema syncer statistics, including init, start, watch, clear"},
+		{name: "tidb_load_schema", tbl: "tidb_load_schema", labels: []string{"instance"}, comment: "The time cost of TiDB loading schema"},
+		{name: "tidb_meta_operation", tbl: "tidb_meta_operation", labels: []string{"instance", "type", "result"}, comment: "The time cost of TiDB meta operations, including get/set schema and ddl jobs"},
+		{name: "tidb_auto_id_request", tbl: "tidb_auto_id_request", labels: []string{"instance", "type"}, comment: "The time cost of TiDB auto id, handle id requests"},
+		{name: "tidb_statistics_auto_analyze", tbl: "tidb_statistics_auto_analyze", labels: []string{"instance"}, comment: "The time cost of TiDB auto analyze"},
+		{name: "tidb_gc", tbl: "tidb_gc", labels: []string{"instance"}, comment: "The time cost of kv storage garbage collection"},
+		{name: "tidb_gc_push_task", tbl: "tidb_gc_push_task", labels: []string{"instance", "type"}, comment: "The time cost of kv storage range worker processing one task"},
+		{name: "tidb_batch_client_unavailable", tbl: "tidb_batch_client_unavailable", labels: []string{"instance"}, comment: "The time cost of kv storage batch processing unvailable"},
+		{name: "tidb_batch_client_wait", tbl: "tidb_batch_client_wait", labels: []string{"instance"}, comment: "The time cost of TiDB kv storage batch client wait request batch"},
+	}
+
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+
+	table := &TableDef{
+		Category:  []string{CategoryTiDB},
+		Title:     "Time Consume",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
+	}
+
+	resultRows := make([]TableRowDef, 0, len(defs))
+	arg := newQueryArg(startTime, endTime)
+	specialHandle := func(row []string) []string {
+		if arg.totalTime == 0 && len(row[3]) > 0 {
+			totalTime, err := strconv.ParseFloat(row[3], 64)
+			if err == nil {
+				arg.totalTime = totalTime
+			}
+		}
+		return row
+	}
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	table.Rows = resultRows
+	return table, nil
+}
+
 func GetTiDBTxnTableData(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 	defs1 := []totalValueAndTotalCountTableDef{
 		{name: "tidb_transaction_retry_num", tbl: "tidb_transaction_retry_num", sumTbl: "tidb_transaction_retry_total_num", countTbl: "tidb_transaction_retry_num_total_count", labels: []string{"instance"}},
@@ -375,57 +461,6 @@ func GetTiDBDDLOwner(startTime, endTime string, db *sql.DB) (*TableDef, error) {
 		Column:    []string{"MIN_TIME", "DDL OWNER"},
 		Rows:      rows,
 	}
-	return table, nil
-}
-
-func GetTiDBDDLInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
-	defs1 := []totalTimeByLabelsTableDef{
-		{name: "tidb_ddl_handle_job", tbl: "tidb_ddl", labels: []string{"instance", "type"}, comment: "The time cost of handle TiDB DDL job"},
-		{name: "tidb_ddl_worker", tbl: "tidb_ddl_worker", labels: []string{"instance", "type", "result", "action"}, comment: "The time cost of DDL worker handle job"},
-		{name: "tidb_ddl_update_self_version", tbl: "tidb_ddl_update_self_version", labels: []string{"instance", "result"}, comment: "The time cost of TiDB schema syncer version update"},
-		{name: "tidb_owner_handle_syncer", tbl: "tidb_owner_handle_syncer", labels: []string{"instance", "type", "result"}, comment: "The time cost of TiDB DDL owner operations on etcd"},
-		{name: "tidb_ddl_batch_add_index", tbl: "tidb_ddl_batch_add_index", labels: []string{"instance", "type"}, comment: "The time cost of TiDB batch add index"},
-		{name: "tidb_ddl_deploy_syncer", tbl: "tidb_ddl_deploy_syncer", labels: []string{"instance", "type", "result"}, comment: "The time cost of TiDB ddl schema syncer statistics, including init, start, watch, clear"},
-		{name: "tidb_load_schema", tbl: "tidb_load_schema", labels: []string{"instance"}, comment: "The time cost of TiDB loading schema"},
-	}
-
-	defs := make([]rowQuery, 0, len(defs1))
-	for i := range defs1 {
-		defs = append(defs, defs1[i])
-	}
-
-	table := &TableDef{
-		Category:  []string{CategoryTiDB},
-		Title:     "Time Consume",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
-	}
-
-	resultRows := make([]TableRowDef, 0, len(defs))
-	arg := newQueryArg(startTime, endTime)
-	specialHandle := func(row []string) []string {
-		if arg.totalTime == 0 && len(row[3]) > 0 {
-			totalTime, err := strconv.ParseFloat(row[3], 64)
-			if err == nil {
-				arg.totalTime = totalTime
-			}
-		}
-		return row
-	}
-	appendRows := func(row TableRowDef) {
-		row.Values = specialHandle(row.Values)
-		for i := range row.SubValues {
-			row.SubValues[i] = specialHandle(row.SubValues[i])
-		}
-		resultRows = append(resultRows, row)
-	}
-
-	err := getTableRows(defs, arg, db, appendRows)
-	if err != nil {
-		return nil, err
-	}
-	table.Rows = resultRows
 	return table, nil
 }
 
@@ -520,6 +555,80 @@ func GetPDSchedulerInfo(startTime, endTime string, db *sql.DB) (*TableDef, error
 		{name: "blance-region-out", tbl: "pd_scheduler_balance_region", condition: "type='move-peer' and address like '%-out'", labels: []string{"address"}},
 	}
 
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return nil, err
+	}
+
+	return &TableDef{
+		Category:  []string{CategoryPD},
+		Title:     "blance leader/region",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},
+		Rows:      rows,
+	}, nil
+}
+
+func GetTiKVRegionSizeInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []totalValueAndTotalCountTableDef{
+		{name: "Approximate Region size", tbl: "tikv_approximate_region_size", sumTbl: "tikv_approximate_region_total_size", countTbl: "tikv_approximate_region_size_total_count", labels: []string{"instance"}},
+	}
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+	resultRows := make([]TableRowDef, 0, len(defs))
+
+	specialHandle := func(row []string) []string {
+		if len(row) == 8 {
+			// total value and total count is not right.
+			tmpRow := row[:2]
+			tmpRow = append(tmpRow, row[4:]...)
+			row = tmpRow
+		}
+		for i := 2; i < len(row); i++ {
+			if len(row[i]) == 0 {
+				continue
+			}
+			row[i] = convertFloatToSize(row[i])
+		}
+		return row
+	}
+
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+
+	quantiles := []float64{0.99, 0.90, 0.80, 0.50}
+	arg := &queryArg{
+		startTime: startTime,
+		endTime:   endTime,
+		quantiles: quantiles,
+	}
+
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	return &TableDef{
+		Category:  []string{CategoryTiKV},
+		Title:     "Approximate Region size",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "LABEL", "P99", "P90", "P80", "P50"},
+		Rows:      resultRows,
+	}, nil
+}
+
+func GetTiKVStoreInfo(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []sumValueQuery{
+		{name: "store size", tbl: "tikv_engine_size", labels: []string{"instance", "type"}},
+	}
 	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
 	if err != nil {
 		return nil, err
@@ -957,6 +1066,26 @@ func getSQLRows(db *sql.DB, sql string) ([]TableRowDef, error) {
 	return resultRows, nil
 }
 
+func getSQLRoundRows(db *sql.DB, sql string, nums []int, comment string) ([]TableRowDef, error) {
+	rows, err := querySQL(db, sql)
+	if nums != nil {
+		for _, i := range nums {
+			for _, row := range rows {
+				row[i] = RoundFloatString(row[i])
+			}
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	resultRows := make([]TableRowDef, len(rows))
+	for i := range rows {
+		resultRows[i] = TableRowDef{Values: rows[i], Comment: comment}
+	}
+
+	return resultRows, nil
+}
+
 func getTableRows(defs []rowQuery, arg *queryArg, db *sql.DB, appendRows func(def TableRowDef)) error {
 	for _, def := range defs {
 		row, err := def.queryRow(arg, db)
@@ -970,4 +1099,367 @@ func getTableRows(defs []rowQuery, arg *queryArg, db *sql.DB, appendRows func(de
 		appendRows(*row)
 	}
 	return nil
+}
+
+func NewTableRowDef(values []string, subValues [][]string) TableRowDef {
+	return TableRowDef{
+		Values:    values,
+		SubValues: subValues,
+	}
+}
+
+func getAvgValueTableData(defs1 []AvgMaxMinTableDef, startTime, endTime string, db *sql.DB) ([]TableRowDef, error) {
+	defs := make([]rowQuery, 0, len(defs1))
+	for i := range defs1 {
+		defs = append(defs, defs1[i])
+	}
+
+	resultRows := make([]TableRowDef, 0, len(defs))
+	specialHandle := func(row []string) []string {
+		for len(row) < 3 {
+			return row
+		}
+		row[2] = convertFloatToInt(row[2])
+		return row
+	}
+
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+	arg := newQueryArg(startTime, endTime)
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return nil, err
+	}
+	return resultRows, nil
+}
+
+func GetAvgMaxMinTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []AvgMaxMinTableDef{
+		{name: "node_cpu_usage", tbl: "node_cpu_usage", label: "instance", Comment: "the CPU usage in each node"},
+		//{name: "node_mem_usage", tbl: "node_mem_usage", label: "instance"},
+		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", label: "instance", Comment: "the disk write latency in each node"},
+		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance", Comment: "the disk read latency in each node"},
+	}
+	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return nil, err
+	}
+	return &TableDef{
+		Category:  []string{CategoryOverview},
+		Title:     "Error",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
+		Rows:      rows,
+	}, nil
+}
+
+func GetCPUUsageTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.process_cpu_usage where time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
+		startTime, endTime)
+	rows, err := getSQLRoundRows(db, sql, []int{2, 3, 4}, "")
+	if err != nil {
+		return nil, err
+	}
+
+	table := &TableDef{
+		Category:  []string{CategoryNode},
+		Title:     "process cpu usage",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"instance", "job", "AVG", "MAX", "MIN"},
+		Rows:      rows,
+	}
+	return table, nil
+}
+
+func GetGoroutinesCountTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select instance, job, avg(value), max(value), min(value) from metrics_schema.goroutines_count where job in ('tidb','pd') and time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
+		startTime, endTime)
+	rows, err := getSQLRoundRows(db, sql, []int{2, 3, 4}, "The goroutine count of each instance")
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{CategoryNode},
+		Title:     "goroutines count",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"instance", "job", "AVG", "MAX", "MIN"},
+		Rows:      rows,
+	}
+	return table, nil
+}
+
+func GetTiKVThreadCPUTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []AvgMaxMinTableDef{
+		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'raftstore%'", Comment: "The CPU usage of each TiKV raftstore"},
+		{name: "apply", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'apply%'", Comment: "The CPU usage of each TiKV apply"},
+		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'sched_worker%'", Comment: "The CPU usage of each TiKV sched_worker"},
+		{name: "snap", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'snap%'", Comment: "The CPU usage of each TiKV snapshot"},
+		{name: "cop", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'cop%'", Comment: "The CPU usage of each TiKV coporssesor"},
+		{name: "grpc", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'grpc%'", Comment: "The CPU usage of each TiKV grpc"},
+		{name: "rocksdb", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'rocksdb%'", Comment: "The CPU usage of each TiKV rocksdb"},
+		{name: "gc", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'gc%'", Comment: "The CPU usage of each TiKV gc"},
+		{name: "split_check", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'split_check%'", Comment: "The CPU usage of each TiKV split_check"},
+	}
+	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return nil, err
+	}
+	return &TableDef{
+		Category:  []string{CategoryOverview},
+		Title:     "Error",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
+		Rows:      rows,
+	}, nil
+}
+
+func GetStoreStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	defs1 := []AvgMaxMinTableDef{
+		{name: "region_score", tbl: "pd_scheduler_store_status", condition: "type = 'region_score'", label: "address", Comment: "The region score status of store"},
+		{name: "leader_score", tbl: "pd_scheduler_store_status", condition: "type = 'leader_score'", label: "address", Comment: "The leader score status of store"},
+		{name: "region_count", tbl: "pd_scheduler_store_status", condition: "type = 'region_count'", label: "address", Comment: "The region count status of store"},
+		{name: "leader_count", tbl: "pd_scheduler_store_status", condition: "type = 'leader_count'", label: "address", Comment: "The region score status of store"},
+		{name: "region_size", tbl: "pd_scheduler_store_status", condition: "type = 'region_size'", label: "address", Comment: "The region size status of store"},
+		{name: "leader_size", tbl: "pd_scheduler_store_status", condition: "type = 'leader_size'", label: "address", Comment: "The leader size status of store"},
+	}
+	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return nil, err
+	}
+	return &TableDef{
+		Category:  []string{CategoryOverview},
+		Title:     "Error",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
+		Rows:      rows,
+	}, nil
+}
+
+func GetPDClusterStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_cluster_status where time >= '%s' and time < '%s' group by type",
+		startTime, endTime)
+	rows, err := getSQLRoundRows(db, sql, []int{1, 2}, "")
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{"PD"},
+		Title:     "cluster status",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"TYPE", "MAX", "MIN"},
+		Rows:      rows,
+	}
+	return table, nil
+}
+
+func GetPDEtcdStatusTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_server_etcd_state where time >= '%s' and time < '%s' group by type",
+		startTime, endTime)
+	rows, err := getSQLRoundRows(db, sql, []int{1, 2}, "")
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{"PD"},
+		Title:     "etcd status",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"TYPE", "MAX", "MIN"},
+		Rows:      rows,
+	}
+	return table, nil
+}
+
+func GetClusterInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	sql := fmt.Sprintf("select * from information_schema.cluster_info")
+	rows, err := getSQLRoundRows(db, sql, nil, "The info of each node")
+	if err != nil {
+		return nil, err
+	}
+	table := &TableDef{
+		Category:  []string{"header"},
+		Title:     "cluster info",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"TYPE", "INSTANCE", "STATUS_ADDRESS", "VERSION", "GIT_HASH", "START_TIME", "UPTIME"},
+		Rows:      rows,
+	}
+
+	return table, nil
+}
+
+func GetTiKVCacheHitTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	tables := []AvgMaxMinTableDef{
+		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", label: "type", Comment: "The hit rate of memtable"},
+		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit", label: "type", Comment: "The hit rate of all block cache"},
+		{name: "index", tbl: "tikv_block_index_cache_hit", label: "type", Comment: "The hit rate of index block cache"},
+		{name: "filter", tbl: "tikv_block_filter_cache_hit", label: "type", Comment: "The hit rate of filter block cache"},
+		{name: "data", tbl: "tikv_block_data_cache_hit", label: "type", Comment: "The hit rate of data block cache"},
+		{name: "bloom_prefix", tbl: "tikv_block_bloom_prefix_cache_hit", label: "type", Comment: "The hit rate of bloom_prefix block cache"},
+	}
+
+	resultRows := make([]TableRowDef, 0, len(tables))
+	table := &TableDef{
+		Category:  []string{"TiKV"},
+		Title:     "cache hit",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"METRIC_NAME", "TPYE", "AVG", "MAX", "MIN"},
+	}
+	for i, t := range tables {
+		sql := ""
+		if i < 2 {
+			sql = fmt.Sprintf("select '%[4]s', '', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s'",
+				t.tbl, startTime, endTime, t.name)
+		} else {
+			sql = fmt.Sprintf("select '', '%[4]s', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s'",
+				t.tbl, startTime, endTime, t.name)
+		}
+		rows, err := querySQL(db, sql)
+		if err != nil {
+			return nil, err
+		}
+		if len(rows) == 0 {
+			continue
+		}
+		for _, i := range []int{2, 3, 4} {
+			for _, row := range rows {
+				row[i] = RoundFloatString(row[i])
+			}
+		}
+		for _, row := range rows {
+			resultRows = append(resultRows, NewTableRowDef(row, nil))
+		}
+	}
+	table.Rows = resultRows
+	return table, nil
+}
+
+type hardWare struct {
+	instance string
+	Type     map[string]int
+	cpu      int
+	memory   float64
+	disk     map[string]float64
+	uptime   string
+}
+
+func GetClusterHardwareInfoTable(startTime, endTime string, db *sql.DB) (*TableDef, error) {
+	resultRows := make([]TableRowDef, 0, 1)
+	table := &TableDef{
+		Category:  []string{"Header"},
+		Title:     "cluster hardware",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"HOST", "INSTANCE", "CPU_CORES", "MEMORY (GB)", "DISK (GB)", "UPTIME"},
+	}
+	sql := "SELECT instance,type,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='cpu' and name = 'cpu-physical-cores'"
+	rows, err := querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string]*hardWare)
+	var s string
+	for _, row := range rows {
+		idx := strings.Index(row[0], ":")
+		s := row[0][:idx]
+		cpuCnt, err := strconv.Atoi(row[2])
+		if err != nil {
+			return &TableDef{}, err
+		}
+		if _, ok := m[s]; ok {
+			if _, ok := m[s].Type[row[1]]; ok {
+				m[s].Type[row[1]] += 1
+			} else {
+				m[s].Type[row[1]] = 1
+			}
+			m[s].cpu += cpuCnt
+		} else {
+			m[s] = &hardWare{s, map[string]int{row[1]: 1}, cpuCnt, 0, make(map[string]float64), ""}
+		}
+	}
+	sql = "SELECT instance,VALUE FROM information_schema.CLUSTER_HARDWARE WHERE device_type='memory' and name = 'capacity'"
+	rows, err = querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		s = row[0][:strings.Index(row[0], ":")]
+		memCnt, err := strconv.ParseFloat(row[1], 64)
+		if err != nil {
+			return &TableDef{}, err
+		}
+		if _, ok := m[s]; ok {
+			m[s].memory += memCnt
+		} else {
+			m[s].memory = memCnt
+		}
+	}
+	sql = "SELECT `INSTANCE`,`DEVICE_NAME`,`VALUE` from information_schema.CLUSTER_HARDWARE where `NAME` = 'total' AND `DEVICE_TYPE` = 'disk' AND `DEVICE_NAME` NOT LIKE '/dev/loop%' AND (`DEVICE_NAME` LIKE '/dev%' or `DEVICE_NAME` LIKE 'sda%' or`DEVICE_NAME` LIKE 'nvme%')"
+	rows, err = querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		s = row[0][:strings.Index(row[0], ":")]
+		diskCnt, err := strconv.ParseFloat(row[2], 64)
+		if err != nil {
+			return &TableDef{}, err
+		}
+		if _, ok := m[s]; ok {
+			if _, ok := m[s].disk[row[1]]; ok {
+				m[s].disk[row[1]] += diskCnt
+			} else {
+				m[s].disk[row[1]] = diskCnt
+			}
+		} else {
+			m[s].disk = make(map[string]float64)
+		}
+	}
+	sql = fmt.Sprintf("SELECT instance,max(value) FROM metrics_schema.node_uptime  where time >= '%[1]s' and time < '%[2]s' GROUP BY instance", startTime, endTime)
+	rows, err = querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, row := range rows {
+		s = row[0][:strings.Index(row[0], ":")]
+		if _, ok := m[s]; ok {
+			m[s].uptime = row[1]
+		} else {
+			m[s] = &hardWare{s, make(map[string]int), 0, 0, make(map[string]float64), "row[1]"}
+		}
+	}
+	rows = rows[:0]
+	for _, v := range m {
+		row := make([]string, 6)
+		row[0] = v.instance
+		for k, va := range v.Type {
+			row[1] += fmt.Sprintf("%[1]s*%[2]s ", k, strconv.Itoa(va))
+		}
+		row[2] = strconv.Itoa(v.cpu) + "/" + strconv.Itoa(v.cpu*2)
+		row[3] = fmt.Sprintf("%f", v.memory/(1024*1024*1024))
+		for k, va := range v.disk {
+			row[4] += fmt.Sprintf("%[1]s : %[2]f\n", k, va/(1024*1024*1024))
+		}
+		row[5] = v.uptime
+		rows = append(rows, row)
+	}
+	for _, row := range rows {
+		resultRows = append(resultRows, NewTableRowDef(row, nil))
+	}
+	resultRows[0].Comment = "The hardwareInfo of each node"
+	table.Rows = resultRows
+	return table, nil
 }

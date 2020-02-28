@@ -27,6 +27,76 @@ func newQueryArg(startTime, endTime string) *queryArg {
 	}
 }
 
+type AvgMaxMinTableDef struct {
+	name      string
+	tbl       string
+	condition string
+	label     string
+	Comment   string
+}
+
+// Table schema
+// METRIC_NAME , LABEL, AVG(VALUE), MAX(VALUE), MIN(VALUE),
+func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error) {
+	if len(t.name) == 0 {
+		t.name = t.tbl
+	}
+	condition := fmt.Sprintf("where time >= '%s' and time < '%s' ", arg.startTime, arg.endTime)
+	if len(t.condition) > 0 {
+		condition = condition + "and " + t.condition
+	}
+	sql := fmt.Sprintf("select '%s', '', avg(value), max(value), min(value) from metrics_schema.%s %s",
+		t.name, t.tbl, condition)
+	rows, err := querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+	if len(t.label) == 0 {
+		return t.genRow(rows[0], nil), nil
+	}
+
+	sql = fmt.Sprintf("select '',`%[2]v`, avg(value), max(value), min(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` order by avg(value) desc",
+		t.name, t.label, t.tbl, condition)
+	subRows, err := querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	for i := range subRows {
+		row := subRows[i]
+		row[1] = strings.Join(row[1:2], ",")
+		newRow := row[:2]
+		newRow = append(newRow, row[2:]...)
+		subRows[i] = newRow
+	}
+	return t.genRow(rows[0], subRows), nil
+}
+
+func (t AvgMaxMinTableDef) genRow(values []string, subValues [][]string) *TableRowDef {
+	specialHandle := func(row []string) []string {
+		if len(row) == 0 {
+			return row
+		}
+		row[2] = RoundFloatString(row[2])
+		row[3] = RoundFloatString(row[3])
+		row[4] = RoundFloatString(row[4])
+		return row
+	}
+
+	values = specialHandle(values)
+	for i := range subValues {
+		subValues[i] = specialHandle(subValues[i])
+	}
+
+	return &TableRowDef{
+		Values:    values,
+		SubValues: subValues,
+		Comment:   t.Comment,
+	}
+}
+
 type sumValueQuery struct {
 	name      string
 	tbl       string
@@ -422,6 +492,20 @@ func convertFloatToInt(s string) string {
 	}
 	f = math.Round(f)
 	return fmt.Sprintf("%.0f", f)
+}
+
+func convertFloatToSize(s string) string {
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return s
+	}
+	if mb := f / float64(1024*1024); mb > 0 {
+		f = math.Round(mb*1000) / 1000
+		return fmt.Sprintf("%.3f MB", f)
+	}
+	kb := f / float64(1024)
+	f = math.Round(kb*1000) / 1000
+	return fmt.Sprintf("%.3f KB", f)
 }
 
 func RoundFloatString(s string) string {

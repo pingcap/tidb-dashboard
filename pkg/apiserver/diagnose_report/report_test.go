@@ -22,8 +22,8 @@ func (t *testReportSuite) TestReport(c *C) {
 	//startTime := "2020-02-23 10:55:00"
 	//endTime := "2020-02-23 11:05:00"
 
-	startTime := "2020-02-26 20:20:23"
-	endTime := "2020-02-26 21:20:23"
+	startTime := "2020-02-27 19:20:23"
+	endTime := "2020-02-27 21:20:23"
 
 	tables, errs := diagnose_report.GetReportTables(startTime, endTime, cli)
 	for _, tbl := range tables {
@@ -46,20 +46,52 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	//startTime := "2020-02-23 10:55:00"
 	//endTime := "2020-02-23 11:05:00"
 
-	startTime := "2020-02-26 20:00:00"
-	endTime := "2020-02-26 20:05:00"
+	startTime := "2020-02-27 20:00:00"
+	endTime := "2020-02-27 21:00:00"
 
 	var table *diagnose_report.TableDef
 	var err error
-	//table, err = diagnose_report.GetTiKVTotalTimeConsumeTable(startTime, endTime, cli)
-	//c.Assert(err, IsNil)
-	//printRows(table)
-	//
-	table, err = diagnose_report.GetTotalErrorTable(startTime, endTime, cli)
+	table, err = diagnose_report.GetTiKVRegionSizeInfo(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 
-	table, err = diagnose_report.GetTiKVTaskInfo(startTime, endTime, cli)
+	table, err = diagnose_report.GetAvgMaxMinTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetCPUUsageTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetGoroutinesCountTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetTiKVThreadCPUTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetStoreStatusTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetPDClusterStatusTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetPDEtcdStatusTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetTiKVCacheHitTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetClusterInfoTable(startTime, endTime, cli)
+	c.Assert(err, IsNil)
+	printRows(table)
+
+	table, err = diagnose_report.GetClusterHardwareInfoTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 }

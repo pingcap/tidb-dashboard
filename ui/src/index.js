@@ -10,6 +10,7 @@ import AppKeyVis from '@/apps/keyvis';
 import AppHome from '@/apps/home';
 import AppDemo from '@/apps/demo';
 import AppStatement from '@/apps/statement';
+import AppLogSearching from '@/apps/logsearch';
 
 async function main() {
   const registry = new AppRegistry();
@@ -41,6 +42,7 @@ async function main() {
     .register(AppKeyVis)
     .register(AppHome)
     .register(AppDemo)
+    .register(AppLogSearching)
     .register(AppStatement);
 
   if (routingUtil.isLocationMatch('/')) {

@@ -12,7 +12,7 @@ if (process.env.REACT_APP_DASHBOARD_API_URL !== undefined) {
   DASHBOARD_API_URL_PERFIX = process.env.REACT_APP_DASHBOARD_API_URL;
 }
 
-const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}/dashboard/api`;
+export const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}/dashboard/api`;
 
 console.log(`Dashboard API URL: ${DASHBOARD_API_URL}`);
 

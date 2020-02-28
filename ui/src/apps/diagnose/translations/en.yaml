@@ -3,4 +3,6 @@ diagnose:
   time_selector:
     start_time: Start Time
     end_time: End Time
+  gen_report: Generate Diagnose Report
+  keep_wait: It takes some time, keep patience
   open_link: in case the browser block opening the new tab, please open the link manually

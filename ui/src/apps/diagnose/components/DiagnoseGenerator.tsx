@@ -67,7 +67,7 @@ function DiagnoseGenerator({ basePath, createReport }: Props) {
         onClick={genReport}
         loading={loading}
       >
-        Generate Diagnose Report
+        {loading ? t('diagnose.keep_wait') : t('diagnose.gen_report')}
       </Button>
       {reportUrl && (
         <p style={{ marginTop: 12 }}>

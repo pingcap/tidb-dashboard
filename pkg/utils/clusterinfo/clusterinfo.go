@@ -38,14 +38,6 @@ type TiDBInfo struct {
 	StatusPort uint            `json:"status_port"`
 }
 
-type TiDBOldInfo struct {
-	Version    string          `json:"version"`
-	IP         string          `json:"ip"`
-	Port       uint            `json:"port"`
-	Status     ComponentStatus `json:"status"`
-	StatusPort uint            `json:"status_port"`
-}
-
 type TiKVInfo struct {
 	Version    string            `json:"version"`
 	IP         string            `json:"ip"`

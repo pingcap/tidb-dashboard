@@ -3,9 +3,11 @@ package diagnose_test
 import (
 	"database/sql"
 	"fmt"
+	"testing"
+
+	"github.com/jinzhu/gorm"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose"
 	. "github.com/pingcap/check"
-	"testing"
 )
 
 func TestT(t *testing.T) {
@@ -18,9 +20,9 @@ var _ = Suite(&testReportSuite{})
 type testReportSuite struct{}
 
 func (t *testReportSuite) TestReport(c *C) {
-	cli := t.getDBCli(c, "", "0.0.0.0:4000", "test")
-	//startTime := "2020-02-23 10:55:00"
-	//endTime := "2020-02-23 11:05:00"
+	cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
+	c.Assert(err, IsNil)
+	defer cli.Close()
 
 	startTime := "2020-02-27 19:20:23"
 	endTime := "2020-02-27 21:20:23"
@@ -41,16 +43,14 @@ func (t *testReportSuite) getDBCli(c *C, passwd, addr, dbName string) *sql.DB {
 }
 
 func (t *testReportSuite) TestGetTable(c *C) {
-	//cli := t.getDBCli(c, "", "172.16.5.40:4009", "test")
-	cli := t.getDBCli(c, "", "127.0.0.1:4000", "test")
-	//startTime := "2020-02-23 10:55:00"
-	//endTime := "2020-02-23 11:05:00"
+	cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
+	c.Assert(err, IsNil)
+	defer cli.Close()
 
 	startTime := "2020-02-27 20:00:00"
 	endTime := "2020-02-27 21:00:00"
 
 	var table *diagnose.TableDef
-	var err error
 	table, err = diagnose.GetTiKVRegionSizeInfo(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)

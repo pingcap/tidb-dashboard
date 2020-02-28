@@ -14,7 +14,6 @@
 package diagnose
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -66,16 +65,7 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) genReportHandler(c *gin.Context) {
 	// uncomment it to get gorm.DB
-	// db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
-
-	dbDSN := fmt.Sprintf("root:%s@tcp(%s)/%s", "", "172.16.5.40:4009", "test")
-	// dbDSN := fmt.Sprintf("root:%s@tcp(%s)/%s", "", "127.0.0.1:4000", "test")
-	db, err := sql.Open("mysql", dbDSN)
-	if err != nil {
-		c.String(http.StatusBadRequest, "%v", err)
-		return
-	}
-	db.SetMaxOpenConns(10)
+	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
 	defer db.Close()
 
 	// startTime := "2020-02-25 13:20:23"

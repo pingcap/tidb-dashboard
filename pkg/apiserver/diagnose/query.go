@@ -1,15 +1,16 @@
 package diagnose
 
 import (
-	"database/sql"
 	"fmt"
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/jinzhu/gorm"
 )
 
 type rowQuery interface {
-	queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error)
+	queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error)
 }
 
 type queryArg struct {
@@ -37,7 +38,7 @@ type AvgMaxMinTableDef struct {
 
 // Table schema
 // METRIC_NAME , LABEL, AVG(VALUE), MAX(VALUE), MIN(VALUE),
-func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error) {
+func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error) {
 	if len(t.name) == 0 {
 		t.name = t.tbl
 	}
@@ -107,7 +108,7 @@ type sumValueQuery struct {
 
 // Table schema
 // METRIC_NAME , LABEL  TOTAL_VALUE
-func (t sumValueQuery) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error) {
+func (t sumValueQuery) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error) {
 	if len(t.name) == 0 {
 		t.name = t.tbl
 	}
@@ -173,7 +174,7 @@ type totalTimeByLabelsTableDef struct {
 
 // Table schema
 // METRIC_NAME , LABEL , TIME_RATIO ,  TOTAL_VALUE , TOTAL_COUNT , P999 , P99 , P90 , P80
-func (t totalTimeByLabelsTableDef) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error) {
+func (t totalTimeByLabelsTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error) {
 	sql := t.genSumarySQLs(arg.totalTime, arg.startTime, arg.endTime, arg.quantiles)
 	rows, err := querySQL(db, sql)
 	if err != nil {
@@ -324,7 +325,7 @@ type totalValueAndTotalCountTableDef struct {
 
 // Table schema
 // METRIC_NAME , LABEL  TOTAL_VALUE , TOTAL_COUNT , P999 , P99 , P90 , P80
-func (t totalValueAndTotalCountTableDef) queryRow(arg *queryArg, db *sql.DB) (*TableRowDef, error) {
+func (t totalValueAndTotalCountTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error) {
 	sql := t.genSumarySQLs(arg.startTime, arg.endTime, arg.quantiles)
 	rows, err := querySQL(db, sql)
 	if err != nil {
@@ -438,11 +439,12 @@ func (t totalValueAndTotalCountTableDef) genDetailSQLs(startTime, endTime string
 	return joinSql
 }
 
-func querySQL(db *sql.DB, sql string) ([][]string, error) {
+func querySQL(db *gorm.DB, sql string) ([][]string, error) {
 	if len(sql) == 0 {
 		return nil, nil
 	}
-	rows, err := db.Query(sql)
+
+	rows, err := db.Raw(sql).Rows()
 	if err != nil {
 		return nil, err
 	}

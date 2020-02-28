@@ -52,7 +52,7 @@ type Services struct {
 func Handler(apiPrefix string, config *config.Config, services *Services) http.Handler {
 	once.Do(func() {
 		// These global modification will be effective only for the first invoke.
-		// gin.SetMode(gin.ReleaseMode)
+		gin.SetMode(gin.ReleaseMode)
 	})
 
 	r := gin.New()

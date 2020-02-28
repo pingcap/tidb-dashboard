@@ -67,37 +67,13 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) genReportHandler(c *gin.Context) {
-	// uncomment it to get gorm.DB
 	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
-
-	// startTime := "2020-02-25 13:20:23"
-	// endTime := "2020-02-26 13:30:23"
 	startTime := c.Query("start_time")
 	endTime := c.Query("end_time")
 	if startTime == "" || endTime == "" {
 		_ = c.Error(fmt.Errorf("invalid begin_time or end_time"))
 		return
 	}
-
-	// tables := []*TableDef{}
-	// table, err := GetTotalErrorTable(startTime, endTime, db)
-	// if err != nil {
-	// 	_ = c.Error(err)
-	// 	return
-	// }
-	// tables = append(tables, table)
-	// table, err = GetTiDBGCConfigInfo(startTime, endTime, db)
-	// if err != nil {
-	// 	_ = c.Error(err)
-	// 	return
-	// }
-	// tables = append(tables, table)
-	// table, err = GetTiKVErrorTable(startTime, endTime, db)
-	// if err != nil {
-	// 	_ = c.Error(err)
-	// 	return
-	// }
-	// tables = append(tables, table)
 
 	tables, errs := GetReportTablesForDisplay(startTime, endTime, db)
 	if len(errs) > 0 {
@@ -110,11 +86,13 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
+
 	report := Report{Content: string(content)}
 	if err := s.db.Create(&report).Error; err != nil {
 		_ = c.Error(err)
 		return
 	}
+
 	c.JSON(http.StatusOK, ReportRes{ReportID: report.ID})
 }
 

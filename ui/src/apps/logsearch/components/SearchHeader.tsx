@@ -1,5 +1,5 @@
 import client from "@/utils/client";
-import { LogsearchCreateTaskGroupRequest, LogsearchSearchTarget } from "@/utils/dashboard_client";
+import { LogsearchCreateTaskGroupRequest, LogsearchSearchTarget, ClusterinfoClusterInfo } from "@/utils/dashboard_client";
 import { Card, Col, DatePicker, Form, Row, Select, TreeSelect } from "antd";
 import { RangePickerValue } from "antd/lib/date-picker/interface";
 import Search from "antd/lib/input/Search";
@@ -43,6 +43,34 @@ const mockServerMap: Map<string, LogsearchSearchTarget> = new Map([
 
 function buildServerMap() {
   // TODO: parse from topology
+  // const serverMap = new Map<string, LogsearchSearchTarget>()
+  // info?.tidb?.nodes?.forEach(tidb => {
+  //   const addr = `${tidb.ip}:${tidb.port}`
+  //   const target :LogsearchSearchTarget = {
+  //     ip: tidb.ip,
+  //     port: tidb.status_port,
+  //     kind: 'tidb'
+  //   }
+  //   serverMap.set(addr, target)
+  // })
+  // info?.tikv?.nodes?.forEach(tikv => {
+  //   const addr = `${tikv.ip}:${tikv.port}`
+  //   const target :LogsearchSearchTarget = {
+  //     ip: tikv.ip,
+  //     port: tikv.status_port,
+  //     kind: 'tidb'
+  //   }
+  //   serverMap.set(addr, target)
+  // })
+  // info?.pd?.nodes?.forEach(pd => {
+  //   const addr = `${pd.ip}:${pd.port}`
+  //   const target :LogsearchSearchTarget = {
+  //     ip: pd.ip,
+  //     port: pd.port,
+  //     kind: 'tidb'
+  //   }
+  //   serverMap.set(addr, target)
+  // })
   return mockServerMap
 }
 
@@ -100,6 +128,12 @@ export default function SearchHeader() {
   // don't add the dependent functions likes dispatch into the dependency array
   // it will cause the infinite loop
 
+  useEffect(() => {
+    (async function() {
+      const res = await client.dashboard.topologyGet()
+      console.log(res.data)
+    }())
+  }, [])
   const serverMap = buildServerMap()
 
   async function createTaskGroup() {

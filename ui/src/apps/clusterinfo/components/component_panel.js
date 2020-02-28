@@ -1,40 +1,28 @@
 import React from 'react';
 import { Row, Col } from 'antd';
+import alive_dead_cnt from './utils';
+
+import styles from './component_panel.module.less';
 
 export default class ComponentPanel extends React.Component {
-  constructor(prop) {
-    super(prop);
-    // console.log(this.props);
-  }
-
   render() {
-    let [alive_cnt, down_cnt] = [0, 0];
-    if (this.props.datas.err === null) {
-      this.props.datas.nodes.forEach((n) => {
-        console.log(n);
-        if (n.status === 1) {
-          alive_cnt ++;
-        } else {
-          down_cnt++;
-        }
-      })
-    }
+    const [alive_cnt, down_cnt] = alive_dead_cnt(this.props.datas);
     return (
-      <div>
-        <p>{this.props.name}</p>
+      <div className="component-panel">
+        <h3>{this.props.name}</h3>
 
         <Row gutter={[16, 16]}>
-          <Col span={12} >
-            <p>Up</p>
-            <p>{alive_cnt}</p>
+          <Col span={12}>
+            <p className="desc-text">Up</p>
+            <p className="alive-cnt">{alive_cnt}</p>
           </Col>
 
-          <Col span={12} >
-            <p>ABNORMAL</p>
-            <p>{down_cnt}</p>
+          <Col span={12}>
+            <p className="desc-text">ABNORMAL</p>
+            <p className="down-cnt">{down_cnt}</p>
           </Col>
         </Row>
       </div>
-    )
+    );
   }
 }

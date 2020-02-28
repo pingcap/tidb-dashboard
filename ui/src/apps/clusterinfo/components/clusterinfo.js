@@ -1,5 +1,5 @@
 import React from 'react';
-import {Table} from 'antd';
+import { Table } from 'antd';
 
 const columns = [
   {
@@ -25,64 +25,58 @@ const columns = [
   {
     title: 'Deploy Directory',
     dataIndex: 'deploy_dir',
-    key: 'deploy_dir'
+    key: 'deploy_dir',
   },
   {
     title: 'Status Port',
     dataIndex: 'status_port',
     key: 'status_port',
-  }
+  },
 ];
 
-export default class ClusterInfo extends React.Component {
+export default class Component_panel extends React.Component {
   render() {
     const data = this.props.data;
-    console.log(data);
     let dataSource = [];
-    if (data.tikv !== null && data.tikv.err === null) {
 
-      dataSource.push({
-        'ip': 'tikv',
-        'children': data.tikv.nodes.map((n, index) => wrapnode(n, 'tikv', index)),
-      })
-    }
+    push_nodes('tikv', data, dataSource);
+    push_nodes('tidb', data, dataSource);
+    push_nodes('pd', data, dataSource);
 
-    if (data.tidb !== null && data.tidb.err === null) {
-      dataSource.push({
-        'ip': 'tidb',
-        'children': data.tidb.nodes.map((n, index) => wrapnode(n, 'tidb', index)),
-      })
-    }
+    return <Table columns={columns} dataSource={dataSource} />;
+  }
+}
 
-    if (data.pd !== null && data.pd.err === null) {
-      dataSource.push({
-        'ip': 'pd',
-        'children': data.tidb.nodes.map((n, index) => wrapnode(n, 'pd', index)),
-      })
-    }
-    console.log(dataSource);
-
-    return (
-      <Table columns={columns} dataSource={dataSource} />
-    )
+function push_nodes(key, data, dataSource) {
+  if (data[key] !== undefined && data[key] !== null && data[key].err === null) {
+    dataSource.push({
+      ip: key + '(' + data.tidb.nodes.length + ')',
+      children: data[key].nodes.map((n, index) => wrapnode(n, key, index)),
+    });
   }
 }
 
 function wrapnode(node, comp, id) {
   if (node === undefined || node === null) {
-    return
+    return;
   }
   let status = 'down';
   if (node.status === 1) {
     status = 'up';
   }
+  if (node.deploy_dir === undefined && node.binary_path !== null) {
+    node.deploy_dir = node.binary_path.substring(
+      0,
+      node.binary_path.lastIndexOf('/')
+    );
+  }
   return {
-    key: comp + "-" + id,
+    key: comp + '-' + id,
     port: node.port,
     binary_path: node.binary_path,
     deploy_dir: node.deploy_dir,
     version: node.version,
     status_port: node.status_port,
     status: status,
-  }
+  };
 }

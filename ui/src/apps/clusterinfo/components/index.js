@@ -1,5 +1,5 @@
-import ComponentPanel from './componentPanel';
-import ClusterInfoTable from './clusterInfo';
-import MonitorAlertBar from './monitorAlertBar';
+import ComponentPanel from './ComponentPanel';
+import ClusterInfoTable from './ClusterInfoTable';
+import MonitorAlertBar from './MonitorAlertBar';
 
 export { ComponentPanel, ClusterInfoTable, MonitorAlertBar };

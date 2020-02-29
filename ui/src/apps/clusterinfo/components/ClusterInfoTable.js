@@ -2,57 +2,65 @@ import React from 'react';
 import { Table } from 'antd';
 import { useTranslation } from 'react-i18next';
 
-
-function ComponentPanelTable(props) {
+function ComponentPanelTable({ cluster }) {
   const { t } = useTranslation();
   const columns = [
     {
-      title: t('clusterInfo.componentTable.ip'),
+      title: t('clusterinfo.component_table.ip'),
       dataIndex: 'ip',
       key: 'ip',
     },
     {
-      title: t('clusterInfo.componentTable.port'),
+      title: t('clusterinfo.component_table.port'),
       dataIndex: 'port',
       key: 'port',
     },
     {
-      title: t('clusterInfo.componentTable.status'),
+      title: t('clusterinfo.component_table.status'),
       dataIndex: 'status',
       key: 'status',
     },
     {
-      title: t('clusterInfo.componentTable.version'),
+      title: t('clusterinfo.component_table.version'),
       dataIndex: 'version',
       key: 'version',
     },
     {
-      title: t('clusterInfo.componentTable.deploy_dir'),
+      title: t('clusterinfo.component_table.deploy_dir'),
       dataIndex: 'deploy_dir',
       key: 'deploy_dir',
     },
     {
-      title: t('clusterInfo.componentTable.status_port'),
+      title: t('clusterinfo.component_table.status_port'),
       dataIndex: 'status_port',
       key: 'status_port',
     },
   ];
 
-  const data = props.data;
   let dataSource = [];
 
-  pushNodes('tikv', data, dataSource);
-  pushNodes('tidb', data, dataSource);
-  pushNodes('pd', data, dataSource);
+  pushNodes('tikv', cluster, dataSource);
+  pushNodes('tidb', cluster, dataSource);
+  pushNodes('pd', cluster, dataSource);
 
-  return <Table columns={columns} dataSource={dataSource} />;
+  return (
+    <div>
+      {/* TODO: i18n */}
+      <h2>Nodes List</h2>
+      <Table columns={columns} dataSource={dataSource} pagination={false} />;
+    </div>
+  );
 }
 
-function pushNodes(key, data, dataSource) {
-  if (data[key] !== undefined && data[key] !== null && data[key].err === null) {
+function pushNodes(key, cluster, dataSource) {
+  if (
+    cluster[key] !== undefined &&
+    cluster[key] !== null &&
+    cluster[key].err === null
+  ) {
     dataSource.push({
-      ip: key + '(' + data.tidb.nodes.length + ')',
-      children: data[key].nodes.map((n, index) => wrapnode(n, key, index)),
+      ip: key + '(' + cluster.tidb.nodes.length + ')',
+      children: cluster[key].nodes.map((n, index) => wrapnode(n, key, index)),
     });
   }
 }

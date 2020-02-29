@@ -208,12 +208,12 @@ export default function SearchHeader() {
             <Col span={12}>
               <Form.Item label={t('logs.common.log_level')} labelCol={{ span: 4 }}>
                 <Select value={logLevel} style={{ width: 100 }} onChange={handleLogLevelChange}>
-                  <Option value={1}>Debug</Option>
-                  <Option value={2}>Info</Option>
-                  <Option value={3}>Warn</Option>
-                  <Option value={4}>Trace</Option>
-                  <Option value={5}>Critical</Option>
-                  <Option value={6}>Error</Option>
+                  <Option value={1}>DEBUG</Option>
+                  <Option value={2}>INFO</Option>
+                  <Option value={3}>WARN</Option>
+                  <Option value={4}>TRACE</Option>
+                  <Option value={5}>CRITICAL</Option>
+                  <Option value={6}>ERROR</Option>
                 </Select>
               </Form.Item>
             </Col>

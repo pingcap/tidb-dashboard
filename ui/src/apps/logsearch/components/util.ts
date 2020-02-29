@@ -5,13 +5,13 @@ export const namingMap = {
 }
 
 export const LogLevelMap = {
-  0: 'Unknown',
-  1: 'Debug',
-  2: 'Info',
-  3: 'Warn',
-  4: 'Trace',
-  5: 'Critical',
-  6: 'Error'
+  0: 'UNKNOWN',
+  1: 'DEBUG',
+  2: 'INFO',
+  3: 'WARN',
+  4: 'TRACE',
+  5: 'CRITICAL',
+  6: 'ERROR'
 }
 
 export enum TaskState {

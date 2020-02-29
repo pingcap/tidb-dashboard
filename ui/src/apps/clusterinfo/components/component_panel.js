@@ -8,7 +8,7 @@ export default class ComponentPanel extends React.Component {
   render() {
     const [alive_cnt, down_cnt] = alive_dead_cnt(this.props.datas);
     return (
-      <div className="component-panel">
+      <div>
         <h3>{this.props.name} NODES</h3>
 
         <Row gutter={[16, 16]}>

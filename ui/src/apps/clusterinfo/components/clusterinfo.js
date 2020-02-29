@@ -39,15 +39,15 @@ export default class Component_panel extends React.Component {
     const data = this.props.data;
     let dataSource = [];
 
-    push_nodes('tikv', data, dataSource);
-    push_nodes('tidb', data, dataSource);
-    push_nodes('pd', data, dataSource);
+    pushNodes('tikv', data, dataSource);
+    pushNodes('tidb', data, dataSource);
+    pushNodes('pd', data, dataSource);
 
     return <Table columns={columns} dataSource={dataSource} />;
   }
 }
 
-function push_nodes(key, data, dataSource) {
+function pushNodes(key, data, dataSource) {
   if (data[key] !== undefined && data[key] !== null && data[key].err === null) {
     dataSource.push({
       ip: key + '(' + data.tidb.nodes.length + ')',

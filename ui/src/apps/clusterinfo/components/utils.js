@@ -1,4 +1,4 @@
-export default function alive_dead_cnt(component_data) {
+export default function aliveDeadCnt(component_data) {
   let [alive_cnt, down_cnt] = [0, 0];
   if (component_data !== null && component_data.err === null) {
     component_data.nodes.forEach((n) => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col } from 'antd';
 import { HashRouter as Router } from 'react-router-dom';
 
-import { Component_panel, ComponentPanel, MonitorAlertBar } from './components';
+import { ClusterInfoTable, ComponentPanel, MonitorAlertBar } from './components';
 
 import client from '@/utils/client';
 
@@ -45,7 +45,7 @@ const App = () => {
 
           <p> Nodes List </p>
 
-          <Component_panel data={cluster.data} />
+          <ClusterInfoTable data={cluster.data} />
         </Col>
         <Col span={8} style={{
           padding: 20

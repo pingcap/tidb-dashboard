@@ -1,6 +1,6 @@
 import React from 'react';
 import {Icon} from 'antd';
-import styles from './monitor_alert_bar.module.less';
+import styles from './monitorAlertBar.module.less';
 
 export default class MonitorAlertBar extends React.Component {
   render() {
@@ -8,7 +8,7 @@ export default class MonitorAlertBar extends React.Component {
     let am = '';
     const data = this.props.data;
     if (data.alert_manager !== null) {
-      am = 'http://' + data.alert_manager.ip + ':' + data.alert_manager.port;
+      am = `http://${data.alert_manager.ip}:${data.alert_manager.port}`;
     }
     if (data.grafana !== null) {
       grafana = 'http://' + data.grafana.ip + ':' + data.grafana.port;

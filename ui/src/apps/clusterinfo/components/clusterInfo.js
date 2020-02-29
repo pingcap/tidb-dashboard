@@ -1,40 +1,43 @@
 import React from 'react';
 import { Table } from 'antd';
+import { useTranslation } from 'react-i18next';
 
-const columns = [
-  {
-    title: 'IP',
-    dataIndex: 'ip',
-    key: 'ip',
-  },
-  {
-    title: 'Port',
-    dataIndex: 'port',
-    key: 'port',
-  },
-  {
-    title: 'Status',
-    dataIndex: 'status',
-    key: 'status',
-  },
-  {
-    title: 'Version',
-    dataIndex: 'version',
-    key: 'version',
-  },
-  {
-    title: 'Deploy Directory',
-    dataIndex: 'deploy_dir',
-    key: 'deploy_dir',
-  },
-  {
-    title: 'Status Port',
-    dataIndex: 'status_port',
-    key: 'status_port',
-  },
-];
 
-function ComponentPanel(props) {
+function ComponentPanelTable(props) {
+  const { t } = useTranslation();
+  const columns = [
+    {
+      title: t('clusterInfo.componentTable.ip'),
+      dataIndex: 'ip',
+      key: 'ip',
+    },
+    {
+      title: t('clusterInfo.componentTable.port'),
+      dataIndex: 'port',
+      key: 'port',
+    },
+    {
+      title: t('clusterInfo.componentTable.status'),
+      dataIndex: 'status',
+      key: 'status',
+    },
+    {
+      title: t('clusterInfo.componentTable.version'),
+      dataIndex: 'version',
+      key: 'version',
+    },
+    {
+      title: t('clusterInfo.componentTable.deploy_dir'),
+      dataIndex: 'deploy_dir',
+      key: 'deploy_dir',
+    },
+    {
+      title: t('clusterInfo.componentTable.status_port'),
+      dataIndex: 'status_port',
+      key: 'status_port',
+    },
+  ];
+
   const data = props.data;
   let dataSource = [];
 
@@ -80,4 +83,4 @@ function wrapnode(node, comp, id) {
   };
 }
 
-export default ComponentPanel;
+export default ComponentPanelTable;

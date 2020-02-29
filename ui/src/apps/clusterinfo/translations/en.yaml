@@ -3,3 +3,10 @@ clusterInfo:
     up: UP
     abnormal: ABNORMAL
     nodes: NODES
+  componentTable:
+    ip: IP
+    port: Port
+    status: Status
+    deploy_dir: Deploy Directory
+    status_port: Status Port
+    version: Version

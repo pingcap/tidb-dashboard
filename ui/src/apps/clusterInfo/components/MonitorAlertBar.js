@@ -16,7 +16,7 @@ export default function MonitorAlertBar({ cluster }) {
 
   return (
     <div className={styles.desc}>
-      <h2>MONITOR AND ALERT</h2>
+      <h2>{t('clusterInfo.monitor_alert.title')}</h2>
       <p>
         <a href={grafana}>
           {t('clusterInfo.monitor_alert.view_monitor')}{' '}

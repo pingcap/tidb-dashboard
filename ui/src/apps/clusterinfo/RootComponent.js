@@ -15,13 +15,16 @@ const App = () => {
   const [cluster, setCluster] = useState({});
 
   useEffect(() => {
-    client.dashboard.topologyAllGet().then(data => {
-      setCluster(data);
-      setLoading(false);
-    });
+    client.dashboard
+      .topologyAllGet()
+      .then(res => res.data)
+      .then(cluster => {
+        setCluster(cluster);
+        setLoading(false);
+      });
   }, []);
 
-  if (loading === true || cluster === undefined) {
+  if (loading) {
     return <p>Loading ...</p>;
   }
 
@@ -38,19 +41,18 @@ const App = () => {
         <Col span={16}>
           <Row gutter={[8, 16]}>
             <Col span={8}>
-              <ComponentPanel name={'TIKV'} datas={cluster.data.tikv} />
+              {/* TODO: datas is too general, it is not a good name, make it specific */}
+              <ComponentPanel name={'TIKV'} datas={cluster.tikv} />
             </Col>
             <Col span={8}>
-              <ComponentPanel name={'TIDB'} datas={cluster.data.tidb} />
+              <ComponentPanel name={'TIDB'} datas={cluster.tidb} />
             </Col>
             <Col span={8}>
-              <ComponentPanel name={'PD'} datas={cluster.data.pd} />
+              <ComponentPanel name={'PD'} datas={cluster.pd} />
             </Col>
           </Row>
 
-          <p> Nodes List </p>
-
-          <ClusterInfoTable data={cluster.data} />
+          <ClusterInfoTable cluster={cluster} />
         </Col>
         <Col
           span={8}
@@ -58,7 +60,7 @@ const App = () => {
             padding: 20,
           }}
         >
-          <MonitorAlertBar data={cluster.data} />
+          <MonitorAlertBar cluster={cluster} />
         </Col>
       </Row>
     </Router>

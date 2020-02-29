@@ -56,6 +56,14 @@ func fillTopologyUnderEtcd(ctx context.Context, service *Service, fillTargetInfo
 	if alertManager != nil {
 		fillTargetInfo.AlertManager = alertManager
 	}
+	if len(tidb) == 0 {
+		tidb, err = clusterinfo.GetTiDBTopologyFromOld(ctx, service.etcdCli)
+		if err != nil {
+			errString := err.Error()
+			fillTargetInfo.TiDB.Err = &errString
+			return
+		}
+	}
 	fillTargetInfo.TiDB.Nodes = tidb
 }
 

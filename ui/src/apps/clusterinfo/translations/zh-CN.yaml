@@ -1,0 +1,5 @@
+clusterinfo:
+  status:
+    up: 正常
+    abnormal: 不正常
+    nodes: 节点

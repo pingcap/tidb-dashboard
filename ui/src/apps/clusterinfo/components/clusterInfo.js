@@ -34,17 +34,15 @@ const columns = [
   },
 ];
 
-export default class Component_panel extends React.Component {
-  render() {
-    const data = this.props.data;
-    let dataSource = [];
+function ComponentPanel(props) {
+  const data = props.data;
+  let dataSource = [];
 
-    pushNodes('tikv', data, dataSource);
-    pushNodes('tidb', data, dataSource);
-    pushNodes('pd', data, dataSource);
+  pushNodes('tikv', data, dataSource);
+  pushNodes('tidb', data, dataSource);
+  pushNodes('pd', data, dataSource);
 
-    return <Table columns={columns} dataSource={dataSource} />;
-  }
+  return <Table columns={columns} dataSource={dataSource} />;
 }
 
 function pushNodes(key, data, dataSource) {
@@ -81,3 +79,5 @@ function wrapnode(node, comp, id) {
     status: status,
   };
 }
+
+export default ComponentPanel;

@@ -1,0 +1,5 @@
+clusterInfo:
+  status:
+    up: UP
+    abnormal: ABNORMAL
+    nodes: NODES

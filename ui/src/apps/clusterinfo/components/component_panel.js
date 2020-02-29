@@ -1,12 +1,12 @@
 import { Col, Row } from 'antd';
 import React from 'react';
 import styles from './component_panel.module.less';
-import alive_dead_cnt from './utils';
+import aliveDeadCnt from './utils';
 
 
 export default class ComponentPanel extends React.Component {
   render() {
-    const [alive_cnt, down_cnt] = alive_dead_cnt(this.props.datas);
+    const [alive_cnt, down_cnt] = aliveDeadCnt(this.props.datas);
     return (
       <div>
         <h3>{this.props.name} NODES</h3>

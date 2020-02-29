@@ -33,7 +33,8 @@ export default function MonitorAlertBar({ cluster }) {
       <h2>{t('clusterInfo.monitor_alert.problems')}</h2>
       <p>
         <a href={''}>
-          Run Diagnose <Icon type="right" style={{ marginLeft: '5px' }} />{' '}
+          {t('clusterInfo.monitor_alert.diagnose')}
+          <Icon type="right" style={{ marginLeft: '5px' }} />{' '}
         </a>
       </p>
     </div>

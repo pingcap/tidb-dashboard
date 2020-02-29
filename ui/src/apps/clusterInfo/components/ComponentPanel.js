@@ -18,9 +18,7 @@ function ComponentPanel(props) {
   }
   return (
     <div>
-      <h3>
-        {t('clusterInfo.status.nodes', {nodeType: props.name})}
-      </h3>
+      <h3>{t('clusterInfo.status.nodes', { nodeType: props.name })}</h3>
 
       <Row gutter={[16, 16]}>
         <Col span={8} className={styles.column}>

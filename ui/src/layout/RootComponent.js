@@ -87,7 +87,7 @@ class App extends React.PureComponent {
               {this.renderAppMenuItem('keyvis')}
               {this.renderAppMenuItem('statement')}
               {this.renderAppMenuItem('logsearch')}
-              {this.renderAppMenuItem('clusterinfo')}
+              {this.renderAppMenuItem('clusterInfo')}
               {isDev ? (
                 <Menu.SubMenu
                   key="sub1"

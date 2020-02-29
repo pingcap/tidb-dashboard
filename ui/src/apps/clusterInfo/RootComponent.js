@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col } from 'antd';
+import { Row, Col, Spin, Icon } from 'antd';
 import { HashRouter as Router } from 'react-router-dom';
 
 import {
@@ -15,17 +15,19 @@ const App = () => {
   const [cluster, setCluster] = useState({});
 
   useEffect(() => {
-    client.dashboard
-      .topologyAllGet()
-      .then(res => res.data)
-      .then(cluster => {
-        setCluster(cluster);
-        setLoading(false);
-      });
+    const fetchLoad = async () => {
+      let res = await client.dashboard.topologyAllGet();
+      const cluster = res.data;
+      setCluster(cluster);
+      setLoading(false);
+    };
+    fetchLoad();
   }, []);
 
   if (loading) {
-    return <p>Loading ...</p>;
+    return (
+      <Spin indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />} />
+    );
   }
 
   return (

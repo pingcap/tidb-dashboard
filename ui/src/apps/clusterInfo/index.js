@@ -1,7 +1,7 @@
 module.exports = {
-  id: 'clusterinfo',
+  id: 'clusterInfo',
   loader: () => import('./app.js'),
-  routerPrefix: '/clusterinfo',
+  routerPrefix: '/clusterInfo',
   icon: 'cluster',
   translations: require.context('./translations/', false, /\.yaml$/),
 };

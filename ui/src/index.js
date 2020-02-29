@@ -10,7 +10,7 @@ import AppKeyVis from '@/apps/keyvis';
 import AppHome from '@/apps/home';
 import AppDemo from '@/apps/demo';
 import AppStatement from '@/apps/statement';
-import AppClusterInfo from '@/apps/clusterinfo';
+import AppClusterInfo from '@/apps/clusterInfo';
 import AppLogSearching from '@/apps/logsearch';
 
 async function main() {

@@ -7,15 +7,17 @@ import client from '@/utils/client';
 
 const App = () => (
   <Router>
-    <Button type="primary" onClick={handleClick}>Button</Button>
     <Link to="/home">
       <Button type="primary">Go To Home</Button>
     </Link>
+    <Button type="primary" onClick={handleClick}>
+      Button
+    </Button>
   </Router>
 );
 
 async function handleClick() {
-  const r = await client.dashboard.fooNameGet("abc");
+  const r = await client.dashboard.fooBarNameGet('abc');
   alert(r.data);
 }
 

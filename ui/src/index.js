@@ -10,6 +10,7 @@ import AppKeyVis from '@/apps/keyvis';
 import AppHome from '@/apps/home';
 import AppDemo from '@/apps/demo';
 import AppStatement from '@/apps/statement';
+import AppDiagnose from '@/apps/diagnose';
 import AppLogSearching from '@/apps/logsearch';
 
 async function main() {
@@ -42,8 +43,9 @@ async function main() {
     .register(AppKeyVis)
     .register(AppHome)
     .register(AppDemo)
-    .register(AppLogSearching)
-    .register(AppStatement);
+    .register(AppStatement)
+    .register(AppDiagnose)
+    .register(AppLogSearching);
 
   if (routingUtil.isLocationMatch('/')) {
     singleSpa.navigateToUrl('#' + registry.getDefaultRouter());

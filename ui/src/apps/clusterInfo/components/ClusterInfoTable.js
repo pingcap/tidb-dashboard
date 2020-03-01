@@ -26,9 +26,9 @@ function ComponentPanelTable({ cluster }) {
       width: TableWidth
     },
     {
-      title: t('cluster_info.component_table.deploy_dir'),
-      dataIndex: 'deploy_dir',
-      key: 'deploy_dir',
+      title: t('cluster_info.component_table.deploy_path'),
+      dataIndex: 'deploy_path',
+      key: 'deploy_path',
       width: TableWidth
     }
     // {
@@ -78,8 +78,8 @@ function wrapNode(node, comp, id) {
   if (node.status === 1) {
     status = 'up'
   }
-  if (node.deploy_dir === undefined && node.binary_path !== null) {
-    node.deploy_dir = node.binary_path.substring(
+  if (node.deploy_path === undefined && node.binary_path !== null) {
+    node.deploy_path = node.binary_path.substring(
       0,
       node.binary_path.lastIndexOf('/')
     )
@@ -87,7 +87,7 @@ function wrapNode(node, comp, id) {
   return {
     address: `${node.ip}:${node.port}`,
     binary_path: node.binary_path,
-    deploy_dir: node.deploy_dir,
+    deploy_path: node.deploy_path,
     version: node.version,
     status_port: node.status_port,
     status: status

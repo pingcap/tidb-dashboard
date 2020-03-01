@@ -8,7 +8,7 @@ cluster_info:
     ip: IP
     port: Port
     status: Status
-    deploy_dir: Deploy Directory
+    deploy_path: Deploy Directory
     status_port: Status Port
     version: Version
     address: Address
@@ -17,6 +17,8 @@ cluster_info:
   monitor_alert:
     title: MONITOR AND ALERT
     view_monitor: VIEW MONITOR
+    view_monitor_warn: MONITOR NOT AVAILABLE
     view_alerts: VIEW ALERTS
+    view_alerts_warn: ALERTS NOT AVAILABLE
     problems: PROBLEMS
     diagnose: RUN DIAGNOSE

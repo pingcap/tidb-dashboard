@@ -20,6 +20,8 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 
 	// MySQL driver used by gorm
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -56,6 +58,10 @@ func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 			if mysqlErr.Number == 1045 {
 				return nil, ErrTiDBAuthFailed.New("bad TiDB username or password")
 			}
+		}
+		log.Warn("unknown error occurred while OpenTiDB", zap.Error(err))
+		if host == "0.0.0.0" {
+			log.Warn("The IP reported by TiDB is 0.0.0.0, which may not have the -advertise-address option")
 		}
 		return nil, err
 	}

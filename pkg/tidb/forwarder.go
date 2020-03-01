@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
@@ -72,12 +71,6 @@ func (f *Forwarder) getServerInfo() (*tidbServerInfo, error) {
 	for _, kv := range resp.Kvs {
 		err = json.Unmarshal(kv.Value, &info)
 		if err != nil {
-			continue
-		}
-		if info.IP == "0.0.0.0" {
-			// Older versions of tidb without the -advertise-address option,
-			// will report ip as 0.0.0.0 and cannot be accessed.
-			log.Warn("The IP reported by TiDB is 0.0.0.0, which may not have the -advertise-address option")
 			continue
 		}
 		return &info, nil

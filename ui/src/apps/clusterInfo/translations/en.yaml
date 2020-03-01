@@ -1,9 +1,9 @@
-clusterInfo:
+cluster_info:
   nav_title: Cluster Info
   status:
     up: UP
     abnormal: ABNORMAL
-    nodes: "{nodeType} NODES"
+    nodes: "{{nodeType}} NODES"
   component_table:
     ip: IP
     port: Port

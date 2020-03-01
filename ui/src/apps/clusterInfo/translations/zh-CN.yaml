@@ -1,4 +1,4 @@
-clusterInfo:
+cluster_info:
   nav_title: 集群信息
   status:
     up: 正常

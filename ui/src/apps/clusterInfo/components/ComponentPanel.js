@@ -18,16 +18,16 @@ function ComponentPanel(props) {
   }
   return (
     <div>
-      <h3>{t('clusterInfo.status.nodes', { nodeType: props.name })}</h3>
+      <h3>{t('cluster_info.status.nodes', { nodeType: props.name })}</h3>
 
       <Row gutter={[16, 16]}>
         <Col span={8} className={styles.column}>
-          <p className={styles.desc}>{t('clusterInfo.status.up')}</p>
+          <p className={styles.desc}>{t('cluster_info.status.up')}</p>
           <p className={styles.alive}>{alive_cnt}</p>
         </Col>
 
         <Col span={8} className={styles.column}>
-          <p className={styles.desc}>{t('clusterInfo.status.abnormal')}</p>
+          <p className={styles.desc}>{t('cluster_info.status.abnormal')}</p>
           <p className={down_cnt === 0 ? styles.alive : styles.down}>
             {down_cnt}
           </p>

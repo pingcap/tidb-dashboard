@@ -6,32 +6,32 @@ function ComponentPanelTable({ cluster }) {
   const { t } = useTranslation();
   const columns = [
     {
-      title: t('clusterInfo.component_table.ip'),
+      title: t('cluster_info.component_table.ip'),
       dataIndex: 'ip',
       key: 'ip',
     },
     {
-      title: t('clusterInfo.component_table.port'),
+      title: t('cluster_info.component_table.port'),
       dataIndex: 'port',
       key: 'port',
     },
     {
-      title: t('clusterInfo.component_table.status'),
+      title: t('cluster_info.component_table.status'),
       dataIndex: 'status',
       key: 'status',
     },
     {
-      title: t('clusterInfo.component_table.version'),
+      title: t('cluster_info.component_table.version'),
       dataIndex: 'version',
       key: 'version',
     },
     {
-      title: t('clusterInfo.component_table.deploy_dir'),
+      title: t('cluster_info.component_table.deploy_dir'),
       dataIndex: 'deploy_dir',
       key: 'deploy_dir',
     },
     {
-      title: t('clusterInfo.component_table.status_port'),
+      title: t('cluster_info.component_table.status_port'),
       dataIndex: 'status_port',
       key: 'status_port',
     },
@@ -45,7 +45,7 @@ function ComponentPanelTable({ cluster }) {
 
   return (
     <div>
-      <h2>{t('clusterInfo.component_table.node_list')}</h2>
+      <h2>{t('cluster_info.component_table.node_list')}</h2>
       <Table columns={columns} dataSource={dataSource} pagination={false} />;
     </div>
   );

@@ -273,7 +273,7 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 		Count   int `json:"count"`
 		Members []struct {
 			ClientUrls    []string    `json:"client_urls"`
-			BinaryPath    string      `json:"binary_path"`
+			DeployPath    string      `json:"deploy_path"`
 			BinaryVersion string      `json:"binary_version"`
 			MemberID      json.Number `json:"member_id"`
 		} `json:"members"`
@@ -302,7 +302,7 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 			Version:    ds.BinaryVersion,
 			IP:         host,
 			Port:       port,
-			BinaryPath: ds.BinaryPath,
+			DeployPath: ds.DeployPath,
 			Status:     storeStatus,
 		})
 	}

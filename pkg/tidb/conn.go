@@ -16,17 +16,29 @@ package tidb
 import (
 	"database/sql/driver"
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 
 	// MySQL driver used by gorm
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-func OpenTiDB(forwarder *Forwarder, user string, pass string) (*gorm.DB, error) {
-	host, port, err := forwarder.GetDBConnProp()
+func (f *Forwarder) GetDBConnProps() (host string, port int, err error) {
+	info, err := f.getServerInfo()
+	if err == nil {
+		host = info.IP
+		port = info.Port
+	}
+	return
+}
+
+func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
+	host, port, err := f.GetDBConnProps()
 	if err != nil {
 		return nil, err
 	}
@@ -40,12 +52,18 @@ func OpenTiDB(forwarder *Forwarder, user string, pass string) (*gorm.DB, error) 
 	dsn := dsnConfig.FormatDSN()
 
 	db, err := gorm.Open("mysql", dsn)
-	if err == driver.ErrBadConn {
-		return nil, ErrTiDBConnFailed.Wrap(err, "failed to connect to TiDB")
-	} else if mysqlErr, ok := err.(*mysql.MySQLError); ok {
-		if mysqlErr.Number == 1045 {
-			return nil, ErrTiDBAuthFailed.New("bad TiDB username or password")
+	if err != nil {
+		if _, ok := err.(*net.OpError); ok || err == driver.ErrBadConn {
+			if host == "0.0.0.0" {
+				log.Warn("The IP reported by TiDB is 0.0.0.0, which may not have the -advertise-address option")
+			}
+			return nil, ErrTiDBConnFailed.Wrap(err, "failed to connect to TiDB")
+		} else if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+			if mysqlErr.Number == 1045 {
+				return nil, ErrTiDBAuthFailed.New("bad TiDB username or password")
+			}
 		}
+		log.Warn("unknown error occurred while OpenTiDB", zap.Error(err))
 		return nil, err
 	}
 

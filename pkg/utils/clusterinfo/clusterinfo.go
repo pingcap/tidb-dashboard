@@ -25,7 +25,7 @@ type PDInfo struct {
 	Version    string          `json:"version"`
 	IP         string          `json:"ip"`
 	Port       uint            `json:"port"`
-	BinaryPath string          `json:"binary_path"`
+	DeployPath string          `json:"deploy_path"`
 	Status     ComponentStatus `json:"status"`
 }
 

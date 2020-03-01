@@ -45,7 +45,7 @@ func MWConnectTiDB(tidbForwarder *tidb.Forwarder) gin.HandlerFunc {
 			return
 		}
 
-		db, err := tidb.OpenTiDB(tidbForwarder, sessionUser.TiDBUsername, sessionUser.TiDBPassword)
+		db, err := tidbForwarder.OpenTiDB(sessionUser.TiDBUsername, sessionUser.TiDBPassword)
 
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {

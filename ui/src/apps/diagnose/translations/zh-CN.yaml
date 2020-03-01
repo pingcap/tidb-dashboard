@@ -1,5 +1,5 @@
 diagnose:
-  nav_title: SQL 诊断
+  nav_title: 集群诊断
   time_selector:
     start_time: 起始时间
     end_time: 结束时间

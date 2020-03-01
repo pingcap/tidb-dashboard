@@ -158,7 +158,7 @@ export default function SearchHeader() {
     }
     const result = await client.dashboard.logsTaskgroupPut(params)
     dispatch({ type: 'task_group_id', payload: result.data.task_group?.id })
-    history.push('/logsearch/detail')
+    history.push('/log/search/detail')
   }
 
   function handleTimeRangeChange(value: RangePickerValue) {
@@ -193,7 +193,7 @@ export default function SearchHeader() {
         <Form labelAlign="right">
           <Row gutter={24}>
             <Col span={12}>
-              <Form.Item label={t('logs.common.time_range')} labelCol={{ span: 4 }}>
+              <Form.Item label={t('log_searching.common.time_range')} labelCol={{ span: 4 }}>
                 <RangePicker
                   value={timeRange}
                   showTime={{
@@ -206,7 +206,7 @@ export default function SearchHeader() {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={t('logs.common.log_level')} labelCol={{ span: 4 }}>
+              <Form.Item label={t('log_searching.common.log_level')} labelCol={{ span: 4 }}>
                 <Select value={logLevel} style={{ width: 100 }} onChange={handleLogLevelChange}>
                   <Option value={1}>DEBUG</Option>
                   <Option value={2}>INFO</Option>
@@ -218,12 +218,12 @@ export default function SearchHeader() {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={t('logs.common.components')} labelCol={{ span: 4 }}
+              <Form.Item label={t('log_searching.common.components')} labelCol={{ span: 4 }}
                 validateStatus={components.length > 0 ? "" : "error"}>
                 <TreeSelect
                   value={components}
                   treeData={buildTreeData(topology)}
-                  placeholder={t('logs.common.components_placeholder')}
+                  placeholder={t('log_searching.common.components_placeholder')}
                   onChange={handleComponentChange}
                   treeDefaultExpandAll={true}
                   treeCheckable={true}
@@ -235,11 +235,11 @@ export default function SearchHeader() {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={t('logs.common.keywords')} labelCol={{ span: 4 }}>
+              <Form.Item label={t('log_searching.common.keywords')} labelCol={{ span: 4 }}>
                 <Search
                   value={searchValue}
-                  placeholder={t('logs.common.keywords_placeholder')}
-                  enterButton={t('logs.common.search')}
+                  placeholder={t('log_searching.common.keywords_placeholder')}
+                  enterButton={t('log_searching.common.search')}
                   style={{ width: 400 }}
                   onChange={handleSearchPatternChange}
                   onSearch={handleSearch}

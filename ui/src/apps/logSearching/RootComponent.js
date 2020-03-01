@@ -17,7 +17,7 @@ const App = withRouter(props => {
         <div style={{ margin: 12 }}>
           <Breadcrumb>
             <Breadcrumb.Item>
-              <Link to="/logsearch">Log Searching</Link>
+              <Link to="/log/search">Log Searching</Link>
             </Breadcrumb.Item>
             {page === 'detail' && (
               <Breadcrumb.Item>Detail</Breadcrumb.Item>
@@ -26,10 +26,10 @@ const App = withRouter(props => {
         </div>
         <div style={{ margin: 12 }}>
           <Switch>
-            <Route exact path="/logsearch">
+            <Route exact path="/log/search">
               <LogSearching />
             </Route>
-            <Route path="/logsearch/detail">
+            <Route path="/log/search/detail">
               <LogSearchingDetail />
             </Route>
           </Switch>

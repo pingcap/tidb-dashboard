@@ -25,3 +25,5 @@ signin:
 nav:
   user:
     signout: 登出
+  sider:
+    debug: 高级调试

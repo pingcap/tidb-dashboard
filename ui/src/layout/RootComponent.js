@@ -67,6 +67,7 @@ class App extends React.PureComponent {
   render() {
     const siderWidth = 260;
     const isDev = process.env.NODE_ENV === 'development';
+    const { t } = this.props;
 
     return (
       <Router>
@@ -82,12 +83,22 @@ class App extends React.PureComponent {
               mode="inline"
               theme="dark"
               selectedKeys={[this.state.activeAppId]}
-              defaultOpenKeys={['sub1']}
+              defaultOpenKeys={['debug']}
             >
               {this.renderAppMenuItem('keyvis')}
               {this.renderAppMenuItem('statement')}
               {this.renderAppMenuItem('diagnose')}
-              {this.renderAppMenuItem('logsearch')}
+              <Menu.SubMenu
+                  key="debug"
+                  title={
+                    <span>
+                      <Icon type="experiment" />
+                      <span>{t('nav.sider.debug')}</span>
+                    </span>
+                  }
+                >
+                  {this.renderAppMenuItem('log_searching')}
+                </Menu.SubMenu>
               {isDev ? (
                 <Menu.SubMenu
                   key="sub1"

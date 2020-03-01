@@ -1,5 +1,5 @@
-logs:
-  nav_title: Log searching
+log_searching:
+  nav_title: Search Logs
   page:
     intro: Preview and download logs by clicking Search
     tip: The preview shows only the first 500 logs

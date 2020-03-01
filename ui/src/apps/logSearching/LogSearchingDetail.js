@@ -11,7 +11,7 @@ export default function LogSearchingDetail() {
         <Col span={18}>
           <SearchHeader />
           <Alert
-            message={t('logs.page.tip')}
+            message={t('log_searching.page.tip')}
             type="info"
             showIcon
             style={{ marginTop: 14, marginBottom: 14 }}

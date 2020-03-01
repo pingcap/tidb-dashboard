@@ -1,0 +1,24 @@
+cluster_info:
+  nav_title: 集群信息
+  status:
+    up: 正常
+    abnormal: 不正常
+    nodes: "{{nodeType}} 节点"
+  component_table:
+    ip: IP
+    port: 端口
+    status: 状态
+    deploy_path: 部署地址
+    status_port: 状态端口
+    version: 版本
+    address: 地址
+
+    node_list: 节点列表
+  monitor_alert:
+    title: 监控和告警
+    view_monitor: 查看监控
+    view_monitor_warn: 监控不可用
+    view_alerts: 参看告警
+    view_alerts_warn: 告警不可用
+    problems: 问题
+    diagnose: 运行诊断

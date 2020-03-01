@@ -1,0 +1,24 @@
+cluster_info:
+  nav_title: Cluster Info
+  status:
+    up: UP
+    abnormal: ABNORMAL
+    nodes: "{{nodeType}} NODES"
+  component_table:
+    ip: IP
+    port: Port
+    status: Status
+    deploy_path: Deploy Directory
+    status_port: Status Port
+    version: Version
+    address: Address
+
+    node_list: NODES LIST
+  monitor_alert:
+    title: MONITOR AND ALERT
+    view_monitor: VIEW MONITOR
+    view_monitor_warn: MONITOR NOT AVAILABLE
+    view_alerts: VIEW ALERTS
+    view_alerts_warn: ALERTS NOT AVAILABLE
+    problems: PROBLEMS
+    diagnose: RUN DIAGNOSE

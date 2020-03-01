@@ -1,33 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Spin, Icon } from 'antd';
-import { HashRouter as Router } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { Row, Col, Spin, Icon } from 'antd'
+import { HashRouter as Router } from 'react-router-dom'
 
-import {
-  ClusterInfoTable,
-  ComponentPanel,
-  MonitorAlertBar,
-} from './components';
+import client from '@/utils/client'
 
-import client from '@/utils/client';
+import { ClusterInfoTable, ComponentPanel, MonitorAlertBar } from './components'
 
 const App = () => {
-  const [loading, setLoading] = useState(true);
-  const [cluster, setCluster] = useState({});
+  const [loading, setLoading] = useState(true)
+  const [cluster, setCluster] = useState({})
 
   useEffect(() => {
     const fetchLoad = async () => {
-      let res = await client.dashboard.topologyAllGet();
-      const cluster = res.data;
-      setCluster(cluster);
-      setLoading(false);
-    };
-    fetchLoad();
-  }, []);
+      let res = await client.dashboard.topologyAllGet()
+      const cluster = res.data
+      setCluster(cluster)
+      setLoading(false)
+    }
+    fetchLoad()
+  }, [])
 
   if (loading) {
     return (
       <Spin indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />} />
-    );
+    )
   }
 
   return (
@@ -37,10 +33,10 @@ const App = () => {
           background: '#fff',
           padding: 24,
           margin: 24,
-          minHeight: 700,
+          minHeight: 700
         }}
       >
-        <Col span={16}>
+        <Col span={18}>
           <Row gutter={[8, 16]}>
             <Col span={8}>
               <ComponentPanel name={'TIKV'} datas={cluster.tikv} />
@@ -55,17 +51,12 @@ const App = () => {
 
           <ClusterInfoTable cluster={cluster} />
         </Col>
-        <Col
-          span={8}
-          style={{
-            padding: 20,
-          }}
-        >
+        <Col span={6}>
           <MonitorAlertBar cluster={cluster} />
         </Col>
       </Row>
     </Router>
-  );
-};
+  )
+}
 
-export default App;
+export default App

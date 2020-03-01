@@ -1,23 +1,23 @@
-import { Col, Row } from 'antd';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import styles from './ComponentPanel.module.less';
+import { Col, Row } from 'antd'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import styles from './ComponentPanel.module.less'
 
 function ComponentPanel(props) {
-  const { t } = useTranslation();
-  let [alive_cnt, down_cnt] = [0, 0];
-  const server_info = props.datas;
+  const { t } = useTranslation()
+  let [alive_cnt, down_cnt] = [0, 0]
+  const server_info = props.datas
   if (server_info !== null && server_info.err === null) {
     server_info.nodes.forEach(n => {
       if (n.status === 1) {
-        alive_cnt++;
+        alive_cnt++
       } else {
-        down_cnt++;
+        down_cnt++
       }
-    });
+    })
   }
   return (
-    <div>
+    <div className={styles.bottom}>
       <h3>{t('cluster_info.status.nodes', { nodeType: props.name })}</h3>
 
       <Row gutter={[16, 16]}>
@@ -34,7 +34,7 @@ function ComponentPanel(props) {
         </Col>
       </Row>
     </div>
-  );
+  )
 }
 
-export default ComponentPanel;
+export default ComponentPanel

@@ -11,6 +11,7 @@ cluster_info:
     deploy_dir: Deploy Directory
     status_port: Status Port
     version: Version
+    address: Address
 
     node_list: NODES LIST
   monitor_alert:

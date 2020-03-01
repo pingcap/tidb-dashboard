@@ -11,6 +11,7 @@ cluster_info:
     deploy_dir: 部署地址
     status_port: 状态端口
     version: 版本
+    address: 地址
 
     node_list: 节点列表
   monitor_alert:

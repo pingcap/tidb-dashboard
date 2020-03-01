@@ -16,6 +16,7 @@ package tidb
 import (
 	"database/sql/driver"
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -52,7 +53,10 @@ func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 
 	db, err := gorm.Open("mysql", dsn)
 	if err != nil {
-		if err == driver.ErrBadConn {
+		if _, ok := err.(*net.OpError); ok || err == driver.ErrBadConn {
+			if host == "0.0.0.0" {
+				log.Warn("The IP reported by TiDB is 0.0.0.0, which may not have the -advertise-address option")
+			}
 			return nil, ErrTiDBConnFailed.Wrap(err, "failed to connect to TiDB")
 		} else if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == 1045 {
@@ -60,9 +64,6 @@ func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 			}
 		}
 		log.Warn("unknown error occurred while OpenTiDB", zap.Error(err))
-		if host == "0.0.0.0" {
-			log.Warn("The IP reported by TiDB is 0.0.0.0, which may not have the -advertise-address option")
-		}
 		return nil, err
 	}
 

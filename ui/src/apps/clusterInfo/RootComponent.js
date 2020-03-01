@@ -43,7 +43,6 @@ const App = () => {
         <Col span={16}>
           <Row gutter={[8, 16]}>
             <Col span={8}>
-              {/* TODO: datas is too general, it is not a good name, make it specific */}
               <ComponentPanel name={'TIKV'} datas={cluster.tikv} />
             </Col>
             <Col span={8}>

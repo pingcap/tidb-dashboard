@@ -46,7 +46,6 @@ async function main() {
     .register(AppDemo)
     .register(AppStatement)
     .register(AppClusterInfo)
-    .register(AppStatement)
     .register(AppDiagnose)
     .register(AppLogSearching);
 

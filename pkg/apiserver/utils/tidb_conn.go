@@ -44,7 +44,7 @@ func MWConnectTiDB(tidbForwarder *tidb.Forwarder) gin.HandlerFunc {
 			return
 		}
 
-		db, err := tidb.OpenTiDB(tidbForwarder, sessionUser.TiDBUsername, sessionUser.TiDBPassword)
+		db, err := tidbForwarder.OpenTiDB(sessionUser.TiDBUsername, sessionUser.TiDBPassword)
 		if err != nil && errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 			// If TiDB conn is ok when login but fail this time, it means TiDB credential has been changed since
 			// login. In this case, we return unauthorized error, so that the front-end can let user to login again.

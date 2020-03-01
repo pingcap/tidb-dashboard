@@ -29,7 +29,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/profile"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/profiling"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -71,7 +71,7 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	foo.NewService(config).Register(endpoint, auth)
 	info.NewService(config, services.TiDBForwarder, services.Store).Register(endpoint, auth)
 	clusterinfo.NewService(config, services.EtcdProvider.GetEtcdClient(), services.HTTPClient).Register(endpoint, auth)
-	profile.NewService(config, services.Store).Register(endpoint)
+	profiling.NewService(config, services.Store).Register(endpoint)
 	services.KeyVisual.Register(endpoint, auth)
 	logsearch.NewService(config, services.Store).Register(endpoint, auth)
 	statement.NewService(config, services.TiDBForwarder).Register(endpoint, auth)

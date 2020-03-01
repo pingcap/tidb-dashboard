@@ -12,6 +12,7 @@ import AppDemo from '@/apps/demo';
 import AppStatement from '@/apps/statement';
 import AppDiagnose from '@/apps/diagnose';
 import AppLogSearching from '@/apps/logSearching';
+import AppNodeProfiling from '@/apps/nodeProfiling';
 
 async function main() {
   const registry = new AppRegistry();
@@ -45,7 +46,8 @@ async function main() {
     .register(AppDemo)
     .register(AppStatement)
     .register(AppDiagnose)
-    .register(AppLogSearching);
+    .register(AppLogSearching)
+    .register(AppNodeProfiling);
 
   if (routingUtil.isLocationMatch('/')) {
     singleSpa.navigateToUrl('#' + registry.getDefaultRouter());

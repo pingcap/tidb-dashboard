@@ -82,8 +82,6 @@ type TaskGroupResponse struct {
 	Tasks     []*TaskModel   `json:"tasks"`
 }
 
-type EmptyResponse struct{}
-
 // @Summary Create and run task group
 // @Description Create and run task group
 // @Produce json
@@ -221,7 +219,7 @@ func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 // @Description retry tasks that has been failed in a task group
 // @Produce json
 // @Param id path string true "task group id"
-// @Success 200 {object} EmptyResponse
+// @Success 200 {object} utils.APIEmptyResponse
 // @Failure 400 {object} utils.APIError
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroups/{id}/retry [post]
@@ -248,7 +246,7 @@ func (s *Service) RetryTask(c *gin.Context) {
 
 	if len(tasks) == 0 {
 		// No tasks to retry
-		c.JSON(http.StatusOK, gin.H{})
+		c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 		return
 	}
 
@@ -264,14 +262,14 @@ func (s *Service) RetryTask(c *gin.Context) {
 	if !s.scheduler.AsyncStart(&taskGroup, tasks) {
 		log.Error("Failed to retry task group", zap.Uint("task_group_id", taskGroup.ID))
 	}
-	c.JSON(http.StatusOK, gin.H{})
+	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
 // @Summary Cancel running tasks
 // @Description cancel all running tasks in a task group
 // @Produce json
 // @Param id path string true "task group id"
-// @Success 200 {object} EmptyResponse
+// @Success 200 {object} utils.APIEmptyResponse
 // @Failure 400 {object} utils.APIError
 // @Router /logs/taskgroups/{id}/cancel [post]
 func (s *Service) CancelTask(c *gin.Context) {
@@ -293,14 +291,14 @@ func (s *Service) CancelTask(c *gin.Context) {
 		return
 	}
 	s.scheduler.AsyncAbort(uint(taskGroupID))
-	c.JSON(http.StatusOK, gin.H{})
+	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
 // @Summary Delete task group
 // @Description delete a task group by providing task group ID
 // @Produce json
 // @Param id path string true "task group id"
-// @Success 200 {object} EmptyResponse
+// @Success 200 {object} utils.APIEmptyResponse
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroups/{id} [delete]
 func (s *Service) DeleteTaskGroup(c *gin.Context) {
@@ -312,5 +310,5 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 		return
 	}
 	taskGroup.Delete(s.db)
-	c.JSON(http.StatusOK, gin.H{})
+	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }

@@ -98,6 +98,7 @@ class App extends React.PureComponent {
                   }
                 >
                   {this.renderAppMenuItem('log_searching')}
+                  {this.renderAppMenuItem('node_profiling')}
                 </Menu.SubMenu>
               {isDev ? (
                 <Menu.SubMenu

@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package profile
+package profiling
 
 import (
 	"context"
@@ -20,11 +20,13 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
@@ -54,17 +56,16 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 
 // Register register the handlers to the service.
 func (s *Service) Register(r *gin.RouterGroup) {
-	endpoint := r.Group("/profile")
+	endpoint := r.Group("/profiling")
 	endpoint.POST("/group/start", s.startHandler)
 	endpoint.GET("/group/status/:groupId", s.statusHandler)
 	endpoint.POST("/group/cancel/:groupId", s.cancelGroupHandler)
-	endpoint.POST("/single/cancel/:taskId", s.cancelHandler)
 	endpoint.GET("/group/download/:groupId", s.downloadGroupHandler)
 	endpoint.GET("/single/download/:taskId", s.downloadHandler)
 	endpoint.DELETE("/group/delete/:groupId", s.deleteHandler)
 }
 
-type ProfilingRequest struct {
+type StartRequest struct {
 	Tidb []string `json:"tidb"`
 	Tikv []string `json:"tikv"`
 	Pd   []string `json:"pd"`
@@ -73,12 +74,12 @@ type ProfilingRequest struct {
 // @Summary Create a task group
 // @Description Create and run a task group
 // @Produce json
-// @Param pr body profile.ProfilingRequest true "profiling request"
-// @Success 200 {uint} uint "group ID"
+// @Param pr body StartRequest true "profiling request"
+// @Success 200 {object} TaskGroupModel "task group"
 // @Failure 400 {object} utils.APIError
-// @Router /profile/group/start [post]
+// @Router /profiling/group/start [post]
 func (s *Service) startHandler(c *gin.Context) {
-	var pr ProfilingRequest
+	var pr StartRequest
 	if err := c.ShouldBindJSON(&pr); err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
@@ -123,21 +124,22 @@ func (s *Service) startHandler(c *gin.Context) {
 		s.db.Save(taskGroup.TaskGroupModel)
 	}()
 
-	c.JSON(http.StatusOK, taskGroup.ID)
+	c.JSON(http.StatusOK, taskGroup.TaskGroupModel)
 }
 
-type Status struct {
-	TaskGroup TaskGroupModel `json:"task_group_status"`
-	Tasks     []TaskModel    `json:"tasks_status"`
+type StatusResponse struct {
+	ServerTime int64          `json:"server_time"`
+	TaskGroup  TaskGroupModel `json:"task_group_status"`
+	Tasks      []TaskModel    `json:"tasks_status"`
 }
 
 // @Summary List all tasks with a given group ID
-// @Description List all profling tasks with a given group ID
+// @Description List all profiling tasks with a given group ID
 // @Produce json
 // @Param groupId path string true "group ID"
-// @Success 200 {object} Status
+// @Success 200 {object} StatusResponse
 // @Failure 400 {object} utils.APIError
-// @Router /profile/group/status/{groupId} [get]
+// @Router /profiling/group/status/{groupId} [get]
 func (s *Service) statusHandler(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
@@ -161,9 +163,10 @@ func (s *Service) statusHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, Status{
-		TaskGroup: taskGroup,
-		Tasks:     tasks,
+	c.JSON(http.StatusOK, StatusResponse{
+		ServerTime: time.Now().Unix(),
+		TaskGroup:  taskGroup,
+		Tasks:      tasks,
 	})
 }
 
@@ -173,7 +176,7 @@ func (s *Service) statusHandler(c *gin.Context) {
 // @Param groupId path string true "group ID"
 // @Success 200 {string} string "success"
 // @Failure 400 {object} utils.APIError
-// @Router /profile/group/cancel/{groupId} [post]
+// @Router /profiling/group/cancel/{groupId} [post]
 func (s *Service) cancelGroupHandler(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
@@ -198,43 +201,13 @@ func (s *Service) cancelGroupHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, "success")
 }
 
-// @Summary Cancel a single task with a given task ID
-// @Description Cancel a single profling task with a given task ID
-// @Produce json
-// @Param taskId path string true "task ID"
-// @Success 200 {string} string "success"
-// @Failure 400 {object} utils.APIError
-// @Failure 500 {object} utils.APIError
-// @Router /profile/single/cancel/{taskId} [post]
-func (s *Service) cancelHandler(c *gin.Context) {
-	taskID, err := strconv.Atoi(c.Param("taskId"))
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(err)
-		return
-	}
-	task := TaskModel{}
-	err = s.db.Where("id = ? AND state = ?", taskID, TaskStateRunning).First(&task).Error
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(err)
-		return
-	}
-
-	if task, ok := s.tasks.Load(task.ID); ok {
-		t := task.(*Task)
-		t.stop()
-	}
-	c.JSON(http.StatusOK, "success")
-}
-
 // @Summary Download all results with a given group ID
 // @Description Download all finished profiling results with a given group ID
 // @Produce application/x-gzip
 // @Param groupId path string true "group ID"
 // @Failure 400 {object} utils.APIError
 // @Failure 500 {object} utils.APIError
-// @Router /profile/group/download/{groupId} [get]
+// @Router /profiling/group/download/{groupId} [get]
 func (s *Service) downloadGroupHandler(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
@@ -280,7 +253,7 @@ func (s *Service) downloadGroupHandler(c *gin.Context) {
 // @Param taskId path string true "task ID"
 // @Failure 400 {object} utils.APIError
 // @Failure 500 {object} utils.APIError
-// @Router /profile/single/download/{taskId} [get]
+// @Router /profiling/single/download/{taskId} [get]
 func (s *Service) downloadHandler(c *gin.Context) {
 	taskID, err := strconv.Atoi(c.Param("taskId"))
 	if err != nil {
@@ -319,10 +292,10 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Description Delete all finished profiling tasks with a given group ID
 // @Produce json
 // @Param groupId path string true "group ID"
-// @Success 200 {string} string "success"
+// @Success 200 {object} utils.APIEmptyResponse
 // @Failure 400 {object} utils.APIError
 // @Failure 500 {object} utils.APIError
-// @Router /profile/group/delete/{groupId} [delete]
+// @Router /profiling/group/delete/{groupId} [delete]
 func (s *Service) deleteHandler(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
@@ -350,5 +323,5 @@ func (s *Service) deleteHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, "success")
+	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }

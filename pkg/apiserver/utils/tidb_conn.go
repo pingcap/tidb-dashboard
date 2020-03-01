@@ -41,20 +41,24 @@ func MWConnectTiDB(tidbForwarder *tidb.Forwarder) gin.HandlerFunc {
 			// Only TiDBAuth is able to access. Raise error in this case.
 			// The error is privilege error instead of authorization error so that user will not be redirected.
 			MakeInsufficientPrivilegeError(c)
+			c.Abort()
 			return
 		}
 
 		db, err := tidb.OpenTiDB(tidbForwarder, sessionUser.TiDBUsername, sessionUser.TiDBPassword)
-		if err != nil && errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
-			// If TiDB conn is ok when login but fail this time, it means TiDB credential has been changed since
-			// login. In this case, we return unauthorized error, so that the front-end can let user to login again.
-			MakeUnauthorizedError(c)
-			return
-		} else if err != nil {
-			// For other kind of connection errors, for example, PD goes away, return these errors directly.
-			// In front-end we will simply display these errors but not ask user to login again.
-			c.Status(500)
-			_ = c.Error(err)
+
+		if err != nil {
+			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
+				// If TiDB conn is ok when login but fail this time, it means TiDB credential has been changed since
+				// login. In this case, we return unauthorized error, so that the front-end can let user to login again.
+				MakeUnauthorizedError(c)
+			} else {
+				// For other kind of connection errors, for example, PD goes away, return these errors directly.
+				// In front-end we will simply display these errors but not ask user to login again.
+				c.Status(500)
+				_ = c.Error(err)
+			}
+			c.Abort()
 			return
 		}
 

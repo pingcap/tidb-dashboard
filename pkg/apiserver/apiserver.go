@@ -14,6 +14,7 @@
 package apiserver
 
 import (
+	"html/template"
 	"net/http"
 	"sync"
 
@@ -61,7 +62,8 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	r.Use(gzip.Gzip(gzip.BestSpeed))
 	r.Use(utils.MWHandleErrors())
 
-	r.LoadHTMLGlob("templates/**/*")
+	templates := template.New("api")
+	r.SetHTMLTemplate(templates)
 
 	endpoint := r.Group(apiPrefix)
 
@@ -75,7 +77,7 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	services.KeyVisual.Register(endpoint, auth)
 	logsearch.NewService(config, services.Store).Register(endpoint, auth)
 	statement.NewService(config, services.TiDBForwarder).Register(endpoint, auth)
-	diagnose.NewService(config, services.TiDBForwarder, services.Store).Register(endpoint, auth)
+	diagnose.NewService(config, services.TiDBForwarder, services.Store).Register(endpoint, auth).RegisterTemplates(templates)
 
 	return r
 }

@@ -59,7 +59,7 @@ func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder) (*utils.S
 	if !f.IsTiDBAuth {
 		return nil, ErrSignInUnsupportedAuthType.New("unsupported auth type, only TiDB auth is supported")
 	}
-	db, err := tidb.OpenTiDB(tidbForwarder, f.Username, f.Password)
+	db, err := tidbForwarder.OpenTiDB(f.Username, f.Password)
 	if err != nil {
 		if errorx.Cast(err) == nil {
 			return nil, ErrSignInOther.WrapWithNoMessage(err)

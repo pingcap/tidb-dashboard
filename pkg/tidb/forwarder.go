@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
@@ -25,8 +26,10 @@ import (
 
 // FIXME: This is duplicated with the one in KeyVis.
 type tidbServerInfo struct {
-	IP   string `json:"ip"`
-	Port int    `json:"listening_port"`
+	ID         string `json:"ddl_id"`
+	IP         string `json:"ip"`
+	Port       int    `json:"listening_port"`
+	StatusPort uint   `json:"status_port"`
 }
 
 type ForwarderConfig struct {
@@ -45,6 +48,7 @@ type Forwarder struct {
 	etcdProvider pd.EtcdProvider
 }
 
+// TODO: Requires load balancing and health checks.
 func (f *Forwarder) Open() error {
 	// Currently this function does nothing.
 	return nil
@@ -55,13 +59,13 @@ func (f *Forwarder) Close() error {
 	return nil
 }
 
-func (f *Forwarder) GetDBConnProp() (host string, port int, err error) {
+func (f *Forwarder) getServerInfo() (*tidbServerInfo, error) {
 	ctx, cancel := context.WithTimeout(f.ctx, f.config.TiDBRetrieveTimeout)
 	resp, err := f.etcdProvider.GetEtcdClient().Get(ctx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
 	cancel()
 
 	if err != nil {
-		return "", 0, ErrPDAccessFailed.New("access PD failed: %s", err)
+		return nil, ErrPDAccessFailed.New("access PD failed: %s", err)
 	}
 
 	var info tidbServerInfo
@@ -70,9 +74,16 @@ func (f *Forwarder) GetDBConnProp() (host string, port int, err error) {
 		if err != nil {
 			continue
 		}
-		return info.IP, info.Port, nil
+		if info.IP == "0.0.0.0" {
+			// Older versions of tidb without the -advertise-address option,
+			// will report ip as 0.0.0.0 and cannot be accessed.
+			log.Warn("The IP reported by TiDB is 0.0.0.0, which may not have the -advertise-address option")
+			continue
+		}
+		return &info, nil
 	}
-	return "", 0, ErrNoAliveTiDB.New("no TiDB is alive")
+
+	return nil, ErrNoAliveTiDB.New("no TiDB is alive")
 }
 
 func NewForwarder(config *ForwarderConfig, etcdProvider pd.EtcdProvider) *Forwarder {

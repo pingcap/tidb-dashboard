@@ -3,5 +3,6 @@ module.exports = {
   loader: () => import('./app.js'),
   routerPrefix: '/cluster_info',
   icon: 'cluster',
-  translations: require.context('./translations/', false, /\.yaml$/)
+  isDefaultRouter: true,
+  translations: require.context('./translations/', false, /\.yaml$/),
 }

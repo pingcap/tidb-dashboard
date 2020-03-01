@@ -3,6 +3,5 @@ module.exports = {
   loader: () => import('./app.js'),
   routerPrefix: '/node_profiling',
   icon: 'heat-map',
-  isDefaultRouter: true,
   translations: require.context('./translations/', false, /\.yaml$/),
-};
+}

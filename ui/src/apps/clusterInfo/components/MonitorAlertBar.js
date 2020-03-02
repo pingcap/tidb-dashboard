@@ -21,7 +21,7 @@ export default function MonitorAlertBar({ cluster }) {
         <h3>{t('cluster_info.monitor_alert.title')}</h3>
         <div className={styles.height}>
           <p>
-            {grafana === '' ? (
+            {!grafana? (
               t('cluster_info.monitor_alert.view_monitor_warn')
             ) : (
               <a href={grafana}>
@@ -31,7 +31,7 @@ export default function MonitorAlertBar({ cluster }) {
             )}
           </p>
           <p>
-            {am === '' ? (
+            {!am? (
               t('cluster_info.monitor_alert.view_alerts_warn')
             ) : (
               <a href={am} className={styles.warn}>

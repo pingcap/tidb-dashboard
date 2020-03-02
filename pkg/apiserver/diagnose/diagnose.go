@@ -16,7 +16,6 @@ package diagnose
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -49,20 +48,13 @@ func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstor
 	return &Service{config: config, db: db, tidbForwarder: tidbForwarder}
 }
 
-func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) *Service {
+func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/diagnose")
 	endpoint.POST("/reports",
 		auth.MWAuthRequired(),
 		utils.MWConnectTiDB(s.tidbForwarder),
 		s.genReportHandler)
 	endpoint.GET("/reports/:id", s.reportHandler)
-	return s
-}
-
-func (s *Service) RegisterTemplates(t *template.Template) *Service {
-	_, _ = t.Parse(TemplateIndex)
-	_, _ = t.Parse(TemplateTable)
-	return s
 }
 
 // @Summary SQL diagnosis report

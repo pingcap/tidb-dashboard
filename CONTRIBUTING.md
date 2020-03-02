@@ -14,8 +14,8 @@ To build TiDB Dashboard you'll need to at least have the following installed:
 
 - `git` - Version control
 - `make` - Build tool (run common workflows)
-- `[golang](https://golang.org/)` - Golang cli (require 1.13+)
-- `[node.js](https://nodejs.org/)` - Javascript runtime (require 12+)
+- [`golang`](https://golang.org/) - Golang (require 1.13+)
+- [`node.js`](https://nodejs.org/) - Javascript runtime (require 12+)
 
 ### Getting the repository
 
@@ -61,7 +61,7 @@ Follow personal ["Settings" -> "Developer settings" -> "Personal access tokens" 
 
 At this point, you can build and run TiDB Dashboard. 
 
-> Note: TiDB Dashboard need a running TiDB cluster as target, before continue, see [how to start a local TiDB cluster](## Starting a TiDB cluster).
+> Note: TiDB Dashboard need a running TiDB cluster as target, before continue, see [how to start a local TiDB cluster](#starting-a-tidb-cluster).
 
 Build and run back-end server:
 
@@ -90,7 +90,7 @@ See the [style doc](https://github.com/golang/go/wiki/CodeReviewComments) for de
 
 Please follow this style to make TiDB Dashboard easy to review, maintain, and develop.
 
-## Starting a TiDB cluster
+### Starting a TiDB cluster
 
 To run TiDB Dashboard, you also need run a local TiDB cluster (at least 1 TiDB server), here we introduce how to start a local TiDB cluster by binary deployment. Also, you can use other ways like [docker-compose](https://github.com/pingcap/tidb-docker-compose#quick-start) or [TiUP](https://tiup.io).
 

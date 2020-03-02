@@ -60,7 +60,7 @@ const (
 	CategoryPD       = "PD"
 	CategoryTiKV     = "TiKV"
 	CategoryConfig   = "config"
-	CategoryError    = "s/err/error"
+	CategoryError    = "error"
 )
 
 func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB) []*TableDef {

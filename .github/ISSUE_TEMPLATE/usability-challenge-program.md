@@ -1,5 +1,5 @@
 ---
-name: "🏪 Usability Challenge Program"
+name: "\U0001F3EA Usability Challenge Program"
 about: UCP Season1 Program
 title: 'UCP: '
 labels: ''

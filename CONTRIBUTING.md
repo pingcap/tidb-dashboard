@@ -49,7 +49,7 @@ npm install @openapitools/openapi-generator-cli -g
 
 1. Create a personal access token
 
-Follow personal ["Settings" -> "Developer settings" -> "Personal access tokens" -> "Generate new token"](https://github.com/settings/tokens/new) path, the "Select scopes" must select `repo` and `read:packages` at least.
+    Follow personal ["Settings" -> "Developer settings" -> "Personal access tokens" -> "Generate new token"](https://github.com/settings/tokens/new) path, the "Select scopes" must select `repo` and `read:packages` at least.
 
 2. Edit `~/.npmrc`, add a new line by the following content
 
@@ -77,13 +77,13 @@ For front-end, you should build API client and start a React develpment server:
 make swagger_client
 cd ui
 npm run start
-# Now tidb-dashboard UI is available in 127.0.0.1:3000
+# Now tidb-dashboard UI is available on 127.0.0.1:3000
 ```
 
 When you're ready to test out your changes, use the `dev` task. It will lint your code and verify the UI building.
 
 ```bash
-    
+make dev
 ```
 
 See the [style doc](https://github.com/golang/go/wiki/CodeReviewComments) for details on the conventions.

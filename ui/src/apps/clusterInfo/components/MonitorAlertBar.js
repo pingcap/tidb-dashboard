@@ -22,13 +22,17 @@ export default function MonitorAlertBar({ cluster }) {
         <div className={styles.height}>
           <p>
             <a href={grafana}>
-              {t('cluster_info.monitor_alert.view_monitor')}
+              {grafana === ''
+                ? t('cluster_info.monitor_alert.view_monitor_warn')
+                : t('cluster_info.monitor_alert.view_monitor')}
               <Icon type="right" style={{ marginLeft: '5px' }} />
             </a>
           </p>
           <p>
             <a href={am} className={styles.warn}>
-              {t('cluster_info.monitor_alert.view_alerts')}
+              {am === ''
+                ? t('cluster_info.monitor_alert.view_alerts_warn')
+                : t('cluster_info.monitor_alert.view_alerts')}
               <Icon type="right" style={{ marginLeft: '5px' }} />
             </a>
           </p>

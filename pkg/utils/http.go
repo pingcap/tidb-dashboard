@@ -27,7 +27,7 @@ type TemplateInfo struct {
 	Text string
 }
 
-func NewRender(templ *template.Template, infos []TemplateInfo) render.HTMLRender {
+func NewHTMLRender(templ *template.Template, infos []TemplateInfo) render.HTMLRender {
 	for _, info := range infos {
 		t := templ.New(info.Name)
 		if _, err := t.Parse(info.Text); err != nil {

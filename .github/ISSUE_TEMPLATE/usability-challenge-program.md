@@ -1,9 +1,8 @@
 ---
-name: "\U0001F3EA Usability Challenge Program"
-about: UCP Season1 Program
+name: "\U0001F947 Challenge Program"
+about: Challenge Program issues
+labels: challenge-program-2
 title: 'UCP: '
-labels: ''
-assignees: ''
 
 ---
 
@@ -15,14 +14,18 @@ assignees: ''
 
 <!-- Add the score which the contributor will obtain once this issue is solved -->
 
-## Mentor
+* score number
+
+## Mentor(s)
 
 <!-- Add the mentor of this issue -->
+
+* @xxxx
+
+Contact the mentors: **#tidb-challenge-program** channel in [TiDB Community](https://join.slack.com/t/tidbcommunity/shared_invite/enQtNzc0MzI4ODExMDc4LWYwYmIzMjZkYzJiNDUxMmZlN2FiMGJkZjAyMzQ5NGU0NGY0NzI3NTYwMjAyNGQ1N2I2ZjAxNzc1OGUwYWM0NzE)  Slack Workspace
 
 ## Recommended Skills
 
 <!-- Add the description about what kind of skills does the contributor should have to solve this issue. -->
-
-## Learning Materials
-
-<!-- Add the description about what kind of materials does the contributor need to learn to solve this issue. -->
+* skills 1
+* skills 1

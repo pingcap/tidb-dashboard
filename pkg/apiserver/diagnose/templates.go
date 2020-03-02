@@ -1,5 +1,14 @@
 package diagnose
 
+import (
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+)
+
+var TemplateInfos = []utils.TemplateInfo{
+	{Name: "sql-diagnosis/index", Text: TemplateIndex},
+	{Name: "sql-diagnosis/table", Text: TemplateTable},
+}
+
 const TemplateIndex = `
 {{ define "sql-diagnosis/index" }}
   <!DOCTYPE html>

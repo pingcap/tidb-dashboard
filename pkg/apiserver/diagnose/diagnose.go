@@ -20,19 +20,22 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/render"
 	"github.com/jinzhu/gorm"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	apiutils "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
 type Service struct {
 	config        *config.Config
 	db            *dbstore.DB
 	tidbForwarder *tidb.Forwarder
+	htmlRender    render.HTMLRender
 }
 
 type ReportRes struct {
@@ -44,25 +47,23 @@ type Report struct {
 	Content string
 }
 
-func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB) *Service {
+func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, t *template.Template) *Service {
 	db.AutoMigrate(&Report{})
-	return &Service{config: config, db: db, tidbForwarder: tidbForwarder}
+	return &Service{
+		config:        config,
+		db:            db,
+		tidbForwarder: tidbForwarder,
+		htmlRender:    utils.NewRender(t, TemplateInfos),
+	}
 }
 
-func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) *Service {
+func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/diagnose")
 	endpoint.POST("/reports",
 		auth.MWAuthRequired(),
-		utils.MWConnectTiDB(s.tidbForwarder),
+		apiutils.MWConnectTiDB(s.tidbForwarder),
 		s.genReportHandler)
 	endpoint.GET("/reports/:id", s.reportHandler)
-	return s
-}
-
-func (s *Service) RegisterTemplates(t *template.Template) *Service {
-	_, _ = t.Parse(TemplateIndex)
-	_, _ = t.Parse(TemplateTable)
-	return s
 }
 
 // @Summary SQL diagnosis report
@@ -73,9 +74,9 @@ func (s *Service) RegisterTemplates(t *template.Template) *Service {
 // @Success 200 {object} diagnose.ReportRes
 // @Router /diagnose/reports [post]
 // @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 401 {object} apiutils.APIError "Unauthorized failure"
 func (s *Service) genReportHandler(c *gin.Context) {
-	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
+	db := c.MustGet(apiutils.TiDBConnectionKey).(*gorm.DB)
 	startTime := c.Query("start_time")
 	endTime := c.Query("end_time")
 	if startTime == "" || endTime == "" {
@@ -123,5 +124,5 @@ func (s *Service) reportHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.HTML(http.StatusOK, "sql-diagnosis/index", tables)
+	utils.HTML(c, s.htmlRender, http.StatusOK, "sql-diagnosis/index", tables)
 }

@@ -40,6 +40,11 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
 
+const (
+	DelimsLeft  = "{{"
+	DelimsRight = "}}"
+)
+
 var once sync.Once
 
 type Services struct {
@@ -61,9 +66,7 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	r.Use(gin.Recovery())
 	r.Use(gzip.Gzip(gzip.BestSpeed))
 	r.Use(utils.MWHandleErrors())
-
-	templates := template.New("api")
-	r.SetHTMLTemplate(templates)
+	r.Delims(DelimsLeft, DelimsRight)
 
 	endpoint := r.Group(apiPrefix)
 
@@ -77,7 +80,11 @@ func Handler(apiPrefix string, config *config.Config, services *Services) http.H
 	services.KeyVisual.Register(endpoint, auth)
 	logsearch.NewService(config, services.Store).Register(endpoint, auth)
 	statement.NewService(config, services.TiDBForwarder).Register(endpoint, auth)
-	diagnose.NewService(config, services.TiDBForwarder, services.Store).Register(endpoint, auth).RegisterTemplates(templates)
+	diagnose.NewService(config, services.TiDBForwarder, services.Store, NewTemplate(r, "diagnose")).Register(endpoint, auth)
 
 	return r
+}
+
+func NewTemplate(r *gin.Engine, name string) *template.Template {
+	return template.New(name).Delims(DelimsLeft, DelimsRight).Funcs(r.FuncMap)
 }

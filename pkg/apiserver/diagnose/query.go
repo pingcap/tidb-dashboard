@@ -527,6 +527,10 @@ func RoundFloatString(s string) string {
 	if err != nil {
 		return s
 	}
+	return convertFloatToString(f)
+}
+
+func convertFloatToString(f float64) string {
 	if f == 0 {
 		return "0"
 	}

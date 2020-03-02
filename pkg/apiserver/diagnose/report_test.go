@@ -14,15 +14,22 @@
 package diagnose
 
 import (
-	"fmt"
-	"strings"
+	//"fmt"
+	"log"
+	"net/http"
+	//"strings"
 	"testing"
 
 	"github.com/jinzhu/gorm"
 	. "github.com/pingcap/check"
+	_ "net/http/pprof"
 )
 
 func TestT(t *testing.T) {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
 	CustomVerboseFlag = true
 	TestingT(t)
 }
@@ -59,6 +66,30 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	printRows(table)
 }
 
+func (t *testReportSuite) TestCompareTable(c *C) {
+	//cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
+	cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
+	c.Assert(err, IsNil)
+	defer cli.Close()
+
+	startTime1 := "2020-03-02 17:04:00"
+	endTime1 := "2020-03-02 17:06:00"
+
+	startTime2 := "2020-03-02 17:14:00"
+	endTime2 := "2020-03-02 17:28:00"
+
+	var errs []error
+	var tables []*TableDef
+	tables, errs = GetCompareReportTables(startTime1, endTime1, startTime2, endTime2, cli)
+	for _, tbl := range tables {
+		printRows(tbl)
+	}
+	for _, err := range errs {
+		c.Assert(err, IsNil)
+	}
+	c.Assert(errs, HasLen, 0)
+}
+
 func (t *testReportSuite) TestRoundFloatString(c *C) {
 	cases := []struct {
 		in  string
@@ -85,46 +116,46 @@ func (t *testReportSuite) TestRoundFloatString(c *C) {
 	}
 }
 
-func printRows(t *TableDef) {
-	if t == nil {
-		fmt.Println("table is nil")
-		return
-	}
-
-	if len(t.Rows) == 0 {
-		fmt.Println("table rows is 0")
-		return
-	}
-
-	fieldLen := t.ColumnWidth()
-	//fmt.Println(fieldLen)
-	printLine := func(values []string, comment string) {
-		line := ""
-		for i, s := range values {
-			for k := len(s); k < fieldLen[i]; k++ {
-				s += " "
-			}
-			if i > 0 {
-				line += "    |    "
-			}
-			line += s
-		}
-		if len(comment) != 0 {
-			line = line + "    |    " + comment
-		}
-		fmt.Println(line)
-	}
-
-	fmt.Println(strings.Join(t.Category, " - "))
-	fmt.Println(t.Title)
-	fmt.Println(t.CommentEN)
-	printLine(t.Column, "")
-
-	for _, row := range t.Rows {
-		printLine(row.Values, row.Comment)
-		for i := range row.SubValues {
-			printLine(row.SubValues[i], "")
-		}
-	}
-	fmt.Println("")
-}
+//func printRows(t *TableDef) {
+//	if t == nil {
+//		fmt.Println("table is nil")
+//		return
+//	}
+//
+//	if len(t.Rows) == 0 {
+//		fmt.Println("table rows is 0")
+//		return
+//	}
+//
+//	fieldLen := t.ColumnWidth()
+//	//fmt.Println(fieldLen)
+//	printLine := func(values []string, comment string) {
+//		line := ""
+//		for i, s := range values {
+//			for k := len(s); k < fieldLen[i]; k++ {
+//				s += " "
+//			}
+//			if i > 0 {
+//				line += "    |    "
+//			}
+//			line += s
+//		}
+//		if len(comment) != 0 {
+//			line = line + "    |    " + comment
+//		}
+//		fmt.Println(line)
+//	}
+//
+//	fmt.Println(strings.Join(t.Category, " - "))
+//	fmt.Println(t.Title)
+//	fmt.Println(t.CommentEN)
+//	printLine(t.Column, "")
+//
+//	for _, row := range t.Rows {
+//		printLine(row.Values, row.Comment)
+//		for i := range row.SubValues {
+//			printLine(row.SubValues[i], "")
+//		}
+//	}
+//	fmt.Println("")
+//}

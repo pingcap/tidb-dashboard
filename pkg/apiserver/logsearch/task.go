@@ -151,7 +151,7 @@ func (t *Task) SyncRun() {
 		return
 	}
 
-	opt := grpc.WithInsecure().WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxRecvMsgSize)),
+	opt := grpc.WithInsecure().WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxRecvMsgSize))
 	conn, err := grpc.Dial(t.model.SearchTarget.Address(), opt)
 	if err != nil {
 		t.setError(err)

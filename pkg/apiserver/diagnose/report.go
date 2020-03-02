@@ -73,10 +73,11 @@ const (
 	CategoryPD       = "PD"
 	CategoryTiKV     = "TiKV"
 	CategoryConfig   = "config"
+	CategoryError    = "error"
 )
 
-func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB) ([]*TableDef, []error) {
-	tables, errs := GetReportTables(startTime, endTime, db)
+func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB) []*TableDef {
+	tables := GetReportTables(startTime, endTime, db)
 	lastCategory := ""
 	for _, tbl := range tables {
 		if tbl == nil {
@@ -91,10 +92,10 @@ func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB) ([]*Table
 			tbl.Category = []string{""}
 		}
 	}
-	return tables, errs
+	return tables
 }
 
-func GetReportTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []error) {
+func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 	funcs := []func(string, string, *gorm.DB) (*TableDef, error){
 		// Header
 		GetHeaderTimeTable,
@@ -146,18 +147,37 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []err
 		GetPDCurrentConfig,
 		GetTiKVCurrentConfig,
 	}
+
 	tables := make([]*TableDef, 0, len(funcs))
-	errs := make([]error, 0, len(funcs))
+	var errRows []TableRowDef
 	for _, f := range funcs {
 		tbl, err := f(startTime, endTime, db)
 		if err != nil {
-			errs = append(errs, err)
+			category := ""
+			if tbl.Category != nil {
+				category = strings.Join(tbl.Category, ",")
+			}
+			errRows = append(errRows, TableRowDef{
+				Values: []string{category, tbl.Title, err.Error()},
+			})
 		}
 		if tbl != nil {
 			tables = append(tables, tbl)
 		}
 	}
-	return tables, errs
+	tables = append(tables, GenerateReportError(errRows))
+	return tables
+}
+
+func GenerateReportError(errRows []TableRowDef) *TableDef {
+	return &TableDef{
+		Category:  []string{CategoryError},
+		Title:     "Generate Report Error",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"CATEGORY", "TITLE", "ERROR"},
+		Rows:      errRows,
+	}
 }
 
 func GetHeaderTimeTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {

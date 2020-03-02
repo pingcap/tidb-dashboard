@@ -39,11 +39,10 @@ func (t *testReportSuite) TestReport(c *C) {
 	startTime := "2020-02-27 19:20:23"
 	endTime := "2020-02-27 21:20:23"
 
-	tables, errs := GetReportTablesForDisplay(startTime, endTime, cli)
+	tables := GetReportTablesForDisplay(startTime, endTime, cli)
 	for _, tbl := range tables {
 		printRows(tbl)
 	}
-	c.Assert(errs, HasLen, 0)
 }
 
 func (t *testReportSuite) TestGetTable(c *C) {

@@ -84,12 +84,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		return
 	}
 
-	tables, errs := GetReportTablesForDisplay(startTime, endTime, db)
-	if len(errs) > 0 {
-		_ = c.Error(errs[0])
-		return
-	}
-
+	tables := GetReportTablesForDisplay(startTime, endTime, db)
 	content, err := json.Marshal(tables)
 	if err != nil {
 		_ = c.Error(err)

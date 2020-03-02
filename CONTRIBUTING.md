@@ -6,7 +6,7 @@ If you need any help or mentoring getting started, understanding the codebase, o
 
 ## Building and setting up a development workspace
 
-TiDB Dasboard is a web interface which integrate into PD by default, andd can be deploy standalone. Its back-end is written in [Golang](https://golang.org/) with [Gin](https://github.com/gin-gonic/gin), front-end is written in [Typescript](https://www.typescriptlang.org/) with [React](https://github.com/facebook/react). It uses [swaggo](https://github.com/swaggo/swag) and [openapi-generator](https://github.com/OpenAPITools/openapi-generator) for automaticly generating API documents and API client. Also, to provide consistency, we use linters and automated formatting tools.
+TiDB Dasboard is a web interface which integrate into PD by default, andd can be deploy standalone. Its back-end is written in [Golang](https://golang.org/) with [Gin](https://github.com/gin-gonic/gin), front-end is written in [Typescript](https://www.typescriptlang.org/) with [React](https://github.com/facebook/react). It uses [swaggo](https://github.com/swaggo/swag) and [openapi-generator](https://github.com/OpenAPITools/openapi-generator) for automatically generating API documents and API client. Also, to provide consistency, we use linters and automated formatting tools.
 
 ### Prerequisites
 

@@ -8,24 +8,19 @@ title: 'UCP: '
 
 ## Description
 
-<!-- Add the issue description here -->
+xxx
 
 ## Score
 
-<!-- Add the score which the contributor will obtain once this issue is solved -->
-
-* score number
+* xxx
 
 ## Mentor(s)
 
-<!-- Add the mentor of this issue -->
-
-* @xxxx
+* @xxx
 
 Contact the mentors: **#tidb-challenge-program** channel in [TiDB Community](https://join.slack.com/t/tidbcommunity/shared_invite/enQtNzc0MzI4ODExMDc4LWYwYmIzMjZkYzJiNDUxMmZlN2FiMGJkZjAyMzQ5NGU0NGY0NzI3NTYwMjAyNGQ1N2I2ZjAxNzc1OGUwYWM0NzE)  Slack Workspace
 
 ## Recommended Skills
 
-<!-- Add the description about what kind of skills does the contributor should have to solve this issue. -->
 * skills 1
 * skills 1

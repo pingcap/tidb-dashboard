@@ -162,7 +162,7 @@ func GenerateReportError(errRows []TableRowDef) *TableDef {
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"CATEGORY", "TITLE", "ERROR"},
-		Rows: errRows,
+		Rows:      errRows,
 	}
 }
 

@@ -67,13 +67,14 @@ func autoMigrate(db *dbstore.DB) error {
 // Task is the unit to fetch profiling information.
 type Task struct {
 	*TaskModel
-	db     *dbstore.DB
-	ctx    context.Context
-	cancel context.CancelFunc
+	ctx          context.Context
+	cancel       context.CancelFunc
+	db           *dbstore.DB
+	grabInterval uint
 }
 
 // NewTask creates a new profiling task.
-func NewTask(db *dbstore.DB, id uint, component, addr string) *Task {
+func NewTask(db *dbstore.DB, id, grabInterval uint, component, addr string) *Task {
 	return &Task{
 		TaskModel: &TaskModel{
 			TaskGroupID: id,
@@ -82,13 +83,14 @@ func NewTask(db *dbstore.DB, id uint, component, addr string) *Task {
 			Component:   component,
 			CreatedAt:   time.Now().Unix(),
 		},
-		db: db,
+		db:           db,
+		grabInterval: grabInterval,
 	}
 }
 
 func (t *Task) run() {
 	filePrefix := fmt.Sprintf("profile_group_%d_task%d_%s_%s_", t.TaskGroupID, t.ID, t.Component, t.Addr)
-	svgFilePath, err := fetchSvg(t.ctx, t.Component, t.Addr, filePrefix)
+	svgFilePath, err := fetchSvg(t.ctx, t.Component, t.Addr, filePrefix, t.grabInterval)
 	if err != nil {
 		t.Error = err.Error()
 		t.State = TaskStateError

@@ -26,10 +26,10 @@ import (
 )
 
 // the default time interval of profiling.
-const grabInterval = 30
+const defaultGrabInterval = 30
 
-func fetchSvg(ctx context.Context, t, addr, filePrefix string) (string, error) {
-	url := getURL(t, addr)
+func fetchSvg(ctx context.Context, t, addr, filePrefix string, grabInterval uint) (string, error) {
+	url := getURL(t, addr, grabInterval)
 	if url == "" {
 		return "", errors.Errorf("no such component: %s", t)
 	}
@@ -58,8 +58,11 @@ func fetchSvg(ctx context.Context, t, addr, filePrefix string) (string, error) {
 	return svgFilePath, nil
 }
 
-func getURL(t, addr string) string {
+func getURL(t, addr string, grabInterval uint) string {
 	var url string
+	if grabInterval == 0 {
+		grabInterval = defaultGrabInterval
+	}
 	interval := fmt.Sprintf("%d", grabInterval)
 	switch t {
 	case pd:

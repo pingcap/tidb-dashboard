@@ -66,9 +66,10 @@ func (s *Service) Register(r *gin.RouterGroup) {
 }
 
 type StartRequest struct {
-	Tidb []string `json:"tidb"`
-	Tikv []string `json:"tikv"`
-	Pd   []string `json:"pd"`
+	Tidb         []string `json:"tidb"`
+	Tikv         []string `json:"tikv"`
+	Pd           []string `json:"pd"`
+	GrabInterval uint     `json:"grab-interval"`
 }
 
 // @Summary Create a task group
@@ -100,7 +101,7 @@ func (s *Service) startHandler(c *gin.Context) {
 	var tasks []*Task
 	for component, addrs := range addrs {
 		for _, addr := range addrs {
-			t := NewTask(s.db, taskGroup.ID, component, addr)
+			t := NewTask(s.db, taskGroup.ID, pr.GrabInterval, component, addr)
 			s.db.Create(t.TaskModel)
 			ctx, cancel := context.WithCancel(context.Background())
 			t.ctx = ctx

@@ -134,6 +134,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 		GetPDCurrentConfig,
 		GetTiKVCurrentConfig,
 	}
+	
 	tables := make([]*TableDef, 0, len(funcs))
 	var errRows []TableRowDef
 	for _, f := range funcs {

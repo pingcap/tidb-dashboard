@@ -142,7 +142,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 		if err != nil {
 			category := ""
 			if tbl.Category != nil {
-				category = tbl.Category[0]
+				category = strings.Join(tbl.Category, ",")
 			}
 			errRows = append(errRows, TableRowDef{
 				Values: []string{category, tbl.Title, err.Error()},

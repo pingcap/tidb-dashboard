@@ -24,20 +24,20 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	etcdclientv3 "go.etcd.io/etcd/clientv3"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
 type Service struct {
-	config     *config.Config
-	etcdCli    *etcdclientv3.Client
-	httpClient *http.Client
+	config       *config.Config
+	etcdProvider pd.EtcdProvider
+	httpClient   *http.Client
 }
 
-func NewService(config *config.Config, etcdClient *etcdclientv3.Client, httpClient *http.Client) *Service {
-	return &Service{etcdCli: etcdClient, config: config, httpClient: httpClient}
+func NewService(config *config.Config, etcdProvider pd.EtcdProvider, httpClient *http.Client) *Service {
+	return &Service{config: config, etcdProvider: etcdProvider, httpClient: httpClient}
 }
 
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
@@ -66,7 +66,7 @@ func (s *Service) deleteTiDBTopologyHandler(c *gin.Context) {
 		wg.Add(1)
 		go func(toDel string) {
 			defer wg.Done()
-			if _, err := s.etcdCli.Delete(ctx, toDel); err != nil {
+			if _, err := s.etcdProvider.GetEtcdClient().Delete(ctx, toDel); err != nil {
 				errorChannel <- err
 			}
 		}(key)

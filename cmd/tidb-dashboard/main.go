@@ -34,8 +34,6 @@ import (
 	"sync"
 	"syscall"
 
-	http2 "github.com/pingcap-incubator/tidb-dashboard/pkg/http"
-
 	"github.com/joho/godotenv"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
@@ -44,6 +42,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	http2 "github.com/pingcap-incubator/tidb-dashboard/pkg/http"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
 	keyvisualinput "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
 	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
@@ -141,7 +140,7 @@ func main() {
 	tidbForwarder.Open()        //nolint:errcheck
 	defer tidbForwarder.Close() //nolint:errcheck
 
-	httpcli := http2.NewHTTPClientWithConf(cliConfig.CoreConfig)
+	httpClient := http2.NewHTTPClientWithConf(cliConfig.CoreConfig)
 
 	// key visual
 	remoteDataProvider := &keyvisualregion.PDDataProvider{
@@ -159,7 +158,7 @@ func main() {
 		KeyVisual:     keyvisualService,
 		TiDBForwarder: tidbForwarder,
 		EtcdProvider:  etcdProvider,
-		HTTPClient:    httpcli,
+		HTTPClient:    httpClient,
 	}
 	mux := http.DefaultServeMux
 	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))

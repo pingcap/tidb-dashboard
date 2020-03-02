@@ -63,9 +63,10 @@ function pushNodes(key, cluster, dataSource) {
     cluster[key] !== null &&
     cluster[key].err === null
   ) {
+    const nodes = cluster[key].nodes;
     dataSource.push({
-      address: key + '(' + cluster.tidb.nodes.length + ')',
-      children: cluster[key].nodes.map((n, index) => wrapNode(n, key, index))
+      address: key + '(' + nodes.length + ')',
+      children: nodes.map((n, index) => wrapNode(n, key, index))
     })
   }
 }

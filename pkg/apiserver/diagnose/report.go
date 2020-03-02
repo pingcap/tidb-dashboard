@@ -207,8 +207,9 @@ func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (*TableDef, error
 		Title:     "diagnose",
 		CommentEN: "Automatically diagnose the cluster problem and record the problem in below table.",
 		CommentCN: "",
-		Column:    []string{"RULE", "ITEM", "TYPE", "INSTANCE", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
-		Rows:      rows,
+		//joinColumns: []int{0, 1, 2, 3, 6},
+		Column: []string{"RULE", "ITEM", "TYPE", "INSTANCE", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
+		Rows:   rows,
 	}
 	return table, nil
 }
@@ -1444,12 +1445,13 @@ func GetClusterInfoTable(startTime, endTime string, db *gorm.DB) (*TableDef, err
 		return nil, err
 	}
 	table := &TableDef{
-		Category:  []string{CategoryHeader},
-		Title:     "cluster info",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"TYPE", "INSTANCE", "STATUS_ADDRESS", "VERSION", "GIT_HASH", "START_TIME", "UPTIME"},
-		Rows:      rows,
+		Category:    []string{CategoryHeader},
+		Title:       "cluster info",
+		CommentEN:   "",
+		CommentCN:   "",
+		joinColumns: []int{0, 1, 2, 3, 4},
+		Column:      []string{"TYPE", "INSTANCE", "STATUS_ADDRESS", "VERSION", "GIT_HASH", "START_TIME", "UPTIME"},
+		Rows:        rows,
 	}
 
 	return table, nil

@@ -12,12 +12,18 @@ import (
 
 func GetCompareReportTables(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB) ([]*TableDef, []error) {
 	var errs []error
-	tables1, err1 := GetCompareTables(startTime1, endTime1, db)
+	var resultTables []*TableDef
+	resultTables = append(resultTables, GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2))
+	header, err0 := GetReportHeaderTables(startTime2, endTime2, db)
+	errs = append(errs, err0...)
+	resultTables = append(resultTables, header...)
+	tables1, err1 := getCompareTables(startTime1, endTime1, db)
 	errs = append(errs, err1...)
-	tables2, err2 := GetCompareTables(startTime2, endTime2, db)
+	tables2, err2 := getCompareTables(startTime2, endTime2, db)
 	errs = append(errs, err2...)
 	tables, err3 := CompareTables(tables1, tables2)
 	errs = append(errs, err3...)
+	resultTables = append(resultTables, tables...)
 	return tables, errs
 }
 
@@ -72,7 +78,7 @@ func CompareTables(tables1, tables2 []*TableDef) ([]*TableDef, []error) {
 		for _, tbl2 := range tables2 {
 			if strings.Join(tbl1.Category, ",") == strings.Join(tbl2.Category, ",") &&
 				tbl1.Title == tbl2.Title {
-				//printRows(tbl1)
+				printRows(tbl1)
 				//printRows(tbl2)
 				table, err := compareTable(tbl1, tbl2)
 				if err != nil {
@@ -136,7 +142,11 @@ func compareTable(table1, table2 *TableDef) (*TableDef, error) {
 	}
 	columns := make([]string, 0, len(table1.Column)*2-len(table1.joinColumns))
 	for i := range table1.Column {
-		columns = append(columns, "t1."+table1.Column[i])
+		if checkIn(i, table1.joinColumns) {
+			columns = append(columns, table1.Column[i])
+		} else {
+			columns = append(columns, "t1."+table1.Column[i])
+		}
 	}
 	columns = append(columns, "DIFF_RATIO")
 	for i := range table2.Column {
@@ -170,7 +180,6 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef) (*TableRowDef, error) {
 		if err != nil {
 			return nil, errors.Errorf("category %v,table %v, calculate diff ratio error: %v,  %v,%v", strings.Join(table.Category, ","), table.Title, err.Error(), subRow1, subRow2)
 		}
-		//fmt.Printf("%v     %v        %v -------\n", ratio, subRow1, subRow2)
 		subJoinRows = append(subJoinRows, &newJoinRow{
 			row1:  subRow1,
 			row2:  subRow2,
@@ -295,6 +304,7 @@ func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, error) {
 		}
 		if f1 == 0 || f2 == 0 {
 			ratio += 1
+			continue
 		}
 		ratio += math.Abs(f1-f2) / math.Max(f1, f2)
 	}
@@ -370,23 +380,26 @@ func getTableLablesMap(table *TableDef) (map[string]*TableRowDef, error) {
 	return labelsMap, nil
 }
 
-func GetCompareTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []error) {
+func getCompareTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []error) {
 	funcs := []func(string, string, *gorm.DB) (*TableDef, error){
-		// Node
-		GetLoadTable,
-		GetCPUUsageTable,
-		GetTiKVThreadCPUTable,
-		GetGoroutinesCountTable,
-		//
-		// Overview
-		GetTotalTimeConsumeTable,
-		GetTotalErrorTable,
-		//
-		//// TiDB
-		GetTiDBTimeConsumeTable,
-		GetTiDBTxnTableData,
-		GetTiDBDDLOwner,
-		//
+		// Diagnose
+		//GetDiagnoseReport,
+
+		//Node
+		//GetLoadTable,
+		//GetCPUUsageTable,
+		//GetTiKVThreadCPUTable,
+		//GetGoroutinesCountTable,
+		////
+		//// Overview
+		//GetTotalTimeConsumeTable,
+		//GetTotalErrorTable,
+		////
+		////// TiDB
+		//GetTiDBTimeConsumeTable,
+		//GetTiDBTxnTableData,
+		//GetTiDBDDLOwner,
+		////
 		//// PD
 		//GetPDTimeConsumeTable,
 		//GetPDSchedulerInfo,
@@ -406,11 +419,33 @@ func GetCompareTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []er
 		//GetTiKVGCInfo,
 		//GetTiKVTaskInfo,
 		//GetTiKVCacheHitTable,
-		//
-		//// Config
-		//GetPDConfigInfo,
-		//GetTiDBGCConfigInfo,
 	}
+	return getTables(startTime, endTime, db, funcs)
+}
+
+func GetReportHeaderTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []error) {
+	funcs := []func(string, string, *gorm.DB) (*TableDef, error){
+		// Header
+		GetClusterHardwareInfoTable,
+		GetClusterInfoTable,
+	}
+	return getTables(startTime, endTime, db, funcs)
+}
+
+func GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2 string) *TableDef {
+	return &TableDef{
+		Category:  []string{CategoryHeader},
+		Title:     "Compare Report Time Range",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"T1.START_TIME", "T1.END_TIME", "T2.START_TIME", "T2.END_TIME"},
+		Rows: []TableRowDef{
+			{Values: []string{startTime1, endTime1, startTime2, endTime2}},
+		},
+	}
+}
+
+func getTables(startTime, endTime string, db *gorm.DB, funcs []func(string, string, *gorm.DB) (*TableDef, error)) ([]*TableDef, []error) {
 	tables := make([]*TableDef, 0, len(funcs))
 	errs := make([]error, 0, len(funcs))
 	for _, f := range funcs {

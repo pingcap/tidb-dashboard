@@ -66,7 +66,7 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	printRows(table)
 }
 
-func (t *testReportSuite) TestCompareTable(c *C) {
+func (t *testReportSuite) TestGetCompareTable(c *C) {
 	//cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
 	cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
 	c.Assert(err, IsNil)
@@ -88,6 +88,89 @@ func (t *testReportSuite) TestCompareTable(c *C) {
 		c.Assert(err, IsNil)
 	}
 	c.Assert(errs, HasLen, 0)
+}
+
+func (t *testReportSuite) TestCompareTable(c *C) {
+	table1 := TableDef{
+		Category:       []string{"header"},
+		Title:          "test",
+		joinColumns:    []int{1},
+		compareColumns: []int{2},
+		Column:         []string{"c1", "c2", "c3"},
+		Rows:           nil,
+	}
+
+	cases := []struct {
+		rows1 []TableRowDef
+		rows2 []TableRowDef
+		out   []TableRowDef
+	}{
+		{
+			rows1: nil,
+			rows2: nil,
+			out:   []TableRowDef{},
+		},
+		{
+			rows1: []TableRowDef{
+				{Values: []string{"0", "0", "0"}},
+			},
+			rows2: nil,
+			out: []TableRowDef{
+				{Values: []string{"0", "0", "0", "1", "", ""}},
+			},
+		},
+		{
+			rows1: []TableRowDef{
+				{Values: []string{"0", "0", "0"}},
+			},
+			rows2: []TableRowDef{
+				{Values: []string{"1", "1", "1"}},
+			},
+			out: []TableRowDef{
+				{Values: []string{"0", "0", "0", "1", "", ""}},
+				{Values: []string{"", "1", "", "1", "1", "1"}},
+			},
+		},
+		{
+			rows1: []TableRowDef{
+				{Values: []string{"0", "0", "0"}},
+			},
+			rows2: []TableRowDef{
+				{Values: []string{"1", "0", "0"}},
+			},
+			out: []TableRowDef{
+				{Values: []string{"0", "0", "0", "0", "1", "0"}},
+			},
+		},
+		{
+			rows1: []TableRowDef{
+				{Values: []string{"0", "0", "0"}},
+			},
+			rows2: []TableRowDef{
+				{Values: []string{"1", "0", "1"}},
+			},
+			out: []TableRowDef{
+				{Values: []string{"0", "0", "0", "1", "1", "1"}},
+			},
+		},
+	}
+
+	for _, cas := range cases {
+		t1 := table1
+		t2 := table1
+		t1.Rows = cas.rows1
+		t2.Rows = cas.rows2
+		t, err := compareTable(&t1, &t2)
+		c.Assert(err, IsNil)
+		c.Assert(len(t.Rows), Equals, len(cas.out))
+		for i, row := range t.Rows {
+			c.Assert(row.Values, DeepEquals, cas.out[i].Values)
+			c.Assert(len(row.SubValues), Equals, len(cas.out[i].SubValues))
+			for j, subRow := range cas.out[i].SubValues {
+				c.Assert(subRow, DeepEquals, row.SubValues[j])
+			}
+		}
+	}
 }
 
 func (t *testReportSuite) TestRoundFloatString(c *C) {

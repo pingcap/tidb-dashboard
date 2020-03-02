@@ -1,7 +1,6 @@
 package diagnose
 
 import (
-	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/pingcap/errors"
 	"math"
@@ -13,10 +12,18 @@ import (
 func GetCompareReportTables(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB) ([]*TableDef, []error) {
 	var errs []error
 	var resultTables []*TableDef
+	// Get Header tables.
 	resultTables = append(resultTables, GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2))
-	header, err0 := GetReportHeaderTables(startTime2, endTime2, db)
+	tables0, err0 := GetReportHeaderTables(startTime2, endTime2, db)
 	errs = append(errs, err0...)
-	resultTables = append(resultTables, header...)
+	resultTables = append(resultTables, tables0...)
+
+	// Get tables in 2 ranges
+	tables0, err0 = GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2, db)
+	errs = append(errs, err0...)
+	resultTables = append(resultTables, tables0...)
+
+	// Get compare tables
 	tables1, err1 := getCompareTables(startTime1, endTime1, db)
 	errs = append(errs, err1...)
 	tables2, err2 := getCompareTables(startTime2, endTime2, db)
@@ -24,51 +31,13 @@ func GetCompareReportTables(startTime1, endTime1, startTime2, endTime2 string, d
 	tables, err3 := CompareTables(tables1, tables2)
 	errs = append(errs, err3...)
 	resultTables = append(resultTables, tables...)
-	return tables, errs
-}
 
-func printRows(t *TableDef) {
-	if t == nil {
-		fmt.Println("table is nil")
-		return
-	}
+	// Get end tables
+	tables0, err0 = GetReportEndTables(startTime2, endTime2, db)
+	errs = append(errs, err0...)
+	resultTables = append(resultTables, tables0...)
 
-	if len(t.Rows) == 0 {
-		fmt.Println("table rows is 0")
-		return
-	}
-
-	fieldLen := t.ColumnWidth()
-	//fmt.Println(fieldLen)
-	printLine := func(values []string, comment string) {
-		line := ""
-		for i, s := range values {
-			for k := len(s); k < fieldLen[i]; k++ {
-				s += " "
-			}
-			if i > 0 {
-				line += "    |    "
-			}
-			line += s
-		}
-		if len(comment) != 0 {
-			line = line + "    |    " + comment
-		}
-		fmt.Println(line)
-	}
-
-	fmt.Println(strings.Join(t.Category, " - "))
-	fmt.Println(t.Title)
-	fmt.Println(t.CommentEN)
-	printLine(t.Column, "")
-
-	for _, row := range t.Rows {
-		printLine(row.Values, row.Comment)
-		for i := range row.SubValues {
-			printLine(row.SubValues[i], "")
-		}
-	}
-	fmt.Println("")
+	return resultTables, errs
 }
 
 func CompareTables(tables1, tables2 []*TableDef) ([]*TableDef, []error) {
@@ -78,8 +47,6 @@ func CompareTables(tables1, tables2 []*TableDef) ([]*TableDef, []error) {
 		for _, tbl2 := range tables2 {
 			if strings.Join(tbl1.Category, ",") == strings.Join(tbl2.Category, ",") &&
 				tbl1.Title == tbl2.Title {
-				printRows(tbl1)
-				//printRows(tbl2)
 				table, err := compareTable(tbl1, tbl2)
 				if err != nil {
 					errs = append(errs, err)
@@ -151,7 +118,7 @@ func compareTable(table1, table2 *TableDef) (*TableDef, error) {
 	columns = append(columns, "DIFF_RATIO")
 	for i := range table2.Column {
 		if !checkIn(i, table2.joinColumns) {
-			columns = append(columns, "t2."+table1.Column[i])
+			columns = append(columns, "t2."+table2.Column[i])
 		}
 	}
 	sort.Slice(resultRows, func(i, j int) bool {
@@ -280,7 +247,6 @@ func (r *newJoinRow) genNewRow(table *TableDef) []string {
 
 func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, error) {
 	if len(table.compareColumns) == 0 {
-		fmt.Printf("category %v,table %v doesn't specified the compare columns", strings.Join(table.Category, ","), table.Title)
 		return 0, nil
 	}
 	if len(row1) == 0 && len(row2) == 0 {
@@ -382,43 +348,40 @@ func getTableLablesMap(table *TableDef) (map[string]*TableRowDef, error) {
 
 func getCompareTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []error) {
 	funcs := []func(string, string, *gorm.DB) (*TableDef, error){
-		// Diagnose
-		//GetDiagnoseReport,
-
 		//Node
-		//GetLoadTable,
-		//GetCPUUsageTable,
-		//GetTiKVThreadCPUTable,
-		//GetGoroutinesCountTable,
-		////
-		//// Overview
-		//GetTotalTimeConsumeTable,
-		//GetTotalErrorTable,
-		////
-		////// TiDB
-		//GetTiDBTimeConsumeTable,
-		//GetTiDBTxnTableData,
-		//GetTiDBDDLOwner,
-		////
-		//// PD
-		//GetPDTimeConsumeTable,
-		//GetPDSchedulerInfo,
-		//GetPDClusterStatusTable,
-		//GetStoreStatusTable,
-		//GetPDEtcdStatusTable,
+		GetLoadTable,
+		GetCPUUsageTable,
+		GetTiKVThreadCPUTable,
+		GetGoroutinesCountTable,
+
+		// Overview
+		GetTotalTimeConsumeTable,
+		GetTotalErrorTable,
 		//
-		//// TiKV
-		//GetTiKVTotalTimeConsumeTable,
-		//GetTiKVErrorTable,
-		//GetTiKVStoreInfo,
-		//GetTiKVRegionSizeInfo,
-		//GetTiKVCopInfo,
-		//GetTiKVSchedulerInfo,
-		//GetTiKVRaftInfo,
-		//GetTiKVSnapshotInfo,
-		//GetTiKVGCInfo,
-		//GetTiKVTaskInfo,
-		//GetTiKVCacheHitTable,
+		//// TiDB
+		GetTiDBTimeConsumeTable,
+		GetTiDBTxnTableData,
+		GetTiDBDDLOwner,
+		//
+		// PD
+		GetPDTimeConsumeTable,
+		GetPDSchedulerInfo,
+		GetPDClusterStatusTable,
+		GetStoreStatusTable,
+		GetPDEtcdStatusTable,
+
+		// TiKV
+		GetTiKVTotalTimeConsumeTable,
+		GetTiKVErrorTable,
+		GetTiKVStoreInfo,
+		GetTiKVRegionSizeInfo,
+		GetTiKVCopInfo,
+		GetTiKVSchedulerInfo,
+		GetTiKVRaftInfo,
+		GetTiKVSnapshotInfo,
+		GetTiKVGCInfo,
+		GetTiKVTaskInfo,
+		GetTiKVCacheHitTable,
 	}
 	return getTables(startTime, endTime, db, funcs)
 }
@@ -428,6 +391,15 @@ func GetReportHeaderTables(startTime, endTime string, db *gorm.DB) ([]*TableDef,
 		// Header
 		GetClusterHardwareInfoTable,
 		GetClusterInfoTable,
+	}
+	return getTables(startTime, endTime, db, funcs)
+}
+
+func GetReportEndTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []error) {
+	funcs := []func(string, string, *gorm.DB) (*TableDef, error){
+		GetTiDBCurrentConfig,
+		GetPDCurrentConfig,
+		GetTiKVCurrentConfig,
 	}
 	return getTables(startTime, endTime, db, funcs)
 }
@@ -443,6 +415,39 @@ func GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2 string
 			{Values: []string{startTime1, endTime1, startTime2, endTime2}},
 		},
 	}
+}
+
+func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB) ([]*TableDef, []error) {
+	funcs := []func(string, string, *gorm.DB) (*TableDef, error){
+		// Diagnose
+		GetDiagnoseReport,
+		// Config
+		GetPDConfigInfo,
+		GetTiDBGCConfigInfo,
+	}
+
+	tables := make([]*TableDef, 0, len(funcs))
+	errs := make([]error, 0, len(funcs))
+	for _, f := range funcs {
+		tbl1, err := f(startTime1, endTime1, db)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		if tbl1 != nil {
+			tbl1.Title += " in time range t1"
+			tables = append(tables, tbl1)
+		}
+		tbl2, err := f(startTime2, endTime2, db)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		if tbl2 != nil {
+			tbl2.Title += " in time range t2"
+			tables = append(tables, tbl2)
+		}
+	}
+	return tables, errs
+
 }
 
 func getTables(startTime, endTime string, db *gorm.DB, funcs []func(string, string, *gorm.DB) (*TableDef, error)) ([]*TableDef, []error) {

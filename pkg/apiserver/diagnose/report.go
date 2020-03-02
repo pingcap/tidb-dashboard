@@ -1084,7 +1084,7 @@ func GetTiKVRaftInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) 
 	}
 	table := &TableDef{
 		Category:       []string{CategoryTiKV},
-		Title:          "Snapshot Info",
+		Title:          "Raft Info",
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
@@ -1363,7 +1363,7 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (*TableDef, e
 	}
 	return &TableDef{
 		Category:       []string{CategoryNode},
-		Title:          "Error",
+		Title:          "TiKV Thread CPU Usage",
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},

@@ -14,10 +14,11 @@
 package diagnose
 
 import (
-	//"fmt"
+	"fmt"
 	"log"
 	"net/http"
-	//"strings"
+	"strings"
+
 	"testing"
 
 	"github.com/jinzhu/gorm"
@@ -199,46 +200,46 @@ func (t *testReportSuite) TestRoundFloatString(c *C) {
 	}
 }
 
-//func printRows(t *TableDef) {
-//	if t == nil {
-//		fmt.Println("table is nil")
-//		return
-//	}
-//
-//	if len(t.Rows) == 0 {
-//		fmt.Println("table rows is 0")
-//		return
-//	}
-//
-//	fieldLen := t.ColumnWidth()
-//	//fmt.Println(fieldLen)
-//	printLine := func(values []string, comment string) {
-//		line := ""
-//		for i, s := range values {
-//			for k := len(s); k < fieldLen[i]; k++ {
-//				s += " "
-//			}
-//			if i > 0 {
-//				line += "    |    "
-//			}
-//			line += s
-//		}
-//		if len(comment) != 0 {
-//			line = line + "    |    " + comment
-//		}
-//		fmt.Println(line)
-//	}
-//
-//	fmt.Println(strings.Join(t.Category, " - "))
-//	fmt.Println(t.Title)
-//	fmt.Println(t.CommentEN)
-//	printLine(t.Column, "")
-//
-//	for _, row := range t.Rows {
-//		printLine(row.Values, row.Comment)
-//		for i := range row.SubValues {
-//			printLine(row.SubValues[i], "")
-//		}
-//	}
-//	fmt.Println("")
-//}
+func printRows(t *TableDef) {
+	if t == nil {
+		fmt.Println("table is nil")
+		return
+	}
+
+	if len(t.Rows) == 0 {
+		fmt.Println("table rows is 0")
+		return
+	}
+
+	fieldLen := t.ColumnWidth()
+	//fmt.Println(fieldLen)
+	printLine := func(values []string, comment string) {
+		line := ""
+		for i, s := range values {
+			for k := len(s); k < fieldLen[i]; k++ {
+				s += " "
+			}
+			if i > 0 {
+				line += "    |    "
+			}
+			line += s
+		}
+		if len(comment) != 0 {
+			line = line + "    |    " + comment
+		}
+		fmt.Println(line)
+	}
+
+	fmt.Println(strings.Join(t.Category, " - "))
+	fmt.Println(t.Title)
+	fmt.Println(t.CommentEN)
+	printLine(t.Column, "")
+
+	for _, row := range t.Rows {
+		printLine(row.Values, row.Comment)
+		for i := range row.SubValues {
+			printLine(row.SubValues[i], "")
+		}
+	}
+	fmt.Println("")
+}

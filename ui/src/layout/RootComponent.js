@@ -1,24 +1,24 @@
-import React from 'react';
-import { Layout, Menu, Icon } from 'antd';
-import { Link } from 'react-router-dom';
-import { HashRouter as Router } from 'react-router-dom';
-import { withTranslation } from 'react-i18next';
-import Nav from './Nav';
+import React from 'react'
+import { Layout, Menu, Icon } from 'antd'
+import { Link } from 'react-router-dom'
+import { HashRouter as Router } from 'react-router-dom'
+import { withTranslation } from 'react-i18next'
+import Nav from './Nav'
 
-import styles from './RootComponent.module.less';
+import styles from './RootComponent.module.less'
 
 @withTranslation()
 class App extends React.PureComponent {
   state = {
     collapsed: false,
     activeAppId: null,
-  };
+  }
 
   triggerResizeEvent = () => {
-    const event = document.createEvent('HTMLEvents');
-    event.initEvent('resize', true, false);
-    window.dispatchEvent(event);
-  };
+    const event = document.createEvent('HTMLEvents')
+    event.initEvent('resize', true, false)
+    window.dispatchEvent(event)
+  }
 
   handleToggle = () => {
     this.setState(
@@ -26,33 +26,33 @@ class App extends React.PureComponent {
         collapsed: !this.state.collapsed,
       },
       () => {
-        this.triggerResizeEvent();
+        this.triggerResizeEvent()
       }
-    );
-  };
+    )
+  }
 
   handleRouting = () => {
-    const activeApp = this.props.registry.getActiveApp();
+    const activeApp = this.props.registry.getActiveApp()
     if (activeApp) {
       this.setState({
         activeAppId: activeApp.id,
-      });
+      })
     }
-  };
+  }
 
   async componentDidMount() {
-    window.addEventListener('single-spa:routing-event', this.handleRouting);
+    window.addEventListener('single-spa:routing-event', this.handleRouting)
   }
 
   componentWillUnmount() {
-    window.removeEventListener('single-spa:routing-event', this.handleRouting);
+    window.removeEventListener('single-spa:routing-event', this.handleRouting)
   }
 
   renderAppMenuItem = appId => {
-    const registry = this.props.registry;
-    const app = registry.apps[appId];
+    const registry = this.props.registry
+    const app = registry.apps[appId]
     if (!app) {
-      return null;
+      return null
     }
     return (
       <Menu.Item key={appId}>
@@ -61,12 +61,13 @@ class App extends React.PureComponent {
           <span>{this.props.t(`${appId}.nav_title`, appId)}</span>
         </Link>
       </Menu.Item>
-    );
-  };
+    )
+  }
 
   render() {
-    const siderWidth = 260;
-    const isDev = process.env.NODE_ENV === 'development';
+    const siderWidth = 260
+    const isDev = process.env.NODE_ENV === 'development'
+    const { t } = this.props
 
     return (
       <Router>
@@ -82,13 +83,24 @@ class App extends React.PureComponent {
               mode="inline"
               theme="dark"
               selectedKeys={[this.state.activeAppId]}
-              defaultOpenKeys={['sub1']}
+              defaultOpenKeys={['debug']}
             >
+              {this.renderAppMenuItem('cluster_info')}
               {this.renderAppMenuItem('keyvis')}
               {this.renderAppMenuItem('statement')}
               {this.renderAppMenuItem('diagnose')}
-              {this.renderAppMenuItem('logsearch')}
-              {this.renderAppMenuItem('cluster_info')}
+              <Menu.SubMenu
+                key="debug"
+                title={
+                  <span>
+                    <Icon type="experiment" />
+                    <span>{t('nav.sider.debug')}</span>
+                  </span>
+                }
+              >
+                {this.renderAppMenuItem('log_searching')}
+                {this.renderAppMenuItem('node_profiling')}
+              </Menu.SubMenu>
               {isDev ? (
                 <Menu.SubMenu
                   key="sub1"
@@ -123,8 +135,8 @@ class App extends React.PureComponent {
           </Layout>
         </Layout>
       </Router>
-    );
+    )
   }
 }
 
-export default App;
+export default App

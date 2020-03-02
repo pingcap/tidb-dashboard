@@ -13,7 +13,7 @@ export default function LogSearchingPage() {
           <Empty
             description={
               <span>
-                {t('logs.page.intro')}
+                {t('log_searching.page.intro')}
               </span>
             } />
         </Col>

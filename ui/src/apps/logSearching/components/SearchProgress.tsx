@@ -119,9 +119,9 @@ export default function SearchProgress() {
   });
 
   const descriptionArray = [
-    t('logs.progress.running'),
-    t('logs.progress.success'),
-    t('logs.progress.failed')
+    t('log_searching.progress.running'),
+    t('log_searching.progress.success'),
+    t('log_searching.progress.failed')
   ]
 
   function progressDescription(tasks: LogsearchTaskModel[]) {
@@ -207,7 +207,7 @@ export default function SearchProgress() {
       return
     }
     confirm({
-      title: t('logs.confirm.cancel_tasks'),
+      title: t('log_searching.confirm.cancel_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdCancelPost(taskGroupID)
       },
@@ -219,7 +219,7 @@ export default function SearchProgress() {
       return
     }
     confirm({
-      title: t('logs.confirm.retry_tasks'),
+      title: t('log_searching.confirm.retry_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdRetryPost(taskGroupID)
       },
@@ -233,12 +233,12 @@ export default function SearchProgress() {
   return (
     <div>
       <Card>
-        <Title level={3}>{t('logs.common.progress')}</Title>
+        <Title level={3}>{t('log_searching.common.progress')}</Title>
         <div>{progressDescription(tasks)}</div>
         <div className={styles.buttons}>
-          <Button type="primary" onClick={handleDownload} disabled={checkedKeys.length < 1}>{t('logs.common.download_selected')}</Button>
-          <Button type="danger" onClick={handleCancel} disabled={!tasks.some(task => task.state === TaskState.Running)}>{t('logs.common.cancel')}</Button>
-          <Button onClick={handleRetry} disabled={tasks.some(task => task.state === TaskState.Running) || !tasks.some(task => task.state === TaskState.Error)}>{t('logs.common.retry')}</Button>
+          <Button type="primary" onClick={handleDownload} disabled={checkedKeys.length < 1}>{t('log_searching.common.download_selected')}</Button>
+          <Button type="danger" onClick={handleCancel} disabled={!tasks.some(task => task.state === TaskState.Running)}>{t('log_searching.common.cancel')}</Button>
+          <Button onClick={handleRetry} disabled={tasks.some(task => task.state === TaskState.Running) || !tasks.some(task => task.state === TaskState.Error)}>{t('log_searching.common.retry')}</Button>
         </div>
         <Tree
           checkable

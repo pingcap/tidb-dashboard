@@ -1,7 +1,7 @@
 module.exports = {
-  id: 'logsearch',
+  id: 'node_profiling',
   loader: () => import('./app.js'),
-  routerPrefix: '/logsearch',
-  icon: 'pie-chart',
+  routerPrefix: '/node_profiling',
+  icon: 'heat-map',
   translations: require.context('./translations/', false, /\.yaml$/),
 }

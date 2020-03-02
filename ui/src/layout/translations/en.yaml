@@ -25,3 +25,5 @@ signin:
 nav:
   user:
     signout: Sign Out
+  sider:
+    debug: Advanced Debugging

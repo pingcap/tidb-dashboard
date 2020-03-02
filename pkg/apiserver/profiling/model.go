@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package profile
+package profiling
 
 import (
 	"context"
@@ -40,8 +40,8 @@ type TaskModel struct {
 	Addr        string    `json:"address"`
 	FilePath    string    `json:"file_path" gorm:"type:text"`
 	Component   string    `json:"component"`
-	CreateTime  int64     `json:"create_time"`
-	FinishTime  int64     `json:"finish_time"`
+	CreatedAt   int64     `json:"created_at"`
+	FinishedAt  int64     `json:"finished_at"`
 	Error       string    `json:"error" gorm:"type:text"`
 }
 
@@ -80,7 +80,7 @@ func NewTask(db *dbstore.DB, id uint, component, addr string) *Task {
 			State:       TaskStateRunning,
 			Addr:        addr,
 			Component:   component,
-			CreateTime:  time.Now().Unix(),
+			CreatedAt:   time.Now().Unix(),
 		},
 		db: db,
 	}
@@ -97,7 +97,7 @@ func (t *Task) run() {
 	}
 	t.FilePath = svgFilePath
 	t.State = TaskStateFinish
-	t.FinishTime = time.Now().Unix()
+	t.FinishedAt = time.Now().Unix()
 	t.db.Save(t.TaskModel)
 }
 

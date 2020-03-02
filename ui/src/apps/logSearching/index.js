@@ -1,8 +1,7 @@
 module.exports = {
-  id: 'cluster_info',
+  id: 'log_searching',
   loader: () => import('./app.js'),
-  routerPrefix: '/cluster_info',
-  icon: 'cluster',
-  isDefaultRouter: true,
+  routerPrefix: '/log/search',
+  icon: 'file-text',
   translations: require.context('./translations/', false, /\.yaml$/),
 }

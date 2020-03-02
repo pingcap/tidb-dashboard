@@ -1,5 +1,5 @@
 diagnose:
-  nav_title: SQL Diagnose
+  nav_title: Cluster Diagnose
   time_selector:
     start_time: Start Time
     end_time: End Time

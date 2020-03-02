@@ -10,9 +10,10 @@ import AppKeyVis from '@/apps/keyvis'
 import AppHome from '@/apps/home'
 import AppDemo from '@/apps/demo'
 import AppStatement from '@/apps/statement'
-import AppClusterInfo from '@/apps/clusterInfo'
 import AppDiagnose from '@/apps/diagnose'
-import AppLogSearching from '@/apps/logsearch'
+import AppLogSearching from '@/apps/logSearching'
+import AppNodeProfiling from '@/apps/nodeProfiling'
+import AppClusterInfo from '@/apps/clusterInfo'
 
 async function main() {
   const registry = new AppRegistry()
@@ -48,6 +49,7 @@ async function main() {
     .register(AppClusterInfo)
     .register(AppDiagnose)
     .register(AppLogSearching)
+    .register(AppNodeProfiling)
 
   if (routingUtil.isLocationMatch('/')) {
     singleSpa.navigateToUrl('#' + registry.getDefaultRouter())

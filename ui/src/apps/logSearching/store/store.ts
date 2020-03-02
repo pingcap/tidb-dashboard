@@ -18,14 +18,12 @@ export interface ServerType {
 
 type StateType = {
   searchOptions: SearchOptions,
-  taskGroupID: number,
   tasks: LogsearchTaskModel[],
   topology: Map<string, LogsearchSearchTarget>,
 }
 
 type ActionType =
   | { type: 'search_options'; payload: SearchOptions }
-  | { type: 'task_group_id'; payload: number }
   | { type: 'tasks'; payload: LogsearchTaskModel[] }
   | { type: 'topology'; payload: Map<string, LogsearchSearchTarget> }
 
@@ -41,7 +39,6 @@ export const initialState: StateType = {
     curComponents: [],
     curSearchValue: '',
   },
-  taskGroupID: -1,
   tasks: [],
   topology: new Map(),
 }
@@ -52,11 +49,6 @@ export const reducer = (state: StateType, action: ActionType): StateType => {
       return {
         ...state,
         searchOptions: action.payload
-      }
-    case "task_group_id":
-      return {
-        ...state,
-        taskGroupID: action.payload
       }
     case 'tasks':
       return {

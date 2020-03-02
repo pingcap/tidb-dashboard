@@ -157,8 +157,12 @@ export default function SearchHeader() {
       }
     }
     const result = await client.dashboard.logsTaskgroupPut(params)
-    dispatch({ type: 'task_group_id', payload: result.data.task_group?.id })
-    history.push('/log/search/detail')
+    const id = result.data.task_group?.id
+    if (!id) {
+      // promp error here
+      return
+    }
+    history.push('/log/search/detail?id=' + id)
   }
 
   function handleTimeRangeChange(value: RangePickerValue) {

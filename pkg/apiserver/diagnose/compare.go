@@ -60,7 +60,6 @@ func CompareTables(tables1, tables2 []*TableDef) ([]*TableDef, []TableRowDef) {
 				}
 			}
 		}
-
 	}
 	return resultTables, errRows
 }
@@ -461,7 +460,6 @@ func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, 
 		}
 	}
 	return tables, errRows
-
 }
 
 func getTables(startTime, endTime string, db *gorm.DB, funcs []func(string, string, *gorm.DB) (TableDef, error)) ([]*TableDef, []TableRowDef) {

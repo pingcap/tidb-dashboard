@@ -53,6 +53,7 @@ For front-end, you should build API client and start a React development server:
 
 ```bash
 cd ui
+yarn # Install all the dependencies
 npm run build_api_client
 npm run start
 # Now tidb-dashboard UI is available on 127.0.0.1:3000
@@ -70,18 +71,22 @@ Please follow this style to make TiDB Dashboard easy to review, maintain, and de
 
 ### Starting a TiDB cluster
 
-> Note: TiDB Dashboard can run without a TiDB cluster, but some features are unavailable and not conducive to debugging.
+To run TiDB Dashboard, you'd like to run a local TiDB cluster (at least 1 TiDB, 1 TiKV and 1 PD), here we introduce how to start a local TiDB cluster by binary deployment. Alternatively, you can use other ways like [TiUP](https://tiup.io) (It's under actively development).
 
-To run TiDB Dashboard, you'd like to run a local TiDB cluster (at least 1 TiDB, 1 TiKV and 1 PD), here we introduce how to start a local TiDB cluster by binary deployment. Alternatively, you can use other ways like [docker-compose](https://github.com/pingcap/tidb-docker-compose#quick-start) or [TiUP](https://tiup.io) (It's under actively development).
+Download all needed files, but do not save them in `tidb-dashboard` folder, Choose 1 of 2:
 
-Download all needed files (Do not save them in `tidb-dashboard` folder):
-
+For linux user:
 ```bash
-# Download the package.
 wget https://download.pingcap.org/tidb-latest-linux-amd64.tar.gz
-# Extract the package.
 tar -xzf tidb-latest-linux-amd64.tar.gz
 cd tidb-latest-linux-amd64
+```
+
+For Mac OS user: 
+```bash
+wget https://download.pingcap.org/tidb-latest-darwin-amd64.tar.gz
+tar -xzf tidb-latest-darwin-amd64.tar.gz
+cd tidb-latest-darwin-amd64
 ```
 
 Then start a local TiDB cluster with 1 TiDB, 1 TiKV and 1 PD step by step:

@@ -272,7 +272,7 @@ func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, error) {
 			ratio += 1
 			continue
 		}
-		ratio += math.Abs(f1-f2) / math.Max(f1, f2)
+		ratio += (f2 - f1) / math.Max(f1, f2)
 	}
 	return ratio, nil
 }
@@ -357,12 +357,12 @@ func getCompareTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []er
 		// Overview
 		GetTotalTimeConsumeTable,
 		GetTotalErrorTable,
-		//
-		//// TiDB
+
+		// TiDB
 		GetTiDBTimeConsumeTable,
 		GetTiDBTxnTableData,
 		GetTiDBDDLOwner,
-		//
+
 		// PD
 		GetPDTimeConsumeTable,
 		GetPDSchedulerInfo,

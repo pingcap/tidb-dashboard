@@ -1258,19 +1258,7 @@ func getAvgValueTableData(defs1 []AvgMaxMinTableDef, startTime, endTime string, 
 	}
 
 	resultRows := make([]TableRowDef, 0, len(defs))
-	specialHandle := func(row []string) []string {
-		for len(row) < 3 {
-			return row
-		}
-		row[2] = convertFloatToInt(row[2])
-		return row
-	}
-
 	appendRows := func(row TableRowDef) {
-		row.Values = specialHandle(row.Values)
-		for i := range row.SubValues {
-			row.SubValues[i] = specialHandle(row.SubValues[i])
-		}
 		resultRows = append(resultRows, row)
 	}
 	arg := newQueryArg(startTime, endTime)

@@ -58,26 +58,26 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
-	startTime := "2020-02-27 20:00:00"
-	endTime := "2020-02-27 21:00:00"
+	startTime := "2020-03-03 17:18:00"
+	endTime := "2020-03-03 17:21:00"
 
 	var table *TableDef
-	table, err = GetClusterHardwareInfoTable(startTime, endTime, cli)
+	table, err = GetTiKVThreadCPUTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(table)
 }
 
 func (t *testReportSuite) TestGetCompareTable(c *C) {
-	//cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
-	cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
+	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
+	//cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
-	startTime1 := "2020-03-02 17:04:00"
-	endTime1 := "2020-03-02 17:06:00"
+	startTime1 := "2020-03-03 17:08:00"
+	endTime1 := "2020-03-03 17:11:00"
 
-	startTime2 := "2020-03-02 17:14:00"
-	endTime2 := "2020-03-02 17:28:00"
+	startTime2 := "2020-03-03 17:18:00"
+	endTime2 := "2020-03-03 17:21:00"
 
 	var errs []error
 	var tables []*TableDef

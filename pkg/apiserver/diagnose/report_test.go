@@ -70,8 +70,7 @@ func (t *testReportSuite) TestGetCompareTable(c *C) {
 	startTime2 := "2020-03-03 17:18:00"
 	endTime2 := "2020-03-03 17:21:00"
 
-	var tables []*TableDef
-	tables = GetCompareReportTables(startTime1, endTime1, startTime2, endTime2, cli)
+	tables := GetCompareReportTables(startTime1, endTime1, startTime2, endTime2, cli)
 	for _, tbl := range tables {
 		printRows(tbl)
 	}

@@ -76,28 +76,26 @@ func compareTable(table1, table2 *TableDef) (*TableDef, error) {
 	}
 
 	resultRows := make([]TableRowDef, 0, len(table1.Rows))
-	for _, row1 := range table1.Rows {
-		label1 := genRowLabel(row1.Values, table1.joinColumns)
+	for i := range table1.Rows {
+		label1 := genRowLabel(table1.Rows[i].Values, table1.joinColumns)
 		row2, ok := labelsMap2[label1]
 		if !ok {
 			row2 = &TableRowDef{}
-			//return nil, errors.Errorf("category %v,table %v doesn't find row label: %v", strings.Join(table2.Category, ","), table2.Title, label1)
 		}
-		newRow, err := joinRow(&row1, row2, table1)
+		newRow, err := joinRow(&table1.Rows[i], row2, table1)
 		if err != nil {
 			return nil, err
 		}
 		resultRows = append(resultRows, *newRow)
 	}
-	for _, row2 := range table2.Rows {
-		label2 := genRowLabel(row2.Values, table2.joinColumns)
-		row1, ok := labelsMap1[label2]
+	for i := range table2.Rows {
+		label2 := genRowLabel(table2.Rows[i].Values, table2.joinColumns)
+		_, ok := labelsMap1[label2]
 		if ok {
 			continue
-			//return nil, errors.Errorf("category %v,table %v doesn't find row label: %v", strings.Join(table2.Category, ","), table2.Title, label1)
 		}
-		row1 = &TableRowDef{}
-		newRow, err := joinRow(row1, &row2, table1)
+		row1 := &TableRowDef{}
+		newRow, err := joinRow(row1, &table2.Rows[i], table1)
 		if err != nil {
 			return nil, err
 		}
@@ -130,7 +128,7 @@ func compareTable(table1, table2 *TableDef) (*TableDef, error) {
 		return resultRows[i].ratio > resultRows[j].ratio
 	})
 	if len(table1.compareColumns) > 0 {
-		comment := "\ndiff_ratio = max( "
+		comment := "\nDIFF_RATIO = max( "
 		for i, idx := range table1.compareColumns {
 			if i > 0 {
 				comment += " , "

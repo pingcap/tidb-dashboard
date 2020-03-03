@@ -15,22 +15,14 @@ package diagnose
 
 import (
 	"fmt"
-	"log"
-	"net/http"
 	"strings"
-
 	"testing"
 
 	"github.com/jinzhu/gorm"
 	. "github.com/pingcap/check"
-	_ "net/http/pprof"
 )
 
 func TestT(t *testing.T) {
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-
 	CustomVerboseFlag = true
 	TestingT(t)
 }
@@ -40,12 +32,12 @@ var _ = Suite(&testReportSuite{})
 type testReportSuite struct{}
 
 func (t *testReportSuite) TestReport(c *C) {
-	cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
+	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
-	startTime := "2020-02-27 19:20:23"
-	endTime := "2020-02-27 21:20:23"
+	startTime := "2020-03-03 17:18:00"
+	endTime := "2020-03-03 17:21:00"
 
 	tables := GetReportTablesForDisplay(startTime, endTime, cli)
 	for _, tbl := range tables {
@@ -61,15 +53,14 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	startTime := "2020-03-03 17:18:00"
 	endTime := "2020-03-03 17:21:00"
 
-	var table *TableDef
+	var table TableDef
 	table, err = GetLoadTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
-	printRows(table)
+	printRows(&table)
 }
 
 func (t *testReportSuite) TestGetCompareTable(c *C) {
 	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
-	//cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
@@ -79,16 +70,11 @@ func (t *testReportSuite) TestGetCompareTable(c *C) {
 	startTime2 := "2020-03-03 17:18:00"
 	endTime2 := "2020-03-03 17:21:00"
 
-	var errs []error
 	var tables []*TableDef
-	tables, errs = GetCompareReportTables(startTime1, endTime1, startTime2, endTime2, cli)
+	tables = GetCompareReportTables(startTime1, endTime1, startTime2, endTime2, cli)
 	for _, tbl := range tables {
 		printRows(tbl)
 	}
-	for _, err := range errs {
-		c.Assert(err, IsNil)
-	}
-	c.Assert(errs, HasLen, 0)
 }
 
 func (t *testReportSuite) TestCompareTable(c *C) {
@@ -206,6 +192,9 @@ func printRows(t *TableDef) {
 		return
 	}
 
+	fmt.Println(strings.Join(t.Category, " - "))
+	fmt.Println(t.Title)
+	fmt.Println(t.CommentEN)
 	if len(t.Rows) == 0 {
 		fmt.Println("table rows is 0")
 		return
@@ -230,9 +219,6 @@ func printRows(t *TableDef) {
 		fmt.Println(line)
 	}
 
-	fmt.Println(strings.Join(t.Category, " - "))
-	fmt.Println(t.Title)
-	fmt.Println(t.CommentEN)
 	printLine(t.Column, "")
 
 	for _, row := range t.Rows {

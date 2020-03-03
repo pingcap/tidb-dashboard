@@ -99,7 +99,7 @@ func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB) []*TableD
 }
 
 func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
-	funcs := []func(string, string, *gorm.DB) (*TableDef, error){
+	funcs := []func(string, string, *gorm.DB) (TableDef, error){
 		// Header
 		GetHeaderTimeTable,
 		GetClusterHardwareInfoTable,
@@ -156,19 +156,15 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 	for _, f := range funcs {
 		tbl, err := f(startTime, endTime, db)
 		if err != nil {
-			category := ""
-			if tbl.Category != nil {
-				category = strings.Join(tbl.Category, ",")
-			}
-			errRows = append(errRows, TableRowDef{
-				Values: []string{category, tbl.Title, err.Error()},
-			})
+			errRows = appendErrorRow(tbl, err, errRows)
 		}
-		if tbl != nil {
-			tables = append(tables, tbl)
+		if tbl.Rows != nil {
+			tables = append(tables, &tbl)
 		}
 	}
-	tables = append(tables, GenerateReportError(errRows))
+	if len(errRows) > 0 {
+		tables = append(tables, GenerateReportError(errRows))
+	}
 	return tables
 }
 
@@ -183,8 +179,8 @@ func GenerateReportError(errRows []TableRowDef) *TableDef {
 	}
 }
 
-func GetHeaderTimeTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
-	return &TableDef{
+func GetHeaderTimeTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	return TableDef{
 		Category:  []string{CategoryHeader},
 		Title:     "Report Time Range",
 		CommentEN: "",
@@ -196,25 +192,25 @@ func GetHeaderTimeTable(startTime, endTime string, db *gorm.DB) (*TableDef, erro
 	}, nil
 }
 
-func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
-	sql := fmt.Sprintf("select /*+ time_range('%s','%s') */ * from information_schema.INSPECTION_RESULT", startTime, endTime)
-	rows, err := getSQLRows(db, sql)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	table := TableDef{
 		Category:  []string{CategoryDiagnose},
 		Title:     "diagnose",
 		CommentEN: "Automatically diagnose the cluster problem and record the problem in below table.",
 		CommentCN: "",
 		//joinColumns: []int{0, 1, 2, 3, 6},
 		Column: []string{"RULE", "ITEM", "TYPE", "INSTANCE", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
-		Rows:   rows,
 	}
+	sql := fmt.Sprintf("select /*+ time_range('%s','%s') */ * from information_schema.INSPECTION_RESULT", startTime, endTime)
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
-func GetTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalTimeByLabelsTableDef{
 		{name: "tidb_query", tbl: "tidb_query", labels: []string{"sql_type"}, comment: "The time cost of sql query"},
 		{name: "tidb_get_token(us)", tbl: "tidb_get_token", labels: []string{"instance"}, comment: "The time cost of session getting token to execute sql query"},
@@ -289,7 +285,7 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*TableDef
 		defs = append(defs, defs1[i])
 	}
 
-	table := &TableDef{
+	table := TableDef{
 		Category: []string{CategoryOverview},
 		Title:    "Time Consume",
 		CommentEN: `The table contain the event time consume in TiDB/TiKV/PD. 
@@ -330,13 +326,13 @@ P80 is the max time of 0.80 quantile;
 
 	err := getTableRows(defs, arg, db, appendRows)
 	if err != nil {
-		return nil, err
+		return table, err
 	}
 	table.Rows = resultRows
 	return table, nil
 }
 
-func GetTotalErrorTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTotalErrorTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
 		{tbl: "tidb_binlog_error_total_count", labels: []string{"instance"}, comment: "The total count of TiDB write binlog error and skip binlog"},
 		{tbl: "tidb_handshake_error_total_count", labels: []string{"instance"}, comment: "The total count of TiDB processing handshake error"},
@@ -357,12 +353,7 @@ func GetTotalErrorTable(startTime, endTime string, db *gorm.DB) (*TableDef, erro
 		{tbl: "node_network_out_errors_total_count", labels: []string{"instance"}},
 	}
 
-	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
-	if err != nil {
-		return nil, err
-	}
-
-	return &TableDef{
+	table := TableDef{
 		Category: []string{CategoryOverview},
 		Title:    "Error",
 		CommentEN: `The table contain the total count of error event. 
@@ -374,11 +365,17 @@ TOTAL_COUNT is the total count of this event;
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},
-		Rows:           rows,
-	}, nil
+	}
+
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
+	return table, nil
 }
 
-func GetTiDBTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiDBTimeConsumeTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalTimeByLabelsTableDef{
 		{name: "tidb_query", tbl: "tidb_query", labels: []string{"instance", "sql_type"}, comment: "The time cost of sql query"},
 		{name: "tidb_get_token(us)", tbl: "tidb_get_token", labels: []string{"instance"}, comment: "The time cost of session getting token to execute sql query"},
@@ -415,7 +412,7 @@ func GetTiDBTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*TableDef,
 		defs = append(defs, defs1[i])
 	}
 
-	table := &TableDef{
+	table := TableDef{
 		Category: []string{CategoryTiDB},
 		Title:    "Time Consume",
 		CommentEN: `The table contain the event time consume in TiDB. 
@@ -456,13 +453,13 @@ P80 is the max time of 0.80 quantile;
 
 	err := getTableRows(defs, arg, db, appendRows)
 	if err != nil {
-		return nil, err
+		return table, err
 	}
 	table.Rows = resultRows
 	return table, nil
 }
 
-func GetTiDBTxnTableData(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiDBTxnTableData(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalValueAndTotalCountTableDef{
 		{name: "tidb_transaction_retry_num", tbl: "tidb_transaction_retry_num", sumTbl: "tidb_transaction_retry_total_num", countTbl: "tidb_transaction_retry_num_total_count", labels: []string{"instance"}},
 		{name: "tidb_transaction_statement_num", tbl: "tidb_transaction_statement_num", sumTbl: "tidb_transaction_statement_total_num", countTbl: "tidb_transaction_statement_num_total_count", labels: []string{"sql_type"}},
@@ -486,7 +483,7 @@ func GetTiDBTxnTableData(startTime, endTime string, db *gorm.DB) (*TableDef, err
 	resultRows := make([]TableRowDef, 0, len(defs))
 
 	quantiles := []float64{0.999, 0.99, 0.90, 0.80}
-	table := &TableDef{
+	table := TableDef{
 		Category: []string{CategoryTiDB},
 		Title:    "Transaction",
 		CommentEN: `The table contain the TiDB transaction statistics information. 
@@ -535,80 +532,76 @@ P80 is the max size/value of 0.80 quantile;
 
 	err := getTableRows(defs, arg, db, appendRows)
 	if err != nil {
-		return nil, err
+		return table, err
 	}
 	table.Rows = resultRows
 	return table, nil
 }
 
-func GetTiDBDDLOwner(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiDBDDLOwner(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf("select min(time),instance from metrics_schema.tidb_ddl_worker_total_count where time>='%s' and time<'%s' and value>0 and type='run_job' group by instance order by min(time);",
 		startTime, endTime)
 
-	rows, err := getSQLRows(db, sql)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:    []string{CategoryTiDB},
 		Title:       "DDL-owner",
 		CommentEN:   "DDL Owner info. Attention, if no DDL request has been executed, below owner info maybe null, it doesn't indicate no DDL owner exists.",
 		CommentCN:   "",
 		joinColumns: []int{1},
 		Column:      []string{"MIN_TIME", "DDL OWNER"},
-		Rows:        rows,
 	}
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
-func GetPDConfigInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetPDConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf(`select t1.*,t2.count from
 		(select min(time),type,value from metrics_schema.pd_scheduler_config where time>='%[1]s' and time<'%[2]s' group by type,value order by type) as t1 join
 		(select type, count(distinct value) as count from metrics_schema.pd_scheduler_config where time>='%[1]s' and time<'%[2]s' group by type order by count desc) as t2 
 		where t1.type=t2.type order by t2.count desc;`, startTime, endTime)
 
-	rows, err := getSQLRows(db, sql)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:  []string{CategoryConfig},
 		Title:     "Scheduler Config",
 		CommentEN: "PD scheduler config change history. MIN_TIME is the minimum start effective time",
 		CommentCN: "",
-		//joinColumns: []int{1, 2},
-		//compareColumns: []int{2},
-		Column: []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
-		Rows:   rows,
+		Column:    []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
 	}
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
-func GetTiDBGCConfigInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiDBGCConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf(`select t1.*,t2.count from
 		(select min(time),type,value from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' group by type,value order by type) as t1 join
 		(select type, count(distinct value) as count from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' group by type order by count desc) as t2 
 		where t1.type=t2.type order by t2.count desc;`, startTime, endTime)
 
-	rows, err := getSQLRows(db, sql)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category: []string{CategoryConfig},
 		Title:    "TiDB GC Config",
-		CommentEN: `PD scheduler config change history; 
+		CommentEN: `TiDB GC config change history; 
 MIN_TIME is the minimum start effective time`,
 		CommentCN: "",
-		//joinColumns:    []int{1, 2},
-		//compareColumns: []int{2},
-		Column: []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
-		Rows:   rows,
+		Column:    []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
 	}
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
-func GetPDTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetPDTimeConsumeTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalTimeByLabelsTableDef{
 		{name: "pd_client_cmd", tbl: "pd_client_cmd", labels: []string{"instance", "type"}, comment: "The time cost of pd client command"},
 		{name: "pd_handle_request", tbl: "pd_handle_request", labels: []string{"instance", "type"}, comment: "The time cost of pd handle request"},
@@ -626,7 +619,7 @@ func GetPDTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*TableDef, e
 		defs = append(defs, defs1[i])
 	}
 
-	table := &TableDef{
+	table := TableDef{
 		Category: []string{CategoryPD},
 		Title:    "Time Consume",
 		CommentEN: `The table contain the event time consume in PD. 
@@ -655,13 +648,13 @@ P80 is the max time of 0.80 quantile;
 
 	err := getTableRows(defs, arg, db, appendRows)
 	if err != nil {
-		return nil, err
+		return table, err
 	}
 	table.Rows = resultRows
 	return table, nil
 }
 
-func GetPDSchedulerInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetPDSchedulerInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
 		{name: "blance-leader-in", tbl: "pd_scheduler_balance_leader", condition: "type='move-leader' and address like '%-in'", labels: []string{"address"}, comment: "blance-leader-in is the total count of leader move into the tikv store"},
 		{name: "blance-leader-out", tbl: "pd_scheduler_balance_leader", condition: "type='move-leader' and address like '%-out'", labels: []string{"address"}, comment: "blance-leader-out is the total count of leader move out the tikv store"},
@@ -669,12 +662,7 @@ func GetPDSchedulerInfo(startTime, endTime string, db *gorm.DB) (*TableDef, erro
 		{name: "blance-region-out", tbl: "pd_scheduler_balance_region", condition: "type='move-peer' and address like '%-out'", labels: []string{"address"}, comment: "blance-region-in is the total count of region move into the tikv store"},
 	}
 
-	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
-	if err != nil {
-		return nil, err
-	}
-
-	return &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryPD},
 		Title:          "blance leader/region",
 		CommentEN:      "",
@@ -682,11 +670,17 @@ func GetPDSchedulerInfo(startTime, endTime string, db *gorm.DB) (*TableDef, erro
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},
-		Rows:           rows,
-	}, nil
+	}
+
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
+	return table, err
 }
 
-func GetTiKVRegionSizeInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVRegionSizeInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalValueAndTotalCountTableDef{
 		{name: "Approximate Region size", tbl: "tikv_approximate_region_size", sumTbl: "tikv_approximate_region_total_size", countTbl: "tikv_approximate_region_size_total_count", labels: []string{"instance"}},
 	}
@@ -727,11 +721,7 @@ func GetTiKVRegionSizeInfo(startTime, endTime string, db *gorm.DB) (*TableDef, e
 		quantiles: quantiles,
 	}
 
-	err := getTableRows(defs, arg, db, appendRows)
-	if err != nil {
-		return nil, err
-	}
-	return &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "Approximate Region size",
 		CommentEN:      "",
@@ -739,20 +729,20 @@ func GetTiKVRegionSizeInfo(startTime, endTime string, db *gorm.DB) (*TableDef, e
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "P99", "P90", "P80", "P50"},
-		Rows:           resultRows,
-	}, nil
+	}
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = resultRows
+	return table, nil
 }
 
-func GetTiKVStoreInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVStoreInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
 		{name: "store size", tbl: "tikv_engine_size", labels: []string{"instance", "type"}},
 	}
-	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
-	if err != nil {
-		return nil, err
-	}
-
-	return &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "blance leader/region",
 		CommentEN:      "",
@@ -760,11 +750,16 @@ func GetTiKVStoreInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error)
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},
-		Rows:           rows,
-	}, nil
+	}
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
+	return table, nil
 }
 
-func GetTiKVTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalTimeByLabelsTableDef{
 		{name: "tikv_grpc_messge", tbl: "tikv_grpc_messge", labels: []string{"instance", "type"}, comment: "The time cost of TiKV handle of gRPC message"},
 		{name: "tikv_cop_request", tbl: "tikv_cop_request", labels: []string{"instance", "req"}, comment: "The time cost of coprocessor handle read requests"},
@@ -797,7 +792,7 @@ func GetTiKVTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (*Tabl
 		defs = append(defs, defs1[i])
 	}
 
-	table := &TableDef{
+	table := TableDef{
 		Category: []string{CategoryTiKV},
 		Title:    "Time Consume",
 		CommentEN: `The table contain the event time consume in TiKV. 
@@ -838,13 +833,13 @@ P80 is the max time of 0.80 quantile;
 
 	err := getTableRows(defs, arg, db, appendRows)
 	if err != nil {
-		return nil, err
+		return table, err
 	}
 	table.Rows = resultRows
 	return table, nil
 }
 
-func GetTiKVSchedulerInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVSchedulerInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalValueAndTotalCountTableDef{
 		{name: "tikv_scheduler_keys_read", tbl: "tikv_scheduler_keys_read", sumTbl: "tikv_scheduler_keys_total_read", countTbl: "tikv_scheduler_keys_read_total_count", labels: []string{"instance", "type"}},
 		{name: "tikv_scheduler_keys_written", tbl: "tikv_scheduler_keys_written", sumTbl: "tikv_scheduler_keys_total_written", countTbl: "tikv_scheduler_keys_written_total_count", labels: []string{"instance", "type"}},
@@ -878,12 +873,7 @@ func GetTiKVSchedulerInfo(startTime, endTime string, db *gorm.DB) (*TableDef, er
 		resultRows = append(resultRows, row)
 	}
 
-	arg := newQueryArg(startTime, endTime)
-	err := getTableRows(defs, arg, db, appendRows)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "Scheduler Info",
 		CommentEN:      "",
@@ -891,23 +881,23 @@ func GetTiKVSchedulerInfo(startTime, endTime string, db *gorm.DB) (*TableDef, er
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
-		Rows:           resultRows,
 	}
+	arg := newQueryArg(startTime, endTime)
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = resultRows
 	return table, nil
 }
 
-func GetTiKVGCInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVGCInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
 		{tbl: "tikv_gc_keys_total_num", labels: []string{"instance", "cf", "tag"}},
 		{name: "tidb_gc_worker_action_total_num", tbl: "tidb_gc_worker_action_opm", labels: []string{"instance", "type"}},
 	}
 
-	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
-	if err != nil {
-		return nil, err
-	}
-
-	table := &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "GC Info",
 		CommentEN:      "",
@@ -915,12 +905,16 @@ func GetTiKVGCInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE"},
-		Rows:           rows,
 	}
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
-func GetTiKVTaskInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVTaskInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
 		{tbl: "tikv_worker_handled_tasks_total_num", labels: []string{"instance", "name"}, comment: "Total number of tasks handled by worker"},
 		{tbl: "tikv_worker_pending_tasks_total_num", labels: []string{"instance", "name"}, comment: "Total number of pending and running tasks of worker"},
@@ -928,12 +922,7 @@ func GetTiKVTaskInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) 
 		{tbl: "tikv_futurepool_pending_tasks_total_num", labels: []string{"instance", "name"}, comment: "Total pending and running tasks of future_pool"},
 	}
 
-	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
-	if err != nil {
-		return nil, err
-	}
-
-	table := &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "Task Info",
 		CommentEN:      "",
@@ -941,8 +930,12 @@ func GetTiKVTaskInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) 
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE"},
-		Rows:           rows,
 	}
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
@@ -976,7 +969,7 @@ func getSumValueTableData(defs1 []sumValueQuery, startTime, endTime string, db *
 	return resultRows, nil
 }
 
-func GetTiKVSnapshotInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVSnapshotInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalValueAndTotalCountTableDef{
 		{name: "tikv_snapshot_kv_count", tbl: "tikv_snapshot_kv_count", sumTbl: "tikv_snapshot_kv_total_count", countTbl: "tikv_snapshot_kv_count_total_count", labels: []string{"instance"}},
 		{name: "tikv_snapshot_size", tbl: "tikv_snapshot_size", sumTbl: "tikv_snapshot_total_size", countTbl: "tikv_snapshot_size_total_count", labels: []string{"instance"}},
@@ -1008,13 +1001,7 @@ func GetTiKVSnapshotInfo(startTime, endTime string, db *gorm.DB) (*TableDef, err
 		resultRows = append(resultRows, row)
 	}
 
-	arg := newQueryArg(startTime, endTime)
-
-	err := getTableRows(defs, arg, db, appendRows)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "Snapshot Info",
 		CommentEN:      "",
@@ -1022,12 +1009,17 @@ func GetTiKVSnapshotInfo(startTime, endTime string, db *gorm.DB) (*TableDef, err
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
-		Rows:           resultRows,
 	}
+	arg := newQueryArg(startTime, endTime)
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = resultRows
 	return table, nil
 }
 
-func GetTiKVCopInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVCopInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
 		{tbl: "tikv_cop_kv_cursor_total_operations", labels: []string{"instance", "req"}},
 		{tbl: "tikv_cop_total_response_total_size", labels: []string{"instance"}},
@@ -1042,13 +1034,7 @@ func GetTiKVCopInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
 		resultRows = append(resultRows, row)
 	}
 
-	arg := newQueryArg(startTime, endTime)
-
-	err := getTableRows(defs, arg, db, appendRows)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "Coprocessor Info",
 		CommentEN:      "",
@@ -1056,12 +1042,17 @@ func GetTiKVCopInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE"},
-		Rows:           resultRows,
 	}
+	arg := newQueryArg(startTime, endTime)
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = resultRows
 	return table, nil
 }
 
-func GetTiKVRaftInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVRaftInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
 		{tbl: "tikv_raft_sent_messages_total_num", labels: []string{"instance", "type"}},
 		{tbl: "tikv_flush_messages_total_num", labels: []string{"instance"}},
@@ -1077,12 +1068,7 @@ func GetTiKVRaftInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) 
 	appendRows := func(row TableRowDef) {
 		resultRows = append(resultRows, row)
 	}
-	arg := newQueryArg(startTime, endTime)
-	err := getTableRows(defs, arg, db, appendRows)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "Raft Info",
 		CommentEN:      "",
@@ -1090,12 +1076,17 @@ func GetTiKVRaftInfo(startTime, endTime string, db *gorm.DB) (*TableDef, error) 
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE"},
-		Rows:           resultRows,
 	}
+	arg := newQueryArg(startTime, endTime)
+	err := getTableRows(defs, arg, db, appendRows)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = resultRows
 	return table, nil
 }
 
-func GetTiKVErrorTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVErrorTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
 		{tbl: "tikv_grpc_error_total_count", labels: []string{"instance", "type"}, comment: "The total count of the gRPC message failures"},
 		{tbl: "tikv_critical_error_total_count", labels: []string{"instance", "type"}, comment: "The total count of the TiKV critical error"},
@@ -1113,7 +1104,7 @@ func GetTiKVErrorTable(startTime, endTime string, db *gorm.DB) (*TableDef, error
 		defs = append(defs, defs1[i])
 	}
 
-	table := &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "Error",
 		CommentEN:      "",
@@ -1143,60 +1134,60 @@ func GetTiKVErrorTable(startTime, endTime string, db *gorm.DB) (*TableDef, error
 	}
 	err := getTableRows(defs, arg, db, appendRows)
 	if err != nil {
-		return nil, err
+		return table, err
 	}
 	table.Rows = resultRows
 	return table, nil
 }
 
-func GetTiDBCurrentConfig(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiDBCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf("select `key`,`value` from information_schema.CLUSTER_CONFIG where type='tidb' group by `key`,`value` order by `key`;")
-	rows, err := getSQLRows(db, sql)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:  []string{CategoryConfig},
 		Title:     "TiDB Current Config",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"KEY", "VALUE"},
-		Rows:      rows,
 	}
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
-func GetPDCurrentConfig(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetPDCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf("select `key`,`value` from information_schema.CLUSTER_CONFIG where type='pd' group by `key`,`value` order by `key`;")
-	rows, err := getSQLRows(db, sql)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:  []string{CategoryConfig},
 		Title:     "PD Current Config",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"KEY", "VALUE"},
-		Rows:      rows,
 	}
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
-func GetTiKVCurrentConfig(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf("select `key`,`value` from information_schema.CLUSTER_CONFIG where type='tikv' group by `key`,`value` order by `key`;")
-	rows, err := getSQLRows(db, sql)
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:  []string{CategoryConfig},
 		Title:     "TiKV Current Config",
 		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"KEY", "VALUE"},
-		Rows:      rows,
 	}
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
@@ -1269,32 +1260,33 @@ func getAvgValueTableData(defs1 []AvgMaxMinTableDef, startTime, endTime string, 
 	return resultRows, nil
 }
 
-func GetLoadTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
 		{name: "node_cpu_usage", tbl: "node_cpu_usage", label: "instance", Comment: "the CPU usage in each node"},
 		//{name: "node_mem_usage", tbl: "node_mem_usage", label: "instance"},
 		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", label: "instance", Comment: "the disk write latency in each node"},
 		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance", Comment: "the disk read latency in each node"},
 	}
-	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
-	if err != nil {
-		return nil, err
-	}
-	row, err := getAvgMaxMinMemoryUsage(startTime, endTime, db)
-	if err != nil {
-		return nil, err
-	}
-	rows = append(rows, *row)
-	return &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryNode},
-		Title:          "Error",
+		Title:          "Load",
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
 		Column:         []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
-		Rows:           rows,
-	}, nil
+	}
+	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	row, err := getAvgMaxMinMemoryUsage(startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	rows = append(rows, *row)
+	table.Rows = rows
+	return table, nil
 }
 
 func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowDef, error) {
@@ -1335,15 +1327,10 @@ func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowD
 	}, nil
 }
 
-func GetCPUUsageTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetCPUUsageTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.process_cpu_usage where time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
 		startTime, endTime)
-	rows, err := getSQLRoundRows(db, sql, []int{2, 3, 4}, "")
-	if err != nil {
-		return nil, err
-	}
-
-	table := &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryNode},
 		Title:          "process cpu usage",
 		CommentEN:      "",
@@ -1351,32 +1338,36 @@ func GetCPUUsageTable(startTime, endTime string, db *gorm.DB) (*TableDef, error)
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
 		Column:         []string{"instance", "job", "AVG", "MAX", "MIN"},
-		Rows:           rows,
 	}
+	rows, err := getSQLRoundRows(db, sql, []int{2, 3, 4}, "")
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
-func GetGoroutinesCountTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetGoroutinesCountTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf("select instance, job, avg(value), max(value), min(value) from metrics_schema.goroutines_count where job in ('tidb','pd') and time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
 		startTime, endTime)
-	rows, err := getSQLRoundRows(db, sql, []int{2, 3, 4}, "The goroutine count of each instance")
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryNode},
 		Title:          "goroutines count",
-		CommentEN:      "",
+		CommentEN:      "The goroutine count of tidb/pd server",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
 		Column:         []string{"instance", "job", "AVG", "MAX", "MIN"},
-		Rows:           rows,
 	}
+	rows, err := getSQLRoundRows(db, sql, []int{2, 3, 4}, "")
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
-func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
 		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'raftstore%'", Comment: "The CPU usage of each TiKV raftstore"},
 		{name: "apply", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'apply%'", Comment: "The CPU usage of each TiKV apply"},
@@ -1388,11 +1379,7 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (*TableDef, e
 		{name: "gc", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'gc%'", Comment: "The CPU usage of each TiKV gc"},
 		{name: "split_check", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'split_check%'", Comment: "The CPU usage of each TiKV split_check"},
 	}
-	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
-	if err != nil {
-		return nil, err
-	}
-	return &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryNode},
 		Title:          "TiKV Thread CPU Usage",
 		CommentEN:      "",
@@ -1400,11 +1387,16 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (*TableDef, e
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
 		Column:         []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
-		Rows:           rows,
-	}, nil
+	}
+	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
+	return table, nil
 }
 
-func GetStoreStatusTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetStoreStatusTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
 		{name: "region_score", tbl: "pd_scheduler_store_status", condition: "type = 'region_score'", label: "address", Comment: "The region score status of store"},
 		{name: "leader_score", tbl: "pd_scheduler_store_status", condition: "type = 'leader_score'", label: "address", Comment: "The leader score status of store"},
@@ -1413,11 +1405,7 @@ func GetStoreStatusTable(startTime, endTime string, db *gorm.DB) (*TableDef, err
 		{name: "region_size", tbl: "pd_scheduler_store_status", condition: "type = 'region_size'", label: "address", Comment: "The region size status of store"},
 		{name: "leader_size", tbl: "pd_scheduler_store_status", condition: "type = 'leader_size'", label: "address", Comment: "The leader size status of store"},
 	}
-	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
-	if err != nil {
-		return nil, err
-	}
-	return &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryPD},
 		Title:          "Error",
 		CommentEN:      "",
@@ -1425,18 +1413,19 @@ func GetStoreStatusTable(startTime, endTime string, db *gorm.DB) (*TableDef, err
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
 		Column:         []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
-		Rows:           rows,
-	}, nil
+	}
+	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
+	return table, nil
 }
 
-func GetPDClusterStatusTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetPDClusterStatusTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_cluster_status where time >= '%s' and time < '%s' group by type",
 		startTime, endTime)
-	rows, err := getSQLRoundRows(db, sql, []int{1, 2}, "")
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryPD},
 		Title:          "cluster status",
 		CommentEN:      "",
@@ -1444,19 +1433,19 @@ func GetPDClusterStatusTable(startTime, endTime string, db *gorm.DB) (*TableDef,
 		joinColumns:    []int{0},
 		compareColumns: []int{1, 2},
 		Column:         []string{"TYPE", "MAX", "MIN"},
-		Rows:           rows,
 	}
+	rows, err := getSQLRoundRows(db, sql, []int{1, 2}, "")
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
-func GetPDEtcdStatusTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetPDEtcdStatusTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf("select type, max(value), min(value) from metrics_schema.pd_server_etcd_state where time >= '%s' and time < '%s' group by type",
 		startTime, endTime)
-	rows, err := getSQLRoundRows(db, sql, []int{1, 2}, "")
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryPD},
 		Title:          "etcd status",
 		CommentEN:      "",
@@ -1464,31 +1453,34 @@ func GetPDEtcdStatusTable(startTime, endTime string, db *gorm.DB) (*TableDef, er
 		joinColumns:    []int{0},
 		compareColumns: []int{1, 2},
 		Column:         []string{"TYPE", "MAX", "MIN"},
-		Rows:           rows,
 	}
+	rows, err := getSQLRoundRows(db, sql, []int{1, 2}, "")
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
-func GetClusterInfoTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetClusterInfoTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf("select * from information_schema.cluster_info")
-	rows, err := getSQLRoundRows(db, sql, nil, "")
-	if err != nil {
-		return nil, err
-	}
-	table := &TableDef{
+	table := TableDef{
 		Category:    []string{CategoryHeader},
 		Title:       "cluster info",
 		CommentEN:   "",
 		CommentCN:   "",
 		joinColumns: []int{0, 1, 2, 3, 4},
 		Column:      []string{"TYPE", "INSTANCE", "STATUS_ADDRESS", "VERSION", "GIT_HASH", "START_TIME", "UPTIME"},
-		Rows:        rows,
 	}
-
+	rows, err := getSQLRoundRows(db, sql, nil, "")
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
 	return table, nil
 }
 
-func GetTiKVCacheHitTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetTiKVCacheHitTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	tables := []AvgMaxMinTableDef{
 		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", label: "type", Comment: "The hit rate of memtable"},
 		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit", label: "type", Comment: "The hit rate of all block cache"},
@@ -1499,7 +1491,7 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *gorm.DB) (*TableDef, er
 	}
 
 	resultRows := make([]TableRowDef, 0, len(tables))
-	table := &TableDef{
+	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "cache hit",
 		CommentEN:      "",
@@ -1519,7 +1511,7 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *gorm.DB) (*TableDef, er
 		}
 		rows, err := querySQL(db, sql)
 		if err != nil {
-			return nil, err
+			return table, err
 		}
 		if len(rows) == 0 {
 			continue
@@ -1546,9 +1538,9 @@ type hardWare struct {
 	uptime   string
 }
 
-func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
+func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	resultRows := make([]TableRowDef, 0, 1)
-	table := &TableDef{
+	table := TableDef{
 		Category:  []string{CategoryHeader},
 		Title:     "cluster hardware",
 		CommentEN: "",
@@ -1562,7 +1554,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		OR NAME = 'cpu-logical-cores' ORDER BY INSTANCE `
 	rows, err := querySQL(db, sql)
 	if err != nil {
-		return nil, err
+		return table, err
 	}
 	m := make(map[string]*hardWare)
 	var s string
@@ -1571,7 +1563,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 		s := row[0][:idx]
 		cpuCnt, err := strconv.Atoi(row[3])
 		if err != nil {
-			return &TableDef{}, err
+			return table, err
 		}
 		if _, ok := m[s]; ok {
 			if _, ok := m[s].Type[row[1]]; ok {
@@ -1589,26 +1581,26 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 	sql = "SELECT instance,value FROM information_schema.CLUSTER_HARDWARE WHERE device_type='memory' and name = 'capacity' group by instance,value"
 	rows, err = querySQL(db, sql)
 	if err != nil {
-		return nil, err
+		return table, err
 	}
 	for _, row := range rows {
 		s = row[0][:strings.Index(row[0], ":")]
 		memCnt, err := strconv.ParseFloat(row[1], 64)
 		if err != nil {
-			return &TableDef{}, err
+			return table, err
 		}
 		m[s].memory = memCnt
 	}
 	sql = "SELECT `INSTANCE`,`DEVICE_NAME`,`VALUE` from information_schema.CLUSTER_HARDWARE where `NAME` = 'total' AND `DEVICE_TYPE` = 'disk' AND `DEVICE_NAME` NOT LIKE '/dev/loop%' AND (`DEVICE_NAME` LIKE '/dev%' or `DEVICE_NAME` LIKE 'sda%' or`DEVICE_NAME` LIKE 'nvme%') group by instance,device_name,value"
 	rows, err = querySQL(db, sql)
 	if err != nil {
-		return nil, err
+		return table, err
 	}
 	for _, row := range rows {
 		s = row[0][:strings.Index(row[0], ":")]
 		diskCnt, err := strconv.ParseFloat(row[2], 64)
 		if err != nil {
-			return &TableDef{}, err
+			return table, err
 		}
 		if _, ok := m[s].disk[row[1]]; !ok {
 			m[s].disk[row[1]] = diskCnt
@@ -1622,7 +1614,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (*Table
 	sql = fmt.Sprintf(sql, startTime, endTime)
 	rows, err = querySQL(db, sql)
 	if err != nil {
-		return nil, err
+		return table, err
 	}
 
 	for _, row := range rows {

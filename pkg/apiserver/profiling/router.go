@@ -25,6 +25,7 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
@@ -47,8 +48,9 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 }
 
 // Register register the handlers to the service.
-func (s *Service) Register(r *gin.RouterGroup) {
+func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/profiling")
+	endpoint.Use(auth.MWAuthRequired())
 	endpoint.POST("/group/start", s.startHandler)
 	endpoint.GET("/group/status/:groupId", s.statusHandler)
 	endpoint.POST("/group/cancel/:groupId", s.cancelGroupHandler)
@@ -68,8 +70,10 @@ type StartRequest struct {
 // @Description Start a profiling task group
 // @Produce json
 // @Param pr body StartRequest true "profiling request"
+// @Security JwtAuth
 // @Success 200 {object} TaskGroupModel "task group"
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/start [post]
 func (s *Service) startHandler(c *gin.Context) {
 	var pr StartRequest
@@ -135,8 +139,10 @@ type StatusResponse struct {
 // @Description List all profiling tasks with a given group ID
 // @Produce json
 // @Param groupId path string true "group ID"
+// @Security JwtAuth
 // @Success 200 {object} StatusResponse
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/status/{groupId} [get]
 func (s *Service) statusHandler(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
@@ -172,8 +178,10 @@ func (s *Service) statusHandler(c *gin.Context) {
 // @Description Cancel all profling tasks with a given group ID
 // @Produce json
 // @Param groupId path string true "group ID"
+// @Security JwtAuth
 // @Success 200 {string} string "success"
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/cancel/{groupId} [post]
 func (s *Service) cancelGroupHandler(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
@@ -203,7 +211,9 @@ func (s *Service) cancelGroupHandler(c *gin.Context) {
 // @Description Download all finished profiling results with a given group ID
 // @Produce application/x-gzip
 // @Param groupId path string true "group ID"
+// @Security JwtAuth
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /profiling/group/download/{groupId} [get]
 func (s *Service) downloadGroupHandler(c *gin.Context) {
@@ -249,7 +259,9 @@ func (s *Service) downloadGroupHandler(c *gin.Context) {
 // @Description Download all finished profiling results with a given group ID
 // @Produce application/x-gzip
 // @Param taskId path string true "task ID"
+// @Security JwtAuth
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /profiling/single/download/{taskId} [get]
 func (s *Service) downloadHandler(c *gin.Context) {
@@ -290,8 +302,10 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Description Delete all finished profiling tasks with a given group ID
 // @Produce json
 // @Param groupId path string true "group ID"
+// @Security JwtAuth
 // @Success 200 {object} utils.APIEmptyResponse
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /profiling/group/delete/{groupId} [delete]
 func (s *Service) deleteHandler(c *gin.Context) {

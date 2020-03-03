@@ -62,9 +62,6 @@ A standalone TiDB Dashboard Server contains the following components:
 - Optional: [Node.js](https://nodejs.org/) 12+ and [yarn](https://yarnpkg.com/) if you want to build
   the UI.
 
-  **IMPORTANT**: TiDB Dashboard uses packages from GitHub Packages. You need to [configure the `~/.npmrc`](https://github.com/pingcap-incubator/pd-client-js#install)
-  in order to install these packages.
-
 ### Build Instructions
 
 #### API Only

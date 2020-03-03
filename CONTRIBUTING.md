@@ -6,7 +6,9 @@ If you need any help or mentoring getting started, understanding the codebase, o
 
 ## Building and setting up a development workspace
 
-TiDB Dasboard is a web interface which integrate into PD by default, andd can be deploy standalone. Its back-end is written in [Golang](https://golang.org/) with [Gin](https://github.com/gin-gonic/gin), front-end is written in [Typescript](https://www.typescriptlang.org/) with [React](https://github.com/facebook/react). It uses [swaggo](https://github.com/swaggo/swag) and [openapi-generator](https://github.com/OpenAPITools/openapi-generator) for automatically generating API documents and API client. Also, to provide consistency, we use linters and automated formatting tools.
+TiDB Dashboard is a web based UI for TiDB clusters. It is integrated into [PD](https://github.com/pingcap/pd) by default. It can also be deployed as a standalone server. The back-end is written in [Golang](https://golang.org/) with [Gin web framework](https://github.com/gin-gonic/gin) and the front-end is written in [TypeScript](https://www.typescriptlang.org/) with [React](https://github.com/facebook/react). [swaggo](https://github.com/swaggo/swag) and [openapi-generator](https://github.com/OpenAPITools/openapi-generator) are used for automatically generating API documents and API client.
+
+The following steps are describing how to develop TiDB Dashboard by running a self-built TiDB Dashboard server (i.e. standalone) along with a separated TiDB cluster.
 
 ### Prerequisites
 
@@ -14,8 +16,10 @@ To build TiDB Dashboard you'll need to at least have the following installed:
 
 - `git` - Version control
 - `make` - Build tool (run common workflows)
-- [`golang`](https://golang.org/) - Golang (require 1.13+)
-- [`node.js`](https://nodejs.org/) - Javascript runtime (require 12+)
+- [`Golang`](https://golang.org/) - Golang (require 1.13+)
+- [`Node.js`](https://nodejs.org/) - Javascript runtime (require 12+)
+- [`Yarn`](https://classic.yarnpkg.com/en/docs/install) - Javascript dependency management (require 1.21+)
+- [`Java`](https://www.java.com/ES/download/) - depended by [openapi-generator](https://github.com/OpenAPITools/openapi-generator) (require 8+)
 
 ### Getting the repository
 
@@ -25,43 +29,17 @@ cd tidb-dashboard
 # Future instructions assume you are in this directory
 ```
 
-### Preparing environment
-
 Optional: set Taobao's npm mirror registry to speed up package downloading if needed
 
 ```bash
 npm config set registry https://registry.npm.taobao.org
 ```
 
-Install yarn
-
-```bash
-npm install yarn -g
-```
-
-Install Openapi-generator
-
-```bash
-npm install @openapitools/openapi-generator-cli -g
-```
-
-**IMPORTANT**: TiDB Dashboard uses packages from GitHub Packages. you need to configure the ~/.npmrc in order to install these packages.
-
-1. Create a personal access token
-
-    Follow personal ["Settings" -> "Developer settings" -> "Personal access tokens" -> "Generate new token"](https://github.com/settings/tokens/new) path, the "Select scopes" must select `repo` and `read:packages` at least.
-
-2. Edit `~/.npmrc`, add a new line by the following content
-
-```
-//npm.pkg.github.com/:_authToken=[YOUR_PERSONAL_ACCESS_TOKEN]
-```
-
 ### Building and running
 
 At this point, you can build and run TiDB Dashboard. 
 
-> Note: TiDB Dashboard need a running TiDB cluster as target, before continue, see [how to start a local TiDB cluster](#starting-a-tidb-cluster).
+> Note: If you want to debug TiDB Dashboard, it needs a running TiDB cluster as target, see [how to start a local TiDB cluster](#starting-a-tidb-cluster).
 
 Build and run back-end server:
 
@@ -71,11 +49,11 @@ make run
 # Now tidb-dashboard server is listen on 127.0.0.1:12333
 ```
 
-For front-end, you should build API client and start a React develpment server:
+For front-end, you should build API client and start a React development server:
 
 ```bash
-make swagger_client
 cd ui
+npm run build_api_client
 npm run start
 # Now tidb-dashboard UI is available on 127.0.0.1:3000
 ```
@@ -92,7 +70,9 @@ Please follow this style to make TiDB Dashboard easy to review, maintain, and de
 
 ### Starting a TiDB cluster
 
-To run TiDB Dashboard, you also need run a local TiDB cluster (at least 1 TiDB server), here we introduce how to start a local TiDB cluster by binary deployment. Also, you can use other ways like [docker-compose](https://github.com/pingcap/tidb-docker-compose#quick-start) or [TiUP](https://tiup.io).
+> Note: TiDB Dashboard can run without a TiDB cluster, but some features are unavailable and not conducive to debugging.
+
+To run TiDB Dashboard, you'd like to run a local TiDB cluster (at least 1 TiDB, 1 TiKV and 1 PD), here we introduce how to start a local TiDB cluster by binary deployment. Alternatively, you can use other ways like [docker-compose](https://github.com/pingcap/tidb-docker-compose#quick-start) or [TiUP](https://tiup.io) (It's under actively development).
 
 Download all needed files (Do not save them in `tidb-dashboard` folder):
 
@@ -104,14 +84,7 @@ tar -xzf tidb-latest-linux-amd64.tar.gz
 cd tidb-latest-linux-amd64
 ```
 
-You can simply start 1 TiDB server for testing:
-
-```bash
-./bin/tidb-server --log-file=tidb.log
-# Now tidb-server is listen on port 4000
-```
-
-Or start a local TiDB cluster with 1 TiDB, 1 TiKV and 1 PD:
+Then start a local TiDB cluster with 1 TiDB, 1 TiKV and 1 PD step by step:
 
 Firstly start a pd-server:
 
@@ -188,14 +161,8 @@ The format can be described more formally as follows:
 
 The first line is the subject and should be no longer than 50 characters, the other lines should be wrapped at 72 characters (see [this blog post](https://preslav.me/2015/02/21/what-s-with-the-50-72-rule/) for why).
 
-If the change affects more than one subsystem, you can use comma to separate them like `util/codec,util/types:`.
+If the change affects more than one subsystem, you can use comma to separate them like `keyvis`.
 
 If the change affects many subsystems, you can use `*` instead, like `*:`.
 
 The body of the commit message should describe why the change was made and at a high level, how the code works.
-
-### Signing off the Commit
-
-The project uses [DCO check](https://github.com/probot/dco#how-it-works) and the commit message must contain a `Signed-off-by` line for [Developer Certificate of Origin](https://developercertificate.org/).
-
-Use option `git commit -s` to sign off your commits.

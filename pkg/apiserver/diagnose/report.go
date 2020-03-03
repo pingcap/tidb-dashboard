@@ -1280,6 +1280,11 @@ func GetLoadTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
 	if err != nil {
 		return nil, err
 	}
+	row, err := getAvgMaxMinMemoryUsage(startTime, endTime, db)
+	if err != nil {
+		return nil, err
+	}
+	rows = append(rows, *row)
 	return &TableDef{
 		Category:       []string{CategoryNode},
 		Title:          "Error",
@@ -1289,6 +1294,44 @@ func GetLoadTable(startTime, endTime string, db *gorm.DB) (*TableDef, error) {
 		compareColumns: []int{2, 3, 4},
 		Column:         []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
 		Rows:           rows,
+	}, nil
+}
+
+func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowDef, error) {
+	condition := fmt.Sprintf("where time >= '%s' and time < '%s' ", startTime, endTime)
+	sql := fmt.Sprintf(`select 'node_mem_usage','', 100*(1-t1.avg_value/t2.total),100*(1-t1.min_value/t2.total), 100*(1-t1.max_value/t2.total) from 
+			(select avg(value) as avg_value,max(value) as max_value,min(value) as min_value from metrics_schema.node_memory_available %[1]s) as t1 join
+			(select max(value) as total from metrics_schema.node_total_memory %[1]s) as t2;`, condition)
+	rows, err := querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+	sql = fmt.Sprintf(`select 'node_mem_usage',t1.instance, 100*(1-t1.avg_value/t2.total), 100*(1-t1.min_value/t2.total), 100*(1-t1.max_value/t2.total)  from 
+			(select instance, avg(value) as avg_value,max(value) as max_value,min(value) as min_value from metrics_schema.node_memory_available %[1]s GROUP BY instance) as t1 join
+			(select instance, max(value) as total from metrics_schema.node_total_memory %[1]s GROUP BY instance) as t2 where t1.instance = t2.instance;`, condition)
+	subRows, err := querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	specialHandle := func(row []string) []string {
+		if len(row) == 0 {
+			return row
+		}
+		row[2] = RoundFloatString(row[2])
+		row[3] = RoundFloatString(row[3])
+		row[4] = RoundFloatString(row[4])
+		return row
+	}
+	rows[0] = specialHandle(rows[0])
+	for i := range subRows {
+		subRows[i] = specialHandle(subRows[i])
+	}
+	return &TableRowDef{
+		Values:    rows[0],
+		SubValues: subRows,
 	}, nil
 }
 

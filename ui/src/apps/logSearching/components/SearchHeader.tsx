@@ -162,7 +162,7 @@ export default function SearchHeader() {
       // promp error here
       return
     }
-    history.push('/log/search/detail?id=' + id)
+    history.push('/log/search/detail/' + id)
   }
 
   function handleTimeRangeChange(value: RangePickerValue) {

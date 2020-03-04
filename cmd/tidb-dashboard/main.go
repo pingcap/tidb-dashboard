@@ -101,7 +101,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	return cfg
 }
 
-func getContext() (context.Context, *sync.WaitGroup) {
+func getContext() context.Context {
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		sc := make(chan os.Signal, 1)
@@ -113,8 +113,7 @@ func getContext() (context.Context, *sync.WaitGroup) {
 		<-sc
 		cancel()
 	}()
-	wg := &sync.WaitGroup{}
-	return ctx, wg
+	return ctx
 }
 
 func main() {
@@ -124,7 +123,7 @@ func main() {
 	defer log.Sync() //nolint:errcheck
 
 	cliConfig := NewCLIConfig()
-	ctx, wg := getContext()
+	ctx := getContext()
 
 	store := dbstore.MustOpenDBStore(cliConfig.CoreConfig)
 	defer store.Close() //nolint:errcheck
@@ -150,8 +149,9 @@ func main() {
 		EtcdProvider:   etcdProvider,
 		Store:          store,
 	}
-	keyvisualService := keyvisual.NewService(ctx, wg, cliConfig.CoreConfig, remoteDataProvider)
+	keyvisualService := keyvisual.NewService(ctx, cliConfig.CoreConfig, remoteDataProvider)
 	keyvisualService.Start()
+	defer keyvisualService.Close()
 
 	services := &apiserver.Services{
 		Store:         store,
@@ -182,6 +182,7 @@ func main() {
 	log.Info(fmt.Sprintf("Swagger: http://127.0.0.1:%d/dashboard/api/swagger/", cliConfig.ListenPort))
 
 	srv := &http.Server{Handler: mux}
+	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		if err := srv.Serve(listener); err != http.ErrServerClosed {
@@ -194,10 +195,7 @@ func main() {
 	if err := srv.Shutdown(context.Background()); err != nil {
 		log.Fatal("Can not stop server", zap.Error(err))
 	}
-
-	// waiting for other goroutines
 	wg.Wait()
-
 	log.Info("Stop dashboard server")
 }
 

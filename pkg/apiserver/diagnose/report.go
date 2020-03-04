@@ -16,6 +16,7 @@ package diagnose
 import (
 	"fmt"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -238,17 +239,23 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 	for i := 0; i < conc; i++ {
 		<-doneChan
 	}
+
 	// all task done, close the resChan
 	close(resChan)
-	m := make(map[int]*tblAndErr)
-	for tblAndErr := range resChan {
-		m[tblAndErr.taskID] = tblAndErr
-	}
 
-	tables := make([]*TableDef, len(funcs))
+	var tblAndErrSlice []tblAndErr
+	for tblAndErr := range resChan {
+		tblAndErrSlice = append(tblAndErrSlice, *tblAndErr)
+	}
+	sort.Slice(tblAndErrSlice, func(i, j int) bool {
+		return tblAndErrSlice[i].taskID < tblAndErrSlice[j].taskID
+	})
+	var tables []*TableDef
 	var errRows []TableRowDef
-	for k, v := range m {
-		tables[k] = v.tbl
+	for _,v := range tblAndErrSlice {
+		if v.tbl != nil {
+			tables = append(tables, v.tbl)
+		}
 		if v.err != nil {
 			errRows = append(errRows, *v.err)
 		}
@@ -285,11 +292,7 @@ func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool
 		}
 		tblAndErr.taskID = task.taskID
 		resChan <- &tblAndErr
-		if tblAndErr.taskID == cap(taskChan)-1 {
-			close(taskChan)
-		}
 	}
-	//task := <- taskChan
 	doneChan <- true
 }
 
@@ -304,6 +307,7 @@ func func2task(funcs []getTableFunc) chan *task {
 	for i := 0; i < len(funcs); i++ {
 		taskChan <- &task{funcs[i], i}
 	}
+	close(taskChan)
 	return taskChan
 }
 

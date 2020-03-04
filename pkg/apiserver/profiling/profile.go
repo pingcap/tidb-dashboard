@@ -25,9 +25,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-const defaultProfileSecs = 30
-const maxProfileSecs = 120
-
 func fetchProfilingSVG(ctx context.Context, nodeType NodeType, addr, filePrefix string, profileDurationSecs uint) (string, error) {
 	url := getProfilingURL(nodeType, addr, profileDurationSecs)
 	if url == "" {

@@ -45,7 +45,7 @@ type TaskModel struct {
 	ID          uint      `json:"id" gorm:"primary_key"`
 	TaskGroupID uint      `json:"task_group_id" gorm:"index"`
 	State       TaskState `json:"state" gorm:"index"`
-	Addr        string    `json:"address"`
+	Addr        string    `json:"address" gorm:"size:32"`
 	TargetKind  NodeType  `json:"target_kind" gorm:"size:10"`
 	FilePath    string    `json:"file_path" gorm:"type:text"`
 	Error       string    `json:"error" gorm:"type:text"`

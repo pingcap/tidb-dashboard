@@ -80,10 +80,10 @@ func (s *Service) startHandler(c *gin.Context) {
 	}
 
 	if pr.DurationSecs == 0 {
-		pr.DurationSecs = defaultProfileSecs
+		pr.DurationSecs = 30
 	}
-	if pr.DurationSecs > maxProfileSecs {
-		pr.DurationSecs = maxProfileSecs
+	if pr.DurationSecs > 120 {
+		pr.DurationSecs = 120
 	}
 	taskGroup := NewTaskGroup(s.db, pr.DurationSecs)
 	if err := s.db.Create(taskGroup.TaskGroupModel).Error; err != nil {

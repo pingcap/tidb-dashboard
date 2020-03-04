@@ -1,8 +1,8 @@
-import { Alert, Col, Row } from 'antd'
-import React from 'react'
-import { useTranslation } from 'react-i18next'
-import { SearchHeader, SearchProgress, SearchResult } from './components'
+import { Alert, Col, Row } from 'antd';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from "react-router-dom";
+import { SearchHeader, SearchProgress, SearchResult } from './components';
 
 export default function LogSearchingDetail() {
   const { t } = useTranslation()
@@ -14,7 +14,7 @@ export default function LogSearchingDetail() {
     <div>
       <Row gutter={[16, 16]}>
         <Col span={18}>
-          <SearchHeader />
+          <SearchHeader taskGroupID={taskGroupID} />
           <Alert
             message={t('log_searching.page.tip')}
             type="info"

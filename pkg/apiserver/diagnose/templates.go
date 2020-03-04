@@ -78,7 +78,7 @@ const TemplateIndex = `
             btn.onclick = function () {
               const curRow = btn.getAttribute('data-row')
               const tbodyEl = btn.parentNode.parentNode.parentNode
-              const subValueRows = tbodyEl.querySelectorAll('tr[data-row="' + curRow + ''"]')
+              const subValueRows = tbodyEl.querySelectorAll('tr[data-row="' + curRow + '"]')
               subValueRows.forEach(row => row.classList.toggle('fold'))
 
               if (btn.innerHTML === 'expand') {

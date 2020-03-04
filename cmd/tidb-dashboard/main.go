@@ -24,7 +24,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"net"
 	"net/http"
@@ -38,6 +37,8 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	flag "github.com/spf13/pflag"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
@@ -77,9 +78,12 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
 	flag.BoolVar(&cfg.EnableDebugLog, "debug", false, "Enable debug logs")
 	// debug for keyvisual
-	// TODO: Hide help information
+	// Hide help information
 	flag.Int64Var(&cfg.KVFileStartTime, "keyvis-file-start", 0, "(debug) start time for file range in file mode")
 	flag.Int64Var(&cfg.KVFileEndTime, "keyvis-file-end", 0, "(debug) end time for file range in file mode")
+
+	_ = flag.CommandLine.MarkHidden("keyvis-file-start")
+	_ = flag.CommandLine.MarkHidden("keyvis-file-end")
 
 	flag.Parse()
 

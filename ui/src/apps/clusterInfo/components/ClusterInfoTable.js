@@ -1,8 +1,6 @@
 import React from 'react'
-import { Table } from 'antd'
+import { Table, Card, Skeleton } from 'antd'
 import { useTranslation } from 'react-i18next'
-
-const TableWidth = 120
 
 function ComponentPanelTable({ cluster }) {
   const { t } = useTranslation()
@@ -11,49 +9,55 @@ function ComponentPanelTable({ cluster }) {
       title: t('cluster_info.component_table.address'),
       dataIndex: 'address',
       key: 'address',
-      width: TableWidth
+      ellipsis: true,
+      width: 240,
     },
     {
       title: t('cluster_info.component_table.status'),
       dataIndex: 'status',
       key: 'status',
-      width: TableWidth
+      width: 100,
     },
     {
       title: t('cluster_info.component_table.version'),
       dataIndex: 'version',
       key: 'version',
-      width: TableWidth
+      ellipsis: true,
+      width: 200,
     },
     {
       title: t('cluster_info.component_table.deploy_path'),
       dataIndex: 'deploy_path',
       key: 'deploy_path',
-      width: TableWidth
-    }
-    // {
-    //   title: t('cluster_info.component_table.status_port'),
-    //   dataIndex: 'status_port',
-    //   key: 'status_port',
-    // },
+      ellipsis: true,
+    },
   ]
 
   let dataSource = []
-
-  pushNodes('tikv', cluster, dataSource)
-  pushNodes('tidb', cluster, dataSource)
-  pushNodes('pd', cluster, dataSource)
+  if (cluster) {
+    pushNodes('tikv', cluster, dataSource)
+    pushNodes('tidb', cluster, dataSource)
+    pushNodes('pd', cluster, dataSource)
+  }
 
   return (
-    <div>
-      <h3>{t('cluster_info.component_table.node_list')}</h3>
-      <Table
-        columns={columns}
-        dataSource={dataSource}
-        pagination={false}
-        width={20}
-      />
-    </div>
+    <Card
+      size="small"
+      bordered={false}
+      title={t('cluster_info.component_table.node_list')}
+    >
+      {!cluster ? (
+        <Skeleton active title={false} paragraph={{ rows: 5 }} />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={dataSource}
+          pagination={false}
+          size="middle"
+          style={{ margin: -5 }}
+        />
+      )}
+    </Card>
   )
 }
 
@@ -63,10 +67,10 @@ function pushNodes(key, cluster, dataSource) {
     cluster[key] !== null &&
     cluster[key].err === null
   ) {
-    const nodes = cluster[key].nodes;
+    const nodes = cluster[key].nodes
     dataSource.push({
       address: key + '(' + nodes.length + ')',
-      children: nodes.map((n, index) => wrapNode(n, key, index))
+      children: nodes.map((n, index) => wrapNode(n, key, index)),
     })
   }
 }
@@ -91,7 +95,7 @@ function wrapNode(node, comp, id) {
     deploy_path: node.deploy_path,
     version: node.version,
     status_port: node.status_port,
-    status: status
+    status: status,
   }
 }
 

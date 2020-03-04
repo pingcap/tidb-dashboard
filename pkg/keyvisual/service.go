@@ -54,7 +54,10 @@ var (
 )
 
 type Service struct {
-	wg       *sync.WaitGroup
+	ctx    context.Context
+	cancel context.CancelFunc
+	wg     sync.WaitGroup
+
 	config   *config.Config
 	provider *region.PDDataProvider
 
@@ -63,19 +66,20 @@ type Service struct {
 	strategy matrix.Strategy
 }
 
-func NewService(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider) *Service {
-	in := input.NewStatInput(ctx, provider)
-	labelStrategy := decorator.TiDBLabelStrategy(ctx, provider)
-	strategy := matrix.DistanceStrategy(ctx, wg, labelStrategy, 1.0/math.Phi, 15, 50)
-	stat := storage.NewStat(ctx, wg, provider, defaultStatConfig, strategy, in.GetStartTime())
-	return &Service{
-		wg:       wg,
+func NewService(ctx context.Context, cfg *config.Config, provider *region.PDDataProvider) *Service {
+	ctx, cancel := context.WithCancel(ctx)
+	srv := &Service{
+		ctx:      ctx,
+		cancel:   cancel,
 		config:   cfg,
 		provider: provider,
-		in:       in,
-		stat:     stat,
-		strategy: strategy,
 	}
+	wg := &srv.wg
+	srv.in = input.NewStatInput(ctx, provider)
+	labelStrategy := decorator.TiDBLabelStrategy(ctx, provider)
+	srv.strategy = matrix.DistanceStrategy(ctx, wg, labelStrategy, 1.0/math.Phi, 15, 50)
+	srv.stat = storage.NewStat(ctx, wg, provider, defaultStatConfig, srv.strategy, srv.in.GetStartTime())
+	return srv
 }
 
 func (s *Service) Start() {
@@ -88,6 +92,11 @@ func (s *Service) Start() {
 		s.in.Background(s.stat)
 		s.wg.Done()
 	}()
+}
+
+func (s *Service) Close() {
+	s.cancel()
+	s.wg.Wait()
 }
 
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {

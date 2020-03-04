@@ -14,18 +14,27 @@
 package diagnose
 
 import (
+	"bufio"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+	"io/ioutil"
 )
 
-var TemplateInfoWithFilenames = []utils.TemplateInfoWithFilename{
-	{Name: "sql-diagnosis/index", Text: TemplateIndex, Filename: "./pkg/apiserver/diagnose/templates/index.gohtml"},
-	{Name: "sql-diagnosis/table", Text: TemplateTable, Filename: "./pkg/apiserver/diagnose/templates/table.gohtml"},
+var fs = assetFS()
+
+func FetchTemplates() []utils.TemplateInfoWithFilename {
+	var result []utils.TemplateInfoWithFilename
+	result = append(result, readFromFS("sql-diagnosis/index", "pkg/apiserver/diagnose/templates/index.gohtml"))
+	result = append(result, readFromFS("sql-diagnosis/table", "pkg/apiserver/diagnose/templates/table.gohtml"))
+	return result
 }
 
-const TemplateIndex = `
-You should not see this message.
-`
-
-const TemplateTable = `
-You should not see this message.
-`
+func readFromFS(name string, filename string) utils.TemplateInfoWithFilename {
+	file, _ := fs.Open(filename)
+	defer file.Close()
+	content, _ := ioutil.ReadAll(bufio.NewReader(file))
+	return utils.TemplateInfoWithFilename{
+		Name:     name,
+		Text:     string(content),
+		Filename: filename,
+	}
+}

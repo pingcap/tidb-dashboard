@@ -53,7 +53,7 @@ func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstor
 		config:        config,
 		db:            db,
 		tidbForwarder: tidbForwarder,
-		htmlRender:    utils.NewPreferLocalFileHTMLRender(TemplateInfoWithFilenames),
+		htmlRender:    utils.NewPreferLocalFileHTMLRender(FetchTemplates()),
 	}
 }
 

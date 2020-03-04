@@ -52,6 +52,7 @@ endif
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh
 endif
+	scripts/generate_diagnose_report_template.sh
 	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 
 run:

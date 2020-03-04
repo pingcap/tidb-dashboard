@@ -173,7 +173,7 @@ The format can be described more formally as follows:
 
 The first line is the subject and should be no longer than 50 characters, the other lines should be wrapped at 72 characters (see [this blog post](https://preslav.me/2015/02/21/what-s-with-the-50-72-rule/) for why).
 
-If the change affects more than one subsystem, you can use comma to separate them like `keyvis`.
+If the change affects more than one subsystem, you can use comma to separate them like `keyviz`.
 
 If the change affects many subsystems, you can use `*` instead, like `*:`.
 

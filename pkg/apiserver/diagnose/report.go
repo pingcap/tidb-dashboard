@@ -222,6 +222,9 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 
 	// get the local CPU count for concurrence
 	conc := runtime.NumCPU()
+	if conc > 8 {
+		conc = 8
+	}
 	taskChan := func2task(funcs)
 	resChan := make(chan *tblAndErr, len(funcs))
 	doneChan := make(chan bool, conc)

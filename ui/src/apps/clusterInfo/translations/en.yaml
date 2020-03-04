@@ -3,7 +3,7 @@ cluster_info:
   status:
     up: UP
     abnormal: ABNORMAL
-    nodes: "{{nodeType}} NODES"
+    nodes: '{{nodeType}} NODES'
   component_table:
     ip: IP
     port: Port
@@ -17,8 +17,8 @@ cluster_info:
   monitor_alert:
     title: MONITOR AND ALERT
     view_monitor: VIEW MONITOR
-    view_monitor_warn: MONITOR NOT AVAILABLE
+    view_monitor_warn: Monitor is not available
     view_alerts: VIEW ALERTS
-    view_alerts_warn: ALERTS NOT AVAILABLE
+    view_alerts_warn: Alert is not available
     problems: PROBLEMS
-    diagnose: RUN DIAGNOSE
+    run_diagnose: RUN DIAGNOSE

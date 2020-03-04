@@ -1,5 +1,5 @@
 import React from 'react'
-import { Icon } from 'antd'
+import { Icon, Card } from 'antd'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import styles from './MonitorAlertBar.module.less'
@@ -17,39 +17,44 @@ export default function MonitorAlertBar({ cluster }) {
 
   return (
     <div>
-      <div className={styles.desc}>
-        <h3>{t('cluster_info.monitor_alert.title')}</h3>
-        <div className={styles.height}>
-          <p>
-            {!grafana? (
-              t('cluster_info.monitor_alert.view_monitor_warn')
-            ) : (
-              <a href={grafana}>
-                {t('cluster_info.monitor_alert.view_monitor')}
-                <Icon type="right" style={{ marginLeft: '5px' }} />
-              </a>
-            )}
-          </p>
-          <p>
-            {!am? (
-              t('cluster_info.monitor_alert.view_alerts_warn')
-            ) : (
-              <a href={am} className={styles.warn}>
-                {t('cluster_info.monitor_alert.view_alerts')}
-                <Icon type="right" style={{ marginLeft: '5px' }} />
-              </a>
-            )}
-          </p>
-
-          <h3>{t('cluster_info.monitor_alert.problems')}</h3>
-          <p>
-            <Link to={`/diagnose`}>
-              {t('cluster_info.monitor_alert.diagnose')}
+      <Card
+        size="small"
+        bordered={false}
+        title={t('cluster_info.monitor_alert.title')}
+      >
+        <p>
+          {!grafana ? (
+            t('cluster_info.monitor_alert.view_monitor_warn')
+          ) : (
+            <a href={grafana}>
+              {t('cluster_info.monitor_alert.view_monitor')}
               <Icon type="right" style={{ marginLeft: '5px' }} />
-            </Link>
-          </p>
-        </div>
-      </div>
+            </a>
+          )}
+        </p>
+        <p>
+          {!am ? (
+            t('cluster_info.monitor_alert.view_alerts_warn')
+          ) : (
+            <a href={am} className={styles.warn}>
+              {t('cluster_info.monitor_alert.view_alerts')}
+              <Icon type="right" style={{ marginLeft: '5px' }} />
+            </a>
+          )}
+        </p>
+      </Card>
+      <Card
+        size="small"
+        bordered={false}
+        title={t('cluster_info.monitor_alert.problems')}
+      >
+        <p>
+          <Link to={`/diagnose`}>
+            {t('cluster_info.monitor_alert.run_diagnose')}
+            <Icon type="right" style={{ marginLeft: '5px' }} />
+          </Link>
+        </p>
+      </Card>
     </div>
   )
 }

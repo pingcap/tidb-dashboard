@@ -1,4 +1,4 @@
-import { Col, Row } from 'antd'
+import { Col, Row, Card } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './ComponentPanel.module.less'
@@ -17,23 +17,24 @@ function ComponentPanel(props) {
     })
   }
   return (
-    <div className={styles.bottom}>
-      <h3>{t('cluster_info.status.nodes', { nodeType: props.name })}</h3>
-
-      <Row gutter={[16, 16]}>
-        <Col span={8} className={styles.column}>
-          <p className={styles.desc}>{t('cluster_info.status.up')}</p>
-          <p className={styles.alive}>{alive_cnt}</p>
+    <Card
+      size="small"
+      bordered={false}
+      title={t('cluster_info.status.nodes', { nodeType: props.name })}
+    >
+      <Row gutter={24}>
+        <Col span={9}>
+          <div className={styles.desc}>{t('cluster_info.status.up')}</div>
+          <div className={styles.alive}>{alive_cnt}</div>
         </Col>
-
-        <Col span={8} className={styles.column}>
-          <p className={styles.desc}>{t('cluster_info.status.abnormal')}</p>
-          <p className={down_cnt === 0 ? styles.alive : styles.down}>
+        <Col span={9}>
+          <div className={styles.desc}>{t('cluster_info.status.abnormal')}</div>
+          <div className={down_cnt === 0 ? styles.alive : styles.down}>
             {down_cnt}
-          </p>
+          </div>
         </Col>
       </Row>
-    </div>
+    </Card>
   )
 }
 

@@ -61,7 +61,7 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/logs")
-	//endpoint.Use(auth.MWAuthRequired())
+	endpoint.Use(auth.MWAuthRequired())
 
 	endpoint.GET("/download", s.DownloadLogs)
 	endpoint.PUT("/taskgroup", s.CreateTaskGroup)
@@ -86,8 +86,10 @@ type TaskGroupResponse struct {
 // @Description Create and run task group
 // @Produce json
 // @Param request body CreateTaskGroupRequest true "Request body"
+// @Security JwtAuth
 // @Success 200 {object} TaskGroupResponse
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroup [put]
 func (s *Service) CreateTaskGroup(c *gin.Context) {
@@ -137,7 +139,9 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 // @Description download logs by multiple task IDs
 // @Produce application/x-tar,application/zip
 // @Param id query []string false "task id"
+// @Security JwtAuth
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /logs/download [get]
 func (s *Service) DownloadLogs(c *gin.Context) {
@@ -169,7 +173,9 @@ func (s *Service) DownloadLogs(c *gin.Context) {
 // @Description list all log search tasks in a task group by providing task group ID
 // @Produce json
 // @Param id path string true "Task Group ID"
+// @Security JwtAuth
 // @Success 200 {object} TaskGroupResponse
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroups/{id} [get]
 func (s *Service) GetTaskGroup(c *gin.Context) {
@@ -197,7 +203,9 @@ func (s *Service) GetTaskGroup(c *gin.Context) {
 // @Description preview fetched logs in a task group by providing task group ID
 // @Produce json
 // @Param id path string true "task group id"
+// @Security JwtAuth
 // @Success 200 {array} PreviewModel
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroups/{id}/preview [get]
 func (s *Service) GetTaskGroupPreview(c *gin.Context) {
@@ -219,8 +227,10 @@ func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 // @Description retry tasks that has been failed in a task group
 // @Produce json
 // @Param id path string true "task group id"
+// @Security JwtAuth
 // @Success 200 {object} utils.APIEmptyResponse
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroups/{id}/retry [post]
 func (s *Service) RetryTask(c *gin.Context) {
@@ -269,8 +279,10 @@ func (s *Service) RetryTask(c *gin.Context) {
 // @Description cancel all running tasks in a task group
 // @Produce json
 // @Param id path string true "task group id"
+// @Security JwtAuth
 // @Success 200 {object} utils.APIEmptyResponse
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /logs/taskgroups/{id}/cancel [post]
 func (s *Service) CancelTask(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("id"))
@@ -298,7 +310,9 @@ func (s *Service) CancelTask(c *gin.Context) {
 // @Description delete a task group by providing task group ID
 // @Produce json
 // @Param id path string true "task group id"
+// @Security JwtAuth
 // @Success 200 {object} utils.APIEmptyResponse
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroups/{id} [delete]
 func (s *Service) DeleteTaskGroup(c *gin.Context) {

@@ -193,6 +193,7 @@ func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
 				Expire: expire,
 			})
 		},
+		TokenLookup: "header: Authorization, query: token",
 	})
 
 	if err != nil {

@@ -8,6 +8,7 @@ import { Context } from "../store";
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon';
 import styles from './SearchProgress.module.css';
 import { namingMap, TaskState } from './util';
+import { getAuthToken } from '@/utils/auth';
 
 const { confirm } = Modal;
 const { Title } = Typography;
@@ -196,9 +197,9 @@ export default function SearchProgress() {
         name === key
       )
     )
-
+    const token = getAuthToken()
     const params = keys.map(id => `id=${id}`).join('&')
-    const url = `${DASHBOARD_API_URL}/logs/download?${params}`
+    const url = `${DASHBOARD_API_URL}/logs/download?${params}&token=${token}`
     downloadFile(url)
   }
 

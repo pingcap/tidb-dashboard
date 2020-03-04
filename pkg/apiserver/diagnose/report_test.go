@@ -32,7 +32,7 @@ var _ = Suite(&testReportSuite{})
 type testReportSuite struct{}
 
 func (t *testReportSuite) TestReport(c *C) {
-	cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
+	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
 	c.Assert(err, IsNil)
 	defer cli.Close()
 

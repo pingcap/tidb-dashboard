@@ -251,9 +251,9 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 		return tblAndErrSlice[i].taskID < tblAndErrSlice[j].taskID
 	})
 
-	tables := make([]*TableDef, 0, len(tblAndErrSlice) + 1)
+	tables := make([]*TableDef, 0, len(tblAndErrSlice)+1)
 	errRows := make([]TableRowDef, 0, len(tblAndErrSlice))
-	for _,v := range tblAndErrSlice {
+	for _, v := range tblAndErrSlice {
 		if v.tbl != nil {
 			tables = append(tables, v.tbl)
 		}

@@ -242,7 +242,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 	close(resChan)
 	m := make(map[int]*tblAndErr)
 	for tblAndErr := range resChan {
-		m[tblAndErr.taskId] = tblAndErr
+		m[tblAndErr.taskID] = tblAndErr
 	}
 
 	tables := make([]*TableDef, len(funcs))
@@ -260,7 +260,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 type tblAndErr struct {
 	tbl    *TableDef
 	err    *TableRowDef
-	taskId int
+	taskID int
 }
 
 // 1.doGetTable gets the task from taskChan,and close the taskChan if taskChan is empty.
@@ -283,9 +283,9 @@ func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool
 		if tbl != nil {
 			tblAndErr.tbl = tbl
 		}
-		tblAndErr.taskId = task.taskId
+		tblAndErr.taskID = task.taskID
 		resChan <- &tblAndErr
-		if tblAndErr.taskId == cap(taskChan)-1 {
+		if tblAndErr.taskID == cap(taskChan)-1 {
 			close(taskChan)
 		}
 	}
@@ -295,7 +295,7 @@ func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool
 
 type task struct {
 	t      getTableFunc
-	taskId int // taskId for arrange the tables in order
+	taskID int // taskID for arrange the tables in order
 }
 
 //change the get-Table-func to task

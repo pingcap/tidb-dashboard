@@ -1,39 +1,49 @@
-import { Col, Row } from 'antd'
+import { Col, Row, Card, Skeleton } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './ComponentPanel.module.less'
 
-function ComponentPanel(props) {
+function ComponentPanel({ data, field }) {
   const { t } = useTranslation()
-  let [alive_cnt, down_cnt] = [0, 0]
-  const server_info = props.datas
-  if (server_info !== null && server_info.err === null) {
-    server_info.nodes.forEach(n => {
+
+  let up_nodes = 0
+  let abnormal_nodes = 0
+
+  if (data && data[field] && !data[field].err) {
+    data[field].nodes.forEach(n => {
       if (n.status === 1) {
-        alive_cnt++
+        up_nodes++
       } else {
-        down_cnt++
+        abnormal_nodes++
       }
     })
   }
+
   return (
-    <div className={styles.bottom}>
-      <h3>{t('cluster_info.status.nodes', { nodeType: props.name })}</h3>
-
-      <Row gutter={[16, 16]}>
-        <Col span={8} className={styles.column}>
-          <p className={styles.desc}>{t('cluster_info.status.up')}</p>
-          <p className={styles.alive}>{alive_cnt}</p>
-        </Col>
-
-        <Col span={8} className={styles.column}>
-          <p className={styles.desc}>{t('cluster_info.status.abnormal')}</p>
-          <p className={down_cnt === 0 ? styles.alive : styles.down}>
-            {down_cnt}
-          </p>
-        </Col>
-      </Row>
-    </div>
+    <Card
+      size="small"
+      bordered={false}
+      title={t('cluster_info.status.nodes', { nodeType: field.toUpperCase() })}
+    >
+      {!data ? (
+        <Skeleton active title={false} />
+      ) : (
+        <Row gutter={24}>
+          <Col span={9}>
+            <div className={styles.desc}>{t('cluster_info.status.up')}</div>
+            <div className={styles.alive}>{up_nodes}</div>
+          </Col>
+          <Col span={9}>
+            <div className={styles.desc}>
+              {t('cluster_info.status.abnormal')}
+            </div>
+            <div className={abnormal_nodes === 0 ? styles.alive : styles.down}>
+              {abnormal_nodes}
+            </div>
+          </Col>
+        </Row>
+      )}
+    </Card>
   )
 }
 

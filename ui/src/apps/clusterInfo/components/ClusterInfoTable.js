@@ -1,5 +1,5 @@
 import React from 'react'
-import { Table, Card } from 'antd'
+import { Table, Card, Skeleton } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 function ComponentPanelTable({ cluster }) {
@@ -34,24 +34,29 @@ function ComponentPanelTable({ cluster }) {
   ]
 
   let dataSource = []
-
-  pushNodes('tikv', cluster, dataSource)
-  pushNodes('tidb', cluster, dataSource)
-  pushNodes('pd', cluster, dataSource)
+  if (cluster) {
+    pushNodes('tikv', cluster, dataSource)
+    pushNodes('tidb', cluster, dataSource)
+    pushNodes('pd', cluster, dataSource)
+  }
 
   return (
     <Card
       size="small"
       bordered={false}
       title={t('cluster_info.component_table.node_list')}
-      bodyStyle={{ padding: 5 }}
     >
-      <Table
-        columns={columns}
-        dataSource={dataSource}
-        pagination={false}
-        size="middle"
-      />
+      {!cluster ? (
+        <Skeleton active title={false} paragraph={{ rows: 5 }} />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={dataSource}
+          pagination={false}
+          size="middle"
+          style={{ margin: -5 }}
+        />
+      )}
     </Card>
   )
 }

@@ -1,20 +1,11 @@
 import React from 'react'
-import { Icon, Card } from 'antd'
+import { Icon, Card, Skeleton } from 'antd'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import styles from './MonitorAlertBar.module.less'
 
 export default function MonitorAlertBar({ cluster }) {
   const { t } = useTranslation()
-  let am = ''
-  let grafana = ''
-  if (cluster.alert_manager !== null) {
-    am = `http://${cluster.alert_manager.ip}:${cluster.alert_manager.port}`
-  }
-  if (cluster.grafana !== null) {
-    grafana = `http://${cluster.grafana.ip}:${cluster.grafana.port}`
-  }
-
   return (
     <div>
       <Card
@@ -22,26 +13,37 @@ export default function MonitorAlertBar({ cluster }) {
         bordered={false}
         title={t('cluster_info.monitor_alert.title')}
       >
-        <p>
-          {!grafana ? (
-            t('cluster_info.monitor_alert.view_monitor_warn')
-          ) : (
-            <a href={grafana}>
-              {t('cluster_info.monitor_alert.view_monitor')}
-              <Icon type="right" style={{ marginLeft: '5px' }} />
-            </a>
-          )}
-        </p>
-        <p>
-          {!am ? (
-            t('cluster_info.monitor_alert.view_alerts_warn')
-          ) : (
-            <a href={am} className={styles.warn}>
-              {t('cluster_info.monitor_alert.view_alerts')}
-              <Icon type="right" style={{ marginLeft: '5px' }} />
-            </a>
-          )}
-        </p>
+        {!cluster ? (
+          <Skeleton active title={false} />
+        ) : (
+          <>
+            <p>
+              {!cluster || !cluster.grafana ? (
+                t('cluster_info.monitor_alert.view_monitor_warn')
+              ) : (
+                <a
+                  href={`http://${cluster.grafana.ip}:${cluster.grafana.port}`}
+                >
+                  {t('cluster_info.monitor_alert.view_monitor')}
+                  <Icon type="right" style={{ marginLeft: '5px' }} />
+                </a>
+              )}
+            </p>
+            <p>
+              {!cluster || !cluster.alert_manager ? (
+                t('cluster_info.monitor_alert.view_alerts_warn')
+              ) : (
+                <a
+                  href={`http://${cluster.alert_manager.ip}:${cluster.alert_manager.port}`}
+                  className={styles.warn}
+                >
+                  {t('cluster_info.monitor_alert.view_alerts')}
+                  <Icon type="right" style={{ marginLeft: '5px' }} />
+                </a>
+              )}
+            </p>
+          </>
+        )}
       </Card>
       <Card
         size="small"

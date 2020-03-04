@@ -1,39 +1,48 @@
-import { Col, Row, Card } from 'antd'
+import { Col, Row, Card, Skeleton } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './ComponentPanel.module.less'
 
-function ComponentPanel(props) {
+function ComponentPanel({ data, field }) {
   const { t } = useTranslation()
-  let [alive_cnt, down_cnt] = [0, 0]
-  const server_info = props.datas
-  if (server_info !== null && server_info.err === null) {
-    server_info.nodes.forEach(n => {
+
+  let up_nodes = 0
+  let abnormal_nodes = 0
+
+  if (data && data[field] && !data[field].err) {
+    data[field].nodes.forEach(n => {
       if (n.status === 1) {
-        alive_cnt++
+        up_nodes++
       } else {
-        down_cnt++
+        abnormal_nodes++
       }
     })
   }
+
   return (
     <Card
       size="small"
       bordered={false}
-      title={t('cluster_info.status.nodes', { nodeType: props.name })}
+      title={t('cluster_info.status.nodes', { nodeType: field.toUpperCase() })}
     >
-      <Row gutter={24}>
-        <Col span={9}>
-          <div className={styles.desc}>{t('cluster_info.status.up')}</div>
-          <div className={styles.alive}>{alive_cnt}</div>
-        </Col>
-        <Col span={9}>
-          <div className={styles.desc}>{t('cluster_info.status.abnormal')}</div>
-          <div className={down_cnt === 0 ? styles.alive : styles.down}>
-            {down_cnt}
-          </div>
-        </Col>
-      </Row>
+      {!data ? (
+        <Skeleton active title={false} />
+      ) : (
+        <Row gutter={24}>
+          <Col span={9}>
+            <div className={styles.desc}>{t('cluster_info.status.up')}</div>
+            <div className={styles.alive}>{up_nodes}</div>
+          </Col>
+          <Col span={9}>
+            <div className={styles.desc}>
+              {t('cluster_info.status.abnormal')}
+            </div>
+            <div className={abnormal_nodes === 0 ? styles.alive : styles.down}>
+              {abnormal_nodes}
+            </div>
+          </Col>
+        </Row>
+      )}
     </Card>
   )
 }

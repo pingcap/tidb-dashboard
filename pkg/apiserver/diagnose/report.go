@@ -243,15 +243,16 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 	// all task done, close the resChan
 	close(resChan)
 
-	var tblAndErrSlice []tblAndErr
+	tblAndErrSlice := make([]tblAndErr, 0, cap(resChan))
 	for tblAndErr := range resChan {
 		tblAndErrSlice = append(tblAndErrSlice, *tblAndErr)
 	}
 	sort.Slice(tblAndErrSlice, func(i, j int) bool {
 		return tblAndErrSlice[i].taskID < tblAndErrSlice[j].taskID
 	})
-	var tables []*TableDef
-	var errRows []TableRowDef
+
+	tables := make([]*TableDef, 0, len(tblAndErrSlice) + 1)
+	errRows := make([]TableRowDef, 0, len(tblAndErrSlice))
 	for _,v := range tblAndErrSlice {
 		if v.tbl != nil {
 			tables = append(tables, v.tbl)

@@ -77,6 +77,10 @@ const (
 )
 
 func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB) []*TableDef {
+	errRows := checkBeforeReport(db)
+	if len(errRows) > 0 {
+		return []*TableDef{GenerateReportError(errRows)}
+	}
 	tables := GetReportTables(startTime, endTime, db)
 	lastCategory := ""
 	for _, tbl := range tables {
@@ -93,6 +97,71 @@ func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB) []*TableD
 		}
 	}
 	return tables
+}
+
+func checkBeforeReport(db *gorm.DB) (errRows []TableRowDef) {
+	sql := "select count(distinct value) from information_schema.cluster_config where type='pd' and `key` = 'pd-server.metric-storage' and value != '';"
+	rows, err := querySQL(db, sql)
+	if err != nil {
+		errRows = append(errRows, TableRowDef{
+			Values: []string{"check before report", "information_schema.cluster_config", err.Error()},
+		})
+		return
+	}
+	if len(rows) == 0 {
+		errRows = append(errRows, TableRowDef{
+			Values: []string{"check before report", "information_schema.cluster_config", "The PD config `pd-server.metric-storage` was not found"},
+		})
+		return
+	}
+	count, err := strconv.Atoi(rows[0][0])
+	if err != nil {
+		errRows = append(errRows, TableRowDef{
+			Values: []string{"check before report", "information_schema.cluster_config", "check the sql result: " + sql + " ,the expect result is 1"},
+		})
+		return
+	}
+	command := "you can use this shell command to set the config: `curl -X POST -d '{\"metric-storage\":\"http://{PROMETHEUS_ADDRESS}\"}' http://{PD_ADDRESS}/pd/api/v1/config`, \n" +
+		"PROMETHEUS_ADDRESS is the prometheus address, It's used for query metric data; PD_ADDRESS is the HTTP API address of PD server, all PD servers need to set this config. \n" +
+		"Here is an example: `curl -X POST -d '{\"metric-storage\":\"http://127.0.0.1:9090\"}' http://127.0.0.1:2379/pd/api/v1/config`"
+	if count == 0 {
+		errRows = append(errRows, TableRowDef{
+			Values: []string{
+				"check before report",
+				"information_schema.cluster_config",
+				"The PD config `pd-server.metric-storage` was not set, \n" + command,
+			},
+		})
+		return
+	}
+	if count > 1 {
+		errRows = append(errRows, TableRowDef{
+			Values: []string{
+				"check before report",
+				"information_schema.cluster_config",
+				"The PD config `pd-server.metric-storage` value is different from PD servers, \n" +
+					"check the sql result: " + sql + " ,the expect result is 1, \n" + command,
+			},
+		})
+		return
+	}
+
+	// Check for query metric.
+	sql = "select count(*) from metrics_schema.up;"
+	_, err = querySQL(db, sql)
+	if err != nil {
+		errRows = append(errRows, TableRowDef{
+			Values: []string{
+				"check before report",
+				"metrics_schema.up",
+				err.Error() + ", \n" +
+					"Currently, the PD config `pd-server.metric-storage` value should be prometheus address, please check whether the config value is correct, you can use below sql check the value: \n" +
+					"select * from information_schema.cluster_config where type='pd' and `key` ='pd-server.metric-storage'; , \n" + command,
+			},
+		})
+		return
+	}
+	return nil
 }
 
 func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
@@ -175,7 +244,7 @@ func GenerateReportError(errRows []TableRowDef) *TableDef {
 		Title:     "Generate Report Error",
 		CommentEN: "",
 		CommentCN: "",
-		Column:    []string{"CATEGORY", "TITLE", "ERROR"},
+		Column:    []string{"CATEGORY", "TABLE", "ERROR"},
 		Rows:      errRows,
 	}
 }

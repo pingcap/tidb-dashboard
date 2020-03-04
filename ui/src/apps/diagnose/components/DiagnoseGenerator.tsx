@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, DatePicker } from 'antd'
+import { Button, DatePicker, message } from 'antd'
 import { RangePickerValue } from 'antd/lib/date-picker/interface'
 import { useTranslation } from 'react-i18next'
 
@@ -7,10 +7,7 @@ const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
 interface Props {
   basePath: string
-  createReport: (
-    startTime: string,
-    endTime: string
-  ) => Promise<ReportRes | undefined>
+  createReport: (startTime: string, endTime: string) => Promise<ReportRes>
 }
 
 interface ReportRes {
@@ -31,7 +28,7 @@ function DiagnoseGenerator({ basePath, createReport }: Props) {
     if (dates[0] && dates[1]) {
       setTimeRange([
         dates[0].format(DATE_TIME_FORMAT),
-        dates[1].format(DATE_TIME_FORMAT)
+        dates[1].format(DATE_TIME_FORMAT),
       ])
     } else {
       setTimeRange(['', ''])
@@ -39,26 +36,29 @@ function DiagnoseGenerator({ basePath, createReport }: Props) {
   }
 
   async function genReport() {
-    setReportUrl('')
-    setLoading(true)
-    const res = await createReport(timeRange[0], timeRange[1])
-    setLoading(false)
-    if (res) {
+    try {
+      setReportUrl('')
+      setLoading(true)
+      const res = await createReport(timeRange[0], timeRange[1])
+      setLoading(false)
       const reportUrl = `${basePath}/diagnose/reports/${res.report_id}`
       setReportUrl(reportUrl)
       window.open(reportUrl, '_blank')
+    } catch (error) {
+      setLoading(false)
+      message.error(error.message)
     }
   }
 
   return (
     <div>
       <DatePicker.RangePicker
-        style={{ marginRight: 12 }}
+        style={{ width: 360, marginRight: 12 }}
         showTime
         format={DATE_TIME_FORMAT}
         placeholder={[
           t('diagnose.time_selector.start_time'),
-          t('diagnose.time_selector.end_time')
+          t('diagnose.time_selector.end_time'),
         ]}
         onChange={handleRangeChange}
       />

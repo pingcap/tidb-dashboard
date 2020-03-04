@@ -8,6 +8,8 @@ This repository contains both Dashboard HTTP API and Dashboard UI. Dashboard HTT
 
 TiDB Dashboard can also live as a standalone binary for development.
 
+If you're interested in contributing to TiDB Dashboard, or want to build it from source, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## Getting Started: PD with TiDB Dashboard
 
 ![](etc/arch_pd_integration.svg)

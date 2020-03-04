@@ -84,9 +84,14 @@ cd tidb-latest-linux-amd64
 
 For Mac OS user: 
 ```bash
-wget https://download.pingcap.org/tidb-latest-darwin-amd64.tar.gz
-tar -xzf tidb-latest-darwin-amd64.tar.gz
-cd tidb-latest-darwin-amd64
+wget https://download.pingcap.org/tidb-nightly-darwin-amd64.tar.gz
+wget https://download.pingcap.org/tikv-nightly-darwin-amd64.tar.gz
+wget https://download.pingcap.org/pd-nightly-darwin-amd64.tar.gz
+mkdir tidb-nightly-darwin-amd64
+tar -xzf tidb-nightly-darwin-amd64.tar.gz -C tidb-nightly-darwin-amd64 --strip-components=1
+tar -xzf tikv-nightly-darwin-amd64.tar.gz -C tidb-nightly-darwin-amd64 --strip-components=1
+tar -xzf pd-nightly-darwin-amd64.tar.gz -C tidb-nightly-darwin-amd64 --strip-components=1
+cd tidb-nightly-darwin-amd64
 ```
 
 Then start a local TiDB cluster with 1 TiDB, 1 TiKV and 1 PD step by step:
@@ -120,7 +125,9 @@ Use `mysql-client` to check if `tidb-server` is on:
 mysql -h 127.0.0.1 -P 4000 -uroot
 ```
 
-Now, you are able to login TiDB dashboard with TiDB root user.
+Now, you are able to login TiDB Dashboard with TiDB root user.
+
+> Note: TiDB Dashboard use user `root` and **empty password** by default.
 
 ## Contribution flow
 

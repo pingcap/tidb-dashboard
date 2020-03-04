@@ -15,6 +15,7 @@ package diagnose
 
 import (
 	"fmt"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -164,8 +165,10 @@ func checkBeforeReport(db *gorm.DB) (errRows []TableRowDef) {
 	return nil
 }
 
+type getTableFunc func(string, string, *gorm.DB) (*TableDef, error)
+
 func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
-	funcs := []func(string, string, *gorm.DB) (*TableDef, error){
+	funcs := []getTableFunc{
 		// Header
 		GetHeaderTimeTable,
 		GetClusterHardwareInfoTable,
@@ -217,25 +220,88 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 		GetTiKVCurrentConfig,
 	}
 
-	tables := make([]*TableDef, 0, len(funcs))
+	// get the local CPU count for concurrence
+	conc := runtime.NumCPU()
+	taskChan := func2task(funcs)
+	resChan := make(chan *tblAndErr, len(funcs))
+	doneChan := make(chan bool, conc)
+
+	//get table concurrently
+	for i := 0; i < conc; i++ {
+		go doGetTable(taskChan, resChan, doneChan, startTime, endTime, db)
+	}
+
+	//block until all doGetTable done
+	for i := 0; i < conc; i++ {
+		<-doneChan
+	}
+	// all task done, close the resChan
+	close(resChan)
+	m := make(map[int]*tblAndErr)
+	for tblAndErr := range resChan {
+		m[tblAndErr.taskId] = tblAndErr
+	}
+
+	tables := make([]*TableDef, len(funcs))
 	var errRows []TableRowDef
-	for _, f := range funcs {
+	for k, v := range m {
+		tables[k] = v.tbl
+		if v.err != nil {
+			errRows = append(errRows, *v.err)
+		}
+	}
+	tables = append(tables, GenerateReportError(errRows))
+	return tables
+}
+
+type tblAndErr struct {
+	tbl    *TableDef
+	err    *TableRowDef
+	taskId int
+}
+
+// 1.doGetTable gets the task from taskChan,and close the taskChan if taskChan is empty.
+// 2.doGetTable puts the tblAndErr result to resChan.
+// 3.if taskChan is empty, put a true in doneChan.
+func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool, startTime, endTime string, db *gorm.DB) {
+	for task := range taskChan {
+		f := task.t
 		tbl, err := f(startTime, endTime, db)
+		tblAndErr := tblAndErr{}
 		if err != nil {
 			category := ""
 			if tbl.Category != nil {
 				category = strings.Join(tbl.Category, ",")
 			}
-			errRows = append(errRows, TableRowDef{
+			tblAndErr.err = &TableRowDef{
 				Values: []string{category, tbl.Title, err.Error()},
-			})
+			}
 		}
 		if tbl != nil {
-			tables = append(tables, tbl)
+			tblAndErr.tbl = tbl
+		}
+		tblAndErr.taskId = task.taskId
+		resChan <- &tblAndErr
+		if tblAndErr.taskId == cap(taskChan)-1 {
+			close(taskChan)
 		}
 	}
-	tables = append(tables, GenerateReportError(errRows))
-	return tables
+	//task := <- taskChan
+	doneChan <- true
+}
+
+type task struct {
+	t      getTableFunc
+	taskId int // taskId for arrange the tables in order
+}
+
+//change the get-Table-func to task
+func func2task(funcs []getTableFunc) chan *task {
+	taskChan := make(chan *task, len(funcs))
+	for i := 0; i < len(funcs); i++ {
+		taskChan <- &task{funcs[i], i}
+	}
+	return taskChan
 }
 
 func GenerateReportError(errRows []TableRowDef) *TableDef {

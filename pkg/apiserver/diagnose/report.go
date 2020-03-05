@@ -300,7 +300,7 @@ func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool
 		tblAndErr.taskID = task.taskID
 		resChan <- &tblAndErr
 		atomic.AddInt32(&progress, 1)
-		UpdateReportProgress(sqliteDB, reportID, int(progress)/cap(resChan)*100)
+		_ = UpdateReportProgress(sqliteDB, reportID, int(progress)*100/cap(resChan))
 	}
 	doneChan <- true
 }

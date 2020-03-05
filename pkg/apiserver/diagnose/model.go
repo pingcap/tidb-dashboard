@@ -33,8 +33,7 @@ func Migrate(db *dbstore.DB) {
 }
 
 func NewReport(db *dbstore.DB, startTime, endTime time.Time) (uint, error) {
-	// report := Report{StartTime: startTime, EndTime: endTime}
-	report := Report{StartTime: startTime, EndTime: endTime, Progress: 10} // just for test, will remove later
+	report := Report{StartTime: startTime, EndTime: endTime}
 	err := db.Create(&report).Error
 	if err != nil {
 		return 0, err

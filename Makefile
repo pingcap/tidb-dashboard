@@ -16,6 +16,10 @@ ifeq ($(UI),1)
 BUILD_TAGS += ui_server
 endif
 
+ifeq ($(HOT_SWAP),1)
+	BUILD_TAGS += hot_swap
+endif
+
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.ReleaseVersion=$(shell git describe --tags --dirty)"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.BuildTS=$(shell date -u '+%Y-%m-%d %I:%M:%S')"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.GitHash=$(shell git rev-parse HEAD)"
@@ -45,14 +49,16 @@ ui: swagger_client
 	src/apps/keyvis/download_dummydata.sh &&\
 	REACT_APP_DASHBOARD_API_URL="" npm run build
 
-server:
+template:
+	scripts/generate_diagnose_report_template.sh
+
+server: template
 ifeq ($(SWAGGER),1)
 	make swagger_spec
 endif
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh
 endif
-	scripts/generate_diagnose_report_template.sh
 	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 
 run:

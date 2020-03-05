@@ -25,20 +25,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-// the default time interval of profiling.
-const defaultGrabInterval = 30
-
-func fetchSvg(ctx context.Context, t, addr, filePrefix string, grabInterval uint) (string, error) {
-	url := getURL(t, addr, grabInterval)
+func fetchProfilingSVG(ctx context.Context, nodeType NodeType, addr, filePrefix string, profileDurationSecs uint) (string, error) {
+	url := getProfilingURL(nodeType, addr, profileDurationSecs)
 	if url == "" {
-		return "", errors.Errorf("no such component: %s", t)
+		return "", errors.Errorf("no such component: %s", nodeType)
 	}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return "", err
 	}
 	req = req.WithContext(ctx)
-	if t == pd {
+	if nodeType == NodeTypePD {
 		// forbidden PD follower proxy
 		req.Header.Add("PD-Allow-follower-handle", "true")
 	}
@@ -51,32 +48,30 @@ func fetchSvg(ctx context.Context, t, addr, filePrefix string, grabInterval uint
 		return "", errors.Errorf("request %s failed: %s", url, resp.Status)
 	}
 
-	svgFilePath, err := getSvgFilePath(t, filePrefix, resp.Body)
+	svgFilePath, err := getSvgFilePath(nodeType, filePrefix, resp.Body)
 	if err != nil {
 		return "", err
 	}
 	return svgFilePath, nil
 }
 
-func getURL(t, addr string, grabInterval uint) string {
+func getProfilingURL(nodeType NodeType, addr string, profileDurationSecs uint) string {
 	var url string
-	if grabInterval == 0 {
-		grabInterval = defaultGrabInterval
-	}
-	interval := fmt.Sprintf("%d", grabInterval)
-	switch t {
-	case pd:
-		url = "/pd/api/v1/debug/pprof/profile?seconds=" + interval
-	case tikv, tidb:
-		url = "/debug/pprof/profile?seconds=" + interval
+	secs := fmt.Sprintf("%d", profileDurationSecs)
+	switch nodeType {
+	case NodeTypePD:
+		url = "/pd/api/v1/debug/pprof/profile?seconds=" + secs
+	case NodeTypeTiKV, NodeTypeTiDB:
+		url = "/debug/pprof/profile?seconds=" + secs
 	default:
 		return ""
 	}
+	// FIXME: Support TLS
 	return fmt.Sprintf("http://%s%s", addr, url)
 }
 
-func getSvgFilePath(t, filePrefix string, body io.ReadCloser) (string, error) {
-	if t == tikv {
+func getSvgFilePath(nodeType NodeType, filePrefix string, body io.ReadCloser) (string, error) {
+	if nodeType == NodeTypeTiKV {
 		tmpfile, err := ioutil.TempFile("", filePrefix)
 		if err != nil {
 			return "", err
@@ -94,6 +89,7 @@ func getSvgFilePath(t, filePrefix string, body io.ReadCloser) (string, error) {
 		}
 		return svgFilePath, nil
 	}
+
 	tmpfile, err := ioutil.TempFile("", filePrefix)
 	if err != nil {
 		return "", err

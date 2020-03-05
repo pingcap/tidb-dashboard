@@ -1,2 +1,12 @@
 node_profiling:
   nav_title: 节点性能分析
+  index:
+    control_form:
+      nodes:
+        label: 选择节点
+        placeholder: 请选择需要进行性能分析的目标节点
+      duration:
+        label: 分析时长
+      submit: 开始分析
+  detail:
+    download: 下载性能分析结果

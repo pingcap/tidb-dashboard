@@ -24,7 +24,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"net"
 	"net/http"
@@ -36,6 +35,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/pingcap/log"
+	flag "github.com/spf13/pflag"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
@@ -76,10 +76,12 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
 	flag.BoolVar(&cfg.EnableDebugLog, "debug", false, "Enable debug logs")
-	// debug for keyvisual
-	// TODO: Hide help information
-	flag.Int64Var(&cfg.KVFileStartTime, "keyvis-file-start", 0, "(debug) start time for file range in file mode")
-	flag.Int64Var(&cfg.KVFileEndTime, "keyvis-file-end", 0, "(debug) end time for file range in file mode")
+	// debug for keyvisual，hide help information
+	flag.Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")
+	flag.Int64Var(&cfg.KVFileEndTime, "keyviz-file-end", 0, "(debug) end time for file range in file mode")
+
+	_ = flag.CommandLine.MarkHidden("keyviz-file-start")
+	_ = flag.CommandLine.MarkHidden("keyviz-file-end")
 
 	flag.Parse()
 
@@ -94,14 +96,14 @@ func NewCLIConfig() *DashboardCLIConfig {
 	if startTime != 0 || endTime != 0 {
 		// file mode (debug)
 		if startTime == 0 || endTime == 0 || startTime >= endTime {
-			panic("keyvis-file-start must be smaller than keyvis-file-end, and none of them are 0")
+			panic("keyviz-file-start must be smaller than keyviz-file-end, and none of them are 0")
 		}
 	}
 
 	return cfg
 }
 
-func getContext() (context.Context, *sync.WaitGroup) {
+func getContext() context.Context {
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		sc := make(chan os.Signal, 1)
@@ -113,8 +115,7 @@ func getContext() (context.Context, *sync.WaitGroup) {
 		<-sc
 		cancel()
 	}()
-	wg := &sync.WaitGroup{}
-	return ctx, wg
+	return ctx
 }
 
 func main() {
@@ -124,7 +125,7 @@ func main() {
 	defer log.Sync() //nolint:errcheck
 
 	cliConfig := NewCLIConfig()
-	ctx, wg := getContext()
+	ctx := getContext()
 
 	store := dbstore.MustOpenDBStore(cliConfig.CoreConfig)
 	defer store.Close() //nolint:errcheck
@@ -150,8 +151,9 @@ func main() {
 		EtcdProvider:   etcdProvider,
 		Store:          store,
 	}
-	keyvisualService := keyvisual.NewService(ctx, wg, cliConfig.CoreConfig, remoteDataProvider)
+	keyvisualService := keyvisual.NewService(ctx, cliConfig.CoreConfig, remoteDataProvider)
 	keyvisualService.Start()
+	defer keyvisualService.Close()
 
 	services := &apiserver.Services{
 		Store:         store,
@@ -182,6 +184,7 @@ func main() {
 	log.Info(fmt.Sprintf("Swagger: http://127.0.0.1:%d/dashboard/api/swagger/", cliConfig.ListenPort))
 
 	srv := &http.Server{Handler: mux}
+	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		if err := srv.Serve(listener); err != http.ErrServerClosed {
@@ -194,10 +197,7 @@ func main() {
 	if err := srv.Shutdown(context.Background()); err != nil {
 		log.Fatal("Can not stop server", zap.Error(err))
 	}
-
-	// waiting for other goroutines
 	wg.Wait()
-
 	log.Info("Stop dashboard server")
 }
 

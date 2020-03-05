@@ -1153,9 +1153,9 @@
     to-fast-properties "^2.0.0"
 
 "@baurine/grafana-value-formats@^0.1.1":
-  version "0.1.1"
-  resolved "https://npm.pkg.github.com/download/@baurine/grafana-value-formats/0.1.1/35ae41f50724009ae383412b6d39fb7e87620b3b17c2467bdfbf5d72c60e636e#ee5dabfc2bb59e148e6304e5d272c2f40fecbefc"
-  integrity sha512-TpdWQmjlIvHPAx5lWwr6CAgPfOCM+oTVv2zn1hNKriBbM4KpHbiMqkXpzxMbC9XvgtCjHJWSJh+YNCNWPibunw==
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@baurine/grafana-value-formats/-/grafana-value-formats-0.1.2.tgz#c7bfefa4a81d43099101cd389a83eb45cbb5653f"
+  integrity sha512-P6OPC4LyQmysSYyY2n6n6ZcxdvmUsJ2O0RvLipsReLWZUzYQaQRDi+dKUDCFJgf9A2Mf3mLWacVEM+DsvHf/cQ==
 
 "@cnakazawa/watch@^1.0.3":
   version "1.0.3"

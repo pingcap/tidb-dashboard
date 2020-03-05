@@ -8,6 +8,8 @@ This repository contains both Dashboard HTTP API and Dashboard UI. Dashboard HTT
 
 TiDB Dashboard can also live as a standalone binary for development.
 
+If you're interested in contributing to TiDB Dashboard, or want to build it from source, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## Getting Started: PD with TiDB Dashboard
 
 ![](etc/arch_pd_integration.svg)
@@ -61,9 +63,6 @@ A standalone TiDB Dashboard Server contains the following components:
 - Required: Go 1.13+
 - Optional: [Node.js](https://nodejs.org/) 12+ and [yarn](https://yarnpkg.com/) if you want to build
   the UI.
-
-  **IMPORTANT**: TiDB Dashboard uses packages from GitHub Packages. You need to [configure the `~/.npmrc`](https://github.com/pingcap-incubator/pd-client-js#install)
-  in order to install these packages.
 
 ### Build Instructions
 

@@ -31,7 +31,8 @@ default:
 lint:
 	scripts/lint.sh
 
-dev: lint default
+dev:
+	HOT_SWAP=1 make template lint default
 
 swagger_spec:
 	scripts/generate_swagger_spec.sh

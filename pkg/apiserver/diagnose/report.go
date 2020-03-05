@@ -238,7 +238,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 	//get table concurrently
 	var progress int32
 	for i := 0; i < conc; i++ {
-		go doGetTable(taskChan, resChan, doneChan, startTime, endTime, db, sqliteDB, reportID, progress)
+		go doGetTable(taskChan, resChan, doneChan, startTime, endTime, db, sqliteDB, reportID, &progress)
 	}
 
 	//block until all doGetTable done
@@ -281,7 +281,7 @@ type tblAndErr struct {
 // 1.doGetTable gets the task from taskChan,and close the taskChan if taskChan is empty.
 // 2.doGetTable puts the tblAndErr result to resChan.
 // 3.if taskChan is empty, put a true in doneChan.
-func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool, startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress int32) {
+func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool, startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress *int32) {
 	for task := range taskChan {
 		f := task.t
 		tbl, err := f(startTime, endTime, db)
@@ -299,8 +299,8 @@ func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool
 		}
 		tblAndErr.taskID = task.taskID
 		resChan <- &tblAndErr
-		atomic.AddInt32(&progress, 1)
-		UpdateReportProgress(sqliteDB, reportID, int(progress)/cap(resChan)*100)
+		atomic.AddInt32(progress, 1)
+		UpdateReportProgress(sqliteDB, reportID, int(*progress)*100/cap(resChan))
 	}
 	doneChan <- true
 }

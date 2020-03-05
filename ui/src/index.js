@@ -7,8 +7,6 @@ import * as i18nUtil from '@/utils/i18n'
 import * as LayoutMain from '@/layout'
 import * as LayoutSignIn from '@/layout/signin'
 import AppKeyVis from '@/apps/keyvis'
-import AppHome from '@/apps/home'
-import AppDemo from '@/apps/demo'
 import AppStatement from '@/apps/statement'
 import AppDiagnose from '@/apps/diagnose'
 import AppLogSearching from '@/apps/logSearching'
@@ -43,8 +41,6 @@ async function main() {
 
   registry
     .register(AppKeyVis)
-    .register(AppHome)
-    .register(AppDemo)
     .register(AppStatement)
     .register(AppClusterInfo)
     .register(AppDiagnose)

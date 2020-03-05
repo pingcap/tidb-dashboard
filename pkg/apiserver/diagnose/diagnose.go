@@ -108,8 +108,8 @@ func (s *Service) genReportHandler(c *gin.Context) {
 	go func() {
 		defer db.Close()
 
-		tables := GetReportTablesForDisplay(startTimeStr, endTimeStr, db)
-		// tables := GetReportTablesForDisplay(startTime, endTime, db, s.db, reportID)
+		//tables := GetReportTablesForDisplay(startTimeStr, endTimeStr, db)
+		tables := GetReportTablesForDisplay(startTimeStr, endTimeStr, db, s.db, reportID)
 		_ = UpdateReportProgress(s.db, reportID, 100) // will remove later
 		content, err := json.Marshal(tables)
 		if err == nil {

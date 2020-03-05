@@ -15,6 +15,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/joomcode/errorx v1.0.1
 	github.com/pingcap/check v0.0.0-20191216031241-8a5a85928f12
+	github.com/pingcap/errors v0.11.5-0.20190809092503-95897b64e011
 	github.com/pingcap/kvproto v0.0.0-20200214064158-62d31900d88e
 	github.com/pingcap/log v0.0.0-20200117041106-d28c14d3b1cd
 	github.com/pingcap/sysutil v0.0.0-20200206130906-2bfa6dc40bcd

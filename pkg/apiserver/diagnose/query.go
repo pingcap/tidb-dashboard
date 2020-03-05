@@ -72,18 +72,11 @@ func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, e
 		return t.genRow(rows[0], nil), nil
 	}
 
-	sql = fmt.Sprintf("select '',`%[2]v`, avg(value), max(value), min(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` order by avg(value) desc",
+	sql = fmt.Sprintf("select '%[1]s',`%[2]v`, avg(value), max(value), min(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` order by avg(value) desc",
 		t.name, t.label, t.tbl, condition)
 	subRows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
-	}
-	for i := range subRows {
-		row := subRows[i]
-		row[1] = strings.Join(row[1:2], ",")
-		newRow := row[:2]
-		newRow = append(newRow, row[2:]...)
-		subRows[i] = newRow
 	}
 	return t.genRow(rows[0], subRows), nil
 }
@@ -527,10 +520,18 @@ func RoundFloatString(s string) string {
 	if err != nil {
 		return s
 	}
+	return convertFloatToString(f)
+}
+
+func convertFloatToString(f float64) string {
 	if f == 0 {
 		return "0"
 	}
-
+	sign := float64(1)
+	if f < 0 {
+		sign = -1
+		f = 0 - f
+	}
 	tmp := f
 	n := 2
 	for {
@@ -548,7 +549,7 @@ func RoundFloatString(s string) string {
 	f = math.Round(f*value) / value
 
 	format := `%.` + strconv.FormatInt(int64(n), 10) + `f`
-	str := fmt.Sprintf(format, f)
+	str := fmt.Sprintf(format, f*sign)
 	if strings.Contains(str, ".") {
 		for strings.HasSuffix(str, "0") {
 			str = str[:len(str)-1]

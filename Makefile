@@ -17,7 +17,7 @@ BUILD_TAGS += ui_server
 endif
 
 ifeq ($(HOT_SWAP),1)
-	BUILD_TAGS += hot_swap
+	BUILD_TAGS += hot_swap_template
 endif
 
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.ReleaseVersion=$(shell git describe --tags --dirty)"
@@ -32,7 +32,7 @@ lint:
 	scripts/lint.sh
 
 dev:
-	HOT_SWAP=1 make template lint default
+	HOT_SWAP=1 make embed_template lint default
 
 swagger_spec:
 	scripts/generate_swagger_spec.sh
@@ -50,10 +50,10 @@ ui: swagger_client
 	src/apps/keyvis/download_dummydata.sh &&\
 	REACT_APP_DASHBOARD_API_URL="" npm run build
 
-template:
+embed_template:
 	scripts/generate_diagnose_report_template.sh
 
-server: template
+server: embed_template
 ifeq ($(SWAGGER),1)
 	make swagger_spec
 endif

@@ -1262,8 +1262,6 @@ func getAvgValueTableData(defs1 []AvgMaxMinTableDef, startTime, endTime string, 
 
 func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "node_cpu_usage", tbl: "node_cpu_usage", label: "instance", Comment: "the CPU usage in each node"},
-		//{name: "node_mem_usage", tbl: "node_mem_usage", label: "instance"},
 		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", label: "instance", Comment: "the disk write latency in each node"},
 		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance", Comment: "the disk read latency in each node"},
 	}
@@ -1280,13 +1278,54 @@ func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	if err != nil {
 		return table, err
 	}
-	row, err := getAvgMaxMinMemoryUsage(startTime, endTime, db)
+	// get cpu usage
+	row, err := getAvgMaxMinCPUUsage(startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	rows = append(rows, *row)
+	// get memory usage
+	row, err = getAvgMaxMinMemoryUsage(startTime, endTime, db)
 	if err != nil {
 		return table, err
 	}
 	rows = append(rows, *row)
 	table.Rows = rows
 	return table, nil
+}
+
+func getAvgMaxMinCPUUsage(startTime, endTime string, db *gorm.DB) (*TableRowDef, error) {
+	condition := fmt.Sprintf("where time >= '%s' and time < '%s' ", startTime, endTime)
+	sql := fmt.Sprintf("select 'node_cpu_usage', '', 100-avg(value),100-min(value),100-max(value) from metrics_schema.node_cpu_usage %s and mode='idle'", condition)
+	rows, err := querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+	sql = fmt.Sprintf("select 'node_cpu_usage', instance, 100-avg(value),100-min(value),100-max(value) from metrics_schema.node_cpu_usage %s and mode='idle' group by instance", condition)
+	subRows, err := querySQL(db, sql)
+	if err != nil {
+		return nil, err
+	}
+	specialHandle := func(row []string) []string {
+		if len(row) == 0 {
+			return row
+		}
+		row[2] = RoundFloatString(row[2]) + "%"
+		row[3] = RoundFloatString(row[3]) + "%"
+		row[4] = RoundFloatString(row[4]) + "%"
+		return row
+	}
+	rows[0] = specialHandle(rows[0])
+	for i := range subRows {
+		subRows[i] = specialHandle(subRows[i])
+	}
+	return &TableRowDef{
+		Values:    rows[0],
+		SubValues: subRows,
+	}, nil
 }
 
 func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowDef, error) {
@@ -1312,9 +1351,9 @@ func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowD
 		if len(row) == 0 {
 			return row
 		}
-		row[2] = RoundFloatString(row[2])
-		row[3] = RoundFloatString(row[3])
-		row[4] = RoundFloatString(row[4])
+		row[2] = RoundFloatString(row[2]) + "%"
+		row[3] = RoundFloatString(row[3]) + "%"
+		row[4] = RoundFloatString(row[4]) + "%"
 		return row
 	}
 	rows[0] = specialHandle(rows[0])
@@ -1565,17 +1604,17 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (TableD
 		if err != nil {
 			return table, err
 		}
-		if _, ok := m[s]; ok {
-			if _, ok := m[s].Type[row[1]]; ok {
-				m[s].Type[row[1]]++
-			} else {
-				m[s].Type[row[1]] = 1
-			}
-			if _, ok := m[s].cpu[row[2]]; !ok {
-				m[s].cpu[row[2]] = cpuCnt
-			}
-		} else {
+		_, ok := m[s]
+		if !ok {
 			m[s] = &hardWare{s, map[string]int{row[1]: 1}, make(map[string]int), 0, make(map[string]float64), ""}
+		}
+		if _, ok := m[s].Type[row[1]]; ok {
+			m[s].Type[row[1]]++
+		} else {
+			m[s].Type[row[1]] = 1
+		}
+		if _, ok := m[s].cpu[row[2]]; !ok {
+			m[s].cpu[row[2]] = cpuCnt
 		}
 	}
 	sql = "SELECT instance,value FROM information_schema.CLUSTER_HARDWARE WHERE device_type='memory' and name = 'capacity' group by instance,value"

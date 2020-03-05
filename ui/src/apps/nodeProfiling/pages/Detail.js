@@ -27,7 +27,7 @@ const columns = [
             <Progress
               percent={Math.round(record.progress * 100)}
               size="small"
-              width="200"
+              width={200}
             />
           </div>
         )
@@ -44,7 +44,8 @@ const columns = [
 
 function mapData(data) {
   data.tasks_status.forEach(task => {
-    if (task.state == 1) {
+    task.key = task.id
+    if (task.state === 1) {
       let task_elapsed_secs = data.server_time - task.started_at
       let progress =
         task_elapsed_secs / data.task_group_status.profile_duration_secs
@@ -89,7 +90,7 @@ export default function Page() {
         clearInterval(t)
       }
     }
-  }, [])
+  }, [id])
 
   return (
     <Card bordered={false}>

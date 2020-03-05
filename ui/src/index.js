@@ -52,6 +52,10 @@ async function main() {
   }
 
   window.addEventListener('single-spa:app-change', () => {
+    const spinner = document.getElementById('dashboard_page_spinner')
+    if (spinner) {
+      spinner.remove()
+    }
     if (!routingUtil.isLocationMatchPrefix(authUtil.signInRoute)) {
       if (!authUtil.getAuthTokenAsBearer()) {
         singleSpa.navigateToUrl('#' + authUtil.signInRoute)
@@ -61,7 +65,6 @@ async function main() {
   })
 
   singleSpa.start()
-  document.getElementById('dashboard_page_spinner').remove()
 }
 
 main()

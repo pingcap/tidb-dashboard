@@ -1,3 +1,4 @@
 import DiagnoseGenerator from './DiagnoseGenerator'
+import DiagnoseStatus from './DiagnoseStatus'
 
-export { DiagnoseGenerator }
+export { DiagnoseGenerator, DiagnoseStatus }

@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"path"
 	"strconv"
@@ -31,6 +32,10 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
+
+// MaxRecvMsgSize set max gRPC receive message size received from server. If any message size is larger than
+// current value, an error will be reported from gRPC.
+var MaxRecvMsgSize = math.MaxInt64
 
 type TaskGroup struct {
 	service                *Service
@@ -146,8 +151,10 @@ func (t *Task) SyncRun() {
 		return
 	}
 
-	opt := grpc.WithInsecure()
-	conn, err := grpc.Dial(t.model.SearchTarget.Address(), opt)
+	conn, err := grpc.Dial(t.model.SearchTarget.Address(),
+		grpc.WithInsecure(),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxRecvMsgSize)),
+	)
 	if err != nil {
 		t.setError(err)
 		return

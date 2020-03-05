@@ -19,8 +19,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync/atomic"
 
 	"github.com/jinzhu/gorm"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
 type TableDef struct {
@@ -81,12 +83,12 @@ const (
 	CategoryError    = "error"
 )
 
-func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB) []*TableDef {
+func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint) []*TableDef {
 	errRows := checkBeforeReport(db)
 	if len(errRows) > 0 {
 		return []*TableDef{GenerateReportError(errRows)}
 	}
-	tables := GetReportTables(startTime, endTime, db)
+	tables := GetReportTables(startTime, endTime, db, sqliteDB, reportID)
 	lastCategory := ""
 	for _, tbl := range tables {
 		if tbl == nil {
@@ -171,7 +173,7 @@ func checkBeforeReport(db *gorm.DB) (errRows []TableRowDef) {
 
 type getTableFunc func(string, string, *gorm.DB) (TableDef, error)
 
-func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
+func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint) []*TableDef {
 	funcs := []getTableFunc{
 		// Header
 		GetHeaderTimeTable,
@@ -234,8 +236,9 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 	doneChan := make(chan bool, conc)
 
 	//get table concurrently
+	var progress int32
 	for i := 0; i < conc; i++ {
-		go doGetTable(taskChan, resChan, doneChan, startTime, endTime, db)
+		go doGetTable(taskChan, resChan, doneChan, startTime, endTime, db, sqliteDB, reportID, progress)
 	}
 
 	//block until all doGetTable done
@@ -249,6 +252,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 	tblAndErrSlice := make([]tblAndErr, 0, cap(resChan))
 	for tblAndErr := range resChan {
 		tblAndErrSlice = append(tblAndErrSlice, *tblAndErr)
+
 	}
 	sort.Slice(tblAndErrSlice, func(i, j int) bool {
 		return tblAndErrSlice[i].taskID < tblAndErrSlice[j].taskID
@@ -277,7 +281,7 @@ type tblAndErr struct {
 // 1.doGetTable gets the task from taskChan,and close the taskChan if taskChan is empty.
 // 2.doGetTable puts the tblAndErr result to resChan.
 // 3.if taskChan is empty, put a true in doneChan.
-func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool, startTime, endTime string, db *gorm.DB) {
+func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool, startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress int32) {
 	for task := range taskChan {
 		f := task.t
 		tbl, err := f(startTime, endTime, db)
@@ -295,6 +299,8 @@ func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool
 		}
 		tblAndErr.taskID = task.taskID
 		resChan <- &tblAndErr
+		atomic.AddInt32(&progress, 1)
+		UpdateReportProgress(sqliteDB, reportID, int(progress)/cap(resChan)*100)
 	}
 	doneChan <- true
 }

@@ -14,7 +14,6 @@
 package profiling
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -29,13 +28,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
-)
-
-// Built-in component type
-const (
-	tikv = "tikv"
-	tidb = "tidb"
-	pd   = "pd"
 )
 
 // Service is used to provide a kind of feature.
@@ -66,14 +58,14 @@ func (s *Service) Register(r *gin.RouterGroup) {
 }
 
 type StartRequest struct {
-	Tidb         []string `json:"tidb"`
-	Tikv         []string `json:"tikv"`
-	Pd           []string `json:"pd"`
-	GrabInterval uint     `json:"grab-interval"`
+	TiDB         []string `json:"tidb"`
+	TiKV         []string `json:"tikv"`
+	PD           []string `json:"pd"`
+	DurationSecs uint     `json:"duration_secs"`
 }
 
-// @Summary Create a task group
-// @Description Create and run a task group
+// @Summary Start profiling
+// @Description Start a profiling task group
 // @Produce json
 // @Param pr body StartRequest true "profiling request"
 // @Success 200 {object} TaskGroupModel "task group"
@@ -87,29 +79,34 @@ func (s *Service) startHandler(c *gin.Context) {
 		return
 	}
 
-	taskGroup := NewTaskGroup()
+	if pr.DurationSecs == 0 {
+		pr.DurationSecs = 30
+	}
+	if pr.DurationSecs > 120 {
+		pr.DurationSecs = 120
+	}
+	taskGroup := NewTaskGroup(s.db, pr.DurationSecs)
 	if err := s.db.Create(taskGroup.TaskGroupModel).Error; err != nil {
 		_ = c.Error(err)
 		return
 	}
-	addrs := map[string][]string{
-		tidb: pr.Tidb,
-		tikv: pr.Tikv,
-		pd:   pr.Pd,
+
+	nodes := map[NodeType][]string{
+		NodeTypeTiDB: pr.TiDB,
+		NodeTypeTiKV: pr.TiKV,
+		NodeTypePD:   pr.PD,
 	}
 
 	var tasks []*Task
-	for component, addrs := range addrs {
-		for _, addr := range addrs {
-			t := NewTask(s.db, taskGroup.ID, pr.GrabInterval, component, addr)
+	for nodeType, nodeAddresses := range nodes {
+		for _, addr := range nodeAddresses {
+			t := NewTask(taskGroup, nodeType, addr)
 			s.db.Create(t.TaskModel)
-			ctx, cancel := context.WithCancel(context.Background())
-			t.ctx = ctx
-			t.cancel = cancel
 			s.tasks.Store(t.ID, t)
 			tasks = append(tasks, t)
 		}
 	}
+
 	go func() {
 		var wg sync.WaitGroup
 		for i := 0; i < len(tasks); i++ {
@@ -165,7 +162,7 @@ func (s *Service) statusHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, StatusResponse{
-		ServerTime: time.Now().Unix(),
+		ServerTime: time.Now().Unix(), // Used to estimate task progress
 		TaskGroup:  taskGroup,
 		Tasks:      tasks,
 	})

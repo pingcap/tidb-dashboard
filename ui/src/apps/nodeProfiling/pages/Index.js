@@ -1,6 +1,6 @@
 import client from '@/utils/client'
 import React, { useEffect, useState } from 'react'
-import { message, Card, Form, TreeSelect, Button } from 'antd'
+import { message, Card, Form, TreeSelect, Button, Select } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 
@@ -78,9 +78,16 @@ function filterTreeNode(inputValue, treeNode) {
   return name.includes(inputValue)
 }
 
+const profilingDurationsSec = [10, 30, 60, 120]
+const defaultProfilingDuration = 30
+
 export default function Page() {
   const [topology, setTopology] = useState(new Map())
+
+  // FIXME: Use Antd form
   const [nodes, setNodes] = useState([])
+  const [duration, setDuration] = useState(defaultProfilingDuration)
+
   const [loading, setLoading] = useState(false)
   const { t } = useTranslation()
   const history = useHistory()
@@ -104,6 +111,7 @@ export default function Page() {
       tidb: [],
       tikv: [],
       pd: [],
+      duration_secs: duration,
     }
     nodes.forEach(n => {
       const [kind, addr] = n.split('|')
@@ -122,11 +130,13 @@ export default function Page() {
   return (
     <Card bordered={false}>
       <Form layout="inline">
-        <Form.Item label="Nodes">
+        <Form.Item label={t('node_profiling.index.control_form.nodes.label')}>
           <TreeSelect
             value={nodes}
             treeData={buildTreeData(topology)}
-            placeholder={t('log_searching.common.components_placeholder')}
+            placeholder={t(
+              'node_profiling.index.control_form.nodes.placeholder'
+            )}
             onChange={setNodes}
             treeDefaultExpandAll={true}
             treeCheckable={true}
@@ -136,9 +146,24 @@ export default function Page() {
             style={{ width: 400 }}
           />
         </Form.Item>
+        <Form.Item
+          label={t('node_profiling.index.control_form.duration.label')}
+        >
+          <Select
+            value={duration}
+            onChange={setDuration}
+            style={{ width: 120 }}
+          >
+            {profilingDurationsSec.map(sec => (
+              <Select.Option value={sec} key={sec}>
+                {sec}s
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
         <Form.Item>
           <Button type="primary" onClick={handleStart} loading={loading}>
-            Start Profiling (30s)
+            {t('node_profiling.index.control_form.submit')}
           </Button>
         </Form.Item>
       </Form>

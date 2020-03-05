@@ -1,6 +1,6 @@
 import React from 'react'
 import { HashRouter as Router, Switch, Route } from 'react-router-dom'
-import { DiagnoseGenerator } from './components'
+import { DiagnoseGenerator, DiagnoseStatus } from './components'
 import client from '@/utils/client'
 
 function createReport(startTime, endTime) {
@@ -9,15 +9,24 @@ function createReport(startTime, endTime) {
     .then(res => res.data)
 }
 
+function fetchReport(reportId) {
+  return client.dashboard
+    .diagnoseReportsIdStatusGet(reportId)
+    .then(res => res.data)
+}
+
 const App = () => (
   <Router>
     <div style={{ margin: 12 }}>
       <Switch>
-        <Route path="/diagnose">
-          <DiagnoseGenerator
+        <Route path="/diagnose/:id">
+          <DiagnoseStatus
             basePath={client.basePath}
-            createReport={createReport}
+            fetchReport={fetchReport}
           />
+        </Route>
+        <Route path="/diagnose">
+          <DiagnoseGenerator createReport={createReport} />
         </Route>
       </Switch>
     </div>

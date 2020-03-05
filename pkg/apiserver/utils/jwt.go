@@ -60,7 +60,7 @@ func ParseJWTToken(str string) (string, error) {
 		return "", err
 	}
 	if !token.Valid {
-		return "", errors.New("Token is invalid")
+		return "", errors.New("token is invalid")
 	}
 	return claims.Data, nil
 }

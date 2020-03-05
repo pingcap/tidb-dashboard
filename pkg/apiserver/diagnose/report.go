@@ -15,6 +15,8 @@ package diagnose
 
 import (
 	"fmt"
+	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -167,8 +169,10 @@ func checkBeforeReport(db *gorm.DB) (errRows []TableRowDef) {
 	return nil
 }
 
+type getTableFunc func(string, string, *gorm.DB) (TableDef, error)
+
 func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
-	funcs := []func(string, string, *gorm.DB) (TableDef, error){
+	funcs := []getTableFunc{
 		// Header
 		GetHeaderTimeTable,
 		GetClusterHardwareInfoTable,
@@ -220,21 +224,94 @@ func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 		GetTiKVCurrentConfig,
 	}
 
-	tables := make([]*TableDef, 0, len(funcs))
-	var errRows []TableRowDef
-	for _, f := range funcs {
+	// get the local CPU count for concurrence
+	conc := runtime.NumCPU()
+	if conc > 20 {
+		conc = 20
+	}
+	taskChan := func2task(funcs)
+	resChan := make(chan *tblAndErr, len(funcs))
+	doneChan := make(chan bool, conc)
+
+	//get table concurrently
+	for i := 0; i < conc; i++ {
+		go doGetTable(taskChan, resChan, doneChan, startTime, endTime, db)
+	}
+
+	//block until all doGetTable done
+	for i := 0; i < conc; i++ {
+		<-doneChan
+	}
+
+	// all task done, close the resChan
+	close(resChan)
+
+	tblAndErrSlice := make([]tblAndErr, 0, cap(resChan))
+	for tblAndErr := range resChan {
+		tblAndErrSlice = append(tblAndErrSlice, *tblAndErr)
+	}
+	sort.Slice(tblAndErrSlice, func(i, j int) bool {
+		return tblAndErrSlice[i].taskID < tblAndErrSlice[j].taskID
+	})
+
+	tables := make([]*TableDef, 0, len(tblAndErrSlice)+1)
+	errRows := make([]TableRowDef, 0, len(tblAndErrSlice))
+	for _, v := range tblAndErrSlice {
+		if v.tbl != nil {
+			tables = append(tables, v.tbl)
+		}
+		if v.err != nil {
+			errRows = append(errRows, *v.err)
+		}
+	}
+	tables = append(tables, GenerateReportError(errRows))
+	return tables
+}
+
+type tblAndErr struct {
+	tbl    *TableDef
+	err    *TableRowDef
+	taskID int
+}
+
+// 1.doGetTable gets the task from taskChan,and close the taskChan if taskChan is empty.
+// 2.doGetTable puts the tblAndErr result to resChan.
+// 3.if taskChan is empty, put a true in doneChan.
+func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool, startTime, endTime string, db *gorm.DB) {
+	for task := range taskChan {
+		f := task.t
 		tbl, err := f(startTime, endTime, db)
+		tblAndErr := tblAndErr{}
 		if err != nil {
-			errRows = appendErrorRow(tbl, err, errRows)
+			category := ""
+			if tbl.Category != nil {
+				category = strings.Join(tbl.Category, ",")
+			}
+			tblAndErr.err = &TableRowDef{Values: []string{category, tbl.Title, err.Error()}}
+			continue
 		}
 		if tbl.Rows != nil {
-			tables = append(tables, &tbl)
+			tblAndErr.tbl = &tbl
 		}
+		tblAndErr.taskID = task.taskID
+		resChan <- &tblAndErr
 	}
-	if len(errRows) > 0 {
-		tables = append(tables, GenerateReportError(errRows))
+	doneChan <- true
+}
+
+type task struct {
+	t      getTableFunc
+	taskID int // taskID for arrange the tables in order
+}
+
+//change the get-Table-func to task
+func func2task(funcs []getTableFunc) chan *task {
+	taskChan := make(chan *task, len(funcs))
+	for i := 0; i < len(funcs); i++ {
+		taskChan <- &task{funcs[i], i}
 	}
-	return tables
+	close(taskChan)
+	return taskChan
 }
 
 func GenerateReportError(errRows []TableRowDef) *TableDef {

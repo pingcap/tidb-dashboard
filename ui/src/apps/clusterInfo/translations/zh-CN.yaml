@@ -2,8 +2,8 @@ cluster_info:
   nav_title: 集群信息
   status:
     up: 正常
-    abnormal: 不正常
-    nodes: "{{nodeType}} 节点"
+    abnormal: 异常
+    nodes: '{{nodeType}} 节点'
   component_table:
     ip: IP
     port: 端口
@@ -18,7 +18,7 @@ cluster_info:
     title: 监控和告警
     view_monitor: 查看监控
     view_monitor_warn: 监控不可用
-    view_alerts: 参看告警
+    view_alerts: 查看告警
     view_alerts_warn: 告警不可用
     problems: 问题
-    diagnose: 运行诊断
+    run_diagnose: 运行诊断

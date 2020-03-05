@@ -1,5 +1,5 @@
 import client from "@/utils/client";
-import { LogsearchCreateTaskGroupRequest, LogsearchSearchTarget, ClusterinfoClusterInfo } from "@/utils/dashboard_client";
+import { ClusterinfoClusterInfo, LogsearchCreateTaskGroupRequest, LogsearchSearchTarget } from "@/utils/dashboard_client";
 import { Card, Col, DatePicker, Form, Row, Select, TreeSelect } from "antd";
 import { RangePickerValue } from "antd/lib/date-picker/interface";
 import Search from "antd/lib/input/Search";
@@ -43,7 +43,7 @@ function buildServerMap(info: ClusterinfoClusterInfo) {
   const serverMap = new Map<string, LogsearchSearchTarget>()
   info?.tidb?.nodes?.forEach(tidb => {
     const addr = `${tidb.ip}:${tidb.port}`
-    const target :LogsearchSearchTarget = {
+    const target: LogsearchSearchTarget = {
       ip: tidb.ip,
       port: tidb.status_port,
       kind: 'tidb'
@@ -52,7 +52,7 @@ function buildServerMap(info: ClusterinfoClusterInfo) {
   })
   info?.tikv?.nodes?.forEach(tikv => {
     const addr = `${tikv.ip}:${tikv.port}`
-    const target :LogsearchSearchTarget = {
+    const target: LogsearchSearchTarget = {
       ip: tikv.ip,
       port: tikv.port,
       kind: 'tikv'
@@ -61,7 +61,7 @@ function buildServerMap(info: ClusterinfoClusterInfo) {
   })
   info?.pd?.nodes?.forEach(pd => {
     const addr = `${pd.ip}:${pd.port}`
-    const target :LogsearchSearchTarget = {
+    const target: LogsearchSearchTarget = {
       ip: pd.ip,
       port: pd.port,
       kind: 'pd'
@@ -100,37 +100,63 @@ function buildTreeData(serverMap: Map<string, LogsearchSearchTarget>) {
     }))
 }
 
-export default function SearchHeader() {
+interface Props {
+  taskGroupID: number
+}
+
+export default function SearchHeader({
+  taskGroupID
+}: Props) {
   const { store, dispatch } = useContext(Context)
-  const { searchOptions, topology } = store
+  const { topology } = store
   const { t } = useTranslation()
   const history = useHistory()
 
-  const [timeRange, setTimeRange] = useState<RangePickerValue>(searchOptions.curTimeRange)
-  const [logLevel, setLogLevel] = useState<number>(searchOptions.curLogLevel)
-  const [components, setComponents] = useState<string[]>(searchOptions.curComponents)
-  const [searchValue, setSearchValue] = useState<string>(searchOptions.curSearchValue)
+  const [timeRange, setTimeRange] = useState<RangePickerValue>([])
+  const [logLevel, setLogLevel] = useState<number>(3)
+  const [components, setComponents] = useState<string[]>([])
+  const [searchValue, setSearchValue] = useState<string>('')
 
-  useEffect(() => {
-    dispatch({
-      type: 'search_options', payload: {
-        curTimeRange: timeRange,
-        curLogLevel: logLevel,
-        curComponents: components,
-        curSearchValue: searchValue,
-      }
-    })
-  }, [timeRange, logLevel, components, searchValue])
+  // useEffect(() => {
+  //   dispatch({
+  //     type: 'search_options', payload: {
+  //       curTimeRange: timeRange,
+  //       curLogLevel: logLevel,
+  //       curComponents: components,
+  //       curSearchValue: searchValue,
+  //     }
+  //   })
+  // }, [timeRange, logLevel, components, searchValue])
   // don't add the dependent functions likes dispatch into the dependency array
   // it will cause the infinite loop
 
   useEffect(() => {
     async function fetchData() {
-      const res = await client.dashboard.topologyAllGet()
+      let res = await client.dashboard.topologyAllGet()
       const serverMap = buildServerMap(res.data)
-      dispatch({type: 'topology', payload: serverMap})
-      console.log(res.data)
-      console.log(serverMap)
+      dispatch({ type: 'topology', payload: serverMap })
+      if (!taskGroupID) {
+        return
+      }
+      res = await client.dashboard.logsTaskgroupsIdGet(taskGroupID)
+      const { task_group, tasks } = res.data
+      const { start_time, end_time, levels, patterns } = task_group?.search_request
+      const startTime = start_time ? moment(start_time) : null
+      const endTime = end_time ? moment(end_time) : null
+      setTimeRange([startTime, endTime] as RangePickerValue)
+      setLogLevel(levels.length > 0 ? levels[0] : 3)
+      setSearchValue(patterns.join(' '))
+      setComponents(tasks?.map(task => {
+        let component = ''
+        for (let [addr, target] of serverMap.entries()) {
+          if (target.ip === task.search_target?.ip
+            && target.port === task.search_target?.port) {
+            component = addr
+            break
+          }
+        }
+        return component
+      }))
     }
     fetchData()
   }, [])
@@ -157,8 +183,12 @@ export default function SearchHeader() {
       }
     }
     const result = await client.dashboard.logsTaskgroupPut(params)
-    dispatch({ type: 'task_group_id', payload: result.data.task_group?.id })
-    history.push('/log/search/detail')
+    const id = result.data.task_group?.id
+    if (!id) {
+      // promp error here
+      return
+    }
+    history.push('/log/search/detail/' + id)
   }
 
   function handleTimeRangeChange(value: RangePickerValue) {

@@ -109,6 +109,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		defer db.Close()
 		tables := GetReportTablesForDisplay(startTimeStr, endTimeStr, db)
 		// tables := GetReportTablesForDisplay(startTime, endTime, db, s.db, reportID)
+		UpdateReportProgress(s.db, reportID, 100)
 		content, err := json.Marshal(tables)
 		if err == nil {
 			SaveReportContent(s.db, reportID, string(content))

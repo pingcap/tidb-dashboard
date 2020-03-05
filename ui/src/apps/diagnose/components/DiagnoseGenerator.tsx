@@ -2,11 +2,11 @@ import React, { useState } from 'react'
 import { Button, DatePicker, message } from 'antd'
 import { RangePickerValue } from 'antd/lib/date-picker/interface'
 import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 
 const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
 interface Props {
-  basePath: string
   createReport: (startTime: string, endTime: string) => Promise<ReportRes>
 }
 
@@ -14,11 +14,10 @@ interface ReportRes {
   report_id: string
 }
 
-function DiagnoseGenerator({ basePath, createReport }: Props) {
+function DiagnoseGenerator({ createReport }: Props) {
   const [timeRange, setTimeRange] = useState<[string, string]>(['', ''])
-  const [loading, setLoading] = useState(false)
-  const [reportUrl, setReportUrl] = useState('')
   const { t } = useTranslation()
+  const history = useHistory()
 
   function handleRangeChange(
     dates: RangePickerValue,
@@ -37,15 +36,9 @@ function DiagnoseGenerator({ basePath, createReport }: Props) {
 
   async function genReport() {
     try {
-      setReportUrl('')
-      setLoading(true)
       const res = await createReport(timeRange[0], timeRange[1])
-      setLoading(false)
-      const reportUrl = `${basePath}/diagnose/reports/${res.report_id}`
-      setReportUrl(reportUrl)
-      window.open(reportUrl, '_blank')
+      history.push(`/diagnose/${res.report_id}`)
     } catch (error) {
-      setLoading(false)
       message.error(error.message)
     }
   }
@@ -62,22 +55,9 @@ function DiagnoseGenerator({ basePath, createReport }: Props) {
         ]}
         onChange={handleRangeChange}
       />
-      <Button
-        disabled={timeRange[0] === ''}
-        onClick={genReport}
-        loading={loading}
-      >
-        {loading ? t('diagnose.keep_wait') : t('diagnose.gen_report')}
+      <Button disabled={timeRange[0] === ''} onClick={genReport}>
+        {t('diagnose.gen_report')}
       </Button>
-      {reportUrl && (
-        <p style={{ marginTop: 12 }}>
-          {t('diagnose.open_link')}:
-          <br />
-          <a href={reportUrl} target="_blank">
-            {reportUrl}
-          </a>
-        </p>
-      )}
     </div>
   )
 }

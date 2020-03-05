@@ -1,83 +1,113 @@
-import React, { useState } from 'react'
-import { Button, DatePicker, message } from 'antd'
-import { RangePickerValue } from 'antd/lib/date-picker/interface'
-import { useTranslation } from 'react-i18next'
+import React, { useState, useEffect, useRef } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { Button, message, Progress } from 'antd'
+import moment from 'moment'
 
 const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
+// TODO: move a better place, and duplicated with useSetInterval in SearchProgess.tsx
+// https://overreacted.io/zh-hans/making-setinterval-declarative-with-react-hooks/
+function useInterval(callback: () => void, delay: null | number) {
+  const savedCallback = useRef<() => void>(callback)
+
+  // save new callback
+  useEffect(() => {
+    savedCallback.current = callback
+  })
+
+  // set interval
+  useEffect(() => {
+    function tick() {
+      savedCallback.current()
+    }
+    if (delay !== null) {
+      tick()
+      let id = setInterval(tick, delay)
+      return () => clearInterval(id)
+    }
+  }, [delay])
+}
+
 interface Props {
   basePath: string
-  createReport: (startTime: string, endTime: string) => Promise<ReportRes>
+  fetchReport: (reportId: string) => Promise<Report>
 }
 
-interface ReportRes {
-  report_id: string
+interface Report {
+  ID: string
+  start_time: string
+  end_time: string
+  progress: number
 }
 
-function DiagnoseStatus({ basePath, createReport }: Props) {
-  const [timeRange, setTimeRange] = useState<[string, string]>(['', ''])
-  const [loading, setLoading] = useState(false)
-  const [reportUrl, setReportUrl] = useState('')
-  const { t } = useTranslation()
-
-  function handleRangeChange(
-    dates: RangePickerValue,
-    _dateStrings: [string, string]
-  ) {
-    // if user clear the range picker, dates is [], dataStrings is ['','']
-    if (dates[0] && dates[1]) {
-      setTimeRange([
-        dates[0].format(DATE_TIME_FORMAT),
-        dates[1].format(DATE_TIME_FORMAT),
-      ])
-    } else {
-      setTimeRange(['', ''])
-    }
+function reportUrl(report: Report | undefined, basePath: string) {
+  if (report && report.progress >= 100) {
+    return `${basePath}/diagnose/reports/${report.ID}`
   }
+  return ''
+}
 
-  async function genReport() {
-    try {
-      setReportUrl('')
-      setLoading(true)
-      const res = await createReport(timeRange[0], timeRange[1])
-      setLoading(false)
-      const reportUrl = `${basePath}/diagnose/reports/${res.report_id}`
-      setReportUrl(reportUrl)
-      window.open(reportUrl, '_blank')
-    } catch (error) {
-      setLoading(false)
-      message.error(error.message)
-    }
-  }
+function DiagnoseStatus({ basePath, fetchReport }: Props) {
+  const [report, setReport] = useState<Report | undefined>(undefined)
+  const [stopInterval, setStopInterval] = useState(false)
+  const { id } = useParams()
+
+  useInterval(
+    () => {
+      async function fetchData() {
+        if (!id) {
+          setStopInterval(true)
+          return
+        }
+        try {
+          const res = await fetchReport(id)
+          setReport(res)
+          if (res.progress >= 100) {
+            setStopInterval(true)
+            window.open(reportUrl(res, basePath))
+          }
+        } catch (error) {
+          message.error(error.message)
+        }
+      }
+      fetchData()
+    },
+    stopInterval ? null : 2000
+  )
+
+  const reportFullUrl = reportUrl(report, basePath)
 
   return (
     <div>
-      <DatePicker.RangePicker
-        style={{ width: 360, marginRight: 12 }}
-        showTime
-        format={DATE_TIME_FORMAT}
-        placeholder={[
-          t('diagnose.time_selector.start_time'),
-          t('diagnose.time_selector.end_time'),
-        ]}
-        onChange={handleRangeChange}
-      />
-      <Button
-        disabled={timeRange[0] === ''}
-        onClick={genReport}
-        loading={loading}
-      >
-        {loading ? t('diagnose.keep_wait') : t('diagnose.gen_report')}
-      </Button>
-      {reportUrl && (
-        <p style={{ marginTop: 12 }}>
-          {t('diagnose.open_link')}:
-          <br />
-          <a href={reportUrl} target="_blank">
-            {reportUrl}
+      <h1>Report Status</h1>
+      <p>
+        Time Range:{' '}
+        {report && (
+          <span>
+            {moment(report.start_time).format(DATE_TIME_FORMAT)} ~{' '}
+            {moment(report.end_time).format(DATE_TIME_FORMAT)}
+          </span>
+        )}
+      </p>
+      <p>
+        Progress:{' '}
+        <Progress
+          style={{ width: 200 }}
+          percent={report?.progress || 0}
+          status={report?.progress === 100 ? 'normal' : 'active'}
+        />
+      </p>
+      <p>
+        Full Report:{' '}
+        {reportFullUrl && (
+          <a href={reportFullUrl} target="_blank">
+            {reportFullUrl}
           </a>
-        </p>
-      )}
+        )}
+      </p>
+      <Link to="/diagnose">
+        <Button type="primary">Back to Generate New Report</Button>
+      </Link>
     </div>
   )
 }

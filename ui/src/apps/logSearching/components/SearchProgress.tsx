@@ -197,12 +197,12 @@ export default function SearchProgress() {
       )
     )
     
-    const res = await client.dashboard.logsDownloadTokenGet(keys)
+    const res = await client.dashboard.logsDownloadAcquireTokenGet(keys)
     const token = res.data
     if (!token) {
       return
     }
-    const url = `${DASHBOARD_API_URL}/download-logs?token=${token}`
+    const url = `${DASHBOARD_API_URL}/logs/download?token=${token}`
     downloadFile(url)
   }
 

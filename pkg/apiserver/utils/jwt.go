@@ -39,8 +39,8 @@ func newClaims(str string) *Claims {
 	}
 }
 
-// NewJWTToken create a JWT string by given data
-func NewJWTToken(str string) (string, error) {
+// NewJWTString create a JWT string by given data
+func NewJWTString(str string) (string, error) {
 	claims := newClaims(str)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(hmacSampleSecret[:])
@@ -50,8 +50,8 @@ func NewJWTToken(str string) (string, error) {
 	return tokenString, nil
 }
 
-// ParseJWTToken parse the JWT string and return the raw data
-func ParseJWTToken(str string) (string, error) {
+// ParseJWTString parse the JWT string and return the raw data
+func ParseJWTString(str string) (string, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(str, claims, func(token *jwt.Token) (interface{}, error) {
 		return hmacSampleSecret[:], nil

@@ -62,17 +62,15 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/logs")
-	endpoint.Use(auth.MWAuthRequired())
 
-	endpoint.GET("/downloadToken", s.GetDownloadToken)
-	endpoint.PUT("/taskgroup", s.CreateTaskGroup)
-	endpoint.GET("/taskgroups/:id", s.GetTaskGroup)
-	endpoint.GET("/taskgroups/:id/preview", s.GetTaskGroupPreview)
-	endpoint.POST("/taskgroups/:id/retry", s.RetryTask)
-	endpoint.POST("/taskgroups/:id/cancel", s.CancelTask)
-	endpoint.DELETE("/taskgroups/:id", s.DeleteTaskGroup)
-
-	r.GET("/download-logs", s.DownloadLogs)
+	endpoint.GET("/download", s.DownloadLogs)
+	endpoint.GET("/download/acquire_token", auth.MWAuthRequired(), s.GetDownloadToken)
+	endpoint.PUT("/taskgroup", auth.MWAuthRequired(), s.CreateTaskGroup)
+	endpoint.GET("/taskgroups/:id", auth.MWAuthRequired(), s.GetTaskGroup)
+	endpoint.GET("/taskgroups/:id/preview", auth.MWAuthRequired(), s.GetTaskGroupPreview)
+	endpoint.POST("/taskgroups/:id/retry", auth.MWAuthRequired(), s.RetryTask)
+	endpoint.POST("/taskgroups/:id/cancel", auth.MWAuthRequired(), s.CancelTask)
+	endpoint.DELETE("/taskgroups/:id", auth.MWAuthRequired(), s.DeleteTaskGroup)
 }
 
 type CreateTaskGroupRequest struct {
@@ -146,11 +144,11 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 // @Success 200 {string} string "xxx"
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /logs/downloadToken [get]
+// @Router /logs/download/acquire_token [get]
 func (s *Service) GetDownloadToken(c *gin.Context) {
 	ids := c.QueryArray("id")
 	str := strings.Join(ids, ",")
-	token, err := utils.NewJWTToken(str)
+	token, err := utils.NewJWTString(str)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
@@ -317,17 +315,17 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
-// @Summary Get Download
+// @Summary Download
 // @Description download logs by multiple task IDs
 // @Produce application/x-tar,application/zip
-// @Param token query string true "JWT token"
+// @Param token query string true "download token"
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /download-logs [get]
+// @Router /logs/download [get]
 func (s *Service) DownloadLogs(c *gin.Context) {
 	token := c.Query("token")
-	str, err := utils.ParseJWTToken(token)
+	str, err := utils.ParseJWTString(token)
 	if err != nil {
 		c.Status(http.StatusUnauthorized)
 		_ = c.Error(utils.ErrInvalidRequest.New(err.Error()))

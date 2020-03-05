@@ -207,9 +207,13 @@ export default function SearchProgress({
         name === key
       )
     )
-
-    const params = keys.map(id => `id=${id}`).join('&')
-    const url = `${DASHBOARD_API_URL}/logs/download?${params}`
+    
+    const res = await client.dashboard.logsDownloadAcquireTokenGet(keys)
+    const token = res.data
+    if (!token) {
+      return
+    }
+    const url = `${DASHBOARD_API_URL}/logs/download?token=${token}`
     downloadFile(url)
   }
 

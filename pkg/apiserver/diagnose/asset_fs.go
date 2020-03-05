@@ -16,8 +16,9 @@ package diagnose
 
 import (
 	"bufio"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 	"io/ioutil"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
 func readFromFS(name string, filename string) utils.TemplateInfoWithFilename {

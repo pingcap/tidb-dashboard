@@ -14,13 +14,14 @@
 package utils
 
 import (
+	"html/template"
+	"io/ioutil"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
-	"html/template"
-	"io/ioutil"
-	"os"
 )
 
 type TemplateInfo struct {
@@ -56,9 +57,8 @@ func (info TemplateInfoWithFilename) loadContext() string {
 			log.Fatal("Failed to load template from file", zap.String("filename", info.Filename), zap.Error(err))
 		}
 		return string(data)
-	} else {
-		return info.Text
 	}
+	return info.Text
 }
 
 func fileExists(filename string) bool {
@@ -81,9 +81,8 @@ type PreferLocalFileHTMLProduction struct {
 func (r PreferLocalFileHTMLProduction) Instance(name string, data interface{}) render.Render {
 	if r.shouldLoadFromFile() {
 		return buildBackend(r.Infos).Instance(name, data)
-	} else {
-		return r.backend.Instance(name, data)
 	}
+	return r.backend.Instance(name, data)
 }
 
 func (r *PreferLocalFileHTMLProduction) shouldLoadFromFile() bool {
@@ -94,8 +93,6 @@ func (r *PreferLocalFileHTMLProduction) anyFileExists() bool {
 	for _, info := range r.Infos {
 		if fileExists(info.Filename) {
 			return true
-		} else {
-			continue
 		}
 	}
 	return false

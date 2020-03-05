@@ -15,6 +15,7 @@ package utils
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"github.com/joomcode/errorx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
@@ -22,7 +23,7 @@ import (
 
 const (
 	// The key that attached the TiDB connection in the gin Context.
-	TiDBConnectionKey = "tidb"
+	tiDBConnectionKey = "tidb"
 )
 
 // MWConnectTiDB creates a middleware that attaches TiDB connection to the context, according to the identity
@@ -62,8 +63,38 @@ func MWConnectTiDB(tidbForwarder *tidb.Forwarder) gin.HandlerFunc {
 			return
 		}
 
-		defer db.Close() //nolint:errcheck
-		c.Set(TiDBConnectionKey, db)
+		defer func() {
+			// We allow tiDBConnectionKey to be cleared by `TakeTiDBConnection`.
+			dbInContext := c.MustGet(tiDBConnectionKey)
+			if dbInContext != nil {
+				dbInContext2 := dbInContext.(*gorm.DB)
+				if dbInContext2 != nil {
+					_ = dbInContext2.Close()
+				}
+			}
+		}()
+
+		c.Set(tiDBConnectionKey, db)
 		c.Next()
 	}
+}
+
+// TakeTiDBConnection takes out the TiDB connection stored in the gin context by `MWConnectTiDB` middleware.
+// Subsequent handlers in this context cannot access the TiDB connection any more.
+//
+// The TiDB connection will no longer be closed automatically after all handlers are finished. You must manually
+// close the taken out connection.
+func TakeTiDBConnection(c *gin.Context) *gorm.DB {
+	db := GetTiDBConnection(c)
+	c.Set(tiDBConnectionKey, nil)
+	return db
+}
+
+// GetTiDBConnection gets the TiDB connection stored in the gin context by `MWConnectTiDB` middleware.
+//
+// The connection will be closed automatically after all handlers are finished. Thus you must not use it outside
+// the request lifetime. If you want to extend the lifetime, use `TakeTiDBConnection`.
+func GetTiDBConnection(c *gin.Context) *gorm.DB {
+	db := c.MustGet(tiDBConnectionKey).(*gorm.DB)
+	return db
 }

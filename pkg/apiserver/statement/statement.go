@@ -19,7 +19,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -55,7 +54,7 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) schemasHandler(c *gin.Context) {
-	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
+	db := utils.GetTiDBConnection(c)
 	schemas, err := QuerySchemas(db)
 	if err != nil {
 		_ = c.Error(err)
@@ -72,7 +71,7 @@ func (s *Service) schemasHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) timeRangesHandler(c *gin.Context) {
-	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
+	db := utils.GetTiDBConnection(c)
 	timeRanges, err := QueryTimeRanges(db)
 	if err != nil {
 		_ = c.Error(err)
@@ -103,7 +102,7 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 		_ = c.Error(fmt.Errorf("invalid begin_time or end_time"))
 		return
 	}
-	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
+	db := utils.GetTiDBConnection(c)
 	overviews, err := QueryStatementsOverview(db, schemas, beginTime, endTime)
 	if err != nil {
 		_ = c.Error(err)
@@ -124,7 +123,7 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) detailHandler(c *gin.Context) {
-	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
+	db := utils.GetTiDBConnection(c)
 	schema := c.Query("schema")
 	beginTime := c.Query("begin_time")
 	endTime := c.Query("end_time")
@@ -149,7 +148,7 @@ func (s *Service) detailHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) nodesHandler(c *gin.Context) {
-	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
+	db := utils.GetTiDBConnection(c)
 	schema := c.Query("schema")
 	beginTime := c.Query("begin_time")
 	endTime := c.Query("end_time")

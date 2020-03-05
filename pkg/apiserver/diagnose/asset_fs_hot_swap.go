@@ -10,18 +10,23 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// +build hot_swap
 
 package diagnose
 
 import (
+	"bufio"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+	"io/ioutil"
 )
 
-var fs = assetFS()
-
-func FetchTemplates() []utils.TemplateInfoWithFilename {
-	var result []utils.TemplateInfoWithFilename
-	result = append(result, readFromFS("sql-diagnosis/index", "pkg/apiserver/diagnose/templates/index.gohtml"))
-	result = append(result, readFromFS("sql-diagnosis/table", "pkg/apiserver/diagnose/templates/table.gohtml"))
-	return result
+func readFromFS(name string, filename string) utils.TemplateInfoWithFilename {
+	file, _ := fs.Open(filename)
+	defer file.Close()
+	content, _ := ioutil.ReadAll(bufio.NewReader(file))
+	return utils.TemplateInfoWithFilename{
+		Name:     name,
+		Text:     string(content),
+		Filename: filename,
+	}
 }

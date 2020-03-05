@@ -33,16 +33,23 @@ const (
 	TaskStateFinish
 )
 
+type NodeType string
+
+const (
+	NodeTypeTiKV NodeType = "tikv"
+	NodeTypeTiDB NodeType = "tidb"
+	NodeTypePD   NodeType = "pd"
+)
+
 type TaskModel struct {
 	ID          uint      `json:"id" gorm:"primary_key"`
 	TaskGroupID uint      `json:"task_group_id" gorm:"index"`
 	State       TaskState `json:"state" gorm:"index"`
-	Addr        string    `json:"address"`
+	Addr        string    `json:"address" gorm:"size:32"`
+	TargetKind  NodeType  `json:"target_kind" gorm:"size:10"`
 	FilePath    string    `json:"file_path" gorm:"type:text"`
-	Component   string    `json:"component"`
-	CreatedAt   int64     `json:"created_at"`
-	FinishedAt  int64     `json:"finished_at"`
 	Error       string    `json:"error" gorm:"type:text"`
+	StartedAt   int64     `json:"started_at"` // The start running time, reset when retry. Used to estimate approximate profiling progress.
 }
 
 func (TaskModel) TableName() string {
@@ -50,8 +57,9 @@ func (TaskModel) TableName() string {
 }
 
 type TaskGroupModel struct {
-	ID    uint      `json:"id" gorm:"primary_key"`
-	State TaskState `json:"state" gorm:"index"`
+	ID                  uint      `json:"id" gorm:"primary_key"`
+	State               TaskState `json:"state" gorm:"index"`
+	ProfileDurationSecs uint      `json:"profile_duration_secs"`
 }
 
 func (TaskGroupModel) TableName() string {
@@ -67,40 +75,40 @@ func autoMigrate(db *dbstore.DB) error {
 // Task is the unit to fetch profiling information.
 type Task struct {
 	*TaskModel
-	ctx          context.Context
-	cancel       context.CancelFunc
-	db           *dbstore.DB
-	grabInterval uint
+	ctx       context.Context
+	cancel    context.CancelFunc
+	taskGroup *TaskGroup
 }
 
 // NewTask creates a new profiling task.
-func NewTask(db *dbstore.DB, id, grabInterval uint, component, addr string) *Task {
+func NewTask(taskGroup *TaskGroup, targetKind NodeType, addr string) *Task {
+	ctx, cancel := context.WithCancel(context.Background())
 	return &Task{
 		TaskModel: &TaskModel{
-			TaskGroupID: id,
+			TaskGroupID: taskGroup.ID,
 			State:       TaskStateRunning,
 			Addr:        addr,
-			Component:   component,
-			CreatedAt:   time.Now().Unix(),
+			TargetKind:  targetKind,
+			StartedAt:   time.Now().Unix(),
 		},
-		db:           db,
-		grabInterval: grabInterval,
+		ctx:       ctx,
+		cancel:    cancel,
+		taskGroup: taskGroup,
 	}
 }
 
 func (t *Task) run() {
-	filePrefix := fmt.Sprintf("profile_group_%d_task%d_%s_%s_", t.TaskGroupID, t.ID, t.Component, t.Addr)
-	svgFilePath, err := fetchSvg(t.ctx, t.Component, t.Addr, filePrefix, t.grabInterval)
+	filePrefix := fmt.Sprintf("profile_group_%d_task%d_%s_%s_", t.TaskGroupID, t.ID, t.TargetKind, t.Addr)
+	svgFilePath, err := fetchProfilingSVG(t.ctx, t.TargetKind, t.Addr, filePrefix, t.taskGroup.ProfileDurationSecs)
 	if err != nil {
 		t.Error = err.Error()
 		t.State = TaskStateError
-		t.db.Save(t.TaskModel)
+		t.taskGroup.db.Save(t.TaskModel)
 		return
 	}
 	t.FilePath = svgFilePath
 	t.State = TaskStateFinish
-	t.FinishedAt = time.Now().Unix()
-	t.db.Save(t.TaskModel)
+	t.taskGroup.db.Save(t.TaskModel)
 }
 
 func (t *Task) stop() {
@@ -110,13 +118,16 @@ func (t *Task) stop() {
 // TaskGroup is the collection of tasks.
 type TaskGroup struct {
 	*TaskGroupModel
+	db *dbstore.DB
 }
 
 // NewTaskGroup create a new profiling task group.
-func NewTaskGroup() *TaskGroup {
+func NewTaskGroup(db *dbstore.DB, profileDurationSecs uint) *TaskGroup {
 	return &TaskGroup{
 		TaskGroupModel: &TaskGroupModel{
-			State: TaskStateRunning,
+			State:               TaskStateRunning,
+			ProfileDurationSecs: profileDurationSecs,
 		},
+		db: db,
 	}
 }

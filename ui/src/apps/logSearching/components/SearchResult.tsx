@@ -17,17 +17,35 @@ type LogPreview = {
 }
 
 function logRender(log: string) {
+  function trimString(str: string) {
+    const len = 512
+    return str.length > len ?
+      str.substring(0, len - 3) + "..." :
+      str
+  }
+
   return (
-    <Tooltip title={log}>
-      <span>{log}</span>
-    </Tooltip>
+    <Tooltip title={trimString(log)}>
+      <div style={{
+        overflow: "hidden",
+        whiteSpace: "nowrap",
+        textOverflow: "ellipsis"
+      }}>
+        <span>{log}</span>
+      </div>
+    </Tooltip >
   )
 }
+interface Props {
+  taskGroupID: number
+}
 
-export default function SearchResult() {
+export default function SearchResult({
+  taskGroupID
+}: Props) {
   const { store } = useContext(Context)
   const [logPreviews, setData] = useState<LogPreview[]>([])
-  const { taskGroupID, tasks } = store
+  const { tasks } = store
   const { t } = useTranslation()
 
   useEffect(() => {

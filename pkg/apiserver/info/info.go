@@ -17,7 +17,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -93,7 +92,7 @@ type DatabaseResponse = []string
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) databasesHandler(c *gin.Context) {
-	db := c.MustGet(utils.TiDBConnectionKey).(*gorm.DB)
+	db := utils.GetTiDBConnection(c)
 	var result DatabaseResponse
 	err := db.Raw("show databases").Pluck("Databases", &result).Error
 	if err != nil {

@@ -2,8 +2,13 @@ import React from 'react'
 import { Table, Card, Skeleton } from 'antd'
 import { useTranslation } from 'react-i18next'
 
+import client from '@/utils/client'
+
 function ComponentPanelTable({ cluster }) {
   const { t } = useTranslation()
+
+  let dataSource = []
+
   const columns = [
     {
       title: t('cluster_info.component_table.address'),
@@ -11,12 +16,6 @@ function ComponentPanelTable({ cluster }) {
       key: 'address',
       ellipsis: true,
       width: 240,
-    },
-    {
-      title: t('cluster_info.component_table.status'),
-      dataIndex: 'status',
-      key: 'status',
-      width: 100,
     },
     {
       title: t('cluster_info.component_table.version'),
@@ -31,9 +30,32 @@ function ComponentPanelTable({ cluster }) {
       key: 'deploy_path',
       ellipsis: true,
     },
+    {
+      title: t('cluster_info.component_table.status'),
+      dataIndex: 'status',
+      key: 'status',
+      width: 100,
+    },
+    {
+      title: t('cluster_info.component_table.action'),
+      key: 'action',
+      width: 100,
+      render: (_, node) => {
+        if (
+          node !== undefined &&
+          node.status !== undefined &&
+          node.status !== 'up'
+        ) {
+          return (
+            <a onClick={() => deleteTiDBTopology(node, dataSource)}>
+              {t('cluster_info.component_table.del_db')}
+            </a>
+          )
+        }
+      },
+    },
   ]
 
-  let dataSource = []
   if (cluster) {
     pushNodes('tikv', cluster, dataSource)
     pushNodes('tidb', cluster, dataSource)
@@ -79,6 +101,7 @@ function wrapNode(node, comp, id) {
   if (node === undefined || node === null) {
     return
   }
+  // TODO: i18n
   let status = 'down'
   if (node.status === 1) {
     status = 'up'
@@ -97,6 +120,24 @@ function wrapNode(node, comp, id) {
     status_port: node.status_port,
     status: status,
   }
+}
+
+async function deleteTiDBTopology(node, dataSource) {
+  // let resp = await client.dashboard.topologyAddressDelete(`${node.ip}:${node.port}`)
+  // if (resp.status === 200) {
+  //   for (let v in dataSource) {
+  //     if (v.address.includes('tidb')) {
+  //       let cnt = 0;
+  //       for (let n in v.children) {
+  //         if (n.address === node.address) {
+  //           v.children.remove(cnt);
+  //           break;
+  //         }
+  //         ++cnt;
+  //       }
+  //     }
+  //   }
+  // }
 }
 
 export default ComponentPanelTable

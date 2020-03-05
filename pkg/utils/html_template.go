@@ -70,7 +70,7 @@ func fileExists(filename string) bool {
 }
 
 func NewPreferLocalFileHTMLRender(infos []TemplateInfoWithFilename) render.HTMLRender {
-	return PreferLocalFileHTMLProduction{Infos: infos}
+	return PreferLocalFileHTMLProduction{backend: buildBackend(infos), Infos: infos}
 }
 
 type PreferLocalFileHTMLProduction struct {
@@ -80,27 +80,31 @@ type PreferLocalFileHTMLProduction struct {
 
 func (r PreferLocalFileHTMLProduction) Instance(name string, data interface{}) render.Render {
 	if r.shouldLoadFromFile() {
-		r.backend = r.rebuildBackend()
-	}
-	return r.backend.Instance(name, data)
-}
-
-func (r PreferLocalFileHTMLProduction) shouldLoadFromFile() bool {
-	if r.backend == nil {
-		return true
+		return buildBackend(r.Infos).Instance(name, data)
 	} else {
-		return r.anyFileExists()
+		return r.backend.Instance(name, data)
 	}
 }
 
-func (r PreferLocalFileHTMLProduction) anyFileExists() bool {
-	return true
+func (r *PreferLocalFileHTMLProduction) shouldLoadFromFile() bool {
+	return r.backend == nil || r.anyFileExists()
 }
 
-// Re-create template every time.
-func (r PreferLocalFileHTMLProduction) rebuildBackend() *render.HTMLProduction {
-	templ := template.New("")
+func (r *PreferLocalFileHTMLProduction) anyFileExists() bool {
 	for _, info := range r.Infos {
+		if fileExists(info.Filename) {
+			return true
+		} else {
+			continue
+		}
+	}
+	return false
+}
+
+// Re-create template every time with hot-swap feature.
+func buildBackend(infos []TemplateInfoWithFilename) *render.HTMLProduction {
+	templ := template.New("")
+	for _, info := range infos {
 		t := templ.New(info.Name)
 		if _, err := t.Parse(info.loadContext()); err != nil {
 			log.Fatal("Failed to parse template", zap.String("name", info.Name), zap.Error(err))

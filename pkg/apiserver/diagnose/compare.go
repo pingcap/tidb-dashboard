@@ -1,6 +1,7 @@
 package diagnose
 
 import (
+	"container/heap"
 	"fmt"
 	"math"
 	"sort"
@@ -47,12 +48,13 @@ func GetCompareReportTables(startTime1, endTime1, startTime2, endTime2 string, d
 
 func CompareTables(tables1, tables2 []*TableDef) ([]*TableDef, []TableRowDef) {
 	var errRows []TableRowDef
-	resultTables := make([]*TableDef, 0, len(tables1))
+	dr := &diffRows{}
+	resultTables := make([]*TableDef, 1, len(tables1))
 	for _, tbl1 := range tables1 {
 		for _, tbl2 := range tables2 {
 			if strings.Join(tbl1.Category, ",") == strings.Join(tbl2.Category, ",") &&
 				tbl1.Title == tbl2.Title {
-				table, err := compareTable(tbl1, tbl2)
+				table, err := compareTable(tbl1, tbl2, dr)
 				if err != nil {
 					errRows = appendErrorRow(*tbl1, err, errRows)
 				} else if table != nil {
@@ -61,10 +63,38 @@ func CompareTables(tables1, tables2 []*TableDef) ([]*TableDef, []TableRowDef) {
 			}
 		}
 	}
+	resultTables[0] = GenerateDiffTable(*dr)
 	return resultTables, errRows
 }
 
-func compareTable(table1, table2 *TableDef) (*TableDef, error) {
+func GenerateDiffTable(dr diffRows) *TableDef {
+	l := dr.Len()
+	rows := make([]TableRowDef, 0, l)
+	labels := make(map[string]struct{}, l)
+	for dr.Len() > 0 {
+		row := heap.Pop(&dr).(diffRow)
+		if _, ok := labels[row.label]; ok {
+			continue
+		}
+		labels[row.label] = struct{}{}
+		rows = append(rows, TableRowDef{
+			Values: []string{
+				row.label,
+				strconv.FormatFloat(row.ratio, 'f', -1, 64),
+			},
+		})
+	}
+	return &TableDef{
+		Category:  []string{CategoryOverview},
+		Title:     "Max diff item",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"NAME", "MAX_DIFF"},
+		Rows:      rows,
+	}
+}
+
+func compareTable(table1, table2 *TableDef, dr *diffRows) (*TableDef, error) {
 	labelsMap1, err := getTableLablesMap(table1)
 	if err != nil {
 		return nil, err
@@ -81,7 +111,7 @@ func compareTable(table1, table2 *TableDef) (*TableDef, error) {
 		if !ok {
 			row2 = &TableRowDef{}
 		}
-		newRow, err := joinRow(&table1.Rows[i], row2, table1)
+		newRow, err := joinRow(&table1.Rows[i], row2, table1, dr)
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +124,7 @@ func compareTable(table1, table2 *TableDef) (*TableDef, error) {
 			continue
 		}
 		row1 := &TableRowDef{}
-		newRow, err := joinRow(row1, &table2.Rows[i], table1)
+		newRow, err := joinRow(row1, &table2.Rows[i], table1, dr)
 		if err != nil {
 			return nil, err
 		}
@@ -143,7 +173,7 @@ func compareTable(table1, table2 *TableDef) (*TableDef, error) {
 	return resultTable, nil
 }
 
-func joinRow(row1, row2 *TableRowDef, table *TableDef) (*TableRowDef, error) {
+func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowDef, error) {
 	rowsMap1, err := genRowsLablesMap(table, row1.SubValues)
 	if err != nil {
 		return nil, err
@@ -166,6 +196,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef) (*TableRowDef, error) {
 			row2:  subRow2,
 			ratio: ratio,
 		})
+		dr.appendRow(diffRow{label, ratio})
 	}
 
 	for _, subRow2 := range row2.SubValues {
@@ -184,6 +215,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef) (*TableRowDef, error) {
 			row2:  subRow2,
 			ratio: ratio,
 		})
+		dr.appendRow(diffRow{label, ratio})
 	}
 
 	sort.Slice(subJoinRows, func(i, j int) bool {
@@ -206,6 +238,15 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef) (*TableRowDef, error) {
 				return nil, errors.Errorf("category %v,table %v, calculate diff ratio error: %v,  %v,%v", strings.Join(table.Category, ","), table.Title, err.Error(), row1.Values, row2.Values)
 			}
 		}
+		label := ""
+		if len(row1.Values) >= len(table.Column) {
+			label = genRowLabel(row1.Values, table.joinColumns)
+		} else if len(row2.Values) >= len(table.Column) {
+			label = genRowLabel(row2.Values, table.joinColumns)
+		}
+		if len(label) > 0 {
+			dr.appendRow(diffRow{label, totalRatio})
+		}
 	}
 
 	resultJoinRow := newJoinRow{
@@ -221,6 +262,36 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef) (*TableRowDef, error) {
 		Comment:   "",
 	}
 	return resultRow, nil
+}
+
+type diffRow struct {
+	label string
+	ratio float64
+}
+
+type diffRows []diffRow
+
+func (r diffRows) Len() int           { return len(r) }
+func (r diffRows) Less(i, j int) bool { return math.Abs(r[i].ratio) < math.Abs(r[j].ratio) }
+func (r diffRows) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
+
+func (r *diffRows) Push(x interface{}) {
+	*r = append(*r, x.(diffRow))
+}
+
+func (r *diffRows) Pop() interface{} {
+	old := *r
+	n := len(old)
+	x := old[n-1]
+	*r = old[0 : n-1]
+	return x
+}
+
+func (r *diffRows) appendRow(row diffRow) {
+	heap.Push(r, row)
+	if r.Len() > 150 {
+		heap.Pop(r)
+	}
 }
 
 type newJoinRow struct {
@@ -301,6 +372,8 @@ func parseFloat(s string) (float64, error) {
 	} else if strings.HasSuffix(s, " KB") {
 		ratio = 1024
 		s = s[:len(s)-3]
+	} else if strings.HasSuffix(s, "%") {
+		s = s[:len(s)-1]
 	}
 
 	f, err := strconv.ParseFloat(s, 64)
@@ -360,7 +433,7 @@ func getTableLablesMap(table *TableDef) (map[string]*TableRowDef, error) {
 }
 
 func getCompareTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []TableRowDef) {
-	funcs := []func(string, string, *gorm.DB) (TableDef, error){
+	funcs := []getTableFunc{
 		//Node
 		GetLoadTable,
 		GetCPUUsageTable,
@@ -396,7 +469,7 @@ func getCompareTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []Ta
 		GetTiKVTaskInfo,
 		GetTiKVCacheHitTable,
 	}
-	return getTables(startTime, endTime, db, funcs)
+	return getTablesParallel(startTime, endTime, db, funcs)
 }
 
 func GetReportHeaderTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []TableRowDef) {
@@ -414,7 +487,7 @@ func GetReportEndTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []
 		GetPDCurrentConfig,
 		GetTiKVCurrentConfig,
 	}
-	return getTables(startTime, endTime, db, funcs)
+	return getTablesParallel(startTime, endTime, db, funcs)
 }
 
 func GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2 string) *TableDef {
@@ -488,4 +561,61 @@ func appendErrorRow(tbl TableDef, err error, errRows []TableRowDef) []TableRowDe
 	}
 	errRows = append(errRows, TableRowDef{Values: []string{category, tbl.Title, err.Error()}})
 	return errRows
+}
+
+type getTableTask struct {
+	f      getTableFunc
+	result chan taskResult
+}
+
+type taskResult struct {
+	tbl TableDef
+	err error
+}
+
+func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableFunc) ([]*TableDef, []TableRowDef) {
+	workerNum := 20
+	if workerNum > len(funcs) {
+		workerNum = len(funcs)
+	}
+	taskCh := make(chan *getTableTask, workerNum)
+	taskCh2 := make(chan *getTableTask, workerNum)
+	for i := 0; i < workerNum; i++ {
+		go workerRun(taskCh, startTime, endTime, db)
+	}
+
+	// Send tasks.
+	go func() {
+		for i := range funcs {
+			task := &getTableTask{
+				f:      funcs[i],
+				result: make(chan taskResult, 1),
+			}
+			taskCh <- task
+			taskCh2 <- task
+		}
+		close(taskCh)
+		close(taskCh2)
+	}()
+
+	tables := make([]*TableDef, 0, len(funcs))
+	var errRows []TableRowDef
+	for task := range taskCh2 {
+		result := <-task.result
+		if result.err != nil {
+			errRows = appendErrorRow(result.tbl, result.err, errRows)
+			continue
+		}
+		if result.tbl.Rows != nil {
+			tables = append(tables, &result.tbl)
+		}
+	}
+	return tables, errRows
+}
+
+func workerRun(taskCh chan *getTableTask, startTime, endTime string, db *gorm.DB) {
+	for t := range taskCh {
+		tbl, err := t.f(startTime, endTime, db)
+		t.result <- taskResult{tbl: tbl, err: err}
+	}
 }

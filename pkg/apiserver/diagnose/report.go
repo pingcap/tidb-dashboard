@@ -169,7 +169,7 @@ func checkBeforeReport(db *gorm.DB) (errRows []TableRowDef) {
 	return nil
 }
 
-type getTableFunc func(string, string, *gorm.DB) (TableDef, error)
+type getTableFunc = func(string, string, *gorm.DB) (TableDef, error)
 
 func GetReportTables(startTime, endTime string, db *gorm.DB) []*TableDef {
 	funcs := []getTableFunc{

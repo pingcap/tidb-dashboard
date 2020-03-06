@@ -76,7 +76,7 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) genReportHandler(c *gin.Context) {
-	db := c.MustGet(apiutils.TiDBConnectionKey).(*gorm.DB)
+	db := apiutils.GetTiDBConnection(c)
 	startTime := c.Query("start_time")
 	endTime := c.Query("end_time")
 	if startTime == "" || endTime == "" {

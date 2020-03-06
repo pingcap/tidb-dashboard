@@ -14,7 +14,6 @@
 package diagnose
 
 import (
-	"database/sql"
 	"fmt"
 	"math"
 	"strconv"
@@ -56,62 +55,69 @@ func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, e
 	if len(t.name) == 0 {
 		t.name = t.tbl
 	}
-	condition := fmt.Sprintf("time >= '%s' and time < '%s' ", arg.startTime, arg.endTime)
-	if len(t.condition) > 0 {
-		condition = condition + "and " + t.condition
+	type AvgMaxMin struct {
+		Name string
+		Label string
+		Avg   string
+		Max   string
+		Min   string
 	}
+	avgMaxMinToSlice := func(a AvgMaxMin) []string {
+		return []string{a.Name, a.Label, a.Avg, a.Max, a.Min}
+	}
+	var result AvgMaxMin
+	var subResults []AvgMaxMin
 
-	fields := fmt.Sprintf("'%s', '', avg(value), max(value), min(value)", t.name)
+	fields := fmt.Sprintf(`
+		'%s' as name,
+		'' as label,
+		avg(value) as avg, 
+		max(value) as max, 
+		min(value) as min
+		`, t.name)
 	table := fmt.Sprintf("metrics_schema.%s", t.tbl)
-	rows, err := db.
+	query := db.
 		Select(fields).
 		Table(table).
-		Where(condition).
-		Rows()
-	if err != nil {
+		Where("time >= ? AND time < ?", arg.startTime, arg.endTime)
+	if len(t.condition) > 0 {
+		query = query.Where(t.condition)
+	}
+	if err := query.First(&result).Error; err != nil {
 		return nil, err
 	}
-	results, err := scanRows(rows)
-	if err != nil {
-		return nil, err
-	}
-	if len(results) == 0 {
-		return nil, nil
-	}
+	row := avgMaxMinToSlice(result)
 	if len(t.label) == 0 {
-		return t.genRow(results[0], nil), nil
+		return t.genRow(row, nil), nil
 	}
 
 	label := "`" + t.label + "`"
 	fields = fmt.Sprintf(`
-						'' as blank,
-						%v as label, 
-						avg(value) as avg, 
-						max(value) as max, 
-						min(value) as min`, label)
-
-	rows, err = db.
+		'%s' as name,
+		%s as label,
+		avg(value) as avg, 
+		max(value) as max, 
+		min(value) as min
+		`, t.name, label)
+	query = db.
 		Select(fields).
 		Table(table).
-		Where(condition).
+		Where("time >= ? AND time < ?", arg.startTime, arg.endTime)
+	if len(t.condition) > 0 {
+		query = query.Where(t.condition)
+	}
+	query = query.
 		Group(label).
-		Order("avg(value) desc").
-		Rows()
-	if err != nil {
+		Order("avg(value) desc")
+	if err := query.Find(&subResults).Error; err != nil {
 		return nil, err
 	}
-	subResults, err := scanRows(rows)
-	if err != nil {
-		return nil, err
+
+	var subRows [][]string
+	for _, subResult := range subResults {
+		subRows = append(subRows, avgMaxMinToSlice(subResult))
 	}
-	for i := range subResults {
-		row := subResults[i]
-		row[1] = strings.Join(row[1:2], ",")
-		newRow := row[:2]
-		newRow = append(newRow, row[2:]...)
-		subResults[i] = newRow
-	}
-	return t.genRow(results[0], subResults), nil
+	return t.genRow(row, subRows), nil
 }
 
 func (t AvgMaxMinTableDef) genRow(values []string, subValues [][]string) *TableRowDef {
@@ -151,58 +157,68 @@ func (t sumValueQuery) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error
 	if len(t.name) == 0 {
 		t.name = t.tbl
 	}
-	condition := fmt.Sprintf("time >= '%s' and time < '%s' ", arg.startTime, arg.endTime)
-	if len(t.condition) > 0 {
-		condition = condition + "and " + t.condition
+	type SumValue struct {
+		Name string
+		Label string
+		Sum string
 	}
-	fields := fmt.Sprintf("'%s', '', sum(value)", t.name)
+	sumValueToSlice := func(s SumValue) []string {
+		return []string{s.Name, s.Label, s.Sum}
+	}
+	var result SumValue
+	var subResults []SumValue
+
+	fields := fmt.Sprintf(`
+		'%s' as name, 
+		'' as label,
+		sum(value) as sum
+		`, t.name)
 	table := fmt.Sprintf("metrics_schema.%s", t.tbl)
-	rows, err := db.
+
+	query := db.
 		Select(fields).
 		Table(table).
-		Where(condition).
-		Rows()
-	if err != nil {
+		Where("time >= ? and time < ?", arg.startTime, arg.endTime)
+	if len(t.condition) > 0 {
+		query = query.Where(t.condition)
+	}
+	if err := query.First(&result).Error; err != nil {
 		return nil, err
 	}
-	results, err := scanRows(rows)
-	if err != nil {
-		return nil, err
-	}
-	if len(results) == 0 {
-		return nil, nil
-	}
+	row := sumValueToSlice(result)
 	if len(t.labels) == 0 {
-		return t.genRow(results[0], nil), nil
+		return t.genRow(row, nil), nil
 	}
 
-	labels := fmt.Sprintf("`%v`", strings.Join(t.labels, "`,`"))
-	fields = fmt.Sprintf("'%v', %v, sum(value)", t.name, labels)
+	labelFields := fmt.Sprintf("`%v`", strings.Join(t.labels, "`||','||`"))
+	fields = fmt.Sprintf(`
+		'%s' as name, 
+		%s as label, 
+		sum(value) as sum
+		`, t.name, labelFields)
 	table = fmt.Sprintf("metrics_schema.%v", t.tbl)
+	groupLabels := fmt.Sprintf("`%v`", strings.Join(t.labels, "`,`"))
 
-	rows, err = db.
+	query = db.
 		Select(fields).
 		Table(table).
-		Where(condition).
-		Group("labels").
+		Where("time >= ? and time < ?", arg.startTime, arg.endTime)
+	if len(t.condition) > 0 {
+		query = query.Where(t.condition)
+	}
+	query = query.
+		Group(groupLabels).
 		Having("sum(value) > 0").
-		Order("sum(value) desc").
-		Rows()
-	if err != nil {
+		Order("sum(value) desc")
+	if err := query.Find(&subResults).Error; err != nil {
 		return nil, err
 	}
-	subResults, err := scanRows(rows)
-	if err != nil {
-		return nil, err
+
+	var subRows [][]string
+	for _, subResult := range subResults {
+		subRows = append(subRows, sumValueToSlice(subResult))
 	}
-	for i := range subResults {
-		row := subResults[i]
-		row[1] = strings.Join(row[1:1+len(t.labels)], ",")
-		newRow := row[:2]
-		newRow = append(newRow, row[1+len(t.labels):]...)
-		subResults[i] = newRow
-	}
-	return t.genRow(results[0], subResults), nil
+	return t.genRow(row, subRows), nil
 }
 
 func (t sumValueQuery) genRow(values []string, subValues [][]string) *TableRowDef {
@@ -254,13 +270,6 @@ func (t totalTimeByLabelsTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableR
 	if err != nil {
 		return nil, err
 	}
-	for i := range subRows {
-		row := subRows[i]
-		row[1] = strings.Join(row[1:1+len(t.labels)], ",")
-		newRow := row[:2]
-		newRow = append(newRow, row[1+len(t.labels):]...)
-		subRows[i] = newRow
-	}
 	return t.genRow(rows, subRows), nil
 }
 
@@ -303,62 +312,133 @@ func (t totalTimeByLabelsTableDef) genRow(values []string, subValues [][]string)
 	}
 }
 
+type TotalTimeByLabels struct {
+	Name string
+	Label string
+	RatioSumValue string
+	TotalTime string
+	TotalCount string
+	AggrQuantileMax string
+}
+
+func (t TotalTimeByLabels)toSlice() []string {
+	stringSlice := []string{
+		t.Name, t.Label, t.RatioSumValue, t.TotalTime, t.TotalCount,
+	}
+	if len(t.AggrQuantileMax) == 0 {
+		return stringSlice
+	}
+	stringSlice = append(stringSlice, strings.Fields(t.AggrQuantileMax)...)
+	return stringSlice
+}
+
 func (t totalTimeByLabelsTableDef) querySummary(db *gorm.DB, totalTime float64, startTime, endTime string, quantiles []float64) ([]string, error) {
-	fields := fmt.Sprintf("'%[1]s','', if(%[2]v>0,sum(t0.value)/%[2]v,1) , sum(t0.value)",
-		t.name, totalTime)
 	tables := fmt.Sprintf("metrics_schema.%s_total_time t0", t.tbl)
-	conditions := fmt.Sprintf("t0.time >= '%s' and t0.time < '%s'", startTime, endTime)
-
-	fields += fmt.Sprintf(", sum(t1.value)")
 	tables += fmt.Sprintf(", metrics_schema.%s_total_count t1", t.tbl)
-	conditions += " and " + fmt.Sprintf("t1.time >= '%s' and t1.time < '%s'", startTime, endTime)
 
+	aggrQuantileMaxField := ""
 	tableNum := 2
+	for range quantiles {
+		tableAlias := fmt.Sprintf("t%v", tableNum)
+		tables += fmt.Sprintf(", metrics_schema.%s_duration %s", t.tbl, tableAlias)
+		if tableNum == 2 {
+			aggrQuantileMaxField += ", "
+		} else {
+			aggrQuantileMaxField += "||' '||"
+		}
+		aggrQuantileMaxField += fmt.Sprintf("max(%v.value)", tableAlias)
+		tableNum++
+	}
+	if len(aggrQuantileMaxField) == 0 {
+		aggrQuantileMaxField = "''"
+	}
+
+	ratioSumValueField := "'1'"
+	if totalTime > 0 {
+		ratioSumValueField = fmt.Sprintf("sum(t0.value)/%v", totalTime)
+	}
+
+	fields := fmt.Sprintf(`
+		'%s' as name,
+		'' as label,
+		%s as ratioSumValue, 
+		sum(t0.value) as totalTime
+		sum(t1.value) as totalCount
+		%s as aggrQuantileMax
+		`,
+		t.name, ratioSumValueField, aggrQuantileMaxField)
+
+	query := db.
+		Select(fields).
+		Table(tables).
+		Where("t0.time >= ? AND t0.time < ?", startTime, endTime).
+		Where("t1.time >= ? AND t1.time < ?", startTime, endTime)
+
+	tableNum = 2
 	for _, quantile := range quantiles {
 		tableAlias := fmt.Sprintf("t%v", tableNum)
-		fields += fmt.Sprintf(", max(%v.value)", tableAlias)
-		tables += fmt.Sprintf(", metrics_schema.%s_duration %s", t.tbl, tableAlias)
-		conditions += " and " + fmt.Sprintf("%[3]s.time >= '%[1]s' and %[3]s.time < '%[2]s' and %[3]s.quantile=%[4]f", startTime, endTime, tableAlias, quantile)
+		query = query.Where(fmt.Sprintf("%[1]s.time >= ? AND %[1]s.time < ? AND %[1]s.quantile = ?", tableAlias), startTime, endTime, quantile)
 		tableNum++
 	}
 
-	rows, err := db.
-		Select(fields).
-		Table(tables).
-		Where(conditions).
-		Rows()
-	if err != nil {
+	var result TotalTimeByLabels
+	if err := query.First(&result).Error; err != nil {
 		return nil, err
 	}
-	results, err := scanRows(rows)
-	if err != nil {
-		return nil, err
-	}
-	if len(results) == 0 {
-		return nil, nil
-	}
-	return results[0], nil
+
+	row := result.toSlice()
+	return row, nil
 }
 
 func (t totalTimeByLabelsTableDef) queryDetail(db *gorm.DB, totalTime float64, startTime, endTime string, quantiles []float64) ([][]string, error) {
 	if len(t.labels) == 0 {
 		return nil, nil
 	}
-	fields := fmt.Sprintf("'%s', ", t.name) + "t0.`" + strings.Join(t.labels, "`, t0.`") +
-		"`, " + fmt.Sprintf("if(%[1]v>0,sum(t0.value)/%[1]v,1)", totalTime) + ", sum(t0.value) as total"
 	tables := fmt.Sprintf("metrics_schema.%s_total_time t0", t.tbl)
-	conditions := fmt.Sprintf("t0.time >= '%s' and t0.time < '%s'", startTime, endTime)
+	tables += fmt.Sprintf(", metrics_schema.%s_total_count t1", t.tbl)
 
-	fields += ", sum(t1.value) as total_count"
-	tables += fmt.Sprintf(", metrics_schema.%[1]s_total_count t1", t.tbl)
-	conditions += " and " + fmt.Sprintf("t1.time >= '%s' and t1.time < '%s'", startTime, endTime)
-
+	aggrQuantileMaxField := ""
 	tableNum := 2
+	for range quantiles {
+		tableAlias := fmt.Sprintf("t%v", tableNum)
+		tables += fmt.Sprintf(", metrics_schema.%s_duration %s", t.tbl, tableAlias)
+		if tableNum == 2 {
+			aggrQuantileMaxField += ", "
+		} else {
+			aggrQuantileMaxField += "||' '||"
+		}
+		aggrQuantileMaxField += fmt.Sprintf("max(%v.value)", tableAlias)
+		tableNum++
+	}
+	if len(aggrQuantileMaxField) == 0 {
+		aggrQuantileMaxField = "''"
+	}
+
+	labelFields := fmt.Sprintf("t0.`%v`", strings.Join(t.labels, "`||','||t0.`"))
+	ratioSumValueField := "'1'"
+	if totalTime > 0 {
+		ratioSumValueField = fmt.Sprintf("sum(t0.value)/%v", totalTime)
+	}
+	fields := fmt.Sprintf(`
+		'%s' as name,
+		%s as label,
+		%s as ratioSumValue, 
+		sum(t0.value) as totalTime
+		sum(t1.value) as totalCount
+		%s as aggrQuantileMax
+		`,
+		t.name, labelFields, ratioSumValueField, aggrQuantileMaxField)
+
+	query := db.
+		Select(fields).
+		Table(tables).
+		Where("t0.time >= ? AND t0.time < ?", startTime, endTime).
+		Where("t1.time >= ? AND t1.time < ?", startTime, endTime)
+
+	tableNum = 2
 	for _, quantile := range quantiles {
 		tableAlias := fmt.Sprintf("t%v", tableNum)
-		fields += fmt.Sprintf(", max(%v.value)", tableAlias)
-		tables += fmt.Sprintf(", metrics_schema.%s_duration %s", t.tbl, tableAlias)
-		conditions += " and " + fmt.Sprintf("%[3]s.time >= '%[1]s' and %[3]s.time < '%[2]s' and %[3]s.quantile=%[4]f", startTime, endTime, tableAlias, quantile)
+		query = query.Where(fmt.Sprintf("%[1]s.time >= ? AND %[1]s.time < ? AND %[1]s.quantile = ?", tableAlias), startTime, endTime, quantile)
 		tableNum++
 	}
 
@@ -368,31 +448,30 @@ func (t totalTimeByLabelsTableDef) queryDetail(db *gorm.DB, totalTime float64, s
 			if i > 0 || j > 0 {
 				joinSQL += " and "
 			}
-			joinSQL += fmt.Sprintf("t%v.%s = t%v.%s", i, label, i+1, label)
+			joinSQL += fmt.Sprintf("t%v.`%s` = t%v.`%s`", i, label, i+1, label)
 		}
 	}
-	groupSQL := "t0.`" + strings.Join(t.labels, "`, t0.`") + "`"
-	orderSQL := "total desc"
+	if len(joinSQL) != 0 {
+		query = query.Where(joinSQL)
+	}
 
-	rows, err := db.
-		Select(fields).
-		Table(tables).
-		Where(conditions).Where(joinSQL).
+	groupSQL := "t0.`" + strings.Join(t.labels, "`, t0.`") + "`"
+	orderSQL := "sum(t0.value) desc"
+	query = query.
 		Group(groupSQL).
 		Having("sum(t0.value) > 0").
-		Order(orderSQL).
-		Rows()
-	if err != nil {
+		Order(orderSQL)
+
+	var subResults []TotalTimeByLabels
+	if err := query.Find(&subResults).Error; err != nil {
 		return nil, err
 	}
-	detail, err := scanRows(rows)
-	if err != nil {
-		return nil, err
+
+	var subRows [][]string
+	for _, subResult := range subResults {
+		subRows = append(subRows, subResult.toSlice())
 	}
-	if len(detail) == 0 {
-		return nil, nil
-	}
-	return detail, nil
+	return subRows, nil
 }
 
 type totalValueAndTotalCountTableDef struct {
@@ -418,13 +497,6 @@ func (t totalValueAndTotalCountTableDef) queryRow(arg *queryArg, db *gorm.DB) (*
 	subRows, err := t.queryDetail(db, arg.startTime, arg.endTime, arg.quantiles)
 	if err != nil {
 		return nil, err
-	}
-	for i := range subRows {
-		row := subRows[i]
-		row[1] = strings.Join(row[1:1+len(t.labels)], ",")
-		newRow := row[:2]
-		newRow = append(newRow, row[1+len(t.labels):]...)
-		subRows[i] = newRow
 	}
 	return t.genRow(rows, subRows), nil
 }
@@ -452,59 +524,121 @@ func (t totalValueAndTotalCountTableDef) genRow(values []string, subValues [][]s
 	}
 }
 
+type TotalValueAndTotalCount struct {
+	Name string
+	Label string
+	TotalSum string
+	TotalCount string
+	AggrQuantileMax string
+}
+
+func (t TotalValueAndTotalCount)toSlice() []string {
+	stringSlice := []string{
+		t.Name, t.Label, t.TotalSum, t.TotalCount,
+	}
+	if len(t.AggrQuantileMax) == 0 {
+		return stringSlice
+	}
+	stringSlice = append(stringSlice, strings.Fields(t.AggrQuantileMax)...)
+	return stringSlice
+}
+
 func (t totalValueAndTotalCountTableDef) querySummary(db *gorm.DB, startTime, endTime string, quantiles []float64) ([]string, error) {
-	fields := fmt.Sprintf("'%s','', sum(t0.value)", t.name)
 	tables := fmt.Sprintf("metrics_schema.%s t0", t.sumTbl)
-	conditions := fmt.Sprintf("t0.time >= '%s' and t0.time < '%s'", startTime, endTime)
-
-	fields += fmt.Sprintf(", sum(t1.value)")
 	tables += fmt.Sprintf(", metrics_schema.%s t1", t.countTbl)
-	conditions += " and " + fmt.Sprintf("t1.time >= '%s' and t1.time < '%s'", startTime, endTime)
 
+	aggrQuantileMaxField := ""
 	tableNum := 2
-	for _, quantile := range quantiles {
+	for range quantiles {
 		tableAlias := fmt.Sprintf("t%v", tableNum)
-		fields += fmt.Sprintf(", max(%v.value)", tableAlias)
 		tables += fmt.Sprintf(", metrics_schema.%s %s", t.tbl, tableAlias)
-		conditions += " and " + fmt.Sprintf("%[3]s.time >= '%[1]s' and %[3]s.time < '%[2]s' and %[3]s.quantile=%[4]f", startTime, endTime, tableAlias, quantile)
+		if tableNum == 2 {
+			aggrQuantileMaxField += ", "
+		} else {
+			aggrQuantileMaxField += "||' '||"
+		}
+		aggrQuantileMaxField += fmt.Sprintf("max(%v.value)", tableAlias)
 		tableNum++
 	}
-	rows, err := db.
+	if len(aggrQuantileMaxField) == 0 {
+		aggrQuantileMaxField = "''"
+	}
+
+	fields := fmt.Sprintf(`
+		'%s' as name,
+		'' as label,
+		sum(t0.value) as totalSum
+		sum(t1.value) as totalCount
+		%s as aggrQuantileMax
+		`,
+		t.name, aggrQuantileMaxField)
+
+	query := db.
 		Select(fields).
 		Table(tables).
-		Where(conditions).
-		Rows()
-	if err != nil {
+		Where("t0.time >= ? AND t0.time < ?", startTime, endTime).
+		Where("t1.time >= ? AND t1.time < ?", startTime, endTime)
+
+	tableNum = 2
+	for _, quantile := range quantiles {
+		tableAlias := fmt.Sprintf("t%v", tableNum)
+		query = query.Where(fmt.Sprintf("%[1]s.time >= ? AND %[1]s.time < ? AND %[1]s.quantile = ?", tableAlias), startTime, endTime, quantile)
+		tableNum++
+	}
+
+	var result TotalValueAndTotalCount
+	if err := query.First(&result).Error; err != nil {
 		return nil, err
 	}
-	results, err := scanRows(rows)
-	if err != nil {
-		return nil, err
-	}
-	if len(results) == 0 {
-		return nil, nil
-	}
-	return results[0], nil
+
+	row := result.toSlice()
+	return row, nil
 }
 
 func (t totalValueAndTotalCountTableDef) queryDetail(db *gorm.DB, startTime, endTime string, quantiles []float64) ([][]string, error) {
 	if len(t.labels) == 0 {
 		return nil, nil
 	}
-	fields := fmt.Sprintf("'%s', ", t.name) + "t0.`" + strings.Join(t.labels, "`, t0.`") + "`, sum(t0.value) as total"
 	tables := fmt.Sprintf("metrics_schema.%s t0", t.sumTbl)
-	conditions := fmt.Sprintf("t0.time >= '%s' and t0.time < '%s'", startTime, endTime)
-
-	fields += ", sum(t1.value) as count"
 	tables += fmt.Sprintf(", metrics_schema.%s t1", t.countTbl)
-	conditions += " and " + fmt.Sprintf("t1.time >= '%s' and t1.time < '%s'", startTime, endTime)
 
+	aggrQuantileMaxField := ""
 	tableNum := 2
+	for range quantiles {
+		tableAlias := fmt.Sprintf("t%v", tableNum)
+		tables += fmt.Sprintf(", metrics_schema.%s %s", t.tbl, tableAlias)
+		if tableNum == 2 {
+			aggrQuantileMaxField += ", "
+		} else {
+			aggrQuantileMaxField += "||' '||"
+		}
+		aggrQuantileMaxField += fmt.Sprintf("max(%v.value)", tableAlias)
+		tableNum++
+	}
+	if len(aggrQuantileMaxField) == 0 {
+		aggrQuantileMaxField = "''"
+	}
+
+	labelFields := fmt.Sprintf("t0.`%v`", strings.Join(t.labels, "`||','||t0.`"))
+	fields := fmt.Sprintf(`
+		'%s' as name,
+		%s as label,
+		sum(t0.value) as totalSum
+		sum(t1.value) as totalCount
+		%s as aggrQuantileMax
+		`,
+		t.name, labelFields, aggrQuantileMaxField)
+
+	query := db.
+		Select(fields).
+		Table(tables).
+		Where("t0.time >= ? AND t0.time < ?", startTime, endTime).
+		Where("t1.time >= ? AND t1.time < ?", startTime, endTime)
+
+	tableNum = 2
 	for _, quantile := range quantiles {
 		tableAlias := fmt.Sprintf("t%v", tableNum)
-		fields += fmt.Sprintf(", max(%v.value)", tableAlias)
-		tables += fmt.Sprintf(", metrics_schema.%s %s", t.tbl, tableAlias)
-		conditions += " and " + fmt.Sprintf("%[3]s.time >= '%[1]s' and %[3]s.time < '%[2]s' and %[3]s.quantile=%[4]f", startTime, endTime, tableAlias, quantile)
+		query = query.Where(fmt.Sprintf("%[1]s.time >= ? AND %[1]s.time < ? AND %[1]s.quantile = ?", tableAlias), startTime, endTime, quantile)
 		tableNum++
 	}
 
@@ -514,59 +648,30 @@ func (t totalValueAndTotalCountTableDef) queryDetail(db *gorm.DB, startTime, end
 			if i > 0 || j > 0 {
 				joinSQL += " and "
 			}
-			joinSQL += fmt.Sprintf("t%v.%s = t%v.%s", i, label, i+1, label)
+			joinSQL += fmt.Sprintf("t%v.`%s` = t%v.`%s`", i, label, i+1, label)
 		}
 	}
-	groupSQL := "t0.`" + strings.Join(t.labels, "`, t0.`") + "`"
-	orderSQL := "total desc"
+	if len(joinSQL) != 0 {
+		query = query.Where(joinSQL)
+	}
 
-	rows, err := db.
-		Select(fields).
-		Table(tables).
-		Where(conditions).Where(joinSQL).
+	groupSQL := "t0.`" + strings.Join(t.labels, "`, t0.`") + "`"
+	orderSQL := "sum(t0.value) desc"
+	query = query.
 		Group(groupSQL).
 		Having("sum(t0.value) > 0").
-		Order(orderSQL).
-		Rows()
-	if err != nil {
-		return nil, err
-	}
-	detail, err := scanRows(rows)
-	if err != nil {
-		return nil, err
-	}
-	if len(detail) == 0 {
-		return nil, nil
-	}
-	return detail, nil
-}
+		Order(orderSQL)
 
-func scanRows(rows *sql.Rows) ([][]string, error) {
-	defer rows.Close()
-	// Read all rows.
-	resultRows := make([][]string, 0, 2)
-	for rows.Next() {
-		cols, err := rows.Columns()
-		if err != nil {
-			return nil, err
-		}
-
-		// See https://stackoverflow.com/questions/14477941/read-select-columns-into-string-in-go
-		rawResult := make([]string, len(cols))
-		dest := make([]interface{}, len(cols))
-		for i := range rawResult {
-			dest[i] = &rawResult[i]
-		}
-		err = rows.Scan(dest...)
-		if err != nil {
-			return nil, err
-		}
-		resultRows = append(resultRows, rawResult)
-	}
-	if err := rows.Err(); err != nil {
+	var subResults []TotalValueAndTotalCount
+	if err := query.Find(&subResults).Error; err != nil {
 		return nil, err
 	}
-	return resultRows, nil
+
+	var subRows [][]string
+	for _, subResult := range subResults {
+		subRows = append(subRows, subResult.toSlice())
+	}
+	return subRows, nil
 }
 
 func querySQL(db *gorm.DB, sql string) ([][]string, error) {

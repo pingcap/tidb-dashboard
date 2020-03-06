@@ -50,6 +50,7 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Summary Delete etcd's tidb key.
 // @Description Delete etcd's TiDB key with ip:port.
 // @Produce json
+// @Param address path string true "ip:port"
 // @Success 200 "delete ok"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /topology/{address} [delete]

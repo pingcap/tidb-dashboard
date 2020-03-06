@@ -16,7 +16,7 @@ type clusterInspection struct {
 	db *gorm.DB
 }
 
-func (c *clusterInspection) getTiDBQPS() error {
+func (c *clusterInspection) getTiDBQueryQPS() error {
 	query := queryQPS{
 		table:  "tidb_qps",
 		labels: []string{"instance"},
@@ -29,7 +29,6 @@ func (c *clusterInspection) getTiDBQPS() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%v\n", referQPS)
 
 	arg.startTime = c.startTime
 	arg.endTime = c.endTime
@@ -37,7 +36,6 @@ func (c *clusterInspection) getTiDBQPS() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%v\n", qps)
 
 	for label, vs := range qps.valueByLabel {
 		referVs, ok := referQPS.valueByLabel[label]
@@ -47,7 +45,8 @@ func (c *clusterInspection) getTiDBQPS() error {
 		for _, v := range vs {
 			for _, rv := range referVs {
 				if v.label == rv.label {
-					fmt.Printf("qps diff: %v : %v\n", v.label, calculateDiff(rv, v))
+					printDiff("query-qps", v.label, "avg", float64(rv.avg), float64(v.avg))
+					printDiff("query-qps", v.label, "max", float64(rv.max), float64(v.max))
 					break
 				}
 			}
@@ -56,8 +55,52 @@ func (c *clusterInspection) getTiDBQPS() error {
 	return nil
 }
 
-func calculateDiff(refer avgMaxMin, check avgMaxMin) float64 {
-	return float64(check.avg) / float64(refer.avg)
+func printDiff(item, label, tp string, refer, now float64) {
+	fmt.Printf("%s: %s: refer: %.3f, now: %.3f, %s diff: : %.2f\n", item, label, refer, now, tp, calculateDiff(refer, now))
+}
+
+func (c *clusterInspection) getTiDBQueryDuration() error {
+	query := queryDuration{
+		table:     "tidb_query_duration",
+		labels:    []string{"instance"},
+		condition: "value is not null and quantile=0.999",
+	}
+	arg := &queryArg{
+		startTime: c.referStartTime,
+		endTime:   c.referEndTime,
+	}
+	referDuration, err := query.queryResult(arg, c.db)
+	if err != nil {
+		return err
+	}
+
+	arg.startTime = c.startTime
+	arg.endTime = c.endTime
+	duratoin, err := query.queryResult(arg, c.db)
+	if err != nil {
+		return err
+	}
+
+	for label, vs := range duratoin.valueByLabel {
+		referVs, ok := referDuration.valueByLabel[label]
+		if !ok {
+			continue
+		}
+		for _, v := range vs {
+			for _, rv := range referVs {
+				if v.label == rv.label {
+					printDiff("query-duration", v.label, "avg", float64(rv.avg), float64(v.avg))
+					printDiff("query-duration", v.label, "max", float64(rv.max), float64(v.max))
+					break
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func calculateDiff(refer float64, check float64) float64 {
+	return float64(check) / float64(refer)
 }
 
 type qpsResult struct {
@@ -113,6 +156,66 @@ func (s queryQPS) queryResult(arg *queryArg, db *gorm.DB) (qpsResult, error) {
 		}
 	}
 	return result, nil
+}
+
+type durationResult struct {
+	valueByLabel map[string][]durationValue
+}
+
+type durationValue struct {
+	label string
+
+	avg float64
+	max float64
+}
+
+type queryDuration struct {
+	table     string
+	labels    []string
+	condition string
+}
+
+func (s queryDuration) queryResult(arg *queryArg, db *gorm.DB) (durationResult, error) {
+	condition := fmt.Sprintf("where time >= '%s' and time < '%s' ", arg.startTime, arg.endTime)
+	if len(s.condition) > 0 {
+		condition = condition + "and " + s.condition
+	}
+	prepareSQL := "set @@tidb_metric_query_step=30;set @@tidb_metric_query_range_duration=30;"
+	result := durationResult{valueByLabel: make(map[string][]durationValue, len(s.labels))}
+	for _, label := range s.labels {
+		sql := fmt.Sprintf("select `%[1]s` as label, avg(value),max(value) from metrics_schema.%[2]s %[3]s group by `%[1]s`",
+			label, s.table, condition)
+		sql = prepareSQL + sql
+		rows, err := querySQL(db, sql)
+		if err != nil {
+			return result, err
+		}
+		for _, row := range rows {
+			values, err := batchAtof(row[1:])
+			if err != nil {
+				return result, err
+			}
+			result.valueByLabel[label] = append(result.valueByLabel[label], durationValue{
+				label: row[0],
+				avg:   values[0],
+				max:   values[1],
+			})
+
+		}
+	}
+	return result, nil
+}
+
+func batchAtof(ss []string) ([]float64, error) {
+	re := make([]float64, len(ss))
+	for i := range ss {
+		v, err := strconv.ParseFloat(ss[i], 64)
+		if err != nil {
+			return nil, err
+		}
+		re[i] = v
+	}
+	return re, nil
 }
 
 func batchAtoi(ss []string) ([]int, error) {

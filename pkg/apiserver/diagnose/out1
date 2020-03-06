@@ -8,46 +8,51 @@ header
 cluster hardware
 
 HOST            |    INSTANCE               |    CPU_CORES       |    MEMORY (GB)     |    DISK (GB)                                                                                                                                      |    UPTIME (DAY)      
-172.16.5.40     |    tidb*1 tikv*4 pd*1     |    20/40           |    125.640472      |    sda1: 0.185237    nvme0n1: 343.715603    /dev/sda1: 0.185237    /dev/nvme0n1: 343.715603    /dev/sda3: 1465.187500    sda3: 1465.187500        |    250.31395395916368    |    The hardwareInfo of each node
+172.16.5.40     |    tidb*1 tikv*4 pd*1     |    20/40           |    0.122696        |    /dev/sda3: 1465.187500    /dev/nvme0n1: 343.715603    /dev/sda1: 0.185237    nvme0n1: 343.715603    sda1: 0.185237    sda3: 1465.187500        |    250.31395395916368    |    The hardwareInfo of each node
 
 header
 cluster info
 
 TYPE              |    INSTANCE             |    STATUS_ADDRESS       |    VERSION                                   |    GIT_HASH                                    |    START_TIME                   |    UPTIME             
-tidb              |    172.16.5.40:4009     |    172.16.5.40:10089    |    5.7.25-TiDB-v4.0.0-beta-311-gd93c06149    |    d93c061491d8094751a53c510bd8de886722952a    |    2020-03-05T20:08:47+08:00    |    3h5m7.596640429s   
-pd                |    172.16.5.40:24799    |    172.16.5.40:24799    |    4.1.0-alpha                               |    61d9f9cc35d3f191eb5e7ea1eb4f8e29eb73eda0    |    2020-03-05T17:31:43+08:00    |    5h42m11.596644426s 
-tikv              |    172.16.5.40:21150    |    172.16.5.40:21151    |    4.1.0-alpha                               |    8fa0e059e14c3a1433fcb581452f9ea0a14a72ce    |    2020-03-04T20:53:15+08:00    |    26h20m39.596649086s
-tikv              |    172.16.5.40:22150    |    172.16.5.40:22151    |    4.1.0-alpha                               |    8fa0e059e14c3a1433fcb581452f9ea0a14a72ce    |    2020-03-04T20:53:50+08:00    |    26h20m4.596651985s 
-tikv              |    172.16.5.40:23150    |    172.16.5.40:23151    |    4.1.0-alpha                               |    8fa0e059e14c3a1433fcb581452f9ea0a14a72ce    |    2020-03-04T20:54:17+08:00    |    26h19m37.596653899s
-tikv              |    172.16.5.40:20150    |    172.16.5.40:20151    |    4.1.0-alpha                               |    8fa0e059e14c3a1433fcb581452f9ea0a14a72ce    |    2020-03-04T20:45:24+08:00    |    26h28m30.596655446s
+tidb              |    172.16.5.40:4009     |    172.16.5.40:10089    |    5.7.25-TiDB-v4.0.0-beta-311-gd93c06149    |    d93c061491d8094751a53c510bd8de886722952a    |    2020-03-05T20:08:47+08:00    |    25h8m31.178870406s 
+tidb              |    0.0.0.0:4000         |    0.0.0.0:10080        |    5.7.25-TiDB-v4.0.0-beta-314-g2e2f14847    |    2e2f14847507c3fa8dc17c79f8601a641221aff4    |    2020-03-06T21:13:55+08:00    |    3m23.178876116s    
+tidb              |    0.0.0.0:4000         |    0.0.0.0:10080        |    5.7.25-TiDB-v4.0.0-beta-314-g2e2f14847    |    2e2f14847507c3fa8dc17c79f8601a641221aff4    |    2020-03-06T21:14:01+08:00    |    3m17.178879152s    
+tidb              |    0.0.0.0:4000         |    0.0.0.0:10080        |    5.7.25-TiDB-v4.0.0-beta-314-g2e2f14847    |    2e2f14847507c3fa8dc17c79f8601a641221aff4    |    2020-03-06T21:13:50+08:00    |    3m28.178881882s    
+pd                |    172.16.5.40:24799    |    172.16.5.40:24799    |    4.1.0-alpha                               |    61d9f9cc35d3f191eb5e7ea1eb4f8e29eb73eda0    |    2020-03-06T11:34:18+08:00    |    9h43m0.178885142s  
+tikv              |    172.16.5.40:20150    |    172.16.5.40:20151    |    4.1.0-alpha                               |    8fa0e059e14c3a1433fcb581452f9ea0a14a72ce    |    2020-03-04T20:45:24+08:00    |    48h31m54.178889809s
+tikv              |    172.16.5.40:21150    |    172.16.5.40:21151    |    4.1.0-alpha                               |    8fa0e059e14c3a1433fcb581452f9ea0a14a72ce    |    2020-03-04T20:53:15+08:00    |    48h24m3.178892939s 
+tikv              |    172.16.5.40:22150    |    172.16.5.40:22151    |    4.1.0-alpha                               |    8fa0e059e14c3a1433fcb581452f9ea0a14a72ce    |    2020-03-04T20:53:50+08:00    |    48h23m28.178895665s
+tikv              |    172.16.5.40:23150    |    172.16.5.40:23151    |    4.1.0-alpha                               |    8fa0e059e14c3a1433fcb581452f9ea0a14a72ce    |    2020-03-04T20:54:17+08:00    |    48h23m1.178898406s 
 
 diagnose
 diagnose in time range t1
 Automatically diagnose the cluster problem and record the problem in below table.
-RULE               |    ITEM                           |    TYPE         |    INSTANCE             |    VALUE        |    REFERENCE                                                |    SEVERITY     |    DETAILS                                                                                                                                                                                                                    
-current-load       |    disk-usage                     |    tidb         |    172.16.5.40:10089    |    90.81        |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='tidb' and instance='172.16.5.40:10089' and device_type='disk' and device_name='/dev/sda3'
-current-load       |    disk-usage                     |    pd           |    172.16.5.40:24799    |    90.81        |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='pd' and instance='172.16.5.40:24799' and device_type='disk' and device_name='/dev/sda3'  
-current-load       |    disk-usage                     |    tidb         |    172.16.5.40:10089    |    99.83        |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='tidb' and instance='172.16.5.40:10089' and device_type='disk' and device_name='/dev/sda1'
-current-load       |    disk-usage                     |    pd           |    172.16.5.40:24799    |    99.83        |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='pd' and instance='172.16.5.40:24799' and device_type='disk' and device_name='/dev/sda1'  
-threshold-check    |    leader-score-balance           |    tikv         |    172.16.5.40:23150    |    100.00%      |    < 5.00%                                                  |    warning      |    172.16.5.40:20150 leader_score is 167.00, much more than 172.16.5.40:23150 leader_score 0.00                                                                                                                               
-threshold-check    |    leader-score-balance           |    tikv         |    172.16.5.40:21150    |    100.00%      |    < 5.00%                                                  |    warning      |    172.16.5.40:20150 leader_score is 167.00, much more than 172.16.5.40:21150 leader_score 0.00                                                                                                                               
-threshold-check    |    leader-score-balance           |    tikv         |    172.16.5.40:22150    |    100.00%      |    < 5.00%                                                  |    warning      |    172.16.5.40:20150 leader_score is 167.00, much more than 172.16.5.40:22150 leader_score 0.00                                                                                                                               
-threshold-check    |    grpc-cpu                       |    tikv         |    172.16.5.40:20151    |    10.15        |    < 3.60, config: server.grpc-concurrency=4                |    warning      |    select instance, sum(value) as cpu from metrics_schema.tikv_thread_cpu where time>='2020-03-05 20:48:00' and time<='2020-03-05 20:50:00' and name like 'grpc%' group by instance                                           
-threshold-check    |    storage-readpool-normal-cpu    |    tikv         |    172.16.5.40:20151    |    15.54        |    < 7.20, config: readpool.storage.normal-concurrency=8    |    warning      |    select instance, sum(value) as cpu from metrics_schema.tikv_thread_cpu where time>='2020-03-05 20:48:00' and time<='2020-03-05 20:50:00' and name like 'store_read_norm%' group by instance                                
+RULE               |    ITEM                           |    TYPE         |    INSTANCE             |    VALUE           |    REFERENCE                                                |    SEVERITY     |    DETAILS                                                                                                                                                                                                                    
+version            |    git_hash                       |    tidb         |                         |    inconsistent    |    consistent                                               |    critical     |    the cluster has 2 different tidb version, execute the sql to see more detail: select * from information_schema.cluster_info where type='tidb'                                                                              
+current-load       |    disk-usage                     |    tidb         |    172.16.5.40:10089    |    90.89           |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='tidb' and instance='172.16.5.40:10089' and device_type='disk' and device_name='/dev/sda3'
+current-load       |    disk-usage                     |    pd           |    172.16.5.40:24799    |    90.89           |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='pd' and instance='172.16.5.40:24799' and device_type='disk' and device_name='/dev/sda3'  
+current-load       |    disk-usage                     |    tidb         |    172.16.5.40:10089    |    99.83           |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='tidb' and instance='172.16.5.40:10089' and device_type='disk' and device_name='/dev/sda1'
+current-load       |    disk-usage                     |    pd           |    172.16.5.40:24799    |    99.83           |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='pd' and instance='172.16.5.40:24799' and device_type='disk' and device_name='/dev/sda1'  
+threshold-check    |    leader-score-balance           |    tikv         |    172.16.5.40:23150    |    100.00%         |    < 5.00%                                                  |    warning      |    172.16.5.40:20150 leader_score is 167.00, much more than 172.16.5.40:23150 leader_score 0.00                                                                                                                               
+threshold-check    |    leader-score-balance           |    tikv         |    172.16.5.40:21150    |    100.00%         |    < 5.00%                                                  |    warning      |    172.16.5.40:20150 leader_score is 167.00, much more than 172.16.5.40:21150 leader_score 0.00                                                                                                                               
+threshold-check    |    leader-score-balance           |    tikv         |    172.16.5.40:22150    |    100.00%         |    < 5.00%                                                  |    warning      |    172.16.5.40:20150 leader_score is 167.00, much more than 172.16.5.40:22150 leader_score 0.00                                                                                                                               
+threshold-check    |    grpc-cpu                       |    tikv         |    172.16.5.40:20151    |    10.15           |    < 3.60, config: server.grpc-concurrency=4                |    warning      |    select instance, sum(value) as cpu from metrics_schema.tikv_thread_cpu where time>='2020-03-05 20:48:00' and time<='2020-03-05 20:50:00' and name like 'grpc%' group by instance                                           
+threshold-check    |    storage-readpool-normal-cpu    |    tikv         |    172.16.5.40:20151    |    15.54           |    < 7.20, config: readpool.storage.normal-concurrency=8    |    warning      |    select instance, sum(value) as cpu from metrics_schema.tikv_thread_cpu where time>='2020-03-05 20:48:00' and time<='2020-03-05 20:50:00' and name like 'store_read_norm%' group by instance                                
 
 diagnose
 diagnose in time range t2
 Automatically diagnose the cluster problem and record the problem in below table.
-RULE               |    ITEM                           |    TYPE         |    INSTANCE             |    VALUE        |    REFERENCE                                                |    SEVERITY     |    DETAILS                                                                                                                                                                                                                    
-current-load       |    disk-usage                     |    tidb         |    172.16.5.40:10089    |    90.81        |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='tidb' and instance='172.16.5.40:10089' and device_type='disk' and device_name='/dev/sda3'
-current-load       |    disk-usage                     |    pd           |    172.16.5.40:24799    |    90.81        |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='pd' and instance='172.16.5.40:24799' and device_type='disk' and device_name='/dev/sda3'  
-current-load       |    disk-usage                     |    tidb         |    172.16.5.40:10089    |    99.83        |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='tidb' and instance='172.16.5.40:10089' and device_type='disk' and device_name='/dev/sda1'
-current-load       |    disk-usage                     |    pd           |    172.16.5.40:24799    |    99.83        |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='pd' and instance='172.16.5.40:24799' and device_type='disk' and device_name='/dev/sda1'  
-threshold-check    |    leader-score-balance           |    tikv         |    172.16.5.40:21150    |    100.00%      |    < 5.00%                                                  |    warning      |    172.16.5.40:20150 leader_score is 167.00, much more than 172.16.5.40:21150 leader_score 0.00                                                                                                                               
-threshold-check    |    leader-score-balance           |    tikv         |    172.16.5.40:22150    |    100.00%      |    < 5.00%                                                  |    warning      |    172.16.5.40:20150 leader_score is 167.00, much more than 172.16.5.40:22150 leader_score 0.00                                                                                                                               
-threshold-check    |    leader-score-balance           |    tikv         |    172.16.5.40:23150    |    100.00%      |    < 5.00%                                                  |    warning      |    172.16.5.40:20150 leader_score is 167.00, much more than 172.16.5.40:23150 leader_score 0.00                                                                                                                               
-threshold-check    |    grpc-cpu                       |    tikv         |    172.16.5.40:20151    |    9.55         |    < 3.60, config: server.grpc-concurrency=4                |    warning      |    select instance, sum(value) as cpu from metrics_schema.tikv_thread_cpu where time>='2020-03-05 20:55:00' and time<='2020-03-05 20:57:00' and name like 'grpc%' group by instance                                           
-threshold-check    |    storage-readpool-normal-cpu    |    tikv         |    172.16.5.40:20151    |    14.26        |    < 7.20, config: readpool.storage.normal-concurrency=8    |    warning      |    select instance, sum(value) as cpu from metrics_schema.tikv_thread_cpu where time>='2020-03-05 20:55:00' and time<='2020-03-05 20:57:00' and name like 'store_read_norm%' group by instance                                
+RULE               |    ITEM                           |    TYPE         |    INSTANCE             |    VALUE           |    REFERENCE                                                |    SEVERITY     |    DETAILS                                                                                                                                                                                                                    
+version            |    git_hash                       |    tidb         |                         |    inconsistent    |    consistent                                               |    critical     |    the cluster has 2 different tidb version, execute the sql to see more detail: select * from information_schema.cluster_info where type='tidb'                                                                              
+current-load       |    disk-usage                     |    tidb         |    172.16.5.40:10089    |    90.89           |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='tidb' and instance='172.16.5.40:10089' and device_type='disk' and device_name='/dev/sda3'
+current-load       |    disk-usage                     |    pd           |    172.16.5.40:24799    |    90.89           |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='pd' and instance='172.16.5.40:24799' and device_type='disk' and device_name='/dev/sda3'  
+current-load       |    disk-usage                     |    tidb         |    172.16.5.40:10089    |    99.83           |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='tidb' and instance='172.16.5.40:10089' and device_type='disk' and device_name='/dev/sda1'
+current-load       |    disk-usage                     |    pd           |    172.16.5.40:24799    |    99.83           |    <70                                                      |    warning      |    current disk-usage is too high, execute the sql to see more detail: select * from information_schema.cluster_hardware where type='pd' and instance='172.16.5.40:24799' and device_type='disk' and device_name='/dev/sda1'  
+threshold-check    |    leader-score-balance           |    tikv         |    172.16.5.40:23150    |    100.00%         |    < 5.00%                                                  |    warning      |    172.16.5.40:20150 leader_score is 167.00, much more than 172.16.5.40:23150 leader_score 0.00                                                                                                                               
+threshold-check    |    leader-score-balance           |    tikv         |    172.16.5.40:22150    |    100.00%         |    < 5.00%                                                  |    warning      |    172.16.5.40:20150 leader_score is 167.00, much more than 172.16.5.40:22150 leader_score 0.00                                                                                                                               
+threshold-check    |    leader-score-balance           |    tikv         |    172.16.5.40:21150    |    100.00%         |    < 5.00%                                                  |    warning      |    172.16.5.40:20150 leader_score is 167.00, much more than 172.16.5.40:21150 leader_score 0.00                                                                                                                               
+threshold-check    |    grpc-cpu                       |    tikv         |    172.16.5.40:20151    |    9.55            |    < 3.60, config: server.grpc-concurrency=4                |    warning      |    select instance, sum(value) as cpu from metrics_schema.tikv_thread_cpu where time>='2020-03-05 20:55:00' and time<='2020-03-05 20:57:00' and name like 'grpc%' group by instance                                           
+threshold-check    |    storage-readpool-normal-cpu    |    tikv         |    172.16.5.40:20151    |    14.26           |    < 7.20, config: readpool.storage.normal-concurrency=8    |    warning      |    select instance, sum(value) as cpu from metrics_schema.tikv_thread_cpu where time>='2020-03-05 20:55:00' and time<='2020-03-05 20:57:00' and name like 'store_read_norm%' group by instance                                
 
 config
 Scheduler Config in time range t1
@@ -136,8 +141,8 @@ tikv_raft_propose_wait,172.16.5.40:20151                                        
 tidb_load_schema,172.16.5.40:10089                                               |    -0.1666666666666666 
 pd_grpc_completed_commands,GetGCSafePoint                                        |    0.22222222222222215 
 pd_grpc_completed_commands,172.16.5.40:24799,GetGCSafePoint                      |    0.22222222222222215 
-rocksdb,172.16.5.40:22151                                                        |    -0.2222222222222222 
 rocksdb,172.16.5.40:23151                                                        |    0.2222222222222222  
+rocksdb,172.16.5.40:22151                                                        |    -0.2222222222222222 
 172.16.5.40:9099,overwritten-cluster                                             |    0.2222222222222222  
 grpc,172.16.5.40:22151                                                           |    0.22222222222222235 
 tikv_pd_request,172.16.5.40:22151,get_gc_safe_point                              |    -0.25               
@@ -205,31 +210,31 @@ tikv_cop_scan_details_total,172.16.5.40:20151,index,total,write                 
 cop,172.16.5.40:20151                                                            |    0.9980000000000001  
 tikv_cop_request,select                                                          |    0.9992255566311714  
 tikv_cop_request,172.16.5.40:20151,select                                        |    0.9992255566311714  
+tikv_cop_scan_details_total,172.16.5.40:20151,index,seek,lock                    |    0.9995376031342492  
 tikv_cop_scan_details_total,172.16.5.40:20151,index,total,lock                   |    0.9995376031342492  
 tikv_cop_scan_details_total,172.16.5.40:20151,index,seek,write                   |    0.9995376031342492  
-tikv_cop_scan_details_total,172.16.5.40:20151,index,seek,lock                    |    0.9995376031342492  
 tikv_cop_handle,select                                                           |    0.9996105919003114  
 tikv_cop_handle,172.16.5.40:20151,select                                         |    0.9996105919003114  
 tikv_cop_scan_details_total,172.16.5.40:20151,select,seek,lock                   |    0.9997623000521009  
-tikv_cop_scan_details_total,172.16.5.40:20151,select,total,lock                  |    0.9999059468048006  
 tikv_cop_scan_details_total,172.16.5.40:20151,select,seek,write                  |    0.9999059468048006  
+tikv_cop_scan_details_total,172.16.5.40:20151,select,total,lock                  |    0.9999059468048006  
 tikv_cop_total_response_total_size,172.16.5.40:20151                             |    0.9999316179081735  
 tikv_cop_scan_details_total,172.16.5.40:20151,select,get,lock                    |    0.999941383868296   
 tikv_cop_kv_cursor_total_operations,172.16.5.40:20151,select                     |    0.9999440643262486  
 tikv_cop_scan_details_total,172.16.5.40:20151,select,total,write                 |    0.9999685517943352  
 tikv_cop_scan_details_total,172.16.5.40:20151,select,processed,write             |    0.9999707702958796  
 tikv_cop_scan_details_total,172.16.5.40:20151,select,next,write                  |    0.999971738610569   
-tikv_raft_store_events,172.16.5.40:20151,compact_check                           |    1                   
 tidb_gc,172.16.5.40:10089                                                        |    1                   
+tikv_raft_store_events,172.16.5.40:23151,snap_gc                                 |    1                   
 raftstore,172.16.5.40:22151                                                      |    1                   
 pd_grpc_completed_commands,UpdateGCSafePoint                                     |    1                   
 gc,172.16.5.40:20151                                                             |    -1                  
 tidb_slow_query_cop_process,172.16.5.40:10089                                    |    1                   
-tikv_raft_store_events,172.16.5.40:23151,compact_check                           |    1                   
+tikv_raft_store_events,172.16.5.40:20151,snap_gc                                 |    1                   
 pd_grpc_completed_commands,172.16.5.40:24799,ServerInfo                          |    1                   
 tikv_futurepool_handled_tasks_total_num,172.16.5.40:20151,cop-high               |    1                   
 raftstore,172.16.5.40:21151                                                      |    -1                  
-tikv_raft_store_events,pd_store_heartbeat                                        |    1                   
+tikv_raft_store_events,snap_gc                                                   |    1                   
 tikv_raft_store_events,172.16.5.40:20151,cleanup_import_sst                      |    1                   
 tikv_gc_tasks,gc                                                                 |    1                   
 tidb_query,Set                                                                   |    1                   
@@ -239,20 +244,20 @@ tikv_raft_store_events,cleanup_import_sst                                       
 tikv_raft_process,172.16.5.40:22151,ready                                        |    1                   
 tikv_gc_keys_total_num,172.16.5.40:20151,write,seek                              |    1                   
 tikv_raft_process,172.16.5.40:23151,ready                                        |    1                   
-tikv_raft_store_events,snap_gc                                                   |    1                   
+tikv_raft_store_events,172.16.5.40:23151,compact_check                           |    1                   
 pd_client_cmd,update_gc_safe_point                                               |    1                   
 tidb_query,172.16.5.40:10089,Set                                                 |    1                   
-tidb_gc_worker_action_total_num,172.16.5.40:10089,delete_range                   |    1                   
+tidb_gc_worker_action_total_num,172.16.5.40:10089,redo_delete_range              |    1                   
 tikv_raft_store_events,172.16.5.40:20151,pd_store_heartbeat                      |    1                   
 tikv_worker_handled_tasks_total_num,172.16.5.40:22151,region-collector-worker    |    1                   
-tikv_futurepool_pending_tasks_total_num,172.16.5.40:20151,cop-normal             |    1                   
+tikv_gc_keys_total_num,172.16.5.40:20151,write,processed                         |    1                   
 tikv_worker_handled_tasks_total_num,172.16.5.40:20151,cleanup-worker             |    1                   
 pd_grpc_completed_commands,172.16.5.40:24799,UpdateGCSafePoint                   |    1                   
 pd_client_cmd,172.16.5.40:10089,update_gc_safe_point                             |    1                   
-tikv_raft_store_events,172.16.5.40:23151,snap_gc                                 |    1                   
-tikv_raft_store_events,172.16.5.40:20151,snap_gc                                 |    1                   
-tikv_gc_keys_total_num,172.16.5.40:20151,write,processed                         |    1                   
-tidb_gc_worker_action_total_num,172.16.5.40:10089,redo_delete_range              |    1                   
+tikv_raft_store_events,172.16.5.40:20151,compact_check                           |    1                   
+tidb_gc_worker_action_total_num,172.16.5.40:10089,delete_range                   |    1                   
+tikv_futurepool_pending_tasks_total_num,172.16.5.40:20151,cop-normal             |    1                   
+tikv_raft_store_events,pd_store_heartbeat                                        |    1                   
 tikv_gc_keys_total_num,172.16.5.40:20151,write,next                              |    1                   
 tikv_raft_store_events,172.16.5.40:21151,compact_check                           |    1                   
 tikv_worker_handled_tasks_total_num,172.16.5.40:20151,gc-worker                  |    1                   
@@ -306,10 +311,10 @@ raftstore       |    172.16.5.40:20151    |    0.03           |    0.04         
 raftstore       |    172.16.5.40:23151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 raftstore       |    172.16.5.40:21151    |    0.00006        |    0.0002         |    0              |    -1             |    0              |    0              |    0          
 apply           |                         |    0              |    0              |    0              |    0              |    0              |    0              |    0          
-apply           |    172.16.5.40:21151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
-apply           |    172.16.5.40:20151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 apply           |    172.16.5.40:23151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 apply           |    172.16.5.40:22151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
+apply           |    172.16.5.40:20151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
+apply           |    172.16.5.40:21151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 sched_worker    |                         |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 sched_worker    |    172.16.5.40:20151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 rocksdb         |                         |    0.00007        |    0.001          |    0              |    0              |    0.00007        |    0.001          |    0          
@@ -318,19 +323,19 @@ rocksdb         |    172.16.5.40:20151    |    0.0001         |    0.001        
 rocksdb         |    172.16.5.40:21151    |    0.00004        |    0.0004         |    0              |    0              |    0.00004        |    0.0004         |    0          
 rocksdb         |    172.16.5.40:22151    |    0.00006        |    0.0009         |    0              |    -0.22          |    0.00005        |    0.0007         |    0          
 split_check     |                         |    0              |    0              |    0              |    0              |    0              |    0              |    0          
+split_check     |    172.16.5.40:20151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
+split_check     |    172.16.5.40:21151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 split_check     |    172.16.5.40:22151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 split_check     |    172.16.5.40:23151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
-split_check     |    172.16.5.40:21151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
-split_check     |    172.16.5.40:20151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 snap            |                         |    0.000008       |    0.0004         |    0              |    -0.5           |    0.000004       |    0.0002         |    0          
 snap            |    172.16.5.40:20151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 snap            |    172.16.5.40:21151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 snap            |    172.16.5.40:22151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 snap            |    172.16.5.40:23151    |    0.00003        |    0.0004         |    0              |    -0.5           |    0.00002        |    0.0002         |    0          
 gc              |                         |    0.00001        |    0.0002         |    0              |    -1             |    0              |    0              |    0          
-gc              |    172.16.5.40:21151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 gc              |    172.16.5.40:22151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 gc              |    172.16.5.40:23151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
+gc              |    172.16.5.40:21151    |    0              |    0              |    0              |    0              |    0              |    0              |    0          
 gc              |    172.16.5.40:20151    |    0.00006        |    0.0002         |    0              |    -1             |    0              |    0              |    0          
 
 node
@@ -368,8 +373,8 @@ pd_grpc_completed_commands           |    LeaseKeepAlive          |    0.0000005
 pd_grpc_completed_commands           |    GetMembers              |    0.00000001        |    0.001             |    3                 |    0.005             |    0.005             |    0.005             |    0.004             |    0                 |    0.00000002        |    0.001             |    3                 |    0.005             |    0.005             |    0.005             |    0.004         
 pd_grpc_completed_commands           |    MemberList              |    0.000000008       |    0.0008            |    16                |    0.005             |    0.005             |    0.005             |    0.004             |    -0.13             |    0.000000008       |    0.0007            |    16                |    0.005             |    0.005             |    0.005             |    0.004         
 tikv_raft_store_events               |                            |    0.00000001        |    0.001             |    64                |    0.001             |    0.001             |    0.0009            |    0.0008            |    3.67              |    0.0000001         |    0.009             |    69                |    0.001             |    0.001             |    0.0009            |    0.0008        
-tikv_raft_store_events               |    snap_gc                 |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000003        |    0.003             |    11                |    0.001             |    0.001             |    0.0009            |    0.0008        
 tikv_raft_store_events               |    pd_store_heartbeat      |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000003        |    0.003             |    51                |    0.001             |    0.001             |    0.0009            |    0.0008        
+tikv_raft_store_events               |    snap_gc                 |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000003        |    0.003             |    11                |    0.001             |    0.001             |    0.0009            |    0.0008        
 tikv_raft_store_events               |    cleanup_import_sst      |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000001        |    0.001             |    3                 |    0.001             |    0.001             |    0.0009            |    0.0008        
 tikv_raft_store_events               |    compact_check           |    0.00000001        |    0.001             |    3                 |    0.001             |    0.001             |    0.0009            |    0.0008            |    0.67              |    0.00000003        |    0.003             |    3                 |    0.001             |    0.001             |    0.0009            |    0.0008        
 tikv_cop_handle                      |                            |    0.0000005         |    0.05              |    203               |    0.001             |    0.001             |    0.0009            |    0.0007            |    2                 |    0.0007            |    60.36             |    500               |    2.03              |    1.85              |    0.67              |    0.39          
@@ -673,15 +678,15 @@ DIFF_RATIO = max( (t2.MAX-t1.MAX)/max(t2.MAX, t1.MAX) , (t2.MIN-t1.MIN)/max(t2.M
 TYPE                        |    t1.MAX           |    t1.MIN           |    DIFF_RATIO    |    t2.MAX           |    t2.MIN       
 storage_size                |    12659958177      |    12659957617      |    0.0000003     |    12659962385      |    12659961801  
 store_offline_count         |    0                |    0                |    0             |    0                |    0            
-store_unhealth_count        |    0                |    0                |    0             |    0                |    0            
-region_count                |    167              |    167              |    0             |    167              |    167          
-store_low_space_count       |    4                |    4                |    0             |    4                |    4            
-store_down_count            |    0                |    0                |    0             |    0                |    0            
-leader_count                |    167              |    167              |    0             |    167              |    167          
-store_up_count              |    4                |    4                |    0             |    4                |    4            
 store_tombstone_count       |    0                |    0                |    0             |    0                |    0            
-storage_capacity            |    6292932395008    |    6292932395008    |    0             |    6292932395008    |    6292932395008
+region_count                |    167              |    167              |    0             |    167              |    167          
+store_down_count            |    0                |    0                |    0             |    0                |    0            
+store_low_space_count       |    4                |    4                |    0             |    4                |    4            
 store_disconnected_count    |    0                |    0                |    0             |    0                |    0            
+leader_count                |    167              |    167              |    0             |    167              |    167          
+store_unhealth_count        |    0                |    0                |    0             |    0                |    0            
+store_up_count              |    4                |    4                |    0             |    4                |    4            
+storage_capacity            |    6292932395008    |    6292932395008    |    0             |    6292932395008    |    6292932395008
 
 PD
 Error
@@ -701,23 +706,23 @@ leader_score    |    172.16.5.40:22150    |    0                |    0          
 region_count    |                         |    41.75            |    167              |    0                |    0              |    41.75            |    167              |    0            
 region_count    |    172.16.5.40:20150    |    167              |    167              |    167              |    0              |    167              |    167              |    167          
 region_count    |    172.16.5.40:22150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
-region_count    |    172.16.5.40:23150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
 region_count    |    172.16.5.40:21150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
+region_count    |    172.16.5.40:23150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
 leader_count    |                         |    41.75            |    167              |    0                |    0              |    41.75            |    167              |    0            
 leader_count    |    172.16.5.40:20150    |    167              |    167              |    167              |    0              |    167              |    167              |    167          
-leader_count    |    172.16.5.40:22150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
-leader_count    |    172.16.5.40:21150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
 leader_count    |    172.16.5.40:23150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
+leader_count    |    172.16.5.40:21150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
+leader_count    |    172.16.5.40:22150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
 region_size     |                         |    3299.5           |    13198            |    0                |    0              |    3299.5           |    13198            |    0            
 region_size     |    172.16.5.40:20150    |    13198            |    13198            |    13198            |    0              |    13198            |    13198            |    13198        
-region_size     |    172.16.5.40:23150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
 region_size     |    172.16.5.40:21150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
+region_size     |    172.16.5.40:23150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
 region_size     |    172.16.5.40:22150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
 leader_size     |                         |    3299.5           |    13198            |    0                |    0              |    3299.5           |    13198            |    0            
 leader_size     |    172.16.5.40:20150    |    13198            |    13198            |    13198            |    0              |    13198            |    13198            |    13198        
-leader_size     |    172.16.5.40:22150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
-leader_size     |    172.16.5.40:23150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
 leader_size     |    172.16.5.40:21150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
+leader_size     |    172.16.5.40:23150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
+leader_size     |    172.16.5.40:22150    |    0                |    0                |    0                |    0              |    0                |    0                |    0            
 
 PD
 etcd status
@@ -746,10 +751,10 @@ METRIC_NAME                          |    LABEL                                 
 tikv_raft_store_events               |                                            |    0.00000003        |    0.001             |    64                |    0.001             |    0.001             |    0.0009            |    0.0008            |    7                 |    0.0000002         |    0.009             |    69                |    0.001             |    0.001             |    0.0009            |    0.0008        
 tikv_raft_store_events               |    172.16.5.40:21151,compact_check         |    0.00000003        |    0.001             |    1                 |    0.001             |    0.001             |    0.0009            |    0.0008            |    1                 |                      |                      |                      |                      |                      |                      |                  
 tikv_raft_store_events               |    172.16.5.40:20151,pd_store_heartbeat    |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000006        |    0.003             |    13                |    0.001             |    0.001             |    0.0009            |    0.0008        
-tikv_raft_store_events               |    172.16.5.40:20151,compact_check         |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000003        |    0.001             |    1                 |    0.001             |    0.001             |    0.0009            |    0.0008        
-tikv_raft_store_events               |    172.16.5.40:20151,snap_gc               |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000003        |    0.001             |    3                 |    0.001             |    0.001             |    0.0009            |    0.0008        
-tikv_raft_store_events               |    172.16.5.40:23151,compact_check         |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000003        |    0.001             |    1                 |    0.001             |    0.001             |    0.0009            |    0.0008        
 tikv_raft_store_events               |    172.16.5.40:23151,snap_gc               |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000003        |    0.001             |    3                 |    0.001             |    0.001             |    0.0009            |    0.0008        
+tikv_raft_store_events               |    172.16.5.40:23151,compact_check         |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000003        |    0.001             |    1                 |    0.001             |    0.001             |    0.0009            |    0.0008        
+tikv_raft_store_events               |    172.16.5.40:20151,snap_gc               |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000003        |    0.001             |    3                 |    0.001             |    0.001             |    0.0009            |    0.0008        
+tikv_raft_store_events               |    172.16.5.40:20151,compact_check         |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000003        |    0.001             |    1                 |    0.001             |    0.001             |    0.0009            |    0.0008        
 tikv_raft_store_events               |    172.16.5.40:20151,cleanup_import_sst    |                      |                      |                      |                      |                      |                      |                      |    1                 |    0.00000003        |    0.001             |    1                 |    0.001             |    0.001             |    0.0009            |    0.0008        
 tikv_raft_process                    |                                            |    0.000008          |    0.33              |    16944             |    0.001             |    0.001             |    0.0007            |    0.0005            |    3.63              |    0.00002           |    0.9               |    19376             |    0.001             |    0.001             |    0.0008            |    0.0006        
 tikv_raft_process                    |    172.16.5.40:21151,ready                 |    0.00000003        |    0.001             |    17                |    0.001             |    0.001             |    0.0007            |    0.0005            |    1                 |                      |                      |                      |                      |                      |                      |                  
@@ -828,15 +833,15 @@ store size        |    172.16.5.40:20151,lock       |    18743512          |    
 store size        |    172.16.5.40:20151,raft       |    87488330          |    0.00002           |    87489994      
 store size        |    172.16.5.40:20151,write      |    3077380936        |    0.0000009         |    3077383632    
 store size        |    172.16.5.40:20151,default    |    22360572538       |    0.0000007         |    22360587970   
-store size        |    172.16.5.40:21151,write      |    29361664          |    0                 |    29361664      
-store size        |    172.16.5.40:21151,raft       |    29361664          |    0                 |    29361664      
 store size        |    172.16.5.40:22151,write      |    29361664          |    0                 |    29361664      
 store size        |    172.16.5.40:22151,raft       |    29361664          |    0                 |    29361664      
-store size        |    172.16.5.40:23151,raft       |    29361664          |    0                 |    29361664      
+store size        |    172.16.5.40:21151,write      |    29361664          |    0                 |    29361664      
 store size        |    172.16.5.40:23151,write      |    29361664          |    0                 |    29361664      
+store size        |    172.16.5.40:23151,raft       |    29361664          |    0                 |    29361664      
+store size        |    172.16.5.40:21151,raft       |    29361664          |    0                 |    29361664      
 store size        |    172.16.5.40:21151,lock       |    7341568           |    0                 |    7341568       
-store size        |    172.16.5.40:22151,lock       |    7341568           |    0                 |    7341568       
 store size        |    172.16.5.40:23151,lock       |    7341568           |    0                 |    7341568       
+store size        |    172.16.5.40:22151,lock       |    7341568           |    0                 |    7341568       
 store size        |    172.16.5.40:23151,default    |    3152              |    0                 |    3152          
 store size        |    172.16.5.40:21151,default    |    3136              |    0                 |    3136          
 store size        |    172.16.5.40:22151,default    |    3136              |    0                 |    3136          
@@ -861,9 +866,9 @@ tikv_cop_scan_details_total            |    172.16.5.40:20151,select,get,lock   
 tikv_cop_scan_details_total            |    172.16.5.40:20151,select,seek,write           |    82.67             |    1                 |    878970.67     
 tikv_cop_scan_details_total            |    172.16.5.40:20151,select,total,lock           |    82.67             |    1                 |    878970.67     
 tikv_cop_scan_details_total            |    172.16.5.40:20151,select,seek,lock            |    41.33             |    1                 |    173874.67     
+tikv_cop_scan_details_total            |    172.16.5.40:20151,index,seek,write            |    120               |    1                 |    259517.33     
 tikv_cop_scan_details_total            |    172.16.5.40:20151,index,total,lock            |    120               |    1                 |    259517.33     
 tikv_cop_scan_details_total            |    172.16.5.40:20151,index,seek,lock             |    120               |    1                 |    259517.33     
-tikv_cop_scan_details_total            |    172.16.5.40:20151,index,seek,write            |    120               |    1                 |    259517.33     
 tikv_cop_scan_details_total            |    172.16.5.40:20151,index,total,write           |    1489.33           |    1                 |    691596        
 tikv_cop_scan_details_total            |    172.16.5.40:20151,index,processed,write       |    944               |    1                 |    431624        
 tikv_cop_scan_details_total            |    172.16.5.40:20151,index,next,write            |    1369.33           |    1                 |    432078.67     
@@ -931,8 +936,8 @@ tikv_gc_keys_total_num             |    172.16.5.40:20151,write,seek           |
 tikv_gc_keys_total_num             |    172.16.5.40:20151,write,next           |    3                 |    1                 |                  
 tikv_gc_keys_total_num             |    172.16.5.40:20151,write,processed      |    1                 |    1                 |                  
 tidb_gc_worker_action_total_num    |                                           |    3                 |    2                 |    0             
-tidb_gc_worker_action_total_num    |    172.16.5.40:10089,redo_delete_range    |    1                 |    1                 |                  
 tidb_gc_worker_action_total_num    |    172.16.5.40:10089,delete_range         |    1                 |    1                 |                  
+tidb_gc_worker_action_total_num    |    172.16.5.40:10089,redo_delete_range    |    1                 |    1                 |                  
 
 TiKV
 Task Info
@@ -1105,7 +1110,7 @@ PD Current Config
 KEY                                                         |    VALUE                                                                       
 DisableStrictReconfigCheck                                  |    false                                                                       
 ElectionInterval                                            |    3s                                                                          
-EnableDashboard                                             |    false                                                                       
+EnableDashboard                                             |    true                                                                        
 EnableDynamicConfig                                         |    false                                                                       
 HeartbeatStreamBindInterval                                 |    1m0s                                                                        
 LeaderPriorityCheckInterval                                 |    1m0s                                                                        
@@ -1224,10 +1229,10 @@ gc.max-write-bytes-per-sec                               |    0KiB
 gc.ratio-threshold                                       |    1.1                             
 import.num-threads                                       |    8                               
 import.stream-channel-window                             |    128                             
-log-file                                                 |    tikv3.log                       
+log-file                                                 |    tikv2.log                       
 log-file                                                 |    tikv1.log                       
 log-file                                                 |    tikv.log                        
-log-file                                                 |    tikv2.log                       
+log-file                                                 |    tikv3.log                       
 log-level                                                |    info                            
 log-rotation-size                                        |    300MiB                          
 log-rotation-timespan                                    |    1d                              
@@ -1358,10 +1363,10 @@ raftstore.raft-max-size-per-msg                          |    1MiB
 raftstore.raft-min-election-timeout-ticks                |    10                              
 raftstore.raft-reject-transfer-leader-duration           |    3s                              
 raftstore.raft-store-max-leader-lease                    |    9s                              
-raftstore.raftdb-path                                    |    /home/pingcap/cs/data/tikv2/raft
 raftstore.raftdb-path                                    |    /home/pingcap/cs/data/tikv/raft 
-raftstore.raftdb-path                                    |    /home/pingcap/cs/data/tikv1/raft
 raftstore.raftdb-path                                    |    /home/pingcap/cs/data/tikv3/raft
+raftstore.raftdb-path                                    |    /home/pingcap/cs/data/tikv2/raft
+raftstore.raftdb-path                                    |    /home/pingcap/cs/data/tikv1/raft
 raftstore.region-compact-check-interval                  |    5m                              
 raftstore.region-compact-check-step                      |    100                             
 raftstore.region-compact-min-tombstones                  |    10000                           
@@ -1626,9 +1631,9 @@ server.addr                                              |    0.0.0.0:20150
 server.addr                                              |    0.0.0.0:22150                   
 server.addr                                              |    0.0.0.0:23150                   
 server.addr                                              |    0.0.0.0:21150                   
+server.advertise-addr                                    |    172.16.5.40:23150               
 server.advertise-addr                                    |    172.16.5.40:20150               
 server.advertise-addr                                    |    172.16.5.40:21150               
-server.advertise-addr                                    |    172.16.5.40:23150               
 server.advertise-addr                                    |    172.16.5.40:22150               
 server.concurrent-recv-snap-limit                        |    32                              
 server.concurrent-send-snap-limit                        |    32                              
@@ -1666,9 +1671,9 @@ storage.block-cache.memory-allocator                     |    nodump
 storage.block-cache.num-shard-bits                       |    6                               
 storage.block-cache.shared                               |    true                            
 storage.block-cache.strict-capacity-limit                |    false                           
-storage.data-dir                                         |    /home/pingcap/cs/data/tikv3     
-storage.data-dir                                         |    /home/pingcap/cs/data/tikv2     
 storage.data-dir                                         |    /home/pingcap/cs/data/tikv      
+storage.data-dir                                         |    /home/pingcap/cs/data/tikv2     
+storage.data-dir                                         |    /home/pingcap/cs/data/tikv3     
 storage.data-dir                                         |    /home/pingcap/cs/data/tikv1     
 storage.gc-ratio-threshold                               |    1.1                             
 storage.max-key-size                                     |    4096                            
@@ -1677,7 +1682,7 @@ storage.scheduler-concurrency                            |    524288
 storage.scheduler-pending-write-threshold                |    100MiB                          
 storage.scheduler-worker-pool-size                       |    8                               
 
-PASS: report_test.go:62: testReportSuite.TestGetCompareTable	24.763s
+PASS: report_test.go:62: testReportSuite.TestGetCompareTable	12.994s
 OK: 1 passed
 PASS
-ok  	github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose	24.783s
+ok  	github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose	13.014s

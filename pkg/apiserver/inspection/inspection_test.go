@@ -36,6 +36,9 @@ func (t *testInspectionSuite) TestInspection(c *C) {
 		endTime:   endTime2,
 		db:        cli,
 	}
-	err = is.getTiDBQPS()
+	err = is.getTiDBQueryQPS()
+	c.Assert(err, IsNil)
+
+	err = is.getTiDBQueryDuration()
 	c.Assert(err, IsNil)
 }

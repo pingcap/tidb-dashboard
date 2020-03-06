@@ -43,10 +43,6 @@ type ReportRes struct {
 	ReportID uint `json:"report_id"`
 }
 
-type ProgressRes struct {
-	Progress int `json:"progress"`
-}
-
 func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, t *template.Template) *Service {
 	Migrate(db)
 	return &Service{

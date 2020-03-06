@@ -304,7 +304,7 @@ func doGetTable(taskChan chan *task, resChan chan *tblAndErr, wg *sync.WaitGroup
 		tblAndErr.taskID = task.taskID
 		resChan <- &tblAndErr
 		atomic.AddInt32(progress, 1)
-		UpdateReportProgress(sqliteDB, reportID, int(*progress)*100/totalTableCount)
+		_ = UpdateReportProgress(sqliteDB, reportID, int(*progress)*100/totalTableCount)
 	}
 }
 

@@ -75,6 +75,8 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Produce json
 // @Param start_time query string true "start time of the report"
 // @Param end_time query string true "end time of the report"
+// @Param c_start_time query string false "compared start time of the report"
+// @Param c_end_time query string false "compared end time of the report"
 // @Success 200 {object} diagnose.ReportRes
 // @Router /diagnose/reports [post]
 // @Security JwtAuth
@@ -83,6 +85,8 @@ func (s *Service) genReportHandler(c *gin.Context) {
 	db := apiutils.TakeTiDBConnection(c)
 	startTimeStr := c.Query("start_time")
 	endTimeStr := c.Query("end_time")
+	compareStartTimeStr := c.Query("c_start_time")
+	compareEndTimeStr := c.Query("c_end_time")
 	if startTimeStr == "" || endTimeStr == "" {
 		_ = c.Error(fmt.Errorf("invalid begin_time or end_time"))
 		return
@@ -102,7 +106,27 @@ func (s *Service) genReportHandler(c *gin.Context) {
 	}
 	endTime := time.Unix(tsSec, 0)
 
-	reportID, err := NewReport(s.db, startTime, endTime)
+	var compareStartTime, compareEndTime *time.Time
+	if compareStartTimeStr != "" {
+		tsSec, err = strconv.ParseInt(compareStartTimeStr, 10, 64)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+		compareStartTime = new(time.Time)
+		*compareStartTime = time.Unix(tsSec, 0)
+	}
+	if compareEndTimeStr != "" {
+		tsSec, err = strconv.ParseInt(compareEndTimeStr, 10, 64)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+		compareEndTime = new(time.Time)
+		*compareEndTime = time.Unix(tsSec, 0)
+	}
+
+	reportID, err := NewReport(s.db, startTime, endTime, compareStartTime, compareEndTime)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -111,7 +135,15 @@ func (s *Service) genReportHandler(c *gin.Context) {
 	go func() {
 		defer db.Close()
 
-		tables := GetReportTablesForDisplay(startTime.Format(timeLayout), endTime.Format(timeLayout), db, s.db, reportID)
+		var tables []*TableDef
+		if compareStartTime == nil || compareEndTime == nil {
+			tables = GetReportTablesForDisplay(startTime.Format(timeLayout), endTime.Format(timeLayout), db, s.db, reportID)
+		} else {
+			tables = GetCompareReportTablesForDisplay(
+				startTime.Format(timeLayout), endTime.Format(timeLayout),
+				compareStartTime.Format(timeLayout), compareEndTime.Format(timeLayout),
+				db, s.db, reportID)
+		}
 		_ = UpdateReportProgress(s.db, reportID, 100)
 		content, err := json.Marshal(tables)
 		if err == nil {

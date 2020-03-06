@@ -23,18 +23,25 @@ import (
 
 type Report struct {
 	gorm.Model
-	Progress  int       `json:"progress"` // 0~100
-	Content   string    `json:"content"`
-	StartTime time.Time `json:"start_time"`
-	EndTime   time.Time `json:"end_time"`
+	Progress         int        `json:"progress"` // 0~100
+	Content          string     `json:"content"`
+	StartTime        time.Time  `json:"start_time"`
+	EndTime          time.Time  `json:"end_time"`
+	CompareStartTime *time.Time `json:"compare_start_time"`
+	CompareEndTime   *time.Time `json:"compare_end_time"`
 }
 
 func Migrate(db *dbstore.DB) {
 	db.AutoMigrate(&Report{})
 }
 
-func NewReport(db *dbstore.DB, startTime, endTime time.Time) (uint, error) {
-	report := Report{StartTime: startTime, EndTime: endTime}
+func NewReport(db *dbstore.DB, startTime, endTime time.Time, compareStartTime, compareEndTime *time.Time) (uint, error) {
+	report := Report{
+		StartTime:        startTime,
+		EndTime:          endTime,
+		CompareStartTime: compareStartTime,
+		CompareEndTime:   compareEndTime,
+	}
 	err := db.Create(&report).Error
 	if err != nil {
 		return 0, err

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Button, message, Progress } from 'antd'
+import { Button, message, Progress, Table, Skeleton, Card } from 'antd'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 
@@ -38,14 +38,46 @@ interface Report {
   ID: string
   start_time: string
   end_time: string
+  compare_start_time: string | null
+  compare_end_time: string | null
   progress: number
 }
+
+type align = 'left' | 'right' | 'center'
+
+const columns = [
+  {
+    title: 'kind',
+    dataIndex: 'kind',
+    key: 'kind',
+    align: 'right' as align,
+    width: 180,
+  },
+  {
+    title: 'content',
+    dataIndex: 'content',
+    key: 'content',
+    align: 'left' as align,
+  },
+]
 
 function reportUrl(report: Report | undefined, basePath: string) {
   if (report && report.progress >= 100) {
     return `${basePath}/diagnose/reports/${report.ID}`
   }
   return ''
+}
+
+function BackLink() {
+  const { t } = useTranslation()
+
+  return (
+    <Link to="/diagnose">
+      <Button type="primary" style={{ marginTop: 16 }}>
+        {t('diagnose.back_to_gen_report')}
+      </Button>
+    </Link>
+  )
 }
 
 function DiagnoseStatus({ basePath, fetchReport }: Props) {
@@ -77,40 +109,72 @@ function DiagnoseStatus({ basePath, fetchReport }: Props) {
     stopInterval ? null : 2000
   )
 
+  if (report === undefined) {
+    return (
+      <Card title={t('diagnose.report_status')} loading={true}>
+        <BackLink />
+      </Card>
+    )
+  }
+
   const reportFullUrl = reportUrl(report, basePath)
 
-  return (
-    <div>
-      <h1>{t('diagnose.report_status')}</h1>
-      <p>
-        {t('diagnose.time_range')}:{' '}
-        {report && (
-          <span>
-            {moment(report.start_time).format(DATE_TIME_FORMAT)} ~{' '}
-            {moment(report.end_time).format(DATE_TIME_FORMAT)}
-          </span>
-        )}
-      </p>
-      <p>
-        {t('diagnose.progress')}:{' '}
+  const dataSource = [
+    {
+      kind: t('diagnose.time_range'),
+      content: `
+      ${moment(report?.start_time).format(DATE_TIME_FORMAT)}
+      ~
+      ${moment(report?.end_time).format(DATE_TIME_FORMAT)}`,
+    },
+    {
+      kind: t('diagnose.progress'),
+      content: (
         <Progress
           style={{ width: 200 }}
           percent={report?.progress || 0}
           status={report?.progress === 100 ? 'normal' : 'active'}
         />
-      </p>
-      <p>
-        {t('diagnose.full_report')}:{' '}
-        {reportFullUrl && (
-          <a href={reportFullUrl} target="_blank">
-            {reportFullUrl}
-          </a>
-        )}
-      </p>
-      <Link to="/diagnose">
-        <Button type="primary">{t('diagnose.back_to_gen_report')}</Button>
-      </Link>
-    </div>
+      ),
+    },
+    {
+      kind: t('diagnose.full_report'),
+      content: reportFullUrl ? (
+        <a href={reportFullUrl} target="_blank">
+          {reportFullUrl}
+        </a>
+      ) : (
+        ''
+      ),
+    },
+  ]
+  if (report?.compare_start_time && report?.compare_end_time) {
+    dataSource.splice(1, 0, {
+      kind: t('diagnose.compare_time_range'),
+      content: `
+      ${moment(report?.compare_start_time).format(DATE_TIME_FORMAT)}
+      ~
+      ${moment(report?.compare_end_time).format(DATE_TIME_FORMAT)}`,
+    })
+  }
+
+  return (
+    <Card
+      title={
+        report?.compare_start_time
+          ? t('diagnose.compare_report_status')
+          : t('diagnose.report_status')
+      }
+    >
+      <Table
+        dataSource={dataSource}
+        columns={columns}
+        pagination={false}
+        showHeader={false}
+        rowKey={'kind'}
+      />
+      <BackLink />
+    </Card>
   )
 }
 

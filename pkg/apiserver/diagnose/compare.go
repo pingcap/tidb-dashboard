@@ -3,12 +3,13 @@ package diagnose
 import (
 	"container/heap"
 	"fmt"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 
 	"github.com/jinzhu/gorm"
 	"github.com/pingcap/errors"

@@ -141,12 +141,13 @@ func (t *testReportSuite) TestCompareTable(c *C) {
 		},
 	}
 
+	dr := &diffRows{}
 	for _, cas := range cases {
 		t1 := table1
 		t2 := table1
 		t1.Rows = cas.rows1
 		t2.Rows = cas.rows2
-		t, err := compareTable(&t1, &t2)
+		t, err := compareTable(&t1, &t2, dr)
 		c.Assert(err, IsNil)
 		c.Assert(len(t.Rows), Equals, len(cas.out))
 		for i, row := range t.Rows {

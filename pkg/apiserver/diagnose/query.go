@@ -56,7 +56,7 @@ func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, e
 		t.name = t.tbl
 	}
 	type AvgMaxMin struct {
-		Name string
+		Name  string
 		Label string
 		Avg   string
 		Max   string
@@ -113,7 +113,7 @@ func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, e
 		return nil, err
 	}
 
-	var subRows [][]string
+	subRows := make([][]string, 0, len(subResults))
 	for _, subResult := range subResults {
 		subRows = append(subRows, avgMaxMinToSlice(subResult))
 	}
@@ -158,9 +158,9 @@ func (t sumValueQuery) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error
 		t.name = t.tbl
 	}
 	type SumValue struct {
-		Name string
+		Name  string
 		Label string
-		Sum string
+		Sum   string
 	}
 	sumValueToSlice := func(s SumValue) []string {
 		return []string{s.Name, s.Label, s.Sum}
@@ -214,7 +214,7 @@ func (t sumValueQuery) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error
 		return nil, err
 	}
 
-	var subRows [][]string
+	subRows := make([][]string, 0, len(subResults))
 	for _, subResult := range subResults {
 		subRows = append(subRows, sumValueToSlice(subResult))
 	}
@@ -313,15 +313,15 @@ func (t totalTimeByLabelsTableDef) genRow(values []string, subValues [][]string)
 }
 
 type TotalTimeByLabels struct {
-	Name string
-	Label string
-	RatioSumValue string
-	TotalTime string
-	TotalCount string
+	Name            string
+	Label           string
+	RatioSumValue   string
+	TotalTime       string
+	TotalCount      string
 	AggrQuantileMax string
 }
 
-func (t TotalTimeByLabels)toSlice() []string {
+func (t TotalTimeByLabels) toSlice() []string {
 	stringSlice := []string{
 		t.Name, t.Label, t.RatioSumValue, t.TotalTime, t.TotalCount,
 	}
@@ -467,7 +467,7 @@ func (t totalTimeByLabelsTableDef) queryDetail(db *gorm.DB, totalTime float64, s
 		return nil, err
 	}
 
-	var subRows [][]string
+	subRows := make([][]string, 0, len(subResults))
 	for _, subResult := range subResults {
 		subRows = append(subRows, subResult.toSlice())
 	}
@@ -525,14 +525,14 @@ func (t totalValueAndTotalCountTableDef) genRow(values []string, subValues [][]s
 }
 
 type TotalValueAndTotalCount struct {
-	Name string
-	Label string
-	TotalSum string
-	TotalCount string
+	Name            string
+	Label           string
+	TotalSum        string
+	TotalCount      string
 	AggrQuantileMax string
 }
 
-func (t TotalValueAndTotalCount)toSlice() []string {
+func (t TotalValueAndTotalCount) toSlice() []string {
 	stringSlice := []string{
 		t.Name, t.Label, t.TotalSum, t.TotalCount,
 	}
@@ -667,7 +667,7 @@ func (t totalValueAndTotalCountTableDef) queryDetail(db *gorm.DB, startTime, end
 		return nil, err
 	}
 
-	var subRows [][]string
+	subRows := make([][]string, 0, len(subResults))
 	for _, subResult := range subResults {
 		subRows = append(subRows, subResult.toSlice())
 	}

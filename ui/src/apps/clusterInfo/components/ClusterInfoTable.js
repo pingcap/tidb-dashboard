@@ -123,7 +123,7 @@ function wrapNode(node, comp, id) {
 }
 
 async function deleteTiDBTopology(node, dataSource, setCluster) {
-  let resp = await client.dashboard.topologyAddressDelete(`${node.ip}:${node.port}`)
+  let resp = await client.dashboard.topologyTidbAddressDelete(node.address)
   if (resp.status === 200) {
     for (let v of dataSource) {
       if (v.address.includes('tidb')) {

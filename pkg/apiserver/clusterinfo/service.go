@@ -44,7 +44,7 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/topology")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/all", s.topologyHandler)
-	endpoint.DELETE("/tidb/:address/", s.deleteTiDBTopologyHandler)
+	endpoint.DELETE("/tidb/:address", s.deleteTiDBTopologyHandler)
 }
 
 // @Summary Delete etcd's tidb key.
@@ -53,7 +53,8 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Param address path string true "ip:port"
 // @Success 200 "delete ok"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /topology/{address} [delete]
+// @Security JwtAuth
+// @Router /topology/tidb/{address} [delete]
 func (s *Service) deleteTiDBTopologyHandler(c *gin.Context) {
 	address := c.Param("address")
 	errorChannel := make(chan error, 2)

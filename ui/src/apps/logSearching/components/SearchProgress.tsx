@@ -97,14 +97,25 @@ function downloadFile(url: string) {
   link.click();
 }
 
-export default function SearchProgress() {
+interface Props {
+  taskGroupID: number
+}
+
+export default function SearchProgress({
+  taskGroupID
+}: Props) {
   const { store, dispatch } = useContext(Context)
-  const { taskGroupID, tasks } = store
+  const { tasks } = store
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
   const { t } = useTranslation()
 
-  async function getTasks(taskGroupID: number) {
+  async function getTasks(taskGroupID: number, tasks: LogsearchTaskModel[]) {
     if (taskGroupID < 0) {
+      return
+    }
+    if (tasks.length > 0 &&
+      taskGroupID === tasks[0].task_group_id &&
+      !tasks.some(task => task.state === TaskState.Running)) {
       return
     }
     const res = await client.dashboard.logsTaskgroupsIdGet(taskGroupID)
@@ -115,7 +126,7 @@ export default function SearchProgress() {
   }
 
   useSetInterval(() => {
-    getTasks(taskGroupID)
+    getTasks(taskGroupID, tasks)
   });
 
   const descriptionArray = [
@@ -196,9 +207,13 @@ export default function SearchProgress() {
         name === key
       )
     )
-
-    const params = keys.map(id => `id=${id}`).join('&')
-    const url = `${DASHBOARD_API_URL}/logs/download?${params}`
+    
+    const res = await client.dashboard.logsDownloadAcquireTokenGet(keys)
+    const token = res.data
+    if (!token) {
+      return
+    }
+    const url = `${DASHBOARD_API_URL}/logs/download?token=${token}`
     downloadFile(url)
   }
 
@@ -210,8 +225,14 @@ export default function SearchProgress() {
       title: t('log_searching.confirm.cancel_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdCancelPost(taskGroupID)
+        dispatch({type: 'tasks', payload: tasks.map(task => {
+          if (task.state === TaskState.Error) {
+            task.state = TaskState.Running
+          }
+          return task
+        })})
       },
-    });
+    })
   }
 
   async function handleRetry() {
@@ -222,8 +243,14 @@ export default function SearchProgress() {
       title: t('log_searching.confirm.retry_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdRetryPost(taskGroupID)
+        dispatch({type: 'tasks', payload: tasks.map(task => {
+          if (task.state === TaskState.Error) {
+            task.state = TaskState.Running
+          }
+          return task
+        })})
       },
-    });
+    })
   }
 
   function handleCheck(checkedKeys: string[] | { checked: string[]; halfChecked: string[]; }, e: AntTreeNodeCheckedEvent) {

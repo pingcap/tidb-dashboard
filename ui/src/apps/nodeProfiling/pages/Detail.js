@@ -1,7 +1,8 @@
 import client, { DASHBOARD_API_URL } from '@/utils/client'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Card, Table, Button, Icon } from 'antd'
+import { Card, Table, Button, Icon, Form, Skeleton, Progress } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 const columns = [
   {
@@ -13,7 +14,7 @@ const columns = [
   {
     title: 'Kind',
     key: 'kind',
-    dataIndex: 'component',
+    dataIndex: 'target_kind',
     width: 100,
   },
   {
@@ -21,60 +22,97 @@ const columns = [
     key: 'status',
     render: (text, record) => {
       if (record.state === 1) {
-        return <Icon type="loading" />
+        return (
+          <div style={{ width: 200 }}>
+            <Progress
+              percent={Math.round(record.progress * 100)}
+              size="small"
+              width={200}
+            />
+          </div>
+        )
       } else if (record.state === 0) {
         return record.error
       } else {
-        const url = `${DASHBOARD_API_URL}/profiling/single/download/${record.id}`
         return (
-          <span>
-            <Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />{' '}
-            <a href={url} target="_blank">
-              Download
-            </a>
-          </span>
+          <Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
         )
       }
     },
   },
 ]
 
+function mapData(data) {
+  data.tasks_status.forEach(task => {
+    task.key = task.id
+    if (task.state === 1) {
+      let task_elapsed_secs = data.server_time - task.started_at
+      let progress =
+        task_elapsed_secs / data.task_group_status.profile_duration_secs
+      if (progress > 0.99) {
+        progress = 0.99
+      }
+      if (progress < 0) {
+        progress = 0
+      }
+      task.progress = progress
+    }
+  })
+  return data
+}
+
 export default function Page() {
   const { id } = useParams()
+  const [isLoading, setIsLoading] = useState(true)
   const [isRunning, setIsRunning] = useState(true)
   const [data, setData] = useState([])
+  const { t } = useTranslation()
 
   useEffect(() => {
     let t = null
     async function fetchData() {
-      const res = await client.dashboard.profilingGroupStatusGroupIdGet(id)
-      if (res.data.task_group_status.state === 2) {
-        setIsRunning(false)
-        if (t !== null) {
-          clearInterval(t)
+      try {
+        const res = await client.dashboard.profilingGroupStatusGroupIdGet(id)
+        if (res.data.task_group_status.state === 2) {
+          setIsRunning(false)
+          if (t !== null) {
+            clearInterval(t)
+          }
         }
-      }
-      setData(res.data)
+        setData(mapData(res.data))
+      } catch (ex) {}
+      setIsLoading(false)
     }
     t = setInterval(() => fetchData(), 1000)
+    fetchData()
     return () => {
       if (t !== null) {
         clearInterval(t)
       }
     }
-  }, [])
+  }, [id])
 
   return (
     <Card bordered={false}>
-      <Button
-        loading={isRunning}
-        type="primary"
-        href={`${DASHBOARD_API_URL}/profiling/group/download/${id}`}
-        target="_blank"
-      >
-        Download All
-      </Button>
-      <Table columns={columns} dataSource={data.tasks_status} />
+      {isLoading ? (
+        <Skeleton active title={false} paragraph={{ rows: 5 }} />
+      ) : (
+        <Form>
+          <Form.Item>
+            <Button
+              disabled={isRunning}
+              type="primary"
+              href={`${DASHBOARD_API_URL}/profiling/group/download/${id}`}
+              target="_blank"
+            >
+              {t('node_profiling.detail.download')}
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Table columns={columns} dataSource={data.tasks_status} />
+          </Form.Item>
+        </Form>
+      )}
     </Card>
   )
 }

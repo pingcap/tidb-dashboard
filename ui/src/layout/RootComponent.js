@@ -66,7 +66,7 @@ class App extends React.PureComponent {
 
   render() {
     const siderWidth = 260
-    const isDev = process.env.NODE_ENV === 'development'
+    // const isDev = process.env.NODE_ENV === 'development'
     const { t } = this.props
 
     return (
@@ -101,20 +101,6 @@ class App extends React.PureComponent {
                 {this.renderAppMenuItem('log_searching')}
                 {this.renderAppMenuItem('node_profiling')}
               </Menu.SubMenu>
-              {isDev ? (
-                <Menu.SubMenu
-                  key="sub1"
-                  title={
-                    <span>
-                      <Icon type="user" />
-                      <span>Demos</span>
-                    </span>
-                  }
-                >
-                  {this.renderAppMenuItem('home')}
-                  {this.renderAppMenuItem('demo')}
-                </Menu.SubMenu>
-              ) : null}
             </Menu>
           </Layout.Sider>
           <Layout>

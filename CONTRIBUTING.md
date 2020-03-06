@@ -46,12 +46,12 @@ curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh
 
 Start a local cluster
 ```bash
-tiup run playground 
+tiup run playground nightly
 ```
 
 Now you successfully start a cluster, continue reading how to [build and run TiDB Dashboard](#building-and-running).
 
-> Note: you might notice that there is a TiDB Dashboard Integrated in PD (Default address: http://127.0.0.1:2379/dashboard), but we still need to deploy TiDB Dashboard standalonely for debugging.
+> Note: you might notice that there is a TiDB Dashboard integrated in PD (Default address: http://127.0.0.1:2379/dashboard), but we still need to start a standlone TiDB Dashboard for developing.
 
 -------
 

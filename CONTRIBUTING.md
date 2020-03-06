@@ -25,8 +25,6 @@ To build TiDB Dashboard you'll need to at least have the following installed:
 
 ```bash
 git clone https://github.com/pingcap-incubator/tidb-dashboard.git
-cd tidb-dashboard
-# Future instructions assume you are in this directory
 ```
 
 Optional: set Taobao's npm mirror registry to speed up package downloading if needed
@@ -35,43 +33,29 @@ Optional: set Taobao's npm mirror registry to speed up package downloading if ne
 npm config set registry https://registry.npm.taobao.org
 ```
 
-### Building and running
-
-At this point, you can build and run TiDB Dashboard. 
-
-> Note: If you want to debug TiDB Dashboard, it needs a running TiDB cluster as target, see [how to start a local TiDB cluster](#starting-a-tidb-cluster).
-
-Build and run back-end server:
-
-```bash
-make
-make run
-# Now tidb-dashboard server is listen on 127.0.0.1:12333
-```
-
-For front-end, you should build API client and start a React development server:
-
-```bash
-cd ui
-yarn # Install all the dependencies
-npm run build_api_client
-npm run start
-# Now tidb-dashboard UI is available on 127.0.0.1:3000
-```
-
-When you're ready to test out your changes, use the `dev` task. It will lint your code and verify the UI building.
-
-```bash
-make dev
-```
-
-See the [style doc](https://github.com/golang/go/wiki/CodeReviewComments) for details on the conventions.
-
-Please follow this style to make TiDB Dashboard easy to review, maintain, and develop.
-
 ### Starting a TiDB cluster
 
-To run TiDB Dashboard, you'd like to run a local TiDB cluster (at least 1 TiDB, 1 TiKV and 1 PD), here we introduce how to start a local TiDB cluster by binary deployment. Alternatively, you can use other ways like [TiUP](https://tiup.io) (It's under actively development).
+To run TiDB Dashboard, you'd like to run a local TiDB cluster (at least 1 TiDB, 1 TiKV and 1 PD), here we introduce how to start a local TiDB cluster by [TiUP](https://tiup.io).
+
+TiUP is the offical component manager for [TiDB](https://github.com/pingcap/tidb), which help you download binary files and run them.
+
+Downlaod and install TiUP
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh 
+```
+
+Start a local cluster
+```bash
+tiup run playground 
+```
+
+Now you successfully start a cluster, continue reading how to [build and run TiDB Dashboard](#building-and-running).
+
+> Note: you might notice that there is a TiDB Dashboard Integrated in PD (Default address: http://127.0.0.1:2379/dashboard), but we still need to deploy TiDB Dashboard standalonely for debugging.
+
+-------
+
+Alternatively, you can deploy a cluster with binary files manually:
 
 Download all needed files, but do not save them in `tidb-dashboard` folder, Choose 1 of 2:
 
@@ -117,17 +101,50 @@ Open a new terminal and start tidb-server:
 # Now tidb-server is listen on port 4000
 ```
 
--------
-
 Use `mysql-client` to check if `tidb-server` is on:
 
 ```bash
 mysql -h 127.0.0.1 -P 4000 -uroot
 ```
 
+### Building and running
+
+At this point, you can build and run TiDB Dashboard. 
+
+> Note: If you want to debug TiDB Dashboard, it needs a running TiDB cluster as target, see [how to start a local TiDB cluster](#starting-a-tidb-cluster).
+
+Build and run back-end server (future instructions assume you are in the `tidb-dashboard` directory):
+
+```bash
+make
+make run
+# Now tidb-dashboard server is listen on 127.0.0.1:12333
+```
+
+For front-end, you should build API client and start a React development server:
+
+```bash
+make swagger_spec # Generate swagger file
+cd ui
+yarn # Install all the dependencies
+npm run build_api_client
+npm run start
+# Now tidb-dashboard UI is available on 127.0.0.1:3000
+```
+
 Now, you are able to login TiDB Dashboard with TiDB root user.
 
 > Note: TiDB Dashboard use user `root` and **empty password** by default.
+
+When you're ready to test out your changes, use the `dev` task. It will lint your code and verify the UI building.
+
+```bash
+make dev
+```
+
+See the [style doc](https://github.com/golang/go/wiki/CodeReviewComments) for details on the conventions.
+
+Please follow this style to make TiDB Dashboard easy to review, maintain, and develop.
 
 ## Contribution flow
 

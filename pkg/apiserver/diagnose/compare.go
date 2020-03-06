@@ -1,43 +1,69 @@
 package diagnose
 
 import (
+	"container/heap"
 	"fmt"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/jinzhu/gorm"
 	"github.com/pingcap/errors"
 )
 
-func GetCompareReportTables(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB) []*TableDef {
+func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint) []*TableDef {
 	var errRows []TableRowDef
 	var resultTables []*TableDef
-	// Get Header tables.
 	resultTables = append(resultTables, GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2))
-	tables0, err0 := GetReportHeaderTables(startTime2, endTime2, db)
-	errRows = append(errRows, err0...)
-	resultTables = append(resultTables, tables0...)
+	var tables0, tables1, tables2, tables3, tables4 []*TableDef
+	var errRows0, errRows1, errRows2, errRows3, errRows4 []TableRowDef
+	var wg sync.WaitGroup
+	wg.Add(5)
+	var progress int32
+	totalTableCount := 61
+	go func() {
+		// Get Header tables.
+		tables0, errRows0 = GetReportHeaderTables(startTime2, endTime2, db, sqliteDB, reportID, &progress, totalTableCount)
+		errRows = append(errRows, errRows0...)
+		wg.Done()
+	}()
+	go func() {
+		// Get tables in 2 ranges
+		tables1, errRows1 = GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2, db, sqliteDB, reportID, &progress, totalTableCount)
+		errRows = append(errRows, errRows1...)
+		wg.Done()
+	}()
+	go func() {
+		// Get compare refer tables
+		tables2, errRows2 = getCompareTables(startTime1, endTime1, db, sqliteDB, reportID, &progress, totalTableCount)
+		errRows = append(errRows, errRows2...)
+		wg.Done()
+	}()
 
-	// Get tables in 2 ranges
-	tables0, err0 = GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2, db)
-	errRows = append(errRows, err0...)
-	resultTables = append(resultTables, tables0...)
+	go func() {
+		// Get compare tables
+		tables3, errRows3 = getCompareTables(startTime2, endTime2, db.New(), sqliteDB, reportID, &progress, totalTableCount)
+		errRows = append(errRows, errRows3...)
+		wg.Done()
+	}()
 
-	// Get compare tables
-	tables1, err1 := getCompareTables(startTime1, endTime1, db)
-	errRows = append(errRows, err1...)
-	tables2, err2 := getCompareTables(startTime2, endTime2, db)
-	errRows = append(errRows, err2...)
-	tables, err3 := CompareTables(tables1, tables2)
-	errRows = append(errRows, err3...)
+	go func() {
+		// Get end tables
+		tables4, errRows4 = GetReportEndTables(startTime2, endTime2, db, sqliteDB, reportID, &progress, totalTableCount)
+		errRows = append(errRows, errRows4...)
+		wg.Done()
+	}()
+	wg.Wait()
+
+	tables, errs := CompareTables(tables2, tables3)
+	errRows = append(errRows, errs...)
+	resultTables = append(resultTables, tables0...)
+	resultTables = append(resultTables, tables1...)
 	resultTables = append(resultTables, tables...)
-
-	// Get end tables
-	tables0, err0 = GetReportEndTables(startTime2, endTime2, db)
-	errRows = append(errRows, err0...)
-	resultTables = append(resultTables, tables0...)
+	resultTables = append(resultTables, tables4...)
 
 	if len(errRows) > 0 {
 		resultTables = append(resultTables, GenerateReportError(errRows))
@@ -47,12 +73,13 @@ func GetCompareReportTables(startTime1, endTime1, startTime2, endTime2 string, d
 
 func CompareTables(tables1, tables2 []*TableDef) ([]*TableDef, []TableRowDef) {
 	var errRows []TableRowDef
-	resultTables := make([]*TableDef, 0, len(tables1))
+	dr := &diffRows{}
+	resultTables := make([]*TableDef, 1, len(tables1))
 	for _, tbl1 := range tables1 {
 		for _, tbl2 := range tables2 {
 			if strings.Join(tbl1.Category, ",") == strings.Join(tbl2.Category, ",") &&
 				tbl1.Title == tbl2.Title {
-				table, err := compareTable(tbl1, tbl2)
+				table, err := compareTable(tbl1, tbl2, dr)
 				if err != nil {
 					errRows = appendErrorRow(*tbl1, err, errRows)
 				} else if table != nil {
@@ -61,10 +88,38 @@ func CompareTables(tables1, tables2 []*TableDef) ([]*TableDef, []TableRowDef) {
 			}
 		}
 	}
+	resultTables[0] = GenerateDiffTable(*dr)
 	return resultTables, errRows
 }
 
-func compareTable(table1, table2 *TableDef) (*TableDef, error) {
+func GenerateDiffTable(dr diffRows) *TableDef {
+	l := dr.Len()
+	rows := make([]TableRowDef, 0, l)
+	labels := make(map[string]struct{}, l)
+	for dr.Len() > 0 {
+		row := heap.Pop(&dr).(diffRow)
+		if _, ok := labels[row.label]; ok {
+			continue
+		}
+		labels[row.label] = struct{}{}
+		rows = append(rows, TableRowDef{
+			Values: []string{
+				row.label,
+				strconv.FormatFloat(row.ratio, 'f', -1, 64),
+			},
+		})
+	}
+	return &TableDef{
+		Category:  []string{CategoryOverview},
+		Title:     "Max diff item",
+		CommentEN: "",
+		CommentCN: "",
+		Column:    []string{"NAME", "MAX_DIFF"},
+		Rows:      rows,
+	}
+}
+
+func compareTable(table1, table2 *TableDef, dr *diffRows) (*TableDef, error) {
 	labelsMap1, err := getTableLablesMap(table1)
 	if err != nil {
 		return nil, err
@@ -81,7 +136,7 @@ func compareTable(table1, table2 *TableDef) (*TableDef, error) {
 		if !ok {
 			row2 = &TableRowDef{}
 		}
-		newRow, err := joinRow(&table1.Rows[i], row2, table1)
+		newRow, err := joinRow(&table1.Rows[i], row2, table1, dr)
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +149,7 @@ func compareTable(table1, table2 *TableDef) (*TableDef, error) {
 			continue
 		}
 		row1 := &TableRowDef{}
-		newRow, err := joinRow(row1, &table2.Rows[i], table1)
+		newRow, err := joinRow(row1, &table2.Rows[i], table1, dr)
 		if err != nil {
 			return nil, err
 		}
@@ -143,7 +198,7 @@ func compareTable(table1, table2 *TableDef) (*TableDef, error) {
 	return resultTable, nil
 }
 
-func joinRow(row1, row2 *TableRowDef, table *TableDef) (*TableRowDef, error) {
+func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowDef, error) {
 	rowsMap1, err := genRowsLablesMap(table, row1.SubValues)
 	if err != nil {
 		return nil, err
@@ -166,6 +221,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef) (*TableRowDef, error) {
 			row2:  subRow2,
 			ratio: ratio,
 		})
+		dr.appendRow(diffRow{label, ratio})
 	}
 
 	for _, subRow2 := range row2.SubValues {
@@ -184,6 +240,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef) (*TableRowDef, error) {
 			row2:  subRow2,
 			ratio: ratio,
 		})
+		dr.appendRow(diffRow{label, ratio})
 	}
 
 	sort.Slice(subJoinRows, func(i, j int) bool {
@@ -206,6 +263,15 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef) (*TableRowDef, error) {
 				return nil, errors.Errorf("category %v,table %v, calculate diff ratio error: %v,  %v,%v", strings.Join(table.Category, ","), table.Title, err.Error(), row1.Values, row2.Values)
 			}
 		}
+		label := ""
+		if len(row1.Values) >= len(table.Column) {
+			label = genRowLabel(row1.Values, table.joinColumns)
+		} else if len(row2.Values) >= len(table.Column) {
+			label = genRowLabel(row2.Values, table.joinColumns)
+		}
+		if len(label) > 0 {
+			dr.appendRow(diffRow{label, totalRatio})
+		}
 	}
 
 	resultJoinRow := newJoinRow{
@@ -221,6 +287,36 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef) (*TableRowDef, error) {
 		Comment:   "",
 	}
 	return resultRow, nil
+}
+
+type diffRow struct {
+	label string
+	ratio float64
+}
+
+type diffRows []diffRow
+
+func (r diffRows) Len() int           { return len(r) }
+func (r diffRows) Less(i, j int) bool { return math.Abs(r[i].ratio) < math.Abs(r[j].ratio) }
+func (r diffRows) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
+
+func (r *diffRows) Push(x interface{}) {
+	*r = append(*r, x.(diffRow))
+}
+
+func (r *diffRows) Pop() interface{} {
+	old := *r
+	n := len(old)
+	x := old[n-1]
+	*r = old[0 : n-1]
+	return x
+}
+
+func (r *diffRows) appendRow(row diffRow) {
+	heap.Push(r, row)
+	if r.Len() > 150 {
+		heap.Pop(r)
+	}
 }
 
 type newJoinRow struct {
@@ -301,6 +397,8 @@ func parseFloat(s string) (float64, error) {
 	} else if strings.HasSuffix(s, " KB") {
 		ratio = 1024
 		s = s[:len(s)-3]
+	} else if strings.HasSuffix(s, "%") {
+		s = s[:len(s)-1]
 	}
 
 	f, err := strconv.ParseFloat(s, 64)
@@ -359,8 +457,8 @@ func getTableLablesMap(table *TableDef) (map[string]*TableRowDef, error) {
 	return labelsMap, nil
 }
 
-func getCompareTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []TableRowDef) {
-	funcs := []func(string, string, *gorm.DB) (TableDef, error){
+func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress *int32, totalTableCount int) ([]*TableDef, []TableRowDef) {
+	funcs := []getTableFunc{
 		//Node
 		GetLoadTable,
 		GetCPUUsageTable,
@@ -396,25 +494,25 @@ func getCompareTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []Ta
 		GetTiKVTaskInfo,
 		GetTiKVCacheHitTable,
 	}
-	return getTables(startTime, endTime, db, funcs)
+	return getTablesParallel(startTime, endTime, db, funcs, sqliteDB, reportID, progress, totalTableCount)
 }
 
-func GetReportHeaderTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []TableRowDef) {
+func GetReportHeaderTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress *int32, totalTableCount int) ([]*TableDef, []TableRowDef) {
 	funcs := []func(string, string, *gorm.DB) (TableDef, error){
 		// Header
 		GetClusterHardwareInfoTable,
 		GetClusterInfoTable,
 	}
-	return getTables(startTime, endTime, db, funcs)
+	return getTablesParallel(startTime, endTime, db, funcs, sqliteDB, reportID, progress, totalTableCount)
 }
 
-func GetReportEndTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []TableRowDef) {
+func GetReportEndTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress *int32, totalTableCount int) ([]*TableDef, []TableRowDef) {
 	funcs := []func(string, string, *gorm.DB) (TableDef, error){
 		GetTiDBCurrentConfig,
 		GetPDCurrentConfig,
 		GetTiKVCurrentConfig,
 	}
-	return getTables(startTime, endTime, db, funcs)
+	return getTablesParallel(startTime, endTime, db, funcs, sqliteDB, reportID, progress, totalTableCount)
 }
 
 func GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2 string) *TableDef {
@@ -430,7 +528,7 @@ func GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2 string
 	}
 }
 
-func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB) ([]*TableDef, []TableRowDef) {
+func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress *int32, totalTableCount int) ([]*TableDef, []TableRowDef) {
 	funcs := []func(string, string, *gorm.DB) (TableDef, error){
 		// Diagnose
 		GetDiagnoseReport,
@@ -441,40 +539,41 @@ func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, 
 
 	tables := make([]*TableDef, 0, len(funcs))
 	var errRows []TableRowDef
-	for _, f := range funcs {
-		tbl1, err := f(startTime1, endTime1, db)
-		if err != nil {
-			errRows = appendErrorRow(tbl1, err, errRows)
-		}
-		if tbl1.Rows != nil {
-			tbl1.Title += " in time range t1"
-			tables = append(tables, &tbl1)
-		}
-		tbl2, err := f(startTime2, endTime2, db)
-		if err != nil {
-			errRows = appendErrorRow(tbl2, err, errRows)
-		}
-		if tbl2.Rows != nil {
-			tbl2.Title += " in time range t2"
-			tables = append(tables, &tbl2)
-		}
-	}
-	return tables, errRows
-}
 
-func getTables(startTime, endTime string, db *gorm.DB, funcs []func(string, string, *gorm.DB) (TableDef, error)) ([]*TableDef, []TableRowDef) {
-	var errRows []TableRowDef
-	tables := make([]*TableDef, 0, len(funcs))
-	for _, f := range funcs {
-		tbl, err := f(startTime, endTime, db)
-		if err != nil {
-			errRows = appendErrorRow(tbl, err, errRows)
-			continue
+	var tables1, tables2 []*TableDef
+	var errRows1, errRows2 []TableRowDef
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		tables1, errRows1 = getTablesParallel(startTime1, endTime1, db, funcs, sqliteDB, reportID, progress, totalTableCount)
+		errRows = append(errRows, errRows1...)
+		for _, tbl := range tables1 {
+			if tbl.Rows != nil {
+				tbl.Title += " in time range t1"
+			}
 		}
-		if tbl.Rows != nil {
-			tables = append(tables, &tbl)
+		wg.Done()
+	}()
+	go func() {
+		tables2, errRows2 = getTablesParallel(startTime2, endTime2, db, funcs, sqliteDB, reportID, progress, totalTableCount)
+		errRows = append(errRows, errRows2...)
+		for _, tbl := range tables2 {
+			if tbl.Rows != nil {
+				tbl.Title += " in time range t2"
+			}
 		}
+		wg.Done()
+	}()
+	wg.Wait()
+
+	for len(tables1) > 0 && len(tables2) > 0 {
+		tables = append(tables, tables1[0])
+		tables = append(tables, tables2[0])
+		tables1 = tables1[1:]
+		tables2 = tables2[1:]
 	}
+	tables = append(tables, tables1...)
+	tables = append(tables, tables2...)
 	return tables, errRows
 }
 

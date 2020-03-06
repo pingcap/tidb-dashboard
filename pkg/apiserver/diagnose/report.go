@@ -19,6 +19,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 
 	"github.com/jinzhu/gorm"
@@ -171,7 +172,7 @@ func checkBeforeReport(db *gorm.DB) (errRows []TableRowDef) {
 	return nil
 }
 
-type getTableFunc func(string, string, *gorm.DB) (TableDef, error)
+type getTableFunc = func(string, string, *gorm.DB) (TableDef, error)
 
 func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint) []*TableDef {
 	funcs := []getTableFunc{
@@ -226,26 +227,32 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 		GetTiKVCurrentConfig,
 	}
 
+	var progress int32
+	totalTableCount := len(funcs)
+	tables, errRows := getTablesParallel(startTime, endTime, db, funcs, sqliteDB, reportID, &progress, totalTableCount)
+	tables = append(tables, GenerateReportError(errRows))
+	return tables
+}
+
+func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableFunc, sqliteDB *dbstore.DB, reportID uint, progress *int32, totalTableCount int) ([]*TableDef, []TableRowDef) {
 	// get the local CPU count for concurrence
 	conc := runtime.NumCPU()
 	if conc > 20 {
 		conc = 20
 	}
+	if conc > len(funcs) {
+		conc = len(funcs)
+	}
 	taskChan := func2task(funcs)
 	resChan := make(chan *tblAndErr, len(funcs))
-	doneChan := make(chan bool, conc)
+	var wg sync.WaitGroup
 
 	//get table concurrently
-	var progress int32
 	for i := 0; i < conc; i++ {
-		go doGetTable(taskChan, resChan, doneChan, startTime, endTime, db, sqliteDB, reportID, &progress)
+		wg.Add(1)
+		go doGetTable(taskChan, resChan, &wg, startTime, endTime, db, sqliteDB, reportID, progress, totalTableCount)
 	}
-
-	//block until all doGetTable done
-	for i := 0; i < conc; i++ {
-		<-doneChan
-	}
-
+	wg.Wait()
 	// all task done, close the resChan
 	close(resChan)
 
@@ -268,8 +275,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 			errRows = append(errRows, *v.err)
 		}
 	}
-	tables = append(tables, GenerateReportError(errRows))
-	return tables
+	return tables, errRows
 }
 
 type tblAndErr struct {
@@ -281,16 +287,15 @@ type tblAndErr struct {
 // 1.doGetTable gets the task from taskChan,and close the taskChan if taskChan is empty.
 // 2.doGetTable puts the tblAndErr result to resChan.
 // 3.if taskChan is empty, put a true in doneChan.
-func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool, startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress *int32) {
+
+func doGetTable(taskChan chan *task, resChan chan *tblAndErr, wg *sync.WaitGroup, startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress *int32, totalTableCount int) {
+	defer wg.Done()
 	for task := range taskChan {
 		f := task.t
 		tbl, err := f(startTime, endTime, db)
 		tblAndErr := tblAndErr{}
 		if err != nil {
-			category := ""
-			if tbl.Category != nil {
-				category = strings.Join(tbl.Category, ",")
-			}
+			category := strings.Join(tbl.Category, ",")
 			tblAndErr.err = &TableRowDef{Values: []string{category, tbl.Title, err.Error()}}
 			continue
 		}
@@ -300,9 +305,8 @@ func doGetTable(taskChan chan *task, resChan chan *tblAndErr, doneChan chan bool
 		tblAndErr.taskID = task.taskID
 		resChan <- &tblAndErr
 		atomic.AddInt32(progress, 1)
-		UpdateReportProgress(sqliteDB, reportID, int(*progress)*100/cap(resChan))
+		UpdateReportProgress(sqliteDB, reportID, int(*progress)*100/totalTableCount)
 	}
-	doneChan <- true
 }
 
 type task struct {

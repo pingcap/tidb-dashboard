@@ -35,24 +35,33 @@ function ComponentPanelTable({ cluster }) {
       dataIndex: 'status',
       key: 'status',
       width: 100,
+      render: (text, node) => {
+        return (
+          <span>
+            <span>{text} </span>
+            {node !== undefined &&
+              node.status !== undefined &&
+              node.status !== 'up' && (
+                <a
+                  onClick={() =>
+                    deleteTiDBTopology(
+                      node,
+                      cluster.cluster,
+                      cluster.setCluster
+                    )
+                  }
+                >
+                  ( {t('cluster_info.component_table.del_db')} )
+                </a>
+              )}
+          </span>
+        )
+      },
     },
     {
       title: t('cluster_info.component_table.action'),
       key: 'action',
       width: 100,
-      render: (_, node) => {
-        if (
-          node !== undefined &&
-          node.status !== undefined &&
-          node.status !== 'up'
-        ) {
-          return (
-            <a onClick={() => deleteTiDBTopology(node, dataSource, cluster.setCluster)}>
-              {t('cluster_info.component_table.del_db')}
-            </a>
-          )
-        }
-      },
     },
   ]
 
@@ -101,7 +110,6 @@ function wrapNode(node, comp, id) {
   if (node === undefined || node === null) {
     return
   }
-  // TODO: i18n
   let status = 'down'
   if (node.status === 1) {
     status = 'up'
@@ -122,23 +130,8 @@ function wrapNode(node, comp, id) {
   }
 }
 
-async function deleteTiDBTopology(node, dataSource, setCluster) {
-  let resp = await client.dashboard.topologyTidbAddressDelete(node.address)
-  if (resp.status === 200) {
-    for (let v of dataSource) {
-      if (v.address.includes('tidb')) {
-        let cnt = 0;
-        for (let n of v.children) {
-          if (n.address === node.address) {
-            v.children.splice(cnt, 1);
-            break;
-          }
-          ++cnt;
-        }
-      }
-    }
-  }
-  setCluster(dataSource);
+async function deleteTiDBTopology(node, cluster, setCluster) {
+  await client.dashboard.topologyTidbAddressDelete(node.address)
 }
 
 export default ComponentPanelTable

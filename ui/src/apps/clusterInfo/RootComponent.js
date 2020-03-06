@@ -17,7 +17,7 @@ const App = () => {
       setCluster(cluster)
     }
     fetchLoad()
-  }, [])
+  }, [cluster])
 
   return (
     <Router>
@@ -36,7 +36,7 @@ const App = () => {
                   <ComponentPanel field="pd" data={cluster} />
                 </Col>
               </Row>
-              <ClusterInfoTable cluster={{cluster, setCluster}} />
+              <ClusterInfoTable cluster={{ cluster, setCluster }} />
             </Col>
             <Col span={6}>
               <MonitorAlertBar cluster={cluster} />

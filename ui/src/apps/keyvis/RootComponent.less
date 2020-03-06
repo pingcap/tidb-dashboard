@@ -70,50 +70,36 @@
     color: #eee;
     background-color: #333;
     box-shadow: 5px 5px 10px rgba(black, 0.5);
-
-    div:not(:first-child) {
-      margin-top: 8px;
-    }
+    border-radius: 3px;
+    min-width: 200px;
 
     div.value {
       display: flex;
       align-items: center;
-      justify-content: space-between;
 
-      p.value {
+      div.value {
         margin: 0px;
-        text-align: center;
         padding: 7px;
-        width: fit-content;
-        font-size: 14px;
         font-weight: bold;
-        border-radius: 5px;
+        border-radius: 3px;
       }
 
-      p.unit {
-        padding: 3px;
-        font-weight: 500;
-        font-size: 12px;
+      div.unit {
         color: #999;
+        font-size: 0.8rem;
+        margin-left: 10px;
       }
-    }
-
-    div.time {
-      display: flex;
-      // justify-content: space-around;
-      white-space: pre-wrap;
     }
 
     button {
+      line-height: 1;
       background-color: transparent;
       border: transparent solid 1px;
-      border-radius: 4px;
+      border-radius: 3px;
       outline: none;
       padding: 3px;
       text-align: left;
       color: #fff;
-      font-family: unset;
-      font-size: 13px;
       transition: background-color ease-in 100ms;
 
       &:hover {
@@ -127,21 +113,40 @@
       }
     }
 
-    button.time {
+    .time {
       color: #aaa;
-      line-height: 125%;
-      width: 100%;
-      &:not(:first-child) {
-        margin-left: 20px;
+      line-height: 1.2;
+      margin-top: 10px;
+      font-size: 0.8rem;
+    }
+
+    .overviewLabel {
+      margin: 20px 0;
+      .subLabel {
+        display: block;
+        padding: 1 3px;
       }
     }
 
-    button.key {
-      color: #aaa;
-    }
-
-    button.label {
-      font-size: 14px;
+    .keyContainer {
+      margin-top: 10px;
+      padding: 0 3px;
+      .desc {
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 0.8rem;
+        color: #ccc;
+      }
+      .label,
+      .key {
+        display: block;
+        color: #888;
+        font-size: 0.7rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 250px;
+      }
     }
   }
 

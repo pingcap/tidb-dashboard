@@ -23,6 +23,7 @@ import (
 	"sync/atomic"
 
 	"github.com/jinzhu/gorm"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
@@ -259,7 +260,6 @@ func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableF
 	tblAndErrSlice := make([]tblAndErr, 0, cap(resChan))
 	for tblAndErr := range resChan {
 		tblAndErrSlice = append(tblAndErrSlice, *tblAndErr)
-
 	}
 	sort.Slice(tblAndErrSlice, func(i, j int) bool {
 		return tblAndErrSlice[i].taskID < tblAndErrSlice[j].taskID

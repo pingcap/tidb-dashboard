@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Button, message, Progress } from 'antd'
 import moment from 'moment'
+import { useTranslation } from 'react-i18next'
 
 const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
@@ -51,6 +52,7 @@ function DiagnoseStatus({ basePath, fetchReport }: Props) {
   const [report, setReport] = useState<Report | undefined>(undefined)
   const [stopInterval, setStopInterval] = useState(false)
   const { id } = useParams()
+  const { t } = useTranslation()
 
   useInterval(
     () => {
@@ -79,9 +81,9 @@ function DiagnoseStatus({ basePath, fetchReport }: Props) {
 
   return (
     <div>
-      <h1>Report Status</h1>
+      <h1>{t('diagnose.report_status')}</h1>
       <p>
-        Time Range:{' '}
+        {t('diagnose.time_range')}:{' '}
         {report && (
           <span>
             {moment(report.start_time).format(DATE_TIME_FORMAT)} ~{' '}
@@ -90,7 +92,7 @@ function DiagnoseStatus({ basePath, fetchReport }: Props) {
         )}
       </p>
       <p>
-        Progress:{' '}
+        {t('diagnose.progress')}:{' '}
         <Progress
           style={{ width: 200 }}
           percent={report?.progress || 0}
@@ -98,7 +100,7 @@ function DiagnoseStatus({ basePath, fetchReport }: Props) {
         />
       </p>
       <p>
-        Full Report:{' '}
+        {t('diagnose.full_report')}:{' '}
         {reportFullUrl && (
           <a href={reportFullUrl} target="_blank">
             {reportFullUrl}
@@ -106,7 +108,7 @@ function DiagnoseStatus({ basePath, fetchReport }: Props) {
         )}
       </p>
       <Link to="/diagnose">
-        <Button type="primary">Back to Generate New Report</Button>
+        <Button type="primary">{t('diagnose.back_to_gen_report')}</Button>
       </Link>
     </div>
   )

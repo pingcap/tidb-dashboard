@@ -15,7 +15,7 @@ interface ReportRes {
 }
 
 function DiagnoseGenerator({ createReport }: Props) {
-  const [timeRange, setTimeRange] = useState<[string, string]>(['', ''])
+  const [timeRange, setTimeRange] = useState<RangePickerValue>([null, null])
   const { t } = useTranslation()
   const history = useHistory()
 
@@ -25,18 +25,18 @@ function DiagnoseGenerator({ createReport }: Props) {
   ) {
     // if user clear the range picker, dates is [], dataStrings is ['','']
     if (dates[0] && dates[1]) {
-      setTimeRange([
-        dates[0].format(DATE_TIME_FORMAT),
-        dates[1].format(DATE_TIME_FORMAT),
-      ])
+      setTimeRange(dates)
     } else {
-      setTimeRange(['', ''])
+      setTimeRange([null, null])
     }
   }
 
   async function genReport() {
     try {
-      const res = await createReport(timeRange[0], timeRange[1])
+      const res = await createReport(
+        timeRange[0]?.unix() + '',
+        timeRange[1]?.unix() + ''
+      )
       history.push(`/diagnose/${res.report_id}`)
     } catch (error) {
       message.error(error.message)
@@ -55,7 +55,7 @@ function DiagnoseGenerator({ createReport }: Props) {
         ]}
         onChange={handleRangeChange}
       />
-      <Button disabled={timeRange[0] === ''} onClick={genReport}>
+      <Button disabled={timeRange[0] === null} onClick={genReport}>
         {t('diagnose.gen_report')}
       </Button>
     </div>

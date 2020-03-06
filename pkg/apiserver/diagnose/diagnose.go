@@ -32,6 +32,10 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
+const (
+	timeLayout = "2006-01-02 15:04:05"
+)
+
 type Service struct {
 	config        *config.Config
 	db            *dbstore.DB
@@ -41,10 +45,6 @@ type Service struct {
 
 type ReportRes struct {
 	ReportID uint `json:"report_id"`
-}
-
-type ProgressRes struct {
-	Progress int `json:"progress"`
 }
 
 func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, t *template.Template) *Service {
@@ -88,16 +88,19 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		return
 	}
 
-	startTime, err := time.Parse("2006-01-02 15:04:05", startTimeStr)
+	tsSec, err := strconv.ParseInt(startTimeStr, 10, 64)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	endTime, err := time.Parse("2006-01-02 15:04:05", endTimeStr)
+	startTime := time.Unix(tsSec, 0)
+
+	tsSec, err = strconv.ParseInt(endTimeStr, 10, 64)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
+	endTime := time.Unix(tsSec, 0)
 
 	reportID, err := NewReport(s.db, startTime, endTime)
 	if err != nil {
@@ -108,9 +111,8 @@ func (s *Service) genReportHandler(c *gin.Context) {
 	go func() {
 		defer db.Close()
 
-		//tables := GetReportTablesForDisplay(startTimeStr, endTimeStr, db)
-		tables := GetReportTablesForDisplay(startTimeStr, endTimeStr, db, s.db, reportID)
-		_ = UpdateReportProgress(s.db, reportID, 100) // will remove later
+		tables := GetReportTablesForDisplay(startTime.Format(timeLayout), endTime.Format(timeLayout), db, s.db, reportID)
+		_ = UpdateReportProgress(s.db, reportID, 100)
 		content, err := json.Marshal(tables)
 		if err == nil {
 			_ = SaveReportContent(s.db, reportID, string(content))

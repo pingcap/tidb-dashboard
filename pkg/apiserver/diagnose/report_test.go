@@ -59,22 +59,22 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	printRows(&table)
 }
 
-func (t *testReportSuite) TestGetCompareTable(c *C) {
-	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
-	c.Assert(err, IsNil)
-	defer cli.Close()
-
-	startTime1 := "2020-03-03 17:08:00"
-	endTime1 := "2020-03-03 17:11:00"
-
-	startTime2 := "2020-03-03 17:18:00"
-	endTime2 := "2020-03-03 17:21:00"
-
-	tables := GetCompareReportTables(startTime1, endTime1, startTime2, endTime2, cli)
-	for _, tbl := range tables {
-		printRows(tbl)
-	}
-}
+//func (t *testReportSuite) TestGetCompareTable(c *C) {
+//	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
+//	c.Assert(err, IsNil)
+//	defer cli.Close()
+//
+//	startTime1 := "2020-03-03 17:08:00"
+//	endTime1 := "2020-03-03 17:11:00"
+//
+//	startTime2 := "2020-03-03 17:18:00"
+//	endTime2 := "2020-03-03 17:21:00"
+//
+//	tables := GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2, cli)
+//	for _, tbl := range tables {
+//		printRows(tbl)
+//	}
+//}
 
 func (t *testReportSuite) TestCompareTable(c *C) {
 	table1 := TableDef{
@@ -141,12 +141,13 @@ func (t *testReportSuite) TestCompareTable(c *C) {
 		},
 	}
 
+	dr := &diffRows{}
 	for _, cas := range cases {
 		t1 := table1
 		t2 := table1
 		t1.Rows = cas.rows1
 		t2.Rows = cas.rows2
-		t, err := compareTable(&t1, &t2)
+		t, err := compareTable(&t1, &t2, dr)
 		c.Assert(err, IsNil)
 		c.Assert(len(t.Rows), Equals, len(cas.out))
 		for i, row := range t.Rows {

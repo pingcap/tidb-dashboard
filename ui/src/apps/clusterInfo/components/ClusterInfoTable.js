@@ -47,7 +47,7 @@ function ComponentPanelTable({ cluster }) {
           node.status !== 'up'
         ) {
           return (
-            <a onClick={() => deleteTiDBTopology(node, dataSource)}>
+            <a onClick={() => deleteTiDBTopology(node, dataSource, cluster.setCluster)}>
               {t('cluster_info.component_table.del_db')}
             </a>
           )
@@ -56,10 +56,10 @@ function ComponentPanelTable({ cluster }) {
     },
   ]
 
-  if (cluster) {
-    pushNodes('tikv', cluster, dataSource)
-    pushNodes('tidb', cluster, dataSource)
-    pushNodes('pd', cluster, dataSource)
+  if (cluster.cluster) {
+    pushNodes('tikv', cluster.cluster, dataSource)
+    pushNodes('tidb', cluster.cluster, dataSource)
+    pushNodes('pd', cluster.cluster, dataSource)
   }
 
   return (
@@ -122,22 +122,23 @@ function wrapNode(node, comp, id) {
   }
 }
 
-async function deleteTiDBTopology(node, dataSource) {
-  // let resp = await client.dashboard.topologyAddressDelete(`${node.ip}:${node.port}`)
-  // if (resp.status === 200) {
-  //   for (let v in dataSource) {
-  //     if (v.address.includes('tidb')) {
-  //       let cnt = 0;
-  //       for (let n in v.children) {
-  //         if (n.address === node.address) {
-  //           v.children.remove(cnt);
-  //           break;
-  //         }
-  //         ++cnt;
-  //       }
-  //     }
-  //   }
-  // }
+async function deleteTiDBTopology(node, dataSource, setCluster) {
+  let resp = await client.dashboard.topologyAddressDelete(`${node.ip}:${node.port}`)
+  if (resp.status === 200) {
+    for (let v of dataSource) {
+      if (v.address.includes('tidb')) {
+        let cnt = 0;
+        for (let n of v.children) {
+          if (n.address === node.address) {
+            v.children.splice(cnt, 1);
+            break;
+          }
+          ++cnt;
+        }
+      }
+    }
+  }
+  setCluster(dataSource);
 }
 
 export default ComponentPanelTable

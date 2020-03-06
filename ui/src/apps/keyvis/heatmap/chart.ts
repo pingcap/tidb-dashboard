@@ -704,7 +704,7 @@ export async function heatmapChart(
 
         let overviewLabelDiv = tooltipDiv
           .selectAll('div.overviewLabel')
-          .data([keyIdx])
+          .data([keyIdx + 1])
         overviewLabelDiv = overviewLabelDiv
           .enter()
           .append('div')
@@ -731,11 +731,11 @@ export async function heatmapChart(
         let keyContainer = tooltipDiv.selectAll('div.keyContainer').data([
           {
             desc: 'Start Key (Incl.):',
-            idx: keyIdx,
+            idx: keyIdx + 1,
           },
           {
             desc: 'End key (Excl.):',
-            idx: keyIdx + 1,
+            idx: keyIdx,
           },
         ])
 

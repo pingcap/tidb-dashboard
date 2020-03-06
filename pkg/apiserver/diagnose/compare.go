@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/jinzhu/gorm"
 	"github.com/pingcap/errors"
@@ -15,30 +16,51 @@ import (
 func GetCompareReportTables(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB) []*TableDef {
 	var errRows []TableRowDef
 	var resultTables []*TableDef
-	// Get Header tables.
 	resultTables = append(resultTables, GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2))
-	tables0, err0 := GetReportHeaderTables(startTime2, endTime2, db)
-	errRows = append(errRows, err0...)
-	resultTables = append(resultTables, tables0...)
+	var tables0, tables1, tables2, tables3, tables4 []*TableDef
+	var errRows0, errRows1, errRows2, errRows3, errRows4 []TableRowDef
+	var wg sync.WaitGroup
+	wg.Add(5)
+	go func() {
+		// Get Header tables.
+		tables0, errRows0 = GetReportHeaderTables(startTime2, endTime2, db)
+		errRows = append(errRows, errRows0...)
+		wg.Done()
+	}()
+	go func() {
+		// Get tables in 2 ranges
+		tables1, errRows1 = GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2, db)
+		errRows = append(errRows, errRows1...)
+		wg.Done()
+	}()
+	go func() {
+		// Get compare refer tables
+		tables2, errRows2 = getCompareTables(startTime1, endTime1, db)
+		errRows = append(errRows, errRows2...)
+		wg.Done()
+	}()
 
-	// Get tables in 2 ranges
-	tables0, err0 = GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2, db)
-	errRows = append(errRows, err0...)
-	resultTables = append(resultTables, tables0...)
+	go func() {
+		// Get compare tables
+		tables3, errRows3 = getCompareTables(startTime2, endTime2, db.New())
+		errRows = append(errRows, errRows3...)
+		wg.Done()
+	}()
 
-	// Get compare tables
-	tables1, err1 := getCompareTables(startTime1, endTime1, db)
-	errRows = append(errRows, err1...)
-	tables2, err2 := getCompareTables(startTime2, endTime2, db)
-	errRows = append(errRows, err2...)
-	tables, err3 := CompareTables(tables1, tables2)
-	errRows = append(errRows, err3...)
+	go func() {
+		// Get end tables
+		tables4, errRows4 = GetReportEndTables(startTime2, endTime2, db)
+		errRows = append(errRows, errRows4...)
+		wg.Done()
+	}()
+	wg.Wait()
+
+	tables, errs := CompareTables(tables2, tables3)
+	errRows = append(errRows, errs...)
+	resultTables = append(resultTables, tables0...)
+	resultTables = append(resultTables, tables1...)
 	resultTables = append(resultTables, tables...)
-
-	// Get end tables
-	tables0, err0 = GetReportEndTables(startTime2, endTime2, db)
-	errRows = append(errRows, err0...)
-	resultTables = append(resultTables, tables0...)
+	resultTables = append(resultTables, tables4...)
 
 	if len(errRows) > 0 {
 		resultTables = append(resultTables, GenerateReportError(errRows))
@@ -478,7 +500,7 @@ func GetReportHeaderTables(startTime, endTime string, db *gorm.DB) ([]*TableDef,
 		GetClusterHardwareInfoTable,
 		GetClusterInfoTable,
 	}
-	return getTables(startTime, endTime, db, funcs)
+	return getTablesParallel(startTime, endTime, db, funcs)
 }
 
 func GetReportEndTables(startTime, endTime string, db *gorm.DB) ([]*TableDef, []TableRowDef) {
@@ -514,40 +536,41 @@ func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, 
 
 	tables := make([]*TableDef, 0, len(funcs))
 	var errRows []TableRowDef
-	for _, f := range funcs {
-		tbl1, err := f(startTime1, endTime1, db)
-		if err != nil {
-			errRows = appendErrorRow(tbl1, err, errRows)
-		}
-		if tbl1.Rows != nil {
-			tbl1.Title += " in time range t1"
-			tables = append(tables, &tbl1)
-		}
-		tbl2, err := f(startTime2, endTime2, db)
-		if err != nil {
-			errRows = appendErrorRow(tbl2, err, errRows)
-		}
-		if tbl2.Rows != nil {
-			tbl2.Title += " in time range t2"
-			tables = append(tables, &tbl2)
-		}
-	}
-	return tables, errRows
-}
 
-func getTables(startTime, endTime string, db *gorm.DB, funcs []func(string, string, *gorm.DB) (TableDef, error)) ([]*TableDef, []TableRowDef) {
-	var errRows []TableRowDef
-	tables := make([]*TableDef, 0, len(funcs))
-	for _, f := range funcs {
-		tbl, err := f(startTime, endTime, db)
-		if err != nil {
-			errRows = appendErrorRow(tbl, err, errRows)
-			continue
+	var tables1, tables2 []*TableDef
+	var errRows1, errRows2 []TableRowDef
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		tables1, errRows1 = getTablesParallel(startTime1, endTime1, db, funcs)
+		errRows = append(errRows, errRows1...)
+		for _, tbl := range tables1 {
+			if tbl.Rows != nil {
+				tbl.Title += " in time range t1"
+			}
 		}
-		if tbl.Rows != nil {
-			tables = append(tables, &tbl)
+		wg.Done()
+	}()
+	go func() {
+		tables2, errRows2 = getTablesParallel(startTime2, endTime2, db, funcs)
+		errRows = append(errRows, errRows2...)
+		for _, tbl := range tables2 {
+			if tbl.Rows != nil {
+				tbl.Title += " in time range t2"
+			}
 		}
+		wg.Done()
+	}()
+	wg.Wait()
+
+	for len(tables1) > 0 && len(tables2) > 0 {
+		tables = append(tables, tables1[0])
+		tables = append(tables, tables2[0])
+		tables1 = tables1[1:]
+		tables2 = tables2[1:]
 	}
+	tables = append(tables, tables1...)
+	tables = append(tables, tables2...)
 	return tables, errRows
 }
 
@@ -561,61 +584,4 @@ func appendErrorRow(tbl TableDef, err error, errRows []TableRowDef) []TableRowDe
 	}
 	errRows = append(errRows, TableRowDef{Values: []string{category, tbl.Title, err.Error()}})
 	return errRows
-}
-
-type getTableTask struct {
-	f      getTableFunc
-	result chan taskResult
-}
-
-type taskResult struct {
-	tbl TableDef
-	err error
-}
-
-func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableFunc) ([]*TableDef, []TableRowDef) {
-	workerNum := 20
-	if workerNum > len(funcs) {
-		workerNum = len(funcs)
-	}
-	taskCh := make(chan *getTableTask, workerNum)
-	taskCh2 := make(chan *getTableTask, workerNum)
-	for i := 0; i < workerNum; i++ {
-		go workerRun(taskCh, startTime, endTime, db)
-	}
-
-	// Send tasks.
-	go func() {
-		for i := range funcs {
-			task := &getTableTask{
-				f:      funcs[i],
-				result: make(chan taskResult, 1),
-			}
-			taskCh <- task
-			taskCh2 <- task
-		}
-		close(taskCh)
-		close(taskCh2)
-	}()
-
-	tables := make([]*TableDef, 0, len(funcs))
-	var errRows []TableRowDef
-	for task := range taskCh2 {
-		result := <-task.result
-		if result.err != nil {
-			errRows = appendErrorRow(result.tbl, result.err, errRows)
-			continue
-		}
-		if result.tbl.Rows != nil {
-			tables = append(tables, &result.tbl)
-		}
-	}
-	return tables, errRows
-}
-
-func workerRun(taskCh chan *getTableTask, startTime, endTime string, db *gorm.DB) {
-	for t := range taskCh {
-		tbl, err := t.f(startTime, endTime, db)
-		t.result <- taskResult{tbl: tbl, err: err}
-	}
 }

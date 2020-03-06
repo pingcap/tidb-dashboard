@@ -106,14 +106,19 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 		rows = append(rows, TableRowDef{
 			Values: []string{
 				row.label,
-				strconv.FormatFloat(row.ratio, 'f', -1, 64),
+				fmt.Sprintf("%.2f", row.ratio),
 			},
+			Comment: row.comment,
 		})
+	}
+	// reverse rows.
+	for i, j := 0, len(rows)-1; i < j; i, j = i+1, j-1 {
+		rows[i], rows[j] = rows[j], rows[i]
 	}
 	return &TableDef{
 		Category:  []string{CategoryOverview},
 		Title:     "Max diff item",
-		CommentEN: "",
+		CommentEN: "The max different metrics between 2 time range",
 		CommentCN: "",
 		Column:    []string{"NAME", "MAX_DIFF"},
 		Rows:      rows,
@@ -222,7 +227,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			row2:  subRow2,
 			ratio: ratio,
 		})
-		dr.appendRow(diffRow{label, ratio})
+		dr.appendRow(diffRow{label, ratio, row1.Comment})
 	}
 
 	for _, subRow2 := range row2.SubValues {
@@ -241,7 +246,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			row2:  subRow2,
 			ratio: ratio,
 		})
-		dr.appendRow(diffRow{label, ratio})
+		dr.appendRow(diffRow{label, ratio, row1.Comment})
 	}
 
 	sort.Slice(subJoinRows, func(i, j int) bool {
@@ -271,7 +276,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			label = genRowLabel(row2.Values, table.joinColumns)
 		}
 		if len(label) > 0 {
-			dr.appendRow(diffRow{label, totalRatio})
+			dr.appendRow(diffRow{label, totalRatio, row1.Comment})
 		}
 	}
 
@@ -285,14 +290,15 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 		Values:    resultJoinRow.genNewRow(table),
 		SubValues: resultSubRows,
 		ratio:     totalRatio,
-		Comment:   "",
+		Comment:   row1.Comment,
 	}
 	return resultRow, nil
 }
 
 type diffRow struct {
-	label string
-	ratio float64
+	label   string
+	ratio   float64
+	comment string
 }
 
 type diffRows []diffRow

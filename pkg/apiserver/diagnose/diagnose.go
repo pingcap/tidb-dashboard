@@ -88,16 +88,19 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		return
 	}
 
-	startTime, err := time.Parse("2006-01-02 15:04:05", startTimeStr)
+	tsSec, err := strconv.ParseInt(startTimeStr, 10, 64)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	endTime, err := time.Parse("2006-01-02 15:04:05", endTimeStr)
+	startTime := time.Unix(tsSec, 0)
+
+	tsSec, err = strconv.ParseInt(endTimeStr, 10, 64)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
+	endTime := time.Unix(tsSec, 0)
 
 	reportID, err := NewReport(s.db, startTime, endTime)
 	if err != nil {

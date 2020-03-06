@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 

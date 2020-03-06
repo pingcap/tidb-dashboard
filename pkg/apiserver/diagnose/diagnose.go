@@ -32,6 +32,10 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
+const (
+	timeLayout = "2006-01-02 15:04:05"
+)
+
 type Service struct {
 	config        *config.Config
 	db            *dbstore.DB
@@ -107,7 +111,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 	go func() {
 		defer db.Close()
 
-		tables := GetReportTablesForDisplay(startTimeStr, endTimeStr, db, s.db, reportID)
+		tables := GetReportTablesForDisplay(startTime.Format(timeLayout), endTime.Format(timeLayout), db, s.db, reportID)
 		_ = UpdateReportProgress(s.db, reportID, 100)
 		content, err := json.Marshal(tables)
 		if err == nil {

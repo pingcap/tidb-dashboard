@@ -1737,7 +1737,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (TableD
 	table := TableDef{
 		Category:  []string{CategoryHeader},
 		Title:     "cluster hardware",
-		CommentEN: "",
+		CommentEN: "The hardwareInfo of each node",
 		CommentCN: "",
 		Column:    []string{"HOST", "INSTANCE", "CPU_CORES", "MEMORY (GB)", "DISK (GB)", "UPTIME (DAY)"},
 	}
@@ -1837,7 +1837,6 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (TableD
 	for _, row := range rows {
 		resultRows = append(resultRows, NewTableRowDef(row, nil))
 	}
-	resultRows[0].Comment = "The hardwareInfo of each node"
 	table.Rows = resultRows
 	return table, nil
 }

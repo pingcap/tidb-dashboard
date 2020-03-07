@@ -16,6 +16,13 @@ type clusterInspection struct {
 	db *gorm.DB
 }
 
+func (c *clusterInspection) inspectForAffectByBigQuery() error {
+	c.getTiDBQueryQPS()
+	c.getTiDBQueryDuration()
+	c.getTiDBCopDuration()
+	return nil
+}
+
 func (c *clusterInspection) getTiDBQueryQPS() error {
 	query := queryQPS{
 		table:  "tidb_qps",
@@ -55,16 +62,25 @@ func (c *clusterInspection) getTiDBQueryQPS() error {
 	return nil
 }
 
-func printDiff(item, label, tp string, refer, now float64) {
-	fmt.Printf("%s: %s: refer: %.3f, now: %.3f, %s diff: : %.2f\n", item, label, refer, now, tp, calculateDiff(refer, now))
-}
-
 func (c *clusterInspection) getTiDBQueryDuration() error {
 	query := queryDuration{
 		table:     "tidb_query_duration",
 		labels:    []string{"instance"},
 		condition: "value is not null and quantile=0.999",
 	}
+	return c.getDuration(query)
+}
+
+func (c *clusterInspection) getTiDBCopDuration() error {
+	query := queryDuration{
+		table:     "tidb_cop_duration",
+		labels:    []string{"instance"},
+		condition: "value is not null and quantile=0.999",
+	}
+	return c.getDuration(query)
+}
+
+func (c *clusterInspection) getDuration(query queryDuration) error {
 	arg := &queryArg{
 		startTime: c.referStartTime,
 		endTime:   c.referEndTime,
@@ -276,4 +292,8 @@ func querySQL(db *gorm.DB, sql string) ([][]string, error) {
 		return nil, err
 	}
 	return resultRows, nil
+}
+
+func printDiff(item, label, tp string, refer, now float64) {
+	fmt.Printf("%s: %s: refer: %.3f, now: %.3f, %s diff: : %.2f\n", item, label, refer, now, tp, calculateDiff(refer, now))
 }

@@ -666,7 +666,11 @@ P80 is the max size/value of 0.80 quantile;
 			if len(row[i]) == 0 {
 				continue
 			}
-			row[i] = convertFloatToInt(row[i])
+			if row[0] == "tidb_txn_kv_write_size" && i != 3 {
+				row[i] = convertFloatToSize(row[i])
+			} else {
+				row[i] = convertFloatToInt(row[i])
+			}
 		}
 		return row
 	}
@@ -837,7 +841,7 @@ func GetPDSchedulerInfo(startTime, endTime string, db *gorm.DB) (TableDef, error
 
 func GetTiKVRegionSizeInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalValueAndTotalCountTableDef{
-		{name: "Approximate Region size", tbl: "tikv_approximate_region_size", sumTbl: "tikv_approximate_region_total_size", countTbl: "tikv_approximate_region_size_total_count", labels: []string{"instance"}},
+		{name: "Approximate Region size", tbl: "tikv_approximate_region_size", sumTbl: "tikv_approximate_region_total_size", countTbl: "tikv_approximate_region_size_total_count", labels: []string{"instance"}, comment: "The approximate Region size"},
 	}
 	defs := make([]rowQuery, 0, len(defs1))
 	for i := range defs1 {
@@ -895,12 +899,12 @@ func GetTiKVRegionSizeInfo(startTime, endTime string, db *gorm.DB) (TableDef, er
 
 func GetTiKVStoreInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
-		{name: "store size", tbl: "tikv_engine_size", labels: []string{"instance", "type"}},
+		{name: "store size", tbl: "tikv_engine_size", labels: []string{"instance", "type"}, comment: "The storage size"},
 	}
 	table := TableDef{
 		Category:       []string{CategoryTiKV},
-		Title:          "blance leader/region",
-		CommentEN:      "",
+		Title:          "tikv engine size",
+		CommentEN:      "The storage size per TiKV instance",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
@@ -910,6 +914,7 @@ func GetTiKVStoreInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) 
 	if err != nil {
 		return table, err
 	}
+	convertFloatToSizeByRows(rows, 2)
 	table.Rows = rows
 	return table, nil
 }
@@ -996,12 +1001,12 @@ P80 is the max time of 0.80 quantile;
 
 func GetTiKVSchedulerInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalValueAndTotalCountTableDef{
-		{name: "tikv_scheduler_keys_read", tbl: "tikv_scheduler_keys_read", sumTbl: "tikv_scheduler_keys_total_read", countTbl: "tikv_scheduler_keys_read_total_count", labels: []string{"instance", "type"}},
-		{name: "tikv_scheduler_keys_written", tbl: "tikv_scheduler_keys_written", sumTbl: "tikv_scheduler_keys_total_written", countTbl: "tikv_scheduler_keys_written_total_count", labels: []string{"instance", "type"}},
+		{name: "tikv_scheduler_keys_read", tbl: "tikv_scheduler_keys_read", sumTbl: "tikv_scheduler_keys_total_read", countTbl: "tikv_scheduler_keys_read_total_count", labels: []string{"instance", "type"}, comment: "The count of keys read by a command"},
+		{name: "tikv_scheduler_keys_written", tbl: "tikv_scheduler_keys_written", sumTbl: "tikv_scheduler_keys_total_written", countTbl: "tikv_scheduler_keys_written_total_count", labels: []string{"instance", "type"}, comment: "The count of keys written by a command"},
 	}
 	defs2 := []sumValueQuery{
-		{tbl: "tikv_scheduler_scan_details_total_num", labels: []string{"instance", "req", "tag"}},
-		{tbl: "tikv_scheduler_stage_total_num", labels: []string{"instance", "type", "stage"}},
+		{tbl: "tikv_scheduler_scan_details_total_num", labels: []string{"instance", "req", "tag"}, comment: "The keys scan details of each CF when executing a command"},
+		{tbl: "tikv_scheduler_stage_total_num", labels: []string{"instance", "type", "stage"}, comment: "the total number of scheduler state"},
 	}
 
 	defs := make([]rowQuery, 0, len(defs1))
@@ -1048,8 +1053,8 @@ func GetTiKVSchedulerInfo(startTime, endTime string, db *gorm.DB) (TableDef, err
 
 func GetTiKVGCInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
-		{tbl: "tikv_gc_keys_total_num", labels: []string{"instance", "cf", "tag"}},
-		{name: "tidb_gc_worker_action_total_num", tbl: "tidb_gc_worker_action_opm", labels: []string{"instance", "type"}},
+		{tbl: "tikv_gc_keys_total_num", labels: []string{"instance", "cf", "tag"}, comment: "The total number of keys in CF affected during GC"},
+		{name: "tidb_gc_worker_action_total_num", tbl: "tidb_gc_worker_action_opm", labels: []string{"instance", "type"}, comment: "The total count of kv storage garbage collection"},
 	}
 
 	table := TableDef{
@@ -1126,11 +1131,11 @@ func getSumValueTableData(defs1 []sumValueQuery, startTime, endTime string, db *
 
 func GetTiKVSnapshotInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalValueAndTotalCountTableDef{
-		{name: "tikv_snapshot_kv_count", tbl: "tikv_snapshot_kv_count", sumTbl: "tikv_snapshot_kv_total_count", countTbl: "tikv_snapshot_kv_count_total_count", labels: []string{"instance"}},
-		{name: "tikv_snapshot_size", tbl: "tikv_snapshot_size", sumTbl: "tikv_snapshot_total_size", countTbl: "tikv_snapshot_size_total_count", labels: []string{"instance"}},
+		{name: "tikv_snapshot_kv_count", tbl: "tikv_snapshot_kv_count", sumTbl: "tikv_snapshot_kv_total_count", countTbl: "tikv_snapshot_kv_count_total_count", labels: []string{"instance"}, comment: "The count of KV within a snapshot"},
+		{name: "tikv_snapshot_size", tbl: "tikv_snapshot_size", sumTbl: "tikv_snapshot_total_size", countTbl: "tikv_snapshot_size_total_count", labels: []string{"instance"}, comment: "The size of snapshot size"},
 	}
 	defs2 := []sumValueQuery{
-		{tbl: "tikv_snapshot_state_total_count", labels: []string{"instance", "type"}},
+		{tbl: "tikv_snapshot_state_total_count", labels: []string{"instance", "type"}, comment: "The total number of snapshots in different states"},
 	}
 	defs := make([]rowQuery, 0, len(defs1))
 	for i := range defs1 {
@@ -1176,9 +1181,9 @@ func GetTiKVSnapshotInfo(startTime, endTime string, db *gorm.DB) (TableDef, erro
 
 func GetTiKVCopInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
-		{tbl: "tikv_cop_kv_cursor_total_operations", labels: []string{"instance", "req"}},
+		{name: "tikv_cop_scan_keys_num", tbl: "tikv_cop_kv_cursor_total_operations", labels: []string{"instance", "req"}},
 		{tbl: "tikv_cop_total_response_total_size", labels: []string{"instance"}},
-		{tbl: "tikv_cop_scan_details_total", labels: []string{"instance", "req", "tag", "cf"}},
+		{name: "tikv_cop_scan_num", tbl: "tikv_cop_scan_details_total", labels: []string{"instance", "req", "tag", "cf"}, comment: "TiKV coprocessor scan operations number"},
 	}
 	defs := make([]rowQuery, 0, len(defs1))
 	for i := range defs1 {
@@ -1186,6 +1191,9 @@ func GetTiKVCopInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	}
 	resultRows := make([]TableRowDef, 0, len(defs))
 	appendRows := func(row TableRowDef) {
+		if len(row.Values) == 3 && row.Values[0] == "tikv_cop_total_response_total_size" {
+			convertFloatToSizeByRow(&row, 2)
+		}
 		resultRows = append(resultRows, row)
 	}
 
@@ -1209,11 +1217,11 @@ func GetTiKVCopInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 
 func GetTiKVRaftInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
-		{tbl: "tikv_raft_sent_messages_total_num", labels: []string{"instance", "type"}},
-		{tbl: "tikv_flush_messages_total_num", labels: []string{"instance"}},
-		{tbl: "tikv_receive_messages_total_num", labels: []string{"instance"}},
-		{tbl: "tikv_raft_dropped_messages_total", labels: []string{"instance", "type"}},
-		{tbl: "tikv_raft_proposals_total_num", labels: []string{"instance", "type"}},
+		{tbl: "tikv_raft_sent_messages_total_num", labels: []string{"instance", "type"}, comment: "The total number of Raft messages sent"},
+		{tbl: "tikv_flush_messages_total_num", labels: []string{"instance"}, comment: "The total number of Raft messages flushed"},
+		{tbl: "tikv_receive_messages_total_num", labels: []string{"instance"}, comment: "The total number of Raft messages received"},
+		{tbl: "tikv_raft_dropped_messages_total", labels: []string{"instance", "type"}, comment: "The total number of dropped Raft messages"},
+		{tbl: "tikv_raft_proposals_total_num", labels: []string{"instance", "type"}, comment: "The total number of raft proposals"},
 	}
 	defs := make([]rowQuery, 0, len(defs1))
 	for i := range defs1 {
@@ -1664,12 +1672,12 @@ func GetStoreStatusTable(startTime, endTime string, db *gorm.DB) (TableDef, erro
 	}
 	table := TableDef{
 		Category:       []string{CategoryPD},
-		Title:          "Error",
+		Title:          "store status",
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
-		Column:         []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
+		Column:         []string{"METRIC_NAME", "INSTANCE", "AVG", "MAX", "MIN"},
 	}
 	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
 	if err != nil {
@@ -1694,6 +1702,21 @@ func GetPDClusterStatusTable(startTime, endTime string, db *gorm.DB) (TableDef, 
 	rows, err := getSQLRoundRows(db, sql, []int{1, 2}, "")
 	if err != nil {
 		return table, err
+	}
+	for i := range rows {
+		if len(rows[i].Values) != 3 {
+			continue
+		}
+		switch rows[i].Values[0] {
+		case "store_disconnected_count":
+		case "leader_count":
+			rows[i].Comment = "The total number of leader Regions"
+		case "store_up_count":
+			rows[i].Comment = "The count of healthy stores"
+		case "storage_capacity", "storage_size":
+			rows[i].Values[1] = convertFloatToSize(rows[i].Values[1])
+			rows[i].Values[2] = convertFloatToSize(rows[i].Values[2])
+		}
 	}
 	table.Rows = rows
 	return table, nil
@@ -1759,6 +1782,25 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *gorm.DB) (TableDef, err
 	rows, err := getAvgValueTableData(tables, startTime, endTime, db)
 	if err != nil {
 		return table, err
+	}
+	specialHandle := func(row []string) []string {
+		if len(row) < 5 {
+			return row
+		}
+		for i := 2; i < 5; i++ {
+			f, err := strconv.ParseFloat(row[i], 64)
+			if err != nil {
+				return row
+			}
+			row[i] = convertFloatToString(f*100) + "%"
+		}
+		return row
+	}
+	for i := range rows {
+		rows[i].Values = specialHandle(rows[i].Values)
+		for j := range rows[i].SubValues {
+			rows[i].SubValues[j] = specialHandle(rows[i].SubValues[j])
+		}
 	}
 	table.Rows = rows
 	return table, nil

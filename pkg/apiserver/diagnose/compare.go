@@ -398,7 +398,10 @@ func parseFloat(s string) (float64, error) {
 		return float64(0), nil
 	}
 	ratio := float64(1)
-	if strings.HasSuffix(s, " MB") {
+	if strings.HasSuffix(s, " GB") {
+		ratio = 1024 * 1024 * 1024
+		s = s[:len(s)-3]
+	} else if strings.HasSuffix(s, " MB") {
 		ratio = 1024 * 1024
 		s = s[:len(s)-3]
 	} else if strings.HasSuffix(s, " KB") {

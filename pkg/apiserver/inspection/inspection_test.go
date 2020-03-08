@@ -22,11 +22,11 @@ func (t *testInspectionSuite) TestInspection(c *C) {
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
-	startTime1 := "2020-03-05 20:48:00"
-	endTime1 := "2020-03-05 20:50:00"
+	startTime1 := "2020-03-08 02:23:00"
+	endTime1 := "2020-03-08 02:27:00"
 
-	startTime2 := "2020-03-05 20:55:00"
-	endTime2 := "2020-03-05 20:57:00"
+	startTime2 := "2020-03-08 02:30:00"
+	endTime2 := "2020-03-08 02:34:00"
 
 	is := &clusterInspection{
 		referStartTime: startTime1,
@@ -36,6 +36,6 @@ func (t *testInspectionSuite) TestInspection(c *C) {
 		endTime:   endTime2,
 		db:        cli,
 	}
-	err = is.inspectForAffectByBigQuery()
+	_, err = is.inspectForAffectByBigQuery()
 	c.Assert(err, IsNil)
 }

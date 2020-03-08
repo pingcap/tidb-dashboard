@@ -76,7 +76,7 @@ const (
 	// Category names.
 	CategoryHeader   = "header"
 	CategoryDiagnose = "diagnose"
-	CategoryNode     = "node"
+	CategoryLoad     = "load"
 	CategoryOverview = "overview"
 	CategoryTiDB     = "TiDB"
 	CategoryPD       = "PD"
@@ -185,7 +185,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 		// Diagnose
 		GetDiagnoseReport,
 
-		// Node
+		// Load
 		GetLoadTable,
 		GetCPUUsageTable,
 		GetTiKVThreadCPUTable,
@@ -616,15 +616,15 @@ P80 is the max time of 0.80 quantile;
 
 func GetTiDBTxnTableData(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalValueAndTotalCountTableDef{
-		{name: "tidb_transaction_retry_num", tbl: "tidb_transaction_retry_num", sumTbl: "tidb_transaction_retry_total_num", countTbl: "tidb_transaction_retry_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_transaction_statement_num", tbl: "tidb_transaction_statement_num", sumTbl: "tidb_transaction_statement_total_num", countTbl: "tidb_transaction_statement_num_total_count", labels: []string{"sql_type"}},
-		{name: "tidb_txn_region_num", tbl: "tidb_txn_region_num", sumTbl: "tidb_txn_region_total_num", countTbl: "tidb_txn_region_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_txn_kv_write_num", tbl: "tidb_kv_write_num", sumTbl: "tidb_kv_write_total_num", countTbl: "tidb_kv_write_num_total_count", labels: []string{"instance"}},
-		{name: "tidb_txn_kv_write_size", tbl: "tidb_kv_write_size", sumTbl: "tidb_kv_write_total_size", countTbl: "tidb_kv_write_size_total_count", labels: []string{"instance"}},
+		{name: "tidb_transaction_retry_num", tbl: "tidb_transaction_retry_num", sumTbl: "tidb_transaction_retry_total_num", countTbl: "tidb_transaction_retry_num_total_count", labels: []string{"instance"}, comment: "TiDB transaction retry num"},
+		{name: "tidb_transaction_statement_num", tbl: "tidb_transaction_statement_num", sumTbl: "tidb_transaction_statement_total_num", countTbl: "tidb_transaction_statement_num_total_count", labels: []string{"sql_type"}, comment: "The total count of TiDB statements numbers within one transaction. Internal means TiDB inner transaction"},
+		{name: "tidb_txn_region_num", tbl: "tidb_txn_region_num", sumTbl: "tidb_txn_region_total_num", countTbl: "tidb_txn_region_num_total_count", labels: []string{"instance"}, comment: "the count of regions operates per transaction execution"},
+		{name: "tidb_txn_kv_write_num", tbl: "tidb_kv_write_num", sumTbl: "tidb_kv_write_total_num", countTbl: "tidb_kv_write_num_total_count", labels: []string{"instance"}, comment: " kv write number per transaction execution"},
+		{name: "tidb_txn_kv_write_size", tbl: "tidb_kv_write_size", sumTbl: "tidb_kv_write_total_size", countTbl: "tidb_kv_write_size_total_count", labels: []string{"instance"}, comment: "kv write size per transaction execution"},
 	}
 	defs2 := []sumValueQuery{
-		{name: "tidb_load_safepoint_total_num", tbl: "tidb_load_safepoint_total_num", labels: []string{"type"}},
-		{name: "tidb_lock_resolver_total_num", tbl: "tidb_lock_resolver_total_num", labels: []string{"type"}},
+		{name: "tidb_load_safepoint_total_num", tbl: "tidb_load_safepoint_total_num", labels: []string{"type"}, comment: "The total count of safe point loading"},
+		{name: "tidb_lock_resolver_total_num", tbl: "tidb_lock_resolver_total_num", labels: []string{"type"}, comment: "The total number of lock resolve"},
 	}
 
 	defs := make([]rowQuery, 0, len(defs1)+len(defs2))
@@ -1417,22 +1417,19 @@ func getAvgValueTableData(defs1 []AvgMaxMinTableDef, startTime, endTime string, 
 
 func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", label: "instance", Comment: "the disk write latency in each node"},
-		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance", Comment: "the disk read latency in each node"},
+		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", label: "instance", Comment: "the disk write latency in each node(ms)"},
+		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance", Comment: "the disk read latency in each node(ms)"},
 	}
 	table := TableDef{
-		Category:       []string{CategoryNode},
-		Title:          "Load",
+		Category:       []string{CategoryLoad},
+		Title:          "Load info",
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
 		Column:         []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
 	}
-	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
-	if err != nil {
-		return table, err
-	}
+	rows := make([]TableRowDef, 0, 4)
 	// get cpu usage
 	row, err := getAvgMaxMinCPUUsage(startTime, endTime, db)
 	if err != nil {
@@ -1445,6 +1442,11 @@ func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 		return table, err
 	}
 	rows = append(rows, *row)
+	partRows, err := getAvgValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	rows = append(rows, partRows...)
 	table.Rows = rows
 	return table, nil
 }
@@ -1524,18 +1526,35 @@ func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowD
 func GetCPUUsageTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.process_cpu_usage where time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
 		startTime, endTime)
+	fmt.Println(sql)
 	table := TableDef{
-		Category:       []string{CategoryNode},
+		Category:       []string{CategoryLoad},
 		Title:          "process cpu usage",
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
-		Column:         []string{"instance", "job", "AVG", "MAX", "MIN"},
+		Column:         []string{"INSTANCE", "JOB", "AVG", "MAX", "MIN"},
 	}
 	rows, err := getSQLRoundRows(db, sql, []int{2, 3, 4}, "")
 	if err != nil {
 		return table, err
+	}
+	specialHandle := func(row []string) []string {
+		if len(row) < 5 {
+			return row
+		}
+		for i := 2; i < 5; i++ {
+			f, err := strconv.ParseFloat(row[i], 64)
+			if err != nil {
+				return row
+			}
+			row[i] = convertFloatToString(f*100) + "%"
+		}
+		return row
+	}
+	for i := range rows {
+		rows[i].Values = specialHandle(rows[i].Values)
 	}
 	table.Rows = rows
 	return table, nil
@@ -1545,13 +1564,13 @@ func GetGoroutinesCountTable(startTime, endTime string, db *gorm.DB) (TableDef, 
 	sql := fmt.Sprintf("select instance, job, avg(value), max(value), min(value) from metrics_schema.goroutines_count where job in ('tidb','pd') and time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
 		startTime, endTime)
 	table := TableDef{
-		Category:       []string{CategoryNode},
+		Category:       []string{CategoryLoad},
 		Title:          "goroutines count",
 		CommentEN:      "The goroutine count of tidb/pd server",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
-		Column:         []string{"instance", "job", "AVG", "MAX", "MIN"},
+		Column:         []string{"INSTANCE", "JOB", "AVG", "MAX", "MIN"},
 	}
 	rows, err := getSQLRoundRows(db, sql, []int{2, 3, 4}, "")
 	if err != nil {
@@ -1562,7 +1581,7 @@ func GetGoroutinesCountTable(startTime, endTime string, db *gorm.DB) (TableDef, 
 }
 
 func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
-	defs1 := []AvgMaxMinTableDef{
+	defs := []AvgMaxMinTableDef{
 		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'raftstore%'", Comment: "The CPU usage of each TiKV raftstore"},
 		{name: "apply", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'apply%'", Comment: "The CPU usage of each TiKV apply"},
 		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'sched_worker%'", Comment: "The CPU usage of each TiKV sched_worker"},
@@ -1574,19 +1593,63 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, er
 		{name: "split_check", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'split_check%'", Comment: "The CPU usage of each TiKV split_check"},
 	}
 	table := TableDef{
-		Category:       []string{CategoryNode},
+		Category:       []string{CategoryLoad},
 		Title:          "TiKV Thread CPU Usage",
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
-		Column:         []string{"METRIC_NAME", "instance", "AVG", "MAX", "MIN"},
+		Column:         []string{"METRIC_NAME", "INSTANCE", "AVG", "MAX", "MIN"},
 	}
-	rows, err := getAvgValueTableData(defs1, startTime, endTime, db)
-	if err != nil {
-		return table, err
+	specialHandle := func(row []string) []string {
+		if len(row) < 5 {
+			return row
+		}
+		for i := 2; i < 5; i++ {
+			f, err := strconv.ParseFloat(row[i], 64)
+			if err != nil {
+				return row
+			}
+			row[i] = convertFloatToString(f*100) + "%"
+		}
+		return row
 	}
-	table.Rows = rows
+	resultRows := make([]TableRowDef, 0, len(defs))
+	appendRows := func(row TableRowDef) {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
+		resultRows = append(resultRows, row)
+	}
+
+	for _, def := range defs {
+		condition := fmt.Sprintf("where time >= '%s' and time < '%s' ", startTime, endTime)
+		if len(def.condition) > 0 {
+			condition = condition + "and " + def.condition
+		}
+		sql := fmt.Sprintf("select '%[1]s', '', avg(sum_value),max(sum_value),min(sum_value) from ( select sum(value) as sum_value from metrics_schema.%[2]s %[3]s group by %[4]s, time) as t1",
+			def.name, def.tbl, condition, def.label)
+		rows, err := querySQL(db, sql)
+		if err != nil {
+			return table, err
+		}
+		if len(rows) == 0 {
+			continue
+		}
+		sql = fmt.Sprintf("select '%[1]s', %[2]s,avg(sum_value),max(sum_value),min(sum_value) from ( select %[2]s,sum(value) as sum_value from metrics_schema.%[3]s %[4]s group by %[2]s,time) as t1 group by %[2]s order by avg(sum_value) desc",
+			def.name, def.label, def.tbl, condition)
+		subRows, err := querySQL(db, sql)
+		if err != nil {
+			return table, err
+		}
+		appendRows(TableRowDef{
+			Values:    rows[0],
+			SubValues: subRows,
+			Comment:   def.Comment,
+		})
+	}
+	table.Rows = resultRows
 	return table, nil
 }
 
@@ -1676,15 +1739,14 @@ func GetClusterInfoTable(startTime, endTime string, db *gorm.DB) (TableDef, erro
 
 func GetTiKVCacheHitTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	tables := []AvgMaxMinTableDef{
-		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", label: "type", Comment: "The hit rate of memtable"},
-		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit", label: "type", Comment: "The hit rate of all block cache"},
-		{name: "index", tbl: "tikv_block_index_cache_hit", label: "type", Comment: "The hit rate of index block cache"},
-		{name: "filter", tbl: "tikv_block_filter_cache_hit", label: "type", Comment: "The hit rate of filter block cache"},
-		{name: "data", tbl: "tikv_block_data_cache_hit", label: "type", Comment: "The hit rate of data block cache"},
-		{name: "bloom_prefix", tbl: "tikv_block_bloom_prefix_cache_hit", label: "type", Comment: "The hit rate of bloom_prefix block cache"},
+		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", label: "instance", Comment: "The hit rate of memtable"},
+		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit", label: "instance", Comment: "The hit rate of all block cache"},
+		{name: "tikv_block_index_cache_hit", tbl: "tikv_block_index_cache_hit", label: "instance", Comment: "The hit rate of index block cache"},
+		{name: "tikv_block_filter_cache_hit", tbl: "tikv_block_filter_cache_hit", label: "instance", Comment: "The hit rate of filter block cache"},
+		{name: "tikv_block_data_cache_hit", tbl: "tikv_block_data_cache_hit", label: "instance", Comment: "The hit rate of data block cache"},
+		{name: "tikv_block_bloom_prefix_cache_hit", tbl: "tikv_block_bloom_prefix_cache_hit", label: "instance", Comment: "The hit rate of bloom_prefix block cache"},
 	}
 
-	resultRows := make([]TableRowDef, 0, len(tables))
 	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "cache hit",
@@ -1692,34 +1754,13 @@ func GetTiKVCacheHitTable(startTime, endTime string, db *gorm.DB) (TableDef, err
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
-		Column:         []string{"METRIC_NAME", "TPYE", "AVG", "MAX", "MIN"},
+		Column:         []string{"METRIC_NAME", "INSTANCE", "AVG", "MAX", "MIN"},
 	}
-	for i, t := range tables {
-		sql := ""
-		if i < 2 {
-			sql = fmt.Sprintf("select '%[4]s', '', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s'",
-				t.tbl, startTime, endTime, t.name)
-		} else {
-			sql = fmt.Sprintf("select '', '%[4]s', avg(value), max(value), min(value) from metrics_schema.%[1]s where time >= '%[2]s' and time < '%[3]s'",
-				t.tbl, startTime, endTime, t.name)
-		}
-		rows, err := querySQL(db, sql)
-		if err != nil {
-			return table, err
-		}
-		if len(rows) == 0 {
-			continue
-		}
-		for _, i := range []int{2, 3, 4} {
-			for _, row := range rows {
-				row[i] = RoundFloatString(row[i])
-			}
-		}
-		for _, row := range rows {
-			resultRows = append(resultRows, NewTableRowDef(row, nil))
-		}
+	rows, err := getAvgValueTableData(tables, startTime, endTime, db)
+	if err != nil {
+		return table, err
 	}
-	table.Rows = resultRows
+	table.Rows = rows
 	return table, nil
 }
 

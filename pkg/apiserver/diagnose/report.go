@@ -1181,9 +1181,9 @@ func GetTiKVSnapshotInfo(startTime, endTime string, db *gorm.DB) (TableDef, erro
 
 func GetTiKVCopInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []sumValueQuery{
-		{name: "tikv_cop_scan_keys_num", tbl: "tikv_cop_kv_cursor_total_operations", labels: []string{"instance", "req"}},
-		{tbl: "tikv_cop_total_response_total_size", labels: []string{"instance"}},
-		{name: "tikv_cop_scan_num", tbl: "tikv_cop_scan_details_total", labels: []string{"instance", "req", "tag", "cf"}, comment: "TiKV coprocessor scan operations number"},
+		{name: "tikv_cop_scan_keys_num", tbl: "tikv_cop_scan_keys_total_num", labels: []string{"instance", "req"}, comment: "TiKV coprocessor scan keys total count."},
+		{tbl: "tikv_cop_total_response_total_size", labels: []string{"instance"}, comment: "TiKV coprocessor response total size"},
+		{name: "tikv_cop_scan_num", tbl: "tikv_cop_scan_details_total", labels: []string{"instance", "req", "tag", "cf"}, comment: "TiKV coprocessor scan operations total count"},
 	}
 	defs := make([]rowQuery, 0, len(defs1))
 	for i := range defs1 {

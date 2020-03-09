@@ -1,60 +1,61 @@
-import * as singleSpa from 'single-spa';
-import React from 'react';
-import { Form, Icon, Input, Button, Tabs, Alert, message } from 'antd';
-import Flexbox from '@g07cha/flexbox-react';
-import { withTranslation } from 'react-i18next';
-import LanguageDropdown from '@/components/LanguageDropdown';
-import client from '@/utils/client';
-import * as authUtil from '@/utils/auth';
+import * as singleSpa from 'single-spa'
+import React from 'react'
+import { Form, Icon, Input, Button, Tabs, Alert, message } from 'antd'
+import { motion } from 'framer-motion'
+import Flexbox from '@g07cha/flexbox-react'
+import { withTranslation } from 'react-i18next'
+import LanguageDropdown from '@/components/LanguageDropdown'
+import client from '@/utils/client'
+import * as authUtil from '@/utils/auth'
 
-import styles from './RootComponent.module.less';
+import styles from './RootComponent.module.less'
 
 @Form.create({ name: 'tidb_signin' })
 @withTranslation()
 class TiDBSignInForm extends React.PureComponent {
   state = {
     loading: false,
-  };
+  }
 
   signIn = async form => {
-    this.setState({ loading: true });
+    this.setState({ loading: true })
     try {
       const r = await client.dashboard.userLoginPost({
         username: form.username,
         password: form.password,
         is_tidb_auth: true,
-      });
-      authUtil.setAuthToken(r.data.token);
-      message.success(this.props.t('signin.message.success'));
-      singleSpa.navigateToUrl('#' + this.props.registry.getDefaultRouter());
+      })
+      authUtil.setAuthToken(r.data.token)
+      message.success(this.props.t('signin.message.success'))
+      singleSpa.navigateToUrl('#' + this.props.registry.getDefaultRouter())
     } catch (e) {
-      console.log(e);
+      console.log(e)
       if (!e.handled) {
-        let msg;
+        let msg
         if (e.response.data) {
-          msg = this.props.t(e.response.data.code);
+          msg = this.props.t(e.response.data.code)
         } else {
-          msg = e.message;
+          msg = e.message
         }
-        message.error(this.props.t('signin.message.error', { msg }));
+        message.error(this.props.t('signin.message.error', { msg }))
       }
     }
-    this.setState({ loading: false });
-  };
+    this.setState({ loading: false })
+  }
 
   handleSubmit = e => {
-    e.preventDefault();
+    e.preventDefault()
     this.props.form.validateFields((err, values) => {
       if (err) {
-        return;
+        return
       }
-      this.signIn(values);
-    });
-  };
+      this.signIn(values)
+    })
+  }
 
   render() {
-    const { getFieldDecorator } = this.props.form;
-    const { t } = this.props;
+    const { getFieldDecorator } = this.props.form
+    const { t } = this.props
     return (
       <Form onSubmit={this.handleSubmit} layout="vertical">
         <Form.Item>
@@ -96,17 +97,28 @@ class TiDBSignInForm extends React.PureComponent {
           </Button>
         </Form.Item>
       </Form>
-    );
+    )
   }
+}
+
+const variants = {
+  visible: { opacity: 1, scale: 1 },
+  hidden: { opacity: 0, scale: 0.7 },
 }
 
 @withTranslation()
 class App extends React.PureComponent {
   render() {
-    const { t, registry } = this.props;
+    const { t, registry } = this.props
     return (
       <div className={styles.container}>
-        <div className={styles.dialog}>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={variants}
+          transition={{ ease: 'easeOut' }}
+          className={styles.dialog}
+        >
           <Flexbox justifyContent="space-between" alignItems="center">
             <h1 style={{ margin: 0 }}>TiDB Dashboard</h1>
             <LanguageDropdown>
@@ -123,10 +135,10 @@ class App extends React.PureComponent {
               <TiDBSignInForm registry={registry} />
             </Tabs.TabPane>
           </Tabs>
-        </div>
+        </motion.div>
       </div>
-    );
+    )
   }
 }
 
-export default App;
+export default App

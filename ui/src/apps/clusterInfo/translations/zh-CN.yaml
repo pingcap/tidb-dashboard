@@ -14,8 +14,12 @@ cluster_info:
     address: 地址
 
     node_list: 节点列表
-    del_db: 隐藏
+    hide_db: 隐藏
     action: 操作
+
+    hide_warning: 你希望隐藏这个 TiDB 吗
+    hide_confirm: 是的
+    hide_cancel: 取消
   monitor_alert:
     title: 监控和告警
     view_monitor: 查看监控

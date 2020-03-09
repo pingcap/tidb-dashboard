@@ -1,5 +1,5 @@
-import React from 'react'
-import { Table, Card, Skeleton } from 'antd'
+import React, { useState } from 'react'
+import { Table, Card, Skeleton, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import client from '@/utils/client'
@@ -7,6 +7,7 @@ import client from '@/utils/client'
 function ComponentPanelTable({ cluster }) {
   const { t } = useTranslation()
 
+  const [modalVis, setModalVis] = useState(false)
   let dataSource = []
 
   const columns = [
@@ -42,17 +43,29 @@ function ComponentPanelTable({ cluster }) {
             {node !== undefined &&
               node.status !== undefined &&
               node.status !== 'up' && (
-                <a
-                  onClick={() =>
-                    deleteTiDBTopology(
-                      node,
-                      cluster.cluster,
-                      cluster.setCluster
-                    )
-                  }
-                >
-                  ( {t('cluster_info.component_table.del_db')} )
-                </a>
+                <span>
+                  <a
+                    onClick={() => {
+                      setModalVis(true)
+                    }}
+                  >
+                    ( {t('cluster_info.component_table.hide_db')} )
+                  </a>
+                  <Modal
+                    title={'hide'}
+                    visible={modalVis}
+                    onOk={() => {
+                      deleteTiDBTopology(
+                        node,
+                        cluster.cluster,
+                        cluster.setCluster
+                      ).then(_ => setModalVis(false))
+                    }}
+                    onCancel={() => setModalVis(false)}
+                  >
+                    <p>{t('cluster_info.component_table.hide_warning')}</p>
+                  </Modal>
+                </span>
               )}
           </span>
         )

@@ -14,8 +14,12 @@ cluster_info:
     address: Address
 
     node_list: NODES LIST
-    del_db: HIDE
+    hide_db: HIDE
     action: Action
+
+    hide_warning: Do you want to hide this TiDB key?
+    hide_confirm: OK
+    hide_cancel: Cancel
   monitor_alert:
     title: MONITOR AND ALERT
     view_monitor: VIEW MONITOR

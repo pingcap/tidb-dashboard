@@ -4,5 +4,14 @@ diagnose:
     start_time: 起始时间
     end_time: 结束时间
   gen_report: 生成诊断报告
-  keep_wait: 需要一些时间，请耐心等待
-  open_link: 如果浏览器阻拦了打开新 tab，请手动点击此链接
+  gen_compared_report: 生成对比诊断报告
+  add_compare: 添加对比
+  cancel_compare: 取消对比
+  compare: 对比
+  report_status: 报告状态
+  compare_report_status: 对比报告状态
+  time_range: 时间段
+  compare_time_range: 对比时间段
+  progress: 进度
+  full_report: 完整报告
+  back_to_gen_report: 返回

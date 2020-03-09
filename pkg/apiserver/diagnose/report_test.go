@@ -31,19 +31,19 @@ var _ = Suite(&testReportSuite{})
 
 type testReportSuite struct{}
 
-func (t *testReportSuite) TestReport(c *C) {
-	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
-	c.Assert(err, IsNil)
-	defer cli.Close()
-
-	startTime := "2020-03-03 17:18:00"
-	endTime := "2020-03-03 17:21:00"
-
-	tables := GetReportTablesForDisplay(startTime, endTime, cli)
-	for _, tbl := range tables {
-		printRows(tbl)
-	}
-}
+//func (t *testReportSuite) TestReport(c *C) {
+//	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
+//	c.Assert(err, IsNil)
+//	defer cli.Close()
+//
+//	startTime := "2020-03-03 17:18:00"
+//	endTime := "2020-03-03 17:21:00"
+//
+//	tables := GetReportTablesForDisplay(startTime, endTime, cli)
+//	for _, tbl := range tables {
+//		printRows(tbl)
+//	}
+//}
 
 func (t *testReportSuite) TestGetTable(c *C) {
 	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
@@ -64,25 +64,13 @@ func (t *testReportSuite) TestGetCompareTable(c *C) {
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
-	//startTime1 := "2020-03-05 20:48:00"
-	//endTime1 := "2020-03-05 20:50:00"
-	//
-	//startTime2 := "2020-03-05 20:55:00"
-	//endTime2 := "2020-03-05 20:57:00"
-	//
+	startTime1 := "2020-03-09 22:10:00"
+	endTime1 := "2020-03-09 22:12:00"
 
-	startTime1 := "2020-03-09 20:42:00"
-	endTime1 := "2020-03-09 20:45:00"
+	startTime2 := "2020-03-09 22:13:00"
+	endTime2 := "2020-03-09 22:15:00"
 
-	startTime2 := "2020-03-09 20:47:30"
-	endTime2 := "2020-03-09 20:50:30"
-
-	//startTime1 := "2020-03-08 01:36:00"
-	//endTime1 := "2020-03-08 01:41:00"
-	//
-	//startTime2 := "2020-03-08 01:46:30"
-	//endTime2 := "2020-03-08 01:51:30"
-	tables := GetCompareReportTables(startTime1, endTime1, startTime2, endTime2, cli)
+	tables := GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2, cli,nil,0)
 	for _, tbl := range tables {
 		printRows(tbl)
 	}

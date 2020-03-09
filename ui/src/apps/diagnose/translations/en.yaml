@@ -4,5 +4,14 @@ diagnose:
     start_time: Start Time
     end_time: End Time
   gen_report: Generate Diagnose Report
-  keep_wait: It takes some time, keep patient
-  open_link: In case the browser blocks opening the new tab, please open the link manually
+  gen_compared_report: Generate Compared Diagnose Report
+  add_compare: Add Compare
+  cancel_compare: Cancel Compare
+  compare: Compare
+  report_status: Report Status
+  compare_report_status: Compare Report Status
+  time_range: Time Range
+  compare_time_range: Compared Time Range
+  progress: Progress
+  full_report: Full Report
+  back_to_gen_report: Back to Generate New Report

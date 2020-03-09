@@ -506,6 +506,10 @@ func convertFloatToSize(s string) string {
 	if err != nil {
 		return s
 	}
+	if mb := f / float64(1024*1024*1024); mb > 1 {
+		f = math.Round(mb*1000) / 1000
+		return fmt.Sprintf("%.3f GB", f)
+	}
 	if mb := f / float64(1024*1024); mb > 0 {
 		f = math.Round(mb*1000) / 1000
 		return fmt.Sprintf("%.3f MB", f)
@@ -513,6 +517,25 @@ func convertFloatToSize(s string) string {
 	kb := f / float64(1024)
 	f = math.Round(kb*1000) / 1000
 	return fmt.Sprintf("%.3f KB", f)
+}
+
+func convertFloatToSizeByRows(rows []TableRowDef, idx int) {
+	for i := range rows {
+		convertFloatToSizeByRow(&rows[i], idx)
+	}
+}
+
+func convertFloatToSizeByRow(row *TableRowDef, idx int) {
+	if len(row.Values) < (idx + 1) {
+		return
+	}
+	row.Values[idx] = convertFloatToSize(row.Values[idx])
+	for j := range row.SubValues {
+		if len(row.SubValues[j]) < (idx + 1) {
+			continue
+		}
+		row.SubValues[j][idx] = convertFloatToSize(row.SubValues[j][idx])
+	}
 }
 
 func RoundFloatString(s string) string {

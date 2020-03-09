@@ -161,9 +161,8 @@ func (s *Service) GetDownloadToken(c *gin.Context) {
 // @Summary List all task groups
 // @Description list all log search taskgroups
 // @Produce json
-// @Param id path string true "Task Group ID"
 // @Security JwtAuth
-// @Success 200 {Array} TaskGroupResponse
+// @Success 200 {array} TaskGroupResponse
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroups [get]

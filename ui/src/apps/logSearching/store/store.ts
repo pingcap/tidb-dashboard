@@ -1,6 +1,6 @@
-import { LogsearchSearchTarget, LogsearchTaskModel } from '@/utils/dashboard_client/api';
+import { LogsearchTaskModel } from '@/utils/dashboard_client/api';
 import React from 'react';
-import { Component } from '../components/util';
+import { Component } from '../components/utils';
 
 export interface ServerType {
   ip: string,

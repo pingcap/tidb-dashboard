@@ -1,5 +1,5 @@
 import client from "@/utils/client";
-import { ClusterinfoClusterInfo, LogsearchCreateTaskGroupRequest, LogsearchSearchTarget, LogsearchTaskGroupResponse } from "@/utils/dashboard_client";
+import { LogsearchCreateTaskGroupRequest, LogsearchSearchTarget } from "@/utils/dashboard_client";
 import { Card, Col, DatePicker, Form, Row, Select, TreeSelect } from "antd";
 import { RangePickerValue } from "antd/lib/date-picker/interface";
 import Search from "antd/lib/input/Search";
@@ -9,7 +9,7 @@ import React, { ChangeEvent, useContext, useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { useHistory } from "react-router-dom";
 import { Context } from "../store";
-import { AllLogLevel, namingMap, Component, parseClusterInfo, parseSearchingParams } from "./util";
+import { AllLogLevel, Component, namingMap, parseClusterInfo, parseSearchingParams } from "./utils";
 
 const { SHOW_CHILD } = TreeSelect;
 const { RangePicker } = DatePicker

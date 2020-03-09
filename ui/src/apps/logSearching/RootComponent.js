@@ -8,8 +8,7 @@ import { Context, initialState, reducer } from './store'
 
 const App = withRouter(props => {
   const { location } = props
-  const page = location.pathname.split('/').pop()
-  console.log(location.pathname.split('/').pop())
+  const page = location.pathname.split('/')[3]
   const [store, dispatch] = useReducer(reducer, initialState);
 
   return (

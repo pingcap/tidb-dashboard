@@ -1,10 +1,12 @@
 import { Col, Empty, Row } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { SearchHeader } from './components'
 
 export default function LogSearchingPage() {
   const { t } = useTranslation()
+
   return (
     <div>
       <SearchHeader />
@@ -15,7 +17,9 @@ export default function LogSearchingPage() {
               <span>
                 {t('log_searching.page.intro')}
               </span>
-            } />
+            }>
+            View <Link to="/log/search/history">search history</Link>
+          </Empty>
         </Col>
       </Row>
     </div>

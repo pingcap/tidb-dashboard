@@ -4,7 +4,7 @@ import moment from 'moment';
 import React, { useContext, useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { Context } from "../store";
-import { LogLevelMap, namingMap } from './util';
+import { LogLevelMap, namingMap } from './utils';
 
 const { Column } = Table;
 

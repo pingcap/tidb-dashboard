@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Context } from "../store";
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon';
 import styles from './SearchProgress.module.css';
-import { namingMap, TaskState, Component } from './util';
+import { namingMap, TaskState, Component } from './utils';
 import Item from 'antd/lib/list/Item';
 
 const { confirm } = Modal;

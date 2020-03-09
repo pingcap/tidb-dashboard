@@ -1,6 +1,6 @@
-import { LogsearchTaskGroupResponse, ClusterinfoClusterInfo, LogsearchTaskModel } from "@/utils/dashboard_client"
-import moment from "moment"
+import { ClusterinfoClusterInfo, LogsearchTaskGroupResponse, LogsearchTaskModel } from "@/utils/dashboard_client"
 import { RangePickerValue } from "antd/lib/date-picker/interface"
+import moment from "moment"
 
 export const namingMap = {
   tidb: 'TiDB',
@@ -32,14 +32,14 @@ export class Component {
   port: number
   statusPort: number
 
-  constructor(kind: string, ip : string, port: number, statusPort: number) {
+  constructor(kind: string, ip: string, port: number, statusPort: number) {
     this.kind = kind
     this.ip = ip
     this.port = port
     this.statusPort = statusPort
   }
 
-  addr():string {
+  addr(): string {
     return `${this.ip}:${this.port}`
   }
 
@@ -49,9 +49,9 @@ export class Component {
       this.port
   }
 
-  match(task: LogsearchTaskModel):boolean {
+  match(task: LogsearchTaskModel): boolean {
     const kind = task.search_target?.kind
-    if (kind === this.kind) {
+    if (kind !== this.kind) {
       return false
     }
     const rpcPort = kind === 'tidb' ? this.statusPort : this.port
@@ -66,7 +66,7 @@ export function parseClusterInfo(info: ClusterinfoClusterInfo): Component[] {
   const components: Component[] = []
   info?.tidb?.nodes?.forEach(item => {
     if (item.ip === undefined || item.port === undefined || item.status_port === undefined) {
-        return
+      return
     }
     const component = new Component('tidb', item.ip, item.port, item.status_port)
     components.push(component)
@@ -74,7 +74,7 @@ export function parseClusterInfo(info: ClusterinfoClusterInfo): Component[] {
   info?.tikv?.nodes?.forEach(item => {
     if (item.ip === undefined || item.port === undefined || item.status_port === undefined) {
       return
-  }
+    }
     const component = new Component('tikv', item.ip, item.port, item.status_port)
     components.push(component)
   })
@@ -95,7 +95,7 @@ interface Params {
   searchValue: string,
 }
 
-export function parseSearchingParams(resp: LogsearchTaskGroupResponse, components: Component[]):Params {
+export function parseSearchingParams(resp: LogsearchTaskGroupResponse, components: Component[]): Params {
   const { task_group, tasks } = resp
   const { start_time, end_time, levels, patterns } = task_group?.search_request || {}
   const startTime = start_time ? moment(start_time) : null

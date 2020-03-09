@@ -57,7 +57,7 @@ func fillTopologyUnderEtcd(ctx context.Context, service *Service, fillTargetInfo
 	if alertManager != nil {
 		fillTargetInfo.AlertManager = alertManager
 		amCount, err := clusterinfo.GetAlertCount(alertManager, service.httpClient)
-		if err != nil {
+		if err == nil {
 			fillTargetInfo.AlertCount = &amCount
 		}
 	}

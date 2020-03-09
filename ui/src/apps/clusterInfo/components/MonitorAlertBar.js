@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { Icon, Card, Skeleton } from 'antd'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import axios from 'axios'
 import styles from './MonitorAlertBar.module.less'
 
 export default function MonitorAlertBar({ cluster }) {

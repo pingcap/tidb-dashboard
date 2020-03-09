@@ -16,6 +16,7 @@ package profiling
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
@@ -78,10 +79,11 @@ type Task struct {
 	ctx       context.Context
 	cancel    context.CancelFunc
 	taskGroup *TaskGroup
+	tls       bool
 }
 
 // NewTask creates a new profiling task.
-func NewTask(taskGroup *TaskGroup, targetKind NodeType, addr string) *Task {
+func NewTask(taskGroup *TaskGroup, targetKind NodeType, addr string, tls bool) *Task {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &Task{
 		TaskModel: &TaskModel{
@@ -94,12 +96,13 @@ func NewTask(taskGroup *TaskGroup, targetKind NodeType, addr string) *Task {
 		ctx:       ctx,
 		cancel:    cancel,
 		taskGroup: taskGroup,
+		tls:       tls,
 	}
 }
 
-func (t *Task) run() {
+func (t *Task) run(httpClient *http.Client) {
 	filePrefix := fmt.Sprintf("profile_group_%d_task%d_%s_%s_", t.TaskGroupID, t.ID, t.TargetKind, t.Addr)
-	svgFilePath, err := fetchProfilingSVG(t.ctx, t.TargetKind, t.Addr, filePrefix, t.taskGroup.ProfileDurationSecs)
+	svgFilePath, err := fetchProfilingSVG(t.ctx, t.TargetKind, t.Addr, filePrefix, t.taskGroup.ProfileDurationSecs, httpClient, t.tls)
 	if err != nil {
 		t.Error = err.Error()
 		t.State = TaskStateError

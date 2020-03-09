@@ -33,6 +33,8 @@ import (
 	"sync"
 	"syscall"
 
+	"go.etcd.io/etcd/pkg/transport"
+
 	"github.com/joho/godotenv"
 	"github.com/pingcap/log"
 	flag "github.com/spf13/pflag"
@@ -80,10 +82,27 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")
 	flag.Int64Var(&cfg.KVFileEndTime, "keyviz-file-end", 0, "(debug) end time for file range in file mode")
 
+	caPath := flag.String("cacert", "", "path of file that contains list of trusted SSL CAs.")
+	certPath := flag.String("cert", "", "path of file that contains X509 certificate in PEM format..")
+	keyPath := flag.String("key", "", "path of file that contains X509 key in PEM format.")
+
 	_ = flag.CommandLine.MarkHidden("keyviz-file-start")
 	_ = flag.CommandLine.MarkHidden("keyviz-file-end")
 
 	flag.Parse()
+
+	if len(*caPath) != 0 && len(*certPath) != 0 && len(*keyPath) != 0 {
+		tlsInfo := transport.TLSInfo{
+			CertFile:      *certPath,
+			KeyFile:       *keyPath,
+			TrustedCAFile: *caPath,
+		}
+		tlsConfig, err := tlsInfo.ClientConfig()
+		if err != nil {
+			fmt.Println("failed to load certificates", err)
+		}
+		cfg.CoreConfig.TLSConfig = tlsConfig
+	}
 
 	if showVersion {
 		utils.PrintInfo()
@@ -136,7 +155,7 @@ func main() {
 		log.Fatal("Cannot create etcd client", zap.Error(err))
 	}
 
-	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(), etcdProvider)
+	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(cliConfig.CoreConfig.TLSConfig), etcdProvider)
 	// FIXME: Handle open error
 	tidbForwarder.Open()        //nolint:errcheck
 	defer tidbForwarder.Close() //nolint:errcheck
@@ -147,7 +166,7 @@ func main() {
 	remoteDataProvider := &keyvisualregion.PDDataProvider{
 		FileStartTime:  cliConfig.KVFileStartTime,
 		FileEndTime:    cliConfig.KVFileEndTime,
-		PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint),
+		PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint, httpClient),
 		EtcdProvider:   etcdProvider,
 		Store:          store,
 	}

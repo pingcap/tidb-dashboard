@@ -25,8 +25,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func fetchProfilingSVG(ctx context.Context, nodeType NodeType, addr, filePrefix string, profileDurationSecs uint) (string, error) {
-	url := getProfilingURL(nodeType, addr, profileDurationSecs)
+func fetchProfilingSVG(ctx context.Context, nodeType NodeType, addr, filePrefix string, profileDurationSecs uint, httpClient *http.Client, tls bool) (string, error) {
+	url := getProfilingURL(nodeType, addr, profileDurationSecs, tls)
 	if url == "" {
 		return "", errors.Errorf("no such component: %s", nodeType)
 	}
@@ -39,7 +39,7 @@ func fetchProfilingSVG(ctx context.Context, nodeType NodeType, addr, filePrefix 
 		// forbidden PD follower proxy
 		req.Header.Add("PD-Allow-follower-handle", "true")
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -55,7 +55,7 @@ func fetchProfilingSVG(ctx context.Context, nodeType NodeType, addr, filePrefix 
 	return svgFilePath, nil
 }
 
-func getProfilingURL(nodeType NodeType, addr string, profileDurationSecs uint) string {
+func getProfilingURL(nodeType NodeType, addr string, profileDurationSecs uint, tls bool) string {
 	var url string
 	secs := fmt.Sprintf("%d", profileDurationSecs)
 	switch nodeType {
@@ -66,8 +66,12 @@ func getProfilingURL(nodeType NodeType, addr string, profileDurationSecs uint) s
 	default:
 		return ""
 	}
-	// FIXME: Support TLS
-	return fmt.Sprintf("http://%s%s", addr, url)
+	schema := "http"
+	// TiKV dose not support TLS for the status server currently
+	if nodeType != NodeTypeTiKV && tls {
+		schema = "https"
+	}
+	return fmt.Sprintf("%s://%s%s", schema, addr, url)
 }
 
 func getSvgFilePath(nodeType NodeType, filePrefix string, body io.ReadCloser) (string, error) {

@@ -61,13 +61,6 @@ function mapData(data) {
   return data
 }
 
-function downloadFile(url) {
-  const link = document.createElement('a');
-  link.href = url;
-  document.body.appendChild(link);
-  link.click();
-}
-
 export default function Page() {
   const { id } = useParams()
   const [isLoading, setIsLoading] = useState(true)
@@ -100,13 +93,13 @@ export default function Page() {
   }, [id])
 
   async function handleDownload() {
-    const res = await client.dashboard.profilingDownloadAcquireTokenGet(id)
+    const res = await client.dashboard.profilingGroupDownloadAcquireTokenGet(id)
     const token = res.data
     if (!token) {
       return
     }
     const url = `${DASHBOARD_API_URL}/profiling/group/download?token=${token}`
-    downloadFile(url)
+    window.open(url)
   }
 
   return (
@@ -116,7 +109,11 @@ export default function Page() {
       ) : (
         <Form>
           <Form.Item>
-            <Button disabled={isRunning} type="primary" onClick={handleDownload} target="_blank">
+            <Button
+              disabled={isRunning}
+              type="primary"
+              onClick={handleDownload}
+            >
               {t('node_profiling.detail.download')}
             </Button>
           </Form.Item>

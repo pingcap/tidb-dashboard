@@ -1,46 +1,54 @@
-import client, { DASHBOARD_API_URL } from '@/utils/client';
-import { LogsearchSearchTarget, LogsearchTaskModel } from '@/utils/dashboard_client';
-import { Button, Card, Modal, Tree, Typography } from 'antd';
-import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree';
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { useTranslation } from 'react-i18next';
-import { Context } from "../store";
-import { FailIcon, LoadingIcon, SuccessIcon } from './Icon';
-import styles from './SearchProgress.module.css';
-import { namingMap, TaskState } from './util';
+import client, { DASHBOARD_API_URL } from '@/utils/client'
+import {
+  LogsearchSearchTarget,
+  LogsearchTaskModel,
+} from '@/utils/dashboard_client'
+import { Button, Card, Modal, Tree, Typography } from 'antd'
+import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree'
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Context } from '../store'
+import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
+import styles from './SearchProgress.module.css'
+import { namingMap, TaskState } from './util'
 
-const { confirm } = Modal;
-const { Title } = Typography;
-const { TreeNode } = Tree;
+const { confirm } = Modal
+const { Title } = Typography
+const { TreeNode } = Tree
 
 function leafNodeProps(state: number | undefined) {
   switch (state) {
     case TaskState.Running:
       return {
         icon: LoadingIcon,
-        disableCheckbox: true
+        disableCheckbox: true,
       }
     case TaskState.Finished:
       return {
         icon: SuccessIcon,
-        disableCheckbox: false
+        disableCheckbox: false,
       }
     case TaskState.Error:
       return {
         icon: FailIcon,
-        disableCheckbox: true
+        disableCheckbox: true,
       }
     default:
-      break;
+      break
   }
 }
 
-function renderLeafNodes(tasks: LogsearchTaskModel[], serverMap: Map<string, LogsearchSearchTarget>) {
+function renderLeafNodes(
+  tasks: LogsearchTaskModel[],
+  serverMap: Map<string, LogsearchSearchTarget>
+) {
   return tasks.map(task => {
     let title = ''
     for (let [addr, target] of serverMap.entries()) {
-      if (target.ip === task.search_target?.ip
-        && target.port === task.search_target?.port) {
+      if (
+        target.ip === task.search_target?.ip &&
+        target.port === task.search_target?.port
+      ) {
         title = addr
         break
       }
@@ -75,35 +83,26 @@ function parentNodeCheckable(tasks: LogsearchTaskModel[]) {
 }
 
 function useSetInterval(callback: () => void) {
-  const ref = useRef<() => void>(callback);
+  const ref = useRef<() => void>(callback)
 
   useEffect(() => {
-    ref.current = callback;
-  });
+    ref.current = callback
+  })
 
   useEffect(() => {
     const cb = () => {
       ref.current()
-    };
+    }
     const timer = setInterval(cb, 1000)
-    return () => clearInterval(timer);
-  }, []);
-}
-
-function downloadFile(url: string) {
-  const link = document.createElement('a');
-  link.href = url;
-  document.body.appendChild(link);
-  link.click();
+    return () => clearInterval(timer)
+  }, [])
 }
 
 interface Props {
   taskGroupID: number
 }
 
-export default function SearchProgress({
-  taskGroupID
-}: Props) {
+export default function SearchProgress({ taskGroupID }: Props) {
   const { store, dispatch } = useContext(Context)
   const { tasks } = store
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
@@ -113,26 +112,28 @@ export default function SearchProgress({
     if (taskGroupID < 0) {
       return
     }
-    if (tasks.length > 0 &&
+    if (
+      tasks.length > 0 &&
       taskGroupID === tasks[0].task_group_id &&
-      !tasks.some(task => task.state === TaskState.Running)) {
+      !tasks.some(task => task.state === TaskState.Running)
+    ) {
       return
     }
     const res = await client.dashboard.logsTaskgroupsIdGet(taskGroupID)
     dispatch({
       type: 'tasks',
-      payload: res.data.tasks ?? []
+      payload: res.data.tasks ?? [],
     })
   }
 
   useSetInterval(() => {
     getTasks(taskGroupID, tasks)
-  });
+  })
 
   const descriptionArray = [
     t('log_searching.progress.running'),
     t('log_searching.progress.success'),
-    t('log_searching.progress.failed')
+    t('log_searching.progress.failed'),
   ]
 
   function progressDescription(tasks: LogsearchTaskModel[]) {
@@ -154,11 +155,14 @@ export default function SearchProgress({
     return res.join('，')
   }
 
-  function renderTreeNodes(tasks: LogsearchTaskModel[], serverMap: Map<string, LogsearchSearchTarget>) {
+  function renderTreeNodes(
+    tasks: LogsearchTaskModel[],
+    serverMap: Map<string, LogsearchSearchTarget>
+  ) {
     const servers = {
       tidb: [],
       tikv: [],
-      pd: []
+      pd: [],
     }
 
     tasks.forEach(task => {
@@ -176,10 +180,12 @@ export default function SearchProgress({
         const title = (
           <span>
             {namingMap[key]}
-            <span style={{
-              fontSize: "0.8em",
-              marginLeft: 5
-            }}>
+            <span
+              style={{
+                fontSize: '0.8em',
+                marginLeft: 5,
+              }}
+            >
               {progressDescription(tasks)}
             </span>
           </span>
@@ -193,8 +199,7 @@ export default function SearchProgress({
             children={renderLeafNodes(tasks, serverMap)}
           />
         )
-      }
-      )
+      })
   }
 
   async function handleDownload() {
@@ -202,19 +207,17 @@ export default function SearchProgress({
       return
     }
     // filter out all parent node
-    const keys = checkedKeys.filter(key =>
-      !Object.keys(namingMap).some(name =>
-        name === key
-      )
+    const keys = checkedKeys.filter(
+      key => !Object.keys(namingMap).some(name => name === key)
     )
-    
+
     const res = await client.dashboard.logsDownloadAcquireTokenGet(keys)
     const token = res.data
     if (!token) {
       return
     }
     const url = `${DASHBOARD_API_URL}/logs/download?token=${token}`
-    downloadFile(url)
+    window.open(url)
   }
 
   async function handleCancel() {
@@ -225,12 +228,15 @@ export default function SearchProgress({
       title: t('log_searching.confirm.cancel_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdCancelPost(taskGroupID)
-        dispatch({type: 'tasks', payload: tasks.map(task => {
-          if (task.state === TaskState.Error) {
-            task.state = TaskState.Running
-          }
-          return task
-        })})
+        dispatch({
+          type: 'tasks',
+          payload: tasks.map(task => {
+            if (task.state === TaskState.Error) {
+              task.state = TaskState.Running
+            }
+            return task
+          }),
+        })
       },
     })
   }
@@ -243,19 +249,25 @@ export default function SearchProgress({
       title: t('log_searching.confirm.retry_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdRetryPost(taskGroupID)
-        dispatch({type: 'tasks', payload: tasks.map(task => {
-          if (task.state === TaskState.Error) {
-            task.state = TaskState.Running
-          }
-          return task
-        })})
+        dispatch({
+          type: 'tasks',
+          payload: tasks.map(task => {
+            if (task.state === TaskState.Error) {
+              task.state = TaskState.Running
+            }
+            return task
+          }),
+        })
       },
     })
   }
 
-  function handleCheck(checkedKeys: string[] | { checked: string[]; halfChecked: string[]; }, e: AntTreeNodeCheckedEvent) {
+  function handleCheck(
+    checkedKeys: string[] | { checked: string[]; halfChecked: string[] },
+    e: AntTreeNodeCheckedEvent
+  ) {
     setCheckedKeys(checkedKeys as string[])
-  };
+  }
 
   return (
     <div>
@@ -263,9 +275,29 @@ export default function SearchProgress({
         <Title level={3}>{t('log_searching.common.progress')}</Title>
         <div>{progressDescription(tasks)}</div>
         <div className={styles.buttons}>
-          <Button type="primary" onClick={handleDownload} disabled={checkedKeys.length < 1}>{t('log_searching.common.download_selected')}</Button>
-          <Button type="danger" onClick={handleCancel} disabled={!tasks.some(task => task.state === TaskState.Running)}>{t('log_searching.common.cancel')}</Button>
-          <Button onClick={handleRetry} disabled={tasks.some(task => task.state === TaskState.Running) || !tasks.some(task => task.state === TaskState.Error)}>{t('log_searching.common.retry')}</Button>
+          <Button
+            type="primary"
+            onClick={handleDownload}
+            disabled={checkedKeys.length < 1}
+          >
+            {t('log_searching.common.download_selected')}
+          </Button>
+          <Button
+            type="danger"
+            onClick={handleCancel}
+            disabled={!tasks.some(task => task.state === TaskState.Running)}
+          >
+            {t('log_searching.common.cancel')}
+          </Button>
+          <Button
+            onClick={handleRetry}
+            disabled={
+              tasks.some(task => task.state === TaskState.Running) ||
+              !tasks.some(task => task.state === TaskState.Error)
+            }
+          >
+            {t('log_searching.common.retry')}
+          </Button>
         </div>
         <Tree
           checkable

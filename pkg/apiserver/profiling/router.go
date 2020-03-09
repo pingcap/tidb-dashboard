@@ -50,12 +50,14 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 // Register register the handlers to the service.
 func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/profiling")
-	endpoint.GET("/download/acquire_token", auth.MWAuthRequired(), s.getTokenHandler)
+
 	endpoint.POST("/group/start", auth.MWAuthRequired(), s.startHandler)
 	endpoint.GET("/group/status/:groupId", auth.MWAuthRequired(), s.statusHandler)
 	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), s.cancelGroupHandler)
-	endpoint.GET("/group/download/:groupId", s.downloadGroupHandler)
-	endpoint.GET("/single/download/:taskId", s.downloadHandler)
+	endpoint.GET("/group/download/acquire_token", auth.MWAuthRequired(), s.getGroupDownloadTokenHandler)
+	endpoint.GET("/group/download", s.downloadGroupHandler)
+	endpoint.GET("/single/download/acquire_token", auth.MWAuthRequired(), s.getSingleDownloadTokenHandler)
+	endpoint.GET("/single/download", s.downloadSingleHandler)
 	endpoint.DELETE("/group/delete/:groupId", auth.MWAuthRequired(), s.deleteHandler)
 }
 
@@ -207,18 +209,18 @@ func (s *Service) cancelGroupHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, "success")
 }
 
-// @Summary Get download token with a given task ID or group ID
-// @Description Get download token with a given task ID or group ID
+// @Summary Get download token for group download
+// @Description Get download token with a given group ID
 // @Produce plain
-// @Param id query string false "task ID or group ID"
+// @Param id query string false "group ID"
 // @Security JwtAuth
 // @Success 200 {string} string
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /profiling/download/acquire_token [get]
-func (s *Service) getTokenHandler(c *gin.Context) {
+// @Router /profiling/group/download/acquire_token [get]
+func (s *Service) getGroupDownloadTokenHandler(c *gin.Context) {
 	id := c.Query("id")
-	token, err := utils.NewJWTString(id)
+	token, err := utils.NewJWTString("profiling/group_download", id)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
@@ -238,7 +240,7 @@ func (s *Service) getTokenHandler(c *gin.Context) {
 // @Router /profiling/group/download [get]
 func (s *Service) downloadGroupHandler(c *gin.Context) {
 	token := c.Query("token")
-	str, err := utils.ParseJWTString(token)
+	str, err := utils.ParseJWTString("profiling/group_download", token)
 	if err != nil {
 		c.Status(http.StatusUnauthorized)
 		_ = c.Error(utils.ErrInvalidRequest.New(err.Error()))
@@ -282,6 +284,26 @@ func (s *Service) downloadGroupHandler(c *gin.Context) {
 	c.FileAttachment(temp.Name(), fileName)
 }
 
+// @Summary Get download token for single download
+// @Description Get download token with a given task ID
+// @Produce plain
+// @Param id query string false "task ID"
+// @Security JwtAuth
+// @Success 200 {string} string
+// @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Router /profiling/single/download/acquire_token [get]
+func (s *Service) getSingleDownloadTokenHandler(c *gin.Context) {
+	id := c.Query("id")
+	token, err := utils.NewJWTString("profiling/single_download", id)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		return
+	}
+	c.String(http.StatusOK, token)
+}
+
 // @Summary Download the result of a task
 // @Description Download the finished profiling result of a task
 // @Produce application/x-gzip
@@ -291,9 +313,9 @@ func (s *Service) downloadGroupHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /profiling/single/download [get]
-func (s *Service) downloadHandler(c *gin.Context) {
+func (s *Service) downloadSingleHandler(c *gin.Context) {
 	token := c.Query("token")
-	str, err := utils.ParseJWTString(token)
+	str, err := utils.ParseJWTString("profiling/single_download", token)
 	if err != nil {
 		c.Status(http.StatusUnauthorized)
 		_ = c.Error(utils.ErrInvalidRequest.New(err.Error()))

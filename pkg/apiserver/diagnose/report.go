@@ -637,7 +637,13 @@ func GetTiDBTxnTableData(startTime, endTime string, db *gorm.DB) (TableDef, erro
 
 	resultRows := make([]TableRowDef, 0, len(defs))
 
-	quantiles := []float64{0.999, 0.99, 0.90, 0.80}
+	quantiles := Quantiles{
+		Q1: 0.999,
+		Q2: 0.99,
+		Q3: 0.90,
+		Q4: 0.80,
+	}
+
 	table := TableDef{
 		Category: []string{CategoryTiDB},
 		Title:    "Transaction",
@@ -869,7 +875,12 @@ func GetTiKVRegionSizeInfo(startTime, endTime string, db *gorm.DB) (TableDef, er
 		resultRows = append(resultRows, row)
 	}
 
-	quantiles := []float64{0.99, 0.90, 0.80, 0.50}
+	quantiles := Quantiles{
+		Q1: 0.99,
+		Q2: 0.90,
+		Q3: 0.80,
+		Q4: 0.50,
+	}
 	arg := &queryArg{
 		startTime: startTime,
 		endTime:   endTime,

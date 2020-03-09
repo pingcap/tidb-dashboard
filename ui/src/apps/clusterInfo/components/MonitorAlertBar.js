@@ -7,21 +7,11 @@ import styles from './MonitorAlertBar.module.less'
 
 export default function MonitorAlertBar({ cluster }) {
   const { t } = useTranslation()
-  const [alertCounter, setAlertCounter] = useState(0)
 
-  useEffect(() => {
-    const fetchNum = async () => {
-      if (cluster === null || cluster.alert_manager === null) {
-        return
-      }
-      let resp = await axios.get(
-        `http://${cluster.alert_manager.ip}:${cluster.alert_manager.port}/api/v2/alerts`
-      )
-      setAlertCounter(resp.data.length)
-    }
-    fetchNum()
-  }, [cluster])
-
+  let alertCounter = 0
+  if (cluster !== null && cluster.alert_count !== null) {
+    alertCounter = cluster.alert_count
+  }
   return (
     <div>
       <Card

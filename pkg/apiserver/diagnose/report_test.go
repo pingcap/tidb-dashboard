@@ -70,12 +70,18 @@ func (t *testReportSuite) TestGetCompareTable(c *C) {
 	//startTime2 := "2020-03-05 20:55:00"
 	//endTime2 := "2020-03-05 20:57:00"
 	//
-	startTime1 := "2020-03-08 02:23:00"
-	endTime1 := "2020-03-08 02:27:00"
 
-	startTime2 := "2020-03-08 02:30:00"
-	endTime2 := "2020-03-08 02:34:00"
+	startTime1 := "2020-03-09 20:42:00"
+	endTime1 := "2020-03-09 20:45:00"
 
+	startTime2 := "2020-03-09 20:47:30"
+	endTime2 := "2020-03-09 20:50:30"
+
+	//startTime1 := "2020-03-08 01:36:00"
+	//endTime1 := "2020-03-08 01:41:00"
+	//
+	//startTime2 := "2020-03-08 01:46:30"
+	//endTime2 := "2020-03-08 01:51:30"
 	tables := GetCompareReportTables(startTime1, endTime1, startTime2, endTime2, cli)
 	for _, tbl := range tables {
 		printRows(tbl)

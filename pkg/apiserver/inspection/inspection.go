@@ -18,6 +18,81 @@ type clusterInspection struct {
 	db *gorm.DB
 }
 
+
+func (c *clusterInspection) inspectForAffectByWrite() (*inspectionResult, error) {
+	checks := []struct {
+		query     metricQuery
+		ct        compareType
+		threshold float64
+	}{
+		{
+			query: &queryTotal{
+				baseQuery: baseQuery{
+					table:  "tidb_kv_write_total_num",
+					labels: []string{"instance"},
+				},
+			},
+			ct:        compareGT,
+			threshold: 1.5,
+		},
+		{
+			query: &queryQPS{
+				baseQuery: baseQuery{
+					table:  "tidb_qps",
+					labels: []string{"instance"},
+				},
+			},
+			ct:        compareLT,
+			threshold: 0.9,
+		},
+		{
+			query: &queryDuration{
+				baseQuery: baseQuery{
+					table:     "tidb_query_duration",
+					labels:    []string{"instance"},
+					condition: "value is not null and quantile=0.999",
+				},
+			},
+			ct: compareGT,
+			threshold: 1.2,
+		},
+	}
+	var totalDiffs []metricDiff
+	for _, ck := range checks {
+		err := c.compareMetric(ck.query)
+		if err != nil {
+			return nil, err
+		}
+		partDiffs := ck.query.compare()
+		partDiffs = checkDiffs(partDiffs, ck.ct, ck.threshold)
+		if len(partDiffs) == 0 {
+			return nil, nil
+		}
+		totalDiffs = append(totalDiffs, partDiffs...)
+	}
+	//var detailSQL string
+	//var err error
+	//detailSQL, err = c.queryBigQueryInSlowLog()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//if len(detailSQL) == 0 {
+	//	detailSQL, err = c.queryExpensiveQueryInTiDBLog()
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
+	detail := genMetricDiffsString(totalDiffs)
+	//if len(detailSQL) > 0 {
+	//	detail = detail + " ,has big query been execute in diagnose time range, " + "check the big query with sql: \n" + detailSQL
+	//}
+	result := &inspectionResult{
+		detail: detail,
+	}
+	fmt.Println(detail)
+	return result, nil
+}
+
 func (c *clusterInspection) inspectForAffectByBigQuery() (*inspectionResult, error) {
 	checks := []struct {
 		query     metricQuery
@@ -43,7 +118,6 @@ func (c *clusterInspection) inspectForAffectByBigQuery() (*inspectionResult, err
 				},
 			},
 			ct: compareGT,
-			//threshold: 1.5,
 			threshold: 1.2,
 		},
 		{
@@ -55,8 +129,7 @@ func (c *clusterInspection) inspectForAffectByBigQuery() (*inspectionResult, err
 				},
 			},
 			ct: compareGT,
-			//threshold: 2,
-			threshold: 1.5,
+			threshold: 2,
 		},
 		//{
 		//	query: &queryTotal{
@@ -115,9 +188,17 @@ func (c *clusterInspection) inspectForAffectByBigQuery() (*inspectionResult, err
 		}
 		totalDiffs = append(totalDiffs, partDiffs...)
 	}
-	detailSQL, err := c.queryBigQueryInSlowLog()
+	var detailSQL string
+	var err error
+	detailSQL, err = c.queryBigQueryInSlowLog()
 	if err != nil {
 		return nil, err
+	}
+	if len(detailSQL) == 0 {
+		detailSQL, err = c.queryExpensiveQueryInTiDBLog()
+		if err != nil {
+			return nil, err
+		}
 	}
 	detail := genMetricDiffsString(totalDiffs)
 	if len(detailSQL) > 0 {
@@ -480,6 +561,26 @@ WHERE t1.digest NOT IN
 ORDER BY  t1.sum_process_time DESC limit 10;`, c.startTime, c.endTime, c.referStartTime, c.referEndTime), nil
 }
 
+func (c *clusterInspection) queryExpensiveQueryInTiDBLog() (string, error) {
+	sql := fmt.Sprintf("SELECT count(*) FROM information_schema.cluster_log WHERE type='tidb' AND time >= '%s' AND time < '%s' AND level = 'warn' AND message LIKE '%s'", c.startTime, c.endTime,"%expensive_query%")
+	rows, err := querySQL(c.db, sql)
+	if err != nil {
+		return "", err
+	}
+	if len(rows) == 0 || len(rows[0]) == 0 {
+		return "", nil
+	}
+	count, err := strconv.Atoi(rows[0][0])
+	if err != nil {
+		return "", err
+	}
+	if count == 0 {
+		return "", nil
+	}
+	sql = strings.Replace(sql,"count(*)", "*",1)
+	return sql,nil
+}
+
 func batchAtof(ss []string) ([]float64, error) {
 	re := make([]float64, len(ss))
 	for i := range ss {
@@ -578,14 +679,18 @@ type metricDiff struct {
 }
 
 func (d metricDiff) String() string {
-	return d.tp + "|" + d.label + "|" + fmt.Sprintf("%.2f", d.ratio)
+	if d.ratio > 1 {
+		return d.tp + ":" + d.label + " ↑ " + fmt.Sprintf("%.2f", d.ratio)
+	} else {
+		return d.tp + ":" + d.label + " ↓ " + fmt.Sprintf("%.2f", d.ratio)
+	}
 }
 
 type compareType bool
 
 const (
-	compareLT = false
-	compareGT = true
+	compareLT compareType = false
+	compareGT compareType = true
 )
 
 func checkDiffs(diffs []metricDiff, tp compareType, threshold float64) []metricDiff {

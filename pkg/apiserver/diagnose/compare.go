@@ -103,6 +103,8 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 			Values: []string{
 				row.label,
 				strconv.FormatFloat(row.ratio, 'f', -1, 64),
+				row.v1,
+				row.v2,
 			},
 		})
 	}
@@ -115,7 +117,7 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 		Title:     "Max diff item",
 		CommentEN: "",
 		CommentCN: "",
-		Column:    []string{"NAME", "MAX_DIFF"},
+		Column:    []string{"NAME", "MAX_DIFF","t1.VALUE","t2.VALUE"},
 		Rows:      rows,
 	}
 }
@@ -213,7 +215,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 	for _, subRow1 := range row1.SubValues {
 		label := genRowLabel(subRow1, table.joinColumns)
 		subRow2 := rowsMap2[label]
-		ratio, err := calculateDiffRatio(subRow1, subRow2, table)
+		ratio,idx, err := calculateDiffRatio(subRow1, subRow2, table)
 		if err != nil {
 			return nil, errors.Errorf("category %v,table %v, calculate diff ratio error: %v,  %v,%v", strings.Join(table.Category, ","), table.Title, err.Error(), subRow1, subRow2)
 		}
@@ -222,7 +224,8 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			row2:  subRow2,
 			ratio: ratio,
 		})
-		dr.appendRow(diffRow{label, ratio})
+
+		dr.addRow(label,ratio,subRow1,subRow2,idx)
 	}
 
 	for _, subRow2 := range row2.SubValues {
@@ -231,7 +234,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 		if ok {
 			continue
 		}
-		ratio, err := calculateDiffRatio(subRow1, subRow2, table)
+		ratio,idx, err := calculateDiffRatio(subRow1, subRow2, table)
 		if err != nil {
 			return nil, errors.Errorf("category %v,table %v, calculate diff ratio error: %v,  %v,%v", strings.Join(table.Category, ","), table.Title, err.Error(), subRow1, subRow2)
 		}
@@ -241,7 +244,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			row2:  subRow2,
 			ratio: ratio,
 		})
-		dr.appendRow(diffRow{label, ratio})
+		dr.addRow(label,ratio,subRow1,subRow2,idx)
 	}
 
 	sort.Slice(subJoinRows, func(i, j int) bool {
@@ -256,10 +259,11 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 
 	// row join with null row
 	if len(subJoinRows) == 0 {
+		var totalRatioIdx = -1
 		if len(row1.Values) != len(row2.Values) {
 			totalRatio = 1
 		} else {
-			totalRatio, err = calculateDiffRatio(row1.Values, row2.Values, table)
+			totalRatio,totalRatioIdx, err = calculateDiffRatio(row1.Values, row2.Values, table)
 			if err != nil {
 				return nil, errors.Errorf("category %v,table %v, calculate diff ratio error: %v,  %v,%v", strings.Join(table.Category, ","), table.Title, err.Error(), row1.Values, row2.Values)
 			}
@@ -271,7 +275,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			label = genRowLabel(row2.Values, table.joinColumns)
 		}
 		if len(label) > 0 {
-			dr.appendRow(diffRow{label, totalRatio})
+			dr.addRow(label,totalRatio,row1.Values,row2.Values,totalRatioIdx)
 		}
 	}
 
@@ -293,6 +297,8 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 type diffRow struct {
 	label string
 	ratio float64
+	v1 string
+	v2 string
 }
 
 type diffRows []diffRow
@@ -313,9 +319,28 @@ func (r *diffRows) Pop() interface{} {
 	return x
 }
 
+func (r *diffRows) addRow(label string,ratio float64, vs1,vs2 []string,idx int) {
+	v1 := ""
+	v2 := ""
+	if idx >=0 {
+		if idx < len(vs1) {
+			v1 = vs1[idx]
+		}
+		if idx < len(vs2) {
+			v2 = vs2[idx]
+		}
+	}
+	r.appendRow(diffRow{
+		label: label,
+		ratio: ratio,
+		v1:    v1,
+		v2:    v2,
+	})
+}
+
 func (r *diffRows) appendRow(row diffRow) {
 	heap.Push(r, row)
-	if r.Len() > 150 {
+	if r.Len() > 450 {
 		heap.Pop(r)
 	}
 }
@@ -356,25 +381,29 @@ func (r *newJoinRow) genNewRow(table *TableDef) []string {
 	return newRow
 }
 
-func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, error) {
+func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64,int, error) {
 	if len(table.compareColumns) == 0 {
-		return 0, nil
+		return 0,-1, nil
 	}
 	if len(row1) == 0 && len(row2) == 0 {
-		return 0, nil
+		return 0,-1, nil
 	}
-	if len(row1) == 0 || len(row2) == 0 {
-		return float64(1), nil
+	if len(row1) == 0 {
+		return float64(1),table.compareColumns[0], nil
+	}
+	if len(row2) == 0 {
+		return float64(-1),table.compareColumns[0], nil
 	}
 	maxRatio := float64(0)
+	maxIdx := -1
 	for _, idx := range table.compareColumns {
 		f1, err := parseFloat(row1[idx])
 		if err != nil {
-			return 0, err
+			return 0,-1, err
 		}
 		f2, err := parseFloat(row2[idx])
 		if err != nil {
-			return 0, err
+			return 0,-1, err
 		}
 		if f1 == f2 {
 			continue
@@ -382,9 +411,10 @@ func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, error) {
 		ratio := (f2 - f1) / math.Max(f1, f2)
 		if math.Abs(ratio) > math.Abs(maxRatio) {
 			maxRatio = ratio
+			maxIdx = idx
 		}
 	}
-	return maxRatio, nil
+	return maxRatio,maxIdx, nil
 }
 
 func parseFloat(s string) (float64, error) {

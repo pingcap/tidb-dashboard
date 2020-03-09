@@ -57,7 +57,8 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 // Register register the handlers to the service.
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/profiling")
-
+	endpoint.POST("/auto/start", auth.MWAuthRequired(), s.autoStartHandler)
+	endpoint.POST("/auto/stop", auth.MWAuthRequired(), s.autoStopHandler)
 	endpoint.GET("/group/list", auth.MWAuthRequired(), s.getGroupList)
 	endpoint.POST("/group/start", auth.MWAuthRequired(), s.start)
 	endpoint.GET("/group/detail/:groupId", auth.MWAuthRequired(), s.getGroupDetail)
@@ -78,11 +79,11 @@ type StartRequest struct {
 // @Summary Start profiling
 // @Description Start a profiling task group
 // @Produce json
-// @Param pr body StartRequest true "profiling request"
-// @Security JwtAuth
+// @Param req body StartRequest true "profiling request"
 // @Success 200 {object} TaskGroupModel "task group"
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
 // @Router /profiling/group/start [post]
 func (s *Service) start(c *gin.Context) {
 	var req StartRequest
@@ -131,8 +132,31 @@ func (s *Service) start(c *gin.Context) {
 		taskGroup.State = TaskStateFinish
 		s.db.Save(taskGroup.TaskGroupModel)
 	}()
+	return taskGroup, nil
+}
 
-	c.JSON(http.StatusOK, taskGroup.TaskGroupModel)
+func (s *Service) autoCollect(c *gin.Context, req *StartRequest, nodes map[NodeType][]string) {
+	ticker := time.NewTicker(time.Duration(req.CollectionInterval) * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-s.quit:
+			return
+		case <-ticker.C:
+			s.collect(req, nodes)
+		}
+	}
+}
+
+// @Summary Stop auto profiling
+// @Description Stop auto profiling
+// @Produce json
+// @Success 200 {string} string "success"
+// @Router /profiling/group/stop [post]
+func (s *Service) autoStopHandler(c *gin.Context) {
+	close(s.quit)
+	c.JSON(http.StatusOK, "success")
 }
 
 // @ID getProfilingGroups

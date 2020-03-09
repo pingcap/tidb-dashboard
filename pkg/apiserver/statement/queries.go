@@ -22,6 +22,24 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"
+// return "d1, d2, d3"
+func extractSchemasFromTableNames(tableNames string) string {
+	schemas := make(map[string]bool)
+	tables := strings.Split(tableNames, ",")
+	for _, v := range tables {
+		schema := strings.Trim(strings.Split(v, ".")[0], " ")
+		if len(schema) > 0 {
+			schemas[schema] = true
+		}
+	}
+	keys := make([]string, 0, len(schemas))
+	for k := range schemas {
+		keys = append(keys, k)
+	}
+	return strings.Join(keys, ", ")
+}
+
 func QuerySchemas(db *gorm.DB) ([]string, error) {
 	sql := `SHOW DATABASES`
 
@@ -65,7 +83,8 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime s
 			sum(exec_count) AS agg_exec_count,
 			round(sum(exec_count*avg_affected_rows)/sum(exec_count)) AS agg_avg_affected_rows,
 			round(sum(exec_count*avg_latency)/sum(exec_count)) AS agg_avg_latency,
-			round(sum(exec_count*avg_mem)/sum(exec_count)) AS agg_avg_mem
+			round(sum(exec_count*avg_mem)/sum(exec_count)) AS agg_avg_mem,
+			group_concat(table_names) AS agg_schemas
 		`).
 		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
 		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
@@ -81,8 +100,15 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime s
 		query = query.Where("table_names REGEXP ?", regexAll)
 	}
 
-	err = query.Find(&result).Error
-	return result, err
+	if err := query.Find(&result).Error; err != nil {
+		return nil, err
+	}
+
+	for _, v := range result {
+		v.AggSchemas = extractSchemasFromTableNames(v.AggSchemas)
+	}
+
+	return result, nil
 }
 
 // Sample params:
@@ -101,7 +127,8 @@ func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string
 			sum(sum_latency) AS agg_sum_latency,
 			sum(exec_count) AS agg_exec_count,
 			round(sum(exec_count*avg_affected_rows)/sum(exec_count)) AS agg_avg_affected_rows,
-			round(sum(exec_count*avg_total_keys)/sum(exec_count)) AS agg_avg_total_keys
+			round(sum(exec_count*avg_total_keys)/sum(exec_count)) AS agg_avg_total_keys,
+			group_concat(table_names) AS agg_schemas
 		`).
 		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
 		Where("schema_name = ?", schema).
@@ -112,6 +139,7 @@ func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string
 	if err := query.Scan(&result).Error; err != nil {
 		return nil, err
 	}
+	result.AggSchemas = extractSchemasFromTableNames(result.AggSchemas)
 
 	query = db.
 		Select(`query_sample_text, last_seen`).

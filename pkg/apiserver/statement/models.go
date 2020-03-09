@@ -29,6 +29,9 @@ type Overview struct {
 	AggExecCount       int    `json:"exec_count"`
 	AggAvgAffectedRows int    `json:"avg_affected_rows"`
 	AggAvgMem          int    `json:"avg_mem"`
+	// Schemas is extracted from table_names column
+	// table_names example: "d1.t1,d2.t2", we extract the "d1,d2" as schemas
+	AggSchemas string `json:"schemas"`
 }
 
 // Detail represents the detail of a statement
@@ -40,6 +43,10 @@ type Detail struct {
 	AggExecCount       int    `json:"exec_count"`
 	AggAvgAffectedRows int    `json:"avg_affected_rows"`
 	AggAvgTotalKeys    int    `json:"avg_total_keys"`
+
+	// Schemas is extracted from table_names column
+	// table_names example: "d1.t1,d2.t2", we extract the "d1,d2" as schemas
+	AggSchemas string `json:"schemas"`
 
 	QuerySampleText string `json:"query_sample_text"`
 	LastSeen        string `json:"last_seen"`

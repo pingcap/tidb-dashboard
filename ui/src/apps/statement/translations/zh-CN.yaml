@@ -5,6 +5,7 @@ statement:
     select_schemas: 选择数据库
   common:
     schema: 数据库
+    schemas: 数据库
     digest_text: SQL 类别
     sum_latency: 总时长
     exec_count: 总次数

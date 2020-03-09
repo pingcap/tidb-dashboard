@@ -5,6 +5,7 @@ statement:
     select_schemas: Select schemas
   common:
     schema: Schema
+    schemas: Schemas
     digest_text: SQL Category
     sum_latency: Sum Latency
     exec_count: Exec Count

@@ -28,6 +28,8 @@ export interface StatementOverview {
   avg_affected_rows: number
   avg_latency: number
   avg_mem: number
+
+  schemas: string
 }
 
 //////////////////
@@ -40,6 +42,8 @@ export interface StatementDetailInfo {
   exec_count: number
   avg_affected_rows: number
   avg_total_keys: number
+
+  schemas: string
 
   query_sample_text: string
   last_seen: string

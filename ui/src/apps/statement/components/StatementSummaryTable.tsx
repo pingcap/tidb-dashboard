@@ -12,14 +12,14 @@ const columns = [
     dataIndex: 'kind',
     key: 'kind',
     align: 'center' as align,
-    width: 160
+    width: 160,
   },
   {
     title: 'content',
     dataIndex: 'content',
     key: 'content',
-    align: 'left' as align
-  }
+    align: 'left' as align,
+  },
 ]
 
 type Props = {
@@ -31,31 +31,31 @@ type Props = {
 export default function StatementSummaryTable({
   detail,
   beginTime,
-  endTime
+  endTime,
 }: Props) {
   const { t } = useTranslation()
 
   const dataSource = [
     {
-      kind: t('statement.common.schema'),
-      content: detail.schema_name
+      kind: t('statement.common.schemas'),
+      content: detail.schemas,
     },
     {
       kind: t('statement.detail.time_range'),
-      content: `${beginTime} ~ ${endTime}`
+      content: `${beginTime} ~ ${endTime}`,
     },
     {
       kind: t('statement.common.digest_text'),
-      content: detail.digest_text
+      content: detail.digest_text,
     },
     {
       kind: t('statement.detail.query_sample_text'),
-      content: detail.query_sample_text
+      content: detail.query_sample_text,
     },
     {
       kind: t('statement.detail.last_seen'),
-      content: moment(detail.last_seen).format('YYYY-MM-DD HH:mm:ss')
-    }
+      content: moment(detail.last_seen).format('YYYY-MM-DD HH:mm:ss'),
+    },
   ]
 
   return (

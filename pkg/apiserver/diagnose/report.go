@@ -1536,7 +1536,6 @@ func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowD
 func GetCPUUsageTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.process_cpu_usage where time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
 		startTime, endTime)
-	fmt.Println(sql)
 	table := TableDef{
 		Category:       []string{CategoryLoad},
 		Title:          "process cpu usage",

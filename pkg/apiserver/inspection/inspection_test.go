@@ -29,11 +29,11 @@ func (t *testInspectionSuite) TestInspection(c *C) {
 	//startTime2 := "2020-03-08 01:46:30"
 	//endTime2 := "2020-03-08 01:51:30"
 
-	startTime1 := "2020-03-09 19:55:00"
-	endTime1 := "2020-03-09 19:57:00"
+	startTime1 := "2020-03-09 22:07:00"
+	endTime1 := "2020-03-09 22:11:00"
 
-	startTime2 := "2020-03-09 20:47:00"
-	endTime2 := "2020-03-09 20:55:00"
+	startTime2 := "2020-03-09 22:12:00"
+	endTime2 := "2020-03-09 22:16:00"
 
 	is := &clusterInspection{
 		referStartTime: startTime1,
@@ -46,6 +46,6 @@ func (t *testInspectionSuite) TestInspection(c *C) {
 
 	_,err = is.diagnoseServerDown()
 	c.Assert(err, IsNil)
-	_, err = is.inspectForAffectByWrite()
+	_, err = is.inspectForAffectByBigQuery()
 	c.Assert(err, IsNil)
 }

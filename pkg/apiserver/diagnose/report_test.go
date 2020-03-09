@@ -65,10 +65,10 @@ func (t *testReportSuite) TestGetCompareTable(c *C) {
 	defer cli.Close()
 
 	startTime1 := "2020-03-09 22:10:00"
-	endTime1 := "2020-03-09 22:12:00"
+	endTime1 := "2020-03-09 22:10:01"
 
-	startTime2 := "2020-03-09 22:13:00"
-	endTime2 := "2020-03-09 22:15:00"
+	startTime2 := "2020-03-09 22:14:30"
+	endTime2 := "2020-03-09 22:14:31"
 
 	tables := GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2, cli,nil,0)
 	for _, tbl := range tables {

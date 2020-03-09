@@ -96,20 +96,30 @@ func CompareTables(tables1, tables2 []*TableDef) ([]*TableDef, []TableRowDef) {
 func GenerateDiffTable(dr diffRows) *TableDef {
 	l := dr.Len()
 	rows := make([]TableRowDef, 0, l)
-	labels := make(map[string]struct{}, l)
+	rowMap := make(map[string]int,l)
 	for dr.Len() > 0 {
 		row := heap.Pop(&dr).(diffRow)
-		if _, ok := labels[row.label]; ok {
+		label := ""
+		if labels := strings.Split(row.label,",");len(labels) > 0 {
+			label = labels[0]
+		}
+		if len(label) == 0 {
 			continue
 		}
-		labels[row.label] = struct{}{}
+		vs := []string{
+			row.table,
+			row.label,
+			fmt.Sprintf("%.2f", row.ratio),
+			row.v1,
+			row.v2,
+		}
+		if idx, ok :=rowMap[label]; ok {
+			rows[idx].SubValues = append(rows[idx].SubValues,vs)
+			continue
+		}
+		rowMap[label]=len(rows)
 		rows = append(rows, TableRowDef{
-			Values: []string{
-				row.label,
-				fmt.Sprintf("%.2f", row.ratio),
-				row.v1,
-				row.v2,
-			},
+			Values: vs,
 			Comment: row.comment,
 		})
 	}
@@ -122,7 +132,7 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 		Title:     "Max diff item",
 		CommentEN: "The max different metrics between 2 time range",
 		CommentCN: "",
-		Column:    []string{"NAME", "MAX_DIFF","t1.VALUE","t2.VALUE"},
+		Column:    []string{"TABLE","NAME", "MAX_DIFF","t1.VALUE","t2.VALUE"},
 		Rows:      rows,
 	}
 }
@@ -216,6 +226,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 		return nil, err
 	}
 
+	tableName := strings.Join(table.Category," -> ") + " -> " + table.Title
 	subJoinRows := make([]*newJoinRow, 0, len(row1.SubValues))
 	for _, subRow1 := range row1.SubValues {
 		label := genRowLabel(subRow1, table.joinColumns)
@@ -229,7 +240,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			row2:  subRow2,
 			ratio: ratio,
 		})
-		dr.addRow(label,ratio,subRow1,subRow2,idx)
+		dr.addRow(tableName,label,ratio,subRow1,subRow2,idx)
 	}
 
 	for _, subRow2 := range row2.SubValues {
@@ -248,7 +259,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			row2:  subRow2,
 			ratio: ratio,
 		})
-		dr.addRow(label,ratio,subRow1,subRow2,idx)
+		dr.addRow(tableName,label,ratio,subRow1,subRow2,idx)
 	}
 
 	sort.Slice(subJoinRows, func(i, j int) bool {
@@ -279,7 +290,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			label = genRowLabel(row2.Values, table.joinColumns)
 		}
 		if len(label) > 0 {
-			dr.addRow(label,totalRatio,row1.Values,row2.Values,totalRatioIdx)
+			dr.addRow(tableName,label,totalRatio,row1.Values,row2.Values,totalRatioIdx)
 		}
 	}
 
@@ -299,6 +310,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 }
 
 type diffRow struct {
+	table string
 	label string
 	ratio float64
 	v1 string
@@ -324,7 +336,7 @@ func (r *diffRows) Pop() interface{} {
 	return x
 }
 
-func (r *diffRows) addRow(label string,ratio float64, vs1,vs2 []string,idx int) {
+func (r *diffRows) addRow(table,label string,ratio float64, vs1,vs2 []string,idx int) {
 	v1 := ""
 	v2 := ""
 	if idx >=0 {
@@ -336,6 +348,7 @@ func (r *diffRows) addRow(label string,ratio float64, vs1,vs2 []string,idx int) 
 		}
 	}
 	r.appendRow(diffRow{
+		table: table,
 		label: label,
 		ratio: ratio,
 		v1:    v1,

@@ -120,17 +120,17 @@ func (c *clusterInspection) inspectForAffectByBigQuery() (*inspectionResult, err
 			ct: compareGT,
 			threshold: 1.2,
 		},
-		{
-			query: &queryDuration{
-				baseQuery: baseQuery{
-					table:     "tidb_cop_duration",
-					labels:    []string{"instance"},
-					condition: "value is not null and quantile=0.999",
-				},
-			},
-			ct: compareGT,
-			threshold: 2,
-		},
+		//{
+		//	query: &queryDuration{
+		//		baseQuery: baseQuery{
+		//			table:     "tidb_cop_duration",
+		//			labels:    []string{"instance"},
+		//			condition: "value is not null and quantile=0.999",
+		//		},
+		//	},
+		//	ct: compareGT,
+		//	threshold: 2,
+		//},
 		//{
 		//	query: &queryTotal{
 		//		baseQuery: baseQuery{
@@ -142,38 +142,38 @@ func (c *clusterInspection) inspectForAffectByBigQuery() (*inspectionResult, err
 		//	ct:        compareGT,
 		//	threshold: 1.0,
 		//},
-		{
-			query: &queryTotal{
-				baseQuery: baseQuery{
-					table:  "tikv_cop_scan_details_total",
-					labels: []string{"instance"},
-				},
-			},
-			ct:        compareGT,
-			threshold: 2.0,
-		},
-		{
-			query: &queryDuration{
-				baseQuery: baseQuery{
-					table:     "tikv_cop_handle_duration",
-					labels:    []string{"instance"},
-					condition: "value is not null and quantile=0.999",
-				},
-			},
-			ct:        compareGT,
-			threshold: 2.0,
-		},
-		{
-			query: &queryDuration{
-				baseQuery: baseQuery{
-					table:     "tikv_cop_wait_duration",
-					labels:    []string{"instance"},
-					condition: "value is not null and quantile=0.999",
-				},
-			},
-			ct:        compareGT,
-			threshold: 1.1,
-		},
+		//{
+		//	query: &queryTotal{
+		//		baseQuery: baseQuery{
+		//			table:  "tikv_cop_scan_details_total",
+		//			labels: []string{"instance"},
+		//		},
+		//	},
+		//	ct:        compareGT,
+		//	threshold: 2.0,
+		//},
+		//{
+		//	query: &queryDuration{
+		//		baseQuery: baseQuery{
+		//			table:     "tikv_cop_handle_duration",
+		//			labels:    []string{"instance"},
+		//			condition: "value is not null and quantile=0.999",
+		//		},
+		//	},
+		//	ct:        compareGT,
+		//	threshold: 2.0,
+		//},
+		//{
+		//	query: &queryDuration{
+		//		baseQuery: baseQuery{
+		//			table:     "tikv_cop_wait_duration",
+		//			labels:    []string{"instance"},
+		//			condition: "value is not null and quantile=0.999",
+		//		},
+		//	},
+		//	ct:        compareGT,
+		//	threshold: 1.1,
+		//},
 	}
 	var totalDiffs []metricDiff
 	for _, ck := range checks {
@@ -508,10 +508,6 @@ FROM
     FROM information_schema.CLUSTER_SLOW_QUERY
     WHERE time >= '%s'
             AND time < '%s'
-            AND is_internal=false
-            AND process_keys > 1000
-            AND request_count > 5
-            AND process_time > 0.5
     GROUP BY  digest) AS t1
 WHERE t1.digest NOT IN 
     (SELECT digest
@@ -542,15 +538,11 @@ WHERE t1.digest NOT IN
          sum(Request_count),
          sum(process_keys),
          max(Cop_proc_max),
-         min(query),
+         min(query),min(prev_stmt),
          digest
     FROM information_schema.CLUSTER_SLOW_QUERY
     WHERE time >= '%s'
             AND time < '%s'
-            AND is_internal=false
-            AND process_keys > 1000
-            AND request_count > 5
-            AND process_time > 0.5
     GROUP BY  digest) AS t1
 WHERE t1.digest NOT IN 
     (SELECT digest

@@ -1,5 +1,6 @@
 import { LogsearchSearchTarget, LogsearchTaskModel } from '@/utils/dashboard_client/api';
 import React from 'react';
+import { Component } from '../components/util';
 
 export interface ServerType {
   ip: string,
@@ -10,12 +11,12 @@ export interface ServerType {
 
 type StateType = {
   tasks: LogsearchTaskModel[],
-  topology: Map<string, LogsearchSearchTarget>,
+  components: Component[],
 }
 
 type ActionType =
   | { type: 'tasks'; payload: LogsearchTaskModel[] }
-  | { type: 'topology'; payload: Map<string, LogsearchSearchTarget> }
+  | { type: 'components'; payload: Component[] }
 
 type ContextType = {
   store: StateType,
@@ -24,7 +25,7 @@ type ContextType = {
 
 export const initialState: StateType = {
   tasks: [],
-  topology: new Map(),
+  components: [],
 }
 
 export const reducer = (state: StateType, action: ActionType): StateType => {
@@ -34,10 +35,10 @@ export const reducer = (state: StateType, action: ActionType): StateType => {
         ...state,
         tasks: action.payload
       }
-    case 'topology':
+    case 'components':
       return {
         ...state,
-        topology: action.payload
+        components: action.payload
       }
     default:
       return state

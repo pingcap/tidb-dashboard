@@ -27,3 +27,6 @@ log_searching:
     level: Level
     component: Component
     log: Log
+  history:
+    running: running
+    finished: finished

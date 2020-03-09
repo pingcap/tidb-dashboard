@@ -3,12 +3,13 @@ import React, { useReducer } from 'react'
 import { HashRouter as Router, Link, Route, Switch, withRouter } from 'react-router-dom'
 import LogSearching from './LogSearching'
 import LogSearchingDetail from './LogSearchingDetail'
+import LogSearchingHistory from './LogSearchingHistory'
 import { Context, initialState, reducer } from './store'
 
 const App = withRouter(props => {
   const { location } = props
-  const page = location.pathname.split('/')[-2]
-
+  const page = location.pathname.split('/').pop()
+  console.log(location.pathname.split('/').pop())
   const [store, dispatch] = useReducer(reducer, initialState);
 
   return (
@@ -22,12 +23,18 @@ const App = withRouter(props => {
             {page === 'detail' && (
               <Breadcrumb.Item>Detail</Breadcrumb.Item>
             )}
+            {page === 'history' && (
+              <Breadcrumb.Item>History</Breadcrumb.Item>
+            )}
           </Breadcrumb>
         </div>
         <div style={{ margin: 12 }}>
           <Switch>
             <Route exact path="/log/search">
               <LogSearching />
+            </Route>
+            <Route path="/log/search/history">
+              <LogSearchingHistory />
             </Route>
             <Route path="/log/search/detail/:id">
               <LogSearchingDetail />

@@ -27,3 +27,6 @@ log_searching:
     level: 日志等级
     component: 组件
     log: 日志
+  history:
+    running: 正在运行
+    finished: 已完成

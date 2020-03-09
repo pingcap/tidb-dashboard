@@ -7,7 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { Context } from "../store";
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon';
 import styles from './SearchProgress.module.css';
-import { namingMap, TaskState } from './util';
+import { namingMap, TaskState, Component } from './util';
+import Item from 'antd/lib/list/Item';
 
 const { confirm } = Modal;
 const { Title } = Typography;
@@ -35,16 +36,10 @@ function leafNodeProps(state: number | undefined) {
   }
 }
 
-function renderLeafNodes(tasks: LogsearchTaskModel[], serverMap: Map<string, LogsearchSearchTarget>) {
+function renderLeafNodes(tasks: LogsearchTaskModel[], components: Component[]) {
   return tasks.map(task => {
-    let title = ''
-    for (let [addr, target] of serverMap.entries()) {
-      if (target.ip === task.search_target?.ip
-        && target.port === task.search_target?.port) {
-        title = addr
-        break
-      }
-    }
+    const target = components.find(item => item.match(task))
+    const title = !!target ? target.addr() : ''
     return (
       <TreeNode
         key={task.id?.toString()}
@@ -154,7 +149,7 @@ export default function SearchProgress({
     return res.join('，')
   }
 
-  function renderTreeNodes(tasks: LogsearchTaskModel[], serverMap: Map<string, LogsearchSearchTarget>) {
+  function renderTreeNodes(tasks: LogsearchTaskModel[], components: Component[]) {
     const servers = {
       tidb: [],
       tikv: [],
@@ -190,7 +185,7 @@ export default function SearchProgress({
             title={title}
             icon={parentNodeIcon(tasks)}
             disableCheckbox={!parentNodeCheckable(tasks)}
-            children={renderLeafNodes(tasks, serverMap)}
+            children={renderLeafNodes(tasks, components)}
           />
         )
       }
@@ -207,7 +202,7 @@ export default function SearchProgress({
         name === key
       )
     )
-    
+
     const res = await client.dashboard.logsDownloadAcquireTokenGet(keys)
     const token = res.data
     if (!token) {
@@ -225,12 +220,14 @@ export default function SearchProgress({
       title: t('log_searching.confirm.cancel_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdCancelPost(taskGroupID)
-        dispatch({type: 'tasks', payload: tasks.map(task => {
-          if (task.state === TaskState.Error) {
-            task.state = TaskState.Running
-          }
-          return task
-        })})
+        dispatch({
+          type: 'tasks', payload: tasks.map(task => {
+            if (task.state === TaskState.Error) {
+              task.state = TaskState.Running
+            }
+            return task
+          })
+        })
       },
     })
   }
@@ -243,12 +240,14 @@ export default function SearchProgress({
       title: t('log_searching.confirm.retry_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdRetryPost(taskGroupID)
-        dispatch({type: 'tasks', payload: tasks.map(task => {
-          if (task.state === TaskState.Error) {
-            task.state = TaskState.Running
-          }
-          return task
-        })})
+        dispatch({
+          type: 'tasks', payload: tasks.map(task => {
+            if (task.state === TaskState.Error) {
+              task.state = TaskState.Running
+            }
+            return task
+          })
+        })
       },
     })
   }
@@ -273,7 +272,7 @@ export default function SearchProgress({
           showIcon
           onCheck={handleCheck}
         >
-          {renderTreeNodes(store.tasks, store.topology)}
+          {renderTreeNodes(store.tasks, store.components)}
         </Tree>
       </Card>
     </div>

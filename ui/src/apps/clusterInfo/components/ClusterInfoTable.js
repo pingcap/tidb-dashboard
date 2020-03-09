@@ -79,9 +79,14 @@ function wrapNode(node, comp, id) {
   if (node === undefined || node === null) {
     return
   }
-  let status = 'down'
+  // This part is copied from backend.
+  let status = 'down';
   if (node.status === 1) {
-    status = 'up'
+    status = 'up';
+  } else if (node.status === 2) {
+    status = 'tombstone';
+  } else if (node.status === 3) {
+    status = 'offline';
   }
   if (node.deploy_path === undefined && node.binary_path !== null) {
     node.deploy_path = node.binary_path.substring(

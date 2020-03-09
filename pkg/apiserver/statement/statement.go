@@ -44,6 +44,7 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint.GET("/overviews", s.overviewsHandler)
 	endpoint.GET("/detail", s.detailHandler)
 	endpoint.GET("/nodes", s.nodesHandler)
+	endpoint.GET("/plans", s.plansHandler)
 }
 
 // @Summary TiDB databases
@@ -159,4 +160,29 @@ func (s *Service) nodesHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, nodes)
+}
+
+// @Summary Statement plans
+// @Description Get statement plans
+// @Produce json
+// @Param schema query string true "Statement schema"
+// @Param begin_time query string true "Statement begin time"
+// @Param end_time query string true "Statement end time"
+// @Param digest query string true "Statement digest"
+// @Success 200 {array} statement.Plan
+// @Router /statements/plans [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) plansHandler(c *gin.Context) {
+	db := utils.GetTiDBConnection(c)
+	schema := c.Query("schema")
+	beginTime := c.Query("begin_time")
+	endTime := c.Query("end_time")
+	digest := c.Query("digest")
+	plans, err := QueryStatementPlans(db, schema, beginTime, endTime, digest)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, plans)
 }

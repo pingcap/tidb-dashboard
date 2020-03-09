@@ -180,3 +180,24 @@ func QueryStatementNodes(db *gorm.DB, schema, beginTime, endTime, digest string)
 		Find(&result).Error
 	return result, err
 }
+
+// Sample params:
+// schemas: "tpcc"
+// beginTime: "2020-02-13 10:30:00"
+// endTime: "2020-02-13 11:00:00"
+// digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
+func QueryStatementPlans(db *gorm.DB, schema, beginTime, endTime, digest string) (result []*Plan, err error) {
+	err = db.
+		Select(`
+			plan_digest,
+			plan,
+			prev_sample_text
+		`).
+		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Where("schema_name = ?", schema).
+		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
+		Where("digest = ?", digest).
+		Group("plan_digest, plan, prev_sample_text").
+		Find(&result).Error
+	return result, err
+}

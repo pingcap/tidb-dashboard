@@ -22,6 +22,12 @@ export default function StatementDetailPage() {
       .then(res => res.data)
   }
 
+  function queryPlans(digest, schemaName, beginTime, endTime) {
+    return client.dashboard
+      .statementsPlansGet(schemaName, beginTime, endTime, digest)
+      .then(res => res.data)
+  }
+
   return digest ? (
     <StatementDetail
       digest={digest}
@@ -30,6 +36,7 @@ export default function StatementDetailPage() {
       endTime={endTime}
       onFetchDetail={queryDetail}
       onFetchNodes={queryNodes}
+      onFetchPlans={queryPlans}
     />
   ) : (
     <p>No sql digest</p>

@@ -58,3 +58,9 @@ export interface StatementNode {
   avg_mem: number
   sum_backoff_times: number
 }
+
+export interface StatementPlan {
+  plan_digest: string
+  plan: string
+  prev_sample_text: string
+}

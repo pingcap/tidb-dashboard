@@ -62,3 +62,9 @@ type Node struct {
 	AvgMem          int    `json:"avg_mem"`
 	SumBackoffTimes int    `json:"sum_backoff_times"`
 }
+
+type Plan struct {
+	PlanDigest     string `json:"plan_digest"`
+	Plan           string `json:"plan"`
+	PrevSampleText string `json:"prev_sample_text"`
+}

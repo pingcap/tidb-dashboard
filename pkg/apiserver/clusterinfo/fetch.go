@@ -35,7 +35,6 @@ type ClusterInfo struct {
 	} `json:"pd"`
 	Grafana      *clusterinfo.GrafanaInfo      `json:"grafana"`
 	AlertManager *clusterinfo.AlertManagerInfo `json:"alert_manager"`
-	AlertCount   *int                          `json:"alert_count"`
 }
 
 // fetches etcd, and parses the ns below:
@@ -58,7 +57,7 @@ func fillTopologyUnderEtcd(ctx context.Context, service *Service, fillTargetInfo
 		fillTargetInfo.AlertManager = alertManager
 		amCount, err := clusterinfo.GetAlertCount(alertManager, service.httpClient)
 		if err == nil {
-			fillTargetInfo.AlertCount = &amCount
+			fillTargetInfo.AlertManager.AlertCount = amCount
 		}
 	}
 	if len(tidb) == 0 {

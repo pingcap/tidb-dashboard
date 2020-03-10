@@ -8,8 +8,8 @@ export default function MonitorAlertBar({ cluster }) {
   const { t } = useTranslation()
 
   let alertCounter = 0
-  if (cluster !== null && cluster.alert_count !== null) {
-    alertCounter = cluster.alert_count
+  if (cluster !== null && cluster.alert_manager !== null) {
+    alertCounter = cluster.alert_manager.alert_count
   }
   return (
     <div>

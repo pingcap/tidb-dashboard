@@ -18,81 +18,6 @@ type clusterInspection struct {
 	db *gorm.DB
 }
 
-
-func (c *clusterInspection) inspectForAffectByWrite() (*inspectionResult, error) {
-	checks := []struct {
-		query     metricQuery
-		ct        compareType
-		threshold float64
-	}{
-		{
-			query: &queryTotal{
-				baseQuery: baseQuery{
-					table:  "tidb_kv_write_total_num",
-					labels: []string{"instance"},
-				},
-			},
-			ct:        compareGT,
-			threshold: 1.5,
-		},
-		{
-			query: &queryQPS{
-				baseQuery: baseQuery{
-					table:  "tidb_qps",
-					labels: []string{"instance"},
-				},
-			},
-			ct:        compareLT,
-			threshold: 0.9,
-		},
-		{
-			query: &queryDuration{
-				baseQuery: baseQuery{
-					table:     "tidb_query_duration",
-					labels:    []string{"instance"},
-					condition: "value is not null and quantile=0.999",
-				},
-			},
-			ct: compareGT,
-			threshold: 1.2,
-		},
-	}
-	var totalDiffs []metricDiff
-	for _, ck := range checks {
-		err := c.compareMetric(ck.query)
-		if err != nil {
-			return nil, err
-		}
-		partDiffs := ck.query.compare()
-		partDiffs = checkDiffs(partDiffs, ck.ct, ck.threshold)
-		if len(partDiffs) == 0 {
-			return nil, nil
-		}
-		totalDiffs = append(totalDiffs, partDiffs...)
-	}
-	//var detailSQL string
-	//var err error
-	//detailSQL, err = c.queryBigQueryInSlowLog()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//if len(detailSQL) == 0 {
-	//	detailSQL, err = c.queryExpensiveQueryInTiDBLog()
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//}
-	detail := genMetricDiffsString(totalDiffs)
-	//if len(detailSQL) > 0 {
-	//	detail = detail + " ,has big query been execute in diagnose time range, " + "check the big query with sql: \n" + detailSQL
-	//}
-	result := &inspectionResult{
-		detail: detail,
-	}
-	fmt.Println(detail)
-	return result, nil
-}
-
 func (c *clusterInspection) inspectForAffectByBigQuery() (*inspectionResult, error) {
 	checks := []struct {
 		query     metricQuery
@@ -107,10 +32,10 @@ func (c *clusterInspection) inspectForAffectByBigQuery() (*inspectionResult, err
 				},
 			},
 			ct:        compareLT,
-			threshold: 0.90,
+			threshold: 0.95,
 		},
 		{
-			query: &queryDuration{
+			query: &queryQuantile{
 				baseQuery: baseQuery{
 					table:     "tidb_query_duration",
 					labels:    []string{"instance"},
@@ -120,60 +45,57 @@ func (c *clusterInspection) inspectForAffectByBigQuery() (*inspectionResult, err
 			ct: compareGT,
 			threshold: 1.2,
 		},
-		//{
-		//	query: &queryDuration{
-		//		baseQuery: baseQuery{
-		//			table:     "tidb_cop_duration",
-		//			labels:    []string{"instance"},
-		//			condition: "value is not null and quantile=0.999",
-		//		},
-		//	},
-		//	ct: compareGT,
-		//	threshold: 2,
-		//},
-		//{
-		//	query: &queryTotal{
-		//		baseQuery: baseQuery{
-		//			table:     "tikv_futurepool_handled_tasks_total_num",
-		//			labels:    []string{"instance"},
-		//			condition: "name like 'cop%'",
-		//		},
-		//	},
-		//	ct:        compareGT,
-		//	threshold: 1.0,
-		//},
-		//{
-		//	query: &queryTotal{
-		//		baseQuery: baseQuery{
-		//			table:  "tikv_cop_scan_details_total",
-		//			labels: []string{"instance"},
-		//		},
-		//	},
-		//	ct:        compareGT,
-		//	threshold: 2.0,
-		//},
-		//{
-		//	query: &queryDuration{
-		//		baseQuery: baseQuery{
-		//			table:     "tikv_cop_handle_duration",
-		//			labels:    []string{"instance"},
-		//			condition: "value is not null and quantile=0.999",
-		//		},
-		//	},
-		//	ct:        compareGT,
-		//	threshold: 2.0,
-		//},
-		//{
-		//	query: &queryDuration{
-		//		baseQuery: baseQuery{
-		//			table:     "tikv_cop_wait_duration",
-		//			labels:    []string{"instance"},
-		//			condition: "value is not null and quantile=0.999",
-		//		},
-		//	},
-		//	ct:        compareGT,
-		//	threshold: 1.1,
-		//},
+	}
+	otherInfoChecks := []struct {
+		query     metricQuery
+		ct        compareType
+		threshold float64
+	}{
+		{
+			query: &queryQuantile{
+				baseQuery: baseQuery{
+					table:     "tidb_cop_duration",
+					labels:    []string{"instance"},
+					condition: "value is not null and quantile=0.999",
+				},
+			},
+			ct: compareGT,
+			threshold: 2,
+		},
+		{
+			// Check for big write transaction
+			query: &queryQuantile{
+				baseQuery: baseQuery{
+					table:     "tidb_kv_write_num",
+					labels:    []string{"instance"},
+					condition: "value is not null and quantile=0.999",
+				},
+			},
+			ct: compareGT,
+			threshold: 2,
+		},
+		{
+			query: &queryTotal{
+				baseQuery: baseQuery{
+					table:     "tikv_cop_scan_keys_total_num",
+					labels:    []string{"instance"},
+				},
+			},
+			ct:        compareGT,
+			threshold: 2.0,
+		},
+		{
+			// Check for tikv storage handle time
+			query: &queryQuantile{
+				baseQuery: baseQuery{
+					table:     "tikv_storage_async_request_duration",
+					labels:    []string{"instance","type"},
+					condition: "value is not null and quantile=0.999",
+				},
+			},
+			ct: compareGT,
+			threshold: 2,
+		},
 	}
 	var totalDiffs []metricDiff
 	for _, ck := range checks {
@@ -188,6 +110,17 @@ func (c *clusterInspection) inspectForAffectByBigQuery() (*inspectionResult, err
 		}
 		totalDiffs = append(totalDiffs, partDiffs...)
 	}
+	// Only for get more information
+	for _, ck := range otherInfoChecks {
+		err := c.compareMetric(ck.query)
+		if err != nil {
+			continue
+		}
+		partDiffs := ck.query.compare()
+		partDiffs = checkDiffs(partDiffs, ck.ct, ck.threshold)
+		totalDiffs = append(totalDiffs, partDiffs...)
+	}
+
 	var detailSQL string
 	var err error
 	detailSQL, err = c.queryBigQueryInSlowLog()
@@ -202,11 +135,12 @@ func (c *clusterInspection) inspectForAffectByBigQuery() (*inspectionResult, err
 	}
 	detail := genMetricDiffsString(totalDiffs)
 	if len(detailSQL) > 0 {
-		detail = detail + " ,has big query been execute in diagnose time range, " + "check the big query with sql: \n" + detailSQL
+		detail = detail + " ,maybe have big query been execute in diagnose time range, " + "check the big query with sql: \n" + detailSQL
 	}
 	result := &inspectionResult{
 		detail: detail,
 	}
+	fmt.Println()
 	fmt.Println(detail)
 	return result, nil
 }
@@ -285,10 +219,7 @@ func (s *queryQPS) setCurrent() {
 func (s *queryQPS) compare() []metricDiff {
 	var diffs []metricDiff
 	for label, v := range s.current {
-		rv, ok := s.refer[label]
-		if !ok {
-			continue
-		}
+		rv := s.refer[label]
 		diff := metricDiff{
 			tp:    s.table,
 			label: label,
@@ -353,7 +284,7 @@ func queryMetric(query metricQuery, arg *queryArg, db *gorm.DB) error {
 	return nil
 }
 
-type queryDuration struct {
+type queryQuantile struct {
 	baseQuery
 	result  map[string]durationValue
 	refer   map[string]durationValue
@@ -365,20 +296,20 @@ type durationValue struct {
 	max float64
 }
 
-func (s *queryDuration) init() {
+func (s *queryQuantile) init() {
 	s.result = make(map[string]durationValue)
 }
 
-func (s *queryDuration) setRefer() {
+func (s *queryQuantile) setRefer() {
 	s.refer = s.result
 	s.result = nil
 }
-func (s *queryDuration) setCurrent() {
+func (s *queryQuantile) setCurrent() {
 	s.current = s.result
 	s.result = nil
 }
 
-func (s *queryDuration) compare() []metricDiff {
+func (s *queryQuantile) compare() []metricDiff {
 	var diffs []metricDiff
 	for label, v := range s.current {
 		rv, ok := s.refer[label]
@@ -398,7 +329,7 @@ func (s *queryDuration) compare() []metricDiff {
 	return diffs
 }
 
-func (s *queryDuration) getDiff() []metricDiff {
+func (s *queryQuantile) getDiff() []metricDiff {
 	var diffs []metricDiff
 	for label, v := range s.current {
 		rv, ok := s.refer[label]
@@ -418,16 +349,15 @@ func (s *queryDuration) getDiff() []metricDiff {
 	return diffs
 }
 
-func (s *queryDuration) generateSQL(arg *queryArg) string {
+func (s *queryQuantile) generateSQL(arg *queryArg) string {
 	prepareSQL := "set @@tidb_metric_query_step=30;set @@tidb_metric_query_range_duration=30;"
 	sql := fmt.Sprintf("select `%[1]s`, avg(value),max(value) from metrics_schema.%[2]s %[3]s group by `%[1]s`",
 		strings.Join(s.labels, "`,`"), s.table, s.genCondition(arg))
 	sql = prepareSQL + sql
-	//fmt.Println(sql)
 	return sql
 }
 
-func (s *queryDuration) appendRow(row []string) error {
+func (s *queryQuantile) appendRow(row []string) error {
 	label := strings.Join(row[:len(s.labels)], ",")
 	values, err := batchAtof(row[len(s.labels):])
 	if err != nil {
@@ -508,6 +438,7 @@ FROM
     FROM information_schema.CLUSTER_SLOW_QUERY
     WHERE time >= '%s'
             AND time < '%s'
+			AND Is_internal = false
     GROUP BY  digest) AS t1
 WHERE t1.digest NOT IN 
     (SELECT digest
@@ -535,14 +466,17 @@ WHERE t1.digest NOT IN
          sum(query_time) AS sum_query_time,
          sum(Process_time) AS sum_process_time,
          sum(Wait_time) AS sum_wait_time,
+         sum(Commit_time),
          sum(Request_count),
          sum(process_keys),
+         sum(Write_keys),
          max(Cop_proc_max),
          min(query),min(prev_stmt),
          digest
     FROM information_schema.CLUSTER_SLOW_QUERY
     WHERE time >= '%s'
             AND time < '%s'
+            AND Is_internal = false
     GROUP BY  digest) AS t1
 WHERE t1.digest NOT IN 
     (SELECT digest
@@ -550,7 +484,7 @@ WHERE t1.digest NOT IN
     WHERE time >= '%s'
             AND time < '%s'
     GROUP BY  digest)
-ORDER BY  t1.sum_process_time DESC limit 10;`, c.startTime, c.endTime, c.referStartTime, c.referEndTime), nil
+ORDER BY  t1.sum_query_time DESC limit 10;`, c.startTime, c.endTime, c.referStartTime, c.referEndTime), nil
 }
 
 func (c *clusterInspection) queryExpensiveQueryInTiDBLog() (string, error) {
@@ -645,7 +579,11 @@ func querySQL(db *gorm.DB, sql string) ([][]string, error) {
 }
 
 func calculateDiff(refer float64, check float64) float64 {
-	return float64(check) / float64(refer)
+	if refer != 0 {
+		return float64(check) / float64(refer)
+	} else {
+		return 1
+	}
 }
 
 func printDiff(item, label, tp string, refer, now float64) {
@@ -706,7 +644,7 @@ func genMetricDiffsString(diffs []metricDiff) string {
 	var buf bytes.Buffer
 	for i := range diffs {
 		if i > 0 {
-			buf.WriteString(" -> " + diffs[i].String())
+			buf.WriteString("\n" + diffs[i].String())
 		} else {
 			buf.WriteString(diffs[i].String())
 		}

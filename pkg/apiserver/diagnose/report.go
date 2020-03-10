@@ -229,17 +229,17 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 	}
 
 	var progress int32
-	totalTableCount := len(funcs)
-	tables, errRows := getTablesParallel(startTime, endTime, db, funcs, sqliteDB, reportID, &progress, totalTableCount)
+	totalTableCount := int32(len(funcs))
+	tables, errRows := getTablesParallel(startTime, endTime, db, funcs, sqliteDB, reportID, &progress, &totalTableCount)
 	tables = append(tables, GenerateReportError(errRows))
 	return tables
 }
 
-func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableFunc, sqliteDB *dbstore.DB, reportID uint, progress *int32, totalTableCount int) ([]*TableDef, []TableRowDef) {
+func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableFunc, sqliteDB *dbstore.DB, reportID uint, progress,totalTableCount *int32) ([]*TableDef, []TableRowDef) {
 	// get the local CPU count for concurrence
 	conc := runtime.NumCPU()
-	if conc > 20 {
-		conc = 20
+	if conc > 8 {
+		conc = 8
 	}
 	if conc > len(funcs) {
 		conc = len(funcs)
@@ -287,11 +287,12 @@ type tblAndErr struct {
 // 1.doGetTable gets the task from taskChan,and close the taskChan if taskChan is empty.
 // 2.doGetTable puts the tblAndErr result to resChan.
 // 3.if taskChan is empty, put a true in doneChan.
-func doGetTable(taskChan chan *task, resChan chan *tblAndErr, wg *sync.WaitGroup, startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress *int32, totalTableCount int) {
+func doGetTable(taskChan chan *task, resChan chan *tblAndErr, wg *sync.WaitGroup, startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress,totalTableCount *int32) {
 	defer wg.Done()
 	for task := range taskChan {
 		f := task.t
 		tbl, err := f(startTime, endTime, db)
+		newProgress := atomic.AddInt32(progress, 1)
 		tblAndErr := tblAndErr{}
 		if err != nil {
 			category := strings.Join(tbl.Category, ",")
@@ -303,9 +304,8 @@ func doGetTable(taskChan chan *task, resChan chan *tblAndErr, wg *sync.WaitGroup
 		}
 		tblAndErr.taskID = task.taskID
 		resChan <- &tblAndErr
-		atomic.AddInt32(progress, 1)
 		if sqliteDB != nil {
-			_ = UpdateReportProgress(sqliteDB, reportID, int(*progress)*100/totalTableCount)
+			_ = UpdateReportProgress(sqliteDB, reportID, int((newProgress*100)/atomic.LoadInt32(totalTableCount)))
 		}
 	}
 }
@@ -923,30 +923,30 @@ func GetTiKVStoreInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) 
 
 func GetTiKVTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []totalTimeByLabelsTableDef{
-		{name: "tikv_grpc_messge", tbl: "tikv_grpc_messge", labels: []string{"instance", "type"}, comment: "The time cost of TiKV handle of gRPC message"},
-		{name: "tikv_cop_request", tbl: "tikv_cop_request", labels: []string{"instance", "req"}, comment: "The time cost of coprocessor handle read requests"},
-		{name: "tikv_cop_handle", tbl: "tikv_cop_handle", labels: []string{"instance", "req"}, comment: "The time cost of handling coprocessor requests"},
-		{name: "tikv_cop_wait", tbl: "tikv_cop_wait", labels: []string{"instance", "req"}, comment: "The time cost of coprocessor requests that wait for being handled"},
-		{name: "tikv_scheduler_command", tbl: "tikv_scheduler_command", labels: []string{"instance", "type"}, comment: "The time cost of executing commit command"},
-		{name: "tikv_scheduler_latch_wait", tbl: "tikv_scheduler_latch_wait", labels: []string{"instance", "type"}, comment: "The time cost of TiKV latch wait in commit command"},
-		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"instance", "type"}, comment: "The time cost of handling snapshots"},
-		{name: "tikv_send_snapshot", tbl: "tikv_send_snapshot", labels: []string{"instance"}, comment: "The time cost of sending snapshots"},
+		//{name: "tikv_grpc_messge", tbl: "tikv_grpc_messge", labels: []string{"instance", "type"}, comment: "The time cost of TiKV handle of gRPC message"},
+		//{name: "tikv_cop_request", tbl: "tikv_cop_request", labels: []string{"instance", "req"}, comment: "The time cost of coprocessor handle read requests"},
+		//{name: "tikv_cop_handle", tbl: "tikv_cop_handle", labels: []string{"instance", "req"}, comment: "The time cost of handling coprocessor requests"},
+		//{name: "tikv_cop_wait", tbl: "tikv_cop_wait", labels: []string{"instance", "req"}, comment: "The time cost of coprocessor requests that wait for being handled"},
+		//{name: "tikv_scheduler_command", tbl: "tikv_scheduler_command", labels: []string{"instance", "type"}, comment: "The time cost of executing commit command"},
+		//{name: "tikv_scheduler_latch_wait", tbl: "tikv_scheduler_latch_wait", labels: []string{"instance", "type"}, comment: "The time cost of TiKV latch wait in commit command"},
+		//{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"instance", "type"}, comment: "The time cost of handling snapshots"},
+		//{name: "tikv_send_snapshot", tbl: "tikv_send_snapshot", labels: []string{"instance"}, comment: "The time cost of sending snapshots"},
 		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"instance", "type"}, comment: "The time cost of processing asynchronous snapshot requests"},
-		{name: "tikv_raft_append_log", tbl: "tikv_append_log", labels: []string{"instance"}, comment: "The time cost of Raft appends log"},
-		{name: "tikv_raft_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}, comment: "The time cost of Raft apply log"},
-		{name: "tikv_raft_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}, comment: "The time cost of Raft apply wait"},
-		{name: "tikv_raft_process", tbl: "tikv_process", labels: []string{"instance", "type"}, comment: "The time cost of peer processes in Raft"},
-		{name: "tikv_raft_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}, comment: "The wait time of each proposal"},
-		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"instance", "type"}, comment: "The time cost of raftstore events"},
-		{name: "tikv_raft_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}, comment: "The time cost of Raft commits log"},
-		{name: "tikv_check_split", tbl: "tikv_check_split", labels: []string{"instance"}, comment: "The time cost of running split check"},
-		{name: "tikv_ingest_sst", tbl: "tikv_ingest_sst", labels: []string{"instance"}, comment: "The time cost of ingesting SST files"},
-		{name: "tikv_gc_tasks", tbl: "tikv_gc_tasks", labels: []string{"instance", "task"}, comment: "The time cost of executing GC tasks"},
-		{name: "tikv_pd_request", tbl: "tikv_pd_request", labels: []string{"instance", "type"}, comment: "The time cost of TiKV sends requests to PD"},
-		{name: "tikv_lock_manager_deadlock_detect", tbl: "tikv_lock_manager_deadlock_detect", labels: []string{"instance"}, comment: "The time cost of deadlock detect"},
-		{name: "tikv_lock_manager_waiter_lifetime", tbl: "tikv_lock_manager_waiter_lifetime", labels: []string{"instance"}},
-		{name: "tikv_backup_range", tbl: "tikv_backup_range", labels: []string{"instance", "type"}},
-		{name: "tikv_backup", tbl: "tikv_backup", labels: []string{"instance"}},
+		//{name: "tikv_raft_append_log", tbl: "tikv_append_log", labels: []string{"instance"}, comment: "The time cost of Raft appends log"},
+		//{name: "tikv_raft_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}, comment: "The time cost of Raft apply log"},
+		//{name: "tikv_raft_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}, comment: "The time cost of Raft apply wait"},
+		//{name: "tikv_raft_process", tbl: "tikv_process", labels: []string{"instance", "type"}, comment: "The time cost of peer processes in Raft"},
+		//{name: "tikv_raft_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}, comment: "The wait time of each proposal"},
+		//{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"instance", "type"}, comment: "The time cost of raftstore events"},
+		//{name: "tikv_raft_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}, comment: "The time cost of Raft commits log"},
+		//{name: "tikv_check_split", tbl: "tikv_check_split", labels: []string{"instance"}, comment: "The time cost of running split check"},
+		//{name: "tikv_ingest_sst", tbl: "tikv_ingest_sst", labels: []string{"instance"}, comment: "The time cost of ingesting SST files"},
+		//{name: "tikv_gc_tasks", tbl: "tikv_gc_tasks", labels: []string{"instance", "task"}, comment: "The time cost of executing GC tasks"},
+		//{name: "tikv_pd_request", tbl: "tikv_pd_request", labels: []string{"instance", "type"}, comment: "The time cost of TiKV sends requests to PD"},
+		//{name: "tikv_lock_manager_deadlock_detect", tbl: "tikv_lock_manager_deadlock_detect", labels: []string{"instance"}, comment: "The time cost of deadlock detect"},
+		//{name: "tikv_lock_manager_waiter_lifetime", tbl: "tikv_lock_manager_waiter_lifetime", labels: []string{"instance"}},
+		//{name: "tikv_backup_range", tbl: "tikv_backup_range", labels: []string{"instance", "type"}},
+		//{name: "tikv_backup", tbl: "tikv_backup", labels: []string{"instance"}},
 	}
 
 	defs := make([]rowQuery, 0, len(defs1))

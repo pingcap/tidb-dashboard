@@ -29,11 +29,35 @@ func (t *testInspectionSuite) TestInspection(c *C) {
 	//startTime2 := "2020-03-08 01:46:30"
 	//endTime2 := "2020-03-08 01:51:30"
 
-	startTime1 := "2020-03-09 22:07:00"
-	endTime1 := "2020-03-09 22:11:00"
+	// affect by big write with conflict
+	//startTime1 := "2020-03-10 12:35:00"
+	//endTime1 := "2020-03-10 12:39:00"
+	//
+	//startTime2 := "2020-03-10 12:41:00"
+	//endTime2 := "2020-03-10 12:45:00"
 
-	startTime2 := "2020-03-09 22:12:00"
-	endTime2 := "2020-03-09 22:16:00"
+	// affect by big write without conflict
+	//startTime1 := "	2020-03-10 13:20:00"
+	//endTime1 := "	2020-03-10 13:23:00"
+	//
+	//startTime2 := "2020-03-10 13:24:00"
+	//endTime2 := "2020-03-10 13:27:00"
+
+	// diagnose for server down
+	//startTime1 := "2020-03-09 20:35:00"
+	//endTime1 := "2020-03-09 21:20:00"
+	//startTime2 := "2020-03-08 20:35:00"
+	//endTime2 := "2020-03-09 21:20:00"
+
+	// diagnose for disk slow , need more disk metric.
+	startTime1 := "2020-03-10 12:48:00"
+	endTime1 := "2020-03-10 12:50:00"
+
+	startTime2 := "2020-03-10 12:54:30"
+	endTime2 := "2020-03-10 12:56:30"
+
+
+
 
 	is := &clusterInspection{
 		referStartTime: startTime1,
@@ -45,6 +69,8 @@ func (t *testInspectionSuite) TestInspection(c *C) {
 	}
 
 	_,err = is.diagnoseServerDown()
+	c.Assert(err, IsNil)
+	_,err = is.diagnoseTiKVServerDown()
 	c.Assert(err, IsNil)
 	_, err = is.inspectForAffectByBigQuery()
 	c.Assert(err, IsNil)

@@ -10,7 +10,7 @@ func (c *clusterInspection) diagnoseFault() (*inspectionResult, error) {
 	return nil,nil
 }
 
-func (c *clusterInspection) diagnoseServerDown() (*inspectionResult, error) {
+func (c *clusterInspection) diagnoseTiKVServerDown() (*inspectionResult, error) {
 	// TiKV server down
 	prepareSQL := "set @@tidb_metric_query_step=30;set @@tidb_metric_query_range_duration=30;"
 	condition := fmt.Sprintf("where time >= '%s' and time < '%s' ", c.startTime, c.endTime)
@@ -29,20 +29,19 @@ func (c *clusterInspection) diagnoseServerDown() (*inspectionResult, error) {
 	if count == 0 {
 		return nil, nil
 	}
-	detail := fmt.Sprintf("There is %v tikv server disconnect with pd", count)
 	sql = fmt.Sprintf(`select t1.instance,t2.min_time from
 (select instance from metrics_schema.up %[1]s and job='tikv' group by instance having max(value)-min(value)>0) as t1 join
 (select instance,min(time) as min_time from metrics_schema.up %[1]s and job='tikv' and value=0 group by instance) as t2 on t1.instance=t2.instance;`,condition)
 	rows, err = querySQL(c.db, prepareSQL + sql)
-	fmt.Println(sql)
 	if err != nil {
 		return nil, err
 	}
+	detail := fmt.Sprintf("There is %v tikv server disconnect with pd", len(rows))
 	for _,row := range rows {
 		if len(row)<2 {
 			continue
 		}
-		info := fmt.Sprintf(",\ntikv %s ,maybe disconnect around time '%s'", row[0],row[1])
+		info := fmt.Sprintf(",\ntikv %s disconnect with prometheus around time '%s'", row[0],row[1])
 		detail += info
 	}
 	fmt.Println(detail)
@@ -50,4 +49,28 @@ func (c *clusterInspection) diagnoseServerDown() (*inspectionResult, error) {
 	return nil,err
 }
 
-
+func (c *clusterInspection) diagnoseServerDown() (*inspectionResult, error) {
+	condition := fmt.Sprintf("where time >= '%s' and time < '%s' ", c.startTime, c.endTime)
+	prepareSQL := "set @@tidb_metric_query_step=30;set @@tidb_metric_query_range_duration=30;"
+	sql := fmt.Sprintf(`select t1.job,t1.instance, t2.min_time from
+(select instance,job from metrics_schema.up %[1]s group by instance,job having max(value)-min(value)>0) as t1 join
+(select instance,min(time) as min_time from metrics_schema.up %[1]s and value=0 group by instance,job) as t2 on t1.instance=t2.instance;`,condition)
+	rows, err := querySQL(c.db, prepareSQL + sql)
+	if err != nil {
+		return nil, err
+	}
+	detail := ""
+	for i,row := range rows {
+		if len(row)<3 {
+			continue
+		}
+		if i > 0 {
+			detail += ",\n"
+		}
+		info := fmt.Sprintf("%s %s disconnect with prometheus around time '%s'", row[0],row[1],row[2])
+		detail += info
+	}
+	fmt.Println(detail)
+	fmt.Println()
+	return nil,err
+}

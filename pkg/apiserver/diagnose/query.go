@@ -510,7 +510,7 @@ func convertFloatToSize(s string) string {
 		f = math.Round(mb*1000) / 1000
 		return fmt.Sprintf("%.3f GB", f)
 	}
-	if mb := f / float64(1024*1024); mb > 0 {
+	if mb := f / float64(1024*1024); mb > 1 {
 		f = math.Round(mb*1000) / 1000
 		return fmt.Sprintf("%.3f MB", f)
 	}

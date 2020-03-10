@@ -3,7 +3,6 @@ package diagnose
 import (
 	"container/heap"
 	"fmt"
-	"github.com/pingcap/log"
 	"math"
 	"sort"
 	"strconv"
@@ -12,7 +11,6 @@ import (
 	"sync/atomic"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
-
 	"github.com/jinzhu/gorm"
 	"github.com/pingcap/errors"
 )
@@ -67,9 +65,6 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 	resultTables = append(resultTables, tables...)
 	resultTables = append(resultTables, tables4...)
 
-	log.Info("finish compare report")
-	fmt.Println("----------------------cs")
-
 	if len(errRows) > 0 {
 		resultTables = append(resultTables, GenerateReportError(errRows))
 	}
@@ -110,7 +105,7 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 		vj1 ,err3 := parseFloat(dr[j].v1)
 		vj2 ,err4 := parseFloat(dr[j].v2)
 		if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
-			fmt.Println("should never hapen",err1,err2)
+			// should never be error herr.
 			return false
 		}
 		return math.Abs(vi2-vi1) > math.Abs(vj1-vj2)
@@ -247,7 +242,6 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 		return nil, err
 	}
 
-	tableName := strings.Join(table.Category," -> ") + " -> " + table.Title
 	subJoinRows := make([]*newJoinRow, 0, len(row1.SubValues))
 	for _, subRow1 := range row1.SubValues {
 		label := genRowLabel(subRow1, table.joinColumns)
@@ -261,10 +255,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			row2:  subRow2,
 			ratio: ratio,
 		})
-		// overview -> Time Consume table is redundant
-		if tableName != "overview -> Time Consume" {
-			dr.addRow(table.Title,label,ratio,subRow1,subRow2,idx,row1.Comment)
-		}
+		dr.addRow(table.Title,label,ratio,subRow1,subRow2,idx,row1.Comment)
 	}
 
 	for _, subRow2 := range row2.SubValues {
@@ -283,10 +274,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			row2:  subRow2,
 			ratio: ratio,
 		})
-		// overview -> Time Consume table is redundant
-		if tableName != "overview -> Time Consume" {
-			dr.addRow(table.Title,label,ratio,subRow1,subRow2,idx,row2.Comment)
-		}
+		dr.addRow(table.Title,label,ratio,subRow1,subRow2,idx,row2.Comment)
 	}
 
 	sort.Slice(subJoinRows, func(i, j int) bool {
@@ -316,10 +304,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 		} else if len(row2.Values) >= len(table.Column) {
 			label = genRowLabel(row2.Values, table.joinColumns)
 		}
-		// overview -> Time Consume table data is redundant
-		if len(label) > 0 && tableName != "overview -> Time Consume" {
-			dr.addRow(table.Title,label,totalRatio,row1.Values,row2.Values,totalRatioIdx,row1.Comment)
-		}
+		dr.addRow(table.Title,label,totalRatio,row1.Values,row2.Values,totalRatioIdx,row1.Comment)
 	}
 
 	resultJoinRow := newJoinRow{
@@ -365,6 +350,9 @@ func (r *diffRows) Pop() interface{} {
 }
 
 func (r *diffRows) addRow(table,label string,ratio float64, vs1,vs2 []string,idx int,comment string) {
+	if ratio == 0 {
+		return
+	}
 	v1 := ""
 	v2 := ""
 	if idx >=0 {
@@ -387,7 +375,7 @@ func (r *diffRows) addRow(table,label string,ratio float64, vs1,vs2 []string,idx
 
 func (r *diffRows) appendRow(row diffRow) {
 	heap.Push(r, row)
-	if r.Len() > 1000 {
+	if r.Len() > 500 {
 		heap.Pop(r)
 	}
 }

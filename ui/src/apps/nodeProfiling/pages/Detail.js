@@ -98,8 +98,7 @@ export default function Page() {
     if (!token) {
       return
     }
-    const url = `${DASHBOARD_API_URL}/profiling/group/download?token=${token}`
-    window.open(url)
+    window.location = `${DASHBOARD_API_URL}/profiling/group/download?token=${token}`
   }
 
   return (

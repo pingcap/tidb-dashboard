@@ -21,5 +21,4 @@ statement:
     query_sample_text: 最后出现 SQL 语句
     last_seen: 最后出现时间
   plan:
-    plan: 执行计划
-    prev_sample_text: 前一条 SQL 语句
+    plans: 执行计划

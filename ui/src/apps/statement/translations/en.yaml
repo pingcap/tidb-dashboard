@@ -21,5 +21,4 @@ statement:
     query_sample_text: Last SQL Statement
     last_seen: Last Seen
   plan:
-    plan: Plan
-    prev_sample_text: Previous Statement
+    plans: Plans

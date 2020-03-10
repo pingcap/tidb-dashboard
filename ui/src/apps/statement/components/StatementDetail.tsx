@@ -4,15 +4,11 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import StatementNodesTable from './StatementNodesTable'
 import StatementSummaryTable from './StatementSummaryTable'
-import {
-  StatementDetailInfo,
-  StatementNode,
-  StatementPlan,
-} from './statement-types'
+import { StatementDetailInfo, StatementNode } from './statement-types'
 
 import styles from './styles.module.css'
 import { useTranslation } from 'react-i18next'
-import StatementPlansTable from './StatementPlansTable'
+import StatementPlanTable from './StatementPlanTable'
 
 function StatisCard({ detail }: { detail: StatementDetailInfo }) {
   const { t } = useTranslation()
@@ -56,12 +52,6 @@ interface Props {
     beginTime: string,
     endTime: string
   ) => Promise<StatementNode[] | undefined>
-  onFetchPlans: (
-    digest: string,
-    schemaName: string,
-    beginTime: string,
-    endTime: string
-  ) => Promise<StatementPlan[] | undefined>
 }
 
 export default function StatementDetail({
@@ -71,12 +61,11 @@ export default function StatementDetail({
   endTime,
   onFetchDetail,
   onFetchNodes,
-  onFetchPlans,
 }: Props) {
   const [detail, setDetail] = useState<StatementDetailInfo | null>(null)
   const [nodes, setNodes] = useState<StatementNode[]>([])
-  const [plans, setPlans] = useState<StatementPlan[]>([])
   const [loading, setLoading] = useState(true)
+  const { t } = useTranslation()
 
   useEffect(() => {
     async function query() {
@@ -95,13 +84,6 @@ export default function StatementDetail({
         endTime
       )
       setNodes(nodesRes || [])
-      const plansRes = await onFetchPlans(
-        digest,
-        schemaName,
-        beginTime,
-        endTime
-      )
-      setPlans(plansRes || [])
       setLoading(false)
     }
     query()
@@ -130,10 +112,16 @@ export default function StatementDetail({
           <div className={styles.table_wrapper}>
             <StatementNodesTable nodes={nodes} />
           </div>
-          <div style={{ height: 12 }} />
-          <div className={styles.table_wrapper}>
-            <StatementPlansTable plans={plans} />
-          </div>
+          {detail.plans.length > 0 && (
+            <div style={{ marginTop: 6 }}>
+              <h3>{t('statement.plan.plans')}</h3>
+              <div className={styles.table_wrapper}>
+                {detail.plans.map(plan => (
+                  <StatementPlanTable plan={plan} key={plan.digest} />
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

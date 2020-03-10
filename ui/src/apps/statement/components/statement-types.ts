@@ -47,6 +47,8 @@ export interface StatementDetailInfo {
 
   query_sample_text: string
   last_seen: string
+
+  plans: StatementPlan[]
 }
 
 export interface StatementNode {
@@ -60,7 +62,15 @@ export interface StatementNode {
 }
 
 export interface StatementPlan {
-  plan_digest: string
-  plan: string
-  prev_sample_text: string
+  digest: string
+  content: string
 }
+
+export interface StatementPlanStep {
+  id: string
+  task: string
+  estRows: number
+  operator_info: string
+}
+
+export type StatementParsedPlan = StatementPlanStep[]

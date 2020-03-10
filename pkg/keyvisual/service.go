@@ -66,7 +66,7 @@ type Service struct {
 	strategy matrix.Strategy
 }
 
-func NewService(ctx context.Context, cfg *config.Config, provider *region.PDDataProvider) *Service {
+func NewService(ctx context.Context, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) *Service {
 	ctx, cancel := context.WithCancel(ctx)
 	srv := &Service{
 		ctx:      ctx,
@@ -76,7 +76,7 @@ func NewService(ctx context.Context, cfg *config.Config, provider *region.PDData
 	}
 	wg := &srv.wg
 	srv.in = input.NewStatInput(ctx, provider)
-	labelStrategy := decorator.TiDBLabelStrategy(ctx, provider)
+	labelStrategy := decorator.TiDBLabelStrategy(ctx, cfg, provider, httpClient)
 	srv.strategy = matrix.DistanceStrategy(ctx, wg, labelStrategy, 1.0/math.Phi, 15, 50)
 	srv.stat = storage.NewStat(ctx, wg, provider, defaultStatConfig, srv.strategy, srv.in.GetStartTime())
 	return srv

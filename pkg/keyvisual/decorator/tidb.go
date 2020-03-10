@@ -17,10 +17,12 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/codec"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 )
 
@@ -32,18 +34,22 @@ type tableDetail struct {
 }
 
 type tidbLabelStrategy struct {
-	Ctx      context.Context
-	Provider *region.PDDataProvider
+	Ctx        context.Context
+	Config     *config.Config
+	Provider   *region.PDDataProvider
+	HTTPClient *http.Client
 
 	TableMap    sync.Map
 	TidbAddress []string
 }
 
 // TiDBLabelStrategy implements the LabelStrategy interface. Get Label Information from TiDB.
-func TiDBLabelStrategy(ctx context.Context, provider *region.PDDataProvider) LabelStrategy {
+func TiDBLabelStrategy(ctx context.Context, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) LabelStrategy {
 	s := &tidbLabelStrategy{
-		Ctx:      ctx,
-		Provider: provider,
+		Ctx:        ctx,
+		Config:     cfg,
+		Provider:   provider,
+		HTTPClient: httpClient,
 	}
 	return s
 }

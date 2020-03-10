@@ -14,7 +14,6 @@
 package profiling
 
 import (
-	"context"
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
@@ -49,7 +48,7 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 	}
 	httpClient := &http.Client{
 		Transport: &http.Transport{
-			DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			DialTLS: func(network, addr string) (net.Conn, error) {
 				conn, err := tls.Dial(network, addr, config.TLSConfig)
 				return conn, err
 			},

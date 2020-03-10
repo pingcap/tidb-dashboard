@@ -72,5 +72,3 @@ export interface StatementPlanStep {
   estRows: number
   operator_info: string
 }
-
-export type StatementParsedPlan = StatementPlanStep[]

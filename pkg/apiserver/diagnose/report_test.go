@@ -54,7 +54,7 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	endTime := "2020-03-10 12:59:00"
 
 	var table TableDef
-	table, err = GetProcessMemUsageTable(startTime, endTime, cli)
+	table, err = GetTiKVRocksDBTimeConsumeTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(&table)
 }
@@ -70,7 +70,7 @@ func (t *testReportSuite) TestGetTable(c *C) {
 //	startTime2 := "2020-03-03 17:18:00"
 //	endTime2 := "2020-03-03 17:21:00"
 //
-//	tables := GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2, cli,nil,0)
+//	tables := GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2, cli, nil, 0)
 //	for _, tbl := range tables {
 //		printRows(tbl)
 //	}

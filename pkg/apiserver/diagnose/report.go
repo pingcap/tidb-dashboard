@@ -210,6 +210,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 
 		// TiKV
 		GetTiKVTotalTimeConsumeTable,
+		GetTiKVRocksDBTimeConsumeTable,
 		GetTiKVErrorTable,
 		GetTiKVStoreInfo,
 		GetTiKVRegionSizeInfo,
@@ -236,7 +237,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 	return tables
 }
 
-func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableFunc, sqliteDB *dbstore.DB, reportID uint, progress,totalTableCount *int32) ([]*TableDef, []TableRowDef) {
+func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableFunc, sqliteDB *dbstore.DB, reportID uint, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
 	// get the local CPU count for concurrence
 	conc := runtime.NumCPU()
 	if conc > 20 {
@@ -288,7 +289,7 @@ type tblAndErr struct {
 // 1.doGetTable gets the task from taskChan,and close the taskChan if taskChan is empty.
 // 2.doGetTable puts the tblAndErr result to resChan.
 // 3.if taskChan is empty, put a true in doneChan.
-func doGetTable(taskChan chan *task, resChan chan *tblAndErr, wg *sync.WaitGroup, startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress,totalTableCount *int32) {
+func doGetTable(taskChan chan *task, resChan chan *tblAndErr, wg *sync.WaitGroup, startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress, totalTableCount *int32) {
 	defer wg.Done()
 	for task := range taskChan {
 		f := task.t
@@ -1953,6 +1954,140 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (TableD
 	}
 	for _, row := range rows {
 		resultRows = append(resultRows, NewTableRowDef(row, nil))
+	}
+	table.Rows = resultRows
+	return table, nil
+}
+
+func GetTiKVRocksDBTimeConsumeTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	defs := []struct {
+		name       string
+		maxTbl     string
+		tbl        string
+		conditions []string
+		comment    string
+	}{
+		{
+			name:       "get duration",
+			maxTbl:     "tikv_engine_max_get_duration",
+			tbl:        "tikv_engine_avg_get_duration",
+			conditions: []string{"type='get_average'", "type='get_max'", "type='get_percentile99'", "type='get_percentile95'"},
+			comment:    "The time consumed when rocksdb executing get operations",
+		},
+		{
+			name:       "seek duration",
+			maxTbl:     "tikv_engine_max_seek_duration",
+			tbl:        "tikv_engine_avg_seek_duration",
+			conditions: []string{"type='seek_average'", "type='seek_max'", "type='seek_percentile99'", "type='seek_percentile95'"},
+			comment:    "The time consumed when rocksdb executing seek operations",
+		},
+		{
+			name:       "write duration",
+			maxTbl:     "tikv_engine_write_duration",
+			tbl:        "tikv_engine_write_duration",
+			conditions: []string{"type='write_average'", "type='write_max'", "type='write_percentile99'", "type='write_percentile95'"},
+			comment:    "The time consumed when rocksdb executing write operations",
+		},
+		{
+			name:       "WAL sync duration",
+			maxTbl:     "tikv_wal_sync_max_duration",
+			tbl:        "tikv_wal_sync_duration",
+			conditions: []string{"type='wal_file_sync_average'", "type='wal_file_sync_max'", "type='wal_file_sync_percentile99'", "type='wal_file_sync_percentile95'"},
+			comment:    "The time consumed when rocksdb executing WAL sync operations",
+		},
+		{
+			name:       "compaction duration",
+			maxTbl:     "tikv_compaction_max_duration",
+			tbl:        "tikv_compaction_duration",
+			conditions: []string{"type='compaction_time_average'", "type='compaction_time_max'", "type='compaction_time_percentile99'", "type='compaction_time_percentile95'"},
+			comment:    "The time consumed when rocksdb executing compaction operations",
+		},
+		{
+			name:       "SST read duration",
+			maxTbl:     "tikv_sst_read_max_duration",
+			tbl:        "tikv_sst_read_duration",
+			conditions: []string{"type='sst_read_micros_average'", "type='sst_read_micros_max'", "type='sst_read_micros_percentile99'", "type='sst_read_micros_percentile95'"},
+			comment:    "The time consumed when rocksdb reading SST files",
+		},
+		{
+			name:       "write stall duration",
+			maxTbl:     "tikv_write_stall_max_duration",
+			tbl:        "tikv_write_stall_avg_duration",
+			conditions: []string{"type='write_stall_average'", "type='write_stall_max'", "type='write_stall_percentile99'", "type='write_stall_percentile95'"},
+			comment:    "The time which is caused by write stall",
+		},
+	}
+	table := TableDef{
+		Category:       []string{CategoryTiKV},
+		Title:          "RocksDB Time Consume",
+		CommentEN:      "",
+		CommentCN:      "",
+		joinColumns:    []int{0, 1},
+		compareColumns: []int{2, 3, 4, 5},
+		Column:         []string{"METRIC_NAME", "LABEL", "AVG", "MAX", "P99", "P95"},
+	}
+	timeCondition := fmt.Sprintf("where time >= '%s' and time < '%s' ", startTime, endTime)
+
+	specialHandle := func(row []string) []string {
+		if len(row) < 6 {
+			return row
+		}
+		for i := 2; i < 6; i++ {
+			row[i] = convertFloatToDuration(row[i], float64(1)/float64(10e5))
+		}
+		return row
+	}
+
+	resultRows := make([]TableRowDef, 0, len(defs))
+	for _, def := range defs {
+		// get sum rows
+		sql := fmt.Sprintf("select '%s', '', t0.*, t1.*,t2.*,t3.* from ", def.name)
+		for i := range def.conditions {
+			condition := timeCondition
+			if len(def.conditions[i]) > 0 {
+				condition = condition + " and " + def.conditions[i]
+			}
+			// avg value
+			if i == 0 {
+				sql = sql + fmt.Sprintf("(select avg(value) from metrics_schema.%s %s) as t%v ", def.tbl, condition, i)
+			} else {
+				sql = sql + fmt.Sprintf("join (select max(value) from metrics_schema.%s %s) as t%v ", def.tbl, condition, i)
+			}
+		}
+		rows, err := querySQL(db, sql)
+		if err != nil {
+			return table, err
+		}
+		if len(rows) == 0 {
+			continue
+		}
+		sql = fmt.Sprintf("select '%s', t0.instance, t0.value, t1.value,t2.value,t3.value from ", def.name)
+		for i := range def.conditions {
+			condition := timeCondition
+			if len(def.conditions[i]) > 0 {
+				condition = condition + " and " + def.conditions[i]
+			}
+			// avg value
+			if i == 0 {
+				sql = sql + fmt.Sprintf("(select instance, avg(value) as value from metrics_schema.%s %s group by instance) as t%v ", def.tbl, condition, i)
+			} else {
+				sql = sql + fmt.Sprintf("join (select instance, max(value) as value from metrics_schema.%s %s group by instance) as t%v ", def.tbl, condition, i)
+			}
+		}
+		sql += " on t0.instance = t1.instance and t1.instance = t2.instance and t2.instance = t3.instance order by t0.value desc"
+		subRows, err := querySQL(db, sql)
+		if err != nil {
+			return table, err
+		}
+		rows[0] = specialHandle(rows[0])
+		for i := range subRows {
+			subRows[i] = specialHandle(subRows[i])
+		}
+		resultRows = append(resultRows, TableRowDef{
+			Values:    rows[0],
+			SubValues: subRows,
+			Comment:   def.comment,
+		})
 	}
 	table.Rows = resultRows
 	return table, nil

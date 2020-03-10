@@ -51,10 +51,10 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	defer cli.Close()
 
 	startTime := "2020-03-10 12:55:00"
-	endTime := "2020-03-10 12:56:00"
+	endTime := "2020-03-10 12:59:00"
 
 	var table TableDef
-	table, err = GetTiKVTotalTimeConsumeTable(startTime, endTime, cli)
+	table, err = GetProcessMemUsageTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(&table)
 }

@@ -188,6 +188,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 		// Load
 		GetLoadTable,
 		GetCPUUsageTable,
+		GetProcessMemUsageTable,
 		GetTiKVThreadCPUTable,
 		GetGoroutinesCountTable,
 
@@ -1559,6 +1560,38 @@ func GetCPUUsageTable(startTime, endTime string, db *gorm.DB) (TableDef, error) 
 				return row
 			}
 			row[i] = convertFloatToString(f*100) + "%"
+		}
+		return row
+	}
+	for i := range rows {
+		rows[i].Values = specialHandle(rows[i].Values)
+	}
+	table.Rows = rows
+	return table, nil
+}
+
+func GetProcessMemUsageTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.tidb_process_mem_usage where time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
+		startTime, endTime)
+	table := TableDef{
+		Category:       []string{CategoryLoad},
+		Title:          "process memory usage",
+		CommentEN:      "",
+		CommentCN:      "",
+		joinColumns:    []int{0, 1},
+		compareColumns: []int{2, 3, 4},
+		Column:         []string{"INSTANCE", "JOB", "AVG", "MAX", "MIN"},
+	}
+	rows, err := getSQLRoundRows(db, sql, []int{2, 3, 4}, "")
+	if err != nil {
+		return table, err
+	}
+	specialHandle := func(row []string) []string {
+		if len(row) < 5 {
+			return row
+		}
+		for i := 2; i < 5; i++ {
+			row[i] = convertFloatToSize(row[i])
 		}
 		return row
 	}

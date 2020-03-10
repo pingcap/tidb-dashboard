@@ -531,6 +531,7 @@ func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.
 		//Node
 		GetLoadTable,
 		GetCPUUsageTable,
+		GetProcessMemUsageTable,
 		GetTiKVThreadCPUTable,
 		GetGoroutinesCountTable,
 

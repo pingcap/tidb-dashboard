@@ -52,7 +52,6 @@ type AlertManagerInfo struct {
 	IP         string `json:"ip"`
 	Port       uint   `json:"port"`
 	BinaryPath string `json:"binary_path"`
-	AlertCount int    `json:"alert_count,omitempty"`
 }
 
 type GrafanaInfo struct {

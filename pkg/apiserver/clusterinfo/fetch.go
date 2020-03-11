@@ -55,10 +55,6 @@ func fillTopologyUnderEtcd(ctx context.Context, service *Service, fillTargetInfo
 	}
 	if alertManager != nil {
 		fillTargetInfo.AlertManager = alertManager
-		amCount, err := clusterinfo.GetAlertCount(alertManager, service.httpClient)
-		if err == nil {
-			fillTargetInfo.AlertManager.AlertCount = amCount
-		}
 	}
 	if len(tidb) == 0 {
 		tidb, err = clusterinfo.GetTiDBTopologyFromOld(ctx, service.etcdProvider.GetEtcdClient())

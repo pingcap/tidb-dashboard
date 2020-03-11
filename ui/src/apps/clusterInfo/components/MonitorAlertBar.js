@@ -4,13 +4,25 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import styles from './MonitorAlertBar.module.less'
 
+import client from '@/utils/client'
+
 export default function MonitorAlertBar({ cluster }) {
   const { t } = useTranslation()
+  const [alertCounter, setAlertCounter] = useState(0)
 
-  let alertCounter = 0
-  if (cluster !== null && cluster.alert_manager !== null) {
-    alertCounter = cluster.alert_manager.alert_count
-  }
+  useEffect(() => {
+    const fetchNum = async () => {
+      if (cluster === null || cluster.alert_manager === null) {
+        return
+      }
+      let resp = await client.dashboard.topologyAlertmanagerAddressCountGet(
+        `${cluster.alert_manager.ip}:${cluster.alert_manager.port}`
+      )
+      setAlertCounter(resp.data)
+    }
+    fetchNum()
+  }, [cluster])
+
   return (
     <div>
       <Card

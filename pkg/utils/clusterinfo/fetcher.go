@@ -399,3 +399,15 @@ func GetAlertCount(info *AlertManagerInfo, httpClient *http.Client) (int, error)
 
 	return len(alerts), nil
 }
+
+func GetAlertCountByAddress(address string, httpClient *http.Client) (int, error) {
+	ip, port, err := parseHostAndPortFromAddress(address)
+	if err != nil {
+		return 0, err
+	}
+	return GetAlertCount(&AlertManagerInfo{
+		IP:         ip,
+		Port:       port,
+		BinaryPath: "",
+	}, httpClient)
+}

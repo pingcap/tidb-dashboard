@@ -14,7 +14,6 @@ export default function LabelChart({ cluster }) {
       if (node.labels) {
         for (let key in node.labels) {
           if (node.labels.hasOwnProperty(key)) {
-            console.log(key, node.labels[key])
             current.children.push({
               name: `${key}: ${node.labels[key]}`,
             })
@@ -24,10 +23,12 @@ export default function LabelChart({ cluster }) {
       datas.push(current)
     }
   }
-  datas = {
-    name: 'TiKV Labels',
-    children: datas,
-  }
+  datas = [
+    {
+      name: 'TiKV Labels',
+      children: datas,
+    },
+  ]
 
   let treeOption = {
     tooltip: {
@@ -40,10 +41,10 @@ export default function LabelChart({ cluster }) {
 
         data: datas,
 
-        left: '2%',
-        right: '2%',
-        top: '8%',
-        bottom: '20%',
+        // left: '2%',
+        // right: '2%',
+        // top: '8%',
+        // bottom: '20%',
 
         symbol: 'emptyCircle',
 
@@ -68,13 +69,14 @@ export default function LabelChart({ cluster }) {
           },
         },
 
+        symbolSize: 10,
         animationDurationUpdate: 750,
       },
     ],
   }
   return (
     <div>
-      <ReactEcharts option={treeOption} />
+      <ReactEcharts option={treeOption} lazyUpdate={true} />
     </div>
   )
 }

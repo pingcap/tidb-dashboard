@@ -6,6 +6,7 @@ import client from '@/utils/client'
 
 import { ClusterInfoTable, ComponentPanel, MonitorAlertBar } from './components'
 import styles from './RootComponent.module.less'
+import LabelChart from '@/apps/clusterInfo/components/LabelChart';
 
 const App = () => {
   const [cluster, setCluster] = useState(null)
@@ -37,6 +38,7 @@ const App = () => {
                 </Col>
               </Row>
               <ClusterInfoTable cluster={cluster} />
+              <LabelChart cluster={cluster} />
             </Col>
             <Col span={6}>
               <MonitorAlertBar cluster={cluster} />

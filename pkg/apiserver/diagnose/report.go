@@ -744,9 +744,10 @@ func GetPDConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 
 func GetTiDBGCConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf(`select t1.*,t2.count from
-		(select min(time),type,value from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' group by type,value order by type) as t1 join
-		(select type, count(distinct value) as count from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' group by type order by count desc) as t2 
+		(select min(time),type,value from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' and value > 0 group by type,value order by type) as t1 join
+		(select type, count(distinct value) as count from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' and value > 0 group by type order by count desc) as t2 
 		where t1.type=t2.type order by t2.count desc;`, startTime, endTime)
+	fmt.Println(sql)
 
 	table := TableDef{
 		Category: []string{CategoryConfig},

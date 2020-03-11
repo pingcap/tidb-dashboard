@@ -54,7 +54,7 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	endTime := "2020-03-11 14:45:30"
 
 	var table TableDef
-	table, err = GetLoadTable(startTime, endTime, cli)
+	table, err = GetTiDBGCConfigInfo(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(&table)
 }

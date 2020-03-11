@@ -92,6 +92,15 @@ export default function Page() {
     }
   }, [id])
 
+  async function handleDownload() {
+    const res = await client.dashboard.profilingGroupDownloadAcquireTokenGet(id)
+    const token = res.data
+    if (!token) {
+      return
+    }
+    window.location = `${DASHBOARD_API_URL}/profiling/group/download?token=${token}`
+  }
+
   return (
     <Card bordered={false}>
       {isLoading ? (
@@ -102,8 +111,7 @@ export default function Page() {
             <Button
               disabled={isRunning}
               type="primary"
-              href={`${DASHBOARD_API_URL}/profiling/group/download/${id}`}
-              target="_blank"
+              onClick={handleDownload}
             >
               {t('node_profiling.detail.download')}
             </Button>

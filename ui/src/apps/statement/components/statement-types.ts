@@ -28,6 +28,8 @@ export interface StatementOverview {
   avg_affected_rows: number
   avg_latency: number
   avg_mem: number
+
+  schemas: string
 }
 
 //////////////////
@@ -41,8 +43,12 @@ export interface StatementDetailInfo {
   avg_affected_rows: number
   avg_total_keys: number
 
+  schemas: string
+
   query_sample_text: string
   last_seen: string
+
+  plans: StatementPlan[]
 }
 
 export interface StatementNode {
@@ -53,4 +59,16 @@ export interface StatementNode {
   max_latency: number
   avg_mem: number
   sum_backoff_times: number
+}
+
+export interface StatementPlan {
+  digest: string
+  content: string
+}
+
+export interface StatementPlanStep {
+  id: string
+  task: string
+  estRows: number
+  operator_info: string
 }

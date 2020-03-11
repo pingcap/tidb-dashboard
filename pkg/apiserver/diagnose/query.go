@@ -616,13 +616,13 @@ func genComment(comment string, labels []string) string {
 
 func sortRowsByIndex(resultRows []TableRowDef, idx int) {
 	// sort sub rows.
-	for _, row := range resultRows {
-		sort.Slice(row.SubValues, func(i, j int) bool {
-			if len(row.SubValues[i]) < (idx+1) || len(row.SubValues[j]) < (idx+1) {
+	for j := range resultRows {
+		sort.Slice(resultRows[j].SubValues, func(i, j int) bool {
+			if len(resultRows[j].SubValues[i]) < (idx+1) || len(resultRows[j].SubValues[j]) < (idx+1) {
 				return false
 			}
-			v1, err1 := parseFloat(row.SubValues[i][idx])
-			v2, err2 := parseFloat(row.SubValues[j][idx])
+			v1, err1 := parseFloat(resultRows[j].SubValues[i][idx])
+			v2, err2 := parseFloat(resultRows[j].SubValues[j][idx])
 			if err1 != nil || err2 != nil {
 				return false
 			}

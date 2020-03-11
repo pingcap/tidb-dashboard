@@ -17,7 +17,10 @@ import (
 )
 
 func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint) []*TableDef {
-	var errRows []TableRowDef
+	errRows := checkBeforeReport(db)
+	if len(errRows) > 0 {
+		return []*TableDef{GenerateReportError(errRows)}
+	}
 	var resultTables []*TableDef
 	resultTables = append(resultTables, GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2))
 	var tables0, tables1, tables2, tables3, tables4 []*TableDef
@@ -214,7 +217,7 @@ func compareTable(table1, table2 *TableDef, dr *diffRows) (*TableDef, error) {
 		}
 	}
 	sort.Slice(resultRows, func(i, j int) bool {
-		return resultRows[i].ratio > resultRows[j].ratio
+		return math.Abs(resultRows[i].ratio) > math.Abs(resultRows[j].ratio)
 	})
 	if len(table1.compareColumns) > 0 {
 		comment := "\nDIFF_RATIO = max( "
@@ -243,6 +246,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 		return nil, err
 	}
 
+	diffTableName := strings.Join(table.Category, "-") + ", " + table.Title
 	subJoinRows := make([]*newJoinRow, 0, len(row1.SubValues))
 	for _, subRow1 := range row1.SubValues {
 		label := genRowLabel(subRow1, table.joinColumns)
@@ -256,7 +260,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			row2:  subRow2,
 			ratio: ratio,
 		})
-		dr.addRow(table.Title, label, ratio, subRow1, subRow2, idx, row1.Comment)
+		dr.addRow(diffTableName, label, ratio, subRow1, subRow2, idx, row1.Comment)
 	}
 
 	for _, subRow2 := range row2.SubValues {
@@ -275,7 +279,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			row2:  subRow2,
 			ratio: ratio,
 		})
-		dr.addRow(table.Title, label, ratio, subRow1, subRow2, idx, row2.Comment)
+		dr.addRow(diffTableName, label, ratio, subRow1, subRow2, idx, row2.Comment)
 	}
 
 	sort.Slice(subJoinRows, func(i, j int) bool {
@@ -305,7 +309,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 		} else if len(row2.Values) >= len(table.Column) {
 			label = genRowLabel(row2.Values, table.joinColumns)
 		}
-		dr.addRow(table.Title, label, totalRatio, row1.Values, row2.Values, totalRatioIdx, row1.Comment)
+		dr.addRow(diffTableName, label, totalRatio, row1.Values, row2.Values, totalRatioIdx, row1.Comment)
 	}
 
 	resultJoinRow := newJoinRow{
@@ -442,6 +446,9 @@ func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, int, err
 			return 0, -1, err
 		}
 		if f1 == f2 {
+			continue
+		}
+		if (f1 == 0 || f2 == 0) && maxRatio != 0 {
 			continue
 		}
 		ratio := (f2 - f1) / math.Max(f1, f2)

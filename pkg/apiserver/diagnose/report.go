@@ -459,7 +459,7 @@ P90 is the max time of 0.90 quantile;
 P80 is the max time of 0.80 quantile; 
 `,
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{3},
+		compareColumns: []int{3, 4, 5},
 		CommentCN:      "",
 		Column:         []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
@@ -587,7 +587,7 @@ P80 is the max time of 0.80 quantile;
 `,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{3},
+		compareColumns: []int{3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 
@@ -657,7 +657,7 @@ P80 is the max size/value of 0.80 quantile;
 `,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{2},
+		compareColumns: []int{2, 3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 
@@ -747,7 +747,6 @@ func GetTiDBGCConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, erro
 		(select min(time),type,value from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' and value > 0 group by type,value order by type) as t1 join
 		(select type, count(distinct value) as count from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' and value > 0 group by type order by count desc) as t2 
 		where t1.type=t2.type order by t2.count desc;`, startTime, endTime)
-	fmt.Println(sql)
 
 	table := TableDef{
 		Category: []string{CategoryConfig},
@@ -799,7 +798,7 @@ P80 is the max time of 0.80 quantile;
 `,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{3},
+		compareColumns: []int{3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 
@@ -973,7 +972,7 @@ P80 is the max time of 0.80 quantile;
 `,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{3},
+		compareColumns: []int{3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 
@@ -1044,7 +1043,7 @@ func GetTiKVSchedulerInfo(startTime, endTime string, db *gorm.DB) (TableDef, err
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{2},
+		compareColumns: []int{2, 3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 	arg := newQueryArg(startTime, endTime)
@@ -1172,7 +1171,7 @@ func GetTiKVSnapshotInfo(startTime, endTime string, db *gorm.DB) (TableDef, erro
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{2},
+		compareColumns: []int{2, 3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 	arg := newQueryArg(startTime, endTime)
@@ -1537,7 +1536,7 @@ func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowD
 }
 
 func GetCPUUsageTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
-	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.process_cpu_usage where time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
+	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.process_cpu_usage where time >= '%s' and time < '%s' and job not in ('overwritten-nodes','overwritten-cluster') group by instance, job order by avg(value) desc",
 		startTime, endTime)
 	table := TableDef{
 		Category:       []string{CategoryLoad},
@@ -1609,7 +1608,7 @@ func GetGoroutinesCountTable(startTime, endTime string, db *gorm.DB) (TableDef, 
 		startTime, endTime)
 	table := TableDef{
 		Category:       []string{CategoryLoad},
-		Title:          "goroutines count",
+		Title:          "TiDB/PD goroutines count",
 		CommentEN:      "The goroutine count of tidb/pd server",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},

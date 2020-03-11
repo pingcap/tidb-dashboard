@@ -33,8 +33,8 @@ const (
 
 func newZapEncoder(zapcore.EncoderConfig) (zapcore.Encoder, error) {
 	logCfg := log.Config{
-		Level: "info",
-		File:  log.FileLogConfig{},
+		DisableTimestamp:    false,
+		DisableErrorVerbose: false,
 	}
 	return log.NewTextEncoder(&logCfg), nil
 }

@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next'
 
 import client from '@/utils/client'
 
+const confirm = Modal.confirm;
+
 function ComponentPanelTable({ cluster }) {
   const { t } = useTranslation()
 
-  const [modalVis, setModalVis] = useState(false)
   let dataSource = []
 
   const columns = [
@@ -37,33 +38,33 @@ function ComponentPanelTable({ cluster }) {
       key: 'status',
       width: 100,
       render: (text, node) => {
-        if (node && node.address && node.address.includes('tidb')) {
+        console.log(node)
+        if (node && node.comp && node.comp === 'tidb') {
+          let showConfirm = () => {
+            confirm({
+              title: 'hide',
+              content: t('cluster_info.component_table.hide_warning'),
+              onOk() {
+                deleteTiDBTopology(node, cluster.cluster, cluster.setCluster)
+              },
+              onCancel() {},
+            });
+          }
+          console.log("IN BRANCH")
           return (
             <span>
               <span>{text} </span>
-              {node && node.status !== undefined && node.status !== 'up' && (
+              {node.status && node.status !== 'up' && (
                 <span>
+                  (
                   <a
                     onClick={() => {
-                      setModalVis(true)
+                     showConfirm()
                     }}
                   >
-                    ( {t('cluster_info.component_table.hide_db')} )
+                    {t('cluster_info.component_table.hide_db')}
                   </a>
-                  <Modal
-                    title={'hide'}
-                    visible={modalVis}
-                    onOk={() => {
-                      deleteTiDBTopology(
-                        node,
-                        cluster.cluster,
-                        cluster.setCluster
-                      ).then(_ => setModalVis(false))
-                    }}
-                    onCancel={() => setModalVis(false)}
-                  >
-                    <p>{t('cluster_info.component_table.hide_warning')}</p>
-                  </Modal>
+                  )
                 </span>
               )}
             </span>
@@ -136,6 +137,8 @@ function wrapNode(node, comp, id) {
     version: node.version,
     status_port: node.status_port,
     status: status,
+
+    comp: comp,
   }
 }
 

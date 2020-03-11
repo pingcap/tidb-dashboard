@@ -137,27 +137,6 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// @Summary Get Download token
-// @Description get download token with multiple task IDs
-// @Produce plain
-// @Param id query []string false "task id"
-// @Security JwtAuth
-// @Success 200 {string} string "xxx"
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /logs/download/acquire_token [get]
-func (s *Service) GetDownloadToken(c *gin.Context) {
-	ids := c.QueryArray("id")
-	str := strings.Join(ids, ",")
-	token, err := utils.NewJWTString(str)
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
-		return
-	}
-	c.String(http.StatusOK, token)
-}
-
 // @Summary List all task groups
 // @Description list all log search taskgroups
 // @Produce json

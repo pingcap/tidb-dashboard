@@ -54,7 +54,7 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	endTime := "2020-03-10 12:59:00"
 
 	var table TableDef
-	table, err = GetTiKVRocksDBTimeConsumeTable(startTime, endTime, cli)
+	table, err = GetTiKVThreadCPUTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(&table)
 }

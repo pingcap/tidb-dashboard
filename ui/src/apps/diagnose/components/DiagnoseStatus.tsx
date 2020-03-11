@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Button, message, Progress, Table, Skeleton, Card } from 'antd'
+import { Button, message, Progress, Table, Card } from 'antd'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 

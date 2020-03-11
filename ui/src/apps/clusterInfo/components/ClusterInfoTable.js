@@ -37,12 +37,11 @@ function ComponentPanelTable({ cluster }) {
       key: 'status',
       width: 100,
       render: (text, node) => {
-        return (
-          <span>
-            <span>{text} </span>
-            {node !== undefined &&
-              node.status !== undefined &&
-              node.status !== 'up' && (
+        if (node && node.address && node.address.includes('tidb')) {
+          return (
+            <span>
+              <span>{text} </span>
+              {node && node.status !== undefined && node.status !== 'up' && (
                 <span>
                   <a
                     onClick={() => {
@@ -67,14 +66,11 @@ function ComponentPanelTable({ cluster }) {
                   </Modal>
                 </span>
               )}
-          </span>
-        )
+            </span>
+          )
+        }
+        return <span>{text} </span>
       },
-    },
-    {
-      title: t('cluster_info.component_table.action'),
-      key: 'action',
-      width: 100,
     },
   ]
 

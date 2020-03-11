@@ -29,19 +29,19 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func newClaims(str string) *Claims {
-	expirationTime := time.Now().Add(24 * time.Hour)
+func newClaims(issuer string, data string) *Claims {
 	return &Claims{
-		Data: str,
+		Data: data,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
+			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+			Issuer:    issuer,
 		},
 	}
 }
 
 // NewJWTString create a JWT string by given data
-func NewJWTString(str string) (string, error) {
-	claims := newClaims(str)
+func NewJWTString(issuer string, data string) (string, error) {
+	claims := newClaims(issuer, data)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(hmacSampleSecret[:])
 	if err != nil {
@@ -51,9 +51,9 @@ func NewJWTString(str string) (string, error) {
 }
 
 // ParseJWTString parse the JWT string and return the raw data
-func ParseJWTString(str string) (string, error) {
+func ParseJWTString(requiredIssuer string, tokenStr string) (string, error) {
 	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(str, claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 		return hmacSampleSecret[:], nil
 	})
 	if err != nil {
@@ -61,6 +61,9 @@ func ParseJWTString(str string) (string, error) {
 	}
 	if !token.Valid {
 		return "", errors.New("token is invalid")
+	}
+	if claims.Issuer != requiredIssuer {
+		return "", errors.New("invalid issuer")
 	}
 	return claims.Data, nil
 }

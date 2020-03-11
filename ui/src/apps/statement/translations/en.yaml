@@ -5,6 +5,7 @@ statement:
     select_schemas: Select schemas
   common:
     schema: Schema
+    schemas: Schemas
     digest_text: SQL Category
     sum_latency: Sum Latency
     exec_count: Exec Count
@@ -19,3 +20,5 @@ statement:
     time_range: Time Range
     query_sample_text: Last SQL Statement
     last_seen: Last Seen
+  plan:
+    plans: Plans

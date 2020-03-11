@@ -82,13 +82,6 @@ function useSetInterval(callback: () => void) {
   }, []);
 }
 
-function downloadFile(url: string) {
-  const link = document.createElement('a');
-  link.href = url;
-  document.body.appendChild(link);
-  link.click();
-}
-
 interface Props {
   taskGroupID: number,
   tasks: LogsearchTaskModel[],
@@ -203,7 +196,7 @@ export default function SearchProgress({
       return
     }
     const url = `${DASHBOARD_API_URL}/logs/download?token=${token}`
-    downloadFile(url)
+    window.open(url)
   }
 
   async function handleCancel() {

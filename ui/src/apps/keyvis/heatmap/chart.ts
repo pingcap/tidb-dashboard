@@ -5,7 +5,7 @@ import { createBuffer } from './buffer'
 import { labelAxisGroup } from './axis/label-axis'
 import { histogram } from './axis/histogram'
 import { getColorScheme, ColorScheme, rasterizeLevel } from './color'
-import { withUnit, truncateString, clickToCopyBehavior } from './utils'
+import { withUnit, clickToCopyBehavior } from './utils'
 
 import legend from './legend'
 
@@ -13,17 +13,12 @@ const margin = {
   top: 25,
   right: 40,
   bottom: 70,
-  left: 70
-}
-
-const tooltipSize = {
-  width: 255,
-  height: 205
+  left: 70,
 }
 
 const tooltipOffset = {
   horizontal: 20,
-  vertical: 20
+  vertical: 20,
 }
 
 type TooltipStatus = {
@@ -50,7 +45,8 @@ function normalizeData(d: number[][], maxValue: number) {
   for (let cIdx = 0; cIdx < width; cIdx++) {
     for (let rIdx = 0; rIdx < height; rIdx++) {
       const addr = rIdx * width + cIdx
-      normalized[addr] = Math.log(d[cIdx][rIdx]) / logMaxValue * rasterizeLevel
+      normalized[addr] =
+        (Math.log(d[cIdx][rIdx]) / logMaxValue) * rasterizeLevel
     }
   }
   return normalized
@@ -105,7 +101,10 @@ export async function heatmapChart(
     // Sync transform on resize
     if (canvasWidth !== 0 && canvasHeight !== 0) {
       zoomTransform = d3.zoomIdentity
-        .translate((zoomTransform.x * newCanvasWidth) / canvasWidth, (zoomTransform.y * newCanvasHeight) / canvasHeight)
+        .translate(
+          (zoomTransform.x * newCanvasWidth) / canvasWidth,
+          (zoomTransform.y * newCanvasHeight) / canvasHeight
+        )
         .scale(zoomTransform.k)
     }
     width = newWidth
@@ -133,7 +132,9 @@ export async function heatmapChart(
   heatmapChart()
 
   function heatmapChart() {
-    let xHistogramCanvas = container.selectAll('canvas.x-histogram').data([null])
+    let xHistogramCanvas = container
+      .selectAll('canvas.x-histogram')
+      .data([null])
     xHistogramCanvas = xHistogramCanvas
       .enter()
       .append('canvas')
@@ -152,7 +153,9 @@ export async function heatmapChart(
       .getContext('2d')
       .scale(window.devicePixelRatio, window.devicePixelRatio)
 
-    let yHistogramCanvas = container.selectAll('canvas.y-histogram').data([null])
+    let yHistogramCanvas = container
+      .selectAll('canvas.y-histogram')
+      .data([null])
     yHistogramCanvas = yHistogramCanvas
       .enter()
       .append('canvas')
@@ -244,7 +247,9 @@ export async function heatmapChart(
       .axisBottom(xScale)
       .tickFormat(idx =>
         data.timeAxis[idx as number] !== undefined
-          ? d3.timeFormat('%Y-%m-%d %H:%M:%S')(new Date(data.timeAxis[idx as number] * 1000))
+          ? d3.timeFormat('%Y-%m-%d %H:%M:%S')(
+              new Date(data.timeAxis[idx as number] * 1000)
+            )
           : ''
       )
       .ticks(width / 270)
@@ -276,7 +281,10 @@ export async function heatmapChart(
       const dragLeft = Math.max(0, transform.applyX(0))
       const dragRight = Math.max(0, canvasWidth - transform.applyX(canvasWidth))
       const dragTop = Math.max(0, transform.applyY(0))
-      const dragBottom = Math.max(0, canvasHeight - transform.applyY(canvasHeight))
+      const dragBottom = Math.max(
+        0,
+        canvasHeight - transform.applyY(canvasHeight)
+      )
       return d3.zoomIdentity
         .translate(
           Math.floor(transform.x - (dragLeft - dragRight) * bounceRatio),
@@ -469,7 +477,11 @@ export async function heatmapChart(
         xRescale,
         yRescale
       )
-      labelAxis(labelCanvas.node().getContext('2d'), focusStatus?.yDomain, yRescale)
+      labelAxis(
+        labelCanvas.node().getContext('2d'),
+        focusStatus?.yDomain,
+        yRescale
+      )
       xAxisG.call(xAxis.scale(xRescale))
       hideAxisTicksWithoutLabel()
     }
@@ -480,7 +492,7 @@ export async function heatmapChart(
           .brush()
           .extent([
             [0, 0],
-            [canvasWidth, canvasHeight]
+            [canvasWidth, canvasHeight],
           ])
           .on('start', brushStart)
           .on('brush', brushing)
@@ -492,7 +504,10 @@ export async function heatmapChart(
           .append('g')
           .classed('brush', true)
           .merge(brushSvg)
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+          .attr(
+            'transform',
+            'translate(' + margin.left + ',' + margin.top + ')'
+          )
           .call(brush)
 
         function brushStart() {
@@ -506,8 +521,14 @@ export async function heatmapChart(
             const xRescale = zoomTransform.rescaleX(xScale)
             const yRescale = zoomTransform.rescaleY(yScale)
             focusStatus = {
-              xDomain: [xRescale.invert(selection[0][0]), xRescale.invert(selection[1][0])],
-              yDomain: [yRescale.invert(selection[0][1]), yRescale.invert(selection[1][1])]
+              xDomain: [
+                xRescale.invert(selection[0][0]),
+                xRescale.invert(selection[1][0]),
+              ],
+              yDomain: [
+                yRescale.invert(selection[0][1]),
+                yRescale.invert(selection[1][1]),
+              ],
             }
             render()
           }
@@ -522,16 +543,20 @@ export async function heatmapChart(
             brush.move(brushSvg, null)
             const xRescale = zoomTransform.rescaleX(xScale)
             const yRescale = zoomTransform.rescaleY(yScale)
-            const startTime = data.timeAxis[Math.floor(xRescale.invert(selection[0][0]))]
-            const endTime = data.timeAxis[Math.ceil(xRescale.invert(selection[1][0]))]
-            const startKey = data.keyAxis[Math.floor(yRescale.invert(selection[0][1]))].key
-            const endKey = data.keyAxis[Math.ceil(yRescale.invert(selection[1][1]))].key
+            const startTime =
+              data.timeAxis[Math.floor(xRescale.invert(selection[0][0]))]
+            const endTime =
+              data.timeAxis[Math.ceil(xRescale.invert(selection[1][0]))]
+            const startKey =
+              data.keyAxis[Math.floor(yRescale.invert(selection[0][1]))].key
+            const endKey =
+              data.keyAxis[Math.ceil(yRescale.invert(selection[1][1]))].key
 
             onBrush({
               starttime: startTime,
               endtime: endTime,
               startkey: startKey,
-              endkey: endKey
+              endkey: endKey,
             })
           }
 
@@ -543,34 +568,93 @@ export async function heatmapChart(
       }
     }
 
+    function getTooltipOverviewLabel(keyIdx) {
+      function truncate(s) {
+        return _.truncate(s, {
+          length: 16,
+        })
+      }
+
+      const leftLabel = data.keyAxis[keyIdx]!.labels
+      const rightLabel = data.keyAxis[keyIdx + 1]!.labels
+      if (!leftLabel && !rightLabel) {
+        return []
+      }
+      if (!rightLabel) {
+        return leftLabel.map(truncate)
+      }
+      if (_.isEqual(leftLabel, rightLabel)) {
+        return leftLabel.map(truncate)
+      }
+
+      // If label prefixes are identical, show `~`
+      {
+        const l = leftLabel.length
+        if (l === rightLabel.length && l >= 2) {
+          if (
+            _.isEqual(leftLabel.slice(0, l - 1), rightLabel.slice(0, l - 1))
+          ) {
+            return [
+              ...leftLabel.slice(0, l - 1).map(truncate),
+              `${truncate(leftLabel[l - 1])} ~ ${truncate(rightLabel[l - 1])}`,
+            ]
+          }
+        }
+      }
+
+      // Cross boundary, only use left label
+      return leftLabel.map(truncate)
+    }
+
     function renderTooltip() {
       if (tooltipStatus.hidden) {
         tooltipLayer.selectAll('div').remove()
       } else {
         const xRescale = zoomTransform.rescaleX(xScale)
         const yRescale = zoomTransform.rescaleY(yScale)
-        const canvasOffset = [xRescale(tooltipStatus.x), yRescale(tooltipStatus.y)]
-        const clampX = x => _.clamp(x, 0, canvasWidth - tooltipSize.width)
-        const clampY = y => _.clamp(y, 0, canvasHeight - tooltipSize.height)
-        const rightX = margin.left + clampX(canvasOffset[0] + tooltipOffset.horizontal)
-        const leftX = margin.left + clampX(canvasOffset[0] + -tooltipSize.width - tooltipOffset.horizontal)
-        const bottomY = margin.top + clampY(canvasOffset[1] + tooltipOffset.vertical)
-        const topY = margin.top + clampY(canvasOffset[1] - tooltipSize.height - tooltipOffset.vertical)
-        const tooltipX = canvasOffset[0] < canvasWidth / 2 ? rightX : leftX
-        const tooltipY = canvasOffset[1] < canvasHeight / 2 ? bottomY : topY
+        const canvasOffset = [
+          xRescale(tooltipStatus.x),
+          yRescale(tooltipStatus.y),
+        ]
 
         let tooltipDiv = tooltipLayer.selectAll('div').data([null])
         tooltipDiv = tooltipDiv
           .enter()
           .append('div')
           .style('position', 'absolute')
-          .style('width', tooltipSize.width + 'px')
-          .style('height', tooltipSize.height + 'px')
+          // .style('width', tooltipSize.width + 'px')
+          // .style('height', tooltipSize.height + 'px')
           .classed('tooltip', true)
           .merge(tooltipDiv)
           .style('pointer-events', tooltipStatus.pinned ? 'all' : 'none')
-          .style('left', tooltipX + 'px')
-          .style('top', tooltipY + 'px')
+
+        if (canvasOffset[0] < canvasWidth / 2) {
+          // Left half
+          const v = canvasOffset[0] + tooltipOffset.horizontal + margin.left
+          tooltipDiv.style('left', `${v}px`).style('right', 'auto')
+        } else {
+          // Right half
+          const v =
+            canvasWidth -
+            canvasOffset[0] +
+            tooltipOffset.horizontal +
+            margin.right
+          tooltipDiv.style('right', `${v}px`).style('left', 'auto')
+        }
+
+        if (canvasOffset[1] < canvasHeight / 2) {
+          // Top half
+          const v = canvasOffset[1] + tooltipOffset.vertical + margin.top
+          tooltipDiv.style('top', `${v}px`).style('bottom', 'auto')
+        } else {
+          // Bottom half
+          const v =
+            canvasHeight -
+            canvasOffset[1] +
+            tooltipOffset.vertical +
+            margin.bottom
+          tooltipDiv.style('bottom', `${v}px`).style('top', 'auto')
+        }
 
         const timeIdx = Math.floor(tooltipStatus.x)
         const keyIdx = Math.floor(tooltipStatus.y)
@@ -583,68 +667,100 @@ export async function heatmapChart(
           .classed('value', true)
           .merge(valueDiv)
 
-        let valueText = valueDiv.selectAll('p.value').data([null])
+        let valueText = valueDiv.selectAll('div.value').data([null])
         valueText = valueText
           .enter()
-          .append('p')
+          .append('div')
           .classed('value', true)
           .merge(valueText)
           .text(withUnit(value))
           .style('color', colorScheme.label(value))
           .style('background-color', colorScheme.background(value))
 
-        let unitText = valueDiv.selectAll('p.unit').data([null])
+        let unitText = valueDiv.selectAll('div.unit').data([null])
         unitText = unitText
           .enter()
-          .append('p')
+          .append('div')
           .classed('unit', true)
           .merge(unitText)
           .text(tagUnit(dataTag))
 
-        let timeDiv = tooltipDiv.selectAll('div.time').data([null])
+        const timeText = [timeIdx, timeIdx + 1]
+          .map(idx =>
+            d3.timeFormat('%Y-%m-%d\n%H:%M:%S')(
+              new Date(data.timeAxis[idx] * 1000)
+            )
+          )
+          .join(' ~ ')
+
+        let timeDiv = tooltipDiv.selectAll('button.time').data([timeText])
         timeDiv = timeDiv
           .enter()
-          .append('div')
+          .append('button')
           .classed('time', true)
           .merge(timeDiv)
+          .call(clickToCopyBehavior, d => d)
+          .text(d => d)
 
-        let timeText = timeDiv.selectAll('button.time').data([timeIdx, timeIdx + 1])
-        let timeTextEnter = timeText.enter()
-        // timeTextEnter
-        //   .append('p')
-        //   .text('-')
-        //   .style('display', (d, i) => (i > 0 ? '' : 'none'))
-        timeText = timeTextEnter
-          .append('button')
-          .classed('time', true)
-          .merge(timeText)
-          .call(clickToCopyBehavior, d => d3.timeFormat('%Y-%m-%d\n%H:%M:%S')(new Date(data.timeAxis[d] * 1000)))
-          .text(d => d3.timeFormat('%Y-%m-%d\n%H:%M:%S')(new Date(data.timeAxis[d] * 1000)))
-
-        let keyDiv = tooltipDiv.selectAll('div.key').data([keyIdx, keyIdx + 1])
-        keyDiv = keyDiv
+        let overviewLabelDiv = tooltipDiv
+          .selectAll('div.overviewLabel')
+          .data([keyIdx + 1])
+        overviewLabelDiv = overviewLabelDiv
           .enter()
           .append('div')
-          .classed('key', true)
-          .merge(keyDiv)
+          .classed('overviewLabel', true)
+          .merge(overviewLabelDiv)
 
-        let labelText = keyDiv.selectAll('button.label').data(d => [d])
-        labelText = labelText
+        let overviewSubLabel = overviewLabelDiv
+          .selectAll('.subLabel')
+          .style('display', 'none')
+          .data(keyIdx => getTooltipOverviewLabel(keyIdx))
+
+        overviewSubLabel = overviewSubLabel
           .enter()
           .append('button')
-          .classed('label', true)
-          .merge(labelText)
-          .call(clickToCopyBehavior, d => data.keyAxis[d]!.labels.join('/'))
-          .text(d => data.keyAxis[d]!.labels.join('/'))
+          .classed('subLabel', true)
+          .merge(overviewSubLabel)
+          .call(clickToCopyBehavior, d => d)
+          .text((d, idx) => {
+            // Prefix with spaces
+            return '\u00A0'.repeat(idx * 2) + d
+          })
+          .style('display', 'block')
 
-        let keyText = keyDiv.selectAll('button.key').data(d => [d])
+        let keyContainer = tooltipDiv.selectAll('div.keyContainer').data([
+          {
+            desc: 'Start Key (Incl.):',
+            idx: keyIdx + 1,
+          },
+          {
+            desc: 'End key (Excl.):',
+            idx: keyIdx,
+          },
+        ])
+
+        keyContainer = keyContainer
+          .enter()
+          .append('div')
+          .classed('keyContainer', true)
+          .merge(keyContainer)
+
+        let descText = keyContainer.selectAll('.desc').data(d => [d])
+        descText = descText
+          .enter()
+          .append('div')
+          .classed('desc', true)
+          .merge(descText)
+          .text(({ desc }) => desc)
+
+        let keyText = keyContainer.selectAll('button.key').data(d => [d])
         keyText = keyText
           .enter()
           .append('button')
           .classed('key', true)
           .merge(keyText)
-          .call(clickToCopyBehavior, d => data.keyAxis[d]!.key)
-          .text(d => truncateString(data.keyAxis[d]!.key, 30))
+          .call(clickToCopyBehavior, ({ idx }) => data.keyAxis[idx]!.key)
+          .text(({ idx }) => data.keyAxis[idx]!.key)
       }
     }
 
@@ -652,7 +768,10 @@ export async function heatmapChart(
       if (tooltipStatus.pinned) {
         const xRescale = zoomTransform.rescaleX(xScale)
         const yRescale = zoomTransform.rescaleY(yScale)
-        const canvasOffset = [xRescale(tooltipStatus.x), yRescale(tooltipStatus.y)]
+        const canvasOffset = [
+          xRescale(tooltipStatus.x),
+          yRescale(tooltipStatus.y),
+        ]
         const crossCenterPadding = 3
         const crossBorder = 1
         const crossSize = 8
@@ -662,12 +781,24 @@ export async function heatmapChart(
         ctx.strokeStyle = '#111'
         ctx.beginPath()
         ctx.moveTo(canvasOffset[0], canvasOffset[1] - crossSize - crossBorder)
-        ctx.lineTo(canvasOffset[0], canvasOffset[1] - crossCenterPadding + crossBorder)
-        ctx.moveTo(canvasOffset[0], canvasOffset[1] + crossCenterPadding - crossBorder)
+        ctx.lineTo(
+          canvasOffset[0],
+          canvasOffset[1] - crossCenterPadding + crossBorder
+        )
+        ctx.moveTo(
+          canvasOffset[0],
+          canvasOffset[1] + crossCenterPadding - crossBorder
+        )
         ctx.lineTo(canvasOffset[0], canvasOffset[1] + crossSize + crossBorder)
         ctx.moveTo(canvasOffset[0] - crossSize - crossBorder, canvasOffset[1])
-        ctx.lineTo(canvasOffset[0] - crossCenterPadding + crossBorder, canvasOffset[1])
-        ctx.moveTo(canvasOffset[0] + crossCenterPadding - crossBorder, canvasOffset[1])
+        ctx.lineTo(
+          canvasOffset[0] - crossCenterPadding + crossBorder,
+          canvasOffset[1]
+        )
+        ctx.moveTo(
+          canvasOffset[0] + crossCenterPadding - crossBorder,
+          canvasOffset[1]
+        )
         ctx.lineTo(canvasOffset[0] + crossSize + crossBorder, canvasOffset[1])
         ctx.stroke()
         ctx.lineWidth = crossWidth

@@ -50,11 +50,11 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
-	startTime := "2020-03-10 12:55:00"
-	endTime := "2020-03-10 12:59:00"
+	startTime := "2020-03-11 14:42:30"
+	endTime := "2020-03-11 14:45:30"
 
 	var table TableDef
-	table, err = GetTiKVThreadCPUTable(startTime, endTime, cli)
+	table, err = GetLoadTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(&table)
 }

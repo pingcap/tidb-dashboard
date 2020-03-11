@@ -16,6 +16,7 @@ package diagnose
 import (
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -611,4 +612,32 @@ func genComment(comment string, labels []string) string {
 		comment = fmt.Sprintf("%s the label is [%s]", comment, strings.Join(labels, ", "))
 	}
 	return comment
+}
+
+func sortRowsByIndex(resultRows []TableRowDef, idx int) {
+	// sort sub rows.
+	for _, row := range resultRows {
+		sort.Slice(row.SubValues, func(i, j int) bool {
+			if len(row.SubValues[i]) < (idx+1) || len(row.SubValues[j]) < (idx+1) {
+				return false
+			}
+			v1, err1 := parseFloat(row.SubValues[i][idx])
+			v2, err2 := parseFloat(row.SubValues[j][idx])
+			if err1 != nil || err2 != nil {
+				return false
+			}
+			return v1 > v2
+		})
+	}
+	sort.Slice(resultRows, func(i, j int) bool {
+		if len(resultRows[i].Values) < (idx+1) || len(resultRows[j].Values) < (idx+1) {
+			return false
+		}
+		v1, err1 := parseFloat(resultRows[i].Values[idx])
+		v2, err2 := parseFloat(resultRows[j].Values[idx])
+		if err1 != nil || err2 != nil {
+			return false
+		}
+		return v1 > v2
+	})
 }

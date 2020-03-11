@@ -1473,7 +1473,7 @@ func getAvgMaxMinCPUUsage(startTime, endTime string, db *gorm.DB) (*TableRowDef,
 	if len(rows) == 0 {
 		return nil, nil
 	}
-	sql = fmt.Sprintf("select 'node_cpu_usage', instance, 100-avg(value),100-min(value),100-max(value) from metrics_schema.node_cpu_usage %s and mode='idle' group by instance", condition)
+	sql = fmt.Sprintf("select 'node_cpu_usage', instance, 100-avg(value) as avg_value,100-min(value),100-max(value) from metrics_schema.node_cpu_usage %s and mode='idle' group by instance order by avg_value desc", condition)
 	subRows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
@@ -1509,9 +1509,9 @@ func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowD
 	if len(rows) == 0 {
 		return nil, nil
 	}
-	sql = fmt.Sprintf(`select 'node_mem_usage',t1.instance, 100*(1-t1.avg_value/t2.total), 100*(1-t1.min_value/t2.total), 100*(1-t1.max_value/t2.total)  from 
+	sql = fmt.Sprintf(`select 'node_mem_usage',t1.instance, 100*(1-t1.avg_value/t2.total) as avg_value, 100*(1-t1.min_value/t2.total), 100*(1-t1.max_value/t2.total)  from 
 			(select instance, avg(value) as avg_value,max(value) as max_value,min(value) as min_value from metrics_schema.node_memory_available %[1]s GROUP BY instance) as t1 join
-			(select instance, max(value) as total from metrics_schema.node_total_memory %[1]s GROUP BY instance) as t2 where t1.instance = t2.instance;`, condition)
+			(select instance, max(value) as total from metrics_schema.node_total_memory %[1]s GROUP BY instance) as t2 where t1.instance = t2.instance order by avg_value desc;`, condition)
 	subRows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
@@ -1694,34 +1694,13 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, er
 		if err != nil {
 			return table, err
 		}
-		sort.Slice(subRows, func(i, j int) bool {
-			if len(subRows[i]) < 5 || len(subRows[j]) < 5 {
-				return false
-			}
-			v1, err1 := parseFloat(subRows[i][2])
-			v2, err2 := parseFloat(subRows[j][2])
-			if err1 != nil || err2 != nil {
-				return false
-			}
-			return v1 > v2
-		})
 		appendRows(TableRowDef{
 			Values:    rows[0],
 			SubValues: subRows,
 			Comment:   def.Comment,
 		})
 	}
-	sort.Slice(resultRows, func(i, j int) bool {
-		if len(resultRows[i].Values) < 5 || len(resultRows[j].Values) < 5 {
-			return false
-		}
-		v1, err1 := parseFloat(resultRows[i].Values[2])
-		v2, err2 := parseFloat(resultRows[j].Values[2])
-		if err1 != nil || err2 != nil {
-			return false
-		}
-		return v1 > v2
-	})
+	sortRowsByIndex(resultRows, 2)
 	table.Rows = resultRows
 	return table, nil
 }

@@ -1,13 +1,12 @@
 import client from '@/utils/client';
-import { LogsearchTaskGroupResponse } from '@/utils/dashboard_client';
+import { LogsearchSearchTarget, LogsearchTaskGroupResponse } from '@/utils/dashboard_client';
 import { Button, Table, Tag } from 'antd';
 import { RangePickerValue } from 'antd/lib/date-picker/interface';
 import { Moment } from 'moment';
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Context } from "../store";
-import { Component, LogLevelMap, parseClusterInfo, parseSearchingParams } from './utils';
+import { LogLevelMap, parseSearchingParams, ServerType } from './utils';
 
 const { Column } = Table;
 
@@ -17,17 +16,18 @@ type History = {
   key: number
   time?: RangePickerValue
   level?: string
-  components?: Component[]
+  components?: LogsearchSearchTarget[]
   keywords?: string
   size?: string
   state?: string
   action?: number
 }
 
-function componentRender(components: Component[]) {
-  const tidb = components.filter(item => item.kind === 'tidb')
-  const tikv = components.filter(item => item.kind === 'tikv')
-  const pd = components.filter(item => item.kind === 'pd')
+function componentRender(targets: LogsearchSearchTarget[]) {
+  const tidb = targets.filter(item => item.kind === ServerType.TiDB)
+  const tikv = targets.filter(item => item.kind === ServerType.TiKV)
+  const pd = targets.filter(item => item.kind === ServerType.PD)
+
   return (
     <span>
       {tidb.length > 0 && (<Tag>{tidb.length} TiDB</Tag>)}
@@ -52,8 +52,6 @@ function timeRender(timeRange: RangePickerValue): string {
 }
 
 export default function SearchHistory() {
-  const { store, dispatch } = useContext(Context)
-  const { components: allComponents } = store
   const [taskGroups, setTaskGroups] = useState<LogsearchTaskGroupResponse[]>([])
   const [selectedRowKeys, setRowKeys] = useState<string[] | number[]>([])
 
@@ -61,11 +59,8 @@ export default function SearchHistory() {
 
   useEffect(() => {
     async function getData() {
-      const res = await client.dashboard.topologyAllGet()
-      const allComponents = parseClusterInfo(res.data)
-      dispatch({ type: 'components', payload: allComponents })
-      const res1 = await client.dashboard.logsTaskgroupsGet()
-      setTaskGroups(res1.data)
+      const res = await client.dashboard.logsTaskgroupsGet()
+      setTaskGroups(res.data)
     }
     getData()
   }, [])
@@ -82,10 +77,12 @@ export default function SearchHistory() {
     return (
       <span>
         <Button type="link">
-          <Link to={`/log/search/detail/${taskGroupID}`}>Detail</Link>
+          <Link to={`/log/search/detail/${taskGroupID}`}>
+            {t('log_searching.history.detail')}
+          </Link>
         </Button>
         <Button type="link" onClick={handleDelete}>
-          Delete
+          {t('log_searching.history.delete')}
         </Button>
       </span>
     )
@@ -98,6 +95,18 @@ export default function SearchHistory() {
       const res = await client.dashboard.logsTaskgroupsGet()
       setTaskGroups(res.data)
     }
+  }
+
+  async function handleDeleteAll() {
+    const allKeys = taskGroups.map(taskGroup => taskGroup.task_group?.id)
+    for (const key of allKeys) {
+      if (key === undefined) {
+        continue
+      }
+      await client.dashboard.logsTaskgroupsIdDelete(key)
+    }
+    const res = await client.dashboard.logsTaskgroupsGet()
+    setTaskGroups(res.data)
   }
 
   const rowSelection = {
@@ -113,7 +122,7 @@ export default function SearchHistory() {
   ]
 
   const historyList: History[] = taskGroups.map(taskGroup => {
-    const { timeRange, logLevel, components, searchValue } = parseSearchingParams(taskGroup, allComponents)
+    const { timeRange, logLevel, components, searchValue } = parseSearchingParams(taskGroup)
     const taskGroupID = taskGroup.task_group?.id || 0
     const state = descriptionArray[(taskGroup.task_group?.state || 1) - 1]
     return {
@@ -129,14 +138,17 @@ export default function SearchHistory() {
 
   return (
     <div style={{ backgroundColor: "#FFFFFF" }}>
-      <Button type="primary" style={{ marginBottom: 16, marginTop: 16 }} onClick={handleDeleteSelected}>Delete Selected</Button>
+      <div style={{ padding: 16 }}>
+        <Button type="danger" onClick={handleDeleteSelected} disabled={selectedRowKeys.length < 1} style={{ marginRight: 16 }}>{t('log_searching.history.delete_selected')}</Button>
+        <Button type="danger" onClick={handleDeleteAll} >{t('log_searching.history.delete_all')}</Button>
+      </div>
       <Table dataSource={historyList} rowSelection={rowSelection} pagination={{ pageSize: 100 }}>
-        <Column width={400} title="Time Range" dataIndex="time" key="time" render={timeRender} />
-        <Column title="Level" dataIndex="level" key="level" />
-        <Column width={230} title="Components" dataIndex="components" key="components" render={componentRender} />
-        <Column title="Keywords" dataIndex="keywords" key="keywords" />
-        <Column title="State" dataIndex="state" key="state" />
-        <Column title="Action" dataIndex="action" key="action" render={actionRender} />
+        <Column width={400} title={t('log_searching.common.time_range')} dataIndex="time" key="time" render={timeRender} />
+        <Column title={t('log_searching.preview.level')} dataIndex="level" key="level" />
+        <Column width={230} title={t('log_searching.preview.component')} dataIndex="components" key="components" render={componentRender} />
+        <Column title={t('log_searching.common.keywords')} dataIndex="keywords" key="keywords" />
+        <Column title={t('log_searching.history.state')} dataIndex="state" key="state" />
+        <Column title={t('log_searching.history.action')} dataIndex="action" key="action" render={actionRender} />
       </Table>
     </div>
   )

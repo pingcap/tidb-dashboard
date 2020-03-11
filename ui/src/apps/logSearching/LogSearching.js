@@ -18,7 +18,7 @@ export default function LogSearchingPage() {
                 {t('log_searching.page.intro')}
               </span>
             }>
-            View <Link to="/log/search/history">search history</Link>
+            {t('log_searching.page.view')} <Link to="/log/search/history">{t('log_searching.page.search_histroy')}</Link>
           </Empty>
         </Col>
       </Row>

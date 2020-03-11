@@ -1,14 +1,12 @@
 import client, { DASHBOARD_API_URL } from '@/utils/client';
-import { LogsearchSearchTarget, LogsearchTaskModel } from '@/utils/dashboard_client';
+import { LogsearchTaskModel } from '@/utils/dashboard_client';
 import { Button, Card, Modal, Tree, Typography } from 'antd';
 import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree';
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { Context } from "../store";
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon';
 import styles from './SearchProgress.module.css';
-import { namingMap, TaskState, Component } from './utils';
-import Item from 'antd/lib/list/Item';
+import { getGRPCAddress, namingMap, ServerType, ServerTypeList, TaskState, getAddress } from './utils';
 
 const { confirm } = Modal;
 const { Title } = Typography;
@@ -36,13 +34,12 @@ function leafNodeProps(state: number | undefined) {
   }
 }
 
-function renderLeafNodes(tasks: LogsearchTaskModel[], components: Component[]) {
+function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map(task => {
-    const target = components.find(item => item.match(task))
-    const title = !!target ? target.addr() : ''
+    const title = getAddress(task.search_target)
     return (
       <TreeNode
-        key={task.id?.toString()}
+        key={`${task.id}`}
         value={task.id}
         title={title}
         {...leafNodeProps(task.state)}
@@ -93,14 +90,16 @@ function downloadFile(url: string) {
 }
 
 interface Props {
-  taskGroupID: number
+  taskGroupID: number,
+  tasks: LogsearchTaskModel[],
+  setTasks: Dispatch<SetStateAction<LogsearchTaskModel[]>>
 }
 
 export default function SearchProgress({
-  taskGroupID
+  taskGroupID,
+  tasks,
+  setTasks,
 }: Props) {
-  const { store, dispatch } = useContext(Context)
-  const { tasks } = store
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
   const { t } = useTranslation()
 
@@ -114,10 +113,7 @@ export default function SearchProgress({
       return
     }
     const res = await client.dashboard.logsTaskgroupsIdGet(taskGroupID)
-    dispatch({
-      type: 'tasks',
-      payload: res.data.tasks ?? []
-    })
+    setTasks(res.data.tasks ?? [])
   }
 
   useSetInterval(() => {
@@ -149,28 +145,27 @@ export default function SearchProgress({
     return res.join('，')
   }
 
-  function renderTreeNodes(tasks: LogsearchTaskModel[], components: Component[]) {
+  function renderTreeNodes(tasks: LogsearchTaskModel[]) {
     const servers = {
-      tidb: [],
-      tikv: [],
-      pd: []
+      [ServerType.TiDB]: [],
+      [ServerType.TiKV]: [],
+      [ServerType.PD]: []
     }
 
     tasks.forEach(task => {
-      const serverType = task.search_target?.kind ?? ''
-      if (!(serverType in servers)) {
+      if (task.search_target?.kind === undefined) {
         return
       }
-      servers[serverType].push(task)
+      servers[task.search_target.kind].push(task)
     })
 
-    return Object.keys(servers)
-      .filter(key => servers[key].length > 0)
-      .map(key => {
-        const tasks = servers[key]
+    return ServerTypeList
+      .filter(kind => servers[kind].length > 0)
+      .map(kind => {
+        const tasks: LogsearchTaskModel[] = servers[kind]
         const title = (
           <span>
-            {namingMap[key]}
+            {namingMap[kind]}
             <span style={{
               fontSize: "0.8em",
               marginLeft: 5
@@ -181,15 +176,14 @@ export default function SearchProgress({
         )
         return (
           <TreeNode
-            key={key}
+            key={namingMap[kind]}
             title={title}
             icon={parentNodeIcon(tasks)}
             disableCheckbox={!parentNodeCheckable(tasks)}
-            children={renderLeafNodes(tasks, components)}
+            children={renderLeafNodes(tasks)}
           />
         )
-      }
-      )
+      })
   }
 
   async function handleDownload() {
@@ -220,14 +214,12 @@ export default function SearchProgress({
       title: t('log_searching.confirm.cancel_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdCancelPost(taskGroupID)
-        dispatch({
-          type: 'tasks', payload: tasks.map(task => {
-            if (task.state === TaskState.Error) {
-              task.state = TaskState.Running
-            }
-            return task
-          })
-        })
+        setTasks(tasks.map(task => {
+          if (task.state === TaskState.Error) {
+            task.state = TaskState.Running
+          }
+          return task
+        }))
       },
     })
   }
@@ -240,14 +232,12 @@ export default function SearchProgress({
       title: t('log_searching.confirm.retry_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdRetryPost(taskGroupID)
-        dispatch({
-          type: 'tasks', payload: tasks.map(task => {
-            if (task.state === TaskState.Error) {
-              task.state = TaskState.Running
-            }
-            return task
-          })
-        })
+        setTasks(tasks.map(task => {
+          if (task.state === TaskState.Error) {
+            task.state = TaskState.Running
+          }
+          return task
+        }))
       },
     })
   }
@@ -268,11 +258,11 @@ export default function SearchProgress({
         </div>
         <Tree
           checkable
-          expandedKeys={Object.keys(namingMap)}
+          expandedKeys={Object.values(namingMap)}
           showIcon
           onCheck={handleCheck}
         >
-          {renderTreeNodes(store.tasks, store.components)}
+          {renderTreeNodes(tasks)}
         </Tree>
       </Card>
     </div>

@@ -1,9 +1,9 @@
 import client from '@/utils/client';
+import { LogsearchTaskModel } from '@/utils/dashboard_client/api';
 import { Table, Tooltip } from 'antd';
 import moment from 'moment';
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { Context } from "../store";
 import { LogLevelMap, namingMap } from './utils';
 
 const { Column } = Table;
@@ -38,14 +38,14 @@ function logRender(log: string) {
 }
 interface Props {
   taskGroupID: number
+  tasks: LogsearchTaskModel[],
 }
 
 export default function SearchResult({
-  taskGroupID
+  taskGroupID,
+  tasks,
 }: Props) {
-  const { store } = useContext(Context)
   const [logPreviews, setData] = useState<LogPreview[]>([])
-  const { tasks } = store
   const { t } = useTranslation()
 
   useEffect(() => {

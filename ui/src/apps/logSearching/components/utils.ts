@@ -1,12 +1,6 @@
-import { ClusterinfoClusterInfo, LogsearchTaskGroupResponse, LogsearchTaskModel } from "@/utils/dashboard_client"
+import { ClusterinfoClusterInfo, LogsearchSearchTarget, LogsearchTaskGroupResponse, LogsearchTaskModel } from "@/utils/dashboard_client"
 import { RangePickerValue } from "antd/lib/date-picker/interface"
 import moment from "moment"
-
-export const namingMap = {
-  tidb: 'TiDB',
-  tikv: 'TiKV',
-  pd: 'PD'
-}
 
 export const LogLevelMap = {
   0: 'UNKNOWN',
@@ -24,78 +18,67 @@ export enum TaskState {
   Error
 }
 
-export const AllLogLevel = [1, 2, 3, 4, 5, 6]
-
-export class Component {
-  kind: string
-  ip: string
-  port: number
-  statusPort: number
-
-  constructor(kind: string, ip: string, port: number, statusPort: number) {
-    this.kind = kind
-    this.ip = ip
-    this.port = port
-    this.statusPort = statusPort
-  }
-
-  addr(): string {
-    return `${this.ip}:${this.port}`
-  }
-
-  grpcPort(): number {
-    return this.kind === 'tidb' ?
-      this.statusPort :
-      this.port
-  }
-
-  match(task: LogsearchTaskModel): boolean {
-    const kind = task.search_target?.kind
-    if (kind !== this.kind) {
-      return false
-    }
-    const rpcPort = kind === 'tidb' ? this.statusPort : this.port
-    if (task.search_target?.ip === this.ip && task.search_target.port === rpcPort) {
-      return true
-    }
-    return false
-  }
+export enum ServerType {
+  Unknown = 0,
+  TiDB,
+  TiKV,
+  PD,
 }
 
-export function parseClusterInfo(info: ClusterinfoClusterInfo): Component[] {
-  const components: Component[] = []
+export const namingMap = {
+  [ServerType.TiDB]: 'TiDB',
+  [ServerType.TiKV]: 'TiKV',
+  [ServerType.PD]: 'PD'
+}
+
+export const AllLogLevel = [1, 2, 3, 4, 5, 6]
+
+export function parseClusterInfo(info: ClusterinfoClusterInfo): LogsearchSearchTarget[] {
+  const targets: LogsearchSearchTarget[] = []
   info?.tidb?.nodes?.forEach(item => {
     if (item.ip === undefined || item.port === undefined || item.status_port === undefined) {
       return
     }
-    const component = new Component('tidb', item.ip, item.port, item.status_port)
-    components.push(component)
+    targets.push({
+      kind: ServerType.TiDB,
+      ip: item.ip,
+      port: item.port,
+      status_port: item.status_port,
+    })
   })
   info?.tikv?.nodes?.forEach(item => {
     if (item.ip === undefined || item.port === undefined || item.status_port === undefined) {
       return
     }
-    const component = new Component('tikv', item.ip, item.port, item.status_port)
-    components.push(component)
+    targets.push({
+      kind: ServerType.TiKV,
+      ip: item.ip,
+      port: item.port,
+      status_port: item.status_port,
+    })
   })
   info?.pd?.nodes?.forEach(item => {
     if (item.ip === undefined || item.port === undefined) {
       return
     }
-    const component = new Component('pd', item.ip, item.port, item.port)
-    components.push(component)
+    targets.push({
+      kind: ServerType.PD,
+      ip: item.ip,
+      port: item.port,
+      status_port: item.port,
+    })
   })
-  return components
+  return targets
 }
 
 interface Params {
   timeRange: RangePickerValue,
   logLevel: number,
-  components: Component[],
+  components: LogsearchSearchTarget[],
   searchValue: string,
 }
 
-export function parseSearchingParams(resp: LogsearchTaskGroupResponse, components: Component[]): Params {
+export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
   const { task_group, tasks } = resp
   const { start_time, end_time, levels, patterns } = task_group?.search_request || {}
   const startTime = start_time ? moment(start_time) : null
@@ -104,18 +87,35 @@ export function parseSearchingParams(resp: LogsearchTaskGroupResponse, component
     timeRange: [startTime, endTime] as RangePickerValue,
     logLevel: levels && levels.length > 0 ? levels[0] : 0,
     searchValue: patterns && patterns.length > 0 ? patterns.join(' ') : '',
-    components: tasks && tasks.length > 0 ? getComponents(tasks, components) : [],
+    components: tasks && tasks.length > 0 ? getComponents(tasks) : [],
   }
 }
 
-function getComponents(tasks: LogsearchTaskModel[], components: Component[]): Component[] {
-  const res: Component[] = []
+function getComponents(tasks: LogsearchTaskModel[]): LogsearchSearchTarget[] {
+  const targets: LogsearchSearchTarget[] = []
   tasks.forEach(task => {
-    const component = components.find(item => item.match(task))
-    if (component === undefined) {
+    if (task.search_target === undefined) {
       return
     }
-    res.push(component)
+    targets.push(task.search_target)
   })
-  return res
+  return targets
 }
+
+export function getGRPCAddress(target: LogsearchSearchTarget | undefined): string {
+  if (target === undefined) {
+    return ''
+  }
+  return target?.kind === ServerType.TiDB ?
+    `${target.ip}:${target.status_port}` :
+    `${target.ip}:${target.port}`
+}
+
+export function getAddress(target: LogsearchSearchTarget | undefined): string {
+  if (target === undefined) {
+    return ''
+  }
+  return `${target.ip}:${target.port}`
+}
+
+export const ServerTypeList = [ServerType.TiDB, ServerType.TiKV, ServerType.PD]

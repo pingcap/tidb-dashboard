@@ -5,43 +5,43 @@ import { RangePickerValue } from "antd/lib/date-picker/interface";
 import Search from "antd/lib/input/Search";
 import { TreeNode } from "antd/lib/tree-select";
 import moment from 'moment';
-import React, { ChangeEvent, useContext, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { useHistory } from "react-router-dom";
-import { Context } from "../store";
-import { AllLogLevel, Component, namingMap, parseClusterInfo, parseSearchingParams } from "./utils";
+import { AllLogLevel, getAddress, namingMap, parseClusterInfo, parseSearchingParams, ServerType, ServerTypeList } from "./utils";
 
 const { SHOW_CHILD } = TreeSelect;
 const { RangePicker } = DatePicker
 const { Option } = Select;
 
-function buildTreeData(components: Component[]) {
+function buildTreeData(targets: LogsearchSearchTarget[]) {
   const servers = {
-    tidb: [],
-    tikv: [],
-    pd: []
+    [ServerType.TiDB]: [],
+    [ServerType.TiKV]: [],
+    [ServerType.PD]: []
   }
 
-  components.forEach(item => {
-    const serverType = item.kind
-    if (!(serverType in servers)) {
+  targets.forEach(item => {
+    if (item.kind === undefined) {
       return
     }
-    const addr = item.addr()
-    servers[serverType].push({
-      title: addr,
-      value: addr,
-      key: addr
-    })
+    servers[item.kind].push(item)
   })
 
-  return Object.keys(servers)
+  return ServerTypeList
     .filter(kind => servers[kind].length > 0)
     .map(kind => ({
       title: namingMap[kind],
       value: kind,
       key: kind,
-      children: servers[kind]
+      children: servers[kind].map((item: LogsearchSearchTarget) => {
+        const addr = getAddress(item)
+        return {
+          title: addr,
+          value: addr,
+          key: addr,
+        }
+      })
     }))
 }
 
@@ -52,8 +52,6 @@ interface Props {
 export default function SearchHeader({
   taskGroupID
 }: Props) {
-  const { store, dispatch } = useContext(Context)
-  const { components: allComponents } = store
   const { t } = useTranslation()
   const history = useHistory()
 
@@ -62,19 +60,20 @@ export default function SearchHeader({
   const [selectedComponents, setComponents] = useState<string[]>([])
   const [searchValue, setSearchValue] = useState<string>('')
 
+  const [allTargets, setAllTargets] = useState<LogsearchSearchTarget[]>([])
   useEffect(() => {
     async function fetchData() {
       const res = await client.dashboard.topologyAllGet()
-      const allComponents = parseClusterInfo(res.data)
-      dispatch({ type: 'components', payload: allComponents })
+      const targets = parseClusterInfo(res.data)
+      setAllTargets(targets)
       if (!taskGroupID) {
         return
       }
       const res2 = await client.dashboard.logsTaskgroupsIdGet(taskGroupID)
-      const { timeRange, logLevel, components, searchValue } = parseSearchingParams(res2.data, allComponents)
+      const { timeRange, logLevel, components, searchValue } = parseSearchingParams(res2.data)
       setTimeRange(timeRange)
       setLogLevel(logLevel === 0 ? 3 : logLevel)
-      setComponents(components.map(item => item.addr()))
+      setComponents(components.map(item => getAddress(item)))
       setSearchValue(searchValue)
     }
     fetchData()
@@ -82,16 +81,12 @@ export default function SearchHeader({
 
   async function createTaskGroup() {
     // TODO: check select at least one component
-    const targets: LogsearchSearchTarget[] = allComponents.filter(item =>
-      selectedComponents.some(addr => addr === item.addr())
-    ).map(item => ({
-      ip: item.ip,
-      port: item.grpcPort(),
-      kind: item.kind,
-    }))
+    const searchTargets: LogsearchSearchTarget[] = allTargets.filter(item =>
+      selectedComponents.some(addr => addr === getAddress(item))
+    )
 
     let params: LogsearchCreateTaskGroupRequest = {
-      search_targets: targets,
+      search_targets: searchTargets,
       request: {
         start_time: timeRange?.[0]?.valueOf(), // unix millionsecond
         end_time: timeRange?.[1]?.valueOf(), // unix millionsecond
@@ -169,7 +164,7 @@ export default function SearchHeader({
                 validateStatus={selectedComponents.length > 0 ? "" : "error"}>
                 <TreeSelect
                   value={selectedComponents}
-                  treeData={buildTreeData(allComponents)}
+                  treeData={buildTreeData(allTargets)}
                   placeholder={t('log_searching.common.components_placeholder')}
                   onChange={handleComponentChange}
                   treeDefaultExpandAll={true}

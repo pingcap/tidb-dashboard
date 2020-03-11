@@ -1,8 +1,14 @@
 log_searching:
   nav_title: Search Logs
+  nav:
+    log_searching: Log Searching
+    detail: Detail
+    history: History
   page:
     intro: Preview and download logs by clicking Search
     tip: The preview shows only the first 500 logs
+    view: View
+    search_histroy: search histroy
   common:
     time_range: Time Range
     log_level: Log Level
@@ -30,3 +36,9 @@ log_searching:
   history:
     running: running
     finished: finished
+    delete_selected: Delete selected
+    delete_all: Delete All
+    state: State
+    action: Action
+    detail: Detail
+    delete: Delete

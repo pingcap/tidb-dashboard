@@ -25,6 +25,7 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
@@ -47,14 +48,17 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 }
 
 // Register register the handlers to the service.
-func (s *Service) Register(r *gin.RouterGroup) {
+func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint := r.Group("/profiling")
-	endpoint.POST("/group/start", s.startHandler)
-	endpoint.GET("/group/status/:groupId", s.statusHandler)
-	endpoint.POST("/group/cancel/:groupId", s.cancelGroupHandler)
-	endpoint.GET("/group/download/:groupId", s.downloadGroupHandler)
-	endpoint.GET("/single/download/:taskId", s.downloadHandler)
-	endpoint.DELETE("/group/delete/:groupId", s.deleteHandler)
+
+	endpoint.POST("/group/start", auth.MWAuthRequired(), s.startHandler)
+	endpoint.GET("/group/status/:groupId", auth.MWAuthRequired(), s.statusHandler)
+	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), s.cancelGroupHandler)
+	endpoint.GET("/group/download/acquire_token", auth.MWAuthRequired(), s.getGroupDownloadTokenHandler)
+	endpoint.GET("/group/download", s.downloadGroupHandler)
+	endpoint.GET("/single/download/acquire_token", auth.MWAuthRequired(), s.getSingleDownloadTokenHandler)
+	endpoint.GET("/single/download", s.downloadSingleHandler)
+	endpoint.DELETE("/group/delete/:groupId", auth.MWAuthRequired(), s.deleteHandler)
 }
 
 type StartRequest struct {
@@ -68,8 +72,10 @@ type StartRequest struct {
 // @Description Start a profiling task group
 // @Produce json
 // @Param pr body StartRequest true "profiling request"
+// @Security JwtAuth
 // @Success 200 {object} TaskGroupModel "task group"
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/start [post]
 func (s *Service) startHandler(c *gin.Context) {
 	var pr StartRequest
@@ -135,8 +141,10 @@ type StatusResponse struct {
 // @Description List all profiling tasks with a given group ID
 // @Produce json
 // @Param groupId path string true "group ID"
+// @Security JwtAuth
 // @Success 200 {object} StatusResponse
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/status/{groupId} [get]
 func (s *Service) statusHandler(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
@@ -172,8 +180,10 @@ func (s *Service) statusHandler(c *gin.Context) {
 // @Description Cancel all profling tasks with a given group ID
 // @Produce json
 // @Param groupId path string true "group ID"
+// @Security JwtAuth
 // @Success 200 {string} string "success"
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/cancel/{groupId} [post]
 func (s *Service) cancelGroupHandler(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
@@ -199,15 +209,44 @@ func (s *Service) cancelGroupHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, "success")
 }
 
-// @Summary Download all results with a given group ID
-// @Description Download all finished profiling results with a given group ID
-// @Produce application/x-gzip
-// @Param groupId path string true "group ID"
+// @Summary Get download token for group download
+// @Description Get download token with a given group ID
+// @Produce plain
+// @Param id query string false "group ID"
+// @Security JwtAuth
+// @Success 200 {string} string
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Router /profiling/group/download/acquire_token [get]
+func (s *Service) getGroupDownloadTokenHandler(c *gin.Context) {
+	id := c.Query("id")
+	token, err := utils.NewJWTString("profiling/group_download", id)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		return
+	}
+	c.String(http.StatusOK, token)
+}
+
+// @Summary Download all results of a task group
+// @Description Download all finished profiling results of a task group
+// @Produce application/x-gzip
+// @Param token query string true "download token"
+// @Security JwtAuth
+// @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /profiling/group/download/{groupId} [get]
+// @Router /profiling/group/download [get]
 func (s *Service) downloadGroupHandler(c *gin.Context) {
-	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
+	token := c.Query("token")
+	str, err := utils.ParseJWTString("profiling/group_download", token)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		_ = c.Error(utils.ErrInvalidRequest.New(err.Error()))
+		return
+	}
+	taskGroupID, err := strconv.Atoi(str)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
@@ -245,15 +284,44 @@ func (s *Service) downloadGroupHandler(c *gin.Context) {
 	c.FileAttachment(temp.Name(), fileName)
 }
 
-// @Summary Download all results with a given group ID
-// @Description Download all finished profiling results with a given group ID
-// @Produce application/x-gzip
-// @Param taskId path string true "task ID"
+// @Summary Get download token for single download
+// @Description Get download token with a given task ID
+// @Produce plain
+// @Param id query string false "task ID"
+// @Security JwtAuth
+// @Success 200 {string} string
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Router /profiling/single/download/acquire_token [get]
+func (s *Service) getSingleDownloadTokenHandler(c *gin.Context) {
+	id := c.Query("id")
+	token, err := utils.NewJWTString("profiling/single_download", id)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		return
+	}
+	c.String(http.StatusOK, token)
+}
+
+// @Summary Download the result of a task
+// @Description Download the finished profiling result of a task
+// @Produce application/x-gzip
+// @Param token query string true "download token"
+// @Security JwtAuth
+// @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /profiling/single/download/{taskId} [get]
-func (s *Service) downloadHandler(c *gin.Context) {
-	taskID, err := strconv.Atoi(c.Param("taskId"))
+// @Router /profiling/single/download [get]
+func (s *Service) downloadSingleHandler(c *gin.Context) {
+	token := c.Query("token")
+	str, err := utils.ParseJWTString("profiling/single_download", token)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		_ = c.Error(utils.ErrInvalidRequest.New(err.Error()))
+		return
+	}
+	taskID, err := strconv.Atoi(str)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
@@ -290,8 +358,10 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Description Delete all finished profiling tasks with a given group ID
 // @Produce json
 // @Param groupId path string true "group ID"
+// @Security JwtAuth
 // @Success 200 {object} utils.APIEmptyResponse
 // @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /profiling/group/delete/{groupId} [delete]
 func (s *Service) deleteHandler(c *gin.Context) {

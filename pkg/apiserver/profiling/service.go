@@ -80,6 +80,7 @@ type StartRequest struct {
 // @Description Start a profiling task group
 // @Produce json
 // @Param req body StartRequest true "profiling request"
+// @Security JwtAuth
 // @Success 200 {object} TaskGroupModel "task group"
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
@@ -136,15 +137,21 @@ func (s *Service) start(c *gin.Context) {
 }
 
 func (s *Service) autoCollect(c *gin.Context, req *StartRequest, nodes map[NodeType][]string) {
-	ticker := time.NewTicker(time.Duration(req.CollectionInterval) * time.Second)
-	defer ticker.Stop()
+	interval := time.Duration(req.CollectionInterval+req.DurationSecs) * time.Second
+	timer := time.NewTimer(interval)
+	defer timer.Stop()
 
 	for {
-		select {
-		case <-s.quit:
+		if !s.enableAutoCollect {
 			return
-		case <-ticker.C:
-			s.collect(req, nodes)
+		}
+		select {
+		case <-s.ctx.Done():
+			return
+		case <-timer.C:
+			_, _ = s.collect(req, nodes)
+			timer.Reset(interval)
+		default:
 		}
 	}
 }
@@ -152,10 +159,15 @@ func (s *Service) autoCollect(c *gin.Context, req *StartRequest, nodes map[NodeT
 // @Summary Stop auto profiling
 // @Description Stop auto profiling
 // @Produce json
+// @Security JwtAuth
 // @Success 200 {string} string "success"
 // @Router /profiling/group/stop [post]
 func (s *Service) autoStopHandler(c *gin.Context) {
-	close(s.quit)
+	if !s.enableAutoCollect {
+		c.JSON(http.StatusBadRequest, "auto profiling job has been stopped")
+	}
+
+	s.enableAutoCollect = false
 	c.JSON(http.StatusOK, "success")
 }
 
@@ -426,12 +438,37 @@ func (s *Service) deleteGroup(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	taskGroup := TaskGroupModel{}
-	err = s.db.Where("id = ? AND state <> ?", taskGroupID, TaskStateRunning).Find(&taskGroup).Error
+
+	// cancel all running tasks
+	var tasks []TaskModel
+	err = s.db.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateRunning).Find(&tasks).Error
 	if err != nil {
-		c.Status(http.StatusBadRequest)
+		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
+	}
+	for _, task := range tasks {
+		if task, ok := s.tasks.Load(task.ID); ok {
+			t := task.(*Task)
+			t.stop()
+		}
+	}
+
+	// wait for tasks stop
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		var runningTasks []TaskModel
+		err = s.db.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateRunning).Find(&runningTasks).Error
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			_ = c.Error(err)
+			return
+		}
+		if len(runningTasks) == 0 {
+			break
+		}
+		<-ticker.C
 	}
 
 	err = s.db.Where("task_group_id = ?", taskGroupID).Delete(&TaskModel{}).Error

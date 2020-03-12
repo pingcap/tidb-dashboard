@@ -28,6 +28,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
 
 type Service struct {
@@ -45,6 +46,7 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/all", s.topologyHandler)
 	endpoint.DELETE("/tidb/:address/", s.deleteTiDBTopologyHandler)
+	endpoint.GET("/alertmanager/:address/count", s.topologyGetAlertCount)
 }
 
 // @Summary Delete etcd's tidb key.
@@ -117,4 +119,22 @@ func (s *Service) topologyHandler(c *gin.Context) {
 	wg.Wait()
 
 	c.JSON(http.StatusOK, returnObject)
+}
+
+// @Summary Get the count of alert
+// @Description Get alert number of the alert manager.
+// @Produce json
+// @Success 200 {object} int
+// @Param address path string true "ip:port"
+// @Router /topology/alertmanager/{address}/count [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) topologyGetAlertCount(c *gin.Context) {
+	address := c.Param("address")
+	cnt, err := clusterinfo.GetAlertCountByAddress(address, s.httpClient)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, cnt)
 }

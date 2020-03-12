@@ -18,7 +18,8 @@ cluster_info:
     title: MONITOR AND ALERT
     view_monitor: VIEW MONITOR
     view_monitor_warn: Monitor is not available
-    view_alerts: VIEW ALERTS
+    view_alerts: 'VIEW {{alertCount}} ALERTS'
+    view_zero_alerts: 'VIEW ALERTS'
     view_alerts_warn: Alert is not available
     problems: PROBLEMS
     run_diagnose: RUN DIAGNOSE

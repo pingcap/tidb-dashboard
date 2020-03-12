@@ -2,6 +2,9 @@
   "name": "tidb-dashboard-ui",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "dependencies": {
     "@baurine/grafana-value-formats": "^0.1.1",
     "@g07cha/flexbox-react": "^5.0.0",

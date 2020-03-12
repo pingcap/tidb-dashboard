@@ -15,7 +15,7 @@ Although TiDB Dashboard can also be integrated into [PD], this form is not conve
 
 ### Step 1. Start a TiDB cluster
 
-#### Solution 1. TiUP (Recommended)
+#### Solution A. Use TiUP (Recommended)
 
 [TiUP] is the offical component manager for [TiDB]. It can help you set up a local TiDB cluster in a few minutes.
 
@@ -33,7 +33,7 @@ tiup run playground nightly
 
 > Note: you might notice that there is already a TiDB Dashboard integrated into the PD started by TiUP. For development purpose, we will not use the that TiDB Dashboard. Please keep following the rest of the steps in this document.
 
-#### Solution 2. Download and Run Binary Manually
+#### Solution B. Download and Run Binary Manually
 
 <details>
 
@@ -107,7 +107,7 @@ The followings are required for developing TiDB Dashboard:
 - make - Build tool (run common workflows)
 - [Golang 1.13+](https://golang.org/) - To compile the server.
 - [Node.js 12+](https://nodejs.org/) - To compile the front-end.
-- [Yarn 1.21+](https://classic.yarnpkg.com/en/docs/install) - To manage front-end dependencies。
+- [Yarn 1.21+](https://classic.yarnpkg.com/en/docs/install) - To manage front-end dependencies.
 - [Java 8+](https://www.java.com/ES/download/) - To generate JavaScript API client by OpenAPI specification.
 
 ### Step 3. Build and Run TiDB Dashboard

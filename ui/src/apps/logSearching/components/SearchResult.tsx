@@ -4,7 +4,7 @@ import { Table, Tooltip } from 'antd';
 import moment from 'moment';
 import React, { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { LogLevelMap, namingMap } from './utils';
+import { LogLevelMap, namingMap, DATE_TIME_FORMAT } from './utils';
 
 const { Column } = Table;
 
@@ -21,9 +21,8 @@ function componentRender(target: LogsearchSearchTarget | undefined) {
     return ''
   }
   return (
-    <div style={{textAlign: "center"}}>
-      <div>{target.kind ? namingMap[target.kind] : ''}</div>
-      <div>{target.ip}</div>
+    <div style={{fontSize: "0.8em"}}>
+      <div>{target.kind ? namingMap[target.kind] : ''} {target.ip}</div>
     </div>
   )
 }
@@ -77,7 +76,7 @@ export default function SearchResult({
       setData(res.data.map((value, index): LogPreview => {
         return {
           key: index,
-          time: moment(value.time).format(),
+          time: moment(value.time).format(DATE_TIME_FORMAT),
           level: LogLevelMap[value.level ?? 0],
           component: getComponent(value.task_id),
           log: value.message,
@@ -91,7 +90,7 @@ export default function SearchResult({
   return (
     <div style={{ backgroundColor: "#FFFFFF" }}>
       <Table dataSource={logPreviews} size="middle" pagination={{ pageSize: 100 }}>
-        <Column width={220} title={t('log_searching.preview.time')} dataIndex="time" key="time" />
+        <Column width={150} title={t('log_searching.preview.time')} dataIndex="time" key="time" />
         <Column width={80} title={t('log_searching.preview.level')} dataIndex="level" key="level" />
         <Column width={100} title={t('log_searching.preview.component')} dataIndex="component" key="component" render={componentRender}/>
         <Column ellipsis title={t('log_searching.preview.log')} dataIndex="log" key="log" render={logRender} />

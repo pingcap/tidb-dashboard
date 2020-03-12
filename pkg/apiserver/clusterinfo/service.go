@@ -23,13 +23,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
-
 	"github.com/gin-gonic/gin"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
 
 type Service struct {

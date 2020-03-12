@@ -377,12 +377,20 @@ func getPDNodesHealth(pdEndPoint string, httpClient *http.Client) (map[string]st
 	return memberHealth, nil
 }
 
-func GetAlertCount(info *AlertManagerInfo, httpClient *http.Client) (int, error) {
-	apiAddress := fmt.Sprintf("http://%s:%d/api/v2/alerts", info.IP, info.Port)
+// GetAlertCountByAddress receives alert manager's address like "ip:port", and it returns the
+//  alert number of the alert manager.
+func GetAlertCountByAddress(address string, httpClient *http.Client) (int, error) {
+	ip, port, err := parseHostAndPortFromAddress(address)
+	if err != nil {
+		return 0, err
+	}
+
+	apiAddress := fmt.Sprintf("http://%s:%d/api/v2/alerts", ip, port)
 	resp, err := httpClient.Get(apiAddress)
 	if err != nil {
 		return 0, err
 	}
+
 	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 
@@ -398,16 +406,4 @@ func GetAlertCount(info *AlertManagerInfo, httpClient *http.Client) (int, error)
 	}
 
 	return len(alerts), nil
-}
-
-func GetAlertCountByAddress(address string, httpClient *http.Client) (int, error) {
-	ip, port, err := parseHostAndPortFromAddress(address)
-	if err != nil {
-		return 0, err
-	}
-	return GetAlertCount(&AlertManagerInfo{
-		IP:         ip,
-		Port:       port,
-		BinaryPath: "",
-	}, httpClient)
 }

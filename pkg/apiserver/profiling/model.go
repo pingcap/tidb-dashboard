@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
@@ -33,23 +34,14 @@ const (
 	TaskStateFinish
 )
 
-type NodeType string
-
-const (
-	NodeTypeTiKV NodeType = "tikv"
-	NodeTypeTiDB NodeType = "tidb"
-	NodeTypePD   NodeType = "pd"
-)
-
 type TaskModel struct {
-	ID          uint      `json:"id" gorm:"primary_key"`
-	TaskGroupID uint      `json:"task_group_id" gorm:"index"`
-	State       TaskState `json:"state" gorm:"index"`
-	Addr        string    `json:"address" gorm:"size:32"`
-	TargetKind  NodeType  `json:"target_kind" gorm:"size:10"`
-	FilePath    string    `json:"file_path" gorm:"type:text"`
-	Error       string    `json:"error" gorm:"type:text"`
-	StartedAt   int64     `json:"started_at"` // The start running time, reset when retry. Used to estimate approximate profiling progress.
+	ID          uint                    `json:"id" gorm:"primary_key"`
+	TaskGroupID uint                    `json:"task_group_id" gorm:"index"`
+	State       TaskState               `json:"state" gorm:"index"`
+	Target      utils.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
+	FilePath    string                  `json:"file_path" gorm:"type:text"`
+	Error       string                  `json:"error" gorm:"type:text"`
+	StartedAt   int64                   `json:"started_at"` // The start running time, reset when retry. Used to estimate approximate profiling progress.
 }
 
 func (TaskModel) TableName() string {
@@ -81,14 +73,13 @@ type Task struct {
 }
 
 // NewTask creates a new profiling task.
-func NewTask(taskGroup *TaskGroup, targetKind NodeType, addr string) *Task {
+func NewTask(taskGroup *TaskGroup, target utils.RequestTargetNode) *Task {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &Task{
 		TaskModel: &TaskModel{
 			TaskGroupID: taskGroup.ID,
 			State:       TaskStateRunning,
-			Addr:        addr,
-			TargetKind:  targetKind,
+			Target:      target,
 			StartedAt:   time.Now().Unix(),
 		},
 		ctx:       ctx,
@@ -98,8 +89,8 @@ func NewTask(taskGroup *TaskGroup, targetKind NodeType, addr string) *Task {
 }
 
 func (t *Task) run() {
-	filePrefix := fmt.Sprintf("profile_group_%d_task%d_%s_%s_", t.TaskGroupID, t.ID, t.TargetKind, t.Addr)
-	svgFilePath, err := fetchProfilingSVG(t.ctx, t.TargetKind, t.Addr, filePrefix, t.taskGroup.ProfileDurationSecs)
+	fileNameWithoutExt := fmt.Sprintf("profiling_%d_%d_%s", t.TaskGroupID, t.ID, t.Target.FileName())
+	svgFilePath, err := profileAndWriteSVG(t.ctx, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs)
 	if err != nil {
 		t.Error = err.Error()
 		t.State = TaskStateError

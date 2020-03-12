@@ -75,8 +75,8 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 }
 
 type CreateTaskGroupRequest struct {
-	Request       SearchLogRequest `json:"request" binding:"required"`
-	SearchTargets []SearchTarget   `json:"search_targets" binding:"required"`
+	Request       SearchLogRequest          `json:"request" binding:"required"`
+	SearchTargets []utils.RequestTargetNode `json:"search_targets" binding:"required"`
 }
 
 type TaskGroupResponse struct {
@@ -116,11 +116,10 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 		return
 	}
 	tasks := make([]*TaskModel, 0, len(req.SearchTargets))
-	for _, t := range req.SearchTargets {
-		target := t
+	for _, target := range req.SearchTargets {
 		task := &TaskModel{
 			TaskGroupID:  taskGroup.ID,
-			SearchTarget: &target,
+			SearchTarget: target,
 			State:        TaskStateRunning,
 		}
 		// Ignore task creation errors

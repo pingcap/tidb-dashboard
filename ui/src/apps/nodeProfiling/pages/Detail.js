@@ -8,13 +8,13 @@ const columns = [
   {
     title: 'Node',
     key: 'node',
-    dataIndex: 'address',
+    dataIndex: 'target.display_name',
     width: 200,
   },
   {
     title: 'Kind',
     key: 'kind',
-    dataIndex: 'target_kind',
+    dataIndex: 'target.kind',
     width: 100,
   },
   {

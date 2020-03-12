@@ -62,10 +62,8 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 }
 
 type StartRequest struct {
-	TiDB         []string `json:"tidb"`
-	TiKV         []string `json:"tikv"`
-	PD           []string `json:"pd"`
-	DurationSecs uint     `json:"duration_secs"`
+	Targets      []utils.RequestTargetNode `json:"targets"`
+	DurationSecs uint                      `json:"duration_secs"`
 }
 
 // @Summary Start profiling
@@ -78,39 +76,36 @@ type StartRequest struct {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/start [post]
 func (s *Service) startHandler(c *gin.Context) {
-	var pr StartRequest
-	if err := c.ShouldBindJSON(&pr); err != nil {
+	var req StartRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
+	if len(req.Targets) == 0 {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.NewWithNoMessage())
+		return
+	}
 
-	if pr.DurationSecs == 0 {
-		pr.DurationSecs = 30
+	if req.DurationSecs == 0 {
+		req.DurationSecs = 30
 	}
-	if pr.DurationSecs > 120 {
-		pr.DurationSecs = 120
+	if req.DurationSecs > 120 {
+		req.DurationSecs = 120
 	}
-	taskGroup := NewTaskGroup(s.db, pr.DurationSecs)
+	taskGroup := NewTaskGroup(s.db, req.DurationSecs)
 	if err := s.db.Create(taskGroup.TaskGroupModel).Error; err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	nodes := map[NodeType][]string{
-		NodeTypeTiDB: pr.TiDB,
-		NodeTypeTiKV: pr.TiKV,
-		NodeTypePD:   pr.PD,
-	}
-
 	var tasks []*Task
-	for nodeType, nodeAddresses := range nodes {
-		for _, addr := range nodeAddresses {
-			t := NewTask(taskGroup, nodeType, addr)
-			s.db.Create(t.TaskModel)
-			s.tasks.Store(t.ID, t)
-			tasks = append(tasks, t)
-		}
+	for _, target := range req.Targets {
+		t := NewTask(taskGroup, target)
+		s.db.Create(t.TaskModel)
+		s.tasks.Store(t.ID, t)
+		tasks = append(tasks, t)
 	}
 
 	go func() {
@@ -280,7 +275,7 @@ func (s *Service) downloadGroupHandler(c *gin.Context) {
 		return
 	}
 
-	fileName := fmt.Sprintf("profile_taskgroup_%d.tar.gz", taskGroupID)
+	fileName := fmt.Sprintf("profiling_pack_%d.tar.gz", taskGroupID)
 	c.FileAttachment(temp.Name(), fileName)
 }
 
@@ -314,6 +309,7 @@ func (s *Service) getSingleDownloadTokenHandler(c *gin.Context) {
 // @Failure 500 {object} utils.APIError
 // @Router /profiling/single/download [get]
 func (s *Service) downloadSingleHandler(c *gin.Context) {
+	// FIXME: We can simply provide only a single file
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/single_download", token)
 	if err != nil {
@@ -350,7 +346,7 @@ func (s *Service) downloadSingleHandler(c *gin.Context) {
 		return
 	}
 
-	fileName := fmt.Sprintf("profile_task_%d.tar.gz", taskID)
+	fileName := fmt.Sprintf("profiling_%d.tar.gz", taskID)
 	c.FileAttachment(temp.Name(), fileName)
 }
 

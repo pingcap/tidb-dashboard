@@ -151,7 +151,7 @@ func (t *Task) SyncRun() {
 		return
 	}
 
-	conn, err := grpc.Dial(t.model.SearchTarget.GRPCAddress(),
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", t.model.SearchTarget.IP, t.model.SearchTarget.Port),
 		grpc.WithInsecure(),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxRecvMsgSize)),
 	)

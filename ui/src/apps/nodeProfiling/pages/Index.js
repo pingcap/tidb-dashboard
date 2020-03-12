@@ -1,75 +1,38 @@
 import client from '@/utils/client'
 import React, { useEffect, useState } from 'react'
-import { message, Card, Form, TreeSelect, Button, Select } from 'antd'
+import { message, Card, Form, TreeSelect, Button, Select, Table } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 
 // FIXME: The following logic should be extracted into a common component.
-
-const namingMap = {
-  tidb: 'TiDB',
-  tikv: 'TiKV',
-  pd: 'PD',
-}
-
-function buildServerMap(info) {
-  const serverMap = new Map()
-  info.tidb.nodes.forEach(tidb => {
-    const addr = `${tidb.ip}:${tidb.status_port}`
-    const target = {
-      ip: tidb.ip,
-      port: tidb.status_port,
-      kind: 'tidb',
-    }
-    serverMap.set(addr, target)
-  })
-  info.tikv.nodes.forEach(tikv => {
-    const addr = `${tikv.ip}:${tikv.status_port}`
-    const target = {
-      ip: tikv.ip,
-      port: tikv.status_port,
-      kind: 'tikv',
-    }
-    serverMap.set(addr, target)
-  })
-  info.pd.nodes.forEach(pd => {
-    const addr = `${pd.ip}:${pd.port}`
-    const target = {
-      ip: pd.ip,
-      port: pd.port,
-      kind: 'pd',
-    }
-    serverMap.set(addr, target)
-  })
-  return serverMap
-}
-
-function buildTreeData(serverMap) {
-  const servers = {
+function getTreeData(topologyMap) {
+  const treeDataByKind = {
     tidb: [],
     tikv: [],
     pd: [],
   }
-
-  serverMap.forEach((target, addr) => {
-    const kind = target.kind ?? ''
-    if (!(kind in servers)) {
+  Object.values(topologyMap).forEach(target => {
+    if (!(target.kind in treeDataByKind)) {
       return
     }
-    servers[kind].push({
-      title: addr,
-      value: `${kind}|${addr}`, // hack
-      key: `${kind}${addr}`,
+    treeDataByKind[target.kind].push({
+      title: target.display_name,
+      value: target.display_name,
+      key: target.display_name,
     })
   })
-
-  return Object.keys(servers)
-    .filter(kind => servers[kind].length > 0)
+  const kindTitleMap = {
+    tidb: 'TiDB',
+    tikv: 'TiKV',
+    pd: 'PD',
+  }
+  return Object.keys(treeDataByKind)
+    .filter(kind => treeDataByKind[kind].length > 0)
     .map(kind => ({
-      title: namingMap[kind],
+      title: kindTitleMap[kind],
       value: kind,
       key: kind,
-      children: servers[kind],
+      children: treeDataByKind[kind],
     }))
 }
 
@@ -78,14 +41,50 @@ function filterTreeNode(inputValue, treeNode) {
   return name.includes(inputValue)
 }
 
+async function getTargetsMapAsync() {
+  const res = await client.dashboard.topologyAllGet()
+  const map = {}
+  res.data.tidb.nodes.forEach(node => {
+    const display = `${node.ip}:${node.port}`
+    const target = {
+      kind: 'tidb',
+      display_name: display,
+      ip: node.ip,
+      port: node.status_port,
+    }
+    map[display] = target
+  })
+  res.data.tikv.nodes.forEach(node => {
+    const display = `${node.ip}:${node.port}`
+    const target = {
+      kind: 'tikv',
+      display_name: display,
+      ip: node.ip,
+      port: node.status_port,
+    }
+    map[display] = target
+  })
+  res.data.pd.nodes.forEach(node => {
+    const display = `${node.ip}:${node.port}`
+    const target = {
+      kind: 'pd',
+      display_name: display,
+      ip: node.ip,
+      port: node.port,
+    }
+    map[display] = target
+  })
+  return map
+}
+
 const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
 
 export default function Page() {
-  const [topology, setTopology] = useState(new Map())
+  const [targetsMap, setTargetsMap] = useState({})
 
   // FIXME: Use Antd form
-  const [nodes, setNodes] = useState([])
+  const [selectedTargets, setSelectedTargets] = useState([])
   const [duration, setDuration] = useState(defaultProfilingDuration)
 
   const [loading, setLoading] = useState(false)
@@ -94,29 +93,21 @@ export default function Page() {
 
   useEffect(() => {
     async function fetchData() {
-      const res = await client.dashboard.topologyAllGet()
-      const serverMap = buildServerMap(res.data)
-      setTopology(serverMap)
+      setTargetsMap(await getTargetsMapAsync())
     }
     fetchData()
   }, [])
 
   async function handleStart() {
-    if (nodes.length === 0) {
+    if (selectedTargets.length === 0) {
       // TODO: Show notification
       return
     }
     setLoading(true)
     const req = {
-      tidb: [],
-      tikv: [],
-      pd: [],
+      targets: selectedTargets.map(k => targetsMap[k]),
       duration_secs: duration,
     }
-    nodes.forEach(n => {
-      const [kind, addr] = n.split('|')
-      req[kind].push(addr)
-    })
     try {
       const res = await client.dashboard.profilingGroupStartPost(req)
       history.push(`/node_profiling/${res.data.id}`)
@@ -128,45 +119,55 @@ export default function Page() {
   }
 
   return (
-    <Card bordered={false}>
-      <Form layout="inline">
-        <Form.Item label={t('node_profiling.index.control_form.nodes.label')}>
-          <TreeSelect
-            value={nodes}
-            treeData={buildTreeData(topology)}
-            placeholder={t(
-              'node_profiling.index.control_form.nodes.placeholder'
-            )}
-            onChange={setNodes}
-            treeDefaultExpandAll={true}
-            treeCheckable={true}
-            showCheckedStrategy={TreeSelect.SHOW_CHILD}
-            allowClear
-            filterTreeNode={filterTreeNode}
-            style={{ width: 400 }}
-          />
-        </Form.Item>
-        <Form.Item
-          label={t('node_profiling.index.control_form.duration.label')}
-        >
-          <Select
-            value={duration}
-            onChange={setDuration}
-            style={{ width: 120 }}
+    <div>
+      <Card bordered={false}>
+        <Form layout="inline">
+          <Form.Item label={t('node_profiling.index.control_form.nodes.label')}>
+            <TreeSelect
+              value={selectedTargets}
+              treeData={getTreeData(targetsMap)}
+              placeholder={t(
+                'node_profiling.index.control_form.nodes.placeholder'
+              )}
+              onChange={setSelectedTargets}
+              treeDefaultExpandAll={true}
+              treeCheckable={true}
+              showCheckedStrategy={TreeSelect.SHOW_CHILD}
+              allowClear
+              filterTreeNode={filterTreeNode}
+              style={{ width: 400 }}
+            />
+          </Form.Item>
+          <Form.Item
+            label={t('node_profiling.index.control_form.duration.label')}
           >
-            {profilingDurationsSec.map(sec => (
-              <Select.Option value={sec} key={sec}>
-                {sec}s
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" onClick={handleStart} loading={loading}>
-            {t('node_profiling.index.control_form.submit')}
-          </Button>
-        </Form.Item>
-      </Form>
-    </Card>
+            <Select
+              value={duration}
+              onChange={setDuration}
+              style={{ width: 120 }}
+            >
+              {profilingDurationsSec.map(sec => (
+                <Select.Option value={sec} key={sec}>
+                  {sec}s
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" onClick={handleStart} loading={loading}>
+              {t('node_profiling.index.control_form.submit')}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
+      <Card
+        title="Profiling History"
+        bordered={false}
+        bodyStyle={{ padding: 0 }}
+        style={{ marginTop: 24 }}
+      >
+        <Table columns={[]} dataSource={[]} size="middle" />
+      </Card>
+    </div>
   )
 }

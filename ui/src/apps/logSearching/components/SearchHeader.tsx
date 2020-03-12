@@ -1,24 +1,32 @@
-import client from "@/utils/client";
-import { LogsearchCreateTaskGroupRequest, LogsearchSearchTarget } from "@/utils/dashboard_client";
-import { Card, Col, DatePicker, Form, Row, Select, TreeSelect } from "antd";
-import { RangePickerValue } from "antd/lib/date-picker/interface";
-import Search from "antd/lib/input/Search";
-import { TreeNode } from "antd/lib/tree-select";
-import moment from 'moment';
-import React, { ChangeEvent, useEffect, useState } from "react";
-import { useTranslation } from 'react-i18next';
-import { useHistory } from "react-router-dom";
-import { AllLogLevel, getAddress, namingMap, parseClusterInfo, parseSearchingParams, ServerType, ServerTypeList } from "./utils";
+import client from '@/utils/client'
+import {
+  LogsearchCreateTaskGroupRequest,
+  UtilsRequestTargetNode,
+} from '@/utils/dashboard_client'
+import { Card, Col, DatePicker, Form, Row, Select, TreeSelect } from 'antd'
+import { RangePickerValue } from 'antd/lib/date-picker/interface'
+import Search from 'antd/lib/input/Search'
+import { TreeNode } from 'antd/lib/tree-select'
+import moment from 'moment'
+import React, { ChangeEvent, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
+import {
+  AllLogLevel,
+  namingMap,
+  parseClusterInfo,
+  parseSearchingParams,
+} from './utils'
 
-const { SHOW_CHILD } = TreeSelect;
+const { SHOW_CHILD } = TreeSelect
 const { RangePicker } = DatePicker
-const { Option } = Select;
+const { Option } = Select
 
-function buildTreeData(targets: LogsearchSearchTarget[]) {
+function buildTreeData(targets: UtilsRequestTargetNode[]) {
   const servers = {
-    [ServerType.TiDB]: [],
-    [ServerType.TiKV]: [],
-    [ServerType.PD]: []
+    tidb: [],
+    tikv: [],
+    pd: [],
   }
 
   targets.forEach(item => {
@@ -28,20 +36,19 @@ function buildTreeData(targets: LogsearchSearchTarget[]) {
     servers[item.kind].push(item)
   })
 
-  return ServerTypeList
+  return Object.keys(servers)
     .filter(kind => servers[kind].length > 0)
     .map(kind => ({
       title: namingMap[kind],
       value: kind,
       key: kind,
-      children: servers[kind].map((item: LogsearchSearchTarget) => {
-        const addr = getAddress(item)
+      children: servers[kind].map((item: UtilsRequestTargetNode) => {
         return {
-          title: addr,
-          value: addr,
-          key: addr,
+          title: item.display_name,
+          value: item.display_name,
+          key: item.display_name,
         }
-      })
+      }),
     }))
 }
 
@@ -49,9 +56,7 @@ interface Props {
   taskGroupID: number
 }
 
-export default function SearchHeader({
-  taskGroupID
-}: Props) {
+export default function SearchHeader({ taskGroupID }: Props) {
   const { t } = useTranslation()
   const history = useHistory()
 
@@ -60,7 +65,7 @@ export default function SearchHeader({
   const [selectedComponents, setComponents] = useState<string[]>([])
   const [searchValue, setSearchValue] = useState<string>('')
 
-  const [allTargets, setAllTargets] = useState<LogsearchSearchTarget[]>([])
+  const [allTargets, setAllTargets] = useState<UtilsRequestTargetNode[]>([])
   useEffect(() => {
     async function fetchData() {
       const res = await client.dashboard.topologyAllGet()
@@ -70,10 +75,15 @@ export default function SearchHeader({
         return
       }
       const res2 = await client.dashboard.logsTaskgroupsIdGet(taskGroupID)
-      const { timeRange, logLevel, components, searchValue } = parseSearchingParams(res2.data)
+      const {
+        timeRange,
+        logLevel,
+        components,
+        searchValue,
+      } = parseSearchingParams(res2.data)
       setTimeRange(timeRange)
       setLogLevel(logLevel === 0 ? 3 : logLevel)
-      setComponents(components.map(item => getAddress(item)))
+      setComponents(components.map(item => item.display_name!))
       setSearchValue(searchValue)
     }
     fetchData()
@@ -81,8 +91,9 @@ export default function SearchHeader({
 
   async function createTaskGroup() {
     // TODO: check select at least one component
-    const searchTargets: LogsearchSearchTarget[] = allTargets.filter(item =>
-      selectedComponents.some(addr => addr === getAddress(item))
+    // FIXME: Use HashMap is more efficient
+    const searchTargets: UtilsRequestTargetNode[] = allTargets.filter(item =>
+      selectedComponents.some(addr => addr === item.display_name)
     )
 
     let params: LogsearchCreateTaskGroupRequest = {
@@ -92,7 +103,7 @@ export default function SearchHeader({
         end_time: timeRange?.[1]?.valueOf(), // unix millionsecond
         levels: AllLogLevel.slice(logLevel - 1), // 3 => [3,4,5,6]
         patterns: searchValue.split(/\s+/), // 'foo boo' => ['foo', 'boo']
-      }
+      },
     }
     const result = await client.dashboard.logsTaskgroupPut(params)
     const id = result.data.task_group?.id
@@ -135,11 +146,17 @@ export default function SearchHeader({
         <Form labelAlign="right">
           <Row gutter={24}>
             <Col span={12}>
-              <Form.Item label={t('log_searching.common.time_range')} labelCol={{ span: 4 }}>
+              <Form.Item
+                label={t('log_searching.common.time_range')}
+                labelCol={{ span: 4 }}
+              >
                 <RangePicker
                   value={timeRange}
                   showTime={{
-                    defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('11:59:59', 'HH:mm:ss')],
+                    defaultValue: [
+                      moment('00:00:00', 'HH:mm:ss'),
+                      moment('11:59:59', 'HH:mm:ss'),
+                    ],
                   }}
                   format="YYYY-MM-DD HH:mm:ss"
                   style={{ width: 400 }}
@@ -148,8 +165,15 @@ export default function SearchHeader({
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={t('log_searching.common.log_level')} labelCol={{ span: 4 }}>
-                <Select value={logLevel} style={{ width: 100 }} onChange={handleLogLevelChange}>
+              <Form.Item
+                label={t('log_searching.common.log_level')}
+                labelCol={{ span: 4 }}
+              >
+                <Select
+                  value={logLevel}
+                  style={{ width: 100 }}
+                  onChange={handleLogLevelChange}
+                >
                   <Option value={1}>DEBUG</Option>
                   <Option value={2}>INFO</Option>
                   <Option value={3}>WARN</Option>
@@ -160,8 +184,11 @@ export default function SearchHeader({
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={t('log_searching.common.components')} labelCol={{ span: 4 }}
-                validateStatus={selectedComponents.length > 0 ? "" : "error"}>
+              <Form.Item
+                label={t('log_searching.common.components')}
+                labelCol={{ span: 4 }}
+                validateStatus={selectedComponents.length > 0 ? '' : 'error'}
+              >
                 <TreeSelect
                   value={selectedComponents}
                   treeData={buildTreeData(allTargets)}
@@ -177,7 +204,10 @@ export default function SearchHeader({
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={t('log_searching.common.keywords')} labelCol={{ span: 4 }}>
+              <Form.Item
+                label={t('log_searching.common.keywords')}
+                labelCol={{ span: 4 }}
+              >
                 <Search
                   value={searchValue}
                   placeholder={t('log_searching.common.keywords_placeholder')}

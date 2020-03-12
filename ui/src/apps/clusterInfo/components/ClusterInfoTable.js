@@ -71,10 +71,10 @@ function ComponentPanelTable({ cluster }) {
     },
   ]
 
-  if (cluster.cluster) {
-    pushNodes('tikv', cluster.cluster, dataSource)
-    pushNodes('tidb', cluster.cluster, dataSource)
-    pushNodes('pd', cluster.cluster, dataSource)
+  if (cluster) {
+    pushNodes('tikv', cluster, dataSource)
+    pushNodes('tidb', cluster, dataSource)
+    pushNodes('pd', cluster, dataSource)
   }
 
   return (

@@ -36,7 +36,7 @@ const App = () => {
                   <ComponentPanel field="pd" data={cluster} />
                 </Col>
               </Row>
-              <ClusterInfoTable cluster={{ cluster, setCluster }} />
+              <ClusterInfoTable cluster={cluster} />
             </Col>
             <Col span={6}>
               <MonitorAlertBar cluster={cluster} />

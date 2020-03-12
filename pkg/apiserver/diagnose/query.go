@@ -86,7 +86,6 @@ func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, e
 		return t.genRow(results[0], nil), nil
 	}
 
-
 	label := "`" + t.label + "`"
 	fields = fmt.Sprintf(`
 		'%s' as name,
@@ -189,7 +188,7 @@ func (t sumValueQuery) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error
 		sum(value) as sum
 		`, t.name, labelFields)
 	table = fmt.Sprintf("metrics_schema.%v", t.tbl)
-	groupSql := fmt.Sprintf("`%v`", strings.Join(t.labels, "`,`"))
+	groupSQL := fmt.Sprintf("`%v`", strings.Join(t.labels, "`,`"))
 
 	query = db.
 		Select(fields).
@@ -198,8 +197,8 @@ func (t sumValueQuery) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error
 	if len(t.condition) > 0 {
 		query = query.Where(t.condition)
 	}
-	rows, err  = query.
-		Group(groupSql).
+	rows, err = query.
+		Group(groupSQL).
 		Having("sum(value) > 0").
 		Order("sum(value) desc").
 		Rows()
@@ -326,7 +325,7 @@ func (t totalTimeByLabelsTableDef) querySummary(db *gorm.DB, totalTime float64, 
 		tableAlias := fmt.Sprintf("t%v", tableNum)
 		tables += fmt.Sprintf(", metrics_schema.%s_duration %s", t.tbl, tableAlias)
 		fields += fmt.Sprintf(", max(%v.value)", tableAlias)
-		tableNum++;
+		tableNum++
 	}
 
 	query := db.
@@ -447,13 +446,6 @@ func (t totalValueAndTotalCountTableDef) queryRow(arg *queryArg, db *gorm.DB) (*
 	subRows, err := t.queryDetail(db, arg.startTime, arg.endTime, arg.quantiles)
 	if err != nil {
 		return nil, err
-	}
-	for i := range subRows {
-		row := subRows[i]
-		row[1] = strings.Join(row[1:1+len(t.labels)], ",")
-		newRow := row[:2]
-		newRow = append(newRow, row[1+len(t.labels):]...)
-		subRows[i] = newRow
 	}
 	return t.genRow(rows, subRows), nil
 }

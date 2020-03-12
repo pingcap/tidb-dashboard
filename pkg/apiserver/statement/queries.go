@@ -65,7 +65,8 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime s
 			sum(exec_count) AS agg_exec_count,
 			round(sum(exec_count*avg_affected_rows)/sum(exec_count)) AS agg_avg_affected_rows,
 			round(sum(exec_count*avg_latency)/sum(exec_count)) AS agg_avg_latency,
-			round(sum(exec_count*avg_mem)/sum(exec_count)) AS agg_avg_mem
+			round(sum(exec_count*avg_mem)/sum(exec_count)) AS agg_avg_mem,
+			group_concat(table_names) AS agg_table_names
 		`).
 		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
 		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
@@ -82,7 +83,7 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime s
 	}
 
 	err = query.Find(&result).Error
-	return result, err
+	return
 }
 
 // Sample params:
@@ -101,7 +102,8 @@ func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string
 			sum(sum_latency) AS agg_sum_latency,
 			sum(exec_count) AS agg_exec_count,
 			round(sum(exec_count*avg_affected_rows)/sum(exec_count)) AS agg_avg_affected_rows,
-			round(sum(exec_count*avg_total_keys)/sum(exec_count)) AS agg_avg_total_keys
+			round(sum(exec_count*avg_total_keys)/sum(exec_count)) AS agg_avg_total_keys,
+			group_concat(table_names) AS agg_table_names
 		`).
 		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
 		Where("schema_name = ?", schema).
@@ -122,6 +124,22 @@ func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string
 		Order("last_seen DESC")
 
 	if err := query.First(&result).Error; err != nil {
+		return nil, err
+	}
+
+	query = db.
+		Select(`
+			plan_digest,
+			plan
+		`).
+		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Where("schema_name = ?", schema).
+		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
+		Where("digest = ?", digest).
+		Where("plan_digest != ''").
+		Group("plan_digest, plan")
+
+	if err := query.Find(&result.Plans).Error; err != nil {
 		return nil, err
 	}
 
@@ -150,5 +168,5 @@ func QueryStatementNodes(db *gorm.DB, schema, beginTime, endTime, digest string)
 		Where("digest = ?", digest).
 		Order("sum_latency DESC").
 		Find(&result).Error
-	return result, err
+	return
 }

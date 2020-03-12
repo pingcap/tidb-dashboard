@@ -158,6 +158,10 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 }
 
 func compareTable(table1, table2 *TableDef, dr *diffRows) (*TableDef, error) {
+	switch table1.Title {
+	case "Scheduler Config", "TiDB GC Config":
+		return compareTableWithNonUniqueKey(table1, table2, &diffRows{})
+	}
 	labelsMap1, err := getTableLablesMap(table1)
 	if err != nil {
 		return nil, err
@@ -234,6 +238,148 @@ func compareTable(table1, table2 *TableDef, dr *diffRows) (*TableDef, error) {
 	resultTable.Column = columns
 	resultTable.Rows = resultRows
 	return resultTable, nil
+}
+
+func compareTableWithNonUniqueKey(table1, table2 *TableDef, dr *diffRows) (_ *TableDef, err error) {
+	defer func() {
+		defer func() {
+			if v := recover(); v != nil {
+				err = errors.Errorf("join table error %v,%v", table1.Category, table1.Title)
+			}
+		}()
+	}()
+	labelsMap1, err := getTableLablesMapWithNonUniqueJoinKey(table1)
+	if err != nil {
+		return nil, err
+	}
+	labelsMap2, err := getTableLablesMapWithNonUniqueJoinKey(table2)
+	if err != nil {
+		return nil, err
+	}
+
+	resultRows := make([]TableRowDef, 0, len(table1.Rows))
+	for i := range table1.Rows {
+		label1 := genRowLabel(table1.Rows[i].Values, table1.joinColumns)
+		var row2 *TableRowDef
+		if row2s, ok := labelsMap2[label1]; ok && len(row2s) > 0 {
+			row2 = row2s[0]
+			if len(row2s) == 1 {
+				delete(labelsMap2, label1)
+			} else {
+				labelsMap2[label1] = row2s[1:]
+			}
+		} else {
+			delete(labelsMap2, label1)
+			row2 = &TableRowDef{}
+		}
+		if row1s, ok := labelsMap1[label1]; ok {
+			if len(row1s) <= 1 {
+				delete(labelsMap1, label1)
+			} else {
+				labelsMap1[label1] = row1s[1:]
+			}
+		}
+		newRow, err := joinRow(&table1.Rows[i], row2, table1, dr)
+		if err != nil {
+			return nil, err
+		}
+		resultRows = append(resultRows, *newRow)
+	}
+	for len(labelsMap2) > 0 {
+		for label, row2s := range labelsMap2 {
+			if len(row2s) == 0 {
+				delete(labelsMap2, label)
+				continue
+			}
+			row2 := row2s[0]
+			if len(row2s) == 1 {
+				delete(labelsMap2, label)
+			} else {
+				labelsMap2[label] = row2s[1:]
+			}
+			var row1 *TableRowDef
+			if row1s, ok := labelsMap1[label]; ok && len(row1s) > 0 {
+				row1 = row1s[0]
+				if len(row1s) == 0 {
+					delete(labelsMap1, label)
+				} else {
+					labelsMap1[label] = row1s[1:]
+				}
+			} else {
+				delete(labelsMap1, label)
+				row1 = &TableRowDef{}
+			}
+			newRow, err := joinRow(row1, row2, table1, dr)
+			if err != nil {
+				return nil, err
+			}
+			resultRows = append(resultRows, *newRow)
+		}
+	}
+
+	resultTable := &TableDef{
+		Category:       table1.Category,
+		Title:          table1.Title,
+		CommentEN:      table1.CommentEN,
+		CommentCN:      table1.CommentCN,
+		joinColumns:    nil,
+		compareColumns: nil,
+	}
+	columns := make([]string, 0, len(table1.Column)*2-len(table1.joinColumns))
+	for i := range table1.Column {
+		if checkIn(i, table1.joinColumns) {
+			columns = append(columns, table1.Column[i])
+		} else {
+			columns = append(columns, "t1."+table1.Column[i])
+		}
+	}
+	columns = append(columns, "DIFF_RATIO")
+	for i := range table2.Column {
+		if !checkIn(i, table2.joinColumns) {
+			columns = append(columns, "t2."+table2.Column[i])
+		}
+	}
+	sort.Slice(resultRows, func(i, j int) bool {
+		if len(table1.joinColumns) > 0 {
+			idx := table1.joinColumns[0]
+			if len(resultRows[i].Values) > (idx+1) &&
+				len(resultRows[j].Values) > (idx+1) {
+				if resultRows[i].Values[idx] != resultRows[j].Values[idx] {
+					return resultRows[i].Values[idx] < resultRows[j].Values[idx]
+				} else {
+					return resultRows[i].Values[0] < resultRows[j].Values[0]
+				}
+			}
+		}
+		return false
+	})
+	if len(table1.compareColumns) > 0 {
+		comment := "\nDIFF_RATIO = max( "
+		for i, idx := range table1.compareColumns {
+			if i > 0 {
+				comment += " , "
+			}
+			comment = comment + fmt.Sprintf("(t2.%[1]s-t1.%[1]s)/max(t2.%[1]s, t1.%[1]s)", table1.Column[idx])
+		}
+		comment += " )"
+		resultTable.CommentEN += comment
+	}
+
+	resultTable.Column = columns
+	resultTable.Rows = resultRows
+	return resultTable, nil
+}
+
+func getTableLablesMapWithNonUniqueJoinKey(table *TableDef) (map[string][]*TableRowDef, error) {
+	if len(table.joinColumns) == 0 {
+		return nil, errors.Errorf("category %v,table %v doesn't have join columns", strings.Join(table.Category, ","), table.Title)
+	}
+	labelsMap := make(map[string][]*TableRowDef, len(table.Rows))
+	for i := range table.Rows {
+		label := genRowLabel(table.Rows[i].Values, table.joinColumns)
+		labelsMap[label] = append(labelsMap[label], &table.Rows[i])
+	}
+	return labelsMap, nil
 }
 
 func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowDef, error) {
@@ -549,6 +695,10 @@ func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.
 		GetGoroutinesCountTable,
 		GetProcessMemUsageTable,
 
+		// Config
+		GetPDConfigInfo,
+		GetTiDBGCConfigInfo,
+
 		// Overview
 		GetTotalTimeConsumeTable,
 		GetTotalErrorTable,
@@ -622,9 +772,6 @@ func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, 
 	funcs := []func(string, string, *gorm.DB) (TableDef, error){
 		// Diagnose
 		GetDiagnoseReport,
-		// Config
-		GetPDConfigInfo,
-		GetTiDBGCConfigInfo,
 	}
 	atomic.AddInt32(totalTableCount, int32(len(funcs)*2))
 

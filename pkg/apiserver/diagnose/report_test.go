@@ -65,11 +65,11 @@ func (t *testReportSuite) TestGetTable(c *C) {
 //	c.Assert(err, IsNil)
 //	defer cli.Close()
 //
-//	startTime1 := "2020-03-03 17:08:00"
-//	endTime1 := "2020-03-03 17:11:00"
+//	startTime1 := "2020-03-12 20:17:00"
+//	endTime1 := "2020-03-12 20:39:00"
 //
-//	startTime2 := "2020-03-03 17:18:00"
-//	endTime2 := "2020-03-03 17:21:00"
+//	startTime2 := "2020-03-12 20:17:00"
+//	endTime2 := "2020-03-12 20:39:00"
 //
 //	tables := GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2, cli, nil, 0)
 //	for _, tbl := range tables {

@@ -17,7 +17,7 @@ If you're interested in contributing to TiDB Dashboard, checkout our [help wante
 for a list, in which we have also marked the difficulty level. We have prepared many suitable tasks.
 
 For a detailed step-by-step contributing guide, or want to build TiDB Dashboard from source,
-see CONTRIBUTING.md.
+see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ### ⭐️ TiDB Usability Challenge (March 2 ~ May 30) ⭐️
 

@@ -25,8 +25,9 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 	resultTables = append(resultTables, GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2))
 	var tables0, tables1, tables2, tables3, tables4 []*TableDef
 	var errRows0, errRows1, errRows2, errRows3, errRows4 []TableRowDef
+	var compareDiagnoseTable *TableDef
 	var wg sync.WaitGroup
-	wg.Add(5)
+	wg.Add(6)
 	var progress, totalTableCount int32
 	go func() {
 		// Get Header tables.
@@ -53,6 +54,15 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 		errRows = append(errRows, errRows3...)
 		wg.Done()
 	}()
+	go func() {
+		tbl, errRow := CompareDiagnose(startTime1, endTime1, startTime2, endTime2, db)
+		if errRow != nil {
+			errRows = append(errRows, *errRow)
+		} else {
+			compareDiagnoseTable = &tbl
+		}
+		wg.Done()
+	}()
 
 	go func() {
 		// Get end tables
@@ -66,6 +76,9 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 	errRows = append(errRows, errs...)
 	resultTables = append(resultTables, tables0...)
 	resultTables = append(resultTables, tables1...)
+	if compareDiagnoseTable != nil {
+		resultTables = append(resultTables, compareDiagnoseTable)
+	}
 	resultTables = append(resultTables, tables...)
 	resultTables = append(resultTables, tables4...)
 

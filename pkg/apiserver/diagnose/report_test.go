@@ -89,11 +89,11 @@ func (t *testReportSuite) TestInspection(c *C) {
 	defer cli.Close()
 
 	// affect by big query join
-	//startTime1 := "2020-03-08 01:36:00"
-	//endTime1 := "2020-03-08 01:41:00"
-	//
-	//startTime2 := "2020-03-08 01:46:30"
-	//endTime2 := "2020-03-08 01:51:30"
+	startTime1 := "2020-03-08 01:36:00"
+	endTime1 := "2020-03-08 01:41:00"
+
+	startTime2 := "2020-03-08 01:46:30"
+	endTime2 := "2020-03-08 01:51:30"
 
 	// affect by big write with conflict
 	//startTime1 := "2020-03-10 12:35:00"
@@ -116,25 +116,15 @@ func (t *testReportSuite) TestInspection(c *C) {
 	//endTime2 := "2020-03-09 21:20:00"
 
 	// diagnose for disk slow , need more disk metric.
-	startTime1 := "2020-03-10 12:48:00"
-	endTime1 := "2020-03-10 12:50:00"
+	//startTime1 := "2020-03-10 12:48:00"
+	//endTime1 := "2020-03-10 12:50:00"
+	//
+	//startTime2 := "2020-03-10 12:54:30"
+	//endTime2 := "2020-03-10 12:56:30"
 
-	startTime2 := "2020-03-10 12:54:30"
-	endTime2 := "2020-03-10 12:56:30"
-
-	is := &clusterInspection{
-		referStartTime: startTime1,
-		referEndTime:   endTime1,
-
-		startTime: startTime2,
-		endTime:   endTime2,
-		db:        cli,
-	}
-
-	_, err = is.diagnoseServerDown()
-	c.Assert(err, IsNil)
-	_, err = is.inspectForAffectByBigQuery()
-	c.Assert(err, IsNil)
+	table, errRow := CompareDiagnose(startTime1, endTime1, startTime2, endTime2, cli)
+	c.Assert(errRow, IsNil)
+	printRows(&table)
 }
 
 func (t *testReportSuite) TestCompareTable(c *C) {

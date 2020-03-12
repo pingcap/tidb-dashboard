@@ -356,7 +356,7 @@ func GetHeaderTimeTable(startTime, endTime string, db *gorm.DB) (TableDef, error
 func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	table := TableDef{
 		Category:  []string{CategoryDiagnose},
-		Title:     "diagnose",
+		Title:     "Diagnose",
 		CommentEN: "Automatically diagnose the cluster problem and record the problem in below table.",
 		CommentCN: "",
 		//joinColumns: []int{0, 1, 2, 3, 6},

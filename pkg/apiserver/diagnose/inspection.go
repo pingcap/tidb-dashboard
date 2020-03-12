@@ -27,11 +27,10 @@ func CompareDiagnose(referStartTime, referEndTime, startTime, endTime string, db
 	}
 	table := TableDef{
 		Category:  []string{CategoryDiagnose},
-		Title:     "diagnose",
-		CommentEN: "Automatically diagnose the cluster problem and record the problem in below table.",
+		Title:     "Compare Diagnose",
+		CommentEN: "Automatically diagnose the cluster problem by compare with the refer time.",
 		CommentCN: "",
-		//joinColumns: []int{0, 1, 2, 3, 6},
-		Column: []string{"RULE", "DETAIL"},
+		Column:    []string{"RULE", "DETAIL"},
 	}
 	details, err := c.inspectForAffectByBigQuery()
 	if err != nil {
@@ -186,8 +185,6 @@ func (c *clusterInspection) inspectForAffectByBigQuery() ([]string, error) {
 	if len(detailSQL) > 0 {
 		details = append(details, "try to check the slow query only appear in diagnose time range with sql: \n"+detailSQL)
 	}
-	fmt.Println()
-	fmt.Println(details)
 	return details, nil
 }
 
@@ -266,14 +263,8 @@ func (s *queryQPS) compare() []metricDiff {
 	var diffs []metricDiff
 	for label, v := range s.current {
 		rv := s.refer[label]
-		diff := metricDiff{
-			tp:    s.table,
-			label: label,
-			ratio: calculateDiff(float64(rv.avg), float64(v.avg)),
-		}
+		diff := newMetricDiff(s.table, label, float64(rv.avg), float64(v.avg))
 		diffs = append(diffs, diff)
-		printDiff("query-qps", label, "avg", float64(rv.avg), float64(v.avg))
-		printDiff("query-qps", label, "max", float64(rv.max), float64(v.max))
 	}
 	return diffs
 }
@@ -354,34 +345,8 @@ func (s *queryQuantile) compare() []metricDiff {
 	var diffs []metricDiff
 	for label, v := range s.current {
 		rv := s.refer[label]
-		diff := metricDiff{
-			tp:    s.table,
-			label: label,
-			ratio: calculateDiff(rv.avg, v.avg),
-		}
+		diff := newMetricDiff(s.table, label, rv.avg, v.avg)
 		diffs = append(diffs, diff)
-		printDiff(s.table, label, "avg", float64(rv.avg), float64(v.avg))
-		printDiff(s.table, label, "max", float64(rv.max), float64(v.max))
-	}
-	return diffs
-}
-
-func (s *queryQuantile) getDiff() []metricDiff {
-	var diffs []metricDiff
-	for label, v := range s.current {
-		rv, ok := s.refer[label]
-		// todo, consider no label match, such as add a new tidb.
-		if !ok {
-			continue
-		}
-		diff := metricDiff{
-			tp:    s.table,
-			label: label,
-			ratio: calculateDiff(rv.avg, v.avg),
-		}
-		diffs = append(diffs, diff)
-		printDiff(s.table, label, "avg", float64(rv.avg), float64(v.avg))
-		printDiff(s.table, label, "max", float64(rv.max), float64(v.max))
 	}
 	return diffs
 }
@@ -433,13 +398,8 @@ func (s *queryTotal) compare() []metricDiff {
 
 	for label, v := range s.current {
 		rv := s.refer[label]
-		diff := metricDiff{
-			tp:    s.table,
-			label: label,
-			ratio: calculateDiff(float64(rv), float64(v)),
-		}
+		diff := newMetricDiff(s.table, label, float64(rv), float64(v))
 		diffs = append(diffs, diff)
-		printDiff(s.table, label, "sum", float64(rv), float64(v))
 	}
 	return diffs
 }
@@ -448,7 +408,6 @@ func (s *queryTotal) generateSQL(arg *queryArg) string {
 	prepareSQL := "set @@tidb_metric_query_step=60;set @@tidb_metric_query_range_duration=60;"
 	sql := fmt.Sprintf("select `%[1]s`, sum(value) as total from metrics_schema.%[2]s %[3]s group by `%[1]s` having total > 0",
 		strings.Join(s.labels, "`,`"), s.table, s.genCondition(arg))
-	//fmt.Println(sql)
 	sql = prepareSQL + sql
 	return sql
 }
@@ -574,33 +533,30 @@ func calculateDiff(refer float64, check float64) float64 {
 	}
 }
 
-func printDiff(item, label, tp string, refer, now float64) {
-	fmt.Printf("%s: %s: refer: %.3f, now: %.3f, %s diff: : %.2f\n", item, label, refer, now, tp, calculateDiff(refer, now))
-}
-
-type inspectionResult struct {
-	tp       string
-	instance string
-	// represents the diagnostics item, e.g: `ddl.lease` `raftstore.cpuusage`
-	item string
-	// diagnosis result value base on current cluster status
-	actual   string
-	expected string
-	severity string
-	detail   string
-}
-
 type metricDiff struct {
 	tp    string
 	label string
 	ratio float64
+	rv    float64
+	v     float64
+}
+
+func newMetricDiff(tp, label string, refer, check float64) metricDiff {
+	return metricDiff{
+		tp:    tp,
+		label: label,
+		ratio: calculateDiff(refer, check),
+		rv:    refer,
+		v:     check,
+	}
+
 }
 
 func (d metricDiff) String() string {
 	if d.ratio > 1 {
-		return d.tp + ":" + d.label + " ↑ " + fmt.Sprintf("%.2f", d.ratio)
+		return fmt.Sprintf("%s,%s: ↑ %.2f (%.2f / %.2f)", d.tp, d.label, d.ratio, d.v, d.rv)
 	} else {
-		return d.tp + ":" + d.label + " ↓ " + fmt.Sprintf("%.2f", d.ratio)
+		return fmt.Sprintf("%s,%s: ↓ %.2f (%.2f / %.2f)", d.tp, d.label, d.ratio, d.v, d.rv)
 	}
 }
 

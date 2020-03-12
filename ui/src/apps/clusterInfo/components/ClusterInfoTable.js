@@ -1,10 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Table, Card, Skeleton, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import client from '@/utils/client'
-
-const confirm = Modal.confirm;
 
 function ComponentPanelTable({ cluster }) {
   const { t } = useTranslation()
@@ -38,19 +36,17 @@ function ComponentPanelTable({ cluster }) {
       key: 'status',
       width: 100,
       render: (text, node) => {
-        console.log(node)
         if (node && node.comp && node.comp === 'tidb') {
           let showConfirm = () => {
-            confirm({
-              title: 'hide',
+            Modal.confirm({
+              title: t('cluster_info.component_table.hide_db'),
               content: t('cluster_info.component_table.hide_warning'),
               onOk() {
-                deleteTiDBTopology(node, cluster.cluster, cluster.setCluster)
+                client.dashboard.topologyTidbAddressDelete(node.address)
               },
               onCancel() {},
             });
           }
-          console.log("IN BRANCH")
           return (
             <span>
               <span>{text} </span>
@@ -140,10 +136,6 @@ function wrapNode(node, comp, id) {
 
     comp: comp,
   }
-}
-
-async function deleteTiDBTopology(node, cluster, setCluster) {
-  await client.dashboard.topologyTidbAddressDelete(node.address)
 }
 
 export default ComponentPanelTable

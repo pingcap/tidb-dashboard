@@ -198,7 +198,9 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 
 		// TiDB
 		GetTiDBTimeConsumeTable,
+		GetTiDBConnectionCountTable,
 		GetTiDBTxnTableData,
+		GetTiDBStatisticsInfo,
 		GetTiDBDDLOwner,
 
 		// PD
@@ -699,6 +701,52 @@ P80 is the max size/value of 0.80 quantile;
 	}
 	table.Rows = resultRows
 	return table, nil
+}
+
+func GetTiDBConnectionCountTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	sql := fmt.Sprintf("select instance, avg(value), max(value), min(value) from metrics_schema.tidb_connection_count where time >= '%s' and time < '%s' group by instance order by avg(value) desc",
+		startTime, endTime)
+	table := TableDef{
+		Category:       []string{CategoryTiDB},
+		Title:          "TiDB Connection count",
+		CommentEN:      "The connection count of tidb server",
+		CommentCN:      "",
+		joinColumns:    []int{0},
+		compareColumns: []int{1, 2, 3},
+		Column:         []string{"INSTANCE", "AVG", "MAX", "MIN"},
+	}
+	rows, err := getSQLRoundRows(db, sql, []int{1, 2, 3}, "")
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
+	return table, nil
+}
+
+func GetTiDBStatisticsInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	defs1 := []sumValueQuery{
+		{name: "pseudo_estimation_total_count", tbl: "tidb_statistics_pseudo_estimation_total_count", labels: []string{"instance"}, comment: "The total count of TiDB optimizer using pseudo estimation"},
+		{name: "dump_feedback_total_count", tbl: "tidb_statistics_dump_feedback_total_count", labels: []string{"instance", "type"}, comment: "The total count of operations that TiDB dumping statistics back to kv storage"},
+		{name: "store_query_feedback_total_count", tbl: "tidb_statistics_store_query_feedback_total_count", labels: []string{"instance", "type"}, comment: "The total count of TiDB store quering feedback"},
+		{name: "update_stats_total_count", tbl: "tidb_statistics_update_stats_total_count", labels: []string{"instance", "type"}, comment: "The total count of TiDB updating statistics using feed back"},
+	}
+
+	table := TableDef{
+		Category:       []string{CategoryTiDB},
+		Title:          "Statistics Info",
+		CommentEN:      "",
+		CommentCN:      "",
+		joinColumns:    []int{0, 1},
+		compareColumns: []int{2},
+		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},
+	}
+
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
+	return table, err
 }
 
 func GetTiDBDDLOwner(startTime, endTime string, db *gorm.DB) (TableDef, error) {

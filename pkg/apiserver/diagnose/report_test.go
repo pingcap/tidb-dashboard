@@ -46,15 +46,16 @@ type testReportSuite struct{}
 //}
 
 func (t *testReportSuite) TestGetTable(c *C) {
-	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
+	cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
+	//cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
 	startTime := "2020-03-11 14:42:30"
-	endTime := "2020-03-11 14:45:30"
+	endTime := "2020-03-11 15:45:30"
 
 	var table TableDef
-	table, err = GetTiDBGCConfigInfo(startTime, endTime, cli)
+	table, err = GetTiDBStatisticsInfo(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(&table)
 }

@@ -555,7 +555,9 @@ func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.
 
 		// TiDB
 		GetTiDBTimeConsumeTable,
+		GetTiDBConnectionCountTable,
 		GetTiDBTxnTableData,
+		GetTiDBStatisticsInfo,
 		GetTiDBDDLOwner,
 
 		// PD

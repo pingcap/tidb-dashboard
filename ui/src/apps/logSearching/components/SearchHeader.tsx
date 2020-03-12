@@ -7,6 +7,7 @@ import { TreeNode } from "antd/lib/tree-select";
 import moment from 'moment';
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
+import { useMediaQuery } from 'react-responsive';
 import { useHistory } from "react-router-dom";
 import { AllLogLevel, getAddress, namingMap, parseClusterInfo, parseSearchingParams, ServerType, ServerTypeList } from "./utils";
 
@@ -54,6 +55,7 @@ export default function SearchHeader({
 }: Props) {
   const { t } = useTranslation()
   const history = useHistory()
+  const isSmallScreen = useMediaQuery({ query: '(max-width: 1700px)' })
 
   const [timeRange, setTimeRange] = useState<RangePickerValue>([])
   const [logLevel, setLogLevel] = useState<number>(3)
@@ -129,26 +131,32 @@ export default function SearchHeader({
     return name.includes(inputValue)
   }
 
+  function labelCol() {
+    return {
+      span: isSmallScreen ? 0 : 4
+    }
+  }
+
   return (
     <div>
       <Card>
         <Form labelAlign="right">
           <Row gutter={24}>
             <Col span={12}>
-              <Form.Item label={t('log_searching.common.time_range')} labelCol={{ span: 4 }}>
+              <Form.Item label={t('log_searching.common.time_range')} labelCol={labelCol()}>
                 <RangePicker
                   value={timeRange}
                   showTime={{
                     defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('11:59:59', 'HH:mm:ss')],
                   }}
                   format="YYYY-MM-DD HH:mm:ss"
-                  style={{ width: 400 }}
+                  style={{ width: 350 }}
                   onChange={handleTimeRangeChange}
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={t('log_searching.common.log_level')} labelCol={{ span: 4 }}>
+              <Form.Item label={t('log_searching.common.log_level')} labelCol={labelCol()}>
                 <Select value={logLevel} style={{ width: 100 }} onChange={handleLogLevelChange}>
                   <Option value={1}>DEBUG</Option>
                   <Option value={2}>INFO</Option>
@@ -160,7 +168,7 @@ export default function SearchHeader({
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={t('log_searching.common.components')} labelCol={{ span: 4 }}
+              <Form.Item label={t('log_searching.common.components')} labelCol={labelCol()} style={{ marginBottom: 0 }}
                 validateStatus={selectedComponents.length > 0 ? "" : "error"}>
                 <TreeSelect
                   value={selectedComponents}
@@ -172,17 +180,17 @@ export default function SearchHeader({
                   showCheckedStrategy={SHOW_CHILD}
                   allowClear
                   filterTreeNode={filterTreeNode}
-                  style={{ width: 400 }}
+                  style={{ width: 350 }}
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={t('log_searching.common.keywords')} labelCol={{ span: 4 }}>
+              <Form.Item label={t('log_searching.common.keywords')} labelCol={labelCol()} style={{ marginBottom: 0 }}>
                 <Search
                   value={searchValue}
                   placeholder={t('log_searching.common.keywords_placeholder')}
                   enterButton={t('log_searching.common.search')}
-                  style={{ width: 400 }}
+                  style={{ width: 350 }}
                   onChange={handleSearchPatternChange}
                   onSearch={handleSearch}
                 />

@@ -6,7 +6,7 @@ import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "re
 import { useTranslation } from 'react-i18next';
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon';
 import styles from './SearchProgress.module.css';
-import { getGRPCAddress, namingMap, ServerType, ServerTypeList, TaskState, getAddress } from './utils';
+import { namingMap, ServerType, ServerTypeList, TaskState, getAddress } from './utils';
 
 const { confirm } = Modal;
 const { Title } = Typography;

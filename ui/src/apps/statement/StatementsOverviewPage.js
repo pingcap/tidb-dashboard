@@ -1,5 +1,5 @@
 import React from 'react'
-import { StatementsOverview } from './components'
+import { StatementsOverview } from '@pingcap-incubator/statement'
 import client from '@/utils/client'
 
 function fakeReq(res) {

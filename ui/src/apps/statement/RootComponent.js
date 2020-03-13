@@ -5,13 +5,13 @@ import {
   Route,
   Redirect,
   Link,
-  withRouter
+  withRouter,
 } from 'react-router-dom'
 import { Breadcrumb } from 'antd'
 
 import StatementsOverviewPage from './StatementsOverviewPage'
 import StatementDetailPage from './StatementDetailPage'
-import { SearchContext } from './components'
+import { SearchContext } from '@pingcap-incubator/statement'
 
 const App = withRouter(props => {
   const { location } = props
@@ -20,7 +20,7 @@ const App = withRouter(props => {
   const [searchOptions, setSearchOptions] = useState({
     curInstance: undefined,
     curSchemas: [],
-    curTimeRange: undefined
+    curTimeRange: undefined,
   })
   const searchContext = { searchOptions, setSearchOptions }
 

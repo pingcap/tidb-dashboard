@@ -1,5 +1,5 @@
 import React from 'react'
-import { StatementDetail } from './components'
+import { StatementDetail } from '@pingcap-incubator/statement'
 import { useLocation } from 'react-router-dom'
 import client from '@/utils/client'
 

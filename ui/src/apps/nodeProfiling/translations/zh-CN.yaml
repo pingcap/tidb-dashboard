@@ -1,6 +1,6 @@
 node_profiling:
   nav_title: 节点性能分析
-  index:
+  list:
     control_form:
       nodes:
         label: 选择节点
@@ -8,5 +8,27 @@ node_profiling:
       duration:
         label: 分析时长
       submit: 开始分析
+    table:
+      title: 性能分析历史
+      columns:
+        targets: 节点
+        start_at: 开始时间
+        duration: 时长 (秒)
+        status: 状态
+        action: 操作
+      status:
+        running: 分析中
+        finished: 完成
+        unknown: 未知
+      actions:
+        detail: 详情
   detail:
     download: 下载性能分析结果
+    table:
+      title: 性能分析详情
+      columns:
+        node: 节点
+        kind: 类型
+        status: 状态
+      status:
+        finished: 完成

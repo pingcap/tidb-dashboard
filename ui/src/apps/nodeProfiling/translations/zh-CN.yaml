@@ -17,8 +17,8 @@ node_profiling:
         status: 状态
         action: 操作
       status:
-        running: 运行在
-        finished: 已完成
+        running: 分析中
+        finished: 完成
         unknown: 未知
       actions:
         detail: 详情
@@ -31,4 +31,4 @@ node_profiling:
         kind: 类型
         status: 状态
       status:
-        finished: 已完成
+        finished: 完成

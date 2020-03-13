@@ -16,6 +16,7 @@ package profiling
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -72,10 +73,11 @@ type Task struct {
 	ctx       context.Context
 	cancel    context.CancelFunc
 	taskGroup *TaskGroup
+	tls       bool
 }
 
 // NewTask creates a new profiling task.
-func NewTask(taskGroup *TaskGroup, target utils.RequestTargetNode) *Task {
+func NewTask(taskGroup *TaskGroup, target utils.RequestTargetNode, tls bool) *Task {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &Task{
 		TaskModel: &TaskModel{
@@ -87,12 +89,13 @@ func NewTask(taskGroup *TaskGroup, target utils.RequestTargetNode) *Task {
 		ctx:       ctx,
 		cancel:    cancel,
 		taskGroup: taskGroup,
+		tls:       tls,
 	}
 }
 
-func (t *Task) run() {
+func (t *Task) run(httpClient *http.Client) {
 	fileNameWithoutExt := fmt.Sprintf("profiling_%d_%d_%s", t.TaskGroupID, t.ID, t.Target.FileName())
-	svgFilePath, err := profileAndWriteSVG(t.ctx, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs)
+	svgFilePath, err := profileAndWriteSVG(t.ctx, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs, httpClient, t.tls)
 	if err != nil {
 		t.Error = err.Error()
 		t.State = TaskStateError

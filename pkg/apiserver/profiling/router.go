@@ -33,9 +33,10 @@ import (
 
 // Service is used to provide a kind of feature.
 type Service struct {
-	config *config.Config
-	db     *dbstore.DB
-	tasks  sync.Map
+	config     *config.Config
+	db         *dbstore.DB
+	tasks      sync.Map
+	httpClient *http.Client
 }
 
 // NewService creates a new service.
@@ -44,7 +45,13 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 	if err != nil {
 		log.Fatal("Failed to initialize database", zap.Error(err))
 	}
-	return &Service{config: config, db: db, tasks: sync.Map{}}
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: config.TLSConfig,
+		},
+	}
+
+	return &Service{config: config, db: db, tasks: sync.Map{}, httpClient: httpClient}
 }
 
 // Register register the handlers to the service.
@@ -102,9 +109,9 @@ func (s *Service) start(c *gin.Context) {
 		return
 	}
 
-	var tasks []*Task
+	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		t := NewTask(taskGroup, target)
+		t := NewTask(taskGroup, target, s.config.TLSConfig != nil)
 		s.db.Create(t.TaskModel)
 		s.tasks.Store(t.ID, t)
 		tasks = append(tasks, t)
@@ -116,7 +123,7 @@ func (s *Service) start(c *gin.Context) {
 			wg.Add(1)
 			go func(idx int) {
 				defer wg.Done()
-				tasks[idx].run()
+				tasks[idx].run(s.httpClient)
 				s.tasks.Delete(tasks[idx].ID)
 			}(i)
 		}

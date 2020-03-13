@@ -28,7 +28,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh
 Start a local TiDB cluster:
 
 ```bash
-tiup run playground nightly
+tiup playground nightly
 ```
 
 > Note: you might notice that there is already a TiDB Dashboard integrated into the PD started by TiUP. For development purpose, we will not use the that TiDB Dashboard. Please keep following the rest of the steps in this document.
@@ -146,7 +146,7 @@ The followings are required for developing TiDB Dashboard:
 
    TiDB Dashboard UI: http://127.0.0.1:3000
 
-   > Note: you can login TiDB Dashboard UI using user `root` and **empty password** by default.
+   > Note: If you encounter a rotating blue circle, don't worry. It may happen when you enter TiDB Dashboard UI for the first time. We are solving this problem. Now, you just need to refresh the page. Then, you can login TiDB Dashboard UI using user `root` and **empty password** by default.
 
    Swagger UI for TiDB Dashboard APIs: http://localhost:12333/dashboard/api/swagger
 

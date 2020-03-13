@@ -31,6 +31,7 @@ import (
 	"github.com/pingcap/sysutil"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // MaxRecvMsgSize set max gRPC receive message size received from server. If any message size is larger than
@@ -110,7 +111,7 @@ type Task struct {
 }
 
 func (t *Task) String() string {
-	return fmt.Sprintf("LogSearchTask { id = %d, target = %s, task_group_id = %d }", t.model.ID, t.model.SearchTarget, t.taskGroup.model.ID)
+	return fmt.Sprintf("LogSearchTask { id = %d, target = %s, task_group_id = %d }", t.model.ID, t.model.SearchTarget.String(), t.taskGroup.model.ID)
 }
 
 // This function is multi-thread safe.
@@ -151,8 +152,13 @@ func (t *Task) SyncRun() {
 		return
 	}
 
+	secureOpt := grpc.WithInsecure()
+	if t.taskGroup.service.config.TLSConfig != nil {
+		creds := credentials.NewTLS(t.taskGroup.service.config.TLSConfig)
+		secureOpt = grpc.WithTransportCredentials(creds)
+	}
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", t.model.SearchTarget.IP, t.model.SearchTarget.Port),
-		grpc.WithInsecure(),
+		secureOpt,
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxRecvMsgSize)),
 	)
 	if err != nil {

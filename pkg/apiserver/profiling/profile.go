@@ -26,8 +26,8 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 )
 
-func profileAndWriteSVG(ctx context.Context, target *utils.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
-	url, err := getProfilingURL(target, profileDurationSecs)
+func profileAndWriteSVG(ctx context.Context, target *utils.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, httpClient *http.Client, tls bool) (string, error) {
+	url, err := getProfilingURL(target, profileDurationSecs, tls)
 	if err != nil {
 		return "", err
 	}
@@ -40,7 +40,7 @@ func profileAndWriteSVG(ctx context.Context, target *utils.RequestTargetNode, fi
 		// forbidden PD follower proxy
 		req.Header.Add("PD-Allow-follower-handle", "true")
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to send profiling request to %s (url = %s): %s", target, url, err)
 	}
@@ -56,7 +56,7 @@ func profileAndWriteSVG(ctx context.Context, target *utils.RequestTargetNode, fi
 	return svgFilePath, nil
 }
 
-func getProfilingURL(target *utils.RequestTargetNode, profileDurationSecs uint) (string, error) {
+func getProfilingURL(target *utils.RequestTargetNode, profileDurationSecs uint, tls bool) (string, error) {
 	var url string
 	secs := strconv.Itoa(int(profileDurationSecs))
 	switch target.Kind {
@@ -67,8 +67,12 @@ func getProfilingURL(target *utils.RequestTargetNode, profileDurationSecs uint) 
 	default:
 		return "", fmt.Errorf("unsupported target %s", target)
 	}
-	// FIXME: Support TLS
-	return fmt.Sprintf("http://%s:%d%s", target.IP, target.Port, url), nil
+	schema := "http"
+	// TiKV dose not support TLS for the status server currently
+	if target.Kind != utils.NodeKindTiKV && tls {
+		schema = "https"
+	}
+	return fmt.Sprintf("%s://%s:%d%s", schema, target.IP, target.Port, url), nil
 }
 
 func writePprofRsSVG(body io.ReadCloser, fileNameWithoutExt string) (string, error) {

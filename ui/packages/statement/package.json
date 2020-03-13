@@ -7,8 +7,11 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
+    "@rollup/plugin-typescript": "^4.0.0",
     "@rollup/plugin-yaml": "^2.1.0",
-    "rollup": "^1.29.0"
+    "rollup": "^1.29.0",
+    "tslib": "^1.9.3",
+    "typescript": "^3.7.4"
   },
   "scripts": {
     "build": "rollup -c",

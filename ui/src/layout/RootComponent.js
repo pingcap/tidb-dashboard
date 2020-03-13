@@ -101,6 +101,8 @@ class App extends React.PureComponent {
                 {this.renderAppMenuItem('log_searching')}
                 {this.renderAppMenuItem('node_profiling')}
               </Menu.SubMenu>
+              {process.env.NODE_ENV === 'development' &&
+                this.renderAppMenuItem('playground')}
             </Menu>
           </Layout.Sider>
           <Layout>

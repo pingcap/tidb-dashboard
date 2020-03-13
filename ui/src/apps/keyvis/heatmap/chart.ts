@@ -576,7 +576,7 @@ export async function heatmapChart(
       }
 
       const leftLabel = data.keyAxis[keyIdx]!.labels
-      const rightLabel = data.keyAxis[keyIdx + 1]!.labels
+      const rightLabel = data.keyAxis[keyIdx - 1]!.labels
       if (!leftLabel && !rightLabel) {
         return []
       }

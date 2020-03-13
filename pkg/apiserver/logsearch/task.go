@@ -111,7 +111,7 @@ type Task struct {
 }
 
 func (t *Task) String() string {
-	return fmt.Sprintf("LogSearchTask { id = %d, target = %s, task_group_id = %d }", t.model.ID, t.model.SearchTarget.String(), t.taskGroup.model.ID)
+	return fmt.Sprintf("LogSearchTask { id = %d, target = %s, task_group_id = %d }", t.model.ID, t.model.SearchTarget, t.taskGroup.model.ID)
 }
 
 // This function is multi-thread safe.
@@ -157,7 +157,8 @@ func (t *Task) SyncRun() {
 		creds := credentials.NewTLS(t.taskGroup.service.config.TLSConfig)
 		secureOpt = grpc.WithTransportCredentials(creds)
 	}
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", t.model.SearchTarget.IP, t.model.SearchTarget.Port),
+
+	conn, err := grpc.Dial(t.model.SearchTarget.GRPCAddress(),
 		secureOpt,
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxRecvMsgSize)),
 	)

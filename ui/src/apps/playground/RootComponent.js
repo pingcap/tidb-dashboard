@@ -1,11 +1,11 @@
 import React from 'react'
 import { HashRouter as Router } from 'react-router-dom'
-import ExampleComponent from '@pingcap-incubator/statement'
+import StatementsOverviewPage from './StatementsOverviewPage'
 
 const App = () => (
   <Router>
     <div style={{ margin: 12 }}>
-      <ExampleComponent text="dashboard" />
+      <StatementsOverviewPage />
     </div>
   </Router>
 )

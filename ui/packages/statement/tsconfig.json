@@ -15,9 +15,7 @@
     "noImplicitThis": true,
     "noImplicitAny": false,
     "strictNullChecks": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "suppressImplicitAnyIndexErrors": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "build", "dist", "example", "rollup.config.js"]

@@ -1,0 +1,24 @@
+statement:
+  nav_title: Statements
+  filters:
+    select_time: Select time range
+    select_schemas: Select schemas
+  common:
+    schema: Schema
+    schemas: Schemas
+    digest_text: SQL Category
+    sum_latency: Sum Latency
+    exec_count: Exec Count
+    avg_affected_rows: Avg Affected Rows
+    avg_latency: Avg Latency
+    max_latency: Max Latency
+    avg_mem: Avg Cost Memory
+    sum_backoff_times: Sum Backoff Times
+    avg_total_keys: Avg Scan Rows
+  detail:
+    node: Node
+    time_range: Time Range
+    query_sample_text: Last SQL Statement
+    last_seen: Last Seen
+  plan:
+    plans: Plans

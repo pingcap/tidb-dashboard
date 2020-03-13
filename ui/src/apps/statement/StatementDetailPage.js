@@ -1,5 +1,5 @@
 import React from 'react'
-// import { StatementDetail } from '@pingcap-incubator/statement'
+import { StatementDetail } from '@pingcap-incubator/statement'
 import { useLocation } from 'react-router-dom'
 import client from '@/utils/client'
 
@@ -22,17 +22,17 @@ export default function StatementDetailPage() {
       .then(res => res.data)
   }
 
-  return <div>...</div>
-  // return digest ? (
-  //   <StatementDetail
-  //     digest={digest}
-  //     schemaName={schemaName}
-  //     beginTime={beginTime}
-  //     endTime={endTime}
-  //     onFetchDetail={queryDetail}
-  //     onFetchNodes={queryNodes}
-  //   />
-  // ) : (
-  //   <p>No sql digest</p>
-  // )
+  // return <div>...</div>
+  return digest ? (
+    <StatementDetail
+      digest={digest}
+      schemaName={schemaName}
+      beginTime={beginTime}
+      endTime={endTime}
+      onFetchDetail={queryDetail}
+      onFetchNodes={queryNodes}
+    />
+  ) : (
+    <p>No sql digest</p>
+  )
 }

@@ -1,5 +1,5 @@
 import React from 'react'
-// import { StatementsOverview } from '@pingcap-incubator/statement'
+import { StatementsOverview } from '@pingcap-incubator/statement'
 import client from '@/utils/client'
 
 function fakeReq(res) {
@@ -45,17 +45,17 @@ export default function StatementsOverviewPage() {
 
   const updateConfig = () => fakeReq('ok')
 
-  return <div>...</div>
-  // return (
-  //   <StatementsOverview
-  //     onFetchInstances={queryInstance}
-  //     onFetchSchemas={querySchemas}
-  //     onFetchTimeRanges={queryTimeRanges}
-  //     onFetchStatements={queryStatements}
-  //     onGetStatementStatus={queryStatementStatus}
-  //     onSetStatementStatus={updateStatementStatus}
-  //     onFetchConfig={queryConfig}
-  //     onUpdateConfig={updateConfig}
-  //   />
-  // )
+  // return <div>...</div>
+  return (
+    <StatementsOverview
+      onFetchInstances={queryInstance}
+      onFetchSchemas={querySchemas}
+      onFetchTimeRanges={queryTimeRanges}
+      onFetchStatements={queryStatements}
+      onGetStatementStatus={queryStatementStatus}
+      onSetStatementStatus={updateStatementStatus}
+      onFetchConfig={queryConfig}
+      onUpdateConfig={updateConfig}
+    />
+  )
 }

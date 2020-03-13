@@ -20,6 +20,11 @@ type Label = Section<string>
 type DisplayLabel = DisplaySection<string>
 
 export function labelAxisGroup(keyAxis: KeyAxisEntry[]) {
+  // Remove the endkey of the last region, so that the row where the region is located is aligned with the startkey.
+  if (keyAxis.length > 1) {
+    keyAxis = keyAxis.slice(1)
+  }
+
   let range: [number, number] = [0, 0]
   const groups = aggrKeyAxisLabel(keyAxis)
 

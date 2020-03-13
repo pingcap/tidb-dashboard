@@ -1,0 +1,23 @@
+.statement_summary {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.statement_summary .table_wrapper {
+  flex: 1;
+}
+
+.table_wrapper {
+  background-color: white;
+}
+
+.statement_statis {
+  background-color: white;
+  padding: 12px;
+  margin-left: 12px;
+}
+
+/* for StatementSettingModal */
+.config_form :global(.ant-form-item) {
+  margin-bottom: 0;
+}

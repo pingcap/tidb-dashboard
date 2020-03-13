@@ -5,16 +5,12 @@ import pkg from './package.json'
 
 export default [
   {
-    input: 'src/main.js',
+    input: 'src/index.js',
     external: [],
     output: [
       { file: pkg.main, format: 'cjs' },
       { file: pkg.module, format: 'es' },
     ],
-    plugins: [
-      resolve(), // so Rollup can find `ms`
-      commonjs(), // so Rollup can convert `ms` to an ES module
-      yaml(),
-    ],
+    plugins: [resolve(), commonjs(), yaml()],
   },
 ]

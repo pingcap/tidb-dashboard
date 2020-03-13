@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Row, Col, Card } from 'antd'
 import { HashRouter as Router } from 'react-router-dom'
+import ExampleComponent from '@pingcap-incubator/statement'
 
 import client from '@/utils/client'
 
@@ -43,6 +44,8 @@ const App = () => {
             </Col>
           </Row>
         </Card>
+        {/* playground, only for test */}
+        <ExampleComponent text={'dashboard'} />
       </div>
     </Router>
   )

@@ -28,4 +28,4 @@ class Example extends React.Component {
 
 ## License
 
- © [@pingcap-incubator](https://github.com/@pingcap-incubator)
+ © [@pingcap-incubator](https://github.com/pingcap-incubator)

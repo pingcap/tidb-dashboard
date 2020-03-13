@@ -16,16 +16,11 @@
     "react-router-dom": "^5.1.2"
   },
   "devDependencies": {
+    "@baurine/grafana-value-formats": "^0.1.1",
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
-    "@rollup/plugin-typescript": "^4.0.0",
     "@rollup/plugin-yaml": "^2.1.0",
-    "rollup": "^1.29.0",
-    "rollup-plugin-peer-deps-external": "^2.2.2",
-    "rollup-plugin-postcss": "^2.4.1",
-    "tslib": "^1.9.3",
-    "typescript": "^3.7.4",
-    "@baurine/grafana-value-formats": "^0.1.1",
+    "@types/react": "^16.9.22",
     "antd": "^3.26.5",
     "i18next": "^19.1.0",
     "lodash": "^4.17.15",
@@ -34,7 +29,11 @@
     "react-dom": "^16.12.0",
     "react-i18next": "^11.3.2",
     "react-router-dom": "^5.1.2",
-    "@types/react": "^16.9.22"
+    "rollup": "^1.29.0",
+    "rollup-plugin-peer-deps-external": "^2.2.2",
+    "rollup-plugin-postcss": "^2.4.1",
+    "tslib": "^1.9.3",
+    "typescript": "^3.7.4"
   },
   "scripts": {
     "build": "rollup -c",

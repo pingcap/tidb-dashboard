@@ -22,7 +22,6 @@ export default function StatementDetailPage() {
       .then(res => res.data)
   }
 
-  // return <div>...</div>
   return digest ? (
     <StatementDetail
       digest={digest}

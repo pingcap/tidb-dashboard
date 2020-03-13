@@ -45,7 +45,6 @@ export default function StatementsOverviewPage() {
 
   const updateConfig = () => fakeReq('ok')
 
-  // return <div>...</div>
   return (
     <StatementsOverview
       onFetchInstances={queryInstance}

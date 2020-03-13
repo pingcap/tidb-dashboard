@@ -28,7 +28,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh
 Start a local TiDB cluster:
 
 ```bash
-tiup run playground nightly
+tiup playground nightly
 ```
 
 > Note: you might notice that there is already a TiDB Dashboard integrated into the PD started by TiUP. For development purpose, we will not use the that TiDB Dashboard. Please keep following the rest of the steps in this document.
@@ -132,10 +132,11 @@ The followings are required for developing TiDB Dashboard:
    # In tidb-dashboard directory:
    cd ui
    yarn  # install all dependencies
+   npm run build_api_client  # build API client from OpenAPI spec
    npm start
    ```
 
-   > Note: Currently the front-end server will not watch for Golang code changes, which means you must manually rebuild the Dashboard API Client if back-end code is updated (for example, you pulled latest change from the repository):
+   > Note: Currently the front-end server will not watch for Golang code changes, which means you must manually rebuild the API Client if back-end code is updated (for example, you pulled latest change from the repository):
    >
    > ```bash
    > npm run build_api_client
@@ -145,7 +146,7 @@ The followings are required for developing TiDB Dashboard:
 
    TiDB Dashboard UI: http://127.0.0.1:3000
 
-   > Note: you can login TiDB Dashboard UI using user `root` and **empty password** by default.
+   > Note: If you encounter a rotating blue circle, don't worry. It may happen when you enter TiDB Dashboard UI for the first time. We are solving this problem. Now, you just need to refresh the page. Then, you can login TiDB Dashboard UI using user `root` and **empty password** by default.
 
    Swagger UI for TiDB Dashboard APIs: http://localhost:12333/dashboard/api/swagger
 

@@ -24,6 +24,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -84,27 +85,28 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")
 	flag.Int64Var(&cfg.KVFileEndTime, "keyviz-file-end", 0, "(debug) end time for file range in file mode")
 
-	caPath := flag.String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
-	certPath := flag.String("cluster-cert", "", "path of file that contains X509 certificate in PEM format..")
-	keyPath := flag.String("cluster-key", "", "path of file that contains X509 key in PEM format.")
+	clusterCaPath := flag.String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
+	clusterCertPath := flag.String("cluster-cert", "", "path of file that contains X509 certificate in PEM format.")
+	clusterKeyPath := flag.String("cluster-key", "", "path of file that contains X509 key in PEM format.")
+
+	tidbCaPath := flag.String("tidb-ca", "", "path of file that contains list of trusted SSL CAs.")
+	tidbCertPath := flag.String("tidb-cert", "", "path of file that contains X509 certificate in PEM format.")
+	tidbKeyPath := flag.String("tidb-key", "", "path of file that contains X509 key in PEM format.")
 
 	_ = flag.CommandLine.MarkHidden("keyviz-file-start")
 	_ = flag.CommandLine.MarkHidden("keyviz-file-end")
 
 	flag.Parse()
 
-	// setup TLSConfig
-	if len(*caPath) != 0 && len(*certPath) != 0 && len(*keyPath) != 0 {
-		tlsInfo := transport.TLSInfo{
-			CertFile:      *certPath,
-			KeyFile:       *keyPath,
-			TrustedCAFile: *caPath,
-		}
-		tlsConfig, err := tlsInfo.ClientConfig()
-		if err != nil {
-			log.Fatal("Failed to load certificates", zap.Error(err))
-		}
-		cfg.CoreConfig.TLSConfig = tlsConfig
+	// setup TLSConfig for TiDB components
+	if len(*clusterCaPath) != 0 && len(*clusterCertPath) != 0 && len(*clusterKeyPath) != 0 {
+		cfg.CoreConfig.TLSConfig = buildTLSConfig(clusterCaPath, clusterKeyPath, clusterCertPath)
+	}
+
+	// setup TLSConfig for MySQL client
+	// See https://github.com/pingcap/docs/blob/7a62321b3ce9318cbda8697503c920b2a01aeb3d/how-to/secure/enable-tls-clients.md#enable-authentication
+	if (len(*tidbCertPath) != 0 && len(*tidbKeyPath) != 0) || len(*tidbCaPath) != 0 {
+		cfg.CoreConfig.TiDBTLSConfig = buildTLSConfig(tidbCaPath, tidbKeyPath, tidbCertPath)
 	}
 
 	// normalize PDEndPoint
@@ -154,6 +156,19 @@ func getContext() context.Context {
 	return ctx
 }
 
+func buildTLSConfig(caPath, keyPath, certPath *string) *tls.Config {
+	tlsInfo := transport.TLSInfo{
+		TrustedCAFile: *caPath,
+		KeyFile:       *keyPath,
+		CertFile:      *certPath,
+	}
+	tlsConfig, err := tlsInfo.ClientConfig()
+	if err != nil {
+		log.Fatal("Failed to load certificates", zap.Error(err))
+	}
+	return tlsConfig
+}
+
 func main() {
 	_ = godotenv.Load()
 
@@ -172,7 +187,7 @@ func main() {
 		log.Fatal("Cannot create etcd client", zap.Error(err))
 	}
 
-	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(cliConfig.CoreConfig.TLSConfig), etcdProvider)
+	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(cliConfig.CoreConfig.TiDBTLSConfig), etcdProvider)
 	// FIXME: Handle open error
 	tidbForwarder.Open()        //nolint:errcheck
 	defer tidbForwarder.Close() //nolint:errcheck

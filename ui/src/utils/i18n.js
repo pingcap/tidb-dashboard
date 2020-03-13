@@ -1,18 +1,26 @@
-import i18next from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+import i18next from 'i18next'
+import { initReactI18next } from 'react-i18next'
+import LanguageDetector from 'i18next-browser-languagedetector'
 
 export function addTranslations(requireContext) {
-  const keys = requireContext.keys();
+  if (typeof requireContext === 'object') {
+    Object.keys(requireContext).forEach(key => {
+      const translations = requireContext[key]
+      i18next.addResourceBundle(key, 'translation', translations, true, false)
+    })
+    return
+  }
+
+  const keys = requireContext.keys()
   keys.forEach(key => {
-    const m = key.match(/\/(.+)\.yaml/);
+    const m = key.match(/\/(.+)\.yaml/)
     if (!m) {
-      return;
+      return
     }
-    const lang = m[1];
-    const translations = requireContext(key);
-    i18next.addResourceBundle(lang, 'translation', translations, true, false);
-  });
+    const lang = m[1]
+    const translations = requireContext(key)
+    i18next.addResourceBundle(lang, 'translation', translations, true, false)
+  })
 }
 
 export function init() {
@@ -25,5 +33,5 @@ export function init() {
       interpolation: {
         escapeValue: false,
       },
-    });
+    })
 }

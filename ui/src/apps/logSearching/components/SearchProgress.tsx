@@ -5,7 +5,7 @@ import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree';
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon';
-import styles from './SearchProgress.module.css';
+import styles from './Styles.module.css';
 import { getAddress, namingMap, ServerType, ServerTypeList, TaskState } from './utils';
 
 const { confirm } = Modal;
@@ -273,6 +273,7 @@ export default function SearchProgress({
               expandedKeys={Object.values(namingMap)}
               showIcon
               onCheck={handleCheck}
+              style={{ overflowX: "hidden" }}
             >
               {renderTreeNodes(tasks)}
             </Tree>

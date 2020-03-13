@@ -16,7 +16,6 @@
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-i18next": "^11.3.2",
-    "react-responsive": "^8.0.3",
     "react-router-dom": "^5.1.2",
     "single-spa": "^4.4.2",
     "single-spa-react": "^2.11.0"

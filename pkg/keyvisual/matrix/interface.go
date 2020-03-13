@@ -14,8 +14,6 @@
 package matrix
 
 import (
-	"encoding/hex"
-
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
 )
 
@@ -38,23 +36,3 @@ type Strategy interface {
 	splitStrategy
 	decorator.LabelStrategy
 }
-
-// NaiveLabelStrategy is one of the simplest LabelStrategy.
-type NaiveLabelStrategy struct{}
-
-// CrossBorder always returns false. So NaiveLabelStrategy believes that there are no cross-border situations.
-func (s NaiveLabelStrategy) CrossBorder(startKey, endKey string) bool {
-	return false
-}
-
-// Label only decodes the key.
-func (s NaiveLabelStrategy) Label(key string) decorator.LabelKey {
-	str := hex.EncodeToString([]byte(key))
-	return decorator.LabelKey{
-		Key:    str,
-		Labels: []string{str},
-	}
-}
-
-// Background do nothing.
-func (s NaiveLabelStrategy) Background() {}

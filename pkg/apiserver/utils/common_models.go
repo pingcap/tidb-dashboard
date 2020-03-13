@@ -28,3 +28,24 @@ func (n *RequestTargetNode) FileName() string {
 	displayName := strings.NewReplacer(".", "_", ":", "_").Replace(n.DisplayName)
 	return fmt.Sprintf("%s_%s", n.Kind, displayName)
 }
+
+type RequestTargetStatistics struct {
+	NumTiKVNodes int `json:"num_tikv_nodes"`
+	NumTiDBNodes int `json:"num_tidb_nodes"`
+	NumPDNodes   int `json:"num_pd_nodes"`
+}
+
+func NewRequestTargetStatisticsFromArray(arr *[]RequestTargetNode) RequestTargetStatistics {
+	stats := RequestTargetStatistics{}
+	for _, node := range *arr {
+		switch node.Kind {
+		case NodeKindTiDB:
+			stats.NumTiDBNodes++
+		case NodeKindTiKV:
+			stats.NumTiKVNodes++
+		case NodeKindPD:
+			stats.NumPDNodes++
+		}
+	}
+	return stats
+}

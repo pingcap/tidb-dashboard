@@ -1,8 +1,11 @@
 import client from '@/utils/client'
 import React, { useEffect, useState } from 'react'
-import { message, Card, Form, TreeSelect, Button, Select, Table } from 'antd'
+import { message, Card, Form, TreeSelect, Button, Select, Badge } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import DateTime from '@/components/DateTime'
+import CardTable from '@/components/CardTable'
 
 // FIXME: The following logic should be extracted into a common component.
 function getTreeData(topologyMap) {
@@ -82,20 +85,31 @@ const defaultProfilingDuration = 30
 
 export default function Page() {
   const [targetsMap, setTargetsMap] = useState({})
+  const [historyTable, setHistoryTable] = useState([])
 
   // FIXME: Use Antd form
   const [selectedTargets, setSelectedTargets] = useState([])
   const [duration, setDuration] = useState(defaultProfilingDuration)
 
-  const [loading, setLoading] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [listLoading, setListLoading] = useState(true)
   const { t } = useTranslation()
   const history = useHistory()
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchTargetsMap() {
       setTargetsMap(await getTargetsMapAsync())
     }
-    fetchData()
+    async function fetchHistory() {
+      setListLoading(true)
+      try {
+        const res = await client.dashboard.getProfilingGroups()
+        setHistoryTable(res.data)
+      } catch (e) {}
+      setListLoading(false)
+    }
+    fetchTargetsMap()
+    fetchHistory()
   }, [])
 
   async function handleStart() {
@@ -103,31 +117,106 @@ export default function Page() {
       // TODO: Show notification
       return
     }
-    setLoading(true)
+    setSubmitting(true)
     const req = {
       targets: selectedTargets.map(k => targetsMap[k]),
       duration_secs: duration,
     }
     try {
-      const res = await client.dashboard.profilingGroupStartPost(req)
+      const res = await client.dashboard.startProfiling(req)
       history.push(`/node_profiling/${res.data.id}`)
     } catch (e) {
       // FIXME
       message.error(e.message)
     }
-    setLoading(false)
+    setSubmitting(false)
   }
+
+  const historyTableColumns = [
+    {
+      title: t('node_profiling.list.table.columns.targets'),
+      key: 'targets',
+      render: (_, rec) => {
+        // TODO: Extract to utility function
+        const r = []
+        if (rec.target_stats.num_tidb_nodes) {
+          r.push(`${rec.target_stats.num_tidb_nodes} TiDB`)
+        }
+        if (rec.target_stats.num_tikv_nodes) {
+          r.push(`${rec.target_stats.num_tikv_nodes} TiKV`)
+        }
+        if (rec.target_stats.num_pd_nodes) {
+          r.push(`${rec.target_stats.num_pd_nodes} PD`)
+        }
+        return <span>{r.join(', ')}</span>
+      },
+    },
+    {
+      title: t('node_profiling.list.table.columns.start_at'),
+      key: 'started_at',
+      render: (_, rec) => {
+        return <DateTime.Calendar unixTimeStampMs={rec.started_at * 1000} />
+      },
+    },
+    {
+      title: t('node_profiling.list.table.columns.duration'),
+      key: 'duration',
+      dataIndex: 'profile_duration_secs',
+      width: 150,
+    },
+    {
+      title: t('node_profiling.list.table.columns.status'),
+      key: 'status',
+      render: (_, rec) => {
+        if (rec.state === 1) {
+          return (
+            <Badge
+              status="processing"
+              text={t('node_profiling.list.table.status.running')}
+            />
+          )
+        } else if (rec.state === 2) {
+          return (
+            <Badge
+              status="success"
+              text={t('node_profiling.list.table.status.finished')}
+            />
+          )
+        } else {
+          return (
+            <Badge
+              status="default"
+              text={t('node_profiling.list.table.status.unknown')}
+            />
+          )
+        }
+      },
+      width: 150,
+    },
+    {
+      title: t('node_profiling.list.table.columns.action'),
+      key: 'action',
+      render: (_, rec) => {
+        return (
+          <Link to={`/node_profiling/${rec.id}`}>
+            {t('node_profiling.list.table.actions.detail')}
+          </Link>
+        )
+      },
+      width: 100,
+    },
+  ]
 
   return (
     <div>
       <Card bordered={false}>
         <Form layout="inline">
-          <Form.Item label={t('node_profiling.index.control_form.nodes.label')}>
+          <Form.Item label={t('node_profiling.list.control_form.nodes.label')}>
             <TreeSelect
               value={selectedTargets}
               treeData={getTreeData(targetsMap)}
               placeholder={t(
-                'node_profiling.index.control_form.nodes.placeholder'
+                'node_profiling.list.control_form.nodes.placeholder'
               )}
               onChange={setSelectedTargets}
               treeDefaultExpandAll={true}
@@ -139,7 +228,7 @@ export default function Page() {
             />
           </Form.Item>
           <Form.Item
-            label={t('node_profiling.index.control_form.duration.label')}
+            label={t('node_profiling.list.control_form.duration.label')}
           >
             <Select
               value={duration}
@@ -154,20 +243,20 @@ export default function Page() {
             </Select>
           </Form.Item>
           <Form.Item>
-            <Button type="primary" onClick={handleStart} loading={loading}>
-              {t('node_profiling.index.control_form.submit')}
+            <Button type="primary" onClick={handleStart} loading={submitting}>
+              {t('node_profiling.list.control_form.submit')}
             </Button>
           </Form.Item>
         </Form>
       </Card>
-      <Card
-        title="Profiling History"
-        bordered={false}
-        bodyStyle={{ padding: 0 }}
+      <CardTable
         style={{ marginTop: 24 }}
-      >
-        <Table columns={[]} dataSource={[]} size="middle" />
-      </Card>
+        loading={listLoading}
+        columns={historyTableColumns}
+        dataSource={historyTable}
+        title={t('node_profiling.list.table.title')}
+        rowKey="id"
+      />
     </div>
   )
 }

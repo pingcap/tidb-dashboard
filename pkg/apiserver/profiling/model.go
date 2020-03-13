@@ -49,9 +49,11 @@ func (TaskModel) TableName() string {
 }
 
 type TaskGroupModel struct {
-	ID                  uint      `json:"id" gorm:"primary_key"`
-	State               TaskState `json:"state" gorm:"index"`
-	ProfileDurationSecs uint      `json:"profile_duration_secs"`
+	ID                  uint                          `json:"id" gorm:"primary_key"`
+	State               TaskState                     `json:"state" gorm:"index"`
+	ProfileDurationSecs uint                          `json:"profile_duration_secs"`
+	TargetStats         utils.RequestTargetStatistics `json:"target_stats" gorm:"embedded;embedded_prefix:target_stats_"`
+	StartedAt           int64                         `json:"started_at"`
 }
 
 func (TaskGroupModel) TableName() string {
@@ -113,11 +115,13 @@ type TaskGroup struct {
 }
 
 // NewTaskGroup create a new profiling task group.
-func NewTaskGroup(db *dbstore.DB, profileDurationSecs uint) *TaskGroup {
+func NewTaskGroup(db *dbstore.DB, profileDurationSecs uint, stats utils.RequestTargetStatistics) *TaskGroup {
 	return &TaskGroup{
 		TaskGroupModel: &TaskGroupModel{
 			State:               TaskStateRunning,
 			ProfileDurationSecs: profileDurationSecs,
+			TargetStats:         stats,
+			StartedAt:           time.Now().Unix(),
 		},
 		db: db,
 	}

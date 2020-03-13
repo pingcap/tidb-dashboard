@@ -1,6 +1,6 @@
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
-import typescript from '@rollup/plugin-typescript'
+import typescript from 'rollup-plugin-typescript2'
 import yaml from '@rollup/plugin-yaml'
 import postcss from 'rollup-plugin-postcss'
 import external from 'rollup-plugin-peer-deps-external'
@@ -19,7 +19,10 @@ export default [
       postcss({ modules: true }),
       resolve(),
       commonjs(),
-      typescript(),
+      typescript({
+        rollupCommonJSResolveHack: true,
+        clean: true,
+      }),
       yaml(),
     ],
   },

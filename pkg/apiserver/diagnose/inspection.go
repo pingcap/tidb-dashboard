@@ -143,7 +143,7 @@ func (c *clusterInspection) inspectForAffectByBigQuery() ([]string, error) {
 			threshold: 1.0,
 		},
 	}
-	var totalDiffs []metricDiff
+	totalDiffs := make([]metricDiff, 0, len(checks))
 	for _, ck := range checks {
 		err := c.compareMetric(ck.query)
 		if err != nil {
@@ -260,7 +260,7 @@ func (s *queryQPS) setCurrent() {
 }
 
 func (s *queryQPS) compare() []metricDiff {
-	var diffs []metricDiff
+	diffs := make([]metricDiff, 0, len(s.current))
 	for label, v := range s.current {
 		rv := s.refer[label]
 		diff := newMetricDiff(s.table, label, float64(rv.avg), float64(v.avg))
@@ -342,7 +342,7 @@ func (s *queryQuantile) setCurrent() {
 }
 
 func (s *queryQuantile) compare() []metricDiff {
-	var diffs []metricDiff
+	diffs := make([]metricDiff, 0, len(s.current))
 	for label, v := range s.current {
 		rv := s.refer[label]
 		diff := newMetricDiff(s.table, label, rv.avg, v.avg)
@@ -394,11 +394,10 @@ func (s *queryTotal) setCurrent() {
 }
 
 func (s *queryTotal) compare() []metricDiff {
-	var diffs []metricDiff
-
+	diffs := make([]metricDiff, 0, len(s.current))
 	for label, v := range s.current {
 		rv := s.refer[label]
-		diff := newMetricDiff(s.table, label, float64(rv), float64(v))
+		diff := newMetricDiff(s.table, label, rv, v)
 		diffs = append(diffs, diff)
 	}
 	return diffs
@@ -527,10 +526,9 @@ func batchAtoi(ss []string) ([]int, error) {
 
 func calculateDiff(refer float64, check float64) float64 {
 	if refer != 0 {
-		return float64(check) / float64(refer)
-	} else {
-		return check
+		return check / refer
 	}
+	return check
 }
 
 type metricDiff struct {
@@ -555,9 +553,8 @@ func newMetricDiff(tp, label string, refer, check float64) metricDiff {
 func (d metricDiff) String() string {
 	if d.ratio > 1 {
 		return fmt.Sprintf("%s,%s: ↑ %.2f (%.2f / %.2f)", d.tp, d.label, d.ratio, d.v, d.rv)
-	} else {
-		return fmt.Sprintf("%s,%s: ↓ %.2f (%.2f / %.2f)", d.tp, d.label, d.ratio, d.v, d.rv)
 	}
+	return fmt.Sprintf("%s,%s: ↓ %.2f (%.2f / %.2f)", d.tp, d.label, d.ratio, d.v, d.rv)
 }
 
 type compareType bool

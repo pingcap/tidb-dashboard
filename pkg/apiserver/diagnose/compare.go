@@ -405,7 +405,6 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 		return nil, err
 	}
 
-	diffTableName := strings.Join(table.Category, "-") + ", " + table.Title
 	subJoinRows := make([]*newJoinRow, 0, len(row1.SubValues))
 	for _, subRow1 := range row1.SubValues {
 		label := genRowLabel(subRow1, table.joinColumns)
@@ -419,7 +418,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			row2:  subRow2,
 			ratio: ratio,
 		})
-		dr.addRow(diffTableName, label, ratio, subRow1, subRow2, idx, row1.Comment)
+		dr.addRow(table, label, ratio, subRow1, subRow2, idx, row1.Comment)
 	}
 
 	for _, subRow2 := range row2.SubValues {
@@ -438,7 +437,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			row2:  subRow2,
 			ratio: ratio,
 		})
-		dr.addRow(diffTableName, label, ratio, subRow1, subRow2, idx, row2.Comment)
+		dr.addRow(table, label, ratio, subRow1, subRow2, idx, row2.Comment)
 	}
 
 	sort.Slice(subJoinRows, func(i, j int) bool {
@@ -468,7 +467,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 		} else if len(row2.Values) >= len(table.Column) {
 			label = genRowLabel(row2.Values, table.joinColumns)
 		}
-		dr.addRow(diffTableName, label, totalRatio, row1.Values, row2.Values, totalRatioIdx, row1.Comment)
+		dr.addRow(table, label, totalRatio, row1.Values, row2.Values, totalRatioIdx, row1.Comment)
 	}
 
 	resultJoinRow := newJoinRow{
@@ -513,9 +512,13 @@ func (r *diffRows) Pop() interface{} {
 	return x
 }
 
-func (r *diffRows) addRow(table, label string, ratio float64, vs1, vs2 []string, idx int, comment string) {
+func (r *diffRows) addRow(table *TableDef, label string, ratio float64, vs1, vs2 []string, idx int, comment string) {
+	tableName := strings.Join(table.Category, "-") + ", " + table.Title
 	if ratio == 0 {
 		return
+	}
+	if idx < len(table.Column) {
+		comment = comment + ", the value is " + table.Column[idx]
 	}
 	v1 := ""
 	v2 := ""
@@ -528,7 +531,7 @@ func (r *diffRows) addRow(table, label string, ratio float64, vs1, vs2 []string,
 		}
 	}
 	r.appendRow(diffRow{
-		table:   table,
+		table:   tableName,
 		label:   label,
 		ratio:   ratio,
 		v1:      v1,

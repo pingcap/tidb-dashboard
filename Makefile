@@ -38,7 +38,7 @@ yarn_dependencies:
 
 swagger_client: swagger_spec yarn_dependencies
 	cd ui &&\
-	npm run build_api_client
+	npm run build:api_client
 
 ui: swagger_client
 	cd ui &&\

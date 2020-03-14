@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   id: 'keyvis',
   loader: () => import('./app.js'),
   routerPrefix: '/keyvis',

@@ -132,14 +132,14 @@ The followings are required for developing TiDB Dashboard:
    # In tidb-dashboard directory:
    cd ui
    yarn  # install all dependencies
-   npm run build_api_client  # build API client from OpenAPI spec
+   npm run build:api_client  # build API client from OpenAPI spec
    npm start
    ```
 
    > Note: Currently the front-end server will not watch for Golang code changes, which means you must manually rebuild the API Client if back-end code is updated (for example, you pulled latest change from the repository):
    >
    > ```bash
-   > npm run build_api_client
+   > npm run build:api_client
    > ```
 
 4. That's it! You can access TiDB Dashboard now:

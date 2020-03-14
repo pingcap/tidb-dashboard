@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   id: 'log_searching',
   loader: () => import('./app.js'),
   routerPrefix: '/log/search',

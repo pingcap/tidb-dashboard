@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   id: 'cluster_info',
   loader: () => import('./app.js'),
   routerPrefix: '/cluster_info',

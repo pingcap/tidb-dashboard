@@ -6,12 +6,12 @@ import * as i18nUtil from '@/utils/i18n'
 
 import * as LayoutMain from '@/layout'
 import * as LayoutSignIn from '@/layout/signin'
-import AppKeyVis from '@/apps/keyvis'
-import AppStatement from '@/apps/statement'
-import AppDiagnose from '@/apps/diagnose'
-import AppLogSearching from '@/apps/logSearching'
-import AppNodeProfiling from '@/apps/nodeProfiling'
-import AppClusterInfo from '@/apps/clusterInfo'
+import appKeyVis from '@/apps/keyvis'
+import appStatement from '@/apps/statement'
+import appDiagnose from '@/apps/diagnose'
+import appLogSearching from '@/apps/logSearching'
+import appNodeProfiling from '@/apps/nodeProfiling'
+import appClusterInfo from '@/apps/clusterInfo'
 
 async function main() {
   const registry = new AppRegistry()
@@ -40,12 +40,12 @@ async function main() {
   )
 
   registry
-    .register(AppKeyVis)
-    .register(AppStatement)
-    .register(AppClusterInfo)
-    .register(AppDiagnose)
-    .register(AppLogSearching)
-    .register(AppNodeProfiling)
+    .register(appKeyVis)
+    .register(appStatement)
+    .register(appClusterInfo)
+    .register(appDiagnose)
+    .register(appLogSearching)
+    .register(appNodeProfiling)
 
   if (routingUtil.isLocationMatch('/')) {
     singleSpa.navigateToUrl('#' + registry.getDefaultRouter())

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   id: 'node_profiling',
   loader: () => import('./app.js'),
   routerPrefix: '/node_profiling',

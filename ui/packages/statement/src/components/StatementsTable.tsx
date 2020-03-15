@@ -12,6 +12,7 @@ const tableColumns = (
   maxExecCount: number,
   maxAvgLatency: number,
   maxAvgMem: number,
+  detailPagePath: string,
   t: (string) => string
 ) => [
   {
@@ -26,7 +27,7 @@ const tableColumns = (
     width: 400,
     render: (text, record: StatementOverview) => (
       <Link
-        to={`/statement/detail?digest=${record.digest}&schema=${record.schema_name}&begin_time=${timeRange.begin_time}&end_time=${timeRange.end_time}`}
+        to={`${detailPagePath}?digest=${record.digest}&schema=${record.schema_name}&begin_time=${timeRange.begin_time}&end_time=${timeRange.end_time}`}
       >
         {text}
       </Link>
@@ -102,12 +103,14 @@ interface Props {
   statements: StatementOverview[]
   loading: boolean
   timeRange: StatementTimeRange
+  detailPagePath: string
 }
 
 export default function StatementsTable({
   statements,
   loading,
   timeRange,
+  detailPagePath,
 }: Props) {
   const { t } = useTranslation()
   const maxExecCount = useMemo(
@@ -122,7 +125,15 @@ export default function StatementsTable({
     statements,
   ])
   const columns = useMemo(
-    () => tableColumns(timeRange, maxExecCount!, maxAvgLatency!, maxAvgMem!, t),
+    () =>
+      tableColumns(
+        timeRange,
+        maxExecCount!,
+        maxAvgLatency!,
+        maxAvgMem!,
+        detailPagePath,
+        t
+      ),
     [timeRange, maxExecCount, maxAvgLatency, maxAvgMem, t]
   )
   return (

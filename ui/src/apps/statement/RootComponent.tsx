@@ -44,7 +44,10 @@ const App = withRouter(props => {
         <div style={{ margin: 12 }}>
           <Switch>
             <Route path="/statement/overview">
-              <StatementsOverviewPage dashboardClient={client.dashboard} />
+              <StatementsOverviewPage
+                dashboardClient={client.dashboard}
+                detailPagePath="/statement/detail"
+              />
             </Route>
             <Route path="/statement/detail">
               <StatementDetailPage dashboardClient={client.dashboard} />

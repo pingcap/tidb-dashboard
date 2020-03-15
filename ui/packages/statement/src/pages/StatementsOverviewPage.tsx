@@ -10,9 +10,13 @@ function fakeReq<T>(res: T): Promise<T> {
 
 type Props = {
   dashboardClient: DefaultApi
+  detailPagePath: string
 }
 
-export default function StatementsOverviewPage({ dashboardClient }: Props) {
+export default function StatementsOverviewPage({
+  dashboardClient,
+  detailPagePath,
+}: Props) {
   function queryInstance() {
     return Promise.resolve([{ uuid: 'current', name: 'current cluster' }])
   }
@@ -59,6 +63,7 @@ export default function StatementsOverviewPage({ dashboardClient }: Props) {
       onSetStatementStatus={updateStatementStatus}
       onFetchConfig={queryConfig}
       onUpdateConfig={updateConfig}
+      detailPagePath={detailPagePath}
     />
   )
 }

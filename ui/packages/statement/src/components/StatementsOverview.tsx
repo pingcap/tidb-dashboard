@@ -136,6 +136,8 @@ interface Props {
 
   onFetchConfig: (instanceId: string) => Promise<StatementConfig>
   onUpdateConfig: (instanceId: string, config: StatementConfig) => Promise<any>
+
+  detailPagePath: string
 }
 
 export default function StatementsOverview({
@@ -149,6 +151,8 @@ export default function StatementsOverview({
 
   onFetchConfig,
   onUpdateConfig,
+
+  detailPagePath,
 }: Props) {
   const { searchOptions, setSearchOptions } = useContext(SearchContext)
   // combine the context to state
@@ -407,6 +411,7 @@ export default function StatementsOverview({
           statements={state.statements}
           loading={state.statementsLoading}
           timeRange={state.curTimeRange!}
+          detailPagePath={detailPagePath}
         />
       </div>
     </div>

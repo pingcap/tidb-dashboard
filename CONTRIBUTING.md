@@ -132,14 +132,21 @@ The followings are required for developing TiDB Dashboard:
    # In tidb-dashboard directory:
    cd ui
    yarn  # install all dependencies
-   npm run build_api_client  # build API client from OpenAPI spec
-   npm start
+   yarn run build_api_client  # build API client from OpenAPI spec
+   yarn build # build dependent packages in ui/packages folders
+   yarn start
+   ```
+
+   If you need to modify the code in the packages folder, for example the `ui/packages/statement`, you need to start the package in a new terminal tab by following code:
+
+   ```bash
+   yarn workspace @pingcap-incubator/statement start
    ```
 
    > Note: Currently the front-end server will not watch for Golang code changes, which means you must manually rebuild the API Client if back-end code is updated (for example, you pulled latest change from the repository):
    >
    > ```bash
-   > npm run build_api_client
+   > yarn run build_api_client
    > ```
 
 4. That's it! You can access TiDB Dashboard now:

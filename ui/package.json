@@ -27,10 +27,11 @@
   },
   "scripts": {
     "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
+    "build": "lerna run --stream --sort build && react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "build_api_client": "openapi-generator generate -i ../docs/swagger.yaml -g typescript-axios -c .openapi_config.yaml -o packages/dashboard_client/src"
+    "build_api_client": "openapi-generator generate -i ../docs/swagger.yaml -g typescript-axios -c .openapi_config.yaml -o packages/dashboard_client/src",
+    "clean": "yarn workspaces run clean"
   },
   "homepage": "/dashboard",
   "eslintConfig": {

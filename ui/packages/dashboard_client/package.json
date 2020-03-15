@@ -13,7 +13,8 @@
   "scripts": {
     "build": "rollup -c",
     "start": "rollup -c -w",
-    "prepare": "yarn run build"
+    "prepare": "yarn run build",
+    "clean": "rimraf dist"
   },
   "dependencies": {
     "axios": "^0.19.0"

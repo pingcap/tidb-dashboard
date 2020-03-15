@@ -2,11 +2,20 @@ import i18next from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 
+import dayjs from 'dayjs'
+import 'dayjs/locale/en'
+import 'dayjs/locale/zh-cn'
+
+i18next.on('languageChanged', function(lng) {
+  console.log('Language', lng)
+  dayjs.locale(lng.toLowerCase())
+})
+
 export function addTranslations(requireContext) {
   if (typeof requireContext === 'object') {
     Object.keys(requireContext).forEach(key => {
       const translations = requireContext[key]
-      i18next.addResourceBundle(key, 'translation', translations, true, false)
+      addTranslationResource(key, translations)
     })
     return
   }
@@ -19,8 +28,12 @@ export function addTranslations(requireContext) {
     }
     const lang = m[1]
     const translations = requireContext(key)
-    i18next.addResourceBundle(lang, 'translation', translations, true, false)
+    addTranslationResource(lang, translations)
   })
+}
+
+export function addTranslationResource(lang, translations) {
+  i18next.addResourceBundle(lang, 'translation', translations, true, false)
 }
 
 export function init() {

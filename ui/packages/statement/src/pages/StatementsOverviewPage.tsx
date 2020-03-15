@@ -1,28 +1,32 @@
 import React from 'react'
-import { StatementsOverview } from '@pingcap-incubator/statement'
-import client from '@/utils/client'
+import { StatementsOverview, StatementConfig } from '../components'
+import { DefaultApi } from '@pingcap-incubator/dashboard_client'
 
-function fakeReq(res) {
+function fakeReq<T>(res: T): Promise<T> {
   return new Promise((resolve, reject) => {
     setTimeout(() => resolve(res), 2000)
   })
 }
 
-export default function StatementsOverviewPage() {
+type Props = {
+  dashboardClient: DefaultApi
+}
+
+export default function StatementsOverviewPage({ dashboardClient }: Props) {
   function queryInstance() {
     return Promise.resolve([{ uuid: 'current', name: 'current cluster' }])
   }
 
   function querySchemas() {
-    return client.dashboard.statementsSchemasGet().then(res => res.data)
+    return dashboardClient.statementsSchemasGet().then(res => res.data)
   }
 
   function queryTimeRanges() {
-    return client.dashboard.statementsTimeRangesGet().then(res => res.data)
+    return dashboardClient.statementsTimeRangesGet().then(res => res.data)
   }
 
   function queryStatements(_instanceId, schemas, beginTime, endTime) {
-    return client.dashboard
+    return dashboardClient
       .statementsOverviewsGet(beginTime, endTime, schemas.join(','))
       .then(res => res.data)
   }
@@ -41,7 +45,7 @@ export default function StatementsOverviewPage() {
       keep_duration: 100,
       max_sql_count: 1000,
       max_sql_length: 100,
-    })
+    } as StatementConfig)
 
   const updateConfig = () => fakeReq('ok')
 

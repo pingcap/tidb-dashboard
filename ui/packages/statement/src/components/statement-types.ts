@@ -15,21 +15,21 @@ export interface StatementConfig {
 //////////////////
 
 export interface StatementTimeRange {
-  begin_time: string
-  end_time: string
+  begin_time?: string
+  end_time?: string
 }
 
 export interface StatementOverview {
-  schema_name: string
-  digest: string
-  digest_text: string
-  sum_latency: number
-  exec_count: number
-  avg_affected_rows: number
-  avg_latency: number
-  avg_mem: number
+  schema_name?: string
+  digest?: string
+  digest_text?: string
+  sum_latency?: number
+  exec_count?: number
+  avg_affected_rows?: number
+  avg_latency?: number
+  avg_mem?: number
 
-  schemas: string
+  schemas?: string
 }
 
 //////////////////

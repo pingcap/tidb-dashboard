@@ -13,58 +13,19 @@ export interface StatementConfig {
 }
 
 //////////////////
+import {
+  StatementTimeRange as D_StatementTimeRange,
+  StatementOverview as D_StatementOverview,
+  StatementNode as D_StatementNode,
+  StatementDetail as D_SattementDetail,
+  StatementPlan as D_StatementPlan,
+} from '@pingcap-incubator/dashboard_client'
 
-export interface StatementTimeRange {
-  begin_time?: string
-  end_time?: string
-}
-
-export interface StatementOverview {
-  schema_name?: string
-  digest?: string
-  digest_text?: string
-  sum_latency?: number
-  exec_count?: number
-  avg_affected_rows?: number
-  avg_latency?: number
-  avg_mem?: number
-
-  schemas?: string
-}
-
-//////////////////
-
-export interface StatementDetailInfo {
-  schema_name: string
-  digest: string
-  digest_text: string
-  sum_latency: number
-  exec_count: number
-  avg_affected_rows: number
-  avg_total_keys: number
-
-  schemas: string
-
-  query_sample_text: string
-  last_seen: string
-
-  plans: StatementPlan[]
-}
-
-export interface StatementNode {
-  address: string
-  sum_latency: number
-  exec_count: number
-  avg_latency: number
-  max_latency: number
-  avg_mem: number
-  sum_backoff_times: number
-}
-
-export interface StatementPlan {
-  digest: string
-  content: string
-}
+export type StatementTimeRange = D_StatementTimeRange
+export type StatementOverview = D_StatementOverview
+export type StatementDetailInfo = D_SattementDetail
+export type StatementNode = D_StatementNode
+export type StatementPlan = D_StatementPlan
 
 export interface StatementPlanStep {
   id: string

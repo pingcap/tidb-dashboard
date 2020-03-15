@@ -1,9 +1,13 @@
 import React from 'react'
-import { StatementDetail } from '@pingcap-incubator/statement'
+import { StatementDetail } from '../components'
 import { useLocation } from 'react-router-dom'
-import client from '@/utils/client'
+import { DefaultApi } from '@pingcap-incubator/dashboard_client'
 
-export default function StatementDetailPage() {
+type Props = {
+  dashboardClient: DefaultApi
+}
+
+export default function StatementDetailPage({ dashboardClient }: Props) {
   const params = new URLSearchParams(useLocation().search)
   const digest = params.get('digest')
   const schemaName = params.get('schema')
@@ -11,13 +15,13 @@ export default function StatementDetailPage() {
   const endTime = params.get('end_time')
 
   function queryDetail(digest, schemaName, beginTime, endTime) {
-    return client.dashboard
+    return dashboardClient
       .statementsDetailGet(schemaName, beginTime, endTime, digest)
       .then(res => res.data)
   }
 
   function queryNodes(digest, schemaName, beginTime, endTime) {
-    return client.dashboard
+    return dashboardClient
       .statementsNodesGet(schemaName, beginTime, endTime, digest)
       .then(res => res.data)
   }
@@ -25,9 +29,9 @@ export default function StatementDetailPage() {
   return digest ? (
     <StatementDetail
       digest={digest}
-      schemaName={schemaName}
-      beginTime={beginTime}
-      endTime={endTime}
+      schemaName={schemaName || ''}
+      beginTime={beginTime || ''}
+      endTime={endTime || ''}
       onFetchDetail={queryDetail}
       onFetchNodes={queryNodes}
     />

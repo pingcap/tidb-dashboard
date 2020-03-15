@@ -1,11 +1,7 @@
 import typescript from 'rollup-plugin-typescript2'
 import commonjs from 'rollup-plugin-commonjs'
 import external from 'rollup-plugin-peer-deps-external'
-import postcss from 'rollup-plugin-postcss'
 import resolve from 'rollup-plugin-node-resolve'
-import url from 'rollup-plugin-url'
-import svgr from '@svgr/rollup'
-import yaml from '@rollup/plugin-yaml'
 
 import pkg from './package.json'
 
@@ -25,16 +21,11 @@ export default {
       sourcemap: true,
     },
   ],
+  external: ['url'],
   plugins: [
     external({
       includeDependencies: true,
     }),
-    postcss({
-      modules: true,
-    }),
-    url(),
-    svgr(),
-    yaml(),
     resolve(),
     typescript({
       rollupCommonJSResolveHack: true,

@@ -132,8 +132,7 @@ The followings are required for developing TiDB Dashboard:
    # In tidb-dashboard directory:
    cd ui
    yarn  # install all dependencies
-   yarn run build_api_client  # build API client from OpenAPI spec
-   yarn build # build dependent packages in ui/packages folders
+   yarn run build_packages # build dependent packages in ui/packages folders
    yarn start
    ```
 

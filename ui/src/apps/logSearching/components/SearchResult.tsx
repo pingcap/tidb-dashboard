@@ -1,5 +1,5 @@
 import client from '@/utils/client';
-import { LogsearchTaskModel } from '@/utils/dashboard_client/api';
+import { LogsearchTaskModel } from '@pingcap-incubator/dashboard_client';
 import { Table, Tooltip } from 'antd';
 import moment from 'moment';
 import React, { useEffect, useState } from "react";

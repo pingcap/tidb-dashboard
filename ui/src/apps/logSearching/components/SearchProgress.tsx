@@ -1,5 +1,5 @@
 import client, { DASHBOARD_API_URL } from '@/utils/client';
-import { LogsearchTaskModel } from '@/utils/dashboard_client';
+import { LogsearchTaskModel } from '@pingcap-incubator/dashboard_client';
 import { Button, Card, Modal, Tree, Typography } from 'antd';
 import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree';
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";

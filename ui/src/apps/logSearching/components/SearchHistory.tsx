@@ -1,5 +1,5 @@
 import client from '@/utils/client';
-import { LogsearchSearchTarget, LogsearchTaskGroupResponse } from '@/utils/dashboard_client';
+import { LogsearchSearchTarget, LogsearchTaskGroupResponse } from '@pingcap-incubator/dashboard_client';
 import { Button, Table, Tag } from 'antd';
 import { RangePickerValue } from 'antd/lib/date-picker/interface';
 import { Moment } from 'moment';

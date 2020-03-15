@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react'
 import * as d3 from 'd3'
 import { heatmapChart } from './chart'
-import { DecoratorLabelKey, MatrixMatrix } from '@/utils/dashboard_client'
+import { DecoratorLabelKey, MatrixMatrix } from '@pingcap-incubator/dashboard_client'
 
 export type KeyAxisEntry = DecoratorLabelKey
 

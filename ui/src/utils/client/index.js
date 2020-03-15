@@ -2,7 +2,7 @@ import i18next from 'i18next'
 import axios from 'axios'
 import { message } from 'antd'
 import * as singleSpa from 'single-spa'
-import * as DashboardClient from '@/utils/dashboard_client'
+import * as DashboardClient from '@pingcap-incubator/dashboard_client'
 import * as authUtil from '@/utils/auth'
 import * as routingUtil from '@/utils/routing'
 

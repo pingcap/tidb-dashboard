@@ -16,9 +16,10 @@
     "start": "rollup -c -w",
     "prepare": "yarn run build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@baurine/grafana-value-formats": "^0.1.1"
+  },
   "peerDependencies": {
-    "@baurine/grafana-value-formats": "^0.1.1",
     "antd": "^3.26.5",
     "i18next": "^19.1.0",
     "lodash": "^4.17.15",
@@ -29,7 +30,6 @@
     "react-router-dom": "^5.1.2"
   },
   "devDependencies": {
-    "@baurine/grafana-value-formats": "^0.1.1",
     "@rollup/plugin-yaml": "^2.1.0",
     "@svgr/rollup": "^2.4.1",
     "@types/react": "^16.9.22",

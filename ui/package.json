@@ -6,7 +6,6 @@
     "packages/*"
   ],
   "dependencies": {
-    "@baurine/grafana-value-formats": "^0.1.1",
     "@g07cha/flexbox-react": "^5.0.0",
     "@pingcap-incubator/statement": "0.0.1",
     "antd": "^3.26.5",

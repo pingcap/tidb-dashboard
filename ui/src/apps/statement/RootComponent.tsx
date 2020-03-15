@@ -9,9 +9,13 @@ import {
 } from 'react-router-dom'
 import { Breadcrumb } from 'antd'
 
-import StatementsOverviewPage from './StatementsOverviewPage'
-import StatementDetailPage from './StatementDetailPage'
-import { SearchContext } from '@pingcap-incubator/statement'
+import {
+  StatementsOverviewPage,
+  StatementDetailPage,
+  SearchContext,
+  SearchOptions,
+} from '@pingcap-incubator/statement'
+import client from '@/utils/client'
 
 const App = withRouter(props => {
   const { location } = props
@@ -21,7 +25,7 @@ const App = withRouter(props => {
     curInstance: undefined,
     curSchemas: [],
     curTimeRange: undefined,
-  })
+  } as SearchOptions)
   const searchContext = { searchOptions, setSearchOptions }
 
   return (
@@ -40,10 +44,10 @@ const App = withRouter(props => {
         <div style={{ margin: 12 }}>
           <Switch>
             <Route path="/statement/overview">
-              <StatementsOverviewPage />
+              <StatementsOverviewPage dashboardClient={client.dashboard} />
             </Route>
             <Route path="/statement/detail">
-              <StatementDetailPage />
+              <StatementDetailPage dashboardClient={client.dashboard} />
             </Route>
             <Redirect exact from="/statement" to="/statement/overview" />
           </Switch>

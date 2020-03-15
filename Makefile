@@ -38,12 +38,12 @@ yarn_dependencies:
 
 swagger_client: swagger_spec yarn_dependencies
 	cd ui &&\
-	npm run build_api_client
+	yarn run build_api_client
 
 ui: swagger_client
 	cd ui &&\
 	src/apps/keyvis/download_dummydata.sh &&\
-	REACT_APP_DASHBOARD_API_URL="" npm run build
+	REACT_APP_DASHBOARD_API_URL="" yarn build
 
 server:
 ifeq ($(SWAGGER),1)

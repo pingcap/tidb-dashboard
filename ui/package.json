@@ -30,7 +30,7 @@
     "build": "lerna run --stream --sort build && react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "build_api_client": "openapi-generator generate -i ../docs/swagger.yaml -g typescript-axios -c .openapi_config.yaml -o packages/dashboard_client/src",
+    "build_api_client": "yarn workspace @pingcap-incubator/dashboard_client run gen_api",
     "clean": "yarn workspaces run clean"
   },
   "homepage": "/dashboard",

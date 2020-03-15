@@ -37,7 +37,7 @@ const tableColumns = (
     dataIndex: 'sum_latency',
     key: 'sum_latency',
     sorter: (a: StatementOverview, b: StatementOverview) =>
-      a.sum_latency - b.sum_latency,
+      a.sum_latency! - b.sum_latency!,
     render: text => getValueFormat('ns')(text, 2, null),
   },
   {
@@ -45,7 +45,7 @@ const tableColumns = (
     dataIndex: 'exec_count',
     key: 'exec_count',
     sorter: (a: StatementOverview, b: StatementOverview) =>
-      a.exec_count - b.exec_count,
+      a.exec_count! - b.exec_count!,
     render: text => (
       <div>
         {getValueFormat('short')(text, 0, 0)}
@@ -61,7 +61,7 @@ const tableColumns = (
     dataIndex: 'avg_affected_rows',
     key: 'avg_affected_rows',
     sorter: (a: StatementOverview, b: StatementOverview) =>
-      a.avg_affected_rows - b.avg_affected_rows,
+      a.avg_affected_rows! - b.avg_affected_rows!,
     render: text => getValueFormat('short')(text, 0, 0),
   },
   {
@@ -69,7 +69,7 @@ const tableColumns = (
     dataIndex: 'avg_latency',
     key: 'avg_latency',
     sorter: (a: StatementOverview, b: StatementOverview) =>
-      a.avg_latency - b.avg_latency,
+      a.avg_latency! - b.avg_latency!,
     render: text => (
       <div>
         {getValueFormat('ns')(text, 2, null)}
@@ -85,7 +85,7 @@ const tableColumns = (
     dataIndex: 'avg_mem',
     key: 'avg_mem',
     sorter: (a: StatementOverview, b: StatementOverview) =>
-      a.avg_mem - b.avg_mem,
+      a.avg_mem! - b.avg_mem!,
     render: text => (
       <div>
         {getValueFormat('bytes')(text, 2, null)}

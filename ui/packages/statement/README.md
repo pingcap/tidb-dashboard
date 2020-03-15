@@ -16,13 +16,18 @@ npm install --save @pingcap-incubator/statement
 import React from 'react'
 import { HashRouter as Router } from 'react-router-dom'
 import { StatementsOverviewPage } from '@pingcap-incubator/statement'
-import client from '@/utils/client'
+import * as DashboardClient from '@pingcap-incubator/dashboard_client'
+
+const dashboardClient = new DashboardClient.DefaultApi({
+  basePath: 'http://127.0.0.1:12333/dashboard/api',
+  apiKey: 'xxx',
+})
 
 const App = () => (
   <Router>
     <div style={{ margin: 12 }}>
       <StatementsOverviewPage
-        dashboardClient={client.dashboard}
+        dashboardClient={dashboardClient}
         detailPagePath="/statement/detail"
       />
     </div>

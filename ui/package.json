@@ -29,7 +29,7 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "build_api_client": "openapi-generator generate -i ../docs/swagger.yaml -g typescript-axios -c .openapi_config.yaml -o src/utils/dashboard_client"
+    "build_api_client": "openapi-generator generate -i ../docs/swagger.yaml -g typescript-axios -c .openapi_config.yaml -o packages/dashboard_client/src"
   },
   "homepage": "/dashboard",
   "eslintConfig": {

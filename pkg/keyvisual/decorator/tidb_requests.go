@@ -56,7 +56,7 @@ type tableInfo struct {
 	} `json:"index_info"`
 }
 
-func (s *tidbLabelStrategy) updateAddress() {
+func (s *tidbLabelStrategy) updateAddress(ctx context.Context) {
 	cli := s.Provider.EtcdProvider.GetEtcdClient()
 	if cli == nil {
 		return
@@ -64,7 +64,7 @@ func (s *tidbLabelStrategy) updateAddress() {
 	var info serverInfo
 	for i := 0; i < retryCnt; i++ {
 		var tidbAddress []string
-		ectx, cancel := context.WithTimeout(s.Ctx, etcdGetTimeout)
+		ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
 		resp, err := cli.Get(ectx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
 		cancel()
 		if err != nil {

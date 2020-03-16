@@ -187,13 +187,14 @@ func main() {
 		EtcdProvider:   etcdProvider,
 		Store:          store,
 	}
-	keyvisualService := keyvisual.NewService(ctx, cliConfig.CoreConfig, remoteDataProvider, httpClient)
-	keyvisualService.Start()
-	defer keyvisualService.Close()
+
+	keyvisualApp := keyvisual.NewApp(cliConfig.CoreConfig, remoteDataProvider, httpClient)
+	_ = keyvisualApp.Start(ctx)
+	defer keyvisualApp.Stop(context.Background()) //nolint:errcheck
 
 	services := &apiserver.Services{
 		Store:         store,
-		KeyVisual:     keyvisualService,
+		KeyVisual:     keyvisualApp,
 		TiDBForwarder: tidbForwarder,
 		EtcdProvider:  etcdProvider,
 		HTTPClient:    httpClient,

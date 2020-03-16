@@ -45,7 +45,7 @@ var once sync.Once
 type Services struct {
 	Store         *dbstore.DB
 	TiDBForwarder *tidb.Forwarder
-	KeyVisual     *keyvisual.Service
+	KeyVisual     *keyvisual.App
 	EtcdProvider  pd.EtcdProvider
 	HTTPClient    *http.Client
 }

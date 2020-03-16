@@ -8,6 +8,7 @@ import { StatementDetailInfo, StatementNode } from './statement-types'
 
 import styles from './styles.module.css'
 import { useTranslation } from 'react-i18next'
+import StatementPlanTable from './StatementPlanTable'
 
 function StatisCard({ detail }: { detail: StatementDetailInfo }) {
   const { t } = useTranslation()
@@ -59,11 +60,12 @@ export default function StatementDetail({
   beginTime,
   endTime,
   onFetchDetail,
-  onFetchNodes
+  onFetchNodes,
 }: Props) {
   const [detail, setDetail] = useState<StatementDetailInfo | null>(null)
   const [nodes, setNodes] = useState<StatementNode[]>([])
   const [loading, setLoading] = useState(true)
+  const { t } = useTranslation()
 
   useEffect(() => {
     async function query() {
@@ -85,7 +87,7 @@ export default function StatementDetail({
       setLoading(false)
     }
     query()
-  // eslint-disable-next-line
+    // eslint-disable-next-line
   }, [digest, schemaName, beginTime, endTime])
   // don't add the dependent functions likes onFetchDetail into the dependency array
   // it will cause the infinite loop if use context inside it in the future
@@ -110,6 +112,16 @@ export default function StatementDetail({
           <div className={styles.table_wrapper}>
             <StatementNodesTable nodes={nodes} />
           </div>
+          {detail.plans.length > 0 && (
+            <div style={{ marginTop: 6 }}>
+              <h3>{t('statement.plan.plans')}</h3>
+              <div className={styles.table_wrapper}>
+                {detail.plans.map(plan => (
+                  <StatementPlanTable plan={plan} key={plan.digest} />
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

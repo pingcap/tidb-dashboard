@@ -66,6 +66,7 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 	endpoint.GET("/download", s.DownloadLogs)
 	endpoint.GET("/download/acquire_token", auth.MWAuthRequired(), s.GetDownloadToken)
 	endpoint.PUT("/taskgroup", auth.MWAuthRequired(), s.CreateTaskGroup)
+	endpoint.GET("/taskgroups", auth.MWAuthRequired(), s.GetAllTaskGroups)
 	endpoint.GET("/taskgroups/:id", auth.MWAuthRequired(), s.GetTaskGroup)
 	endpoint.GET("/taskgroups/:id/preview", auth.MWAuthRequired(), s.GetTaskGroupPreview)
 	endpoint.POST("/taskgroups/:id/retry", auth.MWAuthRequired(), s.RetryTask)
@@ -136,25 +137,36 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// @Summary Get Download token
-// @Description get download token with multiple task IDs
-// @Produce plain
-// @Param id query []string false "task id"
+// @Summary List all task groups
+// @Description list all log search taskgroups
+// @Produce json
 // @Security JwtAuth
-// @Success 200 {string} string "xxx"
-// @Failure 400 {object} utils.APIError
+// @Success 200 {array} TaskGroupResponse
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /logs/download/acquire_token [get]
-func (s *Service) GetDownloadToken(c *gin.Context) {
-	ids := c.QueryArray("id")
-	str := strings.Join(ids, ",")
-	token, err := utils.NewJWTString(str)
+// @Failure 500 {object} utils.APIError
+// @Router /logs/taskgroups [get]
+func (s *Service) GetAllTaskGroups(c *gin.Context) {
+	var taskGroups []*TaskGroupModel
+	err := s.db.Find(&taskGroups).Error
 	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		_ = c.Error(err)
 		return
 	}
-	c.String(http.StatusOK, token)
+	var resp = make([]TaskGroupResponse, 0, len(taskGroups))
+	for _, taskGroup := range taskGroups {
+		var tasks []*TaskModel
+		err = s.db.Where("task_group_id = ?", taskGroup.ID).Find(&tasks).Error
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+		resp = append(resp, TaskGroupResponse{
+			TaskGroup: *taskGroup,
+			Tasks:     tasks,
+		})
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 // @Summary List tasks in a task group
@@ -315,6 +327,27 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
+// @Summary Get download token
+// @Description get download token with multiple task IDs
+// @Produce plain
+// @Param id query []string false "task id"
+// @Security JwtAuth
+// @Success 200 {string} string "xxx"
+// @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Router /logs/download/acquire_token [get]
+func (s *Service) GetDownloadToken(c *gin.Context) {
+	ids := c.QueryArray("id")
+	str := strings.Join(ids, ",")
+	token, err := utils.NewJWTString("logs/download", str)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		return
+	}
+	c.String(http.StatusOK, token)
+}
+
 // @Summary Download
 // @Description download logs by multiple task IDs
 // @Produce application/x-tar,application/zip
@@ -325,7 +358,7 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 // @Router /logs/download [get]
 func (s *Service) DownloadLogs(c *gin.Context) {
 	token := c.Query("token")
-	str, err := utils.ParseJWTString(token)
+	str, err := utils.ParseJWTString("logs/download", token)
 	if err != nil {
 		c.Status(http.StatusUnauthorized)
 		_ = c.Error(utils.ErrInvalidRequest.New(err.Error()))

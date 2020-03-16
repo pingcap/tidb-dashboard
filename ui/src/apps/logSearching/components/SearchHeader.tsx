@@ -1,102 +1,47 @@
 import client from "@/utils/client";
-import { ClusterinfoClusterInfo, LogsearchCreateTaskGroupRequest, LogsearchSearchTarget } from "@/utils/dashboard_client";
+import { LogsearchCreateTaskGroupRequest, LogsearchSearchTarget } from "@/utils/dashboard_client";
 import { Card, Col, DatePicker, Form, Row, Select, TreeSelect } from "antd";
 import { RangePickerValue } from "antd/lib/date-picker/interface";
 import Search from "antd/lib/input/Search";
 import { TreeNode } from "antd/lib/tree-select";
 import moment from 'moment';
-import React, { ChangeEvent, useContext, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { useHistory } from "react-router-dom";
-import { Context } from "../store";
-import { AllLogLevel, namingMap } from "./util";
+import { AllLogLevel, getAddress, namingMap, parseClusterInfo, parseSearchingParams, ServerType, ServerTypeList } from "./utils";
 
 const { SHOW_CHILD } = TreeSelect;
 const { RangePicker } = DatePicker
 const { Option } = Select;
 
-// serverMap example:
-// const serverMap: Map<string, LogsearchSearchTarget> = new Map([
-//   [
-//     `127.0.0.1:4000`, {
-//       ip: "127.0.0.1",
-//       port: 10080,
-//       kind: "tidb"
-//     }
-//   ],
-//   [
-//     `127.0.0.1:20160`, {
-//       ip: "127.0.0.1",
-//       port: 20160,
-//       kind: "tikv"
-//     },
-//   ],
-//   [
-//     `127.0.0.1:2379`, {
-//       ip: "127.0.0.1",
-//       port: 2379,
-//       kind: "pd"
-//     }
-//   ]
-// ])
-function buildServerMap(info: ClusterinfoClusterInfo) {
-  const serverMap = new Map<string, LogsearchSearchTarget>()
-  info?.tidb?.nodes?.forEach(tidb => {
-    const addr = `${tidb.ip}:${tidb.port}`
-    const target: LogsearchSearchTarget = {
-      ip: tidb.ip,
-      port: tidb.status_port,
-      kind: 'tidb'
-    }
-    serverMap.set(addr, target)
-  })
-  info?.tikv?.nodes?.forEach(tikv => {
-    const addr = `${tikv.ip}:${tikv.port}`
-    const target: LogsearchSearchTarget = {
-      ip: tikv.ip,
-      port: tikv.port,
-      kind: 'tikv'
-    }
-    serverMap.set(addr, target)
-  })
-  info?.pd?.nodes?.forEach(pd => {
-    const addr = `${pd.ip}:${pd.port}`
-    const target: LogsearchSearchTarget = {
-      ip: pd.ip,
-      port: pd.port,
-      kind: 'pd'
-    }
-    serverMap.set(addr, target)
-  })
-  return serverMap
-}
-
-function buildTreeData(serverMap: Map<string, LogsearchSearchTarget>) {
+function buildTreeData(targets: LogsearchSearchTarget[]) {
   const servers = {
-    tidb: [],
-    tikv: [],
-    pd: []
+    [ServerType.TiDB]: [],
+    [ServerType.TiKV]: [],
+    [ServerType.PD]: []
   }
 
-  serverMap.forEach((target, addr) => {
-    const kind = target.kind ?? ''
-    if (!(kind in servers)) {
+  targets.forEach(item => {
+    if (item.kind === undefined) {
       return
     }
-    servers[kind].push({
-      title: addr,
-      value: addr,
-      key: addr
-    })
+    servers[item.kind].push(item)
   })
 
-  return Object.keys(servers)
+  return ServerTypeList
     .filter(kind => servers[kind].length > 0)
     .map(kind => ({
       title: namingMap[kind],
       value: kind,
       key: kind,
-      children: servers[kind]
+      children: servers[kind].map((item: LogsearchSearchTarget) => {
+        const addr = getAddress(item)
+        return {
+          title: addr,
+          value: addr,
+          key: addr,
+        }
+      })
     }))
 }
 
@@ -107,74 +52,41 @@ interface Props {
 export default function SearchHeader({
   taskGroupID
 }: Props) {
-  const { store, dispatch } = useContext(Context)
-  const { topology } = store
   const { t } = useTranslation()
   const history = useHistory()
 
   const [timeRange, setTimeRange] = useState<RangePickerValue>([])
   const [logLevel, setLogLevel] = useState<number>(3)
-  const [components, setComponents] = useState<string[]>([])
+  const [selectedComponents, setComponents] = useState<string[]>([])
   const [searchValue, setSearchValue] = useState<string>('')
 
-  // useEffect(() => {
-  //   dispatch({
-  //     type: 'search_options', payload: {
-  //       curTimeRange: timeRange,
-  //       curLogLevel: logLevel,
-  //       curComponents: components,
-  //       curSearchValue: searchValue,
-  //     }
-  //   })
-  // }, [timeRange, logLevel, components, searchValue])
-  // don't add the dependent functions likes dispatch into the dependency array
-  // it will cause the infinite loop
-
+  const [allTargets, setAllTargets] = useState<LogsearchSearchTarget[]>([])
   useEffect(() => {
     async function fetchData() {
-      let res = await client.dashboard.topologyAllGet()
-      const serverMap = buildServerMap(res.data)
-      dispatch({ type: 'topology', payload: serverMap })
+      const res = await client.dashboard.topologyAllGet()
+      const targets = parseClusterInfo(res.data)
+      setAllTargets(targets)
       if (!taskGroupID) {
         return
       }
-      res = await client.dashboard.logsTaskgroupsIdGet(taskGroupID)
-      const { task_group, tasks } = res.data
-      const { start_time, end_time, levels, patterns } = task_group?.search_request
-      const startTime = start_time ? moment(start_time) : null
-      const endTime = end_time ? moment(end_time) : null
-      setTimeRange([startTime, endTime] as RangePickerValue)
-      setLogLevel(levels.length > 0 ? levels[0] : 3)
-      setSearchValue(patterns.join(' '))
-      setComponents(tasks?.map(task => {
-        let component = ''
-        for (let [addr, target] of serverMap.entries()) {
-          if (target.ip === task.search_target?.ip
-            && target.port === task.search_target?.port) {
-            component = addr
-            break
-          }
-        }
-        return component
-      }))
+      const res2 = await client.dashboard.logsTaskgroupsIdGet(taskGroupID)
+      const { timeRange, logLevel, components, searchValue } = parseSearchingParams(res2.data)
+      setTimeRange(timeRange)
+      setLogLevel(logLevel === 0 ? 3 : logLevel)
+      setComponents(components.map(item => getAddress(item)))
+      setSearchValue(searchValue)
     }
     fetchData()
   }, [])
 
   async function createTaskGroup() {
     // TODO: check select at least one component
-
-    const targets: LogsearchSearchTarget[] = []
-    components.forEach(address => {
-      const target = topology.get(address)
-      if (!target) {
-        return
-      }
-      targets.push(target)
-    })
+    const searchTargets: LogsearchSearchTarget[] = allTargets.filter(item =>
+      selectedComponents.some(addr => addr === getAddress(item))
+    )
 
     let params: LogsearchCreateTaskGroupRequest = {
-      search_targets: targets,
+      search_targets: searchTargets,
       request: {
         start_time: timeRange?.[0]?.valueOf(), // unix millionsecond
         end_time: timeRange?.[1]?.valueOf(), // unix millionsecond
@@ -249,10 +161,10 @@ export default function SearchHeader({
             </Col>
             <Col span={12}>
               <Form.Item label={t('log_searching.common.components')} labelCol={{ span: 4 }}
-                validateStatus={components.length > 0 ? "" : "error"}>
+                validateStatus={selectedComponents.length > 0 ? "" : "error"}>
                 <TreeSelect
-                  value={components}
-                  treeData={buildTreeData(topology)}
+                  value={selectedComponents}
+                  treeData={buildTreeData(allTargets)}
                   placeholder={t('log_searching.common.components_placeholder')}
                   onChange={handleComponentChange}
                   treeDefaultExpandAll={true}

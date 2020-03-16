@@ -1,50 +1,12 @@
 import client, { DASHBOARD_API_URL } from '@/utils/client'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Card, Table, Button, Icon, Form, Skeleton, Progress } from 'antd'
+import { Button, Badge, Progress } from 'antd'
 import { useTranslation } from 'react-i18next'
-
-const columns = [
-  {
-    title: 'Node',
-    key: 'node',
-    dataIndex: 'address',
-    width: 200,
-  },
-  {
-    title: 'Kind',
-    key: 'kind',
-    dataIndex: 'target_kind',
-    width: 100,
-  },
-  {
-    title: 'Status',
-    key: 'status',
-    render: (text, record) => {
-      if (record.state === 1) {
-        return (
-          <div style={{ width: 200 }}>
-            <Progress
-              percent={Math.round(record.progress * 100)}
-              size="small"
-              width={200}
-            />
-          </div>
-        )
-      } else if (record.state === 0) {
-        return record.error
-      } else {
-        return (
-          <Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
-        )
-      }
-    },
-  },
-]
+import CardTable from '@/components/CardTable'
 
 function mapData(data) {
   data.tasks_status.forEach(task => {
-    task.key = task.id
     if (task.state === 1) {
       let task_elapsed_secs = data.server_time - task.started_at
       let progress =
@@ -72,7 +34,7 @@ export default function Page() {
     let t = null
     async function fetchData() {
       try {
-        const res = await client.dashboard.profilingGroupStatusGroupIdGet(id)
+        const res = await client.dashboard.getProfilingGroupDetail(id)
         if (res.data.task_group_status.state === 2) {
           setIsRunning(false)
           if (t !== null) {
@@ -93,7 +55,7 @@ export default function Page() {
   }, [id])
 
   async function handleDownload() {
-    const res = await client.dashboard.profilingGroupDownloadAcquireTokenGet(id)
+    const res = await client.dashboard.getProfilingGroupDownloadToken(id)
     const token = res.data
     if (!token) {
       return
@@ -101,26 +63,59 @@ export default function Page() {
     window.location = `${DASHBOARD_API_URL}/profiling/group/download?token=${token}`
   }
 
+  const columns = [
+    {
+      title: t('node_profiling.detail.table.columns.node'),
+      key: 'node',
+      dataIndex: 'target.display_name',
+      width: 200,
+    },
+    {
+      title: t('node_profiling.detail.table.columns.kind'),
+      key: 'kind',
+      dataIndex: 'target.kind',
+      width: 100,
+    },
+    {
+      title: t('node_profiling.detail.table.columns.status'),
+      key: 'status',
+      render: (_, record) => {
+        if (record.state === 1) {
+          return (
+            <div style={{ width: 200 }}>
+              <Progress
+                percent={Math.round(record.progress * 100)}
+                size="small"
+                width={200}
+              />
+            </div>
+          )
+        } else if (record.state === 0) {
+          return <Badge status="error" text={record.error} />
+        } else {
+          return (
+            <Badge
+              status="success"
+              text={t('node_profiling.detail.table.status.finished')}
+            />
+          )
+        }
+      },
+    },
+  ]
+
   return (
-    <Card bordered={false}>
-      {isLoading ? (
-        <Skeleton active title={false} paragraph={{ rows: 5 }} />
-      ) : (
-        <Form>
-          <Form.Item>
-            <Button
-              disabled={isRunning}
-              type="primary"
-              onClick={handleDownload}
-            >
-              {t('node_profiling.detail.download')}
-            </Button>
-          </Form.Item>
-          <Form.Item>
-            <Table columns={columns} dataSource={data.tasks_status} />
-          </Form.Item>
-        </Form>
-      )}
-    </Card>
+    <CardTable
+      loading={isLoading}
+      columns={columns}
+      dataSource={data.tasks_status}
+      rowKey="id"
+      title={t('node_profiling.detail.table.title')}
+      cardExtra={
+        <Button disabled={isRunning} type="primary" onClick={handleDownload}>
+          {t('node_profiling.detail.download')}
+        </Button>
+      }
+    />
   )
 }

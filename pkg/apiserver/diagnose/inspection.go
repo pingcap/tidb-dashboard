@@ -423,21 +423,20 @@ func (s *queryTotal) appendRow(row []string) error {
 }
 
 func (c *clusterInspection) queryBigQueryInSlowLog() (string, error) {
-	sql := fmt.Sprintf(`SELECT count(*)
-FROM 
-    (SELECT sum(Process_time) AS sum_process_time,
+	sql := fmt.Sprintf(`select count(*) from 
+    (select sum(Process_time) as sum_process_time,
          digest
-    FROM information_schema.CLUSTER_SLOW_QUERY
-    WHERE time >= '%s'
+    from information_schema.CLUSTER_SLOW_QUERY
+    where time >= '%s'
             AND time < '%s'
 			AND Is_internal = false
-    GROUP BY  digest) AS t1
-WHERE t1.digest NOT IN 
-    (SELECT digest
-    FROM information_schema.CLUSTER_SLOW_QUERY
-    WHERE time >= '%s'
-            AND time < '%s'
-    GROUP BY  digest);`, c.startTime, c.endTime, c.referStartTime, c.referEndTime)
+    group by  digest) AS t1
+	where t1.digest NOT IN 
+    (select digest
+    from information_schema.CLUSTER_SLOW_QUERY
+    where time >= '%s'
+            and time < '%s'
+    group by  digest);`, c.startTime, c.endTime, c.referStartTime, c.referEndTime)
 	rows, err := querySQL(c.db, sql)
 	if err != nil {
 		return "", err
@@ -452,8 +451,8 @@ WHERE t1.digest NOT IN
 	if count == 0 {
 		return "", nil
 	}
-	return fmt.Sprintf(`SELECT * FROM 
-    (SELECT count(*),
+	return fmt.Sprintf(`select * from 
+    (select count(*),
          min(time),
          sum(query_time) AS sum_query_time,
          sum(Process_time) AS sum_process_time,
@@ -465,22 +464,23 @@ WHERE t1.digest NOT IN
          max(Cop_proc_max),
          min(query),min(prev_stmt),
          digest
-    FROM information_schema.CLUSTER_SLOW_QUERY
-    WHERE time >= '%s'
+    from information_schema.CLUSTER_SLOW_QUERY
+    where time >= '%s'
+            and time < '%s'
+            and Is_internal = false
+    group by  digest) AS t1
+	where t1.digest NOT IN 
+    (select digest
+    from information_schema.CLUSTER_SLOW_QUERY
+    where time >= '%s'
             AND time < '%s'
-            AND Is_internal = false
-    GROUP BY  digest) AS t1
-WHERE t1.digest NOT IN 
-    (SELECT digest
-    FROM information_schema.CLUSTER_SLOW_QUERY
-    WHERE time >= '%s'
-            AND time < '%s'
-    GROUP BY  digest)
-ORDER BY  t1.sum_query_time DESC limit 10;`, c.startTime, c.endTime, c.referStartTime, c.referEndTime), nil
+    group by  digest)
+	order by  t1.sum_query_time desc limit 10;`, c.startTime, c.endTime, c.referStartTime, c.referEndTime), nil
 }
 
 func (c *clusterInspection) queryExpensiveQueryInTiDBLog() (string, error) {
-	sql := fmt.Sprintf("SELECT count(*) FROM information_schema.cluster_log WHERE type='tidb' AND time >= '%s' AND time < '%s' AND level = 'warn' AND message LIKE '%s'", c.startTime, c.endTime, "%expensive_query%")
+	sql := fmt.Sprintf(`select count(*) from information_schema.cluster_log where type='tidb' and time >= '%s' and time < '%s' and level = 'warn' and message LIKE '%s'`,
+		c.startTime, c.endTime, "%expensive_query%")
 	rows, err := querySQL(c.db, sql)
 	if err != nil {
 		return "", err
@@ -547,7 +547,6 @@ func newMetricDiff(tp, label string, refer, check float64) metricDiff {
 		rv:    refer,
 		v:     check,
 	}
-
 }
 
 func (d metricDiff) String() string {

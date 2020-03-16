@@ -359,9 +359,8 @@ func compareTableWithNonUniqueKey(table1, table2 *TableDef, dr *diffRows) (_ *Ta
 				len(resultRows[j].Values) > (idx+1) {
 				if resultRows[i].Values[idx] != resultRows[j].Values[idx] {
 					return resultRows[i].Values[idx] < resultRows[j].Values[idx]
-				} else {
-					return resultRows[i].Values[0] < resultRows[j].Values[0]
 				}
+				return resultRows[i].Values[0] < resultRows[j].Values[0]
 			}
 		}
 		return false

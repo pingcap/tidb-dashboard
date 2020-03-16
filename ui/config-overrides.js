@@ -80,8 +80,6 @@ const buildAsLibrary = () => config => {
     new AddAssetPlugin(`lib/package.json`, JSON.stringify(packageMeta, null, 2))
   )(config)
 
-  console.log(config)
-
   return config
 }
 

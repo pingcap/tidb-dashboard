@@ -20,6 +20,11 @@ type Label = Section<string>
 type DisplayLabel = DisplaySection<string>
 
 export function labelAxisGroup(keyAxis: KeyAxisEntry[]) {
+  // Remove the endkey of the last region, so that the row where the region is located is aligned with the startkey.
+  if (keyAxis.length > 1) {
+    keyAxis = keyAxis.slice(1)
+  }
+
   let range: [number, number] = [0, 0]
   const groups = aggrKeyAxisLabel(keyAxis)
 
@@ -84,6 +89,7 @@ function fitLabelText(label: DisplayLabel): string {
 
 function aggrKeyAxisLabel(keyAxis: KeyAxisEntry[]): Label[][] {
   let result: Label[][] = _.times(4, () => [])
+  let notEqual: boolean[] = _.times(keyAxis.length, () => false)
 
   for (let groupIdx = 0; groupIdx < result.length; groupIdx++) {
     let lastLabel: string | null = null
@@ -91,8 +97,10 @@ function aggrKeyAxisLabel(keyAxis: KeyAxisEntry[]): Label[][] {
 
     for (let keyIdx = 0; keyIdx < keyAxis.length; keyIdx++) {
       const label = keyAxis[keyIdx].labels[groupIdx]
+      // When the prefixes are equal and this column is null, it is considered equal to the previous row of labels.
+      notEqual[keyIdx] = notEqual[keyIdx] || (label != null && label != lastLabel)
 
-      if (label != lastLabel || keyIdx === keyAxis.length - 1) {
+      if (notEqual[keyIdx]) {
         if (startKeyIdx != null && lastLabel != null) {
           result[groupIdx].push({
             val: lastLabel,
@@ -105,9 +113,17 @@ function aggrKeyAxisLabel(keyAxis: KeyAxisEntry[]): Label[][] {
         if (label != null) {
           startKeyIdx = keyIdx
         }
-      }
 
-      lastLabel = label
+        lastLabel = label
+      }
+    }
+
+    if (startKeyIdx != null && lastLabel != null) {
+      result[groupIdx].push({
+        val: lastLabel,
+        startIdx: startKeyIdx,
+        endIdx: keyAxis.length
+      })
     }
   }
 

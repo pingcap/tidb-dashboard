@@ -1,12 +1,12 @@
 import client, { DASHBOARD_API_URL } from '@/utils/client';
 import { LogsearchTaskModel } from '@/utils/dashboard_client';
-import { Button, Card, Modal, Tree, Typography } from 'antd';
+import { Button, Card, Modal, Spin, Tree, Typography } from 'antd';
 import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree';
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon';
-import styles from './SearchProgress.module.css';
-import { getGRPCAddress, namingMap, ServerType, ServerTypeList, TaskState, getAddress } from './utils';
+import styles from './Styles.module.css';
+import { getAddress, namingMap, ServerType, ServerTypeList, TaskState } from './utils';
 
 const { confirm } = Modal;
 const { Title } = Typography;
@@ -95,6 +95,7 @@ export default function SearchProgress({
 }: Props) {
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
   const { t } = useTranslation()
+  const [loading, setLoading] = useState(true)
 
   async function getTasks(taskGroupID: number, tasks: LogsearchTaskModel[]) {
     if (taskGroupID < 0) {
@@ -111,7 +112,17 @@ export default function SearchProgress({
 
   useSetInterval(() => {
     getTasks(taskGroupID, tasks)
-  });
+  })
+
+  useEffect(() => {
+    if (tasks.length > 0) {
+      setLoading(false)
+    }
+  }, [tasks])
+
+  useEffect(() => {
+    setLoading(true)
+  }, [taskGroupID])
 
   const descriptionArray = [
     t('log_searching.progress.running'),
@@ -242,21 +253,32 @@ export default function SearchProgress({
   return (
     <div>
       <Card>
-        <Title level={3}>{t('log_searching.common.progress')}</Title>
-        <div>{progressDescription(tasks)}</div>
-        <div className={styles.buttons}>
-          <Button type="primary" onClick={handleDownload} disabled={checkedKeys.length < 1}>{t('log_searching.common.download_selected')}</Button>
-          <Button type="danger" onClick={handleCancel} disabled={!tasks.some(task => task.state === TaskState.Running)}>{t('log_searching.common.cancel')}</Button>
-          <Button onClick={handleRetry} disabled={tasks.some(task => task.state === TaskState.Running) || !tasks.some(task => task.state === TaskState.Error)}>{t('log_searching.common.retry')}</Button>
-        </div>
-        <Tree
-          checkable
-          expandedKeys={Object.values(namingMap)}
-          showIcon
-          onCheck={handleCheck}
-        >
-          {renderTreeNodes(tasks)}
-        </Tree>
+        {loading && <div style={{ textAlign: "center" }}>
+          <Spin size="large" style={{
+            marginTop: 100,
+            marginBottom: 100,
+          }} />
+        </div>}
+        {!loading && (
+          <>
+            <Title level={3}>{t('log_searching.common.progress')}</Title>
+            <div>{progressDescription(tasks)}</div>
+            <div className={styles.buttons}>
+              <Button type="primary" onClick={handleDownload} disabled={checkedKeys.length < 1}>{t('log_searching.common.download_selected')}</Button>
+              <Button type="danger" onClick={handleCancel} disabled={!tasks.some(task => task.state === TaskState.Running)}>{t('log_searching.common.cancel')}</Button>
+              <Button onClick={handleRetry} disabled={tasks.some(task => task.state === TaskState.Running) || !tasks.some(task => task.state === TaskState.Error)}>{t('log_searching.common.retry')}</Button>
+            </div>
+            <Tree
+              checkable
+              expandedKeys={Object.values(namingMap)}
+              showIcon
+              onCheck={handleCheck}
+              style={{ overflowX: "hidden" }}
+            >
+              {renderTreeNodes(tasks)}
+            </Tree>
+          </>
+        )}
       </Card>
     </div>
   )

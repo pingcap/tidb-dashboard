@@ -15,7 +15,7 @@ log_searching:
     components: Components
     components_placeholder: Select at least one component
     keywords: Keywords
-    keywords_placeholder: Optional, separated by spaces
+    keywords_placeholder: Keywords, Optional, separated by spaces
     search: Search
     progress: Searching progress
     download_selected: Download selected

@@ -15,7 +15,7 @@ log_searching:
     components: 选择组件
     components_placeholder: 至少选择一个组件
     keywords: 关键字
-    keywords_placeholder: 可选，以空格分割
+    keywords_placeholder: 搜索关键字，可选，以空格分割
     search: 搜索
     progress: 搜索进度
     download_selected: 下载选中日志

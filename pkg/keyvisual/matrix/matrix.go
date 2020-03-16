@@ -36,6 +36,15 @@ func CreateMatrix(strategy Strategy, times []time.Time, keys []string, valuesLis
 	for i, key := range keys {
 		keyAxis[i] = strategy.Label(key)
 	}
+
+	if keys[0] == "" {
+		keyAxis[0] = strategy.LabelGlobalStart()
+	}
+	endIndex := len(keys) - 1
+	if keys[endIndex] == "" {
+		keyAxis[endIndex] = strategy.LabelGlobalEnd()
+	}
+
 	// collect unix times
 	timeAxis := make([]int64, len(times))
 	for i, t := range times {

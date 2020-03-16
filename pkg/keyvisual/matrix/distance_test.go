@@ -24,6 +24,8 @@ import (
 	"testing"
 
 	. "github.com/pingcap/check"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
 )
 
 var _ = Suite(&testDistanceSuite{})
@@ -79,7 +81,7 @@ func BenchmarkGenerateScale(b *testing.B) {
 
 	ctx, cancel := context.WithCancel(context.TODO())
 	wg := &sync.WaitGroup{}
-	strategy := DistanceStrategy(ctx, wg, NaiveLabelStrategy{}, 1.0/math.Phi, 15, 50).(*distanceStrategy)
+	strategy := DistanceStrategy(ctx, wg, decorator.NaiveLabelStrategy{}, 1.0/math.Phi, 15, 50).(*distanceStrategy)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()

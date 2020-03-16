@@ -21,9 +21,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/codec"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb/codec"
 )
 
 type tableDetail struct {
@@ -109,4 +109,22 @@ func (s *tidbLabelStrategy) Label(key string) (label LabelKey) {
 		}
 	}
 	return
+}
+
+var globalStart = LabelKey{
+	Key:    "",
+	Labels: []string{"meta"},
+}
+
+var globalEnd = LabelKey{
+	Key:    "",
+	Labels: []string{},
+}
+
+func (s *tidbLabelStrategy) LabelGlobalStart() LabelKey {
+	return globalStart
+}
+
+func (s *tidbLabelStrategy) LabelGlobalEnd() LabelKey {
+	return globalEnd
 }

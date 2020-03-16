@@ -177,11 +177,11 @@ export default function SearchHeader({
               filterTreeNode={filterTreeNode}
             />
           </Form.Item>
-          <div>
+          <Form.Item>
             <Button type="primary" htmlType="submit">
-              search
-          </Button>
-          </div>
+              {t('log_searching.common.search')}
+            </Button>
+          </Form.Item>
         </Form>
       </Card>
     </div>

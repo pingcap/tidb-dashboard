@@ -83,7 +83,7 @@ func NewLocalEtcdClientProvider(config *config.Config) (*LocalEtcdProvider, erro
 				PermitWithoutStream: true,
 			}),
 		},
-		TLS:       config.TLSConfig,
+		TLS:       config.ClusterTLSConfig,
 		LogConfig: &zapCfg,
 	})
 	if err != nil {

@@ -98,12 +98,12 @@ func NewCLIConfig() *DashboardCLIConfig {
 
 	flag.Parse()
 
-	// setup TLSConfig for TiDB components
+	// setup TLS config for TiDB components
 	if len(*clusterCaPath) != 0 && len(*clusterCertPath) != 0 && len(*clusterKeyPath) != 0 {
-		cfg.CoreConfig.TLSConfig = buildTLSConfig(clusterCaPath, clusterKeyPath, clusterCertPath)
+		cfg.CoreConfig.ClusterTLSConfig = buildTLSConfig(clusterCaPath, clusterKeyPath, clusterCertPath)
 	}
 
-	// setup TLSConfig for MySQL client
+	// setup TLS config for MySQL client
 	// See https://github.com/pingcap/docs/blob/7a62321b3ce9318cbda8697503c920b2a01aeb3d/how-to/secure/enable-tls-clients.md#enable-authentication
 	if (len(*tidbCertPath) != 0 && len(*tidbKeyPath) != 0) || len(*tidbCaPath) != 0 {
 		cfg.CoreConfig.TiDBTLSConfig = buildTLSConfig(tidbCaPath, tidbKeyPath, tidbCertPath)
@@ -118,7 +118,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 		log.Fatal("Invalid PD Endpoint", zap.Error(err))
 	}
 	pdEndPoint.Scheme = "http"
-	if cfg.CoreConfig.TLSConfig != nil {
+	if cfg.CoreConfig.ClusterTLSConfig != nil {
 		pdEndPoint.Scheme = "https"
 	}
 	cfg.CoreConfig.PDEndPoint = pdEndPoint.String()

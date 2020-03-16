@@ -22,7 +22,7 @@ type Config struct {
 	PDEndPoint string
 
 	// TLS config for mTLS authentication between TiDB components.
-	TLSConfig *tls.Config
+	ClusterTLSConfig *tls.Config
 
 	// TLS config for mTLS authentication between TiDB and MySQL client.
 	TiDBTLSConfig *tls.Config

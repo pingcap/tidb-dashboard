@@ -1,6 +1,6 @@
 export default {
   id: 'statement',
-  loader: () => import('./app.js'),
+  reactRoot: () => import('.').then(m => m.default),
   routerPrefix: '/statement',
   icon: 'thunderbolt',
   translations: require.context('./translations/', false, /\.yaml$/),

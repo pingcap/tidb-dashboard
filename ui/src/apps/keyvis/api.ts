@@ -1,14 +1,19 @@
 import { HeatmapData, HeatmapRange, DataTag } from './heatmap'
-import client from '@/utils/client'
+import * as client from '@/utils/client'
 
-export async function fetchHeatmap(selection?: HeatmapRange, type: DataTag = 'written_bytes'): Promise<HeatmapData> {
-  const resp = await client.dashboard.keyvisualHeatmapsGet(
-    selection?.startkey,
-    selection?.endkey,
-    selection?.starttime,
-    selection?.endtime,
-    type,
-  )
+export async function fetchHeatmap(
+  selection?: HeatmapRange,
+  type: DataTag = 'written_bytes'
+): Promise<HeatmapData> {
+  const resp = await client
+    .getGlobal()
+    .keyvisualHeatmapsGet(
+      selection?.startkey,
+      selection?.endkey,
+      selection?.starttime,
+      selection?.endtime,
+      type
+    )
   reverse(resp.data)
   return resp.data
 }

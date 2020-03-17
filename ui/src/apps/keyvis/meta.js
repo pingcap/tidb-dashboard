@@ -1,6 +1,6 @@
 export default {
   id: 'keyvis',
-  loader: () => import('./app.js'),
+  reactRoot: () => import('.').then(m => m.default),
   routerPrefix: '/keyvis',
   icon: 'eye',
   translations: require.context('./translations/', false, /\.yaml$/),

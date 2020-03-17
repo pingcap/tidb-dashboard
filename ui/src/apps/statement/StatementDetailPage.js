@@ -1,7 +1,7 @@
 import React from 'react'
 import { StatementDetail } from './components'
 import { useLocation } from 'react-router-dom'
-import client from '@/utils/client'
+import * as client from '@/utils/client'
 
 export default function StatementDetailPage() {
   const params = new URLSearchParams(useLocation().search)
@@ -11,13 +11,15 @@ export default function StatementDetailPage() {
   const endTime = params.get('end_time')
 
   function queryDetail(digest, schemaName, beginTime, endTime) {
-    return client.dashboard
+    return client
+      .getGlobal()
       .statementsDetailGet(schemaName, beginTime, endTime, digest)
       .then(res => res.data)
   }
 
   function queryNodes(digest, schemaName, beginTime, endTime) {
-    return client.dashboard
+    return client
+      .getGlobal()
       .statementsNodesGet(schemaName, beginTime, endTime, digest)
       .then(res => res.data)
   }

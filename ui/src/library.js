@@ -1,10 +1,18 @@
-// The entry file used when build as a library
+// The entry file used when build as a library.
+import i18next from 'i18next'
 
-import appKeyVis from '@/apps/keyvis'
-import appStatement from '@/apps/statement'
+import AppKeyVis from '@/apps/keyvis'
+import metaKeyVis from '@/apps/keyvis/meta'
+
+import AppStatement from '@/apps/statement'
+import metaStatement from '@/apps/statement/meta'
+
 import * as i18n from '@/utils/i18n'
-import client from '@/utils/client'
+import * as client from '@/utils/client'
 
-// TODO: Allow customizing client prefix
+i18next.on('initialized', () => {
+  i18n.addTranslations(metaKeyVis.translations)
+  i18n.addTranslations(metaStatement.translations)
+})
 
-export { appKeyVis, appStatement, i18n, client }
+export default { AppKeyVis, AppStatement, client, i18n }

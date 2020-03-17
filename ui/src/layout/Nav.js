@@ -1,38 +1,38 @@
-import React from 'react';
-import { Layout, Menu, Dropdown, Icon } from 'antd';
-import Flexbox from '@g07cha/flexbox-react';
-import LanguageDropdown from '@/components/LanguageDropdown';
-import NavAction from './NavAction';
-import { withTranslation } from 'react-i18next';
-import client from '@/utils/client';
-import * as authUtil from '@/utils/auth';
+import React from 'react'
+import { Layout, Menu, Dropdown, Icon } from 'antd'
+import Flexbox from '@g07cha/flexbox-react'
+import LanguageDropdown from '@/components/LanguageDropdown'
+import NavAction from './NavAction'
+import { withTranslation } from 'react-i18next'
+import * as client from '@/utils/client'
+import * as authUtil from '@/utils/auth'
 
-import styles from './Nav.module.less';
+import styles from './Nav.module.less'
 
 @withTranslation()
 class Nav extends React.PureComponent {
   state = {
     login: null,
-  };
+  }
 
   handleToggle = () => {
-    this.props.onToggle && this.props.onToggle();
-  };
+    this.props.onToggle && this.props.onToggle()
+  }
 
   handleUserMenuClick = item => {
     switch (item.key) {
       case 'signout':
-        authUtil.clearAuthToken();
-        window.location.reload();
-        break;
+        authUtil.clearAuthToken()
+        window.location.reload()
+        break
       default:
     }
-  };
+  }
 
   async componentDidMount() {
-    const resp = await client.dashboard.infoWhoamiGet();
+    const resp = await client.getGlobal().infoWhoamiGet()
     if (resp.data) {
-      this.setState({ login: resp.data });
+      this.setState({ login: resp.data })
     }
   }
 
@@ -43,7 +43,7 @@ class Nav extends React.PureComponent {
           <Icon type="logout" /> {this.props.t('nav.user.signout')}
         </Menu.Item>
       </Menu>
-    );
+    )
 
     return (
       <Layout.Header
@@ -75,8 +75,8 @@ class Nav extends React.PureComponent {
           </div>
         </Flexbox>
       </Layout.Header>
-    );
+    )
   }
 }
 
-export default Nav;
+export default Nav

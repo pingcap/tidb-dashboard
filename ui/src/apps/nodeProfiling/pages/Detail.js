@@ -1,4 +1,4 @@
-import client, { DASHBOARD_API_URL } from '@/utils/client'
+import * as client from '@/utils/client'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Button, Badge, Progress } from 'antd'
@@ -34,7 +34,7 @@ export default function Page() {
     let t = null
     async function fetchData() {
       try {
-        const res = await client.dashboard.getProfilingGroupDetail(id)
+        const res = await client.getGlobal().getProfilingGroupDetail(id)
         if (res.data.task_group_status.state === 2) {
           setIsRunning(false)
           if (t !== null) {
@@ -55,12 +55,14 @@ export default function Page() {
   }, [id])
 
   async function handleDownload() {
-    const res = await client.dashboard.getProfilingGroupDownloadToken(id)
+    const res = await client.getGlobal().getProfilingGroupDownloadToken(id)
     const token = res.data
     if (!token) {
       return
     }
-    window.location = `${DASHBOARD_API_URL}/profiling/group/download?token=${token}`
+    window.location = `${
+      client.getGlobalOptions().basePath
+    }/profiling/group/download?token=${token}`
   }
 
   const columns = [

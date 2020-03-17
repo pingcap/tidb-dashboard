@@ -1,12 +1,33 @@
-import * as singleSpa from 'single-spa';
-import * as i18nUtil from '@/utils/i18n';
-import * as routingUtil from '@/utils/routing';
+import React from 'react'
+import ReactDOM from 'react-dom'
+import singleSpaReact from 'single-spa-react'
+import * as singleSpa from 'single-spa'
+import * as i18nUtil from '@/utils/i18n'
+import * as routingUtil from '@/utils/routing'
 
 // TODO: This part might be better in TS.
 export default class AppRegistry {
   constructor() {
-    this.defaultRouter = '';
-    this.apps = {};
+    this.defaultRouter = ''
+    this.apps = {}
+  }
+
+  static newReactSpaApp = async function(
+    rootComponentAsyncLoader,
+    targetDomId
+  ) {
+    const component = await rootComponentAsyncLoader()
+    const reactLifecycles = singleSpaReact({
+      React,
+      ReactDOM,
+      rootComponent: component,
+      domElementGetter: () => document.getElementById(targetDomId),
+    })
+    return {
+      bootstrap: [reactLifecycles.bootstrap],
+      mount: [reactLifecycles.mount],
+      unmount: [reactLifecycles.unmount],
+    }
   }
 
   /**
@@ -17,55 +38,55 @@ export default class AppRegistry {
    *
    * @param {{
    *  id: string,
-   *  loader: Function,
+   *  reactRoot: Function,
    *  routerPrefix: string,
    *  indexRoute: string,
    *  isDefaultRouter: boolean,
    *  icon: string,
    * }} app
    */
-  register(app) {
+  registerMeta(app) {
     if (app.translations) {
-      i18nUtil.addTranslations(app.translations);
+      i18nUtil.addTranslations(app.translations)
     }
 
     singleSpa.registerApplication(
       app.id,
-      app.loader,
+      AppRegistry.newReactSpaApp(app.reactRoot, '__spa_content__'),
       () => {
-        return routingUtil.isLocationMatchPrefix(app.routerPrefix);
+        return routingUtil.isLocationMatchPrefix(app.routerPrefix)
       },
       {
         registry: this,
         app,
       }
-    );
+    )
     if (!app.indexRoute) {
-      app.indexRoute = app.routerPrefix;
+      app.indexRoute = app.routerPrefix
     }
     if (!this.defaultRouter || app.isDefaultRouter) {
-      this.defaultRouter = app.indexRoute;
+      this.defaultRouter = app.indexRoute
     }
-    this.apps[app.id] = app;
-    return this;
+    this.apps[app.id] = app
+    return this
   }
 
   /**
    * Get the default router for initial routing.
    */
   getDefaultRouter() {
-    return this.defaultRouter || '/';
+    return this.defaultRouter || '/'
   }
 
   /**
    * Get the registry of the current active app.
    */
   getActiveApp() {
-    const mountedApps = singleSpa.getMountedApps();
+    const mountedApps = singleSpa.getMountedApps()
     for (let i = 0; i < mountedApps.length; i++) {
-      const app = mountedApps[i];
+      const app = mountedApps[i]
       if (this.apps[app] !== undefined) {
-        return this.apps[app];
+        return this.apps[app]
       }
     }
   }

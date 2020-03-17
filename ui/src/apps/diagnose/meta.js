@@ -1,6 +1,6 @@
 export default {
   id: 'diagnose',
-  loader: () => import('./app.js'),
+  reactRoot: () => import('.').then(m => m.default),
   routerPrefix: '/diagnose',
   icon: 'safety-certificate',
   translations: require.context('./translations/', false, /\.yaml$/),

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Row, Col, Card } from 'antd'
 import { HashRouter as Router } from 'react-router-dom'
 
-import client from '@/utils/client'
+import * as client from '@/utils/client'
 
 import { ClusterInfoTable, ComponentPanel, MonitorAlertBar } from './components'
 import styles from './RootComponent.module.less'
@@ -12,7 +12,7 @@ const App = () => {
 
   useEffect(() => {
     const fetchLoad = async () => {
-      let res = await client.dashboard.topologyAllGet()
+      let res = await client.getGlobal().topologyAllGet()
       const cluster = res.data
       setCluster(cluster)
     }

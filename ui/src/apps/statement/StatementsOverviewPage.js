@@ -1,6 +1,6 @@
 import React from 'react'
 import { StatementsOverview } from './components'
-import client from '../../utils/client'
+import * as client from '@/utils/client'
 
 function fakeReq(res) {
   return new Promise((resolve, reject) => {
@@ -14,15 +14,22 @@ export default function StatementsOverviewPage() {
   }
 
   function querySchemas() {
-    return client.dashboard.statementsSchemasGet().then(res => res.data)
+    return client
+      .getGlobal()
+      .statementsSchemasGet()
+      .then(res => res.data)
   }
 
   function queryTimeRanges() {
-    return client.dashboard.statementsTimeRangesGet().then(res => res.data)
+    return client
+      .getGlobal()
+      .statementsTimeRangesGet()
+      .then(res => res.data)
   }
 
   function queryStatements(_instanceId, schemas, beginTime, endTime) {
-    return client.dashboard
+    return client
+      .getGlobal()
       .statementsOverviewsGet(beginTime, endTime, schemas.join(','))
       .then(res => res.data)
   }
@@ -40,7 +47,7 @@ export default function StatementsOverviewPage() {
       refresh_interval: 100,
       keep_duration: 100,
       max_sql_count: 1000,
-      max_sql_length: 100
+      max_sql_length: 100,
     })
 
   const updateConfig = () => fakeReq('ok')

@@ -27,7 +27,8 @@ export function addTranslationResource(lang, translations) {
   i18next.addResourceBundle(lang, 'translation', translations, true, false)
 }
 
-export function init() {
+export function init(config = {}) {
+  // FIXME: We should not use a global i18next instance
   i18next
     .use(LanguageDetector)
     .use(initReactI18next)
@@ -37,5 +38,6 @@ export function init() {
       interpolation: {
         escapeValue: false,
       },
+      ...config,
     })
 }

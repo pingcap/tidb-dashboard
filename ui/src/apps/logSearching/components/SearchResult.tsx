@@ -1,12 +1,12 @@
-import client from '@/utils/client';
-import { LogsearchTaskModel } from '@/utils/dashboard_client/api';
-import { Table, Tooltip } from 'antd';
-import moment from 'moment';
-import React, { useEffect, useState } from "react";
-import { useTranslation } from 'react-i18next';
-import { LogLevelMap, namingMap } from './utils';
+import * as client from '@/utils/client'
+import { LogsearchTaskModel } from '@/utils/dashboard_client/api'
+import { Table, Tooltip } from 'antd'
+import moment from 'moment'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { LogLevelMap, namingMap } from './utils'
 
-const { Column } = Table;
+const { Column } = Table
 
 type LogPreview = {
   key: number
@@ -19,32 +19,29 @@ type LogPreview = {
 function logRender(log: string) {
   function trimString(str: string) {
     const len = 512
-    return str.length > len ?
-      str.substring(0, len - 3) + "..." :
-      str
+    return str.length > len ? str.substring(0, len - 3) + '...' : str
   }
 
   return (
     <Tooltip title={trimString(log)}>
-      <div style={{
-        overflow: "hidden",
-        whiteSpace: "nowrap",
-        textOverflow: "ellipsis"
-      }}>
+      <div
+        style={{
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
+        }}
+      >
         <span>{log}</span>
       </div>
-    </Tooltip >
+    </Tooltip>
   )
 }
 interface Props {
   taskGroupID: number
-  tasks: LogsearchTaskModel[],
+  tasks: LogsearchTaskModel[]
 }
 
-export default function SearchResult({
-  taskGroupID,
-  tasks,
-}: Props) {
+export default function SearchResult({ taskGroupID, tasks }: Props) {
   const [logPreviews, setData] = useState<LogPreview[]>([])
   const { t } = useTranslation()
 
@@ -61,28 +58,59 @@ export default function SearchResult({
         return
       }
 
-      const res = await client.dashboard.logsTaskgroupsIdPreviewGet(taskGroupID)
-      setData(res.data.map((value, index): LogPreview => {
-        return {
-          key: index,
-          time: moment(value.time).format(),
-          level: LogLevelMap[value.level ?? 0],
-          component: getComponentType(value.task_id),
-          log: value.message,
-        }
-      }))
+      const res = await client
+        .getGlobal()
+        .logsTaskgroupsIdPreviewGet(taskGroupID)
+      setData(
+        res.data.map(
+          (value, index): LogPreview => {
+            return {
+              key: index,
+              time: moment(value.time).format(),
+              level: LogLevelMap[value.level ?? 0],
+              component: getComponentType(value.task_id),
+              log: value.message,
+            }
+          }
+        )
+      )
     }
 
     getLogPreview()
   }, [taskGroupID, tasks])
 
   return (
-    <div style={{ backgroundColor: "#FFFFFF" }}>
-      <Table dataSource={logPreviews} size="middle" pagination={{ pageSize: 100 }}>
-        <Column width={220} title={t('log_searching.preview.time')} dataIndex="time" key="time" />
-        <Column width={80} title={t('log_searching.preview.level')} dataIndex="level" key="level" />
-        <Column width={100} title={t('log_searching.preview.component')} dataIndex="component" key="component" />
-        <Column ellipsis title={t('log_searching.preview.log')} dataIndex="log" key="log" render={logRender} />
+    <div style={{ backgroundColor: '#FFFFFF' }}>
+      <Table
+        dataSource={logPreviews}
+        size="middle"
+        pagination={{ pageSize: 100 }}
+      >
+        <Column
+          width={220}
+          title={t('log_searching.preview.time')}
+          dataIndex="time"
+          key="time"
+        />
+        <Column
+          width={80}
+          title={t('log_searching.preview.level')}
+          dataIndex="level"
+          key="level"
+        />
+        <Column
+          width={100}
+          title={t('log_searching.preview.component')}
+          dataIndex="component"
+          key="component"
+        />
+        <Column
+          ellipsis
+          title={t('log_searching.preview.log')}
+          dataIndex="log"
+          key="log"
+          render={logRender}
+        />
       </Table>
     </div>
   )

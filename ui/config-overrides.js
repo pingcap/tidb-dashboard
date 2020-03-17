@@ -38,7 +38,7 @@ const buildAsLibrary = () => config => {
     main: path.resolve(__dirname, 'src/library.js'),
   }
   config.output.library = 'tidbDashboard'
-  config.output.libraryTarget = 'commonjs'
+  config.output.libraryTarget = 'commonjs2'
   config.output.filename = 'lib/main.js'
 
   // Everything in node_modules will not be included in the build, except for

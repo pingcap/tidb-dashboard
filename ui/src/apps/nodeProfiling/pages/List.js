@@ -1,4 +1,4 @@
-import client from '@/utils/client'
+import * as client from '@/utils/client'
 import React, { useEffect, useState } from 'react'
 import { message, Card, Form, TreeSelect, Button, Select, Badge } from 'antd'
 import { useTranslation } from 'react-i18next'
@@ -45,7 +45,7 @@ function filterTreeNode(inputValue, treeNode) {
 }
 
 async function getTargetsMapAsync() {
-  const res = await client.dashboard.topologyAllGet()
+  const res = await client.getGlobal().topologyAllGet()
   const map = {}
   res.data.tidb.nodes.forEach(node => {
     const display = `${node.ip}:${node.port}`
@@ -103,7 +103,7 @@ export default function Page() {
     async function fetchHistory() {
       setListLoading(true)
       try {
-        const res = await client.dashboard.getProfilingGroups()
+        const res = await client.getGlobal().getProfilingGroups()
         setHistoryTable(res.data)
       } catch (e) {}
       setListLoading(false)
@@ -123,7 +123,7 @@ export default function Page() {
       duration_secs: duration,
     }
     try {
-      const res = await client.dashboard.startProfiling(req)
+      const res = await client.getGlobal().startProfiling(req)
       history.push(`/node_profiling/${res.data.id}`)
     } catch (e) {
       // FIXME

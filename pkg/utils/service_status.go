@@ -14,7 +14,10 @@
 package utils
 
 import (
+	"context"
 	"sync/atomic"
+
+	"go.uber.org/fx"
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,6 +39,19 @@ func (s *ServiceStatus) Start() {
 
 func (s *ServiceStatus) Stop() {
 	atomic.StoreInt32((*int32)(s), 0)
+}
+
+func (s *ServiceStatus) Invoke(lc fx.Lifecycle) {
+	lc.Append(fx.Hook{
+		OnStart: func(context.Context) error {
+			s.Start()
+			return nil
+		},
+		OnStop: func(context.Context) error {
+			s.Stop()
+			return nil
+		},
+	})
 }
 
 func (s *ServiceStatus) MWHandleStopped(stoppedHandler gin.HandlerFunc) gin.HandlerFunc {

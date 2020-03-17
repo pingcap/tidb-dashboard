@@ -143,18 +143,7 @@ func (s *Service) Start(ctx context.Context) error {
 			diagnose.Register,
 			keyvisual.Register,
 			// Must be at the end
-			func(lc fx.Lifecycle) {
-				lc.Append(fx.Hook{
-					OnStart: func(context.Context) error {
-						s.status.Start()
-						return nil
-					},
-					OnStop: func(context.Context) error {
-						s.status.Stop()
-						return nil
-					},
-				})
-			},
+			s.status.Invoke,
 		),
 	)
 

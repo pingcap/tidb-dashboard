@@ -15,13 +15,18 @@ package keyvisual
 
 import (
 	"context"
+	"encoding/hex"
 	"math"
 	"net/http"
+	"strconv"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+	"github.com/pingcap/log"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
@@ -69,7 +74,8 @@ type Service struct {
 	httpClient *http.Client
 	db         *dbstore.DB
 
-	core *ServiceCore
+	stat     *storage.Stat
+	strategy matrix.Strategy
 }
 
 func NewService(lc fx.Lifecycle, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client, db *dbstore.DB) *Service {
@@ -93,9 +99,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/keyvisual")
 	endpoint.Use(s.status.MWHandleStopped(stoppedHandler))
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.GET("/heatmaps", func(c *gin.Context) {
-		s.core.heatmapsHandler(c)
-	})
+	endpoint.GET("/heatmaps", s.heatmaps)
 }
 
 func (s *Service) Name() string {
@@ -111,15 +115,18 @@ func (s *Service) Start(ctx context.Context) error {
 	s.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
-			s.newWaitGroup,
+			newWaitGroup,
 			s.provide,
 			input.NewStatInput,
 			decorator.TiDBLabelStrategy,
-			s.newStrategy,
-			s.newStat,
-			s.newServiceCore,
+			newStrategy,
+			newStat,
 		),
-		fx.Populate(&s.core),
+		fx.Populate(&s.stat, &s.strategy),
+		fx.Invoke(
+			// Must be at the end
+			s.status.Invoke,
+		),
 	)
 
 	if err := s.app.Err(); err != nil {
@@ -133,11 +140,92 @@ func (s *Service) Start(ctx context.Context) error {
 
 func (s *Service) Stop(ctx context.Context) error {
 	err := s.app.Stop(ctx)
-	s.core = nil
+	s.stat = nil
+	s.strategy = nil
 	return err
 }
 
-func (s *Service) newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {
+// @Summary Key Visual Heatmaps
+// @Description Heatmaps in a given range to visualize TiKV usage
+// @Produce json
+// @Param startkey query string false "The start of the key range"
+// @Param endkey query string false "The end of the key range"
+// @Param starttime query int false "The start of the time range (Unix)"
+// @Param endtime query int false "The end of the time range (Unix)"
+// @Param type query string false "Main types of data" Enums(written_bytes, read_bytes, written_keys, read_keys, integration)
+// @Success 200 {object} matrix.Matrix
+// @Router /keyvisual/heatmaps [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) heatmaps(c *gin.Context) {
+	startKey := c.Query("startkey")
+	endKey := c.Query("endkey")
+	startTimeString := c.Query("starttime")
+	endTimeString := c.Query("endtime")
+	typ := c.Query("type")
+
+	endTime := time.Now()
+	startTime := endTime.Add(-360 * time.Minute)
+	if startTimeString != "" {
+		tsSec, err := strconv.ParseInt(startTimeString, 10, 64)
+		if err != nil {
+			log.Error("parse ts failed", zap.Error(err))
+			c.JSON(http.StatusBadRequest, "bad request")
+			return
+		}
+		startTime = time.Unix(tsSec, 0)
+	}
+	if endTimeString != "" {
+		tsSec, err := strconv.ParseInt(endTimeString, 10, 64)
+		if err != nil {
+			log.Error("parse ts failed", zap.Error(err))
+			c.JSON(http.StatusBadRequest, "bad request")
+			return
+		}
+		endTime = time.Unix(tsSec, 0)
+	}
+	if !(startTime.Before(endTime) && (endKey == "" || startKey < endKey)) {
+		c.JSON(http.StatusBadRequest, "bad request")
+		return
+	}
+
+	log.Debug("Request matrix",
+		zap.Time("start-time", startTime),
+		zap.Time("end-time", endTime),
+		zap.String("start-key", startKey),
+		zap.String("end-key", endKey),
+		zap.String("type", typ),
+	)
+
+	if startKeyBytes, err := hex.DecodeString(startKey); err == nil {
+		startKey = string(startKeyBytes)
+	} else {
+		c.JSON(http.StatusBadRequest, "bad request")
+		return
+	}
+	if endKeyBytes, err := hex.DecodeString(endKey); err == nil {
+		endKey = string(endKeyBytes)
+	} else {
+		c.JSON(http.StatusBadRequest, "bad request")
+		return
+	}
+	baseTag := region.IntoTag(typ)
+	plane := s.stat.Range(startTime, endTime, startKey, endKey, baseTag)
+	resp := plane.Pixel(s.strategy, heatmapsMaxDisplayY, region.GetDisplayTags(baseTag))
+	resp.Range(startKey, endKey)
+	// TODO: An expedient to reduce data transmission, which needs to be deleted later.
+	resp.DataMap = map[string][][]uint64{
+		typ: resp.DataMap[typ],
+	}
+	// ----------
+	c.JSON(http.StatusOK, resp)
+}
+
+func (s *Service) provide() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB) {
+	return s.config, s.provider, s.httpClient, s.db
+}
+
+func newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {
 	wg := &sync.WaitGroup{}
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
@@ -148,15 +236,11 @@ func (s *Service) newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {
 	return wg
 }
 
-func (s *Service) provide() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB) {
-	return s.config, s.provider, s.httpClient, s.db
-}
-
-func (s *Service) newStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.LabelStrategy) matrix.Strategy {
+func newStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.LabelStrategy) matrix.Strategy {
 	return matrix.DistanceStrategy(lc, wg, labelStrategy, distanceStrategyRatio, distanceStrategyLevel, distanceStrategyCount)
 }
 
-func (s *Service) newStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, in input.StatInput, strategy matrix.Strategy) *storage.Stat {
+func newStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, in input.StatInput, strategy matrix.Strategy) *storage.Stat {
 	stat := storage.NewStat(lc, wg, provider, defaultStatConfig, strategy, in.GetStartTime())
 
 	lc.Append(fx.Hook{
@@ -171,26 +255,6 @@ func (s *Service) newStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.
 	})
 
 	return stat
-}
-
-func (s *Service) newServiceCore(lc fx.Lifecycle, wg *sync.WaitGroup, stat *storage.Stat, strategy matrix.Strategy) *ServiceCore {
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			s.status.Start()
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			s.status.Stop()
-			s.cancel()
-			return nil
-		},
-	})
-
-	return &ServiceCore{
-		maxDisplayY: heatmapsMaxDisplayY,
-		stat:        stat,
-		strategy:    strategy,
-	}
 }
 
 func stoppedHandler(c *gin.Context) {

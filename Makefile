@@ -47,7 +47,8 @@ ui: swagger_client
 
 publish_ui_packages: swagger_client
 	cd ui &&\
-	yarn run publish
+	yarn run build:packages &&\
+	yarn run publish:packages
 
 server:
 ifeq ($(SWAGGER),1)

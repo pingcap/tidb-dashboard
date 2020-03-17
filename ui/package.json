@@ -32,7 +32,7 @@
     "build": "yarn run build:packages && react-app-rewired build",
     "test": "react-app-rewired test",
     "clean": "yarn workspaces run clean",
-    "publish": "yarn workspaces run publish"
+    "publish:packages": "yarn workspaces run publish"
   },
   "homepage": "/dashboard",
   "eslintConfig": {

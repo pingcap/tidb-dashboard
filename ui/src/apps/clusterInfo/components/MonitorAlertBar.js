@@ -1,11 +1,28 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Icon, Card, Skeleton } from 'antd'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import styles from './MonitorAlertBar.module.less'
 
+import client from '@/utils/client'
+
 export default function MonitorAlertBar({ cluster }) {
   const { t } = useTranslation()
+  const [alertCounter, setAlertCounter] = useState(0)
+
+  useEffect(() => {
+    const fetchNum = async () => {
+      if (cluster === null || cluster.alert_manager === null) {
+        return
+      }
+      let resp = await client.dashboard.topologyAlertmanagerAddressCountGet(
+        `${cluster.alert_manager.ip}:${cluster.alert_manager.port}`
+      )
+      setAlertCounter(resp.data)
+    }
+    fetchNum()
+  }, [cluster])
+
   return (
     <div>
       <Card
@@ -35,9 +52,13 @@ export default function MonitorAlertBar({ cluster }) {
               ) : (
                 <a
                   href={`http://${cluster.alert_manager.ip}:${cluster.alert_manager.port}`}
-                  className={styles.warn}
+                  className={alertCounter !== 0 && styles.warn}
                 >
-                  {t('cluster_info.monitor_alert.view_alerts')}
+                  {alertCounter === 0
+                    ? t('cluster_info.monitor_alert.view_zero_alerts')
+                    : t('cluster_info.monitor_alert.view_alerts', {
+                        alertCount: alertCounter,
+                      })}
                   <Icon type="right" style={{ marginLeft: '5px' }} />
                 </a>
               )}

@@ -1,13 +1,12 @@
 import client, { DASHBOARD_API_URL } from '@/utils/client';
-import { LogsearchSearchTarget, LogsearchTaskModel } from '@/utils/dashboard_client';
-import { Button, Card, Modal, Tree, Typography } from 'antd';
+import { LogsearchTaskModel } from '@/utils/dashboard_client';
+import { Button, Card, Modal, Spin, Tree, Typography } from 'antd';
 import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree';
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { Context } from "../store";
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon';
-import styles from './SearchProgress.module.css';
-import { namingMap, TaskState } from './util';
+import styles from './Styles.module.css';
+import { getAddress, namingMap, ServerType, ServerTypeList, TaskState } from './utils';
 
 const { confirm } = Modal;
 const { Title } = Typography;
@@ -35,19 +34,12 @@ function leafNodeProps(state: number | undefined) {
   }
 }
 
-function renderLeafNodes(tasks: LogsearchTaskModel[], serverMap: Map<string, LogsearchSearchTarget>) {
+function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map(task => {
-    let title = ''
-    for (let [addr, target] of serverMap.entries()) {
-      if (target.ip === task.search_target?.ip
-        && target.port === task.search_target?.port) {
-        title = addr
-        break
-      }
-    }
+    const title = getAddress(task.search_target)
     return (
       <TreeNode
-        key={task.id?.toString()}
+        key={`${task.id}`}
         value={task.id}
         title={title}
         {...leafNodeProps(task.state)}
@@ -91,16 +83,19 @@ function useSetInterval(callback: () => void) {
 }
 
 interface Props {
-  taskGroupID: number
+  taskGroupID: number,
+  tasks: LogsearchTaskModel[],
+  setTasks: Dispatch<SetStateAction<LogsearchTaskModel[]>>
 }
 
 export default function SearchProgress({
-  taskGroupID
+  taskGroupID,
+  tasks,
+  setTasks,
 }: Props) {
-  const { store, dispatch } = useContext(Context)
-  const { tasks } = store
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
   const { t } = useTranslation()
+  const [loading, setLoading] = useState(true)
 
   async function getTasks(taskGroupID: number, tasks: LogsearchTaskModel[]) {
     if (taskGroupID < 0) {
@@ -112,15 +107,22 @@ export default function SearchProgress({
       return
     }
     const res = await client.dashboard.logsTaskgroupsIdGet(taskGroupID)
-    dispatch({
-      type: 'tasks',
-      payload: res.data.tasks ?? []
-    })
+    setTasks(res.data.tasks ?? [])
   }
 
   useSetInterval(() => {
     getTasks(taskGroupID, tasks)
-  });
+  })
+
+  useEffect(() => {
+    if (tasks.length > 0) {
+      setLoading(false)
+    }
+  }, [tasks])
+
+  useEffect(() => {
+    setLoading(true)
+  }, [taskGroupID])
 
   const descriptionArray = [
     t('log_searching.progress.running'),
@@ -147,28 +149,27 @@ export default function SearchProgress({
     return res.join('，')
   }
 
-  function renderTreeNodes(tasks: LogsearchTaskModel[], serverMap: Map<string, LogsearchSearchTarget>) {
+  function renderTreeNodes(tasks: LogsearchTaskModel[]) {
     const servers = {
-      tidb: [],
-      tikv: [],
-      pd: []
+      [ServerType.TiDB]: [],
+      [ServerType.TiKV]: [],
+      [ServerType.PD]: []
     }
 
     tasks.forEach(task => {
-      const serverType = task.search_target?.kind ?? ''
-      if (!(serverType in servers)) {
+      if (task.search_target?.kind === undefined) {
         return
       }
-      servers[serverType].push(task)
+      servers[task.search_target.kind].push(task)
     })
 
-    return Object.keys(servers)
-      .filter(key => servers[key].length > 0)
-      .map(key => {
-        const tasks = servers[key]
+    return ServerTypeList
+      .filter(kind => servers[kind].length > 0)
+      .map(kind => {
+        const tasks: LogsearchTaskModel[] = servers[kind]
         const title = (
           <span>
-            {namingMap[key]}
+            {namingMap[kind]}
             <span style={{
               fontSize: "0.8em",
               marginLeft: 5
@@ -179,15 +180,14 @@ export default function SearchProgress({
         )
         return (
           <TreeNode
-            key={key}
+            key={namingMap[kind]}
             title={title}
             icon={parentNodeIcon(tasks)}
             disableCheckbox={!parentNodeCheckable(tasks)}
-            children={renderLeafNodes(tasks, serverMap)}
+            children={renderLeafNodes(tasks)}
           />
         )
-      }
-      )
+      })
   }
 
   async function handleDownload() {
@@ -218,12 +218,12 @@ export default function SearchProgress({
       title: t('log_searching.confirm.cancel_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdCancelPost(taskGroupID)
-        dispatch({type: 'tasks', payload: tasks.map(task => {
+        setTasks(tasks.map(task => {
           if (task.state === TaskState.Error) {
             task.state = TaskState.Running
           }
           return task
-        })})
+        }))
       },
     })
   }
@@ -236,12 +236,12 @@ export default function SearchProgress({
       title: t('log_searching.confirm.retry_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdRetryPost(taskGroupID)
-        dispatch({type: 'tasks', payload: tasks.map(task => {
+        setTasks(tasks.map(task => {
           if (task.state === TaskState.Error) {
             task.state = TaskState.Running
           }
           return task
-        })})
+        }))
       },
     })
   }
@@ -253,21 +253,32 @@ export default function SearchProgress({
   return (
     <div>
       <Card>
-        <Title level={3}>{t('log_searching.common.progress')}</Title>
-        <div>{progressDescription(tasks)}</div>
-        <div className={styles.buttons}>
-          <Button type="primary" onClick={handleDownload} disabled={checkedKeys.length < 1}>{t('log_searching.common.download_selected')}</Button>
-          <Button type="danger" onClick={handleCancel} disabled={!tasks.some(task => task.state === TaskState.Running)}>{t('log_searching.common.cancel')}</Button>
-          <Button onClick={handleRetry} disabled={tasks.some(task => task.state === TaskState.Running) || !tasks.some(task => task.state === TaskState.Error)}>{t('log_searching.common.retry')}</Button>
-        </div>
-        <Tree
-          checkable
-          expandedKeys={Object.keys(namingMap)}
-          showIcon
-          onCheck={handleCheck}
-        >
-          {renderTreeNodes(store.tasks, store.topology)}
-        </Tree>
+        {loading && <div style={{ textAlign: "center" }}>
+          <Spin size="large" style={{
+            marginTop: 100,
+            marginBottom: 100,
+          }} />
+        </div>}
+        {!loading && (
+          <>
+            <Title level={3}>{t('log_searching.common.progress')}</Title>
+            <div>{progressDescription(tasks)}</div>
+            <div className={styles.buttons}>
+              <Button type="primary" onClick={handleDownload} disabled={checkedKeys.length < 1}>{t('log_searching.common.download_selected')}</Button>
+              <Button type="danger" onClick={handleCancel} disabled={!tasks.some(task => task.state === TaskState.Running)}>{t('log_searching.common.cancel')}</Button>
+              <Button onClick={handleRetry} disabled={tasks.some(task => task.state === TaskState.Running) || !tasks.some(task => task.state === TaskState.Error)}>{t('log_searching.common.retry')}</Button>
+            </div>
+            <Tree
+              checkable
+              expandedKeys={Object.values(namingMap)}
+              showIcon
+              onCheck={handleCheck}
+              style={{ overflowX: "hidden" }}
+            >
+              {renderTreeNodes(tasks)}
+            </Tree>
+          </>
+        )}
       </Card>
     </div>
   )

@@ -11,6 +11,7 @@
     "d3": "^5.15.0",
     "echarts": "^4.6.0",
     "echarts-for-react": "^2.0.15-beta.1",
+    "dayjs": "^1.8.22",
     "i18next": "^19.1.0",
     "i18next-browser-languagedetector": "^4.0.1",
     "lodash": "^4.17.15",

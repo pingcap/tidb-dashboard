@@ -96,6 +96,7 @@ func (a *App) Start(ctx context.Context) error {
 	a.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
+			a.Parameters,
 			dbstore.MustOpenDBStore,
 			pd.NewEtcdClient,
 			tidb.NewForwarderConfig,

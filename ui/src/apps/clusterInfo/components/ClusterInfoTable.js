@@ -36,7 +36,8 @@ function ComponentPanelTable({ cluster }) {
       key: 'status',
       width: 100,
       render: (status, node) => {
-        if (node && node.comp && node.comp === 'tidb') {
+        let isDb = (node.comp && node.comp === 'tidb');
+        if (node && isDb) {
           let showConfirm = () => {
             Modal.confirm({
               title: t('cluster_info.component_table.hide_db'),
@@ -68,7 +69,9 @@ function ComponentPanelTable({ cluster }) {
             </span>
           )
         }
-        return <span>{status}</span>
+        if (status) {
+          return <span>{t(`cluster_info.component_table.${status}`)} </span>
+        }
       },
     },
   ]

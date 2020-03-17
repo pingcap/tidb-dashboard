@@ -39,7 +39,7 @@ function ComponentPanelTable({ cluster }) {
         if (!status) {
           return
         }
-        let statusBanner = <span>{t(`cluster_info.component_table.${status}`)} </span>;
+        let statusContent = t(`cluster_info.component_table.${status}`)
         if (node.comp && node.comp === 'tidb') {
           let showConfirm = () => {
             Modal.confirm({
@@ -55,28 +55,24 @@ function ComponentPanelTable({ cluster }) {
                 client.dashboard.topologyTidbAddressDelete(node.address)
               },
               onCancel() {},
-            });
+            })
           }
           return (
             <span>
-              {statusBanner}
+              {statusContent}
               {node.status && node.status !== 'up' && (
-                <span>
-                  (
-                  <a
-                    onClick={() => {
-                     showConfirm()
-                    }}
-                  >
-                    {t('cluster_info.component_table.hide_db.click')}
-                  </a>
-                  )
-                </span>
+                <a
+                  onClick={() => {
+                    showConfirm()
+                  }}
+                >
+                  ({t('cluster_info.component_table.hide_db.click')})
+                </a>
               )}
             </span>
           )
         }
-        return statusBanner;
+        return <span>{statusContent}</span>
       },
     },
   ]
@@ -126,13 +122,13 @@ function wrapNode(node, comp, id, t) {
   if (node === undefined || node === null) {
     return
   }
-  let status = 'down';
+  let status = 'down'
   if (node.status === 1) {
-    status = 'up';
+    status = 'up'
   } else if (node.status === 2) {
-    status = 'tombstone';
+    status = 'tombstone'
   } else if (node.status === 3) {
-    status = 'offline';
+    status = 'offline'
   }
   if (node.deploy_path === undefined && node.binary_path !== null) {
     node.deploy_path = node.binary_path.substring(

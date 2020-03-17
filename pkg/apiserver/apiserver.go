@@ -15,7 +15,6 @@ package apiserver
 
 import (
 	"html/template"
-	"sync"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -25,14 +24,7 @@ import (
 	utils2 "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
-var once sync.Once
-
 func NewAPIHandlerEngine(apiPrefix string) (r *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils2.NewTemplateFunc) {
-	once.Do(func() {
-		// These global modification will be effective only for the first invoke.
-		gin.SetMode(gin.ReleaseMode)
-	})
-
 	r = gin.New()
 	r.Use(cors.AllowAll())
 	r.Use(gzip.Gzip(gzip.BestSpeed))

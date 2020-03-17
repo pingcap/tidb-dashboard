@@ -16,6 +16,7 @@ package server
 import (
 	"context"
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -45,6 +46,8 @@ import (
 var (
 	ErrNS             = errorx.NewNamespace("error.server")
 	ErrServiceStopped = ErrNS.NewType("service_stopped")
+
+	once sync.Once
 )
 
 type PDDataProviderConstructor func(*config.Config, *http.Client, *clientv3.Client) *keyvisualregion.PDDataProvider
@@ -63,6 +66,11 @@ type App struct {
 
 func NewApp(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stoppedHandler gin.HandlerFunc, newPDDataProvider PDDataProviderConstructor) *App {
 	_ = godotenv.Load()
+
+	once.Do(func() {
+		// These global modification will be effective only for the first invoke.
+		gin.SetMode(gin.ReleaseMode)
+	})
 
 	a := &App{
 		status:            utils.NewAppStatus(),

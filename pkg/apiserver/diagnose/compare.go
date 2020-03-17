@@ -608,7 +608,6 @@ func (r *newJoinRow) genNewRow(table *TableDef) []string {
 }
 
 func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, []float64, int, error) {
-	var ratios []float64
 	if len(table.compareColumns) == 0 {
 		return 0, nil, -1, nil
 	}
@@ -621,7 +620,7 @@ func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, []float6
 	if len(row2) == 0 {
 		return float64(-1), nil, table.compareColumns[0], nil
 	}
-	ratios = make([]float64, 0, len(table.compareColumns))
+	ratios := make([]float64, 0, len(table.compareColumns))
 	maxRatio := float64(0)
 	maxIdx := -1
 	for _, idx := range table.compareColumns {

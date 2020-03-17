@@ -14,6 +14,11 @@ cluster_info:
     address: Address
 
     node_list: NODES LIST
+
+    up: Up
+    down: Down
+    tombstone: Tombstone
+    offline: Offline
   monitor_alert:
     title: MONITOR AND ALERT
     view_monitor: VIEW MONITOR

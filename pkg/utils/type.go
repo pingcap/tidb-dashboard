@@ -14,16 +14,7 @@
 package utils
 
 import (
-	"github.com/pingcap/log"
-	"go.uber.org/fx"
+	"html/template"
 )
 
-type FxPrinter func(string, ...interface{})
-
-func (p FxPrinter) Printf(format string, args ...interface{}) {
-	p(format, args...)
-}
-
-func NewFxPrinter() fx.Printer {
-	return FxPrinter(log.S().Debugf)
-}
+type NewTemplateFunc func(name string) *template.Template

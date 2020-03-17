@@ -41,7 +41,7 @@ func NewService(config *config.Config, etcdProvider pd.EtcdProvider, httpClient 
 	return &Service{config: config, etcdProvider: etcdProvider, httpClient: httpClient}
 }
 
-func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
+func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/topology")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/all", s.topologyHandler)

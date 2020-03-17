@@ -70,13 +70,29 @@ type App struct {
 	service *Service
 }
 
-func NewApp(cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) *App {
-	return &App{
+func NewApp(lc fx.Lifecycle, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) *App {
+	keyvisualApp := &App{
 		status:     utils.NewAppStatus(),
 		config:     cfg,
 		provider:   provider,
 		httpClient: httpClient,
 	}
+
+	lc.Append(fx.Hook{
+		OnStart: keyvisualApp.Start,
+		OnStop:  keyvisualApp.Stop,
+	})
+
+	return keyvisualApp
+}
+
+func Register(r *gin.RouterGroup, auth *user.AuthService, a *App) {
+	endpoint := r.Group("/keyvisual")
+	endpoint.Use(a.status.MWHandleStopped(stoppedHandler))
+	endpoint.Use(auth.MWAuthRequired())
+	endpoint.GET("/heatmaps", func(c *gin.Context) {
+		a.service.heatmapsHandler(c)
+	})
 }
 
 func (a *App) Start(ctx context.Context) error {
@@ -94,6 +110,7 @@ func (a *App) Start(ctx context.Context) error {
 		),
 		fx.Populate(&a.service),
 	)
+
 	if err := a.app.Err(); err != nil {
 		return err
 	}
@@ -107,15 +124,6 @@ func (a *App) Stop(ctx context.Context) error {
 	err := a.app.Stop(ctx)
 	a.service = nil
 	return err
-}
-
-func (a *App) Register(r *gin.RouterGroup, auth *user.AuthService) {
-	endpoint := r.Group("/keyvisual")
-	endpoint.Use(a.status.MWHandleStopped(stoppedHandler))
-	endpoint.Use(auth.MWAuthRequired())
-	endpoint.GET("/heatmaps", func(c *gin.Context) {
-		a.service.heatmapsHandler(c)
-	})
 }
 
 func (a *App) NewWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {

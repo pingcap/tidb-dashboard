@@ -15,6 +15,7 @@ package utils
 
 import (
 	"context"
+	"net/http"
 	"sync/atomic"
 
 	"go.uber.org/fx"
@@ -62,4 +63,14 @@ func (s *ServiceStatus) MWHandleStopped(stoppedHandler gin.HandlerFunc) gin.Hand
 		}
 		c.Next()
 	}
+}
+
+func (s *ServiceStatus) NewStatefulHandler(handler http.Handler, stoppedHandler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !s.IsRunning() {
+			stoppedHandler.ServeHTTP(w, r)
+			return
+		}
+		handler.ServeHTTP(w, r)
+	})
 }

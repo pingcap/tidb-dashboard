@@ -169,8 +169,6 @@ func main() {
 
 	s := apiserver.NewService(
 		cliConfig.CoreConfig,
-		uiserver.Handler(),
-		swaggerserver.Handler(),
 		apiserver.StoppedHandler,
 		func(cfg *config.Config, httpClient *http.Client, etcdClient *clientv3.Client) *keyvisualregion.PDDataProvider {
 			return &keyvisualregion.PDDataProvider{
@@ -191,7 +189,9 @@ func main() {
 	apiserver.Register(&r.RouterGroup, s)
 
 	mux := http.DefaultServeMux
-	mux.Handle("/", r)
+	mux.Handle("/dashboard/", s.NewStatefulHandler(http.StripPrefix("/dashboard", uiserver.Handler())))
+	mux.Handle("/dashboard/api/", r)
+	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 
 	utils.LogInfo()
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))

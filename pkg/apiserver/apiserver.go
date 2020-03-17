@@ -16,13 +16,13 @@ package apiserver
 import (
 	"context"
 	"html/template"
+	"io"
 	"net/http"
 	"sync"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/joomcode/errorx"
 	cors "github.com/rs/cors/wrapper/gin"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
@@ -47,9 +47,6 @@ import (
 )
 
 var (
-	ErrNS             = errorx.NewNamespace("error.apiserver")
-	ErrServiceStopped = ErrNS.NewType("service_stopped")
-
 	once sync.Once
 )
 
@@ -61,7 +58,7 @@ type Service struct {
 
 	config            *config.Config
 	newPDDataProvider PDDataProviderConstructor
-	stoppedHandler    gin.HandlerFunc
+	stoppedHandler    http.Handler
 
 	apiHandlerEngine *gin.Engine
 }
@@ -72,7 +69,7 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 	apiHandlerEngine.Use(gzip.Gzip(gzip.BestSpeed))
 	apiHandlerEngine.Use(utils.MWHandleErrors())
 
-	endpoint = &apiHandlerEngine.RouterGroup
+	endpoint = apiHandlerEngine.Group("/dashboard/api")
 
 	newTemplate = func(name string) *template.Template {
 		return template.New(name).Funcs(apiHandlerEngine.FuncMap)
@@ -81,7 +78,7 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 	return
 }
 
-func NewService(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stoppedHandler gin.HandlerFunc, newPDDataProvider PDDataProviderConstructor) *Service {
+func NewService(cfg *config.Config, stoppedHandler http.Handler, newPDDataProvider PDDataProviderConstructor) *Service {
 	once.Do(func() {
 		// These global modification will be effective only for the first invoke.
 		_ = godotenv.Load()
@@ -97,8 +94,8 @@ func NewService(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stop
 }
 
 func Register(r *gin.RouterGroup, s *Service) {
-	r.Use(s.status.MWHandleStopped(s.stoppedHandler))
-	endpoint := r.Group("/api")
+	endpoint := r.Group("/dashboard/api")
+	endpoint.Use(s.status.MWHandleStopped(gin.WrapH(s.stoppedHandler)))
 	endpoint.Any("/*any", s.handler)
 }
 
@@ -155,6 +152,10 @@ func (s *Service) Stop(ctx context.Context) error {
 	return err
 }
 
+func (s *Service) NewStatefulHandler(handler http.Handler) http.Handler {
+	return s.status.NewStatefulHandler(handler, s.stoppedHandler)
+}
+
 func (s *Service) handler(c *gin.Context) {
 	s.apiHandlerEngine.HandleContext(c)
 }
@@ -163,6 +164,7 @@ func (s *Service) provide() *config.Config {
 	return s.config
 }
 
-func StoppedHandler(c *gin.Context) {
-	_ = c.AbortWithError(http.StatusNotFound, ErrServiceStopped.NewWithNoMessage())
-}
+var StoppedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotFound)
+	_, _ = io.WriteString(w, "Dashboard is not started.\n")
+})

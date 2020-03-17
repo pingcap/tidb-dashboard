@@ -86,7 +86,7 @@ func NewApp(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stoppedH
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(a.status.MWHandleStopped(stoppedHandler))
-	r.Any("/dashboard", gin.WrapH(mux))
+	r.Any("/*any", gin.WrapH(mux))
 	a.Handler = r
 
 	return a
@@ -115,6 +115,7 @@ func (a *App) Start(ctx context.Context) error {
 			// app
 			keyvisual.NewApp,
 		),
+		fx.Populate(&a.apiHandlerEngine),
 		fx.Invoke(
 			user.Register,
 			foo.Register,
@@ -125,8 +126,20 @@ func (a *App) Start(ctx context.Context) error {
 			statement.Register,
 			diagnose.Register,
 			keyvisual.Register,
+			// Must be at the end
+			func(lc fx.Lifecycle) {
+				lc.Append(fx.Hook{
+					OnStart: func(context.Context) error {
+						a.status.Start()
+						return nil
+					},
+					OnStop: func(context.Context) error {
+						a.status.Stop()
+						return nil
+					},
+				})
+			},
 		),
-		fx.Populate(&a.apiHandlerEngine),
 	)
 
 	if err := a.app.Err(); err != nil {

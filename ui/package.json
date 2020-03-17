@@ -27,9 +27,9 @@
   },
   "scripts": {
     "start": "react-app-rewired start",
-    "build_api_client": "yarn workspace @pingcap-incubator/dashboard_client build",
-    "build_packages": "lerna run --stream --sort build",
-    "build": "yarn run build_packages && react-app-rewired build",
+    "build:api_client": "yarn workspace @pingcap-incubator/dashboard_client build",
+    "build:packages": "lerna run --stream --sort build",
+    "build": "yarn run build:packages && react-app-rewired build",
     "test": "react-app-rewired test",
     "clean": "yarn workspaces run clean"
   },

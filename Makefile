@@ -38,7 +38,7 @@ yarn_dependencies:
 
 swagger_client: swagger_spec yarn_dependencies
 	cd ui &&\
-	yarn run build_api_client
+	yarn run build:api_client
 
 ui: swagger_client
 	cd ui &&\

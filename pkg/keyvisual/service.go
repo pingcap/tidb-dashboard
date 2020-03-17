@@ -98,6 +98,10 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	})
 }
 
+func (s *Service) Name() string {
+	return "keyvisual"
+}
+
 func (s *Service) IsRunning() bool {
 	return s.status.IsRunning()
 }

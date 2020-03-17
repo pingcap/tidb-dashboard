@@ -14,7 +14,15 @@
 package utils
 
 import (
+	"context"
 	"html/template"
 )
 
 type NewTemplateFunc func(name string) *template.Template
+
+type StatefulService interface {
+	Name() string
+	IsRunning() bool
+	StartSupportTask(context.Context) error
+	StopSupportTask(context.Context) error
+}

@@ -102,14 +102,6 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/heatmaps", s.heatmaps)
 }
 
-func (s *Service) Name() string {
-	return "keyvisual"
-}
-
-func (s *Service) IsRunning() bool {
-	return s.status.IsRunning()
-}
-
 func (s *Service) Start(ctx context.Context) error {
 	s.ctx, s.cancel = context.WithCancel(ctx)
 	s.app = fx.New(

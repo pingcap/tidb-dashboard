@@ -101,14 +101,6 @@ func Register(r *gin.RouterGroup, s *Service) {
 	r.Any("/*any", gin.WrapH(s.core))
 }
 
-func (s *Service) Name() string {
-	return "dashboard"
-}
-
-func (s *Service) IsRunning() bool {
-	return s.status.IsRunning()
-}
-
 func (s *Service) Start(ctx context.Context) error {
 	s.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),

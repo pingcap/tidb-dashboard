@@ -27,7 +27,7 @@ import (
 
 var once sync.Once
 
-func NewApiHandlerEngine(apiPrefix string) (r *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils2.NewTemplateFunc) {
+func NewAPIHandlerEngine(apiPrefix string) (r *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils2.NewTemplateFunc) {
 	once.Do(func() {
 		// These global modification will be effective only for the first invoke.
 		gin.SetMode(gin.ReleaseMode)

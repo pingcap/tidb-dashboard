@@ -101,7 +101,7 @@ func (a *App) Start(ctx context.Context) error {
 			tidb.NewForwarder,
 			http2.NewHTTPClientWithConf,
 			a.newPDDataProvider,
-			a.NewApiHandlerEngine,
+			a.NewAPIHandlerEngine,
 			user.NewAuthService,
 			foo.NewService,
 			info.NewService,
@@ -146,8 +146,8 @@ func (a *App) Parameters() *config.Config {
 	return a.config
 }
 
-func (a *App) NewApiHandlerEngine() (r *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils.NewTemplateFunc) {
-	return apiserver.NewApiHandlerEngine("/dashboard/api")
+func (a *App) NewAPIHandlerEngine() (r *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils.NewTemplateFunc) {
+	return apiserver.NewAPIHandlerEngine("/dashboard/api")
 }
 
 func StoppedHandler(c *gin.Context) {

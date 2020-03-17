@@ -43,14 +43,14 @@ function ComponentPanelTable({ cluster }) {
         if (node.comp && node.comp === 'tidb') {
           let showConfirm = () => {
             Modal.confirm({
-              title: `${t('cluster_info.component_table.hide_db', {
+              title: `${t('cluster_info.component_table.hide_db.title', {
                 nodeName: node.address,
               })}`,
-              content: t('cluster_info.component_table.hide_warning', {
+              content: t('cluster_info.component_table.hide_db.warning', {
                 nodeName: node.address,
               }),
-              okText: t('cluster_info.component_table.hide_confirm'),
-              cancelText: t('cluster_info.component_table.hide_cancel'),
+              okText: t('cluster_info.component_table.hide_db.confirm'),
+              cancelText: t('cluster_info.component_table.hide_db.cancel'),
               onOk() {
                 client.dashboard.topologyTidbAddressDelete(node.address)
               },
@@ -68,7 +68,7 @@ function ComponentPanelTable({ cluster }) {
                      showConfirm()
                     }}
                   >
-                    {t('cluster_info.component_table.hide_db')}
+                    {t('cluster_info.component_table.hide_db.click')}
                   </a>
                   )
                 </span>

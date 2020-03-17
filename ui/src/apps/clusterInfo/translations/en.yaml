@@ -14,12 +14,15 @@ cluster_info:
     address: Address
 
     node_list: NODES LIST
-    hide_db: 'HIDE {{nodeName}}'
     action: Action
 
-    hide_warning: 'Do you want to hide TiDB node {{nodeName}}?'
-    hide_confirm: OK
-    hide_cancel: Cancel
+    hide_db:
+      title: 'HIDE TiDB Node'
+      action: 'HIDE {{nodeName}}'
+      warning: 'Do you want to hide TiDB node {{nodeName}}?'
+      confirm: OK
+      cancel: Cancel
+      click: HIDE
 
     up: Up
     down: Down

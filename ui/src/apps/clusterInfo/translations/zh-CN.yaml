@@ -14,12 +14,15 @@ cluster_info:
     address: 地址
 
     node_list: 节点列表
-    hide_db: '隐藏 {{nodeName}}'
     action: 操作
 
-    hide_warning: '你希望隐藏 TiDB 节点 {{nodeName}} 吗？'
-    hide_confirm: 是的
-    hide_cancel: 取消
+    hide_db:
+      title: 隐藏 TiDB 节点
+      action: '隐藏 {{nodeName}}'
+      warning: '你希望隐藏 TiDB 节点 {{nodeName}} 吗？'
+      confirm: 是的
+      cancel: 取消
+      click: 隐藏
 
     up: 正常
     down: 关闭

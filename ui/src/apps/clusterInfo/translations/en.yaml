@@ -14,7 +14,7 @@ cluster_info:
     address: Address
 
     node_list: NODES LIST
-    hide_db: HIDE
+    hide_db: 'HIDE {{nodeName}}'
     action: Action
 
     hide_warning: 'Do you want to hide TiDB node {{nodeName}}?'

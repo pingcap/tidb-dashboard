@@ -17,6 +17,13 @@ function ComponentPanelTable({ cluster }) {
       dataIndex: 'status',
       key: 'status',
       width: 100,
+      render: function(text) {
+        if (text) {
+          return (
+            <span>{t(`cluster_info.component_table.${text}`)} </span>
+          )
+        }
+      }
     },
     {
       title: t('cluster_info.component_table.version'),
@@ -79,14 +86,13 @@ function wrapNode(node, comp, id, t) {
   if (node === undefined || node === null) {
     return
   }
-  // This part is copied from backend.
-  let status = t('cluster_info.component_table.down');
+  let status = 'down';
   if (node.status === 1) {
-    status = t('cluster_info.component_table.up');
+    status = 'up';
   } else if (node.status === 2) {
-    status = t('cluster_info.component_table.tombstone');
+    status = 'tombstone';
   } else if (node.status === 3) {
-    status = t('cluster_info.component_table.offline');
+    status = 'offline';
   }
   if (node.deploy_path === undefined && node.binary_path !== null) {
     node.deploy_path = node.binary_path.substring(

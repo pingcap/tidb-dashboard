@@ -575,35 +575,36 @@ export async function heatmapChart(
         })
       }
 
-      const leftLabel = data.keyAxis[keyIdx]!.labels
-      const rightLabel = data.keyAxis[keyIdx + 1]!.labels
-      if (!leftLabel && !rightLabel) {
+      const startLabel = data.keyAxis[keyIdx]!.labels
+      const endLabel = data.keyAxis[keyIdx - 1]!.labels
+
+      if (!startLabel && !endLabel) {
         return []
       }
-      if (!rightLabel) {
-        return leftLabel.map(truncate)
+      if (!startLabel) {
+        return endLabel.map(truncate)
       }
-      if (_.isEqual(leftLabel, rightLabel)) {
-        return leftLabel.map(truncate)
-      }
-
-      // If label prefixes are identical, show `~`
-      {
-        const l = leftLabel.length
-        if (l === rightLabel.length && l >= 2) {
-          if (
-            _.isEqual(leftLabel.slice(0, l - 1), rightLabel.slice(0, l - 1))
-          ) {
-            return [
-              ...leftLabel.slice(0, l - 1).map(truncate),
-              `${truncate(leftLabel[l - 1])} ~ ${truncate(rightLabel[l - 1])}`,
-            ]
-          }
-        }
+      if (!endLabel || _.isEqual(startLabel, endLabel)) {
+        return startLabel.map(truncate)
       }
 
-      // Cross boundary, only use left label
-      return leftLabel.map(truncate)
+      const startLen = startLabel.length
+      const endLen = endLabel.length
+
+      // Cross start boundary, only use end label
+      if (startLen >= 1 && startLen + 1 == endLen && _.isEqual(startLabel, endLabel.slice(0, startLen))) {
+        return endLabel.map(truncate)
+      }
+      // range
+      if (startLen >= 2 && startLen == endLen
+        && _.isEqual(startLabel.slice(0, startLen - 1), endLabel.slice(0, startLen - 1))) {
+        return [
+          ...startLabel.slice(0, startLen - 1).map(truncate),
+          `${truncate(startLabel[startLen - 1])} ~ ${truncate(endLabel[startLen - 1])}`,
+        ]
+      }
+      // Cross end boundary, only use start label
+      return startLabel.map(truncate)
     }
 
     function renderTooltip() {

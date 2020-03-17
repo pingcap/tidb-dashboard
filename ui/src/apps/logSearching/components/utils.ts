@@ -2,6 +2,8 @@ import { ClusterinfoClusterInfo, LogsearchSearchTarget, LogsearchTaskGroupRespon
 import { RangePickerValue } from "antd/lib/date-picker/interface"
 import moment from "moment"
 
+export const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
+
 export const LogLevelMap = {
   0: 'UNKNOWN',
   1: 'DEBUG',

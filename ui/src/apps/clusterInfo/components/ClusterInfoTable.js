@@ -41,6 +41,8 @@ function ComponentPanelTable({ cluster }) {
             Modal.confirm({
               title: t('cluster_info.component_table.hide_db'),
               content: t('cluster_info.component_table.hide_warning'),
+              okText: t('cluster_info.component_table.hide_confirm'),
+              cancelText: t('cluster_info.component_table.hide_cancel'),
               onOk() {
                 client.dashboard.topologyTidbAddressDelete(node.address)
               },

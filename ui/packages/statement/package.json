@@ -3,8 +3,8 @@
   "version": "0.0.2",
   "description": "",
   "author": "pingcap-incubator",
-  "repository" : {
-    "type" : "git",
+  "repository": {
+    "type": "git",
     "url": "git@github.com:pingcap-incubator/tidb-dashboard.git"
   },
   "main": "dist/index.js",
@@ -17,7 +17,7 @@
   "scripts": {
     "build": "rollup -c",
     "start": "rollup -c -w",
-    "clean":"rimraf dist",
+    "clean": "rimraf dist",
     "p": "yarn publish"
   },
   "dependencies": {
@@ -51,6 +51,7 @@
     "rollup-plugin-postcss": "^1.6.2",
     "rollup-plugin-typescript2": "^0.17.0",
     "rollup-plugin-url": "^1.4.0",
+    "ts-import-plugin": "^1.6.5",
     "typescript": "^3.7.4"
   },
   "files": [

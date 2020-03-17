@@ -10,7 +10,7 @@ export default function LogSearchingPage() {
   return (
     <div>
       <SearchHeader />
-      <Row type="flex" align="bottom" style={{ width: "100%", height: 500 }}>
+      <Row type="flex" align="bottom" style={{ width: "100%", height: 400 }}>
         <Col span={24}>
           <Empty
             description={

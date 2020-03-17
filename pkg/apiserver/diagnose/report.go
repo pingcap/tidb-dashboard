@@ -198,7 +198,9 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 
 		// TiDB
 		GetTiDBTimeConsumeTable,
+		GetTiDBConnectionCountTable,
 		GetTiDBTxnTableData,
+		GetTiDBStatisticsInfo,
 		GetTiDBDDLOwner,
 
 		// PD
@@ -354,7 +356,7 @@ func GetHeaderTimeTable(startTime, endTime string, db *gorm.DB) (TableDef, error
 func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	table := TableDef{
 		Category:  []string{CategoryDiagnose},
-		Title:     "diagnose",
+		Title:     "Diagnose",
 		CommentEN: "Automatically diagnose the cluster problem and record the problem in below table.",
 		CommentCN: "",
 		//joinColumns: []int{0, 1, 2, 3, 6},
@@ -459,7 +461,7 @@ P90 is the max time of 0.90 quantile;
 P80 is the max time of 0.80 quantile; 
 `,
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{3},
+		compareColumns: []int{3, 4, 5},
 		CommentCN:      "",
 		Column:         []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
@@ -587,7 +589,7 @@ P80 is the max time of 0.80 quantile;
 `,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{3},
+		compareColumns: []int{3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 
@@ -657,7 +659,7 @@ P80 is the max size/value of 0.80 quantile;
 `,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{2},
+		compareColumns: []int{2, 3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 
@@ -701,6 +703,52 @@ P80 is the max size/value of 0.80 quantile;
 	return table, nil
 }
 
+func GetTiDBConnectionCountTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	sql := fmt.Sprintf("select instance, avg(value), max(value), min(value) from metrics_schema.tidb_connection_count where time >= '%s' and time < '%s' group by instance order by avg(value) desc",
+		startTime, endTime)
+	table := TableDef{
+		Category:       []string{CategoryTiDB},
+		Title:          "TiDB Connection count",
+		CommentEN:      "The connection count of tidb server",
+		CommentCN:      "",
+		joinColumns:    []int{0},
+		compareColumns: []int{1, 2, 3},
+		Column:         []string{"INSTANCE", "AVG", "MAX", "MIN"},
+	}
+	rows, err := getSQLRoundRows(db, sql, []int{1, 2, 3}, "")
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
+	return table, nil
+}
+
+func GetTiDBStatisticsInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	defs1 := []sumValueQuery{
+		{name: "pseudo_estimation_total_count", tbl: "tidb_statistics_pseudo_estimation_total_count", labels: []string{"instance"}, comment: "The total count of TiDB optimizer using pseudo estimation"},
+		{name: "dump_feedback_total_count", tbl: "tidb_statistics_dump_feedback_total_count", labels: []string{"instance", "type"}, comment: "The total count of operations that TiDB dumping statistics back to kv storage"},
+		{name: "store_query_feedback_total_count", tbl: "tidb_statistics_store_query_feedback_total_count", labels: []string{"instance", "type"}, comment: "The total count of TiDB store quering feedback"},
+		{name: "update_stats_total_count", tbl: "tidb_statistics_update_stats_total_count", labels: []string{"instance", "type"}, comment: "The total count of TiDB updating statistics using feed back"},
+	}
+
+	table := TableDef{
+		Category:       []string{CategoryTiDB},
+		Title:          "Statistics Info",
+		CommentEN:      "",
+		CommentCN:      "",
+		joinColumns:    []int{0, 1},
+		compareColumns: []int{2},
+		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},
+	}
+
+	rows, err := getSumValueTableData(defs1, startTime, endTime, db)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
+	return table, err
+}
+
 func GetTiDBDDLOwner(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf("select min(time),instance from metrics_schema.tidb_ddl_worker_total_count where time>='%s' and time<'%s' and value>0 and type='run_job' group by instance order by min(time);",
 		startTime, endTime)
@@ -723,16 +771,18 @@ func GetTiDBDDLOwner(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 
 func GetPDConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf(`select t1.*,t2.count from
-		(select min(time),type,value from metrics_schema.pd_scheduler_config where time>='%[1]s' and time<'%[2]s' group by type,value order by type) as t1 join
+		(select min(time) as time,type,value from metrics_schema.pd_scheduler_config where time>='%[1]s' and time<'%[2]s' group by type,value order by type) as t1 join
 		(select type, count(distinct value) as count from metrics_schema.pd_scheduler_config where time>='%[1]s' and time<'%[2]s' group by type order by count desc) as t2 
-		where t1.type=t2.type order by t2.count desc;`, startTime, endTime)
+		where t1.type=t2.type order by t2.count desc, t1.time;`, startTime, endTime)
 
 	table := TableDef{
-		Category:  []string{CategoryConfig},
-		Title:     "Scheduler Config",
-		CommentEN: "PD scheduler config change history. MIN_TIME is the minimum start effective time",
-		CommentCN: "",
-		Column:    []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
+		Category:       []string{CategoryConfig},
+		Title:          "Scheduler Config",
+		CommentEN:      "PD scheduler config change history. MIN_TIME is the minimum start effective time",
+		CommentCN:      "",
+		joinColumns:    []int{1},
+		compareColumns: []int{2},
+		Column:         []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
 	}
 	rows, err := getSQLRows(db, sql)
 	if err != nil {
@@ -744,17 +794,19 @@ func GetPDConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 
 func GetTiDBGCConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf(`select t1.*,t2.count from
-		(select min(time),type,value from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' group by type,value order by type) as t1 join
-		(select type, count(distinct value) as count from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' group by type order by count desc) as t2 
-		where t1.type=t2.type order by t2.count desc;`, startTime, endTime)
+		(select min(time) as time,type,value from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' and value > 0 group by type,value order by type) as t1 join
+		(select type, count(distinct value) as count from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' and value > 0 group by type order by count desc) as t2 
+		where t1.type=t2.type order by t2.count desc, t1.time;`, startTime, endTime)
 
 	table := TableDef{
 		Category: []string{CategoryConfig},
 		Title:    "TiDB GC Config",
 		CommentEN: `TiDB GC config change history; 
 MIN_TIME is the minimum start effective time`,
-		CommentCN: "",
-		Column:    []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
+		CommentCN:      "",
+		joinColumns:    []int{1},
+		compareColumns: []int{2},
+		Column:         []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
 	}
 	rows, err := getSQLRows(db, sql)
 	if err != nil {
@@ -798,7 +850,7 @@ P80 is the max time of 0.80 quantile;
 `,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{3},
+		compareColumns: []int{3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 
@@ -972,7 +1024,7 @@ P80 is the max time of 0.80 quantile;
 `,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{3},
+		compareColumns: []int{3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "TIME_RATIO", "TOTAL_TIME", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 
@@ -1043,7 +1095,7 @@ func GetTiKVSchedulerInfo(startTime, endTime string, db *gorm.DB) (TableDef, err
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{2},
+		compareColumns: []int{2, 3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 	arg := newQueryArg(startTime, endTime)
@@ -1171,7 +1223,7 @@ func GetTiKVSnapshotInfo(startTime, endTime string, db *gorm.DB) (TableDef, erro
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
-		compareColumns: []int{2},
+		compareColumns: []int{2, 3, 4, 5},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_VALUE", "TOTAL_COUNT", "P999", "P99", "P90", "P80"},
 	}
 	arg := newQueryArg(startTime, endTime)
@@ -1434,7 +1486,7 @@ func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	}
 	table := TableDef{
 		Category:       []string{CategoryLoad},
-		Title:          "Load info",
+		Title:          "Node Load info",
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
@@ -1473,7 +1525,7 @@ func getAvgMaxMinCPUUsage(startTime, endTime string, db *gorm.DB) (*TableRowDef,
 	if len(rows) == 0 {
 		return nil, nil
 	}
-	sql = fmt.Sprintf("select 'node_cpu_usage', instance, 100-avg(value),100-min(value),100-max(value) from metrics_schema.node_cpu_usage %s and mode='idle' group by instance", condition)
+	sql = fmt.Sprintf("select 'node_cpu_usage', instance, 100-avg(value) as avg_value,100-min(value),100-max(value) from metrics_schema.node_cpu_usage %s and mode='idle' group by instance order by avg_value desc", condition)
 	subRows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
@@ -1509,9 +1561,9 @@ func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowD
 	if len(rows) == 0 {
 		return nil, nil
 	}
-	sql = fmt.Sprintf(`select 'node_mem_usage',t1.instance, 100*(1-t1.avg_value/t2.total), 100*(1-t1.min_value/t2.total), 100*(1-t1.max_value/t2.total)  from 
+	sql = fmt.Sprintf(`select 'node_mem_usage',t1.instance, 100*(1-t1.avg_value/t2.total) as avg_value, 100*(1-t1.min_value/t2.total), 100*(1-t1.max_value/t2.total)  from 
 			(select instance, avg(value) as avg_value,max(value) as max_value,min(value) as min_value from metrics_schema.node_memory_available %[1]s GROUP BY instance) as t1 join
-			(select instance, max(value) as total from metrics_schema.node_total_memory %[1]s GROUP BY instance) as t2 where t1.instance = t2.instance;`, condition)
+			(select instance, max(value) as total from metrics_schema.node_total_memory %[1]s GROUP BY instance) as t2 where t1.instance = t2.instance order by avg_value desc;`, condition)
 	subRows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
@@ -1536,11 +1588,11 @@ func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowD
 }
 
 func GetCPUUsageTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
-	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.process_cpu_usage where time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
+	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.process_cpu_usage where time >= '%s' and time < '%s' and job not in ('overwritten-nodes','overwritten-cluster') group by instance, job order by avg(value) desc",
 		startTime, endTime)
 	table := TableDef{
 		Category:       []string{CategoryLoad},
-		Title:          "process cpu usage",
+		Title:          "Process cpu usage",
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
@@ -1572,11 +1624,11 @@ func GetCPUUsageTable(startTime, endTime string, db *gorm.DB) (TableDef, error) 
 }
 
 func GetProcessMemUsageTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
-	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.tidb_process_mem_usage where time >= '%s' and time < '%s' group by instance, job order by avg(value) desc",
+	sql := fmt.Sprintf("select instance, job, avg(value),max(value),min(value) from metrics_schema.tidb_process_mem_usage where time >= '%s' and time < '%s' and job not in ('overwritten-nodes','overwritten-cluster') group by instance, job order by avg(value) desc",
 		startTime, endTime)
 	table := TableDef{
 		Category:       []string{CategoryLoad},
-		Title:          "process memory usage",
+		Title:          "Process memory usage",
 		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
@@ -1608,7 +1660,7 @@ func GetGoroutinesCountTable(startTime, endTime string, db *gorm.DB) (TableDef, 
 		startTime, endTime)
 	table := TableDef{
 		Category:       []string{CategoryLoad},
-		Title:          "goroutines count",
+		Title:          "TiDB/PD goroutines count",
 		CommentEN:      "The goroutine count of tidb/pd server",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
@@ -1625,15 +1677,23 @@ func GetGoroutinesCountTable(startTime, endTime string, db *gorm.DB) (TableDef, 
 
 func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs := []AvgMaxMinTableDef{
-		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'raftstore%'", Comment: "The CPU usage of each TiKV raftstore"},
-		{name: "apply", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'apply%'", Comment: "The CPU usage of each TiKV apply"},
-		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'sched_worker%'", Comment: "The CPU usage of each TiKV sched_worker"},
-		{name: "snap", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'snap%'", Comment: "The CPU usage of each TiKV snapshot"},
-		{name: "cop", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'cop%'", Comment: "The CPU usage of each TiKV coporssesor"},
-		{name: "grpc", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'grpc%'", Comment: "The CPU usage of each TiKV grpc"},
-		{name: "rocksdb", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'rocksdb%'", Comment: "The CPU usage of each TiKV rocksdb"},
-		{name: "gc", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'gc%'", Comment: "The CPU usage of each TiKV gc"},
-		{name: "split_check", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'split_check%'", Comment: "The CPU usage of each TiKV split_check"},
+		{name: "grpc poll", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'grpc%'", Comment: "The CPU utilization of each TiKV grpc"},
+		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'raftstore_%'", Comment: "The CPU utilization of TiKV raftstore thread"},
+		{name: "Async apply", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'apply%'", Comment: "The CPU utilization of TiKV async apply thread"},
+		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'sched_%'", Comment: "The CPU utilization of TiKV scheduler worker thread"},
+		{name: "snapshot", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'snap%'", Comment: "The CPU utilization of TiKV snapshot"},
+		{name: "unified read pool", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'unified_read_po%'", Comment: "The CPU utilization TiKV unified read pool thread"},
+		{name: "storage read pool", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'store_read%'", Comment: "The CPU utilization TiKV storage read pool thread"},
+		{name: "storage read pool normal", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'store_read_norm%'", Comment: "The CPU utilization TiKV storage read pool normal thread"},
+		{name: "storage read pool high", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'store_read_high%'", Comment: "The CPU utilization TiKV storage read pool high thread"},
+		{name: "storage read pool low", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'store_read_low%'", Comment: "The CPU utilization TiKV storage read pool low thread"},
+		{name: "cop", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'cop%'", Comment: "The CPU utilization of TiKV coporssesor"},
+		{name: "cop normal", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'cop_normal%'", Comment: "The CPU utilization of TiKV coporssesor normal thread"},
+		{name: "cop high", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'cop_high%'", Comment: "The CPU utilization of TiKV coporssesor high thread"},
+		{name: "cop low", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'cop_low%'", Comment: "The CPU utilization of TiKV coporssesor low thread"},
+		{name: "rocksdb", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'rocksdb%'", Comment: "The CPU utilization TiKV rocksdb"},
+		{name: "gc", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'gc_worker%'", Comment: "The CPU utilization of TiKV gc"},
+		{name: "split_check", tbl: "tikv_thread_cpu", label: "instance", condition: "name = 'split_check'", Comment: "The CPU utilization of TiKV split_check"},
 	}
 	table := TableDef{
 		Category:       []string{CategoryLoad},
@@ -1692,6 +1752,7 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, er
 			Comment:   def.Comment,
 		})
 	}
+	sortRowsByIndex(resultRows, 2)
 	table.Rows = resultRows
 	return table, nil
 }

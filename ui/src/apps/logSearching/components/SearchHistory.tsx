@@ -6,11 +6,9 @@ import { Moment } from 'moment';
 import React, { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { LogLevelMap, parseSearchingParams, ServerType } from './utils';
+import { LogLevelMap, parseSearchingParams, ServerType, DATE_TIME_FORMAT } from './utils';
 
 const { Column } = Table;
-
-const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
 type History = {
   key: number

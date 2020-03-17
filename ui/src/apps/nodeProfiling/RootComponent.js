@@ -1,6 +1,6 @@
 import React from 'react'
 import { HashRouter as Router, Route, Switch } from 'react-router-dom'
-import IndexPage from './pages/Index'
+import ListPage from './pages/List'
 import DetailPage from './pages/Detail'
 
 const App = () => (
@@ -8,7 +8,7 @@ const App = () => (
     <Router>
       <Switch>
         <Route exact path="/node_profiling">
-          <IndexPage />
+          <ListPage />
         </Route>
         <Route path="/node_profiling/:id">
           <DetailPage />

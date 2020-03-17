@@ -28,10 +28,14 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof" //nolint:gosec
+	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
+
+	"go.etcd.io/etcd/pkg/transport"
 
 	"github.com/joho/godotenv"
 	"github.com/pingcap/log"
@@ -80,10 +84,42 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")
 	flag.Int64Var(&cfg.KVFileEndTime, "keyviz-file-end", 0, "(debug) end time for file range in file mode")
 
+	caPath := flag.String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
+	certPath := flag.String("cluster-cert", "", "path of file that contains X509 certificate in PEM format..")
+	keyPath := flag.String("cluster-key", "", "path of file that contains X509 key in PEM format.")
+
 	_ = flag.CommandLine.MarkHidden("keyviz-file-start")
 	_ = flag.CommandLine.MarkHidden("keyviz-file-end")
 
 	flag.Parse()
+
+	// setup TLSConfig
+	if len(*caPath) != 0 && len(*certPath) != 0 && len(*keyPath) != 0 {
+		tlsInfo := transport.TLSInfo{
+			CertFile:      *certPath,
+			KeyFile:       *keyPath,
+			TrustedCAFile: *caPath,
+		}
+		tlsConfig, err := tlsInfo.ClientConfig()
+		if err != nil {
+			log.Fatal("Failed to load certificates", zap.Error(err))
+		}
+		cfg.CoreConfig.TLSConfig = tlsConfig
+	}
+
+	// normalize PDEndPoint
+	if !strings.HasPrefix(cfg.CoreConfig.PDEndPoint, "http") {
+		cfg.CoreConfig.PDEndPoint = fmt.Sprintf("http://%s", cfg.CoreConfig.PDEndPoint)
+	}
+	pdEndPoint, err := url.Parse(cfg.CoreConfig.PDEndPoint)
+	if err != nil {
+		log.Fatal("Invalid PD Endpoint", zap.Error(err))
+	}
+	pdEndPoint.Scheme = "http"
+	if cfg.CoreConfig.TLSConfig != nil {
+		pdEndPoint.Scheme = "https"
+	}
+	cfg.CoreConfig.PDEndPoint = pdEndPoint.String()
 
 	if showVersion {
 		utils.PrintInfo()
@@ -136,7 +172,7 @@ func main() {
 		log.Fatal("Cannot create etcd client", zap.Error(err))
 	}
 
-	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(), etcdProvider)
+	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(cliConfig.CoreConfig.TLSConfig), etcdProvider)
 	// FIXME: Handle open error
 	tidbForwarder.Open()        //nolint:errcheck
 	defer tidbForwarder.Close() //nolint:errcheck
@@ -147,11 +183,11 @@ func main() {
 	remoteDataProvider := &keyvisualregion.PDDataProvider{
 		FileStartTime:  cliConfig.KVFileStartTime,
 		FileEndTime:    cliConfig.KVFileEndTime,
-		PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint),
+		PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint, httpClient),
 		EtcdProvider:   etcdProvider,
 		Store:          store,
 	}
-	keyvisualService := keyvisual.NewService(ctx, cliConfig.CoreConfig, remoteDataProvider)
+	keyvisualService := keyvisual.NewService(ctx, cliConfig.CoreConfig, remoteDataProvider, httpClient)
 	keyvisualService.Start()
 	defer keyvisualService.Close()
 

@@ -32,16 +32,16 @@ type DB struct {
 	*gorm.DB
 }
 
-func MustOpenDBStore(lc fx.Lifecycle, config *config.Config) *DB {
-	err := os.MkdirAll(config.DataDir, 0777)
-	if err != nil {
-		log.Fatal("Failed to create Dashboard storage directory", zap.Error(err))
-		return nil
+func NewDBStore(lc fx.Lifecycle, config *config.Config) (*DB, error) {
+	if err := os.MkdirAll(config.DataDir, 0777); err != nil {
+		log.Error("Failed to create Dashboard storage directory", zap.Error(err))
+		return nil, err
 	}
+
 	gormDB, err := gorm.Open("sqlite3", path.Join(config.DataDir, "dashboard.sqlite.db"))
 	if err != nil {
-		log.Fatal("Failed to open Dashboard storage file", zap.Error(err))
-		return nil
+		log.Error("Failed to open Dashboard storage file", zap.Error(err))
+		return nil, err
 	}
 
 	db := &DB{gormDB}
@@ -52,5 +52,5 @@ func MustOpenDBStore(lc fx.Lifecycle, config *config.Config) *DB {
 		},
 	})
 
-	return db
+	return db, nil
 }

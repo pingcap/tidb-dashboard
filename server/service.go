@@ -106,7 +106,7 @@ func (s *Service) Start(ctx context.Context) error {
 		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
 			s.provide,
-			dbstore.MustOpenDBStore,
+			dbstore.NewDBStore,
 			pd.NewEtcdClient,
 			tidb.NewForwarderConfig,
 			tidb.NewForwarder,

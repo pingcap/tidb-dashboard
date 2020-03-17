@@ -111,13 +111,13 @@ func (s *Service) StartSupportTask(ctx context.Context) error {
 	s.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
-			s.NewWaitGroup,
-			s.Parameters,
+			s.newWaitGroup,
+			s.provide,
 			input.NewStatInput,
 			decorator.TiDBLabelStrategy,
-			s.DistanceStrategy,
-			s.NewStat,
-			s.NewServiceCore,
+			s.newStrategy,
+			s.newStat,
+			s.newServiceCore,
 		),
 		fx.Populate(&s.core),
 	)
@@ -137,7 +137,7 @@ func (s *Service) StopSupportTask(ctx context.Context) error {
 	return err
 }
 
-func (s *Service) NewWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {
+func (s *Service) newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {
 	wg := &sync.WaitGroup{}
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
@@ -148,15 +148,15 @@ func (s *Service) NewWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {
 	return wg
 }
 
-func (s *Service) Parameters() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB) {
+func (s *Service) provide() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB) {
 	return s.config, s.provider, s.httpClient, s.db
 }
 
-func (s *Service) DistanceStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.LabelStrategy) matrix.Strategy {
+func (s *Service) newStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.LabelStrategy) matrix.Strategy {
 	return matrix.DistanceStrategy(lc, wg, labelStrategy, distanceStrategyRatio, distanceStrategyLevel, distanceStrategyCount)
 }
 
-func (s *Service) NewStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, in input.StatInput, strategy matrix.Strategy) *storage.Stat {
+func (s *Service) newStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, in input.StatInput, strategy matrix.Strategy) *storage.Stat {
 	stat := storage.NewStat(lc, wg, provider, defaultStatConfig, strategy, in.GetStartTime())
 
 	lc.Append(fx.Hook{
@@ -173,7 +173,7 @@ func (s *Service) NewStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.
 	return stat
 }
 
-func (s *Service) NewServiceCore(lc fx.Lifecycle, wg *sync.WaitGroup, stat *storage.Stat, strategy matrix.Strategy) *ServiceCore {
+func (s *Service) newServiceCore(lc fx.Lifecycle, wg *sync.WaitGroup, stat *storage.Stat, strategy matrix.Strategy) *ServiceCore {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.status.Start()

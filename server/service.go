@@ -113,14 +113,14 @@ func (s *Service) StartSupportTask(ctx context.Context) error {
 	s.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
-			s.Parameters,
+			s.provide,
 			dbstore.MustOpenDBStore,
 			pd.NewEtcdClient,
 			tidb.NewForwarderConfig,
 			tidb.NewForwarder,
 			http2.NewHTTPClientWithConf,
 			s.newPDDataProvider,
-			s.NewAPIHandlerEngine,
+			s.newAPIHandlerEngine,
 			user.NewAuthService,
 			foo.NewService,
 			info.NewService,
@@ -173,11 +173,11 @@ func (s *Service) StopSupportTask(ctx context.Context) error {
 	return err
 }
 
-func (s *Service) Parameters() *config.Config {
+func (s *Service) provide() *config.Config {
 	return s.config
 }
 
-func (s *Service) NewAPIHandlerEngine() (r *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils.NewTemplateFunc) {
+func (s *Service) newAPIHandlerEngine() (r *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils.NewTemplateFunc) {
 	return apiserver.NewAPIHandlerEngine("/dashboard/api")
 }
 

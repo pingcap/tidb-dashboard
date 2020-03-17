@@ -37,6 +37,8 @@ const App = () => (
 export default App
 ```
 
+More usage, see [demo](https://github.com/baurine/test-tidb-dashboard-packages)
+
 ## License
 
 © [@pingcap-incubator](https://github.com/pingcap-incubator)

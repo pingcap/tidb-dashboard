@@ -35,6 +35,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
 	flag "github.com/spf13/pflag"
 	"go.etcd.io/etcd/clientv3"
@@ -166,7 +167,7 @@ func main() {
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
-	app := server.NewService(
+	s := server.NewService(
 		cliConfig.CoreConfig,
 		uiserver.Handler(),
 		swaggerserver.Handler(),
@@ -180,12 +181,16 @@ func main() {
 			}
 		},
 	)
-	if err := app.StartSupportTask(ctx); err != nil {
+	if err := s.StartSupportTask(ctx); err != nil {
 		log.Fatal("Can not start server", zap.Error(err))
 	}
-	defer app.StopSupportTask(context.Background()) //nolint:errcheck
+	defer s.StopSupportTask(context.Background()) //nolint:errcheck
+
+	r := gin.New()
+	r.Use(gin.Recovery())
+	server.Register(&r.RouterGroup, s)
 	mux := http.DefaultServeMux
-	mux.Handle("/", app.Handler)
+	mux.Handle("/", r)
 
 	utils.LogInfo()
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))

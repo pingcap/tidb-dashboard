@@ -58,17 +58,17 @@ type Service struct {
 
 	config            *config.Config
 	newPDDataProvider PDDataProviderConstructor
+	stoppedHandler    gin.HandlerFunc
 
 	apiHandlerEngine *gin.Engine
 
-	http.Handler
+	core http.Handler
 }
 
 func NewService(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stoppedHandler gin.HandlerFunc, newPDDataProvider PDDataProviderConstructor) *Service {
-	_ = godotenv.Load()
-
 	once.Do(func() {
 		// These global modification will be effective only for the first invoke.
+		_ = godotenv.Load()
 		gin.SetMode(gin.ReleaseMode)
 	})
 
@@ -76,6 +76,7 @@ func NewService(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stop
 		status:            utils.NewServiceStatus(),
 		config:            cfg,
 		newPDDataProvider: newPDDataProvider,
+		stoppedHandler:    stoppedHandler,
 	}
 
 	// handle ui, api, swagger
@@ -90,14 +91,14 @@ func NewService(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stop
 		s.apiHandlerEngine.ServeHTTP(w, r)
 	}))
 
-	// global Handler
-	r := gin.New()
-	r.Use(gin.Recovery())
-	r.Use(s.status.MWHandleStopped(stoppedHandler))
-	r.Any("/*any", gin.WrapH(mux))
-	s.Handler = r
+	s.core = mux
 
 	return s
+}
+
+func Register(r *gin.RouterGroup, s *Service) {
+	r.Use(s.status.MWHandleStopped(s.stoppedHandler))
+	r.Any("/*any", gin.WrapH(s.core))
 }
 
 func (s *Service) IsRunning() bool {

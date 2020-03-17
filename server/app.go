@@ -20,6 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/joomcode/errorx"
+	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
@@ -46,7 +47,7 @@ var (
 	ErrServiceStopped = ErrNS.NewType("service_stopped")
 )
 
-type PDDataProviderConstructor func(*config.Config, *http.Client, pd.EtcdProvider) *keyvisualregion.PDDataProvider
+type PDDataProviderConstructor func(*config.Config, *http.Client, *clientv3.Client) *keyvisualregion.PDDataProvider
 
 type App struct {
 	app    *fx.App
@@ -96,7 +97,7 @@ func (a *App) Start(ctx context.Context) error {
 		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
 			dbstore.MustOpenDBStore,
-			pd.NewLocalEtcdClientProvider,
+			pd.NewEtcdClient,
 			tidb.NewForwarderConfig,
 			tidb.NewForwarder,
 			http2.NewHTTPClientWithConf,

@@ -37,6 +37,7 @@ import (
 
 	"github.com/pingcap/log"
 	flag "github.com/spf13/pflag"
+	"go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/pkg/transport"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -44,7 +45,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	keyvisualinput "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
 	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
@@ -171,12 +171,12 @@ func main() {
 		uiserver.Handler(),
 		swaggerserver.Handler(),
 		server.StoppedHandler,
-		func(cfg *config.Config, httpClient *http.Client, etcdProvider pd.EtcdProvider) *keyvisualregion.PDDataProvider {
+		func(cfg *config.Config, httpClient *http.Client, etcdClient *clientv3.Client) *keyvisualregion.PDDataProvider {
 			return &keyvisualregion.PDDataProvider{
 				FileStartTime:  cliConfig.KVFileStartTime,
 				FileEndTime:    cliConfig.KVFileEndTime,
 				PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint, httpClient),
-				EtcdProvider:   etcdProvider,
+				EtcdClient:     etcdClient,
 			}
 		},
 	)

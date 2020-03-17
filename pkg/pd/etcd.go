@@ -43,18 +43,7 @@ func init() {
 	_ = zap.RegisterEncoder("etcd-client", newZapEncoder)
 }
 
-var _ EtcdProvider = (*LocalEtcdProvider)(nil)
-
-type EtcdProvider interface {
-	GetEtcdClient() *clientv3.Client
-}
-
-// FIXME: We should be able to provide etcd directly. However currently there are problems in PD.
-type LocalEtcdProvider struct {
-	client *clientv3.Client
-}
-
-func NewLocalEtcdClientProvider(config *config.Config) (*LocalEtcdProvider, error) {
+func NewEtcdClient(config *config.Config) (*clientv3.Client, error) {
 	// TODO: refactor
 	// Because etcd client does not support setting logger directly,
 	// the configuration of pingcap/log is copied here.
@@ -63,7 +52,7 @@ func NewLocalEtcdClientProvider(config *config.Config) (*LocalEtcdProvider, erro
 	zapCfg.OutputPaths = []string{"stderr"}
 	zapCfg.ErrorOutputPaths = []string{"stderr"}
 
-	client, err := clientv3.New(clientv3.Config{
+	return clientv3.New(clientv3.Config{
 		Endpoints:        []string{config.PDEndPoint},
 		AutoSyncInterval: 30 * time.Second,
 		DialTimeout:      5 * time.Second,
@@ -86,12 +75,4 @@ func NewLocalEtcdClientProvider(config *config.Config) (*LocalEtcdProvider, erro
 		TLS:       config.TLSConfig,
 		LogConfig: &zapCfg,
 	})
-	if err != nil {
-		return nil, err
-	}
-	return &LocalEtcdProvider{client: client}, nil
-}
-
-func (p *LocalEtcdProvider) GetEtcdClient() *clientv3.Client {
-	return p.client
 }

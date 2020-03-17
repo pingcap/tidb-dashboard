@@ -19,26 +19,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AppStatus int32
+type ServiceStatus int32
 
-func NewAppStatus() *AppStatus {
-	var a AppStatus = 0
+func NewServiceStatus() *ServiceStatus {
+	var a ServiceStatus = 0
 	return &a
 }
 
-func (s *AppStatus) IsRunning() bool {
+func (s *ServiceStatus) IsRunning() bool {
 	return atomic.LoadInt32((*int32)(s)) != 0
 }
 
-func (s *AppStatus) Start() {
+func (s *ServiceStatus) Start() {
 	atomic.StoreInt32((*int32)(s), 1)
 }
 
-func (s *AppStatus) Stop() {
+func (s *ServiceStatus) Stop() {
 	atomic.StoreInt32((*int32)(s), 0)
 }
 
-func (s *AppStatus) MWHandleStopped(stoppedHandler gin.HandlerFunc) gin.HandlerFunc {
+func (s *ServiceStatus) MWHandleStopped(stoppedHandler gin.HandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !s.IsRunning() {
 			stoppedHandler(c)

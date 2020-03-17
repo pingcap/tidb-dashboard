@@ -54,7 +54,7 @@ type PDDataProviderConstructor func(*config.Config, *http.Client, *clientv3.Clie
 
 type App struct {
 	app    *fx.App
-	status *utils.AppStatus
+	status *utils.ServiceStatus
 
 	config            *config.Config
 	newPDDataProvider PDDataProviderConstructor
@@ -73,7 +73,7 @@ func NewApp(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stoppedH
 	})
 
 	a := &App{
-		status:            utils.NewAppStatus(),
+		status:            utils.NewServiceStatus(),
 		config:            cfg,
 		newPDDataProvider: newPDDataProvider,
 	}

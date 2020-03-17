@@ -59,7 +59,7 @@ var (
 
 type App struct {
 	app    *fx.App
-	status *utils.AppStatus
+	status *utils.ServiceStatus
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -74,7 +74,7 @@ type App struct {
 
 func NewApp(lc fx.Lifecycle, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client, db *dbstore.DB) *App {
 	keyvisualApp := &App{
-		status:     utils.NewAppStatus(),
+		status:     utils.NewServiceStatus(),
 		config:     cfg,
 		provider:   provider,
 		httpClient: httpClient,

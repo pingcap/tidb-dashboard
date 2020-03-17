@@ -35,7 +35,7 @@ function ComponentPanelTable({ cluster }) {
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (text, node) => {
+      render: (status, node) => {
         if (node && node.comp && node.comp === 'tidb') {
           let showConfirm = () => {
             Modal.confirm({
@@ -49,7 +49,7 @@ function ComponentPanelTable({ cluster }) {
           }
           return (
             <span>
-              <span>{text} </span>
+              <span>{t(`cluster_info.component_table.${status}`)} </span>
               {node.status && node.status !== 'up' && (
                 <span>
                   (
@@ -66,15 +66,15 @@ function ComponentPanelTable({ cluster }) {
             </span>
           )
         }
-        return <span>{text} </span>
+        return <span>{status}</span>
       },
     },
   ]
 
   if (cluster) {
-    pushNodes('tikv', cluster, dataSource)
-    pushNodes('tidb', cluster, dataSource)
-    pushNodes('pd', cluster, dataSource)
+    pushNodes('tikv', cluster, dataSource, t)
+    pushNodes('tidb', cluster, dataSource, t)
+    pushNodes('pd', cluster, dataSource, t)
   }
 
   return (
@@ -98,7 +98,7 @@ function ComponentPanelTable({ cluster }) {
   )
 }
 
-function pushNodes(key, cluster, dataSource) {
+function pushNodes(key, cluster, dataSource, t) {
   if (
     cluster[key] !== undefined &&
     cluster[key] !== null &&
@@ -107,18 +107,22 @@ function pushNodes(key, cluster, dataSource) {
     const nodes = cluster[key].nodes
     dataSource.push({
       address: key + '(' + nodes.length + ')',
-      children: nodes.map((n, index) => wrapNode(n, key, index)),
+      children: nodes.map((n, index) => wrapNode(n, key, index, t)),
     })
   }
 }
 
-function wrapNode(node, comp, id) {
+function wrapNode(node, comp, id, t) {
   if (node === undefined || node === null) {
     return
   }
-  let status = 'down'
+  let status = 'down';
   if (node.status === 1) {
-    status = 'up'
+    status = 'up';
+  } else if (node.status === 2) {
+    status = 'tombstone';
+  } else if (node.status === 3) {
+    status = 'offline';
   }
   if (node.deploy_path === undefined && node.binary_path !== null) {
     node.deploy_path = node.binary_path.substring(

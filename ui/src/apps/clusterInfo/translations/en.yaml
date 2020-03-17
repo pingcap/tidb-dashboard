@@ -20,6 +20,11 @@ cluster_info:
     hide_warning: Do you want to hide this TiDB?
     hide_confirm: OK
     hide_cancel: Cancel
+
+    up: Up
+    down: Down
+    tombstone: Tombstone
+    offline: Offline
   monitor_alert:
     title: MONITOR AND ALERT
     view_monitor: VIEW MONITOR

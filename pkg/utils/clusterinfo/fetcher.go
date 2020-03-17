@@ -343,6 +343,8 @@ func storeStateToStatus(state string) ComponentStatus {
 		return ComponentStatusUp
 	case "tombstone":
 		return ComponentStatusTombstone
+	case "offline":
+		return ComponentStatusOffline
 	default:
 		return ComponentStatusUnreachable
 	}

@@ -20,6 +20,11 @@ cluster_info:
     hide_warning: 你希望隐藏这个 TiDB 吗
     hide_confirm: 是的
     hide_cancel: 取消
+
+    up: 正常
+    down: 关闭
+    tombstone: 已下线
+    offline: 下线中
   monitor_alert:
     title: 监控和告警
     view_monitor: 查看监控

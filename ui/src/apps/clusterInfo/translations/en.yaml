@@ -17,7 +17,7 @@ cluster_info:
     hide_db: HIDE
     action: Action
 
-    hide_warning: Do you want to hide this TiDB?
+    hide_warning: 'Do you want to hide TiDB node {{nodeName}}?'
     hide_confirm: OK
     hide_cancel: Cancel
 

@@ -17,7 +17,7 @@ cluster_info:
     hide_db: 隐藏
     action: 操作
 
-    hide_warning: 你希望隐藏这个 TiDB 吗
+    hide_warning: '你希望隐藏 TiDB 节点 {{nodeName}} 吗？'
     hide_confirm: 是的
     hide_cancel: 取消
 

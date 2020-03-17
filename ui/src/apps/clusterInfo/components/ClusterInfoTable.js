@@ -36,12 +36,17 @@ function ComponentPanelTable({ cluster }) {
       key: 'status',
       width: 100,
       render: (status, node) => {
-        let isDb = (node.comp && node.comp === 'tidb');
-        if (node && isDb) {
+        if (!status) {
+          return
+        }
+        let statusBanner = <span>{t(`cluster_info.component_table.${status}`)} </span>;
+        if (node.comp && node.comp === 'tidb') {
           let showConfirm = () => {
             Modal.confirm({
-              title: t('cluster_info.component_table.hide_db'),
-              content: t('cluster_info.component_table.hide_warning'),
+              title: `${t('cluster_info.component_table.hide_db')}`,
+              content: t('cluster_info.component_table.hide_warning', {
+                nodeName: node.address,
+              }),
               okText: t('cluster_info.component_table.hide_confirm'),
               cancelText: t('cluster_info.component_table.hide_cancel'),
               onOk() {
@@ -52,7 +57,7 @@ function ComponentPanelTable({ cluster }) {
           }
           return (
             <span>
-              <span>{t(`cluster_info.component_table.${status}`)} </span>
+              {statusBanner}
               {node.status && node.status !== 'up' && (
                 <span>
                   (
@@ -69,9 +74,7 @@ function ComponentPanelTable({ cluster }) {
             </span>
           )
         }
-        if (status) {
-          return <span>{t(`cluster_info.component_table.${status}`)} </span>
-        }
+        return statusBanner;
       },
     },
   ]

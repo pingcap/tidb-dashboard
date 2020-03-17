@@ -180,10 +180,10 @@ func main() {
 			}
 		},
 	)
-	if err := app.Start(ctx); err != nil {
+	if err := app.StartSupportTask(ctx); err != nil {
 		log.Fatal("Can not start server", zap.Error(err))
 	}
-	defer app.Stop(context.Background()) //nolint:errcheck
+	defer app.StopSupportTask(context.Background()) //nolint:errcheck
 	mux := http.DefaultServeMux
 	mux.Handle("/", app.Handler)
 

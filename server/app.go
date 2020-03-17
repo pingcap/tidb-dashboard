@@ -104,7 +104,7 @@ func (a *App) IsRunning() bool {
 	return a.status.IsRunning()
 }
 
-func (a *App) Start(ctx context.Context) error {
+func (a *App) StartSupportTask(ctx context.Context) error {
 	a.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
@@ -163,7 +163,7 @@ func (a *App) Start(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) Stop(ctx context.Context) error {
+func (a *App) StopSupportTask(ctx context.Context) error {
 	err := a.app.Stop(ctx)
 	a.apiHandlerEngine = nil
 	return err

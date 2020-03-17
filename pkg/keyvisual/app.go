@@ -82,8 +82,8 @@ func NewApp(lc fx.Lifecycle, cfg *config.Config, provider *region.PDDataProvider
 	}
 
 	lc.Append(fx.Hook{
-		OnStart: keyvisualApp.Start,
-		OnStop:  keyvisualApp.Stop,
+		OnStart: keyvisualApp.StartSupportTask,
+		OnStop:  keyvisualApp.StopSupportTask,
 	})
 
 	return keyvisualApp
@@ -102,7 +102,7 @@ func (a *App) IsRunning() bool {
 	return a.status.IsRunning()
 }
 
-func (a *App) Start(ctx context.Context) error {
+func (a *App) StartSupportTask(ctx context.Context) error {
 	a.ctx, a.cancel = context.WithCancel(ctx)
 	a.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),
@@ -127,7 +127,7 @@ func (a *App) Start(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) Stop(ctx context.Context) error {
+func (a *App) StopSupportTask(ctx context.Context) error {
 	err := a.app.Stop(ctx)
 	a.service = nil
 	return err

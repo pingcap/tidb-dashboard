@@ -52,7 +52,7 @@ export default function MonitorAlertBar({ cluster }) {
               ) : (
                 <a
                   href={`http://${cluster.alert_manager.ip}:${cluster.alert_manager.port}`}
-                  className={alertCounter !== 0 && styles.warn}
+                  className={alertCounter !== 0 ? styles.warn : undefined}
                 >
                   {alertCounter === 0
                     ? t('cluster_info.monitor_alert.view_zero_alerts')

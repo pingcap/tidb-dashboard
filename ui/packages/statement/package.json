@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "description": "",
   "author": "pingcap-incubator",
-  "repository": "",
+  "repository" : {
+    "type" : "git",
+    "url": "git@github.com:pingcap-incubator/tidb-dashboard.git"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "jsnext:main": "dist/index.es.js",

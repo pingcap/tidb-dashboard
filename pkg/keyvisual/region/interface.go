@@ -14,7 +14,6 @@
 package region
 
 import (
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
@@ -35,5 +34,4 @@ type PDDataProvider struct {
 	PeriodicGetter RegionsInfoGenerator
 
 	EtcdProvider pd.EtcdProvider
-	Store        *dbstore.DB
 }

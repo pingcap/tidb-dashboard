@@ -19,6 +19,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/joomcode/errorx"
 	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
@@ -40,6 +41,11 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
+var (
+	ErrNS             = errorx.NewNamespace("error.server")
+	ErrServiceStopped = ErrNS.NewType("service_stopped")
+)
+
 type PDDataProviderConstructor func(*config.Config, *http.Client, pd.EtcdProvider) *keyvisualregion.PDDataProvider
 
 type App struct {
@@ -47,20 +53,20 @@ type App struct {
 	status *utils.AppStatus
 
 	config            *config.Config
-	getPDDataProvider PDDataProviderConstructor
+	newPDDataProvider PDDataProviderConstructor
 
 	apiHandlerEngine *gin.Engine
 
 	http.Handler
 }
 
-func NewApp(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stoppedHandler gin.HandlerFunc, getPDDataProvider PDDataProviderConstructor) *App {
+func NewApp(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stoppedHandler gin.HandlerFunc, newPDDataProvider PDDataProviderConstructor) *App {
 	_ = godotenv.Load()
 
 	a := &App{
 		status:            utils.NewAppStatus(),
 		config:            cfg,
-		getPDDataProvider: getPDDataProvider,
+		newPDDataProvider: newPDDataProvider,
 	}
 
 	// handle ui, api, swagger
@@ -94,7 +100,7 @@ func (a *App) Start(ctx context.Context) error {
 			tidb.NewForwarderConfig,
 			tidb.NewForwarder,
 			http2.NewHTTPClientWithConf,
-			a.getPDDataProvider,
+			a.newPDDataProvider,
 			a.NewApiHandlerEngine,
 			user.NewAuthService,
 			foo.NewService,
@@ -142,4 +148,8 @@ func (a *App) Parameters() *config.Config {
 
 func (a *App) NewApiHandlerEngine() (r *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils.NewTemplateFunc) {
 	return apiserver.NewApiHandlerEngine("/dashboard/api")
+}
+
+func StoppedHandler(c *gin.Context) {
+	_ = c.AbortWithError(http.StatusNotFound, ErrServiceStopped.NewWithNoMessage())
 }

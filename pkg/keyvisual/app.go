@@ -25,6 +25,7 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
@@ -66,16 +67,18 @@ type App struct {
 	config     *config.Config
 	provider   *region.PDDataProvider
 	httpClient *http.Client
+	db         *dbstore.DB
 
 	service *Service
 }
 
-func NewApp(lc fx.Lifecycle, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) *App {
+func NewApp(lc fx.Lifecycle, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client, db *dbstore.DB) *App {
 	keyvisualApp := &App{
 		status:     utils.NewAppStatus(),
 		config:     cfg,
 		provider:   provider,
 		httpClient: httpClient,
+		db:         db,
 	}
 
 	lc.Append(fx.Hook{
@@ -137,8 +140,8 @@ func (a *App) NewWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {
 	return wg
 }
 
-func (a *App) Parameters() (*config.Config, *region.PDDataProvider, *http.Client) {
-	return a.config, a.provider, a.httpClient
+func (a *App) Parameters() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB) {
+	return a.config, a.provider, a.httpClient, a.db
 }
 
 func (a *App) DistanceStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.LabelStrategy) matrix.Strategy {

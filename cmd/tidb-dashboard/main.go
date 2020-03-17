@@ -166,7 +166,7 @@ func main() {
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
-	app := server.NewApp(
+	app := server.NewService(
 		cliConfig.CoreConfig,
 		uiserver.Handler(),
 		swaggerserver.Handler(),

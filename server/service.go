@@ -52,7 +52,7 @@ var (
 
 type PDDataProviderConstructor func(*config.Config, *http.Client, *clientv3.Client) *keyvisualregion.PDDataProvider
 
-type App struct {
+type Service struct {
 	app    *fx.App
 	status *utils.ServiceStatus
 
@@ -64,7 +64,7 @@ type App struct {
 	http.Handler
 }
 
-func NewApp(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stoppedHandler gin.HandlerFunc, newPDDataProvider PDDataProviderConstructor) *App {
+func NewService(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stoppedHandler gin.HandlerFunc, newPDDataProvider PDDataProviderConstructor) *Service {
 	_ = godotenv.Load()
 
 	once.Do(func() {
@@ -72,7 +72,7 @@ func NewApp(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stoppedH
 		gin.SetMode(gin.ReleaseMode)
 	})
 
-	a := &App{
+	s := &Service{
 		status:            utils.NewServiceStatus(),
 		config:            cfg,
 		newPDDataProvider: newPDDataProvider,
@@ -87,35 +87,35 @@ func NewApp(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stoppedH
 		mux.Handle("/dashboard/api/swagger/", swaggerHandler)
 	}
 	mux.Handle("/dashboard/api/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		a.apiHandlerEngine.ServeHTTP(w, r)
+		s.apiHandlerEngine.ServeHTTP(w, r)
 	}))
 
 	// global Handler
 	r := gin.New()
 	r.Use(gin.Recovery())
-	r.Use(a.status.MWHandleStopped(stoppedHandler))
+	r.Use(s.status.MWHandleStopped(stoppedHandler))
 	r.Any("/*any", gin.WrapH(mux))
-	a.Handler = r
+	s.Handler = r
 
-	return a
+	return s
 }
 
-func (a *App) IsRunning() bool {
-	return a.status.IsRunning()
+func (s *Service) IsRunning() bool {
+	return s.status.IsRunning()
 }
 
-func (a *App) StartSupportTask(ctx context.Context) error {
-	a.app = fx.New(
+func (s *Service) StartSupportTask(ctx context.Context) error {
+	s.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
-			a.Parameters,
+			s.Parameters,
 			dbstore.MustOpenDBStore,
 			pd.NewEtcdClient,
 			tidb.NewForwarderConfig,
 			tidb.NewForwarder,
 			http2.NewHTTPClientWithConf,
-			a.newPDDataProvider,
-			a.NewAPIHandlerEngine,
+			s.newPDDataProvider,
+			s.NewAPIHandlerEngine,
 			user.NewAuthService,
 			foo.NewService,
 			info.NewService,
@@ -124,10 +124,9 @@ func (a *App) StartSupportTask(ctx context.Context) error {
 			logsearch.NewService,
 			statement.NewService,
 			diagnose.NewService,
-			// app
-			keyvisual.NewApp,
+			keyvisual.NewService,
 		),
-		fx.Populate(&a.apiHandlerEngine),
+		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			user.Register,
 			foo.Register,
@@ -142,11 +141,11 @@ func (a *App) StartSupportTask(ctx context.Context) error {
 			func(lc fx.Lifecycle) {
 				lc.Append(fx.Hook{
 					OnStart: func(context.Context) error {
-						a.status.Start()
+						s.status.Start()
 						return nil
 					},
 					OnStop: func(context.Context) error {
-						a.status.Stop()
+						s.status.Stop()
 						return nil
 					},
 				})
@@ -154,26 +153,26 @@ func (a *App) StartSupportTask(ctx context.Context) error {
 		),
 	)
 
-	if err := a.app.Err(); err != nil {
+	if err := s.app.Err(); err != nil {
 		return err
 	}
-	if err := a.app.Start(ctx); err != nil {
+	if err := s.app.Start(ctx); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (a *App) StopSupportTask(ctx context.Context) error {
-	err := a.app.Stop(ctx)
-	a.apiHandlerEngine = nil
+func (s *Service) StopSupportTask(ctx context.Context) error {
+	err := s.app.Stop(ctx)
+	s.apiHandlerEngine = nil
 	return err
 }
 
-func (a *App) Parameters() *config.Config {
-	return a.config
+func (s *Service) Parameters() *config.Config {
+	return s.config
 }
 
-func (a *App) NewAPIHandlerEngine() (r *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils.NewTemplateFunc) {
+func (s *Service) NewAPIHandlerEngine() (r *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils.NewTemplateFunc) {
 	return apiserver.NewAPIHandlerEngine("/dashboard/api")
 }
 

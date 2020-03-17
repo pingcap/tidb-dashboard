@@ -23,6 +23,6 @@ type NewTemplateFunc func(name string) *template.Template
 type StatefulService interface {
 	Name() string
 	IsRunning() bool
-	StartSupportTask(context.Context) error
-	StopSupportTask(context.Context) error
+	Start(context.Context) error
+	Stop(context.Context) error
 }

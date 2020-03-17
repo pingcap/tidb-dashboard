@@ -82,8 +82,8 @@ func NewService(lc fx.Lifecycle, cfg *config.Config, provider *region.PDDataProv
 	}
 
 	lc.Append(fx.Hook{
-		OnStart: s.StartSupportTask,
-		OnStop:  s.StopSupportTask,
+		OnStart: s.Start,
+		OnStop:  s.Stop,
 	})
 
 	return s
@@ -106,7 +106,7 @@ func (s *Service) IsRunning() bool {
 	return s.status.IsRunning()
 }
 
-func (s *Service) StartSupportTask(ctx context.Context) error {
+func (s *Service) Start(ctx context.Context) error {
 	s.ctx, s.cancel = context.WithCancel(ctx)
 	s.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),
@@ -131,7 +131,7 @@ func (s *Service) StartSupportTask(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) StopSupportTask(ctx context.Context) error {
+func (s *Service) Stop(ctx context.Context) error {
 	err := s.app.Stop(ctx)
 	s.core = nil
 	return err

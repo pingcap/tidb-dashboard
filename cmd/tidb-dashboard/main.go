@@ -181,10 +181,10 @@ func main() {
 			}
 		},
 	)
-	if err := s.StartSupportTask(ctx); err != nil {
+	if err := s.Start(ctx); err != nil {
 		log.Fatal("Can not start server", zap.Error(err))
 	}
-	defer s.StopSupportTask(context.Background()) //nolint:errcheck
+	defer s.Stop(context.Background()) //nolint:errcheck
 
 	r := gin.New()
 	r.Use(gin.Recovery())

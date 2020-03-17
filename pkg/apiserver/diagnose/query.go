@@ -16,6 +16,7 @@ package diagnose
 import (
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -510,13 +511,32 @@ func convertFloatToSize(s string) string {
 		f = math.Round(mb*1000) / 1000
 		return fmt.Sprintf("%.3f GB", f)
 	}
-	if mb := f / float64(1024*1024); mb > 0 {
+	if mb := f / float64(1024*1024); mb > 1 {
 		f = math.Round(mb*1000) / 1000
 		return fmt.Sprintf("%.3f MB", f)
 	}
 	kb := f / float64(1024)
 	f = math.Round(kb*1000) / 1000
 	return fmt.Sprintf("%.3f KB", f)
+}
+
+func convertFloatToDuration(s string, ratio float64) string {
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return s
+	}
+	f = f * ratio
+	if f > 1 {
+		f = math.Round(f*1000) / 1000
+		return fmt.Sprintf("%.3f s", f)
+	}
+	if ms := f * 1000; ms > 1 {
+		f = math.Round(ms*1000) / 1000
+		return fmt.Sprintf("%.3f ms", f)
+	}
+	us := f * 1000 * 1000
+	f = math.Round(us*1000) / 1000
+	return fmt.Sprintf("%.3f us", f)
 }
 
 func convertFloatToSizeByRows(rows []TableRowDef, idx int) {
@@ -592,4 +612,32 @@ func genComment(comment string, labels []string) string {
 		comment = fmt.Sprintf("%s the label is [%s]", comment, strings.Join(labels, ", "))
 	}
 	return comment
+}
+
+func sortRowsByIndex(resultRows []TableRowDef, idx int) {
+	// sort sub rows.
+	for j := range resultRows {
+		sort.Slice(resultRows[j].SubValues, func(i, j int) bool {
+			if len(resultRows[j].SubValues[i]) < (idx+1) || len(resultRows[j].SubValues[j]) < (idx+1) {
+				return false
+			}
+			v1, err1 := parseFloat(resultRows[j].SubValues[i][idx])
+			v2, err2 := parseFloat(resultRows[j].SubValues[j][idx])
+			if err1 != nil || err2 != nil {
+				return false
+			}
+			return v1 > v2
+		})
+	}
+	sort.Slice(resultRows, func(i, j int) bool {
+		if len(resultRows[i].Values) < (idx+1) || len(resultRows[j].Values) < (idx+1) {
+			return false
+		}
+		v1, err1 := parseFloat(resultRows[i].Values[idx])
+		v2, err2 := parseFloat(resultRows[j].Values[idx])
+		if err1 != nil || err2 != nil {
+			return false
+		}
+		return v1 > v2
+	})
 }

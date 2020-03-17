@@ -28,9 +28,9 @@ const (
 	etcdGetTimeout = time.Second
 )
 
-func request(addr string, uri string, v interface{}) error {
-	url := fmt.Sprintf("http://%s/%s", addr, uri)
-	resp, err := http.Get(url) //nolint:gosec
+func request(endpoint string, uri string, v interface{}, httpClient *http.Client) error {
+	url := fmt.Sprintf("%s/%s", endpoint, uri)
+	resp, err := httpClient.Get(url) //nolint:gosec
 	if err != nil {
 		log.Warn("request failed", zap.String("url", url))
 		return err

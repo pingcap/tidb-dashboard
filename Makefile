@@ -1,4 +1,4 @@
-.PHONY: swagger_spec yarn_dependencies swagger_client ui server run dev lint
+.PHONY: swagger_spec yarn_dependencies swagger_client ui server run dev lint publish_ui_packages
 
 DASHBOARD_PKG := github.com/pingcap-incubator/tidb-dashboard
 

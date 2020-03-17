@@ -14,8 +14,8 @@
   "scripts": {
     "build": "rollup -c",
     "start": "rollup -c -w",
-    "prepare": "yarn run build",
-    "clean":"rimraf dist"
+    "clean":"rimraf dist",
+    "p": "yarn publish"
   },
   "dependencies": {
     "@baurine/grafana-value-formats": "^0.1.1",

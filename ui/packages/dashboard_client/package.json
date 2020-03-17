@@ -13,8 +13,8 @@
   "scripts": {
     "gen_api": "openapi-generator generate -i swagger.yaml -g typescript-axios -c .openapi_config.yaml -o src",
     "build": "yarn run gen_api && rollup -c",
-    "prepare": "yarn run build",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "p": "yarn publish"
   },
   "dependencies": {
     "axios": "^0.19.0"

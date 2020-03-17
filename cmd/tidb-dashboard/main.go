@@ -43,13 +43,13 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	keyvisualinput "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
 	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
-	"github.com/pingcap-incubator/tidb-dashboard/server"
 )
 
 type DashboardCLIConfig struct {
@@ -167,11 +167,11 @@ func main() {
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
-	s := server.NewService(
+	s := apiserver.NewService(
 		cliConfig.CoreConfig,
 		uiserver.Handler(),
 		swaggerserver.Handler(),
-		server.StoppedHandler,
+		apiserver.StoppedHandler,
 		func(cfg *config.Config, httpClient *http.Client, etcdClient *clientv3.Client) *keyvisualregion.PDDataProvider {
 			return &keyvisualregion.PDDataProvider{
 				FileStartTime:  cliConfig.KVFileStartTime,
@@ -188,7 +188,8 @@ func main() {
 
 	r := gin.New()
 	r.Use(gin.Recovery())
-	server.Register(&r.RouterGroup, s)
+	apiserver.Register(&r.RouterGroup, s)
+
 	mux := http.DefaultServeMux
 	mux.Handle("/", r)
 

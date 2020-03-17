@@ -108,11 +108,11 @@ func (s *Service) Start(ctx context.Context) error {
 		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
 			newWaitGroup,
+			newStrategy,
+			newStat,
 			s.provide,
 			input.NewStatInput,
 			decorator.TiDBLabelStrategy,
-			newStrategy,
-			newStat,
 		),
 		fx.Populate(&s.stat, &s.strategy),
 		fx.Invoke(

@@ -98,6 +98,10 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, a *App) {
 	})
 }
 
+func (a *App) IsRunning() bool {
+	return a.status.IsRunning()
+}
+
 func (a *App) Start(ctx context.Context) error {
 	a.ctx, a.cancel = context.WithCancel(ctx)
 	a.app = fx.New(

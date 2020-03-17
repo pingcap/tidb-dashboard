@@ -100,6 +100,10 @@ func NewApp(cfg *config.Config, uiHandler, swaggerHandler http.Handler, stoppedH
 	return a
 }
 
+func (a *App) IsRunning() bool {
+	return a.status.IsRunning()
+}
+
 func (a *App) Start(ctx context.Context) error {
 	a.app = fx.New(
 		fx.Logger(utils.NewFxPrinter()),

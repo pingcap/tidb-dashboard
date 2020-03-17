@@ -1,0 +1,21 @@
+name: Publish UI Packages
+
+on:
+  push:
+    paths:
+      - 'ui/packages/.packages_release_version'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      # Setup .npmrc file to publish to GitHub Packages
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@pingcap-incubator' # Defaults to the user or organization that owns the workflow file
+      - run: make publish_ui_packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

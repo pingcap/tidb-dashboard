@@ -31,7 +31,8 @@
     "build:packages": "lerna run --stream --sort build",
     "build": "yarn run build:packages && react-app-rewired build",
     "test": "react-app-rewired test",
-    "clean": "yarn workspaces run clean"
+    "clean": "yarn workspaces run clean",
+    "publish": "yarn workspaces run publish"
   },
   "homepage": "/dashboard",
   "eslintConfig": {

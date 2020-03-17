@@ -45,6 +45,10 @@ ui: swagger_client
 	src/apps/keyvis/download_dummydata.sh &&\
 	REACT_APP_DASHBOARD_API_URL="" yarn build
 
+publish_ui_packages: swagger_client
+	cd ui &&\
+	yarn run publish
+
 server:
 ifeq ($(SWAGGER),1)
 	make swagger_spec

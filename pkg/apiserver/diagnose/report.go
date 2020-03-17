@@ -458,8 +458,7 @@ TOTAL_COUNT is the total count of this event;
 P999 is the max time of 0.999 quantile; 
 P99 is the max time of 0.99 quantile; 
 P90 is the max time of 0.90 quantile; 
-P80 is the max time of 0.80 quantile; 
-`,
+P80 is the max time of 0.80 quantile;`,
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{3, 4, 5},
 		CommentCN:      "",
@@ -520,8 +519,7 @@ func GetTotalErrorTable(startTime, endTime string, db *gorm.DB) (TableDef, error
 		CommentEN: `The table contain the total count of error event. 
 METRIC_NAME is the error event name; 
 LABEL is the event label, such as instance, event type ...; 
-TOTAL_COUNT is the total count of this event; 
-`,
+TOTAL_COUNT is the total count of this event;`,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
@@ -585,8 +583,7 @@ TOTAL_COUNT is the total count of this event;
 P999 is the max time of 0.999 quantile; 
 P99 is the max time of 0.99 quantile; 
 P90 is the max time of 0.90 quantile; 
-P80 is the max time of 0.80 quantile; 
-`,
+P80 is the max time of 0.80 quantile;`,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{3, 4, 5},
@@ -655,8 +652,7 @@ TOTAL_COUNT is the total count of this object;
 P999 is the max size/value of 0.999 quantile; 
 P99 is the max size/value of 0.99 quantile; 
 P90 is the max size/value of 0.90 quantile; 
-P80 is the max size/value of 0.80 quantile; 
-`,
+P80 is the max size/value of 0.80 quantile;`,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4, 5},
@@ -846,8 +842,7 @@ TOTAL_COUNT is the total count of this event;
 P999 is the max time of 0.999 quantile; 
 P99 is the max time of 0.99 quantile; 
 P90 is the max time of 0.90 quantile; 
-P80 is the max time of 0.80 quantile; 
-`,
+P80 is the max time of 0.80 quantile;`,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{3, 4, 5},
@@ -1020,8 +1015,7 @@ TOTAL_COUNT is the total count of this event;
 P999 is the max time of 0.999 quantile; 
 P99 is the max time of 0.99 quantile; 
 P90 is the max time of 0.90 quantile; 
-P80 is the max time of 0.80 quantile; 
-`,
+P80 is the max time of 0.80 quantile;`,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{3, 4, 5},
@@ -1839,7 +1833,7 @@ func GetPDEtcdStatusTable(startTime, endTime string, db *gorm.DB) (TableDef, err
 }
 
 func GetClusterInfoTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
-	sql := fmt.Sprintf("select * from information_schema.cluster_info")
+	sql := fmt.Sprintf("select * from information_schema.cluster_info order by type,start_time desc")
 	table := TableDef{
 		Category:    []string{CategoryHeader},
 		Title:       "cluster info",

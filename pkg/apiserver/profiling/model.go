@@ -77,8 +77,8 @@ type Task struct {
 }
 
 // NewTask creates a new profiling task.
-func NewTask(taskGroup *TaskGroup, target utils.RequestTargetNode, tls bool) *Task {
-	ctx, cancel := context.WithCancel(context.Background())
+func NewTask(ctx context.Context, taskGroup *TaskGroup, target utils.RequestTargetNode, tls bool) *Task {
+	ctx, cancel := context.WithCancel(ctx)
 	return &Task{
 		TaskModel: &TaskModel{
 			TaskGroupID: taskGroup.ID,

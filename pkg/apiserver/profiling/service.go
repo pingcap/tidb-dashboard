@@ -14,15 +14,18 @@
 package profiling
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
@@ -33,14 +36,18 @@ import (
 
 // Service is used to provide a kind of feature.
 type Service struct {
-	config     *config.Config
-	db         *dbstore.DB
-	tasks      sync.Map
-	httpClient *http.Client
+	ctx               context.Context
+	cancel            context.CancelFunc
+	config            *config.Config
+	db                *dbstore.DB
+	tasks             sync.Map
+	httpClient        *http.Client
+	enableAutoCollect uint32
+	canAutoCollect    bool
 }
 
 // NewService creates a new service.
-func NewService(config *config.Config, db *dbstore.DB) *Service {
+func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service {
 	err := autoMigrate(db)
 	if err != nil {
 		log.Fatal("Failed to initialize database", zap.Error(err))
@@ -50,17 +57,37 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 			TLSClientConfig: config.ClusterTLSConfig,
 		},
 	}
+	s := &Service{config: config, db: db, tasks: sync.Map{}, httpClient: httpClient}
 
-	return &Service{config: config, db: db, tasks: sync.Map{}, httpClient: httpClient}
+	lc.Append(fx.Hook{
+		OnStart: s.Start,
+		OnStop:  s.Stop,
+	})
+
+	return s
+}
+
+func (s *Service) Start(_ctx context.Context) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	s.ctx = ctx
+	s.cancel = cancel
+	s.canAutoCollect = true
+	return nil
+}
+
+func (s *Service) Stop(ctx context.Context) error {
+	s.canAutoCollect = false
+	s.cancel()
+	return nil
 }
 
 // Register register the handlers to the service.
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/profiling")
-	endpoint.POST("/auto/start", auth.MWAuthRequired(), s.autoStartHandler)
-	endpoint.POST("/auto/stop", auth.MWAuthRequired(), s.autoStopHandler)
+	endpoint.POST("/auto/start", auth.MWAuthRequired(), s.autoStart)
+	endpoint.POST("/auto/stop", auth.MWAuthRequired(), s.autoStop)
 	endpoint.GET("/group/list", auth.MWAuthRequired(), s.getGroupList)
-	endpoint.POST("/group/start", auth.MWAuthRequired(), s.start)
+	endpoint.POST("/group/start", auth.MWAuthRequired(), s.startGroup)
 	endpoint.GET("/group/detail/:groupId", auth.MWAuthRequired(), s.getGroupDetail)
 	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), s.cancelGroup)
 	endpoint.DELETE("/group/delete/:groupId", auth.MWAuthRequired(), s.deleteGroup)
@@ -71,8 +98,9 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 type StartRequest struct {
-	Targets      []utils.RequestTargetNode `json:"targets"`
-	DurationSecs uint                      `json:"duration_secs"`
+	Targets            []utils.RequestTargetNode `json:"targets"`
+	DurationSecs       uint                      `json:"duration_secs"`
+	CollectionInterval uint                      `json:"collection_interval"`
 }
 
 // @ID startProfiling
@@ -86,7 +114,7 @@ type StartRequest struct {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /profiling/group/start [post]
-func (s *Service) start(c *gin.Context) {
+func (s *Service) startGroup(c *gin.Context) {
 	var req StartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Status(http.StatusBadRequest)
@@ -105,15 +133,25 @@ func (s *Service) start(c *gin.Context) {
 	if req.DurationSecs > 120 {
 		req.DurationSecs = 120
 	}
-	taskGroup := NewTaskGroup(s.db, req.DurationSecs, utils.NewRequestTargetStatisticsFromArray(&req.Targets))
-	if err := s.db.Create(taskGroup.TaskGroupModel).Error; err != nil {
+
+	taskGroup, err := s.collect(&req)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
+	}
+	c.JSON(http.StatusOK, taskGroup.TaskGroupModel)
+}
+
+func (s *Service) collect(req *StartRequest) (*TaskGroup, error) {
+	taskGroup := NewTaskGroup(s.db, req.DurationSecs, utils.NewRequestTargetStatisticsFromArray(&req.Targets))
+	if err := s.db.Create(taskGroup.TaskGroupModel).Error; err != nil {
+		return nil, err
 	}
 
 	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		t := NewTask(taskGroup, target, s.config.ClusterTLSConfig != nil)
+		t := NewTask(s.ctx, taskGroup, target, s.config.ClusterTLSConfig != nil)
 		s.db.Create(t.TaskModel)
 		s.tasks.Store(t.ID, t)
 		tasks = append(tasks, t)
@@ -136,24 +174,65 @@ func (s *Service) start(c *gin.Context) {
 	return taskGroup, nil
 }
 
-func (s *Service) autoCollect(c *gin.Context, req *StartRequest, nodes map[NodeType][]string) {
+func (s *Service) autoCollect(req *StartRequest) {
 	interval := time.Duration(req.CollectionInterval+req.DurationSecs) * time.Second
 	timer := time.NewTimer(interval)
 	defer timer.Stop()
 
 	for {
-		if !s.enableAutoCollect {
+		if atomic.LoadUint32(&s.enableAutoCollect) == 0 {
 			return
 		}
 		select {
 		case <-s.ctx.Done():
 			return
 		case <-timer.C:
-			_, _ = s.collect(req, nodes)
+			_, _ = s.collect(req)
 			timer.Reset(interval)
 		default:
 		}
 	}
+}
+
+// @Summary Start auto profiling
+// @Description Start auto profiling
+// @Produce json
+// @Param req body StartRequest true "auto profiling request"
+// @Security JwtAuth
+// @Success 200 {string} string "success"
+// @Failure 400 {object} utils.APIError
+// @Router /profiling/auto/start [post]
+func (s *Service) autoStart(c *gin.Context) {
+	if atomic.LoadUint32(&s.enableAutoCollect) > 0 {
+		c.JSON(http.StatusBadRequest, "auto profiling job is running")
+		return
+	}
+	atomic.StoreUint32(&s.enableAutoCollect, 1)
+	var req StartRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(err)
+		return
+	}
+
+	if req.DurationSecs == 0 {
+		req.DurationSecs = 30
+	}
+	if req.DurationSecs > 120 {
+		req.DurationSecs = 120
+	}
+
+	if req.CollectionInterval == 0 {
+		req.CollectionInterval = 3600
+	}
+	if !s.canAutoCollect {
+		atomic.StoreUint32(&s.enableAutoCollect, 0)
+		c.JSON(http.StatusBadRequest, "auto profiling service is not started")
+		return
+	}
+
+	go s.autoCollect(&req)
+	c.JSON(http.StatusOK, "success")
 }
 
 // @Summary Stop auto profiling
@@ -161,13 +240,13 @@ func (s *Service) autoCollect(c *gin.Context, req *StartRequest, nodes map[NodeT
 // @Produce json
 // @Security JwtAuth
 // @Success 200 {string} string "success"
-// @Router /profiling/group/stop [post]
-func (s *Service) autoStopHandler(c *gin.Context) {
-	if !s.enableAutoCollect {
+// @Router /profiling/auto/stop [post]
+func (s *Service) autoStop(c *gin.Context) {
+	if atomic.LoadUint32(&s.enableAutoCollect) == 0 {
 		c.JSON(http.StatusBadRequest, "auto profiling job has been stopped")
 	}
 
-	s.enableAutoCollect = false
+	atomic.StoreUint32(&s.enableAutoCollect, 0)
 	c.JSON(http.StatusOK, "success")
 }
 

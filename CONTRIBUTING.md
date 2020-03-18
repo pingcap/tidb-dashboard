@@ -119,26 +119,34 @@ The followings are required for developing TiDB Dashboard:
    cd tidb-dashboard
    ```
 
-2. Build and run TiDB Dashboard back-end server:
+1. Build and run TiDB Dashboard back-end server:
 
    ```bash
    # In tidb-dashboard directory:
    make dev && make run
    ```
 
-3. Build and run front-end server in a new terminal:
+1. Build and watch front-end packages changes in a new terminal
 
    ```bash
    # In tidb-dashboard directory:
    cd ui
    yarn  # install all dependencies
-   yarn run watch:packages # watch the changes of dependent packages in ui/packages folders
-   yarn start # start the root project in a new tab
+   yarn run build:packages # build packages
+   yarn run watch:packages # watch packages changes
    ```
 
-   > Note: Currently the front-end server will not watch for Golang code changes, which means you must manually rebuild the API Client if back-end code is updated (for example, you pulled latest change from the repository), just need to re-run the `yarn run watch:packages` after running the `make dev`.
+   > Note: Currently the front-end side will not watch for Golang code changes, which means you must manually rebuild the API Client if back-end code is updated (for example, you pulled latest change from the repository), just need to re-run the `yarn run watch:packages` after running the `make dev`.
 
-4. That's it! You can access TiDB Dashboard now:
+1. Build and run front-end server in a new terminal
+
+   ```bash
+   # In tidb-dashboard directory:
+   cd ui
+   yarn start
+   ```
+
+1. That's it! You can access TiDB Dashboard now:
 
    TiDB Dashboard UI: http://127.0.0.1:3000
 

@@ -37,7 +37,12 @@ export default {
     external({
       includeDependencies: true,
     }),
-    postcss(),
+    // https://github.com/egoist/rollup-plugin-postcss/issues/110
+    // https://github.com/cisen/blog/issues/295
+    postcss({
+      extensions: ['.css', '.scss', '.less'],
+      use: ['sass', ['less', { javascriptEnabled: true }]],
+    }),
     url(),
     svgr(),
     yaml(),

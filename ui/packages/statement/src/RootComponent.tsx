@@ -9,13 +9,10 @@ import {
 } from 'react-router-dom'
 import { Breadcrumb } from 'antd'
 
-import {
-  StatementsOverviewPage,
-  StatementDetailPage,
-  SearchContext,
-  SearchOptions,
-} from '@pingcap-incubator/statement'
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
+
+import { SearchContext, SearchOptions } from './components'
+import { StatementsOverviewPage, StatementDetailPage } from './pages'
 
 const App = withRouter(props => {
   const { location } = props
@@ -45,12 +42,12 @@ const App = withRouter(props => {
           <Switch>
             <Route path="/statement/overview">
               <StatementsOverviewPage
-                dashboardClient={client.dashboard}
+                dashboardClient={client.getInstance()}
                 detailPagePath="/statement/detail"
               />
             </Route>
             <Route path="/statement/detail">
-              <StatementDetailPage dashboardClient={client.dashboard} />
+              <StatementDetailPage dashboardClient={client.getInstance()} />
             </Route>
             <Redirect exact from="/statement" to="/statement/overview" />
           </Switch>

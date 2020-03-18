@@ -10,6 +10,6 @@ function getInstance(): DefaultApi {
   return apiClientInstance
 }
 
-export { setInstance, getInstance }
+export default { setInstance, getInstance }
 
 export * from './api'

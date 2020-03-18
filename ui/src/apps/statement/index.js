@@ -1,9 +1,6 @@
-import { translations } from '@pingcap-incubator/statement'
+import { AppConfig } from '@pingcap-incubator/statement'
 
 export default {
-  id: 'statement',
+  ...AppConfig,
   loader: () => import('./app.js'),
-  routerPrefix: '/statement',
-  icon: 'thunderbolt',
-  translations,
 }

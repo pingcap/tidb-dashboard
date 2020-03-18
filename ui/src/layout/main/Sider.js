@@ -23,12 +23,7 @@ const ToggleBanner = props => {
   }
 
   return (
-    <motion.div
-      className={styles.banner}
-      onClick={props.onToggle}
-      animate={props.collapsed ? 'collapsed' : 'open'}
-      initial="open"
-    >
+    <motion.div className={styles.banner} onClick={props.onToggle}>
       <motion.div
         variants={expandedContentVariants}
         style={{ width: props.width - toggleWidth }}

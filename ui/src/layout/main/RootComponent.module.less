@@ -1,12 +1,26 @@
 @import '~antd/es/style/themes/default.less';
 
 .container {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .content {
-  position: relative;
-  z-index: 2;
-  box-shadow: 0 0 30px rgba(#000, 0.15);
+  position: absolute;
+  z-index: 3;
   background: #fff;
+  top: 0;
+  height: 100%;
+  overflow-y: auto;
+  right: 0;
+}
+
+.contentBack {
+  position: absolute;
+  z-index: 2;
+  background: #fff;
+  top: 0;
+  height: 100%;
+  right: 0;
+  box-shadow: 0 0 30px rgba(#000, 0.15);
 }

@@ -26,8 +26,7 @@ import (
 type ServiceStatus int32
 
 func NewServiceStatus() *ServiceStatus {
-	var a ServiceStatus = 0
-	return &a
+	return new(ServiceStatus)
 }
 
 func (s *ServiceStatus) IsRunning() bool {
@@ -42,7 +41,7 @@ func (s *ServiceStatus) Stop() {
 	atomic.StoreInt32((*int32)(s), 0)
 }
 
-func (s *ServiceStatus) Invoke(lc fx.Lifecycle) {
+func (s *ServiceStatus) Register(lc fx.Lifecycle) {
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			s.Start()
@@ -65,7 +64,7 @@ func (s *ServiceStatus) MWHandleStopped(stoppedHandler gin.HandlerFunc) gin.Hand
 	}
 }
 
-func (s *ServiceStatus) NewStatefulHandler(handler http.Handler, stoppedHandler http.Handler) http.Handler {
+func (s *ServiceStatus) NewStatusfulHandler(handler http.Handler, stoppedHandler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !s.IsRunning() {
 			stoppedHandler.ServeHTTP(w, r)

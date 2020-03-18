@@ -104,7 +104,7 @@ func (s *Service) Start(ctx context.Context) error {
 		fx.Logger(utils2.NewFxPrinter()),
 		fx.Provide(
 			newAPIHandlerEngine,
-			s.provide,
+			s.provideLocals,
 			s.newPDDataProvider,
 			dbstore.NewDBStore,
 			pd.NewEtcdClient,
@@ -133,7 +133,7 @@ func (s *Service) Start(ctx context.Context) error {
 			diagnose.Register,
 			keyvisual.Register,
 			// Must be at the end
-			s.status.Invoke,
+			s.status.Register,
 		),
 	)
 
@@ -152,15 +152,15 @@ func (s *Service) Stop(ctx context.Context) error {
 	return err
 }
 
-func (s *Service) NewStatefulHandler(handler http.Handler) http.Handler {
-	return s.status.NewStatefulHandler(handler, s.stoppedHandler)
+func (s *Service) NewStatusfulHandler(handler http.Handler) http.Handler {
+	return s.status.NewStatusfulHandler(handler, s.stoppedHandler)
 }
 
 func (s *Service) handler(c *gin.Context) {
 	s.apiHandlerEngine.HandleContext(c)
 }
 
-func (s *Service) provide() *config.Config {
+func (s *Service) provideLocals() *config.Config {
 	return s.config
 }
 

@@ -189,7 +189,7 @@ func main() {
 	apiserver.Register(&r.RouterGroup, s)
 
 	mux := http.DefaultServeMux
-	mux.Handle("/dashboard/", s.NewStatefulHandler(http.StripPrefix("/dashboard", uiserver.Handler())))
+	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
 	mux.Handle("/dashboard/api/", r)
 	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 

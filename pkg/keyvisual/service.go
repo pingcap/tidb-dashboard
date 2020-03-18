@@ -110,14 +110,14 @@ func (s *Service) Start(ctx context.Context) error {
 			newWaitGroup,
 			newStrategy,
 			newStat,
-			s.provide,
+			s.provideLocals,
 			input.NewStatInput,
 			decorator.TiDBLabelStrategy,
 		),
 		fx.Populate(&s.stat, &s.strategy),
 		fx.Invoke(
 			// Must be at the end
-			s.status.Invoke,
+			s.status.Register,
 		),
 	)
 
@@ -213,7 +213,7 @@ func (s *Service) heatmaps(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (s *Service) provide() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB) {
+func (s *Service) provideLocals() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB) {
 	return s.config, s.provider, s.httpClient, s.db
 }
 

@@ -136,7 +136,7 @@ The followings are required for developing TiDB Dashboard:
    yarn start # start the root project in a new tab
    ```
 
-   > Note: Currently the front-end server will not watch for Golang code changes, which means you must manually rebuild the API Client if back-end code is updated (for example, you pulled latest change from the repository), just need to re-run the `yarn run watch:packages` command is ok after running the `make dev`.
+   > Note: Currently the front-end server will not watch for Golang code changes, which means you must manually rebuild the API Client if back-end code is updated (for example, you pulled latest change from the repository), just need to re-run the `yarn run watch:packages` after running the `make dev`.
 
 4. That's it! You can access TiDB Dashboard now:
 

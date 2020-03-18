@@ -3,7 +3,7 @@ import { Layout, Menu, Icon } from 'antd'
 import { Link } from 'react-router-dom'
 import { HashRouter as Router } from 'react-router-dom'
 import { withTranslation } from 'react-i18next'
-import Nav from './Nav'
+import Sider from './Sider'
 
 import styles from './RootComponent.module.less'
 
@@ -67,59 +67,34 @@ class App extends React.PureComponent {
   render() {
     const siderWidth = 260
     // const isDev = process.env.NODE_ENV === 'development'
-    const { t } = this.props
 
     return (
       <Router>
         <Layout className={styles.container}>
-          <Layout.Sider
-            className={styles.sider}
+          <Sider
+            registry={this.props.registry}
             width={siderWidth}
-            trigger={null}
-            collapsible
+            onToggle={this.handleToggle}
             collapsed={this.state.collapsed}
-          >
-            <Menu
-              mode="inline"
-              theme="dark"
-              selectedKeys={[this.state.activeAppId]}
-              defaultOpenKeys={['debug']}
-            >
-              {this.renderAppMenuItem('cluster_info')}
-              {this.renderAppMenuItem('keyvis')}
-              {this.renderAppMenuItem('statement')}
-              {this.renderAppMenuItem('diagnose')}
-              <Menu.SubMenu
-                key="debug"
-                title={
-                  <span>
-                    <Icon type="experiment" />
-                    <span>{t('nav.sider.debug')}</span>
-                  </span>
-                }
-              >
-                {this.renderAppMenuItem('log_searching')}
-                {this.renderAppMenuItem('node_profiling')}
-              </Menu.SubMenu>
-            </Menu>
-          </Layout.Sider>
-          <Layout>
-            <Nav
+            collapsedWidth={80}
+          />
+          {/* <Layout> */}
+          {/* <Nav
               siderWidth={siderWidth}
               siderWidthCollapsed={80}
               collapsed={this.state.collapsed}
               onToggle={this.handleToggle}
-            />
-            <Layout.Content
-              className={styles.content}
-              style={{
-                paddingLeft: `${this.state.collapsed ? 80 : siderWidth}px`,
-              }}
-            >
-              <div id="__spa_content__"></div>
-            </Layout.Content>
-          </Layout>
+            /> */}
+          <Layout.Content
+            className={styles.content}
+            style={{
+              marginLeft: `${this.state.collapsed ? 80 : siderWidth}px`,
+            }}
+          >
+            <div id="__spa_content__"></div>
+          </Layout.Content>
         </Layout>
+        {/* </Layout> */}
       </Router>
     )
   }

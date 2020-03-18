@@ -1,0 +1,3 @@
+user_profile:
+  title: '用户: {{username}}'
+  logout: 登出

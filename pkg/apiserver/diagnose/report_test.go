@@ -46,16 +46,16 @@ type testReportSuite struct{}
 //}
 
 func (t *testReportSuite) TestGetTable(c *C) {
-	cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
-	//cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
+	//cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
+	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
-	startTime := "2020-03-11 14:42:30"
-	endTime := "2020-03-11 15:45:30"
+	startTime := "	2020-03-10 13:20:00"
+	endTime := "	2020-03-10 13:23:00"
 
 	var table TableDef
-	table, err = GetTiDBStatisticsInfo(startTime, endTime, cli)
+	table, err = GetClusterHardwareInfoTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(&table)
 }
@@ -153,7 +153,7 @@ func (t *testReportSuite) TestCompareTable(c *C) {
 			},
 			rows2: nil,
 			out: []TableRowDef{
-				{Values: []string{"0", "0", "0", "1", "", ""}},
+				{Values: []string{"0", "0", "0", "", "", "1"}},
 			},
 		},
 		{
@@ -164,7 +164,7 @@ func (t *testReportSuite) TestCompareTable(c *C) {
 				{Values: []string{"1", "1", "1"}},
 			},
 			out: []TableRowDef{
-				{Values: []string{"0", "0", "0", "1", "", ""}},
+				{Values: []string{"0", "0", "0", "", "", "1"}},
 				{Values: []string{"", "1", "", "1", "1", "1"}},
 			},
 		},
@@ -176,7 +176,7 @@ func (t *testReportSuite) TestCompareTable(c *C) {
 				{Values: []string{"1", "0", "0"}},
 			},
 			out: []TableRowDef{
-				{Values: []string{"0", "0", "0", "0", "1", "0"}},
+				{Values: []string{"0", "0", "0", "1", "0", "0"}},
 			},
 		},
 		{

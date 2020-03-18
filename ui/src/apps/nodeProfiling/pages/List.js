@@ -1,11 +1,11 @@
 import client from '@/utils/client'
 import React, { useEffect, useState } from 'react'
-import { message, Card, Form, TreeSelect, Button, Select, Badge } from 'antd'
+import { message, Form, TreeSelect, Button, Select, Badge } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import DateTime from '@/components/DateTime'
-import CardTable from '@/components/CardTable'
+import { Card, CardTable } from '@/components'
 
 // FIXME: The following logic should be extracted into a common component.
 function getTreeData(topologyMap) {
@@ -209,7 +209,7 @@ export default function Page() {
 
   return (
     <div>
-      <Card bordered={false}>
+      <Card>
         <Form layout="inline">
           <Form.Item label={t('node_profiling.list.control_form.nodes.label')}>
             <TreeSelect

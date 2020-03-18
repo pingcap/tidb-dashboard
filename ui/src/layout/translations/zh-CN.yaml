@@ -18,8 +18,7 @@ signin:
     password: 密码
     button: 登录
     tidb_auth:
-      message: 集群中启动有 TiDB 节点时您可以使用 TiDB SQL 用户登录集群。
-      title: TiDB 用户
+      title: SQL 用户登录
       check:
         message: 请输入用户名
 nav:

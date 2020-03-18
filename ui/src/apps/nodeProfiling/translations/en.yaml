@@ -23,9 +23,11 @@ node_profiling:
       actions:
         detail: Detail
   detail:
+    head:
+      back: History
+      title: Profiling Detail
     download: Download Profiling Result
     table:
-      title: Profiling Detail
       columns:
         node: Node
         kind: Kind

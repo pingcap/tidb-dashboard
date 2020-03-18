@@ -1,5 +1,5 @@
-import { Slider, Spin, Icon, Select, Dropdown, Button } from 'antd';
 import React, { Component } from 'react';
+import { Slider, Spin, Icon, Select, Dropdown, Button } from 'antd';
 import { withTranslation, WithTranslation } from 'react-i18next';
 import Flexbox from '@g07cha/flexbox-react';
 

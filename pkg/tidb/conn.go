@@ -49,6 +49,9 @@ func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 	dsnConfig.User = user
 	dsnConfig.Passwd = pass
 	dsnConfig.Timeout = time.Second
+	if f.config.TiDBTLSConfig != nil {
+		dsnConfig.TLSConfig = "tidb"
+	}
 	dsn := dsnConfig.FormatDSN()
 
 	db, err := gorm.Open("mysql", dsn)

@@ -1,5 +1,5 @@
 import client from "@/utils/client";
-import { LogsearchCreateTaskGroupRequest, LogsearchSearchTarget } from "@/utils/dashboard_client";
+import { LogsearchCreateTaskGroupRequest, LogsearchSearchTarget } from "@pingcap-incubator/dashboard_client";
 import { Button, Card, DatePicker, Form, Input, Select, TreeSelect } from "antd";
 import { RangePickerValue } from "antd/lib/date-picker/interface";
 import { TreeNode } from "antd/lib/tree-select";

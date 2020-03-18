@@ -1,4 +1,4 @@
-import { ClusterinfoClusterInfo, LogsearchSearchTarget, LogsearchTaskGroupResponse, LogsearchTaskModel } from "@/utils/dashboard_client"
+import { ClusterinfoClusterInfo, LogsearchSearchTarget, LogsearchTaskGroupResponse, LogsearchTaskModel } from "@pingcap-incubator/dashboard_client"
 import { RangePickerValue } from "antd/lib/date-picker/interface"
 import moment from "moment"
 

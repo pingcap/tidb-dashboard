@@ -153,8 +153,8 @@ func (t *Task) SyncRun() {
 	}
 
 	secureOpt := grpc.WithInsecure()
-	if t.taskGroup.service.config.TLSConfig != nil {
-		creds := credentials.NewTLS(t.taskGroup.service.config.TLSConfig)
+	if t.taskGroup.service.config.ClusterTLSConfig != nil {
+		creds := credentials.NewTLS(t.taskGroup.service.config.ClusterTLSConfig)
 		secureOpt = grpc.WithTransportCredentials(creds)
 	}
 

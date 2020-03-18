@@ -1,0 +1,5 @@
+dashboard_settings:
+  nav_title: 设置
+  i18n:
+    title: 语言和本地化
+    language: 语言

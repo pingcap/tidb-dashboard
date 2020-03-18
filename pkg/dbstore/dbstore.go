@@ -14,6 +14,7 @@
 package dbstore
 
 import (
+	"context"
 	"os"
 	"path"
 
@@ -21,6 +22,7 @@ import (
 	// Sqlite3 driver used by gorm
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/pingcap/log"
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
@@ -30,16 +32,25 @@ type DB struct {
 	*gorm.DB
 }
 
-func MustOpenDBStore(config *config.Config) *DB {
-	err := os.MkdirAll(config.DataDir, 0777)
-	if err != nil {
-		log.Fatal("Failed to create Dashboard storage directory", zap.Error(err))
-		return nil
+func NewDBStore(lc fx.Lifecycle, config *config.Config) (*DB, error) {
+	if err := os.MkdirAll(config.DataDir, 0777); err != nil {
+		log.Error("Failed to create Dashboard storage directory", zap.Error(err))
+		return nil, err
 	}
-	db, err := gorm.Open("sqlite3", path.Join(config.DataDir, "dashboard.sqlite.db"))
+
+	gormDB, err := gorm.Open("sqlite3", path.Join(config.DataDir, "dashboard.sqlite.db"))
 	if err != nil {
-		log.Fatal("Failed to open Dashboard storage file", zap.Error(err))
-		return nil
+		log.Error("Failed to open Dashboard storage file", zap.Error(err))
+		return nil, err
 	}
-	return &DB{db}
+
+	db := &DB{gormDB}
+
+	lc.Append(fx.Hook{
+		OnStop: func(context.Context) error {
+			return db.Close()
+		},
+	})
+
+	return db, nil
 }

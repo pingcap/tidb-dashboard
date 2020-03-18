@@ -1,5 +1,6 @@
 import React from 'react'
-import { Table, Skeleton, Card } from 'antd'
+import { Table, Skeleton } from 'antd'
+import { Card } from '@/components'
 import classNames from 'classnames'
 import styles from './index.module.less'
 
@@ -17,7 +18,6 @@ class TableCard extends React.PureComponent {
     return (
       <Card
         title={title}
-        bordered={false}
         style={style}
         className={classNames(styles.cardTable, className)}
         extra={cardExtra}
@@ -29,7 +29,9 @@ class TableCard extends React.PureComponent {
             paragraph={{ rows: loadingSkeletonRows || 5 }}
           />
         ) : (
-          <Table pagination={false} size="middle" {...rest} />
+          <div className={styles.cardTableContent}>
+            <Table pagination={false} size="middle" {...rest} />
+          </div>
         )}
       </Card>
     )

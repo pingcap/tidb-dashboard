@@ -26,6 +26,7 @@ require (
 	github.com/swaggo/http-swagger v0.0.0-20200103000832-0e9263c4b516
 	github.com/swaggo/swag v1.6.5
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
+	go.uber.org/fx v1.10.0
 	go.uber.org/zap v1.13.0
 	google.golang.org/grpc v1.25.1
 )

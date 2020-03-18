@@ -47,7 +47,7 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 	}
 	httpClient := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: config.TLSConfig,
+			TLSClientConfig: config.ClusterTLSConfig,
 		},
 	}
 
@@ -55,7 +55,7 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 }
 
 // Register register the handlers to the service.
-func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
+func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/profiling")
 
 	endpoint.GET("/group/list", auth.MWAuthRequired(), s.getGroupList)
@@ -111,7 +111,7 @@ func (s *Service) start(c *gin.Context) {
 
 	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		t := NewTask(taskGroup, target, s.config.TLSConfig != nil)
+		t := NewTask(taskGroup, target, s.config.ClusterTLSConfig != nil)
 		s.db.Create(t.TaskModel)
 		s.tasks.Store(t.ID, t)
 		tasks = append(tasks, t)

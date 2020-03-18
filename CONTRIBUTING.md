@@ -126,7 +126,7 @@ The followings are required for developing TiDB Dashboard:
    make dev && make run
    ```
 
-1. Build and watch front-end packages changes in a new terminal
+1. Build and watch front-end packages changes in a new terminal:
 
    ```bash
    # In tidb-dashboard directory:
@@ -138,7 +138,7 @@ The followings are required for developing TiDB Dashboard:
 
    > Note: Currently the front-end side will not watch for Golang code changes, which means you must manually rebuild the API Client if back-end code is updated (for example, you pulled latest change from the repository), just need to re-run the `yarn run watch:packages` after running the `make dev`.
 
-1. Build and run front-end server in a new terminal
+1. Build and run front-end server in a new terminal:
 
    ```bash
    # In tidb-dashboard directory:

@@ -43,9 +43,7 @@ function ComponentPanelTable({ cluster }) {
         if (node.comp && node.comp === 'tidb') {
           let showConfirm = () => {
             Modal.confirm({
-              title: `${t('cluster_info.component_table.hide_db.title', {
-                nodeName: node.address,
-              })}`,
+              title: `${t('cluster_info.component_table.hide_db.title')}`,
               content: t('cluster_info.component_table.hide_db.warning', {
                 nodeName: node.address,
               }),

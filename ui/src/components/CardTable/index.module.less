@@ -2,19 +2,17 @@
 
 .cardTable {
   :global {
-    .ant-card-body {
-      padding: 0;
-      & > .ant-skeleton {
-        padding: @padding-lg;
-      }
+    .ant-table-content tr:first-child > th:first-child {
+      padding-left: @padding-page !important;
+    }
 
-      .ant-table-content tr:first-child > th:first-child {
-        padding-left: @padding-lg !important;
-      }
-
-      .ant-table-row td:first-child {
-        padding-left: @padding-lg !important;
-      }
+    .ant-table-row td:first-child {
+      padding-left: @padding-page !important;
     }
   }
+}
+
+.cardTableContent {
+  margin-left: -@padding-page;
+  margin-right: -@padding-page;
 }

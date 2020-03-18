@@ -8,7 +8,7 @@
   top: 0;
   height: 100%;
   z-index: 1;
-  background: @sider-background;
+  background: linear-gradient(@sider-background, #ebeffa);
   overflow-x: hidden;
   overflow-y: auto;
 
@@ -36,7 +36,7 @@
       }
 
       &:hover {
-        background: darken(@sider-background, 3%);
+        background: rgba(darken(@sider-background, 30%), 0.15);
       }
 
       > a {
@@ -48,7 +48,7 @@
       }
 
       &.ant-menu-item-selected {
-        background: darken(@sider-background, 3%);
+        background: rgba(darken(@sider-background, 30%), 0.15);
 
         > a {
           color: #000;

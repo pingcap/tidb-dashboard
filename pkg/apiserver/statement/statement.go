@@ -35,7 +35,7 @@ func NewService(config *config.Config, tidbForwarder *tidb.Forwarder) *Service {
 	return &Service{config: config, tidbForwarder: tidbForwarder}
 }
 
-func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
+func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))

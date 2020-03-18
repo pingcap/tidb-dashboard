@@ -1,0 +1,104 @@
+@import '~antd/es/style/themes/default.less';
+
+@sider-background: #f7f7fa;
+
+.sider {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  z-index: 1;
+  background: linear-gradient(@sider-background, #ebeffa);
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  :global {
+    .ant-layout-sider-children {
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 20px;
+    }
+
+    .ant-menu {
+      border-right: 0;
+      background: none;
+    }
+
+    .ant-menu-submenu-selected {
+      color: #000;
+    }
+
+    .ant-menu-item {
+      &::after {
+        left: 0;
+        right: auto;
+        border-width: 5px;
+      }
+
+      &:hover {
+        background: rgba(darken(@sider-background, 30%), 0.15);
+      }
+
+      > a {
+        color: #666;
+
+        &:hover {
+          color: @primary-color;
+        }
+      }
+
+      &.ant-menu-item-selected {
+        background: rgba(darken(@sider-background, 30%), 0.15);
+
+        > a {
+          color: #000;
+        }
+      }
+    }
+  }
+}
+
+.banner {
+  background: @primary-color;
+  color: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none;
+  position: relative;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.bannerLeft {
+  padding: 20px 24px;
+  padding-right: 16px;
+}
+
+.bannerRight {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  transition: background-color 0.2s @ease-out;
+  display: flex;
+}
+
+.banner:hover .bannerRight {
+  background: lighten(@primary-color, 5%);
+}
+
+.bannerLogo {
+  margin: 5px 0;
+}
+
+.bannerContent {
+  margin-left: 15px;
+}
+
+.bannerTitle {
+  font-size: 1rem;
+}
+
+.bannerVersion {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}

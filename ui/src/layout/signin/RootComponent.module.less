@@ -1,13 +1,59 @@
+@dialog-width: 400px;
+
 .container {
-  width: 380px;
-  margin: 0 auto;
-  padding-top: 30px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.dialogContainer {
+  min-width: @dialog-width;
+  width: 38%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 30px 65px;
+  overflow-y: auto;
 }
 
 .dialog {
-  background-color: #fff;
-  padding: 40px;
-  padding-bottom: 10px;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  max-width: 300px;
+  width: 100%;
+  margin: auto;
+}
+
+.landing {
+  flex-grow: 1;
+  background-image: url(./landing.svg);
+  background-size: cover;
+  background-position: center left;
+}
+
+.logo {
+  height: 40px;
+  margin-bottom: 80px;
+}
+
+.signInButton {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.extraLink {
+  font-size: 0.8rem;
+  margin: 15px 0;
+  a {
+    color: #888;
+    &:hover {
+      color: #666;
+    }
+  }
 }

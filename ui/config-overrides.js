@@ -29,6 +29,9 @@ module.exports = override(
       '@primary-color': '#3351ff',
       '@body-background': '#f0f2f5',
     },
+    globalVars: {
+      '@padding-page': '48px',
+    },
     localIdentName: '[local]--[hash:base64:5]',
   }),
   addWebpackResolve({

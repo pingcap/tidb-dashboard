@@ -3,6 +3,8 @@ import { Tooltip } from 'antd'
 import dayjs from 'dayjs'
 import { withTranslation } from 'react-i18next'
 
+dayjs.extend(require('dayjs/plugin/localizedFormat'))
+
 @withTranslation() // Re-render when language changes
 class Long extends React.PureComponent {
   render() {

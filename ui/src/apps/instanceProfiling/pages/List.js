@@ -124,7 +124,7 @@ export default function Page() {
     }
     try {
       const res = await client.dashboard.startProfiling(req)
-      history.push(`/node_profiling/${res.data.id}`)
+      history.push(`/instance_profiling/${res.data.id}`)
     } catch (e) {
       // FIXME
       message.error(e.message)
@@ -134,7 +134,7 @@ export default function Page() {
 
   const historyTableColumns = [
     {
-      title: t('node_profiling.list.table.columns.targets'),
+      title: t('instance_profiling.list.table.columns.targets'),
       key: 'targets',
       render: (_, rec) => {
         // TODO: Extract to utility function
@@ -152,41 +152,41 @@ export default function Page() {
       },
     },
     {
-      title: t('node_profiling.list.table.columns.start_at'),
+      title: t('instance_profiling.list.table.columns.start_at'),
       key: 'started_at',
       render: (_, rec) => {
         return <DateTime.Calendar unixTimeStampMs={rec.started_at * 1000} />
       },
     },
     {
-      title: t('node_profiling.list.table.columns.duration'),
+      title: t('instance_profiling.list.table.columns.duration'),
       key: 'duration',
       dataIndex: 'profile_duration_secs',
       width: 150,
     },
     {
-      title: t('node_profiling.list.table.columns.status'),
+      title: t('instance_profiling.list.table.columns.status'),
       key: 'status',
       render: (_, rec) => {
         if (rec.state === 1) {
           return (
             <Badge
               status="processing"
-              text={t('node_profiling.list.table.status.running')}
+              text={t('instance_profiling.list.table.status.running')}
             />
           )
         } else if (rec.state === 2) {
           return (
             <Badge
               status="success"
-              text={t('node_profiling.list.table.status.finished')}
+              text={t('instance_profiling.list.table.status.finished')}
             />
           )
         } else {
           return (
             <Badge
               status="default"
-              text={t('node_profiling.list.table.status.unknown')}
+              text={t('instance_profiling.list.table.status.unknown')}
             />
           )
         }
@@ -194,12 +194,12 @@ export default function Page() {
       width: 150,
     },
     {
-      title: t('node_profiling.list.table.columns.action'),
+      title: t('instance_profiling.list.table.columns.action'),
       key: 'action',
       render: (_, rec) => {
         return (
-          <Link to={`/node_profiling/${rec.id}`}>
-            {t('node_profiling.list.table.actions.detail')}
+          <Link to={`/instance_profiling/${rec.id}`}>
+            {t('instance_profiling.list.table.actions.detail')}
           </Link>
         )
       },
@@ -209,14 +209,16 @@ export default function Page() {
 
   return (
     <div>
-      <Card>
+      <Card title={t('instance_profiling.list.control_form.title')}>
         <Form layout="inline">
-          <Form.Item label={t('node_profiling.list.control_form.nodes.label')}>
+          <Form.Item
+            label={t('instance_profiling.list.control_form.nodes.label')}
+          >
             <TreeSelect
               value={selectedTargets}
               treeData={getTreeData(targetsMap)}
               placeholder={t(
-                'node_profiling.list.control_form.nodes.placeholder'
+                'instance_profiling.list.control_form.nodes.placeholder'
               )}
               onChange={setSelectedTargets}
               treeDefaultExpandAll={true}
@@ -228,7 +230,7 @@ export default function Page() {
             />
           </Form.Item>
           <Form.Item
-            label={t('node_profiling.list.control_form.duration.label')}
+            label={t('instance_profiling.list.control_form.duration.label')}
           >
             <Select
               value={duration}
@@ -244,7 +246,7 @@ export default function Page() {
           </Form.Item>
           <Form.Item>
             <Button type="primary" onClick={handleStart} loading={submitting}>
-              {t('node_profiling.list.control_form.submit')}
+              {t('instance_profiling.list.control_form.submit')}
             </Button>
           </Form.Item>
         </Form>
@@ -254,7 +256,7 @@ export default function Page() {
         loading={listLoading}
         columns={historyTableColumns}
         dataSource={historyTable}
-        title={t('node_profiling.list.table.title')}
+        title={t('instance_profiling.list.table.title')}
         rowKey="id"
       />
     </div>

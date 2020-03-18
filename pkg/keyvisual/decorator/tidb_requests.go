@@ -88,7 +88,7 @@ func (s *tidbLabelStrategy) updateMap() {
 	var dbInfos []*dbInfo
 	var tidbEndpoint string
 	reqScheme := "http"
-	if s.Config.TLSConfig != nil {
+	if s.Config.ClusterTLSConfig != nil {
 		reqScheme = "https"
 	}
 	for _, addr := range s.TidbAddress {

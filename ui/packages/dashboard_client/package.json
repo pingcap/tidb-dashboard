@@ -14,7 +14,7 @@
     "npm": ">=5"
   },
   "scripts": {
-    "gen_api": "openapi-generator generate -i swagger.yaml -g typescript-axios -c .openapi_config.yaml -o src",
+    "gen_api": "openapi-generator generate -i swagger.yaml -g typescript-axios -c .openapi_config.yaml -o src/api",
     "build": "yarn run gen_api && rollup -c",
     "clean": "rimraf dist",
     "p": "yarn publish"

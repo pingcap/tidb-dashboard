@@ -17,19 +17,19 @@ function StatisCard({ detail }: { detail: StatementDetailInfo }) {
     <div className={styles.statement_statis}>
       <p>
         {t('statement.common.sum_latency')}:{' '}
-        {getValueFormat('ns')(detail.sum_latency, 2, null)}
+        {getValueFormat('ns')(detail.sum_latency!, 2, null)}
       </p>
       <p>
         {t('statement.common.exec_count')}:{' '}
-        {getValueFormat('short')(detail.exec_count, 0, 0)}
+        {getValueFormat('short')(detail.exec_count!, 0, 0)}
       </p>
       <p>
         {t('statement.common.avg_affected_rows')}:{' '}
-        {getValueFormat('short')(detail.avg_affected_rows, 0, 0)}
+        {getValueFormat('short')(detail.avg_affected_rows!, 0, 0)}
       </p>
       <p>
         {t('statement.common.avg_total_keys')}:{' '}
-        {getValueFormat('short')(detail.avg_total_keys, 0, 0)}
+        {getValueFormat('short')(detail.avg_total_keys!, 0, 0)}
       </p>
     </div>
   )
@@ -45,13 +45,13 @@ interface Props {
     schemaName: string,
     beginTime: string,
     endTime: string
-  ) => Promise<StatementDetailInfo | undefined>
+  ) => Promise<StatementDetailInfo>
   onFetchNodes: (
     digest: string,
     schemaName: string,
     beginTime: string,
     endTime: string
-  ) => Promise<StatementNode[] | undefined>
+  ) => Promise<StatementNode[]>
 }
 
 export default function StatementDetail({
@@ -112,11 +112,11 @@ export default function StatementDetail({
           <div className={styles.table_wrapper}>
             <StatementNodesTable nodes={nodes} />
           </div>
-          {detail.plans.length > 0 && (
+          {detail.plans!.length > 0 && (
             <div style={{ marginTop: 6 }}>
               <h3>{t('statement.plan.plans')}</h3>
               <div className={styles.table_wrapper}>
-                {detail.plans.map(plan => (
+                {detail.plans!.map(plan => (
                   <StatementPlanTable plan={plan} key={plan.digest} />
                 ))}
               </div>

@@ -8,7 +8,7 @@ import {
   StatementConfig,
   Instance,
   StatementOverview,
-  StatementTimeRange
+  StatementTimeRange,
 } from './statement-types'
 import styles from './styles.module.css'
 import { SearchContext } from './search-options-context'
@@ -42,7 +42,7 @@ const initState: State = {
   timeRanges: [],
 
   statementsLoading: false,
-  statements: []
+  statements: [],
 }
 
 type Action =
@@ -61,7 +61,7 @@ function reducer(state: State, action: Action): State {
     case 'save_instances':
       return {
         ...state,
-        instances: action.payload
+        instances: action.payload,
       }
     case 'change_instance':
       return {
@@ -72,45 +72,45 @@ function reducer(state: State, action: Action): State {
         statementStatus: 'unknown',
         schemas: [],
         timeRanges: [],
-        statements: []
+        statements: [],
       }
     case 'change_statement_status':
       return {
         ...state,
-        statementStatus: action.payload
+        statementStatus: action.payload,
       }
     case 'save_schemas':
       return {
         ...state,
-        schemas: action.payload
+        schemas: action.payload,
       }
     case 'change_schema':
       return {
         ...state,
         curSchemas: action.payload,
-        statements: []
+        statements: [],
       }
     case 'save_time_ranges':
       return {
         ...state,
-        timeRanges: action.payload
+        timeRanges: action.payload,
       }
     case 'change_time_range':
       return {
         ...state,
         curTimeRange: action.payload,
-        statements: []
+        statements: [],
       }
     case 'save_statements':
       return {
         ...state,
         statementsLoading: false,
-        statements: action.payload
+        statements: action.payload,
       }
     case 'set_statements_loading':
       return {
         ...state,
-        statementsLoading: true
+        statementsLoading: true,
       }
     default:
       throw new Error('invalid action type')
@@ -120,15 +120,13 @@ function reducer(state: State, action: Action): State {
 interface Props {
   onFetchInstances: () => Promise<Instance[] | undefined>
   onFetchSchemas: (instanceId: string) => Promise<string[] | undefined>
-  onFetchTimeRanges: (
-    instanceId: string
-  ) => Promise<StatementTimeRange[] | undefined>
+  onFetchTimeRanges: (instanceId: string) => Promise<StatementTimeRange[]>
   onFetchStatements: (
     instanceId: string,
     schemas: string[],
     beginTime: string,
     endTime: string
-  ) => Promise<StatementOverview[] | undefined>
+  ) => Promise<StatementOverview[]>
 
   onGetStatementStatus: (instanceId: string) => Promise<any>
   onSetStatementStatus: (
@@ -136,8 +134,10 @@ interface Props {
     status: 'on' | 'off'
   ) => Promise<any>
 
-  onFetchConfig: (instanceId: string) => Promise<StatementConfig | undefined>
+  onFetchConfig: (instanceId: string) => Promise<StatementConfig>
   onUpdateConfig: (instanceId: string, config: StatementConfig) => Promise<any>
+
+  detailPagePath: string
 }
 
 export default function StatementsOverview({
@@ -150,21 +150,23 @@ export default function StatementsOverview({
   onSetStatementStatus,
 
   onFetchConfig,
-  onUpdateConfig
+  onUpdateConfig,
+
+  detailPagePath,
 }: Props) {
   const { searchOptions, setSearchOptions } = useContext(SearchContext)
   // combine the context to state
   const [state, dispatch] = useReducer(reducer, {
     ...initState,
-    ...searchOptions
+    ...searchOptions,
   })
   const [
     enableStatementModalVisible,
-    setEnableStatementModalVisible
+    setEnableStatementModalVisible,
   ] = useState(false)
   const [
     statementSettingModalVisible,
-    setStatementSettingModalVisible
+    setStatementSettingModalVisible,
   ] = useState(false)
   const { t } = useTranslation()
 
@@ -173,18 +175,18 @@ export default function StatementsOverview({
       const res = await onFetchInstances()
       dispatch({
         type: 'save_instances',
-        payload: res || []
+        payload: res || [],
       })
       if (res?.length === 1 && !state.curInstance) {
         dispatch({
           type: 'change_instance',
-          payload: res[0].uuid
+          payload: res[0].uuid,
         })
       }
     }
 
     queryInstances()
-  // eslint-disable-next-line
+    // eslint-disable-next-line
   }, [])
   // empty dependency represents only run this effect once at the begining time
 
@@ -207,7 +209,7 @@ export default function StatementsOverview({
         const res = await onFetchSchemas(state.curInstance)
         dispatch({
           type: 'save_schemas',
-          payload: res || []
+          payload: res || [],
         })
       }
     }
@@ -217,12 +219,12 @@ export default function StatementsOverview({
         const res = await onFetchTimeRanges(state.curInstance)
         dispatch({
           type: 'save_time_ranges',
-          payload: res || []
+          payload: res || [],
         })
         if (res && res.length > 0 && !state.curTimeRange) {
           dispatch({
             type: 'change_time_range',
-            payload: res[0]
+            payload: res[0],
           })
         }
       }
@@ -231,7 +233,7 @@ export default function StatementsOverview({
     queryStatementStatus()
     querySchemas()
     queryTimeRanges()
-  // eslint-disable-next-line
+    // eslint-disable-next-line
   }, [state.curInstance])
   // don't add the dependent functions likes onFetchTimeRanges into the dependency array
   // it will cause the infinite loop
@@ -243,17 +245,17 @@ export default function StatementsOverview({
         return
       }
       dispatch({
-        type: 'set_statements_loading'
+        type: 'set_statements_loading',
       })
       const res = await onFetchStatements(
         state.curInstance,
         state.curSchemas,
-        state.curTimeRange.begin_time,
-        state.curTimeRange.end_time
+        state.curTimeRange.begin_time!,
+        state.curTimeRange.end_time!
       )
       dispatch({
         type: 'save_statements',
-        payload: res || []
+        payload: res || [],
       })
     }
 
@@ -262,9 +264,9 @@ export default function StatementsOverview({
     setSearchOptions({
       curInstance: state.curInstance,
       curSchemas: state.curSchemas,
-      curTimeRange: state.curTimeRange
+      curTimeRange: state.curTimeRange,
     })
-  // eslint-disable-next-line
+    // eslint-disable-next-line
   }, [state.curInstance, state.curSchemas, state.curTimeRange])
   // don't add the dependent functions likes onFetchStatements into the dependency array
   // it will cause the infinite loop
@@ -273,14 +275,14 @@ export default function StatementsOverview({
   function handleInstanceChange(val: string | undefined) {
     dispatch({
       type: 'change_instance',
-      payload: val
+      payload: val,
     })
   }
 
   function handleSchemaChange(val: string[]) {
     dispatch({
       type: 'change_schema',
-      payload: val
+      payload: val,
     })
   }
 
@@ -288,7 +290,7 @@ export default function StatementsOverview({
     const timeRange = state.timeRanges.find(item => item.begin_time === val)
     dispatch({
       type: 'change_time_range',
-      payload: timeRange
+      payload: timeRange,
     })
   }
 
@@ -306,12 +308,12 @@ export default function StatementsOverview({
             if (res !== undefined) {
               dispatch({
                 type: 'change_statement_status',
-                payload: 'off'
+                payload: 'off',
               })
             }
           })
         },
-        onCancel() {}
+        onCancel() {},
       })
     }
   }
@@ -409,6 +411,7 @@ export default function StatementsOverview({
           statements={state.statements}
           loading={state.statementsLoading}
           timeRange={state.curTimeRange!}
+          detailPagePath={detailPagePath}
         />
       </div>
     </div>

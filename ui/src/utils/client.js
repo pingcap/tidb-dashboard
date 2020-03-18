@@ -2,7 +2,9 @@ import i18next from 'i18next'
 import axios from 'axios'
 import { message } from 'antd'
 import * as singleSpa from 'single-spa'
-import * as DashboardClient from '@/utils/dashboard_client'
+import DashboardClient, {
+  DefaultApi,
+} from '@pingcap-incubator/dashboard_client'
 import * as authUtil from '@/utils/auth'
 import * as routingUtil from '@/utils/routing'
 
@@ -16,6 +18,7 @@ export const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}/dashboard/api`
 
 console.log(`Dashboard API URL: ${DASHBOARD_API_URL}`)
 
+// TODO: use a individual axios instance instead of global
 axios.interceptors.response.use(undefined, function(err) {
   const { response } = err
   // Handle unauthorized error in a unified way
@@ -40,12 +43,13 @@ axios.interceptors.response.use(undefined, function(err) {
   return Promise.reject(err)
 })
 
-const dashboardClient = new DashboardClient.DefaultApi({
+const dashboardClient = new DefaultApi({
   basePath: DASHBOARD_API_URL,
   apiKey: () => authUtil.getAuthTokenAsBearer(),
 })
+// TODO: Polish, add init() function
+DashboardClient.setInstance(dashboardClient)
 
 export default {
-  basePath: DASHBOARD_API_URL,
   dashboard: dashboardClient,
 }

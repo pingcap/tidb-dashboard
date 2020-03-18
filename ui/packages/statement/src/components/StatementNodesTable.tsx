@@ -11,7 +11,7 @@ const tableColumns = (
   maxAvgLatency: number,
   maxMaxLatency: number,
   maxAvgMem: number,
-  t: (string) => string
+  t: (_: string) => string
 ) => [
   {
     title: t('statement.detail.node'),
@@ -23,14 +23,14 @@ const tableColumns = (
     dataIndex: 'sum_latency',
     key: 'sum_latency',
     sorter: (a: StatementNode, b: StatementNode) =>
-      a.sum_latency - b.sum_latency,
+      a.sum_latency! - b.sum_latency!,
     render: text => getValueFormat('ns')(text, 2, null)
   },
   {
     title: t('statement.common.exec_count'),
     dataIndex: 'exec_count',
     key: 'exec_count',
-    sorter: (a: StatementNode, b: StatementNode) => a.exec_count - b.exec_count,
+    sorter: (a: StatementNode, b: StatementNode) => a.exec_count! - b.exec_count!,
     render: text => getValueFormat('short')(text, 0, 0)
   },
   {
@@ -38,7 +38,7 @@ const tableColumns = (
     dataIndex: 'avg_latency',
     key: 'avg_latency',
     sorter: (a: StatementNode, b: StatementNode) =>
-      a.avg_latency - b.avg_latency,
+      a.avg_latency! - b.avg_latency!,
     render: text => (
       <div>
         {getValueFormat('ns')(text, 2, null)}
@@ -54,7 +54,7 @@ const tableColumns = (
     dataIndex: 'max_latency',
     key: 'max_latency',
     sorter: (a: StatementNode, b: StatementNode) =>
-      a.max_latency - b.max_latency,
+      a.max_latency! - b.max_latency!,
     render: text => (
       <div>
         {getValueFormat('ns')(text, 2, null)}
@@ -69,7 +69,7 @@ const tableColumns = (
     title: t('statement.common.avg_mem'),
     dataIndex: 'avg_mem',
     key: 'avg_mem',
-    sorter: (a: StatementNode, b: StatementNode) => a.avg_mem - b.avg_mem,
+    sorter: (a: StatementNode, b: StatementNode) => a.avg_mem! - b.avg_mem!,
     render: text => (
       <div>
         {getValueFormat('bytes')(text, 2, null)}
@@ -85,7 +85,7 @@ const tableColumns = (
     dataIndex: 'sum_backoff_times',
     key: 'sum_backoff_times',
     sorter: (a: StatementNode, b: StatementNode) =>
-      a.sum_backoff_times - b.sum_backoff_times,
+      a.sum_backoff_times! - b.sum_backoff_times!,
     render: text => getValueFormat('short')(text, 0, 0)
   }
 ]

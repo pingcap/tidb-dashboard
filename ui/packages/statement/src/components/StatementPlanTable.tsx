@@ -55,7 +55,7 @@ const columns = [
 ]
 
 export default function StatementPlanTable({ plan }: { plan: StatementPlan }) {
-  const planSteps = useMemo(() => parsePlan(plan.content), [plan])
+  const planSteps = useMemo(() => parsePlan(plan.content!), [plan])
 
   return (
     <Table

@@ -3,8 +3,8 @@
   "version": "0.0.3",
   "description": "",
   "author": "pingcap-incubator",
-  "repository" : {
-    "type" : "git",
+  "repository": {
+    "type": "git",
     "url": "git@github.com:pingcap-incubator/tidb-dashboard.git"
   },
   "main": "dist/index.js",
@@ -24,6 +24,7 @@
   },
   "peerDependencies": {},
   "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^1.0.8-4.2.2",
     "babel-core": "^6.26.3",
     "babel-runtime": "^6.26.0",
     "cross-env": "^5.1.4",

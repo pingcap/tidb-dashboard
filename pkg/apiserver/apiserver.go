@@ -152,8 +152,8 @@ func (s *Service) Stop(ctx context.Context) error {
 	return err
 }
 
-func (s *Service) NewStatusfulHandler(handler http.Handler) http.Handler {
-	return s.status.NewStatusfulHandler(handler, s.stoppedHandler)
+func (s *Service) NewStatusAwareHandler(handler http.Handler) http.Handler {
+	return s.status.NewStatusAwareHandler(handler, s.stoppedHandler)
 }
 
 func (s *Service) handler(c *gin.Context) {

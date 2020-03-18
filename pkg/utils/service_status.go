@@ -64,7 +64,7 @@ func (s *ServiceStatus) MWHandleStopped(stoppedHandler gin.HandlerFunc) gin.Hand
 	}
 }
 
-func (s *ServiceStatus) NewStatusfulHandler(handler http.Handler, stoppedHandler http.Handler) http.Handler {
+func (s *ServiceStatus) NewStatusAwareHandler(handler http.Handler, stoppedHandler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !s.IsRunning() {
 			stoppedHandler.ServeHTTP(w, r)

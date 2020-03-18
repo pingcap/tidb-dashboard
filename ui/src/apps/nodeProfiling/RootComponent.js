@@ -4,7 +4,7 @@ import ListPage from './pages/List'
 import DetailPage from './pages/Detail'
 
 const App = () => (
-  <div style={{ padding: 24 }}>
+  <div>
     <Router>
       <Switch>
         <Route exact path="/node_profiling">

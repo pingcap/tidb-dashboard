@@ -1,0 +1,3 @@
+user_profile:
+  title: 'User: {{username}}'
+  logout: Logout

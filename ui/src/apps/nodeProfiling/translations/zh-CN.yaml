@@ -23,9 +23,11 @@ node_profiling:
       actions:
         detail: 详情
   detail:
+    head:
+      back: 历史记录
+      title: 性能分析详情
     download: 下载性能分析结果
     table:
-      title: 性能分析详情
       columns:
         node: 节点
         kind: 类型

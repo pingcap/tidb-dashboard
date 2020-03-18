@@ -1,9 +1,10 @@
 import client, { DASHBOARD_API_URL } from '@/utils/client'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Button, Badge, Progress } from 'antd'
+import { Button, Badge, Progress, Icon } from 'antd'
 import { useTranslation } from 'react-i18next'
-import CardTable from '@/components/CardTable'
+import { Link } from 'react-router-dom'
+import { Head, CardTable } from '@/components'
 
 function mapData(data) {
   data.tasks_status.forEach(task => {
@@ -105,17 +106,26 @@ export default function Page() {
   ]
 
   return (
-    <CardTable
-      loading={isLoading}
-      columns={columns}
-      dataSource={data.tasks_status}
-      rowKey="id"
-      title={t('node_profiling.detail.table.title')}
-      cardExtra={
-        <Button disabled={isRunning} type="primary" onClick={handleDownload}>
-          {t('node_profiling.detail.download')}
-        </Button>
-      }
-    />
+    <div>
+      <Head
+        title={t('node_profiling.detail.head.title')}
+        back={
+          <Link to={`/node_profiling`}>
+            <Icon type="arrow-left" /> {t('node_profiling.detail.head.back')}
+          </Link>
+        }
+        titleExtra={
+          <Button disabled={isRunning} type="primary" onClick={handleDownload}>
+            {t('node_profiling.detail.download')}
+          </Button>
+        }
+      />
+      <CardTable
+        loading={isLoading}
+        columns={columns}
+        dataSource={data.tasks_status}
+        rowKey="id"
+      />
+    </div>
   )
 }

@@ -36,24 +36,19 @@ import (
 	"sync"
 	"syscall"
 
-	"go.etcd.io/etcd/pkg/transport"
-
-	"github.com/joho/godotenv"
+	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
 	flag "github.com/spf13/pflag"
+	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/pkg/transport"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
-	http2 "github.com/pingcap-incubator/tidb-dashboard/pkg/http"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
 	keyvisualinput "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
 	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
@@ -125,7 +120,8 @@ func NewCLIConfig() *DashboardCLIConfig {
 
 	if showVersion {
 		utils.PrintInfo()
-		exit(0)
+		_ = log.Sync()
+		os.Exit(0)
 	}
 
 	// keyvisual
@@ -170,65 +166,49 @@ func buildTLSConfig(caPath, keyPath, certPath *string) *tls.Config {
 }
 
 func main() {
-	_ = godotenv.Load()
-
 	// Flushing any buffered log entries
 	defer log.Sync() //nolint:errcheck
 
 	cliConfig := NewCLIConfig()
 	ctx := getContext()
 
-	store := dbstore.MustOpenDBStore(cliConfig.CoreConfig)
-	defer store.Close() //nolint:errcheck
-
-	etcdProvider, err := pd.NewLocalEtcdClientProvider(cliConfig.CoreConfig)
-	if err != nil {
-		_ = store.Close()
-		log.Fatal("Cannot create etcd client", zap.Error(err))
+	if cliConfig.EnableDebugLog {
+		log.SetLevel(zapcore.DebugLevel)
 	}
-
-	tidbForwarder := tidb.NewForwarder(tidb.NewForwarderConfig(cliConfig.CoreConfig.TiDBTLSConfig), etcdProvider)
-	// FIXME: Handle open error
-	tidbForwarder.Open()        //nolint:errcheck
-	defer tidbForwarder.Close() //nolint:errcheck
-
-	httpClient := http2.NewHTTPClientWithConf(cliConfig.CoreConfig)
-
-	// key visual
-	remoteDataProvider := &keyvisualregion.PDDataProvider{
-		FileStartTime:  cliConfig.KVFileStartTime,
-		FileEndTime:    cliConfig.KVFileEndTime,
-		PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint, httpClient),
-		EtcdProvider:   etcdProvider,
-		Store:          store,
-	}
-	keyvisualService := keyvisual.NewService(ctx, cliConfig.CoreConfig, remoteDataProvider, httpClient)
-	keyvisualService.Start()
-	defer keyvisualService.Close()
-
-	services := &apiserver.Services{
-		Store:         store,
-		KeyVisual:     keyvisualService,
-		TiDBForwarder: tidbForwarder,
-		EtcdProvider:  etcdProvider,
-		HTTPClient:    httpClient,
-	}
-	mux := http.DefaultServeMux
-	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
-	mux.Handle("/dashboard/api/", apiserver.Handler("/dashboard/api", cliConfig.CoreConfig, services))
-	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 
 	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		_ = store.Close()
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
-	utils.LogInfo()
-	if cliConfig.EnableDebugLog {
-		log.SetLevel(zapcore.DebugLevel)
+	s := apiserver.NewService(
+		cliConfig.CoreConfig,
+		apiserver.StoppedHandler,
+		func(cfg *config.Config, httpClient *http.Client, etcdClient *clientv3.Client) *keyvisualregion.PDDataProvider {
+			return &keyvisualregion.PDDataProvider{
+				FileStartTime:  cliConfig.KVFileStartTime,
+				FileEndTime:    cliConfig.KVFileEndTime,
+				PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint, httpClient),
+				EtcdClient:     etcdClient,
+			}
+		},
+	)
+	if err := s.Start(ctx); err != nil {
+		log.Fatal("Can not start server", zap.Error(err))
 	}
+	defer s.Stop(context.Background()) //nolint:errcheck
+
+	r := gin.New()
+	r.Use(gin.Recovery())
+	apiserver.Register(&r.RouterGroup, s)
+
+	mux := http.DefaultServeMux
+	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
+	mux.Handle("/dashboard/api/", r)
+	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
+
+	utils.LogInfo()
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
 	log.Info(fmt.Sprintf("UI:      http://127.0.0.1:%d/dashboard/", cliConfig.ListenPort))
 	log.Info(fmt.Sprintf("API:     http://127.0.0.1:%d/dashboard/api/", cliConfig.ListenPort))
@@ -239,20 +219,15 @@ func main() {
 	wg.Add(1)
 	go func() {
 		if err := srv.Serve(listener); err != http.ErrServerClosed {
-			log.Fatal("Can not run server", zap.Error(err))
+			log.Error("Server aborted with an error", zap.Error(err))
 		}
 		wg.Done()
 	}()
 
 	<-ctx.Done()
 	if err := srv.Shutdown(context.Background()); err != nil {
-		log.Fatal("Can not stop server", zap.Error(err))
+		log.Error("Can not stop server", zap.Error(err))
 	}
 	wg.Wait()
 	log.Info("Stop dashboard server")
-}
-
-func exit(code int) {
-	_ = log.Sync()
-	os.Exit(code)
 }

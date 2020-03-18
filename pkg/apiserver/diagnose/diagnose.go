@@ -14,15 +14,16 @@
 package diagnose
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
+	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	apiutils "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -47,8 +48,16 @@ type ReportRes struct {
 	ReportID uint `json:"report_id"`
 }
 
-func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, t *template.Template) *Service {
-	Migrate(db)
+func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, newTemplate utils.NewTemplateFunc) *Service {
+	lc.Append(fx.Hook{
+		OnStart: func(context.Context) error {
+			Migrate(db)
+			return nil
+		},
+	})
+
+	t := newTemplate("diagnose")
+
 	return &Service{
 		config:        config,
 		db:            db,
@@ -57,7 +66,7 @@ func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstor
 	}
 }
 
-func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
+func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/diagnose")
 	endpoint.POST("/reports",
 		auth.MWAuthRequired(),

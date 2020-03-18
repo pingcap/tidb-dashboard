@@ -25,13 +25,11 @@ import (
 )
 
 type periodicInput struct {
-	Ctx            context.Context
 	PeriodicGetter region.RegionsInfoGenerator
 }
 
-func PeriodicInput(ctx context.Context, periodicGetter region.RegionsInfoGenerator) StatInput {
+func PeriodicInput(periodicGetter region.RegionsInfoGenerator) StatInput {
 	return &periodicInput{
-		Ctx:            ctx,
 		PeriodicGetter: periodicGetter,
 	}
 }
@@ -40,12 +38,12 @@ func (input *periodicInput) GetStartTime() time.Time {
 	return time.Now()
 }
 
-func (input *periodicInput) Background(stat *storage.Stat) {
+func (input *periodicInput) Background(ctx context.Context, stat *storage.Stat) {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 	for {
 		select {
-		case <-input.Ctx.Done():
+		case <-ctx.Done():
 			return
 		case <-ticker.C:
 			regions, err := input.PeriodicGetter()

@@ -1,6 +1,6 @@
 {
   "name": "@pingcap-incubator/dashboard_client",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "author": "pingcap-incubator",
   "repository": {
@@ -23,7 +23,6 @@
   "dependencies": {
     "axios": "^0.19.0"
   },
-  "peerDependencies": {},
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^1.0.8-4.2.2",
     "babel-core": "^6.26.3",

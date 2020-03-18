@@ -72,7 +72,7 @@ func NewEtcdClient(config *config.Config) (*clientv3.Client, error) {
 				PermitWithoutStream: true,
 			}),
 		},
-		TLS:       config.TLSConfig,
+		TLS:       config.ClusterTLSConfig,
 		LogConfig: &zapCfg,
 	})
 }

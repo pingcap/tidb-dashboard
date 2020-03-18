@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
@@ -36,13 +37,16 @@ type tidbServerInfo struct {
 
 type ForwarderConfig struct {
 	TiDBRetrieveTimeout time.Duration
-	TLSConfig           *tls.Config
+	TiDBTLSConfig       *tls.Config
 }
 
 func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
+	if cfg.TiDBTLSConfig != nil {
+		_ = mysql.RegisterTLSConfig("tidb", cfg.TiDBTLSConfig)
+	}
 	return &ForwarderConfig{
 		TiDBRetrieveTimeout: time.Second,
-		TLSConfig:           cfg.TLSConfig,
+		TiDBTLSConfig:       cfg.TiDBTLSConfig,
 	}
 }
 

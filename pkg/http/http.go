@@ -30,7 +30,7 @@ func NewHTTPClientWithConf(config *config.Config) *http.Client {
 	return &http.Client{
 		Transport: &http.Transport{
 			DialTLS: func(network, addr string) (net.Conn, error) {
-				conn, err := tls.Dial(network, addr, config.TLSConfig)
+				conn, err := tls.Dial(network, addr, config.ClusterTLSConfig)
 				return conn, err
 			},
 		},

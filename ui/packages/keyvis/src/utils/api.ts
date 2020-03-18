@@ -1,5 +1,5 @@
 import client from '@pingcap-incubator/dashboard_client'
-import { HeatmapData, HeatmapRange, DataTag } from '../heatmap'
+import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types'
 
 export async function fetchHeatmap(
   selection?: HeatmapRange,

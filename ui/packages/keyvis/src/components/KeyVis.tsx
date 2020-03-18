@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Heatmap, HeatmapData, HeatmapRange, DataTag } from '../heatmap';
+import { Heatmap } from '../heatmap';
+import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types';
 import { fetchHeatmap } from '../utils';
 import ToolBar from './ToolBar';
 

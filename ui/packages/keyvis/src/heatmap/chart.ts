@@ -1,12 +1,11 @@
 import * as d3 from 'd3'
 import _ from 'lodash'
-import { HeatmapRange, HeatmapData, DataTag, tagUnit } from '.'
+import { HeatmapRange, HeatmapData, DataTag } from './types'
 import { createBuffer } from './buffer'
 import { labelAxisGroup } from './axis/label-axis'
 import { histogram } from './axis/histogram'
 import { getColorScheme, ColorScheme, rasterizeLevel } from './color'
-import { withUnit, clickToCopyBehavior } from './utils'
-
+import { tagUnit, withUnit, clickToCopyBehavior } from './utils'
 import legend from './legend'
 
 const margin = {
@@ -592,15 +591,27 @@ export async function heatmapChart(
       const endLen = endLabel.length
 
       // Cross start boundary, only use end label
-      if (startLen >= 1 && startLen + 1 == endLen && _.isEqual(startLabel, endLabel.slice(0, startLen))) {
+      if (
+        startLen >= 1 &&
+        startLen + 1 == endLen &&
+        _.isEqual(startLabel, endLabel.slice(0, startLen))
+      ) {
         return endLabel.map(truncate)
       }
       // range
-      if (startLen >= 2 && startLen == endLen
-        && _.isEqual(startLabel.slice(0, startLen - 1), endLabel.slice(0, startLen - 1))) {
+      if (
+        startLen >= 2 &&
+        startLen == endLen &&
+        _.isEqual(
+          startLabel.slice(0, startLen - 1),
+          endLabel.slice(0, startLen - 1)
+        )
+      ) {
         return [
           ...startLabel.slice(0, startLen - 1).map(truncate),
-          `${truncate(startLabel[startLen - 1])} ~ ${truncate(endLabel[startLen - 1])}`,
+          `${truncate(startLabel[startLen - 1])} ~ ${truncate(
+            endLabel[startLen - 1]
+          )}`,
         ]
       }
       // Cross end boundary, only use start label

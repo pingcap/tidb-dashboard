@@ -27,6 +27,11 @@ export function addTranslationResource(lang, translations) {
   i18next.addResourceBundle(lang, 'translation', translations, true, false)
 }
 
+export const ALL_LANGUAGES = {
+  'zh-CN': '简体中文',
+  en: 'English',
+}
+
 export function init() {
   i18next
     .use(LanguageDetector)

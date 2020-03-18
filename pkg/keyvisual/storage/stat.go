@@ -20,6 +20,8 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/fx"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 )
@@ -172,7 +174,7 @@ type Stat struct {
 }
 
 // NewStat generates a Stat based on the configuration.
-func NewStat(ctx context.Context, wg *sync.WaitGroup, provider *region.PDDataProvider, cfg StatConfig, strategy matrix.Strategy, startTime time.Time) *Stat {
+func NewStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, cfg StatConfig, strategy matrix.Strategy, startTime time.Time) *Stat {
 	layers := make([]*layerStat, len(cfg.LayersConfig))
 	for i, c := range cfg.LayersConfig {
 		layers[i] = newLayerStat(c, strategy, startTime)
@@ -186,11 +188,16 @@ func NewStat(ctx context.Context, wg *sync.WaitGroup, provider *region.PDDataPro
 		provider: provider,
 	}
 
-	wg.Add(1)
-	go func() {
-		s.rebuildRegularly(ctx)
-		wg.Done()
-	}()
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			wg.Add(1)
+			go func() {
+				s.rebuildRegularly(ctx)
+				wg.Done()
+			}()
+			return nil
+		},
+	})
 
 	return s
 }

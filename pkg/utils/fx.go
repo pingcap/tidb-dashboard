@@ -11,27 +11,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package region
+package utils
 
 import (
-	"go.etcd.io/etcd/clientv3"
+	"github.com/pingcap/log"
+	"go.uber.org/fx"
 )
 
-type RegionsInfo interface {
-	Len() int
-	GetKeys() []string
-	GetValues(tag StatTag) []uint64
+type FxPrinter func(string, ...interface{})
+
+func (p FxPrinter) Printf(format string, args ...interface{}) {
+	p(format, args...)
 }
 
-type RegionsInfoGenerator func() (RegionsInfo, error)
-
-type PDDataProvider struct {
-	// File mode (debug)
-	FileStartTime int64
-	FileEndTime   int64
-	// API or Core mode
-	// This item takes effect only when both FileStartTime and FileEndTime are 0.
-	PeriodicGetter RegionsInfoGenerator
-
-	EtcdClient *clientv3.Client
+func NewFxPrinter() fx.Printer {
+	return FxPrinter(log.S().Debugf)
 }

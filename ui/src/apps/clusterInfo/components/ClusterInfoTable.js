@@ -76,13 +76,14 @@ function pushNodes(key, cluster, dataSource, t) {
   ) {
     const nodes = cluster[key].nodes
     dataSource.push({
+      key,
       address: key + '(' + nodes.length + ')',
-      children: nodes.map((n, index) => wrapNode(n, key, index, t)),
+      children: nodes.map((n, index) => wrapNode(n, key, index)),
     })
   }
 }
 
-function wrapNode(node, comp, id, t) {
+function wrapNode(node, comp, id) {
   if (node === undefined || node === null) {
     return
   }
@@ -101,6 +102,7 @@ function wrapNode(node, comp, id, t) {
     )
   }
   return {
+    key: `${comp}:${node.ip}:${node.port}`,
     address: `${node.ip}:${node.port}`,
     binary_path: node.binary_path,
     deploy_path: node.deploy_path,

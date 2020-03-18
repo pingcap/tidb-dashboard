@@ -14,6 +14,7 @@
 package diagnose
 
 import (
+	"bytes"
 	"fmt"
 	"runtime"
 	"sort"
@@ -1719,7 +1720,7 @@ func GetGoroutinesCountTable(startTime, endTime string, db *gorm.DB) (TableDef, 
 
 func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs := []AvgMaxMinTableDef{
-		{name: "grpc poll", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'grpc%'", Comment: "The CPU utilization of each TiKV grpc"},
+		{name: "grpc", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'grpc%'", Comment: "The CPU utilization of each TiKV grpc"},
 		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'raftstore_%'", Comment: "The CPU utilization of TiKV raftstore thread"},
 		{name: "Async apply", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'apply%'", Comment: "The CPU utilization of TiKV async apply thread"},
 		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'sched_%'", Comment: "The CPU utilization of TiKV scheduler worker thread"},
@@ -1737,6 +1738,19 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, er
 		{name: "gc", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'gc_worker%'", Comment: "The CPU utilization of TiKV gc"},
 		{name: "split_check", tbl: "tikv_thread_cpu", label: "instance", condition: "name = 'split_check'", Comment: "The CPU utilization of TiKV split_check"},
 	}
+	configKeys := map[string]string{
+		"grpc":                     "server.grpc-concurrency",
+		"sched_worker":             "storage.scheduler-worker-pool-size",
+		"raftstore":                "raftstore.store-pool-size",
+		"Async apply":              "raftstore.apply-pool-size",
+		"unified read pool":        "readpool.unified.max-thread-count",
+		"storage read pool high":   "readpool.storage.high-concurrency",
+		"storage read pool low":    "readpool.storage.low-concurrency",
+		"storage read pool normal": "readpool.storage.normal-concurrency",
+		"cop high":                 "readpool.coprocessor.high-concurrency",
+		"cop low":                  "readpool.coprocessor.low-concurrency",
+		"cop normal":               "readpool.coprocessor.normal-concurrency",
+	}
 	table := TableDef{
 		Category:       []string{CategoryLoad},
 		Title:          "TiKV Thread CPU Usage",
@@ -1744,10 +1758,38 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, er
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
-		Column:         []string{"METRIC_NAME", "INSTANCE", "AVG", "MAX", "MIN"},
+		Column:         []string{"METRIC_NAME", "INSTANCE", "AVG", "MAX", "MIN", "CONFIG_KEY", "CURRENT_CONFIG_VALUE"},
+	}
+	type instanceKey struct {
+		instance string
+		key      string
+	}
+	var keysBuf bytes.Buffer
+	idx := 0
+	for _, v := range configKeys {
+		if idx > 0 {
+			keysBuf.WriteByte(',')
+		}
+		keysBuf.WriteByte('\'')
+		keysBuf.WriteString(v)
+		keysBuf.WriteByte('\'')
+		idx++
+	}
+	sql := fmt.Sprintf("select t2.status_address, t1.`key`,t1.value from (select instance, `key`,value from information_schema.cluster_config where type='tikv' and `key` in (%s) ) as t1 join "+
+		"(select instance,status_address from information_schema.cluster_info where type='tikv') as t2 where t1.instance=t2.instance", keysBuf.String())
+	rows, err := querySQL(db, sql)
+	if err != nil {
+		return table, err
+	}
+	cfgMap := make(map[instanceKey]string)
+	for _, row := range rows {
+		cfgMap[instanceKey{
+			instance: row[0],
+			key:      row[1],
+		}] = row[2]
 	}
 	specialHandle := func(row []string) []string {
-		if len(row) < 5 {
+		if len(row) < 7 {
 			return row
 		}
 		for i := 2; i < 5; i++ {
@@ -1756,6 +1798,14 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, er
 				return row
 			}
 			row[i] = convertFloatToString(f*100) + "%"
+		}
+		// get config value
+		if cfgValue, ok := cfgMap[instanceKey{
+			instance: row[1],
+			key:      configKeys[row[0]],
+		}]; ok {
+			row[5] = configKeys[row[0]]
+			row[6] = cfgValue
 		}
 		return row
 	}
@@ -1773,7 +1823,7 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, er
 		if len(def.condition) > 0 {
 			condition = condition + "and " + def.condition
 		}
-		sql := fmt.Sprintf("select '%[1]s', '', avg(sum_value),max(sum_value),min(sum_value) from ( select sum(value) as sum_value from metrics_schema.%[2]s %[3]s group by %[4]s, time) as t1",
+		sql := fmt.Sprintf("select '%[1]s', '', avg(sum_value),max(sum_value),min(sum_value),'','' from ( select sum(value) as sum_value from metrics_schema.%[2]s %[3]s group by %[4]s, time) as t1",
 			def.name, def.tbl, condition, def.label)
 		rows, err := querySQL(db, sql)
 		if err != nil {
@@ -1782,7 +1832,7 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, er
 		if len(rows) == 0 {
 			continue
 		}
-		sql = fmt.Sprintf("select '%[1]s', %[2]s,avg(sum_value),max(sum_value),min(sum_value) from ( select %[2]s,sum(value) as sum_value from metrics_schema.%[3]s %[4]s group by %[2]s,time) as t1 group by %[2]s order by avg(sum_value) desc",
+		sql = fmt.Sprintf("select '%[1]s', %[2]s,avg(sum_value),max(sum_value),min(sum_value),'','' from ( select %[2]s,sum(value) as sum_value from metrics_schema.%[3]s %[4]s group by %[2]s,time) as t1 group by %[2]s order by avg(sum_value) desc",
 			def.name, def.label, def.tbl, condition)
 		subRows, err := querySQL(db, sql)
 		if err != nil {

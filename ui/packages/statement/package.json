@@ -16,7 +16,7 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "start": "rollup -c -w",
+    "watch": "rollup -c -w",
     "clean": "rimraf dist",
     "p": "yarn publish"
   },

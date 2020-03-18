@@ -26,8 +26,8 @@
     "single-spa-react": "^2.11.0"
   },
   "scripts": {
+    "watch:packages": "lerna run --parallel watch",
     "start": "react-app-rewired start",
-    "build:api_client": "yarn workspace @pingcap-incubator/dashboard_client build",
     "build:packages": "lerna run --stream --sort build",
     "build": "yarn run build:packages && react-app-rewired build",
     "test": "react-app-rewired test",

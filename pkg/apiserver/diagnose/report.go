@@ -226,7 +226,9 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 
 		// Config
 		GetPDConfigInfo,
+		GetPDConfigChangeInfo,
 		GetTiDBGCConfigInfo,
+		GetTiDBGCConfigChangeInfo,
 		GetTiDBCurrentConfig,
 		GetPDCurrentConfig,
 		GetTiKVCurrentConfig,
@@ -766,19 +768,40 @@ func GetTiDBDDLOwner(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 }
 
 func GetPDConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
-	sql := fmt.Sprintf(`select t1.*,t2.count from
+	table := TableDef{
+		Category:       []string{CategoryConfig},
+		Title:          "Scheduler Initial Config",
+		CommentEN:      "PD scheduler initial config value. The initial time is the report start time",
+		CommentCN:      "",
+		joinColumns:    []int{0},
+		compareColumns: []int{1},
+		Column:         []string{"CONFIG_ITEM", "VALUE"},
+	}
+	sql := fmt.Sprintf(`select type,value from metrics_schema.pd_scheduler_config where time='%[1]s'`, startTime)
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	if len(rows) > 0 {
+		table.Rows = rows
+	}
+	return table, nil
+}
+
+func GetPDConfigChangeInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	sql := fmt.Sprintf(`select t1.* from
 		(select min(time) as time,type,value from metrics_schema.pd_scheduler_config where time>='%[1]s' and time<'%[2]s' group by type,value order by type) as t1 join
 		(select type, count(distinct value) as count from metrics_schema.pd_scheduler_config where time>='%[1]s' and time<'%[2]s' group by type order by count desc) as t2 
-		where t1.type=t2.type order by t2.count desc, t1.time;`, startTime, endTime)
+		where t1.type=t2.type and t2.count > 1 order by t2.count desc, t1.time;`, startTime, endTime)
 
 	table := TableDef{
 		Category:       []string{CategoryConfig},
-		Title:          "Scheduler Config",
-		CommentEN:      "PD scheduler config change history. MIN_TIME is the minimum start effective time",
+		Title:          "Scheduler Change Config",
+		CommentEN:      "PD scheduler config change history. APPROXIMATE_CHANGE_TIME is the minimum start effective time",
 		CommentCN:      "",
 		joinColumns:    []int{1},
 		compareColumns: []int{2},
-		Column:         []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
+		Column:         []string{"APPROXIMATE_CHANGE_TIME", "CONFIG_ITEM", "VALUE"},
 	}
 	rows, err := getSQLRows(db, sql)
 	if err != nil {
@@ -789,20 +812,39 @@ func GetPDConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 }
 
 func GetTiDBGCConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
-	sql := fmt.Sprintf(`select t1.*,t2.count from
+	table := TableDef{
+		Category:       []string{CategoryConfig},
+		Title:          "TiDB GC Initial Config",
+		CommentEN:      "TiDB GC initial config value. The initial time is the report start time",
+		CommentCN:      "",
+		joinColumns:    []int{0},
+		compareColumns: []int{1},
+		Column:         []string{"CONFIG_ITEM", "VALUE"},
+	}
+	sql := fmt.Sprintf(`select type,value from metrics_schema.tidb_gc_config where time='%[1]s' and value>0`, startTime)
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
+	return table, nil
+}
+
+func GetTiDBGCConfigChangeInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	sql := fmt.Sprintf(`select t1.* from
 		(select min(time) as time,type,value from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' and value > 0 group by type,value order by type) as t1 join
 		(select type, count(distinct value) as count from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' and value > 0 group by type order by count desc) as t2 
-		where t1.type=t2.type order by t2.count desc, t1.time;`, startTime, endTime)
+		where t1.type=t2.type and t2.count>1 order by t2.count desc, t1.time;`, startTime, endTime)
 
 	table := TableDef{
 		Category: []string{CategoryConfig},
-		Title:    "TiDB GC Config",
+		Title:    "TiDB GC Change Config",
 		CommentEN: `TiDB GC config change history; 
-MIN_TIME is the minimum start effective time`,
+APPROXIMATE_CHANGE_TIME is the minimum start effective time`,
 		CommentCN:      "",
 		joinColumns:    []int{1},
 		compareColumns: []int{2},
-		Column:         []string{"MIN_TIME", "CONFIG_ITEM", "VALUE", "CHANGE_COUNT"},
+		Column:         []string{"APPROXIMATE_CHANGE_TIME", "CONFIG_ITEM", "VALUE"},
 	}
 	rows, err := getSQLRows(db, sql)
 	if err != nil {

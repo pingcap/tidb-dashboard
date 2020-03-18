@@ -175,7 +175,12 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 	}
 }
 
-func compareTable(table1, table2 *TableDef, dr *diffRows) (*TableDef, error) {
+func compareTable(table1, table2 *TableDef, dr *diffRows) (_ *TableDef, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.Errorf("compare table %s ,%s panic", table1.Category, table1.Title)
+		}
+	}()
 	switch table1.Title {
 	case "Scheduler Config", "TiDB GC Config":
 		return compareTableWithNonUniqueKey(table1, table2, &diffRows{})
@@ -740,7 +745,9 @@ func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.
 
 		// Config
 		GetPDConfigInfo,
+		GetPDConfigChangeInfo,
 		GetTiDBGCConfigInfo,
+		GetTiDBGCConfigChangeInfo,
 
 		// Overview
 		GetTotalTimeConsumeTable,

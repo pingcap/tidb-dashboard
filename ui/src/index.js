@@ -4,7 +4,7 @@ import * as routingUtil from '@/utils/routing'
 import * as authUtil from '@/utils/auth'
 import * as i18nUtil from '@/utils/i18n'
 
-import * as LayoutMain from '@/layout'
+import * as LayoutMain from '@/layout/main'
 import * as LayoutSignIn from '@/layout/signin'
 import AppKeyVis from '@/apps/keyvis'
 import AppStatement from '@/apps/statement'

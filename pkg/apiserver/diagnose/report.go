@@ -773,11 +773,14 @@ func GetPDConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 		Title:          "Scheduler Initial Config",
 		CommentEN:      "PD scheduler initial config value. The initial time is the report start time",
 		CommentCN:      "",
-		joinColumns:    []int{0},
+		joinColumns:    []int{0, 2},
 		compareColumns: []int{1},
-		Column:         []string{"CONFIG_ITEM", "VALUE"},
+		Column:         []string{"CONFIG_ITEM", "VALUE", "CURRENT_VALUE", "DIFF_WITH_CURRENT"},
 	}
-	sql := fmt.Sprintf(`select type,value from metrics_schema.pd_scheduler_config where time='%[1]s'`, startTime)
+	sql := fmt.Sprintf(`select t1.type,t1.value,t2.value,t1.value!=t2.value from
+		(select distinct type,value from metrics_schema.pd_scheduler_config where time = '%[1]s' and value>0) as t1 join
+		(select distinct type,value from metrics_schema.pd_scheduler_config where time = now() and value>0) as t2
+		where t1.type=t2.type order by abs(t2.value-t1.value) desc`, startTime)
 	rows, err := getSQLRows(db, sql)
 	if err != nil {
 		return table, err
@@ -817,11 +820,14 @@ func GetTiDBGCConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, erro
 		Title:          "TiDB GC Initial Config",
 		CommentEN:      "TiDB GC initial config value. The initial time is the report start time",
 		CommentCN:      "",
-		joinColumns:    []int{0},
+		joinColumns:    []int{0, 2},
 		compareColumns: []int{1},
-		Column:         []string{"CONFIG_ITEM", "VALUE"},
+		Column:         []string{"CONFIG_ITEM", "VALUE", "CURRENT_VALUE", "DIFF_WITH_CURRENT"},
 	}
-	sql := fmt.Sprintf(`select type,value from metrics_schema.tidb_gc_config where time='%[1]s' and value>0`, startTime)
+	sql := fmt.Sprintf(`select t1.type,t1.value,t2.value,t1.value!=t2.value from
+		(select distinct type,value from metrics_schema.tidb_gc_config where time = '%[1]s' and value>0) as t1 join
+		(select distinct type,value from metrics_schema.tidb_gc_config where time = now() and value>0) as t2
+		where t1.type=t2.type order by abs(t2.value-t1.value) desc`, startTime)
 	rows, err := getSQLRows(db, sql)
 	if err != nil {
 		return table, err

@@ -2,21 +2,23 @@
 
 .container {
   height: 100vh;
-  overflow: hidden;
 }
 
 .content {
-  position: absolute;
+  position: relative;
   z-index: 3;
   background: #fff;
-  top: 0;
-  height: 100%;
-  overflow-y: auto;
-  right: 0;
+
+  &:before,
+  &:after {
+    // Handle margin collapse
+    content: ' ';
+    display: table;
+  }
 }
 
 .contentBack {
-  position: absolute;
+  position: fixed;
   z-index: 2;
   background: #fff;
   top: 0;

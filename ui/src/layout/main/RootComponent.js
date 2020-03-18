@@ -113,7 +113,7 @@ class App extends React.PureComponent {
           <div
             className={styles.content}
             style={{
-              left: this.state.contentLeftOffset,
+              marginLeft: this.state.contentLeftOffset,
             }}
           >
             <div id="__spa_content__"></div>

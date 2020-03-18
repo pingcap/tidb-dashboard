@@ -20,7 +20,9 @@ import (
 	"time"
 
 	"go.etcd.io/etcd/clientv3"
+	"go.uber.org/fx"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
@@ -37,17 +39,17 @@ type ForwarderConfig struct {
 	TLSConfig           *tls.Config
 }
 
-func NewForwarderConfig(tlsConfig *tls.Config) *ForwarderConfig {
+func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
 	return &ForwarderConfig{
 		TiDBRetrieveTimeout: time.Second,
-		TLSConfig:           tlsConfig,
+		TLSConfig:           cfg.TLSConfig,
 	}
 }
 
 type Forwarder struct {
-	ctx          context.Context
-	config       *ForwarderConfig
-	etcdProvider pd.EtcdProvider
+	ctx        context.Context
+	config     *ForwarderConfig
+	etcdClient *clientv3.Client
 }
 
 // TODO: Requires load balancing and health checks.
@@ -63,7 +65,7 @@ func (f *Forwarder) Close() error {
 
 func (f *Forwarder) getServerInfo() (*tidbServerInfo, error) {
 	ctx, cancel := context.WithTimeout(f.ctx, f.config.TiDBRetrieveTimeout)
-	resp, err := f.etcdProvider.GetEtcdClient().Get(ctx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
+	resp, err := f.etcdClient.Get(ctx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
 	cancel()
 
 	if err != nil {
@@ -82,10 +84,21 @@ func (f *Forwarder) getServerInfo() (*tidbServerInfo, error) {
 	return nil, ErrNoAliveTiDB.New("no TiDB is alive")
 }
 
-func NewForwarder(config *ForwarderConfig, etcdProvider pd.EtcdProvider) *Forwarder {
-	return &Forwarder{
-		etcdProvider: etcdProvider,
-		config:       config,
-		ctx:          context.TODO(),
+func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3.Client) *Forwarder {
+	f := &Forwarder{
+		etcdClient: etcdClient,
+		config:     config,
+		ctx:        context.Background(),
 	}
+
+	lc.Append(fx.Hook{
+		OnStart: func(context.Context) error {
+			return f.Open()
+		},
+		OnStop: func(context.Context) error {
+			return f.Close()
+		},
+	})
+
+	return f
 }

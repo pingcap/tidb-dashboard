@@ -21,6 +21,8 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/fx"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb/codec"
@@ -34,7 +36,6 @@ type tableDetail struct {
 }
 
 type tidbLabelStrategy struct {
-	Ctx        context.Context
 	Config     *config.Config
 	Provider   *region.PDDataProvider
 	HTTPClient *http.Client
@@ -44,25 +45,36 @@ type tidbLabelStrategy struct {
 }
 
 // TiDBLabelStrategy implements the LabelStrategy interface. Get Label Information from TiDB.
-func TiDBLabelStrategy(ctx context.Context, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) LabelStrategy {
+func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) LabelStrategy {
 	s := &tidbLabelStrategy{
-		Ctx:        ctx,
 		Config:     cfg,
 		Provider:   provider,
 		HTTPClient: httpClient,
 	}
+
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			wg.Add(1)
+			go func() {
+				s.Background(ctx)
+				wg.Done()
+			}()
+			return nil
+		},
+	})
+
 	return s
 }
 
-func (s *tidbLabelStrategy) Background() {
+func (s *tidbLabelStrategy) Background(ctx context.Context) {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 	for {
 		select {
-		case <-s.Ctx.Done():
+		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			s.updateAddress()
+			s.updateAddress(ctx)
 			s.updateMap()
 		}
 	}

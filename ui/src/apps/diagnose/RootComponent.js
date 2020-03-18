@@ -21,7 +21,7 @@ const App = () => (
       <Switch>
         <Route path="/diagnose/:id">
           <DiagnoseStatus
-            basePath={client.basePath}
+            basePath={client.dashboard.basePath}
             fetchReport={fetchReport}
           />
         </Route>

@@ -15,9 +15,9 @@ const tableColumns = (
   t: (string) => string
 ) => [
   {
-    title: t('statement.common.schema'),
-    dataIndex: 'schema_name',
-    key: 'schema_name'
+    title: t('statement.common.schemas'),
+    dataIndex: 'schemas',
+    key: 'schemas',
   },
   {
     title: t('statement.common.digest_text'),
@@ -30,7 +30,7 @@ const tableColumns = (
       >
         {text}
       </Link>
-    )
+    ),
   },
   {
     title: t('statement.common.sum_latency'),
@@ -38,7 +38,7 @@ const tableColumns = (
     key: 'sum_latency',
     sorter: (a: StatementOverview, b: StatementOverview) =>
       a.sum_latency - b.sum_latency,
-    render: text => getValueFormat('ns')(text, 2, null)
+    render: text => getValueFormat('ns')(text, 2, null),
   },
   {
     title: t('statement.common.exec_count'),
@@ -54,7 +54,7 @@ const tableColumns = (
           color="rgba(73, 169, 238, 1)"
         />
       </div>
-    )
+    ),
   },
   {
     title: t('statement.common.avg_affected_rows'),
@@ -62,7 +62,7 @@ const tableColumns = (
     key: 'avg_affected_rows',
     sorter: (a: StatementOverview, b: StatementOverview) =>
       a.avg_affected_rows - b.avg_affected_rows,
-    render: text => getValueFormat('short')(text, 0, 0)
+    render: text => getValueFormat('short')(text, 0, 0),
   },
   {
     title: t('statement.common.avg_latency'),
@@ -78,7 +78,7 @@ const tableColumns = (
           color="rgba(73, 169, 238, 1)"
         />
       </div>
-    )
+    ),
   },
   {
     title: t('statement.common.avg_mem'),
@@ -94,8 +94,8 @@ const tableColumns = (
           color="rgba(255, 102, 51, 1)"
         />
       </div>
-    )
-  }
+    ),
+  },
 ]
 
 interface Props {
@@ -107,9 +107,9 @@ interface Props {
 export default function StatementsTable({
   statements,
   loading,
-  timeRange
+  timeRange,
 }: Props) {
-  const {t} = useTranslation()
+  const { t } = useTranslation()
   const maxExecCount = useMemo(
     () => _.max(statements.map(s => s.exec_count)) || 1,
     [statements]
@@ -119,7 +119,7 @@ export default function StatementsTable({
     [statements]
   )
   const maxAvgMem = useMemo(() => _.max(statements.map(s => s.avg_mem)) || 1, [
-    statements
+    statements,
   ])
   const columns = useMemo(
     () => tableColumns(timeRange, maxExecCount!, maxAvgLatency!, maxAvgMem!, t),

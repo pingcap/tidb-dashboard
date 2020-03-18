@@ -5,6 +5,7 @@ statement:
     select_schemas: 选择数据库
   common:
     schema: 数据库
+    schemas: 数据库
     digest_text: SQL 类别
     sum_latency: 总时长
     exec_count: 总次数
@@ -19,3 +20,5 @@ statement:
     time_range: 时间段
     query_sample_text: 最后出现 SQL 语句
     last_seen: 最后出现时间
+  plan:
+    plans: 执行计划

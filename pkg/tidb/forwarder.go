@@ -15,6 +15,7 @@ package tidb
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"time"
 
@@ -33,11 +34,13 @@ type tidbServerInfo struct {
 
 type ForwarderConfig struct {
 	TiDBRetrieveTimeout time.Duration
+	TLSConfig           *tls.Config
 }
 
-func NewForwarderConfig() *ForwarderConfig {
+func NewForwarderConfig(tlsConfig *tls.Config) *ForwarderConfig {
 	return &ForwarderConfig{
 		TiDBRetrieveTimeout: time.Second,
+		TLSConfig:           tlsConfig,
 	}
 }
 

@@ -10,6 +10,7 @@
     "classnames": "^2.2.6",
     "d3": "^5.15.0",
     "framer-motion": "^1.9.0",
+    "dayjs": "^1.8.22",
     "i18next": "^19.1.0",
     "i18next-browser-languagedetector": "^4.0.1",
     "lodash": "^4.17.15",

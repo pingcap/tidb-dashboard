@@ -76,7 +76,7 @@ function pushNodes(key, cluster, dataSource, t) {
   ) {
     const nodes = cluster[key].nodes
     dataSource.push({
-      key: key,
+      key,
       address: key + '(' + nodes.length + ')',
       children: nodes.map((n, index) => wrapNode(n, key, index)),
     })

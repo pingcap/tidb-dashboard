@@ -32,7 +32,7 @@ func NewService(config *config.Config) *Service {
 	return &Service{}
 }
 
-func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
+func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/foo")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/bar/:name", s.greetHandler)

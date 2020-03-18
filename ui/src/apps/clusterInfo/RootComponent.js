@@ -17,7 +17,7 @@ const App = () => {
       setCluster(cluster)
     }
     fetchLoad()
-  }, [])
+  }, [cluster])
 
   return (
     <Router>

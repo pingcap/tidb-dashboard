@@ -1,9 +1,14 @@
 import React from 'react'
-import { Table, Card, Skeleton } from 'antd'
+import { Table, Card, Skeleton, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
+
+import client from '@/utils/client'
 
 function ComponentPanelTable({ cluster }) {
   const { t } = useTranslation()
+
+  let dataSource = []
+
   const columns = [
     {
       title: t('cluster_info.component_table.address'),
@@ -11,19 +16,6 @@ function ComponentPanelTable({ cluster }) {
       key: 'address',
       ellipsis: true,
       width: 240,
-    },
-    {
-      title: t('cluster_info.component_table.status'),
-      dataIndex: 'status',
-      key: 'status',
-      width: 100,
-      render: function(text) {
-        if (text) {
-          return (
-            <span>{t(`cluster_info.component_table.${text}`)} </span>
-          )
-        }
-      }
     },
     {
       title: t('cluster_info.component_table.version'),
@@ -38,9 +30,51 @@ function ComponentPanelTable({ cluster }) {
       key: 'deploy_path',
       ellipsis: true,
     },
+    {
+      title: t('cluster_info.component_table.status'),
+      dataIndex: 'status',
+      key: 'status',
+      width: 100,
+      render: (status, node) => {
+        if (!status) {
+          return
+        }
+        let statusContent = t(`cluster_info.component_table.${status}`)
+        if (node.comp && node.comp === 'tidb') {
+          let showConfirm = () => {
+            Modal.confirm({
+              title: `${t('cluster_info.component_table.hide_db.title')}`,
+              content: t('cluster_info.component_table.hide_db.warning', {
+                nodeName: node.address,
+              }),
+              okText: t('cluster_info.component_table.hide_db.confirm'),
+              cancelText: t('cluster_info.component_table.hide_db.cancel'),
+              onOk() {
+                client.dashboard.topologyTidbAddressDelete(node.address)
+              },
+              onCancel() {},
+            })
+          }
+          return (
+            <span>
+              {statusContent}
+              {node.status && node.status !== 'up' && (
+                <a
+                  onClick={() => {
+                    showConfirm()
+                  }}
+                >
+                  ({t('cluster_info.component_table.hide_db.click')})
+                </a>
+              )}
+            </span>
+          )
+        }
+        return <span>{statusContent}</span>
+      },
+    },
   ]
 
-  let dataSource = []
   if (cluster) {
     pushNodes('tikv', cluster, dataSource, t)
     pushNodes('tidb', cluster, dataSource, t)
@@ -87,13 +121,13 @@ function wrapNode(node, comp, id) {
   if (node === undefined || node === null) {
     return
   }
-  let status = 'down';
+  let status = 'down'
   if (node.status === 1) {
-    status = 'up';
+    status = 'up'
   } else if (node.status === 2) {
-    status = 'tombstone';
+    status = 'tombstone'
   } else if (node.status === 3) {
-    status = 'offline';
+    status = 'offline'
   }
   if (node.deploy_path === undefined && node.binary_path !== null) {
     node.deploy_path = node.binary_path.substring(
@@ -109,6 +143,8 @@ function wrapNode(node, comp, id) {
     version: node.version,
     status_port: node.status_port,
     status: status,
+
+    comp: comp,
   }
 }
 

@@ -36,14 +36,13 @@ import (
 
 // Service is used to provide a kind of feature.
 type Service struct {
-	ctx               context.Context
-	cancel            context.CancelFunc
-	config            *config.Config
-	db                *dbstore.DB
-	tasks             sync.Map
-	httpClient        *http.Client
-	enableAutoCollect uint32
-	canAutoCollect    bool
+	ctx                  context.Context
+	config               *config.Config
+	db                   *dbstore.DB
+	wg                   sync.WaitGroup
+	tasks                sync.Map
+	httpClient           *http.Client
+	isAutoCollectRunning uint32
 }
 
 // NewService creates a new service.
@@ -67,17 +66,13 @@ func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service
 	return s
 }
 
-func (s *Service) Start(_ctx context.Context) error {
-	ctx, cancel := context.WithCancel(context.Background())
+func (s *Service) Start(ctx context.Context) error {
 	s.ctx = ctx
-	s.cancel = cancel
-	s.canAutoCollect = true
 	return nil
 }
 
 func (s *Service) Stop(ctx context.Context) error {
-	s.canAutoCollect = false
-	s.cancel()
+	s.wg.Wait()
 	return nil
 }
 
@@ -157,7 +152,9 @@ func (s *Service) collect(req *StartRequest) (*TaskGroup, error) {
 		tasks = append(tasks, t)
 	}
 
+	s.wg.Add(1)
 	go func() {
+		defer s.wg.Done()
 		var wg sync.WaitGroup
 		for i := 0; i < len(tasks); i++ {
 			wg.Add(1)
@@ -175,12 +172,13 @@ func (s *Service) collect(req *StartRequest) (*TaskGroup, error) {
 }
 
 func (s *Service) autoCollect(req *StartRequest) {
+	defer s.wg.Done()
 	interval := time.Duration(req.CollectionInterval+req.DurationSecs) * time.Second
 	timer := time.NewTimer(interval)
 	defer timer.Stop()
 
 	for {
-		if atomic.LoadUint32(&s.enableAutoCollect) == 0 {
+		if atomic.LoadUint32(&s.isAutoCollectRunning) == 0 {
 			return
 		}
 		select {
@@ -203,11 +201,11 @@ func (s *Service) autoCollect(req *StartRequest) {
 // @Failure 400 {object} utils.APIError
 // @Router /profiling/auto/start [post]
 func (s *Service) autoStart(c *gin.Context) {
-	if atomic.LoadUint32(&s.enableAutoCollect) > 0 {
+	if atomic.LoadUint32(&s.isAutoCollectRunning) > 0 {
 		c.JSON(http.StatusBadRequest, "auto profiling job is running")
 		return
 	}
-	atomic.StoreUint32(&s.enableAutoCollect, 1)
+	atomic.StoreUint32(&s.isAutoCollectRunning, 1)
 	var req StartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Status(http.StatusBadRequest)
@@ -225,12 +223,7 @@ func (s *Service) autoStart(c *gin.Context) {
 	if req.CollectionInterval == 0 {
 		req.CollectionInterval = 3600
 	}
-	if !s.canAutoCollect {
-		atomic.StoreUint32(&s.enableAutoCollect, 0)
-		c.JSON(http.StatusBadRequest, "auto profiling service is not started")
-		return
-	}
-
+	s.wg.Add(1)
 	go s.autoCollect(&req)
 	c.JSON(http.StatusOK, "success")
 }
@@ -242,11 +235,11 @@ func (s *Service) autoStart(c *gin.Context) {
 // @Success 200 {string} string "success"
 // @Router /profiling/auto/stop [post]
 func (s *Service) autoStop(c *gin.Context) {
-	if atomic.LoadUint32(&s.enableAutoCollect) == 0 {
+	if atomic.LoadUint32(&s.isAutoCollectRunning) == 0 {
 		c.JSON(http.StatusBadRequest, "auto profiling job has been stopped")
 	}
 
-	atomic.StoreUint32(&s.enableAutoCollect, 0)
+	atomic.StoreUint32(&s.isAutoCollectRunning, 0)
 	c.JSON(http.StatusOK, "success")
 }
 

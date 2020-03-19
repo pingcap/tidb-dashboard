@@ -2,9 +2,10 @@
 @import '../../../../node_modules/antd/es/style/themes/default.less';
 
 .PD-KeyVis {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+  font-size: 14px;
+  width: 100%;
+  height: calc(100vh - 170px);
+  padding: 16px;
 
   .ui.dropdown .menu {
     z-index: 9999;
@@ -13,6 +14,8 @@
   .PD-KeyVis-Toolbar {
     display: flex;
     align-items: center;
+    background-color: white;
+    padding: 16px;
     flex-wrap: wrap;
 
     .PD-Cluster-Legend {
@@ -146,9 +149,8 @@
   }
 
   .heatmap {
-    flex-grow: 1;
-    margin: @padding-page;
-    margin-top: -32px;
+    width: 100%;
+    height: 100%;
   }
 }
 

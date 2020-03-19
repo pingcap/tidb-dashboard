@@ -1,8 +1,7 @@
-import * as d3 from 'd3'
-import { Section, DisplaySection, scaleSections } from '.'
-import { KeyAxisEntry } from '..'
-import { truncateString } from '../utils'
 import _ from 'lodash'
+import { Section, DisplaySection, scaleSections } from '.'
+import { KeyAxisEntry } from '../types'
+import { truncateString } from '../utils'
 
 const labelAxisMargin = 4
 const labelAxisWidth = 28

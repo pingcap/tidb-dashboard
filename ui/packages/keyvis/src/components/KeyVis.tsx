@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Heatmap, HeatmapData, HeatmapRange, DataTag } from './heatmap'
-import { fetchHeatmap } from './api'
-import './RootComponent.less'
-
+import { Heatmap } from '../heatmap'
+import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types'
+import { fetchHeatmap } from '../utils'
 import ToolBar from './ToolBar'
+import './KeyVis.less'
 
 type CacheEntry = {
   metricType: DataTag
@@ -56,6 +56,7 @@ class HeatmapCache {
       }
       return data
     }
+    return undefined
   }
 }
 

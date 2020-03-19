@@ -1,11 +1,11 @@
 import * as d3 from 'd3'
 import _ from 'lodash'
-import { HeatmapRange, HeatmapData, DataTag, tagUnit } from '.'
+import { HeatmapRange, HeatmapData, DataTag } from './types'
 import { createBuffer } from './buffer'
 import { labelAxisGroup } from './axis/label-axis'
 import { histogram } from './axis/histogram'
 import { getColorScheme, ColorScheme, rasterizeLevel } from './color'
-import { withUnit, clickToCopyBehavior } from './utils'
+import { tagUnit, withUnit, clickToCopyBehavior } from './utils'
 
 import legend from './legend'
 

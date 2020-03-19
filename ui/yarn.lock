@@ -2124,6 +2124,20 @@
   resolved "https://registry.yarnpkg.com/@openapitools/openapi-generator-cli/-/openapi-generator-cli-1.0.8-4.2.2.tgz#60a680a092138ff244318cafca5c6be188ba5880"
   integrity sha512-K14xUl5Cc2Epm5hoclvi1KGANy9SCSWddEZCLk9Ij0v0ujbLtK1bMOkrjCOz0ADxdb0Vfsc6T6EE3G3lmBrOCQ==
 
+"@pingcap-incubator/statement@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@pingcap-incubator/statement/-/statement-0.0.5.tgz#c5d60acc71b669059dcef37851f2b9bec16f5d59"
+  integrity sha512-tZJu0gTl9+Z3EH6DjOGK7pc+Sd2eypvvrL4Q0qZ/92v3zjnuL8QNwQ9e9QJ22NDkp24F+8Qzn0qpPE0JA+YqmQ==
+  dependencies:
+    "@baurine/grafana-value-formats" "^0.1.1"
+    "@pingcap-incubator/dashboard_client" "^0.0.5"
+    antd "^3.26.5"
+    i18next "^19.1.0"
+    lodash "^4.17.15"
+    moment "^2.24.0"
+    react-i18next "^11.3.2"
+    react-router-dom "^5.1.2"
+
 "@popmotion/easing@^1.0.1", "@popmotion/easing@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@popmotion/easing/-/easing-1.0.2.tgz#17d925c45b4bf44189e5a38038d149df42d8c0b4"

@@ -46,6 +46,13 @@ import (
 	utils2 "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
+func Handler(s *Service) http.Handler {
+	r := gin.New()
+	r.Use(gin.Recovery())
+	Register(r.Group("/dashboard"), s)
+	return r
+}
+
 var (
 	once sync.Once
 )
@@ -82,7 +89,7 @@ func NewService(cfg *config.Config, stoppedHandler http.Handler, newPDDataProvid
 }
 
 func Register(r *gin.RouterGroup, s *Service) {
-	endpoint := r.Group("/dashboard/api")
+	endpoint := r.Group("/api")
 	endpoint.Use(s.status.MWHandleStopped(gin.WrapH(s.stoppedHandler)))
 	endpoint.Any("/*any", s.handler)
 }

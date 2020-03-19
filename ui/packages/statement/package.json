@@ -1,6 +1,6 @@
 {
   "name": "@pingcap-incubator/statement",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "",
   "author": "pingcap-incubator",
   "repository": {
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@baurine/grafana-value-formats": "^0.1.1",
-    "@pingcap-incubator/dashboard_client": "^0.0.5",
+    "@pingcap-incubator/dashboard_client": "^0.0.6",
     "antd": "^3.26.5",
     "i18next": "^19.1.0",
     "lodash": "^4.17.15",

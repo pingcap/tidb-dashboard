@@ -1,7 +1,8 @@
 module.exports = {
-  id: 'node_profiling',
+  id: 'overview',
   loader: () => import('./app.js'),
-  routerPrefix: '/node_profiling',
-  icon: 'heat-map',
+  routerPrefix: '/overview',
+  icon: 'appstore',
+  isDefaultRouter: true,
   translations: require.context('./translations/', false, /\.yaml$/),
 }

@@ -1,12 +1,28 @@
 @import '~antd/es/style/themes/default.less';
 
 .container {
-  min-height: 100vh;
+  height: 100vh;
 }
 
 .content {
   position: relative;
-  z-index: 2;
-  box-shadow: 0 0 30px rgba(#000, 0.15);
+  z-index: 3;
   background: #fff;
+
+  &:before,
+  &:after {
+    // Handle margin collapse
+    content: ' ';
+    display: table;
+  }
+}
+
+.contentBack {
+  position: fixed;
+  z-index: 2;
+  background: #fff;
+  top: 0;
+  height: 100%;
+  right: 0;
+  box-shadow: 0 0 30px rgba(#000, 0.15);
 }

@@ -1,13 +1,22 @@
 import React, { useRef, useEffect } from 'react'
 import * as d3 from 'd3'
+import useEventListener from '@use-it/event-listener'
 import { heatmapChart } from './chart'
-import { DecoratorLabelKey, MatrixMatrix } from '@pingcap-incubator/dashboard_client'
+import {
+  DecoratorLabelKey,
+  MatrixMatrix,
+} from '@pingcap-incubator/dashboard_client'
 
 export type KeyAxisEntry = DecoratorLabelKey
 
 export type HeatmapData = MatrixMatrix
 
-export type DataTag = 'integration' | 'written_bytes' | 'read_bytes' | 'written_keys' | 'read_keys'
+export type DataTag =
+  | 'integration'
+  | 'written_bytes'
+  | 'read_bytes'
+  | 'written_keys'
+  | 'read_keys'
 
 export type HeatmapRange = {
   starttime?: number
@@ -44,25 +53,42 @@ const _Heatmap: React.FunctionComponent<HeatmapProps> = props => {
 
   let chart
 
+  function updateChartSize() {
+    if (divRef.current == null) {
+      return
+    }
+    if (!chart) {
+      return
+    }
+    const container = divRef.current
+    const width = container.offsetWidth
+    const height = container.offsetHeight
+    chart.size(width, height)
+  }
+
   useEffect(() => {
     const init = async () => {
       console.log('side effect in heatmap')
       if (divRef.current != null) {
         console.log('side effect in heatmap inside')
         const container = divRef.current
-        chart = await heatmapChart(d3.select(container), props.data, props.dataTag, props.onBrush, props.onZoom)
+        chart = await heatmapChart(
+          d3.select(container),
+          props.data,
+          props.dataTag,
+          props.onBrush,
+          props.onZoom
+        )
         props.onChartInit(chart)
-        const render = () => {
-          const width = container.offsetWidth
-          const height = container.offsetHeight
-          chart.size(width, height)
-        }
-        window.onresize = render
-        render()
+        updateChartSize()
       }
     }
     init()
   }, [divRef.current, props.data, props.dataTag])
+
+  useEventListener('resize', () => {
+    updateChartSize()
+  })
 
   return <div className="heatmap" ref={divRef} />
 }

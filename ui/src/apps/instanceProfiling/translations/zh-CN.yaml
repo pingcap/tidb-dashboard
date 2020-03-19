@@ -1,17 +1,18 @@
-node_profiling:
-  nav_title: 节点性能分析
+instance_profiling:
+  nav_title: 实例性能分析
   list:
     control_form:
+      title: 开始性能分析
       nodes:
-        label: 选择节点
-        placeholder: 请选择需要进行性能分析的目标节点
+        label: 选择实例
+        placeholder: 请选择需要进行性能分析的目标实例
       duration:
         label: 分析时长
       submit: 开始分析
     table:
       title: 性能分析历史
       columns:
-        targets: 节点
+        targets: 实例
         start_at: 开始时间
         duration: 时长 (秒)
         status: 状态
@@ -29,7 +30,7 @@ node_profiling:
     download: 下载性能分析结果
     table:
       columns:
-        node: 节点
+        instance: 实例
         kind: 类型
         status: 状态
       status:

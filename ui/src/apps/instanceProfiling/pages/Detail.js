@@ -66,19 +66,19 @@ export default function Page() {
 
   const columns = [
     {
-      title: t('node_profiling.detail.table.columns.node'),
-      key: 'node',
+      title: t('instance_profiling.detail.table.columns.instance'),
+      key: 'instance',
       dataIndex: 'target.display_name',
       width: 200,
     },
     {
-      title: t('node_profiling.detail.table.columns.kind'),
+      title: t('instance_profiling.detail.table.columns.kind'),
       key: 'kind',
       dataIndex: 'target.kind',
       width: 100,
     },
     {
-      title: t('node_profiling.detail.table.columns.status'),
+      title: t('instance_profiling.detail.table.columns.status'),
       key: 'status',
       render: (_, record) => {
         if (record.state === 1) {
@@ -97,7 +97,7 @@ export default function Page() {
           return (
             <Badge
               status="success"
-              text={t('node_profiling.detail.table.status.finished')}
+              text={t('instance_profiling.detail.table.status.finished')}
             />
           )
         }
@@ -108,15 +108,16 @@ export default function Page() {
   return (
     <div>
       <Head
-        title={t('node_profiling.detail.head.title')}
+        title={t('instance_profiling.detail.head.title')}
         back={
-          <Link to={`/node_profiling`}>
-            <Icon type="arrow-left" /> {t('node_profiling.detail.head.back')}
+          <Link to={`/instance_profiling`}>
+            <Icon type="arrow-left" />{' '}
+            {t('instance_profiling.detail.head.back')}
           </Link>
         }
         titleExtra={
           <Button disabled={isRunning} type="primary" onClick={handleDownload}>
-            {t('node_profiling.detail.download')}
+            {t('instance_profiling.detail.download')}
           </Button>
         }
       />

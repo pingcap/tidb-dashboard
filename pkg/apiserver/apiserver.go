@@ -46,6 +46,13 @@ import (
 	utils2 "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
+func Handler(s *Service) http.Handler {
+	r := gin.New()
+	r.Use(gin.Recovery())
+	Register(r.Group("/dashboard"), s)
+	return r
+}
+
 var (
 	once sync.Once
 )
@@ -56,26 +63,14 @@ type Service struct {
 	app    *fx.App
 	status *utils2.ServiceStatus
 
+	ctx    context.Context
+	cancel context.CancelFunc
+
 	config            *config.Config
 	newPDDataProvider PDDataProviderConstructor
 	stoppedHandler    http.Handler
 
 	apiHandlerEngine *gin.Engine
-}
-
-func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils2.NewTemplateFunc) {
-	apiHandlerEngine = gin.New()
-	apiHandlerEngine.Use(cors.AllowAll())
-	apiHandlerEngine.Use(gzip.Gzip(gzip.BestSpeed))
-	apiHandlerEngine.Use(utils.MWHandleErrors())
-
-	endpoint = apiHandlerEngine.Group("/dashboard/api")
-
-	newTemplate = func(name string) *template.Template {
-		return template.New(name).Funcs(apiHandlerEngine.FuncMap)
-	}
-
-	return
 }
 
 func NewService(cfg *config.Config, stoppedHandler http.Handler, newPDDataProvider PDDataProviderConstructor) *Service {
@@ -94,12 +89,13 @@ func NewService(cfg *config.Config, stoppedHandler http.Handler, newPDDataProvid
 }
 
 func Register(r *gin.RouterGroup, s *Service) {
-	endpoint := r.Group("/dashboard/api")
+	endpoint := r.Group("/api")
 	endpoint.Use(s.status.MWHandleStopped(gin.WrapH(s.stoppedHandler)))
 	endpoint.Any("/*any", s.handler)
 }
 
 func (s *Service) Start(ctx context.Context) error {
+	s.ctx, s.cancel = context.WithCancel(ctx)
 	s.app = fx.New(
 		fx.Logger(utils2.NewFxPrinter()),
 		fx.Provide(
@@ -140,15 +136,22 @@ func (s *Service) Start(ctx context.Context) error {
 	if err := s.app.Err(); err != nil {
 		return err
 	}
-	if err := s.app.Start(ctx); err != nil {
+	if err := s.app.Start(s.ctx); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (s *Service) Stop(ctx context.Context) error {
+	s.cancel()
 	err := s.app.Stop(ctx)
+
+	// drop
+	s.app = nil
 	s.apiHandlerEngine = nil
+	s.ctx = nil
+	s.cancel = nil
+
 	return err
 }
 
@@ -162,6 +165,21 @@ func (s *Service) handler(c *gin.Context) {
 
 func (s *Service) provideLocals() *config.Config {
 	return s.config
+}
+
+func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils2.NewTemplateFunc) {
+	apiHandlerEngine = gin.New()
+	apiHandlerEngine.Use(cors.AllowAll())
+	apiHandlerEngine.Use(gzip.Gzip(gzip.BestSpeed))
+	apiHandlerEngine.Use(utils.MWHandleErrors())
+
+	endpoint = apiHandlerEngine.Group("/dashboard/api")
+
+	newTemplate = func(name string) *template.Template {
+		return template.New(name).Funcs(apiHandlerEngine.FuncMap)
+	}
+
+	return
 }
 
 var StoppedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

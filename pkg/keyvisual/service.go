@@ -131,9 +131,16 @@ func (s *Service) Start(ctx context.Context) error {
 }
 
 func (s *Service) Stop(ctx context.Context) error {
+	s.cancel()
 	err := s.app.Stop(ctx)
+
+	// drop
+	s.app = nil
 	s.stat = nil
 	s.strategy = nil
+	s.ctx = nil
+	s.cancel = nil
+
 	return err
 }
 

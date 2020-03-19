@@ -22,6 +22,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unsafe"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
@@ -36,13 +37,18 @@ import (
 
 // Service is used to provide a kind of feature.
 type Service struct {
-	ctx                  context.Context
-	config               *config.Config
-	db                   *dbstore.DB
-	wg                   sync.WaitGroup
-	tasks                sync.Map
-	httpClient           *http.Client
-	isAutoCollectRunning uint32
+	ctx            context.Context
+	config         *config.Config
+	db             *dbstore.DB
+	wg             sync.WaitGroup
+	tasks          sync.Map
+	httpClient     *http.Client
+	autoCollectCtx unsafe.Pointer
+}
+
+type AutoCollectContext struct {
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 // NewService creates a new service.
@@ -129,7 +135,7 @@ func (s *Service) startGroup(c *gin.Context) {
 		req.DurationSecs = 120
 	}
 
-	taskGroup, err := s.collect(&req)
+	taskGroup, err := s.collect(s.ctx, &req)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
@@ -138,7 +144,7 @@ func (s *Service) startGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, taskGroup.TaskGroupModel)
 }
 
-func (s *Service) collect(req *StartRequest) (*TaskGroup, error) {
+func (s *Service) collect(ctx context.Context, req *StartRequest) (*TaskGroup, error) {
 	taskGroup := NewTaskGroup(s.db, req.DurationSecs, utils.NewRequestTargetStatisticsFromArray(&req.Targets))
 	if err := s.db.Create(taskGroup.TaskGroupModel).Error; err != nil {
 		return nil, err
@@ -146,7 +152,7 @@ func (s *Service) collect(req *StartRequest) (*TaskGroup, error) {
 
 	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		t := NewTask(s.ctx, taskGroup, target, s.config.ClusterTLSConfig != nil)
+		t := NewTask(ctx, taskGroup, target, s.config.ClusterTLSConfig != nil)
 		s.db.Create(t.TaskModel)
 		s.tasks.Store(t.ID, t)
 		tasks = append(tasks, t)
@@ -171,23 +177,19 @@ func (s *Service) collect(req *StartRequest) (*TaskGroup, error) {
 	return taskGroup, nil
 }
 
-func (s *Service) autoCollect(req *StartRequest) {
+func (s *Service) autoCollect(ctx context.Context, req *StartRequest) {
 	defer s.wg.Done()
 	interval := time.Duration(req.CollectionInterval+req.DurationSecs) * time.Second
 	timer := time.NewTimer(interval)
 	defer timer.Stop()
 
 	for {
-		if atomic.LoadUint32(&s.isAutoCollectRunning) == 0 {
-			return
-		}
 		select {
-		case <-s.ctx.Done():
+		case <-ctx.Done():
 			return
 		case <-timer.C:
-			_, _ = s.collect(req)
+			_, _ = s.collect(ctx, req)
 			timer.Reset(interval)
-		default:
 		}
 	}
 }
@@ -201,7 +203,9 @@ func (s *Service) autoCollect(req *StartRequest) {
 // @Failure 400 {object} utils.APIError
 // @Router /profiling/auto/start [post]
 func (s *Service) autoStart(c *gin.Context) {
-	if !atomic.CompareAndSwapUint32(&s.isAutoCollectRunning, 0, 1) {
+	ctx, cancel := context.WithCancel(s.ctx)
+	autoCollectCtx := &AutoCollectContext{ctx: ctx, cancel: cancel}
+	if !atomic.CompareAndSwapPointer(&s.autoCollectCtx, nil, unsafe.Pointer(autoCollectCtx)) {
 		c.JSON(http.StatusBadRequest, "auto profiling job is running")
 		return
 	}
@@ -223,7 +227,7 @@ func (s *Service) autoStart(c *gin.Context) {
 		req.CollectionInterval = 3600
 	}
 	s.wg.Add(1)
-	go s.autoCollect(&req)
+	go s.autoCollect(autoCollectCtx.ctx, &req)
 	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
@@ -234,11 +238,12 @@ func (s *Service) autoStart(c *gin.Context) {
 // @Success 200 {object} utils.APIEmptyResponse
 // @Router /profiling/auto/stop [post]
 func (s *Service) autoStop(c *gin.Context) {
-	if !atomic.CompareAndSwapUint32(&s.isAutoCollectRunning, 1, 0) {
+	p := atomic.SwapPointer(&s.autoCollectCtx, nil)
+	if p == nil {
 		c.JSON(http.StatusBadRequest, "auto profiling job has been stopped")
 		return
 	}
-
+	(*AutoCollectContext)(p).cancel()
 	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 

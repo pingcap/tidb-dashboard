@@ -1,7 +1,7 @@
 import React from 'react'
 import { Table, Skeleton } from 'antd'
-import { Card } from '@/components'
 import classNames from 'classnames'
+import Card from '../Card'
 import styles from './index.module.less'
 
 class TableCard extends React.PureComponent {

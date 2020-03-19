@@ -1,6 +1,6 @@
 import React from 'react'
 import { Form, Select } from 'antd'
-import { Card } from '@/components'
+import { Card } from '@pingcap-incubator/dashboard_components'
 import _ from 'lodash'
 import { ALL_LANGUAGES } from '@/utils/i18n'
 import { withTranslation } from 'react-i18next'

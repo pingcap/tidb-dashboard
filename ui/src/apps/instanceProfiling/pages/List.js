@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import DateTime from '@/components/DateTime'
-import { Card, CardTable } from '@/components'
+import { Card, CardTable } from '@pingcap-incubator/dashboard_components'
 
 // FIXME: The following logic should be extracted into a common component.
 function getTreeData(topologyMap) {

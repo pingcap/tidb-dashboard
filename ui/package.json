@@ -8,6 +8,7 @@
   "dependencies": {
     "@g07cha/flexbox-react": "^5.0.0",
     "@pingcap-incubator/dashboard_client": "^0.0.5",
+    "@pingcap-incubator/dashboard_components": "^0.0.5",
     "@pingcap-incubator/statement": "^0.0.5",
     "@use-it/event-listener": "^0.1.3",
     "antd": "^3.26.5",

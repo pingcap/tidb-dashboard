@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom'
 import { Button, Badge, Progress, Icon } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Head, CardTable } from '@/components'
+import { Head, CardTable } from '@pingcap-incubator/dashboard_components'
 
 function mapData(data) {
   data.tasks_status.forEach(task => {

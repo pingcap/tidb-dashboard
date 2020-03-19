@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Tooltip, Popconfirm, Icon, Divider, Badge } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { CardTable } from '@/components'
+import { CardTable } from '@pingcap-incubator/dashboard_components'
 import client from '@/utils/client'
 
 const STATUS_DOWN = 0

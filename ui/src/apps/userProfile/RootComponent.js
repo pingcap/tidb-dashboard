@@ -1,6 +1,6 @@
 import React from 'react'
 import { Skeleton, Button, Icon } from 'antd'
-import { Head, Card } from '@/components'
+import { Head, Card } from '@pingcap-incubator/dashboard_components'
 import client from '@/utils/client'
 import { withTranslation } from 'react-i18next'
 import * as authUtil from '@/utils/auth'

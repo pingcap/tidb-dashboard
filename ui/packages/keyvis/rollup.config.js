@@ -41,7 +41,18 @@ export default {
     // https://github.com/cisen/blog/issues/295
     postcss({
       extensions: ['.css', '.scss', '.less'],
-      use: ['sass', ['less', { javascriptEnabled: true }]],
+      use: [
+        'sass',
+        [
+          'less',
+          {
+            javascriptEnabled: true,
+            globalVars: {
+              '@padding-page': '48px', // TODO: keep same with root project
+            },
+          },
+        ],
+      ],
     }),
     url(),
     svgr(),

@@ -16,7 +16,6 @@ package diagnose
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -42,10 +41,6 @@ type Service struct {
 	db            *dbstore.DB
 	tidbForwarder *tidb.Forwarder
 	htmlRender    render.HTMLRender
-}
-
-type ReportRes struct {
-	ReportID uint `json:"report_id"`
 }
 
 func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, newTemplate utils.NewTemplateFunc) *Service {
@@ -79,60 +74,37 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		s.reportStatusHandler)
 }
 
+type GenerateReportRequest struct {
+	StartTime        int64 `json:"start_time"`
+	EndTime          int64 `json:"end_time"`
+	CompareStartTime int64 `json:"compare_start_time"`
+	CompareEndTime   int64 `json:"compare_end_time"`
+}
+
 // @Summary SQL diagnosis report
 // @Description Generate sql diagnosis report
 // @Produce json
-// @Param start_time query string true "start time of the report"
-// @Param end_time query string true "end time of the report"
-// @Param c_start_time query string false "compared start time of the report"
-// @Param c_end_time query string false "compared end time of the report"
-// @Success 200 {object} diagnose.ReportRes
+// @Param request body GenerateReportRequest true "Request body"
+// @Success 200 {object} int
 // @Router /diagnose/reports [post]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) genReportHandler(c *gin.Context) {
-	db := apiutils.TakeTiDBConnection(c)
-	startTimeStr := c.Query("start_time")
-	endTimeStr := c.Query("end_time")
-	compareStartTimeStr := c.Query("c_start_time")
-	compareEndTimeStr := c.Query("c_end_time")
-	if startTimeStr == "" || endTimeStr == "" {
-		_ = c.Error(fmt.Errorf("invalid begin_time or end_time"))
+	var req GenerateReportRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(apiutils.ErrInvalidRequest.WrapWithNoMessage(err))
 		return
 	}
 
-	tsSec, err := strconv.ParseInt(startTimeStr, 10, 64)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	startTime := time.Unix(tsSec, 0)
-
-	tsSec, err = strconv.ParseInt(endTimeStr, 10, 64)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	endTime := time.Unix(tsSec, 0)
-
+	startTime := time.Unix(req.StartTime, 0)
+	endTime := time.Unix(req.EndTime, 0)
 	var compareStartTime, compareEndTime *time.Time
-	if compareStartTimeStr != "" {
-		tsSec, err = strconv.ParseInt(compareStartTimeStr, 10, 64)
-		if err != nil {
-			_ = c.Error(err)
-			return
-		}
+	if req.CompareStartTime != 0 && req.CompareEndTime != 0 {
 		compareStartTime = new(time.Time)
-		*compareStartTime = time.Unix(tsSec, 0)
-	}
-	if compareEndTimeStr != "" {
-		tsSec, err = strconv.ParseInt(compareEndTimeStr, 10, 64)
-		if err != nil {
-			_ = c.Error(err)
-			return
-		}
 		compareEndTime = new(time.Time)
-		*compareEndTime = time.Unix(tsSec, 0)
+		*compareStartTime = time.Unix(req.CompareStartTime, 0)
+		*compareEndTime = time.Unix(req.CompareEndTime, 0)
 	}
 
 	reportID, err := NewReport(s.db, startTime, endTime, compareStartTime, compareEndTime)
@@ -140,6 +112,8 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
+
+	db := apiutils.TakeTiDBConnection(c)
 
 	go func() {
 		defer db.Close()
@@ -160,7 +134,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		}
 	}()
 
-	c.JSON(http.StatusOK, ReportRes{ReportID: reportID})
+	c.JSON(http.StatusOK, reportID)
 }
 
 // @Summary Diagnosis report status

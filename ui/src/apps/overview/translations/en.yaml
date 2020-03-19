@@ -1,5 +1,7 @@
 overview:
   nav_title: Overview
+  top_statements:
+    title: TOP STATEMENTS
   status:
     up: UP
     abnormal: ABNORMAL

@@ -1,8 +1,9 @@
 import * as d3 from 'd3'
-import { ColorScheme } from './color'
-import { withUnit } from './utils'
-import { DataTag, tagUnit } from '.'
 import _ from 'lodash'
+
+import { ColorScheme } from './color'
+import { DataTag } from './types'
+import { tagUnit, withUnit } from './utils'
 
 export default function(colorScheme: ColorScheme, dataTag: DataTag) {
   let marginLeft = 70
@@ -42,7 +43,11 @@ export default function(colorScheme: ColorScheme, dataTag: DataTag) {
 
   let xAxis = d3
     .axisBottom(xScale)
-    .tickValues(_.range(0, tickCount + 1).map(d => xScale.invert((innerWidth * d) / tickCount)))
+    .tickValues(
+      _.range(0, tickCount + 1).map(d =>
+        xScale.invert((innerWidth * d) / tickCount)
+      )
+    )
     .tickSize(innerHeight)
     .tickFormat(d => withUnit(d as number))
 

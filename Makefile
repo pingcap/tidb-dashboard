@@ -39,7 +39,6 @@ yarn_dependencies:
 
 ui: swagger_spec yarn_dependencies
 	cd ui &&\
-	src/apps/keyvis/download_dummydata.sh &&\
 	REACT_APP_DASHBOARD_API_URL="" yarn build
 
 publish_ui_packages: swagger_spec yarn_dependencies

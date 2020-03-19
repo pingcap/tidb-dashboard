@@ -1,5 +1,22 @@
 import * as d3 from 'd3'
 
+import { DataTag } from './types'
+
+export function tagUnit(tag: DataTag): string {
+  switch (tag) {
+    case 'integration':
+      return 'bytes/min'
+    case 'read_bytes':
+      return 'bytes/min'
+    case 'written_bytes':
+      return 'bytes/min'
+    case 'read_keys':
+      return 'keys/min'
+    case 'written_keys':
+      return 'keys/min'
+  }
+}
+
 export function withUnit(val: number): string {
   val = val || 0
   if (val > 1024 * 1024 * 1024) {
@@ -15,7 +32,11 @@ export function withUnit(val: number): string {
 
 export function truncateString(str: string, len: number): string {
   if (str.length > len) {
-    return str.substr(0, len / 2 - 1) + '....' + str.substr(str.length - len / 2 + 1, str.length)
+    return (
+      str.substr(0, len / 2 - 1) +
+      '....' +
+      str.substr(str.length - len / 2 + 1, str.length)
+    )
   } else {
     return str
   }

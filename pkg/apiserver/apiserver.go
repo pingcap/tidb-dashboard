@@ -94,8 +94,17 @@ func Register(r *gin.RouterGroup, s *Service) {
 	endpoint.Any("/*any", s.handler)
 }
 
+func (s *Service) IsRunning() bool {
+	return s.status.IsRunning()
+}
+
 func (s *Service) Start(ctx context.Context) error {
+	if s.IsRunning() {
+		return nil
+	}
+
 	s.ctx, s.cancel = context.WithCancel(ctx)
+
 	s.app = fx.New(
 		fx.Logger(utils2.NewFxPrinter()),
 		fx.Provide(
@@ -143,6 +152,10 @@ func (s *Service) Start(ctx context.Context) error {
 }
 
 func (s *Service) Stop(ctx context.Context) error {
+	if !s.IsRunning() {
+		return nil
+	}
+
 	s.cancel()
 	err := s.app.Stop(ctx)
 

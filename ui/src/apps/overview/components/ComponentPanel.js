@@ -11,10 +11,10 @@ function ComponentPanel({ data, field }) {
 
   if (data && data[field] && !data[field].err) {
     data[field].nodes.forEach(n => {
-      if (n.status === 1) {
-        up_nodes++
-      } else {
+      if (n.status === 0) {
         abnormal_nodes++
+      } else {
+        up_nodes++
       }
     })
   }
@@ -23,20 +23,18 @@ function ComponentPanel({ data, field }) {
     <Card
       size="small"
       bordered={false}
-      title={t('cluster_info.status.nodes', { nodeType: field.toUpperCase() })}
+      title={t('overview.status.nodes', { nodeType: field.toUpperCase() })}
     >
       {!data ? (
         <Skeleton active title={false} />
       ) : (
         <Row gutter={24}>
           <Col span={9}>
-            <div className={styles.desc}>{t('cluster_info.status.up')}</div>
+            <div className={styles.desc}>{t('overview.status.up')}</div>
             <div className={styles.alive}>{up_nodes}</div>
           </Col>
           <Col span={9}>
-            <div className={styles.desc}>
-              {t('cluster_info.status.abnormal')}
-            </div>
+            <div className={styles.desc}>{t('overview.status.abnormal')}</div>
             <div className={abnormal_nodes === 0 ? styles.alive : styles.down}>
               {abnormal_nodes}
             </div>

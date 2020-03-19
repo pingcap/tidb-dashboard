@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react'
 import * as d3 from 'd3'
+import useEventListener from '@use-it/event-listener'
 import { heatmapChart } from './chart'
-
 import { HeatmapData, DataTag, HeatmapRange } from './types'
 
 type HeatmapProps = {
@@ -17,6 +17,19 @@ const _Heatmap: React.FunctionComponent<HeatmapProps> = props => {
 
   let chart
 
+  function updateChartSize() {
+    if (divRef.current == null) {
+      return
+    }
+    if (!chart) {
+      return
+    }
+    const container = divRef.current
+    const width = container.offsetWidth
+    const height = container.offsetHeight
+    chart.size(width, height)
+  }
+
   useEffect(() => {
     const init = async () => {
       console.log('side effect in heatmap')
@@ -31,17 +44,15 @@ const _Heatmap: React.FunctionComponent<HeatmapProps> = props => {
           props.onZoom
         )
         props.onChartInit(chart)
-        const render = () => {
-          const width = container.offsetWidth
-          const height = container.offsetHeight
-          chart.size(width, height)
-        }
-        window.onresize = render
-        render()
+        updateChartSize()
       }
     }
     init()
   }, [divRef.current, props.data, props.dataTag])
+
+  useEventListener('resize', () => {
+    updateChartSize()
+  })
 
   return <div className="heatmap" ref={divRef} />
 }

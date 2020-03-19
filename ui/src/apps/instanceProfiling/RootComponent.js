@@ -7,10 +7,10 @@ const App = () => (
   <div>
     <Router>
       <Switch>
-        <Route exact path="/node_profiling">
+        <Route exact path="/instance_profiling">
           <ListPage />
         </Route>
-        <Route path="/node_profiling/:id">
+        <Route path="/instance_profiling/:id">
           <DetailPage />
         </Route>
       </Switch>

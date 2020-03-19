@@ -548,9 +548,9 @@ export async function heatmapChart(
             const endTime =
               data.timeAxis[Math.ceil(xRescale.invert(selection[1][0]))]
             const startKey =
-              data.keyAxis[Math.floor(yRescale.invert(selection[0][1]))].key
-            const endKey =
               data.keyAxis[Math.ceil(yRescale.invert(selection[1][1]))].key
+            const endKey =
+              data.keyAxis[Math.floor(yRescale.invert(selection[0][1]))].key
 
             onBrush({
               starttime: startTime,

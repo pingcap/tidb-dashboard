@@ -28,7 +28,7 @@ export default function MonitorAlertBar({ cluster }) {
       <Card
         size="small"
         bordered={false}
-        title={t('cluster_info.monitor_alert.title')}
+        title={t('overview.monitor_alert.title')}
       >
         {!cluster ? (
           <Skeleton active title={false} />
@@ -36,27 +36,27 @@ export default function MonitorAlertBar({ cluster }) {
           <>
             <p>
               {!cluster || !cluster.grafana ? (
-                t('cluster_info.monitor_alert.view_monitor_warn')
+                t('overview.monitor_alert.view_monitor_warn')
               ) : (
                 <a
                   href={`http://${cluster.grafana.ip}:${cluster.grafana.port}`}
                 >
-                  {t('cluster_info.monitor_alert.view_monitor')}
+                  {t('overview.monitor_alert.view_monitor')}
                   <Icon type="right" style={{ marginLeft: '5px' }} />
                 </a>
               )}
             </p>
             <p>
               {!cluster || !cluster.alert_manager ? (
-                t('cluster_info.monitor_alert.view_alerts_warn')
+                t('overview.monitor_alert.view_alerts_warn')
               ) : (
                 <a
                   href={`http://${cluster.alert_manager.ip}:${cluster.alert_manager.port}`}
                   className={alertCounter !== 0 ? styles.warn : undefined}
                 >
                   {alertCounter === 0
-                    ? t('cluster_info.monitor_alert.view_zero_alerts')
-                    : t('cluster_info.monitor_alert.view_alerts', {
+                    ? t('overview.monitor_alert.view_zero_alerts')
+                    : t('overview.monitor_alert.view_alerts', {
                         alertCount: alertCounter,
                       })}
                   <Icon type="right" style={{ marginLeft: '5px' }} />
@@ -69,11 +69,11 @@ export default function MonitorAlertBar({ cluster }) {
       <Card
         size="small"
         bordered={false}
-        title={t('cluster_info.monitor_alert.problems')}
+        title={t('overview.monitor_alert.problems')}
       >
         <p>
           <Link to={`/diagnose`}>
-            {t('cluster_info.monitor_alert.run_diagnose')}
+            {t('overview.monitor_alert.run_diagnose')}
             <Icon type="right" style={{ marginLeft: '5px' }} />
           </Link>
         </p>

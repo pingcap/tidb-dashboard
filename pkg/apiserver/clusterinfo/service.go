@@ -45,7 +45,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/topology")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/all", s.topologyHandler)
-	endpoint.DELETE("/tidb/:address/", s.deleteTiDBTopologyHandler)
+	endpoint.DELETE("/tidb/:address", s.deleteTiDBTopologyHandler)
 	endpoint.GET("/alertmanager/:address/count", s.topologyGetAlertCount)
 }
 

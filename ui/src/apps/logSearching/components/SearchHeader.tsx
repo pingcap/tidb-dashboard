@@ -156,14 +156,13 @@ export default function SearchHeader({
             <Input
               value={searchValue}
               placeholder={t('log_searching.common.keywords_placeholder')}
-              // enterButton={t('log_searching.common.search')}
               onChange={handleSearchPatternChange}
-              style={{ width: 350 }}
+              style={{ width: 300 }}
             />
           </Form.Item>
           <Form.Item
             className={styles.components}
-            style={{ flex: "auto" }}
+            style={{ flex: "auto", minWidth: 220 }}
             validateStatus={selectedComponents.length > 0 ? "" : "error"}>
             <TreeSelect
               value={selectedComponents}

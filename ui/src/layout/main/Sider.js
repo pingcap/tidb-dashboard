@@ -135,6 +135,7 @@ class Sider extends React.PureComponent {
           style={{ flexGrow: 1 }}
           defaultOpenKeys={['debug']}
         >
+          {this.renderAppMenuItem('overview')}
           {this.renderAppMenuItem('cluster_info')}
           {this.renderAppMenuItem('keyvis')}
           {this.renderAppMenuItem('statement')}

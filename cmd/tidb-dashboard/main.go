@@ -36,7 +36,6 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
 	flag "github.com/spf13/pflag"
 	"go.etcd.io/etcd/clientv3"
@@ -199,13 +198,9 @@ func main() {
 	}
 	defer s.Stop(context.Background()) //nolint:errcheck
 
-	r := gin.New()
-	r.Use(gin.Recovery())
-	apiserver.Register(&r.RouterGroup, s)
-
 	mux := http.DefaultServeMux
 	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
-	mux.Handle("/dashboard/api/", r)
+	mux.Handle("/dashboard/api/", apiserver.Handler(s))
 	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 
 	utils.LogInfo()

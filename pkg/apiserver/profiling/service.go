@@ -197,15 +197,14 @@ func (s *Service) autoCollect(req *StartRequest) {
 // @Produce json
 // @Param req body StartRequest true "auto profiling request"
 // @Security JwtAuth
-// @Success 200 {string} string "success"
+// @Success 200 {object} utils.APIEmptyResponse
 // @Failure 400 {object} utils.APIError
 // @Router /profiling/auto/start [post]
 func (s *Service) autoStart(c *gin.Context) {
-	if atomic.LoadUint32(&s.isAutoCollectRunning) > 0 {
+	if !atomic.CompareAndSwapUint32(&s.isAutoCollectRunning, 0, 1) {
 		c.JSON(http.StatusBadRequest, "auto profiling job is running")
 		return
 	}
-	atomic.StoreUint32(&s.isAutoCollectRunning, 1)
 	var req StartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Status(http.StatusBadRequest)
@@ -225,22 +224,22 @@ func (s *Service) autoStart(c *gin.Context) {
 	}
 	s.wg.Add(1)
 	go s.autoCollect(&req)
-	c.JSON(http.StatusOK, "success")
+	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
 // @Summary Stop auto profiling
 // @Description Stop auto profiling
 // @Produce json
 // @Security JwtAuth
-// @Success 200 {string} string "success"
+// @Success 200 {object} utils.APIEmptyResponse
 // @Router /profiling/auto/stop [post]
 func (s *Service) autoStop(c *gin.Context) {
-	if atomic.LoadUint32(&s.isAutoCollectRunning) == 0 {
+	if !atomic.CompareAndSwapUint32(&s.isAutoCollectRunning, 1, 0) {
 		c.JSON(http.StatusBadRequest, "auto profiling job has been stopped")
+		return
 	}
 
-	atomic.StoreUint32(&s.isAutoCollectRunning, 0)
-	c.JSON(http.StatusOK, "success")
+	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
 // @ID getProfilingGroups
@@ -314,7 +313,7 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 // @Produce json
 // @Param groupId path string true "group ID"
 // @Security JwtAuth
-// @Success 200 {string} string "success"
+// @Success 200 {object} utils.APIEmptyResponse
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/cancel/{groupId} [post]
@@ -339,7 +338,7 @@ func (s *Service) cancelGroup(c *gin.Context) {
 			t.stop()
 		}
 	}
-	c.JSON(http.StatusOK, "success")
+	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
 // @ID getProfilingGroupDownloadToken

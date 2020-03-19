@@ -3,15 +3,20 @@ import { Layout, Menu, Icon } from 'antd'
 import { Link } from 'react-router-dom'
 import { HashRouter as Router } from 'react-router-dom'
 import { withTranslation } from 'react-i18next'
+import { motion } from 'framer-motion'
 import Sider from './Sider'
 
 import styles from './RootComponent.module.less'
+
+const siderWidth = 260
+const siderCollapsedWidth = 80
 
 @withTranslation()
 class App extends React.PureComponent {
   state = {
     collapsed: false,
     activeAppId: null,
+    contentLeftOffset: siderWidth,
   }
 
   triggerResizeEvent = () => {
@@ -64,37 +69,56 @@ class App extends React.PureComponent {
     )
   }
 
-  render() {
-    const siderWidth = 260
-    // const isDev = process.env.NODE_ENV === 'development'
+  getMotionVariant = () => {
+    return this.state.collapsed ? 'collapsed' : 'open'
+  }
 
+  handleAnimationStart = () => {
+    if (!this.state.collapsed) {
+      this.setState({ contentLeftOffset: siderWidth })
+    }
+  }
+
+  handleAnimationComplete = () => {
+    if (this.state.collapsed) {
+      this.setState({ contentLeftOffset: siderCollapsedWidth })
+    }
+  }
+
+  render() {
     return (
       <Router>
-        <Layout className={styles.container}>
+        <motion.div
+          className={styles.container}
+          animate={this.getMotionVariant()}
+          initial={this.getMotionVariant()}
+          onAnimationStart={this.handleAnimationStart}
+          onAnimationComplete={this.handleAnimationComplete}
+        >
           <Sider
             registry={this.props.registry}
             width={siderWidth}
             onToggle={this.handleToggle}
             collapsed={this.state.collapsed}
-            collapsedWidth={80}
+            collapsedWidth={siderCollapsedWidth}
           />
-          {/* <Layout> */}
-          {/* <Nav
-              siderWidth={siderWidth}
-              siderWidthCollapsed={80}
-              collapsed={this.state.collapsed}
-              onToggle={this.handleToggle}
-            /> */}
-          <Layout.Content
+          <motion.div
+            className={styles.contentBack}
+            variants={{
+              open: { left: siderWidth },
+              collapsed: { left: siderCollapsedWidth },
+            }}
+            transition={{ ease: 'easeOut' }}
+          ></motion.div>
+          <div
             className={styles.content}
             style={{
-              marginLeft: `${this.state.collapsed ? 80 : siderWidth}px`,
+              marginLeft: this.state.contentLeftOffset,
             }}
           >
             <div id="__spa_content__"></div>
-          </Layout.Content>
-        </Layout>
-        {/* </Layout> */}
+          </div>
+        </motion.div>
       </Router>
     )
   }

@@ -8,6 +8,7 @@ import * as LayoutMain from '@/layout/main'
 import * as LayoutSignIn from '@/layout/signin'
 import AppDashboardSettings from '@/apps/dashboardSettings'
 import AppUserProfile from '@/apps/userProfile'
+import AppOverview from '@/apps/overview'
 import AppKeyVis from '@/apps/keyvis'
 import AppStatement from '@/apps/statement'
 import AppDiagnose from '@/apps/diagnose'
@@ -45,6 +46,7 @@ async function main() {
   registry
     .register(AppDashboardSettings)
     .register(AppUserProfile)
+    .register(AppOverview)
     .register(AppKeyVis)
     .register(AppStatement)
     .register(AppClusterInfo)

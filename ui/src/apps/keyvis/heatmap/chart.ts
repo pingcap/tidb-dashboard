@@ -548,9 +548,9 @@ export async function heatmapChart(
             const endTime =
               data.timeAxis[Math.ceil(xRescale.invert(selection[1][0]))]
             const startKey =
-              data.keyAxis[Math.floor(yRescale.invert(selection[0][1]))].key
-            const endKey =
               data.keyAxis[Math.ceil(yRescale.invert(selection[1][1]))].key
+            const endKey =
+              data.keyAxis[Math.floor(yRescale.invert(selection[0][1]))].key
 
             onBrush({
               starttime: startTime,
@@ -592,15 +592,27 @@ export async function heatmapChart(
       const endLen = endLabel.length
 
       // Cross start boundary, only use end label
-      if (startLen >= 1 && startLen + 1 == endLen && _.isEqual(startLabel, endLabel.slice(0, startLen))) {
+      if (
+        startLen >= 1 &&
+        startLen + 1 == endLen &&
+        _.isEqual(startLabel, endLabel.slice(0, startLen))
+      ) {
         return endLabel.map(truncate)
       }
       // range
-      if (startLen >= 2 && startLen == endLen
-        && _.isEqual(startLabel.slice(0, startLen - 1), endLabel.slice(0, startLen - 1))) {
+      if (
+        startLen >= 2 &&
+        startLen == endLen &&
+        _.isEqual(
+          startLabel.slice(0, startLen - 1),
+          endLabel.slice(0, startLen - 1)
+        )
+      ) {
         return [
           ...startLabel.slice(0, startLen - 1).map(truncate),
-          `${truncate(startLabel[startLen - 1])} ~ ${truncate(endLabel[startLen - 1])}`,
+          `${truncate(startLabel[startLen - 1])} ~ ${truncate(
+            endLabel[startLen - 1]
+          )}`,
         ]
       }
       // Cross end boundary, only use start label
@@ -610,159 +622,172 @@ export async function heatmapChart(
     function renderTooltip() {
       if (tooltipStatus.hidden) {
         tooltipLayer.selectAll('div').remove()
-      } else {
-        const xRescale = zoomTransform.rescaleX(xScale)
-        const yRescale = zoomTransform.rescaleY(yScale)
-        const canvasOffset = [
-          xRescale(tooltipStatus.x),
-          yRescale(tooltipStatus.y),
-        ]
-
-        let tooltipDiv = tooltipLayer.selectAll('div').data([null])
-        tooltipDiv = tooltipDiv
-          .enter()
-          .append('div')
-          .style('position', 'absolute')
-          // .style('width', tooltipSize.width + 'px')
-          // .style('height', tooltipSize.height + 'px')
-          .classed('tooltip', true)
-          .merge(tooltipDiv)
-          .style('pointer-events', tooltipStatus.pinned ? 'all' : 'none')
-
-        if (canvasOffset[0] < canvasWidth / 2) {
-          // Left half
-          const v = canvasOffset[0] + tooltipOffset.horizontal + margin.left
-          tooltipDiv.style('left', `${v}px`).style('right', 'auto')
-        } else {
-          // Right half
-          const v =
-            canvasWidth -
-            canvasOffset[0] +
-            tooltipOffset.horizontal +
-            margin.right
-          tooltipDiv.style('right', `${v}px`).style('left', 'auto')
-        }
-
-        if (canvasOffset[1] < canvasHeight / 2) {
-          // Top half
-          const v = canvasOffset[1] + tooltipOffset.vertical + margin.top
-          tooltipDiv.style('top', `${v}px`).style('bottom', 'auto')
-        } else {
-          // Bottom half
-          const v =
-            canvasHeight -
-            canvasOffset[1] +
-            tooltipOffset.vertical +
-            margin.bottom
-          tooltipDiv.style('bottom', `${v}px`).style('top', 'auto')
-        }
-
-        const timeIdx = Math.floor(tooltipStatus.x)
-        const keyIdx = Math.floor(tooltipStatus.y)
-        const value = data.data[dataTag]?.[timeIdx]?.[keyIdx]
-
-        let valueDiv = tooltipDiv.selectAll('div.value').data([null])
-        valueDiv = valueDiv
-          .enter()
-          .append('div')
-          .classed('value', true)
-          .merge(valueDiv)
-
-        let valueText = valueDiv.selectAll('div.value').data([null])
-        valueText = valueText
-          .enter()
-          .append('div')
-          .classed('value', true)
-          .merge(valueText)
-          .text(withUnit(value))
-          .style('color', colorScheme.label(value))
-          .style('background-color', colorScheme.background(value))
-
-        let unitText = valueDiv.selectAll('div.unit').data([null])
-        unitText = unitText
-          .enter()
-          .append('div')
-          .classed('unit', true)
-          .merge(unitText)
-          .text(tagUnit(dataTag))
-
-        const timeText = [timeIdx, timeIdx + 1]
-          .map(idx =>
-            d3.timeFormat('%Y-%m-%d\n%H:%M:%S')(
-              new Date(data.timeAxis[idx] * 1000)
-            )
-          )
-          .join(' ~ ')
-
-        let timeDiv = tooltipDiv.selectAll('button.time').data([timeText])
-        timeDiv = timeDiv
-          .enter()
-          .append('button')
-          .classed('time', true)
-          .merge(timeDiv)
-          .call(clickToCopyBehavior, d => d)
-          .text(d => d)
-
-        let overviewLabelDiv = tooltipDiv
-          .selectAll('div.overviewLabel')
-          .data([keyIdx + 1])
-        overviewLabelDiv = overviewLabelDiv
-          .enter()
-          .append('div')
-          .classed('overviewLabel', true)
-          .merge(overviewLabelDiv)
-
-        let overviewSubLabel = overviewLabelDiv
-          .selectAll('.subLabel')
-          .style('display', 'none')
-          .data(keyIdx => getTooltipOverviewLabel(keyIdx))
-
-        overviewSubLabel = overviewSubLabel
-          .enter()
-          .append('button')
-          .classed('subLabel', true)
-          .merge(overviewSubLabel)
-          .call(clickToCopyBehavior, d => d)
-          .text((d, idx) => {
-            // Prefix with spaces
-            return '\u00A0'.repeat(idx * 2) + d
-          })
-          .style('display', 'block')
-
-        let keyContainer = tooltipDiv.selectAll('div.keyContainer').data([
-          {
-            desc: 'Start Key (Incl.):',
-            idx: keyIdx + 1,
-          },
-          {
-            desc: 'End key (Excl.):',
-            idx: keyIdx,
-          },
-        ])
-
-        keyContainer = keyContainer
-          .enter()
-          .append('div')
-          .classed('keyContainer', true)
-          .merge(keyContainer)
-
-        let descText = keyContainer.selectAll('.desc').data(d => [d])
-        descText = descText
-          .enter()
-          .append('div')
-          .classed('desc', true)
-          .merge(descText)
-          .text(({ desc }) => desc)
-
-        let keyText = keyContainer.selectAll('button.key').data(d => [d])
-        keyText = keyText
-          .enter()
-          .append('button')
-          .classed('key', true)
-          .merge(keyText)
-          .call(clickToCopyBehavior, ({ idx }) => data.keyAxis[idx]!.key)
-          .text(({ idx }) => data.keyAxis[idx]!.key)
+        return
       }
+
+      const timeIdx = Math.floor(tooltipStatus.x)
+      const keyIdx = Math.floor(tooltipStatus.y)
+
+      if (data.keyAxis[keyIdx] == null || data.keyAxis[keyIdx + 1] == null) {
+        return
+      }
+
+      if (
+        data.timeAxis[timeIdx] == null ||
+        data.timeAxis[timeIdx + 1] == null
+      ) {
+        return
+      }
+
+      const xRescale = zoomTransform.rescaleX(xScale)
+      const yRescale = zoomTransform.rescaleY(yScale)
+      const canvasOffset = [
+        xRescale(tooltipStatus.x),
+        yRescale(tooltipStatus.y),
+      ]
+
+      let tooltipDiv = tooltipLayer.selectAll('div').data([null])
+      tooltipDiv = tooltipDiv
+        .enter()
+        .append('div')
+        .style('position', 'absolute')
+        // .style('width', tooltipSize.width + 'px')
+        // .style('height', tooltipSize.height + 'px')
+        .classed('tooltip', true)
+        .merge(tooltipDiv)
+        .style('pointer-events', tooltipStatus.pinned ? 'all' : 'none')
+
+      if (canvasOffset[0] < canvasWidth / 2) {
+        // Left half
+        const v = canvasOffset[0] + tooltipOffset.horizontal + margin.left
+        tooltipDiv.style('left', `${v}px`).style('right', 'auto')
+      } else {
+        // Right half
+        const v =
+          canvasWidth -
+          canvasOffset[0] +
+          tooltipOffset.horizontal +
+          margin.right
+        tooltipDiv.style('right', `${v}px`).style('left', 'auto')
+      }
+
+      if (canvasOffset[1] < canvasHeight / 2) {
+        // Top half
+        const v = canvasOffset[1] + tooltipOffset.vertical + margin.top
+        tooltipDiv.style('top', `${v}px`).style('bottom', 'auto')
+      } else {
+        // Bottom half
+        const v =
+          canvasHeight -
+          canvasOffset[1] +
+          tooltipOffset.vertical +
+          margin.bottom
+        tooltipDiv.style('bottom', `${v}px`).style('top', 'auto')
+      }
+
+      const value = data.data[dataTag]?.[timeIdx]?.[keyIdx]
+
+      let valueDiv = tooltipDiv.selectAll('div.value').data([null])
+      valueDiv = valueDiv
+        .enter()
+        .append('div')
+        .classed('value', true)
+        .merge(valueDiv)
+
+      let valueText = valueDiv.selectAll('div.value').data([null])
+      valueText = valueText
+        .enter()
+        .append('div')
+        .classed('value', true)
+        .merge(valueText)
+        .text(withUnit(value))
+        .style('color', colorScheme.label(value))
+        .style('background-color', colorScheme.background(value))
+
+      let unitText = valueDiv.selectAll('div.unit').data([null])
+      unitText = unitText
+        .enter()
+        .append('div')
+        .classed('unit', true)
+        .merge(unitText)
+        .text(tagUnit(dataTag))
+
+      const timeText = [timeIdx, timeIdx + 1]
+        .map(idx =>
+          d3.timeFormat('%Y-%m-%d\n%H:%M:%S')(
+            new Date(data.timeAxis[idx] * 1000)
+          )
+        )
+        .join(' ~ ')
+
+      let timeDiv = tooltipDiv.selectAll('button.time').data([timeText])
+      timeDiv = timeDiv
+        .enter()
+        .append('button')
+        .classed('time', true)
+        .merge(timeDiv)
+        .call(clickToCopyBehavior, d => d)
+        .text(d => d)
+
+      let overviewLabelDiv = tooltipDiv
+        .selectAll('div.overviewLabel')
+        .data([keyIdx + 1])
+      overviewLabelDiv = overviewLabelDiv
+        .enter()
+        .append('div')
+        .classed('overviewLabel', true)
+        .merge(overviewLabelDiv)
+
+      let overviewSubLabel = overviewLabelDiv
+        .selectAll('.subLabel')
+        .style('display', 'none')
+        .data(keyIdx => getTooltipOverviewLabel(keyIdx))
+
+      overviewSubLabel = overviewSubLabel
+        .enter()
+        .append('button')
+        .classed('subLabel', true)
+        .merge(overviewSubLabel)
+        .call(clickToCopyBehavior, d => d)
+        .text((d, idx) => {
+          // Prefix with spaces
+          return '\u00A0'.repeat(idx * 2) + d
+        })
+        .style('display', 'block')
+
+      let keyContainer = tooltipDiv.selectAll('div.keyContainer').data([
+        {
+          desc: 'Start Key (Incl.):',
+          idx: keyIdx + 1,
+        },
+        {
+          desc: 'End key (Excl.):',
+          idx: keyIdx,
+        },
+      ])
+
+      keyContainer = keyContainer
+        .enter()
+        .append('div')
+        .classed('keyContainer', true)
+        .merge(keyContainer)
+
+      let descText = keyContainer.selectAll('.desc').data(d => [d])
+      descText = descText
+        .enter()
+        .append('div')
+        .classed('desc', true)
+        .merge(descText)
+        .text(({ desc }) => desc)
+
+      let keyText = keyContainer.selectAll('button.key').data(d => [d])
+      keyText = keyText
+        .enter()
+        .append('button')
+        .classed('key', true)
+        .merge(keyText)
+        .call(clickToCopyBehavior, ({ idx }) => data.keyAxis[idx]!.key)
+        .text(({ idx }) => data.keyAxis[idx]!.key)
     }
 
     function renderCross() {

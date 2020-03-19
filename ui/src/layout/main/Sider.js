@@ -23,12 +23,7 @@ const ToggleBanner = props => {
   }
 
   return (
-    <motion.div
-      className={styles.banner}
-      onClick={props.onToggle}
-      animate={props.collapsed ? 'collapsed' : 'open'}
-      initial="open"
-    >
+    <motion.div className={styles.banner} onClick={props.onToggle}>
       <motion.div
         variants={expandedContentVariants}
         style={{ width: props.width - toggleWidth }}
@@ -135,6 +130,7 @@ class Sider extends React.PureComponent {
           style={{ flexGrow: 1 }}
           defaultOpenKeys={['debug']}
         >
+          {this.renderAppMenuItem('overview')}
           {this.renderAppMenuItem('cluster_info')}
           {this.renderAppMenuItem('keyvis')}
           {this.renderAppMenuItem('statement')}

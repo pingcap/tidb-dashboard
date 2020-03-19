@@ -252,7 +252,6 @@ export default function Page() {
         </Form>
       </Card>
       <CardTable
-        style={{ marginTop: 24 }}
         loading={listLoading}
         columns={historyTableColumns}
         dataSource={historyTable}

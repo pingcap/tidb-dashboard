@@ -19,21 +19,16 @@ class App extends React.PureComponent {
     contentLeftOffset: siderWidth,
   }
 
+  handleToggle = () => {
+    this.setState({
+      collapsed: !this.state.collapsed,
+    })
+  }
+
   triggerResizeEvent = () => {
     const event = document.createEvent('HTMLEvents')
     event.initEvent('resize', true, false)
     window.dispatchEvent(event)
-  }
-
-  handleToggle = () => {
-    this.setState(
-      {
-        collapsed: !this.state.collapsed,
-      },
-      () => {
-        this.triggerResizeEvent()
-      }
-    )
   }
 
   handleRouting = () => {
@@ -75,13 +70,17 @@ class App extends React.PureComponent {
 
   handleAnimationStart = () => {
     if (!this.state.collapsed) {
-      this.setState({ contentLeftOffset: siderWidth })
+      this.setState({ contentLeftOffset: siderWidth }, () =>
+        this.triggerResizeEvent()
+      )
     }
   }
 
   handleAnimationComplete = () => {
     if (this.state.collapsed) {
-      this.setState({ contentLeftOffset: siderCollapsedWidth })
+      this.setState({ contentLeftOffset: siderCollapsedWidth }, () =>
+        this.triggerResizeEvent()
+      )
     }
   }
 

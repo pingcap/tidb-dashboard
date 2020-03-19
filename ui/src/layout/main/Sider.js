@@ -145,7 +145,7 @@ class Sider extends React.PureComponent {
             }
           >
             {this.renderAppMenuItem('log_searching')}
-            {this.renderAppMenuItem('node_profiling')}
+            {this.renderAppMenuItem('instance_profiling')}
           </Menu.SubMenu>
         </Menu>
         <Menu mode="inline" selectedKeys={[this.state.activeAppId]}>

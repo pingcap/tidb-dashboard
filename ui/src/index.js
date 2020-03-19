@@ -13,7 +13,7 @@ import AppKeyVis from '@/apps/keyvis'
 import AppStatement from '@/apps/statement'
 import AppDiagnose from '@/apps/diagnose'
 import AppLogSearching from '@/apps/logSearching'
-import AppNodeProfiling from '@/apps/nodeProfiling'
+import AppInstanceProfiling from '@/apps/instanceProfiling'
 import AppClusterInfo from '@/apps/clusterInfo'
 import AppPlayground from '@/apps/playground'
 
@@ -52,7 +52,7 @@ async function main() {
     .register(AppClusterInfo)
     .register(AppDiagnose)
     .register(AppLogSearching)
-    .register(AppNodeProfiling)
+    .register(AppInstanceProfiling)
     .register(AppPlayground)
 
   if (routingUtil.isLocationMatch('/')) {

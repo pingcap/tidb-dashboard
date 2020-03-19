@@ -1,17 +1,18 @@
-node_profiling:
-  nav_title: Profile Nodes
+instance_profiling:
+  nav_title: Profile Instances
   list:
     control_form:
+      title: Start Profiling Instances
       nodes:
-        label: Select nodes
-        placeholder: Please select the node to profile
+        label: Select instances
+        placeholder: Please select the instance to profile
       duration:
         label: Duration
       submit: Start Profiling
     table:
       title: Profiling History
       columns:
-        targets: Profiling Targets
+        targets: Instances
         start_at: Start At
         duration: Duration (sec)
         status: Status
@@ -29,7 +30,7 @@ node_profiling:
     download: Download Profiling Result
     table:
       columns:
-        node: Node
+        instance: Instance
         kind: Kind
         status: Status
       status:

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Row, Col, Card } from 'antd'
+import { Row, Col, Card, Skeleton } from 'antd'
 import { HashRouter as Router } from 'react-router-dom'
-
+import { useTranslation } from 'react-i18next'
 import client from '@/utils/client'
 
 import { ComponentPanel, MonitorAlertBar } from './components'
@@ -9,6 +9,7 @@ import styles from './RootComponent.module.less'
 
 const App = () => {
   const [cluster, setCluster] = useState(null)
+  const { t } = useTranslation()
 
   useEffect(() => {
     const fetchLoad = async () => {
@@ -36,6 +37,13 @@ const App = () => {
                   <ComponentPanel field="pd" data={cluster} />
                 </Col>
               </Row>
+              <Card
+                size="small"
+                bordered={false}
+                title={t('overview.top_statements.title')}
+              >
+                <Skeleton active />
+              </Card>
             </Col>
             <Col span={6}>
               <MonitorAlertBar cluster={cluster} />

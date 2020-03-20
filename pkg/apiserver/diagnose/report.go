@@ -939,7 +939,7 @@ APPROXIMATE_CHANGE_TIME is the minimum start effective time`,
 		CommentCN:      "",
 		joinColumns:    []int{1, 2},
 		compareColumns: []int{3},
-		Column:         []string{"APPROXIMATE_CHANGE_TIME", "INSTANCE", "CONFIG_ITEM", "VALUE"},
+		Column:         []string{"APPROXIMATE_CHANGE_TIME", "CONFIG_ITEM", "INSTANCE", "VALUE"},
 	}
 	rows, err := getSQLRows(db, sql)
 	if err != nil {
@@ -1024,7 +1024,7 @@ APPROXIMATE_CHANGE_TIME is the minimum start effective time`,
 		CommentCN:      "",
 		joinColumns:    []int{1, 2},
 		compareColumns: []int{3},
-		Column:         []string{"APPROXIMATE_CHANGE_TIME", "INSTANCE", "CONFIG_ITEM", "VALUE"},
+		Column:         []string{"APPROXIMATE_CHANGE_TIME", "CONFIG_ITEM", "INSTANCE", "VALUE"},
 	}
 	rows, err := getSQLRows(db, sql)
 	if err != nil {

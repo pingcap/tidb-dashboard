@@ -1,7 +1,7 @@
-log_searching:
+search_logs:
   nav_title: Search Logs
   nav:
-    log_searching: Log Searching
+    search_logs: Search Logs
     detail: Detail
     history: History
   page:
@@ -11,9 +11,11 @@ log_searching:
     search_histroy: search histroy
   common:
     time_range: Time Range
+    start_time: Start Time
+    end_time: End Time
     log_level: Log Level
-    components: Components
-    components_placeholder: Select at least one component
+    components: instances
+    components_placeholder: Select at least one instance
     keywords: Keywords
     keywords_placeholder: Keywords, Optional, separated by spaces
     search: Search
@@ -26,7 +28,7 @@ log_searching:
     success: completed
     failed: failed
   confirm:
-    cancel_tasks: Are you sure you want to cancel all running log search task?
+    cancel_tasks: Are you sure you want to cancel all running log search tasks?
     retry_tasks: Are you sure you want to retry all failed log search tasks?
   preview:
     time: Time

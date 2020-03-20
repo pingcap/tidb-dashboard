@@ -1,12 +1,13 @@
 import client from '@/utils/client';
 import { LogsearchSearchTarget, LogsearchTaskGroupResponse } from '@pingcap-incubator/dashboard_client';
-import { Button, Table, Tag } from 'antd';
+import { CardTable } from "@pingcap-incubator/dashboard_components";
+import { Badge, Button, Table } from 'antd';
 import { RangePickerValue } from 'antd/lib/date-picker/interface';
 import { Moment } from 'moment';
 import React, { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { LogLevelMap, parseSearchingParams, ServerType, DATE_TIME_FORMAT } from './utils';
+import { DATE_TIME_FORMAT, LogLevelMap, parseSearchingParams, ServerType } from './utils';
 
 const { Column } = Table;
 
@@ -17,7 +18,7 @@ type History = {
   components?: LogsearchSearchTarget[]
   keywords?: string
   size?: string
-  state?: string
+  state?: number
   action?: number
 }
 
@@ -25,12 +26,19 @@ function componentRender(targets: LogsearchSearchTarget[]) {
   const tidb = targets.filter(item => item.kind === ServerType.TiDB)
   const tikv = targets.filter(item => item.kind === ServerType.TiKV)
   const pd = targets.filter(item => item.kind === ServerType.PD)
-
+  const r: Array<string> = []
+  if (tidb.length > 0) {
+    r.push(`${tidb.length} TiDB`)
+  }
+  if (tikv.length > 0) {
+    r.push(`${tikv.length} TiKV`)
+  }
+  if (pd.length > 0) {
+    r.push(`${pd.length} PD`)
+  }
   return (
     <span>
-      {tidb.length > 0 && (<Tag>{tidb.length} TiDB</Tag>)}
-      {tikv.length > 0 && (<Tag>{tikv.length} TiKV</Tag>)}
-      {pd.length > 0 && (<Tag>{pd.length} PD</Tag>)}
+      {r.join(', ')}
     </span>
   )
 }
@@ -63,26 +71,33 @@ export default function SearchHistory() {
     getData()
   }, [])
 
+  function stateRender(state: number | undefined) {
+    if (state === undefined || state < 1) {
+      return
+    }
+    switch (state) {
+      case 1:
+        return (
+          <Badge color="yellow" text={t('search_logs.history.running')} />
+        )
+      case 2:
+        return (
+          <Badge color="green" text={t('search_logs.history.finished')} />
+        )
+      default:
+        return
+    }
+
+  }
+
   function actionRender(taskGroupID: number) {
     if (taskGroupID === 0) {
       return
     }
-    async function handleDelete() {
-      await client.dashboard.logsTaskgroupsIdDelete(taskGroupID)
-      const res = await client.dashboard.logsTaskgroupsGet()
-      setTaskGroups(res.data)
-    }
     return (
-      <span>
-        <Button type="link">
-          <Link to={`/log/search/detail/${taskGroupID}`}>
-            {t('log_searching.history.detail')}
-          </Link>
-        </Button>
-        <Button type="link" onClick={handleDelete}>
-          {t('log_searching.history.delete')}
-        </Button>
-      </span>
+      <Link to={`/search_logs/detail/${taskGroupID}`}>
+        {t('search_logs.history.detail')}
+      </Link>
     )
   }
 
@@ -114,40 +129,34 @@ export default function SearchHistory() {
     },
   }
 
-  const descriptionArray = [
-    t('log_searching.history.running'),
-    t('log_searching.history.finished'),
-  ]
-
   const historyList: History[] = taskGroups.map(taskGroup => {
     const { timeRange, logLevel, components, searchValue } = parseSearchingParams(taskGroup)
     const taskGroupID = taskGroup.task_group?.id || 0
-    const state = descriptionArray[(taskGroup.task_group?.state || 1) - 1]
     return {
       key: taskGroupID,
       time: timeRange,
       level: LogLevelMap[logLevel],
       components: components,
       keywords: searchValue,
-      state: state,
+      state: taskGroup.task_group?.state,
       action: taskGroupID
     }
   })
 
   return (
     <div style={{ backgroundColor: "#FFFFFF" }}>
-      <div style={{ padding: 16 }}>
-        <Button type="danger" onClick={handleDeleteSelected} disabled={selectedRowKeys.length < 1} style={{ marginRight: 16 }}>{t('log_searching.history.delete_selected')}</Button>
-        <Button type="danger" onClick={handleDeleteAll} >{t('log_searching.history.delete_all')}</Button>
+      <div style={{ marginLeft: 48, marginRight: 48 }}>
+        <Button type="danger" onClick={handleDeleteSelected} disabled={selectedRowKeys.length < 1} style={{ marginRight: 16 }}>{t('search_logs.history.delete_selected')}</Button>
+        <Button type="danger" onClick={handleDeleteAll} >{t('search_logs.history.delete_all')}</Button>
       </div>
-      <Table dataSource={historyList} rowSelection={rowSelection} pagination={{ pageSize: 100 }}>
-        <Column width={400} title={t('log_searching.common.time_range')} dataIndex="time" key="time" render={timeRender} />
-        <Column title={t('log_searching.preview.level')} dataIndex="level" key="level" />
-        <Column width={230} title={t('log_searching.preview.component')} dataIndex="components" key="components" render={componentRender} />
-        <Column title={t('log_searching.common.keywords')} dataIndex="keywords" key="keywords" />
-        <Column title={t('log_searching.history.state')} dataIndex="state" key="state" />
-        <Column title={t('log_searching.history.action')} dataIndex="action" key="action" render={actionRender} />
-      </Table>
+      <CardTable dataSource={historyList} rowSelection={rowSelection} pagination={{ pageSize: 100 }} style={{ marginTop: 0 }}>
+        <Column width={400} title={t('search_logs.common.time_range')} dataIndex="time" key="time" render={timeRender} />
+        <Column title={t('search_logs.preview.level')} dataIndex="level" key="level" />
+        <Column width={230} title={t('search_logs.preview.component')} dataIndex="components" key="components" render={componentRender} />
+        <Column title={t('search_logs.common.keywords')} dataIndex="keywords" key="keywords" />
+        <Column title={t('search_logs.history.state')} dataIndex="state" key="state" render={stateRender} />
+        <Column title={t('search_logs.history.action')} dataIndex="action" key="action" render={actionRender} />
+      </CardTable>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import client from "@/utils/client";
 import { LogsearchCreateTaskGroupRequest, LogsearchSearchTarget } from "@pingcap-incubator/dashboard_client";
-import { Button, Card, DatePicker, Form, Input, Select, TreeSelect } from "antd";
+import { Button, DatePicker, Form, Input, Select, TreeSelect } from "antd";
 import { RangePickerValue } from "antd/lib/date-picker/interface";
 import { TreeNode } from "antd/lib/tree-select";
 import moment from 'moment';
@@ -100,7 +100,7 @@ export default function SearchHeader({
       // promp error here
       return
     }
-    history.push('/log/search/detail/' + id)
+    history.push('/search_logs/detail/' + id)
   }
 
   function handleTimeRangeChange(value: RangePickerValue) {
@@ -130,59 +130,58 @@ export default function SearchHeader({
 
   return (
     <div>
-      <Card>
-        <Form layout="inline" onSubmit={handleSearch} style={{ display: "flex", flexWrap: "wrap" }}>
-          <Form.Item>
-            <RangePicker
-              value={timeRange}
-              showTime={{
-                defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('11:59:59', 'HH:mm:ss')],
-              }}
-              format="YYYY-MM-DD HH:mm:ss"
-              onChange={handleTimeRangeChange}
-            />
-          </Form.Item>
-          <Form.Item>
-            <Select value={logLevel} style={{ width: 100 }} onChange={handleLogLevelChange}>
-              <Option value={1}>DEBUG</Option>
-              <Option value={2}>INFO</Option>
-              <Option value={3}>WARN</Option>
-              <Option value={4}>TRACE</Option>
-              <Option value={5}>CRITICAL</Option>
-              <Option value={6}>ERROR</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item>
-            <Input
-              value={searchValue}
-              placeholder={t('log_searching.common.keywords_placeholder')}
-              onChange={handleSearchPatternChange}
-              style={{ width: 300 }}
-            />
-          </Form.Item>
-          <Form.Item
-            className={styles.components}
-            style={{ flex: "auto", minWidth: 220 }}
-            validateStatus={selectedComponents.length > 0 ? "" : "error"}>
-            <TreeSelect
-              value={selectedComponents}
-              treeData={buildTreeData(allTargets)}
-              placeholder={t('log_searching.common.components_placeholder')}
-              onChange={handleComponentChange}
-              treeDefaultExpandAll={true}
-              treeCheckable={true}
-              showCheckedStrategy={SHOW_CHILD}
-              allowClear
-              filterTreeNode={filterTreeNode}
-            />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              {t('log_searching.common.search')}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
+      <Form layout="inline" onSubmit={handleSearch} style={{ display: "flex", flexWrap: "wrap" }}>
+        <Form.Item>
+          <RangePicker
+            value={timeRange}
+            showTime={{
+              defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('11:59:59', 'HH:mm:ss')],
+            }}
+            placeholder={[t('search_logs.common.start_time'), t('search_logs.common.end_time')]}
+            format="YYYY-MM-DD HH:mm:ss"
+            onChange={handleTimeRangeChange}
+          />
+        </Form.Item>
+        <Form.Item>
+          <Select value={logLevel} style={{ width: 100 }} onChange={handleLogLevelChange}>
+            <Option value={1}>DEBUG</Option>
+            <Option value={2}>INFO</Option>
+            <Option value={3}>WARN</Option>
+            <Option value={4}>TRACE</Option>
+            <Option value={5}>CRITICAL</Option>
+            <Option value={6}>ERROR</Option>
+          </Select>
+        </Form.Item>
+        <Form.Item>
+          <Input
+            value={searchValue}
+            placeholder={t('search_logs.common.keywords_placeholder')}
+            onChange={handleSearchPatternChange}
+            style={{ width: 300 }}
+          />
+        </Form.Item>
+        <Form.Item
+          className={styles.components}
+          style={{ flex: "auto", minWidth: 220 }}
+          validateStatus={selectedComponents.length > 0 ? "" : "error"}>
+          <TreeSelect
+            value={selectedComponents}
+            treeData={buildTreeData(allTargets)}
+            placeholder={t('search_logs.common.components_placeholder')}
+            onChange={handleComponentChange}
+            treeDefaultExpandAll={true}
+            treeCheckable={true}
+            showCheckedStrategy={SHOW_CHILD}
+            allowClear
+            filterTreeNode={filterTreeNode}
+          />
+        </Form.Item>
+        <Form.Item>
+          <Button type="primary" htmlType="submit">
+            {t('search_logs.common.search')}
+          </Button>
+        </Form.Item>
+      </Form>
     </div>
   )
 }

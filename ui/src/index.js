@@ -12,7 +12,7 @@ import AppOverview from '@/apps/overview'
 import AppKeyVis from '@/apps/keyvis'
 import AppStatement from '@/apps/statement'
 import AppDiagnose from '@/apps/diagnose'
-import AppLogSearching from '@/apps/logSearching'
+import AppSearchLogs from '@/apps/searchLogs'
 import AppInstanceProfiling from '@/apps/instanceProfiling'
 import AppClusterInfo from '@/apps/clusterInfo'
 import AppPlayground from '@/apps/playground'
@@ -51,7 +51,7 @@ async function main() {
     .register(AppStatement)
     .register(AppClusterInfo)
     .register(AppDiagnose)
-    .register(AppLogSearching)
+    .register(AppSearchLogs)
     .register(AppInstanceProfiling)
     .register(AppPlayground)
 

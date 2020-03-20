@@ -1,7 +1,7 @@
-log_searching:
+search_logs:
   nav_title: 日志搜索
   nav:
-    log_searching: 日志搜索
+    search_logs: 日志搜索
     detail: 搜索详情
     history: 历史搜索
   page:
@@ -11,9 +11,11 @@ log_searching:
     search_histroy: 搜索历史
   common:
     time_range: 时间范围
+    start_time: 起始时间
+    end_time: 结束时间
     log_level: 日志等级
-    components: 选择组件
-    components_placeholder: 至少选择一个组件
+    components: 选择实例
+    components_placeholder: 至少选择一个实例
     keywords: 关键字
     keywords_placeholder: 搜索关键字，可选，以空格分割
     search: 搜索

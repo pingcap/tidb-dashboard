@@ -1,7 +1,7 @@
 module.exports = {
-  id: 'log_searching',
+  id: 'search_logs',
   loader: () => import('./app.js'),
-  routerPrefix: '/log/search',
+  routerPrefix: '/search_logs',
   icon: 'file-text',
   translations: require.context('./translations/', false, /\.yaml$/),
 }

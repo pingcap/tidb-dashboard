@@ -1,7 +1,8 @@
-import { Alert, Col, Row } from 'antd';
-import React, { useState} from 'react';
+import { Head } from "@pingcap-incubator/dashboard_components";
+import { Col, Row, Icon } from 'antd';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { SearchHeader, SearchProgress, SearchResult } from './components';
 
 export default function LogSearchingDetail() {
@@ -15,13 +16,18 @@ export default function LogSearchingDetail() {
     <div>
       <Row gutter={[16, 16]}>
         <Col span={18}>
-          <SearchHeader taskGroupID={taskGroupID} />
-          <Alert
-            message={t('log_searching.page.tip')}
-            type="info"
-            showIcon
-            style={{ marginTop: 14, marginBottom: 14 }}
-          />
+          <Head
+            title={t('search_logs.nav.detail')}
+            back={
+              <Link to={`/search_logs`}>
+                <Icon type="arrow-left" />{' '}
+                {t('search_logs.nav.search_logs')}
+              </Link>
+            } />
+          <div style={{ marginLeft: 48, marginRight: 48 }}>
+            <SearchHeader taskGroupID={taskGroupID} />
+          </div>
+
           <SearchResult taskGroupID={taskGroupID} tasks={tasks} />
         </Col>
         <Col span={6}>

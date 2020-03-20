@@ -748,6 +748,10 @@ func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.
 		GetPDConfigChangeInfo,
 		GetTiDBGCConfigInfo,
 		GetTiDBGCConfigChangeInfo,
+		GetTiKVRocksDBConfigInfo,
+		GetTiKVRocksDBConfigChangeInfo,
+		GetTiKVRaftStoreConfigInfo,
+		GetTiKVRaftStoreConfigChangeInfo,
 
 		// Overview
 		GetTotalTimeConsumeTable,

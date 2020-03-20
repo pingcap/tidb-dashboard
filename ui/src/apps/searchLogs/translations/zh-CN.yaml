@@ -2,7 +2,7 @@ search_logs:
   nav_title: 日志搜索
   nav:
     search_logs: 日志搜索
-    detail: 搜索详情
+    detail: 搜索结果
     history: 历史搜索
   page:
     intro: 点击搜索预览和下载日志
@@ -36,7 +36,7 @@ search_logs:
     component: 组件
     log: 日志
   history:
-    running: 正在运行
+    running: 正在搜索
     finished: 已完成
     delete_selected: 删除选中的任务
     delete_all: 删除全部任务

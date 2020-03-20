@@ -1,9 +1,9 @@
-import { Head } from "@pingcap-incubator/dashboard_components";
-import { Col, Row, Icon } from 'antd';
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useParams, Link } from "react-router-dom";
-import { SearchHeader, SearchProgress, SearchResult } from './components';
+import { Head } from '@pingcap-incubator/dashboard_components'
+import { Col, Row, Icon } from 'antd'
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useParams, Link } from 'react-router-dom'
+import { SearchHeader, SearchProgress, SearchResult } from './components'
 
 export default function LogSearchingDetail() {
   const { t } = useTranslation()
@@ -14,23 +14,26 @@ export default function LogSearchingDetail() {
 
   return (
     <div>
-      <Row gutter={[16, 16]}>
+      <Row>
         <Col span={18}>
           <Head
             title={t('search_logs.nav.detail')}
             back={
               <Link to={`/search_logs`}>
-                <Icon type="arrow-left" />{' '}
-                {t('search_logs.nav.search_logs')}
+                <Icon type="arrow-left" /> {t('search_logs.nav.search_logs')}
               </Link>
-            } />
-          <div style={{ marginLeft: 48, marginRight: 48 }}>
+            }
+          >
             <SearchHeader taskGroupID={taskGroupID} />
-          </div>
+          </Head>
           <SearchResult taskGroupID={taskGroupID} tasks={tasks} />
         </Col>
         <Col span={6}>
-          <SearchProgress taskGroupID={taskGroupID} tasks={tasks} setTasks={setTasks} />
+          <SearchProgress
+            taskGroupID={taskGroupID}
+            tasks={tasks}
+            setTasks={setTasks}
+          />
         </Col>
       </Row>
     </div>

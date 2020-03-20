@@ -2,7 +2,7 @@ search_logs:
   nav_title: Search Logs
   nav:
     search_logs: Search Logs
-    detail: Detail
+    detail: Search Result
     history: History
   page:
     intro: Preview and download logs by clicking Search
@@ -19,7 +19,7 @@ search_logs:
     keywords: Keywords
     keywords_placeholder: Keywords, Optional, separated by spaces
     search: Search
-    progress: Searching progress
+    progress: Progress
     download_selected: Download selected
     cancel: Cancel
     retry: Retry
@@ -36,8 +36,8 @@ search_logs:
     component: Component
     log: Log
   history:
-    running: running
-    finished: finished
+    running: Running
+    finished: Finished
     delete_selected: Delete selected
     delete_all: Delete All
     state: State

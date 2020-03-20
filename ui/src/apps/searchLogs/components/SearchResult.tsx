@@ -1,13 +1,18 @@
-import client from '@/utils/client';
-import { LogsearchSearchTarget, LogsearchTaskModel } from '@pingcap-incubator/dashboard_client';
-import { Card } from '@pingcap-incubator/dashboard_components';
-import { Alert, Spin, Table, Tooltip } from 'antd';
-import moment from 'moment';
-import React, { useEffect, useState } from "react";
-import { useTranslation } from 'react-i18next';
-import { DATE_TIME_FORMAT, LogLevelMap, namingMap } from './utils';
+import client from '@/utils/client'
+import {
+  LogsearchSearchTarget,
+  LogsearchTaskModel,
+} from '@pingcap-incubator/dashboard_client'
+import { Card } from '@pingcap-incubator/dashboard_components'
+import { Alert, Skeleton, Table, Tooltip } from 'antd'
+import moment from 'moment'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
-const { Column } = Table;
+import { DATE_TIME_FORMAT, LogLevelMap, namingMap } from './utils'
+import styles from './SearchResult.module.css'
+
+const { Column } = Table
 
 type LogPreview = {
   key: number
@@ -22,7 +27,7 @@ function componentRender(target: LogsearchSearchTarget | undefined) {
     return ''
   }
   return (
-    <div style={{ fontSize: "0.8em" }}>
+    <div>
       {target.kind ? namingMap[target.kind] : ''} {target.ip}
     </div>
   )
@@ -31,33 +36,30 @@ function componentRender(target: LogsearchSearchTarget | undefined) {
 function logRender(log: string) {
   function trimString(str: string) {
     const len = 512
-    return str.length > len ?
-      str.substring(0, len - 3) + "..." :
-      str
+    return str.length > len ? str.substring(0, len - 3) + '...' : str
   }
 
   return (
     <Tooltip title={trimString(log)}>
-      <div style={{
-        overflow: "hidden",
-        whiteSpace: "nowrap",
-        textOverflow: "ellipsis"
-      }}>
+      <div
+        style={{
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
+        }}
+      >
         <span>{log}</span>
       </div>
-    </Tooltip >
+    </Tooltip>
   )
 }
 
 interface Props {
   taskGroupID: number
-  tasks: LogsearchTaskModel[],
+  tasks: LogsearchTaskModel[]
 }
 
-export default function SearchResult({
-  taskGroupID,
-  tasks,
-}: Props) {
+export default function SearchResult({ taskGroupID, tasks }: Props) {
   const [logPreviews, setData] = useState<LogPreview[]>([])
   const { t } = useTranslation()
   const [loading, setLoading] = useState(true)
@@ -75,53 +77,77 @@ export default function SearchResult({
       }
 
       const res = await client.dashboard.logsTaskgroupsIdPreviewGet(taskGroupID)
-      setData(res.data.map((value, index): LogPreview => {
-        return {
-          key: index,
-          time: moment(value.time).format(DATE_TIME_FORMAT),
-          level: LogLevelMap[value.level ?? 0],
-          component: getComponent(value.task_id),
-          log: value.message,
-        }
-      }))
+      setData(
+        res.data.map(
+          (value, index): LogPreview => {
+            return {
+              key: index,
+              time: moment(value.time).format(DATE_TIME_FORMAT),
+              level: LogLevelMap[value.level ?? 0],
+              component: getComponent(value.task_id),
+              log: value.message,
+            }
+          }
+        )
+      )
       setLoading(false)
     }
-    if (!loading && tasks.length > 0 &&
-      taskGroupID !== tasks[0].task_group_id) {
+    if (
+      !loading &&
+      tasks.length > 0 &&
+      taskGroupID !== tasks[0].task_group_id
+    ) {
       setLoading(true)
     }
     getLogPreview()
   }, [taskGroupID, tasks])
 
   return (
-    <div style={{
-      backgroundColor: "#FFFFFF",
-      minHeight: 400,
-    }}>
-      {loading && <Spin size="large" style={{
-        position: "absolute",
-        left: "50%",
-        top: "50%",
-        transform: "translate(-50%, -50%)"
-      }} />}
+    <Card>
+      {loading && <Skeleton active />}
       {!loading && (
         <>
-          <Card style={{ marginTop: 0 }}>
-            <Alert
-              message={t('search_logs.page.tip')}
-              type="info"
-              showIcon
-              style={{ marginTop: 24, marginBottom:24 }}
+          <Alert
+            message={t('search_logs.page.tip')}
+            type="info"
+            showIcon
+            style={{ marginBottom: 24 }}
+          />
+          <Table
+            dataSource={logPreviews}
+            size="middle"
+            pagination={{ pageSize: 100 }}
+            className={styles.resultTable}
+          >
+            <Column
+              width={180}
+              title={t('search_logs.preview.time')}
+              dataIndex="time"
+              key="time"
             />
-            <Table dataSource={logPreviews} size="middle" pagination={{ pageSize: 100 }}>
-              <Column width={150} title={t('search_logs.preview.time')} dataIndex="time" key="time" />
-              <Column width={80} title={t('search_logs.preview.level')} dataIndex="level" key="level" />
-              <Column width={100} title={t('search_logs.preview.component')} dataIndex="component" key="component" render={componentRender} />
-              <Column ellipsis title={t('search_logs.preview.log')} dataIndex="log" key="log" render={logRender} />
-            </Table>
-          </Card>
+            <Column
+              width={80}
+              title={t('search_logs.preview.level')}
+              dataIndex="level"
+              key="level"
+            />
+            <Column
+              width={150}
+              title={t('search_logs.preview.component')}
+              dataIndex="component"
+              key="component"
+              render={componentRender}
+            />
+            <Column
+              ellipsis
+              title={t('search_logs.preview.log')}
+              dataIndex="log"
+              key="log"
+              render={logRender}
+            />
+          </Table>
         </>
       )}
-    </div>
+    </Card>
   )
 }

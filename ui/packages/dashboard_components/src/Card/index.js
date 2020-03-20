@@ -4,10 +4,10 @@ import styles from './index.module.less'
 
 class Card extends React.PureComponent {
   render() {
-    const { title, extra, className, children, style, ...rest } = this.props
+    const { title, extra, className, children, ...rest } = this.props
     return (
       <div className={classNames(styles.cardContainer, className)} {...rest}>
-        <div className={styles.cardInner} style={style}>
+        <div className={styles.cardInner}>
           {(title || extra) && (
             <div className={styles.cardTitleSection}>
               {title && <div className={styles.cardTitle}>{title}</div>}

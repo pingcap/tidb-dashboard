@@ -1,24 +1,35 @@
-import client from "@/utils/client";
-import { LogsearchCreateTaskGroupRequest, LogsearchSearchTarget } from "@pingcap-incubator/dashboard_client";
-import { Button, DatePicker, Form, Input, Select, TreeSelect } from "antd";
-import { RangePickerValue } from "antd/lib/date-picker/interface";
-import { TreeNode } from "antd/lib/tree-select";
-import moment from 'moment';
-import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { useTranslation } from 'react-i18next';
-import { useHistory } from "react-router-dom";
-import styles from './Styles.module.css';
-import { AllLogLevel, getAddress, namingMap, parseClusterInfo, parseSearchingParams, ServerType, ServerTypeList } from "./utils";
+import client from '@/utils/client'
+import {
+  LogsearchCreateTaskGroupRequest,
+  LogsearchSearchTarget,
+} from '@pingcap-incubator/dashboard_client'
+import { Button, DatePicker, Form, Input, Select, TreeSelect } from 'antd'
+import { RangePickerValue } from 'antd/lib/date-picker/interface'
+import { TreeNode } from 'antd/lib/tree-select'
+import moment from 'moment'
+import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
+import styles from './Styles.module.css'
+import {
+  AllLogLevel,
+  getAddress,
+  namingMap,
+  parseClusterInfo,
+  parseSearchingParams,
+  ServerType,
+  ServerTypeList,
+} from './utils'
 
-const { SHOW_CHILD } = TreeSelect;
+const { SHOW_CHILD } = TreeSelect
 const { RangePicker } = DatePicker
-const { Option } = Select;
+const { Option } = Select
 
 function buildTreeData(targets: LogsearchSearchTarget[]) {
   const servers = {
     [ServerType.TiDB]: [],
     [ServerType.TiKV]: [],
-    [ServerType.PD]: []
+    [ServerType.PD]: [],
   }
 
   targets.forEach(item => {
@@ -28,30 +39,26 @@ function buildTreeData(targets: LogsearchSearchTarget[]) {
     servers[item.kind].push(item)
   })
 
-  return ServerTypeList
-    .filter(kind => servers[kind].length > 0)
-    .map(kind => ({
-      title: namingMap[kind],
-      value: kind,
-      key: kind,
-      children: servers[kind].map((item: LogsearchSearchTarget) => {
-        const addr = getAddress(item)
-        return {
-          title: addr,
-          value: addr,
-          key: addr,
-        }
-      })
-    }))
+  return ServerTypeList.filter(kind => servers[kind].length > 0).map(kind => ({
+    title: namingMap[kind],
+    value: kind,
+    key: kind,
+    children: servers[kind].map((item: LogsearchSearchTarget) => {
+      const addr = getAddress(item)
+      return {
+        title: addr,
+        value: addr,
+        key: addr,
+      }
+    }),
+  }))
 }
 
 interface Props {
   taskGroupID: number
 }
 
-export default function SearchHeader({
-  taskGroupID
-}: Props) {
+export default function SearchHeader({ taskGroupID }: Props) {
   const { t } = useTranslation()
   const history = useHistory()
 
@@ -70,7 +77,12 @@ export default function SearchHeader({
         return
       }
       const res2 = await client.dashboard.logsTaskgroupsIdGet(taskGroupID)
-      const { timeRange, logLevel, components, searchValue } = parseSearchingParams(res2.data)
+      const {
+        timeRange,
+        logLevel,
+        components,
+        searchValue,
+      } = parseSearchingParams(res2.data)
       setTimeRange(timeRange)
       setLogLevel(logLevel === 0 ? 3 : logLevel)
       setComponents(components.map(item => getAddress(item)))
@@ -92,7 +104,7 @@ export default function SearchHeader({
         end_time: timeRange?.[1]?.valueOf(), // unix millionsecond
         levels: AllLogLevel.slice(logLevel - 1), // 3 => [3,4,5,6]
         patterns: searchValue.split(/\s+/), // 'foo boo' => ['foo', 'boo']
-      }
+      },
     }
     const result = await client.dashboard.logsTaskgroupPut(params)
     const id = result.data.task_group?.id
@@ -129,59 +141,72 @@ export default function SearchHeader({
   }
 
   return (
-    <div>
-      <Form layout="inline" onSubmit={handleSearch} style={{ display: "flex", flexWrap: "wrap" }}>
-        <Form.Item>
-          <RangePicker
-            value={timeRange}
-            showTime={{
-              defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('11:59:59', 'HH:mm:ss')],
-            }}
-            placeholder={[t('search_logs.common.start_time'), t('search_logs.common.end_time')]}
-            format="YYYY-MM-DD HH:mm:ss"
-            onChange={handleTimeRangeChange}
-          />
-        </Form.Item>
-        <Form.Item>
-          <Select value={logLevel} style={{ width: 100 }} onChange={handleLogLevelChange}>
-            <Option value={1}>DEBUG</Option>
-            <Option value={2}>INFO</Option>
-            <Option value={3}>WARN</Option>
-            <Option value={4}>TRACE</Option>
-            <Option value={5}>CRITICAL</Option>
-            <Option value={6}>ERROR</Option>
-          </Select>
-        </Form.Item>
-        <Form.Item>
-          <Input
-            value={searchValue}
-            placeholder={t('search_logs.common.keywords_placeholder')}
-            onChange={handleSearchPatternChange}
-            style={{ width: 300 }}
-          />
-        </Form.Item>
-        <Form.Item
-          className={styles.components}
-          style={{ flex: "auto", minWidth: 220 }}
-          validateStatus={selectedComponents.length > 0 ? "" : "error"}>
-          <TreeSelect
-            value={selectedComponents}
-            treeData={buildTreeData(allTargets)}
-            placeholder={t('search_logs.common.components_placeholder')}
-            onChange={handleComponentChange}
-            treeDefaultExpandAll={true}
-            treeCheckable={true}
-            showCheckedStrategy={SHOW_CHILD}
-            allowClear
-            filterTreeNode={filterTreeNode}
-          />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            {t('search_logs.common.search')}
-          </Button>
-        </Form.Item>
-      </Form>
-    </div>
+    <Form
+      layout="inline"
+      onSubmit={handleSearch}
+      style={{ display: 'flex', flexWrap: 'wrap' }}
+    >
+      <Form.Item>
+        <RangePicker
+          value={timeRange}
+          showTime={{
+            defaultValue: [
+              moment('00:00:00', 'HH:mm:ss'),
+              moment('11:59:59', 'HH:mm:ss'),
+            ],
+          }}
+          placeholder={[
+            t('search_logs.common.start_time'),
+            t('search_logs.common.end_time'),
+          ]}
+          format="YYYY-MM-DD HH:mm:ss"
+          onChange={handleTimeRangeChange}
+        />
+      </Form.Item>
+      <Form.Item>
+        <Select
+          value={logLevel}
+          style={{ width: 100 }}
+          onChange={handleLogLevelChange}
+        >
+          <Option value={1}>DEBUG</Option>
+          <Option value={2}>INFO</Option>
+          <Option value={3}>WARN</Option>
+          <Option value={4}>TRACE</Option>
+          <Option value={5}>CRITICAL</Option>
+          <Option value={6}>ERROR</Option>
+        </Select>
+      </Form.Item>
+      <Form.Item>
+        <Input
+          value={searchValue}
+          placeholder={t('search_logs.common.keywords_placeholder')}
+          onChange={handleSearchPatternChange}
+          style={{ width: 300 }}
+        />
+      </Form.Item>
+      <Form.Item
+        className={styles.components}
+        style={{ flex: 'auto', minWidth: 220 }}
+        validateStatus={selectedComponents.length > 0 ? '' : 'error'}
+      >
+        <TreeSelect
+          value={selectedComponents}
+          treeData={buildTreeData(allTargets)}
+          placeholder={t('search_logs.common.components_placeholder')}
+          onChange={handleComponentChange}
+          treeDefaultExpandAll={true}
+          treeCheckable={true}
+          showCheckedStrategy={SHOW_CHILD}
+          allowClear
+          filterTreeNode={filterTreeNode}
+        />
+      </Form.Item>
+      <Form.Item>
+        <Button type="primary" htmlType="submit">
+          {t('search_logs.common.search')}
+        </Button>
+      </Form.Item>
+    </Form>
   )
 }

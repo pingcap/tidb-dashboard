@@ -1,4 +1,4 @@
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 import {
   LogsearchSearchTarget,
   LogsearchTaskGroupResponse,
@@ -69,7 +69,7 @@ export default function SearchHistory() {
 
   useEffect(() => {
     async function getData() {
-      const res = await client.dashboard.logsTaskgroupsGet()
+      const res = await client.getInstance().logsTaskgroupsGet()
       setTaskGroups(res.data)
     }
     getData()
@@ -107,8 +107,8 @@ export default function SearchHistory() {
   async function handleDeleteSelected() {
     for (const key of selectedRowKeys) {
       const taskGroupID = key as number
-      await client.dashboard.logsTaskgroupsIdDelete(taskGroupID)
-      const res = await client.dashboard.logsTaskgroupsGet()
+      await client.getInstance().logsTaskgroupsIdDelete(taskGroupID + '')
+      const res = await client.getInstance().logsTaskgroupsGet()
       setTaskGroups(res.data)
     }
   }
@@ -119,9 +119,9 @@ export default function SearchHistory() {
       if (key === undefined) {
         continue
       }
-      await client.dashboard.logsTaskgroupsIdDelete(key)
+      await client.getInstance().logsTaskgroupsIdDelete(key + '')
     }
-    const res = await client.dashboard.logsTaskgroupsGet()
+    const res = await client.getInstance().logsTaskgroupsGet()
     setTaskGroups(res.data)
   }
 

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import styles from './MonitorAlertBar.module.less'
 
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 
 export default function MonitorAlertBar({ cluster }) {
   const { t } = useTranslation()
@@ -15,7 +15,7 @@ export default function MonitorAlertBar({ cluster }) {
       if (cluster === null || cluster.alert_manager === null) {
         return
       }
-      let resp = await client.dashboard.topologyAlertmanagerAddressCountGet(
+      let resp = await client.getInstance().topologyAlertmanagerAddressCountGet(
         `${cluster.alert_manager.ip}:${cluster.alert_manager.port}`
       )
       setAlertCounter(resp.data)

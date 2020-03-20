@@ -4,7 +4,7 @@ import { Form, Icon, Input, Button, message } from 'antd'
 import { motion } from 'framer-motion'
 import { withTranslation } from 'react-i18next'
 import LanguageDropdown from '@/components/LanguageDropdown'
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 import * as authUtil from '@/utils/auth'
 
 import { ReactComponent as Logo } from './logo.svg'
@@ -39,7 +39,7 @@ class TiDBSignInForm extends React.PureComponent {
     this.clearErrorMessages()
 
     try {
-      const r = await client.dashboard.userLoginPost({
+      const r = await client.getInstance().userLoginPost({
         username: form.username,
         password: form.password,
         is_tidb_auth: true,

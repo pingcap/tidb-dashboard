@@ -5,7 +5,7 @@ import { Head } from '@pingcap-incubator/dashboard_components'
 import { DateTime } from '@/components'
 import { DiagnoseReport } from '@pingcap-incubator/dashboard_client'
 import { useTranslation } from 'react-i18next'
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 
 function DiagnoseStatus() {
   const [report, setReport] = useState<DiagnoseReport | undefined>(undefined)
@@ -19,10 +19,10 @@ function DiagnoseStatus() {
     }
     async function fetchData() {
       try {
-        const res = await client.dashboard.diagnoseReportsIdStatusGet(id)
+        const res = await client.getInstance().diagnoseReportsIdStatusGet(id!)
         const { data } = res
         setReport(data)
-        if (data.progress >= 100) {
+        if (data.progress! >= 100) {
           if (t !== null) {
             clearInterval(t)
           }
@@ -40,13 +40,6 @@ function DiagnoseStatus() {
     }
   }, [id])
 
-  function handleViewReport() {
-    window.open(
-      // FIXME: use report.id
-      `${client.dashboard.basePath}/diagnose/reports/${report!['ID']}`
-    )
-  }
-
   return (
     <Head
       title={t('diagnose.status.head.title')}
@@ -57,12 +50,13 @@ function DiagnoseStatus() {
       }
       titleExtra={
         report && (
-          <Button
-            type="primary"
-            disabled={report?.progress! < 100}
-            onClick={handleViewReport}
-          >
-            {t('diagnose.status.head.view')}
+          <Button type="primary" disabled={report?.progress! < 100}>
+            <a
+              href={`${client.getBasePath()}/diagnose/reports/${report!['ID']}`}
+              target="_blank"
+            >
+              {t('diagnose.status.head.view')}
+            </a>
           </Button>
         )
       }

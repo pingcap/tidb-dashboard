@@ -1,4 +1,4 @@
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 import {
   LogsearchCreateTaskGroupRequest,
   LogsearchSearchTarget,
@@ -70,13 +70,15 @@ export default function SearchHeader({ taskGroupID }: Props) {
   const [allTargets, setAllTargets] = useState<LogsearchSearchTarget[]>([])
   useEffect(() => {
     async function fetchData() {
-      const res = await client.dashboard.topologyAllGet()
+      const res = await client.getInstance().topologyAllGet()
       const targets = parseClusterInfo(res.data)
       setAllTargets(targets)
       if (!taskGroupID) {
         return
       }
-      const res2 = await client.dashboard.logsTaskgroupsIdGet(taskGroupID)
+      const res2 = await client
+        .getInstance()
+        .logsTaskgroupsIdGet(taskGroupID + '')
       const {
         timeRange,
         logLevel,
@@ -106,7 +108,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
         patterns: searchValue.split(/\s+/), // 'foo boo' => ['foo', 'boo']
       },
     }
-    const result = await client.dashboard.logsTaskgroupPut(params)
+    const result = await client.getInstance().logsTaskgroupPut(params)
     const id = result.data.task_group?.id
     if (!id) {
       // promp error here

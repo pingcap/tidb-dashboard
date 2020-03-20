@@ -1,4 +1,4 @@
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 import {
   LogsearchSearchTarget,
   LogsearchTaskModel,
@@ -76,7 +76,9 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
         return
       }
 
-      const res = await client.dashboard.logsTaskgroupsIdPreviewGet(taskGroupID)
+      const res = await client
+        .getInstance()
+        .logsTaskgroupsIdPreviewGet(taskGroupID + '')
       setData(
         res.data.map(
           (value, index): LogPreview => {

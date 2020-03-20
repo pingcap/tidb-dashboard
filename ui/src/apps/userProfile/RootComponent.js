@@ -1,7 +1,7 @@
 import React from 'react'
 import { Skeleton, Button, Icon } from 'antd'
 import { Head, Card } from '@pingcap-incubator/dashboard_components'
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 import { withTranslation } from 'react-i18next'
 import * as authUtil from '@/utils/auth'
 
@@ -12,7 +12,7 @@ class App extends React.PureComponent {
   }
 
   async componentDidMount() {
-    const resp = await client.dashboard.infoWhoamiGet()
+    const resp = await client.getInstance().infoWhoamiGet()
     if (resp.data) {
       this.setState({ login: resp.data })
     }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Row, Col, Card, Skeleton } from 'antd'
 import { HashRouter as Router } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 
 import { ComponentPanel, MonitorAlertBar } from './components'
 import styles from './RootComponent.module.less'
@@ -13,7 +13,7 @@ const App = () => {
 
   useEffect(() => {
     const fetchLoad = async () => {
-      let res = await client.dashboard.topologyAllGet()
+      let res = await client.getInstance().topologyAllGet()
       const cluster = res.data
       setCluster(cluster)
     }

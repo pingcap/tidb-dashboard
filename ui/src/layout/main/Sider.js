@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Flexbox from '@g07cha/flexbox-react'
 import { withTranslation } from 'react-i18next'
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 
 import { ReactComponent as Logo } from './logo-icon-light.svg'
 import styles from './Sider.module.less'
@@ -71,7 +71,7 @@ class Sider extends React.PureComponent {
   }
 
   updateCurrentLogin = async () => {
-    const resp = await client.dashboard.infoWhoamiGet()
+    const resp = await client.getInstance().infoWhoamiGet()
     if (resp.data) {
       this.setState({ currentLogin: resp.data })
     }

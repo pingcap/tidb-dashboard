@@ -1,4 +1,4 @@
-import client, { DASHBOARD_API_URL } from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 import { LogsearchTaskModel } from '@pingcap-incubator/dashboard_client'
 import { Button, Modal, Tree, Skeleton } from 'antd'
 import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree'
@@ -120,7 +120,7 @@ export default function SearchProgress({
     ) {
       return
     }
-    const res = await client.dashboard.logsTaskgroupsIdGet(taskGroupID)
+    const res = await client.getInstance().logsTaskgroupsIdGet(taskGroupID + '')
     setTasks(res.data.tasks ?? [])
   }
 
@@ -213,12 +213,12 @@ export default function SearchProgress({
       key => !Object.keys(namingMap).some(name => name === key)
     )
 
-    const res = await client.dashboard.logsDownloadAcquireTokenGet(keys)
+    const res = await client.getInstance().logsDownloadAcquireTokenGet(keys)
     const token = res.data
     if (!token) {
       return
     }
-    const url = `${DASHBOARD_API_URL}/logs/download?token=${token}`
+    const url = `${client.getBasePath()}/logs/download?token=${token}`
     window.open(url)
   }
 
@@ -229,7 +229,7 @@ export default function SearchProgress({
     confirm({
       title: t('search_logs.confirm.cancel_tasks'),
       onOk() {
-        client.dashboard.logsTaskgroupsIdCancelPost(taskGroupID)
+        client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + '')
         setTasks(
           tasks.map(task => {
             if (task.state === TaskState.Error) {
@@ -249,7 +249,7 @@ export default function SearchProgress({
     confirm({
       title: t('search_logs.confirm.retry_tasks'),
       onOk() {
-        client.dashboard.logsTaskgroupsIdRetryPost(taskGroupID)
+        client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + '')
         setTasks(
           tasks.map(task => {
             if (task.state === TaskState.Error) {

@@ -13,43 +13,47 @@ if (process.env.REACT_APP_DASHBOARD_API_URL !== undefined) {
   // Accept empty string as dashboard API URL as well.
   DASHBOARD_API_URL_PERFIX = process.env.REACT_APP_DASHBOARD_API_URL
 }
+const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}/dashboard/api`
 
-export const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}/dashboard/api`
+function initAxios() {
+  const instance = axios.create()
 
-console.log(`Dashboard API URL: ${DASHBOARD_API_URL}`)
-
-// TODO: use a individual axios instance instead of global
-axios.interceptors.response.use(undefined, function(err) {
-  const { response } = err
-  // Handle unauthorized error in a unified way
-  if (
-    response &&
-    response.data &&
-    response.data.code === 'error.api.unauthorized'
-  ) {
+  instance.interceptors.response.use(undefined, function(err) {
+    const { response } = err
+    // Handle unauthorized error in a unified way
     if (
-      !routingUtil.isLocationMatch('/') &&
-      !routingUtil.isLocationMatchPrefix(authUtil.signInRoute)
+      response &&
+      response.data &&
+      response.data.code === 'error.api.unauthorized'
     ) {
-      message.error(i18next.t('error.message.unauthorized'))
+      if (
+        !routingUtil.isLocationMatch('/') &&
+        !routingUtil.isLocationMatchPrefix(authUtil.signInRoute)
+      ) {
+        message.error(i18next.t('error.message.unauthorized'))
+      }
+      authUtil.clearAuthToken()
+      singleSpa.navigateToUrl('#' + authUtil.signInRoute)
+      err.handled = true
+    } else if (err.message === 'Network Error') {
+      message.error(i18next.t('error.message.network'))
+      err.handled = true
     }
-    authUtil.clearAuthToken()
-    singleSpa.navigateToUrl('#' + authUtil.signInRoute)
-    err.handled = true
-  } else if (err.message === 'Network Error') {
-    message.error(i18next.t('error.message.network'))
-    err.handled = true
-  }
-  return Promise.reject(err)
-})
+    return Promise.reject(err)
+  })
 
-const dashboardClient = new DefaultApi({
-  basePath: DASHBOARD_API_URL,
-  apiKey: () => authUtil.getAuthTokenAsBearer(),
-})
-// TODO: Polish, add init() function
-DashboardClient.setInstance(dashboardClient)
+  return instance
+}
 
-export default {
-  dashboard: dashboardClient,
+export function init() {
+  const dashboardClient = new DefaultApi(
+    {
+      basePath: DASHBOARD_API_URL,
+      apiKey: () => authUtil.getAuthTokenAsBearer(),
+    },
+    undefined,
+    initAxios()
+  )
+
+  DashboardClient.init(DASHBOARD_API_URL, dashboardClient)
 }

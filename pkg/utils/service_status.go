@@ -58,6 +58,7 @@ func (s *ServiceStatus) MWHandleStopped(stoppedHandler gin.HandlerFunc) gin.Hand
 	return func(c *gin.Context) {
 		if !s.IsRunning() {
 			stoppedHandler(c)
+			c.Abort()
 			return
 		}
 		c.Next()

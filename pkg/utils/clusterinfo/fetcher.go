@@ -198,7 +198,7 @@ func GetTiKVTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, erro
 		// In current TiKV, it's version may not start with 'v',
 		//  so we may need to add a prefix 'v' for it.
 		version := strings.Trim(v.Version, "\n ")
-		if strings.HasPrefix(version, "v") {
+		if !strings.HasPrefix(version, "v") {
 			version = "v" + version
 		}
 		node := TiKVInfo{

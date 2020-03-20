@@ -1,0 +1,37 @@
+instance_profiling:
+  nav_title: 实例性能分析
+  list:
+    control_form:
+      title: 开始性能分析
+      nodes:
+        label: 选择实例
+        placeholder: 请选择需要进行性能分析的目标实例
+      duration:
+        label: 分析时长
+      submit: 开始分析
+    table:
+      title: 性能分析历史
+      columns:
+        targets: 实例
+        start_at: 开始时间
+        duration: 时长 (秒)
+        status: 状态
+        action: 操作
+      status:
+        running: 分析中
+        finished: 完成
+        unknown: 未知
+      actions:
+        detail: 详情
+  detail:
+    head:
+      back: 历史记录
+      title: 性能分析详情
+    download: 下载性能分析结果
+    table:
+      columns:
+        instance: 实例
+        kind: 类型
+        status: 状态
+      status:
+        finished: 完成

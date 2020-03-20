@@ -26,7 +26,6 @@ type LabelKey struct {
 
 // LabelStrategy requires cross-border determination and key decoration scheme.
 type LabelStrategy interface {
-	Background()
 	CrossBorder(startKey, endKey string) bool
 	Label(key string) LabelKey
 	LabelGlobalStart() LabelKey
@@ -49,9 +48,6 @@ func (s NaiveLabelStrategy) Label(key string) LabelKey {
 		Labels: []string{str},
 	}
 }
-
-// Background do nothing.
-func (s NaiveLabelStrategy) Background() {}
 
 func (s NaiveLabelStrategy) LabelGlobalStart() LabelKey {
 	return s.Label("")

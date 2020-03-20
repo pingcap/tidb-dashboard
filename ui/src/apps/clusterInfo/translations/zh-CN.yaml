@@ -1,30 +1,20 @@
 cluster_info:
   nav_title: 集群信息
-  status:
-    up: 正常
-    abnormal: 异常
-    nodes: '{{nodeType}} 节点'
-  component_table:
-    ip: IP
-    port: 端口
-    status: 状态
-    deploy_path: 部署地址
-    status_port: 状态端口
-    version: 版本
-    address: 地址
-
-    node_list: 节点列表
-
-    up: 正常
-    down: 关闭
-    tombstone: 已下线
-    offline: 下线中
-  monitor_alert:
-    title: 监控和告警
-    view_monitor: 查看监控
-    view_monitor_warn: 监控不可用
-    view_alerts: '查看 {{alertCount}} 条告警'
-    view_zero_alerts: 查看告警
-    view_alerts_warn: 告警不可用
-    problems: 问题
-    run_diagnose: 运行诊断
+  list:
+    instance_table:
+      title: 实例
+      columns:
+        node: 节点
+        version: 版本
+        status: 状态
+        deploy_path: 部署路径
+      actions:
+        hide_db:
+          tooltip: 隐藏
+          confirm: 您确认要隐藏该 TiDB 节点吗?
+      status:
+        up: 在线
+        down: 离线
+        tombstone: 已缩容下线
+        offline: 下线中
+        unknown: 未知

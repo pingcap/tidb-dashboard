@@ -1,4 +1,4 @@
-.PHONY: swagger_spec yarn_dependencies swagger_client ui server run dev lint
+.PHONY: swagger_spec yarn_dependencies ui server run dev lint publish_ui_packages
 
 DASHBOARD_PKG := github.com/pingcap-incubator/tidb-dashboard
 
@@ -29,6 +29,7 @@ lint:
 
 dev: lint default
 
+# convert api in Golang code to swagger configuration file
 swagger_spec:
 	scripts/generate_swagger_spec.sh
 
@@ -36,14 +37,14 @@ yarn_dependencies:
 	cd ui &&\
 	yarn install --frozen-lockfile
 
-swagger_client: swagger_spec yarn_dependencies
+ui: swagger_spec yarn_dependencies
 	cd ui &&\
-	npm run build_api_client
+	REACT_APP_DASHBOARD_API_URL="" yarn build
 
-ui: swagger_client
+publish_ui_packages: swagger_spec yarn_dependencies
 	cd ui &&\
-	src/apps/keyvis/download_dummydata.sh &&\
-	REACT_APP_DASHBOARD_API_URL="" npm run build
+	yarn run build:packages &&\
+	yarn run publish:packages
 
 server:
 ifeq ($(SWAGGER),1)

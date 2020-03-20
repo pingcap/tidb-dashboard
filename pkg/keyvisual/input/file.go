@@ -14,6 +14,7 @@
 package input
 
 import (
+	"context"
 	"os"
 	"time"
 
@@ -42,7 +43,7 @@ func (input *fileInput) GetStartTime() time.Time {
 	return input.Now.Add(input.StartTime.Sub(input.EndTime))
 }
 
-func (input *fileInput) Background(stat *storage.Stat) {
+func (input *fileInput) Background(ctx context.Context, stat *storage.Stat) {
 	log.Info("keyvisual load files from", zap.Time("start-time", input.StartTime))
 	fileTime := input.StartTime
 	for !fileTime.After(input.EndTime) {

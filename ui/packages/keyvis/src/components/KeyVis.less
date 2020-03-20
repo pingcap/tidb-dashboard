@@ -1,0 +1,166 @@
+// @import '~antd/es/style/themes/default.less';
+@import '../../../../node_modules/antd/es/style/themes/default.less';
+
+.PD-KeyVis {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  .ui.dropdown .menu {
+    z-index: 9999;
+  }
+
+  .PD-KeyVis-Toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    .PD-Cluster-Legend {
+      width: 410px;
+      position: relative;
+      height: 30px;
+      margin-top: 16px;
+
+      p.unit {
+        // font-family: 'Poppins';
+        font-size: 12px;
+        color: #333;
+        margin-top: 5px;
+      }
+    }
+
+    .group-icons-btn {
+      border: 0;
+      margin-top: -7px;
+      .button {
+        border-left: 0 !important;
+      }
+
+      .icon {
+        color: #1b1c1d;
+      }
+    }
+
+    .space {
+      width: 12px;
+    }
+
+    .ant-select .anticon {
+      margin-right: 5px;
+    }
+  }
+
+  svg,
+  button {
+    user-select: none;
+  }
+
+  g.tick text {
+    font-family: 'Poppins';
+    font-size: 12px;
+    text-anchor: start;
+  }
+
+  .tooltip {
+    padding: 10px;
+    color: #eee;
+    background-color: #333;
+    box-shadow: 5px 5px 10px rgba(black, 0.5);
+    border-radius: 3px;
+    min-width: 200px;
+
+    div.value {
+      display: flex;
+      align-items: center;
+
+      div.value {
+        margin: 0px;
+        padding: 7px;
+        font-weight: bold;
+        border-radius: 3px;
+      }
+
+      div.unit {
+        color: #999;
+        font-size: 0.8rem;
+        margin-left: 10px;
+      }
+    }
+
+    button {
+      line-height: 1;
+      background-color: transparent;
+      border: transparent solid 1px;
+      border-radius: 3px;
+      outline: none;
+      padding: 3px;
+      text-align: left;
+      color: #fff;
+      transition: background-color ease-in 100ms;
+
+      &:hover {
+        border: #888 solid 1px;
+        cursor: pointer;
+      }
+
+      &:active {
+        background-color: #888;
+        transition: none;
+      }
+    }
+
+    .time {
+      color: #aaa;
+      line-height: 1.2;
+      margin-top: 10px;
+      font-size: 0.8rem;
+    }
+
+    .overviewLabel {
+      margin: 20px 0;
+      .subLabel {
+        display: block;
+        padding: 1 3px;
+      }
+    }
+
+    .keyContainer {
+      margin-top: 10px;
+      padding: 0 3px;
+      .desc {
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 0.8rem;
+        color: #ccc;
+      }
+      .label,
+      .key {
+        display: block;
+        color: #888;
+        font-size: 0.7rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 250px;
+      }
+    }
+  }
+
+  .heatmap {
+    flex-grow: 1;
+    margin: @padding-page;
+    margin-top: -32px;
+  }
+}
+
+#PD-KeyVis-Brightness-Overlay {
+  background-color: white;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: @box-shadow-base;
+}
+
+.PD-KeyVis-Select-Option .anticon {
+  display: none;
+}

@@ -24,37 +24,39 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.etcd.io/etcd/clientv3"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
 
 type Service struct {
-	config       *config.Config
-	etcdProvider pd.EtcdProvider
-	httpClient   *http.Client
+	config     *config.Config
+	etcdClient *clientv3.Client
+	httpClient *http.Client
 }
 
-func NewService(config *config.Config, etcdProvider pd.EtcdProvider, httpClient *http.Client) *Service {
-	return &Service{config: config, etcdProvider: etcdProvider, httpClient: httpClient}
+func NewService(config *config.Config, etcdClient *clientv3.Client, httpClient *http.Client) *Service {
+	return &Service{config: config, etcdClient: etcdClient, httpClient: httpClient}
 }
 
-func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
+func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/topology")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/all", s.topologyHandler)
-	endpoint.DELETE("/tidb/:address/", s.deleteTiDBTopologyHandler)
+	endpoint.DELETE("/tidb/:address", s.deleteTiDBTopologyHandler)
 	endpoint.GET("/alertmanager/:address/count", s.topologyGetAlertCount)
 }
 
 // @Summary Delete etcd's tidb key.
 // @Description Delete etcd's TiDB key with ip:port.
 // @Produce json
-// @Success 204 "delete ok"
+// @Param address path string true "ip:port"
+// @Success 200 "delete ok"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /topology/address [delete]
+// @Security JwtAuth
+// @Router /topology/tidb/{address} [delete]
 func (s *Service) deleteTiDBTopologyHandler(c *gin.Context) {
 	address := c.Param("address")
 	errorChannel := make(chan error, 2)
@@ -68,7 +70,7 @@ func (s *Service) deleteTiDBTopologyHandler(c *gin.Context) {
 		wg.Add(1)
 		go func(toDel string) {
 			defer wg.Done()
-			if _, err := s.etcdProvider.GetEtcdClient().Delete(ctx, toDel); err != nil {
+			if _, err := s.etcdClient.Delete(ctx, toDel); err != nil {
 				errorChannel <- err
 			}
 		}(key)

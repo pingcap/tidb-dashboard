@@ -6,21 +6,24 @@ import { addTranslationResource } from '@/utils/i18n'
 import i18next from 'i18next'
 import { format as longFormat } from './Long'
 
+dayjs.extend(require('dayjs/plugin/calendar'))
+dayjs.extend(require('dayjs/plugin/localizedFormat'))
+
 const translations = {
   en: {
     sameDay: '[Today at] h:mm A',
-    nextDay: '[Tomorrow]',
-    nextWeek: 'dddd',
-    lastDay: '[Yesterday]',
-    lastWeek: '[Last] dddd',
+    nextDay: '[Tomorrow] h:mm A',
+    nextWeek: 'dddd h:mm A',
+    lastDay: '[Yesterday] h:mm A',
+    lastWeek: '[Last] dddd h:mm A',
     sameElse: 'lll',
   },
   'zh-CN': {
     sameDay: '[今天] HH:mm',
-    nextDay: '[明天]',
-    nextWeek: '[下]dddd',
-    lastDay: '[昨天]',
-    lastWeek: '[上]dddd',
+    nextDay: '[明天] HH:mm',
+    nextWeek: '[下]dddd HH:mm',
+    lastDay: '[昨天] HH:mm',
+    lastWeek: '[上]dddd HH:mm',
     sameElse: 'lll',
   },
 }
@@ -34,9 +37,6 @@ for (const key in translations) {
     },
   })
 }
-
-const calendar = require('dayjs/plugin/calendar')
-dayjs.extend(calendar)
 
 @withTranslation() // Re-render when language changes
 class Calendar extends React.PureComponent {

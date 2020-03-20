@@ -20,6 +20,8 @@ import (
 	"sort"
 	"sync"
 
+	"go.uber.org/fx"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
 )
 
@@ -45,7 +47,7 @@ type distanceStrategy struct {
 
 // DistanceStrategy adopts the strategy that the closer the split time is to the current time, the more traffic is
 // allocated, when buckets are split.
-func DistanceStrategy(ctx context.Context, wg *sync.WaitGroup, label decorator.LabelStrategy, ratio float64, level int, count int) Strategy {
+func DistanceStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, label decorator.LabelStrategy, ratio float64, level int, count int) Strategy {
 	pow := make([]float64, level)
 	for i := range pow {
 		pow[i] = math.Pow(ratio, float64(i))
@@ -58,11 +60,18 @@ func DistanceStrategy(ctx context.Context, wg *sync.WaitGroup, label decorator.L
 		SplitRatioPow: pow,
 		ScaleWorkers:  make([]chan *scaleTask, workerCount),
 	}
-	s.StartWorkers(wg)
-	go func() {
-		<-ctx.Done()
-		s.StopWorkers()
-	}()
+
+	lc.Append(fx.Hook{
+		OnStart: func(context.Context) error {
+			s.StartWorkers(wg)
+			return nil
+		},
+		OnStop: func(context.Context) error {
+			s.StopWorkers()
+			return nil
+		},
+	})
+
 	return s
 }
 

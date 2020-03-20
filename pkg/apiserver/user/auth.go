@@ -203,7 +203,7 @@ func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
 	return &AuthService{middleware: middleware}
 }
 
-func (s *AuthService) Register(r *gin.RouterGroup) {
+func Register(r *gin.RouterGroup, s *AuthService) {
 	endpoint := r.Group("/user")
 	endpoint.POST("/login", s.loginHandler)
 }

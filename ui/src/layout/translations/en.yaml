@@ -18,8 +18,7 @@ signin:
     password: Password
     button: Sign In
     tidb_auth:
-      message: You can sign in using TiDB SQL user if TiDB instance is started in the cluster.
-      title: TiDB User
+      title: SQL User Sign In
       check:
         message: Username is required
 nav:

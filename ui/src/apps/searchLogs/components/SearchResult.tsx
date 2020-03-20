@@ -1,6 +1,6 @@
 import client from '@/utils/client';
 import { LogsearchSearchTarget, LogsearchTaskModel } from '@pingcap-incubator/dashboard_client';
-import { CardTable } from '@pingcap-incubator/dashboard_components';
+import { Card } from '@pingcap-incubator/dashboard_components';
 import { Alert, Spin, Table, Tooltip } from 'antd';
 import moment from 'moment';
 import React, { useEffect, useState } from "react";
@@ -106,18 +106,20 @@ export default function SearchResult({
       }} />}
       {!loading && (
         <>
-          <Alert
-            message={t('search_logs.page.tip')}
-            type="info"
-            showIcon
-            style={{ marginTop: 48, paddingLeft: 48 }}
-          />
-          <CardTable dataSource={logPreviews} size="middle" pagination={{ pageSize: 100 }} style={{ marginTop: 0 }}>
-            <Column width={150} title={t('search_logs.preview.time')} dataIndex="time" key="time" />
-            <Column width={80} title={t('search_logs.preview.level')} dataIndex="level" key="level" />
-            <Column width={100} title={t('search_logs.preview.component')} dataIndex="component" key="component" render={componentRender} />
-            <Column ellipsis title={t('search_logs.preview.log')} dataIndex="log" key="log" render={logRender} />
-          </CardTable>
+          <Card style={{ marginTop: 0 }}>
+            <Alert
+              message={t('search_logs.page.tip')}
+              type="info"
+              showIcon
+              style={{ marginTop: 24, marginBottom:24 }}
+            />
+            <Table dataSource={logPreviews} size="middle" pagination={{ pageSize: 100 }}>
+              <Column width={150} title={t('search_logs.preview.time')} dataIndex="time" key="time" />
+              <Column width={80} title={t('search_logs.preview.level')} dataIndex="level" key="level" />
+              <Column width={100} title={t('search_logs.preview.component')} dataIndex="component" key="component" render={componentRender} />
+              <Column ellipsis title={t('search_logs.preview.log')} dataIndex="log" key="log" render={logRender} />
+            </Table>
+          </Card>
         </>
       )}
     </div>

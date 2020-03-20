@@ -105,7 +105,7 @@ export default function Page() {
       try {
         const res = await client.dashboard.getProfilingGroups()
         setHistoryTable(res.data)
-      } catch (e) {}
+      } catch (e) { }
       setListLoading(false)
     }
     fetchTargetsMap()

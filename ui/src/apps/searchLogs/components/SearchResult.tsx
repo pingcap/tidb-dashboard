@@ -1,6 +1,7 @@
 import client from '@/utils/client';
 import { LogsearchSearchTarget, LogsearchTaskModel } from '@pingcap-incubator/dashboard_client';
-import { Spin, Table, Tooltip } from 'antd';
+import { CardTable } from '@pingcap-incubator/dashboard_components';
+import { Alert, Spin, Table, Tooltip } from 'antd';
 import moment from 'moment';
 import React, { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
@@ -95,17 +96,29 @@ export default function SearchResult({
   return (
     <div style={{
       backgroundColor: "#FFFFFF",
-      textAlign: "center",
       minHeight: 400,
     }}>
-      {loading && <Spin size="large" style={{ marginTop: 200 }} />}
+      {loading && <Spin size="large" style={{
+        position: "absolute",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)"
+      }} />}
       {!loading && (
-        <Table dataSource={logPreviews} size="middle" pagination={{ pageSize: 100 }}>
-          <Column width={150} title={t('log_searching.preview.time')} dataIndex="time" key="time" />
-          <Column width={80} title={t('log_searching.preview.level')} dataIndex="level" key="level" />
-          <Column width={100} title={t('log_searching.preview.component')} dataIndex="component" key="component" render={componentRender} />
-          <Column ellipsis title={t('log_searching.preview.log')} dataIndex="log" key="log" render={logRender} />
-        </Table>
+        <>
+          <Alert
+            message={t('search_logs.page.tip')}
+            type="info"
+            showIcon
+            style={{ marginTop: 48, paddingLeft: 48 }}
+          />
+          <CardTable dataSource={logPreviews} size="middle" pagination={{ pageSize: 100 }} style={{ marginTop: 0 }}>
+            <Column width={150} title={t('search_logs.preview.time')} dataIndex="time" key="time" />
+            <Column width={80} title={t('search_logs.preview.level')} dataIndex="level" key="level" />
+            <Column width={100} title={t('search_logs.preview.component')} dataIndex="component" key="component" render={componentRender} />
+            <Column ellipsis title={t('search_logs.preview.log')} dataIndex="log" key="log" render={logRender} />
+          </CardTable>
+        </>
       )}
     </div>
   )

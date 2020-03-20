@@ -1,6 +1,6 @@
 import client, { DASHBOARD_API_URL } from '@/utils/client';
 import { LogsearchTaskModel } from '@pingcap-incubator/dashboard_client';
-import { Button, Card, Modal, Spin, Tree, Typography } from 'antd';
+import { Button, Modal, Spin, Tree, Typography } from 'antd';
 import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree';
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { useTranslation } from 'react-i18next';
@@ -125,9 +125,9 @@ export default function SearchProgress({
   }, [taskGroupID])
 
   const descriptionArray = [
-    t('log_searching.progress.running'),
-    t('log_searching.progress.success'),
-    t('log_searching.progress.failed')
+    t('search_logs.progress.running'),
+    t('search_logs.progress.success'),
+    t('search_logs.progress.failed')
   ]
 
   function progressDescription(tasks: LogsearchTaskModel[]) {
@@ -215,7 +215,7 @@ export default function SearchProgress({
       return
     }
     confirm({
-      title: t('log_searching.confirm.cancel_tasks'),
+      title: t('search_logs.confirm.cancel_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdCancelPost(taskGroupID)
         setTasks(tasks.map(task => {
@@ -233,7 +233,7 @@ export default function SearchProgress({
       return
     }
     confirm({
-      title: t('log_searching.confirm.retry_tasks'),
+      title: t('search_logs.confirm.retry_tasks'),
       onOk() {
         client.dashboard.logsTaskgroupsIdRetryPost(taskGroupID)
         setTasks(tasks.map(task => {
@@ -252,21 +252,23 @@ export default function SearchProgress({
 
   return (
     <div>
-      <Card>
+      <div style={{ marginTop: 48, minHeight: 400 }}>
         {loading && <div style={{ textAlign: "center" }}>
           <Spin size="large" style={{
-            marginTop: 100,
-            marginBottom: 100,
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            transform: "translate(-50%, -50%)"
           }} />
         </div>}
         {!loading && (
           <>
-            <Title level={3}>{t('log_searching.common.progress')}</Title>
+            <Title level={4}>{t('search_logs.common.progress')}</Title>
             <div>{progressDescription(tasks)}</div>
             <div className={styles.buttons}>
-              <Button type="primary" onClick={handleDownload} disabled={checkedKeys.length < 1}>{t('log_searching.common.download_selected')}</Button>
-              <Button type="danger" onClick={handleCancel} disabled={!tasks.some(task => task.state === TaskState.Running)}>{t('log_searching.common.cancel')}</Button>
-              <Button onClick={handleRetry} disabled={tasks.some(task => task.state === TaskState.Running) || !tasks.some(task => task.state === TaskState.Error)}>{t('log_searching.common.retry')}</Button>
+              <Button type="primary" onClick={handleDownload} disabled={checkedKeys.length < 1}>{t('search_logs.common.download_selected')}</Button>
+              <Button type="danger" onClick={handleCancel} disabled={!tasks.some(task => task.state === TaskState.Running)}>{t('search_logs.common.cancel')}</Button>
+              <Button onClick={handleRetry} disabled={tasks.some(task => task.state === TaskState.Running) || !tasks.some(task => task.state === TaskState.Error)}>{t('search_logs.common.retry')}</Button>
             </div>
             <Tree
               checkable
@@ -279,7 +281,7 @@ export default function SearchProgress({
             </Tree>
           </>
         )}
-      </Card>
+      </div>
     </div>
   )
 }

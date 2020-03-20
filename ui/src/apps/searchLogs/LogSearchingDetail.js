@@ -27,7 +27,6 @@ export default function LogSearchingDetail() {
           <div style={{ marginLeft: 48, marginRight: 48 }}>
             <SearchHeader taskGroupID={taskGroupID} />
           </div>
-
           <SearchResult taskGroupID={taskGroupID} tasks={tasks} />
         </Col>
         <Col span={6}>

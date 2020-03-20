@@ -2,6 +2,8 @@ name: Publish UI Packages
 
 on:
   push:
+    branches:
+      - master
     paths:
       - 'ui/packages/.packages_release_version'
 

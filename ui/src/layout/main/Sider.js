@@ -144,7 +144,7 @@ class Sider extends React.PureComponent {
               </span>
             }
           >
-            {this.renderAppMenuItem('log_searching')}
+            {this.renderAppMenuItem('search_logs')}
             {this.renderAppMenuItem('instance_profiling')}
           </Menu.SubMenu>
         </Menu>

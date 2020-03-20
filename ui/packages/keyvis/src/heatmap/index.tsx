@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react'
 import * as d3 from 'd3'
-import { useEventListener } from '@umijs/hooks'
+import useEventListener from '@use-it/event-listener'
 import { heatmapChart } from './chart'
 import { HeatmapData, DataTag, HeatmapRange } from './types'
 

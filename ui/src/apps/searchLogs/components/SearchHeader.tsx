@@ -132,6 +132,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
   }
 
   function handleSearch(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     createTaskGroup()
   }
 

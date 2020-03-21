@@ -19,4 +19,4 @@ cluster_info:
         offline: Offline
         unknown: Unknown
   error:
-    load: 'Load {{comp}} error'
+    load: 'Load component {{comp}} error: {{cause}}'

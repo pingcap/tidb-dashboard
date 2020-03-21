@@ -108,7 +108,7 @@ function useClusterNodeDataSource() {
         const nodes = res.data[nodeKind]
         console.log(nodes);
         if (nodes.err) {
-          message.warn(t('cluster_info.error.load', {comp: nodeKind}));
+          message.warn(t('cluster_info.error.load', {comp: nodeKind, cause: nodes.err}));
           return {
             key: nodeKind,
             nodeKind,

@@ -19,4 +19,4 @@ cluster_info:
         offline: 下线中
         unknown: 未知
   error:
-    load: '加载 {{comp}} 失败'
+    load: '加载组件 {{comp}} 失败: {{cause}}'

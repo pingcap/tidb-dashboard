@@ -15,6 +15,7 @@ package clusterinfo
 
 import (
 	"context"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
 

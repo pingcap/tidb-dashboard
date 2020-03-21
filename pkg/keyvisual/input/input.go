@@ -25,12 +25,12 @@ import (
 // StatInput is the interface that different data inputs need to implement.
 type StatInput interface {
 	GetStartTime() time.Time
-	Background(stat *storage.Stat)
+	Background(ctx context.Context, stat *storage.Stat)
 }
 
-func NewStatInput(ctx context.Context, provider *region.PDDataProvider) StatInput {
+func NewStatInput(provider *region.PDDataProvider) StatInput {
 	if provider.FileStartTime == 0 && provider.FileEndTime == 0 {
-		return PeriodicInput(ctx, provider.PeriodicGetter)
+		return PeriodicInput(provider.PeriodicGetter)
 	}
 	startTime := time.Unix(provider.FileStartTime, 0)
 	endTime := time.Unix(provider.FileEndTime, 0)

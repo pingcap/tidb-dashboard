@@ -1,0 +1,17 @@
+overview:
+  nav_title: 概况
+  top_statements:
+    title: Top SQL 语句
+  status:
+    up: 正常
+    abnormal: 异常
+    nodes: '{{nodeType}} 节点'
+  monitor_alert:
+    title: 监控和告警
+    view_monitor: 查看监控
+    view_monitor_warn: 监控不可用
+    view_alerts: '查看 {{alertCount}} 条告警'
+    view_zero_alerts: 查看告警
+    view_alerts_warn: 告警不可用
+    problems: 问题
+    run_diagnose: 运行诊断

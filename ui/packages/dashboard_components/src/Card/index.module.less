@@ -1,0 +1,34 @@
+// @import '~antd/es/style/themes/default.less';
+@import '../../../../node_modules/antd/es/style/themes/default.less';
+
+.cardContainer {
+  // &:before,
+  // &:after {
+  //   // Handle margin collapse
+  //   content: ' ';
+  //   display: table;
+  // }
+}
+
+.cardInner {
+  margin: @padding-page;
+}
+
+.cardTitleSection {
+  margin: @padding-lg 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.cardTitle {
+  color: @heading-color;
+  font-size: @heading-4-size;
+  line-height: 32px;
+  flex-grow: 1;
+  margin-right: @padding-lg;
+}
+
+.cardContent {
+  margin: @padding-lg 0;
+}

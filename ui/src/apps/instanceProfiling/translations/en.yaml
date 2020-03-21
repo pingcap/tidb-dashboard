@@ -1,0 +1,37 @@
+instance_profiling:
+  nav_title: Profile Instances
+  list:
+    control_form:
+      title: Start Profiling Instances
+      nodes:
+        label: Select instances
+        placeholder: Please select the instance to profile
+      duration:
+        label: Duration
+      submit: Start Profiling
+    table:
+      title: Profiling History
+      columns:
+        targets: Instances
+        start_at: Start At
+        duration: Duration (sec)
+        status: Status
+        action: Action
+      status:
+        running: Running
+        finished: Finished
+        unknown: Unknown
+      actions:
+        detail: Detail
+  detail:
+    head:
+      back: History
+      title: Profiling Detail
+    download: Download Profiling Result
+    table:
+      columns:
+        instance: Instance
+        kind: Kind
+        status: Status
+      status:
+        finished: Finished

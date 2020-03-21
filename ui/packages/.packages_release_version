@@ -1,0 +1,4 @@
+# This file contains a version number which will be used to publish ui packages.
+# To trigger a new publish, increase this version number,
+# as well as bump all package versions by running `yarn run bump:packages`.
+20200319_1

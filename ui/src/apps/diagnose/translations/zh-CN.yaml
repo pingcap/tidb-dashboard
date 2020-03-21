@@ -1,17 +1,18 @@
 diagnose:
   nav_title: 集群诊断
-  time_selector:
-    start_time: 起始时间
-    end_time: 结束时间
-  gen_report: 生成诊断报告
-  gen_compared_report: 生成对比诊断报告
-  add_compare: 添加对比
-  cancel_compare: 取消对比
-  compare: 对比
-  report_status: 报告状态
-  compare_report_status: 对比报告状态
-  time_range: 时间段
-  compare_time_range: 对比时间段
-  progress: 进度
-  full_report: 完整报告
-  back_to_gen_report: 返回
+  generate:
+    title: 生成诊断报告
+    range_begin: 诊断区间起始时间
+    range_duration: 区间大小
+    is_compare: 与其他区间对比
+    compare_range_begin: 基线区间起始时间
+    submit: 生成报告
+  status:
+    head:
+      title: 诊断状态
+      back: 生成诊断报告
+      view: 查看完整诊断报告
+    range_begin: 区间起始时间
+    range_end: 区间结束时间
+    baseline_begin: 基线区间起始时间
+    progress: 生成进度

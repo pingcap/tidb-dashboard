@@ -1,8 +1,0 @@
-.buttons {
-  margin-top: 12px;
-}
-
-.buttons>:global(button) {
-  margin-right: 12px;
-  margin-bottom: 12px;
-}

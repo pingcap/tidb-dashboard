@@ -14,10 +14,13 @@
 package http
 
 import (
+	"context"
 	"crypto/tls"
 	"net"
 	"net/http"
 	"time"
+
+	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
@@ -26,14 +29,23 @@ const (
 	HTTPTimeout = time.Second * 3
 )
 
-func NewHTTPClientWithConf(config *config.Config) *http.Client {
-	return &http.Client{
+func NewHTTPClientWithConf(lc fx.Lifecycle, config *config.Config) *http.Client {
+	cli := &http.Client{
 		Transport: &http.Transport{
 			DialTLS: func(network, addr string) (net.Conn, error) {
-				conn, err := tls.Dial(network, addr, config.TLSConfig)
+				conn, err := tls.Dial(network, addr, config.ClusterTLSConfig)
 				return conn, err
 			},
 		},
 		Timeout: HTTPTimeout,
 	}
+
+	lc.Append(fx.Hook{
+		OnStop: func(context.Context) error {
+			cli.CloseIdleConnections()
+			return nil
+		},
+	})
+
+	return cli
 }

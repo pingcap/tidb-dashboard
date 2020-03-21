@@ -20,5 +20,10 @@ import (
 type Config struct {
 	DataDir    string
 	PDEndPoint string
-	TLSConfig  *tls.Config
+
+	// TLS config for mTLS authentication between TiDB components.
+	ClusterTLSConfig *tls.Config
+
+	// TLS config for mTLS authentication between TiDB and MySQL client.
+	TiDBTLSConfig *tls.Config
 }

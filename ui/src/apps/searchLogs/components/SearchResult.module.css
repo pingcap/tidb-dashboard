@@ -1,0 +1,3 @@
+.resultTable :global(.ant-table-row) {
+  font-size: 0.8rem;
+}

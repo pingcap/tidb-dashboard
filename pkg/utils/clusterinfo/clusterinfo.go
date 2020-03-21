@@ -19,6 +19,7 @@ const (
 	ComponentStatusUnreachable ComponentStatus = 0
 	ComponentStatusUp          ComponentStatus = 1
 	ComponentStatusTombstone   ComponentStatus = 2
+	ComponentStatusOffline     ComponentStatus = 3
 )
 
 type PDInfo struct {

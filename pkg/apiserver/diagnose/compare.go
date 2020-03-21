@@ -17,13 +17,17 @@ import (
 )
 
 func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint) []*TableDef {
-	var errRows []TableRowDef
+	errRows := checkBeforeReport(db)
+	if len(errRows) > 0 {
+		return []*TableDef{GenerateReportError(errRows)}
+	}
 	var resultTables []*TableDef
 	resultTables = append(resultTables, GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2))
 	var tables0, tables1, tables2, tables3, tables4 []*TableDef
 	var errRows0, errRows1, errRows2, errRows3, errRows4 []TableRowDef
+	var compareDiagnoseTable *TableDef
 	var wg sync.WaitGroup
-	wg.Add(5)
+	wg.Add(6)
 	var progress, totalTableCount int32
 	go func() {
 		// Get Header tables.
@@ -50,6 +54,15 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 		errRows = append(errRows, errRows3...)
 		wg.Done()
 	}()
+	go func() {
+		tbl, errRow := CompareDiagnose(startTime1, endTime1, startTime2, endTime2, db)
+		if errRow != nil {
+			errRows = append(errRows, *errRow)
+		} else {
+			compareDiagnoseTable = &tbl
+		}
+		wg.Done()
+	}()
 
 	go func() {
 		// Get end tables
@@ -63,6 +76,9 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 	errRows = append(errRows, errs...)
 	resultTables = append(resultTables, tables0...)
 	resultTables = append(resultTables, tables1...)
+	if compareDiagnoseTable != nil {
+		resultTables = append(resultTables, compareDiagnoseTable)
+	}
 	resultTables = append(resultTables, tables...)
 	resultTables = append(resultTables, tables4...)
 
@@ -111,8 +127,13 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 		}
 		return math.Abs(vi2-vi1) > math.Abs(vj1-vj2)
 	})
+
+	type groupValue struct {
+		name     string
+		ratioIdx int
+	}
 	rows := make([]TableRowDef, 0, l)
-	rowMap := make(map[string]int, l)
+	rowMap := make(map[groupValue]int, l)
 	for i := range dr {
 		row := dr[i]
 		name := ""
@@ -134,11 +155,11 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 			row.v1,
 			row.v2,
 		}
-		if idx, ok := rowMap[name]; ok {
+		if idx, ok := rowMap[groupValue{name: name, ratioIdx: row.ratioIdx}]; ok {
 			rows[idx].SubValues = append(rows[idx].SubValues, vs)
 			continue
 		}
-		rowMap[name] = len(rows)
+		rowMap[groupValue{name: name, ratioIdx: row.ratioIdx}] = len(rows)
 		rows = append(rows, TableRowDef{
 			Values:  vs,
 			Comment: row.comment,
@@ -154,7 +175,16 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 	}
 }
 
-func compareTable(table1, table2 *TableDef, dr *diffRows) (*TableDef, error) {
+func compareTable(table1, table2 *TableDef, dr *diffRows) (_ *TableDef, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.Errorf("compare table %s ,%s panic", table1.Category, table1.Title)
+		}
+	}()
+	switch table1.Title {
+	case "Scheduler Config", "TiDB GC Config":
+		return compareTableWithNonUniqueKey(table1, table2, &diffRows{})
+	}
 	labelsMap1, err := getTableLablesMap(table1)
 	if err != nil {
 		return nil, err
@@ -207,30 +237,169 @@ func compareTable(table1, table2 *TableDef, dr *diffRows) (*TableDef, error) {
 			columns = append(columns, "t1."+table1.Column[i])
 		}
 	}
-	columns = append(columns, "DIFF_RATIO")
 	for i := range table2.Column {
 		if !checkIn(i, table2.joinColumns) {
 			columns = append(columns, "t2."+table2.Column[i])
 		}
 	}
+	for _, idx := range table1.compareColumns {
+		columns = append(columns, table1.Column[idx]+"_DIFF_RATIO")
+	}
 	sort.Slice(resultRows, func(i, j int) bool {
-		return resultRows[i].ratio > resultRows[j].ratio
+		return math.Abs(resultRows[i].ratio) > math.Abs(resultRows[j].ratio)
 	})
 	if len(table1.compareColumns) > 0 {
-		comment := "\nDIFF_RATIO = max( "
-		for i, idx := range table1.compareColumns {
-			if i > 0 {
-				comment += " , "
+		for _, idx := range table1.compareColumns {
+			comment := table1.Column[idx] + "_DIFF_RATIO=" + fmt.Sprintf("(t2.%[1]s-t1.%[1]s)/max(t2.%[1]s, t1.%[1]s)", table1.Column[idx])
+			if len(resultTable.CommentEN) > 0 {
+				resultTable.CommentEN += ", \n"
 			}
-			comment = comment + fmt.Sprintf("(t2.%[1]s-t1.%[1]s)/max(t2.%[1]s, t1.%[1]s)", table1.Column[idx])
+			resultTable.CommentEN += comment
 		}
-		comment += " )"
+	}
+
+	resultTable.Column = columns
+	resultTable.Rows = resultRows
+	return resultTable, nil
+}
+
+func compareTableWithNonUniqueKey(table1, table2 *TableDef, dr *diffRows) (_ *TableDef, err error) {
+	defer func() {
+		defer func() {
+			if v := recover(); v != nil {
+				err = errors.Errorf("join table error %v,%v", table1.Category, table1.Title)
+			}
+		}()
+	}()
+	labelsMap1, err := getTableLablesMapWithNonUniqueJoinKey(table1)
+	if err != nil {
+		return nil, err
+	}
+	labelsMap2, err := getTableLablesMapWithNonUniqueJoinKey(table2)
+	if err != nil {
+		return nil, err
+	}
+
+	resultRows := make([]TableRowDef, 0, len(table1.Rows))
+	for i := range table1.Rows {
+		label1 := genRowLabel(table1.Rows[i].Values, table1.joinColumns)
+		var row2 *TableRowDef
+		if row2s, ok := labelsMap2[label1]; ok && len(row2s) > 0 {
+			row2 = row2s[0]
+			if len(row2s) == 1 {
+				delete(labelsMap2, label1)
+			} else {
+				labelsMap2[label1] = row2s[1:]
+			}
+		} else {
+			delete(labelsMap2, label1)
+			row2 = &TableRowDef{}
+		}
+		if row1s, ok := labelsMap1[label1]; ok {
+			if len(row1s) <= 1 {
+				delete(labelsMap1, label1)
+			} else {
+				labelsMap1[label1] = row1s[1:]
+			}
+		}
+		newRow, err := joinRow(&table1.Rows[i], row2, table1, dr)
+		if err != nil {
+			return nil, err
+		}
+		resultRows = append(resultRows, *newRow)
+	}
+	for len(labelsMap2) > 0 {
+		for label, row2s := range labelsMap2 {
+			if len(row2s) == 0 {
+				delete(labelsMap2, label)
+				continue
+			}
+			row2 := row2s[0]
+			if len(row2s) == 1 {
+				delete(labelsMap2, label)
+			} else {
+				labelsMap2[label] = row2s[1:]
+			}
+			var row1 *TableRowDef
+			if row1s, ok := labelsMap1[label]; ok && len(row1s) > 0 {
+				row1 = row1s[0]
+				if len(row1s) == 0 {
+					delete(labelsMap1, label)
+				} else {
+					labelsMap1[label] = row1s[1:]
+				}
+			} else {
+				delete(labelsMap1, label)
+				row1 = &TableRowDef{}
+			}
+			newRow, err := joinRow(row1, row2, table1, dr)
+			if err != nil {
+				return nil, err
+			}
+			resultRows = append(resultRows, *newRow)
+		}
+	}
+
+	resultTable := &TableDef{
+		Category:       table1.Category,
+		Title:          table1.Title,
+		CommentEN:      table1.CommentEN,
+		CommentCN:      table1.CommentCN,
+		joinColumns:    nil,
+		compareColumns: nil,
+	}
+	columns := make([]string, 0, len(table1.Column)*2-len(table1.joinColumns))
+	for i := range table1.Column {
+		if checkIn(i, table1.joinColumns) {
+			columns = append(columns, table1.Column[i])
+		} else {
+			columns = append(columns, "t1."+table1.Column[i])
+		}
+	}
+	for i := range table2.Column {
+		if !checkIn(i, table2.joinColumns) {
+			columns = append(columns, "t2."+table2.Column[i])
+		}
+	}
+	for _, idx := range table1.compareColumns {
+		columns = append(columns, table1.Column[idx]+"_DIFF_RATIO")
+	}
+	sort.Slice(resultRows, func(i, j int) bool {
+		if len(table1.joinColumns) > 0 {
+			idx := table1.joinColumns[0]
+			if len(resultRows[i].Values) > (idx+1) &&
+				len(resultRows[j].Values) > (idx+1) {
+				if resultRows[i].Values[idx] != resultRows[j].Values[idx] {
+					return resultRows[i].Values[idx] < resultRows[j].Values[idx]
+				}
+				return resultRows[i].Values[0] < resultRows[j].Values[0]
+			}
+		}
+		return false
+	})
+	for _, idx := range table1.compareColumns {
+		comment := table1.Column[idx] + "_DIFF_RATIO=" + fmt.Sprintf("(t2.%[1]s-t1.%[1]s)/max(t2.%[1]s, t1.%[1]s)", table1.Column[idx])
+		if len(resultTable.CommentEN) > 0 {
+			resultTable.CommentEN += ", \n"
+		}
 		resultTable.CommentEN += comment
 	}
 
 	resultTable.Column = columns
 	resultTable.Rows = resultRows
 	return resultTable, nil
+}
+
+func getTableLablesMapWithNonUniqueJoinKey(table *TableDef) (map[string][]*TableRowDef, error) {
+	if len(table.joinColumns) == 0 {
+		return nil, errors.Errorf("category %v,table %v doesn't have join columns", strings.Join(table.Category, ","), table.Title)
+	}
+	labelsMap := make(map[string][]*TableRowDef, len(table.Rows))
+	for i := range table.Rows {
+		label := genRowLabel(table.Rows[i].Values, table.joinColumns)
+		labelsMap[label] = append(labelsMap[label], &table.Rows[i])
+	}
+	return labelsMap, nil
 }
 
 func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowDef, error) {
@@ -247,16 +416,17 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 	for _, subRow1 := range row1.SubValues {
 		label := genRowLabel(subRow1, table.joinColumns)
 		subRow2 := rowsMap2[label]
-		ratio, idx, err := calculateDiffRatio(subRow1, subRow2, table)
+		ratio, ratios, idx, err := calculateDiffRatio(subRow1, subRow2, table)
 		if err != nil {
 			return nil, errors.Errorf("category %v,table %v, calculate diff ratio error: %v,  %v,%v", strings.Join(table.Category, ","), table.Title, err.Error(), subRow1, subRow2)
 		}
 		subJoinRows = append(subJoinRows, &newJoinRow{
-			row1:  subRow1,
-			row2:  subRow2,
-			ratio: ratio,
+			row1:   subRow1,
+			row2:   subRow2,
+			ratio:  ratio,
+			ratios: ratios,
 		})
-		dr.addRow(table.Title, label, ratio, subRow1, subRow2, idx, row1.Comment)
+		dr.addRow(table, label, ratio, subRow1, subRow2, idx, row1.Comment)
 	}
 
 	for _, subRow2 := range row2.SubValues {
@@ -265,53 +435,53 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 		if ok {
 			continue
 		}
-		ratio, idx, err := calculateDiffRatio(subRow1, subRow2, table)
+		ratio, ratios, idx, err := calculateDiffRatio(subRow1, subRow2, table)
 		if err != nil {
 			return nil, errors.Errorf("category %v,table %v, calculate diff ratio error: %v,  %v,%v", strings.Join(table.Category, ","), table.Title, err.Error(), subRow1, subRow2)
 		}
 
 		subJoinRows = append(subJoinRows, &newJoinRow{
-			row1:  subRow1,
-			row2:  subRow2,
-			ratio: ratio,
+			row1:   subRow1,
+			row2:   subRow2,
+			ratio:  ratio,
+			ratios: ratios,
 		})
-		dr.addRow(table.Title, label, ratio, subRow1, subRow2, idx, row2.Comment)
+		dr.addRow(table, label, ratio, subRow1, subRow2, idx, row2.Comment)
 	}
 
 	sort.Slice(subJoinRows, func(i, j int) bool {
 		return subJoinRows[i].ratio > subJoinRows[j].ratio
 	})
 	totalRatio := float64(0)
+	var totalRatios []float64
 	resultSubRows := make([][]string, 0, len(row1.SubValues))
 	for _, r := range subJoinRows {
-		totalRatio += r.ratio
 		resultSubRows = append(resultSubRows, r.genNewRow(table))
 	}
 
-	// row join with null row
-	if len(subJoinRows) == 0 {
-		var totalRatioIdx = -1
-		if len(row1.Values) != len(row2.Values) {
-			totalRatio = 1
-		} else {
-			totalRatio, totalRatioIdx, err = calculateDiffRatio(row1.Values, row2.Values, table)
-			if err != nil {
-				return nil, errors.Errorf("category %v,table %v, calculate diff ratio error: %v,  %v,%v", strings.Join(table.Category, ","), table.Title, err.Error(), row1.Values, row2.Values)
-			}
+	var totalRatioIdx = -1
+	if len(row1.Values) != len(row2.Values) {
+		totalRatio = 1
+		totalRatios = nil
+	} else {
+		totalRatio, totalRatios, totalRatioIdx, err = calculateDiffRatio(row1.Values, row2.Values, table)
+		if err != nil {
+			return nil, errors.Errorf("category %v,table %v, calculate diff ratio error: %v,  %v,%v", strings.Join(table.Category, ","), table.Title, err.Error(), row1.Values, row2.Values)
 		}
-		label := ""
-		if len(row1.Values) >= len(table.Column) {
-			label = genRowLabel(row1.Values, table.joinColumns)
-		} else if len(row2.Values) >= len(table.Column) {
-			label = genRowLabel(row2.Values, table.joinColumns)
-		}
-		dr.addRow(table.Title, label, totalRatio, row1.Values, row2.Values, totalRatioIdx, row1.Comment)
 	}
+	label := ""
+	if len(row1.Values) >= len(table.Column) {
+		label = genRowLabel(row1.Values, table.joinColumns)
+	} else if len(row2.Values) >= len(table.Column) {
+		label = genRowLabel(row2.Values, table.joinColumns)
+	}
+	dr.addRow(table, label, totalRatio, row1.Values, row2.Values, totalRatioIdx, row1.Comment)
 
 	resultJoinRow := newJoinRow{
-		row1:  row1.Values,
-		row2:  row2.Values,
-		ratio: totalRatio,
+		row1:   row1.Values,
+		row2:   row2.Values,
+		ratio:  totalRatio,
+		ratios: totalRatios,
 	}
 
 	resultRow := &TableRowDef{
@@ -324,12 +494,13 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 }
 
 type diffRow struct {
-	table   string
-	label   string
-	ratio   float64
-	v1      string
-	v2      string
-	comment string
+	table    string
+	label    string
+	ratio    float64
+	ratioIdx int
+	v1       string
+	v2       string
+	comment  string
 }
 
 type diffRows []diffRow
@@ -350,9 +521,13 @@ func (r *diffRows) Pop() interface{} {
 	return x
 }
 
-func (r *diffRows) addRow(table, label string, ratio float64, vs1, vs2 []string, idx int, comment string) {
+func (r *diffRows) addRow(table *TableDef, label string, ratio float64, vs1, vs2 []string, idx int, comment string) {
+	tableName := strings.Join(table.Category, "-") + ", " + table.Title
 	if ratio == 0 {
 		return
+	}
+	if idx > 0 && idx < len(table.Column) {
+		comment = comment + ", the value is " + table.Column[idx]
 	}
 	v1 := ""
 	v2 := ""
@@ -365,12 +540,13 @@ func (r *diffRows) addRow(table, label string, ratio float64, vs1, vs2 []string,
 		}
 	}
 	r.appendRow(diffRow{
-		table:   table,
-		label:   label,
-		ratio:   ratio,
-		v1:      v1,
-		v2:      v2,
-		comment: comment,
+		table:    tableName,
+		label:    label,
+		ratio:    ratio,
+		ratioIdx: idx,
+		v1:       v1,
+		v2:       v2,
+		comment:  comment,
 	})
 }
 
@@ -382,17 +558,16 @@ func (r *diffRows) appendRow(row diffRow) {
 }
 
 type newJoinRow struct {
-	row1  []string
-	row2  []string
-	ratio float64
+	row1   []string
+	row2   []string
+	ratio  float64
+	ratios []float64
 }
 
 func (r *newJoinRow) genNewRow(table *TableDef) []string {
 	newRow := make([]string, 0, len(r.row1)+len(r.row2))
-	ratio := convertFloatToString(r.ratio)
 	if len(r.row1) == 0 {
 		newRow = append(newRow, make([]string, len(r.row2))...)
-		newRow = append(newRow, ratio)
 		for i := range r.row2 {
 			if checkIn(i, table.joinColumns) {
 				newRow[i] = r.row2[i]
@@ -400,13 +575,26 @@ func (r *newJoinRow) genNewRow(table *TableDef) []string {
 				newRow = append(newRow, r.row2[i])
 			}
 		}
+		for i := range table.compareColumns {
+			if len(r.ratios) > i {
+				newRow = append(newRow, convertFloatToString(r.ratios[i]))
+			} else {
+				newRow = append(newRow, convertFloatToString(r.ratio))
+			}
+		}
 		return newRow
 	}
 
 	newRow = append(newRow, r.row1...)
-	newRow = append(newRow, ratio)
 	if len(r.row2) == 0 {
 		newRow = append(newRow, make([]string, len(r.row1)-len(table.joinColumns))...)
+		for i := range table.compareColumns {
+			if len(r.ratios) > i {
+				newRow = append(newRow, convertFloatToString(r.ratios[i]))
+			} else {
+				newRow = append(newRow, convertFloatToString(r.ratio))
+			}
+		}
 		return newRow
 	}
 	for i := range r.row2 {
@@ -414,43 +602,56 @@ func (r *newJoinRow) genNewRow(table *TableDef) []string {
 			newRow = append(newRow, r.row2[i])
 		}
 	}
+	for i := range table.compareColumns {
+		if len(r.ratios) > i {
+			newRow = append(newRow, convertFloatToString(r.ratios[i]))
+		} else {
+			newRow = append(newRow, convertFloatToString(r.ratio))
+		}
+	}
 	return newRow
 }
 
-func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, int, error) {
+func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, []float64, int, error) {
 	if len(table.compareColumns) == 0 {
-		return 0, -1, nil
+		return 0, nil, -1, nil
 	}
 	if len(row1) == 0 && len(row2) == 0 {
-		return 0, -1, nil
+		return 0, nil, -1, nil
 	}
 	if len(row1) == 0 {
-		return float64(1), table.compareColumns[0], nil
+		return float64(1), nil, table.compareColumns[0], nil
 	}
 	if len(row2) == 0 {
-		return float64(-1), table.compareColumns[0], nil
+		return float64(-1), nil, table.compareColumns[0], nil
 	}
+	ratios := make([]float64, 0, len(table.compareColumns))
 	maxRatio := float64(0)
 	maxIdx := -1
 	for _, idx := range table.compareColumns {
 		f1, err := parseFloat(row1[idx])
 		if err != nil {
-			return 0, -1, err
+			return 0, nil, -1, err
 		}
 		f2, err := parseFloat(row2[idx])
 		if err != nil {
-			return 0, -1, err
+			return 0, nil, -1, err
 		}
 		if f1 == f2 {
+			ratios = append(ratios, 0)
 			continue
 		}
 		ratio := (f2 - f1) / math.Max(f1, f2)
+		ratios = append(ratios, ratio)
+		if (f1 == 0 || f2 == 0) && maxRatio != 0 {
+			continue
+		}
 		if math.Abs(ratio) > math.Abs(maxRatio) {
 			maxRatio = ratio
 			maxIdx = idx
 		}
 	}
-	return maxRatio, maxIdx, nil
+	return maxRatio, ratios, maxIdx, nil
 }
 
 func parseFloat(s string) (float64, error) {
@@ -538,9 +739,15 @@ func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.
 		//Node
 		GetLoadTable,
 		GetCPUUsageTable,
-		GetProcessMemUsageTable,
 		GetTiKVThreadCPUTable,
 		GetGoroutinesCountTable,
+		GetProcessMemUsageTable,
+
+		// Config
+		GetPDConfigInfo,
+		GetPDConfigChangeInfo,
+		GetTiDBGCConfigInfo,
+		GetTiDBGCConfigChangeInfo,
 
 		// Overview
 		GetTotalTimeConsumeTable,
@@ -548,7 +755,9 @@ func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.
 
 		// TiDB
 		GetTiDBTimeConsumeTable,
+		GetTiDBConnectionCountTable,
 		GetTiDBTxnTableData,
+		GetTiDBStatisticsInfo,
 		GetTiDBDDLOwner,
 
 		// PD
@@ -613,9 +822,6 @@ func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, 
 	funcs := []func(string, string, *gorm.DB) (TableDef, error){
 		// Diagnose
 		GetDiagnoseReport,
-		// Config
-		GetPDConfigInfo,
-		GetTiDBGCConfigInfo,
 	}
 	atomic.AddInt32(totalTableCount, int32(len(funcs)*2))
 

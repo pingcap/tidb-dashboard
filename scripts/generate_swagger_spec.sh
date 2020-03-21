@@ -23,3 +23,4 @@ go mod tidy
 echo "+ Generate swagger spec"
 go mod vendor
 swag init --parseVendor -g cmd/tidb-dashboard/main.go
+cp docs/swagger.yaml ui/packages/dashboard_client/

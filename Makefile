@@ -32,7 +32,7 @@ lint:
 	scripts/lint.sh
 
 dev:
-	HOT_SWAP=1 make embed_template lint default
+	HOT_SWAP=1 make lint default
 
 # convert api in Golang code to swagger configuration file
 swagger_spec:
@@ -51,10 +51,7 @@ publish_ui_packages: swagger_spec yarn_dependencies
 	yarn run build:packages &&\
 	yarn run publish:packages
 
-embed_template:
-	scripts/generate_diagnose_report_template.sh
-
-server: embed_template
+server:
 ifeq ($(SWAGGER),1)
 	make swagger_spec
 endif

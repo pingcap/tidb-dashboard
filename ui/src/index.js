@@ -3,6 +3,7 @@ import AppRegistry from '@/utils/registry'
 import * as routingUtil from '@/utils/routing'
 import * as authUtil from '@/utils/auth'
 import * as i18nUtil from '@/utils/i18n'
+import * as clientUtil from '@/utils/client'
 
 import * as LayoutMain from '@/layout/main'
 import * as LayoutSignIn from '@/layout/signin'
@@ -18,6 +19,13 @@ import AppClusterInfo from '@/apps/clusterInfo'
 import AppPlayground from '@/apps/playground'
 
 async function main() {
+  clientUtil.init()
+
+  i18nUtil.init()
+  i18nUtil.addTranslations(
+    require.context('@/layout/translations/', false, /\.yaml$/)
+  )
+
   const registry = new AppRegistry()
 
   singleSpa.registerApplication(
@@ -36,11 +44,6 @@ async function main() {
       return routingUtil.isLocationMatchPrefix(authUtil.signInRoute)
     },
     { registry }
-  )
-
-  i18nUtil.init()
-  i18nUtil.addTranslations(
-    require.context('@/layout/translations/', false, /\.yaml$/)
   )
 
   registry

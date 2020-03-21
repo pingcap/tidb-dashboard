@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { useEventListener } from '@umijs/hooks'
 import { useTranslation } from 'react-i18next'
 import { useTrail, useSpring, animated } from 'react-spring'
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 
 import Banner from './Banner'
 import styles from './index.module.less'
@@ -57,7 +57,7 @@ function useCurrentLogin() {
   const [login, setLogin] = useState(null)
   useEffect(() => {
     async function fetch() {
-      const resp = await client.dashboard.infoWhoamiGet()
+      const resp = await client.getInstance().infoWhoamiGet()
       if (resp.data) {
         setLogin(resp.data)
       }

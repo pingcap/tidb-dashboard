@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Button, DatePicker, Form, Select, Switch, message } from 'antd'
-import { RangePickerValue } from 'antd/lib/date-picker/interface'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@pingcap-incubator/dashboard_components'
 import { useHistory } from 'react-router-dom'
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 
 const useSubmitHandler = form => {
   const history = useHistory()
@@ -25,7 +24,7 @@ const useSubmitHandler = form => {
         : 0
 
       try {
-        const res = await client.dashboard.diagnoseReportsPost({
+        const res = await client.getInstance().diagnoseReportsPost({
           start_time,
           end_time,
           compare_start_time,

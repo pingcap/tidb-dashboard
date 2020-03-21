@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Tooltip, Popconfirm, Icon, Divider, Badge } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { CardTable } from '@pingcap-incubator/dashboard_components'
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 
 const STATUS_DOWN = 0
 const STATUS_UP = 1
@@ -90,7 +90,7 @@ function useStatusColumnRender(handleHideTiDB) {
 
 function useHideTiDBHandler(updateData) {
   return async node => {
-    await client.dashboard.topologyTidbAddressDelete(`${node.ip}:${node.port}`)
+    await client.getInstance().topologyTidbAddressDelete(`${node.ip}:${node.port}`)
     updateData()
   }
 }
@@ -102,7 +102,7 @@ function useClusterNodeDataSource() {
   const fetch = async () => {
     setIsLoading(true)
     try {
-      const res = await client.dashboard.topologyAllGet()
+      const res = await client.getInstance().topologyAllGet()
       const items = ['tidb', 'tikv', 'pd'].map(nodeKind => {
         const nodes = res.data[nodeKind]
         if (nodes.err) {

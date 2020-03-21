@@ -106,7 +106,6 @@ function useClusterNodeDataSource() {
       const res = await client.dashboard.topologyAllGet()
       const items = ['tidb', 'tikv', 'pd'].map(nodeKind => {
         const nodes = res.data[nodeKind]
-        console.log(nodes);
         if (nodes.err) {
           message.warn(t('cluster_info.error.load', {comp: nodeKind, cause: nodes.err}));
           return {

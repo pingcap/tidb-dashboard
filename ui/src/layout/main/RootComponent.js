@@ -1,126 +1,93 @@
-import React from 'react'
-import { Layout, Menu, Icon } from 'antd'
-import { Link } from 'react-router-dom'
+import React, { useState, useCallback, useEffect } from 'react'
+import { useToggle } from '@umijs/hooks'
 import { HashRouter as Router } from 'react-router-dom'
-import { withTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
-import Sider from './Sider'
+import { useSpring, animated } from 'react-spring'
 
+import Sider from './Sider'
 import styles from './RootComponent.module.less'
 
 const siderWidth = 260
 const siderCollapsedWidth = 80
+const collapsedContentOffset = siderCollapsedWidth - siderWidth
+const contentOffsetTrigger = collapsedContentOffset * 0.99
 
-@withTranslation()
-class App extends React.PureComponent {
-  state = {
-    collapsed: false,
-    activeAppId: null,
-    contentLeftOffset: siderWidth,
-  }
+function triggerResizeEvent() {
+  const event = document.createEvent('HTMLEvents')
+  event.initEvent('resize', true, false)
+  window.dispatchEvent(event)
+}
 
-  handleToggle = () => {
-    this.setState({
-      collapsed: !this.state.collapsed,
-    })
-  }
-
-  triggerResizeEvent = () => {
-    const event = document.createEvent('HTMLEvents')
-    event.initEvent('resize', true, false)
-    window.dispatchEvent(event)
-  }
-
-  handleRouting = () => {
-    const activeApp = this.props.registry.getActiveApp()
-    if (activeApp) {
-      this.setState({
-        activeAppId: activeApp.id,
-      })
+const useContentLeftOffset = collapsed => {
+  const [offset, setOffset] = useState(siderWidth)
+  const onAnimationStart = useCallback(() => {
+    if (!collapsed) {
+      setOffset(siderWidth)
     }
-  }
-
-  async componentDidMount() {
-    window.addEventListener('single-spa:routing-event', this.handleRouting)
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('single-spa:routing-event', this.handleRouting)
-  }
-
-  renderAppMenuItem = appId => {
-    const registry = this.props.registry
-    const app = registry.apps[appId]
-    if (!app) {
-      return null
-    }
-    return (
-      <Menu.Item key={appId}>
-        <Link to={app.indexRoute}>
-          {app.icon ? <Icon type={app.icon} /> : null}
-          <span>{this.props.t(`${appId}.nav_title`, appId)}</span>
-        </Link>
-      </Menu.Item>
-    )
-  }
-
-  getMotionVariant = () => {
-    return this.state.collapsed ? 'collapsed' : 'open'
-  }
-
-  handleAnimationStart = () => {
-    if (!this.state.collapsed) {
-      this.setState({ contentLeftOffset: siderWidth }, () =>
-        this.triggerResizeEvent()
-      )
-    }
-  }
-
-  handleAnimationComplete = () => {
-    if (this.state.collapsed) {
-      this.setState({ contentLeftOffset: siderCollapsedWidth }, () =>
-        this.triggerResizeEvent()
-      )
-    }
-  }
-
-  render() {
-    return (
-      <Router>
-        <motion.div
-          className={styles.container}
-          animate={this.getMotionVariant()}
-          initial={this.getMotionVariant()}
-          onAnimationStart={this.handleAnimationStart}
-          onAnimationComplete={this.handleAnimationComplete}
-        >
-          <Sider
-            registry={this.props.registry}
-            width={siderWidth}
-            onToggle={this.handleToggle}
-            collapsed={this.state.collapsed}
-            collapsedWidth={siderCollapsedWidth}
-          />
-          <motion.div
-            className={styles.contentBack}
-            variants={{
-              open: { left: siderWidth },
-              collapsed: { left: siderCollapsedWidth },
-            }}
-            transition={{ ease: 'easeOut' }}
-          ></motion.div>
-          <div
-            className={styles.content}
-            style={{
-              marginLeft: this.state.contentLeftOffset,
-            }}
-          >
-            <div id="__spa_content__"></div>
-          </div>
-        </motion.div>
-      </Router>
-    )
+  }, [collapsed])
+  const onAnimationFrame = useCallback(
+    ({ x }) => {
+      if (collapsed && x < contentOffsetTrigger) {
+        setOffset(siderCollapsedWidth)
+      }
+    },
+    [collapsed]
+  )
+  useEffect(triggerResizeEvent, [offset])
+  return {
+    contentLeftOffset: offset,
+    onAnimationStart,
+    onAnimationFrame,
   }
 }
 
-export default App
+export default function App({ registry }) {
+  const { state: collapsed, toggle: toggleCollapsed } = useToggle()
+  const {
+    contentLeftOffset,
+    onAnimationStart,
+    onAnimationFrame,
+  } = useContentLeftOffset(collapsed)
+  const transContentBack = useSpring({
+    x: collapsed ? collapsedContentOffset : 0,
+    from: { x: 0 },
+    onStart: onAnimationStart,
+    onFrame: onAnimationFrame,
+  })
+  const transContainer = useSpring({
+    opacity: 1,
+    from: { opacity: 0 },
+    delay: 100,
+  })
+
+  return (
+    <Router>
+      <animated.div className={styles.container} style={transContainer}>
+        <Sider
+          registry={registry}
+          width={siderWidth}
+          onToggle={() => toggleCollapsed()}
+          collapsed={collapsed}
+          collapsedWidth={siderCollapsedWidth}
+          animationDelay={0}
+        />
+        <animated.div
+          className={styles.contentBack}
+          style={{
+            left: `${siderWidth}px`,
+            transform: transContentBack.x.interpolate(
+              x => `translate3d(${x}px, 0, 0)`
+            ),
+          }}
+        ></animated.div>
+        <div
+          className={styles.content}
+          style={{
+            marginLeft: contentLeftOffset,
+          }}
+        >
+          <div id="__spa_content__"></div>
+        </div>
+      </animated.div>
+    </Router>
+  )
+}

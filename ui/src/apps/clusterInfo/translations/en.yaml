@@ -18,3 +18,5 @@ cluster_info:
         tombstone: Tombstone
         offline: Offline
         unknown: Unknown
+  error:
+    load: 'Load {{comp}} error'

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Tooltip, Popconfirm, Icon, Divider, Badge } from 'antd'
+import { Tooltip, Popconfirm, Icon, Divider, Badge, message } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { CardTable } from '@pingcap-incubator/dashboard_components'
 import client from '@/utils/client'
@@ -98,6 +98,7 @@ function useHideTiDBHandler(updateData) {
 function useClusterNodeDataSource() {
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState([])
+  const { t } = useTranslation()
 
   const fetch = async () => {
     setIsLoading(true)
@@ -105,7 +106,9 @@ function useClusterNodeDataSource() {
       const res = await client.dashboard.topologyAllGet()
       const items = ['tidb', 'tikv', 'pd'].map(nodeKind => {
         const nodes = res.data[nodeKind]
+        console.log(nodes);
         if (nodes.err) {
+          message.warn(t('cluster_info.error.load', {comp: nodeKind}));
           return {
             key: nodeKind,
             nodeKind,

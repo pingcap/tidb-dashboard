@@ -51,11 +51,11 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
-	startTime := "2020-03-18 23:27:00"
-	endTime := "2020-03-18 23:35:00"
+	startTime := "2020-03-20 15:27:00"
+	endTime := "2020-03-20 16:35:00"
 
 	var table TableDef
-	table, err = GetTiKVThreadCPUTable(startTime, endTime, cli)
+	table, err = GetTiKVRocksDBConfigChangeInfo(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(&table)
 }
@@ -71,11 +71,11 @@ func (t *testReportSuite) TestGetCompareTable(c *C) {
 	//startTime2 := "2020-03-12 20:17:00"
 	//endTime2 := "2020-03-12 20:39:00"
 
-	startTime1 := "2020-03-08 01:36:00"
-	endTime1 := "2020-03-08 01:41:00"
+	startTime1 := "2020-03-20 15:00:00"
+	endTime1 := "2020-03-20 15:30:00"
 
-	startTime2 := "2020-03-08 01:46:30"
-	endTime2 := "2020-03-08 01:51:30"
+	startTime2 := "2020-03-20 15:30:00"
+	endTime2 := "2020-03-20 16:00:00"
 
 	tables := GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2, cli, nil, 0)
 	for _, tbl := range tables {

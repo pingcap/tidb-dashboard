@@ -181,8 +181,7 @@ func compareTable(table1, table2 *TableDef, dr *diffRows) (_ *TableDef, err erro
 			err = errors.Errorf("compare table %s ,%s panic", table1.Category, table1.Title)
 		}
 	}()
-	switch table1.Title {
-	case "Scheduler Config", "TiDB GC Config":
+	if strings.Contains(strings.ToLower(table1.Title), "config") {
 		return compareTableWithNonUniqueKey(table1, table2, &diffRows{})
 	}
 	labelsMap1, err := getTableLablesMap(table1)
@@ -748,6 +747,10 @@ func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.
 		GetPDConfigChangeInfo,
 		GetTiDBGCConfigInfo,
 		GetTiDBGCConfigChangeInfo,
+		GetTiKVRocksDBConfigInfo,
+		GetTiKVRocksDBConfigChangeInfo,
+		GetTiKVRaftStoreConfigInfo,
+		GetTiKVRaftStoreConfigChangeInfo,
 
 		// Overview
 		GetTotalTimeConsumeTable,

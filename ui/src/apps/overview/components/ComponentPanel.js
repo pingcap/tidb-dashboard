@@ -11,7 +11,12 @@ function ComponentPanel({ data, field }) {
   let up_nodes = 0
   let abnormal_nodes = 0
   let has_error = false
+  let error_hint;
 
+  if (data && data.error) {
+    has_error = true
+    error_hint = data.error
+  }
   if (data && data[field]) {
     if (!data[field].err) {
       data[field].nodes.forEach(n => {
@@ -23,6 +28,7 @@ function ComponentPanel({ data, field }) {
       })
     } else {
       has_error = true
+      error_hint = data[field].err
     }
   }
 
@@ -33,7 +39,7 @@ function ComponentPanel({ data, field }) {
     abnormal_nodes = '-'
     title_style = 'danger'
     extra = (
-      <Tooltip title={data[field].err}>
+      <Tooltip title={error_hint}>
         <Icon
           type="warning"
           style={{ marginLeft: '5px', fontSize: 15 }}
@@ -61,7 +67,7 @@ function ComponentPanel({ data, field }) {
           </Col>
           <Col span={9}>
             <div className={styles.desc}>{t('overview.status.abnormal')}</div>
-            {/*Note: If `field_error` is true, both "up" and "down" should be "-" with the sample color*/}
+            {/*Note: If `has_error` is true, both "up" and "down" should be "-" with the sample color*/}
             <div className={abnormal_nodes === 0 || has_error ? styles.alive : styles.down}>
               {abnormal_nodes}
             </div>

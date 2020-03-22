@@ -13,9 +13,23 @@ const App = () => {
 
   useEffect(() => {
     const fetchLoad = async () => {
-      let res = await client.dashboard.topologyAllGet()
-      const cluster = res.data
-      setCluster(cluster)
+      try {
+        let res = await client.dashboard.topologyAllGet()
+        const cluster = res.data
+        setCluster(cluster)
+      } catch (error) {
+        let topology_error;
+        if (error.response) {
+          topology_error = error.response.data;
+        } else if (error.request) {
+          topology_error = error.request;
+        } else {
+          topology_error = error.message;
+        }
+        console.log(topology_error)
+        setCluster({error: topology_error})
+      }
+
     }
     fetchLoad()
   }, [])

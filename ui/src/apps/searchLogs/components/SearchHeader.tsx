@@ -3,7 +3,7 @@ import {
   LogsearchCreateTaskGroupRequest,
   LogsearchSearchTarget,
 } from '@pingcap-incubator/dashboard_client'
-import { Button, DatePicker, Form, Input, Select, TreeSelect } from 'antd'
+import { Button, DatePicker, Form, Input, Select, TreeSelect, message } from 'antd'
 import { RangePickerValue } from 'antd/lib/date-picker/interface'
 import { TreeNode } from 'antd/lib/tree-select'
 import moment from 'moment'
@@ -109,7 +109,13 @@ export default function SearchHeader({ taskGroupID }: Props) {
         patterns: searchValue.split(/\s+/), // 'foo boo' => ['foo', 'boo']
       },
     }
-    const result = await client.getInstance().logsTaskgroupPut(params)
+    let result
+    try {
+      result = await client.getInstance().logsTaskgroupPut(params)
+    } catch(error) {
+      message.error(error?.response?.data?.message)
+      return
+    }
     const id = result.data.task_group?.id
     if (!id) {
       // promp error here

@@ -2,6 +2,7 @@ import client from '@pingcap-incubator/dashboard_client'
 import { LogsearchTaskModel } from '@pingcap-incubator/dashboard_client'
 import { Button, Modal, Tree, Skeleton } from 'antd'
 import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree'
+import { Key } from 'rc-tree/lib/interface'
 import React, {
   Dispatch,
   SetStateAction,
@@ -52,7 +53,6 @@ function renderLeafNodes(tasks: LogsearchTaskModel[]) {
     return (
       <TreeNode
         key={`${task.id}`}
-        value={task.id}
         title={title}
         {...leafNodeProps(task.state)}
       />
@@ -264,10 +264,7 @@ export default function SearchProgress({
     })
   }
 
-  function handleCheck(
-    checkedKeys: string[] | { checked: string[]; halfChecked: string[] },
-    e: AntTreeNodeCheckedEvent
-  ) {
+  const handleCheck = (checkedKeys, info) => {
     setCheckedKeys(checkedKeys as string[])
   }
 

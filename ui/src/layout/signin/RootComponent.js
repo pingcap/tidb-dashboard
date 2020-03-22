@@ -1,6 +1,9 @@
 import * as singleSpa from 'single-spa'
 import React from 'react'
-import { Form, Icon, Input, Button, message } from 'antd'
+import { DownOutlined, GlobalOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Input, Button, message } from 'antd';
 import { motion } from 'framer-motion'
 import { withTranslation } from 'react-i18next'
 import LanguageDropdown from '@/components/LanguageDropdown'
@@ -120,7 +123,7 @@ class TiDBSignInForm extends React.PureComponent {
               })(
                 <Input
                   onInput={this.clearErrorMessages}
-                  prefix={<Icon type="user" />}
+                  prefix={<UserOutlined />}
                   disabled
                 />
               )}
@@ -136,7 +139,7 @@ class TiDBSignInForm extends React.PureComponent {
             >
               {getFieldDecorator('password')(
                 <Input
-                  prefix={<Icon type="lock" />}
+                  prefix={<LockOutlined />}
                   type="password"
                   disabled={this.state.loading}
                   onInput={this.clearErrorMessages}
@@ -163,14 +166,14 @@ class TiDBSignInForm extends React.PureComponent {
             <div className={styles.extraLink}>
               <LanguageDropdown>
                 <a>
-                  <Icon type="global" /> Switch Language <Icon type="down" />
+                  <GlobalOutlined /> Switch Language <DownOutlined />
                 </a>
               </LanguageDropdown>
             </div>
           </AnimationItem>
         </motion.div>
       </Form>
-    )
+    );
   }
 }
 

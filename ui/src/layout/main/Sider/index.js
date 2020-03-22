@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Layout, Menu, Icon } from 'antd'
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+import { ExperimentOutlined } from '@ant-design/icons';
+import { Layout, Menu } from 'antd';
 import { Link } from 'react-router-dom'
 import { useEventListener } from '@umijs/hooks'
 import { useTranslation } from 'react-i18next'
@@ -35,12 +37,12 @@ function useAnimatedAppMenuItem(registry, appId, title) {
     return (
       <AnimatedMenuItem key={appId} {...animationProps}>
         <Link to={app.indexRoute}>
-          {app.icon ? <Icon type={app.icon} /> : null}
+          {app.icon ? <LegacyIcon type={app.icon} /> : null}
           <span>{title ? title : t(`${appId}.nav_title`, appId)}</span>
         </Link>
       </AnimatedMenuItem>
-    )
-  }
+    );
+  };
 }
 
 function useActiveAppId(registry) {
@@ -89,7 +91,7 @@ export default function Sider({
       key="debug"
       title={
         <span>
-          <Icon type="experiment" />
+          <ExperimentOutlined />
           <span>{t('nav.sider.debug')}</span>
         </span>
       }

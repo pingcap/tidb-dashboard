@@ -1,5 +1,7 @@
 import React from 'react'
-import { Form, Select } from 'antd'
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { Select } from 'antd';
 import { Card } from '@pingcap-incubator/dashboard_components'
 import _ from 'lodash'
 import { ALL_LANGUAGES } from '@/utils/i18n'

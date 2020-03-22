@@ -1,6 +1,8 @@
 import client from '@pingcap-incubator/dashboard_client'
 import React, { useEffect, useState } from 'react'
-import { message, Form, TreeSelect, Button, Select, Badge } from 'antd'
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+import { message, TreeSelect, Button, Select, Badge } from 'antd';
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { Link } from 'react-router-dom'

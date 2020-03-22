@@ -1,5 +1,5 @@
 import React from 'react'
-import { Icon } from 'antd'
+import { Icon as LegacyIcon } from '@ant-design/compatible';
 import { useSize } from '@umijs/hooks'
 import Flexbox from '@g07cha/flexbox-react'
 import { useSpring, animated } from 'react-spring'
@@ -51,11 +51,11 @@ export default function ToggleBanner({
         </div>
       </animated.div>
       <animated.div style={transButton} className={styles.bannerRight}>
-        <Icon
+        <LegacyIcon
           type={collapsed ? 'menu-unfold' : 'menu-fold'}
           style={{ margin: 'auto' }}
         />
       </animated.div>
     </div>
-  )
+  );
 }

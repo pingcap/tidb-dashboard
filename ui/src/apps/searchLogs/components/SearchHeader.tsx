@@ -3,9 +3,12 @@ import {
   LogsearchCreateTaskGroupRequest,
   LogsearchSearchTarget,
 } from '@pingcap-incubator/dashboard_client'
-import { Button, DatePicker, Form, Input, Select, TreeSelect } from 'antd'
-import { RangePickerValue } from 'antd/lib/date-picker/interface'
-import { TreeNode } from 'antd/lib/tree-select'
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css'
+import { Button, DatePicker, Input, Select, TreeSelect } from 'antd'
+import { RangeValue } from 'rc-picker/lib/interface'
+import { LegacyDataNode } from 'rc-tree-select/lib/interface'
+import { FilterFunc } from 'rc-select/lib/interface/generator';
 import moment from 'moment'
 import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -63,7 +66,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
   const { t } = useTranslation()
   const history = useHistory()
 
-  const [timeRange, setTimeRange] = useState<RangePickerValue>([])
+  const [timeRange, setTimeRange] = useState<RangeValue<moment.Moment>>(null)
   const [logLevel, setLogLevel] = useState<number>(3)
   const [selectedComponents, setComponents] = useState<string[]>([])
   const [searchValue, setSearchValue] = useState<string>('')
@@ -118,8 +121,8 @@ export default function SearchHeader({ taskGroupID }: Props) {
     history.push('/search_logs/detail/' + id)
   }
 
-  function handleTimeRangeChange(value: RangePickerValue) {
-    setTimeRange(value)
+  function handleTimeRangeChange(values: RangeValue<moment.Moment>, formatString: [string, string]) {
+    setTimeRange(values)
   }
 
   function handleLogLevelChange(value: number) {
@@ -139,8 +142,8 @@ export default function SearchHeader({ taskGroupID }: Props) {
     createTaskGroup()
   }
 
-  function filterTreeNode(inputValue: string, treeNode: TreeNode): boolean {
-    const name = treeNode.key as string
+  function filterTreeNode(inputValue: string, legacyDataNode?: LegacyDataNode): boolean {
+    const name = legacyDataNode?.key as string
     return name.includes(inputValue)
   }
 

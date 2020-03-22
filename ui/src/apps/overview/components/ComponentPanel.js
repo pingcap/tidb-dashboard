@@ -1,4 +1,4 @@
-import { Col, Row, Card, Skeleton } from 'antd'
+import { Col, Row, Card, Skeleton, Icon, Tooltip } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './ComponentPanel.module.less'
@@ -8,23 +8,49 @@ function ComponentPanel({ data, field }) {
 
   let up_nodes = 0
   let abnormal_nodes = 0
+  let field_error = false
 
-  if (data && data[field] && !data[field].err) {
-    data[field].nodes.forEach(n => {
-      if (n.status === 0) {
-        abnormal_nodes++
-      } else {
-        up_nodes++
-      }
-    })
+  if (data && data[field]) {
+    if (!data[field].err) {
+      data[field].nodes.forEach(n => {
+        if (n.status === 0) {
+          abnormal_nodes++
+        } else {
+          up_nodes++
+        }
+      })
+    } else {
+      field_error = true
+    }
+  }
+
+  let title
+  if (field_error) {
+    // Note: once `field_error` is true, `data[field].err` must exists.
+    up_nodes = '-'
+    abnormal_nodes = '-'
+    title = (
+      <span style={{ color: 'red' }}>
+        {' '}
+        <Tooltip title={data[field].err}>
+          {t('overview.status.nodes', { nodeType: field.toUpperCase() })}
+          <Icon
+            type="close-circle"
+            style={{ color: 'red', marginLeft: '5px', fontSize: 15 }}
+          />
+        </Tooltip>
+      </span>
+    )
+  } else {
+    title = (
+      <span className="style">
+        {t('overview.status.nodes', { nodeType: field.toUpperCase() })}
+      </span>
+    )
   }
 
   return (
-    <Card
-      size="small"
-      bordered={false}
-      title={t('overview.status.nodes', { nodeType: field.toUpperCase() })}
-    >
+    <Card hoverable size="small" bordered={false} title={title}>
       {!data ? (
         <Skeleton active title={false} />
       ) : (

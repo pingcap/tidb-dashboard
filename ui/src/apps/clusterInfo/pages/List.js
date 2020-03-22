@@ -107,7 +107,9 @@ function useClusterNodeDataSource() {
       const items = ['tidb', 'tikv', 'pd'].map(nodeKind => {
         const nodes = res.data[nodeKind]
         if (nodes.err) {
-          message.warn(t('cluster_info.error.load', {comp: nodeKind, cause: nodes.err}));
+          message.warn(
+            t('cluster_info.error.load', { comp: nodeKind, cause: nodes.err })
+          )
           return {
             key: nodeKind,
             nodeKind,

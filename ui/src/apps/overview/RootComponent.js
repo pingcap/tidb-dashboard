@@ -26,7 +26,6 @@ const App = () => {
         } else {
           topology_error = error.message;
         }
-        console.log(topology_error)
         setCluster({error: topology_error})
       }
 

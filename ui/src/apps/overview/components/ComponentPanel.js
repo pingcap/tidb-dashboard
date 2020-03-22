@@ -1,14 +1,16 @@
-import { Col, Row, Card, Skeleton, Icon, Tooltip } from 'antd'
+import { Col, Row, Card, Skeleton, Icon, Tooltip, Typography } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './ComponentPanel.module.less'
+
+const {Text} = Typography;
 
 function ComponentPanel({ data, field }) {
   const { t } = useTranslation()
 
   let up_nodes = 0
   let abnormal_nodes = 0
-  let field_error = false
+  let has_error = false
 
   if (data && data[field]) {
     if (!data[field].err) {
@@ -20,37 +22,35 @@ function ComponentPanel({ data, field }) {
         }
       })
     } else {
-      field_error = true
+      has_error = true
     }
   }
 
-  let title
-  if (field_error) {
-    // Note: once `field_error` is true, `data[field].err` must exists.
+  let extra, title_style
+  if (has_error) {
+    // Note: once `has_error` is true, `data[field].err` must exists.
     up_nodes = '-'
     abnormal_nodes = '-'
-    title = (
-      <span style={{ color: 'red' }}>
-        {' '}
-        <Tooltip title={data[field].err}>
-          {t('overview.status.nodes', { nodeType: field.toUpperCase() })}
-          <Icon
-            type="close-circle"
-            style={{ color: 'red', marginLeft: '5px', fontSize: 15 }}
-          />
-        </Tooltip>
-      </span>
-    )
-  } else {
-    title = (
-      <span className="style">
-        {t('overview.status.nodes', { nodeType: field.toUpperCase() })}
-      </span>
+    title_style = 'danger'
+    extra = (
+      <Tooltip title={data[field].err}>
+        <Icon
+          type="warning"
+          style={{ marginLeft: '5px', fontSize: 15 }}
+        />
+      </Tooltip>
     )
   }
 
+  let title = (
+    <Text type={title_style}>
+      {t('overview.status.nodes', { nodeType: field.toUpperCase() })}
+      { extra }
+    </Text>
+  )
+
   return (
-    <Card hoverable size="small" bordered={false} title={title}>
+    <Card size="small" bordered={false} title={title}>
       {!data ? (
         <Skeleton active title={false} />
       ) : (
@@ -62,7 +62,7 @@ function ComponentPanel({ data, field }) {
           <Col span={9}>
             <div className={styles.desc}>{t('overview.status.abnormal')}</div>
             {/*Note: If `field_error` is true, both "up" and "down" should be "-" with the sample color*/}
-            <div className={abnormal_nodes === 0 || !field_error ? styles.alive : styles.down}>
+            <div className={abnormal_nodes === 0 || has_error ? styles.alive : styles.down}>
               {abnormal_nodes}
             </div>
           </Col>

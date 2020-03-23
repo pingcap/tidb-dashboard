@@ -82,12 +82,12 @@ interface Params {
 
 export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
   const { task_group, tasks } = resp
-  const { start_time, end_time, levels, patterns } = task_group?.search_request || {}
+  const { start_time, end_time, min_level, patterns } = task_group?.search_request || {}
   const startTime = start_time ? moment(start_time) : null
   const endTime = end_time ? moment(end_time) : null
   return {
     timeRange: [startTime, endTime] as RangePickerValue,
-    logLevel: levels && levels.length > 0 ? levels[0] : 0,
+    logLevel: min_level?min_level:0,
     searchValue: patterns && patterns.length > 0 ? patterns.join(' ') : '',
     components: tasks && tasks.length > 0 ? getComponents(tasks) : [],
   }

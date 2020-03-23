@@ -4,10 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { CardTable } from '@pingcap-incubator/dashboard_components'
 import client from '@pingcap-incubator/dashboard_client'
 
-const STATUS_DOWN = 0
+const STATUS_UNREACHABLE = 0
 const STATUS_UP = 1
 const STATUS_TOMBSTONE = 2
 const STATUS_OFFLINE = 3
+const STATUS_DISCONNECTED = 4
+const STATUS_DOWN = 5
+
 
 function useStatusColumnRender(handleHideTiDB) {
   const { t } = useTranslation()
@@ -47,6 +50,22 @@ function useStatusColumnRender(handleHideTiDB) {
           <Badge
             status="processing"
             text={t('cluster_info.list.instance_table.status.offline')}
+          />
+        )
+        break
+      case STATUS_UNREACHABLE:
+        statusNode = (
+          <Badge
+            status="error"
+            text={t('cluster_info.list.instance_table.status.unreachable')}
+          />
+        )
+        break
+      case STATUS_DISCONNECTED:
+        statusNode = (
+          <Badge
+            status="error"
+            text={t('cluster_info.list.instance_table.status.disconnected')}
           />
         )
         break

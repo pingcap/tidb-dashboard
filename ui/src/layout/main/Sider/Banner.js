@@ -1,5 +1,5 @@
 import React from 'react'
-import { Icon as LegacyIcon } from '@ant-design/compatible';
+import { Icon as LegacyIcon } from '@ant-design/compatible'
 import { useSize } from '@umijs/hooks'
 import Flexbox from '@g07cha/flexbox-react'
 import { useSpring, animated } from 'react-spring'
@@ -57,5 +57,5 @@ export default function ToggleBanner({
         />
       </animated.div>
     </div>
-  );
+  )
 }

@@ -4,8 +4,8 @@ import {
   LogsearchTaskGroupResponse,
 } from '@pingcap-incubator/dashboard_client'
 import { CardTable, Head } from '@pingcap-incubator/dashboard_components'
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Badge, Button, Table } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Badge, Button, Table } from 'antd'
 import { RangeValue } from 'rc-picker/lib/interface'
 import { Moment } from 'moment'
 import React, { useEffect, useState } from 'react'
@@ -223,5 +223,5 @@ export default function SearchHistory() {
         </CardTable>
       </div>
     </div>
-  );
+  )
 }

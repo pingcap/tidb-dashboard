@@ -3,12 +3,11 @@ import {
   LogsearchCreateTaskGroupRequest,
   LogsearchSearchTarget,
 } from '@pingcap-incubator/dashboard_client'
-import { Form } from '@ant-design/compatible';
+import { Form } from '@ant-design/compatible'
 import '@ant-design/compatible/assets/index.css'
 import { Button, DatePicker, Input, Select, TreeSelect } from 'antd'
 import { RangeValue } from 'rc-picker/lib/interface'
 import { LegacyDataNode } from 'rc-tree-select/lib/interface'
-import { FilterFunc } from 'rc-select/lib/interface/generator';
 import moment from 'moment'
 import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { RightOutlined } from '@ant-design/icons';
-import { Card, Skeleton } from 'antd';
+import { RightOutlined } from '@ant-design/icons'
+import { Card, Skeleton } from 'antd'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import styles from './MonitorAlertBar.module.less'
@@ -82,5 +82,5 @@ export default function MonitorAlertBar({ cluster }) {
         </p>
       </Card>
     </div>
-  );
+  )
 }

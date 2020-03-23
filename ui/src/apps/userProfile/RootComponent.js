@@ -1,6 +1,6 @@
 import React from 'react'
-import { LogoutOutlined } from '@ant-design/icons';
-import { Skeleton, Button } from 'antd';
+import { LogoutOutlined } from '@ant-design/icons'
+import { Skeleton, Button } from 'antd'
 import { Head, Card } from '@pingcap-incubator/dashboard_components'
 import client from '@pingcap-incubator/dashboard_client'
 import { withTranslation } from 'react-i18next'
@@ -44,7 +44,7 @@ class App extends React.PureComponent {
           </Button>
         </Card>
       </div>
-    );
+    )
   }
 }
 

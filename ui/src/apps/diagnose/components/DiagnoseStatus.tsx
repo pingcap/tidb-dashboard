@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Descriptions, message, Skeleton, Progress, Button } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Descriptions, message, Skeleton, Progress, Button } from 'antd'
 import { Head } from '@pingcap-incubator/dashboard_components'
 import { DateTime } from '@/components'
 import { DiagnoseReport } from '@pingcap-incubator/dashboard_client'
@@ -86,7 +86,7 @@ function DiagnoseStatus() {
         </Descriptions>
       )}
     </Head>
-  );
+  )
 }
 
 export default DiagnoseStatus

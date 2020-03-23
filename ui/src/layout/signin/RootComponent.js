@@ -1,9 +1,9 @@
 import * as singleSpa from 'single-spa'
 import React from 'react'
-import { DownOutlined, GlobalOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Input, Button, message } from 'antd';
+import { DownOutlined, GlobalOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
+import { Form } from '@ant-design/compatible'
+import '@ant-design/compatible/assets/index.css'
+import { Input, Button, message } from 'antd'
 import { motion } from 'framer-motion'
 import { withTranslation } from 'react-i18next'
 import LanguageDropdown from '@/components/LanguageDropdown'
@@ -173,7 +173,7 @@ class TiDBSignInForm extends React.PureComponent {
           </AnimationItem>
         </motion.div>
       </Form>
-    );
+    )
   }
 }
 

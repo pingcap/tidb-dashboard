@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { DeleteOutlined } from '@ant-design/icons';
-import { Tooltip, Popconfirm, Divider, Badge } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons'
+import { Tooltip, Popconfirm, Divider, Badge } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { CardTable } from '@pingcap-incubator/dashboard_components'
 import client from '@pingcap-incubator/dashboard_client'
@@ -85,8 +85,8 @@ function useStatusColumnRender(handleHideTiDB) {
           </>
         )}
       </span>
-    );
-  };
+    )
+  }
 }
 
 function useHideTiDBHandler(updateData) {

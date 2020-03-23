@@ -1,6 +1,6 @@
 import { Head } from '@pingcap-incubator/dashboard_components'
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Col, Row } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Col, Row } from 'antd'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router-dom'
@@ -38,5 +38,5 @@ export default function LogSearchingDetail() {
         </Col>
       </Row>
     </div>
-  );
+  )
 }

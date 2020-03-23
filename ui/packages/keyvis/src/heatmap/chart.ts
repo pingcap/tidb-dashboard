@@ -601,7 +601,7 @@ export async function heatmapChart(
       }
       // range
       if (
-        startLen >= 2 &&
+        startLen >= 3 &&
         startLen == endLen &&
         _.isEqual(
           startLabel.slice(0, startLen - 1),

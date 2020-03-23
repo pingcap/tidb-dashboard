@@ -43,11 +43,6 @@
     "bump:packages": "lerna version --no-git-tag-version --no-push",
     "format": "prettier --write ."
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged --bail"
-    }
-  },
   "homepage": "/dashboard",
   "browserslist": {
     "production": [

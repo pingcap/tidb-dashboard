@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -67,7 +68,8 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		auth.MWAuthRequired(),
 		apiutils.MWConnectTiDB(s.tidbForwarder),
 		s.genReportHandler)
-	endpoint.GET("/reports/:id", s.reportHandler)
+	endpoint.GET("/reports/:id/detail", s.reportHandler)
+	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)
 	endpoint.GET("/reports/:id/status",
 		auth.MWAuthRequired(),
 		apiutils.MWConnectTiDB(s.tidbForwarder),
@@ -193,4 +195,30 @@ func (s *Service) reportHandler(c *gin.Context) {
 		return
 	}
 	utils.HTML(c, s.htmlRender, http.StatusOK, "sql-diagnosis/index", tables)
+}
+
+func (s *Service) reportDataHandler(c *gin.Context) {
+	id := c.Param("id")
+	reportID, err := strconv.Atoi(id)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	report, err := GetReport(s.db, uint(reportID))
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	finalContent := "window.__diagnosis_data__ = " + report.Content
+	reader := strings.NewReader(finalContent)
+	contentLength := len(finalContent)
+	contentType := "text/javascript"
+
+	extraHeaders := map[string]string{
+		"Content-Disposition": `attachment; filename="data.js"`,
+	}
+
+	c.DataFromReader(http.StatusOK, int64(contentLength), contentType, reader, extraHeaders)
 }

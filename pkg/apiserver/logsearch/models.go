@@ -63,7 +63,7 @@ type SearchLogRequest struct {
 	// We use a string array to represent multiple CNF pattern sceniaor like:
 	// SELECT * FROM t WHERE c LIKE '%s%' and c REGEXP '.*a.*' because
 	// Golang and Rust don't support perl-like (?=re1)(?=re2)
-	Patterns             []string `protobuf:"bytes,4,rep,name=patterns" json:"patterns,omitempty"`
+	Patterns []string `protobuf:"bytes,4,rep,name=patterns" json:"patterns,omitempty"`
 }
 
 func (r *SearchLogRequest) Convert() *diagnosticspb.SearchLogRequest {
@@ -71,11 +71,11 @@ func (r *SearchLogRequest) Convert() *diagnosticspb.SearchLogRequest {
 	for i, level := range r.Levels {
 		levels[i] = diagnosticspb.LogLevel(level)
 	}
-	return &diagnosticspb.SearchLogRequest {
+	return &diagnosticspb.SearchLogRequest{
 		StartTime: r.StartTime,
-		EndTime: r.EndTime,
-		Levels: levels,
-		Patterns: r.Patterns,
+		EndTime:   r.EndTime,
+		Levels:    levels,
+		Patterns:  r.Patterns,
 	}
 }
 

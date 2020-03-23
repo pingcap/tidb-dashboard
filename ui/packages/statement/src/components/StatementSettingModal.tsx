@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Modal, Form, message, Spin, InputNumber } from 'antd'
+import { Form } from '@ant-design/compatible'
+import '@ant-design/compatible/assets/index.css'
+import { Modal, message, Spin, InputNumber } from 'antd'
 import { StatementConfig } from './statement-types'
 
 import styles from './styles.module.css'

@@ -54,7 +54,30 @@ var ServerTypeMap = map[ServerType]string{
 	ServerTypePD:   "pd",
 }
 
-type SearchLogRequest diagnosticspb.SearchLogRequest
+type LogLevel int32
+
+type SearchLogRequest struct {
+	StartTime int64      `protobuf:"varint,1,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
+	EndTime   int64      `protobuf:"varint,2,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	Levels    []LogLevel `protobuf:"varint,3,rep,packed,name=levels,enum=diagnosticspb.LogLevel" json:"levels,omitempty"`
+	// We use a string array to represent multiple CNF pattern sceniaor like:
+	// SELECT * FROM t WHERE c LIKE '%s%' and c REGEXP '.*a.*' because
+	// Golang and Rust don't support perl-like (?=re1)(?=re2)
+	Patterns             []string `protobuf:"bytes,4,rep,name=patterns" json:"patterns,omitempty"`
+}
+
+func (r *SearchLogRequest) Convert() *diagnosticspb.SearchLogRequest {
+	levels := make([]diagnosticspb.LogLevel, len(r.Levels))
+	for i, level := range r.Levels {
+		levels[i] = diagnosticspb.LogLevel(level)
+	}
+	return &diagnosticspb.SearchLogRequest {
+		StartTime: r.StartTime,
+		EndTime: r.EndTime,
+		Levels: levels,
+		Patterns: r.Patterns,
+	}
+}
 
 func (r *SearchLogRequest) Scan(src interface{}) error {
 	return json.Unmarshal([]byte(src.(string)), r)

@@ -13,7 +13,7 @@ const margin = {
   top: 25,
   right: 40,
   bottom: 70,
-  left: 70,
+  left: 100,
 }
 
 const tooltipOffset = {
@@ -182,9 +182,9 @@ export async function heatmapChart(
       .style('position', 'absolute')
       .style('z-index', '102')
       .merge(labelCanvas)
-      .style('width', 60 + 'px')
+      .style('width', 90 + 'px')
       .style('height', canvasHeight + 'px')
-      .attr('width', 60 * window.devicePixelRatio)
+      .attr('width', 90 * window.devicePixelRatio)
       .attr('height', canvasHeight * window.devicePixelRatio)
       .style('margin-top', margin.top + 'px')
     labelCanvas

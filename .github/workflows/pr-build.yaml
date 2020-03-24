@@ -1,4 +1,4 @@
-name: Build PR
+name: Build
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   backend:
-    name: Backend
+    name: backend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -37,7 +37,7 @@ jobs:
           git diff --exit-code
 
   frontend:
-    name: Frontend
+    name: frontend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

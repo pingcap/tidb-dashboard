@@ -57,7 +57,7 @@ var ServerTypeMap = map[ServerType]string{
 type LogLevel int32
 
 const (
-	LogLevelUNKNOWN  LogLevel = 0
+	LogLevelUnknown  LogLevel = 0
 	LogLevelDebug    LogLevel = 1
 	LogLevelInfo     LogLevel = 2
 	LogLevelWarn     LogLevel = 3
@@ -65,28 +65,28 @@ const (
 	LogLevelCritical LogLevel = 5
 	LogLevelError    LogLevel = 6
 )
+var PBLogLevelSlice = []diagnosticspb.LogLevel{
+	diagnosticspb.LogLevel(LogLevelUnknown),
+	diagnosticspb.LogLevel(LogLevelDebug),
+	diagnosticspb.LogLevel(LogLevelInfo),
+	diagnosticspb.LogLevel(LogLevelWarn),
+	diagnosticspb.LogLevel(LogLevelTrace),
+	diagnosticspb.LogLevel(LogLevelCritical),
+	diagnosticspb.LogLevel(LogLevelError),
+}
 
 type SearchLogRequest struct {
-	StartTime int64    `json:"start_time,omitempty"`
-	EndTime   int64    `json:"end_time,omitempty"`
+	StartTime int64    `json:"start_time"`
+	EndTime   int64    `json:"end_time"`
 	MinLevel  LogLevel `json:"min_level"`
 	// We use a string array to represent multiple CNF pattern sceniaor like:
 	// SELECT * FROM t WHERE c LIKE '%s%' and c REGEXP '.*a.*' because
 	// Golang and Rust don't support perl-like (?=re1)(?=re2)
-	Patterns []string `json:"patterns,omitempty"`
+	Patterns []string `json:"patterns"`
 }
 
-func (r *SearchLogRequest) Convert() *diagnosticspb.SearchLogRequest {
-	levelsSlice := []diagnosticspb.LogLevel{
-		diagnosticspb.LogLevel(LogLevelUNKNOWN),
-		diagnosticspb.LogLevel(LogLevelDebug),
-		diagnosticspb.LogLevel(LogLevelInfo),
-		diagnosticspb.LogLevel(LogLevelWarn),
-		diagnosticspb.LogLevel(LogLevelTrace),
-		diagnosticspb.LogLevel(LogLevelCritical),
-		diagnosticspb.LogLevel(LogLevelError),
-	}
-	var levels = levelsSlice[r.MinLevel:]
+func (r *SearchLogRequest) ConvertToPB() *diagnosticspb.SearchLogRequest {
+	var levels = PBLogLevelSlice[r.MinLevel:]
 	return &diagnosticspb.SearchLogRequest{
 		StartTime: r.StartTime,
 		EndTime:   r.EndTime,

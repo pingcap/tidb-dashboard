@@ -1,0 +1,74 @@
+on:
+  pull_request:
+    branches:
+      - master
+
+name: Test UI
+
+jobs:
+  release_assets:
+    name: Test UI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@master
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - uses: actions/setup-go@v1
+        with:
+          go-version: '1.13.5'
+      - name: Lookup yarn cache
+        id: yarn_cache
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.yarn_cache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Load go module cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Load golangci-lint cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/golangci-lint
+          key: ${{ runner.os }}-golint
+          restore-keys: |
+            ${{ runner.os }}-golint
+      - name: Load tiup cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.tiup/components
+          key: ${{ runner.os }}-tiup
+          restore-keys: |
+            ${{ runner.os }}-tiup
+      - name: Install and run TiUP
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
+          source /home/runner/.profile
+          tiup update --nightly --all
+          tiup playground nightly &
+      - name: Build UI
+        run: |
+          make ui
+        env:
+          NO_MINIMIZE: true
+      - name: Build and run backend
+        run: |
+          make
+          make run &
+        env:
+          UI: 1
+      - name: Run e2e test
+        run: |
+          cd ui/tests
+          yarn
+          yarn test
+        env:
+          CI: true

@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import styles from './Styles.module.css'
 import {
-  AllLogLevel,
   getAddress,
   namingMap,
   parseClusterInfo,
@@ -91,7 +90,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
       setSearchValue(searchValue)
     }
     fetchData()
-  }, [])
+  }, [taskGroupID])
 
   async function createTaskGroup() {
     // TODO: check select at least one component

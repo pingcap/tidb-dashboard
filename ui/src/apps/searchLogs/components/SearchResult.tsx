@@ -102,7 +102,7 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
       setLoading(true)
     }
     getLogPreview()
-  }, [taskGroupID, tasks])
+  }, [loading, taskGroupID, tasks])
 
   return (
     <Card>

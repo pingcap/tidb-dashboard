@@ -33,9 +33,10 @@ import (
 
 // Service is used to provide a kind of feature.
 type Service struct {
-	config *config.Config
-	db     *dbstore.DB
-	tasks  sync.Map
+	config     *config.Config
+	db         *dbstore.DB
+	tasks      sync.Map
+	httpClient *http.Client
 }
 
 // NewService creates a new service.
@@ -44,30 +45,36 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 	if err != nil {
 		log.Fatal("Failed to initialize database", zap.Error(err))
 	}
-	return &Service{config: config, db: db, tasks: sync.Map{}}
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: config.ClusterTLSConfig,
+		},
+	}
+
+	return &Service{config: config, db: db, tasks: sync.Map{}, httpClient: httpClient}
 }
 
 // Register register the handlers to the service.
-func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
+func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/profiling")
 
-	endpoint.POST("/group/start", auth.MWAuthRequired(), s.startHandler)
-	endpoint.GET("/group/status/:groupId", auth.MWAuthRequired(), s.statusHandler)
-	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), s.cancelGroupHandler)
-	endpoint.GET("/group/download/acquire_token", auth.MWAuthRequired(), s.getGroupDownloadTokenHandler)
-	endpoint.GET("/group/download", s.downloadGroupHandler)
-	endpoint.GET("/single/download/acquire_token", auth.MWAuthRequired(), s.getSingleDownloadTokenHandler)
-	endpoint.GET("/single/download", s.downloadSingleHandler)
-	endpoint.DELETE("/group/delete/:groupId", auth.MWAuthRequired(), s.deleteHandler)
+	endpoint.GET("/group/list", auth.MWAuthRequired(), s.getGroupList)
+	endpoint.POST("/group/start", auth.MWAuthRequired(), s.start)
+	endpoint.GET("/group/detail/:groupId", auth.MWAuthRequired(), s.getGroupDetail)
+	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), s.cancelGroup)
+	endpoint.DELETE("/group/delete/:groupId", auth.MWAuthRequired(), s.deleteGroup)
+	endpoint.GET("/group/download/acquire_token", auth.MWAuthRequired(), s.getGroupDownloadToken)
+	endpoint.GET("/group/download", s.downloadGroup)
+	endpoint.GET("/single/download/acquire_token", auth.MWAuthRequired(), s.getSingleDownloadToken)
+	endpoint.GET("/single/download", s.downloadSingle)
 }
 
 type StartRequest struct {
-	TiDB         []string `json:"tidb"`
-	TiKV         []string `json:"tikv"`
-	PD           []string `json:"pd"`
-	DurationSecs uint     `json:"duration_secs"`
+	Targets      []utils.RequestTargetNode `json:"targets"`
+	DurationSecs uint                      `json:"duration_secs"`
 }
 
+// @ID startProfiling
 // @Summary Start profiling
 // @Description Start a profiling task group
 // @Produce json
@@ -77,40 +84,37 @@ type StartRequest struct {
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/start [post]
-func (s *Service) startHandler(c *gin.Context) {
-	var pr StartRequest
-	if err := c.ShouldBindJSON(&pr); err != nil {
+func (s *Service) start(c *gin.Context) {
+	var req StartRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
+	if len(req.Targets) == 0 {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.NewWithNoMessage())
+		return
+	}
 
-	if pr.DurationSecs == 0 {
-		pr.DurationSecs = 30
+	if req.DurationSecs == 0 {
+		req.DurationSecs = 30
 	}
-	if pr.DurationSecs > 120 {
-		pr.DurationSecs = 120
+	if req.DurationSecs > 120 {
+		req.DurationSecs = 120
 	}
-	taskGroup := NewTaskGroup(s.db, pr.DurationSecs)
+	taskGroup := NewTaskGroup(s.db, req.DurationSecs, utils.NewRequestTargetStatisticsFromArray(&req.Targets))
 	if err := s.db.Create(taskGroup.TaskGroupModel).Error; err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	nodes := map[NodeType][]string{
-		NodeTypeTiDB: pr.TiDB,
-		NodeTypeTiKV: pr.TiKV,
-		NodeTypePD:   pr.PD,
-	}
-
-	var tasks []*Task
-	for nodeType, nodeAddresses := range nodes {
-		for _, addr := range nodeAddresses {
-			t := NewTask(taskGroup, nodeType, addr)
-			s.db.Create(t.TaskModel)
-			s.tasks.Store(t.ID, t)
-			tasks = append(tasks, t)
-		}
+	tasks := make([]*Task, 0, len(req.Targets))
+	for _, target := range req.Targets {
+		t := NewTask(taskGroup, target, s.config.ClusterTLSConfig != nil)
+		s.db.Create(t.TaskModel)
+		s.tasks.Store(t.ID, t)
+		tasks = append(tasks, t)
 	}
 
 	go func() {
@@ -119,7 +123,7 @@ func (s *Service) startHandler(c *gin.Context) {
 			wg.Add(1)
 			go func(idx int) {
 				defer wg.Done()
-				tasks[idx].run()
+				tasks[idx].run(s.httpClient)
 				s.tasks.Delete(tasks[idx].ID)
 			}(i)
 		}
@@ -131,22 +135,42 @@ func (s *Service) startHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, taskGroup.TaskGroupModel)
 }
 
-type StatusResponse struct {
+// @ID getProfilingGroups
+// @Summary List all profiling groups
+// @Description List all profiling groups
+// @Produce json
+// @Security JwtAuth
+// @Success 200 {array} TaskGroupModel
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Router /profiling/group/list [get]
+func (s *Service) getGroupList(c *gin.Context) {
+	var resp []TaskGroupModel
+	err := s.db.Order("id DESC").Find(&resp).Error
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+type GroupDetailResponse struct {
 	ServerTime int64          `json:"server_time"`
 	TaskGroup  TaskGroupModel `json:"task_group_status"`
 	Tasks      []TaskModel    `json:"tasks_status"`
 }
 
+// @ID getProfilingGroupDetail
 // @Summary List all tasks with a given group ID
 // @Description List all profiling tasks with a given group ID
 // @Produce json
 // @Param groupId path string true "group ID"
 // @Security JwtAuth
-// @Success 200 {object} StatusResponse
+// @Success 200 {object} GroupDetailResponse
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /profiling/group/status/{groupId} [get]
-func (s *Service) statusHandler(c *gin.Context) {
+// @Router /profiling/group/detail/{groupId} [get]
+func (s *Service) getGroupDetail(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
 		c.Status(http.StatusBadRequest)
@@ -169,13 +193,14 @@ func (s *Service) statusHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, StatusResponse{
+	c.JSON(http.StatusOK, GroupDetailResponse{
 		ServerTime: time.Now().Unix(), // Used to estimate task progress
 		TaskGroup:  taskGroup,
 		Tasks:      tasks,
 	})
 }
 
+// @ID cancelProfilingGroup
 // @Summary Cancel all tasks with a given group ID
 // @Description Cancel all profling tasks with a given group ID
 // @Produce json
@@ -185,7 +210,7 @@ func (s *Service) statusHandler(c *gin.Context) {
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/cancel/{groupId} [post]
-func (s *Service) cancelGroupHandler(c *gin.Context) {
+func (s *Service) cancelGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
 		c.Status(http.StatusBadRequest)
@@ -209,6 +234,7 @@ func (s *Service) cancelGroupHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, "success")
 }
 
+// @ID getProfilingGroupDownloadToken
 // @Summary Get download token for group download
 // @Description Get download token with a given group ID
 // @Produce plain
@@ -218,7 +244,7 @@ func (s *Service) cancelGroupHandler(c *gin.Context) {
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/download/acquire_token [get]
-func (s *Service) getGroupDownloadTokenHandler(c *gin.Context) {
+func (s *Service) getGroupDownloadToken(c *gin.Context) {
 	id := c.Query("id")
 	token, err := utils.NewJWTString("profiling/group_download", id)
 	if err != nil {
@@ -229,6 +255,7 @@ func (s *Service) getGroupDownloadTokenHandler(c *gin.Context) {
 	c.String(http.StatusOK, token)
 }
 
+// @ID downloadProfilingGroup
 // @Summary Download all results of a task group
 // @Description Download all finished profiling results of a task group
 // @Produce application/x-gzip
@@ -238,7 +265,7 @@ func (s *Service) getGroupDownloadTokenHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /profiling/group/download [get]
-func (s *Service) downloadGroupHandler(c *gin.Context) {
+func (s *Service) downloadGroup(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/group_download", token)
 	if err != nil {
@@ -280,10 +307,11 @@ func (s *Service) downloadGroupHandler(c *gin.Context) {
 		return
 	}
 
-	fileName := fmt.Sprintf("profile_taskgroup_%d.tar.gz", taskGroupID)
+	fileName := fmt.Sprintf("profiling_pack_%d.tar.gz", taskGroupID)
 	c.FileAttachment(temp.Name(), fileName)
 }
 
+// @ID getProfilingSingleDownloadToken
 // @Summary Get download token for single download
 // @Description Get download token with a given task ID
 // @Produce plain
@@ -293,7 +321,7 @@ func (s *Service) downloadGroupHandler(c *gin.Context) {
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/single/download/acquire_token [get]
-func (s *Service) getSingleDownloadTokenHandler(c *gin.Context) {
+func (s *Service) getSingleDownloadToken(c *gin.Context) {
 	id := c.Query("id")
 	token, err := utils.NewJWTString("profiling/single_download", id)
 	if err != nil {
@@ -304,6 +332,7 @@ func (s *Service) getSingleDownloadTokenHandler(c *gin.Context) {
 	c.String(http.StatusOK, token)
 }
 
+// @ID downloadProfilingSingle
 // @Summary Download the result of a task
 // @Description Download the finished profiling result of a task
 // @Produce application/x-gzip
@@ -313,7 +342,8 @@ func (s *Service) getSingleDownloadTokenHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /profiling/single/download [get]
-func (s *Service) downloadSingleHandler(c *gin.Context) {
+func (s *Service) downloadSingle(c *gin.Context) {
+	// FIXME: We can simply provide only a single file
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/single_download", token)
 	if err != nil {
@@ -350,10 +380,11 @@ func (s *Service) downloadSingleHandler(c *gin.Context) {
 		return
 	}
 
-	fileName := fmt.Sprintf("profile_task_%d.tar.gz", taskID)
+	fileName := fmt.Sprintf("profiling_%d.tar.gz", taskID)
 	c.FileAttachment(temp.Name(), fileName)
 }
 
+// @ID deleteProfilingGroup
 // @Summary Delete all tasks with a given group ID
 // @Description Delete all finished profiling tasks with a given group ID
 // @Produce json
@@ -364,7 +395,7 @@ func (s *Service) downloadSingleHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /profiling/group/delete/{groupId} [delete]
-func (s *Service) deleteHandler(c *gin.Context) {
+func (s *Service) deleteGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
 		c.Status(http.StatusBadRequest)

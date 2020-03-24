@@ -42,7 +42,7 @@ type ClusterInfo struct {
 // * /topology/alertmanager
 // * /topology/tidb
 func fillTopologyUnderEtcd(ctx context.Context, service *Service, fillTargetInfo *ClusterInfo) {
-	tidb, grafana, alertManager, err := clusterinfo.GetTopologyUnderEtcd(ctx, service.etcdProvider.GetEtcdClient())
+	tidb, grafana, alertManager, err := clusterinfo.GetTopologyUnderEtcd(ctx, service.etcdClient)
 	if err != nil {
 		// Note: GetTopology return error only when fetch etcd failed.
 		// So it's ok to fill all of them err
@@ -56,14 +56,14 @@ func fillTopologyUnderEtcd(ctx context.Context, service *Service, fillTargetInfo
 	if alertManager != nil {
 		fillTargetInfo.AlertManager = alertManager
 	}
-	if len(tidb) == 0 {
-		tidb, err = clusterinfo.GetTiDBTopologyFromOld(ctx, service.etcdProvider.GetEtcdClient())
-		if err != nil {
-			errString := err.Error()
-			fillTargetInfo.TiDB.Err = &errString
-			return
-		}
-	}
+	//if len(tidb) == 0 {
+	//	tidb, err = clusterinfo.GetTiDBTopologyFromOld(ctx, service.etcdClient)
+	//	if err != nil {
+	//		errString := err.Error()
+	//		fillTargetInfo.TiDB.Err = &errString
+	//		return
+	//	}
+	//}
 	fillTargetInfo.TiDB.Nodes = tidb
 }
 

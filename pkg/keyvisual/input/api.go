@@ -114,10 +114,10 @@ func read(stream io.ReadCloser) (*RegionsInfo, error) {
 	return regions, err
 }
 
-func NewAPIPeriodicGetter(pdAddr string) regionpkg.RegionsInfoGenerator {
+func NewAPIPeriodicGetter(pdAddr string, client *http.Client) regionpkg.RegionsInfoGenerator {
 	addr := fmt.Sprintf("%s/pd/api/v1/regions", pdAddr)
 	return func() (regionsInfo regionpkg.RegionsInfo, err error) {
-		resp, err := http.Get(addr) //nolint:bodyclose,gosec
+		resp, err := client.Get(addr) //nolint:bodyclose,gosec
 		if err == nil {
 			return read(resp.Body)
 		}

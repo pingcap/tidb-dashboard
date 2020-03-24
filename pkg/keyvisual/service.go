@@ -23,25 +23,34 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
-	// Import for swag go doc
-	_ "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/storage"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
 const (
-	maxDisplayY = 1536
+	heatmapsMaxDisplayY = 1536
+
+	distanceStrategyRatio = 1.0 / math.Phi
+	distanceStrategyLevel = 15
+	distanceStrategyCount = 50
 )
 
 var (
+	ErrNS             = errorx.NewNamespace("error.keyvisual")
+	ErrServiceStopped = ErrNS.NewType("service_stopped")
+
 	defaultStatConfig = storage.StatConfig{
 		LayersConfig: []storage.LayerConfig{
 			{Len: 60, Ratio: 2 / 1},                     // step 1 minutes, total 60, 1 hours (sum: 1 hours)
@@ -54,55 +63,98 @@ var (
 )
 
 type Service struct {
+	app    *fx.App
+	status *utils.ServiceStatus
+
 	ctx    context.Context
 	cancel context.CancelFunc
-	wg     sync.WaitGroup
 
-	config   *config.Config
-	provider *region.PDDataProvider
+	config     *config.Config
+	provider   *region.PDDataProvider
+	httpClient *http.Client
+	db         *dbstore.DB
 
-	in       input.StatInput
 	stat     *storage.Stat
 	strategy matrix.Strategy
 }
 
-func NewService(ctx context.Context, cfg *config.Config, provider *region.PDDataProvider) *Service {
-	ctx, cancel := context.WithCancel(ctx)
-	srv := &Service{
-		ctx:      ctx,
-		cancel:   cancel,
-		config:   cfg,
-		provider: provider,
+func NewService(lc fx.Lifecycle, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client, db *dbstore.DB) *Service {
+	s := &Service{
+		status:     utils.NewServiceStatus(),
+		config:     cfg,
+		provider:   provider,
+		httpClient: httpClient,
+		db:         db,
 	}
-	wg := &srv.wg
-	srv.in = input.NewStatInput(ctx, provider)
-	labelStrategy := decorator.TiDBLabelStrategy(ctx, provider)
-	srv.strategy = matrix.DistanceStrategy(ctx, wg, labelStrategy, 1.0/math.Phi, 15, 50)
-	srv.stat = storage.NewStat(ctx, wg, provider, defaultStatConfig, srv.strategy, srv.in.GetStartTime())
-	return srv
+
+	lc.Append(fx.Hook{
+		OnStart: s.Start,
+		OnStop:  s.Stop,
+	})
+
+	return s
 }
 
-func (s *Service) Start() {
-	s.wg.Add(2)
-	go func() {
-		s.strategy.Background()
-		s.wg.Done()
-	}()
-	go func() {
-		s.in.Background(s.stat)
-		s.wg.Done()
-	}()
-}
-
-func (s *Service) Close() {
-	s.cancel()
-	s.wg.Wait()
-}
-
-func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
+func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/keyvisual")
+	endpoint.Use(s.status.MWHandleStopped(stoppedHandler))
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.GET("/heatmaps", s.heatmapsHandler)
+	endpoint.GET("/heatmaps", s.heatmaps)
+}
+
+func (s *Service) IsRunning() bool {
+	return s.status.IsRunning()
+}
+
+func (s *Service) Start(ctx context.Context) error {
+	if s.IsRunning() {
+		return nil
+	}
+
+	s.ctx, s.cancel = context.WithCancel(ctx)
+
+	s.app = fx.New(
+		fx.Logger(utils.NewFxPrinter()),
+		fx.Provide(
+			newWaitGroup,
+			newStrategy,
+			newStat,
+			s.provideLocals,
+			input.NewStatInput,
+			decorator.TiDBLabelStrategy,
+		),
+		fx.Populate(&s.stat, &s.strategy),
+		fx.Invoke(
+			// Must be at the end
+			s.status.Register,
+		),
+	)
+
+	if err := s.app.Err(); err != nil {
+		return err
+	}
+	if err := s.app.Start(s.ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Service) Stop(ctx context.Context) error {
+	if !s.IsRunning() {
+		return nil
+	}
+
+	s.cancel()
+	err := s.app.Stop(ctx)
+
+	// drop
+	s.app = nil
+	s.stat = nil
+	s.strategy = nil
+	s.ctx = nil
+	s.cancel = nil
+
+	return err
 }
 
 // @Summary Key Visual Heatmaps
@@ -117,7 +169,7 @@ func (s *Service) Register(r *gin.RouterGroup, auth *user.AuthService) {
 // @Router /keyvisual/heatmaps [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) heatmapsHandler(c *gin.Context) {
+func (s *Service) heatmaps(c *gin.Context) {
 	startKey := c.Query("startkey")
 	endKey := c.Query("endkey")
 	startTimeString := c.Query("starttime")
@@ -171,7 +223,7 @@ func (s *Service) heatmapsHandler(c *gin.Context) {
 	}
 	baseTag := region.IntoTag(typ)
 	plane := s.stat.Range(startTime, endTime, startKey, endKey, baseTag)
-	resp := plane.Pixel(s.strategy, maxDisplayY, region.GetDisplayTags(baseTag))
+	resp := plane.Pixel(s.strategy, heatmapsMaxDisplayY, region.GetDisplayTags(baseTag))
 	resp.Range(startKey, endKey)
 	// TODO: An expedient to reduce data transmission, which needs to be deleted later.
 	resp.DataMap = map[string][][]uint64{
@@ -179,4 +231,44 @@ func (s *Service) heatmapsHandler(c *gin.Context) {
 	}
 	// ----------
 	c.JSON(http.StatusOK, resp)
+}
+
+func (s *Service) provideLocals() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB) {
+	return s.config, s.provider, s.httpClient, s.db
+}
+
+func newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {
+	wg := &sync.WaitGroup{}
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			wg.Wait()
+			return nil
+		},
+	})
+	return wg
+}
+
+func newStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.LabelStrategy) matrix.Strategy {
+	return matrix.DistanceStrategy(lc, wg, labelStrategy, distanceStrategyRatio, distanceStrategyLevel, distanceStrategyCount)
+}
+
+func newStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, in input.StatInput, strategy matrix.Strategy) *storage.Stat {
+	stat := storage.NewStat(lc, wg, provider, defaultStatConfig, strategy, in.GetStartTime())
+
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			wg.Add(1)
+			go func() {
+				in.Background(ctx, stat)
+				wg.Done()
+			}()
+			return nil
+		},
+	})
+
+	return stat
+}
+
+func stoppedHandler(c *gin.Context) {
+	_ = c.AbortWithError(http.StatusNotFound, ErrServiceStopped.NewWithNoMessage())
 }

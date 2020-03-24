@@ -24,6 +24,9 @@ import (
 	"testing"
 
 	. "github.com/pingcap/check"
+	"go.uber.org/fx"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
 )
 
 var _ = Suite(&testDistanceSuite{})
@@ -77,9 +80,15 @@ func BenchmarkGenerateScale(b *testing.B) {
 	keymap.SaveKeys(compactKeys)
 	keymap.SaveKeys(data.Keys)
 
-	ctx, cancel := context.WithCancel(context.TODO())
+	var strategy *distanceStrategy
 	wg := &sync.WaitGroup{}
-	strategy := DistanceStrategy(ctx, wg, NaiveLabelStrategy{}, 1.0/math.Phi, 15, 50).(*distanceStrategy)
+	app := fx.New(
+		fx.Provide(func(lc fx.Lifecycle) Strategy {
+			return DistanceStrategy(lc, wg, decorator.NaiveLabelStrategy{}, 1.0/math.Phi, 15, 50).(*distanceStrategy)
+		}),
+		fx.Populate(&strategy),
+	)
+	_ = app.Start(context.Background())
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
@@ -88,6 +97,6 @@ func BenchmarkGenerateScale(b *testing.B) {
 		_ = strategy.GenerateScale(chunks, compactKeys, dis)
 	}
 	b.StopTimer()
-	cancel()
+	_ = app.Stop(context.Background())
 	wg.Wait()
 }

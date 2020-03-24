@@ -1,17 +1,18 @@
 diagnose:
   nav_title: Cluster Diagnose
-  time_selector:
-    start_time: Start Time
-    end_time: End Time
-  gen_report: Generate Diagnose Report
-  gen_compared_report: Generate Compared Diagnose Report
-  add_compare: Add Compare
-  cancel_compare: Cancel Compare
-  compare: Compare
-  report_status: Report Status
-  compare_report_status: Compare Report Status
-  time_range: Time Range
-  compare_time_range: Compared Time Range
-  progress: Progress
-  full_report: Full Report
-  back_to_gen_report: Back to Generate New Report
+  generate:
+    title: New Diagnose Report
+    range_begin: Diagnose Begin Range
+    range_duration: Range Size
+    is_compare: Compare by Baseline
+    compare_range_begin: Baseline Begin Range
+    submit: Generate
+  status:
+    head:
+      title: Diagnose Status
+      back: New Diagnose Report
+      view: View Full Report
+    range_begin: Range Start Time
+    range_end: Range End Time
+    baseline_begin: Baseline Range Start Time
+    progress: Progress

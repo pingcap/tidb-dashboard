@@ -46,35 +46,86 @@ type testReportSuite struct{}
 //}
 
 func (t *testReportSuite) TestGetTable(c *C) {
+	//cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
 	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
-	startTime := "2020-03-10 12:55:00"
-	endTime := "2020-03-10 12:59:00"
+	startTime := "2020-03-20 15:27:00"
+	endTime := "2020-03-20 16:35:00"
 
 	var table TableDef
-	table, err = GetTiKVRocksDBTimeConsumeTable(startTime, endTime, cli)
+	table, err = GetTiKVRocksDBConfigChangeInfo(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(&table)
 }
 
-//func (t *testReportSuite) TestGetCompareTable(c *C) {
-//	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
-//	c.Assert(err, IsNil)
-//	defer cli.Close()
-//
-//	startTime1 := "2020-03-03 17:08:00"
-//	endTime1 := "2020-03-03 17:11:00"
-//
-//	startTime2 := "2020-03-03 17:18:00"
-//	endTime2 := "2020-03-03 17:21:00"
-//
-//	tables := GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2, cli, nil, 0)
-//	for _, tbl := range tables {
-//		printRows(tbl)
-//	}
-//}
+func (t *testReportSuite) TestGetCompareTable(c *C) {
+	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
+	c.Assert(err, IsNil)
+	defer cli.Close()
+
+	//startTime1 := "2020-03-12 20:17:00"
+	//endTime1 := "2020-03-12 20:39:00"
+	//
+	//startTime2 := "2020-03-12 20:17:00"
+	//endTime2 := "2020-03-12 20:39:00"
+
+	startTime1 := "2020-03-20 15:00:00"
+	endTime1 := "2020-03-20 15:30:00"
+
+	startTime2 := "2020-03-20 15:30:00"
+	endTime2 := "2020-03-20 16:00:00"
+
+	tables := GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2, cli, nil, 0)
+	for _, tbl := range tables {
+		printRows(tbl)
+	}
+}
+
+func (t *testReportSuite) TestInspection(c *C) {
+	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
+	c.Assert(err, IsNil)
+	defer cli.Close()
+
+	// affect by big query join
+	startTime1 := "2020-03-08 01:36:00"
+	endTime1 := "2020-03-08 01:41:00"
+
+	startTime2 := "2020-03-08 01:46:30"
+	endTime2 := "2020-03-08 01:51:30"
+
+	// affect by big write with conflict
+	//startTime1 := "2020-03-10 12:35:00"
+	//endTime1 := "2020-03-10 12:39:00"
+	//
+	//startTime2 := "2020-03-10 12:41:00"
+	//endTime2 := "2020-03-10 12:45:00"
+
+	// affect by big write without conflict
+	//startTime1 := "	2020-03-10 13:20:00"
+	//endTime1 := "	2020-03-10 13:23:00"
+	//
+	//startTime2 := "2020-03-10 13:24:00"
+	//endTime2 := "2020-03-10 13:27:00"
+
+	// diagnose for server down
+	//startTime1 := "2020-03-09 20:35:00"
+	//endTime1 := "2020-03-09 21:20:00"
+	//startTime2 := "2020-03-08 20:35:00"
+	//endTime2 := "2020-03-09 21:20:00"
+
+	// diagnose for disk slow , need more disk metric.
+	//startTime1 := "2020-03-10 12:48:00"
+	//endTime1 := "2020-03-10 12:50:00"
+	//
+	//startTime2 := "2020-03-10 12:54:30"
+	//endTime2 := "2020-03-10 12:56:30"
+
+	table, errRow := CompareDiagnose(startTime1, endTime1, startTime2, endTime2, cli)
+	c.Assert(errRow, IsNil)
+	printRows(&table)
+}
 
 func (t *testReportSuite) TestCompareTable(c *C) {
 	table1 := TableDef{
@@ -102,7 +153,7 @@ func (t *testReportSuite) TestCompareTable(c *C) {
 			},
 			rows2: nil,
 			out: []TableRowDef{
-				{Values: []string{"0", "0", "0", "1", "", ""}},
+				{Values: []string{"0", "0", "0", "", "", "1"}},
 			},
 		},
 		{
@@ -113,7 +164,7 @@ func (t *testReportSuite) TestCompareTable(c *C) {
 				{Values: []string{"1", "1", "1"}},
 			},
 			out: []TableRowDef{
-				{Values: []string{"0", "0", "0", "1", "", ""}},
+				{Values: []string{"0", "0", "0", "", "", "1"}},
 				{Values: []string{"", "1", "", "1", "1", "1"}},
 			},
 		},
@@ -125,7 +176,7 @@ func (t *testReportSuite) TestCompareTable(c *C) {
 				{Values: []string{"1", "0", "0"}},
 			},
 			out: []TableRowDef{
-				{Values: []string{"0", "0", "0", "0", "1", "0"}},
+				{Values: []string{"0", "0", "0", "1", "0", "0"}},
 			},
 		},
 		{

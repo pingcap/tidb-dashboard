@@ -31,6 +31,7 @@ import (
 	"github.com/pingcap/sysutil"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // MaxRecvMsgSize set max gRPC receive message size received from server. If any message size is larger than
@@ -151,8 +152,14 @@ func (t *Task) SyncRun() {
 		return
 	}
 
+	secureOpt := grpc.WithInsecure()
+	if t.taskGroup.service.config.ClusterTLSConfig != nil {
+		creds := credentials.NewTLS(t.taskGroup.service.config.ClusterTLSConfig)
+		secureOpt = grpc.WithTransportCredentials(creds)
+	}
+
 	conn, err := grpc.Dial(t.model.SearchTarget.GRPCAddress(),
-		grpc.WithInsecure(),
+		secureOpt,
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxRecvMsgSize)),
 	)
 	if err != nil {
@@ -162,7 +169,7 @@ func (t *Task) SyncRun() {
 	defer conn.Close()
 
 	cli := diagnosticspb.NewDiagnosticsClient(conn)
-	stream, err := cli.SearchLog(t.ctx, (*diagnosticspb.SearchLogRequest)(t.taskGroup.model.SearchRequest))
+	stream, err := cli.SearchLog(t.ctx, t.taskGroup.model.SearchRequest.ConvertToPB())
 	if err != nil {
 		t.setError(err)
 		return

@@ -17,11 +17,15 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/codec"
+	"go.uber.org/fx"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb/codec"
 )
 
 type tableDetail struct {
@@ -32,31 +36,45 @@ type tableDetail struct {
 }
 
 type tidbLabelStrategy struct {
-	Ctx      context.Context
-	Provider *region.PDDataProvider
+	Config     *config.Config
+	Provider   *region.PDDataProvider
+	HTTPClient *http.Client
 
 	TableMap    sync.Map
 	TidbAddress []string
 }
 
 // TiDBLabelStrategy implements the LabelStrategy interface. Get Label Information from TiDB.
-func TiDBLabelStrategy(ctx context.Context, provider *region.PDDataProvider) LabelStrategy {
+func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) LabelStrategy {
 	s := &tidbLabelStrategy{
-		Ctx:      ctx,
-		Provider: provider,
+		Config:     cfg,
+		Provider:   provider,
+		HTTPClient: httpClient,
 	}
+
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			wg.Add(1)
+			go func() {
+				s.Background(ctx)
+				wg.Done()
+			}()
+			return nil
+		},
+	})
+
 	return s
 }
 
-func (s *tidbLabelStrategy) Background() {
+func (s *tidbLabelStrategy) Background(ctx context.Context) {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 	for {
 		select {
-		case <-s.Ctx.Done():
+		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			s.updateAddress()
+			s.updateAddress(ctx)
 			s.updateMap()
 		}
 	}
@@ -103,4 +121,22 @@ func (s *tidbLabelStrategy) Label(key string) (label LabelKey) {
 		}
 	}
 	return
+}
+
+var globalStart = LabelKey{
+	Key:    "",
+	Labels: []string{"meta"},
+}
+
+var globalEnd = LabelKey{
+	Key:    "",
+	Labels: []string{},
+}
+
+func (s *tidbLabelStrategy) LabelGlobalStart() LabelKey {
+	return globalStart
+}
+
+func (s *tidbLabelStrategy) LabelGlobalEnd() LabelKey {
+	return globalEnd
 }

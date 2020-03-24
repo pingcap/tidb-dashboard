@@ -56,15 +56,12 @@ type tableInfo struct {
 	} `json:"index_info"`
 }
 
-func (s *tidbLabelStrategy) updateAddress() {
-	cli := s.Provider.EtcdProvider.GetEtcdClient()
-	if cli == nil {
-		return
-	}
+func (s *tidbLabelStrategy) updateAddress(ctx context.Context) {
+	cli := s.Provider.EtcdClient
 	var info serverInfo
 	for i := 0; i < retryCnt; i++ {
 		var tidbAddress []string
-		ectx, cancel := context.WithTimeout(s.Ctx, etcdGetTimeout)
+		ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
 		resp, err := cli.Get(ectx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
 		cancel()
 		if err != nil {
@@ -89,10 +86,15 @@ func (s *tidbLabelStrategy) updateAddress() {
 
 func (s *tidbLabelStrategy) updateMap() {
 	var dbInfos []*dbInfo
-	var tidbAddr string
+	var tidbEndpoint string
+	reqScheme := "http"
+	if s.Config.ClusterTLSConfig != nil {
+		reqScheme = "https"
+	}
 	for _, addr := range s.TidbAddress {
-		if err := request(addr, "schema", &dbInfos); err == nil {
-			tidbAddr = addr
+		reqEndpoint := fmt.Sprintf("%s://%s", reqScheme, addr)
+		if err := request(reqEndpoint, "schema", &dbInfos, s.HTTPClient); err == nil {
+			tidbEndpoint = reqEndpoint
 			break
 		}
 	}
@@ -105,7 +107,7 @@ func (s *tidbLabelStrategy) updateMap() {
 		if db.State == 0 {
 			continue
 		}
-		if err := request(tidbAddr, fmt.Sprintf("schema/%s", db.Name.O), &tableInfos); err != nil {
+		if err := request(tidbEndpoint, fmt.Sprintf("schema/%s", db.Name.O), &tableInfos, s.HTTPClient); err != nil {
 			continue
 		}
 		for _, table := range tableInfos {

@@ -1,0 +1,46 @@
+search_logs:
+  nav_title: Search Logs
+  nav:
+    search_logs: Search Logs
+    detail: Search Result
+    history: History
+  page:
+    intro: Preview and download logs by clicking Search
+    tip: The preview shows only the first 500 logs
+    view: View
+    search_histroy: search histroy
+  common:
+    time_range: Time Range
+    start_time: Start Time
+    end_time: End Time
+    log_level: Log Level
+    components: instances
+    components_placeholder: Select at least one instance
+    keywords: Keywords
+    keywords_placeholder: Keywords, Optional, separated by spaces
+    search: Search
+    progress: Progress
+    download_selected: Download selected
+    cancel: Cancel
+    retry: Retry
+  progress:
+    running: is running
+    success: completed
+    failed: failed
+  confirm:
+    cancel_tasks: Are you sure you want to cancel all running log search tasks?
+    retry_tasks: Are you sure you want to retry all failed log search tasks?
+  preview:
+    time: Time
+    level: Level
+    component: Component
+    log: Log
+  history:
+    running: Running
+    finished: Finished
+    delete_selected: Delete selected
+    delete_all: Delete All
+    state: State
+    action: Action
+    detail: Detail
+    delete: Delete

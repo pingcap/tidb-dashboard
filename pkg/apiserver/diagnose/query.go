@@ -518,7 +518,7 @@ func (t totalValueAndTotalCountTableDef) genDetailSQLs(startTime, endTime string
 
 // Read all rows.
 func scanRows(rows *sql.Rows) ([][]string, error) {
-	resultRows := make([][]string, 0, 2)
+	resultRows := make([][]string, 0, 10)
 	for rows.Next() {
 		cols, err := rows.Columns()
 		if err != nil {
@@ -547,47 +547,13 @@ func querySQL(db *gorm.DB, sql string) ([][]string, error) {
 	if len(sql) == 0 {
 		return nil, nil
 	}
-
 	rows, err := db.Raw(sql).Rows()
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	// Read all rows.
-	resultRows := make([][]string, 0, 2)
-	for rows.Next() {
-		cols, err1 := rows.Columns()
-		if err1 != nil {
-			return nil, err
-		}
-
-		// See https://stackoverflow.com/questions/14477941/read-select-columns-into-string-in-go
-		rawResult := make([][]byte, len(cols))
-		dest := make([]interface{}, len(cols))
-		for i := range rawResult {
-			dest[i] = &rawResult[i]
-		}
-
-		err1 = rows.Scan(dest...)
-		if err1 != nil {
-			return nil, err
-		}
-
-		resultRow := []string{}
-		for _, raw := range rawResult {
-			val := ""
-			if raw != nil {
-				val = string(raw)
-			}
-
-			resultRow = append(resultRow, val)
-		}
-		resultRows = append(resultRows, resultRow)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	return resultRows, nil
+	resultRows, err := scanRows(rows)
+	rows.Close()
+	return resultRows, err
 }
 
 func convertFloatToInt(s string) string {

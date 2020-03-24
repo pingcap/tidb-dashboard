@@ -40,6 +40,11 @@
     "publish:packages": "yarn workspaces run p",
     "bump:packages": "lerna version --no-git-tag-version --no-push"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged --bail"
+    }
+  },
   "homepage": "/dashboard",
   "browserslist": {
     "production": [
@@ -63,9 +68,12 @@
     "antd-dayjs-webpack-plugin": "^0.0.8",
     "babel-plugin-import": "^1.13.0",
     "customize-cra": "^0.9.1",
+    "husky": "^4.2.3",
     "lerna": "^3.20.2",
     "less": "^3.10.3",
     "less-loader": "^5.0.0",
+    "prettier": "^2.0.2",
+    "pretty-quick": "^2.0.1",
     "react-app-rewire-yaml": "^1.1.0",
     "react-app-rewired": "^2.1.5",
     "react-scripts": "3.1.x",

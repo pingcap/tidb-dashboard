@@ -1,9 +1,7 @@
 import * as singleSpa from 'single-spa'
 import React from 'react'
 import { DownOutlined, GlobalOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
-import { Form } from '@ant-design/compatible'
-import '@ant-design/compatible/assets/index.css'
-import { Input, Button, message } from 'antd'
+import { Form, Input, Button, message } from 'antd'
 import { motion } from 'framer-motion'
 import { withTranslation } from 'react-i18next'
 import LanguageDropdown from '@/components/LanguageDropdown'
@@ -24,7 +22,6 @@ const AnimationItem = (props) => {
   )
 }
 
-@Form.create({ name: 'tidb_signin' })
 @withTranslation()
 class TiDBSignInForm extends React.PureComponent {
   state = {
@@ -72,14 +69,8 @@ class TiDBSignInForm extends React.PureComponent {
     this.setState({ loading: false })
   }
 
-  handleSubmit = (e) => {
-    e.preventDefault()
-    this.props.form.validateFields((err, values) => {
-      if (err) {
-        return
-      }
-      this.signIn(values)
-    })
+  handleSubmit = (values) => {
+    this.signIn(values)
   }
 
   clearErrorMessages = () => {
@@ -91,10 +82,14 @@ class TiDBSignInForm extends React.PureComponent {
   }
 
   render() {
-    const { getFieldDecorator } = this.props.form
     const { t } = this.props
     return (
-      <Form onSubmit={this.handleSubmit} layout="vertical">
+      <Form 
+        name='tidb_signin' 
+        onFinish={this.handleSubmit}
+        layout="vertical"
+        initialValues={{username:'root'}}
+      >
         <motion.div
           initial="initial"
           animate="open"
@@ -111,22 +106,16 @@ class TiDBSignInForm extends React.PureComponent {
             </Form.Item>
           </AnimationItem>
           <AnimationItem>
-            <Form.Item label={t('signin.form.username')}>
-              {getFieldDecorator('username', {
-                rules: [
-                  {
-                    required: true,
-                    message: t('signin.form.tidb_auth.check.username'),
-                  },
-                ],
-                initialValue: 'root',
-              })(
-                <Input
-                  onInput={this.clearErrorMessages}
-                  prefix={<UserOutlined />}
-                  disabled
-                />
-              )}
+            <Form.Item
+              name='username'
+              label={t('signin.form.username')}
+              rules={[{required:true, message: t('signin.form.tidb_auth.check.username')}]}
+            >
+              <Input
+                onInput={this.clearErrorMessages}
+                prefix={<UserOutlined />}
+                disabled
+              />
             </Form.Item>
           </AnimationItem>
           <AnimationItem>
@@ -137,15 +126,13 @@ class TiDBSignInForm extends React.PureComponent {
                 validateStatus: 'error',
               })}
             >
-              {getFieldDecorator('password')(
-                <Input
-                  prefix={<LockOutlined />}
-                  type="password"
-                  disabled={this.state.loading}
-                  onInput={this.clearErrorMessages}
-                  ref={this.refPassword}
-                />
-              )}
+              <Input
+                prefix={<LockOutlined />}
+                type="password"
+                disabled={this.state.loading}
+                onInput={this.clearErrorMessages}
+                ref={this.refPassword}
+              />
             </Form.Item>
           </AnimationItem>
           <AnimationItem>

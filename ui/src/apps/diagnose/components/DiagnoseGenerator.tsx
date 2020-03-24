@@ -1,98 +1,80 @@
 import React from 'react'
-import { Form } from '@ant-design/compatible'
-import '@ant-design/compatible/assets/index.css'
-import { Button, DatePicker, Select, Switch, message } from 'antd'
+import { Button, DatePicker, Form, Select, Switch, message } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@pingcap-incubator/dashboard_components'
 import { useHistory } from 'react-router-dom'
 import client from '@pingcap-incubator/dashboard_client'
 
-const useSubmitHandler = (form) => {
-  const history = useHistory()
-  return (e) => {
-    e.preventDefault()
-    form.validateFields(async (err, values) => {
-      if (err) {
-        return
-      }
-
-      const start_time = values.rangeBegin.unix()
-      const end_time = start_time + values.rangeDuration * 60
-      const compare_start_time = values.isCompare
-        ? values.compareRangeBegin.unix()
-        : 0
-      const compare_end_time = values.isCompare
-        ? compare_start_time + values.rangeDuration * 60
-        : 0
-
-      try {
-        const res = await client.getInstance().diagnoseReportsPost({
-          start_time,
-          end_time,
-          compare_start_time,
-          compare_end_time,
-        })
-        history.push(`/diagnose/${res.data}`)
-      } catch (error) {
-        message.error(error.message)
-      }
-    })
-  }
-}
-
-function DiagnoseGenerator(props) {
+function DiagnoseGenerator() {
   const { t } = useTranslation()
+  const history = useHistory()
 
-  const { getFieldDecorator } = props.form
-  const isComapre = props.form.getFieldValue('isCompare')
-  const handleSubmit = useSubmitHandler(props.form)
+  async function finishHandler(fieldsValue) {
+    const start_time = fieldsValue['rangeBegin'].unix()
+    const range_duration = fieldsValue['rangeDuration']
+    const is_compare = fieldsValue['isCompare']
+    const compare_range_begin = fieldsValue['compareRangeBegin']
+
+    const end_time = start_time + range_duration * 60
+    const compare_start_time = is_compare
+      ? compare_range_begin.unix()
+      : 0
+    const compare_end_time = is_compare
+      ? compare_start_time + range_duration * 60
+      : 0
+
+    try {
+      const res = await client.getInstance().diagnoseReportsPost({
+        start_time,
+        end_time,
+        compare_start_time,
+        compare_end_time,
+      })
+      history.push(`/diagnose/${res.data}`)
+    } catch (error) {
+      message.error(error.message)
+    }
+  }
 
   return (
     <Card title={t('diagnose.generate.title')}>
-      <Form onSubmit={handleSubmit}>
-        <Form.Item label={t('diagnose.generate.range_begin')}>
-          {getFieldDecorator('rangeBegin', {
-            rules: [
-              {
-                required: true,
-              },
-            ],
-          })(<DatePicker showTime />)}
+      <Form onFinish={finishHandler} initialValues={{rangeDuration:10}}>
+        <Form.Item 
+          name='rangeBegin'
+          rules={[{required: true,}]}
+          label={t('diagnose.generate.range_begin')}>
+          <DatePicker showTime />
         </Form.Item>
-        <Form.Item label={t('diagnose.generate.range_duration')}>
-          {getFieldDecorator('rangeDuration', {
-            initialValue: 10,
-            rules: [
-              {
-                required: true,
-              },
-            ],
-          })(
-            <Select style={{ width: 120 }}>
-              <Select.Option value={5}>5 min</Select.Option>
-              <Select.Option value={10}>10 min</Select.Option>
-              <Select.Option value={30}>30 min</Select.Option>
-              <Select.Option value={60}>1 hour</Select.Option>
-              <Select.Option value={24 * 60}>1 day</Select.Option>
-            </Select>
-          )}
+        <Form.Item 
+          name='rangeDuration'
+          rules={[{required: true,}]}
+          label={t('diagnose.generate.range_duration')}>
+          <Select style={{ width: 120 }}>
+            <Select.Option value={5}>5 min</Select.Option>
+            <Select.Option value={10}>10 min</Select.Option>
+            <Select.Option value={30}>30 min</Select.Option>
+            <Select.Option value={60}>1 hour</Select.Option>
+            <Select.Option value={24 * 60}>1 day</Select.Option>
+          </Select> 
         </Form.Item>
-        <Form.Item label={t('diagnose.generate.is_compare')}>
-          {getFieldDecorator('isCompare', { valuePropName: 'checked' })(
+        <Form.Item
+          name='isCompare'
+          valuePropName='checked'
+          label={t('diagnose.generate.is_compare')}>
             <Switch />
-          )}
+        </Form.Item> 
+        <Form.Item noStyle shouldUpdate={(prev, cur) => prev.isCompare !== cur.isCompare}>
+        {({ getFieldValue }) => {
+          return getFieldValue('isCompare') === true? (
+            <Form.Item
+              name='compareRangeBegin'
+              rules={[{required: true}]}
+              label={t('diagnose.generate.compare_range_begin')}>
+              <DatePicker showTime />
+            </Form.Item>
+          ) :null
+        }}
         </Form.Item>
-        {isComapre && (
-          <Form.Item label={t('diagnose.generate.compare_range_begin')}>
-            {getFieldDecorator('compareRangeBegin', {
-              rules: [
-                {
-                  required: isComapre,
-                },
-              ],
-            })(<DatePicker showTime />)}
-          </Form.Item>
-        )}
         <Form.Item>
           <Button type="primary" htmlType="submit">
             {t('diagnose.generate.submit')}
@@ -103,6 +85,4 @@ function DiagnoseGenerator(props) {
   )
 }
 
-const GenerateForm = Form.create()(DiagnoseGenerator)
-
-export default GenerateForm
+export default DiagnoseGenerator

@@ -344,9 +344,9 @@ export default function StatementsOverview({
           onChange={handleTimeRangeChange}
         >
           {state.timeRanges.map((item) => (
-            <Option value={item.begin_time || ''} key={item.begin_time}>
-              {item.begin_time} ~ {item.end_time}
-            </Option>
+              <Option value={item.begin_time || ''} key={item.begin_time}>
+                {item.begin_time} ~ {item.end_time}
+              </Option>
           ))}
         </Select>
         <Select

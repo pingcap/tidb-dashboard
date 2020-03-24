@@ -1,13 +1,10 @@
 import React from 'react'
-import { Form } from '@ant-design/compatible'
-import '@ant-design/compatible/assets/index.css'
-import { Select } from 'antd'
+import { Form, Select } from 'antd'
 import { Card } from '@pingcap-incubator/dashboard_components'
 import _ from 'lodash'
 import { ALL_LANGUAGES } from '@/utils/i18n'
 import { withTranslation } from 'react-i18next'
 
-@Form.create()
 @withTranslation()
 class LanguageForm extends React.PureComponent {
   handleLanguageChange = (langKey) => {

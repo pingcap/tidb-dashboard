@@ -3,9 +3,7 @@ import {
   LogsearchCreateTaskGroupRequest,
   LogsearchSearchTarget,
 } from '@pingcap-incubator/dashboard_client'
-import { Form } from '@ant-design/compatible'
-import '@ant-design/compatible/assets/index.css'
-import { Button, DatePicker, Input, Select, TreeSelect } from 'antd'
+import { Button, DatePicker, Form, Input, Select, TreeSelect } from 'antd'
 import { RangeValue } from 'rc-picker/lib/interface'
 import { LegacyDataNode } from 'rc-tree-select/lib/interface'
 import moment from 'moment'
@@ -136,8 +134,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
     setSearchValue(e.target.value)
   }
 
-  function handleSearch(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  function handleSearch() {
     createTaskGroup()
   }
 
@@ -149,7 +146,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
   return (
     <Form
       layout="inline"
-      onSubmit={handleSearch}
+      onFinish={handleSearch}
       style={{ display: 'flex', flexWrap: 'wrap' }}
     >
       <Form.Item>

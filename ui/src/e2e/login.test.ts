@@ -1,25 +1,33 @@
 import puppeteer from 'puppeteer'
 
-describe('Login', () => {
-  let browser
-  let page
-  beforeAll(async () => {
-    // browser = await puppeteer.launch({
-    //   headless: false,
-    //   slowMo: 100,
-    // })
-    browser = await puppeteer.launch()
-    page = await browser.newPage()
-  })
+// const LOGIN_URL = 'http://localhost:3000/#/signin'
+const LOGIN_URL = process.env.CI
+  ? 'http://127.0.0.1:12333/dashboard/#/signin'
+  : 'http://localhost:3000/#/signin'
 
-  afterAll(() => {
-    browser.close()
-  })
+describe('Login', () => {
+  // let browser
+  // let page
+  // beforeAll(async () => {
+  //   // browser = await puppeteer.launch({
+  //   //   headless: false,
+  //   //   slowMo: 100,
+  //   // })
+  //   browser = await puppeteer.launch()
+  //   page = await browser.newPage()
+  // })
+
+  // afterAll(() => {
+  //   browser.close()
+  // })
 
   it(
     'should login success by correct password',
     async () => {
-      await page.goto('http://127.0.0.1:12333/dashboard/#/signin')
+      const browser = await puppeteer.launch()
+      const page = await browser.newPage()
+
+      await page.goto(LOGIN_URL)
 
       const title = await page.title()
       expect(title).toBe('TiDB Dashboard')
@@ -39,6 +47,8 @@ describe('Login', () => {
       expect(content).toEqual('Sign in successfully')
 
       // await page.screenshot({ path: 'screen-1.png' })
+
+      await browser.close()
     },
     10 * 1000
   )
@@ -46,7 +56,9 @@ describe('Login', () => {
   it(
     'should login fail by incorrect password',
     async () => {
-      await page.goto('http://127.0.0.1:12333/dashboard/#/signin')
+      const browser = await puppeteer.launch()
+      const page = await browser.newPage()
+      await page.goto(LOGIN_URL)
 
       await page.waitForSelector('input#tidb_signin_password')
       await page.type('input#tidb_signin_password', 'any')
@@ -64,6 +76,8 @@ describe('Login', () => {
       expect(content).toEqual('Sign in failed: TiDB authentication failed')
 
       // await page.screenshot({ path: 'screen-2.png' })
+
+      await browser.close()
     },
     10 * 1000
   )

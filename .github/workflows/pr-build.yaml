@@ -65,6 +65,9 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - name: Install yarn packages
+        run: |
+          make yarn_dependencies
       - name: Check format
         run: |
           yarn prettier --check . || (echo "::error ::Please format your code using 'yarn format'"; exit 1)

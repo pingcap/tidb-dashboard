@@ -6,25 +6,25 @@ const LOGIN_URL = process.env.CI
   : 'http://localhost:3000/#/signin'
 
 describe('Login', () => {
-  // let browser
+  let browser
   // let page
-  // beforeAll(async () => {
-  //   // browser = await puppeteer.launch({
-  //   //   headless: false,
-  //   //   slowMo: 100,
-  //   // })
-  //   browser = await puppeteer.launch()
-  //   page = await browser.newPage()
-  // })
+  beforeAll(async () => {
+    // browser = await puppeteer.launch({
+    //   headless: false,
+    //   slowMo: 100,
+    // })
+    browser = await puppeteer.launch()
+    // page = await browser.newPage()
+  })
 
-  // afterAll(() => {
-  //   browser.close()
-  // })
+  afterAll(() => {
+    browser.close()
+  })
 
   it(
     'should login success by correct password',
     async () => {
-      const browser = await puppeteer.launch()
+      // const browser = await puppeteer.launch()
       const page = await browser.newPage()
 
       await page.goto(LOGIN_URL)
@@ -48,7 +48,7 @@ describe('Login', () => {
 
       // await page.screenshot({ path: 'screen-1.png' })
 
-      await browser.close()
+      // await browser.close()
     },
     10 * 1000
   )
@@ -56,7 +56,7 @@ describe('Login', () => {
   it(
     'should login fail by incorrect password',
     async () => {
-      const browser = await puppeteer.launch()
+      // const browser = await puppeteer.launch()
       const page = await browser.newPage()
       await page.goto(LOGIN_URL)
 
@@ -77,7 +77,7 @@ describe('Login', () => {
 
       // await page.screenshot({ path: 'screen-2.png' })
 
-      await browser.close()
+      // await browser.close()
     },
     10 * 1000
   )

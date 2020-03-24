@@ -19,7 +19,7 @@ describe('Login', () => {
   it(
     'should login success by correct password',
     async () => {
-      await page.goto('http://localhost:3000/#/signin')
+      await page.goto('http://127.0.0.1:12333/dashboard/#/signin')
 
       const title = await page.title()
       expect(title).toBe('TiDB Dashboard')
@@ -46,7 +46,7 @@ describe('Login', () => {
   it(
     'should login fail by incorrect password',
     async () => {
-      await page.goto('http://localhost:3000/#/signin')
+      await page.goto('http://127.0.0.1:12333/dashboard/#/signin')
 
       await page.waitForSelector('input#tidb_signin_password')
       await page.type('input#tidb_signin_password', 'any')

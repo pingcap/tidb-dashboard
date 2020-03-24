@@ -7,7 +7,7 @@ name: Test UI
 
 jobs:
   release_assets:
-    name: Release UI Assets
+    name: Test UI
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -33,6 +33,12 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - uses: actions/cache@v1
+        with:
+          path: ~/.tiup/components
+          key: ${{ runner.os }}-tiup
+          restore-keys: |
+            ${{ runner.os }}-tiup
       - name: Install and run TiUP
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
@@ -47,4 +53,5 @@ jobs:
           make run &
       - name: Run e2e test
         run: |
+          cd ui
           yarn test

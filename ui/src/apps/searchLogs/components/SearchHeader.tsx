@@ -104,7 +104,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
       request: {
         start_time: timeRange?.[0]?.valueOf(), // unix millionsecond
         end_time: timeRange?.[1]?.valueOf(), // unix millionsecond
-        levels: AllLogLevel.slice(logLevel - 1), // 3 => [3,4,5,6]
+        min_level: logLevel,
         patterns: searchValue.split(/\s+/), // 'foo boo' => ['foo', 'boo']
       },
     }

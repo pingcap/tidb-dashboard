@@ -20,7 +20,6 @@ const enableEslintIgnore = () => config => {
   eslintRule.use[0].options.baseConfig.rules = {
     'jsx-a11y/anchor-is-valid': 'off',
   }
-  eslintRule.use[0].options.ignore = true
   return config
 }
 

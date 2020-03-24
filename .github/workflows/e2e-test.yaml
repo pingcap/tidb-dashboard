@@ -42,9 +42,8 @@ jobs:
       - name: Install and run TiUP
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
-          source /home/runner/.profile
-          tiup update --nightly --all
-          tiup playground nightly &
+          ~/.tiup/bin/tiup update --nightly --all
+          ~/.tiup/bin/tiup playground nightly &
       - name: Build UI
         run: |
           make ui

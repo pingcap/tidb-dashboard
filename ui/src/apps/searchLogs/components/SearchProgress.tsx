@@ -1,8 +1,6 @@
 import client from '@pingcap-incubator/dashboard_client'
 import { LogsearchTaskModel } from '@pingcap-incubator/dashboard_client'
 import { Button, Modal, Tree, Skeleton } from 'antd'
-import { AntTreeNodeCheckedEvent } from 'antd/lib/tree/Tree'
-import { Key } from 'rc-tree/lib/interface'
 import React, {
   Dispatch,
   SetStateAction,

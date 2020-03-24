@@ -14,6 +14,7 @@
 package diagnose
 
 import (
+	"database/sql"
 	"fmt"
 	"math"
 	"sort"
@@ -56,30 +57,65 @@ func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, e
 	if len(t.name) == 0 {
 		t.name = t.tbl
 	}
-	condition := fmt.Sprintf("where time >= '%s' and time < '%s' ", arg.startTime, arg.endTime)
+	fields := fmt.Sprintf(`
+		'%s' as name,
+		'' as label,
+		avg(value) as avg, 
+		max(value) as max, 
+		min(value) as min
+		`, t.name)
+	table := fmt.Sprintf("metrics_schema.%s", t.tbl)
+	query := db.
+		Select(fields).
+		Table(table).
+		Where("time >= ? AND time < ?", arg.startTime, arg.endTime)
 	if len(t.condition) > 0 {
-		condition = condition + "and " + t.condition
+		query = query.Where(t.condition)
 	}
-	sql := fmt.Sprintf("select '%s', '', avg(value), max(value), min(value) from metrics_schema.%s %s",
-		t.name, t.tbl, condition)
-	rows, err := querySQL(db, sql)
+	rows, err := query.Rows()
 	if err != nil {
 		return nil, err
 	}
-	if len(rows) == 0 {
+	results, err := scanRows(rows)
+	rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	if len(results) == 0 {
 		return nil, nil
 	}
 	if len(t.label) == 0 {
-		return t.genRow(rows[0], nil), nil
+		return t.genRow(results[0], nil), nil
 	}
 
-	sql = fmt.Sprintf("select '%[1]s',`%[2]v`, avg(value), max(value), min(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` order by avg(value) desc",
-		t.name, t.label, t.tbl, condition)
-	subRows, err := querySQL(db, sql)
+	label := "`" + t.label + "`"
+	fields = fmt.Sprintf(`
+		'%s' as name,
+		%s as label,
+		avg(value) as avg, 
+		max(value) as max, 
+		min(value) as min
+		`, t.name, label)
+	query = db.
+		Select(fields).
+		Table(table).
+		Where("time >= ? AND time < ?", arg.startTime, arg.endTime)
+	if len(t.condition) > 0 {
+		query = query.Where(t.condition)
+	}
+	rows, err = query.
+		Group(label).
+		Order("avg(value) desc").
+		Rows()
 	if err != nil {
 		return nil, err
 	}
-	return t.genRow(rows[0], subRows), nil
+	subResults, err := scanRows(rows)
+	rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	return t.genRow(results[0], subResults), nil
 }
 
 func (t AvgMaxMinTableDef) genRow(values []string, subValues [][]string) *TableRowDef {
@@ -119,37 +155,71 @@ func (t sumValueQuery) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error
 	if len(t.name) == 0 {
 		t.name = t.tbl
 	}
-	condition := fmt.Sprintf("where time >= '%s' and time < '%s' ", arg.startTime, arg.endTime)
+	fields := fmt.Sprintf(`
+		'%s' as name, 
+		'' as label,
+		sum(value) as sum
+		`, t.name)
+	table := fmt.Sprintf("metrics_schema.%s", t.tbl)
+	query := db.
+		Select(fields).
+		Table(table).
+		Where("time >= ? AND time < ?", arg.startTime, arg.endTime)
 	if len(t.condition) > 0 {
-		condition = condition + "and " + t.condition
+		query = query.Where(t.condition)
 	}
-	sql := fmt.Sprintf("select '%s', '', sum(value) from metrics_schema.%s %s",
-		t.name, t.tbl, condition)
-	rows, err := querySQL(db, sql)
+	rows, err := query.Rows()
 	if err != nil {
 		return nil, err
 	}
-	if len(rows) == 0 {
+	results, err := scanRows(rows)
+	rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	if len(results) == 0 {
 		return nil, nil
 	}
 	if len(t.labels) == 0 {
-		return t.genRow(rows[0], nil), nil
+		return t.genRow(results[0], nil), nil
 	}
 
-	sql = fmt.Sprintf("select '%[1]v',`%[2]v`, sum(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` having sum(value) > 0 order by sum(value) desc",
-		t.name, strings.Join(t.labels, "`,`"), t.tbl, condition)
-	subRows, err := querySQL(db, sql)
+	labelFields := fmt.Sprintf("`%v`", strings.Join(t.labels, "`,`"))
+	fields = fmt.Sprintf(`
+		'%s' as name, 
+		%s, 
+		sum(value) as sum
+		`, t.name, labelFields)
+	table = fmt.Sprintf("metrics_schema.%v", t.tbl)
+	query = db.
+		Select(fields).
+		Table(table).
+		Where("time >= ? AND time < ?", arg.startTime, arg.endTime)
+	if len(t.condition) > 0 {
+		query = query.Where(t.condition)
+	}
+	rows, err = query.
+		Group(labelFields).
+		Having("sum(value) > 0").
+		Order("sum(value) desc").
+		Rows()
 	if err != nil {
 		return nil, err
 	}
-	for i := range subRows {
-		row := subRows[i]
+	subResults, err := scanRows(rows)
+	rows.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range subResults {
+		row := subResults[i]
 		row[1] = strings.Join(row[1:1+len(t.labels)], ",")
 		newRow := row[:2]
 		newRow = append(newRow, row[1+len(t.labels):]...)
-		subRows[i] = newRow
+		subResults[i] = newRow
 	}
-	return t.genRow(rows[0], subRows), nil
+	return t.genRow(results[0], subResults), nil
 }
 
 func (t sumValueQuery) genRow(values []string, subValues [][]string) *TableRowDef {
@@ -444,6 +514,33 @@ func (t totalValueAndTotalCountTableDef) genDetailSQLs(startTime, endTime string
 	}
 	joinSQL += " order by t0.total desc"
 	return joinSQL
+}
+
+// Read all rows.
+func scanRows(rows *sql.Rows) ([][]string, error) {
+	resultRows := make([][]string, 0, 2)
+	for rows.Next() {
+		cols, err := rows.Columns()
+		if err != nil {
+			return nil, err
+		}
+
+		// See https://stackoverflow.com/questions/14477941/read-select-columns-into-string-in-go
+		rawResult := make([]string, len(cols))
+		dest := make([]interface{}, len(cols))
+		for i := range rawResult {
+			dest[i] = &rawResult[i]
+		}
+		err = rows.Scan(dest...)
+		if err != nil {
+			return nil, err
+		}
+		resultRows = append(resultRows, rawResult)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return resultRows, nil
 }
 
 func querySQL(db *gorm.DB, sql string) ([][]string, error) {

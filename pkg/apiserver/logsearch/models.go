@@ -65,6 +65,7 @@ const (
 	LogLevelCritical LogLevel = 5
 	LogLevelError    LogLevel = 6
 )
+
 var PBLogLevelSlice = []diagnosticspb.LogLevel{
 	diagnosticspb.LogLevel(LogLevelUnknown),
 	diagnosticspb.LogLevel(LogLevelDebug),

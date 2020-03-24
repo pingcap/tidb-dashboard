@@ -87,7 +87,7 @@ export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
   const endTime = end_time ? moment(end_time) : null
   return {
     timeRange: [startTime, endTime] as RangePickerValue,
-    logLevel: min_level ? min_level : 0,
+    logLevel: min_level ?? 0,
     searchValue: patterns && patterns.length > 0 ? patterns.join(' ') : '',
     components: tasks && tasks.length > 0 ? getComponents(tasks) : [],
   }

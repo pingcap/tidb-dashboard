@@ -10,7 +10,7 @@ function ComponentPanel({ data, field }) {
   let abnormal_nodes = 0
 
   if (data && data[field] && !data[field].err) {
-    data[field].nodes.forEach(n => {
+    data[field].nodes.forEach((n) => {
       if (n.status === 0) {
         abnormal_nodes++
       } else {

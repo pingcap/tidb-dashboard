@@ -66,7 +66,7 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
 
   useEffect(() => {
     function getComponent(id: number | undefined) {
-      return tasks.find(task => {
+      return tasks.find((task) => {
         return task.id !== undefined && task.id === id
       })?.search_target
     }

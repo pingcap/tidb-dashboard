@@ -159,16 +159,43 @@ The followings are required for developing TiDB Dashboard:
 This is a rough outline of what a contributor's workflow looks like:
 
 - Create a Git branch from where you want to base your work. This is usually master.
+
 - Write code, add test cases, and commit your work (see below for message format).
+
+- Run lints and / or formatters.
+
+  - Backend:
+
+    ```bash
+    # In tidb-dashboard directory:
+    make dev
+    ```
+
+  - Frontend:
+
+    ```bash
+    # In ui directory:
+    yarn format
+    ```
+
+    > Recommended to install [Prettier plugin](https://prettier.io/docs/en/editors.html) for your editor so that there will be auto format on save.
+
 - Run tests and make sure all tests pass.
+
 - Push your changes to a branch in your fork of the repository and submit a pull request.
+
 - Your PR will be reviewed by two maintainers, who may request some changes.
+
   - Once you've made changes, your PR must be re-reviewed and approved.
+
   - If the PR becomes out of date, you can use GitHub's 'update branch' button.
+
   - If there are conflicts, you can rebase (or merge) and resolve them locally. Then force push to your PR branch.
     You do not need to get re-review just for resolving conflicts, but you should request re-review if there are significant changes.
+
 - Our CI system automatically tests all pull requests.
-- If all tests passed and got more than two approvals. Reviewers will merge your PR.
+
+- If all tests passed and got an approval, reviewers will merge your PR.
 
 Thanks for your contributions!
 

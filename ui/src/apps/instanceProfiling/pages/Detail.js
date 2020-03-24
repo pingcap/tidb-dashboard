@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import { Head, CardTable } from '@pingcap-incubator/dashboard_components'
 
 function mapData(data) {
-  data.tasks_status.forEach(task => {
+  data.tasks_status.forEach((task) => {
     if (task.state === 1) {
       let task_elapsed_secs = data.server_time - task.started_at
       let progress =

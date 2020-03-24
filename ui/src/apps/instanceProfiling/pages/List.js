@@ -14,7 +14,7 @@ function getTreeData(topologyMap) {
     tikv: [],
     pd: [],
   }
-  Object.values(topologyMap).forEach(target => {
+  Object.values(topologyMap).forEach((target) => {
     if (!(target.kind in treeDataByKind)) {
       return
     }
@@ -30,8 +30,8 @@ function getTreeData(topologyMap) {
     pd: 'PD',
   }
   return Object.keys(treeDataByKind)
-    .filter(kind => treeDataByKind[kind].length > 0)
-    .map(kind => ({
+    .filter((kind) => treeDataByKind[kind].length > 0)
+    .map((kind) => ({
       title: kindTitleMap[kind],
       value: kind,
       key: kind,
@@ -47,7 +47,7 @@ function filterTreeNode(inputValue, treeNode) {
 async function getTargetsMapAsync() {
   const res = await client.getInstance().topologyAllGet()
   const map = {}
-  res.data.tidb.nodes.forEach(node => {
+  res.data.tidb.nodes.forEach((node) => {
     const display = `${node.ip}:${node.port}`
     const target = {
       kind: 'tidb',
@@ -57,7 +57,7 @@ async function getTargetsMapAsync() {
     }
     map[display] = target
   })
-  res.data.tikv.nodes.forEach(node => {
+  res.data.tikv.nodes.forEach((node) => {
     const display = `${node.ip}:${node.port}`
     const target = {
       kind: 'tikv',
@@ -67,7 +67,7 @@ async function getTargetsMapAsync() {
     }
     map[display] = target
   })
-  res.data.pd.nodes.forEach(node => {
+  res.data.pd.nodes.forEach((node) => {
     const display = `${node.ip}:${node.port}`
     const target = {
       kind: 'pd',
@@ -105,7 +105,7 @@ export default function Page() {
       try {
         const res = await client.getInstance().getProfilingGroups()
         setHistoryTable(res.data)
-      } catch (e) { }
+      } catch (e) {}
       setListLoading(false)
     }
     fetchTargetsMap()
@@ -119,7 +119,7 @@ export default function Page() {
     }
     setSubmitting(true)
     const req = {
-      targets: selectedTargets.map(k => targetsMap[k]),
+      targets: selectedTargets.map((k) => targetsMap[k]),
       duration_secs: duration,
     }
     try {
@@ -237,7 +237,7 @@ export default function Page() {
               onChange={setDuration}
               style={{ width: 120 }}
             >
-              {profilingDurationsSec.map(sec => (
+              {profilingDurationsSec.map((sec) => (
                 <Select.Option value={sec} key={sec}>
                   {sec}s
                 </Select.Option>

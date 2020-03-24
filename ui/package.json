@@ -38,7 +38,8 @@
     "test": "react-app-rewired test",
     "clean": "yarn workspaces run clean",
     "publish:packages": "yarn workspaces run p",
-    "bump:packages": "lerna version --no-git-tag-version --no-push"
+    "bump:packages": "lerna version --no-git-tag-version --no-push",
+    "format": "prettier --write ."
   },
   "husky": {
     "hooks": {

@@ -10,7 +10,7 @@ import * as authUtil from '@/utils/auth'
 import { ReactComponent as Logo } from './logo.svg'
 import styles from './RootComponent.module.less'
 
-const AnimationItem = props => {
+const AnimationItem = (props) => {
   return (
     <motion.div
       variants={{ open: { y: 0, opacity: 1 }, initial: { y: 50, opacity: 0 } }}
@@ -34,7 +34,7 @@ class TiDBSignInForm extends React.PureComponent {
     this.refPassword = React.createRef()
   }
 
-  signIn = async form => {
+  signIn = async (form) => {
     this.setState({ loading: true })
     this.clearErrorMessages()
 
@@ -69,7 +69,7 @@ class TiDBSignInForm extends React.PureComponent {
     this.setState({ loading: false })
   }
 
-  handleSubmit = e => {
+  handleSubmit = (e) => {
     e.preventDefault()
     this.props.form.validateFields((err, values) => {
       if (err) {

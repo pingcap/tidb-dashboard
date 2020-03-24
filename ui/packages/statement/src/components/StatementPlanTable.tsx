@@ -5,7 +5,7 @@ import { StatementPlan, StatementPlanStep } from './statement-types'
 
 function parsePlan(plan: string): StatementPlanStep[] {
   const lines = plan.split('\n')
-  return lines.map(line => {
+  return lines.map((line) => {
     const [_, id, task, estRowsStr, operator_info] = line.split('\t')
     const estRows = +estRowsStr
     return {

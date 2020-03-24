@@ -36,7 +36,9 @@ export function scaleSections<T>(
     const commonStart = Math.max(startPos, canvasStart)
     const commonEnd = Math.min(endPos, canvasEnd)
     const focus = focusDomain
-      ? Math.min(scale(focusDomain[1]), endPos) - Math.max(scale(focusDomain[0]), startPos) > 0
+      ? Math.min(scale(focusDomain[1]), endPos) -
+          Math.max(scale(focusDomain[0]), startPos) >
+        0
       : false
 
     if (mergedSmallSection) {
@@ -53,12 +55,20 @@ export function scaleSections<T>(
 
     if (commonEnd - commonStart > 0) {
       if (commonEnd - commonStart > mergeWidth) {
-        result.push(_.assign({ startPos: commonStart, endPos: commonEnd, focus: focus }, section))
+        result.push(
+          _.assign(
+            { startPos: commonStart, endPos: commonEnd, focus: focus },
+            section
+          )
+        )
         oneSectionRendered = true
         mergedSmallSection = null
       } else {
         if (mergedSmallSection === null) {
-          mergedSmallSection = _.assign({ startPos: commonStart, endPos: commonEnd, focus: focus }, section)
+          mergedSmallSection = _.assign(
+            { startPos: commonStart, endPos: commonEnd, focus: focus },
+            section
+          )
         } else {
           mergedSmallSection.val = merge(mergedSmallSection.val, section.val)
           mergedSmallSection.endPos = commonEnd

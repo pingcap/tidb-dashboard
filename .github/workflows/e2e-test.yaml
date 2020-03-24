@@ -54,4 +54,4 @@ jobs:
       - name: Run e2e test
         run: |
           cd ui
-          yarn test
+          CI=true yarn test

@@ -5,7 +5,7 @@ import { StatementDetailInfo } from './statement-types'
 import { useTranslation } from 'react-i18next'
 import SyntaxHighlighter from 'react-syntax-highlighter'
 import { atomOneLight } from 'react-syntax-highlighter/dist/esm/styles/hljs'
-import sqlFormatter from "sql-formatter"
+import sqlFormatter from 'sql-formatter'
 
 type align = 'left' | 'right' | 'center'
 
@@ -49,11 +49,19 @@ export default function StatementSummaryTable({
     },
     {
       kind: t('statement.common.digest_text'),
-      content: <SyntaxHighlighter language='sql' style={atomOneLight}>{sqlFormatter.format(detail.digest_text)}</SyntaxHighlighter>,
+      content: (
+        <SyntaxHighlighter language="sql" style={atomOneLight}>
+          {sqlFormatter.format(detail.digest_text)}
+        </SyntaxHighlighter>
+      ),
     },
     {
       kind: t('statement.detail.query_sample_text'),
-      content: <SyntaxHighlighter language='sql' style={atomOneLight}>{sqlFormatter.format(detail.query_sample_text)}</SyntaxHighlighter>,
+      content: (
+        <SyntaxHighlighter language="sql" style={atomOneLight}>
+          {sqlFormatter.format(detail.query_sample_text)}
+        </SyntaxHighlighter>
+      ),
     },
     {
       kind: t('statement.detail.last_seen'),

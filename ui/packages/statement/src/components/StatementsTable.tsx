@@ -6,9 +6,6 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import { HorizontalBar } from './HorizontalBar'
 import { StatementOverview, StatementTimeRange } from './statement-types'
 import { useTranslation } from 'react-i18next'
-import SyntaxHighlighter from 'react-syntax-highlighter'
-import { atomOneLight } from 'react-syntax-highlighter/dist/esm/styles/hljs'
-import sqlFormatter from 'sql-formatter'
 
 const tableColumns = (
   timeRange: StatementTimeRange,
@@ -32,9 +29,7 @@ const tableColumns = (
       <Link
         to={`${detailPagePath}?digest=${record.digest}&schema=${record.schema_name}&begin_time=${timeRange.begin_time}&end_time=${timeRange.end_time}`}
       >
-        <SyntaxHighlighter language="sql" style={atomOneLight}>
-          {sqlFormatter.format(text)}
-        </SyntaxHighlighter>
+        {text}
       </Link>
     ),
   },

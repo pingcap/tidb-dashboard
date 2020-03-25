@@ -146,6 +146,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
 
   return (
     <Form
+      name="search_form"
       layout="inline"
       onSubmit={handleSearch}
       style={{ display: 'flex', flexWrap: 'wrap' }}
@@ -169,6 +170,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
       </Form.Item>
       <Form.Item>
         <Select
+          id="log_level_selector"
           value={logLevel}
           style={{ width: 100 }}
           onChange={handleLogLevelChange}

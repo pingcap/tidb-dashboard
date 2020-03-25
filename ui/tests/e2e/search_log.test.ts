@@ -67,12 +67,30 @@ describe('Search Logs', () => {
       )
       await searchBtn.click()
 
-      // check result
+      // check search result
       const logsTable = await page.waitForSelector('table')
       const content = await logsTable.$eval('tbody', (node) => node.innerText)
       expect(content).toContain('Welcome to TiDB')
       expect(content.includes('Welcome to TiKV')).toBe(false)
+
+      // download
+      const progressComponents = await page.waitForSelector(
+        'div#search_progress ul.ant-tree'
+      )
+      const tidbCheckbox = await progressComponents.$(
+        'li:nth-child(1) > span.ant-tree-checkbox'
+      )
+      await tidbCheckbox.click()
+      // set download path
+      // https://www.lfhacks.com/tech/puppeteer-file-download
+      await page._client.send('Page.setDownloadBehavior', {
+        behavior: 'allow',
+        downloadPath: '~/Downloads',
+      })
+      const downloadBtn = await page.$('div#search_progress button')
+      await downloadBtn.click()
+      await page.waitFor(2000)
     },
-    10 * 1000
+    20 * 1000
   )
 })

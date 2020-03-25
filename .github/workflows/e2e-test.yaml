@@ -34,6 +34,13 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - name: Load golangci-lint cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/golangci-lint
+          key: ${{ runner.os }}-golint
+          restore-keys: |
+            ${{ runner.os }}-golint
       - name: Load tiup cache
         uses: actions/cache@v1
         with:
@@ -41,24 +48,27 @@ jobs:
           key: ${{ runner.os }}-tiup
           restore-keys: |
             ${{ runner.os }}-tiup
-      - name: Install and run TiUP in background
+      - name: Install and run TiUP in the background
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
           source /home/runner/.profile
           tiup update --nightly --all
           tiup playground nightly &
-      - name: Build and run backend in background
+      - name: Build UI
+        run: |
+          make ui
+        env:
+          NO_MINIMIZE: true
+      - name: Build and run backend in the background
         run: |
           make
           make run &
-      - name: Start frontend in background
-        run: |
-          cd ui
-          yarn
-          yarn run build:packages
-          yarn start &
+        env:
+          UI: 1
       - name: Run e2e test
         run: |
           cd ui/tests
           yarn
           yarn test
+        env:
+          CI: true

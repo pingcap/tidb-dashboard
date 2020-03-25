@@ -7,7 +7,7 @@ import {
   DownOutlined,
   LoadingOutlined,
   SyncOutlined,
-} from '@ant-design/icons';
+} from '@ant-design/icons'
 import { Slider, Spin, Select, Dropdown, Button } from 'antd'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import Flexbox from '@g07cha/flexbox-react'

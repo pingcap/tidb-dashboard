@@ -1,7 +1,9 @@
-module.exports = {
+import { HeatMapOutlined } from '@ant-design/icons'
+
+export default {
   id: 'instance_profiling',
   loader: () => import('./app.js'),
   routerPrefix: '/instance_profiling',
-  icon: 'heat-map',
+  icon: HeatMapOutlined,
   translations: require.context('./translations/', false, /\.yaml$/),
 }

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { Icon as LegacyIcon } from '@ant-design/compatible'
 import { ExperimentOutlined } from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
@@ -37,7 +36,7 @@ function useAnimatedAppMenuItem(registry, appId, title) {
     return (
       <AnimatedMenuItem key={appId} {...animationProps}>
         <Link to={app.indexRoute}>
-          {app.icon ? <LegacyIcon type={app.icon} /> : null}
+          {app.icon ? <app.icon /> : null}
           <span>{title ? title : t(`${appId}.nav_title`, appId)}</span>
         </Link>
       </AnimatedMenuItem>

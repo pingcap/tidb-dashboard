@@ -1,11 +1,15 @@
 import React from 'react'
-import { HashRouter as Router, Route, Switch, withRouter } from 'react-router-dom'
+import {
+  HashRouter as Router,
+  Route,
+  Switch,
+  withRouter,
+} from 'react-router-dom'
 import LogSearching from './LogSearching'
 import LogSearchingDetail from './LogSearchingDetail'
 import LogSearchingHistory from './LogSearchingHistory'
 
-const App = withRouter(props => {
-
+const App = withRouter((props) => {
   return (
     <div>
       <Switch>

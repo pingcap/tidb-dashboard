@@ -6,13 +6,9 @@ export function LoadingIcon() {
 }
 
 export function SuccessIcon() {
-  return (
-    <Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
-  )
+  return <Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
 }
 
 export function FailIcon() {
-  return (
-    <Icon type="info-circle" theme="twoTone" twoToneColor="#faad14" />
-  )
+  return <Icon type="info-circle" theme="twoTone" twoToneColor="#faad14" />
 }

@@ -13,9 +13,10 @@ const {
 const addYaml = require('react-app-rewire-yaml')
 const WebpackBar = require('webpackbar')
 
-const enableEslintIgnore = () => config => {
+const enableEslintIgnore = () => (config) => {
   const eslintRule = config.module.rules.filter(
-    r => r.use && r.use.some(u => u.options && u.options.useEslintrc !== void 0)
+    (r) =>
+      r.use && r.use.some((u) => u.options && u.options.useEslintrc !== void 0)
   )[0]
   eslintRule.use[0].options.baseConfig.rules = {
     'jsx-a11y/anchor-is-valid': 'off',
@@ -23,7 +24,7 @@ const enableEslintIgnore = () => config => {
   return config
 }
 
-const disableMinimizeByEnv = () => config => {
+const disableMinimizeByEnv = () => (config) => {
   if (process.env.NO_MINIMIZE) {
     config.optimization.minimize = false
     config.optimization.splitChunks = false

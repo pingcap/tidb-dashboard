@@ -5,7 +5,7 @@ import { ColorScheme } from './color'
 import { DataTag } from './types'
 import { tagUnit, withUnit } from './utils'
 
-export default function(colorScheme: ColorScheme, dataTag: DataTag) {
+export default function (colorScheme: ColorScheme, dataTag: DataTag) {
   let marginLeft = 70
   let marginRight = 120
   let width = 500
@@ -44,12 +44,12 @@ export default function(colorScheme: ColorScheme, dataTag: DataTag) {
   let xAxis = d3
     .axisBottom(xScale)
     .tickValues(
-      _.range(0, tickCount + 1).map(d =>
+      _.range(0, tickCount + 1).map((d) =>
         xScale.invert((innerWidth * d) / tickCount)
       )
     )
     .tickSize(innerHeight)
-    .tickFormat(d => withUnit(d as number))
+    .tickFormat((d) => withUnit(d as number))
 
   let svg = contaiiner.selectAll('svg').data([null])
   svg = svg
@@ -68,7 +68,7 @@ export default function(colorScheme: ColorScheme, dataTag: DataTag) {
     .attr('transform', 'translate(' + marginLeft + ', 0)')
     .merge(xAxisG)
     .call(xAxis)
-    .call(g => {
+    .call((g) => {
       g.selectAll('.tick text').attr('y', innerHeight + 6)
       g.selectAll('.domain').remove()
     })

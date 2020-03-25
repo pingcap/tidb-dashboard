@@ -17,13 +17,13 @@ export default function StatementDetailPage({ dashboardClient }: Props) {
   function queryDetail(digest, schemaName, beginTime, endTime) {
     return dashboardClient
       .statementsDetailGet(schemaName, beginTime, endTime, digest)
-      .then(res => res.data)
+      .then((res) => res.data)
   }
 
   function queryNodes(digest, schemaName, beginTime, endTime) {
     return dashboardClient
       .statementsNodesGet(schemaName, beginTime, endTime, digest)
-      .then(res => res.data)
+      .then((res) => res.data)
   }
 
   return digest ? (

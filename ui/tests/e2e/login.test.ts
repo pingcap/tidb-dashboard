@@ -1,18 +1,12 @@
 import puppeteer from 'puppeteer'
+import { URL_PREFIX, PUPPETEER_CONFIG } from './test_config'
 
-// const LOGIN_URL = 'http://localhost:3000/#/signin'
-const LOGIN_URL = process.env.CI
-  ? 'http://127.0.0.1:12333/dashboard/#/signin'
-  : 'http://localhost:3000/#/signin'
+const LOGIN_URL = `${URL_PREFIX}/signin`
 
 describe('Login', () => {
   let browser
   beforeAll(async () => {
-    // browser = await puppeteer.launch({
-    //   headless: false,
-    //   slowMo: 100,
-    // })
-    browser = await puppeteer.launch()
+    browser = await puppeteer.launch(PUPPETEER_CONFIG)
   })
 
   afterAll(() => {

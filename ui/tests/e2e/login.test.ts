@@ -27,7 +27,7 @@ describe('Login', () => {
         (el) => (el ? true : false)
       )
       expect(containsPwdInput).toBe(true)
-      const errorContent = await page.$eval(
+      const errorContent = await errorContainer.$eval(
         '.ant-form-explain',
         (el) => el.textContent
       )

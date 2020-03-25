@@ -1,7 +1,5 @@
 import puppeteer from 'puppeteer'
-import { URL_PREFIX, PUPPETEER_CONFIG } from './test_config'
-
-const LOGIN_URL = `${URL_PREFIX}/signin`
+import { LOGIN_URL, OVERVIEW_URL, PUPPETEER_CONFIG } from './test_config'
 
 describe('Login', () => {
   let browser
@@ -14,6 +12,31 @@ describe('Login', () => {
   })
 
   it(
+    'should login fail by incorrect password',
+    async () => {
+      const page = await browser.newPage()
+      await page.goto(LOGIN_URL)
+
+      const pwdInput = await page.waitForSelector('input#tidb_signin_password')
+      await pwdInput.type('any')
+      await page.click('button#signin_btn')
+
+      const errorContainer = await page.waitForSelector('div.has-error')
+      const containsPwdInput = await errorContainer.$eval(
+        'input#tidb_signin_password',
+        (el) => (el ? true : false)
+      )
+      expect(containsPwdInput).toBe(true)
+      const errorContent = await page.$eval(
+        '.ant-form-explain',
+        (el) => el.textContent
+      )
+      expect(errorContent).toContain('TiDB authentication failed')
+    },
+    10 * 1000
+  )
+
+  it(
     'should login success by correct password',
     async () => {
       const page = await browser.newPage()
@@ -23,47 +46,10 @@ describe('Login', () => {
       const title = await page.title()
       expect(title).toBe('TiDB Dashboard')
 
-      await page.waitForSelector('button[type=submit]')
-      await page.click('button[type=submit]')
-
-      await page.waitForSelector('.ant-message-success')
-      const success = await page.$eval('.ant-message-success', (el) =>
-        el ? true : false
-      )
-      expect(success).toBe(true)
-      const content = await page.$eval(
-        '.ant-message-success span',
-        (el) => el.textContent
-      )
-      expect(content).toEqual('Sign in successfully')
-
-      // await page.screenshot({ path: 'screen-1.png' })
-    },
-    10 * 1000
-  )
-
-  it(
-    'should login fail by incorrect password',
-    async () => {
-      const page = await browser.newPage()
-      await page.goto(LOGIN_URL)
-
-      await page.waitForSelector('input#tidb_signin_password')
-      await page.type('input#tidb_signin_password', 'any')
-      await page.click('button[type=submit]')
-
-      await page.waitForSelector('.ant-form-explain')
-      const fail = await page.$eval('.ant-form-explain', (el) =>
-        el ? true : false
-      )
-      expect(fail).toBe(true)
-      const content = await page.$eval(
-        '.ant-form-explain',
-        (el) => el.textContent
-      )
-      expect(content).toEqual('Sign in failed: TiDB authentication failed')
-
-      // await page.screenshot({ path: 'screen-2.png' })
+      const loginBtn = await page.waitForSelector('button#signin_btn')
+      await Promise.all([page.waitForNavigation(), loginBtn.click()])
+      const url = await page.url()
+      expect(url).toBe(OVERVIEW_URL)
     },
     10 * 1000
   )

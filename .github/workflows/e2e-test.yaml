@@ -45,7 +45,7 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
           source /home/runner/.profile
-          tiup install playground
+          tiup install --nightly --all
           tiup playground nightly &
       - name: Build UI
         run: |

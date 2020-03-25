@@ -5,10 +5,8 @@ import { Card } from '@pingcap-incubator/dashboard_components'
 import { useHistory } from 'react-router-dom'
 import client from '@pingcap-incubator/dashboard_client'
 
-export default function DiagnoseGenerator() {
-  const { t } = useTranslation()
-  const history = useHistory()
-  const useFinishHandler = async function (fieldsValue) {
+const useFinishHandler = (history) => {
+  return async (fieldsValue) => {
     const start_time = fieldsValue['rangeBegin'].unix()
     const range_duration = fieldsValue['rangeDuration']
     const is_compare = fieldsValue['isCompare']
@@ -32,7 +30,12 @@ export default function DiagnoseGenerator() {
       message.error(error.message)
     }
   }
-  const handleFinish = useFinishHandler
+}
+
+export default function DiagnoseGenerator() {
+  const { t } = useTranslation()
+  const history = useHistory()
+  const handleFinish = useFinishHandler(history)
   const layout = { labelCol: { span: 4 }, wrapperCol: { span: 16 } }
 
   return (

@@ -1,13 +1,13 @@
+name: Test
+
 on:
   pull_request:
     branches:
       - master
 
-name: Test UI
-
 jobs:
-  release_assets:
-    name: Test UI
+  e2e_test:
+    name: UI
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,9 +24,9 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: ${{ steps.yarn_cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-yarn-e2e-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-
+            ${{ runner.os }}-yarn-e2e
       - name: Load go module cache
         uses: actions/cache@v1
         with:
@@ -34,13 +34,6 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: Load golangci-lint cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/golangci-lint
-          key: ${{ runner.os }}-golint
-          restore-keys: |
-            ${{ runner.os }}-golint
       - name: Load tiup cache
         uses: actions/cache@v1
         with:
@@ -52,13 +45,13 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
           source /home/runner/.profile
-          tiup update --nightly --all
           tiup playground nightly &
       - name: Build UI
         run: |
           make ui
         env:
           NO_MINIMIZE: true
+          CI: true
       - name: Build and run backend in the background
         run: |
           make

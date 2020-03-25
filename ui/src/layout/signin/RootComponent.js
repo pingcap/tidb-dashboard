@@ -1,6 +1,11 @@
 import * as singleSpa from 'single-spa'
 import React from 'react'
-import { DownOutlined, GlobalOutlined, LockOutlined, UserOutlined } from '@ant-design/icons'
+import {
+  DownOutlined,
+  GlobalOutlined,
+  LockOutlined,
+  UserOutlined,
+} from '@ant-design/icons'
 import { Form, Input, Button, message } from 'antd'
 import { motion } from 'framer-motion'
 import { withTranslation } from 'react-i18next'
@@ -84,11 +89,11 @@ class TiDBSignInForm extends React.PureComponent {
   render() {
     const { t } = this.props
     return (
-      <Form 
-        name='tidb_signin' 
+      <Form
+        name="tidb_signin"
         onFinish={this.handleSubmit}
         layout="vertical"
-        initialValues={{username:'root'}}
+        initialValues={{ username: 'root' }}
       >
         <motion.div
           initial="initial"
@@ -107,9 +112,14 @@ class TiDBSignInForm extends React.PureComponent {
           </AnimationItem>
           <AnimationItem>
             <Form.Item
-              name='username'
+              name="username"
               label={t('signin.form.username')}
-              rules={[{required:true, message: t('signin.form.tidb_auth.check.username')}]}
+              rules={[
+                {
+                  required: true,
+                  message: t('signin.form.tidb_auth.check.username'),
+                },
+              ]}
             >
               <Input
                 onInput={this.clearErrorMessages}

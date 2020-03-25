@@ -89,10 +89,10 @@ export function parseClusterInfo(
 }
 
 interface Params {
-  timeRange: RangeValue<moment.Moment>,
-  logLevel: number,
-  components: LogsearchSearchTarget[],
-  searchValue: string,
+  timeRange: RangeValue<moment.Moment>
+  logLevel: number
+  components: LogsearchSearchTarget[]
+  searchValue: string
 }
 
 export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {

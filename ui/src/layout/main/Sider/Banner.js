@@ -51,10 +51,11 @@ export default function ToggleBanner({
         </div>
       </animated.div>
       <animated.div style={transButton} className={styles.bannerRight}>
-        {collapsed
-          ?<MenuUnfoldOutlined style={{ margin: 'auto' }}/>
-          :<MenuFoldOutlined style={{ margin: 'auto' }}/>
-        }
+        {collapsed ? (
+          <MenuUnfoldOutlined style={{ margin: 'auto' }} />
+        ) : (
+          <MenuFoldOutlined style={{ margin: 'auto' }} />
+        )}
       </animated.div>
     </div>
   )

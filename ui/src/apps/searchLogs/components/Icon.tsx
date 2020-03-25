@@ -1,4 +1,8 @@
-import { CheckCircleTwoTone, InfoCircleTwoTone, LoadingOutlined } from '@ant-design/icons'
+import {
+  CheckCircleTwoTone,
+  InfoCircleTwoTone,
+  LoadingOutlined,
+} from '@ant-design/icons'
 import React from 'react'
 
 export function LoadingIcon() {

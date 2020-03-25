@@ -7,7 +7,7 @@ import { Button, DatePicker, Form, Input, Select, TreeSelect } from 'antd'
 import { RangeValue } from 'rc-picker/lib/interface'
 import { LegacyDataNode } from 'rc-tree-select/lib/interface'
 import moment from 'moment'
-import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react'
+import React, { ChangeEvent, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import styles from './Styles.module.css'
@@ -118,7 +118,10 @@ export default function SearchHeader({ taskGroupID }: Props) {
     history.push('/search_logs/detail/' + id)
   }
 
-  function handleTimeRangeChange(values: RangeValue<moment.Moment>, formatString: [string, string]) {
+  function handleTimeRangeChange(
+    values: RangeValue<moment.Moment>,
+    formatString: [string, string]
+  ) {
     setTimeRange(values)
   }
 
@@ -138,7 +141,10 @@ export default function SearchHeader({ taskGroupID }: Props) {
     createTaskGroup()
   }
 
-  function filterTreeNode(inputValue: string, legacyDataNode?: LegacyDataNode): boolean {
+  function filterTreeNode(
+    inputValue: string,
+    legacyDataNode?: LegacyDataNode
+  ): boolean {
     const name = legacyDataNode?.key as string
     return name.includes(inputValue)
   }

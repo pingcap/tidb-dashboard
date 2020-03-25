@@ -16,9 +16,7 @@ function DiagnoseGenerator() {
     const compare_range_begin = fieldsValue['compareRangeBegin']
 
     const end_time = start_time + range_duration * 60
-    const compare_start_time = is_compare
-      ? compare_range_begin.unix()
-      : 0
+    const compare_start_time = is_compare ? compare_range_begin.unix() : 0
     const compare_end_time = is_compare
       ? compare_start_time + range_duration * 60
       : 0
@@ -38,42 +36,49 @@ function DiagnoseGenerator() {
 
   return (
     <Card title={t('diagnose.generate.title')}>
-      <Form onFinish={finishHandler} initialValues={{rangeDuration:10}}>
-        <Form.Item 
-          name='rangeBegin'
-          rules={[{required: true,}]}
-          label={t('diagnose.generate.range_begin')}>
+      <Form onFinish={finishHandler} initialValues={{ rangeDuration: 10 }}>
+        <Form.Item
+          name="rangeBegin"
+          rules={[{ required: true }]}
+          label={t('diagnose.generate.range_begin')}
+        >
           <DatePicker showTime />
         </Form.Item>
-        <Form.Item 
-          name='rangeDuration'
-          rules={[{required: true,}]}
-          label={t('diagnose.generate.range_duration')}>
+        <Form.Item
+          name="rangeDuration"
+          rules={[{ required: true }]}
+          label={t('diagnose.generate.range_duration')}
+        >
           <Select style={{ width: 120 }}>
             <Select.Option value={5}>5 min</Select.Option>
             <Select.Option value={10}>10 min</Select.Option>
             <Select.Option value={30}>30 min</Select.Option>
             <Select.Option value={60}>1 hour</Select.Option>
             <Select.Option value={24 * 60}>1 day</Select.Option>
-          </Select> 
+          </Select>
         </Form.Item>
         <Form.Item
-          name='isCompare'
-          valuePropName='checked'
-          label={t('diagnose.generate.is_compare')}>
-            <Switch />
-        </Form.Item> 
-        <Form.Item noStyle shouldUpdate={(prev, cur) => prev.isCompare !== cur.isCompare}>
-        {({ getFieldValue }) => {
-          return getFieldValue('isCompare') === true? (
-            <Form.Item
-              name='compareRangeBegin'
-              rules={[{required: true}]}
-              label={t('diagnose.generate.compare_range_begin')}>
-              <DatePicker showTime />
-            </Form.Item>
-          ) :null
-        }}
+          name="isCompare"
+          valuePropName="checked"
+          label={t('diagnose.generate.is_compare')}
+        >
+          <Switch />
+        </Form.Item>
+        <Form.Item
+          noStyle
+          shouldUpdate={(prev, cur) => prev.isCompare !== cur.isCompare}
+        >
+          {({ getFieldValue }) => {
+            return getFieldValue('isCompare') === true ? (
+              <Form.Item
+                name="compareRangeBegin"
+                rules={[{ required: true }]}
+                label={t('diagnose.generate.compare_range_begin')}
+              >
+                <DatePicker showTime />
+              </Form.Item>
+            ) : null
+          }}
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit">

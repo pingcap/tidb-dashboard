@@ -112,8 +112,7 @@ export default function Page() {
         title={t('instance_profiling.detail.head.title')}
         back={
           <Link to={`/instance_profiling`}>
-            <ArrowLeftOutlined />{' '}
-            {t('instance_profiling.detail.head.back')}
+            <ArrowLeftOutlined /> {t('instance_profiling.detail.head.back')}
           </Link>
         }
         titleExtra={

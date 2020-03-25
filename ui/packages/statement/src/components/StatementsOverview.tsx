@@ -273,7 +273,10 @@ export default function StatementsOverview({
   // it will cause the infinite loop
   // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
 
-  function handleInstanceChange (val: string, option: OptionsType[number] | OptionsType) {
+  function handleInstanceChange(
+    val: string,
+    option: OptionsType[number] | OptionsType
+  ) {
     dispatch({
       type: 'change_instance',
       payload: val,
@@ -287,7 +290,10 @@ export default function StatementsOverview({
     })
   }
 
-  function handleTimeRangeChange (val: string, option: OptionsType[number] | OptionsType) {
+  function handleTimeRangeChange(
+    val: string,
+    option: OptionsType[number] | OptionsType
+  ) {
     const timeRange = state.timeRanges.find((item) => item.begin_time === val)
     dispatch({
       type: 'change_time_range',
@@ -344,9 +350,9 @@ export default function StatementsOverview({
           onChange={handleTimeRangeChange}
         >
           {state.timeRanges.map((item) => (
-              <Option value={item.begin_time || ''} key={item.begin_time}>
-                {item.begin_time} ~ {item.end_time}
-              </Option>
+            <Option value={item.begin_time || ''} key={item.begin_time}>
+              {item.begin_time} ~ {item.end_time}
+            </Option>
           ))}
         </Select>
         <Select

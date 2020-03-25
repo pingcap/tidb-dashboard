@@ -65,4 +65,4 @@ jobs:
           yarn
           yarn test
         env:
-          CI: true
+          SERVER_URL: http://127.0.0.1:12333/dashboard/

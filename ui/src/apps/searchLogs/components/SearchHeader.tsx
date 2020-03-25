@@ -7,9 +7,10 @@ import { Button, DatePicker, Form, Input, Select, TreeSelect } from 'antd'
 import { RangePickerValue } from 'antd/lib/date-picker/interface'
 import { TreeNode } from 'antd/lib/tree-select'
 import moment from 'moment'
-import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react'
+import React, { ChangeEvent, FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
+import { useMount } from '@umijs/hooks'
 import styles from './Styles.module.css'
 import {
   getAddress,
@@ -69,7 +70,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
   const [searchValue, setSearchValue] = useState<string>('')
 
   const [allTargets, setAllTargets] = useState<LogsearchSearchTarget[]>([])
-  useEffect(() => {
+  useMount(() => {
     async function fetchData() {
       const res = await client.getInstance().topologyAllGet()
       const targets = parseClusterInfo(res.data)
@@ -92,7 +93,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
       setSearchValue(searchValue)
     }
     fetchData()
-  }, [taskGroupID])
+  })
 
   async function createTaskGroup() {
     // TODO: check select at least one component

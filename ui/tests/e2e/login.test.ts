@@ -33,13 +33,13 @@ describe('Login', () => {
       await page.click('button[type=submit]')
 
       await page.waitForSelector('.ant-message-success')
-      const success = await page.$eval('.ant-message-success', el =>
+      const success = await page.$eval('.ant-message-success', (el) =>
         el ? true : false
       )
       expect(success).toBe(true)
       const content = await page.$eval(
         '.ant-message-success span',
-        el => el.textContent
+        (el) => el.textContent
       )
       expect(content).toEqual('Sign in successfully')
 
@@ -59,13 +59,13 @@ describe('Login', () => {
       await page.click('button[type=submit]')
 
       await page.waitForSelector('.ant-form-explain')
-      const fail = await page.$eval('.ant-form-explain', el =>
+      const fail = await page.$eval('.ant-form-explain', (el) =>
         el ? true : false
       )
       expect(fail).toBe(true)
       const content = await page.$eval(
         '.ant-form-explain',
-        el => el.textContent
+        (el) => el.textContent
       )
       expect(content).toEqual('Sign in failed: TiDB authentication failed')
 

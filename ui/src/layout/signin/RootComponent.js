@@ -36,6 +36,7 @@ class TiDBSignInForm extends React.PureComponent {
 
   constructor(props) {
     super(props)
+    this.refForm = React.createRef()
     this.refPassword = React.createRef()
   }
 
@@ -64,7 +65,7 @@ class TiDBSignInForm extends React.PureComponent {
         this.setState({
           signInError: this.props.t('signin.message.error', { msg }),
         })
-        this.props.form.setFieldsValue({ password: '' })
+        this.refForm.current.setFieldsValue({ password: '' })
         setTimeout(() => {
           // Focus after disable state is removed
           this.refPassword.current.focus()
@@ -94,6 +95,7 @@ class TiDBSignInForm extends React.PureComponent {
         onFinish={this.handleSubmit}
         layout="vertical"
         initialValues={{ username: 'root' }}
+        ref={this.refForm}
       >
         <motion.div
           initial="initial"
@@ -130,6 +132,7 @@ class TiDBSignInForm extends React.PureComponent {
           </AnimationItem>
           <AnimationItem>
             <Form.Item
+              name="password"
               label={t('signin.form.password')}
               {...(this.state.signInError && {
                 help: this.state.signInError,

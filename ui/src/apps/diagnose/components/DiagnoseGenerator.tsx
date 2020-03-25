@@ -5,11 +5,10 @@ import { Card } from '@pingcap-incubator/dashboard_components'
 import { useHistory } from 'react-router-dom'
 import client from '@pingcap-incubator/dashboard_client'
 
-function DiagnoseGenerator() {
+export default function DiagnoseGenerator() {
   const { t } = useTranslation()
   const history = useHistory()
-
-  async function finishHandler(fieldsValue) {
+  const useFinishHandler = async function (fieldsValue) {
     const start_time = fieldsValue['rangeBegin'].unix()
     const range_duration = fieldsValue['rangeDuration']
     const is_compare = fieldsValue['isCompare']
@@ -33,10 +32,16 @@ function DiagnoseGenerator() {
       message.error(error.message)
     }
   }
+  const handleFinish = useFinishHandler
+  const layout = { labelCol: { span: 4 }, wrapperCol: { span: 16 } }
 
   return (
     <Card title={t('diagnose.generate.title')}>
-      <Form onFinish={finishHandler} initialValues={{ rangeDuration: 10 }}>
+      <Form
+        {...layout}
+        onFinish={handleFinish}
+        initialValues={{ rangeDuration: 10 }}
+      >
         <Form.Item
           name="rangeBegin"
           rules={[{ required: true }]}
@@ -69,15 +74,17 @@ function DiagnoseGenerator() {
           shouldUpdate={(prev, cur) => prev.isCompare !== cur.isCompare}
         >
           {({ getFieldValue }) => {
-            return getFieldValue('isCompare') === true ? (
-              <Form.Item
-                name="compareRangeBegin"
-                rules={[{ required: true }]}
-                label={t('diagnose.generate.compare_range_begin')}
-              >
-                <DatePicker showTime />
-              </Form.Item>
-            ) : null
+            return (
+              getFieldValue('isCompare') && (
+                <Form.Item
+                  name="compareRangeBegin"
+                  rules={[{ required: true }]}
+                  label={t('diagnose.generate.compare_range_begin')}
+                >
+                  <DatePicker showTime />
+                </Form.Item>
+              )
+            )
           }}
         </Form.Item>
         <Form.Item>
@@ -89,5 +96,3 @@ function DiagnoseGenerator() {
     </Card>
   )
 }
-
-export default DiagnoseGenerator

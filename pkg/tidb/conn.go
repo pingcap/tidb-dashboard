@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	EnvTidbOverrideEndpointKey = "TIDB_OVERRIDE_ENDPOINT"
+	envTidbOverrideEndpointKey = "TIDB_OVERRIDE_ENDPOINT"
 )
 
 func (f *Forwarder) GetDBConnProps() (host string, port int, err error) {
@@ -45,7 +45,7 @@ func (f *Forwarder) GetDBConnProps() (host string, port int, err error) {
 
 func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 	var addr string
-	addr = os.Getenv(EnvTidbOverrideEndpointKey)
+	addr = os.Getenv(envTidbOverrideEndpointKey)
 	if len(addr) < 1 {
 		host, port, err := f.GetDBConnProps()
 		if err != nil {

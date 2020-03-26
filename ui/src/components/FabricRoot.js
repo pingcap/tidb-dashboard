@@ -1,7 +1,7 @@
 import React from 'react'
 import { Icon } from 'antd'
-import { createTheme, Customizations } from 'office-ui-fabric-react'
-import { registerIcons } from 'office-ui-fabric-react/lib/Styling'
+import { createTheme, registerIcons } from 'office-ui-fabric-react/lib/Styling'
+import { Customizations } from 'office-ui-fabric-react/lib/Utilities'
 
 registerIcons({
   icons: {

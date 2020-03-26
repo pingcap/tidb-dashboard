@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import styles from './Styles.module.css'
 import {
-  AllLogLevel,
   getAddress,
   namingMap,
   parseClusterInfo,
@@ -32,26 +31,28 @@ function buildTreeData(targets: LogsearchSearchTarget[]) {
     [ServerType.PD]: [],
   }
 
-  targets.forEach(item => {
+  targets.forEach((item) => {
     if (item.kind === undefined) {
       return
     }
     servers[item.kind].push(item)
   })
 
-  return ServerTypeList.filter(kind => servers[kind].length > 0).map(kind => ({
-    title: namingMap[kind],
-    value: kind,
-    key: kind,
-    children: servers[kind].map((item: LogsearchSearchTarget) => {
-      const addr = getAddress(item)
-      return {
-        title: addr,
-        value: addr,
-        key: addr,
-      }
-    }),
-  }))
+  return ServerTypeList.filter((kind) => servers[kind].length > 0).map(
+    (kind) => ({
+      title: namingMap[kind],
+      value: kind,
+      key: kind,
+      children: servers[kind].map((item: LogsearchSearchTarget) => {
+        const addr = getAddress(item)
+        return {
+          title: addr,
+          value: addr,
+          key: addr,
+        }
+      }),
+    })
+  )
 }
 
 interface Props {
@@ -87,16 +88,16 @@ export default function SearchHeader({ taskGroupID }: Props) {
       } = parseSearchingParams(res2.data)
       setTimeRange(timeRange)
       setLogLevel(logLevel === 0 ? 3 : logLevel)
-      setComponents(components.map(item => getAddress(item)))
+      setComponents(components.map((item) => getAddress(item)))
       setSearchValue(searchValue)
     }
     fetchData()
-  }, [])
+  }, [taskGroupID])
 
   async function createTaskGroup() {
     // TODO: check select at least one component
-    const searchTargets: LogsearchSearchTarget[] = allTargets.filter(item =>
-      selectedComponents.some(addr => addr === getAddress(item))
+    const searchTargets: LogsearchSearchTarget[] = allTargets.filter((item) =>
+      selectedComponents.some((addr) => addr === getAddress(item))
     )
 
     let params: LogsearchCreateTaskGroupRequest = {

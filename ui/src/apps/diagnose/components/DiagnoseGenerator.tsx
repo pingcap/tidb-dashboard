@@ -5,9 +5,9 @@ import { Card } from '@pingcap-incubator/dashboard_components'
 import { useHistory } from 'react-router-dom'
 import client from '@pingcap-incubator/dashboard_client'
 
-const useSubmitHandler = form => {
+const useSubmitHandler = (form) => {
   const history = useHistory()
-  return e => {
+  return (e) => {
     e.preventDefault()
     form.validateFields(async (err, values) => {
       if (err) {

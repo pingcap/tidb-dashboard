@@ -8,7 +8,7 @@ import { withTranslation } from 'react-i18next'
 @Form.create()
 @withTranslation()
 class LanguageForm extends React.PureComponent {
-  handleLanguageChange = langKey => {
+  handleLanguageChange = (langKey) => {
     this.props.i18n.changeLanguage(langKey)
   }
 

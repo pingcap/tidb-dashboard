@@ -59,7 +59,8 @@ export async function heatmapChart(
   onBrush: (range: HeatmapRange) => void,
   onZoom: () => void
 ) {
-  const maxValue = d3.max(data.data[dataTag].map(array => d3.max(array)!)) || 0
+  const maxValue =
+    d3.max(data.data[dataTag].map((array) => d3.max(array)!)) || 0
   const normalizedData = normalizeData(data.data[dataTag], maxValue)
 
   let colorScheme: ColorScheme
@@ -74,28 +75,28 @@ export async function heatmapChart(
   let canvasWidth = 0
   let canvasHeight = 0
 
-  heatmapChart.brightness = function(val: number) {
+  heatmapChart.brightness = function (val: number) {
     brightness = val
     updateBuffer()
     heatmapChart()
   }
 
-  heatmapChart.brush = function(enabled: boolean) {
+  heatmapChart.brush = function (enabled: boolean) {
     isBrushing = enabled
     heatmapChart()
   }
 
-  heatmapChart.brush = function(enabled: boolean) {
+  heatmapChart.brush = function (enabled: boolean) {
     isBrushing = enabled
     heatmapChart()
   }
 
-  heatmapChart.resetZoom = function() {
+  heatmapChart.resetZoom = function () {
     zoomTransform = d3.zoomIdentity
     heatmapChart()
   }
 
-  heatmapChart.size = function(newWidth, newHeight) {
+  heatmapChart.size = function (newWidth, newHeight) {
     const newCanvasWidth = newWidth - margin.left - margin.right
     const newCanvasHeight = newHeight - margin.top - margin.bottom
     // Sync transform on resize
@@ -245,7 +246,7 @@ export async function heatmapChart(
 
     const xAxis = d3
       .axisBottom(xScale)
-      .tickFormat(idx =>
+      .tickFormat((idx) =>
         data.timeAxis[idx as number] !== undefined
           ? d3.timeFormat('%Y-%m-%d %H:%M:%S')(
               new Date(data.timeAxis[idx as number] * 1000)
@@ -376,7 +377,7 @@ export async function heatmapChart(
     }
 
     function hideAxisTicksWithoutLabel() {
-      axis.selectAll('.tick text').each(function() {
+      axis.selectAll('.tick text').each(function () {
         if (this.innerHTML === '') {
           this.parentNode.style.display = 'none'
         }
@@ -713,7 +714,7 @@ export async function heatmapChart(
         .text(tagUnit(dataTag))
 
       const timeText = [timeIdx, timeIdx + 1]
-        .map(idx =>
+        .map((idx) =>
           d3.timeFormat('%Y-%m-%d\n%H:%M:%S')(
             new Date(data.timeAxis[idx] * 1000)
           )
@@ -726,8 +727,8 @@ export async function heatmapChart(
         .append('button')
         .classed('time', true)
         .merge(timeDiv)
-        .call(clickToCopyBehavior, d => d)
-        .text(d => d)
+        .call(clickToCopyBehavior, (d) => d)
+        .text((d) => d)
 
       let overviewLabelDiv = tooltipDiv
         .selectAll('div.overviewLabel')
@@ -741,14 +742,14 @@ export async function heatmapChart(
       let overviewSubLabel = overviewLabelDiv
         .selectAll('.subLabel')
         .style('display', 'none')
-        .data(keyIdx => getTooltipOverviewLabel(keyIdx))
+        .data((keyIdx) => getTooltipOverviewLabel(keyIdx))
 
       overviewSubLabel = overviewSubLabel
         .enter()
         .append('button')
         .classed('subLabel', true)
         .merge(overviewSubLabel)
-        .call(clickToCopyBehavior, d => d)
+        .call(clickToCopyBehavior, (d) => d)
         .text((d, idx) => {
           // Prefix with spaces
           return '\u00A0'.repeat(idx * 2) + d
@@ -772,7 +773,7 @@ export async function heatmapChart(
         .classed('keyContainer', true)
         .merge(keyContainer)
 
-      let descText = keyContainer.selectAll('.desc').data(d => [d])
+      let descText = keyContainer.selectAll('.desc').data((d) => [d])
       descText = descText
         .enter()
         .append('div')
@@ -780,7 +781,7 @@ export async function heatmapChart(
         .merge(descText)
         .text(({ desc }) => desc)
 
-      let keyText = keyContainer.selectAll('button.key').data(d => [d])
+      let keyText = keyContainer.selectAll('button.key').data((d) => [d])
       keyText = keyText
         .enter()
         .append('button')

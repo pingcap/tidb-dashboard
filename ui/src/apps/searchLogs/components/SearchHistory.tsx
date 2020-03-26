@@ -31,9 +31,9 @@ type History = {
 }
 
 function componentRender(targets: LogsearchSearchTarget[]) {
-  const tidb = targets.filter(item => item.kind === ServerType.TiDB)
-  const tikv = targets.filter(item => item.kind === ServerType.TiKV)
-  const pd = targets.filter(item => item.kind === ServerType.PD)
+  const tidb = targets.filter((item) => item.kind === ServerType.TiDB)
+  const tikv = targets.filter((item) => item.kind === ServerType.TiKV)
+  const pd = targets.filter((item) => item.kind === ServerType.PD)
   const r: Array<string> = []
   if (tidb.length > 0) {
     r.push(`${tidb.length} TiDB`)
@@ -114,7 +114,7 @@ export default function SearchHistory() {
   }
 
   async function handleDeleteAll() {
-    const allKeys = taskGroups.map(taskGroup => taskGroup.task_group?.id)
+    const allKeys = taskGroups.map((taskGroup) => taskGroup.task_group?.id)
     for (const key of allKeys) {
       if (key === undefined) {
         continue
@@ -132,7 +132,7 @@ export default function SearchHistory() {
     },
   }
 
-  const historyList: History[] = taskGroups.map(taskGroup => {
+  const historyList: History[] = taskGroups.map((taskGroup) => {
     const {
       timeRange,
       logLevel,

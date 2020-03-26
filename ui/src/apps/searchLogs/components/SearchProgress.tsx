@@ -47,7 +47,7 @@ function leafNodeProps(state: number | undefined) {
 }
 
 function renderLeafNodes(tasks: LogsearchTaskModel[]) {
-  return tasks.map(task => {
+  return tasks.map((task) => {
     const title = getAddress(task.search_target)
     return (
       <TreeNode
@@ -62,11 +62,11 @@ function renderLeafNodes(tasks: LogsearchTaskModel[]) {
 
 function parentNodeIcon(tasks: LogsearchTaskModel[]) {
   // Running: has at least one task running
-  if (tasks.some(task => task.state === TaskState.Running)) {
+  if (tasks.some((task) => task.state === TaskState.Running)) {
     return LoadingIcon
   }
   // Finished: all tasks are finished
-  if (!tasks.some(task => task.state !== TaskState.Finished)) {
+  if (!tasks.some((task) => task.state !== TaskState.Finished)) {
     return SuccessIcon
   }
   // Failed: no task is running, and has failed task
@@ -75,7 +75,7 @@ function parentNodeIcon(tasks: LogsearchTaskModel[]) {
 
 function parentNodeCheckable(tasks: LogsearchTaskModel[]) {
   // Checkable: at least one task has finished
-  return tasks.some(task => task.state === TaskState.Finished)
+  return tasks.some((task) => task.state === TaskState.Finished)
 }
 
 function useSetInterval(callback: () => void) {
@@ -116,7 +116,7 @@ export default function SearchProgress({
     if (
       tasks.length > 0 &&
       taskGroupID === tasks[0].task_group_id &&
-      !tasks.some(task => task.state === TaskState.Running)
+      !tasks.some((task) => task.state === TaskState.Running)
     ) {
       return
     }
@@ -146,7 +146,7 @@ export default function SearchProgress({
 
   function progressDescription(tasks: LogsearchTaskModel[]) {
     const arr = [0, 0, 0]
-    tasks.forEach(task => {
+    tasks.forEach((task) => {
       const state = task.state
       if (state !== undefined) {
         arr[state - 1]++
@@ -170,38 +170,40 @@ export default function SearchProgress({
       [ServerType.PD]: [],
     }
 
-    tasks.forEach(task => {
+    tasks.forEach((task) => {
       if (task.search_target?.kind === undefined) {
         return
       }
       servers[task.search_target.kind].push(task)
     })
 
-    return ServerTypeList.filter(kind => servers[kind].length > 0).map(kind => {
-      const tasks: LogsearchTaskModel[] = servers[kind]
-      const title = (
-        <span>
-          {namingMap[kind]}
-          <span
-            style={{
-              fontSize: '0.8em',
-              marginLeft: 5,
-            }}
-          >
-            {progressDescription(tasks)}
+    return ServerTypeList.filter((kind) => servers[kind].length > 0).map(
+      (kind) => {
+        const tasks: LogsearchTaskModel[] = servers[kind]
+        const title = (
+          <span>
+            {namingMap[kind]}
+            <span
+              style={{
+                fontSize: '0.8em',
+                marginLeft: 5,
+              }}
+            >
+              {progressDescription(tasks)}
+            </span>
           </span>
-        </span>
-      )
-      return (
-        <TreeNode
-          key={namingMap[kind]}
-          title={title}
-          icon={parentNodeIcon(tasks)}
-          disableCheckbox={!parentNodeCheckable(tasks)}
-          children={renderLeafNodes(tasks)}
-        />
-      )
-    })
+        )
+        return (
+          <TreeNode
+            key={namingMap[kind]}
+            title={title}
+            icon={parentNodeIcon(tasks)}
+            disableCheckbox={!parentNodeCheckable(tasks)}
+            children={renderLeafNodes(tasks)}
+          />
+        )
+      }
+    )
   }
 
   async function handleDownload() {
@@ -210,7 +212,7 @@ export default function SearchProgress({
     }
     // filter out all parent node
     const keys = checkedKeys.filter(
-      key => !Object.keys(namingMap).some(name => name === key)
+      (key) => !Object.keys(namingMap).some((name) => name === key)
     )
 
     const res = await client.getInstance().logsDownloadAcquireTokenGet(keys)
@@ -231,7 +233,7 @@ export default function SearchProgress({
       onOk() {
         client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + '')
         setTasks(
-          tasks.map(task => {
+          tasks.map((task) => {
             if (task.state === TaskState.Error) {
               task.state = TaskState.Running
             }
@@ -251,7 +253,7 @@ export default function SearchProgress({
       onOk() {
         client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + '')
         setTasks(
-          tasks.map(task => {
+          tasks.map((task) => {
             if (task.state === TaskState.Error) {
               task.state = TaskState.Running
             }
@@ -286,15 +288,15 @@ export default function SearchProgress({
             <Button
               type="danger"
               onClick={handleCancel}
-              disabled={!tasks.some(task => task.state === TaskState.Running)}
+              disabled={!tasks.some((task) => task.state === TaskState.Running)}
             >
               {t('search_logs.common.cancel')}
             </Button>
             <Button
               onClick={handleRetry}
               disabled={
-                tasks.some(task => task.state === TaskState.Running) ||
-                !tasks.some(task => task.state === TaskState.Error)
+                tasks.some((task) => task.state === TaskState.Running) ||
+                !tasks.some((task) => task.state === TaskState.Error)
               }
             >
               {t('search_logs.common.retry')}

@@ -89,8 +89,10 @@ function useStatusColumnRender(handleHideTiDB) {
 }
 
 function useHideTiDBHandler(updateData) {
-  return async node => {
-    await client.getInstance().topologyTidbAddressDelete(`${node.ip}:${node.port}`)
+  return async (node) => {
+    await client
+      .getInstance()
+      .topologyTidbAddressDelete(`${node.ip}:${node.port}`)
     updateData()
   }
 }
@@ -103,7 +105,7 @@ function useClusterNodeDataSource() {
     setIsLoading(true)
     try {
       const res = await client.getInstance().topologyAllGet()
-      const items = ['tidb', 'tikv', 'pd'].map(nodeKind => {
+      const items = ['tidb', 'tikv', 'pd'].map((nodeKind) => {
         const nodes = res.data[nodeKind]
         if (nodes.err) {
           return {
@@ -112,7 +114,7 @@ function useClusterNodeDataSource() {
             children: [],
           }
         }
-        const children = nodes.nodes.map(node => {
+        const children = nodes.nodes.map((node) => {
           if (node.deploy_path === undefined && node.binary_path !== null) {
             node.deploy_path = node.binary_path.substring(
               0,

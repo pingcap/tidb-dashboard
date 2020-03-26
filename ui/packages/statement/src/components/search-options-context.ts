@@ -17,7 +17,7 @@ export const SearchContext = React.createContext<SearchContextType>({
   searchOptions: {
     curInstance: undefined,
     curSchemas: [],
-    curTimeRange: undefined
+    curTimeRange: undefined,
   },
-  setSearchOptions: (_options: SearchOptions) => {}
+  setSearchOptions: (_options: SearchOptions) => {},
 })

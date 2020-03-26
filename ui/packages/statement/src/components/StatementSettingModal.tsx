@@ -16,12 +16,12 @@ interface Props {
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
-    sm: { span: 8 }
+    sm: { span: 8 },
   },
   wrapperCol: {
     xs: { span: 24 },
-    sm: { span: 16 }
-  }
+    sm: { span: 16 },
+  },
 }
 
 function StatementSettingModal({
@@ -29,7 +29,7 @@ function StatementSettingModal({
   visible,
   onClose,
   onFetchConfig,
-  onUpdateConfig
+  onUpdateConfig,
 }: Props) {
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -67,7 +67,7 @@ function StatementSettingModal({
   ) {
     setConfig({
       ...(config as StatementConfig),
-      [configKey]: configValue
+      [configKey]: configValue,
     })
   }
 
@@ -94,9 +94,9 @@ function StatementSettingModal({
               min={30}
               max={60}
               value={config.refresh_interval || 30}
-              onChange={val => handleConfigChange('refresh_interval', val)}
-              formatter={val => `${val} min`}
-              parser={val => (val || '').replace(' min', '')}
+              onChange={(val) => handleConfigChange('refresh_interval', val)}
+              formatter={(val) => `${val} min`}
+              parser={(val) => (val || '').replace(' min', '')}
             />
           </Form.Item>
           <Form.Item label="保留时间">
@@ -104,9 +104,9 @@ function StatementSettingModal({
               min={30}
               max={60}
               value={config.keep_duration || 30}
-              onChange={val => handleConfigChange('keep_duration', val)}
-              formatter={val => `${val} day`}
-              parser={val => (val || '').replace(' day', '')}
+              onChange={(val) => handleConfigChange('keep_duration', val)}
+              formatter={(val) => `${val} day`}
+              parser={(val) => (val || '').replace(' day', '')}
             />
           </Form.Item>
           <Form.Item label="保存 SQL 条数">
@@ -114,7 +114,7 @@ function StatementSettingModal({
               min={10}
               max={100}
               value={config.max_sql_count || 100}
-              onChange={val => handleConfigChange('max_sql_count', val)}
+              onChange={(val) => handleConfigChange('max_sql_count', val)}
             />
           </Form.Item>
           <Form.Item label="保留 SQL 最大长度">
@@ -122,7 +122,7 @@ function StatementSettingModal({
               min={10}
               max={4096}
               value={config.max_sql_length || 4096}
-              onChange={val => handleConfigChange('max_sql_length', val)}
+              onChange={(val) => handleConfigChange('max_sql_length', val)}
             />
           </Form.Item>
         </Form>

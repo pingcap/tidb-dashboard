@@ -15,9 +15,11 @@ export default function MonitorAlertBar({ cluster }) {
       if (cluster === null || cluster.alert_manager === null) {
         return
       }
-      let resp = await client.getInstance().topologyAlertmanagerAddressCountGet(
-        `${cluster.alert_manager.ip}:${cluster.alert_manager.port}`
-      )
+      let resp = await client
+        .getInstance()
+        .topologyAlertmanagerAddressCountGet(
+          `${cluster.alert_manager.ip}:${cluster.alert_manager.port}`
+        )
       setAlertCounter(resp.data)
     }
     fetchNum()

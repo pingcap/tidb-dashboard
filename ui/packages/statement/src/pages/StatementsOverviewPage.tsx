@@ -22,17 +22,17 @@ export default function StatementsOverviewPage({
   }
 
   function querySchemas() {
-    return dashboardClient.statementsSchemasGet().then(res => res.data)
+    return dashboardClient.statementsSchemasGet().then((res) => res.data)
   }
 
   function queryTimeRanges() {
-    return dashboardClient.statementsTimeRangesGet().then(res => res.data)
+    return dashboardClient.statementsTimeRangesGet().then((res) => res.data)
   }
 
   function queryStatements(_instanceId, schemas, beginTime, endTime) {
     return dashboardClient
       .statementsOverviewsGet(beginTime, endTime, schemas.join(','))
-      .then(res => res.data)
+      .then((res) => res.data)
   }
 
   function queryStatementStatus() {

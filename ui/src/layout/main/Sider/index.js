@@ -27,7 +27,7 @@ function TrailMenu({ items, delay, ...props }) {
 
 function useAnimatedAppMenuItem(registry, appId, title) {
   const { t } = useTranslation()
-  return animationProps => {
+  return (animationProps) => {
     const app = registry.apps[appId]
     if (!app) {
       return null
@@ -84,7 +84,7 @@ export default function Sider({
     useAnimatedAppMenuItem(registry, 'search_logs'),
     useAnimatedAppMenuItem(registry, 'instance_profiling'),
   ]
-  const debugSubMenu = animationProps => (
+  const debugSubMenu = (animationProps) => (
     <AnimatedSubMenu
       key="debug"
       title={
@@ -95,7 +95,7 @@ export default function Sider({
       }
       {...animationProps}
     >
-      {debugSubMenuItems.map(r => r())}
+      {debugSubMenuItems.map((r) => r())}
     </AnimatedSubMenu>
   )
 

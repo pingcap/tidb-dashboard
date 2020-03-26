@@ -533,17 +533,17 @@ func convertFloatToDuration(s string, ratio float64) string {
 		return s
 	}
 	f = f * ratio
-	if f > 1 {
+	if f > 10 {
 		f = math.Round(f*1000) / 1000
-		return fmt.Sprintf("%.3f s", f)
+		return fmt.Sprintf("%.0f s", f)
 	}
-	if ms := f * 1000; ms > 1 {
+	if ms := f * 1000; ms > 10 {
 		f = math.Round(ms*1000) / 1000
-		return fmt.Sprintf("%.3f ms", f)
+		return fmt.Sprintf("%.0f ms", f)
 	}
 	us := f * 1000 * 1000
 	f = math.Round(us*1000) / 1000
-	return fmt.Sprintf("%.3f us", f)
+	return fmt.Sprintf("%.0f us", f)
 }
 
 func convertFloatToSizeByRows(rows []TableRowDef, idx int) {

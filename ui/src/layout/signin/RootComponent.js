@@ -151,6 +151,7 @@ class TiDBSignInForm extends React.PureComponent {
           <AnimationItem>
             <Form.Item>
               <Button
+                id="signin_btn"
                 type="primary"
                 htmlType="submit"
                 size="large"

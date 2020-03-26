@@ -35,7 +35,7 @@ function useAnimatedAppMenuItem(registry, appId, title) {
     }
     return (
       <AnimatedMenuItem key={appId} {...animationProps}>
-        <Link to={app.indexRoute}>
+        <Link to={app.indexRoute} id={appId}>
           {app.icon ? <app.icon /> : null}
           <span>{title ? title : t(`${appId}.nav_title`, appId)}</span>
         </Link>

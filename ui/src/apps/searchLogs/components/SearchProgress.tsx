@@ -272,7 +272,11 @@ export default function SearchProgress({
   }
 
   return (
-    <Card style={{ marginLeft: -48 }} title={t('search_logs.common.progress')}>
+    <Card
+      id="search_progress"
+      style={{ marginLeft: -48 }}
+      title={t('search_logs.common.progress')}
+    >
       {loading && <Skeleton active />}
       {!loading && (
         <>

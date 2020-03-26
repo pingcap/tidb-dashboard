@@ -2,9 +2,10 @@ import React from 'react'
 import { HashRouter as Router, Route, Switch } from 'react-router-dom'
 import ListPage from './pages/List'
 import DetailPage from './pages/Detail'
+import { FabricRoot } from '@/components'
 
 const App = () => (
-  <div>
+  <FabricRoot>
     <Router>
       <Switch>
         <Route exact path="/instance_profiling">
@@ -15,7 +16,7 @@ const App = () => (
         </Route>
       </Switch>
     </Router>
-  </div>
+  </FabricRoot>
 )
 
 export default App

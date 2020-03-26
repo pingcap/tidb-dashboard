@@ -39,7 +39,7 @@ const tableColumns = (
     key: 'sum_latency',
     sorter: (a: StatementOverview, b: StatementOverview) =>
       a.sum_latency! - b.sum_latency!,
-    render: text => getValueFormat('ns')(text, 2, null),
+    render: (text) => getValueFormat('ns')(text, 2, null),
   },
   {
     title: t('statement.common.exec_count'),

@@ -22,25 +22,26 @@ describe('Search Logs', () => {
       await ppExpect(page).toClick('button#signin_btn')
 
       // jump to search logs page
-      await ppExpect(page).toClick('a[href="#/search_logs"]')
+      await ppExpect(page).toClick('a#search_logs')
 
       // find search form
-      const searchForm = await page.waitForSelector('form[name="search_form"]')
+      const searchForm = await page.waitForSelector('form#search_form')
 
       // set log level to INFO
       await ppExpect(searchForm).toClick('div#log_level_selector')
-      const logLevelLists = await page.waitForSelector('ul[role=listbox]')
-      await ppExpect(logLevelLists).toClick('li', { text: 'INFO' })
+      await ppExpect(page).toClick('li[data-e2e="level_info"]')
 
       // select TiDB component
-      await ppExpect(searchForm).toClick('div:nth-child(4)')
+      await ppExpect(searchForm).toClick('div[data-e2e="components_selector"]')
       await ppExpect(page).toClick('ul[role=tree] span[title="TiDB"]')
 
       // start search
-      await ppExpect(searchForm).toClick('button', { text: 'Search' })
+      await ppExpect(searchForm).toClick('button#search_btn')
 
       // check search result
-      const logsTable = await page.waitForSelector('table tbody')
+      const logsTable = await page.waitForSelector(
+        'div#logs_result table tbody'
+      )
       const content = await logsTable.evaluate((node) => node.innerText)
       expect(content).toContain('Welcome to TiDB')
       expect(content.includes('Welcome to TiKV')).toBe(false)

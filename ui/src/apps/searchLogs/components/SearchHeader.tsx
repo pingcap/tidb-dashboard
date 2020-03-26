@@ -59,6 +59,8 @@ interface Props {
   taskGroupID: number
 }
 
+const LOG_LEVELS = ['debug', 'info', 'warn', 'trace', 'critical', 'error']
+
 export default function SearchHeader({ taskGroupID }: Props) {
   const { t } = useTranslation()
   const history = useHistory()
@@ -146,7 +148,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
 
   return (
     <Form
-      name="search_form"
+      id="search_form"
       layout="inline"
       onSubmit={handleSearch}
       style={{ display: 'flex', flexWrap: 'wrap' }}
@@ -175,12 +177,11 @@ export default function SearchHeader({ taskGroupID }: Props) {
           style={{ width: 100 }}
           onChange={handleLogLevelChange}
         >
-          <Option value={1}>DEBUG</Option>
-          <Option value={2}>INFO</Option>
-          <Option value={3}>WARN</Option>
-          <Option value={4}>TRACE</Option>
-          <Option value={5}>CRITICAL</Option>
-          <Option value={6}>ERROR</Option>
+          {LOG_LEVELS.map((val, idx) => (
+            <Option key={val} data-e2e={`level_${val}`} value={idx + 1}>
+              {val.toUpperCase()}
+            </Option>
+          ))}
         </Select>
       </Form.Item>
       <Form.Item>
@@ -192,6 +193,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
         />
       </Form.Item>
       <Form.Item
+        data-e2e="components_selector"
         className={styles.components}
         style={{ flex: 'auto', minWidth: 220 }}
         validateStatus={selectedComponents.length > 0 ? '' : 'error'}
@@ -209,7 +211,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
         />
       </Form.Item>
       <Form.Item>
-        <Button type="primary" htmlType="submit">
+        <Button id="search_btn" type="primary" htmlType="submit">
           {t('search_logs.common.search')}
         </Button>
       </Form.Item>

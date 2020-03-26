@@ -16,8 +16,9 @@ function TrailMenu({ items, delay, ...props }) {
   const trail = useTrail(items.length, {
     opacity: 1,
     transform: 'translate3d(0, 0, 0)',
-    from: { opacity: 0, transform: 'translate3d(0, 40px, 0)' },
+    from: { opacity: 0, transform: 'translate3d(0, 60px, 0)' },
     delay,
+    config: { mass: 1, tension: 5000, friction: 200 },
   })
   return (
     <Menu {...props}>{trail.map((style, idx) => items[idx]({ style }))}</Menu>
@@ -26,7 +27,7 @@ function TrailMenu({ items, delay, ...props }) {
 
 function useAnimatedAppMenuItem(registry, appId, title) {
   const { t } = useTranslation()
-  return animationProps => {
+  return (animationProps) => {
     const app = registry.apps[appId]
     if (!app) {
       return null
@@ -83,7 +84,7 @@ export default function Sider({
     useAnimatedAppMenuItem(registry, 'search_logs'),
     useAnimatedAppMenuItem(registry, 'instance_profiling'),
   ]
-  const debugSubMenu = animationProps => (
+  const debugSubMenu = (animationProps) => (
     <AnimatedSubMenu
       key="debug"
       title={
@@ -94,7 +95,7 @@ export default function Sider({
       }
       {...animationProps}
     >
-      {debugSubMenuItems.map(r => r())}
+      {debugSubMenuItems.map((r) => r())}
     </AnimatedSubMenu>
   )
 
@@ -147,7 +148,7 @@ export default function Sider({
         />
         <TrailMenu
           items={extraMenuItems}
-          delay={animationDelay + 800}
+          delay={animationDelay + 200}
           mode="inline"
           selectedKeys={[activeAppId]}
         />

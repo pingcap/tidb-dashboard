@@ -16,7 +16,7 @@ const tableColumns = (
   {
     title: t('statement.detail.node'),
     dataIndex: 'address',
-    key: 'address'
+    key: 'address',
   },
   {
     title: t('statement.common.sum_latency'),
@@ -24,14 +24,15 @@ const tableColumns = (
     key: 'sum_latency',
     sorter: (a: StatementNode, b: StatementNode) =>
       a.sum_latency! - b.sum_latency!,
-    render: text => getValueFormat('ns')(text, 2, null)
+    render: (text) => getValueFormat('ns')(text, 2, null),
   },
   {
     title: t('statement.common.exec_count'),
     dataIndex: 'exec_count',
     key: 'exec_count',
-    sorter: (a: StatementNode, b: StatementNode) => a.exec_count! - b.exec_count!,
-    render: text => getValueFormat('short')(text, 0, 0)
+    sorter: (a: StatementNode, b: StatementNode) =>
+      a.exec_count! - b.exec_count!,
+    render: (text) => getValueFormat('short')(text, 0, 0),
   },
   {
     title: t('statement.common.avg_latency'),
@@ -39,7 +40,7 @@ const tableColumns = (
     key: 'avg_latency',
     sorter: (a: StatementNode, b: StatementNode) =>
       a.avg_latency! - b.avg_latency!,
-    render: text => (
+    render: (text) => (
       <div>
         {getValueFormat('ns')(text, 2, null)}
         <HorizontalBar
@@ -47,7 +48,7 @@ const tableColumns = (
           color="rgba(73, 169, 238, 1)"
         />
       </div>
-    )
+    ),
   },
   {
     title: t('statement.common.max_latency'),
@@ -55,7 +56,7 @@ const tableColumns = (
     key: 'max_latency',
     sorter: (a: StatementNode, b: StatementNode) =>
       a.max_latency! - b.max_latency!,
-    render: text => (
+    render: (text) => (
       <div>
         {getValueFormat('ns')(text, 2, null)}
         <HorizontalBar
@@ -63,14 +64,14 @@ const tableColumns = (
           color="rgba(73, 169, 238, 1)"
         />
       </div>
-    )
+    ),
   },
   {
     title: t('statement.common.avg_mem'),
     dataIndex: 'avg_mem',
     key: 'avg_mem',
     sorter: (a: StatementNode, b: StatementNode) => a.avg_mem! - b.avg_mem!,
-    render: text => (
+    render: (text) => (
       <div>
         {getValueFormat('bytes')(text, 2, null)}
         <HorizontalBar
@@ -78,7 +79,7 @@ const tableColumns = (
           color="rgba(245, 154, 35, 1)"
         />
       </div>
-    )
+    ),
   },
   {
     title: t('statement.common.sum_backoff_times'),
@@ -86,26 +87,26 @@ const tableColumns = (
     key: 'sum_backoff_times',
     sorter: (a: StatementNode, b: StatementNode) =>
       a.sum_backoff_times! - b.sum_backoff_times!,
-    render: text => getValueFormat('short')(text, 0, 0)
-  }
+    render: (text) => getValueFormat('short')(text, 0, 0),
+  },
 ]
 
 export default function StatementNodesTable({
-  nodes
+  nodes,
 }: {
   nodes: StatementNode[]
 }) {
   const { t } = useTranslation()
   const maxAvgLatency = useMemo(
-    () => _.max(nodes.map(n => n.avg_latency)) || 1,
+    () => _.max(nodes.map((n) => n.avg_latency)) || 1,
     [nodes]
   )
   const maxMaxLatency = useMemo(
-    () => _.max(nodes.map(n => n.max_latency)) || 1,
+    () => _.max(nodes.map((n) => n.max_latency)) || 1,
     [nodes]
   )
-  const maxAvgMem = useMemo(() => _.max(nodes.map(n => n.avg_mem)) || 1, [
-    nodes
+  const maxAvgMem = useMemo(() => _.max(nodes.map((n) => n.avg_mem)) || 1, [
+    nodes,
   ])
   const columns = useMemo(
     () => tableColumns(maxAvgLatency!, maxMaxLatency!, maxAvgMem!, t),

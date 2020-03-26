@@ -28,11 +28,11 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
     this.props.onToggleAutoFetch()
   }
 
-  handleDateRange = value => {
+  handleDateRange = (value) => {
     this.props.onChangeDateRange(value)
   }
 
-  handleMetricChange = value => {
+  handleMetricChange = (value) => {
     this.props.onChangeMetric(value)
   }
 
@@ -91,7 +91,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
             overlay={
               <div id="PD-KeyVis-Brightness-Overlay">
                 <div
-                  onClick={e => {
+                  onClick={(e) => {
                     e.stopPropagation()
                   }}
                 >
@@ -103,7 +103,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
                       min={-6}
                       max={6}
                       step={0.1}
-                      onChange={value =>
+                      onChange={(value) =>
                         this.handleBrightLevel(value as number)
                       }
                     />
@@ -152,7 +152,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
             value={dateRange}
             style={{ width: 150 }}
           >
-            {DateRangeOptions.map(option => (
+            {DateRangeOptions.map((option) => (
               <Select.Option
                 key={option.text}
                 value={option.value}
@@ -170,7 +170,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
             value={metricType}
             style={{ width: 160 }}
           >
-            {MetricOptions.map(option => (
+            {MetricOptions.map((option) => (
               <Select.Option
                 key={option.text}
                 value={option.value}

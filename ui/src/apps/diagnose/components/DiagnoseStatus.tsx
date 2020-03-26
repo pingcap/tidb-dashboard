@@ -54,6 +54,7 @@ function DiagnoseStatus() {
             <a
               href={`${client.getBasePath()}/diagnose/reports/${report!['ID']}`}
               target="_blank"
+              rel="noopener noreferrer"
             >
               {t('diagnose.status.head.view')}
             </a>

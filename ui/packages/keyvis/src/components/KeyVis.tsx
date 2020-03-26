@@ -26,9 +26,9 @@ class HeatmapCache {
     let selection
     if (typeof range === 'number') {
       const endTime = Math.ceil(new Date().getTime() / 1000)
-      this.cache = this.cache.filter(entry => entry.expireTime > endTime)
+      this.cache = this.cache.filter((entry) => entry.expireTime > endTime)
       const entry = this.cache.find(
-        entry => entry.dateRange === range && entry.metricType === metricType
+        (entry) => entry.dateRange === range && entry.metricType === metricType
       )
       if (entry) {
         return entry.data
@@ -74,7 +74,7 @@ type ChartState = {
 let _chart
 let cache = new HeatmapCache()
 
-const KeyVis = props => {
+const KeyVis = (props) => {
   const [chartState, setChartState] = useState<ChartState>()
   const [selection, setSelection] = useState<HeatmapRange | null>(null)
   const [isLoading, setLoading] = useState(false)
@@ -109,7 +109,7 @@ const KeyVis = props => {
     setLoading(false)
   }
 
-  const onChangeBrightLevel = val => {
+  const onChangeBrightLevel = (val) => {
     if (!_chart) return
     setBrightLevel(val)
     _chart.brightness(val)
@@ -127,12 +127,12 @@ const KeyVis = props => {
     }
   }
 
-  const onChangeMetric = value => {
+  const onChangeMetric = (value) => {
     setMetricType(value)
   }
 
   const onChartInit = useCallback(
-    chart => {
+    (chart) => {
       _chart = chart
       setLoading(false)
       setBrightLevel(1)

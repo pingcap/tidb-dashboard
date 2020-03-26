@@ -18,7 +18,7 @@ function StatementEnableModal({
   onClose,
   onData,
   onSetting,
-  instanceId
+  instanceId,
 }: Props) {
   const [curTime, setCurTime] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -48,11 +48,11 @@ function StatementEnableModal({
       onCancel={onClose}
       onOk={handleOk}
       confirmLoading={submitting}
-      title='开启 Statement 统计'
+      title="开启 Statement 统计"
     >
       <div>
         开启前请确认设置：
-        <Button type='primary' onClick={onSetting}>
+        <Button type="primary" onClick={onSetting}>
           设置
         </Button>
       </div>

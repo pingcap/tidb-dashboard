@@ -1,0 +1,5 @@
+build/
+dist/
+public/
+packages/dashboard_client/src/api/*.ts
+packages/dashboard_client/swagger.yaml

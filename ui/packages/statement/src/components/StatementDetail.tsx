@@ -116,7 +116,7 @@ export default function StatementDetail({
             <div style={{ marginTop: 6 }}>
               <h3>{t('statement.plan.plans')}</h3>
               <div className={styles.table_wrapper}>
-                {detail.plans!.map(plan => (
+                {detail.plans!.map((plan) => (
                   <StatementPlanTable plan={plan} key={plan.digest} />
                 ))}
               </div>

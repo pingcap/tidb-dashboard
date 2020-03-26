@@ -110,55 +110,12 @@ func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB, sqliteDB 
 }
 
 func checkBeforeReport(db *gorm.DB) (errRows []TableRowDef) {
-	sql := "select count(distinct value) from information_schema.cluster_config where type='pd' and `key` = 'pd-server.metric-storage' and value != '';"
-	rows, err := querySQL(db, sql)
-	if err != nil {
-		errRows = append(errRows, TableRowDef{
-			Values: []string{"check before report", "information_schema.cluster_config", err.Error()},
-		})
-		return
-	}
-	if len(rows) == 0 {
-		errRows = append(errRows, TableRowDef{
-			Values: []string{"check before report", "information_schema.cluster_config", "The PD config `pd-server.metric-storage` was not found"},
-		})
-		return
-	}
-	count, err := strconv.Atoi(rows[0][0])
-	if err != nil {
-		errRows = append(errRows, TableRowDef{
-			Values: []string{"check before report", "information_schema.cluster_config", "check the sql result: " + sql + " ,the expect result is 1"},
-		})
-		return
-	}
 	command := "you can use this shell command to set the config: `curl -X POST -d '{\"metric-storage\":\"http://{PROMETHEUS_ADDRESS}\"}' http://{PD_ADDRESS}/pd/api/v1/config`, \n" +
 		"PROMETHEUS_ADDRESS is the prometheus address, It's used for query metric data; PD_ADDRESS is the HTTP API address of PD server, all PD servers need to set this config. \n" +
 		"Here is an example: `curl -X POST -d '{\"metric-storage\":\"http://127.0.0.1:9090\"}' http://127.0.0.1:2379/pd/api/v1/config`"
-	if count == 0 {
-		errRows = append(errRows, TableRowDef{
-			Values: []string{
-				"check before report",
-				"information_schema.cluster_config",
-				"The PD config `pd-server.metric-storage` was not set, \n" + command,
-			},
-		})
-		return
-	}
-	if count > 1 {
-		errRows = append(errRows, TableRowDef{
-			Values: []string{
-				"check before report",
-				"information_schema.cluster_config",
-				"The PD config `pd-server.metric-storage` value is different from PD servers, \n" +
-					"check the sql result: " + sql + " ,the expect result is 1, \n" + command,
-			},
-		})
-		return
-	}
-
 	// Check for query metric.
-	sql = "select count(*) from metrics_schema.up;"
-	_, err = querySQL(db, sql)
+	sql := "select count(*) from metrics_schema.up;"
+	_, err := querySQL(db, sql)
 	if err != nil {
 		errRows = append(errRows, TableRowDef{
 			Values: []string{
@@ -230,6 +187,10 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 		GetPDConfigChangeInfo,
 		GetTiDBGCConfigInfo,
 		GetTiDBGCConfigChangeInfo,
+		GetTiKVRocksDBConfigInfo,
+		GetTiKVRocksDBConfigChangeInfo,
+		GetTiKVRaftStoreConfigInfo,
+		GetTiKVRaftStoreConfigChangeInfo,
 		GetTiDBCurrentConfig,
 		GetPDCurrentConfig,
 		GetTiKVCurrentConfig,
@@ -852,6 +813,175 @@ APPROXIMATE_CHANGE_TIME is the minimum start effective time`,
 		joinColumns:    []int{1},
 		compareColumns: []int{2},
 		Column:         []string{"APPROXIMATE_CHANGE_TIME", "CONFIG_ITEM", "VALUE"},
+	}
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
+	return table, nil
+}
+
+func GetTiKVRocksDBConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	table := TableDef{
+		Category:       []string{CategoryConfig},
+		Title:          "TiKV RocksDB Initial Config",
+		CommentEN:      "TiKV RocksDB initial config value. The initial time is the report start time",
+		CommentCN:      "",
+		joinColumns:    []int{0, 1, 3},
+		compareColumns: []int{2},
+		Column:         []string{"CONFIG_ITEM", "INSTANCE", "VALUE", "CURRENT_VALUE", "DIFF_WITH_CURRENT", "DISTINCT_VALUES_IN_INSTANCE"},
+	}
+	sql := fmt.Sprintf(`select t1.name,'', t1.value,t2.value,t1.value!=t2.value, t1.count from
+		(select concat(name,' , ',cf) as name, min(value) as value, count(distinct value) as count from metrics_schema.tikv_config_rocksdb where time = '%[1]s' group by cf, name) as t1 join
+		(select concat(name,' , ',cf) as name, min(value) as value from metrics_schema.tikv_config_rocksdb where time = now()   group by cf, name) as t2
+		where t1.name=t2.name order by abs(t2.value-t1.value) desc,t1.count desc, t1.name`, startTime)
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	//var subRows []TableRowDef
+	subRowsMap := make(map[string][][]string)
+	for i, row := range rows {
+		if len(row.Values) < 6 {
+			continue
+		}
+		if row.Values[5] == "1" {
+			continue
+		}
+		if len(subRowsMap) == 0 {
+			sql = fmt.Sprintf(`select t1.name,t1.instance,t1.value,t2.value,t1.value!=t2.value, '' from
+			(select concat(name,' , ',cf) as name,instance, value from metrics_schema.tikv_config_rocksdb where time = '%[1]s' group by cf, name, instance, value) as t1 join
+			(select concat(name,' , ',cf) as name,instance, value from metrics_schema.tikv_config_rocksdb where time = now()   group by cf, name, instance, value) as t2
+			where t1.name=t2.name and t1.instance = t2.instance order by abs(t2.value-t1.value) desc, t1.name`, startTime)
+			subRows, err := getSQLRows(db, sql)
+			if err != nil {
+				return table, err
+			}
+			for _, subRow := range subRows {
+				if len(subRow.Values) < 6 {
+					continue
+				}
+				subRowsMap[subRow.Values[0]] = append(subRowsMap[subRow.Values[0]], subRow.Values)
+			}
+		}
+		rows[i].SubValues = subRowsMap[row.Values[0]]
+		if len(rows[i].SubValues) > 0 && row.Values[4] == "0" {
+			for _, subRow := range rows[i].SubValues {
+				if row.Values[4] != "0" {
+					break
+				}
+				if len(subRow) != 6 {
+					continue
+				}
+				rows[i].Values[4] = subRow[4]
+			}
+		}
+	}
+	table.Rows = rows
+	return table, nil
+}
+
+func GetTiKVRocksDBConfigChangeInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	sql := fmt.Sprintf(`select t1.* from
+		(select min(time) as time,concat(name,' , ',cf) as name,instance,value from metrics_schema.tikv_config_rocksdb where time>='%[1]s' and time<'%[2]s'         group by name,cf,instance,value order by name) as t1 join
+		(select concat(name,' , ',cf) as name,instance, count(distinct value) as count from metrics_schema.tikv_config_rocksdb where time>='%[1]s' and time<'%[2]s' group by name,cf,instance order by count desc) as t2 
+		where t1.name=t2.name and t1.instance = t2.instance and t2.count>1 order by t1.name,instance, t2.count desc, t1.time;`, startTime, endTime)
+
+	table := TableDef{
+		Category: []string{CategoryConfig},
+		Title:    "TiKV RocksDB Change Config",
+		CommentEN: `TiKV RocksDB config change history; 
+APPROXIMATE_CHANGE_TIME is the minimum start effective time`,
+		CommentCN:      "",
+		joinColumns:    []int{1, 2},
+		compareColumns: []int{3},
+		Column:         []string{"APPROXIMATE_CHANGE_TIME", "CONFIG_ITEM", "INSTANCE", "VALUE"},
+	}
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = rows
+	return table, nil
+}
+
+func GetTiKVRaftStoreConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	table := TableDef{
+		Category:  []string{CategoryConfig},
+		Title:     "TiKV RaftStore Initial Config",
+		CommentEN: "TiKV RaftStore initial config value. The initial time is the report start time",
+		CommentCN: "",
+
+		joinColumns:    []int{0, 1, 3},
+		compareColumns: []int{2},
+		Column:         []string{"CONFIG_ITEM", "INSTANCE", "VALUE", "CURRENT_VALUE", "DIFF_WITH_CURRENT", "DISTINCT_VALUES_IN_INSTANCE"},
+	}
+	sql := fmt.Sprintf(`select t1.name,'', t1.value,t2.value,t1.value!=t2.value, t1.count from
+		(select name, min(value) as value, count(distinct value) as count from metrics_schema.tikv_config_raftstore where time = '%[1]s' group by name) as t1 join
+		(select name, min(value) as value                                 from metrics_schema.tikv_config_raftstore where time = now()   group by name) as t2
+		where t1.name=t2.name order by abs(t2.value-t1.value) desc,t1.count desc, t1.name`, startTime)
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	//var subRows []TableRowDef
+	subRowsMap := make(map[string][][]string)
+	for i, row := range rows {
+		if len(row.Values) < 6 {
+			continue
+		}
+		if row.Values[5] == "1" {
+			continue
+		}
+		if len(subRowsMap) == 0 {
+			sql = fmt.Sprintf(`select t1.name,t1.instance,t1.value,t2.value,t1.value!=t2.value, '' from
+			(select name,instance, value from metrics_schema.tikv_config_raftstore where time = '%[1]s' group by name, instance, value) as t1 join
+			(select name,instance, value from metrics_schema.tikv_config_raftstore where time = now()   group by name, instance, value) as t2
+			where t1.name=t2.name and t1.instance = t2.instance order by abs(t2.value-t1.value) desc, t1.name`, startTime)
+			subRows, err := getSQLRows(db, sql)
+			if err != nil {
+				return table, err
+			}
+			for _, subRow := range subRows {
+				if len(subRow.Values) < 6 {
+					continue
+				}
+				subRowsMap[subRow.Values[0]] = append(subRowsMap[subRow.Values[0]], subRow.Values)
+			}
+		}
+		rows[i].SubValues = subRowsMap[row.Values[0]]
+		if len(rows[i].SubValues) > 0 && row.Values[4] == "0" {
+			for _, subRow := range rows[i].SubValues {
+				if row.Values[4] != "0" {
+					break
+				}
+				if len(subRow) != 6 {
+					continue
+				}
+				rows[i].Values[4] = subRow[4]
+			}
+		}
+	}
+	table.Rows = rows
+	return table, nil
+}
+
+func GetTiKVRaftStoreConfigChangeInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	sql := fmt.Sprintf(`select t1.* from
+		(select min(time) as time,name,instance,value from metrics_schema.tikv_config_raftstore where time>='%[1]s' and time<'%[2]s'         group by name,instance,value order by name) as t1 join
+		(select name,instance, count(distinct value) as count from metrics_schema.tikv_config_raftstore where time>='%[1]s' and time<'%[2]s' group by name,instance order by count desc) as t2 
+		where t1.name=t2.name and t1.instance = t2.instance and t2.count>1 order by t1.name,instance,t2.count desc, t1.time;`, startTime, endTime)
+
+	table := TableDef{
+		Category: []string{CategoryConfig},
+		Title:    "TiKV RaftStore Change Config",
+		CommentEN: `TiKV RaftStore config change history; 
+APPROXIMATE_CHANGE_TIME is the minimum start effective time`,
+		CommentCN:      "",
+		joinColumns:    []int{1, 2},
+		compareColumns: []int{3},
+		Column:         []string{"APPROXIMATE_CHANGE_TIME", "CONFIG_ITEM", "INSTANCE", "VALUE"},
 	}
 	rows, err := getSQLRows(db, sql)
 	if err != nil {

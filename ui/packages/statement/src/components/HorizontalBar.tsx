@@ -11,7 +11,7 @@ export function HorizontalBar({ factor, color }: Props) {
       style={{
         width: 100 * factor,
         height: 14,
-        backgroundColor: color
+        backgroundColor: color,
       }}
     ></div>
   )

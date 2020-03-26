@@ -47,10 +47,7 @@ import (
 )
 
 func Handler(s *Service) http.Handler {
-	r := gin.New()
-	r.Use(gin.Recovery())
-	Register(r.Group("/dashboard"), s)
-	return r
+	return s.status.NewStatusAwareHandler(http.HandlerFunc(s.handler), s.stoppedHandler)
 }
 
 var (
@@ -86,12 +83,6 @@ func NewService(cfg *config.Config, stoppedHandler http.Handler, newPDDataProvid
 		newPDDataProvider: newPDDataProvider,
 		stoppedHandler:    stoppedHandler,
 	}
-}
-
-func Register(r *gin.RouterGroup, s *Service) {
-	endpoint := r.Group("/api")
-	endpoint.Use(s.status.MWHandleStopped(gin.WrapH(s.stoppedHandler)))
-	endpoint.Any("/*any", s.handler)
 }
 
 func (s *Service) IsRunning() bool {
@@ -172,8 +163,8 @@ func (s *Service) NewStatusAwareHandler(handler http.Handler) http.Handler {
 	return s.status.NewStatusAwareHandler(handler, s.stoppedHandler)
 }
 
-func (s *Service) handler(c *gin.Context) {
-	s.apiHandlerEngine.HandleContext(c)
+func (s *Service) handler(w http.ResponseWriter, r *http.Request) {
+	s.apiHandlerEngine.ServeHTTP(w, r)
 }
 
 func (s *Service) provideLocals() *config.Config {
@@ -182,6 +173,7 @@ func (s *Service) provideLocals() *config.Config {
 
 func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils2.NewTemplateFunc) {
 	apiHandlerEngine = gin.New()
+	apiHandlerEngine.Use(gin.Recovery())
 	apiHandlerEngine.Use(cors.AllowAll())
 	apiHandlerEngine.Use(gzip.Gzip(gzip.BestSpeed))
 	apiHandlerEngine.Use(utils.MWHandleErrors())

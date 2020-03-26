@@ -1697,8 +1697,8 @@ func getAvgValueTableData(defs1 []AvgMaxMinTableDef, startTime, endTime string, 
 
 func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", labels: []string{"instance", "device"}, Comment: "the disk write latency in each node(ms)"},
-		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", labels: []string{"instance", "device"}, Comment: "the disk read latency in each node(ms)"},
+		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", labels: []string{"instance", "device"}, Comment: "the disk write latency in each node"},
+		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", labels: []string{"instance", "device"}, Comment: "the disk read latency in each node"},
 	}
 	table := TableDef{
 		Category:       []string{CategoryLoad},
@@ -1725,6 +1725,21 @@ func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	partRows, err := getAvgValueTableData(defs1, startTime, endTime, db)
 	if err != nil {
 		return table, err
+	}
+	specialHandle := func(row []string) []string {
+		if len(row) < 5 {
+			return row
+		}
+		for i := 2; i < 5; i++ {
+			row[i] = convertFloatToDuration(row[i], float64(1))
+		}
+		return row
+	}
+	for _, row := range partRows {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
 	}
 	rows = append(rows, partRows...)
 	table.Rows = rows

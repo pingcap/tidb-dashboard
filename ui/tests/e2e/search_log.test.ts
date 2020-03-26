@@ -33,7 +33,7 @@ describe('Search Logs', () => {
       await ppExpect(logLevelLists).toClick('li', { text: 'INFO' })
 
       // select TiDB component
-      await ppExpect(searchForm).toClick('div.ant-form-item:nth-child(4)')
+      await ppExpect(searchForm).toClick('div:nth-child(4)')
       await ppExpect(page).toClick('ul[role=tree] span[title="TiDB"]')
 
       // start search

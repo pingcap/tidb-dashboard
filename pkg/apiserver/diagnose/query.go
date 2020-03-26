@@ -46,7 +46,7 @@ type AvgMaxMinTableDef struct {
 	name      string
 	tbl       string
 	condition string
-	label     string
+	labels    []string
 	Comment   string
 }
 
@@ -69,15 +69,22 @@ func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, e
 	if len(rows) == 0 {
 		return nil, nil
 	}
-	if len(t.label) == 0 {
+	if len(t.labels) == 0 {
 		return t.genRow(rows[0], nil), nil
 	}
 
 	sql = fmt.Sprintf("select '%[1]s',`%[2]v`, avg(value), max(value), min(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` order by avg(value) desc",
-		t.name, t.label, t.tbl, condition)
+		t.name, strings.Join(t.labels, "`,`"), t.tbl, condition)
 	subRows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
+	}
+	for i := range subRows {
+		row := subRows[i]
+		row[1] = strings.Join(row[1:1+len(t.labels)], ",")
+		newRow := row[:2]
+		newRow = append(newRow, row[1+len(t.labels):]...)
+		subRows[i] = newRow
 	}
 	return t.genRow(rows[0], subRows), nil
 }

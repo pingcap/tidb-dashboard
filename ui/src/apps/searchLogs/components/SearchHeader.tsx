@@ -183,8 +183,8 @@ export default function SearchHeader({ taskGroupID }: Props) {
           onChange={handleLogLevelChange}
         >
           {LOG_LEVELS.map((val, idx) => (
-            <Option key={val} data-e2e={`level_${val}`} value={idx + 1}>
-              {val.toUpperCase()}
+            <Option key={val} value={idx + 1}>
+              <div data-e2e={`level_${val}`}>{val.toUpperCase()}</div>
             </Option>
           ))}
         </Select>

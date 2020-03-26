@@ -154,6 +154,18 @@ The followings are required for developing TiDB Dashboard:
 
    Swagger UI for TiDB Dashboard APIs: http://localhost:12333/dashboard/api/swagger
 
+### Step 4. Run E2E Tests (optional)
+
+Now we have only a few e2e tests in the `ui/tests` folder, you can contribute more for it.
+
+After finishing the above steps, we can run the tests by following commands:
+
+```bash
+cd ui/tests
+yarn
+yarn test
+```
+
 ## Contribution flow
 
 This is a rough outline of what a contributor's workflow looks like:

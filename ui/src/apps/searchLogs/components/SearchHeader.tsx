@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import styles from './Styles.module.css'
 import {
-  AllLogLevel,
   getAddress,
   namingMap,
   parseClusterInfo,
@@ -32,31 +31,35 @@ function buildTreeData(targets: LogsearchSearchTarget[]) {
     [ServerType.PD]: [],
   }
 
-  targets.forEach(item => {
+  targets.forEach((item) => {
     if (item.kind === undefined) {
       return
     }
     servers[item.kind].push(item)
   })
 
-  return ServerTypeList.filter(kind => servers[kind].length > 0).map(kind => ({
-    title: namingMap[kind],
-    value: kind,
-    key: kind,
-    children: servers[kind].map((item: LogsearchSearchTarget) => {
-      const addr = getAddress(item)
-      return {
-        title: addr,
-        value: addr,
-        key: addr,
-      }
-    }),
-  }))
+  return ServerTypeList.filter((kind) => servers[kind].length > 0).map(
+    (kind) => ({
+      title: namingMap[kind],
+      value: kind,
+      key: kind,
+      children: servers[kind].map((item: LogsearchSearchTarget) => {
+        const addr = getAddress(item)
+        return {
+          title: addr,
+          value: addr,
+          key: addr,
+        }
+      }),
+    })
+  )
 }
 
 interface Props {
   taskGroupID: number
 }
+
+const LOG_LEVELS = ['debug', 'info', 'warn', 'trace', 'critical', 'error']
 
 export default function SearchHeader({ taskGroupID }: Props) {
   const { t } = useTranslation()
@@ -87,16 +90,16 @@ export default function SearchHeader({ taskGroupID }: Props) {
       } = parseSearchingParams(res2.data)
       setTimeRange(timeRange)
       setLogLevel(logLevel === 0 ? 3 : logLevel)
-      setComponents(components.map(item => getAddress(item)))
+      setComponents(components.map((item) => getAddress(item)))
       setSearchValue(searchValue)
     }
     fetchData()
-  }, [])
+  }, [taskGroupID])
 
   async function createTaskGroup() {
     // TODO: check select at least one component
-    const searchTargets: LogsearchSearchTarget[] = allTargets.filter(item =>
-      selectedComponents.some(addr => addr === getAddress(item))
+    const searchTargets: LogsearchSearchTarget[] = allTargets.filter((item) =>
+      selectedComponents.some((addr) => addr === getAddress(item))
     )
 
     let params: LogsearchCreateTaskGroupRequest = {
@@ -145,6 +148,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
 
   return (
     <Form
+      id="search_form"
       layout="inline"
       onSubmit={handleSearch}
       style={{ display: 'flex', flexWrap: 'wrap' }}
@@ -168,16 +172,16 @@ export default function SearchHeader({ taskGroupID }: Props) {
       </Form.Item>
       <Form.Item>
         <Select
+          id="log_level_selector"
           value={logLevel}
           style={{ width: 100 }}
           onChange={handleLogLevelChange}
         >
-          <Option value={1}>DEBUG</Option>
-          <Option value={2}>INFO</Option>
-          <Option value={3}>WARN</Option>
-          <Option value={4}>TRACE</Option>
-          <Option value={5}>CRITICAL</Option>
-          <Option value={6}>ERROR</Option>
+          {LOG_LEVELS.map((val, idx) => (
+            <Option key={val} data-e2e={`level_${val}`} value={idx + 1}>
+              {val.toUpperCase()}
+            </Option>
+          ))}
         </Select>
       </Form.Item>
       <Form.Item>
@@ -189,6 +193,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
         />
       </Form.Item>
       <Form.Item
+        data-e2e="components_selector"
         className={styles.components}
         style={{ flex: 'auto', minWidth: 220 }}
         validateStatus={selectedComponents.length > 0 ? '' : 'error'}
@@ -206,7 +211,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
         />
       </Form.Item>
       <Form.Item>
-        <Button type="primary" htmlType="submit">
+        <Button id="search_btn" type="primary" htmlType="submit">
           {t('search_logs.common.search')}
         </Button>
       </Form.Item>

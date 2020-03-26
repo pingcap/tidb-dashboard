@@ -39,7 +39,7 @@ const tableColumns = (
     key: 'sum_latency',
     sorter: (a: StatementOverview, b: StatementOverview) =>
       a.sum_latency! - b.sum_latency!,
-    render: text => getValueFormat('ns')(text, 2, null),
+    render: (text) => getValueFormat('ns')(text, 2, null),
   },
   {
     title: t('statement.common.exec_count'),
@@ -47,7 +47,7 @@ const tableColumns = (
     key: 'exec_count',
     sorter: (a: StatementOverview, b: StatementOverview) =>
       a.exec_count! - b.exec_count!,
-    render: text => (
+    render: (text) => (
       <div>
         {getValueFormat('short')(text, 0, 0)}
         <HorizontalBar
@@ -63,7 +63,7 @@ const tableColumns = (
     key: 'avg_affected_rows',
     sorter: (a: StatementOverview, b: StatementOverview) =>
       a.avg_affected_rows! - b.avg_affected_rows!,
-    render: text => getValueFormat('short')(text, 0, 0),
+    render: (text) => getValueFormat('short')(text, 0, 0),
   },
   {
     title: t('statement.common.avg_latency'),
@@ -71,7 +71,7 @@ const tableColumns = (
     key: 'avg_latency',
     sorter: (a: StatementOverview, b: StatementOverview) =>
       a.avg_latency! - b.avg_latency!,
-    render: text => (
+    render: (text) => (
       <div>
         {getValueFormat('ns')(text, 2, null)}
         <HorizontalBar
@@ -87,7 +87,7 @@ const tableColumns = (
     key: 'avg_mem',
     sorter: (a: StatementOverview, b: StatementOverview) =>
       a.avg_mem! - b.avg_mem!,
-    render: text => (
+    render: (text) => (
       <div>
         {getValueFormat('bytes')(text, 2, null)}
         <HorizontalBar
@@ -114,16 +114,17 @@ export default function StatementsTable({
 }: Props) {
   const { t } = useTranslation()
   const maxExecCount = useMemo(
-    () => _.max(statements.map(s => s.exec_count)) || 1,
+    () => _.max(statements.map((s) => s.exec_count)) || 1,
     [statements]
   )
   const maxAvgLatency = useMemo(
-    () => _.max(statements.map(s => s.avg_latency)) || 1,
+    () => _.max(statements.map((s) => s.avg_latency)) || 1,
     [statements]
   )
-  const maxAvgMem = useMemo(() => _.max(statements.map(s => s.avg_mem)) || 1, [
-    statements,
-  ])
+  const maxAvgMem = useMemo(
+    () => _.max(statements.map((s) => s.avg_mem)) || 1,
+    [statements]
+  )
   const columns = useMemo(
     () =>
       tableColumns(

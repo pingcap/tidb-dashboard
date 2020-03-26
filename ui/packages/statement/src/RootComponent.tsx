@@ -14,7 +14,7 @@ import client from '@pingcap-incubator/dashboard_client'
 import { SearchContext, SearchOptions } from './components'
 import { StatementsOverviewPage, StatementDetailPage } from './pages'
 
-const App = withRouter(props => {
+const App = withRouter((props) => {
   const { location } = props
   const page = location.pathname.split('/').pop()
 
@@ -57,7 +57,7 @@ const App = withRouter(props => {
   )
 })
 
-export default function() {
+export default function () {
   return (
     <Router>
       <App />

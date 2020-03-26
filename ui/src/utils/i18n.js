@@ -6,14 +6,14 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import 'dayjs/locale/zh-cn'
 
-i18next.on('languageChanged', function(lng) {
+i18next.on('languageChanged', function (lng) {
   console.log('Language', lng)
   dayjs.locale(lng.toLowerCase())
 })
 
 export function addTranslations(requireContext) {
   if (typeof requireContext === 'object') {
-    Object.keys(requireContext).forEach(key => {
+    Object.keys(requireContext).forEach((key) => {
       const translations = requireContext[key]
       addTranslationResource(key, translations)
     })
@@ -21,7 +21,7 @@ export function addTranslations(requireContext) {
   }
 
   const keys = requireContext.keys()
-  keys.forEach(key => {
+  keys.forEach((key) => {
     const m = key.match(/\/(.+)\.yaml/)
     if (!m) {
       return

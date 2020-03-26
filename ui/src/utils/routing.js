@@ -1,15 +1,15 @@
 export function isLocationMatch(s, matchPrefix) {
-  let hash = window.location.hash;
+  let hash = window.location.hash
   if (!hash || hash === '#') {
-    hash = '#/';
+    hash = '#/'
   }
   if (matchPrefix) {
-    return hash.indexOf(`#${s}`) === 0;
+    return hash.indexOf(`#${s}`) === 0
   } else {
-    return hash.trim() === `#${s}`;
+    return hash.trim() === `#${s}`
   }
 }
 
 export function isLocationMatchPrefix(s) {
-  return isLocationMatch(s, true);
+  return isLocationMatch(s, true)
 }

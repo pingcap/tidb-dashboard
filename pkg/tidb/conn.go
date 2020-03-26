@@ -17,6 +17,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"net"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -28,7 +30,11 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-func (f *Forwarder) GetDBConnProps() (host string, port int, err error) {
+const (
+	envTidbOverrideEndpointKey = "TIDB_OVERRIDE_ENDPOINT"
+)
+
+func (f *Forwarder) getDBConnProps() (host string, port int, err error) {
 	info, err := f.getServerInfo()
 	if err == nil {
 		host = info.IP
@@ -38,14 +44,18 @@ func (f *Forwarder) GetDBConnProps() (host string, port int, err error) {
 }
 
 func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
-	host, port, err := f.GetDBConnProps()
-	if err != nil {
-		return nil, err
+	var addr string
+	addr = os.Getenv(envTidbOverrideEndpointKey)
+	if len(addr) < 1 {
+		host, port, err := f.getDBConnProps()
+		if err != nil {
+			return nil, err
+		}
+		addr = fmt.Sprintf("%s:%d", host, port)
 	}
-
 	dsnConfig := mysql.NewConfig()
 	dsnConfig.Net = "tcp"
-	dsnConfig.Addr = fmt.Sprintf("%s:%d", host, port)
+	dsnConfig.Addr = addr
 	dsnConfig.User = user
 	dsnConfig.Passwd = pass
 	dsnConfig.Timeout = time.Second
@@ -57,7 +67,7 @@ func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 	db, err := gorm.Open("mysql", dsn)
 	if err != nil {
 		if _, ok := err.(*net.OpError); ok || err == driver.ErrBadConn {
-			if host == "0.0.0.0" {
+			if strings.HasPrefix(addr, "0.0.0.0:") {
 				log.Warn("The IP reported by TiDB is 0.0.0.0, which may not have the -advertise-address option")
 			}
 			return nil, ErrTiDBConnFailed.Wrap(err, "failed to connect to TiDB")

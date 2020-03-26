@@ -33,15 +33,15 @@ describe('Search Logs', () => {
 
       // select TiDB component
       await ppExpect(searchForm).toClick('div[data-e2e="components_selector"]')
+      // components selector dropdown is a DOM node with absolute position
+      // and its parent is body, failed to add id or data-e2e to it
       await ppExpect(page).toClick('ul[role=tree] span[title="TiDB"]')
 
       // start search
       await ppExpect(searchForm).toClick('button#search_btn')
 
       // check search result
-      const logsTable = await page.waitForSelector(
-        'div#logs_result table tbody'
-      )
+      const logsTable = await page.waitForSelector('#logs_result table tbody')
       const content = await logsTable.evaluate((node) => node.innerText)
       expect(content).toContain('Welcome to TiDB')
       expect(content.includes('Welcome to TiKV')).toBe(false)

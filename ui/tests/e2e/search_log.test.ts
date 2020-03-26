@@ -41,8 +41,8 @@ describe('Search Logs', () => {
 
       // check search result
       const logsTable = await page.waitForSelector('table tbody')
-      await ppExpect(logsTable).toMatch('Welcome to TiDB')
       const content = await logsTable.evaluate((node) => node.innerText)
+      expect(content).toContain('Welcome to TiDB')
       expect(content.includes('Welcome to TiKV')).toBe(false)
 
       // TODO: test download

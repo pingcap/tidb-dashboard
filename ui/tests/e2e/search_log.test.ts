@@ -1,4 +1,5 @@
 import puppeteer from 'puppeteer'
+import ppExpect from 'expect-puppeteer'
 import { LOGIN_URL, PUPPETEER_CONFIG } from './test_config'
 
 describe('Search Logs', () => {
@@ -16,81 +17,36 @@ describe('Search Logs', () => {
     async () => {
       const page = await browser.newPage()
 
-      await page.goto(LOGIN_URL)
-
       // login
-      const loginBtn = await page.waitForSelector('button#signin_btn')
-      await loginBtn.click()
+      await page.goto(LOGIN_URL)
+      await ppExpect(page).toClick('button#signin_btn')
 
       // jump to search logs page
-      const searchLogsLink = await page.waitForSelector(
-        'a[href="#/search_logs"]'
-      )
-      await searchLogsLink.click()
+      await ppExpect(page).toClick('a[href="#/search_logs"]')
 
       // find search form
       const searchForm = await page.waitForSelector('form[name="search_form"]')
 
       // set log level to INFO
-      const logLevelSelector = await searchForm.$('div#log_level_selector')
-      await logLevelSelector.click()
-      const logLevelLists = await page.waitForSelector(
-        'div.ant-select-dropdown ul[role=listbox]'
-      )
-      const logLevels = await logLevelLists.$$eval('li[role=option]', (nodes) =>
-        nodes.map((n) => n.innerText)
-      )
-      expect(logLevels).toEqual([
-        'DEBUG',
-        'INFO',
-        'WARN',
-        'TRACE',
-        'CRITICAL',
-        'ERROR',
-      ])
-
-      const infoNode = await logLevelLists.$('li[role=option]:nth-child(2)')
-      await infoNode.click()
+      await ppExpect(searchForm).toClick('div#log_level_selector')
+      const logLevelLists = await page.waitForSelector('ul[role=listbox]')
+      await ppExpect(logLevelLists).toClick('li', { text: 'INFO' })
 
       // select TiDB component
-      const componentSelector = await searchForm.$(
-        'div.ant-form-item:nth-child(4)'
-      )
-      await componentSelector.click()
-      const componentsTree = await page.waitForSelector('ul.ant-select-tree')
-      const tidbComponent = await componentsTree.$('span[title="TiDB"]')
-      await tidbComponent.click()
+      await ppExpect(searchForm).toClick('div.ant-form-item:nth-child(4)')
+      await ppExpect(page).toClick('ul[role=tree] span[title="TiDB"]')
 
       // start search
-      const searchBtn = await searchForm.$(
-        'div.ant-form-item:nth-child(5) button[type="submit"]'
-      )
-      await searchBtn.click()
+      await ppExpect(searchForm).toClick('button', { text: 'Search' })
 
       // check search result
-      const logsTable = await page.waitForSelector('table')
-      const content = await logsTable.$eval('tbody', (node) => node.innerText)
-      expect(content).toContain('Welcome to TiDB')
+      const logsTable = await page.waitForSelector('table tbody')
+      await ppExpect(logsTable).toMatch('Welcome to TiDB')
+      const content = await logsTable.evaluate((node) => node.innerText)
       expect(content.includes('Welcome to TiKV')).toBe(false)
 
-      // download
-      const progressComponents = await page.waitForSelector(
-        'div#search_progress ul.ant-tree'
-      )
-      const tidbCheckbox = await progressComponents.$(
-        'li:nth-child(1) > span.ant-tree-checkbox'
-      )
-      await tidbCheckbox.click()
-      // set download path
-      // https://www.lfhacks.com/tech/puppeteer-file-download
-      await page._client.send('Page.setDownloadBehavior', {
-        behavior: 'allow',
-        downloadPath: '~/Downloads',
-      })
-      const downloadBtn = await page.$('div#search_progress button')
-      await downloadBtn.click()
-      await page.waitFor(2000)
+      // TODO: test download
     },
-    20 * 1000
+    10 * 1000
   )
 })

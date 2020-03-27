@@ -64,13 +64,13 @@ export default function Page() {
       {
         title: t('instance_profiling.detail.table.columns.instance'),
         key: 'instance',
-        dataIndex: 'target.display_name',
+        dataIndex: ['target', 'display_name'],
         width: 200,
       },
       {
         title: t('instance_profiling.detail.table.columns.kind'),
         key: 'kind',
-        dataIndex: 'target.kind',
+        dataIndex: ['target', 'kind'],
         width: 100,
       },
       {

@@ -3,7 +3,7 @@ diagnose:
   generate:
     title: New Diagnose Report
     range_begin: Diagnose Begin Range
-    range_duration: Range Size
+    range_duration: Range Size (min)
     is_compare: Compare by Baseline
     compare_range_begin: Baseline Begin Range
     submit: Generate
@@ -16,3 +16,10 @@ diagnose:
     range_end: Range End Time
     baseline_begin: Baseline Range Start Time
     progress: Progress
+  time_duration:
+    min: min
+    min_with_count: '{{count}} min'
+    min_with_count_plural: '{{count}} mins'
+    hour_with_count: '{{count}} hour'
+    hour_with_count_plural: '{{count}} hours'
+    day_with_count: '{{count}} day'

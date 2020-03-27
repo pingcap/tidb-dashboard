@@ -1,5 +1,5 @@
-import React from 'react'
-import { Button, DatePicker, Form, Select, Switch, message } from 'antd'
+import React, { useMemo } from 'react'
+import { Button, DatePicker, Form, Switch, message, InputNumber } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@pingcap-incubator/dashboard_components'
 import { useHistory } from 'react-router-dom'
@@ -36,10 +36,42 @@ export default function DiagnoseGenerator() {
   const { t } = useTranslation()
   const history = useHistory()
   const handleFinish = useFinishHandler(history)
+  const [form] = Form.useForm()
+
+  const rangeDurationShortcuts = useMemo(
+    () => [
+      {
+        val: 5,
+        text: t('diagnose.time_duration.min_with_count', { count: 5 }),
+      },
+      {
+        val: 10,
+        text: t('diagnose.time_duration.min_with_count', { count: 10 }),
+      },
+      {
+        val: 30,
+        text: t('diagnose.time_duration.min_with_count', { count: 30 }),
+      },
+      {
+        val: 60,
+        text: t('diagnose.time_duration.hour_with_count', { count: 1 }),
+      },
+      {
+        val: 24 * 60,
+        text: t('diagnose.time_duration.day_with_count', { count: 1 }),
+      },
+    ],
+    [t]
+  )
+
+  function changeRangeDuration(val: number) {
+    form.setFieldsValue({ rangeDuration: val })
+  }
 
   return (
     <Card title={t('diagnose.generate.title')}>
       <Form
+        form={form}
         layout="vertical"
         style={{ minWidth: 500 }}
         onFinish={handleFinish}
@@ -52,18 +84,25 @@ export default function DiagnoseGenerator() {
         >
           <DatePicker showTime />
         </Form.Item>
-        <Form.Item
-          name="rangeDuration"
-          rules={[{ required: true }]}
-          label={t('diagnose.generate.range_duration')}
-        >
-          <Select style={{ width: 120 }}>
-            <Select.Option value={5}>5 min</Select.Option>
-            <Select.Option value={10}>10 min</Select.Option>
-            <Select.Option value={30}>30 min</Select.Option>
-            <Select.Option value={60}>1 hour</Select.Option>
-            <Select.Option value={24 * 60}>1 day</Select.Option>
-          </Select>
+        <Form.Item required label={t('diagnose.generate.range_duration')}>
+          <Form.Item name="rangeDuration" noStyle>
+            <InputNumber min={1} max={24 * 60} />
+          </Form.Item>
+          <div style={{ marginTop: 4, marginLeft: -8 }}>
+            {rangeDurationShortcuts.map((item, idx) => (
+              <>
+                <Button
+                  type="link"
+                  size="small"
+                  key={item.val}
+                  onClick={() => changeRangeDuration(item.val)}
+                >
+                  {item.text}
+                </Button>
+                {idx < rangeDurationShortcuts.length - 1 && '/'}
+              </>
+            ))}
+          </div>
         </Form.Item>
         <Form.Item
           name="isCompare"

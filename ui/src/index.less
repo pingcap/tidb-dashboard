@@ -1,3 +1,19 @@
-#root .ant-form-inline .ant-form-item {
-  margin-bottom: 12px;
+@import '~antd/es/style/themes/default.less';
+
+#root {
+  .ant-badge {
+    font-size: 1em;
+  }
+
+  .ant-badge-status-text {
+    font-size: 1em;
+  }
+
+  .ant-form-inline .ant-form-item {
+    margin-bottom: @padding-sm;
+  }
+
+  .ant-form-inline {
+    margin-bottom: -@padding-sm;
+  }
 }

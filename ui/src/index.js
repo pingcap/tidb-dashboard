@@ -1,4 +1,3 @@
-import './index.less'
 import * as singleSpa from 'single-spa'
 import AppRegistry from '@/utils/registry'
 import * as routingUtil from '@/utils/routing'
@@ -18,6 +17,8 @@ import AppSearchLogs from '@/apps/searchLogs'
 import AppInstanceProfiling from '@/apps/instanceProfiling'
 import AppClusterInfo from '@/apps/clusterInfo'
 import AppPlayground from '@/apps/playground'
+
+import './index.less'
 
 async function main() {
   clientUtil.init()

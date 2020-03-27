@@ -3,9 +3,10 @@ import React, { useState, useMemo } from 'react'
 import { message, Form, TreeSelect, Button, Select, Badge } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { Link } from 'react-router-dom'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import DateTime from '@/components/DateTime'
-import { Card, CardTable } from '@pingcap-incubator/dashboard_components'
+import { Card } from '@pingcap-incubator/dashboard_components'
+import { CardTableV2 } from '@/components'
 import { useClientRequest } from '@/utils/useClientRequest'
 
 // FIXME: The following logic should be extracted into a common component.
@@ -129,86 +130,81 @@ export default function Page() {
     setSubmitting(false)
   }
 
-  const historyTableColumns = useMemo(
-    () => [
-      {
-        title: t('instance_profiling.list.table.columns.targets'),
-        key: 'targets',
-        render: (_, rec) => {
-          // TODO: Extract to utility function
-          const r = []
-          if (rec.target_stats.num_tidb_nodes) {
-            r.push(`${rec.target_stats.num_tidb_nodes} TiDB`)
-          }
-          if (rec.target_stats.num_tikv_nodes) {
-            r.push(`${rec.target_stats.num_tikv_nodes} TiKV`)
-          }
-          if (rec.target_stats.num_pd_nodes) {
-            r.push(`${rec.target_stats.num_pd_nodes} PD`)
-          }
-          return <span>{r.join(', ')}</span>
-        },
+  function handleRowClick(rec) {
+    history.push(`/instance_profiling/${rec.id}`)
+  }
+
+  const historyTableColumns = [
+    {
+      name: t('instance_profiling.list.table.columns.targets'),
+      key: 'targets',
+      minWidth: 150,
+      maxWidth: 250,
+      isResizable: true,
+      onRender: (rec) => {
+        // TODO: Extract to utility function
+        const r = []
+        if (rec.target_stats.num_tidb_nodes) {
+          r.push(`${rec.target_stats.num_tidb_nodes} TiDB`)
+        }
+        if (rec.target_stats.num_tikv_nodes) {
+          r.push(`${rec.target_stats.num_tikv_nodes} TiKV`)
+        }
+        if (rec.target_stats.num_pd_nodes) {
+          r.push(`${rec.target_stats.num_pd_nodes} PD`)
+        }
+        return <span>{r.join(', ')}</span>
       },
-      {
-        title: t('instance_profiling.list.table.columns.start_at'),
-        key: 'started_at',
-        render: (_, rec) => {
-          return <DateTime.Calendar unixTimeStampMs={rec.started_at * 1000} />
-        },
-      },
-      {
-        title: t('instance_profiling.list.table.columns.duration'),
-        key: 'duration',
-        dataIndex: 'profile_duration_secs',
-        width: 150,
-      },
-      {
-        title: t('instance_profiling.list.table.columns.status'),
-        key: 'status',
-        render: (_, rec) => {
-          if (rec.state === 1) {
-            return (
-              <Badge
-                status="processing"
-                text={t('instance_profiling.list.table.status.running')}
-              />
-            )
-          } else if (rec.state === 2) {
-            return (
-              <Badge
-                status="success"
-                text={t('instance_profiling.list.table.status.finished')}
-              />
-            )
-          } else {
-            return (
-              <Badge
-                status="default"
-                text={t('instance_profiling.list.table.status.unknown')}
-              />
-            )
-          }
-        },
-        width: 150,
-      },
-      {
-        title: t('instance_profiling.list.table.columns.action'),
-        key: 'action',
-        render: (_, rec) => {
+    },
+    {
+      name: t('instance_profiling.list.table.columns.status'),
+      key: 'status',
+      minWidth: 100,
+      maxWidth: 150,
+      isResizable: true,
+      isCollapsible: true,
+      onRender: (rec) => {
+        if (rec.state === 1) {
           return (
-            <Link to={`/instance_profiling/${rec.id}`}>
-              {t('instance_profiling.list.table.actions.detail')}
-            </Link>
+            <Badge
+              status="processing"
+              text={t('instance_profiling.list.table.status.running')}
+            />
           )
-        },
-        width: 100,
+        } else if (rec.state === 2) {
+          return (
+            <Badge
+              status="success"
+              text={t('instance_profiling.list.table.status.finished')}
+            />
+          )
+        }
       },
-    ],
-    [t]
-  )
+    },
+    {
+      name: t('instance_profiling.list.table.columns.start_at'),
+      key: 'started_at',
+      minWidth: 160,
+      maxWidth: 220,
+      isResizable: true,
+      isCollapsible: true,
+      onRender: (rec) => {
+        return <DateTime.Calendar unixTimeStampMs={rec.started_at * 1000} />
+      },
+    },
+    {
+      name: t('instance_profiling.list.table.columns.duration'),
+      key: 'duration',
+      minWidth: 100,
+      maxWidth: 150,
+      fieldName: 'profile_duration_secs',
+      isResizable: true,
+      isCollapsible: true,
+    },
+  ]
 
   return (
-    <div>
+    <ScrollablePane style={{ height: '100vh' }}>
       <Card title={t('instance_profiling.list.control_form.title')}>
         <Form layout="inline">
           <Form.Item
@@ -251,13 +247,12 @@ export default function Page() {
           </Form.Item>
         </Form>
       </Card>
-      <CardTable
+      <CardTableV2
         loading={listLoading}
+        items={historyTable || []}
         columns={historyTableColumns}
-        dataSource={historyTable}
-        title={t('instance_profiling.list.table.title')}
-        rowKey="id"
+        onRowClicked={handleRowClick}
       />
-    </div>
+    </ScrollablePane>
   )
 }

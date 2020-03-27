@@ -5,7 +5,8 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Button, Badge, Progress } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Head, CardTable } from '@pingcap-incubator/dashboard_components'
+import { Head } from '@pingcap-incubator/dashboard_components'
+import { CardTableV2 } from '@/components'
 import { useClientRequestWithPolling } from '@/utils/useClientRequest'
 
 function mapData(data) {
@@ -59,24 +60,28 @@ export default function Page() {
     window.location = `${client.getBasePath()}/profiling/group/download?token=${token}`
   }, [id])
 
-  const columns = useMemo(() => {
-    return [
+  const columns = useMemo(
+    () => [
       {
-        title: t('instance_profiling.detail.table.columns.instance'),
+        name: t('instance_profiling.detail.table.columns.instance'),
         key: 'instance',
-        dataIndex: ['target', 'display_name'],
-        width: 200,
+        minWidth: 150,
+        maxWidth: 400,
+        onRender: (record) => record.target.display_name,
       },
       {
-        title: t('instance_profiling.detail.table.columns.kind'),
+        name: t('instance_profiling.detail.table.columns.kind'),
         key: 'kind',
-        dataIndex: ['target', 'kind'],
-        width: 100,
+        minWidth: 100,
+        maxWidth: 150,
+        onRender: (record) => record.target.kind,
       },
       {
-        title: t('instance_profiling.detail.table.columns.status'),
+        name: t('instance_profiling.detail.table.columns.status'),
         key: 'status',
-        render: (_, record) => {
+        minWidth: 150,
+        maxWidth: 200,
+        onRender: (record) => {
           if (record.state === 1) {
             return (
               <div style={{ width: 200 }}>
@@ -99,8 +104,9 @@ export default function Page() {
           }
         },
       },
-    ]
-  }, [t])
+    ],
+    [t]
+  )
 
   return (
     <div>
@@ -121,11 +127,11 @@ export default function Page() {
           </Button>
         }
       />
-      <CardTable
+      <CardTableV2
         loading={isLoading && !data}
         columns={columns}
-        dataSource={data && data.tasks_status}
-        rowKey="id"
+        items={data?.tasks_status || []}
+        getKey={(row) => row.id}
       />
     </div>
   )

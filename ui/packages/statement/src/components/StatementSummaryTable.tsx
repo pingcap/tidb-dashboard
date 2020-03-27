@@ -51,7 +51,7 @@ export default function StatementSummaryTable({
       kind: t('statement.common.digest_text'),
       content: (
         <SyntaxHighlighter language="sql" style={atomOneLight}>
-          {sqlFormatter.format(detail.digest_text, {uppercase: true})}
+          {sqlFormatter.format(detail.digest_text, { uppercase: true })}
         </SyntaxHighlighter>
       ),
     },
@@ -59,7 +59,7 @@ export default function StatementSummaryTable({
       kind: t('statement.detail.query_sample_text'),
       content: (
         <SyntaxHighlighter language="sql" style={atomOneLight}>
-          {sqlFormatter.format(detail.query_sample_text, {uppercase: true})}
+          {sqlFormatter.format(detail.query_sample_text, { uppercase: true })}
         </SyntaxHighlighter>
       ),
     },

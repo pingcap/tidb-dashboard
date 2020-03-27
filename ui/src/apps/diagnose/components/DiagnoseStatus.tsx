@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Descriptions, message, Icon, Skeleton, Progress, Button } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Descriptions, message, Skeleton, Progress, Button } from 'antd'
 import { Head } from '@pingcap-incubator/dashboard_components'
 import { DateTime } from '@/components'
 import { DiagnoseReport } from '@pingcap-incubator/dashboard_client'
@@ -45,7 +46,7 @@ function DiagnoseStatus() {
       title={t('diagnose.status.head.title')}
       back={
         <Link to={`/diagnose`}>
-          <Icon type="arrow-left" /> {t('diagnose.status.head.back')}
+          <ArrowLeftOutlined /> {t('diagnose.status.head.back')}
         </Link>
       }
       titleExtra={

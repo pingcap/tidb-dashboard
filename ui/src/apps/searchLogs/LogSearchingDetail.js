@@ -1,5 +1,6 @@
 import { Head } from '@pingcap-incubator/dashboard_components'
-import { Col, Row, Icon } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Col, Row } from 'antd'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router-dom'
@@ -20,7 +21,7 @@ export default function LogSearchingDetail() {
             title={t('search_logs.nav.detail')}
             back={
               <Link to={`/search_logs`}>
-                <Icon type="arrow-left" /> {t('search_logs.nav.search_logs')}
+                <ArrowLeftOutlined /> {t('search_logs.nav.search_logs')}
               </Link>
             }
           >

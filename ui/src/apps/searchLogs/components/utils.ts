@@ -4,7 +4,7 @@ import {
   LogsearchTaskGroupResponse,
   LogsearchTaskModel,
 } from '@pingcap-incubator/dashboard_client'
-import { RangePickerValue } from 'antd/lib/date-picker/interface'
+import { RangeValue } from 'rc-picker/lib/interface'
 import moment from 'moment'
 
 export const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
@@ -89,7 +89,7 @@ export function parseClusterInfo(
 }
 
 interface Params {
-  timeRange: RangePickerValue
+  timeRange: RangeValue<moment.Moment>
   logLevel: number
   components: LogsearchSearchTarget[]
   searchValue: string
@@ -102,7 +102,7 @@ export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
   const startTime = start_time ? moment(start_time) : null
   const endTime = end_time ? moment(end_time) : null
   return {
-    timeRange: [startTime, endTime] as RangePickerValue,
+    timeRange: [startTime, endTime] as RangeValue<moment.Moment>,
     logLevel: min_level ?? 0,
     searchValue: patterns && patterns.length > 0 ? patterns.join(' ') : '',
     components: tasks && tasks.length > 0 ? getComponents(tasks) : [],

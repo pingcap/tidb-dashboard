@@ -1,12 +1,12 @@
 import React from 'react'
-import { Icon } from 'antd'
+import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons'
 import { createTheme, registerIcons } from 'office-ui-fabric-react/lib/Styling'
 import { Customizations } from 'office-ui-fabric-react/lib/Utilities'
 
 registerIcons({
   icons: {
-    sortup: <Icon type="arrow-up" />,
-    sortdown: <Icon type="arrow-down" />,
+    sortup: <ArrowUpOutlined />,
+    sortdown: <ArrowDownOutlined />,
   },
 })
 

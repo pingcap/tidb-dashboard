@@ -3,7 +3,7 @@ diagnose:
   generate:
     title: New Diagnose Report
     range_begin: Diagnose Begin Range
-    range_duration: Range Size (min)
+    range_duration: Range Duration (min)
     is_compare: Compare by Baseline
     compare_range_begin: Baseline Begin Range
     submit: Generate

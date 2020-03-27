@@ -1,4 +1,3 @@
-import './index.less'
 import * as singleSpa from 'single-spa'
 import AppRegistry from '@/utils/registry'
 import * as routingUtil from '@/utils/routing'

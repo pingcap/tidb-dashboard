@@ -36,14 +36,12 @@ export default function DiagnoseGenerator() {
   const { t } = useTranslation()
   const history = useHistory()
   const handleFinish = useFinishHandler(history)
-  const layout = { labelCol: { span: 4 }, wrapperCol: { span: 16 } }
-  const tailLayout = { wrapperCol: { offset: 4, span: 16 } }
 
   return (
     <Card title={t('diagnose.generate.title')}>
       <Form
+        layout="vertical"
         style={{ minWidth: 500 }}
-        {...layout}
         onFinish={handleFinish}
         initialValues={{ rangeDuration: 10 }}
       >
@@ -92,7 +90,7 @@ export default function DiagnoseGenerator() {
             )
           }}
         </Form.Item>
-        <Form.Item {...tailLayout}>
+        <Form.Item>
           <Button type="primary" htmlType="submit">
             {t('diagnose.generate.submit')}
           </Button>

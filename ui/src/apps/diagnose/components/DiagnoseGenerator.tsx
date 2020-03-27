@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Card } from '@pingcap-incubator/dashboard_components'
 import { useHistory } from 'react-router-dom'
 import client from '@pingcap-incubator/dashboard_client'
+import styles from './styles.module.less'
 
 const useFinishHandler = (history) => {
   return async (fieldsValue) => {
@@ -88,7 +89,7 @@ export default function DiagnoseGenerator() {
           <Form.Item name="rangeDuration" noStyle>
             <InputNumber min={1} max={24 * 60} />
           </Form.Item>
-          <div style={{ marginTop: 4, marginLeft: -8 }}>
+          <div className={styles.range_duration_shortcuts}>
             {rangeDurationShortcuts.map((item, idx) => (
               <>
                 <Button

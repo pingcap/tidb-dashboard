@@ -4,10 +4,10 @@ import {
   LogsearchSearchTarget,
 } from '@pingcap-incubator/dashboard_client'
 import { Button, DatePicker, Form, Input, Select, TreeSelect } from 'antd'
-import { RangePickerValue } from 'antd/lib/date-picker/interface'
-import { TreeNode } from 'antd/lib/tree-select'
+import { RangeValue } from 'rc-picker/lib/interface'
+import { LegacyDataNode } from 'rc-tree-select/lib/interface'
 import moment from 'moment'
-import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react'
+import React, { ChangeEvent, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import styles from './Styles.module.css'
@@ -65,7 +65,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
   const { t } = useTranslation()
   const history = useHistory()
 
-  const [timeRange, setTimeRange] = useState<RangePickerValue>([])
+  const [timeRange, setTimeRange] = useState<RangeValue<moment.Moment>>(null)
   const [logLevel, setLogLevel] = useState<number>(3)
   const [selectedComponents, setComponents] = useState<string[]>([])
   const [searchValue, setSearchValue] = useState<string>('')
@@ -120,8 +120,11 @@ export default function SearchHeader({ taskGroupID }: Props) {
     history.push('/search_logs/detail/' + id)
   }
 
-  function handleTimeRangeChange(value: RangePickerValue) {
-    setTimeRange(value)
+  function handleTimeRangeChange(
+    values: RangeValue<moment.Moment>,
+    formatString: [string, string]
+  ) {
+    setTimeRange(values)
   }
 
   function handleLogLevelChange(value: number) {
@@ -136,13 +139,15 @@ export default function SearchHeader({ taskGroupID }: Props) {
     setSearchValue(e.target.value)
   }
 
-  function handleSearch(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  function handleSearch() {
     createTaskGroup()
   }
 
-  function filterTreeNode(inputValue: string, treeNode: TreeNode): boolean {
-    const name = treeNode.key as string
+  function filterTreeNode(
+    inputValue: string,
+    legacyDataNode?: LegacyDataNode
+  ): boolean {
+    const name = legacyDataNode?.key as string
     return name.includes(inputValue)
   }
 
@@ -150,7 +155,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
     <Form
       id="search_form"
       layout="inline"
-      onSubmit={handleSearch}
+      onFinish={handleSearch}
       style={{ display: 'flex', flexWrap: 'wrap' }}
     >
       <Form.Item>
@@ -178,8 +183,8 @@ export default function SearchHeader({ taskGroupID }: Props) {
           onChange={handleLogLevelChange}
         >
           {LOG_LEVELS.map((val, idx) => (
-            <Option key={val} data-e2e={`level_${val}`} value={idx + 1}>
-              {val.toUpperCase()}
+            <Option key={val} value={idx + 1}>
+              <div data-e2e={`level_${val}`}>{val.toUpperCase()}</div>
             </Option>
           ))}
         </Select>

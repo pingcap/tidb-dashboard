@@ -1,7 +1,8 @@
 import client from '@pingcap-incubator/dashboard_client'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Button, Badge, Progress, Icon } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Button, Badge, Progress } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Head, CardTable } from '@pingcap-incubator/dashboard_components'
@@ -68,13 +69,13 @@ export default function Page() {
     {
       title: t('instance_profiling.detail.table.columns.instance'),
       key: 'instance',
-      dataIndex: 'target.display_name',
+      dataIndex: ['target', 'display_name'],
       width: 200,
     },
     {
       title: t('instance_profiling.detail.table.columns.kind'),
       key: 'kind',
-      dataIndex: 'target.kind',
+      dataIndex: ['target', 'kind'],
       width: 100,
     },
     {
@@ -111,8 +112,7 @@ export default function Page() {
         title={t('instance_profiling.detail.head.title')}
         back={
           <Link to={`/instance_profiling`}>
-            <Icon type="arrow-left" />{' '}
-            {t('instance_profiling.detail.head.back')}
+            <ArrowLeftOutlined /> {t('instance_profiling.detail.head.back')}
           </Link>
         }
         titleExtra={

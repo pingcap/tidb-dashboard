@@ -1,14 +1,18 @@
-import { Icon } from 'antd'
+import {
+  CheckCircleTwoTone,
+  InfoCircleTwoTone,
+  LoadingOutlined,
+} from '@ant-design/icons'
 import React from 'react'
 
 export function LoadingIcon() {
-  return <Icon type="loading" />
+  return <LoadingOutlined />
 }
 
 export function SuccessIcon() {
-  return <Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
+  return <CheckCircleTwoTone twoToneColor="#52c41a" />
 }
 
 export function FailIcon() {
-  return <Icon type="info-circle" theme="twoTone" twoToneColor="#faad14" />
+  return <InfoCircleTwoTone twoToneColor="#faad14" />
 }

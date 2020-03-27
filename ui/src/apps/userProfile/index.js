@@ -1,7 +1,9 @@
-module.exports = {
+import { UserOutlined } from '@ant-design/icons'
+
+export default {
   id: 'user_profile',
   loader: () => import('./app.js'),
   routerPrefix: '/user_profile',
-  icon: 'user',
+  icon: UserOutlined,
   translations: require.context('./translations/', false, /\.yaml$/),
 }

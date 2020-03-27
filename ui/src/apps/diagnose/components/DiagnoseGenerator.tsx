@@ -1,5 +1,14 @@
 import React from 'react'
-import { Button, DatePicker, Form, Select, Switch, message } from 'antd'
+import {
+  Button,
+  DatePicker,
+  Form,
+  Select,
+  Switch,
+  Input,
+  InputNumber,
+  message,
+} from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@pingcap-incubator/dashboard_components'
 import { useHistory } from 'react-router-dom'
@@ -8,7 +17,10 @@ import client from '@pingcap-incubator/dashboard_client'
 const useFinishHandler = (history) => {
   return async (fieldsValue) => {
     const start_time = fieldsValue['rangeBegin'].unix()
-    const range_duration = fieldsValue['rangeDuration']
+    let range_duration = fieldsValue['rangeDuration']
+    if (fieldsValue['rangeDuration'] === 0) {
+      range_duration = fieldsValue['rangeDurationCustom']
+    }
     const is_compare = fieldsValue['isCompare']
     const compare_range_begin = fieldsValue['compareRangeBegin']
 
@@ -43,7 +55,7 @@ export default function DiagnoseGenerator() {
         layout="vertical"
         style={{ minWidth: 500 }}
         onFinish={handleFinish}
-        initialValues={{ rangeDuration: 10 }}
+        initialValues={{ rangeDuration: 10, rangeDurationCustom: 10 }}
       >
         <Form.Item
           name="rangeBegin"
@@ -52,18 +64,49 @@ export default function DiagnoseGenerator() {
         >
           <DatePicker showTime />
         </Form.Item>
-        <Form.Item
-          name="rangeDuration"
-          rules={[{ required: true }]}
-          label={t('diagnose.generate.range_duration')}
-        >
-          <Select style={{ width: 120 }}>
-            <Select.Option value={5}>5 min</Select.Option>
-            <Select.Option value={10}>10 min</Select.Option>
-            <Select.Option value={30}>30 min</Select.Option>
-            <Select.Option value={60}>1 hour</Select.Option>
-            <Select.Option value={24 * 60}>1 day</Select.Option>
-          </Select>
+        <Form.Item label={t('diagnose.generate.range_duration')}>
+          <Input.Group compact>
+            <Form.Item
+              name="rangeDuration"
+              rules={[{ required: true }]}
+              noStyle
+            >
+              <Select style={{ width: 120 }}>
+                <Select.Option value={5}>5 min</Select.Option>
+                <Select.Option value={10}>10 min</Select.Option>
+                <Select.Option value={30}>30 min</Select.Option>
+                <Select.Option value={60}>1 hour</Select.Option>
+                <Select.Option value={24 * 60}>1 day</Select.Option>
+                <Select.Option value={0}>Custom</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              noStyle
+              shouldUpdate={(prev, cur) =>
+                prev.rangeDuration !== cur.rangeDuration
+              }
+            >
+              {({ getFieldValue }) => {
+                return (
+                  getFieldValue('rangeDuration') === 0 && (
+                    <Form.Item
+                      noStyle
+                      name="rangeDurationCustom"
+                      rules={[{ required: true }]}
+                    >
+                      <InputNumber
+                        min={1}
+                        max={43200}
+                        formatter={(value) => `${value} min`}
+                        parser={(value) => value?.replace(/[^\d]/g, '') || ''}
+                        style={{ width: 120 }}
+                      />
+                    </Form.Item>
+                  )
+                )
+              }}
+            </Form.Item>
+          </Input.Group>
         </Form.Item>
         <Form.Item
           name="isCompare"

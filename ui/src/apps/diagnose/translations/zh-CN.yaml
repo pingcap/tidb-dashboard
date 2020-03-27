@@ -2,9 +2,9 @@ diagnose:
   nav_title: 集群诊断
   generate:
     title: 生成诊断报告
-    range_begin: 诊断区间起始时间
-    range_duration: 区间大小
-    is_compare: 与其他区间对比
+    range_begin: 区间起始时间
+    range_duration: 区间长度
+    is_compare: 与基线区间对比
     compare_range_begin: 基线区间起始时间
     submit: 生成报告
   status:

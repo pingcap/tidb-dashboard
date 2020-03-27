@@ -64,7 +64,10 @@ export default function DiagnoseGenerator() {
         >
           <DatePicker showTime />
         </Form.Item>
-        <Form.Item label={t('diagnose.generate.range_duration')}>
+        <Form.Item
+          label={t('diagnose.generate.range_duration')}
+          rules={[{ required: true }]}
+        >
           <Input.Group compact>
             <Form.Item
               name="rangeDuration"

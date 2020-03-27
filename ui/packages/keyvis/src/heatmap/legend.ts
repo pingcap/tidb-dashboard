@@ -6,30 +6,33 @@ import { DataTag } from './types'
 import { tagUnit, withUnit } from './utils'
 
 export default function (colorScheme: ColorScheme, dataTag: DataTag) {
-  let marginLeft = 70
   let marginRight = 120
   let width = 500
   let height = 50
-  let innerWidth = width - marginLeft - marginRight
+  let innerWidth = width - marginRight
   let innerHeight = 26
   let tickCount = 5
 
   if (document.querySelector('.PD-Cluster-Legend') === null) {
     return
   }
-  let contaiiner = (d3 as any).select('.PD-Cluster-Legend')
+  let container = (d3 as any)
+    .select('.PD-Cluster-Legend')
+    .style('width', `${width}px`)
+    .style('height', `${height}px`)
 
   let xScale = (d3 as any)
     .scaleSymlog()
     .domain([colorScheme.maxValue / 1000, colorScheme.maxValue])
     .range([0, innerWidth])
 
-  let canvas = contaiiner.selectAll('canvas').data([null])
+  let canvas = container.selectAll('canvas').data([null])
   canvas = canvas
     .enter()
     .append('canvas')
-    .style('left', marginLeft + 'px')
     .style('position', 'absolute')
+    .style('left', '0px')
+    .style('top', '0px')
     .merge(canvas)
     .attr('width', width)
     .attr('height', height)
@@ -51,12 +54,13 @@ export default function (colorScheme: ColorScheme, dataTag: DataTag) {
     .tickSize(innerHeight)
     .tickFormat((d) => withUnit(d as number))
 
-  let svg = contaiiner.selectAll('svg').data([null])
+  let svg = container.selectAll('svg').data([null])
   svg = svg
     .enter()
     .append('svg')
     .style('position', 'absolute')
     .style('left', '0px')
+    .style('top', '0px')
     .merge(svg)
     .attr('width', width)
     .attr('height', height)
@@ -65,7 +69,6 @@ export default function (colorScheme: ColorScheme, dataTag: DataTag) {
   xAxisG = xAxisG
     .enter()
     .append('g')
-    .attr('transform', 'translate(' + marginLeft + ', 0)')
     .merge(xAxisG)
     .call(xAxis)
     .call((g) => {
@@ -73,12 +76,11 @@ export default function (colorScheme: ColorScheme, dataTag: DataTag) {
       g.selectAll('.domain').remove()
     })
 
-  let unitLabel = contaiiner.selectAll('p').data([null])
+  let unitLabel = container.selectAll('div').data([null])
   unitLabel = unitLabel
     .enter()
-    .append('p')
+    .append('div')
     .classed('unit', true)
-    .style('margin-left', marginLeft + innerWidth + 30 + 'px')
     .merge(unitLabel)
     .text(tagUnit(dataTag))
 }

@@ -104,10 +104,9 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
                     e.stopPropagation()
                   }}
                 >
-                  <Flexbox flexDirection="column" alignItems="center">
+                  <Flexbox flexDirection="column">
                     <div className="PD-Cluster-Legend" />
                     <Slider
-                      style={{ width: 360 }}
                       defaultValue={0}
                       min={-6}
                       max={6}

@@ -1,6 +1,7 @@
 package tcp
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"sync"
@@ -46,6 +47,7 @@ type Proxy struct {
 	dialTimeout   time.Duration
 	endpoints     []string
 	donec         chan struct{}
+	errc          chan error
 
 	mu        sync.Mutex
 	remotes   []*remote
@@ -68,6 +70,7 @@ func NewProxy(l net.Listener, endpoints []string, checkInterval time.Duration, t
 	}
 	return &Proxy{
 		l:             l,
+		errc:          make(chan error),
 		donec:         make(chan struct{}),
 		remotes:       remotes,
 		endpoints:     endpoints,
@@ -96,6 +99,7 @@ func (p *Proxy) serve(in net.Conn) {
 	}
 	if out == nil {
 		in.Close()
+		defer p.errc <- fmt.Errorf("no alive remotes")
 		return
 	}
 	io.Copy(in, out)
@@ -143,7 +147,7 @@ func (p *Proxy) doCheck() {
 	}
 }
 
-func (p *Proxy) Run() error {
+func (p *Proxy) Run() {
 	log.Info("start serve requests to remotes", zap.Strings("remotes", p.endpoints))
 	go p.doCheck()
 	// wait a ping before serve connections
@@ -151,13 +155,18 @@ func (p *Proxy) Run() error {
 	for {
 		incoming, err := p.l.Accept()
 		if err != nil {
-			return err
+			p.errc <- err
+		} else {
+			go p.serve(incoming)
 		}
-		go p.serve(incoming)
 	}
 }
 
 func (p *Proxy) Stop() {
 	p.l.Close()
 	close(p.donec)
+}
+
+func (p *Proxy) Err() chan error {
+	return p.errc
 }

@@ -17,6 +17,7 @@ import {
   ServerType,
   ServerTypeList,
   TaskState,
+  req_with_err_prompt,
 } from './utils'
 import { Card } from '@pingcap-incubator/dashboard_components'
 
@@ -213,11 +214,13 @@ export default function SearchProgress({
       (key) => !Object.keys(namingMap).some((name) => name === key)
     )
 
-    const res = await client.getInstance().logsDownloadAcquireTokenGet(keys)
-    const token = res.data
-    if (!token) {
+    const res = await req_with_err_prompt(
+      client.getInstance().logsDownloadAcquireTokenGet(keys)
+    )
+    if (!res || !res.data) {
       return
     }
+    const token = res.data
     const url = `${client.getBasePath()}/logs/download?token=${token}`
     window.open(url)
   }

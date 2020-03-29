@@ -6,6 +6,7 @@ import {
 } from '@pingcap-incubator/dashboard_client'
 import { RangeValue } from 'rc-picker/lib/interface'
 import moment from 'moment'
+import { message } from 'antd'
 
 export const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
@@ -139,3 +140,17 @@ export function getAddress(target: LogsearchSearchTarget | undefined): string {
 }
 
 export const ServerTypeList = [ServerType.TiDB, ServerType.TiKV, ServerType.PD]
+
+export async function req_with_err_prompt<T>(
+  req: Promise<T>
+): Promise<T | null> {
+  try {
+    return await req
+  } catch (error) {
+    let msg = error?.response?.data?.message
+    if (msg) {
+      message.error(msg)
+    }
+    return null
+  }
+}

@@ -1,17 +1,8 @@
-import client from '@pingcap-incubator/dashboard_client'
 import {
   LogsearchCreateTaskGroupRequest,
   LogsearchSearchTarget,
 } from '@pingcap-incubator/dashboard_client'
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  Select,
-  TreeSelect,
-  message,
-} from 'antd'
+import { Button, DatePicker, Form, Input, Select, TreeSelect } from 'antd'
 import { RangeValue } from 'rc-picker/lib/interface'
 import { LegacyDataNode } from 'rc-tree-select/lib/interface'
 import moment from 'moment'
@@ -20,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useMount } from '@umijs/hooks'
 import styles from './Styles.module.css'
+import { req_with_err_prompt } from './utils'
 import {
   getAddress,
   namingMap,
@@ -120,18 +112,14 @@ export default function SearchHeader({ taskGroupID }: Props) {
         patterns: searchValue.split(/\s+/), // 'foo boo' => ['foo', 'boo']
       },
     }
-    let result
-    try {
-      result = await client.getInstance().logsTaskgroupPut(params)
-    } catch (error) {
-      message.error(error?.response?.data?.message)
+
+    let result = await req_with_err_prompt(
+      client.getInstance().logsTaskgroupPut(params)
+    )
+    if (!result || !result.data.task_group?.id) {
       return
     }
     const id = result.data.task_group?.id
-    if (!id) {
-      // promp error here
-      return
-    }
     history.push('/search_logs/detail/' + id)
   }
 

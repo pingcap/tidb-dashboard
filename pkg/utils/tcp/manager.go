@@ -20,12 +20,12 @@ type ProxyManager struct {
 func NewProxyManager(c *config.Config) *ProxyManager {
 	return &ProxyManager{
 		c:       c,
-		proxies: make(map[int]*Proxy),
+		proxies: make(map[string]*ProxyRef),
 	}
 }
 
 // Create uses an available system port and create a loadbalance based TCP proxy for given endpoints
-func (pm *ProxyManager) Create(label string, endpoints []string) (*ProxyRef, error) {
+func (pm *ProxyManager) Create(key string, endpoints []string) (*ProxyRef, error) {
 	if len(endpoints) == 0 {
 		return nil, fmt.Errorf("empty endpoints")
 	}
@@ -44,8 +44,12 @@ func (pm *ProxyManager) Create(label string, endpoints []string) (*ProxyRef, err
 		Proxy: proxy,
 	}
 
-	pm.proxies[label] = r
+	pm.proxies[key] = r
 	return r, nil
+}
+
+func (pm *ProxyManager) GetProxy(key string) *ProxyRef {
+	return pm.proxies[key]
 }
 
 func getFreePort() (int, error) {

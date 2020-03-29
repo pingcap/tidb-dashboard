@@ -23,11 +23,15 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
-	"k8s.io/kubernetes/cmd/kubeadm/app/phases/selfhosting"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/tcp"
+)
+
+const (
+	tidbProxyLabel   = "tidb"
+	statusProxyLable = "tidbStatus"
 )
 
 // FIXME: This is duplicated with the one in KeyVis.
@@ -57,8 +61,8 @@ type Forwarder struct {
 	ctx        context.Context
 	config     *ForwarderConfig
 	etcdClient *clientv3.Client
-	pm  *tcp.ProxyManager
-	mysqlPort int
+	pm         *tcp.ProxyManager
+	mysqlPort  int
 	statusPort int
 }
 
@@ -69,31 +73,33 @@ func (f *Forwarder) Open() error {
 	}
 	var statusEndpoints, mysqlEndpoints []string
 	for _, server := range cluster {
-		statusEndpoints = append(statusEndpoints, fmt.Sprintf("%s:%s", server.IP, server.StatusPort))
-		mysqlEndpoints = append(mysqlEndpoints, fmt.Sprintf("%s:%s", server.IP, server.Port))
+		statusEndpoints = append(statusEndpoints, fmt.Sprintf("%s:%d", server.IP, server.StatusPort))
+		mysqlEndpoints = append(mysqlEndpoints, fmt.Sprintf("%s:%d", server.IP, server.Port))
 	}
-	pr, err := f.pm.Create("tidb", mysqlEndpoints)
+	pr, err := f.pm.Create(tidbProxyLabel, mysqlEndpoints)
 	if err != nil {
 		return err
 	}
+	go pr.Run()
 	f.mysqlPort = pr.Port
-	pr, err = f.pm.Create("tidbStatus", statusEndpoints)
+	pr, err = f.pm.Create(statusProxyLable, statusEndpoints)
 	if err != nil {
 		return err
-	}
-	go func ()  {
-		for {
-			select {
-			}
-		}
 	}
 	f.statusPort = pr.Port
-	pr.Run()
+	go pr.Run()
 	return nil
 }
 
 func (f *Forwarder) Close() error {
-	// Currently this function does nothing.
+	p := f.pm.GetProxy(tidbProxyLabel)
+	if p != nil {
+		p.Stop()
+	}
+	p = f.pm.GetProxy(statusProxyLable)
+	if p != nil {
+		p.Stop()
+	}
 	return nil
 }
 
@@ -115,17 +121,18 @@ func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
 		}
 		allTiDB = append(allTiDB, info)
 	}
-	if len(info) == 0 {
+	if len(allTiDB) == 0 {
 		return nil, ErrNoAliveTiDB.New("no TiDB is alive")
 	}
 
 	return allTiDB, nil
 }
 
-func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, pm *tcp.ProxyManager etcdClient *clientv3.Client) *Forwarder {
+func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, pm *tcp.ProxyManager, etcdClient *clientv3.Client) *Forwarder {
 	f := &Forwarder{
 		etcdClient: etcdClient,
 		config:     config,
+		pm:         pm,
 		ctx:        context.Background(),
 	}
 

@@ -1,7 +1,6 @@
 package tcp
 
 import (
-	"fmt"
 	"io"
 	"net"
 	"sync"
@@ -27,9 +26,10 @@ func (r *remote) becomeInactive() {
 	r.mu.Lock()
 	r.inactive = true
 	r.mu.Unlock()
+	log.Info("become inactive", zap.String("remote", r.addr))
 }
 
-func (r *remote) ping(timeout time.Duration) error {
+func (r *remote) dial(timeout time.Duration) error {
 	conn, err := net.DialTimeout("tcp", r.addr, timeout)
 	if err != nil {
 		return err
@@ -38,6 +38,7 @@ func (r *remote) ping(timeout time.Duration) error {
 	r.mu.Lock()
 	r.inactive = false
 	r.mu.Unlock()
+	log.Info("become active", zap.String("remote", r.addr))
 	return nil
 }
 
@@ -51,7 +52,7 @@ type Proxy struct {
 
 	mu        sync.Mutex
 	remotes   []*remote
-	pickCount int
+	pickCount int // for RoundRobin count
 }
 
 func NewProxy(l net.Listener, endpoints []string, checkInterval time.Duration, timeout time.Duration) *Proxy {
@@ -61,7 +62,7 @@ func NewProxy(l net.Listener, endpoints []string, checkInterval time.Duration, t
 	if timeout == 0 {
 		timeout = 10 * time.Second
 	}
-	var remotes []*remote
+	remotes := []*remote{}
 	for _, e := range endpoints {
 		remotes = append(remotes, &remote{
 			addr:     e,
@@ -80,35 +81,44 @@ func NewProxy(l net.Listener, endpoints []string, checkInterval time.Duration, t
 
 func (p *Proxy) serve(in net.Conn) {
 	var (
-		err error
-		out net.Conn
+		err    error
+		out    net.Conn
+		picked *remote
 	)
 	for {
 		p.mu.Lock()
-		remote := p.pick()
+		picked = p.pick()
 		p.mu.Unlock()
-		if remote == nil {
+		if picked == nil {
 			break
 		}
-		out, err = net.DialTimeout("tcp", remote.addr, p.dialTimeout)
+		out, err = net.DialTimeout("tcp", picked.addr, p.dialTimeout)
 		if err == nil {
 			break
 		}
-		remote.becomeInactive()
-		log.Warn("remote become inactive", zap.String("remote", remote.addr))
+		picked.becomeInactive()
+		log.Warn("remote become inactive", zap.String("remote", picked.addr))
 	}
 	if out == nil {
 		in.Close()
-		defer p.errc <- fmt.Errorf("no alive remotes")
 		return
 	}
-	io.Copy(in, out)
-	in.Close()
-	out.Close()
+	go func() {
+		// send response
+		if _, err = io.Copy(in, out); err != nil {
+			log.Warn("send response failed", zap.Error(err))
+		}
+		in.Close()
+		out.Close()
+	}()
+	// send request
+	if _, err = io.Copy(out, in); err != nil {
+		log.Warn("send request failed", zap.Error(err))
+	}
 }
 
 func (p *Proxy) pick() *remote {
-	var activeRemotes []*remote
+	activeRemotes := []*remote{}
 	for _, r := range p.remotes {
 		if r.isActive() {
 			activeRemotes = append(activeRemotes, r)
@@ -133,7 +143,7 @@ func (p *Proxy) doCheck() {
 				}
 				go func(r *remote) {
 					log.Debug("run remote check", zap.String("remote", r.addr))
-					if err := r.ping(p.dialTimeout); err != nil {
+					if err := r.dial(p.dialTimeout); err != nil {
 						log.Warn("fail to recv activity from remote, stay inactive and wait to next checking round", zap.String("remote", r.addr), zap.Duration("interval", p.checkInterval), zap.Error(err))
 					} else {
 						log.Debug("remote become active", zap.String("remote", r.addr))
@@ -148,25 +158,26 @@ func (p *Proxy) doCheck() {
 }
 
 func (p *Proxy) Run() {
-	log.Info("start serve requests to remotes", zap.Strings("remotes", p.endpoints))
+	log.Info("start serve requests to remotes", zap.String("endpoint", p.l.Addr().String()), zap.Strings("remotes", p.endpoints))
 	go p.doCheck()
-	// wait a ping before serve connections
-	time.Sleep(p.checkInterval)
+	// wait a check round before serve connections
+	time.Sleep(p.checkInterval + time.Second)
 	for {
-		incoming, err := p.l.Accept()
-		if err != nil {
-			p.errc <- err
-		} else {
-			go p.serve(incoming)
+		select {
+		case <-p.donec:
+			p.l.Close()
+			return
+		default:
+			incoming, err := p.l.Accept()
+			if err != nil {
+				log.Warn("got accept err", zap.Error(err))
+			} else {
+				go p.serve(incoming)
+			}
 		}
 	}
 }
 
 func (p *Proxy) Stop() {
-	p.l.Close()
 	close(p.donec)
-}
-
-func (p *Proxy) Err() chan error {
-	return p.errc
 }

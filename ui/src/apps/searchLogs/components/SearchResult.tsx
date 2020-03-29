@@ -94,18 +94,14 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
       )
       setLoading(false)
     }
-    if (
-      !loading &&
-      tasks.length > 0 &&
-      taskGroupID !== tasks[0].task_group_id
-    ) {
+    if (tasks.length > 0 && taskGroupID !== tasks[0].task_group_id) {
       setLoading(true)
     }
     getLogPreview()
-  }, [loading, taskGroupID, tasks])
+  }, [taskGroupID, tasks])
 
   return (
-    <Card>
+    <Card id="logs_result">
       {loading && <Skeleton active />}
       {!loading && (
         <>

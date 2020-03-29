@@ -5,6 +5,8 @@ import (
 	"net"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 )
 
 type ProxyRef struct {
@@ -25,7 +27,7 @@ func NewProxyManager(c *config.Config) *ProxyManager {
 }
 
 // Create uses an available system port and create a loadbalance based TCP proxy for given endpoints
-func (pm *ProxyManager) Create(key string, endpoints []string) (*ProxyRef, error) {
+func (pm *ProxyManager) Create(key string, endpoints map[string]string) (*ProxyRef, error) {
 	if len(endpoints) == 0 {
 		return nil, fmt.Errorf("empty endpoints")
 	}
@@ -50,6 +52,15 @@ func (pm *ProxyManager) Create(key string, endpoints []string) (*ProxyRef, error
 
 func (pm *ProxyManager) GetProxy(key string) *ProxyRef {
 	return pm.proxies[key]
+}
+
+func (pm *ProxyManager) UpdateRemote(key string, newEndpoints map[string]string) {
+	if p := pm.GetProxy(key); p != nil {
+		if newEndpoints == nil {
+			log.Warn("remove all remotes in proxy", zap.String("proxy", key))
+		}
+		p.updateRemotes(newEndpoints)
+	}
 }
 
 func getFreePort() (int, error) {

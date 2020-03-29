@@ -26,7 +26,7 @@ func (r *remote) becomeInactive() {
 	r.mu.Lock()
 	r.inactive = true
 	r.mu.Unlock()
-	log.Info("become inactive", zap.String("remote", r.addr))
+	log.Debug("remote become inactive", zap.String("remote", r.addr))
 }
 
 func (r *remote) dial(timeout time.Duration) error {
@@ -38,7 +38,6 @@ func (r *remote) dial(timeout time.Duration) error {
 	r.mu.Lock()
 	r.inactive = false
 	r.mu.Unlock()
-	log.Info("become active", zap.String("remote", r.addr))
 	return nil
 }
 
@@ -46,36 +45,65 @@ type Proxy struct {
 	l             net.Listener
 	checkInterval time.Duration
 	dialTimeout   time.Duration
-	endpoints     []string
 	donec         chan struct{}
 	errc          chan error
 
 	mu        sync.Mutex
-	remotes   []*remote
+	remotes   map[string]*remote
 	pickCount int // for RoundRobin count
 }
 
-func NewProxy(l net.Listener, endpoints []string, checkInterval time.Duration, timeout time.Duration) *Proxy {
+func NewProxy(l net.Listener, endpoints map[string]string, checkInterval time.Duration, timeout time.Duration) *Proxy {
 	if checkInterval == 0 {
 		checkInterval = 5 * time.Second
 	}
 	if timeout == 0 {
 		timeout = 10 * time.Second
 	}
-	remotes := []*remote{}
-	for _, e := range endpoints {
-		remotes = append(remotes, &remote{
+	remotes := make(map[string]*remote)
+	for key, e := range endpoints {
+		remotes[key] = &remote{
 			addr:     e,
 			inactive: true,
-		})
+		}
 	}
 	return &Proxy{
 		l:             l,
 		errc:          make(chan error),
 		donec:         make(chan struct{}),
 		remotes:       remotes,
-		endpoints:     endpoints,
 		checkInterval: checkInterval,
+	}
+}
+
+func (p *Proxy) updateRemotes(remotes map[string]string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	// remove all remotes
+	if remotes == nil {
+		p.remotes = make(map[string]*remote)
+		return
+	}
+	// update or create new remote
+	for key, nr := range remotes {
+		if cr, ok := p.remotes[key]; !ok {
+			log.Debug("proxy adds new remote", zap.String("remote", nr))
+			p.remotes[key] = &remote{
+				addr:     nr,
+				inactive: true,
+			}
+		} else if cr.addr != nr {
+			log.Debug("proxy updates existing remote", zap.String("old", cr.addr), zap.String("new", nr))
+			cr.addr = nr // could cause data race but doesnt matter
+			cr.becomeInactive()
+		}
+	}
+	// remove old remote
+	for key, r := range p.remotes {
+		if _, ok := remotes[key]; !ok {
+			log.Debug("proxy discards remote", zap.String("remote", r.addr))
+			delete(p.remotes, key)
+		}
 	}
 }
 
@@ -100,20 +128,21 @@ func (p *Proxy) serve(in net.Conn) {
 		log.Warn("remote become inactive", zap.String("remote", picked.addr))
 	}
 	if out == nil {
+		// Do we need issue a error here?
 		in.Close()
 		return
 	}
 	go func() {
 		// send response
 		if _, err = io.Copy(in, out); err != nil {
-			log.Warn("send response failed", zap.Error(err))
+			log.Warn("proxy send response failed", zap.Error(err))
 		}
 		in.Close()
 		out.Close()
 	}()
 	// send request
 	if _, err = io.Copy(out, in); err != nil {
-		log.Warn("send request failed", zap.Error(err))
+		log.Warn("proxy send request failed", zap.Error(err))
 	}
 }
 
@@ -158,7 +187,11 @@ func (p *Proxy) doCheck() {
 }
 
 func (p *Proxy) Run() {
-	log.Info("start serve requests to remotes", zap.String("endpoint", p.l.Addr().String()), zap.Strings("remotes", p.endpoints))
+	endpoints := []string{}
+	for _, r := range p.remotes {
+		endpoints = append(endpoints, r.addr)
+	}
+	log.Info("start serve requests to remotes", zap.String("endpoint", p.l.Addr().String()), zap.Strings("remotes", endpoints))
 	go p.doCheck()
 	// wait a check round before serve connections
 	time.Sleep(p.checkInterval + time.Second)
@@ -170,7 +203,7 @@ func (p *Proxy) Run() {
 		default:
 			incoming, err := p.l.Accept()
 			if err != nil {
-				log.Warn("got accept err", zap.Error(err))
+				log.Warn("got err from listener", zap.Error(err), zap.String("from", p.l.Addr().String()))
 			} else {
 				go p.serve(incoming)
 			}

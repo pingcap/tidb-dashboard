@@ -21,8 +21,11 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/joomcode/errorx"
+	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
@@ -58,12 +61,14 @@ func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
 }
 
 type Forwarder struct {
-	ctx        context.Context
-	config     *ForwarderConfig
-	etcdClient *clientv3.Client
-	pm         *tcp.ProxyManager
-	mysqlPort  int
-	statusPort int
+	ctx          context.Context
+	config       *ForwarderConfig
+	etcdClient   *clientv3.Client
+	pm           *tcp.ProxyManager
+	tidbPort     int
+	statusPort   int
+	donec        chan struct{}
+	pollInterval time.Duration
 }
 
 func (f *Forwarder) Open() error {
@@ -71,23 +76,25 @@ func (f *Forwarder) Open() error {
 	if err != nil {
 		return err
 	}
-	var statusEndpoints, mysqlEndpoints []string
+	statusEndpoints := make(map[string]string)
+	tidbEndpoints := make(map[string]string)
 	for _, server := range cluster {
-		statusEndpoints = append(statusEndpoints, fmt.Sprintf("%s:%d", server.IP, server.StatusPort))
-		mysqlEndpoints = append(mysqlEndpoints, fmt.Sprintf("%s:%d", server.IP, server.Port))
+		statusEndpoints[server.ID] = fmt.Sprintf("%s:%d", server.IP, server.StatusPort)
+		tidbEndpoints[server.ID] = fmt.Sprintf("%s:%d", server.IP, server.Port)
 	}
-	pr, err := f.pm.Create(tidbProxyLabel, mysqlEndpoints)
+	pr, err := f.pm.Create(tidbProxyLabel, tidbEndpoints)
 	if err != nil {
 		return err
 	}
 	go pr.Run()
-	f.mysqlPort = pr.Port
+	f.tidbPort = pr.Port
 	pr, err = f.pm.Create(statusProxyLable, statusEndpoints)
 	if err != nil {
 		return err
 	}
 	f.statusPort = pr.Port
 	go pr.Run()
+	go f.pollingForTiDB()
 	return nil
 }
 
@@ -100,6 +107,7 @@ func (f *Forwarder) Close() error {
 	if p != nil {
 		p.Stop()
 	}
+	close(f.donec)
 	return nil
 }
 
@@ -128,12 +136,42 @@ func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
 	return allTiDB, nil
 }
 
+func (f *Forwarder) pollingForTiDB() {
+	for {
+		select {
+		case <-time.After(f.pollInterval):
+			allTiDB, err := f.getServerInfo()
+			if err != nil {
+				if errorx.IsOfType(err, ErrNoAliveTiDB) {
+					log.Warn("no TiDB is alive now")
+					f.pm.UpdateRemote(tidbProxyLabel, nil)
+					f.pm.UpdateRemote(statusProxyLable, nil)
+				} else {
+					log.Warn("Fail to get TiDB server info from PD", zap.Error(err))
+				}
+				continue
+			}
+			statusEndpoints := make(map[string]string)
+			tidbEndpoints := make(map[string]string)
+			for _, server := range allTiDB {
+				statusEndpoints[server.ID] = fmt.Sprintf("%s:%d", server.IP, server.StatusPort)
+				tidbEndpoints[server.ID] = fmt.Sprintf("%s:%d", server.IP, server.Port)
+			}
+			f.pm.UpdateRemote(tidbProxyLabel, tidbEndpoints)
+			f.pm.UpdateRemote(statusProxyLable, statusEndpoints)
+		case <-f.donec:
+			return
+		}
+	}
+}
+
 func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, pm *tcp.ProxyManager, etcdClient *clientv3.Client) *Forwarder {
 	f := &Forwarder{
-		etcdClient: etcdClient,
-		config:     config,
-		pm:         pm,
-		ctx:        context.Background(),
+		etcdClient:   etcdClient,
+		config:       config,
+		pm:           pm,
+		ctx:          context.Background(),
+		pollInterval: 5 * time.Second,
 	}
 
 	lc.Append(fx.Hook{

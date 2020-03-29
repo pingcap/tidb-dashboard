@@ -29,7 +29,7 @@ func TestProxy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	p := NewProxy(l, []string{fmt.Sprintf("%s:%s", u.Hostname(), u.Port())}, 0, 0)
+	p := NewProxy(l, map[string]string{"test": fmt.Sprintf("%s:%s", u.Hostname(), u.Port())}, 0, 0)
 	go p.Run()
 	defer p.Stop()
 

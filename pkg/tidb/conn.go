@@ -35,7 +35,7 @@ const (
 )
 
 func (f *Forwarder) getDBConnProps() (host string, port int) {
-	return "127.0.0.1", f.mysqlPort
+	return "127.0.0.1", f.tidbPort
 }
 
 func (f *Forwarder) getTiDBStatusConnProps() (host string, port int) {

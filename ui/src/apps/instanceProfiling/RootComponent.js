@@ -1,5 +1,5 @@
 import React from 'react'
-import { HashRouter as Router, Route, Switch } from 'react-router-dom'
+import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 import ListPage from './pages/List'
 import DetailPage from './pages/Detail'
 import { FabricRoot } from '@/components'
@@ -7,7 +7,7 @@ import { FabricRoot } from '@/components'
 const App = () => (
   <FabricRoot>
     <Router>
-      <Switch>
+      <Routes>
         <Route
           exact
           path="/instance_profiling"
@@ -17,7 +17,7 @@ const App = () => (
           path="/instance_profiling/:id"
           render={() => <DetailPage key={Math.random()} />}
         />
-      </Switch>
+      </Routes>
     </Router>
   </FabricRoot>
 )

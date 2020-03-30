@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import {
   HashRouter as Router,
-  Switch,
+  Routes,
   Route,
   Redirect,
   Link,
-  withRouter,
+  useLocation,
 } from 'react-router-dom'
 import { Breadcrumb } from 'antd'
 
@@ -14,8 +14,9 @@ import client from '@pingcap-incubator/dashboard_client'
 import { SearchContext, SearchOptions } from './components'
 import { StatementsOverviewPage, StatementDetailPage } from './pages'
 
-const App = withRouter((props) => {
-  const { location } = props
+const App = (props) => {
+  // const { location } = props
+  const location = useLocation()
   const page = location.pathname.split('/').pop()
 
   const [searchOptions, setSearchOptions] = useState({
@@ -39,7 +40,7 @@ const App = withRouter((props) => {
           </Breadcrumb>
         </div>
         <div style={{ margin: 12 }}>
-          <Switch>
+          <Routes>
             <Route path="/statement/overview">
               <StatementsOverviewPage
                 dashboardClient={client.getInstance()}
@@ -50,12 +51,12 @@ const App = withRouter((props) => {
               <StatementDetailPage dashboardClient={client.getInstance()} />
             </Route>
             <Redirect exact from="/statement" to="/statement/overview" />
-          </Switch>
+          </Routes>
         </div>
       </div>
     </SearchContext.Provider>
   )
-})
+}
 
 export default function () {
   return (

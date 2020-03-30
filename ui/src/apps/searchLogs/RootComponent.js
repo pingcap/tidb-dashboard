@@ -1,18 +1,13 @@
 import React from 'react'
-import {
-  HashRouter as Router,
-  Route,
-  Switch,
-  withRouter,
-} from 'react-router-dom'
+import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 import LogSearching from './LogSearching'
 import LogSearchingDetail from './LogSearchingDetail'
 import LogSearchingHistory from './LogSearchingHistory'
 
-const App = withRouter((props) => {
+const App = (props) => {
   return (
     <div>
-      <Switch>
+      <Routes>
         <Route exact path="/search_logs">
           <LogSearching />
         </Route>
@@ -22,10 +17,10 @@ const App = withRouter((props) => {
         <Route path="/search_logs/detail/:id">
           <LogSearchingDetail />
         </Route>
-      </Switch>
+      </Routes>
     </div>
   )
-})
+}
 
 export default function () {
   return (

@@ -41,16 +41,22 @@ const App = (props) => {
         </div>
         <div style={{ margin: 12 }}>
           <Routes>
-            <Route path="/statement/overview">
-              <StatementsOverviewPage
-                dashboardClient={client.getInstance()}
-                detailPagePath="/statement/detail"
-              />
-            </Route>
-            <Route path="/statement/detail">
-              <StatementDetailPage dashboardClient={client.getInstance()} />
-            </Route>
-            <Redirect exact from="/statement" to="/statement/overview" />
+            <Route
+              path="/statement/overview"
+              element={
+                <StatementsOverviewPage
+                  dashboardClient={client.getInstance()}
+                  detailPagePath="/statement/detail"
+                />
+              }
+            />
+            <Route
+              path="/statement/detail"
+              element={
+                <StatementDetailPage dashboardClient={client.getInstance()} />
+              }
+            />
+            <Redirect from="/statement" to="/statement/overview" />
           </Routes>
         </div>
       </div>

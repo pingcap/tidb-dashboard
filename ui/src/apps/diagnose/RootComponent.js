@@ -5,12 +5,8 @@ import { DiagnoseGenerator, DiagnoseStatus } from './components'
 const App = () => (
   <Router>
     <Routes>
-      <Route path="/diagnose/:id">
-        <DiagnoseStatus />
-      </Route>
-      <Route path="/diagnose">
-        <DiagnoseGenerator />
-      </Route>
+      <Route path="/diagnose/:id" element={<DiagnoseStatus />} />
+      <Route path="/diagnose" element={<DiagnoseGenerator />} />
     </Routes>
   </Router>
 )

@@ -8,15 +8,12 @@ const App = (props) => {
   return (
     <div>
       <Routes>
-        <Route exact path="/search_logs">
-          <LogSearching />
-        </Route>
-        <Route path="/search_logs/history">
-          <LogSearchingHistory />
-        </Route>
-        <Route path="/search_logs/detail/:id">
-          <LogSearchingDetail />
-        </Route>
+        <Route path="/search_logs/*" element={<LogSearching />} />
+        <Route path="/search_logs/history" element={<LogSearchingHistory />} />
+        <Route
+          path="/search_logs/detail/:id"
+          element={<LogSearchingDetail />}
+        />
       </Routes>
     </div>
   )

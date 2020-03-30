@@ -11,11 +11,11 @@ const App = () => (
         <Route
           exact
           path="/instance_profiling"
-          render={() => <ListPage key={Math.random()} />}
+          element={<ListPage key={Math.random()} />}
         />
         <Route
           path="/instance_profiling/:id"
-          render={() => <DetailPage key={Math.random()} />}
+          element={<DetailPage key={Math.random()} />}
         />
       </Routes>
     </Router>

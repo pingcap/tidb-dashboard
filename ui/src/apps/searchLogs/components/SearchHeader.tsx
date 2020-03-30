@@ -115,7 +115,8 @@ export default function SearchHeader({ taskGroupID }: Props) {
     }
 
     let result = await req_with_err_prompt(
-      client.getInstance().logsTaskgroupPut(params)
+      client.getInstance().logsTaskgroupPut(params),
+      t('search_logs.error.search_log')
     )
     if (!result || !result.data.task_group?.id) {
       return

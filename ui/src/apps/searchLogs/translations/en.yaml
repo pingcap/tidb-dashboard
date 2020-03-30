@@ -44,3 +44,6 @@ search_logs:
     action: Action
     detail: Detail
     delete: Delete
+  error:
+    search_log: Failed to start a new search task, please try again later.
+    download_log: Failed to download search log, please try again later.

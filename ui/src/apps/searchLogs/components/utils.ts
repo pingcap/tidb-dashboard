@@ -142,12 +142,13 @@ export function getAddress(target: LogsearchSearchTarget | undefined): string {
 export const ServerTypeList = [ServerType.TiDB, ServerType.TiKV, ServerType.PD]
 
 export async function req_with_err_prompt<T>(
-  req: Promise<T>
+  req: Promise<T>,
+  msg: string
 ): Promise<T | null> {
   try {
     return await req
   } catch (error) {
-    let msg = error?.response?.data?.message
+    console.log(error)
     if (msg) {
       message.error(msg)
     }

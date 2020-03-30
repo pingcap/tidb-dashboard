@@ -44,3 +44,6 @@ search_logs:
     action: 操作
     detail: 查看详情
     delete: 删除
+  error:
+    search_log: 搜索任务创建失败, 请稍候重试
+    download_log: 搜索结果下载失败, 请稍候重试

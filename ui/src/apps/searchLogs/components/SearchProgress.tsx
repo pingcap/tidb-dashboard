@@ -215,7 +215,8 @@ export default function SearchProgress({
     )
 
     const res = await req_with_err_prompt(
-      client.getInstance().logsDownloadAcquireTokenGet(keys)
+      client.getInstance().logsDownloadAcquireTokenGet(keys),
+      t('search_logs.error.download_log')
     )
     if (!res || !res.data) {
       return

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   Button,
   DatePicker,
@@ -49,6 +49,36 @@ export default function DiagnoseGenerator() {
   const history = useHistory()
   const handleFinish = useFinishHandler(history)
 
+  const rangeDurationOptions = useMemo(
+    () => [
+      {
+        val: 5,
+        text: t('diagnose.time_duration.min_with_count', { count: 5 }),
+      },
+      {
+        val: 10,
+        text: t('diagnose.time_duration.min_with_count', { count: 10 }),
+      },
+      {
+        val: 30,
+        text: t('diagnose.time_duration.min_with_count', { count: 30 }),
+      },
+      {
+        val: 60,
+        text: t('diagnose.time_duration.hour_with_count', { count: 1 }),
+      },
+      {
+        val: 24 * 60,
+        text: t('diagnose.time_duration.day_with_count', { count: 1 }),
+      },
+      {
+        val: 0,
+        text: t('diagnose.time_duration.custom'),
+      },
+    ],
+    [t]
+  )
+
   return (
     <Card title={t('diagnose.generate.title')}>
       <Form
@@ -64,10 +94,7 @@ export default function DiagnoseGenerator() {
         >
           <DatePicker showTime />
         </Form.Item>
-        <Form.Item
-          label={t('diagnose.generate.range_duration')}
-          rules={[{ required: true }]}
-        >
+        <Form.Item label={t('diagnose.generate.range_duration')} required>
           <Input.Group compact>
             <Form.Item
               name="rangeDuration"
@@ -75,12 +102,11 @@ export default function DiagnoseGenerator() {
               noStyle
             >
               <Select style={{ width: 120 }}>
-                <Select.Option value={5}>5 min</Select.Option>
-                <Select.Option value={10}>10 min</Select.Option>
-                <Select.Option value={30}>30 min</Select.Option>
-                <Select.Option value={60}>1 hour</Select.Option>
-                <Select.Option value={24 * 60}>1 day</Select.Option>
-                <Select.Option value={0}>Custom</Select.Option>
+                {rangeDurationOptions.map((item) => (
+                  <Select.Option key={item.val} value={item.val}>
+                    {item.text}
+                  </Select.Option>
+                ))}
               </Select>
             </Form.Item>
             <Form.Item
@@ -99,8 +125,10 @@ export default function DiagnoseGenerator() {
                     >
                       <InputNumber
                         min={1}
-                        max={43200}
-                        formatter={(value) => `${value} min`}
+                        max={30 * 24 * 60}
+                        formatter={(value) =>
+                          `${value} ${t('diagnose.time_duration.min')}`
+                        }
                         parser={(value) => value?.replace(/[^\d]/g, '') || ''}
                         style={{ width: 120 }}
                       />

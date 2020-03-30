@@ -1,3 +1,4 @@
+import client from '@pingcap-incubator/dashboard_client'
 import {
   LogsearchCreateTaskGroupRequest,
   LogsearchSearchTarget,

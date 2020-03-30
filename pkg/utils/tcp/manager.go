@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
 type ProxyRef struct {

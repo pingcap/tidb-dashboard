@@ -31,13 +31,6 @@ const (
 	SchemaVersionPath = "/tidb/ddl/global_schema_version"
 )
 
-type serverInfo struct {
-	ID         string `json:"ddl_id"`
-	IP         string `json:"ip"`
-	Port       uint   `json:"listening_port"`
-	StatusPort uint   `json:"status_port"`
-}
-
 type dbInfo struct {
 	Name struct {
 		O string `json:"O"`
@@ -61,6 +54,7 @@ type tableInfo struct {
 	} `json:"index_info"`
 }
 
+<<<<<<< HEAD
 func (s *tidbLabelStrategy) updateAddress(ctx context.Context) {
 	cli := s.Provider.EtcdClient
 	var info serverInfo
@@ -111,6 +105,9 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	log.Debug("schema version has changed", zap.Int64("old", s.SchemaVersion), zap.Int64("new", schemaVersion))
 	s.SchemaVersion = schemaVersion
 
+=======
+func (s *tidbLabelStrategy) updateMap() {
+>>>>>>> make lint happy
 	var dbInfos []*dbInfo
 	var tidbEndpoint string
 	reqScheme := "http"

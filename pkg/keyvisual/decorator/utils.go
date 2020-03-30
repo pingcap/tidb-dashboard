@@ -17,15 +17,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
-)
-
-const (
-	retryCnt       = 10
-	etcdGetTimeout = time.Second
 )
 
 func request(endpoint string, uri string, v interface{}, httpClient *http.Client) error {

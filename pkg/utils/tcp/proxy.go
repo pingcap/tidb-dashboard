@@ -72,6 +72,7 @@ func NewProxy(l net.Listener, endpoints map[string]string, checkInterval time.Du
 		errc:          make(chan error),
 		donec:         make(chan struct{}),
 		remotes:       remotes,
+		dialTimeout:   timeout,
 		checkInterval: checkInterval,
 	}
 }
@@ -135,10 +136,12 @@ func (p *Proxy) serve(in net.Conn) {
 	}
 	// bidirectional copy
 	go func() {
+		//nolint
 		io.Copy(in, out)
 		in.Close()
 		out.Close()
 	}()
+	//nolint
 	io.Copy(out, in)
 	out.Close()
 	in.Close()
@@ -155,7 +158,7 @@ func (p *Proxy) pick() *remote {
 		return nil
 	}
 	r := p.pickCount % len(activeRemotes)
-	p.pickCount += 1
+	p.pickCount++
 	return activeRemotes[r]
 }
 

@@ -120,7 +120,7 @@ func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
 		return nil, ErrPDAccessFailed.New("access PD failed: %s", err)
 	}
 
-	var allTiDB []*tidbServerInfo
+	allTiDB := []*tidbServerInfo{}
 	for _, kv := range resp.Kvs {
 		var info *tidbServerInfo
 		err = json.Unmarshal(kv.Value, &info)

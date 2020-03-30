@@ -16,6 +16,6 @@ package tools
 
 import (
 	_ "github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs"
-	_ "github.com/go-bindata/go-bindata/go-bindata"
+	_ "github.com/go-bindata/go-bindata/v3/go-bindata"
 	_ "github.com/swaggo/swag/cmd/swag"
 )

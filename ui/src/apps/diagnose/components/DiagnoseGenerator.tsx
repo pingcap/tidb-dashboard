@@ -1,5 +1,14 @@
-import React from 'react'
-import { Button, DatePicker, Form, Select, Switch, message } from 'antd'
+import React, { useMemo } from 'react'
+import {
+  Button,
+  DatePicker,
+  Form,
+  Select,
+  Switch,
+  Input,
+  InputNumber,
+  message,
+} from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@pingcap-incubator/dashboard_components'
 import { useHistory } from 'react-router-dom'
@@ -8,7 +17,10 @@ import client from '@pingcap-incubator/dashboard_client'
 const useFinishHandler = (history) => {
   return async (fieldsValue) => {
     const start_time = fieldsValue['rangeBegin'].unix()
-    const range_duration = fieldsValue['rangeDuration']
+    let range_duration = fieldsValue['rangeDuration']
+    if (fieldsValue['rangeDuration'] === 0) {
+      range_duration = fieldsValue['rangeDurationCustom']
+    }
     const is_compare = fieldsValue['isCompare']
     const compare_range_begin = fieldsValue['compareRangeBegin']
 
@@ -37,13 +49,43 @@ export default function DiagnoseGenerator() {
   const history = useHistory()
   const handleFinish = useFinishHandler(history)
 
+  const rangeDurationOptions = useMemo(
+    () => [
+      {
+        val: 5,
+        text: t('diagnose.time_duration.min_with_count', { count: 5 }),
+      },
+      {
+        val: 10,
+        text: t('diagnose.time_duration.min_with_count', { count: 10 }),
+      },
+      {
+        val: 30,
+        text: t('diagnose.time_duration.min_with_count', { count: 30 }),
+      },
+      {
+        val: 60,
+        text: t('diagnose.time_duration.hour_with_count', { count: 1 }),
+      },
+      {
+        val: 24 * 60,
+        text: t('diagnose.time_duration.day_with_count', { count: 1 }),
+      },
+      {
+        val: 0,
+        text: t('diagnose.time_duration.custom'),
+      },
+    ],
+    [t]
+  )
+
   return (
     <Card title={t('diagnose.generate.title')}>
       <Form
         layout="vertical"
         style={{ minWidth: 500 }}
         onFinish={handleFinish}
-        initialValues={{ rangeDuration: 10 }}
+        initialValues={{ rangeDuration: 10, rangeDurationCustom: 10 }}
       >
         <Form.Item
           name="rangeBegin"
@@ -52,18 +94,50 @@ export default function DiagnoseGenerator() {
         >
           <DatePicker showTime />
         </Form.Item>
-        <Form.Item
-          name="rangeDuration"
-          rules={[{ required: true }]}
-          label={t('diagnose.generate.range_duration')}
-        >
-          <Select style={{ width: 120 }}>
-            <Select.Option value={5}>5 min</Select.Option>
-            <Select.Option value={10}>10 min</Select.Option>
-            <Select.Option value={30}>30 min</Select.Option>
-            <Select.Option value={60}>1 hour</Select.Option>
-            <Select.Option value={24 * 60}>1 day</Select.Option>
-          </Select>
+        <Form.Item label={t('diagnose.generate.range_duration')} required>
+          <Input.Group compact>
+            <Form.Item
+              name="rangeDuration"
+              rules={[{ required: true }]}
+              noStyle
+            >
+              <Select style={{ width: 120 }}>
+                {rangeDurationOptions.map((item) => (
+                  <Select.Option key={item.val} value={item.val}>
+                    {item.text}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item
+              noStyle
+              shouldUpdate={(prev, cur) =>
+                prev.rangeDuration !== cur.rangeDuration
+              }
+            >
+              {({ getFieldValue }) => {
+                return (
+                  getFieldValue('rangeDuration') === 0 && (
+                    <Form.Item
+                      noStyle
+                      name="rangeDurationCustom"
+                      rules={[{ required: true }]}
+                    >
+                      <InputNumber
+                        min={1}
+                        max={30 * 24 * 60}
+                        formatter={(value) =>
+                          `${value} ${t('diagnose.time_duration.min')}`
+                        }
+                        parser={(value) => value?.replace(/[^\d]/g, '') || ''}
+                        style={{ width: 120 }}
+                      />
+                    </Form.Item>
+                  )
+                )
+              }}
+            </Form.Item>
+          </Input.Group>
         </Form.Item>
         <Form.Item
           name="isCompare"

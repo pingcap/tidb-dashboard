@@ -1654,8 +1654,8 @@ func getAvgValueTableData(defs1 []AvgMaxMinTableDef, startTime, endTime string, 
 
 func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", label: "instance", Comment: "the disk write latency in each node(ms)"},
-		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", label: "instance", Comment: "the disk read latency in each node(ms)"},
+		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", labels: []string{"instance", "device"}, Comment: "the disk write latency in each node"},
+		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", labels: []string{"instance", "device"}, Comment: "the disk read latency in each node"},
 	}
 	table := TableDef{
 		Category:       []string{CategoryLoad},
@@ -1682,6 +1682,21 @@ func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	partRows, err := getAvgValueTableData(defs1, startTime, endTime, db)
 	if err != nil {
 		return table, err
+	}
+	specialHandle := func(row []string) []string {
+		if len(row) < 5 {
+			return row
+		}
+		for i := 2; i < 5; i++ {
+			row[i] = convertFloatToDuration(row[i], float64(1))
+		}
+		return row
+	}
+	for _, row := range partRows {
+		row.Values = specialHandle(row.Values)
+		for i := range row.SubValues {
+			row.SubValues[i] = specialHandle(row.SubValues[i])
+		}
 	}
 	rows = append(rows, partRows...)
 	table.Rows = rows
@@ -1850,23 +1865,23 @@ func GetGoroutinesCountTable(startTime, endTime string, db *gorm.DB) (TableDef, 
 
 func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs := []AvgMaxMinTableDef{
-		{name: "grpc", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'grpc%'", Comment: "The CPU utilization of each TiKV grpc"},
-		{name: "raftstore", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'raftstore_%'", Comment: "The CPU utilization of TiKV raftstore thread"},
-		{name: "Async apply", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'apply%'", Comment: "The CPU utilization of TiKV async apply thread"},
-		{name: "sched_worker", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'sched_%'", Comment: "The CPU utilization of TiKV scheduler worker thread"},
-		{name: "snapshot", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'snap%'", Comment: "The CPU utilization of TiKV snapshot"},
-		{name: "unified read pool", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'unified_read_po%'", Comment: "The CPU utilization TiKV unified read pool thread"},
-		{name: "storage read pool", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'store_read%'", Comment: "The CPU utilization TiKV storage read pool thread"},
-		{name: "storage read pool normal", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'store_read_norm%'", Comment: "The CPU utilization TiKV storage read pool normal thread"},
-		{name: "storage read pool high", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'store_read_high%'", Comment: "The CPU utilization TiKV storage read pool high thread"},
-		{name: "storage read pool low", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'store_read_low%'", Comment: "The CPU utilization TiKV storage read pool low thread"},
-		{name: "cop", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'cop%'", Comment: "The CPU utilization of TiKV coporssesor"},
-		{name: "cop normal", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'cop_normal%'", Comment: "The CPU utilization of TiKV coporssesor normal thread"},
-		{name: "cop high", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'cop_high%'", Comment: "The CPU utilization of TiKV coporssesor high thread"},
-		{name: "cop low", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'cop_low%'", Comment: "The CPU utilization of TiKV coporssesor low thread"},
-		{name: "rocksdb", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'rocksdb%'", Comment: "The CPU utilization TiKV rocksdb"},
-		{name: "gc", tbl: "tikv_thread_cpu", label: "instance", condition: "name like 'gc_worker%'", Comment: "The CPU utilization of TiKV gc"},
-		{name: "split_check", tbl: "tikv_thread_cpu", label: "instance", condition: "name = 'split_check'", Comment: "The CPU utilization of TiKV split_check"},
+		{name: "grpc", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'grpc%'", Comment: "The CPU utilization of each TiKV grpc"},
+		{name: "raftstore", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'raftstore_%'", Comment: "The CPU utilization of TiKV raftstore thread"},
+		{name: "Async apply", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'apply%'", Comment: "The CPU utilization of TiKV async apply thread"},
+		{name: "sched_worker", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'sched_%'", Comment: "The CPU utilization of TiKV scheduler worker thread"},
+		{name: "snapshot", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'snap%'", Comment: "The CPU utilization of TiKV snapshot"},
+		{name: "unified read pool", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'unified_read_po%'", Comment: "The CPU utilization TiKV unified read pool thread"},
+		{name: "storage read pool", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'store_read%'", Comment: "The CPU utilization TiKV storage read pool thread"},
+		{name: "storage read pool normal", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'store_read_norm%'", Comment: "The CPU utilization TiKV storage read pool normal thread"},
+		{name: "storage read pool high", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'store_read_high%'", Comment: "The CPU utilization TiKV storage read pool high thread"},
+		{name: "storage read pool low", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'store_read_low%'", Comment: "The CPU utilization TiKV storage read pool low thread"},
+		{name: "cop", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'cop%'", Comment: "The CPU utilization of TiKV coporssesor"},
+		{name: "cop normal", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'cop_normal%'", Comment: "The CPU utilization of TiKV coporssesor normal thread"},
+		{name: "cop high", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'cop_high%'", Comment: "The CPU utilization of TiKV coporssesor high thread"},
+		{name: "cop low", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'cop_low%'", Comment: "The CPU utilization of TiKV coporssesor low thread"},
+		{name: "rocksdb", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'rocksdb%'", Comment: "The CPU utilization TiKV rocksdb"},
+		{name: "gc", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name like 'gc_worker%'", Comment: "The CPU utilization of TiKV gc"},
+		{name: "split_check", tbl: "tikv_thread_cpu", labels: []string{"instance"}, condition: "name = 'split_check'", Comment: "The CPU utilization of TiKV split_check"},
 	}
 	configKeys := map[string]string{
 		"grpc":                     "server.grpc-concurrency",
@@ -1954,7 +1969,7 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, er
 			condition = condition + "and " + def.condition
 		}
 		sql := fmt.Sprintf("select '%[1]s', '', avg(sum_value),max(sum_value),min(sum_value),'','' from ( select sum(value) as sum_value from metrics_schema.%[2]s %[3]s group by %[4]s, time) as t1",
-			def.name, def.tbl, condition, def.label)
+			def.name, def.tbl, condition, def.labels[0])
 		rows, err := querySQL(db, sql)
 		if err != nil {
 			return table, err
@@ -1963,7 +1978,7 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, er
 			continue
 		}
 		sql = fmt.Sprintf("select '%[1]s', %[2]s,avg(sum_value),max(sum_value),min(sum_value),'','' from ( select %[2]s,sum(value) as sum_value from metrics_schema.%[3]s %[4]s group by %[2]s,time) as t1 group by %[2]s order by avg(sum_value) desc",
-			def.name, def.label, def.tbl, condition)
+			def.name, def.labels[0], def.tbl, condition)
 		subRows, err := querySQL(db, sql)
 		if err != nil {
 			return table, err
@@ -1981,12 +1996,12 @@ func GetTiKVThreadCPUTable(startTime, endTime string, db *gorm.DB) (TableDef, er
 
 func GetStoreStatusTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "region_score", tbl: "pd_scheduler_store_status", condition: "type = 'region_score'", label: "address", Comment: "The region score status of store"},
-		{name: "leader_score", tbl: "pd_scheduler_store_status", condition: "type = 'leader_score'", label: "address", Comment: "The leader score status of store"},
-		{name: "region_count", tbl: "pd_scheduler_store_status", condition: "type = 'region_count'", label: "address", Comment: "The region count status of store"},
-		{name: "leader_count", tbl: "pd_scheduler_store_status", condition: "type = 'leader_count'", label: "address", Comment: "The region score status of store"},
-		{name: "region_size", tbl: "pd_scheduler_store_status", condition: "type = 'region_size'", label: "address", Comment: "The region size status of store"},
-		{name: "leader_size", tbl: "pd_scheduler_store_status", condition: "type = 'leader_size'", label: "address", Comment: "The leader size status of store"},
+		{name: "region_score", tbl: "pd_scheduler_store_status", condition: "type = 'region_score'", labels: []string{"address"}, Comment: "The region score status of store"},
+		{name: "leader_score", tbl: "pd_scheduler_store_status", condition: "type = 'leader_score'", labels: []string{"address"}, Comment: "The leader score status of store"},
+		{name: "region_count", tbl: "pd_scheduler_store_status", condition: "type = 'region_count'", labels: []string{"address"}, Comment: "The region count status of store"},
+		{name: "leader_count", tbl: "pd_scheduler_store_status", condition: "type = 'leader_count'", labels: []string{"address"}, Comment: "The region score status of store"},
+		{name: "region_size", tbl: "pd_scheduler_store_status", condition: "type = 'region_size'", labels: []string{"address"}, Comment: "The region size status of store"},
+		{name: "leader_size", tbl: "pd_scheduler_store_status", condition: "type = 'leader_size'", labels: []string{"address"}, Comment: "The leader size status of store"},
 	}
 	table := TableDef{
 		Category:       []string{CategoryPD},
@@ -2080,12 +2095,12 @@ func GetClusterInfoTable(startTime, endTime string, db *gorm.DB) (TableDef, erro
 
 func GetTiKVCacheHitTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	tables := []AvgMaxMinTableDef{
-		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", label: "instance", Comment: "The hit rate of memtable"},
-		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit", label: "instance", Comment: "The hit rate of all block cache"},
-		{name: "tikv_block_index_cache_hit", tbl: "tikv_block_index_cache_hit", label: "instance", Comment: "The hit rate of index block cache"},
-		{name: "tikv_block_filter_cache_hit", tbl: "tikv_block_filter_cache_hit", label: "instance", Comment: "The hit rate of filter block cache"},
-		{name: "tikv_block_data_cache_hit", tbl: "tikv_block_data_cache_hit", label: "instance", Comment: "The hit rate of data block cache"},
-		{name: "tikv_block_bloom_prefix_cache_hit", tbl: "tikv_block_bloom_prefix_cache_hit", label: "instance", Comment: "The hit rate of bloom_prefix block cache"},
+		{name: "tikv_memtable_hit", tbl: "tikv_memtable_hit", labels: []string{"instance"}, Comment: "The hit rate of memtable"},
+		{name: "tikv_block_all_cache_hit", tbl: "tikv_block_all_cache_hit", labels: []string{"instance"}, Comment: "The hit rate of all block cache"},
+		{name: "tikv_block_index_cache_hit", tbl: "tikv_block_index_cache_hit", labels: []string{"instance"}, Comment: "The hit rate of index block cache"},
+		{name: "tikv_block_filter_cache_hit", tbl: "tikv_block_filter_cache_hit", labels: []string{"instance"}, Comment: "The hit rate of filter block cache"},
+		{name: "tikv_block_data_cache_hit", tbl: "tikv_block_data_cache_hit", labels: []string{"instance"}, Comment: "The hit rate of data block cache"},
+		{name: "tikv_block_bloom_prefix_cache_hit", tbl: "tikv_block_bloom_prefix_cache_hit", labels: []string{"instance"}, Comment: "The hit rate of bloom_prefix block cache"},
 	}
 
 	table := TableDef{

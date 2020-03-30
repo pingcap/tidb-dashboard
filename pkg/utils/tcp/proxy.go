@@ -128,22 +128,20 @@ func (p *Proxy) serve(in net.Conn) {
 		log.Warn("remote become inactive", zap.String("remote", picked.addr))
 	}
 	if out == nil {
+		log.Warn("no alive remote, drop incoming conn")
 		// Do we need issue a error here?
 		in.Close()
 		return
 	}
+	// bidirectional copy
 	go func() {
-		// send response
-		if _, err = io.Copy(in, out); err != nil {
-			log.Warn("proxy send response failed", zap.Error(err))
-		}
+		io.Copy(in, out)
 		in.Close()
 		out.Close()
 	}()
-	// send request
-	if _, err = io.Copy(out, in); err != nil {
-		log.Warn("proxy send request failed", zap.Error(err))
-	}
+	io.Copy(out, in)
+	out.Close()
+	in.Close()
 }
 
 func (p *Proxy) pick() *remote {

@@ -34,11 +34,11 @@ const (
 	envTidbOverrideEndpointKey = "TIDB_OVERRIDE_ENDPOINT"
 )
 
-func (f *Forwarder) getDBConnProps() (host string, port int) {
+func (f *Forwarder) GetDBConnProps() (host string, port int) {
 	return "127.0.0.1", f.tidbPort
 }
 
-func (f *Forwarder) getTiDBStatusConnProps() (host string, port int) {
+func (f *Forwarder) GetTiDBStatusConnProps() (host string, port int) {
 	return "127.0.0.1", f.statusPort
 }
 
@@ -46,7 +46,7 @@ func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 	var addr string
 	addr = os.Getenv(envTidbOverrideEndpointKey)
 	if len(addr) < 1 {
-		host, port := f.getDBConnProps()
+		host, port := f.GetDBConnProps()
 		addr = fmt.Sprintf("%s:%d", host, port)
 	}
 	dsnConfig := mysql.NewConfig()

@@ -117,12 +117,13 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	if s.Config.ClusterTLSConfig != nil {
 		reqScheme = "https"
 	}
-	for _, addr := range s.TidbAddress {
-		reqEndpoint := fmt.Sprintf("%s://%s", reqScheme, addr)
-		if err := request(reqEndpoint, "schema", &dbInfos, s.HTTPClient); err == nil {
-			tidbEndpoint = reqEndpoint
-			break
-		}
+	hostname, port := s.forwarder.GetTiDBStatusConnProps()
+	target := fmt.Sprintf("%s:%d", hostname, port)
+	reqEndpoint := fmt.Sprintf("%s://%s", reqScheme, target)
+	if err := request(reqEndpoint, "schema", &dbInfos, s.HTTPClient); err == nil {
+		tidbEndpoint = reqEndpoint
+	} else {
+		log.Error("fail to send schema reqeust to tidb", zap.String("endpoint", reqEndpoint), zap.Error(err))
 	}
 	if dbInfos == nil {
 		return

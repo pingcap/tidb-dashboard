@@ -51,11 +51,11 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	c.Assert(err, IsNil)
 	defer cli.Close()
 
-	startTime := "2020-03-20 15:27:00"
-	endTime := "2020-03-20 16:35:00"
+	startTime := "2020-03-25 23:00:00"
+	endTime := "2020-03-25 23:05:00"
 
 	var table TableDef
-	table, err = GetTiKVRocksDBConfigChangeInfo(startTime, endTime, cli)
+	table, err = GetLoadTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(&table)
 }

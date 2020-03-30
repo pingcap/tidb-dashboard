@@ -28,14 +28,14 @@ describe('Search Logs', () => {
       const searchForm = await page.waitForSelector('form#search_form')
 
       // set log level to INFO
-      await ppExpect(searchForm).toClick('div#log_level_selector')
-      await ppExpect(page).toClick('li[data-e2e="level_info"]')
+      await ppExpect(searchForm).toClick('#log_level_selector')
+      await ppExpect(page).toClick('div[data-e2e="level_info"]')
 
       // select TiDB component
       await ppExpect(searchForm).toClick('div[data-e2e="components_selector"]')
       // components selector dropdown is a DOM node with absolute position
       // and its parent is body, failed to add id or data-e2e to it
-      await ppExpect(page).toClick('ul[role=tree] span[title="TiDB"]')
+      await ppExpect(page).toClick('span[title="TiDB"]')
 
       // start search
       await ppExpect(searchForm).toClick('button#search_btn')

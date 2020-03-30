@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Icon, Card, Skeleton } from 'antd'
+import { RightOutlined } from '@ant-design/icons'
+import { Card, Skeleton } from 'antd'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import styles from './MonitorAlertBar.module.less'
@@ -44,7 +45,7 @@ export default function MonitorAlertBar({ cluster }) {
                   href={`http://${cluster.grafana.ip}:${cluster.grafana.port}`}
                 >
                   {t('overview.monitor_alert.view_monitor')}
-                  <Icon type="right" style={{ marginLeft: '5px' }} />
+                  <RightOutlined style={{ marginLeft: '5px' }} />
                 </a>
               )}
             </p>
@@ -61,7 +62,7 @@ export default function MonitorAlertBar({ cluster }) {
                     : t('overview.monitor_alert.view_alerts', {
                         alertCount: alertCounter,
                       })}
-                  <Icon type="right" style={{ marginLeft: '5px' }} />
+                  <RightOutlined style={{ marginLeft: '5px' }} />
                 </a>
               )}
             </p>
@@ -76,7 +77,7 @@ export default function MonitorAlertBar({ cluster }) {
         <p>
           <Link to={`/diagnose`}>
             {t('overview.monitor_alert.run_diagnose')}
-            <Icon type="right" style={{ marginLeft: '5px' }} />
+            <RightOutlined style={{ marginLeft: '5px' }} />
           </Link>
         </p>
       </Card>

@@ -20,8 +20,8 @@ export default function DiagnosisItem({ diagnosis }: Props) {
       <table className="table is-bordered is-hoverable is-narrow is-fullwidth">
         <thead>
           <tr>
-            {Column.map((col, idx) => (
-              <th key={col + idx}>{col}</th>
+            {Column.map((col, colIdx) => (
+              <th key={colIdx}>{col}</th>
             ))}
           </tr>
         </thead>

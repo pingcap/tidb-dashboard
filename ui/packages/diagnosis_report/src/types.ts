@@ -1,3 +1,5 @@
+import { createContext } from 'react'
+
 export interface TableRowDef {
   Values: string[]
   SubValues: string[][]
@@ -15,3 +17,5 @@ export interface TableDef {
   Column: string[]
   Rows: TableRowDef[]
 }
+
+export const ExpandContext = createContext(false)

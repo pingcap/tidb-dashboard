@@ -1,5 +1,5 @@
-import React from 'react'
-import { TableDef } from '../types'
+import React, { useContext } from 'react'
+import { TableDef, ExpandContext } from '../types'
 
 type Props = {
   diagnosis: TableDef
@@ -7,6 +7,7 @@ type Props = {
 
 export default function DiagnosisItem({ diagnosis }: Props) {
   const { Category, Title, CommentEN, Column, Rows } = diagnosis
+  const expand = useContext(ExpandContext)
 
   return (
     <div className="report-container">
@@ -63,7 +64,10 @@ export default function DiagnosisItem({ diagnosis }: Props) {
                 ))}
               </tr>
               {(row.SubValues || []).map((subVals, subValsIdx) => (
-                <tr key={subValsIdx} className="subvalues">
+                <tr
+                  key={subValsIdx}
+                  className={`subvalues ${!expand && 'fold'}`}
+                >
                   {subVals.map((subVal, subValIdx) => (
                     <td key={subValIdx}>
                       {subValIdx === 0 && '|-- '}

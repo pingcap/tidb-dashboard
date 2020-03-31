@@ -1,9 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TableDef, ExpandContext, TableRowDef } from '../types'
 
 function DiagnosisRow({ row }: { row: TableRowDef }) {
   const outsideExpand = useContext(ExpandContext)
   const [internalExpand, setInternalExpand] = useState(false)
+  const { t } = useTranslation()
 
   // when outsideExpand changes, reset the internalExpand to the same as outsideExpand
   useEffect(() => {
@@ -39,7 +41,7 @@ function DiagnosisRow({ row }: { row: TableRowDef }) {
                   className="subvalues-toggle"
                   onClick={() => setInternalExpand(!internalExpand)}
                 >
-                  {internalExpand ? 'fold' : 'expand'}
+                  {internalExpand ? t('diagnosis.fold') : t('diagnosis.expand')}
                 </a>
               </>
             )}

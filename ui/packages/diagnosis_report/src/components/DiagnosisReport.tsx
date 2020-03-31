@@ -8,7 +8,10 @@ function LangDropdown() {
   const { i18n } = useTranslation()
   return (
     <div className="select">
-      <select onChange={(e) => i18n.changeLanguage(e.target.value)}>
+      <select
+        onChange={(e) => i18n.changeLanguage(e.target.value)}
+        defaultValue={i18n.language}
+      >
         {Object.keys(ALL_LANGUAGES).map((langKey) => (
           <option value={langKey} key={langKey}>
             {ALL_LANGUAGES[langKey]}
@@ -35,13 +38,13 @@ export default function DiagnosisReport() {
             style={{ marginRight: 12, marginLeft: 12 }}
             onClick={() => setExpandAll(true)}
           >
-            Expand All
+            {t('diagnosis.expand_all')}
           </button>
           <button
             className="button is-link is-light"
             onClick={() => setExpandAll(false)}
           >
-            Fold All
+            {t('diagnosis.fold_all')}
           </button>
         </div>
 

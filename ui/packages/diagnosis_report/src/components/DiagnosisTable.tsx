@@ -5,7 +5,7 @@ type Props = {
   diagnosis: TableDef
 }
 
-export default function DiagnosisItem({ diagnosis }: Props) {
+export default function DiagnosisTable({ diagnosis }: Props) {
   const { Category, Title, CommentEN, Column, Rows } = diagnosis
   const outsideExpand = useContext(ExpandContext)
   const [internalExpand, setInternalExpand] = useState(false)

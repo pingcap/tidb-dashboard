@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import DiagnosisItem from './DiagnosisItem'
+import DiagnosisTable from './DiagnosisTable'
 import { ExpandContext } from '../types'
 
 export default function DiagnosisReport() {
@@ -28,7 +28,7 @@ export default function DiagnosisReport() {
         </div>
         <ExpandContext.Provider value={expandAll}>
           {diagnosisData.map((item, idx) => (
-            <DiagnosisItem diagnosis={item} key={idx} />
+            <DiagnosisTable diagnosis={item} key={idx} />
           ))}
         </ExpandContext.Provider>
       </div>

@@ -1,0 +1,13 @@
+.report-container {
+  margin-bottom: 16px;
+}
+tr.subvalues {
+  background-color: lightcyan;
+}
+tr.subvalues.fold {
+  display: none;
+}
+.subvalues-toggle {
+  display: inline-block;
+  width: 60px;
+}

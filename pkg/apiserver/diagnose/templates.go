@@ -53,6 +53,7 @@ const TemplateIndex = `
       </style>
     </head>
     <body>
+      <div id="report_container></div>
       <section class="section">
         <div class="container">
           <h1 class="title is-size-1">TiDB SQL Diagnosis System Report</h1>

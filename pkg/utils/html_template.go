@@ -14,27 +14,13 @@
 package utils
 
 import (
-	"html/template"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
 )
 
 type TemplateInfo struct {
 	Name string
 	Text string
-}
-
-func NewHTMLRender(templ *template.Template, infos []TemplateInfo) render.HTMLRender {
-	for _, info := range infos {
-		t := templ.New(info.Name)
-		if _, err := t.Parse(info.Text); err != nil {
-			log.Fatal("Failed to parse template", zap.String("name", info.Name), zap.Error(err))
-		}
-	}
-	return render.HTMLProduction{Template: templ}
 }
 
 func HTML(c *gin.Context, r render.HTMLRender, code int, name string, obj interface{}) {

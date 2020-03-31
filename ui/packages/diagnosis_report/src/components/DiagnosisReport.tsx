@@ -15,8 +15,8 @@ export default function DiagnosisReport() {
             Fold All
           </button>
         </div>
-        {diagnosisData.map((item) => (
-          <DiagnosisItem diagnosis={item} key={item.Title} />
+        {diagnosisData.map((item, idx) => (
+          <DiagnosisItem diagnosis={item} key={item.Title + idx} />
         ))}
       </div>
     </section>

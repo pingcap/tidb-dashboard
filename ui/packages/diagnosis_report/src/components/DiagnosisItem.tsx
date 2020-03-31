@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { TableDef, ExpandContext } from '../types'
 
 type Props = {
@@ -7,7 +7,12 @@ type Props = {
 
 export default function DiagnosisItem({ diagnosis }: Props) {
   const { Category, Title, CommentEN, Column, Rows } = diagnosis
-  const expand = useContext(ExpandContext)
+  const outsideExpand = useContext(ExpandContext)
+  const [internalExpand, setInternalExpand] = useState(false)
+
+  useEffect(() => {
+    setInternalExpand(outsideExpand)
+  }, [outsideExpand])
 
   return (
     <div className="report-container">
@@ -53,10 +58,10 @@ export default function DiagnosisItem({ diagnosis }: Props) {
                       <>
                         &nbsp;&nbsp;&nbsp;
                         <a
-                          href="javascript:void(0)"
                           className="subvalues-toggle"
+                          onClick={() => setInternalExpand(!internalExpand)}
                         >
-                          expand
+                          {internalExpand ? 'fold' : 'expand'}
                         </a>
                       </>
                     )}
@@ -66,7 +71,7 @@ export default function DiagnosisItem({ diagnosis }: Props) {
               {(row.SubValues || []).map((subVals, subValsIdx) => (
                 <tr
                   key={subValsIdx}
-                  className={`subvalues ${!expand && 'fold'}`}
+                  className={`subvalues ${!internalExpand && 'fold'}`}
                 >
                   {subVals.map((subVal, subValIdx) => (
                     <td key={subValIdx}>

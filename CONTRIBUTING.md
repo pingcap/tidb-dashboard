@@ -28,7 +28,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh
 Start a local TiDB cluster:
 
 ```bash
-tiup playground nightly
+tiup playground nightly --monitor
 ```
 
 > Note: you might notice that there is already a TiDB Dashboard integrated into the PD started by TiUP. For development purpose, we will not use the that TiDB Dashboard. Please keep following the rest of the steps in this document.

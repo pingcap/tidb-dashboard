@@ -1,4 +1,4 @@
-import client from '@pingcap-incubator/dashboard_client'
+import client, { reqWithErrPrompt } from '@pingcap-incubator/dashboard_client'
 import { LogsearchTaskModel } from '@pingcap-incubator/dashboard_client'
 import { Button, Modal, Tree, Skeleton } from 'antd'
 import React, {
@@ -17,7 +17,6 @@ import {
   ServerType,
   ServerTypeList,
   TaskState,
-  req_with_err_prompt,
 } from './utils'
 import { Card } from '@pingcap-incubator/dashboard_components'
 
@@ -214,7 +213,7 @@ export default function SearchProgress({
       (key) => !Object.keys(namingMap).some((name) => name === key)
     )
 
-    const res = await req_with_err_prompt(
+    const res = await reqWithErrPrompt(
       client.getInstance().logsDownloadAcquireTokenGet(keys),
       t('search_logs.error.download_log')
     )
@@ -232,8 +231,11 @@ export default function SearchProgress({
     }
     confirm({
       title: t('search_logs.confirm.cancel_tasks'),
-      onOk() {
-        client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + '')
+      async onOk() {
+        await reqWithErrPrompt(
+          client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + ''),
+          t('search_logs.error.cancel_tasks')
+        )
         setTasks(
           tasks.map((task) => {
             if (task.state === TaskState.Error) {
@@ -252,8 +254,11 @@ export default function SearchProgress({
     }
     confirm({
       title: t('search_logs.confirm.retry_tasks'),
-      onOk() {
-        client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + '')
+      async onOk() {
+        await reqWithErrPrompt(
+          client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + ''),
+          t('search_logs.error.retry_tasks')
+        )
         setTasks(
           tasks.map((task) => {
             if (task.state === TaskState.Error) {

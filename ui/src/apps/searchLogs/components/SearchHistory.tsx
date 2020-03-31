@@ -1,4 +1,4 @@
-import client from '@pingcap-incubator/dashboard_client'
+import client, { reqWithErrPrompt } from '@pingcap-incubator/dashboard_client'
 import {
   LogsearchSearchTarget,
   LogsearchTaskGroupResponse,
@@ -70,7 +70,13 @@ export default function SearchHistory() {
 
   useEffect(() => {
     async function getData() {
-      const res = await client.getInstance().logsTaskgroupsGet()
+      const res = await reqWithErrPrompt(
+        client.getInstance().logsTaskgroupsGet(),
+        t('search_logs.error.history_get_data')
+      )
+      if (!res || !res.data) {
+        return
+      }
       setTaskGroups(res.data)
     }
     getData()
@@ -108,8 +114,17 @@ export default function SearchHistory() {
   async function handleDeleteSelected() {
     for (const key of selectedRowKeys) {
       const taskGroupID = key as number
-      await client.getInstance().logsTaskgroupsIdDelete(taskGroupID + '')
-      const res = await client.getInstance().logsTaskgroupsGet()
+      await reqWithErrPrompt(
+        client.getInstance().logsTaskgroupsIdDelete(taskGroupID + ''),
+        t('search_logs.error.delete')
+      )
+      const res = await reqWithErrPrompt(
+        client.getInstance().logsTaskgroupsGet(),
+        t('search_logs.error.task_groups_get')
+      )
+      if (!res || !res.data) {
+        return
+      }
       setTaskGroups(res.data)
     }
   }
@@ -120,9 +135,18 @@ export default function SearchHistory() {
       if (key === undefined) {
         continue
       }
-      await client.getInstance().logsTaskgroupsIdDelete(key + '')
+      await reqWithErrPrompt(
+        client.getInstance().logsTaskgroupsIdDelete(key + ''),
+        t('search_logs.error.delete_task')
+      )
     }
-    const res = await client.getInstance().logsTaskgroupsGet()
+    const res = await reqWithErrPrompt(
+      client.getInstance().logsTaskgroupsGet(),
+      t('search_logs.error.task_groups_get')
+    )
+    if (!res || !res.data) {
+      return
+    }
     setTaskGroups(res.data)
   }
 

@@ -1,4 +1,4 @@
-import client from '@pingcap-incubator/dashboard_client'
+import client, { reqWithErrPrompt } from '@pingcap-incubator/dashboard_client'
 import {
   LogsearchCreateTaskGroupRequest,
   LogsearchSearchTarget,
@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useMount } from '@umijs/hooks'
 import styles from './Styles.module.css'
-import { req_with_err_prompt } from './utils'
 import {
   getAddress,
   namingMap,
@@ -114,7 +113,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
       },
     }
 
-    let result = await req_with_err_prompt(
+    let result = await reqWithErrPrompt(
       client.getInstance().logsTaskgroupPut(params),
       t('search_logs.error.search_log')
     )

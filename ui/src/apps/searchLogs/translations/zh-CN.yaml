@@ -45,5 +45,10 @@ search_logs:
     detail: 查看详情
     delete: 删除
   error:
-    search_log: 搜索任务创建失败, 请稍候重试
-    download_log: 搜索结果下载失败, 请稍候重试
+    search_log: 搜索任务创建失败, 请稍后重试
+    download_log: 搜索结果下载失败, 请稍后重试
+    cancel_tasks: 搜索任务取消失败, 请稍后重试
+    retry_tasks: 搜索任务重試失败, 请稍后重试
+    history_get_data: 数据获取失败, 请稍后重试
+    delete_task: 删除失败, 请稍后重试
+    task_groups_get: 任务组获取失败, 请稍后重试

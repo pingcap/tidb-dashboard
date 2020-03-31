@@ -47,3 +47,8 @@ search_logs:
   error:
     search_log: Failed to start a new search task, please try again later.
     download_log: Failed to download search log, please try again later.
+    cancel_tasks: Failed to cancel search task, please try again later.
+    retry_tasks: Failed to retry search task, please try again later.
+    history_get_data: Failed to get data, please try again later.
+    delete_task: Failed to delete, please try again later.
+    task_groups_get: Failed to list task groups, please try again later.

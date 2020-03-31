@@ -13,14 +13,13 @@ export default function DiagnosisReport() {
         <div>
           <button
             className="button is-link is-light"
-            id="expand-all-btn"
+            style={{ marginRight: 12 }}
             onClick={() => setExpandAll(true)}
           >
             Expand All
           </button>
           <button
             className="button is-link is-light"
-            id="fold-all-btn"
             onClick={() => setExpandAll(false)}
           >
             Fold All

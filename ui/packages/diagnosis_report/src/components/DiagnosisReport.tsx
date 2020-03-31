@@ -26,6 +26,7 @@ export default function DiagnosisReport() {
             Fold All
           </button>
         </div>
+
         <ExpandContext.Provider value={expandAll}>
           {diagnosisData.map((item, idx) => (
             <DiagnosisTable diagnosis={item} key={idx} />

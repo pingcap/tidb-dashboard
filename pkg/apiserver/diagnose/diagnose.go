@@ -57,7 +57,7 @@ func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forw
 		config:        config,
 		db:            db,
 		tidbForwarder: tidbForwarder,
-		htmlRender:    utils.NewHTMLRender(t, TemplateInfos),
+		htmlRender:    loadGlobFromVfs(Vfs, t),
 	}
 }
 

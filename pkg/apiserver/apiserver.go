@@ -47,7 +47,7 @@ import (
 )
 
 func Handler(s *Service) http.Handler {
-	return s.status.NewStatusAwareHandler(http.HandlerFunc(s.handler), s.stoppedHandler)
+	return s.NewStatusAwareHandler(http.HandlerFunc(s.handler), s.stoppedHandler)
 }
 
 var (
@@ -159,8 +159,8 @@ func (s *Service) Stop(ctx context.Context) error {
 	return err
 }
 
-func (s *Service) NewStatusAwareHandler(handler http.Handler) http.Handler {
-	return s.status.NewStatusAwareHandler(handler, s.stoppedHandler)
+func (s *Service) NewStatusAwareHandler(handler http.Handler, stoppedHandler http.Handler) http.Handler {
+	return s.status.NewStatusAwareHandler(handler, stoppedHandler)
 }
 
 func (s *Service) handler(w http.ResponseWriter, r *http.Request) {

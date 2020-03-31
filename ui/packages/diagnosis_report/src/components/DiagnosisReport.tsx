@@ -3,6 +3,7 @@ import DiagnosisItem from './DiagnosisItem'
 
 export default function DiagnosisReport() {
   const diagnosisData = window.__diagnosis_data__ || []
+
   return (
     <section className="section">
       <div className="container">
@@ -16,7 +17,7 @@ export default function DiagnosisReport() {
           </button>
         </div>
         {diagnosisData.map((item, idx) => (
-          <DiagnosisItem diagnosis={item} key={item.Title + idx} />
+          <DiagnosisItem diagnosis={item} key={idx} />
         ))}
       </div>
     </section>

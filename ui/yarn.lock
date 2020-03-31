@@ -1162,6 +1162,11 @@
     "@uifabric/utilities" "^7.15.3"
     tslib "^1.10.0"
 
+"@fortawesome/fontawesome-free@^5.13.0":
+  version "5.13.0"
+  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.13.0.tgz#fcb113d1aca4b471b709e8c9c168674fbd6e06d9"
+  integrity sha512-xKOeQEl5O47GPZYIMToj6uuA2syyFlq9EMSl2ui0uytjY9xbe8XS0pexNWmxrdcCyNGyDmLyYw5FtKsalBUeOg==
+
 "@g07cha/flexbox-react@^5.0.0":
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/@g07cha/flexbox-react/-/flexbox-react-5.0.0.tgz#159b0f8b7c5b8ee41a19256fb0024238abe01b3f"

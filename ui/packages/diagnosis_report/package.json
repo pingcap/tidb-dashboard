@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "/dashboard/api/diagnose/assets/",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.13.0",
     "bulma": "^0.8.1",
     "i18next": "^19.1.0",
     "i18next-browser-languagedetector": "^4.0.1",

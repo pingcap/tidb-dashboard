@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import DiagnosisReport from './components/DiagnosisReport'
 
 import 'bulma/css/bulma.css'
+import '@fortawesome/fontawesome-free/js/all.js'
 import './index.css'
 
 console.log(window.__diagnosis_data__)

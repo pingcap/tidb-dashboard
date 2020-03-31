@@ -10,8 +10,8 @@ export default function DiagnosisItem({ diagnosis }: Props) {
 
   return (
     <div className="report-container">
-      {Category.map((c, idx) => (
-        <h1 className={`title is-size-${idx + 2}`} key={c}>
+      {(Category || []).map((c, idx) => (
+        <h1 className={`title is-size-${idx + 2}`} key={idx}>
           {c}
         </h1>
       ))}
@@ -26,17 +26,49 @@ export default function DiagnosisItem({ diagnosis }: Props) {
           </tr>
         </thead>
         <tbody>
-          {Rows.map((row, rowIdx) => (
+          {(Rows || []).map((row, rowIdx) => (
             <React.Fragment key={rowIdx}>
               <tr>
                 {(row.Values || []).map((val, valIdx) => (
-                  <td key={valIdx}>{val}</td>
+                  <td key={valIdx}>
+                    {val}
+                    {valIdx === 0 && row.Comment && (
+                      <div className="dropdown is-hoverable is-up">
+                        <div className="dropdown-trigger">
+                          <span className="icon has-text-info">
+                            <i className="fas fa-info-circle"></i>
+                          </span>
+                        </div>
+                        <div className="dropdown-menu">
+                          <div className="dropdown-content">
+                            <div className="dropdown-item">
+                              <p>{row.Comment}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {valIdx === 0 && (row.SubValues || []).length > 0 && (
+                      <>
+                        &nbsp;&nbsp;&nbsp;
+                        <a
+                          href="javascript:void(0)"
+                          className="subvalues-toggle"
+                        >
+                          expand
+                        </a>
+                      </>
+                    )}
+                  </td>
                 ))}
               </tr>
               {(row.SubValues || []).map((subVals, subValsIdx) => (
                 <tr key={subValsIdx} className="subvalues">
                   {subVals.map((subVal, subValIdx) => (
-                    <td key={subValIdx}>{subVal}</td>
+                    <td key={subValIdx}>
+                      {subValIdx === 0 && '|-- '}
+                      {subVal}
+                    </td>
                   ))}
                 </tr>
               ))}

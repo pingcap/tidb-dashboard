@@ -1,4 +1,4 @@
-export function init() {
+function init() {
   console.log('load diagnosis_report')
 }
 

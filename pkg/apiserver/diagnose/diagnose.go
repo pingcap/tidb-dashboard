@@ -70,6 +70,9 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		s.genReportHandler)
 	endpoint.GET("/reports/:id/detail", s.reportHandler)
 	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)
+	endpoint.GET("/reports/:id/diagnosis.js", func(c *gin.Context) {
+		c.File("ui/packages/diagnosis_report/dist/index.js")
+	})
 	endpoint.GET("/reports/:id/status",
 		auth.MWAuthRequired(),
 		apiutils.MWConnectTiDB(s.tidbForwarder),

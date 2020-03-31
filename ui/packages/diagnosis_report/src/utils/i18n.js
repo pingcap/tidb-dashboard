@@ -26,9 +26,7 @@ export function init() {
         escapeValue: false,
       },
     })
-    .then(() => {
-      addTranslations(diagnosisTrans)
-    })
+  addTranslations(diagnosisTrans)
 }
 
 export const ALL_LANGUAGES = {

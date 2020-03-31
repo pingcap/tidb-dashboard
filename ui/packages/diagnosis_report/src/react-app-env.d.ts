@@ -4,3 +4,8 @@
 interface Window {
   __diagnosis_data__: any
 }
+
+declare module '*.yaml' {
+  const content: any
+  export default content
+}

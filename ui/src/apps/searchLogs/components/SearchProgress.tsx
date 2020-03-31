@@ -231,8 +231,8 @@ export default function SearchProgress({
     }
     confirm({
       title: t('search_logs.confirm.cancel_tasks'),
-      async onOk() {
-        await reqWithErrPrompt(
+      onOk() {
+        reqWithErrPrompt(
           client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + ''),
           t('search_logs.error.cancel_tasks')
         )
@@ -254,8 +254,8 @@ export default function SearchProgress({
     }
     confirm({
       title: t('search_logs.confirm.retry_tasks'),
-      async onOk() {
-        await reqWithErrPrompt(
+      onOk() {
+        reqWithErrPrompt(
           client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + ''),
           t('search_logs.error.retry_tasks')
         )

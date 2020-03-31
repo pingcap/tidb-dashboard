@@ -24,7 +24,7 @@ export async function reqWithErrPrompt<T>(
   try {
     return await req
   } catch (error) {
-    console.log(error)
+    console.error(error)
     if (msg) {
       message.error(msg)
     }

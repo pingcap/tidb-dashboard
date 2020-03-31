@@ -80,7 +80,7 @@ export default function SearchHistory() {
       setTaskGroups(res.data)
     }
     getData()
-  }, [])
+  }, [t])
 
   function stateRender(state: number | undefined) {
     if (state === undefined || state < 1) {

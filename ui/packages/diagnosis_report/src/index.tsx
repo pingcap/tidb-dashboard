@@ -1,12 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import 'bulma/css/bulma.css'
-import './index.css'
-import App from './App'
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-)
+function App() {
+  return <h1>SQL Diagnosis Report</h1>
+}
+
+ReactDOM.render(<App />, document.getElementById('root'))

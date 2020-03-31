@@ -1,6 +1,8 @@
 import React from 'react'
+import DiagnosisItem from './DiagnosisItem'
 
-export default function Report() {
+export default function DiagnosisReport() {
+  const diagnosisData = window.__diagnosis_data__ || []
   return (
     <section className="section">
       <div className="container">
@@ -13,6 +15,9 @@ export default function Report() {
             Fold All
           </button>
         </div>
+        {diagnosisData.map((item) => (
+          <DiagnosisItem diagnosis={item} key={item.Title} />
+        ))}
       </div>
     </section>
   )

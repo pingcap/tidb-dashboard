@@ -1,8 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import Report from './Report'
+import DiagnosisReport from './components/DiagnosisReport'
 
 import 'bulma/css/bulma.css'
 import './index.css'
 
-ReactDOM.render(<Report />, document.getElementById('root'))
+ReactDOM.render(<DiagnosisReport />, document.getElementById('root'))

@@ -2,6 +2,7 @@
   "name": "@pingcap-incubator/diagnosis_report",
   "version": "0.1.0",
   "private": true,
+  "homepage": "/dashboard/api/diagnose",
   "dependencies": {
     "i18next": "^19.1.0",
     "i18next-browser-languagedetector": "^4.0.1",

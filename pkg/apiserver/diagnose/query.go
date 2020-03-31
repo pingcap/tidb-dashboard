@@ -46,7 +46,7 @@ type AvgMaxMinTableDef struct {
 	name      string
 	tbl       string
 	condition string
-	label     string
+	labels    []string
 	Comment   string
 }
 
@@ -69,15 +69,22 @@ func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, e
 	if len(rows) == 0 {
 		return nil, nil
 	}
-	if len(t.label) == 0 {
+	if len(t.labels) == 0 {
 		return t.genRow(rows[0], nil), nil
 	}
 
 	sql = fmt.Sprintf("select '%[1]s',`%[2]v`, avg(value), max(value), min(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` order by avg(value) desc",
-		t.name, t.label, t.tbl, condition)
+		t.name, strings.Join(t.labels, "`,`"), t.tbl, condition)
 	subRows, err := querySQL(db, sql)
 	if err != nil {
 		return nil, err
+	}
+	for i := range subRows {
+		row := subRows[i]
+		row[1] = strings.Join(row[1:1+len(t.labels)], ",")
+		newRow := row[:2]
+		newRow = append(newRow, row[1+len(t.labels):]...)
+		subRows[i] = newRow
 	}
 	return t.genRow(rows[0], subRows), nil
 }
@@ -526,17 +533,17 @@ func convertFloatToDuration(s string, ratio float64) string {
 		return s
 	}
 	f = f * ratio
-	if f > 1 {
+	if f > 10 {
 		f = math.Round(f*1000) / 1000
-		return fmt.Sprintf("%.3f s", f)
+		return fmt.Sprintf("%.0f s", f)
 	}
-	if ms := f * 1000; ms > 1 {
+	if ms := f * 1000; ms > 10 {
 		f = math.Round(ms*1000) / 1000
-		return fmt.Sprintf("%.3f ms", f)
+		return fmt.Sprintf("%.0f ms", f)
 	}
 	us := f * 1000 * 1000
 	f = math.Round(us*1000) / 1000
-	return fmt.Sprintf("%.3f us", f)
+	return fmt.Sprintf("%.0f us", f)
 }
 
 func convertFloatToSizeByRows(rows []TableRowDef, idx int) {

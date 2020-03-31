@@ -21,14 +21,17 @@
     "p": "yarn publish"
   },
   "dependencies": {
+    "@ant-design/icons": "^4.0.0",
     "@baurine/grafana-value-formats": "^0.1.1",
     "@pingcap-incubator/dashboard_client": "^0.0.8",
-    "antd": "^3.26.5",
+    "antd": "^4.0.0",
     "i18next": "^19.1.0",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "react-i18next": "^11.3.2",
-    "react-router-dom": "^5.1.2"
+    "react-router-dom": "^5.1.2",
+    "react-syntax-highlighter": "^12.2.1",
+    "sql-formatter-plus": "^1.3.6"
   },
   "peerDependencies": {
     "react": "^16.12.0",

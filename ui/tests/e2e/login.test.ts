@@ -1,4 +1,5 @@
 import puppeteer from 'puppeteer'
+import ppExpect from 'expect-puppeteer'
 import { LOGIN_URL, OVERVIEW_URL, PUPPETEER_CONFIG } from './test_config'
 
 describe('Login', () => {
@@ -17,21 +18,9 @@ describe('Login', () => {
       const page = await browser.newPage()
       await page.goto(LOGIN_URL)
 
-      const pwdInput = await page.waitForSelector('input#tidb_signin_password')
-      await pwdInput.type('any')
-      await page.click('button#signin_btn')
-
-      const errorContainer = await page.waitForSelector('div.has-error')
-      const containsPwdInput = await errorContainer.$eval(
-        'input#tidb_signin_password',
-        (el) => (el ? true : false)
-      )
-      expect(containsPwdInput).toBe(true)
-      const errorContent = await errorContainer.$eval(
-        '.ant-form-explain',
-        (el) => el.textContent
-      )
-      expect(errorContent).toContain('TiDB authentication failed')
+      await ppExpect(page).toFill('input#tidb_signin_password', 'any')
+      await ppExpect(page).toClick('button#signin_btn')
+      await ppExpect(page).toMatch('TiDB authentication failed')
     },
     10 * 1000
   )
@@ -40,7 +29,6 @@ describe('Login', () => {
     'should login success by correct password',
     async () => {
       const page = await browser.newPage()
-
       await page.goto(LOGIN_URL)
 
       const title = await page.title()

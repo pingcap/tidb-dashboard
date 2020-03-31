@@ -1,12 +1,18 @@
 import client from '@pingcap-incubator/dashboard_client'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
-import { Button, Badge, Progress, Icon } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Button, Badge, Progress } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Head, CardTable } from '@pingcap-incubator/dashboard_components'
+import { Head } from '@pingcap-incubator/dashboard_components'
+import { CardTableV2 } from '@/components'
+import { useClientRequestWithPolling } from '@/utils/useClientRequest'
 
 function mapData(data) {
+  if (!data) {
+    return data
+  }
   data.tasks_status.forEach((task) => {
     if (task.state === 1) {
       let task_elapsed_secs = data.server_time - task.started_at
@@ -24,86 +30,83 @@ function mapData(data) {
   return data
 }
 
+function isFinished(data) {
+  if (!data) {
+    return false
+  }
+  return data.task_group_status.state === 2
+}
+
 export default function Page() {
-  const { id } = useParams()
-  const [isLoading, setIsLoading] = useState(true)
-  const [isRunning, setIsRunning] = useState(true)
-  const [data, setData] = useState([])
   const { t } = useTranslation()
+  const { id } = useParams()
 
-  useEffect(() => {
-    let t = null
-    async function fetchData() {
-      try {
-        const res = await client.getInstance().getProfilingGroupDetail(id)
-        if (res.data.task_group_status.state === 2) {
-          setIsRunning(false)
-          if (t !== null) {
-            clearInterval(t)
-          }
-        }
-        setData(mapData(res.data))
-      } catch (ex) {}
-      setIsLoading(false)
+  const { data: respData, isLoading } = useClientRequestWithPolling(
+    (cancelToken) =>
+      client.getInstance().getProfilingGroupDetail(id, { cancelToken }),
+    {
+      shouldPoll: (data) => !isFinished(data),
     }
-    t = setInterval(() => fetchData(), 1000)
-    fetchData()
-    return () => {
-      if (t !== null) {
-        clearInterval(t)
-      }
-    }
-  }, [id])
+  )
 
-  async function handleDownload() {
+  const data = useMemo(() => mapData(respData), [respData])
+
+  const handleDownload = useCallback(async () => {
     const res = await client.getInstance().getProfilingGroupDownloadToken(id)
     const token = res.data
     if (!token) {
       return
     }
     window.location = `${client.getBasePath()}/profiling/group/download?token=${token}`
-  }
+  }, [id])
 
-  const columns = [
-    {
-      title: t('instance_profiling.detail.table.columns.instance'),
-      key: 'instance',
-      dataIndex: 'target.display_name',
-      width: 200,
-    },
-    {
-      title: t('instance_profiling.detail.table.columns.kind'),
-      key: 'kind',
-      dataIndex: 'target.kind',
-      width: 100,
-    },
-    {
-      title: t('instance_profiling.detail.table.columns.status'),
-      key: 'status',
-      render: (_, record) => {
-        if (record.state === 1) {
-          return (
-            <div style={{ width: 200 }}>
-              <Progress
-                percent={Math.round(record.progress * 100)}
-                size="small"
-                width={200}
-              />
-            </div>
-          )
-        } else if (record.state === 0) {
-          return <Badge status="error" text={record.error} />
-        } else {
-          return (
-            <Badge
-              status="success"
-              text={t('instance_profiling.detail.table.status.finished')}
-            />
-          )
-        }
+  const columns = useMemo(
+    () => [
+      {
+        name: t('instance_profiling.detail.table.columns.instance'),
+        key: 'instance',
+        minWidth: 150,
+        maxWidth: 400,
+        onRender: (record) => record.target.display_name,
       },
-    },
-  ]
+      {
+        name: t('instance_profiling.detail.table.columns.kind'),
+        key: 'kind',
+        minWidth: 100,
+        maxWidth: 150,
+        onRender: (record) => record.target.kind,
+      },
+      {
+        name: t('instance_profiling.detail.table.columns.status'),
+        key: 'status',
+        minWidth: 150,
+        maxWidth: 200,
+        onRender: (record) => {
+          if (record.state === 1) {
+            return (
+              <div style={{ width: 200 }}>
+                <Progress
+                  percent={Math.round(record.progress * 100)}
+                  size="small"
+                  width={200}
+                />
+              </div>
+            )
+          } else if (record.state === 0) {
+            return <Badge status="error" text={record.error} />
+          } else {
+            return (
+              <Badge
+                status="success"
+                text={t('instance_profiling.detail.table.status.finished')}
+              />
+            )
+          }
+        },
+      },
+    ],
+    [t]
+  )
 
   return (
     <div>
@@ -111,21 +114,24 @@ export default function Page() {
         title={t('instance_profiling.detail.head.title')}
         back={
           <Link to={`/instance_profiling`}>
-            <Icon type="arrow-left" />{' '}
-            {t('instance_profiling.detail.head.back')}
+            <ArrowLeftOutlined /> {t('instance_profiling.detail.head.back')}
           </Link>
         }
         titleExtra={
-          <Button disabled={isRunning} type="primary" onClick={handleDownload}>
+          <Button
+            disabled={!isFinished(data)}
+            type="primary"
+            onClick={handleDownload}
+          >
             {t('instance_profiling.detail.download')}
           </Button>
         }
       />
-      <CardTable
-        loading={isLoading}
+      <CardTableV2
+        loading={isLoading && !data}
         columns={columns}
-        dataSource={data.tasks_status}
-        rowKey="id"
+        items={data?.tasks_status || []}
+        getKey={(row) => row.id}
       />
     </div>
   )

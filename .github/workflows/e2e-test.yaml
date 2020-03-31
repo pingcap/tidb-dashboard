@@ -9,6 +9,7 @@ jobs:
   e2e_test:
     name: UI
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@master

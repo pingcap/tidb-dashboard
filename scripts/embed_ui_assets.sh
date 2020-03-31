@@ -35,7 +35,7 @@ fi
 
 echo "+ Install bindata tools"
 go install github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
-go install github.com/go-bindata/go-bindata/go-bindata
+go install github.com/go-bindata/go-bindata/v3/go-bindata
 
 echo "+ Clean up go mod"
 go mod tidy

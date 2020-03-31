@@ -59,7 +59,7 @@ func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forw
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/diagnose")
-	endpoint.Static("/assets", "/Users/baurine/Codes/Work/pingcap-incubator/tidb-dashboard/ui/packages/diagnosis_report/build")
+	endpoint.Static("/assets", "ui/packages/diagnosis_report/build")
 	endpoint.POST("/reports",
 		auth.MWAuthRequired(),
 		apiutils.MWConnectTiDB(s.tidbForwarder),

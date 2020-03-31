@@ -134,6 +134,7 @@ export default function SearchProgress({
 
   useEffect(() => {
     setLoading(true)
+    setCheckedKeys([])
   }, [taskGroupID])
 
   const descriptionArray = [

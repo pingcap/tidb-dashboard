@@ -1,0 +1,41 @@
+{
+  "name": "@pingcap-incubator/diagnosis_report",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "i18next": "^19.1.0",
+    "i18next-browser-languagedetector": "^4.0.1",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-i18next": "^11.3.2"
+  },
+  "scripts": {
+    "watch": "echo no need",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "clean": "rimraf dist"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^13.1.5",
+    "@types/react": "^16.9.22",
+    "customize-cra": "^0.9.1",
+    "less": "^3.10.3",
+    "less-loader": "^5.0.0",
+    "react-app-rewire-yaml": "^1.1.0",
+    "react-app-rewired": "^2.1.5",
+    "react-scripts": "3.1.x",
+    "typescript": "^3.7.4"
+  }
+}

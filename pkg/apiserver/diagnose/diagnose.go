@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/render"
 	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
@@ -41,7 +40,6 @@ type Service struct {
 	config        *config.Config
 	db            *dbstore.DB
 	tidbForwarder *tidb.Forwarder
-	htmlRender    render.HTMLRender
 }
 
 func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, newTemplate utils.NewTemplateFunc) *Service {
@@ -52,13 +50,10 @@ func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forw
 		},
 	})
 
-	t := newTemplate("diagnose")
-
 	return &Service{
 		config:        config,
 		db:            db,
 		tidbForwarder: tidbForwarder,
-		htmlRender:    utils.NewHTMLRender(t, TemplateInfos),
 	}
 }
 
@@ -69,14 +64,10 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		auth.MWAuthRequired(),
 		apiutils.MWConnectTiDB(s.tidbForwarder),
 		s.genReportHandler)
-	endpoint.GET("/reports/:id/detail", s.reportHandler)
-	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)
-	endpoint.GET("/reports/:id/diagnosis.js", func(c *gin.Context) {
-		c.File("ui/packages/diagnosis_report/dist/index.js")
-	})
-	endpoint.GET("/reports/:id/view", func(c *gin.Context) {
+	endpoint.GET("/reports/:id/detail", func(c *gin.Context) {
 		c.File("ui/packages/diagnosis_report/build/index.html")
 	})
+	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)
 	endpoint.GET("/reports/:id/status",
 		auth.MWAuthRequired(),
 		apiutils.MWConnectTiDB(s.tidbForwarder),
@@ -168,40 +159,6 @@ func (s *Service) reportStatusHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, &report)
-}
-
-// @Summary SQL diagnosis report
-// @Description Get sql diagnosis report
-// @Produce html
-// @Param id path string true "report id"
-// @Success 200 {string} string
-// @Router /diagnose/reports/{id} [get]
-func (s *Service) reportHandler(c *gin.Context) {
-	id := c.Param("id")
-	reportID, err := strconv.Atoi(id)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	report, err := GetReport(s.db, uint(reportID))
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	if len(report.Content) == 0 {
-		c.String(http.StatusOK, "The report is in generating, please referesh it later")
-		return
-	}
-
-	var tables []*TableDef
-	err = json.Unmarshal([]byte(report.Content), &tables)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	utils.HTML(c, s.htmlRender, http.StatusOK, "sql-diagnosis/index", tables)
 }
 
 func (s *Service) reportDataHandler(c *gin.Context) {

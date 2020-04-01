@@ -13,8 +13,7 @@
     "react-i18next": "^11.3.2"
   },
   "scripts": {
-    "watch": "echo 'not implemented'",
-    "dev": "cra-build-watch -p /dashboard/api/diagnose/assets/",
+    "watch": "cra-build-watch -p /dashboard/api/diagnose/assets/",
     "build": "react-app-rewired build",
     "clean": "rimraf dist"
   },

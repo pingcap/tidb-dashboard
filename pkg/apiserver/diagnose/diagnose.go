@@ -57,15 +57,19 @@ func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forw
 	}
 }
 
+var fs http.FileSystem = http.Dir("ui/packages/diagnosis_report/build")
+
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/diagnose")
-	endpoint.Static("/assets", "ui/packages/diagnosis_report/build")
+	endpoint.StaticFS("/assets", fs)
 	endpoint.POST("/reports",
 		auth.MWAuthRequired(),
 		apiutils.MWConnectTiDB(s.tidbForwarder),
 		s.genReportHandler)
 	endpoint.GET("/reports/:id/detail", func(c *gin.Context) {
-		c.File("ui/packages/diagnosis_report/build/index.html")
+		// can't use index.html, it will be redirected
+		// see source code in fs.go#serveFile()
+		c.FileFromFS("report.html", fs)
 	})
 	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)
 	endpoint.GET("/reports/:id/status",

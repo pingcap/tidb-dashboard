@@ -1,4 +1,3 @@
-//+build !dev
 //go:generate vfsgendev -source="github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose".Vfs
 
 package diagnose

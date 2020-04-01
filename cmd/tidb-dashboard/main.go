@@ -68,24 +68,29 @@ func NewCLIConfig() *DashboardCLIConfig {
 	cfg.CoreConfig = &config.Config{}
 
 	var showVersion bool
-	flag.BoolVar(&showVersion, "v", false, "Print version information and exit")
-	flag.BoolVar(&showVersion, "version", false, "Print version information and exit")
-	flag.StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
-	flag.IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
-	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
-	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
-	flag.BoolVar(&cfg.EnableDebugLog, "debug", false, "Enable debug logs")
+	startCmd := flag.NewFlagSet("start", flag.ExitOnError)
+	startCmd.BoolVar(&showVersion, "v", false, "Print version information and exit")
+	startCmd.BoolVar(&showVersion, "version", false, "Print version information and exit")
+	startCmd.StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
+	startCmd.IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
+	startCmd.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
+	startCmd.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
+	startCmd.BoolVar(&cfg.EnableDebugLog, "debug", false, "Enable debug logs")
 	// debug for keyvisual，hide help information
-	flag.Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")
-	flag.Int64Var(&cfg.KVFileEndTime, "keyviz-file-end", 0, "(debug) end time for file range in file mode")
+	startCmd.Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")
+	startCmd.Int64Var(&cfg.KVFileEndTime, "keyviz-file-end", 0, "(debug) end time for file range in file mode")
 
-	clusterCaPath := flag.String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
-	clusterCertPath := flag.String("cluster-cert", "", "path of file that contains X509 certificate in PEM format.")
-	clusterKeyPath := flag.String("cluster-key", "", "path of file that contains X509 key in PEM format.")
+	clusterCaPath := startCmd.String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
+	clusterCertPath := startCmd.String("cluster-cert", "", "path of file that contains X509 certificate in PEM format.")
+	clusterKeyPath := startCmd.String("cluster-key", "", "path of file that contains X509 key in PEM format.")
 
-	tidbCaPath := flag.String("tidb-ca", "", "path of file that contains list of trusted SSL CAs.")
-	tidbCertPath := flag.String("tidb-cert", "", "path of file that contains X509 certificate in PEM format.")
-	tidbKeyPath := flag.String("tidb-key", "", "path of file that contains X509 key in PEM format.")
+	tidbCaPath := startCmd.String("tidb-ca", "", "path of file that contains list of trusted SSL CAs.")
+	tidbCertPath := startCmd.String("tidb-cert", "", "path of file that contains X509 certificate in PEM format.")
+	tidbKeyPath := startCmd.String("tidb-key", "", "path of file that contains X509 key in PEM format.")
+
+	// TODO: add user sub command
+	//var username string
+	//userCmd := flag.NewFlagSet("user", flag.ExitOnError)
 
 	_ = flag.CommandLine.MarkHidden("keyviz-file-start")
 	_ = flag.CommandLine.MarkHidden("keyviz-file-end")

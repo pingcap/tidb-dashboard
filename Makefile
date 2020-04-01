@@ -58,7 +58,7 @@ endif
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh
 endif
-	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
+	go build -o bin/tidb-dashboard start -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 
 run:
-	bin/tidb-dashboard --debug
+	bin/tidb-dashboard start --debug

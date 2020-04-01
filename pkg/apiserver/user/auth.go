@@ -29,6 +29,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	globalUtil "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
 
@@ -57,21 +58,25 @@ type TokenResponse struct {
 func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder) (*utils.SessionUser, error) {
 	// TODO: Support non TiDB auth
 	if !f.IsTiDBAuth {
-		return nil, ErrSignInUnsupportedAuthType.New("unsupported auth type, only TiDB auth is supported")
-	}
-	db, err := tidbForwarder.OpenTiDB(f.Username, f.Password)
-	if err != nil {
-		if errorx.Cast(err) == nil {
+		err := globalUtil.VerifyInternalAccount(tidbForwarder.EtcdClient, f.Username, f.Password)
+		if err != nil {
 			return nil, ErrSignInOther.WrapWithNoMessage(err)
 		}
-		// Possible errors could be:
-		// tidb.ErrNoAliveTiDB
-		// tidb.ErrPDAccessFailed
-		// tidb.ErrTiDBConnFailed
-		// tidb.ErrTiDBAuthFailed
-		return nil, err
+	} else {
+		db, err := tidbForwarder.OpenTiDB(f.Username, f.Password)
+		if err != nil {
+			if errorx.Cast(err) == nil {
+				return nil, ErrSignInOther.WrapWithNoMessage(err)
+			}
+			// Possible errors could be:
+			// tidb.ErrNoAliveTiDB
+			// tidb.ErrPDAccessFailed
+			// tidb.ErrTiDBConnFailed
+			// tidb.ErrTiDBAuthFailed
+			return nil, err
+		}
+		defer db.Close() //nolint:errcheck
 	}
-	defer db.Close() //nolint:errcheck
 
 	// TODO: Fill privilege tables here
 	return &utils.SessionUser{

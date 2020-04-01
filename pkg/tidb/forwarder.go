@@ -53,7 +53,7 @@ func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
 type Forwarder struct {
 	ctx        context.Context
 	config     *ForwarderConfig
-	etcdClient *clientv3.Client
+	EtcdClient *clientv3.Client
 }
 
 // TODO: Requires load balancing and health checks.
@@ -69,7 +69,7 @@ func (f *Forwarder) Close() error {
 
 func (f *Forwarder) getServerInfo() (*tidbServerInfo, error) {
 	ctx, cancel := context.WithTimeout(f.ctx, f.config.TiDBRetrieveTimeout)
-	resp, err := f.etcdClient.Get(ctx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
+	resp, err := f.EtcdClient.Get(ctx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
 	cancel()
 
 	if err != nil {
@@ -90,7 +90,7 @@ func (f *Forwarder) getServerInfo() (*tidbServerInfo, error) {
 
 func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3.Client) *Forwarder {
 	f := &Forwarder{
-		etcdClient: etcdClient,
+		EtcdClient: etcdClient,
 		config:     config,
 		ctx:        context.Background(),
 	}

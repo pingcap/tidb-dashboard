@@ -13,9 +13,9 @@
     "react-i18next": "^11.3.2"
   },
   "scripts": {
-    "watch": "react-app-rewired start",
+    "watch": "node scripts/watch.js",
     "build": "react-app-rewired build",
-    "clean": "rimraf dist"
+    "clean": "rimraf build"
   },
   "browserslist": {
     "production": [

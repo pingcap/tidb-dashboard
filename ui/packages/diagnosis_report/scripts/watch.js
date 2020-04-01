@@ -16,6 +16,7 @@ const overrides = require('../config-overrides') // correct this line to your co
 overrides(config, process.env.NODE_ENV)
 
 config.output.publicPath = '/dashboard/api/diagnose/assets/'
+config.output.path = paths.appBuild
 
 webpack(config).watch({}, (err, stats) => {
   if (err) {

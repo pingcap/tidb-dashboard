@@ -8,9 +8,10 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/elazarl/go-bindata-assetfs v1.0.0
 	github.com/gin-contrib/gzip v0.0.1
-	github.com/gin-gonic/gin v1.5.0
+	github.com/gin-gonic/gin v1.6.2
 	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/go-sql-driver/mysql v1.4.1
+	github.com/golang/protobuf v1.3.5 // indirect
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
 	github.com/jinzhu/gorm v1.9.12
 	github.com/joho/godotenv v1.3.0
@@ -28,5 +29,6 @@ require (
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	go.uber.org/fx v1.10.0
 	go.uber.org/zap v1.13.0
+	golang.org/x/sys v0.0.0-20200331124033-c3d80250170d // indirect
 	google.golang.org/grpc v1.25.1
 )

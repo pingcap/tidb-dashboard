@@ -14,6 +14,7 @@ endif
 
 ifeq ($(UI),1)
 BUILD_TAGS += ui_server
+BUILD_TAGS += embed_diagnosis
 endif
 
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.ReleaseVersion=$(shell git describe --tags --dirty)"

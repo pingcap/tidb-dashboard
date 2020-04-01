@@ -30,7 +30,7 @@ export default function DiagnosisReport() {
   return (
     <section className="section">
       <div className="container">
-        <h1 className="title is-size-1">{t('diagnosis.title')} XXX</h1>
+        <h1 className="title is-size-1">{t('diagnosis.title')}</h1>
         <div>
           <LangDropdown />
           <button

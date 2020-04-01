@@ -20,8 +20,11 @@ config.plugins = config.plugins.filter(
   (plugin) => !(plugin instanceof webpack.HotModuleReplacementPlugin)
 )
 
-// config.output.publicPath = process.env.PUBLIC_URL
-// config.output.publicPath = '/dashboard/api/diagnose/assets/'
+// to speed up rebuild time
+config.mode = 'development'
+config.devtool = 'eval-cheap-module-source-map'
+delete config.optimization
+
 config.output.publicPath = pkg.homepage
 config.output.path = paths.appBuild // else it will put the outputs in the dist folder
 

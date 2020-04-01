@@ -1,5 +1,5 @@
-//+build embed_diagnosis
-//go:generate vfsgendev -tag embed_diagnosis -source="github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose".Vfs
+//+build !dev
+//go:generate vfsgendev -tag dev -source="github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose".Vfs
 
 package diagnose
 

@@ -1,4 +1,4 @@
-//+build !embed_diagnosis
+//+build dev
 
 package diagnose
 

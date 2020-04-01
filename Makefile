@@ -14,7 +14,10 @@ endif
 
 ifeq ($(UI),1)
 BUILD_TAGS += ui_server
-BUILD_TAGS += embed_diagnosis
+endif
+
+ifeq ($(DEV),1)
+BUILD_TAGS += dev
 endif
 
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.ReleaseVersion=$(shell git describe --tags --dirty)"
@@ -28,7 +31,8 @@ default:
 lint:
 	scripts/lint.sh
 
-dev: lint default
+dev:
+	DEV=1 make lint default
 
 # convert api in Golang code to swagger configuration file
 swagger_spec:

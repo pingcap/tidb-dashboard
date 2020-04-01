@@ -30,6 +30,8 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+
+	_ "github.com/shurcooL/vfsgen"
 )
 
 const (

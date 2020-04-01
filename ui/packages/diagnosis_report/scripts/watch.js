@@ -50,4 +50,8 @@ function copyPublicFolder() {
     dereference: true,
     filter: (file) => file !== paths.appHtml,
   })
+  fs.copyFileSync(
+    paths.appBuild + '/index.html',
+    paths.appBuild + '/report.html'
+  )
 }

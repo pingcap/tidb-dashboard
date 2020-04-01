@@ -1,14 +1,15 @@
 const { override } = require('customize-cra')
 const addYaml = require('react-app-rewire-yaml')
-const reactAppRewireBuildDev = require('react-app-rewire-build-dev')
 
-const options = {
-  outputPath: './build',
-  basename: '/dashboard/api/diagnose/assets/',
+const watchDev = () => (config) => {
+  // config.mode = 'development'
+  // config.devtool = 'eval-cheap-module-source-map'
+  // delete config.optimization
+  // config.watch = true
+  // config.watchOptions = {
+  //   ignored: /node_modules/,
+  // }
+  return config
 }
 
-function watchDev(config, env) {
-  return reactAppRewireBuildDev(config, env, options)
-}
-
-module.exports = override(addYaml, watchDev)
+module.exports = override(watchDev(), addYaml)

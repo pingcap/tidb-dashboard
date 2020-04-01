@@ -6,6 +6,7 @@ const paths = require('react-scripts/config/paths')
 const webpack = require('webpack')
 const webpackconfig = require('react-scripts/config/webpack.config.js')
 const config = webpackconfig('development')
+const pkg = require('../package.json')
 
 const overrides = require('../config-overrides') // correct this line to your config-overrides path
 overrides(config, process.env.NODE_ENV)
@@ -20,7 +21,8 @@ config.plugins = config.plugins.filter(
 )
 
 // config.output.publicPath = process.env.PUBLIC_URL
-config.output.publicPath = '/dashboard/api/diagnose/assets/'
+// config.output.publicPath = '/dashboard/api/diagnose/assets/'
+config.output.publicPath = pkg.homepage
 config.output.path = paths.appBuild // else it will put the outputs in the dist folder
 
 webpack(config).watch({}, (err, stats) => {
@@ -37,6 +39,7 @@ webpack(config).watch({}, (err, stats) => {
   )
 })
 
+// copy favicon.ico and robots.txt from public to build folder
 function copyPublicFolder() {
   fs.copySync(paths.appPublic, paths.appBuild, {
     dereference: true,

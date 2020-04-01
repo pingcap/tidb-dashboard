@@ -4995,7 +4995,7 @@ caseless@~0.12.0:
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
   integrity sha1-G2gcIf+EAzyCZUMJBolCDRhxUdw=
 
-chalk@2.4.2, chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.1, chalk@^2.4.1, chalk@^2.4.2:
+chalk@2.4.2, chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.1, chalk@^2.4.0, chalk@^2.4.1, chalk@^2.4.2:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
   integrity sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==
@@ -10513,7 +10513,7 @@ lodash.uniq@^4.5.0:
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
   integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
 
-"lodash@>=3.5 <5", lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.1:
+"lodash@>=3.5 <5", lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.1:
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
   integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
@@ -11051,7 +11051,7 @@ modify-values@^1.0.0:
   resolved "https://registry.yarnpkg.com/modify-values/-/modify-values-1.0.1.tgz#b3939fa605546474e3e3e3c63d64bd43b4ee6022"
   integrity sha512-xV2bxeN6F7oYjZWTe/YPAy6MN2M+sL4u/Rlm2AHCIVGfo2p1yGmBHQ6vHehl4bRTZBdHu3TSkWdYgkwpYzAGSw==
 
-moment@^2.24.0:
+moment@^2.20.1, moment@^2.22.1, moment@^2.24.0:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
@@ -13913,6 +13913,18 @@ react-app-polyfill@^1.0.3:
     regenerator-runtime "^0.13.3"
     whatwg-fetch "^3.0.0"
 
+react-app-rewire-build-dev@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/react-app-rewire-build-dev/-/react-app-rewire-build-dev-1.0.1.tgz#18a56a2395da260c36e835a73a3c46ae48dec2c1"
+  integrity sha512-ja2f/nUG/tkXgzBnzJLnjeId11/kA5ZW5BqwBVVYEy46adM7HxVM7VSUa7VIeQEDcuHAyaGPsd6rEAoKeqWEHA==
+  dependencies:
+    chalk "^2.4.0"
+    filesize "^3.6.1"
+    lodash "^4.17.5"
+    mkdirp "^0.5.1"
+    moment "^2.22.1"
+    simple-node-logger "^0.93.37"
+
 react-app-rewire-yaml@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/react-app-rewire-yaml/-/react-app-rewire-yaml-1.1.0.tgz#b6e73384c152514fb84e238fa2f13f37167f1126"
@@ -15157,6 +15169,14 @@ signal-exit@^3.0.0, signal-exit@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
   integrity sha1-tf3AjxKH6hF4Yo5BXiUTK3NkbG0=
+
+simple-node-logger@^0.93.37:
+  version "0.93.42"
+  resolved "https://registry.yarnpkg.com/simple-node-logger/-/simple-node-logger-0.93.42.tgz#ebc6893ef27a838f12dbd16a71e694976cb0f975"
+  integrity sha512-3Kh0egP+iYr/TSDOdbLEMgyd9o6XsBMk3xk4Ds0/dwoclgDOqdOygusBixcr6ls0nG5xTpwgWiatWfZXjCiCLA==
+  dependencies:
+    lodash "^4.17.10"
+    moment "^2.20.1"
 
 simple-swizzle@^0.2.2:
   version "0.2.2"

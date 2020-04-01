@@ -8,7 +8,8 @@ const webpackconfig = require('react-scripts/config/webpack.config.js')
 const config = webpackconfig('development')
 const pkg = require('../package.json')
 
-const overrides = require('../config-overrides') // correct this line to your config-overrides path
+// work with react-app-rewire and customize-cra
+const overrides = require('../config-overrides')
 overrides(config, process.env.NODE_ENV)
 
 // removes react-dev-utils/webpackHotDevClient.js at first in the array
@@ -25,6 +26,7 @@ config.mode = 'development'
 config.devtool = 'eval-cheap-module-source-map'
 delete config.optimization
 
+// fix publicPath and output path
 config.output.publicPath = pkg.homepage
 config.output.path = paths.appBuild // else it will put the outputs in the dist folder
 

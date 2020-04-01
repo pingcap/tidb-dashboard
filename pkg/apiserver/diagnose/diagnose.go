@@ -31,7 +31,8 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 
-	_ "github.com/shurcooL/vfsgen"
+	// _ "github.com/shurcooL/httpfs" // nolint
+	_ "github.com/shurcooL/httpfs/html/vfstemplate" // nolint
 )
 
 const (

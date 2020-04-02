@@ -634,8 +634,6 @@ func (r *newJoinRow) genNewRow(table *TableDef) []string {
 	return newRow
 }
 
-const maxNoCompareValue = float64(math.MaxInt32)
-
 func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, []float64, int, error) {
 	if len(table.compareColumns) == 0 {
 		return 0, nil, -1, nil
@@ -677,12 +675,12 @@ func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, []float6
 			ratio = 1 - f1/f2
 		}
 		ratios = append(ratios, ratio)
-		if (f1 == 0 || f2 == 0) && maxRatio != 0 && needBetter == false {
+		if (f1 == 0 || f2 == 0) && maxRatio != 0 && !needBetter {
 			continue
 		}
-		if math.Abs(ratio) > math.Abs(maxRatio) || (needBetter == true && f1 != 0 && f2 != 0) {
+		if math.Abs(ratio) > math.Abs(maxRatio) || (needBetter && f1 != 0 && f2 != 0) {
 			maxRatio = ratio
-			needBetter = (f1 == 0 || f2 == 0)
+			needBetter = f1 == 0 || f2 == 0
 			maxIdx = idx
 		}
 	}

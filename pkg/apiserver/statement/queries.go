@@ -18,6 +18,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/jinzhu/gorm"
 )
@@ -81,6 +82,30 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime s
 		regexAll := strings.Join(regex, "|")
 		query = query.Where("table_names REGEXP ?", regexAll)
 	}
+
+	err = query.Find(&result).Error
+	return
+}
+
+func QueryRecentTopStatements(db *gorm.DB) (result []*Overview, err error) {
+	timeBefore30Min := time.Now().Add(-time.Minute * 30)
+	query := db.
+		Select(`
+			schema_name,
+			digest,
+			digest_text,
+			sum(sum_latency) AS agg_sum_latency,
+			sum(exec_count) AS agg_exec_count,
+			round(sum(exec_count*avg_affected_rows)/sum(exec_count)) AS agg_avg_affected_rows,
+			round(sum(exec_count*avg_latency)/sum(exec_count)) AS agg_avg_latency,
+			round(sum(exec_count*avg_mem)/sum(exec_count)) AS agg_avg_mem,
+			group_concat(table_names) AS agg_table_names
+		`).
+		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Where("summary_begin_time > ?", timeBefore30Min).
+		Group("schema_name, digest, digest_text").
+		Order("agg_sum_latency DESC").
+		Limit(5)
 
 	err = query.Find(&result).Error
 	return

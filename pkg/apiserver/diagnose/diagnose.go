@@ -123,8 +123,8 @@ func (s *Service) genReportHandler(c *gin.Context) {
 			tables = GetReportTablesForDisplay(startTime.Format(timeLayout), endTime.Format(timeLayout), db, s.db, reportID)
 		} else {
 			tables = GetCompareReportTablesForDisplay(
-				startTime.Format(timeLayout), endTime.Format(timeLayout),
 				compareStartTime.Format(timeLayout), compareEndTime.Format(timeLayout),
+				startTime.Format(timeLayout), endTime.Format(timeLayout),
 				db, s.db, reportID)
 		}
 		_ = UpdateReportProgress(s.db, reportID, 100)

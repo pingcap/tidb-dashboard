@@ -53,7 +53,9 @@ function DiagnoseStatus() {
         report && (
           <Button type="primary" disabled={report?.progress! < 100}>
             <a
-              href={`${client.getBasePath()}/diagnose/reports/${report!['ID']}/detail`}
+              href={`${client.getBasePath()}/diagnose/reports/${
+                report!['ID']
+              }/detail`}
               target="_blank"
               rel="noopener noreferrer"
             >

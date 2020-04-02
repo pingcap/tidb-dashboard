@@ -1,6 +1,6 @@
 //go:generate vfsgendev -source="github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose".Vfs
 
-// run `go generate pkg/apiserver/diagnose/assets_embed.go` in the project root folder to trigger above command
+// run `go generate ./pkg/apiserver/diagnose` in the project root folder to trigger above command
 
 package diagnose
 

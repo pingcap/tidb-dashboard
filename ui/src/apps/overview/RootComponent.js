@@ -6,16 +6,22 @@ import client from '@pingcap-incubator/dashboard_client'
 
 import { ComponentPanel, MonitorAlertBar } from './components'
 import styles from './RootComponent.module.less'
+import { StatementsTable } from '@pingcap-incubator/statement'
 
 const App = () => {
   const [cluster, setCluster] = useState(null)
+  const [topStatements, setTopStatements] = useState([])
+  const [loading, setLoading] = useState(false)
   const { t } = useTranslation()
 
   useEffect(() => {
     const fetchLoad = async () => {
+      setLoading(true)
       let res = await client.getInstance().topologyAllGet()
-      const cluster = res.data
-      setCluster(cluster)
+      setCluster(res.data)
+      res = await client.getInstance().statementsRecentTopsGet()
+      setTopStatements(res.data)
+      setLoading(false)
     }
     fetchLoad()
   }, [])
@@ -42,7 +48,16 @@ const App = () => {
                 bordered={false}
                 title={t('overview.top_statements.title')}
               >
-                <Skeleton active />
+                {loading ? (
+                  <Skeleton active />
+                ) : (
+                  <StatementsTable
+                    statements={topStatements}
+                    loading={false}
+                    timeRange={{ begin_time: '', end_time: '' }}
+                    detailPagePath={'/statement/detail'}
+                  />
+                )}
               </Card>
             </Col>
             <Col span={6}>

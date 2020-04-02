@@ -37,12 +37,12 @@ function DiagnosisRow({ row }: { row: TableRowDef }) {
             {valIdx === 0 && (row.SubValues || []).length > 0 && (
               <>
                 &nbsp;&nbsp;&nbsp;
-                <a
+                <span
                   className="subvalues-toggle"
                   onClick={() => setInternalExpand(!internalExpand)}
                 >
                   {internalExpand ? t('diagnosis.fold') : t('diagnosis.expand')}
-                </a>
+                </span>
               </>
             )}
           </td>

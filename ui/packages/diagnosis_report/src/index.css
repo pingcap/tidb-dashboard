@@ -13,4 +13,6 @@ tr.subvalues.fold {
 .subvalues-toggle {
   display: inline-block;
   width: 60px;
+  cursor: pointer;
+  color: #2160c4;
 }

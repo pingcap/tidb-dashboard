@@ -16,7 +16,7 @@ const App = () => {
   const [topStatements, setTopStatements] = useState([])
   const [loading, setLoading] = useState(false)
   const { t } = useTranslation()
-  const [timeRange, _] = useState(() => {
+  const [timeRange] = useState(() => {
     // TODO: unify to use timestamp instead of string
     const now = moment().seconds(0)
     if (now.minutes() < 30) {

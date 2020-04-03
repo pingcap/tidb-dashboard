@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
-import { Table } from 'antd'
+import { Table, Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TextWithHorizontalBar, BLUE_COLOR, RED_COLOR } from './HorizontalBar'
 import { StatementOverview, StatementTimeRange } from './statement-types'
 import { useTranslation } from 'react-i18next'
+import styles from './styles.module.css'
 
 const tableColumns = (
   t: (string) => string,
@@ -27,7 +28,6 @@ const tableColumns = (
       title: t('statement.common.digest_text'),
       dataIndex: 'digest_text',
       key: 'digest_text',
-      width: 400,
       render: (value, record: StatementOverview) => (
         <Link
           to={`${detailPagePath || '/statement/detail'}?digest=${
@@ -36,7 +36,9 @@ const tableColumns = (
             timeRange.begin_time
           }&end_time=${timeRange.end_time}`}
         >
-          {value}
+          <Tooltip title={value} placement="right">
+            <div className={styles.digest_column}>{value}</div>
+          </Tooltip>
         </Link>
       ),
     },
@@ -107,7 +109,7 @@ const tableColumns = (
   ]
   if (concise) {
     return columns.filter((col) =>
-      ['digest_text', 'sum_latency', 'avg_latency'].includes(col.key)
+      ['schemas', 'digest_text', 'sum_latency', 'avg_latency'].includes(col.key)
     )
   }
   return columns

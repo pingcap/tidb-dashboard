@@ -131,7 +131,7 @@ export default function StatementsTable({
   concise,
 }: Props) {
   const { t } = useTranslation()
-  // TODO: extract to custom hooks
+  // TODO: extract all following calculations into custom hook for easy reuse
   const maxSumLatency = useMemo(
     () => _.max(statements.map((s) => s.sum_latency)) || 1,
     [statements]

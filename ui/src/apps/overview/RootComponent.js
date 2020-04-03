@@ -30,7 +30,7 @@ const App = () => {
   })
 
   useEffect(() => {
-    const fetchLoad = async () => {
+    const fetchData = async () => {
       setLoading(true)
       let res = await client.getInstance().topologyAllGet()
       setCluster(res.data)
@@ -40,7 +40,7 @@ const App = () => {
       setTopStatements((res.data || []).slice(0, 5))
       setLoading(false)
     }
-    fetchLoad()
+    fetchData()
   }, [timeRange])
 
   return (

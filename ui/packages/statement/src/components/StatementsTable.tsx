@@ -71,14 +71,6 @@ const tableColumns = (
       ),
     },
     {
-      title: t('statement.common.avg_affected_rows'),
-      dataIndex: 'avg_affected_rows',
-      key: 'avg_affected_rows',
-      sorter: (a: StatementOverview, b: StatementOverview) =>
-        a.avg_affected_rows! - b.avg_affected_rows!,
-      render: (value) => getValueFormat('short')(value, 0, 0),
-    },
-    {
       title: t('statement.common.avg_latency'),
       dataIndex: 'avg_latency',
       key: 'avg_latency',
@@ -105,6 +97,14 @@ const tableColumns = (
           color={RED_COLOR}
         />
       ),
+    },
+    {
+      title: t('statement.common.avg_affected_rows'),
+      dataIndex: 'avg_affected_rows',
+      key: 'avg_affected_rows',
+      sorter: (a: StatementOverview, b: StatementOverview) =>
+        a.avg_affected_rows! - b.avg_affected_rows!,
+      render: (value) => getValueFormat('short')(value, 0, 0),
     },
   ]
   if (concise) {

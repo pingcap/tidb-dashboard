@@ -154,9 +154,26 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 			fmt.Sprintf("%.2f", row.ratio),
 			row.v1,
 			row.v2,
+			row.colName,
 		}
 		if idx, ok := rowMap[groupValue{name: name, ratioIdx: row.ratioIdx}]; ok {
-			rows[idx].SubValues = append(rows[idx].SubValues, vs)
+			var lastValue []string
+			if len(rows[idx].SubValues) == 0 {
+				lastValue = rows[idx].Values
+			} else {
+				lastIdx := len(rows[idx].SubValues) - 1
+				lastValue = rows[idx].SubValues[lastIdx]
+			}
+			equal := true
+			for i := 3; i <= 5; i++ {
+				if vs[i] != lastValue[i] {
+					equal = false
+					break
+				}
+			}
+			if !equal {
+				rows[idx].SubValues = append(rows[idx].SubValues, vs)
+			}
 			continue
 		}
 		rowMap[groupValue{name: name, ratioIdx: row.ratioIdx}] = len(rows)
@@ -170,7 +187,7 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 		Title:     "Max diff item",
 		CommentEN: "The max different metrics between 2 time range",
 		CommentCN: "",
-		Column:    []string{"TABLE", "METRIC_NAME", "LABEL", "MAX_DIFF", "t1.VALUE", "t2.VALUE"},
+		Column:    []string{"TABLE", "METRIC_NAME", "LABEL", "MAX_DIFF", "t1.VALUE", "t2.VALUE", "VALUE_TYPE"},
 		Rows:      rows,
 	}
 }
@@ -249,7 +266,7 @@ func compareTable(table1, table2 *TableDef, dr *diffRows) (_ *TableDef, err erro
 	})
 	if len(table1.compareColumns) > 0 {
 		for _, idx := range table1.compareColumns {
-			comment := table1.Column[idx] + "_DIFF_RATIO=" + fmt.Sprintf("(t2.%[1]s-t1.%[1]s)/max(t2.%[1]s, t1.%[1]s)", table1.Column[idx])
+			comment := table1.Column[idx] + "_DIFF_RATIO=" + fmt.Sprintf("if t2.%[1]s > t1.%[1]s => { t2.%[1]s / t1.%[1]s - 1 } else => { 1 - t1.%[1]s / t2.%[1]s }", table1.Column[idx])
 			if len(resultTable.CommentEN) > 0 {
 				resultTable.CommentEN += ", \n"
 			}
@@ -449,7 +466,7 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 	}
 
 	sort.Slice(subJoinRows, func(i, j int) bool {
-		return subJoinRows[i].ratio > subJoinRows[j].ratio
+		return math.Abs(subJoinRows[i].ratio) > math.Abs(subJoinRows[j].ratio)
 	})
 	totalRatio := float64(0)
 	var totalRatios []float64
@@ -468,13 +485,15 @@ func joinRow(row1, row2 *TableRowDef, table *TableDef, dr *diffRows) (*TableRowD
 			return nil, errors.Errorf("category %v,table %v, calculate diff ratio error: %v,  %v,%v", strings.Join(table.Category, ","), table.Title, err.Error(), row1.Values, row2.Values)
 		}
 	}
-	label := ""
-	if len(row1.Values) >= len(table.Column) {
-		label = genRowLabel(row1.Values, table.joinColumns)
-	} else if len(row2.Values) >= len(table.Column) {
-		label = genRowLabel(row2.Values, table.joinColumns)
+	if len(row1.SubValues) == 0 && len(row2.SubValues) == 0 {
+		label := ""
+		if len(row1.Values) >= len(table.Column) {
+			label = genRowLabel(row1.Values, table.joinColumns)
+		} else if len(row2.Values) >= len(table.Column) {
+			label = genRowLabel(row2.Values, table.joinColumns)
+		}
+		dr.addRow(table, label, totalRatio, row1.Values, row2.Values, totalRatioIdx, row1.Comment)
 	}
-	dr.addRow(table, label, totalRatio, row1.Values, row2.Values, totalRatioIdx, row1.Comment)
 
 	resultJoinRow := newJoinRow{
 		row1:   row1.Values,
@@ -497,6 +516,7 @@ type diffRow struct {
 	label    string
 	ratio    float64
 	ratioIdx int
+	colName  string
 	v1       string
 	v2       string
 	comment  string
@@ -521,12 +541,14 @@ func (r *diffRows) Pop() interface{} {
 }
 
 func (r *diffRows) addRow(table *TableDef, label string, ratio float64, vs1, vs2 []string, idx int, comment string) {
-	tableName := strings.Join(table.Category, "-") + ", " + table.Title
 	if ratio == 0 {
 		return
 	}
+	tableName := strings.Join(table.Category, "-") + ", " + table.Title
+	colName := ""
 	if idx > 0 && idx < len(table.Column) {
 		comment = comment + ", the value is " + table.Column[idx]
+		colName = table.Column[idx]
 	}
 	v1 := ""
 	v2 := ""
@@ -543,6 +565,7 @@ func (r *diffRows) addRow(table *TableDef, label string, ratio float64, vs1, vs2
 		label:    label,
 		ratio:    ratio,
 		ratioIdx: idx,
+		colName:  colName,
 		v1:       v1,
 		v2:       v2,
 		comment:  comment,
@@ -618,35 +641,46 @@ func calculateDiffRatio(row1, row2 []string, table *TableDef) (float64, []float6
 	if len(row1) == 0 && len(row2) == 0 {
 		return 0, nil, -1, nil
 	}
-	if len(row1) == 0 {
-		return float64(1), nil, table.compareColumns[0], nil
-	}
-	if len(row2) == 0 {
-		return float64(-1), nil, table.compareColumns[0], nil
-	}
 	ratios := make([]float64, 0, len(table.compareColumns))
 	maxRatio := float64(0)
+	needBetter := false
 	maxIdx := -1
 	for _, idx := range table.compareColumns {
-		f1, err := parseFloat(row1[idx])
-		if err != nil {
-			return 0, nil, -1, err
+		var f1, f2 float64
+		var err error
+		if idx < len(row1) {
+			f1, err = parseFloat(row1[idx])
+			if err != nil {
+				return 0, nil, -1, err
+			}
 		}
-		f2, err := parseFloat(row2[idx])
-		if err != nil {
-			return 0, nil, -1, err
+		if idx < len(row2) {
+			f2, err = parseFloat(row2[idx])
+			if err != nil {
+				return 0, nil, -1, err
+			}
 		}
 		if f1 == f2 {
 			ratios = append(ratios, 0)
 			continue
 		}
-		ratio := (f2 - f1) / math.Max(f1, f2)
+		ratio := float64(0)
+		if f1 == 0 {
+			ratio = f2
+		} else if f2 == 0 {
+			ratio = 0 - f1
+		} else if f2 > f1 {
+			ratio = f2/f1 - 1
+		} else {
+			ratio = 1 - f1/f2
+		}
 		ratios = append(ratios, ratio)
-		if (f1 == 0 || f2 == 0) && maxRatio != 0 {
+		if (f1 == 0 || f2 == 0) && maxRatio != 0 && !needBetter {
 			continue
 		}
-		if math.Abs(ratio) > math.Abs(maxRatio) {
+		if math.Abs(ratio) > math.Abs(maxRatio) || (needBetter && f1 != 0 && f2 != 0) {
 			maxRatio = ratio
+			needBetter = f1 == 0 || f2 == 0
 			maxIdx = idx
 		}
 	}
@@ -742,16 +776,6 @@ func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.
 		GetGoroutinesCountTable,
 		GetProcessMemUsageTable,
 
-		// Config
-		GetPDConfigInfo,
-		GetPDConfigChangeInfo,
-		GetTiDBGCConfigInfo,
-		GetTiDBGCConfigChangeInfo,
-		GetTiKVRocksDBConfigInfo,
-		GetTiKVRocksDBConfigChangeInfo,
-		GetTiKVRaftStoreConfigInfo,
-		GetTiKVRaftStoreConfigChangeInfo,
-
 		// Overview
 		GetTotalTimeConsumeTable,
 		GetTotalErrorTable,
@@ -783,6 +807,16 @@ func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.
 		GetTiKVGCInfo,
 		GetTiKVTaskInfo,
 		GetTiKVCacheHitTable,
+
+		// Config
+		GetPDConfigInfo,
+		GetPDConfigChangeInfo,
+		GetTiDBGCConfigInfo,
+		GetTiDBGCConfigChangeInfo,
+		GetTiKVRocksDBConfigInfo,
+		GetTiKVRocksDBConfigChangeInfo,
+		GetTiKVRaftStoreConfigInfo,
+		GetTiKVRaftStoreConfigChangeInfo,
 	}
 	atomic.AddInt32(totalTableCount, int32(len(funcs)))
 	return getTablesParallel(startTime, endTime, db, funcs, sqliteDB, reportID, progress, totalTableCount)

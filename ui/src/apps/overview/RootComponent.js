@@ -7,20 +7,35 @@ import client from '@pingcap-incubator/dashboard_client'
 import { ComponentPanel, MonitorAlertBar } from './components'
 import styles from './RootComponent.module.less'
 import { StatementsTable } from '@pingcap-incubator/statement'
+import moment from 'moment'
+
+const timeFormat = 'YYYY-MM-DD HH:mm:ss'
 
 const App = () => {
   const [cluster, setCluster] = useState(null)
   const [topStatements, setTopStatements] = useState([])
   const [loading, setLoading] = useState(false)
   const { t } = useTranslation()
+  const [timeRange, _] = useState(() => {
+    // TODO: unify to use timestamp instead of string
+    const now = moment().seconds(0)
+    if (now.minutes() < 30) {
+      now.minutes(0)
+    }
+    const begin_time = now.format(timeFormat)
+    const end_time = now.add(30, 'm').format(timeFormat)
+    return { begin_time, end_time }
+  })
 
   useEffect(() => {
     const fetchLoad = async () => {
       setLoading(true)
       let res = await client.getInstance().topologyAllGet()
       setCluster(res.data)
-      res = await client.getInstance().statementsRecentTopsGet()
-      setTopStatements(res.data)
+      res = await client
+        .getInstance()
+        .statementsOverviewsGet(timeRange.begin_time, timeRange.end_time)
+      setTopStatements((res.data || []).slice(0, 5))
       setLoading(false)
     }
     fetchLoad()
@@ -54,7 +69,7 @@ const App = () => {
                   <StatementsTable
                     statements={topStatements}
                     loading={false}
-                    timeRange={{ begin_time: '', end_time: '' }}
+                    timeRange={timeRange}
                     detailPagePath={'/statement/detail'}
                   />
                 )}

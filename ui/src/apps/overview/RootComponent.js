@@ -14,7 +14,7 @@ const timeFormat = 'YYYY-MM-DD HH:mm:ss'
 const App = () => {
   const [cluster, setCluster] = useState(null)
   const [topStatements, setTopStatements] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [loadingStatements, setLoadingStatements] = useState(false)
   const { t } = useTranslation()
   const [timeRange] = useState(() => {
     // TODO: unify to use timestamp instead of string
@@ -30,17 +30,23 @@ const App = () => {
   })
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      let res = await client.getInstance().topologyAllGet()
+    const fetchLoad = async () => {
+      const res = await client.getInstance().topologyAllGet()
       setCluster(res.data)
-      res = await client
+    }
+    fetchLoad()
+  }, [])
+
+  useEffect(() => {
+    const fetchTopStatements = async () => {
+      setLoadingStatements(true)
+      const res = await client
         .getInstance()
         .statementsOverviewsGet(timeRange.begin_time, timeRange.end_time)
       setTopStatements((res.data || []).slice(0, 5))
-      setLoading(false)
+      setLoadingStatements(false)
     }
-    fetchData()
+    fetchTopStatements()
   }, [timeRange])
 
   return (
@@ -65,7 +71,7 @@ const App = () => {
                 bordered={false}
                 title={t('overview.top_statements.title')}
               >
-                {loading ? (
+                {loadingStatements ? (
                   <Skeleton active />
                 ) : (
                   <StatementsTable

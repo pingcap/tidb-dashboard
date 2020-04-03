@@ -21,6 +21,8 @@ const App = () => {
     const now = moment().seconds(0)
     if (now.minutes() < 30) {
       now.minutes(0)
+    } else {
+      now.minutes(30)
     }
     const begin_time = now.format(timeFormat)
     const end_time = now.add(30, 'm').format(timeFormat)
@@ -39,7 +41,7 @@ const App = () => {
       setLoading(false)
     }
     fetchLoad()
-  }, [])
+  }, [timeRange])
 
   return (
     <Router>
@@ -70,6 +72,7 @@ const App = () => {
                     statements={topStatements}
                     loading={false}
                     timeRange={timeRange}
+                    concise={true}
                   />
                 )}
               </Card>

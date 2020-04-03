@@ -44,7 +44,6 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/overviews", s.overviewsHandler)
 	endpoint.GET("/detail", s.detailHandler)
 	endpoint.GET("/nodes", s.nodesHandler)
-	endpoint.GET("/recent_tops", s.recentTopsHandler)
 }
 
 // @Summary TiDB databases
@@ -160,21 +159,4 @@ func (s *Service) nodesHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, nodes)
-}
-
-// @Summary Recent Top Statements
-// @Description Get recent top statements
-// @Produce json
-// @Success 200 {array} statement.Overview
-// @Router /statements/recent_tops [get]
-// @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) recentTopsHandler(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
-	tops, err := QueryRecentTopStatements(db)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	c.JSON(http.StatusOK, tops)
 }

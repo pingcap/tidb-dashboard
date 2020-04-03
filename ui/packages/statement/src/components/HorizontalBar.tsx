@@ -1,5 +1,8 @@
 import React from 'react'
 
+export const BLUE_COLOR = 'rgba(73, 169, 238, 1)'
+export const RED_COLOR = 'rgba(255, 102, 51, 1)'
+
 interface HorizontalBarProps {
   factor: number // 0~1
   color: string

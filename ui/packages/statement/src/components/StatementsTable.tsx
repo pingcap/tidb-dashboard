@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { Link } from 'react-router-dom'
 import { Table } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { TextWithHorizontalBar } from './HorizontalBar'
+import { TextWithHorizontalBar, BLUE_COLOR, RED_COLOR } from './HorizontalBar'
 import { StatementOverview, StatementTimeRange } from './statement-types'
 import { useTranslation } from 'react-i18next'
 
@@ -50,7 +50,7 @@ const tableColumns = (
         <TextWithHorizontalBar
           text={getValueFormat('ns')(value, 2, null)}
           factor={value / maxSumLatency}
-          color="rgba(73, 169, 238, 1)"
+          color={BLUE_COLOR}
         />
       ),
     },
@@ -64,7 +64,7 @@ const tableColumns = (
         <TextWithHorizontalBar
           text={getValueFormat('short')(value, 0, 0)}
           factor={value / maxExecCount}
-          color="rgba(73, 169, 238, 1)"
+          color={BLUE_COLOR}
         />
       ),
     },
@@ -86,7 +86,7 @@ const tableColumns = (
         <TextWithHorizontalBar
           text={getValueFormat('ns')(value, 2, null)}
           factor={value / maxAvgLatency}
-          color="rgba(73, 169, 238, 1)"
+          color={BLUE_COLOR}
         />
       ),
     },
@@ -100,7 +100,7 @@ const tableColumns = (
         <TextWithHorizontalBar
           text={getValueFormat('bytes')(value, 2, null)}
           factor={value / maxAvgMem}
-          color="rgba(255, 102, 51, 1)"
+          color={RED_COLOR}
         />
       ),
     },
@@ -129,6 +129,7 @@ export default function StatementsTable({
   concise,
 }: Props) {
   const { t } = useTranslation()
+  // TODO: extract to custom hooks
   const maxSumLatency = useMemo(
     () => _.max(statements.map((s) => s.sum_latency)) || 1,
     [statements]

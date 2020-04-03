@@ -8,12 +8,12 @@ import { StatementOverview, StatementTimeRange } from './statement-types'
 import { useTranslation } from 'react-i18next'
 
 const tableColumns = (
+  t: (string) => string,
   timeRange: StatementTimeRange,
   maxExecCount: number,
   maxAvgLatency: number,
   maxAvgMem: number,
-  detailPagePath: string,
-  t: (string) => string
+  detailPagePath?: string
 ) => [
   {
     title: t('statement.common.schemas'),
@@ -27,7 +27,11 @@ const tableColumns = (
     width: 400,
     render: (text, record: StatementOverview) => (
       <Link
-        to={`${detailPagePath}?digest=${record.digest}&schema=${record.schema_name}&begin_time=${timeRange.begin_time}&end_time=${timeRange.end_time}`}
+        to={`${detailPagePath || '/statement/detail'}?digest=${
+          record.digest
+        }&schema=${record.schema_name}&begin_time=${
+          timeRange.begin_time
+        }&end_time=${timeRange.end_time}`}
       >
         {text}
       </Link>
@@ -103,7 +107,7 @@ interface Props {
   statements: StatementOverview[]
   loading: boolean
   timeRange: StatementTimeRange
-  detailPagePath: string
+  detailPagePath?: string
 }
 
 export default function StatementsTable({
@@ -128,12 +132,12 @@ export default function StatementsTable({
   const columns = useMemo(
     () =>
       tableColumns(
+        t,
         timeRange,
         maxExecCount!,
         maxAvgLatency!,
         maxAvgMem!,
-        detailPagePath,
-        t
+        detailPagePath
       ),
     [timeRange, maxExecCount, maxAvgLatency, maxAvgMem, t]
   )

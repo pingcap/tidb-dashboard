@@ -70,7 +70,6 @@ const App = () => {
                     statements={topStatements}
                     loading={false}
                     timeRange={timeRange}
-                    detailPagePath={'/statement/detail'}
                   />
                 )}
               </Card>

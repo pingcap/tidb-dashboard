@@ -33,7 +33,7 @@ function buildTreeData(targets: LogsearchSearchTarget[]) {
   }
 
   targets.forEach((item) => {
-    if (item.target == undefined || item.target.kind === undefined) {
+    if (item.target === undefined || item.target.kind === undefined) {
       return
     }
     servers[item.target.kind].push(item)

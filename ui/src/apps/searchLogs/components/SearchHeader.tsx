@@ -15,10 +15,10 @@ import styles from './Styles.module.css'
 import {
   getAddress,
   namingMap,
+  NodeKind,
+  NodeKindList,
   parseClusterInfo,
   parseSearchingParams,
-  ServerType,
-  ServerTypeList,
 } from './utils'
 
 const { SHOW_CHILD } = TreeSelect
@@ -27,19 +27,19 @@ const { Option } = Select
 
 function buildTreeData(targets: LogsearchSearchTarget[]) {
   const servers = {
-    [ServerType.TiDB]: [],
-    [ServerType.TiKV]: [],
-    [ServerType.PD]: [],
+    [NodeKind.TiDB]: [],
+    [NodeKind.TiKV]: [],
+    [NodeKind.PD]: [],
   }
 
   targets.forEach((item) => {
-    if (item.kind === undefined) {
+    if (item.target == undefined || item.target.kind === undefined) {
       return
     }
-    servers[item.kind].push(item)
+    servers[item.target.kind].push(item)
   })
 
-  return ServerTypeList.filter((kind) => servers[kind].length > 0).map(
+  return NodeKindList.filter((kind) => servers[kind].length > 0).map(
     (kind) => ({
       title: namingMap[kind],
       value: kind,

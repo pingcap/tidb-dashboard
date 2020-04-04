@@ -15,7 +15,7 @@ import {
   DATE_TIME_FORMAT,
   LogLevelMap,
   parseSearchingParams,
-  ServerType,
+  NodeKind,
 } from './utils'
 
 const { Column } = Table
@@ -32,9 +32,9 @@ type History = {
 }
 
 function componentRender(targets: LogsearchSearchTarget[]) {
-  const tidb = targets.filter((item) => item.kind === ServerType.TiDB)
-  const tikv = targets.filter((item) => item.kind === ServerType.TiKV)
-  const pd = targets.filter((item) => item.kind === ServerType.PD)
+  const tidb = targets.filter((item) => item.target?.kind == NodeKind.TiDB)
+  const tikv = targets.filter((item) => item.target?.kind == NodeKind.TiKV)
+  const pd = targets.filter((item) => item.target?.kind == NodeKind.PD)
   const r: Array<string> = []
   if (tidb.length > 0) {
     r.push(`${tidb.length} TiDB`)

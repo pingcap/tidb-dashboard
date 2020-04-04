@@ -25,17 +25,16 @@ export enum TaskState {
   Error,
 }
 
-export enum ServerType {
-  Unknown = 0,
-  TiDB,
-  TiKV,
-  PD,
+export enum NodeKind {
+  TiDB = 'tidb',
+  TiKV = 'tikv',
+  PD = 'pd',
 }
 
 export const namingMap = {
-  [ServerType.TiDB]: 'TiDB',
-  [ServerType.TiKV]: 'TiKV',
-  [ServerType.PD]: 'PD',
+  [NodeKind.TiDB]: 'TiDB',
+  [NodeKind.TiKV]: 'TiKV',
+  [NodeKind.PD]: 'PD',
 }
 
 export const AllLogLevel = [1, 2, 3, 4, 5, 6]
@@ -53,9 +52,12 @@ export function parseClusterInfo(
       return
     }
     targets.push({
-      kind: ServerType.TiDB,
-      ip: item.ip,
-      port: item.port,
+      target: {
+        kind: NodeKind.TiDB,
+        ip: item.ip,
+        port: item.port,
+        display_name: `${item.ip}:${item.port}`,
+      },
       status_port: item.status_port,
     })
   })
@@ -68,9 +70,12 @@ export function parseClusterInfo(
       return
     }
     targets.push({
-      kind: ServerType.TiKV,
-      ip: item.ip,
-      port: item.port,
+      target: {
+        kind: NodeKind.TiKV,
+        ip: item.ip,
+        port: item.port,
+        display_name: `${item.ip}:${item.port}`,
+      },
       status_port: item.status_port,
     })
   })
@@ -79,9 +84,12 @@ export function parseClusterInfo(
       return
     }
     targets.push({
-      kind: ServerType.PD,
-      ip: item.ip,
-      port: item.port,
+      target: {
+        kind: NodeKind.PD,
+        ip: item.ip,
+        port: item.port,
+        display_name: `${item.ip}:${item.port}`,
+      },
       status_port: item.port,
     })
   })
@@ -126,16 +134,16 @@ export function getGRPCAddress(
   if (target === undefined) {
     return ''
   }
-  return target?.kind === ServerType.TiDB
-    ? `${target.ip}:${target.status_port}`
-    : `${target.ip}:${target.port}`
+  return target?.target?.kind === NodeKind.TiDB
+    ? `${target.target.ip}:${target.status_port}`
+    : `${target?.target?.ip}:${target?.target?.port}`
 }
 
 export function getAddress(target: LogsearchSearchTarget | undefined): string {
   if (target === undefined) {
     return ''
   }
-  return `${target.ip}:${target.port}`
+  return `${target.target?.ip}:${target.target?.port}`
 }
 
-export const ServerTypeList = [ServerType.TiDB, ServerType.TiKV, ServerType.PD]
+export const NodeKindList = [NodeKind.TiDB, NodeKind.TiKV, NodeKind.PD]

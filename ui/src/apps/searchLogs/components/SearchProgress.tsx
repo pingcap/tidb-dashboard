@@ -14,8 +14,8 @@ import styles from './Styles.module.css'
 import {
   getAddress,
   namingMap,
-  ServerType,
-  ServerTypeList,
+  NodeKind,
+  NodeKindList,
   TaskState,
 } from './utils'
 import { Card } from '@pingcap-incubator/dashboard_components'
@@ -163,19 +163,19 @@ export default function SearchProgress({
 
   function renderTreeNodes(tasks: LogsearchTaskModel[]) {
     const servers = {
-      [ServerType.TiDB]: [],
-      [ServerType.TiKV]: [],
-      [ServerType.PD]: [],
+      [NodeKind.TiDB]: [],
+      [NodeKind.TiKV]: [],
+      [NodeKind.PD]: [],
     }
 
     tasks.forEach((task) => {
-      if (task.search_target?.kind === undefined) {
+      if (task.search_target?.target?.kind === undefined) {
         return
       }
-      servers[task.search_target.kind].push(task)
+      servers[task.search_target.target.kind].push(task)
     })
 
-    return ServerTypeList.filter((kind) => servers[kind].length > 0).map(
+    return NodeKindList.filter((kind) => servers[kind].length > 0).map(
       (kind) => {
         const tasks: LogsearchTaskModel[] = servers[kind]
         const title = (

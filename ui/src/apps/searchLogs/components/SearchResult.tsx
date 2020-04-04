@@ -28,7 +28,8 @@ function componentRender(target: LogsearchSearchTarget | undefined) {
   }
   return (
     <div>
-      {target.kind ? namingMap[target.kind] : ''} {target.ip}
+      {target.target?.kind ? namingMap[target.target?.kind] : ''}{' '}
+      {target.target?.ip}
     </div>
   )
 }

@@ -29,8 +29,8 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
-	globalUtil "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
+	globalUtil "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
 var (

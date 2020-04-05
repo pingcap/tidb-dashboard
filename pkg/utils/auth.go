@@ -15,9 +15,10 @@ package utils
 
 import (
 	"context"
+	"time"
+
 	"github.com/gtank/cryptopasta"
 	"go.etcd.io/etcd/clientv3"
-	"time"
 )
 
 const EtcdInternalAccountsPath = "/dashboard/internal_accounts"

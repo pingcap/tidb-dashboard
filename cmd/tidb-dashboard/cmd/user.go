@@ -11,10 +11,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package cmd
 
-import "github.com/pingcap-incubator/tidb-dashboard/cmd/tidb-dashboard/cmd"
+import (
+	"fmt"
 
-func main() {
-	cmd.Execute()
+	"github.com/spf13/cobra"
+)
+
+var userCmd = &cobra.Command{
+	Use:   "user",
+	Short: "set, reset, clear tikv mode password",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("user called")
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(userCmd)
 }

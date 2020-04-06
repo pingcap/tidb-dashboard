@@ -56,9 +56,8 @@ type TokenResponse struct {
 }
 
 func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder) (*utils.SessionUser, error) {
-	// TODO: Support non TiDB auth
 	if !f.IsTiDBAuth {
-		err := globalUtil.VerifyInternalAccount(tidbForwarder.EtcdClient, f.Username, f.Password)
+		err := globalUtil.VerifyKvModeAuthKey(tidbForwarder.EtcdClient, f.Password)
 		if err != nil {
 			return nil, ErrSignInOther.WrapWithNoMessage(err)
 		}

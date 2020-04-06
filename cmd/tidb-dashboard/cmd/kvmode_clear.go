@@ -15,19 +15,32 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
+	globalUtil "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
-var userCmd = &cobra.Command{
-	Use:   "user",
-	Short: "set, reset, clear tikv mode password",
+var kvModeAuthClearCmd = &cobra.Command{
+	Use:   "auth-clear",
+	Short: "clear tikv mode auth secret key",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("user called")
+		client, err := pd.NewEtcdClientNoLC(cfg.CoreConfig)
+		if err != nil {
+			fmt.Println("Failed to create etcdClient")
+			os.Exit(1)
+		}
+
+		if globalUtil.ClearKvModeAuthKey(client) != nil {
+			fmt.Println("Failed to clear kv mode auth secret key")
+			os.Exit(1)
+		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(userCmd)
+	kvModeCmd.AddCommand(kvModeAuthClearCmd)
 }

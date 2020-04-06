@@ -11,6 +11,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @title Dashboard API
+// @version 1.0
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @BasePath /dashboard/api
+// @securityDefinitions.apikey JwtAuth
+// @in header
+// @name Authorization
+
 package main
 
 import "github.com/pingcap-incubator/tidb-dashboard/cmd/tidb-dashboard/cmd"

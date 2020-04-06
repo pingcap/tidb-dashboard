@@ -172,21 +172,19 @@ func run(runCmd *cobra.Command) {
 
 func init() {
 	cfg.CoreConfig = &config.Config{}
-
-	rootCmd.Flags().BoolVar(&showVersion, "v", false, "Print version information and exit")
-	rootCmd.Flags().BoolVar(&showVersion, "version", false, "Print version information and exit")
+	rootCmd.Flags().BoolVarP(&showVersion, "version", "v", false, "Print version information and exit")
 	rootCmd.Flags().StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
 	rootCmd.Flags().IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
 	rootCmd.Flags().StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
-	rootCmd.Flags().StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
+	rootCmd.PersistentFlags().StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
 	rootCmd.Flags().BoolVar(&cfg.EnableDebugLog, "debug", false, "Enable debug logs")
 	// debug for keyvisual，hide help information
 	rootCmd.Flags().Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")
 	rootCmd.Flags().Int64Var(&cfg.KVFileEndTime, "keyviz-file-end", 0, "(debug) end time for file range in file mode")
 
-	clusterCaPath := rootCmd.Flags().String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
-	clusterCertPath := rootCmd.Flags().String("cluster-cert", "", "path of file that contains X509 certificate in PEM format.")
-	clusterKeyPath := rootCmd.Flags().String("cluster-key", "", "path of file that contains X509 key in PEM format.")
+	clusterCaPath := rootCmd.PersistentFlags().String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
+	clusterCertPath := rootCmd.PersistentFlags().String("cluster-cert", "", "path of file that contains X509 certificate in PEM format.")
+	clusterKeyPath := rootCmd.PersistentFlags().String("cluster-key", "", "path of file that contains X509 key in PEM format.")
 
 	tidbCaPath := rootCmd.Flags().String("tidb-ca", "", "path of file that contains list of trusted SSL CAs.")
 	tidbCertPath := rootCmd.Flags().String("tidb-cert", "", "path of file that contains X509 certificate in PEM format.")

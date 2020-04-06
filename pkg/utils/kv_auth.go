@@ -15,26 +15,29 @@ package utils
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/gtank/cryptopasta"
 	"go.etcd.io/etcd/clientv3"
 )
 
-const EtcdInternalAccountsPath = "/dashboard/internal_accounts"
+const etcdKvModeAuthKeyPath = "/dashboard/kv_mode/auth_key"
 
-func ClearInternalAccount(etcdClient *clientv3.Client, username string) error {
+// ClearKvModeAuthKey delete the etcd path of KV mode user account
+func ClearKvModeAuthKey(etcdClient *clientv3.Client) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	_, err := etcdClient.Delete(ctx, EtcdInternalAccountsPath+username)
+	_, err := etcdClient.Delete(ctx, etcdKvModeAuthKeyPath)
 	return err
 }
 
-func VerifyInternalAccount(etcdClient *clientv3.Client, username string, password string) error {
+// VerifyKvModeAuthKey get hashed pass from etcd and check
+func VerifyKvModeAuthKey(etcdClient *clientv3.Client, authKey string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	path := EtcdInternalAccountsPath + username
+	path := etcdKvModeAuthKeyPath
 	hashedPass := []byte("")
 	resp, err := etcdClient.Get(ctx, path)
 	if err != nil {
@@ -44,17 +47,22 @@ func VerifyInternalAccount(etcdClient *clientv3.Client, username string, passwor
 		hashedPass = kv.Value
 	}
 
-	return cryptopasta.CheckPasswordHash(hashedPass, []byte(password))
+	if string(hashedPass) == "" {
+		return errors.New("set auth key before verify")
+	}
+
+	return cryptopasta.CheckPasswordHash(hashedPass, []byte(authKey))
 }
 
-func ResetInternalAccount(etcdClient *clientv3.Client, username string, password string) error {
+// ResetKvModeAuthKey set new auth key to etcd
+func ResetKvModeAuthKey(etcdClient *clientv3.Client, authKey string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	hashedPass, err := cryptopasta.HashPassword([]byte(password))
+	hashedPass, err := cryptopasta.HashPassword([]byte(authKey))
 	if err != nil {
 		return err
 	}
-	_, err = etcdClient.Put(ctx, EtcdInternalAccountsPath+username, string(hashedPass))
+	_, err = etcdClient.Put(ctx, etcdKvModeAuthKeyPath, string(hashedPass))
 	return err
 }

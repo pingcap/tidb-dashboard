@@ -9,12 +9,12 @@ export function histogram(data: number[][]) {
   let xRange: [number, number] = [0, 0]
   let yRange: [number, number] = [0, 0]
 
-  histogram.xRange = function(val: [number, number]) {
+  histogram.xRange = function (val: [number, number]) {
     xRange = val
     return this
   }
 
-  histogram.yRange = function(val: [number, number]) {
+  histogram.yRange = function (val: [number, number]) {
     yRange = val
     return this
   }
@@ -56,11 +56,23 @@ export function histogram(data: number[][]) {
       ySum.push({ val: sumVal, startIdx: y, endIdx: y + 1 })
     }
 
-    const xBins = scaleSections(xSum, xFocusDomain, xRange, xScale, (origin, val) => origin + val)
-    const yBins = scaleSections(ySum, yFocusDomain, yRange, yScale, (origin, val) => origin + val)
+    const xBins = scaleSections(
+      xSum,
+      xFocusDomain,
+      xRange,
+      xScale,
+      (origin, val) => origin + val
+    )
+    const yBins = scaleSections(
+      ySum,
+      yFocusDomain,
+      yRange,
+      yScale,
+      (origin, val) => origin + val
+    )
 
-    const xBinsMax = d3.max(xBins, section => section.val)!
-    const yBinsMax = d3.max(yBins, section => section.val)!
+    const xBinsMax = d3.max(xBins, (section) => section.val)!
+    const yBinsMax = d3.max(yBins, (section) => section.val)!
 
     xCtx.clearRect(xRange[0], 0, xRange[1], xHeight)
     xCtx.strokeStyle = stroke

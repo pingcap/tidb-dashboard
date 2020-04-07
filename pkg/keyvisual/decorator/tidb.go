@@ -106,7 +106,7 @@ func (s *tidbLabelStrategy) Label(key string) (label LabelKey) {
 		label.Labels = append(label.Labels, "meta")
 	} else if v, ok := s.TableMap.Load(TableID); ok {
 		detail := v.(*tableDetail)
-		label.Labels = append(label.Labels, detail.Name)
+		label.Labels = append(label.Labels, detail.DB, detail.Name)
 		if rowID := decodeKey.RowID(); rowID != 0 {
 			label.Labels = append(label.Labels, fmt.Sprintf("row_%d", rowID))
 		} else if indexID := decodeKey.IndexID(); indexID != 0 {

@@ -18,7 +18,7 @@ const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}/dashboard/api`
 function initAxios() {
   const instance = axios.create()
 
-  instance.interceptors.response.use(undefined, function(err) {
+  instance.interceptors.response.use(undefined, function (err) {
     const { response } = err
     // Handle unauthorized error in a unified way
     if (

@@ -1,0 +1,80 @@
+name: Build
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@master
+      - uses: actions/setup-go@v1
+        with:
+          go-version: "1.13.5"
+      - name: Load go module cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Load golangci-lint cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/golangci-lint
+          key: ${{ runner.os }}-golint
+          restore-keys: |
+            ${{ runner.os }}-golint
+      - name: Lint and build
+        run: |
+          make dev
+      - name: Check uncommitted lint changes
+        run: |
+          git diff --exit-code
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@master
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "12.x"
+      - uses: actions/setup-go@v1
+        with:
+          go-version: "1.13.5"
+      - name: Lookup yarn cache
+        id: yarn_cache
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Load yarn cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.yarn_cache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Load go module cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Install yarn packages
+        run: |
+          make yarn_dependencies
+      - name: Check format
+        run: |
+          yarn prettier --check . || (echo "::error ::Please format your code using 'yarn format'"; exit 1)
+        working-directory: ui
+      - name: Build UI
+        run: |
+          make ui
+        env:
+          NO_MINIMIZE: true
+          CI: true

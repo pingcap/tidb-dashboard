@@ -54,7 +54,47 @@ var ServerTypeMap = map[ServerType]string{
 	ServerTypePD:   "pd",
 }
 
-type SearchLogRequest diagnosticspb.SearchLogRequest
+type LogLevel int32
+
+const (
+	LogLevelUnknown  LogLevel = 0
+	LogLevelDebug    LogLevel = 1
+	LogLevelInfo     LogLevel = 2
+	LogLevelWarn     LogLevel = 3
+	LogLevelTrace    LogLevel = 4
+	LogLevelCritical LogLevel = 5
+	LogLevelError    LogLevel = 6
+)
+
+var PBLogLevelSlice = []diagnosticspb.LogLevel{
+	diagnosticspb.LogLevel(LogLevelUnknown),
+	diagnosticspb.LogLevel(LogLevelDebug),
+	diagnosticspb.LogLevel(LogLevelInfo),
+	diagnosticspb.LogLevel(LogLevelWarn),
+	diagnosticspb.LogLevel(LogLevelTrace),
+	diagnosticspb.LogLevel(LogLevelCritical),
+	diagnosticspb.LogLevel(LogLevelError),
+}
+
+type SearchLogRequest struct {
+	StartTime int64    `json:"start_time"`
+	EndTime   int64    `json:"end_time"`
+	MinLevel  LogLevel `json:"min_level"`
+	// We use a string array to represent multiple CNF pattern sceniaor like:
+	// SELECT * FROM t WHERE c LIKE '%s%' and c REGEXP '.*a.*' because
+	// Golang and Rust don't support perl-like (?=re1)(?=re2)
+	Patterns []string `json:"patterns"`
+}
+
+func (r *SearchLogRequest) ConvertToPB() *diagnosticspb.SearchLogRequest {
+	var levels = PBLogLevelSlice[r.MinLevel:]
+	return &diagnosticspb.SearchLogRequest{
+		StartTime: r.StartTime,
+		EndTime:   r.EndTime,
+		Levels:    levels,
+		Patterns:  r.Patterns,
+	}
+}
 
 func (r *SearchLogRequest) Scan(src interface{}) error {
 	return json.Unmarshal([]byte(src.(string)), r)

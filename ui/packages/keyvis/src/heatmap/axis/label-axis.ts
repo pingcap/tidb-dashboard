@@ -27,7 +27,7 @@ export function labelAxisGroup(keyAxis: KeyAxisEntry[]) {
   let range: [number, number] = [0, 0]
   const groups = aggrKeyAxisLabel(keyAxis)
 
-  labelAxisGroup.range = function(val) {
+  labelAxisGroup.range = function (val) {
     range = val
     return this
   }
@@ -40,7 +40,9 @@ export function labelAxisGroup(keyAxis: KeyAxisEntry[]) {
     const width = ctx.canvas.width
     const height = ctx.canvas.height
 
-    let scaledGroups = groups.map(group => scaleSections(group, focusDomain, range, scale, () => ''))
+    let scaledGroups = groups.map((group) =>
+      scaleSections(group, focusDomain, range, scale, () => '')
+    )
 
     ctx.clearRect(0, 0, width, height)
     ctx.strokeStyle = stroke
@@ -63,7 +65,10 @@ export function labelAxisGroup(keyAxis: KeyAxisEntry[]) {
         if (shouleShowLabelText(label)) {
           ctx.font = label.focus ? focusFont : font
           ctx.fillStyle = label.focus ? textFillFocus : textFill
-          ctx.translate(marginLeft + labelAxisWidth / 2 + 2, label.endPos - labelTextPadding)
+          ctx.translate(
+            marginLeft + labelAxisWidth / 2 + 2,
+            label.endPos - labelTextPadding
+          )
           ctx.rotate(-Math.PI / 2)
           ctx.fillText(fitLabelText(label), 0, 0)
           ctx.resetTransform()
@@ -77,7 +82,9 @@ export function labelAxisGroup(keyAxis: KeyAxisEntry[]) {
 }
 
 function shouleShowLabelText(label: DisplayLabel): boolean {
-  return label.endPos - label.startPos >= minTextHeight && label.val?.length !== 0
+  return (
+    label.endPos - label.startPos >= minTextHeight && label.val?.length !== 0
+  )
 }
 
 function fitLabelText(label: DisplayLabel): string {
@@ -97,14 +104,15 @@ function aggrKeyAxisLabel(keyAxis: KeyAxisEntry[]): Label[][] {
     for (let keyIdx = 0; keyIdx < keyAxis.length; keyIdx++) {
       const label = keyAxis[keyIdx].labels[groupIdx]
       // When the prefixes are equal and this column is null, it is considered equal to the previous row of labels.
-      notEqual[keyIdx] = notEqual[keyIdx] || (label != null && label != lastLabel)
+      notEqual[keyIdx] =
+        notEqual[keyIdx] || (label != null && label != lastLabel)
 
       if (notEqual[keyIdx]) {
         if (startKeyIdx != null && lastLabel != null) {
           result[groupIdx].push({
             val: lastLabel,
             startIdx: startKeyIdx,
-            endIdx: keyIdx
+            endIdx: keyIdx,
           })
           startKeyIdx = null
         }
@@ -121,7 +129,7 @@ function aggrKeyAxisLabel(keyAxis: KeyAxisEntry[]): Label[][] {
       result[groupIdx].push({
         val: lastLabel,
         startIdx: startKeyIdx,
-        endIdx: keyAxis.length
+        endIdx: keyAxis.length,
       })
     }
   }

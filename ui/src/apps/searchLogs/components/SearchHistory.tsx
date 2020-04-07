@@ -4,8 +4,9 @@ import {
   LogsearchTaskGroupResponse,
 } from '@pingcap-incubator/dashboard_client'
 import { CardTable, Head } from '@pingcap-incubator/dashboard_components'
-import { Badge, Button, Icon, Table } from 'antd'
-import { RangePickerValue } from 'antd/lib/date-picker/interface'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Badge, Button, Table } from 'antd'
+import { RangeValue } from 'rc-picker/lib/interface'
 import { Moment } from 'moment'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -21,7 +22,7 @@ const { Column } = Table
 
 type History = {
   key: number
-  time?: RangePickerValue
+  time?: RangeValue<Moment>
   level?: string
   components?: LogsearchSearchTarget[]
   keywords?: string
@@ -31,9 +32,9 @@ type History = {
 }
 
 function componentRender(targets: LogsearchSearchTarget[]) {
-  const tidb = targets.filter(item => item.kind === ServerType.TiDB)
-  const tikv = targets.filter(item => item.kind === ServerType.TiKV)
-  const pd = targets.filter(item => item.kind === ServerType.PD)
+  const tidb = targets.filter((item) => item.kind === ServerType.TiDB)
+  const tikv = targets.filter((item) => item.kind === ServerType.TiKV)
+  const pd = targets.filter((item) => item.kind === ServerType.PD)
   const r: Array<string> = []
   if (tidb.length > 0) {
     r.push(`${tidb.length} TiDB`)
@@ -54,8 +55,8 @@ function formatTime(time: Moment | null | undefined): string {
   return time.format(DATE_TIME_FORMAT)
 }
 
-function timeRender(timeRange: RangePickerValue): string {
-  if (!timeRange[0] || !timeRange[1]) {
+function timeRender(timeRange: RangeValue<Moment>): string {
+  if (!timeRange?.[0] || !timeRange?.[1]) {
     return ''
   }
   return `${formatTime(timeRange[0])} ~ ${formatTime(timeRange[1])}`
@@ -114,7 +115,7 @@ export default function SearchHistory() {
   }
 
   async function handleDeleteAll() {
-    const allKeys = taskGroups.map(taskGroup => taskGroup.task_group?.id)
+    const allKeys = taskGroups.map((taskGroup) => taskGroup.task_group?.id)
     for (const key of allKeys) {
       if (key === undefined) {
         continue
@@ -132,7 +133,7 @@ export default function SearchHistory() {
     },
   }
 
-  const historyList: History[] = taskGroups.map(taskGroup => {
+  const historyList: History[] = taskGroups.map((taskGroup) => {
     const {
       timeRange,
       logLevel,
@@ -157,7 +158,7 @@ export default function SearchHistory() {
         title={t('search_logs.nav.history')}
         back={
           <Link to={`/search_logs`}>
-            <Icon type="arrow-left" /> {t('search_logs.nav.search_logs')}
+            <ArrowLeftOutlined /> {t('search_logs.nav.search_logs')}
           </Link>
         }
         titleExtra={

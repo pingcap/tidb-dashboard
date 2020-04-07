@@ -57,7 +57,7 @@ func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forw
 		config:        config,
 		db:            db,
 		tidbForwarder: tidbForwarder,
-		htmlRender:    utils.NewHTMLRender(t, TemplateInfos),
+		htmlRender:    loadGlobFromVfs(Vfs, t),
 	}
 }
 
@@ -123,8 +123,8 @@ func (s *Service) genReportHandler(c *gin.Context) {
 			tables = GetReportTablesForDisplay(startTime.Format(timeLayout), endTime.Format(timeLayout), db, s.db, reportID)
 		} else {
 			tables = GetCompareReportTablesForDisplay(
-				startTime.Format(timeLayout), endTime.Format(timeLayout),
 				compareStartTime.Format(timeLayout), compareEndTime.Format(timeLayout),
+				startTime.Format(timeLayout), endTime.Format(timeLayout),
 				db, s.db, reportID)
 		}
 		_ = UpdateReportProgress(s.db, reportID, 100)

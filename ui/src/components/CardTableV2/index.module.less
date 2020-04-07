@@ -1,0 +1,45 @@
+.cardTable {
+  :global {
+    .ms-DetailsRow-fields {
+      font-size: 0.8rem;
+
+      > :first-child {
+        padding-left: @padding-page;
+      }
+
+      > :last-child {
+        padding-right: @padding-page;
+      }
+    }
+  }
+}
+
+.tableHeader {
+  :global {
+    .ms-DetailsHeader {
+      padding-top: 0;
+
+      > :first-child .ms-DetailsHeader-cellTitle {
+        padding-left: @padding-page;
+      }
+
+      > :nth-last-child(2) .ms-DetailsHeader-cellTitle {
+        padding-right: @padding-page;
+      }
+
+      &.is-resizingColumn > :nth-last-child(3) .ms-DetailsHeader-cellTitle {
+        // FIXME: This is highly magical
+        padding-right: @padding-page;
+      }
+    }
+  }
+}
+
+.clickableTableRow {
+  cursor: pointer;
+}
+
+.cardTableContent {
+  margin-left: -@padding-page;
+  margin-right: -@padding-page;
+}

@@ -1,12 +1,76 @@
-import React, { Component } from 'react'
-import { Slider, Spin, Icon, Select, Dropdown, Button } from 'antd'
+import React, { Component, useEffect } from 'react'
+import Icon, {
+  AreaChartOutlined,
+  ArrowsAltOutlined,
+  BulbOutlined,
+  ClockCircleOutlined,
+  DownOutlined,
+  LoadingOutlined,
+  SyncOutlined,
+} from '@ant-design/icons'
+import { Slider, Spin, Select, Dropdown, Button, Menu } from 'antd'
 import { withTranslation, WithTranslation } from 'react-i18next'
+import { useSpring, animated } from 'react-spring'
 import Flexbox from '@g07cha/flexbox-react'
 import { Card } from '@pingcap-incubator/dashboard_components'
+import prettyMs from 'pretty-ms'
+
+function RefreshProgress(props) {
+  const { value } = props
+  const r = 50
+  const totalLength = 2 * Math.PI * r
+  const [springProps, setSpringProps] = useSpring(() => ({
+    value: 0,
+  }))
+
+  useEffect(() => {
+    setSpringProps({
+      value,
+    })
+  }, [value])
+
+  return (
+    <svg
+      viewBox="0 0 120 120"
+      width="1em"
+      height="1em"
+      className="anticon"
+      style={{
+        transform: 'rotate(-90deg)',
+      }}
+    >
+      <circle
+        cx="60"
+        cy="60"
+        r={r}
+        fill="none"
+        stroke="#eee"
+        strokeWidth="20"
+      />
+      <animated.circle
+        cx="60"
+        cy="60"
+        r={r}
+        fill="none"
+        stroke={springProps.value.interpolate({
+          range: [0, 1],
+          output: ['#989CAB', '#4571FF'],
+        })}
+        strokeWidth="20"
+        strokeDasharray={totalLength}
+        strokeDashoffset={springProps.value.interpolate({
+          range: [0, 1],
+          output: [totalLength, 0],
+        })}
+      />
+    </svg>
+  )
+}
 
 export interface IKeyVisToolBarProps {
   isLoading: boolean
-  isAutoFetch: boolean
+  autoRefreshSeconds: number
+  remainingRefreshSeconds?: number
   isOnBrush: boolean
   metricType: string
   brightLevel: number
@@ -14,9 +78,10 @@ export interface IKeyVisToolBarProps {
   onResetZoom: () => void
   onToggleBrush: () => void
   onChangeMetric: (string) => void
-  onToggleAutoFetch: any
   onChangeDateRange: (number) => void
   onChangeBrightLevel: (number) => void
+  onChangeAutoRefresh: (number) => void
+  onRefresh: () => void
 }
 
 class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
@@ -24,15 +89,19 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
     exp: 0,
   }
 
-  handleAutoFetch = () => {
-    this.props.onToggleAutoFetch()
+  handleRefreshClick = () => {
+    this.props.onRefresh()
   }
 
-  handleDateRange = value => {
+  handleAutoRefreshMenuClick = ({ key }) => {
+    this.props.onChangeAutoRefresh(parseInt(key))
+  }
+
+  handleDateRange = (value) => {
     this.props.onChangeDateRange(value)
   }
 
-  handleMetricChange = value => {
+  handleMetricChange = (value) => {
     this.props.onChangeMetric(value)
   }
 
@@ -48,30 +117,17 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
   }
 
   render() {
-    const { t, isAutoFetch, dateRange, isOnBrush, metricType } = this.props
+    const {
+      t,
+      dateRange,
+      isOnBrush,
+      metricType,
+      remainingRefreshSeconds,
+      autoRefreshSeconds,
+    } = this.props
 
-    const DateRangeOptions = [
-      {
-        text: t('keyvis.toolbar.date_range.hour', { n: 1 }),
-        value: 3600 * 1,
-      },
-      {
-        text: t('keyvis.toolbar.date_range.hour', { n: 6 }),
-        value: 3600 * 6,
-      },
-      {
-        text: t('keyvis.toolbar.date_range.hour', { n: 12 }),
-        value: 3600 * 12,
-      },
-      {
-        text: t('keyvis.toolbar.date_range.day', { n: 1 }),
-        value: 3600 * 24,
-      },
-      {
-        text: t('keyvis.toolbar.date_range.day', { n: 7 }),
-        value: 3600 * 24 * 7,
-      },
-    ]
+    // in hours
+    const dateRangeOptions = [1, 6, 12, 24, 24 * 7]
 
     const MetricOptions = [
       { text: t('keyvis.toolbar.view_type.read_bytes'), value: 'read_bytes' },
@@ -84,6 +140,28 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
       { text: t('keyvis.toolbar.view_type.all'), value: 'integration' },
     ]
 
+    // in seconds
+    const autoRefreshOptions = [15, 30, 1 * 60, 2 * 60, 5 * 60, 10 * 60]
+
+    const autoRefreshMenu = (
+      <Menu
+        onClick={this.handleAutoRefreshMenuClick}
+        selectedKeys={[String(this.props.autoRefreshSeconds || 0)]}
+      >
+        <Menu.ItemGroup title={t('keyvis.toolbar.auto_refresh.title')}>
+          <Menu.Item key="0">{t('keyvis.toolbar.auto_refresh.off')}</Menu.Item>
+          <Menu.Divider />
+          {autoRefreshOptions.map((sec) => {
+            return (
+              <Menu.Item key={String(sec)}>
+                {prettyMs(sec * 1000, { verbose: true })}
+              </Menu.Item>
+            )
+          })}
+        </Menu.ItemGroup>
+      </Menu>
+    )
+
     return (
       <Card>
         <div className="PD-KeyVis-Toolbar">
@@ -91,19 +169,18 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
             overlay={
               <div id="PD-KeyVis-Brightness-Overlay">
                 <div
-                  onClick={e => {
+                  onClick={(e) => {
                     e.stopPropagation()
                   }}
                 >
-                  <Flexbox flexDirection="column" alignItems="center">
+                  <Flexbox flexDirection="column">
                     <div className="PD-Cluster-Legend" />
                     <Slider
-                      style={{ width: 360 }}
                       defaultValue={0}
                       min={-6}
                       max={6}
                       step={0.1}
-                      onChange={value =>
+                      onChange={(value) =>
                         this.handleBrightLevel(value as number)
                       }
                     />
@@ -114,9 +191,9 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
             trigger={['click']}
             onVisibleChange={this.handleBrightnessDropdown}
           >
-            <Button icon="bulb">
+            <Button icon={<BulbOutlined />}>
               {t('keyvis.toolbar.brightness')}
-              <Icon type="down" />
+              <DownOutlined />
             </Button>
           </Dropdown>
 
@@ -125,7 +202,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
           <Button.Group>
             <Button
               onClick={this.props.onToggleBrush}
-              icon="arrows-alt"
+              icon={<ArrowsAltOutlined />}
               type={isOnBrush ? 'primary' : 'default'}
             >
               {t('keyvis.toolbar.zoom.select')}
@@ -137,28 +214,19 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
 
           <div className="space" />
 
-          <Button
-            onClick={this.handleAutoFetch}
-            icon="sync"
-            type={isAutoFetch ? 'primary' : 'default'}
-          >
-            {t('keyvis.toolbar.auto_refresh')}
-          </Button>
-
-          <div className="space" />
-
           <Select
             onChange={this.handleDateRange}
             value={dateRange}
             style={{ width: 150 }}
           >
-            {DateRangeOptions.map(option => (
+            {dateRangeOptions.map((hour) => (
               <Select.Option
-                key={option.text}
-                value={option.value}
+                key={hour}
+                value={hour * 60 * 60}
                 className="PD-KeyVis-Select-Option"
               >
-                <Icon type="clock-circle" /> {option.text}
+                <ClockCircleOutlined />{' '}
+                {prettyMs(hour * 60 * 60 * 1000, { verbose: true })}
               </Select.Option>
             ))}
           </Select>
@@ -170,22 +238,40 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
             value={metricType}
             style={{ width: 160 }}
           >
-            {MetricOptions.map(option => (
+            {MetricOptions.map((option) => (
               <Select.Option
                 key={option.text}
                 value={option.value}
                 className="PD-KeyVis-Select-Option"
               >
-                <Icon type="area-chart" /> {option.text}
+                <AreaChartOutlined /> {option.text}
               </Select.Option>
             ))}
           </Select>
 
           <div className="space" />
 
+          <Dropdown.Button
+            onClick={this.handleRefreshClick}
+            overlay={autoRefreshMenu}
+            trigger={['click']}
+            icon={<DownOutlined />}
+          >
+            {autoRefreshSeconds ? (
+              <RefreshProgress
+                value={1 - (remainingRefreshSeconds || 0) / autoRefreshSeconds}
+              />
+            ) : (
+              <SyncOutlined />
+            )}
+            {t('keyvis.toolbar.refresh')}
+          </Dropdown.Button>
+
+          <div className="space" />
+
           {this.props.isLoading && (
             <Spin
-              indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />}
+              indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
             />
           )}
         </div>

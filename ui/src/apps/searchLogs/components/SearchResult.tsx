@@ -66,7 +66,7 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
 
   useEffect(() => {
     function getComponent(id: number | undefined) {
-      return tasks.find(task => {
+      return tasks.find((task) => {
         return task.id !== undefined && task.id === id
       })?.search_target
     }
@@ -94,18 +94,14 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
       )
       setLoading(false)
     }
-    if (
-      !loading &&
-      tasks.length > 0 &&
-      taskGroupID !== tasks[0].task_group_id
-    ) {
+    if (tasks.length > 0 && taskGroupID !== tasks[0].task_group_id) {
       setLoading(true)
     }
     getLogPreview()
   }, [taskGroupID, tasks])
 
   return (
-    <Card>
+    <Card id="logs_result">
       {loading && <Skeleton active />}
       {!loading && (
         <>

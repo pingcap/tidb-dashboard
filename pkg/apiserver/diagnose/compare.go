@@ -25,9 +25,9 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 	resultTables = append(resultTables, GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2))
 	var tables0, tables1, tables2, tables3, tables4 []*TableDef
 	var errRows0, errRows1, errRows2, errRows3, errRows4 []TableRowDef
-	var compareDiagnoseTable *TableDef
+	var compareDiagnoseTable, abnormalSlowQuery *TableDef
 	var wg sync.WaitGroup
-	wg.Add(6)
+	wg.Add(7)
 	var progress, totalTableCount int32
 	go func() {
 		// Get Header tables.
@@ -63,7 +63,15 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 		}
 		wg.Done()
 	}()
-
+	go func() {
+		tbl, errRow := getTiDBAbnormalSlowQueryOnly(startTime1, endTime1, startTime2, endTime2, db)
+		if errRow != nil {
+			errRows = append(errRows, *errRow)
+		} else {
+			abnormalSlowQuery = &tbl
+		}
+		wg.Done()
+	}()
 	go func() {
 		// Get end tables
 		tables4, errRows4 = GetReportEndTables(startTime2, endTime2, db, sqliteDB, reportID, &progress, &totalTableCount)
@@ -78,6 +86,9 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 	resultTables = append(resultTables, tables1...)
 	if compareDiagnoseTable != nil {
 		resultTables = append(resultTables, compareDiagnoseTable)
+	}
+	if abnormalSlowQuery != nil {
+		resultTables = append(resultTables, abnormalSlowQuery)
 	}
 	resultTables = append(resultTables, tables...)
 	resultTables = append(resultTables, tables4...)
@@ -859,6 +870,11 @@ func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, 
 	funcs := []func(string, string, *gorm.DB) (TableDef, error){
 		// Diagnose
 		GetDiagnoseReport,
+
+		// TiDB
+		GetTiDBTopNSlowQuery,
+		GetTiDBTopNSlowQueryGroupByDigest,
+		GetTiDBSlowQueryWithDiffPlan,
 	}
 	atomic.AddInt32(totalTableCount, int32(len(funcs)*2))
 
@@ -912,4 +928,46 @@ func appendErrorRow(tbl TableDef, err error, errRows []TableRowDef) []TableRowDe
 	}
 	errRows = append(errRows, TableRowDef{Values: []string{category, tbl.Title, err.Error()}})
 	return errRows
+}
+
+func getTiDBAbnormalSlowQueryOnly(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB) (TableDef, *TableRowDef) {
+	sql := fmt.Sprintf(`SELECT * FROM
+    (SELECT /*+ AGG_TO_COP(), HASH_AGG() */ count(*),
+         min(time),
+         sum(query_time) AS sum_query_time,
+         sum(Process_time) AS sum_process_time,
+         sum(Wait_time) AS sum_wait_time,
+         sum(Commit_time),
+         sum(Request_count),
+         sum(process_keys),
+         sum(Write_keys),
+         max(Cop_proc_max),
+         min(query),min(prev_stmt),
+         digest
+    FROM information_schema.CLUSTER_SLOW_QUERY
+    WHERE time >= '%s'
+            AND time < '%s'
+            AND Is_internal = false
+    GROUP BY  digest) AS t1
+WHERE t1.digest NOT IN
+    (SELECT /*+ AGG_TO_COP(), HASH_AGG() */ digest
+    FROM information_schema.CLUSTER_SLOW_QUERY
+    WHERE time >= '%s'
+            AND time < '%s'
+    GROUP BY  digest)
+ORDER BY  t1.sum_query_time DESC limit 10`, startTime2, endTime2, startTime1, endTime1)
+	table := TableDef{
+		Category:  []string{CategoryTiDB},
+		Title:     "Slow Query Only Appear In t2",
+		CommentEN: sql,
+		CommentCN: "",
+		Column:    []string{"count(*)", "min(time)", "sum(query_time)", "sum(Process_time)", "sum(Wait_time)", "sum(Commit_time)", "sum(Request_count)", "sum(process_keys)", "sum(Write_keys)", "max(Cop_proc_max)", "min(query)", "min(prev_stmt)", "digest"},
+	}
+	fmt.Println(sql)
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, &TableRowDef{Values: []string{strings.Join(table.Category, ","), table.Title, err.Error()}}
+	}
+	table.Rows = rows
+	return table, nil
 }

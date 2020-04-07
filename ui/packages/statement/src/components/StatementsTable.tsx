@@ -155,9 +155,9 @@ export default function StatementsTable({
         concise || false,
         timeRange,
         maxSumLatency,
-        maxExecCount!,
-        maxAvgLatency!,
-        maxAvgMem!,
+        maxExecCount,
+        maxAvgLatency,
+        maxAvgMem,
         detailPagePath
       ),
     [

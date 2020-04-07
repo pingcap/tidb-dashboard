@@ -103,47 +103,47 @@ function useClusterNodeDataSource() {
   const [data, setData] = useState([])
   const { t } = useTranslation()
 
-  const fetch = async () => {
-    setIsLoading(true)
-    try {
-      const res = await client.getInstance().topologyAllGet()
-      const items = ['tidb', 'tikv', 'pd'].map((nodeKind) => {
-        const nodes = res.data[nodeKind]
-        if (nodes.err) {
-          message.warn(
-            t('cluster_info.error.load', { comp: nodeKind, cause: nodes.err })
-          )
+  useEffect(() => {
+    const fetch = async () => {
+      setIsLoading(true)
+      try {
+        const res = await client.getInstance().topologyAllGet()
+        const items = ['tidb', 'tikv', 'pd'].map((nodeKind) => {
+          const nodes = res.data[nodeKind]
+          if (nodes.err) {
+            message.warn(
+              t('cluster_info.error.load', { comp: nodeKind, cause: nodes.err })
+            )
+            return {
+              key: nodeKind,
+              nodeKind,
+              children: [],
+            }
+          }
+          const children = nodes.nodes.map((node) => {
+            if (node.deploy_path === undefined && node.binary_path !== null) {
+              node.deploy_path = node.binary_path.substring(
+                0,
+                node.binary_path.lastIndexOf('/')
+              )
+            }
+            return {
+              key: `${node.ip}:${node.port}`,
+              ...node,
+              nodeKind,
+            }
+          })
           return {
             key: nodeKind,
             nodeKind,
-            children: [],
-          }
-        }
-        const children = nodes.nodes.map((node) => {
-          if (node.deploy_path === undefined && node.binary_path !== null) {
-            node.deploy_path = node.binary_path.substring(
-              0,
-              node.binary_path.lastIndexOf('/')
-            )
-          }
-          return {
-            key: `${node.ip}:${node.port}`,
-            ...node,
-            nodeKind,
+            children,
           }
         })
-        return {
-          key: nodeKind,
-          nodeKind,
-          children,
-        }
-      })
-      setData(items)
-    } catch (e) {}
-    setIsLoading(false)
-  }
+        setData(items)
+      } catch (e) {}
+      setIsLoading(false)
+    }
 
-  useEffect(() => {
     fetch()
   }, [])
 

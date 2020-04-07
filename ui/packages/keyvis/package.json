@@ -1,6 +1,6 @@
 {
   "name": "@pingcap-incubator/keyvis",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "",
   "author": "pingcap-incubator",
   "repository": {
@@ -21,11 +21,11 @@
     "p": "yarn publish"
   },
   "dependencies": {
-    "@g07cha/flexbox-react": "^5.0.0",
-    "@pingcap-incubator/dashboard_client": "^0.0.8",
-    "@pingcap-incubator/dashboard_components": "^0.0.8",
-    "@use-it/event-listener": "^0.1.3",
     "@ant-design/icons": "^4.0.0",
+    "@g07cha/flexbox-react": "^5.0.0",
+    "@pingcap-incubator/dashboard_client": "^0.0.9",
+    "@pingcap-incubator/dashboard_components": "^0.0.9",
+    "@use-it/event-listener": "^0.1.3",
     "antd": "^4.0.0",
     "d3": "^5.15.0",
     "i18next": "^19.1.0",

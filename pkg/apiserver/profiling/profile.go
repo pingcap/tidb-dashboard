@@ -15,64 +15,168 @@ package profiling
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
 	"strconv"
+	"time"
+
+	"github.com/google/pprof/driver"
+	"github.com/google/pprof/profile"
+	"github.com/pkg/errors"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 )
 
-func profileAndWriteSVG(ctx context.Context, target *utils.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, httpClient *http.Client, tls bool) (string, error) {
-	url, err := getProfilingURL(target, profileDurationSecs, tls)
+type flagSet struct {
+	*flag.FlagSet
+	args []string
+}
+
+func fetchPprofSVG(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt, format string, profileDurationSecs uint, tls bool) (string, error) {
+	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt)
 	if err != nil {
 		return "", err
 	}
+	defer tmpfile.Close()
+	svgPath := tmpfile.Name() + ".svg"
+	format = "-" + format
+	args := []string{
+		format,
+		// prevent printing stdout
+		"-output", "dummy",
+		"-seconds", strconv.Itoa(int(profileDurationSecs)),
+	}
+	address := fmt.Sprintf("%s:%d", target.IP, target.Port)
+	args = append(args, address)
+	f := &flagSet{
+		FlagSet: flag.NewFlagSet("pprof", flag.PanicOnError),
+		args:    args,
+	}
+	if err := driver.PProf(&driver.Options{
+		Fetch:   &fetcher{ctx: ctx, httpClient: httpClient, target: target, output: svgPath, tls: tls},
+		Flagset: f,
+		Writer:  &oswriter{output: svgPath},
+	}); err != nil {
+		return "", err
+	}
+	return svgPath, nil
+}
+
+func (f *flagSet) StringList(o, d, c string) *[]*string {
+	return &[]*string{f.String(o, d, c)}
+}
+
+func (f *flagSet) ExtraUsage() string {
+	return ""
+}
+
+func (f *flagSet) Parse(usage func()) []string {
+	f.Usage = usage
+	_ = f.FlagSet.Parse(f.args)
+	return f.Args()
+}
+
+func (f *flagSet) AddExtraUsage(eu string) {}
+
+// oswriter implements the Writer interface using a regular file.
+type oswriter struct {
+	output string
+}
+
+func (o *oswriter) Open(name string) (io.WriteCloser, error) {
+	f, err := os.Create(o.output)
+	return f, err
+}
+
+type fetcher struct {
+	ctx        context.Context
+	httpClient *http.Client
+	target     *utils.RequestTargetNode
+	output     string
+	tls        bool
+}
+
+func (f *fetcher) Fetch(src string, duration, timeout time.Duration) (*profile.Profile, string, error) {
+	var url string
+	secs := strconv.Itoa(int(duration / time.Second))
+	switch f.target.Kind {
+	case utils.NodeKindPD:
+		url = "/pd/api/v1/debug/pprof/profile?seconds=" + secs
+	case utils.NodeKindTiDB:
+		url = "/debug/pprof/profile?seconds=" + secs
+	default:
+		return nil, "", fmt.Errorf("unsupported target %s", f.target)
+	}
+	schema := "http"
+	if f.tls {
+		schema = "https"
+	}
+	url = fmt.Sprintf("%s://%s:%d%s", schema, f.target.IP, f.target.Port, url)
+
+	p, err := f.getProfile(f.target, url)
+	return p, url, err
+}
+
+func (f *fetcher) getProfile(target *utils.RequestTargetNode, source string) (*profile.Profile, error) {
+	req, err := http.NewRequest(http.MethodGet, source, nil)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(f.ctx)
+	if target.Kind == utils.NodeKindPD {
+		// forbidden PD follower proxy
+		req.Header.Add("PD-Allow-follower-handle", "true")
+	}
+	resp, err := f.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		defer resp.Body.Close()
+		return nil, fmt.Errorf("failed to profile %s: status code %s", target, resp.Status)
+	}
+	return profile.Parse(resp.Body)
+}
+
+func profileAndWriteSVG(ctx context.Context, target *utils.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, httpClient *http.Client, tls bool) (string, error) {
+	switch target.Kind {
+	case utils.NodeKindTiKV:
+		return fetchFlameGraphSVG(ctx, httpClient, target, fileNameWithoutExt, profileDurationSecs, tls)
+	case utils.NodeKindPD, utils.NodeKindTiDB:
+		return fetchPprofSVG(ctx, httpClient, target, fileNameWithoutExt, "svg", profileDurationSecs, tls)
+	default:
+		return "", fmt.Errorf("unsupported target %s", target)
+	}
+}
+
+func fetchFlameGraphSVG(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, tls bool) (string, error) {
+	schema := "http"
+	if tls {
+		schema = "https"
+	}
+	url := fmt.Sprintf("%s://%s:%d/debug/pprof/profile?seconds=%d", schema, target.IP, target.Port, profileDurationSecs)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return "", err
 	}
 	req = req.WithContext(ctx)
-	if target.Kind == utils.NodeKindPD {
-		// forbidden PD follower proxy
-		req.Header.Add("PD-Allow-follower-handle", "true")
-	}
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed to send profiling request to %s (url = %s): %s", target, url, err)
+		return "", err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to profile %s: status code %s", target, resp.Status)
+		return "", errors.Errorf("request %s failed: %s", url, resp.Status)
 	}
-
-	svgFilePath, err := writeProfilingSVG(target, resp.Body, fileNameWithoutExt)
+	svgFilePath, err := writePprofRsSVG(resp.Body, fileNameWithoutExt)
 	if err != nil {
-		return "", fmt.Errorf("failed to write profiling result: %s", err)
+		return "", err
 	}
 	return svgFilePath, nil
-}
-
-func getProfilingURL(target *utils.RequestTargetNode, profileDurationSecs uint, tls bool) (string, error) {
-	var url string
-	secs := strconv.Itoa(int(profileDurationSecs))
-	switch target.Kind {
-	case utils.NodeKindPD:
-		url = "/pd/api/v1/debug/pprof/profile?seconds=" + secs
-	case utils.NodeKindTiKV, utils.NodeKindTiDB:
-		url = "/debug/pprof/profile?seconds=" + secs
-	default:
-		return "", fmt.Errorf("unsupported target %s", target)
-	}
-	schema := "http"
-	// TiKV dose not support TLS for the status server currently
-	if target.Kind != utils.NodeKindTiKV && tls {
-		schema = "https"
-	}
-	return fmt.Sprintf("%s://%s:%d%s", schema, target.IP, target.Port, url), nil
 }
 
 func writePprofRsSVG(body io.ReadCloser, fileNameWithoutExt string) (string, error) {
@@ -90,32 +194,4 @@ func writePprofRsSVG(body io.ReadCloser, fileNameWithoutExt string) (string, err
 		return "", fmt.Errorf("write SVG from temp file failed: %s", err)
 	}
 	return svgFilePath, nil
-}
-
-func writePprofGoSVG(body io.ReadCloser, fileNameWithoutExt string) (string, error) {
-	profileFile, err := ioutil.TempFile("", fileNameWithoutExt)
-	if err != nil {
-		return "", fmt.Errorf("create temp file failed: %s", err)
-	}
-	defer os.Remove(profileFile.Name()) // Clean up
-	_, err = io.Copy(profileFile, body)
-	if err != nil {
-		return "", fmt.Errorf("write temp file failed: %s", err)
-	}
-	svgFilePath := profileFile.Name() + ".svg"
-	if _, err := exec.Command(goCmd(), "tool", "pprof", "-svg", "-output", svgFilePath, profileFile.Name()).CombinedOutput(); err != nil { //nolint:gosec
-		return "", fmt.Errorf("generate SVG using pprof failed: %s", err)
-	}
-	return svgFilePath, nil
-}
-
-func writeProfilingSVG(target *utils.RequestTargetNode, body io.ReadCloser, fileNameWithoutExt string) (string, error) {
-	switch target.Kind {
-	case utils.NodeKindTiKV:
-		return writePprofRsSVG(body, fileNameWithoutExt)
-	case utils.NodeKindPD, utils.NodeKindTiDB:
-		return writePprofGoSVG(body, fileNameWithoutExt)
-	default:
-		return "", fmt.Errorf("unsupported target %s", target)
-	}
 }

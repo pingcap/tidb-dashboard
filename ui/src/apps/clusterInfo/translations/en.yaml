@@ -19,4 +19,3 @@ cluster_info:
         offline: Offline
         unknown: Unknown
         unreachable: Unreachable
-        disconnected: Disconnected

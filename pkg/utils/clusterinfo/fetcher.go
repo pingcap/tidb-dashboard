@@ -345,7 +345,7 @@ func parseHostAndPortFromAddressURL(urlString string) (string, uint, error) {
 func storeStateToStatus(state string) ComponentStatus {
 	state = strings.Trim(strings.ToLower(state), "\n ")
 	switch state {
-	case "up":
+	case "up", "disconnected":
 		return ComponentStatusUp
 	case "tombstone":
 		return ComponentStatusTombstone
@@ -353,8 +353,6 @@ func storeStateToStatus(state string) ComponentStatus {
 		return ComponentStatusOffline
 	case "down":
 		return ComponentStatusDown
-	case "disconnected":
-		return ComponentStatusDisconnected
 	default:
 		return ComponentStatusUnreachable
 	}

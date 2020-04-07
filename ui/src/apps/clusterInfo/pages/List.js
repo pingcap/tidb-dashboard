@@ -9,9 +9,7 @@ const STATUS_UNREACHABLE = 0
 const STATUS_UP = 1
 const STATUS_TOMBSTONE = 2
 const STATUS_OFFLINE = 3
-const STATUS_DISCONNECTED = 4
-const STATUS_DOWN = 5
-
+const STATUS_DOWN = 4
 
 function useStatusColumnRender(handleHideTiDB) {
   const { t } = useTranslation()
@@ -59,14 +57,6 @@ function useStatusColumnRender(handleHideTiDB) {
           <Badge
             status="error"
             text={t('cluster_info.list.instance_table.status.unreachable')}
-          />
-        )
-        break
-      case STATUS_DISCONNECTED:
-        statusNode = (
-          <Badge
-            status="error"
-            text={t('cluster_info.list.instance_table.status.disconnected')}
           />
         )
         break

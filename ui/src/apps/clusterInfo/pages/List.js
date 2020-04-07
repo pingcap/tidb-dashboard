@@ -4,6 +4,7 @@ import { Tooltip, Popconfirm, Divider, Badge } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { CardTable } from '@pingcap-incubator/dashboard_components'
 import client from '@pingcap-incubator/dashboard_client'
+import DateTime from '@/components/DateTime'
 
 const STATUS_DOWN = 0
 const STATUS_UP = 1
@@ -175,6 +176,16 @@ export default function ListPage() {
       dataIndex: 'status',
       width: 150,
       render: renderStatusColumn,
+    },
+    {
+      title: t('cluster_info.list.instance_table.columns.up_time'),
+      dataIndex: 'start_timestamp',
+      width: 150,
+      render: (ts) => {
+        if (ts !== undefined) {
+          return <DateTime.Calendar unixTimeStampMs={ts * 1000} />
+        }
+      },
     },
     {
       title: t('cluster_info.list.instance_table.columns.version'),

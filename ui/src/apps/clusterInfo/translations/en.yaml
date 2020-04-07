@@ -7,6 +7,7 @@ cluster_info:
         node: Node
         version: Version
         status: Status
+        up_time: Up Time
         deploy_path: Deploy Directory
       actions:
         hide_db:

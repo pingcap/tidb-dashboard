@@ -27,7 +27,7 @@ const (
 	// preRatioTarget = 512
 	preTarget = 3072
 
-	dirtyValue = 1 << 30
+	dirtyWrittenBytes = 1 << 32
 )
 
 // CreateStorageAxis converts the RegionsInfo to a StorageAxis.
@@ -84,8 +84,8 @@ func IntoResponseAxis(storageAxis matrix.Axis, baseTag region.StatTag) matrix.Ax
 
 // TODO: Temporary solution, need to trace the source of dirty data.
 func wash(axis *matrix.Axis) {
-	for i, value := range axis.ValuesList[0] {
-		if value >= dirtyValue {
+	for i, value := range axis.ValuesList[1] {
+		if value >= dirtyWrittenBytes {
 			for j := range region.ResponseTags {
 				axis.ValuesList[j][i] = 0
 			}

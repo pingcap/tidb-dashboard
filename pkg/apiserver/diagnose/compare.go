@@ -963,11 +963,27 @@ ORDER BY  t1.sum_query_time DESC limit 10`, startTime2, endTime2, startTime1, en
 		CommentCN: "",
 		Column:    []string{"count(*)", "min(time)", "sum(query_time)", "sum(Process_time)", "sum(Wait_time)", "sum(Commit_time)", "sum(Request_count)", "sum(process_keys)", "sum(Write_keys)", "max(Cop_proc_max)", "min(query)", "min(prev_stmt)", "digest"},
 	}
-	fmt.Println(sql)
 	rows, err := getSQLRows(db, sql)
 	if err != nil {
 		return table, &TableRowDef{Values: []string{strings.Join(table.Category, ","), table.Title, err.Error()}}
 	}
-	table.Rows = rows
+	table.Rows = useSubRowForLongColumnValue(rows, len(table.Column)-3)
 	return table, nil
+}
+
+func useSubRowForLongColumnValue(rows []TableRowDef, colIdx int) []TableRowDef {
+	maxLen := 100
+	for i := range rows {
+		row := rows[i]
+		if len(row.Values) <= colIdx {
+			continue
+		}
+		if len(row.Values[colIdx]) > maxLen {
+			subRow := make([]string, len(row.Values))
+			subRow[colIdx] = row.Values[colIdx]
+			rows[i].Values[colIdx] = row.Values[colIdx][:100]
+			rows[i].SubValues = append(rows[i].SubValues, subRow)
+		}
+	}
+	return rows
 }

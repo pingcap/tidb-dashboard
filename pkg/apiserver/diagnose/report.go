@@ -2413,7 +2413,7 @@ func GetTiDBTopNSlowQuery(startTime, endTime string, db *gorm.DB) (TableDef, err
 	if err != nil {
 		return table, err
 	}
-	table.Rows = rows
+	table.Rows = useSubRowForLongColumnValue(rows, len(table.Column)-1)
 	return table, nil
 }
 
@@ -2442,7 +2442,7 @@ func GetTiDBTopNSlowQueryGroupByDigest(startTime, endTime string, db *gorm.DB) (
 	if err != nil {
 		return table, err
 	}
-	table.Rows = rows
+	table.Rows = useSubRowForLongColumnValue(rows, len(table.Column)-1)
 	return table, nil
 }
 
@@ -2460,6 +2460,6 @@ func GetTiDBSlowQueryWithDiffPlan(startTime, endTime string, db *gorm.DB) (Table
 	if err != nil {
 		return table, err
 	}
-	table.Rows = rows
+	table.Rows = useSubRowForLongColumnValue(rows, 1)
 	return table, nil
 }

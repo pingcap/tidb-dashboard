@@ -63,7 +63,7 @@ func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, e
 	}
 	sql := fmt.Sprintf("select '%s', '', avg(value), max(value), min(value) from metrics_schema.%s %s",
 		t.name, t.tbl, condition)
-	rows, err := querySQLWithPlaceholder(db, sql, args...)
+	rows, err := querySQL(db, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (t AvgMaxMinTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, e
 
 	sql = fmt.Sprintf("select '%[1]s',`%[2]v`, avg(value), max(value), min(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` order by avg(value) desc",
 		t.name, strings.Join(t.labels, "`,`"), t.tbl, condition)
-	subRows, err := querySQLWithPlaceholder(db, sql, args...)
+	subRows, err := querySQL(db, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (t sumValueQuery) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error
 	}
 	sql := fmt.Sprintf("select '%s', '', sum(value) from metrics_schema.%s %s",
 		t.name, t.tbl, condition)
-	rows, err := querySQLWithPlaceholder(db, sql, args...)
+	rows, err := querySQL(db, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func (t sumValueQuery) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error
 
 	sql = fmt.Sprintf("select '%[1]v',`%[2]v`, sum(value) from metrics_schema.%[3]v %[4]s group by `%[2]v` having sum(value) > 0 order by sum(value) desc",
 		t.name, strings.Join(t.labels, "`,`"), t.tbl, condition)
-	subRows, err := querySQLWithPlaceholder(db, sql, args...)
+	subRows, err := querySQL(db, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +192,7 @@ type totalTimeByLabelsTableDef struct {
 // METRIC_NAME , LABEL , TIME_RATIO ,  TOTAL_VALUE , TOTAL_COUNT , P999 , P99 , P90 , P80
 func (t totalTimeByLabelsTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error) {
 	sql, args := t.genSumarySQLs(arg.totalTime, arg.startTime, arg.endTime, arg.quantiles)
-	rows, err := querySQLWithPlaceholder(db, sql, args...)
+	rows, err := querySQL(db, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +212,7 @@ func (t totalTimeByLabelsTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableR
 	}
 
 	sql, args = t.genDetailSQLs(arg.totalTime, arg.startTime, arg.endTime, arg.quantiles)
-	subRows, err := querySQLWithPlaceholder(db, sql, args...)
+	subRows, err := querySQL(db, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -347,7 +347,7 @@ type totalValueAndTotalCountTableDef struct {
 // METRIC_NAME , LABEL  TOTAL_VALUE , TOTAL_COUNT , P999 , P99 , P90 , P80
 func (t totalValueAndTotalCountTableDef) queryRow(arg *queryArg, db *gorm.DB) (*TableRowDef, error) {
 	sql, args := t.genSumarySQLs(arg.startTime, arg.endTime, arg.quantiles)
-	rows, err := querySQLWithPlaceholder(db, sql, args...)
+	rows, err := querySQL(db, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -359,7 +359,7 @@ func (t totalValueAndTotalCountTableDef) queryRow(arg *queryArg, db *gorm.DB) (*
 		return t.genRow(rows[0], nil), nil
 	}
 	sql, args = t.genDetailSQLs(arg.startTime, arg.endTime, arg.quantiles)
-	subRows, err := querySQLWithPlaceholder(db, sql, args...)
+	subRows, err := querySQL(db, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -463,54 +463,7 @@ func (t totalValueAndTotalCountTableDef) genDetailSQLs(startTime, endTime string
 	return joinSQL, args
 }
 
-func querySQL(db *gorm.DB, sql string) ([][]string, error) {
-	if len(sql) == 0 {
-		return nil, nil
-	}
-
-	rows, err := db.Raw(sql).Rows()
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	// Read all rows.
-	resultRows := make([][]string, 0, 2)
-	for rows.Next() {
-		cols, err1 := rows.Columns()
-		if err1 != nil {
-			return nil, err
-		}
-
-		// See https://stackoverflow.com/questions/14477941/read-select-columns-into-string-in-go
-		rawResult := make([][]byte, len(cols))
-		dest := make([]interface{}, len(cols))
-		for i := range rawResult {
-			dest[i] = &rawResult[i]
-		}
-
-		err1 = rows.Scan(dest...)
-		if err1 != nil {
-			return nil, err
-		}
-
-		resultRow := []string{}
-		for _, raw := range rawResult {
-			val := ""
-			if raw != nil {
-				val = string(raw)
-			}
-
-			resultRow = append(resultRow, val)
-		}
-		resultRows = append(resultRows, resultRow)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	return resultRows, nil
-}
-
-func querySQLWithPlaceholder(db *gorm.DB, sql string, args ...interface{}) ([][]string, error) {
+func querySQL(db *gorm.DB, sql string, args ...interface{}) ([][]string, error) {
 	if len(sql) == 0 {
 		return nil, nil
 	}

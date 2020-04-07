@@ -17,6 +17,7 @@ function ComponentPanel({ data, field }) {
     has_error = true
     error_hint = data.error
   }
+
   if (data && data[field]) {
     if (!data[field].err) {
       data[field].nodes.forEach((n) => {
@@ -43,15 +44,6 @@ function ComponentPanel({ data, field }) {
         <Icon type="warning" style={{ marginLeft: '5px', fontSize: 15 }} />
       </Tooltip>
     )
-  }
-  if (data && data[field] && !data[field].err) {
-    data[field].nodes.forEach((n) => {
-      if (n.status === 0) {
-        abnormal_nodes++
-      } else {
-        up_nodes++
-      }
-    })
   }
 
   let title = (

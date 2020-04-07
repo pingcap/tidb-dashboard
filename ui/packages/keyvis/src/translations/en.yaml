@@ -5,10 +5,10 @@ keyvis:
     zoom:
       select: Select & Zoom
       reset: Reset
-    auto_refresh: Auto Refresh
-    date_range:
-      hour: '{{n}} hour(s)'
-      day: '{{n}} day(s)'
+    refresh: Refresh
+    auto_refresh:
+      title: Auto Refresh
+      off: Off
     view_type:
       read_bytes: Read (bytes)
       write_bytes: Write (bytes)

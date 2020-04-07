@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { Heatmap } from '../heatmap'
 import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types'
 import { fetchHeatmap } from '../utils'
@@ -12,11 +12,11 @@ type CacheEntry = {
   data: HeatmapData
 }
 
-const CACHE_EXPRIE_SECS = 60
+// const CACHE_EXPRIE_SECS = 10
 
 class HeatmapCache {
-  cache: CacheEntry[] = []
-  latestFetchIdx = 0
+  // cache: CacheEntry[] = []
+  // latestFetchIdx = 0
 
   async fetch(
     range: number | HeatmapRange,
@@ -26,41 +26,39 @@ class HeatmapCache {
     let selection
     if (typeof range === 'number') {
       const endTime = Math.ceil(new Date().getTime() / 1000)
-      this.cache = this.cache.filter((entry) => entry.expireTime > endTime)
-      const entry = this.cache.find(
-        (entry) => entry.dateRange === range && entry.metricType === metricType
-      )
-      if (entry) {
-        return entry.data
-      } else {
-        selection = {
-          starttime: endTime - range,
-          endtime: endTime,
-        }
+      // this.cache = this.cache.filter((entry) => entry.expireTime > endTime)
+      // const entry = this.cache.find(
+      //   (entry) => entry.dateRange === range && entry.metricType === metricType
+      // )
+      // if (entry) {
+      //   return entry.data
+      // } else {
+      selection = {
+        starttime: endTime - range,
+        endtime: endTime,
       }
+      // }
     } else {
       selection = range
     }
 
-    this.latestFetchIdx += 1
-    const fetchIdx = this.latestFetchIdx
+    // this.latestFetchIdx += 1
+    // const fetchIdx = this.latestFetchIdx
     const data = await fetchHeatmap(selection, metricType)
-    if (fetchIdx === this.latestFetchIdx) {
-      if (typeof range === 'number') {
-        this.cache.push({
-          dateRange: range,
-          metricType: metricType,
-          expireTime: new Date().getTime() / 1000 + CACHE_EXPRIE_SECS,
-          data: data,
-        })
-      }
-      return data
-    }
-    return undefined
+    // if (fetchIdx === this.latestFetchIdx) {
+    // if (typeof range === 'number') {
+    //   this.cache.push({
+    //     dateRange: range,
+    //     metricType: metricType,
+    //     expireTime: new Date().getTime() / 1000 + CACHE_EXPRIE_SECS,
+    //     data: data,
+    //   })
+    // }
+    return data
+    // }
+    // return undefined
   }
 }
-
-const DEFAULT_INTERVAL = 60000
 
 // Todo: define heatmap state, with auto check control, date range select, reset to zoom
 // fetchData ,  changeType, add loading state, change zoom level to reset autofetch,
@@ -78,30 +76,50 @@ const KeyVis = (props) => {
   const [chartState, setChartState] = useState<ChartState>()
   const [selection, setSelection] = useState<HeatmapRange | null>(null)
   const [isLoading, setLoading] = useState(false)
-  const [isAutoFetch, setAutoFetch] = useState(false)
+  const [autoRefreshSeconds, setAutoRefreshSeconds] = useState(0)
+  // const autoRefreshRemainingSeconds = useRef(0)
+  const [remainingRefreshSeconds, setRemainingRefreshSeconds] = useState(0)
   const [isOnBrush, setOnBrush] = useState(false)
   const [dateRange, setDateRange] = useState(3600 * 6)
   const [brightLevel, setBrightLevel] = useState(1)
   const [metricType, setMetricType] = useState<DataTag>('written_bytes')
 
+  // Tick auto refresh
   useEffect(() => {
-    const timerId =
-      isAutoFetch &&
-      setInterval(() => {
+    const timerId = setInterval(() => {
+      if (autoRefreshSeconds === 0) {
+        return
+      }
+      if (remainingRefreshSeconds == 0) {
         _fetchHeatmap()
-      }, DEFAULT_INTERVAL)
+      } else {
+        setRemainingRefreshSeconds(remainingRefreshSeconds - 1)
+      }
+    }, 1000)
 
     return () => {
-      // _chart = null
-      timerId && clearInterval(timerId)
+      clearInterval(timerId)
     }
-  }, [isAutoFetch])
+  }, [autoRefreshSeconds, remainingRefreshSeconds])
+
+  useEffect(() => {
+    if (remainingRefreshSeconds > autoRefreshSeconds) {
+      setRemainingRefreshSeconds(autoRefreshSeconds)
+    }
+    if (autoRefreshSeconds > 0) {
+      onResetZoom()
+      setOnBrush(false)
+    }
+  }, [autoRefreshSeconds])
 
   useEffect(() => {
     _fetchHeatmap()
   }, [selection, metricType, dateRange])
 
   const _fetchHeatmap = async () => {
+    if (autoRefreshSeconds > 0) {
+      setRemainingRefreshSeconds(autoRefreshSeconds)
+    }
     setLoading(true)
     setOnBrush(false)
     const data = await cache.fetch(selection || dateRange, metricType)
@@ -113,18 +131,6 @@ const KeyVis = (props) => {
     if (!_chart) return
     setBrightLevel(val)
     _chart.brightness(val)
-  }
-
-  const onToggleAutoFetch = (enable: Boolean | undefined) => {
-    if (enable === undefined) {
-      enable = !isAutoFetch
-    }
-    setAutoFetch(enable as boolean)
-    if (enable) {
-      _chart.resetZoom()
-      setOnBrush(false)
-      _fetchHeatmap()
-    }
   }
 
   const onChangeMetric = (value) => {
@@ -141,6 +147,14 @@ const KeyVis = (props) => {
     [props]
   )
 
+  const onChangeAutoRefresh = (v: number) => {
+    setAutoRefreshSeconds(v)
+  }
+
+  const onRefresh = () => {
+    _fetchHeatmap()
+  }
+
   const onChangeDateRange = (v: number) => {
     setDateRange(v)
     setSelection(null)
@@ -151,7 +165,7 @@ const KeyVis = (props) => {
   }
 
   const onToggleBrush = () => {
-    setAutoFetch(false)
+    setAutoRefreshSeconds(0)
     setOnBrush(!isOnBrush)
     _chart.brush(!isOnBrush)
   }
@@ -159,14 +173,14 @@ const KeyVis = (props) => {
   const onBrush = useCallback(
     (selection: HeatmapRange) => {
       setOnBrush(false)
-      setAutoFetch(false)
+      setAutoRefreshSeconds(0)
       setSelection(selection)
     },
     [props]
   )
 
   const onZoom = useCallback(() => {
-    setAutoFetch(false)
+    setAutoRefreshSeconds(0)
   }, [props])
 
   return (
@@ -178,12 +192,15 @@ const KeyVis = (props) => {
         onToggleBrush={onToggleBrush}
         onResetZoom={onResetZoom}
         isLoading={isLoading}
-        isAutoFetch={isAutoFetch}
+        autoRefreshSeconds={autoRefreshSeconds}
+        remainingRefreshSeconds={remainingRefreshSeconds}
         isOnBrush={isOnBrush}
         onChangeBrightLevel={onChangeBrightLevel}
         onChangeMetric={onChangeMetric}
         onChangeDateRange={onChangeDateRange}
-        onToggleAutoFetch={onToggleAutoFetch}
+        // onToggleAutoFetch={onToggleAutoFetch}
+        onChangeAutoRefresh={onChangeAutoRefresh}
+        onRefresh={onRefresh}
       />
       {chartState && (
         <Heatmap

@@ -931,31 +931,31 @@ func appendErrorRow(tbl TableDef, err error, errRows []TableRowDef) []TableRowDe
 }
 
 func getTiDBAbnormalSlowQueryOnly(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB) (TableDef, *TableRowDef) {
-	sql := fmt.Sprintf(`SELECT * FROM
-    (SELECT /*+ AGG_TO_COP(), HASH_AGG() */ count(*),
+	sql := fmt.Sprintf(`select * from
+    (select /*+ agg_to_cop(), hash_agg() */ count(*),
          min(time),
-         sum(query_time) AS sum_query_time,
-         sum(Process_time) AS sum_process_time,
-         sum(Wait_time) AS sum_wait_time,
-         sum(Commit_time),
-         sum(Request_count),
+         sum(query_time) as sum_query_time,
+         sum(process_time) as sum_process_time,
+         sum(wait_time) as sum_wait_time,
+         sum(commit_time),
+         sum(request_count),
          sum(process_keys),
-         sum(Write_keys),
-         max(Cop_proc_max),
+         sum(write_keys),
+         max(cop_proc_max),
          min(query),min(prev_stmt),
          digest
-    FROM information_schema.CLUSTER_SLOW_QUERY
-    WHERE time >= '%s'
-            AND time < '%s'
-            AND Is_internal = false
-    GROUP BY  digest) AS t1
-WHERE t1.digest NOT IN
-    (SELECT /*+ AGG_TO_COP(), HASH_AGG() */ digest
-    FROM information_schema.CLUSTER_SLOW_QUERY
-    WHERE time >= '%s'
-            AND time < '%s'
-    GROUP BY  digest)
-ORDER BY  t1.sum_query_time DESC limit 10`, startTime2, endTime2, startTime1, endTime1)
+    from information_schema.cluster_slow_query
+    where time >= '%s'
+            and time < '%s'
+            and is_internal = false
+    group by  digest) as t1
+where t1.digest not in
+    (select /*+ agg_to_cop(), hash_agg() */ digest
+    from information_schema.cluster_slow_query
+    where time >= '%s'
+            and time < '%s'
+    group by  digest)
+order by  t1.sum_query_time desc limit 10`, startTime2, endTime2, startTime1, endTime1)
 	table := TableDef{
 		Category:  []string{CategoryTiDB},
 		Title:     "Slow Query Only Appear In t2",

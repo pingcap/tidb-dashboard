@@ -83,12 +83,12 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 	tables, errs := CompareTables(tables2, tables3)
 	errRows = append(errRows, errs...)
 	resultTables = append(resultTables, tables0...)
+	if abnormalSlowQuery != nil {
+		resultTables = append(resultTables, abnormalSlowQuery)
+	}
 	resultTables = append(resultTables, tables1...)
 	if compareDiagnoseTable != nil {
 		resultTables = append(resultTables, compareDiagnoseTable)
-	}
-	if abnormalSlowQuery != nil {
-		resultTables = append(resultTables, abnormalSlowQuery)
 	}
 	resultTables = append(resultTables, tables...)
 	resultTables = append(resultTables, tables4...)
@@ -868,13 +868,13 @@ func GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2 string
 
 func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
 	funcs := []func(string, string, *gorm.DB) (TableDef, error){
-		// Diagnose
-		GetDiagnoseReport,
-
 		// TiDB
 		GetTiDBTopNSlowQuery,
 		GetTiDBTopNSlowQueryGroupByDigest,
 		GetTiDBSlowQueryWithDiffPlan,
+
+		// Diagnose
+		GetDiagnoseReport,
 	}
 	atomic.AddInt32(totalTableCount, int32(len(funcs)*2))
 

@@ -31,19 +31,19 @@ var _ = Suite(&testReportSuite{})
 
 type testReportSuite struct{}
 
-func (t *testReportSuite) TestReport(c *C) {
-	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
-	c.Assert(err, IsNil)
-	defer cli.Close()
-
-	startTime := "2020-03-03 17:18:00"
-	endTime := "2020-03-03 17:21:00"
-
-	tables := GetReportTablesForDisplay(startTime, endTime, cli, nil, 0)
-	for _, tbl := range tables {
-		printRows(tbl)
-	}
-}
+//func (t *testReportSuite) TestReport(c *C) {
+//	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
+//	c.Assert(err, IsNil)
+//	defer cli.Close()
+//
+//	startTime := "2020-03-03 17:18:00"
+//	endTime := "2020-03-03 17:21:00"
+//
+//	tables := GetReportTablesForDisplay(startTime, endTime, cli)
+//	for _, tbl := range tables {
+//		printRows(tbl)
+//	}
+//}
 
 func (t *testReportSuite) TestGetTable(c *C) {
 	//cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
@@ -55,7 +55,7 @@ func (t *testReportSuite) TestGetTable(c *C) {
 	endTime := "2020-03-25 23:05:00"
 
 	var table TableDef
-	table, err = GetTiDBSlowQueryWithDiffPlan(startTime, endTime, cli)
+	table, err = GetLoadTable(startTime, endTime, cli)
 	c.Assert(err, IsNil)
 	printRows(&table)
 }

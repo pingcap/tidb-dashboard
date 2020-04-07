@@ -9,14 +9,17 @@ import styles from './RootComponent.module.less'
 
 const App = () => {
   const [cluster, setCluster] = useState(null)
+  const [clusterError, setClusterError] = useState(null)
+
   const { t } = useTranslation()
 
   useEffect(() => {
     const fetchLoad = async () => {
       try {
-        let res = await client.dashboard.topologyAllGet()
+        let res = await client.getInstance().topologyAllGet()
         const cluster = res.data
         setCluster(cluster)
+        setClusterError(null)
       } catch (error) {
         let topology_error
         if (error.response) {
@@ -26,12 +29,9 @@ const App = () => {
         } else {
           topology_error = error.message
         }
-        setCluster({ error: topology_error })
+        setCluster(null)
+        setClusterError(topology_error)
       }
-
-      let res = await client.getInstance().topologyAllGet()
-      const cluster = res.data
-      setCluster(cluster)
     }
     fetchLoad()
   }, [])
@@ -62,7 +62,11 @@ const App = () => {
               </Card>
             </Col>
             <Col span={6}>
-              <MonitorAlertBar cluster={cluster} />
+              {cluster ? (
+                <MonitorAlertBar cluster={cluster} />
+              ) : (
+                <MonitorAlertBar cluster={{ error: clusterError }} />
+              )}
             </Col>
           </Row>
         </Card>

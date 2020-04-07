@@ -13,7 +13,7 @@ export default function MonitorAlertBar({ cluster }) {
 
   useEffect(() => {
     const fetchNum = async () => {
-      if (cluster === null || cluster.alert_manager === null) {
+      if (!cluster || !cluster.alert_manager) {
         return
       }
       let resp = await client

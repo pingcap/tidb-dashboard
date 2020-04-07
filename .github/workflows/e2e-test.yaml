@@ -1,0 +1,70 @@
+name: Test
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  e2e_test:
+    name: UI
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@master
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "12.x"
+      - uses: actions/setup-go@v1
+        with:
+          go-version: "1.13.5"
+      - name: Lookup yarn cache
+        id: yarn_cache
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.yarn_cache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-e2e-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-e2e
+      - name: Load go module cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Load tiup cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.tiup/components
+          key: ${{ runner.os }}-tiup
+          restore-keys: |
+            ${{ runner.os }}-tiup
+      - name: Install and run TiUP in the background
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
+          source /home/runner/.profile
+          tiup update --nightly --all
+          tiup playground nightly &
+      - name: Build UI
+        run: |
+          make ui
+        env:
+          NO_MINIMIZE: true
+          CI: true
+      - name: Build and run backend in the background
+        run: |
+          make
+          make run &
+        env:
+          UI: 1
+      - name: Run e2e test
+        run: |
+          cd ui/tests
+          yarn
+          yarn test
+        env:
+          SERVER_URL: http://127.0.0.1:12333/dashboard/
+          CI: true

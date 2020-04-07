@@ -1,7 +1,9 @@
-module.exports = {
+import { SafetyCertificateOutlined } from '@ant-design/icons'
+
+export default {
   id: 'diagnose',
   loader: () => import('./app.js'),
   routerPrefix: '/diagnose',
-  icon: 'safety-certificate',
+  icon: SafetyCertificateOutlined,
   translations: require.context('./translations/', false, /\.yaml$/),
 }

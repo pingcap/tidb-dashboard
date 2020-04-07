@@ -13,6 +13,7 @@ import {
 import styles from './styles.module.css'
 import { SearchContext } from './search-options-context'
 import { useTranslation } from 'react-i18next'
+import { OptionsType } from 'rc-select/lib/interface/index'
 const { Option } = Select
 
 interface State {
@@ -272,7 +273,10 @@ export default function StatementsOverview({
   // it will cause the infinite loop
   // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
 
-  function handleInstanceChange(val: string | undefined) {
+  function handleInstanceChange(
+    val: string,
+    option: OptionsType[number] | OptionsType
+  ) {
     dispatch({
       type: 'change_instance',
       payload: val,
@@ -286,8 +290,11 @@ export default function StatementsOverview({
     })
   }
 
-  function handleTimeRangeChange(val: string | undefined) {
-    const timeRange = state.timeRanges.find(item => item.begin_time === val)
+  function handleTimeRangeChange(
+    val: string,
+    option: OptionsType[number] | OptionsType
+  ) {
+    const timeRange = state.timeRanges.find((item) => item.begin_time === val)
     dispatch({
       type: 'change_time_range',
       payload: timeRange,
@@ -304,7 +311,7 @@ export default function StatementsOverview({
         okText: '关闭',
         okButtonProps: { type: 'danger' },
         onOk() {
-          return onSetStatementStatus(state.curInstance!, 'off').then(res => {
+          return onSetStatementStatus(state.curInstance!, 'off').then((res) => {
             if (res !== undefined) {
               dispatch({
                 type: 'change_statement_status',
@@ -329,7 +336,7 @@ export default function StatementsOverview({
             style={{ width: 200, marginRight: 12 }}
             onChange={handleInstanceChange}
           >
-            {state.instances.map(item => (
+            {state.instances.map((item) => (
               <Option value={item.uuid} key={item.uuid}>
                 {item.name}
               </Option>
@@ -342,8 +349,8 @@ export default function StatementsOverview({
           style={{ width: 340, marginRight: 12 }}
           onChange={handleTimeRangeChange}
         >
-          {state.timeRanges.map(item => (
-            <Option value={item.begin_time} key={item.begin_time}>
+          {state.timeRanges.map((item) => (
+            <Option value={item.begin_time || ''} key={item.begin_time}>
               {item.begin_time} ~ {item.end_time}
             </Option>
           ))}
@@ -356,7 +363,7 @@ export default function StatementsOverview({
           style={{ minWidth: 200, marginRight: 12 }}
           onChange={handleSchemaChange}
         >
-          {state.schemas.map(item => (
+          {state.schemas.map((item) => (
             <Option value={item} key={item}>
               {item}
             </Option>
@@ -389,7 +396,7 @@ export default function StatementsOverview({
         <StatementEnableModal
           instanceId={state.curInstance || ''}
           visible={enableStatementModalVisible}
-          onOK={instanceId => onSetStatementStatus(instanceId, 'on')}
+          onOK={(instanceId) => onSetStatementStatus(instanceId, 'on')}
           onClose={() => setEnableStatementModalVisible(false)}
           onSetting={() => setStatementSettingModalVisible(true)}
           onData={() =>

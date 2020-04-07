@@ -1,0 +1,9 @@
+{{ define "sql-diagnosis/navigator" }}
+    <div class="navigator-container">
+        <div class="sidenav">
+            {{ range . }}
+                <a href="#{{.Title}}"> {{index .Category 0}} {{ .Title }}</a>
+            {{ end }}
+        </div>
+    </div>
+{{ end }}

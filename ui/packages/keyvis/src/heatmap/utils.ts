@@ -43,7 +43,7 @@ export function truncateString(str: string, len: number): string {
 }
 
 export function clickToCopyBehavior(selection, map) {
-  selection.each(function(d) {
+  selection.each(function (d) {
     d3.select(this).on('click', () => {
       copyToClipboard(map(d))
     })
@@ -51,10 +51,7 @@ export function clickToCopyBehavior(selection, map) {
 }
 
 function copyToClipboard(text: string) {
-  const input = d3
-    .select('body')
-    .append('input')
-    .attr('value', text)
+  const input = d3.select('body').append('input').attr('value', text)
   input.node()!.select()
   document.execCommand('copy')
   input.remove()

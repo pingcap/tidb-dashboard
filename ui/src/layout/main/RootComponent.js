@@ -17,7 +17,7 @@ function triggerResizeEvent() {
   window.dispatchEvent(event)
 }
 
-const useContentLeftOffset = collapsed => {
+const useContentLeftOffset = (collapsed) => {
   const [offset, setOffset] = useState(siderWidth)
   const onAnimationStart = useCallback(() => {
     if (!collapsed) {
@@ -75,7 +75,7 @@ export default function App({ registry }) {
           style={{
             left: `${siderWidth}px`,
             transform: transContentBack.x.interpolate(
-              x => `translate3d(${x}px, 0, 0)`
+              (x) => `translate3d(${x}px, 0, 0)`
             ),
           }}
         ></animated.div>

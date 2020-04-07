@@ -4,4 +4,3 @@ import SearchResult from './SearchResult'
 import SearchHistory from './SearchHistory'
 
 export { SearchHeader, SearchProgress, SearchResult, SearchHistory }
-

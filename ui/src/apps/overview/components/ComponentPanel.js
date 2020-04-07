@@ -3,7 +3,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './ComponentPanel.module.less'
 
-const {Text} = Typography;
+const { Text } = Typography
 
 function ComponentPanel({ data, field }) {
   const { t } = useTranslation()
@@ -11,7 +11,7 @@ function ComponentPanel({ data, field }) {
   let up_nodes = 0
   let abnormal_nodes = 0
   let has_error = false
-  let error_hint;
+  let error_hint
 
   if (data && data.error) {
     has_error = true
@@ -19,7 +19,7 @@ function ComponentPanel({ data, field }) {
   }
   if (data && data[field]) {
     if (!data[field].err) {
-      data[field].nodes.forEach(n => {
+      data[field].nodes.forEach((n) => {
         if (n.status === 0) {
           abnormal_nodes++
         } else {
@@ -40,18 +40,24 @@ function ComponentPanel({ data, field }) {
     title_style = 'danger'
     extra = (
       <Tooltip title={error_hint}>
-        <Icon
-          type="warning"
-          style={{ marginLeft: '5px', fontSize: 15 }}
-        />
+        <Icon type="warning" style={{ marginLeft: '5px', fontSize: 15 }} />
       </Tooltip>
     )
+  }
+  if (data && data[field] && !data[field].err) {
+    data[field].nodes.forEach((n) => {
+      if (n.status === 0) {
+        abnormal_nodes++
+      } else {
+        up_nodes++
+      }
+    })
   }
 
   let title = (
     <Text type={title_style}>
       {t('overview.status.nodes', { nodeType: field.toUpperCase() })}
-      { extra }
+      {extra}
     </Text>
   )
 
@@ -68,7 +74,11 @@ function ComponentPanel({ data, field }) {
           <Col span={9}>
             <div className={styles.desc}>{t('overview.status.abnormal')}</div>
             {/*Note: If `has_error` is true, both "up" and "down" should be "-" with the sample color*/}
-            <div className={abnormal_nodes === 0 || has_error ? styles.alive : styles.down}>
+            <div
+              className={
+                abnormal_nodes === 0 || has_error ? styles.alive : styles.down
+              }
+            >
               {abnormal_nodes}
             </div>
           </Col>

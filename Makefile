@@ -16,6 +16,10 @@ ifeq ($(UI),1)
 BUILD_TAGS += ui_server
 endif
 
+ifeq ($(HOT_SWAP),1)
+	BUILD_TAGS += hot_swap_template
+endif
+
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.ReleaseVersion=$(shell git describe --tags --dirty)"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.BuildTS=$(shell date -u '+%Y-%m-%d %I:%M:%S')"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.GitHash=$(shell git rev-parse HEAD)"
@@ -27,7 +31,8 @@ default:
 lint:
 	scripts/lint.sh
 
-dev: lint default
+dev:
+	HOT_SWAP=1 make lint default
 
 # convert api in Golang code to swagger configuration file
 swagger_spec:

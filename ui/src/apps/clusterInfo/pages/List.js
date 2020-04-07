@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Tooltip, Popconfirm, Icon, Divider, Badge, message } from 'antd'
+import { Tooltip, Popconfirm, Divider, Badge, message } from 'antd'
+import { DeleteOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { CardTable } from '@pingcap-incubator/dashboard_components'
-import client from '@/utils/client'
+import client from '@pingcap-incubator/dashboard_client'
 
 const STATUS_DOWN = 0
 const STATUS_UP = 1
@@ -77,7 +78,7 @@ function useStatusColumnRender(handleHideTiDB) {
                 )}
               >
                 <a>
-                  <Icon type="delete" />
+                  <DeleteOutlined />
                 </a>
               </Tooltip>
             </Popconfirm>
@@ -89,8 +90,10 @@ function useStatusColumnRender(handleHideTiDB) {
 }
 
 function useHideTiDBHandler(updateData) {
-  return async node => {
-    await client.dashboard.topologyTidbAddressDelete(`${node.ip}:${node.port}`)
+  return async (node) => {
+    await client
+      .getInstance()
+      .topologyTidbAddressDelete(`${node.ip}:${node.port}`)
     updateData()
   }
 }
@@ -103,8 +106,8 @@ function useClusterNodeDataSource() {
   const fetch = async () => {
     setIsLoading(true)
     try {
-      const res = await client.dashboard.topologyAllGet()
-      const items = ['tidb', 'tikv', 'pd'].map(nodeKind => {
+      const res = await client.getInstance().topologyAllGet()
+      const items = ['tidb', 'tikv', 'pd'].map((nodeKind) => {
         const nodes = res.data[nodeKind]
         if (nodes.err) {
           message.warn(
@@ -116,7 +119,7 @@ function useClusterNodeDataSource() {
             children: [],
           }
         }
-        const children = nodes.nodes.map(node => {
+        const children = nodes.nodes.map((node) => {
           if (node.deploy_path === undefined && node.binary_path !== null) {
             node.deploy_path = node.binary_path.substring(
               0,

@@ -12,7 +12,8 @@
     "@pingcap-incubator/keyvis": "^0.0.8",
     "@pingcap-incubator/statement": "^0.0.8",
     "@umijs/hooks": "^1.8.0",
-    "antd": "^3.26.5",
+    "@ant-design/icons": "^4.0.0",
+    "antd": "^4.0.0",
     "axios": "^0.19.0",
     "classnames": "^2.2.6",
     "d3": "^5.15.0",
@@ -22,6 +23,7 @@
     "i18next-browser-languagedetector": "^4.0.1",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
+    "office-ui-fabric-react": "^7.105.3",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-i18next": "^11.3.2",
@@ -38,12 +40,15 @@
     "test": "react-app-rewired test",
     "clean": "yarn workspaces run clean",
     "publish:packages": "yarn workspaces run p",
-    "bump:packages": "lerna version --no-git-tag-version --no-push"
+    "bump:packages": "lerna version --no-git-tag-version --no-push",
+    "format": "prettier --write ."
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged --bail"
+    }
   },
   "homepage": "/dashboard",
-  "eslintConfig": {
-    "extends": "react-app"
-  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -66,12 +71,17 @@
     "antd-dayjs-webpack-plugin": "^0.0.8",
     "babel-plugin-import": "^1.13.0",
     "customize-cra": "^0.9.1",
+    "husky": "^4.2.3",
     "lerna": "^3.20.2",
     "less": "^3.10.3",
     "less-loader": "^5.0.0",
+    "prettier": "^2.0.2",
+    "pretty-quick": "^2.0.1",
     "react-app-rewire-yaml": "^1.1.0",
     "react-app-rewired": "^2.1.5",
     "react-scripts": "3.1.x",
-    "typescript": "^3.7.4"
+    "typescript": "^3.7.4",
+    "webpack-bundle-analyzer": "^3.6.1",
+    "webpackbar": "^4.0.0"
   }
 }

@@ -1,12 +1,12 @@
-import * as singleSpa from 'single-spa';
-import * as i18nUtil from '@/utils/i18n';
-import * as routingUtil from '@/utils/routing';
+import * as singleSpa from 'single-spa'
+import * as i18nUtil from '@/utils/i18n'
+import * as routingUtil from '@/utils/routing'
 
 // TODO: This part might be better in TS.
 export default class AppRegistry {
   constructor() {
-    this.defaultRouter = '';
-    this.apps = {};
+    this.defaultRouter = ''
+    this.apps = {}
   }
 
   /**
@@ -26,46 +26,46 @@ export default class AppRegistry {
    */
   register(app) {
     if (app.translations) {
-      i18nUtil.addTranslations(app.translations);
+      i18nUtil.addTranslations(app.translations)
     }
 
     singleSpa.registerApplication(
       app.id,
       app.loader,
       () => {
-        return routingUtil.isLocationMatchPrefix(app.routerPrefix);
+        return routingUtil.isLocationMatchPrefix(app.routerPrefix)
       },
       {
         registry: this,
         app,
       }
-    );
+    )
     if (!app.indexRoute) {
-      app.indexRoute = app.routerPrefix;
+      app.indexRoute = app.routerPrefix
     }
     if (!this.defaultRouter || app.isDefaultRouter) {
-      this.defaultRouter = app.indexRoute;
+      this.defaultRouter = app.indexRoute
     }
-    this.apps[app.id] = app;
-    return this;
+    this.apps[app.id] = app
+    return this
   }
 
   /**
    * Get the default router for initial routing.
    */
   getDefaultRouter() {
-    return this.defaultRouter || '/';
+    return this.defaultRouter || '/'
   }
 
   /**
    * Get the registry of the current active app.
    */
   getActiveApp() {
-    const mountedApps = singleSpa.getMountedApps();
+    const mountedApps = singleSpa.getMountedApps()
     for (let i = 0; i < mountedApps.length; i++) {
-      const app = mountedApps[i];
+      const app = mountedApps[i]
       if (this.apps[app] !== undefined) {
-        return this.apps[app];
+        return this.apps[app]
       }
     }
   }

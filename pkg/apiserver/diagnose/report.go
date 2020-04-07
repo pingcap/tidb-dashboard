@@ -1722,9 +1722,11 @@ func getAvgMaxMinCPUUsage(startTime, endTime string, db *gorm.DB) (*TableRowDef,
 		if len(row) == 0 {
 			return row
 		}
-		row[2] = RoundFloatString(row[2]) + "%"
-		row[3] = RoundFloatString(row[3]) + "%"
-		row[4] = RoundFloatString(row[4]) + "%"
+		for i := 2; i <= 4; i++ {
+			if len(row[i]) > 0 {
+				row[i] = RoundFloatString(row[i]) + "%"
+			}
+		}
 		return row
 	}
 	rows[0] = specialHandle(rows[0])
@@ -1760,9 +1762,11 @@ func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowD
 		if len(row) == 0 {
 			return row
 		}
-		row[2] = RoundFloatString(row[2]) + "%"
-		row[3] = RoundFloatString(row[3]) + "%"
-		row[4] = RoundFloatString(row[4]) + "%"
+		for i := 2; i <= 4; i++ {
+			if len(row[i]) > 0 {
+				row[i] = RoundFloatString(row[i]) + "%"
+			}
+		}
 		return row
 	}
 	rows[0] = specialHandle(rows[0])

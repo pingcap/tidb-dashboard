@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   HashRouter as Router,
   Routes,
   Route,
-  Redirect,
   Link,
+  useNavigate,
   useLocation,
 } from 'react-router-dom'
 import { Breadcrumb } from 'antd'
@@ -15,7 +15,7 @@ import { SearchContext, SearchOptions } from './components'
 import { StatementsOverviewPage, StatementDetailPage } from './pages'
 
 const App = (props) => {
-  // const { location } = props
+  const navigate = useNavigate()
   const location = useLocation()
   const page = location.pathname.split('/').pop()
 
@@ -25,7 +25,9 @@ const App = (props) => {
     curTimeRange: undefined,
   } as SearchOptions)
   const searchContext = { searchOptions, setSearchOptions }
-
+  useEffect(() => {
+    navigate('/statement/overview')
+  }, [])
   return (
     <SearchContext.Provider value={searchContext}>
       <div>
@@ -56,7 +58,6 @@ const App = (props) => {
                 <StatementDetailPage dashboardClient={client.getInstance()} />
               }
             />
-            <Redirect from="/statement" to="/statement/overview" />
           </Routes>
         </div>
       </div>

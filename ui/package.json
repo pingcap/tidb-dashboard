@@ -27,8 +27,8 @@
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-i18next": "^11.3.2",
-    "react-router": "^6.0.0-alpha.2",
-    "react-router-dom": "^6.0.0-alpha.2",
+    "react-router": "^6.0.0-alpha.3",
+    "react-router-dom": "^6.0.0-alpha.3",
     "react-spring": "^8.0.27",
     "single-spa": "^4.4.2",
     "single-spa-react": "^2.11.0"

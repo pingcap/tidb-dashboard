@@ -23,7 +23,6 @@ const App = () => {
     curTimeRange: undefined,
   } as SearchOptions)
   const searchContext = { searchOptions, setSearchOptions }
-
   return (
     <SearchContext.Provider value={searchContext}>
       <div>

@@ -1,6 +1,17 @@
-.bar_container {
+/* TODO: change to use less */
+
+.container {
   display: flex;
   align-items: center;
+}
+
+.text_container {
+  width: 64px;
+}
+
+.bar_container {
+  width: 100px;
+  position: relative;
 }
 
 .normal_bar {
@@ -8,42 +19,22 @@
   background-color: #3a7de1;
 }
 
-/* TODO: change to use less */
-.max_min_bar {
-  height: 3px;
-  background-color: #f2be2c;
-  position: absolute;
-  top: 5px;
-}
-
-.max_min_bar::before {
-  content: '';
-  position: absolute;
-  border-color: #f2be2c;
-  border-style: solid;
-  border-width: 0 3px 0 0;
-  height: 10px;
-  width: 3px;
-  top: -3px;
-}
-
-.max_min_bar::after {
-  content: '';
-  position: absolute;
-  border-color: #f2be2c;
-  border-style: solid;
-  border-width: 0 3px 0 0;
-  height: 10px;
-  width: 3px;
-  top: -3px;
-  right: 0px;
-}
-
 .max_bar {
   height: 3px;
   background-color: #f2be2c;
   position: absolute;
   top: 5px;
+}
+
+.min_bar::before {
+  content: '';
+  position: absolute;
+  border-color: #f2be2c;
+  border-style: solid;
+  border-width: 0 3px 0 0;
+  height: 10px;
+  width: 3px;
+  top: -3px;
 }
 
 .max_bar::after {

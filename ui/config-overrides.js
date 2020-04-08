@@ -34,6 +34,14 @@ const disableMinimizeByEnv = () => (config) => {
   return config
 }
 
+const diagnoseReportEntry = require('react-app-rewire-multiple-entry')([
+  {
+    entry: 'src/externalEntries/diagnoseReport',
+    template: 'public/diagnoseReport.html',
+    outPath: '/diagnoseReport.html',
+  },
+])
+
 module.exports = override(
   fixBabelImports('import', {
     libraryName: 'antd',
@@ -61,5 +69,6 @@ module.exports = override(
     openAnalyzer: false,
   }),
   addWebpackPlugin(new WebpackBar()),
-  disableMinimizeByEnv()
+  disableMinimizeByEnv(),
+  diagnoseReportEntry.addMultiEntry
 )

@@ -1,0 +1,6 @@
+diagnosis:
+  title: TiDB SQL Diagnosis System Report
+  expand_all: Expand All
+  fold_all: Fold All
+  expand: expand
+  fold: fold

@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"sync"
 
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -66,11 +67,12 @@ type Service struct {
 	config            *config.Config
 	newPDDataProvider PDDataProviderConstructor
 	stoppedHandler    http.Handler
+	uiAssetFS         *assetfs.AssetFS
 
 	apiHandlerEngine *gin.Engine
 }
 
-func NewService(cfg *config.Config, stoppedHandler http.Handler, newPDDataProvider PDDataProviderConstructor) *Service {
+func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS *assetfs.AssetFS, newPDDataProvider PDDataProviderConstructor) *Service {
 	once.Do(func() {
 		// These global modification will be effective only for the first invoke.
 		_ = godotenv.Load()
@@ -82,6 +84,7 @@ func NewService(cfg *config.Config, stoppedHandler http.Handler, newPDDataProvid
 		config:            cfg,
 		newPDDataProvider: newPDDataProvider,
 		stoppedHandler:    stoppedHandler,
+		uiAssetFS:         uiAssetFS,
 	}
 }
 
@@ -167,8 +170,8 @@ func (s *Service) handler(w http.ResponseWriter, r *http.Request) {
 	s.apiHandlerEngine.ServeHTTP(w, r)
 }
 
-func (s *Service) provideLocals() *config.Config {
-	return s.config
+func (s *Service) provideLocals() (*config.Config, *assetfs.AssetFS) {
+	return s.config, s.uiAssetFS
 }
 
 func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils2.NewTemplateFunc) {

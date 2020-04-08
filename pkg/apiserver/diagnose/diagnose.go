@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"time"
 
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 	"go.uber.org/fx"
@@ -41,9 +42,10 @@ type Service struct {
 	db            *dbstore.DB
 	tidbForwarder *tidb.Forwarder
 	htmlRender    render.HTMLRender
+	uiAssetFS     *assetfs.AssetFS
 }
 
-func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, newTemplate utils.NewTemplateFunc) *Service {
+func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, uiAssetFS *assetfs.AssetFS, newTemplate utils.NewTemplateFunc) *Service {
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			Migrate(db)
@@ -58,6 +60,7 @@ func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forw
 		db:            db,
 		tidbForwarder: tidbForwarder,
 		htmlRender:    loadGlobFromVfs(Vfs, t),
+		uiAssetFS:     uiAssetFS,
 	}
 }
 
@@ -67,7 +70,8 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		auth.MWAuthRequired(),
 		apiutils.MWConnectTiDB(s.tidbForwarder),
 		s.genReportHandler)
-	endpoint.GET("/reports/:id", s.reportHandler)
+	endpoint.GET("/reports/:id/detail", s.reportHtmlHandler)
+	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)
 	endpoint.GET("/reports/:id/status",
 		auth.MWAuthRequired(),
 		apiutils.MWConnectTiDB(s.tidbForwarder),
@@ -162,12 +166,34 @@ func (s *Service) reportStatusHandler(c *gin.Context) {
 }
 
 // @Summary SQL diagnosis report
-// @Description Get sql diagnosis report
+// @Description Get sql diagnosis report HTML
 // @Produce html
 // @Param id path string true "report id"
 // @Success 200 {string} string
-// @Router /diagnose/reports/{id} [get]
-func (s *Service) reportHandler(c *gin.Context) {
+// @Router /diagnose/reports/{id}/detail [get]
+func (s *Service) reportHtmlHandler(c *gin.Context) {
+	if s.uiAssetFS == nil {
+		c.Data(http.StatusNotFound, "text/plain", []byte("UI is not built"))
+		return
+	}
+
+	// Serve report html directly from assets
+	d, err := s.uiAssetFS.Asset("build/diagnoseReport.html")
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	c.Data(http.StatusOK, "text/html; charset=utf-8", d)
+}
+
+// @Summary SQL diagnosis report data
+// @Description Get sql diagnosis report data
+// @Produce text/javascript
+// @Param id path string true "report id"
+// @Success 200 {string} string
+// @Router /diagnose/reports/{id}/data.js [get]
+func (s *Service) reportDataHandler(c *gin.Context) {
 	id := c.Param("id")
 	reportID, err := strconv.Atoi(id)
 	if err != nil {
@@ -181,16 +207,6 @@ func (s *Service) reportHandler(c *gin.Context) {
 		return
 	}
 
-	if len(report.Content) == 0 {
-		c.String(http.StatusOK, "The report is in generating, please referesh it later")
-		return
-	}
-
-	var tables []*TableDef
-	err = json.Unmarshal([]byte(report.Content), &tables)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	utils.HTML(c, s.htmlRender, http.StatusOK, "sql-diagnosis/index", tables)
+	data := "window.__diagnosis_data__ = " + report.Content
+	c.Data(http.StatusOK, "text/javascript", []byte(data))
 }

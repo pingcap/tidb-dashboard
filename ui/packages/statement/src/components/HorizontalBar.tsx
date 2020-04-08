@@ -11,7 +11,7 @@ type TextWithHorizontalBarProps = {
 
 export function TextWithHorizontalBar({
   text,
-  normalVal: factor,
+  normalVal,
   maxVal,
   minVal,
 }: TextWithHorizontalBarProps) {
@@ -23,14 +23,23 @@ export function TextWithHorizontalBar({
       <div style={{ width: 100, position: 'relative' }}>
         <div
           className={styles.normal_bar}
-          style={{ width: 100 * factor }}
+          style={{ width: 100 * normalVal }}
         ></div>
-        {maxVal && minVal && (
+        {maxVal !== undefined && minVal !== undefined && (
           <div
             className={styles.max_min_bar}
             style={{
               width: 100 * (maxVal - minVal),
               left: 100 * minVal,
+            }}
+          ></div>
+        )}
+        {maxVal !== undefined && minVal === undefined && (
+          <div
+            className={styles.max_bar}
+            style={{
+              width: 100 * (maxVal - normalVal),
+              left: 100 * normalVal,
             }}
           ></div>
         )}

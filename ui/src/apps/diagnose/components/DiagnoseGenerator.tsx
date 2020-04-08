@@ -11,10 +11,10 @@ import {
 } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@pingcap-incubator/dashboard_components'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import client from '@pingcap-incubator/dashboard_client'
 
-const useFinishHandler = (history) => {
+const useFinishHandler = (navigate) => {
   return async (fieldsValue) => {
     const start_time = fieldsValue['rangeBegin'].unix()
     let range_duration = fieldsValue['rangeDuration']
@@ -37,7 +37,7 @@ const useFinishHandler = (history) => {
         compare_start_time,
         compare_end_time,
       })
-      history.push(`/diagnose/${res.data}`)
+      navigate(`/diagnose/${res.data}`)
     } catch (error) {
       message.error(error.message)
     }
@@ -46,8 +46,8 @@ const useFinishHandler = (history) => {
 
 export default function DiagnoseGenerator() {
   const { t } = useTranslation()
-  const history = useHistory()
-  const handleFinish = useFinishHandler(history)
+  const navigate = useNavigate()
+  const handleFinish = useFinishHandler(navigate)
 
   const rangeDurationOptions = useMemo(
     () => [

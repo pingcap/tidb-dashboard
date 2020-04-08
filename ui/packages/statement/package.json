@@ -29,7 +29,8 @@
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "react-i18next": "^11.3.2",
-    "react-router-dom": "^5.1.2",
+    "react-router": "^6.0.0-alpha.3",
+    "react-router-dom": "^6.0.0-alpha.3",
     "react-syntax-highlighter": "^12.2.1",
     "sql-formatter-plus": "^1.3.6"
   },

@@ -63,14 +63,21 @@ const tableColumns = (
       key: 'avg_latency',
       sorter: (a: StatementOverview, b: StatementOverview) =>
         a.avg_latency! - b.avg_latency!,
-      render: (value) => (
-        <TextWithHorizontalBar
-          text={getValueFormat('ns')(value, 1, null)}
-          normalVal={value / maxMins.maxAvgLatency}
-          maxVal={(value / maxMins.maxAvgLatency) * 1.2}
-          minVal={(value / maxMins.maxAvgLatency) * 0.5}
-        />
-      ),
+      render: (value) => {
+        const tooltipContent = `
+AVG: ${getValueFormat('ns')(value, 1, null)}
+MIN: ${getValueFormat('ns')(value * 0.5, 1, null)}
+MAX: ${getValueFormat('ns')(value * 1.2, 1, null)}`
+        return (
+          <TextWithHorizontalBar
+            tooltip={<pre>{tooltipContent.trim()}</pre>}
+            text={getValueFormat('ns')(value, 1, null)}
+            normalVal={value / maxMins.maxAvgLatency}
+            maxVal={(value / maxMins.maxAvgLatency) * 1.2}
+            minVal={(value / maxMins.maxAvgLatency) * 0.5}
+          />
+        )
+      },
     },
     {
       title: t('statement.common.exec_count'),
@@ -99,14 +106,6 @@ const tableColumns = (
         />
       ),
     },
-    // {
-    //   title: t('statement.common.avg_affected_rows'),
-    //   dataIndex: 'avg_affected_rows',
-    //   key: 'avg_affected_rows',
-    //   sorter: (a: StatementOverview, b: StatementOverview) =>
-    //     a.avg_affected_rows! - b.avg_affected_rows!,
-    //   render: (value) => getValueFormat('short')(value, 0, 0),
-    // },
   ]
   if (concise) {
     return columns.filter((col) =>

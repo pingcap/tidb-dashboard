@@ -32,6 +32,7 @@ export function TextWithHorizontalBar({
           }}
         ></div>
         <div
+          className={styles.max_min_bar}
           style={{
             width: 100 * (maxVal - minVal),
             height: 3,

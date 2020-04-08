@@ -2,3 +2,29 @@
   display: flex;
   align-items: center;
 }
+
+.max_min_bar {
+}
+
+.max_min_bar::before {
+  content: '';
+  position: absolute;
+  border-color: #f2be2c;
+  border-style: solid;
+  border-width: 0 3px 0 0;
+  height: 10px;
+  width: 3px;
+  top: -3px;
+}
+
+.max_min_bar::after {
+  content: '';
+  position: absolute;
+  border-color: #f2be2c;
+  border-style: solid;
+  border-width: 0 3px 0 0;
+  height: 10px;
+  width: 3px;
+  top: -3px;
+  right: 0px;
+}

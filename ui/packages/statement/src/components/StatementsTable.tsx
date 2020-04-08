@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { Link } from 'react-router-dom'
 import { Table, Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { TextWithHorizontalBar, BLUE_COLOR, ORANGE_COLOR } from './HorizontalBar'
+import { TextWithHorizontalBar } from './HorizontalBar'
 import {
   StatementOverview,
   StatementTimeRange,
@@ -54,7 +54,6 @@ const tableColumns = (
         <TextWithHorizontalBar
           text={getValueFormat('ns')(value, 1, null)}
           normalVal={value / maxMins.maxSumLatency}
-          color={BLUE_COLOR}
         />
       ),
     },
@@ -68,7 +67,6 @@ const tableColumns = (
         <TextWithHorizontalBar
           text={getValueFormat('short')(value, 0, 0)}
           normalVal={value / maxMins.maxExecCount}
-          color={BLUE_COLOR}
         />
       ),
     },
@@ -82,7 +80,6 @@ const tableColumns = (
         <TextWithHorizontalBar
           text={getValueFormat('ns')(value, 1, null)}
           normalVal={value / maxMins.maxAvgLatency}
-          color={BLUE_COLOR}
         />
       ),
     },
@@ -96,7 +93,6 @@ const tableColumns = (
         <TextWithHorizontalBar
           text={getValueFormat('deckbytes')(value, 1, null)}
           normalVal={value / maxMins.maxAvgMem}
-          color={ORANGE_COLOR}
         />
       ),
     },

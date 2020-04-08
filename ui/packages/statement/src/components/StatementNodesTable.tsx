@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementNode, StatementMaxMinVals } from './statement-types'
-import { TextWithHorizontalBar, BLUE_COLOR, ORANGE_COLOR } from './HorizontalBar'
+import { TextWithHorizontalBar } from './HorizontalBar'
 import { useMaxMin } from './use-max-min'
 
 const tableColumns = (
@@ -24,9 +24,8 @@ const tableColumns = (
       a.sum_latency! - b.sum_latency!,
     render: (value) => (
       <TextWithHorizontalBar
-        text={getValueFormat('ns')(value, 2, null)}
+        text={getValueFormat('ns')(value, 1, null)}
         normalVal={value / maxMins.maxSumLatency}
-        color={BLUE_COLOR}
       />
     ),
   },
@@ -40,7 +39,6 @@ const tableColumns = (
       <TextWithHorizontalBar
         text={getValueFormat('short')(value, 0, 0)}
         normalVal={value / maxMins.maxExecCount}
-        color={BLUE_COLOR}
       />
     ),
   },
@@ -52,9 +50,8 @@ const tableColumns = (
       a.avg_latency! - b.avg_latency!,
     render: (value) => (
       <TextWithHorizontalBar
-        text={getValueFormat('ns')(value, 2, null)}
+        text={getValueFormat('ns')(value, 1, null)}
         normalVal={value / maxMins.maxAvgLatency}
-        color={BLUE_COLOR}
       />
     ),
   },
@@ -66,9 +63,8 @@ const tableColumns = (
       a.max_latency! - b.max_latency!,
     render: (value) => (
       <TextWithHorizontalBar
-        text={getValueFormat('ns')(value, 2, null)}
+        text={getValueFormat('ns')(value, 1, null)}
         normalVal={value / maxMins.maxMaxLatency}
-        color={BLUE_COLOR}
       />
     ),
   },
@@ -79,9 +75,8 @@ const tableColumns = (
     sorter: (a: StatementNode, b: StatementNode) => a.avg_mem! - b.avg_mem!,
     render: (value) => (
       <TextWithHorizontalBar
-        text={getValueFormat('bytes')(value, 2, null)}
+        text={getValueFormat('deckbytes')(value, 1, null)}
         normalVal={value / maxMins.maxAvgMem}
-        color={ORANGE_COLOR}
       />
     ),
   },

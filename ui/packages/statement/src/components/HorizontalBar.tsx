@@ -2,15 +2,11 @@ import React from 'react'
 import _ from 'lodash'
 import styles from './HorizontalBar.module.css'
 
-export const BLUE_COLOR = '#3a7de1'
-export const ORANGE_COLOR = '#f2be2c'
-
 type TextWithHorizontalBarProps = {
   text: string
   normalVal: number // 0~1
   maxVal?: number // 0~1
   minVal?: number // 0~1
-  color: string
 }
 
 export function TextWithHorizontalBar({

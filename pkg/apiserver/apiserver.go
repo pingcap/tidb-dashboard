@@ -15,7 +15,6 @@ package apiserver
 
 import (
 	"context"
-	"html/template"
 	"io"
 	"net/http"
 	"sync"
@@ -174,7 +173,7 @@ func (s *Service) provideLocals() (*config.Config, *assetfs.AssetFS) {
 	return s.config, s.uiAssetFS
 }
 
-func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGroup, newTemplate utils2.NewTemplateFunc) {
+func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGroup) {
 	apiHandlerEngine = gin.New()
 	apiHandlerEngine.Use(gin.Recovery())
 	apiHandlerEngine.Use(cors.AllowAll())
@@ -182,10 +181,6 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 	apiHandlerEngine.Use(utils.MWHandleErrors())
 
 	endpoint = apiHandlerEngine.Group("/dashboard/api")
-
-	newTemplate = func(name string) *template.Template {
-		return template.New(name).Funcs(apiHandlerEngine.FuncMap)
-	}
 
 	return
 }

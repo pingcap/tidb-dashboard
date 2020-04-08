@@ -22,7 +22,6 @@ import (
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/render"
 	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
@@ -30,7 +29,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
 const (
@@ -41,11 +39,10 @@ type Service struct {
 	config        *config.Config
 	db            *dbstore.DB
 	tidbForwarder *tidb.Forwarder
-	htmlRender    render.HTMLRender
 	uiAssetFS     *assetfs.AssetFS
 }
 
-func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, uiAssetFS *assetfs.AssetFS, newTemplate utils.NewTemplateFunc) *Service {
+func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, uiAssetFS *assetfs.AssetFS) *Service {
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			Migrate(db)
@@ -53,13 +50,10 @@ func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forw
 		},
 	})
 
-	t := newTemplate("diagnose")
-
 	return &Service{
 		config:        config,
 		db:            db,
 		tidbForwarder: tidbForwarder,
-		htmlRender:    loadGlobFromVfs(Vfs, t),
 		uiAssetFS:     uiAssetFS,
 	}
 }
@@ -70,7 +64,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		auth.MWAuthRequired(),
 		apiutils.MWConnectTiDB(s.tidbForwarder),
 		s.genReportHandler)
-	endpoint.GET("/reports/:id/detail", s.reportHtmlHandler)
+	endpoint.GET("/reports/:id/detail", s.reportHTMLHandler)
 	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)
 	endpoint.GET("/reports/:id/status",
 		auth.MWAuthRequired(),
@@ -171,7 +165,7 @@ func (s *Service) reportStatusHandler(c *gin.Context) {
 // @Param id path string true "report id"
 // @Success 200 {string} string
 // @Router /diagnose/reports/{id}/detail [get]
-func (s *Service) reportHtmlHandler(c *gin.Context) {
+func (s *Service) reportHTMLHandler(c *gin.Context) {
 	if s.uiAssetFS == nil {
 		c.Data(http.StatusNotFound, "text/plain", []byte("UI is not built"))
 		return

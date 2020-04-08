@@ -9,15 +9,11 @@ SKIP_YARN_INSTALL ?=
 LDFLAGS ?=
 
 ifeq ($(SWAGGER),1)
-BUILD_TAGS += swagger_server
+	BUILD_TAGS += swagger_server
 endif
 
 ifeq ($(UI),1)
-BUILD_TAGS += ui_server
-endif
-
-ifeq ($(HOT_SWAP),1)
-	BUILD_TAGS += hot_swap_template
+	BUILD_TAGS += ui_server
 endif
 
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.ReleaseVersion=$(shell git describe --tags --dirty)"
@@ -31,8 +27,7 @@ default:
 lint:
 	scripts/lint.sh
 
-dev:
-	HOT_SWAP=1 make lint default
+dev: lint default
 
 # convert api in Golang code to swagger configuration file
 swagger_spec:

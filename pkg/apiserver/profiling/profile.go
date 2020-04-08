@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/goccy/go-graphviz"
 	"github.com/google/pprof/driver"
 	"github.com/google/pprof/profile"
 	"github.com/pkg/errors"
@@ -36,13 +37,13 @@ type flagSet struct {
 	args []string
 }
 
-func fetchPprofSVG(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt, format string, profileDurationSecs uint, tls bool) (string, error) {
+func fetchPprof(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt, format string, profileDurationSecs uint, tls bool) (string, error) {
 	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt)
 	if err != nil {
 		return "", err
 	}
 	defer tmpfile.Close()
-	svgPath := tmpfile.Name() + ".svg"
+	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), format)
 	format = "-" + format
 	args := []string{
 		format,
@@ -57,13 +58,13 @@ func fetchPprofSVG(ctx context.Context, httpClient *http.Client, target *utils.R
 		args:    args,
 	}
 	if err := driver.PProf(&driver.Options{
-		Fetch:   &fetcher{ctx: ctx, httpClient: httpClient, target: target, output: svgPath, tls: tls},
+		Fetch:   &fetcher{ctx: ctx, httpClient: httpClient, target: target, output: tmpPath, tls: tls},
 		Flagset: f,
-		Writer:  &oswriter{output: svgPath},
+		Writer:  &oswriter{output: tmpPath},
 	}); err != nil {
 		return "", err
 	}
-	return svgPath, nil
+	return tmpPath, nil
 }
 
 func (f *flagSet) StringList(o, d, c string) *[]*string {
@@ -147,7 +148,7 @@ func profileAndWriteSVG(ctx context.Context, target *utils.RequestTargetNode, fi
 	case utils.NodeKindTiKV:
 		return fetchFlameGraphSVG(ctx, httpClient, target, fileNameWithoutExt, profileDurationSecs, tls)
 	case utils.NodeKindPD, utils.NodeKindTiDB:
-		return fetchPprofSVG(ctx, httpClient, target, fileNameWithoutExt, "svg", profileDurationSecs, tls)
+		return fetchPprofSVG(ctx, httpClient, target, fileNameWithoutExt, "dot", profileDurationSecs, tls)
 	default:
 		return "", fmt.Errorf("unsupported target %s", target)
 	}
@@ -194,4 +195,34 @@ func writePprofRsSVG(body io.ReadCloser, fileNameWithoutExt string) (string, err
 		return "", fmt.Errorf("write SVG from temp file failed: %s", err)
 	}
 	return svgFilePath, nil
+}
+
+func fetchPprofSVG(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt, format string, profileDurationSecs uint, tls bool) (string, error) {
+	f, err := fetchPprof(ctx, httpClient, target, fileNameWithoutExt, format, profileDurationSecs, tls)
+	if err != nil {
+		return "", err
+	}
+
+	b, err := ioutil.ReadFile(f)
+	if err != nil {
+		return "", fmt.Errorf("failed to get dot output from file: %v", err)
+	}
+
+	g := graphviz.New()
+	graph, err := graphviz.ParseBytes(b)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse dot file: %v", err)
+	}
+
+	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt)
+	if err != nil {
+		return "", err
+	}
+	defer tmpfile.Close()
+	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), "svg")
+	if err := g.RenderFilename(graph, graphviz.SVG, tmpPath); err != nil {
+		return "", fmt.Errorf("failed to render svg: %v", err)
+	}
+
+	return tmpPath, nil
 }

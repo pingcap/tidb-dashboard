@@ -3,7 +3,17 @@
   align-items: center;
 }
 
+.normal_bar {
+  height: 14px;
+  background-color: #3a7de1;
+}
+
+/* TODO: change to use less */
 .max_min_bar {
+  height: 3px;
+  background-color: #f2be2c;
+  position: absolute;
+  top: 5px;
 }
 
 .max_min_bar::before {
@@ -27,4 +37,7 @@
   width: 3px;
   top: -3px;
   right: 0px;
+}
+
+.max_bar {
 }

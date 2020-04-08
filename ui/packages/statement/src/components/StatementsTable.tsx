@@ -52,7 +52,7 @@ const tableColumns = (
         a.sum_latency! - b.sum_latency!,
       render: (value) => (
         <TextWithHorizontalBar
-          text={getValueFormat('ns')(value, 2, null)}
+          text={getValueFormat('ns')(value, 1, null)}
           factor={value / maxMins.maxSumLatency}
           color={BLUE_COLOR}
         />
@@ -80,7 +80,7 @@ const tableColumns = (
         a.avg_latency! - b.avg_latency!,
       render: (value) => (
         <TextWithHorizontalBar
-          text={getValueFormat('ns')(value, 2, null)}
+          text={getValueFormat('ns')(value, 1, null)}
           factor={value / maxMins.maxAvgLatency}
           color={BLUE_COLOR}
         />
@@ -94,20 +94,20 @@ const tableColumns = (
         a.avg_mem! - b.avg_mem!,
       render: (value) => (
         <TextWithHorizontalBar
-          text={getValueFormat('bytes')(value, 2, null)}
+          text={getValueFormat('deckbytes')(value, 1, null)}
           factor={value / maxMins.maxAvgMem}
           color={RED_COLOR}
         />
       ),
     },
-    {
-      title: t('statement.common.avg_affected_rows'),
-      dataIndex: 'avg_affected_rows',
-      key: 'avg_affected_rows',
-      sorter: (a: StatementOverview, b: StatementOverview) =>
-        a.avg_affected_rows! - b.avg_affected_rows!,
-      render: (value) => getValueFormat('short')(value, 0, 0),
-    },
+    // {
+    //   title: t('statement.common.avg_affected_rows'),
+    //   dataIndex: 'avg_affected_rows',
+    //   key: 'avg_affected_rows',
+    //   sorter: (a: StatementOverview, b: StatementOverview) =>
+    //     a.avg_affected_rows! - b.avg_affected_rows!,
+    //   render: (value) => getValueFormat('short')(value, 0, 0),
+    // },
   ]
   if (concise) {
     return columns.filter((col) =>

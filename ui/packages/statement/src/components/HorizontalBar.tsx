@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { ReactNode } from 'react'
+import { Tooltip } from 'antd'
 import cx from 'classnames'
 import styles from './HorizontalBar.module.css'
 
@@ -7,6 +8,7 @@ type TextWithHorizontalBarProps = {
   normalVal: number // 0~1
   maxVal?: number // 0~1
   minVal?: number // 0~1
+  tooltip?: string | ReactNode
 }
 
 export function TextWithHorizontalBar({
@@ -14,8 +16,9 @@ export function TextWithHorizontalBar({
   normalVal,
   maxVal,
   minVal,
+  tooltip,
 }: TextWithHorizontalBarProps) {
-  return (
+  const body = (
     <div className={styles.container}>
       <div className={styles.text_container}>{text}</div>
       <div className={styles.bar_container}>
@@ -44,4 +47,5 @@ export function TextWithHorizontalBar({
       </div>
     </div>
   )
+  return tooltip ? <Tooltip title={tooltip}>{body}</Tooltip> : body
 }

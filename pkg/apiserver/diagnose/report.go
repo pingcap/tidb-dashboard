@@ -2447,14 +2447,14 @@ func GetTiDBTopNSlowQueryGroupByDigest(startTime, endTime string, db *gorm.DB) (
 }
 
 func GetTiDBSlowQueryWithDiffPlan(startTime, endTime string, db *gorm.DB) (TableDef, error) {
-	sql := fmt.Sprintf("select /*+ AGG_TO_COP(), HASH_AGG() */ count(distinct plan_digest) as diff_plan, min(query) from information_schema.cluster_slow_query where time >= '%s' and time < '%s' group by digest having diff_plan>1;",
+	sql := fmt.Sprintf("select /*+ AGG_TO_COP(), HASH_AGG() */ digest, min(query) from information_schema.cluster_slow_query where time >= '%s' and time < '%s' group by digest having max(plan_digest) != min(plan_digest);",
 		startTime, endTime)
 	table := TableDef{
 		Category:  []string{CategoryTiDB},
 		Title:     "Slow Query with Diff Plan",
 		CommentEN: sql,
 		CommentCN: "",
-		Column:    []string{"diff_plan_count", "query"},
+		Column:    []string{"digest", "query"},
 	}
 	rows, err := getSQLRows(db, sql)
 	if err != nil {

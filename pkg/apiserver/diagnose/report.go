@@ -344,6 +344,7 @@ func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error)
 			continue
 		}
 		newRows = append(newRows, row)
+		rowIdxMap[name] = len(newRows) - 1
 	}
 	table.Rows = newRows
 	return table, nil

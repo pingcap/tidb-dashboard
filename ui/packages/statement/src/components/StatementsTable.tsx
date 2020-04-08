@@ -53,7 +53,7 @@ const tableColumns = (
       render: (value) => (
         <TextWithHorizontalBar
           text={getValueFormat('ns')(value, 1, null)}
-          factor={value / maxMins.maxSumLatency}
+          normalVal={value / maxMins.maxSumLatency}
           color={BLUE_COLOR}
         />
       ),
@@ -67,7 +67,7 @@ const tableColumns = (
       render: (value) => (
         <TextWithHorizontalBar
           text={getValueFormat('short')(value, 0, 0)}
-          factor={value / maxMins.maxExecCount}
+          normalVal={value / maxMins.maxExecCount}
           color={BLUE_COLOR}
         />
       ),
@@ -81,7 +81,7 @@ const tableColumns = (
       render: (value) => (
         <TextWithHorizontalBar
           text={getValueFormat('ns')(value, 1, null)}
-          factor={value / maxMins.maxAvgLatency}
+          normalVal={value / maxMins.maxAvgLatency}
           color={BLUE_COLOR}
         />
       ),
@@ -95,7 +95,7 @@ const tableColumns = (
       render: (value) => (
         <TextWithHorizontalBar
           text={getValueFormat('deckbytes')(value, 1, null)}
-          factor={value / maxMins.maxAvgMem}
+          normalVal={value / maxMins.maxAvgMem}
           color={ORANGE_COLOR}
         />
       ),

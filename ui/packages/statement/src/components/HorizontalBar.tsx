@@ -7,7 +7,7 @@ export const ORANGE_COLOR = '#f2be2c'
 
 type TextWithHorizontalBarProps = {
   text: string
-  factor: number // 0~1
+  normalVal: number // 0~1
   maxVal?: number // 0~1
   minVal?: number // 0~1
   color: string
@@ -15,7 +15,7 @@ type TextWithHorizontalBarProps = {
 
 export function TextWithHorizontalBar({
   text,
-  factor,
+  normalVal: factor,
   maxVal,
   minVal,
 }: TextWithHorizontalBarProps) {

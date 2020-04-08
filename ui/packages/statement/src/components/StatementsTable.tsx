@@ -93,7 +93,7 @@ const tableColumns = (
         a.avg_mem! - b.avg_mem!,
       render: (value) => (
         <TextWithHorizontalBar
-          text={getValueFormat('deckbytes')(value, 1, null)}
+          text={getValueFormat('decbytes')(value, 1, null)}
           normalVal={value / maxMins.maxAvgMem}
           maxVal={(value / maxMins.maxAvgMem) * 1.2}
         />

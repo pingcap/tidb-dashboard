@@ -1,5 +1,5 @@
 import React from 'react'
-import _ from 'lodash'
+import cx from 'classnames'
 import styles from './HorizontalBar.module.css'
 
 type TextWithHorizontalBarProps = {
@@ -15,19 +15,17 @@ export function TextWithHorizontalBar({
   maxVal,
   minVal,
 }: TextWithHorizontalBarProps) {
-  // const minVal = rest.minVal || factor / 2
-  // const maxVal = rest.maxVal || _.min([1.0, factor * 1.3]) || 1.0
   return (
-    <div className={styles.bar_container}>
-      <div style={{ width: 64 }}>{text}</div>
-      <div style={{ width: 100, position: 'relative' }}>
+    <div className={styles.container}>
+      <div className={styles.text_container}>{text}</div>
+      <div className={styles.bar_container}>
         <div
           className={styles.normal_bar}
           style={{ width: 100 * normalVal }}
         ></div>
         {maxVal !== undefined && minVal !== undefined && (
           <div
-            className={styles.max_min_bar}
+            className={cx(styles.min_bar, styles.max_bar)}
             style={{
               width: 100 * (maxVal - minVal),
               left: 100 * minVal,

@@ -58,19 +58,6 @@ const tableColumns = (
       ),
     },
     {
-      title: t('statement.common.exec_count'),
-      dataIndex: 'exec_count',
-      key: 'exec_count',
-      sorter: (a: StatementOverview, b: StatementOverview) =>
-        a.exec_count! - b.exec_count!,
-      render: (value) => (
-        <TextWithHorizontalBar
-          text={getValueFormat('short')(value, 0, 0)}
-          normalVal={value / maxMins.maxExecCount}
-        />
-      ),
-    },
-    {
       title: t('statement.common.avg_latency'),
       dataIndex: 'avg_latency',
       key: 'avg_latency',
@@ -82,6 +69,19 @@ const tableColumns = (
           normalVal={value / maxMins.maxAvgLatency}
           maxVal={(value / maxMins.maxAvgLatency) * 1.2}
           minVal={(value / maxMins.maxAvgLatency) * 0.5}
+        />
+      ),
+    },
+    {
+      title: t('statement.common.exec_count'),
+      dataIndex: 'exec_count',
+      key: 'exec_count',
+      sorter: (a: StatementOverview, b: StatementOverview) =>
+        a.exec_count! - b.exec_count!,
+      render: (value) => (
+        <TextWithHorizontalBar
+          text={getValueFormat('short')(value, 0, 0)}
+          normalVal={value / maxMins.maxExecCount}
         />
       ),
     },

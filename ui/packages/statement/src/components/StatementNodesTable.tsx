@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementNode, StatementMaxMinVals } from './statement-types'
-import { TextWithHorizontalBar, BLUE_COLOR, RED_COLOR } from './HorizontalBar'
+import { TextWithHorizontalBar, BLUE_COLOR, ORANGE_COLOR } from './HorizontalBar'
 import { useMaxMin } from './use-max-min'
 
 const tableColumns = (
@@ -81,7 +81,7 @@ const tableColumns = (
       <TextWithHorizontalBar
         text={getValueFormat('bytes')(value, 2, null)}
         factor={value / maxMins.maxAvgMem}
-        color={RED_COLOR}
+        color={ORANGE_COLOR}
       />
     ),
   },

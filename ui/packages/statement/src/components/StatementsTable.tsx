@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { Link } from 'react-router-dom'
 import { Table, Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { TextWithHorizontalBar, BLUE_COLOR, RED_COLOR } from './HorizontalBar'
+import { TextWithHorizontalBar, BLUE_COLOR, ORANGE_COLOR } from './HorizontalBar'
 import {
   StatementOverview,
   StatementTimeRange,
@@ -96,7 +96,7 @@ const tableColumns = (
         <TextWithHorizontalBar
           text={getValueFormat('deckbytes')(value, 1, null)}
           factor={value / maxMins.maxAvgMem}
-          color={RED_COLOR}
+          color={ORANGE_COLOR}
         />
       ),
     },

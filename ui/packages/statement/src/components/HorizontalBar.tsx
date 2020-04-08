@@ -8,7 +8,7 @@ interface HorizontalBarProps {
   color: string
 }
 
-export function HorizontalBar({ factor, color }: HorizontalBarProps) {
+function HorizontalBar({ factor, color }: HorizontalBarProps) {
   return (
     <div
       style={{

@@ -80,6 +80,8 @@ const tableColumns = (
         <TextWithHorizontalBar
           text={getValueFormat('ns')(value, 1, null)}
           normalVal={value / maxMins.maxAvgLatency}
+          maxVal={(value / maxMins.maxAvgLatency) * 1.2}
+          minVal={(value / maxMins.maxAvgLatency) * 0.5}
         />
       ),
     },
@@ -93,6 +95,7 @@ const tableColumns = (
         <TextWithHorizontalBar
           text={getValueFormat('deckbytes')(value, 1, null)}
           normalVal={value / maxMins.maxAvgMem}
+          maxVal={(value / maxMins.maxAvgMem) * 1.2}
         />
       ),
     },

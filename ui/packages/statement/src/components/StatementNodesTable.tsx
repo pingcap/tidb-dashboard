@@ -1,18 +1,14 @@
 import React, { useMemo } from 'react'
-import _ from 'lodash'
 import { Table } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import { StatementNode } from './statement-types'
+import { StatementNode, StatementMaxMinVals } from './statement-types'
 import { TextWithHorizontalBar, BLUE_COLOR, RED_COLOR } from './HorizontalBar'
+import { useMaxMin } from './use-max-min'
 
 const tableColumns = (
-  maxSumLatency: number,
-  maxExecCount: number,
-  maxAvgLatency: number,
-  maxMaxLatency: number,
-  maxAvgMem: number,
+  maxMins: StatementMaxMinVals,
   t: (_: string) => string
 ) => [
   {
@@ -29,7 +25,7 @@ const tableColumns = (
     render: (value) => (
       <TextWithHorizontalBar
         text={getValueFormat('ns')(value, 2, null)}
-        factor={value / maxSumLatency}
+        factor={value / maxMins.maxSumLatency}
         color={BLUE_COLOR}
       />
     ),
@@ -43,7 +39,7 @@ const tableColumns = (
     render: (value) => (
       <TextWithHorizontalBar
         text={getValueFormat('short')(value, 0, 0)}
-        factor={value / maxExecCount}
+        factor={value / maxMins.maxExecCount}
         color={BLUE_COLOR}
       />
     ),
@@ -57,7 +53,7 @@ const tableColumns = (
     render: (value) => (
       <TextWithHorizontalBar
         text={getValueFormat('ns')(value, 2, null)}
-        factor={value / maxAvgLatency}
+        factor={value / maxMins.maxAvgLatency}
         color={BLUE_COLOR}
       />
     ),
@@ -71,7 +67,7 @@ const tableColumns = (
     render: (value) => (
       <TextWithHorizontalBar
         text={getValueFormat('ns')(value, 2, null)}
-        factor={value / maxMaxLatency}
+        factor={value / maxMins.maxMaxLatency}
         color={BLUE_COLOR}
       />
     ),
@@ -84,7 +80,7 @@ const tableColumns = (
     render: (value) => (
       <TextWithHorizontalBar
         text={getValueFormat('bytes')(value, 2, null)}
-        factor={value / maxAvgMem}
+        factor={value / maxMins.maxAvgMem}
         color={RED_COLOR}
       />
     ),
@@ -105,37 +101,8 @@ export default function StatementNodesTable({
   nodes: StatementNode[]
 }) {
   const { t } = useTranslation()
-  const maxSumLatency = useMemo(
-    () => _.max(nodes.map((n) => n.sum_latency)) || 1,
-    [nodes]
-  )
-  const maxExecCount = useMemo(
-    () => _.max(nodes.map((n) => n.exec_count)) || 1,
-    [nodes]
-  )
-  const maxAvgLatency = useMemo(
-    () => _.max(nodes.map((n) => n.avg_latency)) || 1,
-    [nodes]
-  )
-  const maxMaxLatency = useMemo(
-    () => _.max(nodes.map((n) => n.max_latency)) || 1,
-    [nodes]
-  )
-  const maxAvgMem = useMemo(() => _.max(nodes.map((n) => n.avg_mem)) || 1, [
-    nodes,
-  ])
-  const columns = useMemo(
-    () =>
-      tableColumns(
-        maxSumLatency,
-        maxExecCount,
-        maxAvgLatency,
-        maxMaxLatency,
-        maxAvgMem,
-        t
-      ),
-    [maxSumLatency, maxExecCount, maxAvgLatency, maxAvgMem, maxMaxLatency, t]
-  )
+  const maxMins = useMaxMin(nodes)
+  const columns = useMemo(() => tableColumns(maxMins, t), [maxMins, t])
 
   return (
     <Table

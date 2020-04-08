@@ -4,18 +4,20 @@ import { Link } from 'react-router-dom'
 import { Table, Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TextWithHorizontalBar, BLUE_COLOR, RED_COLOR } from './HorizontalBar'
-import { StatementOverview, StatementTimeRange } from './statement-types'
+import {
+  StatementOverview,
+  StatementTimeRange,
+  StatementMaxMinVals,
+} from './statement-types'
 import { useTranslation } from 'react-i18next'
 import styles from './styles.module.css'
+import { useMaxMin } from './use-max-min'
 
 const tableColumns = (
   t: (string) => string,
   concise: boolean,
   timeRange: StatementTimeRange,
-  maxSumLatency: number,
-  maxExecCount: number,
-  maxAvgLatency: number,
-  maxAvgMem: number,
+  maxMins: StatementMaxMinVals,
   detailPagePath?: string
 ) => {
   const columns = [
@@ -51,7 +53,7 @@ const tableColumns = (
       render: (value) => (
         <TextWithHorizontalBar
           text={getValueFormat('ns')(value, 2, null)}
-          factor={value / maxSumLatency}
+          factor={value / maxMins.maxSumLatency}
           color={BLUE_COLOR}
         />
       ),
@@ -65,7 +67,7 @@ const tableColumns = (
       render: (value) => (
         <TextWithHorizontalBar
           text={getValueFormat('short')(value, 0, 0)}
-          factor={value / maxExecCount}
+          factor={value / maxMins.maxExecCount}
           color={BLUE_COLOR}
         />
       ),
@@ -79,7 +81,7 @@ const tableColumns = (
       render: (value) => (
         <TextWithHorizontalBar
           text={getValueFormat('ns')(value, 2, null)}
-          factor={value / maxAvgLatency}
+          factor={value / maxMins.maxAvgLatency}
           color={BLUE_COLOR}
         />
       ),
@@ -93,7 +95,7 @@ const tableColumns = (
       render: (value) => (
         <TextWithHorizontalBar
           text={getValueFormat('bytes')(value, 2, null)}
-          factor={value / maxAvgMem}
+          factor={value / maxMins.maxAvgMem}
           color={RED_COLOR}
         />
       ),
@@ -131,44 +133,10 @@ export default function StatementsTable({
   concise,
 }: Props) {
   const { t } = useTranslation()
-  // TODO: extract all following calculations into custom hook for easy reuse
-  const maxSumLatency = useMemo(
-    () => _.max(statements.map((s) => s.sum_latency)) || 1,
-    [statements]
-  )
-  const maxExecCount = useMemo(
-    () => _.max(statements.map((s) => s.exec_count)) || 1,
-    [statements]
-  )
-  const maxAvgLatency = useMemo(
-    () => _.max(statements.map((s) => s.avg_latency)) || 1,
-    [statements]
-  )
-  const maxAvgMem = useMemo(
-    () => _.max(statements.map((s) => s.avg_mem)) || 1,
-    [statements]
-  )
+  const maxMins = useMaxMin(statements)
   const columns = useMemo(
-    () =>
-      tableColumns(
-        t,
-        concise || false,
-        timeRange,
-        maxSumLatency,
-        maxExecCount,
-        maxAvgLatency,
-        maxAvgMem,
-        detailPagePath
-      ),
-    [
-      t,
-      concise,
-      timeRange,
-      maxSumLatency,
-      maxExecCount,
-      maxAvgLatency,
-      maxAvgMem,
-    ]
+    () => tableColumns(t, concise || false, timeRange, maxMins, detailPagePath),
+    [t, concise, timeRange, maxMins]
   )
 
   return (

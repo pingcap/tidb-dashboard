@@ -31,6 +31,8 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 )
 
+var _ driver.Fetcher = (*fetcher)(nil)
+
 type flagSet struct {
 	*flag.FlagSet
 	args []string

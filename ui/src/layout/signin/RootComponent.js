@@ -8,7 +8,7 @@ import {
 } from '@ant-design/icons'
 import { Form, Input, Button, message } from 'antd'
 import { motion } from 'framer-motion'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import LanguageDropdown from '@/components/LanguageDropdown'
 import client from '@pingcap-incubator/dashboard_client'
 import * as authUtil from '@/utils/auth'
@@ -27,7 +27,8 @@ const AnimationItem = (props) => {
   )
 }
 
-function TiDBSignInForm({ t, registry }) {
+function TiDBSignInForm({ registry }) {
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
   const [signInError, setSignInError] = useState(null)
 
@@ -167,12 +168,12 @@ function TiDBSignInForm({ t, registry }) {
   )
 }
 
-function App({ t, registry }) {
+function App({ registry }) {
   return (
     <div className={styles.container}>
       <div className={styles.dialogContainer}>
         <div className={styles.dialog}>
-          <TiDBSignInForm t={t} registry={registry} />
+          <TiDBSignInForm registry={registry} />
         </div>
       </div>
       <motion.div
@@ -185,4 +186,4 @@ function App({ t, registry }) {
   )
 }
 
-export default withTranslation()(App)
+export default App

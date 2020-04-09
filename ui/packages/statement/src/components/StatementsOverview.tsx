@@ -346,7 +346,7 @@ export default function StatementsOverview({
         <Select
           value={state.curTimeRange?.begin_time}
           placeholder={t('statement.filters.select_time')}
-          style={{ width: 340, marginRight: 12 }}
+          style={{ width: 360, marginRight: 12 }}
           onChange={handleTimeRangeChange}
         >
           {state.timeRanges.map((item) => (

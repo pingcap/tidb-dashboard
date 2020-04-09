@@ -16,10 +16,14 @@ package clusterinfo
 type ComponentStatus uint
 
 const (
+	// ComponentStatusUnreachable means unreachable or disconnected
 	ComponentStatusUnreachable ComponentStatus = 0
 	ComponentStatusUp          ComponentStatus = 1
 	ComponentStatusTombstone   ComponentStatus = 2
 	ComponentStatusOffline     ComponentStatus = 3
+
+	// PD's Store may have state name down.
+	ComponentStatusDown ComponentStatus = 4
 )
 
 type PDInfo struct {

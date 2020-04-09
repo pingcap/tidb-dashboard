@@ -182,7 +182,7 @@ export default function ListPage() {
       dataIndex: 'start_timestamp',
       width: 150,
       render: (ts) => {
-        if (ts !== undefined) {
+        if (ts !== undefined && ts !== 0) {
           return <DateTime.Calendar unixTimeStampMs={ts * 1000} />
         }
       },

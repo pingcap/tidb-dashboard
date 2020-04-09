@@ -2,6 +2,7 @@ overview:
   nav_title: 概况
   top_statements:
     title: Top SQL 语句
+    more: 更多
   status:
     up: 正常
     abnormal: 异常

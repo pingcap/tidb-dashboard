@@ -25,9 +25,9 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 	resultTables = append(resultTables, GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2))
 	var tables0, tables1, tables2, tables3, tables4 []*TableDef
 	var errRows0, errRows1, errRows2, errRows3, errRows4 []TableRowDef
-	var compareDiagnoseTable *TableDef
+	var compareDiagnoseTable, abnormalSlowQuery *TableDef
 	var wg sync.WaitGroup
-	wg.Add(6)
+	wg.Add(7)
 	var progress, totalTableCount int32
 	go func() {
 		// Get Header tables.
@@ -63,7 +63,15 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 		}
 		wg.Done()
 	}()
-
+	go func() {
+		tbl, errRow := getTiDBAbnormalSlowQueryOnly(startTime1, endTime1, startTime2, endTime2, db)
+		if errRow != nil {
+			errRows = append(errRows, *errRow)
+		} else {
+			abnormalSlowQuery = &tbl
+		}
+		wg.Done()
+	}()
 	go func() {
 		// Get end tables
 		tables4, errRows4 = GetReportEndTables(startTime2, endTime2, db, sqliteDB, reportID, &progress, &totalTableCount)
@@ -75,6 +83,9 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 	tables, errs := CompareTables(tables2, tables3)
 	errRows = append(errRows, errs...)
 	resultTables = append(resultTables, tables0...)
+	if abnormalSlowQuery != nil {
+		resultTables = append(resultTables, abnormalSlowQuery)
+	}
 	resultTables = append(resultTables, tables1...)
 	if compareDiagnoseTable != nil {
 		resultTables = append(resultTables, compareDiagnoseTable)
@@ -857,6 +868,11 @@ func GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2 string
 
 func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
 	funcs := []func(string, string, *gorm.DB) (TableDef, error){
+		// TiDB
+		GetTiDBTopNSlowQuery,
+		GetTiDBTopNSlowQueryGroupByDigest,
+		GetTiDBSlowQueryWithDiffPlan,
+
 		// Diagnose
 		GetDiagnoseReport,
 	}
@@ -912,4 +928,62 @@ func appendErrorRow(tbl TableDef, err error, errRows []TableRowDef) []TableRowDe
 	}
 	errRows = append(errRows, TableRowDef{Values: []string{category, tbl.Title, err.Error()}})
 	return errRows
+}
+
+func getTiDBAbnormalSlowQueryOnly(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB) (TableDef, *TableRowDef) {
+	sql := fmt.Sprintf(`select * from
+    (select /*+ agg_to_cop(), hash_agg() */ count(*),
+         min(time),
+         sum(query_time) as sum_query_time,
+         sum(process_time) as sum_process_time,
+         sum(wait_time) as sum_wait_time,
+         sum(commit_time),
+         sum(request_count),
+         sum(process_keys),
+         sum(write_keys),
+         max(cop_proc_max),
+         min(query),min(prev_stmt),
+         digest
+    from information_schema.cluster_slow_query
+    where time >= '%s'
+            and time < '%s'
+            and is_internal = false
+    group by  digest) as t1
+where t1.digest not in
+    (select /*+ agg_to_cop(), hash_agg() */ digest
+    from information_schema.cluster_slow_query
+    where time >= '%s'
+            and time < '%s'
+    group by  digest)
+order by  t1.sum_query_time desc limit 10`, startTime2, endTime2, startTime1, endTime1)
+	table := TableDef{
+		Category:  []string{CategoryTiDB},
+		Title:     "Slow Query Only Appear In t2",
+		CommentEN: sql,
+		CommentCN: "",
+		Column:    []string{"count(*)", "min(time)", "sum(query_time)", "sum(Process_time)", "sum(Wait_time)", "sum(Commit_time)", "sum(Request_count)", "sum(process_keys)", "sum(Write_keys)", "max(Cop_proc_max)", "min(query)", "min(prev_stmt)", "digest"},
+	}
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, &TableRowDef{Values: []string{strings.Join(table.Category, ","), table.Title, err.Error()}}
+	}
+	table.Rows = useSubRowForLongColumnValue(rows, len(table.Column)-3)
+	return table, nil
+}
+
+func useSubRowForLongColumnValue(rows []TableRowDef, colIdx int) []TableRowDef {
+	maxLen := 100
+	for i := range rows {
+		row := rows[i]
+		if len(row.Values) <= colIdx {
+			continue
+		}
+		if len(row.Values[colIdx]) > maxLen {
+			subRow := make([]string, len(row.Values))
+			subRow[colIdx] = row.Values[colIdx]
+			rows[i].Values[colIdx] = row.Values[colIdx][:100]
+			rows[i].SubValues = append(rows[i].SubValues, subRow)
+		}
+	}
+	return rows
 }

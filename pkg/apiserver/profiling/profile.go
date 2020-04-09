@@ -27,7 +27,6 @@ import (
 	"github.com/goccy/go-graphviz"
 	"github.com/google/pprof/driver"
 	"github.com/google/pprof/profile"
-	"github.com/pkg/errors"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 )
@@ -37,10 +36,10 @@ type flagSet struct {
 	args []string
 }
 
-func fetchPprof(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt, format string, profileDurationSecs uint, tls bool) (string, error) {
+func fetchPprof(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt, format string, profileDurationSecs uint, schema string) (string, error) {
 	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create temp file: %v", err)
 	}
 	defer tmpfile.Close()
 	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), format)
@@ -58,11 +57,11 @@ func fetchPprof(ctx context.Context, httpClient *http.Client, target *utils.Requ
 		args:    args,
 	}
 	if err := driver.PProf(&driver.Options{
-		Fetch:   &fetcher{ctx: ctx, httpClient: httpClient, target: target, output: tmpPath, tls: tls},
+		Fetch:   &fetcher{ctx: ctx, httpClient: httpClient, target: target, output: tmpPath, schema: schema},
 		Flagset: f,
 		Writer:  &oswriter{output: tmpPath},
 	}); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to generate profile report: %v", err)
 	}
 	return tmpPath, nil
 }
@@ -98,7 +97,7 @@ type fetcher struct {
 	httpClient *http.Client
 	target     *utils.RequestTargetNode
 	output     string
-	tls        bool
+	schema     string
 }
 
 func (f *fetcher) Fetch(src string, duration, timeout time.Duration) (*profile.Profile, string, error) {
@@ -112,11 +111,7 @@ func (f *fetcher) Fetch(src string, duration, timeout time.Duration) (*profile.P
 	default:
 		return nil, "", fmt.Errorf("unsupported target %s", f.target)
 	}
-	schema := "http"
-	if f.tls {
-		schema = "https"
-	}
-	url = fmt.Sprintf("%s://%s:%d%s", schema, f.target.IP, f.target.Port, url)
+	url = fmt.Sprintf("%s://%s:%d%s", f.schema, f.target.IP, f.target.Port, url)
 
 	p, err := f.getProfile(f.target, url)
 	return p, url, err
@@ -125,7 +120,7 @@ func (f *fetcher) Fetch(src string, duration, timeout time.Duration) (*profile.P
 func (f *fetcher) getProfile(target *utils.RequestTargetNode, source string) (*profile.Profile, error) {
 	req, err := http.NewRequest(http.MethodGet, source, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create a new request %s: %v", source, err)
 	}
 	req = req.WithContext(f.ctx)
 	if target.Kind == utils.NodeKindPD {
@@ -134,44 +129,44 @@ func (f *fetcher) getProfile(target *utils.RequestTargetNode, source string) (*p
 	}
 	resp, err := f.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("request %s failed: %v", source, err)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		defer resp.Body.Close()
 		return nil, fmt.Errorf("failed to profile %s: status code %s", target, resp.Status)
 	}
 	return profile.Parse(resp.Body)
 }
 
 func profileAndWriteSVG(ctx context.Context, target *utils.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, httpClient *http.Client, tls bool) (string, error) {
+	schema := "http"
+	if tls {
+		schema = "https"
+	}
 	switch target.Kind {
 	case utils.NodeKindTiKV:
-		return fetchFlameGraphSVG(ctx, httpClient, target, fileNameWithoutExt, profileDurationSecs, tls)
+		return fetchTiKVFlameGraphSVG(ctx, httpClient, target, fileNameWithoutExt, profileDurationSecs, schema)
 	case utils.NodeKindPD, utils.NodeKindTiDB:
-		return fetchPprofSVG(ctx, httpClient, target, fileNameWithoutExt, "dot", profileDurationSecs, tls)
+		return fetchPprofSVG(ctx, httpClient, target, fileNameWithoutExt, profileDurationSecs, schema)
 	default:
 		return "", fmt.Errorf("unsupported target %s", target)
 	}
 }
 
-func fetchFlameGraphSVG(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, tls bool) (string, error) {
-	schema := "http"
-	if tls {
-		schema = "https"
-	}
+func fetchTiKVFlameGraphSVG(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, schema string) (string, error) {
 	url := fmt.Sprintf("%s://%s:%d/debug/pprof/profile?seconds=%d", schema, target.IP, target.Port, profileDurationSecs)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create a new request %s: %v", url, err)
 	}
 	req = req.WithContext(ctx)
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("request %s failed: %v", url, err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", errors.Errorf("request %s failed: %s", url, resp.Status)
+		return "", fmt.Errorf("response of request %s is not ok: %s", url, resp.Status)
 	}
 	svgFilePath, err := writePprofRsSVG(resp.Body, fileNameWithoutExt)
 	if err != nil {
@@ -183,45 +178,45 @@ func fetchFlameGraphSVG(ctx context.Context, httpClient *http.Client, target *ut
 func writePprofRsSVG(body io.ReadCloser, fileNameWithoutExt string) (string, error) {
 	file, err := ioutil.TempFile("", fileNameWithoutExt)
 	if err != nil {
-		return "", fmt.Errorf("create temp file failed: %s", err)
+		return "", fmt.Errorf("failed to create temp file: %v", err)
 	}
 	_, err = io.Copy(file, body)
 	if err != nil {
-		return "", fmt.Errorf("write temp file failed: %s", err)
+		return "", fmt.Errorf("failed to write temp file: %v", err)
 	}
 	svgFilePath := file.Name() + ".svg"
 	err = os.Rename(file.Name(), svgFilePath)
 	if err != nil {
-		return "", fmt.Errorf("write SVG from temp file failed: %s", err)
+		return "", fmt.Errorf("failed to write SVG from temp file: %v", err)
 	}
 	return svgFilePath, nil
 }
 
-func fetchPprofSVG(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt, format string, profileDurationSecs uint, tls bool) (string, error) {
-	f, err := fetchPprof(ctx, httpClient, target, fileNameWithoutExt, format, profileDurationSecs, tls)
+func fetchPprofSVG(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, schema string) (string, error) {
+	f, err := fetchPprof(ctx, httpClient, target, fileNameWithoutExt, "dot", profileDurationSecs, schema)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
 	}
 
 	b, err := ioutil.ReadFile(f)
 	if err != nil {
-		return "", fmt.Errorf("failed to get dot output from file: %v", err)
+		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
 	}
 
 	g := graphviz.New()
 	graph, err := graphviz.ParseBytes(b)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse dot file: %v", err)
+		return "", fmt.Errorf("failed to parse DOT file: %v", err)
 	}
 
 	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create temp file: %v", err)
 	}
 	defer tmpfile.Close()
 	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), "svg")
 	if err := g.RenderFilename(graph, graphviz.SVG, tmpPath); err != nil {
-		return "", fmt.Errorf("failed to render svg: %v", err)
+		return "", fmt.Errorf("failed to render SVG: %v", err)
 	}
 
 	return tmpPath, nil

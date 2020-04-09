@@ -1,109 +1,126 @@
 import React, { useMemo } from 'react'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
-import { Table } from 'antd'
+import { Table, Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { HorizontalBar } from './HorizontalBar'
+import { TextWithHorizontalBar, BLUE_COLOR, RED_COLOR } from './HorizontalBar'
 import { StatementOverview, StatementTimeRange } from './statement-types'
 import { useTranslation } from 'react-i18next'
+import styles from './styles.module.css'
 
 const tableColumns = (
+  t: (string) => string,
+  concise: boolean,
   timeRange: StatementTimeRange,
+  maxSumLatency: number,
   maxExecCount: number,
   maxAvgLatency: number,
   maxAvgMem: number,
-  detailPagePath: string,
-  t: (string) => string
-) => [
-  {
-    title: t('statement.common.schemas'),
-    dataIndex: 'schemas',
-    key: 'schemas',
-  },
-  {
-    title: t('statement.common.digest_text'),
-    dataIndex: 'digest_text',
-    key: 'digest_text',
-    width: 400,
-    render: (text, record: StatementOverview) => (
-      <Link
-        to={`${detailPagePath}?digest=${record.digest}&schema=${record.schema_name}&begin_time=${timeRange.begin_time}&end_time=${timeRange.end_time}`}
-      >
-        {text}
-      </Link>
-    ),
-  },
-  {
-    title: t('statement.common.sum_latency'),
-    dataIndex: 'sum_latency',
-    key: 'sum_latency',
-    sorter: (a: StatementOverview, b: StatementOverview) =>
-      a.sum_latency! - b.sum_latency!,
-    render: (text) => getValueFormat('ns')(text, 2, null),
-  },
-  {
-    title: t('statement.common.exec_count'),
-    dataIndex: 'exec_count',
-    key: 'exec_count',
-    sorter: (a: StatementOverview, b: StatementOverview) =>
-      a.exec_count! - b.exec_count!,
-    render: (text) => (
-      <div>
-        {getValueFormat('short')(text, 0, 0)}
-        <HorizontalBar
-          factor={text / maxExecCount}
-          color="rgba(73, 169, 238, 1)"
+  detailPagePath?: string
+) => {
+  const columns = [
+    {
+      title: t('statement.common.schemas'),
+      dataIndex: 'schemas',
+      key: 'schemas',
+    },
+    {
+      title: t('statement.common.digest_text'),
+      dataIndex: 'digest_text',
+      key: 'digest_text',
+      render: (value, record: StatementOverview) => (
+        <Link
+          to={`${detailPagePath || '/statement/detail'}?digest=${
+            record.digest
+          }&schema=${record.schema_name}&begin_time=${
+            timeRange.begin_time
+          }&end_time=${timeRange.end_time}`}
+        >
+          <Tooltip title={value} placement="right">
+            <div className={styles.digest_column}>{value}</div>
+          </Tooltip>
+        </Link>
+      ),
+    },
+    {
+      title: t('statement.common.sum_latency'),
+      dataIndex: 'sum_latency',
+      key: 'sum_latency',
+      sorter: (a: StatementOverview, b: StatementOverview) =>
+        a.sum_latency! - b.sum_latency!,
+      render: (value) => (
+        <TextWithHorizontalBar
+          text={getValueFormat('ns')(value, 2, null)}
+          factor={value / maxSumLatency}
+          color={BLUE_COLOR}
         />
-      </div>
-    ),
-  },
-  {
-    title: t('statement.common.avg_affected_rows'),
-    dataIndex: 'avg_affected_rows',
-    key: 'avg_affected_rows',
-    sorter: (a: StatementOverview, b: StatementOverview) =>
-      a.avg_affected_rows! - b.avg_affected_rows!,
-    render: (text) => getValueFormat('short')(text, 0, 0),
-  },
-  {
-    title: t('statement.common.avg_latency'),
-    dataIndex: 'avg_latency',
-    key: 'avg_latency',
-    sorter: (a: StatementOverview, b: StatementOverview) =>
-      a.avg_latency! - b.avg_latency!,
-    render: (text) => (
-      <div>
-        {getValueFormat('ns')(text, 2, null)}
-        <HorizontalBar
-          factor={text / maxAvgLatency}
-          color="rgba(73, 169, 238, 1)"
+      ),
+    },
+    {
+      title: t('statement.common.exec_count'),
+      dataIndex: 'exec_count',
+      key: 'exec_count',
+      sorter: (a: StatementOverview, b: StatementOverview) =>
+        a.exec_count! - b.exec_count!,
+      render: (value) => (
+        <TextWithHorizontalBar
+          text={getValueFormat('short')(value, 0, 0)}
+          factor={value / maxExecCount}
+          color={BLUE_COLOR}
         />
-      </div>
-    ),
-  },
-  {
-    title: t('statement.common.avg_mem'),
-    dataIndex: 'avg_mem',
-    key: 'avg_mem',
-    sorter: (a: StatementOverview, b: StatementOverview) =>
-      a.avg_mem! - b.avg_mem!,
-    render: (text) => (
-      <div>
-        {getValueFormat('bytes')(text, 2, null)}
-        <HorizontalBar
-          factor={text / maxAvgMem}
-          color="rgba(255, 102, 51, 1)"
+      ),
+    },
+    {
+      title: t('statement.common.avg_latency'),
+      dataIndex: 'avg_latency',
+      key: 'avg_latency',
+      sorter: (a: StatementOverview, b: StatementOverview) =>
+        a.avg_latency! - b.avg_latency!,
+      render: (value) => (
+        <TextWithHorizontalBar
+          text={getValueFormat('ns')(value, 2, null)}
+          factor={value / maxAvgLatency}
+          color={BLUE_COLOR}
         />
-      </div>
-    ),
-  },
-]
+      ),
+    },
+    {
+      title: t('statement.common.avg_mem'),
+      dataIndex: 'avg_mem',
+      key: 'avg_mem',
+      sorter: (a: StatementOverview, b: StatementOverview) =>
+        a.avg_mem! - b.avg_mem!,
+      render: (value) => (
+        <TextWithHorizontalBar
+          text={getValueFormat('bytes')(value, 2, null)}
+          factor={value / maxAvgMem}
+          color={RED_COLOR}
+        />
+      ),
+    },
+    {
+      title: t('statement.common.avg_affected_rows'),
+      dataIndex: 'avg_affected_rows',
+      key: 'avg_affected_rows',
+      sorter: (a: StatementOverview, b: StatementOverview) =>
+        a.avg_affected_rows! - b.avg_affected_rows!,
+      render: (value) => getValueFormat('short')(value, 0, 0),
+    },
+  ]
+  if (concise) {
+    return columns.filter((col) =>
+      ['schemas', 'digest_text', 'sum_latency', 'avg_latency'].includes(col.key)
+    )
+  }
+  return columns
+}
 
 interface Props {
   statements: StatementOverview[]
   loading: boolean
   timeRange: StatementTimeRange
-  detailPagePath: string
+  detailPagePath?: string
+  concise?: boolean
 }
 
 export default function StatementsTable({
@@ -111,8 +128,14 @@ export default function StatementsTable({
   loading,
   timeRange,
   detailPagePath,
+  concise,
 }: Props) {
   const { t } = useTranslation()
+  // TODO: extract all following calculations into custom hook for easy reuse
+  const maxSumLatency = useMemo(
+    () => _.max(statements.map((s) => s.sum_latency)) || 1,
+    [statements]
+  )
   const maxExecCount = useMemo(
     () => _.max(statements.map((s) => s.exec_count)) || 1,
     [statements]
@@ -128,15 +151,26 @@ export default function StatementsTable({
   const columns = useMemo(
     () =>
       tableColumns(
+        t,
+        concise || false,
         timeRange,
+        maxSumLatency,
         maxExecCount!,
         maxAvgLatency!,
         maxAvgMem!,
-        detailPagePath,
-        t
+        detailPagePath
       ),
-    [timeRange, maxExecCount, maxAvgLatency, maxAvgMem, t]
+    [
+      t,
+      concise,
+      timeRange,
+      maxSumLatency,
+      maxExecCount,
+      maxAvgLatency,
+      maxAvgMem,
+    ]
   )
+
   return (
     <Table
       columns={columns}

@@ -326,15 +326,30 @@ func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error)
 		Title:     "Diagnose",
 		CommentEN: "Automatically diagnose the cluster problem and record the problem in below table.",
 		CommentCN: "",
-		//joinColumns: []int{0, 1, 2, 3, 6},
-		Column: []string{"RULE", "ITEM", "TYPE", "INSTANCE", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
+		Column:    []string{"RULE", "ITEM", "TYPE", "INSTANCE", "STATUS_ADDRESS", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
 	}
-	sql := fmt.Sprintf("select /*+ time_range('%s','%s') */ * from information_schema.INSPECTION_RESULT", startTime, endTime)
+	sql := fmt.Sprintf("select /*+ time_range('%s','%s') */ %s from information_schema.INSPECTION_RESULT", startTime, endTime, strings.Join(table.Column, ","))
 	rows, err := getSQLRows(db, sql)
 	if err != nil {
 		return table, err
 	}
-	table.Rows = rows
+	newRows := make([]TableRowDef, 0, len(rows))
+	rowIdxMap := make(map[string]int)
+	for _, row := range rows {
+		if len(row.Values) < len(table.Column) {
+			continue
+		}
+		// rule + item
+		name := row.Values[0] + row.Values[1]
+		idx, ok := rowIdxMap[name]
+		if ok && idx < len(newRows) {
+			newRows[idx].SubValues = append(newRows[idx].SubValues, row.Values)
+			continue
+		}
+		newRows = append(newRows, row)
+		rowIdxMap[name] = len(newRows) - 1
+	}
+	table.Rows = newRows
 	return table, nil
 }
 

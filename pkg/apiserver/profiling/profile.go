@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/goccy/go-graphviz"
@@ -31,7 +32,10 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 )
 
-var _ driver.Fetcher = (*fetcher)(nil)
+var (
+	_  driver.Fetcher = (*fetcher)(nil)
+	mu sync.Mutex
+)
 
 type flagSet struct {
 	*flag.FlagSet
@@ -205,18 +209,21 @@ func fetchPprofSVG(ctx context.Context, httpClient *http.Client, target *utils.R
 		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
 	}
 
-	g := graphviz.New()
-	graph, err := graphviz.ParseBytes(b)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse DOT file: %v", err)
-	}
-
 	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt)
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %v", err)
 	}
 	defer tmpfile.Close()
 	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), "svg")
+
+	g := graphviz.New()
+	mu.Lock()
+	defer mu.Unlock()
+	graph, err := graphviz.ParseBytes(b)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse DOT file: %v", err)
+	}
+
 	if err := g.RenderFilename(graph, graphviz.SVG, tmpPath); err != nil {
 		return "", fmt.Errorf("failed to render SVG: %v", err)
 	}

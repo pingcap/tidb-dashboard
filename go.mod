@@ -22,7 +22,6 @@ require (
 	github.com/pingcap/sysutil v0.0.0-20200206130906-2bfa6dc40bcd
 	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.7.0
-	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749
 	github.com/spf13/pflag v1.0.1
 	github.com/swaggo/http-swagger v0.0.0-20200103000832-0e9263c4b516
 	github.com/swaggo/swag v1.6.5

@@ -16,10 +16,15 @@ package uiserver
 import (
 	"io"
 	"net/http"
+
+	assetfs "github.com/elazarl/go-bindata-assetfs"
+)
+
+var (
+	fs = assetFS()
 )
 
 func Handler() http.Handler {
-	fs := assetFS()
 	if fs != nil {
 		fileServer := http.FileServer(fs)
 		return fileServer
@@ -28,4 +33,8 @@ func Handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, _ = io.WriteString(w, "Dashboard UI is not built. Use `UI=1 make`.\n")
 	})
+}
+
+func AssetFS() *assetfs.AssetFS {
+	return fs
 }

@@ -160,6 +160,9 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 		GetTiDBTxnTableData,
 		GetTiDBStatisticsInfo,
 		GetTiDBDDLOwner,
+		GetTiDBTopNSlowQuery,
+		GetTiDBTopNSlowQueryGroupByDigest,
+		GetTiDBSlowQueryWithDiffPlan,
 
 		// PD
 		GetPDTimeConsumeTable,
@@ -323,15 +326,30 @@ func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error)
 		Title:     "Diagnose",
 		CommentEN: "Automatically diagnose the cluster problem and record the problem in below table.",
 		CommentCN: "",
-		//joinColumns: []int{0, 1, 2, 3, 6},
-		Column: []string{"RULE", "ITEM", "TYPE", "INSTANCE", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
+		Column:    []string{"RULE", "ITEM", "TYPE", "INSTANCE", "STATUS_ADDRESS", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
 	}
-	sql := fmt.Sprintf("select /*+ time_range('%s','%s') */ * from information_schema.INSPECTION_RESULT", startTime, endTime)
+	sql := fmt.Sprintf("select /*+ time_range('%s','%s') */ %s from information_schema.INSPECTION_RESULT", startTime, endTime, strings.Join(table.Column, ","))
 	rows, err := getSQLRows(db, sql)
 	if err != nil {
 		return table, err
 	}
-	table.Rows = rows
+	newRows := make([]TableRowDef, 0, len(rows))
+	rowIdxMap := make(map[string]int)
+	for _, row := range rows {
+		if len(row.Values) < len(table.Column) {
+			continue
+		}
+		// rule + item
+		name := row.Values[0] + row.Values[1]
+		idx, ok := rowIdxMap[name]
+		if ok && idx < len(newRows) {
+			newRows[idx].SubValues = append(newRows[idx].SubValues, row.Values)
+			continue
+		}
+		newRows = append(newRows, row)
+		rowIdxMap[name] = len(newRows) - 1
+	}
+	table.Rows = newRows
 	return table, nil
 }
 
@@ -2392,5 +2410,71 @@ func GetTiKVRocksDBTimeConsumeTable(startTime, endTime string, db *gorm.DB) (Tab
 		})
 	}
 	table.Rows = resultRows
+	return table, nil
+}
+
+func GetTiDBTopNSlowQuery(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	columns := []string{"query_time", "parse_time", "compile_time", "prewrite_time", "commit_time", "process_time", "wait_time", "backoff_time", "cop_proc_max", "cop_wait_max", "query"}
+	sql := fmt.Sprintf("select %s from information_schema.cluster_slow_query where time >= '%s' and time < '%s' order by query_time desc limit 10;",
+		strings.Join(columns, ","), startTime, endTime)
+	table := TableDef{
+		Category:  []string{CategoryTiDB},
+		Title:     "Top 10 Slow Query",
+		CommentEN: sql,
+		CommentCN: "",
+		Column:    columns,
+	}
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = useSubRowForLongColumnValue(rows, len(table.Column)-1)
+	return table, nil
+}
+
+func GetTiDBTopNSlowQueryGroupByDigest(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	columns := []string{"*", "query_time", "parse_time", "compile_time", "prewrite_time", "commit_time", "process_time", "wait_time", "backoff_time", "cop_proc_max", "cop_wait_max", "query"}
+	for i := range columns {
+		switch columns[i] {
+		case "*":
+			columns[i] = "count(*)"
+		case "query":
+			columns[i] = "min(query)"
+		default:
+			columns[i] = "sum(" + columns[i] + ")"
+		}
+	}
+	sql := fmt.Sprintf("select /*+ AGG_TO_COP(), HASH_AGG() */ %s from information_schema.cluster_slow_query where time >= '%s' and time < '%s' group by digest order by sum(query_time) desc limit 10;",
+		strings.Join(columns, ","), startTime, endTime)
+	table := TableDef{
+		Category:  []string{CategoryTiDB},
+		Title:     "Top 10 Slow Query Group By Digest",
+		CommentEN: sql,
+		CommentCN: "",
+		Column:    columns,
+	}
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = useSubRowForLongColumnValue(rows, len(table.Column)-1)
+	return table, nil
+}
+
+func GetTiDBSlowQueryWithDiffPlan(startTime, endTime string, db *gorm.DB) (TableDef, error) {
+	sql := fmt.Sprintf("select /*+ AGG_TO_COP(), HASH_AGG() */ digest, min(query) from information_schema.cluster_slow_query where time >= '%s' and time < '%s' group by digest having max(plan_digest) != min(plan_digest);",
+		startTime, endTime)
+	table := TableDef{
+		Category:  []string{CategoryTiDB},
+		Title:     "Slow Query with Diff Plan",
+		CommentEN: sql,
+		CommentCN: "",
+		Column:    []string{"digest", "query"},
+	}
+	rows, err := getSQLRows(db, sql)
+	if err != nil {
+		return table, err
+	}
+	table.Rows = useSubRowForLongColumnValue(rows, 1)
 	return table, nil
 }

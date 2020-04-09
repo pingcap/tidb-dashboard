@@ -2,7 +2,7 @@ import client from '@pingcap-incubator/dashboard_client'
 import React, { useState, useMemo } from 'react'
 import { message, Form, TreeSelect, Button, Select, Badge } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import DateTime from '@/components/DateTime'
 import { Card } from '@pingcap-incubator/dashboard_components'
@@ -108,7 +108,7 @@ export default function Page() {
   )
 
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   async function handleStart() {
     if (selectedTargets.length === 0) {
@@ -122,7 +122,7 @@ export default function Page() {
     }
     try {
       const res = await client.getInstance().startProfiling(req)
-      history.push(`/instance_profiling/${res.data.id}`)
+      navigate(`/instance_profiling/${res.data.id}`)
     } catch (e) {
       // FIXME
       message.error(e.message)
@@ -131,7 +131,7 @@ export default function Page() {
   }
 
   function handleRowClick(rec) {
-    history.push(`/instance_profiling/${rec.id}`)
+    navigate(`/instance_profiling/${rec.id}`)
   }
 
   const historyTableColumns = [

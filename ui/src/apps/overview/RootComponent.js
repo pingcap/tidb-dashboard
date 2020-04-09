@@ -64,16 +64,18 @@ const App = () => {
               <Card
                 size="small"
                 bordered={false}
+                extra={
+                  <Link to="/statement">
+                    {t('overview.top_statements.more')}
+                    <RightOutlined />
+                  </Link>
+                }
                 title={
-                  <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                    <h3 style={{ marginRight: 8 }}>
-                      {t('overview.top_statements.title')}
-                    </h3>
-                    <Link to="/statement">
-                      {t('overview.top_statements.more')}
-                      <RightOutlined />
-                    </Link>
-                  </div>
+                  timeRange.begin_time.length > 0
+                    ? `${t('overview.top_statements.title')} (${
+                        timeRange.begin_time
+                      } ~ ${timeRange.end_time})`
+                    : t('overview.top_statements.title')
                 }
               >
                 {loadingStatements ? (

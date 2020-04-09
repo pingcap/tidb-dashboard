@@ -1,53 +1,48 @@
 import React, { useState, useEffect } from 'react'
 import { Row, Col, Card, Skeleton } from 'antd'
-import { HashRouter as Router } from 'react-router-dom'
+import { RightOutlined } from '@ant-design/icons'
+import { HashRouter as Router, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+
 import client from '@pingcap-incubator/dashboard_client'
+import { StatementsTable } from '@pingcap-incubator/statement'
 
 import { ComponentPanel, MonitorAlertBar } from './components'
 import styles from './RootComponent.module.less'
-import { StatementsTable } from '@pingcap-incubator/statement'
-import moment from 'moment'
-
-const timeFormat = 'YYYY-MM-DD HH:mm:ss'
 
 const App = () => {
   const [cluster, setCluster] = useState(null)
+  const [timeRange, setTimeRange] = useState({ begin_time: '', end_time: '' })
   const [topStatements, setTopStatements] = useState([])
   const [loadingStatements, setLoadingStatements] = useState(false)
   const { t } = useTranslation()
-  const [timeRange] = useState(() => {
-    // TODO: unify to use timestamp instead of string
-    const now = moment().seconds(0)
-    if (now.minutes() < 30) {
-      now.minutes(0)
-    } else {
-      now.minutes(30)
-    }
-    const begin_time = now.format(timeFormat)
-    const end_time = now.add(30, 'm').format(timeFormat)
-    return { begin_time, end_time }
-  })
 
   useEffect(() => {
     const fetchLoad = async () => {
       const res = await client.getInstance().topologyAllGet()
       setCluster(res.data)
     }
-    fetchLoad()
-  }, [])
 
-  useEffect(() => {
     const fetchTopStatements = async () => {
       setLoadingStatements(true)
-      const res = await client
-        .getInstance()
-        .statementsOverviewsGet(timeRange.begin_time, timeRange.end_time)
-      setTopStatements((res.data || []).slice(0, 5))
+      let res = await client.getInstance().statementsTimeRangesGet()
+      const timeRanges = res.data || []
+      if (timeRanges.length > 0) {
+        setTimeRange(timeRanges[0])
+        res = await client
+          .getInstance()
+          .statementsOverviewsGet(
+            timeRanges[0].begin_time,
+            timeRanges[0].end_time
+          )
+        setTopStatements((res.data || []).slice(0, 5))
+      }
       setLoadingStatements(false)
     }
+
+    fetchLoad()
     fetchTopStatements()
-  }, [timeRange])
+  }, [])
 
   return (
     <Router>
@@ -69,7 +64,17 @@ const App = () => {
               <Card
                 size="small"
                 bordered={false}
-                title={t('overview.top_statements.title')}
+                title={
+                  <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                    <h3 style={{ marginRight: 8 }}>
+                      {t('overview.top_statements.title')}
+                    </h3>
+                    <Link to="/statement">
+                      {t('overview.top_statements.more')}
+                      <RightOutlined />
+                    </Link>
+                  </div>
+                }
               >
                 {loadingStatements ? (
                   <Skeleton active />

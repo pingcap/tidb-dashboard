@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import {
   HashRouter as Router,
   Routes,
   Route,
   Link,
-  useNavigate,
   useLocation,
 } from 'react-router-dom'
 import { Breadcrumb } from 'antd'
@@ -14,8 +13,7 @@ import client from '@pingcap-incubator/dashboard_client'
 import { SearchContext, SearchOptions } from './components'
 import { StatementsOverviewPage, StatementDetailPage } from './pages'
 
-const App = (props) => {
-  const navigate = useNavigate()
+const App = () => {
   const location = useLocation()
   const page = location.pathname.split('/').pop()
 
@@ -25,16 +23,14 @@ const App = (props) => {
     curTimeRange: undefined,
   } as SearchOptions)
   const searchContext = { searchOptions, setSearchOptions }
-  useEffect(() => {
-    navigate('/statement/overview')
-  }, [])
+
   return (
     <SearchContext.Provider value={searchContext}>
       <div>
         <div style={{ margin: 12 }}>
           <Breadcrumb>
             <Breadcrumb.Item>
-              <Link to="/statement/overview">Statements Overview</Link>
+              <Link to="/statement">Statements Overview</Link>
             </Breadcrumb.Item>
             {page === 'detail' && (
               <Breadcrumb.Item>Statement Detail</Breadcrumb.Item>
@@ -44,7 +40,7 @@ const App = (props) => {
         <div style={{ margin: 12 }}>
           <Routes>
             <Route
-              path="/statement/overview"
+              path="/statement"
               element={
                 <StatementsOverviewPage
                   dashboardClient={client.getInstance()}

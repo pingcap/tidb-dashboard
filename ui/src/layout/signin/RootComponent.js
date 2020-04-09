@@ -78,7 +78,7 @@ function TiDBSignInForm({ registry }) {
 
   useEffect(() => {
     refPassword.current.focus()
-  })
+  }, [])
 
   return (
     <Form

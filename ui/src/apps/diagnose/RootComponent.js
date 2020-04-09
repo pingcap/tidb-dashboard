@@ -1,17 +1,13 @@
 import React from 'react'
-import { HashRouter as Router, Switch, Route } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import { DiagnoseGenerator, DiagnoseStatus } from './components'
 
 const App = () => (
   <Router>
-    <Switch>
-      <Route path="/diagnose/:id">
-        <DiagnoseStatus />
-      </Route>
-      <Route path="/diagnose">
-        <DiagnoseGenerator />
-      </Route>
-    </Switch>
+    <Routes>
+      <Route path="/diagnose/:id" element={<DiagnoseStatus />} />
+      <Route path="/diagnose" element={<DiagnoseGenerator />} />
+    </Routes>
   </Router>
 )
 

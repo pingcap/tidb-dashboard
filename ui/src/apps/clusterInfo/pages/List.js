@@ -4,11 +4,12 @@ import { DeleteOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { CardTable } from '@pingcap-incubator/dashboard_components'
 import client from '@pingcap-incubator/dashboard_client'
-
-const STATUS_DOWN = 0
-const STATUS_UP = 1
-const STATUS_TOMBSTONE = 2
-const STATUS_OFFLINE = 3
+import {
+  STATUS_TOMBSTONE,
+  STATUS_DOWN,
+  STATUS_OFFLINE,
+  STATUS_UP,
+} from '@/apps/clusterInfo/status/status'
 
 function useStatusColumnRender(handleHideTiDB) {
   const { t } = useTranslation()

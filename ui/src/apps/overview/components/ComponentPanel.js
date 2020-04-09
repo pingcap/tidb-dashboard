@@ -3,6 +3,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './ComponentPanel.module.less'
 import { CloseCircleOutlined } from '@ant-design/icons'
+import { STATUS_UP, STATUS_TOMBSTONE } from '@/apps/clusterInfo/status/status'
 
 const { Text } = Typography
 
@@ -22,10 +23,12 @@ function ComponentPanel({ data, field, clusterError }) {
   if (data && data[field]) {
     if (!data[field].err) {
       data[field].nodes.forEach((n) => {
-        if (n.status === 0) {
-          abnormal_nodes++
-        } else {
+        // NOTE: if node is tombstone,
+        //  no counter should be incremented.
+        if (n.status === STATUS_UP) {
           up_nodes++
+        } else if (n.status !== STATUS_TOMBSTONE) {
+          abnormal_nodes++
         }
       })
     } else {

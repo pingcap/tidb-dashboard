@@ -1,0 +1,6 @@
+diagnosis:
+  title: TiDB SQL 诊断系统报告
+  expand_all: 展开所有
+  fold_all: 收起所有
+  expand: 展开
+  fold: 收起

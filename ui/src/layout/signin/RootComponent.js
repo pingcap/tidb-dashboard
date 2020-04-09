@@ -1,5 +1,5 @@
 import * as singleSpa from 'single-spa'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   DownOutlined,
   GlobalOutlined,
@@ -32,8 +32,8 @@ function TiDBSignInForm({ registry }) {
   const [loading, setLoading] = useState(false)
   const [signInError, setSignInError] = useState(null)
 
-  const refForm = React.createRef()
-  const refPassword = React.createRef()
+  const refForm = useRef()
+  const refPassword = useRef()
 
   const signIn = async (form) => {
     setLoading(true)

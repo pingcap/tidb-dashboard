@@ -7,7 +7,7 @@ import styles from './MonitorAlertBar.module.less'
 
 import client from '@pingcap-incubator/dashboard_client'
 
-export default function MonitorAlertBar({ cluster }) {
+export default function MonitorAlertBar({ cluster, clusterError }) {
   const { t } = useTranslation()
   const [alertCounter, setAlertCounter] = useState(0)
 

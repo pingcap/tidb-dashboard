@@ -1,11 +1,12 @@
-import { Col, Row, Card, Skeleton, Icon, Tooltip, Typography } from 'antd'
+import { Col, Row, Card, Skeleton, Tooltip, Typography } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './ComponentPanel.module.less'
+import { CloseCircleOutlined } from '@ant-design/icons'
 
 const { Text } = Typography
 
-function ComponentPanel({ data, field }) {
+function ComponentPanel({ data, field, clusterError }) {
   const { t } = useTranslation()
 
   let up_nodes = 0
@@ -13,9 +14,9 @@ function ComponentPanel({ data, field }) {
   let has_error = false
   let error_hint
 
-  if (data && data.error) {
+  if (clusterError) {
     has_error = true
-    error_hint = data.error
+    error_hint = clusterError
   }
 
   if (data && data[field]) {
@@ -41,7 +42,7 @@ function ComponentPanel({ data, field }) {
     title_style = 'danger'
     extra = (
       <Tooltip title={error_hint}>
-        <Icon type="warning" style={{ marginLeft: '5px', fontSize: 15 }} />
+        <CloseCircleOutlined style={{ marginLeft: '5px', fontSize: 15 }} />
       </Tooltip>
     )
   }

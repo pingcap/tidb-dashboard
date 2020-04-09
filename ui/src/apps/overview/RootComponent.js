@@ -44,13 +44,25 @@ const App = () => {
             <Col span={18}>
               <Row gutter={24}>
                 <Col span={8}>
-                  <ComponentPanel field="tikv" data={cluster} />
+                  <ComponentPanel
+                    field="tikv"
+                    data={cluster}
+                    clusterError={clusterError}
+                  />
                 </Col>
                 <Col span={8}>
-                  <ComponentPanel field="tidb" data={cluster} />
+                  <ComponentPanel
+                    field="tidb"
+                    data={cluster}
+                    clusterError={clusterError}
+                  />
                 </Col>
                 <Col span={8}>
-                  <ComponentPanel field="pd" data={cluster} />
+                  <ComponentPanel
+                    field="pd"
+                    data={cluster}
+                    clusterError={clusterError}
+                  />
                 </Col>
               </Row>
               <Card
@@ -63,9 +75,15 @@ const App = () => {
             </Col>
             <Col span={6}>
               {cluster ? (
-                <MonitorAlertBar cluster={cluster} />
+                <MonitorAlertBar
+                  cluster={cluster}
+                  clusterError={clusterError}
+                />
               ) : (
-                <MonitorAlertBar cluster={{ error: clusterError }} />
+                <MonitorAlertBar
+                  cluster={cluster}
+                  clusterError={clusterError}
+                />
               )}
             </Col>
           </Row>

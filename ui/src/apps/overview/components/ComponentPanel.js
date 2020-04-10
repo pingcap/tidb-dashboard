@@ -39,7 +39,6 @@ function ComponentPanel({ data, field, clusterError }) {
 
   let extra, title_style
   if (has_error) {
-    // Note: once `has_error` is true, `data[field].err` must exists.
     title_style = 'danger'
     extra = (
       <Tooltip title={error_hint}>
@@ -69,7 +68,6 @@ function ComponentPanel({ data, field, clusterError }) {
           </Col>
           <Col span={9}>
             <div className={styles.desc}>{t('overview.status.abnormal')}</div>
-            {/*Note: If `has_error` is true, both "up" and "down" should be "-" with the sample color*/}
             <div
               className={
                 abnormal_nodes === 0 || has_error ? styles.alive : styles.down

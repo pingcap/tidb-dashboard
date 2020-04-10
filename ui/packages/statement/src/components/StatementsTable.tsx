@@ -54,10 +54,8 @@ const tableColumns = (
       name: t('statement.common.sum_latency'),
       key: 'sum_latency',
       minWidth: 170,
-      isRowHeader: true,
       isSorted: true,
-      isSortedDescending: false,
-      onColumnClick: () => {},
+      isSortedDescending: true,
       onRender: (rec) => (
         <TextWithHorizontalBar
           text={getValueFormat('ns')(rec.sum_latency, 1, null)}
@@ -145,8 +143,6 @@ export default function StatementsTable({
       items={statements}
       columns={columns}
       getKey={(item) => item.digest_text}
-      setKey="none"
-      isHeaderVisible={true}
     />
   )
 }

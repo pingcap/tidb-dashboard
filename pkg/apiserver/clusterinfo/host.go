@@ -2,11 +2,12 @@ package clusterinfo
 
 import (
 	"fmt"
-	"github.com/jinzhu/gorm"
 	"math"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/jinzhu/gorm"
 )
 
 type CPUUsage struct {

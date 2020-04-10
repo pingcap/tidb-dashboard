@@ -143,7 +143,7 @@ func loadHosts(db *gorm.DB) (HostMap, error) {
 		return nil, err
 	}
 
-	hostMap := make(HostMap, 0)
+	hostMap := make(HostMap)
 	for _, row := range rows {
 		ip := parseIP(row[1])
 		var list []Instance
@@ -170,7 +170,7 @@ func loadCPUCores(db *gorm.DB) (CPUCoreMap, error) {
 		return nil, err
 	}
 
-	var m = make(CPUCoreMap, 0)
+	var m = make(CPUCoreMap)
 	for _, row := range rows {
 		ip := parseIP(row[0])
 		cores, err := strconv.Atoi(row[1])
@@ -196,7 +196,7 @@ func loadMemory(db *gorm.DB) (MemoryMap, error) {
 		return nil, err
 	}
 
-	var m = make(MemoryMap, 0)
+	var m = make(MemoryMap)
 	for _, row := range rows {
 		ip := parseIP(row[0])
 
@@ -235,7 +235,7 @@ func loadCPUUsage(db *gorm.DB) (CPUUsageMap, error) {
 		return nil, err
 	}
 
-	var m = make(CPUUsageMap, 0)
+	var m = make(CPUUsageMap)
 	for _, row := range rows {
 		ip := parseIP(row[0])
 
@@ -277,7 +277,7 @@ func queryPartition(db *gorm.DB, instance Instance) (PartitionMap, error) {
 		return nil, err
 	}
 
-	var m = make(PartitionMap, 0)
+	var m = make(PartitionMap)
 	for _, row := range rows {
 		name := row[0]
 

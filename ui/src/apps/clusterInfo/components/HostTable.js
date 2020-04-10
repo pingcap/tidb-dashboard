@@ -18,7 +18,7 @@ function useDataSource() {
         return item
       })
       setData(data)
-    } catch (e) { }
+    } catch (e) {}
     setIsLoading(false)
   }
 
@@ -41,14 +41,13 @@ function toPercentStr(num) {
   if (num === undefined) {
     return ''
   }
-  return '' + Number(num * 100).toFixed(1) + '%';
+  return '' + Number(num * 100).toFixed(1) + '%'
 }
 
 function filterUniquePartitions(items) {
-  return items.filter((x, i, a) =>
-    a.findIndex(y =>
-      y.partition.path === x.partition.path
-    ) === i)
+  return items.filter(
+    (x, i, a) => a.findIndex((y) => y.partition.path === x.partition.path) === i
+  )
 }
 
 export default function HostTable() {
@@ -89,7 +88,8 @@ export default function HostTable() {
               percent={(1 - idle) * 100}
               successPercent={user * 100}
               size="small"
-              showInfo={false} />
+              showInfo={false}
+            />
           </Tooltip>
         )
       },
@@ -111,14 +111,17 @@ export default function HostTable() {
         const { total, used } = memory
         const usedPercent = (used / total).toFixed(3)
         const title = (
-          <div>Used: {byteSizeToStr(used, 1)} ({toPercentStr(usedPercent)})</div>
+          <div>
+            Used: {byteSizeToStr(used, 1)} ({toPercentStr(usedPercent)})
+          </div>
         )
         return (
           <Tooltip title={title}>
             <Progress
               percent={usedPercent * 100}
               size="small"
-              showInfo={false} />
+              showInfo={false}
+            />
           </Tooltip>
         )
       },
@@ -128,35 +131,36 @@ export default function HostTable() {
       dataIndex: 'partitions',
       key: 'deploy',
       render: (partitions) => {
-        if ((partitions === undefined) || (partitions.length === 0)) {
+        if (partitions === undefined || partitions.length === 0) {
           return
         }
         const serverTotal = {
-          'tidb': 0,
-          'tikv': 0,
-          'pd': 0
+          tidb: 0,
+          tikv: 0,
+          pd: 0,
         }
-        return filterUniquePartitions(partitions)
-          .map(partition => {
-            const currentMountPoint = partition.partition.path
-            partitions.forEach(item => {
-              if (item.partition.path !== currentMountPoint) {
-                return
-              }
-              serverTotal[item.instance.server_type]++
-            })
-            const serverInfos = []
-            if (serverTotal.tidb > 0) {
-              serverInfos.push(`${serverTotal.tidb} TiDB`)
+        return filterUniquePartitions(partitions).map((partition) => {
+          const currentMountPoint = partition.partition.path
+          partitions.forEach((item) => {
+            if (item.partition.path !== currentMountPoint) {
+              return
             }
-            if (serverTotal.tikv > 0) {
-              serverInfos.push(`${serverTotal.tikv} TiKV`)
-            }
-            if (serverTotal.pd > 0) {
-              serverInfos.push(`${serverTotal.pd} PD`)
-            }
-            return `${serverInfos.join(' ')}: ${partition.partition.fstype.toUpperCase()} ${currentMountPoint}`
+            serverTotal[item.instance.server_type]++
           })
+          const serverInfos = []
+          if (serverTotal.tidb > 0) {
+            serverInfos.push(`${serverTotal.tidb} TiDB`)
+          }
+          if (serverTotal.tikv > 0) {
+            serverInfos.push(`${serverTotal.tikv} TiKV`)
+          }
+          if (serverTotal.pd > 0) {
+            serverInfos.push(`${serverTotal.pd} PD`)
+          }
+          return `${serverInfos.join(
+            ' '
+          )}: ${partition.partition.fstype.toUpperCase()} ${currentMountPoint}`
+        })
       },
     },
     {
@@ -164,13 +168,12 @@ export default function HostTable() {
       dataIndex: 'partitions',
       key: 'disk_size',
       render: (partitions) => {
-        if ((partitions === undefined) || (partitions.length === 0)) {
+        if (partitions === undefined || partitions.length === 0) {
           return
         }
-        return filterUniquePartitions(partitions)
-          .map((partiton,i) => {
-            return <div key={i}>{byteSizeToStr(partiton.partition.total)}</div>
-          })
+        return filterUniquePartitions(partitions).map((partiton, i) => {
+          return <div key={i}>{byteSizeToStr(partiton.partition.total)}</div>
+        })
       },
     },
     {
@@ -178,26 +181,28 @@ export default function HostTable() {
       dataIndex: 'partitions',
       key: 'disk_usage',
       render: (partitions) => {
-        if ((partitions === undefined) || (partitions.length === 0)) {
+        if (partitions === undefined || partitions.length === 0) {
           return
         }
-        return filterUniquePartitions(partitions)
-          .map((partiton, i) => {
-            const { total, free } = partiton.partition
-            const used = total - free
-            const usedPercent = (used / total).toFixed(3)
-            const title = (
-              <div>Used: {byteSizeToStr(used, 1)} ({toPercentStr(usedPercent)})</div>
-            )
-            return (
-              <Tooltip title={title} key={i}>
-                <Progress
-                  percent={usedPercent * 100}
-                  size="small"
-                  showInfo={false} />
-              </Tooltip>
-            )
-          })
+        return filterUniquePartitions(partitions).map((partiton, i) => {
+          const { total, free } = partiton.partition
+          const used = total - free
+          const usedPercent = (used / total).toFixed(3)
+          const title = (
+            <div>
+              Used: {byteSizeToStr(used, 1)} ({toPercentStr(usedPercent)})
+            </div>
+          )
+          return (
+            <Tooltip title={title} key={i}>
+              <Progress
+                percent={usedPercent * 100}
+                size="small"
+                showInfo={false}
+              />
+            </Tooltip>
+          )
+        })
       },
     },
   ]

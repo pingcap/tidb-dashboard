@@ -5,7 +5,7 @@ import cx from 'classnames'
 import Card from '../Card'
 import styles from './index.module.less'
 
-export interface ITableCardProps<RecordType extends object = any>
+export interface ICardTableProps<RecordType extends object = any>
   extends TableProps<RecordType> {
   title?: any
   className?: string
@@ -16,7 +16,7 @@ export interface ITableCardProps<RecordType extends object = any>
   children?: ReactNode
 }
 
-function TableCard({
+function CardTable({
   title,
   className,
   style,
@@ -24,7 +24,7 @@ function TableCard({
   loadingSkeletonRows,
   cardExtra,
   ...rest
-}: ITableCardProps) {
+}: ICardTableProps) {
   return (
     <Card
       title={title}
@@ -47,4 +47,4 @@ function TableCard({
   )
 }
 
-export default TableCard
+export default CardTable

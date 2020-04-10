@@ -1,13 +1,13 @@
-import client from '@pingcap-incubator/dashboard_client'
 import React, { useState, useMemo } from 'react'
 import { message, Form, TreeSelect, Button, Select, Badge } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import DateTime from '@/components/DateTime'
 import { Card } from '@pingcap-incubator/dashboard_components'
-import { CardTableV2 } from '@/components'
+import { CardTableV2 } from '@pingcap-incubator/dashboard_components'
+import client from '@pingcap-incubator/dashboard_client'
 import { useClientRequest } from '@/utils/useClientRequest'
+import DateTime from '@/components/DateTime'
 
 // FIXME: The following logic should be extracted into a common component.
 function getTreeData(topologyMap) {

@@ -1,3 +1,5 @@
+import typescript from 'rollup-plugin-typescript2'
+import createTransformer from 'ts-import-plugin'
 import babel from 'rollup-plugin-babel'
 import commonjs from 'rollup-plugin-commonjs'
 import external from 'rollup-plugin-peer-deps-external'
@@ -8,8 +10,15 @@ import svgr from '@svgr/rollup'
 
 import pkg from './package.json'
 
+// https://github.com/Brooooooklyn/ts-import-plugin
+const transformer = createTransformer({
+  libraryDirectory: 'es',
+  libraryName: 'antd',
+  style: true,
+})
+
 export default {
-  input: 'src/index.js',
+  input: 'src/index.ts',
   output: [
     {
       file: pkg.main,
@@ -44,11 +53,20 @@ export default {
     }),
     url(),
     svgr(),
-    babel({
-      exclude: 'node_modules/**',
-      plugins: ['external-helpers'],
-    }),
+    // babel({
+    //   exclude: 'node_modules/**',
+    //   plugins: ['external-helpers'],
+    // }),
     resolve(),
+    typescript({
+      rollupCommonJSResolveHack: true,
+      clean: true,
+      transformers: [
+        () => ({
+          before: transformer,
+        }),
+      ],
+    }),
     commonjs(),
   ],
 }

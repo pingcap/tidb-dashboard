@@ -54,8 +54,10 @@ const tableColumns = (
       name: t('statement.common.sum_latency'),
       key: 'sum_latency',
       minWidth: 170,
-      sorter: (a: StatementOverview, b: StatementOverview) =>
-        a.sum_latency! - b.sum_latency!,
+      isRowHeader: true,
+      isSorted: true,
+      isSortedDescending: false,
+      onColumnClick: () => {},
       onRender: (rec) => (
         <TextWithHorizontalBar
           text={getValueFormat('ns')(rec.sum_latency, 1, null)}
@@ -67,8 +69,6 @@ const tableColumns = (
       name: t('statement.common.avg_latency'),
       key: 'avg_latency',
       minWidth: 170,
-      sorter: (a: StatementOverview, b: StatementOverview) =>
-        a.avg_latency! - b.avg_latency!,
       onRender: (rec) => {
         const tooltipContent = `
 AVG: ${getValueFormat('ns')(rec.avg_latency, 1, null)}
@@ -89,8 +89,6 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`
       name: t('statement.common.exec_count'),
       key: 'exec_count',
       minWidth: 170,
-      sorter: (a: StatementOverview, b: StatementOverview) =>
-        a.exec_count! - b.exec_count!,
       onRender: (rec) => (
         <TextWithHorizontalBar
           text={getValueFormat('short')(rec.exec_count, 0, 0)}
@@ -102,8 +100,6 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`
       name: t('statement.common.avg_mem'),
       key: 'avg_mem',
       minWidth: 170,
-      sorter: (a: StatementOverview, b: StatementOverview) =>
-        a.avg_mem! - b.avg_mem!,
       onRender: (rec) => (
         <TextWithHorizontalBar
           text={getValueFormat('decbytes')(rec.avg_mem, 1, null)}
@@ -143,5 +139,14 @@ export default function StatementsTable({
     [t, concise, timeRange, maxMins]
   )
 
-  return <CardTableV2 loading={loading} items={statements} columns={columns} />
+  return (
+    <CardTableV2
+      loading={loading}
+      items={statements}
+      columns={columns}
+      getKey={(item) => item.digest_text}
+      setKey="none"
+      isHeaderVisible={true}
+    />
+  )
 }

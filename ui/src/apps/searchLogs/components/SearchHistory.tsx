@@ -128,7 +128,7 @@ export default function SearchHistory() {
 
   const rowSelection = {
     selectedRowKeys,
-    onChange: (selectedRowKeys: string[] | number[]) => {
+    onChange: (selectedRowKeys: any[]) => {
       setRowKeys(selectedRowKeys)
     },
   }

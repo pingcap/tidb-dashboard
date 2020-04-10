@@ -1,10 +1,25 @@
-import React from 'react'
-import classNames from 'classnames'
+import React, { ReactNode } from 'react'
+import cx from 'classnames'
 import styles from './index.module.less'
 
-function Card({ title, extra, className, children, ...rest }) {
+export interface ICardProps {
+  title?: ReactNode
+  extra?: ReactNode
+  className?: string
+  style?: object
+  children?: ReactNode
+  [k: string]: any
+}
+
+export default function Card({
+  title,
+  extra,
+  className,
+  children,
+  ...rest
+}: ICardProps) {
   return (
-    <div className={classNames(styles.cardContainer, className)} {...rest}>
+    <div className={cx(styles.cardContainer, className)} {...rest}>
       <div className={styles.cardInner}>
         {(title || extra) && (
           <div className={styles.cardTitleSection}>
@@ -17,5 +32,3 @@ function Card({ title, extra, className, children, ...rest }) {
     </div>
   )
 }
-
-export default Card

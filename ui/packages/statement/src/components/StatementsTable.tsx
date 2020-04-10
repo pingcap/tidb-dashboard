@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
-import { Table, Tooltip } from 'antd'
+import { Tooltip } from 'antd'
+import { useTranslation } from 'react-i18next'
+import { CardTableV2 } from '@pingcap-incubator/dashboard_components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TextWithHorizontalBar } from './HorizontalBar'
 import {
@@ -9,7 +11,6 @@ import {
   StatementTimeRange,
   StatementMaxMinVals,
 } from './statement-types'
-import { useTranslation } from 'react-i18next'
 import styles from './styles.module.less'
 import { useMaxMin } from './use-max-min'
 
@@ -22,87 +23,92 @@ const tableColumns = (
 ) => {
   const columns = [
     {
-      title: t('statement.common.schemas'),
-      dataIndex: 'schemas',
+      name: t('statement.common.schemas'),
       key: 'schemas',
+      minWidth: 120,
+      maxWidth: 160,
+      isResizable: true,
+      onRender: (rec) => rec.schemas,
     },
     {
-      title: t('statement.common.digest_text'),
-      dataIndex: 'digest_text',
+      name: t('statement.common.digest_text'),
       key: 'digest_text',
-      render: (value, record: StatementOverview) => (
+      minWidth: 200,
+      maxWidth: 250,
+      isResizable: true,
+      onRender: (rec: StatementOverview) => (
         <Link
           to={`${detailPagePath || '/statement/detail'}?digest=${
-            record.digest
-          }&schema=${record.schema_name}&begin_time=${
+            rec.digest
+          }&schema=${rec.schema_name}&begin_time=${
             timeRange.begin_time
           }&end_time=${timeRange.end_time}`}
         >
-          <Tooltip title={value} placement="right">
-            <div className={styles.digest_column}>{value}</div>
+          <Tooltip title={rec.digest_text} placement="right">
+            <div className={styles.digest_column}>{rec.digest_text}</div>
           </Tooltip>
         </Link>
       ),
     },
     {
-      title: t('statement.common.sum_latency'),
-      dataIndex: 'sum_latency',
+      name: t('statement.common.sum_latency'),
       key: 'sum_latency',
+      minWidth: 170,
       sorter: (a: StatementOverview, b: StatementOverview) =>
         a.sum_latency! - b.sum_latency!,
-      render: (value) => (
+      onRender: (rec) => (
         <TextWithHorizontalBar
-          text={getValueFormat('ns')(value, 1, null)}
-          normalVal={value / maxMins.maxSumLatency}
+          text={getValueFormat('ns')(rec.sum_latency, 1, null)}
+          normalVal={rec.sum_latency / maxMins.maxSumLatency}
         />
       ),
     },
     {
-      title: t('statement.common.avg_latency'),
-      dataIndex: 'avg_latency',
+      name: t('statement.common.avg_latency'),
       key: 'avg_latency',
+      minWidth: 170,
       sorter: (a: StatementOverview, b: StatementOverview) =>
         a.avg_latency! - b.avg_latency!,
-      render: (value) => {
+      onRender: (rec) => {
         const tooltipContent = `
-AVG: ${getValueFormat('ns')(value, 1, null)}
-MIN: ${getValueFormat('ns')(value * 0.5, 1, null)}
-MAX: ${getValueFormat('ns')(value * 1.2, 1, null)}`
+AVG: ${getValueFormat('ns')(rec.avg_latency, 1, null)}
+MIN: ${getValueFormat('ns')(rec.avg_latency * 0.5, 1, null)}
+MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`
         return (
           <TextWithHorizontalBar
             tooltip={<pre>{tooltipContent.trim()}</pre>}
-            text={getValueFormat('ns')(value, 1, null)}
-            normalVal={value / maxMins.maxAvgLatency}
-            maxVal={(value / maxMins.maxAvgLatency) * 1.2}
-            minVal={(value / maxMins.maxAvgLatency) * 0.5}
+            text={getValueFormat('ns')(rec.avg_latency, 1, null)}
+            normalVal={rec.avg_latency / maxMins.maxAvgLatency}
+            maxVal={(rec.avg_latency / maxMins.maxAvgLatency) * 1.2}
+            minVal={(rec.avg_latency / maxMins.maxAvgLatency) * 0.5}
           />
         )
       },
     },
     {
-      title: t('statement.common.exec_count'),
-      dataIndex: 'exec_count',
+      name: t('statement.common.exec_count'),
       key: 'exec_count',
+      minWidth: 170,
       sorter: (a: StatementOverview, b: StatementOverview) =>
         a.exec_count! - b.exec_count!,
-      render: (value) => (
+      onRender: (rec) => (
         <TextWithHorizontalBar
-          text={getValueFormat('short')(value, 0, 0)}
-          normalVal={value / maxMins.maxExecCount}
+          text={getValueFormat('short')(rec.exec_count, 0, 0)}
+          normalVal={rec.exec_count / maxMins.maxExecCount}
         />
       ),
     },
     {
-      title: t('statement.common.avg_mem'),
-      dataIndex: 'avg_mem',
+      name: t('statement.common.avg_mem'),
       key: 'avg_mem',
+      minWidth: 170,
       sorter: (a: StatementOverview, b: StatementOverview) =>
         a.avg_mem! - b.avg_mem!,
-      render: (value) => (
+      onRender: (rec) => (
         <TextWithHorizontalBar
-          text={getValueFormat('decbytes')(value, 1, null)}
-          normalVal={value / maxMins.maxAvgMem}
-          maxVal={(value / maxMins.maxAvgMem) * 1.2}
+          text={getValueFormat('decbytes')(rec.avg_mem, 1, null)}
+          normalVal={rec.avg_mem / maxMins.maxAvgMem}
+          maxVal={(rec.avg_mem / maxMins.maxAvgMem) * 1.2}
         />
       ),
     },
@@ -137,13 +143,5 @@ export default function StatementsTable({
     [t, concise, timeRange, maxMins]
   )
 
-  return (
-    <Table
-      columns={columns}
-      dataSource={statements}
-      loading={loading}
-      rowKey={(record: StatementOverview, index) => `${record.digest}_${index}`}
-      pagination={false}
-    />
-  )
+  return <CardTableV2 loading={loading} items={statements} columns={columns} />
 }

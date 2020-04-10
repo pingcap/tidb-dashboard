@@ -147,7 +147,7 @@ function useClusterNodeDataSource() {
     }
 
     fetch()
-  })
+  }, [t])
 
   return [isLoading, data, fetch]
 }

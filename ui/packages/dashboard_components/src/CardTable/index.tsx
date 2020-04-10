@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react'
 import { Table, Skeleton } from 'antd'
 import { TableProps } from 'antd/lib/table'
-import classNames from 'classnames'
+import cx from 'classnames'
 import Card from '../Card'
 import styles from './index.module.less'
 
@@ -29,7 +29,7 @@ function TableCard({
     <Card
       title={title}
       style={style}
-      className={classNames(styles.cardTable, className)}
+      className={cx(styles.cardTable, className)}
       extra={cardExtra}
     >
       {loading ? (

@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react'
 import { Skeleton } from 'antd'
-import classNames from 'classnames'
-import Card from '../Card'
+import cx from 'classnames'
 import {
   DetailsList,
   DetailsListLayoutMode,
@@ -10,6 +9,7 @@ import {
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
+import Card from '../Card'
 import styles from './index.module.less'
 
 export interface ICardTableV2Props extends IDetailsListProps {
@@ -70,7 +70,7 @@ export default function CardTableV2(props: ICardTableV2Props) {
     <Card
       title={title}
       style={style}
-      className={classNames(styles.cardTable, className)}
+      className={cx(styles.cardTable, className)}
       extra={cardExtra}
     >
       {loading ? (

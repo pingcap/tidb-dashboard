@@ -12,15 +12,32 @@ import styles from './RootComponent.module.less'
 
 const App = () => {
   const [cluster, setCluster] = useState(null)
+  const [clusterError, setClusterError] = useState(null)
   const [timeRange, setTimeRange] = useState({ begin_time: '', end_time: '' })
   const [topStatements, setTopStatements] = useState([])
   const [loadingStatements, setLoadingStatements] = useState(false)
+
   const { t } = useTranslation()
 
   useEffect(() => {
     const fetchLoad = async () => {
-      const res = await client.getInstance().topologyAllGet()
-      setCluster(res.data)
+      try {
+        let res = await client.getInstance().topologyAllGet()
+        const cluster = res.data
+        setCluster(cluster)
+        setClusterError(null)
+      } catch (error) {
+        let topology_error
+        if (error.response) {
+          topology_error = error.response.data
+        } else if (error.request) {
+          topology_error = error.request
+        } else {
+          topology_error = error.message
+        }
+        setCluster(null)
+        setClusterError(topology_error)
+      }
     }
 
     const fetchTopStatements = async () => {
@@ -52,13 +69,25 @@ const App = () => {
             <Col span={18}>
               <Row gutter={24}>
                 <Col span={8}>
-                  <ComponentPanel field="tikv" data={cluster} />
+                  <ComponentPanel
+                    field="tikv"
+                    data={cluster}
+                    clusterError={clusterError}
+                  />
                 </Col>
                 <Col span={8}>
-                  <ComponentPanel field="tidb" data={cluster} />
+                  <ComponentPanel
+                    field="tidb"
+                    data={cluster}
+                    clusterError={clusterError}
+                  />
                 </Col>
                 <Col span={8}>
-                  <ComponentPanel field="pd" data={cluster} />
+                  <ComponentPanel
+                    field="pd"
+                    data={cluster}
+                    clusterError={clusterError}
+                  />
                 </Col>
               </Row>
               <Card
@@ -91,7 +120,17 @@ const App = () => {
               </Card>
             </Col>
             <Col span={6}>
-              <MonitorAlertBar cluster={cluster} />
+              {cluster ? (
+                <MonitorAlertBar
+                  cluster={cluster}
+                  clusterError={clusterError}
+                />
+              ) : (
+                <MonitorAlertBar
+                  cluster={cluster}
+                  clusterError={clusterError}
+                />
+              )}
             </Col>
           </Row>
         </Card>

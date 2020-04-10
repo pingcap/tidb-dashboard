@@ -20,3 +20,5 @@ cluster_info:
         offline: Offline
         unknown: Unknown
         unreachable: Unreachable
+  error:
+    load: 'Load component {{comp}} error: {{cause}}'

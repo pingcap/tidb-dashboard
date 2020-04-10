@@ -1,6 +1,5 @@
 import typescript from 'rollup-plugin-typescript2'
 import createTransformer from 'ts-import-plugin'
-import babel from 'rollup-plugin-babel'
 import commonjs from 'rollup-plugin-commonjs'
 import external from 'rollup-plugin-peer-deps-external'
 import postcss from 'rollup-plugin-postcss'
@@ -53,10 +52,6 @@ export default {
     }),
     url(),
     svgr(),
-    // babel({
-    //   exclude: 'node_modules/**',
-    //   plugins: ['external-helpers'],
-    // }),
     resolve(),
     typescript({
       rollupCommonJSResolveHack: true,

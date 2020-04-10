@@ -6,7 +6,7 @@ import StatementNodesTable from './StatementNodesTable'
 import StatementSummaryTable from './StatementSummaryTable'
 import { StatementDetailInfo, StatementNode } from './statement-types'
 
-import styles from './styles.module.css'
+import styles from './styles.module.less'
 import { useTranslation } from 'react-i18next'
 import StatementPlanTable from './StatementPlanTable'
 

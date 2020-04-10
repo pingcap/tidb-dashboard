@@ -10,7 +10,7 @@ import {
   StatementOverview,
   StatementTimeRange,
 } from './statement-types'
-import styles from './styles.module.css'
+import styles from './styles.module.less'
 import { SearchContext } from './search-options-context'
 import { useTranslation } from 'react-i18next'
 import { OptionsType } from 'rc-select/lib/interface/index'

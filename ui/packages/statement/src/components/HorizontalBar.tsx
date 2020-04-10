@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react'
 import { Tooltip } from 'antd'
 import cx from 'classnames'
-import styles from './HorizontalBar.module.css'
+import styles from './HorizontalBar.module.less'
 
 type TextWithHorizontalBarProps = {
   text: string

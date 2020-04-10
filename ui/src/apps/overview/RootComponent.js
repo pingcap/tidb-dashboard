@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { Row, Col, Card, Skeleton } from 'antd'
-import { HashRouter as Router } from 'react-router-dom'
+import { RightOutlined } from '@ant-design/icons'
+import { HashRouter as Router, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+
 import client from '@pingcap-incubator/dashboard_client'
+import { StatementsTable } from '@pingcap-incubator/statement'
 
 import { ComponentPanel, MonitorAlertBar } from './components'
 import styles from './RootComponent.module.less'
@@ -10,6 +13,9 @@ import styles from './RootComponent.module.less'
 const App = () => {
   const [cluster, setCluster] = useState(null)
   const [clusterError, setClusterError] = useState(null)
+  const [timeRange, setTimeRange] = useState({ begin_time: '', end_time: '' })
+  const [topStatements, setTopStatements] = useState([])
+  const [loadingStatements, setLoadingStatements] = useState(false)
 
   const { t } = useTranslation()
 
@@ -33,7 +39,26 @@ const App = () => {
         setClusterError(topology_error)
       }
     }
+
+    const fetchTopStatements = async () => {
+      setLoadingStatements(true)
+      let res = await client.getInstance().statementsTimeRangesGet()
+      const timeRanges = res.data || []
+      if (timeRanges.length > 0) {
+        setTimeRange(timeRanges[0])
+        res = await client
+          .getInstance()
+          .statementsOverviewsGet(
+            timeRanges[0].begin_time,
+            timeRanges[0].end_time
+          )
+        setTopStatements((res.data || []).slice(0, 5))
+      }
+      setLoadingStatements(false)
+    }
+
     fetchLoad()
+    fetchTopStatements()
   }, [])
 
   return (
@@ -68,9 +93,30 @@ const App = () => {
               <Card
                 size="small"
                 bordered={false}
-                title={t('overview.top_statements.title')}
+                extra={
+                  <Link to="/statement">
+                    {t('overview.top_statements.more')}
+                    <RightOutlined />
+                  </Link>
+                }
+                title={
+                  timeRange.begin_time.length > 0
+                    ? `${t('overview.top_statements.title')} (${
+                        timeRange.begin_time
+                      } ~ ${timeRange.end_time})`
+                    : t('overview.top_statements.title')
+                }
               >
-                <Skeleton active />
+                {loadingStatements ? (
+                  <Skeleton active />
+                ) : (
+                  <StatementsTable
+                    statements={topStatements}
+                    loading={false}
+                    timeRange={timeRange}
+                    concise={true}
+                  />
+                )}
               </Card>
             </Col>
             <Col span={6}>

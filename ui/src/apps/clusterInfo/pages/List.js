@@ -10,6 +10,7 @@ import {
   STATUS_OFFLINE,
   STATUS_UP,
 } from '@/apps/clusterInfo/status/status'
+import DateTime from '@/components/DateTime'
 
 function useStatusColumnRender(handleHideTiDB) {
   const { t } = useTranslation()
@@ -180,6 +181,16 @@ export default function ListPage() {
       dataIndex: 'status',
       width: 150,
       render: renderStatusColumn,
+    },
+    {
+      title: t('cluster_info.list.instance_table.columns.up_time'),
+      dataIndex: 'start_timestamp',
+      width: 150,
+      render: (ts) => {
+        if (ts !== undefined && ts !== 0) {
+          return <DateTime.Calendar unixTimeStampMs={ts * 1000} />
+        }
+      },
     },
     {
       title: t('cluster_info.list.instance_table.columns.version'),

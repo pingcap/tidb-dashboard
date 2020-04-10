@@ -69,7 +69,7 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime s
 			group_concat(table_names) AS agg_table_names
 		`).
 		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
-		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
+		Where("summary_begin_time >= ? AND summary_end_time <= ?", beginTime, endTime).
 		Group("schema_name, digest, digest_text").
 		Order("agg_sum_latency DESC")
 
@@ -107,7 +107,7 @@ func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string
 		`).
 		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
 		Where("schema_name = ?", schema).
-		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
+		Where("summary_begin_time >= ? AND summary_end_time <= ?", beginTime, endTime).
 		Where("digest = ?", digest).
 		Group("digest, digest_text, schema_name")
 
@@ -119,7 +119,7 @@ func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string
 		Select(`query_sample_text, last_seen`).
 		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
 		Where("schema_name = ?", schema).
-		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
+		Where("summary_begin_time >= ? AND summary_end_time <= ?", beginTime, endTime).
 		Where("digest = ?", digest).
 		Order("last_seen DESC")
 
@@ -134,7 +134,7 @@ func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string
 		`).
 		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
 		Where("schema_name = ?", schema).
-		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
+		Where("summary_begin_time >= ? AND summary_end_time <= ?", beginTime, endTime).
 		Where("digest = ?", digest).
 		Where("plan_digest != ''").
 		Group("plan_digest, plan")
@@ -164,7 +164,7 @@ func QueryStatementNodes(db *gorm.DB, schema, beginTime, endTime, digest string)
 		`).
 		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
 		Where("schema_name = ?", schema).
-		Where("summary_begin_time = ? AND summary_end_time = ?", beginTime, endTime).
+		Where("summary_begin_time >= ? AND summary_end_time <= ?", beginTime, endTime).
 		Where("digest = ?", digest).
 		Order("sum_latency DESC").
 		Find(&result).Error

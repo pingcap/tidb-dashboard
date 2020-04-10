@@ -16,37 +16,44 @@ package clusterinfo
 type ComponentStatus uint
 
 const (
+	// ComponentStatusUnreachable means unreachable or disconnected
 	ComponentStatusUnreachable ComponentStatus = 0
 	ComponentStatusUp          ComponentStatus = 1
 	ComponentStatusTombstone   ComponentStatus = 2
 	ComponentStatusOffline     ComponentStatus = 3
+
+	// PD's Store may have state name down.
+	ComponentStatusDown ComponentStatus = 4
 )
 
 type PDInfo struct {
-	Version    string          `json:"version"`
-	IP         string          `json:"ip"`
-	Port       uint            `json:"port"`
-	DeployPath string          `json:"deploy_path"`
-	Status     ComponentStatus `json:"status"`
+	Version        string          `json:"version"`
+	IP             string          `json:"ip"`
+	Port           uint            `json:"port"`
+	DeployPath     string          `json:"deploy_path"`
+	Status         ComponentStatus `json:"status"`
+	StartTimestamp int64           `json:"start_timestamp"`
 }
 
 type TiDBInfo struct {
-	Version    string          `json:"version"`
-	IP         string          `json:"ip"`
-	Port       uint            `json:"port"`
-	BinaryPath string          `json:"binary_path"`
-	Status     ComponentStatus `json:"status"`
-	StatusPort uint            `json:"status_port"`
+	Version        string          `json:"version"`
+	IP             string          `json:"ip"`
+	Port           uint            `json:"port"`
+	BinaryPath     string          `json:"binary_path"`
+	Status         ComponentStatus `json:"status"`
+	StatusPort     uint            `json:"status_port"`
+	StartTimestamp int64           `json:"start_timestamp"`
 }
 
 type TiKVInfo struct {
-	Version    string            `json:"version"`
-	IP         string            `json:"ip"`
-	Port       uint              `json:"port"`
-	BinaryPath string            `json:"binary_path"`
-	Status     ComponentStatus   `json:"status"`
-	StatusPort uint              `json:"status_port"`
-	Labels     map[string]string `json:"labels"`
+	Version        string            `json:"version"`
+	IP             string            `json:"ip"`
+	Port           uint              `json:"port"`
+	BinaryPath     string            `json:"binary_path"`
+	Status         ComponentStatus   `json:"status"`
+	StatusPort     uint              `json:"status_port"`
+	Labels         map[string]string `json:"labels"`
+	StartTimestamp int64             `json:"start_timestamp"`
 }
 
 type AlertManagerInfo struct {

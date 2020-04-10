@@ -20,3 +20,5 @@ cluster_info:
         offline: 下线中
         unknown: 未知
         unreachable: 无法访问
+  error:
+    load: '加载组件 {{comp}} 失败: {{cause}}'

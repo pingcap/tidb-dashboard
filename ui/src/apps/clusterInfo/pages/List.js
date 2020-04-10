@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react'
-import { DeleteOutlined } from '@ant-design/icons'
 import { Tooltip, Popconfirm, Divider, Badge } from 'antd'
+import { DeleteOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { CardTable } from '@pingcap-incubator/dashboard_components'
 import client from '@pingcap-incubator/dashboard_client'
+import {
+  STATUS_TOMBSTONE,
+  STATUS_DOWN,
+  STATUS_OFFLINE,
+  STATUS_UP,
+} from '@/apps/clusterInfo/status/status'
 import DateTime from '@/components/DateTime'
-
-const STATUS_UNREACHABLE = 0
-const STATUS_UP = 1
-const STATUS_TOMBSTONE = 2
-const STATUS_OFFLINE = 3
-const STATUS_DOWN = 4
 
 function useStatusColumnRender(handleHideTiDB) {
   const { t } = useTranslation()
@@ -50,14 +50,6 @@ function useStatusColumnRender(handleHideTiDB) {
           <Badge
             status="processing"
             text={t('cluster_info.list.instance_table.status.offline')}
-          />
-        )
-        break
-      case STATUS_UNREACHABLE:
-        statusNode = (
-          <Badge
-            status="error"
-            text={t('cluster_info.list.instance_table.status.unreachable')}
           />
         )
         break
@@ -112,44 +104,44 @@ function useClusterNodeDataSource() {
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState([])
 
-  const fetch = async () => {
-    setIsLoading(true)
-    try {
-      const res = await client.getInstance().topologyAllGet()
-      const items = ['tidb', 'tikv', 'pd'].map((nodeKind) => {
-        const nodes = res.data[nodeKind]
-        if (nodes.err) {
+  useEffect(() => {
+    const fetch = async () => {
+      setIsLoading(true)
+      try {
+        const res = await client.getInstance().topologyAllGet()
+        const items = ['tidb', 'tikv', 'pd'].map((nodeKind) => {
+          const nodes = res.data[nodeKind]
+          if (nodes.err) {
+            return {
+              key: nodeKind,
+              nodeKind,
+              children: [],
+            }
+          }
+          const children = nodes.nodes.map((node) => {
+            if (node.deploy_path === undefined && node.binary_path !== null) {
+              node.deploy_path = node.binary_path.substring(
+                0,
+                node.binary_path.lastIndexOf('/')
+              )
+            }
+            return {
+              key: `${node.ip}:${node.port}`,
+              ...node,
+              nodeKind,
+            }
+          })
           return {
             key: nodeKind,
             nodeKind,
-            children: [],
-          }
-        }
-        const children = nodes.nodes.map((node) => {
-          if (node.deploy_path === undefined && node.binary_path !== null) {
-            node.deploy_path = node.binary_path.substring(
-              0,
-              node.binary_path.lastIndexOf('/')
-            )
-          }
-          return {
-            key: `${node.ip}:${node.port}`,
-            ...node,
-            nodeKind,
+            children,
           }
         })
-        return {
-          key: nodeKind,
-          nodeKind,
-          children,
-        }
-      })
-      setData(items)
-    } catch (e) {}
-    setIsLoading(false)
-  }
+        setData(items)
+      } catch (e) {}
+      setIsLoading(false)
+    }
 
-  useEffect(() => {
     fetch()
   }, [])
 

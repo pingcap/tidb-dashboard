@@ -29,6 +29,7 @@
     "i18next": "^19.1.0",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
+    "office-ui-fabric-react": "^7.105.3",
     "react-i18next": "^11.3.2",
     "react-router": "^6.0.0-alpha.3",
     "react-router-dom": "^6.0.0-alpha.3",

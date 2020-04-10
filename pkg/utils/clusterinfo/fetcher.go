@@ -22,6 +22,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pingcap/log"
@@ -108,6 +109,7 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 			Status:         ComponentStatusUnreachable,
 			StatusPort:     ds.StatusPort,
 			StartTimestamp: ds.StartTimestamp,
+			GitHash:        ds.GitHash,
 		}
 	}
 }
@@ -215,6 +217,7 @@ func GetTiKVTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, erro
 			StatusPort:     statusPort,
 			Labels:         map[string]string{},
 			StartTimestamp: v.StartTimestamp,
+			GitHash:        v.GitHash,
 		}
 		for _, v := range v.Labels {
 			node.Labels[v.Key] = node.Labels[v.Value]
@@ -298,7 +301,9 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 
 	healthMap := <-healthMapChan
 	close(healthMapChan)
-	for _, ds := range ds.Members {
+
+	var wg sync.WaitGroup
+	for i, ds := range ds.Members {
 		u := ds.ClientUrls[0]
 		ts, err := getPDStartTimestamp(u, httpClient)
 		if err != nil {
@@ -324,7 +329,16 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 			Status:         storeStatus,
 			StartTimestamp: ts,
 		})
+		if storeStatus == ComponentStatusUp {
+			wg.Add(1)
+			member := ds
+			go func(index int) {
+				defer wg.Done()
+				nodes[index].GitHash, _ = getPDNodeGitHash(member.ClientUrls[0], httpClient)
+			}(i)
+		}
 	}
+	wg.Wait()
 	return nodes, nil
 }
 
@@ -396,6 +410,27 @@ func storeStateToStatus(state string) ComponentStatus {
 	default:
 		return ComponentStatusUnreachable
 	}
+}
+
+func getPDNodeGitHash(pdEndPoint string, httpClient *http.Client) (string, error) {
+	resp, err := httpClient.Get(pdEndPoint + "/pd/api/v1/status")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return "", err
+	}
+	var status struct {
+		GitHash string `json:"git_hash"`
+	}
+	err = json.Unmarshal(data, &status)
+	if err != nil {
+		return "", err
+	}
+	return status.GitHash, nil
 }
 
 func getPDNodesHealth(pdEndPoint string, httpClient *http.Client) (map[string]struct{}, error) {

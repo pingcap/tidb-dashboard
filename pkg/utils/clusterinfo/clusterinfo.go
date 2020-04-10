@@ -27,6 +27,7 @@ const (
 )
 
 type PDInfo struct {
+	GitHash        string          `json:"git_hash"`
 	Version        string          `json:"version"`
 	IP             string          `json:"ip"`
 	Port           uint            `json:"port"`
@@ -36,6 +37,7 @@ type PDInfo struct {
 }
 
 type TiDBInfo struct {
+	GitHash        string          `json:"git_hash"`
 	Version        string          `json:"version"`
 	IP             string          `json:"ip"`
 	Port           uint            `json:"port"`
@@ -46,6 +48,7 @@ type TiDBInfo struct {
 }
 
 type TiKVInfo struct {
+	GitHash        string            `json:"git_hash"`
 	Version        string            `json:"version"`
 	IP             string            `json:"ip"`
 	Port           uint              `json:"port"`

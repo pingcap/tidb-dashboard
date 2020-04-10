@@ -21,6 +21,7 @@
     "p": "yarn publish"
   },
   "dependencies": {
+    "@ant-design/icons": "^4.0.0",
     "antd": "^4.0.0",
     "classnames": "^2.2.6",
     "office-ui-fabric-react": "^7.105.3"

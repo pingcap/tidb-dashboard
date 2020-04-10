@@ -103,7 +103,6 @@ function useHideTiDBHandler(updateData) {
 function useClusterNodeDataSource() {
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState([])
-  const { t } = useTranslation()
 
   useEffect(() => {
     const fetch = async () => {

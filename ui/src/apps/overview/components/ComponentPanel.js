@@ -2,7 +2,7 @@ import { Col, Row, Card, Skeleton, Tooltip, Typography } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './ComponentPanel.module.less'
-import { CloseCircleOutlined } from '@ant-design/icons'
+import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { STATUS_UP, STATUS_TOMBSTONE } from '@/apps/clusterInfo/status/status'
 
 const { Text } = Typography
@@ -40,12 +40,12 @@ function ComponentPanel({ data, field, clusterError }) {
   let extra, title_style
   if (has_error) {
     // Note: once `has_error` is true, `data[field].err` must exists.
-    up_nodes = '-'
-    abnormal_nodes = '-'
     title_style = 'danger'
     extra = (
       <Tooltip title={error_hint}>
-        <CloseCircleOutlined style={{ marginLeft: '5px', fontSize: 15 }} />
+        <ExclamationCircleOutlined
+          style={{ marginLeft: '5px', fontSize: 15 }}
+        />
       </Tooltip>
     )
   }
@@ -59,7 +59,7 @@ function ComponentPanel({ data, field, clusterError }) {
 
   return (
     <Card size="small" bordered={false} title={title}>
-      {!data ? (
+      {!data || has_error ? (
         <Skeleton active title={false} />
       ) : (
         <Row gutter={24}>

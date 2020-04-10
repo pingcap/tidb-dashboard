@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Tooltip, Popconfirm, Divider, Badge, message } from 'antd'
+import { Tooltip, Popconfirm, Divider, Badge } from 'antd'
 import { DeleteOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { CardTable } from '@pingcap-incubator/dashboard_components'
@@ -113,9 +113,6 @@ function useClusterNodeDataSource() {
         const items = ['tidb', 'tikv', 'pd'].map((nodeKind) => {
           const nodes = res.data[nodeKind]
           if (nodes.err) {
-            message.warn(
-              t('cluster_info.error.load', { comp: nodeKind, cause: nodes.err })
-            )
             return {
               key: nodeKind,
               nodeKind,
@@ -147,7 +144,7 @@ function useClusterNodeDataSource() {
     }
 
     fetch()
-  }, [t])
+  }, [])
 
   return [isLoading, data, fetch]
 }

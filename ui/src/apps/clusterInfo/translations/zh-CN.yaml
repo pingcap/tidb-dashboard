@@ -20,5 +20,16 @@ cluster_info:
         offline: 下线中
         unknown: 未知
         unreachable: 无法访问
+    host_table:
+      title: 节点
+      columns:
+        ip: 机器地址
+        cpu: CPU
+        cpu_usage: CPU 使用
+        memory: 物理内存
+        memory_usage: 内存使用
+        deploy: 部署磁盘
+        disk_size: 磁盘容量
+        disk_usage: 磁盘使用
   error:
     load: '加载组件 {{comp}} 失败: {{cause}}'

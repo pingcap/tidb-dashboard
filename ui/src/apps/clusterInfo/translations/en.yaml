@@ -20,5 +20,16 @@ cluster_info:
         offline: Offline
         unknown: Unknown
         unreachable: Unreachable
+    host_table:
+      title: Hosts
+      columns:
+        ip: Address
+        cpu: CPU
+        cpu_usage: CPU Usage
+        memory: Memory
+        memory_usage: Memory Usage
+        deploy: Disk
+        disk_size: Disk Size
+        disk_usage: Disk Usage
   error:
     load: 'Load component {{comp}} error: {{cause}}'

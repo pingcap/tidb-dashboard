@@ -27,18 +27,26 @@ import (
 	"go.etcd.io/etcd/clientv3"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
 
 type Service struct {
-	config     *config.Config
-	etcdClient *clientv3.Client
-	httpClient *http.Client
+	config        *config.Config
+	etcdClient    *clientv3.Client
+	httpClient    *http.Client
+	tidbForwarder *tidb.Forwarder
 }
 
-func NewService(config *config.Config, etcdClient *clientv3.Client, httpClient *http.Client) *Service {
-	return &Service{config: config, etcdClient: etcdClient, httpClient: httpClient}
+func NewService(config *config.Config, etcdClient *clientv3.Client, httpClient *http.Client, tidbForwarder *tidb.Forwarder) *Service {
+	return &Service{
+		config:        config,
+		etcdClient:    etcdClient,
+		httpClient:    httpClient,
+		tidbForwarder: tidbForwarder,
+	}
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -47,6 +55,11 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/all", s.topologyHandler)
 	endpoint.DELETE("/tidb/:address", s.deleteTiDBTopologyHandler)
 	endpoint.GET("/alertmanager/:address/count", s.topologyGetAlertCount)
+
+	endpoint = r.Group("/host")
+	endpoint.Use(auth.MWAuthRequired())
+	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
+	endpoint.GET("/all", s.hostHandler)
 }
 
 // @Summary Delete etcd's tidb key.
@@ -139,4 +152,22 @@ func (s *Service) topologyGetAlertCount(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, cnt)
+}
+
+// @Summary Get all host information in the cluster
+// @Description Get information about host in the cluster
+// @Produce json
+// @Success 200 {array} HostInfo
+// @Router /host/all [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) hostHandler(c *gin.Context) {
+	db := utils.GetTiDBConnection(c)
+	infos, err := GetAllHostInfo(db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, infos)
 }

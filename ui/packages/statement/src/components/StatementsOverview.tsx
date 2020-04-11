@@ -1,7 +1,6 @@
 import React, { useState, useReducer, useEffect, useContext } from 'react'
 import { Select, Button, Modal } from 'antd'
 import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
 import StatementEnableModal from './StatementEnableModal'
 import StatementSettingModal from './StatementSettingModal'
 import StatementsTable from './StatementsTable'
@@ -17,7 +16,6 @@ import { SearchContext } from './search-options-context'
 import { useTranslation } from 'react-i18next'
 import { OptionsType } from 'rc-select/lib/interface/index'
 
-dayjs.extend(utc)
 const { Option } = Select
 
 interface State {
@@ -354,8 +352,8 @@ export default function StatementsOverview({
         >
           {state.timeRanges.map((item) => (
             <Option value={item.begin_time || ''} key={item.begin_time}>
-              {dayjs.utc(item.begin_time! * 1000).format('YYYY-MM-DD HH:mm:ss')}{' '}
-              ~ {dayjs.utc(item.end_time! * 1000).format('YYYY-MM-DD HH:mm:ss')}
+              {dayjs.unix(item.begin_time!).format('YYYY-MM-DD HH:mm:ss')} ~{' '}
+              {dayjs.unix(item.end_time!).format('YYYY-MM-DD HH:mm:ss')}
             </Option>
           ))}
         </Select>

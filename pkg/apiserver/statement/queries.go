@@ -38,12 +38,11 @@ func QuerySchemas(db *gorm.DB) ([]string, error) {
 	return schemas, nil
 }
 
-func QueryTimeRanges(db *gorm.DB) (result []*TimeRangeModel, err error) {
+func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 	err = db.
 		Select(`
-			DISTINCT
-			summary_begin_time AS begin_time,
-			summary_end_time AS end_time
+			DISTINCT CONVERT(UNIX_TIMESTAMP(summary_begin_time), UNSIGNED INTEGER) AS begin_time,
+			CONVERT(UNIX_TIMESTAMP(summary_end_time), UNSIGNED INTEGER) AS end_time
 		`).
 		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
 		Order("summary_begin_time DESC").

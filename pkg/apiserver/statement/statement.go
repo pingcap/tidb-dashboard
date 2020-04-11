@@ -77,29 +77,11 @@ func (s *Service) schemasHandler(c *gin.Context) {
 func (s *Service) timeRangesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	timeRanges, err := QueryTimeRanges(db)
-	timeRangeResponse := []*TimeRange{}
-	for _, timeRange := range timeRanges {
-		beginTime, err := time.Parse(layout, timeRange.BeginTime)
-		if err != nil {
-			_ = c.Error(err)
-			return
-		}
-		endTime, err := time.Parse(layout, timeRange.EndTime)
-		if err != nil {
-			_ = c.Error(err)
-			return
-		}
-		timeRangeResponse = append(timeRangeResponse, &TimeRange{
-			BeginTime: beginTime.Unix(),
-			EndTime:   endTime.Unix(),
-		})
-	}
-
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, timeRangeResponse)
+	c.JSON(http.StatusOK, timeRanges)
 }
 
 // @Summary Statements overview
@@ -130,7 +112,7 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	overviews, err := QueryStatementsOverview(db, schemas, time.Unix(int64(beginTime), 0).In(time.UTC).Format(layout), time.Unix(int64(endTime), 0).In(time.UTC).Format(layout))
+	overviews, err := QueryStatementsOverview(db, schemas, time.Unix(int64(beginTime), 0).Format(layout), time.Unix(int64(endTime), 0).Format(layout))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -164,7 +146,7 @@ func (s *Service) detailHandler(c *gin.Context) {
 		return
 	}
 
-	detail, err := QueryStatementDetail(db, schema, time.Unix(int64(beginTime), 0).In(time.UTC).Format(layout), time.Unix(int64(endTime), 0).In(time.UTC).Format(layout), digest)
+	detail, err := QueryStatementDetail(db, schema, time.Unix(int64(beginTime), 0).Format(layout), time.Unix(int64(endTime), 0).Format(layout), digest)
 	if err != nil {
 		_ = c.Error(err)
 		return

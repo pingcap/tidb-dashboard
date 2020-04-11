@@ -77,7 +77,7 @@ func (s *Service) schemasHandler(c *gin.Context) {
 func (s *Service) timeRangesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	timeRanges, err := QueryTimeRanges(db)
-	var timeRangeResponse []*TimeRange
+	timeRangeResponse := []*TimeRange{}
 	for _, timeRange := range timeRanges {
 		beginTime, err := time.Parse(layout, timeRange.BeginTime)
 		if err != nil {

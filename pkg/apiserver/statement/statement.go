@@ -168,10 +168,18 @@ func (s *Service) detailHandler(c *gin.Context) {
 func (s *Service) nodesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	schema := c.Query("schema")
-	beginTime := c.Query("begin_time")
-	endTime := c.Query("end_time")
 	digest := c.Query("digest")
-	nodes, err := QueryStatementNodes(db, schema, beginTime, endTime, digest)
+	beginTime, err := strconv.Atoi(c.Query("begin_time"))
+	if err != nil {
+		_ = c.Error(fmt.Errorf("invalid begin_time: %s", err))
+		return
+	}
+	endTime, err := strconv.Atoi(c.Query("end_time"))
+	if err != nil {
+		_ = c.Error(fmt.Errorf("invalid end_time: %s", err))
+		return
+	}
+	nodes, err := QueryStatementNodes(db, schema, time.Unix(int64(beginTime), 0).Format(layout), time.Unix(int64(endTime), 0).Format(layout), digest)
 	if err != nil {
 		_ = c.Error(err)
 		return

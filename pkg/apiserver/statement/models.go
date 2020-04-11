@@ -17,7 +17,7 @@ import (
 	"strings"
 )
 
-// TimeRangeUnix represents a range of time in Unix seconds
+// TimeRange represents a range of time
 type TimeRange struct {
 	BeginTime int64 `json:"begin_time"`
 	EndTime   int64 `json:"end_time"`

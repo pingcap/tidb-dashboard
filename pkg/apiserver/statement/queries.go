@@ -38,7 +38,7 @@ func QuerySchemas(db *gorm.DB) ([]string, error) {
 	return schemas, nil
 }
 
-func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
+func QueryTimeRanges(db *gorm.DB) (result []*TimeRangeModel, err error) {
 	err = db.
 		Select(`
 			DISTINCT

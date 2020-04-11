@@ -1,31 +1,23 @@
 import React from 'react'
-import {
-  HashRouter as Router,
-  Route,
-  Switch,
-  withRouter,
-} from 'react-router-dom'
+import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 import LogSearching from './LogSearching'
 import LogSearchingDetail from './LogSearchingDetail'
 import LogSearchingHistory from './LogSearchingHistory'
 
-const App = withRouter((props) => {
+const App = (props) => {
   return (
     <div>
-      <Switch>
-        <Route exact path="/search_logs">
-          <LogSearching />
-        </Route>
-        <Route path="/search_logs/history">
-          <LogSearchingHistory />
-        </Route>
-        <Route path="/search_logs/detail/:id">
-          <LogSearchingDetail />
-        </Route>
-      </Switch>
+      <Routes>
+        <Route path="/search_logs/*" element={<LogSearching />} />
+        <Route path="/search_logs/history" element={<LogSearchingHistory />} />
+        <Route
+          path="/search_logs/detail/:id"
+          element={<LogSearchingDetail />}
+        />
+      </Routes>
     </div>
   )
-})
+}
 
 export default function () {
   return (

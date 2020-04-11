@@ -7,6 +7,7 @@ cluster_info:
         node: Node
         version: Version
         status: Status
+        up_time: Up Time
         deploy_path: Deploy Directory
       actions:
         hide_db:
@@ -18,3 +19,6 @@ cluster_info:
         tombstone: Tombstone
         offline: Offline
         unknown: Unknown
+        unreachable: Unreachable
+  error:
+    load: 'Load component {{comp}} error: {{cause}}'

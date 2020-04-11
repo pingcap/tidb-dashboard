@@ -7,6 +7,7 @@ cluster_info:
         node: 节点
         version: 版本
         status: 状态
+        up_time: 启动时间
         deploy_path: 部署路径
       actions:
         hide_db:
@@ -18,3 +19,6 @@ cluster_info:
         tombstone: 已缩容下线
         offline: 下线中
         unknown: 未知
+        unreachable: 无法访问
+  error:
+    load: '加载组件 {{comp}} 失败: {{cause}}'

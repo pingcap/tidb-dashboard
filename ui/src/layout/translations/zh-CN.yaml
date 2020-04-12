@@ -17,10 +17,14 @@ signin:
     username: 用户名
     password: 密码
     button: 登录
-    tidb_auth:
-      title: SQL 用户登录
+    auth:
+      mode: 鉴权模式
+      kv_title: TiKV 模式登录
+      sql_title: SQL 用户登录
       check:
         message: 请输入用户名
+      sql_mode: SQL 用户模式
+      kv_mode: TiKV 模式
 nav:
   user:
     signout: 登出

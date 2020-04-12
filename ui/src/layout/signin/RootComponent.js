@@ -5,8 +5,9 @@ import {
   GlobalOutlined,
   LockOutlined,
   UserOutlined,
+  UserSwitchOutlined,
 } from '@ant-design/icons'
-import { Form, Input, Button, message } from 'antd'
+import { Form, Input, Button, Menu, Dropdown, message } from 'antd'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import LanguageDropdown from '@/components/LanguageDropdown'
@@ -31,6 +32,7 @@ function TiDBSignInForm({ registry }) {
   const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
   const [signInError, setSignInError] = useState(null)
+  const [isTidbAuth, setIsTidbAuth] = useState(true)
 
   const refForm = useRef()
   const refPassword = useRef()
@@ -43,7 +45,7 @@ function TiDBSignInForm({ registry }) {
       const r = await client.getInstance().userLoginPost({
         username: form.username,
         password: form.password,
-        is_tidb_auth: true,
+        is_tidb_auth: isTidbAuth,
       })
       authUtil.setAuthToken(r.data.token)
       message.success(t('signin.message.success'))
@@ -76,9 +78,20 @@ function TiDBSignInForm({ registry }) {
     setSignInError(null)
   }
 
+  const handleAuthMode = (v) => {
+    setIsTidbAuth(v.key === 'db_auth')
+  }
+
+  const menu = (
+    <Menu onClick={handleAuthMode}>
+      <Menu.Item key="db_auth">SQL User</Menu.Item>
+      <Menu.Item key="kv_auth">TiKV User</Menu.Item>
+    </Menu>
+  )
+
   useEffect(() => {
     refPassword.current.focus()
-  }, [])
+  }, [isTidbAuth])
 
   return (
     <Form
@@ -100,7 +113,11 @@ function TiDBSignInForm({ registry }) {
         </AnimationItem>
         <AnimationItem>
           <Form.Item>
-            <h2>{t('signin.form.tidb_auth.title')}</h2>
+            {isTidbAuth ? (
+              <h2>{t('signin.form.auth.sql_title')}</h2>
+            ) : (
+              <h2>{t('signin.form.auth.kv_title')}</h2>
+            )}
           </Form.Item>
         </AnimationItem>
         <AnimationItem>
@@ -153,6 +170,19 @@ function TiDBSignInForm({ registry }) {
               {t('signin.form.button')}
             </Button>
           </Form.Item>
+        </AnimationItem>
+        <AnimationItem>
+          <div className={styles.extraLink}>
+            <Dropdown overlay={menu}>
+              <a
+                className="ant-dropdown-link"
+                onClick={(e) => e.preventDefault()}
+              >
+                <UserSwitchOutlined /> {t('signin.form.auth.mode')}{' '}
+                <DownOutlined />
+              </a>
+            </Dropdown>
+          </div>
         </AnimationItem>
         <AnimationItem>
           <div className={styles.extraLink}>

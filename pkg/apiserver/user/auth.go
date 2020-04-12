@@ -26,6 +26,7 @@ import (
 	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
+	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -45,7 +46,7 @@ type AuthService struct {
 }
 
 type authenticateForm struct {
-	IsTiDBAuth bool   `json:"is_tidb_auth" binding:"required"`
+	IsTiDBAuth *bool  `json:"is_tidb_auth" binding:"required"`
 	Username   string `json:"username" binding:"required"`
 	Password   string `json:"password"`
 }
@@ -55,9 +56,9 @@ type TokenResponse struct {
 	Expire time.Time `json:"expire"`
 }
 
-func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder) (*utils.SessionUser, error) {
-	if !f.IsTiDBAuth {
-		err := globalUtil.VerifyKvModeAuthKey(tidbForwarder.EtcdClient, f.Password)
+func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder, etcdClient *clientv3.Client) (*utils.SessionUser, error) {
+	if !*f.IsTiDBAuth {
+		err := globalUtil.VerifyKvModeAuthKey(etcdClient, f.Password)
 		if err != nil {
 			return nil, ErrSignInOther.WrapWithNoMessage(err)
 		}
@@ -79,13 +80,13 @@ func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder) (*utils.S
 
 	// TODO: Fill privilege tables here
 	return &utils.SessionUser{
-		IsTiDBAuth:   f.IsTiDBAuth,
+		IsTiDBAuth:   *f.IsTiDBAuth,
 		TiDBUsername: f.Username,
 		TiDBPassword: f.Password,
 	}, nil
 }
 
-func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
+func NewAuthService(tidbForwarder *tidb.Forwarder, etcdClient *clientv3.Client) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -112,7 +113,7 @@ func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
 			if err := c.ShouldBindJSON(&form); err != nil {
 				return nil, utils.ErrInvalidRequest.WrapWithNoMessage(err)
 			}
-			u, err := form.Authenticate(tidbForwarder)
+			u, err := form.Authenticate(tidbForwarder, etcdClient)
 			if err != nil {
 				return nil, errorx.Decorate(err, "authenticate failed")
 			}

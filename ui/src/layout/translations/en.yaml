@@ -17,10 +17,14 @@ signin:
     username: Username
     password: Password
     button: Sign In
-    tidb_auth:
-      title: SQL User Sign In
+    auth:
+      mode: Auth Mode
+      kv_title: KV Mode Sign In
+      sql_title: SQL User Sign In
       check:
         message: Username is required
+      sql_mode: SQL User
+      kv_mode: TiKV Mode
 nav:
   user:
     signout: Sign Out

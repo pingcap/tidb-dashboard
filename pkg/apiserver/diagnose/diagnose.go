@@ -111,7 +111,11 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		return
 	}
 
-	db := apiutils.TakeTiDBConnection(c)
+	db, err := apiutils.TakeTiDBConnection(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 
 	go func() {
 		defer db.Close()

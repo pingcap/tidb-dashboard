@@ -54,7 +54,11 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) schemasHandler(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
+	db, err := utils.GetTiDBConnection(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 	schemas, err := QuerySchemas(db)
 	if err != nil {
 		_ = c.Error(err)
@@ -71,7 +75,11 @@ func (s *Service) schemasHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) timeRangesHandler(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
+	db, err := utils.GetTiDBConnection(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 	timeRanges, err := QueryTimeRanges(db)
 	if err != nil {
 		_ = c.Error(err)
@@ -102,7 +110,12 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 		_ = c.Error(fmt.Errorf("invalid begin_time or end_time"))
 		return
 	}
-	db := utils.GetTiDBConnection(c)
+
+	db, err := utils.GetTiDBConnection(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 	overviews, err := QueryStatementsOverview(db, schemas, beginTime, endTime)
 	if err != nil {
 		_ = c.Error(err)
@@ -123,7 +136,11 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) detailHandler(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
+	db, err := utils.GetTiDBConnection(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 	schema := c.Query("schema")
 	beginTime := c.Query("begin_time")
 	endTime := c.Query("end_time")
@@ -148,7 +165,11 @@ func (s *Service) detailHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) nodesHandler(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
+	db, err := utils.GetTiDBConnection(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 	schema := c.Query("schema")
 	beginTime := c.Query("begin_time")
 	endTime := c.Query("end_time")

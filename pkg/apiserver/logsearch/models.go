@@ -144,10 +144,11 @@ func (task *TaskModel) RemoveDataAndPreview(db *dbstore.DB) {
 }
 
 type TaskGroupModel struct {
-	ID            uint              `json:"id" gorm:"primary_key"`
-	SearchRequest *SearchLogRequest `json:"search_request" gorm:"type:text"`
-	State         TaskGroupState    `json:"state" gorm:"index"`
-	LogStoreDir   *string           `json:"log_store_dir" gorm:"type:text"`
+	ID            uint                          `json:"id" gorm:"primary_key"`
+	SearchRequest *SearchLogRequest             `json:"search_request" gorm:"type:text"`
+	State         TaskGroupState                `json:"state" gorm:"index"`
+	TargetStats   utils.RequestTargetStatistics `json:"target_stats" gorm:"embedded;embedded_prefix:target_stats_"`
+	LogStoreDir   *string                       `json:"log_store_dir" gorm:"type:text"`
 }
 
 func (TaskGroupModel) TableName() string {

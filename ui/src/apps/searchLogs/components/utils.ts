@@ -2,7 +2,6 @@ import {
   ClusterinfoClusterInfo,
   LogsearchSearchTarget,
   LogsearchTaskGroupResponse,
-  LogsearchTaskGroupStats,
   LogsearchTaskModel,
   UtilsRequestTargetStatistics,
 } from '@pingcap-incubator/dashboard_client'
@@ -127,9 +126,9 @@ export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
 }
 
 export function parseHistoryStatsParams(
-  resp: LogsearchTaskGroupStats
+  resp: LogsearchTaskGroupResponse
 ): StatsParams {
-  const { task_group, requestTargetStatistics } = resp
+  const { task_group, tasks } = resp
   const { start_time, end_time, min_level, patterns } =
     task_group?.search_request || {}
   const startTime = start_time ? moment(start_time) : null
@@ -138,7 +137,7 @@ export function parseHistoryStatsParams(
     timeRange: [startTime, endTime] as RangeValue<moment.Moment>,
     logLevel: min_level ?? 0,
     searchValue: patterns && patterns.length > 0 ? patterns.join(' ') : '',
-    stats: requestTargetStatistics,
+    stats: task_group?.target_stats,
   }
 }
 

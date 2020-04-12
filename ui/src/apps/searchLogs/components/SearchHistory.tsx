@@ -1,6 +1,6 @@
 import client from '@pingcap-incubator/dashboard_client'
 import {
-  LogsearchTaskGroupStats,
+  LogsearchTaskGroupResponse,
   UtilsRequestTargetStatistics,
 } from '@pingcap-incubator/dashboard_client'
 import { CardTable, Head } from '@pingcap-incubator/dashboard_components'
@@ -55,7 +55,7 @@ function timeRender(timeRange: RangeValue<Moment>): string {
 }
 
 export default function SearchHistory() {
-  const [taskGroups, setTaskGroups] = useState<LogsearchTaskGroupStats[]>([])
+  const [taskGroups, setTaskGroups] = useState<LogsearchTaskGroupResponse[]>([])
   const [selectedRowKeys, setRowKeys] = useState<string[] | number[]>([])
 
   const { t } = useTranslation()

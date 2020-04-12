@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import _ from 'lodash'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Tooltip } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { CardTableV2 } from '@pingcap-incubator/dashboard_components'
@@ -17,9 +17,7 @@ import { useMaxMin } from './use-max-min'
 const tableColumns = (
   t: (string) => string,
   concise: boolean,
-  timeRange: StatementTimeRange,
-  maxMins: StatementMaxMinVals,
-  detailPagePath?: string
+  maxMins: StatementMaxMinVals
 ) => {
   const columns = [
     {
@@ -37,17 +35,9 @@ const tableColumns = (
       maxWidth: 250,
       isResizable: true,
       onRender: (rec: StatementOverview) => (
-        <Link
-          to={`${detailPagePath || '/statement/detail'}?digest=${
-            rec.digest
-          }&schema=${rec.schema_name}&begin_time=${
-            timeRange.begin_time
-          }&end_time=${timeRange.end_time}`}
-        >
-          <Tooltip title={rec.digest_text} placement="right">
-            <div className={styles.digest_column}>{rec.digest_text}</div>
-          </Tooltip>
-        </Link>
+        <Tooltip title={rec.digest_text} placement="right">
+          <div className={styles.digest_column}>{rec.digest_text}</div>
+        </Tooltip>
       ),
     },
     {
@@ -131,11 +121,21 @@ export default function StatementsTable({
   concise,
 }: Props) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const maxMins = useMaxMin(statements)
-  const columns = useMemo(
-    () => tableColumns(t, concise || false, timeRange, maxMins, detailPagePath),
-    [t, concise, timeRange, maxMins]
-  )
+  const columns = useMemo(() => tableColumns(t, concise || false, maxMins), [
+    t,
+    concise,
+    maxMins,
+  ])
+
+  function handleRowClick(rec) {
+    navigate(
+      `${detailPagePath || '/statement/detail'}?digest=${rec.digest}&schema=${
+        rec.schema_name
+      }&begin_time=${timeRange.begin_time}&end_time=${timeRange.end_time}`
+    )
+  }
 
   return (
     <CardTableV2
@@ -143,6 +143,7 @@ export default function StatementsTable({
       items={statements}
       columns={columns}
       getKey={(item) => item.digest_text}
+      onRowClicked={handleRowClick}
     />
   )
 }

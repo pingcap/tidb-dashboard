@@ -128,7 +128,7 @@ export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
 export function parseHistoryStatsParams(
   resp: LogsearchTaskGroupResponse
 ): StatsParams {
-  const { task_group, tasks } = resp
+  const { task_group } = resp
   const { start_time, end_time, min_level, patterns } =
     task_group?.search_request || {}
   const startTime = start_time ? moment(start_time) : null

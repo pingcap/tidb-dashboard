@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
 import {
   HashRouter as Router,
-  Switch,
+  Routes,
   Route,
-  Redirect,
   Link,
-  withRouter,
+  useLocation,
 } from 'react-router-dom'
 import { Breadcrumb } from 'antd'
 
@@ -14,8 +13,8 @@ import client from '@pingcap-incubator/dashboard_client'
 import { SearchContext, SearchOptions } from './components'
 import { StatementsOverviewPage, StatementDetailPage } from './pages'
 
-const App = withRouter((props) => {
-  const { location } = props
+const App = () => {
+  const location = useLocation()
   const page = location.pathname.split('/').pop()
 
   const [searchOptions, setSearchOptions] = useState({
@@ -24,14 +23,13 @@ const App = withRouter((props) => {
     curTimeRange: undefined,
   } as SearchOptions)
   const searchContext = { searchOptions, setSearchOptions }
-
   return (
     <SearchContext.Provider value={searchContext}>
       <div>
         <div style={{ margin: 12 }}>
           <Breadcrumb>
             <Breadcrumb.Item>
-              <Link to="/statement/overview">Statements Overview</Link>
+              <Link to="/statement">Statements Overview</Link>
             </Breadcrumb.Item>
             {page === 'detail' && (
               <Breadcrumb.Item>Statement Detail</Breadcrumb.Item>
@@ -39,23 +37,28 @@ const App = withRouter((props) => {
           </Breadcrumb>
         </div>
         <div style={{ margin: 12 }}>
-          <Switch>
-            <Route path="/statement/overview">
-              <StatementsOverviewPage
-                dashboardClient={client.getInstance()}
-                detailPagePath="/statement/detail"
-              />
-            </Route>
-            <Route path="/statement/detail">
-              <StatementDetailPage dashboardClient={client.getInstance()} />
-            </Route>
-            <Redirect exact from="/statement" to="/statement/overview" />
-          </Switch>
+          <Routes>
+            <Route
+              path="/statement"
+              element={
+                <StatementsOverviewPage
+                  dashboardClient={client.getInstance()}
+                  detailPagePath="/statement/detail"
+                />
+              }
+            />
+            <Route
+              path="/statement/detail"
+              element={
+                <StatementDetailPage dashboardClient={client.getInstance()} />
+              }
+            />
+          </Routes>
         </div>
       </div>
     </SearchContext.Provider>
   )
-})
+}
 
 export default function () {
   return (

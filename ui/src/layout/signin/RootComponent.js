@@ -1,5 +1,5 @@
 import * as singleSpa from 'single-spa'
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   DownOutlined,
   GlobalOutlined,
@@ -8,7 +8,7 @@ import {
 } from '@ant-design/icons'
 import { Form, Input, Button, message } from 'antd'
 import { motion } from 'framer-motion'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import LanguageDropdown from '@/components/LanguageDropdown'
 import client from '@pingcap-incubator/dashboard_client'
 import * as authUtil from '@/utils/auth'
@@ -27,22 +27,17 @@ const AnimationItem = (props) => {
   )
 }
 
-@withTranslation()
-class TiDBSignInForm extends React.PureComponent {
-  state = {
-    loading: false,
-    signInError: null,
-  }
+function TiDBSignInForm({ registry }) {
+  const { t } = useTranslation()
+  const [loading, setLoading] = useState(false)
+  const [signInError, setSignInError] = useState(null)
 
-  constructor(props) {
-    super(props)
-    this.refForm = React.createRef()
-    this.refPassword = React.createRef()
-  }
+  const refForm = useRef()
+  const refPassword = useRef()
 
-  signIn = async (form) => {
-    this.setState({ loading: true })
-    this.clearErrorMessages()
+  const signIn = async (form) => {
+    setLoading(true)
+    clearErrorMessages()
 
     try {
       const r = await client.getInstance().userLoginPost({
@@ -51,153 +46,144 @@ class TiDBSignInForm extends React.PureComponent {
         is_tidb_auth: true,
       })
       authUtil.setAuthToken(r.data.token)
-      message.success(this.props.t('signin.message.success'))
-      singleSpa.navigateToUrl('#' + this.props.registry.getDefaultRouter())
+      message.success(t('signin.message.success'))
+      singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
     } catch (e) {
       console.log(e)
       if (!e.handled) {
         let msg
         if (e.response.data) {
-          msg = this.props.t(e.response.data.code)
+          msg = t(e.response.data.code)
         } else {
           msg = e.message
         }
-        this.setState({
-          signInError: this.props.t('signin.message.error', { msg }),
-        })
-        this.refForm.current.setFieldsValue({ password: '' })
+        setSignInError(t('signin.message.error', { msg }))
+        refForm.current.setFieldsValue({ password: '' })
         setTimeout(() => {
           // Focus after disable state is removed
-          this.refPassword.current.focus()
+          refPassword.current.focus()
         }, 0)
       }
     }
-    this.setState({ loading: false })
+    setLoading(false)
   }
 
-  handleSubmit = (values) => {
-    this.signIn(values)
+  const handleSubmit = (values) => {
+    signIn(values)
   }
 
-  clearErrorMessages = () => {
-    this.setState({ signInError: null })
+  const clearErrorMessages = () => {
+    setSignInError(null)
   }
 
-  componentDidMount = () => {
-    this.refPassword.current.focus()
-  }
+  useEffect(() => {
+    refPassword.current.focus()
+  }, [])
 
-  render() {
-    const { t } = this.props
-    return (
-      <Form
-        name="tidb_signin"
-        onFinish={this.handleSubmit}
-        layout="vertical"
-        initialValues={{ username: 'root' }}
-        ref={this.refForm}
+  return (
+    <Form
+      name="tidb_signin"
+      onFinish={handleSubmit}
+      layout="vertical"
+      initialValues={{ username: 'root' }}
+      ref={refForm}
+    >
+      <motion.div
+        initial="initial"
+        animate="open"
+        variants={{
+          open: { transition: { staggerChildren: 0.03, delayChildren: 0.5 } },
+        }}
       >
-        <motion.div
-          initial="initial"
-          animate="open"
-          variants={{
-            open: { transition: { staggerChildren: 0.03, delayChildren: 0.5 } },
-          }}
-        >
-          <AnimationItem>
-            <Logo className={styles.logo} />
-          </AnimationItem>
-          <AnimationItem>
-            <Form.Item>
-              <h2>{t('signin.form.tidb_auth.title')}</h2>
-            </Form.Item>
-          </AnimationItem>
-          <AnimationItem>
-            <Form.Item
-              name="username"
-              label={t('signin.form.username')}
-              rules={[
-                {
-                  required: true,
-                  message: t('signin.form.tidb_auth.check.username'),
-                },
-              ]}
+        <AnimationItem>
+          <Logo className={styles.logo} />
+        </AnimationItem>
+        <AnimationItem>
+          <Form.Item>
+            <h2>{t('signin.form.tidb_auth.title')}</h2>
+          </Form.Item>
+        </AnimationItem>
+        <AnimationItem>
+          <Form.Item
+            name="username"
+            label={t('signin.form.username')}
+            rules={[
+              {
+                required: true,
+                message: t('signin.form.tidb_auth.check.username'),
+              },
+            ]}
+          >
+            <Input
+              onInput={clearErrorMessages}
+              prefix={<UserOutlined />}
+              disabled
+            />
+          </Form.Item>
+        </AnimationItem>
+        <AnimationItem>
+          <Form.Item
+            name="password"
+            label={t('signin.form.password')}
+            {...(signInError && {
+              help: signInError,
+              validateStatus: 'error',
+            })}
+          >
+            <Input
+              prefix={<LockOutlined />}
+              type="password"
+              disabled={loading}
+              onInput={clearErrorMessages}
+              ref={refPassword}
+            />
+          </Form.Item>
+        </AnimationItem>
+        <AnimationItem>
+          <Form.Item>
+            <Button
+              id="signin_btn"
+              type="primary"
+              htmlType="submit"
+              size="large"
+              loading={loading}
+              className={styles.signInButton}
+              block
             >
-              <Input
-                onInput={this.clearErrorMessages}
-                prefix={<UserOutlined />}
-                disabled
-              />
-            </Form.Item>
-          </AnimationItem>
-          <AnimationItem>
-            <Form.Item
-              name="password"
-              label={t('signin.form.password')}
-              {...(this.state.signInError && {
-                help: this.state.signInError,
-                validateStatus: 'error',
-              })}
-            >
-              <Input
-                prefix={<LockOutlined />}
-                type="password"
-                disabled={this.state.loading}
-                onInput={this.clearErrorMessages}
-                ref={this.refPassword}
-              />
-            </Form.Item>
-          </AnimationItem>
-          <AnimationItem>
-            <Form.Item>
-              <Button
-                id="signin_btn"
-                type="primary"
-                htmlType="submit"
-                size="large"
-                loading={this.state.loading}
-                className={styles.signInButton}
-                block
-              >
-                {t('signin.form.button')}
-              </Button>
-            </Form.Item>
-          </AnimationItem>
-          <AnimationItem>
-            <div className={styles.extraLink}>
-              <LanguageDropdown>
-                <a>
-                  <GlobalOutlined /> Switch Language <DownOutlined />
-                </a>
-              </LanguageDropdown>
-            </div>
-          </AnimationItem>
-        </motion.div>
-      </Form>
-    )
-  }
+              {t('signin.form.button')}
+            </Button>
+          </Form.Item>
+        </AnimationItem>
+        <AnimationItem>
+          <div className={styles.extraLink}>
+            <LanguageDropdown>
+              <a>
+                <GlobalOutlined /> Switch Language <DownOutlined />
+              </a>
+            </LanguageDropdown>
+          </div>
+        </AnimationItem>
+      </motion.div>
+    </Form>
+  )
 }
 
-@withTranslation()
-class App extends React.PureComponent {
-  render() {
-    const { registry } = this.props
-    return (
-      <div className={styles.container}>
-        <div className={styles.dialogContainer}>
-          <div className={styles.dialog}>
-            <TiDBSignInForm registry={registry} />
-          </div>
+function App({ registry }) {
+  return (
+    <div className={styles.container}>
+      <div className={styles.dialogContainer}>
+        <div className={styles.dialog}>
+          <TiDBSignInForm registry={registry} />
         </div>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ ease: 'easeOut', duration: 0.5 }}
-          className={styles.landing}
-        ></motion.div>
       </div>
-    )
-  }
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ ease: 'easeOut', duration: 0.5 }}
+        className={styles.landing}
+      ></motion.div>
+    </div>
+  )
 }
 
 export default App

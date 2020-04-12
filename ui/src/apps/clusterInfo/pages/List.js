@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react'
-import { DeleteOutlined } from '@ant-design/icons'
 import { Tooltip, Popconfirm, Divider, Badge } from 'antd'
+import { DeleteOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { CardTable } from '@pingcap-incubator/dashboard_components'
 import client from '@pingcap-incubator/dashboard_client'
-
-const STATUS_DOWN = 0
-const STATUS_UP = 1
-const STATUS_TOMBSTONE = 2
-const STATUS_OFFLINE = 3
+import {
+  STATUS_TOMBSTONE,
+  STATUS_DOWN,
+  STATUS_OFFLINE,
+  STATUS_UP,
+} from '@/apps/clusterInfo/status/status'
+import DateTime from '@/components/DateTime'
 
 function useStatusColumnRender(handleHideTiDB) {
   const { t } = useTranslation()
@@ -102,44 +104,44 @@ function useClusterNodeDataSource() {
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState([])
 
-  const fetch = async () => {
-    setIsLoading(true)
-    try {
-      const res = await client.getInstance().topologyAllGet()
-      const items = ['tidb', 'tikv', 'pd'].map((nodeKind) => {
-        const nodes = res.data[nodeKind]
-        if (nodes.err) {
+  useEffect(() => {
+    const fetch = async () => {
+      setIsLoading(true)
+      try {
+        const res = await client.getInstance().topologyAllGet()
+        const items = ['tidb', 'tikv', 'pd'].map((nodeKind) => {
+          const nodes = res.data[nodeKind]
+          if (nodes.err) {
+            return {
+              key: nodeKind,
+              nodeKind,
+              children: [],
+            }
+          }
+          const children = nodes.nodes.map((node) => {
+            if (node.deploy_path === undefined && node.binary_path !== null) {
+              node.deploy_path = node.binary_path.substring(
+                0,
+                node.binary_path.lastIndexOf('/')
+              )
+            }
+            return {
+              key: `${node.ip}:${node.port}`,
+              ...node,
+              nodeKind,
+            }
+          })
           return {
             key: nodeKind,
             nodeKind,
-            children: [],
-          }
-        }
-        const children = nodes.nodes.map((node) => {
-          if (node.deploy_path === undefined && node.binary_path !== null) {
-            node.deploy_path = node.binary_path.substring(
-              0,
-              node.binary_path.lastIndexOf('/')
-            )
-          }
-          return {
-            key: `${node.ip}:${node.port}`,
-            ...node,
-            nodeKind,
+            children,
           }
         })
-        return {
-          key: nodeKind,
-          nodeKind,
-          children,
-        }
-      })
-      setData(items)
-    } catch (e) {}
-    setIsLoading(false)
-  }
+        setData(items)
+      } catch (e) {}
+      setIsLoading(false)
+    }
 
-  useEffect(() => {
     fetch()
   }, [])
 
@@ -175,6 +177,16 @@ export default function ListPage() {
       dataIndex: 'status',
       width: 150,
       render: renderStatusColumn,
+    },
+    {
+      title: t('cluster_info.list.instance_table.columns.up_time'),
+      dataIndex: 'start_timestamp',
+      width: 150,
+      render: (ts) => {
+        if (ts !== undefined && ts !== 0) {
+          return <DateTime.Calendar unixTimeStampMs={ts * 1000} />
+        }
+      },
     },
     {
       title: t('cluster_info.list.instance_table.columns.version'),

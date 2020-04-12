@@ -7,13 +7,13 @@ import styles from './MonitorAlertBar.module.less'
 
 import client from '@pingcap-incubator/dashboard_client'
 
-export default function MonitorAlertBar({ cluster }) {
+export default function MonitorAlertBar({ cluster, clusterError }) {
   const { t } = useTranslation()
   const [alertCounter, setAlertCounter] = useState(0)
 
   useEffect(() => {
     const fetchNum = async () => {
-      if (cluster === null || cluster.alert_manager === null) {
+      if (!cluster || !cluster.alert_manager) {
         return
       }
       let resp = await client

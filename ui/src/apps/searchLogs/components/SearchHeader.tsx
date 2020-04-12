@@ -9,7 +9,7 @@ import { LegacyDataNode } from 'rc-tree-select/lib/interface'
 import moment from 'moment'
 import React, { ChangeEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useMount } from '@umijs/hooks'
 import styles from './Styles.module.css'
 import {
@@ -64,7 +64,7 @@ const LOG_LEVELS = ['debug', 'info', 'warn', 'trace', 'critical', 'error']
 
 export default function SearchHeader({ taskGroupID }: Props) {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const [timeRange, setTimeRange] = useState<RangeValue<moment.Moment>>(null)
   const [logLevel, setLogLevel] = useState<number>(3)
@@ -118,7 +118,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
       // promp error here
       return
     }
-    history.push('/search_logs/detail/' + id)
+    navigate('/search_logs/detail/' + id)
   }
 
   function handleTimeRangeChange(

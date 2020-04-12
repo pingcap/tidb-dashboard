@@ -84,6 +84,11 @@ type TaskGroupResponse struct {
 	Tasks     []*TaskModel   `json:"tasks"`
 }
 
+type TaskGroupStats struct {
+	TaskGroup   TaskGroupModel                `json:"task_group"`
+	TargetStats utils.RequestTargetStatistics `json:"requestTargetStatistics"`
+}
+
 // @Summary Create and run task group
 // @Description Create and run task group
 // @Produce json
@@ -141,7 +146,7 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 // @Description list all log search taskgroups
 // @Produce json
 // @Security JwtAuth
-// @Success 200 {array} TaskGroupResponse
+// @Success 200 {array} TaskGroupStats
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroups [get]
@@ -152,7 +157,7 @@ func (s *Service) GetAllTaskGroups(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	var resp = make([]TaskGroupResponse, 0, len(taskGroups))
+	var resp = make([]TaskGroupStats, 0, len(taskGroups))
 	for _, taskGroup := range taskGroups {
 		var tasks []*TaskModel
 		err = s.db.Where("task_group_id = ?", taskGroup.ID).Find(&tasks).Error
@@ -160,9 +165,25 @@ func (s *Service) GetAllTaskGroups(c *gin.Context) {
 			_ = c.Error(err)
 			return
 		}
-		resp = append(resp, TaskGroupResponse{
-			TaskGroup: *taskGroup,
-			Tasks:     tasks,
+		targetStats := utils.RequestTargetStatistics{
+			NumTiKVNodes: 0,
+			NumTiDBNodes: 0,
+			NumPDNodes:   0,
+		}
+		// aggregation
+		for _, item := range tasks {
+			switch item.SearchTarget.Target.Kind {
+			case utils.NodeKindTiDB:
+				targetStats.NumTiDBNodes++
+			case utils.NodeKindTiKV:
+				targetStats.NumTiKVNodes++
+			case utils.NodeKindPD:
+				targetStats.NumPDNodes++
+			}
+		}
+		resp = append(resp, TaskGroupStats{
+			TaskGroup:   *taskGroup,
+			TargetStats: targetStats,
 		})
 	}
 

@@ -1,7 +1,7 @@
 import client from '@pingcap-incubator/dashboard_client'
 import {
-  LogsearchSearchTarget,
-  LogsearchTaskGroupResponse,
+  LogsearchTaskGroupStats,
+  UtilsRequestTargetStatistics,
 } from '@pingcap-incubator/dashboard_client'
 import { CardTable, Head } from '@pingcap-incubator/dashboard_components'
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -11,12 +11,7 @@ import { Moment } from 'moment'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import {
-  DATE_TIME_FORMAT,
-  LogLevelMap,
-  parseSearchingParams,
-  NodeKind,
-} from './utils'
+import { DATE_TIME_FORMAT, LogLevelMap, parseHistoryStatsParams } from './utils'
 
 const { Column } = Table
 
@@ -24,26 +19,23 @@ type History = {
   key: number
   time?: RangeValue<Moment>
   level?: string
-  components?: LogsearchSearchTarget[]
+  taskGroupStats?: UtilsRequestTargetStatistics
   keywords?: string
   size?: string
   state?: number
   action?: number
 }
 
-function componentRender(targets: LogsearchSearchTarget[]) {
-  const tidb = targets.filter((item) => item.target?.kind === NodeKind.TiDB)
-  const tikv = targets.filter((item) => item.target?.kind === NodeKind.TiKV)
-  const pd = targets.filter((item) => item.target?.kind === NodeKind.PD)
+function componentRender(stats: UtilsRequestTargetStatistics) {
   const r: Array<string> = []
-  if (tidb.length > 0) {
-    r.push(`${tidb.length} TiDB`)
+  if (stats?.num_tidb_nodes) {
+    r.push(`${stats.num_tidb_nodes} TiDB`)
   }
-  if (tikv.length > 0) {
-    r.push(`${tikv.length} TiKV`)
+  if (stats?.num_tikv_nodes) {
+    r.push(`${stats.num_tikv_nodes} TiKV`)
   }
-  if (pd.length > 0) {
-    r.push(`${pd.length} PD`)
+  if (stats?.num_pd_nodes) {
+    r.push(`${stats.num_pd_nodes} PD`)
   }
   return <span>{r.join(', ')}</span>
 }
@@ -63,7 +55,7 @@ function timeRender(timeRange: RangeValue<Moment>): string {
 }
 
 export default function SearchHistory() {
-  const [taskGroups, setTaskGroups] = useState<LogsearchTaskGroupResponse[]>([])
+  const [taskGroups, setTaskGroups] = useState<LogsearchTaskGroupStats[]>([])
   const [selectedRowKeys, setRowKeys] = useState<string[] | number[]>([])
 
   const { t } = useTranslation()
@@ -73,6 +65,7 @@ export default function SearchHistory() {
       const res = await client.getInstance().logsTaskgroupsGet()
       setTaskGroups(res.data)
     }
+
     getData()
   }, [])
 
@@ -134,18 +127,15 @@ export default function SearchHistory() {
   }
 
   const historyList: History[] = taskGroups.map((taskGroup) => {
-    const {
-      timeRange,
-      logLevel,
-      components,
-      searchValue,
-    } = parseSearchingParams(taskGroup)
+    const { timeRange, logLevel, stats, searchValue } = parseHistoryStatsParams(
+      taskGroup
+    )
     const taskGroupID = taskGroup.task_group?.id || 0
     return {
       key: taskGroupID,
       time: timeRange,
       level: LogLevelMap[logLevel],
-      components: components,
+      taskGroupStats: stats,
       keywords: searchValue,
       state: taskGroup.task_group?.state,
       action: taskGroupID,
@@ -199,8 +189,8 @@ export default function SearchHistory() {
           <Column
             width={230}
             title={t('search_logs.preview.component')}
-            dataIndex="components"
-            key="components"
+            dataIndex="taskGroupStats"
+            key="taskGroupStats"
             render={componentRender}
           />
           <Column

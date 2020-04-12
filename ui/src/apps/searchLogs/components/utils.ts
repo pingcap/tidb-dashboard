@@ -2,7 +2,9 @@ import {
   ClusterinfoClusterInfo,
   LogsearchSearchTarget,
   LogsearchTaskGroupResponse,
+  LogsearchTaskGroupStats,
   LogsearchTaskModel,
+  UtilsRequestTargetStatistics,
 } from '@pingcap-incubator/dashboard_client'
 import { RangeValue } from 'rc-picker/lib/interface'
 import moment from 'moment'
@@ -103,6 +105,13 @@ interface Params {
   searchValue: string
 }
 
+interface StatsParams {
+  timeRange: RangeValue<moment.Moment>
+  logLevel: number
+  stats?: UtilsRequestTargetStatistics
+  searchValue: string
+}
+
 export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
   const { task_group, tasks } = resp
   const { start_time, end_time, min_level, patterns } =
@@ -114,6 +123,22 @@ export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
     logLevel: min_level ?? 0,
     searchValue: patterns && patterns.length > 0 ? patterns.join(' ') : '',
     components: tasks && tasks.length > 0 ? getComponents(tasks) : [],
+  }
+}
+
+export function parseHistoryStatsParams(
+  resp: LogsearchTaskGroupStats
+): StatsParams {
+  const { task_group, requestTargetStatistics } = resp
+  const { start_time, end_time, min_level, patterns } =
+    task_group?.search_request || {}
+  const startTime = start_time ? moment(start_time) : null
+  const endTime = end_time ? moment(end_time) : null
+  return {
+    timeRange: [startTime, endTime] as RangeValue<moment.Moment>,
+    logLevel: min_level ?? 0,
+    searchValue: patterns && patterns.length > 0 ? patterns.join(' ') : '',
+    stats: requestTargetStatistics,
   }
 }
 

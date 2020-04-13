@@ -9,11 +9,8 @@ import {
   IDetailsListProps,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
-import { initializeIcons } from 'office-ui-fabric-react/lib/Icons'
 
 import styles from './index.module.less'
-
-initializeIcons(/* optional base url */)
 
 export interface ICardTableV2Props extends IDetailsListProps {
   title?: React.ReactNode

@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react'
-import { Tooltip, Popconfirm, Divider, Badge } from 'antd'
-import { DeleteOutlined } from '@ant-design/icons'
-import { useTranslation } from 'react-i18next'
-import { CardTable } from '@pingcap-incubator/dashboard_components'
-import client from '@pingcap-incubator/dashboard_client'
 import {
-  STATUS_TOMBSTONE,
   STATUS_DOWN,
   STATUS_OFFLINE,
+  STATUS_TOMBSTONE,
   STATUS_UP,
 } from '@/apps/clusterInfo/status/status'
+import { CardTableV2 } from '@/components'
 import DateTime from '@/components/DateTime'
+import { DeleteOutlined } from '@ant-design/icons'
+import client from '@pingcap-incubator/dashboard_client'
+import { Badge, Divider, Popconfirm, Tooltip } from 'antd'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 function useStatusColumnRender(handleHideTiDB) {
   const { t } = useTranslation()
-  return (_, node) => {
+  return (node) => {
     if (node.status == null) {
       // Tree node
       return
@@ -103,21 +103,32 @@ function useHideTiDBHandler(updateData) {
 function useClusterNodeDataSource() {
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState([])
+  const [groupData, setGroupData] = useState([])
 
   useEffect(() => {
     const fetch = async () => {
       setIsLoading(true)
       try {
         const res = await client.getInstance().topologyAllGet()
-        const items = ['tidb', 'tikv', 'pd'].map((nodeKind) => {
+        const items = []
+        const groupItems = []
+        let startIndex = 0
+        const kinds = ['tidb', 'tikv', 'pd']
+        kinds.forEach((nodeKind) => {
           const nodes = res.data[nodeKind]
+          console.log(nodeKind)
           if (nodes.err) {
-            return {
-              key: nodeKind,
-              nodeKind,
-              children: [],
-            }
+            return
           }
+          const count = nodes.nodes.length
+          groupItems.push({
+            key: nodeKind,
+            name: nodeKind,
+            startIndex: startIndex,
+            count: count,
+            level: 0,
+          })
+          startIndex += count
           const children = nodes.nodes.map((node) => {
             if (node.deploy_path === undefined && node.binary_path !== null) {
               node.deploy_path = node.binary_path.substring(
@@ -131,12 +142,10 @@ function useClusterNodeDataSource() {
               nodeKind,
             }
           })
-          return {
-            key: nodeKind,
-            nodeKind,
-            children,
-          }
+          items.push(...children)
         })
+
+        setGroupData(groupItems)
         setData(items)
       } catch (e) {}
       setIsLoading(false)
@@ -145,72 +154,75 @@ function useClusterNodeDataSource() {
     fetch()
   }, [])
 
-  return [isLoading, data, fetch]
+  return [isLoading, data, groupData, fetch]
 }
 
 export default function ListPage() {
   const { t } = useTranslation()
-  const [isLoading, tableData, updateData] = useClusterNodeDataSource()
+  const [
+    isLoading,
+    tableData,
+    groupData,
+    updateData,
+  ] = useClusterNodeDataSource()
   const handleHideTiDB = useHideTiDBHandler(updateData)
   const renderStatusColumn = useStatusColumnRender(handleHideTiDB)
 
   const columns = [
     {
-      title: t('cluster_info.list.instance_table.columns.node'),
+      name: t('cluster_info.list.instance_table.columns.node'),
       key: 'node',
       ellipsis: true,
-      width: 240,
-      render: (_, node) => {
-        if (node.children) {
-          return `${node.nodeKind} (${node.children.length})`
-        } else {
-          return (
-            <Tooltip title={`${node.ip}.${node.port}`}>
-              {node.ip}.{node.port}
-            </Tooltip>
-          )
-        }
-      },
+      minWidth: 80,
+      maxWidth: 150,
+      onRender: (node) => (
+        <Tooltip title={`${node.ip}.${node.port}`}>
+          {node.ip}.{node.port}
+        </Tooltip>
+      ),
     },
     {
-      title: t('cluster_info.list.instance_table.columns.status'),
-      dataIndex: 'status',
-      width: 150,
-      render: renderStatusColumn,
+      name: t('cluster_info.list.instance_table.columns.status'),
+      key: 'status',
+      minWidth: 80,
+      maxWidth: 80,
+      onRender: renderStatusColumn,
     },
     {
-      title: t('cluster_info.list.instance_table.columns.up_time'),
-      dataIndex: 'start_timestamp',
-      width: 150,
-      render: (ts) => {
+      name: t('cluster_info.list.instance_table.columns.up_time'),
+      key: 'start_timestamp',
+      minWidth: 100,
+      maxWidth: 100,
+      onRender: ({ start_timestamp: ts }) => {
         if (ts !== undefined && ts !== 0) {
           return <DateTime.Calendar unixTimeStampMs={ts * 1000} />
         }
       },
     },
     {
-      title: t('cluster_info.list.instance_table.columns.version'),
-      dataIndex: 'version',
+      name: t('cluster_info.list.instance_table.columns.version'),
+      fieldName: 'version',
       key: 'version',
+      minWidth: 100,
+      maxWidth: 200,
       ellipsis: true,
-      width: 200,
     },
     {
-      title: t('cluster_info.list.instance_table.columns.deploy_path'),
-      dataIndex: 'deploy_path',
+      name: t('cluster_info.list.instance_table.columns.deploy_path'),
+      fieldName: 'deploy_path',
       key: 'deploy_path',
+      minWidth: 100,
+      maxWidth: 200,
       ellipsis: true,
     },
   ]
 
   return (
-    <CardTable
-      title={t('cluster_info.list.instance_table.title')}
+    <CardTableV2
       loading={isLoading}
       columns={columns}
-      dataSource={tableData}
-      expandRowByClick
-      defaultExpandAllRows
+      items={tableData || []}
+      groups={groupData || []}
     />
   )
 }

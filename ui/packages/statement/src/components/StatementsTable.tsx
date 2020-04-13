@@ -38,7 +38,7 @@ const tableColumns = (
       name: columnHeaderWithTooltip('statement.common.schemas', t),
       key: 'schemas',
       minWidth: 120,
-      maxWidth: 160,
+      maxWidth: 140,
       isResizable: true,
       onRender: (rec) => rec.schemas,
     },
@@ -59,6 +59,8 @@ const tableColumns = (
       key: 'sum_latency',
       fieldName: 'sum_latency',
       minWidth: 170,
+      maxWidth: 200,
+      isResizable: true,
       isSorted: true,
       isSortedDescending: true,
       onColumnClick: onColumnClick,
@@ -74,6 +76,8 @@ const tableColumns = (
       key: 'avg_latency',
       fieldName: 'avg_latency',
       minWidth: 170,
+      maxWidth: 200,
+      isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => {
         const tooltipContent = `
@@ -96,6 +100,8 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`
       key: 'exec_count',
       fieldName: 'exec_count',
       minWidth: 170,
+      maxWidth: 200,
+      isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => (
         <TextWithHorizontalBar
@@ -109,6 +115,8 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`
       key: 'avg_mem',
       fieldName: 'avg_mem',
       minWidth: 170,
+      maxWidth: 200,
+      isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => (
         <TextWithHorizontalBar

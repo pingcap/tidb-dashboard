@@ -26,6 +26,7 @@
     "@pingcap-incubator/dashboard_client": "^0.0.8",
     "antd": "^4.0.0",
     "classnames": "^2.2.6",
+    "dayjs": "^1.8.22",
     "i18next": "^19.1.0",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",

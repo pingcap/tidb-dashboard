@@ -16,7 +16,9 @@ package statement
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -25,6 +27,8 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
+
+const layout = "2006-01-02 15:04:05"
 
 type Service struct {
 	config        *config.Config
@@ -96,14 +100,19 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 	if schemasQuery != "" {
 		schemas = strings.Split(schemasQuery, ",")
 	}
-	beginTime := c.Query("begin_time")
-	endTime := c.Query("end_time")
-	if beginTime == "" || endTime == "" {
-		_ = c.Error(fmt.Errorf("invalid begin_time or end_time"))
+	beginTime, err := strconv.Atoi(c.Query("begin_time"))
+	if err != nil {
+		_ = c.Error(fmt.Errorf("invalid begin_time: %s", err))
 		return
 	}
+	endTime, err := strconv.Atoi(c.Query("end_time"))
+	if err != nil {
+		_ = c.Error(fmt.Errorf("invalid end_time: %s", err))
+		return
+	}
+
 	db := utils.GetTiDBConnection(c)
-	overviews, err := QueryStatementsOverview(db, schemas, beginTime, endTime)
+	overviews, err := QueryStatementsOverview(db, schemas, time.Unix(int64(beginTime), 0).Format(layout), time.Unix(int64(endTime), 0).Format(layout))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -125,10 +134,19 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 func (s *Service) detailHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	schema := c.Query("schema")
-	beginTime := c.Query("begin_time")
-	endTime := c.Query("end_time")
 	digest := c.Query("digest")
-	detail, err := QueryStatementDetail(db, schema, beginTime, endTime, digest)
+	beginTime, err := strconv.Atoi(c.Query("begin_time"))
+	if err != nil {
+		_ = c.Error(fmt.Errorf("invalid begin_time: %s", err))
+		return
+	}
+	endTime, err := strconv.Atoi(c.Query("end_time"))
+	if err != nil {
+		_ = c.Error(fmt.Errorf("invalid end_time: %s", err))
+		return
+	}
+
+	detail, err := QueryStatementDetail(db, schema, time.Unix(int64(beginTime), 0).Format(layout), time.Unix(int64(endTime), 0).Format(layout), digest)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -150,10 +168,18 @@ func (s *Service) detailHandler(c *gin.Context) {
 func (s *Service) nodesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	schema := c.Query("schema")
-	beginTime := c.Query("begin_time")
-	endTime := c.Query("end_time")
 	digest := c.Query("digest")
-	nodes, err := QueryStatementNodes(db, schema, beginTime, endTime, digest)
+	beginTime, err := strconv.Atoi(c.Query("begin_time"))
+	if err != nil {
+		_ = c.Error(fmt.Errorf("invalid begin_time: %s", err))
+		return
+	}
+	endTime, err := strconv.Atoi(c.Query("end_time"))
+	if err != nil {
+		_ = c.Error(fmt.Errorf("invalid end_time: %s", err))
+		return
+	}
+	nodes, err := QueryStatementNodes(db, schema, time.Unix(int64(beginTime), 0).Format(layout), time.Unix(int64(endTime), 0).Format(layout), digest)
 	if err != nil {
 		_ = c.Error(err)
 		return

@@ -2,9 +2,11 @@ import React, { useState } from 'react'
 import _ from 'lodash'
 import { useNavigate } from 'react-router-dom'
 import { Tooltip } from 'antd'
+import { InfoCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { CardTableV2 } from '@pingcap-incubator/dashboard_components'
+import { ICardTableV2Props } from '@pingcap-incubator/dashboard_components/dist/CardTableV2'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TextWithHorizontalBar } from './HorizontalBar'
 import {
@@ -14,7 +16,16 @@ import {
 } from './statement-types'
 import styles from './styles.module.less'
 import { useMaxMin } from './use-max-min'
-import { ICardTableV2Props } from '@pingcap-incubator/dashboard_components/dist/CardTableV2'
+
+// TODO: Extract to single file when needs to be re-used
+const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
+  <div>
+    {t(key)}&nbsp;&nbsp;
+    <Tooltip title={t(key + '_tooltip')}>
+      <InfoCircleOutlined />
+    </Tooltip>
+  </div>
+)
 
 const tableColumns = (
   t: (string) => string,
@@ -24,7 +35,7 @@ const tableColumns = (
 ): IColumn[] => {
   const columns: IColumn[] = [
     {
-      name: t('statement.common.schemas'),
+      name: columnHeaderWithTooltip('statement.common.schemas', t),
       key: 'schemas',
       minWidth: 120,
       maxWidth: 160,
@@ -32,7 +43,7 @@ const tableColumns = (
       onRender: (rec) => rec.schemas,
     },
     {
-      name: t('statement.common.digest_text'),
+      name: columnHeaderWithTooltip('statement.common.digest_text', t),
       key: 'digest_text',
       minWidth: 200,
       maxWidth: 250,
@@ -44,7 +55,7 @@ const tableColumns = (
       ),
     },
     {
-      name: t('statement.common.sum_latency'),
+      name: columnHeaderWithTooltip('statement.common.sum_latency', t),
       key: 'sum_latency',
       fieldName: 'sum_latency',
       minWidth: 170,
@@ -59,7 +70,7 @@ const tableColumns = (
       ),
     },
     {
-      name: t('statement.common.avg_latency'),
+      name: columnHeaderWithTooltip('statement.common.avg_latency', t),
       key: 'avg_latency',
       fieldName: 'avg_latency',
       minWidth: 170,
@@ -81,7 +92,7 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`
       },
     },
     {
-      name: t('statement.common.exec_count'),
+      name: columnHeaderWithTooltip('statement.common.exec_count', t),
       key: 'exec_count',
       fieldName: 'exec_count',
       minWidth: 170,
@@ -94,7 +105,7 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`
       ),
     },
     {
-      name: t('statement.common.avg_mem'),
+      name: columnHeaderWithTooltip('statement.common.avg_mem', t),
       key: 'avg_mem',
       fieldName: 'avg_mem',
       minWidth: 170,

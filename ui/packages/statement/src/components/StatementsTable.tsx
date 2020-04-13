@@ -14,6 +14,7 @@ import {
 } from './statement-types'
 import styles from './styles.module.less'
 import { useMaxMin } from './use-max-min'
+import { ICardTableV2Props } from '@pingcap-incubator/dashboard_components/dist/CardTableV2'
 
 const tableColumns = (
   t: (string) => string,
@@ -128,7 +129,7 @@ function copyAndSort<T>(
     )
 }
 
-interface Props {
+interface Props extends ICardTableV2Props {
   statements: StatementOverview[]
   loading: boolean
   timeRange: StatementTimeRange
@@ -142,6 +143,7 @@ export default function StatementsTable({
   timeRange,
   detailPagePath,
   concise,
+  ...restPrpos
 }: Props) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -185,10 +187,10 @@ export default function StatementsTable({
   return (
     <CardTableV2
       loading={loading}
-      items={items}
       columns={columns}
-      getKey={(item) => item.digest_text}
       onRowClicked={handleRowClick}
+      {...restPrpos}
+      items={items}
     />
   )
 }

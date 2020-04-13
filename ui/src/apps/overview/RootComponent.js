@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Row, Col, Card, Skeleton } from 'antd'
+import { Row, Col, Card } from 'antd'
 import { RightOutlined } from '@ant-design/icons'
 import { HashRouter as Router, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import dayjs from 'dayjs'
 
 import client from '@pingcap-incubator/dashboard_client'
 import { StatementsTable } from '@pingcap-incubator/statement'
@@ -13,7 +14,7 @@ import styles from './RootComponent.module.less'
 const App = () => {
   const [cluster, setCluster] = useState(null)
   const [clusterError, setClusterError] = useState(null)
-  const [timeRange, setTimeRange] = useState({ begin_time: '', end_time: '' })
+  const [timeRange, setTimeRange] = useState({ begin_time: 0, end_time: 0 })
   const [topStatements, setTopStatements] = useState([])
   const [loadingStatements, setLoadingStatements] = useState(false)
 
@@ -90,34 +91,28 @@ const App = () => {
                   />
                 </Col>
               </Row>
-              <Card
-                size="small"
-                bordered={false}
-                extra={
+              <StatementsTable
+                key={topStatements.length}
+                statements={topStatements}
+                loading={loadingStatements}
+                timeRange={timeRange}
+                concise={true}
+                title={
+                  timeRange.begin_time > 0
+                    ? `${t('overview.top_statements.title')} (${dayjs
+                        .unix(timeRange.begin_time)
+                        .format('YYYY-MM-DD HH:mm:ss')} ~ ${dayjs
+                        .unix(timeRange.end_time)
+                        .format('YYYY-MM-DD HH:mm:ss')})`
+                    : t('overview.top_statements.title')
+                }
+                cardExtra={
                   <Link to="/statement">
                     {t('overview.top_statements.more')}
                     <RightOutlined />
                   </Link>
                 }
-                title={
-                  timeRange.begin_time.length > 0
-                    ? `${t('overview.top_statements.title')} (${
-                        timeRange.begin_time
-                      } ~ ${timeRange.end_time})`
-                    : t('overview.top_statements.title')
-                }
-              >
-                {loadingStatements ? (
-                  <Skeleton active />
-                ) : (
-                  <StatementsTable
-                    statements={topStatements}
-                    loading={false}
-                    timeRange={timeRange}
-                    concise={true}
-                  />
-                )}
-              </Card>
+              />
             </Col>
             <Col span={6}>
               {cluster ? (

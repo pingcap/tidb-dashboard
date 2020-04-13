@@ -417,10 +417,12 @@ export default function StatementsOverview({
       )}
       <div className={styles.table_wrapper}>
         <StatementsTable
+          key={state.statements.length}
           statements={state.statements}
           loading={state.statementsLoading}
           timeRange={state.curTimeRange!}
           detailPagePath={detailPagePath}
+          items={[]}
         />
       </div>
     </div>

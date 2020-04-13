@@ -58,6 +58,10 @@ type TokenResponse struct {
 
 func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder, etcdClient *clientv3.Client) (*utils.SessionUser, error) {
 	if !*f.IsTiDBAuth {
+		//currently only allow root username
+		if f.Username != "root" {
+			return nil, ErrSignInOther.NewWithNoMessage()
+		}
 		err := globalUtil.VerifyKvModeAuthKey(etcdClient, f.Password)
 		if err != nil {
 			return nil, ErrSignInOther.WrapWithNoMessage(err)

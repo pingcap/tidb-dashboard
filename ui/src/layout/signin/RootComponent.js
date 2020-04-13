@@ -178,7 +178,7 @@ function TiDBSignInForm({ registry }) {
                 className="ant-dropdown-link"
                 onClick={(e) => e.preventDefault()}
               >
-                <UserSwitchOutlined /> {t('signin.form.auth.mode')}{' '}
+                <UserSwitchOutlined /> {t('signin.form.auth.mode')}
                 <DownOutlined />
               </a>
             </Dropdown>

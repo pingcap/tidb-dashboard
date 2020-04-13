@@ -92,6 +92,7 @@ const App = () => {
                 </Col>
               </Row>
               <StatementsTable
+                className={styles.statementsTable}
                 key={topStatements.length}
                 statements={topStatements}
                 loading={loadingStatements}

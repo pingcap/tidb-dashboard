@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react'
+import React, { useState } from 'react'
 import _ from 'lodash'
 import { useNavigate } from 'react-router-dom'
 import { Tooltip } from 'antd'
 import { useTranslation } from 'react-i18next'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { CardTableV2 } from '@pingcap-incubator/dashboard_components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { TextWithHorizontalBar } from './HorizontalBar'
@@ -17,9 +18,10 @@ import { useMaxMin } from './use-max-min'
 const tableColumns = (
   t: (string) => string,
   concise: boolean,
-  maxMins: StatementMaxMinVals
-) => {
-  const columns = [
+  maxMins: StatementMaxMinVals,
+  onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void
+): IColumn[] => {
+  const columns: IColumn[] = [
     {
       name: t('statement.common.schemas'),
       key: 'schemas',
@@ -43,9 +45,11 @@ const tableColumns = (
     {
       name: t('statement.common.sum_latency'),
       key: 'sum_latency',
+      fieldName: 'sum_latency',
       minWidth: 170,
       isSorted: true,
       isSortedDescending: true,
+      onColumnClick: onColumnClick,
       onRender: (rec) => (
         <TextWithHorizontalBar
           text={getValueFormat('ns')(rec.sum_latency, 1, null)}
@@ -56,7 +60,9 @@ const tableColumns = (
     {
       name: t('statement.common.avg_latency'),
       key: 'avg_latency',
+      fieldName: 'avg_latency',
       minWidth: 170,
+      onColumnClick: onColumnClick,
       onRender: (rec) => {
         const tooltipContent = `
 AVG: ${getValueFormat('ns')(rec.avg_latency, 1, null)}
@@ -76,7 +82,9 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`
     {
       name: t('statement.common.exec_count'),
       key: 'exec_count',
+      fieldName: 'exec_count',
       minWidth: 170,
+      onColumnClick: onColumnClick,
       onRender: (rec) => (
         <TextWithHorizontalBar
           text={getValueFormat('short')(rec.exec_count, 0, 0)}
@@ -87,7 +95,9 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`
     {
       name: t('statement.common.avg_mem'),
       key: 'avg_mem',
+      fieldName: 'avg_mem',
       minWidth: 170,
+      onColumnClick: onColumnClick,
       onRender: (rec) => (
         <TextWithHorizontalBar
           text={getValueFormat('decbytes')(rec.avg_mem, 1, null)}
@@ -103,6 +113,19 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`
     )
   }
   return columns
+}
+
+function copyAndSort<T>(
+  items: T[],
+  columnKey: string,
+  isSortedDescending?: boolean
+): T[] {
+  const key = columnKey as keyof T
+  return items
+    .slice(0)
+    .sort((a: T, b: T) =>
+      (isSortedDescending ? a[key] < b[key] : a[key] > b[key]) ? 1 : -1
+    )
 }
 
 interface Props {
@@ -122,12 +145,11 @@ export default function StatementsTable({
 }: Props) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const [items, setItems] = useState(statements)
   const maxMins = useMaxMin(statements)
-  const columns = useMemo(() => tableColumns(t, concise || false, maxMins), [
-    t,
-    concise,
-    maxMins,
-  ])
+  const [columns, setColumns] = useState(() =>
+    tableColumns(t, concise || false, maxMins, onColumnClick)
+  )
 
   function handleRowClick(rec) {
     navigate(
@@ -137,10 +159,33 @@ export default function StatementsTable({
     )
   }
 
+  function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {
+    const newColumns: IColumn[] = columns.slice()
+    const currColumn: IColumn = newColumns.filter(
+      (currCol) => column.key === currCol.key
+    )[0]
+    newColumns.forEach((newCol: IColumn) => {
+      if (newCol === currColumn) {
+        currColumn.isSorted = true
+        currColumn.isSortedDescending = !currColumn.isSortedDescending
+      } else {
+        newCol.isSorted = false
+        newCol.isSortedDescending = false
+      }
+    })
+    const newItems = copyAndSort(
+      items,
+      currColumn.fieldName!,
+      currColumn.isSortedDescending
+    )
+    setColumns(newColumns)
+    setItems(newItems)
+  }
+
   return (
     <CardTableV2
       loading={loading}
-      items={statements}
+      items={items}
       columns={columns}
       getKey={(item) => item.digest_text}
       onRowClicked={handleRowClick}

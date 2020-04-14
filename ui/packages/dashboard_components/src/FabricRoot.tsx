@@ -10,8 +10,8 @@ import { Customizations } from 'office-ui-fabric-react/lib/Utilities'
 
 registerIcons({
   icons: {
-    sortup: <ArrowUpOutlined />,
-    sortdown: <ArrowDownOutlined />,
+    SortUp: <ArrowUpOutlined />,
+    SortDown: <ArrowDownOutlined />,
     chevronrightmed: <RightOutlined />,
     tag: <DownOutlined />,
   },

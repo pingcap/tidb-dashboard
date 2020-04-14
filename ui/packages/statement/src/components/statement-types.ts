@@ -28,3 +28,21 @@ export interface StatementPlanStep {
   estRows: number
   operator_info: string
 }
+
+//////////////////
+
+export interface StatementFields {
+  sum_latency?: number
+  exec_count?: number
+  avg_latency?: number
+  max_latency?: number
+  avg_mem?: number
+}
+
+export interface StatementMaxMinVals {
+  maxSumLatency: number
+  maxExecCount: number
+  maxAvgLatency: number
+  maxMaxLatency: number
+  maxAvgMem: number
+}

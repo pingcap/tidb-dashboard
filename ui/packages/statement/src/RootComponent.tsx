@@ -9,6 +9,7 @@ import {
 import { Breadcrumb } from 'antd'
 
 import client from '@pingcap-incubator/dashboard_client'
+import { FabricRoot } from '@pingcap-incubator/dashboard_components'
 
 import { SearchContext, SearchOptions } from './components'
 import { StatementsOverviewPage, StatementDetailPage } from './pages'
@@ -23,7 +24,6 @@ const App = () => {
     curTimeRange: undefined,
   } as SearchOptions)
   const searchContext = { searchOptions, setSearchOptions }
-
   return (
     <SearchContext.Provider value={searchContext}>
       <div>
@@ -63,8 +63,10 @@ const App = () => {
 
 export default function () {
   return (
-    <Router>
-      <App />
-    </Router>
+    <FabricRoot>
+      <Router>
+        <App />
+      </Router>
+    </FabricRoot>
   )
 }

@@ -1,5 +1,6 @@
 import React, { useState, useReducer, useEffect, useContext } from 'react'
 import { Select, Button, Modal } from 'antd'
+import dayjs from 'dayjs'
 import StatementEnableModal from './StatementEnableModal'
 import StatementSettingModal from './StatementSettingModal'
 import StatementsTable from './StatementsTable'
@@ -10,10 +11,11 @@ import {
   StatementOverview,
   StatementTimeRange,
 } from './statement-types'
-import styles from './styles.module.css'
+import styles from './styles.module.less'
 import { SearchContext } from './search-options-context'
 import { useTranslation } from 'react-i18next'
 import { OptionsType } from 'rc-select/lib/interface/index'
+
 const { Option } = Select
 
 interface State {
@@ -125,8 +127,8 @@ interface Props {
   onFetchStatements: (
     instanceId: string,
     schemas: string[],
-    beginTime: string,
-    endTime: string
+    beginTime: number,
+    endTime: number
   ) => Promise<StatementOverview[]>
 
   onGetStatementStatus: (instanceId: string) => Promise<any>
@@ -291,7 +293,7 @@ export default function StatementsOverview({
   }
 
   function handleTimeRangeChange(
-    val: string,
+    val: number,
     option: OptionsType[number] | OptionsType
   ) {
     const timeRange = state.timeRanges.find((item) => item.begin_time === val)
@@ -324,7 +326,6 @@ export default function StatementsOverview({
       })
     }
   }
-
   return (
     <div>
       <div style={{ display: 'flex', marginBottom: 12 }}>
@@ -351,7 +352,8 @@ export default function StatementsOverview({
         >
           {state.timeRanges.map((item) => (
             <Option value={item.begin_time || ''} key={item.begin_time}>
-              {item.begin_time} ~ {item.end_time}
+              {dayjs.unix(item.begin_time!).format('YYYY-MM-DD HH:mm:ss')} ~{' '}
+              {dayjs.unix(item.end_time!).format('YYYY-MM-DD HH:mm:ss')}
             </Option>
           ))}
         </Select>
@@ -415,10 +417,12 @@ export default function StatementsOverview({
       )}
       <div className={styles.table_wrapper}>
         <StatementsTable
+          key={state.statements.length}
           statements={state.statements}
           loading={state.statementsLoading}
           timeRange={state.curTimeRange!}
           detailPagePath={detailPagePath}
+          items={[]}
         />
       </div>
     </div>

@@ -2,6 +2,8 @@ import React from 'react'
 import cx from 'classnames'
 import clamp from 'lodash/clamp'
 
+import WithText from './WithText'
+
 import styles from './Bar.module.less'
 
 export interface IBarProps {
@@ -53,5 +55,7 @@ function Bar({ value, capacity, min, max, className, ...rest }: IBarProps) {
     </div>
   )
 }
+
+Bar.WithText = WithText
 
 export default Bar

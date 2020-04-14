@@ -1,12 +1,6 @@
-import React from 'react'
-import OriBar, { IBarProps } from './Bar'
-import WithText from './WithText'
+import Bar from './Bar'
 
-function Bar(props: IBarProps) {
-  return <OriBar {...props} />
-}
-Bar.WithText = WithText
+export { IBarProps } from './Bar'
+export { IBarWithTextProps } from './WithText'
 
 export default Bar
-export { IBarProps }
-export { IBarWithTextProps } from './WithText'

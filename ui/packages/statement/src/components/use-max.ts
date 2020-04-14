@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import _ from 'lodash'
-import { StatementFields, StatementMaxMinVals } from './statement-types'
+import { StatementFields, StatementMaxVals } from './statement-types'
 
-export function useMaxMin(fields: StatementFields[]): StatementMaxMinVals {
+export function useMax(fields: StatementFields[]): StatementMaxVals {
   return useMemo(() => {
     const maxSumLatency = _.max(fields.map((f) => f.sum_latency)) || 1
     const maxExecCount = _.max(fields.map((f) => f.exec_count)) || 1

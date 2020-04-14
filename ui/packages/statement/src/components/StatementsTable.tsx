@@ -14,10 +14,10 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import {
   StatementOverview,
   StatementTimeRange,
-  StatementMaxMinVals,
+  StatementMaxVals,
 } from './statement-types'
 import styles from './styles.module.less'
-import { useMaxMin } from './use-max-min'
+import { useMax } from './use-max'
 
 // TODO: Extract to single file when needs to be re-used
 const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
@@ -32,7 +32,7 @@ const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
 const tableColumns = (
   t: (string) => string,
   concise: boolean,
-  maxMins: StatementMaxMinVals,
+  maxs: StatementMaxVals,
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void
 ): IColumn[] => {
   const columns: IColumn[] = [
@@ -67,7 +67,7 @@ const tableColumns = (
       isSortedDescending: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => (
-        <Bar.WithText value={rec.sum_latency} capacity={maxMins.maxSumLatency}>
+        <Bar.WithText value={rec.sum_latency} capacity={maxs.maxSumLatency}>
           {getValueFormat('ns')(rec.sum_latency, 1, null)}
         </Bar.WithText>
       ),
@@ -92,7 +92,7 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`.trim()
               // max={rec.avg_latency}
               // min={rec.avg_latency * 0.8}
               value={rec.avg_latency}
-              capacity={maxMins.maxAvgLatency}
+              capacity={maxs.maxAvgLatency}
             >
               {getValueFormat('ns')(rec.avg_latency, 1, null)}
             </Bar.WithText>
@@ -109,7 +109,7 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`.trim()
       isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => (
-        <Bar.WithText value={rec.exec_count} capacity={maxMins.maxExecCount}>
+        <Bar.WithText value={rec.exec_count} capacity={maxs.maxExecCount}>
           {getValueFormat('short')(rec.exec_count, 0, 0)}
         </Bar.WithText>
       ),
@@ -123,7 +123,7 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`.trim()
       isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => (
-        <Bar.WithText value={rec.avg_mem} capacity={maxMins.maxAvgMem}>
+        <Bar.WithText value={rec.avg_mem} capacity={maxs.maxAvgMem}>
           {getValueFormat('decbytes')(rec.avg_mem, 1, null)}
         </Bar.WithText>
       ),
@@ -169,9 +169,9 @@ export default function StatementsTable({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [items, setItems] = useState(statements)
-  const maxMins = useMaxMin(statements)
+  const maxs = useMax(statements)
   const [columns, setColumns] = useState(() =>
-    tableColumns(t, concise || false, maxMins, onColumnClick)
+    tableColumns(t, concise || false, maxs, onColumnClick)
   )
 
   function handleRowClick(rec) {

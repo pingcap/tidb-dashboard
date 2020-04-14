@@ -43,7 +43,7 @@ export interface StatementFields {
   avg_mem?: number
 }
 
-export interface StatementMaxMinVals {
+export interface StatementMaxVals {
   maxSumLatency: number
   maxExecCount: number
   maxMaxLatency: number

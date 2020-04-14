@@ -1,7 +1,7 @@
 import client from '@pingcap-incubator/dashboard_client'
 import {
   LogsearchCreateTaskGroupRequest,
-  LogsearchSearchTarget,
+  UtilsRequestTargetNode,
 } from '@pingcap-incubator/dashboard_client'
 import { Button, DatePicker, Form, Input, Select, TreeSelect } from 'antd'
 import { RangeValue } from 'rc-picker/lib/interface'
@@ -25,7 +25,7 @@ const { SHOW_CHILD } = TreeSelect
 const { RangePicker } = DatePicker
 const { Option } = Select
 
-function buildTreeData(targets: LogsearchSearchTarget[]) {
+function buildTreeData(targets: UtilsRequestTargetNode[]) {
   const servers = {
     [NodeKind.TiDB]: [],
     [NodeKind.TiKV]: [],
@@ -33,10 +33,10 @@ function buildTreeData(targets: LogsearchSearchTarget[]) {
   }
 
   targets.forEach((item) => {
-    if (item.target === undefined || item.target.kind === undefined) {
+    if (item === undefined || item.kind === undefined) {
       return
     }
-    servers[item.target.kind].push(item)
+    servers[item.kind].push(item)
   })
 
   return NodeKindList.filter((kind) => servers[kind].length > 0).map(
@@ -44,7 +44,7 @@ function buildTreeData(targets: LogsearchSearchTarget[]) {
       title: namingMap[kind],
       value: kind,
       key: kind,
-      children: servers[kind].map((item: LogsearchSearchTarget) => {
+      children: servers[kind].map((item: UtilsRequestTargetNode) => {
         const addr = getAddress(item)
         return {
           title: addr,
@@ -71,7 +71,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
   const [selectedComponents, setComponents] = useState<string[]>([])
   const [searchValue, setSearchValue] = useState<string>('')
 
-  const [allTargets, setAllTargets] = useState<LogsearchSearchTarget[]>([])
+  const [allTargets, setAllTargets] = useState<UtilsRequestTargetNode[]>([])
   useMount(() => {
     async function fetchData() {
       const res = await client.getInstance().topologyAllGet()
@@ -99,12 +99,12 @@ export default function SearchHeader({ taskGroupID }: Props) {
 
   async function createTaskGroup() {
     // TODO: check select at least one component
-    const searchTargets: LogsearchSearchTarget[] = allTargets.filter((item) =>
+    const targets: UtilsRequestTargetNode[] = allTargets.filter((item) =>
       selectedComponents.some((addr) => addr === getAddress(item))
     )
 
     let params: LogsearchCreateTaskGroupRequest = {
-      search_targets: searchTargets,
+      targets: targets,
       request: {
         start_time: timeRange?.[0]?.valueOf(), // unix millionsecond
         end_time: timeRange?.[1]?.valueOf(), // unix millionsecond

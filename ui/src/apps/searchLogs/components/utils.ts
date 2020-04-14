@@ -1,8 +1,9 @@
 import {
   ClusterinfoClusterInfo,
-  LogsearchSearchTarget,
+  LogsearchTaskGroupModel,
   LogsearchTaskGroupResponse,
   LogsearchTaskModel,
+  UtilsRequestTargetNode,
   UtilsRequestTargetStatistics,
 } from '@pingcap-incubator/dashboard_client'
 import { RangeValue } from 'rc-picker/lib/interface'
@@ -42,8 +43,8 @@ export const AllLogLevel = [1, 2, 3, 4, 5, 6]
 
 export function parseClusterInfo(
   info: ClusterinfoClusterInfo
-): LogsearchSearchTarget[] {
-  const targets: LogsearchSearchTarget[] = []
+): UtilsRequestTargetNode[] {
+  const targets: UtilsRequestTargetNode[] = []
   info?.tidb?.nodes?.forEach((item) => {
     if (
       item.ip === undefined ||
@@ -52,14 +53,12 @@ export function parseClusterInfo(
     ) {
       return
     }
+    // TiDB has a different behavior: it use "status_port" for grpc, "port" for display.
     targets.push({
-      target: {
-        kind: NodeKind.TiDB,
-        ip: item.ip,
-        port: item.port,
-        display_name: `${item.ip}:${item.port}`,
-      },
-      status_port: item.status_port,
+      kind: NodeKind.TiDB,
+      ip: item.ip,
+      port: item.status_port,
+      display_name: `${item.ip}:${item.port}`,
     })
   })
   info?.tikv?.nodes?.forEach((item) => {
@@ -71,13 +70,10 @@ export function parseClusterInfo(
       return
     }
     targets.push({
-      target: {
-        kind: NodeKind.TiKV,
-        ip: item.ip,
-        port: item.port,
-        display_name: `${item.ip}:${item.port}`,
-      },
-      status_port: item.status_port,
+      kind: NodeKind.TiKV,
+      ip: item.ip,
+      port: item.port,
+      display_name: `${item.ip}:${item.port}`,
     })
   })
   info?.pd?.nodes?.forEach((item) => {
@@ -85,13 +81,10 @@ export function parseClusterInfo(
       return
     }
     targets.push({
-      target: {
-        kind: NodeKind.PD,
-        ip: item.ip,
-        port: item.port,
-        display_name: `${item.ip}:${item.port}`,
-      },
-      status_port: item.port,
+      kind: NodeKind.PD,
+      ip: item.ip,
+      port: item.port,
+      display_name: `${item.ip}:${item.port}`,
     })
   })
   return targets
@@ -100,7 +93,7 @@ export function parseClusterInfo(
 interface Params {
   timeRange: RangeValue<moment.Moment>
   logLevel: number
-  components: LogsearchSearchTarget[]
+  components: UtilsRequestTargetNode[]
   searchValue: string
 }
 
@@ -126,48 +119,45 @@ export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
 }
 
 export function parseHistoryStatsParams(
-  resp: LogsearchTaskGroupResponse
+  resp: LogsearchTaskGroupModel
 ): StatsParams {
-  const { task_group } = resp
   const { start_time, end_time, min_level, patterns } =
-    task_group?.search_request || {}
+    resp?.search_request || {}
   const startTime = start_time ? moment(start_time) : null
   const endTime = end_time ? moment(end_time) : null
   return {
     timeRange: [startTime, endTime] as RangeValue<moment.Moment>,
     logLevel: min_level ?? 0,
     searchValue: patterns && patterns.length > 0 ? patterns.join(' ') : '',
-    stats: task_group?.target_stats,
+    stats: resp?.target_stats,
   }
 }
 
-function getComponents(tasks: LogsearchTaskModel[]): LogsearchSearchTarget[] {
-  const targets: LogsearchSearchTarget[] = []
+function getComponents(tasks: LogsearchTaskModel[]): UtilsRequestTargetNode[] {
+  const targets: UtilsRequestTargetNode[] = []
   tasks.forEach((task) => {
-    if (task.search_target === undefined) {
+    if (task.target === undefined) {
       return
     }
-    targets.push(task.search_target)
+    targets.push(task.target)
   })
   return targets
 }
 
 export function getGRPCAddress(
-  target: LogsearchSearchTarget | undefined
+  target: UtilsRequestTargetNode | undefined
 ): string {
   if (target === undefined) {
     return ''
   }
-  return target?.target?.kind === NodeKind.TiDB
-    ? `${target.target.ip}:${target.status_port}`
-    : `${target?.target?.ip}:${target?.target?.port}`
+  return `${target.ip}:${target.port}`
 }
 
-export function getAddress(target: LogsearchSearchTarget | undefined): string {
+export function getAddress(target: UtilsRequestTargetNode | undefined): string {
   if (target === undefined) {
     return ''
   }
-  return `${target.target?.ip}:${target.target?.port}`
+  return `${target.display_name}`
 }
 
 export const NodeKindList = [NodeKind.TiDB, NodeKind.TiKV, NodeKind.PD]

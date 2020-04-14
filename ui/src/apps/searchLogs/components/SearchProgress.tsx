@@ -47,7 +47,7 @@ function leafNodeProps(state: number | undefined) {
 
 function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map((task) => {
-    const title = getAddress(task.search_target)
+    const title = getAddress(task.target)
     return (
       <TreeNode
         key={`${task.id}`}
@@ -169,10 +169,10 @@ export default function SearchProgress({
     }
 
     tasks.forEach((task) => {
-      if (task.search_target?.target?.kind === undefined) {
+      if (task.target?.kind === undefined) {
         return
       }
-      servers[task.search_target.target.kind].push(task)
+      servers[task.target.kind].push(task)
     })
 
     return NodeKindList.filter((kind) => servers[kind].length > 0).map(

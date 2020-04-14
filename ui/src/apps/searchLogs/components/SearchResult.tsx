@@ -1,6 +1,6 @@
 import client from '@pingcap-incubator/dashboard_client'
 import {
-  LogsearchSearchTarget,
+  UtilsRequestTargetNode,
   LogsearchTaskModel,
 } from '@pingcap-incubator/dashboard_client'
 import { Card } from '@pingcap-incubator/dashboard_components'
@@ -18,18 +18,17 @@ type LogPreview = {
   key: number
   time?: string
   level?: string
-  component?: LogsearchSearchTarget | undefined
+  component?: UtilsRequestTargetNode | undefined
   log?: string
 }
 
-function componentRender(target: LogsearchSearchTarget | undefined) {
+function componentRender(target: UtilsRequestTargetNode | undefined) {
   if (target === undefined) {
     return ''
   }
   return (
     <div>
-      {target.target?.kind ? namingMap[target.target?.kind] : ''}{' '}
-      {target.target?.ip}
+      {target.kind ? namingMap[target.kind] : ''} {target.ip}
     </div>
   )
 }
@@ -69,7 +68,7 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
     function getComponent(id: number | undefined) {
       return tasks.find((task) => {
         return task.id !== undefined && task.id === id
-      })?.search_target
+      })?.target
     }
 
     async function getLogPreview() {

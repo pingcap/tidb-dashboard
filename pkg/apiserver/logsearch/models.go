@@ -16,9 +16,7 @@ package logsearch
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 
@@ -93,41 +91,13 @@ func (r *SearchLogRequest) Value() (driver.Value, error) {
 	return string(val), err
 }
 
-type SearchTarget struct {
-	Target     utils.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
-	StatusPort int                     `json:"status_port" example:"10080"`
-}
-
-func (s *SearchTarget) Address() string {
-	return s.Target.DisplayName
-}
-
-func (s *SearchTarget) GRPCAddress() string {
-	if s.Target.Kind == utils.NodeKindTiDB {
-		return fmt.Sprintf("%s:%d", s.Target.IP, s.StatusPort)
-	}
-	return s.Address()
-}
-
-func (s *SearchTarget) ServerName() string {
-	return string(s.Target.Kind)
-}
-
-func (s *SearchTarget) String() string {
-	return fmt.Sprintf("%s(%s)", s.ServerName(), s.Address())
-}
-
-func (s *SearchTarget) FileName() string {
-	return fmt.Sprintf("%s_%s_%d", s.ServerName(), strings.ReplaceAll(s.Target.IP, ".", "_"), s.Target.Port)
-}
-
 type TaskModel struct {
-	ID           uint          `json:"id" gorm:"primary_key"`
-	TaskGroupID  uint          `json:"task_group_id" gorm:"index"`
-	SearchTarget *SearchTarget `json:"search_target" gorm:"embedded;embedded_prefix:search_target_"`
-	State        TaskState     `json:"state" gorm:"index"`
-	LogStorePath *string       `json:"log_store_path" gorm:"type:text"`
-	Error        *string       `json:"error" gorm:"type:text"`
+	ID           uint                     `json:"id" gorm:"primary_key"`
+	TaskGroupID  uint                     `json:"task_group_id" gorm:"index"`
+	Target       *utils.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
+	State        TaskState                `json:"state" gorm:"index"`
+	LogStorePath *string                  `json:"log_store_path" gorm:"type:text"`
+	Error        *string                  `json:"error" gorm:"type:text"`
 }
 
 func (TaskModel) TableName() string {

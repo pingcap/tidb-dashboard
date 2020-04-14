@@ -1,6 +1,6 @@
 import client from '@pingcap-incubator/dashboard_client'
 import {
-  LogsearchTaskGroupResponse,
+  LogsearchTaskGroupModel,
   UtilsRequestTargetStatistics,
 } from '@pingcap-incubator/dashboard_client'
 import { CardTable, Head } from '@pingcap-incubator/dashboard_components'
@@ -55,7 +55,7 @@ function timeRender(timeRange: RangeValue<Moment>): string {
 }
 
 export default function SearchHistory() {
-  const [taskGroups, setTaskGroups] = useState<LogsearchTaskGroupResponse[]>([])
+  const [taskGroups, setTaskGroups] = useState<LogsearchTaskGroupModel[]>([])
   const [selectedRowKeys, setRowKeys] = useState<string[] | number[]>([])
 
   const { t } = useTranslation()
@@ -108,7 +108,7 @@ export default function SearchHistory() {
   }
 
   async function handleDeleteAll() {
-    const allKeys = taskGroups.map((taskGroup) => taskGroup.task_group?.id)
+    const allKeys = taskGroups.map((taskGroup) => taskGroup.id)
     for (const key of allKeys) {
       if (key === undefined) {
         continue
@@ -130,14 +130,14 @@ export default function SearchHistory() {
     const { timeRange, logLevel, stats, searchValue } = parseHistoryStatsParams(
       taskGroup
     )
-    const taskGroupID = taskGroup.task_group?.id || 0
+    const taskGroupID = taskGroup?.id || 0
     return {
       key: taskGroupID,
       time: timeRange,
       level: LogLevelMap[logLevel],
       taskGroupStats: stats,
       keywords: searchValue,
-      state: taskGroup.task_group?.state,
+      state: taskGroup?.state,
       action: taskGroupID,
     }
   })

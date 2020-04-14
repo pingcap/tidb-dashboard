@@ -9,7 +9,6 @@ export interface IHeadProps {
   footer?: ReactNode
   className?: string
   children?: ReactNode
-  [k: string]: any
 }
 
 function Head({

@@ -5,10 +5,12 @@ import { Tooltip } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import { CardTableV2 } from '@pingcap-incubator/dashboard_components'
-import { ICardTableV2Props } from '@pingcap-incubator/dashboard_components/dist/CardTableV2'
+import {
+  Bar,
+  CardTableV2,
+  ICardTableV2Props,
+} from '@pingcap-incubator/dashboard_components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { TextWithHorizontalBar } from './HorizontalBar'
 import {
   StatementOverview,
   StatementTimeRange,
@@ -45,8 +47,8 @@ const tableColumns = (
     {
       name: columnHeaderWithTooltip('statement.common.digest_text', t),
       key: 'digest_text',
-      minWidth: 200,
-      maxWidth: 250,
+      minWidth: 100,
+      maxWidth: 500,
       isResizable: true,
       onRender: (rec: StatementOverview) => (
         <Tooltip title={rec.digest_text} placement="right">
@@ -58,40 +60,43 @@ const tableColumns = (
       name: columnHeaderWithTooltip('statement.common.sum_latency', t),
       key: 'sum_latency',
       fieldName: 'sum_latency',
-      minWidth: 170,
-      maxWidth: 200,
+      minWidth: 100,
+      maxWidth: 150,
       isResizable: true,
       isSorted: true,
       isSortedDescending: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => (
-        <TextWithHorizontalBar
-          text={getValueFormat('ns')(rec.sum_latency, 1, null)}
-          normalVal={rec.sum_latency / maxMins.maxSumLatency}
-        />
+        <Bar.WithText value={rec.sum_latency} capacity={maxMins.maxSumLatency}>
+          {getValueFormat('ns')(rec.sum_latency, 1, null)}
+        </Bar.WithText>
       ),
     },
     {
       name: columnHeaderWithTooltip('statement.common.avg_latency', t),
       key: 'avg_latency',
       fieldName: 'avg_latency',
-      minWidth: 170,
-      maxWidth: 200,
+      minWidth: 100,
+      maxWidth: 150,
       isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => {
         const tooltipContent = `
 AVG: ${getValueFormat('ns')(rec.avg_latency, 1, null)}
 MIN: ${getValueFormat('ns')(rec.avg_latency * 0.5, 1, null)}
-MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`
+MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`.trim()
         return (
-          <TextWithHorizontalBar
-            tooltip={<pre>{tooltipContent.trim()}</pre>}
-            text={getValueFormat('ns')(rec.avg_latency, 1, null)}
-            normalVal={rec.avg_latency / maxMins.maxAvgLatency}
-            maxVal={(rec.avg_latency / maxMins.maxAvgLatency) * 1.2}
-            minVal={(rec.avg_latency / maxMins.maxAvgLatency) * 0.5}
-          />
+          <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
+            <Bar.WithText
+              // value={rec.avg_latency * 0.9}
+              // max={rec.avg_latency}
+              // min={rec.avg_latency * 0.8}
+              value={rec.avg_latency}
+              capacity={maxMins.maxAvgLatency}
+            >
+              {getValueFormat('ns')(rec.avg_latency, 1, null)}
+            </Bar.WithText>
+          </Tooltip>
         )
       },
     },
@@ -99,31 +104,28 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`
       name: columnHeaderWithTooltip('statement.common.exec_count', t),
       key: 'exec_count',
       fieldName: 'exec_count',
-      minWidth: 170,
-      maxWidth: 200,
+      minWidth: 100,
+      maxWidth: 150,
       isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => (
-        <TextWithHorizontalBar
-          text={getValueFormat('short')(rec.exec_count, 0, 0)}
-          normalVal={rec.exec_count / maxMins.maxExecCount}
-        />
+        <Bar.WithText value={rec.exec_count} capacity={maxMins.maxExecCount}>
+          {getValueFormat('short')(rec.exec_count, 0, 0)}
+        </Bar.WithText>
       ),
     },
     {
       name: columnHeaderWithTooltip('statement.common.avg_mem', t),
       key: 'avg_mem',
       fieldName: 'avg_mem',
-      minWidth: 170,
+      minWidth: 150,
       maxWidth: 200,
       isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => (
-        <TextWithHorizontalBar
-          text={getValueFormat('decbytes')(rec.avg_mem, 1, null)}
-          normalVal={rec.avg_mem / maxMins.maxAvgMem}
-          maxVal={(rec.avg_mem / maxMins.maxAvgMem) * 1.2}
-        />
+        <Bar.WithText value={rec.avg_mem} capacity={maxMins.maxAvgMem}>
+          {getValueFormat('decbytes')(rec.avg_mem, 1, null)}
+        </Bar.WithText>
       ),
     },
   ]

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementNode, StatementMaxMinVals } from './statement-types'
-import { TextWithHorizontalBar } from './HorizontalBar'
+import { Bar } from '@pingcap-incubator/dashboard_components'
 import { useMaxMin } from './use-max-min'
 
 const tableColumns = (
@@ -23,10 +23,9 @@ const tableColumns = (
     sorter: (a: StatementNode, b: StatementNode) =>
       a.sum_latency! - b.sum_latency!,
     render: (value) => (
-      <TextWithHorizontalBar
-        text={getValueFormat('ns')(value, 1, null)}
-        normalVal={value / maxMins.maxSumLatency}
-      />
+      <Bar.WithText value={value} capacity={maxMins.maxSumLatency}>
+        {getValueFormat('ns')(value, 1, null)}
+      </Bar.WithText>
     ),
   },
   {
@@ -36,10 +35,9 @@ const tableColumns = (
     sorter: (a: StatementNode, b: StatementNode) =>
       a.exec_count! - b.exec_count!,
     render: (value) => (
-      <TextWithHorizontalBar
-        text={getValueFormat('short')(value, 0, 0)}
-        normalVal={value / maxMins.maxExecCount}
-      />
+      <Bar.WithText value={value} capacity={maxMins.maxExecCount}>
+        {getValueFormat('short')(value, 0, 0)}
+      </Bar.WithText>
     ),
   },
   {
@@ -49,10 +47,9 @@ const tableColumns = (
     sorter: (a: StatementNode, b: StatementNode) =>
       a.avg_latency! - b.avg_latency!,
     render: (value) => (
-      <TextWithHorizontalBar
-        text={getValueFormat('ns')(value, 1, null)}
-        normalVal={value / maxMins.maxAvgLatency}
-      />
+      <Bar.WithText value={value} capacity={maxMins.maxAvgLatency}>
+        {getValueFormat('ns')(value, 1, null)}
+      </Bar.WithText>
     ),
   },
   {
@@ -62,10 +59,9 @@ const tableColumns = (
     sorter: (a: StatementNode, b: StatementNode) =>
       a.max_latency! - b.max_latency!,
     render: (value) => (
-      <TextWithHorizontalBar
-        text={getValueFormat('ns')(value, 1, null)}
-        normalVal={value / maxMins.maxMaxLatency}
-      />
+      <Bar.WithText value={value} capacity={maxMins.maxMaxLatency}>
+        {getValueFormat('ns')(value, 1, null)}
+      </Bar.WithText>
     ),
   },
   {
@@ -74,10 +70,9 @@ const tableColumns = (
     key: 'avg_mem',
     sorter: (a: StatementNode, b: StatementNode) => a.avg_mem! - b.avg_mem!,
     render: (value) => (
-      <TextWithHorizontalBar
-        text={getValueFormat('decbytes')(value, 1, null)}
-        normalVal={value / maxMins.maxAvgMem}
-      />
+      <Bar.WithText value={value} capacity={maxMins.maxAvgMem}>
+        {getValueFormat('decbytes')(value, 1, null)}
+      </Bar.WithText>
     ),
   },
   {

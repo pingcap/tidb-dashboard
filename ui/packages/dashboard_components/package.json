@@ -24,6 +24,7 @@
     "@ant-design/icons": "^4.0.0",
     "antd": "^4.0.0",
     "classnames": "^2.2.6",
+    "lodash": "^4.17.15",
     "office-ui-fabric-react": "^7.105.3"
   },
   "peerDependencies": {

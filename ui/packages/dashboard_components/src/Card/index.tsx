@@ -2,13 +2,10 @@ import React, { ReactNode } from 'react'
 import cx from 'classnames'
 import styles from './index.module.less'
 
-export interface ICardProps {
+export interface ICardProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   title?: ReactNode
   extra?: ReactNode
-  className?: string
-  style?: object
-  children?: ReactNode
-  [k: string]: any
 }
 
 export default function Card({

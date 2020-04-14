@@ -72,7 +72,7 @@ type Props = {
 export default function DiagnosisTable({ diagnosis }: Props) {
   const { Category, Title, CommentEN, Column, Rows } = diagnosis
   const { t } = useTranslation()
-  const title = 'diagnosis.tables' + Title
+  const title = 'diagnosis.tables.' + Title
 
   return (
     <div className="report-container">

@@ -37,18 +37,10 @@ const tableColumns = (
 ): IColumn[] => {
   const columns: IColumn[] = [
     {
-      name: columnHeaderWithTooltip('statement.common.schemas', t),
-      key: 'schemas',
-      minWidth: 120,
-      maxWidth: 140,
-      isResizable: true,
-      onRender: (rec) => rec.schemas,
-    },
-    {
       name: columnHeaderWithTooltip('statement.common.digest_text', t),
       key: 'digest_text',
       minWidth: 100,
-      maxWidth: 300,
+      maxWidth: 500,
       isResizable: true,
       onRender: (rec: StatementOverview) => (
         <Tooltip title={rec.digest_text} placement="right">
@@ -60,41 +52,46 @@ const tableColumns = (
       name: columnHeaderWithTooltip('statement.common.sum_latency', t),
       key: 'sum_latency',
       fieldName: 'sum_latency',
-      minWidth: 100,
-      maxWidth: 150,
+      minWidth: 140,
+      maxWidth: 200,
       isResizable: true,
       isSorted: true,
       isSortedDescending: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => (
-        <Bar.WithText value={rec.sum_latency} capacity={maxs.maxSumLatency}>
-          {getValueFormat('ns')(rec.sum_latency, 1, null)}
-        </Bar.WithText>
+        <Bar
+          textWidth={70}
+          value={rec.sum_latency}
+          capacity={maxs.maxSumLatency}
+        >
+          {getValueFormat('ns')(rec.sum_latency, 1)}
+        </Bar>
       ),
     },
     {
       name: columnHeaderWithTooltip('statement.common.avg_latency', t),
       key: 'avg_latency',
       fieldName: 'avg_latency',
-      minWidth: 100,
-      maxWidth: 150,
+      minWidth: 140,
+      maxWidth: 200,
       isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => {
         const tooltipContent = `
-AVG: ${getValueFormat('ns')(rec.avg_latency, 1, null)}
-MIN: ${getValueFormat('ns')(rec.min_latency, 1, null)}
-MAX: ${getValueFormat('ns')(rec.max_latency, 1, null)}`.trim()
+AVG: ${getValueFormat('ns')(rec.avg_latency, 1)}
+MIN: ${getValueFormat('ns')(rec.min_latency, 1)}
+MAX: ${getValueFormat('ns')(rec.max_latency, 1)}`
         return (
           <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
-            <Bar.WithText
+            <Bar
+              textWidth={70}
               value={rec.avg_latency}
               max={rec.max_latency}
               min={rec.min_latency}
               capacity={maxs.maxMaxLatency}
             >
-              {getValueFormat('ns')(rec.avg_latency, 1, null)}
-            </Bar.WithText>
+              {getValueFormat('ns')(rec.avg_latency, 1)}
+            </Bar>
           </Tooltip>
         )
       },
@@ -103,40 +100,49 @@ MAX: ${getValueFormat('ns')(rec.max_latency, 1, null)}`.trim()
       name: columnHeaderWithTooltip('statement.common.exec_count', t),
       key: 'exec_count',
       fieldName: 'exec_count',
-      minWidth: 100,
-      maxWidth: 150,
+      minWidth: 140,
+      maxWidth: 200,
       isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => (
-        <Bar.WithText value={rec.exec_count} capacity={maxs.maxExecCount}>
-          {getValueFormat('short')(rec.exec_count, 0, 0)}
-        </Bar.WithText>
+        <Bar textWidth={70} value={rec.exec_count} capacity={maxs.maxExecCount}>
+          {getValueFormat('short')(rec.exec_count, 0, 1)}
+        </Bar>
       ),
     },
     {
       name: columnHeaderWithTooltip('statement.common.avg_mem', t),
       key: 'avg_mem',
       fieldName: 'avg_mem',
-      minWidth: 150,
+      minWidth: 140,
       maxWidth: 200,
       isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => {
         const tooltipContent = `
-AVG: ${getValueFormat('bytes')(rec.avg_mem, 1, null)}
-MAX: ${getValueFormat('bytes')(rec.max_mem, 1, null)}`.trim()
+AVG: ${getValueFormat('bytes')(rec.avg_mem, 1)}
+MAX: ${getValueFormat('bytes')(rec.max_mem, 1)}`
         return (
           <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
-            <Bar.WithText
+            <Bar
+              textWidth={70}
               value={rec.avg_mem}
               max={rec.max_mem}
               capacity={maxs.maxMaxMem}
             >
-              {getValueFormat('bytes')(rec.avg_mem, 1, null)}
-            </Bar.WithText>
+              {getValueFormat('bytes')(rec.avg_mem, 1)}
+            </Bar>
           </Tooltip>
         )
       },
+    },
+    {
+      name: columnHeaderWithTooltip('statement.common.schemas', t),
+      key: 'schemas',
+      minWidth: 160,
+      maxWidth: 240,
+      isResizable: true,
+      onRender: (rec) => rec.schemas,
     },
   ]
   if (concise) {

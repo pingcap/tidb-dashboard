@@ -20,9 +20,9 @@ const tableColumns = (maxs: StatementMaxVals, t: (_: string) => string) => [
     sorter: (a: StatementNode, b: StatementNode) =>
       a.sum_latency! - b.sum_latency!,
     render: (value) => (
-      <Bar.WithText value={value} capacity={maxs.maxSumLatency}>
-        {getValueFormat('ns')(value, 1, null)}
-      </Bar.WithText>
+      <Bar textWidth={70} value={value} capacity={maxs.maxSumLatency}>
+        {getValueFormat('ns')(value, 1)}
+      </Bar>
     ),
   },
   {
@@ -32,9 +32,9 @@ const tableColumns = (maxs: StatementMaxVals, t: (_: string) => string) => [
     sorter: (a: StatementNode, b: StatementNode) =>
       a.exec_count! - b.exec_count!,
     render: (value) => (
-      <Bar.WithText value={value} capacity={maxs.maxExecCount}>
-        {getValueFormat('short')(value, 0, 0)}
-      </Bar.WithText>
+      <Bar textWidth={70} value={value} capacity={maxs.maxExecCount}>
+        {getValueFormat('short')(value, 0, 1)}
+      </Bar>
     ),
   },
   {
@@ -44,9 +44,9 @@ const tableColumns = (maxs: StatementMaxVals, t: (_: string) => string) => [
     sorter: (a: StatementNode, b: StatementNode) =>
       a.avg_latency! - b.avg_latency!,
     render: (value) => (
-      <Bar.WithText value={value} capacity={maxs.maxAvgLatency}>
-        {getValueFormat('ns')(value, 1, null)}
-      </Bar.WithText>
+      <Bar textWidth={70} value={value} capacity={maxs.maxAvgLatency}>
+        {getValueFormat('ns')(value, 1)}
+      </Bar>
     ),
   },
   {
@@ -56,9 +56,9 @@ const tableColumns = (maxs: StatementMaxVals, t: (_: string) => string) => [
     sorter: (a: StatementNode, b: StatementNode) =>
       a.max_latency! - b.max_latency!,
     render: (value) => (
-      <Bar.WithText value={value} capacity={maxs.maxMaxLatency}>
-        {getValueFormat('ns')(value, 1, null)}
-      </Bar.WithText>
+      <Bar textWidth={70} value={value} capacity={maxs.maxMaxLatency}>
+        {getValueFormat('ns')(value, 1)}
+      </Bar>
     ),
   },
   {
@@ -67,9 +67,9 @@ const tableColumns = (maxs: StatementMaxVals, t: (_: string) => string) => [
     key: 'avg_mem',
     sorter: (a: StatementNode, b: StatementNode) => a.avg_mem! - b.avg_mem!,
     render: (value) => (
-      <Bar.WithText value={value} capacity={maxs.maxAvgMem}>
-        {getValueFormat('bytes')(value, 1, null)}
-      </Bar.WithText>
+      <Bar textWidth={70} value={value} capacity={maxs.maxAvgMem}>
+        {getValueFormat('bytes')(value, 1)}
+      </Bar>
     ),
   },
   {
@@ -78,7 +78,7 @@ const tableColumns = (maxs: StatementMaxVals, t: (_: string) => string) => [
     key: 'sum_backoff_times',
     sorter: (a: StatementNode, b: StatementNode) =>
       a.sum_backoff_times! - b.sum_backoff_times!,
-    render: (value) => getValueFormat('short')(value, 0, 0),
+    render: (value) => getValueFormat('short')(value, 0, 1),
   },
 ]
 

@@ -9,6 +9,7 @@ import {
   Bar,
   CardTableV2,
   ICardTableV2Props,
+  FormatHighlightSQL,
 } from '@pingcap-incubator/dashboard_components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import {
@@ -18,7 +19,6 @@ import {
 } from './statement-types'
 import styles from './styles.module.less'
 import { useMax } from './use-max'
-import FormatHighlightSQL from './FormatHighlightSQL'
 
 // TODO: Extract to single file when needs to be re-used
 const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
@@ -45,7 +45,6 @@ const tableColumns = (
       isResizable: true,
       onRender: (rec: StatementOverview) => (
         <Tooltip
-          overlayClassName={styles.digest_column_tooltip}
           title={<FormatHighlightSQL sql={rec.digest_text!} theme="dark" />}
           placement="right"
         >

@@ -2,8 +2,8 @@ import React from 'react'
 import { Table } from 'antd'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
+import { FormatHighlightSQL } from '@pingcap-incubator/dashboard_components'
 import { StatementDetailInfo, DATE_TIME_FORMAT } from './statement-types'
-import FormatHighlightSQL from './FormatHighlightSQL'
 
 type align = 'left' | 'right' | 'center'
 

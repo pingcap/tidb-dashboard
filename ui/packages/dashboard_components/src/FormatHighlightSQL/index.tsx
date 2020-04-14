@@ -4,6 +4,7 @@ import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
 import sql from 'react-syntax-highlighter/dist/esm/languages/hljs/sql'
 import atomOneLight from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light'
 import atomOneDark from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark'
+import './index.module.less'
 
 SyntaxHighlighter.registerLanguage('sql', sql)
 

@@ -1,20 +1,12 @@
-import FabricRoot from './FabricRoot'
-import Head, { IHeadProps } from './Head'
-import Card, { ICardProps } from './Card'
-import CardTable from './CardTable'
-import CardTableV2, { ICardTableV2Props } from './CardTableV2'
-import Bar, { IBarProps, IBarWithTextProps } from './Bar'
-
-export {
-  Head,
-  Card,
-  CardTable,
-  CardTableV2,
-  FabricRoot,
-  Bar,
-  IHeadProps,
-  ICardProps,
-  ICardTableV2Props,
-  IBarProps,
-  IBarWithTextProps,
-}
+export * from './FabricRoot'
+export { default as FabricRoot } from './FabricRoot'
+export * from './Head'
+export { default as Head } from './Head'
+export * from './Card'
+export { default as Card } from './Card'
+export * from './CardTable'
+export { default as CardTable } from './CardTable'
+export * from './CardTableV2'
+export { default as CardTableV2 } from './CardTableV2'
+export * from './Bar'
+export { default as Bar } from './Bar'

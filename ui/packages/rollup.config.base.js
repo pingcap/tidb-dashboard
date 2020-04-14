@@ -46,6 +46,10 @@ export default function baseConfig(pkg) {
             'less',
             {
               javascriptEnabled: true,
+              modifyVars: {
+                '@primary-color': '#3351ff',
+                '@body-background': '#f0f2f5',
+              },
               globalVars: {
                 '@padding-page': '48px', // TODO: keep same with root project
                 '@gray-1': '#fff',

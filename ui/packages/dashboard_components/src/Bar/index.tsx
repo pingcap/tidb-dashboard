@@ -1,6 +1,3 @@
 import Bar from './Bar'
-
-export { IBarProps } from './Bar'
-export { IBarWithTextProps } from './WithText'
-
+export * from './Bar'
 export default Bar

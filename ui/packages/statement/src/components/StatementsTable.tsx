@@ -14,10 +14,10 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import {
   StatementOverview,
   StatementTimeRange,
-  StatementMaxMinVals,
+  StatementMaxVals,
 } from './statement-types'
 import styles from './styles.module.less'
-import { useMaxMin } from './use-max-min'
+import { useMax } from './use-max'
 
 // TODO: Extract to single file when needs to be re-used
 const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
@@ -32,18 +32,10 @@ const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
 const tableColumns = (
   t: (string) => string,
   concise: boolean,
-  maxMins: StatementMaxMinVals,
+  maxs: StatementMaxVals,
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void
 ): IColumn[] => {
   const columns: IColumn[] = [
-    {
-      name: columnHeaderWithTooltip('statement.common.schemas', t),
-      key: 'schemas',
-      minWidth: 120,
-      maxWidth: 140,
-      isResizable: true,
-      onRender: (rec) => rec.schemas,
-    },
     {
       name: columnHeaderWithTooltip('statement.common.digest_text', t),
       key: 'digest_text',
@@ -60,42 +52,46 @@ const tableColumns = (
       name: columnHeaderWithTooltip('statement.common.sum_latency', t),
       key: 'sum_latency',
       fieldName: 'sum_latency',
-      minWidth: 100,
-      maxWidth: 150,
+      minWidth: 140,
+      maxWidth: 200,
       isResizable: true,
       isSorted: true,
       isSortedDescending: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => (
-        <Bar.WithText value={rec.sum_latency} capacity={maxMins.maxSumLatency}>
+        <Bar
+          textWidth={70}
+          value={rec.sum_latency}
+          capacity={maxs.maxSumLatency}
+        >
           {getValueFormat('ns')(rec.sum_latency, 1, null)}
-        </Bar.WithText>
+        </Bar>
       ),
     },
     {
       name: columnHeaderWithTooltip('statement.common.avg_latency', t),
       key: 'avg_latency',
       fieldName: 'avg_latency',
-      minWidth: 100,
-      maxWidth: 150,
+      minWidth: 140,
+      maxWidth: 200,
       isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => {
         const tooltipContent = `
 AVG: ${getValueFormat('ns')(rec.avg_latency, 1, null)}
-MIN: ${getValueFormat('ns')(rec.avg_latency * 0.5, 1, null)}
-MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`.trim()
+MIN: ${getValueFormat('ns')(rec.min_latency, 1, null)}
+MAX: ${getValueFormat('ns')(rec.max_latency, 1, null)}`
         return (
           <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
-            <Bar.WithText
-              // value={rec.avg_latency * 0.9}
-              // max={rec.avg_latency}
-              // min={rec.avg_latency * 0.8}
+            <Bar
+              textWidth={70}
               value={rec.avg_latency}
-              capacity={maxMins.maxAvgLatency}
+              max={rec.max_latency}
+              min={rec.min_latency}
+              capacity={maxs.maxMaxLatency}
             >
               {getValueFormat('ns')(rec.avg_latency, 1, null)}
-            </Bar.WithText>
+            </Bar>
           </Tooltip>
         )
       },
@@ -104,29 +100,49 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`.trim()
       name: columnHeaderWithTooltip('statement.common.exec_count', t),
       key: 'exec_count',
       fieldName: 'exec_count',
-      minWidth: 100,
-      maxWidth: 150,
+      minWidth: 140,
+      maxWidth: 200,
       isResizable: true,
       onColumnClick: onColumnClick,
       onRender: (rec) => (
-        <Bar.WithText value={rec.exec_count} capacity={maxMins.maxExecCount}>
+        <Bar textWidth={70} value={rec.exec_count} capacity={maxs.maxExecCount}>
           {getValueFormat('short')(rec.exec_count, 0, 0)}
-        </Bar.WithText>
+        </Bar>
       ),
     },
     {
       name: columnHeaderWithTooltip('statement.common.avg_mem', t),
       key: 'avg_mem',
       fieldName: 'avg_mem',
-      minWidth: 150,
+      minWidth: 140,
       maxWidth: 200,
       isResizable: true,
       onColumnClick: onColumnClick,
-      onRender: (rec) => (
-        <Bar.WithText value={rec.avg_mem} capacity={maxMins.maxAvgMem}>
-          {getValueFormat('decbytes')(rec.avg_mem, 1, null)}
-        </Bar.WithText>
-      ),
+      onRender: (rec) => {
+        const tooltipContent = `
+AVG: ${getValueFormat('bytes')(rec.avg_mem, 1, null)}
+MAX: ${getValueFormat('bytes')(rec.max_mem, 1, null)}`
+        return (
+          <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
+            <Bar
+              textWidth={70}
+              value={rec.avg_mem}
+              max={rec.max_mem}
+              capacity={maxs.maxMaxMem}
+            >
+              {getValueFormat('bytes')(rec.avg_mem, 1, null)}
+            </Bar>
+          </Tooltip>
+        )
+      },
+    },
+    {
+      name: columnHeaderWithTooltip('statement.common.schemas', t),
+      key: 'schemas',
+      minWidth: 160,
+      maxWidth: 240,
+      isResizable: true,
+      onRender: (rec) => rec.schemas,
     },
   ]
   if (concise) {
@@ -169,9 +185,9 @@ export default function StatementsTable({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [items, setItems] = useState(statements)
-  const maxMins = useMaxMin(statements)
+  const maxs = useMax(statements)
   const [columns, setColumns] = useState(() =>
-    tableColumns(t, concise || false, maxMins, onColumnClick)
+    tableColumns(t, concise || false, maxs, onColumnClick)
   )
 
   function handleRowClick(rec) {

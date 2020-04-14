@@ -49,13 +49,21 @@ function Bar({
     }
   }, [value, capacity])
 
-  const valuesSum = useMemo(() => sum(clampedValues), [clampedValues])
+  const valuesSum = useMemo(() => sum(clampedValues.map(([_s, v]) => v)), [
+    clampedValues,
+  ])
 
   if (min) {
     min = clamp(min, 0, valuesSum)
+    if ((valuesSum - min) / capacity < 0.01) {
+      min = undefined
+    }
   }
   if (max) {
     max = clamp(max, valuesSum, capacity)
+    if ((max - valuesSum) / capacity < 0.01) {
+      max = undefined
+    }
   }
 
   return (
@@ -84,7 +92,7 @@ function Bar({
               left: `${(min / capacity) * 100}%`,
               width: `${((valuesSum - min) / capacity) * 100}%`,
             }}
-          ></div>
+          />
         )}
         {max != null && (
           <div
@@ -93,7 +101,7 @@ function Bar({
               left: `${(valuesSum / capacity) * 100}%`,
               width: `${((max - valuesSum) / capacity) * 100}%`,
             }}
-          ></div>
+          />
         )}
       </div>
     </div>

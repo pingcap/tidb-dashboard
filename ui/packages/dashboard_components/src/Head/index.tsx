@@ -1,6 +1,15 @@
-import React from 'react'
-import classNames from 'classnames'
+import React, { ReactNode } from 'react'
+import cx from 'classnames'
 import styles from './index.module.less'
+
+export interface IHeadProps {
+  title: string
+  titleExtra?: ReactNode
+  back?: ReactNode
+  footer?: ReactNode
+  className?: string
+  children?: ReactNode
+}
 
 function Head({
   title,
@@ -10,9 +19,9 @@ function Head({
   className,
   children,
   ...rest
-}) {
+}: IHeadProps) {
   return (
-    <div className={classNames(styles.headContainer, className)} {...rest}>
+    <div className={cx(styles.headContainer, className)} {...rest}>
       <div className={styles.headInner}>
         {(title || titleExtra || back) && (
           <div className={styles.headTitleSection}>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Table } from 'antd'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 import sqlFormatter from 'sql-formatter-plus'
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -28,6 +28,8 @@ const columns = [
   },
 ]
 
+const timeFormat = 'YYYY-MM-DD HH:mm:ss'
+
 type Props = {
   detail: StatementDetailInfo
   beginTime: string
@@ -48,7 +50,11 @@ export default function StatementSummaryTable({
     },
     {
       kind: t('statement.detail.time_range'),
-      content: `${beginTime} ~ ${endTime}`,
+      content: `${dayjs
+        .unix(parseInt(beginTime))
+        .format(timeFormat)} ~ ${dayjs
+        .unix(parseInt(endTime))
+        .format(timeFormat)}`,
     },
     {
       kind: t('statement.common.digest_text'),
@@ -68,7 +74,7 @@ export default function StatementSummaryTable({
     },
     {
       kind: t('statement.detail.last_seen'),
-      content: moment(detail.last_seen).format('YYYY-MM-DD HH:mm:ss'),
+      content: dayjs(detail.last_seen).format(timeFormat),
     },
   ]
 

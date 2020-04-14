@@ -13,12 +13,14 @@
 
 package statement
 
-import "strings"
+import (
+	"strings"
+)
 
 // TimeRange represents a range of time
 type TimeRange struct {
-	BeginTime string `json:"begin_time"`
-	EndTime   string `json:"end_time"`
+	BeginTime int64 `json:"begin_time"`
+	EndTime   int64 `json:"end_time"`
 }
 
 // Overview represents the overview of a statement

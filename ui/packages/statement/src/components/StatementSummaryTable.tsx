@@ -6,7 +6,7 @@ import sqlFormatter from 'sql-formatter-plus'
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
 import sql from 'react-syntax-highlighter/dist/esm/languages/hljs/sql'
 import atomOneLight from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light'
-import { StatementDetailInfo } from './statement-types'
+import { StatementDetailInfo, DATE_TIME_FORMAT } from './statement-types'
 
 SyntaxHighlighter.registerLanguage('sql', sql)
 
@@ -27,8 +27,6 @@ const columns = [
     align: 'left' as align,
   },
 ]
-
-const timeFormat = 'YYYY-MM-DD HH:mm:ss'
 
 type Props = {
   detail: StatementDetailInfo
@@ -52,9 +50,9 @@ export default function StatementSummaryTable({
       kind: t('statement.detail.time_range'),
       content: `${dayjs
         .unix(parseInt(beginTime))
-        .format(timeFormat)} ~ ${dayjs
+        .format(DATE_TIME_FORMAT)} ~ ${dayjs
         .unix(parseInt(endTime))
-        .format(timeFormat)}`,
+        .format(DATE_TIME_FORMAT)}`,
     },
     {
       kind: t('statement.common.digest_text'),
@@ -74,7 +72,7 @@ export default function StatementSummaryTable({
     },
     {
       kind: t('statement.detail.last_seen'),
-      content: dayjs(detail.last_seen).format(timeFormat),
+      content: dayjs(detail.last_seen).format(DATE_TIME_FORMAT),
     },
   ]
 

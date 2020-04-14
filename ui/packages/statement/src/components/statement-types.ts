@@ -3,6 +3,8 @@ export interface Instance {
   name: string
 }
 
+export const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
+
 export type StatementStatus = 'on' | 'off' | 'unknown'
 
 export interface StatementConfig {

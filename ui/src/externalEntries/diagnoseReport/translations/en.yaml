@@ -4,3 +4,52 @@ diagnosis:
   fold_all: Fold All
   expand: expand
   fold: fold
+  tables:
+    generate_report_error: Generate Report Error
+    report_time_range: Report Time Range
+    diagnose: Diagnose
+    total_time_consume: Total Time Consume
+    total_error: Total Error
+    time_consume: Time Consume
+    transaction: Transaction
+    tidb_connection_count: TiDB Connection count
+    statistics_info: Statistics Info
+    ddl_owner: DDL Owner
+    scheduler_initial_config: Scheduler Initial Config
+    scheduler_change_config: Scheduler Change Config
+    tidb_gc_initial_config: TiDB GC Initial Config
+    tidb_gc_change_config: TiDB GC Change Config
+    tikv_rocksdb_initial_config: TiKV RocksDB Initial Config
+    tikv_rocksdb_change_config: TiKV RocksDB Change Config
+    tikv_raftstore_initial_config: TiKV RaftStore Initial Config
+    tikv_raftstore_change_config: TiKV RaftStore Change Config
+    pd_time_consume: PD Time Consume
+    blance_leader_region: Blance Leader/Region
+    approximate_region_size: Approximate Region size
+    tikv_engine_size: TiKV Engine Size
+    tikv_time_consume: TiKV Time Consume
+    scheduler_info: Scheduler Info
+    gc_info: GC Info
+    task_info: Task Info
+    snapshot_info: Snapshot Info
+    coprocessor_info: Coprocessor Info
+    raft_info: Raft Info
+    tikv_error: TiKV Error
+    tidb_current_config: TiDB Current Config
+    pd_current_config: PD Current Config
+    tikv_current_config: TiKV Current Config
+    node_load_info: Node Load Info
+    process_cpu_usage: Process CPU Usage
+    process_memory_usage: TProcess Memory Usage
+    tidb/pd_goroutines_count: TiDB/PD Goroutines Count
+    tikv_thread_cpu_usage: TiKV Thread CPU Usage
+    store_status: Store Status
+    cluster_status: Cluster Status
+    etcd_status: Etcd Status
+    cluster_info: Cluster Info
+    cache_hit: Cache Hit
+    cluster_hardware: RocksDB Time Consume
+    rocksdb_time_consume: RocksDB Time Consume
+    top_10_slow_query: Top 10 Slow Query
+    top_10_slow_query_group_by_digest: Top 10 Slow Query Group By Digest
+    slow_query_with_diff_plan: Slow Query With Diff Plan

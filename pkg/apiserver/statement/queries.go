@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	statementsTAble = "PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history"
+	statementsTable = "PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history"
 )
 
 func QuerySchemas(db *gorm.DB) ([]string, error) {
@@ -49,7 +49,7 @@ func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 			FLOOR(UNIX_TIMESTAMP(summary_begin_time)) AS begin_time,
 			FLOOR(UNIX_TIMESTAMP(summary_end_time)) AS end_time
 		`).
-		Table(statementsTAble).
+		Table(statementsTable).
 		Order("summary_begin_time DESC").
 		Find(&result).Error
 	return result, err
@@ -72,7 +72,7 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime i
 			ROUND(SUM(exec_count * avg_mem) / SUM(exec_count)) AS agg_avg_mem,
 			GROUP_CONCAT(table_names) AS agg_table_names
 		`).
-		Table(statementsTAble).
+		Table(statementsTable).
 		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Group("schema_name, digest, digest_text").
 		Order("agg_sum_latency DESC")
@@ -109,7 +109,7 @@ func QueryStatementDetail(db *gorm.DB, schema, digest string, beginTime, endTime
 			ROUND(SUM(exec_count * avg_total_keys) / SUM(exec_count)) AS agg_avg_total_keys,
 			GROUP_CONCAT(table_names) AS agg_table_names
 		`).
-		Table(statementsTAble).
+		Table(statementsTable).
 		Where("schema_name = ?", schema).
 		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Where("digest = ?", digest).
@@ -121,7 +121,7 @@ func QueryStatementDetail(db *gorm.DB, schema, digest string, beginTime, endTime
 
 	query = db.
 		Select(`query_sample_text, last_seen`).
-		Table(statementsTAble).
+		Table(statementsTable).
 		Where("schema_name = ?", schema).
 		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Where("digest = ?", digest).
@@ -136,7 +136,7 @@ func QueryStatementDetail(db *gorm.DB, schema, digest string, beginTime, endTime
 			plan_digest,
 			plan
 		`).
-		Table(statementsTAble).
+		Table(statementsTable).
 		Where("schema_name = ?", schema).
 		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Where("digest = ?", digest).
@@ -166,7 +166,7 @@ func QueryStatementNodes(db *gorm.DB, schema, digest string, beginTime, endTime 
 			avg_mem,
 			sum_backoff_times
 		`).
-		Table(statementsTAble).
+		Table(statementsTable).
 		Where("schema_name = ?", schema).
 		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Where("digest = ?", digest).

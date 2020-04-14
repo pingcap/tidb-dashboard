@@ -18,7 +18,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -27,8 +26,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
-
-const layout = "2006-01-02 15:04:05"
 
 type Service struct {
 	config        *config.Config
@@ -112,7 +109,7 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	overviews, err := QueryStatementsOverview(db, schemas, time.Unix(int64(beginTime), 0).Format(layout), time.Unix(int64(endTime), 0).Format(layout))
+	overviews, err := QueryStatementsOverview(db, schemas, int64(beginTime), int64(endTime))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -146,7 +143,7 @@ func (s *Service) detailHandler(c *gin.Context) {
 		return
 	}
 
-	detail, err := QueryStatementDetail(db, schema, time.Unix(int64(beginTime), 0).Format(layout), time.Unix(int64(endTime), 0).Format(layout), digest)
+	detail, err := QueryStatementDetail(db, schema, digest, int64(beginTime), int64(endTime))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -179,7 +176,7 @@ func (s *Service) nodesHandler(c *gin.Context) {
 		_ = c.Error(fmt.Errorf("invalid end_time: %s", err))
 		return
 	}
-	nodes, err := QueryStatementNodes(db, schema, time.Unix(int64(beginTime), 0).Format(layout), time.Unix(int64(endTime), 0).Format(layout), digest)
+	nodes, err := QueryStatementNodes(db, schema, digest, int64(beginTime), int64(endTime))
 	if err != nil {
 		_ = c.Error(err)
 		return

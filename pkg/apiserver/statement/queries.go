@@ -22,6 +22,10 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+const (
+	statementsTAble = "PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history"
+)
+
 func QuerySchemas(db *gorm.DB) ([]string, error) {
 	sql := `SHOW DATABASES`
 
@@ -41,10 +45,11 @@ func QuerySchemas(db *gorm.DB) ([]string, error) {
 func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 	err = db.
 		Select(`
-			DISTINCT CONVERT(UNIX_TIMESTAMP(summary_begin_time), UNSIGNED INTEGER) AS begin_time,
-			CONVERT(UNIX_TIMESTAMP(summary_end_time), UNSIGNED INTEGER) AS end_time
+			DISTINCT
+			FLOOR(UNIX_TIMESTAMP(summary_begin_time)) AS begin_time,
+			FLOOR(UNIX_TIMESTAMP(summary_end_time)) AS end_time
 		`).
-		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Table(statementsTAble).
 		Order("summary_begin_time DESC").
 		Find(&result).Error
 	return result, err
@@ -54,21 +59,21 @@ func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 // schemas: ["tpcc", "test"]
 // beginTime: "2020-02-13 10:30:00"
 // endTime: "2020-02-13 11:00:00"
-func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime string) (result []*Overview, err error) {
+func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime int64) (result []*Overview, err error) {
 	query := db.
 		Select(`
 			schema_name,
 			digest,
 			digest_text,
-			sum(sum_latency) AS agg_sum_latency,
-			sum(exec_count) AS agg_exec_count,
-			round(sum(exec_count*avg_affected_rows)/sum(exec_count)) AS agg_avg_affected_rows,
-			round(sum(exec_count*avg_latency)/sum(exec_count)) AS agg_avg_latency,
-			round(sum(exec_count*avg_mem)/sum(exec_count)) AS agg_avg_mem,
-			group_concat(table_names) AS agg_table_names
+			SUM(sum_latency) AS agg_sum_latency,
+			SUM(exec_count) AS agg_exec_count,
+			ROUND(SUM(exec_count *  avg_affected_rows) / SUM(exec_count)) AS agg_avg_affected_rows,
+			ROUND(SUM(exec_count * avg_latency) / SUM(exec_count)) AS agg_avg_latency,
+			ROUND(SUM(exec_count * avg_mem) / SUM(exec_count)) AS agg_avg_mem,
+			GROUP_CONCAT(table_names) AS agg_table_names
 		`).
-		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
-		Where("summary_begin_time >= ? AND summary_end_time <= ?", beginTime, endTime).
+		Table(statementsTAble).
+		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Group("schema_name, digest, digest_text").
 		Order("agg_sum_latency DESC")
 
@@ -90,7 +95,7 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime s
 // beginTime: "2020-02-13 10:30:00"
 // endTime: "2020-02-13 11:00:00"
 // digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
-func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string) (*Detail, error) {
+func QueryStatementDetail(db *gorm.DB, schema, digest string, beginTime, endTime int64) (*Detail, error) {
 	result := &Detail{}
 
 	query := db.
@@ -98,15 +103,15 @@ func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string
 			schema_name,
 			digest,
 			digest_text,
-			sum(sum_latency) AS agg_sum_latency,
-			sum(exec_count) AS agg_exec_count,
-			round(sum(exec_count*avg_affected_rows)/sum(exec_count)) AS agg_avg_affected_rows,
-			round(sum(exec_count*avg_total_keys)/sum(exec_count)) AS agg_avg_total_keys,
-			group_concat(table_names) AS agg_table_names
+			SUM(sum_latency) AS agg_sum_latency,
+			SUM(exec_count) AS agg_exec_count,
+			ROUND(SUM(exec_count * avg_affected_rows) / SUM(exec_count)) AS agg_avg_affected_rows,
+			ROUND(SUM(exec_count * avg_total_keys) / SUM(exec_count)) AS agg_avg_total_keys,
+			GROUP_CONCAT(table_names) AS agg_table_names
 		`).
-		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Table(statementsTAble).
 		Where("schema_name = ?", schema).
-		Where("summary_begin_time >= ? AND summary_end_time <= ?", beginTime, endTime).
+		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Where("digest = ?", digest).
 		Group("digest, digest_text, schema_name")
 
@@ -116,9 +121,9 @@ func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string
 
 	query = db.
 		Select(`query_sample_text, last_seen`).
-		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Table(statementsTAble).
 		Where("schema_name = ?", schema).
-		Where("summary_begin_time >= ? AND summary_end_time <= ?", beginTime, endTime).
+		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Where("digest = ?", digest).
 		Order("last_seen DESC")
 
@@ -131,9 +136,9 @@ func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string
 			plan_digest,
 			plan
 		`).
-		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Table(statementsTAble).
 		Where("schema_name = ?", schema).
-		Where("summary_begin_time >= ? AND summary_end_time <= ?", beginTime, endTime).
+		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Where("digest = ?", digest).
 		Where("plan_digest != ''").
 		Group("plan_digest, plan")
@@ -150,7 +155,7 @@ func QueryStatementDetail(db *gorm.DB, schema, beginTime, endTime, digest string
 // beginTime: "2020-02-13 10:30:00"
 // endTime: "2020-02-13 11:00:00"
 // digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
-func QueryStatementNodes(db *gorm.DB, schema, beginTime, endTime, digest string) (result []*Node, err error) {
+func QueryStatementNodes(db *gorm.DB, schema, digest string, beginTime, endTime int64) (result []*Node, err error) {
 	err = db.
 		Select(`
 			address,
@@ -161,9 +166,9 @@ func QueryStatementNodes(db *gorm.DB, schema, beginTime, endTime, digest string)
 			avg_mem,
 			sum_backoff_times
 		`).
-		Table("PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history").
+		Table(statementsTAble).
 		Where("schema_name = ?", schema).
-		Where("summary_begin_time >= ? AND summary_end_time <= ?", beginTime, endTime).
+		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Where("digest = ?", digest).
 		Order("sum_latency DESC").
 		Find(&result).Error

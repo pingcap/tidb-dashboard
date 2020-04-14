@@ -7,10 +7,7 @@ import { StatementNode, StatementMaxVals } from './statement-types'
 import { Bar } from '@pingcap-incubator/dashboard_components'
 import { useMax } from './use-max'
 
-const tableColumns = (
-  maxs: StatementMaxVals,
-  t: (_: string) => string
-) => [
+const tableColumns = (maxs: StatementMaxVals, t: (_: string) => string) => [
   {
     title: t('statement.detail.node'),
     dataIndex: 'address',

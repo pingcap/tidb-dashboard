@@ -18,6 +18,7 @@ import {
 } from './statement-types'
 import styles from './styles.module.less'
 import { useMax } from './use-max'
+import FormatHighlightSQL from './FormatHighlightSQL'
 
 // TODO: Extract to single file when needs to be re-used
 const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
@@ -43,7 +44,11 @@ const tableColumns = (
       maxWidth: 500,
       isResizable: true,
       onRender: (rec: StatementOverview) => (
-        <Tooltip title={rec.digest_text} placement="right">
+        <Tooltip
+          overlayClassName={styles.digest_column_tooltip}
+          title={<FormatHighlightSQL sql={rec.digest_text!} theme="dark" />}
+          placement="right"
+        >
           <div className={styles.digest_column}>{rec.digest_text}</div>
         </Tooltip>
       ),

@@ -64,7 +64,7 @@ const tableColumns = (
           value={rec.sum_latency}
           capacity={maxs.maxSumLatency}
         >
-          {getValueFormat('ns')(rec.sum_latency, 1, null)}
+          {getValueFormat('ns')(rec.sum_latency, 1)}
         </Bar>
       ),
     },
@@ -78,9 +78,9 @@ const tableColumns = (
       onColumnClick: onColumnClick,
       onRender: (rec) => {
         const tooltipContent = `
-AVG: ${getValueFormat('ns')(rec.avg_latency, 1, null)}
-MIN: ${getValueFormat('ns')(rec.min_latency, 1, null)}
-MAX: ${getValueFormat('ns')(rec.max_latency, 1, null)}`
+AVG: ${getValueFormat('ns')(rec.avg_latency, 1)}
+MIN: ${getValueFormat('ns')(rec.min_latency, 1)}
+MAX: ${getValueFormat('ns')(rec.max_latency, 1)}`
         return (
           <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
             <Bar
@@ -90,7 +90,7 @@ MAX: ${getValueFormat('ns')(rec.max_latency, 1, null)}`
               min={rec.min_latency}
               capacity={maxs.maxMaxLatency}
             >
-              {getValueFormat('ns')(rec.avg_latency, 1, null)}
+              {getValueFormat('ns')(rec.avg_latency, 1)}
             </Bar>
           </Tooltip>
         )
@@ -106,7 +106,7 @@ MAX: ${getValueFormat('ns')(rec.max_latency, 1, null)}`
       onColumnClick: onColumnClick,
       onRender: (rec) => (
         <Bar textWidth={70} value={rec.exec_count} capacity={maxs.maxExecCount}>
-          {getValueFormat('short')(rec.exec_count, 1, null)}
+          {getValueFormat('short')(rec.exec_count, 0, 1)}
         </Bar>
       ),
     },
@@ -120,8 +120,8 @@ MAX: ${getValueFormat('ns')(rec.max_latency, 1, null)}`
       onColumnClick: onColumnClick,
       onRender: (rec) => {
         const tooltipContent = `
-AVG: ${getValueFormat('bytes')(rec.avg_mem, 1, null)}
-MAX: ${getValueFormat('bytes')(rec.max_mem, 1, null)}`
+AVG: ${getValueFormat('bytes')(rec.avg_mem, 1)}
+MAX: ${getValueFormat('bytes')(rec.max_mem, 1)}`
         return (
           <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
             <Bar
@@ -130,7 +130,7 @@ MAX: ${getValueFormat('bytes')(rec.max_mem, 1, null)}`
               max={rec.max_mem}
               capacity={maxs.maxMaxMem}
             >
-              {getValueFormat('bytes')(rec.avg_mem, 1, null)}
+              {getValueFormat('bytes')(rec.avg_mem, 1)}
             </Bar>
           </Tooltip>
         )

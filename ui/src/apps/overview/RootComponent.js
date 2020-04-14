@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 
 import client from '@pingcap-incubator/dashboard_client'
-import { StatementsTable } from '@pingcap-incubator/statement'
+import { StatementsTable, DATE_TIME_FORMAT } from '@pingcap-incubator/statement'
 
 import { ComponentPanel, MonitorAlertBar } from './components'
 import styles from './RootComponent.module.less'
@@ -102,9 +102,9 @@ const App = () => {
                   timeRange.begin_time > 0
                     ? `${t('overview.top_statements.title')} (${dayjs
                         .unix(timeRange.begin_time)
-                        .format('YYYY-MM-DD HH:mm:ss')} ~ ${dayjs
+                        .format(DATE_TIME_FORMAT)} ~ ${dayjs
                         .unix(timeRange.end_time)
-                        .format('YYYY-MM-DD HH:mm:ss')})`
+                        .format(DATE_TIME_FORMAT)})`
                     : t('overview.top_statements.title')
                 }
                 cardExtra={

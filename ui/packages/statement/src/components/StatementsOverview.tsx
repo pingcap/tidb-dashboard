@@ -10,6 +10,7 @@ import {
   Instance,
   StatementOverview,
   StatementTimeRange,
+  DATE_TIME_FORMAT,
 } from './statement-types'
 import styles from './styles.module.less'
 import { SearchContext } from './search-options-context'
@@ -352,8 +353,8 @@ export default function StatementsOverview({
         >
           {state.timeRanges.map((item) => (
             <Option value={item.begin_time || ''} key={item.begin_time}>
-              {dayjs.unix(item.begin_time!).format('YYYY-MM-DD HH:mm:ss')} ~{' '}
-              {dayjs.unix(item.end_time!).format('YYYY-MM-DD HH:mm:ss')}
+              {dayjs.unix(item.begin_time!).format(DATE_TIME_FORMAT)} ~{' '}
+              {dayjs.unix(item.end_time!).format(DATE_TIME_FORMAT)}
             </Option>
           ))}
         </Select>

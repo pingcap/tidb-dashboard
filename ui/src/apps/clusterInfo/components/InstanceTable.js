@@ -11,9 +11,6 @@ import client from '@pingcap-incubator/dashboard_client'
 import { Badge, Divider, Popconfirm, Tooltip } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { initializeIcons } from 'office-ui-fabric-react/lib/Icons'
-
-initializeIcons(/* optional base url */)
 
 function useStatusColumnRender(handleHideTiDB) {
   const { t } = useTranslation()
@@ -119,7 +116,6 @@ function useClusterNodeDataSource() {
         const kinds = ['tidb', 'tikv', 'pd']
         kinds.forEach((nodeKind) => {
           const nodes = res.data[nodeKind]
-          console.log(nodeKind)
           if (nodes.err) {
             return
           }

@@ -40,7 +40,7 @@ export default function HostTable() {
       fieldName: 'ip',
       key: 'ip',
       minWidth: 100,
-      maxWidth: 100,
+      maxWidth: 150,
       isResizable: true,
       isCollapsible: true,
     },

@@ -48,7 +48,7 @@ const tableColumns = (
       name: columnHeaderWithTooltip('statement.common.digest_text', t),
       key: 'digest_text',
       minWidth: 100,
-      maxWidth: 500,
+      maxWidth: 300,
       isResizable: true,
       onRender: (rec: StatementOverview) => (
         <Tooltip title={rec.digest_text} placement="right">
@@ -83,16 +83,15 @@ const tableColumns = (
       onRender: (rec) => {
         const tooltipContent = `
 AVG: ${getValueFormat('ns')(rec.avg_latency, 1, null)}
-MIN: ${getValueFormat('ns')(rec.avg_latency * 0.5, 1, null)}
-MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`.trim()
+MIN: ${getValueFormat('ns')(rec.min_latency, 1, null)}
+MAX: ${getValueFormat('ns')(rec.max_latency, 1, null)}`.trim()
         return (
           <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
             <Bar.WithText
-              // value={rec.avg_latency * 0.9}
-              // max={rec.avg_latency}
-              // min={rec.avg_latency * 0.8}
               value={rec.avg_latency}
-              capacity={maxs.maxAvgLatency}
+              max={rec.max_latency}
+              min={rec.min_latency}
+              capacity={maxs.maxMaxLatency}
             >
               {getValueFormat('ns')(rec.avg_latency, 1, null)}
             </Bar.WithText>
@@ -122,11 +121,22 @@ MAX: ${getValueFormat('ns')(rec.avg_latency * 1.2, 1, null)}`.trim()
       maxWidth: 200,
       isResizable: true,
       onColumnClick: onColumnClick,
-      onRender: (rec) => (
-        <Bar.WithText value={rec.avg_mem} capacity={maxs.maxAvgMem}>
-          {getValueFormat('decbytes')(rec.avg_mem, 1, null)}
-        </Bar.WithText>
-      ),
+      onRender: (rec) => {
+        const tooltipContent = `
+AVG: ${getValueFormat('bytes')(rec.avg_mem, 1, null)}
+MAX: ${getValueFormat('bytes')(rec.max_mem, 1, null)}`.trim()
+        return (
+          <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
+            <Bar.WithText
+              value={rec.avg_mem}
+              max={rec.max_mem}
+              capacity={maxs.maxMaxMem}
+            >
+              {getValueFormat('bytes')(rec.avg_mem, 1, null)}
+            </Bar.WithText>
+          </Tooltip>
+        )
+      },
     },
   ]
   if (concise) {

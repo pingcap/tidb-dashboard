@@ -16,10 +16,11 @@ export interface IBarProps {
 
 function Bar({ value, capacity, min, max, className, ...rest }: IBarProps) {
   value = clamp(value, 0, capacity)
-  if (min) {
+  // consider the min and max maybe 0
+  if (min !== undefined) {
     min = clamp(min, 0, value)
   }
-  if (max) {
+  if (max !== undefined) {
     max = clamp(max, value, capacity)
   }
 
@@ -31,7 +32,9 @@ function Bar({ value, capacity, min, max, className, ...rest }: IBarProps) {
         className={styles.bar}
         style={{ width: `${(value / capacity) * 100}%` }}
       />
-      {min && (
+      {/* consider the stituation that min and max maybe 0 */}
+      {/* so we can't use `min && ...` and `max && ...` */}
+      {min !== undefined && (
         <div
           className={cx(styles.error_bar, styles.min_bar)}
           style={{
@@ -40,7 +43,7 @@ function Bar({ value, capacity, min, max, className, ...rest }: IBarProps) {
           }}
         ></div>
       )}
-      {max && (
+      {max !== undefined && (
         <div
           className={cx(styles.error_bar, styles.max_bar)}
           style={{

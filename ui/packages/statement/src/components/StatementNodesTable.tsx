@@ -71,7 +71,7 @@ const tableColumns = (
     sorter: (a: StatementNode, b: StatementNode) => a.avg_mem! - b.avg_mem!,
     render: (value) => (
       <Bar.WithText value={value} capacity={maxs.maxAvgMem}>
-        {getValueFormat('decbytes')(value, 1, null)}
+        {getValueFormat('bytes')(value, 1, null)}
       </Bar.WithText>
     ),
   },

@@ -57,8 +57,8 @@ func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 
 // Sample params:
 // schemas: ["tpcc", "test"]
-// beginTime: "2020-02-13 10:30:00"
-// endTime: "2020-02-13 11:00:00"
+// beginTime: 1586844000
+// endTime: 1586845800
 func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime int64) (result []*Overview, err error) {
 	query := db.
 		Select(`
@@ -68,8 +68,11 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime i
 			SUM(sum_latency) AS agg_sum_latency,
 			SUM(exec_count) AS agg_exec_count,
 			ROUND(SUM(exec_count *  avg_affected_rows) / SUM(exec_count)) AS agg_avg_affected_rows,
+			MAX(max_latency) AS agg_max_latency,
 			ROUND(SUM(exec_count * avg_latency) / SUM(exec_count)) AS agg_avg_latency,
+			MIN(min_latency) AS agg_min_latency,
 			ROUND(SUM(exec_count * avg_mem) / SUM(exec_count)) AS agg_avg_mem,
+			MAX(max_mem) AS agg_max_mem,
 			GROUP_CONCAT(table_names) AS agg_table_names
 		`).
 		Table(statementsTable).
@@ -92,8 +95,8 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime i
 
 // Sample params:
 // schemas: "tpcc"
-// beginTime: "2020-02-13 10:30:00"
-// endTime: "2020-02-13 11:00:00"
+// beginTime: 1586844000
+// endTime: 1586845800
 // digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
 func QueryStatementDetail(db *gorm.DB, schema, digest string, beginTime, endTime int64) (*Detail, error) {
 	result := &Detail{}
@@ -152,8 +155,8 @@ func QueryStatementDetail(db *gorm.DB, schema, digest string, beginTime, endTime
 
 // Sample params:
 // schemas: "tpcc"
-// beginTime: "2020-02-13 10:30:00"
-// endTime: "2020-02-13 11:00:00"
+// beginTime: 1586844000
+// endTime: 1586845800
 // digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
 func QueryStatementNodes(db *gorm.DB, schema, digest string, beginTime, endTime int64) (result []*Node, err error) {
 	err = db.

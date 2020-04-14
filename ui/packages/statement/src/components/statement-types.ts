@@ -36,15 +36,19 @@ export interface StatementPlanStep {
 export interface StatementFields {
   sum_latency?: number
   exec_count?: number
-  avg_latency?: number
   max_latency?: number
+  avg_latency?: number
+  min_latency?: number
+  max_mem?: number
   avg_mem?: number
 }
 
 export interface StatementMaxMinVals {
   maxSumLatency: number
   maxExecCount: number
-  maxAvgLatency: number
   maxMaxLatency: number
+  maxAvgLatency: number
+  maxMinLatency: number
+  maxMaxMem: number
   maxAvgMem: number
 }

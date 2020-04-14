@@ -41,8 +41,8 @@ type Instance struct {
 }
 
 type PartitionInstance struct {
-	Partition       `json:"partition"`
-	Instance        `json:"instance"`
+	Partition `json:"partition"`
+	Instance  `json:"instance"`
 }
 
 func GetAllHostInfo(db *gorm.DB) ([]HostInfo, error) {
@@ -78,8 +78,8 @@ func GetAllHostInfo(db *gorm.DB) ([]HostInfo, error) {
 			disk := inferPartition(dataDir, diskMap)
 
 			disks = append(disks, PartitionInstance{
-				Partition:       disk,
-				Instance:        instance,
+				Partition: disk,
+				Instance:  instance,
 			})
 		}
 
@@ -147,7 +147,7 @@ func loadHosts(db *gorm.DB) (HostMap, error) {
 	for rows.Next() {
 		var instance, serverType string
 		err = rows.Scan(&serverType, &instance)
-		if err != nil{
+		if err != nil {
 			continue
 		}
 		ip := parseIP(instance)
@@ -181,7 +181,7 @@ func loadCPUCores(db *gorm.DB) (CPUCoreMap, error) {
 		var instance string
 		var value int
 		err = rows.Scan(&instance, &value)
-		if err != nil{
+		if err != nil {
 			continue
 		}
 		ip := parseIP(instance)
@@ -210,7 +210,7 @@ func loadMemory(db *gorm.DB) (MemoryMap, error) {
 		var instance, name string
 		var value int
 		err = rows.Scan(&instance, &name, &value)
-		if err != nil{
+		if err != nil {
 			continue
 		}
 		ip := parseIP(instance)
@@ -250,7 +250,7 @@ func loadCPUUsage(db *gorm.DB) (CPUUsageMap, error) {
 		var instance, name string
 		var value float64
 		err = rows.Scan(&instance, &name, &value)
-		if err != nil{
+		if err != nil {
 			continue
 		}
 		ip := parseIP(instance)
@@ -293,7 +293,7 @@ func queryPartition(db *gorm.DB, instance Instance) (PartitionMap, error) {
 		var deviceName, name string
 		var value string
 		err = rows.Scan(&deviceName, &name, &value)
-		if err != nil{
+		if err != nil {
 			continue
 		}
 

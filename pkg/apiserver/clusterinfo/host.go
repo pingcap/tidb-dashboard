@@ -43,7 +43,6 @@ type Instance struct {
 type PartitionInstance struct {
 	Partition       `json:"partition"`
 	Instance        `json:"instance"`
-	InstanceDataDir string `json:"instance_data_dir"`
 }
 
 func GetAllHostInfo(db *gorm.DB) ([]HostInfo, error) {
@@ -81,7 +80,6 @@ func GetAllHostInfo(db *gorm.DB) ([]HostInfo, error) {
 			disks = append(disks, PartitionInstance{
 				Partition:       disk,
 				Instance:        instance,
-				InstanceDataDir: dataDir,
 			})
 		}
 
@@ -138,23 +136,29 @@ func inferPartition(dataDir string, diskMap PartitionMap) Partition {
 type HostMap map[string][]Instance
 
 func loadHosts(db *gorm.DB) (HostMap, error) {
+	hostMap := make(HostMap)
+
 	sql := "select TYPE, INSTANCE from INFORMATION_SCHEMA.CLUSTER_INFO;"
-	rows, err := querySQL(db, sql)
+	rows, err := db.Raw(sql).Rows()
 	if err != nil {
 		return nil, err
 	}
-
-	hostMap := make(HostMap)
-	for _, row := range rows {
-		ip := parseIP(row[1])
+	defer rows.Close()
+	for rows.Next() {
+		var instance, serverType string
+		err = rows.Scan(&serverType, &instance)
+		if err != nil{
+			continue
+		}
+		ip := parseIP(instance)
 		var list []Instance
 		if instances, ok := hostMap[ip]; ok {
 			list = instances
 		}
 
 		list = append(list, Instance{
-			Address:    row[1],
-			ServerType: row[0],
+			Address:    instance,
+			ServerType: serverType,
 		})
 		hostMap[ip] = list
 	}
@@ -165,20 +169,23 @@ func loadHosts(db *gorm.DB) (HostMap, error) {
 type CPUCoreMap map[string]int
 
 func loadCPUCores(db *gorm.DB) (CPUCoreMap, error) {
+	var m = make(CPUCoreMap)
+
 	sql := "select INSTANCE, VALUE from INFORMATION_SCHEMA.CLUSTER_HARDWARE where name = 'cpu-logical-cores';"
-	rows, err := querySQL(db, sql)
+	rows, err := db.Raw(sql).Rows()
 	if err != nil {
 		return nil, err
 	}
-
-	var m = make(CPUCoreMap)
-	for _, row := range rows {
-		ip := parseIP(row[0])
-		cores, err := strconv.Atoi(row[1])
-		if err != nil {
+	defer rows.Close()
+	for rows.Next() {
+		var instance string
+		var value int
+		err = rows.Scan(&instance, &value)
+		if err != nil{
 			continue
 		}
-		m[ip] = cores
+		ip := parseIP(instance)
+		m[ip] = value
 	}
 
 	return m, nil
@@ -191,15 +198,22 @@ func parseIP(addr string) string {
 type MemoryMap map[string]Memory
 
 func loadMemory(db *gorm.DB) (MemoryMap, error) {
+	var m = make(MemoryMap)
+
 	sql := "select INSTANCE, NAME, VALUE from INFORMATION_SCHEMA.CLUSTER_LOAD where device_type = 'memory' and device_name = 'virtual';"
-	rows, err := querySQL(db, sql)
+	rows, err := db.Raw(sql).Rows()
 	if err != nil {
 		return nil, err
 	}
-
-	var m = make(MemoryMap)
-	for _, row := range rows {
-		ip := parseIP(row[0])
+	defer rows.Close()
+	for rows.Next() {
+		var instance, name string
+		var value int
+		err = rows.Scan(&instance, &name, &value)
+		if err != nil{
+			continue
+		}
+		ip := parseIP(instance)
 
 		var memory Memory
 		var ok bool
@@ -207,17 +221,11 @@ func loadMemory(db *gorm.DB) (MemoryMap, error) {
 			memory = Memory{}
 		}
 
-		switch row[1] {
+		switch name {
 		case "total":
-			memory.Total, err = strconv.Atoi(row[2])
-			if err != nil {
-				continue
-			}
+			memory.Total = value
 		case "used":
-			memory.Used, err = strconv.Atoi(row[2])
-			if err != nil {
-				continue
-			}
+			memory.Used = value
 		default:
 			continue
 		}
@@ -230,15 +238,22 @@ func loadMemory(db *gorm.DB) (MemoryMap, error) {
 type CPUUsageMap map[string]CPUUsage
 
 func loadCPUUsage(db *gorm.DB) (CPUUsageMap, error) {
+	var m = make(CPUUsageMap)
+
 	sql := "select INSTANCE, NAME, VALUE from INFORMATION_SCHEMA.CLUSTER_LOAD where device_type = 'cpu' and device_name = 'usage';"
-	rows, err := querySQL(db, sql)
+	rows, err := db.Raw(sql).Rows()
 	if err != nil {
 		return nil, err
 	}
-
-	var m = make(CPUUsageMap)
-	for _, row := range rows {
-		ip := parseIP(row[0])
+	defer rows.Close()
+	for rows.Next() {
+		var instance, name string
+		var value float64
+		err = rows.Scan(&instance, &name, &value)
+		if err != nil{
+			continue
+		}
+		ip := parseIP(instance)
 
 		var cpu CPUUsage
 		var ok bool
@@ -246,17 +261,11 @@ func loadCPUUsage(db *gorm.DB) (CPUUsageMap, error) {
 			cpu = CPUUsage{}
 		}
 
-		switch row[1] {
+		switch name {
 		case "system":
-			cpu.System, err = strconv.ParseFloat(row[2], 64)
-			if err != nil {
-				continue
-			}
+			cpu.System = value
 		case "idle":
-			cpu.Idle, err = strconv.ParseFloat(row[2], 64)
-			if err != nil {
-				continue
-			}
+			cpu.Idle = value
 		default:
 			continue
 		}
@@ -269,37 +278,43 @@ func loadCPUUsage(db *gorm.DB) (CPUUsageMap, error) {
 type PartitionMap map[string]Partition
 
 func queryPartition(db *gorm.DB, instance Instance) (PartitionMap, error) {
+	var m = make(PartitionMap)
+
 	sql := fmt.Sprintf("select DEVICE_NAME, NAME, VALUE from INFORMATION_SCHEMA.CLUSTER_HARDWARE where type = '%s' and instance = '%s' and device_type = 'disk';",
 		instance.ServerType,
 		instance.Address,
 	)
-	rows, err := querySQL(db, sql)
+	rows, err := db.Raw(sql).Rows()
 	if err != nil {
 		return nil, err
 	}
-
-	var m = make(PartitionMap)
-	for _, row := range rows {
-		name := row[0]
+	defer rows.Close()
+	for rows.Next() {
+		var deviceName, name string
+		var value string
+		err = rows.Scan(&deviceName, &name, &value)
+		if err != nil{
+			continue
+		}
 
 		var partition Partition
 		var ok bool
-		if partition, ok = m[name]; !ok {
+		if partition, ok = m[deviceName]; !ok {
 			partition = Partition{}
 		}
 
-		switch row[1] {
+		switch name {
 		case "fstype":
-			partition.FSType = row[2]
+			partition.FSType = value
 		case "path":
-			partition.Path = row[2]
+			partition.Path = value
 		case "total":
-			partition.Total, err = strconv.Atoi(row[2])
+			partition.Total, err = strconv.Atoi(value)
 			if err != nil {
 				continue
 			}
 		case "free":
-			partition.Free, err = strconv.Atoi(row[2])
+			partition.Free, err = strconv.Atoi(value)
 			if err != nil {
 				continue
 			}
@@ -307,7 +322,7 @@ func queryPartition(db *gorm.DB, instance Instance) (PartitionMap, error) {
 			continue
 		}
 
-		m[name] = partition
+		m[deviceName] = partition
 	}
 
 	return m, nil
@@ -329,56 +344,11 @@ func queryDeployInfo(db *gorm.DB, instance Instance) (string, error) {
 		instance.ServerType,
 		instance.Address,
 		configKey)
-	rows, err := querySQL(db, sql)
-	if err != nil {
+
+	var dataDir string
+	if err := db.Raw(sql).Row().Scan(&dataDir); err != nil {
 		return "", err
 	}
-	return rows[0][0], nil
-}
 
-func querySQL(db *gorm.DB, sql string) ([][]string, error) {
-	if len(sql) == 0 {
-		return nil, nil
-	}
-
-	rows, err := db.Raw(sql).Rows()
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	// Read all rows.
-	resultRows := make([][]string, 0, 2)
-	for rows.Next() {
-		cols, err1 := rows.Columns()
-		if err1 != nil {
-			return nil, err
-		}
-
-		// See https://stackoverflow.com/questions/14477941/read-select-columns-into-string-in-go
-		rawResult := make([][]byte, len(cols))
-		dest := make([]interface{}, len(cols))
-		for i := range rawResult {
-			dest[i] = &rawResult[i]
-		}
-
-		err1 = rows.Scan(dest...)
-		if err1 != nil {
-			return nil, err
-		}
-
-		resultRow := []string{}
-		for _, raw := range rawResult {
-			val := ""
-			if raw != nil {
-				val = string(raw)
-			}
-
-			resultRow = append(resultRow, val)
-		}
-		resultRows = append(resultRows, resultRow)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	return resultRows, nil
+	return dataDir, nil
 }

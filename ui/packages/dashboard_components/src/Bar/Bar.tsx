@@ -53,13 +53,13 @@ function Bar({
     clampedValues,
   ])
 
-  if (min) {
+  if (min != null) {
     min = clamp(min, 0, valuesSum)
     if ((valuesSum - min) / capacity < 0.01) {
       min = undefined
     }
   }
-  if (max) {
+  if (max != null) {
     max = clamp(max, valuesSum, capacity)
     if ((max - valuesSum) / capacity < 0.01) {
       max = undefined
@@ -76,7 +76,7 @@ function Bar({
       <div className={styles.bar_container}>
         {clampedValues.map(([offset, value], idx) => (
           <div
-            className={cx(styles.bar, styles.segmented_bar)}
+            className={cx(styles.bar)}
             style={{
               width: `${(value / capacity) * 100}%`,
               left: `${(offset / capacity) * 100}%`,

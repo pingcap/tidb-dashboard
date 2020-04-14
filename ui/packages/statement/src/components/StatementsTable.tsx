@@ -106,7 +106,7 @@ MAX: ${getValueFormat('ns')(rec.max_latency, 1, null)}`
       onColumnClick: onColumnClick,
       onRender: (rec) => (
         <Bar textWidth={70} value={rec.exec_count} capacity={maxs.maxExecCount}>
-          {getValueFormat('short')(rec.exec_count, 0, 0)}
+          {getValueFormat('short')(rec.exec_count, 1, null)}
         </Bar>
       ),
     },

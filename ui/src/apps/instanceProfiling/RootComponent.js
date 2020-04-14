@@ -2,7 +2,7 @@ import React from 'react'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 import ListPage from './pages/List'
 import DetailPage from './pages/Detail'
-import { FabricRoot } from '@/components'
+import { FabricRoot } from '@pingcap-incubator/dashboard_components'
 
 const App = () => (
   <FabricRoot>

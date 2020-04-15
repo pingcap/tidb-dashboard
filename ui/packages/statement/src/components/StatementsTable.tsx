@@ -22,12 +22,12 @@ import { useMax } from './use-max'
 
 // TODO: Extract to single file when needs to be re-used
 const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
-  <div>
-    {t(key)}&nbsp;&nbsp;
+  <>
+    {t(key)}
     <Tooltip title={t(key + '_tooltip')}>
-      <InfoCircleOutlined />
+      <InfoCircleOutlined style={{ margin: '0 8px' }} />
     </Tooltip>
-  </div>
+  </>
 )
 
 const tableColumns = (

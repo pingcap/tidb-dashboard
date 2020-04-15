@@ -11,12 +11,7 @@ import React, {
 import { useTranslation } from 'react-i18next'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import styles from './Styles.module.css'
-import {
-  namingMap,
-  NodeKind,
-  NodeKindList,
-  TaskState,
-} from './utils'
+import { namingMap, NodeKind, NodeKindList, TaskState } from './utils'
 import { Card } from '@pingcap-incubator/dashboard_components'
 
 const { confirm } = Modal

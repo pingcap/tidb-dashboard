@@ -9,6 +9,7 @@ import {
   Bar,
   CardTableV2,
   ICardTableV2Props,
+  FormatHighlightSQL,
 } from '@pingcap-incubator/dashboard_components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import {
@@ -43,7 +44,10 @@ const tableColumns = (
       maxWidth: 500,
       isResizable: true,
       onRender: (rec: StatementOverview) => (
-        <Tooltip title={rec.digest_text} placement="right">
+        <Tooltip
+          title={<FormatHighlightSQL sql={rec.digest_text!} theme="dark" />}
+          placement="right"
+        >
           <div className={styles.digest_column}>{rec.digest_text}</div>
         </Tooltip>
       ),

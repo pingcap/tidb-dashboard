@@ -16,5 +16,6 @@
     "noImplicitAny": false,
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true
-  }
+  },
+  "files": ["./typings.d.ts"]
 }

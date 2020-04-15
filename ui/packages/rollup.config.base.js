@@ -7,6 +7,7 @@ import resolve from 'rollup-plugin-node-resolve'
 import url from 'rollup-plugin-url'
 import svgr from '@svgr/rollup'
 import yaml from '@rollup/plugin-yaml'
+import lessLoaderConfig from '../less-loader-config.json'
 
 // https://github.com/Brooooooklyn/ts-import-plugin
 const transformer = createTransformer({
@@ -39,33 +40,8 @@ export default function baseConfig(pkg) {
       // https://github.com/egoist/rollup-plugin-postcss/issues/110
       // https://github.com/cisen/blog/issues/295
       postcss({
-        extensions: ['.css', '.scss', '.less'],
-        use: [
-          'sass',
-          [
-            'less',
-            {
-              javascriptEnabled: true,
-              modifyVars: {
-                '@primary-color': '#3351ff',
-                '@body-background': '#f0f2f5',
-              },
-              globalVars: {
-                '@padding-page': '48px', // TODO: keep same with root project
-                '@gray-1': '#fff',
-                '@gray-2': '#fafafa',
-                '@gray-3': '#f5f5f5',
-                '@gray-4': '#f0f0f0',
-                '@gray-5': '#d9d9d9',
-                '@gray-6': '#bfbfbf',
-                '@gray-7': '#8c8c8c',
-                '@gray-8': '#595959',
-                '@gray-9': '#262626',
-                '@gray-10': '#000',
-              },
-            },
-          ],
-        ],
+        extensions: ['.css', '.less'],
+        use: [['less', lessLoaderConfig]],
       }),
       url(),
       svgr(),

@@ -12,6 +12,8 @@ const {
 } = require('customize-cra')
 const addYaml = require('react-app-rewire-yaml')
 const WebpackBar = require('webpackbar')
+// the json format can work for commonjs and esm both
+const lessLoaderConfig = require('./less-loader-config.json')
 
 const enableEslintIgnore = () => (config) => {
   const eslintRule = config.module.rules.filter(
@@ -48,27 +50,7 @@ module.exports = override(
     libraryDirectory: 'es',
     style: true,
   }),
-  addLessLoader({
-    javascriptEnabled: true,
-    modifyVars: {
-      '@primary-color': '#3351ff',
-      '@body-background': '#f0f2f5',
-    },
-    globalVars: {
-      '@padding-page': '48px',
-      '@gray-1': '#fff',
-      '@gray-2': '#fafafa',
-      '@gray-3': '#f5f5f5',
-      '@gray-4': '#f0f0f0',
-      '@gray-5': '#d9d9d9',
-      '@gray-6': '#bfbfbf',
-      '@gray-7': '#8c8c8c',
-      '@gray-8': '#595959',
-      '@gray-9': '#262626',
-      '@gray-10': '#000',
-    },
-    localIdentName: '[local]--[hash:base64:5]',
-  }),
+  addLessLoader(lessLoaderConfig),
   addWebpackResolve({
     alias: { '@': path.resolve(__dirname, 'src') },
   }),

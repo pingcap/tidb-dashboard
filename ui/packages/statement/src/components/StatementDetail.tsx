@@ -6,7 +6,7 @@ import StatementNodesTable from './StatementNodesTable'
 import StatementSummaryTable from './StatementSummaryTable'
 import { StatementDetailInfo, StatementNode } from './statement-types'
 
-import styles from './styles.module.css'
+import styles from './styles.module.less'
 import { useTranslation } from 'react-i18next'
 import StatementPlanTable from './StatementPlanTable'
 
@@ -17,19 +17,19 @@ function StatisCard({ detail }: { detail: StatementDetailInfo }) {
     <div className={styles.statement_statis}>
       <p>
         {t('statement.common.sum_latency')}:{' '}
-        {getValueFormat('ns')(detail.sum_latency!, 2, null)}
+        {getValueFormat('ns')(detail.sum_latency!, 2)}
       </p>
       <p>
         {t('statement.common.exec_count')}:{' '}
-        {getValueFormat('short')(detail.exec_count!, 0, 0)}
+        {getValueFormat('short')(detail.exec_count!, 0, 2)}
       </p>
       <p>
         {t('statement.common.avg_affected_rows')}:{' '}
-        {getValueFormat('short')(detail.avg_affected_rows!, 0, 0)}
+        {getValueFormat('short')(detail.avg_affected_rows!, 2)}
       </p>
       <p>
         {t('statement.common.avg_total_keys')}:{' '}
-        {getValueFormat('short')(detail.avg_total_keys!, 0, 0)}
+        {getValueFormat('short')(detail.avg_total_keys!, 2)}
       </p>
     </div>
   )

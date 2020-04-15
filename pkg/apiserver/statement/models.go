@@ -13,12 +13,14 @@
 
 package statement
 
-import "strings"
+import (
+	"strings"
+)
 
 // TimeRange represents a range of time
 type TimeRange struct {
-	BeginTime string `json:"begin_time"`
-	EndTime   string `json:"end_time"`
+	BeginTime int64 `json:"begin_time"`
+	EndTime   int64 `json:"end_time"`
 }
 
 // Overview represents the overview of a statement
@@ -27,10 +29,14 @@ type Overview struct {
 	Digest             string `json:"digest"`
 	DigestText         string `json:"digest_text"`
 	AggSumLatency      int    `json:"sum_latency"`
+	AggMaxLatency      int    `json:"max_latency"`
 	AggAvgLatency      int    `json:"avg_latency"`
+	AggMinLatency      int    `json:"min_latency"`
 	AggExecCount       int    `json:"exec_count"`
 	AggAvgAffectedRows int    `json:"avg_affected_rows"`
-	AggAvgMem          int    `json:"avg_mem"`
+
+	AggMaxMem int `json:"max_mem"`
+	AggAvgMem int `json:"avg_mem"`
 
 	AggTableNames string `json:"agg_table_names"`
 	// Schemas is extracted from table_names column

@@ -1,10 +1,22 @@
-import React from 'react'
+import React, { ReactNode } from 'react'
 import { Table, Skeleton } from 'antd'
-import classNames from 'classnames'
+import { TableProps } from 'antd/lib/table'
+import cx from 'classnames'
 import Card from '../Card'
 import styles from './index.module.less'
 
-function TableCard({
+export interface ICardTableProps<RecordType extends object = any>
+  extends TableProps<RecordType> {
+  title?: any
+  className?: string
+  style?: object
+  loading?: boolean
+  loadingSkeletonRows?: number
+  cardExtra?: ReactNode
+  children?: ReactNode
+}
+
+function CardTable({
   title,
   className,
   style,
@@ -12,12 +24,12 @@ function TableCard({
   loadingSkeletonRows,
   cardExtra,
   ...rest
-}) {
+}: ICardTableProps) {
   return (
     <Card
       title={title}
       style={style}
-      className={classNames(styles.cardTable, className)}
+      className={cx(styles.cardTable, className)}
       extra={cardExtra}
     >
       {loading ? (
@@ -35,4 +47,4 @@ function TableCard({
   )
 }
 
-export default TableCard
+export default CardTable

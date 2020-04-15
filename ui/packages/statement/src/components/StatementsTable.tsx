@@ -1,110 +1,152 @@
-import React, { useMemo } from 'react'
+import React, { useState } from 'react'
 import _ from 'lodash'
-import { Link } from 'react-router-dom'
-import { Table, Tooltip } from 'antd'
-import { getValueFormat } from '@baurine/grafana-value-formats'
-import { TextWithHorizontalBar, BLUE_COLOR, RED_COLOR } from './HorizontalBar'
-import { StatementOverview, StatementTimeRange } from './statement-types'
+import { useNavigate } from 'react-router-dom'
+import { Tooltip } from 'antd'
+import { InfoCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-import styles from './styles.module.css'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import {
+  Bar,
+  CardTableV2,
+  ICardTableV2Props,
+  FormatHighlightSQL,
+} from '@pingcap-incubator/dashboard_components'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+import {
+  StatementOverview,
+  StatementTimeRange,
+  StatementMaxVals,
+} from './statement-types'
+import styles from './styles.module.less'
+import { useMax } from './use-max'
+
+// TODO: Extract to single file when needs to be re-used
+const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
+  <div>
+    {t(key)}&nbsp;&nbsp;
+    <Tooltip title={t(key + '_tooltip')}>
+      <InfoCircleOutlined />
+    </Tooltip>
+  </div>
+)
 
 const tableColumns = (
   t: (string) => string,
   concise: boolean,
-  timeRange: StatementTimeRange,
-  maxSumLatency: number,
-  maxExecCount: number,
-  maxAvgLatency: number,
-  maxAvgMem: number,
-  detailPagePath?: string
-) => {
-  const columns = [
+  maxs: StatementMaxVals,
+  onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void
+): IColumn[] => {
+  const columns: IColumn[] = [
     {
-      title: t('statement.common.schemas'),
-      dataIndex: 'schemas',
-      key: 'schemas',
-    },
-    {
-      title: t('statement.common.digest_text'),
-      dataIndex: 'digest_text',
+      name: columnHeaderWithTooltip('statement.common.digest_text', t),
       key: 'digest_text',
-      render: (value, record: StatementOverview) => (
-        <Link
-          to={`${detailPagePath || '/statement/detail'}?digest=${
-            record.digest
-          }&schema=${record.schema_name}&begin_time=${
-            timeRange.begin_time
-          }&end_time=${timeRange.end_time}`}
+      minWidth: 100,
+      maxWidth: 500,
+      isResizable: true,
+      onRender: (rec: StatementOverview) => (
+        <Tooltip
+          title={<FormatHighlightSQL sql={rec.digest_text!} theme="dark" />}
+          placement="right"
         >
-          <Tooltip title={value} placement="right">
-            <div className={styles.digest_column}>{value}</div>
-          </Tooltip>
-        </Link>
+          <div className={styles.digest_column}>{rec.digest_text}</div>
+        </Tooltip>
       ),
     },
     {
-      title: t('statement.common.sum_latency'),
-      dataIndex: 'sum_latency',
+      name: columnHeaderWithTooltip('statement.common.sum_latency', t),
       key: 'sum_latency',
-      sorter: (a: StatementOverview, b: StatementOverview) =>
-        a.sum_latency! - b.sum_latency!,
-      render: (value) => (
-        <TextWithHorizontalBar
-          text={getValueFormat('ns')(value, 2, null)}
-          factor={value / maxSumLatency}
-          color={BLUE_COLOR}
-        />
+      fieldName: 'sum_latency',
+      minWidth: 140,
+      maxWidth: 200,
+      isResizable: true,
+      isSorted: true,
+      isSortedDescending: true,
+      onColumnClick: onColumnClick,
+      onRender: (rec) => (
+        <Bar
+          textWidth={70}
+          value={rec.sum_latency}
+          capacity={maxs.maxSumLatency}
+        >
+          {getValueFormat('ns')(rec.sum_latency, 1)}
+        </Bar>
       ),
     },
     {
-      title: t('statement.common.exec_count'),
-      dataIndex: 'exec_count',
-      key: 'exec_count',
-      sorter: (a: StatementOverview, b: StatementOverview) =>
-        a.exec_count! - b.exec_count!,
-      render: (value) => (
-        <TextWithHorizontalBar
-          text={getValueFormat('short')(value, 0, 0)}
-          factor={value / maxExecCount}
-          color={BLUE_COLOR}
-        />
-      ),
-    },
-    {
-      title: t('statement.common.avg_latency'),
-      dataIndex: 'avg_latency',
+      name: columnHeaderWithTooltip('statement.common.avg_latency', t),
       key: 'avg_latency',
-      sorter: (a: StatementOverview, b: StatementOverview) =>
-        a.avg_latency! - b.avg_latency!,
-      render: (value) => (
-        <TextWithHorizontalBar
-          text={getValueFormat('ns')(value, 2, null)}
-          factor={value / maxAvgLatency}
-          color={BLUE_COLOR}
-        />
+      fieldName: 'avg_latency',
+      minWidth: 140,
+      maxWidth: 200,
+      isResizable: true,
+      onColumnClick: onColumnClick,
+      onRender: (rec) => {
+        const tooltipContent = `
+AVG: ${getValueFormat('ns')(rec.avg_latency, 1)}
+MIN: ${getValueFormat('ns')(rec.min_latency, 1)}
+MAX: ${getValueFormat('ns')(rec.max_latency, 1)}`
+        return (
+          <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
+            <Bar
+              textWidth={70}
+              value={rec.avg_latency}
+              max={rec.max_latency}
+              min={rec.min_latency}
+              capacity={maxs.maxMaxLatency}
+            >
+              {getValueFormat('ns')(rec.avg_latency, 1)}
+            </Bar>
+          </Tooltip>
+        )
+      },
+    },
+    {
+      name: columnHeaderWithTooltip('statement.common.exec_count', t),
+      key: 'exec_count',
+      fieldName: 'exec_count',
+      minWidth: 140,
+      maxWidth: 200,
+      isResizable: true,
+      onColumnClick: onColumnClick,
+      onRender: (rec) => (
+        <Bar textWidth={70} value={rec.exec_count} capacity={maxs.maxExecCount}>
+          {getValueFormat('short')(rec.exec_count, 0, 1)}
+        </Bar>
       ),
     },
     {
-      title: t('statement.common.avg_mem'),
-      dataIndex: 'avg_mem',
+      name: columnHeaderWithTooltip('statement.common.avg_mem', t),
       key: 'avg_mem',
-      sorter: (a: StatementOverview, b: StatementOverview) =>
-        a.avg_mem! - b.avg_mem!,
-      render: (value) => (
-        <TextWithHorizontalBar
-          text={getValueFormat('bytes')(value, 2, null)}
-          factor={value / maxAvgMem}
-          color={RED_COLOR}
-        />
-      ),
+      fieldName: 'avg_mem',
+      minWidth: 140,
+      maxWidth: 200,
+      isResizable: true,
+      onColumnClick: onColumnClick,
+      onRender: (rec) => {
+        const tooltipContent = `
+AVG: ${getValueFormat('bytes')(rec.avg_mem, 1)}
+MAX: ${getValueFormat('bytes')(rec.max_mem, 1)}`
+        return (
+          <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
+            <Bar
+              textWidth={70}
+              value={rec.avg_mem}
+              max={rec.max_mem}
+              capacity={maxs.maxMaxMem}
+            >
+              {getValueFormat('bytes')(rec.avg_mem, 1)}
+            </Bar>
+          </Tooltip>
+        )
+      },
     },
     {
-      title: t('statement.common.avg_affected_rows'),
-      dataIndex: 'avg_affected_rows',
-      key: 'avg_affected_rows',
-      sorter: (a: StatementOverview, b: StatementOverview) =>
-        a.avg_affected_rows! - b.avg_affected_rows!,
-      render: (value) => getValueFormat('short')(value, 0, 0),
+      name: columnHeaderWithTooltip('statement.common.schemas', t),
+      key: 'schemas',
+      minWidth: 160,
+      maxWidth: 240,
+      isResizable: true,
+      onRender: (rec) => rec.schemas,
     },
   ]
   if (concise) {
@@ -115,7 +157,20 @@ const tableColumns = (
   return columns
 }
 
-interface Props {
+function copyAndSort<T>(
+  items: T[],
+  columnKey: string,
+  isSortedDescending?: boolean
+): T[] {
+  const key = columnKey as keyof T
+  return items
+    .slice(0)
+    .sort((a: T, b: T) =>
+      (isSortedDescending ? a[key] < b[key] : a[key] > b[key]) ? 1 : -1
+    )
+}
+
+interface Props extends ICardTableV2Props {
   statements: StatementOverview[]
   loading: boolean
   timeRange: StatementTimeRange
@@ -129,55 +184,54 @@ export default function StatementsTable({
   timeRange,
   detailPagePath,
   concise,
+  ...restPrpos
 }: Props) {
   const { t } = useTranslation()
-  // TODO: extract all following calculations into custom hook for easy reuse
-  const maxSumLatency = useMemo(
-    () => _.max(statements.map((s) => s.sum_latency)) || 1,
-    [statements]
-  )
-  const maxExecCount = useMemo(
-    () => _.max(statements.map((s) => s.exec_count)) || 1,
-    [statements]
-  )
-  const maxAvgLatency = useMemo(
-    () => _.max(statements.map((s) => s.avg_latency)) || 1,
-    [statements]
-  )
-  const maxAvgMem = useMemo(
-    () => _.max(statements.map((s) => s.avg_mem)) || 1,
-    [statements]
-  )
-  const columns = useMemo(
-    () =>
-      tableColumns(
-        t,
-        concise || false,
-        timeRange,
-        maxSumLatency,
-        maxExecCount!,
-        maxAvgLatency!,
-        maxAvgMem!,
-        detailPagePath
-      ),
-    [
-      t,
-      concise,
-      timeRange,
-      maxSumLatency,
-      maxExecCount,
-      maxAvgLatency,
-      maxAvgMem,
-    ]
+  const navigate = useNavigate()
+  const [items, setItems] = useState(statements)
+  const maxs = useMax(statements)
+  const [columns, setColumns] = useState(() =>
+    tableColumns(t, concise || false, maxs, onColumnClick)
   )
 
+  function handleRowClick(rec) {
+    navigate(
+      `${detailPagePath || '/statement/detail'}?digest=${rec.digest}&schema=${
+        rec.schema_name
+      }&begin_time=${timeRange.begin_time}&end_time=${timeRange.end_time}`
+    )
+  }
+
+  function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {
+    const newColumns: IColumn[] = columns.slice()
+    const currColumn: IColumn = newColumns.filter(
+      (currCol) => column.key === currCol.key
+    )[0]
+    newColumns.forEach((newCol: IColumn) => {
+      if (newCol === currColumn) {
+        currColumn.isSorted = true
+        currColumn.isSortedDescending = !currColumn.isSortedDescending
+      } else {
+        newCol.isSorted = false
+        newCol.isSortedDescending = false
+      }
+    })
+    const newItems = copyAndSort(
+      items,
+      currColumn.fieldName!,
+      currColumn.isSortedDescending
+    )
+    setColumns(newColumns)
+    setItems(newItems)
+  }
+
   return (
-    <Table
-      columns={columns}
-      dataSource={statements}
+    <CardTableV2
       loading={loading}
-      rowKey={(record: StatementOverview, index) => `${record.digest}_${index}`}
-      pagination={false}
+      columns={columns}
+      onRowClicked={handleRowClick}
+      {...restPrpos}
+      items={items}
     />
   )
 }

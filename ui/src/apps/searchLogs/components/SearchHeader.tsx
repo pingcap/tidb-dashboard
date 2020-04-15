@@ -13,7 +13,6 @@ import { useNavigate } from 'react-router-dom'
 import { useMount } from '@umijs/hooks'
 import styles from './Styles.module.css'
 import {
-  getAddress,
   namingMap,
   NodeKind,
   NodeKindList,
@@ -45,7 +44,7 @@ function buildTreeData(targets: UtilsRequestTargetNode[]) {
       value: kind,
       key: kind,
       children: servers[kind].map((item: UtilsRequestTargetNode) => {
-        const addr = getAddress(item)
+        const addr = item.display_name ?? ''
         return {
           title: addr,
           value: addr,
@@ -91,7 +90,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
       } = parseSearchingParams(res2.data)
       setTimeRange(timeRange)
       setLogLevel(logLevel === 0 ? 3 : logLevel)
-      setComponents(components.map((item) => getAddress(item)))
+      setComponents(components.map((item) => item.display_name ?? ''))
       setSearchValue(searchValue)
     }
     fetchData()
@@ -100,7 +99,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
   async function createTaskGroup() {
     // TODO: check select at least one component
     const targets: UtilsRequestTargetNode[] = allTargets.filter((item) =>
-      selectedComponents.some((addr) => addr === getAddress(item))
+      selectedComponents.some((addr) => addr === item.display_name ?? '')
     )
 
     let params: LogsearchCreateTaskGroupRequest = {

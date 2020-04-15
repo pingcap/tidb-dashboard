@@ -144,20 +144,4 @@ function getComponents(tasks: LogsearchTaskModel[]): UtilsRequestTargetNode[] {
   return targets
 }
 
-export function getGRPCAddress(
-  target: UtilsRequestTargetNode | undefined
-): string {
-  if (target === undefined) {
-    return ''
-  }
-  return `${target.ip}:${target.port}`
-}
-
-export function getAddress(target: UtilsRequestTargetNode | undefined): string {
-  if (target === undefined) {
-    return ''
-  }
-  return `${target.display_name}`
-}
-
 export const NodeKindList = [NodeKind.TiDB, NodeKind.TiKV, NodeKind.PD]

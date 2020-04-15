@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import styles from './Styles.module.css'
 import {
-  getAddress,
   namingMap,
   NodeKind,
   NodeKindList,
@@ -47,7 +46,7 @@ function leafNodeProps(state: number | undefined) {
 
 function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map((task) => {
-    const title = getAddress(task.target)
+    const title = task.target?.display_name ?? ''
     return (
       <TreeNode
         key={`${task.id}`}

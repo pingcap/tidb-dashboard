@@ -1,15 +1,16 @@
-import React, { useCallback } from 'react'
-import { Skeleton } from 'antd'
-import classNames from 'classnames'
-import { Card } from '@pingcap-incubator/dashboard_components'
+import React, { useCallback, useMemo } from 'react'
+import { Skeleton, Checkbox } from 'antd'
+import cx from 'classnames'
 import {
   DetailsList,
   DetailsListLayoutMode,
   SelectionMode,
   IDetailsListProps,
+  IColumn,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
+import Card from '../Card'
 import styles from './index.module.less'
 
 export interface ICardTableV2Props extends IDetailsListProps {
@@ -19,6 +20,9 @@ export interface ICardTableV2Props extends IDetailsListProps {
   loading?: boolean
   loadingSkeletonRows?: number
   cardExtra?: React.ReactNode
+  // The keys of visible columns. If null, all columns will be shown.
+  visibleColumnKeys?: { [key: string]: boolean }
+  // Event triggered when a row is clicked.
   onRowClicked?: (item: any, itemIndex: number) => void
 }
 
@@ -52,7 +56,45 @@ function useRenderClickableRow(onRowClicked) {
   )
 }
 
-export default function CardTableV2(props: ICardTableV2Props) {
+function renderColumnVisibilitySelection(
+  columns?: IColumn[],
+  visibleColumnKeys?: { [key: string]: boolean },
+  onChange?: (visibleKeys: { [key: string]: boolean }) => void
+) {
+  if (columns == null) {
+    return null
+  }
+  if (visibleColumnKeys == null) {
+    visibleColumnKeys = {}
+    columns.forEach((c) => {
+      visibleColumnKeys![c.key] = true
+    })
+  }
+  return (
+    <>
+      {columns.map((column) => (
+        <div key={column.key}>
+          <Checkbox
+            checked={visibleColumnKeys![column.key]}
+            onChange={(e) => {
+              if (!onChange) {
+                return
+              }
+              onChange({
+                ...visibleColumnKeys!,
+                [column.key]: e.target.checked,
+              })
+            }}
+          >
+            {column.name}
+          </Checkbox>
+        </div>
+      ))}
+    </>
+  )
+}
+
+function CardTableV2(props: ICardTableV2Props) {
   const {
     title,
     className,
@@ -60,17 +102,25 @@ export default function CardTableV2(props: ICardTableV2Props) {
     loading = false,
     loadingSkeletonRows = 5,
     cardExtra,
+    visibleColumnKeys,
     onRowClicked,
+    columns,
     ...restProps
   } = props
 
   const renderClickableRow = useRenderClickableRow(onRowClicked)
+  const filteredColumns = useMemo(() => {
+    if (columns == null || visibleColumnKeys == null) {
+      return columns
+    }
+    return columns.filter((c) => visibleColumnKeys[c.key])
+  }, [columns, visibleColumnKeys])
 
   return (
     <Card
       title={title}
       style={style}
-      className={classNames(styles.cardTable, className)}
+      className={cx(styles.cardTable, className)}
       extra={cardExtra}
     >
       {loading ? (
@@ -86,6 +136,7 @@ export default function CardTableV2(props: ICardTableV2Props) {
             layoutMode={DetailsListLayoutMode.justified}
             onRenderDetailsHeader={renderStickyHeader}
             onRenderRow={onRowClicked ? renderClickableRow : undefined}
+            columns={filteredColumns}
             {...restProps}
           />
         </div>
@@ -93,3 +144,7 @@ export default function CardTableV2(props: ICardTableV2Props) {
     </Card>
   )
 }
+
+CardTableV2.renderColumnVisibilitySelection = renderColumnVisibilitySelection
+
+export default CardTableV2

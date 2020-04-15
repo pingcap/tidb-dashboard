@@ -1,7 +1,5 @@
-import AppConfig from './app-config'
-import RootComponent from './RootComponent'
-
-export { AppConfig, RootComponent }
+export { default as AppConfig } from './app-config'
+export { default as RootComponent } from './RootComponent'
 
 export * from './components'
 export * from './pages'

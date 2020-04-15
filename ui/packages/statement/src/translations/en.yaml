@@ -6,13 +6,19 @@ statement:
   common:
     schema: Schema
     schemas: Schemas
-    digest_text: SQL Category
+    schemas_tooltip: SQL statement related schemas
+    digest_text: SQL
+    digest_text_tooltip: SQL Digest
     sum_latency: Sum Latency
+    sum_latency_tooltip: Total time consuming for single SQL statement
     exec_count: Exec Count
+    exec_count_tooltip: Total execution times for single SQL statement
     avg_affected_rows: Avg Affected Rows
     avg_latency: Avg Latency
+    avg_latency_tooltip: Average time consuming for single SQL statement
     max_latency: Max Latency
     avg_mem: Avg Cost Memory
+    avg_mem_tooltip: Average memory consuming for signle SQL statement
     sum_backoff_times: Sum Backoff Times
     avg_total_keys: Avg Scan Rows
   detail:

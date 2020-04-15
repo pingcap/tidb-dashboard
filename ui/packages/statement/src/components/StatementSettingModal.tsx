@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Form, Modal, message, Spin, InputNumber } from 'antd'
 import { StatementConfig } from './statement-types'
 
-import styles from './styles.module.css'
+import styles from './styles.module.less'
 
 interface Props {
   instanceId: string

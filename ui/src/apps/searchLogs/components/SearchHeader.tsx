@@ -19,6 +19,7 @@ import {
   parseSearchingParams,
   ServerType,
   ServerTypeList,
+  DATE_TIME_FORMAT,
 } from './utils'
 
 const { SHOW_CHILD } = TreeSelect
@@ -172,7 +173,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
             t('search_logs.common.start_time'),
             t('search_logs.common.end_time'),
           ]}
-          format="YYYY-MM-DD HH:mm:ss"
+          format={DATE_TIME_FORMAT}
           onChange={handleTimeRangeChange}
         />
       </Form.Item>

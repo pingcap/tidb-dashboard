@@ -18,7 +18,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -27,8 +26,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
-
-const layout = "2006-01-02 15:04:05"
 
 type Service struct {
 	config        *config.Config
@@ -100,19 +97,14 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 	if schemasQuery != "" {
 		schemas = strings.Split(schemasQuery, ",")
 	}
-	beginTime, err := strconv.Atoi(c.Query("begin_time"))
+	beginTime, endTime, err := parseTimeParams(c)
 	if err != nil {
-		_ = c.Error(fmt.Errorf("invalid begin_time: %s", err))
-		return
-	}
-	endTime, err := strconv.Atoi(c.Query("end_time"))
-	if err != nil {
-		_ = c.Error(fmt.Errorf("invalid end_time: %s", err))
+		_ = c.Error(err)
 		return
 	}
 
 	db := utils.GetTiDBConnection(c)
-	overviews, err := QueryStatementsOverview(db, schemas, time.Unix(int64(beginTime), 0).Format(layout), time.Unix(int64(endTime), 0).Format(layout))
+	overviews, err := QueryStatementsOverview(db, schemas, beginTime, endTime)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -135,18 +127,13 @@ func (s *Service) detailHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	schema := c.Query("schema")
 	digest := c.Query("digest")
-	beginTime, err := strconv.Atoi(c.Query("begin_time"))
+	beginTime, endTime, err := parseTimeParams(c)
 	if err != nil {
-		_ = c.Error(fmt.Errorf("invalid begin_time: %s", err))
-		return
-	}
-	endTime, err := strconv.Atoi(c.Query("end_time"))
-	if err != nil {
-		_ = c.Error(fmt.Errorf("invalid end_time: %s", err))
+		_ = c.Error(err)
 		return
 	}
 
-	detail, err := QueryStatementDetail(db, schema, time.Unix(int64(beginTime), 0).Format(layout), time.Unix(int64(endTime), 0).Format(layout), digest)
+	detail, err := QueryStatementDetail(db, schema, digest, beginTime, endTime)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -169,20 +156,28 @@ func (s *Service) nodesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	schema := c.Query("schema")
 	digest := c.Query("digest")
-	beginTime, err := strconv.Atoi(c.Query("begin_time"))
+	beginTime, endTime, err := parseTimeParams(c)
 	if err != nil {
-		_ = c.Error(fmt.Errorf("invalid begin_time: %s", err))
+		_ = c.Error(err)
 		return
 	}
-	endTime, err := strconv.Atoi(c.Query("end_time"))
-	if err != nil {
-		_ = c.Error(fmt.Errorf("invalid end_time: %s", err))
-		return
-	}
-	nodes, err := QueryStatementNodes(db, schema, time.Unix(int64(beginTime), 0).Format(layout), time.Unix(int64(endTime), 0).Format(layout), digest)
+
+	nodes, err := QueryStatementNodes(db, schema, digest, beginTime, endTime)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusOK, nodes)
+}
+
+func parseTimeParams(c *gin.Context) (int64, int64, error) {
+	beginTime, err := strconv.Atoi(c.Query("begin_time"))
+	if err != nil {
+		return 0, 0, fmt.Errorf("invalid begin_time: %s", err)
+	}
+	endTime, err := strconv.Atoi(c.Query("end_time"))
+	if err != nil {
+		return 0, 0, fmt.Errorf("invalid end_time: %s", err)
+	}
+	return int64(beginTime), int64(endTime), nil
 }

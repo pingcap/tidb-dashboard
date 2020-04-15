@@ -7,6 +7,11 @@ declare module '*.css' {
   export default content
 }
 
+declare module '*.less' {
+  const content: { [className: string]: string }
+  export default content
+}
+
 declare module '*.yaml' {
   const content: any
   export default content

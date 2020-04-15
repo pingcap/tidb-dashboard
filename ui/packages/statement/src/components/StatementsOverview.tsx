@@ -10,8 +10,9 @@ import {
   Instance,
   StatementOverview,
   StatementTimeRange,
+  DATE_TIME_FORMAT,
 } from './statement-types'
-import styles from './styles.module.css'
+import styles from './styles.module.less'
 import { SearchContext } from './search-options-context'
 import { useTranslation } from 'react-i18next'
 import { OptionsType } from 'rc-select/lib/interface/index'
@@ -352,8 +353,8 @@ export default function StatementsOverview({
         >
           {state.timeRanges.map((item) => (
             <Option value={item.begin_time || ''} key={item.begin_time}>
-              {dayjs.unix(item.begin_time!).format('YYYY-MM-DD HH:mm:ss')} ~{' '}
-              {dayjs.unix(item.end_time!).format('YYYY-MM-DD HH:mm:ss')}
+              {dayjs.unix(item.begin_time!).format(DATE_TIME_FORMAT)} ~{' '}
+              {dayjs.unix(item.end_time!).format(DATE_TIME_FORMAT)}
             </Option>
           ))}
         </Select>
@@ -417,10 +418,12 @@ export default function StatementsOverview({
       )}
       <div className={styles.table_wrapper}>
         <StatementsTable
+          key={state.statements.length}
           statements={state.statements}
           loading={state.statementsLoading}
           timeRange={state.curTimeRange!}
           detailPagePath={detailPagePath}
+          items={[]}
         />
       </div>
     </div>

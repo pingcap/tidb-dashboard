@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Modal, message, Button } from 'antd'
 import moment from 'moment'
+import { DATE_TIME_FORMAT } from './statement-types'
 
 interface Props {
   visible: boolean
@@ -24,9 +25,9 @@ function StatementEnableModal({
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    setCurTime(moment().format('YYYY-MM-DD HH:mm:ss'))
+    setCurTime(moment().format(DATE_TIME_FORMAT))
     const timer = setInterval(() => {
-      setCurTime(moment().format('YYYY-MM-DD HH:mm:ss'))
+      setCurTime(moment().format(DATE_TIME_FORMAT))
     }, 1000)
     return () => clearInterval(timer)
   }, [])

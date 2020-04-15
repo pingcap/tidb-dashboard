@@ -5,6 +5,7 @@ statement:
   filters:
     select_time: 选择时间段
     select_schemas: 选择数据库
+    select_stmt_types: 选择 SQL 类型
   common:
     schema: 数据库
     schemas: 数据库

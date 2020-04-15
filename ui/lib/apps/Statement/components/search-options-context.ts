@@ -6,6 +6,7 @@ export interface SearchOptions {
   curInstance: string | undefined
   curSchemas: string[]
   curTimeRange: StatementTimeRange | undefined
+  curStmtTypes: string[]
 }
 
 export interface SearchContextType {
@@ -18,6 +19,7 @@ export const SearchContext = React.createContext<SearchContextType>({
     curInstance: undefined,
     curSchemas: [],
     curTimeRange: undefined,
+    curStmtTypes: []
   },
   setSearchOptions: (_options: SearchOptions) => {},
 })

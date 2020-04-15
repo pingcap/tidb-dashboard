@@ -4,8 +4,6 @@ DASHBOARD_PKG := github.com/pingcap-incubator/tidb-dashboard
 
 BUILD_TAGS ?=
 
-SKIP_YARN_INSTALL ?=
-
 LDFLAGS ?=
 
 ifeq ($(UI),1)

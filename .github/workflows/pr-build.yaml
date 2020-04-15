@@ -77,4 +77,4 @@ jobs:
           make ui
         env:
           NO_MINIMIZE: true
-          CI: true
+          # CI: true

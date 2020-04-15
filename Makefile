@@ -1,4 +1,4 @@
-.PHONY: lint dev yarn_dependencies ui server run
+.PHONY: install_tools lint dev yarn_dependencies ui server run
 
 DASHBOARD_PKG := github.com/pingcap-incubator/tidb-dashboard
 
@@ -19,12 +19,15 @@ LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils.GitBranch=$(shell git rev-parse --abbr
 
 default: server
 
+install_tools:
+	scripts/install_go_tools.sh
+
 lint:
 	scripts/lint.sh
 
 dev: lint default
 
-yarn_dependencies:
+yarn_dependencies: install_tools
 	cd ui &&\
 	yarn install --frozen-lockfile
 
@@ -32,8 +35,7 @@ ui: yarn_dependencies
 	cd ui &&\
 	REACT_APP_DASHBOARD_API_URL="" yarn build
 
-server:
-	scripts/install_go_tools.sh
+server: install_tools
 	scripts/generate_swagger_spec.sh
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh

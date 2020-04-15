@@ -16,8 +16,9 @@ package swaggerserver
 import (
 	"net/http"
 
-	_ "github.com/pingcap-incubator/tidb-dashboard/docs"
 	httpSwagger "github.com/swaggo/http-swagger"
+	// Swagger doc
+	_ "github.com/pingcap-incubator/tidb-dashboard/docs"
 )
 
 func Handler() http.Handler {

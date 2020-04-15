@@ -66,7 +66,7 @@ export default function (colorScheme: ColorScheme, dataTag: DataTag) {
     .attr('height', height)
 
   let xAxisG = svg.selectAll('g').data([null])
-  xAxisG = xAxisG
+  xAxisG
     .enter()
     .append('g')
     .merge(xAxisG)
@@ -77,7 +77,7 @@ export default function (colorScheme: ColorScheme, dataTag: DataTag) {
     })
 
   let unitLabel = container.selectAll('div').data([null])
-  unitLabel = unitLabel
+  unitLabel
     .enter()
     .append('div')
     .classed('unit', true)

@@ -595,7 +595,7 @@ export async function heatmapChart(
       // Cross start boundary, only use end label
       if (
         startLen >= 1 &&
-        startLen + 1 == endLen &&
+        startLen + 1 === endLen &&
         _.isEqual(startLabel, endLabel.slice(0, startLen))
       ) {
         return endLabel.map(truncate)
@@ -603,7 +603,7 @@ export async function heatmapChart(
       // range
       if (
         startLen >= 3 &&
-        startLen == endLen &&
+        startLen === endLen &&
         _.isEqual(
           startLabel.slice(0, startLen - 1),
           endLabel.slice(0, startLen - 1)
@@ -696,7 +696,7 @@ export async function heatmapChart(
         .merge(valueDiv)
 
       let valueText = valueDiv.selectAll('div.value').data([null])
-      valueText = valueText
+      valueText
         .enter()
         .append('div')
         .classed('value', true)
@@ -706,7 +706,7 @@ export async function heatmapChart(
         .style('background-color', colorScheme.background(value))
 
       let unitText = valueDiv.selectAll('div.unit').data([null])
-      unitText = unitText
+      unitText
         .enter()
         .append('div')
         .classed('unit', true)
@@ -722,7 +722,7 @@ export async function heatmapChart(
         .join(' ~ ')
 
       let timeDiv = tooltipDiv.selectAll('button.time').data([timeText])
-      timeDiv = timeDiv
+      timeDiv
         .enter()
         .append('button')
         .classed('time', true)
@@ -744,7 +744,7 @@ export async function heatmapChart(
         .style('display', 'none')
         .data((keyIdx) => getTooltipOverviewLabel(keyIdx))
 
-      overviewSubLabel = overviewSubLabel
+      overviewSubLabel
         .enter()
         .append('button')
         .classed('subLabel', true)
@@ -774,7 +774,7 @@ export async function heatmapChart(
         .merge(keyContainer)
 
       let descText = keyContainer.selectAll('.desc').data((d) => [d])
-      descText = descText
+      descText
         .enter()
         .append('div')
         .classed('desc', true)
@@ -782,7 +782,7 @@ export async function heatmapChart(
         .text(({ desc }) => desc)
 
       let keyText = keyContainer.selectAll('button.key').data((d) => [d])
-      keyText = keyText
+      keyText
         .enter()
         .append('button')
         .classed('key', true)

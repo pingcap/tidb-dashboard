@@ -7,7 +7,7 @@ import { StatementPlan } from '@lib/client'
 function parsePlan(plan: string): StatementPlanStep[] {
   const lines = plan.split('\n')
   return lines.map((line) => {
-    const [_, id, task, estRowsStr, operator_info] = line.split('\t')
+    const [id, task, estRowsStr, operator_info] = line.split('\t').slice(1)
     const estRows = +estRowsStr
     return {
       id,

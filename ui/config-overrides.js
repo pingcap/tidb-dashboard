@@ -22,7 +22,10 @@ const enableEslintIgnore = () => (config) => {
     (r) =>
       r.use && r.use.some((u) => u.options && u.options.useEslintrc !== void 0)
   )[0]
-  eslintRule.use[0].options.baseConfig.rules = {
+  const options = eslintRule.use[0].options
+  options.ignore = true
+  options.ignorePattern = 'lib/client/api/*.ts'
+  options.baseConfig.rules = {
     'jsx-a11y/anchor-is-valid': 'off',
   }
   return config

@@ -105,7 +105,7 @@ function aggrKeyAxisLabel(keyAxis: KeyAxisEntry[]): Label[][] {
       const label = keyAxis[keyIdx].labels[groupIdx]
       // When the prefixes are equal and this column is null, it is considered equal to the previous row of labels.
       notEqual[keyIdx] =
-        notEqual[keyIdx] || (label != null && label != lastLabel)
+        notEqual[keyIdx] || (label != null && label !== lastLabel)
 
       if (notEqual[keyIdx]) {
         if (startKeyIdx != null && lastLabel != null) {

@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
+import useInterval from '@use-it/interval'
 import { Heatmap } from '../heatmap'
 import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types'
 import { fetchHeatmap } from '../utils'
@@ -77,55 +78,57 @@ const KeyViz = (props) => {
   const [selection, setSelection] = useState<HeatmapRange | null>(null)
   const [isLoading, setLoading] = useState(false)
   const [autoRefreshSeconds, setAutoRefreshSeconds] = useState(0)
-  // const autoRefreshRemainingSeconds = useRef(0)
+  const autoRefreshSecondsRef = useRef(autoRefreshSeconds)
   const [remainingRefreshSeconds, setRemainingRefreshSeconds] = useState(0)
   const [isOnBrush, setOnBrush] = useState(false)
   const [dateRange, setDateRange] = useState(3600 * 6)
   const [brightLevel, setBrightLevel] = useState(1)
   const [metricType, setMetricType] = useState<DataTag>('written_bytes')
 
-  // Tick auto refresh
   useEffect(() => {
-    const timerId = setInterval(() => {
-      if (autoRefreshSeconds === 0) {
-        return
-      }
-      if (remainingRefreshSeconds == 0) {
-        _fetchHeatmap()
+    autoRefreshSecondsRef.current = autoRefreshSeconds
+  }, [autoRefreshSeconds])
+
+  useInterval(() => {
+    if (autoRefreshSeconds === 0) {
+      return
+    }
+    if (remainingRefreshSeconds === 0) {
+      _fetchHeatmap()
+    } else {
+      setRemainingRefreshSeconds((c) => c - 1)
+    }
+  }, 1000)
+
+  useEffect(() => {
+    setRemainingRefreshSeconds((r) => {
+      if (r > autoRefreshSeconds) {
+        return autoRefreshSeconds
       } else {
-        setRemainingRefreshSeconds(remainingRefreshSeconds - 1)
+        return r
       }
-    }, 1000)
+    })
 
-    return () => {
-      clearInterval(timerId)
-    }
-  }, [autoRefreshSeconds, remainingRefreshSeconds])
-
-  useEffect(() => {
-    if (remainingRefreshSeconds > autoRefreshSeconds) {
-      setRemainingRefreshSeconds(autoRefreshSeconds)
-    }
     if (autoRefreshSeconds > 0) {
       onResetZoom()
       setOnBrush(false)
     }
   }, [autoRefreshSeconds])
 
-  useEffect(() => {
-    _fetchHeatmap()
-  }, [selection, metricType, dateRange])
-
-  const _fetchHeatmap = async () => {
-    if (autoRefreshSeconds > 0) {
-      setRemainingRefreshSeconds(autoRefreshSeconds)
+  const _fetchHeatmap = useCallback(async () => {
+    if (autoRefreshSecondsRef.current > 0) {
+      setRemainingRefreshSeconds(autoRefreshSecondsRef.current)
     }
     setLoading(true)
     setOnBrush(false)
     const data = await cache.fetch(selection || dateRange, metricType)
     setChartState({ heatmapData: data!, metricType: metricType })
     setLoading(false)
-  }
+  }, [selection, dateRange, metricType])
+
+  useEffect(() => {
+    _fetchHeatmap()
+  }, [_fetchHeatmap])
 
   const onChangeBrightLevel = (val) => {
     if (!_chart) return
@@ -136,16 +139,6 @@ const KeyViz = (props) => {
   const onChangeMetric = (value) => {
     setMetricType(value)
   }
-
-  const onChartInit = useCallback(
-    (chart) => {
-      _chart = chart
-      setLoading(false)
-      setBrightLevel(1)
-      _chart.brightness(1)
-    },
-    [props]
-  )
 
   const onChangeAutoRefresh = (v: number) => {
     setAutoRefreshSeconds(v)
@@ -170,18 +163,24 @@ const KeyViz = (props) => {
     _chart.brush(!isOnBrush)
   }
 
-  const onBrush = useCallback(
-    (selection: HeatmapRange) => {
-      setOnBrush(false)
-      setAutoRefreshSeconds(0)
-      setSelection(selection)
-    },
-    [props]
-  )
+  const onBrush = useCallback((selection: HeatmapRange) => {
+    setOnBrush(false)
+    setAutoRefreshSeconds(0)
+    setSelection(selection)
+  }, [])
 
   const onZoom = useCallback(() => {
     setAutoRefreshSeconds(0)
-  }, [props])
+  }, [])
+
+  const onChartInit = useCallback((chart) => {
+    _chart = chart
+    setLoading(false)
+    setBrightLevel((l) => {
+      _chart.brightness(l)
+      return l
+    })
+  }, [])
 
   return (
     <div className="PD-KeyVis">

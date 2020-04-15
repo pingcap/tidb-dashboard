@@ -14,41 +14,38 @@ type HeatmapProps = {
 
 const _Heatmap: React.FunctionComponent<HeatmapProps> = (props) => {
   const divRef: React.RefObject<HTMLDivElement> = useRef(null)
-
-  let chart
+  const chart = useRef<any>(null)
 
   function updateChartSize() {
     if (divRef.current == null) {
       return
     }
-    if (!chart) {
+    if (!chart.current) {
       return
     }
     const container = divRef.current
     const width = container.offsetWidth
     const height = container.offsetHeight
-    chart.size(width, height)
+    chart.current.size(width, height)
   }
 
   useEffect(() => {
     const init = async () => {
-      console.log('side effect in heatmap')
       if (divRef.current != null) {
-        console.log('side effect in heatmap inside')
         const container = divRef.current
-        chart = await heatmapChart(
+        chart.current = await heatmapChart(
           d3.select(container),
           props.data,
           props.dataTag,
           props.onBrush,
           props.onZoom
         )
-        props.onChartInit(chart)
+        props.onChartInit(chart.current)
         updateChartSize()
       }
     }
     init()
-  }, [divRef.current, props.data, props.dataTag])
+  }, [props, props.data, props.dataTag])
 
   useEventListener('resize', () => {
     updateChartSize()

@@ -42,6 +42,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
 	endpoint.GET("/schemas", s.schemasHandler)
 	endpoint.GET("/time_ranges", s.timeRangesHandler)
+	endpoint.GET("/stmt_types", s.stmtTypesHandler)
 	endpoint.GET("/overviews", s.overviewsHandler)
 	endpoint.GET("/detail", s.detailHandler)
 	endpoint.GET("/nodes", s.nodesHandler)
@@ -81,30 +82,51 @@ func (s *Service) timeRangesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, timeRanges)
 }
 
+// @Summary Statement types
+// @Description Get all statement types
+// @Produce json
+// @Success 200 {array} string
+// @Router /statements/stmt_types [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) stmtTypesHandler(c *gin.Context) {
+	db := utils.GetTiDBConnection(c)
+	stmtTypes, err := QueryStmtTypes(db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, stmtTypes)
+}
+
 // @Summary Statements overview
 // @Description Get statements overview
 // @Produce json
-// @Param schemas query string false "Target schemas"
 // @Param begin_time query string true "Statement begin time"
 // @Param end_time query string true "Statement end time"
+// @Param schemas query string false "Target schemas"
+// @Param stmt_types query string false "Target statement types"
 // @Success 200 {array} statement.Overview
 // @Router /statements/overviews [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) overviewsHandler(c *gin.Context) {
-	var schemas []string
-	schemasQuery := c.Query("schemas")
-	if schemasQuery != "" {
-		schemas = strings.Split(schemasQuery, ",")
-	}
 	beginTime, endTime, err := parseTimeParams(c)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
+	schemas := strings.Split(c.Query("schemas"), ",")
+	if len(schemas) == 1 && schemas[0] == "" {
+		schemas = nil
+	}
+	stmtTypes := strings.Split(c.Query("stmt_types"), ",")
+	if len(stmtTypes) == 1 && stmtTypes[0] == "" {
+		stmtTypes = nil
+	}
 
 	db := utils.GetTiDBConnection(c)
-	overviews, err := QueryStatementsOverview(db, schemas, beginTime, endTime)
+	overviews, err := QueryStatementsOverview(db, beginTime, endTime, schemas, stmtTypes)
 	if err != nil {
 		_ = c.Error(err)
 		return

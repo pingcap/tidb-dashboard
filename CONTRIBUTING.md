@@ -126,31 +126,18 @@ The followings are required for developing TiDB Dashboard:
    make dev && make run
    ```
 
-1. Build and watch front-end packages changes in a new terminal:
-
-   ```bash
-   # In tidb-dashboard directory:
-   cd ui
-   yarn  # install all dependencies
-   yarn run build:packages # build packages
-   yarn run watch:packages # watch packages changes
-   ```
-
-   > Note: Currently the front-end side will not watch for Golang code changes, which means you must manually rebuild the API Client if back-end code is updated (for example, you pulled latest change from the repository), just need to re-run the `yarn run watch:packages` after running the `make dev`.
-
 1. Build and run front-end server in a new terminal:
 
    ```bash
    # In tidb-dashboard directory:
    cd ui
+   yarn  # install all dependencies
    yarn start
    ```
 
 1. That's it! You can access TiDB Dashboard now:
 
    TiDB Dashboard UI: http://127.0.0.1:3000
-
-   > Note: If you encounter a rotating blue circle, don't worry. It may happen when you enter TiDB Dashboard UI for the first time. We are solving this problem. Now, you just need to refresh the page. Then, you can login TiDB Dashboard UI using user `root` and **empty password** by default.
 
    Swagger UI for TiDB Dashboard APIs: http://localhost:12333/dashboard/api/swagger
 

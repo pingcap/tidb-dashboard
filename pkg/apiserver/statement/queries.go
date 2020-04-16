@@ -24,7 +24,10 @@ import (
 )
 
 const (
-	statementsTable = "PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history"
+	statementsTable        = "PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history"
+	stmtEnableVar          = "tidb_enable_stmt_summary"
+	stmtRefreshIntervalVar = "tidb_stmt_summary_refresh_interval"
+	stmtHistroySizeVar     = "tidb_stmt_summary_history_size"
 )
 
 type sqlVariable struct {
@@ -55,13 +58,17 @@ func querySQLIntVariable(db *gorm.DB, name string) (int, error) {
 func QueryStmtConfig(db *gorm.DB) (*Config, error) {
 	config := Config{}
 
-	enable, err := querySQLIntVariable(db, "tidb_enable_stmt_summary")
+	enable, err := querySQLIntVariable(db, stmtEnableVar)
 	if err != nil {
 		return nil, err
 	}
-	config.Enable = enable != 0
+	if enable == 0 {
+		config.Enable = "off"
+	} else {
+		config.Enable = "on"
+	}
 
-	refreshInterval, err := querySQLIntVariable(db, "tidb_stmt_summary_refresh_interval")
+	refreshInterval, err := querySQLIntVariable(db, stmtRefreshIntervalVar)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +78,7 @@ func QueryStmtConfig(db *gorm.DB) (*Config, error) {
 		config.RefreshInterval = refreshInterval
 	}
 
-	historySize, err := querySQLIntVariable(db, "tidb_stmt_summary_history_size")
+	historySize, err := querySQLIntVariable(db, stmtHistroySizeVar)
 	if err != nil {
 		return nil, err
 	}
@@ -81,8 +88,26 @@ func QueryStmtConfig(db *gorm.DB) (*Config, error) {
 		config.HistorySize = historySize
 	}
 
-	fmt.Printf("config:\n%+v\n", config)
 	return &config, err
+}
+
+func UpdateStmtConfig(db *gorm.DB, config *Config) (err error) {
+	var sql string
+	if config.Enable != "" {
+		// switch enable
+		sql = fmt.Sprintf("SET GLOBAL %s = %t", stmtEnableVar, config.Enable == "on")
+		err = db.Raw(sql).Error
+	} else {
+		// update other configurations
+		sql = fmt.Sprintf("SET GLOBAL %s = %d", stmtRefreshIntervalVar, config.RefreshInterval)
+		err = db.Raw(sql).Error
+		if err != nil {
+			return
+		}
+		sql = fmt.Sprintf("SET GLOBAL %s = %d", stmtHistroySizeVar, config.HistorySize)
+		err = db.Raw(sql).Error
+	}
+	return
 }
 
 func QuerySchemas(db *gorm.DB) ([]string, error) {

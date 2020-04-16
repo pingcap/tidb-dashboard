@@ -41,6 +41,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
 	endpoint.GET("/config", s.configHandler)
+	endpoint.POST("/config", s.modifyConfigHandler)
 	endpoint.GET("/schemas", s.schemasHandler)
 	endpoint.GET("/time_ranges", s.timeRangesHandler)
 	endpoint.GET("/stmt_types", s.stmtTypesHandler)
@@ -64,6 +65,28 @@ func (s *Service) configHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, config)
+}
+
+// @Summary Statement configurationt
+// @Description Modify configuration of statements
+// @Param request body statement.Config true "Request body"
+// @Success 204
+// @Router /statements/config [post]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) modifyConfigHandler(c *gin.Context) {
+	var req Config
+	if err := c.ShouldBindJSON(&req); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	db := utils.GetTiDBConnection(c)
+	err := UpdateStmtConfig(db, &req)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
 
 // @Summary TiDB databases

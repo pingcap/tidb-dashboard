@@ -5,6 +5,7 @@ statement:
   filters:
     select_time: Select time range
     select_schemas: Select schemas
+    select_stmt_types: Select SQL types
   common:
     schema: Schema
     schemas: Schemas

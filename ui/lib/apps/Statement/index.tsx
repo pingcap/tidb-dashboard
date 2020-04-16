@@ -12,6 +12,7 @@ const App = () => {
     curInstance: undefined,
     curSchemas: [],
     curTimeRange: undefined,
+    curStmtTypes: [],
   } as SearchOptions)
   const searchContext = { searchOptions, setSearchOptions }
 

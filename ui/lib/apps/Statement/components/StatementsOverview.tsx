@@ -20,12 +20,14 @@ interface State {
   curInstance: string | undefined
   curSchemas: string[]
   curTimeRange: StatementTimeRange | undefined
+  curStmtTypes: string[]
 
   statementStatus: StatementStatus
 
   instances: Instance[]
   schemas: string[]
   timeRanges: StatementTimeRange[]
+  stmtTypes: string[]
 
   statementsLoading: boolean
   statements: StatementOverview[]
@@ -35,12 +37,14 @@ const initState: State = {
   curInstance: undefined,
   curSchemas: [],
   curTimeRange: undefined,
+  curStmtTypes: [],
 
   statementStatus: 'unknown',
 
   instances: [],
   schemas: [],
   timeRanges: [],
+  stmtTypes: [],
 
   statementsLoading: false,
   statements: [],
@@ -54,6 +58,8 @@ type Action =
   | { type: 'change_schema'; payload: string[] }
   | { type: 'save_time_ranges'; payload: StatementTimeRange[] }
   | { type: 'change_time_range'; payload: StatementTimeRange | undefined }
+  | { type: 'save_stmt_types'; payload: string[] }
+  | { type: 'change_stmt_types'; payload: string[] }
   | { type: 'save_statements'; payload: StatementOverview[] }
   | { type: 'set_statements_loading' }
 
@@ -102,6 +108,17 @@ function reducer(state: State, action: Action): State {
         curTimeRange: action.payload,
         statements: [],
       }
+    case 'save_stmt_types':
+      return {
+        ...state,
+        stmtTypes: action.payload,
+      }
+    case 'change_stmt_types':
+      return {
+        ...state,
+        curStmtTypes: action.payload,
+        statements: [],
+      }
     case 'save_statements':
       return {
         ...state,
@@ -122,11 +139,13 @@ interface Props {
   onFetchInstances: () => Promise<Instance[] | undefined>
   onFetchSchemas: (instanceId: string) => Promise<string[] | undefined>
   onFetchTimeRanges: (instanceId: string) => Promise<StatementTimeRange[]>
+  onFetchStmtTypes: (instanceId: string) => Promise<string[] | undefined>
   onFetchStatements: (
     instanceId: string,
-    schemas: string[],
     beginTime: number,
-    endTime: number
+    endTime: number,
+    schemas: string[],
+    stmtTypes: string[]
   ) => Promise<StatementOverview[]>
 
   onGetStatementStatus: (instanceId: string) => Promise<any>
@@ -145,6 +164,7 @@ export default function StatementsOverview({
   onFetchInstances,
   onFetchSchemas,
   onFetchTimeRanges,
+  onFetchStmtTypes,
   onFetchStatements,
 
   onGetStatementStatus,
@@ -223,9 +243,20 @@ export default function StatementsOverview({
       }
     }
 
+    async function queryStmtTypes() {
+      if (state.curInstance) {
+        const res = await onFetchStmtTypes(state.curInstance)
+        dispatch({
+          type: 'save_stmt_types',
+          payload: res || [],
+        })
+      }
+    }
+
     queryStatementStatus()
     querySchemas()
     queryTimeRanges()
+    queryStmtTypes()
     // eslint-disable-next-line
   }, [state.curInstance])
   // don't add the dependent functions likes onFetchTimeRanges into the dependency array
@@ -242,9 +273,10 @@ export default function StatementsOverview({
       })
       const res = await onFetchStatements(
         state.curInstance,
-        state.curSchemas,
         state.curTimeRange.begin_time!,
-        state.curTimeRange.end_time!
+        state.curTimeRange.end_time!,
+        state.curSchemas,
+        state.curStmtTypes
       )
       dispatch({
         type: 'save_statements',
@@ -258,9 +290,15 @@ export default function StatementsOverview({
       curInstance: state.curInstance,
       curSchemas: state.curSchemas,
       curTimeRange: state.curTimeRange,
+      curStmtTypes: state.curStmtTypes,
     })
     // eslint-disable-next-line
-  }, [state.curInstance, state.curSchemas, state.curTimeRange])
+  }, [
+    state.curInstance,
+    state.curSchemas,
+    state.curTimeRange,
+    state.curStmtTypes,
+  ])
   // don't add the dependent functions likes onFetchStatements into the dependency array
   // it will cause the infinite loop
   // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
@@ -280,6 +318,13 @@ export default function StatementsOverview({
     dispatch({
       type: 'change_time_range',
       payload: timeRange,
+    })
+  }
+
+  function handleStmtTypeChange(val: string[]) {
+    dispatch({
+      type: 'change_stmt_types',
+      payload: val,
     })
   }
 
@@ -314,6 +359,22 @@ export default function StatementsOverview({
               {state.schemas.map((item) => (
                 <Option value={item} key={item}>
                   {item}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Select
+              value={state.curStmtTypes}
+              mode="multiple"
+              allowClear
+              placeholder={t('statement.filters.select_stmt_types')}
+              style={{ minWidth: 160 }}
+              onChange={handleStmtTypeChange}
+            >
+              {state.stmtTypes.map((item) => (
+                <Option value={item} key={item}>
+                  {item.toUpperCase()}
                 </Option>
               ))}
             </Select>

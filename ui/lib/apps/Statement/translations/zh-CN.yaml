@@ -31,3 +31,6 @@ statement:
     last_seen: 最后出现时间
   plan:
     plans: 执行计划
+  tooltip:
+    settings: 设置
+    refresh: 刷新

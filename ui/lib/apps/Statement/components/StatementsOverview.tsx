@@ -1,8 +1,7 @@
-import React, { useReducer, useEffect, useContext } from 'react'
-import { Select, Form } from 'antd'
+import React, { useReducer, useEffect, useContext, useState } from 'react'
+import { Select, Space, Tooltip } from 'antd'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
-import { OptionsType } from 'rc-select/lib/interface/index'
 import { StatementOverview, StatementTimeRange } from '@lib/client'
 import { Card } from '@lib/components'
 import StatementsTable from './StatementsTable'
@@ -13,6 +12,7 @@ import {
   DATE_TIME_FORMAT,
 } from './statement-types'
 import { SearchContext } from './search-options-context'
+import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 const { Option } = Select
 
@@ -181,6 +181,7 @@ export default function StatementsOverview({
     ...initState,
     ...searchOptions,
   })
+  const [refreshTimes, setRefreshTimes] = useState(0)
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -298,6 +299,7 @@ export default function StatementsOverview({
     state.curSchemas,
     state.curTimeRange,
     state.curStmtTypes,
+    refreshTimes,
   ])
   // don't add the dependent functions likes onFetchStatements into the dependency array
   // it will cause the infinite loop
@@ -330,8 +332,8 @@ export default function StatementsOverview({
   return (
     <div>
       <Card>
-        <Form layout="inline">
-          <Form.Item>
+        <div style={{ display: 'flex' }}>
+          <Space size="middle">
             <Select
               value={`${state.curTimeRange?.begin_time}_${state.curTimeRange?.end_time}`}
               placeholder={t('statement.filters.select_time')}
@@ -348,8 +350,6 @@ export default function StatementsOverview({
                 </Option>
               ))}
             </Select>
-          </Form.Item>
-          <Form.Item>
             <Select
               value={state.curSchemas}
               mode="multiple"
@@ -364,8 +364,6 @@ export default function StatementsOverview({
                 </Option>
               ))}
             </Select>
-          </Form.Item>
-          <Form.Item>
             <Select
               value={state.curStmtTypes}
               mode="multiple"
@@ -380,11 +378,22 @@ export default function StatementsOverview({
                 </Option>
               ))}
             </Select>
-          </Form.Item>
-        </Form>
+          </Space>
+          <div style={{ flex: 1 }} />
+          <Space size="middle">
+            <Tooltip title={t('statement.tooltip.settings')}>
+              <SettingOutlined onClick={() => console.log('haha')} />
+            </Tooltip>
+            <Tooltip title={t('statement.tooltip.refresh')}>
+              <ReloadOutlined
+                onClick={() => setRefreshTimes((prev) => prev + 1)}
+              />
+            </Tooltip>
+          </Space>
+        </div>
       </Card>
       <StatementsTable
-        key={state.statements.length}
+        key={`${state.statements.length}_${refreshTimes}`}
         statements={state.statements}
         loading={state.statementsLoading}
         timeRange={state.curTimeRange!}

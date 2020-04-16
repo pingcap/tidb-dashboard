@@ -31,3 +31,6 @@ statement:
     last_seen: Last Seen
   plan:
     plans: Plans
+  tooltip:
+    settings: Settings
+    refresh: Refresh

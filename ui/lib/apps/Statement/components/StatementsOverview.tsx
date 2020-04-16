@@ -1,5 +1,5 @@
 import React, { useReducer, useEffect, useContext, useState } from 'react'
-import { Select, Space, Tooltip } from 'antd'
+import { Select, Space, Tooltip, Drawer, Form, Switch, Button } from 'antd'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 import { StatementOverview, StatementTimeRange } from '@lib/client'
@@ -182,6 +182,7 @@ export default function StatementsOverview({
     ...searchOptions,
   })
   const [refreshTimes, setRefreshTimes] = useState(0)
+  const [showSettings, setShowSettings] = useState(false)
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -382,7 +383,7 @@ export default function StatementsOverview({
           <div style={{ flex: 1 }} />
           <Space size="middle">
             <Tooltip title={t('statement.tooltip.settings')}>
-              <SettingOutlined onClick={() => console.log('haha')} />
+              <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
             <Tooltip title={t('statement.tooltip.refresh')}>
               <ReloadOutlined
@@ -399,6 +400,44 @@ export default function StatementsOverview({
         timeRange={state.curTimeRange!}
         detailPagePath={detailPagePath}
       />
+      <Drawer
+        title="设置"
+        closable={true}
+        onClose={() => setShowSettings(false)}
+        visible={showSettings}
+      >
+        <Form layout="vertical">
+          <Form.Item label="总开关">
+            <Switch />
+          </Form.Item>
+          <Form.Item label="数据收集周期">
+            <Select style={{ width: 120 }}>
+              {[30, 60].map((item) => (
+                <Select.Option key={item} value={item}>
+                  {item}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item label="数据保留时间">
+            <Select style={{ width: 120 }}>
+              {[30, 60].map((item) => (
+                <Select.Option key={item} value={item}>
+                  {item}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit">
+                保存
+              </Button>
+              <Button onClick={() => setShowSettings(false)}>取消</Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Drawer>
     </div>
   )
 }

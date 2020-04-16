@@ -1,3 +1,4 @@
+const { paths } = require('react-app-rewired')
 const { createProxyMiddleware } = require('http-proxy-middleware')
 
 const dashboardApiPrefix =
@@ -17,7 +18,7 @@ module.exports = function (app) {
 
   // Rewrite the webpage to our static HTML.
   app.use('/dashboard/api/diagnose/reports/:id/detail', function (req, res) {
-    req.url = '/diagnoseReport.html'
+    req.url = paths.publicUrlOrPath + 'diagnoseReport.html'
     app.handle(req, res)
   })
 }

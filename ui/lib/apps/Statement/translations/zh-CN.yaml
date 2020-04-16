@@ -1,5 +1,7 @@
 statement:
   nav_title: SQL 语句分析
+  pages:
+    detail: SQL 语句详情
   filters:
     select_time: 选择时间段
     select_schemas: 选择数据库

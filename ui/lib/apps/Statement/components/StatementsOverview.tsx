@@ -1,8 +1,10 @@
-import React, { useState, useReducer, useEffect, useContext } from 'react'
-import { Select, Button, Modal } from 'antd'
+import React, { useReducer, useEffect, useContext } from 'react'
+import { Select, Form } from 'antd'
 import dayjs from 'dayjs'
-import StatementEnableModal from './StatementEnableModal'
-import StatementSettingModal from './StatementSettingModal'
+import { useTranslation } from 'react-i18next'
+import { OptionsType } from 'rc-select/lib/interface/index'
+import { StatementOverview, StatementTimeRange } from '@lib/client'
+import { Card } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import {
   StatementStatus,
@@ -10,11 +12,7 @@ import {
   Instance,
   DATE_TIME_FORMAT,
 } from './statement-types'
-import { StatementOverview, StatementTimeRange } from '@lib/client'
-import styles from './styles.module.less'
 import { SearchContext } from './search-options-context'
-import { useTranslation } from 'react-i18next'
-import { OptionsType } from 'rc-select/lib/interface/index'
 
 const { Option } = Select
 
@@ -163,14 +161,6 @@ export default function StatementsOverview({
     ...initState,
     ...searchOptions,
   })
-  const [
-    enableStatementModalVisible,
-    setEnableStatementModalVisible,
-  ] = useState(false)
-  const [
-    statementSettingModalVisible,
-    setStatementSettingModalVisible,
-  ] = useState(false)
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -275,16 +265,6 @@ export default function StatementsOverview({
   // it will cause the infinite loop
   // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
 
-  function handleInstanceChange(
-    val: string,
-    option: OptionsType[number] | OptionsType
-  ) {
-    dispatch({
-      type: 'change_instance',
-      payload: val,
-    })
-  }
-
   function handleSchemaChange(val: string[]) {
     dispatch({
       type: 'change_schema',
@@ -294,7 +274,7 @@ export default function StatementsOverview({
 
   function handleTimeRangeChange(
     val: number,
-    option: OptionsType[number] | OptionsType
+    _option: OptionsType[number] | OptionsType
   ) {
     const timeRange = state.timeRanges.find((item) => item.begin_time === val)
     dispatch({
@@ -303,128 +283,50 @@ export default function StatementsOverview({
     })
   }
 
-  function toggleStatementStatus(enable: boolean) {
-    if (enable) {
-      setEnableStatementModalVisible(true)
-    } else {
-      Modal.confirm({
-        title: '关闭 Statement 统计',
-        content: '确认要关闭统计吗？关闭后不留存 statement 统计信息！',
-        okText: '关闭',
-        okButtonProps: { type: 'danger' },
-        onOk() {
-          return onSetStatementStatus(state.curInstance!, 'off').then((res) => {
-            if (res !== undefined) {
-              dispatch({
-                type: 'change_statement_status',
-                payload: 'off',
-              })
-            }
-          })
-        },
-        onCancel() {},
-      })
-    }
-  }
   return (
     <div>
-      <div style={{ display: 'flex', marginBottom: 12 }}>
-        {false && (
-          <Select
-            value={state.curInstance}
-            allowClear
-            placeholder="选择集群实例"
-            style={{ width: 200, marginRight: 12 }}
-            onChange={handleInstanceChange}
-          >
-            {state.instances.map((item) => (
-              <Option value={item.uuid} key={item.uuid}>
-                {item.name}
-              </Option>
-            ))}
-          </Select>
-        )}
-        <Select
-          value={state.curTimeRange?.begin_time}
-          placeholder={t('statement.filters.select_time')}
-          style={{ width: 360, marginRight: 12 }}
-          onChange={handleTimeRangeChange}
-        >
-          {state.timeRanges.map((item) => (
-            <Option value={item.begin_time || ''} key={item.begin_time}>
-              {dayjs.unix(item.begin_time!).format(DATE_TIME_FORMAT)} ~{' '}
-              {dayjs.unix(item.end_time!).format(DATE_TIME_FORMAT)}
-            </Option>
-          ))}
-        </Select>
-        <Select
-          value={state.curSchemas}
-          mode="multiple"
-          allowClear
-          placeholder={t('statement.filters.select_schemas')}
-          style={{ minWidth: 200, marginRight: 12 }}
-          onChange={handleSchemaChange}
-        >
-          {state.schemas.map((item) => (
-            <Option value={item} key={item}>
-              {item}
-            </Option>
-          ))}
-        </Select>
-        {state.statementStatus === 'on' && (
-          <div>
-            <Button
-              type="primary"
-              style={{ backgroundColor: 'rgba(0,128,0,1)', marginRight: 12 }}
-              onClick={() => toggleStatementStatus(false)}
+      <Card>
+        <Form layout="inline">
+          <Form.Item>
+            <Select
+              value={state.curTimeRange?.begin_time}
+              placeholder={t('statement.filters.select_time')}
+              style={{ width: 360 }}
+              onChange={handleTimeRangeChange}
             >
-              已开启
-            </Button>
-            <Button
-              type="primary"
-              onClick={() => setStatementSettingModalVisible(true)}
+              {state.timeRanges.map((item) => (
+                <Option value={item.begin_time || ''} key={item.begin_time}>
+                  {dayjs.unix(item.begin_time!).format(DATE_TIME_FORMAT)} ~{' '}
+                  {dayjs.unix(item.end_time!).format(DATE_TIME_FORMAT)}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Select
+              value={state.curSchemas}
+              mode="multiple"
+              allowClear
+              placeholder={t('statement.filters.select_schemas')}
+              style={{ minWidth: 200 }}
+              onChange={handleSchemaChange}
             >
-              设置
-            </Button>
-          </div>
-        )}
-        {state.statementStatus === 'off' && (
-          <Button type="danger" onClick={() => toggleStatementStatus(true)}>
-            已关闭
-          </Button>
-        )}
-      </div>
-      {enableStatementModalVisible && (
-        <StatementEnableModal
-          instanceId={state.curInstance || ''}
-          visible={enableStatementModalVisible}
-          onOK={(instanceId) => onSetStatementStatus(instanceId, 'on')}
-          onClose={() => setEnableStatementModalVisible(false)}
-          onSetting={() => setStatementSettingModalVisible(true)}
-          onData={() =>
-            dispatch({ type: 'change_statement_status', payload: 'on' })
-          }
-        />
-      )}
-      {statementSettingModalVisible && (
-        <StatementSettingModal
-          instanceId={state.curInstance || ''}
-          visible={statementSettingModalVisible}
-          onClose={() => setStatementSettingModalVisible(false)}
-          onFetchConfig={onFetchConfig}
-          onUpdateConfig={onUpdateConfig}
-        />
-      )}
-      <div className={styles.table_wrapper}>
-        <StatementsTable
-          key={state.statements.length}
-          statements={state.statements}
-          loading={state.statementsLoading}
-          timeRange={state.curTimeRange!}
-          detailPagePath={detailPagePath}
-          items={[]}
-        />
-      </div>
+              {state.schemas.map((item) => (
+                <Option value={item} key={item}>
+                  {item}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Form>
+      </Card>
+      <StatementsTable
+        key={state.statements.length}
+        statements={state.statements}
+        loading={state.statementsLoading}
+        timeRange={state.curTimeRange!}
+        detailPagePath={detailPagePath}
+      />
     </div>
   )
 }

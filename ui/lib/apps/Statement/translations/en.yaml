@@ -1,5 +1,7 @@
 statement:
-  nav_title: Statements
+  nav_title: SQL Statements
+  pages:
+    detail: SQL Statement Detail
   filters:
     select_time: Select time range
     select_schemas: Select schemas

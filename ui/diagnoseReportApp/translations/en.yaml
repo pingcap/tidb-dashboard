@@ -5,8 +5,7 @@ diagnosis:
   expand: expand
   fold: fold
   tables:
-    Category:
-      '':
+    category:
       header: Header
       diagnose: Diagnose
       load: Load
@@ -16,7 +15,7 @@ diagnosis:
       TiKV: TiKV
       config: Config
       error: Error
-    Title:
+    title:
       generate_report_error: Generate Report Error
       report_time_range: Report Time Range
       diagnose: Diagnosis
@@ -65,23 +64,22 @@ diagnosis:
       top_10_slow_query: Top 10 Slow Query
       top_10_slow_query_group_by_digest: Top 10 Slow Query Group By Digest
       slow_query_with_diff_plan: Slow Query With Diff Plan
-    Comment:
-      '':
-      diagnose_comment: Automatically diagnose the cluster problem and record the problem in below table.
-      total_time_consume_comment: The table contain the event time consume in TiDB/TiKV/PD. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;
-      total_error_comment: The table contain the total count of error event. METRIC_NAME is the error event name; LABEL is the event label, such as instance, event type ...; TOTAL_COUNT is the total count of this event;
-      tidb_time_consume_comment: The table contain the event time consume in TiDB. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;
-      transaction_comment: The table contain the TiDB transaction statistics information. METRIC_NAME is the object name; LABEL is the object label, such as instance, event type ...; TOTAL_VALUE is the total size/value of this object; TOTAL_COUNT is the total count of this object; P999 is the max size/value of 0.999 quantile; P99 is the max size/value of 0.99 quantile; P90 is the max size/value of 0.90 quantile; P80 is the max size/value of 0.80 quantile;
-      tidb_connection_count_comment: The connection count of tidb server.
-      ddl_owner_comment: DDL Owner info. Attention, if no DDL request has been executed, below owner info maybe null, it doesn't indicate no DDL owner exists.
-      scheduler_initial_config_comment: PD scheduler initial config value. The initial time is the report start time.
-      scheduler_change_config_comment: PD scheduler config change history. APPROXIMATE_CHANGE_TIME is the minimum start effective time.
-      tidb_gc_initial_config_comment: TiDB GC initial config value. The initial time is the report start time.
-      tidb_gc_change_config_comment: TiDB GC config change history, APPROXIMATE_CHANGE_TIME is the minimum start effective time.
-      tikv_rocksdb_initial_config_comment: TiKV RocksDB initial config value. The initial time is the report start time.
-      tikv_rocksdb_change_config_comment: TiKV RocksDB config change history, APPROXIMATE_CHANGE_TIME is the minimum start effective time.
-      tikv_raftstore_initial_config_comment: TiKV RaftStore initial config value. The initial time is the report start time.
-      tikv_raftstore_change_config_comment: TiKV RaftStore config change history, APPROXIMATE_CHANGE_TIME is the minimum start effective time.
-      pd_time_consume_comment: The table contain the event time consume in PD. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;
-      tikv_engine_size_comment: The storage size per TiKV instance.
-      tikv_time_consume_comment: The table contain the event time consume in TiKV. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;
+    comment:
+      diagnose: Automatically diagnose the cluster problem and record the problem in below table.
+      total_time_consume: The table contain the event time consume in TiDB/TiKV/PD. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;
+      total_error: The table contain the total count of error event. METRIC_NAME is the error event name; LABEL is the event label, such as instance, event type ...; TOTAL_COUNT is the total count of this event;
+      tidb_time_consume: The table contain the event time consume in TiDB. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;
+      transaction: The table contain the TiDB transaction statistics information. METRIC_NAME is the object name; LABEL is the object label, such as instance, event type ...; TOTAL_VALUE is the total size/value of this object; TOTAL_COUNT is the total count of this object; P999 is the max size/value of 0.999 quantile; P99 is the max size/value of 0.99 quantile; P90 is the max size/value of 0.90 quantile; P80 is the max size/value of 0.80 quantile;
+      tidb_connection_count: The connection count of tidb server.
+      ddl_owner: DDL Owner info. Attention, if no DDL request has been executed, below owner info maybe null, it doesn't indicate no DDL owner exists.
+      scheduler_initial_config: PD scheduler initial config value. The initial time is the report start time.
+      scheduler_change_config: PD scheduler config change history. APPROXIMATE_CHANGE_TIME is the minimum start effective time.
+      tidb_gc_initial_config: TiDB GC initial config value. The initial time is the report start time.
+      tidb_gc_change_config: TiDB GC config change history, APPROXIMATE_CHANGE_TIME is the minimum start effective time.
+      tikv_rocksdb_initial_config: TiKV RocksDB initial config value. The initial time is the report start time.
+      tikv_rocksdb_change_config: TiKV RocksDB config change history, APPROXIMATE_CHANGE_TIME is the minimum start effective time.
+      tikv_raftstore_initial_config: TiKV RaftStore initial config value. The initial time is the report start time.
+      tikv_raftstore_change_config: TiKV RaftStore config change history, APPROXIMATE_CHANGE_TIME is the minimum start effective time.
+      pd_time_consume: The table contain the event time consume in PD. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;
+      tikv_engine_size: The storage size per TiKV instance.
+      tikv_time_consume: The table contain the event time consume in TiKV. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;

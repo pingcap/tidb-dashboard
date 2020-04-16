@@ -4,17 +4,17 @@ import { Tooltip } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 import {
   Bar,
   CardTableV2,
   ICardTableV2Props,
   FormatHighlightSQL,
+  EllipsisText,
 } from '@lib/components'
-import { getValueFormat } from '@baurine/grafana-value-formats'
-import { StatementMaxVals } from './statement-types'
 import { StatementOverview, StatementTimeRange } from '@lib/client'
-import styles from './styles.module.less'
 import { useMax } from './use-max'
+import { StatementMaxVals } from './statement-types'
 
 // TODO: Extract to single file when needs to be re-used
 const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
@@ -44,7 +44,7 @@ const tableColumns = (
           title={<FormatHighlightSQL sql={rec.digest_text!} theme="dark" />}
           placement="right"
         >
-          <div className={styles.digest_column}>{rec.digest_text}</div>
+          <EllipsisText>{rec.digest_text}</EllipsisText>
         </Tooltip>
       ),
     },
@@ -142,7 +142,11 @@ MAX: ${getValueFormat('bytes')(rec.max_mem, 1)}`
       minWidth: 160,
       maxWidth: 240,
       isResizable: true,
-      onRender: (rec) => rec.schemas,
+      onRender: (rec) => (
+        <Tooltip title={rec.schemas}>
+          <EllipsisText>{rec.schemas}</EllipsisText>
+        </Tooltip>
+      ),
     },
   ]
   if (concise) {

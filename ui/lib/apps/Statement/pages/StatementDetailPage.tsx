@@ -26,16 +26,14 @@ export default function StatementDetailPage({ dashboardClient }: Props) {
       .then((res) => res.data)
   }
 
-  return digest ? (
+  return (
     <StatementDetail
-      digest={digest}
+      digest={digest || ''}
       schemaName={schemaName || ''}
       beginTime={beginTime || ''}
       endTime={endTime || ''}
       onFetchDetail={queryDetail}
       onFetchNodes={queryNodes}
     />
-  ) : (
-    <p>No sql digest</p>
   )
 }

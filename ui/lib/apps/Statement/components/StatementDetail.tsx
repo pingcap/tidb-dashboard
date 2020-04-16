@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import { Spin } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import StatementNodesTable from './StatementNodesTable'
-import StatementSummaryTable from './StatementSummaryTable'
 import {
   StatementDetail as StatementDetailInfo,
   StatementNode,
 } from '@lib/client'
+import { Head } from '@lib/components'
+
+import StatementPlanTable from './StatementPlanTable'
+import StatementNodesTable from './StatementNodesTable'
+import StatementSummaryTable from './StatementSummaryTable'
 
 import styles from './styles.module.less'
-import { useTranslation } from 'react-i18next'
-import StatementPlanTable from './StatementPlanTable'
 
 function StatisCard({ detail }: { detail: StatementDetailInfo }) {
   const { t } = useTranslation()
@@ -97,7 +101,15 @@ export default function StatementDetail({
   // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
 
   return (
-    <div className={styles.statement_detail}>
+    <div>
+      <Head
+        title={t('statement.pages.detail')}
+        back={
+          <Link to="/statement">
+            <ArrowLeftOutlined /> {t('statement.nav_title')}
+          </Link>
+        }
+      />
       {loading && <Spin />}
       {!loading && detail == null && <p>query failed!</p>}
       {!loading && detail && (

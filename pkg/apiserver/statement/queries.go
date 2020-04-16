@@ -39,8 +39,7 @@ type sqlVariable struct {
 // https://github.com/jinzhu/gorm/issues/2616
 func querySQLIntVariable(db *gorm.DB, name string) (int, error) {
 	var variables []sqlVariable
-	sql := fmt.Sprintf(`SHOW GLOBAL VARIABLES LIKE '%s'`, name)
-	err := db.Raw(sql).Scan(&variables).Error
+	err := db.Raw("SHOW GLOBAL VARIABLES LIKE ?", name).Scan(&variables).Error
 	if err != nil {
 		return 0, err
 	}
@@ -94,18 +93,18 @@ func QueryStmtConfig(db *gorm.DB) (*Config, error) {
 func UpdateStmtConfig(db *gorm.DB, config *Config) (err error) {
 	var sql string
 	if config.Enable != "" {
-		// switch enable
-		sql = fmt.Sprintf("SET GLOBAL %s = %t", stmtEnableVar, config.Enable == "on")
-		err = db.Exec(sql).Error
+		// toggle enable
+		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtEnableVar)
+		err = db.Exec(sql, config.Enable == "on").Error
 	} else {
 		// update other configurations
-		sql = fmt.Sprintf("SET GLOBAL %s = %d", stmtRefreshIntervalVar, config.RefreshInterval)
-		err = db.Exec(sql).Error
+		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtRefreshIntervalVar)
+		err = db.Exec(sql, config.RefreshInterval).Error
 		if err != nil {
 			return
 		}
-		sql = fmt.Sprintf("SET GLOBAL %s = %d", stmtHistroySizeVar, config.HistorySize)
-		err = db.Exec(sql).Error
+		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtHistroySizeVar)
+		err = db.Exec(sql, config.HistorySize).Error
 	}
 	return
 }

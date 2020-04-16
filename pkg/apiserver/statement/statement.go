@@ -116,7 +116,6 @@ func (s *Service) schemasHandler(c *gin.Context) {
 func (s *Service) timeRangesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	timeRanges, err := QueryTimeRanges(db)
-	_, _ = QueryStmtConfig(db)
 	if err != nil {
 		_ = c.Error(err)
 		return

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { Table } from 'antd'
+import { Pre } from '@lib/components'
 
 import { StatementPlanStep } from './statement-types'
 import { StatementPlan } from '@lib/client'
@@ -20,11 +21,11 @@ function parsePlan(plan: string): StatementPlanStep[] {
 
 function cellRender(val: any, _row: StatementPlanStep) {
   return (
-    <pre>
+    <Pre>
       <code style={{ whiteSpace: 'pre-wrap' }}>
         {typeof val === 'number' ? val.toFixed(2) : val}
       </code>
-    </pre>
+    </Pre>
   )
 }
 

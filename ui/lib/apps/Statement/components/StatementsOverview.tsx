@@ -2,7 +2,6 @@ import React, { useReducer, useEffect, useContext } from 'react'
 import { Select, Form } from 'antd'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
-import { OptionsType } from 'rc-select/lib/interface/index'
 import { StatementOverview, StatementTimeRange } from '@lib/client'
 import { Card } from '@lib/components'
 import StatementsTable from './StatementsTable'
@@ -310,10 +309,7 @@ export default function StatementsOverview({
     })
   }
 
-  function handleTimeRangeChange(
-    val: number,
-    _option: OptionsType[number] | OptionsType
-  ) {
+  function handleTimeRangeChange(val: number) {
     const timeRange = state.timeRanges.find((item) => item.begin_time === val)
     dispatch({
       type: 'change_time_range',

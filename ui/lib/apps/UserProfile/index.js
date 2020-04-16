@@ -1,7 +1,7 @@
 import React from 'react'
 import { LogoutOutlined } from '@ant-design/icons'
 import { Skeleton, Button } from 'antd'
-import { Head, Card } from '@lib/components'
+import { Root, Head, Card } from '@lib/components'
 import client from '@lib/client'
 import { withTranslation } from 'react-i18next'
 import * as auth from '@lib/utils/auth'
@@ -27,23 +27,25 @@ class App extends React.PureComponent {
   render() {
     if (!this.state.login) {
       return (
-        <Card>
-          <Skeleton active />
-        </Card>
+        <Root>
+          <Card>
+            <Skeleton active />
+          </Card>
+        </Root>
       )
     }
 
     const { t } = this.props
 
     return (
-      <div>
+      <Root>
         <Head title={t('user_profile.title', this.state.login)} />
         <Card>
           <Button type="danger" onClick={this.handleLogout}>
             <LogoutOutlined /> {t('user_profile.logout')}
           </Button>
         </Card>
-      </div>
+      </Root>
     )
   }
 }

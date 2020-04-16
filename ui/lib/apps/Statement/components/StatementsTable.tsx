@@ -11,6 +11,7 @@ import {
   ICardTableV2Props,
   FormatHighlightSQL,
   EllipsisText,
+  Pre,
 } from '@lib/components'
 import { StatementOverview, StatementTimeRange } from '@lib/client'
 import { useMax } from './use-max'
@@ -82,7 +83,7 @@ AVG: ${getValueFormat('ns')(rec.avg_latency, 1)}
 MIN: ${getValueFormat('ns')(rec.min_latency, 1)}
 MAX: ${getValueFormat('ns')(rec.max_latency, 1)}`
         return (
-          <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
+          <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
             <Bar
               textWidth={70}
               value={rec.avg_latency}
@@ -123,7 +124,7 @@ MAX: ${getValueFormat('ns')(rec.max_latency, 1)}`
 AVG: ${getValueFormat('bytes')(rec.avg_mem, 1)}
 MAX: ${getValueFormat('bytes')(rec.max_mem, 1)}`
         return (
-          <Tooltip title={<pre>{tooltipContent.trim()}</pre>}>
+          <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
             <Bar
               textWidth={70}
               value={rec.avg_mem}

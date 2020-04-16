@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 
 import client from '@lib/client'
-import { FabricRoot } from '@lib/components'
+import { Root } from '@lib/components'
 
 import { SearchContext, SearchOptions } from './components'
 import { StatementsOverviewPage, StatementDetailPage } from './pages'
@@ -41,11 +41,11 @@ const App = () => {
 
 export default function () {
   return (
-    <FabricRoot>
+    <Root>
       <Router>
         <App />
       </Router>
-    </FabricRoot>
+    </Root>
   )
 }
 

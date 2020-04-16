@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	statementsTable = "PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history"
+	statementsTable = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
 )
 
 func QuerySchemas(db *gorm.DB) ([]string, error) {
@@ -180,7 +180,7 @@ func QueryStatementDetail(db *gorm.DB, schema, digest string, beginTime, endTime
 func QueryStatementNodes(db *gorm.DB, schema, digest string, beginTime, endTime int64) (result []*Node, err error) {
 	err = db.
 		Select(`
-			address,
+			instance,
 			sum_latency,
 			exec_count,
 			avg_latency,

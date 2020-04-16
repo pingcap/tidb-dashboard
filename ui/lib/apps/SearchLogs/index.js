@@ -1,4 +1,5 @@
 import React from 'react'
+import { Root } from '@lib/components'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 import LogSearching from './LogSearching'
 import LogSearchingDetail from './LogSearchingDetail'
@@ -21,8 +22,10 @@ const App = (props) => {
 
 export default function () {
   return (
-    <Router>
-      <App />
-    </Router>
+    <Root>
+      <Router>
+        <App />
+      </Router>
+    </Root>
   )
 }

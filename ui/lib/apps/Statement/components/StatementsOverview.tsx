@@ -310,11 +310,10 @@ export default function StatementsOverview({
     })
   }
 
-  function handleTimeRangeChange(
-    val: number,
-    _option: OptionsType[number] | OptionsType
-  ) {
-    const timeRange = state.timeRanges.find((item) => item.begin_time === val)
+  function handleTimeRangeChange(val: string) {
+    const timeRange = state.timeRanges.find(
+      (item) => `${item.begin_time}_${item.end_time}` === val
+    )
     dispatch({
       type: 'change_time_range',
       payload: timeRange,
@@ -334,13 +333,16 @@ export default function StatementsOverview({
         <Form layout="inline">
           <Form.Item>
             <Select
-              value={state.curTimeRange?.begin_time}
+              value={`${state.curTimeRange?.begin_time}_${state.curTimeRange?.end_time}`}
               placeholder={t('statement.filters.select_time')}
               style={{ width: 360 }}
               onChange={handleTimeRangeChange}
             >
               {state.timeRanges.map((item) => (
-                <Option value={item.begin_time || ''} key={item.begin_time}>
+                <Option
+                  value={`${item.begin_time}_${item.end_time}`}
+                  key={`${item.begin_time}_${item.end_time}`}
+                >
                   {dayjs.unix(item.begin_time!).format(DATE_TIME_FORMAT)} ~{' '}
                   {dayjs.unix(item.end_time!).format(DATE_TIME_FORMAT)}
                 </Option>

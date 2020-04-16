@@ -59,6 +59,7 @@ func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 	dsnConfig.User = user
 	dsnConfig.Passwd = pass
 	dsnConfig.Timeout = time.Second
+	dsnConfig.ParseTime = true
 	if f.config.TiDBTLSConfig != nil {
 		dsnConfig.TLSConfig = "tidb"
 	}

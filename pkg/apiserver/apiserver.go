@@ -15,6 +15,7 @@ package apiserver
 
 import (
 	"context"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/slowquery"
 	"io"
 	"net/http"
 	"sync"
@@ -115,6 +116,7 @@ func (s *Service) Start(ctx context.Context) error {
 			clusterinfo.NewService,
 			profiling.NewService,
 			logsearch.NewService,
+			slowquery.NewService,
 			statement.NewService,
 			diagnose.NewService,
 			keyvisual.NewService,
@@ -127,6 +129,7 @@ func (s *Service) Start(ctx context.Context) error {
 			clusterinfo.Register,
 			profiling.Register,
 			logsearch.Register,
+			slowquery.Register,
 			statement.Register,
 			diagnose.Register,
 			keyvisual.Register,

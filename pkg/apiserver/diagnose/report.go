@@ -1090,7 +1090,7 @@ func GetTiKVStoreInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) 
 	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "tikv_engine_size",
-		Comment:        "tikv_engine_size",
+		Comment:        "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
 		Column:         []string{"METRIC_NAME", "LABEL", "TOTAL_COUNT"},

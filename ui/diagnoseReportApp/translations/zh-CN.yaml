@@ -81,5 +81,4 @@ diagnosis:
       tikv_raftstore_initial_config: TiKV RaftStore 的初始配置值。初始时间是报表的开始时间。
       tikv_raftstore_change_config: TiKV RaftStore 的配置更改历史。
       pd_time_consume: 该表显示的是 PD 中的事件所消耗的时间。METRIC_NAME 是事件名称，LABEL 是事件标签，例如实例，事件类型…，TIME_RATIO 是该事件的 TOTAL_TIME 除以所有事件的 TOTAL_TIME，所有事件总的 TIME_RATIO 为 1，TOTAL_TIME 是该事件的总耗费时间，TOTAL_COUNT 是该事件的总计数，P999 是 0.999 分位数的最大时间 ，P99 是 0.99 分位数的最大时间，P90 是 0.90 分位数的最大时间，P80 是 0.80 分位数的最大时间。
-      tikv_engine_size: 每个 TiKV 实例的存储大小。
       tikv_time_consume: 该表显示的是 TiKV 中的事件所消耗的时间。METRIC_NAME 是事件名称，LABEL 是事件标签，例如实例，事件类型…，TIME_RATIO 是该事件的 TOTAL_TIME 除以所有事件的 TOTAL_TIME，所有事件总的 TIME_RATIO 为 1，TOTAL_TIME 是该事件的总耗费时间，TOTAL_COUNT 是该事件的总计数，P999 是 0.999 分位数的最大时间 ，P99 是 0.99 分位数的最大时间，P90 是 0.90 分位数的最大时间，P80 是 0.80 分位数的最大时间。

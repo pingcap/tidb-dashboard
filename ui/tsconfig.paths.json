@@ -2,7 +2,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@lib/*": ["lib/*"],
+      "@dashboard/*": ["dashboardApp/*"],
+      "@diagnoseReport/*": ["diagnoseReportApp/*"]
     }
   }
 }

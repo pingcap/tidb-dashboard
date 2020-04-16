@@ -72,17 +72,16 @@ type Props = {
 export default function DiagnosisTable({ diagnosis }: Props) {
   const { Category, Title, CommentEN, Column, Rows } = diagnosis
   const { t } = useTranslation()
-  const title = 'diagnosis.tables.' + Title
 
   return (
     <div className="report-container">
       {(Category || []).map((c, idx) => (
         <h1 className={`title is-size-${idx + 2}`} key={idx}>
-          {c}
+          {t(`diagnosis.tables.Category.${c}`)}
         </h1>
       ))}
-      <h3 className="is-size-4">{t(title)}</h3>
-      {CommentEN && <p>{CommentEN}</p>}
+      <h3 className="is-size-4">{t(`diagnosis.tables.Title.${Title}`)}</h3>
+      {CommentEN && <p>{t(`diagnosis.tables.Comment.${CommentEN}`)}</p>}
       <table className="table is-bordered is-hoverable is-narrow is-fullwidth">
         <thead>
           <tr>

@@ -324,7 +324,7 @@ func GetDiagnoseReport(startTime, endTime string, db *gorm.DB) (TableDef, error)
 	table := TableDef{
 		Category:  []string{CategoryDiagnose},
 		Title:     "diagnose",
-		CommentEN: "Automatically diagnose the cluster problem and record the problem in below table.",
+		CommentEN: "diagnose_comment",
 		CommentCN: "",
 		Column:    []string{"RULE", "ITEM", "TYPE", "INSTANCE", "STATUS_ADDRESS", "VALUE", "REFERENCE", "SEVERITY", "DETAILS"},
 	}
@@ -429,18 +429,9 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (TableDef,
 	}
 
 	table := TableDef{
-		Category: []string{CategoryOverview},
-		Title:    "total_time_consume",
-		CommentEN: `The table contain the event time consume in TiDB/TiKV/PD. 
-METRIC_NAME is the event name; 
-LABEL is the event label, such as instance, event type ...; 
-TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; 
-TOTAL_TIME is the total time cost of this event; 
-TOTAL_COUNT is the total count of this event; 
-P999 is the max time of 0.999 quantile; 
-P99 is the max time of 0.99 quantile; 
-P90 is the max time of 0.90 quantile; 
-P80 is the max time of 0.80 quantile;`,
+		Category:       []string{CategoryOverview},
+		Title:          "total_time_consume",
+		CommentEN:      `total_time_consume_comment`,
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{3, 4, 5},
 		CommentCN:      "",
@@ -496,12 +487,9 @@ func GetTotalErrorTable(startTime, endTime string, db *gorm.DB) (TableDef, error
 	}
 
 	table := TableDef{
-		Category: []string{CategoryOverview},
-		Title:    "total_error",
-		CommentEN: `The table contain the total count of error event. 
-METRIC_NAME is the error event name; 
-LABEL is the event label, such as instance, event type ...; 
-TOTAL_COUNT is the total count of this event;`,
+		Category:       []string{CategoryOverview},
+		Title:          "total_error",
+		CommentEN:      `total_error_comment`,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
@@ -554,18 +542,9 @@ func GetTiDBTimeConsumeTable(startTime, endTime string, db *gorm.DB) (TableDef, 
 	}
 
 	table := TableDef{
-		Category: []string{CategoryTiDB},
-		Title:    "time_consume",
-		CommentEN: `The table contain the event time consume in TiDB. 
-METRIC_NAME is the event name; 
-LABEL is the event label, such as instance, event type ...; 
-TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; 
-TOTAL_TIME is the total time cost of this event; 
-TOTAL_COUNT is the total count of this event; 
-P999 is the max time of 0.999 quantile; 
-P99 is the max time of 0.99 quantile; 
-P90 is the max time of 0.90 quantile; 
-P80 is the max time of 0.80 quantile;`,
+		Category:       []string{CategoryTiDB},
+		Title:          "time_consume",
+		CommentEN:      `tidb_time_consume_comment`,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{3, 4, 5},
@@ -624,17 +603,9 @@ func GetTiDBTxnTableData(startTime, endTime string, db *gorm.DB) (TableDef, erro
 
 	quantiles := []float64{0.999, 0.99, 0.90, 0.80}
 	table := TableDef{
-		Category: []string{CategoryTiDB},
-		Title:    "transaction",
-		CommentEN: `The table contain the TiDB transaction statistics information. 
-METRIC_NAME is the object name; 
-LABEL is the object label, such as instance, event type ...; 
-TOTAL_VALUE is the total size/value of this object; 
-TOTAL_COUNT is the total count of this object; 
-P999 is the max size/value of 0.999 quantile; 
-P99 is the max size/value of 0.99 quantile; 
-P90 is the max size/value of 0.90 quantile; 
-P80 is the max size/value of 0.80 quantile;`,
+		Category:       []string{CategoryTiDB},
+		Title:          "transaction",
+		CommentEN:      `transaction_comment`,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4, 5},
@@ -687,7 +658,7 @@ func GetTiDBConnectionCountTable(startTime, endTime string, db *gorm.DB) (TableD
 	table := TableDef{
 		Category:       []string{CategoryTiDB},
 		Title:          "tidb_connection_count",
-		CommentEN:      "The connection count of tidb server",
+		CommentEN:      "tidb_connection_count_comment",
 		CommentCN:      "",
 		joinColumns:    []int{0},
 		compareColumns: []int{1, 2, 3},
@@ -734,7 +705,7 @@ func GetTiDBDDLOwner(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	table := TableDef{
 		Category:    []string{CategoryTiDB},
 		Title:       "ddl_owner",
-		CommentEN:   "DDL Owner info. Attention, if no DDL request has been executed, below owner info maybe null, it doesn't indicate no DDL owner exists.",
+		CommentEN:   "ddl_owner_comment",
 		CommentCN:   "",
 		joinColumns: []int{1},
 		Column:      []string{"MIN_TIME", "DDL OWNER"},
@@ -751,7 +722,7 @@ func GetPDConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	table := TableDef{
 		Category:       []string{CategoryConfig},
 		Title:          "scheduler_initial_config",
-		CommentEN:      "PD scheduler initial config value. The initial time is the report start time",
+		CommentEN:      "scheduler_initial_config_comment",
 		CommentCN:      "",
 		joinColumns:    []int{0, 2},
 		compareColumns: []int{1},
@@ -780,7 +751,7 @@ func GetPDConfigChangeInfo(startTime, endTime string, db *gorm.DB) (TableDef, er
 	table := TableDef{
 		Category:       []string{CategoryConfig},
 		Title:          "scheduler_change_config",
-		CommentEN:      "PD scheduler config change history. APPROXIMATE_CHANGE_TIME is the minimum start effective time",
+		CommentEN:      "scheduler_change_config_comment",
 		CommentCN:      "",
 		joinColumns:    []int{1},
 		compareColumns: []int{2},
@@ -798,7 +769,7 @@ func GetTiDBGCConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, erro
 	table := TableDef{
 		Category:       []string{CategoryConfig},
 		Title:          "tidb_gc_initial_config",
-		CommentEN:      "TiDB GC initial config value. The initial time is the report start time",
+		CommentEN:      "tidb_gc_initial_config_comment",
 		CommentCN:      "",
 		joinColumns:    []int{0, 2},
 		compareColumns: []int{1},
@@ -823,10 +794,9 @@ func GetTiDBGCConfigChangeInfo(startTime, endTime string, db *gorm.DB) (TableDef
 		where t1.type=t2.type and t2.count>1 order by t2.count desc, t1.time;`, startTime, endTime)
 
 	table := TableDef{
-		Category: []string{CategoryConfig},
-		Title:    "tidb_gc_change_config",
-		CommentEN: `TiDB GC config change history; 
-APPROXIMATE_CHANGE_TIME is the minimum start effective time`,
+		Category:       []string{CategoryConfig},
+		Title:          "tidb_gc_change_config",
+		CommentEN:      `tidb_gc_change_config_comment`,
 		CommentCN:      "",
 		joinColumns:    []int{1},
 		compareColumns: []int{2},
@@ -844,7 +814,7 @@ func GetTiKVRocksDBConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef,
 	table := TableDef{
 		Category:       []string{CategoryConfig},
 		Title:          "tikv_rocksdb_initial_config",
-		CommentEN:      "TiKV RocksDB initial config value. The initial time is the report start time",
+		CommentEN:      "tikv_rocksdb_initial_config_comment",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1, 3},
 		compareColumns: []int{2},
@@ -907,10 +877,9 @@ func GetTiKVRocksDBConfigChangeInfo(startTime, endTime string, db *gorm.DB) (Tab
 		where t1.name=t2.name and t1.instance = t2.instance and t2.count>1 order by t1.name,instance, t2.count desc, t1.time;`, startTime, endTime)
 
 	table := TableDef{
-		Category: []string{CategoryConfig},
-		Title:    "tikv_rocksdb_change_config",
-		CommentEN: `TiKV RocksDB config change history; 
-APPROXIMATE_CHANGE_TIME is the minimum start effective time`,
+		Category:       []string{CategoryConfig},
+		Title:          "tikv_rocksdb_change_config",
+		CommentEN:      `tikv_rocksdb_change_config_comment`,
 		CommentCN:      "",
 		joinColumns:    []int{1, 2},
 		compareColumns: []int{3},
@@ -928,7 +897,7 @@ func GetTiKVRaftStoreConfigInfo(startTime, endTime string, db *gorm.DB) (TableDe
 	table := TableDef{
 		Category:  []string{CategoryConfig},
 		Title:     "tikv_raftstore_initial_config",
-		CommentEN: "TiKV RaftStore initial config value. The initial time is the report start time",
+		CommentEN: "tikv_raftstore_initial_config_comment",
 		CommentCN: "",
 
 		joinColumns:    []int{0, 1, 3},
@@ -992,10 +961,9 @@ func GetTiKVRaftStoreConfigChangeInfo(startTime, endTime string, db *gorm.DB) (T
 		where t1.name=t2.name and t1.instance = t2.instance and t2.count>1 order by t1.name,instance,t2.count desc, t1.time;`, startTime, endTime)
 
 	table := TableDef{
-		Category: []string{CategoryConfig},
-		Title:    "tikv_raftstore_change_config",
-		CommentEN: `TiKV RaftStore config change history; 
-APPROXIMATE_CHANGE_TIME is the minimum start effective time`,
+		Category:       []string{CategoryConfig},
+		Title:          "tikv_raftstore_change_config",
+		CommentEN:      `tikv_raftstore_change_config_comment`,
 		CommentCN:      "",
 		joinColumns:    []int{1, 2},
 		compareColumns: []int{3},
@@ -1028,18 +996,9 @@ func GetPDTimeConsumeTable(startTime, endTime string, db *gorm.DB) (TableDef, er
 	}
 
 	table := TableDef{
-		Category: []string{CategoryPD},
-		Title:    "pd_time_consume",
-		CommentEN: `The table contain the event time consume in PD. 
-METRIC_NAME is the event name; 
-LABEL is the event label, such as instance, event type ...; 
-TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; 
-TOTAL_TIME is the total time cost of this event; 
-TOTAL_COUNT is the total count of this event; 
-P999 is the max time of 0.999 quantile; 
-P99 is the max time of 0.99 quantile; 
-P90 is the max time of 0.90 quantile; 
-P80 is the max time of 0.80 quantile;`,
+		Category:       []string{CategoryPD},
+		Title:          "pd_time_consume",
+		CommentEN:      `pd_time_consume_comment`,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{3, 4, 5},
@@ -1152,7 +1111,7 @@ func GetTiKVStoreInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) 
 	table := TableDef{
 		Category:       []string{CategoryTiKV},
 		Title:          "tikv_engine_size",
-		CommentEN:      "The storage size per TiKV instance",
+		CommentEN:      "tikv_engine_size_comment",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},
@@ -1201,18 +1160,9 @@ func GetTiKVTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (Table
 	}
 
 	table := TableDef{
-		Category: []string{CategoryTiKV},
-		Title:    "tikv_time_consume",
-		CommentEN: `The table contain the event time consume in TiKV. 
-METRIC_NAME is the event name; 
-LABEL is the event label, such as instance, event type ...; 
-TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; 
-TOTAL_TIME is the total time cost of this event; 
-TOTAL_COUNT is the total count of this event; 
-P999 is the max time of 0.999 quantile; 
-P99 is the max time of 0.99 quantile; 
-P90 is the max time of 0.90 quantile; 
-P80 is the max time of 0.80 quantile;`,
+		Category:       []string{CategoryTiKV},
+		Title:          "tikv_time_consume",
+		CommentEN:      `tikv_time_consume_comment`,
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{3, 4, 5},
@@ -1871,7 +1821,7 @@ func GetGoroutinesCountTable(startTime, endTime string, db *gorm.DB) (TableDef, 
 	table := TableDef{
 		Category:       []string{CategoryLoad},
 		Title:          "tidb/pd_goroutines_count",
-		CommentEN:      "The goroutine count of tidb/pd server",
+		CommentEN:      "",
 		CommentCN:      "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2, 3, 4},
@@ -2175,7 +2125,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (TableD
 	table := TableDef{
 		Category:  []string{CategoryHeader},
 		Title:     "cluster_hardware",
-		CommentEN: "The hardwareInfo of each node",
+		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"HOST", "INSTANCE", "CPU_CORES", "MEMORY (GB)", "DISK (GB)", "UPTIME (DAY)"},
 	}
@@ -2420,7 +2370,7 @@ func GetTiDBTopNSlowQuery(startTime, endTime string, db *gorm.DB) (TableDef, err
 	table := TableDef{
 		Category:  []string{CategoryTiDB},
 		Title:     "top_10_slow_query",
-		CommentEN: sql,
+		CommentEN: "",
 		CommentCN: "",
 		Column:    columns,
 	}
@@ -2449,7 +2399,7 @@ func GetTiDBTopNSlowQueryGroupByDigest(startTime, endTime string, db *gorm.DB) (
 	table := TableDef{
 		Category:  []string{CategoryTiDB},
 		Title:     "top_10_slow_query_group_by_digest",
-		CommentEN: sql,
+		CommentEN: "",
 		CommentCN: "",
 		Column:    columns,
 	}
@@ -2467,7 +2417,7 @@ func GetTiDBSlowQueryWithDiffPlan(startTime, endTime string, db *gorm.DB) (Table
 	table := TableDef{
 		Category:  []string{CategoryTiDB},
 		Title:     "slow_query_with_diff_plan",
-		CommentEN: sql,
+		CommentEN: "",
 		CommentCN: "",
 		Column:    []string{"digest", "query"},
 	}

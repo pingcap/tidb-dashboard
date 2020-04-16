@@ -187,6 +187,8 @@ module.exports = override(
     modifyVars: {
       '@primary-color': '#3351ff',
       '@body-background': '#f0f2f5',
+      '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
+      '@tooltip-max-width': '500px',
     },
     globalVars: {
       '@padding-page': '48px',

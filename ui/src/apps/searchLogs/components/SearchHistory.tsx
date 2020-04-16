@@ -7,11 +7,12 @@ import { CardTable, Head } from '@pingcap-incubator/dashboard_components'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Badge, Button, Table } from 'antd'
 import { RangeValue } from 'rc-picker/lib/interface'
-import { Moment } from 'moment'
+import moment, { Moment } from 'moment'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { DATE_TIME_FORMAT, LogLevelMap, parseHistoryStatsParams } from './utils'
+import { DATE_TIME_FORMAT, LogLevelMap } from './utils'
+import { LogsearchSearchLogRequest } from '@pingcap-incubator/dashboard_client/src'
 
 const { Column } = Table
 
@@ -47,7 +48,10 @@ function formatTime(time: Moment | null | undefined): string {
   return time.format(DATE_TIME_FORMAT)
 }
 
-function timeRender(timeRange: RangeValue<Moment>): string {
+function timeRender(request: LogsearchSearchLogRequest): string {
+  const startTime = request.start_time ? moment(request.start_time) : null
+  const endTime = request.end_time ? moment(request.end_time) : null
+  const timeRange = [startTime, endTime] as RangeValue<moment.Moment>
   if (!timeRange?.[0] || !timeRange?.[1]) {
     return ''
   }
@@ -68,6 +72,16 @@ export default function SearchHistory() {
 
     getData()
   }, [])
+
+  function levelRender(request: LogsearchSearchLogRequest) {
+    return LogLevelMap[request?.min_level ?? 0]
+  }
+
+  function patternRender(request: LogsearchSearchLogRequest) {
+    return request.patterns && request.patterns.length > 0
+      ? request.patterns.join(' ')
+      : ''
+  }
 
   function stateRender(state: number | undefined) {
     if (state === undefined || state < 1) {
@@ -126,22 +140,6 @@ export default function SearchHistory() {
     },
   }
 
-  const historyList: History[] = taskGroups.map((taskGroup) => {
-    const { timeRange, logLevel, stats, searchValue } = parseHistoryStatsParams(
-      taskGroup
-    )
-    const taskGroupID = taskGroup?.id || 0
-    return {
-      key: taskGroupID,
-      time: timeRange,
-      level: LogLevelMap[logLevel],
-      taskGroupStats: stats,
-      keywords: searchValue,
-      state: taskGroup?.state,
-      action: taskGroupID,
-    }
-  })
-
   return (
     <div>
       <Head
@@ -169,7 +167,7 @@ export default function SearchHistory() {
       />
       <div style={{ backgroundColor: '#FFFFFF' }}>
         <CardTable
-          dataSource={historyList}
+          dataSource={taskGroups}
           rowSelection={rowSelection}
           pagination={{ pageSize: 100 }}
           style={{ marginTop: 0 }}
@@ -177,26 +175,28 @@ export default function SearchHistory() {
           <Column
             width={400}
             title={t('search_logs.common.time_range')}
-            dataIndex="time"
+            dataIndex="search_request"
             key="time"
             render={timeRender}
           />
           <Column
             title={t('search_logs.preview.level')}
-            dataIndex="level"
+            dataIndex="search_request"
             key="level"
+            render={levelRender}
           />
           <Column
             width={230}
             title={t('search_logs.preview.component')}
-            dataIndex="taskGroupStats"
-            key="taskGroupStats"
+            dataIndex="target_stats"
+            key="target_stats"
             render={componentRender}
           />
           <Column
             title={t('search_logs.common.keywords')}
-            dataIndex="keywords"
-            key="keywords"
+            dataIndex="search_request"
+            key="searchValue"
+            render={patternRender}
           />
           <Column
             title={t('search_logs.history.state')}
@@ -206,8 +206,8 @@ export default function SearchHistory() {
           />
           <Column
             title={t('search_logs.history.action')}
-            dataIndex="action"
-            key="action"
+            dataIndex="id"
+            key="id"
             render={actionRender}
           />
         </CardTable>

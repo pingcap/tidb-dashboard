@@ -1,25 +1,10 @@
-import { CardTableV2 } from '@lib/components'
-import { useClientRequest } from '@lib/utils/useClientRequest'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 import client from '@lib/client'
-import { Progress, Tooltip } from 'antd'
-import byteSize from 'byte-size'
+import { Bar, CardTableV2 } from '@lib/components'
+import { useClientRequest } from '@lib/utils/useClientRequest'
+import { Tooltip } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-
-function byteSizeToStr(num, precision) {
-  if (num === undefined) {
-    return ''
-  }
-  const b = byteSize(num, { units: 'iec', precision: precision })
-  return `${b.value} ${b.unit}`
-}
-
-function toPercentStr(num) {
-  if (num === undefined) {
-    return ''
-  }
-  return '' + Number(num * 100).toFixed(1) + '%'
-}
 
 function filterUniquePartitions(items) {
   return items.filter(
@@ -65,20 +50,20 @@ export default function HostTable() {
           return
         }
         const { system, idle } = cpu_usage
-        const user = (1 - system - idle).toFixed(3)
+        const user = 1 - system - idle
         const title = (
           <>
-            <div>User: {toPercentStr(user)}</div>
-            <div>System: {toPercentStr(system)}</div>
+            <div>User: {getValueFormat('percentunit')(user)}</div>
+            <div>System: {getValueFormat('percentunit')(system)}</div>
           </>
         )
+        console.log([user, system])
         return (
           <Tooltip title={title}>
-            <Progress
-              percent={(1 - idle) * 100}
-              successPercent={user * 100}
-              size="small"
-              showInfo={false}
+            <Bar
+              value={[user, system]}
+              colors={['#667cff', '#ff4d4f']}
+              capacity={1}
             />
           </Tooltip>
         )
@@ -91,7 +76,7 @@ export default function HostTable() {
       maxWidth: 60,
       isResizable: true,
       isCollapsible: true,
-      onRender: ({ memory }) => byteSizeToStr(memory.total, 0),
+      onRender: ({ memory }) => getValueFormat('bytes')(memory.total, 0),
     },
     {
       name: t('cluster_info.list.host_table.columns.memory_usage'),
@@ -108,16 +93,13 @@ export default function HostTable() {
         const usedPercent = (used / total).toFixed(3)
         const title = (
           <div>
-            Used: {byteSizeToStr(used, 1)} ({toPercentStr(usedPercent)})
+            Used: {getValueFormat('bytes')(used, 1)} (
+            {getValueFormat('percentunit')(usedPercent, 1)})
           </div>
         )
         return (
           <Tooltip title={title}>
-            <Progress
-              percent={usedPercent * 100}
-              size="small"
-              showInfo={false}
-            />
+            <Bar value={used} capacity={total} />
           </Tooltip>
         )
       },
@@ -157,7 +139,7 @@ export default function HostTable() {
             serverInfos.push(`${serverTotal.pd} PD`)
           }
           return `${serverInfos.join(
-            ' '
+            ','
           )}: ${partition.partition.fstype.toUpperCase()} ${currentMountPoint}`
         })
       },
@@ -174,7 +156,11 @@ export default function HostTable() {
           return
         }
         return filterUniquePartitions(partitions).map((partiton, i) => {
-          return <div key={i}>{byteSizeToStr(partiton.partition.total)}</div>
+          return (
+            <div key={i}>
+              {getValueFormat('bytes')(partiton.partition.total, 0)}
+            </div>
+          )
         })
       },
     },
@@ -195,16 +181,13 @@ export default function HostTable() {
           const usedPercent = (used / total).toFixed(3)
           const title = (
             <div>
-              Used: {byteSizeToStr(used, 1)} ({toPercentStr(usedPercent)})
+              Used: {getValueFormat('bytes')(used, 1)} (
+              {getValueFormat('percentunit')(usedPercent, 1)})
             </div>
           )
           return (
             <Tooltip title={title} key={i}>
-              <Progress
-                percent={usedPercent * 100}
-                size="small"
-                showInfo={false}
-              />
+              <Bar value={used} capacity={total} />
             </Tooltip>
           )
         })

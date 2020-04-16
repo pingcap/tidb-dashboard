@@ -1,15 +1,16 @@
+import { DeleteOutlined } from '@ant-design/icons'
 import {
   STATUS_DOWN,
   STATUS_OFFLINE,
   STATUS_TOMBSTONE,
   STATUS_UP,
 } from '@lib/apps/ClusterInfo/status/status'
+import client from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
-import { DeleteOutlined } from '@ant-design/icons'
-import client from '@lib/client'
+import { useClientRequest } from '@lib/utils/useClientRequest'
 import { Badge, Divider, Popconfirm, Tooltip } from 'antd'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 function useStatusColumnRender(handleHideTiDB) {
@@ -100,71 +101,55 @@ function useHideTiDBHandler(updateData) {
   }
 }
 
-function useClusterNodeDataSource() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [data, setData] = useState([])
-  const [groupData, setGroupData] = useState([])
-
-  useEffect(() => {
-    const fetch = async () => {
-      setIsLoading(true)
-      try {
-        const res = await client.getInstance().topologyAllGet()
-        const items = []
-        const groupItems = []
-        let startIndex = 0
-        const kinds = ['tidb', 'tikv', 'pd']
-        kinds.forEach((nodeKind) => {
-          const nodes = res.data[nodeKind]
-          if (nodes.err) {
-            return
-          }
-          const count = nodes.nodes.length
-          groupItems.push({
-            key: nodeKind,
-            name: nodeKind,
-            startIndex: startIndex,
-            count: count,
-            level: 0,
-          })
-          startIndex += count
-          const children = nodes.nodes.map((node) => {
-            if (node.deploy_path === undefined && node.binary_path !== null) {
-              node.deploy_path = node.binary_path.substring(
-                0,
-                node.binary_path.lastIndexOf('/')
-              )
-            }
-            return {
-              key: `${node.ip}:${node.port}`,
-              ...node,
-              nodeKind,
-            }
-          })
-          items.push(...children)
-        })
-
-        setGroupData(groupItems)
-        setData(items)
-      } catch (e) {}
-      setIsLoading(false)
+function buildData(data) {
+  if (data === undefined) {
+    return {}
+  }
+  const tableData = []
+  const groupData = []
+  let startIndex = 0
+  const kinds = ['tidb', 'tikv', 'pd']
+  kinds.forEach((nodeKind) => {
+    const nodes = data[nodeKind]
+    if (nodes.err) {
+      return
     }
-
-    fetch()
-  }, [])
-
-  return [isLoading, data, groupData, fetch]
+    const count = nodes.nodes.length
+    groupData.push({
+      key: nodeKind,
+      name: nodeKind,
+      startIndex: startIndex,
+      count: count,
+      level: 0,
+    })
+    startIndex += count
+    const children = nodes.nodes.map((node) => {
+      if (node.deploy_path === undefined && node.binary_path !== null) {
+        node.deploy_path = node.binary_path.substring(
+          0,
+          node.binary_path.lastIndexOf('/')
+        )
+      }
+      return {
+        key: `${node.ip}:${node.port}`,
+        ...node,
+        nodeKind,
+      }
+    })
+    tableData.push(...children)
+  })
+  return { tableData, groupData }
 }
 
 export default function ListPage() {
   const { t } = useTranslation()
-  const [
-    isLoading,
-    tableData,
-    groupData,
-    updateData,
-  ] = useClusterNodeDataSource()
-  const handleHideTiDB = useHideTiDBHandler(updateData)
+
+  const { data, isLoading, sendRequest } = useClientRequest((cancelToken) =>
+    client.getInstance().topologyAllGet({ cancelToken })
+  )
+  const { tableData, groupData } = buildData(data)
+
+  const handleHideTiDB = useHideTiDBHandler(sendRequest)
   const renderStatusColumn = useStatusColumnRender(handleHideTiDB)
 
   const columns = [

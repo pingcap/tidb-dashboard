@@ -2,7 +2,6 @@ import {
   ClusterinfoClusterInfo,
   LogsearchTaskGroupResponse,
   LogsearchTaskModel,
-  LogserachTaskGroupModel,
   UtilsRequestTargetNode,
 } from '@lib/client'
 import { RangeValue } from 'rc-picker/lib/interface'

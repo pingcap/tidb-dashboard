@@ -1,8 +1,7 @@
 import client from '@lib/client'
 import {
-  LogsearchSearchTarget,
-  LogsearchTaskGroupResponse,
   UtilsRequestTargetStatistics,
+  LogsearchSearchLogRequest,
 } from '@lib/client'
 import { CardTable, Head } from '@lib/components'
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -13,7 +12,6 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { DATE_TIME_FORMAT, LogLevelMap } from './utils'
-import { LogsearchSearchLogRequest } from '@pingcap-incubator/dashboard_client/src'
 
 const { Column } = Table
 

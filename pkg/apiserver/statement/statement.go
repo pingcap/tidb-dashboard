@@ -70,7 +70,7 @@ func (s *Service) configHandler(c *gin.Context) {
 // @Summary Statement configurationt
 // @Description Modify configuration of statements
 // @Param request body statement.Config true "Request body"
-// @Success 204
+// @Success 204 {object} string
 // @Router /statements/config [post]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"

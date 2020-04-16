@@ -96,16 +96,16 @@ func UpdateStmtConfig(db *gorm.DB, config *Config) (err error) {
 	if config.Enable != "" {
 		// switch enable
 		sql = fmt.Sprintf("SET GLOBAL %s = %t", stmtEnableVar, config.Enable == "on")
-		err = db.Raw(sql).Error
+		err = db.Exec(sql).Error
 	} else {
 		// update other configurations
 		sql = fmt.Sprintf("SET GLOBAL %s = %d", stmtRefreshIntervalVar, config.RefreshInterval)
-		err = db.Raw(sql).Error
+		err = db.Exec(sql).Error
 		if err != nil {
 			return
 		}
 		sql = fmt.Sprintf("SET GLOBAL %s = %d", stmtHistroySizeVar, config.HistorySize)
-		err = db.Raw(sql).Error
+		err = db.Exec(sql).Error
 	}
 	return
 }

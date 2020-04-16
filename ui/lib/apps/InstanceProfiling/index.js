@@ -1,11 +1,11 @@
 import React from 'react'
+import { Root } from '@lib/components'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 import ListPage from './pages/List'
 import DetailPage from './pages/Detail'
-import { FabricRoot } from '@lib/components'
 
 const App = () => (
-  <FabricRoot>
+  <Root>
     <Router>
       <Routes>
         <Route
@@ -19,7 +19,7 @@ const App = () => (
         />
       </Routes>
     </Router>
-  </FabricRoot>
+  </Root>
 )
 
 export default App

@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -25,6 +26,64 @@ import (
 const (
 	statementsTable = "PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history"
 )
+
+type sqlVariable struct {
+	Name  string `gorm:"column:Variable_name"`
+	Value string `gorm:"column:Value"`
+}
+
+// How to get sql variables by GORM
+// https://github.com/jinzhu/gorm/issues/2616
+func querySQLIntVariable(db *gorm.DB, name string) (int, error) {
+	var variables []sqlVariable
+	sql := fmt.Sprintf(`SHOW GLOBAL VARIABLES LIKE '%s'`, name)
+	err := db.Raw(sql).Scan(&variables).Error
+	if err != nil {
+		return 0, err
+	}
+	strVal := variables[0].Value
+	if strVal == "" {
+		return -1, nil
+	}
+	intVal, err := strconv.Atoi(strVal)
+	if err != nil {
+		return 0, err
+	}
+	return intVal, nil
+}
+
+func QueryStmtConfig(db *gorm.DB) (*Config, error) {
+	config := Config{}
+
+	enable, err := querySQLIntVariable(db, "tidb_enable_stmt_summary")
+	if err != nil {
+		return nil, err
+	}
+	config.Enable = enable != 0
+
+	refreshInterval, err := querySQLIntVariable(db, "tidb_stmt_summary_refresh_interval")
+	if err != nil {
+		return nil, err
+	}
+	if refreshInterval == -1 {
+		config.RefreshInterval = 1800
+	} else {
+		config.RefreshInterval = refreshInterval
+	}
+
+	historySize, err := querySQLIntVariable(db, "tidb_stmt_summary_history_size")
+	if err != nil {
+		return nil, err
+	}
+	if historySize == -1 {
+		config.HistorySize = 24
+	} else {
+		config.HistorySize = historySize
+	}
+
+	fmt.Printf("config:\n%+v\n", config)
+	return &config, err
+}
 
 func QuerySchemas(db *gorm.DB) ([]string, error) {
 	sql := `SHOW DATABASES`

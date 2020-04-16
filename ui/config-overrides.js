@@ -17,6 +17,18 @@ const nodeExternals = require('webpack-node-externals')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const GeneratePackageJsonPlugin = require('generate-package-json-webpack-plugin')
 
+function isBuildAsLibrary() {
+  // Specify by --library
+  return (
+    process.env.npm_lifecycle_script &&
+    process.env.npm_lifecycle_script.includes('library')
+  )
+}
+
+function isBuildAsDevServer() {
+  return process.env.NODE_ENV !== 'production'
+}
+
 const enableEslintIgnore = () => (config) => {
   const eslintRule = config.module.rules.filter(
     (r) =>
@@ -54,7 +66,7 @@ const addAlias = () => (config) => {
 }
 
 const addDiagnoseReportEntry = () => (config) => {
-  if (process.env.npm_lifecycle_script.includes('library')) {
+  if (isBuildAsLibrary()) {
     return config
   }
   const e = require('react-app-rewire-multiple-entry')([
@@ -69,12 +81,10 @@ const addDiagnoseReportEntry = () => (config) => {
 }
 
 const buildAsLibrary = () => (config) => {
-  // Build as a library instead of an App.
-  if (!process.env.npm_lifecycle_script.includes('library')) {
+  if (!isBuildAsLibrary()) {
     return config
   }
-  if (process.env.NODE_ENV !== 'production') {
-    // Not available when using dev server
+  if (isBuildAsDevServer()) {
     return config
   }
 
@@ -114,6 +124,7 @@ const buildAsLibrary = () => (config) => {
   addWebpackPlugin(
     new MiniCssExtractPlugin({
       filename: 'lib/style.css',
+      ignoreOrder: true,
     })
   )(config)
 
@@ -140,9 +151,21 @@ const removeWebpackPlugin = (unwantedCtorNames) => (config) => {
   return config
 }
 
+// See https://github.com/ant-design/ant-design/issues/14895
+const ignoreMiniCssExtractOrder = () => (config) => {
+  for (let i = 0; i < config.plugins.length; i++) {
+    const p = config.plugins[i]
+    if (!!p.constructor && p.constructor.name === 'MiniCssExtractPlugin') {
+      const miniCssExtractOptions = { ...p.options, ignoreOrder: true }
+      config.plugins[i] = new MiniCssExtractPlugin(miniCssExtractOptions)
+      break
+    }
+  }
+  return config
+}
+
 const addWebpackBundleSize = () => (config) => {
-  if (process.env.NODE_ENV !== 'production') {
-    // Analyze bundle size only when we are not in dev mode.
+  if (isBuildAsDevServer()) {
     return config
   }
   addBundleVisualizer({
@@ -157,6 +180,7 @@ module.exports = override(
     libraryDirectory: 'es',
     style: true,
   }),
+  ignoreMiniCssExtractOrder(),
   addLessLoader({
     javascriptEnabled: true,
     modifyVars: {
@@ -176,7 +200,9 @@ module.exports = override(
       '@gray-9': '#262626',
       '@gray-10': '#000',
     },
-    localIdentName: '[local]--[hash:base64:5]',
+    modules: {
+      localIdentName: '[local]--[hash:base64:5]',
+    },
   }),
   addAlias(),
   addDecoratorsLegacy(),

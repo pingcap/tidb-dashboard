@@ -1,5 +1,6 @@
-export * from './FabricRoot'
-export { default as FabricRoot } from './FabricRoot'
+export * from './Root'
+export { default as Root } from './Root'
+
 export * from './Head'
 export { default as Head } from './Head'
 export * from './Card'

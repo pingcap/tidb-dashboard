@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react'
+import { Root } from '@lib/components'
 import { useToggle } from '@umijs/hooks'
 import { HashRouter as Router } from 'react-router-dom'
 import { useSpring, animated } from 'react-spring'
@@ -60,34 +61,36 @@ export default function App({ registry }) {
   })
 
   return (
-    <Router>
-      <animated.div className={styles.container} style={transContainer}>
-        <Sider
-          registry={registry}
-          width={siderWidth}
-          onToggle={() => toggleCollapsed()}
-          collapsed={collapsed}
-          collapsedWidth={siderCollapsedWidth}
-          animationDelay={0}
-        />
-        <animated.div
-          className={styles.contentBack}
-          style={{
-            left: `${siderWidth}px`,
-            transform: transContentBack.x.interpolate(
-              (x) => `translate3d(${x}px, 0, 0)`
-            ),
-          }}
-        ></animated.div>
-        <div
-          className={styles.content}
-          style={{
-            marginLeft: contentLeftOffset,
-          }}
-        >
-          <div id="__spa_content__"></div>
-        </div>
-      </animated.div>
-    </Router>
+    <Root>
+      <Router>
+        <animated.div className={styles.container} style={transContainer}>
+          <Sider
+            registry={registry}
+            width={siderWidth}
+            onToggle={() => toggleCollapsed()}
+            collapsed={collapsed}
+            collapsedWidth={siderCollapsedWidth}
+            animationDelay={0}
+          />
+          <animated.div
+            className={styles.contentBack}
+            style={{
+              left: `${siderWidth}px`,
+              transform: transContentBack.x.interpolate(
+                (x) => `translate3d(${x}px, 0, 0)`
+              ),
+            }}
+          ></animated.div>
+          <div
+            className={styles.content}
+            style={{
+              marginLeft: contentLeftOffset,
+            }}
+          >
+            <div id="__spa_content__"></div>
+          </div>
+        </animated.div>
+      </Router>
+    </Root>
   )
 }

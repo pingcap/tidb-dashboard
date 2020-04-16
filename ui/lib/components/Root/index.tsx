@@ -16,6 +16,6 @@ const theme = createTheme({
 
 Customizations.applySettings({ theme })
 
-export default function FabricRoot({ children }) {
+export default function Root({ children }) {
   return <>{children}</>
 }

@@ -1,14 +1,11 @@
 import React from 'react'
 import { Root } from '@lib/components'
+import KeyViz from './components/KeyViz'
 
-import ListPage from './pages/List'
-
-const App = () => {
+export default () => {
   return (
     <Root>
-      <ListPage />
+      <KeyViz />
     </Root>
   )
 }
-
-export default App

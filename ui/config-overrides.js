@@ -12,6 +12,7 @@ const {
 } = require('customize-cra')
 const addYaml = require('react-app-rewire-yaml')
 const { alias, configPaths } = require('react-app-rewire-alias')
+const webpack = require('webpack')
 const WebpackBar = require('webpackbar')
 const nodeExternals = require('webpack-node-externals')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
@@ -210,6 +211,12 @@ module.exports = override(
   addYaml,
   addWebpackBundleSize(),
   addWebpackPlugin(new WebpackBar()),
+  addWebpackPlugin(
+    new webpack.NormalModuleReplacementPlugin(
+      /antd\/es\/style\/index\.less/,
+      path.resolve(__dirname, 'lib/antd.less')
+    )
+  ),
   disableMinimizeByEnv(),
   addDiagnoseReportEntry(),
   buildAsLibrary()

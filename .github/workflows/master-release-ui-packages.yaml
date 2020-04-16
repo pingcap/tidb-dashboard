@@ -38,6 +38,7 @@ jobs:
             ${{ runner.os }}-go-
       - name: Build and publish packages
         run: |
+          make yarn_dependencies
           cd ui
           yarn build:library
           cd build/lib

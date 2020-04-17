@@ -5,51 +5,80 @@ diagnosis:
   expand: expand
   fold: fold
   tables:
-    generate_report_error: Generate Report Error
-    report_time_range: Report Time Range
-    diagnose: Diagnose
-    total_time_consume: Total Time Consume
-    total_error: Total Error
-    time_consume: Time Consume
-    transaction: Transaction
-    tidb_connection_count: TiDB Connection count
-    statistics_info: Statistics Info
-    ddl_owner: DDL Owner
-    scheduler_initial_config: Scheduler Initial Config
-    scheduler_change_config: Scheduler Change Config
-    tidb_gc_initial_config: TiDB GC Initial Config
-    tidb_gc_change_config: TiDB GC Change Config
-    tikv_rocksdb_initial_config: TiKV RocksDB Initial Config
-    tikv_rocksdb_change_config: TiKV RocksDB Change Config
-    tikv_raftstore_initial_config: TiKV RaftStore Initial Config
-    tikv_raftstore_change_config: TiKV RaftStore Change Config
-    pd_time_consume: PD Time Consume
-    blance_leader_region: Blance Leader/Region
-    approximate_region_size: Approximate Region size
-    tikv_engine_size: TiKV Engine Size
-    tikv_time_consume: TiKV Time Consume
-    scheduler_info: Scheduler Info
-    gc_info: GC Info
-    task_info: Task Info
-    snapshot_info: Snapshot Info
-    coprocessor_info: Coprocessor Info
-    raft_info: Raft Info
-    tikv_error: TiKV Error
-    tidb_current_config: TiDB Current Config
-    pd_current_config: PD Current Config
-    tikv_current_config: TiKV Current Config
-    node_load_info: Node Load Info
-    process_cpu_usage: Process CPU Usage
-    process_memory_usage: TProcess Memory Usage
-    tidb/pd_goroutines_count: TiDB/PD Goroutines Count
-    tikv_thread_cpu_usage: TiKV Thread CPU Usage
-    store_status: Store Status
-    cluster_status: Cluster Status
-    etcd_status: Etcd Status
-    cluster_info: Cluster Info
-    cache_hit: Cache Hit
-    cluster_hardware: RocksDB Time Consume
-    rocksdb_time_consume: RocksDB Time Consume
-    top_10_slow_query: Top 10 Slow Query
-    top_10_slow_query_group_by_digest: Top 10 Slow Query Group By Digest
-    slow_query_with_diff_plan: Slow Query With Diff Plan
+    category:
+      header: Header
+      diagnose: Diagnose
+      load: Load
+      overview: Overview
+      TiDB: TiDB
+      PD: PD
+      TiKV: TiKV
+      config: Config
+      error: Error
+    title:
+      generate_report_error: Generate Report Error
+      report_time_range: Report Time Range
+      diagnose: Diagnosis
+      total_time_consume: Total Time Consume
+      total_error: Total Error
+      time_consume: Time Consume
+      transaction: Transaction
+      tidb_connection_count: TiDB Connection count
+      statistics_info: Statistics Info
+      ddl_owner: DDL Owner
+      scheduler_initial_config: Scheduler Initial Config
+      scheduler_change_config: Scheduler Change Config
+      tidb_gc_initial_config: TiDB GC Initial Config
+      tidb_gc_change_config: TiDB GC Change Config
+      tikv_rocksdb_initial_config: TiKV RocksDB Initial Config
+      tikv_rocksdb_change_config: TiKV RocksDB Change Config
+      tikv_raftstore_initial_config: TiKV RaftStore Initial Config
+      tikv_raftstore_change_config: TiKV RaftStore Change Config
+      pd_time_consume: PD Time Consume
+      blance_leader_region: Blance Leader/Region
+      approximate_region_size: Approximate Region size
+      tikv_engine_size: TiKV Engine Size
+      tikv_time_consume: TiKV Time Consume
+      scheduler_info: Scheduler Info
+      gc_info: GC Info
+      task_info: Task Info
+      snapshot_info: Snapshot Info
+      coprocessor_info: Coprocessor Info
+      raft_info: Raft Info
+      tikv_error: TiKV Error
+      tidb_current_config: TiDB Current Config
+      pd_current_config: PD Current Config
+      tikv_current_config: TiKV Current Config
+      node_load_info: Node Load Info
+      process_cpu_usage: Process CPU Usage
+      process_memory_usage: TProcess Memory Usage
+      tidb/pd_goroutines_count: TiDB/PD Goroutines Count
+      tikv_thread_cpu_usage: TiKV Thread CPU Usage
+      store_status: Store Status
+      cluster_status: Cluster Status
+      etcd_status: Etcd Status
+      cluster_info: Cluster Info
+      cache_hit: Cache Hit
+      cluster_hardware: Cluster Hardware
+      rocksdb_time_consume: RocksDB Time Consume
+      top_10_slow_query: Top 10 Slow Query
+      top_10_slow_query_group_by_digest: Top 10 Slow Query Group By Digest
+      slow_query_with_diff_plan: Slow Query With Diff Plan
+    comment:
+      diagnose: Automatically diagnose the cluster problem and record the problem in below table.
+      total_time_consume: The table contain the event time consume in TiDB/TiKV/PD. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;
+      total_error: The table contain the total count of error event. METRIC_NAME is the error event name; LABEL is the event label, such as instance, event type ...; TOTAL_COUNT is the total count of this event;
+      tidb_time_consume: The table contain the event time consume in TiDB. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;
+      transaction: The table contain the TiDB transaction statistics information. METRIC_NAME is the object name; LABEL is the object label, such as instance, event type ...; TOTAL_VALUE is the total size/value of this object; TOTAL_COUNT is the total count of this object; P999 is the max size/value of 0.999 quantile; P99 is the max size/value of 0.99 quantile; P90 is the max size/value of 0.90 quantile; P80 is the max size/value of 0.80 quantile;
+      tidb_connection_count: The connection count of tidb server.
+      ddl_owner: DDL Owner info. Attention, if no DDL request has been executed, below owner info maybe null, it doesn't indicate no DDL owner exists.
+      scheduler_initial_config: PD scheduler initial config value. The initial time is the report start time.
+      scheduler_change_config: PD scheduler config change history. APPROXIMATE_CHANGE_TIME is the minimum start effective time.
+      tidb_gc_initial_config: TiDB GC initial config value. The initial time is the report start time.
+      tidb_gc_change_config: TiDB GC config change history, APPROXIMATE_CHANGE_TIME is the minimum start effective time.
+      tikv_rocksdb_initial_config: TiKV RocksDB initial config value. The initial time is the report start time.
+      tikv_rocksdb_change_config: TiKV RocksDB config change history, APPROXIMATE_CHANGE_TIME is the minimum start effective time.
+      tikv_raftstore_initial_config: TiKV RaftStore initial config value. The initial time is the report start time.
+      tikv_raftstore_change_config: TiKV RaftStore config change history, APPROXIMATE_CHANGE_TIME is the minimum start effective time.
+      pd_time_consume: The table contain the event time consume in PD. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;
+      tikv_time_consume: The table contain the event time consume in TiKV. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;

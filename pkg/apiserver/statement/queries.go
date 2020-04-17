@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	statementsTable        = "PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history"
+	statementsTable        = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
 	stmtEnableVar          = "tidb_enable_stmt_summary"
 	stmtRefreshIntervalVar = "tidb_stmt_summary_refresh_interval"
 	stmtHistroySizeVar     = "tidb_stmt_summary_history_size"
@@ -258,7 +258,7 @@ func QueryStatementDetail(db *gorm.DB, schema, digest string, beginTime, endTime
 func QueryStatementNodes(db *gorm.DB, schema, digest string, beginTime, endTime int64) (result []*Node, err error) {
 	err = db.
 		Select(`
-			address,
+			instance,
 			sum_latency,
 			exec_count,
 			avg_latency,

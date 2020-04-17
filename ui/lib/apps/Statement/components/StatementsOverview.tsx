@@ -1,5 +1,6 @@
 import React, { useReducer, useEffect, useContext, useState } from 'react'
 import { Select, Space, Tooltip, Drawer, Button } from 'antd'
+import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
@@ -10,10 +11,9 @@ import {
 } from '@lib/client'
 import { Card } from '@lib/components'
 import StatementsTable from './StatementsTable'
+import StatementSettingForm from './StatementSettingForm'
 import { StatementStatus, Instance, DATE_TIME_FORMAT } from './statement-types'
 import { SearchContext } from './search-options-context'
-import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
-import StatementSettingForm from './StatementSettingForm'
 import styles from './styles.module.less'
 
 const { Option } = Select

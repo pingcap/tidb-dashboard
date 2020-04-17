@@ -11,8 +11,8 @@ import { useMax } from './use-max'
 const tableColumns = (maxs: StatementMaxVals, t: (_: string) => string) => [
   {
     title: t('statement.detail.node'),
-    dataIndex: 'address',
-    key: 'address',
+    dataIndex: 'instance',
+    key: 'instance',
   },
   {
     title: t('statement.common.sum_latency'),
@@ -96,7 +96,7 @@ export default function StatementNodesTable({
     <Table
       columns={columns}
       dataSource={nodes}
-      rowKey={(record: StatementNode, index) => `${record.address}_${index}`}
+      rowKey={(record: StatementNode, index) => `${record.instance}_${index}`}
       pagination={false}
     />
   )

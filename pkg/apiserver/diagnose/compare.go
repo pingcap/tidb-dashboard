@@ -194,12 +194,11 @@ func GenerateDiffTable(dr diffRows) *TableDef {
 		})
 	}
 	return &TableDef{
-		Category:  []string{CategoryOverview},
-		Title:     "Max diff item",
-		CommentEN: "The max different metrics between 2 time range",
-		CommentCN: "",
-		Column:    []string{"TABLE", "METRIC_NAME", "LABEL", "MAX_DIFF", "t1.VALUE", "t2.VALUE", "VALUE_TYPE"},
-		Rows:      rows,
+		Category: []string{CategoryOverview},
+		Title:    "Max diff item",
+		Comment:  "The max different metrics between 2 time range",
+		Column:   []string{"TABLE", "METRIC_NAME", "LABEL", "MAX_DIFF", "t1.VALUE", "t2.VALUE", "VALUE_TYPE"},
+		Rows:     rows,
 	}
 }
 
@@ -251,8 +250,7 @@ func compareTable(table1, table2 *TableDef, dr *diffRows) (_ *TableDef, err erro
 	resultTable := &TableDef{
 		Category:       table1.Category,
 		Title:          table1.Title,
-		CommentEN:      table1.CommentEN,
-		CommentCN:      table1.CommentCN,
+		Comment:        table1.Comment,
 		joinColumns:    nil,
 		compareColumns: nil,
 	}
@@ -278,10 +276,10 @@ func compareTable(table1, table2 *TableDef, dr *diffRows) (_ *TableDef, err erro
 	if len(table1.compareColumns) > 0 {
 		for _, idx := range table1.compareColumns {
 			comment := table1.Column[idx] + "_DIFF_RATIO=" + fmt.Sprintf("if t2.%[1]s > t1.%[1]s => { t2.%[1]s / t1.%[1]s - 1 } else => { 1 - t1.%[1]s / t2.%[1]s }", table1.Column[idx])
-			if len(resultTable.CommentEN) > 0 {
-				resultTable.CommentEN += ", \n"
+			if len(resultTable.Comment) > 0 {
+				resultTable.Comment += ", \n"
 			}
-			resultTable.CommentEN += comment
+			resultTable.Comment += comment
 		}
 	}
 
@@ -370,8 +368,7 @@ func compareTableWithNonUniqueKey(table1, table2 *TableDef, dr *diffRows) (_ *Ta
 	resultTable := &TableDef{
 		Category:       table1.Category,
 		Title:          table1.Title,
-		CommentEN:      table1.CommentEN,
-		CommentCN:      table1.CommentCN,
+		Comment:        table1.Comment,
 		joinColumns:    nil,
 		compareColumns: nil,
 	}
@@ -406,10 +403,10 @@ func compareTableWithNonUniqueKey(table1, table2 *TableDef, dr *diffRows) (_ *Ta
 	})
 	for _, idx := range table1.compareColumns {
 		comment := table1.Column[idx] + "_DIFF_RATIO=" + fmt.Sprintf("(t2.%[1]s-t1.%[1]s)/max(t2.%[1]s, t1.%[1]s)", table1.Column[idx])
-		if len(resultTable.CommentEN) > 0 {
-			resultTable.CommentEN += ", \n"
+		if len(resultTable.Comment) > 0 {
+			resultTable.Comment += ", \n"
 		}
-		resultTable.CommentEN += comment
+		resultTable.Comment += comment
 	}
 
 	resultTable.Column = columns
@@ -855,11 +852,10 @@ func GetReportEndTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstor
 
 func GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2 string) *TableDef {
 	return &TableDef{
-		Category:  []string{CategoryHeader},
-		Title:     "Compare Report Time Range",
-		CommentEN: "",
-		CommentCN: "",
-		Column:    []string{"T1.START_TIME", "T1.END_TIME", "T2.START_TIME", "T2.END_TIME"},
+		Category: []string{CategoryHeader},
+		Title:    "Compare Report Time Range",
+		Comment:  "",
+		Column:   []string{"T1.START_TIME", "T1.END_TIME", "T2.START_TIME", "T2.END_TIME"},
 		Rows: []TableRowDef{
 			{Values: []string{startTime1, endTime1, startTime2, endTime2}},
 		},
@@ -957,11 +953,10 @@ where t1.digest not in
     group by  digest)
 order by  t1.sum_query_time desc limit 10`, startTime2, endTime2, startTime1, endTime1)
 	table := TableDef{
-		Category:  []string{CategoryTiDB},
-		Title:     "Slow Query Only Appear In t2",
-		CommentEN: sql,
-		CommentCN: "",
-		Column:    []string{"count(*)", "min(time)", "sum(query_time)", "sum(Process_time)", "sum(Wait_time)", "sum(Commit_time)", "sum(Request_count)", "sum(process_keys)", "sum(Write_keys)", "max(Cop_proc_max)", "min(query)", "min(prev_stmt)", "digest"},
+		Category: []string{CategoryTiDB},
+		Title:    "Slow Query Only Appear In t2",
+		Comment:  sql,
+		Column:   []string{"count(*)", "min(time)", "sum(query_time)", "sum(Process_time)", "sum(Wait_time)", "sum(Commit_time)", "sum(Request_count)", "sum(process_keys)", "sum(Write_keys)", "max(Cop_proc_max)", "min(query)", "min(prev_stmt)", "digest"},
 	}
 	rows, err := getSQLRows(db, sql)
 	if err != nil {

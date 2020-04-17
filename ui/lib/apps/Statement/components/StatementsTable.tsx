@@ -19,12 +19,12 @@ import { StatementMaxVals } from './statement-types'
 
 // TODO: Extract to single file when needs to be re-used
 const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
-  <>
-    {t(key)}
-    <Tooltip title={t(key + '_tooltip')}>
+  <Tooltip title={t(key + '_tooltip')}>
+    <span>
+      {t(key)}
       <InfoCircleOutlined style={{ margin: '0 8px' }} />
-    </Tooltip>
-  </>
+    </span>
+  </Tooltip>
 )
 
 const tableColumns = (

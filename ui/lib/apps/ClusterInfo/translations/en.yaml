@@ -31,5 +31,6 @@ cluster_info:
         deploy: Disk
         disk_size: Disk Size
         disk_usage: Disk Usage
+      instanceUnavailable: Instance on the host is unavailable
   error:
     load: 'Load component {{comp}} error: {{cause}}'

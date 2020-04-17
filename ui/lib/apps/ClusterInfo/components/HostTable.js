@@ -2,9 +2,11 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import client from '@lib/client'
 import { Bar, CardTableV2 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { Tooltip } from 'antd'
+import { Tooltip, Typography } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+
+const { Text } = Typography
 
 function filterUniquePartitions(items) {
   return items.filter(
@@ -22,12 +24,23 @@ export default function HostTable() {
   const columns = [
     {
       name: t('cluster_info.list.host_table.columns.ip'),
-      fieldName: 'ip',
       key: 'ip',
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
       isCollapsible: true,
+      onRender: ({ ip, unavailable }) => {
+        if (unavailable) {
+          return (
+            <Tooltip
+              title={t('cluster_info.list.host_table.instanceUnavailable')}
+            >
+              <Text type="warning">{ip}</Text>
+            </Tooltip>
+          )
+        }
+        return ip
+      },
     },
     {
       name: t('cluster_info.list.host_table.columns.cpu'),
@@ -36,7 +49,8 @@ export default function HostTable() {
       maxWidth: 60,
       isResizable: true,
       isCollapsible: true,
-      onRender: ({ cpu_core }) => `${cpu_core} vCPU`,
+      onRender: ({ cpu_core }) =>
+        cpu_core !== undefined ? `${cpu_core} vCPU` : '',
     },
     {
       name: t('cluster_info.list.host_table.columns.cpu_usage'),
@@ -57,7 +71,6 @@ export default function HostTable() {
             <div>System: {getValueFormat('percentunit')(system)}</div>
           </>
         )
-        console.log([user, system])
         return (
           <Tooltip title={title}>
             <Bar
@@ -76,7 +89,8 @@ export default function HostTable() {
       maxWidth: 60,
       isResizable: true,
       isCollapsible: true,
-      onRender: ({ memory }) => getValueFormat('bytes')(memory.total, 0),
+      onRender: ({ memory }) =>
+        memory !== undefined ? getValueFormat('bytes')(memory.total, 0) : '',
     },
     {
       name: t('cluster_info.list.host_table.columns.memory_usage'),

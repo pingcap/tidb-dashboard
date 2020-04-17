@@ -1,7 +1,19 @@
+// Copyright 2020 PingCAP, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package clusterinfo
 
 import (
-	"fmt"
 	"math"
 	"path/filepath"
 	"strconv"
@@ -28,16 +40,17 @@ type Partition struct {
 }
 
 type HostInfo struct {
-	IP         string `json:"ip"`
-	CPUCore    int    `json:"cpu_core"`
-	CPUUsage   `json:"cpu_usage"`
-	Memory     `json:"memory"`
-	Partitions []PartitionInstance `json:"partitions"`
+	IP          string `json:"ip"`
+	CPUCore     int    `json:"cpu_core,omitempty"`
+	*CPUUsage   `json:"cpu_usage,omitempty"`
+	*Memory     `json:"memory,omitempty"`
+	Partitions  []PartitionInstance `json:"partitions,omitempty"`
+	Unavailable bool                `json:"unavailable"`
 }
 
 type Instance struct {
-	Address    string `json:"address"`
-	ServerType string `json:"server_type"`
+	Address    string `gorm:"column:INSTANCE" json:"address"`
+	ServerType string `gorm:"column:TYPE" json:"server_type"`
 }
 
 type PartitionInstance struct {
@@ -50,35 +63,39 @@ func GetAllHostInfo(db *gorm.DB) ([]HostInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	cores, err := loadCPUCores(db)
+	memory, usages, err := queryClusterLoad(db)
 	if err != nil {
 		return nil, err
 	}
-	usages, err := loadCPUUsage(db)
+	cores, hostPartitionMap, err := queryClusterHardware(db)
 	if err != nil {
 		return nil, err
 	}
-	memory, err := loadMemory(db)
+	dataDirMap, err := queryDeployInfo(db)
 	if err != nil {
 		return nil, err
 	}
 
 	infos := make([]HostInfo, 0)
 	for ip, instances := range hostMap {
-		var disks = make([]PartitionInstance, 0)
+		var partitions = make([]PartitionInstance, 0)
 		for _, instance := range instances {
-			dataDir, err := queryDeployInfo(db, instance)
-			if err != nil {
-				continue
-			}
-			diskMap, err := queryPartition(db, instance)
-			if err != nil {
-				continue
-			}
-			disk := inferPartition(dataDir, diskMap)
+			ip := parseIP(instance.Address)
 
-			disks = append(disks, PartitionInstance{
-				Partition: disk,
+			partitionMap, ok := hostPartitionMap[ip]
+			if !ok {
+				continue
+			}
+
+			dataDir, ok := dataDirMap[instance.Address]
+			if !ok {
+				continue
+			}
+
+			partition := inferPartition(dataDir, partitionMap)
+
+			partitions = append(partitions, PartitionInstance{
+				Partition: partition,
 				Instance:  instance,
 			})
 		}
@@ -88,7 +105,7 @@ func GetAllHostInfo(db *gorm.DB) ([]HostInfo, error) {
 			CPUCore:    cores[ip],
 			CPUUsage:   usages[ip],
 			Memory:     memory[ip],
-			Partitions: disks,
+			Partitions: partitions,
 		}
 		infos = append(infos, info)
 	}
@@ -133,222 +150,232 @@ func inferPartition(dataDir string, diskMap PartitionMap) Partition {
 	return targetDisk
 }
 
+// HostMap map host ip to all instance on it
+// e.g. "127.0.0.1" => []Instance{...}
 type HostMap map[string][]Instance
 
 func loadHosts(db *gorm.DB) (HostMap, error) {
 	hostMap := make(HostMap)
-
-	sql := "select TYPE, INSTANCE from INFORMATION_SCHEMA.CLUSTER_INFO;"
-	rows, err := db.Raw(sql).Rows()
-	if err != nil {
+	var rows []Instance
+	if err := db.Table("INFORMATION_SCHEMA.CLUSTER_INFO").Find(&rows).Error; err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var instance, serverType string
-		err = rows.Scan(&serverType, &instance)
-		if err != nil {
-			continue
-		}
-		ip := parseIP(instance)
-		var list []Instance
-		if instances, ok := hostMap[ip]; ok {
-			list = instances
+	for _, row := range rows {
+		ip := parseIP(row.Address)
+		instances, ok := hostMap[ip]
+		if !ok {
+			instances = []Instance{}
 		}
 
-		list = append(list, Instance{
-			Address:    instance,
-			ServerType: serverType,
+		instances = append(instances, Instance{
+			Address:    row.Address,
+			ServerType: row.ServerType,
 		})
-		hostMap[ip] = list
+		hostMap[ip] = instances
 	}
 
 	return hostMap, nil
-}
-
-type CPUCoreMap map[string]int
-
-func loadCPUCores(db *gorm.DB) (CPUCoreMap, error) {
-	var m = make(CPUCoreMap)
-
-	sql := "select INSTANCE, VALUE from INFORMATION_SCHEMA.CLUSTER_HARDWARE where name = 'cpu-logical-cores';"
-	rows, err := db.Raw(sql).Rows()
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var instance string
-		var value int
-		err = rows.Scan(&instance, &value)
-		if err != nil {
-			continue
-		}
-		ip := parseIP(instance)
-		m[ip] = value
-	}
-
-	return m, nil
 }
 
 func parseIP(addr string) string {
 	return strings.Split(addr, ":")[0]
 }
 
-type MemoryMap map[string]Memory
+// CPUCoreMap map host ip to its cpu logical cores number
+// e.g. "127.0.0.1" => 8
+type CPUCoreMap map[string]int
 
-func loadMemory(db *gorm.DB) (MemoryMap, error) {
-	var m = make(MemoryMap)
+// Memory map host ip to its Memory detail
+// e.g. "127.0.0.1" => &Memory{}
+type MemoryMap map[string]*Memory
 
-	sql := "select INSTANCE, NAME, VALUE from INFORMATION_SCHEMA.CLUSTER_LOAD where device_type = 'memory' and device_name = 'virtual';"
-	rows, err := db.Raw(sql).Rows()
-	if err != nil {
-		return nil, err
+// CPUUsageMap map host ip to its cpu usage
+// e.g. "127.0.0.1" => &CPUUsage{ Idle: 0.1, System: 0.1 }
+type CPUUsageMap map[string]*CPUUsage
+
+type ClusterTableModel struct {
+	Instance   string `gorm:"column:INSTANCE"`
+	DeviceName string `gorm:"column:DEVICE_NAME"`
+	DeviceType string `gorm:"column:DEVICE_TYPE"`
+	Name       string `gorm:"column:NAME"`
+	Value      string `gorm:"column:VALUE"`
+}
+
+const ClusterLoadCondition = "(device_type = 'memory' and device_name = 'virtual') or (device_type = 'cpu' and device_name = 'usage')"
+
+func queryClusterLoad(db *gorm.DB) (MemoryMap, CPUUsageMap, error) {
+	memoryMap := make(MemoryMap, 0)
+	cpuMap := make(CPUUsageMap, 0)
+	var rows []ClusterTableModel
+	if err := db.Table("INFORMATION_SCHEMA.CLUSTER_LOAD").
+		Where(ClusterLoadCondition).Find(&rows).Error; err != nil {
+		return nil, nil, err
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var instance, name string
-		var value int
-		err = rows.Scan(&instance, &name, &value)
-		if err != nil {
-			continue
-		}
-		ip := parseIP(instance)
 
-		var memory Memory
-		var ok bool
-		if memory, ok = m[ip]; !ok {
-			memory = Memory{}
-		}
-
-		switch name {
-		case "total":
-			memory.Total = value
-		case "used":
-			memory.Used = value
+	for _, row := range rows {
+		switch {
+		case row.DeviceType == "memory" && row.DeviceName == "virtual":
+			saveMemory(&row, &memoryMap)
+		case row.DeviceType == "cpu" && row.DeviceName == "usage":
+			saveCPUUsageMap(&row, &cpuMap)
 		default:
 			continue
 		}
-		m[ip] = memory
 	}
-
-	return m, nil
+	return memoryMap, cpuMap, nil
 }
 
-type CPUUsageMap map[string]CPUUsage
+func saveMemory(row *ClusterTableModel, m *MemoryMap) {
+	ip := parseIP(row.Instance)
 
-func loadCPUUsage(db *gorm.DB) (CPUUsageMap, error) {
-	var m = make(CPUUsageMap)
-
-	sql := "select INSTANCE, NAME, VALUE from INFORMATION_SCHEMA.CLUSTER_LOAD where device_type = 'cpu' and device_name = 'usage';"
-	rows, err := db.Raw(sql).Rows()
-	if err != nil {
-		return nil, err
+	memory, ok := (*m)[ip]
+	if !ok {
+		memory = &Memory{}
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var instance, name string
-		var value float64
-		err = rows.Scan(&instance, &name, &value)
+
+	var err error
+	switch row.Name {
+	case "total":
+		memory.Total, err = strconv.Atoi(row.Value)
 		if err != nil {
-			continue
+			return
 		}
-		ip := parseIP(instance)
-
-		var cpu CPUUsage
-		var ok bool
-		if cpu, ok = m[ip]; !ok {
-			cpu = CPUUsage{}
+	case "used":
+		memory.Used, err = strconv.Atoi(row.Value)
+		if err != nil {
+			return
 		}
-
-		switch name {
-		case "system":
-			cpu.System = value
-		case "idle":
-			cpu.Idle = value
-		default:
-			continue
-		}
-		m[ip] = cpu
+	default:
+		return
 	}
-
-	return m, nil
+	(*m)[ip] = memory
 }
 
+func saveCPUUsageMap(row *ClusterTableModel, m *CPUUsageMap) {
+	ip := parseIP(row.Instance)
+
+	var cpu *CPUUsage
+	var ok bool
+	if cpu, ok = (*m)[ip]; !ok {
+		cpu = &CPUUsage{}
+	}
+
+	var err error
+	switch row.Name {
+	case "system":
+		cpu.System, err = strconv.ParseFloat(row.Value, 64)
+		if err != nil {
+			return
+		}
+	case "idle":
+		cpu.Idle, err = strconv.ParseFloat(row.Value, 64)
+		if err != nil {
+			return
+		}
+	default:
+		return
+	}
+	(*m)[ip] = cpu
+}
+
+// PartitionMap map partition name to its detail
+// e.g. "nvme0n1p1" => Partition{ Path: "/", FSType: "ext4", ... }
 type PartitionMap map[string]Partition
 
-func queryPartition(db *gorm.DB, instance Instance) (PartitionMap, error) {
-	var m = make(PartitionMap)
+// HostPartition map host ip to all partitions on it
+// e.g. "127.0.0.1" => { "nvme0n1p1" => Partition{ Path: "/", FSType: "ext4", ... }, ... }
+type HostPartitionMap map[string]PartitionMap
 
-	sql := fmt.Sprintf("select DEVICE_NAME, NAME, VALUE from INFORMATION_SCHEMA.CLUSTER_HARDWARE where type = '%s' and instance = '%s' and device_type = 'disk';",
-		instance.ServerType,
-		instance.Address,
-	)
-	rows, err := db.Raw(sql).Rows()
-	if err != nil {
-		return nil, err
+const ClusterHardWareCondition = "(device_type = 'cpu' and name = 'cpu-logical-cores') or (device_type = 'disk')"
+
+func queryClusterHardware(db *gorm.DB) (CPUCoreMap, HostPartitionMap, error) {
+	cpuMap := make(CPUCoreMap, 0)
+	hostMap := make(HostPartitionMap, 0)
+	var rows []ClusterTableModel
+
+	if err := db.Table("INFORMATION_SCHEMA.CLUSTER_HARDWARE").Where(ClusterHardWareCondition).Find(&rows).Error; err != nil {
+		return nil, nil, err
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var deviceName, name string
-		var value string
-		err = rows.Scan(&deviceName, &name, &value)
-		if err != nil {
-			continue
-		}
 
-		var partition Partition
-		var ok bool
-		if partition, ok = m[deviceName]; !ok {
-			partition = Partition{}
-		}
-
-		switch name {
-		case "fstype":
-			partition.FSType = value
-		case "path":
-			partition.Path = value
-		case "total":
-			partition.Total, err = strconv.Atoi(value)
-			if err != nil {
-				continue
-			}
-		case "free":
-			partition.Free, err = strconv.Atoi(value)
-			if err != nil {
-				continue
-			}
+	for _, row := range rows {
+		switch {
+		case row.DeviceType == "cpu" && row.Name == "cpu-logical-cores":
+			saveCPUCore(&row, &cpuMap)
+		case row.DeviceType == "disk":
+			savePartition(&row, &hostMap)
 		default:
 			continue
 		}
-
-		m[deviceName] = partition
 	}
-
-	return m, nil
+	return cpuMap, hostMap, nil
 }
 
-func queryDeployInfo(db *gorm.DB, instance Instance) (string, error) {
-	var configKey string
-	switch instance.ServerType {
-	case "tidb":
-		configKey = "log.file.filename"
-	case "tikv":
-		configKey = "storage.data-dir"
-	case "pd":
-		configKey = "data-dir"
+func saveCPUCore(row *ClusterTableModel, m *CPUCoreMap) {
+	ip := parseIP(row.Instance)
+	cores, err := strconv.Atoi(row.Value)
+	if err != nil {
+		return
+	}
+	(*m)[ip] = cores
+}
+
+func savePartition(row *ClusterTableModel, m *HostPartitionMap) {
+	ip := parseIP(row.Instance)
+
+	partitionMap, ok := (*m)[ip]
+	if !ok {
+		partitionMap = make(PartitionMap, 0)
+	}
+
+	partition, ok := partitionMap[row.DeviceName]
+	if !ok {
+		partition = Partition{}
+	}
+
+	var err error
+	switch row.Name {
+	case "fstype":
+		partition.FSType = row.Value
+	case "path":
+		partition.Path = row.Value
+	case "total":
+		partition.Total, err = strconv.Atoi(row.Value)
+		if err != nil {
+			return
+		}
+	case "free":
+		partition.Free, err = strconv.Atoi(row.Value)
+		if err != nil {
+			return
+		}
 	default:
-		return "", fmt.Errorf("unknown server type: %s", instance.ServerType)
-	}
-	sql := fmt.Sprintf("select VALUE from INFORMATION_SCHEMA.CLUSTER_CONFIG where type = '%s' and instance = '%s' and `key` = '%s';",
-		instance.ServerType,
-		instance.Address,
-		configKey)
-
-	var dataDir string
-	if err := db.Raw(sql).Row().Scan(&dataDir); err != nil {
-		return "", err
+		return
 	}
 
-	return dataDir, nil
+	partitionMap[row.DeviceName] = partition
+	(*m)[ip] = partitionMap
+}
+
+type ClusterConfigModel struct {
+	Instance string `gorm:"column:INSTANCE"`
+	Value    string `gorm:"column:VALUE"`
+}
+
+// DataDirMap map instance address to its data directory
+// e.g. "127.0.0.1:20160" => "/tikv/data-dir"
+type DataDirMap map[string]string
+
+const ClusterConfigCondition = "(`type` = 'tidb' and `key` = 'log.file.filename') or (`type` = 'tikv' and `key` = 'storage.data-dir') or (`type` = 'pd' and `key` = 'data-dir')"
+
+func queryDeployInfo(db *gorm.DB) (DataDirMap, error) {
+	m := make(DataDirMap, 0)
+	var rows []ClusterConfigModel
+	if err := db.Table("INFORMATION_SCHEMA.CLUSTER_CONFIG").Where(ClusterConfigCondition).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+
+	for _, row := range rows {
+		m[row.Instance] = row.Value
+	}
+	return m, nil
 }

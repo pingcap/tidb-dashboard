@@ -163,11 +163,75 @@ func (s *Service) topologyGetAlertCount(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) hostHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	infos, err := GetAllHostInfo(db)
+	db.LogMode(true)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var wg sync.WaitGroup
+
+	var clusterInfo ClusterInfo
+	fetchers := []func(ctx context.Context, service *Service, info *ClusterInfo){
+		fillTopologyUnderEtcd,
+		fillTiKVTopology,
+		fillPDTopology,
+	}
+	for _, fetcher := range fetchers {
+		wg.Add(1)
+		currentFetcher := fetcher
+		go func() {
+			defer wg.Done()
+			currentFetcher(ctx, s, &clusterInfo)
+		}()
+	}
+
+	var infos []HostInfo
+	var err error
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		infos, err = GetAllHostInfo(db)
+	}()
+	wg.Wait()
+
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
+	AllHosts := loadHostsFromClusterInfo(clusterInfo)
+
+OuterLoop:
+	for _, host := range AllHosts {
+		for _, info := range infos {
+			if host == info.IP {
+				continue OuterLoop
+			}
+		}
+		infos = append(infos, HostInfo{
+			IP:          host,
+			Unavailable: true,
+		})
+	}
+
 	c.JSON(http.StatusOK, infos)
+}
+
+func loadHostsFromClusterInfo(info ClusterInfo) []string {
+	var allNodes []string
+	for _, node := range info.TiDB.Nodes {
+		if node.Status != clusterinfo.ComponentStatusUp {
+			allNodes = append(allNodes, node.IP)
+		}
+	}
+	for _, node := range info.TiKV.Nodes {
+		if node.Status != clusterinfo.ComponentStatusUp {
+			allNodes = append(allNodes, node.IP)
+		}
+	}
+	for _, node := range info.PD.Nodes {
+		if node.Status != clusterinfo.ComponentStatusUp {
+			allNodes = append(allNodes, node.IP)
+		}
+	}
+	return allNodes
 }

@@ -61,11 +61,7 @@ func QueryStmtConfig(db *gorm.DB) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	if enable == 0 {
-		config.Enable = "off"
-	} else {
-		config.Enable = "on"
-	}
+	config.Enable = enable != 0
 
 	refreshInterval, err := querySQLIntVariable(db, stmtRefreshIntervalVar)
 	if err != nil {
@@ -92,11 +88,10 @@ func QueryStmtConfig(db *gorm.DB) (*Config, error) {
 
 func UpdateStmtConfig(db *gorm.DB, config *Config) (err error) {
 	var sql string
-	if config.Enable != "" {
-		// toggle enable
-		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtEnableVar)
-		err = db.Exec(sql, config.Enable == "on").Error
-	} else {
+	sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtEnableVar)
+	err = db.Exec(sql, config.Enable).Error
+
+	if config.Enable {
 		// update other configurations
 		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtRefreshIntervalVar)
 		err = db.Exec(sql, config.RefreshInterval).Error

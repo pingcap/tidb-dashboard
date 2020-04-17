@@ -18,9 +18,9 @@ import (
 )
 
 type Config struct {
-	Enable          string `json:"enable"`
-	RefreshInterval int    `json:"refresh_interval"`
-	HistorySize     int    `json:"history_size"`
+	Enable          bool `json:"enable"`
+	RefreshInterval int  `json:"refresh_interval"`
+	HistorySize     int  `json:"history_size"`
 }
 
 // TimeRange represents a range of time

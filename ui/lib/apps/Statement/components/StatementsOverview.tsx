@@ -396,7 +396,7 @@ export default function StatementsOverview({
           </Space>
           <div style={{ flex: 1 }} />
           <Space size="middle">
-            <Tooltip title={t('statement.tooltip.settings')}>
+            <Tooltip title={t('statement.setting.title')}>
               <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
             <Tooltip title={t('statement.tooltip.refresh')}>

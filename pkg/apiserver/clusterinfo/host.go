@@ -204,8 +204,8 @@ type ClusterTableModel struct {
 const ClusterLoadCondition = "(device_type = 'memory' and device_name = 'virtual') or (device_type = 'cpu' and device_name = 'usage')"
 
 func queryClusterLoad(db *gorm.DB) (MemoryMap, CPUUsageMap, error) {
-	memoryMap := make(MemoryMap, 0)
-	cpuMap := make(CPUUsageMap, 0)
+	memoryMap := make(MemoryMap)
+	cpuMap := make(CPUUsageMap)
 	var rows []ClusterTableModel
 	if err := db.Table("INFORMATION_SCHEMA.CLUSTER_LOAD").
 		Where(ClusterLoadCondition).Find(&rows).Error; err != nil {
@@ -215,9 +215,9 @@ func queryClusterLoad(db *gorm.DB) (MemoryMap, CPUUsageMap, error) {
 	for _, row := range rows {
 		switch {
 		case row.DeviceType == "memory" && row.DeviceName == "virtual":
-			saveMemory(&row, &memoryMap)
+			saveMemory(row, &memoryMap)
 		case row.DeviceType == "cpu" && row.DeviceName == "usage":
-			saveCPUUsageMap(&row, &cpuMap)
+			saveCPUUsageMap(row, &cpuMap)
 		default:
 			continue
 		}
@@ -225,7 +225,7 @@ func queryClusterLoad(db *gorm.DB) (MemoryMap, CPUUsageMap, error) {
 	return memoryMap, cpuMap, nil
 }
 
-func saveMemory(row *ClusterTableModel, m *MemoryMap) {
+func saveMemory(row ClusterTableModel, m *MemoryMap) {
 	ip := parseIP(row.Instance)
 
 	memory, ok := (*m)[ip]
@@ -251,7 +251,7 @@ func saveMemory(row *ClusterTableModel, m *MemoryMap) {
 	(*m)[ip] = memory
 }
 
-func saveCPUUsageMap(row *ClusterTableModel, m *CPUUsageMap) {
+func saveCPUUsageMap(row ClusterTableModel, m *CPUUsageMap) {
 	ip := parseIP(row.Instance)
 
 	var cpu *CPUUsage
@@ -289,8 +289,8 @@ type HostPartitionMap map[string]PartitionMap
 const ClusterHardWareCondition = "(device_type = 'cpu' and name = 'cpu-logical-cores') or (device_type = 'disk')"
 
 func queryClusterHardware(db *gorm.DB) (CPUCoreMap, HostPartitionMap, error) {
-	cpuMap := make(CPUCoreMap, 0)
-	hostMap := make(HostPartitionMap, 0)
+	cpuMap := make(CPUCoreMap)
+	hostMap := make(HostPartitionMap)
 	var rows []ClusterTableModel
 
 	if err := db.Table("INFORMATION_SCHEMA.CLUSTER_HARDWARE").Where(ClusterHardWareCondition).Find(&rows).Error; err != nil {
@@ -300,9 +300,9 @@ func queryClusterHardware(db *gorm.DB) (CPUCoreMap, HostPartitionMap, error) {
 	for _, row := range rows {
 		switch {
 		case row.DeviceType == "cpu" && row.Name == "cpu-logical-cores":
-			saveCPUCore(&row, &cpuMap)
+			saveCPUCore(row, &cpuMap)
 		case row.DeviceType == "disk":
-			savePartition(&row, &hostMap)
+			savePartition(row, &hostMap)
 		default:
 			continue
 		}
@@ -310,7 +310,7 @@ func queryClusterHardware(db *gorm.DB) (CPUCoreMap, HostPartitionMap, error) {
 	return cpuMap, hostMap, nil
 }
 
-func saveCPUCore(row *ClusterTableModel, m *CPUCoreMap) {
+func saveCPUCore(row ClusterTableModel, m *CPUCoreMap) {
 	ip := parseIP(row.Instance)
 	cores, err := strconv.Atoi(row.Value)
 	if err != nil {
@@ -319,12 +319,12 @@ func saveCPUCore(row *ClusterTableModel, m *CPUCoreMap) {
 	(*m)[ip] = cores
 }
 
-func savePartition(row *ClusterTableModel, m *HostPartitionMap) {
+func savePartition(row ClusterTableModel, m *HostPartitionMap) {
 	ip := parseIP(row.Instance)
 
 	partitionMap, ok := (*m)[ip]
 	if !ok {
-		partitionMap = make(PartitionMap, 0)
+		partitionMap = make(PartitionMap)
 	}
 
 	partition, ok := partitionMap[row.DeviceName]
@@ -368,7 +368,7 @@ type DataDirMap map[string]string
 const ClusterConfigCondition = "(`type` = 'tidb' and `key` = 'log.file.filename') or (`type` = 'tikv' and `key` = 'storage.data-dir') or (`type` = 'pd' and `key` = 'data-dir')"
 
 func queryDeployInfo(db *gorm.DB) (DataDirMap, error) {
-	m := make(DataDirMap, 0)
+	m := make(DataDirMap)
 	var rows []ClusterConfigModel
 	if err := db.Table("INFORMATION_SCHEMA.CLUSTER_CONFIG").Where(ClusterConfigCondition).Find(&rows).Error; err != nil {
 		return nil, err

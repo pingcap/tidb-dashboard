@@ -32,5 +32,22 @@ statement:
   plan:
     plans: Plans
   tooltip:
-    settings: Settings
     refresh: Refresh
+  setting:
+    title: Settings
+    disabled_desc_title: This Feature Is Not Open
+    disabled_desc_line_1: SQL statements feature is not open, we can't view history records.
+    disabled_desc_line_2: You can change the setting to open it and wait for the new records.
+    open_setting: Open Setting
+    close_statement: Close SQL statements
+    close_statement_warning: Are you sure to close this feature? All history records will be cleared after closing it!
+    switch: Open Statements
+    refresh_interval: Data Collect Interval
+    keep_duration: Data Keep Duration
+  actions:
+    save: Save
+    close: Close
+    cancel: Cancel
+  time:
+    min: min
+    day: day

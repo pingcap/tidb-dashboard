@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import {
   Form,
-  message,
   InputNumber,
   Skeleton,
   Switch,
@@ -13,6 +12,7 @@ import {
 } from 'antd'
 import { StatementConfig } from '@lib/client'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   instanceId: string
@@ -57,6 +57,7 @@ function StatementSettingForm({
   const [submitting, setSubmitting] = useState(false)
   const [oriConfig, setOriConfig] = useState<StatementConfig | null>(null)
   const [config, setConfig] = useState<InternalStatementConfig | null>(null)
+  const { t } = useTranslation()
 
   useEffect(() => {
     async function fetchConfig() {
@@ -96,7 +97,6 @@ function StatementSettingForm({
     const res = await onUpdateConfig(instanceId, newConfig)
     setSubmitting(false)
     if (res !== undefined) {
-      message.success(`设置 Statement 成功！`)
       onClose()
       onConfigUpdated()
     }
@@ -106,11 +106,11 @@ function StatementSettingForm({
     if (oriConfig.enable && !values.enable) {
       // warning
       Modal.confirm({
-        title: '关闭 SQL 语句分析功能',
+        title: t('statement.setting.close_statement'),
         icon: <ExclamationCircleOutlined />,
-        content: '确认要关闭该功能吗？关闭后现有历史记录也将被清空！',
-        okText: '关闭',
-        cancelText: '取消',
+        content: t('statement.setting.close_statement_warning'),
+        okText: t('statement.actions.close'),
+        cancelText: t('statement.actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: () => updateConfig(values),
       })
@@ -124,7 +124,11 @@ function StatementSettingForm({
       {loading && <Skeleton active={true} paragraph={{ rows: 5 }} />}
       {!loading && config && (
         <Form layout="vertical" initialValues={config} onFinish={handleSubmit}>
-          <Form.Item name="enable" valuePropName="checked" label="总开关">
+          <Form.Item
+            name="enable"
+            valuePropName="checked"
+            label={t('statement.setting.switch')}
+          >
             <Switch />
           </Form.Item>
           <Form.Item
@@ -135,13 +139,15 @@ function StatementSettingForm({
               return (
                 getFieldValue('enable') && (
                   <Form.Item noStyle>
-                    <Form.Item label="数据收集周期">
+                    <Form.Item label={t('statement.setting.refresh_interval')}>
                       <Input.Group>
                         <Form.Item noStyle name="refresh_interval">
                           <InputNumber
                             min={1}
                             max={config.max_refresh_interval}
-                            formatter={(value) => `${value} min`}
+                            formatter={(value) =>
+                              `${value} ${t('statement.time.min')}`
+                            }
                             parser={(value) =>
                               value?.replace(/[^\d]/g, '') || ''
                             }
@@ -159,13 +165,15 @@ function StatementSettingForm({
                         </Form.Item>
                       </Input.Group>
                     </Form.Item>
-                    <Form.Item label="数据保留时间">
+                    <Form.Item label={t('statement.setting.keep_duration')}>
                       <Input.Group>
                         <Form.Item noStyle name="keep_duration">
                           <InputNumber
                             min={1}
                             max={config.max_keep_duration}
-                            formatter={(value) => `${value} day`}
+                            formatter={(value) =>
+                              `${value} ${t('statement.time.day')}`
+                            }
                             parser={(value) =>
                               value?.replace(/[^\d]/g, '') || ''
                             }
@@ -191,9 +199,9 @@ function StatementSettingForm({
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit" loading={submitting}>
-                保存
+                {t('statement.actions.save')}
               </Button>
-              <Button onClick={onClose}>取消</Button>
+              <Button onClick={onClose}>{t('statement.actions.cancel')}</Button>
             </Space>
           </Form.Item>
         </Form>

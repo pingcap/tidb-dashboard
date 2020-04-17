@@ -329,13 +329,13 @@ export default function StatementsOverview({
 
   const StatementDisabled = (
     <div className={styles.statement_disabled_container}>
-      <h2>该功能未启用</h2>
+      <h2>{t('statement.setting.disabled_desc_title')}</h2>
       <div className={styles.statement_disabled_desc}>
-        <p>SQL 语句分析功能未启用，因此无法查看历史记录。</p>
-        <p>您可以修改设置打开该功能后等待新数据收集。</p>
+        <p>{t('statement.setting.disabled_desc_line_1')}</p>
+        <p>{t('statement.setting.disabled_desc_line_2')}</p>
       </div>
       <Button type="primary" onClick={() => setShowSettings(true)}>
-        打开设置
+        {t('statement.setting.open_setting')}
       </Button>
     </div>
   )
@@ -418,7 +418,7 @@ export default function StatementsOverview({
         />
       )}
       <Drawer
-        title="设置"
+        title={t('statement.setting.title')}
         width={300}
         closable={true}
         visible={showSettings}

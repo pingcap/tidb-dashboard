@@ -9,6 +9,7 @@ import {
   Slider,
   Space,
   Button,
+  Modal,
 } from 'antd'
 import { StatementConfig } from '@lib/client'
 
@@ -51,6 +52,7 @@ function StatementSettingForm({
 }: Props) {
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [oriConfig, setOriConfig] = useState<StatementConfig | null>(null)
   const [config, setConfig] = useState<InternalStatementConfig | null>(null)
 
   useEffect(() => {
@@ -58,6 +60,8 @@ function StatementSettingForm({
       setLoading(true)
       const res = await onFetchConfig(instanceId)
       if (res !== undefined) {
+        setOriConfig(res)
+
         const refresh_interval = Math.ceil(res.refresh_interval / 60)
         const max_refresh_interval = Math.max(refresh_interval, 60)
         const keep_duration = Math.ceil(
@@ -77,13 +81,35 @@ function StatementSettingForm({
     fetchConfig()
   }, [instanceId, onFetchConfig])
 
-  async function submit() {
+  async function updateConfig(values) {
     setSubmitting(true)
-    const res = await onUpdateConfig(instanceId, config as StatementConfig)
+    const newConfig: StatementConfig = {
+      enable: values.enable,
+      refresh_interval: values.refresh_interval * 60,
+      history_size: Math.ceil(
+        (values.keep_duration * 24 * 60) / values.refresh_interval
+      ),
+    }
+    const res = await onUpdateConfig(instanceId, newConfig)
     setSubmitting(false)
     if (res !== undefined) {
-      message.success(`设置 statement 成功！`)
+      message.success(`设置 Statement 成功！`)
       onClose()
+    }
+  }
+
+  function handleSubmit(values) {
+    if (oriConfig.enable && !values.enable) {
+      // warning
+      Modal.confirm({
+        title: '关闭 Statement 统计功能',
+        content: '确认要关闭该功能吗？关闭后现有历史记录也将被清空！',
+        okText: '关闭',
+        okButtonProps: { type: 'danger' },
+        onOk: () => updateConfig(values),
+      })
+    } else {
+      updateConfig(values)
     }
   }
 
@@ -91,7 +117,7 @@ function StatementSettingForm({
     <>
       {loading && <Skeleton active={true} paragraph={{ rows: 5 }} />}
       {!loading && config && (
-        <Form layout="vertical" initialValues={config}>
+        <Form layout="vertical" initialValues={config} onFinish={handleSubmit}>
           <Form.Item name="enable" valuePropName="checked" label="总开关">
             <Switch />
           </Form.Item>

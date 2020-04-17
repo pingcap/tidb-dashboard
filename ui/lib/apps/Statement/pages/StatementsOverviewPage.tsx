@@ -1,5 +1,5 @@
 import React from 'react'
-import { StatementsOverview, StatementConfig } from '../components'
+import { StatementsOverview } from '../components'
 import { DefaultApi } from '@lib/client'
 
 function fakeReq<T>(res: T): Promise<T> {

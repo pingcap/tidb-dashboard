@@ -1,16 +1,15 @@
 import React, { useReducer, useEffect, useContext, useState } from 'react'
-import { Select, Space, Tooltip, Drawer, Form, Switch, Button } from 'antd'
+import { Select, Space, Tooltip, Drawer } from 'antd'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
-import { StatementOverview, StatementTimeRange } from '@lib/client'
+import {
+  StatementOverview,
+  StatementTimeRange,
+  StatementConfig,
+} from '@lib/client'
 import { Card } from '@lib/components'
 import StatementsTable from './StatementsTable'
-import {
-  StatementStatus,
-  StatementConfig,
-  Instance,
-  DATE_TIME_FORMAT,
-} from './statement-types'
+import { StatementStatus, Instance, DATE_TIME_FORMAT } from './statement-types'
 import { SearchContext } from './search-options-context'
 import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
 import StatementSettingForm from './StatementSettingForm'

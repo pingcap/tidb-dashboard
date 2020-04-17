@@ -3,9 +3,10 @@ statement:
   pages:
     detail: SQL Statement Detail
   filters:
-    select_time: Select time range
-    select_schemas: Select schemas
+    select_time: Select Time Range
+    select_schemas: Select Schemas
     select_stmt_types: Select SQL types
+    select_columns: Select Columns
   common:
     schema: Schema
     schemas: Schemas
@@ -24,6 +25,7 @@ statement:
     avg_mem_tooltip: Average memory consuming for signle SQL statement
     sum_backoff_times: Sum Backoff Times
     avg_total_keys: Avg Scan Rows
+    show_full_sql: Show Full SQL
   detail:
     node: Node
     time_range: Time Range

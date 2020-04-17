@@ -445,14 +445,14 @@ export default function StatementsOverview({
                         checked={showFullSQL}
                         onChange={(e) => setShowFullSQL(e.target.checked)}
                       >
-                        显示完整的 SQL
+                        {t('statement.common.show_full_sql')}
                       </Checkbox>
                     </Menu.Item>
                   </Menu>
                 }
               >
                 <div style={{ cursor: 'pointer' }}>
-                  选择列 <DownOutlined />
+                  {t('statement.filters.select_columns')} <DownOutlined />
                 </div>
               </Dropdown>
             )}

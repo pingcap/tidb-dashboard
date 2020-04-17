@@ -1,3 +1,4 @@
+import { WarningOutlined } from '@ant-design/icons'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import client from '@lib/client'
 import { Bar, CardTableV2 } from '@lib/components'
@@ -5,6 +6,7 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { Tooltip, Typography } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { red } from '@ant-design/colors'
 
 const { Text } = Typography
 
@@ -35,7 +37,9 @@ export default function HostTable() {
             <Tooltip
               title={t('cluster_info.list.host_table.instanceUnavailable')}
             >
-              <Text type="warning">{ip}</Text>
+              <Text type="warning">
+                <WarningOutlined /> {ip}
+              </Text>
             </Tooltip>
           )
         }
@@ -73,11 +77,7 @@ export default function HostTable() {
         )
         return (
           <Tooltip title={title}>
-            <Bar
-              value={[user, system]}
-              colors={['#667cff', '#ff4d4f']}
-              capacity={1}
-            />
+            <Bar value={[user, system]} colors={[null, red[4]]} capacity={1} />
           </Tooltip>
         )
       },

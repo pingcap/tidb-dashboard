@@ -231,6 +231,7 @@ func saveMemory(row ClusterTableModel, m *MemoryMap) {
 	memory, ok := (*m)[ip]
 	if !ok {
 		memory = &Memory{}
+		(*m)[ip] = memory
 	}
 
 	var err error
@@ -248,7 +249,6 @@ func saveMemory(row ClusterTableModel, m *MemoryMap) {
 	default:
 		return
 	}
-	(*m)[ip] = memory
 }
 
 func saveCPUUsageMap(row ClusterTableModel, m *CPUUsageMap) {
@@ -258,6 +258,7 @@ func saveCPUUsageMap(row ClusterTableModel, m *CPUUsageMap) {
 	var ok bool
 	if cpu, ok = (*m)[ip]; !ok {
 		cpu = &CPUUsage{}
+		(*m)[ip] = cpu
 	}
 
 	var err error
@@ -275,7 +276,6 @@ func saveCPUUsageMap(row ClusterTableModel, m *CPUUsageMap) {
 	default:
 		return
 	}
-	(*m)[ip] = cpu
 }
 
 // PartitionMap map partition name to its detail

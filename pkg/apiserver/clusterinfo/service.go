@@ -163,7 +163,6 @@ func (s *Service) topologyGetAlertCount(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) hostHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	db.LogMode(true)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -198,10 +197,10 @@ func (s *Service) hostHandler(c *gin.Context) {
 		return
 	}
 
-	AllHosts := loadHostsFromClusterInfo(clusterInfo)
+	allHosts := loadUnavailableHosts(clusterInfo)
 
 OuterLoop:
-	for _, host := range AllHosts {
+	for _, host := range allHosts {
 		for _, info := range infos {
 			if host == info.IP {
 				continue OuterLoop
@@ -216,7 +215,7 @@ OuterLoop:
 	c.JSON(http.StatusOK, infos)
 }
 
-func loadHostsFromClusterInfo(info ClusterInfo) []string {
+func loadUnavailableHosts(info ClusterInfo) []string {
 	var allNodes []string
 	for _, node := range info.TiDB.Nodes {
 		if node.Status != clusterinfo.ComponentStatusUp {
@@ -224,7 +223,11 @@ func loadHostsFromClusterInfo(info ClusterInfo) []string {
 		}
 	}
 	for _, node := range info.TiKV.Nodes {
-		if node.Status != clusterinfo.ComponentStatusUp {
+		switch node.Status {
+		case clusterinfo.ComponentStatusUp,
+			clusterinfo.ComponentStatusOffline,
+			clusterinfo.ComponentStatusTombstone:
+		default:
 			allNodes = append(allNodes, node.IP)
 		}
 	}

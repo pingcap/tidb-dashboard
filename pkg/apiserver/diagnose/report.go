@@ -1589,8 +1589,15 @@ func getAvgValueTableData(defs1 []AvgMaxMinTableDef, startTime, endTime string, 
 
 func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", labels: []string{"instance", "device"}, Comment: "the disk write latency in each node"},
-		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", labels: []string{"instance", "device"}, Comment: "the disk read latency in each node"},
+		{name: "node_disk_io_utilization", tbl: "node_disk_io_util", labels: []string{"instance", "device"}, Comment: "the disk i/o utilization"},
+		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", labels: []string{"instance", "device"}, Comment: "the disk write latency"},
+		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", labels: []string{"instance", "device"}, Comment: "the disk read latency"},
+		{name: "tikv_disk_read_bytes", tbl: "tikv_disk_read_bytes", labels: []string{"instance", "device"}, Comment: "the disk read bytes per second"},
+		{name: "tikv_disk_write_bytes", tbl: "tikv_disk_write_bytes", labels: []string{"instance", "device"}, Comment: "the disk write bytes per second"},
+		{name: "node_network_in_traffic", tbl: "node_network_in_traffic", labels: []string{"instance", "device"}, Comment: "the network inbound bytes per second"},
+		{name: "node_network_out_traffic", tbl: "node_network_out_traffic", labels: []string{"instance", "device"}, Comment: "the network outbound bytes per second"},
+		{name: "node_tcp_in_use", tbl: "node_tcp_in_use", labels: []string{"instance"}, Comment: "the count of tcp sockets in state inuse"},
+		{name: "node_tcp_connections", tbl: "node_tcp_connections", labels: []string{"instance"}, Comment: "the count of tcp connections"},
 	}
 	table := TableDef{
 		Category:       []string{CategoryLoad},
@@ -1622,7 +1629,23 @@ func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 			return row
 		}
 		for i := 2; i < 5; i++ {
-			row[i] = convertFloatToDuration(row[i], float64(1))
+			if len(row[i]) == 0 {
+				continue
+			}
+			switch row[0] {
+			case "node_disk_io_utilization":
+				f, err := strconv.ParseFloat(row[i], 64)
+				if err != nil {
+					return row
+				}
+				row[i] = convertFloatToString(f*100) + "%"
+			case "node_disk_write_latency", "node_disk_read_latency":
+				row[i] = convertFloatToDuration(row[i], float64(1))
+			case "node_tcp_in_use", "node_tcp_connections":
+				row[i] = convertFloatToInt(row[i])
+			default:
+				row[i] = convertFloatToSize(row[i])
+			}
 		}
 		return row
 	}

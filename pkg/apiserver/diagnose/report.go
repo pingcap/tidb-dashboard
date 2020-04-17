@@ -398,16 +398,16 @@ func GetTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (TableDef,
 		{name: "tikv_cop_wait", tbl: "tikv_cop_wait", labels: []string{"req"}, comment: "The time cost of coprocessor requests that wait for being handled"},
 		{name: "tikv_scheduler_command", tbl: "tikv_scheduler_command", labels: []string{"type"}, comment: "The time cost of executing commit command"},
 		{name: "tikv_scheduler_latch_wait", tbl: "tikv_scheduler_latch_wait", labels: []string{"type"}, comment: "The time cost of TiKV latch wait in commit command"},
+		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"type"}, comment: "The time cost of processing asynchronous snapshot requests"},
+		{name: "tikv_raft_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}, comment: "The wait time of each proposal"},
+		{name: "tikv_raft_process", tbl: "tikv_process", labels: []string{"type"}, comment: "The time cost of peer processes in Raft"},
+		{name: "tikv_raft_append_log", tbl: "tikv_append_log", labels: []string{"instance"}, comment: "The time cost of Raft appends log"},
+		{name: "tikv_raft_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}, comment: "The time cost of Raft commits log"},
+		{name: "tikv_raft_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}, comment: "The time cost of Raft apply wait"},
+		{name: "tikv_raft_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}, comment: "The time cost of Raft apply log"},
+		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"type"}, comment: "The time cost of raftstore events"},
 		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"type"}, comment: "The time cost of handling snapshots"},
 		{name: "tikv_send_snapshot", tbl: "tikv_send_snapshot", labels: []string{"instance"}, comment: "The time cost of sending snapshots"},
-		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"type"}, comment: "The time cost of processing asynchronous snapshot requests"},
-		{name: "tikv_raft_append_log", tbl: "tikv_append_log", labels: []string{"instance"}, comment: "The time cost of Raft appends log"},
-		{name: "tikv_raft_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}, comment: "The time cost of Raft apply log"},
-		{name: "tikv_raft_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}, comment: "The time cost of Raft apply wait"},
-		{name: "tikv_raft_process", tbl: "tikv_process", labels: []string{"type"}, comment: "The time cost of peer processes in Raft"},
-		{name: "tikv_raft_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}, comment: "The wait time of each proposal"},
-		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"type"}, comment: "The time cost of raftstore events"},
-		{name: "tikv_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}, comment: "The time cost of Raft commits log"},
 		{name: "tikv_check_split", tbl: "tikv_check_split", labels: []string{"instance"}, comment: "The time cost of running split check"},
 		{name: "tikv_ingest_sst", tbl: "tikv_ingest_sst", labels: []string{"instance"}, comment: "The time cost of ingesting SST files"},
 		{name: "tikv_gc_tasks", tbl: "tikv_gc_tasks", labels: []string{"task"}, comment: "The time cost of executing GC tasks"},
@@ -1112,16 +1112,16 @@ func GetTiKVTotalTimeConsumeTable(startTime, endTime string, db *gorm.DB) (Table
 		{name: "tikv_cop_wait", tbl: "tikv_cop_wait", labels: []string{"instance", "req"}, comment: "The time cost of coprocessor requests that wait for being handled"},
 		{name: "tikv_scheduler_command", tbl: "tikv_scheduler_command", labels: []string{"instance", "type"}, comment: "The time cost of executing commit command"},
 		{name: "tikv_scheduler_latch_wait", tbl: "tikv_scheduler_latch_wait", labels: []string{"instance", "type"}, comment: "The time cost of TiKV latch wait in commit command"},
+		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"instance", "type"}, comment: "The time cost of processing asynchronous snapshot requests"},
+		{name: "tikv_raft_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}, comment: "The wait time of each proposal"},
+		{name: "tikv_raft_process", tbl: "tikv_process", labels: []string{"instance", "type"}, comment: "The time cost of peer processes in Raft"},
+		{name: "tikv_raft_append_log", tbl: "tikv_append_log", labels: []string{"instance"}, comment: "The time cost of Raft appends log"},
+		{name: "tikv_raft_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}, comment: "The time cost of Raft commits log"},
+		{name: "tikv_raft_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}, comment: "The time cost of Raft apply wait"},
+		{name: "tikv_raft_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}, comment: "The time cost of Raft apply log"},
+		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"instance", "type"}, comment: "The time cost of raftstore events"},
 		{name: "tikv_handle_snapshot", tbl: "tikv_handle_snapshot", labels: []string{"instance", "type"}, comment: "The time cost of handling snapshots"},
 		{name: "tikv_send_snapshot", tbl: "tikv_send_snapshot", labels: []string{"instance"}, comment: "The time cost of sending snapshots"},
-		{name: "tikv_storage_async_request", tbl: "tikv_storage_async_request", labels: []string{"instance", "type"}, comment: "The time cost of processing asynchronous snapshot requests"},
-		{name: "tikv_raft_append_log", tbl: "tikv_append_log", labels: []string{"instance"}, comment: "The time cost of Raft appends log"},
-		{name: "tikv_raft_apply_log", tbl: "tikv_apply_log", labels: []string{"instance"}, comment: "The time cost of Raft apply log"},
-		{name: "tikv_raft_apply_wait", tbl: "tikv_apply_wait", labels: []string{"instance"}, comment: "The time cost of Raft apply wait"},
-		{name: "tikv_raft_process", tbl: "tikv_process", labels: []string{"instance", "type"}, comment: "The time cost of peer processes in Raft"},
-		{name: "tikv_raft_propose_wait", tbl: "tikv_propose_wait", labels: []string{"instance"}, comment: "The wait time of each proposal"},
-		{name: "tikv_raft_store_events", tbl: "tikv_raft_store_events", labels: []string{"instance", "type"}, comment: "The time cost of raftstore events"},
-		{name: "tikv_raft_commit_log", tbl: "tikv_commit_log", labels: []string{"instance"}, comment: "The time cost of Raft commits log"},
 		{name: "tikv_check_split", tbl: "tikv_check_split", labels: []string{"instance"}, comment: "The time cost of running split check"},
 		{name: "tikv_ingest_sst", tbl: "tikv_ingest_sst", labels: []string{"instance"}, comment: "The time cost of ingesting SST files"},
 		{name: "tikv_gc_tasks", tbl: "tikv_gc_tasks", labels: []string{"instance", "task"}, comment: "The time cost of executing GC tasks"},
@@ -1589,8 +1589,15 @@ func getAvgValueTableData(defs1 []AvgMaxMinTableDef, startTime, endTime string, 
 
 func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	defs1 := []AvgMaxMinTableDef{
-		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", labels: []string{"instance", "device"}, Comment: "the disk write latency in each node"},
-		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", labels: []string{"instance", "device"}, Comment: "the disk read latency in each node"},
+		{name: "node_disk_io_utilization", tbl: "node_disk_io_util", labels: []string{"instance", "device"}, Comment: "the disk i/o utilization"},
+		{name: "node_disk_write_latency", tbl: "node_disk_write_latency", labels: []string{"instance", "device"}, Comment: "the disk write latency"},
+		{name: "node_disk_read_latency", tbl: "node_disk_read_latency", labels: []string{"instance", "device"}, Comment: "the disk read latency"},
+		{name: "tikv_disk_read_bytes", tbl: "tikv_disk_read_bytes", labels: []string{"instance", "device"}, Comment: "the disk read bytes per second"},
+		{name: "tikv_disk_write_bytes", tbl: "tikv_disk_write_bytes", labels: []string{"instance", "device"}, Comment: "the disk write bytes per second"},
+		{name: "node_network_in_traffic", tbl: "node_network_in_traffic", labels: []string{"instance", "device"}, Comment: "the network inbound bytes per second"},
+		{name: "node_network_out_traffic", tbl: "node_network_out_traffic", labels: []string{"instance", "device"}, Comment: "the network outbound bytes per second"},
+		{name: "node_tcp_in_use", tbl: "node_tcp_in_use", labels: []string{"instance"}, Comment: "the count of tcp sockets in state inuse"},
+		{name: "node_tcp_connections", tbl: "node_tcp_connections", labels: []string{"instance"}, Comment: "the count of tcp connections"},
 	}
 	table := TableDef{
 		Category:       []string{CategoryLoad},
@@ -1622,7 +1629,23 @@ func GetLoadTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 			return row
 		}
 		for i := 2; i < 5; i++ {
-			row[i] = convertFloatToDuration(row[i], float64(1))
+			if len(row[i]) == 0 {
+				continue
+			}
+			switch row[0] {
+			case "node_disk_io_utilization":
+				f, err := strconv.ParseFloat(row[i], 64)
+				if err != nil {
+					return row
+				}
+				row[i] = convertFloatToString(f*100) + "%"
+			case "node_disk_write_latency", "node_disk_read_latency":
+				row[i] = convertFloatToDuration(row[i], float64(1))
+			case "node_tcp_in_use", "node_tcp_connections":
+				row[i] = convertFloatToInt(row[i])
+			default:
+				row[i] = convertFloatToSize(row[i])
+			}
 		}
 		return row
 	}

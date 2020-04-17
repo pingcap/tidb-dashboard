@@ -251,7 +251,7 @@ export default function StatementsOverview({
     queryTimeRanges()
     queryStmtTypes()
     // eslint-disable-next-line
-  }, [state.curInstance])
+  }, [state.curInstance, refreshTimes])
   // don't add the dependent functions likes onFetchTimeRanges into the dependency array
   // it will cause the infinite loop
   // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
@@ -421,6 +421,7 @@ export default function StatementsOverview({
           onClose={() => setShowSettings(false)}
           onFetchConfig={onFetchConfig}
           onUpdateConfig={onUpdateConfig}
+          onConfigUpdated={() => setRefreshTimes((prev) => prev + 1)}
         />
       </Drawer>
     </div>

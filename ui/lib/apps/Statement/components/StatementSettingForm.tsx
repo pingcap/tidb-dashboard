@@ -20,6 +20,7 @@ interface Props {
   onClose: () => void
   onFetchConfig: (instanceId: string) => Promise<StatementConfig | undefined>
   onUpdateConfig: (instanceId: string, config: StatementConfig) => Promise<any>
+  onConfigUpdated: () => any
 }
 
 type InternalStatementConfig = StatementConfig & {
@@ -50,6 +51,7 @@ function StatementSettingForm({
   onClose,
   onFetchConfig,
   onUpdateConfig,
+  onConfigUpdated,
 }: Props) {
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -96,6 +98,7 @@ function StatementSettingForm({
     if (res !== undefined) {
       message.success(`设置 Statement 成功！`)
       onClose()
+      onConfigUpdated()
     }
   }
 

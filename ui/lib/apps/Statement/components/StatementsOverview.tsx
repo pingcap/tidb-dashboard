@@ -13,6 +13,7 @@ import { StatementStatus, Instance, DATE_TIME_FORMAT } from './statement-types'
 import { SearchContext } from './search-options-context'
 import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
 import StatementSettingForm from './StatementSettingForm'
+import styles from './styles.module.less'
 
 const { Option } = Select
 
@@ -148,13 +149,7 @@ interface Props {
     stmtTypes: string[]
   ) => Promise<StatementOverview[]>
 
-  onGetStatementStatus: (instanceId: string) => Promise<any>
-  onSetStatementStatus: (
-    instanceId: string,
-    status: 'on' | 'off'
-  ) => Promise<any>
-
-  onFetchConfig: (instanceId: string) => Promise<StatementConfig>
+  onFetchConfig: (instanceId: string) => Promise<StatementConfig | undefined>
   onUpdateConfig: (instanceId: string, config: StatementConfig) => Promise<any>
 
   detailPagePath: string
@@ -166,9 +161,6 @@ export default function StatementsOverview({
   onFetchTimeRanges,
   onFetchStmtTypes,
   onFetchStatements,
-
-  onGetStatementStatus,
-  onSetStatementStatus,
 
   onFetchConfig,
   onUpdateConfig,
@@ -329,6 +321,19 @@ export default function StatementsOverview({
     })
   }
 
+  const StatementDisabled = (
+    <div className={styles.statement_disabled_container}>
+      <h2>该功能未启用</h2>
+      <div className={styles.statement_disabled_desc}>
+        <p>SQL 语句分析功能未启用，因此无法查看历史记录。</p>
+        <p>您可以修改设置打开该功能后等待新数据收集。</p>
+      </div>
+      <Button type="primary" onClick={() => setShowSettings(true)}>
+        打开设置
+      </Button>
+    </div>
+  )
+
   return (
     <div>
       <Card>
@@ -393,20 +398,7 @@ export default function StatementsOverview({
         </div>
       </Card>
       {state.statementStatus === 'off' ? (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <h2>该功能未启用</h2>
-          <p>SQL 语句分析功能未启用，因此无法查看历史记录。</p>
-          <p>您可以修改设置打开该功能后等待新数据收集。</p>
-          <Button type="primary" onClick={() => setShowSettings(true)}>
-            打开设置
-          </Button>
-        </div>
+        StatementDisabled
       ) : (
         <StatementsTable
           key={`${state.statements.length}_${refreshTimes}`}

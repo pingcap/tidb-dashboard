@@ -2,12 +2,6 @@ import React from 'react'
 import { StatementsOverview } from '../components'
 import { DefaultApi, StatementConfig } from '@lib/client'
 
-function fakeReq<T>(res: T): Promise<T> {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => resolve(res), 2000)
-  })
-}
-
 type Props = {
   dashboardClient: DefaultApi
   detailPagePath: string
@@ -50,14 +44,6 @@ export default function StatementsOverviewPage({
       .then((res) => res.data)
   }
 
-  function queryStatementStatus() {
-    return fakeReq('ok')
-  }
-
-  function updateStatementStatus() {
-    return fakeReq('ok')
-  }
-
   const queryConfig = () => {
     return dashboardClient.statementsConfigGet().then((res) => res.data)
   }
@@ -73,8 +59,6 @@ export default function StatementsOverviewPage({
       onFetchTimeRanges={queryTimeRanges}
       onFetchStmtTypes={queryStmtTypes}
       onFetchStatements={queryStatements}
-      onGetStatementStatus={queryStatementStatus}
-      onSetStatementStatus={updateStatementStatus}
       onFetchConfig={queryConfig}
       onUpdateConfig={updateConfig}
       detailPagePath={detailPagePath}

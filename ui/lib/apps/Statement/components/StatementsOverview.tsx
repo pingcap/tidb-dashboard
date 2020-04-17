@@ -1,5 +1,6 @@
 import React, { useReducer, useEffect, useContext, useState } from 'react'
 import { Select, Space, Tooltip, Drawer, Button } from 'antd'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 import {
@@ -341,7 +342,7 @@ export default function StatementsOverview({
   )
 
   return (
-    <div>
+    <ScrollablePane style={{ height: '100vh' }}>
       <Card>
         <div style={{ display: 'flex' }}>
           <Space size="middle">
@@ -433,6 +434,6 @@ export default function StatementsOverview({
           onConfigUpdated={() => setRefreshTimes((prev) => prev + 1)}
         />
       </Drawer>
-    </div>
+    </ScrollablePane>
   )
 }

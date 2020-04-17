@@ -58,13 +58,9 @@ export default function StatementsOverviewPage({
     return fakeReq('ok')
   }
 
-  const queryConfig = () =>
-    fakeReq({
-      refresh_interval: 100,
-      keep_duration: 100,
-      max_sql_count: 1000,
-      max_sql_length: 100,
-    } as StatementConfig)
+  const queryConfig = () => {
+    return dashboardClient.statementsConfigGet().then((res) => res.data)
+  }
 
   const updateConfig = () => fakeReq('ok')
 

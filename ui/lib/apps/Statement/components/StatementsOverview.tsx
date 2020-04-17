@@ -13,6 +13,7 @@ import {
 } from './statement-types'
 import { SearchContext } from './search-options-context'
 import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
+import StatementSettingForm from './StatementSettingForm'
 
 const { Option } = Select
 
@@ -402,41 +403,18 @@ export default function StatementsOverview({
       />
       <Drawer
         title="设置"
+        width={300}
         closable={true}
-        onClose={() => setShowSettings(false)}
         visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        destroyOnClose={true}
       >
-        <Form layout="vertical">
-          <Form.Item label="总开关">
-            <Switch />
-          </Form.Item>
-          <Form.Item label="数据收集周期">
-            <Select style={{ width: 120 }}>
-              {[30, 60].map((item) => (
-                <Select.Option key={item} value={item}>
-                  {item}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item label="数据保留时间">
-            <Select style={{ width: 120 }}>
-              {[30, 60].map((item) => (
-                <Select.Option key={item} value={item}>
-                  {item}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit">
-                保存
-              </Button>
-              <Button onClick={() => setShowSettings(false)}>取消</Button>
-            </Space>
-          </Form.Item>
-        </Form>
+        <StatementSettingForm
+          instanceId={state.curInstance || ''}
+          onClose={() => setShowSettings(false)}
+          onFetchConfig={onFetchConfig}
+          onUpdateConfig={onUpdateConfig}
+        />
       </Drawer>
     </div>
   )

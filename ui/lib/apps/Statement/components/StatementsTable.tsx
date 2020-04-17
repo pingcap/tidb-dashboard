@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Tooltip } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
@@ -170,6 +170,8 @@ interface Props extends ICardTableV2Props {
   loading: boolean
   timeRange: StatementTimeRange
   detailPagePath?: string
+
+  onGetColumns?: (columns: IColumn[]) => void
 }
 
 export default function StatementsTable({
@@ -177,6 +179,7 @@ export default function StatementsTable({
   loading,
   timeRange,
   detailPagePath,
+  onGetColumns,
   ...restPrpos
 }: Props) {
   const { t } = useTranslation()
@@ -186,6 +189,11 @@ export default function StatementsTable({
   const [columns, setColumns] = useState(() =>
     tableColumns(t, maxs, onColumnClick)
   )
+
+  useEffect(() => {
+    onGetColumns && onGetColumns(columns)
+    // eslint-disable-next-line
+  }, [])
 
   function handleRowClick(rec) {
     navigate(

@@ -70,28 +70,22 @@ function renderColumnVisibilitySelection(
       visibleColumnKeys![c.key] = true
     })
   }
-  return (
-    <>
-      {columns.map((column) => (
-        <div key={column.key}>
-          <Checkbox
-            checked={visibleColumnKeys![column.key]}
-            onChange={(e) => {
-              if (!onChange) {
-                return
-              }
-              onChange({
-                ...visibleColumnKeys!,
-                [column.key]: e.target.checked,
-              })
-            }}
-          >
-            {column.name}
-          </Checkbox>
-        </div>
-      ))}
-    </>
-  )
+  return columns.map((column) => (
+    <Checkbox
+      checked={visibleColumnKeys![column.key]}
+      onChange={(e) => {
+        if (!onChange) {
+          return
+        }
+        onChange({
+          ...visibleColumnKeys!,
+          [column.key]: e.target.checked,
+        })
+      }}
+    >
+      {column.name}
+    </Checkbox>
+  ))
 }
 
 function CardTableV2(props: ICardTableV2Props) {

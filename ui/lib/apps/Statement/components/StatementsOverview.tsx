@@ -1,7 +1,21 @@
 import React, { useReducer, useEffect, useContext, useState } from 'react'
-import { Select, Space, Tooltip, Drawer, Button } from 'antd'
-import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
+import {
+  Select,
+  Space,
+  Tooltip,
+  Drawer,
+  Button,
+  Dropdown,
+  Menu,
+  Checkbox,
+} from 'antd'
+import {
+  SettingOutlined,
+  ReloadOutlined,
+  DownOutlined,
+} from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 import {
@@ -9,7 +23,7 @@ import {
   StatementTimeRange,
   StatementConfig,
 } from '@lib/client'
-import { Card } from '@lib/components'
+import { Card, CardTableV2 } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import StatementSettingForm from './StatementSettingForm'
 import { StatementStatus, Instance, DATE_TIME_FORMAT } from './statement-types'
@@ -176,6 +190,17 @@ export default function StatementsOverview({
   })
   const [refreshTimes, setRefreshTimes] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
+  const [columns, setColumns] = useState<IColumn[]>([])
+  const [visibleColumnKeys, setVisibleColumnKeys] = useState<{
+    [key: string]: boolean
+  }>({
+    digest_text: true,
+    sum_latency: true,
+    avg_latency: true,
+    exec_count: true,
+    avg_mem: true,
+    schemas: true,
+  })
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -396,6 +421,30 @@ export default function StatementsOverview({
           </Space>
           <div style={{ flex: 1 }} />
           <Space size="middle">
+            {columns.length > 0 && (
+              <Dropdown
+                placement="topRight"
+                overlay={
+                  <Menu>
+                    {CardTableV2.renderColumnVisibilitySelection(
+                      columns,
+                      visibleColumnKeys,
+                      setVisibleColumnKeys
+                    ).map((item) => (
+                      <Menu.Item>{item}</Menu.Item>
+                    ))}
+                    <Menu.Divider />
+                    <Menu.Item>
+                      <Checkbox>显示完整的 SQL</Checkbox>
+                    </Menu.Item>
+                  </Menu>
+                }
+              >
+                <div style={{ cursor: 'pointer' }}>
+                  选择列 <DownOutlined />
+                </div>
+              </Dropdown>
+            )}
             <Tooltip title={t('statement.setting.title')}>
               <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
@@ -414,6 +463,8 @@ export default function StatementsOverview({
           loading={state.statementsLoading}
           timeRange={state.curTimeRange!}
           detailPagePath={detailPagePath}
+          onGetColumns={setColumns}
+          visibleColumnKeys={visibleColumnKeys}
         />
       ) : (
         StatementDisabled

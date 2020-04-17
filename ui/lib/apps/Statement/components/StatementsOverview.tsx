@@ -1,5 +1,5 @@
 import React, { useReducer, useEffect, useContext, useState } from 'react'
-import { Select, Space, Tooltip, Drawer } from 'antd'
+import { Select, Space, Tooltip, Drawer, Button } from 'antd'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 import {
@@ -208,13 +208,12 @@ export default function StatementsOverview({
   useEffect(() => {
     async function queryStatementStatus() {
       if (state.curInstance) {
-        const res = await onGetStatementStatus(state.curInstance)
+        const res = await onFetchConfig(state.curInstance)
         if (res !== undefined) {
-          // TODO: set on or off according res
-          // dispatch({
-          //   type: 'change_statement_status',
-          //   payload: 'on'
-          // })
+          dispatch({
+            type: 'change_statement_status',
+            payload: res.enable ? 'on' : 'off',
+          })
         }
       }
     }
@@ -393,13 +392,30 @@ export default function StatementsOverview({
           </Space>
         </div>
       </Card>
-      <StatementsTable
-        key={`${state.statements.length}_${refreshTimes}`}
-        statements={state.statements}
-        loading={state.statementsLoading}
-        timeRange={state.curTimeRange!}
-        detailPagePath={detailPagePath}
-      />
+      {state.statementStatus === 'off' ? (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <h2>该功能未启用</h2>
+          <p>SQL 语句分析功能未启用，因此无法查看历史记录。</p>
+          <p>您可以修改设置打开该功能后等待新数据收集。</p>
+          <Button type="primary" onClick={() => setShowSettings(true)}>
+            打开设置
+          </Button>
+        </div>
+      ) : (
+        <StatementsTable
+          key={`${state.statements.length}_${refreshTimes}`}
+          statements={state.statements}
+          loading={state.statementsLoading}
+          timeRange={state.curTimeRange!}
+          detailPagePath={detailPagePath}
+        />
+      )}
       <Drawer
         title="设置"
         width={300}

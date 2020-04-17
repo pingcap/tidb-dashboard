@@ -357,7 +357,7 @@ export default function StatementsOverview({
     })
   }
 
-  const StatementDisabled = (
+  const statementDisabled = (
     <div className={styles.statement_disabled_container}>
       <h2>{t('statement.setting.disabled_desc_title')}</h2>
       <div className={styles.statement_disabled_desc}>
@@ -368,6 +368,27 @@ export default function StatementsOverview({
         {t('statement.setting.open_setting')}
       </Button>
     </div>
+  )
+
+  const dropdownMenus = (
+    <Menu>
+      {CardTableV2.renderColumnVisibilitySelection(
+        columns,
+        visibleColumnKeys,
+        setVisibleColumnKeys
+      ).map((item, idx) => (
+        <Menu.Item key={idx}>{item}</Menu.Item>
+      ))}
+      <Menu.Divider />
+      <Menu.Item>
+        <Checkbox
+          checked={showFullSQL}
+          onChange={(e) => setShowFullSQL(e.target.checked)}
+        >
+          {t('statement.common.show_full_sql')}
+        </Checkbox>
+      </Menu.Item>
+    </Menu>
   )
 
   return (
@@ -430,26 +451,7 @@ export default function StatementsOverview({
                 placement="bottomRight"
                 visible={dropdownVisible}
                 onVisibleChange={setDropdownVisible}
-                overlay={
-                  <Menu>
-                    {CardTableV2.renderColumnVisibilitySelection(
-                      columns,
-                      visibleColumnKeys,
-                      setVisibleColumnKeys
-                    ).map((item, idx) => (
-                      <Menu.Item key={idx}>{item}</Menu.Item>
-                    ))}
-                    <Menu.Divider />
-                    <Menu.Item>
-                      <Checkbox
-                        checked={showFullSQL}
-                        onChange={(e) => setShowFullSQL(e.target.checked)}
-                      >
-                        {t('statement.common.show_full_sql')}
-                      </Checkbox>
-                    </Menu.Item>
-                  </Menu>
-                }
+                overlay={dropdownMenus}
               >
                 <div style={{ cursor: 'pointer' }}>
                   {t('statement.filters.select_columns')} <DownOutlined />
@@ -479,7 +481,7 @@ export default function StatementsOverview({
           visibleColumnKeys={visibleColumnKeys}
         />
       ) : (
-        StatementDisabled
+        statementDisabled
       )}
       <Drawer
         title={t('statement.setting.title')}

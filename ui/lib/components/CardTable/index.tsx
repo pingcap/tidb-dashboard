@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 import { Table, Skeleton } from 'antd'
-import { TableProps } from 'antd/lib/table'
+import { TableProps } from 'antd/es/table'
 import cx from 'classnames'
 import Card from '../Card'
 import styles from './index.module.less'

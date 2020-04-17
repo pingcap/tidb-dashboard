@@ -1,8 +1,9 @@
-import React, { useState, useReducer, useEffect, useContext } from 'react'
-import { Select, Button, Modal } from 'antd'
+import React, { useReducer, useEffect, useContext } from 'react'
+import { Select, Form } from 'antd'
 import dayjs from 'dayjs'
-import StatementEnableModal from './StatementEnableModal'
-import StatementSettingModal from './StatementSettingModal'
+import { useTranslation } from 'react-i18next'
+import { StatementOverview, StatementTimeRange } from '@lib/client'
+import { Card } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import {
   StatementStatus,
@@ -10,11 +11,7 @@ import {
   Instance,
   DATE_TIME_FORMAT,
 } from './statement-types'
-import { StatementOverview, StatementTimeRange } from '@lib/client'
-import styles from './styles.module.less'
 import { SearchContext } from './search-options-context'
-import { useTranslation } from 'react-i18next'
-import { OptionsType } from 'rc-select/lib/interface/index'
 
 const { Option } = Select
 
@@ -22,12 +19,14 @@ interface State {
   curInstance: string | undefined
   curSchemas: string[]
   curTimeRange: StatementTimeRange | undefined
+  curStmtTypes: string[]
 
   statementStatus: StatementStatus
 
   instances: Instance[]
   schemas: string[]
   timeRanges: StatementTimeRange[]
+  stmtTypes: string[]
 
   statementsLoading: boolean
   statements: StatementOverview[]
@@ -37,12 +36,14 @@ const initState: State = {
   curInstance: undefined,
   curSchemas: [],
   curTimeRange: undefined,
+  curStmtTypes: [],
 
   statementStatus: 'unknown',
 
   instances: [],
   schemas: [],
   timeRanges: [],
+  stmtTypes: [],
 
   statementsLoading: false,
   statements: [],
@@ -56,6 +57,8 @@ type Action =
   | { type: 'change_schema'; payload: string[] }
   | { type: 'save_time_ranges'; payload: StatementTimeRange[] }
   | { type: 'change_time_range'; payload: StatementTimeRange | undefined }
+  | { type: 'save_stmt_types'; payload: string[] }
+  | { type: 'change_stmt_types'; payload: string[] }
   | { type: 'save_statements'; payload: StatementOverview[] }
   | { type: 'set_statements_loading' }
 
@@ -104,6 +107,17 @@ function reducer(state: State, action: Action): State {
         curTimeRange: action.payload,
         statements: [],
       }
+    case 'save_stmt_types':
+      return {
+        ...state,
+        stmtTypes: action.payload,
+      }
+    case 'change_stmt_types':
+      return {
+        ...state,
+        curStmtTypes: action.payload,
+        statements: [],
+      }
     case 'save_statements':
       return {
         ...state,
@@ -124,11 +138,13 @@ interface Props {
   onFetchInstances: () => Promise<Instance[] | undefined>
   onFetchSchemas: (instanceId: string) => Promise<string[] | undefined>
   onFetchTimeRanges: (instanceId: string) => Promise<StatementTimeRange[]>
+  onFetchStmtTypes: (instanceId: string) => Promise<string[] | undefined>
   onFetchStatements: (
     instanceId: string,
-    schemas: string[],
     beginTime: number,
-    endTime: number
+    endTime: number,
+    schemas: string[],
+    stmtTypes: string[]
   ) => Promise<StatementOverview[]>
 
   onGetStatementStatus: (instanceId: string) => Promise<any>
@@ -147,6 +163,7 @@ export default function StatementsOverview({
   onFetchInstances,
   onFetchSchemas,
   onFetchTimeRanges,
+  onFetchStmtTypes,
   onFetchStatements,
 
   onGetStatementStatus,
@@ -163,14 +180,6 @@ export default function StatementsOverview({
     ...initState,
     ...searchOptions,
   })
-  const [
-    enableStatementModalVisible,
-    setEnableStatementModalVisible,
-  ] = useState(false)
-  const [
-    statementSettingModalVisible,
-    setStatementSettingModalVisible,
-  ] = useState(false)
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -233,9 +242,20 @@ export default function StatementsOverview({
       }
     }
 
+    async function queryStmtTypes() {
+      if (state.curInstance) {
+        const res = await onFetchStmtTypes(state.curInstance)
+        dispatch({
+          type: 'save_stmt_types',
+          payload: res || [],
+        })
+      }
+    }
+
     queryStatementStatus()
     querySchemas()
     queryTimeRanges()
+    queryStmtTypes()
     // eslint-disable-next-line
   }, [state.curInstance])
   // don't add the dependent functions likes onFetchTimeRanges into the dependency array
@@ -252,9 +272,10 @@ export default function StatementsOverview({
       })
       const res = await onFetchStatements(
         state.curInstance,
-        state.curSchemas,
         state.curTimeRange.begin_time!,
-        state.curTimeRange.end_time!
+        state.curTimeRange.end_time!,
+        state.curSchemas,
+        state.curStmtTypes
       )
       dispatch({
         type: 'save_statements',
@@ -268,22 +289,18 @@ export default function StatementsOverview({
       curInstance: state.curInstance,
       curSchemas: state.curSchemas,
       curTimeRange: state.curTimeRange,
+      curStmtTypes: state.curStmtTypes,
     })
     // eslint-disable-next-line
-  }, [state.curInstance, state.curSchemas, state.curTimeRange])
+  }, [
+    state.curInstance,
+    state.curSchemas,
+    state.curTimeRange,
+    state.curStmtTypes,
+  ])
   // don't add the dependent functions likes onFetchStatements into the dependency array
   // it will cause the infinite loop
   // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
-
-  function handleInstanceChange(
-    val: string,
-    option: OptionsType[number] | OptionsType
-  ) {
-    dispatch({
-      type: 'change_instance',
-      payload: val,
-    })
-  }
 
   function handleSchemaChange(val: string[]) {
     dispatch({
@@ -292,10 +309,7 @@ export default function StatementsOverview({
     })
   }
 
-  function handleTimeRangeChange(
-    val: number,
-    option: OptionsType[number] | OptionsType
-  ) {
+  function handleTimeRangeChange(val: number) {
     const timeRange = state.timeRanges.find((item) => item.begin_time === val)
     dispatch({
       type: 'change_time_range',
@@ -303,128 +317,73 @@ export default function StatementsOverview({
     })
   }
 
-  function toggleStatementStatus(enable: boolean) {
-    if (enable) {
-      setEnableStatementModalVisible(true)
-    } else {
-      Modal.confirm({
-        title: '关闭 Statement 统计',
-        content: '确认要关闭统计吗？关闭后不留存 statement 统计信息！',
-        okText: '关闭',
-        okButtonProps: { type: 'danger' },
-        onOk() {
-          return onSetStatementStatus(state.curInstance!, 'off').then((res) => {
-            if (res !== undefined) {
-              dispatch({
-                type: 'change_statement_status',
-                payload: 'off',
-              })
-            }
-          })
-        },
-        onCancel() {},
-      })
-    }
+  function handleStmtTypeChange(val: string[]) {
+    dispatch({
+      type: 'change_stmt_types',
+      payload: val,
+    })
   }
+
   return (
     <div>
-      <div style={{ display: 'flex', marginBottom: 12 }}>
-        {false && (
-          <Select
-            value={state.curInstance}
-            allowClear
-            placeholder="选择集群实例"
-            style={{ width: 200, marginRight: 12 }}
-            onChange={handleInstanceChange}
-          >
-            {state.instances.map((item) => (
-              <Option value={item.uuid} key={item.uuid}>
-                {item.name}
-              </Option>
-            ))}
-          </Select>
-        )}
-        <Select
-          value={state.curTimeRange?.begin_time}
-          placeholder={t('statement.filters.select_time')}
-          style={{ width: 360, marginRight: 12 }}
-          onChange={handleTimeRangeChange}
-        >
-          {state.timeRanges.map((item) => (
-            <Option value={item.begin_time || ''} key={item.begin_time}>
-              {dayjs.unix(item.begin_time!).format(DATE_TIME_FORMAT)} ~{' '}
-              {dayjs.unix(item.end_time!).format(DATE_TIME_FORMAT)}
-            </Option>
-          ))}
-        </Select>
-        <Select
-          value={state.curSchemas}
-          mode="multiple"
-          allowClear
-          placeholder={t('statement.filters.select_schemas')}
-          style={{ minWidth: 200, marginRight: 12 }}
-          onChange={handleSchemaChange}
-        >
-          {state.schemas.map((item) => (
-            <Option value={item} key={item}>
-              {item}
-            </Option>
-          ))}
-        </Select>
-        {state.statementStatus === 'on' && (
-          <div>
-            <Button
-              type="primary"
-              style={{ backgroundColor: 'rgba(0,128,0,1)', marginRight: 12 }}
-              onClick={() => toggleStatementStatus(false)}
+      <Card>
+        <Form layout="inline">
+          <Form.Item>
+            <Select
+              value={state.curTimeRange?.begin_time}
+              placeholder={t('statement.filters.select_time')}
+              style={{ width: 360 }}
+              onChange={handleTimeRangeChange}
             >
-              已开启
-            </Button>
-            <Button
-              type="primary"
-              onClick={() => setStatementSettingModalVisible(true)}
+              {state.timeRanges.map((item) => (
+                <Option value={item.begin_time || ''} key={item.begin_time}>
+                  {dayjs.unix(item.begin_time!).format(DATE_TIME_FORMAT)} ~{' '}
+                  {dayjs.unix(item.end_time!).format(DATE_TIME_FORMAT)}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Select
+              value={state.curSchemas}
+              mode="multiple"
+              allowClear
+              placeholder={t('statement.filters.select_schemas')}
+              style={{ minWidth: 200 }}
+              onChange={handleSchemaChange}
             >
-              设置
-            </Button>
-          </div>
-        )}
-        {state.statementStatus === 'off' && (
-          <Button type="danger" onClick={() => toggleStatementStatus(true)}>
-            已关闭
-          </Button>
-        )}
-      </div>
-      {enableStatementModalVisible && (
-        <StatementEnableModal
-          instanceId={state.curInstance || ''}
-          visible={enableStatementModalVisible}
-          onOK={(instanceId) => onSetStatementStatus(instanceId, 'on')}
-          onClose={() => setEnableStatementModalVisible(false)}
-          onSetting={() => setStatementSettingModalVisible(true)}
-          onData={() =>
-            dispatch({ type: 'change_statement_status', payload: 'on' })
-          }
-        />
-      )}
-      {statementSettingModalVisible && (
-        <StatementSettingModal
-          instanceId={state.curInstance || ''}
-          visible={statementSettingModalVisible}
-          onClose={() => setStatementSettingModalVisible(false)}
-          onFetchConfig={onFetchConfig}
-          onUpdateConfig={onUpdateConfig}
-        />
-      )}
-      <div className={styles.table_wrapper}>
-        <StatementsTable
-          key={state.statements.length}
-          statements={state.statements}
-          loading={state.statementsLoading}
-          timeRange={state.curTimeRange!}
-          detailPagePath={detailPagePath}
-          items={[]}
-        />
-      </div>
+              {state.schemas.map((item) => (
+                <Option value={item} key={item}>
+                  {item}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Select
+              value={state.curStmtTypes}
+              mode="multiple"
+              allowClear
+              placeholder={t('statement.filters.select_stmt_types')}
+              style={{ minWidth: 160 }}
+              onChange={handleStmtTypeChange}
+            >
+              {state.stmtTypes.map((item) => (
+                <Option value={item} key={item}>
+                  {item.toUpperCase()}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Form>
+      </Card>
+      <StatementsTable
+        key={state.statements.length}
+        statements={state.statements}
+        loading={state.statementsLoading}
+        timeRange={state.curTimeRange!}
+        detailPagePath={detailPagePath}
+      />
     </div>
   )
 }

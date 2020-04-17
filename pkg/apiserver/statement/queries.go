@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	statementsTable = "PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history"
+	statementsTable = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
 )
 
 func QuerySchemas(db *gorm.DB) ([]string, error) {
@@ -52,14 +52,29 @@ func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 		Table(statementsTable).
 		Order("summary_begin_time DESC").
 		Find(&result).Error
-	return result, err
+	return
+}
+
+func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
+	// why should put DISTINCT inside the `Pluck()` method, see here:
+	// https://github.com/jinzhu/gorm/issues/496
+	err = db.
+		Table(statementsTable).
+		Order("stmt_type ASC").
+		Pluck("DISTINCT stmt_type", &result).
+		Error
+	return
 }
 
 // Sample params:
-// schemas: ["tpcc", "test"]
 // beginTime: 1586844000
 // endTime: 1586845800
-func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime int64) (result []*Overview, err error) {
+// schemas: ["tpcc", "test"]
+// stmtTypes: ["select", "update"]
+func QueryStatementsOverview(
+	db *gorm.DB,
+	beginTime, endTime int64,
+	schemas, stmtTypes []string) (result []*Overview, err error) {
 	query := db.
 		Select(`
 			schema_name,
@@ -87,6 +102,10 @@ func QueryStatementsOverview(db *gorm.DB, schemas []string, beginTime, endTime i
 		}
 		regexAll := strings.Join(regex, "|")
 		query = query.Where("table_names REGEXP ?", regexAll)
+	}
+
+	if len(stmtTypes) > 0 {
+		query = query.Where("stmt_type in (?)", stmtTypes)
 	}
 
 	err = query.Find(&result).Error
@@ -161,7 +180,7 @@ func QueryStatementDetail(db *gorm.DB, schema, digest string, beginTime, endTime
 func QueryStatementNodes(db *gorm.DB, schema, digest string, beginTime, endTime int64) (result []*Node, err error) {
 	err = db.
 		Select(`
-			address,
+			instance,
 			sum_latency,
 			exec_count,
 			avg_latency,

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Form, Select } from 'antd'
-import { Card } from '@lib/components'
+import { Root, Card } from '@lib/components'
 import _ from 'lodash'
 import { ALL_LANGUAGES } from '@lib/utils/i18n'
 import { withTranslation } from 'react-i18next'
@@ -40,9 +40,9 @@ class LanguageForm extends React.PureComponent {
 }
 
 const App = () => (
-  <div>
+  <Root>
     <LanguageForm />
-  </div>
+  </Root>
 )
 
 export default App

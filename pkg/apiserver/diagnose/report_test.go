@@ -245,7 +245,7 @@ func printRows(t *TableDef) {
 
 	fmt.Println(strings.Join(t.Category, " - "))
 	fmt.Println(t.Title)
-	fmt.Println(t.CommentEN)
+	fmt.Println(t.Comment)
 	if len(t.Rows) == 0 {
 		fmt.Println("table rows is 0")
 		return

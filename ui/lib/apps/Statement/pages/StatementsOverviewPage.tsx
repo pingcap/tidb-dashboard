@@ -29,9 +29,24 @@ export default function StatementsOverviewPage({
     return dashboardClient.statementsTimeRangesGet().then((res) => res.data)
   }
 
-  function queryStatements(_instanceId, schemas, beginTime, endTime) {
+  function queryStmtTypes() {
+    return dashboardClient.statementsStmtTypesGet().then((res) => res.data)
+  }
+
+  function queryStatements(
+    _instanceId,
+    beginTime,
+    endTime,
+    schemas,
+    stmtTypes
+  ) {
     return dashboardClient
-      .statementsOverviewsGet(beginTime, endTime, schemas.join(','))
+      .statementsOverviewsGet(
+        beginTime,
+        endTime,
+        schemas.join(','),
+        stmtTypes.join(',')
+      )
       .then((res) => res.data)
   }
 
@@ -58,6 +73,7 @@ export default function StatementsOverviewPage({
       onFetchInstances={queryInstance}
       onFetchSchemas={querySchemas}
       onFetchTimeRanges={queryTimeRanges}
+      onFetchStmtTypes={queryStmtTypes}
       onFetchStatements={queryStatements}
       onGetStatementStatus={queryStatementStatus}
       onSetStatementStatus={updateStatementStatus}

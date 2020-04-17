@@ -12,6 +12,7 @@ import {
   Modal,
 } from 'antd'
 import { StatementConfig } from '@lib/client'
+import { ExclamationCircleOutlined } from '@ant-design/icons'
 
 interface Props {
   instanceId: string
@@ -103,8 +104,10 @@ function StatementSettingForm({
       // warning
       Modal.confirm({
         title: '关闭 Statement 统计功能',
+        icon: <ExclamationCircleOutlined />,
         content: '确认要关闭该功能吗？关闭后现有历史记录也将被清空！',
         okText: '关闭',
+        cancelText: '取消',
         okButtonProps: { type: 'danger' },
         onOk: () => updateConfig(values),
       })

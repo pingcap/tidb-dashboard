@@ -1,6 +1,6 @@
 import React from 'react'
 import { StatementsOverview } from '../components'
-import { DefaultApi } from '@lib/client'
+import { DefaultApi, StatementConfig } from '@lib/client'
 
 function fakeReq<T>(res: T): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -62,7 +62,9 @@ export default function StatementsOverviewPage({
     return dashboardClient.statementsConfigGet().then((res) => res.data)
   }
 
-  const updateConfig = () => fakeReq('ok')
+  const updateConfig = (_instanceId: string, config: StatementConfig) => {
+    return dashboardClient.statementsConfigPost(config).then((res) => res.data)
+  }
 
   return (
     <StatementsOverview

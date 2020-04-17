@@ -30,7 +30,8 @@ const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
 const tableColumns = (
   t: (string) => string,
   maxs: StatementMaxVals,
-  onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void
+  onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
+  showFullSQL?: boolean
 ): IColumn[] => {
   const columns: IColumn[] = [
     {
@@ -44,7 +45,11 @@ const tableColumns = (
           title={<FormatHighlightSQL sql={rec.digest_text!} theme="dark" />}
           placement="right"
         >
-          <EllipsisText>{rec.digest_text}</EllipsisText>
+          {showFullSQL ? (
+            <div style={{ whiteSpace: 'pre-wrap' }}>{rec.digest_text}</div>
+          ) : (
+            <EllipsisText>{rec.digest_text}</EllipsisText>
+          )}
         </Tooltip>
       ),
     },
@@ -166,19 +171,21 @@ function copyAndSort<T>(
 }
 
 interface Props extends ICardTableV2Props {
-  statements: StatementOverview[]
   loading: boolean
+  statements: StatementOverview[]
   timeRange: StatementTimeRange
   detailPagePath?: string
+  showFullSQL?: boolean
 
   onGetColumns?: (columns: IColumn[]) => void
 }
 
 export default function StatementsTable({
-  statements,
   loading,
+  statements,
   timeRange,
   detailPagePath,
+  showFullSQL,
   onGetColumns,
   ...restPrpos
 }: Props) {
@@ -187,7 +194,7 @@ export default function StatementsTable({
   const [items, setItems] = useState(statements)
   const maxs = useMax(statements)
   const [columns, setColumns] = useState(() =>
-    tableColumns(t, maxs, onColumnClick)
+    tableColumns(t, maxs, onColumnClick, showFullSQL)
   )
 
   useEffect(() => {

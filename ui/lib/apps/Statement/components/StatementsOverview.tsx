@@ -182,12 +182,15 @@ export default function StatementsOverview({
 
   detailPagePath,
 }: Props) {
+  const { t } = useTranslation()
+
   const { searchOptions, setSearchOptions } = useContext(SearchContext)
   // combine the context to state
   const [state, dispatch] = useReducer(reducer, {
     ...initState,
     ...searchOptions,
   })
+
   const [refreshTimes, setRefreshTimes] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
   const [columns, setColumns] = useState<IColumn[]>([])
@@ -201,7 +204,8 @@ export default function StatementsOverview({
     avg_mem: true,
     schemas: true,
   })
-  const { t } = useTranslation()
+  const [dropdownVisible, setDropdownVisible] = useState(false)
+  const [showFullSQL, setShowFullSQL] = useState(false)
 
   useEffect(() => {
     async function queryInstances() {
@@ -423,19 +427,26 @@ export default function StatementsOverview({
           <Space size="middle">
             {columns.length > 0 && (
               <Dropdown
-                placement="topRight"
+                placement="bottomRight"
+                visible={dropdownVisible}
+                onVisibleChange={setDropdownVisible}
                 overlay={
                   <Menu>
                     {CardTableV2.renderColumnVisibilitySelection(
                       columns,
                       visibleColumnKeys,
                       setVisibleColumnKeys
-                    ).map((item) => (
-                      <Menu.Item>{item}</Menu.Item>
+                    ).map((item, idx) => (
+                      <Menu.Item key={idx}>{item}</Menu.Item>
                     ))}
                     <Menu.Divider />
                     <Menu.Item>
-                      <Checkbox>显示完整的 SQL</Checkbox>
+                      <Checkbox
+                        checked={showFullSQL}
+                        onChange={(e) => setShowFullSQL(e.target.checked)}
+                      >
+                        显示完整的 SQL
+                      </Checkbox>
                     </Menu.Item>
                   </Menu>
                 }
@@ -458,11 +469,12 @@ export default function StatementsOverview({
       </Card>
       {state.statementEnable ? (
         <StatementsTable
-          key={`${state.statements.length}_${refreshTimes}`}
+          key={`${state.statements.length}_${refreshTimes}_${showFullSQL}`}
           statements={state.statements}
           loading={state.statementsLoading}
           timeRange={state.curTimeRange!}
           detailPagePath={detailPagePath}
+          showFullSQL={showFullSQL}
           onGetColumns={setColumns}
           visibleColumnKeys={visibleColumnKeys}
         />

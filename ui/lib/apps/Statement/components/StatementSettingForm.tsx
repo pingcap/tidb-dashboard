@@ -106,7 +106,7 @@ function StatementSettingForm({
     if (oriConfig.enable && !values.enable) {
       // warning
       Modal.confirm({
-        title: '关闭 Statement 统计功能',
+        title: '关闭 SQL 语句分析功能',
         icon: <ExclamationCircleOutlined />,
         content: '确认要关闭该功能吗？关闭后现有历史记录也将被清空！',
         okText: '关闭',

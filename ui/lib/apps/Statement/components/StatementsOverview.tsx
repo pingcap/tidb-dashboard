@@ -233,6 +233,12 @@ export default function StatementsOverview({
             payload: res[0],
           })
         }
+        if (res && res.length === 0) {
+          dispatch({
+            type: 'change_time_range',
+            payload: undefined,
+          })
+        }
       }
     }
 
@@ -340,7 +346,10 @@ export default function StatementsOverview({
         <div style={{ display: 'flex' }}>
           <Space size="middle">
             <Select
-              value={`${state.curTimeRange?.begin_time}_${state.curTimeRange?.end_time}`}
+              value={
+                state.curTimeRange &&
+                `${state.curTimeRange.begin_time}_${state.curTimeRange.end_time}`
+              }
               placeholder={t('statement.filters.select_time')}
               style={{ width: 360 }}
               onChange={handleTimeRangeChange}

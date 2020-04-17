@@ -12,17 +12,17 @@ statement:
     schemas: 数据库
     schemas_tooltip: SQL 语句涉及的数据库
     digest_text: SQL
-    digest_text_tooltip: SQL 指纹
-    sum_latency: 总延时
-    sum_latency_tooltip: 单个 SQL 语句的累计耗时
-    exec_count: 总次数
-    exec_count_tooltip: 单个 SQL 语句执行的总次数
+    digest_text_tooltip: 显示的是 SQL 模板，不同参数的同类 SQL 拥有一致的模板
+    sum_latency: 累计耗时
+    sum_latency_tooltip: 该类 SQL 在时间段内的累计执行时间
+    exec_count: 执行次数
+    exec_count_tooltip: 该类 SQL 在时间段内被执行的总次数
     avg_affected_rows: 平均影响行数
-    avg_latency: 平均延时
-    avg_latency_tooltip: 单个 SQL 语句的平均耗时
-    max_latency: 最大延时
-    avg_mem: 平均消耗内存
-    avg_mem_tooltip: 单个 SQL 语句的平均消耗内存
+    avg_latency: 平均耗时
+    avg_latency_tooltip: 单条 SQL 语句的平均执行时间
+    max_latency: 最大耗时
+    avg_mem: 平均内存
+    avg_mem_tooltip: 单条 SQL 语句的平均消耗内存大小
     sum_backoff_times: Backoff 重试次数
     avg_total_keys: 平均扫描行数
     show_full_sql: 显示完整的 SQL

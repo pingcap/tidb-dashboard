@@ -97,9 +97,14 @@ const App = () => {
                   className={styles.statementsTable}
                   key={topStatements.length}
                   statements={topStatements}
+                  visibleColumnKeys={{
+                    digest_text: true,
+                    sum_latency: true,
+                    avg_latency: true,
+                    schemas: true,
+                  }}
                   loading={loadingStatements}
                   timeRange={timeRange}
-                  concise={true}
                   title={
                     timeRange.begin_time > 0
                       ? `${t('overview.top_statements.title')} (${dayjs

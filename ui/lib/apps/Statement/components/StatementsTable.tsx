@@ -29,7 +29,6 @@ const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
 
 const tableColumns = (
   t: (string) => string,
-  concise: boolean,
   maxs: StatementMaxVals,
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void
 ): IColumn[] => {
@@ -150,11 +149,6 @@ MAX: ${getValueFormat('bytes')(rec.max_mem, 1)}`
       ),
     },
   ]
-  if (concise) {
-    return columns.filter((col) =>
-      ['schemas', 'digest_text', 'sum_latency', 'avg_latency'].includes(col.key)
-    )
-  }
   return columns
 }
 
@@ -176,7 +170,6 @@ interface Props extends ICardTableV2Props {
   loading: boolean
   timeRange: StatementTimeRange
   detailPagePath?: string
-  concise?: boolean
 }
 
 export default function StatementsTable({
@@ -184,7 +177,6 @@ export default function StatementsTable({
   loading,
   timeRange,
   detailPagePath,
-  concise,
   ...restPrpos
 }: Props) {
   const { t } = useTranslation()
@@ -192,7 +184,7 @@ export default function StatementsTable({
   const [items, setItems] = useState(statements)
   const maxs = useMax(statements)
   const [columns, setColumns] = useState(() =>
-    tableColumns(t, concise || false, maxs, onColumnClick)
+    tableColumns(t, maxs, onColumnClick)
   )
 
   function handleRowClick(rec) {

@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - "ui/packages/.packages_release_version"
+      - "ui/.package_release_version"
 
 jobs:
   release_packages:
@@ -36,6 +36,13 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - run: make publish_ui_packages
+      - name: Build and publish packages
+        run: |
+          make yarn_dependencies
+          cd ui
+          yarn build:library
+          cd build/lib
+          cp ../package.json ./
+          yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,33 @@
+statement:
+  nav_title: SQL 语句分析
+  pages:
+    detail: SQL 语句详情
+  filters:
+    select_time: 选择时间段
+    select_schemas: 选择数据库
+    select_stmt_types: 选择 SQL 类型
+  common:
+    schema: 数据库
+    schemas: 数据库
+    schemas_tooltip: SQL 语句涉及的数据库
+    digest_text: SQL
+    digest_text_tooltip: SQL 指纹
+    sum_latency: 总延时
+    sum_latency_tooltip: 单个 SQL 语句的累计耗时
+    exec_count: 总次数
+    exec_count_tooltip: 单个 SQL 语句执行的总次数
+    avg_affected_rows: 平均影响行数
+    avg_latency: 平均延时
+    avg_latency_tooltip: 单个 SQL 语句的平均耗时
+    max_latency: 最大延时
+    avg_mem: 平均消耗内存
+    avg_mem_tooltip: 单个 SQL 语句的平均消耗内存
+    sum_backoff_times: Backoff 重试次数
+    avg_total_keys: 平均扫描行数
+  detail:
+    node: 节点
+    time_range: 时间段
+    query_sample_text: 最后出现 SQL 语句
+    last_seen: 最后出现时间
+  plan:
+    plans: 执行计划

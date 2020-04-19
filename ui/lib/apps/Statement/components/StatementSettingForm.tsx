@@ -10,9 +10,9 @@ import {
   Button,
   Modal,
 } from 'antd'
-import { StatementConfig } from '@lib/client'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
+import { StatementConfig } from '@lib/client'
 
 interface Props {
   instanceId: string
@@ -29,22 +29,14 @@ type InternalStatementConfig = StatementConfig & {
   max_keep_duration: number
 }
 
-const REFRESH_INTERVAL_MARKS = {
-  1: '1',
-  5: '5',
-  15: '15',
-  30: '30',
-  60: '60',
-}
+const convertArrToObj = (arr: number[]) =>
+  arr.reduce((acc, cur) => {
+    acc[cur] = cur
+    return acc
+  }, {})
 
-const KEEY_DURATION_MARKS = {
-  1: '1',
-  2: '2',
-  5: '5',
-  10: '10',
-  20: '20',
-  30: '30',
-}
+const REFRESH_INTERVAL_MARKS = convertArrToObj([1, 5, 15, 30, 60])
+const KEEP_DURATION_MARKS = convertArrToObj([1, 2, 5, 10, 20, 30])
 
 function StatementSettingForm({
   instanceId,
@@ -145,9 +137,7 @@ function StatementSettingForm({
                           <InputNumber
                             min={1}
                             max={config.max_refresh_interval}
-                            formatter={(value) =>
-                              `${value} ${t('statement.time.min')}`
-                            }
+                            formatter={(value) => `${value} min`}
                             parser={(value) =>
                               value?.replace(/[^\d]/g, '') || ''
                             }
@@ -171,9 +161,7 @@ function StatementSettingForm({
                           <InputNumber
                             min={1}
                             max={config.max_keep_duration}
-                            formatter={(value) =>
-                              `${value} ${t('statement.time.day')}`
-                            }
+                            formatter={(value) => `${value} day`}
                             parser={(value) =>
                               value?.replace(/[^\d]/g, '') || ''
                             }
@@ -184,7 +172,7 @@ function StatementSettingForm({
                             min={1}
                             max={config.max_keep_duration}
                             marks={{
-                              ...KEEY_DURATION_MARKS,
+                              ...KEEP_DURATION_MARKS,
                               [config.max_keep_duration]: `${config.max_keep_duration}`,
                             }}
                           />

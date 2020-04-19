@@ -48,6 +48,3 @@ statement:
     save: 保存
     close: 关闭
     cancel: 取消
-  time:
-    min: 分钟
-    day: 天

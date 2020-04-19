@@ -45,7 +45,7 @@ function buildTreeData(targets: UtilsRequestTargetNode[]) {
       value: kind,
       key: kind,
       children: servers[kind].map((item: UtilsRequestTargetNode) => {
-        const addr = item.display_name ?? ''
+        const addr = item.display_name!
         return {
           title: addr,
           value: addr,

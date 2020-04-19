@@ -2,6 +2,7 @@ import client from '@lib/client'
 import {
   UtilsRequestTargetStatistics,
   LogsearchSearchLogRequest,
+  LogsearchTaskGroupModel,
 } from '@lib/client'
 import { CardTable, Head } from '@lib/components'
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -14,17 +15,6 @@ import { Link } from 'react-router-dom'
 import { DATE_TIME_FORMAT, LogLevelMap } from './utils'
 
 const { Column } = Table
-
-type History = {
-  key: number
-  time?: RangeValue<Moment>
-  level?: string
-  taskGroupStats?: UtilsRequestTargetStatistics
-  keywords?: string
-  size?: string
-  state?: number
-  action?: number
-}
 
 function componentRender(stats: UtilsRequestTargetStatistics) {
   const r: Array<string> = []
@@ -73,7 +63,7 @@ export default function SearchHistory() {
   }, [])
 
   function levelRender(request: LogsearchSearchLogRequest) {
-    return LogLevelMap[request?.min_level ?? 0]
+    return LogLevelMap[request.min_level!]
   }
 
   function patternRender(request: LogsearchSearchLogRequest) {
@@ -100,12 +90,13 @@ export default function SearchHistory() {
     }
   }
 
-  function actionRender(taskGroupID: number) {
-    if (taskGroupID === 0) {
+  function actionRender(taskGroup: LogsearchTaskGroupModel) {
+    console.log(taskGroup)
+    if (taskGroup.id === 0) {
       return
     }
     return (
-      <Link to={`/search_logs/detail/${taskGroupID}`}>
+      <Link to={`/search_logs/detail/${taskGroup.id}`}>
         {t('search_logs.history.detail')}
       </Link>
     )
@@ -194,7 +185,7 @@ export default function SearchHistory() {
           <Column
             title={t('search_logs.common.keywords')}
             dataIndex="search_request"
-            key="searchValue"
+            key="keywords"
             render={patternRender}
           />
           <Column
@@ -205,8 +196,7 @@ export default function SearchHistory() {
           />
           <Column
             title={t('search_logs.history.action')}
-            dataIndex="id"
-            key="id"
+            key="action"
             render={actionRender}
           />
         </CardTable>

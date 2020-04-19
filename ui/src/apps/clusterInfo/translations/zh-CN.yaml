@@ -9,6 +9,7 @@ cluster_info:
         status: 状态
         up_time: 启动时间
         deploy_path: 部署路径
+        git_hash: Git 哈希值
       actions:
         hide_db:
           tooltip: 隐藏

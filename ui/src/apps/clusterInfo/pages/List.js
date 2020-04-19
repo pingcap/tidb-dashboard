@@ -201,6 +201,12 @@ export default function ListPage() {
       key: 'deploy_path',
       ellipsis: true,
     },
+    {
+      title: t('cluster_info.list.instance_table.columns.git_hash'),
+      dataIndex: 'git_hash',
+      key: 'git_hash',
+      ellipsis: true,
+    },
   ]
 
   return (

@@ -291,6 +291,7 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 			DeployPath    string      `json:"deploy_path"`
 			BinaryVersion string      `json:"binary_version"`
 			MemberID      json.Number `json:"member_id"`
+			GitHash       string      `json:"git_hash"`
 		} `json:"members"`
 	}{}
 
@@ -303,7 +304,7 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 	close(healthMapChan)
 
 	var wg sync.WaitGroup
-	for i, ds := range ds.Members {
+	for _, ds := range ds.Members {
 		u := ds.ClientUrls[0]
 		ts, err := getPDStartTimestamp(u, httpClient)
 		if err != nil {
@@ -328,17 +329,12 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 			DeployPath:     ds.DeployPath,
 			Status:         storeStatus,
 			StartTimestamp: ts,
+			GitHash:        ds.GitHash,
 		})
 		if storeStatus == ComponentStatusUp {
 			wg.Add(1)
-			member := ds
-			go func(index int) {
-				defer wg.Done()
-				nodes[index].GitHash, _ = getPDNodeGitHash(member.ClientUrls[0], httpClient)
-			}(i)
 		}
 	}
-	wg.Wait()
 	return nodes, nil
 }
 
@@ -410,27 +406,6 @@ func storeStateToStatus(state string) ComponentStatus {
 	default:
 		return ComponentStatusUnreachable
 	}
-}
-
-func getPDNodeGitHash(pdEndPoint string, httpClient *http.Client) (string, error) {
-	resp, err := httpClient.Get(pdEndPoint + "/pd/api/v1/status")
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-		return "", err
-	}
-	var status struct {
-		GitHash string `json:"git_hash"`
-	}
-	err = json.Unmarshal(data, &status)
-	if err != nil {
-		return "", err
-	}
-	return status.GitHash, nil
 }
 
 func getPDNodesHealth(pdEndPoint string, httpClient *http.Client) (map[string]struct{}, error) {

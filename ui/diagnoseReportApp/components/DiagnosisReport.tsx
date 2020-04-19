@@ -26,6 +26,42 @@ type Props = {
   diagnosisTables: TableDef[]
 }
 
+function TablesNavMenu({ diagnosisTables }: Props) {
+  const { t } = useTranslation()
+  return (
+    <div className="dropdown is-hoverable">
+      <div className="dropdown-trigger">
+        <a className="navbar-link">{t('diagnosis.all_tables')}</a>
+      </div>
+      <div className="dropdown-menu">
+        <div
+          className="dropdown-content"
+          style={{
+            maxHeight: 500,
+            overflowY: 'scroll',
+          }}
+        >
+          {diagnosisTables.map((item) => (
+            <React.Fragment key={item.Title}>
+              <h2 style={{ paddingLeft: 16 }}>
+                {item.Category[0] &&
+                  t(`diagnosis.tables.category.${item.Category[0]}`)}
+              </h2>
+              <a
+                style={{ paddingLeft: 32 }}
+                className="dropdown-item"
+                href={`#${item.Title}`}
+              >
+                {t(`diagnosis.tables.title.${item.Title}`)}
+              </a>
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function DiagnosisReport({ diagnosisTables }: Props) {
   const [expandAll, setExpandAll] = useState(false)
   const { t } = useTranslation()
@@ -49,37 +85,7 @@ export default function DiagnosisReport({ diagnosisTables }: Props) {
           >
             {t('diagnosis.fold_all')}
           </button>
-          <div className="dropdown is-hoverable">
-            <div className="dropdown-trigger">
-              <a className="navbar-link">{t('diagnosis.all_tables')}</a>
-            </div>
-            <div className="dropdown-menu">
-              <div
-                className="dropdown-content"
-                style={{
-                  maxHeight: 500,
-                  overflowY: 'scroll',
-                }}
-              >
-                {diagnosisTables.map((item) => (
-                  <>
-                    <h2 style={{ paddingLeft: 16 }}>
-                      {item.Category[0] &&
-                        t(`diagnosis.tables.category.${item.Category[0]}`)}
-                    </h2>
-                    <a
-                      style={{ paddingLeft: 28 }}
-                      key={item.Title}
-                      href={`#${item.Title}`}
-                      className="dropdown-item"
-                    >
-                      {t(`diagnosis.tables.title.${item.Title}`)}
-                    </a>
-                  </>
-                ))}
-              </div>
-            </div>
-          </div>
+          <TablesNavMenu diagnosisTables={diagnosisTables} />
         </div>
 
         <ExpandContext.Provider value={expandAll}>

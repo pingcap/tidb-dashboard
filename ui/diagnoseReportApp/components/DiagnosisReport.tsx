@@ -51,7 +51,7 @@ export default function DiagnosisReport({ diagnosisTables }: Props) {
           </button>
           <div className="dropdown is-hoverable">
             <div className="dropdown-trigger">
-              <a className="navbar-link">Tables</a>
+              <a className="navbar-link">{t('diagnosis.all_tables')}</a>
             </div>
             <div className="dropdown-menu">
               <div

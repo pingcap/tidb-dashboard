@@ -44,6 +44,7 @@ type DynamicConfigManager struct {
 	etcdClient *clientv3.Client
 
 	dynamicConfig *DynamicConfig
+	pushChannels  []chan DynamicConfig
 }
 
 func NewDynamicConfigManager(lc fx.Lifecycle, config *Config, etcdClient *clientv3.Client) *DynamicConfigManager {
@@ -53,6 +54,7 @@ func NewDynamicConfigManager(lc fx.Lifecycle, config *Config, etcdClient *client
 	}
 	lc.Append(fx.Hook{
 		OnStart: dc.Start,
+		OnStop:  dc.Stop,
 	})
 	return dc
 }
@@ -66,6 +68,23 @@ func (dc *DynamicConfigManager) Start(ctx context.Context) error {
 	}
 	dc.dynamicConfig.Adjust()
 	return dc.store()
+}
+
+func (dc *DynamicConfigManager) Stop(ctx context.Context) error {
+	dc.mu.Lock()
+	defer dc.mu.Unlock()
+	for _, ch := range dc.pushChannels {
+		close(ch)
+	}
+	return nil
+}
+
+func (dc *DynamicConfigManager) NewPushChannel() <-chan DynamicConfig {
+	dc.mu.Lock()
+	defer dc.mu.Unlock()
+	ch := make(chan DynamicConfig, 100)
+	dc.pushChannels = append(dc.pushChannels, ch)
+	return ch
 }
 
 func (dc *DynamicConfigManager) Get() DynamicConfig {

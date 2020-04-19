@@ -208,7 +208,7 @@ func (s *distanceStrategy) GenerateScale(chunks []chunk, compactKeys []string, d
 	return scale
 }
 
-func (s *distanceStrategy) GenerateScaleColumnWork(ch chan *scaleTask) {
+func (s *distanceStrategy) GenerateScaleColumnWork(ch <-chan *scaleTask) {
 	var maxDis int
 	// Each split interval needs to be sorted after copying to tempDis
 	var tempDis []int

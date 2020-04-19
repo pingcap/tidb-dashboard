@@ -34,7 +34,7 @@ var (
 	ErrUnableToLoad = ErrorNS.NewType("unable_to_load")
 )
 
-type DynamicConfigOption func(cfg *DynamicConfig)
+type DynamicConfigOption func(dc *DynamicConfig)
 
 type DynamicConfigManager struct {
 	mu sync.RWMutex
@@ -48,86 +48,93 @@ type DynamicConfigManager struct {
 }
 
 func NewDynamicConfigManager(lc fx.Lifecycle, config *Config, etcdClient *clientv3.Client) *DynamicConfigManager {
-	dc := &DynamicConfigManager{
+	m := &DynamicConfigManager{
 		config:     config,
 		etcdClient: etcdClient,
 	}
 	lc.Append(fx.Hook{
-		OnStart: dc.Start,
-		OnStop:  dc.Stop,
+		OnStart: m.Start,
+		OnStop:  m.Stop,
 	})
-	return dc
+	return m
 }
 
-func (dc *DynamicConfigManager) Start(ctx context.Context) error {
-	dc.mu.Lock()
-	defer dc.mu.Unlock()
-	dc.ctx = ctx
-	if err := dc.load(); err != nil {
+func (m *DynamicConfigManager) Start(ctx context.Context) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.ctx = ctx
+	if err := m.load(); err != nil {
 		return nil
 	}
-	dc.dynamicConfig.Adjust()
-	return dc.store()
+	m.dynamicConfig.Adjust()
+	return m.store()
 }
 
-func (dc *DynamicConfigManager) Stop(ctx context.Context) error {
-	dc.mu.Lock()
-	defer dc.mu.Unlock()
-	for _, ch := range dc.pushChannels {
+func (m *DynamicConfigManager) Stop(ctx context.Context) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, ch := range m.pushChannels {
 		close(ch)
 	}
 	return nil
 }
 
-func (dc *DynamicConfigManager) NewPushChannel() <-chan DynamicConfig {
-	dc.mu.Lock()
-	defer dc.mu.Unlock()
+func (m *DynamicConfigManager) NewPushChannel() <-chan DynamicConfig {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	ch := make(chan DynamicConfig, 100)
-	dc.pushChannels = append(dc.pushChannels, ch)
+	ch <- *m.dynamicConfig
+	m.pushChannels = append(m.pushChannels, ch)
 	return ch
 }
 
-func (dc *DynamicConfigManager) Get() DynamicConfig {
-	dc.mu.RLock()
-	defer dc.mu.RUnlock()
-	return *dc.dynamicConfig
+func (m *DynamicConfigManager) Get() DynamicConfig {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return *m.dynamicConfig
 }
 
-func (dc *DynamicConfigManager) Set(opts ...DynamicConfigOption) error {
-	dc.mu.Lock()
-	defer dc.mu.Unlock()
+func (m *DynamicConfigManager) Set(opts ...DynamicConfigOption) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	for _, opt := range opts {
-		opt(dc.dynamicConfig)
+		opt(m.dynamicConfig)
 	}
-	return dc.store()
+	if err := m.store(); err != nil {
+		return err
+	}
+	for _, ch := range m.pushChannels {
+		ch <- *m.dynamicConfig
+	}
+	return nil
 }
 
-func (dc *DynamicConfigManager) load() error {
-	resp, err := dc.etcdClient.Get(dc.ctx, DynamicConfigPath)
+func (m *DynamicConfigManager) load() error {
+	resp, err := m.etcdClient.Get(m.ctx, DynamicConfigPath)
 	if err != nil {
 		return err
 	}
 
-	dc.dynamicConfig = &DynamicConfig{}
+	m.dynamicConfig = &DynamicConfig{}
 	switch len(resp.Kvs) {
 	case 0:
 		log.Warn("Dynamic config does not exist in etcd")
 		return nil
 	case 1:
 		log.Info("Load dynamic config from etcd", zap.ByteString("json", resp.Kvs[0].Value))
-		return json.Unmarshal(resp.Kvs[0].Value, dc.dynamicConfig)
+		return json.Unmarshal(resp.Kvs[0].Value, m.dynamicConfig)
 	default:
 		log.Error("unreachable")
 		return ErrUnableToLoad.NewWithNoMessage()
 	}
 }
 
-func (dc *DynamicConfigManager) store() error {
-	bs, err := json.Marshal(dc.dynamicConfig)
+func (m *DynamicConfigManager) store() error {
+	bs, err := json.Marshal(m.dynamicConfig)
 	if err != nil {
 		return err
 	}
 	log.Info("Save dynamic config to etcd", zap.ByteString("json", bs))
-	_, err = dc.etcdClient.Put(dc.ctx, DynamicConfigPath, string(bs))
+	_, err = m.etcdClient.Put(m.ctx, DynamicConfigPath, string(bs))
 	return err
 }

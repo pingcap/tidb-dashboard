@@ -14,11 +14,11 @@
 package config
 
 type KeyVisualConfig struct {
-	AutoCollectionEnabled bool
+	AutoCollectionEnabled bool `json:"auto_collection_enabled"`
 }
 
 type DynamicConfig struct {
-	KeyVisual KeyVisualConfig
+	KeyVisual KeyVisualConfig `json:"keyvisual"`
 }
 
 // Adjust is used to fill the default config for the existing config of the old version.

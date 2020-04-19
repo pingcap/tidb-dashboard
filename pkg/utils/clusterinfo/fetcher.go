@@ -86,7 +86,7 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 			Version    string `json:"version"`
 			GitHash    string `json:"git_hash"`
 			StatusPort uint   `json:"status_port"`
-			// TODO: modify this after tidb's info changed to `deploy_dir`.
+			// TODO: modify this after tidb's info changed to `deploy_path`.
 			BinaryPath     string `json:"binary_path"`
 			StartTimestamp int64  `json:"start_timestamp"`
 		}{}
@@ -105,7 +105,7 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 			Version:        ds.Version,
 			IP:             host,
 			Port:           port,
-			DeployDir:      ds.BinaryPath,
+			DeployPath:     ds.BinaryPath,
 			Status:         ComponentStatusUnreachable,
 			StatusPort:     ds.StatusPort,
 			StartTimestamp: ds.StartTimestamp,
@@ -212,7 +212,7 @@ func GetTiKVTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, erro
 			Version:        version,
 			IP:             host,
 			Port:           port,
-			DeployDir:      v.BinaryPath,
+			DeployPath:     v.BinaryPath,
 			Status:         storeStateToStatus(v.StateName),
 			StatusPort:     statusPort,
 			Labels:         map[string]string{},
@@ -249,7 +249,7 @@ func GetTiDBTopologyFromOld(ctx context.Context, etcdclient *clientv3.Client) ([
 			Version:    currentInfo.Version,
 			IP:         currentInfo.IP,
 			Port:       currentInfo.ListeningPort,
-			DeployDir:  "",
+			DeployPath: "",
 			Status:     ComponentStatusUp,
 			StatusPort: currentInfo.StatusPort,
 		})
@@ -323,7 +323,7 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 			Version:        ds.BinaryVersion,
 			IP:             host,
 			Port:           port,
-			DeployDir:      ds.DeployPath,
+			DeployPath:     ds.DeployPath,
 			Status:         storeStatus,
 			StartTimestamp: ts,
 		})

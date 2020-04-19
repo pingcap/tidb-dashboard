@@ -82,11 +82,24 @@ export default function DiagnosisTable({ diagnosis }: Props) {
       ))}
       <h3 className="is-size-4">{t(`diagnosis.tables.title.${Title}`)}</h3>
       {Comment && <p>{t(`diagnosis.tables.comment.${Comment}`)}</p>}
-      <table className="table is-bordered is-hoverable is-narrow is-fullwidth">
+      <table
+        className="table is-bordered is-hoverable is-narrow is-fullwidth"
+        style={{ position: 'relative' }}
+      >
         <thead>
           <tr>
             {Column.map((col, colIdx) => (
-              <th key={colIdx}>{col}</th>
+              <th
+                style={{
+                  position: 'sticky',
+                  top: 55,
+                  backgroundColor: 'white',
+                  zIndex: 1,
+                }}
+                key={colIdx}
+              >
+                {col}
+              </th>
             ))}
           </tr>
         </thead>

@@ -42,7 +42,7 @@ type distanceStrategy struct {
 
 	SplitRatioPow []float64
 
-	ScaleWorkers []chan *scaleTask
+	ScaleWorkerCh chan *scaleTask
 }
 
 // DistanceStrategy adopts the strategy that the closer the split time is to the current time, the more traffic is
@@ -58,7 +58,6 @@ func DistanceStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, label decorator.Label
 		SplitLevel:    level,
 		SplitCount:    count,
 		SplitRatioPow: pow,
-		ScaleWorkers:  make([]chan *scaleTask, workerCount),
 	}
 
 	lc.Append(fx.Hook{
@@ -159,7 +158,14 @@ func (s *distanceStrategy) Split(dst, src chunk, tag splitTag, axesIndex int, he
 }
 
 // multi-threaded calculate scale matrix.
-var workerCount = runtime.NumCPU()
+var workerCount int
+
+func init() {
+	workerCount = runtime.NumCPU()
+	if workerCount > 20 {
+		workerCount = 20
+	}
+}
 
 type scaleTask struct {
 	*sync.WaitGroup
@@ -170,21 +176,18 @@ type scaleTask struct {
 }
 
 func (s *distanceStrategy) StartWorkers(wg *sync.WaitGroup) {
-	wg.Add(len(s.ScaleWorkers))
-	for i := range s.ScaleWorkers {
-		ch := make(chan *scaleTask)
-		s.ScaleWorkers[i] = ch
+	s.ScaleWorkerCh = make(chan *scaleTask, workerCount*100)
+	wg.Add(workerCount)
+	for i := 0; i < workerCount; i++ {
 		go func() {
-			s.GenerateScaleColumnWork(ch)
+			s.GenerateScaleColumnWork(s.ScaleWorkerCh)
 			wg.Done()
 		}()
 	}
 }
 
 func (s *distanceStrategy) StopWorkers() {
-	for _, ch := range s.ScaleWorkers {
-		ch <- nil
-	}
+	close(s.ScaleWorkerCh)
 }
 
 func (s *distanceStrategy) GenerateScale(chunks []chunk, compactKeys []string, dis [][]int) [][]float64 {
@@ -193,7 +196,7 @@ func (s *distanceStrategy) GenerateScale(chunks []chunk, compactKeys []string, d
 	scale := make([][]float64, axesLen)
 	wg.Add(axesLen)
 	for i := 0; i < axesLen; i++ {
-		s.ScaleWorkers[i%workerCount] <- &scaleTask{
+		s.ScaleWorkerCh <- &scaleTask{
 			WaitGroup:   &wg,
 			Dis:         dis[i],
 			Keys:        chunks[i].Keys,

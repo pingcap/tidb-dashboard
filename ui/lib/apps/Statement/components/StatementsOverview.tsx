@@ -24,7 +24,7 @@ interface State {
   curTimeRange: StatementTimeRange | undefined
   curStmtTypes: string[]
 
-  statementStatus: StatementStatus
+  statementStatus: boolean
 
   instances: Instance[]
   schemas: string[]
@@ -41,7 +41,7 @@ const initState: State = {
   curTimeRange: undefined,
   curStmtTypes: [],
 
-  statementStatus: 'unknown',
+  statementStatus: true,
 
   instances: [],
   schemas: [],
@@ -78,7 +78,7 @@ function reducer(state: State, action: Action): State {
         curInstance: action.payload,
         curSchemas: [],
         curTimeRange: undefined,
-        statementStatus: 'unknown',
+        statementStatus: true,
         schemas: [],
         timeRanges: [],
         statements: [],
@@ -205,7 +205,7 @@ export default function StatementsOverview({
         if (res !== undefined) {
           dispatch({
             type: 'change_statement_status',
-            payload: res.enable ? 'on' : 'off',
+            payload: res.enable,
           })
         }
       }
@@ -407,9 +407,7 @@ export default function StatementsOverview({
           </Space>
         </div>
       </Card>
-      {state.statementStatus === 'off' ? (
-        StatementDisabled
-      ) : (
+      {state.statementStatus ? (
         <StatementsTable
           key={`${state.statements.length}_${refreshTimes}`}
           statements={state.statements}
@@ -417,6 +415,8 @@ export default function StatementsOverview({
           timeRange={state.curTimeRange!}
           detailPagePath={detailPagePath}
         />
+      ) : (
+        StatementDisabled
       )}
       <Drawer
         title={t('statement.setting.title')}

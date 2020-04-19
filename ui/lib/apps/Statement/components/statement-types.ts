@@ -5,8 +5,6 @@ export interface Instance {
 
 export const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
-export type StatementStatus = 'on' | 'off' | 'unknown'
-
 export interface StatementPlanStep {
   id: string
   task: string

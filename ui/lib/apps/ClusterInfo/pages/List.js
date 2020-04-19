@@ -119,12 +119,6 @@ function useClusterNodeDataSource() {
             }
           }
           const children = nodes.nodes.map((node) => {
-            if (node.deploy_path === undefined && node.binary_path !== null) {
-              node.deploy_path = node.binary_path.substring(
-                0,
-                node.binary_path.lastIndexOf('/')
-              )
-            }
             return {
               key: `${node.ip}:${node.port}`,
               ...node,

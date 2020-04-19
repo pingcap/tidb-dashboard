@@ -83,9 +83,10 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 		ttlMap[address] = value
 	} else if fieldType == "info" {
 		ds := struct {
-			Version        string `json:"version"`
-			GitHash        string `json:"git_hash"`
-			StatusPort     uint   `json:"status_port"`
+			Version    string `json:"version"`
+			GitHash    string `json:"git_hash"`
+			StatusPort uint   `json:"status_port"`
+			// TODO: modify this after tidb's info changed to `deploy_dir`.
 			BinaryPath     string `json:"binary_path"`
 			StartTimestamp int64  `json:"start_timestamp"`
 		}{}
@@ -104,7 +105,7 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 			Version:        ds.Version,
 			IP:             host,
 			Port:           port,
-			BinaryPath:     ds.BinaryPath,
+			DeployDir:      ds.BinaryPath,
 			Status:         ComponentStatusUnreachable,
 			StatusPort:     ds.StatusPort,
 			StartTimestamp: ds.StartTimestamp,
@@ -145,10 +146,11 @@ type tikvStore struct {
 		Key   string `json:"key"`
 		Value string `json:"value"`
 	}
-	StateName      string `json:"state_name"`
-	Version        string `json:"version"`
-	StatusAddress  string `json:"status_address"`
-	GitHash        string `json:"git_hash"`
+	StateName     string `json:"state_name"`
+	Version       string `json:"version"`
+	StatusAddress string `json:"status_address"`
+	GitHash       string `json:"git_hash"`
+	// TODO: change this to deploy_dir after tikv's field changed to `deploy_dir`.
 	BinaryPath     string `json:"binary_path"`
 	StartTimestamp int64  `json:"start_timestamp"`
 }
@@ -210,7 +212,7 @@ func GetTiKVTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, erro
 			Version:        version,
 			IP:             host,
 			Port:           port,
-			BinaryPath:     v.BinaryPath,
+			DeployDir:      v.BinaryPath,
 			Status:         storeStateToStatus(v.StateName),
 			StatusPort:     statusPort,
 			Labels:         map[string]string{},
@@ -247,7 +249,7 @@ func GetTiDBTopologyFromOld(ctx context.Context, etcdclient *clientv3.Client) ([
 			Version:    currentInfo.Version,
 			IP:         currentInfo.IP,
 			Port:       currentInfo.ListeningPort,
-			BinaryPath: "",
+			DeployDir:  "",
 			Status:     ComponentStatusUp,
 			StatusPort: currentInfo.StatusPort,
 		})
@@ -284,7 +286,8 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 	ds := struct {
 		Count   int `json:"count"`
 		Members []struct {
-			ClientUrls    []string    `json:"client_urls"`
+			ClientUrls []string `json:"client_urls"`
+			// TODO: change this after pd's field is changed.
 			DeployPath    string      `json:"deploy_path"`
 			BinaryVersion string      `json:"binary_version"`
 			MemberID      json.Number `json:"member_id"`
@@ -320,7 +323,7 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 			Version:        ds.BinaryVersion,
 			IP:             host,
 			Port:           port,
-			DeployPath:     ds.DeployPath,
+			DeployDir:      ds.DeployPath,
 			Status:         storeStatus,
 			StartTimestamp: ts,
 		})

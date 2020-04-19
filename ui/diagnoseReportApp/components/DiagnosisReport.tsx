@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import DiagnosisTable from './DiagnosisTable'
-import { ExpandContext } from '../types'
+import { ExpandContext, TableDef } from '../types'
 import { ALL_LANGUAGES } from '@lib/utils/i18n'
 
 function LangDropdown() {
@@ -22,8 +22,11 @@ function LangDropdown() {
   )
 }
 
-export default function DiagnosisReport() {
-  const diagnosisData = window['__diagnosis_data__'] || []
+type Props = {
+  diagnosisTables: TableDef[]
+}
+
+export default function DiagnosisReport({ diagnosisTables }: Props) {
   const [expandAll, setExpandAll] = useState(false)
   const { t } = useTranslation()
 
@@ -31,7 +34,7 @@ export default function DiagnosisReport() {
     <section className="section">
       <div className="container">
         <h1 className="title is-size-1">{t('diagnosis.title')}</h1>
-        <div>
+        <div className="actions sticky-top">
           <LangDropdown />
           <button
             className="button is-link is-light"
@@ -46,10 +49,41 @@ export default function DiagnosisReport() {
           >
             {t('diagnosis.fold_all')}
           </button>
+          <div className="dropdown is-hoverable">
+            <div className="dropdown-trigger">
+              <a className="navbar-link">Tables</a>
+            </div>
+            <div className="dropdown-menu">
+              <div
+                className="dropdown-content"
+                style={{
+                  maxHeight: 500,
+                  overflowY: 'scroll',
+                }}
+              >
+                {diagnosisTables.map((item) => (
+                  <>
+                    <h2 style={{ paddingLeft: 16 }}>
+                      {item.Category[0] &&
+                        t(`diagnosis.tables.category.${item.Category[0]}`)}
+                    </h2>
+                    <a
+                      style={{ paddingLeft: 28 }}
+                      key={item.Title}
+                      href={`#${item.Title}`}
+                      className="dropdown-item"
+                    >
+                      {t(`diagnosis.tables.title.${item.Title}`)}
+                    </a>
+                  </>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
         <ExpandContext.Provider value={expandAll}>
-          {diagnosisData.map((item, idx) => (
+          {diagnosisTables.map((item, idx) => (
             <DiagnosisTable diagnosis={item} key={idx} />
           ))}
         </ExpandContext.Provider>

@@ -16,3 +16,14 @@ tr.subvalues.fold {
   cursor: pointer;
   color: #2160c4;
 }
+
+.sticky-top {
+  position: sticky;
+  top: 0;
+}
+
+.actions {
+  padding: 8px 0;
+  background-color: white;
+  z-index: 1;
+}

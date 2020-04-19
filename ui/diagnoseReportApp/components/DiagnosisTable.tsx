@@ -74,7 +74,7 @@ export default function DiagnosisTable({ diagnosis }: Props) {
   const { t } = useTranslation()
 
   return (
-    <div className="report-container">
+    <div className="report-container" id={Title}>
       {(Category || []).map((c, idx) => (
         <h1 className={`title is-size-${idx + 2}`} key={idx}>
           {c && t(`diagnosis.tables.category.${c}`)}

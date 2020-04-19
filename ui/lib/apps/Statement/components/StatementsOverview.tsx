@@ -24,7 +24,7 @@ interface State {
   curTimeRange: StatementTimeRange | undefined
   curStmtTypes: string[]
 
-  statementStatus: boolean
+  statementEnable: boolean
 
   instances: Instance[]
   schemas: string[]
@@ -41,7 +41,7 @@ const initState: State = {
   curTimeRange: undefined,
   curStmtTypes: [],
 
-  statementStatus: true,
+  statementEnable: true,
 
   instances: [],
   schemas: [],
@@ -78,7 +78,7 @@ function reducer(state: State, action: Action): State {
         curInstance: action.payload,
         curSchemas: [],
         curTimeRange: undefined,
-        statementStatus: true,
+        statementEnable: true,
         schemas: [],
         timeRanges: [],
         statements: [],
@@ -86,7 +86,7 @@ function reducer(state: State, action: Action): State {
     case 'change_statement_status':
       return {
         ...state,
-        statementStatus: action.payload,
+        statementEnable: action.payload,
       }
     case 'save_schemas':
       return {
@@ -407,7 +407,7 @@ export default function StatementsOverview({
           </Space>
         </div>
       </Card>
-      {state.statementStatus ? (
+      {state.statementEnable ? (
         <StatementsTable
           key={`${state.statements.length}_${refreshTimes}`}
           statements={state.statements}

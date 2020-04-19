@@ -67,7 +67,7 @@ type Detail struct {
 
 // Node represents the statement in each node
 type Node struct {
-	Address         string `json:"address"`
+	Instance        string `json:"instance"`
 	SumLatency      int    `json:"sum_latency"`
 	ExecCount       int    `json:"exec_count"`
 	AvgLatency      int    `json:"avg_latency"`

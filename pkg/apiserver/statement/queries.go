@@ -30,20 +30,16 @@ const (
 	stmtHistroySizeVar     = "tidb_stmt_summary_history_size"
 )
 
-type sqlVariable struct {
-	Name  string `gorm:"column:Variable_name"`
-	Value string `gorm:"column:Value"`
-}
-
 // How to get sql variables by GORM
 // https://github.com/jinzhu/gorm/issues/2616
 func querySQLIntVariable(db *gorm.DB, name string) (int, error) {
-	var variables []sqlVariable
-	err := db.Raw("SHOW GLOBAL VARIABLES LIKE ?", name).Scan(&variables).Error
+	var values []string
+	sql := fmt.Sprintf("SELECT @@GLOBAL.%s as value", name) // nolints
+	err := db.Raw(sql).Pluck("value", &values).Error
 	if err != nil {
 		return 0, err
 	}
-	strVal := variables[0].Value
+	strVal := values[0]
 	if strVal == "" {
 		return -1, nil
 	}

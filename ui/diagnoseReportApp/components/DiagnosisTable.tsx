@@ -89,15 +89,7 @@ export default function DiagnosisTable({ diagnosis }: Props) {
         <thead>
           <tr>
             {Column.map((col, colIdx) => (
-              <th
-                style={{
-                  position: 'sticky',
-                  top: 55,
-                  backgroundColor: 'white',
-                  zIndex: 1,
-                }}
-                key={colIdx}
-              >
+              <th className="table-header-row" key={colIdx}>
                 {col}
               </th>
             ))}

@@ -17,13 +17,20 @@ tr.subvalues.fold {
   color: #2160c4;
 }
 
-.sticky-top {
-  position: sticky;
-  top: 0;
-}
-
 .actions {
   padding: 8px 0;
   background-color: white;
+
+  position: sticky;
+  top: 0;
   z-index: 2;
+}
+
+.table-header-row {
+  position: sticky;
+  top: 55px;
+  z-index: 1;
+
+  background-color: #888;
+  color: white !important;
 }

@@ -34,7 +34,7 @@ export default function DiagnosisReport({ diagnosisTables }: Props) {
     <section className="section">
       <div className="container">
         <h1 className="title is-size-1">{t('diagnosis.title')}</h1>
-        <div className="actions sticky-top">
+        <div className="actions">
           <LangDropdown />
           <button
             className="button is-link is-light"

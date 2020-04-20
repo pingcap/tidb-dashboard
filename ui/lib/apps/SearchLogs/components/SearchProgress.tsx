@@ -157,7 +157,7 @@ export default function SearchProgress({
     const allSize = tasks.reduce((previousValue, currentValue) => {
       return previousValue + currentValue.size!
     }, 0)
-    return res.join('，') + getValueFormat('bytes')(allSize, 1)
+    return res.join('，') + ' ' + getValueFormat('bytes')(allSize, 1)
   }
 
   function renderTreeNodes(tasks: LogsearchTaskModel[]) {

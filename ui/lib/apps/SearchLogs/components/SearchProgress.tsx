@@ -1,20 +1,12 @@
 import client from '@lib/client'
 import { LogsearchTaskModel } from '@lib/client'
 import { Button, Modal, Tree, Skeleton } from 'antd'
-import React, {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-} from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import styles from './Styles.module.css'
 import { namingMap, NodeKind, NodeKindList, TaskState } from './utils'
 import { Card } from '@lib/components'
-import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 
 const { confirm } = Modal
 const { TreeNode } = Tree
@@ -72,83 +64,36 @@ function parentNodeCheckable(tasks: LogsearchTaskModel[]) {
   return tasks.some((task) => task.state === TaskState.Finished)
 }
 
-function useSetInterval(callback: () => void) {
-  const ref = useRef<() => void>(callback)
-
-  useEffect(() => {
-    ref.current = callback
-  })
-
-  useEffect(() => {
-    const cb = () => {
-      ref.current()
-    }
-    const timer = setInterval(cb, 1000)
-    return () => clearInterval(timer)
-  }, [])
-}
-
 interface Props {
   taskGroupID: number
   tasks: LogsearchTaskModel[]
-  setTasks: Dispatch<SetStateAction<LogsearchTaskModel[]>>
 }
 
-export default function SearchProgress({
-  taskGroupID,
-  // tasks,
-  setTasks,
-}: Props) {
+export default function SearchProgress({ taskGroupID, tasks }: Props) {
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState<Boolean>(true)
+  const [reloading, setReloading] = useState<Boolean>(false)
+
   const { t } = useTranslation()
 
-  async function getTasks(taskGroupID: number, tasks: LogsearchTaskModel[]) {
-    if (taskGroupID < 0) {
-      return
-    }
-    if (
-      tasks.length > 0 &&
-      taskGroupID === tasks[0].task_group_id &&
-      !tasks.some((task) => task.state === TaskState.Running)
-    ) {
-      return
-    }
-    const res = await client.getInstance().logsTaskgroupsIdGet(taskGroupID + '')
-    setTasks(res.data.tasks ?? [])
+  if (reloading) {
+    tasks = tasks.map((task) => {
+      if (task.state === TaskState.Error) {
+        task.state = TaskState.Running
+      }
+      return task
+    })
   }
 
-  // useSetInterval(() => {
-  //   getTasks(taskGroupID, tasks)
-  // })
-
-  function isFinished(data) {
-    if (!data) {
-      return false
+  useEffect(() => {
+    if (reloading) {
+      setReloading(false)
     }
-    if (taskGroupID < 0) {
-      return true
+    if (tasks !== undefined && tasks.length > 0) {
+      setIsLoading(false)
     }
-    if (
-      tasks.length > 0 &&
-      taskGroupID === tasks[0].task_group_id &&
-      !tasks.some((task) => task.state === TaskState.Running)
-    ) {
-      return true
-    }
-    return true
-  }
-
-  const { data, isLoading } = useClientRequestWithPolling(
-    (cancelToken) =>
-      client
-        .getInstance()
-        .logsTaskgroupsIdGet(taskGroupID + '', { cancelToken }),
-    {
-      shouldPoll: (data) => !isFinished(data),
-    }
-  )
-
-  const tasks = useMemo(() => data?.tasks ?? [], [data, taskGroupID])
+    // eslint-disable-next-line
+  }, [tasks])
 
   const descriptionArray = [
     t('search_logs.progress.running'),
@@ -244,14 +189,7 @@ export default function SearchProgress({
       title: t('search_logs.confirm.cancel_tasks'),
       onOk() {
         client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + '')
-        setTasks(
-          tasks.map((task) => {
-            if (task.state === TaskState.Error) {
-              task.state = TaskState.Running
-            }
-            return task
-          })
-        )
+        setReloading(true)
       },
     })
   }
@@ -264,14 +202,7 @@ export default function SearchProgress({
       title: t('search_logs.confirm.retry_tasks'),
       onOk() {
         client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + '')
-        setTasks(
-          tasks.map((task) => {
-            if (task.state === TaskState.Error) {
-              task.state = TaskState.Running
-            }
-            return task
-          })
-        )
+        setReloading(true)
       },
     })
   }
@@ -282,7 +213,6 @@ export default function SearchProgress({
 
   return (
     <Card
-      key={taskGroupID}
       id="search_progress"
       style={{ marginLeft: -48 }}
       title={t('search_logs.common.progress')}

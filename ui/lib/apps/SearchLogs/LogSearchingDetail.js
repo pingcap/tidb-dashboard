@@ -1,17 +1,39 @@
 import { Head } from '@lib/components'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Col, Row } from 'antd'
-import React, { useState } from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router-dom'
 import { SearchHeader, SearchProgress, SearchResult } from './components'
+import client from '@lib/client'
+import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 
 export default function LogSearchingDetail() {
   const { t } = useTranslation()
   const { id } = useParams()
   const taskGroupID = id === undefined ? 0 : +id
 
-  const [tasks, setTasks] = useState([])
+  function isFinished(data) {
+    if (taskGroupID < 0) {
+      return true
+    }
+    if (!data) {
+      return false
+    }
+    return true
+  }
+
+  const { data } = useClientRequestWithPolling(
+    (cancelToken) =>
+      client.getInstance().logsTaskgroupsIdGet(id, { cancelToken }),
+    {
+      shouldPoll: (data) => !isFinished(data),
+      pollingInterval: 1000,
+      immediate: true,
+    }
+  )
+
+  const tasks = useMemo(() => data?.tasks ?? [], [data])
 
   return (
     <div>
@@ -38,7 +60,6 @@ export default function LogSearchingDetail() {
             key={taskGroupID}
             taskGroupID={taskGroupID}
             tasks={tasks}
-            setTasks={setTasks}
           />
         </Col>
       </Row>

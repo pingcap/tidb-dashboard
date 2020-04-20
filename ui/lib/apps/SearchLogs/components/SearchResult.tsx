@@ -98,7 +98,7 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
   }, [taskGroupID, tasks])
 
   return (
-    <Card id="logs_result" key={taskGroupID}>
+    <Card id="logs_result">
       {loading && <Skeleton active />}
       {!loading && (
         <>

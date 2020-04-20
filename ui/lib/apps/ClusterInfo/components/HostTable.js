@@ -50,7 +50,7 @@ export default function HostTable() {
       name: t('cluster_info.list.host_table.columns.cpu'),
       key: 'cpu_core',
       minWidth: 60,
-      maxWidth: 60,
+      maxWidth: 90,
       isResizable: true,
       isCollapsible: true,
       onRender: ({ cpu_core }) =>
@@ -59,8 +59,8 @@ export default function HostTable() {
     {
       name: t('cluster_info.list.host_table.columns.cpu_usage'),
       key: 'cpu_usage',
-      minWidth: 80,
-      maxWidth: 100,
+      minWidth: 100,
+      maxWidth: 150,
       isResizable: true,
       isCollapsible: true,
       onRender: ({ cpu_usage }) => {
@@ -86,7 +86,7 @@ export default function HostTable() {
       name: t('cluster_info.list.host_table.columns.memory'),
       key: 'memory',
       minWidth: 60,
-      maxWidth: 60,
+      maxWidth: 90,
       isResizable: true,
       isCollapsible: true,
       onRender: ({ memory }) =>
@@ -95,8 +95,8 @@ export default function HostTable() {
     {
       name: t('cluster_info.list.host_table.columns.memory_usage'),
       key: 'memory_usage',
-      minWidth: 80,
-      maxWidth: 100,
+      minWidth: 100,
+      maxWidth: 150,
       isResizable: true,
       isCollapsible: true,
       onRender: ({ memory }) => {
@@ -162,7 +162,7 @@ export default function HostTable() {
       name: t('cluster_info.list.host_table.columns.disk_size'),
       key: 'disk_size',
       minWidth: 80,
-      maxWidth: 80,
+      maxWidth: 100,
       isResizable: true,
       isCollapsible: true,
       onRender: ({ partitions }) => {
@@ -206,6 +206,12 @@ export default function HostTable() {
           )
         })
       },
+    },
+    {
+      name: '',
+      key: 'dummy',
+      isResizable: true,
+      isCollapsible: true,
     },
   ]
 

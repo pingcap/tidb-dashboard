@@ -64,7 +64,7 @@ function renderColumnVisibilitySelection(
   onChange?: (visibleKeys: { [key: string]: boolean }) => void
 ) {
   if (columns == null) {
-    return null
+    return []
   }
   if (visibleColumnKeys == null) {
     visibleColumnKeys = {}
@@ -74,6 +74,7 @@ function renderColumnVisibilitySelection(
   }
   return columns.map((column) => (
     <Checkbox
+      key={column.key}
       checked={visibleColumnKeys![column.key]}
       onChange={(e) => {
         if (!onChange) {
@@ -117,7 +118,7 @@ function CardTableV2(props: ICardTableV2Props) {
   }, [columns, visibleColumnKeys])
 
   const filteredItems = useMemo(() => {
-    if (visibleColumnKeys == null) {
+    if (visibleItemsCount == null) {
       return items
     }
     return items.slice(0, visibleItemsCount)

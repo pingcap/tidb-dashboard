@@ -26,7 +26,7 @@ import {
 import { Card, CardTableV2 } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import StatementSettingForm from './StatementSettingForm'
-import { StatementStatus, Instance, DATE_TIME_FORMAT } from './statement-types'
+import { Instance, DATE_TIME_FORMAT } from './statement-types'
 import { SearchContext } from './search-options-context'
 import styles from './styles.module.less'
 
@@ -69,7 +69,7 @@ const initState: State = {
 type Action =
   | { type: 'save_instances'; payload: Instance[] }
   | { type: 'change_instance'; payload: string | undefined }
-  | { type: 'change_statement_status'; payload: StatementStatus }
+  | { type: 'change_statement_status'; payload: boolean }
   | { type: 'save_schemas'; payload: string[] }
   | { type: 'change_schema'; payload: string[] }
   | { type: 'save_time_ranges'; payload: StatementTimeRange[] }
@@ -234,7 +234,7 @@ export default function StatementsOverview({
         if (res !== undefined) {
           dispatch({
             type: 'change_statement_status',
-            payload: res.enable,
+            payload: res.enable!,
           })
         }
       }

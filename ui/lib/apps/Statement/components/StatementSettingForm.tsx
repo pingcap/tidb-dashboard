@@ -58,10 +58,10 @@ function StatementSettingForm({
       if (res) {
         setOriConfig(res)
 
-        const refresh_interval = Math.ceil(res.refresh_interval / 60)
+        const refresh_interval = Math.ceil(res.refresh_interval! / 60)
         const max_refresh_interval = Math.max(refresh_interval, 60)
         const keep_duration = Math.ceil(
-          (res.refresh_interval * res.history_size) / (24 * 60 * 60)
+          (res.refresh_interval! * res.history_size!) / (24 * 60 * 60)
         )
         const max_keep_duration = Math.max(keep_duration, 30)
         setConfig({
@@ -95,7 +95,7 @@ function StatementSettingForm({
   }
 
   function handleSubmit(values) {
-    if (oriConfig.enable && !values.enable) {
+    if (oriConfig?.enable && !values.enable) {
       // warning
       Modal.confirm({
         title: t('statement.setting.close_statement'),

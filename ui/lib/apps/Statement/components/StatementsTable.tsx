@@ -9,8 +9,6 @@ import {
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { CardTableV2, ICardTableV2Props, EllipsisText } from '@lib/components'
 import { StatementOverview, StatementTimeRange } from '@lib/client'
-// import { useMax } from './use-max'
-// import { StatementMaxVals } from './statement-types'
 import * as commonColumns from '../utils/commonColumns'
 
 // TODO: Extract to single file when needs to be re-used
@@ -30,7 +28,7 @@ const tableColumns = (
   showFullSQL?: boolean
 ): IColumn[] => {
   const columns: IColumn[] = [
-    commonColumns.useDigestColumn(rows),
+    commonColumns.useDigestColumn(rows, showFullSQL),
     {
       ...commonColumns.useSumLatencyColumn(rows),
       isSorted: true,
@@ -105,10 +103,14 @@ export default function StatementsTable({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [items, setItems] = useState(statements)
-  // const maxs = useMax(statements)
-  const [columns, setColumns] = useState(() =>
+  const [columns, setColumns] = useState(
     tableColumns(t, statements, onColumnClick, showFullSQL)
   )
+  // `useState(() => tableColumns(...))` will cause run-time crash, the message:
+  // Warning: Do not call Hooks inside useEffect(...), useMemo(...),
+  // or other built-in Hooks. You can only call Hooks at the top level of your React function.
+  // I guess because we use the `useTranslation()` inside the `tableColumns()` method
+  // TODO: verify
 
   useEffect(() => {
     onGetColumns && onGetColumns(columns)

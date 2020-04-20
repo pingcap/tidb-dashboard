@@ -1,7 +1,7 @@
 import client from '@lib/client'
 import {
   LogsearchCreateTaskGroupRequest,
-  LogsearchSearchTarget,
+  UtilsRequestTargetNode,
 } from '@lib/client'
 import { Button, DatePicker, Form, Input, Select, TreeSelect } from 'antd'
 import { RangeValue } from 'rc-picker/lib/interface'
@@ -13,12 +13,11 @@ import { useNavigate } from 'react-router-dom'
 import { useMount } from '@umijs/hooks'
 import styles from './Styles.module.css'
 import {
-  getAddress,
   namingMap,
+  NodeKind,
+  NodeKindList,
   parseClusterInfo,
   parseSearchingParams,
-  ServerType,
-  ServerTypeList,
   DATE_TIME_FORMAT,
 } from './utils'
 
@@ -26,27 +25,27 @@ const { SHOW_CHILD } = TreeSelect
 const { RangePicker } = DatePicker
 const { Option } = Select
 
-function buildTreeData(targets: LogsearchSearchTarget[]) {
+function buildTreeData(targets: UtilsRequestTargetNode[]) {
   const servers = {
-    [ServerType.TiDB]: [],
-    [ServerType.TiKV]: [],
-    [ServerType.PD]: [],
+    [NodeKind.TiDB]: [],
+    [NodeKind.TiKV]: [],
+    [NodeKind.PD]: [],
   }
 
   targets.forEach((item) => {
-    if (item.kind === undefined) {
+    if (item === undefined || item.kind === undefined) {
       return
     }
     servers[item.kind].push(item)
   })
 
-  return ServerTypeList.filter((kind) => servers[kind].length > 0).map(
+  return NodeKindList.filter((kind) => servers[kind].length > 0).map(
     (kind) => ({
       title: namingMap[kind],
       value: kind,
       key: kind,
-      children: servers[kind].map((item: LogsearchSearchTarget) => {
-        const addr = getAddress(item)
+      children: servers[kind].map((item: UtilsRequestTargetNode) => {
+        const addr = item.display_name!
         return {
           title: addr,
           value: addr,
@@ -72,7 +71,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
   const [selectedComponents, setComponents] = useState<string[]>([])
   const [searchValue, setSearchValue] = useState<string>('')
 
-  const [allTargets, setAllTargets] = useState<LogsearchSearchTarget[]>([])
+  const [allTargets, setAllTargets] = useState<UtilsRequestTargetNode[]>([])
   useMount(() => {
     async function fetchData() {
       const res = await client.getInstance().topologyAllGet()
@@ -92,7 +91,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
       } = parseSearchingParams(res2.data)
       setTimeRange(timeRange)
       setLogLevel(logLevel === 0 ? 3 : logLevel)
-      setComponents(components.map((item) => getAddress(item)))
+      setComponents(components.map((item) => item.display_name ?? ''))
       setSearchValue(searchValue)
     }
     fetchData()
@@ -100,12 +99,12 @@ export default function SearchHeader({ taskGroupID }: Props) {
 
   async function createTaskGroup() {
     // TODO: check select at least one component
-    const searchTargets: LogsearchSearchTarget[] = allTargets.filter((item) =>
-      selectedComponents.some((addr) => addr === getAddress(item))
+    const targets: UtilsRequestTargetNode[] = allTargets.filter((item) =>
+      selectedComponents.some((addr) => addr === item.display_name ?? '')
     )
 
     let params: LogsearchCreateTaskGroupRequest = {
-      search_targets: searchTargets,
+      targets: targets,
       request: {
         start_time: timeRange?.[0]?.valueOf(), // unix millionsecond
         end_time: timeRange?.[1]?.valueOf(), // unix millionsecond

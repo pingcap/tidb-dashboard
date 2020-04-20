@@ -1,5 +1,5 @@
 import client from '@lib/client'
-import { LogsearchSearchTarget, LogsearchTaskModel } from '@lib/client'
+import { UtilsRequestTargetNode, LogsearchTaskModel } from '@lib/client'
 import { Card } from '@lib/components'
 import { Alert, Skeleton, Table, Tooltip } from 'antd'
 import moment from 'moment'
@@ -15,11 +15,11 @@ type LogPreview = {
   key: number
   time?: string
   level?: string
-  component?: LogsearchSearchTarget | undefined
+  component?: UtilsRequestTargetNode | undefined
   log?: string
 }
 
-function componentRender(target: LogsearchSearchTarget | undefined) {
+function componentRender(target: UtilsRequestTargetNode | undefined) {
   if (target === undefined) {
     return ''
   }
@@ -65,7 +65,7 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
     function getComponent(id: number | undefined) {
       return tasks.find((task) => {
         return task.id !== undefined && task.id === id
-      })?.search_target
+      })?.target
     }
 
     async function getLogPreview() {

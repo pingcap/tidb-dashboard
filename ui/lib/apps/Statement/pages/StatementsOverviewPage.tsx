@@ -1,12 +1,6 @@
 import React from 'react'
-import { StatementsOverview, StatementConfig } from '../components'
-import { DefaultApi } from '@lib/client'
-
-function fakeReq<T>(res: T): Promise<T> {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => resolve(res), 2000)
-  })
-}
+import { StatementsOverview } from '../components'
+import { DefaultApi, StatementConfig } from '@lib/client'
 
 type Props = {
   dashboardClient: DefaultApi
@@ -50,23 +44,13 @@ export default function StatementsOverviewPage({
       .then((res) => res.data)
   }
 
-  function queryStatementStatus() {
-    return fakeReq('ok')
+  const queryConfig = () => {
+    return dashboardClient.statementsConfigGet().then((res) => res.data)
   }
 
-  function updateStatementStatus() {
-    return fakeReq('ok')
+  const updateConfig = (_instanceId: string, config: StatementConfig) => {
+    return dashboardClient.statementsConfigPost(config).then((res) => res.data)
   }
-
-  const queryConfig = () =>
-    fakeReq({
-      refresh_interval: 100,
-      keep_duration: 100,
-      max_sql_count: 1000,
-      max_sql_length: 100,
-    } as StatementConfig)
-
-  const updateConfig = () => fakeReq('ok')
 
   return (
     <StatementsOverview
@@ -75,8 +59,6 @@ export default function StatementsOverviewPage({
       onFetchTimeRanges={queryTimeRanges}
       onFetchStmtTypes={queryStmtTypes}
       onFetchStatements={queryStatements}
-      onGetStatementStatus={queryStatementStatus}
-      onSetStatementStatus={updateStatementStatus}
       onFetchConfig={queryConfig}
       onUpdateConfig={updateConfig}
       detailPagePath={detailPagePath}

@@ -1,17 +1,20 @@
-import React, { useReducer, useEffect, useContext } from 'react'
-import { Select, Form } from 'antd'
+import React, { useReducer, useEffect, useContext, useState } from 'react'
+import { Select, Space, Tooltip, Drawer, Button } from 'antd'
+import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
-import { StatementOverview, StatementTimeRange } from '@lib/client'
+import {
+  StatementOverview,
+  StatementTimeRange,
+  StatementConfig,
+} from '@lib/client'
 import { Card } from '@lib/components'
 import StatementsTable from './StatementsTable'
-import {
-  StatementStatus,
-  StatementConfig,
-  Instance,
-  DATE_TIME_FORMAT,
-} from './statement-types'
+import StatementSettingForm from './StatementSettingForm'
+import { StatementStatus, Instance, DATE_TIME_FORMAT } from './statement-types'
 import { SearchContext } from './search-options-context'
+import styles from './styles.module.less'
 
 const { Option } = Select
 
@@ -21,7 +24,7 @@ interface State {
   curTimeRange: StatementTimeRange | undefined
   curStmtTypes: string[]
 
-  statementStatus: StatementStatus
+  statementEnable: boolean
 
   instances: Instance[]
   schemas: string[]
@@ -38,7 +41,7 @@ const initState: State = {
   curTimeRange: undefined,
   curStmtTypes: [],
 
-  statementStatus: 'unknown',
+  statementEnable: true,
 
   instances: [],
   schemas: [],
@@ -75,7 +78,7 @@ function reducer(state: State, action: Action): State {
         curInstance: action.payload,
         curSchemas: [],
         curTimeRange: undefined,
-        statementStatus: 'unknown',
+        statementEnable: true,
         schemas: [],
         timeRanges: [],
         statements: [],
@@ -83,7 +86,7 @@ function reducer(state: State, action: Action): State {
     case 'change_statement_status':
       return {
         ...state,
-        statementStatus: action.payload,
+        statementEnable: action.payload,
       }
     case 'save_schemas':
       return {
@@ -147,13 +150,7 @@ interface Props {
     stmtTypes: string[]
   ) => Promise<StatementOverview[]>
 
-  onGetStatementStatus: (instanceId: string) => Promise<any>
-  onSetStatementStatus: (
-    instanceId: string,
-    status: 'on' | 'off'
-  ) => Promise<any>
-
-  onFetchConfig: (instanceId: string) => Promise<StatementConfig>
+  onFetchConfig: (instanceId: string) => Promise<StatementConfig | undefined>
   onUpdateConfig: (instanceId: string, config: StatementConfig) => Promise<any>
 
   detailPagePath: string
@@ -166,9 +163,6 @@ export default function StatementsOverview({
   onFetchStmtTypes,
   onFetchStatements,
 
-  onGetStatementStatus,
-  onSetStatementStatus,
-
   onFetchConfig,
   onUpdateConfig,
 
@@ -180,6 +174,8 @@ export default function StatementsOverview({
     ...initState,
     ...searchOptions,
   })
+  const [refreshTimes, setRefreshTimes] = useState(0)
+  const [showSettings, setShowSettings] = useState(false)
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -205,13 +201,12 @@ export default function StatementsOverview({
   useEffect(() => {
     async function queryStatementStatus() {
       if (state.curInstance) {
-        const res = await onGetStatementStatus(state.curInstance)
+        const res = await onFetchConfig(state.curInstance)
         if (res !== undefined) {
-          // TODO: set on or off according res
-          // dispatch({
-          //   type: 'change_statement_status',
-          //   payload: 'on'
-          // })
+          dispatch({
+            type: 'change_statement_status',
+            payload: res.enable,
+          })
         }
       }
     }
@@ -239,6 +234,12 @@ export default function StatementsOverview({
             payload: res[0],
           })
         }
+        if (res && res.length === 0) {
+          dispatch({
+            type: 'change_time_range',
+            payload: undefined,
+          })
+        }
       }
     }
 
@@ -257,7 +258,7 @@ export default function StatementsOverview({
     queryTimeRanges()
     queryStmtTypes()
     // eslint-disable-next-line
-  }, [state.curInstance])
+  }, [state.curInstance, refreshTimes])
   // don't add the dependent functions likes onFetchTimeRanges into the dependency array
   // it will cause the infinite loop
   // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
@@ -297,6 +298,7 @@ export default function StatementsOverview({
     state.curSchemas,
     state.curTimeRange,
     state.curStmtTypes,
+    refreshTimes,
   ])
   // don't add the dependent functions likes onFetchStatements into the dependency array
   // it will cause the infinite loop
@@ -309,8 +311,10 @@ export default function StatementsOverview({
     })
   }
 
-  function handleTimeRangeChange(val: number) {
-    const timeRange = state.timeRanges.find((item) => item.begin_time === val)
+  function handleTimeRangeChange(val: string) {
+    const timeRange = state.timeRanges.find(
+      (item) => `${item.begin_time}_${item.end_time}` === val
+    )
     dispatch({
       type: 'change_time_range',
       payload: timeRange,
@@ -324,26 +328,43 @@ export default function StatementsOverview({
     })
   }
 
+  const StatementDisabled = (
+    <div className={styles.statement_disabled_container}>
+      <h2>{t('statement.setting.disabled_desc_title')}</h2>
+      <div className={styles.statement_disabled_desc}>
+        <p>{t('statement.setting.disabled_desc_line_1')}</p>
+        <p>{t('statement.setting.disabled_desc_line_2')}</p>
+      </div>
+      <Button type="primary" onClick={() => setShowSettings(true)}>
+        {t('statement.setting.open_setting')}
+      </Button>
+    </div>
+  )
+
   return (
-    <div>
+    <ScrollablePane style={{ height: '100vh' }}>
       <Card>
-        <Form layout="inline">
-          <Form.Item>
+        <div style={{ display: 'flex' }}>
+          <Space size="middle">
             <Select
-              value={state.curTimeRange?.begin_time}
+              value={
+                state.curTimeRange &&
+                `${state.curTimeRange.begin_time}_${state.curTimeRange.end_time}`
+              }
               placeholder={t('statement.filters.select_time')}
               style={{ width: 360 }}
               onChange={handleTimeRangeChange}
             >
               {state.timeRanges.map((item) => (
-                <Option value={item.begin_time || ''} key={item.begin_time}>
+                <Option
+                  value={`${item.begin_time}_${item.end_time}`}
+                  key={`${item.begin_time}_${item.end_time}`}
+                >
                   {dayjs.unix(item.begin_time!).format(DATE_TIME_FORMAT)} ~{' '}
                   {dayjs.unix(item.end_time!).format(DATE_TIME_FORMAT)}
                 </Option>
               ))}
             </Select>
-          </Form.Item>
-          <Form.Item>
             <Select
               value={state.curSchemas}
               mode="multiple"
@@ -358,8 +379,6 @@ export default function StatementsOverview({
                 </Option>
               ))}
             </Select>
-          </Form.Item>
-          <Form.Item>
             <Select
               value={state.curStmtTypes}
               mode="multiple"
@@ -374,16 +393,47 @@ export default function StatementsOverview({
                 </Option>
               ))}
             </Select>
-          </Form.Item>
-        </Form>
+          </Space>
+          <div style={{ flex: 1 }} />
+          <Space size="middle">
+            <Tooltip title={t('statement.setting.title')}>
+              <SettingOutlined onClick={() => setShowSettings(true)} />
+            </Tooltip>
+            <Tooltip title={t('statement.tooltip.refresh')}>
+              <ReloadOutlined
+                onClick={() => setRefreshTimes((prev) => prev + 1)}
+              />
+            </Tooltip>
+          </Space>
+        </div>
       </Card>
-      <StatementsTable
-        key={state.statements.length}
-        statements={state.statements}
-        loading={state.statementsLoading}
-        timeRange={state.curTimeRange!}
-        detailPagePath={detailPagePath}
-      />
-    </div>
+      {state.statementEnable ? (
+        <StatementsTable
+          key={`${state.statements.length}_${refreshTimes}`}
+          statements={state.statements}
+          loading={state.statementsLoading}
+          timeRange={state.curTimeRange!}
+          detailPagePath={detailPagePath}
+        />
+      ) : (
+        StatementDisabled
+      )}
+      <Drawer
+        title={t('statement.setting.title')}
+        width={300}
+        closable={true}
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        destroyOnClose={true}
+      >
+        <StatementSettingForm
+          instanceId={state.curInstance || ''}
+          onClose={() => setShowSettings(false)}
+          onFetchConfig={onFetchConfig}
+          onUpdateConfig={onUpdateConfig}
+          onConfigUpdated={() => setRefreshTimes((prev) => prev + 1)}
+        />
+      </Drawer>
+    </ScrollablePane>
   )
 }

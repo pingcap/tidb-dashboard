@@ -29,10 +29,17 @@ type ClusterInfo struct {
 		Nodes []clusterinfo.TiKVInfo `json:"nodes"`
 		Err   *string                `json:"err"`
 	} `json:"tikv"`
+
 	PD struct {
 		Nodes []clusterinfo.PDInfo `json:"nodes"`
 		Err   *string              `json:"err"`
 	} `json:"pd"`
+
+	TiFlash struct {
+		Nodes []clusterinfo.TiFlashInfo `json:"nodes"`
+		Err   *string                   `json:"err"`
+	} `json:"tiflash"`
+
 	Grafana      *clusterinfo.GrafanaInfo      `json:"grafana"`
 	AlertManager *clusterinfo.AlertManagerInfo `json:"alert_manager"`
 }
@@ -77,12 +84,14 @@ func fillPDTopology(ctx context.Context, service *Service, fillTargetInfo *Clust
 	fillTargetInfo.PD.Nodes = pdPeers
 }
 
-func fillTiKVTopology(ctx context.Context, service *Service, fillTargetInfo *ClusterInfo) {
-	kv, err := clusterinfo.GetTiKVTopology(service.config.PDEndPoint, service.httpClient)
+func fillStoreTopology(ctx context.Context, service *Service, fillTargetInfo *ClusterInfo) {
+	kv, tiflashes, err := clusterinfo.GetStoreTopology(service.config.PDEndPoint, service.httpClient)
 	if err != nil {
 		errString := err.Error()
 		fillTargetInfo.TiKV.Err = &errString
+		fillTargetInfo.TiFlash.Err = &errString
 		return
 	}
 	fillTargetInfo.TiKV.Nodes = kv
+	fillTargetInfo.TiFlash.Nodes = tiflashes
 }

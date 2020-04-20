@@ -16,9 +16,9 @@ package logsearch
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"fmt"
 	"os"
-	"strings"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 
@@ -39,20 +39,6 @@ const (
 	TaskGroupStateRunning  TaskGroupState = 1
 	TaskGroupStateFinished TaskGroupState = 2
 )
-
-type ServerType int
-
-const (
-	ServerTypeTiDB ServerType = 1
-	ServerTypeTiKV ServerType = 2
-	ServerTypePD   ServerType = 3
-)
-
-var ServerTypeMap = map[ServerType]string{
-	ServerTypeTiDB: "tidb",
-	ServerTypeTiKV: "tikv",
-	ServerTypePD:   "pd",
-}
 
 type LogLevel int32
 
@@ -105,43 +91,13 @@ func (r *SearchLogRequest) Value() (driver.Value, error) {
 	return string(val), err
 }
 
-type SearchTarget struct {
-	Kind       ServerType `json:"kind" example:"1"`
-	IP         string     `json:"ip" gorm:"size:32" example:"127.0.0.1"`
-	Port       int        `json:"port" example:"4000"`
-	StatusPort int        `json:"status_port" example:"10080"`
-}
-
-func (s *SearchTarget) Address() string {
-	return fmt.Sprintf("%s:%d", s.IP, s.Port)
-}
-
-func (s *SearchTarget) GRPCAddress() string {
-	if s.Kind == ServerTypeTiDB {
-		return fmt.Sprintf("%s:%d", s.IP, s.StatusPort)
-	}
-	return s.Address()
-}
-
-func (s *SearchTarget) ServerName() string {
-	return ServerTypeMap[s.Kind]
-}
-
-func (s *SearchTarget) String() string {
-	return fmt.Sprintf("%s(%s)", s.ServerName(), s.Address())
-}
-
-func (s *SearchTarget) FileName() string {
-	return fmt.Sprintf("%s_%s_%d", s.ServerName(), strings.ReplaceAll(s.IP, ".", "_"), s.Port)
-}
-
 type TaskModel struct {
-	ID           uint          `json:"id" gorm:"primary_key"`
-	TaskGroupID  uint          `json:"task_group_id" gorm:"index"`
-	SearchTarget *SearchTarget `json:"search_target" gorm:"embedded;embedded_prefix:search_target_"`
-	State        TaskState     `json:"state" gorm:"index"`
-	LogStorePath *string       `json:"log_store_path" gorm:"type:text"`
-	Error        *string       `json:"error" gorm:"type:text"`
+	ID           uint                     `json:"id" gorm:"primary_key"`
+	TaskGroupID  uint                     `json:"task_group_id" gorm:"index"`
+	Target       *utils.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
+	State        TaskState                `json:"state" gorm:"index"`
+	LogStorePath *string                  `json:"log_store_path" gorm:"type:text"`
+	Error        *string                  `json:"error" gorm:"type:text"`
 }
 
 func (TaskModel) TableName() string {
@@ -158,10 +114,11 @@ func (task *TaskModel) RemoveDataAndPreview(db *dbstore.DB) {
 }
 
 type TaskGroupModel struct {
-	ID            uint              `json:"id" gorm:"primary_key"`
-	SearchRequest *SearchLogRequest `json:"search_request" gorm:"type:text"`
-	State         TaskGroupState    `json:"state" gorm:"index"`
-	LogStoreDir   *string           `json:"log_store_dir" gorm:"type:text"`
+	ID            uint                          `json:"id" gorm:"primary_key"`
+	SearchRequest *SearchLogRequest             `json:"search_request" gorm:"type:text"`
+	State         TaskGroupState                `json:"state" gorm:"index"`
+	TargetStats   utils.RequestTargetStatistics `json:"target_stats" gorm:"embedded;embedded_prefix:target_stats_"`
+	LogStoreDir   *string                       `json:"log_store_dir" gorm:"type:text"`
 }
 
 func (TaskGroupModel) TableName() string {

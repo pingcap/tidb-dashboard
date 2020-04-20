@@ -10,8 +10,7 @@ export interface TableRowDef {
 export interface TableDef {
   Category: string[]
   Title: string
-  CommentEN: string
-  CommentCN: string
+  Comment: string
   joinColumns: number[]
   compareColumns: number[]
   Column: string[]

@@ -8,6 +8,7 @@ import dayjs from 'dayjs'
 import { StatementTimeRange } from '@lib/client'
 
 import styles from './TimeRangeSelector.module.less'
+import { useTranslation } from 'react-i18next'
 
 const RECENT_MINS = [30, 60, 3 * 60, 6 * 60, 12 * 60, 24 * 60]
 
@@ -65,6 +66,7 @@ export default function TimeRangeSelector({
   timeRanges,
   onChange,
 }: ITimeRangeSelectorProps) {
+  const { t } = useTranslation()
   const { allBeginTime, allEndTime, minBeginTime, maxEndTime } = useMemo(
     () => calcTime(timeRanges),
     [timeRanges]
@@ -74,6 +76,7 @@ export default function TimeRangeSelector({
     return latestTimeRange
   })
   const [curRecent, setCurRecent] = useState(30)
+  const [dropdownVisible, setDropdownVisible] = useState(false)
 
   useEffect(() => {
     setCurTimeRange(calcTime(timeRanges).latestTimeRange)
@@ -114,7 +117,7 @@ export default function TimeRangeSelector({
   const dropdownContent = (
     <div className={styles.dropdown_content_container}>
       <div className={styles.fixed_time_ranges}>
-        <span>常用时间范围</span>
+        <span>{t('statement.time_range_selector.usual_time_ranges')}</span>
         <div className={styles.time_range_items}>
           {RECENT_MINS.map((mins) => (
             <div
@@ -125,13 +128,14 @@ export default function TimeRangeSelector({
               })}
               onClick={() => handleTimeRangeChange(mins)}
             >
-              最近 {getValueFormat('m')(mins, 0)}
+              {t('statement.time_range_selector.recent')}{' '}
+              {getValueFormat('m')(mins, 0)}
             </div>
           ))}
         </div>
       </div>
       <div className={styles.custom_time_ranges}>
-        <span>自定义时间范围</span>
+        <span>{t('statement.time_range_selector.custom_time_ranges')}</span>
         <Slider
           min={minBeginTime}
           max={maxEndTime}
@@ -150,10 +154,18 @@ export default function TimeRangeSelector({
   )
 
   return (
-    <Dropdown overlay={dropdownContent} trigger={['click']}>
+    <Dropdown
+      overlay={dropdownContent}
+      trigger={['click']}
+      visible={dropdownVisible}
+      onVisibleChange={setDropdownVisible}
+    >
       <Button icon={<ClockCircleOutlined />}>
         {curRecent > 0 ? (
-          <span>最近 {getValueFormat('m')(curRecent, 0)}</span>
+          <span>
+            {t('statement.time_range_selector.recent')}{' '}
+            {getValueFormat('m')(curRecent, 0)}
+          </span>
         ) : (
           <span>
             {dayjs.unix(curTimeRange.begin_time!).format('MM-DD HH:mm')} ~{' '}

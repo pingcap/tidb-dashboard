@@ -142,7 +142,12 @@ func (t *Task) SyncRun() {
 		}
 		t.model.State = TaskStateFinished
 		stat, err := os.Stat(*t.model.LogStorePath)
-		if err == nil {
+		if err != nil {
+			log.Warn("Can NOT fetch log file size for LogSearchTask",
+				zap.Any("task", t),
+				zap.String("err", err.Error()),
+			)
+		} else {
 			t.model.Size = stat.Size()
 		}
 		log.Debug("LogSearchTask finished", zap.Any("task", t))

@@ -258,7 +258,7 @@ func getAllTiFlashNodes(stores []store) []tiflashStore {
 }
 
 func getTiFlashTopology(stores []tiflashStore) ([]TiFlashInfo, error) {
-	var nodes []TiFlashInfo
+	nodes := make([]TiFlashInfo, 0)
 	for _, v := range stores {
 		// parse ip and port
 		host, port, err := parseHostAndPortFromAddress(v.Address)

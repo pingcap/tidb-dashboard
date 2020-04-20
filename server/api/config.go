@@ -307,3 +307,33 @@ func (h *confHandler) SetClusterVersion(w http.ResponseWriter, r *http.Request) 
 	}
 	h.rd.JSON(w, http.StatusOK, nil)
 }
+
+// @Tags config
+// @Summary Get replication mode config.
+// @Produce json
+// @Success 200 {object} config.ReplicationModeConfig
+// @Router /config/replication-mode [get]
+func (h *confHandler) GetReplicationMode(w http.ResponseWriter, r *http.Request) {
+	h.rd.JSON(w, http.StatusOK, h.svr.GetReplicationModeConfig())
+}
+
+// @Tags config
+// @Summary Set replication mode config.
+// @Accept json
+// @Param body body object string "json params"
+// @Produce json
+// @Success 200 {string} string
+// @Failure 500 {string} string "PD server failed to proceed the request."
+// @Router /config/replication-mode [post]
+func (h *confHandler) SetReplicationMode(w http.ResponseWriter, r *http.Request) {
+	config := h.svr.GetReplicationModeConfig()
+	if err := apiutil.ReadJSONRespondError(h.rd, w, r.Body, &config); err != nil {
+		return
+	}
+
+	if err := h.svr.SetReplicationModeConfig(*config); err != nil {
+		h.rd.JSON(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	h.rd.JSON(w, http.StatusOK, nil)
+}

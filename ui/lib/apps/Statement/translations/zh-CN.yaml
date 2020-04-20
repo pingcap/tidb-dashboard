@@ -7,21 +7,22 @@ statement:
     select_schemas: 选择数据库
     select_stmt_types: 选择 SQL 类型
   common:
+    columns:
+      plan_digest: 执行计划 ID
+      plan_digest_tooltip: 不同的执行计划有不同的 ID
+      digest_text: SQL
+      digest_text_tooltip: SQL 指纹，相似的 SQL 语句即使查询参数不一样也具有相同的 SQL 指纹
+      sum_latency: 累计耗时
+      sum_latency_tooltip: 该类 SQL 语句在时间段内的累计执行时间
+      exec_count: 执行次数
+      exec_count_tooltip: 该类 SQL 语句在时间段内被执行的总次数
+      avg_latency: 平均耗时
+      avg_latency_tooltip: 单条 SQL 语句的执行时间
+      avg_mem: 平均内存
+      avg_mem_tooltip: 单条 SQL 语句的消耗内存大小
     schema: 数据库
     schemas: 数据库
     schemas_tooltip: SQL 语句涉及的数据库
-    digest_text: SQL
-    digest_text_tooltip: SQL 指纹
-    sum_latency: 总延时
-    sum_latency_tooltip: 单个 SQL 语句的累计耗时
-    exec_count: 总次数
-    exec_count_tooltip: 单个 SQL 语句执行的总次数
-    avg_affected_rows: 平均影响行数
-    avg_latency: 平均延时
-    avg_latency_tooltip: 单个 SQL 语句的平均耗时
-    max_latency: 最大延时
-    avg_mem: 平均消耗内存
-    avg_mem_tooltip: 单个 SQL 语句的平均消耗内存
     sum_backoff_times: Backoff 重试次数
     avg_total_keys: 平均扫描行数
   detail:

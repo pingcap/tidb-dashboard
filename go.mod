@@ -32,3 +32,5 @@ require (
 	go.uber.org/zap v1.13.0
 	google.golang.org/grpc v1.25.1
 )
+
+replace github.com/swaggo/swag => github.com/breeswish/swag v1.6.6-0.20200420031958-719cfd8cfce1

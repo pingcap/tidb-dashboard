@@ -3,19 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { Tooltip } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import { getValueFormat } from '@baurine/grafana-value-formats'
 import {
-  Bar,
-  CardTableV2,
-  ICardTableV2Props,
-  FormatHighlightSQL,
-  EllipsisText,
-  Pre,
-} from '@lib/components'
+  IColumn,
+  ColumnActionsMode,
+} from 'office-ui-fabric-react/lib/DetailsList'
+import { CardTableV2, ICardTableV2Props, EllipsisText } from '@lib/components'
 import { StatementOverview, StatementTimeRange } from '@lib/client'
-import { useMax } from './use-max'
-import { StatementMaxVals } from './statement-types'
+// import { useMax } from './use-max'
+// import { StatementMaxVals } from './statement-types'
+import * as commonColumns from '../utils/commonColumns'
 
 // TODO: Extract to single file when needs to be re-used
 const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
@@ -30,112 +26,32 @@ const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
 const tableColumns = (
   t: (string) => string,
   concise: boolean,
-  maxs: StatementMaxVals,
+  rows: StatementOverview[],
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void
 ): IColumn[] => {
   const columns: IColumn[] = [
+    commonColumns.useDigestColumn(rows),
     {
-      name: columnHeaderWithTooltip('statement.common.digest_text', t),
-      key: 'digest_text',
-      minWidth: 100,
-      maxWidth: 500,
-      isResizable: true,
-      onRender: (rec: StatementOverview) => (
-        <Tooltip
-          title={<FormatHighlightSQL sql={rec.digest_text!} theme="dark" />}
-          placement="right"
-        >
-          <EllipsisText>{rec.digest_text}</EllipsisText>
-        </Tooltip>
-      ),
-    },
-    {
-      name: columnHeaderWithTooltip('statement.common.sum_latency', t),
-      key: 'sum_latency',
-      fieldName: 'sum_latency',
-      minWidth: 140,
-      maxWidth: 200,
-      isResizable: true,
+      ...commonColumns.useSumLatencyColumn(rows),
       isSorted: true,
       isSortedDescending: true,
       onColumnClick: onColumnClick,
-      onRender: (rec) => (
-        <Bar
-          textWidth={70}
-          value={rec.sum_latency}
-          capacity={maxs.maxSumLatency}
-        >
-          {getValueFormat('ns')(rec.sum_latency, 1)}
-        </Bar>
-      ),
+      columnActionsMode: ColumnActionsMode.clickable,
     },
     {
-      name: columnHeaderWithTooltip('statement.common.avg_latency', t),
-      key: 'avg_latency',
-      fieldName: 'avg_latency',
-      minWidth: 140,
-      maxWidth: 200,
-      isResizable: true,
+      ...commonColumns.useAvgMinMaxLatencyColumn(rows),
       onColumnClick: onColumnClick,
-      onRender: (rec) => {
-        const tooltipContent = `
-AVG: ${getValueFormat('ns')(rec.avg_latency, 1)}
-MIN: ${getValueFormat('ns')(rec.min_latency, 1)}
-MAX: ${getValueFormat('ns')(rec.max_latency, 1)}`
-        return (
-          <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
-            <Bar
-              textWidth={70}
-              value={rec.avg_latency}
-              max={rec.max_latency}
-              min={rec.min_latency}
-              capacity={maxs.maxMaxLatency}
-            >
-              {getValueFormat('ns')(rec.avg_latency, 1)}
-            </Bar>
-          </Tooltip>
-        )
-      },
+      columnActionsMode: ColumnActionsMode.clickable,
     },
     {
-      name: columnHeaderWithTooltip('statement.common.exec_count', t),
-      key: 'exec_count',
-      fieldName: 'exec_count',
-      minWidth: 140,
-      maxWidth: 200,
-      isResizable: true,
+      ...commonColumns.useExecCountColumn(rows),
       onColumnClick: onColumnClick,
-      onRender: (rec) => (
-        <Bar textWidth={70} value={rec.exec_count} capacity={maxs.maxExecCount}>
-          {getValueFormat('short')(rec.exec_count, 0, 1)}
-        </Bar>
-      ),
+      columnActionsMode: ColumnActionsMode.clickable,
     },
     {
-      name: columnHeaderWithTooltip('statement.common.avg_mem', t),
-      key: 'avg_mem',
-      fieldName: 'avg_mem',
-      minWidth: 140,
-      maxWidth: 200,
-      isResizable: true,
+      ...commonColumns.useAvgMaxMemColumn(rows),
       onColumnClick: onColumnClick,
-      onRender: (rec) => {
-        const tooltipContent = `
-AVG: ${getValueFormat('bytes')(rec.avg_mem, 1)}
-MAX: ${getValueFormat('bytes')(rec.max_mem, 1)}`
-        return (
-          <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
-            <Bar
-              textWidth={70}
-              value={rec.avg_mem}
-              max={rec.max_mem}
-              capacity={maxs.maxMaxMem}
-            >
-              {getValueFormat('bytes')(rec.avg_mem, 1)}
-            </Bar>
-          </Tooltip>
-        )
-      },
+      columnActionsMode: ColumnActionsMode.clickable,
     },
     {
       name: columnHeaderWithTooltip('statement.common.schemas', t),
@@ -143,6 +59,7 @@ MAX: ${getValueFormat('bytes')(rec.max_mem, 1)}`
       minWidth: 160,
       maxWidth: 240,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: (rec) => (
         <Tooltip title={rec.schemas}>
           <EllipsisText>{rec.schemas}</EllipsisText>
@@ -171,7 +88,7 @@ function copyAndSort<T>(
     )
 }
 
-interface Props extends ICardTableV2Props {
+interface Props extends Partial<ICardTableV2Props> {
   statements: StatementOverview[]
   loading: boolean
   timeRange: StatementTimeRange
@@ -190,9 +107,9 @@ export default function StatementsTable({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [items, setItems] = useState(statements)
-  const maxs = useMax(statements)
-  const [columns, setColumns] = useState(() =>
-    tableColumns(t, concise || false, maxs, onColumnClick)
+  // const maxs = useMax(statements)
+  const [columns, setColumns] = useState(
+    tableColumns(t, concise || false, statements, onColumnClick)
   )
 
   function handleRowClick(rec) {

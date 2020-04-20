@@ -1,5 +1,6 @@
 import client from '@lib/client'
 import { LogsearchTaskModel } from '@lib/client'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 import { Button, Modal, Tree, Skeleton } from 'antd'
 import React, {
   Dispatch,
@@ -42,10 +43,11 @@ function leafNodeProps(state: number | undefined) {
 function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map((task) => {
     const title = task.target?.display_name ?? ''
+    const size = getValueFormat('bytes')(task.size!, 1)
     return (
       <TreeNode
         key={`${task.id}`}
-        title={title}
+        title={`${title} ${size}`}
         {...leafNodeProps(task.state)}
       />
     )
@@ -152,7 +154,10 @@ export default function SearchProgress({
       const str = `${count} ${descriptionArray[index]}`
       res.push(str)
     })
-    return res.join('，')
+    const allSize = tasks.reduce((previousValue, currentValue) => {
+      return previousValue + currentValue.size!
+    }, 0)
+    return res.join('，') + getValueFormat('bytes')(allSize, 1)
   }
 
   function renderTreeNodes(tasks: LogsearchTaskModel[]) {

@@ -97,6 +97,7 @@ type TaskModel struct {
 	Target       *utils.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
 	State        TaskState                `json:"state" gorm:"index"`
 	LogStorePath *string                  `json:"log_store_path" gorm:"type:text"`
+	Size         int64                    `json:"size" gorm:"index"`
 	Error        *string                  `json:"error" gorm:"type:text"`
 }
 

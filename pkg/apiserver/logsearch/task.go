@@ -141,6 +141,10 @@ func (t *Task) SyncRun() {
 			return
 		}
 		t.model.State = TaskStateFinished
+		stat, err := os.Stat(*t.model.LogStorePath)
+		if err == nil {
+			t.model.Size = stat.Size()
+		}
 		log.Debug("LogSearchTask finished", zap.Any("task", t))
 		t.taskGroup.service.db.Save(t.model)
 	}()

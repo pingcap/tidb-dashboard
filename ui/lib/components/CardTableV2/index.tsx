@@ -20,6 +20,7 @@ export interface ICardTableV2Props extends IDetailsListProps {
   loading?: boolean
   loadingSkeletonRows?: number
   cardExtra?: React.ReactNode
+  cardNoMargin?: boolean
   // The keys of visible columns. If null, all columns will be shown.
   visibleColumnKeys?: { [key: string]: boolean }
   // Event triggered when a row is clicked.
@@ -102,6 +103,7 @@ function CardTableV2(props: ICardTableV2Props) {
     loading = false,
     loadingSkeletonRows = 5,
     cardExtra,
+    cardNoMargin,
     visibleColumnKeys,
     onRowClicked,
     columns,
@@ -121,6 +123,7 @@ function CardTableV2(props: ICardTableV2Props) {
       title={title}
       style={style}
       className={cx(styles.cardTable, className)}
+      noMargin={cardNoMargin}
       extra={cardExtra}
     >
       {loading ? (
@@ -136,6 +139,9 @@ function CardTableV2(props: ICardTableV2Props) {
             layoutMode={DetailsListLayoutMode.justified}
             onRenderDetailsHeader={renderStickyHeader}
             onRenderRow={onRowClicked ? renderClickableRow : undefined}
+            onRenderCheckbox={(props) => {
+              return <Checkbox checked={props?.checked} />
+            }}
             columns={filteredColumns}
             {...restProps}
           />

@@ -27,10 +27,15 @@ export default function LogSearchingDetail() {
           >
             <SearchHeader taskGroupID={taskGroupID} />
           </Head>
-          <SearchResult taskGroupID={taskGroupID} tasks={tasks} />
+          <SearchResult
+            key={taskGroupID}
+            taskGroupID={taskGroupID}
+            tasks={tasks}
+          />
         </Col>
         <Col span={6}>
           <SearchProgress
+            key={taskGroupID}
             taskGroupID={taskGroupID}
             tasks={tasks}
             setTasks={setTasks}

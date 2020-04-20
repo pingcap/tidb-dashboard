@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useMemo,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
@@ -19,6 +20,7 @@ import {
   TaskState,
 } from './utils'
 import { Card } from '@lib/components'
+import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 
 const { confirm } = Modal
 const { TreeNode } = Tree
@@ -100,12 +102,11 @@ interface Props {
 
 export default function SearchProgress({
   taskGroupID,
-  tasks,
+  // tasks,
   setTasks,
 }: Props) {
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
   const { t } = useTranslation()
-  const [loading, setLoading] = useState(true)
 
   async function getTasks(taskGroupID: number, tasks: LogsearchTaskModel[]) {
     if (taskGroupID < 0) {
@@ -122,19 +123,38 @@ export default function SearchProgress({
     setTasks(res.data.tasks ?? [])
   }
 
-  useSetInterval(() => {
-    getTasks(taskGroupID, tasks)
-  })
+  // useSetInterval(() => {
+  //   getTasks(taskGroupID, tasks)
+  // })
 
-  useEffect(() => {
-    if (tasks.length > 0) {
-      setLoading(false)
+  function isFinished(data) {
+    if (!data) {
+      return false
     }
-  }, [tasks])
+    if (taskGroupID < 0) {
+      return true
+    }
+    if (
+      tasks.length > 0 &&
+      taskGroupID === tasks[0].task_group_id &&
+      !tasks.some((task) => task.state === TaskState.Running)
+    ) {
+      return true
+    }
+    return true
+  }
 
-  useEffect(() => {
-    setLoading(true)
-  }, [taskGroupID])
+  const { data, isLoading } = useClientRequestWithPolling(
+    (cancelToken) =>
+      client
+        .getInstance()
+        .logsTaskgroupsIdGet(taskGroupID + '', { cancelToken }),
+    {
+      shouldPoll: (data) => !isFinished(data),
+    }
+  )
+
+  const tasks = useMemo(() => data?.tasks ?? [], [data, taskGroupID])
 
   const descriptionArray = [
     t('search_logs.progress.running'),
@@ -268,12 +288,13 @@ export default function SearchProgress({
 
   return (
     <Card
+      key={taskGroupID}
       id="search_progress"
       style={{ marginLeft: -48 }}
       title={t('search_logs.common.progress')}
     >
-      {loading && <Skeleton active />}
-      {!loading && (
+      {isLoading && <Skeleton active />}
+      {!isLoading && (
         <>
           <div>{progressDescription(tasks)}</div>
           <div className={styles.buttons}>

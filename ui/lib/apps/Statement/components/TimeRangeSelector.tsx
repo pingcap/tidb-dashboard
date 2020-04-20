@@ -82,7 +82,7 @@ export default function TimeRangeSelector({
     setCurTimeRange(calcTime(timeRanges).latestTimeRange)
   }, [timeRanges])
 
-  function handleTimeRangeChange(mins: number) {
+  function handleRecentChange(mins: number) {
     setCurRecent(mins)
     const beginTime = findNearTimePoint(maxEndTime - mins * 60, allBeginTime)
     const timeRange = {
@@ -123,7 +123,7 @@ export default function TimeRangeSelector({
               className={cx(styles.time_range_item, {
                 [styles.time_range_item_active]: mins === curRecent,
               })}
-              onClick={() => handleTimeRangeChange(mins)}
+              onClick={() => handleRecentChange(mins)}
             >
               {t('statement.time_range_selector.recent')}{' '}
               {getValueFormat('m')(mins, 0)}
@@ -152,6 +152,7 @@ export default function TimeRangeSelector({
 
   return (
     <Dropdown
+      disabled={timeRanges.length === 0}
       overlay={dropdownContent}
       trigger={['click']}
       visible={dropdownVisible}

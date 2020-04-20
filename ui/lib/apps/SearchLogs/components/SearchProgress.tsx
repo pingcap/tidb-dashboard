@@ -154,10 +154,10 @@ export default function SearchProgress({
       const str = `${count} ${descriptionArray[index]}`
       res.push(str)
     })
-    const allSize = tasks.reduce((previousValue, currentValue) => {
+    const allSize = tasks.reduce((total, current) => {
       return previousValue + currentValue.size!
     }, 0)
-    return res.join('，') + ' ' + getValueFormat('bytes')(allSize, 1)
+    return res.join('，') + ' ' + getValueFormat('bytes')(allSize, 0)
   }
 
   function renderTreeNodes(tasks: LogsearchTaskModel[]) {

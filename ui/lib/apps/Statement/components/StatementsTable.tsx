@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Tooltip } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
@@ -15,19 +15,19 @@ import * as commonColumns from '../utils/commonColumns'
 
 // TODO: Extract to single file when needs to be re-used
 const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
-  <>
-    {t(key)}
-    <Tooltip title={t(key + '_tooltip')}>
+  <Tooltip title={t(key + '_tooltip')}>
+    <span>
+      {t(key)}
       <InfoCircleOutlined style={{ margin: '0 8px' }} />
-    </Tooltip>
-  </>
+    </span>
+  </Tooltip>
 )
 
 const tableColumns = (
   t: (string) => string,
-  concise: boolean,
   rows: StatementOverview[],
-  onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void
+  onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
+  showFullSQL?: boolean
 ): IColumn[] => {
   const columns: IColumn[] = [
     commonColumns.useDigestColumn(rows),
@@ -67,11 +67,6 @@ const tableColumns = (
       ),
     },
   ]
-  if (concise) {
-    return columns.filter((col) =>
-      ['schemas', 'digest_text', 'sum_latency', 'avg_latency'].includes(col.key)
-    )
-  }
   return columns
 }
 
@@ -89,28 +84,36 @@ function copyAndSort<T>(
 }
 
 interface Props extends Partial<ICardTableV2Props> {
-  statements: StatementOverview[]
   loading: boolean
+  statements: StatementOverview[]
   timeRange: StatementTimeRange
   detailPagePath?: string
-  concise?: boolean
+  showFullSQL?: boolean
+
+  onGetColumns?: (columns: IColumn[]) => void
 }
 
 export default function StatementsTable({
-  statements,
   loading,
+  statements,
   timeRange,
   detailPagePath,
-  concise,
+  showFullSQL,
+  onGetColumns,
   ...restPrpos
 }: Props) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [items, setItems] = useState(statements)
   // const maxs = useMax(statements)
-  const [columns, setColumns] = useState(
-    tableColumns(t, concise || false, statements, onColumnClick)
+  const [columns, setColumns] = useState(() =>
+    tableColumns(t, statements, onColumnClick, showFullSQL)
   )
+
+  useEffect(() => {
+    onGetColumns && onGetColumns(columns)
+    // eslint-disable-next-line
+  }, [])
 
   function handleRowClick(rec) {
     navigate(

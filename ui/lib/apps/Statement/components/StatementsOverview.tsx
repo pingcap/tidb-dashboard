@@ -26,6 +26,7 @@ import {
 import { Card, CardTableV2 } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import StatementSettingForm from './StatementSettingForm'
+import TimeRangeSelector from './TimeRangeSelector'
 import { Instance, DATE_TIME_FORMAT } from './statement-types'
 import { SearchContext } from './search-options-context'
 import styles from './styles.module.less'

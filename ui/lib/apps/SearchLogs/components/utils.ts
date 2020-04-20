@@ -1,8 +1,8 @@
 import {
   ClusterinfoClusterInfo,
-  LogsearchSearchTarget,
   LogsearchTaskGroupResponse,
   LogsearchTaskModel,
+  UtilsRequestTargetNode,
 } from '@lib/client'
 import { RangeValue } from 'rc-picker/lib/interface'
 import moment from 'moment'
@@ -25,25 +25,24 @@ export enum TaskState {
   Error,
 }
 
-export enum ServerType {
-  Unknown = 0,
-  TiDB,
-  TiKV,
-  PD,
+export enum NodeKind {
+  TiDB = 'tidb',
+  TiKV = 'tikv',
+  PD = 'pd',
 }
 
 export const namingMap = {
-  [ServerType.TiDB]: 'TiDB',
-  [ServerType.TiKV]: 'TiKV',
-  [ServerType.PD]: 'PD',
+  [NodeKind.TiDB]: 'TiDB',
+  [NodeKind.TiKV]: 'TiKV',
+  [NodeKind.PD]: 'PD',
 }
 
 export const AllLogLevel = [1, 2, 3, 4, 5, 6]
 
 export function parseClusterInfo(
   info: ClusterinfoClusterInfo
-): LogsearchSearchTarget[] {
-  const targets: LogsearchSearchTarget[] = []
+): UtilsRequestTargetNode[] {
+  const targets: UtilsRequestTargetNode[] = []
   info?.tidb?.nodes?.forEach((item) => {
     if (
       item.ip === undefined ||
@@ -52,11 +51,12 @@ export function parseClusterInfo(
     ) {
       return
     }
+    // TiDB has a different behavior: it use "status_port" for grpc, "port" for display.
     targets.push({
-      kind: ServerType.TiDB,
+      kind: NodeKind.TiDB,
       ip: item.ip,
-      port: item.port,
-      status_port: item.status_port,
+      port: item.status_port,
+      display_name: `${item.ip}:${item.port}`,
     })
   })
   info?.tikv?.nodes?.forEach((item) => {
@@ -68,10 +68,10 @@ export function parseClusterInfo(
       return
     }
     targets.push({
-      kind: ServerType.TiKV,
+      kind: NodeKind.TiKV,
       ip: item.ip,
       port: item.port,
-      status_port: item.status_port,
+      display_name: `${item.ip}:${item.port}`,
     })
   })
   info?.pd?.nodes?.forEach((item) => {
@@ -79,10 +79,10 @@ export function parseClusterInfo(
       return
     }
     targets.push({
-      kind: ServerType.PD,
+      kind: NodeKind.PD,
       ip: item.ip,
       port: item.port,
-      status_port: item.port,
+      display_name: `${item.ip}:${item.port}`,
     })
   })
   return targets
@@ -91,7 +91,7 @@ export function parseClusterInfo(
 interface Params {
   timeRange: RangeValue<moment.Moment>
   logLevel: number
-  components: LogsearchSearchTarget[]
+  components: UtilsRequestTargetNode[]
   searchValue: string
 }
 
@@ -109,33 +109,15 @@ export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
   }
 }
 
-function getComponents(tasks: LogsearchTaskModel[]): LogsearchSearchTarget[] {
-  const targets: LogsearchSearchTarget[] = []
+function getComponents(tasks: LogsearchTaskModel[]): UtilsRequestTargetNode[] {
+  const targets: UtilsRequestTargetNode[] = []
   tasks.forEach((task) => {
-    if (task.search_target === undefined) {
+    if (task.target === undefined) {
       return
     }
-    targets.push(task.search_target)
+    targets.push(task.target)
   })
   return targets
 }
 
-export function getGRPCAddress(
-  target: LogsearchSearchTarget | undefined
-): string {
-  if (target === undefined) {
-    return ''
-  }
-  return target?.kind === ServerType.TiDB
-    ? `${target.ip}:${target.status_port}`
-    : `${target.ip}:${target.port}`
-}
-
-export function getAddress(target: LogsearchSearchTarget | undefined): string {
-  if (target === undefined) {
-    return ''
-  }
-  return `${target.ip}:${target.port}`
-}
-
-export const ServerTypeList = [ServerType.TiDB, ServerType.TiKV, ServerType.PD]
+export const NodeKindList = [NodeKind.TiDB, NodeKind.TiKV, NodeKind.PD]

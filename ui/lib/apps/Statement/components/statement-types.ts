@@ -5,15 +5,6 @@ export interface Instance {
 
 export const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
-export type StatementStatus = 'on' | 'off' | 'unknown'
-
-export interface StatementConfig {
-  refresh_interval: number
-  keep_duration: number
-  max_sql_count: number
-  max_sql_length: number
-}
-
 export interface StatementPlanStep {
   id: string
   task: string

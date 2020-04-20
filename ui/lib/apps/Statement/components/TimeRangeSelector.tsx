@@ -4,11 +4,11 @@ import { ClockCircleOutlined, DownOutlined } from '@ant-design/icons'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import cx from 'classnames'
 import dayjs from 'dayjs'
+import { useTranslation } from 'react-i18next'
 
 import { StatementTimeRange } from '@lib/client'
 
 import styles from './TimeRangeSelector.module.less'
-import { useTranslation } from 'react-i18next'
 
 const RECENT_MINS = [30, 60, 3 * 60, 6 * 60, 12 * 60, 24 * 60]
 
@@ -84,10 +84,7 @@ export default function TimeRangeSelector({
 
   function handleTimeRangeChange(mins: number) {
     setCurRecent(mins)
-    const beginTime = findNearTimePoint(
-      dayjs().unix() - mins * 60,
-      allBeginTime
-    )
+    const beginTime = findNearTimePoint(maxEndTime - mins * 60, allBeginTime)
     const timeRange = {
       begin_time: beginTime,
       end_time: maxEndTime,

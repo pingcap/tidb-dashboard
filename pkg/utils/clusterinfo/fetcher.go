@@ -187,12 +187,7 @@ type tikvStore struct {
 	store
 }
 
-func getAllTiKVNodes(endpoint string, httpClient *http.Client) ([]tikvStore, error) {
-	stores, err := getAllStoreNodes(endpoint, httpClient)
-	if err != nil {
-		return nil, err
-	}
-
+func getAllTiKVNodes(stores []store) []tikvStore {
 	tikvs := make([]tikvStore, len(stores))
 	for i := range stores {
 		isTiFlash := false
@@ -205,16 +200,11 @@ func getAllTiKVNodes(endpoint string, httpClient *http.Client) ([]tikvStore, err
 			tikvs = append(tikvs, tikvStore{stores[i]})
 		}
 	}
-	return tikvs, nil
+	return tikvs
 }
 
-func GetTiKVTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, error) {
+func getTiKVTopology(stores []tikvStore) ([]TiKVInfo, error) {
 	nodes := make([]TiKVInfo, 0)
-	stores, err := getAllTiKVNodes(endpoint, httpClient)
-
-	if err != nil {
-		return nil, err
-	}
 	for _, v := range stores {
 		// parse ip and port
 		host, port, err := parseHostAndPortFromAddress(v.Address)
@@ -254,12 +244,7 @@ type tiflashStore struct {
 	store
 }
 
-func getAllTiFlashStores(endpoint string, httpClient *http.Client) ([]tiflashStore, error) {
-	stores, err := getAllStoreNodes(endpoint, httpClient)
-	if err != nil {
-		return nil, err
-	}
-
+func getAllTiFlashNodes(stores []store) []tiflashStore {
 	tiflashes := make([]tiflashStore, len(stores))
 	for i := range stores {
 		for _, label := range stores[i].Labels {
@@ -269,16 +254,11 @@ func getAllTiFlashStores(endpoint string, httpClient *http.Client) ([]tiflashSto
 		}
 	}
 
-	return tiflashes, nil
+	return tiflashes
 }
 
-func GetTiFlashTopology(endpoint string, httpClient *http.Client) ([]TiFlashInfo, error) {
+func getTiFlashTopology(stores []tiflashStore) ([]TiFlashInfo, error) {
 	var nodes []TiFlashInfo
-	stores, err := getAllTiFlashStores(endpoint, httpClient)
-
-	if err != nil {
-		return nodes, err
-	}
 	for _, v := range stores {
 		// parse ip and port
 		host, port, err := parseHostAndPortFromAddress(v.Address)
@@ -307,6 +287,27 @@ func GetTiFlashTopology(endpoint string, httpClient *http.Client) ([]TiFlashInfo
 	}
 
 	return nodes, nil
+}
+
+func GetStoreTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, []TiFlashInfo, error) {
+	stores, err := getAllStoreNodes(endpoint, httpClient)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	tikvStores := getAllTiKVNodes(stores)
+	tikvInfos, err := getTiKVTopology(tikvStores)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	tiflashStores := getAllTiFlashNodes(stores)
+	tiflashInfos, err := getTiFlashTopology(tiflashStores)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return tikvInfos, tiflashInfos, nil
 }
 
 // GetTiDBTopologyFromOld get tidb topology under "/tidb/server/info/".

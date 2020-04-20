@@ -108,7 +108,7 @@ function buildData(data) {
   const tableData = []
   const groupData = []
   let startIndex = 0
-  const kinds = ['tidb', 'tikv', 'pd']
+  const kinds = ['tidb', 'tikv', 'pd', 'tiflash']
   kinds.forEach((nodeKind) => {
     const nodes = data[nodeKind]
     if (nodes.err) {

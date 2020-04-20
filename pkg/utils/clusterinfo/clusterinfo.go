@@ -56,6 +56,17 @@ type TiKVInfo struct {
 	StartTimestamp int64             `json:"start_timestamp"`
 }
 
+type TiFlashInfo struct {
+	Version        string            `json:"version"`
+	IP             string            `json:"ip"`
+	Port           uint              `json:"port"`
+	BinaryPath     string            `json:"binary_path"`
+	Status         ComponentStatus   `json:"status"`
+	StatusPort     uint              `json:"status_port"`
+	Labels         map[string]string `json:"labels"`
+	StartTimestamp int64             `json:"start_timestamp"`
+}
+
 type AlertManagerInfo struct {
 	IP         string `json:"ip"`
 	Port       uint   `json:"port"`

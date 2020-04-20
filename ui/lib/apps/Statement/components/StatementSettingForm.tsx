@@ -55,7 +55,7 @@ function StatementSettingForm({
     async function fetchConfig() {
       setLoading(true)
       const res = await onFetchConfig(instanceId)
-      if (res !== undefined) {
+      if (res) {
         setOriConfig(res)
 
         const refresh_interval = Math.ceil(res.refresh_interval / 60)

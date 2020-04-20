@@ -22,6 +22,7 @@ export interface ICardTableV2Props extends IDetailsListProps {
   cardExtra?: React.ReactNode
   // The keys of visible columns. If null, all columns will be shown.
   visibleColumnKeys?: { [key: string]: boolean }
+  visibleItemsCount?: number
   // Event triggered when a row is clicked.
   onRowClicked?: (item: any, itemIndex: number) => void
 }
@@ -97,18 +98,28 @@ function CardTableV2(props: ICardTableV2Props) {
     loadingSkeletonRows = 5,
     cardExtra,
     visibleColumnKeys,
+    visibleItemsCount,
     onRowClicked,
     columns,
+    items,
     ...restProps
   } = props
 
   const renderClickableRow = useRenderClickableRow(onRowClicked)
+
   const filteredColumns = useMemo(() => {
     if (columns == null || visibleColumnKeys == null) {
       return columns
     }
     return columns.filter((c) => visibleColumnKeys[c.key])
   }, [columns, visibleColumnKeys])
+
+  const filteredItems = useMemo(() => {
+    if (visibleColumnKeys == null) {
+      return items
+    }
+    return items.slice(0, visibleItemsCount)
+  }, [items, visibleItemsCount])
 
   return (
     <Card
@@ -131,6 +142,7 @@ function CardTableV2(props: ICardTableV2Props) {
             onRenderDetailsHeader={renderStickyHeader}
             onRenderRow={onRowClicked ? renderClickableRow : undefined}
             columns={filteredColumns}
+            items={filteredItems}
             {...restProps}
           />
         </div>

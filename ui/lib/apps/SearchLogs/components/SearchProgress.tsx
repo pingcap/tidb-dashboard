@@ -11,13 +11,7 @@ import React, {
 import { useTranslation } from 'react-i18next'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import styles from './Styles.module.css'
-import {
-  getAddress,
-  namingMap,
-  ServerType,
-  ServerTypeList,
-  TaskState,
-} from './utils'
+import { namingMap, NodeKind, NodeKindList, TaskState } from './utils'
 import { Card } from '@lib/components'
 
 const { confirm } = Modal
@@ -47,7 +41,7 @@ function leafNodeProps(state: number | undefined) {
 
 function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map((task) => {
-    const title = getAddress(task.search_target)
+    const title = task.target?.display_name ?? ''
     return (
       <TreeNode
         key={`${task.id}`}
@@ -163,19 +157,19 @@ export default function SearchProgress({
 
   function renderTreeNodes(tasks: LogsearchTaskModel[]) {
     const servers = {
-      [ServerType.TiDB]: [],
-      [ServerType.TiKV]: [],
-      [ServerType.PD]: [],
+      [NodeKind.TiDB]: [],
+      [NodeKind.TiKV]: [],
+      [NodeKind.PD]: [],
     }
 
     tasks.forEach((task) => {
-      if (task.search_target?.kind === undefined) {
+      if (task.target?.kind === undefined) {
         return
       }
-      servers[task.search_target.kind].push(task)
+      servers[task.target.kind].push(task)
     })
 
-    return ServerTypeList.filter((kind) => servers[kind].length > 0).map(
+    return NodeKindList.filter((kind) => servers[kind].length > 0).map(
       (kind) => {
         const tasks: LogsearchTaskModel[] = servers[kind]
         const title = (

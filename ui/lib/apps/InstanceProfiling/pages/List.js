@@ -103,7 +103,7 @@ export default function Page() {
     data: historyTable,
     isLoading: listLoading,
   } = useClientRequest((cancelToken) =>
-    client.getInstance().getProfilingGroups(cancelToken)
+    client.getInstance().getProfilingGroups({ cancelToken })
   )
 
   const { t } = useTranslation()

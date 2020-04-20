@@ -116,7 +116,7 @@ export default function TimeRangeSelector({
 
   const dropdownContent = (
     <div className={styles.dropdown_content_container}>
-      <div className={styles.fixed_time_ranges}>
+      <div className={styles.usual_time_ranges}>
         <span>{t('statement.time_range_selector.usual_time_ranges')}</span>
         <div className={styles.time_range_items}>
           {RECENT_MINS.map((mins) => (

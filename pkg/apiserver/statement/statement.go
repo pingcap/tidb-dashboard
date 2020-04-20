@@ -46,6 +46,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/overviews", s.overviewsHandler)
 	endpoint.GET("/detail", s.detailHandler)
 	endpoint.GET("/nodes", s.nodesHandler)
+	endpoint.GET("/plans", s.getPlansHandler)
 }
 
 // @Summary TiDB databases
@@ -141,7 +142,7 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 // @Param begin_time query string true "Statement begin time"
 // @Param end_time query string true "Statement end time"
 // @Param digest query string true "Statement digest"
-// @Success 200 {object} statement.Detail
+// @Success 200 {object} Detail
 // @Router /statements/detail [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
@@ -190,6 +191,37 @@ func (s *Service) nodesHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, nodes)
+}
+
+type GetPlansRequest struct {
+	SchemaName string `json:"schema_name" form:"schema_name"`
+	Digest     string `json:"digest" form:"digest"`
+	BeginTime  int    `json:"begin_time" form:"begin_time"`
+	EndTime    int    `json:"end_time" form:"end_time"`
+}
+
+// @Summary Get statement plans
+// @Description Get statement plans
+// @Produce json
+// @Param q query GetPlansRequest true "Query"
+// @Success 200 {array} PlanDetailModel
+// @Router /statements/plans [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) getPlansHandler(c *gin.Context) {
+	var req GetPlansRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		return
+	}
+	db := utils.GetTiDBConnection(c)
+	plans, err := QueryPlans(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, plans)
 }
 
 func parseTimeParams(c *gin.Context) (int64, int64, error) {

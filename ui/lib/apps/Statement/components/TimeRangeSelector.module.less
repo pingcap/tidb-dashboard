@@ -7,4 +7,35 @@
   outline: none;
   box-shadow: @box-shadow-base;
   box-sizing: border-box;
+
+  .fixed_time_ranges {
+    span {
+      color: @gray-6;
+    }
+
+    margin-bottom: 16px;
+  }
+
+  .custom_time_ranges {
+    span {
+      color: @gray-6;
+    }
+  }
+
+  .time_range_items {
+    max-width: 300px;
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .time_range_item {
+    width: 100px;
+    padding-bottom: 4px;
+    cursor: pointer;
+  }
+
+  .time_range_item_active {
+    color: @primary-color;
+  }
 }

@@ -16,7 +16,6 @@ import {
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 import {
   StatementOverview,
@@ -27,7 +26,7 @@ import { Card, CardTableV2 } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
-import { Instance, DATE_TIME_FORMAT } from './statement-types'
+import { Instance } from './statement-types'
 import { SearchContext } from './search-options-context'
 import styles from './styles.module.less'
 
@@ -341,13 +340,10 @@ export default function StatementsOverview({
     })
   }
 
-  function handleTimeRangeChange(val: string) {
-    const timeRange = state.timeRanges.find(
-      (item) => `${item.begin_time}_${item.end_time}` === val
-    )
+  function handleTimeRangeChange(val: StatementTimeRange) {
     dispatch({
       type: 'change_time_range',
-      payload: timeRange,
+      payload: val,
     })
   }
 
@@ -397,25 +393,10 @@ export default function StatementsOverview({
       <Card>
         <div style={{ display: 'flex' }}>
           <Space size="middle">
-            <Select
-              value={
-                state.curTimeRange &&
-                `${state.curTimeRange.begin_time}_${state.curTimeRange.end_time}`
-              }
-              placeholder={t('statement.filters.select_time')}
-              style={{ width: 360 }}
+            <TimeRangeSelector
+              timeRanges={state.timeRanges}
               onChange={handleTimeRangeChange}
-            >
-              {state.timeRanges.map((item) => (
-                <Option
-                  value={`${item.begin_time}_${item.end_time}`}
-                  key={`${item.begin_time}_${item.end_time}`}
-                >
-                  {dayjs.unix(item.begin_time!).format(DATE_TIME_FORMAT)} ~{' '}
-                  {dayjs.unix(item.end_time!).format(DATE_TIME_FORMAT)}
-                </Option>
-              ))}
-            </Select>
+            />
             <Select
               value={state.curSchemas}
               mode="multiple"

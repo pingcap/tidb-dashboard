@@ -46,6 +46,26 @@ TiDB Dashboard can also be integrated into PD, as follows:
 
 ## For Developers How To ...
 
+### Change the base URL of Dashboard API endpoint
+
+By default, the base URL of Dashboard API is `http://127.0.0.1:12333` if using `yarn start` to set up the dashboard for development. Sometimes you just want to change the URL for some reasons:
+
+1. Use `.env`
+
+   Add setting below into your `.env` file ( create one under `ui` if you don't have one already)
+
+   ```shell
+   REACT_APP_DASHBOARD_API_URL=your_new_endpoint
+   ```
+
+2. Use a environment variable
+
+   Use a scoped or global environment variable to specify the `REACT_APP_DASHBOARD_API_URL` for convienience.
+
+   ```shell
+   REACT_APP_DASHBOARD_API_URL=your_new_endpoint yarn start
+   ```
+
 ### Keep session valid after rebooting the server
 
 By default, the session secret key is generated dynamically when the server starts. This results in

@@ -24,7 +24,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
+	"go.uber.org/zap"
 )
 
 // GetTopology return error only when fetch etcd failed.
@@ -81,10 +83,11 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 		ttlMap[address] = value
 	} else if fieldType == "info" {
 		ds := struct {
-			Version    string `json:"version"`
-			GitHash    string `json:"git_hash"`
-			StatusPort uint   `json:"status_port"`
-			BinaryPath string `json:"binary_path"`
+			Version        string `json:"version"`
+			GitHash        string `json:"git_hash"`
+			StatusPort     uint   `json:"status_port"`
+			BinaryPath     string `json:"binary_path"`
+			StartTimestamp int64  `json:"start_timestamp"`
 		}{}
 
 		//var currentInfo TiDB
@@ -98,12 +101,13 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 		}
 
 		infoMap[address] = &TiDBInfo{
-			Version:    ds.Version,
-			IP:         host,
-			Port:       port,
-			BinaryPath: ds.BinaryPath,
-			Status:     ComponentStatusUnreachable,
-			StatusPort: ds.StatusPort,
+			Version:        ds.Version,
+			IP:             host,
+			Port:           port,
+			BinaryPath:     ds.BinaryPath,
+			Status:         ComponentStatusUnreachable,
+			StatusPort:     ds.StatusPort,
+			StartTimestamp: ds.StartTimestamp,
 		}
 	}
 }
@@ -141,11 +145,12 @@ type tikvStore struct {
 		Key   string `json:"key"`
 		Value string `json:"value"`
 	}
-	StateName     string `json:"state_name"`
-	Version       string `json:"version"`
-	StatusAddress string `json:"status_address"`
-	GitHash       string `json:"git_hash"`
-	BinaryPath    string `json:"binary_path"`
+	StateName      string `json:"state_name"`
+	Version        string `json:"version"`
+	StatusAddress  string `json:"status_address"`
+	GitHash        string `json:"git_hash"`
+	BinaryPath     string `json:"binary_path"`
+	StartTimestamp int64  `json:"start_timestamp"`
 }
 
 func getAllTiKVNodes(endpoint string, httpClient *http.Client) ([]tikvStore, error) {
@@ -202,13 +207,14 @@ func GetTiKVTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, erro
 			version = "v" + version
 		}
 		node := TiKVInfo{
-			Version:    version,
-			IP:         host,
-			Port:       port,
-			BinaryPath: v.BinaryPath,
-			Status:     storeStateToStatus(v.StateName),
-			StatusPort: statusPort,
-			Labels:     map[string]string{},
+			Version:        version,
+			IP:             host,
+			Port:           port,
+			BinaryPath:     v.BinaryPath,
+			Status:         storeStateToStatus(v.StateName),
+			StatusPort:     statusPort,
+			Labels:         map[string]string{},
+			StartTimestamp: v.StartTimestamp,
 		}
 		for _, v := range v.Labels {
 			node.Labels[v.Key] = node.Labels[v.Value]
@@ -293,7 +299,13 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 	healthMap := <-healthMapChan
 	close(healthMapChan)
 	for _, ds := range ds.Members {
-		host, port, err := parseHostAndPortFromAddressURL(ds.ClientUrls[0])
+		u := ds.ClientUrls[0]
+		ts, err := getPDStartTimestamp(u, httpClient)
+		if err != nil {
+			log.Warn("failed to get PD node status", zap.Error(err))
+			continue
+		}
+		host, port, err := parseHostAndPortFromAddressURL(u)
 		if err != nil {
 			continue
 		}
@@ -305,14 +317,40 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 		}
 
 		nodes = append(nodes, PDInfo{
-			Version:    ds.BinaryVersion,
-			IP:         host,
-			Port:       port,
-			DeployPath: ds.DeployPath,
-			Status:     storeStatus,
+			Version:        ds.BinaryVersion,
+			IP:             host,
+			Port:           port,
+			DeployPath:     ds.DeployPath,
+			Status:         storeStatus,
+			StartTimestamp: ts,
 		})
 	}
 	return nodes, nil
+}
+
+func getPDStartTimestamp(pdEndPoint string, httpClient *http.Client) (int64, error) {
+	resp, err := httpClient.Get(pdEndPoint + "/pd/api/v1/status")
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return 0, fmt.Errorf("fetch PD %s status got wrong status code", pdEndPoint)
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+
+	ds := struct {
+		StartTimestamp int64 `json:"start_timestamp"`
+	}{}
+	err = json.Unmarshal(data, &ds)
+	if err != nil {
+		return 0, err
+	}
+
+	return ds.StartTimestamp, nil
 }
 
 // address should be like "ip:port" as "127.0.0.1:2379".
@@ -351,6 +389,10 @@ func storeStateToStatus(state string) ComponentStatus {
 		return ComponentStatusTombstone
 	case "offline":
 		return ComponentStatusOffline
+	case "down":
+		return ComponentStatusDown
+	case "disconnected":
+		return ComponentStatusUnreachable
 	default:
 		return ComponentStatusUnreachable
 	}

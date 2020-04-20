@@ -107,6 +107,7 @@ func (s *Service) topologyHandler(c *gin.Context) {
 		fillTopologyUnderEtcd,
 		fillTiKVTopology,
 		fillPDTopology,
+		fillTiFlashTopology,
 	}
 
 	var wg sync.WaitGroup

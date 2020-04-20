@@ -109,7 +109,7 @@ function useClusterNodeDataSource() {
       setIsLoading(true)
       try {
         const res = await client.getInstance().topologyAllGet()
-        const items = ['tidb', 'tikv', 'pd'].map((nodeKind) => {
+        const items = ['tidb', 'tikv', 'pd', 'tiflash'].map((nodeKind) => {
           const nodes = res.data[nodeKind]
           if (nodes.err) {
             return {

@@ -138,7 +138,7 @@ func genDBList(infoMap map[string]*TiDBInfo, ttlMap map[string][]byte) []TiDBInf
 	return nodes
 }
 
-type tikvStore struct {
+type store struct {
 	Address string `json:"address"`
 	ID      int    `json:"id"`
 	Labels  []struct {
@@ -153,7 +153,7 @@ type tikvStore struct {
 	StartTimestamp int64  `json:"start_timestamp"`
 }
 
-func getAllTiKVNodes(endpoint string, httpClient *http.Client) ([]tikvStore, error) {
+func getAllStoreNodes(endpoint string, httpClient *http.Client) ([]store, error) {
 	resp, err := httpClient.Get(endpoint + "/pd/api/v1/stores")
 	if err != nil {
 		return nil, err
@@ -165,7 +165,7 @@ func getAllTiKVNodes(endpoint string, httpClient *http.Client) ([]tikvStore, err
 	storeResp := struct {
 		Count  int `json:"count"`
 		Stores []struct {
-			Store tikvStore
+			Store store
 		} `json:"stores"`
 	}{}
 	data, err := ioutil.ReadAll(resp.Body)
@@ -176,11 +176,36 @@ func getAllTiKVNodes(endpoint string, httpClient *http.Client) ([]tikvStore, err
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]tikvStore, storeResp.Count)
+	ret := make([]store, storeResp.Count)
 	for i, s := range storeResp.Stores {
 		ret[i] = s.Store
 	}
 	return ret, nil
+}
+
+type tikvStore struct {
+	store
+}
+
+func getAllTiKVNodes(endpoint string, httpClient *http.Client) ([]tikvStore, error) {
+	stores, err := getAllStoreNodes(endpoint, httpClient)
+	if err != nil {
+		return nil, err
+	}
+
+	tikvs := make([]tikvStore, len(stores))
+	for i := range stores {
+		isTiFlash := false
+		for _, label := range stores[i].Labels {
+			if label.Key == "engine" && label.Value == "tiflash" {
+				isTiFlash = true
+			}
+		}
+		if !isTiFlash {
+			tikvs = append(tikvs, tikvStore{stores[i]})
+		}
+	}
+	return tikvs, nil
 }
 
 func GetTiKVTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, error) {
@@ -211,6 +236,65 @@ func GetTiKVTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, erro
 			IP:             host,
 			Port:           port,
 			BinaryPath:     v.BinaryPath,
+			Status:         storeStateToStatus(v.StateName),
+			StatusPort:     statusPort,
+			Labels:         map[string]string{},
+			StartTimestamp: v.StartTimestamp,
+		}
+		for _, v := range v.Labels {
+			node.Labels[v.Key] = node.Labels[v.Value]
+		}
+		nodes = append(nodes, node)
+	}
+
+	return nodes, nil
+}
+
+type tiflashStore struct {
+	store
+}
+
+func getAllTiFlashStores(endpoint string, httpClient *http.Client) ([]tiflashStore, error) {
+	stores, err := getAllStoreNodes(endpoint, httpClient)
+	if err != nil {
+		return nil, err
+	}
+
+	tiflashes := make([]tiflashStore, len(stores))
+	for i := range stores {
+		for _, label := range stores[i].Labels {
+			if label.Key == "engine" && label.Value == "tiflash" {
+				tiflashes = append(tiflashes, tiflashStore{stores[i]})
+			}
+		}
+	}
+
+	return tiflashes, nil
+}
+
+func GetTiFlashTopology(endpoint string, httpClient *http.Client) ([]TiFlashInfo, error) {
+	var nodes []TiFlashInfo
+	stores, err := getAllTiFlashStores(endpoint, httpClient)
+
+	if err != nil {
+		return nodes, err
+	}
+	for _, v := range stores {
+		// parse ip and port
+		host, port, err := parseHostAndPortFromAddress(v.Address)
+		if err != nil {
+			continue
+		}
+		_, statusPort, err := parseHostAndPortFromAddress(v.StatusAddress)
+		if err != nil {
+			continue
+		}
+		version := strings.Trim(v.Version, "\n ")
+		node := TiFlashInfo{
+			Version:        version,
+			IP:             host,
+			Port:           port,
+			BinaryPath:     v.BinaryPath, // TiFlash hasn't BinaryPath for now, so it would be empty
 			Status:         storeStateToStatus(v.StateName),
 			StatusPort:     statusPort,
 			Labels:         map[string]string{},

@@ -50,7 +50,11 @@ export function useDigestColumn(
         placement="right"
       >
         <TextWrap multiline={showFullSQL}>
-          <HighlightSQL sql={rec.digest_text} compact={!showFullSQL} />
+          {showFullSQL ? (
+            <HighlightSQL sql={rec.digest_text} />
+          ) : (
+            <Pre>{rec.digest_text}</Pre>
+          )}
         </TextWrap>
       </Tooltip>
     ),

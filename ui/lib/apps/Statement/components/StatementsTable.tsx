@@ -1,29 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Tooltip } from 'antd'
-import { InfoCircleOutlined } from '@ant-design/icons'
-import { useTranslation } from 'react-i18next'
 import {
   IColumn,
   ColumnActionsMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
-import { CardTableV2, ICardTableV2Props, EllipsisText } from '@lib/components'
+import { CardTableV2, ICardTableV2Props } from '@lib/components'
 import { StatementTimeRange, StatementModel } from '@lib/client'
 import DetailPage from '../pages/Detail'
 import * as useStatementColumn from '../utils/useColumn'
 
-// TODO: Extract to single file when needs to be re-used
-const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
-  <Tooltip title={t(key + '_tooltip')}>
-    <span>
-      {t(key)}
-      <InfoCircleOutlined style={{ margin: '0 8px' }} />
-    </span>
-  </Tooltip>
-)
-
 const tableColumns = (
-  t: (string) => string,
   rows: StatementModel[],
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
   showFullSQL?: boolean
@@ -91,11 +77,10 @@ export default function StatementsTable({
   onGetColumns,
   ...restPrpos
 }: Props) {
-  const { t } = useTranslation()
   const navigate = useNavigate()
   const [items, setItems] = useState(statements)
   const [columns, setColumns] = useState(
-    tableColumns(t, statements, onColumnClick, showFullSQL)
+    tableColumns(statements, onColumnClick, showFullSQL)
   )
   // `useState(() => tableColumns(...))` will cause run-time crash, the message:
   // Warning: Do not call Hooks inside useEffect(...), useMemo(...),

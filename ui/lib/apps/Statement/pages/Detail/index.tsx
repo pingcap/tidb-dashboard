@@ -44,7 +44,7 @@ function usePlanColumns(rows: StatementModel[]): IColumn[] {
 
 function DetailPage() {
   const query = DetailPage.parseQuery(useLocation().search)
-  const { data: plans, error, isLoading } = useClientRequest((cancelToken) =>
+  const { data: plans, isLoading } = useClientRequest((cancelToken) =>
     client
       .getInstance()
       .statementsPlansGet(

@@ -54,7 +54,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
   let title_key
   if (query.allPlans === 1) {
     title_key = 'one_for_all'
-  } else if (query.plans.length == query.allPlans) {
+  } else if (query.plans.length === query.allPlans) {
     title_key = 'all'
   } else {
     title_key = 'some'

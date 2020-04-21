@@ -123,7 +123,7 @@ func QueryPlanDetail(
 	db *gorm.DB,
 	beginTime, endTime int,
 	schemaName, digest string,
-	plans []string) (result *PlanDetailModel, err error) {
+	plans []string) (result PlanDetailModel, err error) {
 	fields := getAllAggrFields()
 	query := db.
 		Select(strings.Join(fields, ",")).
@@ -134,91 +134,6 @@ func QueryPlanDetail(
 	if len(plans) > 0 {
 		query = query.Where("plan_digest in (?)", plans)
 	}
-	err = query.Scan(result).Error
-	return
-}
-
-// Sample params:
-// schemas: "tpcc"
-// beginTime: 1586844000
-// endTime: 1586845800
-// digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
-func QueryStatementDetail(db *gorm.DB, schema, digest string, beginTime, endTime int64) (*Detail, error) {
-	result := &Detail{}
-
-	query := db.
-		Select(`
-			schema_name,
-			digest,
-			digest_text,
-			SUM(sum_latency) AS agg_sum_latency,
-			SUM(exec_count) AS agg_exec_count,
-			ROUND(SUM(exec_count * avg_affected_rows) / SUM(exec_count)) AS agg_avg_affected_rows,
-			ROUND(SUM(exec_count * avg_total_keys) / SUM(exec_count)) AS agg_avg_total_keys,
-			GROUP_CONCAT(table_names) AS agg_table_names
-		`).
-		Table(statementsTable).
-		Where("schema_name = ?", schema).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
-		Where("digest = ?", digest).
-		Group("digest, digest_text, schema_name")
-
-	if err := query.Scan(&result).Error; err != nil {
-		return nil, err
-	}
-
-	query = db.
-		Select(`query_sample_text, last_seen`).
-		Table(statementsTable).
-		Where("schema_name = ?", schema).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
-		Where("digest = ?", digest).
-		Order("last_seen DESC")
-
-	if err := query.First(&result).Error; err != nil {
-		return nil, err
-	}
-
-	query = db.
-		Select(`
-			plan_digest,
-			plan
-		`).
-		Table(statementsTable).
-		Where("schema_name = ?", schema).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
-		Where("digest = ?", digest).
-		Where("plan_digest != ''").
-		Group("plan_digest, plan")
-
-	if err := query.Find(&result.Plans).Error; err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-// Sample params:
-// schemas: "tpcc"
-// beginTime: 1586844000
-// endTime: 1586845800
-// digest: "bcaa7bdb37e24d03fb48f20cc32f4ff3f51c0864dc378829e519650df5c7b923"
-func QueryStatementNodes(db *gorm.DB, schema, digest string, beginTime, endTime int64) (result []*Node, err error) {
-	err = db.
-		Select(`
-			instance,
-			sum_latency,
-			exec_count,
-			avg_latency,
-			max_latency,
-			avg_mem,
-			sum_backoff_times
-		`).
-		Table(statementsTable).
-		Where("schema_name = ?", schema).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
-		Where("digest = ?", digest).
-		Order("sum_latency DESC").
-		Find(&result).Error
+	err = query.Scan(&result).Error
 	return
 }

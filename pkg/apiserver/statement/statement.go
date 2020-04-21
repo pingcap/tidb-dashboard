@@ -44,9 +44,8 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/time_ranges", s.timeRangesHandler)
 	endpoint.GET("/stmt_types", s.stmtTypesHandler)
 	endpoint.GET("/overviews", s.overviewsHandler)
-	endpoint.GET("/detail", s.detailHandler)
-	endpoint.GET("/nodes", s.nodesHandler)
 	endpoint.GET("/plans", s.getPlansHandler)
+	endpoint.GET("/plan/detail", s.getPlanDetailHandler)
 }
 
 // @Summary TiDB databases
@@ -135,64 +134,6 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, overviews)
 }
 
-// @Summary Statement detail
-// @Description Get statement detail
-// @Produce json
-// @Param schema query string true "Statement schema"
-// @Param begin_time query string true "Statement begin time"
-// @Param end_time query string true "Statement end time"
-// @Param digest query string true "Statement digest"
-// @Success 200 {object} Detail
-// @Router /statements/detail [get]
-// @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) detailHandler(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
-	schema := c.Query("schema")
-	digest := c.Query("digest")
-	beginTime, endTime, err := parseTimeParams(c)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	detail, err := QueryStatementDetail(db, schema, digest, beginTime, endTime)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	c.JSON(http.StatusOK, detail)
-}
-
-// @Summary Statement nodes
-// @Description Get statement in each node
-// @Produce json
-// @Param schema query string true "Statement schema"
-// @Param begin_time query string true "Statement begin time"
-// @Param end_time query string true "Statement end time"
-// @Param digest query string true "Statement digest"
-// @Success 200 {array} statement.Node
-// @Router /statements/nodes [get]
-// @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) nodesHandler(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
-	schema := c.Query("schema")
-	digest := c.Query("digest")
-	beginTime, endTime, err := parseTimeParams(c)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	nodes, err := QueryStatementNodes(db, schema, digest, beginTime, endTime)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	c.JSON(http.StatusOK, nodes)
-}
-
 type GetPlansRequest struct {
 	SchemaName string `json:"schema_name" form:"schema_name"`
 	Digest     string `json:"digest" form:"digest"`
@@ -222,6 +163,35 @@ func (s *Service) getPlansHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, plans)
+}
+
+type GetPlanDetailRequest struct {
+	GetPlansRequest
+	Plans []string `json:"plans" form:"plans"`
+}
+
+// @Summary Get statement plan detail
+// @Description Get statement plan detail
+// @Produce json
+// @Param q query GetPlanDetailRequest true "Query"
+// @Success 200 {object} PlanDetailModel
+// @Router /statements/plan/detail [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) getPlanDetailHandler(c *gin.Context) {
+	var req GetPlanDetailRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		return
+	}
+	db := utils.GetTiDBConnection(c)
+	result, err := QueryPlanDetail(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, result)
 }
 
 func parseTimeParams(c *gin.Context) (int64, int64, error) {

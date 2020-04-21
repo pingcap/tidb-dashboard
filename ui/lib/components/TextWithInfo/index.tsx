@@ -2,36 +2,76 @@ import React from 'react'
 import { Tooltip, Typography } from 'antd'
 import type { TooltipPlacement } from 'antd/es/tooltip'
 import { InfoCircleOutlined, WarningOutlined } from '@ant-design/icons'
+import { useTranslation } from 'react-i18next'
 
 export interface ITextWithInfoProps {
-  tooltip: React.ReactNode
+  tooltip?: React.ReactNode
   placement?: TooltipPlacement
   children: React.ReactNode
   type?: 'warning' | 'danger'
 }
 
-export default function TextWithInfo({
+function TextWithInfo({
   tooltip,
   placement,
   children,
   type,
 }: ITextWithInfoProps) {
-  const Icon = type ? WarningOutlined : InfoCircleOutlined
-  const textInner = (
-    <>
-      {children}
-      <Icon style={{ marginLeft: 8 }} />
-    </>
-  )
+  let textWithIcon
+  if (tooltip) {
+    const Icon = type ? WarningOutlined : InfoCircleOutlined
+    textWithIcon = (
+      <span>
+        {children} <Icon />
+      </span>
+    )
+  } else {
+    textWithIcon = children
+  }
+
+  let textWithColor
+  if (type) {
+    textWithColor = (
+      <Typography.Text type={type}>{textWithIcon}</Typography.Text>
+    )
+  } else {
+    textWithColor = textWithIcon
+  }
+
+  if (!tooltip) {
+    return textWithColor
+  }
+
   return (
     <Tooltip title={tooltip} placement={placement}>
-      <span>
-        {type ? (
-          <Typography.Text type={type}>{textInner}</Typography.Text>
-        ) : (
-          textInner
-        )}
-      </span>
+      {textWithColor}
     </Tooltip>
   )
 }
+
+export interface ITransKeyTextWithInfo {
+  transKey: string
+  defaultText?: string
+  placement?: TooltipPlacement
+  type?: 'warning' | 'danger'
+}
+
+function TransKey({
+  transKey,
+  defaultText,
+  placement,
+  type,
+}: ITransKeyTextWithInfo) {
+  const { t } = useTranslation()
+  const tooltip = t(`${transKey}_tooltip`, '')
+  const text = t(transKey, defaultText)
+  return (
+    <TextWithInfo tooltip={tooltip} placement={placement} type={type}>
+      {text}
+    </TextWithInfo>
+  )
+}
+
+TextWithInfo.TransKey = TransKey
+
+export default TextWithInfo

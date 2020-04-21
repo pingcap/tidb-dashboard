@@ -134,43 +134,6 @@ type PlanDetailModel struct {
 	AggregatedStatementFields
 }
 
-// Detail represents the detail of a statement
-type Detail struct {
-	SchemaName         string `json:"schema_name"`
-	Digest             string `json:"digest"`
-	DigestText         string `json:"digest_text"`
-	AggSumLatency      int    `json:"sum_latency"`
-	AggExecCount       int    `json:"exec_count"`
-	AggAvgAffectedRows int    `json:"avg_affected_rows"`
-	AggAvgTotalKeys    int    `json:"avg_total_keys"`
-
-	AggTableNames string `json:"agg_table_names"`
-	// Schemas is extracted from table_names column
-	// table_names example: "d1.t1,d2.t2", we extract the "d1,d2" as schemas
-	AggSchemas string `json:"schemas"`
-
-	QuerySampleText string `json:"query_sample_text"`
-	LastSeen        string `json:"last_seen"`
-
-	Plans []*Plan `json:"plans"`
-}
-
-// Node represents the statement in each node
-type Node struct {
-	Instance        string `json:"instance"`
-	SumLatency      int    `json:"sum_latency"`
-	ExecCount       int    `json:"exec_count"`
-	AvgLatency      int    `json:"avg_latency"`
-	MaxLatency      int    `json:"max_latency"`
-	AvgMem          int    `json:"avg_mem"`
-	SumBackoffTimes int    `json:"sum_backoff_times"`
-}
-
-type Plan struct {
-	PlanDigest string `json:"digest"`
-	Plan       string `json:"content"`
-}
-
 // tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"
 // return "d1, d2, d3"
 func extractSchemasFromTableNames(tableNames string) string {
@@ -191,10 +154,5 @@ func extractSchemasFromTableNames(tableNames string) string {
 
 func (overview *Overview) AfterFind() (err error) {
 	overview.Schemas = extractSchemasFromTableNames(overview.AggTableNames)
-	return
-}
-
-func (detail *Detail) AfterFind() (err error) {
-	detail.AggSchemas = extractSchemasFromTableNames(detail.AggTableNames)
 	return
 }

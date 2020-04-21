@@ -9,9 +9,8 @@ import {
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { CardTableV2, ICardTableV2Props, EllipsisText } from '@lib/components'
 import { StatementOverview, StatementTimeRange } from '@lib/client'
-// import { useMax } from './use-max'
-// import { StatementMaxVals } from './statement-types'
-import * as commonColumns from '../utils/commonColumns'
+import DetailPage from '../pages/Detail'
+import * as useStatementColumn from '../utils/useColumn'
 
 // TODO: Extract to single file when needs to be re-used
 const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
@@ -30,26 +29,26 @@ const tableColumns = (
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void
 ): IColumn[] => {
   const columns: IColumn[] = [
-    commonColumns.useDigestColumn(rows),
+    useStatementColumn.useDigestColumn(rows),
     {
-      ...commonColumns.useSumLatencyColumn(rows),
+      ...useStatementColumn.useSumLatencyColumn(rows),
       isSorted: true,
       isSortedDescending: true,
       onColumnClick: onColumnClick,
       columnActionsMode: ColumnActionsMode.clickable,
     },
     {
-      ...commonColumns.useAvgMinMaxLatencyColumn(rows),
+      ...useStatementColumn.useAvgMinMaxLatencyColumn(rows),
       onColumnClick: onColumnClick,
       columnActionsMode: ColumnActionsMode.clickable,
     },
     {
-      ...commonColumns.useExecCountColumn(rows),
+      ...useStatementColumn.useExecCountColumn(rows),
       onColumnClick: onColumnClick,
       columnActionsMode: ColumnActionsMode.clickable,
     },
     {
-      ...commonColumns.useAvgMaxMemColumn(rows),
+      ...useStatementColumn.useAvgMaxMemColumn(rows),
       onColumnClick: onColumnClick,
       columnActionsMode: ColumnActionsMode.clickable,
     },
@@ -113,11 +112,13 @@ export default function StatementsTable({
   )
 
   function handleRowClick(rec) {
-    navigate(
-      `${detailPagePath || '/statement/detail'}?digest=${rec.digest}&schema=${
-        rec.schema_name
-      }&begin_time=${timeRange.begin_time}&end_time=${timeRange.end_time}`
-    )
+    const qs = DetailPage.buildQuery({
+      digest: rec.digest,
+      schema: rec.schema_name,
+      beginTime: timeRange.begin_time,
+      endTime: timeRange.end_time,
+    })
+    navigate(`/statement/detail?${qs}`)
   }
 
   function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {

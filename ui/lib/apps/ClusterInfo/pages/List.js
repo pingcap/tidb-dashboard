@@ -184,7 +184,7 @@ export default function ListPage() {
       width: 150,
       render: (ts) => {
         if (ts !== undefined && ts !== 0) {
-          return <DateTime.Calendar unixTimeStampMs={ts * 1000} />
+          return <DateTime.Calendar unixTimestampMs={ts * 1000} />
         }
       },
     },

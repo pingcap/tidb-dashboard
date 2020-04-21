@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Tooltip } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
@@ -9,28 +9,26 @@ import {
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { CardTableV2, ICardTableV2Props, EllipsisText } from '@lib/components'
 import { StatementOverview, StatementTimeRange } from '@lib/client'
-// import { useMax } from './use-max'
-// import { StatementMaxVals } from './statement-types'
 import * as commonColumns from '../utils/commonColumns'
 
 // TODO: Extract to single file when needs to be re-used
 const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
-  <>
-    {t(key)}
-    <Tooltip title={t(key + '_tooltip')}>
+  <Tooltip title={t(key + '_tooltip')}>
+    <span>
+      {t(key)}
       <InfoCircleOutlined style={{ margin: '0 8px' }} />
-    </Tooltip>
-  </>
+    </span>
+  </Tooltip>
 )
 
 const tableColumns = (
   t: (string) => string,
-  concise: boolean,
   rows: StatementOverview[],
-  onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void
+  onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
+  showFullSQL?: boolean
 ): IColumn[] => {
   const columns: IColumn[] = [
-    commonColumns.useDigestColumn(rows),
+    commonColumns.useDigestColumn(rows, showFullSQL),
     {
       ...commonColumns.useSumLatencyColumn(rows),
       isSorted: true,
@@ -67,11 +65,6 @@ const tableColumns = (
       ),
     },
   ]
-  if (concise) {
-    return columns.filter((col) =>
-      ['schemas', 'digest_text', 'sum_latency', 'avg_latency'].includes(col.key)
-    )
-  }
   return columns
 }
 
@@ -89,28 +82,40 @@ function copyAndSort<T>(
 }
 
 interface Props extends Partial<ICardTableV2Props> {
-  statements: StatementOverview[]
   loading: boolean
+  statements: StatementOverview[]
   timeRange: StatementTimeRange
   detailPagePath?: string
-  concise?: boolean
+  showFullSQL?: boolean
+
+  onGetColumns?: (columns: IColumn[]) => void
 }
 
 export default function StatementsTable({
-  statements,
   loading,
+  statements,
   timeRange,
   detailPagePath,
-  concise,
+  showFullSQL,
+  onGetColumns,
   ...restPrpos
 }: Props) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [items, setItems] = useState(statements)
-  // const maxs = useMax(statements)
   const [columns, setColumns] = useState(
-    tableColumns(t, concise || false, statements, onColumnClick)
+    tableColumns(t, statements, onColumnClick, showFullSQL)
   )
+  // `useState(() => tableColumns(...))` will cause run-time crash, the message:
+  // Warning: Do not call Hooks inside useEffect(...), useMemo(...),
+  // or other built-in Hooks. You can only call Hooks at the top level of your React function.
+  // I guess because we use the `useTranslation()` inside the `tableColumns()` method
+  // TODO: verify
+
+  useEffect(() => {
+    onGetColumns && onGetColumns(columns)
+    // eslint-disable-next-line
+  }, [])
 
   function handleRowClick(rec) {
     navigate(

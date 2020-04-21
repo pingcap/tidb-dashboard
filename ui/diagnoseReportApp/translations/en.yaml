@@ -4,6 +4,7 @@ diagnosis:
   fold_all: Fold All
   expand: expand
   fold: fold
+  all_tables: All Tables
   tables:
     category:
       header: Header

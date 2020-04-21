@@ -111,7 +111,7 @@ type Task struct {
 }
 
 func (t *Task) String() string {
-	return fmt.Sprintf("LogSearchTask { id = %d, target = %s, task_group_id = %d }", t.model.ID, t.model.SearchTarget, t.taskGroup.model.ID)
+	return fmt.Sprintf("LogSearchTask { id = %d, target = %s, task_group_id = %d }", t.model.ID, t.model.Target, t.taskGroup.model.ID)
 }
 
 // This function is multi-thread safe.
@@ -158,7 +158,7 @@ func (t *Task) SyncRun() {
 		secureOpt = grpc.WithTransportCredentials(creds)
 	}
 
-	conn, err := grpc.Dial(t.model.SearchTarget.GRPCAddress(),
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", t.model.Target.IP, t.model.Target.Port),
 		secureOpt,
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(MaxRecvMsgSize)),
 	)
@@ -176,7 +176,7 @@ func (t *Task) SyncRun() {
 	}
 
 	// Create zip file for the log in the log directory
-	savedPath := path.Join(*t.taskGroup.model.LogStoreDir, t.model.SearchTarget.FileName()+".zip")
+	savedPath := path.Join(*t.taskGroup.model.LogStoreDir, t.model.Target.FileName()+".zip")
 	f, err := os.Create(savedPath)
 	if err != nil {
 		t.setError(err)
@@ -188,7 +188,7 @@ func (t *Task) SyncRun() {
 	defer zw.Close()
 	defer zw.Flush()
 
-	writer, err := zw.Create(t.model.SearchTarget.FileName() + ".log")
+	writer, err := zw.Create(t.model.Target.FileName() + ".log")
 	if err != nil {
 		t.setError(err)
 		return

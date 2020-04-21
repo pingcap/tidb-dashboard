@@ -17,8 +17,4 @@ diagnose:
     baseline_begin: Baseline Range Start Time
     progress: Progress
   time_duration:
-    min: min
-    min_with_count: '{{count}} min'
-    hour_with_count: '{{count}} hour'
-    day_with_count: '{{count}} day'
     custom: Custom

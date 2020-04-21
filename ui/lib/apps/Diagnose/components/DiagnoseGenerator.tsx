@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import client from '@lib/client'
 import DiagnoseHistory from './DiagnoseHistory'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 
 const useFinishHandler = (navigate) => {
   return async (fieldsValue) => {
@@ -46,40 +47,12 @@ const useFinishHandler = (navigate) => {
   }
 }
 
+const DURATIONS = [5, 10, 30, 60, 24 * 60]
+
 export default function DiagnoseGenerator() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const handleFinish = useFinishHandler(navigate)
-
-  const rangeDurationOptions = useMemo(
-    () => [
-      {
-        val: 5,
-        text: t('diagnose.time_duration.min_with_count', { count: 5 }),
-      },
-      {
-        val: 10,
-        text: t('diagnose.time_duration.min_with_count', { count: 10 }),
-      },
-      {
-        val: 30,
-        text: t('diagnose.time_duration.min_with_count', { count: 30 }),
-      },
-      {
-        val: 60,
-        text: t('diagnose.time_duration.hour_with_count', { count: 1 }),
-      },
-      {
-        val: 24 * 60,
-        text: t('diagnose.time_duration.day_with_count', { count: 1 }),
-      },
-      {
-        val: 0,
-        text: t('diagnose.time_duration.custom'),
-      },
-    ],
-    [t]
-  )
 
   return (
     <ScrollablePane style={{ height: '100vh' }}>
@@ -105,11 +78,14 @@ export default function DiagnoseGenerator() {
                 noStyle
               >
                 <Select style={{ width: 120 }}>
-                  {rangeDurationOptions.map((item) => (
-                    <Select.Option key={item.val} value={item.val}>
-                      {item.text}
+                  {DURATIONS.map((val) => (
+                    <Select.Option key={val} value={val}>
+                      {getValueFormat('m')(val, 0)}
                     </Select.Option>
                   ))}
+                  <Select.Option value={0}>
+                    {t('diagnose.time_duration.custom')}
+                  </Select.Option>
                 </Select>
               </Form.Item>
               <Form.Item
@@ -129,9 +105,7 @@ export default function DiagnoseGenerator() {
                         <InputNumber
                           min={1}
                           max={30 * 24 * 60}
-                          formatter={(value) =>
-                            `${value} ${t('diagnose.time_duration.min')}`
-                          }
+                          formatter={(value) => `${value} min`}
                           parser={(value) => value?.replace(/[^\d]/g, '') || ''}
                           style={{ width: 120 }}
                         />

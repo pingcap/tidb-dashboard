@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Select, Space, Tooltip, Input } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useNavigate } from 'react-router-dom'
@@ -7,7 +7,6 @@ import TimeRangeSelector from './TimeRangeSelector'
 import { useTranslation } from 'react-i18next'
 import client, { StatementTimeRange, SlowqueryBase } from '@lib/client'
 import { ReloadOutlined } from '@ant-design/icons'
-import { useClientRequest } from '@lib/utils/useClientRequest'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import * as useSlowQueryColumn from '../utils/useColumn'
 
@@ -98,8 +97,6 @@ export default function List() {
   function handleTimeRangeChange(val: StatementTimeRange) {
     setCurTimeRange(val)
   }
-
-  function handleSchemaChange() {}
 
   function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {
     if (column.key === orderBy) {

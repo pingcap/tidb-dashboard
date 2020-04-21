@@ -32,6 +32,7 @@ export default function TimeRangeSelector({
 
   useEffect(() => {
     handleRecentChange(30)
+    // eslint-disable-next-line
   }, [])
 
   function handleRecentChange(mins: number) {

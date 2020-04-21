@@ -1,10 +1,10 @@
 statement:
-  nav_title: SQL Statemennts
+  nav_title: SQL Statements
   pages:
     detail:
       head:
-        back: Statement List
-        title: Statement Detail
+        back: List
+        title: Statement Information
       desc:
         time_range: Selected Time Range
         plan_count: Execution Plans

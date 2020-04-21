@@ -4,7 +4,7 @@ statement:
     detail:
       head:
         back: 返回列表
-        title: SQL 语句详情
+        title: SQL 语句信息
       desc:
         time_range: 时间范围
         plan_count: 执行计划数

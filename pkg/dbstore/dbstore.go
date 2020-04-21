@@ -20,6 +20,7 @@ import (
 
 	"github.com/hypnoglow/gormzap"
 	"github.com/jinzhu/gorm"
+
 	// Sqlite3 driver used by gorm
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/pingcap/log"

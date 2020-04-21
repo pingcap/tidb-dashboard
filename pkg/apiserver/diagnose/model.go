@@ -22,7 +22,7 @@ import (
 )
 
 type Report struct {
-	ID               string     `gorm:"primary_key" gorm:"size:40" json:"id"`
+	ID               string     `gorm:"primary_key;size:40" json:"id"`
 	CreatedAt        time.Time  `json:"created_at"`
 	Progress         int        `json:"progress"` // 0~100
 	Content          string     `json:"content"`

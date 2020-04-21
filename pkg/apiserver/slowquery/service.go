@@ -55,6 +55,7 @@ type DatabaseResponse = []string
 // @Summary Example: Get all databases
 // @Description Get all databases.
 // @Produce json
+// @Param q query QueryRequestParam true "Query"
 // @Success 200 {array} Base
 // @Router /slowquery/list [get]
 // @Security JwtAuth
@@ -83,14 +84,14 @@ func (s *Service) listHandler(c *gin.Context) {
 
 type DetailRequest struct {
 	Digest string `json:"digest"`
-	Time int64 `json:"time"`
+	Time float64 `json:"time"`
 	ConnectID int64 `json:"connect_id"`
 }
 
 // @Summary Example: Get all databases
 // @Description Get all databases.
 // @Produce json
-// @Param request body DetailRequest true "Request body"
+// @Param q query DetailRequest true "Query"
 // @Success 200 {object} SlowQuery
 // @Router /slowquery/detail [get]
 // @Security JwtAuth
@@ -98,7 +99,11 @@ type DetailRequest struct {
 func (s *Service) detailhandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 
-	req := DetailRequest{}
+	req := DetailRequest{
+		Digest:    "db2dfbe10c95c4f44524bfafd669fe532077655ce85fa5fc6927c48999769e29",
+		Time:      1587467607.4329019,
+		ConnectID: 0,
+	}
 	//if err := c.ShouldBindJSON(&req); err != nil {
 	//	c.Status(http.StatusBadRequest)
 	//	_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))

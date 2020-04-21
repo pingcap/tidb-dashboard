@@ -14,9 +14,7 @@
 package slowquery
 
 import (
-	"fmt"
 	"github.com/jinzhu/gorm"
-	"strings"
 	"time"
 )
 
@@ -30,7 +28,7 @@ type Base struct {
 	Instance  string    `gorm:"column:INSTANCE" json:"instance"`
 	Query     string    `gorm:"column:Query" json:"query"`
 	Time      time.Time `gorm:"column:Time" json:"-"`
-	Timestamp int64     `json:"timestamp"`
+	Timestamp float64     `json:"timestamp"`
 	QueryTime float64   `gorm:"column:Query_time" json:"query_time"`
 	MemoryMax int       `gorm:"column:Mem_max" json:"memory_max"`
 	Digest    string    `gorm:"column:Digest" json:"digest"`
@@ -86,7 +84,7 @@ type SlowQuery struct {
 
 func (b *Base) AfterFind() (err error) {
 	if !b.Time.IsZero() {
-		b.Timestamp = b.Time.UnixNano()
+		b.Timestamp = float64(b.Time.UnixNano()) / 1E9
 	}
 	return
 }
@@ -102,46 +100,44 @@ type QueryRequestParam struct {
 }
 
 func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
-	var conditions []string
-	timeRange := fmt.Sprintf("time between from_unixtime(%d) and from_unixtime(%d)", params.LogStartTS, params.LogEndTS)
-	conditions = append(conditions, timeRange)
+	tx := db.Table(SlowQueryTable)
+	tx = tx.Where("time between from_unixtime(?) and from_unixtime(?)", params.LogStartTS, params.LogEndTS)
 	if params.Text != "" {
-		textMatch := fmt.Sprintf(`(txn_start_ts REGEXP '%[1]s' OR digest REGEXP '%[1]s' OR prev_stmt REGEXP '%[1]s' OR query REGEXP '%[1]s')`,
+		tx = tx.Where("txn_start_ts REGEXP '?' OR digest REGEXP '? OR prev_stmt REGEXP '?' OR query REGEXP '?'",
+			params.Text,
+			params.Text,
+			params.Text,
 			params.Text,
 		)
-		conditions = append(conditions, textMatch)
 	}
+
 	if params.DB != "" {
-		conditions = append(conditions, "DB = "+params.DB)
+		tx = tx.Where("DB = ?", params.DB)
 	}
 
 	order := params.OrderBy
 	if params.DESC {
-		order += " desc"
+		tx = tx.Order(gorm.Expr("? DESC", order))
 	} else {
-		order += " asc"
+		tx = tx.Order(gorm.Expr("? ASC", order))
 	}
 
 	var results []Base
 
-	err := db.Table(SlowQueryTable).
-		Where(strings.Join(conditions, " AND ")).
-		Order(order).
-		Limit(params.Limit).
-		Find(&results).Error
+	err := tx.Limit(params.Limit).Find(&results).Error
 	if err != nil {
 		return nil, err
 	}
 	return results, nil
 }
 
-
-
-func QuerySlowLogDetail(db *gorm.DB, request *DetailRequest) (*SlowQuery, error){
+func QuerySlowLogDetail(db *gorm.DB, req *DetailRequest) (*SlowQuery, error){
 	var result SlowQuery
 
 	err := db.Table(SlowQueryTable).
-		// TODO: use params here
+		Where("`Digest` = ?", req.Digest).
+		Where("`Time` = from_unixtime(?)", req.Time).
+		Where("`Conn_id` = ?", req.ConnectID).
 		First(&result).Error
 	if err != nil {
 		return nil, err

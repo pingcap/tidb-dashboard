@@ -1,13 +1,12 @@
 import React, { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Badge } from 'antd'
-import { CardTableV2, DateTime } from '@lib/components'
 import { useTranslation } from 'react-i18next'
-import client, { DiagnoseReport } from '@lib/client'
-import { useClientRequest } from '@lib/utils/useClientRequest'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import dayjs from 'dayjs'
-import { ReconciliationFilled } from '@ant-design/icons'
+import { CardTableV2, DateTime } from '@lib/components'
+import client, { DiagnoseReport } from '@lib/client'
+import { useClientRequest } from '@lib/utils/useClientRequest'
 
 const tableColumns = (t: (string) => string): IColumn[] => [
   {
@@ -22,12 +21,12 @@ const tableColumns = (t: (string) => string): IColumn[] => [
   },
   {
     name: '状态',
-    key: 'process',
+    key: 'progress',
     minWidth: 80,
     maxWidth: 120,
     isResizable: true,
-    onRender: (rec) => {
-      if (rec.process < 100) {
+    onRender: (rec: DiagnoseReport) => {
+      if (rec.progress! < 100) {
         return <Badge status="processing" text="running" />
       } else {
         return <Badge status="success" text="finish" />
@@ -40,7 +39,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     minWidth: 160,
     maxWidth: 220,
     isResizable: true,
-    onRender: (rec) => (
+    onRender: (rec: DiagnoseReport) => (
       <DateTime.Calendar
         unixTimeStampMs={dayjs(rec.start_time).unix() * 1000}
       />
@@ -52,7 +51,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     minWidth: 160,
     maxWidth: 220,
     isResizable: true,
-    onRender: (rec) => (
+    onRender: (rec: DiagnoseReport) => (
       <DateTime.Calendar unixTimeStampMs={dayjs(rec.end_time).unix() * 1000} />
     ),
   },
@@ -62,7 +61,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     minWidth: 160,
     maxWidth: 220,
     isResizable: true,
-    onRender: (rec) =>
+    onRender: (rec: DiagnoseReport) =>
       rec.compare_start_time && (
         <DateTime.Calendar
           unixTimeStampMs={dayjs(rec.compare_start_time).unix() * 1000}
@@ -75,7 +74,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     minWidth: 160,
     maxWidth: 220,
     isResizable: true,
-    onRender: (rec) =>
+    onRender: (rec: DiagnoseReport) =>
       rec.compare_start_time && (
         <DateTime.Calendar
           unixTimeStampMs={dayjs(rec.compare_end_time).unix() * 1000}

@@ -14,6 +14,7 @@ import { Card } from '@lib/components'
 import { useNavigate } from 'react-router-dom'
 import client from '@lib/client'
 import DiagnoseHistory from './DiagnoseHistory'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 
 const useFinishHandler = (navigate) => {
   return async (fieldsValue) => {
@@ -81,97 +82,99 @@ export default function DiagnoseGenerator() {
   )
 
   return (
-    <Card title={t('diagnose.generate.title')}>
-      <Form
-        layout="vertical"
-        style={{ minWidth: 500 }}
-        onFinish={handleFinish}
-        initialValues={{ rangeDuration: 10, rangeDurationCustom: 10 }}
-      >
-        <Form.Item
-          name="rangeBegin"
-          rules={[{ required: true }]}
-          label={t('diagnose.generate.range_begin')}
+    <ScrollablePane style={{ height: '100vh' }}>
+      <Card title={t('diagnose.generate.title')}>
+        <Form
+          layout="vertical"
+          style={{ minWidth: 500 }}
+          onFinish={handleFinish}
+          initialValues={{ rangeDuration: 10, rangeDurationCustom: 10 }}
         >
-          <DatePicker showTime />
-        </Form.Item>
-        <Form.Item label={t('diagnose.generate.range_duration')} required>
-          <Input.Group compact>
-            <Form.Item
-              name="rangeDuration"
-              rules={[{ required: true }]}
-              noStyle
-            >
-              <Select style={{ width: 120 }}>
-                {rangeDurationOptions.map((item) => (
-                  <Select.Option key={item.val} value={item.val}>
-                    {item.text}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item
-              noStyle
-              shouldUpdate={(prev, cur) =>
-                prev.rangeDuration !== cur.rangeDuration
-              }
-            >
-              {({ getFieldValue }) => {
-                return (
-                  getFieldValue('rangeDuration') === 0 && (
-                    <Form.Item
-                      noStyle
-                      name="rangeDurationCustom"
-                      rules={[{ required: true }]}
-                    >
-                      <InputNumber
-                        min={1}
-                        max={30 * 24 * 60}
-                        formatter={(value) =>
-                          `${value} ${t('diagnose.time_duration.min')}`
-                        }
-                        parser={(value) => value?.replace(/[^\d]/g, '') || ''}
-                        style={{ width: 120 }}
-                      />
-                    </Form.Item>
+          <Form.Item
+            name="rangeBegin"
+            rules={[{ required: true }]}
+            label={t('diagnose.generate.range_begin')}
+          >
+            <DatePicker showTime />
+          </Form.Item>
+          <Form.Item label={t('diagnose.generate.range_duration')} required>
+            <Input.Group compact>
+              <Form.Item
+                name="rangeDuration"
+                rules={[{ required: true }]}
+                noStyle
+              >
+                <Select style={{ width: 120 }}>
+                  {rangeDurationOptions.map((item) => (
+                    <Select.Option key={item.val} value={item.val}>
+                      {item.text}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item
+                noStyle
+                shouldUpdate={(prev, cur) =>
+                  prev.rangeDuration !== cur.rangeDuration
+                }
+              >
+                {({ getFieldValue }) => {
+                  return (
+                    getFieldValue('rangeDuration') === 0 && (
+                      <Form.Item
+                        noStyle
+                        name="rangeDurationCustom"
+                        rules={[{ required: true }]}
+                      >
+                        <InputNumber
+                          min={1}
+                          max={30 * 24 * 60}
+                          formatter={(value) =>
+                            `${value} ${t('diagnose.time_duration.min')}`
+                          }
+                          parser={(value) => value?.replace(/[^\d]/g, '') || ''}
+                          style={{ width: 120 }}
+                        />
+                      </Form.Item>
+                    )
                   )
+                }}
+              </Form.Item>
+            </Input.Group>
+          </Form.Item>
+          <Form.Item
+            name="isCompare"
+            valuePropName="checked"
+            label={t('diagnose.generate.is_compare')}
+          >
+            <Switch />
+          </Form.Item>
+          <Form.Item
+            noStyle
+            shouldUpdate={(prev, cur) => prev.isCompare !== cur.isCompare}
+          >
+            {({ getFieldValue }) => {
+              return (
+                getFieldValue('isCompare') && (
+                  <Form.Item
+                    name="compareRangeBegin"
+                    rules={[{ required: true }]}
+                    label={t('diagnose.generate.compare_range_begin')}
+                  >
+                    <DatePicker showTime />
+                  </Form.Item>
                 )
-              }}
-            </Form.Item>
-          </Input.Group>
-        </Form.Item>
-        <Form.Item
-          name="isCompare"
-          valuePropName="checked"
-          label={t('diagnose.generate.is_compare')}
-        >
-          <Switch />
-        </Form.Item>
-        <Form.Item
-          noStyle
-          shouldUpdate={(prev, cur) => prev.isCompare !== cur.isCompare}
-        >
-          {({ getFieldValue }) => {
-            return (
-              getFieldValue('isCompare') && (
-                <Form.Item
-                  name="compareRangeBegin"
-                  rules={[{ required: true }]}
-                  label={t('diagnose.generate.compare_range_begin')}
-                >
-                  <DatePicker showTime />
-                </Form.Item>
               )
-            )
-          }}
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            {t('diagnose.generate.submit')}
-          </Button>
-        </Form.Item>
-      </Form>
+            }}
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              {t('diagnose.generate.submit')}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
       <DiagnoseHistory />
-    </Card>
+    </ScrollablePane>
   )
 }

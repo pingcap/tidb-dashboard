@@ -97,8 +97,8 @@ func (b *Base) AfterFind() (err error) {
 }
 
 type QueryRequestParam struct {
-	LogStartTS int64
-	LogEndTS   int64
+	LogStartTS int64  `json:"logStartTS" form:"logStartTS"`
+	LogEndTS   int64  `json:"logEndTS" form:"logEndTS"`
 	DB         string `json:"db" form:"db"`
 	Limit      int    `json:"limit" form:"limit"`
 	Text       string `json:"text" form:"text"`

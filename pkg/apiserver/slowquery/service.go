@@ -69,10 +69,12 @@ func (s *Service) listHandler(c *gin.Context) {
 	}
 	fmt.Printf("req: %+v\n", req)
 
-	now := time.Now().Unix()
-	before := time.Now().AddDate(0, 0, -1).Unix()
-	req.LogStartTS = before
-	req.LogEndTS = now
+	if req.LogStartTS == 0 {
+		now := time.Now().Unix()
+		before := time.Now().AddDate(0, 0, -1).Unix()
+		req.LogStartTS = before
+		req.LogEndTS = now
+	}
 
 	db := utils.GetTiDBConnection(c)
 	results, err := QuerySlowLogList(db, &req)

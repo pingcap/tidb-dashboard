@@ -47,19 +47,17 @@ export default function List() {
 
   const [orderBy, setOrderBy] = useState('Query_time')
   const [desc, setDesc] = useState(true)
+  const [refreshTimes, setRefreshTimes] = useState(0)
 
   const [curSchemas, setCurSchemas] = useState<string[]>([])
   const [schemas, setSchemas] = useState<string[]>([])
-  const [refreshTimes, setRefreshTimes] = useState(0)
+  const [curTimeRange, setCurTimeRange] = useState<StatementTimeRange | null>(
+    null
+  )
 
   const [loading, setLoading] = useState(false)
   const [slowQueryList, setSlowQueryList] = useState<SlowqueryBase[]>([])
 
-  // const {
-  //   data: slowQueryList,
-  //   isLoading: listLoading,
-  //   sendRequest,
-  // } = useClientRequest((cancelToken) => client.getInstance().slowqueryListGet())
   const [columns, setColumns] = useState<IColumn[]>([])
 
   useEffect(() => {
@@ -72,16 +70,26 @@ export default function List() {
       setLoading(true)
       const res = await client
         .getInstance()
-        .slowqueryListGet('', desc, 50, undefined, undefined, orderBy, '')
+        .slowqueryListGet(
+          '',
+          desc,
+          50,
+          curTimeRange?.end_time,
+          curTimeRange?.begin_time,
+          orderBy,
+          ''
+        )
       setLoading(false)
       if (res?.data) {
         setSlowQueryList(res.data || [])
       }
     }
     getSlowQueryList()
-  }, [orderBy, desc, refreshTimes])
+  }, [curTimeRange, orderBy, desc, refreshTimes])
 
-  function handleTimeRangeChange(val: StatementTimeRange) {}
+  function handleTimeRangeChange(val: StatementTimeRange) {
+    setCurTimeRange(val)
+  }
 
   function handleSchemaChange() {}
 
@@ -103,10 +111,7 @@ export default function List() {
       <Card>
         <div style={{ display: 'flex' }}>
           <Space size="middle">
-            <TimeRangeSelector
-              timeRanges={[]}
-              onChange={handleTimeRangeChange}
-            />
+            <TimeRangeSelector onChange={handleTimeRangeChange} />
             <Select
               value={curSchemas}
               mode="multiple"

@@ -1,17 +1,49 @@
 import { Head } from '@lib/components'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Col, Row } from 'antd'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router-dom'
 import { SearchHeader, SearchProgress, SearchResult } from './components'
+import client from '@lib/client'
+import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
+import { TaskState } from './components/utils'
 
 export default function LogSearchingDetail() {
   const { t } = useTranslation()
   const { id } = useParams()
+  const [reloadKey, setReloadKey] = useState(false)
+
+  function toggleReload() {
+    setReloadKey(!reloadKey)
+  }
+
   const taskGroupID = id === undefined ? 0 : +id
 
-  const [tasks, setTasks] = useState([])
+  function isFinished(data) {
+    if (taskGroupID < 0) {
+      return true
+    }
+    if (!data) {
+      return false
+    }
+    if (data.tasks.some((task) => task.state === TaskState.Running)) {
+      return true
+    }
+    return false
+  }
+
+  const { data } = useClientRequestWithPolling(
+    (cancelToken) =>
+      client.getInstance().logsTaskgroupsIdGet(id, { cancelToken }),
+    {
+      shouldPoll: (data) => !isFinished(data),
+      pollingInterval: 1000,
+      immediate: true,
+    }
+  )
+
+  const tasks = useMemo(() => data?.tasks ?? [], [data])
 
   return (
     <div>
@@ -31,9 +63,10 @@ export default function LogSearchingDetail() {
         </Col>
         <Col span={6}>
           <SearchProgress
+            key={reloadKey}
+            toggleReload={toggleReload}
             taskGroupID={taskGroupID}
             tasks={tasks}
-            setTasks={setTasks}
           />
         </Col>
       </Row>

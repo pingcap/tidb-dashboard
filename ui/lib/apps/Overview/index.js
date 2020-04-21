@@ -101,7 +101,7 @@ const App = () => {
                     digest_text: true,
                     sum_latency: true,
                     avg_latency: true,
-                    schemas: true,
+                    related_schemas: true,
                   }}
                   visibleItemsCount={5}
                   loading={loadingStatements}

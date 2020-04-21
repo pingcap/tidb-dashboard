@@ -27,12 +27,20 @@
 }
 
 .item {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  // nothing for now
+}
 
+.itemSingleline {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   > span {
     display: inline;
+  }
+  pre {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 

@@ -69,15 +69,19 @@ function DiagnoseStatus() {
       ) : (
         <Descriptions column={1} bordered size="small">
           <Descriptions.Item label={t('diagnose.status.range_begin')}>
-            <DateTime.Calendar unixTimeStampMs={new Date(report.start_time!)} />
+            <DateTime.Calendar
+              unixTimestampMs={new Date(report.start_time!).valueOf()}
+            />
           </Descriptions.Item>
           <Descriptions.Item label={t('diagnose.status.range_end')}>
-            <DateTime.Calendar unixTimeStampMs={new Date(report.end_time!)} />
+            <DateTime.Calendar
+              unixTimestampMs={new Date(report.end_time!).valueOf()}
+            />
           </Descriptions.Item>
           {report.compare_start_time && (
             <Descriptions.Item label={t('diagnose.status.baseline_begin')}>
               <DateTime.Calendar
-                unixTimeStampMs={new Date(report.compare_start_time!)}
+                unixTimestampMs={new Date(report.compare_start_time!).valueOf()}
               />
             </Descriptions.Item>
           )}

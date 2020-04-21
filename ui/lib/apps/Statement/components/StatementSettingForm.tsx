@@ -98,9 +98,9 @@ function StatementSettingForm({
     if (oriConfig?.enable && !values.enable) {
       // warning
       Modal.confirm({
-        title: t('statement.setting.close_statement'),
+        title: t('statement.pages.overview.settings.close_statement'),
         icon: <ExclamationCircleOutlined />,
-        content: t('statement.setting.close_statement_warning'),
+        content: t('statement.pages.overview.settings.close_statement_warning'),
         okText: t('statement.actions.close'),
         cancelText: t('statement.actions.cancel'),
         okButtonProps: { type: 'danger' },
@@ -119,7 +119,7 @@ function StatementSettingForm({
           <Form.Item
             name="enable"
             valuePropName="checked"
-            label={t('statement.setting.switch')}
+            label={t('statement.pages.overview.settings.switch')}
           >
             <Switch />
           </Form.Item>
@@ -131,7 +131,11 @@ function StatementSettingForm({
               return (
                 getFieldValue('enable') && (
                   <Form.Item noStyle>
-                    <Form.Item label={t('statement.setting.refresh_interval')}>
+                    <Form.Item
+                      label={t(
+                        'statement.pages.overview.settings.refresh_interval'
+                      )}
+                    >
                       <Input.Group>
                         <Form.Item noStyle name="refresh_interval">
                           <InputNumber
@@ -155,7 +159,11 @@ function StatementSettingForm({
                         </Form.Item>
                       </Input.Group>
                     </Form.Item>
-                    <Form.Item label={t('statement.setting.keep_duration')}>
+                    <Form.Item
+                      label={t(
+                        'statement.pages.overview.settings.keep_duration'
+                      )}
+                    >
                       <Input.Group>
                         <Form.Item noStyle name="keep_duration">
                           <InputNumber

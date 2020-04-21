@@ -5,7 +5,7 @@ import client from '@lib/client'
 import { Root } from '@lib/components'
 
 import { SearchContext, SearchOptions } from './components'
-import { StatementsOverviewPage, StatementDetailPage } from './pages'
+import { StatementsOverviewPage, Detail } from './pages'
 
 const App = () => {
   const [searchOptions, setSearchOptions] = useState({
@@ -30,9 +30,7 @@ const App = () => {
         />
         <Route
           path="/statement/detail"
-          element={
-            <StatementDetailPage dashboardClient={client.getInstance()} />
-          }
+          element={<Detail key={Math.random()} />}
         />
       </Routes>
     </SearchContext.Provider>

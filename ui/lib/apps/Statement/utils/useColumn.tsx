@@ -3,10 +3,9 @@ import {
   IColumn,
   ColumnActionsMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
-import { useTranslation } from 'react-i18next'
 import {
   TextWithInfo,
-  FormatHighlightSQL,
+  HighlightSQL,
   EllipsisText,
   Bar,
   Pre,
@@ -16,12 +15,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import { max } from 'lodash'
 
 function useCommonColumnName(fieldName: string): any {
-  const { t } = useTranslation()
-  return (
-    <TextWithInfo tooltip={t(`statement.common.columns.${fieldName}_tooltip`)}>
-      {t(`statement.common.columns.${fieldName}`)}
-    </TextWithInfo>
-  )
+  return <TextWithInfo.TransKey transKey={`statement.fields.${fieldName}`} />
 }
 
 export function usePlanDigestColumn(
@@ -37,7 +31,7 @@ export function usePlanDigestColumn(
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip title={rec.plan_digest}>
-        <EllipsisText>{rec.plan_digest}</EllipsisText>
+        <EllipsisText>{rec.plan_digest || '(none)'}</EllipsisText>
       </Tooltip>
     ),
   }
@@ -57,7 +51,7 @@ export function useDigestColumn(
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip
-        title={<FormatHighlightSQL sql={rec.digest_text} theme="dark" />}
+        title={<HighlightSQL sql={rec.digest_text} theme="dark" />}
         placement="right"
       >
         {showFullSQL ? (
@@ -174,13 +168,20 @@ Max:  ${getValueFormat('bytes')(rec.max_mem, 1)}`
   }
 }
 
-export function useDummyColumn(): IColumn {
+export function useRelatedSchemasColumn(
+  _rows?: { related_schemas?: string }[] // used for type check only
+): IColumn {
   return {
-    name: '',
-    key: 'dummy',
-    minWidth: 28,
-    maxWidth: 28,
+    name: useCommonColumnName('related_schemas'),
+    key: 'related_schemas',
+    minWidth: 160,
+    maxWidth: 240,
+    isResizable: true,
     columnActionsMode: ColumnActionsMode.disabled,
-    onRender: (rec) => null,
+    onRender: (rec) => (
+      <Tooltip title={rec.related_schemas}>
+        <EllipsisText>{rec.related_schemas}</EllipsisText>
+      </Tooltip>
+    ),
   }
 }

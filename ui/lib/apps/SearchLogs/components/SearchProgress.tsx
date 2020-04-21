@@ -157,7 +157,7 @@ export default function SearchProgress({
       res.push(str)
     })
     const allSize = tasks.reduce((total, current) => {
-      return previousValue + currentValue.size!
+      return total + current.size!
     }, 0)
     return res.join('，') + ' ' + getValueFormat('bytes')(allSize, 0)
   }

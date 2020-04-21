@@ -105,12 +105,11 @@ export function useQueryTimeColumn(rows?: { query_time?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.query_time)) ?? 0 : 0
   return {
     name: useCommonColumnName('query_time'),
-    key: 'query_time',
+    key: 'Query_time',
     fieldName: 'query_time',
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.query_time} capacity={capacity}>
         {getValueFormat('s')(rec.query_time, 1)}
@@ -123,12 +122,11 @@ export function useMemoryColumn(rows?: { memory_max?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.memory_max)) ?? 0 : 0
   return {
     name: useCommonColumnName('memory_max'),
-    key: 'memory_max',
+    key: 'Mem_max',
     fieldName: 'memory_max',
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.memory_max} capacity={capacity}>
         {getValueFormat('bytes')(rec.memory_max, 1)}

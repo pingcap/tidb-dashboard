@@ -14,6 +14,7 @@
 package slowquery
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -61,20 +62,20 @@ type DatabaseResponse = []string
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) listHandler(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
+	var req QueryRequestParam
+	if err := c.ShouldBindQuery(&req); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	fmt.Printf("req: %+v\n", req)
+
 	now := time.Now().Unix()
 	before := time.Now().AddDate(0, 0, -1).Unix()
-	params := QueryRequestParam{
-		LogStartTS: before,
-		LogEndTS:   now,
-		DB:         "",
-		Limit:      10,
-		Text:       "",
-		OrderBy:    "time",
-		DESC:       true,
-	}
+	req.LogStartTS = before
+	req.LogEndTS = now
 
-	results, err := QuerySlowLogList(db, &params)
+	db := utils.GetTiDBConnection(c)
+	results, err := QuerySlowLogList(db, &req)
 	if err != nil {
 		_ = c.Error(err)
 		return

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Select, Space, Tooltip, Input } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useNavigate } from 'react-router-dom'
@@ -8,10 +8,7 @@ import { useTranslation } from 'react-i18next'
 import client, { StatementTimeRange, SlowqueryBase } from '@lib/client'
 import { ReloadOutlined } from '@ant-design/icons'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import {
-  IColumn,
-  ColumnActionsMode,
-} from 'office-ui-fabric-react/lib/DetailsList'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import * as useSlowQueryColumn from '../utils/useColumn'
 
 const { Option } = Select
@@ -19,6 +16,9 @@ const { Search } = Input
 
 const tableColumns = (
   rows: SlowqueryBase[],
+  onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
+  orderBy: string,
+  desc: boolean,
   showFullSQL?: boolean
 ): IColumn[] => {
   return [
@@ -26,28 +26,60 @@ const tableColumns = (
     useSlowQueryColumn.useConnectionIDColumn(rows),
     useSlowQueryColumn.useDigestColumn(rows, showFullSQL),
     useSlowQueryColumn.useEndTimeColumn(rows),
-    useSlowQueryColumn.useQueryTimeColumn(rows),
-    useSlowQueryColumn.useMemoryColumn(rows),
+    {
+      ...useSlowQueryColumn.useQueryTimeColumn(rows),
+      isSorted: orderBy === 'Query_time',
+      isSortedDescending: desc,
+      onColumnClick: onColumnClick,
+    },
+    {
+      ...useSlowQueryColumn.useMemoryColumn(rows),
+      isSorted: orderBy === 'Mem_max',
+      isSortedDescending: desc,
+      onColumnClick: onColumnClick,
+    },
   ]
 }
 
 export default function List() {
+  const navigate = useNavigate()
+  const { t } = useTranslation()
+
+  const [orderBy, setOrderBy] = useState('Query_time')
+  const [desc, setDesc] = useState(true)
+
   const [curSchemas, setCurSchemas] = useState<string[]>([])
   const [schemas, setSchemas] = useState<string[]>([])
   const [refreshTimes, setRefreshTimes] = useState(0)
-  const navigate = useNavigate()
 
-  const { t } = useTranslation()
+  const [loading, setLoading] = useState(false)
+  const [slowQueryList, setSlowQueryList] = useState<SlowqueryBase[]>([])
 
-  const {
-    data: slowQueryList,
-    isLoading: listLoading,
-  } = useClientRequest((cancelToken) => client.getInstance().slowqueryListGet())
+  // const {
+  //   data: slowQueryList,
+  //   isLoading: listLoading,
+  //   sendRequest,
+  // } = useClientRequest((cancelToken) => client.getInstance().slowqueryListGet())
   const [columns, setColumns] = useState<IColumn[]>([])
 
   useEffect(() => {
-    setColumns(tableColumns(slowQueryList || []))
+    setColumns(tableColumns(slowQueryList || [], onColumnClick, orderBy, desc))
+    // eslint-disable-next-line
   }, [slowQueryList])
+
+  useEffect(() => {
+    async function getSlowQueryList() {
+      setLoading(true)
+      const res = await client
+        .getInstance()
+        .slowqueryListGet('', desc, 50, undefined, undefined, orderBy, '')
+      setLoading(false)
+      if (res?.data) {
+        setSlowQueryList(res.data || [])
+      }
+    }
+    getSlowQueryList()
+  }, [orderBy, desc, refreshTimes])
 
   function handleTimeRangeChange(val: StatementTimeRange) {}
 
@@ -55,6 +87,15 @@ export default function List() {
 
   function handleRowClick(rec) {
     navigate(`/slow_query/detail`)
+  }
+
+  function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {
+    if (column.key === orderBy) {
+      setDesc(!desc)
+    } else {
+      setOrderBy(column.key)
+      setDesc(true)
+    }
   }
 
   return (
@@ -93,7 +134,7 @@ export default function List() {
         </div>
       </Card>
       <CardTableV2
-        loading={listLoading}
+        loading={loading}
         items={slowQueryList || []}
         columns={columns}
         onRowClicked={handleRowClick}

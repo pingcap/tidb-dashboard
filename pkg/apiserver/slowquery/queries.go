@@ -14,6 +14,7 @@
 package slowquery
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -98,11 +99,11 @@ func (b *Base) AfterFind() (err error) {
 type QueryRequestParam struct {
 	LogStartTS int64
 	LogEndTS   int64
-	DB         string
-	Limit      int
-	Text       string
-	OrderBy    string
-	DESC       bool
+	DB         string `json:"db" form:"db"`
+	Limit      int    `json:"limit" form:"limit"`
+	Text       string `json:"text" form:"text"`
+	OrderBy    string `json:"orderBy" form:"orderBy"`
+	DESC       bool   `json:"desc" form:"desc"`
 }
 
 func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
@@ -123,9 +124,11 @@ func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
 
 	order := params.OrderBy
 	if params.DESC {
-		tx = tx.Order(gorm.Expr("? DESC", order))
+		// FIXME
+		// but grom.Expr("? DESC", order) doesn't work
+		tx = tx.Order(fmt.Sprintf("%s desc", order))
 	} else {
-		tx = tx.Order(gorm.Expr("? ASC", order))
+		tx = tx.Order(fmt.Sprintf("%s asc", order))
 	}
 
 	var results []Base

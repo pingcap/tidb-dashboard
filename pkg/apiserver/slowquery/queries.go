@@ -15,6 +15,7 @@ package slowquery
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -119,7 +120,8 @@ func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
 	}
 
 	if params.DB != "" {
-		tx = tx.Where("DB = ?", params.DB)
+		dbs := strings.Split(params.DB, ",")
+		tx = tx.Where("DB IN (?)", dbs)
 	}
 
 	order := params.OrderBy

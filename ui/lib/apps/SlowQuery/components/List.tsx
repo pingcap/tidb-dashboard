@@ -66,12 +66,20 @@ export default function List() {
   }, [slowQueryList])
 
   useEffect(() => {
+    async function getSchemas() {
+      const res = await client.getInstance().statementsSchemasGet()
+      setSchemas(res?.data || [])
+    }
+    getSchemas()
+  }, [])
+
+  useEffect(() => {
     async function getSlowQueryList() {
       setLoading(true)
       const res = await client
         .getInstance()
         .slowqueryListGet(
-          '',
+          curSchemas.join(','),
           desc,
           50,
           curTimeRange?.end_time,
@@ -85,7 +93,7 @@ export default function List() {
       }
     }
     getSlowQueryList()
-  }, [curTimeRange, orderBy, desc, searchText, refreshTimes])
+  }, [curTimeRange, curSchemas, orderBy, desc, searchText, refreshTimes])
 
   function handleTimeRangeChange(val: StatementTimeRange) {
     setCurTimeRange(val)
@@ -118,7 +126,7 @@ export default function List() {
               allowClear
               placeholder={t('statement.pages.overview.toolbar.select_schemas')}
               style={{ minWidth: 200 }}
-              onChange={handleSchemaChange}
+              onChange={setCurSchemas}
             >
               {schemas.map((item) => (
                 <Option value={item} key={item}>

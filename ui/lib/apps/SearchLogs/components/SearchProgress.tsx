@@ -42,12 +42,14 @@ function leafNodeProps(state: number | undefined) {
 
 function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map((task) => {
-    const title = task.target?.display_name ?? ''
-    const size = getValueFormat('bytes')(task.size!, 1)
+    let title = task.target?.display_name ?? ''
+    if (task.size) {
+      title += ' ' + getValueFormat('bytes')(task.size!, 1)
+    }
     return (
       <TreeNode
         key={`${task.id}`}
-        title={`${title} ${size}`}
+        title={title}
         {...leafNodeProps(task.state)}
       />
     )

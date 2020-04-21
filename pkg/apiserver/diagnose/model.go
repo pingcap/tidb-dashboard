@@ -49,6 +49,15 @@ func NewReport(db *dbstore.DB, startTime, endTime time.Time, compareStartTime, c
 	return report.ID, nil
 }
 
+func GetReports(db *dbstore.DB) ([]*Report, error) {
+	var reports []*Report
+	err := db.
+		Select("id, created_at, progress, start_time, end_time, compare_start_time, compare_end_time").
+		Order("created_at desc").
+		Find(&reports).Error
+	return reports, err
+}
+
 func GetReport(db *dbstore.DB, reportID uint) (*Report, error) {
 	var report Report
 	err := db.First(&report, reportID).Error

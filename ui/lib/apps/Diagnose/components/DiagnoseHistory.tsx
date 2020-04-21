@@ -79,7 +79,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
       ),
   },
   {
-    name: t('diagnose.list_table.diagnose_end_time'),
+    name: t('diagnose.list_table.compare_end_time'),
     key: 'compare_end_time',
     minWidth: 160,
     maxWidth: 220,

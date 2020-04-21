@@ -124,7 +124,7 @@ func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 			FLOOR(UNIX_TIMESTAMP(summary_end_time)) AS end_time
 		`).
 		Table(statementsTable).
-		Order("summary_begin_time DESC").
+		Order("summary_begin_time DESC, summary_end_time DESC").
 		Find(&result).Error
 	return
 }

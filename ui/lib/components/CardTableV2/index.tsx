@@ -23,6 +23,7 @@ export interface ICardTableV2Props extends IDetailsListProps {
   cardNoMargin?: boolean
   // The keys of visible columns. If null, all columns will be shown.
   visibleColumnKeys?: { [key: string]: boolean }
+  visibleItemsCount?: number
   // Event triggered when a row is clicked.
   onRowClicked?: (item: any, itemIndex: number) => void
 }
@@ -63,7 +64,7 @@ function renderColumnVisibilitySelection(
   onChange?: (visibleKeys: { [key: string]: boolean }) => void
 ) {
   if (columns == null) {
-    return null
+    return []
   }
   if (visibleColumnKeys == null) {
     visibleColumnKeys = {}
@@ -71,28 +72,23 @@ function renderColumnVisibilitySelection(
       visibleColumnKeys![c.key] = true
     })
   }
-  return (
-    <>
-      {columns.map((column) => (
-        <div key={column.key}>
-          <Checkbox
-            checked={visibleColumnKeys![column.key]}
-            onChange={(e) => {
-              if (!onChange) {
-                return
-              }
-              onChange({
-                ...visibleColumnKeys!,
-                [column.key]: e.target.checked,
-              })
-            }}
-          >
-            {column.name}
-          </Checkbox>
-        </div>
-      ))}
-    </>
-  )
+  return columns.map((column) => (
+    <Checkbox
+      key={column.key}
+      checked={visibleColumnKeys![column.key]}
+      onChange={(e) => {
+        if (!onChange) {
+          return
+        }
+        onChange({
+          ...visibleColumnKeys!,
+          [column.key]: e.target.checked,
+        })
+      }}
+    >
+      {column.name}
+    </Checkbox>
+  ))
 }
 
 function CardTableV2(props: ICardTableV2Props) {
@@ -105,18 +101,28 @@ function CardTableV2(props: ICardTableV2Props) {
     cardExtra,
     cardNoMargin,
     visibleColumnKeys,
+    visibleItemsCount,
     onRowClicked,
     columns,
+    items,
     ...restProps
   } = props
 
   const renderClickableRow = useRenderClickableRow(onRowClicked)
+
   const filteredColumns = useMemo(() => {
     if (columns == null || visibleColumnKeys == null) {
       return columns
     }
     return columns.filter((c) => visibleColumnKeys[c.key])
   }, [columns, visibleColumnKeys])
+
+  const filteredItems = useMemo(() => {
+    if (visibleItemsCount == null) {
+      return items
+    }
+    return items.slice(0, visibleItemsCount)
+  }, [items, visibleItemsCount])
 
   return (
     <Card
@@ -143,6 +149,7 @@ function CardTableV2(props: ICardTableV2Props) {
               return <Checkbox checked={props?.checked} />
             }}
             columns={filteredColumns}
+            items={filteredItems}
             {...restProps}
           />
         </div>

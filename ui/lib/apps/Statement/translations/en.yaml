@@ -3,9 +3,10 @@ statement:
   pages:
     detail: SQL Statement Detail
   filters:
-    select_time: Select time range
-    select_schemas: Select schemas
+    select_time: Select Time Range
+    select_schemas: Select Schemas
     select_stmt_types: Select SQL types
+    select_columns: Select Columns
   common:
     columns:
       plan_digest: Plan Digest
@@ -25,6 +26,7 @@ statement:
     schemas_tooltip: Related schema names
     sum_backoff_times: Sum Backoff Times
     avg_total_keys: Avg Scan Rows
+    show_full_sql: Show Full SQL
   detail:
     node: Node
     time_range: Time Range
@@ -49,3 +51,7 @@ statement:
     save: Save
     close: Close
     cancel: Cancel
+  time_range_selector:
+    recent: Recent
+    usual_time_ranges: Usual Time Ranges
+    custom_time_ranges: Custom Time Ranges

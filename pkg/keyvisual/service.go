@@ -36,7 +36,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/storage"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
@@ -76,9 +75,8 @@ type Service struct {
 	httpClient *http.Client
 	db         *dbstore.DB
 
-	stat      *storage.Stat
-	strategy  matrix.Strategy
-	forwarder *tidb.Forwarder
+	stat     *storage.Stat
+	strategy matrix.Strategy
 }
 
 func NewService(

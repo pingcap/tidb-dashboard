@@ -121,6 +121,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 		reqEndpoint := fmt.Sprintf("%s://%s", reqScheme, addr)
 		if err := request(reqEndpoint, "schema", &dbInfos, s.HTTPClient); err == nil {
 			tidbEndpoint = reqEndpoint
+			break
 		}
 	}
 	if dbInfos == nil {

@@ -71,10 +71,9 @@ export default function TimeRangeSelector({
     () => calcTime(timeRanges),
     [timeRanges]
   )
-  const [curTimeRange, setCurTimeRange] = useState<StatementTimeRange>(() => {
-    const { latestTimeRange } = calcTime(timeRanges)
-    return latestTimeRange
-  })
+  const [curTimeRange, setCurTimeRange] = useState<StatementTimeRange>(
+    () => calcTime(timeRanges).latestTimeRange
+  )
   const [curRecent, setCurRecent] = useState(30)
   const [dropdownVisible, setDropdownVisible] = useState(false)
 

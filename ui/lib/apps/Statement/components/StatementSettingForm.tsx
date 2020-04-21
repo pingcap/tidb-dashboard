@@ -101,8 +101,8 @@ function StatementSettingForm({
         title: t('statement.pages.overview.settings.close_statement'),
         icon: <ExclamationCircleOutlined />,
         content: t('statement.pages.overview.settings.close_statement_warning'),
-        okText: t('statement.actions.close'),
-        cancelText: t('statement.actions.cancel'),
+        okText: t('statement.pages.overview.settings.actions.close'),
+        cancelText: t('statement.pages.overview.settings.actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: () => updateConfig(values),
       })
@@ -195,9 +195,11 @@ function StatementSettingForm({
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit" loading={submitting}>
-                {t('statement.actions.save')}
+                {t('statement.pages.overview.settings.actions.save')}
               </Button>
-              <Button onClick={onClose}>{t('statement.actions.cancel')}</Button>
+              <Button onClick={onClose}>
+                {t('statement.pages.overview.settings.actions.cancel')}
+              </Button>
             </Space>
           </Form.Item>
         </Form>

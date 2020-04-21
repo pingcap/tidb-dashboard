@@ -6,6 +6,7 @@ statement:
     select_time: 选择时间段
     select_schemas: 选择数据库
     select_stmt_types: 选择 SQL 类型
+    select_columns: 选择列
   common:
     columns:
       plan_digest: 执行计划 ID
@@ -25,6 +26,7 @@ statement:
     schemas_tooltip: SQL 语句涉及的数据库
     sum_backoff_times: Backoff 重试次数
     avg_total_keys: 平均扫描行数
+    show_full_sql: 显示完整的 SQL
   detail:
     node: 节点
     time_range: 时间段

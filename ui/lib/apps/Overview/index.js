@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Root } from '@lib/components'
 import { Row, Col, Card } from 'antd'
 import { RightOutlined } from '@ant-design/icons'
 import { HashRouter as Router, Link } from 'react-router-dom'
@@ -15,7 +16,7 @@ const App = () => {
   const [cluster, setCluster] = useState(null)
   const [clusterError, setClusterError] = useState(null)
   const [timeRange, setTimeRange] = useState({ begin_time: 0, end_time: 0 })
-  const [topStatements, setTopStatements] = useState([])
+  const [statements, setStatements] = useState([])
   const [loadingStatements, setLoadingStatements] = useState(false)
 
   const { t } = useTranslation()
@@ -41,7 +42,7 @@ const App = () => {
       }
     }
 
-    const fetchTopStatements = async () => {
+    const fetchStatements = async () => {
       setLoadingStatements(true)
       let res = await client.getInstance().statementsTimeRangesGet()
       const timeRanges = res.data || []
@@ -53,85 +54,93 @@ const App = () => {
             timeRanges[0].begin_time,
             timeRanges[0].end_time
           )
-        setTopStatements((res.data || []).slice(0, 5))
+        setStatements(res.data || [])
       }
       setLoadingStatements(false)
     }
 
     fetchLoad()
-    fetchTopStatements()
+    fetchStatements()
   }, [])
 
   return (
-    <Router>
-      <div style={{ padding: 24 }}>
-        <Card bordered={false} className={styles.cardContainer}>
-          <Row gutter={24}>
-            <Col span={18}>
-              <Row gutter={24}>
-                <Col span={8}>
-                  <ComponentPanel
-                    field="tikv"
-                    data={cluster}
-                    clusterError={clusterError}
-                  />
-                </Col>
-                <Col span={8}>
-                  <ComponentPanel
-                    field="tidb"
-                    data={cluster}
-                    clusterError={clusterError}
-                  />
-                </Col>
-                <Col span={8}>
-                  <ComponentPanel
-                    field="pd"
-                    data={cluster}
-                    clusterError={clusterError}
-                  />
-                </Col>
-              </Row>
-              <StatementsTable
-                className={styles.statementsTable}
-                key={topStatements.length}
-                statements={topStatements}
-                loading={loadingStatements}
-                timeRange={timeRange}
-                concise={true}
-                title={
-                  timeRange.begin_time > 0
-                    ? `${t('overview.top_statements.title')} (${dayjs
-                        .unix(timeRange.begin_time)
-                        .format('YYYY-MM-DD HH:mm:ss')} ~ ${dayjs
-                        .unix(timeRange.end_time)
-                        .format('YYYY-MM-DD HH:mm:ss')})`
-                    : t('overview.top_statements.title')
-                }
-                cardExtra={
-                  <Link to="/statement">
-                    {t('overview.top_statements.more')}
-                    <RightOutlined />
-                  </Link>
-                }
-              />
-            </Col>
-            <Col span={6}>
-              {cluster ? (
-                <MonitorAlertBar
-                  cluster={cluster}
-                  clusterError={clusterError}
+    <Root>
+      <Router>
+        <div style={{ padding: 24 }}>
+          <Card bordered={false} className={styles.cardContainer}>
+            <Row gutter={24}>
+              <Col span={18}>
+                <Row gutter={24}>
+                  <Col span={8}>
+                    <ComponentPanel
+                      field="tikv"
+                      data={cluster}
+                      clusterError={clusterError}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <ComponentPanel
+                      field="tidb"
+                      data={cluster}
+                      clusterError={clusterError}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <ComponentPanel
+                      field="pd"
+                      data={cluster}
+                      clusterError={clusterError}
+                    />
+                  </Col>
+                </Row>
+                <StatementsTable
+                  className={styles.statementsTable}
+                  key={statements.length}
+                  statements={statements}
+                  visibleColumnKeys={{
+                    digest_text: true,
+                    sum_latency: true,
+                    avg_latency: true,
+                    schemas: true,
+                  }}
+                  visibleItemsCount={5}
+                  loading={loadingStatements}
+                  timeRange={timeRange}
+                  title={
+                    timeRange.begin_time > 0
+                      ? `${t('overview.top_statements.title')} (${dayjs
+                          .unix(timeRange.begin_time)
+                          .format('YYYY-MM-DD HH:mm:ss')} ~ ${dayjs
+                          .unix(timeRange.end_time)
+                          .format('YYYY-MM-DD HH:mm:ss')})`
+                      : t('overview.top_statements.title')
+                  }
+                  cardExtra={
+                    <Link to="/statement">
+                      {t('overview.top_statements.more')}
+                      <RightOutlined />
+                    </Link>
+                  }
                 />
-              ) : (
-                <MonitorAlertBar
-                  cluster={cluster}
-                  clusterError={clusterError}
-                />
-              )}
-            </Col>
-          </Row>
-        </Card>
-      </div>
-    </Router>
+              </Col>
+              <Col span={6}>
+                {cluster ? (
+                  <MonitorAlertBar
+                    cluster={cluster}
+                    clusterError={clusterError}
+                  />
+                ) : (
+                  <MonitorAlertBar
+                    cluster={cluster}
+                    clusterError={clusterError}
+                  />
+                )}
+              </Col>
+            </Row>
+          </Card>
+        </div>
+      </Router>
+    </Root>
   )
 }
 

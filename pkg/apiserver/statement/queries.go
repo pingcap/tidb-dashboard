@@ -17,14 +17,88 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/jinzhu/gorm"
 )
 
 const (
-	statementsTable = "PERFORMANCE_SCHEMA.cluster_events_statements_summary_by_digest_history"
+	statementsTable        = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
+	stmtEnableVar          = "tidb_enable_stmt_summary"
+	stmtRefreshIntervalVar = "tidb_stmt_summary_refresh_interval"
+	stmtHistroySizeVar     = "tidb_stmt_summary_history_size"
 )
+
+// How to get sql variables by GORM
+// https://github.com/jinzhu/gorm/issues/2616
+func querySQLIntVariable(db *gorm.DB, name string) (int, error) {
+	var values []string
+	sql := fmt.Sprintf("SELECT @@GLOBAL.%s as value", name) // nolints
+	err := db.Raw(sql).Pluck("value", &values).Error
+	if err != nil {
+		return 0, err
+	}
+	strVal := values[0]
+	if strVal == "" {
+		return -1, nil
+	}
+	intVal, err := strconv.Atoi(strVal)
+	if err != nil {
+		return 0, err
+	}
+	return intVal, nil
+}
+
+func QueryStmtConfig(db *gorm.DB) (*Config, error) {
+	config := Config{}
+
+	enable, err := querySQLIntVariable(db, stmtEnableVar)
+	if err != nil {
+		return nil, err
+	}
+	config.Enable = enable != 0
+
+	refreshInterval, err := querySQLIntVariable(db, stmtRefreshIntervalVar)
+	if err != nil {
+		return nil, err
+	}
+	if refreshInterval == -1 {
+		config.RefreshInterval = 1800
+	} else {
+		config.RefreshInterval = refreshInterval
+	}
+
+	historySize, err := querySQLIntVariable(db, stmtHistroySizeVar)
+	if err != nil {
+		return nil, err
+	}
+	if historySize == -1 {
+		config.HistorySize = 24
+	} else {
+		config.HistorySize = historySize
+	}
+
+	return &config, err
+}
+
+func UpdateStmtConfig(db *gorm.DB, config *Config) (err error) {
+	var sql string
+	sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtEnableVar)
+	err = db.Exec(sql, config.Enable).Error
+
+	if config.Enable {
+		// update other configurations
+		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtRefreshIntervalVar)
+		err = db.Exec(sql, config.RefreshInterval).Error
+		if err != nil {
+			return
+		}
+		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtHistroySizeVar)
+		err = db.Exec(sql, config.HistorySize).Error
+	}
+	return
+}
 
 func QuerySchemas(db *gorm.DB) ([]string, error) {
 	sql := `SHOW DATABASES`
@@ -50,7 +124,7 @@ func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 			FLOOR(UNIX_TIMESTAMP(summary_end_time)) AS end_time
 		`).
 		Table(statementsTable).
-		Order("summary_begin_time DESC").
+		Order("summary_begin_time DESC, summary_end_time DESC").
 		Find(&result).Error
 	return
 }
@@ -75,21 +149,11 @@ func QueryStatementsOverview(
 	db *gorm.DB,
 	beginTime, endTime int64,
 	schemas, stmtTypes []string) (result []*Overview, err error) {
+	fields := append(
+		[]string{"schema_name", "digest", "digest_text"},
+		getAggrFields("sum_latency", "exec_count", "avg_affected_rows", "max_latency", "avg_latency", "min_latency", "avg_mem", "max_mem", "table_names")...)
 	query := db.
-		Select(`
-			schema_name,
-			digest,
-			digest_text,
-			SUM(sum_latency) AS agg_sum_latency,
-			SUM(exec_count) AS agg_exec_count,
-			ROUND(SUM(exec_count *  avg_affected_rows) / SUM(exec_count)) AS agg_avg_affected_rows,
-			MAX(max_latency) AS agg_max_latency,
-			ROUND(SUM(exec_count * avg_latency) / SUM(exec_count)) AS agg_avg_latency,
-			MIN(min_latency) AS agg_min_latency,
-			ROUND(SUM(exec_count * avg_mem) / SUM(exec_count)) AS agg_avg_mem,
-			MAX(max_mem) AS agg_max_mem,
-			GROUP_CONCAT(table_names) AS agg_table_names
-		`).
+		Select(strings.Join(fields, ",")).
 		Table(statementsTable).
 		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Group("schema_name, digest, digest_text").
@@ -109,6 +173,42 @@ func QueryStatementsOverview(
 	}
 
 	err = query.Find(&result).Error
+	return
+}
+
+func QueryPlans(
+	db *gorm.DB,
+	beginTime, endTime int,
+	schemaName, digest string) (result []PlanDetailModel, err error) {
+	fields := getAggrFields("plan_digest", "table_names", "digest_text", "digest", "sum_latency", "max_latency", "min_latency", "avg_latency", "exec_count", "avg_mem", "max_mem")
+	err = db.
+		Select(strings.Join(fields, ",")).
+		Table(statementsTable).
+		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
+		Where("schema_name = ?", schemaName).
+		Where("digest = ?", digest).
+		Group("plan_digest").
+		Find(&result).
+		Error
+	return
+}
+
+func QueryPlanDetail(
+	db *gorm.DB,
+	beginTime, endTime int,
+	schemaName, digest string,
+	plans []string) (result *PlanDetailModel, err error) {
+	fields := getAllAggrFields()
+	query := db.
+		Select(strings.Join(fields, ",")).
+		Table(statementsTable).
+		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
+		Where("schema_name = ?", schemaName).
+		Where("digest = ?", digest)
+	if len(plans) > 0 {
+		query = query.Where("plan_digest in (?)", plans)
+	}
+	err = query.Scan(result).Error
 	return
 }
 
@@ -180,7 +280,7 @@ func QueryStatementDetail(db *gorm.DB, schema, digest string, beginTime, endTime
 func QueryStatementNodes(db *gorm.DB, schema, digest string, beginTime, endTime int64) (result []*Node, err error) {
 	err = db.
 		Select(`
-			address,
+			instance,
 			sum_latency,
 			exec_count,
 			avg_latency,

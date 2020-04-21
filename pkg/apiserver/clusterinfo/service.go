@@ -27,18 +27,26 @@ import (
 	"go.etcd.io/etcd/clientv3"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
 )
 
 type Service struct {
-	config     *config.Config
-	etcdClient *clientv3.Client
-	httpClient *http.Client
+	config        *config.Config
+	etcdClient    *clientv3.Client
+	httpClient    *http.Client
+	tidbForwarder *tidb.Forwarder
 }
 
-func NewService(config *config.Config, etcdClient *clientv3.Client, httpClient *http.Client) *Service {
-	return &Service{config: config, etcdClient: etcdClient, httpClient: httpClient}
+func NewService(config *config.Config, etcdClient *clientv3.Client, httpClient *http.Client, tidbForwarder *tidb.Forwarder) *Service {
+	return &Service{
+		config:        config,
+		etcdClient:    etcdClient,
+		httpClient:    httpClient,
+		tidbForwarder: tidbForwarder,
+	}
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -47,6 +55,11 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/all", s.topologyHandler)
 	endpoint.DELETE("/tidb/:address", s.deleteTiDBTopologyHandler)
 	endpoint.GET("/alertmanager/:address/count", s.topologyGetAlertCount)
+
+	endpoint = r.Group("/host")
+	endpoint.Use(auth.MWAuthRequired())
+	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
+	endpoint.GET("/all", s.hostHandler)
 }
 
 // @Summary Delete etcd's tidb key.
@@ -105,7 +118,7 @@ func (s *Service) topologyHandler(c *gin.Context) {
 
 	fetchers := []func(ctx context.Context, service *Service, info *ClusterInfo){
 		fillTopologyUnderEtcd,
-		fillTiKVTopology,
+		fillStoreTopology,
 		fillPDTopology,
 	}
 
@@ -139,4 +152,89 @@ func (s *Service) topologyGetAlertCount(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, cnt)
+}
+
+// @Summary Get all host information in the cluster
+// @Description Get information about host in the cluster
+// @Produce json
+// @Success 200 {array} HostInfo
+// @Router /host/all [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) hostHandler(c *gin.Context) {
+	db := utils.GetTiDBConnection(c)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var wg sync.WaitGroup
+
+	var clusterInfo ClusterInfo
+	fetchers := []func(ctx context.Context, service *Service, info *ClusterInfo){
+		fillTopologyUnderEtcd,
+		fillStoreTopology,
+		fillPDTopology,
+	}
+	for _, fetcher := range fetchers {
+		wg.Add(1)
+		currentFetcher := fetcher
+		go func() {
+			defer wg.Done()
+			currentFetcher(ctx, s, &clusterInfo)
+		}()
+	}
+
+	var infos []HostInfo
+	var err error
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		infos, err = GetAllHostInfo(db)
+	}()
+	wg.Wait()
+
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	allHosts := loadUnavailableHosts(clusterInfo)
+
+OuterLoop:
+	for _, host := range allHosts {
+		for _, info := range infos {
+			if host == info.IP {
+				continue OuterLoop
+			}
+		}
+		infos = append(infos, HostInfo{
+			IP:          host,
+			Unavailable: true,
+		})
+	}
+
+	c.JSON(http.StatusOK, infos)
+}
+
+func loadUnavailableHosts(info ClusterInfo) []string {
+	var allNodes []string
+	for _, node := range info.TiDB.Nodes {
+		if node.Status != clusterinfo.ComponentStatusUp {
+			allNodes = append(allNodes, node.IP)
+		}
+	}
+	for _, node := range info.TiKV.Nodes {
+		switch node.Status {
+		case clusterinfo.ComponentStatusUp,
+			clusterinfo.ComponentStatusOffline,
+			clusterinfo.ComponentStatusTombstone:
+		default:
+			allNodes = append(allNodes, node.IP)
+		}
+	}
+	for _, node := range info.PD.Nodes {
+		if node.Status != clusterinfo.ComponentStatusUp {
+			allNodes = append(allNodes, node.IP)
+		}
+	}
+	return allNodes
 }

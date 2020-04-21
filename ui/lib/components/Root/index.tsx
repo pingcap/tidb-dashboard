@@ -1,5 +1,10 @@
 import React from 'react'
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons'
+import {
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+  DownOutlined,
+  RightOutlined,
+} from '@ant-design/icons'
 import { createTheme, registerIcons } from 'office-ui-fabric-react/lib/Styling'
 import { Customizations } from 'office-ui-fabric-react/lib/Utilities'
 
@@ -7,6 +12,8 @@ registerIcons({
   icons: {
     SortUp: <ArrowUpOutlined />,
     SortDown: <ArrowDownOutlined />,
+    chevronrightmed: <RightOutlined />,
+    tag: <DownOutlined />,
   },
 })
 
@@ -16,6 +23,6 @@ const theme = createTheme({
 
 Customizations.applySettings({ theme })
 
-export default function FabricRoot({ children }) {
+export default function Root({ children }) {
   return <>{children}</>
 }

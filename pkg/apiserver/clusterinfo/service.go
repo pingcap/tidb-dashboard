@@ -118,7 +118,7 @@ func (s *Service) topologyHandler(c *gin.Context) {
 
 	fetchers := []func(ctx context.Context, service *Service, info *ClusterInfo){
 		fillTopologyUnderEtcd,
-		fillTiKVTopology,
+		fillStoreTopology,
 		fillPDTopology,
 	}
 
@@ -171,7 +171,7 @@ func (s *Service) hostHandler(c *gin.Context) {
 	var clusterInfo ClusterInfo
 	fetchers := []func(ctx context.Context, service *Service, info *ClusterInfo){
 		fillTopologyUnderEtcd,
-		fillTiKVTopology,
+		fillStoreTopology,
 		fillPDTopology,
 	}
 	for _, fetcher := range fetchers {

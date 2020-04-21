@@ -40,6 +40,8 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
+	endpoint.GET("/config", s.configHandler)
+	endpoint.POST("/config", s.modifyConfigHandler)
 	endpoint.GET("/schemas", s.schemasHandler)
 	endpoint.GET("/time_ranges", s.timeRangesHandler)
 	endpoint.GET("/stmt_types", s.stmtTypesHandler)
@@ -47,6 +49,45 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/detail", s.detailHandler)
 	endpoint.GET("/nodes", s.nodesHandler)
 	endpoint.GET("/plans", s.getPlansHandler)
+}
+
+// @Summary Statement configuration
+// @Description Get configuration of statements
+// @Produce json
+// @Success 200 {object} statement.Config
+// @Router /statements/config [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) configHandler(c *gin.Context) {
+	db := utils.GetTiDBConnection(c)
+	config, err := QueryStmtConfig(db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, config)
+}
+
+// @Summary Statement configurationt
+// @Description Modify configuration of statements
+// @Param request body statement.Config true "Request body"
+// @Success 204 {object} string
+// @Router /statements/config [post]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) modifyConfigHandler(c *gin.Context) {
+	var req Config
+	if err := c.ShouldBindJSON(&req); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	db := utils.GetTiDBConnection(c)
+	err := UpdateStmtConfig(db, &req)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
 
 // @Summary TiDB databases

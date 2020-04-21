@@ -7,6 +7,15 @@ diagnose:
     is_compare: Compare by Baseline
     compare_range_begin: Baseline Range Start Time
     submit: Start Diagnose
+  list_table:
+    diagnose_create_time: Diagnosis Create Time
+    status: Status
+    status_running: Diagnosing
+    status_finish: Finish
+    diagnose_start_time: Diagnosis Start Time
+    diagnose_end_time: Diagnosis End Time
+    compare_start_time: Comparison Start Time
+    compare_end_time: Comparison End Time
   status:
     head:
       title: Diagnose Status

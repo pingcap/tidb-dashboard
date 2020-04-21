@@ -7,6 +7,15 @@ diagnose:
     is_compare: 与基线区间对比
     compare_range_begin: 基线区间起始时间
     submit: 开始诊断
+  list_table:
+    diagnose_create_time: 诊断创建时间
+    status: 状态
+    status_running: 诊断中
+    status_finish: 完成
+    diagnose_start_time: 诊断开始时间
+    diagnose_end_time: 诊断结束时间
+    compare_start_time: 对比开始时间
+    compare_end_time: 对比结束时间
   status:
     head:
       title: 诊断状态

@@ -10,7 +10,7 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 
 const tableColumns = (t: (string) => string): IColumn[] => [
   {
-    name: '报告创建时间',
+    name: t('diagnose.list_table.diagnose_create_time'),
     key: 'created_at',
     minWidth: 160,
     maxWidth: 220,
@@ -20,21 +20,31 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     ),
   },
   {
-    name: '状态',
+    name: t('diagnose.list_table.status'),
     key: 'progress',
     minWidth: 80,
     maxWidth: 120,
     isResizable: true,
     onRender: (rec: DiagnoseReport) => {
       if (rec.progress! < 100) {
-        return <Badge status="processing" text="running" />
+        return (
+          <Badge
+            status="processing"
+            text={t('diagnose.list_table.status_running')}
+          />
+        )
       } else {
-        return <Badge status="success" text="finish" />
+        return (
+          <Badge
+            status="success"
+            text={t('diagnose.list_table.status_finish')}
+          />
+        )
       }
     },
   },
   {
-    name: '诊断起始时间',
+    name: t('diagnose.list_table.diagnose_start_time'),
     key: 'start_time',
     minWidth: 160,
     maxWidth: 220,
@@ -46,7 +56,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     ),
   },
   {
-    name: '诊断结束时间',
+    name: t('diagnose.list_table.diagnose_end_time'),
     key: 'end_time',
     minWidth: 160,
     maxWidth: 220,
@@ -56,7 +66,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     ),
   },
   {
-    name: '诊断对比开始时间',
+    name: t('diagnose.list_table.compare_start_time'),
     key: 'compare_start_time',
     minWidth: 160,
     maxWidth: 220,
@@ -69,7 +79,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
       ),
   },
   {
-    name: '诊断对比开始时间',
+    name: t('diagnose.list_table.diagnose_end_time'),
     key: 'compare_end_time',
     minWidth: 160,
     maxWidth: 220,

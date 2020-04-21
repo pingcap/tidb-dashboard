@@ -17,12 +17,25 @@ diagnosis:
       config: Config
       error: Error
     title:
+      compare_diagnose: Compare Diagnose
+      compare_report_time_range: Compare Report Time Range
+      top_10_slow_query_in_time_range_t1: Top 10 slow query in time range t1
+      top_10_slow_query_in_time_range_t2: top 10 slow query in time range t2
+      top_10_slow_query_group_by_digest_in_time_range_t1: Top 10 slow query group by digest in time range t1
+      top_10_slow_query_group_by_digest_in_time_range_t2: Top 10 slow query group by digest in time range t2
+      slow_query_with_diff_plan in_in_time_range_t1: Slow query with diff plan in time range t1
+      slow_query_with_diff_plan in_in_time_range_t2: Slow query with diff plan in time range t2
+      diagnose_in_time_range_t1: Diagnose in time range t1
+      diagnose_in_time_range_t2: Diagnose in time range t2
+      max_diff_item: Max Diff Item
+      slow_query_t2: Slow Query Only Appear In t2
       generate_report_error: Generate Report Error
       report_time_range: Report Time Range
       diagnose: Diagnosis
       total_time_consume: Total Time Consume
       total_error: Total Error
       time_consume: Time Consume
+      tidb_time_consume: TiDB time Consume
       transaction: Transaction
       tidb_connection_count: TiDB Connection count
       statistics_info: Statistics Info
@@ -66,6 +79,8 @@ diagnosis:
       top_10_slow_query_group_by_digest: Top 10 Slow Query Group By Digest
       slow_query_with_diff_plan: Slow Query With Diff Plan
     comment:
+      compare_diagnose: Automatically diagnose the cluster problem by compare with the refer time
+      max_diff_item: The max different metrics between 2 time range
       diagnose: Automatically diagnose the cluster problem and record the problem in below table.
       total_time_consume: The table contain the event time consume in TiDB/TiKV/PD. METRIC_NAME is the event name; LABEL is the event label, such as instance, event type ...; TIME_RATIO is the TOTAL_TIME of this event devide by the TOTAL_TIME of upper event which TIME_RATIO is 1; TOTAL_TIME is the total time cost of this event; TOTAL_COUNT is the total count of this event; P999 is the max time of 0.999 quantile; P99 is the max time of 0.99 quantile; P90 is the max time of 0.90 quantile; P80 is the max time of 0.80 quantile;
       total_error: The table contain the total count of error event. METRIC_NAME is the error event name; LABEL is the event label, such as instance, event type ...; TOTAL_COUNT is the total count of this event;

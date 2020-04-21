@@ -17,12 +17,25 @@ diagnosis:
       config: 配置
       error: 错误
     title:
+      compare_diagnose: 诊断对比
+      compare_report_time_range: 对比报告时间范围
+      top_10_slow_query_in_time_range_t1: t1 中的 top 10 慢查询
+      top_10_slow_query_in_time_range_t2: t2 中的 top 10 慢查询
+      top_10_slow_query_group_by_digest_in_time_range_t1: 按 SQL 指纹聚合的 t1 top10 慢查询
+      top_10_slow_query_group_by_digest_in_time_range_t2: 按 SQL 指纹聚合的 t2 top10 慢查询
+      slow_query_with_diff_plan_in_time_range_t1: t1 中的 不同执行计划的慢查询
+      slow_query_with_diff_plan_in_time_range_t2: t2 中的 不同执行计划的慢查询
+      diagnose_in_time_range_t1: t1 中的诊断
+      diagnose_in_time_range_t2: t2 中的诊断
+      max_diff_item: 最大不同项
+      slow_query_t2: t2 慢查询
       generate_report_error: 生成报告的报错
       report_time_range: 报告时间范围
       diagnose: 诊断结果
       total_time_consume: 总的时间消耗
       total_error: 总报错数
-      time_consume: TiDB 时间消耗
+      time_consume: 时间消耗
+      tidb_time_consume: TiDB 时间消耗
       transaction: TiDB 事务
       tidb_connection_count: TiDB 连接数
       statistics_info: 统计信息
@@ -66,6 +79,8 @@ diagnosis:
       top_10_slow_query_group_by_digest: 按 SQL 指纹聚合的 TOP10 慢查询
       slow_query_with_diff_plan: 不同执行计划的慢查询
     comment:
+      compare_diagnose: 通过与参考时间的比较，自动诊断集群问题。
+      max_diff_item: 两段时间中的最大不同项。
       diagnose: 该表显示的是自动诊断的结果，即集群中出现的问题。
       total_time_consume: 该表显示的是 TiDB/TiKV/PD 所消耗的时间。METRIC_NAME 是事件名称，LABEL 是事件标签，如：实例，事件类型等，TIME_RATIO 是该事件的 TOTAL_TIME 除以所有事件的 TOTAL_TIME(所有时间的 TIME_RATIO 为 1)，上事件的TIME_RATIO为1;TOTAL_TIME是该事件的总花费时间，TOTAL_COUNT 是该事件的总计数，P999 是 0.999 分位数的最大时间，P99 是 0.99 分位数的最大时间，P90 是 0.90 分位数的最大时间，P80 是 0.80 分位数的最大时间。
       total_error: 该表显示的是错误的数量。METRIC_NAME 是错误事件名称，LABEL 是事件标签，例如实例，事件类型…，TOTAL_COUNT 是该错误事件的总数。

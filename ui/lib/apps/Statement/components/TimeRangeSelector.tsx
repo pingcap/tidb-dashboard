@@ -115,7 +115,12 @@ export default function TimeRangeSelector({
       end_time: nearEndTime,
     }
     setCurTimeRange(timeRange)
-    onChange(timeRange)
+  }
+
+  function handleSliderAfterChange(values) {
+    if (curRecent === 0) {
+      onChange(curTimeRange)
+    }
   }
 
   const dropdownContent = (
@@ -155,6 +160,7 @@ export default function TimeRangeSelector({
           range
           value={[curTimeRange.begin_time!, curTimeRange.end_time!]}
           onChange={handleSliderChange}
+          onAfterChange={handleSliderAfterChange}
           tipFormatter={(val) => dayjs.unix(val).format('HH:mm')}
         />
         <span>

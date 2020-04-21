@@ -58,8 +58,7 @@ export default function DiagnoseGenerator() {
     <ScrollablePane style={{ height: '100vh' }}>
       <Card title={t('diagnose.generate.title')}>
         <Form
-          layout="vertical"
-          style={{ minWidth: 500 }}
+          layout="inline"
           onFinish={handleFinish}
           initialValues={{ rangeDuration: 10, rangeDurationCustom: 10 }}
         >

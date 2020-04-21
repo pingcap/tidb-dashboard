@@ -45,15 +45,15 @@ export default function List() {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
-  const [orderBy, setOrderBy] = useState('Query_time')
-  const [desc, setDesc] = useState(true)
-  const [refreshTimes, setRefreshTimes] = useState(0)
-
-  const [curSchemas, setCurSchemas] = useState<string[]>([])
-  const [schemas, setSchemas] = useState<string[]>([])
   const [curTimeRange, setCurTimeRange] = useState<StatementTimeRange | null>(
     null
   )
+  const [curSchemas, setCurSchemas] = useState<string[]>([])
+  const [schemas, setSchemas] = useState<string[]>([])
+  const [searchText, setSearchText] = useState('')
+  const [orderBy, setOrderBy] = useState('Query_time')
+  const [desc, setDesc] = useState(true)
+  const [refreshTimes, setRefreshTimes] = useState(0)
 
   const [loading, setLoading] = useState(false)
   const [slowQueryList, setSlowQueryList] = useState<SlowqueryBase[]>([])
@@ -77,7 +77,7 @@ export default function List() {
           curTimeRange?.end_time,
           curTimeRange?.begin_time,
           orderBy,
-          ''
+          searchText
         )
       setLoading(false)
       if (res?.data) {
@@ -85,17 +85,13 @@ export default function List() {
       }
     }
     getSlowQueryList()
-  }, [curTimeRange, orderBy, desc, refreshTimes])
+  }, [curTimeRange, orderBy, desc, searchText, refreshTimes])
 
   function handleTimeRangeChange(val: StatementTimeRange) {
     setCurTimeRange(val)
   }
 
   function handleSchemaChange() {}
-
-  function handleRowClick(rec) {
-    navigate(`/slow_query/detail`)
-  }
 
   function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {
     if (column.key === orderBy) {
@@ -104,6 +100,10 @@ export default function List() {
       setOrderBy(column.key)
       setDesc(true)
     }
+  }
+
+  function handleRowClick(rec) {
+    navigate(`/slow_query/detail`)
   }
 
   return (
@@ -126,7 +126,7 @@ export default function List() {
                 </Option>
               ))}
             </Select>
-            <Search placeholder="包含文本" />
+            <Search placeholder="包含文本" onSearch={setSearchText} />
           </Space>
           <div style={{ flex: 1 }} />
           <Space size="middle">

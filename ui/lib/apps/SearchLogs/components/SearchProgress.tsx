@@ -77,27 +77,13 @@ export default function SearchProgress({
 }: Props) {
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState<Boolean>(true)
-  const [reloading, setReloading] = useState<Boolean>(false)
 
   const { t } = useTranslation()
 
-  if (reloading) {
-    // tasks = tasks.map((task) => {
-    //   if (task.state === TaskState.Error) {
-    //     task.state = TaskState.Running
-    //   }
-    //   return task
-    // })
-  }
-
   useEffect(() => {
-    if (reloading) {
-      setReloading(false)
-    }
     if (tasks !== undefined && tasks.length > 0) {
       setIsLoading(false)
     }
-    // eslint-disable-next-line
   }, [tasks])
 
   const descriptionArray = [
@@ -195,7 +181,6 @@ export default function SearchProgress({
       onOk() {
         client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + '')
         toggleReload()
-        // setReloading(true)
       },
     })
   }
@@ -209,12 +194,11 @@ export default function SearchProgress({
       onOk() {
         client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + '')
         toggleReload()
-        // setReloading(true)
       },
     })
   }
 
-  const handleCheck = (checkedKeys, info) => {
+  const handleCheck = (checkedKeys) => {
     setCheckedKeys(checkedKeys as string[])
   }
 

@@ -94,6 +94,14 @@ export default function TimeRangeSelector({
   }
 
   function handleSliderChange(values) {
+    // weird, why this writing doesn't work
+    // if (values === [0, 0]) {
+    //   return
+    // }
+    if (values[0] === 0 && values[1] === 0) {
+      return
+    }
+
     setCurRecent(0)
     const nearBeginTime = findNearTimePoint(
       (values as [number, number])[0],

@@ -44,7 +44,7 @@ function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map((task) => {
     let title = task.target?.display_name ?? ''
     if (task.size) {
-      title += ' ' + getValueFormat('bytes')(task.size!, 1)
+      title += ' ' + getValueFormat('bytes')(task.size!, 0)
     }
     return (
       <TreeNode

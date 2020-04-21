@@ -13,7 +13,9 @@ require (
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/goccy/go-graphviz v0.0.5
 	github.com/google/pprof v0.0.0-20200407044318-7d83b28da2e9
+	github.com/google/uuid v1.0.0
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
+	github.com/hypnoglow/gormzap v0.3.0
 	github.com/jinzhu/gorm v1.9.12
 	github.com/joho/godotenv v1.3.0
 	github.com/joomcode/errorx v1.0.1

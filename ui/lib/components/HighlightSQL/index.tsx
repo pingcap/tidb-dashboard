@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
 import sql from 'react-syntax-highlighter/dist/esm/languages/hljs/sql'
@@ -27,22 +27,30 @@ function simpleSqlMinify(str) {
 }
 
 export default function HighlightSQL({ sql, compact, theme = 'light' }: Props) {
-  sql = formatSql(sql)
-  if (compact) {
-    sql = simpleSqlMinify(sql)
-  }
-  return (
-    <SyntaxHighlighter
-      language="sql"
-      style={theme === 'light' ? lightTheme : darkTheme}
-      customStyle={{
-        background: 'none',
-        padding: 0,
-        overflowX: 'hidden',
-      }}
-      PreTag={Pre}
-    >
-      {sql}
-    </SyntaxHighlighter>
-  )
+  const formattedSql = useMemo(() => {
+    let f = formatSql(sql)
+    if (compact) {
+      f = simpleSqlMinify(f)
+    }
+    return f
+  }, [sql, compact])
+
+  const memoNode = useMemo(() => {
+    return (
+      <SyntaxHighlighter
+        language="sql"
+        style={theme === 'light' ? lightTheme : darkTheme}
+        customStyle={{
+          background: 'none',
+          padding: 0,
+          overflowX: 'hidden',
+        }}
+        PreTag={Pre}
+      >
+        {formattedSql}
+      </SyntaxHighlighter>
+    )
+  }, [theme, formattedSql])
+
+  return memoNode
 }

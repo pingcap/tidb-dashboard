@@ -4,7 +4,7 @@ statement:
     detail:
       head:
         back: 返回列表
-        title: SQL 语句详情
+        title: SQL 语句信息
       desc:
         time_range: 时间范围
         plan_count: 执行计划数
@@ -64,6 +64,7 @@ statement:
     avg_mem_tooltip: 单条 SQL 语句的消耗内存大小
     max_mem: 最大内存
     max_mem_tooltip: 最大单条 SQL 语句消耗内存大小
+    table_names: 表名
     index_names: 索引名
     index_names_tooltip: SQL 执行时使用的索引名称
     first_seen: 首次出现时间

@@ -77,7 +77,7 @@ func (t *testReportSuite) TestGetCompareTable(c *C) {
 	startTime2 := "2020-04-02 12:15:00"
 	endTime2 := "2020-04-02 12:17:00"
 
-	tables := GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2, cli, nil, 0)
+	tables := GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2, cli, nil, "ID")
 	for _, tbl := range tables {
 		printRows(tbl)
 	}

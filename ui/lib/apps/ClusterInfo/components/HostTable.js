@@ -7,6 +7,7 @@ import { Tooltip, Typography } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { red } from '@ant-design/colors'
+import { useDummyColumn } from '@lib/utils/useColumn'
 
 const { Text } = Typography
 
@@ -27,8 +28,8 @@ export default function HostTable() {
     {
       name: t('cluster_info.list.host_table.columns.ip'),
       key: 'ip',
-      minWidth: 100,
-      maxWidth: 150,
+      minWidth: 150,
+      maxWidth: 200,
       isResizable: true,
       isCollapsible: true,
       onRender: ({ ip, unavailable }) => {
@@ -50,7 +51,7 @@ export default function HostTable() {
       name: t('cluster_info.list.host_table.columns.cpu'),
       key: 'cpu_core',
       minWidth: 60,
-      maxWidth: 90,
+      maxWidth: 100,
       isResizable: true,
       isCollapsible: true,
       onRender: ({ cpu_core }) =>
@@ -86,7 +87,7 @@ export default function HostTable() {
       name: t('cluster_info.list.host_table.columns.memory'),
       key: 'memory',
       minWidth: 60,
-      maxWidth: 90,
+      maxWidth: 100,
       isResizable: true,
       isCollapsible: true,
       onRender: ({ memory }) =>
@@ -207,12 +208,7 @@ export default function HostTable() {
         })
       },
     },
-    {
-      name: '',
-      key: 'dummy',
-      isResizable: true,
-      isCollapsible: true,
-    },
+    useDummyColumn(),
   ]
 
   return (

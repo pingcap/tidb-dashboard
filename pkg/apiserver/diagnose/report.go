@@ -85,7 +85,7 @@ const (
 	CategoryError    = "error"
 )
 
-func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint) []*TableDef {
+func GetReportTablesForDisplay(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID string) []*TableDef {
 	errRows := checkBeforeReport(db)
 	if len(errRows) > 0 {
 		return []*TableDef{GenerateReportError(errRows)}
@@ -130,7 +130,7 @@ func checkBeforeReport(db *gorm.DB) (errRows []TableRowDef) {
 
 type getTableFunc = func(string, string, *gorm.DB) (TableDef, error)
 
-func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint) []*TableDef {
+func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID string) []*TableDef {
 	funcs := []getTableFunc{
 		// Header
 		GetHeaderTimeTable,
@@ -203,7 +203,7 @@ func GetReportTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.D
 	return tables
 }
 
-func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableFunc, sqliteDB *dbstore.DB, reportID uint, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
+func getTablesParallel(startTime, endTime string, db *gorm.DB, funcs []getTableFunc, sqliteDB *dbstore.DB, reportID string, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
 	// get the local CPU count for concurrence
 	conc := runtime.NumCPU()
 	if conc > 20 {
@@ -255,7 +255,7 @@ type tblAndErr struct {
 // 1.doGetTable gets the task from taskChan,and close the taskChan if taskChan is empty.
 // 2.doGetTable puts the tblAndErr result to resChan.
 // 3.if taskChan is empty, put a true in doneChan.
-func doGetTable(taskChan chan *task, resChan chan *tblAndErr, wg *sync.WaitGroup, startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress, totalTableCount *int32) {
+func doGetTable(taskChan chan *task, resChan chan *tblAndErr, wg *sync.WaitGroup, startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID string, progress, totalTableCount *int32) {
 	defer wg.Done()
 	for task := range taskChan {
 		f := task.t

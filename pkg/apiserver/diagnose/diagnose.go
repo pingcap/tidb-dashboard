@@ -14,15 +14,14 @@
 package diagnose
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"time"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/fx"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	apiutils "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -42,13 +41,11 @@ type Service struct {
 	uiAssetFS     *assetfs.AssetFS
 }
 
-func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, uiAssetFS *assetfs.AssetFS) *Service {
-	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			Migrate(db)
-			return nil
-		},
-	})
+func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, uiAssetFS *assetfs.AssetFS) *Service {
+	err := autoMigrate(db)
+	if err != nil {
+		log.Fatal("Failed to initialize database", zap.Error(err))
+	}
 
 	return &Service{
 		config:        config,
@@ -163,13 +160,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) reportStatusHandler(c *gin.Context) {
 	id := c.Param("id")
-	reportID, err := strconv.Atoi(id)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	report, err := GetReport(s.db, uint(reportID))
+	report, err := GetReport(s.db, id)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -207,13 +198,7 @@ func (s *Service) reportHTMLHandler(c *gin.Context) {
 // @Router /diagnose/reports/{id}/data.js [get]
 func (s *Service) reportDataHandler(c *gin.Context) {
 	id := c.Param("id")
-	reportID, err := strconv.Atoi(id)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	report, err := GetReport(s.db, uint(reportID))
+	report, err := GetReport(s.db, id)
 	if err != nil {
 		_ = c.Error(err)
 		return

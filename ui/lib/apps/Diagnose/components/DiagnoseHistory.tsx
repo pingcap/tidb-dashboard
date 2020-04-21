@@ -7,23 +7,32 @@ import dayjs from 'dayjs'
 import { CardTableV2, DateTime } from '@lib/components'
 import client, { DiagnoseReport } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
+import type { TFunction } from 'i18next'
 
-const tableColumns = (t: (string) => string): IColumn[] => [
+const tableColumns = (t: TFunction): IColumn[] => [
+  {
+    name: t('diagnose.list_table.id'),
+    key: 'id',
+    fieldName: 'id',
+    minWidth: 200,
+    maxWidth: 350,
+    isResizable: true,
+  },
   {
     name: t('diagnose.list_table.diagnose_create_time'),
     key: 'created_at',
-    minWidth: 160,
-    maxWidth: 220,
+    minWidth: 100,
+    maxWidth: 200,
     isResizable: true,
     onRender: (rec) => (
-      <DateTime.Calendar unixTimeStampMs={dayjs(rec.CreatedAt).unix() * 1000} />
+      <DateTime.Calendar unixTimestampMs={dayjs(rec.CreatedAt).unix() * 1000} />
     ),
   },
   {
     name: t('diagnose.list_table.status'),
     key: 'progress',
-    minWidth: 80,
-    maxWidth: 120,
+    minWidth: 100,
+    maxWidth: 150,
     isResizable: true,
     onRender: (rec: DiagnoseReport) => {
       if (rec.progress! < 100) {
@@ -44,51 +53,42 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     },
   },
   {
-    name: t('diagnose.list_table.diagnose_start_time'),
+    name: t('diagnose.list_table.range'),
     key: 'start_time',
-    minWidth: 160,
-    maxWidth: 220,
+    minWidth: 200,
+    maxWidth: 350,
     isResizable: true,
-    onRender: (rec: DiagnoseReport) => (
-      <DateTime.Calendar
-        unixTimeStampMs={dayjs(rec.start_time).unix() * 1000}
-      />
-    ),
+    onRender: (rec: DiagnoseReport) => {
+      return (
+        <span>
+          <DateTime.Calendar
+            unixTimestampMs={dayjs(rec.start_time).unix() * 1000}
+          />{' '}
+          ~{' '}
+          <DateTime.Calendar
+            unixTimestampMs={dayjs(rec.end_time).unix() * 1000}
+          />
+        </span>
+      )
+    },
   },
   {
-    name: t('diagnose.list_table.diagnose_end_time'),
-    key: 'end_time',
-    minWidth: 160,
-    maxWidth: 220,
-    isResizable: true,
-    onRender: (rec: DiagnoseReport) => (
-      <DateTime.Calendar unixTimeStampMs={dayjs(rec.end_time).unix() * 1000} />
-    ),
-  },
-  {
-    name: t('diagnose.list_table.compare_start_time'),
+    name: t('diagnose.list_table.compare_range'),
     key: 'compare_start_time',
-    minWidth: 160,
-    maxWidth: 220,
+    minWidth: 200,
+    maxWidth: 350,
     isResizable: true,
     onRender: (rec: DiagnoseReport) =>
       rec.compare_start_time && (
-        <DateTime.Calendar
-          unixTimeStampMs={dayjs(rec.compare_start_time).unix() * 1000}
-        />
-      ),
-  },
-  {
-    name: t('diagnose.list_table.compare_end_time'),
-    key: 'compare_end_time',
-    minWidth: 160,
-    maxWidth: 220,
-    isResizable: true,
-    onRender: (rec: DiagnoseReport) =>
-      rec.compare_start_time && (
-        <DateTime.Calendar
-          unixTimeStampMs={dayjs(rec.compare_end_time).unix() * 1000}
-        />
+        <span>
+          <DateTime.Calendar
+            unixTimestampMs={dayjs(rec.compare_start_time).unix() * 1000}
+          />{' '}
+          ~{' '}
+          <DateTime.Calendar
+            unixTimestampMs={dayjs(rec.compare_end_time).unix() * 1000}
+          />
+        </span>
       ),
   },
 ]
@@ -96,23 +96,20 @@ const tableColumns = (t: (string) => string): IColumn[] => [
 export default function DiagnoseHistory() {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const {
-    data: historyTable,
-    isLoading: listLoading,
-  } = useClientRequest((cancelToken) =>
+  const { data, isLoading } = useClientRequest((cancelToken) =>
     client.getInstance().diagnoseReportsGet({ cancelToken })
   )
-  const historyTableColumns = useMemo(() => tableColumns(t), [t])
+  const columns = useMemo(() => tableColumns(t), [t])
 
   function handleRowClick(rec) {
-    navigate(`/diagnose/${rec.ID}`)
+    navigate(`/diagnose/${rec.id}`)
   }
 
   return (
     <CardTableV2
-      loading={listLoading}
-      items={historyTable || []}
-      columns={historyTableColumns}
+      loading={isLoading}
+      items={data || []}
+      columns={columns}
       onRowClicked={handleRowClick}
     />
   )

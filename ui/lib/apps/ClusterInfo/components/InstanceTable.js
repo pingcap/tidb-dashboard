@@ -156,9 +156,9 @@ export default function ListPage() {
     {
       name: t('cluster_info.list.instance_table.columns.node'),
       key: 'node',
-      ellipsis: true,
-      minWidth: 80,
-      maxWidth: 150,
+      minWidth: 100,
+      maxWidth: 200,
+      isResizable: true,
       onRender: (node) => (
         <Tooltip title={`${node.ip}.${node.port}`}>
           {node.ip}.{node.port}
@@ -168,18 +168,20 @@ export default function ListPage() {
     {
       name: t('cluster_info.list.instance_table.columns.status'),
       key: 'status',
-      minWidth: 80,
-      maxWidth: 80,
+      minWidth: 100,
+      maxWidth: 150,
+      isResizable: true,
       onRender: renderStatusColumn,
     },
     {
       name: t('cluster_info.list.instance_table.columns.up_time'),
       key: 'start_timestamp',
-      minWidth: 100,
-      maxWidth: 100,
+      minWidth: 150,
+      maxWidth: 200,
+      isResizable: true,
       onRender: ({ start_timestamp: ts }) => {
         if (ts !== undefined && ts !== 0) {
-          return <DateTime.Calendar unixTimeStampMs={ts * 1000} />
+          return <DateTime.Calendar unixTimestampMs={ts * 1000} />
         }
       },
     },
@@ -187,17 +189,17 @@ export default function ListPage() {
       name: t('cluster_info.list.instance_table.columns.version'),
       fieldName: 'version',
       key: 'version',
-      minWidth: 100,
-      maxWidth: 200,
-      ellipsis: true,
+      minWidth: 150,
+      maxWidth: 300,
+      isResizable: true,
     },
     {
       name: t('cluster_info.list.instance_table.columns.deploy_path'),
       fieldName: 'deploy_path',
       key: 'deploy_path',
-      minWidth: 100,
-      maxWidth: 200,
-      ellipsis: true,
+      minWidth: 150,
+      maxWidth: 300,
+      isResizable: true,
     },
   ]
 

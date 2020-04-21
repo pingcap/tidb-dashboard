@@ -83,9 +83,9 @@ func (s *Service) listHandler(c *gin.Context) {
 }
 
 type DetailRequest struct {
-	Digest string `json:"digest"`
-	Time float64 `json:"time"`
-	ConnectID int64 `json:"connect_id"`
+	Digest    string  `json:"digest"`
+	Time      float64 `json:"time"`
+	ConnectID int64   `json:"connect_id"`
 }
 
 // @Summary Example: Get all databases
@@ -102,7 +102,7 @@ func (s *Service) detailhandler(c *gin.Context) {
 	req := DetailRequest{
 		Digest:    "db2dfbe10c95c4f44524bfafd669fe532077655ce85fa5fc6927c48999769e29",
 		Time:      1587467607.4329019,
-		ConnectID: 0,
+		ConnectID: 38,
 	}
 	//if err := c.ShouldBindJSON(&req); err != nil {
 	//	c.Status(http.StatusBadRequest)

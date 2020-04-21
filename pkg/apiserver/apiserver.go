@@ -15,7 +15,6 @@ package apiserver
 
 import (
 	"context"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/slowquery"
 	"io"
 	"net/http"
 	"sync"
@@ -34,6 +33,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/profiling"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"

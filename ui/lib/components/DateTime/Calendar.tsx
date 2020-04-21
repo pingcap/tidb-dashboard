@@ -1,13 +1,17 @@
 import React from 'react'
 import { Tooltip } from 'antd'
 import dayjs from 'dayjs'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { addTranslationResource } from '@lib/utils/i18n'
 import i18next from 'i18next'
 import { format as longFormat } from './Long'
+import { IDateTimeProps } from '.'
 
-dayjs.extend(require('dayjs/plugin/calendar'))
-dayjs.extend(require('dayjs/plugin/localizedFormat'))
+import calendar from 'dayjs/plugin/calendar'
+import localizedFormat from 'dayjs/plugin/localizedFormat'
+
+dayjs.extend(calendar)
+dayjs.extend(localizedFormat)
 
 const translations = {
   en: {
@@ -38,20 +42,17 @@ for (const key in translations) {
   })
 }
 
-@withTranslation() // Re-render when language changes
-class Calendar extends React.PureComponent {
-  render() {
-    const { unixTimeStampMs, ...rest } = this.props
-    return (
-      <Tooltip title={longFormat(unixTimeStampMs)} {...rest}>
-        {format(unixTimeStampMs)}
-      </Tooltip>
-    )
-  }
+function Calendar({ unixTimestampMs, ...rest }: IDateTimeProps) {
+  useTranslation() // Re-render when language changes
+  return (
+    <Tooltip title={longFormat(unixTimestampMs)} {...rest}>
+      <span>{format(unixTimestampMs)}</span>
+    </Tooltip>
+  )
 }
 
-export function format(unixTimeStampMs) {
-  return dayjs(unixTimeStampMs).calendar(null, {
+export function format(unixTimestampMs: number) {
+  return dayjs(unixTimestampMs).calendar(undefined, {
     sameDay: i18next.t('component.dateTime.calendar.sameDay'),
     nextDay: i18next.t('component.dateTime.calendar.nextDay'),
     nextWeek: i18next.t('component.dateTime.calendar.nextWeek'),

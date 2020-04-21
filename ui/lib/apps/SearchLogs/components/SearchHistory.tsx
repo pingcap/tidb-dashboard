@@ -91,7 +91,6 @@ export default function SearchHistory() {
   }
 
   function actionRender(taskGroup: LogsearchTaskGroupModel) {
-    console.log(taskGroup)
     if (taskGroup.id === 0) {
       return
     }

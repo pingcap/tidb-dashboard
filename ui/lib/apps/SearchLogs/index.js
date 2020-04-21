@@ -1,4 +1,4 @@
-import React from 'react'
+import react from 'react'
 import { Root } from '@lib/components'
 import {
   HashRouter as Router,

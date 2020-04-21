@@ -18,9 +18,9 @@ import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useTranslation } from 'react-i18next'
 import {
-  StatementOverview,
   StatementTimeRange,
   StatementConfig,
+  StatementModel,
 } from '@lib/client'
 import { Card, CardTableV2 } from '@lib/components'
 import StatementsTable from './StatementsTable'
@@ -46,7 +46,7 @@ interface State {
   stmtTypes: string[]
 
   statementsLoading: boolean
-  statements: StatementOverview[]
+  statements: StatementModel[]
 }
 
 const initState: State = {
@@ -76,7 +76,7 @@ type Action =
   | { type: 'change_time_range'; payload: StatementTimeRange | undefined }
   | { type: 'save_stmt_types'; payload: string[] }
   | { type: 'change_stmt_types'; payload: string[] }
-  | { type: 'save_statements'; payload: StatementOverview[] }
+  | { type: 'save_statements'; payload: StatementModel[] }
   | { type: 'set_statements_loading' }
 
 function reducer(state: State, action: Action): State {
@@ -162,7 +162,7 @@ interface Props {
     endTime: number,
     schemas: string[],
     stmtTypes: string[]
-  ) => Promise<StatementOverview[]>
+  ) => Promise<StatementModel[]>
 
   onFetchConfig: (instanceId: string) => Promise<StatementConfig | undefined>
   onUpdateConfig: (instanceId: string, config: StatementConfig) => Promise<any>
@@ -202,7 +202,7 @@ export default function StatementsOverview({
     avg_latency: true,
     exec_count: true,
     avg_mem: true,
-    schemas: true,
+    related_schemas: true,
   })
   const [dropdownVisible, setDropdownVisible] = useState(false)
   const [showFullSQL, setShowFullSQL] = useState(false)
@@ -356,13 +356,13 @@ export default function StatementsOverview({
 
   const statementDisabled = (
     <div className={styles.statement_disabled_container}>
-      <h2>{t('statement.setting.disabled_desc_title')}</h2>
+      <h2>{t('statement.pages.overview.settings.disabled_desc_title')}</h2>
       <div className={styles.statement_disabled_desc}>
-        <p>{t('statement.setting.disabled_desc_line_1')}</p>
-        <p>{t('statement.setting.disabled_desc_line_2')}</p>
+        <p>{t('statement.pages.overview.settings.disabled_desc_line_1')}</p>
+        <p>{t('statement.pages.overview.settings.disabled_desc_line_2')}</p>
       </div>
       <Button type="primary" onClick={() => setShowSettings(true)}>
-        {t('statement.setting.open_setting')}
+        {t('statement.pages.overview.settings.open_setting')}
       </Button>
     </div>
   )
@@ -382,7 +382,7 @@ export default function StatementsOverview({
           checked={showFullSQL}
           onChange={(e) => setShowFullSQL(e.target.checked)}
         >
-          {t('statement.common.show_full_sql')}
+          {t('statement.pages.overview.toolbar.select_columns.show_full_sql')}
         </Checkbox>
       </Menu.Item>
     </Menu>
@@ -401,7 +401,7 @@ export default function StatementsOverview({
               value={state.curSchemas}
               mode="multiple"
               allowClear
-              placeholder={t('statement.filters.select_schemas')}
+              placeholder={t('statement.pages.overview.toolbar.select_schemas')}
               style={{ minWidth: 200 }}
               onChange={handleSchemaChange}
             >
@@ -415,7 +415,9 @@ export default function StatementsOverview({
               value={state.curStmtTypes}
               mode="multiple"
               allowClear
-              placeholder={t('statement.filters.select_stmt_types')}
+              placeholder={t(
+                'statement.pages.overview.toolbar.select_stmt_types'
+              )}
               style={{ minWidth: 160 }}
               onChange={handleStmtTypeChange}
             >
@@ -436,14 +438,15 @@ export default function StatementsOverview({
                 overlay={dropdownMenus}
               >
                 <div style={{ cursor: 'pointer' }}>
-                  {t('statement.filters.select_columns')} <DownOutlined />
+                  {t('statement.pages.overview.toolbar.select_columns.name')}{' '}
+                  <DownOutlined />
                 </div>
               </Dropdown>
             )}
-            <Tooltip title={t('statement.setting.title')}>
+            <Tooltip title={t('statement.pages.overview.settings.title')}>
               <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
-            <Tooltip title={t('statement.tooltip.refresh')}>
+            <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
               <ReloadOutlined
                 onClick={() => setRefreshTimes((prev) => prev + 1)}
               />
@@ -466,7 +469,7 @@ export default function StatementsOverview({
         statementDisabled
       )}
       <Drawer
-        title={t('statement.setting.title')}
+        title={t('statement.pages.overview.settings.title')}
         width={300}
         closable={true}
         visible={showSettings}

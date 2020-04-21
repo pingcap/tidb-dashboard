@@ -115,13 +115,22 @@ export default function TimeRangeSelector({
       end_time: nearEndTime,
     }
     setCurTimeRange(timeRange)
-    onChange(timeRange)
+  }
+
+  function handleSliderAfterChange(values) {
+    if (curRecent === 0) {
+      onChange(curTimeRange)
+    }
   }
 
   const dropdownContent = (
     <div className={styles.dropdown_content_container}>
       <div className={styles.usual_time_ranges}>
-        <span>{t('statement.time_range_selector.usual_time_ranges')}</span>
+        <span>
+          {t(
+            'statement.pages.overview.toolbar.time_range_selector.usual_time_ranges'
+          )}
+        </span>
         <div className={styles.time_range_items}>
           {RECENT_MINS.map((mins) => (
             <div
@@ -132,14 +141,18 @@ export default function TimeRangeSelector({
               })}
               onClick={() => handleRecentChange(mins)}
             >
-              {t('statement.time_range_selector.recent')}{' '}
+              {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
               {getValueFormat('m')(mins, 0)}
             </div>
           ))}
         </div>
       </div>
       <div className={styles.custom_time_ranges}>
-        <span>{t('statement.time_range_selector.custom_time_ranges')}</span>
+        <span>
+          {t(
+            'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'
+          )}
+        </span>
         <Slider
           min={minBeginTime}
           max={maxEndTime}
@@ -147,6 +160,7 @@ export default function TimeRangeSelector({
           range
           value={[curTimeRange.begin_time!, curTimeRange.end_time!]}
           onChange={handleSliderChange}
+          onAfterChange={handleSliderAfterChange}
           tipFormatter={(val) => dayjs.unix(val).format('HH:mm')}
         />
         <span>
@@ -168,7 +182,7 @@ export default function TimeRangeSelector({
       <Button icon={<ClockCircleOutlined />}>
         {curRecent > 0 ? (
           <span>
-            {t('statement.time_range_selector.recent')}{' '}
+            {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
             {getValueFormat('m')(curRecent, 0)}
           </span>
         ) : (

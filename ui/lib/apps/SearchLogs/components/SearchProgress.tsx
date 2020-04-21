@@ -2,13 +2,7 @@ import client from '@lib/client'
 import { LogsearchTaskModel } from '@lib/client'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { Button, Modal, Tree, Skeleton } from 'antd'
-import React, {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import styles from './Styles.module.css'
@@ -74,65 +68,27 @@ function parentNodeCheckable(tasks: LogsearchTaskModel[]) {
   return tasks.some((task) => task.state === TaskState.Finished)
 }
 
-function useSetInterval(callback: () => void) {
-  const ref = useRef<() => void>(callback)
-
-  useEffect(() => {
-    ref.current = callback
-  })
-
-  useEffect(() => {
-    const cb = () => {
-      ref.current()
-    }
-    const timer = setInterval(cb, 1000)
-    return () => clearInterval(timer)
-  }, [])
-}
-
 interface Props {
   taskGroupID: number
   tasks: LogsearchTaskModel[]
-  setTasks: Dispatch<SetStateAction<LogsearchTaskModel[]>>
+  toggleReload: () => {}
 }
 
 export default function SearchProgress({
   taskGroupID,
   tasks,
-  setTasks,
+  toggleReload,
 }: Props) {
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState<Boolean>(true)
+
   const { t } = useTranslation()
-  const [loading, setLoading] = useState(true)
-
-  async function getTasks(taskGroupID: number, tasks: LogsearchTaskModel[]) {
-    if (taskGroupID < 0) {
-      return
-    }
-    if (
-      tasks.length > 0 &&
-      taskGroupID === tasks[0].task_group_id &&
-      !tasks.some((task) => task.state === TaskState.Running)
-    ) {
-      return
-    }
-    const res = await client.getInstance().logsTaskgroupsIdGet(taskGroupID + '')
-    setTasks(res.data.tasks ?? [])
-  }
-
-  useSetInterval(() => {
-    getTasks(taskGroupID, tasks)
-  })
 
   useEffect(() => {
-    if (tasks.length > 0) {
-      setLoading(false)
+    if (tasks !== undefined && tasks.length > 0) {
+      setIsLoading(false)
     }
   }, [tasks])
-
-  useEffect(() => {
-    setLoading(true)
-  }, [taskGroupID])
 
   const descriptionArray = [
     t('search_logs.progress.running'),
@@ -231,14 +187,7 @@ export default function SearchProgress({
       title: t('search_logs.confirm.cancel_tasks'),
       onOk() {
         client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + '')
-        setTasks(
-          tasks.map((task) => {
-            if (task.state === TaskState.Error) {
-              task.state = TaskState.Running
-            }
-            return task
-          })
-        )
+        toggleReload()
       },
     })
   }
@@ -251,19 +200,12 @@ export default function SearchProgress({
       title: t('search_logs.confirm.retry_tasks'),
       onOk() {
         client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + '')
-        setTasks(
-          tasks.map((task) => {
-            if (task.state === TaskState.Error) {
-              task.state = TaskState.Running
-            }
-            return task
-          })
-        )
+        toggleReload()
       },
     })
   }
 
-  const handleCheck = (checkedKeys, info) => {
+  const handleCheck = (checkedKeys) => {
     setCheckedKeys(checkedKeys as string[])
   }
 
@@ -273,8 +215,8 @@ export default function SearchProgress({
       style={{ marginLeft: -48 }}
       title={t('search_logs.common.progress')}
     >
-      {loading && <Skeleton active />}
-      {!loading && (
+      {isLoading && <Skeleton active />}
+      {!isLoading && (
         <>
           <div>{progressDescription(tasks)}</div>
           <div className={styles.buttons}>

@@ -8,7 +8,7 @@ import styles from './index.module.less'
 export interface IDescriptionsProps {
   className?: string
   children?:
-    | React.ReactElement<IDescriptionsItemProps>[]
+    | (React.ReactElement<IDescriptionsItemProps> | null | undefined)[]
     | React.ReactElement<IDescriptionsItemProps>
   column?: number
 }
@@ -22,7 +22,10 @@ export interface IDescriptionsItemProps extends DescriptionsItemProps {
 function mapItem(item: React.ReactElement<IDescriptionsItemProps>) {
   const { props } = item
   const { multiline, className, children, ...restProps } = props
-  const c = cx(className, styles.item, { [styles.itemMultiline]: multiline })
+  const c = cx(className, styles.item, {
+    [styles.itemMultiline]: multiline,
+    [styles.itemSingleline]: !multiline,
+  })
   return (
     <AntDescriptions.Item className={c} key={item.key || ''} {...restProps}>
       {children}
@@ -40,7 +43,7 @@ function Descriptions({
   let realChildren
   if (children) {
     if (Array.isArray(children)) {
-      realChildren = children.map(mapItem)
+      realChildren = children.filter((v) => v != null).map((v) => mapItem(v!))
     } else {
       realChildren = mapItem(children)
     }

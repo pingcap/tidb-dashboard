@@ -44,7 +44,8 @@ export function usePlanDigestColumn(
 }
 
 export function useDigestColumn(
-  _rows?: { digest_text?: string }[] // used for type check only
+  _rows?: { digest_text?: string }[], // used for type check only
+  showFullSQL?: boolean
 ): IColumn {
   return {
     name: useCommonColumnName('digest_text'),
@@ -59,7 +60,11 @@ export function useDigestColumn(
         title={<FormatHighlightSQL sql={rec.digest_text} theme="dark" />}
         placement="right"
       >
-        <EllipsisText>{rec.digest_text}</EllipsisText>
+        {showFullSQL ? (
+          <div style={{ whiteSpace: 'pre-wrap' }}>{rec.digest_text}</div>
+        ) : (
+          <EllipsisText>{rec.digest_text}</EllipsisText>
+        )}
       </Tooltip>
     ),
   }

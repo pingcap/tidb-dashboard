@@ -8,7 +8,7 @@ const App = (props) => {
   return (
     <div>
       <Routes>
-        <Route path="/slow_query/list" element={<SlowQueryList />} />
+        <Route path="/slow_query" element={<SlowQueryList />} />
         <Route path="/slow_query/detail" element={<SlowQueryDetail />} />
       </Routes>
     </div>

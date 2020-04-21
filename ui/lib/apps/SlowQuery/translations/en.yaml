@@ -2,6 +2,18 @@ slow_query:
   nav_title: Slow Query
   common:
     columns:
+      instance: Instance
+      instance_tooltip: Instance
+      connection_id: Connection ID
+      connection_id_tooltip: Connection ID
+      sql: SQL
+      sql_tooltip: SQL
+      end_time: End Time
+      end_time_tooltip: End Time
+      query_time: Query Time
+      query_time_tooltip: Query Time
+      memory_max: Max Memory
+      memory_max_tooltip: Max Memory
       digest: SQL fingerprint
       digest_tooltip:
       is_internal: Is internal

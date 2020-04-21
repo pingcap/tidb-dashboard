@@ -16,7 +16,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     maxWidth: 220,
     isResizable: true,
     onRender: (rec) => (
-      <DateTime.Calendar unixTimeStampMs={dayjs(rec.CreatedAt).unix() * 1000} />
+      <DateTime.Calendar unixTimestampMs={dayjs(rec.CreatedAt).unix() * 1000} />
     ),
   },
   {
@@ -51,7 +51,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     isResizable: true,
     onRender: (rec: DiagnoseReport) => (
       <DateTime.Calendar
-        unixTimeStampMs={dayjs(rec.start_time).unix() * 1000}
+        unixTimestampMs={dayjs(rec.start_time).unix() * 1000}
       />
     ),
   },
@@ -62,7 +62,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     maxWidth: 220,
     isResizable: true,
     onRender: (rec: DiagnoseReport) => (
-      <DateTime.Calendar unixTimeStampMs={dayjs(rec.end_time).unix() * 1000} />
+      <DateTime.Calendar unixTimestampMs={dayjs(rec.end_time).unix() * 1000} />
     ),
   },
   {
@@ -74,7 +74,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     onRender: (rec: DiagnoseReport) =>
       rec.compare_start_time && (
         <DateTime.Calendar
-          unixTimeStampMs={dayjs(rec.compare_start_time).unix() * 1000}
+          unixTimestampMs={dayjs(rec.compare_start_time).unix() * 1000}
         />
       ),
   },
@@ -87,7 +87,7 @@ const tableColumns = (t: (string) => string): IColumn[] => [
     onRender: (rec: DiagnoseReport) =>
       rec.compare_start_time && (
         <DateTime.Calendar
-          unixTimeStampMs={dayjs(rec.compare_end_time).unix() * 1000}
+          unixTimestampMs={dayjs(rec.compare_end_time).unix() * 1000}
         />
       ),
   },

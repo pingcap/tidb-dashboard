@@ -60,6 +60,9 @@ func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forw
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/diagnose")
+	endpoint.GET("/reports",
+		auth.MWAuthRequired(),
+		s.reportsHandler)
 	endpoint.POST("/reports",
 		auth.MWAuthRequired(),
 		apiutils.MWConnectTiDB(s.tidbForwarder),
@@ -68,7 +71,6 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)
 	endpoint.GET("/reports/:id/status",
 		auth.MWAuthRequired(),
-		apiutils.MWConnectTiDB(s.tidbForwarder),
 		s.reportStatusHandler)
 }
 
@@ -77,6 +79,22 @@ type GenerateReportRequest struct {
 	EndTime          int64 `json:"end_time"`
 	CompareStartTime int64 `json:"compare_start_time"`
 	CompareEndTime   int64 `json:"compare_end_time"`
+}
+
+// @Summary SQL diagnosis reports history
+// @Description Get sql diagnosis reports history
+// @Produce json
+// @Success 200 {array} Report
+// @Router /diagnose/reports [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) reportsHandler(c *gin.Context) {
+	reports, err := GetReports(s.db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, reports)
 }
 
 // @Summary SQL diagnosis report
@@ -139,7 +157,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 // @Description Get diagnosis report status
 // @Produce json
 // @Param id path string true "report id"
-// @Success 200 {object} diagnose.Report
+// @Success 200 {object} Report
 // @Router /diagnose/reports/{id}/status [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"

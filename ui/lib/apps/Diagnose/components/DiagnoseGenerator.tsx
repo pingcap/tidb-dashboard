@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next'
 import { Card } from '@lib/components'
 import { useNavigate } from 'react-router-dom'
 import client from '@lib/client'
+import DiagnoseHistory from './DiagnoseHistory'
 
 const useFinishHandler = (navigate) => {
   return async (fieldsValue) => {
@@ -170,6 +171,7 @@ export default function DiagnoseGenerator() {
           </Button>
         </Form.Item>
       </Form>
+      <DiagnoseHistory />
     </Card>
   )
 }

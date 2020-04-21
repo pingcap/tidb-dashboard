@@ -1,11 +1,11 @@
 import React from 'react'
-import { StatementPlanDetailModel } from '@lib/client'
+import { StatementModel } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import * as useColumn from '@lib/utils/useColumn'
 
 export interface ITabTxnProps {
-  data: StatementPlanDetailModel
+  data: StatementModel
 }
 
 export default function TabCopr({ data }: ITabTxnProps) {
@@ -52,9 +52,9 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
   ]
   const columns = [
-    useColumn.useFieldsKeyColumn('statement.common.columns.'),
+    useColumn.useFieldsKeyColumn('statement.fields.'),
     useColumn.useFieldsValueColumn(),
-    useColumn.useFieldsDescriptionColumn('statement.common.columns.'),
+    useColumn.useFieldsDescriptionColumn('statement.fields.'),
   ]
   return <CardTableV2 cardNoMargin columns={columns} items={items} />
 }

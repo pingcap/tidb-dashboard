@@ -1,12 +1,12 @@
 import React from 'react'
-import { StatementPlanDetailModel } from '@lib/client'
+import { StatementModel } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import * as useColumn from '@lib/utils/useColumn'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'antd'
 
 export interface ITabTimeProps {
-  data: StatementPlanDetailModel
+  data: StatementModel
 }
 
 export default function TabBasic({ data }: ITabTimeProps) {
@@ -67,7 +67,7 @@ export default function TabBasic({ data }: ITabTimeProps) {
       key: 'latency',
       keyDisplay: (
         <Typography.Text strong>
-          {t('statement.common.columns.latency')}
+          {t('statement.fields.latency')}
         </Typography.Text>
       ),
       avg: data.avg_latency,
@@ -76,9 +76,9 @@ export default function TabBasic({ data }: ITabTimeProps) {
     },
   ]
   const columns = [
-    useColumn.useFieldsKeyColumn('statement.common.columns.'),
+    useColumn.useFieldsKeyColumn('statement.fields.'),
     useColumn.useFieldsTimeValueColumn(items),
-    useColumn.useFieldsDescriptionColumn('statement.common.columns.'),
+    useColumn.useFieldsDescriptionColumn('statement.fields.'),
   ]
   return <CardTableV2 cardNoMargin columns={columns} items={items} />
 }

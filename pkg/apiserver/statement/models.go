@@ -33,7 +33,7 @@ type TimeRange struct {
 	EndTime   int64 `json:"end_time"`
 }
 
-type AggregatedStatementFields struct {
+type Model struct {
 	AggExecCount             int    `json:"exec_count" agg:"SUM(exec_count)"`
 	AggSumErrors             int    `json:"sum_errors" agg:"SUM(sum_errors)"`
 	AggSumWarnings           int    `json:"sum_warnings" agg:"SUM(sum_warnings)"`
@@ -89,17 +89,20 @@ type AggregatedStatementFields struct {
 	AggSampleUser            string `json:"sample_user" agg:"ANY_VALUE(sample_user)"`
 	AggQuerySampleText       string `json:"query_sample_text" agg:"ANY_VALUE(query_sample_text)"`
 	AggPrevSampleText        string `json:"prev_sample_text" agg:"ANY_VALUE(prev_sample_text)"`
+	AggSchemaName            string `json:"schema_name" agg:"ANY_VALUE(schema_name)"`
 	AggTableNames            string `json:"table_names" agg:"ANY_VALUE(table_names)"`
 	AggIndexNames            string `json:"index_names" agg:"ANY_VALUE(index_names)"`
 	AggDigestText            string `json:"digest_text" agg:"ANY_VALUE(digest_text)"`
 	AggDigest                string `json:"digest" agg:"ANY_VALUE(digest)"`
 	AggPlanDigest            string `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
 	AggPlan                  string `json:"plan" agg:"ANY_VALUE(plan)"`
+	// Computed fields
+	RelatedSchemas string `json:"related_schemas"`
 }
 
 func getAggrFields(sqlFields ...string) []string {
 	fields := make(map[string]*reflect.StructField)
-	t := reflect.TypeOf(AggregatedStatementFields{})
+	t := reflect.TypeOf(Model{})
 	fieldsNum := t.NumField()
 	for i := 0; i < fieldsNum; i++ {
 		field := t.Field(i)
@@ -108,7 +111,11 @@ func getAggrFields(sqlFields ...string) []string {
 	ret := make([]string, 0, len(sqlFields))
 	for _, fieldName := range sqlFields {
 		if field, ok := fields[strings.ToLower(fieldName)]; ok {
-			ret = append(ret, fmt.Sprintf("%s AS %s", field.Tag.Get("agg"), gorm.ToColumnName(field.Name)))
+			if agg, ok := field.Tag.Lookup("agg"); ok {
+				ret = append(ret, fmt.Sprintf("%s AS %s", agg, gorm.ToColumnName(field.Name)))
+			} else {
+				panic(fmt.Sprintf("field %s cannot be aggregated", fieldName))
+			}
 		} else {
 			panic(fmt.Sprintf("unknown aggregation field %s", fieldName))
 		}
@@ -117,27 +124,16 @@ func getAggrFields(sqlFields ...string) []string {
 }
 
 func getAllAggrFields() []string {
-	t := reflect.TypeOf(AggregatedStatementFields{})
+	t := reflect.TypeOf(Model{})
 	fieldsNum := t.NumField()
 	ret := make([]string, 0, fieldsNum)
 	for i := 0; i < fieldsNum; i++ {
 		field := t.Field(i)
-		ret = append(ret, fmt.Sprintf("%s AS %s", field.Tag.Get("agg"), gorm.ToColumnName(field.Name)))
+		if agg, ok := field.Tag.Lookup("agg"); ok {
+			ret = append(ret, fmt.Sprintf("%s AS %s", agg, gorm.ToColumnName(field.Name)))
+		}
 	}
 	return ret
-}
-
-// Overview represents the overview of a statement
-type Overview struct {
-	AggregatedStatementFields
-	SchemaName string `json:"schema_name"`
-	Digest     string `json:"digest"`
-	DigestText string `json:"digest_text"`
-	Schemas    string `json:"schemas"`
-}
-
-type PlanDetailModel struct {
-	AggregatedStatementFields
 }
 
 // tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"
@@ -158,7 +154,9 @@ func extractSchemasFromTableNames(tableNames string) string {
 	return strings.Join(keys, ", ")
 }
 
-func (overview *Overview) AfterFind() (err error) {
-	overview.Schemas = extractSchemasFromTableNames(overview.AggTableNames)
-	return
+func (m *Model) AfterFind() error {
+	if len(m.AggTableNames) > 0 {
+		m.RelatedSchemas = extractSchemasFromTableNames(m.AggTableNames)
+	}
+	return nil
 }

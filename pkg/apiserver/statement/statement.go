@@ -147,7 +147,7 @@ func (s *Service) stmtTypesHandler(c *gin.Context) {
 // @Param end_time query string true "Statement end time"
 // @Param schemas query string false "Target schemas"
 // @Param stmt_types query string false "Target statement types"
-// @Success 200 {array} statement.Overview
+// @Success 200 {array} Model
 // @Router /statements/overviews [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
@@ -186,7 +186,7 @@ type GetPlansRequest struct {
 // @Description Get statement plans
 // @Produce json
 // @Param q query GetPlansRequest true "Query"
-// @Success 200 {array} PlanDetailModel
+// @Success 200 {array} Model
 // @Router /statements/plans [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
@@ -215,7 +215,7 @@ type GetPlanDetailRequest struct {
 // @Description Get statement plan detail
 // @Produce json
 // @Param q query GetPlanDetailRequest true "Query"
-// @Success 200 {object} PlanDetailModel
+// @Success 200 {object} Model
 // @Router /statements/plan/detail [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"

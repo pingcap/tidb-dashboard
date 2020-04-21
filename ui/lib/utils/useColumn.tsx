@@ -8,6 +8,30 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import React from 'react'
 import { Tooltip } from 'antd'
 import { Pre, Bar } from '@lib/components'
+import { addTranslationResource } from './i18n'
+
+const translations = {
+  en: {
+    name: 'Name',
+    value: 'Value',
+    time: 'Time',
+    desc: 'Description',
+  },
+  'zh-CN': {
+    name: '名称',
+    value: '值',
+    time: '时间',
+    desc: '描述',
+  },
+}
+
+for (const key in translations) {
+  addTranslationResource(key, {
+    component: {
+      commonColumn: translations[key],
+    },
+  })
+}
 
 export function useDummyColumn(): IColumn {
   return {
@@ -23,7 +47,7 @@ export function useDummyColumn(): IColumn {
 export function useFieldsKeyColumn(translationPrefix: string): IColumn {
   const { t } = useTranslation()
   return {
-    name: 'Name',
+    name: t('component.commonColumn.name'),
     key: 'key',
     minWidth: 150,
     maxWidth: 250,
@@ -39,8 +63,9 @@ export function useFieldsKeyColumn(translationPrefix: string): IColumn {
 }
 
 export function useFieldsValueColumn(): IColumn {
+  const { t } = useTranslation()
   return {
-    name: 'Value',
+    name: t('component.commonColumn.value'),
     key: 'value',
     fieldName: 'value',
     minWidth: 150,
@@ -53,11 +78,12 @@ export function useFieldsValueColumn(): IColumn {
 export function useFieldsTimeValueColumn(
   rows?: { avg?: number; min?: number; max?: number; value?: number }[]
 ): IColumn {
+  const { t } = useTranslation()
   const capacity = rows
     ? max(rows.map((v) => max([v.max, v.min, v.avg]))) ?? 0
     : 0
   return {
-    name: 'Time',
+    name: t('component.commonColumn.time'),
     key: 'time',
     minWidth: 150,
     maxWidth: 200,
@@ -102,7 +128,7 @@ export function useFieldsTimeValueColumn(
 export function useFieldsDescriptionColumn(translationPrefix: string): IColumn {
   const { t } = useTranslation()
   return {
-    name: 'Description',
+    name: t('component.commonColumn.desc'),
     key: 'description',
     minWidth: 150,
     maxWidth: 300,

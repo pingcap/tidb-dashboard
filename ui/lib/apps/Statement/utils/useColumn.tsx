@@ -15,9 +15,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import { max } from 'lodash'
 
 function useCommonColumnName(fieldName: string): any {
-  return (
-    <TextWithInfo.TransKey transKey={`statement.common.columns.${fieldName}`} />
-  )
+  return <TextWithInfo.TransKey transKey={`statement.fields.${fieldName}`} />
 }
 
 export function usePlanDigestColumn(
@@ -167,5 +165,23 @@ Max:  ${getValueFormat('bytes')(rec.max_mem, 1)}`
         </Tooltip>
       )
     },
+  }
+}
+
+export function useRelatedSchemasColumn(
+  _rows?: { related_schemas?: string }[] // used for type check only
+): IColumn {
+  return {
+    name: useCommonColumnName('related_schemas'),
+    key: 'related_schemas',
+    minWidth: 160,
+    maxWidth: 240,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => (
+      <Tooltip title={rec.related_schemas}>
+        <EllipsisText>{rec.related_schemas}</EllipsisText>
+      </Tooltip>
+    ),
   }
 }

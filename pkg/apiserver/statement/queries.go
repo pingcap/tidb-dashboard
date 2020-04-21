@@ -148,12 +148,11 @@ func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
 func QueryStatementsOverview(
 	db *gorm.DB,
 	beginTime, endTime int64,
-	schemas, stmtTypes []string) (result []*Overview, err error) {
-	fields := append(
-		[]string{"schema_name", "digest", "digest_text"},
-		getAggrFields("sum_latency", "exec_count", "avg_affected_rows", "max_latency", "avg_latency", "min_latency", "avg_mem", "max_mem", "table_names")...)
+	schemas, stmtTypes []string) (result []Model, err error) {
+	fields := getAggrFields("table_names", "schema_name", "digest", "digest_text", "sum_latency", "exec_count", "max_latency", "avg_latency", "min_latency", "avg_mem", "max_mem")
+	// `table_names` is used to populate `related_schemas`.
 	query := db.
-		Select(strings.Join(fields, ",")).
+		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
 		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Group("schema_name, digest, digest_text").
@@ -179,10 +178,10 @@ func QueryStatementsOverview(
 func QueryPlans(
 	db *gorm.DB,
 	beginTime, endTime int,
-	schemaName, digest string) (result []PlanDetailModel, err error) {
-	fields := getAggrFields("plan_digest", "table_names", "digest_text", "digest", "sum_latency", "max_latency", "min_latency", "avg_latency", "exec_count", "avg_mem", "max_mem")
+	schemaName, digest string) (result []Model, err error) {
+	fields := getAggrFields("plan_digest", "schema_name", "digest_text", "digest", "sum_latency", "max_latency", "min_latency", "avg_latency", "exec_count", "avg_mem", "max_mem")
 	err = db.
-		Select(strings.Join(fields, ",")).
+		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
 		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Where("schema_name = ?", schemaName).
@@ -197,10 +196,10 @@ func QueryPlanDetail(
 	db *gorm.DB,
 	beginTime, endTime int,
 	schemaName, digest string,
-	plans []string) (result PlanDetailModel, err error) {
+	plans []string) (result Model, err error) {
 	fields := getAllAggrFields()
 	query := db.
-		Select(strings.Join(fields, ",")).
+		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
 		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Where("schema_name = ?", schemaName).

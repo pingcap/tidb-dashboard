@@ -8,7 +8,7 @@ import {
   ColumnActionsMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { CardTableV2, ICardTableV2Props, EllipsisText } from '@lib/components'
-import { StatementOverview, StatementTimeRange } from '@lib/client'
+import { StatementTimeRange, StatementModel } from '@lib/client'
 import DetailPage from '../pages/Detail'
 import * as useStatementColumn from '../utils/useColumn'
 
@@ -24,7 +24,7 @@ const columnHeaderWithTooltip = (key: string, t: (string) => string): any => (
 
 const tableColumns = (
   t: (string) => string,
-  rows: StatementOverview[],
+  rows: StatementModel[],
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
   showFullSQL?: boolean
 ): IColumn[] => {
@@ -53,17 +53,7 @@ const tableColumns = (
       columnActionsMode: ColumnActionsMode.clickable,
     },
     {
-      name: columnHeaderWithTooltip('statement.common.schemas', t),
-      key: 'schemas',
-      minWidth: 160,
-      maxWidth: 240,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
-      onRender: (rec) => (
-        <Tooltip title={rec.schemas}>
-          <EllipsisText>{rec.schemas}</EllipsisText>
-        </Tooltip>
-      ),
+      ...useStatementColumn.useRelatedSchemasColumn(rows),
     },
   ]
   return columns
@@ -84,7 +74,7 @@ function copyAndSort<T>(
 
 interface Props extends Partial<ICardTableV2Props> {
   loading: boolean
-  statements: StatementOverview[]
+  statements: StatementModel[]
   timeRange: StatementTimeRange
   detailPagePath?: string
   showFullSQL?: boolean

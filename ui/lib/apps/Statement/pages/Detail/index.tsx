@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import client, { StatementPlanDetailModel } from '@lib/client'
+import client, { StatementModel } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { parseQueryFn, buildQueryFn } from '@lib/utils/query'
 import {
@@ -14,7 +14,7 @@ import {
 } from '@lib/components'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Space, Skeleton } from 'antd'
+import { Space, Skeleton, Alert } from 'antd'
 import { IColumn, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Selection } from 'office-ui-fabric-react/lib/Selection'
 import * as useStatementColumn from '../../utils/useColumn'
@@ -31,7 +31,7 @@ export interface IPageQuery {
   endTime?: number
 }
 
-function usePlanColumns(rows: StatementPlanDetailModel[]): IColumn[] {
+function usePlanColumns(rows: StatementModel[]): IColumn[] {
   return [
     useStatementColumn.usePlanDigestColumn(rows),
     useStatementColumn.useSumLatencyColumn(rows),
@@ -44,7 +44,7 @@ function usePlanColumns(rows: StatementPlanDetailModel[]): IColumn[] {
 
 function DetailPage() {
   const query = DetailPage.parseQuery(useLocation().search)
-  const { data: plans, isLoading } = useClientRequest((cancelToken) =>
+  const { data: plans, error, isLoading } = useClientRequest((cancelToken) =>
     client
       .getInstance()
       .statementsPlansGet(
@@ -62,7 +62,7 @@ function DetailPage() {
   const selection = useRef(
     new Selection({
       onSelectionChanged: () => {
-        const s = selection.current.getSelection() as StatementPlanDetailModel[]
+        const s = selection.current.getSelection() as StatementModel[]
         setSelectedPlans(s.map((v) => v.plan_digest || ''))
       },
     })
@@ -79,18 +79,16 @@ function DetailPage() {
   return (
     <div>
       <Head
-        title={t('statement.detail.head.title')}
+        title={t('statement.pages.detail.head.title')}
         back={
           <Link to={`/statement`}>
-            <ArrowLeftOutlined /> {t('statement.detail.head.back')}
+            <ArrowLeftOutlined /> {t('statement.pages.detail.head.back')}
           </Link>
         }
       >
         {isLoading && <Skeleton active />}
         {!isLoading && (!plans || plans.length === 0) && (
-          <TextWithInfo tooltip="TODO" type="danger">
-            载入数据失败
-          </TextWithInfo>
+          <Alert message="Error" type="error" showIcon />
         )}
         {!isLoading && plans && plans.length > 0 && (
           <>
@@ -100,7 +98,7 @@ function DetailPage() {
                 multiline={sqlExpanded}
                 label={
                   <Space size="middle">
-                    <TextWithInfo.TransKey transKey="statement.common.columns.digest_text" />
+                    <TextWithInfo.TransKey transKey="statement.fields.digest_text" />
                     <Expand.Link
                       expanded={sqlExpanded}
                       onClick={() => toggleSqlExpanded()}
@@ -121,7 +119,7 @@ function DetailPage() {
               <Descriptions.Item
                 label={
                   <Space size="middle">
-                    <TextWithInfo.TransKey transKey="statement.common.columns.digest" />
+                    <TextWithInfo.TransKey transKey="statement.fields.digest" />
                     <CopyLink data={plans[0].digest!} />
                   </Space>
                 }
@@ -130,7 +128,7 @@ function DetailPage() {
               </Descriptions.Item>
               <Descriptions.Item
                 label={
-                  <TextWithInfo.TransKey transKey="statement.detail.desc.time_range" />
+                  <TextWithInfo.TransKey transKey="statement.pages.detail.desc.time_range" />
                 }
               >
                 <DateTime.Calendar
@@ -143,37 +141,50 @@ function DetailPage() {
               </Descriptions.Item>
               <Descriptions.Item
                 label={
+                  <TextWithInfo.TransKey transKey="statement.pages.detail.desc.plan_count" />
+                }
+              >
+                {plans.length}
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={
                   <Space size="middle">
-                    <TextWithInfo.TransKey transKey="statement.common.columns.schema_name" />
+                    <TextWithInfo.TransKey transKey="statement.fields.schema_name" />
                     <CopyLink data={query.schema!} />
                   </Space>
                 }
               >
                 {query.schema!}
               </Descriptions.Item>
-              <Descriptions.Item
-                label={
-                  <TextWithInfo.TransKey transKey="statement.detail.desc.plan_count" />
-                }
-              >
-                {plans.length}
-              </Descriptions.Item>
             </Descriptions>
-            <CardTableV2
-              cardNoMargin
-              columns={planColumns}
-              items={plans}
-              getKey={(row) => row.plan_digest}
-              selectionMode={SelectionMode.multiple}
-              selection={selection.current}
-              selectionPreservedOnEmptyClick
-            />
+            <div
+              style={{ display: plans && plans.length > 1 ? 'block' : 'none' }}
+            >
+              <Alert
+                message={t(`statement.pages.detail.desc.plans.note`)}
+                type="info"
+                showIcon
+              />
+              <CardTableV2
+                cardNoMargin
+                columns={planColumns}
+                items={plans}
+                getKey={(row) => row.plan_digest}
+                selectionMode={SelectionMode.multiple}
+                selection={selection.current}
+                selectionPreservedOnEmptyClick
+              />
+            </div>
           </>
         )}
       </Head>
-      {selectedPlans.length > 0 && (
+      {selectedPlans.length > 0 && plans && plans.length > 0 && (
         <PlanDetail
-          query={{ ...query, plans: selectedPlans }}
+          query={{
+            ...query,
+            plans: selectedPlans,
+            allPlans: plans.length,
+          }}
           key={JSON.stringify(selectedPlans)}
         />
       )}

@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next'
 
 export interface IQuery extends IPageQuery {
   plans: string[]
+  allPlans: number
 }
 
 export interface IPlanDetailProps {
@@ -50,8 +51,21 @@ function PlanDetail({ query }: IPlanDetailProps) {
   )
   const { state: planExpanded, toggle: togglePlanExpanded } = useToggle(false)
 
+  let title_key
+  if (query.allPlans === 1) {
+    title_key = 'one_for_all'
+  } else if (query.plans.length == query.allPlans) {
+    title_key = 'all'
+  } else {
+    title_key = 'some'
+  }
+
   return (
-    <Card title={`${query.plans.length} 个执行计划的执行详情`}>
+    <Card
+      title={t(`statement.pages.detail.desc.plans.title.${title_key}`, {
+        n: query.plans.length,
+      })}
+    >
       {isLoading && <Skeleton active />}
       {!isLoading && data && (
         <>
@@ -61,7 +75,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
               multiline={sqlExpanded}
               label={
                 <Space size="middle">
-                  <TextWithInfo.TransKey transKey="statement.common.columns.query_sample_text" />
+                  <TextWithInfo.TransKey transKey="statement.fields.query_sample_text" />
                   <Expand.Link
                     expanded={sqlExpanded}
                     onClick={() => toggleSqlExpanded()}
@@ -85,7 +99,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
                 multiline={prevSqlExpanded}
                 label={
                   <Space size="middle">
-                    <TextWithInfo.TransKey transKey="statement.common.columns.prev_sample_text" />
+                    <TextWithInfo.TransKey transKey="statement.fields.prev_sample_text" />
                     <Expand.Link
                       expanded={prevSqlExpanded}
                       onClick={() => togglePrevSqlExpanded()}
@@ -109,7 +123,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
               multiline={planExpanded}
               label={
                 <Space size="middle">
-                  <TextWithInfo.TransKey transKey="statement.common.columns.plan" />
+                  <TextWithInfo.TransKey transKey="statement.fields.plan" />
                   <Expand.Link
                     expanded={planExpanded}
                     onClick={() => togglePlanExpanded()}
@@ -125,18 +139,27 @@ function PlanDetail({ query }: IPlanDetailProps) {
           </Descriptions>
           <CardTabs animated={false}>
             <CardTabs.TabPane
-              tab={t('statement.detail.tabs.basic')}
+              tab={t('statement.pages.detail.tabs.basic')}
               key="basic"
             >
               <TabBasic data={data} />
             </CardTabs.TabPane>
-            <CardTabs.TabPane tab={t('statement.detail.tabs.time')} key="time">
+            <CardTabs.TabPane
+              tab={t('statement.pages.detail.tabs.time')}
+              key="time"
+            >
               <TabTime data={data} />
             </CardTabs.TabPane>
-            <CardTabs.TabPane tab={t('statement.detail.tabs.copr')} key="copr">
+            <CardTabs.TabPane
+              tab={t('statement.pages.detail.tabs.copr')}
+              key="copr"
+            >
               <TabCopr data={data} />
             </CardTabs.TabPane>
-            <CardTabs.TabPane tab={t('statement.detail.tabs.txn')} key="txn">
+            <CardTabs.TabPane
+              tab={t('statement.pages.detail.tabs.txn')}
+              key="txn"
+            >
               <TabTxn data={data} />
             </CardTabs.TabPane>
           </CardTabs>

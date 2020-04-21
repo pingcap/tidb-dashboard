@@ -33,6 +33,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/profiling"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -115,6 +116,7 @@ func (s *Service) Start(ctx context.Context) error {
 			clusterinfo.NewService,
 			profiling.NewService,
 			logsearch.NewService,
+			slowquery.NewService,
 			statement.NewService,
 			diagnose.NewService,
 			keyvisual.NewService,
@@ -127,6 +129,7 @@ func (s *Service) Start(ctx context.Context) error {
 			clusterinfo.Register,
 			profiling.Register,
 			logsearch.Register,
+			slowquery.Register,
 			statement.Register,
 			diagnose.Register,
 			keyvisual.Register,

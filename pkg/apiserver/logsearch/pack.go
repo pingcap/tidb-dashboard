@@ -15,7 +15,6 @@ package logsearch
 
 import (
 	"archive/tar"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -37,6 +36,9 @@ func packLogsAsTarball(tasks []*TaskModel, w io.Writer) error {
 		}
 		err := dumpLog(*task.LogStorePath, tw)
 		if err != nil {
+			return err
+		}
+		if err = dumpLog(*task.SlowLogStorePath, tw); err != nil {
 			return err
 		}
 	}
@@ -76,24 +78,28 @@ func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 		_ = c.Error(utils.ErrInvalidRequest.New("Log is not available for this task"))
 		return
 	}
-
-	f, err := os.Open(*task.LogStorePath)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	stat, err := f.Stat()
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	contentType := "application/zip"
+	reader, writer := io.Pipe()
+	go func() {
+		tw := tar.NewWriter(writer)
+		defer writer.Close()
+		defer tw.Close()
+		err := dumpLog(*task.LogStorePath, tw)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+		if task.SlowLogStorePath != nil {
+			if err = dumpLog(*task.SlowLogStorePath, tw); err != nil {
+				_ = c.Error(err)
+				return
+			}
+		}
+	}()
+	contentType := "application/tar"
 	extraHeaders := map[string]string{
-		"Content-Disposition": fmt.Sprintf(`attachment; filename="%s"`, stat.Name()),
+		"Content-Disposition": `attachment; filename="logs.tar"`,
 	}
-
-	c.DataFromReader(http.StatusOK, -1, contentType, f, extraHeaders)
+	c.DataFromReader(http.StatusOK, -1, contentType, reader, extraHeaders)
 }
 
 func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {

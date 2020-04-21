@@ -51,3 +51,7 @@ statement:
     save: 保存
     close: 关闭
     cancel: 取消
+  time_range_selector:
+    recent: 最近
+    usual_time_ranges: 常用时间范围
+    custom_time_ranges: 自定义时间范围

@@ -67,9 +67,14 @@ function parentNodeCheckable(tasks: LogsearchTaskModel[]) {
 interface Props {
   taskGroupID: number
   tasks: LogsearchTaskModel[]
+  toggleReload: () => {}
 }
 
-export default function SearchProgress({ taskGroupID, tasks }: Props) {
+export default function SearchProgress({
+  taskGroupID,
+  tasks,
+  toggleReload,
+}: Props) {
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState<Boolean>(true)
   const [reloading, setReloading] = useState<Boolean>(false)
@@ -77,12 +82,12 @@ export default function SearchProgress({ taskGroupID, tasks }: Props) {
   const { t } = useTranslation()
 
   if (reloading) {
-    tasks = tasks.map((task) => {
-      if (task.state === TaskState.Error) {
-        task.state = TaskState.Running
-      }
-      return task
-    })
+    // tasks = tasks.map((task) => {
+    //   if (task.state === TaskState.Error) {
+    //     task.state = TaskState.Running
+    //   }
+    //   return task
+    // })
   }
 
   useEffect(() => {
@@ -189,7 +194,8 @@ export default function SearchProgress({ taskGroupID, tasks }: Props) {
       title: t('search_logs.confirm.cancel_tasks'),
       onOk() {
         client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + '')
-        setReloading(true)
+        toggleReload()
+        // setReloading(true)
       },
     })
   }
@@ -202,7 +208,8 @@ export default function SearchProgress({ taskGroupID, tasks }: Props) {
       title: t('search_logs.confirm.retry_tasks'),
       onOk() {
         client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + '')
-        setReloading(true)
+        toggleReload()
+        // setReloading(true)
       },
     })
   }

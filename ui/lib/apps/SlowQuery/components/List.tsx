@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Select, Space, Tooltip, Input, InputNumber } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Card, CardTableV2 } from '@lib/components'
 import TimeRangeSelector from './TimeRangeSelector'
 import { useTranslation } from 'react-i18next'
@@ -96,6 +96,25 @@ export default function List() {
     getSlowQueryList()
   }, [curTimeRange, curSchemas, orderBy, desc, searchText, limit, refreshTimes])
 
+  // TODO: refine
+  const location = useLocation()
+  useEffect(() => {
+    if (location.search === '?from=detail') {
+      // load
+      const searchOptionsStr = localStorage.getItem('slow_query_search_options')
+      if (searchOptionsStr !== null) {
+        const searchOptions = JSON.parse(searchOptionsStr)
+        console.log(searchOptions)
+        setCurTimeRange(searchOptions.curTimeRange)
+        setCurSchemas(searchOptions.curSchemas)
+        setSearchText(searchOptions.searchText)
+        setLimit(searchOptions.limit)
+        setOrderBy(searchOptions.orderBy)
+        setDesc(searchOptions.desc)
+      }
+    }
+  }, [])
+
   function handleTimeRangeChange(val: StatementTimeRange) {
     setCurTimeRange(val)
   }
@@ -116,6 +135,18 @@ export default function List() {
       time: rec.query_time,
     })
     navigate(`/slow_query/detail?${qs}`)
+
+    // save search options
+    const searchOptions = JSON.stringify({
+      curTimeRange,
+      curSchemas,
+      orderBy,
+      desc,
+      searchText,
+      limit,
+    })
+    console.log(searchOptions)
+    localStorage.setItem('slow_query_search_options', searchOptions)
   }
 
   return (

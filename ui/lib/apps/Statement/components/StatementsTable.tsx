@@ -39,6 +39,11 @@ const tableColumns = (
       columnActionsMode: ColumnActionsMode.clickable,
     },
     {
+      ...useStatementColumn.useErrorsWarningsColumn(rows),
+      onColumnClick: onColumnClick,
+      columnActionsMode: ColumnActionsMode.clickable,
+    },
+    {
       ...useStatementColumn.useRelatedSchemasColumn(rows),
     },
   ]

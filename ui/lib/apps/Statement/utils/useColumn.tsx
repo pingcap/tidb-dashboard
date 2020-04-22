@@ -3,6 +3,7 @@ import {
   IColumn,
   ColumnActionsMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
+import { red, orange } from '@ant-design/colors'
 import { TextWithInfo, HighlightSQL, TextWrap, Bar, Pre } from '@lib/components'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -158,6 +159,42 @@ Max:  ${getValueFormat('bytes')(rec.max_mem, 1)}`
             capacity={capacity}
           >
             {getValueFormat('bytes')(rec.avg_mem, 1)}
+          </Bar>
+        </Tooltip>
+      )
+    },
+  }
+}
+
+export function useErrorsWarningsColumn(
+  rows?: { sum_errors?: number; sum_warnings?: number }[]
+): IColumn {
+  const capacity = rows
+    ? max(rows.map((v) => v.sum_errors! + v.sum_warnings!)) ?? 0
+    : 0
+  return {
+    name: useCommonColumnName('errors_warnings'),
+    key: 'errors_warnings',
+    fieldName: 'sum_errors',
+    minWidth: 140,
+    maxWidth: 200,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => {
+      const tooltipContent = `
+Errors:   ${getValueFormat('short')(rec.sum_errors, 0)}
+Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
+      return (
+        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
+          <Bar
+            textWidth={70}
+            value={[rec.sum_errors, rec.sum_warnings]}
+            colors={[red[4], orange[4]]}
+            capacity={capacity}
+          >
+            {getValueFormat('short')(rec.sum_errors, 0)}
+            {' / '}
+            {getValueFormat('short')(rec.sum_warnings, 0)}
           </Bar>
         </Tooltip>
       )

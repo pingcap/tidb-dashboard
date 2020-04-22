@@ -72,6 +72,8 @@ statement:
     sample_user_tooltip: The user that executes the SQL (sampled).
     sum_errors: Total Errors
     sum_warnings: Total Warnings
+    errors_warnings: Errors / Warnings
+    errors_warnings_tooltip: Total Errors and Total Warnings
     parse_latency: Parse
     parse_latency_tooltip: Time consumed when parsing the SQL statement
     compile_latency: Compile

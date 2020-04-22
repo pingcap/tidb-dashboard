@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Select, Space, Tooltip, Input } from 'antd'
+import { Select, Space, Tooltip, Input, InputNumber } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardTableV2 } from '@lib/components'
@@ -52,6 +52,7 @@ export default function List() {
   const [searchText, setSearchText] = useState('')
   const [orderBy, setOrderBy] = useState('Query_time')
   const [desc, setDesc] = useState(true)
+  const [limit, setLimit] = useState(50)
   const [refreshTimes, setRefreshTimes] = useState(0)
 
   const [loading, setLoading] = useState(false)
@@ -80,7 +81,7 @@ export default function List() {
         .slowqueryListGet(
           curSchemas.join(','),
           desc,
-          50,
+          limit,
           curTimeRange?.end_time,
           curTimeRange?.begin_time,
           orderBy,
@@ -92,7 +93,7 @@ export default function List() {
       }
     }
     getSlowQueryList()
-  }, [curTimeRange, curSchemas, orderBy, desc, searchText, refreshTimes])
+  }, [curTimeRange, curSchemas, orderBy, desc, searchText, limit, refreshTimes])
 
   function handleTimeRangeChange(val: StatementTimeRange) {
     setCurTimeRange(val)
@@ -132,6 +133,15 @@ export default function List() {
               ))}
             </Select>
             <Search placeholder="包含文本" onSearch={setSearchText} />
+            <InputNumber
+              min={1}
+              max={200}
+              style={{ width: 100 }}
+              value={limit}
+              onChange={(val) => setLimit(val!)}
+              formatter={(value) => `Limit: ${value}`}
+              parser={(value) => value?.replace(/[^\d]/g, '') || ''}
+            />
           </Space>
           <div style={{ flex: 1 }} />
           <Space size="middle">

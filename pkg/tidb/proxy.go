@@ -13,7 +13,6 @@ import (
 
 type remote struct {
 	addr     string
-	mu       sync.Mutex
 	inactive *atomic.Bool
 }
 

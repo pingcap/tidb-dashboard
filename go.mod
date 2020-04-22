@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/appleboy/gin-jwt/v2 v2.6.3
+	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/elazarl/go-bindata-assetfs v1.0.0
 	github.com/gin-contrib/gzip v0.0.1

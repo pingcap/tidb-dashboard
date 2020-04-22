@@ -18,12 +18,13 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/cenkalti/backoff/v4"
+	"github.com/joomcode/errorx"
 	"net"
 	"sync"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
@@ -178,7 +179,12 @@ func (f *Forwarder) pollingForTiDB() {
 	for {
 		select {
 		case <-time.After(f.pollInterval):
-			allTiDB, err := f.getServerInfo()
+			var allTiDB []*tidbServerInfo
+			var err error
+			backoff.Retry(func() error {
+				allTiDB, err = f.getServerInfo()
+				return err
+			}, backoff.NewExponentialBackOff())
 			if err != nil {
 				if errorx.IsOfType(err, ErrNoAliveTiDB) {
 					log.Warn("no TiDB is alive now")

@@ -126,7 +126,7 @@ function buildData(data) {
     const children = nodes.nodes.map((node) => {
       if (
         (node.deploy_path === undefined || node.deploy_path === '') &&
-        node.binary_path !== null
+        node.binary_path
       ) {
         node.deploy_path = node.binary_path.substring(
           0,

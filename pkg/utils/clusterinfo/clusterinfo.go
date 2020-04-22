@@ -41,6 +41,7 @@ type TiDBInfo struct {
 	Version        string          `json:"version"`
 	IP             string          `json:"ip"`
 	Port           uint            `json:"port"`
+	BinaryPath     string          `json:"binary_path"`
 	DeployPath     string          `json:"deploy_path"`
 	Status         ComponentStatus `json:"status"`
 	StatusPort     uint            `json:"status_port"`
@@ -52,7 +53,7 @@ type TiKVInfo struct {
 	Version        string            `json:"version"`
 	IP             string            `json:"ip"`
 	Port           uint              `json:"port"`
-	BinaryPath     string            `json:"binary_path"`
+	DeployPath     string            `json:"deploy_path"`
 	Status         ComponentStatus   `json:"status"`
 	StatusPort     uint              `json:"status_port"`
 	Labels         map[string]string `json:"labels"`

@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -87,6 +88,7 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 			GitHash        string `json:"git_hash"`
 			StatusPort     uint   `json:"status_port"`
 			BinaryPath     string `json:"binary_path"`
+			DeployPath     string `json:"deploy_path"`
 			StartTimestamp int64  `json:"start_timestamp"`
 		}{}
 
@@ -100,11 +102,16 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 			return
 		}
 
+		if ds.DeployPath == "" {
+			ds.DeployPath = path.Dir(ds.BinaryPath)
+		}
+
 		infoMap[address] = &TiDBInfo{
 			GitHash:        ds.GitHash,
 			Version:        ds.Version,
 			IP:             host,
 			Port:           port,
+			DeployPath:     ds.DeployPath,
 			BinaryPath:     ds.BinaryPath,
 			Status:         ComponentStatusUnreachable,
 			StatusPort:     ds.StatusPort,
@@ -150,7 +157,7 @@ type store struct {
 	Version        string `json:"version"`
 	StatusAddress  string `json:"status_address"`
 	GitHash        string `json:"git_hash"`
-	BinaryPath     string `json:"binary_path"`
+	DeployPath     string `json:"deploy_path"`
 	StartTimestamp int64  `json:"start_timestamp"`
 }
 
@@ -226,7 +233,7 @@ func getTiKVTopology(stores []tikvStore) ([]TiKVInfo, error) {
 			Version:        version,
 			IP:             host,
 			Port:           port,
-			BinaryPath:     v.BinaryPath,
+			DeployPath:     v.DeployPath,
 			Status:         storeStateToStatus(v.StateName),
 			StatusPort:     statusPort,
 			Labels:         map[string]string{},
@@ -275,7 +282,7 @@ func getTiFlashTopology(stores []tiflashStore) ([]TiFlashInfo, error) {
 			Version:        version,
 			IP:             host,
 			Port:           port,
-			BinaryPath:     v.BinaryPath, // TiFlash hasn't BinaryPath for now, so it would be empty
+			DeployPath:     v.DeployPath, // TiFlash hasn't BinaryPath for now, so it would be empty
 			Status:         storeStateToStatus(v.StateName),
 			StatusPort:     statusPort,
 			Labels:         map[string]string{},

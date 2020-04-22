@@ -22,7 +22,7 @@ function tableColumns(
   rows: SlowqueryBase[],
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
   orderBy: string,
-  desc: boolean,
+  desc: boolean
 ): IColumn[] {
   return [
     useSlowQueryColumn.useSqlColumn(rows),
@@ -67,11 +67,6 @@ export default function List() {
   const [columns, setColumns] = useState<IColumn[]>(
     tableColumns(slowQueryList || [], onColumnClick, orderBy, desc)
   )
-
-  // useEffect(() => {
-  //   setColumns(tableColumns(slowQueryList || [], onColumnClick, orderBy, desc))
-  //   // eslint-disable-next-line
-  // }, [orderBy, desc])
 
   useEffect(() => {
     async function getSchemas() {
@@ -183,9 +178,7 @@ export default function List() {
                 </Option>
               ))}
             </Select>
-            <Search
-              onSearch={handleSearch}
-            />
+            <Search onSearch={handleSearch} />
             <Select
               defaultValue="100"
               style={{ width: 150 }}

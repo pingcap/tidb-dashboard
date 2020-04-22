@@ -63,7 +63,7 @@ function TransKey({
   type,
 }: ITransKeyTextWithInfo) {
   const { t } = useTranslation()
-  const tooltip = t(`${transKey}_tooltip`, '')
+  const tooltip = t(`${transKey}_tooltip`, { defaultValue: '', fallbackLng: '_' })
   const text = t(transKey, defaultText)
   return (
     <TextWithInfo tooltip={tooltip} placement={placement} type={type}>

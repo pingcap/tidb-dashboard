@@ -13,6 +13,7 @@ import { ReloadOutlined } from '@ant-design/icons'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import * as useSlowQueryColumn from '../utils/useColumn'
 import DetailPage from './Detail'
+import * as useColumn from '@lib/utils/useColumn'
 
 const { Option } = Select
 const { Search } = Input
@@ -22,13 +23,11 @@ const tableColumns = (
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
   orderBy: string,
   desc: boolean,
-  showFullSQL?: boolean
+  // showFullSQL?: boolean
 ): IColumn[] => {
   return [
-    useSlowQueryColumn.useInstanceColumn(rows),
-    useSlowQueryColumn.useConnectionIDColumn(rows),
-    useSlowQueryColumn.useDigestColumn(rows, showFullSQL),
-    useSlowQueryColumn.useEndTimeColumn(rows),
+    useSlowQueryColumn.useSqlColumn(rows),
+    useSlowQueryColumn.useTimestampColumn(rows),
     {
       ...useSlowQueryColumn.useQueryTimeColumn(rows),
       isSorted: orderBy === 'Query_time',
@@ -41,6 +40,7 @@ const tableColumns = (
       isSortedDescending: desc,
       onColumnClick: onColumnClick,
     },
+    useColumn.useDummyColumn(),
   ]
 }
 
@@ -173,19 +173,18 @@ export default function List() {
               ))}
             </Select>
             <Search
-              placeholder="包含文本"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
             <Select
               defaultValue="100"
-              style={{ width: 100 }}
+              style={{ width: 150 }}
               onChange={(val) => setLimit(+val!)}
             >
-              <Option value="100">100</Option>
-              <Option value="200">200</Option>
-              <Option value="500">500</Option>
-              <Option value="1000">1000</Option>
+              <Option value="100">Limit 100</Option>
+              <Option value="200">Limit 200</Option>
+              <Option value="500">Limit 500</Option>
+              <Option value="1000">Limit 1000</Option>
             </Select>
           </Space>
           <div style={{ flex: 1 }} />

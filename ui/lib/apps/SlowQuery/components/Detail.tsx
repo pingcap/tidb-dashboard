@@ -5,7 +5,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { parseQueryFn, buildQueryFn } from '@lib/utils/query'
 import client from '@lib/client'
-import { Skeleton, Space } from 'antd'
+import { Skeleton, Space, Alert } from 'antd'
 import {
   Head,
   Descriptions,
@@ -58,9 +58,7 @@ function DetailPage() {
       >
         {isLoading && <Skeleton active />}
         {!isLoading && !data && (
-          <TextWithInfo tooltip="TODO" type="danger">
-            载入数据失败
-          </TextWithInfo>
+          <Alert message="Error" type="error" showIcon />
         )}
         {!isLoading && !!data && (
           <>

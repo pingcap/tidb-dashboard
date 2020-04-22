@@ -85,7 +85,7 @@ statement:
     process_time_tooltip: SQL 在 TiKV Coprocessor 上的执行耗时，单个 SQL 所有 Coprocessor 任务累计后计算
     backoff_time: 重试等待耗时
     backoff_time_tooltip: 单个 SQL 所有重试累计后计算
-    get_commit_ts_time: Commit Ts 耗时
+    get_commit_ts_time: 取 Commit Ts 耗时
     get_commit_ts_time_tooltip: 从 PD 取递交时间戳（事务号）步骤的耗时
     local_latch_wait_time: Local Latch Wait 耗时
     local_latch_wait_time_tooltip: 事务在 TiDB 本地与其他事务产生了锁冲突并等待的耗时

@@ -201,6 +201,14 @@ export default function ListPage() {
       maxWidth: 300,
       isResizable: true,
     },
+    {
+      name: t('cluster_info.list.instance_table.columns.git_hash'),
+      fieldName: 'git_hash',
+      key: 'git_hash',
+      minWidth: 150,
+      maxWidth: 300,
+      isResizable: true,
+    },
   ]
 
   return (

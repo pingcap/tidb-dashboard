@@ -15,6 +15,8 @@ import * as useSlowQueryColumn from '../utils/useColumn'
 import DetailPage from './Detail'
 import * as useColumn from '@lib/utils/useColumn'
 
+import styles from './List.module.less'
+
 const { Option } = Select
 const { Search } = Input
 
@@ -152,8 +154,8 @@ export default function List() {
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Card>
-        <div style={{ display: 'flex' }}>
-          <Space size="middle">
+        <div className={styles.header}>
+          <Space size="middle" className={styles.search_options}>
             <TimeRangeSelector
               value={curTimeRange}
               onChange={handleTimeRangeChange}
@@ -173,6 +175,7 @@ export default function List() {
               ))}
             </Select>
             <Search
+              style={{ width: 160 }}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
@@ -186,9 +189,15 @@ export default function List() {
               <Option value="500">Limit 500</Option>
               <Option value="1000">Limit 1000</Option>
             </Select>
+            <Space size="middle" className={styles.left_actions}>
+              <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
+                <ReloadOutlined
+                  onClick={() => setRefreshTimes((prev) => prev + 1)}
+                />
+              </Tooltip>
+            </Space>
           </Space>
-          <div style={{ flex: 1 }} />
-          <Space size="middle">
+          <Space size="middle" className={styles.right_actions}>
             <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
               <ReloadOutlined
                 onClick={() => setRefreshTimes((prev) => prev + 1)}

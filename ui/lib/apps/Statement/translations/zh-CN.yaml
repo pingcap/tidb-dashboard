@@ -73,6 +73,8 @@ statement:
     sample_user_tooltip: 执行该类 SQL 的用户名，可能存在多个执行用户，仅显示其中某一个
     sum_errors: 累计 Error 个数
     sum_warnings: 累计 Warning 个数
+    errors_warnings: 错误 / 警告
+    errors_warnings_tooltip: 累计错误和警告个数
     parse_latency: 解析耗时
     parse_latency_tooltip: 解析 SQL 语句的耗时
     compile_latency: 优化耗时

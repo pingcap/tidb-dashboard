@@ -9,6 +9,7 @@ import client, { StatementTimeRange, SlowqueryBase } from '@lib/client'
 import { ReloadOutlined } from '@ant-design/icons'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import * as useSlowQueryColumn from '../utils/useColumn'
+import DetailPage from './Detail'
 
 const { Option } = Select
 const { Search } = Input
@@ -109,7 +110,12 @@ export default function List() {
   }
 
   function handleRowClick(rec) {
-    navigate(`/slow_query/detail`)
+    const qs = DetailPage.buildQuery({
+      digest: rec.digest,
+      connectId: rec.connection_id,
+      time: rec.query_time,
+    })
+    navigate(`/slow_query/detail?${qs}`)
   }
 
   return (

@@ -86,9 +86,9 @@ func (s *Service) listHandler(c *gin.Context) {
 }
 
 type DetailRequest struct {
-	Digest    string  `json:"digest"`
-	Time      float64 `json:"time"`
-	ConnectID int64   `json:"connect_id"`
+	Digest    string  `json:"digest" form:"digest"`
+	Time      float64 `json:"time" form:"time"`
+	ConnectID int64   `json:"connect_id" form:"connect_id"`
 }
 
 // @Summary Example: Get all databases
@@ -100,18 +100,19 @@ type DetailRequest struct {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) detailhandler(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
-
-	req := DetailRequest{
-		Digest:    "db2dfbe10c95c4f44524bfafd669fe532077655ce85fa5fc6927c48999769e29",
-		Time:      1587467607.4329019,
-		ConnectID: 38,
+	// req := DetailRequest{
+	// 	Digest:    "db2dfbe10c95c4f44524bfafd669fe532077655ce85fa5fc6927c48999769e29",
+	// 	Time:      1587467607.4329019,
+	// 	ConnectID: 38,
+	// }
+	var req DetailRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		return
 	}
-	//if err := c.ShouldBindJSON(&req); err != nil {
-	//	c.Status(http.StatusBadRequest)
-	//	_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
-	//	return
-	//}
+	fmt.Printf("detail request: %+v\n", req)
+	db := utils.GetTiDBConnection(c)
 	db.LogMode(true)
 	result, err := QuerySlowLogDetail(db, &req)
 	if err != nil {

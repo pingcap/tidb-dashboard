@@ -144,11 +144,10 @@ func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
 
 func QuerySlowLogDetail(db *gorm.DB, req *DetailRequest) (*SlowQuery, error) {
 	var result SlowQuery
-
 	err := db.Table(SlowQueryTable).
-		//Where("`Digest` = ?", req.Digest).
-		//Where("`Time` = from_unixtime(?)", req.Time).
-		Where("`Conn_id` = ?", req.ConnectID).
+		Where("Digest = ?", req.Digest).
+		Where("Time = from_unixtime(?)", req.Time).
+		Where("Conn_id = ?", req.ConnectID).
 		First(&result).Error
 	if err != nil {
 		return nil, err

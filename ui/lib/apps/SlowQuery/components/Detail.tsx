@@ -51,7 +51,7 @@ function DetailPage() {
       <Head
         title={t('slow_query.detail.head.title')}
         back={
-          <Link to={`/slow_query/list`}>
+          <Link to={`/slow_query`}>
             <ArrowLeftOutlined /> {t('slow_query.detail.head.back')}
           </Link>
         }

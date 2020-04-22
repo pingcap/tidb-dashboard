@@ -48,7 +48,7 @@ type Model struct {
 	AggSumCopTaskNum         int    `json:"sum_cop_task_num" agg:"SUM(sum_cop_task_num)"`
 	AggAvgCopProcessTime     int    `json:"avg_cop_process_time" agg:"ROUND(SUM(exec_count * avg_process_time) / SUM(sum_cop_task_num))"` // avg process time per copr task
 	AggMaxCopProcessTime     int    `json:"max_cop_process_time" agg:"MAX(max_cop_process_time)"`                                         // max process time per copr task
-	AggAvgCopWaitTime        int    `json:"avg_cop_wait_time" agg:"ROUND(SUM(exec_count * avg_wait_time) / SUM(sum_cop_task_num))"`       // avg process time per copr task
+	AggAvgCopWaitTime        int    `json:"avg_cop_wait_time" agg:"ROUND(SUM(exec_count * avg_wait_time) / SUM(sum_cop_task_num))"`       // avg wait time per copr task
 	AggMaxCopWaitTime        int    `json:"max_cop_wait_time" agg:"MAX(max_cop_wait_time)"`                                               // max wait time per copr task
 	AggAvgProcessTime        int    `json:"avg_process_time" agg:"ROUND(SUM(exec_count * avg_process_time) / SUM(exec_count))"`           // avg total process time per sql
 	AggMaxProcessTime        int    `json:"max_process_time" agg:"MAX(max_process_time)"`                                                 // max process time per sql

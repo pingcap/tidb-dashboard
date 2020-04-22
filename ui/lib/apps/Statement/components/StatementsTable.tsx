@@ -39,8 +39,26 @@ const tableColumns = (
       columnActionsMode: ColumnActionsMode.clickable,
     },
     {
-      ...useStatementColumn.useRelatedSchemasColumn(rows),
+      ...useStatementColumn.useErrorsWarningsColumn(rows),
+      onColumnClick: onColumnClick,
+      columnActionsMode: ColumnActionsMode.clickable,
     },
+    {
+      ...useStatementColumn.useAvgParseLatencyColumn(rows),
+      onColumnClick: onColumnClick,
+      columnActionsMode: ColumnActionsMode.clickable,
+    },
+    {
+      ...useStatementColumn.useAvgCompileLatencyColumn(rows),
+      onColumnClick: onColumnClick,
+      columnActionsMode: ColumnActionsMode.clickable,
+    },
+    {
+      ...useStatementColumn.useAvgCoprColumn(rows),
+      onColumnClick: onColumnClick,
+      columnActionsMode: ColumnActionsMode.clickable,
+    },
+    useStatementColumn.useRelatedSchemasColumn(rows),
   ]
   return columns
 }

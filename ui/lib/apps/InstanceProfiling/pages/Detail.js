@@ -67,6 +67,7 @@ export default function Page() {
         key: 'instance',
         minWidth: 150,
         maxWidth: 400,
+        isResizable: true,
         onRender: (record) => record.target.display_name,
       },
       {
@@ -74,6 +75,7 @@ export default function Page() {
         key: 'kind',
         minWidth: 100,
         maxWidth: 150,
+        isResizable: true,
         onRender: (record) => record.target.kind,
       },
       {
@@ -81,6 +83,7 @@ export default function Page() {
         key: 'status',
         minWidth: 150,
         maxWidth: 200,
+        isResizable: true,
         onRender: (record) => {
           if (record.state === 1) {
             return (

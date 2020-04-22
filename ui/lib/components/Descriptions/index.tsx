@@ -19,6 +19,7 @@ export interface IDescriptionsItemProps extends DescriptionsItemProps {
   multiline?: boolean
 }
 
+// FIXME: This logic duplicates to <TextWrap>
 function mapItem(item: React.ReactElement<IDescriptionsItemProps>) {
   const { props } = item
   const { multiline, className, children, ...restProps } = props

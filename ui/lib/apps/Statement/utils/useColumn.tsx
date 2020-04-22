@@ -3,13 +3,7 @@ import {
   IColumn,
   ColumnActionsMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
-import {
-  TextWithInfo,
-  HighlightSQL,
-  EllipsisText,
-  Bar,
-  Pre,
-} from '@lib/components'
+import { TextWithInfo, HighlightSQL, TextWrap, Bar, Pre } from '@lib/components'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { max } from 'lodash'
@@ -31,7 +25,7 @@ export function usePlanDigestColumn(
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip title={rec.plan_digest}>
-        <EllipsisText>{rec.plan_digest || '(none)'}</EllipsisText>
+        <TextWrap>{rec.plan_digest || '(none)'}</TextWrap>
       </Tooltip>
     ),
   }
@@ -48,17 +42,20 @@ export function useDigestColumn(
     minWidth: 100,
     maxWidth: 500,
     isResizable: true,
+    isMultiline: showFullSQL,
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip
         title={<HighlightSQL sql={rec.digest_text} theme="dark" />}
         placement="right"
       >
-        {showFullSQL ? (
-          <div style={{ whiteSpace: 'pre-wrap' }}>{rec.digest_text}</div>
-        ) : (
-          <EllipsisText>{rec.digest_text}</EllipsisText>
-        )}
+        <TextWrap multiline={showFullSQL}>
+          {showFullSQL ? (
+            <HighlightSQL sql={rec.digest_text} />
+          ) : (
+            <Pre>{rec.digest_text}</Pre>
+          )}
+        </TextWrap>
       </Tooltip>
     ),
   }
@@ -180,7 +177,7 @@ export function useRelatedSchemasColumn(
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip title={rec.related_schemas}>
-        <EllipsisText>{rec.related_schemas}</EllipsisText>
+        <TextWrap>{rec.related_schemas}</TextWrap>
       </Tooltip>
     ),
   }

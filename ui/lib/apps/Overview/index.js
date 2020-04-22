@@ -4,7 +4,6 @@ import { Row, Col, Card } from 'antd'
 import { RightOutlined } from '@ant-design/icons'
 import { HashRouter as Router, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import dayjs from 'dayjs'
 
 import client from '@lib/client'
 import { StatementsTable } from '@lib/apps/Statement'

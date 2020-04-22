@@ -49,8 +49,11 @@ const tableColumns = (
       columnActionsMode: ColumnActionsMode.clickable,
     },
     {
-      ...useStatementColumn.useRelatedSchemasColumn(rows),
+      ...useStatementColumn.useAvgCompileLatencyColumn(rows),
+      onColumnClick: onColumnClick,
+      columnActionsMode: ColumnActionsMode.clickable,
     },
+    useStatementColumn.useRelatedSchemasColumn(rows),
   ]
   return columns
 }

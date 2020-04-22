@@ -234,6 +234,38 @@ Max:  ${getValueFormat('ns')(rec.max_parse_latency, 1)}`
   }
 }
 
+export function useAvgCompileLatencyColumn(
+  rows?: { avg_compile_latency?: number; max_compile_latency?: number }[]
+): IColumn {
+  const capacity = rows ? max(rows.map((v) => v.max_compile_latency)) ?? 0 : 0
+  return {
+    name: useCommonColumnName('compile_latency'),
+    key: 'avg_compile_latency',
+    fieldName: 'avg_compile_latency',
+    minWidth: 140,
+    maxWidth: 200,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => {
+      const tooltipContent = `
+Mean: ${getValueFormat('ns')(rec.avg_compile_latency, 1)}
+Max:  ${getValueFormat('ns')(rec.max_compile_latency, 1)}`
+      return (
+        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
+          <Bar
+            textWidth={70}
+            value={rec.avg_compile_latency}
+            max={rec.max_compile_latency}
+            capacity={capacity}
+          >
+            {getValueFormat('ns')(rec.avg_compile_latency, 1)}
+          </Bar>
+        </Tooltip>
+      )
+    },
+  }
+}
+
 export function useRelatedSchemasColumn(
   _rows?: { related_schemas?: string }[] // used for type check only
 ): IColumn {

@@ -202,6 +202,38 @@ Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
   }
 }
 
+export function useAvgParseLatencyColumn(
+  rows?: { avg_parse_latency?: number; max_parse_latency?: number }[]
+): IColumn {
+  const capacity = rows ? max(rows.map((v) => v.max_parse_latency)) ?? 0 : 0
+  return {
+    name: useCommonColumnName('parse_latency'),
+    key: 'avg_parse_latency',
+    fieldName: 'avg_parse_latency',
+    minWidth: 140,
+    maxWidth: 200,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => {
+      const tooltipContent = `
+Mean: ${getValueFormat('ns')(rec.avg_parse_latency, 1)}
+Max:  ${getValueFormat('ns')(rec.max_parse_latency, 1)}`
+      return (
+        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
+          <Bar
+            textWidth={70}
+            value={rec.avg_parse_latency}
+            max={rec.max_parse_latency}
+            capacity={capacity}
+          >
+            {getValueFormat('ns')(rec.avg_parse_latency, 1)}
+          </Bar>
+        </Tooltip>
+      )
+    },
+  }
+}
+
 export function useRelatedSchemasColumn(
   _rows?: { related_schemas?: string }[] // used for type check only
 ): IColumn {

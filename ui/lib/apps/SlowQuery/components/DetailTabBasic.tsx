@@ -10,7 +10,12 @@ export interface ITabBasicProps {
 
 export default function TabBasic({ data }: ITabBasicProps) {
   const items = [
-    { key: 'timestamp', value: <DateTime.Calendar unixTimestampMs={(data.timestamp ?? 0) * 1000} /> },
+    {
+      key: 'timestamp',
+      value: (
+        <DateTime.Calendar unixTimestampMs={(data.timestamp ?? 0) * 1000} />
+      ),
+    },
     { key: 'digest', value: data.digest },
     { key: 'is_internal', value: data.is_internal },
     { key: 'is_success', value: data.success },

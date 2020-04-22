@@ -13,7 +13,6 @@ import {
   Pre,
   HighlightSQL,
   Expand,
-  Card,
 } from '@lib/components'
 import { useToggle } from '@umijs/hooks'
 import CopyLink from '@lib/components/CopyLink'
@@ -60,9 +59,7 @@ function DetailPage() {
         }
       >
         {isLoading && <Skeleton active />}
-        {!isLoading && !data && (
-          <Alert message="Error" type="error" showIcon />
-        )}
+        {!isLoading && !data && <Alert message="Error" type="error" showIcon />}
         {!isLoading && !!data && (
           <>
             <Descriptions>
@@ -134,30 +131,32 @@ function DetailPage() {
                 </Expand>
               </Descriptions.Item>
             </Descriptions>
+            <CardTabs animated={false}>
+              <CardTabs.TabPane
+                tab={t('slow_query.detail.tabs.basic')}
+                key="basic"
+              >
+                <TabBasic data={data} />
+              </CardTabs.TabPane>
+              <CardTabs.TabPane
+                tab={t('slow_query.detail.tabs.time')}
+                key="time"
+              >
+                <TabTime data={data} />
+              </CardTabs.TabPane>
+              <CardTabs.TabPane
+                tab={t('slow_query.detail.tabs.copr')}
+                key="copr"
+              >
+                <TabCopr data={data} />
+              </CardTabs.TabPane>
+              <CardTabs.TabPane tab={t('slow_query.detail.tabs.txn')} key="txn">
+                <TabTxn data={data} />
+              </CardTabs.TabPane>
+            </CardTabs>
           </>
         )}
       </Head>
-      {!isLoading && !!data && (
-        <Card>
-          <CardTabs animated={false}>
-            <CardTabs.TabPane
-              tab={t('slow_query.detail.tabs.basic')}
-              key="basic"
-            >
-              <TabBasic data={data} />
-            </CardTabs.TabPane>
-            <CardTabs.TabPane tab={t('slow_query.detail.tabs.time')} key="time">
-              <TabTime data={data} />
-            </CardTabs.TabPane>
-            <CardTabs.TabPane tab={t('slow_query.detail.tabs.copr')} key="copr">
-              <TabCopr data={data} />
-            </CardTabs.TabPane>
-            <CardTabs.TabPane tab={t('slow_query.detail.tabs.txn')} key="txn">
-              <TabTxn data={data} />
-            </CardTabs.TabPane>
-          </CardTabs>
-        </Card>
-      )}
     </div>
   )
 }

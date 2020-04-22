@@ -57,7 +57,7 @@ export function useConnectionIDColumn(
 }
 
 export function useSqlColumn(
-  _rows?: { query?: string }[], // used for type check only
+  _rows?: { query?: string }[] // used for type check only
 ): IColumn {
   return {
     name: useCommonColumnName('sql'),
@@ -72,7 +72,9 @@ export function useSqlColumn(
         title={<HighlightSQL sql={rec.query} theme="dark" />}
         placement="right"
       >
-        <TextWrap><Pre>{rec.query}</Pre></TextWrap>
+        <TextWrap>
+          <Pre>{rec.query}</Pre>
+        </TextWrap>
       </Tooltip>
     ),
   }

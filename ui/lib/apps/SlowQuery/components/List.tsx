@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Select, Space, Tooltip, Input, InputNumber } from 'antd'
+import { Select, Space, Tooltip, Input } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Card, CardTableV2 } from '@lib/components'
@@ -54,7 +54,7 @@ export default function List() {
   const [searchText, setSearchText] = useState('')
   const [orderBy, setOrderBy] = useState('Query_time')
   const [desc, setDesc] = useState(true)
-  const [limit, setLimit] = useState(50)
+  const [limit, setLimit] = useState(100)
   const [refreshTimes, setRefreshTimes] = useState(0)
 
   const [loading, setLoading] = useState(false)
@@ -80,8 +80,8 @@ export default function List() {
       setLoading(true)
       const res = await client
         .getInstance()
-        .slowqueryListGet(
-          curSchemas.join(','),
+        .slowQueryListGet(
+          curSchemas,
           desc,
           limit,
           curTimeRange?.end_time,
@@ -105,7 +105,6 @@ export default function List() {
       const searchOptionsStr = localStorage.getItem('slow_query_search_options')
       if (searchOptionsStr !== null) {
         const searchOptions = JSON.parse(searchOptionsStr)
-        console.log(searchOptions)
         setCurTimeRange(searchOptions.curTimeRange)
         setCurSchemas(searchOptions.curSchemas)
         setSearchText(searchOptions.searchText)
@@ -114,6 +113,7 @@ export default function List() {
         setDesc(searchOptions.desc)
       }
     }
+    // eslint-disable-next-line
   }, [])
 
   function handleTimeRangeChange(val: TimeRange) {
@@ -133,7 +133,7 @@ export default function List() {
     const qs = DetailPage.buildQuery({
       digest: rec.digest,
       connectId: rec.connection_id,
-      time: rec.query_time,
+      time: rec.timestamp,
     })
     navigate(`/slow_query/detail?${qs}`)
 
@@ -146,7 +146,6 @@ export default function List() {
       searchText,
       limit,
     })
-    console.log(searchOptions)
     localStorage.setItem('slow_query_search_options', searchOptions)
   }
 
@@ -178,15 +177,16 @@ export default function List() {
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
-            <InputNumber
-              min={1}
-              max={200}
+            <Select
+              defaultValue="100"
               style={{ width: 100 }}
-              value={limit}
-              onChange={(val) => setLimit(val!)}
-              formatter={(value) => `Limit: ${value}`}
-              parser={(value) => value?.replace(/[^\d]/g, '') || ''}
-            />
+              onChange={(val) => setLimit(+val!)}
+            >
+              <Option value="100">100</Option>
+              <Option value="200">200</Option>
+              <Option value="500">500</Option>
+              <Option value="1000">1000</Option>
+            </Select>
           </Space>
           <div style={{ flex: 1 }} />
           <Space size="middle">

@@ -14,7 +14,6 @@
 package slowquery
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -25,7 +24,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
-	utils2 "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
 type Service struct {
@@ -39,26 +37,19 @@ func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstor
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
-	endpoint := r.Group("/slowquery")
+	endpoint := r.Group("/slow_query")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
 	endpoint.GET("/list", s.listHandler)
 	endpoint.GET("/detail", s.detailhandler)
 }
 
-type InfoResponse struct { //nolint:golint
-	Version    utils2.VersionInfo `json:"version"`
-	PDEndPoint string             `json:"pd_end_point"`
-}
-
-type DatabaseResponse = []string
-
 // @Summary Example: Get all databases
 // @Description Get all databases.
 // @Produce json
 // @Param q query QueryRequestParam true "Query"
 // @Success 200 {array} Base
-// @Router /slowquery/list [get]
+// @Router /slow_query/list [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) listHandler(c *gin.Context) {
@@ -67,7 +58,6 @@ func (s *Service) listHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	fmt.Printf("req: %+v\n", req)
 
 	if req.LogStartTS == 0 {
 		now := time.Now().Unix()
@@ -96,24 +86,18 @@ type DetailRequest struct {
 // @Produce json
 // @Param q query DetailRequest true "Query"
 // @Success 200 {object} SlowQuery
-// @Router /slowquery/detail [get]
+// @Router /slow_query/detail [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) detailhandler(c *gin.Context) {
-	// req := DetailRequest{
-	// 	Digest:    "db2dfbe10c95c4f44524bfafd669fe532077655ce85fa5fc6927c48999769e29",
-	// 	Time:      1587467607.4329019,
-	// 	ConnectID: 38,
-	// }
 	var req DetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
 		return
 	}
-	fmt.Printf("detail request: %+v\n", req)
+
 	db := utils.GetTiDBConnection(c)
-	db.LogMode(true)
 	result, err := QuerySlowLogDetail(db, &req)
 	if err != nil {
 		_ = c.Error(err)

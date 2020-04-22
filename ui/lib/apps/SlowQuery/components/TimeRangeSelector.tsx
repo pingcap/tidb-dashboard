@@ -54,7 +54,6 @@ export default function TimeRangeSelector({
   }
 
   function handleRangePickerChange(values) {
-    console.log('range picker:', values)
     if (values === null) {
       if (curTimeRange.recent === 0) {
         handleRecentChange(30)

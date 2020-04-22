@@ -15,6 +15,7 @@ package slowquery
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -22,8 +23,8 @@ import (
 )
 
 const (
-	MysqlTimeLayout = "2006-01-02 15:04:05.999999"
-	SlowQueryTable  = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
+	SlowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
+	SelectStmt     = "*, unix_timestamp(time) as timestamp"
 )
 
 type Base struct {
@@ -31,7 +32,7 @@ type Base struct {
 	Instance     string    `gorm:"column:INSTANCE" json:"instance"`
 	Query        string    `gorm:"column:Query" json:"query"`
 	Time         time.Time `gorm:"column:Time" json:"-"`
-	Timestamp    float64   `json:"timestamp"`
+	Timestamp    float64   `gorm:"column:timestamp" json:"timestamp"`
 	QueryTime    float64   `gorm:"column:Query_time" json:"query_time"`
 	MemoryMax    int       `gorm:"column:Mem_max" json:"memory_max"`
 	Digest       string    `gorm:"column:Digest" json:"digest"`
@@ -90,25 +91,44 @@ type SlowQuery struct {
 	CopWaitAddr  string `gorm:"column:Cop_wait_addr" json:"cop_wait_addr"`
 }
 
-func (b *Base) AfterFind() (err error) {
-	if !b.Time.IsZero() {
-		b.Timestamp = float64(b.Time.UnixNano()) / 1e9
-	}
-	return
+type QueryRequestParam struct {
+	LogStartTS int64    `json:"logStartTS" form:"logStartTS"`
+	LogEndTS   int64    `json:"logEndTS" form:"logEndTS"`
+	DB         []string `json:"db" form:"db"`
+	Limit      int      `json:"limit" form:"limit"`
+	Text       string   `json:"text" form:"text"`
+	OrderBy    string   `json:"orderBy" form:"orderBy"`
+	DESC       bool     `json:"desc" form:"desc"`
 }
 
-type QueryRequestParam struct {
-	LogStartTS int64  `json:"logStartTS" form:"logStartTS"`
-	LogEndTS   int64  `json:"logEndTS" form:"logEndTS"`
-	DB         string `json:"db" form:"db"`
-	Limit      int    `json:"limit" form:"limit"`
-	Text       string `json:"text" form:"text"`
-	OrderBy    string `json:"orderBy" form:"orderBy"`
-	DESC       bool   `json:"desc" form:"desc"`
+func getAllColumnNames() []string {
+	t := reflect.TypeOf(Base{})
+	fieldsNum := t.NumField()
+	ret := make([]string, 0, fieldsNum)
+	for i := 0; i < fieldsNum; i++ {
+		field := t.Field(i)
+		if s, ok := field.Tag.Lookup("gorm"); ok {
+			list := strings.Split(s, ":")
+			if len(list) < 1 {
+				panic(fmt.Sprintf("Unknown gorm tag field: %s", s))
+			}
+			ret = append(ret, list[1])
+		}
+	}
+	return ret
+}
+
+func isValidColumnName(name string) bool {
+	for _, item := range getAllColumnNames() {
+		if name == item {
+			return true
+		}
+	}
+	return false
 }
 
 func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
-	tx := db.Table(SlowQueryTable)
+	tx := db.Select(SelectStmt).Table(SlowQueryTable)
 	tx = tx.Where("time between from_unixtime(?) and from_unixtime(?)", params.LogStartTS, params.LogEndTS)
 	if params.Text != "" {
 		tx = tx.Where("txn_start_ts REGEXP ? OR digest REGEXP ? OR prev_stmt REGEXP ? OR query REGEXP ?",
@@ -119,18 +139,17 @@ func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
 		)
 	}
 
-	if params.DB != "" {
-		dbs := strings.Split(params.DB, ",")
-		tx = tx.Where("DB IN (?)", dbs)
+	if len(params.DB) != 0 {
+		tx = tx.Where("DB IN (?)", params.DB)
 	}
 
 	order := params.OrderBy
-	if params.DESC {
-		// FIXME
-		// but grom.Expr("? DESC", order) doesn't work
-		tx = tx.Order(fmt.Sprintf("%s desc", order))
-	} else {
-		tx = tx.Order(fmt.Sprintf("%s asc", order))
+	if isValidColumnName(order) {
+		if params.DESC {
+			tx = tx.Order(fmt.Sprintf("%s desc", order))
+		} else {
+			tx = tx.Order(fmt.Sprintf("%s asc", order))
+		}
 	}
 
 	var results []Base
@@ -144,9 +163,11 @@ func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
 
 func QuerySlowLogDetail(db *gorm.DB, req *DetailRequest) (*SlowQuery, error) {
 	var result SlowQuery
-	err := db.Table(SlowQueryTable).
+	upperBound := req.Time
+	lowerBound := req.Time - 10E-7
+	err := db.Select(SelectStmt).Table(SlowQueryTable).
 		Where("Digest = ?", req.Digest).
-		Where("Time = from_unixtime(?)", req.Time).
+		Where("Time >= from_unixtime(?) and Time <= from_unixtime(?)", lowerBound, upperBound).
 		Where("Conn_id = ?", req.ConnectID).
 		First(&result).Error
 	if err != nil {

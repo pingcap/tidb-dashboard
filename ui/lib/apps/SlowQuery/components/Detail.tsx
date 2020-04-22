@@ -38,7 +38,7 @@ function DetailPage() {
   const { data, isLoading } = useClientRequest((cancelToken) =>
     client
       .getInstance()
-      .slowqueryDetailGet(query.connectId!, query.digest!, query.time!, {
+      .slowQueryDetailGet(query.connectId!, query.digest!, query.time!, {
         cancelToken,
       })
   )

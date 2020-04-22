@@ -1,5 +1,5 @@
 slow_query:
-  nav_title: Slow Query
+  nav_title: Slow Queries
   common:
     columns:
       instance: Instance
@@ -57,8 +57,8 @@ slow_query:
       commit_time_tooltips:
       commit_backoff_time: Commit Backoff Time
       commit_backoff_time_tooltips:
-      total_time: Total Time
-      total_time_tooltip: The execution time of a statement
+      total_time: Query Time
+      total_time_tooltip: The execution time of a statement (Due to the parallel execution it may be significantly smaller than the above time)
 
       request_count: Request Count
       request_count_tooltip:

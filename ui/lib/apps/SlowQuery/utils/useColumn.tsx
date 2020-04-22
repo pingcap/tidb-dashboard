@@ -6,7 +6,7 @@ import {
 import {
   TextWithInfo,
   HighlightSQL,
-  EllipsisText,
+  TextWrap,
   Bar,
   DateTime,
 } from '@lib/components'
@@ -35,7 +35,7 @@ export function useInstanceColumn(
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip title={rec.instance}>
-        <EllipsisText>{rec.instance}</EllipsisText>
+        <TextWrap>{rec.instance}</TextWrap>
       </Tooltip>
     ),
   }
@@ -75,7 +75,7 @@ export function useDigestColumn(
         {showFullSQL ? (
           <div style={{ whiteSpace: 'pre-wrap' }}>{rec.digest_text}</div>
         ) : (
-          <EllipsisText>{rec.query}</EllipsisText>
+          <TextWrap>{rec.query}</TextWrap>
         )}
       </Tooltip>
     ),
@@ -94,9 +94,9 @@ export function useEndTimeColumn(
     isResizable: true,
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
-      <EllipsisText>
+      <TextWrap>
         <DateTime.Calendar unixTimestampMs={rec.timestamp * 1000} />
-      </EllipsisText>
+      </TextWrap>
     ),
   }
 }

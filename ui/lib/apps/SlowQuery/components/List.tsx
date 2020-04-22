@@ -173,7 +173,11 @@ export default function List() {
                 </Option>
               ))}
             </Select>
-            <Search placeholder="包含文本" onSearch={setSearchText} />
+            <Search
+              placeholder="包含文本"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
             <InputNumber
               min={1}
               max={200}

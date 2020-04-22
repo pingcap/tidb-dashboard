@@ -87,7 +87,6 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 			Version        string `json:"version"`
 			GitHash        string `json:"git_hash"`
 			StatusPort     uint   `json:"status_port"`
-			BinaryPath     string `json:"binary_path"`
 			DeployPath     string `json:"deploy_path"`
 			StartTimestamp int64  `json:"start_timestamp"`
 		}{}
@@ -102,17 +101,12 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 			return
 		}
 
-		if ds.DeployPath == "" {
-			ds.DeployPath = path.Dir(ds.BinaryPath)
-		}
-
 		infoMap[address] = &TiDBInfo{
 			GitHash:        ds.GitHash,
 			Version:        ds.Version,
 			IP:             host,
 			Port:           port,
 			DeployPath:     ds.DeployPath,
-			BinaryPath:     ds.BinaryPath,
 			Status:         ComponentStatusUnreachable,
 			StatusPort:     ds.StatusPort,
 			StartTimestamp: ds.StartTimestamp,
@@ -229,6 +223,7 @@ func getTiKVTopology(stores []tikvStore) ([]TiKVInfo, error) {
 		if !strings.HasPrefix(version, "v") {
 			version = "v" + version
 		}
+		fmt.Printf("Node has store deploy_path %s\n", v.DeployPath)
 		node := TiKVInfo{
 			Version:        version,
 			IP:             host,
@@ -333,6 +328,7 @@ func GetTiDBTopologyFromOld(ctx context.Context, etcdclient *clientv3.Client) ([
 			IP            string `json:"ip"`
 			ListeningPort uint   `json:"listening_port"`
 			StatusPort    uint   `json:"status_port"`
+			BinaryPath    string `json:"binary_path"`
 		}{}
 		if err = json.Unmarshal(v.Value, &currentInfo); err != nil {
 			continue
@@ -341,7 +337,7 @@ func GetTiDBTopologyFromOld(ctx context.Context, etcdclient *clientv3.Client) ([
 			Version:    currentInfo.Version,
 			IP:         currentInfo.IP,
 			Port:       currentInfo.ListeningPort,
-			BinaryPath: "",
+			DeployPath: path.Dir(currentInfo.BinaryPath),
 			Status:     ComponentStatusUp,
 			StatusPort: currentInfo.StatusPort,
 		})

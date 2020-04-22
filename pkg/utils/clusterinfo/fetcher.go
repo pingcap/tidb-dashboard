@@ -86,7 +86,7 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 			Version        string `json:"version"`
 			GitHash        string `json:"git_hash"`
 			StatusPort     uint   `json:"status_port"`
-			BinaryPath     string `json:"binary_path"`
+			DeployPath     string `json:"deploy_path"`
 			StartTimestamp int64  `json:"start_timestamp"`
 		}{}
 
@@ -105,7 +105,7 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 			Version:        ds.Version,
 			IP:             host,
 			Port:           port,
-			BinaryPath:     ds.BinaryPath,
+			DeployPath:     ds.DeployPath,
 			Status:         ComponentStatusUnreachable,
 			StatusPort:     ds.StatusPort,
 			StartTimestamp: ds.StartTimestamp,
@@ -150,7 +150,7 @@ type store struct {
 	Version        string `json:"version"`
 	StatusAddress  string `json:"status_address"`
 	GitHash        string `json:"git_hash"`
-	BinaryPath     string `json:"binary_path"`
+	DeployPath     string `json:"deploy_path"`
 	StartTimestamp int64  `json:"start_timestamp"`
 }
 
@@ -226,7 +226,8 @@ func getTiKVTopology(stores []tikvStore) ([]TiKVInfo, error) {
 			Version:        version,
 			IP:             host,
 			Port:           port,
-			BinaryPath:     v.BinaryPath,
+			GitHash:        v.GitHash,
+			DeployPath:     v.DeployPath,
 			Status:         storeStateToStatus(v.StateName),
 			StatusPort:     statusPort,
 			Labels:         map[string]string{},
@@ -275,7 +276,7 @@ func getTiFlashTopology(stores []tiflashStore) ([]TiFlashInfo, error) {
 			Version:        version,
 			IP:             host,
 			Port:           port,
-			BinaryPath:     v.BinaryPath, // TiFlash hasn't BinaryPath for now, so it would be empty
+			DeployPath:     v.DeployPath, // TiFlash hasn't BinaryPath for now, so it would be empty
 			Status:         storeStateToStatus(v.StateName),
 			StatusPort:     statusPort,
 			Labels:         map[string]string{},
@@ -309,36 +310,6 @@ func GetStoreTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, []T
 	}
 
 	return tikvInfos, tiflashInfos, nil
-}
-
-// GetTiDBTopologyFromOld get tidb topology under "/tidb/server/info/".
-// It cannot get "binary_path" field.
-func GetTiDBTopologyFromOld(ctx context.Context, etcdclient *clientv3.Client) ([]TiDBInfo, error) {
-	resp, err := etcdclient.Get(ctx, "/tidb/server/info", clientv3.WithPrefix())
-	if err != nil {
-		return nil, err
-	}
-	dbInfo := []TiDBInfo{}
-	for _, v := range resp.Kvs {
-		currentInfo := struct {
-			Version       string `json:"version"`
-			IP            string `json:"ip"`
-			ListeningPort uint   `json:"listening_port"`
-			StatusPort    uint   `json:"status_port"`
-		}{}
-		if err = json.Unmarshal(v.Value, &currentInfo); err != nil {
-			continue
-		}
-		dbInfo = append(dbInfo, TiDBInfo{
-			Version:    currentInfo.Version,
-			IP:         currentInfo.IP,
-			Port:       currentInfo.ListeningPort,
-			BinaryPath: "",
-			Status:     ComponentStatusUp,
-			StatusPort: currentInfo.StatusPort,
-		})
-	}
-	return dbInfo, nil
 }
 
 func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error) {

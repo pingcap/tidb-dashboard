@@ -41,7 +41,7 @@ type TiDBInfo struct {
 	Version        string          `json:"version"`
 	IP             string          `json:"ip"`
 	Port           uint            `json:"port"`
-	BinaryPath     string          `json:"binary_path"`
+	DeployPath     string          `json:"deploy_path"`
 	Status         ComponentStatus `json:"status"`
 	StatusPort     uint            `json:"status_port"`
 	StartTimestamp int64           `json:"start_timestamp"`
@@ -52,7 +52,7 @@ type TiKVInfo struct {
 	Version        string            `json:"version"`
 	IP             string            `json:"ip"`
 	Port           uint              `json:"port"`
-	BinaryPath     string            `json:"binary_path"`
+	DeployPath     string            `json:"deploy_path"`
 	Status         ComponentStatus   `json:"status"`
 	StatusPort     uint              `json:"status_port"`
 	Labels         map[string]string `json:"labels"`
@@ -63,7 +63,7 @@ type TiFlashInfo struct {
 	Version        string            `json:"version"`
 	IP             string            `json:"ip"`
 	Port           uint              `json:"port"`
-	BinaryPath     string            `json:"binary_path"`
+	DeployPath     string            `json:"deploy_path"`
 	Status         ComponentStatus   `json:"status"`
 	StatusPort     uint              `json:"status_port"`
 	Labels         map[string]string `json:"labels"`
@@ -73,11 +73,11 @@ type TiFlashInfo struct {
 type AlertManagerInfo struct {
 	IP         string `json:"ip"`
 	Port       uint   `json:"port"`
-	BinaryPath string `json:"binary_path"`
+	DeployPath string `json:"deploy_path"`
 }
 
 type GrafanaInfo struct {
 	IP         string `json:"ip"`
 	Port       uint   `json:"port"`
-	BinaryPath string `json:"binary_path"`
+	DeployPath string `json:"deploy_path"`
 }

@@ -20,7 +20,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -223,7 +222,6 @@ func getTiKVTopology(stores []tikvStore) ([]TiKVInfo, error) {
 		if !strings.HasPrefix(version, "v") {
 			version = "v" + version
 		}
-		fmt.Printf("Node has store deploy_path %s\n", v.DeployPath)
 		node := TiKVInfo{
 			Version:        version,
 			IP:             host,
@@ -312,37 +310,6 @@ func GetStoreTopology(endpoint string, httpClient *http.Client) ([]TiKVInfo, []T
 	}
 
 	return tikvInfos, tiflashInfos, nil
-}
-
-// GetTiDBTopologyFromOld get tidb topology under "/tidb/server/info/".
-// It cannot get "binary_path" field.
-func GetTiDBTopologyFromOld(ctx context.Context, etcdclient *clientv3.Client) ([]TiDBInfo, error) {
-	resp, err := etcdclient.Get(ctx, "/tidb/server/info", clientv3.WithPrefix())
-	if err != nil {
-		return nil, err
-	}
-	dbInfo := []TiDBInfo{}
-	for _, v := range resp.Kvs {
-		currentInfo := struct {
-			Version       string `json:"version"`
-			IP            string `json:"ip"`
-			ListeningPort uint   `json:"listening_port"`
-			StatusPort    uint   `json:"status_port"`
-			BinaryPath    string `json:"binary_path"`
-		}{}
-		if err = json.Unmarshal(v.Value, &currentInfo); err != nil {
-			continue
-		}
-		dbInfo = append(dbInfo, TiDBInfo{
-			Version:    currentInfo.Version,
-			IP:         currentInfo.IP,
-			Port:       currentInfo.ListeningPort,
-			DeployPath: path.Dir(currentInfo.BinaryPath),
-			Status:     ComponentStatusUp,
-			StatusPort: currentInfo.StatusPort,
-		})
-	}
-	return dbInfo, nil
 }
 
 func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error) {

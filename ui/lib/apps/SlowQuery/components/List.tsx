@@ -189,13 +189,6 @@ export default function List() {
               <Option value="500">Limit 500</Option>
               <Option value="1000">Limit 1000</Option>
             </Select>
-            <Space size="middle" className={styles.left_actions}>
-              <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-                <ReloadOutlined
-                  onClick={() => setRefreshTimes((prev) => prev + 1)}
-                />
-              </Tooltip>
-            </Space>
           </Space>
           <Space size="middle" className={styles.right_actions}>
             <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>

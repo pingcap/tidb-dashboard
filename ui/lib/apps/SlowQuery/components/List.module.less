@@ -1,38 +1,18 @@
 .header {
   display: flex;
+
+  :global(.ant-space-item) {
+    margin-bottom: 8px;
+  }
 }
 
 .search_options {
+  flex: 1;
   display: flex;
   flex-wrap: wrap;
 }
 
-.left_actions {
-  display: none;
-}
-
 .right_actions {
-  flex: 1;
-  display: flex;
-  flex-direction: row-reverse;
-}
-
-@media only screen and (max-width: 1096px) {
-  .header {
-    :global(.ant-space-item) {
-      margin-bottom: 8px;
-    }
-  }
-
-  .left_actions {
-    display: inherit;
-
-    :global(.ant-space-item) {
-      margin-bottom: 0px;
-    }
-  }
-
-  .right_actions {
-    display: none;
-  }
+  align-self: flex-start;
+  margin-top: 6px;
 }

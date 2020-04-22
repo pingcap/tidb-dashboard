@@ -6,8 +6,6 @@ import cx from 'classnames'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 
-import { StatementTimeRange } from '@lib/client'
-
 import styles from './TimeRangeSelector.module.less'
 import { Moment } from 'moment'
 
@@ -15,31 +13,39 @@ const { RangePicker } = DatePicker
 
 const RECENT_MINS = [30, 60, 3 * 60, 6 * 60, 12 * 60, 24 * 60]
 
+export interface TimeRange {
+  recent: number
+  begin_time: number
+  end_time: number
+}
+
+export const DEF_TIME_RANGE: TimeRange = {
+  recent: 30,
+  begin_time: 0,
+  end_time: 0,
+}
 export interface ITimeRangeSelectorProps {
-  onChange: (val: StatementTimeRange) => void
+  value: TimeRange
+  onChange: (val: TimeRange) => void
 }
 
 export default function TimeRangeSelector({
+  value,
   onChange,
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
-  const [curTimeRange, setCurTimeRange] = useState<StatementTimeRange>({
-    begin_time: 0,
-    end_time: 0,
-  })
-  const [curRecent, setCurRecent] = useState(30)
+  const [curTimeRange, setCurTimeRange] = useState<TimeRange>(value)
   const [dropdownVisible, setDropdownVisible] = useState(false)
 
   useEffect(() => {
-    handleRecentChange(30)
-    // eslint-disable-next-line
-  }, [])
+    setCurTimeRange(value)
+  }, [value])
 
   function handleRecentChange(mins: number) {
-    setCurRecent(mins)
     const now = dayjs().unix()
     const beginTime = now - mins * 60
     const timeRange = {
+      recent: mins,
       begin_time: beginTime,
       end_time: now,
     }
@@ -50,12 +56,12 @@ export default function TimeRangeSelector({
   function handleRangePickerChange(values) {
     console.log('range picker:', values)
     if (values === null) {
-      if (curRecent === 0) {
+      if (curTimeRange.recent === 0) {
         handleRecentChange(30)
       }
     } else {
-      setCurRecent(0)
       const timeRange = {
+        recent: 0,
         begin_time: (values[0] as Moment).unix(),
         end_time: (values[1] as Moment).unix(),
       }
@@ -78,7 +84,7 @@ export default function TimeRangeSelector({
               tabIndex={-1}
               key={mins}
               className={cx(styles.time_range_item, {
-                [styles.time_range_item_active]: mins === curRecent,
+                [styles.time_range_item_active]: mins === curTimeRange.recent,
               })}
               onClick={() => handleRecentChange(mins)}
             >
@@ -113,10 +119,10 @@ export default function TimeRangeSelector({
       onVisibleChange={setDropdownVisible}
     >
       <Button icon={<ClockCircleOutlined />}>
-        {curRecent > 0 ? (
+        {curTimeRange.recent > 0 ? (
           <span>
             {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
-            {getValueFormat('m')(curRecent, 0)}
+            {getValueFormat('m')(curTimeRange.recent, 0)}
           </span>
         ) : (
           <span>

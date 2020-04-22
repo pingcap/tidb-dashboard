@@ -3,9 +3,12 @@ import { Select, Space, Tooltip, Input, InputNumber } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Card, CardTableV2 } from '@lib/components'
-import TimeRangeSelector from './TimeRangeSelector'
+import TimeRangeSelector, {
+  TimeRange,
+  DEF_TIME_RANGE,
+} from './TimeRangeSelector'
 import { useTranslation } from 'react-i18next'
-import client, { StatementTimeRange, SlowqueryBase } from '@lib/client'
+import client, { SlowqueryBase } from '@lib/client'
 import { ReloadOutlined } from '@ant-design/icons'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import * as useSlowQueryColumn from '../utils/useColumn'
@@ -45,9 +48,7 @@ export default function List() {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
-  const [curTimeRange, setCurTimeRange] = useState<StatementTimeRange | null>(
-    null
-  )
+  const [curTimeRange, setCurTimeRange] = useState<TimeRange>(DEF_TIME_RANGE)
   const [curSchemas, setCurSchemas] = useState<string[]>([])
   const [schemas, setSchemas] = useState<string[]>([])
   const [searchText, setSearchText] = useState('')
@@ -115,7 +116,7 @@ export default function List() {
     }
   }, [])
 
-  function handleTimeRangeChange(val: StatementTimeRange) {
+  function handleTimeRangeChange(val: TimeRange) {
     setCurTimeRange(val)
   }
 
@@ -154,7 +155,10 @@ export default function List() {
       <Card>
         <div style={{ display: 'flex' }}>
           <Space size="middle">
-            <TimeRangeSelector onChange={handleTimeRangeChange} />
+            <TimeRangeSelector
+              value={curTimeRange}
+              onChange={handleTimeRangeChange}
+            />
             <Select
               value={curSchemas}
               mode="multiple"

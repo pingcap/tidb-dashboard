@@ -265,6 +265,37 @@ Max:  ${getValueFormat('ns')(rec.max_compile_latency, 1)}`
     },
   }
 }
+export function useAvgCoprColumn(
+  rows?: { avg_cop_process_time?: number; max_cop_process_time?: number }[]
+): IColumn {
+  const capacity = rows ? max(rows.map((v) => v.max_cop_process_time)) ?? 0 : 0
+  return {
+    name: useCommonColumnName('process_time'),
+    key: 'avg_cop_process_time',
+    fieldName: 'avg_cop_process_time',
+    minWidth: 140,
+    maxWidth: 200,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => {
+      const tooltipContent = `
+Mean: ${getValueFormat('ns')(rec.avg_cop_process_time, 1)}
+Max:  ${getValueFormat('ns')(rec.max_cop_process_time, 1)}`
+      return (
+        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
+          <Bar
+            textWidth={70}
+            value={rec.avg_cop_process_time}
+            max={rec.max_cop_process_time}
+            capacity={capacity}
+          >
+            {getValueFormat('ns')(rec.avg_cop_process_time, 1)}
+          </Bar>
+        </Tooltip>
+      )
+    },
+  }
+}
 
 export function useRelatedSchemasColumn(
   _rows?: { related_schemas?: string }[] // used for type check only

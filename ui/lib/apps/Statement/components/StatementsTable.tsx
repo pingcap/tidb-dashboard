@@ -53,6 +53,11 @@ const tableColumns = (
       onColumnClick: onColumnClick,
       columnActionsMode: ColumnActionsMode.clickable,
     },
+    {
+      ...useStatementColumn.useAvgCoprColumn(rows),
+      onColumnClick: onColumnClick,
+      columnActionsMode: ColumnActionsMode.clickable,
+    },
     useStatementColumn.useRelatedSchemasColumn(rows),
   ]
   return columns

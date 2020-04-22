@@ -15,16 +15,11 @@ package decorator
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/pingcap/log"
-	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
-
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
 const (
@@ -54,35 +49,6 @@ type tableInfo struct {
 	} `json:"index_info"`
 }
 
-<<<<<<< HEAD
-func (s *tidbLabelStrategy) updateAddress(ctx context.Context) {
-	cli := s.Provider.EtcdClient
-	var info serverInfo
-	for i := 0; i < retryCnt; i++ {
-		var tidbAddress []string
-		ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
-		resp, err := cli.Get(ectx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
-		cancel()
-		if err != nil {
-			log.Warn("get key failed", zap.String("key", pd.TiDBServerInformationPath), zap.Error(err))
-			time.Sleep(200 * time.Millisecond)
-			continue
-		}
-		for _, kv := range resp.Kvs {
-			err = json.Unmarshal(kv.Value, &info)
-			if err != nil {
-				log.Warn("get key failed", zap.String("key", pd.TiDBServerInformationPath), zap.Error(err))
-				continue
-			}
-			tidbAddress = append(tidbAddress, fmt.Sprintf("%s:%d", info.IP, info.StatusPort))
-		}
-		if len(tidbAddress) > 0 {
-			s.TidbAddress = tidbAddress
-			break
-		}
-	}
-}
-
 func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	// check schema version
 	ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
@@ -105,16 +71,13 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	log.Debug("schema version has changed", zap.Int64("old", s.SchemaVersion), zap.Int64("new", schemaVersion))
 	s.SchemaVersion = schemaVersion
 
-=======
-func (s *tidbLabelStrategy) updateMap() {
->>>>>>> make lint happy
 	var dbInfos []*dbInfo
 	var tidbEndpoint string
 	reqScheme := "http"
 	if s.Config.ClusterTLSConfig != nil {
 		reqScheme = "https"
 	}
-	hostname, port := s.forwarder.GetTiDBStatusConnProps()
+	hostname, port := s.forwarder.GetStatusConnProps()
 	target := fmt.Sprintf("%s:%d", hostname, port)
 	reqEndpoint := fmt.Sprintf("%s://%s", reqScheme, target)
 	if err := request(reqEndpoint, "schema", &dbInfos, s.HTTPClient); err == nil {

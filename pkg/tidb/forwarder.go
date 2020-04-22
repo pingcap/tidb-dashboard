@@ -18,6 +18,8 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net"
+	"sync"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -29,12 +31,11 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/tcp"
 )
 
 const (
 	tidbProxyLabel   = "tidb"
-	statusProxyLable = "tidbStatus"
+	statusProxyLabel = "tidbStatus"
 )
 
 // FIXME: This is duplicated with the one in KeyVis.
@@ -48,6 +49,7 @@ type tidbServerInfo struct {
 type ForwarderConfig struct {
 	TiDBRetrieveTimeout time.Duration
 	TiDBTLSConfig       *tls.Config
+	CheckInterval       time.Duration
 }
 
 func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
@@ -57,14 +59,16 @@ func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
 	return &ForwarderConfig{
 		TiDBRetrieveTimeout: time.Second,
 		TiDBTLSConfig:       cfg.TiDBTLSConfig,
+		CheckInterval:       cfg.CheckInterval,
 	}
 }
 
 type Forwarder struct {
-	ctx          context.Context
-	config       *ForwarderConfig
-	etcdClient   *clientv3.Client
-	pm           *tcp.ProxyManager
+	ctx        context.Context
+	config     *ForwarderConfig
+	etcdClient *clientv3.Client
+	// The key is str label and value is the proxy
+	proxyManager sync.Map
 	tidbPort     int
 	statusPort   int
 	donec        chan struct{}
@@ -82,28 +86,28 @@ func (f *Forwarder) Open() error {
 		statusEndpoints[server.ID] = fmt.Sprintf("%s:%d", server.IP, server.StatusPort)
 		tidbEndpoints[server.ID] = fmt.Sprintf("%s:%d", server.IP, server.Port)
 	}
-	pr, err := f.pm.Create(tidbProxyLabel, tidbEndpoints)
+	pr, err := f.createProxy(tidbProxyLabel, tidbEndpoints)
 	if err != nil {
 		return err
 	}
 	go pr.Run()
-	f.tidbPort = pr.Port
-	pr, err = f.pm.Create(statusProxyLable, statusEndpoints)
+	f.tidbPort = pr.port()
+	pr, err = f.createProxy(statusProxyLabel, statusEndpoints)
 	if err != nil {
 		return err
 	}
-	f.statusPort = pr.Port
+	f.statusPort = pr.port()
 	go pr.Run()
 	go f.pollingForTiDB()
 	return nil
 }
 
 func (f *Forwarder) Close() error {
-	p := f.pm.GetProxy(tidbProxyLabel)
+	p := f.getProxy(tidbProxyLabel)
 	if p != nil {
 		p.Stop()
 	}
-	p = f.pm.GetProxy(statusProxyLable)
+	p = f.getProxy(statusProxyLabel)
 	if p != nil {
 		p.Stop()
 	}
@@ -136,6 +140,40 @@ func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
 	return allTiDB, nil
 }
 
+func (f *Forwarder) createProxy(key string, endpoints map[string]string) (*Proxy, error) {
+	if len(endpoints) == 0 {
+		return nil, fmt.Errorf("empty endpoints")
+	}
+	port, err := getFreePort()
+	if err != nil {
+		return nil, err
+	}
+	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
+	if err != nil {
+		return nil, err
+	}
+	proxy := NewProxy(l, endpoints, f.config.CheckInterval, 0)
+	f.proxyManager.Store(key, proxy)
+	return proxy, nil
+}
+
+func (f *Forwarder) getProxy(key string) *Proxy {
+	v, ok := f.proxyManager.Load(key)
+	if ok {
+		return v.(*Proxy)
+	}
+	return nil
+}
+
+func (f *Forwarder) updateRemote(key string, newEndpoints map[string]string) {
+	if p := f.getProxy(key); p != nil {
+		if newEndpoints == nil {
+			log.Debug("remove all remotes in proxy", zap.String("proxy", key))
+		}
+		p.updateRemotes(newEndpoints)
+	}
+}
+
 func (f *Forwarder) pollingForTiDB() {
 	for {
 		select {
@@ -144,8 +182,8 @@ func (f *Forwarder) pollingForTiDB() {
 			if err != nil {
 				if errorx.IsOfType(err, ErrNoAliveTiDB) {
 					log.Warn("no TiDB is alive now")
-					f.pm.UpdateRemote(tidbProxyLabel, nil)
-					f.pm.UpdateRemote(statusProxyLable, nil)
+					f.updateRemote(tidbProxyLabel, nil)
+					f.updateRemote(statusProxyLabel, nil)
 				} else {
 					log.Warn("Fail to get TiDB server info from PD", zap.Error(err))
 				}
@@ -157,21 +195,21 @@ func (f *Forwarder) pollingForTiDB() {
 				statusEndpoints[server.ID] = fmt.Sprintf("%s:%d", server.IP, server.StatusPort)
 				tidbEndpoints[server.ID] = fmt.Sprintf("%s:%d", server.IP, server.Port)
 			}
-			f.pm.UpdateRemote(tidbProxyLabel, tidbEndpoints)
-			f.pm.UpdateRemote(statusProxyLable, statusEndpoints)
+			f.updateRemote(tidbProxyLabel, tidbEndpoints)
+			f.updateRemote(statusProxyLabel, statusEndpoints)
 		case <-f.donec:
 			return
 		}
 	}
 }
 
-func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, pm *tcp.ProxyManager, etcdClient *clientv3.Client) *Forwarder {
+func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3.Client) *Forwarder {
 	f := &Forwarder{
 		etcdClient:   etcdClient,
 		config:       config,
-		pm:           pm,
 		ctx:          context.Background(),
-		pollInterval: 5 * time.Second,
+		donec:        make(chan struct{}),
+		pollInterval: 5 * time.Second, // TODO: add this into config?
 	}
 
 	lc.Append(fx.Hook{
@@ -184,4 +222,17 @@ func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, pm *tcp.ProxyManager
 	})
 
 	return f
+}
+
+func getFreePort() (int, error) {
+	addr, err := net.ResolveTCPAddr("tcp", "127.0.0.1:0")
+	if err != nil {
+		return 0, err
+	}
+	l, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		return 0, err
+	}
+	defer l.Close()
+	return l.Addr().(*net.TCPAddr).Port, nil
 }

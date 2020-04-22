@@ -46,7 +46,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/tcp"
 )
 
 func Handler(s *Service) http.Handler {
@@ -108,7 +107,6 @@ func (s *Service) Start(ctx context.Context) error {
 			s.provideLocals,
 			s.newPDDataProvider,
 			dbstore.NewDBStore,
-			tcp.NewProxyManager,
 			pd.NewEtcdClient,
 			config.NewDynamicConfigManager,
 			tidb.NewForwarderConfig,

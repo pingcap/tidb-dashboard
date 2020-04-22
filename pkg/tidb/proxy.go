@@ -1,6 +1,7 @@
-package tcp
+package tidb
 
 import (
+	"go.uber.org/atomic"
 	"io"
 	"net"
 	"sync"
@@ -13,19 +14,15 @@ import (
 type remote struct {
 	addr     string
 	mu       sync.Mutex
-	inactive bool
+	inactive *atomic.Bool
 }
 
 func (r *remote) isActive() bool {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	return !r.inactive
+	return !r.inactive.Load()
 }
 
 func (r *remote) becomeInactive() {
-	r.mu.Lock()
-	r.inactive = true
-	r.mu.Unlock()
+	r.inactive.Store(true)
 	log.Debug("remote become inactive", zap.String("remote", r.addr))
 }
 
@@ -35,77 +32,76 @@ func (r *remote) dial(timeout time.Duration) error {
 		return err
 	}
 	conn.Close()
-	r.mu.Lock()
-	r.inactive = false
-	r.mu.Unlock()
+	r.inactive.Store(false)
 	return nil
 }
 
 type Proxy struct {
-	l             net.Listener
+	listener      net.Listener
 	checkInterval time.Duration
 	dialTimeout   time.Duration
-	donec         chan struct{}
-	errc          chan error
+	doneCh        chan struct{}
 
-	mu        sync.Mutex
-	remotes   map[string]*remote
+	remotes   sync.Map
 	pickCount int // for RoundRobin count
 }
 
 func NewProxy(l net.Listener, endpoints map[string]string, checkInterval time.Duration, timeout time.Duration) *Proxy {
-	if checkInterval == 0 {
+	if checkInterval <= 0 {
 		checkInterval = 5 * time.Second
 	}
 	if timeout == 0 {
-		timeout = 10 * time.Second
+		timeout = 3 * time.Second
 	}
-	remotes := make(map[string]*remote)
+	remotes := sync.Map{}
 	for key, e := range endpoints {
-		remotes[key] = &remote{
-			addr:     e,
-			inactive: true,
-		}
+		remotes.Store(key, &remote{addr: e, inactive: atomic.NewBool(true)})
 	}
 	return &Proxy{
-		l:             l,
-		errc:          make(chan error),
-		donec:         make(chan struct{}),
+		listener:      l,
+		doneCh:        make(chan struct{}),
 		remotes:       remotes,
 		dialTimeout:   timeout,
 		checkInterval: checkInterval,
 	}
 }
 
+func (p *Proxy) port() int {
+	return p.listener.Addr().(*net.TCPAddr).Port
+}
+
 func (p *Proxy) updateRemotes(remotes map[string]string) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	// remove all remotes
 	if remotes == nil {
-		p.remotes = make(map[string]*remote)
+		p.remotes = sync.Map{}
 		return
 	}
 	// update or create new remote
-	for key, nr := range remotes {
-		if cr, ok := p.remotes[key]; !ok {
-			log.Debug("proxy adds new remote", zap.String("remote", nr))
-			p.remotes[key] = &remote{
-				addr:     nr,
-				inactive: true,
+	for key, newRemote := range remotes {
+		if curRemote, ok := p.remotes.Load(key); !ok {
+			log.Debug("proxy adds new remote", zap.String("remote", newRemote))
+			p.remotes.Store(key, &remote{
+				addr:     newRemote,
+				inactive: atomic.NewBool(true),
+			})
+		} else {
+			r := curRemote.(*remote)
+			if r.addr != newRemote {
+				log.Debug("proxy updates existing remote", zap.String("old", r.addr), zap.String("new", newRemote))
+				r.addr = newRemote // could cause data race but doesnt matter
+				r.becomeInactive()
 			}
-		} else if cr.addr != nr {
-			log.Debug("proxy updates existing remote", zap.String("old", cr.addr), zap.String("new", nr))
-			cr.addr = nr // could cause data race but doesnt matter
-			cr.becomeInactive()
 		}
 	}
 	// remove old remote
-	for key, r := range p.remotes {
-		if _, ok := remotes[key]; !ok {
+	p.remotes.Range(func(key, value interface{}) bool {
+		k := key.(string)
+		r := value.(*remote)
+		if _, ok := remotes[k]; !ok {
 			log.Debug("proxy discards remote", zap.String("remote", r.addr))
-			delete(p.remotes, key)
+			p.remotes.Delete(key)
 		}
-	}
+		return true
+	})
 }
 
 func (p *Proxy) serve(in net.Conn) {
@@ -115,9 +111,7 @@ func (p *Proxy) serve(in net.Conn) {
 		picked *remote
 	)
 	for {
-		p.mu.Lock()
 		picked = p.pick()
-		p.mu.Unlock()
 		if picked == nil {
 			break
 		}
@@ -149,11 +143,13 @@ func (p *Proxy) serve(in net.Conn) {
 
 func (p *Proxy) pick() *remote {
 	activeRemotes := []*remote{}
-	for _, r := range p.remotes {
+	p.remotes.Range(func(key, value interface{}) bool {
+		r := value.(*remote)
 		if r.isActive() {
 			activeRemotes = append(activeRemotes, r)
 		}
-	}
+		return true
+	})
 	if len(activeRemotes) == 0 {
 		return nil
 	}
@@ -166,10 +162,11 @@ func (p *Proxy) doCheck() {
 	for {
 		select {
 		case <-time.After(p.checkInterval):
-			p.mu.Lock()
-			for _, rmt := range p.remotes {
+			//p.mu.Lock()
+			p.remotes.Range(func(key, value interface{}) bool {
+				rmt := value.(*remote)
 				if rmt.isActive() {
-					continue
+					return true
 				}
 				go func(r *remote) {
 					log.Debug("run remote check", zap.String("remote", r.addr))
@@ -179,9 +176,9 @@ func (p *Proxy) doCheck() {
 						log.Debug("remote become active", zap.String("remote", r.addr))
 					}
 				}(rmt)
-			}
-			p.mu.Unlock()
-		case <-p.donec:
+				return true
+			})
+		case <-p.doneCh:
 			return
 		}
 	}
@@ -189,22 +186,24 @@ func (p *Proxy) doCheck() {
 
 func (p *Proxy) Run() {
 	endpoints := []string{}
-	for _, r := range p.remotes {
+	p.remotes.Range(func(key, value interface{}) bool {
+		r := value.(*remote)
 		endpoints = append(endpoints, r.addr)
-	}
-	log.Info("start serve requests to remotes", zap.String("endpoint", p.l.Addr().String()), zap.Strings("remotes", endpoints))
+		return true
+	})
+	log.Info("start serve requests to remotes", zap.String("endpoint", p.listener.Addr().String()), zap.Strings("remotes", endpoints))
 	go p.doCheck()
 	// wait a check round before serve connections
 	time.Sleep(p.checkInterval + time.Second)
 	for {
 		select {
-		case <-p.donec:
-			p.l.Close()
+		case <-p.doneCh:
+			p.listener.Close()
 			return
 		default:
-			incoming, err := p.l.Accept()
+			incoming, err := p.listener.Accept()
 			if err != nil {
-				log.Warn("got err from listener", zap.Error(err), zap.String("from", p.l.Addr().String()))
+				log.Warn("got err from listener", zap.Error(err), zap.String("from", p.listener.Addr().String()))
 			} else {
 				go p.serve(incoming)
 			}
@@ -213,5 +212,5 @@ func (p *Proxy) Run() {
 }
 
 func (p *Proxy) Stop() {
-	close(p.donec)
+	close(p.doneCh)
 }

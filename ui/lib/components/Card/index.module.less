@@ -13,6 +13,10 @@
   margin: @padding-page;
 }
 
+.cardInner.noMargin {
+  margin: 0;
+}
+
 .cardTitleSection {
   margin: @padding-lg 0;
   display: flex;
@@ -24,10 +28,18 @@
   color: @heading-color;
   font-size: @heading-4-size;
   line-height: 32px;
-  flex-grow: 1;
-  margin-right: @padding-lg;
+  margin-right: @padding-md;
 }
 
-.cardContent {
-  margin: @padding-lg 0;
+.cardSubTitle {
+  margin-left: @padding-md;
+  margin-right: @padding-md;
+}
+
+.cardTitleSpacer {
+  flex-grow: 1;
+}
+
+.hasTitle > .cardContent {
+  margin-top: @padding-lg;
 }

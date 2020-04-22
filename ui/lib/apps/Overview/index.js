@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Root } from '@lib/components'
+import { Root, DateTime } from '@lib/components'
 import { Row, Col, Card } from 'antd'
 import { RightOutlined } from '@ant-design/icons'
 import { HashRouter as Router, Link } from 'react-router-dom'
@@ -16,7 +16,7 @@ const App = () => {
   const [cluster, setCluster] = useState(null)
   const [clusterError, setClusterError] = useState(null)
   const [timeRange, setTimeRange] = useState({ begin_time: 0, end_time: 0 })
-  const [topStatements, setTopStatements] = useState([])
+  const [statements, setStatements] = useState([])
   const [loadingStatements, setLoadingStatements] = useState(false)
 
   const { t } = useTranslation()
@@ -42,7 +42,7 @@ const App = () => {
       }
     }
 
-    const fetchTopStatements = async () => {
+    const fetchStatements = async () => {
       setLoadingStatements(true)
       let res = await client.getInstance().statementsTimeRangesGet()
       const timeRanges = res.data || []
@@ -54,13 +54,13 @@ const App = () => {
             timeRanges[0].begin_time,
             timeRanges[0].end_time
           )
-        setTopStatements((res.data || []).slice(0, 5))
+        setStatements(res.data || [])
       }
       setLoadingStatements(false)
     }
 
     fetchLoad()
-    fetchTopStatements()
+    fetchStatements()
   }, [])
 
   return (
@@ -95,19 +95,30 @@ const App = () => {
                 </Row>
                 <StatementsTable
                   className={styles.statementsTable}
-                  key={topStatements.length}
-                  statements={topStatements}
+                  key={statements.length}
+                  statements={statements}
+                  visibleColumnKeys={{
+                    digest_text: true,
+                    sum_latency: true,
+                    avg_latency: true,
+                    related_schemas: true,
+                  }}
+                  visibleItemsCount={5}
                   loading={loadingStatements}
                   timeRange={timeRange}
-                  concise={true}
-                  title={
-                    timeRange.begin_time > 0
-                      ? `${t('overview.top_statements.title')} (${dayjs
-                          .unix(timeRange.begin_time)
-                          .format('YYYY-MM-DD HH:mm:ss')} ~ ${dayjs
-                          .unix(timeRange.end_time)
-                          .format('YYYY-MM-DD HH:mm:ss')})`
-                      : t('overview.top_statements.title')
+                  title={t('overview.top_statements.title')}
+                  subTitle={
+                    timeRange.begin_time > 0 && (
+                      <span>
+                        <DateTime.Calendar
+                          unixTimestampMs={timeRange.begin_time * 1000}
+                        />{' '}
+                        ~{' '}
+                        <DateTime.Calendar
+                          unixTimestampMs={timeRange.end_time * 1000}
+                        />
+                      </span>
+                    )
                   }
                   cardExtra={
                     <Link to="/statement">

@@ -1,4 +1,4 @@
 import StatementsOverviewPage from './StatementsOverviewPage'
-import StatementDetailPage from './StatementDetailPage'
+import Detail from './Detail'
 
-export { StatementsOverviewPage, StatementDetailPage }
+export { StatementsOverviewPage, Detail }

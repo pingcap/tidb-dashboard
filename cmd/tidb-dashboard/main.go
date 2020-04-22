@@ -16,6 +16,7 @@
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @BasePath /dashboard/api
+// @query.collection.format multi
 // @securityDefinitions.apikey JwtAuth
 // @in header
 // @name Authorization

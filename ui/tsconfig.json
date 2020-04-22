@@ -24,6 +24,9 @@
     "jsx": "react"
   },
   "include": [
-    "src"
+    "src",
+    "lib",
+    "dashboardApp",
+    "diagnoseReportApp"
   ]
 }

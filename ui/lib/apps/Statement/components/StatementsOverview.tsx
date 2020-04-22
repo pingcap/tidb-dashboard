@@ -62,7 +62,7 @@ const initState: State = {
   timeRanges: [],
   stmtTypes: [],
 
-  statementsLoading: false,
+  statementsLoading: true,
   statements: [],
 }
 

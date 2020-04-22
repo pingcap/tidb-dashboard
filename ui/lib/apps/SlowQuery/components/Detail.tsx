@@ -5,7 +5,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { parseQueryFn, buildQueryFn } from '@lib/utils/query'
 import client from '@lib/client'
-import { Skeleton, Space } from 'antd'
+import { Skeleton, Space, Alert } from 'antd'
 import {
   Head,
   Descriptions,
@@ -13,7 +13,6 @@ import {
   Pre,
   HighlightSQL,
   Expand,
-  Card,
 } from '@lib/components'
 import { useToggle } from '@umijs/hooks'
 import CopyLink from '@lib/components/CopyLink'
@@ -44,6 +43,9 @@ function DetailPage() {
   )
 
   const { state: sqlExpanded, toggle: toggleSqlExpanded } = useToggle(false)
+  const { state: prevSqlExpanded, toggle: togglePrevSqlExpanded } = useToggle(
+    false
+  )
   const { state: planExpanded, toggle: togglePlanExpanded } = useToggle(false)
 
   return (
@@ -57,11 +59,7 @@ function DetailPage() {
         }
       >
         {isLoading && <Skeleton active />}
-        {!isLoading && !data && (
-          <TextWithInfo tooltip="TODO" type="danger">
-            载入数据失败
-          </TextWithInfo>
-        )}
+        {!isLoading && !data && <Alert message="Error" type="error" showIcon />}
         {!isLoading && !!data && (
           <>
             <Descriptions>
@@ -86,29 +84,34 @@ function DetailPage() {
                   <HighlightSQL sql={data.query!} />
                 </Expand>
               </Descriptions.Item>
-              <Descriptions.Item
-                span={2}
-                multiline={sqlExpanded}
-                label={
-                  <Space size="middle">
-                    <TextWithInfo.TransKey transKey="slow_query.detail.head.previous_sql" />
-                    <Expand.Link
-                      expanded={sqlExpanded}
-                      onClick={() => toggleSqlExpanded()}
-                    />
-                    <CopyLink data={formatSql(data.prev_stmt!)} />
-                  </Space>
-                }
-              >
-                <Expand
-                  expanded={sqlExpanded}
-                  collapsedContent={
-                    <HighlightSQL sql={data.prev_stmt!} compact />
-                  }
-                >
-                  <HighlightSQL sql={data.prev_stmt!} />
-                </Expand>
-              </Descriptions.Item>
+              {(() => {
+                if (!!data.prev_stmt && data.prev_stmt.length !== 0)
+                  return (
+                    <Descriptions.Item
+                      span={2}
+                      multiline={prevSqlExpanded}
+                      label={
+                        <Space size="middle">
+                          <TextWithInfo.TransKey transKey="slow_query.detail.head.previous_sql" />
+                          <Expand.Link
+                            expanded={prevSqlExpanded}
+                            onClick={() => togglePrevSqlExpanded()}
+                          />
+                          <CopyLink data={formatSql(data.prev_stmt!)} />
+                        </Space>
+                      }
+                    >
+                      <Expand
+                        expanded={prevSqlExpanded}
+                        collapsedContent={
+                          <HighlightSQL sql={data.prev_stmt!} compact />
+                        }
+                      >
+                        <HighlightSQL sql={data.prev_stmt!} />
+                      </Expand>
+                    </Descriptions.Item>
+                  )
+              })()}
               <Descriptions.Item
                 span={2}
                 multiline={planExpanded}
@@ -128,30 +131,32 @@ function DetailPage() {
                 </Expand>
               </Descriptions.Item>
             </Descriptions>
+            <CardTabs animated={false}>
+              <CardTabs.TabPane
+                tab={t('slow_query.detail.tabs.basic')}
+                key="basic"
+              >
+                <TabBasic data={data} />
+              </CardTabs.TabPane>
+              <CardTabs.TabPane
+                tab={t('slow_query.detail.tabs.time')}
+                key="time"
+              >
+                <TabTime data={data} />
+              </CardTabs.TabPane>
+              <CardTabs.TabPane
+                tab={t('slow_query.detail.tabs.copr')}
+                key="copr"
+              >
+                <TabCopr data={data} />
+              </CardTabs.TabPane>
+              <CardTabs.TabPane tab={t('slow_query.detail.tabs.txn')} key="txn">
+                <TabTxn data={data} />
+              </CardTabs.TabPane>
+            </CardTabs>
           </>
         )}
       </Head>
-      {!isLoading && !!data && (
-        <Card>
-          <CardTabs animated={false}>
-            <CardTabs.TabPane
-              tab={t('slow_query.detail.tabs.basic')}
-              key="basic"
-            >
-              <TabBasic data={data} />
-            </CardTabs.TabPane>
-            <CardTabs.TabPane tab={t('slow_query.detail.tabs.time')} key="time">
-              <TabTime data={data} />
-            </CardTabs.TabPane>
-            <CardTabs.TabPane tab={t('slow_query.detail.tabs.copr')} key="copr">
-              <TabCopr data={data} />
-            </CardTabs.TabPane>
-            <CardTabs.TabPane tab={t('slow_query.detail.tabs.txn')} key="txn">
-              <TabTxn data={data} />
-            </CardTabs.TabPane>
-          </CardTabs>
-        </Card>
-      )}
     </div>
   )
 }

@@ -69,7 +69,7 @@ statement:
     first_seen: First Seen
     last_seen: Last Seen
     sample_user: Execution User
-    sample_user_tooltip: The user that executes the SQL (sampled).
+    sample_user_tooltip: The user that executes the SQL (sampled)
     sum_errors: Total Errors
     sum_warnings: Total Warnings
     errors_warnings: Errors / Warnings

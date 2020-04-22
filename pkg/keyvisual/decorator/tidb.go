@@ -40,16 +40,18 @@ type tidbLabelStrategy struct {
 	Provider   *region.PDDataProvider
 	HTTPClient *http.Client
 
-	TableMap    sync.Map
-	TidbAddress []string
+	SchemaVersion int64
+	TableMap      sync.Map
+	TidbAddress   []string
 }
 
 // TiDBLabelStrategy implements the LabelStrategy interface. Get Label Information from TiDB.
 func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) LabelStrategy {
 	s := &tidbLabelStrategy{
-		Config:     cfg,
-		Provider:   provider,
-		HTTPClient: httpClient,
+		Config:        cfg,
+		Provider:      provider,
+		HTTPClient:    httpClient,
+		SchemaVersion: -1,
 	}
 
 	lc.Append(fx.Hook{
@@ -75,7 +77,7 @@ func (s *tidbLabelStrategy) Background(ctx context.Context) {
 			return
 		case <-ticker.C:
 			s.updateAddress(ctx)
-			s.updateMap()
+			s.updateMap(ctx)
 		}
 	}
 }

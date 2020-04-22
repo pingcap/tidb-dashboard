@@ -17,23 +17,24 @@ function DiagnosisRow({ row }: { row: TableRowDef }) {
       <tr>
         {(row.Values || []).map((val, valIdx) => (
           <td key={valIdx}>
-            {val}
-            {valIdx === 0 && row.Comment && (
-              <div className="dropdown is-hoverable is-up">
-                <div className="dropdown-trigger">
-                  <span className="icon has-text-info">
-                    <i className="fas fa-info-circle"></i>
-                  </span>
-                </div>
-                <div className="dropdown-menu">
-                  <div className="dropdown-content">
-                    <div className="dropdown-item">
-                      <p>{row.Comment}</p>
+            {t(`diagnosis.tables.table.name.${val}`, val)}
+            {valIdx === 0 &&
+              t(`diagnosis.tables.table.comment.${val}`, '') !== '' && (
+                <div className="dropdown is-hoverable is-up">
+                  <div className="dropdown-trigger">
+                    <span className="icon has-text-info">
+                      <i className="fas fa-info-circle"></i>
+                    </span>
+                  </div>
+                  <div className="dropdown-menu">
+                    <div className="dropdown-content">
+                      <div className="dropdown-item">
+                        <p>{t(`diagnosis.tables.table.comment.${val}`)}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
             {valIdx === 0 && (row.SubValues || []).length > 0 && (
               <>
                 &nbsp;&nbsp;&nbsp;
@@ -70,7 +71,7 @@ type Props = {
 }
 
 export default function DiagnosisTable({ diagnosis }: Props) {
-  const { Category, Title, Comment, Column, Rows } = diagnosis
+  const { Category, Title, Column, Rows } = diagnosis
   const { t } = useTranslation()
 
   return (
@@ -81,7 +82,7 @@ export default function DiagnosisTable({ diagnosis }: Props) {
         </h1>
       ))}
       <h3 className="is-size-4">{t(`diagnosis.tables.title.${Title}`)}</h3>
-      {Comment && <p>{t(`diagnosis.tables.comment.${Comment}`)}</p>}
+      {<p>{t(`diagnosis.tables.comment.${Title}`, '')}</p>}
       <table
         className="table is-bordered is-hoverable is-narrow is-fullwidth"
         style={{ position: 'relative' }}

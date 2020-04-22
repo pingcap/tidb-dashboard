@@ -98,11 +98,11 @@ function StatementSettingForm({
     if (oriConfig?.enable && !values.enable) {
       // warning
       Modal.confirm({
-        title: t('statement.setting.close_statement'),
+        title: t('statement.pages.overview.settings.close_statement'),
         icon: <ExclamationCircleOutlined />,
-        content: t('statement.setting.close_statement_warning'),
-        okText: t('statement.actions.close'),
-        cancelText: t('statement.actions.cancel'),
+        content: t('statement.pages.overview.settings.close_statement_warning'),
+        okText: t('statement.pages.overview.settings.actions.close'),
+        cancelText: t('statement.pages.overview.settings.actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: () => updateConfig(values),
       })
@@ -119,7 +119,7 @@ function StatementSettingForm({
           <Form.Item
             name="enable"
             valuePropName="checked"
-            label={t('statement.setting.switch')}
+            label={t('statement.pages.overview.settings.switch')}
           >
             <Switch />
           </Form.Item>
@@ -131,7 +131,11 @@ function StatementSettingForm({
               return (
                 getFieldValue('enable') && (
                   <Form.Item noStyle>
-                    <Form.Item label={t('statement.setting.refresh_interval')}>
+                    <Form.Item
+                      label={t(
+                        'statement.pages.overview.settings.refresh_interval'
+                      )}
+                    >
                       <Input.Group>
                         <Form.Item noStyle name="refresh_interval">
                           <InputNumber
@@ -155,7 +159,11 @@ function StatementSettingForm({
                         </Form.Item>
                       </Input.Group>
                     </Form.Item>
-                    <Form.Item label={t('statement.setting.keep_duration')}>
+                    <Form.Item
+                      label={t(
+                        'statement.pages.overview.settings.keep_duration'
+                      )}
+                    >
                       <Input.Group>
                         <Form.Item noStyle name="keep_duration">
                           <InputNumber
@@ -187,9 +195,11 @@ function StatementSettingForm({
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit" loading={submitting}>
-                {t('statement.actions.save')}
+                {t('statement.pages.overview.settings.actions.save')}
               </Button>
-              <Button onClick={onClose}>{t('statement.actions.cancel')}</Button>
+              <Button onClick={onClose}>
+                {t('statement.pages.overview.settings.actions.cancel')}
+              </Button>
             </Space>
           </Form.Item>
         </Form>

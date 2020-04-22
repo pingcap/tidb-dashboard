@@ -1,57 +1,113 @@
 statement:
   nav_title: SQL Statements
   pages:
-    detail: SQL Statement Detail
-  filters:
-    select_time: Select Time Range
-    select_schemas: Select Schemas
-    select_stmt_types: Select SQL types
-    select_columns: Select Columns
-  common:
-    columns:
-      plan_digest: Plan Digest
-      plan_digest_tooltip: Different plans have different plan digest
-      digest_text: SQL Digest
-      digest_text_tooltip: Similar SQLs with different query parameters have same SQL digest
-      sum_latency: Total Latency
-      sum_latency_tooltip: Total execution duration for all SQL statements in this kind
-      exec_count: Execution Count
-      exec_count_tooltip: Total number of execution times for all SQL statements in this kind
-      avg_latency: Mean Latency
-      avg_latency_tooltip: Execution duration of single SQL statement
-      avg_mem: Mean Memory
-      avg_mem_tooltip: Consumed memory of single SQL statement
-    schema: Schema
-    schemas: Schemas
-    schemas_tooltip: Related schema names
-    sum_backoff_times: Sum Backoff Times
-    avg_total_keys: Avg Scan Rows
-    show_full_sql: Show Full SQL
-  detail:
-    node: Node
-    time_range: Time Range
-    query_sample_text: Last SQL Statement
+    detail:
+      head:
+        back: List
+        title: Statement Information
+      desc:
+        time_range: Selected Time Range
+        plan_count: Execution Plans
+        plans:
+          note: There are multiple execution plans for this kind of SQL. You can choose to view one or multiple of them.
+          title:
+            one_for_all: Execution Detail
+            all: Execution Detail of All Plans
+            some: 'Execution Detail of Selected {{n}} Plans'
+      tabs:
+        basic: Basic
+        time: Time
+        copr: Coprocessor Read
+        txn: Transaction
+    overview:
+      toolbar:
+        select_schemas: Select Database
+        select_stmt_types: Select SQL kind
+        select_columns:
+          show_full_sql: Show Full SQL
+          name: Columns
+        refresh: Refresh
+        time_range_selector:
+          name: Select Time Range
+          recent: Recent
+          usual_time_ranges: Common
+          custom_time_ranges: Custom
+      settings:
+        title: Settings
+        disabled_desc_title: Feature Not Enabled
+        disabled_desc_line_1: Statement feature is not enabled so that statement history cannot be viewed.
+        disabled_desc_line_2: You can modify settings to enable the feature and wait for new data being collected.
+        open_setting: Open Settings
+        close_statement: Disable Statement Feature
+        close_statement_warning: Are you sure want to disable this feature? Current statement history will be cleared.
+        switch: Enable
+        refresh_interval: Collect interval
+        keep_duration: Data retain duration
+        actions:
+          save: Save
+          close: Close
+          cancel: Cancel
+  fields:
+    related_schemas: Database
+    related_schemas_tooltip: Related databases of the SQL
+    plan_digest: Plan ID
+    plan_digest_tooltip: Different execution plans have different plan ID
+    digest_text: SQL Template
+    digest_text_tooltip: Similar SQL statements have same SQL template even for different query parameters
+    sum_latency: Total Latency
+    sum_latency_tooltip: Total execution time for this kind of SQL
+    exec_count: Execution Count
+    exec_count_tooltip: Total execution count for this kind of SQL
+    avg_latency: Mean Latency
+    avg_latency_tooltip: Execution time of single SQL
+    avg_mem: Mean Memory
+    avg_mem_tooltip: Memory usage of single SQL
+    max_mem: Max Memory
+    max_mem_tooltip: Maximum memory usage of single SQL
+    index_names: Index Name
+    index_names_tooltip: The name of the used index
+    first_seen: First Seen
     last_seen: Last Seen
-  plan:
-    plans: Plans
-  tooltip:
-    refresh: Refresh
-  setting:
-    title: Settings
-    disabled_desc_title: This Feature Is Not Open
-    disabled_desc_line_1: SQL statements feature is not open, we can't view history records.
-    disabled_desc_line_2: You can change the setting to open it and wait for the new records.
-    open_setting: Open Setting
-    close_statement: Close SQL statements
-    close_statement_warning: Are you sure to close this feature? All history records will be cleared after closing it!
-    switch: Open Statements
-    refresh_interval: Data Collect Interval
-    keep_duration: Data Keep Duration
-  actions:
-    save: Save
-    close: Close
-    cancel: Cancel
-  time_range_selector:
-    recent: Recent
-    usual_time_ranges: Usual Time Ranges
-    custom_time_ranges: Custom Time Ranges
+    sample_user: Execution User
+    sample_user_tooltip: The user that executes the SQL (sampled)
+    sum_errors: Total Errors
+    sum_warnings: Total Warnings
+    errors_warnings: Errors / Warnings
+    errors_warnings_tooltip: Total Errors and Total Warnings
+    parse_latency: Parse
+    parse_latency_tooltip: Time consumed when parsing the SQL statement
+    compile_latency: Compile
+    compile_latency_tooltip: Time consumed when optimizing the SQL statement
+    wait_time: Coprocessor Wait
+    process_time: Coprocessor Execution
+    backoff_time: Backoff Retry
+    get_commit_ts_time: Get Commit Ts
+    local_latch_wait_time: Local Latch Wait
+    resolve_lock_time: Resolve Lock
+    prewrite_time: Prewrite
+    commit_time: Commit
+    commit_backoff_time: Commit Backoff Retry
+    latency: Query
+    sum_cop_task_num: Total Coprocessor Tasks
+    avg_processed_keys: Mean Visible Versions per SQL
+    max_processed_keys: Max Visible Versions per SQL
+    avg_total_keys: Mean Meet Versions per SQL
+    avg_total_keys_tooltip: Meet versions contains overwritten or deleted versions
+    max_total_keys: Max Meet Versions per SQL
+    avg_affected_rows: Mean Affected Rows
+    sum_backoff_times: Total Backoff Count
+    avg_write_keys: Mean Written Keys
+    max_write_keys: Max Written Keys
+    avg_write_size: Mean Written Data Size
+    max_write_size: Max Written Data Size
+    avg_prewrite_regions: Mean Prewrite Regions
+    max_prewrite_regions: Max Prewrite Regions
+    avg_txn_retry: Mean Transaction Retries
+    max_txn_retry: Max Transaction Retries
+    digest: SQL Template ID
+    digest_tooltip: a.k.a. SQL digest
+    schema_name: Execution Database
+    schema_name_tooltip: The database used to execute the SQL
+    query_sample_text: SQL Sample
+    prev_sample_text: Previous SQL Sample
+    plan: Execution Plan

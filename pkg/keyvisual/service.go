@@ -70,6 +70,7 @@ type Service struct {
 	cancel context.CancelFunc
 
 	config     *config.Config
+	cfgManager *config.DynamicConfigManager
 	provider   *region.PDDataProvider
 	httpClient *http.Client
 	db         *dbstore.DB
@@ -78,27 +79,36 @@ type Service struct {
 	strategy matrix.Strategy
 }
 
-func NewService(lc fx.Lifecycle, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client, db *dbstore.DB) *Service {
+func NewService(
+	lc fx.Lifecycle,
+	cfg *config.Config,
+	cfgManager *config.DynamicConfigManager,
+	provider *region.PDDataProvider,
+	httpClient *http.Client,
+	db *dbstore.DB,
+) *Service {
 	s := &Service{
 		status:     utils.NewServiceStatus(),
 		config:     cfg,
+		cfgManager: cfgManager,
 		provider:   provider,
 		httpClient: httpClient,
 		db:         db,
 	}
 
-	lc.Append(fx.Hook{
-		OnStart: s.Start,
-		OnStop:  s.Stop,
-	})
+	lc.Append(s.managerHook())
 
 	return s
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/keyvisual")
-	endpoint.Use(s.status.MWHandleStopped(stoppedHandler))
 	endpoint.Use(auth.MWAuthRequired())
+
+	endpoint.GET("/config", s.getDynamicConfig)
+	endpoint.PUT("/config", s.setDynamicConfig)
+
+	endpoint.Use(s.status.MWHandleStopped(stoppedHandler))
 	endpoint.GET("/heatmaps", s.heatmaps)
 }
 

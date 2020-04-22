@@ -27,8 +27,8 @@ func CompareDiagnose(referStartTime, referEndTime, startTime, endTime string, db
 	}
 	table := TableDef{
 		Category: []string{CategoryDiagnose},
-		Title:    "Compare Diagnose",
-		Comment:  "Automatically diagnose the cluster problem by compare with the refer time.",
+		Title:    "compare_diagnose",
+		Comment:  "",
 		Column:   []string{"RULE", "DETAIL"},
 	}
 	details, err := c.inspectForAffectByBigQuery()

@@ -101,6 +101,7 @@ func fillDBMap(address, fieldType string, value []byte, infoMap map[string]*TiDB
 		}
 
 		infoMap[address] = &TiDBInfo{
+			GitHash:        ds.GitHash,
 			Version:        ds.Version,
 			IP:             host,
 			Port:           port,
@@ -369,6 +370,7 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 	ds := struct {
 		Count   int `json:"count"`
 		Members []struct {
+			GitHash       string      `json:"git_hash"`
 			ClientUrls    []string    `json:"client_urls"`
 			DeployPath    string      `json:"deploy_path"`
 			BinaryVersion string      `json:"binary_version"`
@@ -402,6 +404,7 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 		}
 
 		nodes = append(nodes, PDInfo{
+			GitHash:        ds.GitHash,
 			Version:        ds.BinaryVersion,
 			IP:             host,
 			Port:           port,

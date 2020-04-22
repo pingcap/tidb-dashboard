@@ -15,6 +15,7 @@ import styles from './index.module.less'
 
 export interface ICardTableV2Props extends IDetailsListProps {
   title?: React.ReactNode
+  subTitle?: React.ReactNode
   className?: string
   style?: object
   loading?: boolean
@@ -94,6 +95,7 @@ function renderColumnVisibilitySelection(
 function CardTableV2(props: ICardTableV2Props) {
   const {
     title,
+    subTitle,
     className,
     style,
     loading = false,
@@ -127,6 +129,7 @@ function CardTableV2(props: ICardTableV2Props) {
   return (
     <Card
       title={title}
+      subTitle={subTitle}
       style={style}
       className={cx(styles.cardTable, className)}
       noMargin={cardNoMargin}

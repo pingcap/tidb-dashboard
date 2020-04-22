@@ -1,0 +1,70 @@
+slow_query:
+  nav_title: 慢查询
+  common:
+    columns:
+      instance: TiDB 实例
+      instance_tooltip: 处理该 SQL 的 TiDB 实例地址
+      connection_id: 连接号
+      connection_id_tooltip: SQL 客户端连接 ID
+      sql: SQL
+      timestamp: 结束运行时间
+      query_time: 总执行时间
+      memory_max: 最大内存
+      digest: SQL 模板 ID
+      digest_tooltip: SQL 模板的唯一标识（SQL 指纹）
+      is_internal: 是否为内部 SQL
+      is_success: 是否执行成功
+      index_names: 索引名
+      index_names_tooltip: SQL 执行时使用的索引名称
+      stats: 使用的统计信息
+      backoff_types: 重试类型
+      user: 执行用户名
+      user_tooltip: 执行该类 SQL 的用户名，可能存在多个执行用户，仅显示其中某一个
+      host: 客户端地址
+      host_tooltip: 发送 SQL 的客户端地址
+      db: 执行数据库
+      db_tooltip: 执行该 SQL 时使用的数据库名称
+
+      parse_time: 解析耗时
+      compile_time: 优化耗时
+      wait_time: Coprocessor 累计等待耗时
+      process_time: Coprocessor 累计执行耗时
+      backoff_time: 累计重试等待耗时
+      get_commit_ts_time: 取 Commit Ts 耗时
+      get_commit_ts_time_tooltip: 从 PD 取递交时间戳（事务号）步骤的耗时
+      local_latch_wait_time: Local Latch Wait 耗时
+      local_latch_wait_time_tooltip: 事务在 TiDB 本地与其他事务产生了锁冲突并等待的耗时
+      resolve_lock_time: Resolve Lock 耗时
+      resolve_lock_time_tooltip: 事务在 TiKV 与其他事务产生了锁冲突并处理锁冲突的耗时
+      prewrite_time: Prewrite 阶段耗时
+      commit_time: Commit 阶段耗时
+      commit_backoff_time: Commit 重试等待耗时
+      query_time2: SQL 执行时间
+      query_time2_tooltip: 由于存在并行执行，因此 SQL 执行时间可能远小于上述各项时间
+
+      request_count: Coprocessor 请求数
+      process_keys: 可见版本数
+      total_keys: 遇到版本数
+      total_keys_tooltip: 含已删除或覆盖但未 GC 的版本
+      cop_proc_addr: 最长处理时间实例
+      cop_proc_addr_tooltip: 耗费最长时间处理 Coprocessor 请求的 TiKV 实例地址
+      cop_wait_addr: 最长等待时间实例
+      cop_wait_addr_tooltip: 耗费最长时间等待 Coprocessor 请求的 TiKV 实例地址
+
+      txn_start_ts: 事务号
+      write_keys: 写入 Key 个数
+      write_size: 写入数据量
+      prewrite_regions: Prewrite 涉及 Regions 个数
+      txn_retry: 事务重试次数
+  detail:
+    head:
+      title: 慢查询详情
+      back: 列表
+      sql: SQL
+      previous_sql: 上一条 SQL
+      plan: 执行计划
+    tabs:
+      basic: 基本信息
+      time: 执行时间
+      copr: Coprocessor 读取
+      txn: 事务

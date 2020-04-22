@@ -318,7 +318,7 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 // @Summary Get download token
 // @Description get download token with multiple task IDs
 // @Produce plain
-// @Param id query []string false "task id"
+// @Param id query []string false "task id" collectionFormat(csv)
 // @Security JwtAuth
 // @Success 200 {string} string "xxx"
 // @Failure 400 {object} utils.APIError

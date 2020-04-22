@@ -233,6 +233,7 @@ func getTiKVTopology(stores []tikvStore) ([]TiKVInfo, error) {
 			Version:        version,
 			IP:             host,
 			Port:           port,
+			GitHash:        v.GitHash,
 			DeployPath:     v.DeployPath,
 			Status:         storeStateToStatus(v.StateName),
 			StatusPort:     statusPort,

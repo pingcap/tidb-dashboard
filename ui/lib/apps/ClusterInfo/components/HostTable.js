@@ -91,7 +91,7 @@ export default function HostTable() {
       isResizable: true,
       isCollapsible: true,
       onRender: ({ memory }) =>
-        memory !== undefined ? getValueFormat('bytes')(memory.total, 0) : '',
+        memory !== undefined ? getValueFormat('bytes')(memory.total, 1) : '',
     },
     {
       name: t('cluster_info.list.host_table.columns.memory_usage'),
@@ -173,7 +173,7 @@ export default function HostTable() {
         return filterUniquePartitions(partitions).map((partiton, i) => {
           return (
             <div key={i}>
-              {getValueFormat('bytes')(partiton.partition.total, 0)}
+              {getValueFormat('bytes')(partiton.partition.total, 1)}
             </div>
           )
         })

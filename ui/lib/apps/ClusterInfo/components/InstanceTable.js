@@ -160,8 +160,8 @@ export default function ListPage() {
       maxWidth: 200,
       isResizable: true,
       onRender: (node) => (
-        <Tooltip title={`${node.ip}.${node.port}`}>
-          {node.ip}.{node.port}
+        <Tooltip title={`${node.ip}:${node.port}`}>
+          {node.ip}:{node.port}
         </Tooltip>
       ),
     },

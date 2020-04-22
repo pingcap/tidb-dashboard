@@ -80,7 +80,7 @@ export function useFieldsTimeValueColumn(
 ): IColumn {
   const { t } = useTranslation()
   const capacity = rows
-    ? max(rows.map((v) => max([v.max, v.min, v.avg]))) ?? 0
+    ? max(rows.map((v) => max([v.max, v.min, v.avg, v.value]))) ?? 0
     : 0
   return {
     name: t('component.commonColumn.time'),
@@ -102,7 +102,7 @@ export function useFieldsTimeValueColumn(
       const bar = (
         <Bar
           textWidth={70}
-          value={rec.avg}
+          value={rec.avg ?? rec.value}
           max={rec.max}
           min={rec.min}
           capacity={capacity}

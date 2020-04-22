@@ -175,7 +175,6 @@ export default function List() {
               ))}
             </Select>
             <Search
-              style={{ width: 160 }}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />

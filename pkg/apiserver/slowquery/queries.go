@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/jinzhu/gorm"
 )
@@ -29,14 +28,13 @@ const (
 
 type Base struct {
 	// list filed
-	Instance     string    `gorm:"column:INSTANCE" json:"instance"`
-	Query        string    `gorm:"column:Query" json:"query"`
-	Time         time.Time `gorm:"column:Time" json:"-"`
-	Timestamp    float64   `gorm:"column:timestamp" json:"timestamp"`
-	QueryTime    float64   `gorm:"column:Query_time" json:"query_time"`
-	MemoryMax    int       `gorm:"column:Mem_max" json:"memory_max"`
-	Digest       string    `gorm:"column:Digest" json:"digest"`
-	ConnectionID uint      `gorm:"column:Conn_ID" json:"connection_id"`
+	Instance     string  `gorm:"column:INSTANCE" json:"instance"`
+	Query        string  `gorm:"column:Query" json:"query"`
+	Timestamp    float64 `gorm:"column:timestamp" json:"timestamp"`
+	QueryTime    float64 `gorm:"column:Query_time" json:"query_time"`
+	MemoryMax    int     `gorm:"column:Mem_max" json:"memory_max"`
+	Digest       string  `gorm:"column:Digest" json:"digest"`
+	ConnectionID uint    `gorm:"column:Conn_ID" json:"connection_id"`
 }
 
 type SlowQuery struct {
@@ -164,7 +162,7 @@ func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
 func QuerySlowLogDetail(db *gorm.DB, req *DetailRequest) (*SlowQuery, error) {
 	var result SlowQuery
 	upperBound := req.Time
-	lowerBound := req.Time - 10E-7
+	lowerBound := req.Time - 10e-7
 	err := db.Select(SelectStmt).Table(SlowQueryTable).
 		Where("Digest = ?", req.Digest).
 		Where("Time >= from_unixtime(?) and Time <= from_unixtime(?)", lowerBound, upperBound).

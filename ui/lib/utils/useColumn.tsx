@@ -135,7 +135,11 @@ export function useFieldsDescriptionColumn(translationPrefix: string): IColumn {
     isResizable: true,
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => {
-      return t(`${translationPrefix}${rec.key}_tooltip`, '')
+      // Fallback to no language
+      return t(`${translationPrefix}${rec.key}_tooltip`, {
+        defaultValue: '',
+        fallbackLng: '_',
+      })
     },
   }
 }

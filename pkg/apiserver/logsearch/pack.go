@@ -15,10 +15,12 @@ package logsearch
 
 import (
 	"archive/tar"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
@@ -78,6 +80,16 @@ func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 		_ = c.Error(utils.ErrInvalidRequest.New("Log is not available for this task"))
 		return
 	}
+	f, err := os.Open(*task.LogStorePath)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	stat, err := f.Stat()
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 	reader, writer := io.Pipe()
 	go func() {
 		tw := tar.NewWriter(writer)
@@ -97,7 +109,7 @@ func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 	}()
 	contentType := "application/tar"
 	extraHeaders := map[string]string{
-		"Content-Disposition": `attachment; filename="logs.tar"`,
+		"Content-Disposition": fmt.Sprintf(`attachment; filename="%s-logs.tar"`, strings.Split(stat.Name(), ".")[0]),
 	}
 	c.DataFromReader(http.StatusOK, -1, contentType, reader, extraHeaders)
 }

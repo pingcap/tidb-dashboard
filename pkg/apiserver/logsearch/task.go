@@ -74,8 +74,8 @@ func (tg *TaskGroup) SyncRun() {
 	dir := path.Join(tg.service.logStoreDirectory, strconv.Itoa(int(tg.model.ID)))
 	if err := os.MkdirAll(dir, 0777); err == nil {
 		tg.model.LogStoreDir = &dir
+		tg.service.db.Save(tg.model)
 	}
-	tg.service.db.Save(tg.model)
 
 	wg := sync.WaitGroup{}
 	for _, task := range tg.tasks {

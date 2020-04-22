@@ -44,6 +44,9 @@ function DetailPage() {
   )
 
   const { state: sqlExpanded, toggle: toggleSqlExpanded } = useToggle(false)
+  const { state: prevSqlExpanded, toggle: togglePrevSqlExpanded } = useToggle(
+    false
+  )
   const { state: planExpanded, toggle: togglePlanExpanded } = useToggle(false)
 
   return (
@@ -86,29 +89,34 @@ function DetailPage() {
                   <HighlightSQL sql={data.query!} />
                 </Expand>
               </Descriptions.Item>
-              <Descriptions.Item
-                span={2}
-                multiline={sqlExpanded}
-                label={
-                  <Space size="middle">
-                    <TextWithInfo.TransKey transKey="slow_query.detail.head.previous_sql" />
-                    <Expand.Link
-                      expanded={sqlExpanded}
-                      onClick={() => toggleSqlExpanded()}
-                    />
-                    <CopyLink data={formatSql(data.prev_stmt!)} />
-                  </Space>
-                }
-              >
-                <Expand
-                  expanded={sqlExpanded}
-                  collapsedContent={
-                    <HighlightSQL sql={data.prev_stmt!} compact />
-                  }
-                >
-                  <HighlightSQL sql={data.prev_stmt!} />
-                </Expand>
-              </Descriptions.Item>
+              {(() => {
+                if (!!data.prev_stmt && data.prev_stmt.length !== 0)
+                  return (
+                    <Descriptions.Item
+                      span={2}
+                      multiline={prevSqlExpanded}
+                      label={
+                        <Space size="middle">
+                          <TextWithInfo.TransKey transKey="slow_query.detail.head.previous_sql" />
+                          <Expand.Link
+                            expanded={prevSqlExpanded}
+                            onClick={() => togglePrevSqlExpanded()}
+                          />
+                          <CopyLink data={formatSql(data.prev_stmt!)} />
+                        </Space>
+                      }
+                    >
+                      <Expand
+                        expanded={prevSqlExpanded}
+                        collapsedContent={
+                          <HighlightSQL sql={data.prev_stmt!} compact />
+                        }
+                      >
+                        <HighlightSQL sql={data.prev_stmt!} />
+                      </Expand>
+                    </Descriptions.Item>
+                  )
+              })()}
               <Descriptions.Item
                 span={2}
                 multiline={planExpanded}

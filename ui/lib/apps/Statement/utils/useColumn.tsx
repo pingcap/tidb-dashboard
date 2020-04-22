@@ -174,7 +174,7 @@ export function useErrorsWarningsColumn(
     : 0
   return {
     name: useCommonColumnName('errors_warnings'),
-    key: 'errors_warnings',
+    key: 'sum_errors',
     fieldName: 'sum_errors',
     minWidth: 140,
     maxWidth: 200,

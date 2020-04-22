@@ -9,6 +9,7 @@ cluster_info:
         status: 状态
         up_time: 启动时间
         deploy_path: 部署路径
+        git_hash: Git 哈希值
       actions:
         hide_db:
           tooltip: 隐藏
@@ -20,5 +21,17 @@ cluster_info:
         offline: 下线中
         unknown: 未知
         unreachable: 无法访问
+    host_table:
+      title: 主机
+      columns:
+        ip: 主机地址
+        cpu: CPU
+        cpu_usage: CPU 使用率
+        memory: 物理内存
+        memory_usage: 内存使用率
+        deploy: 部署磁盘
+        disk_size: 磁盘容量
+        disk_usage: 磁盘使用率
+      instanceUnavailable: 获取该主机信息失败：无法访问实例
   error:
     load: '加载组件 {{comp}} 失败: {{cause}}'

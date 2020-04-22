@@ -15,13 +15,16 @@ import styles from './index.module.less'
 
 export interface ICardTableV2Props extends IDetailsListProps {
   title?: React.ReactNode
+  subTitle?: React.ReactNode
   className?: string
   style?: object
   loading?: boolean
   loadingSkeletonRows?: number
   cardExtra?: React.ReactNode
+  cardNoMargin?: boolean
   // The keys of visible columns. If null, all columns will be shown.
   visibleColumnKeys?: { [key: string]: boolean }
+  visibleItemsCount?: number
   // Event triggered when a row is clicked.
   onRowClicked?: (item: any, itemIndex: number) => void
 }
@@ -62,7 +65,7 @@ function renderColumnVisibilitySelection(
   onChange?: (visibleKeys: { [key: string]: boolean }) => void
 ) {
   if (columns == null) {
-    return null
+    return []
   }
   if (visibleColumnKeys == null) {
     visibleColumnKeys = {}
@@ -70,45 +73,45 @@ function renderColumnVisibilitySelection(
       visibleColumnKeys![c.key] = true
     })
   }
-  return (
-    <>
-      {columns.map((column) => (
-        <div key={column.key}>
-          <Checkbox
-            checked={visibleColumnKeys![column.key]}
-            onChange={(e) => {
-              if (!onChange) {
-                return
-              }
-              onChange({
-                ...visibleColumnKeys!,
-                [column.key]: e.target.checked,
-              })
-            }}
-          >
-            {column.name}
-          </Checkbox>
-        </div>
-      ))}
-    </>
-  )
+  return columns.map((column) => (
+    <Checkbox
+      key={column.key}
+      checked={visibleColumnKeys![column.key]}
+      onChange={(e) => {
+        if (!onChange) {
+          return
+        }
+        onChange({
+          ...visibleColumnKeys!,
+          [column.key]: e.target.checked,
+        })
+      }}
+    >
+      {column.name}
+    </Checkbox>
+  ))
 }
 
 function CardTableV2(props: ICardTableV2Props) {
   const {
     title,
+    subTitle,
     className,
     style,
     loading = false,
     loadingSkeletonRows = 5,
     cardExtra,
+    cardNoMargin,
     visibleColumnKeys,
+    visibleItemsCount,
     onRowClicked,
     columns,
+    items,
     ...restProps
   } = props
 
   const renderClickableRow = useRenderClickableRow(onRowClicked)
+
   const filteredColumns = useMemo(() => {
     if (columns == null || visibleColumnKeys == null) {
       return columns
@@ -116,11 +119,20 @@ function CardTableV2(props: ICardTableV2Props) {
     return columns.filter((c) => visibleColumnKeys[c.key])
   }, [columns, visibleColumnKeys])
 
+  const filteredItems = useMemo(() => {
+    if (visibleItemsCount == null) {
+      return items
+    }
+    return items.slice(0, visibleItemsCount)
+  }, [items, visibleItemsCount])
+
   return (
     <Card
       title={title}
+      subTitle={subTitle}
       style={style}
       className={cx(styles.cardTable, className)}
+      noMargin={cardNoMargin}
       extra={cardExtra}
     >
       {loading ? (
@@ -136,7 +148,11 @@ function CardTableV2(props: ICardTableV2Props) {
             layoutMode={DetailsListLayoutMode.justified}
             onRenderDetailsHeader={renderStickyHeader}
             onRenderRow={onRowClicked ? renderClickableRow : undefined}
+            onRenderCheckbox={(props) => {
+              return <Checkbox checked={props?.checked} />
+            }}
             columns={filteredColumns}
+            items={filteredItems}
             {...restProps}
           />
         </div>

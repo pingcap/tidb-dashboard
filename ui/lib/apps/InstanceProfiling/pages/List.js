@@ -103,7 +103,7 @@ export default function Page() {
     data: historyTable,
     isLoading: listLoading,
   } = useClientRequest((cancelToken) =>
-    client.getInstance().getProfilingGroups(cancelToken)
+    client.getInstance().getProfilingGroups({ cancelToken })
   )
 
   const { t } = useTranslation()
@@ -188,7 +188,7 @@ export default function Page() {
       isResizable: true,
       isCollapsible: true,
       onRender: (rec) => {
-        return <DateTime.Calendar unixTimeStampMs={rec.started_at * 1000} />
+        return <DateTime.Calendar unixTimestampMs={rec.started_at * 1000} />
       },
     },
     {

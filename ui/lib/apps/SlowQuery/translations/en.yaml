@@ -1,0 +1,94 @@
+slow_query:
+  nav_title: Slow Queries
+  common:
+    columns:
+      instance: Instance
+      instance_tooltip: Instance
+      connection_id: Connection ID
+      connection_id_tooltip: Connection ID
+      sql: SQL
+      sql_tooltip: SQL
+      end_time: End Time
+      end_time_tooltip: End Time
+      query_time: Query Time
+      query_time_tooltip: Query Time
+      memory_max: Max Memory
+      memory_max_tooltip: Max Memory
+      digest: SQL fingerprint
+      digest_tooltip:
+      is_internal: Is internal
+      is_internal_tooltip: Is internal sql statement
+      is_success: Is success
+      is_success_tooltip: Whether a statement is executed successfully
+      index_names: Index names
+      index_names_tooltip: The names of the indexes involved in a statement
+      stats: Stats
+      stats_tooltip: Stats
+      backoff_types: Backoff Types
+      backoff_types_tooltip: Backoff types
+      max_mem: Max memory
+      max_mem_tooltip: Max memory
+      user: User
+      user_tooltip: User
+      host: Host
+      host_tooltip: Host
+      db: DB
+      db_tooltip: Database
+
+      parse_time: Parse Time
+      parse_time_tooltip:
+      compile_time: Compile Time
+      compile_time_tooltip:
+      wait_time: Coprocessor Wait Time
+      wait_time_tooltip:
+      process_time: Coprocessor Process Time
+      process_time_tooltip:
+      backoff_time: Backoff Time
+      backoff_time_tooltip: The waiting time before retry when a statement encounters errors that require a retry
+      get_commit_ts_time: Get Commit Ts Time
+      get_commit_ts_time_tooltip:
+      local_latch_wait_time: Local Latch Wait Time
+      local_latch_wait_time_tooltip:
+      resolve_lock_time: Resolve Lock Time
+      resolve_lock_time_tooltip:
+      prewrite_time: Prewrite Time
+      prewrite_time_tooltips:
+      commit_time: Commit Time
+      commit_time_tooltips:
+      commit_backoff_time: Commit Backoff Time
+      commit_backoff_time_tooltips:
+      total_time: Query Time
+      total_time_tooltip: The execution time of a statement (Due to the parallel execution it may be significantly smaller than the above time)
+
+      request_count: Request Count
+      request_count_tooltip:
+      process_keys: Process Keys
+      process_keys_tooltip:
+      total_keys: Total Keys
+      total_keys_tooltip:
+      cop_proc_addr: Maximum Process Time Coprocessor Task Address
+      cop_proc_addr_tooltip:
+      cop_wait_addr: Maximum Wait Time Coprocessor Task Address
+      cop_wait_addr_tooltip:
+
+      txn_start_ts: Transaction Start Timestamp
+      txn_start_ts_tooltip:
+      write_keys: Write Keys
+      write_keys_tooltip:
+      write_size: Write Size
+      write_size_tooltip:
+      prewrite_regions: Prewrite Regions
+      prewrite_regions_tooltip:
+      txn_retry: Transaction Retry Times
+      txn_retry_tooltip:
+  detail:
+    head:
+      title: Slow Query Detail
+      back: Back to list
+      sql: SQL
+      previous_sql: Previous SQL
+    tabs:
+      basic: Basic
+      time: Time
+      copr: Coprocessor
+      txn: Transaction

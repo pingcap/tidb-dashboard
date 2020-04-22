@@ -1,14 +1,15 @@
 .cardTable {
   :global {
-    .ms-DetailsRow-fields {
-      font-size: 0.8rem;
+    .ms-DetailsRow {
+      > :first-child.ms-DetailsRow-fields {
+        font-size: 0.8rem;
+        > :first-child {
+          padding-left: @padding-page;
+        }
 
-      > :first-child {
-        padding-left: @padding-page;
-      }
-
-      > :last-child {
-        padding-right: @padding-page;
+        > :last-child {
+          padding-right: @padding-page;
+        }
       }
     }
   }

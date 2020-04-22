@@ -18,16 +18,20 @@ import * as useColumn from '@lib/utils/useColumn'
 const { Option } = Select
 const { Search } = Input
 
-const tableColumns = (
+function tableColumns(
   rows: SlowqueryBase[],
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
   orderBy: string,
-  desc: boolean
-  // showFullSQL?: boolean
-): IColumn[] => {
+  desc: boolean,
+): IColumn[] {
   return [
     useSlowQueryColumn.useSqlColumn(rows),
-    useSlowQueryColumn.useTimestampColumn(rows),
+    {
+      ...useSlowQueryColumn.useTimestampColumn(rows),
+      isSorted: orderBy === 'Time',
+      isSortedDescending: desc,
+      onColumnClick: onColumnClick,
+    },
     {
       ...useSlowQueryColumn.useQueryTimeColumn(rows),
       isSorted: orderBy === 'Query_time',
@@ -52,7 +56,7 @@ export default function List() {
   const [curSchemas, setCurSchemas] = useState<string[]>([])
   const [schemas, setSchemas] = useState<string[]>([])
   const [searchText, setSearchText] = useState('')
-  const [orderBy, setOrderBy] = useState('Query_time')
+  const [orderBy, setOrderBy] = useState('Time')
   const [desc, setDesc] = useState(true)
   const [limit, setLimit] = useState(100)
   const [refreshTimes, setRefreshTimes] = useState(0)
@@ -60,12 +64,14 @@ export default function List() {
   const [loading, setLoading] = useState(false)
   const [slowQueryList, setSlowQueryList] = useState<SlowqueryBase[]>([])
 
-  const [columns, setColumns] = useState<IColumn[]>([])
+  const [columns, setColumns] = useState<IColumn[]>(
+    tableColumns(slowQueryList || [], onColumnClick, orderBy, desc)
+  )
 
-  useEffect(() => {
-    setColumns(tableColumns(slowQueryList || [], onColumnClick, orderBy, desc))
-    // eslint-disable-next-line
-  }, [slowQueryList])
+  // useEffect(() => {
+  //   setColumns(tableColumns(slowQueryList || [], onColumnClick, orderBy, desc))
+  //   // eslint-disable-next-line
+  // }, [orderBy, desc])
 
   useEffect(() => {
     async function getSchemas() {
@@ -92,6 +98,7 @@ export default function List() {
       setLoading(false)
       if (res?.data) {
         setSlowQueryList(res.data || [])
+        setColumns(tableColumns(res.data || [], onColumnClick, orderBy, desc))
       }
     }
     getSlowQueryList()
@@ -149,6 +156,10 @@ export default function List() {
     localStorage.setItem('slow_query_search_options', searchOptions)
   }
 
+  function handleSearch(value) {
+    setSearchText(value)
+  }
+
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Card>
@@ -173,8 +184,7 @@ export default function List() {
               ))}
             </Select>
             <Search
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onSearch={handleSearch}
             />
             <Select
               defaultValue="100"

@@ -85,12 +85,11 @@ export function useTimestampColumn(
 ): IColumn {
   return {
     name: useCommonColumnName('timestamp'),
-    key: 'timestamp',
+    key: 'Time',
     fieldName: 'timestamp',
     minWidth: 100,
     maxWidth: 150,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <TextWrap>
         <DateTime.Calendar unixTimestampMs={rec.timestamp * 1000} />

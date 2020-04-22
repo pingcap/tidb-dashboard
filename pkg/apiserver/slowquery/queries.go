@@ -129,11 +129,12 @@ func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
 	tx := db.Select(SelectStmt).Table(SlowQueryTable)
 	tx = tx.Where("time between from_unixtime(?) and from_unixtime(?)", params.LogStartTS, params.LogEndTS)
 	if params.Text != "" {
-		tx = tx.Where("txn_start_ts REGEXP ? OR digest REGEXP ? OR prev_stmt REGEXP ? OR query REGEXP ?",
-			params.Text,
-			params.Text,
-			params.Text,
-			params.Text,
+		lowerStr := strings.ToLower(params.Text)
+		tx = tx.Where("txn_start_ts REGEXP ? OR LOWER(digest) REGEXP ? OR LOWER(prev_stmt) REGEXP ? OR LOWER(query) REGEXP ?",
+			lowerStr,
+			lowerStr,
+			lowerStr,
+			lowerStr,
 		)
 	}
 

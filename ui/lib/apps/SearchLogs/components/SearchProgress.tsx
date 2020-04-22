@@ -44,7 +44,7 @@ function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map((task) => {
     let title = task.target?.display_name ?? ''
     if (task.size) {
-      title += ' ' + getValueFormat('bytes')(task.size!, 0)
+      title += ' ' + getValueFormat('bytes')(task.size!, 1)
     }
     return (
       <TreeNode
@@ -159,7 +159,7 @@ export default function SearchProgress({
     const allSize = tasks.reduce((total, current) => {
       return total + current.size!
     }, 0)
-    return res.join('，') + ' ' + getValueFormat('bytes')(allSize, 0)
+    return res.join('，') + ' ' + getValueFormat('bytes')(allSize, 1)
   }
 
   function renderTreeNodes(tasks: LogsearchTaskModel[]) {

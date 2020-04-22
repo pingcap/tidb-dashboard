@@ -22,7 +22,7 @@ const tableColumns = (
   rows: SlowqueryBase[],
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
   orderBy: string,
-  desc: boolean,
+  desc: boolean
   // showFullSQL?: boolean
 ): IColumn[] => {
   return [

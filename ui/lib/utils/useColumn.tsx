@@ -136,7 +136,10 @@ export function useFieldsDescriptionColumn(translationPrefix: string): IColumn {
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => {
       // Fallback to no language
-      return t(`${translationPrefix}${rec.key}_tooltip`, {defaultValue: '', fallbackLng: '_'})
+      return t(`${translationPrefix}${rec.key}_tooltip`, {
+        defaultValue: '',
+        fallbackLng: '_',
+      })
     },
   }
 }

@@ -3,13 +3,8 @@ import {
   IColumn,
   ColumnActionsMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
-import {
-  TextWithInfo,
-  HighlightSQL,
-  EllipsisText,
-  Bar,
-  Pre,
-} from '@lib/components'
+import { red, orange } from '@ant-design/colors'
+import { TextWithInfo, HighlightSQL, TextWrap, Bar, Pre } from '@lib/components'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { max } from 'lodash'
@@ -31,7 +26,7 @@ export function usePlanDigestColumn(
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip title={rec.plan_digest}>
-        <EllipsisText>{rec.plan_digest || '(none)'}</EllipsisText>
+        <TextWrap>{rec.plan_digest || '(none)'}</TextWrap>
       </Tooltip>
     ),
   }
@@ -48,17 +43,20 @@ export function useDigestColumn(
     minWidth: 100,
     maxWidth: 500,
     isResizable: true,
+    isMultiline: showFullSQL,
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip
         title={<HighlightSQL sql={rec.digest_text} theme="dark" />}
         placement="right"
       >
-        {showFullSQL ? (
-          <div style={{ whiteSpace: 'pre-wrap' }}>{rec.digest_text}</div>
-        ) : (
-          <EllipsisText>{rec.digest_text}</EllipsisText>
-        )}
+        <TextWrap multiline={showFullSQL}>
+          {showFullSQL ? (
+            <HighlightSQL sql={rec.digest_text} />
+          ) : (
+            <Pre>{rec.digest_text}</Pre>
+          )}
+        </TextWrap>
       </Tooltip>
     ),
   }
@@ -168,6 +166,137 @@ Max:  ${getValueFormat('bytes')(rec.max_mem, 1)}`
   }
 }
 
+export function useErrorsWarningsColumn(
+  rows?: { sum_errors?: number; sum_warnings?: number }[]
+): IColumn {
+  const capacity = rows
+    ? max(rows.map((v) => v.sum_errors! + v.sum_warnings!)) ?? 0
+    : 0
+  return {
+    name: useCommonColumnName('errors_warnings'),
+    key: 'sum_errors',
+    fieldName: 'sum_errors',
+    minWidth: 140,
+    maxWidth: 200,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => {
+      const tooltipContent = `
+Errors:   ${getValueFormat('short')(rec.sum_errors, 0)}
+Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
+      return (
+        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
+          <Bar
+            textWidth={70}
+            value={[rec.sum_errors, rec.sum_warnings]}
+            colors={[red[4], orange[4]]}
+            capacity={capacity}
+          >
+            {getValueFormat('short')(rec.sum_errors, 0)}
+            {' / '}
+            {getValueFormat('short')(rec.sum_warnings, 0)}
+          </Bar>
+        </Tooltip>
+      )
+    },
+  }
+}
+
+export function useAvgParseLatencyColumn(
+  rows?: { avg_parse_latency?: number; max_parse_latency?: number }[]
+): IColumn {
+  const capacity = rows ? max(rows.map((v) => v.max_parse_latency)) ?? 0 : 0
+  return {
+    name: useCommonColumnName('parse_latency'),
+    key: 'avg_parse_latency',
+    fieldName: 'avg_parse_latency',
+    minWidth: 140,
+    maxWidth: 200,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => {
+      const tooltipContent = `
+Mean: ${getValueFormat('ns')(rec.avg_parse_latency, 1)}
+Max:  ${getValueFormat('ns')(rec.max_parse_latency, 1)}`
+      return (
+        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
+          <Bar
+            textWidth={70}
+            value={rec.avg_parse_latency}
+            max={rec.max_parse_latency}
+            capacity={capacity}
+          >
+            {getValueFormat('ns')(rec.avg_parse_latency, 1)}
+          </Bar>
+        </Tooltip>
+      )
+    },
+  }
+}
+
+export function useAvgCompileLatencyColumn(
+  rows?: { avg_compile_latency?: number; max_compile_latency?: number }[]
+): IColumn {
+  const capacity = rows ? max(rows.map((v) => v.max_compile_latency)) ?? 0 : 0
+  return {
+    name: useCommonColumnName('compile_latency'),
+    key: 'avg_compile_latency',
+    fieldName: 'avg_compile_latency',
+    minWidth: 140,
+    maxWidth: 200,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => {
+      const tooltipContent = `
+Mean: ${getValueFormat('ns')(rec.avg_compile_latency, 1)}
+Max:  ${getValueFormat('ns')(rec.max_compile_latency, 1)}`
+      return (
+        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
+          <Bar
+            textWidth={70}
+            value={rec.avg_compile_latency}
+            max={rec.max_compile_latency}
+            capacity={capacity}
+          >
+            {getValueFormat('ns')(rec.avg_compile_latency, 1)}
+          </Bar>
+        </Tooltip>
+      )
+    },
+  }
+}
+export function useAvgCoprColumn(
+  rows?: { avg_cop_process_time?: number; max_cop_process_time?: number }[]
+): IColumn {
+  const capacity = rows ? max(rows.map((v) => v.max_cop_process_time)) ?? 0 : 0
+  return {
+    name: useCommonColumnName('process_time'),
+    key: 'avg_cop_process_time',
+    fieldName: 'avg_cop_process_time',
+    minWidth: 140,
+    maxWidth: 200,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => {
+      const tooltipContent = `
+Mean: ${getValueFormat('ns')(rec.avg_cop_process_time, 1)}
+Max:  ${getValueFormat('ns')(rec.max_cop_process_time, 1)}`
+      return (
+        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
+          <Bar
+            textWidth={70}
+            value={rec.avg_cop_process_time}
+            max={rec.max_cop_process_time}
+            capacity={capacity}
+          >
+            {getValueFormat('ns')(rec.avg_cop_process_time, 1)}
+          </Bar>
+        </Tooltip>
+      )
+    },
+  }
+}
+
 export function useRelatedSchemasColumn(
   _rows?: { related_schemas?: string }[] // used for type check only
 ): IColumn {
@@ -180,7 +309,7 @@ export function useRelatedSchemasColumn(
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip title={rec.related_schemas}>
-        <EllipsisText>{rec.related_schemas}</EllipsisText>
+        <TextWrap>{rec.related_schemas}</TextWrap>
       </Tooltip>
     ),
   }

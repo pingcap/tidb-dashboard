@@ -4,7 +4,7 @@ statement:
     detail:
       head:
         back: 返回列表
-        title: SQL 语句详情
+        title: SQL 语句信息
       desc:
         time_range: 时间范围
         plan_count: 执行计划数
@@ -64,6 +64,7 @@ statement:
     avg_mem_tooltip: 单条 SQL 语句的消耗内存大小
     max_mem: 最大内存
     max_mem_tooltip: 最大单条 SQL 语句消耗内存大小
+    table_names: 表名
     index_names: 索引名
     index_names_tooltip: SQL 执行时使用的索引名称
     first_seen: 首次出现时间
@@ -72,6 +73,8 @@ statement:
     sample_user_tooltip: 执行该类 SQL 的用户名，可能存在多个执行用户，仅显示其中某一个
     sum_errors: 累计 Error 个数
     sum_warnings: 累计 Warning 个数
+    errors_warnings: 错误 / 警告
+    errors_warnings_tooltip: 累计错误和警告个数
     parse_latency: 解析耗时
     parse_latency_tooltip: 解析 SQL 语句的耗时
     compile_latency: 优化耗时
@@ -82,7 +85,7 @@ statement:
     process_time_tooltip: SQL 在 TiKV Coprocessor 上的执行耗时，单个 SQL 所有 Coprocessor 任务累计后计算
     backoff_time: 重试等待耗时
     backoff_time_tooltip: 单个 SQL 所有重试累计后计算
-    get_commit_ts_time: Commit Ts 耗时
+    get_commit_ts_time: 取 Commit Ts 耗时
     get_commit_ts_time_tooltip: 从 PD 取递交时间戳（事务号）步骤的耗时
     local_latch_wait_time: Local Latch Wait 耗时
     local_latch_wait_time_tooltip: 事务在 TiDB 本地与其他事务产生了锁冲突并等待的耗时

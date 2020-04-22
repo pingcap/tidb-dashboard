@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Root } from '@lib/components'
+import { Root, DateTime } from '@lib/components'
 import { Row, Col, Card } from 'antd'
 import { RightOutlined } from '@ant-design/icons'
 import { HashRouter as Router, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import dayjs from 'dayjs'
 
 import client from '@lib/client'
 import { StatementsTable } from '@lib/apps/Statement'
@@ -71,21 +70,28 @@ const App = () => {
             <Row gutter={24}>
               <Col span={18}>
                 <Row gutter={24}>
-                  <Col span={8}>
+                  <Col span={6}>
                     <ComponentPanel
                       field="tikv"
                       data={cluster}
                       clusterError={clusterError}
                     />
                   </Col>
-                  <Col span={8}>
+                  <Col span={6}>
+                    <ComponentPanel
+                      field="tiflash"
+                      data={cluster}
+                      clusterError={clusterError}
+                    />
+                  </Col>
+                  <Col span={6}>
                     <ComponentPanel
                       field="tidb"
                       data={cluster}
                       clusterError={clusterError}
                     />
                   </Col>
-                  <Col span={8}>
+                  <Col span={6}>
                     <ComponentPanel
                       field="pd"
                       data={cluster}
@@ -106,14 +112,19 @@ const App = () => {
                   visibleItemsCount={5}
                   loading={loadingStatements}
                   timeRange={timeRange}
-                  title={
-                    timeRange.begin_time > 0
-                      ? `${t('overview.top_statements.title')} (${dayjs
-                          .unix(timeRange.begin_time)
-                          .format('YYYY-MM-DD HH:mm:ss')} ~ ${dayjs
-                          .unix(timeRange.end_time)
-                          .format('YYYY-MM-DD HH:mm:ss')})`
-                      : t('overview.top_statements.title')
+                  title={t('overview.top_statements.title')}
+                  subTitle={
+                    timeRange.begin_time > 0 && (
+                      <span>
+                        <DateTime.Calendar
+                          unixTimestampMs={timeRange.begin_time * 1000}
+                        />{' '}
+                        ~{' '}
+                        <DateTime.Calendar
+                          unixTimestampMs={timeRange.end_time * 1000}
+                        />
+                      </span>
+                    )
                   }
                   cardExtra={
                     <Link to="/statement">

@@ -9,6 +9,7 @@ cluster_info:
         status: Status
         up_time: Up Time
         deploy_path: Deploy Directory
+        git_hash: Git Hash
       actions:
         hide_db:
           tooltip: Hide

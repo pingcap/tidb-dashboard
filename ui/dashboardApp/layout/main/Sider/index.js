@@ -105,6 +105,7 @@ export default function Sider({
     useAnimatedAppMenuItem(registry, 'cluster_info'),
     useAnimatedAppMenuItem(registry, 'keyviz'),
     useAnimatedAppMenuItem(registry, 'statement'),
+    useAnimatedAppMenuItem(registry, 'slow_query'),
     useAnimatedAppMenuItem(registry, 'diagnose'),
     debugSubMenu,
   ]

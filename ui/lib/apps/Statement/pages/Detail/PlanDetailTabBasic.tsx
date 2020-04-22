@@ -1,8 +1,9 @@
 import React from 'react'
 import { StatementModel } from '@lib/client'
-import { CardTableV2, DateTime } from '@lib/components'
+import { CardTableV2, DateTime, Pre, TextWrap } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import * as useColumn from '@lib/utils/useColumn'
+import { Tooltip } from 'antd'
 
 export interface ITabBasicProps {
   data: StatementModel
@@ -10,6 +11,16 @@ export interface ITabBasicProps {
 
 export default function TabBasic({ data }: ITabBasicProps) {
   const items = [
+    {
+      key: 'table_names',
+      value: (
+        <Tooltip title={data.table_names}>
+          <TextWrap>
+            <Pre>{data.table_names}</Pre>
+          </TextWrap>
+        </Tooltip>
+      ),
+    },
     { key: 'index_names', value: data.index_names },
     {
       key: 'first_seen',

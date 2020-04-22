@@ -149,7 +149,26 @@ func QueryStatementsOverview(
 	db *gorm.DB,
 	beginTime, endTime int64,
 	schemas, stmtTypes []string) (result []Model, err error) {
-	fields := getAggrFields("table_names", "schema_name", "digest", "digest_text", "sum_latency", "exec_count", "max_latency", "avg_latency", "min_latency", "avg_mem", "max_mem")
+	fields := getAggrFields(
+		"table_names",
+		"schema_name",
+		"digest",
+		"digest_text",
+		"sum_latency",
+		"exec_count",
+		"max_latency",
+		"avg_latency",
+		"min_latency",
+		"avg_mem",
+		"max_mem",
+		"sum_errors",
+		"sum_warnings",
+		"avg_parse_latency",
+		"max_parse_latency",
+		"avg_compile_latency",
+		"max_compile_latency",
+		"avg_cop_process_time",
+		"max_cop_process_time")
 	// `table_names` is used to populate `related_schemas`.
 	query := db.
 		Select(strings.Join(fields, ", ")).
@@ -179,7 +198,18 @@ func QueryPlans(
 	db *gorm.DB,
 	beginTime, endTime int,
 	schemaName, digest string) (result []Model, err error) {
-	fields := getAggrFields("plan_digest", "schema_name", "digest_text", "digest", "sum_latency", "max_latency", "min_latency", "avg_latency", "exec_count", "avg_mem", "max_mem")
+	fields := getAggrFields(
+		"plan_digest",
+		"schema_name",
+		"digest_text",
+		"digest",
+		"sum_latency",
+		"max_latency",
+		"min_latency",
+		"avg_latency",
+		"exec_count",
+		"avg_mem",
+		"max_mem")
 	err = db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).

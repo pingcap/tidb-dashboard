@@ -16,7 +16,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
-func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint) []*TableDef {
+func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB, sqliteDB *dbstore.DB, reportID string) []*TableDef {
 	errRows := checkBeforeReport(db)
 	if len(errRows) > 0 {
 		return []*TableDef{GenerateReportError(errRows)}
@@ -775,7 +775,7 @@ func getTableLablesMap(table *TableDef) (map[string]*TableRowDef, error) {
 	return labelsMap, nil
 }
 
-func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
+func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID string, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
 	funcs := []getTableFunc{
 		//Node
 		GetLoadTable,
@@ -830,7 +830,7 @@ func getCompareTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.
 	return getTablesParallel(startTime, endTime, db, funcs, sqliteDB, reportID, progress, totalTableCount)
 }
 
-func GetReportHeaderTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
+func GetReportHeaderTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID string, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
 	funcs := []func(string, string, *gorm.DB) (TableDef, error){
 		// Header
 		GetClusterHardwareInfoTable,
@@ -840,7 +840,7 @@ func GetReportHeaderTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbs
 	return getTablesParallel(startTime, endTime, db, funcs, sqliteDB, reportID, progress, totalTableCount)
 }
 
-func GetReportEndTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
+func GetReportEndTables(startTime, endTime string, db *gorm.DB, sqliteDB *dbstore.DB, reportID string, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
 	funcs := []func(string, string, *gorm.DB) (TableDef, error){
 		GetTiDBCurrentConfig,
 		GetPDCurrentConfig,
@@ -862,7 +862,7 @@ func GetCompareHeaderTimeTable(startTime1, endTime1, startTime2, endTime2 string
 	}
 }
 
-func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB, sqliteDB *dbstore.DB, reportID uint, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
+func GetReportTablesIn2Range(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB, sqliteDB *dbstore.DB, reportID string, progress, totalTableCount *int32) ([]*TableDef, []TableRowDef) {
 	funcs := []func(string, string, *gorm.DB) (TableDef, error){
 		// TiDB
 		GetTiDBTopNSlowQuery,

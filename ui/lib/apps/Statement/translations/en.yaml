@@ -1,10 +1,10 @@
 statement:
-  nav_title: SQL Statemennts
+  nav_title: SQL Statements
   pages:
     detail:
       head:
-        back: Statement List
-        title: Statement Detail
+        back: List
+        title: Statement Information
       desc:
         time_range: Selected Time Range
         plan_count: Execution Plans
@@ -69,9 +69,11 @@ statement:
     first_seen: First Seen
     last_seen: Last Seen
     sample_user: Execution User
-    sample_user_tooltip: The user that executes the SQL (sampled).
+    sample_user_tooltip: The user that executes the SQL (sampled)
     sum_errors: Total Errors
     sum_warnings: Total Warnings
+    errors_warnings: Errors / Warnings
+    errors_warnings_tooltip: Total Errors and Total Warnings
     parse_latency: Parse
     parse_latency_tooltip: Time consumed when parsing the SQL statement
     compile_latency: Compile

@@ -52,17 +52,17 @@ func NewProxy(l net.Listener, endpoints map[string]string, checkInterval time.Du
 	if timeout == 0 {
 		timeout = 3 * time.Second
 	}
-	remotes := sync.Map{}
-	for key, e := range endpoints {
-		remotes.Store(key, &remote{addr: e, inactive: atomic.NewBool(true)})
-	}
-	return &Proxy{
+	p := &Proxy{
 		listener:      l,
 		doneCh:        make(chan struct{}),
-		remotes:       remotes,
+		remotes:       sync.Map{},
 		dialTimeout:   timeout,
 		checkInterval: checkInterval,
 	}
+	for key, e := range endpoints {
+		p.remotes.Store(key, &remote{addr: e, inactive: atomic.NewBool(true)})
+	}
+	return p
 }
 
 func (p *Proxy) port() int {

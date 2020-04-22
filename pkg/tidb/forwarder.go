@@ -181,7 +181,7 @@ func (f *Forwarder) pollingForTiDB() {
 		case <-time.After(f.pollInterval):
 			var allTiDB []*tidbServerInfo
 			var err error
-			backoff.Retry(func() error {
+			err = backoff.Retry(func() error {
 				allTiDB, err = f.getServerInfo()
 				return err
 			}, backoff.NewExponentialBackOff())

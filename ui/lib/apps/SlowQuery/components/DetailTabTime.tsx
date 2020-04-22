@@ -11,8 +11,6 @@ export interface ITabTimeProps {
 
 export default function TabBasic({ data }: ITabTimeProps) {
   const { t } = useTranslation()
-
-  const totalTime = data.query_time! * 10e8
   const items = [
     {
       key: 'parse_time',
@@ -59,13 +57,13 @@ export default function TabBasic({ data }: ITabTimeProps) {
       value: data.commit_backoff_time! * 10e8,
     },
     {
-      key: 'total_time',
+      key: 'query_time2',
       keyDisplay: (
         <Typography.Text strong>
-          {t('slow_query.common.columns.total_time')}
+          {t('slow_query.common.columns.query_time2')}
         </Typography.Text>
       ),
-      value: totalTime,
+      value: data.query_time! * 10e8,
     },
   ]
   const columns = [

@@ -9,6 +9,7 @@ import {
   TextWrap,
   Bar,
   DateTime,
+  Pre,
 } from '@lib/components'
 import { Tooltip } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -55,16 +56,15 @@ export function useConnectionIDColumn(
   }
 }
 
-export function useDigestColumn(
-  _rows?: { query?: string }[], // used for type check only
-  showFullSQL?: boolean
+export function useSqlColumn(
+  _rows?: { query?: string }[] // used for type check only
 ): IColumn {
   return {
     name: useCommonColumnName('sql'),
     key: 'sql',
     fieldName: 'sql',
     minWidth: 200,
-    maxWidth: 400,
+    maxWidth: 500,
     isResizable: true,
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
@@ -72,22 +72,20 @@ export function useDigestColumn(
         title={<HighlightSQL sql={rec.query} theme="dark" />}
         placement="right"
       >
-        {showFullSQL ? (
-          <div style={{ whiteSpace: 'pre-wrap' }}>{rec.digest_text}</div>
-        ) : (
-          <TextWrap>{rec.query}</TextWrap>
-        )}
+        <TextWrap>
+          <Pre>{rec.query}</Pre>
+        </TextWrap>
       </Tooltip>
     ),
   }
 }
 
-export function useEndTimeColumn(
+export function useTimestampColumn(
   _rows?: { timestamp?: number }[] // used for type check only
 ): IColumn {
   return {
-    name: useCommonColumnName('end_time'),
-    key: 'end_time',
+    name: useCommonColumnName('timestamp'),
+    key: 'timestamp',
     fieldName: 'timestamp',
     minWidth: 100,
     maxWidth: 150,

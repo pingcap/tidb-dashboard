@@ -9,7 +9,7 @@ import {
   Menu,
   Checkbox,
 } from 'antd'
-import { CheckboxChangeEvent } from 'antd/lib/checkbox'
+import { useLocalStorageState } from '@umijs/hooks'
 import {
   SettingOutlined,
   ReloadOutlined,
@@ -30,7 +30,6 @@ import TimeRangeSelector from './TimeRangeSelector'
 import { Instance } from './statement-types'
 import { SearchContext } from './search-options-context'
 import styles from './styles.module.less'
-import { load, store } from '@lib/utils/storage'
 
 const { Option } = Select
 
@@ -199,21 +198,21 @@ export default function StatementsOverview({
   const [refreshTimes, setRefreshTimes] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
   const [columns, setColumns] = useState<IColumn[]>([])
-  const [visibleColumnKeys, setVisibleColumnKeys] = useState<{
-    [key: string]: boolean
-  }>(() =>
-    load(VISIBLE_COLUMN_KEYS, {
+  const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
+    VISIBLE_COLUMN_KEYS,
+    {
       digest_text: true,
       sum_latency: true,
       avg_latency: true,
       exec_count: true,
       avg_mem: true,
       related_schemas: true,
-    })
+    } as { [key: string]: boolean }
   )
   const [dropdownVisible, setDropdownVisible] = useState(false)
-  const [showFullSQL, setShowFullSQL] = useState(() =>
-    load(SHOW_FULL_SQL, false)
+  const [showFullSQL, setShowFullSQL] = useLocalStorageState(
+    SHOW_FULL_SQL,
+    false
   )
 
   useEffect(() => {
@@ -363,19 +362,6 @@ export default function StatementsOverview({
     })
   }
 
-  function handleVisibleColumnKeysChange(visibleKeys: {
-    [key: string]: boolean
-  }) {
-    setVisibleColumnKeys(visibleKeys)
-    store(VISIBLE_COLUMN_KEYS, visibleKeys)
-  }
-
-  function handleFullSQLOptionChange(e: CheckboxChangeEvent) {
-    const val = e.target.checked
-    setShowFullSQL(val)
-    store(SHOW_FULL_SQL, val)
-  }
-
   const statementDisabled = (
     <div className={styles.statement_disabled_container}>
       <h2>{t('statement.pages.overview.settings.disabled_desc_title')}</h2>
@@ -394,13 +380,16 @@ export default function StatementsOverview({
       {CardTableV2.renderColumnVisibilitySelection(
         columns,
         visibleColumnKeys,
-        handleVisibleColumnKeysChange
+        setVisibleColumnKeys
       ).map((item, idx) => (
         <Menu.Item key={idx}>{item}</Menu.Item>
       ))}
       <Menu.Divider />
       <Menu.Item>
-        <Checkbox checked={showFullSQL} onChange={handleFullSQLOptionChange}>
+        <Checkbox
+          checked={showFullSQL}
+          onChange={(e) => setShowFullSQL(e.target.checked)}
+        >
           {t('statement.pages.overview.toolbar.select_columns.show_full_sql')}
         </Checkbox>
       </Menu.Item>

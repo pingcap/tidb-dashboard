@@ -14,22 +14,36 @@ import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import * as useSlowQueryColumn from '../utils/useColumn'
 import DetailPage from './Detail'
 import * as useColumn from '@lib/utils/useColumn'
+import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
 
 import styles from './List.module.less'
 
 const { Option } = Select
 const { Search } = Input
 
-const tableColumns = (
+export interface IPageQuery {
+  curTimeRange?: TimeRange
+  curSchemas?: string[]
+  searchText?: string
+  orderBy?: string
+  desc?: boolean
+  limit?: number
+}
+
+function tableColumns(
   rows: SlowqueryBase[],
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
   orderBy: string,
   desc: boolean
-  // showFullSQL?: boolean
-): IColumn[] => {
+): IColumn[] {
   return [
     useSlowQueryColumn.useSqlColumn(rows),
-    useSlowQueryColumn.useTimestampColumn(rows),
+    {
+      ...useSlowQueryColumn.useTimestampColumn(rows),
+      isSorted: orderBy === 'Time',
+      isSortedDescending: desc,
+      onColumnClick: onColumnClick,
+    },
     {
       ...useSlowQueryColumn.useQueryTimeColumn(rows),
       isSorted: orderBy === 'Query_time',
@@ -46,28 +60,25 @@ const tableColumns = (
   ]
 }
 
-export default function List() {
+function List() {
+  const query = List.parseQuery(useLocation().search)
+
   const navigate = useNavigate()
   const { t } = useTranslation()
 
-  const [curTimeRange, setCurTimeRange] = useState<TimeRange>(DEF_TIME_RANGE)
-  const [curSchemas, setCurSchemas] = useState<string[]>([])
+  const [curTimeRange, setCurTimeRange] = useState<TimeRange>(
+    query.curTimeRange ?? DEF_TIME_RANGE
+  )
+  const [curSchemas, setCurSchemas] = useState<string[]>(query.curSchemas ?? [])
   const [schemas, setSchemas] = useState<string[]>([])
-  const [searchText, setSearchText] = useState('')
-  const [orderBy, setOrderBy] = useState('Query_time')
-  const [desc, setDesc] = useState(true)
-  const [limit, setLimit] = useState(100)
+  const [searchText, setSearchText] = useState(query.searchText ?? '')
+  const [orderBy, setOrderBy] = useState(query.orderBy ?? 'Time')
+  const [desc, setDesc] = useState(query.desc ?? true)
+  const [limit, setLimit] = useState(query.limit ?? 100)
   const [refreshTimes, setRefreshTimes] = useState(0)
 
   const [loading, setLoading] = useState(false)
   const [slowQueryList, setSlowQueryList] = useState<SlowqueryBase[]>([])
-
-  const [columns, setColumns] = useState<IColumn[]>([])
-
-  useEffect(() => {
-    setColumns(tableColumns(slowQueryList || [], onColumnClick, orderBy, desc))
-    // eslint-disable-next-line
-  }, [slowQueryList])
 
   useEffect(() => {
     async function getSchemas() {
@@ -92,35 +103,39 @@ export default function List() {
           searchText
         )
       setLoading(false)
-      if (res?.data) {
-        setSlowQueryList(res.data || [])
-      }
+      setSlowQueryList(res.data || [])
     }
     getSlowQueryList()
-  }, [curTimeRange, curSchemas, orderBy, desc, searchText, limit, refreshTimes])
-
-  // TODO: refine
-  const location = useLocation()
-  useEffect(() => {
-    if (location.search === '?from=detail') {
-      // load
-      const searchOptionsStr = localStorage.getItem('slow_query_search_options')
-      if (searchOptionsStr !== null) {
-        const searchOptions = JSON.parse(searchOptionsStr)
-        setCurTimeRange(searchOptions.curTimeRange)
-        setCurSchemas(searchOptions.curSchemas)
-        setSearchText(searchOptions.searchText)
-        setLimit(searchOptions.limit)
-        setOrderBy(searchOptions.orderBy)
-        setDesc(searchOptions.desc)
-      }
-    }
-    // eslint-disable-next-line
-  }, [])
+    const qs = List.buildQuery({
+      curTimeRange,
+      curSchemas,
+      orderBy,
+      desc,
+      searchText,
+      limit,
+    })
+    navigate(`/slow_query?${qs}`)
+  }, [
+    curTimeRange,
+    curSchemas,
+    orderBy,
+    desc,
+    searchText,
+    limit,
+    refreshTimes,
+    navigate,
+  ])
 
   function handleTimeRangeChange(val: TimeRange) {
     setCurTimeRange(val)
   }
+
+  const newColumns = tableColumns(
+    slowQueryList || [],
+    onColumnClick,
+    orderBy,
+    desc
+  )
 
   function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {
     if (column.key === orderBy) {
@@ -138,17 +153,10 @@ export default function List() {
       time: rec.timestamp,
     })
     navigate(`/slow_query/detail?${qs}`)
+  }
 
-    // save search options
-    const searchOptions = JSON.stringify({
-      curTimeRange,
-      curSchemas,
-      orderBy,
-      desc,
-      searchText,
-      limit,
-    })
-    localStorage.setItem('slow_query_search_options', searchOptions)
+  function handleSearch(value) {
+    setSearchText(value)
   }
 
   return (
@@ -174,10 +182,7 @@ export default function List() {
                 </Option>
               ))}
             </Select>
-            <Search
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
+            <Search onSearch={handleSearch} />
             <Select
               defaultValue="100"
               style={{ width: 150 }}
@@ -201,9 +206,14 @@ export default function List() {
       <CardTableV2
         loading={loading}
         items={slowQueryList || []}
-        columns={columns}
+        columns={newColumns}
         onRowClicked={handleRowClick}
       />
     </ScrollablePane>
   )
 }
+
+List.buildQuery = buildQueryFn<IPageQuery>()
+List.parseQuery = parseQueryFn<IPageQuery>()
+
+export default List

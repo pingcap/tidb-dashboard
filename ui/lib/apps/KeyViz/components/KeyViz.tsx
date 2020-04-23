@@ -237,6 +237,7 @@ const KeyViz = (props) => {
   return (
     <div className="PD-KeyVis">
       <ToolBar
+        enabled={serviceEnabled}
         dateRange={dateRange}
         metricType={metricType}
         brightLevel={brightLevel}
@@ -251,6 +252,7 @@ const KeyViz = (props) => {
         onChangeDateRange={onChangeDateRange}
         onChangeAutoRefresh={onChangeAutoRefresh}
         onRefresh={onFetchHeatmap}
+        onShowSettings={() => setShowSettings(true)}
       />
       {mainPart}
       <Drawer

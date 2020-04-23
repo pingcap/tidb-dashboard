@@ -14,27 +14,15 @@ import MonitorAlertBar from './components/MonitorAlertBar'
 import styles from './index.module.less'
 import Nodes from './components/Nodes'
 
-export default function App() {
-  const [cluster, setCluster] = useState<ClusterinfoClusterInfo | null>(null)
+function useStatements() {
   const [timeRange, setTimeRange] = useState<StatementTimeRange>({
     begin_time: 0,
     end_time: 0,
   })
   const [statements, setStatements] = useState<StatementModel[]>([])
-  const [loadingStatements, setLoadingStatements] = useState(false)
-
-  const { t } = useTranslation()
+  const [loadingStatements, setLoadingStatements] = useState(true)
 
   useEffect(() => {
-    const fetchLoad = async () => {
-      try {
-        let res = await client.getInstance().topologyAllGet()
-        setCluster(res.data)
-      } catch (error) {
-        setCluster(null)
-      }
-    }
-
     const fetchStatements = async () => {
       setLoadingStatements(true)
       const rRes = await client.getInstance().statementsTimeRangesGet()
@@ -51,9 +39,30 @@ export default function App() {
       }
       setLoadingStatements(false)
     }
+    fetchStatements()
+  }, [])
+
+  return { timeRange, statements, loadingStatements }
+}
+
+export default function App() {
+  const [cluster, setCluster] = useState<ClusterinfoClusterInfo | null>(null)
+
+  const { timeRange, statements, loadingStatements } = useStatements()
+
+  const { t } = useTranslation()
+
+  useEffect(() => {
+    const fetchLoad = async () => {
+      try {
+        let res = await client.getInstance().topologyAllGet()
+        setCluster(res.data)
+      } catch (error) {
+        setCluster(null)
+      }
+    }
 
     fetchLoad()
-    fetchStatements()
   }, [])
 
   return (

@@ -39,7 +39,9 @@ const HEIGHT = 250
 
 function getSeriesProps(type: GraphType) {
   if (type === 'bar') {
-    return {}
+    return {
+      stack: 'bar_stack',
+    }
   } else if (type === 'line') {
     return {
       showSymbol: false,

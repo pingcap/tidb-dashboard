@@ -67,7 +67,6 @@ func (s *Service) listHandler(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	db.LogMode(true)
 	results, err := QuerySlowLogList(db, &req)
 	if err != nil {
 		_ = c.Error(err)
@@ -99,7 +98,6 @@ func (s *Service) detailhandler(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	db.LogMode(true)
 	result, err := QuerySlowLogDetail(db, &req)
 	if err != nil {
 		_ = c.Error(err)

@@ -121,14 +121,11 @@ const KeyViz = (props) => {
     )
   }, [selection, dateRange, metricType])
 
-  const onChangeBrightLevel = useCallback(
-    (val) => {
-      if (!_chart) return
-      setBrightLevel(val)
-      _chart.brightness(val)
-    },
-    [_chart]
-  )
+  const onChangeBrightLevel = useCallback((val) => {
+    if (!_chart) return
+    setBrightLevel(val)
+    _chart.brightness(val)
+  }, [])
 
   const onChangeMetric = useCallback(setMetricType, [])
 

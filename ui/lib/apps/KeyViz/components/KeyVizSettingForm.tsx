@@ -71,7 +71,7 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
         onUpdateServiceStatus(values.auto_collection_enabled)
       }
     },
-    [config, onUpdateServiceStatus]
+    [config, onUpdateServiceStatus, t]
   )
 
   return (

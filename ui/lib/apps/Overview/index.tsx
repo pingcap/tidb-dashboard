@@ -14,11 +14,11 @@ import { StatementsTable } from '@lib/apps/Statement'
 import MonitorAlertBar from './components/MonitorAlertBar'
 import Nodes from './components/Nodes'
 import { getDefSearchOptions } from '../SlowQuery/components/List'
-
-import styles from './index.module.less'
 import SlowQueriesTable, {
   OrderBy,
 } from '../SlowQuery/components/SlowQueriesTable'
+
+import styles from './index.module.less'
 
 function useStatements() {
   const [timeRange, setTimeRange] = useState<StatementTimeRange>({

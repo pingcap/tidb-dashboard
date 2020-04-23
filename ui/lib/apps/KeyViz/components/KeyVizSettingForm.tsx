@@ -16,10 +16,6 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
   const [config, setConfig] = useState<ConfigKeyVisualConfig | null>(null)
   const { t } = useTranslation()
 
-  useEffect(() => {
-    onFetchServiceStatus()
-  }, [])
-
   const onFetchServiceStatus = useCallback(() => {
     setLoading(true)
     fetchServiceStatus().then(
@@ -33,6 +29,10 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
     )
   }, [])
 
+  useEffect(() => {
+    onFetchServiceStatus()
+  }, [onFetchServiceStatus])
+
   const onSubmitted = useCallback(() => {
     fetchServiceStatus().then(
       (status) => {
@@ -45,12 +45,15 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
         setSubmitting(false)
       }
     )
-  }, [])
+  }, [onClose, onConfigUpdated])
 
-  const onUpdateServiceStatus = useCallback((status) => {
-    setSubmitting(true)
-    updateServiceStatus(status).then(onSubmitted, onSubmitted)
-  }, [])
+  const onUpdateServiceStatus = useCallback(
+    (status) => {
+      setSubmitting(true)
+      updateServiceStatus(status).then(onSubmitted, onSubmitted)
+    },
+    [onSubmitted]
+  )
 
   const onSubmit = useCallback(
     (values) => {
@@ -68,7 +71,7 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
         onUpdateServiceStatus(values.auto_collection_enabled)
       }
     },
-    [config]
+    [config, onUpdateServiceStatus]
   )
 
   return (

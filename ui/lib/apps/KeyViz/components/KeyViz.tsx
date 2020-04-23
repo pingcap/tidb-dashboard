@@ -91,46 +91,6 @@ const KeyViz = (props) => {
   const [showSettings, setShowSettings] = useState(false)
   const { t } = useTranslation()
 
-  useEffect(() => {
-    autoRefreshSecondsRef.current = autoRefreshSeconds
-  }, [autoRefreshSeconds])
-
-  useInterval(() => {
-    if (autoRefreshSeconds === 0) {
-      return
-    }
-    if (remainingRefreshSeconds === 0) {
-      onFetchHeatmap()
-    } else {
-      setRemainingRefreshSeconds((c) => c - 1)
-    }
-  }, 1000)
-
-  useEffect(() => {
-    setRemainingRefreshSeconds((r) => {
-      if (r > autoRefreshSeconds) {
-        return autoRefreshSeconds
-      } else {
-        return r
-      }
-    })
-
-    if (autoRefreshSeconds > 0) {
-      onResetZoom()
-      setOnBrush(false)
-    }
-  }, [autoRefreshSeconds])
-
-  useEffect(() => {
-    if (serviceEnabled) {
-      onFetchHeatmap()
-    }
-  }, [serviceEnabled])
-
-  useEffect(() => {
-    onFetchServiceStatus()
-  }, [selection, dateRange, metricType])
-
   const onFetchServiceStatus = useCallback(() => {
     setLoading(true)
     fetchServiceStatus().then(
@@ -156,13 +116,10 @@ const KeyViz = (props) => {
         setLoading(false)
       },
       () => {
-        // TODO: log error
         setLoading(false)
       }
     )
   }, [selection, dateRange, metricType])
-
-  useEffect(onFetchHeatmap, [onFetchHeatmap])
 
   const onChangeBrightLevel = useCallback(
     (val) => {
@@ -210,6 +167,46 @@ const KeyViz = (props) => {
       return l
     })
   }, [])
+
+  useEffect(() => {
+    autoRefreshSecondsRef.current = autoRefreshSeconds
+  }, [autoRefreshSeconds])
+
+  useEffect(() => {
+    onFetchServiceStatus()
+  }, [onFetchServiceStatus])
+
+  useEffect(() => {
+    if (serviceEnabled) {
+      onFetchHeatmap()
+    }
+  }, [serviceEnabled, onFetchHeatmap])
+
+  useEffect(() => {
+    setRemainingRefreshSeconds((r) => {
+      if (r > autoRefreshSeconds) {
+        return autoRefreshSeconds
+      } else {
+        return r
+      }
+    })
+
+    if (autoRefreshSeconds > 0) {
+      onResetZoom()
+      setOnBrush(false)
+    }
+  }, [autoRefreshSeconds, onResetZoom])
+
+  useInterval(() => {
+    if (autoRefreshSeconds === 0) {
+      return
+    }
+    if (remainingRefreshSeconds === 0) {
+      onFetchHeatmap()
+    } else {
+      setRemainingRefreshSeconds((c) => c - 1)
+    }
+  }, 1000)
 
   const mainPart = serviceEnabled ? (
     chartState && (

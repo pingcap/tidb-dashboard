@@ -13,13 +13,8 @@
 
 package config
 
-const (
-	StatusEnabled  = "enabled"
-	StatusDisabled = "disabled"
-)
-
 type KeyVisualConfig struct {
-	AutoCollection string `json:"auto_collection"`
+	AutoCollectionEnabled bool `json:"auto_collection_enabled"`
 }
 
 type DynamicConfig struct {
@@ -28,10 +23,4 @@ type DynamicConfig struct {
 
 // Adjust is used to fill the default config for the existing config of the old version.
 func (c *DynamicConfig) Adjust() {
-	switch c.KeyVisual.AutoCollection {
-	case StatusEnabled:
-	case StatusDisabled:
-	default:
-		c.KeyVisual.AutoCollection = StatusEnabled
-	}
 }

@@ -138,7 +138,7 @@ diagnosis:
         tikv_flush_messages_total_num: 持久化 raft 消息的总数
         tikv_receive_messages_total_num: 收到的 raft 信息总数
         tikv_raft_dropped_messages_total: 丢掉的 raft 信息总数
-        tikv_raft_proposals_total_num: raft 提议的总数
+        tikv_raft_proposals_total_num: raft proposal 的总数
         tikv_grpc_error_total_count: gRPC 消息失败的总数
         tikv_critical_error_total_count: TiKV 临界误差的总计数
         tikv_coprocessor_request_error_total_count: Coprocessor 错误总数

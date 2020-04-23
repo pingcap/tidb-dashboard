@@ -1,39 +1,53 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Select, Space, Tooltip, Input } from 'antd'
+import { ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import { useSessionStorageState } from '@umijs/hooks'
 import { Card, CardTableV2 } from '@lib/components'
+import client, { SlowqueryBase } from '@lib/client'
+import * as useColumn from '@lib/utils/useColumn'
 import TimeRangeSelector, {
   TimeRange,
   DEF_TIME_RANGE,
 } from './TimeRangeSelector'
-import { useTranslation } from 'react-i18next'
-import client, { SlowqueryBase } from '@lib/client'
-import { ReloadOutlined } from '@ant-design/icons'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import * as useSlowQueryColumn from '../utils/useColumn'
 import DetailPage from './Detail'
-import * as useColumn from '@lib/utils/useColumn'
-import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
+import * as useSlowQueryColumn from '../utils/useColumn'
 
 import styles from './List.module.less'
 
 const { Option } = Select
 const { Search } = Input
 
-export interface IPageQuery {
-  curTimeRange?: TimeRange
-  curSchemas?: string[]
-  searchText?: string
-  orderBy?: string
-  desc?: boolean
-  limit?: number
+const SEARCH_OPTIONS_SESSION_KEY = 'slow_query_search_options'
+const LIMITS = [100, 200, 500, 1000]
+
+type OrderBy = 'Query_time' | 'Mem_max' | 'Time'
+
+export interface ISearchOptions {
+  timeRange: TimeRange
+  schemas: string[]
+  searchText: string
+  orderBy: OrderBy
+  desc: boolean
+  limit: number
+}
+
+const defSearchOptions: ISearchOptions = {
+  timeRange: DEF_TIME_RANGE,
+  schemas: [],
+  searchText: '',
+  orderBy: 'Time',
+  desc: true,
+  limit: 100,
 }
 
 function tableColumns(
   rows: SlowqueryBase[],
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
-  orderBy: string,
+  orderBy: OrderBy,
   desc: boolean
 ): IColumn[] {
   return [
@@ -61,29 +75,30 @@ function tableColumns(
 }
 
 function List() {
-  const query = List.parseQuery(useLocation().search)
-
   const navigate = useNavigate()
   const { t } = useTranslation()
 
-  const [curTimeRange, setCurTimeRange] = useState<TimeRange>(
-    query.curTimeRange ?? DEF_TIME_RANGE
+  const [searchOptions, setSearchOptions] = useSessionStorageState(
+    SEARCH_OPTIONS_SESSION_KEY,
+    defSearchOptions
   )
-  const [curSchemas, setCurSchemas] = useState<string[]>(query.curSchemas ?? [])
-  const [schemas, setSchemas] = useState<string[]>([])
-  const [searchText, setSearchText] = useState(query.searchText ?? '')
-  const [orderBy, setOrderBy] = useState(query.orderBy ?? 'Time')
-  const [desc, setDesc] = useState(query.desc ?? true)
-  const [limit, setLimit] = useState(query.limit ?? 100)
-  const [refreshTimes, setRefreshTimes] = useState(0)
 
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [refreshTimes, setRefreshTimes] = useState(0)
+  const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [slowQueryList, setSlowQueryList] = useState<SlowqueryBase[]>([])
+
+  const columns = tableColumns(
+    slowQueryList || [],
+    onColumnClick,
+    searchOptions.orderBy,
+    searchOptions.desc
+  )
 
   useEffect(() => {
     async function getSchemas() {
       const res = await client.getInstance().statementsSchemasGet()
-      setSchemas(res?.data || [])
+      setAllSchemas(res?.data || [])
     }
     getSchemas()
   }, [])
@@ -94,55 +109,32 @@ function List() {
       const res = await client
         .getInstance()
         .slowQueryListGet(
-          curSchemas,
-          desc,
-          limit,
-          curTimeRange?.end_time,
-          curTimeRange?.begin_time,
-          orderBy,
-          searchText
+          searchOptions.schemas,
+          searchOptions.desc,
+          searchOptions.limit,
+          searchOptions.timeRange.end_time,
+          searchOptions.timeRange.begin_time,
+          searchOptions.orderBy,
+          searchOptions.searchText
         )
       setLoading(false)
       setSlowQueryList(res.data || [])
     }
     getSlowQueryList()
-    const qs = List.buildQuery({
-      curTimeRange,
-      curSchemas,
-      orderBy,
-      desc,
-      searchText,
-      limit,
-    })
-    navigate(`/slow_query?${qs}`)
-  }, [
-    curTimeRange,
-    curSchemas,
-    orderBy,
-    desc,
-    searchText,
-    limit,
-    refreshTimes,
-    navigate,
-  ])
-
-  function handleTimeRangeChange(val: TimeRange) {
-    setCurTimeRange(val)
-  }
-
-  const newColumns = tableColumns(
-    slowQueryList || [],
-    onColumnClick,
-    orderBy,
-    desc
-  )
+  }, [searchOptions, refreshTimes])
 
   function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {
-    if (column.key === orderBy) {
-      setDesc(!desc)
+    if (column.key === searchOptions.orderBy) {
+      setSearchOptions({
+        ...searchOptions,
+        desc: !searchOptions.desc,
+      })
     } else {
-      setOrderBy(column.key)
-      setDesc(true)
+      setSearchOptions({
+        ...searchOptions,
+        orderBy: column.key as OrderBy,
+        desc: true,
+      })
     }
   }
 
@@ -155,43 +147,51 @@ function List() {
     navigate(`/slow_query/detail?${qs}`)
   }
 
-  function handleSearch(value) {
-    setSearchText(value)
-  }
-
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Card>
         <div className={styles.header}>
           <Space size="middle" className={styles.search_options}>
             <TimeRangeSelector
-              value={curTimeRange}
-              onChange={handleTimeRangeChange}
+              value={searchOptions.timeRange}
+              onChange={(timeRange) =>
+                setSearchOptions({ ...searchOptions, timeRange })
+              }
             />
             <Select
-              value={curSchemas}
+              value={searchOptions.schemas}
               mode="multiple"
               allowClear
               placeholder={t('statement.pages.overview.toolbar.select_schemas')}
               style={{ minWidth: 200 }}
-              onChange={setCurSchemas}
+              onChange={(schemas) =>
+                setSearchOptions({ ...searchOptions, schemas })
+              }
             >
-              {schemas.map((item) => (
+              {allSchemas.map((item) => (
                 <Option value={item} key={item}>
                   {item}
                 </Option>
               ))}
             </Select>
-            <Search onSearch={handleSearch} />
+            <Search
+              defaultValue={searchOptions.searchText}
+              onSearch={(searchText) =>
+                setSearchOptions({ ...searchOptions, searchText })
+              }
+            />
             <Select
-              defaultValue="100"
+              value={searchOptions.limit}
               style={{ width: 150 }}
-              onChange={(val) => setLimit(+val!)}
+              onChange={(limit) =>
+                setSearchOptions({ ...searchOptions, limit })
+              }
             >
-              <Option value="100">Limit 100</Option>
-              <Option value="200">Limit 200</Option>
-              <Option value="500">Limit 500</Option>
-              <Option value="1000">Limit 1000</Option>
+              {LIMITS.map((item) => (
+                <Option value={item} key={item}>
+                  Limit {item}
+                </Option>
+              ))}
             </Select>
           </Space>
           <Space size="middle" className={styles.right_actions}>
@@ -206,14 +206,11 @@ function List() {
       <CardTableV2
         loading={loading}
         items={slowQueryList || []}
-        columns={newColumns}
+        columns={columns}
         onRowClicked={handleRowClick}
       />
     </ScrollablePane>
   )
 }
-
-List.buildQuery = buildQueryFn<IPageQuery>()
-List.parseQuery = parseQueryFn<IPageQuery>()
 
 export default List

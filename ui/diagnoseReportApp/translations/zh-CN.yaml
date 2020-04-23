@@ -135,7 +135,7 @@ diagnosis:
         tikv_cop_total_response_total_size: TiKV coprocessor 响应总大小
         tikv_cop_scan_num: TiKV coprocessor 扫描操作总数
         tikv_raft_sent_messages_total_num: 发送的 raft 消息的总数
-        tikv_flush_messages_total_num: 存下的 raft 信息总数
+        tikv_flush_messages_total_num: 持久化 raft 消息的总数
         tikv_receive_messages_total_num: 收到的 raft 信息总数
         tikv_raft_dropped_messages_total: 丢掉的 raft 信息总数
         tikv_raft_proposals_total_num: raft 提议的总数

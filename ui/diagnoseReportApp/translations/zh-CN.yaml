@@ -82,22 +82,22 @@ diagnosis:
       compare_diagnose: 通过与参考时间的比较，自动诊断集群问题。
       max_diff_item: 两段时间中的最大不同项。
       diagnose: 该表显示的是自动诊断的结果，即集群中出现的问题。
-      total_time_consume: 该表显示的是 TiDB/TiKV/PD 所消耗的时间。METRIC_NAME 是事件名称，LABEL 是事件标签，如：实例，事件类型等，TIME_RATIO 是该事件的 TOTAL_TIME 除以所有事件的 TOTAL_TIME(所有时间的 TIME_RATIO 为 1)，上事件的TIME_RATIO为1;TOTAL_TIME是该事件的总花费时间，TOTAL_COUNT 是该事件的总计数，P999 是 0.999 分位数的最大时间，P99 是 0.99 分位数的最大时间，P90 是 0.90 分位数的最大时间，P80 是 0.80 分位数的最大时间。
+      total_time_consume: 该表显示的是 TiDB/TiKV/PD 所消耗的时间。METRIC_NAME 是事件名称，LABEL 是事件标签，如：实例，事件类型等，TIME_RATIO 是该事件的总时间除以 TIME_RATIO 为 1 的事件的总时间；TOTAL_TIME 是该事件的总耗时，TOTAL_COUNT 是该事件的总计数，P999 是 0.999 分位数的最大时间，P99 是 0.99 分位数的最大时间，P90 是 0.90 分位数的最大时间，P80 是 0.80 分位数的最大时间。
       total_error: 该表显示的是错误的数量。METRIC_NAME 是错误事件名称，LABEL 是事件标签，例如实例，事件类型…，TOTAL_COUNT 是该错误事件的总数。
-      tidb_time_consume: 该表显示的是 TiDB 的事件所消耗的时间。METRIC_NAME 是事件名称，LABEL 是事件标签，如：实例，事件类型等，TIME_RATIO 是该事件的 TOTAL_TIME 除以所有事件的 TOTAL_TIME，所有事件的 TIME_RATIO 为 1，TOTAL_TIME 是该事件的总花费时间，TOTAL_COUNT 是该事件的总计数，P999 是 0.999 分位数的最大时间，P99 是 0.99 分位数的最大时间，P90 是 0.90 分位数的最大时间，P80 是 0.80 分位数的最大时间。
+      tidb_time_consume: 该表显示的是 TiDB 的事件所消耗的时间。METRIC_NAME 是事件名称，LABEL 是事件标签，如：实例，事件类型等，TIME_RATIO 是该事件的总时间除以 TIME_RATIO 为 1 的事件的总时间，TOTAL_TIME 是该事件的总耗时，TOTAL_COUNT 是该事件的总计数，P999 是 0.999 分位数的最大时间，P99 是 0.99 分位数的最大时间，P90 是 0.90 分位数的最大时间，P80 是 0.80 分位数的最大时间。
       transaction: 该表显示了 TiDB 的事务统计信息。METRIC_NAME 是对象名，LABEL是对象标签，例如实例，事件类型…，TOTAL_VALUE 是该对象的总大小，TOTAL_COUNT 是该对象的总计数，P999为0.999分位数的最大值，P99是0.99分位数的最大值，P90是0.90分位数的最大值，P80是0.80分位数的最大值。
       tidb_connection_count: tidb 服务器的连接计数。
-      ddl_owner: DDL Owner 的信息。注意：如果没有DDL请求被执行，下面的 Owner 信息可能为空，这并不表示DDL Owner 不存在。
+      ddl_owner: DDL Owner 的信息。注意：如果没有 DDL 请求被执行，下面的 Owner 信息可能为空，这并不表示 DDL Owner 不存在。
       scheduler_initial_config: PD 调度器的初始配置值。初始时间是报表的开始时间。
-      scheduler_change_config: PD 调度器的配置更改历史。APPROXIMATE_CHANGE_TIME 为最近的有效更改时间。。
+      scheduler_change_config: PD 调度器的配置更改历史。APPROXIMATE_CHANGE_TIME 为最近的有效更改时间。
       tidb_gc_initial_config: TiDB GC 的初始配置值。初始时间是报表的开始时间。
       tidb_gc_change_config: TiDB GC 的配置更改历史。APPROXIMATE_CHANGE_TIME 为最近的有效更改时间。
       tikv_rocksdb_initial_config: TiKV RocksDB 的初始配置值。初始时间是报表的开始时间。
       tikv_rocksdb_change_config: TiKV RocksDB 的配置更改历史。APPROXIMATE_CHANGE_TIME 为最近的有效更改时间。
       tikv_raftstore_initial_config: TiKV RaftStore 的初始配置值。初始时间是报表的开始时间。
       tikv_raftstore_change_config: TiKV RaftStore 的配置更改历史。APPROXIMATE_CHANGE_TIME 为最近的有效更改时间。
-      pd_time_consume: 该表显示的是 PD 中的事件所消耗的时间。METRIC_NAME 是事件名称，LABEL 是事件标签，例如实例，事件类型…，TIME_RATIO 是该事件的 TOTAL_TIME 除以所有事件的 TOTAL_TIME，所有事件总的 TIME_RATIO 为 1，TOTAL_TIME 是该事件的总耗费时间，TOTAL_COUNT 是该事件的总计数，P999 是 0.999 分位数的最大时间 ，P99 是 0.99 分位数的最大时间，P90 是 0.90 分位数的最大时间，P80 是 0.80 分位数的最大时间。
-      tikv_time_consume: 该表显示的是 TiKV 中的事件所消耗的时间。METRIC_NAME 是事件名称，LABEL 是事件标签，例如实例，事件类型…，TIME_RATIO 是该事件的 TOTAL_TIME 除以所有事件的 TOTAL_TIME，所有事件总的 TIME_RATIO 为 1，TOTAL_TIME 是该事件的总耗费时间，TOTAL_COUNT 是该事件的总计数，P999 是 0.999 分位数的最大时间 ，P99 是 0.99 分位数的最大时间，P90 是 0.90 分位数的最大时间，P80 是 0.80 分位数的最大时间。
+      pd_time_consume: 该表显示的是 PD 中的事件所消耗的时间。METRIC_NAME 是事件名称，LABEL 是事件标签，例如实例，事件类型…，TIME_RATIO 是该事件的总时间除以 TIME_RATIO 为 1 的事件的总时间，TOTAL_TIME 是该事件的总耗时，TOTAL_COUNT 是该事件的总计数，P999 是 0.999 分位数的最大时间 ，P99 是 0.99 分位数的最大时间，P90 是 0.90 分位数的最大时间，P80 是 0.80 分位数的最大时间。
+      tikv_time_consume: 该表显示的是 TiKV 中的事件所消耗的时间。METRIC_NAME 是事件名称，LABEL 是事件标签，例如实例，事件类型…，TIME_RATIO 是该事件的总时间除以 TIME_RATIO 为 1 的事件的总时间，TOTAL_TIME 是该事件的总耗时，TOTAL_COUNT 是该事件的总计数，P999 是 0.999 分位数的最大时间 ，P99 是 0.99 分位数的最大时间，P90 是 0.90 分位数的最大时间，P80 是 0.80 分位数的最大时间。
     table:
       name:
         tidb_transaction: TiDB 事务
@@ -135,10 +135,10 @@ diagnosis:
         tikv_cop_total_response_total_size: TiKV coprocessor 响应总大小
         tikv_cop_scan_num: TiKV coprocessor 扫描操作总数
         tikv_raft_sent_messages_total_num: 发送的 raft 消息的总数
-        tikv_flush_messages_total_num: raft 上刷新了的信息总数
-        tikv_receive_messages_total_num: raft 收到的的信息总数
-        tikv_raft_dropped_messages_total: raft 丢掉的的信息总数
-        tikv_raft_proposals_total_num: raft 提议的的总数
+        tikv_flush_messages_total_num: 持久化 raft 消息的总数
+        tikv_receive_messages_total_num: 接受 raft 消息的总数
+        tikv_raft_dropped_messages_total: 丢弃 raft 消息的总数
+        tikv_raft_proposals_total_num: raft proposal 的总数
         tikv_grpc_error_total_count: gRPC 消息失败的总数
         tikv_critical_error_total_count: TiKV 临界误差的总计数
         tikv_coprocessor_request_error_total_count: Coprocessor 错误总数

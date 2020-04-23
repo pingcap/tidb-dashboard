@@ -30,6 +30,7 @@ import TimeRangeSelector from './TimeRangeSelector'
 import { Instance } from './statement-types'
 import { SearchContext } from './search-options-context'
 import styles from './styles.module.less'
+import { load, store } from '@lib/utils/storage'
 
 const { Option } = Select
 
@@ -201,26 +202,18 @@ export default function StatementsOverview({
   const [visibleColumnKeys, setVisibleColumnKeys] = useState<{
     [key: string]: boolean
   }>(() => {
-    const content = localStorage.getItem(VISIBLE_COLUMN_KEYS)
-    if (content !== null) {
-      return JSON.parse(content)
-    }
-    return {
+    return load(VISIBLE_COLUMN_KEYS, {
       digest_text: true,
       sum_latency: true,
       avg_latency: true,
       exec_count: true,
       avg_mem: true,
       related_schemas: true,
-    }
+    })
   })
   const [dropdownVisible, setDropdownVisible] = useState(false)
   const [showFullSQL, setShowFullSQL] = useState(() => {
-    const content = localStorage.getItem(SHOW_FULL_SQL)
-    if (content !== null) {
-      return JSON.parse(content)
-    }
-    return false
+    return load(SHOW_FULL_SQL, false)
   })
 
   useEffect(() => {
@@ -374,13 +367,13 @@ export default function StatementsOverview({
     [key: string]: boolean
   }) {
     setVisibleColumnKeys(visibleKeys)
-    localStorage.setItem(VISIBLE_COLUMN_KEYS, JSON.stringify(visibleKeys))
+    store(VISIBLE_COLUMN_KEYS, visibleKeys)
   }
 
   function handleFullSQLOptionChange(e: CheckboxChangeEvent) {
     const val = e.target.checked
     setShowFullSQL(val)
-    localStorage.setItem(SHOW_FULL_SQL, JSON.stringify(val))
+    store(SHOW_FULL_SQL, val)
   }
 
   const statementDisabled = (

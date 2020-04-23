@@ -33,8 +33,8 @@ import styles from './styles.module.less'
 
 const { Option } = Select
 
-const VISIBLE_COLUMN_KEYS = 'visible_column_keys'
-const SHOW_FULL_SQL = 'show_full_sql'
+const VISIBLE_COLUMN_KEYS = 'statement_overview_visible_column_keys'
+const SHOW_FULL_SQL = 'statement_overview_show_full_sql'
 
 interface State {
   curInstance: string | undefined

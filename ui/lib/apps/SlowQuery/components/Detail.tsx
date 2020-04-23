@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation, Link, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { parseQueryFn, buildQueryFn } from '@lib/utils/query'

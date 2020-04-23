@@ -101,9 +101,7 @@ function List() {
           searchText
         )
       setLoading(false)
-      if (res?.data) {
-        setSlowQueryList(res.data || [])
-      }
+      setSlowQueryList(res.data || [])
     }
     getSlowQueryList()
     const qs = List.buildQuery({
@@ -115,7 +113,16 @@ function List() {
       limit,
     })
     navigate(`/slow_query?${qs}`)
-  }, [curTimeRange, curSchemas, orderBy, desc, searchText, limit, refreshTimes])
+  }, [
+    curTimeRange,
+    curSchemas,
+    orderBy,
+    desc,
+    searchText,
+    limit,
+    refreshTimes,
+    navigate,
+  ])
 
   function handleTimeRangeChange(val: TimeRange) {
     setCurTimeRange(val)

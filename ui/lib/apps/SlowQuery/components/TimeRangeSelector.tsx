@@ -21,9 +21,10 @@ export interface TimeRange {
 
 export const DEF_TIME_RANGE: TimeRange = {
   recent: 30,
-  begin_time: 0,
-  end_time: 0,
+  begin_time: dayjs().unix() - 30 * 60,
+  end_time: dayjs().unix(),
 }
+
 export interface ITimeRangeSelectorProps {
   value: TimeRange
   onChange: (val: TimeRange) => void

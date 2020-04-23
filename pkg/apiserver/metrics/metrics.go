@@ -92,9 +92,10 @@ func (s *Service) queryHandler(c *gin.Context) {
 	params.Add("end", strconv.Itoa(req.EndTimeSec))
 	params.Add("step", strconv.Itoa(req.StepSec))
 
-	ctx, cancel = context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	promResp, err := http.Get(fmt.Sprintf("http://%s:%d/api/v1/query_range?%s", info.IP, info.Port, params.Encode()))
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
+	promResp, err := client.Get(fmt.Sprintf("http://%s:%d/api/v1/query_range?%s", info.IP, info.Port, params.Encode()))
 	if err != nil {
 		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to query Prometheus"))
 		return

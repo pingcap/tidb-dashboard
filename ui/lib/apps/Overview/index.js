@@ -70,21 +70,28 @@ const App = () => {
             <Row gutter={24}>
               <Col span={18}>
                 <Row gutter={24}>
-                  <Col span={8}>
+                  <Col span={6}>
                     <ComponentPanel
                       field="tikv"
                       data={cluster}
                       clusterError={clusterError}
                     />
                   </Col>
-                  <Col span={8}>
+                  <Col span={6}>
+                    <ComponentPanel
+                      field="tiflash"
+                      data={cluster}
+                      clusterError={clusterError}
+                    />
+                  </Col>
+                  <Col span={6}>
                     <ComponentPanel
                       field="tidb"
                       data={cluster}
                       clusterError={clusterError}
                     />
                   </Col>
-                  <Col span={8}>
+                  <Col span={6}>
                     <ComponentPanel
                       field="pd"
                       data={cluster}

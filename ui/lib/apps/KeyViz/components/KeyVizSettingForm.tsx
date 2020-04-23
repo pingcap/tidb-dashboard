@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Form, Skeleton, Switch, Space, Button, Modal } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
@@ -16,7 +16,7 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
   const [config, setConfig] = useState<ConfigKeyVisualConfig | null>(null)
   const { t } = useTranslation()
 
-  const onFetchServiceStatus = useCallback(() => {
+  const onFetchServiceStatus = () => {
     setLoading(true)
     fetchServiceStatus().then(
       (status) => {
@@ -27,13 +27,9 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
         setLoading(false)
       }
     )
-  }, [])
+  }
 
-  useEffect(() => {
-    onFetchServiceStatus()
-  }, [onFetchServiceStatus])
-
-  const onSubmitted = useCallback(() => {
+  const onSubmitted = () => {
     fetchServiceStatus().then(
       (status) => {
         setConfig({ auto_collection_enabled: status })
@@ -45,34 +41,30 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
         setSubmitting(false)
       }
     )
-  }, [onClose, onConfigUpdated])
+  }
 
-  const onUpdateServiceStatus = useCallback(
-    (status) => {
-      setSubmitting(true)
-      updateServiceStatus(status).then(onSubmitted, onSubmitted)
-    },
-    [onSubmitted]
-  )
+  const onUpdateServiceStatus = (status) => {
+    setSubmitting(true)
+    updateServiceStatus(status).then(onSubmitted, onSubmitted)
+  }
 
-  const onSubmit = useCallback(
-    (values) => {
-      if (config?.auto_collection_enabled && !values.auto_collection_enabled) {
-        Modal.confirm({
-          title: t('keyviz.settings.close_keyviz'),
-          icon: <ExclamationCircleOutlined />,
-          content: t('keyviz.settings.close_keyviz_warning'),
-          okText: t('keyviz.settings.actions.close'),
-          cancelText: t('keyviz.settings.actions.cancel'),
-          okButtonProps: { type: 'danger' },
-          onOk: () => onUpdateServiceStatus(false),
-        })
-      } else {
-        onUpdateServiceStatus(values.auto_collection_enabled)
-      }
-    },
-    [config, onUpdateServiceStatus, t]
-  )
+  const onSubmit = (values) => {
+    if (config?.auto_collection_enabled && !values.auto_collection_enabled) {
+      Modal.confirm({
+        title: t('keyviz.settings.close_keyviz'),
+        icon: <ExclamationCircleOutlined />,
+        content: t('keyviz.settings.close_keyviz_warning'),
+        okText: t('keyviz.settings.actions.close'),
+        cancelText: t('keyviz.settings.actions.cancel'),
+        okButtonProps: { type: 'danger' },
+        onOk: () => onUpdateServiceStatus(false),
+      })
+    } else {
+      onUpdateServiceStatus(values.auto_collection_enabled)
+    }
+  }
+
+  useEffect(onFetchServiceStatus, [])
 
   return (
     <>

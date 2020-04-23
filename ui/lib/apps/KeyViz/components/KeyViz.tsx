@@ -91,7 +91,7 @@ const KeyViz = (props) => {
   const [showSettings, setShowSettings] = useState(false)
   const { t } = useTranslation()
 
-  const onFetchServiceStatus = useCallback(() => {
+  const onFetchServiceStatus = () => {
     setLoading(true)
     fetchServiceStatus().then(
       (status) => {
@@ -102,7 +102,7 @@ const KeyViz = (props) => {
         setLoading(false)
       }
     )
-  }, [])
+  }
 
   const onFetchHeatmap = useCallback(() => {
     if (autoRefreshSecondsRef.current > 0) {
@@ -121,30 +121,26 @@ const KeyViz = (props) => {
     )
   }, [selection, dateRange, metricType])
 
-  const onChangeBrightLevel = useCallback((val) => {
+  const onChangeBrightLevel = (val) => {
     if (!_chart) return
     setBrightLevel(val)
     _chart.brightness(val)
-  }, [])
+  }
 
-  const onChangeMetric = useCallback(setMetricType, [])
-
-  const onChangeAutoRefresh = useCallback(setAutoRefreshSeconds, [])
-
-  const onChangeDateRange = useCallback((v: number) => {
+  const onChangeDateRange = (v: number) => {
     setDateRange(v)
     setSelection(null)
-  }, [])
+  }
 
-  const onResetZoom = useCallback(() => {
+  const onResetZoom = () => {
     setSelection(null)
-  }, [])
+  }
 
-  const onToggleBrush = useCallback(() => {
+  const onToggleBrush = () => {
     setAutoRefreshSeconds(0)
     setOnBrush(!isOnBrush)
     _chart.brush(!isOnBrush)
-  }, [isOnBrush])
+  }
 
   const onBrush = useCallback((selection: HeatmapRange) => {
     setOnBrush(false)
@@ -169,9 +165,7 @@ const KeyViz = (props) => {
     autoRefreshSecondsRef.current = autoRefreshSeconds
   }, [autoRefreshSeconds])
 
-  useEffect(() => {
-    onFetchServiceStatus()
-  }, [onFetchServiceStatus])
+  useEffect(onFetchServiceStatus, [])
 
   useEffect(() => {
     if (serviceEnabled) {
@@ -192,7 +186,7 @@ const KeyViz = (props) => {
       onResetZoom()
       setOnBrush(false)
     }
-  }, [autoRefreshSeconds, onResetZoom])
+  }, [autoRefreshSeconds])
 
   useInterval(() => {
     if (autoRefreshSeconds === 0) {
@@ -242,9 +236,9 @@ const KeyViz = (props) => {
         remainingRefreshSeconds={remainingRefreshSeconds}
         isOnBrush={isOnBrush}
         onChangeBrightLevel={onChangeBrightLevel}
-        onChangeMetric={onChangeMetric}
+        onChangeMetric={setMetricType}
         onChangeDateRange={onChangeDateRange}
-        onChangeAutoRefresh={onChangeAutoRefresh}
+        onChangeAutoRefresh={setAutoRefreshSeconds}
         onRefresh={onFetchHeatmap}
         onShowSettings={() => setShowSettings(true)}
       />

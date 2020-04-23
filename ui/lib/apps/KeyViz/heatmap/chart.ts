@@ -86,11 +86,6 @@ export async function heatmapChart(
     heatmapChart()
   }
 
-  heatmapChart.brush = function (enabled: boolean) {
-    isBrushing = enabled
-    heatmapChart()
-  }
-
   heatmapChart.resetZoom = function () {
     zoomTransform = d3.zoomIdentity
     heatmapChart()

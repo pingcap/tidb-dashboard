@@ -8,7 +8,7 @@ import { Card } from '@lib/components'
 import client, { SlowqueryBase } from '@lib/client'
 import TimeRangeSelector, {
   TimeRange,
-  DEF_TIME_RANGE,
+  getDefTimeRange,
 } from './TimeRangeSelector'
 import SlowQueriesTable, { OrderBy } from './SlowQueriesTable'
 
@@ -29,13 +29,15 @@ export interface ISearchOptions {
   limit: number
 }
 
-const defSearchOptions: ISearchOptions = {
-  timeRange: DEF_TIME_RANGE,
-  schemas: [],
-  searchText: '',
-  orderBy: 'Time',
-  desc: true,
-  limit: 100,
+export function getDefSearchOptions(): ISearchOptions {
+  return {
+    timeRange: getDefTimeRange(),
+    schemas: [],
+    searchText: '',
+    orderBy: 'Time',
+    desc: true,
+    limit: 100,
+  }
 }
 
 function List() {
@@ -43,7 +45,7 @@ function List() {
 
   const [searchOptions, setSearchOptions] = useSessionStorageState(
     SEARCH_OPTIONS_SESSION_KEY,
-    defSearchOptions
+    getDefSearchOptions()
   )
 
   const [loading, setLoading] = useState(true)

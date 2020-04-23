@@ -113,6 +113,7 @@ func getAllColumnNames() []string {
 			ret = append(ret, list[1])
 		}
 	}
+	ret = append(ret, "Time")
 	return ret
 }
 
@@ -162,8 +163,8 @@ func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
 
 func QuerySlowLogDetail(db *gorm.DB, req *DetailRequest) (*SlowQuery, error) {
 	var result SlowQuery
-	upperBound := req.Time
-	lowerBound := req.Time - 10e-7
+	upperBound := req.Time + 10E-7
+	lowerBound := req.Time - 10E-7
 	err := db.Select(SelectStmt).Table(SlowQueryTable).
 		Where("Digest = ?", req.Digest).
 		Where("Time >= from_unixtime(?) and Time <= from_unixtime(?)", lowerBound, upperBound).

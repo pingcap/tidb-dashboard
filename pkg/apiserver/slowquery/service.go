@@ -61,12 +61,13 @@ func (s *Service) listHandler(c *gin.Context) {
 
 	if req.LogStartTS == 0 {
 		now := time.Now().Unix()
-		before := time.Now().AddDate(0, 0, -1).Unix()
+		before := time.Now().Add(-30 * time.Minute).Unix()
 		req.LogStartTS = before
 		req.LogEndTS = now
 	}
 
 	db := utils.GetTiDBConnection(c)
+	db.LogMode(true)
 	results, err := QuerySlowLogList(db, &req)
 	if err != nil {
 		_ = c.Error(err)
@@ -98,6 +99,7 @@ func (s *Service) detailhandler(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
+	db.LogMode(true)
 	result, err := QuerySlowLogDetail(db, &req)
 	if err != nil {
 		_ = c.Error(err)

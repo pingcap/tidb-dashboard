@@ -1,11 +1,11 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation, Link } from 'react-router-dom'
+import { useLocation, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { parseQueryFn, buildQueryFn } from '@lib/utils/query'
 import client from '@lib/client'
-import { Skeleton, Space, Alert } from 'antd'
+import { Skeleton, Space, Alert, Button } from 'antd'
 import {
   Head,
   Descriptions,
@@ -31,6 +31,7 @@ export interface IPageQuery {
 
 function DetailPage() {
   const query = DetailPage.parseQuery(useLocation().search)
+  const navigate = useNavigate()
 
   const { t } = useTranslation()
 
@@ -53,9 +54,14 @@ function DetailPage() {
       <Head
         title={t('slow_query.detail.head.title')}
         back={
-          <Link to={`/slow_query?from=detail`}>
+          <Button
+            type="link"
+            onClick={() => {
+              navigate(-1)
+            }}
+          >
             <ArrowLeftOutlined /> {t('slow_query.detail.head.back')}
-          </Link>
+          </Button>
         }
       >
         {isLoading && <Skeleton active />}

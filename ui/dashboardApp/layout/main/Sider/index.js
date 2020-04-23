@@ -82,7 +82,6 @@ export default function Sider({
   const currentLogin = useCurrentLogin()
 
   const debugSubMenuItems = [
-    useAnimatedAppMenuItem(registry, 'search_logs'),
     useAnimatedAppMenuItem(registry, 'instance_profiling'),
   ]
   const debugSubMenu = (animationProps) => (
@@ -107,6 +106,7 @@ export default function Sider({
     useAnimatedAppMenuItem(registry, 'statement'),
     useAnimatedAppMenuItem(registry, 'slow_query'),
     useAnimatedAppMenuItem(registry, 'diagnose'),
+    useAnimatedAppMenuItem(registry, 'search_logs'),
     debugSubMenu,
   ]
 

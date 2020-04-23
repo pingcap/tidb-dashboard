@@ -1,9 +1,12 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
+import { Button, Drawer } from 'antd'
+import { useTranslation } from 'react-i18next'
 import useInterval from '@use-it/interval'
 import { Heatmap } from '../heatmap'
 import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types'
-import { fetchHeatmap } from '../utils'
+import { fetchHeatmap, fetchServiceStatus } from '../utils'
 import ToolBar from './ToolBar'
+import KeyVizSettingForm from './KeyVizSettingForm'
 import './KeyViz.less'
 
 type CacheEntry = {
@@ -76,7 +79,7 @@ let cache = new HeatmapCache()
 const KeyViz = (props) => {
   const [chartState, setChartState] = useState<ChartState>()
   const [selection, setSelection] = useState<HeatmapRange | null>(null)
-  const [isLoading, setLoading] = useState(false)
+  const [isLoading, setLoading] = useState(true)
   const [autoRefreshSeconds, setAutoRefreshSeconds] = useState(0)
   const autoRefreshSecondsRef = useRef(autoRefreshSeconds)
   const [remainingRefreshSeconds, setRemainingRefreshSeconds] = useState(0)
@@ -84,68 +87,47 @@ const KeyViz = (props) => {
   const [dateRange, setDateRange] = useState(3600 * 6)
   const [brightLevel, setBrightLevel] = useState(1)
   const [metricType, setMetricType] = useState<DataTag>('written_bytes')
+  const [serviceEnabled, setServiceEnabled] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const { t } = useTranslation()
 
-  useEffect(() => {
-    autoRefreshSecondsRef.current = autoRefreshSeconds
-  }, [autoRefreshSeconds])
-
-  useInterval(() => {
-    if (autoRefreshSeconds === 0) {
-      return
-    }
-    if (remainingRefreshSeconds === 0) {
-      _fetchHeatmap()
-    } else {
-      setRemainingRefreshSeconds((c) => c - 1)
-    }
-  }, 1000)
-
-  useEffect(() => {
-    setRemainingRefreshSeconds((r) => {
-      if (r > autoRefreshSeconds) {
-        return autoRefreshSeconds
-      } else {
-        return r
+  const onFetchServiceStatus = () => {
+    setLoading(true)
+    fetchServiceStatus().then(
+      (status) => {
+        if (!status) {
+          setAutoRefreshSeconds(0)
+        }
+        setServiceEnabled(status)
+        setLoading(false)
+      },
+      () => {
+        setLoading(false)
       }
-    })
+    )
+  }
 
-    if (autoRefreshSeconds > 0) {
-      onResetZoom()
-      setOnBrush(false)
-    }
-  }, [autoRefreshSeconds])
-
-  const _fetchHeatmap = useCallback(async () => {
+  const onFetchHeatmap = useCallback(() => {
     if (autoRefreshSecondsRef.current > 0) {
       setRemainingRefreshSeconds(autoRefreshSecondsRef.current)
     }
     setLoading(true)
     setOnBrush(false)
-    const data = await cache.fetch(selection || dateRange, metricType)
-    setChartState({ heatmapData: data!, metricType: metricType })
-    setLoading(false)
+    cache.fetch(selection || dateRange, metricType).then(
+      (data) => {
+        setChartState({ heatmapData: data!, metricType: metricType })
+        setLoading(false)
+      },
+      () => {
+        setLoading(false)
+      }
+    )
   }, [selection, dateRange, metricType])
-
-  useEffect(() => {
-    _fetchHeatmap()
-  }, [_fetchHeatmap])
 
   const onChangeBrightLevel = (val) => {
     if (!_chart) return
     setBrightLevel(val)
     _chart.brightness(val)
-  }
-
-  const onChangeMetric = (value) => {
-    setMetricType(value)
-  }
-
-  const onChangeAutoRefresh = (v: number) => {
-    setAutoRefreshSeconds(v)
-  }
-
-  const onRefresh = () => {
-    _fetchHeatmap()
   }
 
   const onChangeDateRange = (v: number) => {
@@ -182,9 +164,71 @@ const KeyViz = (props) => {
     })
   }, [])
 
+  useEffect(() => {
+    autoRefreshSecondsRef.current = autoRefreshSeconds
+  }, [autoRefreshSeconds])
+
+  useEffect(onFetchServiceStatus, [])
+
+  useEffect(() => {
+    if (serviceEnabled) {
+      onFetchHeatmap()
+    }
+  }, [serviceEnabled, onFetchHeatmap])
+
+  useEffect(() => {
+    setRemainingRefreshSeconds((r) => {
+      if (r > autoRefreshSeconds) {
+        return autoRefreshSeconds
+      } else {
+        return r
+      }
+    })
+
+    if (autoRefreshSeconds > 0) {
+      onResetZoom()
+      setOnBrush(false)
+    }
+  }, [autoRefreshSeconds])
+
+  useInterval(() => {
+    if (autoRefreshSeconds === 0) {
+      return
+    }
+    if (remainingRefreshSeconds === 0) {
+      onFetchHeatmap()
+    } else {
+      setRemainingRefreshSeconds((c) => c - 1)
+    }
+  }, 1000)
+
+  const mainPart = serviceEnabled ? (
+    chartState && (
+      <Heatmap
+        data={chartState.heatmapData}
+        dataTag={chartState.metricType}
+        onBrush={onBrush}
+        onChartInit={onChartInit}
+        onZoom={onZoom}
+      />
+    )
+  ) : (
+    <div className="keyviz_disabled_container">
+      <h2>{t('keyviz.settings.disabled_desc_title')}</h2>
+      <div className="keyviz_disabled_desc">
+        <p>{t('keyviz.settings.disabled_desc_line_1')}</p>
+        <p>{t('keyviz.settings.disabled_desc_line_2')}</p>
+      </div>
+      <Button type="primary" onClick={() => setShowSettings(true)}>
+        {t('keyviz.settings.open_setting')}
+      </Button>
+    </div>
+  )
+
   return (
     <div className="PD-KeyVis">
       <ToolBar
+        enabled={serviceEnabled}
         dateRange={dateRange}
         metricType={metricType}
         brightLevel={brightLevel}
@@ -195,21 +239,26 @@ const KeyViz = (props) => {
         remainingRefreshSeconds={remainingRefreshSeconds}
         isOnBrush={isOnBrush}
         onChangeBrightLevel={onChangeBrightLevel}
-        onChangeMetric={onChangeMetric}
+        onChangeMetric={setMetricType}
         onChangeDateRange={onChangeDateRange}
-        // onToggleAutoFetch={onToggleAutoFetch}
-        onChangeAutoRefresh={onChangeAutoRefresh}
-        onRefresh={onRefresh}
+        onChangeAutoRefresh={setAutoRefreshSeconds}
+        onRefresh={onFetchHeatmap}
+        onShowSettings={() => setShowSettings(true)}
       />
-      {chartState && (
-        <Heatmap
-          data={chartState.heatmapData}
-          dataTag={chartState.metricType}
-          onBrush={onBrush}
-          onChartInit={onChartInit}
-          onZoom={onZoom}
+      {mainPart}
+      <Drawer
+        title={t('keyviz.settings.title')}
+        width={300}
+        closable={true}
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        destroyOnClose={true}
+      >
+        <KeyVizSettingForm
+          onClose={() => setShowSettings(false)}
+          onConfigUpdated={onFetchServiceStatus}
         />
-      )}
+      </Drawer>
     </div>
   )
 }

@@ -219,7 +219,10 @@ func (s *distanceStrategy) GenerateScaleColumnWork(ctx context.Context, ch <-cha
 		select {
 		case <-ctx.Done():
 			return
-		case task := <-ch:
+		case task, ok := <-ch:
+			if !ok {
+				return
+			}
 			dis := task.Dis
 			keys := task.Keys
 			compactKeys := task.CompactKeys

@@ -48,6 +48,7 @@ statement:
           close: Close
           cancel: Cancel
   fields:
+    table_names: Table Names
     related_schemas: Database
     related_schemas_tooltip: Related databases of the SQL
     plan_digest: Plan ID

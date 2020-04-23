@@ -52,6 +52,7 @@ export default function TimeRangeSelector({
     }
     setCurTimeRange(timeRange)
     onChange(timeRange)
+    setDropdownVisible(false)
   }
 
   function handleRangePickerChange(values) {
@@ -67,6 +68,7 @@ export default function TimeRangeSelector({
       }
       setCurTimeRange(timeRange)
       onChange(timeRange)
+      setDropdownVisible(false)
     }
   }
 

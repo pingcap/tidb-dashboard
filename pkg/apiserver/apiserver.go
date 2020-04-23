@@ -32,6 +32,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/metrics"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/profiling"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/statement"
@@ -121,6 +122,7 @@ func (s *Service) Start(ctx context.Context) error {
 			statement.NewService,
 			diagnose.NewService,
 			keyvisual.NewService,
+			metrics.NewService,
 		),
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
@@ -134,6 +136,7 @@ func (s *Service) Start(ctx context.Context) error {
 			statement.Register,
 			diagnose.Register,
 			keyvisual.Register,
+			metrics.Register,
 			// Must be at the end
 			s.status.Register,
 		),

@@ -81,3 +81,9 @@ type GrafanaInfo struct {
 	Port       uint   `json:"port"`
 	BinaryPath string `json:"binary_path"`
 }
+
+type PrometheusInfo struct {
+	IP         string `json:"ip"`
+	Port       uint   `json:"port"`
+	BinaryPath string `json:"binary_path"`
+}

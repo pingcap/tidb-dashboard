@@ -97,12 +97,12 @@ func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 		defer tw.Close()
 		err := dumpLog(*task.LogStorePath, tw)
 		if err != nil {
-			_ = c.Error(err)
+			log.Error("Error dumping logs from path", zap.String("path", *task.LogStorePath), zap.Error(err))
 			return
 		}
 		if task.SlowLogStorePath != nil {
 			if err = dumpLog(*task.SlowLogStorePath, tw); err != nil {
-				_ = c.Error(err)
+				log.Error("Error dumping logs from path", zap.String("path", *task.SlowLogStorePath), zap.Error(err))
 				return
 			}
 		}

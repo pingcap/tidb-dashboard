@@ -102,6 +102,110 @@ export function useClientRequest<T>(
   }
 }
 
+export interface BatchState<T> {
+  isLoading: boolean
+  data: (T | null)[]
+  error: (any | null)[]
+}
+
+export function useBatchClientRequest<T>(
+  reqFactories: RequestFactory<T>[],
+  options?: Options
+) {
+  const { immediate = true, afterRequest = null, beforeRequest = null } =
+    options || {}
+
+  const [state, setState] = useState<BatchState<T>>({
+    isLoading: false,
+    data: reqFactories.map((_) => null),
+    error: reqFactories.map((_) => null),
+  })
+
+  const cancelTokenSource = useRef<CancelTokenSource[] | null>(null)
+  const mounted = useRef(false)
+
+  const stateRef = useRef(state)
+  useEffect(() => {
+    stateRef.current = state
+  }, [state])
+
+  const sendRequestEach = async (idx) => {
+    try {
+      const resp = await reqFactories[idx](
+        cancelTokenSource.current![idx].token
+      )
+      if (mounted.current) {
+        setState((s) => {
+          s.data[idx] = resp.data
+          return { ...s, data: [...s.data] }
+        })
+      }
+    } catch (e) {
+      if (mounted.current) {
+        setState((s) => {
+          s.error[idx] = e
+          return { ...s, error: [...s.error] }
+        })
+      }
+    }
+  }
+
+  const sendRequest = async () => {
+    if (!mounted.current) {
+      return
+    }
+    if (stateRef.current.isLoading) {
+      return
+    }
+
+    beforeRequest && beforeRequest()
+
+    cancelTokenSource.current = reqFactories.map((_) =>
+      axios.CancelToken.source()
+    )
+    setState((s) => ({
+      ...s,
+      isLoading: true,
+      error: reqFactories.map((_) => null),
+    }))
+
+    const p = reqFactories.map((_, idx) => sendRequestEach(idx))
+    await Promise.all(p)
+    setState((s) => ({
+      ...s,
+      isLoading: false,
+    }))
+
+    cancelTokenSource.current = null
+
+    afterRequest && afterRequest()
+  }
+
+  const cancelLastRequest = useCallback(() => {
+    if (cancelTokenSource.current != null) {
+      cancelTokenSource.current.forEach((c) => c.cancel())
+      cancelTokenSource.current = null
+    }
+  }, [])
+
+  useMount(() => {
+    mounted.current = true
+    if (immediate) {
+      sendRequest()
+    }
+  })
+
+  useUnmount(() => {
+    mounted.current = false
+    cancelLastRequest()
+  })
+
+  return {
+    ...state,
+    sendRequest,
+  }
+}
+
 interface OptionsWithPolling<T> extends Options {
   pollingInterval: number
   shouldPoll: ((data: T) => boolean) | null

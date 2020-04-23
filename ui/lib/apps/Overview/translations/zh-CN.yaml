@@ -8,11 +8,20 @@ overview:
     abnormal: 异常
     nodes: '{{nodeType}} 节点'
   monitor_alert:
-    title: 监控和告警
+    title: 监控告警
     view_monitor: 查看监控
     view_monitor_warn: 监控不可用
     view_alerts: '查看 {{alertCount}} 条告警'
     view_zero_alerts: 查看告警
     view_alerts_warn: 告警不可用
-    problems: 问题
     run_diagnose: 运行诊断
+  metrics:
+    total_requests: QPS
+    latency: 延迟
+  nodes:
+    title: 节点
+    component:
+      tidb: TiDB
+      tikv: TiKV
+      pd: PD
+      tiflash: TiFlash

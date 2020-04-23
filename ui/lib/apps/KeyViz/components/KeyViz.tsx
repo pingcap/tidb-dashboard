@@ -95,6 +95,9 @@ const KeyViz = (props) => {
     setLoading(true)
     fetchServiceStatus().then(
       (status) => {
+        if (!status) {
+          setAutoRefreshSeconds(0)
+        }
         setServiceEnabled(status)
         setLoading(false)
       },

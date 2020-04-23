@@ -123,13 +123,6 @@ function List() {
     getSlowQueryList()
   }, [searchOptions, refreshTimes])
 
-  function handleTimeRangeChange(val: TimeRange) {
-    setSearchOptions({
-      ...searchOptions,
-      timeRange: val,
-    })
-  }
-
   function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {
     if (column.key === searchOptions.orderBy) {
       setSearchOptions({
@@ -161,7 +154,9 @@ function List() {
           <Space size="middle" className={styles.search_options}>
             <TimeRangeSelector
               value={searchOptions.timeRange}
-              onChange={handleTimeRangeChange}
+              onChange={(timeRange) =>
+                setSearchOptions({ ...searchOptions, timeRange })
+              }
             />
             <Select
               value={searchOptions.schemas}

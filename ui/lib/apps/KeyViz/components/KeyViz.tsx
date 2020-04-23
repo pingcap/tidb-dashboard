@@ -1,11 +1,12 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
-import { Button } from 'antd'
+import { Button, Drawer } from 'antd'
 import { useTranslation } from 'react-i18next'
 import useInterval from '@use-it/interval'
 import { Heatmap } from '../heatmap'
 import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types'
 import { fetchHeatmap, fetchServiceStatus } from '../utils'
 import ToolBar from './ToolBar'
+import KeyVizSettingForm from './KeyVizSettingForm'
 import './KeyViz.less'
 
 type CacheEntry = {
@@ -252,6 +253,19 @@ const KeyViz = (props) => {
         onRefresh={onFetchHeatmap}
       />
       {mainPart}
+      <Drawer
+        title={t('keyviz.settings.title')}
+        width={300}
+        closable={true}
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        destroyOnClose={true}
+      >
+        <KeyVizSettingForm
+          onClose={() => setShowSettings(false)}
+          onConfigUpdated={onFetchServiceStatus}
+        />
+      </Drawer>
     </div>
   )
 }

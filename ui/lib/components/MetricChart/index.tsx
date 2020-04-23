@@ -205,7 +205,7 @@ export default function MetricChart({
       },
       series: s,
     }
-  }, [data, valueFormatter, series])
+  }, [data, valueFormatter, series, type])
 
   let inner
 

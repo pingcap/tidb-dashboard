@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Root, DateTime, MetricChart, Card } from '@lib/components'
+import { Root, DateTime, MetricChart } from '@lib/components'
 import { Row, Col } from 'antd'
 import { RightOutlined } from '@ant-design/icons'
 import { HashRouter as Router, Link } from 'react-router-dom'
@@ -16,8 +16,6 @@ import Nodes from './components/Nodes'
 
 export default function App() {
   const [cluster, setCluster] = useState<ClusterinfoClusterInfo | null>(null)
-  // FIXME
-  const [clusterError, setClusterError] = useState(null)
   const [timeRange, setTimeRange] = useState<StatementTimeRange>({
     begin_time: 0,
     end_time: 0,
@@ -32,18 +30,8 @@ export default function App() {
       try {
         let res = await client.getInstance().topologyAllGet()
         setCluster(res.data)
-        setClusterError(null)
       } catch (error) {
-        let topology_error
-        if (error.response) {
-          topology_error = error.response.data
-        } else if (error.request) {
-          topology_error = error.request
-        } else {
-          topology_error = error.message
-        }
         setCluster(null)
-        setClusterError(topology_error)
       }
     }
 

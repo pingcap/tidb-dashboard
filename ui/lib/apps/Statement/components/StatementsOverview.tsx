@@ -62,7 +62,7 @@ const initState: State = {
   timeRanges: [],
   stmtTypes: [],
 
-  statementsLoading: false,
+  statementsLoading: true,
   statements: [],
 }
 
@@ -391,8 +391,8 @@ export default function StatementsOverview({
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Card>
-        <div style={{ display: 'flex' }}>
-          <Space size="middle">
+        <div className={styles.overview_header}>
+          <Space size="middle" className={styles.overview_options}>
             <TimeRangeSelector
               timeRanges={state.timeRanges}
               onChange={handleTimeRangeChange}
@@ -428,8 +428,7 @@ export default function StatementsOverview({
               ))}
             </Select>
           </Space>
-          <div style={{ flex: 1 }} />
-          <Space size="middle">
+          <Space size="middle" className={styles.overview_right_actions}>
             {columns.length > 0 && (
               <Dropdown
                 placement="bottomRight"

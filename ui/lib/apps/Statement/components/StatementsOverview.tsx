@@ -201,8 +201,8 @@ export default function StatementsOverview({
   const [columns, setColumns] = useState<IColumn[]>([])
   const [visibleColumnKeys, setVisibleColumnKeys] = useState<{
     [key: string]: boolean
-  }>(() => {
-    return load(VISIBLE_COLUMN_KEYS, {
+  }>(() =>
+    load(VISIBLE_COLUMN_KEYS, {
       digest_text: true,
       sum_latency: true,
       avg_latency: true,
@@ -210,11 +210,11 @@ export default function StatementsOverview({
       avg_mem: true,
       related_schemas: true,
     })
-  })
+  )
   const [dropdownVisible, setDropdownVisible] = useState(false)
-  const [showFullSQL, setShowFullSQL] = useState(() => {
-    return load(SHOW_FULL_SQL, false)
-  })
+  const [showFullSQL, setShowFullSQL] = useState(() =>
+    load(SHOW_FULL_SQL, false)
+  )
 
   useEffect(() => {
     async function queryInstances() {

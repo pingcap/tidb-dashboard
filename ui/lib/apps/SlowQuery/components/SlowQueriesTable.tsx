@@ -32,6 +32,24 @@ function tableColumns(
       onColumnClick: onColumnClick,
     },
     {
+      ...useSlowQueryColumn.useParseTimeColumn(rows),
+      isSorted: orderBy === 'Parse_time',
+      isSortedDescending: desc,
+      onColumnClick: onColumnClick,
+    },
+    {
+      ...useSlowQueryColumn.useCompileTimeColumn(rows),
+      isSorted: orderBy === 'Compile_time',
+      isSortedDescending: desc,
+      onColumnClick: onColumnClick,
+    },
+    {
+      ...useSlowQueryColumn.useProcessTimeColumn(rows),
+      isSorted: orderBy === 'Process_time',
+      isSortedDescending: desc,
+      onColumnClick: onColumnClick,
+    },
+    {
       ...useSlowQueryColumn.useMemoryColumn(rows),
       isSorted: orderBy === 'Mem_max',
       isSortedDescending: desc,

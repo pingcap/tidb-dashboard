@@ -120,6 +120,61 @@ export function useQueryTimeColumn(rows?: { query_time?: number }[]): IColumn {
   }
 }
 
+export function useParseTimeColumn(rows?: { parse_time?: number }[]): IColumn {
+  const capacity = rows ? max(rows.map((v) => v.parse_time)) ?? 0 : 0
+  return {
+    name: useCommonColumnName('parse_time'),
+    key: 'Parse_time',
+    fieldName: 'parse_time',
+    minWidth: 140,
+    maxWidth: 200,
+    isResizable: true,
+    onRender: (rec) => (
+      <Bar textWidth={70} value={rec.parse_time} capacity={capacity}>
+        {getValueFormat('s')(rec.parse_time, 1)}
+      </Bar>
+    ),
+  }
+}
+
+export function useCompileTimeColumn(
+  rows?: { compile_time?: number }[]
+): IColumn {
+  const capacity = rows ? max(rows.map((v) => v.compile_time)) ?? 0 : 0
+  return {
+    name: useCommonColumnName('compile_time'),
+    key: 'Compile_time',
+    fieldName: 'compile_time',
+    minWidth: 140,
+    maxWidth: 200,
+    isResizable: true,
+    onRender: (rec) => (
+      <Bar textWidth={70} value={rec.compile_time} capacity={capacity}>
+        {getValueFormat('s')(rec.compile_time, 1)}
+      </Bar>
+    ),
+  }
+}
+
+export function useProcessTimeColumn(
+  rows?: { process_time?: number }[]
+): IColumn {
+  const capacity = rows ? max(rows.map((v) => v.process_time)) ?? 0 : 0
+  return {
+    name: useCommonColumnName('process_time'),
+    key: 'Process_time',
+    fieldName: 'process_time',
+    minWidth: 140,
+    maxWidth: 200,
+    isResizable: true,
+    onRender: (rec) => (
+      <Bar textWidth={70} value={rec.process_time} capacity={capacity}>
+        {getValueFormat('s')(rec.process_time, 1)}
+      </Bar>
+    ),
+  }
+}
+
 export function useMemoryColumn(rows?: { memory_max?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.memory_max)) ?? 0 : 0
   return {

@@ -18,6 +18,7 @@ function tableColumns(
   return [
     useSlowQueryColumn.useSqlColumn(rows, showFullSQL),
     useSlowQueryColumn.useInstanceColumn(rows),
+    useSlowQueryColumn.useDBColumn(rows),
     useSlowQueryColumn.useSuccessColumn(rows),
     {
       ...useSlowQueryColumn.useTimestampColumn(rows),

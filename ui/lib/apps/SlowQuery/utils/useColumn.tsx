@@ -86,6 +86,25 @@ export function useInstanceColumn(
   }
 }
 
+export function useDBColumn(
+  _rows?: { db?: string }[] // used for type check only
+): IColumn {
+  return {
+    name: useCommonColumnName('db'),
+    key: 'DB',
+    fieldName: 'db',
+    minWidth: 100,
+    maxWidth: 150,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => (
+      <Tooltip title={rec.db}>
+        <TextWrap>{rec.db}</TextWrap>
+      </Tooltip>
+    ),
+  }
+}
+
 export function useSuccessColumn(
   _rows?: { success?: number }[] // used for type check only
 ): IColumn {

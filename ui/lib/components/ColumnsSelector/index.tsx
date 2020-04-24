@@ -3,6 +3,24 @@ import { Dropdown, Menu, Checkbox } from 'antd'
 import { DownOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import { addTranslationResource } from '@lib/utils/i18n'
+
+const translations = {
+  en: {
+    text: 'Columns',
+  },
+  'zh-CN': {
+    text: '选择列',
+  },
+}
+
+for (const key in translations) {
+  addTranslationResource(key, {
+    component: {
+      columnsSelector: translations[key],
+    },
+  })
+}
 
 export interface IColumnsSelectorProps {
   columns: IColumn[]
@@ -77,8 +95,7 @@ export default function ColumnsSelector({
       overlay={dropdownMenus}
     >
       <div style={{ cursor: 'pointer' }}>
-        {t('statement.pages.overview.toolbar.select_columns.name')}{' '}
-        <DownOutlined />
+        {t('component.columnsSelector.text')} <DownOutlined />
       </div>
     </Dropdown>
   )

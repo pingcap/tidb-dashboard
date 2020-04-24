@@ -25,7 +25,6 @@ statement:
         select_stmt_types: Select SQL kind
         select_columns:
           show_full_sql: Show Full SQL
-          name: Columns
         refresh: Refresh
         time_range_selector:
           name: Select Time Range

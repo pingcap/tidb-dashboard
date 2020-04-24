@@ -14,12 +14,5 @@ cd $PROJECT_DIR
 export GOBIN=$PROJECT_DIR/bin
 export PATH=$GOBIN:$PATH
 
-echo "+ Install swagger tools"
-go install github.com/swaggo/swag/cmd/swag
-
-echo "+ Clean up go mod"
-go mod tidy
-
 echo "+ Generate swagger spec"
-swag init -g cmd/tidb-dashboard/main.go
-cp docs/swagger.yaml ui/packages/dashboard_client/
+swag init --generalInfo cmd/tidb-dashboard/main.go

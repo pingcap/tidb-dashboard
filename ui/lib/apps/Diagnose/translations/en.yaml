@@ -1,0 +1,28 @@
+diagnose:
+  nav_title: Cluster Diagnose
+  generate:
+    title: Start Diagnosis
+    range_begin: Range Start Time
+    range_duration: Range Duration
+    is_compare: Compare by Baseline
+    compare_range_begin: Baseline Range Start Time
+    submit: Start
+  list_table:
+    id: Report ID
+    diagnose_create_time: Diagnose At
+    status: Status
+    status_running: Running
+    status_finish: Finish
+    range: Range
+    compare_range: Baseline Range
+  status:
+    head:
+      title: Diagnose Status
+      back: New Diagnose Report
+      view: View Full Report
+    range_begin: Range Start Time
+    range_end: Range End Time
+    baseline_begin: Baseline Range Start Time
+    progress: Progress
+  time_duration:
+    custom: Custom

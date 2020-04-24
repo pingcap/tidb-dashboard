@@ -1,0 +1,123 @@
+statement:
+  nav_title: SQL 语句分析
+  pages:
+    detail:
+      head:
+        back: 返回列表
+        title: SQL 语句信息
+      desc:
+        time_range: 时间范围
+        plan_count: 执行计划数
+        plans:
+          note: 该 SQL 模板在选定的时间范围内有多个执行计划，您可以选择查看其中一个或多个执行计划。
+          title:
+            one_for_all: 执行详情
+            all: 所有执行计划的执行详情
+            some: '{{n}} 个执行计划的执行详情'
+      tabs:
+        basic: 基本信息
+        time: 执行时间
+        copr: Coprocessor 读取
+        txn: 事务
+    overview:
+      toolbar:
+        select_schemas: 选择数据库
+        select_stmt_types: 选择 SQL 类型
+        select_columns:
+          show_full_sql: 显示完整的 SQL
+          name: 选择列
+        refresh: 刷新
+        time_range_selector:
+          name: 选择时间段
+          recent: 最近
+          usual_time_ranges: 常用时间范围
+          custom_time_ranges: 自定义时间范围
+      settings:
+        title: 设置
+        disabled_desc_title: 该功能未启用
+        disabled_desc_line_1: SQL 语句分析功能未启用，因此无法查看历史记录。
+        disabled_desc_line_2: 您可以修改设置打开该功能后等待新数据收集。
+        open_setting: 打开设置
+        close_statement: 关闭 SQL 语句分析功能
+        close_statement_warning: 确认要关闭该功能吗？关闭后现有历史记录也将被清空！
+        switch: 总开关
+        refresh_interval: 数据收集周期
+        keep_duration: 数据保留时间
+        actions:
+          save: 保存
+          close: 关闭
+          cancel: 取消
+  fields:
+    related_schemas: 数据库
+    related_schemas_tooltip: SQL 语句涉及的数据库
+    plan_digest: 执行计划 ID
+    plan_digest_tooltip: 不同的执行计划有不同的 ID
+    digest_text: SQL 模板
+    digest_text_tooltip: 相似的 SQL 语句即使查询参数不一样也具有相同的 SQL 模板
+    sum_latency: 累计耗时
+    sum_latency_tooltip: 该类 SQL 语句在时间段内的累计执行时间
+    exec_count: 执行次数
+    exec_count_tooltip: 该类 SQL 语句在时间段内被执行的总次数
+    avg_latency: 平均耗时
+    avg_latency_tooltip: 单条 SQL 语句的执行时间
+    avg_mem: 平均内存
+    avg_mem_tooltip: 单条 SQL 语句的消耗内存大小
+    max_mem: 最大内存
+    max_mem_tooltip: 最大单条 SQL 语句消耗内存大小
+    table_names: 表名
+    index_names: 索引名
+    index_names_tooltip: SQL 执行时使用的索引名称
+    first_seen: 首次出现时间
+    last_seen: 最后出现时间
+    sample_user: 执行用户名
+    sample_user_tooltip: 执行该类 SQL 的用户名，可能存在多个执行用户，仅显示其中某一个
+    sum_errors: 累计 Error 个数
+    sum_warnings: 累计 Warning 个数
+    errors_warnings: 错误 / 警告
+    errors_warnings_tooltip: 累计错误和警告个数
+    parse_latency: 解析耗时
+    parse_latency_tooltip: 解析 SQL 语句的耗时
+    compile_latency: 优化耗时
+    compile_latency_tooltip: 编译并优化 SQL 语句的耗时
+    wait_time: Coprocessor 等待耗时
+    wait_time_tooltip: SQL 在 TiKV Coprocessor 上被等待执行的耗时，单个 SQL 所有 Coprocessor 任务累计后计算
+    process_time: Coprocessor 执行耗时
+    process_time_tooltip: SQL 在 TiKV Coprocessor 上的执行耗时，单个 SQL 所有 Coprocessor 任务累计后计算
+    backoff_time: 重试等待耗时
+    backoff_time_tooltip: 单个 SQL 所有重试累计后计算
+    get_commit_ts_time: 取 Commit Ts 耗时
+    get_commit_ts_time_tooltip: 从 PD 取递交时间戳（事务号）步骤的耗时
+    local_latch_wait_time: Local Latch Wait 耗时
+    local_latch_wait_time_tooltip: 事务在 TiDB 本地与其他事务产生了锁冲突并等待的耗时
+    resolve_lock_time: Resolve Lock 耗时
+    resolve_lock_time_tooltip: 事务在 TiKV 与其他事务产生了锁冲突并处理锁冲突的耗时
+    prewrite_time: Prewrite 阶段耗时
+    commit_time: Commit 阶段耗时
+    commit_backoff_time: Commit 重试等待耗时
+    latency: 执行耗时
+    sum_cop_task_num: 累计 Coprocessor 请求数
+    sum_cop_task_num_tooltip: 时间段内该类 SQL 累计发送的 Coprocessor 请求数
+    avg_processed_keys: 单 SQL 平均可见版本数
+    max_processed_keys: 单 SQL 最大可见版本数
+    avg_total_keys: 单 SQL 平均遇到版本数
+    avg_total_keys_tooltip: 含已删除或覆盖但未 GC 的版本
+    max_total_keys: 单 SQL 最大遇到版本数
+    avg_affected_rows: 平均影响行数
+    sum_backoff_times: 累计重试次数
+    sum_backoff_times_tooltip: 这类 SQL 遇到需要重试的错误后的总重试次数
+    avg_write_keys: 平均写入 Key 个数
+    max_write_keys: 最大写入 Key 个数
+    avg_write_size: 平均写入数据量
+    max_write_size: 最大写入数据量
+    avg_prewrite_regions: Prewrite 平均涉及 Region 个数
+    max_prewrite_regions: Prewrite 最大涉及 Region 个数
+    avg_txn_retry: 事务平均重试次数
+    max_txn_retry: 事务最大重试次数
+    digest: SQL 模板 ID
+    digest_tooltip: SQL 模板的唯一标识（SQL 指纹）
+    schema_name: 执行数据库
+    schema_name_tooltip: 执行该 SQL 时使用的数据库名称
+    query_sample_text: SQL 样例
+    prev_sample_text: 前一条 SQL 样例
+    prev_sample_text_tooltip: 一般来说你可能只需要看 COMMIT 语句的前一条 SQL
+    plan: 执行计划

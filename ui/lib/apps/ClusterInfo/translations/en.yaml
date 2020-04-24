@@ -1,0 +1,37 @@
+cluster_info:
+  nav_title: Cluster Info
+  list:
+    instance_table:
+      title: Instances
+      columns:
+        node: Node
+        version: Version
+        status: Status
+        up_time: Up Time
+        deploy_path: Deploy Directory
+        git_hash: Git Hash
+      actions:
+        hide_db:
+          tooltip: Hide
+          confirm: Do you want to hide this TiDB node?
+      status:
+        up: Up
+        down: Down
+        tombstone: Tombstone
+        offline: Offline
+        unknown: Unknown
+        unreachable: Unreachable
+    host_table:
+      title: Hosts
+      columns:
+        ip: Address
+        cpu: CPU
+        cpu_usage: CPU Usage
+        memory: Memory
+        memory_usage: Memory Usage
+        deploy: Disk
+        disk_size: Disk Size
+        disk_usage: Disk Usage
+      instanceUnavailable: Host information is unknow due to instance unreachable
+  error:
+    load: 'Load component {{comp}} error: {{cause}}'

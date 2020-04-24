@@ -1,0 +1,23 @@
+overview:
+  nav_title: Overview
+  top_statements:
+    title: Top SQL Statements
+    more: More
+  monitor_alert:
+    title: Monitor
+    view_monitor: View Metrics
+    view_monitor_warn: Metrics is unavailable
+    view_alerts: 'View {{alertCount}} Alerts'
+    view_zero_alerts: 'View Alerts'
+    view_alerts_warn: Alert is unavailable
+    run_diagnose: Run Diagnonse
+  metrics:
+    total_requests: QPS
+    latency: Latency
+  nodes:
+    title: Nodes
+    component:
+      tidb: TiDB
+      tikv: TiKV
+      pd: PD
+      tiflash: TiFlash

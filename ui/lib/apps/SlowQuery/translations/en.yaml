@@ -1,0 +1,73 @@
+slow_query:
+  nav_title: Slow Queries
+  common:
+    columns:
+      instance: TiDB Instance
+      instance_tooltip: The TiDB address that handles the SQL
+      connection_id: Connection ID
+      connection_id_tooltip: Unique ID of the SQL connection
+      sql: SQL
+      timestamp: Finish Time
+      timestamp_tooltip: The time this SQL finished execution
+      query_time: Latency
+      query_time_tooltip: Execution time of the SQL
+      memory_max: Max Memory
+      memory_max_tooltip: Maximum memory usage of the SQL
+      digest: SQL Template ID
+      digest_tooltip: a.k.a. SQL digest
+      is_internal: Is Internal?
+      is_internal_tooltip: Whether this is an internal SQL
+      is_success: Is Success?
+      is_success_tooltip: Whether SQL is executed successfully
+      index_names: Index Names
+      index_names_tooltip: The name of the used index
+      stats: Used Statistics
+      backoff_types: Backoff Types
+      user: Execution User
+      user_tooltip: The user that executes the SQL
+      host: Client Address
+      host_tooltip: The address of the client that sends the SQL
+      db: Execution Database
+      db_tooltip: The database used to execute the SQL
+
+      parse_time: Parse Time
+      compile_time: Compile Time
+      wait_time: Coprocessor Wait Time
+      process_time: Coprocessor Process Time
+      backoff_time: Backoff Time
+      backoff_time_tooltip: The waiting time before retry when a statement encounters errors that require a retry
+      get_commit_ts_time: Get Commit Ts Time
+      local_latch_wait_time: Local Latch Wait Time
+      resolve_lock_time: Resolve Lock Time
+      prewrite_time: Prewrite Time
+      commit_time: Commit Time
+      commit_backoff_time: Commit Backoff Time
+      query_time2: SQL Query Time
+      query_time2_tooltip: The execution time of a statement (Due to the parallel execution it may be significantly smaller than the above time)
+
+      request_count: Request Count
+      process_keys: Process Keys
+      total_keys: Total Keys
+      cop_proc_addr: Copr Address (Process)
+      cop_proc_addr_tooltip: The address of the TiKV that takes most time process the Coprocessor request
+      cop_wait_addr: Copr Address (Wait)
+      cop_wait_addr_tooltip: The address of the TiKV that takes most time wait the Coprocessor request
+
+      txn_start_ts: Start Timestamp
+      txn_start_ts_tooltip: Transaction start timestamp, a.k.a. Transaction ID
+      write_keys: Write Keys
+      write_size: Write Size
+      prewrite_regions: Prewrite Regions
+      txn_retry: Transaction Retries
+  detail:
+    head:
+      title: Slow Query Detail
+      back: List
+      sql: SQL
+      previous_sql: Previous SQL
+      plan: Plan
+    tabs:
+      basic: Basic
+      time: Time
+      copr: Coprocessor
+      txn: Transaction

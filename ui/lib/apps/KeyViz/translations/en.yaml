@@ -1,0 +1,30 @@
+keyviz:
+  nav_title: Key Visualizer
+  toolbar:
+    brightness: Brightness
+    zoom:
+      select: Select & Zoom
+      reset: Reset
+    refresh: Refresh
+    auto_refresh:
+      title: Auto Refresh
+      off: Off
+    view_type:
+      read_bytes: Read (bytes)
+      write_bytes: Write (bytes)
+      read_keys: Read (keys)
+      write_keys: Write (keys)
+      all: All
+  settings:
+    title: Settings
+    disabled_desc_title: Feature Not Enabled
+    disabled_desc_line_1: Key Visualizer feature is not enabled so that visual reports cannot be viewed.
+    disabled_desc_line_2: You can modify settings to enable the feature and wait for new data being collected.
+    open_setting: Open Settings
+    close_keyviz: Disable Key Visualizer Feature
+    close_keyviz_warning: Are you sure want to disable this feature? Current visual reports will be cleared.
+    switch: Enable
+    actions:
+      save: Save
+      close: Close
+      cancel: Cancel

@@ -21,24 +21,17 @@ cd "$PROJECT_DIR"
 export GOBIN=$PROJECT_DIR/bin
 export PATH=$GOBIN:$PATH
 
-if [ "${NO_ASSET_BUILD_TAG:-}" = "1" ]; then
-  BUILD_TAG_PARAMETER=""
-else
-  BUILD_TAG_PARAMETER="-tags ${ASSET_BUILD_TAG:-ui_server}"
-fi
-
 echo "+ Preflight check"
 if [ ! -d "ui/build" ]; then
   echo "  - Error: UI assets must be built first"
   exit 1
 fi
 
-echo "+ Install bindata tools"
-go install github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
-go install github.com/go-bindata/go-bindata/v3/go-bindata
-
-echo "+ Clean up go mod"
-go mod tidy
+if [ "${NO_ASSET_BUILD_TAG:-}" = "1" ]; then
+  BUILD_TAG_PARAMETER=""
+else
+  BUILD_TAG_PARAMETER="-tags ${ASSET_BUILD_TAG:-ui_server}"
+fi
 
 echo "+ Embed UI assets"
 

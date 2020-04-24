@@ -42,7 +42,7 @@ type distanceStrategy struct {
 
 	SplitRatioPow []float64
 
-	ScaleWorkers []chan *scaleTask
+	ScaleWorkerCh chan *scaleTask
 }
 
 // DistanceStrategy adopts the strategy that the closer the split time is to the current time, the more traffic is
@@ -58,12 +58,11 @@ func DistanceStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, label decorator.Label
 		SplitLevel:    level,
 		SplitCount:    count,
 		SplitRatioPow: pow,
-		ScaleWorkers:  make([]chan *scaleTask, workerCount),
 	}
 
 	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			s.StartWorkers(wg)
+		OnStart: func(ctx context.Context) error {
+			s.StartWorkers(ctx, wg)
 			return nil
 		},
 		OnStop: func(context.Context) error {
@@ -159,7 +158,14 @@ func (s *distanceStrategy) Split(dst, src chunk, tag splitTag, axesIndex int, he
 }
 
 // multi-threaded calculate scale matrix.
-var workerCount = runtime.NumCPU()
+var workerCount int
+
+func init() {
+	workerCount = runtime.NumCPU()
+	if workerCount > 20 {
+		workerCount = 20
+	}
+}
 
 type scaleTask struct {
 	*sync.WaitGroup
@@ -169,22 +175,19 @@ type scaleTask struct {
 	Scale       *[]float64
 }
 
-func (s *distanceStrategy) StartWorkers(wg *sync.WaitGroup) {
-	wg.Add(len(s.ScaleWorkers))
-	for i := range s.ScaleWorkers {
-		ch := make(chan *scaleTask)
-		s.ScaleWorkers[i] = ch
+func (s *distanceStrategy) StartWorkers(ctx context.Context, wg *sync.WaitGroup) {
+	s.ScaleWorkerCh = make(chan *scaleTask, workerCount*100)
+	wg.Add(workerCount)
+	for i := 0; i < workerCount; i++ {
 		go func() {
-			s.GenerateScaleColumnWork(ch)
+			s.GenerateScaleColumnWork(ctx, s.ScaleWorkerCh)
 			wg.Done()
 		}()
 	}
 }
 
 func (s *distanceStrategy) StopWorkers() {
-	for _, ch := range s.ScaleWorkers {
-		ch <- nil
-	}
+	close(s.ScaleWorkerCh)
 }
 
 func (s *distanceStrategy) GenerateScale(chunks []chunk, compactKeys []string, dis [][]int) [][]float64 {
@@ -193,7 +196,7 @@ func (s *distanceStrategy) GenerateScale(chunks []chunk, compactKeys []string, d
 	scale := make([][]float64, axesLen)
 	wg.Add(axesLen)
 	for i := 0; i < axesLen; i++ {
-		s.ScaleWorkers[i%workerCount] <- &scaleTask{
+		s.ScaleWorkerCh <- &scaleTask{
 			WaitGroup:   &wg,
 			Dis:         dis[i],
 			Keys:        chunks[i].Keys,
@@ -205,84 +208,87 @@ func (s *distanceStrategy) GenerateScale(chunks []chunk, compactKeys []string, d
 	return scale
 }
 
-func (s *distanceStrategy) GenerateScaleColumnWork(ch chan *scaleTask) {
+func (s *distanceStrategy) GenerateScaleColumnWork(ctx context.Context, ch <-chan *scaleTask) {
 	var maxDis int
 	// Each split interval needs to be sorted after copying to tempDis
 	var tempDis []int
 	// Used as a mapping from distance to scale
 	tempMapCap := 256
 	tempMap := make([]float64, tempMapCap)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case task, ok := <-ch:
+			if !ok {
+				return
+			}
+			dis := task.Dis
+			keys := task.Keys
+			compactKeys := task.CompactKeys
 
-	for task := range ch {
-		if task == nil {
-			break
-		}
+			// The maximum distance between the StartKey and EndKey of a bucket
+			// is considered the bucket distance.
+			dis, maxDis = toBucketDis(dis)
+			scale := make([]float64, len(dis))
+			*task.Scale = scale
 
-		dis := task.Dis
-		keys := task.Keys
-		compactKeys := task.CompactKeys
+			// When it is not enough to accommodate maxDis, expand the capacity.
+			for tempMapCap <= maxDis {
+				tempMapCap *= 2
+				tempMap = make([]float64, tempMapCap)
+			}
 
-		// The maximum distance between the StartKey and EndKey of a bucket
-		// is considered the bucket distance.
-		dis, maxDis = toBucketDis(dis)
-		scale := make([]float64, len(dis))
-		*task.Scale = scale
+			// generate scale column
+			start := 0
+			for startKey := keys[0]; !equal(compactKeys[start], startKey); {
+				start++
+			}
+			end := start + 1
 
-		// When it is not enough to accommodate maxDis, expand the capacity.
-		for tempMapCap <= maxDis {
-			tempMapCap *= 2
-			tempMap = make([]float64, tempMapCap)
-		}
+			for _, key := range keys[1:] {
+				for !equal(compactKeys[end], key) {
+					end++
+				}
 
-		// generate scale column
-		start := 0
-		for startKey := keys[0]; !equal(compactKeys[start], startKey); {
-			start++
-		}
-		end := start + 1
-
-		for _, key := range keys[1:] {
-			for !equal(compactKeys[end], key) {
+				if start+1 == end {
+					// Optimize calculation when splitting into 1
+					scale[start] = 1.0
+					start++
+				} else {
+					// Copy tempDis and calculate the top n levels
+					tempDis = append(tempDis[:0], dis[start:end]...)
+					tempLen := len(tempDis)
+					sort.Ints(tempDis)
+					// Calculate distribution factors and sums based on distance ordering
+					level := 0
+					tempMap[tempDis[0]] = 1.0
+					tempValue := 1.0
+					tempSum := 1.0
+					for i := 1; i < tempLen; i++ {
+						d := tempDis[i]
+						if d != tempDis[i-1] {
+							level++
+							if level >= s.SplitLevel || i >= s.SplitCount {
+								tempMap[d] = 0
+							} else {
+								// tempValue = math.Pow(s.SplitRatio, float64(level))
+								tempValue = s.SplitRatioPow[level]
+								tempMap[d] = tempValue
+							}
+						}
+						tempSum += tempValue
+					}
+					// Calculate scale
+					for ; start < end; start++ {
+						scale[start] = tempMap[dis[start]] / tempSum
+					}
+				}
 				end++
 			}
-
-			if start+1 == end {
-				// Optimize calculation when splitting into 1
-				scale[start] = 1.0
-				start++
-			} else {
-				// Copy tempDis and calculate the top n levels
-				tempDis = append(tempDis[:0], dis[start:end]...)
-				tempLen := len(tempDis)
-				sort.Ints(tempDis)
-				// Calculate distribution factors and sums based on distance ordering
-				level := 0
-				tempMap[tempDis[0]] = 1.0
-				tempValue := 1.0
-				tempSum := 1.0
-				for i := 1; i < tempLen; i++ {
-					d := tempDis[i]
-					if d != tempDis[i-1] {
-						level++
-						if level >= s.SplitLevel || i >= s.SplitCount {
-							tempMap[d] = 0
-						} else {
-							// tempValue = math.Pow(s.SplitRatio, float64(level))
-							tempValue = s.SplitRatioPow[level]
-							tempMap[d] = tempValue
-						}
-					}
-					tempSum += tempValue
-				}
-				// Calculate scale
-				for ; start < end; start++ {
-					scale[start] = tempMap[dis[start]] / tempSum
-				}
-			}
-			end++
+			// task finish
+			task.WaitGroup.Done()
 		}
-		// task finish
-		task.WaitGroup.Done()
 	}
 }
 

@@ -14,22 +14,20 @@
 package diagnose
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"time"
 
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/render"
-	"go.uber.org/fx"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	apiutils "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
 const (
@@ -40,37 +38,36 @@ type Service struct {
 	config        *config.Config
 	db            *dbstore.DB
 	tidbForwarder *tidb.Forwarder
-	htmlRender    render.HTMLRender
+	uiAssetFS     *assetfs.AssetFS
 }
 
-func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, newTemplate utils.NewTemplateFunc) *Service {
-	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			Migrate(db)
-			return nil
-		},
-	})
-
-	t := newTemplate("diagnose")
+func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, uiAssetFS *assetfs.AssetFS) *Service {
+	err := autoMigrate(db)
+	if err != nil {
+		log.Fatal("Failed to initialize database", zap.Error(err))
+	}
 
 	return &Service{
 		config:        config,
 		db:            db,
 		tidbForwarder: tidbForwarder,
-		htmlRender:    loadGlobFromVfs(Vfs, t),
+		uiAssetFS:     uiAssetFS,
 	}
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/diagnose")
+	endpoint.GET("/reports",
+		auth.MWAuthRequired(),
+		s.reportsHandler)
 	endpoint.POST("/reports",
 		auth.MWAuthRequired(),
 		apiutils.MWConnectTiDB(s.tidbForwarder),
 		s.genReportHandler)
-	endpoint.GET("/reports/:id", s.reportHandler)
+	endpoint.GET("/reports/:id/detail", s.reportHTMLHandler)
+	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)
 	endpoint.GET("/reports/:id/status",
 		auth.MWAuthRequired(),
-		apiutils.MWConnectTiDB(s.tidbForwarder),
 		s.reportStatusHandler)
 }
 
@@ -79,6 +76,22 @@ type GenerateReportRequest struct {
 	EndTime          int64 `json:"end_time"`
 	CompareStartTime int64 `json:"compare_start_time"`
 	CompareEndTime   int64 `json:"compare_end_time"`
+}
+
+// @Summary SQL diagnosis reports history
+// @Description Get sql diagnosis reports history
+// @Produce json
+// @Success 200 {array} Report
+// @Router /diagnose/reports [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) reportsHandler(c *gin.Context) {
+	reports, err := GetReports(s.db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, reports)
 }
 
 // @Summary SQL diagnosis report
@@ -141,19 +154,13 @@ func (s *Service) genReportHandler(c *gin.Context) {
 // @Description Get diagnosis report status
 // @Produce json
 // @Param id path string true "report id"
-// @Success 200 {object} diagnose.Report
+// @Success 200 {object} Report
 // @Router /diagnose/reports/{id}/status [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) reportStatusHandler(c *gin.Context) {
 	id := c.Param("id")
-	reportID, err := strconv.Atoi(id)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	report, err := GetReport(s.db, uint(reportID))
+	report, err := GetReport(s.db, id)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -162,35 +169,41 @@ func (s *Service) reportStatusHandler(c *gin.Context) {
 }
 
 // @Summary SQL diagnosis report
-// @Description Get sql diagnosis report
+// @Description Get sql diagnosis report HTML
 // @Produce html
 // @Param id path string true "report id"
 // @Success 200 {string} string
-// @Router /diagnose/reports/{id} [get]
-func (s *Service) reportHandler(c *gin.Context) {
+// @Router /diagnose/reports/{id}/detail [get]
+func (s *Service) reportHTMLHandler(c *gin.Context) {
+	if s.uiAssetFS == nil {
+		c.Data(http.StatusNotFound, "text/plain", []byte("UI is not built"))
+		return
+	}
+
+	// Serve report html directly from assets
+	d, err := s.uiAssetFS.Asset("build/diagnoseReport.html")
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	c.Data(http.StatusOK, "text/html; charset=utf-8", d)
+}
+
+// @Summary SQL diagnosis report data
+// @Description Get sql diagnosis report data
+// @Produce text/javascript
+// @Param id path string true "report id"
+// @Success 200 {string} string
+// @Router /diagnose/reports/{id}/data.js [get]
+func (s *Service) reportDataHandler(c *gin.Context) {
 	id := c.Param("id")
-	reportID, err := strconv.Atoi(id)
+	report, err := GetReport(s.db, id)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	report, err := GetReport(s.db, uint(reportID))
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	if len(report.Content) == 0 {
-		c.String(http.StatusOK, "The report is in generating, please referesh it later")
-		return
-	}
-
-	var tables []*TableDef
-	err = json.Unmarshal([]byte(report.Content), &tables)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	utils.HTML(c, s.htmlRender, http.StatusOK, "sql-diagnosis/index", tables)
+	data := "window.__diagnosis_data__ = " + report.Content
+	c.Data(http.StatusOK, "text/javascript", []byte(data))
 }

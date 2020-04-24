@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/pingcap/log"
@@ -24,6 +25,10 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
+)
+
+const (
+	SchemaVersionPath = "/tidb/ddl/global_schema_version"
 )
 
 type serverInfo struct {
@@ -84,7 +89,28 @@ func (s *tidbLabelStrategy) updateAddress(ctx context.Context) {
 	}
 }
 
-func (s *tidbLabelStrategy) updateMap() {
+func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
+	// check schema version
+	ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
+	resp, err := s.Provider.EtcdClient.Get(ectx, SchemaVersionPath)
+	cancel()
+	if err != nil || len(resp.Kvs) != 1 {
+		log.Warn("failed to get tidb schema version", zap.Error(err))
+		return
+	}
+	schemaVersion, err := strconv.ParseInt(string(resp.Kvs[0].Value), 10, 64)
+	if err != nil {
+		log.Warn("failed to get tidb schema version", zap.Error(err))
+		return
+	}
+	if schemaVersion == s.SchemaVersion {
+		log.Debug("schema version has not changed, skip this update")
+		return
+	}
+
+	log.Debug("schema version has changed", zap.Int64("old", s.SchemaVersion), zap.Int64("new", schemaVersion))
+	s.SchemaVersion = schemaVersion
+
 	var dbInfos []*dbInfo
 	var tidbEndpoint string
 	reqScheme := "http"

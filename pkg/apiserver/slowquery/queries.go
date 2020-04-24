@@ -43,6 +43,8 @@ type Base struct {
 	ParseTime   float64 `gorm:"column:Parse_time" json:"parse_time"`
 	CompileTime float64 `gorm:"column:Compile_time" json:"compile_time"`
 	ProcessTime float64 `gorm:"column:Process_time" json:"process_time"`
+
+	TxnStartTS uint `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
 }
 
 type SlowQuery struct {
@@ -79,11 +81,10 @@ type SlowQuery struct {
 	CopWaitMax         float64 `gorm:"column:Cop_wait_max" json:"cop_wait_max"`
 
 	// Transaction
-	TxnStartTS     uint `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
-	WriteKeys      int  `gorm:"column:Write_keys" json:"write_keys"`
-	WriteSize      int  `gorm:"column:Write_size" json:"write_size"`
-	PrewriteRegion int  `gorm:"column:Prewrite_region" json:"prewrite_region"`
-	TxnRetry       int  `gorm:"column:Txn_retry" json:"txn_retry"`
+	WriteKeys      int `gorm:"column:Write_keys" json:"write_keys"`
+	WriteSize      int `gorm:"column:Write_size" json:"write_size"`
+	PrewriteRegion int `gorm:"column:Prewrite_region" json:"prewrite_region"`
+	TxnRetry       int `gorm:"column:Txn_retry" json:"txn_retry"`
 
 	// Coprocessor
 	RequestCount uint   `gorm:"column:Request_count" json:"request_count"`

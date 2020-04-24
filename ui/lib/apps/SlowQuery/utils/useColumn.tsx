@@ -251,3 +251,22 @@ export function useMemoryColumn(rows?: { memory_max?: number }[]): IColumn {
     ),
   }
 }
+
+export function useTxnStartTsColumn(
+  _rows?: { txn_start_ts?: number }[] // used for type check only
+): IColumn {
+  return {
+    name: useCommonColumnName('txn_start_ts'),
+    key: 'Txn_start_ts',
+    fieldName: 'txn_start_ts',
+    minWidth: 100,
+    maxWidth: 150,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => (
+      <Tooltip title={rec.txn_start_ts}>
+        <TextWrap>{rec.txn_start_ts}</TextWrap>
+      </Tooltip>
+    ),
+  }
+}

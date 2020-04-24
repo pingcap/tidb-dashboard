@@ -57,6 +57,7 @@ function tableColumns(
       isSortedDescending: desc,
       onColumnClick: onColumnClick,
     },
+    useSlowQueryColumn.useTxnStartTsColumn(rows),
     useColumn.useDummyColumn(),
   ]
 }

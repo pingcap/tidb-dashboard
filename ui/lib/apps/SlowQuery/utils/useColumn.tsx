@@ -23,25 +23,6 @@ function useCommonColumnName(fieldName: string): any {
   )
 }
 
-export function useInstanceColumn(
-  _rows?: { instance?: string }[] // used for type check only
-): IColumn {
-  return {
-    name: useCommonColumnName('instance'),
-    key: 'instance',
-    fieldName: 'instance',
-    minWidth: 100,
-    maxWidth: 140,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
-    onRender: (rec) => (
-      <Tooltip title={rec.instance}>
-        <TextWrap>{rec.instance}</TextWrap>
-      </Tooltip>
-    ),
-  }
-}
-
 export function useConnectionIDColumn(
   _rows?: { connection_id?: number }[] // used for type check only
 ): IColumn {
@@ -80,6 +61,25 @@ export function useSqlColumn(
             <Pre>{rec.query}</Pre>
           )}
         </TextWrap>
+      </Tooltip>
+    ),
+  }
+}
+
+export function useInstanceColumn(
+  _rows?: { instance?: string }[] // used for type check only
+): IColumn {
+  return {
+    name: useCommonColumnName('instance'),
+    key: 'instance',
+    fieldName: 'instance',
+    minWidth: 100,
+    maxWidth: 150,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => (
+      <Tooltip title={rec.instance}>
+        <TextWrap>{rec.instance}</TextWrap>
       </Tooltip>
     ),
   }

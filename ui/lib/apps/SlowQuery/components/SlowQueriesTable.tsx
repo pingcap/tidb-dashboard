@@ -17,6 +17,7 @@ function tableColumns(
 ): IColumn[] {
   return [
     useSlowQueryColumn.useSqlColumn(rows, showFullSQL),
+    useSlowQueryColumn.useInstanceColumn(rows),
     {
       ...useSlowQueryColumn.useTimestampColumn(rows),
       isSorted: orderBy === 'Time',

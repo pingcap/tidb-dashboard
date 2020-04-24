@@ -67,6 +67,25 @@ export function useSqlColumn(
   }
 }
 
+export function useDigestColumn(
+  _rows?: { digest?: string }[] // used for type check only
+): IColumn {
+  return {
+    name: useCommonColumnName('digest'),
+    key: 'Digest',
+    fieldName: 'digest',
+    minWidth: 100,
+    maxWidth: 150,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) => (
+      <Tooltip title={rec.digest}>
+        <TextWrap>{rec.digest}</TextWrap>
+      </Tooltip>
+    ),
+  }
+}
+
 export function useInstanceColumn(
   _rows?: { instance?: string }[] // used for type check only
 ): IColumn {

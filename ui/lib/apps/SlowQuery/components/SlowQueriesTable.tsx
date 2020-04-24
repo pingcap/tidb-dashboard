@@ -17,6 +17,7 @@ function tableColumns(
 ): IColumn[] {
   return [
     useSlowQueryColumn.useSqlColumn(rows, showFullSQL),
+    useSlowQueryColumn.useDigestColumn(rows),
     useSlowQueryColumn.useInstanceColumn(rows),
     useSlowQueryColumn.useDBColumn(rows),
     useSlowQueryColumn.useSuccessColumn(rows),

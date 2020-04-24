@@ -54,6 +54,7 @@ export default function ColumnsSelector({
     <Menu>
       {headExtra && <Menu.Item key="head">{headExtra}</Menu.Item>}
       {headExtra && <Menu.Divider />}
+
       {columns
         .filter((c) => c.key !== 'dummy')
         .map((column) => (
@@ -72,11 +73,12 @@ export default function ColumnsSelector({
             </Checkbox>
           </Menu.Item>
         ))}
+
       {footExtra && <Menu.Divider />}
       {footExtra && <Menu.Item key="foot">{footExtra}</Menu.Item>}
       {/* Menu children only can be Divider/Item/SubMenu/MenuGroup */}
       {/* So the following code doesn't work */}
-      {/* 
+      {/*
       {footExtra && (
         <>
           <Menu.Divider />

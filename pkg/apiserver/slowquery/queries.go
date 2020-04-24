@@ -28,14 +28,13 @@ const (
 
 type Base struct {
 	// list fields
+	Digest string `gorm:"column:Digest" json:"digest"`
+	Query  string `gorm:"column:Query" json:"query"`
+
 	Instance     string `gorm:"column:INSTANCE" json:"instance"`
 	DB           string `gorm:"column:DB" json:"db"`
-	Success      int    `gorm:"column:Succ" json:"success"`
 	ConnectionID uint   `gorm:"column:Conn_ID" json:"connection_id"`
-
-	Digest    string `gorm:"column:Digest" json:"digest"`
-	Query     string `gorm:"column:Query" json:"query"`
-	MemoryMax int    `gorm:"column:Mem_max" json:"memory_max"`
+	Success      int    `gorm:"column:Succ" json:"success"`
 
 	Time        string  `gorm:"column:Time" json:"time_str"`         // finish time
 	Timestamp   float64 `gorm:"column:timestamp" json:"timestamp"`   // unix_timestamp(Time) as timestamp
@@ -44,6 +43,7 @@ type Base struct {
 	CompileTime float64 `gorm:"column:Compile_time" json:"compile_time"`
 	ProcessTime float64 `gorm:"column:Process_time" json:"process_time"`
 
+	MemoryMax  int  `gorm:"column:Mem_max" json:"memory_max"`
 	TxnStartTS uint `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
 }
 

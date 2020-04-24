@@ -8,33 +8,27 @@ import client, {
   ClusterinfoClusterInfo,
   StatementTimeRange,
   StatementModel,
+  SlowqueryBase,
 } from '@lib/client'
 import { StatementsTable } from '@lib/apps/Statement'
 import MonitorAlertBar from './components/MonitorAlertBar'
-import styles from './index.module.less'
 import Nodes from './components/Nodes'
+import { getDefSearchOptions } from '../SlowQuery/components/List'
+import SlowQueriesTable, {
+  OrderBy,
+} from '../SlowQuery/components/SlowQueriesTable'
 
-export default function App() {
-  const [cluster, setCluster] = useState<ClusterinfoClusterInfo | null>(null)
+import styles from './index.module.less'
+
+function useStatements() {
   const [timeRange, setTimeRange] = useState<StatementTimeRange>({
     begin_time: 0,
     end_time: 0,
   })
   const [statements, setStatements] = useState<StatementModel[]>([])
-  const [loadingStatements, setLoadingStatements] = useState(false)
-
-  const { t } = useTranslation()
+  const [loadingStatements, setLoadingStatements] = useState(true)
 
   useEffect(() => {
-    const fetchLoad = async () => {
-      try {
-        let res = await client.getInstance().topologyAllGet()
-        setCluster(res.data)
-      } catch (error) {
-        setCluster(null)
-      }
-    }
-
     const fetchStatements = async () => {
       setLoadingStatements(true)
       const rRes = await client.getInstance().statementsTimeRangesGet()
@@ -51,9 +45,75 @@ export default function App() {
       }
       setLoadingStatements(false)
     }
+    fetchStatements()
+  }, [])
+
+  return { timeRange, statements, loadingStatements }
+}
+
+function useSlowQueries() {
+  const [searchOptions, setSearchOptions] = useState(getDefSearchOptions)
+  const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])
+  const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
+
+  function changeSort(orderBy: OrderBy, desc: boolean) {
+    setSearchOptions({
+      ...searchOptions,
+      orderBy,
+      desc,
+    })
+  }
+
+  useEffect(() => {
+    async function getSlowQueryList() {
+      setLoadingSlowQueries(true)
+      const res = await client
+        .getInstance()
+        .slowQueryListGet(
+          searchOptions.schemas,
+          searchOptions.desc,
+          10,
+          searchOptions.timeRange.end_time,
+          searchOptions.timeRange.begin_time,
+          searchOptions.orderBy,
+          searchOptions.searchText
+        )
+      setLoadingSlowQueries(false)
+      setSlowQueries(res.data || [])
+    }
+    getSlowQueryList()
+  }, [searchOptions])
+
+  return {
+    slowQueries,
+    loadingSlowQueries,
+    changeSort,
+    searchOptions,
+  }
+}
+
+export default function App() {
+  const { t } = useTranslation()
+  const [cluster, setCluster] = useState<ClusterinfoClusterInfo | null>(null)
+  const { timeRange, statements, loadingStatements } = useStatements()
+  const {
+    slowQueries,
+    loadingSlowQueries,
+    changeSort,
+    searchOptions,
+  } = useSlowQueries()
+
+  useEffect(() => {
+    const fetchLoad = async () => {
+      try {
+        let res = await client.getInstance().topologyAllGet()
+        setCluster(res.data)
+      } catch (error) {
+        setCluster(null)
+      }
+    }
 
     fetchLoad()
-    fetchStatements()
   }, [])
 
   return (
@@ -96,7 +156,7 @@ export default function App() {
             />
             <StatementsTable
               className={styles.statementsTable}
-              key={statements.length}
+              key={`statement_${statements.length}`}
               statements={statements}
               visibleColumnKeys={{
                 digest_text: true,
@@ -124,6 +184,32 @@ export default function App() {
                     />
                   </span>
                 )
+              }
+            />
+            <SlowQueriesTable
+              key={`slow_query_${slowQueries.length}`}
+              loading={loadingSlowQueries}
+              slowQueries={slowQueries}
+              onChangeSort={changeSort}
+              orderBy={searchOptions.orderBy}
+              desc={searchOptions.desc}
+              title={
+                <Link to="/slow_query">
+                  Recent Slow Queries <RightOutlined />
+                </Link>
+              }
+              subTitle={
+                <span>
+                  <DateTime.Calendar
+                    unixTimestampMs={searchOptions.timeRange.begin_time * 1000}
+                  />{' '}
+                  ~{' '}
+                  <DateTime.Calendar
+                    unixTimestampMs={
+                      (searchOptions.timeRange.end_time ?? 0) * 1000
+                    }
+                  />
+                </span>
               }
             />
           </Col>

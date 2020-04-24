@@ -20,6 +20,8 @@ slow_query:
       is_internal_tooltip: Whether this is an internal SQL
       is_success: Is Success?
       is_success_tooltip: Whether SQL is executed successfully
+      result: Result
+      result_tooltip: Whether SQL is executed successfully
       index_names: Index Names
       index_names_tooltip: The name of the used index
       stats: Used Statistics
@@ -63,6 +65,9 @@ slow_query:
       write_size: Write Size
       prewrite_regions: Prewrite Regions
       txn_retry: Transaction Retries
+    status:
+      success: Success
+      failed: Failed
   detail:
     head:
       title: Slow Query Detail

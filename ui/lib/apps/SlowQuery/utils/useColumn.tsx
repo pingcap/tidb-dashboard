@@ -11,9 +11,10 @@ import {
   DateTime,
   Pre,
 } from '@lib/components'
-import { Tooltip } from 'antd'
+import { Tooltip, Badge } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { max } from 'lodash'
+import { useTranslation } from 'react-i18next'
 
 function useCommonColumnName(fieldName: string): any {
   return (
@@ -82,6 +83,27 @@ export function useInstanceColumn(
         <TextWrap>{rec.instance}</TextWrap>
       </Tooltip>
     ),
+  }
+}
+
+export function useSuccessColumn(
+  _rows?: { success?: number }[] // used for type check only
+): IColumn {
+  const { t } = useTranslation()
+  return {
+    name: useCommonColumnName('result'),
+    key: 'Succ',
+    fieldName: 'success',
+    minWidth: 100,
+    maxWidth: 150,
+    isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
+    onRender: (rec) =>
+      rec.success === 1 ? (
+        <Badge status="success" text={t(`slow_query.common.status.success`)} />
+      ) : (
+        <Badge status="error" text={t(`slow_query.common.status.failed`)} />
+      ),
   }
 }
 

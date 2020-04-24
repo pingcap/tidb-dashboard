@@ -18,6 +18,9 @@ slow_query:
       digest_tooltip: SQL 模板的唯一标识（SQL 指纹）
       is_internal: 是否为内部 SQL
       is_success: 是否执行成功
+      is_success_tooltip: SQL 是否执行成功
+      result: 执行结果
+      result_tooltip: SQL 是否执行成功
       index_names: 索引名
       index_names_tooltip: SQL 执行时使用的索引名称
       stats: 使用的统计信息
@@ -63,6 +66,9 @@ slow_query:
       write_size: 写入数据量
       prewrite_regions: Prewrite 涉及 Regions 个数
       txn_retry: 事务重试次数
+    status:
+      success: 成功
+      failed: 失败
   detail:
     head:
       title: 慢查询详情

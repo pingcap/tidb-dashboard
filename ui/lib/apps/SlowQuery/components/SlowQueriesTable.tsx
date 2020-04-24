@@ -8,12 +8,10 @@ import * as useColumn from '@lib/utils/useColumn'
 import * as useSlowQueryColumn from '../utils/useColumn'
 import DetailPage from './Detail'
 
-export type OrderBy = 'Query_time' | 'Mem_max' | 'Time'
-
 function tableColumns(
   rows: SlowqueryBase[],
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
-  orderBy: OrderBy,
+  orderBy: string,
   desc: boolean,
   showFullSQL?: boolean
 ): IColumn[] {
@@ -62,10 +60,10 @@ function tableColumns(
 interface Props extends Partial<ICardTableV2Props> {
   loading: boolean
   slowQueries: SlowqueryBase[]
-  orderBy: OrderBy
+  orderBy: string
   desc: boolean
   showFullSQL?: boolean
-  onChangeSort: (orderBy: OrderBy, desc: boolean) => void
+  onChangeSort: (orderBy: string, desc: boolean) => void
   onGetColumns?: (columns: IColumn[]) => void
 }
 
@@ -98,7 +96,7 @@ export default function SlowQueriesTable({
     if (column.key === orderBy) {
       onChangeSort(orderBy, !desc)
     } else {
-      onChangeSort(column.key as OrderBy, true)
+      onChangeSort(column.key, true)
     }
   }
 

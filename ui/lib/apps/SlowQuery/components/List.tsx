@@ -11,7 +11,7 @@ import TimeRangeSelector, {
   TimeRange,
   getDefTimeRange,
 } from './TimeRangeSelector'
-import SlowQueriesTable, { OrderBy } from './SlowQueriesTable'
+import SlowQueriesTable from './SlowQueriesTable'
 
 import styles from './List.module.less'
 
@@ -27,7 +27,7 @@ export interface ISearchOptions {
   timeRange: TimeRange
   schemas: string[]
   searchText: string
-  orderBy: OrderBy
+  orderBy: string
   desc: boolean
   limit: number
 }

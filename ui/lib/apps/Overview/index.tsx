@@ -14,9 +14,7 @@ import { StatementsTable } from '@lib/apps/Statement'
 import MonitorAlertBar from './components/MonitorAlertBar'
 import Nodes from './components/Nodes'
 import { getDefSearchOptions } from '../SlowQuery/components/List'
-import SlowQueriesTable, {
-  OrderBy,
-} from '../SlowQuery/components/SlowQueriesTable'
+import SlowQueriesTable from '../SlowQuery/components/SlowQueriesTable'
 
 import styles from './index.module.less'
 
@@ -56,7 +54,7 @@ function useSlowQueries() {
   const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
 
-  function changeSort(orderBy: OrderBy, desc: boolean) {
+  function changeSort(orderBy: string, desc: boolean) {
     setSearchOptions({
       ...searchOptions,
       orderBy,

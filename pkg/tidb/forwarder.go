@@ -18,13 +18,13 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/cenkalti/backoff/v4"
-	"github.com/joomcode/errorx"
 	"net"
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/go-sql-driver/mysql"
+	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
@@ -91,8 +91,8 @@ func (f *Forwarder) Open() error {
 	if err != nil {
 		return err
 	}
-	go pr.Run()
 	f.tidbPort = pr.port()
+	go pr.Run()
 	pr, err = f.createProxy(statusProxyLabel, statusEndpoints)
 	if err != nil {
 		return err
@@ -103,7 +103,7 @@ func (f *Forwarder) Open() error {
 	return nil
 }
 
-func (f *Forwarder) Close() error {
+func (f *Forwarder) Close() {
 	p := f.getProxy(tidbProxyLabel)
 	if p != nil {
 		p.Stop()
@@ -113,7 +113,6 @@ func (f *Forwarder) Close() error {
 		p.Stop()
 	}
 	close(f.donec)
-	return nil
 }
 
 func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
@@ -223,7 +222,8 @@ func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3
 			return f.Open()
 		},
 		OnStop: func(context.Context) error {
-			return f.Close()
+			f.Close()
+			return nil
 		},
 	})
 

@@ -19,6 +19,7 @@ func TestProxy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer l.Close()
 	want := "hello proxy"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, err := w.Write([]byte(want))
@@ -52,6 +53,7 @@ func TestProxyPick(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer l.Close()
 	n := 3
 	endpoints := make(map[string]string)
 	picked := make([]bool, n)

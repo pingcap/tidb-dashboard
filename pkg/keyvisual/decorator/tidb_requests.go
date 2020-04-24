@@ -80,14 +80,13 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	hostname, port := s.forwarder.GetStatusConnProps()
 	target := fmt.Sprintf("%s:%d", hostname, port)
 	reqEndpoint := fmt.Sprintf("%s://%s", reqScheme, target)
-	if err := request(reqEndpoint, "schema", &dbInfos, s.HTTPClient); err == nil {
-		tidbEndpoint = reqEndpoint
-	} else {
+	if err := request(reqEndpoint, "schema", &dbInfos, s.HTTPClient); err != nil {
 		log.Error("fail to send schema reqeust to tidb", zap.String("endpoint", reqEndpoint), zap.Error(err))
+		if dbInfos == nil {
+			return
+		}
 	}
-	if dbInfos == nil {
-		return
-	}
+	tidbEndpoint = reqEndpoint
 
 	var tableInfos []*tableInfo
 	for _, db := range dbInfos {

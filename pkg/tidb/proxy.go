@@ -161,7 +161,6 @@ func (p *Proxy) doCheck() {
 	for {
 		select {
 		case <-time.After(p.checkInterval):
-			//p.mu.Lock()
 			p.remotes.Range(func(key, value interface{}) bool {
 				rmt := value.(*remote)
 				if rmt.isActive() {

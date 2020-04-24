@@ -34,11 +34,11 @@ const (
 	envTidbOverrideEndpointKey = "TIDB_OVERRIDE_ENDPOINT"
 )
 
-func (f *Forwarder) getDBConnProps() (host string, port int) {
+func (f *Forwarder) getDBConnProps() (string, int) {
 	return "127.0.0.1", f.tidbPort
 }
 
-func (f *Forwarder) GetStatusConnProps() (host string, port int) {
+func (f *Forwarder) GetStatusConnProps() (string, int) {
 	return "127.0.0.1", f.statusPort
 }
 

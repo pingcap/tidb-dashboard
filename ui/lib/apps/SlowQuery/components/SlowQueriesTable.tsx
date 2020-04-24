@@ -56,7 +56,7 @@ export default function SlowQueriesTable({
   onChangeSort,
   ...restProps
 }: Props) {
-  const { navigate } = useNavigate()
+  const navigate = useNavigate()
 
   const columns = tableColumns(slowQueries, onColumnClick, orderBy, desc)
 

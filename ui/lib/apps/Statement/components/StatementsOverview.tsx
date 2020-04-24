@@ -10,14 +10,14 @@ import {
   StatementConfig,
   StatementModel,
 } from '@lib/client'
-import { Card } from '@lib/components'
+import { Card, ColumnsSelector } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
 import { Instance } from './statement-types'
 import { SearchContext } from './search-options-context'
+
 import styles from './styles.module.less'
-import ColumnsSelector from '@lib/components/ColumnsSelector'
 
 const { Option } = Select
 

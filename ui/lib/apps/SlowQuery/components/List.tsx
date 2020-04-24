@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { Select, Space, Tooltip, Input, Checkbox } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useSessionStorageState, useLocalStorageState } from '@umijs/hooks'
-import { Card } from '@lib/components'
+import { Card, ColumnsSelector } from '@lib/components'
 import client, { SlowqueryBase } from '@lib/client'
 import TimeRangeSelector, {
   TimeRange,
@@ -13,8 +14,6 @@ import TimeRangeSelector, {
 import SlowQueriesTable, { OrderBy } from './SlowQueriesTable'
 
 import styles from './List.module.less'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import ColumnsSelector from '@lib/components/ColumnsSelector'
 
 const { Option } = Select
 const { Search } = Input

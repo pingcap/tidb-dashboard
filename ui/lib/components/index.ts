@@ -28,5 +28,7 @@ export * from './Expand'
 export { default as Expand } from './Expand'
 export * from './MetricChart'
 export { default as MetricChart } from './MetricChart'
+export * from './ColumnsSelector'
+export { default as ColumnsSelector } from './ColumnsSelector'
 
 export { default as LanguageDropdown } from './LanguageDropdown'

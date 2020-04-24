@@ -57,7 +57,8 @@ export function useConnectionIDColumn(
 }
 
 export function useSqlColumn(
-  _rows?: { query?: string }[] // used for type check only
+  _rows?: { query?: string }[], // used for type check only
+  showFullSQL?: boolean
 ): IColumn {
   return {
     name: useCommonColumnName('sql'),
@@ -72,8 +73,12 @@ export function useSqlColumn(
         title={<HighlightSQL sql={rec.query} theme="dark" />}
         placement="right"
       >
-        <TextWrap>
-          <Pre>{rec.query}</Pre>
+        <TextWrap multiline={showFullSQL}>
+          {showFullSQL ? (
+            <HighlightSQL sql={rec.query} />
+          ) : (
+            <Pre>{rec.query}</Pre>
+          )}
         </TextWrap>
       </Tooltip>
     ),

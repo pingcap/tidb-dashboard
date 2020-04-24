@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CardTableV2, ICardTableV2Props } from '@lib/components'
 import { SlowqueryBase } from '@lib/client'
@@ -14,10 +14,11 @@ function tableColumns(
   rows: SlowqueryBase[],
   onColumnClick: (ev: React.MouseEvent<HTMLElement>, column: IColumn) => void,
   orderBy: OrderBy,
-  desc: boolean
+  desc: boolean,
+  showFullSQL?: boolean
 ): IColumn[] {
   return [
-    useSlowQueryColumn.useSqlColumn(rows),
+    useSlowQueryColumn.useSqlColumn(rows, showFullSQL),
     {
       ...useSlowQueryColumn.useTimestampColumn(rows),
       isSorted: orderBy === 'Time',
@@ -45,7 +46,9 @@ interface Props extends Partial<ICardTableV2Props> {
   slowQueries: SlowqueryBase[]
   orderBy: OrderBy
   desc: boolean
+  showFullSQL?: boolean
   onChangeSort: (orderBy: OrderBy, desc: boolean) => void
+  onGetColumns?: (columns: IColumn[]) => void
 }
 
 export default function SlowQueriesTable({
@@ -54,11 +57,24 @@ export default function SlowQueriesTable({
   orderBy,
   desc,
   onChangeSort,
+  showFullSQL,
+  onGetColumns,
   ...restProps
 }: Props) {
   const navigate = useNavigate()
 
-  const columns = tableColumns(slowQueries, onColumnClick, orderBy, desc)
+  const columns = tableColumns(
+    slowQueries,
+    onColumnClick,
+    orderBy,
+    desc,
+    showFullSQL
+  )
+
+  useEffect(() => {
+    onGetColumns && onGetColumns(columns)
+    // eslint-disable-next-line
+  }, [])
 
   function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {
     if (column.key === orderBy) {

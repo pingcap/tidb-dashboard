@@ -194,6 +194,9 @@ export default function ListPage() {
       minWidth: 150,
       maxWidth: 300,
       isResizable: true,
+      onRender: (node) => (
+        <Tooltip title={`${node.deploy_path}`}>{node.deploy_path}</Tooltip>
+      ),
     },
     {
       name: t('cluster_info.list.instance_table.columns.git_hash'),
@@ -202,6 +205,9 @@ export default function ListPage() {
       minWidth: 150,
       maxWidth: 300,
       isResizable: true,
+      onRender: (node) => (
+        <Tooltip title={`${node.git_hash}`}>{node.git_hash}</Tooltip>
+      ),
     },
   ]
 

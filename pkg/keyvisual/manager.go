@@ -52,7 +52,11 @@ func (s *Service) managerLoop(ctx context.Context) {
 		case <-ctx.Done():
 			s.stopService()
 			return
-		case cfg := <-ch:
+		case cfg, ok := <-ch:
+			if !ok {
+				s.stopService()
+				return
+			}
 			if cfg.KeyVisual.AutoCollectionEnabled {
 				s.startService(ctx)
 			} else {

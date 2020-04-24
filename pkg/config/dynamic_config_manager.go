@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"sync"
+	"time"
 
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
@@ -27,6 +28,8 @@ import (
 
 const (
 	DynamicConfigPath = "/dashboard/dynamic_config"
+	RetryCount        = 3
+	RetryInterval     = time.Second
 )
 
 var (
@@ -63,9 +66,25 @@ func (m *DynamicConfigManager) Start(ctx context.Context) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.ctx = ctx
-	if err := m.load(); err != nil {
-		return nil
+
+	var err error
+	for i := 0; i < RetryCount; i++ {
+		err = m.load()
+		if err == nil {
+			break
+		}
+
+		select {
+		case <-ctx.Done():
+			return err
+		default:
+			time.Sleep(RetryInterval)
+		}
 	}
+	if err != nil {
+		return err
+	}
+
 	m.dynamicConfig.Adjust()
 	return m.store()
 }

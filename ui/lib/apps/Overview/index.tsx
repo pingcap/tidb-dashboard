@@ -188,6 +188,12 @@ export default function App() {
               key={`slow_query_${slowQueries.length}`}
               loading={loadingSlowQueries}
               slowQueries={slowQueries}
+              visibleColumnKeys={{
+                sql: true,
+                Time: true,
+                Query_time: true,
+                Mem_max: true,
+              }}
               onChangeSort={changeSort}
               orderBy={searchOptions.orderBy}
               desc={searchOptions.desc}

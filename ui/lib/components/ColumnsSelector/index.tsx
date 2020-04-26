@@ -74,7 +74,7 @@ export default function ColumnsSelector({
     }
 
     updateCheckAllStatus(visibleKeys)
-  }, [visibleKeys])
+  }, [visibleKeys, filteredColumns])
 
   function handleCheckAllChange(e) {
     const checked = e.target.checked

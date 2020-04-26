@@ -13,6 +13,7 @@ import TimeRangeSelector, {
 import SlowQueriesTable, { OrderBy } from './SlowQueriesTable'
 
 import styles from './List.module.less'
+import dayjs from 'dayjs'
 
 const { Option } = Select
 const { Search } = Input
@@ -64,6 +65,18 @@ function List() {
   useEffect(() => {
     async function getSlowQueryList() {
       setLoading(true)
+      const recentMins = searchOptions.timeRange.recent
+      if (recentMins > 0) {
+        // beginTime & endTime is fixed value,
+        // so update them to the time range from now
+        const now = dayjs().unix()
+        const beginTime = now - recentMins * 60
+        searchOptions.timeRange = {
+          recent: recentMins,
+          begin_time: beginTime,
+          end_time: now,
+        }
+      }
       const res = await client
         .getInstance()
         .slowQueryListGet(

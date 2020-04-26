@@ -131,7 +131,7 @@ export default function ColumnsSelector({
   )
 
   return (
-    <Popover content={content} title={title} placement="bottom" trigger="click">
+    <Popover content={content} title={title} placement="bottomLeft">
       <span style={{ cursor: 'pointer' }}>
         {t('component.columnsSelector.trigger_text')} <DownOutlined />
       </span>

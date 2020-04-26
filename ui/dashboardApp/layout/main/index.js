@@ -42,7 +42,10 @@ const useContentLeftOffset = (collapsed) => {
 }
 
 export default function App({ registry }) {
-  const [collapsed, setCollapsed] = useLocalStorageState('layout.sider.collapsed', false)
+  const [collapsed, setCollapsed] = useLocalStorageState(
+    'layout.sider.collapsed',
+    false
+  )
   const [defaultCollapsed] = useState(collapsed)
   const {
     contentLeftOffset,
@@ -61,7 +64,7 @@ export default function App({ registry }) {
   })
 
   const handleToggle = useCallback(() => {
-    setCollapsed(c => !c);
+    setCollapsed((c) => !c)
   }, [setCollapsed])
 
   return (

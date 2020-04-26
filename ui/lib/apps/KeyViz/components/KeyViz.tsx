@@ -90,13 +90,17 @@ const KeyViz = (props) => {
   const [getBrightLevel, setBrightLevel] = useGetSet(1)
   const [getMetricType, setMetricType] = useGetSet<DataTag>('written_bytes')
   const [serviceEnabled, setServiceEnabled] = useState(false)
-  const {state: shouldShowSettings, setTrue: openSettings, setFalse: closeSettings} = useBoolean(false)
+  const {
+    state: shouldShowSettings,
+    setTrue: openSettings,
+    setFalse: closeSettings,
+  } = useBoolean(false)
   const { t } = useTranslation()
 
   const updateServiceStatus = useCallback(async function () {
     setLoading(true)
     try {
-      const config = await client.getInstance().keyvisualConfigGet();
+      const config = await client.getInstance().keyvisualConfigGet()
       const enabled = config.data.auto_collection_enabled === true
       if (!enabled) {
         setAutoRefreshSeconds(0)
@@ -105,8 +109,7 @@ const KeyViz = (props) => {
       if (enabled) {
         updateHeatmap()
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -123,10 +126,12 @@ const KeyViz = (props) => {
     setOnBrush(false)
     try {
       const metricType = getMetricType()
-      const data = await cache.fetch(getSelection() || getDateRange(), metricType);
+      const data = await cache.fetch(
+        getSelection() || getDateRange(),
+        metricType
+      )
       setChartState({ heatmapData: data!, metricType })
-    } catch (e) {
-    }
+    } catch (e) {}
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

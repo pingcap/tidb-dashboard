@@ -18,29 +18,39 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
 
   const onFetchServiceStatus = () => {
     setLoading(true)
-    client.getInstance().keyvisualConfigGet().then(
-      (r) => {
-        setConfig({ auto_collection_enabled: (r.data.auto_collection_enabled === true) })
-        setLoading(false)
-      },
-      () => {
-        setLoading(false)
-      }
-    )
+    client
+      .getInstance()
+      .keyvisualConfigGet()
+      .then(
+        (r) => {
+          setConfig({
+            auto_collection_enabled: r.data.auto_collection_enabled === true,
+          })
+          setLoading(false)
+        },
+        () => {
+          setLoading(false)
+        }
+      )
   }
 
   const onSubmitted = () => {
-    client.getInstance().keyvisualConfigGet().then(
-      (r) => {
-        setConfig({ auto_collection_enabled: (r.data.auto_collection_enabled === true) })
-        setSubmitting(false)
-        onClose()
-        setTimeout(onConfigUpdated, 500)
-      },
-      () => {
-        setSubmitting(false)
-      }
-    )
+    client
+      .getInstance()
+      .keyvisualConfigGet()
+      .then(
+        (r) => {
+          setConfig({
+            auto_collection_enabled: r.data.auto_collection_enabled === true,
+          })
+          setSubmitting(false)
+          onClose()
+          setTimeout(onConfigUpdated, 500)
+        },
+        () => {
+          setSubmitting(false)
+        }
+      )
   }
 
   const onUpdateServiceStatus = (status) => {

@@ -67,7 +67,8 @@ function List() {
       setLoading(true)
       const recentMins = searchOptions.timeRange.recent
       if (recentMins > 0) {
-        // beginTime & endTime may outdated, update to recent time range
+        // beginTime & endTime is fixed value,
+        // so update them to the time range from now
         const now = dayjs().unix()
         const beginTime = now - recentMins * 60
         searchOptions.timeRange = {

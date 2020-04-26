@@ -146,7 +146,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
 
 	if req.Text != "" {
 		lowerStr := strings.ToLower(req.Text)
-		tx = tx.Where("txn_start_ts REGEXP ? OR LOWER(digest) REGEXP ? OR LOWER(prev_stmt) REGEXP ? OR LOWER(query) REGEXP ?",
+		tx = tx.Where("txn_start_ts REGEXP ? OR LOWER(digest) REGEXP ? OR LOWER(CONVERT(prev_stmt USING utf8)) REGEXP ? OR LOWER(CONVERT(query USING utf8)) REGEXP ?",
 			lowerStr,
 			lowerStr,
 			lowerStr,
@@ -177,13 +177,11 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
 
 func QuerySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) {
 	var result SlowQuery
-	upperBound := req.Time + 10E-7
-	lowerBound := req.Time - 10E-7
 	err := db.
 		Table(SlowQueryTable).
 		Select(SelectStmt).
 		Where("Digest = ?", req.Digest).
-		Where("Time >= from_unixtime(?) and Time <= from_unixtime(?)", lowerBound, upperBound).
+		Where("Time = from_unixtime(?)", req.Time).
 		Where("Conn_id = ?", req.ConnectID).
 		First(&result).Error
 	if err != nil {

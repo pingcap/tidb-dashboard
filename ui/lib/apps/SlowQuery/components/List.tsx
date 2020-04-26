@@ -5,9 +5,14 @@ import { ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useLocalStorageState } from '@umijs/hooks'
-import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
+import {
+  Card,
+  ColumnsSelector,
+  IColumnKeys,
+  TimeRangeSelector,
+  Toolbar,
+} from '@lib/components'
 import client from '@lib/client'
-import TimeRangeSelector from './TimeRangeSelector'
 import SlowQueriesTable from './SlowQueriesTable'
 
 import useSlowQuery from '../utils/useSlowQuery'

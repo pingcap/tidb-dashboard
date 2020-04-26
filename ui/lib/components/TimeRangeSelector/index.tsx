@@ -1,30 +1,43 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Dropdown, Button, DatePicker } from 'antd'
 import { ClockCircleOutlined, DownOutlined } from '@ant-design/icons'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import cx from 'classnames'
 import dayjs from 'dayjs'
+import moment, { Moment } from 'moment'
 import { useTranslation } from 'react-i18next'
 
-import styles from './TimeRangeSelector.module.less'
-import { Moment } from 'moment'
+import styles from './index.module.less'
 
 const { RangePicker } = DatePicker
 
 const RECENT_MINS = [30, 60, 3 * 60, 6 * 60, 12 * 60, 24 * 60]
 
 export interface TimeRange {
-  recent: number
+  recent: number // 0 means absolute time range, else means relative time range
   begin_time: number
   end_time: number
 }
 
-export function getDefTimeRange(): TimeRange {
+function calcTimeRange(mins: number): TimeRange {
   const now = dayjs().unix()
   return {
-    recent: 30,
-    begin_time: now - 30 * 60,
+    recent: mins,
+    begin_time: now - mins * 60,
     end_time: now,
+  }
+}
+
+export function getDefTimeRange(): TimeRange {
+  return calcTimeRange(30)
+}
+
+export function refreshTimeRange(timeRange: TimeRange): TimeRange {
+  const { recent } = timeRange
+  if (recent === 0) {
+    return timeRange
+  } else {
+    return calcTimeRange(recent)
   }
 }
 
@@ -34,27 +47,23 @@ export interface ITimeRangeSelectorProps {
 }
 
 export default function TimeRangeSelector({
-  value,
+  value: curTimeRange,
   onChange,
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
-  const [curTimeRange, setCurTimeRange] = useState<TimeRange>(value)
   const [dropdownVisible, setDropdownVisible] = useState(false)
 
-  useEffect(() => {
-    setCurTimeRange(value)
-  }, [value])
+  const rangePickerValue = useMemo(() => {
+    return curTimeRange.recent === 0
+      ? ([
+          moment(curTimeRange.begin_time * 1000),
+          moment(curTimeRange.end_time * 1000),
+        ] as [Moment, Moment])
+      : null
+  }, [curTimeRange])
 
   function handleRecentChange(mins: number) {
-    const now = dayjs().unix()
-    const beginTime = now - mins * 60
-    const timeRange = {
-      recent: mins,
-      begin_time: beginTime,
-      end_time: now,
-    }
-    setCurTimeRange(timeRange)
-    onChange(timeRange)
+    onChange(calcTimeRange(mins))
     setDropdownVisible(false)
   }
 
@@ -66,10 +75,9 @@ export default function TimeRangeSelector({
     } else {
       const timeRange = {
         recent: 0,
-        begin_time: (values[0] as Moment).unix(),
-        end_time: (values[1] as Moment).unix(),
+        begin_time: values[0].unix(),
+        end_time: values[1].unix(),
       }
-      setCurTimeRange(timeRange)
       onChange(timeRange)
       setDropdownVisible(false)
     }
@@ -109,6 +117,7 @@ export default function TimeRangeSelector({
           <RangePicker
             showTime
             format="YYYY-MM-DD HH:mm:ss"
+            value={rangePickerValue}
             onChange={handleRangePickerChange}
           />
         </div>

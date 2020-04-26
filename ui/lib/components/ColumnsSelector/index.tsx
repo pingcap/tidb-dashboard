@@ -1,9 +1,11 @@
-import React, { useState, ReactNode, useMemo } from 'react'
-import { Dropdown, Menu, Checkbox } from 'antd'
+import React, { ReactNode, useMemo } from 'react'
+import { Checkbox, Popover, Space } from 'antd'
 import { DownOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { addTranslationResource } from '@lib/utils/i18n'
+
+import styles from './index.module.less'
 
 const translations = {
   en: {
@@ -27,18 +29,16 @@ export interface IColumnsSelectorProps {
   visibleColumnKeys?: { [key: string]: boolean }
   onChange?: (visibleKeys: { [key: string]: boolean }) => void
   headExtra?: ReactNode
-  footExtra?: ReactNode
+  foot?: ReactNode
 }
 
 export default function ColumnsSelector({
   columns,
   visibleColumnKeys,
   onChange,
-  headExtra,
-  footExtra,
+  foot,
 }: IColumnsSelectorProps) {
   const { t } = useTranslation()
-  const [dropdownVisible, setDropdownVisible] = useState(false)
 
   const visibleKeys = useMemo(() => {
     if (visibleColumnKeys) {
@@ -51,54 +51,34 @@ export default function ColumnsSelector({
   }, [visibleColumnKeys, columns])
 
   const dropdownMenus = (
-    <Menu>
-      {headExtra && <Menu.Item key="head">{headExtra}</Menu.Item>}
-      {headExtra && <Menu.Divider />}
-
+    <Space direction="vertical">
       {columns
         .filter((c) => c.key !== 'dummy')
         .map((column) => (
-          <Menu.Item key={column.key}>
-            <Checkbox
-              checked={visibleKeys[column.key]}
-              onChange={(e) => {
-                onChange &&
-                  onChange({
-                    ...visibleKeys,
-                    [column.key]: e.target.checked,
-                  })
-              }}
-            >
-              {column.name}
-            </Checkbox>
-          </Menu.Item>
+          <Checkbox
+            key={column.key}
+            checked={visibleKeys[column.key]}
+            onChange={(e) => {
+              onChange &&
+                onChange({
+                  ...visibleKeys,
+                  [column.key]: e.target.checked,
+                })
+            }}
+          >
+            {column.name}
+          </Checkbox>
         ))}
 
-      {footExtra && <Menu.Divider />}
-      {footExtra && <Menu.Item key="foot">{footExtra}</Menu.Item>}
-      {/* Menu children only can be Divider/Item/SubMenu/MenuGroup */}
-      {/* So the following code doesn't work */}
-      {/*
-      {footExtra && (
-        <>
-          <Menu.Divider />
-          <Menu.Item key="foot">{footExtra}</Menu.Item>
-        </>
-      )}
-      */}
-    </Menu>
+      {foot && <div className={styles.foot_container}>{foot}</div>}
+    </Space>
   )
 
   return (
-    <Dropdown
-      placement="bottomRight"
-      visible={dropdownVisible}
-      onVisibleChange={setDropdownVisible}
-      overlay={dropdownMenus}
-    >
-      <div style={{ cursor: 'pointer' }}>
+    <Popover content={dropdownMenus} placement="bottom">
+      <span style={{ cursor: 'pointer' }}>
         {t('component.columnsSelector.text')} <DownOutlined />
-      </div>
-    </Dropdown>
+      </span>
+    </Popover>
   )
 }

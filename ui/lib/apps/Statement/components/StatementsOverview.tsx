@@ -408,7 +408,7 @@ export default function StatementsOverview({
                 columns={columns}
                 visibleColumnKeys={visibleColumnKeys}
                 onChange={setVisibleColumnKeys}
-                footExtra={
+                foot={
                   <Checkbox
                     checked={showFullSQL}
                     onChange={(e) => setShowFullSQL(e.target.checked)}

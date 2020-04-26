@@ -18,13 +18,6 @@ export async function fetchHeatmap(
   return resp.data
 }
 
-export async function fetchServiceStatus(): Promise<boolean> {
-  return client
-    .getInstance()
-    .keyvisualConfigGet()
-    .then((res) => res.data.auto_collection_enabled || false)
-}
-
 export async function updateServiceStatus(auto_collection_enabled: boolean) {
   await client.getInstance().keyvisualConfigPut({
     auto_collection_enabled,

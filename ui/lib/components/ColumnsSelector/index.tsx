@@ -47,11 +47,6 @@ export default function ColumnsSelector({
   const [indeterminate, setIndeterminate] = useState(true)
   const [checkedAll, setCheckedAll] = useState(false)
 
-  useEffect(() => {
-    updateCheckAllStatus(visibleKeys)
-    // eslint-disable-next-line
-  }, [])
-
   const filteredColumns = useMemo(
     () => columns.filter((c) => c.key !== 'dummy'),
     [columns]
@@ -67,21 +62,22 @@ export default function ColumnsSelector({
     }, {})
   }, [visibleColumnKeys, columns])
 
-  function updateCheckAllStatus(columnKeys) {
-    const checkedKeysCount = Object.keys(columnKeys).filter(
-      (k) => columnKeys[k] && k !== 'dummy'
-    ).length
-    setIndeterminate(
-      checkedKeysCount > 0 && checkedKeysCount < filteredColumns.length
-    )
-    setCheckedAll(checkedKeysCount === filteredColumns.length)
-  }
+  useEffect(() => {
+    function updateCheckAllStatus(columnKeys) {
+      const checkedKeysCount = Object.keys(columnKeys).filter(
+        (k) => columnKeys[k] && k !== 'dummy'
+      ).length
+      setIndeterminate(
+        checkedKeysCount > 0 && checkedKeysCount < filteredColumns.length
+      )
+      setCheckedAll(checkedKeysCount === filteredColumns.length)
+    }
+
+    updateCheckAllStatus(visibleKeys)
+  }, [visibleKeys])
 
   function handleCheckAllChange(e) {
     const checked = e.target.checked
-    setCheckedAll(checked)
-    setIndeterminate(false)
-
     const newVisibleKeys = columns.reduce((acc, cur) => {
       acc[cur.key] = checked
       return acc
@@ -96,8 +92,6 @@ export default function ColumnsSelector({
       [column.key]: checked,
     }
     onChange && onChange(newVisibleKeys)
-
-    updateCheckAllStatus(newVisibleKeys)
   }
 
   const title = (

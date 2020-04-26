@@ -24,6 +24,15 @@ const { Option } = Select
 const VISIBLE_COLUMN_KEYS = 'statement_visible_column_keys'
 const SHOW_FULL_SQL = 'statement_show_full_sql'
 
+const defColumnKeys = {
+  digest_text: true,
+  sum_latency: true,
+  avg_latency: true,
+  exec_count: true,
+  avg_mem: true,
+  related_schemas: true,
+}
+
 interface State {
   curInstance: string | undefined
   curSchemas: string[]
@@ -188,14 +197,7 @@ export default function StatementsOverview({
   const [columns, setColumns] = useState<IColumn[]>([])
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     VISIBLE_COLUMN_KEYS,
-    {
-      digest_text: true,
-      sum_latency: true,
-      avg_latency: true,
-      exec_count: true,
-      avg_mem: true,
-      related_schemas: true,
-    } as { [key: string]: boolean }
+    defColumnKeys as { [key: string]: boolean }
   )
   const [showFullSQL, setShowFullSQL] = useLocalStorageState(
     SHOW_FULL_SQL,
@@ -407,6 +409,7 @@ export default function StatementsOverview({
               <ColumnsSelector
                 columns={columns}
                 visibleColumnKeys={visibleColumnKeys}
+                resetColumnKeys={defColumnKeys}
                 onChange={setVisibleColumnKeys}
                 foot={
                   <Checkbox

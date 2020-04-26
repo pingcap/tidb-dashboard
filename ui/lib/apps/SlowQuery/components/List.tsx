@@ -44,6 +44,13 @@ export function getDefSearchOptions(): ISearchOptions {
   }
 }
 
+const defColumnKeys = {
+  sql: true,
+  Time: true,
+  Query_time: true,
+  Mem_max: true,
+}
+
 function List() {
   const { t } = useTranslation()
 
@@ -60,12 +67,7 @@ function List() {
   const [columns, setColumns] = useState<IColumn[]>([])
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     VISIBLE_COLUMN_KEYS,
-    {
-      sql: true,
-      Time: true,
-      Query_time: true,
-      Mem_max: true,
-    } as { [key: string]: boolean }
+    defColumnKeys as { [key: string]: boolean }
   )
   const [showFullSQL, setShowFullSQL] = useLocalStorageState(
     SHOW_FULL_SQL,
@@ -164,6 +166,7 @@ function List() {
               <ColumnsSelector
                 columns={columns}
                 visibleColumnKeys={visibleColumnKeys}
+                resetColumnKeys={defColumnKeys}
                 onChange={setVisibleColumnKeys}
                 foot={
                   <Checkbox

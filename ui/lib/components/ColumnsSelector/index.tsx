@@ -9,10 +9,14 @@ import styles from './index.module.less'
 
 const translations = {
   en: {
-    text: 'Columns',
+    trigger_text: 'Columns',
+    select: 'Select',
+    reset: 'Reset',
   },
   'zh-CN': {
-    text: '选择列',
+    trigger_text: '选择列',
+    select: '选择',
+    reset: '重置',
   },
 }
 
@@ -103,14 +107,14 @@ export default function ColumnsSelector({
         checked={checkedAll}
         onChange={handleCheckAllChange}
       >
-        Select
+        {t('component.columnsSelector.select')}
       </Checkbox>
       {resetColumnKeys && (
         <Button
           type="link"
           onClick={() => onChange && onChange(resetColumnKeys)}
         >
-          Reset
+          {t('component.columnsSelector.reset')}
         </Button>
       )}
     </div>
@@ -135,7 +139,7 @@ export default function ColumnsSelector({
   return (
     <Popover content={content} title={title} placement="bottom" trigger="click">
       <span style={{ cursor: 'pointer' }}>
-        {t('component.columnsSelector.text')} <DownOutlined />
+        {t('component.columnsSelector.trigger_text')} <DownOutlined />
       </span>
     </Popover>
   )

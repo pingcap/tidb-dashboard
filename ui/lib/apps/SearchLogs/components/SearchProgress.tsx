@@ -8,6 +8,7 @@ import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import styles from './Styles.module.css'
 import { namingMap, NodeKind, NodeKindList, TaskState } from './utils'
 import { Card } from '@lib/components'
+import _ from 'lodash'
 
 const { confirm } = Modal
 const { TreeNode } = Tree
@@ -38,7 +39,7 @@ function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map((task) => {
     let title = task.target?.display_name ?? ''
     if (task.size) {
-      title += ' ' + getValueFormat('bytes')(task.size!, 1)
+      title += ' (' + getValueFormat('bytes')(task.size!, 1) + ')'
     }
     return (
       <TreeNode
@@ -112,10 +113,12 @@ export default function SearchProgress({
       const str = `${count} ${descriptionArray[index]}`
       res.push(str)
     })
-    const allSize = tasks.reduce((total, current) => {
-      return total + current.size!
-    }, 0)
-    return res.join('，') + ' ' + getValueFormat('bytes')(allSize, 1)
+    return (
+      res.join('，') +
+      ' (' +
+      getValueFormat('bytes')(_.sumBy(tasks, 'size'), 1) +
+      ')'
+    )
   }
 
   function renderTreeNodes(tasks: LogsearchTaskModel[]) {

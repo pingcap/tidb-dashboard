@@ -61,7 +61,7 @@ func (s *Service) listHandler(c *gin.Context) {
 
 	if req.LogStartTS == 0 {
 		now := time.Now().Unix()
-		before := time.Now().AddDate(0, 0, -1).Unix()
+		before := time.Now().Add(-30 * time.Minute).Unix()
 		req.LogStartTS = before
 		req.LogEndTS = now
 	}

@@ -7,8 +7,9 @@ import {
   DownOutlined,
   LoadingOutlined,
   SyncOutlined,
+  SettingOutlined,
 } from '@ant-design/icons'
-import { Slider, Spin, Select, Dropdown, Button, Menu } from 'antd'
+import { Slider, Spin, Select, Dropdown, Button, Menu, Tooltip } from 'antd'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { useSpring, animated } from 'react-spring'
 import Flexbox from '@g07cha/flexbox-react'
@@ -68,6 +69,7 @@ function RefreshProgress(props) {
 }
 
 export interface IKeyVisToolBarProps {
+  enabled: boolean
   isLoading: boolean
   autoRefreshSeconds: number
   remainingRefreshSeconds?: number
@@ -82,6 +84,7 @@ export interface IKeyVisToolBarProps {
   onChangeBrightLevel: (number) => void
   onChangeAutoRefresh: (number) => void
   onRefresh: () => void
+  onShowSettings: () => any
 }
 
 class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
@@ -119,11 +122,13 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
   render() {
     const {
       t,
+      enabled,
       dateRange,
       isOnBrush,
       metricType,
       remainingRefreshSeconds,
       autoRefreshSeconds,
+      onShowSettings,
     } = this.props
 
     // in hours
@@ -166,6 +171,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
       <Card>
         <div className="PD-KeyVis-Toolbar">
           <Dropdown
+            disabled={!enabled}
             overlay={
               <div id="PD-KeyVis-Brightness-Overlay">
                 <div
@@ -201,13 +207,14 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
 
           <Button.Group>
             <Button
+              disabled={!enabled}
               onClick={this.props.onToggleBrush}
               icon={<ArrowsAltOutlined />}
               type={isOnBrush ? 'primary' : 'default'}
             >
               {t('keyviz.toolbar.zoom.select')}
             </Button>
-            <Button onClick={this.props.onResetZoom}>
+            <Button disabled={!enabled} onClick={this.props.onResetZoom}>
               {t('keyviz.toolbar.zoom.reset')}
             </Button>
           </Button.Group>
@@ -215,6 +222,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
           <div className="space" />
 
           <Select
+            disabled={!enabled}
             onChange={this.handleDateRange}
             value={dateRange}
             style={{ width: 150 }}
@@ -234,6 +242,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
           <div className="space" />
 
           <Select
+            disabled={!enabled}
             onChange={this.handleMetricChange}
             value={metricType}
             style={{ width: 160 }}
@@ -252,6 +261,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
           <div className="space" />
 
           <Dropdown.Button
+            disabled={!enabled}
             onClick={this.handleRefreshClick}
             overlay={autoRefreshMenu}
             trigger={['click']}
@@ -274,6 +284,12 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
               indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
             />
           )}
+
+          <div style={{ flex: 1 }} />
+
+          <Tooltip title={t('keyviz.settings.title')}>
+            <SettingOutlined onClick={onShowSettings} />
+          </Tooltip>
         </div>
       </Card>
     )

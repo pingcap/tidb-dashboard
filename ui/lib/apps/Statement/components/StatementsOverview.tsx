@@ -9,6 +9,7 @@ import {
   Menu,
   Checkbox,
 } from 'antd'
+import { useLocalStorageState } from '@umijs/hooks'
 import {
   SettingOutlined,
   ReloadOutlined,
@@ -31,6 +32,9 @@ import { SearchContext } from './search-options-context'
 import styles from './styles.module.less'
 
 const { Option } = Select
+
+const VISIBLE_COLUMN_KEYS = 'statement_overview_visible_column_keys'
+const SHOW_FULL_SQL = 'statement_overview_show_full_sql'
 
 interface State {
   curInstance: string | undefined
@@ -194,18 +198,22 @@ export default function StatementsOverview({
   const [refreshTimes, setRefreshTimes] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
   const [columns, setColumns] = useState<IColumn[]>([])
-  const [visibleColumnKeys, setVisibleColumnKeys] = useState<{
-    [key: string]: boolean
-  }>({
-    digest_text: true,
-    sum_latency: true,
-    avg_latency: true,
-    exec_count: true,
-    avg_mem: true,
-    related_schemas: true,
-  })
+  const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
+    VISIBLE_COLUMN_KEYS,
+    {
+      digest_text: true,
+      sum_latency: true,
+      avg_latency: true,
+      exec_count: true,
+      avg_mem: true,
+      related_schemas: true,
+    } as { [key: string]: boolean }
+  )
   const [dropdownVisible, setDropdownVisible] = useState(false)
-  const [showFullSQL, setShowFullSQL] = useState(false)
+  const [showFullSQL, setShowFullSQL] = useLocalStorageState(
+    SHOW_FULL_SQL,
+    false
+  )
 
   useEffect(() => {
     async function queryInstances() {
@@ -391,8 +399,8 @@ export default function StatementsOverview({
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Card>
-        <div style={{ display: 'flex' }}>
-          <Space size="middle">
+        <div className={styles.overview_header}>
+          <Space size="middle" className={styles.overview_options}>
             <TimeRangeSelector
               timeRanges={state.timeRanges}
               onChange={handleTimeRangeChange}
@@ -428,8 +436,7 @@ export default function StatementsOverview({
               ))}
             </Select>
           </Space>
-          <div style={{ flex: 1 }} />
-          <Space size="middle">
+          <Space size="middle" className={styles.overview_right_actions}>
             {columns.length > 0 && (
               <Dropdown
                 placement="bottomRight"

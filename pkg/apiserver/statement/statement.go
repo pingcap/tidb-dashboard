@@ -143,8 +143,8 @@ func (s *Service) stmtTypesHandler(c *gin.Context) {
 // @Summary Statements overview
 // @Description Get statements overview
 // @Produce json
-// @Param begin_time query string true "Statement begin time"
-// @Param end_time query string true "Statement end time"
+// @Param begin_time query int true "Statement begin time"
+// @Param end_time query int true "Statement end time"
 // @Param schemas query string false "Target schemas"
 // @Param stmt_types query string false "Target statement types"
 // @Success 200 {array} Model

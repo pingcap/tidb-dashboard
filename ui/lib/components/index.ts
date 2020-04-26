@@ -26,5 +26,7 @@ export * from './DateTime'
 export { default as DateTime } from './DateTime'
 export * from './Expand'
 export { default as Expand } from './Expand'
+export * from './MetricChart'
+export { default as MetricChart } from './MetricChart'
 
 export { default as LanguageDropdown } from './LanguageDropdown'

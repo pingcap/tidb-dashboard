@@ -19,11 +19,15 @@ export interface TimeRange {
   end_time: number
 }
 
-export const DEF_TIME_RANGE: TimeRange = {
-  recent: 30,
-  begin_time: 0,
-  end_time: 0,
+export function getDefTimeRange(): TimeRange {
+  const now = dayjs().unix()
+  return {
+    recent: 30,
+    begin_time: now - 30 * 60,
+    end_time: now,
+  }
 }
+
 export interface ITimeRangeSelectorProps {
   value: TimeRange
   onChange: (val: TimeRange) => void
@@ -51,6 +55,7 @@ export default function TimeRangeSelector({
     }
     setCurTimeRange(timeRange)
     onChange(timeRange)
+    setDropdownVisible(false)
   }
 
   function handleRangePickerChange(values) {
@@ -66,6 +71,7 @@ export default function TimeRangeSelector({
       }
       setCurTimeRange(timeRange)
       onChange(timeRange)
+      setDropdownVisible(false)
     }
   }
 

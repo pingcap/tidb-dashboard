@@ -11,7 +11,7 @@ const toggleWidth = 40
 const toggleHeight = 50
 
 export default function ToggleBanner({
-  width,
+  fullWidth,
   collapsedWidth,
   collapsed,
   onToggle,
@@ -22,7 +22,7 @@ export default function ToggleBanner({
     height: collapsed ? toggleHeight : bannerSize.height || 0,
   })
   const transButton = useSpring({
-    left: collapsed ? 0 : width - toggleWidth,
+    left: collapsed ? 0 : fullWidth - toggleWidth,
     width: collapsed ? collapsedWidth : toggleWidth,
   })
 
@@ -35,7 +35,7 @@ export default function ToggleBanner({
         <div
           ref={bannerRef}
           className={styles.bannerLeft}
-          style={{ width: width - toggleWidth }}
+          style={{ width: fullWidth - toggleWidth }}
         >
           <Flexbox flexDirection="row">
             <div className={styles.bannerLogo}>

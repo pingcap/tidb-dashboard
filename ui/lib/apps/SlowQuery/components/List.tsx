@@ -102,10 +102,12 @@ function List() {
         .slowQueryListGet(
           searchOptions.schemas,
           searchOptions.desc,
+          '',
           searchOptions.limit,
           searchOptions.timeRange.end_time,
           searchOptions.timeRange.begin_time,
           searchOptions.orderBy,
+          [],
           searchOptions.searchText
         )
       setLoading(false)

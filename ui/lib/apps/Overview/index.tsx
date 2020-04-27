@@ -70,10 +70,12 @@ function useSlowQueries() {
         .slowQueryListGet(
           searchOptions.schemas,
           searchOptions.desc,
+          '',
           10,
           searchOptions.timeRange.end_time,
           searchOptions.timeRange.begin_time,
           searchOptions.orderBy,
+          [],
           searchOptions.searchText
         )
       setLoadingSlowQueries(false)

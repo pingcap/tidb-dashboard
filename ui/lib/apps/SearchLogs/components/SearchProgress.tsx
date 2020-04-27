@@ -116,6 +116,7 @@ export default function SearchProgress({
       [NodeKind.TiDB]: [],
       [NodeKind.TiKV]: [],
       [NodeKind.PD]: [],
+      [NodeKind.TiFlash]: [],
     }
 
     tasks.forEach((task) => {

@@ -29,12 +29,14 @@ export enum NodeKind {
   TiDB = 'tidb',
   TiKV = 'tikv',
   PD = 'pd',
+  TiFlash = 'tiflash',
 }
 
 export const namingMap = {
   [NodeKind.TiDB]: 'TiDB',
   [NodeKind.TiKV]: 'TiKV',
   [NodeKind.PD]: 'PD',
+  [NodeKind.TiFlash]: 'TiFlash',
 }
 
 export const AllLogLevel = [1, 2, 3, 4, 5, 6]
@@ -85,6 +87,17 @@ export function parseClusterInfo(
       display_name: `${item.ip}:${item.port}`,
     })
   })
+  info?.tiflash?.nodes?.forEach(item => {
+    if (!(item.ip && item.port)) {
+      return
+    }
+    targets.push({
+      kind: NodeKind.TiFlash,
+      ip: item.ip,
+      port: item.port,
+      display_name: `${item.ip}:${item.port}`,
+    })
+  })
   return targets
 }
 
@@ -120,4 +133,4 @@ function getComponents(tasks: LogsearchTaskModel[]): UtilsRequestTargetNode[] {
   return targets
 }
 
-export const NodeKindList = [NodeKind.TiDB, NodeKind.TiKV, NodeKind.PD]
+export const NodeKindList = [NodeKind.TiDB, NodeKind.TiKV, NodeKind.PD, NodeKind.TiFlash]

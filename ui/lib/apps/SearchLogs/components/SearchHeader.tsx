@@ -30,6 +30,7 @@ function buildTreeData(targets: UtilsRequestTargetNode[]) {
     [NodeKind.TiDB]: [],
     [NodeKind.TiKV]: [],
     [NodeKind.PD]: [],
+    [NodeKind.TiFlash]: [],
   }
 
   targets.forEach((item) => {

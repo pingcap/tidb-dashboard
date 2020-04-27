@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import { useSessionStorageState } from '@umijs/hooks'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
+
 export interface IQueryOptions {
   timeRange: TimeRange
   schemas: string[]

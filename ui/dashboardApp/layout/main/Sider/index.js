@@ -71,7 +71,8 @@ function useCurrentLogin() {
 
 export default function Sider({
   registry,
-  width,
+  fullWidth,
+  defaultCollapsed,
   collapsed,
   collapsedWidth,
   onToggle,
@@ -120,24 +121,25 @@ export default function Sider({
   ]
 
   const transSider = useSpring({
-    width: collapsed ? collapsedWidth : width,
+    width: collapsed ? collapsedWidth : fullWidth,
   })
 
   return (
     <animated.div style={transSider}>
       <Layout.Sider
         className={styles.sider}
-        width={width}
+        width={fullWidth}
         trigger={null}
         collapsible
         collapsed={collapsed}
-        collapsedWidth={width}
+        collapsedWidth={fullWidth}
+        defaultCollapsed={defaultCollapsed}
         theme="light"
       >
         <Banner
           collapsed={collapsed}
           onToggle={onToggle}
-          width={width}
+          fullWidth={fullWidth}
           collapsedWidth={collapsedWidth}
         />
         <TrailMenu
@@ -146,7 +148,6 @@ export default function Sider({
           mode="inline"
           selectedKeys={[activeAppId]}
           style={{ flexGrow: 1 }}
-          defaultOpenKeys={['debug']}
         />
         <TrailMenu
           items={extraMenuItems}

@@ -14,7 +14,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import { useSpring, animated } from 'react-spring'
 import Flexbox from '@g07cha/flexbox-react'
 import { Card } from '@lib/components'
-import prettyMs from 'pretty-ms'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 
 function RefreshProgress(props) {
   const { value } = props
@@ -159,7 +159,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
           {autoRefreshOptions.map((sec) => {
             return (
               <Menu.Item key={String(sec)}>
-                {prettyMs(sec * 1000, { verbose: true })}
+                {getValueFormat('s')(sec, 0)}
               </Menu.Item>
             )
           })}
@@ -233,8 +233,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
                 value={hour * 60 * 60}
                 className="PD-KeyVis-Select-Option"
               >
-                <ClockCircleOutlined />{' '}
-                {prettyMs(hour * 60 * 60 * 1000, { verbose: true })}
+                <ClockCircleOutlined /> {getValueFormat('h')(hour, 0)}
               </Select.Option>
             ))}
           </Select>

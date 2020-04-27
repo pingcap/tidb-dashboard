@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import SlowQueriesTable from '@lib/apps/SlowQuery/components/SlowQueriesTable'
-import { getDefSearchOptions } from '@lib/apps/SlowQuery/components/List'
+import { getDefQueryOptions } from '@lib/apps/SlowQuery/components/List'
 import client, { SlowqueryBase } from '@lib/client'
 import { IQuery } from './PlanDetail'
 
 function useSlowQueries(query: IQuery) {
-  const [searchOptions, setSearchOptions] = useState(getDefSearchOptions)
+  const [searchOptions, setSearchOptions] = useState(getDefQueryOptions)
   const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
 

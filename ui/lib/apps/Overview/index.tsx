@@ -13,7 +13,7 @@ import client, {
 import { StatementsTable } from '@lib/apps/Statement'
 import MonitorAlertBar from './components/MonitorAlertBar'
 import Nodes from './components/Nodes'
-import { getDefSearchOptions } from '../SlowQuery/components/List'
+import { getDefQueryOptions } from '../SlowQuery/components/List'
 import SlowQueriesTable from '../SlowQuery/components/SlowQueriesTable'
 
 import styles from './index.module.less'
@@ -50,7 +50,7 @@ function useStatements() {
 }
 
 function useSlowQueries() {
-  const [searchOptions, setSearchOptions] = useState(getDefSearchOptions)
+  const [searchOptions, setSearchOptions] = useState(getDefQueryOptions)
   const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
 

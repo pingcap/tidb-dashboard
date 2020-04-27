@@ -87,7 +87,7 @@ export function parseClusterInfo(
       display_name: `${item.ip}:${item.port}`,
     })
   })
-  info?.tiflash?.nodes?.forEach(item => {
+  info?.tiflash?.nodes?.forEach((item) => {
     if (!(item.ip && item.port)) {
       return
     }
@@ -133,4 +133,9 @@ function getComponents(tasks: LogsearchTaskModel[]): UtilsRequestTargetNode[] {
   return targets
 }
 
-export const NodeKindList = [NodeKind.TiDB, NodeKind.TiKV, NodeKind.PD, NodeKind.TiFlash]
+export const NodeKindList = [
+  NodeKind.TiDB,
+  NodeKind.TiKV,
+  NodeKind.PD,
+  NodeKind.TiFlash,
+]

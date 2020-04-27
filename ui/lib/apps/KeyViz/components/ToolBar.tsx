@@ -233,8 +233,7 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
                 value={hour * 60 * 60}
                 className="PD-KeyVis-Select-Option"
               >
-                <ClockCircleOutlined />{' '}
-                {prettyMs(hour * 60 * 60 * 1000, { verbose: true })}
+                <ClockCircleOutlined /> {getValueFormat('h')(hour, 0)}
               </Select.Option>
             ))}
           </Select>

@@ -191,6 +191,11 @@ const KeyViz = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getAutoRefreshSeconds()])
 
+  useEffect(() => {
+    updateHeatmap()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getSelection(), getDateRange(), getMetricType()])
+
   useInterval(() => {
     if (getAutoRefreshSeconds() === 0) {
       return

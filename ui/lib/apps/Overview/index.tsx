@@ -157,7 +157,7 @@ export default function App() {
               desc={queryOptions.desc}
               title={
                 <Link to="/slow_query">
-                  Recent Slow Queries <RightOutlined />
+                  {t('overview.recent_slow_query.title')} <RightOutlined />
                 </Link>
               }
               subTitle={

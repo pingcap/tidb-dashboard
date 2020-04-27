@@ -28,11 +28,15 @@ for (const key in translations) {
   })
 }
 
+export interface IColumnKeys {
+  [key: string]: boolean
+}
+
 export interface IColumnsSelectorProps {
   columns: IColumn[]
-  visibleColumnKeys?: { [key: string]: boolean }
-  resetColumnKeys?: { [key: string]: boolean }
-  onChange?: (visibleKeys: { [key: string]: boolean }) => void
+  visibleColumnKeys?: IColumnKeys
+  resetColumnKeys?: IColumnKeys
+  onChange?: (visibleKeys: IColumnKeys) => void
   foot?: ReactNode
 }
 

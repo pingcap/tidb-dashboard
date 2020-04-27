@@ -10,7 +10,7 @@ import {
   StatementConfig,
   StatementModel,
 } from '@lib/client'
-import { Card, ColumnsSelector } from '@lib/components'
+import { Card, ColumnsSelector, IColumnKeys } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
@@ -24,7 +24,7 @@ const { Option } = Select
 const VISIBLE_COLUMN_KEYS = 'statement_visible_column_keys'
 const SHOW_FULL_SQL = 'statement_show_full_sql'
 
-const defColumnKeys = {
+const defColumnKeys: IColumnKeys = {
   digest_text: true,
   sum_latency: true,
   avg_latency: true,
@@ -197,7 +197,7 @@ export default function StatementsOverview({
   const [columns, setColumns] = useState<IColumn[]>([])
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     VISIBLE_COLUMN_KEYS,
-    defColumnKeys as { [key: string]: boolean }
+    defColumnKeys
   )
   const [showFullSQL, setShowFullSQL] = useLocalStorageState(
     SHOW_FULL_SQL,

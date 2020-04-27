@@ -5,7 +5,7 @@ import { ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useSessionStorageState, useLocalStorageState } from '@umijs/hooks'
-import { Card, ColumnsSelector } from '@lib/components'
+import { Card, ColumnsSelector, IColumnKeys } from '@lib/components'
 import client, { SlowqueryBase } from '@lib/client'
 import TimeRangeSelector, {
   TimeRange,
@@ -44,7 +44,7 @@ export function getDefSearchOptions(): ISearchOptions {
   }
 }
 
-const defColumnKeys = {
+const defColumnKeys: IColumnKeys = {
   sql: true,
   Time: true,
   Query_time: true,
@@ -67,7 +67,7 @@ function List() {
   const [columns, setColumns] = useState<IColumn[]>([])
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     VISIBLE_COLUMN_KEYS,
-    defColumnKeys as { [key: string]: boolean }
+    defColumnKeys
   )
   const [showFullSQL, setShowFullSQL] = useLocalStorageState(
     SHOW_FULL_SQL,

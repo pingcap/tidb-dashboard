@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { Form, Skeleton, Switch, Space, Button, Modal } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-import { fetchServiceStatus, updateServiceStatus } from '../utils'
-import { ConfigKeyVisualConfig } from '@lib/client'
+import { updateServiceStatus } from '../utils'
+import client, { ConfigKeyVisualConfig } from '@lib/client'
 
 interface Props {
   onClose: () => void
@@ -18,29 +18,39 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
 
   const onFetchServiceStatus = () => {
     setLoading(true)
-    fetchServiceStatus().then(
-      (status) => {
-        setConfig({ auto_collection_enabled: status })
-        setLoading(false)
-      },
-      () => {
-        setLoading(false)
-      }
-    )
+    client
+      .getInstance()
+      .keyvisualConfigGet()
+      .then(
+        (r) => {
+          setConfig({
+            auto_collection_enabled: r.data.auto_collection_enabled === true,
+          })
+          setLoading(false)
+        },
+        () => {
+          setLoading(false)
+        }
+      )
   }
 
   const onSubmitted = () => {
-    fetchServiceStatus().then(
-      (status) => {
-        setConfig({ auto_collection_enabled: status })
-        setSubmitting(false)
-        onClose()
-        setTimeout(onConfigUpdated, 500)
-      },
-      () => {
-        setSubmitting(false)
-      }
-    )
+    client
+      .getInstance()
+      .keyvisualConfigGet()
+      .then(
+        (r) => {
+          setConfig({
+            auto_collection_enabled: r.data.auto_collection_enabled === true,
+          })
+          setSubmitting(false)
+          onClose()
+          setTimeout(onConfigUpdated, 500)
+        },
+        () => {
+          setSubmitting(false)
+        }
+      )
   }
 
   const onUpdateServiceStatus = (status) => {

@@ -164,7 +164,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
               <TabTxn data={data} />
             </CardTabs.TabPane>
             <CardTabs.TabPane
-              tab={t('statement.pages.detail.tabs.slow_query', 'Slow Query')}
+              tab={t('statement.pages.detail.tabs.slow_query')}
               key="slow_query"
             >
               <SlowQueryTab query={query} />

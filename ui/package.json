@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^4.0.6",
-    "@baurine/grafana-value-formats": "^0.1.1",
+    "@baurine/grafana-value-formats": "^0.1.2",
     "@fortawesome/fontawesome-free": "^5.13.0",
     "@g07cha/flexbox-react": "^5.0.0",
     "@umijs/hooks": "^1.9.1",

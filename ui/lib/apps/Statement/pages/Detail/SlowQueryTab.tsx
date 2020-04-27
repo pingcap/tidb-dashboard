@@ -1,51 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import SlowQueriesTable from '@lib/apps/SlowQuery/components/SlowQueriesTable'
-import { getDefQueryOptions } from '@lib/apps/SlowQuery/components/List'
-import client, { SlowqueryBase } from '@lib/client'
 import { IQuery } from './PlanDetail'
-
-function useSlowQueries(query: IQuery) {
-  const [searchOptions, setSearchOptions] = useState(getDefQueryOptions)
-  const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])
-  const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
-
-  function changeSort(orderBy: string, desc: boolean) {
-    setSearchOptions({
-      ...searchOptions,
-      orderBy,
-      desc,
-    })
-  }
-
-  useEffect(() => {
-    async function getSlowQueryList() {
-      setLoadingSlowQueries(true)
-      const res = await client
-        .getInstance()
-        .slowQueryListGet(
-          [query.schema!],
-          searchOptions.desc,
-          query.digest,
-          100,
-          query.endTime,
-          query.beginTime,
-          searchOptions.orderBy,
-          query.plans,
-          searchOptions.searchText
-        )
-      setLoadingSlowQueries(false)
-      setSlowQueries(res.data || [])
-    }
-    getSlowQueryList()
-  }, [searchOptions, query])
-
-  return {
-    slowQueries,
-    loadingSlowQueries,
-    changeSort,
-    searchOptions,
-  }
-}
+import useSlowQuery, {
+  getDefQueryOptions,
+} from '@lib/apps/SlowQuery/utils/useSlowQuery'
+import { defSlowQueryColumnKeys } from '@lib/apps/SlowQuery/components/List'
 
 export interface ISlowQueryTabProps {
   query: IQuery
@@ -53,11 +12,25 @@ export interface ISlowQueryTabProps {
 
 export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
   const {
+    queryOptions,
+    setQueryOptions,
     slowQueries,
     loadingSlowQueries,
-    changeSort,
-    searchOptions,
-  } = useSlowQueries(query)
+  } = useSlowQuery(
+    {
+      ...getDefQueryOptions(),
+      timeRange: {
+        recent: 0,
+        begin_time: query.beginTime!,
+        end_time: query.endTime!,
+      },
+      schemas: [query.schema!],
+      limit: 100,
+      digest: query.digest!,
+      plans: query.plans,
+    },
+    false
+  )
 
   return (
     <SlowQueriesTable
@@ -65,15 +38,12 @@ export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
       key={`slow_query_${slowQueries.length}`}
       loading={loadingSlowQueries}
       slowQueries={slowQueries}
-      visibleColumnKeys={{
-        sql: true,
-        Time: true,
-        Query_time: true,
-        Mem_max: true,
-      }}
-      onChangeSort={changeSort}
-      orderBy={searchOptions.orderBy}
-      desc={searchOptions.desc}
+      visibleColumnKeys={defSlowQueryColumnKeys}
+      onChangeSort={(orderBy, desc) =>
+        setQueryOptions({ ...queryOptions, orderBy, desc })
+      }
+      orderBy={queryOptions.orderBy}
+      desc={queryOptions.desc}
     />
   )
 }

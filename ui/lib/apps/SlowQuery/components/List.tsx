@@ -20,7 +20,7 @@ const VISIBLE_COLUMN_KEYS = 'slow_query.visible_column_keys'
 const SHOW_FULL_SQL = 'slow_query.show_full_sql'
 const LIMITS = [100, 200, 500, 1000]
 
-const defColumnKeys: IColumnKeys = {
+export const defSlowQueryColumnKeys: IColumnKeys = {
   sql: true,
   Time: true,
   Query_time: true,
@@ -43,7 +43,7 @@ function List() {
   const [columns, setColumns] = useState<IColumn[]>([])
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     VISIBLE_COLUMN_KEYS,
-    defColumnKeys
+    defSlowQueryColumnKeys
   )
   const [showFullSQL, setShowFullSQL] = useLocalStorageState(
     SHOW_FULL_SQL,
@@ -110,7 +110,7 @@ function List() {
               <ColumnsSelector
                 columns={columns}
                 visibleColumnKeys={visibleColumnKeys}
-                resetColumnKeys={defColumnKeys}
+                resetColumnKeys={defSlowQueryColumnKeys}
                 onChange={setVisibleColumnKeys}
                 foot={
                   <Checkbox

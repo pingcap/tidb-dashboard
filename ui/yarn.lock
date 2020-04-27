@@ -1287,7 +1287,7 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@baurine/grafana-value-formats@^0.1.1":
+"@baurine/grafana-value-formats@^0.1.2":
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/@baurine/grafana-value-formats/-/grafana-value-formats-0.1.2.tgz#c7bfefa4a81d43099101cd389a83eb45cbb5653f"
   integrity sha512-P6OPC4LyQmysSYyY2n6n6ZcxdvmUsJ2O0RvLipsReLWZUzYQaQRDi+dKUDCFJgf9A2Mf3mLWacVEM+DsvHf/cQ==

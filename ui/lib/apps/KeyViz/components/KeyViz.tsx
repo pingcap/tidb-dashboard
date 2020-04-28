@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Button, Drawer } from 'antd'
 import { useTranslation } from 'react-i18next'
+import { useGetSet, useMount, useInterval } from 'react-use'
+import { useBoolean } from '@umijs/hooks'
+
+import client from '@lib/client'
 import { Heatmap } from '../heatmap'
 import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types'
 import { fetchHeatmap } from '../utils'
-import ToolBar from './ToolBar'
 import KeyVizSettingForm from './KeyVizSettingForm'
+import KeyVizToolbar from './KeyVizToolbar'
+
 import './KeyViz.less'
-import { useGetSet, useMount, useInterval } from 'react-use'
-import client from '@lib/client'
-import { useBoolean } from '@umijs/hooks'
 
 type CacheEntry = {
   metricType: DataTag
@@ -232,7 +234,7 @@ const KeyViz = (props) => {
 
   return (
     <div className="PD-KeyVis">
-      <ToolBar
+      <KeyVizToolbar
         enabled={serviceEnabled}
         dateRange={getDateRange()}
         metricType={getMetricType()}

@@ -213,6 +213,7 @@ export default function HostTable() {
 
   return (
     <CardTableV2
+      cardNoMargin
       loading={isLoading}
       columns={columns}
       items={tableData || []}

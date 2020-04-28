@@ -10,7 +10,7 @@ import {
   StatementConfig,
   StatementModel,
 } from '@lib/client'
-import { Card, ColumnsSelector, IColumnKeys } from '@lib/components'
+import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
@@ -367,8 +367,8 @@ export default function StatementsOverview({
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Card>
-        <div className={styles.overview_header}>
-          <Space size="middle" className={styles.overview_options}>
+        <Toolbar>
+          <Space>
             <TimeRangeSelector
               timeRanges={state.timeRanges}
               onChange={handleTimeRangeChange}
@@ -404,7 +404,8 @@ export default function StatementsOverview({
               ))}
             </Select>
           </Space>
-          <Space size="middle" className={styles.overview_right_actions}>
+
+          <Space>
             {columns.length > 0 && (
               <ColumnsSelector
                 columns={columns}
@@ -432,8 +433,9 @@ export default function StatementsOverview({
               />
             </Tooltip>
           </Space>
-        </div>
+        </Toolbar>
       </Card>
+
       {state.statementEnable ? (
         <StatementsTable
           key={`${state.statements.length}_${refreshTimes}_${showFullSQL}`}
@@ -448,6 +450,7 @@ export default function StatementsOverview({
       ) : (
         statementDisabled
       )}
+
       <Drawer
         title={t('statement.pages.overview.settings.title')}
         width={300}

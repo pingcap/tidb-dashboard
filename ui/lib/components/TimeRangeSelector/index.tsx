@@ -11,33 +11,38 @@ import styles from './index.module.less'
 
 const { RangePicker } = DatePicker
 
-const RECENT_MINS = [30, 60, 3 * 60, 6 * 60, 12 * 60, 24 * 60]
+const RECENT_SECONDS = [
+  30 * 60,
+  60 * 60,
+  3 * 60 * 60,
+  6 * 60 * 60,
+  12 * 60 * 60,
+  24 * 60 * 60,
+]
 
-export interface TimeRange {
-  recent: number // 0 means absolute time range, else means relative time range
-  begin_time: number
-  end_time: number
+export interface RecentSecTime {
+  type: 'recent'
+  value: number // unit: seconds
 }
 
-function calcTimeRange(mins: number): TimeRange {
-  const now = dayjs().unix()
-  return {
-    recent: mins,
-    begin_time: now - mins * 60,
-    end_time: now,
-  }
+export interface RangeTime {
+  type: 'absolute'
+  value: [number, number] // unit: seconds
 }
 
-export function getDefTimeRange(): TimeRange {
-  return calcTimeRange(30)
+export type TimeRange = RecentSecTime | RangeTime
+
+export const DEF_TIME_RANGE: TimeRange = {
+  type: 'recent',
+  value: 30 * 60,
 }
 
-export function refreshTimeRange(timeRange: TimeRange): TimeRange {
-  const { recent } = timeRange
-  if (recent === 0) {
-    return timeRange
+export function calcTimeRange(timeRange: TimeRange): [number, number] {
+  if (timeRange.type === 'absolute') {
+    return timeRange.value
   } else {
-    return calcTimeRange(recent)
+    const now = dayjs().unix()
+    return [now - timeRange.value, now]
   }
 }
 
@@ -54,31 +59,32 @@ export default function TimeRangeSelector({
   const [dropdownVisible, setDropdownVisible] = useState(false)
 
   const rangePickerValue = useMemo(() => {
-    return curTimeRange.recent === 0
+    return curTimeRange.type === 'absolute'
       ? ([
-          moment(curTimeRange.begin_time * 1000),
-          moment(curTimeRange.end_time * 1000),
+          moment(curTimeRange.value[0] * 1000),
+          moment(curTimeRange.value[1] * 1000),
         ] as [Moment, Moment])
       : null
   }, [curTimeRange])
 
-  function handleRecentChange(mins: number) {
-    onChange(calcTimeRange(mins))
+  function handleRecentChange(seconds: number) {
+    onChange({
+      type: 'recent',
+      value: seconds,
+    })
     setDropdownVisible(false)
   }
 
   function handleRangePickerChange(values) {
     if (values === null) {
-      if (curTimeRange.recent === 0) {
-        handleRecentChange(30)
+      if (curTimeRange.type === 'absolute') {
+        handleRecentChange(30 * 60)
       }
     } else {
-      const timeRange = {
-        recent: 0,
-        begin_time: values[0].unix(),
-        end_time: values[1].unix(),
-      }
-      onChange(timeRange)
+      onChange({
+        type: 'absolute',
+        value: [values[0].unix(), values[1].unix()],
+      })
       setDropdownVisible(false)
     }
   }
@@ -92,17 +98,19 @@ export default function TimeRangeSelector({
           )}
         </span>
         <div className={styles.time_range_items}>
-          {RECENT_MINS.map((mins) => (
+          {RECENT_SECONDS.map((seconds) => (
             <div
               tabIndex={-1}
-              key={mins}
+              key={seconds}
               className={cx(styles.time_range_item, {
-                [styles.time_range_item_active]: mins === curTimeRange.recent,
+                [styles.time_range_item_active]:
+                  curTimeRange.type === 'recent' &&
+                  curTimeRange.value === seconds,
               })}
-              onClick={() => handleRecentChange(mins)}
+              onClick={() => handleRecentChange(seconds)}
             >
               {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
-              {getValueFormat('m')(mins, 0)}
+              {getValueFormat('s')(seconds, 0)}
             </div>
           ))}
         </div>
@@ -133,15 +141,15 @@ export default function TimeRangeSelector({
       onVisibleChange={setDropdownVisible}
     >
       <Button icon={<ClockCircleOutlined />}>
-        {curTimeRange.recent > 0 ? (
+        {curTimeRange.type === 'recent' ? (
           <span>
             {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
-            {getValueFormat('m')(curTimeRange.recent, 0)}
+            {getValueFormat('s')(curTimeRange.value, 0)}
           </span>
         ) : (
           <span>
-            {dayjs.unix(curTimeRange.begin_time!).format('MM-DD HH:mm:ss')} ~{' '}
-            {dayjs.unix(curTimeRange.end_time!).format('MM-DD HH:mm:ss')}
+            {dayjs.unix(curTimeRange.value[0]).format('MM-DD HH:mm:ss')} ~{' '}
+            {dayjs.unix(curTimeRange.value[1]).format('MM-DD HH:mm:ss')}
           </span>
         )}
         <DownOutlined />

@@ -1,8 +1,8 @@
 import React from 'react'
 import cx from 'classnames'
+import { Space } from 'antd'
 
 import styles from './index.module.less'
-import { Space } from 'antd'
 
 export default function Toolbar(props: React.HTMLAttributes<HTMLDivElement>) {
   const { className, children, ...rest } = props
@@ -20,9 +20,11 @@ export default function Toolbar(props: React.HTMLAttributes<HTMLDivElement>) {
       {React.Children.map(children, (child, idx) => {
         // https://stackoverflow.com/questions/42261783/how-to-assign-the-correct-typing-to-react-cloneelement-when-giving-properties-to
         if (React.isValidElement(child) && child.type === Space) {
-          const extraClassName = idx === 0 ? styles.left_space : styles.right_space
+          const extraClassName =
+            idx === 0 ? styles.left_space : styles.right_space
           return React.cloneElement(child, {
             className: cx(child.props.className, extraClassName),
+            size: child.props.size || 'middle',
           })
         }
       })}

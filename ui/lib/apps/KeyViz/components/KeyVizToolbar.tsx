@@ -286,6 +286,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
               />
             )}
           </Space>
+
           <Space>
             <Tooltip title={t('keyviz.settings.title')}>
               <SettingOutlined onClick={onShowSettings} />

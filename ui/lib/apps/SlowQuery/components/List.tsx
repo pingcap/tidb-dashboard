@@ -5,16 +5,14 @@ import { ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useSessionStorageState, useLocalStorageState } from '@umijs/hooks'
-import { Card, ColumnsSelector, IColumnKeys } from '@lib/components'
+import dayjs from 'dayjs'
+import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
 import client, { SlowqueryBase } from '@lib/client'
 import TimeRangeSelector, {
   TimeRange,
   getDefTimeRange,
 } from './TimeRangeSelector'
 import SlowQueriesTable from './SlowQueriesTable'
-
-import styles from './List.module.less'
-import dayjs from 'dayjs'
 
 const { Option } = Select
 const { Search } = Input
@@ -117,8 +115,8 @@ function List() {
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Card>
-        <div className={styles.header}>
-          <Space size="middle" className={styles.search_options}>
+        <Toolbar>
+          <Space>
             <TimeRangeSelector
               value={searchOptions.timeRange}
               onChange={(timeRange) =>
@@ -161,7 +159,8 @@ function List() {
               ))}
             </Select>
           </Space>
-          <Space size="middle" className={styles.right_actions}>
+
+          <Space>
             {columns.length > 0 && (
               <ColumnsSelector
                 columns={columns}
@@ -186,8 +185,9 @@ function List() {
               />
             </Tooltip>
           </Space>
-        </div>
+        </Toolbar>
       </Card>
+
       <SlowQueriesTable
         loading={loading}
         slowQueries={slowQueryList}

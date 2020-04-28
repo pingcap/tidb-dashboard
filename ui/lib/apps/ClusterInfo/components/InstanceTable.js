@@ -207,6 +207,7 @@ export default function ListPage() {
 
   return (
     <CardTableV2
+      cardNoMargin
       loading={isLoading}
       columns={columns}
       items={tableData || []}

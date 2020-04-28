@@ -1,20 +1,7 @@
 import React, { useReducer, useEffect, useContext, useState } from 'react'
-import {
-  Select,
-  Space,
-  Tooltip,
-  Drawer,
-  Button,
-  Dropdown,
-  Menu,
-  Checkbox,
-} from 'antd'
+import { Select, Space, Tooltip, Drawer, Button, Checkbox } from 'antd'
 import { useLocalStorageState } from '@umijs/hooks'
-import {
-  SettingOutlined,
-  ReloadOutlined,
-  DownOutlined,
-} from '@ant-design/icons'
+import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useTranslation } from 'react-i18next'
@@ -23,18 +10,28 @@ import {
   StatementConfig,
   StatementModel,
 } from '@lib/client'
-import { Card, CardTableV2 } from '@lib/components'
+import { Card, ColumnsSelector, IColumnKeys } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
 import { Instance } from './statement-types'
 import { SearchContext } from './search-options-context'
+
 import styles from './styles.module.less'
 
 const { Option } = Select
 
-const VISIBLE_COLUMN_KEYS = 'statement_overview_visible_column_keys'
-const SHOW_FULL_SQL = 'statement_overview_show_full_sql'
+const VISIBLE_COLUMN_KEYS = 'statement_visible_column_keys'
+const SHOW_FULL_SQL = 'statement_show_full_sql'
+
+const defColumnKeys: IColumnKeys = {
+  digest_text: true,
+  sum_latency: true,
+  avg_latency: true,
+  exec_count: true,
+  avg_mem: true,
+  related_schemas: true,
+}
 
 interface State {
   curInstance: string | undefined
@@ -200,16 +197,8 @@ export default function StatementsOverview({
   const [columns, setColumns] = useState<IColumn[]>([])
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     VISIBLE_COLUMN_KEYS,
-    {
-      digest_text: true,
-      sum_latency: true,
-      avg_latency: true,
-      exec_count: true,
-      avg_mem: true,
-      related_schemas: true,
-    } as { [key: string]: boolean }
+    defColumnKeys
   )
-  const [dropdownVisible, setDropdownVisible] = useState(false)
   const [showFullSQL, setShowFullSQL] = useLocalStorageState(
     SHOW_FULL_SQL,
     false
@@ -375,27 +364,6 @@ export default function StatementsOverview({
     </div>
   )
 
-  const dropdownMenus = (
-    <Menu>
-      {CardTableV2.renderColumnVisibilitySelection(
-        columns,
-        visibleColumnKeys,
-        setVisibleColumnKeys
-      ).map((item, idx) => (
-        <Menu.Item key={idx}>{item}</Menu.Item>
-      ))}
-      <Menu.Divider />
-      <Menu.Item>
-        <Checkbox
-          checked={showFullSQL}
-          onChange={(e) => setShowFullSQL(e.target.checked)}
-        >
-          {t('statement.pages.overview.toolbar.select_columns.show_full_sql')}
-        </Checkbox>
-      </Menu.Item>
-    </Menu>
-  )
-
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Card>
@@ -438,17 +406,22 @@ export default function StatementsOverview({
           </Space>
           <Space size="middle" className={styles.overview_right_actions}>
             {columns.length > 0 && (
-              <Dropdown
-                placement="bottomRight"
-                visible={dropdownVisible}
-                onVisibleChange={setDropdownVisible}
-                overlay={dropdownMenus}
-              >
-                <div style={{ cursor: 'pointer' }}>
-                  {t('statement.pages.overview.toolbar.select_columns.name')}{' '}
-                  <DownOutlined />
-                </div>
-              </Dropdown>
+              <ColumnsSelector
+                columns={columns}
+                visibleColumnKeys={visibleColumnKeys}
+                resetColumnKeys={defColumnKeys}
+                onChange={setVisibleColumnKeys}
+                foot={
+                  <Checkbox
+                    checked={showFullSQL}
+                    onChange={(e) => setShowFullSQL(e.target.checked)}
+                  >
+                    {t(
+                      'statement.pages.overview.toolbar.select_columns.show_full_sql'
+                    )}
+                  </Checkbox>
+                }
+              />
             )}
             <Tooltip title={t('statement.pages.overview.settings.title')}>
               <SettingOutlined onClick={() => setShowSettings(true)} />

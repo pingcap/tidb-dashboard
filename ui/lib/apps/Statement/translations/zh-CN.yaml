@@ -25,7 +25,6 @@ statement:
         select_stmt_types: 选择 SQL 类型
         select_columns:
           show_full_sql: 显示完整的 SQL
-          name: 选择列
         refresh: 刷新
         time_range_selector:
           name: 选择时间段

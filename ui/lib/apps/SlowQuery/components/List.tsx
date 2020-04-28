@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Select, Space, Tooltip, Input } from 'antd'
+import { Select, Space, Tooltip, Input, Checkbox } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import { useSessionStorageState } from '@umijs/hooks'
-import { Card } from '@lib/components'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import { useSessionStorageState, useLocalStorageState } from '@umijs/hooks'
+import { Card, ColumnsSelector, IColumnKeys } from '@lib/components'
 import client, { SlowqueryBase } from '@lib/client'
 import TimeRangeSelector, {
   TimeRange,
   getDefTimeRange,
 } from './TimeRangeSelector'
-import SlowQueriesTable, { OrderBy } from './SlowQueriesTable'
+import SlowQueriesTable from './SlowQueriesTable'
 
 import styles from './List.module.less'
 import dayjs from 'dayjs'
@@ -18,6 +19,8 @@ import dayjs from 'dayjs'
 const { Option } = Select
 const { Search } = Input
 
+const VISIBLE_COLUMN_KEYS = 'slow_query_visible_column_keys'
+const SHOW_FULL_SQL = 'slow_query_show_full_sql'
 const SEARCH_OPTIONS_SESSION_KEY = 'slow_query_search_options'
 const LIMITS = [100, 200, 500, 1000]
 
@@ -25,7 +28,7 @@ export interface ISearchOptions {
   timeRange: TimeRange
   schemas: string[]
   searchText: string
-  orderBy: OrderBy
+  orderBy: string
   desc: boolean
   limit: number
 }
@@ -41,6 +44,13 @@ export function getDefSearchOptions(): ISearchOptions {
   }
 }
 
+const defColumnKeys: IColumnKeys = {
+  sql: true,
+  Time: true,
+  Query_time: true,
+  Mem_max: true,
+}
+
 function List() {
   const { t } = useTranslation()
 
@@ -53,6 +63,16 @@ function List() {
   const [refreshTimes, setRefreshTimes] = useState(0)
   const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [slowQueryList, setSlowQueryList] = useState<SlowqueryBase[]>([])
+
+  const [columns, setColumns] = useState<IColumn[]>([])
+  const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
+    VISIBLE_COLUMN_KEYS,
+    defColumnKeys
+  )
+  const [showFullSQL, setShowFullSQL] = useLocalStorageState(
+    SHOW_FULL_SQL,
+    false
+  )
 
   useEffect(() => {
     async function getSchemas() {
@@ -142,6 +162,24 @@ function List() {
             </Select>
           </Space>
           <Space size="middle" className={styles.right_actions}>
+            {columns.length > 0 && (
+              <ColumnsSelector
+                columns={columns}
+                visibleColumnKeys={visibleColumnKeys}
+                resetColumnKeys={defColumnKeys}
+                onChange={setVisibleColumnKeys}
+                foot={
+                  <Checkbox
+                    checked={showFullSQL}
+                    onChange={(e) => setShowFullSQL(e.target.checked)}
+                  >
+                    {t(
+                      'statement.pages.overview.toolbar.select_columns.show_full_sql'
+                    )}
+                  </Checkbox>
+                }
+              />
+            )}
             <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
               <ReloadOutlined
                 onClick={() => setRefreshTimes((prev) => prev + 1)}
@@ -155,6 +193,7 @@ function List() {
         slowQueries={slowQueryList}
         orderBy={searchOptions.orderBy}
         desc={searchOptions.desc}
+        showFullSQL={showFullSQL}
         onChangeSort={(orderBy, desc) =>
           setSearchOptions({
             ...searchOptions,
@@ -162,6 +201,8 @@ function List() {
             desc,
           })
         }
+        onGetColumns={setColumns}
+        visibleColumnKeys={visibleColumnKeys}
       />
     </ScrollablePane>
   )

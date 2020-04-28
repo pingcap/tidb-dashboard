@@ -6,7 +6,6 @@ import {
   DetailsListLayoutMode,
   SelectionMode,
   IDetailsListProps,
-  IColumn,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
@@ -57,39 +56,6 @@ function useRenderClickableRow(onRowClicked) {
     },
     [onRowClicked]
   )
-}
-
-function renderColumnVisibilitySelection(
-  columns?: IColumn[],
-  visibleColumnKeys?: { [key: string]: boolean },
-  onChange?: (visibleKeys: { [key: string]: boolean }) => void
-) {
-  if (columns == null) {
-    return []
-  }
-  if (visibleColumnKeys == null) {
-    visibleColumnKeys = {}
-    columns.forEach((c) => {
-      visibleColumnKeys![c.key] = true
-    })
-  }
-  return columns.map((column) => (
-    <Checkbox
-      key={column.key}
-      checked={visibleColumnKeys![column.key]}
-      onChange={(e) => {
-        if (!onChange) {
-          return
-        }
-        onChange({
-          ...visibleColumnKeys!,
-          [column.key]: e.target.checked,
-        })
-      }}
-    >
-      {column.name}
-    </Checkbox>
-  ))
 }
 
 function CardTableV2(props: ICardTableV2Props) {
@@ -160,7 +126,5 @@ function CardTableV2(props: ICardTableV2Props) {
     </Card>
   )
 }
-
-CardTableV2.renderColumnVisibilitySelection = renderColumnVisibilitySelection
 
 export default CardTableV2

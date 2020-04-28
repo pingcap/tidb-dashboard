@@ -7,6 +7,7 @@ slow_query:
       connection_id: Connection ID
       connection_id_tooltip: Unique ID of the SQL connection
       sql: SQL
+      sql_tooltip: SQL
       timestamp: Finish Time
       timestamp_tooltip: The time this SQL finished execution
       query_time: Latency
@@ -19,6 +20,8 @@ slow_query:
       is_internal_tooltip: Whether this is an internal SQL
       is_success: Is Success?
       is_success_tooltip: Whether SQL is executed successfully
+      result: Result
+      result_tooltip: Whether SQL is executed successfully
       index_names: Index Names
       index_names_tooltip: The name of the used index
       stats: Used Statistics
@@ -31,9 +34,12 @@ slow_query:
       db_tooltip: The database used to execute the SQL
 
       parse_time: Parse Time
+      parse_time_tooltip: Parse Time
       compile_time: Compile Time
+      compile_time_tooltip: Compile Time
       wait_time: Coprocessor Wait Time
       process_time: Coprocessor Process Time
+      process_time_tooltip: Coprocessor Process Time
       backoff_time: Backoff Time
       backoff_time_tooltip: The waiting time before retry when a statement encounters errors that require a retry
       get_commit_ts_time: Get Commit Ts Time
@@ -59,6 +65,9 @@ slow_query:
       write_size: Write Size
       prewrite_regions: Prewrite Regions
       txn_retry: Transaction Retries
+    status:
+      success: Success
+      failed: Failed
   detail:
     head:
       title: Slow Query Detail

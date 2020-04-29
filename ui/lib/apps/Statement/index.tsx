@@ -5,23 +5,14 @@ import { Root } from '@lib/components'
 import { StatementsOverview } from './components'
 import { Detail } from './pages'
 
-const App = () => {
-  return (
-    <Routes>
-      <Route path="/statement" element={<StatementsOverview />} />
-      <Route
-        path="/statement/detail"
-        element={<Detail key={Math.random()} />}
-      />
-    </Routes>
-  )
-}
-
 export default function () {
   return (
     <Root>
       <Router>
-        <App />
+        <Routes>
+          <Route path="/statement" element={<StatementsOverview />} />
+          <Route path="/statement/detail" element={<Detail />} />
+        </Routes>
       </Router>
     </Root>
   )

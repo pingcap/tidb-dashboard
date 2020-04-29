@@ -100,6 +100,8 @@ export default function App() {
               visibleItemsCount={5}
               loading={loadingStatements}
               timeRange={validTimeRange}
+              orderBy={stmtQueryOptions.orderBy}
+              desc={stmtQueryOptions.desc}
               onChangeSort={(orderBy, desc) =>
                 setStmtQueryOptions({
                   ...stmtQueryOptions,

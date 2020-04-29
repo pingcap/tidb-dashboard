@@ -223,8 +223,8 @@ export default function StatementsOverview() {
         .statementsOverviewsGet(
           validTimeRange.begin_time!,
           validTimeRange.end_time!,
-          state.curSchemas.join(','),
-          state.curStmtTypes.join(',')
+          state.curSchemas,
+          state.curStmtTypes
         )
       dispatch({
         type: 'save_statements',

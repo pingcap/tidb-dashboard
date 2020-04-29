@@ -22,39 +22,27 @@ function tableColumns(
     useSlowQueryColumn.useDBColumn(rows),
     useSlowQueryColumn.useSuccessColumn(rows),
     {
-      ...useSlowQueryColumn.useTimestampColumn(rows),
-      isSorted: orderBy === 'Time',
-      isSortedDescending: desc,
+      ...useSlowQueryColumn.useTimestampColumn(rows, orderBy, desc),
       onColumnClick: onColumnClick,
     },
     {
-      ...useSlowQueryColumn.useQueryTimeColumn(rows),
-      isSorted: orderBy === 'Query_time',
-      isSortedDescending: desc,
+      ...useSlowQueryColumn.useQueryTimeColumn(rows, orderBy, desc),
       onColumnClick: onColumnClick,
     },
     {
-      ...useSlowQueryColumn.useParseTimeColumn(rows),
-      isSorted: orderBy === 'Parse_time',
-      isSortedDescending: desc,
+      ...useSlowQueryColumn.useParseTimeColumn(rows, orderBy, desc),
       onColumnClick: onColumnClick,
     },
     {
-      ...useSlowQueryColumn.useCompileTimeColumn(rows),
-      isSorted: orderBy === 'Compile_time',
-      isSortedDescending: desc,
+      ...useSlowQueryColumn.useCompileTimeColumn(rows, orderBy, desc),
       onColumnClick: onColumnClick,
     },
     {
-      ...useSlowQueryColumn.useProcessTimeColumn(rows),
-      isSorted: orderBy === 'Process_time',
-      isSortedDescending: desc,
+      ...useSlowQueryColumn.useProcessTimeColumn(rows, orderBy, desc),
       onColumnClick: onColumnClick,
     },
     {
-      ...useSlowQueryColumn.useMemoryColumn(rows),
-      isSorted: orderBy === 'Mem_max',
-      isSortedDescending: desc,
+      ...useSlowQueryColumn.useMemoryColumn(rows, orderBy, desc),
       onColumnClick: onColumnClick,
     },
     useSlowQueryColumn.useTxnStartTsColumn(rows),
@@ -65,9 +53,11 @@ function tableColumns(
 interface Props extends Partial<ICardTableV2Props> {
   loading: boolean
   slowQueries: SlowqueryBase[]
+
   orderBy: string
   desc: boolean
   showFullSQL?: boolean
+
   onChangeSort: (orderBy: string, desc: boolean) => void
   onGetColumns?: (columns: IColumn[]) => void
 }
@@ -75,10 +65,12 @@ interface Props extends Partial<ICardTableV2Props> {
 export default function SlowQueriesTable({
   loading,
   slowQueries,
+
   orderBy,
   desc,
-  onChangeSort,
   showFullSQL,
+
+  onChangeSort,
   onGetColumns,
   ...restProps
 }: Props) {

@@ -63,17 +63,21 @@ export function useDigestColumn(
 }
 
 export function useSumLatencyColumn(
-  rows?: { sum_latency?: number }[]
+  rows?: { sum_latency?: number }[],
+  orderBy?: string,
+  desc?: boolean
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.sum_latency)) ?? 0 : 0
+  const key = 'sum_latency'
   return {
-    name: useCommonColumnName('sum_latency'),
-    key: 'sum_latency',
-    fieldName: 'sum_latency',
+    name: useCommonColumnName(key),
+    key,
+    fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
+    isSorted: key === orderBy,
+    isSortedDescending: desc,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.sum_latency} capacity={capacity}>
         {getValueFormat('ns')(rec.sum_latency, 1)}
@@ -83,17 +87,21 @@ export function useSumLatencyColumn(
 }
 
 export function useAvgMinMaxLatencyColumn(
-  rows?: { max_latency?: number; min_latency?: number; avg_latency?: number }[]
+  rows?: { max_latency?: number; min_latency?: number; avg_latency?: number }[],
+  orderBy?: string,
+  desc?: boolean
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_latency)) ?? 0 : 0
+  const key = 'avg_latency'
   return {
     name: useCommonColumnName('avg_latency'),
-    key: 'avg_latency',
+    key,
     fieldName: 'avg_latency',
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
+    isSorted: key === orderBy,
+    isSortedDescending: desc,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('ns')(rec.avg_latency, 1)}
@@ -116,16 +124,22 @@ Max:  ${getValueFormat('ns')(rec.max_latency, 1)}`
   }
 }
 
-export function useExecCountColumn(rows?: { exec_count?: number }[]): IColumn {
+export function useExecCountColumn(
+  rows?: { exec_count?: number }[],
+  orderBy?: string,
+  desc?: boolean
+): IColumn {
   const capacity = rows ? max(rows.map((v) => v.exec_count)) ?? 0 : 0
+  const key = 'exec_count'
   return {
-    name: useCommonColumnName('exec_count'),
-    key: 'exec_count',
-    fieldName: 'exec_count',
+    name: useCommonColumnName(key),
+    key,
+    fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
+    isSorted: key === orderBy,
+    isSortedDescending: desc,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.exec_count} capacity={capacity}>
         {getValueFormat('short')(rec.exec_count, 0, 1)}
@@ -135,17 +149,21 @@ export function useExecCountColumn(rows?: { exec_count?: number }[]): IColumn {
 }
 
 export function useAvgMaxMemColumn(
-  rows?: { avg_mem?: number; max_mem?: number }[]
+  rows?: { avg_mem?: number; max_mem?: number }[],
+  orderBy?: string,
+  desc?: boolean
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_mem)) ?? 0 : 0
+  const key = 'avg_mem'
   return {
-    name: useCommonColumnName('avg_mem'),
-    key: 'avg_mem',
-    fieldName: 'avg_mem',
+    name: useCommonColumnName(key),
+    key,
+    fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
+    isSorted: key === orderBy,
+    isSortedDescending: desc,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('bytes')(rec.avg_mem, 1)}
@@ -167,19 +185,23 @@ Max:  ${getValueFormat('bytes')(rec.max_mem, 1)}`
 }
 
 export function useErrorsWarningsColumn(
-  rows?: { sum_errors?: number; sum_warnings?: number }[]
+  rows?: { sum_errors?: number; sum_warnings?: number }[],
+  orderBy?: string,
+  desc?: boolean
 ): IColumn {
   const capacity = rows
     ? max(rows.map((v) => v.sum_errors! + v.sum_warnings!)) ?? 0
     : 0
+  const key = 'sum_errors'
   return {
     name: useCommonColumnName('errors_warnings'),
-    key: 'sum_errors',
-    fieldName: 'sum_errors',
+    key,
+    fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
+    isSorted: key === orderBy,
+    isSortedDescending: desc,
     onRender: (rec) => {
       const tooltipContent = `
 Errors:   ${getValueFormat('short')(rec.sum_errors, 0)}
@@ -203,17 +225,21 @@ Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
 }
 
 export function useAvgParseLatencyColumn(
-  rows?: { avg_parse_latency?: number; max_parse_latency?: number }[]
+  rows?: { avg_parse_latency?: number; max_parse_latency?: number }[],
+  orderBy?: string,
+  desc?: boolean
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_parse_latency)) ?? 0 : 0
+  const key = 'avg_parse_latency'
   return {
     name: useCommonColumnName('parse_latency'),
-    key: 'avg_parse_latency',
-    fieldName: 'avg_parse_latency',
+    key,
+    fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
+    isSorted: key === orderBy,
+    isSortedDescending: desc,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('ns')(rec.avg_parse_latency, 1)}
@@ -235,17 +261,21 @@ Max:  ${getValueFormat('ns')(rec.max_parse_latency, 1)}`
 }
 
 export function useAvgCompileLatencyColumn(
-  rows?: { avg_compile_latency?: number; max_compile_latency?: number }[]
+  rows?: { avg_compile_latency?: number; max_compile_latency?: number }[],
+  orderBy?: string,
+  desc?: boolean
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_compile_latency)) ?? 0 : 0
+  const key = 'avg_compile_latency'
   return {
     name: useCommonColumnName('compile_latency'),
-    key: 'avg_compile_latency',
-    fieldName: 'avg_compile_latency',
+    key,
+    fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
+    isSorted: key === orderBy,
+    isSortedDescending: desc,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('ns')(rec.avg_compile_latency, 1)}
@@ -266,17 +296,21 @@ Max:  ${getValueFormat('ns')(rec.max_compile_latency, 1)}`
   }
 }
 export function useAvgCoprColumn(
-  rows?: { avg_cop_process_time?: number; max_cop_process_time?: number }[]
+  rows?: { avg_cop_process_time?: number; max_cop_process_time?: number }[],
+  orderBy?: string,
+  desc?: boolean
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_cop_process_time)) ?? 0 : 0
+  const key = 'avg_cop_process_time'
   return {
     name: useCommonColumnName('process_time'),
-    key: 'avg_cop_process_time',
-    fieldName: 'avg_cop_process_time',
+    key,
+    fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
+    isSorted: key === orderBy,
+    isSortedDescending: desc,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('ns')(rec.avg_cop_process_time, 1)}

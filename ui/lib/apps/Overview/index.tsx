@@ -129,6 +129,7 @@ export default function App() {
               visibleItemsCount={5}
               loading={loadingStatements}
               timeRange={timeRange}
+              onChangeSort={(orderBy, desc) => {}}
               title={
                 <Link to="/statement">
                   {t('overview.top_statements.title')} <RightOutlined />

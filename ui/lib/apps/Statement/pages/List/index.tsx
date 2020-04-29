@@ -36,12 +36,16 @@ interface QueryOptions {
   curSchemas: string[]
   curTimeRange: TimeRange
   curStmtTypes: string[]
+  orderBy: string
+  desc: boolean
 }
 
 const initialQueryOptions: QueryOptions = {
   curSchemas: [],
   curTimeRange: DEF_TIME_RANGE,
   curStmtTypes: [],
+  orderBy: 'sum_latency',
+  desc: true,
 }
 
 interface State extends QueryOptions {
@@ -230,6 +234,7 @@ export default function StatementsOverview() {
 
     queryStatementList()
     setQueryOptions({
+      ...queryOptions,
       curSchemas: state.curSchemas,
       curTimeRange: state.curTimeRange,
       curStmtTypes: state.curStmtTypes,
@@ -357,9 +362,18 @@ export default function StatementsOverview() {
           statements={state.statements}
           loading={state.statementsLoading}
           timeRange={validTimeRange}
+          orderBy={queryOptions.orderBy}
+          desc={queryOptions.desc}
           showFullSQL={showFullSQL}
-          onGetColumns={setColumns}
           visibleColumnKeys={visibleColumnKeys}
+          onGetColumns={setColumns}
+          onChangeSort={(orderBy, desc) =>
+            setQueryOptions({
+              ...queryOptions,
+              orderBy,
+              desc,
+            })
+          }
         />
       ) : (
         statementDisabled

@@ -102,6 +102,10 @@ type GetListRequest struct {
 	Text       string   `json:"text" form:"text"`
 	OrderBy    string   `json:"orderBy" form:"orderBy"`
 	DESC       bool     `json:"desc" form:"desc"`
+
+	// for showing slow queries in the statement detail page
+	Plans  []string `json:"plans" form:"plans"`
+	Digest string   `json:"digest" form:"digest"`
 }
 
 type GetDetailRequest struct {
@@ -154,7 +158,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
 		)
 	}
 
-	if len(req.DB) != 0 {
+	if len(req.DB) > 0 {
 		tx = tx.Where("DB IN (?)", req.DB)
 	}
 
@@ -165,6 +169,14 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
 		} else {
 			tx = tx.Order(fmt.Sprintf("%s asc", order))
 		}
+	}
+
+	if len(req.Plans) > 0 {
+		tx = tx.Where("Plan_digest IN (?)", req.Plans)
+	}
+
+	if len(req.Digest) > 0 {
+		tx = tx.Where("Digest = ?", req.Digest)
 	}
 
 	var results []Base

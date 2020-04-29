@@ -15,7 +15,6 @@ package slowquery
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -57,13 +56,6 @@ func (s *Service) listHandler(c *gin.Context) {
 	if err := c.ShouldBindQuery(&req); err != nil {
 		_ = c.Error(err)
 		return
-	}
-
-	if req.LogStartTS == 0 {
-		now := time.Now().Unix()
-		before := time.Now().Add(-30 * time.Minute).Unix()
-		req.LogStartTS = before
-		req.LogEndTS = now
 	}
 
 	db := utils.GetTiDBConnection(c)

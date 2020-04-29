@@ -8,13 +8,15 @@ import client, {
   ClusterinfoClusterInfo,
   StatementTimeRange,
   StatementModel,
-  SlowqueryBase,
 } from '@lib/client'
 import { StatementsTable } from '@lib/apps/Statement'
 import MonitorAlertBar from './components/MonitorAlertBar'
 import Nodes from './components/Nodes'
-import { getDefSearchOptions } from '../SlowQuery/components/List'
 import SlowQueriesTable from '../SlowQuery/components/SlowQueriesTable'
+import useSlowQuery, {
+  getDefQueryOptions,
+} from '../SlowQuery/utils/useSlowQuery'
+import { defSlowQueryColumnKeys } from '../SlowQuery/components/List'
 
 import styles from './index.module.less'
 
@@ -49,57 +51,16 @@ function useStatements() {
   return { timeRange, statements, loadingStatements }
 }
 
-function useSlowQueries() {
-  const [searchOptions, setSearchOptions] = useState(getDefSearchOptions)
-  const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])
-  const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
-
-  function changeSort(orderBy: string, desc: boolean) {
-    setSearchOptions({
-      ...searchOptions,
-      orderBy,
-      desc,
-    })
-  }
-
-  useEffect(() => {
-    async function getSlowQueryList() {
-      setLoadingSlowQueries(true)
-      const res = await client
-        .getInstance()
-        .slowQueryListGet(
-          searchOptions.schemas,
-          searchOptions.desc,
-          10,
-          searchOptions.timeRange.end_time,
-          searchOptions.timeRange.begin_time,
-          searchOptions.orderBy,
-          searchOptions.searchText
-        )
-      setLoadingSlowQueries(false)
-      setSlowQueries(res.data || [])
-    }
-    getSlowQueryList()
-  }, [searchOptions])
-
-  return {
-    slowQueries,
-    loadingSlowQueries,
-    changeSort,
-    searchOptions,
-  }
-}
-
 export default function App() {
   const { t } = useTranslation()
   const [cluster, setCluster] = useState<ClusterinfoClusterInfo | null>(null)
   const { timeRange, statements, loadingStatements } = useStatements()
   const {
-    slowQueries,
+    queryOptions,
+    setQueryOptions,
     loadingSlowQueries,
-    changeSort,
-    searchOptions,
-  } = useSlowQueries()
+    slowQueries,
+  } = useSlowQuery({ ...getDefQueryOptions(), limit: 10 }, false)
 
   useEffect(() => {
     const fetchLoad = async () => {
@@ -188,29 +149,26 @@ export default function App() {
               key={`slow_query_${slowQueries.length}`}
               loading={loadingSlowQueries}
               slowQueries={slowQueries}
-              visibleColumnKeys={{
-                sql: true,
-                Time: true,
-                Query_time: true,
-                Mem_max: true,
-              }}
-              onChangeSort={changeSort}
-              orderBy={searchOptions.orderBy}
-              desc={searchOptions.desc}
+              visibleColumnKeys={defSlowQueryColumnKeys}
+              onChangeSort={(orderBy, desc) =>
+                setQueryOptions({ ...queryOptions, orderBy, desc })
+              }
+              orderBy={queryOptions.orderBy}
+              desc={queryOptions.desc}
               title={
                 <Link to="/slow_query">
-                  Recent Slow Queries <RightOutlined />
+                  {t('overview.recent_slow_query.title')} <RightOutlined />
                 </Link>
               }
               subTitle={
                 <span>
                   <DateTime.Calendar
-                    unixTimestampMs={searchOptions.timeRange.begin_time * 1000}
+                    unixTimestampMs={queryOptions.timeRange.begin_time * 1000}
                   />{' '}
                   ~{' '}
                   <DateTime.Calendar
                     unixTimestampMs={
-                      (searchOptions.timeRange.end_time ?? 0) * 1000
+                      (queryOptions.timeRange.end_time ?? 0) * 1000
                     }
                   />
                 </span>

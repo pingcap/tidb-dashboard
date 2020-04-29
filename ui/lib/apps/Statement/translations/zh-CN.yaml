@@ -19,6 +19,7 @@ statement:
         time: 执行时间
         copr: Coprocessor 读取
         txn: 事务
+        slow_query: 慢查询
     overview:
       toolbar:
         select_schemas: 选择数据库

@@ -19,6 +19,7 @@ statement:
         time: Time
         copr: Coprocessor Read
         txn: Transaction
+        slow_query: Slow Query
     overview:
       toolbar:
         select_schemas: Select Database

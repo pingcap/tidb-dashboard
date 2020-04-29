@@ -4,45 +4,22 @@ import { Select, Space, Tooltip, Input, Checkbox } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import { useSessionStorageState, useLocalStorageState } from '@umijs/hooks'
-import dayjs from 'dayjs'
+import { useLocalStorageState } from '@umijs/hooks'
 import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
-import client, { SlowqueryBase } from '@lib/client'
-import TimeRangeSelector, {
-  TimeRange,
-  getDefTimeRange,
-} from './TimeRangeSelector'
+import client from '@lib/client'
+import TimeRangeSelector from './TimeRangeSelector'
 import SlowQueriesTable from './SlowQueriesTable'
+
+import useSlowQuery from '../utils/useSlowQuery'
 
 const { Option } = Select
 const { Search } = Input
 
-const VISIBLE_COLUMN_KEYS = 'slow_query_visible_column_keys'
-const SHOW_FULL_SQL = 'slow_query_show_full_sql'
-const SEARCH_OPTIONS_SESSION_KEY = 'slow_query_search_options'
+const VISIBLE_COLUMN_KEYS = 'slow_query.visible_column_keys'
+const SHOW_FULL_SQL = 'slow_query.show_full_sql'
 const LIMITS = [100, 200, 500, 1000]
 
-export interface ISearchOptions {
-  timeRange: TimeRange
-  schemas: string[]
-  searchText: string
-  orderBy: string
-  desc: boolean
-  limit: number
-}
-
-export function getDefSearchOptions(): ISearchOptions {
-  return {
-    timeRange: getDefTimeRange(),
-    schemas: [],
-    searchText: '',
-    orderBy: 'Time',
-    desc: true,
-    limit: 100,
-  }
-}
-
-const defColumnKeys: IColumnKeys = {
+export const defSlowQueryColumnKeys: IColumnKeys = {
   sql: true,
   Time: true,
   Query_time: true,
@@ -52,20 +29,20 @@ const defColumnKeys: IColumnKeys = {
 function List() {
   const { t } = useTranslation()
 
-  const [searchOptions, setSearchOptions] = useSessionStorageState(
-    SEARCH_OPTIONS_SESSION_KEY,
-    getDefSearchOptions()
-  )
+  const {
+    savedQueryOptions,
+    setSavedQueryOptions,
+    loadingSlowQueries,
+    slowQueries,
+    refresh,
+  } = useSlowQuery()
 
-  const [loading, setLoading] = useState(true)
-  const [refreshTimes, setRefreshTimes] = useState(0)
   const [allSchemas, setAllSchemas] = useState<string[]>([])
-  const [slowQueryList, setSlowQueryList] = useState<SlowqueryBase[]>([])
 
   const [columns, setColumns] = useState<IColumn[]>([])
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     VISIBLE_COLUMN_KEYS,
-    defColumnKeys
+    defSlowQueryColumnKeys
   )
   const [showFullSQL, setShowFullSQL] = useLocalStorageState(
     SHOW_FULL_SQL,
@@ -80,57 +57,25 @@ function List() {
     getSchemas()
   }, [])
 
-  useEffect(() => {
-    async function getSlowQueryList() {
-      setLoading(true)
-      const recentMins = searchOptions.timeRange.recent
-      if (recentMins > 0) {
-        // beginTime & endTime is fixed value,
-        // so update them to the time range from now
-        const now = dayjs().unix()
-        const beginTime = now - recentMins * 60
-        searchOptions.timeRange = {
-          recent: recentMins,
-          begin_time: beginTime,
-          end_time: now,
-        }
-      }
-      const res = await client
-        .getInstance()
-        .slowQueryListGet(
-          searchOptions.schemas,
-          searchOptions.desc,
-          searchOptions.limit,
-          searchOptions.timeRange.end_time,
-          searchOptions.timeRange.begin_time,
-          searchOptions.orderBy,
-          searchOptions.searchText
-        )
-      setLoading(false)
-      setSlowQueryList(res.data || [])
-    }
-    getSlowQueryList()
-  }, [searchOptions, refreshTimes])
-
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Card>
         <Toolbar>
           <Space>
             <TimeRangeSelector
-              value={searchOptions.timeRange}
+              value={savedQueryOptions.timeRange}
               onChange={(timeRange) =>
-                setSearchOptions({ ...searchOptions, timeRange })
+                setSavedQueryOptions({ ...savedQueryOptions, timeRange })
               }
             />
             <Select
-              value={searchOptions.schemas}
+              value={savedQueryOptions.schemas}
               mode="multiple"
               allowClear
               placeholder={t('statement.pages.overview.toolbar.select_schemas')}
               style={{ minWidth: 200 }}
               onChange={(schemas) =>
-                setSearchOptions({ ...searchOptions, schemas })
+                setSavedQueryOptions({ ...savedQueryOptions, schemas })
               }
             >
               {allSchemas.map((item) => (
@@ -140,16 +85,16 @@ function List() {
               ))}
             </Select>
             <Search
-              defaultValue={searchOptions.searchText}
+              defaultValue={savedQueryOptions.searchText}
               onSearch={(searchText) =>
-                setSearchOptions({ ...searchOptions, searchText })
+                setSavedQueryOptions({ ...savedQueryOptions, searchText })
               }
             />
             <Select
-              value={searchOptions.limit}
+              value={savedQueryOptions.limit}
               style={{ width: 150 }}
               onChange={(limit) =>
-                setSearchOptions({ ...searchOptions, limit })
+                setSavedQueryOptions({ ...savedQueryOptions, limit })
               }
             >
               {LIMITS.map((item) => (
@@ -165,7 +110,7 @@ function List() {
               <ColumnsSelector
                 columns={columns}
                 visibleColumnKeys={visibleColumnKeys}
-                resetColumnKeys={defColumnKeys}
+                resetColumnKeys={defSlowQueryColumnKeys}
                 onChange={setVisibleColumnKeys}
                 foot={
                   <Checkbox
@@ -180,23 +125,21 @@ function List() {
               />
             )}
             <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-              <ReloadOutlined
-                onClick={() => setRefreshTimes((prev) => prev + 1)}
-              />
+              <ReloadOutlined onClick={refresh} />
             </Tooltip>
           </Space>
         </Toolbar>
       </Card>
 
       <SlowQueriesTable
-        loading={loading}
-        slowQueries={slowQueryList}
-        orderBy={searchOptions.orderBy}
-        desc={searchOptions.desc}
+        loading={loadingSlowQueries}
+        slowQueries={slowQueries}
+        orderBy={savedQueryOptions.orderBy}
+        desc={savedQueryOptions.desc}
         showFullSQL={showFullSQL}
         onChangeSort={(orderBy, desc) =>
-          setSearchOptions({
-            ...searchOptions,
+          setSavedQueryOptions({
+            ...savedQueryOptions,
             orderBy,
             desc,
           })

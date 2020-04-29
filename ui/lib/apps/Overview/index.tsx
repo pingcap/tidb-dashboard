@@ -14,7 +14,7 @@ import MonitorAlertBar from './components/MonitorAlertBar'
 import Nodes from './components/Nodes'
 import SlowQueriesTable from '../SlowQuery/components/SlowQueriesTable'
 import useSlowQuery, {
-  getDefQueryOptions,
+  DEF_QUERY_OPTIONS,
 } from '../SlowQuery/utils/useSlowQuery'
 import { defSlowQueryColumnKeys } from '../SlowQuery/components/List'
 
@@ -60,7 +60,7 @@ export default function App() {
     setQueryOptions,
     loadingSlowQueries,
     slowQueries,
-  } = useSlowQuery({ ...getDefQueryOptions(), limit: 10 }, false)
+  } = useSlowQuery({ ...DEF_QUERY_OPTIONS, limit: 10 }, false)
   const [slowQueryBeginTime, slowQueryEndTime] = calcTimeRange(
     queryOptions.timeRange
   )

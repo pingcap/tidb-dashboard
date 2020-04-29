@@ -17,29 +17,27 @@ export interface IQueryOptions {
   plans: string[]
 }
 
-export function getDefQueryOptions(): IQueryOptions {
-  return {
-    timeRange: DEF_TIME_RANGE,
-    schemas: [],
-    searchText: '',
-    orderBy: 'Time',
-    desc: true,
-    limit: 100,
-    digest: '',
-    plans: [],
-  }
+export const DEF_QUERY_OPTIONS: IQueryOptions = {
+  timeRange: DEF_TIME_RANGE,
+  schemas: [],
+  searchText: '',
+  orderBy: 'Time',
+  desc: true,
+  limit: 100,
+  digest: '',
+  plans: [],
 }
 
 export default function useSlowQuery(
   options?: IQueryOptions,
   needSave: boolean = true
 ) {
-  const [queryOptions, setQueryOptions] = useState(() =>
-    options ? options : getDefQueryOptions()
+  const [queryOptions, setQueryOptions] = useState(
+    () => options || DEF_QUERY_OPTIONS
   )
   const [savedQueryOptions, setSavedQueryOptions] = useSessionStorageState(
     QUERY_OPTIONS,
-    options ? options : getDefQueryOptions()
+    options || DEF_QUERY_OPTIONS
   )
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
   const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])

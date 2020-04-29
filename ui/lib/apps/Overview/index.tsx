@@ -8,8 +8,8 @@ import { Root, DateTime, MetricChart } from '@lib/components'
 import { StatementsTable, useStatement } from '@lib/apps/Statement'
 import MonitorAlertBar from './components/MonitorAlertBar'
 import Nodes from './components/Nodes'
+import { defSlowQueryColumnKeys } from '../SlowQuery/pages/List'
 import SlowQueriesTable from '../SlowQuery/components/SlowQueriesTable'
-import { defSlowQueryColumnKeys } from '../SlowQuery/components/List'
 import useSlowQuery, {
   DEF_SLOW_QUERY_OPTIONS,
 } from '../SlowQuery/utils/useSlowQuery'

@@ -6,7 +6,7 @@ import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import * as useColumn from '@lib/utils/useColumn'
 
 import * as useSlowQueryColumn from '../utils/useColumn'
-import DetailPage from './Detail'
+import DetailPage from '../pages/Detail'
 
 function tableColumns(
   rows: SlowqueryBase[],

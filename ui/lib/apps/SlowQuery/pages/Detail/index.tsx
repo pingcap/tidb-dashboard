@@ -1,11 +1,14 @@
 import React from 'react'
+import { Skeleton, Space, Alert } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useLocation, Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
+import { useToggle } from '@umijs/hooks'
+
+import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { parseQueryFn, buildQueryFn } from '@lib/utils/query'
-import client from '@lib/client'
-import { Skeleton, Space, Alert } from 'antd'
+import formatSql from '@lib/utils/formatSql'
 import {
   Head,
   Descriptions,
@@ -13,11 +16,9 @@ import {
   Pre,
   HighlightSQL,
   Expand,
+  CopyLink,
+  CardTabs,
 } from '@lib/components'
-import { useToggle } from '@umijs/hooks'
-import CopyLink from '@lib/components/CopyLink'
-import formatSql from '@lib/utils/formatSql'
-import CardTabs from '@lib/components/CardTabs'
 import TabBasic from './DetailTabBasic'
 import TabTime from './DetailTabTime'
 import TabCopr from './DetailTabCopr'
@@ -131,6 +132,7 @@ function DetailPage() {
                 </Expand>
               </Descriptions.Item>
             </Descriptions>
+
             <CardTabs animated={false}>
               <CardTabs.TabPane
                 tab={t('slow_query.detail.tabs.basic')}

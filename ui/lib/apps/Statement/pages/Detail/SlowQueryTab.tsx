@@ -4,7 +4,7 @@ import { IQuery } from './PlanDetail'
 import useSlowQuery, {
   DEF_SLOW_QUERY_OPTIONS,
 } from '@lib/apps/SlowQuery/utils/useSlowQuery'
-import { defSlowQueryColumnKeys } from '@lib/apps/SlowQuery/components/List'
+import { defSlowQueryColumnKeys } from '@lib/apps/SlowQuery/pages/List'
 
 export interface ISlowQueryTabProps {
   query: IQuery

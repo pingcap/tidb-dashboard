@@ -80,7 +80,6 @@ interface Props extends Partial<ICardTableV2Props> {
   loading: boolean
   statements: StatementModel[]
   timeRange: StatementTimeRange
-  detailPagePath?: string
   showFullSQL?: boolean
 
   onGetColumns?: (columns: IColumn[]) => void
@@ -90,7 +89,6 @@ export default function StatementsTable({
   loading,
   statements,
   timeRange,
-  detailPagePath,
   showFullSQL,
   onGetColumns,
   ...restPrpos

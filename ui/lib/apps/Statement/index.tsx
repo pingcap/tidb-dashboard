@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 
-import client from '@lib/client'
 import { Root } from '@lib/components'
-
-import { SearchContext, SearchOptions } from './components'
-import { StatementsOverviewPage, Detail } from './pages'
+import { SearchContext, SearchOptions, StatementsOverview } from './components'
+import { Detail } from './pages'
 
 const App = () => {
   const [searchOptions, setSearchOptions] = useState({
@@ -19,15 +17,7 @@ const App = () => {
   return (
     <SearchContext.Provider value={searchContext}>
       <Routes>
-        <Route
-          path="/statement"
-          element={
-            <StatementsOverviewPage
-              dashboardClient={client.getInstance()}
-              detailPagePath="/statement/detail"
-            />
-          }
-        />
+        <Route path="/statement" element={<StatementsOverview />} />
         <Route
           path="/statement/detail"
           element={<Detail key={Math.random()} />}

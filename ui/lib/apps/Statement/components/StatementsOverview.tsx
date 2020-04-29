@@ -5,11 +5,7 @@ import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useTranslation } from 'react-i18next'
-import {
-  StatementTimeRange,
-  StatementConfig,
-  StatementModel,
-} from '@lib/client'
+import client, { StatementTimeRange, StatementModel } from '@lib/client'
 import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import StatementSettingForm from './StatementSettingForm'
@@ -152,37 +148,7 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-interface Props {
-  onFetchInstances: () => Promise<Instance[] | undefined>
-  onFetchSchemas: (instanceId: string) => Promise<string[] | undefined>
-  onFetchTimeRanges: (instanceId: string) => Promise<StatementTimeRange[]>
-  onFetchStmtTypes: (instanceId: string) => Promise<string[] | undefined>
-  onFetchStatements: (
-    instanceId: string,
-    beginTime: number,
-    endTime: number,
-    schemas: string[],
-    stmtTypes: string[]
-  ) => Promise<StatementModel[]>
-
-  onFetchConfig: (instanceId: string) => Promise<StatementConfig | undefined>
-  onUpdateConfig: (instanceId: string, config: StatementConfig) => Promise<any>
-
-  detailPagePath: string
-}
-
-export default function StatementsOverview({
-  onFetchInstances,
-  onFetchSchemas,
-  onFetchTimeRanges,
-  onFetchStmtTypes,
-  onFetchStatements,
-
-  onFetchConfig,
-  onUpdateConfig,
-
-  detailPagePath,
-}: Props) {
+export default function StatementsOverview() {
   const { t } = useTranslation()
 
   const { searchOptions, setSearchOptions } = useContext(SearchContext)
@@ -206,7 +172,9 @@ export default function StatementsOverview({
 
   useEffect(() => {
     async function queryInstances() {
-      const res = await onFetchInstances()
+      const res = await Promise.resolve([
+        { uuid: 'current', name: 'current cluster' },
+      ])
       dispatch({
         type: 'save_instances',
         payload: res || [],
@@ -227,11 +195,11 @@ export default function StatementsOverview({
   useEffect(() => {
     async function queryStatementStatus() {
       if (state.curInstance) {
-        const res = await onFetchConfig(state.curInstance)
-        if (res !== undefined) {
+        const res = await client.getInstance().statementsConfigGet()
+        if (res?.data) {
           dispatch({
             type: 'change_statement_status',
-            payload: res.enable!,
+            payload: res?.data.enable!,
           })
         }
       }
@@ -239,28 +207,28 @@ export default function StatementsOverview({
 
     async function querySchemas() {
       if (state.curInstance) {
-        const res = await onFetchSchemas(state.curInstance)
+        const res = await client.getInstance().statementsSchemasGet()
         dispatch({
           type: 'save_schemas',
-          payload: res || [],
+          payload: res?.data || [],
         })
       }
     }
 
     async function queryTimeRanges() {
       if (state.curInstance) {
-        const res = await onFetchTimeRanges(state.curInstance)
+        const res = await client.getInstance().statementsTimeRangesGet()
         dispatch({
           type: 'save_time_ranges',
-          payload: res || [],
+          payload: res?.data || [],
         })
-        if (res && res.length > 0 && !state.curTimeRange) {
+        if (res?.data?.length > 0 && !state.curTimeRange) {
           dispatch({
             type: 'change_time_range',
-            payload: res[0],
+            payload: res?.data[0],
           })
         }
-        if (res && res.length === 0) {
+        if (res?.data?.length === 0) {
           dispatch({
             type: 'change_time_range',
             payload: undefined,
@@ -271,10 +239,10 @@ export default function StatementsOverview({
 
     async function queryStmtTypes() {
       if (state.curInstance) {
-        const res = await onFetchStmtTypes(state.curInstance)
+        const res = await client.getInstance().statementsStmtTypesGet()
         dispatch({
           type: 'save_stmt_types',
-          payload: res || [],
+          payload: res?.data || [],
         })
       }
     }
@@ -297,16 +265,17 @@ export default function StatementsOverview({
       dispatch({
         type: 'set_statements_loading',
       })
-      const res = await onFetchStatements(
-        state.curInstance,
-        state.curTimeRange.begin_time!,
-        state.curTimeRange.end_time!,
-        state.curSchemas,
-        state.curStmtTypes
-      )
+      const res = await client
+        .getInstance()
+        .statementsOverviewsGet(
+          state.curTimeRange.begin_time!,
+          state.curTimeRange.end_time!,
+          state.curSchemas.join(','),
+          state.curStmtTypes.join(',')
+        )
       dispatch({
         type: 'save_statements',
-        payload: res || [],
+        payload: res?.data || [],
       })
     }
 
@@ -442,7 +411,6 @@ export default function StatementsOverview({
           statements={state.statements}
           loading={state.statementsLoading}
           timeRange={state.curTimeRange!}
-          detailPagePath={detailPagePath}
           showFullSQL={showFullSQL}
           onGetColumns={setColumns}
           visibleColumnKeys={visibleColumnKeys}
@@ -462,8 +430,6 @@ export default function StatementsOverview({
         <StatementSettingForm
           instanceId={state.curInstance || ''}
           onClose={() => setShowSettings(false)}
-          onFetchConfig={onFetchConfig}
-          onUpdateConfig={onUpdateConfig}
           onConfigUpdated={() => setRefreshTimes((prev) => prev + 1)}
         />
       </Drawer>

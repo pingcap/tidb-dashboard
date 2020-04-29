@@ -7,7 +7,7 @@ import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useTranslation } from 'react-i18next'
 import client, { StatementTimeRange, StatementModel } from '@lib/client'
 import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
-import StatementsTable from './StatementsTable'
+import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
 

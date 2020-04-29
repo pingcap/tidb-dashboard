@@ -118,6 +118,7 @@ export default function StatementsTable({
       )
     }
     return statements
+    // eslint-disable-next-line
   }, [statements, orderBy, desc])
 
   useEffect(() => {

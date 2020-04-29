@@ -10,7 +10,6 @@ import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
-import { Instance } from './statement-types'
 import { SearchContext } from './search-options-context'
 
 import styles from './styles.module.less'
@@ -30,14 +29,12 @@ const defColumnKeys: IColumnKeys = {
 }
 
 interface State {
-  curInstance: string | undefined
   curSchemas: string[]
   curTimeRange: StatementTimeRange | undefined
   curStmtTypes: string[]
 
   statementEnable: boolean
 
-  instances: Instance[]
   schemas: string[]
   timeRanges: StatementTimeRange[]
   stmtTypes: string[]
@@ -47,14 +44,12 @@ interface State {
 }
 
 const initState: State = {
-  curInstance: undefined,
   curSchemas: [],
   curTimeRange: undefined,
   curStmtTypes: [],
 
   statementEnable: true,
 
-  instances: [],
   schemas: [],
   timeRanges: [],
   stmtTypes: [],
@@ -64,8 +59,6 @@ const initState: State = {
 }
 
 type Action =
-  | { type: 'save_instances'; payload: Instance[] }
-  | { type: 'change_instance'; payload: string | undefined }
   | { type: 'change_statement_status'; payload: boolean }
   | { type: 'save_schemas'; payload: string[] }
   | { type: 'change_schema'; payload: string[] }
@@ -78,22 +71,6 @@ type Action =
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case 'save_instances':
-      return {
-        ...state,
-        instances: action.payload,
-      }
-    case 'change_instance':
-      return {
-        ...state,
-        curInstance: action.payload,
-        curSchemas: [],
-        curTimeRange: undefined,
-        statementEnable: true,
-        schemas: [],
-        timeRanges: [],
-        statements: [],
-      }
     case 'change_statement_status':
       return {
         ...state,
@@ -171,95 +148,61 @@ export default function StatementsOverview() {
   )
 
   useEffect(() => {
-    async function queryInstances() {
-      const res = await Promise.resolve([
-        { uuid: 'current', name: 'current cluster' },
-      ])
-      dispatch({
-        type: 'save_instances',
-        payload: res || [],
-      })
-      if (res?.length === 1 && !state.curInstance) {
-        dispatch({
-          type: 'change_instance',
-          payload: res[0].uuid,
-        })
-      }
-    }
-
-    queryInstances()
-    // eslint-disable-next-line
-  }, [])
-  // empty dependency represents only run this effect once at the begining time
-
-  useEffect(() => {
     async function queryStatementStatus() {
-      if (state.curInstance) {
-        const res = await client.getInstance().statementsConfigGet()
-        if (res?.data) {
-          dispatch({
-            type: 'change_statement_status',
-            payload: res?.data.enable!,
-          })
-        }
+      const res = await client.getInstance().statementsConfigGet()
+      if (res?.data) {
+        dispatch({
+          type: 'change_statement_status',
+          payload: res?.data.enable!,
+        })
       }
     }
 
     async function querySchemas() {
-      if (state.curInstance) {
-        const res = await client.getInstance().statementsSchemasGet()
-        dispatch({
-          type: 'save_schemas',
-          payload: res?.data || [],
-        })
-      }
+      const res = await client.getInstance().statementsSchemasGet()
+      dispatch({
+        type: 'save_schemas',
+        payload: res?.data || [],
+      })
     }
 
     async function queryTimeRanges() {
-      if (state.curInstance) {
-        const res = await client.getInstance().statementsTimeRangesGet()
+      const res = await client.getInstance().statementsTimeRangesGet()
+      dispatch({
+        type: 'save_time_ranges',
+        payload: res?.data || [],
+      })
+      if (res?.data?.length > 0 && !state.curTimeRange) {
         dispatch({
-          type: 'save_time_ranges',
-          payload: res?.data || [],
+          type: 'change_time_range',
+          payload: res?.data[0],
         })
-        if (res?.data?.length > 0 && !state.curTimeRange) {
-          dispatch({
-            type: 'change_time_range',
-            payload: res?.data[0],
-          })
-        }
-        if (res?.data?.length === 0) {
-          dispatch({
-            type: 'change_time_range',
-            payload: undefined,
-          })
-        }
+      }
+      if (res?.data?.length === 0) {
+        dispatch({
+          type: 'change_time_range',
+          payload: undefined,
+        })
       }
     }
 
     async function queryStmtTypes() {
-      if (state.curInstance) {
-        const res = await client.getInstance().statementsStmtTypesGet()
-        dispatch({
-          type: 'save_stmt_types',
-          payload: res?.data || [],
-        })
-      }
+      const res = await client.getInstance().statementsStmtTypesGet()
+      dispatch({
+        type: 'save_stmt_types',
+        payload: res?.data || [],
+      })
     }
 
     queryStatementStatus()
     querySchemas()
     queryTimeRanges()
     queryStmtTypes()
-    // eslint-disable-next-line
-  }, [state.curInstance, refreshTimes])
-  // don't add the dependent functions likes onFetchTimeRanges into the dependency array
-  // it will cause the infinite loop
-  // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
+  }, [state.curTimeRange, refreshTimes])
 
   useEffect(() => {
     async function queryStatementList() {
-      if (!state.curInstance || !state.curTimeRange) {
+      if (!state.curTimeRange) {
         return
       }
       dispatch({
@@ -282,22 +225,17 @@ export default function StatementsOverview() {
     queryStatementList()
     // update context
     setSearchOptions({
-      curInstance: state.curInstance,
       curSchemas: state.curSchemas,
       curTimeRange: state.curTimeRange,
       curStmtTypes: state.curStmtTypes,
     })
-    // eslint-disable-next-line
   }, [
-    state.curInstance,
+    setSearchOptions,
     state.curSchemas,
     state.curTimeRange,
     state.curStmtTypes,
     refreshTimes,
   ])
-  // don't add the dependent functions likes onFetchStatements into the dependency array
-  // it will cause the infinite loop
-  // wrap them by useCallback() in the parent component can fix it but I don't think it is necessary
 
   function handleSchemaChange(val: string[]) {
     dispatch({
@@ -428,7 +366,6 @@ export default function StatementsOverview() {
         destroyOnClose={true}
       >
         <StatementSettingForm
-          instanceId={state.curInstance || ''}
           onClose={() => setShowSettings(false)}
           onConfigUpdated={() => setRefreshTimes((prev) => prev + 1)}
         />

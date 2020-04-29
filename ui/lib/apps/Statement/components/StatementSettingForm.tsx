@@ -15,8 +15,6 @@ import { useTranslation } from 'react-i18next'
 import client, { StatementConfig } from '@lib/client'
 
 interface Props {
-  instanceId: string
-
   onClose: () => void
   onConfigUpdated: () => any
 }
@@ -36,7 +34,7 @@ const convertArrToObj = (arr: number[]) =>
 const REFRESH_INTERVAL_MARKS = convertArrToObj([1, 5, 15, 30, 60])
 const KEEP_DURATION_MARKS = convertArrToObj([1, 2, 5, 10, 20, 30])
 
-function StatementSettingForm({ instanceId, onClose, onConfigUpdated }: Props) {
+function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [oriConfig, setOriConfig] = useState<StatementConfig | null>(null)
@@ -69,7 +67,7 @@ function StatementSettingForm({ instanceId, onClose, onConfigUpdated }: Props) {
       setLoading(false)
     }
     fetchConfig()
-  }, [instanceId])
+  }, [])
 
   async function updateConfig(values) {
     setSubmitting(true)
@@ -82,7 +80,7 @@ function StatementSettingForm({ instanceId, onClose, onConfigUpdated }: Props) {
     }
     const res = await client.getInstance().statementsConfigPost(newConfig)
     setSubmitting(false)
-    if (res !== undefined) {
+    if (res) {
       onClose()
       onConfigUpdated()
     }

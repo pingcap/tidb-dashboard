@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useState } from 'react'
+import React, { useReducer, useEffect, useState, useMemo } from 'react'
 import { Select, Space, Tooltip, Drawer, Button, Checkbox } from 'antd'
 import { useLocalStorageState, useSessionStorageState } from '@umijs/hooks'
 import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
@@ -9,7 +9,11 @@ import client, { StatementTimeRange, StatementModel } from '@lib/client'
 import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
-import TimeRangeSelector from './TimeRangeSelector'
+import TimeRangeSelector, {
+  TimeRange,
+  DEF_TIME_RANGE,
+  calcValidStatementTimeRange,
+} from './TimeRangeSelector'
 
 import styles from './styles.module.less'
 
@@ -30,13 +34,13 @@ const defColumnKeys: IColumnKeys = {
 
 interface QueryOptions {
   curSchemas: string[]
-  curTimeRange: StatementTimeRange | undefined
+  curTimeRange: TimeRange
   curStmtTypes: string[]
 }
 
 const initialQueryOptions: QueryOptions = {
   curSchemas: [],
-  curTimeRange: undefined,
+  curTimeRange: DEF_TIME_RANGE,
   curStmtTypes: [],
 }
 
@@ -69,7 +73,7 @@ type Action =
   | { type: 'save_schemas'; payload: string[] }
   | { type: 'change_schema'; payload: string[] }
   | { type: 'save_time_ranges'; payload: StatementTimeRange[] }
-  | { type: 'change_time_range'; payload: StatementTimeRange | undefined }
+  | { type: 'change_time_range'; payload: TimeRange }
   | { type: 'save_stmt_types'; payload: string[] }
   | { type: 'change_stmt_types'; payload: string[] }
   | { type: 'save_statements'; payload: StatementModel[] }
@@ -156,6 +160,10 @@ export default function StatementsOverview() {
     SHOW_FULL_SQL,
     false
   )
+  const validTimeRange = useMemo(
+    () => calcValidStatementTimeRange(state.curTimeRange, state.timeRanges),
+    [state.curTimeRange, state.timeRanges]
+  )
 
   useEffect(() => {
     async function queryStatementStatus() {
@@ -182,18 +190,6 @@ export default function StatementsOverview() {
         type: 'save_time_ranges',
         payload: res?.data || [],
       })
-      if (res?.data?.length > 0 && !state.curTimeRange) {
-        dispatch({
-          type: 'change_time_range',
-          payload: res?.data[0],
-        })
-      }
-      if (res?.data?.length === 0) {
-        dispatch({
-          type: 'change_time_range',
-          payload: undefined,
-        })
-      }
     }
 
     async function queryStmtTypes() {
@@ -208,11 +204,11 @@ export default function StatementsOverview() {
     querySchemas()
     queryTimeRanges()
     queryStmtTypes()
-  }, [state.curTimeRange, refreshTimes])
+  }, [refreshTimes])
 
   useEffect(() => {
     async function queryStatementList() {
-      if (!state.curTimeRange) {
+      if (state.timeRanges.length === 0) {
         return
       }
       dispatch({
@@ -221,8 +217,8 @@ export default function StatementsOverview() {
       const res = await client
         .getInstance()
         .statementsOverviewsGet(
-          state.curTimeRange.begin_time!,
-          state.curTimeRange.end_time!,
+          validTimeRange.begin_time!,
+          validTimeRange.end_time!,
           state.curSchemas.join(','),
           state.curStmtTypes.join(',')
         )
@@ -239,7 +235,14 @@ export default function StatementsOverview() {
       curStmtTypes: state.curStmtTypes,
     })
     // eslint-disable-next-line
-  }, [state.curSchemas, state.curTimeRange, state.curStmtTypes, refreshTimes])
+  }, [
+    state.curSchemas,
+    state.curTimeRange,
+    state.timeRanges,
+    validTimeRange,
+    state.curStmtTypes,
+    refreshTimes,
+  ])
 
   function handleSchemaChange(val: string[]) {
     dispatch({
@@ -248,7 +251,7 @@ export default function StatementsOverview() {
     })
   }
 
-  function handleTimeRangeChange(val: StatementTimeRange) {
+  function handleTimeRangeChange(val: TimeRange) {
     dispatch({
       type: 'change_time_range',
       payload: val,
@@ -281,6 +284,7 @@ export default function StatementsOverview() {
         <Toolbar>
           <Space>
             <TimeRangeSelector
+              value={state.curTimeRange}
               timeRanges={state.timeRanges}
               onChange={handleTimeRangeChange}
             />
@@ -352,7 +356,7 @@ export default function StatementsOverview() {
           key={`${state.statements.length}_${refreshTimes}_${showFullSQL}`}
           statements={state.statements}
           loading={state.statementsLoading}
-          timeRange={state.curTimeRange!}
+          timeRange={validTimeRange}
           showFullSQL={showFullSQL}
           onGetColumns={setColumns}
           visibleColumnKeys={visibleColumnKeys}

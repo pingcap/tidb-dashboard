@@ -10,10 +10,40 @@ import { StatementTimeRange } from '@lib/client'
 
 import styles from './TimeRangeSelector.module.less'
 
-const RECENT_MINS = [30, 60, 3 * 60, 6 * 60, 12 * 60, 24 * 60]
+// This component looks similar with @lib/component/TimeRangeSelector,
+// but they have totally different logic, so it prefers to not reuse their duplicated part
+
+const RECENT_SECONDS = [
+  30 * 60,
+  60 * 60,
+  3 * 60 * 60,
+  6 * 60 * 60,
+  12 * 60 * 60,
+  24 * 60 * 60,
+]
+
+interface RecentSecTime {
+  type: 'recent'
+  value: number // unit: seconds
+}
+
+interface RangeTime {
+  type: 'absolute'
+  value: [number, number] // unit: seconds
+}
+
+export type TimeRange = RecentSecTime | RangeTime
+
+export const DEF_TIME_RANGE: TimeRange = {
+  type: 'recent',
+  value: 30 * 60,
+}
 
 // timePoints are descent array
 function findNearTimePoint(timePoint: number, timePoints: number[]): number {
+  if (timePoints.length === 0) {
+    return timePoint
+  }
   if (timePoints.length === 1) {
     return timePoints[0]
   }
@@ -37,62 +67,82 @@ function findNearTimePoint(timePoint: number, timePoints: number[]): number {
   return cur
 }
 
-function calcTime(timeRanges: StatementTimeRange[]) {
+function calcAllTime(timeRanges: StatementTimeRange[]) {
   const allBeginTime = timeRanges.map((t) => t.begin_time!)
   const allEndTime = timeRanges.map((t) => t.end_time!)
   const minBeginTime: number = allBeginTime[allBeginTime.length - 1] || 0
   const maxBeginTime: number = allBeginTime[0] || 0
   const maxEndTime: number = allEndTime[0] || 0
-  const latestTimeRange = {
-    begin_time: maxBeginTime,
-    end_time: maxEndTime,
-  }
   return {
     allBeginTime,
     allEndTime,
     minBeginTime,
     maxBeginTime,
     maxEndTime,
-    latestTimeRange,
+  }
+}
+
+export function calcValidStatementTimeRange(
+  curTimeRange: TimeRange,
+  timeRanges: StatementTimeRange[]
+): StatementTimeRange {
+  const { allBeginTime, allEndTime, maxEndTime } = calcAllTime(timeRanges)
+  if (curTimeRange.type === 'recent') {
+    const beginTime = findNearTimePoint(
+      maxEndTime - curTimeRange.value,
+      allBeginTime
+    )
+    return {
+      begin_time: beginTime,
+      end_time: maxEndTime,
+    }
+  } else {
+    const nearBeginTime = findNearTimePoint(curTimeRange.value[0], allBeginTime)
+    const nearEndTime = findNearTimePoint(curTimeRange.value[1], allEndTime)
+    return {
+      begin_time: nearBeginTime,
+      end_time: nearEndTime,
+    }
   }
 }
 
 export interface ITimeRangeSelectorProps {
+  value: TimeRange
   timeRanges: StatementTimeRange[]
-  onChange: (val: StatementTimeRange) => void
+  onChange: (val: TimeRange) => void
 }
 
 export default function TimeRangeSelector({
+  value: curTimeRange,
   timeRanges,
   onChange,
 }: ITimeRangeSelectorProps) {
   const { t } = useTranslation()
-  const { allBeginTime, allEndTime, minBeginTime, maxEndTime } = useMemo(
-    () => calcTime(timeRanges),
-    [timeRanges]
+  const { minBeginTime, maxEndTime } = useMemo(() => calcAllTime(timeRanges), [
+    timeRanges,
+  ])
+  const [sliderTimeRange, setSliderTimeRange] = useState<StatementTimeRange>(
+    () => calcValidStatementTimeRange(curTimeRange, timeRanges)
   )
-  const [curTimeRange, setCurTimeRange] = useState<StatementTimeRange>(
-    () => calcTime(timeRanges).latestTimeRange
-  )
-  const [curRecent, setCurRecent] = useState(30)
   const [dropdownVisible, setDropdownVisible] = useState(false)
 
   useEffect(() => {
-    setCurTimeRange(calcTime(timeRanges).latestTimeRange)
-  }, [timeRanges])
+    setSliderTimeRange(calcValidStatementTimeRange(curTimeRange, timeRanges))
+  }, [curTimeRange, timeRanges])
 
-  function handleRecentChange(mins: number) {
-    setCurRecent(mins)
-    const beginTime = findNearTimePoint(maxEndTime - mins * 60, allBeginTime)
-    const timeRange = {
-      begin_time: beginTime,
-      end_time: maxEndTime,
+  function handleRecentChange(seconds: number) {
+    const timeRange: TimeRange = {
+      type: 'recent',
+      value: seconds,
     }
-    setCurTimeRange(timeRange)
     onChange(timeRange)
+
+    setSliderTimeRange(calcValidStatementTimeRange(timeRange, timeRanges))
+    setDropdownVisible(false)
   }
 
   function handleSliderChange(values) {
+    // when disable statements, values will become [0, 0]
     // weird, why this writing doesn't work
     // if (values === [0, 0]) {
     //   return
@@ -101,26 +151,18 @@ export default function TimeRangeSelector({
       return
     }
 
-    setCurRecent(0)
-    const nearBeginTime = findNearTimePoint(
-      (values as [number, number])[0],
-      allBeginTime
-    )
-    const nearEndTime = findNearTimePoint(
-      (values as [number, number])[1],
-      allEndTime
-    )
-    const timeRange = {
-      begin_time: nearBeginTime,
-      end_time: nearEndTime,
+    const timeRange: TimeRange = {
+      type: 'absolute',
+      value: values,
     }
-    setCurTimeRange(timeRange)
+    setSliderTimeRange(calcValidStatementTimeRange(timeRange, timeRanges))
   }
 
   function handleSliderAfterChange(values) {
-    if (curRecent === 0) {
-      onChange(curTimeRange)
-    }
+    onChange({
+      type: 'absolute',
+      value: values,
+    })
   }
 
   const dropdownContent = (
@@ -132,17 +174,19 @@ export default function TimeRangeSelector({
           )}
         </span>
         <div className={styles.time_range_items}>
-          {RECENT_MINS.map((mins) => (
+          {RECENT_SECONDS.map((seconds) => (
             <div
               tabIndex={-1}
-              key={mins}
+              key={seconds}
               className={cx(styles.time_range_item, {
-                [styles.time_range_item_active]: mins === curRecent,
+                [styles.time_range_item_active]:
+                  curTimeRange.type === 'recent' &&
+                  curTimeRange.value === seconds,
               })}
-              onClick={() => handleRecentChange(mins)}
+              onClick={() => handleRecentChange(seconds)}
             >
               {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
-              {getValueFormat('m')(mins, 0)}
+              {getValueFormat('s')(seconds, 0)}
             </div>
           ))}
         </div>
@@ -158,14 +202,14 @@ export default function TimeRangeSelector({
           max={maxEndTime}
           step={60}
           range
-          value={[curTimeRange.begin_time!, curTimeRange.end_time!]}
+          value={[sliderTimeRange.begin_time!, sliderTimeRange.end_time!]}
           onChange={handleSliderChange}
           onAfterChange={handleSliderAfterChange}
           tipFormatter={(val) => dayjs.unix(val).format('HH:mm')}
         />
         <span>
-          {dayjs.unix(curTimeRange.begin_time!).format('MM-DD HH:mm')} ~{' '}
-          {dayjs.unix(curTimeRange.end_time!).format('MM-DD HH:mm')}
+          {dayjs.unix(sliderTimeRange.begin_time!).format('MM-DD HH:mm')} ~{' '}
+          {dayjs.unix(sliderTimeRange.end_time!).format('MM-DD HH:mm')}
         </span>
       </div>
     </div>
@@ -180,15 +224,15 @@ export default function TimeRangeSelector({
       onVisibleChange={setDropdownVisible}
     >
       <Button icon={<ClockCircleOutlined />}>
-        {curRecent > 0 ? (
+        {curTimeRange.type === 'recent' ? (
           <span>
             {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
-            {getValueFormat('m')(curRecent, 0)}
+            {getValueFormat('s')(curTimeRange.value, 0)}
           </span>
         ) : (
           <span>
-            {dayjs.unix(curTimeRange.begin_time!).format('MM-DD HH:mm')} ~{' '}
-            {dayjs.unix(curTimeRange.end_time!).format('MM-DD HH:mm')}
+            {dayjs.unix(sliderTimeRange.begin_time!).format('MM-DD HH:mm')} ~{' '}
+            {dayjs.unix(sliderTimeRange.end_time!).format('MM-DD HH:mm')}
           </span>
         )}
         <DownOutlined />

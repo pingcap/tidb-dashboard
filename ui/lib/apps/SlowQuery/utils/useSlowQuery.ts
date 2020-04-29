@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import client, { SlowqueryBase } from '@lib/client'
 import { TimeRange, DEF_TIME_RANGE, calcTimeRange } from '@lib/components'
 import { useSessionStorageState } from '@umijs/hooks'
@@ -43,6 +43,12 @@ export default function useSlowQuery(
   const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])
   const [refreshTimes, setRefreshTimes] = useState(0)
 
+  const queryTimeRange = useMemo(() => {
+    let curOptions = needSave ? savedQueryOptions : queryOptions
+    const [beginTime, endTime] = calcTimeRange(curOptions.timeRange)
+    return { beginTime, endTime }
+  }, [queryOptions, savedQueryOptions, needSave])
+
   function refresh() {
     setRefreshTimes((prev) => prev + 1)
   }
@@ -51,7 +57,6 @@ export default function useSlowQuery(
     async function getSlowQueryList() {
       setLoadingSlowQueries(true)
       let curOptions = needSave ? savedQueryOptions : queryOptions
-      const [beginTime, endTime] = calcTimeRange(curOptions.timeRange)
       const res = await client
         .getInstance()
         .slowQueryListGet(
@@ -59,8 +64,8 @@ export default function useSlowQuery(
           curOptions.desc,
           curOptions.digest,
           curOptions.limit,
-          endTime,
-          beginTime,
+          queryTimeRange.endTime,
+          queryTimeRange.beginTime,
           curOptions.orderBy,
           curOptions.plans,
           curOptions.searchText
@@ -69,7 +74,7 @@ export default function useSlowQuery(
       setSlowQueries(res.data || [])
     }
     getSlowQueryList()
-  }, [queryOptions, savedQueryOptions, needSave, refreshTimes])
+  }, [queryOptions, savedQueryOptions, needSave, queryTimeRange, refreshTimes])
 
   return {
     queryOptions,
@@ -78,6 +83,7 @@ export default function useSlowQuery(
     setSavedQueryOptions,
     loadingSlowQueries,
     slowQueries,
+    queryTimeRange,
     refresh,
   }
 }

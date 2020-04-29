@@ -30,7 +30,7 @@ export default function useStatement(
   needSave: boolean = true
 ) {
   const [queryOptions, setQueryOptions] = useState(
-    () => options || DEF_STMT_QUERY_OPTIONS
+    options || DEF_STMT_QUERY_OPTIONS
   )
   const [savedQueryOptions, setSavedQueryOptions] = useSessionStorageState(
     QUERY_OPTIONS,

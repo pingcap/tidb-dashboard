@@ -9,9 +9,9 @@ import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
+import useStatement from '../../utils/useStatement'
 
 import styles from './styles.module.less'
-import useStatement from '../../utils/useStatement'
 
 const { Option } = Select
 

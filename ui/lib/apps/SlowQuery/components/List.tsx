@@ -5,12 +5,11 @@ import { ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useLocalStorageState } from '@umijs/hooks'
-import { Card, ColumnsSelector, IColumnKeys } from '@lib/components'
+import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
 import client from '@lib/client'
 import TimeRangeSelector from './TimeRangeSelector'
 import SlowQueriesTable from './SlowQueriesTable'
 
-import styles from './List.module.less'
 import useSlowQuery from '../utils/useSlowQuery'
 
 const { Option } = Select
@@ -61,8 +60,8 @@ function List() {
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Card>
-        <div className={styles.header}>
-          <Space size="middle" className={styles.search_options}>
+        <Toolbar>
+          <Space>
             <TimeRangeSelector
               value={savedQueryOptions.timeRange}
               onChange={(timeRange) =>
@@ -105,7 +104,8 @@ function List() {
               ))}
             </Select>
           </Space>
-          <Space size="middle" className={styles.right_actions}>
+
+          <Space>
             {columns.length > 0 && (
               <ColumnsSelector
                 columns={columns}
@@ -128,8 +128,9 @@ function List() {
               <ReloadOutlined onClick={refresh} />
             </Tooltip>
           </Space>
-        </div>
+        </Toolbar>
       </Card>
+
       <SlowQueriesTable
         loading={loadingSlowQueries}
         slowQueries={slowQueries}

@@ -9,11 +9,20 @@ import {
   SyncOutlined,
   SettingOutlined,
 } from '@ant-design/icons'
-import { Slider, Spin, Select, Dropdown, Button, Menu, Tooltip } from 'antd'
+import {
+  Slider,
+  Spin,
+  Select,
+  Dropdown,
+  Button,
+  Menu,
+  Tooltip,
+  Space,
+} from 'antd'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { useSpring, animated } from 'react-spring'
 import Flexbox from '@g07cha/flexbox-react'
-import { Card } from '@lib/components'
+import { Card, Toolbar } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 function RefreshProgress(props) {
@@ -68,7 +77,7 @@ function RefreshProgress(props) {
   )
 }
 
-export interface IKeyVisToolBarProps {
+export interface IKeyVizToolbarProps {
   enabled: boolean
   isLoading: boolean
   autoRefreshSeconds: number
@@ -87,7 +96,7 @@ export interface IKeyVisToolBarProps {
   onShowSettings: () => any
 }
 
-class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
+class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
   state = {
     exp: 0,
   }
@@ -169,130 +178,124 @@ class KeyVisToolBar extends Component<IKeyVisToolBarProps & WithTranslation> {
 
     return (
       <Card>
-        <div className="PD-KeyVis-Toolbar">
-          <Dropdown
-            disabled={!enabled}
-            overlay={
-              <div id="PD-KeyVis-Brightness-Overlay">
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation()
-                  }}
-                >
-                  <Flexbox flexDirection="column">
-                    <div className="PD-Cluster-Legend" />
-                    <Slider
-                      defaultValue={0}
-                      min={-6}
-                      max={6}
-                      step={0.1}
-                      onChange={(value) =>
-                        this.handleBrightLevel(value as number)
-                      }
-                    />
-                  </Flexbox>
-                </div>
-              </div>
-            }
-            trigger={['click']}
-            onVisibleChange={this.handleBrightnessDropdown}
-          >
-            <Button icon={<BulbOutlined />}>
-              {t('keyviz.toolbar.brightness')}
-              <DownOutlined />
-            </Button>
-          </Dropdown>
-
-          <div className="space" />
-
-          <Button.Group>
-            <Button
+        <Toolbar className="PD-KeyVis-Toolbar">
+          <Space>
+            <Dropdown
               disabled={!enabled}
-              onClick={this.props.onToggleBrush}
-              icon={<ArrowsAltOutlined />}
-              type={isOnBrush ? 'primary' : 'default'}
+              overlay={
+                <div id="PD-KeyVis-Brightness-Overlay">
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation()
+                    }}
+                  >
+                    <Flexbox flexDirection="column">
+                      <div className="PD-Cluster-Legend" />
+                      <Slider
+                        defaultValue={0}
+                        min={-6}
+                        max={6}
+                        step={0.1}
+                        onChange={(value) =>
+                          this.handleBrightLevel(value as number)
+                        }
+                      />
+                    </Flexbox>
+                  </div>
+                </div>
+              }
+              trigger={['click']}
+              onVisibleChange={this.handleBrightnessDropdown}
             >
-              {t('keyviz.toolbar.zoom.select')}
-            </Button>
-            <Button disabled={!enabled} onClick={this.props.onResetZoom}>
-              {t('keyviz.toolbar.zoom.reset')}
-            </Button>
-          </Button.Group>
+              <Button icon={<BulbOutlined />}>
+                {t('keyviz.toolbar.brightness')}
+                <DownOutlined />
+              </Button>
+            </Dropdown>
 
-          <div className="space" />
-
-          <Select
-            disabled={!enabled}
-            onChange={this.handleDateRange}
-            value={dateRange}
-            style={{ width: 150 }}
-          >
-            {dateRangeOptions.map((hour) => (
-              <Select.Option
-                key={hour}
-                value={hour * 60 * 60}
-                className="PD-KeyVis-Select-Option"
+            <Button.Group>
+              <Button
+                disabled={!enabled}
+                onClick={this.props.onToggleBrush}
+                icon={<ArrowsAltOutlined />}
+                type={isOnBrush ? 'primary' : 'default'}
               >
-                <ClockCircleOutlined /> {getValueFormat('h')(hour, 0)}
-              </Select.Option>
-            ))}
-          </Select>
+                {t('keyviz.toolbar.zoom.select')}
+              </Button>
+              <Button disabled={!enabled} onClick={this.props.onResetZoom}>
+                {t('keyviz.toolbar.zoom.reset')}
+              </Button>
+            </Button.Group>
 
-          <div className="space" />
+            <Select
+              disabled={!enabled}
+              onChange={this.handleDateRange}
+              value={dateRange}
+              style={{ width: 150 }}
+            >
+              {dateRangeOptions.map((hour) => (
+                <Select.Option
+                  key={hour}
+                  value={hour * 60 * 60}
+                  className="PD-KeyVis-Select-Option"
+                >
+                  <ClockCircleOutlined /> {getValueFormat('h')(hour, 0)}
+                </Select.Option>
+              ))}
+            </Select>
 
-          <Select
-            disabled={!enabled}
-            onChange={this.handleMetricChange}
-            value={metricType}
-            style={{ width: 160 }}
-          >
-            {MetricOptions.map((option) => (
-              <Select.Option
-                key={option.text}
-                value={option.value}
-                className="PD-KeyVis-Select-Option"
-              >
-                <AreaChartOutlined /> {option.text}
-              </Select.Option>
-            ))}
-          </Select>
+            <Select
+              disabled={!enabled}
+              onChange={this.handleMetricChange}
+              value={metricType}
+              style={{ width: 160 }}
+            >
+              {MetricOptions.map((option) => (
+                <Select.Option
+                  key={option.text}
+                  value={option.value}
+                  className="PD-KeyVis-Select-Option"
+                >
+                  <AreaChartOutlined /> {option.text}
+                </Select.Option>
+              ))}
+            </Select>
 
-          <div className="space" />
+            <Dropdown.Button
+              disabled={!enabled}
+              onClick={this.handleRefreshClick}
+              overlay={autoRefreshMenu}
+              trigger={['click']}
+              icon={<DownOutlined />}
+            >
+              {autoRefreshSeconds ? (
+                <RefreshProgress
+                  value={
+                    1 - (remainingRefreshSeconds || 0) / autoRefreshSeconds
+                  }
+                />
+              ) : (
+                <SyncOutlined />
+              )}
+              {t('keyviz.toolbar.refresh')}
+            </Dropdown.Button>
 
-          <Dropdown.Button
-            disabled={!enabled}
-            onClick={this.handleRefreshClick}
-            overlay={autoRefreshMenu}
-            trigger={['click']}
-            icon={<DownOutlined />}
-          >
-            {autoRefreshSeconds ? (
-              <RefreshProgress
-                value={1 - (remainingRefreshSeconds || 0) / autoRefreshSeconds}
+            {this.props.isLoading && (
+              <Spin
+                indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
               />
-            ) : (
-              <SyncOutlined />
             )}
-            {t('keyviz.toolbar.refresh')}
-          </Dropdown.Button>
+          </Space>
 
-          <div className="space" />
-
-          {this.props.isLoading && (
-            <Spin
-              indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-            />
-          )}
-
-          <div style={{ flex: 1 }} />
-
-          <Tooltip title={t('keyviz.settings.title')}>
-            <SettingOutlined onClick={onShowSettings} />
-          </Tooltip>
-        </div>
+          <Space>
+            <Tooltip title={t('keyviz.settings.title')}>
+              <SettingOutlined onClick={onShowSettings} />
+            </Tooltip>
+          </Space>
+        </Toolbar>
       </Card>
     )
   }
 }
 
-export default withTranslation()(KeyVisToolBar)
+export default withTranslation()(KeyVizToolbar)

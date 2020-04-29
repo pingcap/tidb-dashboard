@@ -32,5 +32,7 @@ export * from './MetricChart'
 export { default as MetricChart } from './MetricChart'
 export * from './ColumnsSelector'
 export { default as ColumnsSelector } from './ColumnsSelector'
+export * from './Toolbar'
+export { default as Toolbar } from './Toolbar'
 
 export { default as LanguageDropdown } from './LanguageDropdown'

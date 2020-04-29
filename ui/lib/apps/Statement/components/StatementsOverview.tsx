@@ -1,6 +1,6 @@
-import React, { useReducer, useEffect, useContext, useState } from 'react'
+import React, { useReducer, useEffect, useState } from 'react'
 import { Select, Space, Tooltip, Drawer, Button, Checkbox } from 'antd'
-import { useLocalStorageState } from '@umijs/hooks'
+import { useLocalStorageState, useSessionStorageState } from '@umijs/hooks'
 import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
@@ -10,14 +10,14 @@ import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
 import StatementsTable from './StatementsTable'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
-import { SearchContext } from './search-options-context'
 
 import styles from './styles.module.less'
 
 const { Option } = Select
 
-const VISIBLE_COLUMN_KEYS = 'statement_visible_column_keys'
-const SHOW_FULL_SQL = 'statement_show_full_sql'
+const QUERY_OPTIONS = 'statement.query_options'
+const VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
+const SHOW_FULL_SQL = 'statement.show_full_sql'
 
 const defColumnKeys: IColumnKeys = {
   digest_text: true,
@@ -28,11 +28,19 @@ const defColumnKeys: IColumnKeys = {
   related_schemas: true,
 }
 
-interface State {
+interface QueryOptions {
   curSchemas: string[]
   curTimeRange: StatementTimeRange | undefined
   curStmtTypes: string[]
+}
 
+const initialQueryOptions: QueryOptions = {
+  curSchemas: [],
+  curTimeRange: undefined,
+  curStmtTypes: [],
+}
+
+interface State extends QueryOptions {
   statementEnable: boolean
 
   schemas: string[]
@@ -44,9 +52,7 @@ interface State {
 }
 
 const initState: State = {
-  curSchemas: [],
-  curTimeRange: undefined,
-  curStmtTypes: [],
+  ...initialQueryOptions,
 
   statementEnable: true,
 
@@ -128,11 +134,15 @@ function reducer(state: State, action: Action): State {
 export default function StatementsOverview() {
   const { t } = useTranslation()
 
-  const { searchOptions, setSearchOptions } = useContext(SearchContext)
+  const [queryOptions, setQueryOptions] = useSessionStorageState(
+    QUERY_OPTIONS,
+    initialQueryOptions
+  )
+
   // combine the context to state
   const [state, dispatch] = useReducer(reducer, {
     ...initState,
-    ...searchOptions,
+    ...queryOptions,
   })
 
   const [refreshTimes, setRefreshTimes] = useState(0)
@@ -223,19 +233,13 @@ export default function StatementsOverview() {
     }
 
     queryStatementList()
-    // update context
-    setSearchOptions({
+    setQueryOptions({
       curSchemas: state.curSchemas,
       curTimeRange: state.curTimeRange,
       curStmtTypes: state.curStmtTypes,
     })
-  }, [
-    setSearchOptions,
-    state.curSchemas,
-    state.curTimeRange,
-    state.curStmtTypes,
-    refreshTimes,
-  ])
+    // eslint-disable-next-line
+  }, [state.curSchemas, state.curTimeRange, state.curStmtTypes, refreshTimes])
 
   function handleSchemaChange(val: string[]) {
     dispatch({

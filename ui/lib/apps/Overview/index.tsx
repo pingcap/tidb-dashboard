@@ -4,57 +4,30 @@ import { Row, Col } from 'antd'
 import { RightOutlined } from '@ant-design/icons'
 import { HashRouter as Router, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import client, {
-  ClusterinfoClusterInfo,
-  StatementTimeRange,
-  StatementModel,
-} from '@lib/client'
+import client, { ClusterinfoClusterInfo } from '@lib/client'
 import { StatementsTable } from '@lib/apps/Statement'
 import MonitorAlertBar from './components/MonitorAlertBar'
 import Nodes from './components/Nodes'
 import SlowQueriesTable from '../SlowQuery/components/SlowQueriesTable'
+import { defSlowQueryColumnKeys } from '../SlowQuery/components/List'
 import useSlowQuery, {
   DEF_SLOW_QUERY_OPTIONS,
 } from '../SlowQuery/utils/useSlowQuery'
-import { defSlowQueryColumnKeys } from '../SlowQuery/components/List'
+import useStatement from '../Statement/utils/useStatement'
 
 import styles from './index.module.less'
-
-function useStatements() {
-  const [timeRange, setTimeRange] = useState<StatementTimeRange>({
-    begin_time: 0,
-    end_time: 0,
-  })
-  const [statements, setStatements] = useState<StatementModel[]>([])
-  const [loadingStatements, setLoadingStatements] = useState(true)
-
-  useEffect(() => {
-    const fetchStatements = async () => {
-      setLoadingStatements(true)
-      const rRes = await client.getInstance().statementsTimeRangesGet()
-      const timeRanges = rRes.data || []
-      if (timeRanges.length > 0) {
-        setTimeRange(timeRanges[0])
-        const res = await client
-          .getInstance()
-          .statementsOverviewsGet(
-            timeRanges[0].begin_time!,
-            timeRanges[0].end_time!
-          )
-        setStatements(res.data || [])
-      }
-      setLoadingStatements(false)
-    }
-    fetchStatements()
-  }, [])
-
-  return { timeRange, statements, loadingStatements }
-}
 
 export default function App() {
   const { t } = useTranslation()
   const [cluster, setCluster] = useState<ClusterinfoClusterInfo | null>(null)
-  const { timeRange, statements, loadingStatements } = useStatements()
+  const {
+    queryOptions: stmtQueryOptions,
+    setQueryOptions: setStmtQueryOptions,
+    allTimeRanges,
+    validTimeRange,
+    loadingStatements,
+    statements,
+  } = useStatement(undefined, false)
   const {
     queryOptions,
     setQueryOptions,
@@ -128,22 +101,28 @@ export default function App() {
               }}
               visibleItemsCount={5}
               loading={loadingStatements}
-              timeRange={timeRange}
-              onChangeSort={(orderBy, desc) => {}}
+              timeRange={validTimeRange}
+              onChangeSort={(orderBy, desc) =>
+                setStmtQueryOptions({
+                  ...stmtQueryOptions,
+                  orderBy,
+                  desc,
+                })
+              }
               title={
                 <Link to="/statement">
                   {t('overview.top_statements.title')} <RightOutlined />
                 </Link>
               }
               subTitle={
-                timeRange.begin_time && (
+                allTimeRanges.length > 0 && (
                   <span>
                     <DateTime.Calendar
-                      unixTimestampMs={timeRange.begin_time * 1000}
+                      unixTimestampMs={(validTimeRange.begin_time ?? 0) * 1000}
                     />{' '}
                     ~{' '}
                     <DateTime.Calendar
-                      unixTimestampMs={(timeRange.end_time ?? 0) * 1000}
+                      unixTimestampMs={(validTimeRange.end_time ?? 0) * 1000}
                     />
                   </span>
                 )

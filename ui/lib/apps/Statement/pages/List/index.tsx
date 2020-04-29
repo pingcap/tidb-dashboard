@@ -1,25 +1,20 @@
-import React, { useReducer, useEffect, useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import { Select, Space, Tooltip, Drawer, Button, Checkbox } from 'antd'
-import { useLocalStorageState, useSessionStorageState } from '@umijs/hooks'
+import { useLocalStorageState } from '@umijs/hooks'
 import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useTranslation } from 'react-i18next'
-import client, { StatementTimeRange, StatementModel } from '@lib/client'
 import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
-import TimeRangeSelector, {
-  TimeRange,
-  DEF_TIME_RANGE,
-  calcValidStatementTimeRange,
-} from './TimeRangeSelector'
+import TimeRangeSelector from './TimeRangeSelector'
 
 import styles from './styles.module.less'
+import useStatement from '../../utils/useStatement'
 
 const { Option } = Select
 
-const QUERY_OPTIONS = 'statement.query_options'
 const VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const SHOW_FULL_SQL = 'statement.show_full_sql'
 
@@ -32,130 +27,24 @@ const defColumnKeys: IColumnKeys = {
   related_schemas: true,
 }
 
-interface QueryOptions {
-  curSchemas: string[]
-  curTimeRange: TimeRange
-  curStmtTypes: string[]
-  orderBy: string
-  desc: boolean
-}
-
-const initialQueryOptions: QueryOptions = {
-  curSchemas: [],
-  curTimeRange: DEF_TIME_RANGE,
-  curStmtTypes: [],
-  orderBy: 'sum_latency',
-  desc: true,
-}
-
-interface State extends QueryOptions {
-  statementEnable: boolean
-
-  schemas: string[]
-  timeRanges: StatementTimeRange[]
-  stmtTypes: string[]
-
-  statementsLoading: boolean
-  statements: StatementModel[]
-}
-
-const initState: State = {
-  ...initialQueryOptions,
-
-  statementEnable: true,
-
-  schemas: [],
-  timeRanges: [],
-  stmtTypes: [],
-
-  statementsLoading: true,
-  statements: [],
-}
-
-type Action =
-  | { type: 'change_statement_status'; payload: boolean }
-  | { type: 'save_schemas'; payload: string[] }
-  | { type: 'change_schema'; payload: string[] }
-  | { type: 'save_time_ranges'; payload: StatementTimeRange[] }
-  | { type: 'change_time_range'; payload: TimeRange }
-  | { type: 'save_stmt_types'; payload: string[] }
-  | { type: 'change_stmt_types'; payload: string[] }
-  | { type: 'save_statements'; payload: StatementModel[] }
-  | { type: 'set_statements_loading' }
-
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case 'change_statement_status':
-      return {
-        ...state,
-        statementEnable: action.payload,
-      }
-    case 'save_schemas':
-      return {
-        ...state,
-        schemas: action.payload,
-      }
-    case 'change_schema':
-      return {
-        ...state,
-        curSchemas: action.payload,
-        statements: [],
-      }
-    case 'save_time_ranges':
-      return {
-        ...state,
-        timeRanges: action.payload,
-      }
-    case 'change_time_range':
-      return {
-        ...state,
-        curTimeRange: action.payload,
-        statements: [],
-      }
-    case 'save_stmt_types':
-      return {
-        ...state,
-        stmtTypes: action.payload,
-      }
-    case 'change_stmt_types':
-      return {
-        ...state,
-        curStmtTypes: action.payload,
-        statements: [],
-      }
-    case 'save_statements':
-      return {
-        ...state,
-        statementsLoading: false,
-        statements: action.payload,
-      }
-    case 'set_statements_loading':
-      return {
-        ...state,
-        statementsLoading: true,
-      }
-    default:
-      throw new Error('invalid action type')
-  }
-}
-
 export default function StatementsOverview() {
   const { t } = useTranslation()
 
-  const [queryOptions, setQueryOptions] = useSessionStorageState(
-    QUERY_OPTIONS,
-    initialQueryOptions
-  )
+  const {
+    savedQueryOptions,
+    setSavedQueryOptions,
+    enable,
+    allTimeRanges,
+    allSchemas,
+    allStmtTypes,
+    validTimeRange,
+    loadingStatements,
+    statements,
+    refresh,
+  } = useStatement()
 
-  // combine the context to state
-  const [state, dispatch] = useReducer(reducer, {
-    ...initState,
-    ...queryOptions,
-  })
-
-  const [refreshTimes, setRefreshTimes] = useState(0)
-  const [showSettings, setShowSettings] = useState(false)
   const [columns, setColumns] = useState<IColumn[]>([])
+  const [showSettings, setShowSettings] = useState(false)
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     VISIBLE_COLUMN_KEYS,
     defColumnKeys
@@ -164,111 +53,6 @@ export default function StatementsOverview() {
     SHOW_FULL_SQL,
     false
   )
-  const validTimeRange = useMemo(
-    () => calcValidStatementTimeRange(state.curTimeRange, state.timeRanges),
-    [state.curTimeRange, state.timeRanges]
-  )
-
-  useEffect(() => {
-    async function queryStatementStatus() {
-      const res = await client.getInstance().statementsConfigGet()
-      if (res?.data) {
-        dispatch({
-          type: 'change_statement_status',
-          payload: res?.data.enable!,
-        })
-      }
-    }
-
-    async function querySchemas() {
-      const res = await client.getInstance().statementsSchemasGet()
-      dispatch({
-        type: 'save_schemas',
-        payload: res?.data || [],
-      })
-    }
-
-    async function queryTimeRanges() {
-      const res = await client.getInstance().statementsTimeRangesGet()
-      dispatch({
-        type: 'save_time_ranges',
-        payload: res?.data || [],
-      })
-    }
-
-    async function queryStmtTypes() {
-      const res = await client.getInstance().statementsStmtTypesGet()
-      dispatch({
-        type: 'save_stmt_types',
-        payload: res?.data || [],
-      })
-    }
-
-    queryStatementStatus()
-    querySchemas()
-    queryTimeRanges()
-    queryStmtTypes()
-  }, [refreshTimes])
-
-  useEffect(() => {
-    async function queryStatementList() {
-      if (state.timeRanges.length === 0) {
-        return
-      }
-      dispatch({
-        type: 'set_statements_loading',
-      })
-      const res = await client
-        .getInstance()
-        .statementsOverviewsGet(
-          validTimeRange.begin_time!,
-          validTimeRange.end_time!,
-          state.curSchemas,
-          state.curStmtTypes
-        )
-      dispatch({
-        type: 'save_statements',
-        payload: res?.data || [],
-      })
-    }
-
-    queryStatementList()
-    setQueryOptions({
-      ...queryOptions,
-      curSchemas: state.curSchemas,
-      curTimeRange: state.curTimeRange,
-      curStmtTypes: state.curStmtTypes,
-    })
-    // eslint-disable-next-line
-  }, [
-    state.curSchemas,
-    state.curTimeRange,
-    state.timeRanges,
-    validTimeRange,
-    state.curStmtTypes,
-    refreshTimes,
-  ])
-
-  function handleSchemaChange(val: string[]) {
-    dispatch({
-      type: 'change_schema',
-      payload: val,
-    })
-  }
-
-  function handleTimeRangeChange(val: TimeRange) {
-    dispatch({
-      type: 'change_time_range',
-      payload: val,
-    })
-  }
-
-  function handleStmtTypeChange(val: string[]) {
-    dispatch({
-      type: 'change_stmt_types',
-      payload: val,
-    })
-  }
 
   const statementDisabled = (
     <div className={styles.statement_disabled_container}>
@@ -289,35 +73,50 @@ export default function StatementsOverview() {
         <Toolbar>
           <Space>
             <TimeRangeSelector
-              value={state.curTimeRange}
-              timeRanges={state.timeRanges}
-              onChange={handleTimeRangeChange}
+              value={savedQueryOptions.timeRange}
+              timeRanges={allTimeRanges}
+              onChange={(timeRange) =>
+                setSavedQueryOptions({
+                  ...savedQueryOptions,
+                  timeRange,
+                })
+              }
             />
             <Select
-              value={state.curSchemas}
+              value={savedQueryOptions.schemas}
               mode="multiple"
               allowClear
               placeholder={t('statement.pages.overview.toolbar.select_schemas')}
               style={{ minWidth: 200 }}
-              onChange={handleSchemaChange}
+              onChange={(schemas) =>
+                setSavedQueryOptions({
+                  ...savedQueryOptions,
+                  schemas,
+                })
+              }
             >
-              {state.schemas.map((item) => (
+              {allSchemas.map((item) => (
                 <Option value={item} key={item}>
                   {item}
                 </Option>
               ))}
             </Select>
             <Select
-              value={state.curStmtTypes}
+              value={savedQueryOptions.stmtTypes}
               mode="multiple"
               allowClear
               placeholder={t(
                 'statement.pages.overview.toolbar.select_stmt_types'
               )}
               style={{ minWidth: 160 }}
-              onChange={handleStmtTypeChange}
+              onChange={(stmtTypes) =>
+                setSavedQueryOptions({
+                  ...savedQueryOptions,
+                  stmtTypes,
+                })
+              }
             >
-              {state.stmtTypes.map((item) => (
+              {allStmtTypes.map((item) => (
                 <Option value={item} key={item}>
                   {item.toUpperCase()}
                 </Option>
@@ -348,28 +147,25 @@ export default function StatementsOverview() {
               <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
             <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-              <ReloadOutlined
-                onClick={() => setRefreshTimes((prev) => prev + 1)}
-              />
+              <ReloadOutlined onClick={refresh} />
             </Tooltip>
           </Space>
         </Toolbar>
       </Card>
 
-      {state.statementEnable ? (
+      {enable ? (
         <StatementsTable
-          key={`${state.statements.length}_${refreshTimes}_${showFullSQL}`}
-          statements={state.statements}
-          loading={state.statementsLoading}
+          statements={statements}
+          loading={loadingStatements}
           timeRange={validTimeRange}
-          orderBy={queryOptions.orderBy}
-          desc={queryOptions.desc}
+          orderBy={savedQueryOptions.orderBy}
+          desc={savedQueryOptions.desc}
           showFullSQL={showFullSQL}
           visibleColumnKeys={visibleColumnKeys}
           onGetColumns={setColumns}
           onChangeSort={(orderBy, desc) =>
-            setQueryOptions({
-              ...queryOptions,
+            setSavedQueryOptions({
+              ...savedQueryOptions,
               orderBy,
               desc,
             })
@@ -389,7 +185,7 @@ export default function StatementsOverview() {
       >
         <StatementSettingForm
           onClose={() => setShowSettings(false)}
-          onConfigUpdated={() => setRefreshTimes((prev) => prev + 1)}
+          onConfigUpdated={refresh}
         />
       </Drawer>
     </ScrollablePane>

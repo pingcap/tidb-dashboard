@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Root, DateTime, MetricChart } from '@lib/components'
 import { Row, Col } from 'antd'
 import { RightOutlined } from '@ant-design/icons'
 import { HashRouter as Router, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import client, { ClusterinfoClusterInfo } from '@lib/client'
-import { StatementsTable } from '@lib/apps/Statement'
+import { Root, DateTime, MetricChart } from '@lib/components'
+import { StatementsTable, useStatement } from '@lib/apps/Statement'
 import MonitorAlertBar from './components/MonitorAlertBar'
 import Nodes from './components/Nodes'
 import SlowQueriesTable from '../SlowQuery/components/SlowQueriesTable'
@@ -13,7 +13,6 @@ import { defSlowQueryColumnKeys } from '../SlowQuery/components/List'
 import useSlowQuery, {
   DEF_SLOW_QUERY_OPTIONS,
 } from '../SlowQuery/utils/useSlowQuery'
-import useStatement from '../Statement/utils/useStatement'
 
 import styles from './index.module.less'
 
@@ -45,7 +44,6 @@ export default function App() {
         setCluster(null)
       }
     }
-
     fetchLoad()
   }, [])
 
@@ -88,9 +86,8 @@ export default function App() {
               type="line"
             />
             <StatementsTable
-              className={styles.statementsTable}
               key={`statement_${statements.length}`}
-              statements={statements}
+              className={styles.statementsTable}
               visibleColumnKeys={{
                 digest_text: true,
                 sum_latency: true,
@@ -99,6 +96,7 @@ export default function App() {
               }}
               visibleItemsCount={5}
               loading={loadingStatements}
+              statements={statements}
               timeRange={validTimeRange}
               orderBy={stmtQueryOptions.orderBy}
               desc={stmtQueryOptions.desc}
@@ -130,14 +128,14 @@ export default function App() {
             />
             <SlowQueriesTable
               key={`slow_query_${slowQueries.length}`}
+              visibleColumnKeys={defSlowQueryColumnKeys}
               loading={loadingSlowQueries}
               slowQueries={slowQueries}
-              visibleColumnKeys={defSlowQueryColumnKeys}
+              orderBy={queryOptions.orderBy}
+              desc={queryOptions.desc}
               onChangeSort={(orderBy, desc) =>
                 setQueryOptions({ ...queryOptions, orderBy, desc })
               }
-              orderBy={queryOptions.orderBy}
-              desc={queryOptions.desc}
               title={
                 <Link to="/slow_query">
                   {t('overview.recent_slow_query.title')} <RightOutlined />

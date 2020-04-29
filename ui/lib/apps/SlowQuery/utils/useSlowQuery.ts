@@ -5,7 +5,7 @@ import { useSessionStorageState } from '@umijs/hooks'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
 
-export interface IQueryOptions {
+export interface ISlowQueryOptions {
   timeRange: TimeRange
   schemas: string[]
   searchText: string
@@ -17,7 +17,7 @@ export interface IQueryOptions {
   plans: string[]
 }
 
-export const DEF_QUERY_OPTIONS: IQueryOptions = {
+export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
   timeRange: DEF_TIME_RANGE,
   schemas: [],
   searchText: '',
@@ -29,15 +29,15 @@ export const DEF_QUERY_OPTIONS: IQueryOptions = {
 }
 
 export default function useSlowQuery(
-  options?: IQueryOptions,
+  options?: ISlowQueryOptions,
   needSave: boolean = true
 ) {
   const [queryOptions, setQueryOptions] = useState(
-    () => options || DEF_QUERY_OPTIONS
+    () => options || DEF_SLOW_QUERY_OPTIONS
   )
   const [savedQueryOptions, setSavedQueryOptions] = useSessionStorageState(
     QUERY_OPTIONS,
-    options || DEF_QUERY_OPTIONS
+    options || DEF_SLOW_QUERY_OPTIONS
   )
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
   const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])

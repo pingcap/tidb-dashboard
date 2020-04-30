@@ -78,7 +78,6 @@ func (s *Service) handleStartGroup(c *gin.Context) {
 		req: req,
 		ch:  make(chan struct{}, 1),
 	}
-	defer close(session.ch)
 	s.sessionCh <- session
 	select {
 	case <-session.ch:

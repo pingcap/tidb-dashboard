@@ -76,8 +76,10 @@ func NewService(
 	if err := autoMigrate(db); err != nil {
 		return nil, err
 	}
-
-	s := &Service{config: cfg, cfgManager: cfgManager, db: db, httpClient: httpClient}
+	// Change the default timeout
+	newHTTPClient := *httpClient
+	newHTTPClient.Timeout = 0
+	s := &Service{config: cfg, cfgManager: cfgManager, db: db, httpClient: &newHTTPClient}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.wg.Add(1)

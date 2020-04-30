@@ -34,5 +34,7 @@ export * from './ColumnsSelector'
 export { default as ColumnsSelector } from './ColumnsSelector'
 export * from './Toolbar'
 export { default as Toolbar } from './Toolbar'
+export * from './TimeRangeSelector'
+export { default as TimeRangeSelector } from './TimeRangeSelector'
 
 export { default as LanguageDropdown } from './LanguageDropdown'

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import client, { SlowqueryBase } from '@lib/client'
-import { TimeRange, getDefTimeRange } from '../components/TimeRangeSelector'
-import dayjs from 'dayjs'
+import { TimeRange, DEF_TIME_RANGE, calcTimeRange } from '@lib/components'
 import { useSessionStorageState } from '@umijs/hooks'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
@@ -20,7 +19,7 @@ export interface IQueryOptions {
 
 export function getDefQueryOptions(): IQueryOptions {
   return {
-    timeRange: getDefTimeRange(),
+    timeRange: DEF_TIME_RANGE,
     schemas: [],
     searchText: '',
     orderBy: 'Time',
@@ -54,19 +53,7 @@ export default function useSlowQuery(
     async function getSlowQueryList() {
       setLoadingSlowQueries(true)
       let curOptions = needSave ? savedQueryOptions : queryOptions
-      // FIXME: will fix when refine TimeRangeSelector
-      // refresh time range
-      const recentMins = curOptions.timeRange.recent
-      if (recentMins > 0) {
-        const now = dayjs().unix()
-        const beginTime = now - recentMins * 60
-        // in fact we should not mutate the props or state
-        curOptions.timeRange = {
-          recent: recentMins,
-          begin_time: beginTime,
-          end_time: now,
-        }
-      }
+      const [beginTime, endTime] = calcTimeRange(curOptions.timeRange)
       const res = await client
         .getInstance()
         .slowQueryListGet(
@@ -74,8 +61,8 @@ export default function useSlowQuery(
           curOptions.desc,
           curOptions.digest,
           curOptions.limit,
-          curOptions.timeRange.end_time,
-          curOptions.timeRange.begin_time,
+          endTime,
+          beginTime,
           curOptions.orderBy,
           curOptions.plans,
           curOptions.searchText

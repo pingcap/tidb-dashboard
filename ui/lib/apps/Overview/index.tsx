@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Root, DateTime, MetricChart } from '@lib/components'
+import { Root, DateTime, MetricChart, calcTimeRange } from '@lib/components'
 import { Row, Col } from 'antd'
 import { RightOutlined } from '@ant-design/icons'
 import { HashRouter as Router, Link } from 'react-router-dom'
@@ -61,6 +61,9 @@ export default function App() {
     loadingSlowQueries,
     slowQueries,
   } = useSlowQuery({ ...getDefQueryOptions(), limit: 10 }, false)
+  const [slowQueryBeginTime, slowQueryEndTime] = calcTimeRange(
+    queryOptions.timeRange
+  )
 
   useEffect(() => {
     const fetchLoad = async () => {
@@ -163,13 +166,11 @@ export default function App() {
               subTitle={
                 <span>
                   <DateTime.Calendar
-                    unixTimestampMs={queryOptions.timeRange.begin_time * 1000}
+                    unixTimestampMs={slowQueryBeginTime * 1000}
                   />{' '}
                   ~{' '}
                   <DateTime.Calendar
-                    unixTimestampMs={
-                      (queryOptions.timeRange.end_time ?? 0) * 1000
-                    }
+                    unixTimestampMs={slowQueryEndTime * 1000}
                   />
                 </span>
               }

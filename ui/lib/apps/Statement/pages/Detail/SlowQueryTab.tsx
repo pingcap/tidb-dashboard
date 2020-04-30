@@ -20,9 +20,8 @@ export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
     {
       ...getDefQueryOptions(),
       timeRange: {
-        recent: 0,
-        begin_time: query.beginTime!,
-        end_time: query.endTime!,
+        type: 'absolute',
+        value: [query.beginTime!, query.endTime!],
       },
       schemas: [query.schema!],
       limit: 100,

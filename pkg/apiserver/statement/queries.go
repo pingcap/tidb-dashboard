@@ -147,7 +147,7 @@ func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
 // stmtTypes: ["select", "update"]
 func QueryStatementsOverview(
 	db *gorm.DB,
-	beginTime, endTime int64,
+	beginTime, endTime int,
 	schemas, stmtTypes []string) (result []Model, err error) {
 	fields := getAggrFields(
 		"table_names",

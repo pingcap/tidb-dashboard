@@ -1,17 +1,16 @@
 import React from 'react'
-import { HashRouter as Router, Routes, Route } from 'react-router-dom'
-
 import { Root } from '@lib/components'
+import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 import { List, Detail } from './pages'
-import useStatement from './utils/useStatement'
+import useSlowQuery from './utils/useSlowQuery'
 
 export default function () {
   return (
     <Root>
       <Router>
         <Routes>
-          <Route path="/statement" element={<List />} />
-          <Route path="/statement/detail" element={<Detail />} />
+          <Route path="/slow_query" element={<List />} />
+          <Route path="/slow_query/detail" element={<Detail />} />
         </Routes>
       </Router>
     </Root>
@@ -20,4 +19,4 @@ export default function () {
 
 export * from './components'
 export * from './pages'
-export { useStatement }
+export { useSlowQuery }

@@ -1,4 +1,3 @@
-import Detail from './Detail'
-import List from './List'
+import SlowQueriesTable from './SlowQueriesTable'
 
-export { Detail, List }
+export { SlowQueriesTable }

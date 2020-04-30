@@ -14,10 +14,7 @@
 package statement
 
 import (
-	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -140,34 +137,30 @@ func (s *Service) stmtTypesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, stmtTypes)
 }
 
+type GetStatementsRequest struct {
+	Schemas   []string `json:"schemas" form:"schemas"`
+	StmtTypes []string `json:"stmt_types" form:"stmt_types"`
+	BeginTime int      `json:"begin_time" form:"begin_time"`
+	EndTime   int      `json:"end_time" form:"end_time"`
+}
+
 // @Summary Statements overview
 // @Description Get statements overview
 // @Produce json
-// @Param begin_time query int true "Statement begin time"
-// @Param end_time query int true "Statement end time"
-// @Param schemas query string false "Target schemas"
-// @Param stmt_types query string false "Target statement types"
+// @Param q query GetStatementsRequest true "Query"
 // @Success 200 {array} Model
 // @Router /statements/overviews [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) overviewsHandler(c *gin.Context) {
-	beginTime, endTime, err := parseTimeParams(c)
-	if err != nil {
-		_ = c.Error(err)
+	var req GetStatementsRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
 		return
 	}
-	schemas := strings.Split(c.Query("schemas"), ",")
-	if len(schemas) == 1 && schemas[0] == "" {
-		schemas = nil
-	}
-	stmtTypes := strings.Split(c.Query("stmt_types"), ",")
-	if len(stmtTypes) == 1 && stmtTypes[0] == "" {
-		stmtTypes = nil
-	}
-
 	db := utils.GetTiDBConnection(c)
-	overviews, err := QueryStatementsOverview(db, beginTime, endTime, schemas, stmtTypes)
+	overviews, err := QueryStatementsOverview(db, req.BeginTime, req.EndTime, req.Schemas, req.StmtTypes)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -233,16 +226,4 @@ func (s *Service) getPlanDetailHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, result)
-}
-
-func parseTimeParams(c *gin.Context) (int64, int64, error) {
-	beginTime, err := strconv.Atoi(c.Query("begin_time"))
-	if err != nil {
-		return 0, 0, fmt.Errorf("invalid begin_time: %s", err)
-	}
-	endTime, err := strconv.Atoi(c.Query("end_time"))
-	if err != nil {
-		return 0, 0, fmt.Errorf("invalid end_time: %s", err)
-	}
-	return int64(beginTime), int64(endTime), nil
 }

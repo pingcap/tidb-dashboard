@@ -2,9 +2,9 @@ import React from 'react'
 import SlowQueriesTable from '@lib/apps/SlowQuery/components/SlowQueriesTable'
 import { IQuery } from './PlanDetail'
 import useSlowQuery, {
-  getDefQueryOptions,
+  DEF_SLOW_QUERY_OPTIONS,
 } from '@lib/apps/SlowQuery/utils/useSlowQuery'
-import { defSlowQueryColumnKeys } from '@lib/apps/SlowQuery/components/List'
+import { defSlowQueryColumnKeys } from '@lib/apps/SlowQuery/pages/List'
 
 export interface ISlowQueryTabProps {
   query: IQuery
@@ -18,7 +18,7 @@ export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
     loadingSlowQueries,
   } = useSlowQuery(
     {
-      ...getDefQueryOptions(),
+      ...DEF_SLOW_QUERY_OPTIONS,
       timeRange: {
         type: 'absolute',
         value: [query.beginTime!, query.endTime!],

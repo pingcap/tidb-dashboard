@@ -20,12 +20,12 @@ const RECENT_SECONDS = [
   24 * 60 * 60,
 ]
 
-export interface RecentSecTime {
+interface RecentSecTime {
   type: 'recent'
   value: number // unit: seconds
 }
 
-export interface RangeTime {
+interface RangeTime {
   type: 'absolute'
   value: [number, number] // unit: seconds
 }

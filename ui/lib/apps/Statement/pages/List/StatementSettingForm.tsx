@@ -12,14 +12,10 @@ import {
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-import { StatementConfig } from '@lib/client'
+import client, { StatementConfig } from '@lib/client'
 
 interface Props {
-  instanceId: string
-
   onClose: () => void
-  onFetchConfig: (instanceId: string) => Promise<StatementConfig | undefined>
-  onUpdateConfig: (instanceId: string, config: StatementConfig) => Promise<any>
   onConfigUpdated: () => any
 }
 
@@ -38,13 +34,7 @@ const convertArrToObj = (arr: number[]) =>
 const REFRESH_INTERVAL_MARKS = convertArrToObj([1, 5, 15, 30, 60])
 const KEEP_DURATION_MARKS = convertArrToObj([1, 2, 5, 10, 20, 30])
 
-function StatementSettingForm({
-  instanceId,
-  onClose,
-  onFetchConfig,
-  onUpdateConfig,
-  onConfigUpdated,
-}: Props) {
+function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [oriConfig, setOriConfig] = useState<StatementConfig | null>(null)
@@ -54,18 +44,20 @@ function StatementSettingForm({
   useEffect(() => {
     async function fetchConfig() {
       setLoading(true)
-      const res = await onFetchConfig(instanceId)
-      if (res) {
-        setOriConfig(res)
+      const res = await client.getInstance().statementsConfigGet()
+      if (res?.data) {
+        const oriConfig = res.data
+        setOriConfig(oriConfig)
 
-        const refresh_interval = Math.ceil(res.refresh_interval! / 60)
+        const refresh_interval = Math.ceil(oriConfig.refresh_interval! / 60)
         const max_refresh_interval = Math.max(refresh_interval, 60)
         const keep_duration = Math.ceil(
-          (res.refresh_interval! * res.history_size!) / (24 * 60 * 60)
+          (oriConfig.refresh_interval! * oriConfig.history_size!) /
+            (24 * 60 * 60)
         )
         const max_keep_duration = Math.max(keep_duration, 30)
         setConfig({
-          ...res,
+          ...oriConfig,
           refresh_interval,
           keep_duration,
           max_refresh_interval,
@@ -75,7 +67,7 @@ function StatementSettingForm({
       setLoading(false)
     }
     fetchConfig()
-  }, [instanceId, onFetchConfig])
+  }, [])
 
   async function updateConfig(values) {
     setSubmitting(true)
@@ -86,9 +78,9 @@ function StatementSettingForm({
         (values.keep_duration * 24 * 60) / values.refresh_interval
       ),
     }
-    const res = await onUpdateConfig(instanceId, newConfig)
+    const res = await client.getInstance().statementsConfigPost(newConfig)
     setSubmitting(false)
-    if (res !== undefined) {
+    if (res) {
       onClose()
       onConfigUpdated()
     }

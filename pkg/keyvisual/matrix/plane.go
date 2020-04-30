@@ -81,6 +81,7 @@ func (plane *Plane) Pixel(strategy Strategy, target int, displayTags []string) M
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 	generateFunc := func(j int) {
+		defer wg.Done()
 		data := make([][]uint64, axesLen)
 		goCompactChunk := createZeroChunk(compactChunk.Keys)
 		for i, axis := range plane.Axes {
@@ -89,9 +90,8 @@ func (plane *Plane) Pixel(strategy Strategy, target int, displayTags []string) M
 			data[i] = goCompactChunk.Reduce(baseKeys).Values
 		}
 		mutex.Lock()
+		defer mutex.Unlock()
 		matrix.DataMap[displayTags[j]] = data
-		mutex.Unlock()
-		wg.Done()
 	}
 
 	wg.Add(valuesListLen)

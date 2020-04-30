@@ -18,73 +18,43 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
-
-// Service is used to provide a kind of feature.
-type Service struct {
-	config     *config.Config
-	db         *dbstore.DB
-	tasks      sync.Map
-	httpClient *http.Client
-}
-
-// NewService creates a new service.
-func NewService(config *config.Config, db *dbstore.DB) *Service {
-	err := autoMigrate(db)
-	if err != nil {
-		log.Fatal("Failed to initialize database", zap.Error(err))
-	}
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: config.ClusterTLSConfig,
-		},
-	}
-
-	return &Service{config: config, db: db, tasks: sync.Map{}, httpClient: httpClient}
-}
 
 // Register register the handlers to the service.
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/profiling")
-
 	endpoint.GET("/group/list", auth.MWAuthRequired(), s.getGroupList)
-	endpoint.POST("/group/start", auth.MWAuthRequired(), s.start)
+	endpoint.POST("/group/start", auth.MWAuthRequired(), s.handleStartGroup)
 	endpoint.GET("/group/detail/:groupId", auth.MWAuthRequired(), s.getGroupDetail)
-	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), s.cancelGroup)
+	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), s.handleCancelGroup)
 	endpoint.DELETE("/group/delete/:groupId", auth.MWAuthRequired(), s.deleteGroup)
 	endpoint.GET("/group/download/acquire_token", auth.MWAuthRequired(), s.getGroupDownloadToken)
 	endpoint.GET("/group/download", s.downloadGroup)
 	endpoint.GET("/single/download/acquire_token", auth.MWAuthRequired(), s.getSingleDownloadToken)
 	endpoint.GET("/single/download", s.downloadSingle)
-}
-
-type StartRequest struct {
-	Targets      []utils.RequestTargetNode `json:"targets"`
-	DurationSecs uint                      `json:"duration_secs"`
+	endpoint.GET("/config", s.getDynamicConfig)
+	endpoint.PUT("/config", s.setDynamicConfig)
 }
 
 // @ID startProfiling
 // @Summary Start profiling
 // @Description Start a profiling task group
 // @Produce json
-// @Param pr body StartRequest true "profiling request"
+// @Param req body StartRequest true "profiling request"
 // @Security JwtAuth
 // @Success 200 {object} TaskGroupModel "task group"
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
 // @Router /profiling/group/start [post]
-func (s *Service) start(c *gin.Context) {
+func (s *Service) handleStartGroup(c *gin.Context) {
 	var req StartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Status(http.StatusBadRequest)
@@ -98,41 +68,30 @@ func (s *Service) start(c *gin.Context) {
 	}
 
 	if req.DurationSecs == 0 {
-		req.DurationSecs = 30
+		req.DurationSecs = config.DefaultProfilingAutoCollectionDurationSecs
 	}
-	if req.DurationSecs > 120 {
-		req.DurationSecs = 120
-	}
-	taskGroup := NewTaskGroup(s.db, req.DurationSecs, utils.NewRequestTargetStatisticsFromArray(&req.Targets))
-	if err := s.db.Create(taskGroup.TaskGroupModel).Error; err != nil {
-		_ = c.Error(err)
-		return
+	if req.DurationSecs > config.MaxProfilingAutoCollectionDurationSecs {
+		req.DurationSecs = config.MaxProfilingAutoCollectionDurationSecs
 	}
 
-	tasks := make([]*Task, 0, len(req.Targets))
-	for _, target := range req.Targets {
-		t := NewTask(taskGroup, target, s.config.ClusterTLSConfig != nil)
-		s.db.Create(t.TaskModel)
-		s.tasks.Store(t.ID, t)
-		tasks = append(tasks, t)
+	session := &StartRequestSession{
+		req: req,
+		ch:  make(chan struct{}, 1),
 	}
-
-	go func() {
-		var wg sync.WaitGroup
-		for i := 0; i < len(tasks); i++ {
-			wg.Add(1)
-			go func(idx int) {
-				defer wg.Done()
-				tasks[idx].run(s.httpClient)
-				s.tasks.Delete(tasks[idx].ID)
-			}(i)
+	defer close(session.ch)
+	s.sessionCh <- session
+	select {
+	case <-session.ch:
+		if session.err != nil {
+			c.Status(http.StatusInternalServerError)
+			_ = c.Error(session.err)
+		} else {
+			c.JSON(http.StatusOK, session.taskGroup.TaskGroupModel)
 		}
-		wg.Wait()
-		taskGroup.State = TaskStateFinish
-		s.db.Save(taskGroup.TaskGroupModel)
-	}()
-
-	c.JSON(http.StatusOK, taskGroup.TaskGroupModel)
+	case <-time.After(Timeout):
+		c.Status(http.StatusInternalServerError)
+		_ = c.Error(ErrTimeout.NewWithNoMessage())
+	}
 }
 
 // @ID getProfilingGroups
@@ -206,32 +165,23 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 // @Produce json
 // @Param groupId path string true "group ID"
 // @Security JwtAuth
-// @Success 200 {string} string "success"
+// @Success 200 {object} utils.APIEmptyResponse
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/cancel/{groupId} [post]
-func (s *Service) cancelGroup(c *gin.Context) {
+func (s *Service) handleCancelGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
-	var tasks []TaskModel
-	err = s.db.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateRunning).Find(&tasks).Error
-	if err != nil {
+	if err := s.cancelGroup(uint(taskGroupID)); err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
-
-	for _, task := range tasks {
-		if task, ok := s.tasks.Load(task.ID); ok {
-			t := task.(*Task)
-			t.stop()
-		}
-	}
-	c.JSON(http.StatusOK, "success")
+	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
 // @ID getProfilingGroupDownloadToken
@@ -402,25 +352,58 @@ func (s *Service) deleteGroup(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	taskGroup := TaskGroupModel{}
-	err = s.db.Where("id = ? AND state <> ?", taskGroupID, TaskStateRunning).Find(&taskGroup).Error
-	if err != nil {
+	if err := s.cancelGroup(uint(taskGroupID)); err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
 
-	err = s.db.Where("task_group_id = ?", taskGroupID).Delete(&TaskModel{}).Error
-	if err != nil {
+	if err = s.db.Where("task_group_id = ?", taskGroupID).Delete(&TaskModel{}).Error; err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}
-	err = s.db.Where("id = ?", taskGroupID).Delete(&TaskGroupModel{}).Error
-	if err != nil {
+	if err = s.db.Where("id = ?", taskGroupID).Delete(&TaskGroupModel{}).Error; err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
+}
+
+// @Summary Get Profiling Dynamic Config
+// @Produce json
+// @Success 200 {object} config.ProfilingConfig
+// @Router /profiling/config [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) getDynamicConfig(c *gin.Context) {
+	c.JSON(http.StatusOK, s.cfgManager.Get().Profiling)
+}
+
+// @Summary Set Profiling Dynamic Config
+// @Produce json
+// @Param request body config.ProfilingConfig true "Request body"
+// @Success 200 {object} config.ProfilingConfig
+// @Router /profiling/config [put]
+// @Security JwtAuth
+// @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
+func (s *Service) setDynamicConfig(c *gin.Context) {
+	var req config.ProfilingConfig
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		return
+	}
+	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {
+		dc.Profiling = req
+	}
+	if err := s.cfgManager.Set(opt); err != nil {
+		c.Status(http.StatusInternalServerError)
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		return
+	}
+	c.JSON(http.StatusOK, req)
 }

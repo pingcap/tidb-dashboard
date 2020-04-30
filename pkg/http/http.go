@@ -26,18 +26,19 @@ import (
 )
 
 const (
-	HTTPTimeout = time.Second * 3
+	Timeout = time.Second * 3
 )
 
-func NewHTTPClientWithConf(lc fx.Lifecycle, config *config.Config) *http.Client {
+func NewHTTPClientWithConf(lc fx.Lifecycle, conf *config.Config) *http.Client {
 	cli := &http.Client{
 		Transport: &http.Transport{
-			DialTLS: func(network, addr string) (net.Conn, error) {
-				conn, err := tls.Dial(network, addr, config.ClusterTLSConfig)
+			DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				conn, err := tls.Dial(network, addr, conf.ClusterTLSConfig)
 				return conn, err
 			},
+			TLSClientConfig: conf.ClusterTLSConfig,
 		},
-		Timeout: HTTPTimeout,
+		Timeout: Timeout,
 	}
 
 	lc.Append(fx.Hook{

@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
@@ -39,7 +39,7 @@ type TaskModel struct {
 	ID          uint                    `json:"id" gorm:"primary_key"`
 	TaskGroupID uint                    `json:"task_group_id" gorm:"index"`
 	State       TaskState               `json:"state" gorm:"index"`
-	Target      utils.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
+	Target      model.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
 	FilePath    string                  `json:"file_path" gorm:"type:text"`
 	Error       string                  `json:"error" gorm:"type:text"`
 	StartedAt   int64                   `json:"started_at"` // The start running time, reset when retry. Used to estimate approximate profiling progress.
@@ -53,7 +53,7 @@ type TaskGroupModel struct {
 	ID                  uint                          `json:"id" gorm:"primary_key"`
 	State               TaskState                     `json:"state" gorm:"index"`
 	ProfileDurationSecs uint                          `json:"profile_duration_secs"`
-	TargetStats         utils.RequestTargetStatistics `json:"target_stats" gorm:"embedded;embedded_prefix:target_stats_"`
+	TargetStats         model.RequestTargetStatistics `json:"target_stats" gorm:"embedded;embedded_prefix:target_stats_"`
 	StartedAt           int64                         `json:"started_at"`
 }
 
@@ -77,7 +77,7 @@ type Task struct {
 }
 
 // NewTask creates a new profiling task.
-func NewTask(ctx context.Context, taskGroup *TaskGroup, target utils.RequestTargetNode, tls bool) *Task {
+func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, tls bool) *Task {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Task{
 		TaskModel: &TaskModel{
@@ -118,7 +118,7 @@ type TaskGroup struct {
 }
 
 // NewTaskGroup create a new profiling task group.
-func NewTaskGroup(db *dbstore.DB, profileDurationSecs uint, stats utils.RequestTargetStatistics) *TaskGroup {
+func NewTaskGroup(db *dbstore.DB, profileDurationSecs uint, stats model.RequestTargetStatistics) *TaskGroup {
 	return &TaskGroup{
 		TaskGroupModel: &TaskGroupModel{
 			State:               TaskStateRunning,

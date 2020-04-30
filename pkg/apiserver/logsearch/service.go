@@ -24,6 +24,7 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
@@ -76,7 +77,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 type CreateTaskGroupRequest struct {
 	Request SearchLogRequest          `json:"request" binding:"required"`
-	Targets []utils.RequestTargetNode `json:"targets" binding:"required"`
+	Targets []model.RequestTargetNode `json:"targets" binding:"required"`
 }
 
 type TaskGroupResponse struct {
@@ -106,7 +107,7 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 		_ = c.Error(utils.ErrInvalidRequest.NewWithNoMessage())
 		return
 	}
-	stats := utils.NewRequestTargetStatisticsFromArray(&req.Targets)
+	stats := model.NewRequestTargetStatisticsFromArray(&req.Targets)
 	taskGroup := TaskGroupModel{
 		SearchRequest: &req.Request,
 		State:         TaskGroupStateRunning,

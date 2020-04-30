@@ -14,7 +14,7 @@
 package config
 
 import (
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 )
 
 const (
@@ -32,7 +32,7 @@ type KeyVisualConfig struct {
 }
 
 type ProfilingConfig struct {
-	AutoCollectionTargets      []utils.RequestTargetNode `json:"auto_collection_targets"`
+	AutoCollectionTargets      []model.RequestTargetNode `json:"auto_collection_targets"`
 	AutoCollectionDurationSecs uint                      `json:"auto_collection_duration_secs"`
 	AutoCollectionIntervalSecs uint                      `json:"auto_collection_interval_secs"`
 }
@@ -44,7 +44,7 @@ type DynamicConfig struct {
 
 func (c *DynamicConfig) Clone() *DynamicConfig {
 	newCfg := *c
-	newCfg.Profiling.AutoCollectionTargets = make([]utils.RequestTargetNode, len(c.Profiling.AutoCollectionTargets))
+	newCfg.Profiling.AutoCollectionTargets = make([]model.RequestTargetNode, len(c.Profiling.AutoCollectionTargets))
 	copy(newCfg.Profiling.AutoCollectionTargets, c.Profiling.AutoCollectionTargets)
 	return &newCfg
 }

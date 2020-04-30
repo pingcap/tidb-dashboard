@@ -15,16 +15,16 @@ package profiling
 
 import (
 	"context"
-	"github.com/joomcode/errorx"
 	"net/http"
 	"sync"
 	"time"
 
+	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
@@ -40,7 +40,7 @@ var (
 )
 
 type StartRequest struct {
-	Targets      []utils.RequestTargetNode `json:"targets"`
+	Targets      []model.RequestTargetNode `json:"targets"`
 	DurationSecs uint                      `json:"duration_secs"`
 }
 
@@ -53,8 +53,7 @@ type StartRequestSession struct {
 
 // Service is used to provide a kind of feature.
 type Service struct {
-	ctx context.Context
-	wg  sync.WaitGroup
+	wg sync.WaitGroup
 
 	config     *config.Config
 	cfgManager *config.DynamicConfigManager
@@ -74,7 +73,6 @@ func NewService(
 	db *dbstore.DB,
 	httpClient *http.Client,
 ) (*Service, error) {
-
 	if err := autoMigrate(db); err != nil {
 		return nil, err
 	}
@@ -162,14 +160,16 @@ func (s *Service) handleAutoRequest(ctx context.Context, req *StartRequest) {
 
 func (s *Service) exclusiveExecute(ctx context.Context, req *StartRequest) (*TaskGroup, error) {
 	if s.lastTaskGroup != nil {
-		s.cancelGroup(s.lastTaskGroup.ID)
+		if err := s.cancelGroup(s.lastTaskGroup.ID); err != nil {
+			return nil, ErrIgnoredRequest.New("failed to cancel last task group: id = %d", s.lastTaskGroup.ID)
+		}
 		time.Sleep(500 * time.Millisecond)
 	}
 	return s.startGroup(ctx, req)
 }
 
 func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup, error) {
-	taskGroup := NewTaskGroup(s.db, req.DurationSecs, utils.NewRequestTargetStatisticsFromArray(&req.Targets))
+	taskGroup := NewTaskGroup(s.db, req.DurationSecs, model.NewRequestTargetStatisticsFromArray(&req.Targets))
 	if err := s.db.Create(taskGroup.TaskGroupModel).Error; err != nil {
 		return nil, err
 	}

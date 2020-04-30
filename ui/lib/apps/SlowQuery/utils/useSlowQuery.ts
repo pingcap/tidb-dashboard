@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useSessionStorageState } from '@umijs/hooks'
 import client, { SlowqueryBase } from '@lib/client'
 import { TimeRange, DEF_TIME_RANGE, calcTimeRange } from '@lib/components'
-import { useSessionStorageState } from '@umijs/hooks'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
 
@@ -33,7 +33,7 @@ export default function useSlowQuery(
   needSave: boolean = true
 ) {
   const [queryOptions, setQueryOptions] = useState(
-    () => options || DEF_SLOW_QUERY_OPTIONS
+    options || DEF_SLOW_QUERY_OPTIONS
   )
   const [savedQueryOptions, setSavedQueryOptions] = useSessionStorageState(
     QUERY_OPTIONS,

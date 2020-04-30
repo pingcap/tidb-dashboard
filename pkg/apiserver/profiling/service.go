@@ -133,11 +133,11 @@ func (s *Service) serviceLoop(ctx context.Context) {
 			}
 			dc = newDc
 			if req := newAutoRequest(); req != nil {
-				s.handleAutoRequest(ctx, req)
+				_, _ = s.exclusiveExecute(ctx, req)
 			}
 		case <-timeCh:
 			if req := newAutoRequest(); req != nil {
-				s.handleAutoRequest(ctx, req)
+				_, _ = s.exclusiveExecute(ctx, req)
 			}
 		case session := <-s.sessionCh:
 			s.handleRequest(ctx, session, dc)
@@ -149,15 +149,10 @@ func (s *Service) handleRequest(ctx context.Context, session *StartRequestSessio
 	defer close(session.ch)
 	if dc.Profiling.AutoCollectionDurationSecs > 0 {
 		session.err = ErrIgnoredRequest.New("automatic collection is enabled")
+		log.Warn("request is ignored", zap.Error(session.err))
 		return
 	}
 	session.taskGroup, session.err = s.exclusiveExecute(ctx, &session.req)
-}
-
-func (s *Service) handleAutoRequest(ctx context.Context, req *StartRequest) {
-	if _, err := s.exclusiveExecute(ctx, req); err != nil {
-		log.Warn("failed to start task group", zap.Error(err))
-	}
 }
 
 func (s *Service) exclusiveExecute(ctx context.Context, req *StartRequest) (*TaskGroup, error) {
@@ -173,6 +168,7 @@ func (s *Service) exclusiveExecute(ctx context.Context, req *StartRequest) (*Tas
 func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup, error) {
 	taskGroup := NewTaskGroup(s.db, req.DurationSecs, model.NewRequestTargetStatisticsFromArray(&req.Targets))
 	if err := s.db.Create(taskGroup.TaskGroupModel).Error; err != nil {
+		log.Warn("failed to start task group", zap.Error(err))
 		return nil, err
 	}
 
@@ -207,6 +203,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 func (s *Service) cancelGroup(taskGroupID uint) error {
 	var tasks []TaskModel
 	if err := s.db.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateRunning).Find(&tasks).Error; err != nil {
+		log.Warn("failed to cancel task group", zap.Error(err))
 		return err
 	}
 
@@ -223,6 +220,7 @@ func (s *Service) cancelGroup(taskGroupID uint) error {
 	for {
 		var runningTasks []TaskModel
 		if err := s.db.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateRunning).Find(&runningTasks).Error; err != nil {
+			log.Warn("failed to cancel task group", zap.Error(err))
 			return err
 		}
 		if len(runningTasks) == 0 {

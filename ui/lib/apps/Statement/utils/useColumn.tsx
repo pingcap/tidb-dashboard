@@ -1,13 +1,14 @@
-import React from 'react'
-import {
-  IColumn,
-  ColumnActionsMode,
-} from 'office-ui-fabric-react/lib/DetailsList'
-import { red, orange } from '@ant-design/colors'
-import { TextWithInfo, HighlightSQL, TextWrap, Bar, Pre } from '@lib/components'
 import { Tooltip } from 'antd'
-import { getValueFormat } from '@baurine/grafana-value-formats'
 import { max } from 'lodash'
+import {
+  ColumnActionsMode,
+  IColumn,
+} from 'office-ui-fabric-react/lib/DetailsList'
+import React from 'react'
+
+import { orange, red } from '@ant-design/colors'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+import { Bar, HighlightSQL, Pre, TextWithInfo, TextWrap } from '@lib/components'
 
 function useCommonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`statement.fields.${fieldName}`} />

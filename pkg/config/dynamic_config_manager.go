@@ -107,10 +107,10 @@ func (m *DynamicConfigManager) NewPushChannel() <-chan *DynamicConfig {
 	return ch
 }
 
-func (m *DynamicConfigManager) Get() DynamicConfig {
+func (m *DynamicConfigManager) Get() *DynamicConfig {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return *m.dynamicConfig
+	return m.dynamicConfig.Clone()
 }
 
 func (m *DynamicConfigManager) Set(opts ...DynamicConfigOption) error {

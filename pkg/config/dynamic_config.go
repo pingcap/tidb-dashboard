@@ -28,7 +28,9 @@ var (
 )
 
 type KeyVisualConfig struct {
-	AutoCollectionEnabled bool `json:"auto_collection_enabled"`
+	AutoCollectionEnabled bool   `json:"auto_collection_enabled"`
+	Policy                string `json:"policy"`
+	PolicyKVSeparator     string `json:"policy_kv_separator"`
 }
 
 type ProfilingConfig struct {

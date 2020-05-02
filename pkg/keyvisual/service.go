@@ -75,8 +75,9 @@ type Service struct {
 	httpClient *http.Client
 	db         *dbstore.DB
 
-	stat     *storage.Stat
-	strategy matrix.Strategy
+	stat          *storage.Stat
+	strategy      matrix.Strategy
+	labelStrategy decorator.LabelStrategy
 }
 
 func NewService(
@@ -131,9 +132,9 @@ func (s *Service) Start(ctx context.Context) error {
 			newStat,
 			s.provideLocals,
 			input.NewStatInput,
-			decorator.TiDBLabelStrategy,
+			decorator.BuildLabelStrategy,
 		),
-		fx.Populate(&s.stat, &s.strategy),
+		fx.Populate(&s.stat, &s.strategy, &s.labelStrategy),
 		fx.Invoke(
 			// Must be at the end
 			s.status.Register,
@@ -147,6 +148,10 @@ func (s *Service) Start(ctx context.Context) error {
 		return err
 	}
 	return nil
+}
+
+func (s *Service) ReloadLabelStrategyConfig() {
+	s.labelStrategy.ReloadConfig(s.config)
 }
 
 func (s *Service) Stop(ctx context.Context) error {

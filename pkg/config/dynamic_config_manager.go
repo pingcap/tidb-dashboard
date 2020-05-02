@@ -134,7 +134,13 @@ func (m *DynamicConfigManager) load() error {
 		return err
 	}
 
-	m.dynamicConfig = &DynamicConfig{}
+	m.dynamicConfig = &DynamicConfig{
+		KeyVisual: KeyVisualConfig{
+			AutoCollectionEnabled: false,
+			Policy:                m.config.DecoratorMode,
+			PolicyKVSeparator:     m.config.KVSeparator,
+		},
+	}
 	switch len(resp.Kvs) {
 	case 0:
 		log.Warn("Dynamic config does not exist in etcd")

@@ -16,6 +16,16 @@ package decorator
 
 import (
 	"encoding/hex"
+	"net/http"
+	"sync"
+
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
+
+	"go.uber.org/fx"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 )
 
 // LabelKey is the decoration key.
@@ -26,14 +36,47 @@ type LabelKey struct {
 
 // LabelStrategy requires cross-border determination and key decoration scheme.
 type LabelStrategy interface {
+	ReloadConfig(cfg *config.Config)
 	CrossBorder(startKey, endKey string) bool
 	Label(key string) LabelKey
 	LabelGlobalStart() LabelKey
 	LabelGlobalEnd() LabelKey
 }
 
+const (
+	DBMode = "db"
+	KVMode = "kv"
+)
+
+var Mode = []string{DBMode, KVMode}
+
+func ValidateMode(mode string) bool {
+	for _, m := range Mode {
+		if m == mode {
+			return true
+		}
+	}
+	return false
+}
+
+func BuildLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) LabelStrategy {
+	switch cfg.DecoratorMode {
+	case "db":
+		log.Info("BuildLabelStrategy", zap.String("mode", "db"))
+		return TiDBLabelStrategy(lc, wg, cfg, provider, httpClient)
+	case "kv":
+		log.Info("BuildLabelStrategy", zap.String("mode", "kv"), zap.String("Sep", cfg.KVSeparator))
+		return SeparatorLabelStrategy(cfg)
+	default:
+		panic("unreachable")
+	}
+}
+
 // NaiveLabelStrategy is one of the simplest LabelStrategy.
 type NaiveLabelStrategy struct{}
+
+func (s NaiveLabelStrategy) ReloadConfig(cfg *config.Config) {
+}
 
 // CrossBorder always returns false. So NaiveLabelStrategy believes that there are no cross-border situations.
 func (s NaiveLabelStrategy) CrossBorder(startKey, endKey string) bool {

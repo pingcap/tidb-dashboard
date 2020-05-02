@@ -14,13 +14,13 @@ type separatorLabelStrategy struct {
 	Separator string
 }
 
-func SeparatorLabelStrategy(cfg *config.Config) LabelStrategy {
-	return &separatorLabelStrategy{Separator: cfg.KVSeparator}
+func SeparatorLabelStrategy(cfg *config.KeyVisualConfig) LabelStrategy {
+	return &separatorLabelStrategy{Separator: cfg.PolicyKVSeparator}
 }
 
 // ReloadConfig reset separator
-func (s *separatorLabelStrategy) ReloadConfig(cfg *config.Config) {
-	s.Separator = cfg.KVSeparator
+func (s *separatorLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {
+	s.Separator = cfg.PolicyKVSeparator
 
 	log.Info("ReloadConfig", zap.String("Separator", s.Separator))
 }

@@ -69,11 +69,12 @@ type Service struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	config     *config.Config
-	cfgManager *config.DynamicConfigManager
-	provider   *region.PDDataProvider
-	httpClient *http.Client
-	db         *dbstore.DB
+	config       *config.Config
+	KeyVisualCfg *config.KeyVisualConfig
+	cfgManager   *config.DynamicConfigManager
+	provider     *region.PDDataProvider
+	httpClient   *http.Client
+	db           *dbstore.DB
 
 	stat          *storage.Stat
 	strategy      matrix.Strategy
@@ -89,12 +90,13 @@ func NewService(
 	db *dbstore.DB,
 ) *Service {
 	s := &Service{
-		status:     utils.NewServiceStatus(),
-		config:     cfg,
-		cfgManager: cfgManager,
-		provider:   provider,
-		httpClient: httpClient,
-		db:         db,
+		status:       utils.NewServiceStatus(),
+		config:       cfg,
+		KeyVisualCfg: config.NewDefaultKeyVisualConfig(),
+		cfgManager:   cfgManager,
+		provider:     provider,
+		httpClient:   httpClient,
+		db:           db,
 	}
 
 	lc.Append(s.managerHook())
@@ -151,7 +153,7 @@ func (s *Service) Start(ctx context.Context) error {
 }
 
 func (s *Service) ReloadLabelStrategyConfig() {
-	s.labelStrategy.ReloadConfig(s.config)
+	s.labelStrategy.ReloadConfig(s.KeyVisualCfg)
 }
 
 func (s *Service) Stop(ctx context.Context) error {
@@ -248,8 +250,8 @@ func (s *Service) heatmaps(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (s *Service) provideLocals() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB) {
-	return s.config, s.provider, s.httpClient, s.db
+func (s *Service) provideLocals() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB, *config.KeyVisualConfig) {
+	return s.config, s.provider, s.httpClient, s.db, s.KeyVisualCfg
 }
 
 func newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {

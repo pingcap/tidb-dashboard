@@ -20,9 +20,8 @@ import (
 	"sync"
 
 	"github.com/pingcap/log"
-	"go.uber.org/zap"
-
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
@@ -36,37 +35,21 @@ type LabelKey struct {
 
 // LabelStrategy requires cross-border determination and key decoration scheme.
 type LabelStrategy interface {
-	ReloadConfig(cfg *config.Config)
+	ReloadConfig(cfg *config.KeyVisualConfig)
 	CrossBorder(startKey, endKey string) bool
 	Label(key string) LabelKey
 	LabelGlobalStart() LabelKey
 	LabelGlobalEnd() LabelKey
 }
 
-const (
-	DBMode = "db"
-	KVMode = "kv"
-)
-
-var Mode = []string{DBMode, KVMode}
-
-func ValidateMode(mode string) bool {
-	for _, m := range Mode {
-		if m == mode {
-			return true
-		}
-	}
-	return false
-}
-
-func BuildLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) LabelStrategy {
-	switch cfg.DecoratorMode {
-	case "db":
+func BuildLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, keyVisualCfg *config.KeyVisualConfig, provider *region.PDDataProvider, httpClient *http.Client) LabelStrategy {
+	switch keyVisualCfg.Policy {
+	case config.KeyVisualDBPolicy:
 		log.Info("BuildLabelStrategy", zap.String("mode", "db"))
 		return TiDBLabelStrategy(lc, wg, cfg, provider, httpClient)
-	case "kv":
-		log.Info("BuildLabelStrategy", zap.String("mode", "kv"), zap.String("Sep", cfg.KVSeparator))
-		return SeparatorLabelStrategy(cfg)
+	case config.KeyVisualKVPolicy:
+		log.Info("BuildLabelStrategy", zap.String("mode", "kv"), zap.String("Sep", keyVisualCfg.PolicyKVSeparator))
+		return SeparatorLabelStrategy(keyVisualCfg)
 	default:
 		panic("unreachable")
 	}
@@ -75,7 +58,7 @@ func BuildLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config,
 // NaiveLabelStrategy is one of the simplest LabelStrategy.
 type NaiveLabelStrategy struct{}
 
-func (s NaiveLabelStrategy) ReloadConfig(cfg *config.Config) {
+func (s NaiveLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {
 }
 
 // CrossBorder always returns false. So NaiveLabelStrategy believes that there are no cross-border situations.

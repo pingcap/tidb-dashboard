@@ -21,9 +21,6 @@ type Config struct {
 	DataDir    string
 	PDEndPoint string
 
-	DecoratorMode string
-	KVSeparator   string
-
 	// TLS config for mTLS authentication between TiDB components.
 	ClusterTLSConfig *tls.Config
 

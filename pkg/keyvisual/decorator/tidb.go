@@ -68,7 +68,7 @@ func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, 
 	return s
 }
 
-func (s *tidbLabelStrategy) ReloadConfig(cfg *config.Config) {
+func (s *tidbLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {
 }
 
 func (s *tidbLabelStrategy) Background(ctx context.Context) {

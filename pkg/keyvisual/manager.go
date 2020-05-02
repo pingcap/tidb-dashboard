@@ -25,7 +25,6 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
 )
 
 func (s *Service) managerHook() fx.Hook {
@@ -65,21 +64,14 @@ func (s *Service) managerLoop(ctx context.Context) {
 
 func (s *Service) resetKeyVisualConfig(ctx context.Context, cfg *config.DynamicConfig) {
 	if cfg.KeyVisual.AutoCollectionEnabled {
-		// 目前仍是在config.Config中添加两个参数来保存状态
-		// 初始化decorator时也用到config.Config中的两个参数
-		isChanging := false
-		if cfg.KeyVisual.PolicyKVSeparator != "" && s.config.KVSeparator != cfg.KeyVisual.PolicyKVSeparator {
-			s.config.KVSeparator = cfg.KeyVisual.PolicyKVSeparator
-			isChanging = true
-		}
-
-		// 我感觉不用合法性判断，前端应该都是发正确的参数过来
-		if !decorator.ValidateMode(cfg.KeyVisual.Policy) {
-			cfg.KeyVisual.Policy = decorator.DBMode
+		isChanged := false
+		if s.KeyVisualCfg.PolicyKVSeparator != cfg.KeyVisual.PolicyKVSeparator {
+			s.KeyVisualCfg.PolicyKVSeparator = cfg.KeyVisual.PolicyKVSeparator
+			isChanged = true
 		}
 		isRestart := false
-		if s.config.DecoratorMode != cfg.KeyVisual.Policy {
-			s.config.DecoratorMode = cfg.KeyVisual.Policy
+		if s.KeyVisualCfg.Policy != cfg.KeyVisual.Policy {
+			s.KeyVisualCfg.Policy = cfg.KeyVisual.Policy
 			isRestart = true
 		}
 		if !s.IsRunning() {
@@ -88,7 +80,7 @@ func (s *Service) resetKeyVisualConfig(ctx context.Context, cfg *config.DynamicC
 			log.Info("Changed, Restart", zap.String("Policy", cfg.KeyVisual.Policy), zap.String("PolicyKVSeparator", cfg.KeyVisual.PolicyKVSeparator))
 			s.stopService()
 			s.startService(ctx)
-		} else if isChanging {
+		} else if isChanged {
 			s.ReloadLabelStrategyConfig()
 		}
 	} else {

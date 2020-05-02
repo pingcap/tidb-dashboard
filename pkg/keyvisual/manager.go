@@ -77,7 +77,6 @@ func (s *Service) resetKeyVisualConfig(ctx context.Context, cfg *config.DynamicC
 		if !s.IsRunning() {
 			s.startService(ctx)
 		} else if isRestart {
-			log.Info("Changed, Restart", zap.String("Policy", cfg.KeyVisual.Policy), zap.String("PolicyKVSeparator", cfg.KeyVisual.PolicyKVSeparator))
 			s.stopService()
 			s.startService(ctx)
 		} else if isChanged {

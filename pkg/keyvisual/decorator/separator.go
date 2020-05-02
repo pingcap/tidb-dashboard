@@ -21,8 +21,7 @@ func SeparatorLabelStrategy(cfg *config.KeyVisualConfig) LabelStrategy {
 // ReloadConfig reset separator
 func (s *separatorLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {
 	s.Separator = cfg.PolicyKVSeparator
-
-	log.Info("ReloadConfig", zap.String("Separator", s.Separator))
+	log.Debug("ReloadConfig", zap.String("Separator", s.Separator))
 }
 
 // CrossBorder is temporarily not considering cross-border logic

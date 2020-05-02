@@ -45,10 +45,11 @@ type LabelStrategy interface {
 func BuildLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, keyVisualCfg *config.KeyVisualConfig, provider *region.PDDataProvider, httpClient *http.Client) LabelStrategy {
 	switch keyVisualCfg.Policy {
 	case config.KeyVisualDBPolicy:
-		log.Info("BuildLabelStrategy", zap.String("mode", "db"))
+		log.Debug("BuildLabelStrategy", zap.String("Policy", keyVisualCfg.Policy))
 		return TiDBLabelStrategy(lc, wg, cfg, provider, httpClient)
 	case config.KeyVisualKVPolicy:
-		log.Info("BuildLabelStrategy", zap.String("mode", "kv"), zap.String("Sep", keyVisualCfg.PolicyKVSeparator))
+		log.Debug("BuildLabelStrategy", zap.String("Policy", keyVisualCfg.Policy),
+			zap.String("Separator", keyVisualCfg.PolicyKVSeparator))
 		return SeparatorLabelStrategy(keyVisualCfg)
 	default:
 		panic("unreachable")

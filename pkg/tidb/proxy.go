@@ -1,13 +1,14 @@
 package tidb
 
 import (
-	"github.com/pingcap/log"
-	"go.uber.org/atomic"
-	"go.uber.org/zap"
 	"io"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/pingcap/log"
+	"go.uber.org/atomic"
+	"go.uber.org/zap"
 )
 
 type remote struct {

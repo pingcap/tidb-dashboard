@@ -55,13 +55,17 @@ func TestProxyPick(t *testing.T) {
 	}
 	defer l.Close()
 	n := 3
+	responseData := "test"
 	endpoints := make(map[string]string)
-	picked := make([]bool, n)
+	picked := make(map[int]bool)
+	servers := make(map[int]*httptest.Server)
+	var currentPicked int
 	for i := 0; i < n; i++ {
 		idx := i
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			picked[idx] = true
-			_, err := w.Write([]byte("test"))
+			currentPicked = idx
+			_, err := w.Write([]byte(responseData))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -72,7 +76,9 @@ func TestProxyPick(t *testing.T) {
 			t.Fatal(err)
 		}
 		key := strconv.Itoa(i)
-		endpoints[key] = fmt.Sprintf("%s:%s", u.Hostname(), u.Port())
+		endpoint := fmt.Sprintf("%s:%s", u.Hostname(), u.Port())
+		endpoints[key] = endpoint
+		servers[idx] = server
 	}
 	p := newProxy(l, endpoints, 0, 0)
 	go p.run()
@@ -92,7 +98,22 @@ func TestProxyPick(t *testing.T) {
 		client.CloseIdleConnections()
 		time.Sleep(time.Second)
 	}
-	for _, pick := range picked {
-		assert.True(t, pick)
+	// Always pick the same active remote
+	assert.Equal(t, 1, len(picked))
+	ps := servers[currentPicked]
+	if ps == nil {
+		t.Fatal("Fail to get current picked server")
 	}
+	// Shutdown current server to see if we can pick a new one
+	ps.Close()
+	client := &http.Client{}
+	res, err := client.Get("http://" + l.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, responseData, string(data))
 }

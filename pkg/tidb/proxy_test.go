@@ -32,9 +32,9 @@ func TestProxy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	p := NewProxy(l, map[string]string{"test": fmt.Sprintf("%s:%s", u.Hostname(), u.Port())}, 0, 0)
-	go p.Run()
-	defer p.Stop()
+	p := newProxy(l, map[string]string{"test": fmt.Sprintf("%s:%s", u.Hostname(), u.Port())}, 0, 0)
+	go p.run()
+	defer p.stop()
 
 	u.Host = l.Addr().String()
 	res, err := http.Get(u.String())
@@ -74,9 +74,9 @@ func TestProxyPick(t *testing.T) {
 		key := strconv.Itoa(i)
 		endpoints[key] = fmt.Sprintf("%s:%s", u.Hostname(), u.Port())
 	}
-	p := NewProxy(l, endpoints, 0, 0)
-	go p.Run()
-	defer p.Stop()
+	p := newProxy(l, endpoints, 0, 0)
+	go p.run()
+	defer p.stop()
 
 	for i := 0; i < n; i++ {
 		client := &http.Client{}

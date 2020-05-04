@@ -1,14 +1,13 @@
 package tidb
 
 import (
+	"github.com/pingcap/log"
 	"go.uber.org/atomic"
+	"go.uber.org/zap"
 	"io"
 	"net"
 	"sync"
 	"time"
-
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
 )
 
 type remote struct {
@@ -35,24 +34,26 @@ func (r *remote) dial(timeout time.Duration) error {
 	return nil
 }
 
-type Proxy struct {
+type proxy struct {
 	listener      net.Listener
 	checkInterval time.Duration
 	dialTimeout   time.Duration
 	doneCh        chan struct{}
 
+	// The key is server ddl id
 	remotes   sync.Map
+	current   string
 	pickCount int // for RoundRobin count
 }
 
-func NewProxy(l net.Listener, endpoints map[string]string, checkInterval time.Duration, timeout time.Duration) *Proxy {
+func newProxy(l net.Listener, endpoints map[string]string, checkInterval time.Duration, timeout time.Duration) *proxy {
 	if checkInterval <= 0 {
 		checkInterval = 5 * time.Second
 	}
 	if timeout == 0 {
 		timeout = 3 * time.Second
 	}
-	p := &Proxy{
+	p := &proxy{
 		listener:      l,
 		doneCh:        make(chan struct{}),
 		remotes:       sync.Map{},
@@ -65,11 +66,11 @@ func NewProxy(l net.Listener, endpoints map[string]string, checkInterval time.Du
 	return p
 }
 
-func (p *Proxy) port() int {
+func (p *proxy) port() int {
 	return p.listener.Addr().(*net.TCPAddr).Port
 }
 
-func (p *Proxy) updateRemotes(remotes map[string]string) {
+func (p *proxy) updateRemotes(remotes map[string]string) {
 	if remotes == nil {
 		p.remotes = sync.Map{}
 		return
@@ -103,7 +104,7 @@ func (p *Proxy) updateRemotes(remotes map[string]string) {
 	})
 }
 
-func (p *Proxy) serve(in net.Conn) {
+func (p *proxy) serve(in net.Conn) {
 	var (
 		err    error
 		out    net.Conn
@@ -118,6 +119,7 @@ func (p *Proxy) serve(in net.Conn) {
 		if err == nil {
 			break
 		}
+		p.current = ""
 		picked.becomeInactive()
 		log.Warn("remote become inactive", zap.String("remote", picked.addr))
 	}
@@ -140,24 +142,34 @@ func (p *Proxy) serve(in net.Conn) {
 	in.Close()
 }
 
-func (p *Proxy) pick() *remote {
-	activeRemotes := []*remote{}
-	p.remotes.Range(func(key, value interface{}) bool {
-		r := value.(*remote)
-		if r.isActive() {
-			activeRemotes = append(activeRemotes, r)
-		}
-		return true
-	})
-	if len(activeRemotes) == 0 {
-		return nil
+// pick returns an active remote. If there
+func (p *proxy) pick() *remote {
+	var picked *remote
+	if p.current == "" {
+		p.remotes.Range(func(key, value interface{}) bool {
+			id := key.(string)
+			r := value.(*remote)
+			if r.isActive() {
+				p.current = id
+				picked = r
+				return false
+			}
+			return true
+		})
 	}
-	r := p.pickCount % len(activeRemotes)
-	p.pickCount++
-	return activeRemotes[r]
+	if picked != nil {
+		return picked
+	}
+	if p.current != "" {
+		r, ok := p.remotes.Load(p.current)
+		if ok {
+			picked = r.(*remote)
+		}
+	}
+	return picked
 }
 
-func (p *Proxy) doCheck() {
+func (p *proxy) doCheck() {
 	for {
 		select {
 		case <-time.After(p.checkInterval):
@@ -182,7 +194,7 @@ func (p *Proxy) doCheck() {
 	}
 }
 
-func (p *Proxy) Run() {
+func (p *proxy) run() {
 	endpoints := []string{}
 	p.remotes.Range(func(key, value interface{}) bool {
 		r := value.(*remote)
@@ -209,6 +221,6 @@ func (p *Proxy) Run() {
 	}
 }
 
-func (p *Proxy) Stop() {
+func (p *proxy) stop() {
 	close(p.doneCh)
 }

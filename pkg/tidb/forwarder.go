@@ -69,7 +69,7 @@ type Forwarder struct {
 	config     *ForwarderConfig
 	etcdClient *clientv3.Client
 	// The key is str label and value is the proxy
-	proxyManager sync.Map
+	proxies      sync.Map
 	tidbPort     int
 	statusPort   int
 	donec        chan struct{}
@@ -77,9 +77,18 @@ type Forwarder struct {
 }
 
 func (f *Forwarder) Open() error {
-	cluster, err := f.getServerInfo()
-	if err != nil {
-		return err
+	var (
+		cluster []*tidbServerInfo
+		err     error
+	)
+	for {
+		cluster, err = f.getServerInfo()
+		if err == nil {
+			break
+		}
+		log.Error("Fail to get server info", zap.Error(err))
+		// TODO: config this or just use CheckInterval ?
+		<-time.After(time.Second * 5)
 	}
 	statusEndpoints := make(map[string]string)
 	tidbEndpoints := make(map[string]string)
@@ -92,13 +101,13 @@ func (f *Forwarder) Open() error {
 		return err
 	}
 	f.tidbPort = pr.port()
-	go pr.Run()
+	go pr.run()
 	pr, err = f.createProxy(statusProxyLabel, statusEndpoints)
 	if err != nil {
 		return err
 	}
 	f.statusPort = pr.port()
-	go pr.Run()
+	go pr.run()
 	go f.pollingForTiDB()
 	return nil
 }
@@ -106,11 +115,11 @@ func (f *Forwarder) Open() error {
 func (f *Forwarder) Close() {
 	p := f.getProxy(tidbProxyLabel)
 	if p != nil {
-		p.Stop()
+		p.stop()
 	}
 	p = f.getProxy(statusProxyLabel)
 	if p != nil {
-		p.Stop()
+		p.stop()
 	}
 	close(f.donec)
 }
@@ -140,27 +149,24 @@ func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
 	return allTiDB, nil
 }
 
-func (f *Forwarder) createProxy(key string, endpoints map[string]string) (*Proxy, error) {
+func (f *Forwarder) createProxy(key string, endpoints map[string]string) (*proxy, error) {
 	if len(endpoints) == 0 {
 		return nil, fmt.Errorf("empty endpoints")
 	}
-	port, err := getFreePort()
+	l, err := net.Listen("tcp", ":0")
 	if err != nil {
 		return nil, err
 	}
-	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
-	if err != nil {
-		return nil, err
-	}
-	proxy := NewProxy(l, endpoints, f.config.CheckInterval, 0)
-	f.proxyManager.Store(key, proxy)
+	// TODO: config timeout?
+	proxy := newProxy(l, endpoints, f.config.CheckInterval, 0)
+	f.proxies.Store(key, proxy)
 	return proxy, nil
 }
 
-func (f *Forwarder) getProxy(key string) *Proxy {
-	v, ok := f.proxyManager.Load(key)
+func (f *Forwarder) getProxy(key string) *proxy {
+	v, ok := f.proxies.Load(key)
 	if ok {
-		return v.(*Proxy)
+		return v.(*proxy)
 	}
 	return nil
 }
@@ -228,17 +234,4 @@ func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3
 	})
 
 	return f
-}
-
-func getFreePort() (int, error) {
-	addr, err := net.ResolveTCPAddr("tcp", "127.0.0.1:0")
-	if err != nil {
-		return 0, err
-	}
-	l, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		return 0, err
-	}
-	defer l.Close()
-	return l.Addr().(*net.TCPAddr).Port, nil
 }

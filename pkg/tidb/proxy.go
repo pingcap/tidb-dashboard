@@ -41,9 +41,8 @@ type proxy struct {
 	doneCh        chan struct{}
 
 	// The key is server ddl id
-	remotes   sync.Map
-	current   string
-	pickCount int // for RoundRobin count
+	remotes sync.Map
+	current string
 }
 
 func newProxy(l net.Listener, endpoints map[string]string, checkInterval time.Duration, timeout time.Duration) *proxy {

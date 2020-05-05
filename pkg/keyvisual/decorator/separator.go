@@ -2,6 +2,7 @@ package decorator
 
 import (
 	"strings"
+	"sync/atomic"
 
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
@@ -11,17 +12,19 @@ import (
 
 // NaiveLabelStrategy is one of the simplest LabelStrategy.
 type separatorLabelStrategy struct {
-	Separator string
+	Separator atomic.Value
 }
 
 func SeparatorLabelStrategy(cfg *config.KeyVisualConfig) LabelStrategy {
-	return &separatorLabelStrategy{Separator: cfg.PolicyKVSeparator}
+	s := &separatorLabelStrategy{}
+	s.Separator.Store(cfg.PolicyKVSeparator)
+	return s
 }
 
 // ReloadConfig reset separator
 func (s *separatorLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {
-	s.Separator = cfg.PolicyKVSeparator
-	log.Debug("ReloadConfig", zap.String("Separator", s.Separator))
+	s.Separator.Store(cfg.PolicyKVSeparator)
+	log.Debug("ReloadConfig", zap.String("Separator", cfg.PolicyKVSeparator))
 }
 
 // CrossBorder is temporarily not considering cross-border logic
@@ -32,11 +35,12 @@ func (s *separatorLabelStrategy) CrossBorder(startKey, endKey string) bool {
 // Label uses separator to split key
 func (s *separatorLabelStrategy) Label(key string) (label LabelKey) {
 	label.Key = key
-	if s.Separator == "" {
+	separator := s.Separator.Load().(string)
+	if separator == "" {
 		label.Labels = []string{key}
 		return
 	}
-	label.Labels = strings.Split(key, s.Separator)
+	label.Labels = strings.Split(key, separator)
 	return
 }
 

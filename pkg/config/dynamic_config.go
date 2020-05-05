@@ -23,8 +23,7 @@ const (
 	KeyVisualDBPolicy = "db"
 	KeyVisualKVPolicy = "kv"
 
-	DefaultKeyVisualPolicy            = KeyVisualDBPolicy
-	DefaultKeyVisualPolicyKVSeparator = "/"
+	DefaultKeyVisualPolicy = KeyVisualDBPolicy
 
 	DefaultProfilingAutoCollectionDurationSecs = 30
 	MaxProfilingAutoCollectionDurationSecs     = 120
@@ -37,27 +36,19 @@ var (
 	ErrVerificationFailed = ErrorNS.NewType("verification failed")
 )
 
-func validateKeyVisualPolicy(policy string) bool {
-	for _, p := range KeyVisualPolicies {
-		if p == policy {
-			return true
-		}
-	}
-	return false
-}
-
 type KeyVisualConfig struct {
 	AutoCollectionEnabled bool   `json:"auto_collection_enabled"`
 	Policy                string `json:"policy"`
 	PolicyKVSeparator     string `json:"policy_kv_separator"`
 }
 
-func NewDefaultKeyVisualConfig() *KeyVisualConfig {
-	return &KeyVisualConfig{
-		AutoCollectionEnabled: false,
-		Policy:                DefaultKeyVisualPolicy,
-		PolicyKVSeparator:     DefaultKeyVisualPolicyKVSeparator,
+func (c *KeyVisualConfig) validate() bool {
+	for _, p := range KeyVisualPolicies {
+		if p == c.Policy {
+			return true
+		}
 	}
+	return false
 }
 
 type ProfilingConfig struct {
@@ -80,7 +71,7 @@ func (c *DynamicConfig) Clone() *DynamicConfig {
 
 func (c *DynamicConfig) Validate() error {
 	if c.KeyVisual.AutoCollectionEnabled {
-		if !validateKeyVisualPolicy(c.KeyVisual.Policy) {
+		if !c.KeyVisual.validate() {
 			return ErrVerificationFailed.New(fmt.Sprintf("policy must be in %v", KeyVisualPolicies))
 		}
 		if c.KeyVisual.PolicyKVSeparator == "" {
@@ -112,11 +103,8 @@ func (c *DynamicConfig) Validate() error {
 
 // Adjust is used to fill the default config for the existing config of the old version.
 func (c *DynamicConfig) Adjust() {
-	if !validateKeyVisualPolicy(c.KeyVisual.Policy) {
+	if !c.KeyVisual.validate() {
 		c.KeyVisual.Policy = DefaultKeyVisualPolicy
-	}
-	if c.KeyVisual.Policy == KeyVisualKVPolicy && c.KeyVisual.PolicyKVSeparator == "" {
-		c.KeyVisual.PolicyKVSeparator = DefaultKeyVisualPolicyKVSeparator
 	}
 
 	if len(c.Profiling.AutoCollectionTargets) > 0 {

@@ -64,24 +64,14 @@ func (s *Service) managerLoop(ctx context.Context) {
 
 func (s *Service) resetKeyVisualConfig(ctx context.Context, cfg *config.DynamicConfig) {
 	if cfg.KeyVisual.AutoCollectionEnabled {
-		isChanged := false
-		if s.KeyVisualCfg.PolicyKVSeparator != cfg.KeyVisual.PolicyKVSeparator {
-			s.KeyVisualCfg.PolicyKVSeparator = cfg.KeyVisual.PolicyKVSeparator
-			isChanged = true
-		}
-		isRestart := false
+		s.KeyVisualCfg.PolicyKVSeparator = cfg.KeyVisual.PolicyKVSeparator
 		if s.KeyVisualCfg.Policy != cfg.KeyVisual.Policy {
 			s.KeyVisualCfg.Policy = cfg.KeyVisual.Policy
-			isRestart = true
-		}
-		if !s.IsRunning() {
-			s.startService(ctx)
-		} else if isRestart {
 			s.stopService()
-			s.startService(ctx)
-		} else if isChanged {
-			s.ReloadLabelStrategyConfig()
+		} else {
+			s.reloadKeyVisualConfig()
 		}
+		s.startService(ctx)
 	} else {
 		s.stopService()
 	}

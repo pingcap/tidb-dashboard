@@ -16,15 +16,8 @@ package decorator
 
 import (
 	"encoding/hex"
-	"net/http"
-	"sync"
-
-	"github.com/pingcap/log"
-	"go.uber.org/fx"
-	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 )
 
 // LabelKey is the decoration key.
@@ -40,20 +33,6 @@ type LabelStrategy interface {
 	Label(key string) LabelKey
 	LabelGlobalStart() LabelKey
 	LabelGlobalEnd() LabelKey
-}
-
-func BuildLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, keyVisualCfg *config.KeyVisualConfig, provider *region.PDDataProvider, httpClient *http.Client) LabelStrategy {
-	switch keyVisualCfg.Policy {
-	case config.KeyVisualDBPolicy:
-		log.Debug("BuildLabelStrategy", zap.String("Policy", keyVisualCfg.Policy))
-		return TiDBLabelStrategy(lc, wg, cfg, provider, httpClient)
-	case config.KeyVisualKVPolicy:
-		log.Debug("BuildLabelStrategy", zap.String("Policy", keyVisualCfg.Policy),
-			zap.String("Separator", keyVisualCfg.PolicyKVSeparator))
-		return SeparatorLabelStrategy(keyVisualCfg)
-	default:
-		panic("unreachable")
-	}
 }
 
 // NaiveLabelStrategy is one of the simplest LabelStrategy.

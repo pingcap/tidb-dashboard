@@ -90,13 +90,12 @@ func NewService(
 	db *dbstore.DB,
 ) *Service {
 	s := &Service{
-		status:       utils.NewServiceStatus(),
-		config:       cfg,
-		KeyVisualCfg: config.NewDefaultKeyVisualConfig(),
-		cfgManager:   cfgManager,
-		provider:     provider,
-		httpClient:   httpClient,
-		db:           db,
+		status:     utils.NewServiceStatus(),
+		config:     cfg,
+		cfgManager: cfgManager,
+		provider:   provider,
+		httpClient: httpClient,
+		db:         db,
 	}
 
 	lc.Append(s.managerHook())
@@ -134,7 +133,7 @@ func (s *Service) Start(ctx context.Context) error {
 			newStat,
 			s.provideLocals,
 			input.NewStatInput,
-			decorator.BuildLabelStrategy,
+			s.newLabelStrategy,
 		),
 		fx.Populate(&s.stat, &s.strategy, &s.labelStrategy),
 		fx.Invoke(
@@ -152,7 +151,21 @@ func (s *Service) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) ReloadLabelStrategyConfig() {
+func (s *Service) newLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) decorator.LabelStrategy {
+	switch s.KeyVisualCfg.Policy {
+	case config.KeyVisualDBPolicy:
+		log.Debug("BuildLabelStrategy", zap.String("Policy", s.KeyVisualCfg.Policy))
+		return decorator.TiDBLabelStrategy(lc, wg, cfg, provider, httpClient)
+	case config.KeyVisualKVPolicy:
+		log.Debug("BuildLabelStrategy", zap.String("Policy", s.KeyVisualCfg.Policy),
+			zap.String("Separator", s.KeyVisualCfg.PolicyKVSeparator))
+		return decorator.SeparatorLabelStrategy(s.KeyVisualCfg)
+	default:
+		panic("unreachable")
+	}
+}
+
+func (s *Service) reloadKeyVisualConfig() {
 	s.labelStrategy.ReloadConfig(s.KeyVisualCfg)
 }
 
@@ -250,8 +263,8 @@ func (s *Service) heatmaps(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (s *Service) provideLocals() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB, *config.KeyVisualConfig) {
-	return s.config, s.provider, s.httpClient, s.db, s.KeyVisualCfg
+func (s *Service) provideLocals() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB) {
+	return s.config, s.provider, s.httpClient, s.db
 }
 
 func newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {

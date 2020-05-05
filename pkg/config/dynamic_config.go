@@ -22,11 +22,7 @@ import (
 const (
 	KeyVisualDBPolicy = "db"
 	KeyVisualKVPolicy = "kv"
-)
 
-var KeyVisualPolicies = []string{KeyVisualDBPolicy, KeyVisualKVPolicy}
-
-const (
 	DefaultKeyVisualPolicy            = KeyVisualDBPolicy
 	DefaultKeyVisualPolicyKVSeparator = "/"
 
@@ -36,6 +32,8 @@ const (
 )
 
 var (
+	KeyVisualPolicies = []string{KeyVisualDBPolicy, KeyVisualKVPolicy}
+
 	ErrVerificationFailed = ErrorNS.NewType("verification failed")
 )
 

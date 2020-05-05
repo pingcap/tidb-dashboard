@@ -2,7 +2,7 @@ import {
   ClusterinfoClusterInfo,
   LogsearchTaskGroupResponse,
   LogsearchTaskModel,
-  UtilsRequestTargetNode,
+  ModelRequestTargetNode,
 } from '@lib/client'
 import { RangeValue } from 'rc-picker/lib/interface'
 import moment from 'moment'
@@ -43,8 +43,8 @@ export const AllLogLevel = [1, 2, 3, 4, 5, 6]
 
 export function parseClusterInfo(
   info: ClusterinfoClusterInfo
-): UtilsRequestTargetNode[] {
-  const targets: UtilsRequestTargetNode[] = []
+): ModelRequestTargetNode[] {
+  const targets: ModelRequestTargetNode[] = []
   info?.tidb?.nodes?.forEach((item) => {
     if (
       item.ip === undefined ||
@@ -104,7 +104,7 @@ export function parseClusterInfo(
 interface Params {
   timeRange: RangeValue<moment.Moment>
   logLevel: number
-  components: UtilsRequestTargetNode[]
+  components: ModelRequestTargetNode[]
   searchValue: string
 }
 
@@ -122,8 +122,8 @@ export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
   }
 }
 
-function getComponents(tasks: LogsearchTaskModel[]): UtilsRequestTargetNode[] {
-  const targets: UtilsRequestTargetNode[] = []
+function getComponents(tasks: LogsearchTaskModel[]): ModelRequestTargetNode[] {
+  const targets: ModelRequestTargetNode[] = []
   tasks.forEach((task) => {
     if (task.target === undefined) {
       return

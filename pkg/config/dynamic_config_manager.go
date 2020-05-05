@@ -101,16 +101,16 @@ func (m *DynamicConfigManager) Stop(ctx context.Context) error {
 func (m *DynamicConfigManager) NewPushChannel() <-chan *DynamicConfig {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	ch := make(chan *DynamicConfig, 100)
+	ch := make(chan *DynamicConfig, 1000)
 	ch <- m.dynamicConfig.Clone()
 	m.pushChannels = append(m.pushChannels, ch)
 	return ch
 }
 
-func (m *DynamicConfigManager) Get() DynamicConfig {
+func (m *DynamicConfigManager) Get() *DynamicConfig {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return *m.dynamicConfig
+	return m.dynamicConfig.Clone()
 }
 
 func (m *DynamicConfigManager) Set(opts ...DynamicConfigOption) error {

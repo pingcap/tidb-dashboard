@@ -1,6 +1,6 @@
 import client from '@lib/client'
 import {
-  UtilsRequestTargetStatistics,
+  ModelRequestTargetStatistics,
   LogsearchSearchLogRequest,
   LogsearchTaskGroupModel,
 } from '@lib/client'
@@ -16,7 +16,7 @@ import { DATE_TIME_FORMAT, LogLevelMap } from './utils'
 
 const { Column } = Table
 
-function componentRender(stats: UtilsRequestTargetStatistics) {
+function componentRender(stats: ModelRequestTargetStatistics) {
   const r: Array<string> = []
   if (stats?.num_tidb_nodes) {
     r.push(`${stats.num_tidb_nodes} TiDB`)

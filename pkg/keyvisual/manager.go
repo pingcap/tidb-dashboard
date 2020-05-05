@@ -33,8 +33,8 @@ func (s *Service) managerHook() fx.Hook {
 		OnStart: func(ctx context.Context) error {
 			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				s.managerLoop(ctx)
-				wg.Done()
 			}()
 			return nil
 		},

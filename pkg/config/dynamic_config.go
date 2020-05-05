@@ -13,7 +13,11 @@
 
 package config
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
+)
 
 const (
 	KeyVisualDBPolicy = "db"
@@ -25,6 +29,10 @@ var KeyVisualPolicies = []string{KeyVisualDBPolicy, KeyVisualKVPolicy}
 const (
 	DefaultKeyVisualPolicy            = KeyVisualDBPolicy
 	DefaultKeyVisualPolicyKVSeparator = "/"
+
+	DefaultProfilingAutoCollectionDurationSecs = 30
+	MaxProfilingAutoCollectionDurationSecs     = 120
+	DefaultProfilingAutoCollectionIntervalSecs = 3600
 )
 
 var (
@@ -54,13 +62,22 @@ func NewDefaultKeyVisualConfig() *KeyVisualConfig {
 	}
 }
 
-func (c *DynamicConfig) Clone() *DynamicConfig {
-	newCfg := *c
-	return &newCfg
+type ProfilingConfig struct {
+	AutoCollectionTargets      []model.RequestTargetNode `json:"auto_collection_targets"`
+	AutoCollectionDurationSecs uint                      `json:"auto_collection_duration_secs"`
+	AutoCollectionIntervalSecs uint                      `json:"auto_collection_interval_secs"`
 }
 
 type DynamicConfig struct {
 	KeyVisual KeyVisualConfig `json:"keyvisual"`
+	Profiling ProfilingConfig `json:"profiling"`
+}
+
+func (c *DynamicConfig) Clone() *DynamicConfig {
+	newCfg := *c
+	newCfg.Profiling.AutoCollectionTargets = make([]model.RequestTargetNode, len(c.Profiling.AutoCollectionTargets))
+	copy(newCfg.Profiling.AutoCollectionTargets, c.Profiling.AutoCollectionTargets)
+	return &newCfg
 }
 
 func (c *DynamicConfig) Validate() error {
@@ -72,6 +89,26 @@ func (c *DynamicConfig) Validate() error {
 			return ErrVerificationFailed.New("policy_kv_separator cannot be empty")
 		}
 	}
+
+	if len(c.Profiling.AutoCollectionTargets) > 0 {
+		if c.Profiling.AutoCollectionDurationSecs == 0 {
+			return ErrVerificationFailed.New("auto_collection_duration_secs cannot be 0")
+		}
+		if c.Profiling.AutoCollectionDurationSecs > MaxProfilingAutoCollectionDurationSecs {
+			return ErrVerificationFailed.New("auto_collection_duration_secs cannot be greater than %d", MaxProfilingAutoCollectionDurationSecs)
+		}
+		if c.Profiling.AutoCollectionIntervalSecs == 0 {
+			return ErrVerificationFailed.New("auto_collection_interval_secs cannot be 0")
+		}
+	} else {
+		if c.Profiling.AutoCollectionDurationSecs != 0 {
+			return ErrVerificationFailed.New("auto_collection_duration_secs must be 0")
+		}
+		if c.Profiling.AutoCollectionIntervalSecs != 0 {
+			return ErrVerificationFailed.New("auto_collection_interval_secs must be 0")
+		}
+	}
+
 	return nil
 }
 
@@ -82,5 +119,20 @@ func (c *DynamicConfig) Adjust() {
 	}
 	if c.KeyVisual.Policy == KeyVisualKVPolicy && c.KeyVisual.PolicyKVSeparator == "" {
 		c.KeyVisual.PolicyKVSeparator = DefaultKeyVisualPolicyKVSeparator
+	}
+
+	if len(c.Profiling.AutoCollectionTargets) > 0 {
+		if c.Profiling.AutoCollectionDurationSecs == 0 {
+			c.Profiling.AutoCollectionDurationSecs = DefaultProfilingAutoCollectionDurationSecs
+		}
+		if c.Profiling.AutoCollectionDurationSecs > MaxProfilingAutoCollectionDurationSecs {
+			c.Profiling.AutoCollectionDurationSecs = MaxProfilingAutoCollectionDurationSecs
+		}
+		if c.Profiling.AutoCollectionIntervalSecs == 0 {
+			c.Profiling.AutoCollectionIntervalSecs = DefaultProfilingAutoCollectionIntervalSecs
+		}
+	} else {
+		c.Profiling.AutoCollectionDurationSecs = 0
+		c.Profiling.AutoCollectionIntervalSecs = 0
 	}
 }

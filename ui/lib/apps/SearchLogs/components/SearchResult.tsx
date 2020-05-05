@@ -1,5 +1,5 @@
 import client from '@lib/client'
-import { UtilsRequestTargetNode, LogsearchTaskModel } from '@lib/client'
+import { ModelRequestTargetNode, LogsearchTaskModel } from '@lib/client'
 import { Card } from '@lib/components'
 import { Alert, Skeleton, Table, Tooltip } from 'antd'
 import moment from 'moment'
@@ -15,11 +15,11 @@ type LogPreview = {
   key: number
   time?: string
   level?: string
-  component?: UtilsRequestTargetNode | undefined
+  component?: ModelRequestTargetNode | undefined
   log?: string
 }
 
-function componentRender(target: UtilsRequestTargetNode | undefined) {
+function componentRender(target: ModelRequestTargetNode | undefined) {
   if (target === undefined) {
     return ''
   }

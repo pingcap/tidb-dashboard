@@ -29,7 +29,7 @@ import (
 	"github.com/google/pprof/driver"
 	"github.com/google/pprof/profile"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 )
 
 var (
@@ -42,7 +42,7 @@ type flagSet struct {
 	args []string
 }
 
-func fetchPprof(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt, format string, profileDurationSecs uint, schema string) (string, error) {
+func fetchPprof(ctx context.Context, httpClient *http.Client, target *model.RequestTargetNode, fileNameWithoutExt, format string, profileDurationSecs uint, schema string) (string, error) {
 	tmpfile, err := ioutil.TempFile("", fileNameWithoutExt)
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %v", err)
@@ -101,7 +101,7 @@ func (o *oswriter) Open(name string) (io.WriteCloser, error) {
 type fetcher struct {
 	ctx        context.Context
 	httpClient *http.Client
-	target     *utils.RequestTargetNode
+	target     *model.RequestTargetNode
 	output     string
 	schema     string
 }
@@ -110,9 +110,9 @@ func (f *fetcher) Fetch(src string, duration, timeout time.Duration) (*profile.P
 	var url string
 	secs := strconv.Itoa(int(duration / time.Second))
 	switch f.target.Kind {
-	case utils.NodeKindPD:
+	case model.NodeKindPD:
 		url = "/pd/api/v1/debug/pprof/profile?seconds=" + secs
-	case utils.NodeKindTiDB:
+	case model.NodeKindTiDB:
 		url = "/debug/pprof/profile?seconds=" + secs
 	default:
 		return nil, "", fmt.Errorf("unsupported target %s", f.target)
@@ -123,13 +123,13 @@ func (f *fetcher) Fetch(src string, duration, timeout time.Duration) (*profile.P
 	return p, url, err
 }
 
-func (f *fetcher) getProfile(target *utils.RequestTargetNode, source string) (*profile.Profile, error) {
+func (f *fetcher) getProfile(target *model.RequestTargetNode, source string) (*profile.Profile, error) {
 	req, err := http.NewRequest(http.MethodGet, source, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a new request %s: %v", source, err)
 	}
 	req = req.WithContext(f.ctx)
-	if target.Kind == utils.NodeKindPD {
+	if target.Kind == model.NodeKindPD {
 		// forbidden PD follower proxy
 		req.Header.Add("PD-Allow-follower-handle", "true")
 	}
@@ -144,22 +144,22 @@ func (f *fetcher) getProfile(target *utils.RequestTargetNode, source string) (*p
 	return profile.Parse(resp.Body)
 }
 
-func profileAndWriteSVG(ctx context.Context, target *utils.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, httpClient *http.Client, tls bool) (string, error) {
+func profileAndWriteSVG(ctx context.Context, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, httpClient *http.Client, tls bool) (string, error) {
 	schema := "http"
 	if tls {
 		schema = "https"
 	}
 	switch target.Kind {
-	case utils.NodeKindTiKV:
+	case model.NodeKindTiKV:
 		return fetchTiKVFlameGraphSVG(ctx, httpClient, target, fileNameWithoutExt, profileDurationSecs, schema)
-	case utils.NodeKindPD, utils.NodeKindTiDB:
+	case model.NodeKindPD, model.NodeKindTiDB:
 		return fetchPprofSVG(ctx, httpClient, target, fileNameWithoutExt, profileDurationSecs, schema)
 	default:
 		return "", fmt.Errorf("unsupported target %s", target)
 	}
 }
 
-func fetchTiKVFlameGraphSVG(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, schema string) (string, error) {
+func fetchTiKVFlameGraphSVG(ctx context.Context, httpClient *http.Client, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, schema string) (string, error) {
 	url := fmt.Sprintf("%s://%s:%d/debug/pprof/profile?seconds=%d", schema, target.IP, target.Port, profileDurationSecs)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -198,7 +198,7 @@ func writePprofRsSVG(body io.ReadCloser, fileNameWithoutExt string) (string, err
 	return svgFilePath, nil
 }
 
-func fetchPprofSVG(ctx context.Context, httpClient *http.Client, target *utils.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, schema string) (string, error) {
+func fetchPprofSVG(ctx context.Context, httpClient *http.Client, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, schema string) (string, error) {
 	f, err := fetchPprof(ctx, httpClient, target, fileNameWithoutExt, "dot", profileDurationSecs, schema)
 	if err != nil {
 		return "", fmt.Errorf("failed to get DOT output from file: %v", err)

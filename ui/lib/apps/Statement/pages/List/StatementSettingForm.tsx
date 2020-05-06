@@ -123,11 +123,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
               return (
                 getFieldValue('enable') && (
                   <Form.Item noStyle>
-                    <Form.Item
-                      label={t(
-                        'statement.settings.refresh_interval'
-                      )}
-                    >
+                    <Form.Item label={t('statement.settings.refresh_interval')}>
                       <Input.Group>
                         <Form.Item noStyle name="refresh_interval">
                           <InputNumber
@@ -151,11 +147,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                         </Form.Item>
                       </Input.Group>
                     </Form.Item>
-                    <Form.Item
-                      label={t(
-                        'statement.settings.keep_duration'
-                      )}
-                    >
+                    <Form.Item label={t('statement.settings.keep_duration')}>
                       <Input.Group>
                         <Form.Item noStyle name="keep_duration">
                           <InputNumber

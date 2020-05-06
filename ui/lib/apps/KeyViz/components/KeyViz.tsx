@@ -221,11 +221,8 @@ const KeyViz = () => {
     )
   ) : (
     <Result
-      title={t('keyviz.settings.disabled_desc_title')}
-      subTitle={
-        t('keyviz.settings.disabled_desc_line_1') +
-        t('keyviz.settings.disabled_desc_line_2')
-      }
+      title={t('keyviz.settings.disabled_result.title')}
+      subTitle={t('keyviz.settings.disabled_result.sub_title')}
       extra={
         <Button type="primary" onClick={openSettings}>
           {t('keyviz.settings.open_setting')}

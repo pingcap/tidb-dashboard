@@ -90,11 +90,11 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
     if (oriConfig?.enable && !values.enable) {
       // warning
       Modal.confirm({
-        title: t('statement.pages.overview.settings.close_statement'),
+        title: t('statement.settings.close_statement'),
         icon: <ExclamationCircleOutlined />,
-        content: t('statement.pages.overview.settings.close_statement_warning'),
-        okText: t('statement.pages.overview.settings.actions.close'),
-        cancelText: t('statement.pages.overview.settings.actions.cancel'),
+        content: t('statement.settings.close_statement_warning'),
+        okText: t('statement.settings.actions.close'),
+        cancelText: t('statement.settings.actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: () => updateConfig(values),
       })
@@ -111,7 +111,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
           <Form.Item
             name="enable"
             valuePropName="checked"
-            label={t('statement.pages.overview.settings.switch')}
+            label={t('statement.settings.switch')}
           >
             <Switch />
           </Form.Item>
@@ -125,7 +125,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                   <Form.Item noStyle>
                     <Form.Item
                       label={t(
-                        'statement.pages.overview.settings.refresh_interval'
+                        'statement.settings.refresh_interval'
                       )}
                     >
                       <Input.Group>
@@ -153,7 +153,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                     </Form.Item>
                     <Form.Item
                       label={t(
-                        'statement.pages.overview.settings.keep_duration'
+                        'statement.settings.keep_duration'
                       )}
                     >
                       <Input.Group>
@@ -187,10 +187,10 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit" loading={submitting}>
-                {t('statement.pages.overview.settings.actions.save')}
+                {t('statement.settings.actions.save')}
               </Button>
               <Button onClick={onClose}>
-                {t('statement.pages.overview.settings.actions.cancel')}
+                {t('statement.settings.actions.cancel')}
               </Button>
             </Space>
           </Form.Item>

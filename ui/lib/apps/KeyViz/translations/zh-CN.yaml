@@ -17,9 +17,11 @@ keyviz:
       all: 所有
   settings:
     title: 设置
-    disabled_desc_title: 该功能未启用
-    disabled_desc_line_1: 热点可视化功能未启用，因此无法查看可视化报告。
-    disabled_desc_line_2: 您可以修改设置打开该功能后等待新数据收集。
+    disabled_result:
+      title: 该功能未启用
+      sub_title: |
+        热点可视化功能未启用，因此无法查看可视化报告。
+        您可以修改设置打开该功能后等待新数据收集。
     open_setting: 打开设置
     close_keyviz: 关闭热点可视化功能
     close_keyviz_warning: 确认要关闭该功能吗？关闭后现有历史记录也将被清空！

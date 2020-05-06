@@ -128,7 +128,7 @@ export default function StatementsOverview() {
                 }
               />
             )}
-            <Tooltip title={t('statement.pages.overview.settings.title')}>
+            <Tooltip title={t('statement.settings.title')}>
               <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
             <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
@@ -158,21 +158,18 @@ export default function StatementsOverview() {
         />
       ) : (
         <Result
-          title={t('statement.pages.overview.settings.disabled_desc_title')}
-          subTitle={
-            t('statement.pages.overview.settings.disabled_desc_line_1') +
-            t('statement.pages.overview.settings.disabled_desc_line_2')
-          }
+          title={t('statement.settings.disabled_result.title')}
+          subTitle={t('statement.settings.disabled_result.sub_title')}
           extra={
             <Button type="primary" onClick={() => setShowSettings(true)}>
-              {t('statement.pages.overview.settings.open_setting')}
+              {t('statement.settings.open_setting')}
             </Button>
           }
         />
       )}
 
       <Drawer
-        title={t('statement.pages.overview.settings.title')}
+        title={t('statement.settings.title')}
         width={300}
         closable={true}
         visible={showSettings}

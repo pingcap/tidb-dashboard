@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Button, Drawer } from 'antd'
+import { Button, Drawer, Result } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useGetSet, useMount, useInterval } from 'react-use'
 import { useBoolean } from '@umijs/hooks'
@@ -80,7 +80,7 @@ type ChartState = {
 let _chart
 let cache = new HeatmapCache()
 
-const KeyViz = (props) => {
+const KeyViz = () => {
   const [chartState, setChartState] = useState<ChartState>()
   const [getSelection, setSelection] = useGetSet<HeatmapRange | null>(null)
   const [isLoading, setLoading] = useState(true)
@@ -220,16 +220,15 @@ const KeyViz = (props) => {
       />
     )
   ) : (
-    <div className="keyviz_disabled_container">
-      <h2>{t('keyviz.settings.disabled_desc_title')}</h2>
-      <div className="keyviz_disabled_desc">
-        <p>{t('keyviz.settings.disabled_desc_line_1')}</p>
-        <p>{t('keyviz.settings.disabled_desc_line_2')}</p>
-      </div>
-      <Button type="primary" onClick={openSettings}>
-        {t('keyviz.settings.open_setting')}
-      </Button>
-    </div>
+    <Result
+      title={t('keyviz.settings.disabled_result.title')}
+      subTitle={t('keyviz.settings.disabled_result.sub_title')}
+      extra={
+        <Button type="primary" onClick={openSettings}>
+          {t('keyviz.settings.open_setting')}
+        </Button>
+      }
+    />
   )
 
   return (
@@ -252,7 +251,9 @@ const KeyViz = (props) => {
         onRefresh={updateHeatmap}
         onShowSettings={openSettings}
       />
+
       {mainPart}
+
       <Drawer
         title={t('keyviz.settings.title')}
         width={300}

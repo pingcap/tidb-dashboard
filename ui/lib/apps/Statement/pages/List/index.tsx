@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Select, Space, Tooltip, Drawer, Button, Checkbox } from 'antd'
+import { Select, Space, Tooltip, Drawer, Button, Checkbox, Result } from 'antd'
 import { useLocalStorageState } from '@umijs/hooks'
 import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
@@ -10,8 +10,6 @@ import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
 import useStatement from '../../utils/useStatement'
-
-import styles from './styles.module.less'
 
 const { Option } = Select
 
@@ -52,19 +50,6 @@ export default function StatementsOverview() {
   const [showFullSQL, setShowFullSQL] = useLocalStorageState(
     SHOW_FULL_SQL,
     false
-  )
-
-  const statementDisabled = (
-    <div className={styles.statement_disabled_container}>
-      <h2>{t('statement.pages.overview.settings.disabled_desc_title')}</h2>
-      <div className={styles.statement_disabled_desc}>
-        <p>{t('statement.pages.overview.settings.disabled_desc_line_1')}</p>
-        <p>{t('statement.pages.overview.settings.disabled_desc_line_2')}</p>
-      </div>
-      <Button type="primary" onClick={() => setShowSettings(true)}>
-        {t('statement.pages.overview.settings.open_setting')}
-      </Button>
-    </div>
   )
 
   return (
@@ -143,7 +128,7 @@ export default function StatementsOverview() {
                 }
               />
             )}
-            <Tooltip title={t('statement.pages.overview.settings.title')}>
+            <Tooltip title={t('statement.settings.title')}>
               <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
             <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
@@ -172,11 +157,19 @@ export default function StatementsOverview() {
           }
         />
       ) : (
-        statementDisabled
+        <Result
+          title={t('statement.settings.disabled_result.title')}
+          subTitle={t('statement.settings.disabled_result.sub_title')}
+          extra={
+            <Button type="primary" onClick={() => setShowSettings(true)}>
+              {t('statement.settings.open_setting')}
+            </Button>
+          }
+        />
       )}
 
       <Drawer
-        title={t('statement.pages.overview.settings.title')}
+        title={t('statement.settings.title')}
         width={300}
         closable={true}
         visible={showSettings}

@@ -101,7 +101,6 @@ func GetAllHostInfo(db *gorm.DB) ([]HostInfo, error) {
 					}
 				}
 			} else {
-
 				dataDir, ok := dataDirMap[instance.Address]
 				if !ok {
 					continue

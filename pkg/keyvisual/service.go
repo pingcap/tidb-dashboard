@@ -70,7 +70,7 @@ type Service struct {
 	cancel context.CancelFunc
 
 	config       *config.Config
-	KeyVisualCfg *config.KeyVisualConfig
+	keyVisualCfg *config.KeyVisualConfig
 	cfgManager   *config.DynamicConfigManager
 	provider     *region.PDDataProvider
 	httpClient   *http.Client
@@ -152,23 +152,23 @@ func (s *Service) Start(ctx context.Context) error {
 }
 
 func (s *Service) newLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) decorator.LabelStrategy {
-	switch s.KeyVisualCfg.Policy {
+	switch s.keyVisualCfg.Policy {
 	case config.KeyVisualDBPolicy:
-		log.Debug("New LabelStrategy", zap.String("policy", s.KeyVisualCfg.Policy))
+		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy))
 		return decorator.TiDBLabelStrategy(lc, wg, cfg, provider, httpClient)
 	case config.KeyVisualKVPolicy:
-		log.Debug("New LabelStrategy", zap.String("policy", s.KeyVisualCfg.Policy),
-			zap.String("separator", s.KeyVisualCfg.PolicyKVSeparator))
-		return decorator.SeparatorLabelStrategy(s.KeyVisualCfg)
+		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy),
+			zap.String("separator", s.keyVisualCfg.PolicyKVSeparator))
+		return decorator.SeparatorLabelStrategy(s.keyVisualCfg)
 	default:
 		panic("unreachable")
 	}
 }
 
 func (s *Service) reloadKeyVisualConfig(cfg *config.KeyVisualConfig) {
-	s.KeyVisualCfg = cfg
+	s.keyVisualCfg = cfg
 	if s.labelStrategy != nil {
-		s.labelStrategy.ReloadConfig(s.KeyVisualCfg)
+		s.labelStrategy.ReloadConfig(s.keyVisualCfg)
 	}
 }
 

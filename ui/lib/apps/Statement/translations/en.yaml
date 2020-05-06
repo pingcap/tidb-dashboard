@@ -32,21 +32,23 @@ statement:
           recent: Recent
           usual_time_ranges: Common
           custom_time_ranges: Custom
-      settings:
-        title: Settings
-        disabled_desc_title: Feature Not Enabled
-        disabled_desc_line_1: Statement feature is not enabled so that statement history cannot be viewed.
-        disabled_desc_line_2: You can modify settings to enable the feature and wait for new data being collected.
-        open_setting: Open Settings
-        close_statement: Disable Statement Feature
-        close_statement_warning: Are you sure want to disable this feature? Current statement history will be cleared.
-        switch: Enable
-        refresh_interval: Collect interval
-        keep_duration: Data retain duration
-        actions:
-          save: Save
-          close: Close
-          cancel: Cancel
+  settings:
+    title: Settings
+    disabled_result:
+      title: Feature Not Enabled
+      sub_title: |
+        Statement feature is not enabled so that statement history cannot be viewed.
+        You can modify settings to enable the feature and wait for new data being collected.
+    open_setting: Open Settings
+    close_statement: Disable Statement Feature
+    close_statement_warning: Are you sure want to disable this feature? Current statement history will be cleared.
+    switch: Enable
+    refresh_interval: Collect interval
+    keep_duration: Data retain duration
+    actions:
+      save: Save
+      close: Close
+      cancel: Cancel
   fields:
     table_names: Table Names
     related_schemas: Database

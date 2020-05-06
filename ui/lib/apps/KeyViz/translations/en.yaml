@@ -17,9 +17,11 @@ keyviz:
       all: All
   settings:
     title: Settings
-    disabled_desc_title: Feature Not Enabled
-    disabled_desc_line_1: Key Visualizer feature is not enabled so that visual reports cannot be viewed.
-    disabled_desc_line_2: You can modify settings to enable the feature and wait for new data being collected.
+    disabled_result:
+      title: Feature Not Enabled
+      sub_title: |
+        Key Visualizer feature is not enabled so that visual reports cannot be viewed.
+        You can modify settings to enable the feature and wait for new data being collected.
     open_setting: Open Settings
     close_keyviz: Disable Key Visualizer Feature
     close_keyviz_warning: Are you sure want to disable this feature? Current visual reports will be cleared.

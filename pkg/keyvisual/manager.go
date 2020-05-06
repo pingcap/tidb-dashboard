@@ -70,8 +70,8 @@ func (s *Service) resetKeyVisualConfig(ctx context.Context, cfg *config.DynamicC
 		s.reloadKeyVisualConfig(&cfg.KeyVisual)
 		s.startService(ctx)
 	} else {
-		s.reloadKeyVisualConfig(&cfg.KeyVisual)
 		s.stopService()
+		s.reloadKeyVisualConfig(&cfg.KeyVisual)
 	}
 }
 

@@ -14,8 +14,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 )
 
@@ -42,13 +40,13 @@ type KeyVisualConfig struct {
 	PolicyKVSeparator     string `json:"policy_kv_separator"`
 }
 
-func (c *KeyVisualConfig) validate() bool {
+func (c *KeyVisualConfig) validatePolicy() error {
 	for _, p := range KeyVisualPolicies {
 		if p == c.Policy {
-			return true
+			return nil
 		}
 	}
-	return false
+	return ErrVerificationFailed.New("policy must be in %v", KeyVisualPolicies)
 }
 
 type ProfilingConfig struct {
@@ -71,8 +69,8 @@ func (c *DynamicConfig) Clone() *DynamicConfig {
 
 func (c *DynamicConfig) Validate() error {
 	if c.KeyVisual.AutoCollectionEnabled {
-		if !c.KeyVisual.validate() {
-			return ErrVerificationFailed.New(fmt.Sprintf("policy must be in %v", KeyVisualPolicies))
+		if err := c.KeyVisual.validatePolicy(); err != nil {
+			return err
 		}
 	}
 
@@ -100,8 +98,10 @@ func (c *DynamicConfig) Validate() error {
 
 // Adjust is used to fill the default config for the existing config of the old version.
 func (c *DynamicConfig) Adjust() {
-	if !c.KeyVisual.validate() {
-		c.KeyVisual.Policy = DefaultKeyVisualPolicy
+	if c.KeyVisual.AutoCollectionEnabled {
+		if err := c.KeyVisual.validatePolicy(); err != nil {
+			c.KeyVisual.Policy = DefaultKeyVisualPolicy
+		}
 	}
 
 	if len(c.Profiling.AutoCollectionTargets) > 0 {

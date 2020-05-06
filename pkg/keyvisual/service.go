@@ -165,8 +165,8 @@ func (s *Service) newLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *con
 	}
 }
 
-func (s *Service) reloadKeyVisualConfig(cfg config.KeyVisualConfig) {
-	*s.KeyVisualCfg = cfg
+func (s *Service) reloadKeyVisualConfig(cfg *config.KeyVisualConfig) {
+	s.KeyVisualCfg = cfg
 	if s.labelStrategy != nil {
 		s.labelStrategy.ReloadConfig(s.KeyVisualCfg)
 	}

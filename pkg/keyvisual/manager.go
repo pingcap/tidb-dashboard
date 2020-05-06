@@ -57,12 +57,21 @@ func (s *Service) managerLoop(ctx context.Context) {
 				s.stopService()
 				return
 			}
-			if cfg.KeyVisual.AutoCollectionEnabled {
-				s.startService(ctx)
-			} else {
-				s.stopService()
-			}
+			s.resetKeyVisualConfig(ctx, cfg)
 		}
+	}
+}
+
+func (s *Service) resetKeyVisualConfig(ctx context.Context, cfg *config.DynamicConfig) {
+	if cfg.KeyVisual.AutoCollectionEnabled {
+		if s.keyVisualCfg != nil && s.keyVisualCfg.Policy != cfg.KeyVisual.Policy {
+			s.stopService()
+		}
+		s.reloadKeyVisualConfig(&cfg.KeyVisual)
+		s.startService(ctx)
+	} else {
+		s.stopService()
+		s.reloadKeyVisualConfig(&cfg.KeyVisual)
 	}
 }
 

@@ -134,6 +134,7 @@ export default function HostTable() {
           tidb: 0,
           tikv: 0,
           pd: 0,
+          tiflash: 0,
         }
         return filterUniquePartitions(partitions).map((partition) => {
           const currentMountPoint = partition.partition.path
@@ -152,6 +153,9 @@ export default function HostTable() {
           }
           if (serverTotal.pd > 0) {
             serverInfos.push(`${serverTotal.pd} PD`)
+          }
+          if (serverTotal.tiflash > 0) {
+            serverInfos.push(`${serverTotal.tiflash} TiFlash`)
           }
           return `${serverInfos.join(
             ','

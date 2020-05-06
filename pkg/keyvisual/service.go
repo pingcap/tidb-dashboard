@@ -154,19 +154,22 @@ func (s *Service) Start(ctx context.Context) error {
 func (s *Service) newLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) decorator.LabelStrategy {
 	switch s.KeyVisualCfg.Policy {
 	case config.KeyVisualDBPolicy:
-		log.Debug("BuildLabelStrategy", zap.String("Policy", s.KeyVisualCfg.Policy))
+		log.Debug("New LabelStrategy", zap.String("policy", s.KeyVisualCfg.Policy))
 		return decorator.TiDBLabelStrategy(lc, wg, cfg, provider, httpClient)
 	case config.KeyVisualKVPolicy:
-		log.Debug("BuildLabelStrategy", zap.String("Policy", s.KeyVisualCfg.Policy),
-			zap.String("Separator", s.KeyVisualCfg.PolicyKVSeparator))
+		log.Debug("New LabelStrategy", zap.String("policy", s.KeyVisualCfg.Policy),
+			zap.String("separator", s.KeyVisualCfg.PolicyKVSeparator))
 		return decorator.SeparatorLabelStrategy(s.KeyVisualCfg)
 	default:
 		panic("unreachable")
 	}
 }
 
-func (s *Service) reloadKeyVisualConfig() {
-	s.labelStrategy.ReloadConfig(s.KeyVisualCfg)
+func (s *Service) reloadKeyVisualConfig(cfg config.KeyVisualConfig) {
+	*s.KeyVisualCfg = cfg
+	if s.labelStrategy != nil {
+		s.labelStrategy.ReloadConfig(s.KeyVisualCfg)
+	}
 }
 
 func (s *Service) Stop(ctx context.Context) error {
@@ -181,6 +184,7 @@ func (s *Service) Stop(ctx context.Context) error {
 	s.app = nil
 	s.stat = nil
 	s.strategy = nil
+	s.labelStrategy = nil
 	s.ctx = nil
 	s.cancel = nil
 

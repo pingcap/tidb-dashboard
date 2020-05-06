@@ -74,9 +74,6 @@ func (c *DynamicConfig) Validate() error {
 		if !c.KeyVisual.validate() {
 			return ErrVerificationFailed.New(fmt.Sprintf("policy must be in %v", KeyVisualPolicies))
 		}
-		if c.KeyVisual.PolicyKVSeparator == "" {
-			return ErrVerificationFailed.New("policy_kv_separator cannot be empty")
-		}
 	}
 
 	if len(c.Profiling.AutoCollectionTargets) > 0 {

@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo } from 'react'
-import { Skeleton, Checkbox } from 'antd'
+import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
-  DetailsList,
   DetailsListLayoutMode,
   SelectionMode,
   IDetailsListProps,
 } from 'office-ui-fabric-react/lib/DetailsList'
+import { ShimmeredDetailsList } from 'office-ui-fabric-react/lib/ShimmeredDetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
 import Card from '../Card'
@@ -18,7 +18,6 @@ export interface ICardTableV2Props extends IDetailsListProps {
   className?: string
   style?: object
   loading?: boolean
-  loadingSkeletonRows?: number
   cardExtra?: React.ReactNode
   cardNoMargin?: boolean
   // The keys of visible columns. If null, all columns will be shown.
@@ -65,7 +64,6 @@ function CardTableV2(props: ICardTableV2Props) {
     className,
     style,
     loading = false,
-    loadingSkeletonRows = 5,
     cardExtra,
     cardNoMargin,
     visibleColumnKeys,
@@ -101,28 +99,21 @@ function CardTableV2(props: ICardTableV2Props) {
       noMargin={cardNoMargin}
       extra={cardExtra}
     >
-      {loading ? (
-        <Skeleton
-          active
-          title={false}
-          paragraph={{ rows: loadingSkeletonRows }}
+      <div className={styles.cardTableContent}>
+        <ShimmeredDetailsList
+          selectionMode={SelectionMode.none}
+          layoutMode={DetailsListLayoutMode.justified}
+          onRenderDetailsHeader={renderStickyHeader}
+          onRenderRow={onRowClicked ? renderClickableRow : undefined}
+          onRenderCheckbox={(props) => {
+            return <Checkbox checked={props?.checked} />
+          }}
+          columns={filteredColumns}
+          items={filteredItems}
+          enableShimmer={filteredItems.length > 0 ? false : loading}
+          {...restProps}
         />
-      ) : (
-        <div className={styles.cardTableContent}>
-          <DetailsList
-            selectionMode={SelectionMode.none}
-            layoutMode={DetailsListLayoutMode.justified}
-            onRenderDetailsHeader={renderStickyHeader}
-            onRenderRow={onRowClicked ? renderClickableRow : undefined}
-            onRenderCheckbox={(props) => {
-              return <Checkbox checked={props?.checked} />
-            }}
-            columns={filteredColumns}
-            items={filteredItems}
-            {...restProps}
-          />
-        </div>
-      )}
+      </div>
     </Card>
   )
 }

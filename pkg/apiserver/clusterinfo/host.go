@@ -37,6 +37,8 @@ type Partition struct {
 	FSType string `json:"fstype"`
 	Free   int    `json:"free"`
 	Total  int    `json:"total"`
+
+	ServerType string // identify TiFlash
 }
 
 type HostInfo struct {
@@ -87,17 +89,30 @@ func GetAllHostInfo(db *gorm.DB) ([]HostInfo, error) {
 				continue
 			}
 
-			dataDir, ok := dataDirMap[instance.Address]
-			if !ok {
-				continue
+			if instance.ServerType == "tiflash" {
+				// Since Multi-path is a common feature in TiFlash, a TiFlash instance may have multiple partitions.
+				// For now TiFlash will only return the disks it used, so we can just add all partitions.
+				for _, p := range partitionMap {
+					if p.ServerType == "tiflash" {
+						partitions = append(partitions, PartitionInstance{
+							Partition: p,
+							Instance:  instance,
+						})
+					}
+				}
+			} else {
+
+				dataDir, ok := dataDirMap[instance.Address]
+				if !ok {
+					continue
+				}
+
+				partition := inferPartition(dataDir, partitionMap)
+				partitions = append(partitions, PartitionInstance{
+					Partition: partition,
+					Instance:  instance,
+				})
 			}
-
-			partition := inferPartition(dataDir, partitionMap)
-
-			partitions = append(partitions, PartitionInstance{
-				Partition: partition,
-				Instance:  instance,
-			})
 		}
 
 		info := HostInfo{
@@ -199,6 +214,7 @@ type ClusterTableModel struct {
 	DeviceType string `gorm:"column:DEVICE_TYPE"`
 	Name       string `gorm:"column:NAME"`
 	Value      string `gorm:"column:VALUE"`
+	Type       string `gorm:"column:TYPE"`
 }
 
 const ClusterLoadCondition = "(device_type = 'memory' and device_name = 'virtual') or (device_type = 'cpu' and device_name = 'usage')"
@@ -331,6 +347,8 @@ func savePartition(row ClusterTableModel, m *HostPartitionMap) {
 	if !ok {
 		partition = Partition{}
 	}
+
+	partition.ServerType = row.Type
 
 	var err error
 	switch row.Name {

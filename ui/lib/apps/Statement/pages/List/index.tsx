@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Select, Space, Tooltip, Drawer, Button, Checkbox, Result } from 'antd'
-import { useLocalStorageState } from '@umijs/hooks'
+import { useLocalStorageState, useDebounceFn } from '@umijs/hooks'
 import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
@@ -15,6 +15,7 @@ const { Option } = Select
 
 const VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const SHOW_FULL_SQL = 'statement.show_full_sql'
+const COLUMNS_WIDTH = 'statement.columns_width'
 
 const defColumnKeys: IColumnKeys = {
   digest_text: true,
@@ -43,6 +44,7 @@ export default function StatementsOverview() {
 
   const [columns, setColumns] = useState<IColumn[]>([])
   const [showSettings, setShowSettings] = useState(false)
+
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     VISIBLE_COLUMN_KEYS,
     defColumnKeys
@@ -51,6 +53,22 @@ export default function StatementsOverview() {
     SHOW_FULL_SQL,
     false
   )
+
+  const [columnsWidth, setColumnsWidth] = useLocalStorageState(
+    COLUMNS_WIDTH,
+    {}
+  )
+  function handleColumnResize(
+    column?: IColumn,
+    newWidth?: number,
+    _columnIndex?: number
+  ) {
+    setColumnsWidth({
+      ...columnsWidth,
+      [column!.key]: newWidth,
+    })
+  }
+  const { run } = useDebounceFn(handleColumnResize, 500)
 
   return (
     <ScrollablePane style={{ height: '100vh' }}>
@@ -155,6 +173,8 @@ export default function StatementsOverview() {
               desc,
             })
           }
+          columnsWidth={columnsWidth}
+          onColumnResize={run}
         />
       ) : (
         <Result

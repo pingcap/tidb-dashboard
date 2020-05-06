@@ -5,6 +5,7 @@ import {
   DetailsListLayoutMode,
   SelectionMode,
   IDetailsListProps,
+  IColumn,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { ShimmeredDetailsList } from 'office-ui-fabric-react/lib/ShimmeredDetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
@@ -23,6 +24,7 @@ export interface ICardTableV2Props extends IDetailsListProps {
   // The keys of visible columns. If null, all columns will be shown.
   visibleColumnKeys?: { [key: string]: boolean }
   visibleItemsCount?: number
+  columnsWidth?: { [key: string]: number }
   // Event triggered when a row is clicked.
   onRowClicked?: (item: any, itemIndex: number) => void
 }
@@ -68,6 +70,7 @@ function CardTableV2(props: ICardTableV2Props) {
     cardNoMargin,
     visibleColumnKeys,
     visibleItemsCount,
+    columnsWidth,
     onRowClicked,
     columns,
     items,
@@ -76,12 +79,30 @@ function CardTableV2(props: ICardTableV2Props) {
 
   const renderClickableRow = useRenderClickableRow(onRowClicked)
 
-  const filteredColumns = useMemo(() => {
-    if (columns == null || visibleColumnKeys == null) {
-      return columns
+  const finalColumns = useMemo(() => {
+    let newColumns: IColumn[] = columns || []
+    if (visibleColumnKeys != null) {
+      newColumns = newColumns.filter((c) => visibleColumnKeys[c.key])
     }
-    return columns.filter((c) => visibleColumnKeys[c.key])
-  }, [columns, visibleColumnKeys])
+    // https://github.com/microsoft/fluentui/issues/9287
+    // ms doesn't support initial the columns width
+    if (columnsWidth != null) {
+      newColumns = newColumns.map((c) =>
+        columnsWidth[c.key]
+          ? {
+              ...c,
+              style: {
+                width: `${columnsWidth[c.key]}px`,
+              }, // doesn't work
+              currentWidth: columnsWidth[c.key], // doesn't work
+              calculatedWidth: columnsWidth[c.key], // doesn't work
+            }
+          : c
+      )
+    }
+    console.log(newColumns)
+    return newColumns
+  }, [columns, visibleColumnKeys, columnsWidth])
 
   const filteredItems = useMemo(() => {
     if (visibleItemsCount == null) {
@@ -108,7 +129,7 @@ function CardTableV2(props: ICardTableV2Props) {
           onRenderCheckbox={(props) => {
             return <Checkbox checked={props?.checked} />
           }}
-          columns={filteredColumns}
+          columns={finalColumns}
           items={filteredItems}
           enableShimmer={filteredItems.length > 0 ? false : loading}
           {...restProps}

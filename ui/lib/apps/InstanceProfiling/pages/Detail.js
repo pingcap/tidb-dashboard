@@ -134,7 +134,6 @@ export default function Page() {
         loading={isLoading && !data}
         columns={columns}
         items={data?.tasks_status || []}
-        getKey={(row) => row.id}
       />
     </div>
   )

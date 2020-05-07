@@ -41,7 +41,6 @@ type proxy struct {
 	dialTimeout   time.Duration
 	doneCh        chan struct{}
 
-	// The key is server ddl id
 	remotes sync.Map
 	current string
 }
@@ -72,7 +71,10 @@ func (p *proxy) port() int {
 
 func (p *proxy) updateRemotes(remotes map[string]string) {
 	if remotes == nil {
-		p.remotes = sync.Map{}
+		p.remotes.Range(func(key, value interface{}) bool {
+			p.remotes.Delete(key)
+			return true
+		})
 		return
 	}
 	// update or create new remote

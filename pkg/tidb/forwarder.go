@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"sync"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -32,11 +31,6 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
-)
-
-const (
-	tidbProxyLabel   = "tidb"
-	statusProxyLabel = "tidbStatus"
 )
 
 // FIXME: This is duplicated with the one in KeyVis.
@@ -65,62 +59,39 @@ func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
 }
 
 type Forwarder struct {
-	ctx        context.Context
-	config     *ForwarderConfig
-	etcdClient *clientv3.Client
-	// The key is str label and value is the proxy
-	proxies      sync.Map
-	tidbPort     int
-	statusPort   int
-	donec        chan struct{}
-	pollInterval time.Duration
+	ctx             context.Context
+	config          *ForwarderConfig
+	etcdClient      *clientv3.Client
+	tidbProxy       *proxy
+	tidbStatusProxy *proxy
+	tidbPort        int
+	statusPort      int
+	donec           chan struct{}
+	pollInterval    time.Duration
 }
 
 func (f *Forwarder) Open() error {
-	var (
-		cluster []*tidbServerInfo
-		err     error
-	)
-	for {
-		cluster, err = f.getServerInfo()
-		if err == nil {
-			break
-		}
-		log.Error("Fail to get server info", zap.Error(err))
-		// TODO: config this or just use CheckInterval ?
-		<-time.After(time.Second * 5)
-	}
-	statusEndpoints := make(map[string]string)
-	tidbEndpoints := make(map[string]string)
-	for _, server := range cluster {
-		statusEndpoints[server.ID] = fmt.Sprintf("%s:%d", server.IP, server.StatusPort)
-		tidbEndpoints[server.ID] = fmt.Sprintf("%s:%d", server.IP, server.Port)
-	}
-	pr, err := f.createProxy(tidbProxyLabel, tidbEndpoints)
+	pr, err := f.createProxy(nil)
 	if err != nil {
 		return err
 	}
+	f.tidbProxy = pr
 	f.tidbPort = pr.port()
-	go pr.run()
-	pr, err = f.createProxy(statusProxyLabel, statusEndpoints)
+	pr, err = f.createProxy(nil)
 	if err != nil {
 		return err
 	}
+	f.tidbStatusProxy = pr
 	f.statusPort = pr.port()
-	go pr.run()
 	go f.pollingForTiDB()
+	go f.tidbProxy.run()
+	go f.tidbStatusProxy.run()
 	return nil
 }
 
 func (f *Forwarder) Close() {
-	p := f.getProxy(tidbProxyLabel)
-	if p != nil {
-		p.stop()
-	}
-	p = f.getProxy(statusProxyLabel)
-	if p != nil {
-		p.stop()
-	}
+	f.tidbProxy.stop()
+	f.tidbStatusProxy.stop()
 	close(f.donec)
 }
 
@@ -149,35 +120,14 @@ func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
 	return allTiDB, nil
 }
 
-func (f *Forwarder) createProxy(key string, endpoints map[string]string) (*proxy, error) {
-	if len(endpoints) == 0 {
-		return nil, fmt.Errorf("empty endpoints")
-	}
+func (f *Forwarder) createProxy(endpoints map[string]string) (*proxy, error) {
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		return nil, err
 	}
 	// TODO: config timeout?
 	proxy := newProxy(l, endpoints, f.config.CheckInterval, 0)
-	f.proxies.Store(key, proxy)
 	return proxy, nil
-}
-
-func (f *Forwarder) getProxy(key string) *proxy {
-	v, ok := f.proxies.Load(key)
-	if ok {
-		return v.(*proxy)
-	}
-	return nil
-}
-
-func (f *Forwarder) updateRemote(key string, newEndpoints map[string]string) {
-	if p := f.getProxy(key); p != nil {
-		if newEndpoints == nil {
-			log.Debug("remove all remotes in proxy", zap.String("proxy", key))
-		}
-		p.updateRemotes(newEndpoints)
-	}
 }
 
 func (f *Forwarder) pollingForTiDB() {
@@ -186,28 +136,32 @@ func (f *Forwarder) pollingForTiDB() {
 		case <-time.After(f.pollInterval):
 			var allTiDB []*tidbServerInfo
 			var err error
+			bo := backoff.NewExponentialBackOff()
+			// setting a reasonable interval to avoid probing a living service for too long each round
+			bo.MaxInterval = 5 * time.Second
 			err = backoff.Retry(func() error {
 				allTiDB, err = f.getServerInfo()
+				if err != nil {
+					log.Warn("Fail to get TiDB server info from PD", zap.Error(err))
+				}
 				return err
-			}, backoff.NewExponentialBackOff())
+			}, bo)
 			if err != nil {
 				if errorx.IsOfType(err, ErrNoAliveTiDB) {
 					log.Warn("no TiDB is alive now")
-					f.updateRemote(tidbProxyLabel, nil)
-					f.updateRemote(statusProxyLabel, nil)
-				} else {
-					log.Warn("Fail to get TiDB server info from PD", zap.Error(err))
+					f.tidbProxy.updateRemotes(nil)
+					f.tidbStatusProxy.updateRemotes(nil)
 				}
 				continue
 			}
 			statusEndpoints := make(map[string]string)
 			tidbEndpoints := make(map[string]string)
 			for _, server := range allTiDB {
-				statusEndpoints[server.ID] = fmt.Sprintf("%s:%d", server.IP, server.StatusPort)
-				tidbEndpoints[server.ID] = fmt.Sprintf("%s:%d", server.IP, server.Port)
+				statusEndpoints[server.IP] = fmt.Sprintf("%s:%d", server.IP, server.StatusPort)
+				tidbEndpoints[server.IP] = fmt.Sprintf("%s:%d", server.IP, server.Port)
 			}
-			f.updateRemote(tidbProxyLabel, tidbEndpoints)
-			f.updateRemote(statusProxyLabel, statusEndpoints)
+			f.tidbProxy.updateRemotes(tidbEndpoints)
+			f.tidbStatusProxy.updateRemotes(statusEndpoints)
 		case <-f.donec:
 			return
 		}

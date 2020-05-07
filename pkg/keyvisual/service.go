@@ -155,11 +155,11 @@ func (s *Service) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) newLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) decorator.LabelStrategy {
+func (s *Service) newLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client, forwarder *tidb.Forwarder) decorator.LabelStrategy {
 	switch s.keyVisualCfg.Policy {
 	case config.KeyVisualDBPolicy:
 		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy))
-		return decorator.TiDBLabelStrategy(lc, wg, cfg, provider, httpClient)
+		return decorator.TiDBLabelStrategy(lc, wg, cfg, provider, httpClient, forwarder)
 	case config.KeyVisualKVPolicy:
 		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy),
 			zap.String("separator", s.keyVisualCfg.PolicyKVSeparator))

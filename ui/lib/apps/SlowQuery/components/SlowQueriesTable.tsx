@@ -62,6 +62,7 @@ export default function SlowQueriesTable({
       columns={columns}
       items={slowQueries}
       onRowClicked={handleRowClick}
+      getKey={(row) => row?.digest}
     />
   )
 }

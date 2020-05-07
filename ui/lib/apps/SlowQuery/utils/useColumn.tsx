@@ -16,7 +16,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import { max } from 'lodash'
 import { useTranslation } from 'react-i18next'
 
-function SuccessStatusBadge({ status }: { status: 'success' | 'error' }) {
+function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
   const { t } = useTranslation()
   return (
     <Badge status={status} text={t(`slow_query.common.status.${status}`)} />
@@ -146,7 +146,7 @@ export function useSuccessColumn(
     isResizable: true,
     columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
-      <SuccessStatusBadge status={rec.success === 1 ? 'success' : 'error'} />
+      <ResultStatusBadge status={rec.success === 1 ? 'success' : 'error'} />
     ),
   }
 }

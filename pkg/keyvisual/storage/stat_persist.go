@@ -60,7 +60,7 @@ func (s *Stat) Restore() error {
 
 	// load data from db
 	for layerNum := uint8(0); ; layerNum++ {
-		planes, err := FindPlaneOrderByTime(s.db, layerNum)
+		planes, err := FindPlanesOrderByTime(s.db, layerNum)
 		if err != nil || len(planes) == 0 {
 			break
 		}

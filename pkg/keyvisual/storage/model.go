@@ -67,7 +67,7 @@ func ClearTablePlane(db *dbstore.DB) error {
 	return db.Table(tablePlaneName).Delete(&Plane{}).Error
 }
 
-func FindPlaneOrderByTime(db *dbstore.DB, layerNum uint8) ([]*Plane, error) {
+func FindPlanesOrderByTime(db *dbstore.DB, layerNum uint8) ([]*Plane, error) {
 	var planes []*Plane
 	err := db.
 		Where("layer_num = ?", layerNum).

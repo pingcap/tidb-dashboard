@@ -30,7 +30,7 @@ diagnosis:
       max_diff_item: 最大不同项
       slow_query_t2: t2 慢查询
       generate_report_error: 生成报告的报错
-      report_time_range: 报告时间范围
+      report_time_range: 诊断区间
       diagnose: 诊断结果
       total_time_consume: 总的时间消耗
       total_error: 总报错数
@@ -63,15 +63,15 @@ diagnosis:
       tidb_current_config: TiDB 当前配置
       pd_current_config: PD 当前配置
       tikv_current_config: TiKV 当前配置
-      node_load_info: 节点负载信息
-      process_cpu_usage: 实例 CPU 使用率
-      process_memory_usage: 实例的内存消耗
-      tidb/pd_goroutines_count: TiDB/PD Goroutines 数量
+      node_load_info: 各实例负载信息
+      process_cpu_usage: 各实例 CPU 使用率
+      process_memory_usage: 各实例内存消耗
+      tidb/pd_goroutines_count: TiDB/PD 的 Goroutines 数量
       tikv_thread_cpu_usage: TiKV 的 CPU 使用情况
       store_status: TiKV 节点的存储状态
       cluster_status: 集群状态
-      etcd_status: Etcd 状态
-      cluster_info: 集群信息
+      etcd_status: etcd 状态
+      cluster_info: 集群实例信息
       cache_hit: 缓存命中率
       cluster_hardware: 集群硬件信息
       rocksdb_time_consume: RocksDB 时间消耗

@@ -108,7 +108,7 @@ const KeyViz = () => {
       }
       setServiceEnabled(enabled)
       if (enabled) {
-        updateHeatmap()
+        await updateHeatmap()
       }
     } catch (e) {}
     setLoading(false)
@@ -116,7 +116,7 @@ const KeyViz = () => {
   }, [])
 
   useMount(() => {
-    updateServiceStatus()
+    updateServiceStatus().then()
   })
 
   const updateHeatmap = useCallback(async () => {
@@ -194,16 +194,18 @@ const KeyViz = () => {
   }, [getAutoRefreshSeconds()])
 
   useEffect(() => {
-    updateHeatmap()
+    if (serviceEnabled) {
+      updateHeatmap().then()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getSelection(), getDateRange(), getMetricType()])
+  }, [serviceEnabled, getSelection(), getDateRange(), getMetricType()])
 
   useInterval(() => {
     if (getAutoRefreshSeconds() === 0) {
       return
     }
     if (getRemainingRefreshSeconds() === 0) {
-      updateHeatmap()
+      updateHeatmap().then()
     } else {
       setRemainingRefreshSeconds((c) => c - 1)
     }

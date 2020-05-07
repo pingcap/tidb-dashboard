@@ -1,19 +1,19 @@
 diagnosis:
-  title: TiDB SQL 诊断系统报告
+  title: TiDB 集群诊断报告
   expand_all: 展开所有
   fold_all: 收起所有
   expand: 展开
   fold: 收起
-  all_tables: 所有表
+  all_tables: 诊断信息总览
   tables:
     category:
-      header: 标头
+      header: 基本信息
       diagnose: 诊断
       load: 负载
       overview: 总览
-      TiDB: TiDB
-      PD: PD
-      TiKV: TiKV
+      TiDB: TiDB 组件
+      PD: PD 组件
+      TiKV: TiKV 组件
       config: 配置
       error: 错误
     title:
@@ -23,8 +23,8 @@ diagnosis:
       top_10_slow_query_in_time_range_t2: t2 中的 top 10 慢查询
       top_10_slow_query_group_by_digest_in_time_range_t1: 按 SQL 指纹聚合的 t1 top10 慢查询
       top_10_slow_query_group_by_digest_in_time_range_t2: 按 SQL 指纹聚合的 t2 top10 慢查询
-      slow_query_with_diff_plan_in_time_range_t1: t1 中的 不同执行计划的慢查询
-      slow_query_with_diff_plan_in_time_range_t2: t2 中的 不同执行计划的慢查询
+      slow_query_with_diff_plan_in_time_range_t1: t1 中的不同执行计划的慢查询
+      slow_query_with_diff_plan_in_time_range_t2: t2 中的不同执行计划的慢查询
       diagnose_in_time_range_t1: t1 中的诊断
       diagnose_in_time_range_t2: t2 中的诊断
       max_diff_item: 最大不同项

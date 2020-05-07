@@ -140,8 +140,8 @@ export default function StatementsOverview() {
 
       {enable ? (
         <StatementsTable
-          statements={statements}
           loading={loadingStatements}
+          statements={statements}
           timeRange={validTimeRange}
           orderBy={savedQueryOptions.orderBy}
           desc={savedQueryOptions.desc}

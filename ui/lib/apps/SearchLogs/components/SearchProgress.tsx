@@ -1,5 +1,6 @@
 import client from '@lib/client'
 import { LogsearchTaskModel } from '@lib/client'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 import { Button, Modal, Tree, Skeleton } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -7,6 +8,7 @@ import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import styles from './Styles.module.css'
 import { namingMap, NodeKind, NodeKindList, TaskState } from './utils'
 import { Card } from '@lib/components'
+import _ from 'lodash'
 
 const { confirm } = Modal
 const { TreeNode } = Tree
@@ -35,7 +37,10 @@ function leafNodeProps(state: number | undefined) {
 
 function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map((task) => {
-    const title = task.target?.display_name ?? ''
+    let title = task.target?.display_name ?? ''
+    if (task.size) {
+      title += ' (' + getValueFormat('bytes')(task.size!, 1) + ')'
+    }
     return (
       <TreeNode
         key={`${task.id}`}
@@ -108,7 +113,12 @@ export default function SearchProgress({
       const str = `${count} ${descriptionArray[index]}`
       res.push(str)
     })
-    return res.join('，')
+    return (
+      res.join('，') +
+      ' (' +
+      getValueFormat('bytes')(_.sumBy(tasks, 'size'), 1) +
+      ')'
+    )
   }
 
   function renderTreeNodes(tasks: LogsearchTaskModel[]) {
@@ -116,6 +126,7 @@ export default function SearchProgress({
       [NodeKind.TiDB]: [],
       [NodeKind.TiKV]: [],
       [NodeKind.PD]: [],
+      [NodeKind.TiFlash]: [],
     }
 
     tasks.forEach((task) => {

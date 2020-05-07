@@ -25,6 +25,7 @@ import (
 	"strconv"
 	"sync"
 	"time"
+	"unsafe"
 
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 	"github.com/pingcap/log"
@@ -141,6 +142,15 @@ func (t *Task) SyncRun() {
 			return
 		}
 		t.model.State = TaskStateFinished
+		stat, err := os.Stat(*t.model.LogStorePath)
+		if err != nil {
+			log.Warn("Can NOT fetch log file size for LogSearchTask",
+				zap.Any("task", t),
+				zap.String("err", err.Error()),
+			)
+		} else {
+			t.model.Size = stat.Size()
+		}
 		log.Debug("LogSearchTask finished", zap.Any("task", t))
 		t.taskGroup.service.db.Save(t.model)
 	}()
@@ -169,14 +179,32 @@ func (t *Task) SyncRun() {
 	defer conn.Close()
 
 	cli := diagnosticspb.NewDiagnosticsClient(conn)
-	stream, err := cli.SearchLog(t.ctx, t.taskGroup.model.SearchRequest.ConvertToPB())
+	t.searchLog(cli, diagnosticspb.SearchLogRequest_Normal)
+	t.searchLog(cli, diagnosticspb.SearchLogRequest_Slow)
+}
+
+func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diagnosticspb.SearchLogRequest_Target) {
+	if t.model.Error != nil {
+		return
+	}
+	req := t.taskGroup.model.SearchRequest.ConvertToPB(targetType)
+	patterns := make([]string, len(req.Patterns))
+	for i, p := range req.Patterns {
+		patterns[i] = "(?i)" + p
+	}
+	req.Patterns = patterns
+	stream, err := client.SearchLog(t.ctx, req)
 	if err != nil {
 		t.setError(err)
 		return
 	}
 
 	// Create zip file for the log in the log directory
-	savedPath := path.Join(*t.taskGroup.model.LogStoreDir, t.model.Target.FileName()+".zip")
+	fileName := t.model.Target.FileName()
+	if targetType == diagnosticspb.SearchLogRequest_Slow {
+		fileName = fileName + "-slow"
+	}
+	savedPath := path.Join(*t.taskGroup.model.LogStoreDir, fileName+".zip")
 	f, err := os.Create(savedPath)
 	if err != nil {
 		t.setError(err)
@@ -184,11 +212,14 @@ func (t *Task) SyncRun() {
 	}
 	defer f.Close()
 
+	// TODO: Could we use a memory buffer for this and flush the writer regularly to avoid OOM.
+	// This might perform an faster processing. This could also avoid creating an empty .zip
+	// firstly even if the searching result is empty.
 	zw := zip.NewWriter(f)
 	defer zw.Close()
 	defer zw.Flush()
 
-	writer, err := zw.Create(t.model.Target.FileName() + ".log")
+	writer, err := zw.Create(fileName + ".log")
 	if err != nil {
 		t.setError(err)
 		return
@@ -197,7 +228,11 @@ func (t *Task) SyncRun() {
 	bufWriter := bufio.NewWriterSize(writer, 16*1024*1024) // 16M buffer size
 	defer bufWriter.Flush()
 
-	t.model.LogStorePath = &savedPath
+	if targetType == diagnosticspb.SearchLogRequest_Normal {
+		t.model.LogStorePath = &savedPath
+	} else {
+		t.model.SlowLogStorePath = &savedPath
+	}
 	t.model.State = TaskStateRunning
 
 	previewLogLinesCount := 0
@@ -211,8 +246,7 @@ func (t *Task) SyncRun() {
 		}
 		for _, msg := range res.Messages {
 			line := logMessageToString(msg)
-			// TODO: use unsafe here: string -> []byte
-			_, err := bufWriter.Write([]byte(line))
+			_, err := bufWriter.Write(*(*[]byte)(unsafe.Pointer(&line)))
 			if err != nil {
 				t.setError(err)
 				return

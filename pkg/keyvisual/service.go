@@ -69,14 +69,16 @@ type Service struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	config     *config.Config
-	cfgManager *config.DynamicConfigManager
-	provider   *region.PDDataProvider
-	httpClient *http.Client
-	db         *dbstore.DB
+	config       *config.Config
+	keyVisualCfg *config.KeyVisualConfig
+	cfgManager   *config.DynamicConfigManager
+	provider     *region.PDDataProvider
+	httpClient   *http.Client
+	db           *dbstore.DB
 
-	stat     *storage.Stat
-	strategy matrix.Strategy
+	stat          *storage.Stat
+	strategy      matrix.Strategy
+	labelStrategy decorator.LabelStrategy
 }
 
 func NewService(
@@ -131,9 +133,9 @@ func (s *Service) Start(ctx context.Context) error {
 			newStat,
 			s.provideLocals,
 			input.NewStatInput,
-			decorator.TiDBLabelStrategy,
+			s.newLabelStrategy,
 		),
-		fx.Populate(&s.stat, &s.strategy),
+		fx.Populate(&s.stat, &s.strategy, &s.labelStrategy),
 		fx.Invoke(
 			// Must be at the end
 			s.status.Register,
@@ -149,6 +151,27 @@ func (s *Service) Start(ctx context.Context) error {
 	return nil
 }
 
+func (s *Service) newLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) decorator.LabelStrategy {
+	switch s.keyVisualCfg.Policy {
+	case config.KeyVisualDBPolicy:
+		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy))
+		return decorator.TiDBLabelStrategy(lc, wg, cfg, provider, httpClient)
+	case config.KeyVisualKVPolicy:
+		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy),
+			zap.String("separator", s.keyVisualCfg.PolicyKVSeparator))
+		return decorator.SeparatorLabelStrategy(s.keyVisualCfg)
+	default:
+		panic("unreachable")
+	}
+}
+
+func (s *Service) reloadKeyVisualConfig(cfg *config.KeyVisualConfig) {
+	s.keyVisualCfg = cfg
+	if s.labelStrategy != nil {
+		s.labelStrategy.ReloadConfig(s.keyVisualCfg)
+	}
+}
+
 func (s *Service) Stop(ctx context.Context) error {
 	if !s.IsRunning() {
 		return nil
@@ -161,6 +184,7 @@ func (s *Service) Stop(ctx context.Context) error {
 	s.app = nil
 	s.stat = nil
 	s.strategy = nil
+	s.labelStrategy = nil
 	s.ctx = nil
 	s.cancel = nil
 
@@ -269,8 +293,8 @@ func newStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvide
 		OnStart: func(ctx context.Context) error {
 			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				in.Background(ctx, stat)
-				wg.Done()
 			}()
 			return nil
 		},

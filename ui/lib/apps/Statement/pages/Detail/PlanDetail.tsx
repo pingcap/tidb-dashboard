@@ -1,4 +1,7 @@
 import React from 'react'
+import { Space, Skeleton } from 'antd'
+import { useToggle } from '@umijs/hooks'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   Descriptions,
@@ -7,20 +10,18 @@ import {
   Pre,
   CardTabs,
   Expand,
+  CopyLink,
 } from '@lib/components'
-import { IPageQuery } from '.'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
-import { Space, Skeleton } from 'antd'
-import { useToggle } from '@umijs/hooks'
+import formatSql from '@lib/utils/formatSql'
 
+import { IPageQuery } from '.'
 import TabBasic from './PlanDetailTabBasic'
 import TabTime from './PlanDetailTabTime'
 import TabCopr from './PlanDetailTabCopr'
 import TabTxn from './PlanDetailTabTxn'
-import CopyLink from '@lib/components/CopyLink'
-import formatSql from '@lib/utils/formatSql'
-import { useTranslation } from 'react-i18next'
+import SlowQueryTab from './SlowQueryTab'
 
 export interface IQuery extends IPageQuery {
   plans: string[]
@@ -161,6 +162,12 @@ function PlanDetail({ query }: IPlanDetailProps) {
               key="txn"
             >
               <TabTxn data={data} />
+            </CardTabs.TabPane>
+            <CardTabs.TabPane
+              tab={t('statement.pages.detail.tabs.slow_query')}
+              key="slow_query"
+            >
+              <SlowQueryTab query={query} />
             </CardTabs.TabPane>
           </CardTabs>
         </>

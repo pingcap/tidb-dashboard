@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"sync"
+	"time"
 
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
@@ -27,6 +28,8 @@ import (
 
 const (
 	DynamicConfigPath = "/dashboard/dynamic_config"
+	RetryCount        = 3
+	RetryInterval     = time.Second
 )
 
 var (
@@ -44,7 +47,7 @@ type DynamicConfigManager struct {
 	etcdClient *clientv3.Client
 
 	dynamicConfig *DynamicConfig
-	pushChannels  []chan DynamicConfig
+	pushChannels  []chan *DynamicConfig
 }
 
 func NewDynamicConfigManager(lc fx.Lifecycle, config *Config, etcdClient *clientv3.Client) *DynamicConfigManager {
@@ -63,9 +66,25 @@ func (m *DynamicConfigManager) Start(ctx context.Context) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.ctx = ctx
-	if err := m.load(); err != nil {
-		return nil
+
+	var err error
+	for i := 0; i < RetryCount; i++ {
+		err = m.load()
+		if err == nil {
+			break
+		}
+
+		select {
+		case <-ctx.Done():
+			return err
+		default:
+			time.Sleep(RetryInterval)
+		}
 	}
+	if err != nil {
+		return err
+	}
+
 	m.dynamicConfig.Adjust()
 	return m.store()
 }
@@ -79,32 +98,40 @@ func (m *DynamicConfigManager) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (m *DynamicConfigManager) NewPushChannel() <-chan DynamicConfig {
+func (m *DynamicConfigManager) NewPushChannel() <-chan *DynamicConfig {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	ch := make(chan DynamicConfig, 100)
-	ch <- *m.dynamicConfig
+	ch := make(chan *DynamicConfig, 1000)
+	ch <- m.dynamicConfig.Clone()
 	m.pushChannels = append(m.pushChannels, ch)
 	return ch
 }
 
-func (m *DynamicConfigManager) Get() DynamicConfig {
+func (m *DynamicConfigManager) Get() *DynamicConfig {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return *m.dynamicConfig
+	return m.dynamicConfig.Clone()
 }
 
 func (m *DynamicConfigManager) Set(opts ...DynamicConfigOption) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	newDc := m.dynamicConfig.Clone()
 	for _, opt := range opts {
-		opt(m.dynamicConfig)
+		opt(newDc)
 	}
+	if err := newDc.Validate(); err != nil {
+		return err
+	}
+
+	oldDc := m.dynamicConfig
+	m.dynamicConfig = newDc
 	if err := m.store(); err != nil {
+		m.dynamicConfig = oldDc
 		return err
 	}
 	for _, ch := range m.pushChannels {
-		ch <- *m.dynamicConfig
+		ch <- m.dynamicConfig.Clone()
 	}
 	return nil
 }

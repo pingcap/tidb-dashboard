@@ -23,18 +23,28 @@ import (
 
 const (
 	SlowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
-	SelectStmt     = "*, unix_timestamp(time) as timestamp"
+	SelectStmt     = "*, unix_timestamp(Time) as timestamp"
 )
 
 type Base struct {
-	// list filed
-	Instance     string  `gorm:"column:INSTANCE" json:"instance"`
-	Query        string  `gorm:"column:Query" json:"query"`
-	Timestamp    float64 `gorm:"column:timestamp" json:"timestamp"`
-	QueryTime    float64 `gorm:"column:Query_time" json:"query_time"`
-	MemoryMax    int     `gorm:"column:Mem_max" json:"memory_max"`
-	Digest       string  `gorm:"column:Digest" json:"digest"`
-	ConnectionID uint    `gorm:"column:Conn_ID" json:"connection_id"`
+	// list fields
+	Digest string `gorm:"column:Digest" json:"digest"`
+	Query  string `gorm:"column:Query" json:"query"`
+
+	Instance     string `gorm:"column:INSTANCE" json:"instance"`
+	DB           string `gorm:"column:DB" json:"db"`
+	ConnectionID uint   `gorm:"column:Conn_ID" json:"connection_id"`
+	Success      int    `gorm:"column:Succ" json:"success"`
+
+	Time        string  `gorm:"column:Time" json:"time_str"`         // finish time
+	Timestamp   float64 `gorm:"column:timestamp" json:"timestamp"`   // unix_timestamp(Time) as timestamp
+	QueryTime   float64 `gorm:"column:Query_time" json:"query_time"` // latency
+	ParseTime   float64 `gorm:"column:Parse_time" json:"parse_time"`
+	CompileTime float64 `gorm:"column:Compile_time" json:"compile_time"`
+	ProcessTime float64 `gorm:"column:Process_time" json:"process_time"`
+
+	MemoryMax  int  `gorm:"column:Mem_max" json:"memory_max"`
+	TxnStartTS uint `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
 }
 
 type SlowQuery struct {
@@ -46,20 +56,16 @@ type SlowQuery struct {
 
 	// Basic
 	IsInternal   int    `gorm:"column:Is_internal" json:"is_internal"`
-	Success      int    `gorm:"column:Succ" json:"success"`
-	DB           string `gorm:"column:DB" json:"db"`
 	IndexNames   string `gorm:"column:Index_name" json:"index_names"`
 	Stats        string `gorm:"column:Stats" json:"stats"`
 	BackoffTypes string `gorm:"column:Backoff_types" json:"backoff_types"`
+
 	// Connection
 	User string `gorm:"column:User" json:"user"`
 	Host string `gorm:"column:Host" json:"host"`
 
 	// Time
-	ParseTime          float64 `gorm:"column:Parse_time" json:"parse_time"`
-	CompileTime        float64 `gorm:"column:Compile_time" json:"compile_time"`
 	WaitTime           float64 `gorm:"column:Wait_time" json:"wait_time"`
-	ProcessTime        float64 `gorm:"column:Process_time" json:"process_time"`
 	BackoffTime        float64 `gorm:"column:Backoff_time" json:"backoff_time"`
 	GetCommitTSTime    float64 `gorm:"column:Get_commit_ts_time" json:"get_commit_ts_time"`
 	LocalLatchWaitTime float64 `gorm:"column:Local_latch_wait_time" json:"local_latch_wait_time"`
@@ -75,11 +81,10 @@ type SlowQuery struct {
 	CopWaitMax         float64 `gorm:"column:Cop_wait_max" json:"cop_wait_max"`
 
 	// Transaction
-	TxnStartTS     uint `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
-	WriteKeys      int  `gorm:"column:Write_keys" json:"write_keys"`
-	WriteSize      int  `gorm:"column:Write_size" json:"write_size"`
-	PrewriteRegion int  `gorm:"column:Prewrite_region" json:"prewrite_region"`
-	TxnRetry       int  `gorm:"column:Txn_retry" json:"txn_retry"`
+	WriteKeys      int `gorm:"column:Write_keys" json:"write_keys"`
+	WriteSize      int `gorm:"column:Write_size" json:"write_size"`
+	PrewriteRegion int `gorm:"column:Prewrite_region" json:"prewrite_region"`
+	TxnRetry       int `gorm:"column:Txn_retry" json:"txn_retry"`
 
 	// Coprocessor
 	RequestCount uint   `gorm:"column:Request_count" json:"request_count"`
@@ -89,7 +94,7 @@ type SlowQuery struct {
 	CopWaitAddr  string `gorm:"column:Cop_wait_addr" json:"cop_wait_addr"`
 }
 
-type QueryRequestParam struct {
+type GetListRequest struct {
 	LogStartTS int64    `json:"logStartTS" form:"logStartTS"`
 	LogEndTS   int64    `json:"logEndTS" form:"logEndTS"`
 	DB         []string `json:"db" form:"db"`
@@ -97,6 +102,16 @@ type QueryRequestParam struct {
 	Text       string   `json:"text" form:"text"`
 	OrderBy    string   `json:"orderBy" form:"orderBy"`
 	DESC       bool     `json:"desc" form:"desc"`
+
+	// for showing slow queries in the statement detail page
+	Plans  []string `json:"plans" form:"plans"`
+	Digest string   `json:"digest" form:"digest"`
+}
+
+type GetDetailRequest struct {
+	Digest    string  `json:"digest" form:"digest"`
+	Time      float64 `json:"time" form:"time"`
+	ConnectID int64   `json:"connect_id" form:"connect_id"`
 }
 
 func getAllColumnNames() []string {
@@ -126,12 +141,16 @@ func isValidColumnName(name string) bool {
 	return false
 }
 
-func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
-	tx := db.Select(SelectStmt).Table(SlowQueryTable)
-	tx = tx.Where("time between from_unixtime(?) and from_unixtime(?)", params.LogStartTS, params.LogEndTS)
-	if params.Text != "" {
-		lowerStr := strings.ToLower(params.Text)
-		tx = tx.Where("txn_start_ts REGEXP ? OR LOWER(digest) REGEXP ? OR LOWER(prev_stmt) REGEXP ? OR LOWER(query) REGEXP ?",
+func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
+	tx := db.
+		Table(SlowQueryTable).
+		Select(SelectStmt).
+		Where("time between from_unixtime(?) and from_unixtime(?)", req.LogStartTS, req.LogEndTS).
+		Limit(req.Limit)
+
+	if req.Text != "" {
+		lowerStr := strings.ToLower(req.Text)
+		tx = tx.Where("txn_start_ts REGEXP ? OR LOWER(digest) REGEXP ? OR LOWER(CONVERT(prev_stmt USING utf8)) REGEXP ? OR LOWER(CONVERT(query USING utf8)) REGEXP ?",
 			lowerStr,
 			lowerStr,
 			lowerStr,
@@ -139,40 +158,46 @@ func QuerySlowLogList(db *gorm.DB, params *QueryRequestParam) ([]Base, error) {
 		)
 	}
 
-	if len(params.DB) != 0 {
-		tx = tx.Where("DB IN (?)", params.DB)
+	if len(req.DB) > 0 {
+		tx = tx.Where("DB IN (?)", req.DB)
 	}
 
-	order := params.OrderBy
+	order := req.OrderBy
 	if isValidColumnName(order) {
-		if params.DESC {
+		if req.DESC {
 			tx = tx.Order(fmt.Sprintf("%s desc", order))
 		} else {
 			tx = tx.Order(fmt.Sprintf("%s asc", order))
 		}
 	}
 
-	var results []Base
+	if len(req.Plans) > 0 {
+		tx = tx.Where("Plan_digest IN (?)", req.Plans)
+	}
 
-	err := tx.Limit(params.Limit).Find(&results).Error
+	if len(req.Digest) > 0 {
+		tx = tx.Where("Digest = ?", req.Digest)
+	}
+
+	var results []Base
+	err := tx.Find(&results).Error
 	if err != nil {
 		return nil, err
 	}
 	return results, nil
 }
 
-func QuerySlowLogDetail(db *gorm.DB, req *DetailRequest) (*SlowQuery, error) {
+func QuerySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) {
 	var result SlowQuery
-	upperBound := req.Time + 10E-7
-	lowerBound := req.Time - 10E-7
-	err := db.Select(SelectStmt).Table(SlowQueryTable).
+	err := db.
+		Table(SlowQueryTable).
+		Select(SelectStmt).
 		Where("Digest = ?", req.Digest).
-		Where("Time >= from_unixtime(?) and Time <= from_unixtime(?)", lowerBound, upperBound).
+		Where("Time = from_unixtime(?)", req.Time).
 		Where("Conn_id = ?", req.ConnectID).
 		First(&result).Error
 	if err != nil {
 		return nil, err
 	}
-
 	return &result, nil
 }

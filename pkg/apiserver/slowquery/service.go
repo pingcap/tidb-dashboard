@@ -15,7 +15,6 @@ package slowquery
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -47,23 +46,16 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Summary Example: Get all databases
 // @Description Get all databases.
 // @Produce json
-// @Param q query QueryRequestParam true "Query"
+// @Param q query GetListRequest true "Query"
 // @Success 200 {array} Base
 // @Router /slow_query/list [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) listHandler(c *gin.Context) {
-	var req QueryRequestParam
+	var req GetListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		_ = c.Error(err)
 		return
-	}
-
-	if req.LogStartTS == 0 {
-		now := time.Now().Unix()
-		before := time.Now().Add(-30 * time.Minute).Unix()
-		req.LogStartTS = before
-		req.LogEndTS = now
 	}
 
 	db := utils.GetTiDBConnection(c)
@@ -75,22 +67,16 @@ func (s *Service) listHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, results)
 }
 
-type DetailRequest struct {
-	Digest    string  `json:"digest" form:"digest"`
-	Time      float64 `json:"time" form:"time"`
-	ConnectID int64   `json:"connect_id" form:"connect_id"`
-}
-
 // @Summary Example: Get all databases
 // @Description Get all databases.
 // @Produce json
-// @Param q query DetailRequest true "Query"
+// @Param q query GetDetailRequest true "Query"
 // @Success 200 {object} SlowQuery
 // @Router /slow_query/detail [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) detailhandler(c *gin.Context) {
-	var req DetailRequest
+	var req GetDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))

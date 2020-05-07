@@ -180,8 +180,8 @@ func (s *distanceStrategy) StartWorkers(ctx context.Context, wg *sync.WaitGroup)
 	wg.Add(workerCount)
 	for i := 0; i < workerCount; i++ {
 		go func() {
+			defer wg.Done()
 			s.GenerateScaleColumnWork(ctx, s.ScaleWorkerCh)
-			wg.Done()
 		}()
 	}
 }

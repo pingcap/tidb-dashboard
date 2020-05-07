@@ -1,13 +1,13 @@
 import React, { useCallback, useMemo } from 'react'
-import { Skeleton, Checkbox } from 'antd'
+import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
-  DetailsList,
   DetailsListLayoutMode,
   SelectionMode,
   IDetailsListProps,
   IColumn,
 } from 'office-ui-fabric-react/lib/DetailsList'
+import { ShimmeredDetailsList } from 'office-ui-fabric-react/lib/ShimmeredDetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
 import Card from '../Card'
@@ -19,12 +19,12 @@ export interface ICardTableV2Props extends IDetailsListProps {
   className?: string
   style?: object
   loading?: boolean
-  loadingSkeletonRows?: number
   cardExtra?: React.ReactNode
   cardNoMargin?: boolean
   // The keys of visible columns. If null, all columns will be shown.
   visibleColumnKeys?: { [key: string]: boolean }
   visibleItemsCount?: number
+  columnsWidth?: { [key: string]: number }
   // Event triggered when a row is clicked.
   onRowClicked?: (item: any, itemIndex: number) => void
 }
@@ -59,39 +59,6 @@ function useRenderClickableRow(onRowClicked) {
   )
 }
 
-function renderColumnVisibilitySelection(
-  columns?: IColumn[],
-  visibleColumnKeys?: { [key: string]: boolean },
-  onChange?: (visibleKeys: { [key: string]: boolean }) => void
-) {
-  if (columns == null) {
-    return []
-  }
-  if (visibleColumnKeys == null) {
-    visibleColumnKeys = {}
-    columns.forEach((c) => {
-      visibleColumnKeys![c.key] = true
-    })
-  }
-  return columns.map((column) => (
-    <Checkbox
-      key={column.key}
-      checked={visibleColumnKeys![column.key]}
-      onChange={(e) => {
-        if (!onChange) {
-          return
-        }
-        onChange({
-          ...visibleColumnKeys!,
-          [column.key]: e.target.checked,
-        })
-      }}
-    >
-      {column.name}
-    </Checkbox>
-  ))
-}
-
 function CardTableV2(props: ICardTableV2Props) {
   const {
     title,
@@ -99,11 +66,11 @@ function CardTableV2(props: ICardTableV2Props) {
     className,
     style,
     loading = false,
-    loadingSkeletonRows = 5,
     cardExtra,
     cardNoMargin,
     visibleColumnKeys,
     visibleItemsCount,
+    columnsWidth,
     onRowClicked,
     columns,
     items,
@@ -112,12 +79,30 @@ function CardTableV2(props: ICardTableV2Props) {
 
   const renderClickableRow = useRenderClickableRow(onRowClicked)
 
-  const filteredColumns = useMemo(() => {
-    if (columns == null || visibleColumnKeys == null) {
-      return columns
+  const finalColumns = useMemo(() => {
+    let newColumns: IColumn[] = columns || []
+    if (visibleColumnKeys != null) {
+      newColumns = newColumns.filter((c) => visibleColumnKeys[c.key])
     }
-    return columns.filter((c) => visibleColumnKeys[c.key])
-  }, [columns, visibleColumnKeys])
+    // https://github.com/microsoft/fluentui/issues/9287
+    // ms doesn't support initial the columns width
+    if (columnsWidth != null) {
+      newColumns = newColumns.map((c) =>
+        columnsWidth[c.key]
+          ? {
+              ...c,
+              style: {
+                width: `${columnsWidth[c.key]}px`,
+              }, // doesn't work
+              currentWidth: columnsWidth[c.key], // doesn't work
+              calculatedWidth: columnsWidth[c.key], // doesn't work
+            }
+          : c
+      )
+    }
+    console.log(newColumns)
+    return newColumns
+  }, [columns, visibleColumnKeys, columnsWidth])
 
   const filteredItems = useMemo(() => {
     if (visibleItemsCount == null) {
@@ -135,32 +120,23 @@ function CardTableV2(props: ICardTableV2Props) {
       noMargin={cardNoMargin}
       extra={cardExtra}
     >
-      {loading ? (
-        <Skeleton
-          active
-          title={false}
-          paragraph={{ rows: loadingSkeletonRows }}
+      <div className={styles.cardTableContent}>
+        <ShimmeredDetailsList
+          selectionMode={SelectionMode.none}
+          layoutMode={DetailsListLayoutMode.justified}
+          onRenderDetailsHeader={renderStickyHeader}
+          onRenderRow={onRowClicked ? renderClickableRow : undefined}
+          onRenderCheckbox={(props) => {
+            return <Checkbox checked={props?.checked} />
+          }}
+          columns={finalColumns}
+          items={filteredItems}
+          enableShimmer={filteredItems.length > 0 ? false : loading}
+          {...restProps}
         />
-      ) : (
-        <div className={styles.cardTableContent}>
-          <DetailsList
-            selectionMode={SelectionMode.none}
-            layoutMode={DetailsListLayoutMode.justified}
-            onRenderDetailsHeader={renderStickyHeader}
-            onRenderRow={onRowClicked ? renderClickableRow : undefined}
-            onRenderCheckbox={(props) => {
-              return <Checkbox checked={props?.checked} />
-            }}
-            columns={filteredColumns}
-            items={filteredItems}
-            {...restProps}
-          />
-        </div>
-      )}
+      </div>
     </Card>
   )
 }
-
-CardTableV2.renderColumnVisibilitySelection = renderColumnVisibilitySelection
 
 export default CardTableV2

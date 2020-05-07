@@ -12,14 +12,10 @@ import {
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-import { StatementConfig } from '@lib/client'
+import client, { StatementConfig } from '@lib/client'
 
 interface Props {
-  instanceId: string
-
   onClose: () => void
-  onFetchConfig: (instanceId: string) => Promise<StatementConfig | undefined>
-  onUpdateConfig: (instanceId: string, config: StatementConfig) => Promise<any>
   onConfigUpdated: () => any
 }
 
@@ -38,13 +34,7 @@ const convertArrToObj = (arr: number[]) =>
 const REFRESH_INTERVAL_MARKS = convertArrToObj([1, 5, 15, 30, 60])
 const KEEP_DURATION_MARKS = convertArrToObj([1, 2, 5, 10, 20, 30])
 
-function StatementSettingForm({
-  instanceId,
-  onClose,
-  onFetchConfig,
-  onUpdateConfig,
-  onConfigUpdated,
-}: Props) {
+function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [oriConfig, setOriConfig] = useState<StatementConfig | null>(null)
@@ -54,18 +44,20 @@ function StatementSettingForm({
   useEffect(() => {
     async function fetchConfig() {
       setLoading(true)
-      const res = await onFetchConfig(instanceId)
-      if (res) {
-        setOriConfig(res)
+      const res = await client.getInstance().statementsConfigGet()
+      if (res?.data) {
+        const oriConfig = res.data
+        setOriConfig(oriConfig)
 
-        const refresh_interval = Math.ceil(res.refresh_interval! / 60)
+        const refresh_interval = Math.ceil(oriConfig.refresh_interval! / 60)
         const max_refresh_interval = Math.max(refresh_interval, 60)
         const keep_duration = Math.ceil(
-          (res.refresh_interval! * res.history_size!) / (24 * 60 * 60)
+          (oriConfig.refresh_interval! * oriConfig.history_size!) /
+            (24 * 60 * 60)
         )
         const max_keep_duration = Math.max(keep_duration, 30)
         setConfig({
-          ...res,
+          ...oriConfig,
           refresh_interval,
           keep_duration,
           max_refresh_interval,
@@ -75,7 +67,7 @@ function StatementSettingForm({
       setLoading(false)
     }
     fetchConfig()
-  }, [instanceId, onFetchConfig])
+  }, [])
 
   async function updateConfig(values) {
     setSubmitting(true)
@@ -86,9 +78,9 @@ function StatementSettingForm({
         (values.keep_duration * 24 * 60) / values.refresh_interval
       ),
     }
-    const res = await onUpdateConfig(instanceId, newConfig)
+    const res = await client.getInstance().statementsConfigPost(newConfig)
     setSubmitting(false)
-    if (res !== undefined) {
+    if (res) {
       onClose()
       onConfigUpdated()
     }
@@ -98,11 +90,11 @@ function StatementSettingForm({
     if (oriConfig?.enable && !values.enable) {
       // warning
       Modal.confirm({
-        title: t('statement.pages.overview.settings.close_statement'),
+        title: t('statement.settings.close_statement'),
         icon: <ExclamationCircleOutlined />,
-        content: t('statement.pages.overview.settings.close_statement_warning'),
-        okText: t('statement.pages.overview.settings.actions.close'),
-        cancelText: t('statement.pages.overview.settings.actions.cancel'),
+        content: t('statement.settings.close_statement_warning'),
+        okText: t('statement.settings.actions.close'),
+        cancelText: t('statement.settings.actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: () => updateConfig(values),
       })
@@ -119,7 +111,7 @@ function StatementSettingForm({
           <Form.Item
             name="enable"
             valuePropName="checked"
-            label={t('statement.pages.overview.settings.switch')}
+            label={t('statement.settings.switch')}
           >
             <Switch />
           </Form.Item>
@@ -131,11 +123,7 @@ function StatementSettingForm({
               return (
                 getFieldValue('enable') && (
                   <Form.Item noStyle>
-                    <Form.Item
-                      label={t(
-                        'statement.pages.overview.settings.refresh_interval'
-                      )}
-                    >
+                    <Form.Item label={t('statement.settings.refresh_interval')}>
                       <Input.Group>
                         <Form.Item noStyle name="refresh_interval">
                           <InputNumber
@@ -159,11 +147,7 @@ function StatementSettingForm({
                         </Form.Item>
                       </Input.Group>
                     </Form.Item>
-                    <Form.Item
-                      label={t(
-                        'statement.pages.overview.settings.keep_duration'
-                      )}
-                    >
+                    <Form.Item label={t('statement.settings.keep_duration')}>
                       <Input.Group>
                         <Form.Item noStyle name="keep_duration">
                           <InputNumber
@@ -195,10 +179,10 @@ function StatementSettingForm({
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit" loading={submitting}>
-                {t('statement.pages.overview.settings.actions.save')}
+                {t('statement.settings.actions.save')}
               </Button>
               <Button onClick={onClose}>
-                {t('statement.pages.overview.settings.actions.cancel')}
+                {t('statement.settings.actions.cancel')}
               </Button>
             </Space>
           </Form.Item>

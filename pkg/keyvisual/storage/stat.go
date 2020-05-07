@@ -192,8 +192,8 @@ func NewStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvide
 		OnStart: func(ctx context.Context) error {
 			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				s.rebuildRegularly(ctx)
-				wg.Done()
 			}()
 			return nil
 		},

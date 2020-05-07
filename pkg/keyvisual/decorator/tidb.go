@@ -58,14 +58,17 @@ func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, 
 		OnStart: func(ctx context.Context) error {
 			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				s.Background(ctx)
-				wg.Done()
 			}()
 			return nil
 		},
 	})
 
 	return s
+}
+
+func (s *tidbLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {
 }
 
 func (s *tidbLabelStrategy) Background(ctx context.Context) {

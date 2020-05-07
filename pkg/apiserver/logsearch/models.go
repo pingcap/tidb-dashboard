@@ -18,10 +18,9 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
-
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 )
 
@@ -72,13 +71,14 @@ type SearchLogRequest struct {
 	Patterns []string `json:"patterns"`
 }
 
-func (r *SearchLogRequest) ConvertToPB() *diagnosticspb.SearchLogRequest {
+func (r *SearchLogRequest) ConvertToPB(target diagnosticspb.SearchLogRequest_Target) *diagnosticspb.SearchLogRequest {
 	var levels = PBLogLevelSlice[r.MinLevel:]
 	return &diagnosticspb.SearchLogRequest{
 		StartTime: r.StartTime,
 		EndTime:   r.EndTime,
 		Levels:    levels,
 		Patterns:  r.Patterns,
+		Target:    target,
 	}
 }
 
@@ -92,12 +92,14 @@ func (r *SearchLogRequest) Value() (driver.Value, error) {
 }
 
 type TaskModel struct {
-	ID           uint                     `json:"id" gorm:"primary_key"`
-	TaskGroupID  uint                     `json:"task_group_id" gorm:"index"`
-	Target       *utils.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
-	State        TaskState                `json:"state" gorm:"index"`
-	LogStorePath *string                  `json:"log_store_path" gorm:"type:text"`
-	Error        *string                  `json:"error" gorm:"type:text"`
+	ID               uint                     `json:"id" gorm:"primary_key"`
+	TaskGroupID      uint                     `json:"task_group_id" gorm:"index"`
+	Target           *model.RequestTargetNode `json:"target" gorm:"embedded;embedded_prefix:target_"`
+	State            TaskState                `json:"state" gorm:"index"`
+	LogStorePath     *string                  `json:"log_store_path" gorm:"type:text"`
+	SlowLogStorePath *string                  `json:"slow_log_store_path" gorm:"type:text"`
+	Size             int64                    `json:"size" gorm:"index"`
+	Error            *string                  `json:"error" gorm:"type:text"`
 }
 
 func (TaskModel) TableName() string {
@@ -117,7 +119,7 @@ type TaskGroupModel struct {
 	ID            uint                          `json:"id" gorm:"primary_key"`
 	SearchRequest *SearchLogRequest             `json:"search_request" gorm:"type:text"`
 	State         TaskGroupState                `json:"state" gorm:"index"`
-	TargetStats   utils.RequestTargetStatistics `json:"target_stats" gorm:"embedded;embedded_prefix:target_stats_"`
+	TargetStats   model.RequestTargetStatistics `json:"target_stats" gorm:"embedded;embedded_prefix:target_stats_"`
 	LogStoreDir   *string                       `json:"log_store_dir" gorm:"type:text"`
 }
 

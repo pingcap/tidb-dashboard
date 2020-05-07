@@ -7,13 +7,20 @@ slow_query:
       connection_id: 连接号
       connection_id_tooltip: SQL 客户端连接 ID
       sql: SQL
+      sql_tooltip: SQL
       timestamp: 结束运行时间
+      timestamp_tooltip: 该 SQL 结束运行时的时间
       query_time: 总执行时间
+      query_time_tooltip: 该 SQL 总的执行时间
       memory_max: 最大内存
+      memory_max_tooltip: 该 SQL 执行时占用的最大内存空间
       digest: SQL 模板 ID
       digest_tooltip: SQL 模板的唯一标识（SQL 指纹）
       is_internal: 是否为内部 SQL
       is_success: 是否执行成功
+      is_success_tooltip: SQL 是否执行成功
+      result: 执行结果
+      result_tooltip: SQL 是否执行成功
       index_names: 索引名
       index_names_tooltip: SQL 执行时使用的索引名称
       stats: 使用的统计信息
@@ -26,9 +33,12 @@ slow_query:
       db_tooltip: 执行该 SQL 时使用的数据库名称
 
       parse_time: 解析耗时
+      parse_time_tooltip: 解析该 SQL 的耗时
       compile_time: 优化耗时
+      compile_time_tooltip: 优化该 SQL 的耗时
       wait_time: Coprocessor 累计等待耗时
       process_time: Coprocessor 累计执行耗时
+      process_time_tooltip: Coprocessor 累计执行耗时
       backoff_time: 累计重试等待耗时
       get_commit_ts_time: 取 Commit Ts 耗时
       get_commit_ts_time_tooltip: 从 PD 取递交时间戳（事务号）步骤的耗时
@@ -52,10 +62,14 @@ slow_query:
       cop_wait_addr_tooltip: 耗费最长时间等待 Coprocessor 请求的 TiKV 实例地址
 
       txn_start_ts: 事务号
+      txn_start_ts_tooltip: 事物开始的时间戳，也即是事物号
       write_keys: 写入 Key 个数
       write_size: 写入数据量
       prewrite_regions: Prewrite 涉及 Regions 个数
       txn_retry: 事务重试次数
+    status:
+      success: 成功
+      failed: 失败
   detail:
     head:
       title: 慢查询详情

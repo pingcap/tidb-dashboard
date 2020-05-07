@@ -37,15 +37,15 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	apiutils "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
-	http2 "github.com/pingcap-incubator/tidb-dashboard/pkg/http"
+	pkghttp "github.com/pingcap-incubator/tidb-dashboard/pkg/http"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
 	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
-	utils2 "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
 func Handler(s *Service) http.Handler {
@@ -60,7 +60,7 @@ type PDDataProviderConstructor func(*config.Config, *http.Client, *clientv3.Clie
 
 type Service struct {
 	app    *fx.App
-	status *utils2.ServiceStatus
+	status *utils.ServiceStatus
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -81,7 +81,7 @@ func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS *asse
 	})
 
 	return &Service{
-		status:            utils2.NewServiceStatus(),
+		status:            utils.NewServiceStatus(),
 		config:            cfg,
 		newPDDataProvider: newPDDataProvider,
 		stoppedHandler:    stoppedHandler,
@@ -101,7 +101,7 @@ func (s *Service) Start(ctx context.Context) error {
 	s.ctx, s.cancel = context.WithCancel(ctx)
 
 	s.app = fx.New(
-		fx.Logger(utils2.NewFxPrinter()),
+		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
 			newAPIHandlerEngine,
 			s.provideLocals,
@@ -111,7 +111,7 @@ func (s *Service) Start(ctx context.Context) error {
 			config.NewDynamicConfigManager,
 			tidb.NewForwarderConfig,
 			tidb.NewForwarder,
-			http2.NewHTTPClientWithConf,
+			pkghttp.NewHTTPClientWithConf,
 			user.NewAuthService,
 			foo.NewService,
 			info.NewService,
@@ -185,7 +185,7 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 	apiHandlerEngine.Use(gin.Recovery())
 	apiHandlerEngine.Use(cors.AllowAll())
 	apiHandlerEngine.Use(gzip.Gzip(gzip.BestSpeed))
-	apiHandlerEngine.Use(utils.MWHandleErrors())
+	apiHandlerEngine.Use(apiutils.MWHandleErrors())
 
 	endpoint = apiHandlerEngine.Group("/dashboard/api")
 

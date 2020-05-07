@@ -2,7 +2,7 @@ import {
   ClusterinfoClusterInfo,
   LogsearchTaskGroupResponse,
   LogsearchTaskModel,
-  UtilsRequestTargetNode,
+  ModelRequestTargetNode,
 } from '@lib/client'
 import { RangeValue } from 'rc-picker/lib/interface'
 import moment from 'moment'
@@ -29,20 +29,22 @@ export enum NodeKind {
   TiDB = 'tidb',
   TiKV = 'tikv',
   PD = 'pd',
+  TiFlash = 'tiflash',
 }
 
 export const namingMap = {
   [NodeKind.TiDB]: 'TiDB',
   [NodeKind.TiKV]: 'TiKV',
   [NodeKind.PD]: 'PD',
+  [NodeKind.TiFlash]: 'TiFlash',
 }
 
 export const AllLogLevel = [1, 2, 3, 4, 5, 6]
 
 export function parseClusterInfo(
   info: ClusterinfoClusterInfo
-): UtilsRequestTargetNode[] {
-  const targets: UtilsRequestTargetNode[] = []
+): ModelRequestTargetNode[] {
+  const targets: ModelRequestTargetNode[] = []
   info?.tidb?.nodes?.forEach((item) => {
     if (
       item.ip === undefined ||
@@ -85,13 +87,24 @@ export function parseClusterInfo(
       display_name: `${item.ip}:${item.port}`,
     })
   })
+  info?.tiflash?.nodes?.forEach((item) => {
+    if (!(item.ip && item.port)) {
+      return
+    }
+    targets.push({
+      kind: NodeKind.TiFlash,
+      ip: item.ip,
+      port: item.port,
+      display_name: `${item.ip}:${item.port}`,
+    })
+  })
   return targets
 }
 
 interface Params {
   timeRange: RangeValue<moment.Moment>
   logLevel: number
-  components: UtilsRequestTargetNode[]
+  components: ModelRequestTargetNode[]
   searchValue: string
 }
 
@@ -109,8 +122,8 @@ export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
   }
 }
 
-function getComponents(tasks: LogsearchTaskModel[]): UtilsRequestTargetNode[] {
-  const targets: UtilsRequestTargetNode[] = []
+function getComponents(tasks: LogsearchTaskModel[]): ModelRequestTargetNode[] {
+  const targets: ModelRequestTargetNode[] = []
   tasks.forEach((task) => {
     if (task.target === undefined) {
       return
@@ -120,4 +133,9 @@ function getComponents(tasks: LogsearchTaskModel[]): UtilsRequestTargetNode[] {
   return targets
 }
 
-export const NodeKindList = [NodeKind.TiDB, NodeKind.TiKV, NodeKind.PD]
+export const NodeKindList = [
+  NodeKind.TiDB,
+  NodeKind.TiKV,
+  NodeKind.PD,
+  NodeKind.TiFlash,
+]

@@ -1,7 +1,7 @@
 import client from '@lib/client'
 import {
   LogsearchCreateTaskGroupRequest,
-  UtilsRequestTargetNode,
+  ModelRequestTargetNode,
 } from '@lib/client'
 import { Button, DatePicker, Form, Input, Select, TreeSelect } from 'antd'
 import { RangeValue } from 'rc-picker/lib/interface'
@@ -25,11 +25,12 @@ const { SHOW_CHILD } = TreeSelect
 const { RangePicker } = DatePicker
 const { Option } = Select
 
-function buildTreeData(targets: UtilsRequestTargetNode[]) {
+function buildTreeData(targets: ModelRequestTargetNode[]) {
   const servers = {
     [NodeKind.TiDB]: [],
     [NodeKind.TiKV]: [],
     [NodeKind.PD]: [],
+    [NodeKind.TiFlash]: [],
   }
 
   targets.forEach((item) => {
@@ -44,7 +45,7 @@ function buildTreeData(targets: UtilsRequestTargetNode[]) {
       title: namingMap[kind],
       value: kind,
       key: kind,
-      children: servers[kind].map((item: UtilsRequestTargetNode) => {
+      children: servers[kind].map((item: ModelRequestTargetNode) => {
         const addr = item.display_name!
         return {
           title: addr,
@@ -71,7 +72,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
   const [selectedComponents, setComponents] = useState<string[]>([])
   const [searchValue, setSearchValue] = useState<string>('')
 
-  const [allTargets, setAllTargets] = useState<UtilsRequestTargetNode[]>([])
+  const [allTargets, setAllTargets] = useState<ModelRequestTargetNode[]>([])
   useMount(() => {
     async function fetchData() {
       const res = await client.getInstance().topologyAllGet()
@@ -99,7 +100,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
 
   async function createTaskGroup() {
     // TODO: check select at least one component
-    const targets: UtilsRequestTargetNode[] = allTargets.filter((item) =>
+    const targets: ModelRequestTargetNode[] = allTargets.filter((item) =>
       selectedComponents.some((addr) => addr === item.display_name ?? '')
     )
 

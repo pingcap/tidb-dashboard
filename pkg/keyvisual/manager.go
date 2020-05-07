@@ -33,8 +33,8 @@ func (s *Service) managerHook() fx.Hook {
 		OnStart: func(ctx context.Context) error {
 			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				s.managerLoop(ctx)
-				wg.Done()
 			}()
 			return nil
 		},
@@ -52,13 +52,26 @@ func (s *Service) managerLoop(ctx context.Context) {
 		case <-ctx.Done():
 			s.stopService()
 			return
-		case cfg := <-ch:
-			if cfg.KeyVisual.AutoCollectionEnabled {
-				s.startService(ctx)
-			} else {
+		case cfg, ok := <-ch:
+			if !ok {
 				s.stopService()
+				return
 			}
+			s.resetKeyVisualConfig(ctx, cfg)
 		}
+	}
+}
+
+func (s *Service) resetKeyVisualConfig(ctx context.Context, cfg *config.DynamicConfig) {
+	if cfg.KeyVisual.AutoCollectionEnabled {
+		if s.keyVisualCfg != nil && s.keyVisualCfg.Policy != cfg.KeyVisual.Policy {
+			s.stopService()
+		}
+		s.reloadKeyVisualConfig(&cfg.KeyVisual)
+		s.startService(ctx)
+	} else {
+		s.stopService()
+		s.reloadKeyVisualConfig(&cfg.KeyVisual)
 	}
 }
 

@@ -1,4 +1,5 @@
 import { WarningOutlined } from '@ant-design/icons'
+import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import client from '@lib/client'
 import { Bar, CardTableV2 } from '@lib/components'
@@ -32,6 +33,7 @@ export default function HostTable() {
       maxWidth: 200,
       isResizable: true,
       isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ ip, unavailable }) => {
         if (unavailable) {
           return (
@@ -54,6 +56,7 @@ export default function HostTable() {
       maxWidth: 100,
       isResizable: true,
       isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ cpu_core }) =>
         cpu_core !== undefined ? `${cpu_core} vCPU` : '',
     },
@@ -64,6 +67,7 @@ export default function HostTable() {
       maxWidth: 150,
       isResizable: true,
       isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ cpu_usage }) => {
         if (cpu_usage === undefined) {
           return
@@ -90,6 +94,7 @@ export default function HostTable() {
       maxWidth: 100,
       isResizable: true,
       isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ memory }) =>
         memory !== undefined ? getValueFormat('bytes')(memory.total, 1) : '',
     },
@@ -100,6 +105,7 @@ export default function HostTable() {
       maxWidth: 150,
       isResizable: true,
       isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ memory }) => {
         if (memory === undefined) {
           return
@@ -126,6 +132,7 @@ export default function HostTable() {
       maxWidth: 200,
       isResizable: true,
       isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return
@@ -170,6 +177,7 @@ export default function HostTable() {
       maxWidth: 100,
       isResizable: true,
       isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return
@@ -190,6 +198,7 @@ export default function HostTable() {
       maxWidth: 150,
       isResizable: true,
       isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return

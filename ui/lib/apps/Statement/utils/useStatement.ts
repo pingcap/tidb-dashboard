@@ -42,10 +42,10 @@ export default function useStatement(
   const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [allStmtTypes, setAllStmtTypes] = useState<string[]>([])
 
-  const validTimeRange = useMemo(
-    () => calcValidStatementTimeRange(queryOptions.timeRange, allTimeRanges),
-    [queryOptions.timeRange, allTimeRanges]
-  )
+  const validTimeRange = useMemo(() => {
+    let curOptions = needSave ? savedQueryOptions : queryOptions
+    return calcValidStatementTimeRange(curOptions.timeRange, allTimeRanges)
+  }, [needSave, queryOptions, savedQueryOptions, allTimeRanges])
 
   const [loadingStatements, setLoadingStatements] = useState(true)
   const [statements, setStatements] = useState<StatementModel[]>([])

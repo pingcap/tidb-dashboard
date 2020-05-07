@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useEffect } from 'react'
 import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
@@ -13,6 +13,19 @@ import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import Card from '../Card'
 import styles from './index.module.less'
 
+function copyAndSort<T>(
+  items: T[],
+  columnKey: string,
+  isSortedDescending?: boolean
+): T[] {
+  const key = columnKey as keyof T
+  return items
+    .slice(0)
+    .sort((a: T, b: T) =>
+      (isSortedDescending ? a[key] < b[key] : a[key] > b[key]) ? 1 : -1
+    )
+}
+
 export interface ICardTableV2Props extends IDetailsListProps {
   title?: React.ReactNode
   subTitle?: React.ReactNode
@@ -21,12 +34,20 @@ export interface ICardTableV2Props extends IDetailsListProps {
   loading?: boolean
   cardExtra?: React.ReactNode
   cardNoMargin?: boolean
+
   // The keys of visible columns. If null, all columns will be shown.
   visibleColumnKeys?: { [key: string]: boolean }
   visibleItemsCount?: number
-  columnsWidth?: { [key: string]: number }
+
+  // Handle sort
+  orderBy?: string
+  desc?: boolean
+  onChangeSort?: (orderBy: string, desc: boolean) => void
+
   // Event triggered when a row is clicked.
   onRowClicked?: (item: any, itemIndex: number) => void
+
+  onGetColumns?: (columns: IColumn[]) => void
 }
 
 function renderStickyHeader(props, defaultRender) {
@@ -70,8 +91,11 @@ function CardTableV2(props: ICardTableV2Props) {
     cardNoMargin,
     visibleColumnKeys,
     visibleItemsCount,
-    columnsWidth,
+    orderBy,
+    desc = true,
+    onChangeSort,
     onRowClicked,
+    onGetColumns,
     columns,
     items,
     ...restProps
@@ -84,32 +108,50 @@ function CardTableV2(props: ICardTableV2Props) {
     if (visibleColumnKeys != null) {
       newColumns = newColumns.filter((c) => visibleColumnKeys[c.key])
     }
-    // https://github.com/microsoft/fluentui/issues/9287
-    // ms doesn't support initial the columns width
-    if (columnsWidth != null) {
-      newColumns = newColumns.map((c) =>
-        columnsWidth[c.key]
-          ? {
-              ...c,
-              style: {
-                width: `${columnsWidth[c.key]}px`,
-              }, // doesn't work
-              currentWidth: columnsWidth[c.key], // doesn't work
-              calculatedWidth: columnsWidth[c.key], // doesn't work
-            }
-          : c
+    newColumns = newColumns.map((c) => ({
+      ...c,
+      isSorted: c.key === orderBy,
+      isSortedDescending: desc,
+      onColumnClick,
+    }))
+    return newColumns
+    // (ignore onColumnClick)
+    // eslint-disable-next-line
+  }, [columns, visibleColumnKeys, orderBy, desc])
+
+  const finalItems = useMemo(() => {
+    let newItems = items || []
+    if (visibleItemsCount != null) {
+      newItems = newItems.slice(0, visibleItemsCount)
+    }
+    const curColumn = finalColumns.find((col) => col.key === orderBy)
+    if (curColumn) {
+      newItems = copyAndSort(
+        newItems,
+        curColumn.fieldName!,
+        curColumn.isSortedDescending
       )
     }
-    console.log(newColumns)
-    return newColumns
-  }, [columns, visibleColumnKeys, columnsWidth])
+    return newItems
+  }, [items, visibleItemsCount, orderBy, finalColumns])
 
-  const filteredItems = useMemo(() => {
-    if (visibleItemsCount == null) {
-      return items
+  useEffect(() => {
+    onGetColumns && onGetColumns(columns || [])
+    // (ignore onGetColumns)
+    // eslint-disable-next-line
+  }, [columns])
+
+  function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {
+    if (!onChangeSort) {
+      return
     }
-    return items.slice(0, visibleItemsCount)
-  }, [items, visibleItemsCount])
+
+    if (column.key === orderBy) {
+      onChangeSort(orderBy, !desc)
+    } else {
+      onChangeSort(column.key, true)
+    }
+  }
 
   return (
     <Card
@@ -130,8 +172,8 @@ function CardTableV2(props: ICardTableV2Props) {
             return <Checkbox checked={props?.checked} />
           }}
           columns={finalColumns}
-          items={filteredItems}
-          enableShimmer={filteredItems.length > 0 ? false : loading}
+          items={finalItems}
+          enableShimmer={finalItems.length > 0 ? false : loading}
           {...restProps}
         />
       </div>

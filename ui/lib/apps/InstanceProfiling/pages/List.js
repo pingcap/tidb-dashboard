@@ -3,6 +3,7 @@ import { message, Form, TreeSelect, Button, Select, Badge } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Card, CardTableV2 } from '@lib/components'
 import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -140,6 +141,7 @@ export default function Page() {
       minWidth: 150,
       maxWidth: 250,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: (rec) => {
         // TODO: Extract to utility function
         const r = []
@@ -162,6 +164,7 @@ export default function Page() {
       maxWidth: 150,
       isResizable: true,
       isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: (rec) => {
         if (rec.state === 1) {
           return (
@@ -187,6 +190,7 @@ export default function Page() {
       maxWidth: 220,
       isResizable: true,
       isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: (rec) => {
         return <DateTime.Calendar unixTimestampMs={rec.started_at * 1000} />
       },
@@ -199,6 +203,7 @@ export default function Page() {
       fieldName: 'profile_duration_secs',
       isResizable: true,
       isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
     },
   ]
 

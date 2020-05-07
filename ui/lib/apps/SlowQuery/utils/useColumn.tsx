@@ -134,8 +134,8 @@ export function useDBColumn(
 export function useSuccessColumn(
   _rows?: { success?: number }[] // used for type check only
 ): IColumn {
-  // !! Wrong usage, hooks only can be used inside the Function Component
-  // !! Can't be used in normal function
+  // !! Don't call `useTranslation()` directly to avoid this method become the custom hook
+  // !! So we can use this inside the useMemo(), useEffect() and useState(()=>{...})
   // const { t } = useTranslation()
   return {
     name: useCommonColumnName('result'),

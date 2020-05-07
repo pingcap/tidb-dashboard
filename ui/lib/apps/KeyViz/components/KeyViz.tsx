@@ -209,17 +209,7 @@ const KeyViz = () => {
     }
   }, 1000)
 
-  const mainPart = enabled ? (
-    chartState && (
-      <Heatmap
-        data={chartState.heatmapData}
-        dataTag={chartState.metricType}
-        onBrush={onBrush}
-        onChartInit={onChartInit}
-        onZoom={onZoom}
-      />
-    )
-  ) : (
+  const disabledPage = isLoading ? null : (
     <Result
       title={t('keyviz.settings.disabled_result.title')}
       subTitle={t('keyviz.settings.disabled_result.sub_title')}
@@ -230,6 +220,18 @@ const KeyViz = () => {
       }
     />
   )
+
+  const mainPart = !enabled
+    ? disabledPage
+    : chartState && (
+        <Heatmap
+          data={chartState.heatmapData}
+          dataTag={chartState.metricType}
+          onBrush={onBrush}
+          onChartInit={onChartInit}
+          onZoom={onZoom}
+        />
+      )
 
   return (
     <div className="PD-KeyVis">

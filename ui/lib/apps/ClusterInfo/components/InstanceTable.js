@@ -1,4 +1,5 @@
 import { DeleteOutlined } from '@ant-design/icons'
+import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
 import {
   STATUS_DOWN,
   STATUS_OFFLINE,
@@ -153,6 +154,7 @@ export default function ListPage() {
       minWidth: 100,
       maxWidth: 200,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: (node) => (
         <Tooltip title={`${node.ip}:${node.port}`}>
           {node.ip}:{node.port}
@@ -165,6 +167,7 @@ export default function ListPage() {
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: renderStatusColumn,
     },
     {
@@ -173,6 +176,7 @@ export default function ListPage() {
       minWidth: 150,
       maxWidth: 200,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ start_timestamp: ts }) => {
         if (ts !== undefined && ts !== 0) {
           return <DateTime.Calendar unixTimestampMs={ts * 1000} />
@@ -186,6 +190,7 @@ export default function ListPage() {
       minWidth: 150,
       maxWidth: 300,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
     },
     {
       name: t('cluster_info.list.instance_table.columns.deploy_path'),
@@ -194,6 +199,7 @@ export default function ListPage() {
       minWidth: 150,
       maxWidth: 300,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
     },
     {
       name: t('cluster_info.list.instance_table.columns.git_hash'),
@@ -202,6 +208,7 @@ export default function ListPage() {
       minWidth: 150,
       maxWidth: 300,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
     },
   ]
 

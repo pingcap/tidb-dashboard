@@ -4,8 +4,8 @@ const hiddenProps = {
   },
 }
 
-const displayProps = {}
+const showProps = {}
 
 export function setHidden(hidden: boolean) {
-  return hidden ? hiddenProps : displayProps
+  return hidden ? hiddenProps : showProps
 }

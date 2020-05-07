@@ -137,7 +137,7 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
     [form, config]
   )
   const policyOptions = useMemo(() => getPolicyOptions(t), [t])
-  const separatorValidator = useMemo(() => getSeparatorValidator(t), [t])
+  const validateSeparator = useMemo(() => getSeparatorValidator(t), [t])
 
   return (
     <>
@@ -174,7 +174,7 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
                   <Form.Item
                     name="policy_kv_separator"
                     label={t('keyviz.settings.separator')}
-                    {...separatorValidator(separator)}
+                    {...validateSeparator(separator)}
                     {...setHidden(
                       !policyConfigurable || !enabled || policy !== 'kv'
                     )}

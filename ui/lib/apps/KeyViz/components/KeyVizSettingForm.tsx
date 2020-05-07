@@ -12,6 +12,9 @@ import {
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import client, { ConfigKeyVisualConfig } from '@lib/client'
+import { setHidden } from '@lib/utils/form'
+
+const policyConfigurable = process.env.NODE_ENV === 'development'
 
 interface Props {
   onClose: () => void
@@ -118,21 +121,20 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
   useEffect(onFetchServiceStatus, [])
 
   const [form] = Form.useForm()
-  const prevPolicy = form.getFieldValue('policy')
   const onValuesChange = useCallback(
     (changedValues, values) => {
       if (changedValues?.auto_collection_enabled && !values?.policy) {
         form.setFieldsValue({ policy: 'db' })
       }
       if (
-        prevPolicy !== 'kv' &&
+        config?.policy !== 'kv' &&
         changedValues?.policy === 'kv' &&
         !values?.policy_kv_separator
       ) {
         form.setFieldsValue({ policy_kv_separator: '/' })
       }
     },
-    [form, prevPolicy]
+    [form, config]
   )
   const policyOptions = useMemo(() => getPolicyOptions(t), [t])
   const separatorValidator = useMemo(() => getSeparatorValidator(t), [t])
@@ -148,37 +150,42 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
           onFinish={onSubmit}
           onValuesChange={onValuesChange}
         >
-          <Form.Item
-            name="auto_collection_enabled"
-            valuePropName="checked"
-            label={t('keyviz.settings.switch')}
-          >
-            <Switch />
-          </Form.Item>
           <Form.Item noStyle shouldUpdate>
-            {({ getFieldValue }) =>
-              getFieldValue('auto_collection_enabled') && (
-                <Form.Item name="policy" label={t('keyviz.settings.policy')}>
-                  <Radio.Group>{policyOptions}</Radio.Group>
-                </Form.Item>
+            {({ getFieldValue }) => {
+              const enabled = getFieldValue('auto_collection_enabled')
+              const policy = getFieldValue('policy')
+              const separator = getFieldValue('policy_kv_separator')
+              return (
+                <>
+                  <Form.Item
+                    name="auto_collection_enabled"
+                    valuePropName="checked"
+                    label={t('keyviz.settings.switch')}
+                  >
+                    <Switch />
+                  </Form.Item>
+                  <Form.Item
+                    name="policy"
+                    label={t('keyviz.settings.policy')}
+                    {...setHidden(!policyConfigurable || !enabled)}
+                  >
+                    <Radio.Group>{policyOptions}</Radio.Group>
+                  </Form.Item>
+                  <Form.Item
+                    name="policy_kv_separator"
+                    label={t('keyviz.settings.separator')}
+                    {...separatorValidator(separator)}
+                    {...setHidden(
+                      !policyConfigurable || !enabled || policy !== 'kv'
+                    )}
+                  >
+                    <Input
+                      placeholder={t('keyviz.settings.separator_placeholder')}
+                    />
+                  </Form.Item>
+                </>
               )
-            }
-          </Form.Item>
-          <Form.Item noStyle shouldUpdate>
-            {({ getFieldValue }) =>
-              getFieldValue('auto_collection_enabled') &&
-              getFieldValue('policy') === 'kv' && (
-                <Form.Item
-                  name="policy_kv_separator"
-                  label={t('keyviz.settings.separator')}
-                  {...separatorValidator(getFieldValue('policy_kv_separator'))}
-                >
-                  <Input
-                    placeholder={t('keyviz.settings.separator_placeholder')}
-                  />
-                </Form.Item>
-              )
-            }
+            }}
           </Form.Item>
           <Form.Item>
             <Space>

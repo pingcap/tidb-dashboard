@@ -67,7 +67,7 @@ slow_query:
       txn_retry: Transaction Retries
     status:
       success: Success
-      failed: Failed
+      error: Failed
   detail:
     head:
       title: Slow Query Detail

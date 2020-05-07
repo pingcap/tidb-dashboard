@@ -12,7 +12,7 @@ const tableColumns = (
   rows: StatementModel[],
   showFullSQL?: boolean
 ): IColumn[] => {
-  const columns: IColumn[] = [
+  return [
     useStatementColumn.useDigestColumn(rows, showFullSQL),
     useStatementColumn.useSumLatencyColumn(rows),
     useStatementColumn.useAvgMinMaxLatencyColumn(rows),
@@ -25,7 +25,6 @@ const tableColumns = (
     useStatementColumn.useRelatedSchemasColumn(rows),
     useColumn.useDummyColumn(),
   ]
-  return columns
 }
 
 interface Props extends Partial<ICardTableV2Props> {

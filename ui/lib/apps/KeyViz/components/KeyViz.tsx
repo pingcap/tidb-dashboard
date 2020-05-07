@@ -107,17 +107,12 @@ const KeyViz = () => {
         setAutoRefreshSeconds(0)
       }
       setServiceEnabled(enabled)
-      if (enabled) {
-        await updateHeatmap()
-      }
     } catch (e) {}
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useMount(() => {
-    updateServiceStatus().then()
-  })
+  useMount(updateServiceStatus)
 
   const updateHeatmap = useCallback(async () => {
     if (getAutoRefreshSeconds() > 0) {

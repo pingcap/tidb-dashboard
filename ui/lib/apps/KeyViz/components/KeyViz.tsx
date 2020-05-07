@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useGetSet, useMount, useInterval } from 'react-use'
 import { useBoolean } from '@umijs/hooks'
 
-import client from '@lib/client'
+import client, { ConfigKeyVisualConfig } from '@lib/client'
 import { Heatmap } from '../heatmap'
 import { HeatmapData, HeatmapRange, DataTag } from '../heatmap/types'
 import { fetchHeatmap } from '../utils'
@@ -90,7 +90,7 @@ const KeyViz = () => {
   const [getDateRange, setDateRange] = useGetSet(3600 * 6)
   const [getBrightLevel, setBrightLevel] = useGetSet(1)
   const [getMetricType, setMetricType] = useGetSet<DataTag>('written_bytes')
-  const [serviceEnabled, setServiceEnabled] = useState(false)
+  const [config, setConfig] = useState<ConfigKeyVisualConfig | null>(null)
   const {
     state: shouldShowSettings,
     setTrue: openSettings,
@@ -98,15 +98,18 @@ const KeyViz = () => {
   } = useBoolean(false)
   const { t } = useTranslation()
 
+  const enabled = config?.auto_collection_enabled === true
+
   const updateServiceStatus = useCallback(async function () {
     setLoading(true)
     try {
-      const config = await client.getInstance().keyvisualConfigGet()
-      const enabled = config.data.auto_collection_enabled === true
+      const resp = await client.getInstance().keyvisualConfigGet()
+      const config = resp.data
+      const enabled = config?.auto_collection_enabled === true
       if (!enabled) {
         setAutoRefreshSeconds(0)
       }
-      setServiceEnabled(enabled)
+      setConfig(config)
     } catch (e) {}
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -189,11 +192,11 @@ const KeyViz = () => {
   }, [getAutoRefreshSeconds()])
 
   useEffect(() => {
-    if (serviceEnabled) {
+    if (enabled) {
       updateHeatmap().then()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serviceEnabled, getSelection(), getDateRange(), getMetricType()])
+  }, [config, getSelection(), getDateRange(), getMetricType()])
 
   useInterval(() => {
     if (getAutoRefreshSeconds() === 0) {
@@ -206,7 +209,7 @@ const KeyViz = () => {
     }
   }, 1000)
 
-  const mainPart = serviceEnabled ? (
+  const mainPart = enabled ? (
     chartState && (
       <Heatmap
         data={chartState.heatmapData}
@@ -231,7 +234,7 @@ const KeyViz = () => {
   return (
     <div className="PD-KeyVis">
       <KeyVizToolbar
-        enabled={serviceEnabled}
+        enabled={enabled}
         dateRange={getDateRange()}
         metricType={getMetricType()}
         brightLevel={getBrightLevel()}

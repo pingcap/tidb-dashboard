@@ -193,7 +193,7 @@ const KeyViz = () => {
 
   useEffect(() => {
     if (enabled) {
-      updateHeatmap().then()
+      updateHeatmap()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config, getSelection(), getDateRange(), getMetricType()])
@@ -203,7 +203,7 @@ const KeyViz = () => {
       return
     }
     if (getRemainingRefreshSeconds() === 0) {
-      updateHeatmap().then()
+      updateHeatmap()
     } else {
       setRemainingRefreshSeconds((c) => c - 1)
     }

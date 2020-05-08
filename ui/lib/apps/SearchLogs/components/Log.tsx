@@ -10,7 +10,7 @@ export default function Log({ log }: LogProps) {
   const { state: expanded, toggle: toggleExpanded } = useToggle(false)
 
   const handleClick = () => {
-    toggleExpanded(!expanded)
+    toggleExpanded()
   }
 
   return (

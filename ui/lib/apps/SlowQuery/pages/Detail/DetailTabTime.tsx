@@ -1,7 +1,7 @@
 import React from 'react'
 import { SlowquerySlowQuery } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
-import { timeValueColumns } from '@lib/utils/table-columns'
+import { timeValueColumns } from '@lib/utils/tableColumns'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'antd'
 

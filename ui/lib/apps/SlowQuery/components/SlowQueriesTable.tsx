@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { CardTableV2, ICardTableV2Props } from '@lib/components'
 import { SlowqueryBase } from '@lib/client'
 
-import { slowQueryColumns } from '../utils/table-columns'
+import { slowQueryColumns } from '../utils/tableColumns'
 import DetailPage from '../pages/Detail'
 
 interface Props extends Partial<ICardTableV2Props> {

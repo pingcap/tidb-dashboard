@@ -10,7 +10,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementModel } from '@lib/client'
 import { Bar, HighlightSQL, Pre, TextWithInfo, TextWrap } from '@lib/components'
-import { dummyColumn } from '@lib/utils/table-columns'
+import { dummyColumn } from '@lib/utils/tableColumns'
 
 function commonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`statement.fields.${fieldName}`} />

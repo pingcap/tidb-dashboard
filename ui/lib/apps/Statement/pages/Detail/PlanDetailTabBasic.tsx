@@ -3,7 +3,7 @@ import { StatementModel } from '@lib/client'
 import { CardTableV2, DateTime, Pre, TextWrap } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { Tooltip } from 'antd'
-import { valueColumns } from '@lib/utils/table-columns'
+import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabBasicProps {
   data: StatementModel

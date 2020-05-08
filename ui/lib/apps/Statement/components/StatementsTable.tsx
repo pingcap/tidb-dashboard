@@ -66,7 +66,7 @@ export default function StatementsTable({
       columns={columns}
       items={statements}
       onRowClicked={handleRowClick}
-      getKey={(row) => row?.digest}
+      getKey={(row) => row && `${row.digest}_${row.schema_name}`}
     />
   )
 }

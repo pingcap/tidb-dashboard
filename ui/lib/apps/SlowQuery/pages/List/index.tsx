@@ -16,6 +16,7 @@ import {
 import client from '@lib/client'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQuery from '../../utils/useSlowQuery'
+import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
 const { Option } = Select
 const { Search } = Input
@@ -72,81 +73,85 @@ function List() {
 
   return (
     <ScrollablePane style={{ height: '100vh' }}>
-      <Card>
-        <Toolbar>
-          <Space>
-            <TimeRangeSelector
-              value={savedQueryOptions.timeRange}
-              onChange={(timeRange) =>
-                setSavedQueryOptions({ ...savedQueryOptions, timeRange })
-              }
-            />
-            <Select
-              value={savedQueryOptions.schemas}
-              mode="multiple"
-              allowClear
-              placeholder={t('statement.pages.overview.toolbar.select_schemas')}
-              style={{ minWidth: 200 }}
-              onChange={(schemas) =>
-                setSavedQueryOptions({ ...savedQueryOptions, schemas })
-              }
-            >
-              {allSchemas.map((item) => (
-                <Option value={item} key={item}>
-                  {item}
-                </Option>
-              ))}
-            </Select>
-            <Search
-              defaultValue={savedQueryOptions.searchText}
-              onSearch={(searchText) =>
-                setSavedQueryOptions({ ...savedQueryOptions, searchText })
-              }
-            />
-            <Select
-              value={savedQueryOptions.limit}
-              style={{ width: 150 }}
-              onChange={(limit) =>
-                setSavedQueryOptions({ ...savedQueryOptions, limit })
-              }
-            >
-              {LIMITS.map((item) => (
-                <Option value={item} key={item}>
-                  Limit {item}
-                </Option>
-              ))}
-            </Select>
-          </Space>
-
-          <Space>
-            {columns.length > 0 && (
-              <ColumnsSelector
-                columns={columns}
-                visibleColumnKeys={visibleColumnKeys}
-                resetColumnKeys={defSlowQueryColumnKeys}
-                onChange={setVisibleColumnKeys}
-                foot={
-                  <Checkbox
-                    checked={showFullSQL}
-                    onChange={(e) => setShowFullSQL(e.target.checked)}
-                  >
-                    {t(
-                      'statement.pages.overview.toolbar.select_columns.show_full_sql'
-                    )}
-                  </Checkbox>
+      <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
+        <Card>
+          <Toolbar>
+            <Space>
+              <TimeRangeSelector
+                value={savedQueryOptions.timeRange}
+                onChange={(timeRange) =>
+                  setSavedQueryOptions({ ...savedQueryOptions, timeRange })
                 }
               />
-            )}
-            <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-              {loadingSlowQueries ? (
-                <LoadingOutlined />
-              ) : (
-                <ReloadOutlined onClick={refresh} />
+              <Select
+                value={savedQueryOptions.schemas}
+                mode="multiple"
+                allowClear
+                placeholder={t(
+                  'statement.pages.overview.toolbar.select_schemas'
+                )}
+                style={{ minWidth: 200 }}
+                onChange={(schemas) =>
+                  setSavedQueryOptions({ ...savedQueryOptions, schemas })
+                }
+              >
+                {allSchemas.map((item) => (
+                  <Option value={item} key={item}>
+                    {item}
+                  </Option>
+                ))}
+              </Select>
+              <Search
+                defaultValue={savedQueryOptions.searchText}
+                onSearch={(searchText) =>
+                  setSavedQueryOptions({ ...savedQueryOptions, searchText })
+                }
+              />
+              <Select
+                value={savedQueryOptions.limit}
+                style={{ width: 150 }}
+                onChange={(limit) =>
+                  setSavedQueryOptions({ ...savedQueryOptions, limit })
+                }
+              >
+                {LIMITS.map((item) => (
+                  <Option value={item} key={item}>
+                    Limit {item}
+                  </Option>
+                ))}
+              </Select>
+            </Space>
+
+            <Space>
+              {columns.length > 0 && (
+                <ColumnsSelector
+                  columns={columns}
+                  visibleColumnKeys={visibleColumnKeys}
+                  resetColumnKeys={defSlowQueryColumnKeys}
+                  onChange={setVisibleColumnKeys}
+                  foot={
+                    <Checkbox
+                      checked={showFullSQL}
+                      onChange={(e) => setShowFullSQL(e.target.checked)}
+                    >
+                      {t(
+                        'statement.pages.overview.toolbar.select_columns.show_full_sql'
+                      )}
+                    </Checkbox>
+                  }
+                />
               )}
-            </Tooltip>
-          </Space>
-        </Toolbar>
-      </Card>
+              <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
+                {loadingSlowQueries ? (
+                  <LoadingOutlined />
+                ) : (
+                  <ReloadOutlined onClick={refresh} />
+                )}
+              </Tooltip>
+            </Space>
+          </Toolbar>
+        </Card>
+      </Sticky>
 
       <SlowQueriesTable
         loading={loadingSlowQueries}

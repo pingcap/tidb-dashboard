@@ -7,6 +7,7 @@ import * as useColumn from '@lib/utils/useColumn'
 
 import * as useSlowQueryColumn from '../utils/useColumn'
 import DetailPage from '../pages/Detail'
+import { usePersistFn } from '@umijs/hooks'
 
 function tableColumns(rows: SlowqueryBase[], showFullSQL?: boolean): IColumn[] {
   return [
@@ -38,8 +39,6 @@ function SlowQueriesTable({
   showFullSQL,
   ...restProps
 }: Props) {
-  console.log('SlowQueriesTable render', Math.random())
-
   const navigate = useNavigate()
 
   const columns = useMemo(() => tableColumns(slowQueries, showFullSQL), [
@@ -47,17 +46,14 @@ function SlowQueriesTable({
     showFullSQL,
   ])
 
-  const handleRowClick = useCallback(
-    (rec) => {
-      const qs = DetailPage.buildQuery({
-        digest: rec.digest,
-        connectId: rec.connection_id,
-        time: rec.timestamp,
-      })
-      navigate(`/slow_query/detail?${qs}`)
-    },
-    [navigate]
-  )
+  const handleRowClick = usePersistFn((rec) => {
+    const qs = DetailPage.buildQuery({
+      digest: rec.digest,
+      connectId: rec.connection_id,
+      time: rec.timestamp,
+    })
+    navigate(`/slow_query/detail?${qs}`)
+  })
 
   const getKey = useCallback((row) => `${row.digest}_${row.timestamp}`, [])
 

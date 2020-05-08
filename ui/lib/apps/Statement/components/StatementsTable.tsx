@@ -7,6 +7,7 @@ import * as useColumn from '@lib/utils/useColumn'
 
 import * as useStatementColumn from '../utils/useColumn'
 import DetailPage from '../pages/Detail'
+import { usePersistFn } from '@umijs/hooks'
 
 const tableColumns = (
   rows: StatementModel[],
@@ -49,18 +50,15 @@ export default function StatementsTable({
     showFullSQL,
   ])
 
-  const handleRowClick = useCallback(
-    (rec) => {
-      const qs = DetailPage.buildQuery({
-        digest: rec.digest,
-        schema: rec.schema_name,
-        beginTime: timeRange.begin_time,
-        endTime: timeRange.end_time,
-      })
-      navigate(`/statement/detail?${qs}`)
-    },
-    [navigate]
-  )
+  const handleRowClick = usePersistFn((rec) => {
+    const qs = DetailPage.buildQuery({
+      digest: rec.digest,
+      schema: rec.schema_name,
+      beginTime: timeRange.begin_time,
+      endTime: timeRange.end_time,
+    })
+    navigate(`/statement/detail?${qs}`)
+  })
 
   const getKey = useCallback((row) => `${row.digest}_${row.schema_name}`, [])
 

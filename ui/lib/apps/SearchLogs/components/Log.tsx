@@ -1,16 +1,17 @@
 import React from 'react'
 import { useState } from 'react'
 import { TextWrap, Pre } from '@lib/components'
+import { useToggle } from '@umijs/hooks'
 
 interface LogProps {
   log: string
 }
 
 export default function Log({ log }: LogProps) {
-  const [expanded, setExpanded] = useState<boolean>(false)
+  const { state: expanded, toggle: toggleExpanded } = useToggle(false)
 
   const handleClick = () => {
-    setExpanded(!expanded)
+    toggleExpanded(!expanded)
   }
 
   return (

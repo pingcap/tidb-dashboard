@@ -70,9 +70,9 @@ export default function SearchHeader({ taskGroupID }: Props) {
   const navigate = useNavigate()
 
   const [timeRange, setTimeRange] = useState<TimeRange>(DEF_TIME_RANGE)
-  const [logLevel, setLogLevel] = useState<number>(2)
+  const [logLevel, setLogLevel] = useState(2)
   const [selectedComponents, setComponents] = useState<string[]>([])
-  const [searchValue, setSearchValue] = useState<string>('')
+  const [searchValue, setSearchValue] = useState('')
 
   const [allTargets, setAllTargets] = useState<ModelRequestTargetNode[]>([])
   useMount(() => {
@@ -107,12 +107,12 @@ export default function SearchHeader({ taskGroupID }: Props) {
       selectedComponents.some((addr) => addr === item.display_name ?? '')
     )
 
-    const [start_time, end_time] = calcTimeRange(timeRange)
-    let params: LogsearchCreateTaskGroupRequest = {
+    const [startTime, endTime] = calcTimeRange(timeRange)
+    const params: LogsearchCreateTaskGroupRequest = {
       targets: targets,
       request: {
-        start_time: start_time * 1000, // unix millionsecond
-        end_time: end_time * 1000, // unix millionsecond
+        start_time: startTime * 1000, // unix millionsecond
+        end_time: endTime * 1000, // unix millionsecond
         min_level: logLevel,
         patterns: searchValue.split(/\s+/), // 'foo boo' => ['foo', 'boo']
       },

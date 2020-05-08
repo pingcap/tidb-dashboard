@@ -4,7 +4,7 @@ import { RightOutlined } from '@ant-design/icons'
 import { HashRouter as Router, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import client, { ClusterinfoClusterInfo } from '@lib/client'
-import { Root, DateTime, MetricChart } from '@lib/components'
+import { Root, DateTime, MetricChart, AnimatedSkeleton } from '@lib/components'
 import { StatementsTable, useStatement } from '@lib/apps/Statement'
 import MonitorAlertBar from './components/MonitorAlertBar'
 import Nodes from './components/Nodes'
@@ -50,7 +50,7 @@ export default function App() {
   return (
     <Root>
       <Router>
-        <Row gutter={24}>
+        <Row>
           <Col span={18}>
             <MetricChart
               title={t('overview.metrics.total_requests')}

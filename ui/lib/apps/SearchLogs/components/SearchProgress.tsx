@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import styles from './Styles.module.css'
 import { namingMap, NodeKind, NodeKindList, TaskState } from './utils'
-import { Card } from '@lib/components'
+import { Card, AnimatedSkeleton } from '@lib/components'
 import _ from 'lodash'
 
 const { confirm } = Modal
@@ -81,7 +81,7 @@ export default function SearchProgress({
   toggleReload,
 }: Props) {
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState<Boolean>(true)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   const { t } = useTranslation()
 
@@ -219,46 +219,49 @@ export default function SearchProgress({
       style={{ marginLeft: -48 }}
       title={t('search_logs.common.progress')}
     >
-      {isLoading && <Skeleton active />}
-      {!isLoading && (
-        <>
-          <div>{progressDescription(tasks)}</div>
-          <div className={styles.buttons}>
-            <Button
-              type="primary"
-              onClick={handleDownload}
-              disabled={checkedKeys.length < 1}
+      <AnimatedSkeleton showSkeleton={isLoading}>
+        {tasks && (
+          <>
+            <div>{progressDescription(tasks)}</div>
+            <div className={styles.buttons}>
+              <Button
+                type="primary"
+                onClick={handleDownload}
+                disabled={checkedKeys.length < 1}
+              >
+                {t('search_logs.common.download_selected')}
+              </Button>
+              <Button
+                type="danger"
+                onClick={handleCancel}
+                disabled={
+                  !tasks.some((task) => task.state === TaskState.Running)
+                }
+              >
+                {t('search_logs.common.cancel')}
+              </Button>
+              <Button
+                onClick={handleRetry}
+                disabled={
+                  tasks.some((task) => task.state === TaskState.Running) ||
+                  !tasks.some((task) => task.state === TaskState.Error)
+                }
+              >
+                {t('search_logs.common.retry')}
+              </Button>
+            </div>
+            <Tree
+              checkable
+              expandedKeys={Object.values(namingMap)}
+              showIcon
+              onCheck={handleCheck}
+              style={{ overflowX: 'hidden' }}
             >
-              {t('search_logs.common.download_selected')}
-            </Button>
-            <Button
-              type="danger"
-              onClick={handleCancel}
-              disabled={!tasks.some((task) => task.state === TaskState.Running)}
-            >
-              {t('search_logs.common.cancel')}
-            </Button>
-            <Button
-              onClick={handleRetry}
-              disabled={
-                tasks.some((task) => task.state === TaskState.Running) ||
-                !tasks.some((task) => task.state === TaskState.Error)
-              }
-            >
-              {t('search_logs.common.retry')}
-            </Button>
-          </div>
-          <Tree
-            checkable
-            expandedKeys={Object.values(namingMap)}
-            showIcon
-            onCheck={handleCheck}
-            style={{ overflowX: 'hidden' }}
-          >
-            {renderTreeNodes(tasks)}
-          </Tree>
-        </>
-      )}
+              {renderTreeNodes(tasks)}
+            </Tree>
+          </>
+        )}
+      </AnimatedSkeleton>
     </Card>
   )
 }

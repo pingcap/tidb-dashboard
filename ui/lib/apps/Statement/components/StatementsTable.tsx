@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { CardTableV2, ICardTableV2Props } from '@lib/components'
@@ -49,15 +49,20 @@ export default function StatementsTable({
     showFullSQL,
   ])
 
-  function handleRowClick(rec) {
-    const qs = DetailPage.buildQuery({
-      digest: rec.digest,
-      schema: rec.schema_name,
-      beginTime: timeRange.begin_time,
-      endTime: timeRange.end_time,
-    })
-    navigate(`/statement/detail?${qs}`)
-  }
+  const handleRowClick = useCallback(
+    (rec) => {
+      const qs = DetailPage.buildQuery({
+        digest: rec.digest,
+        schema: rec.schema_name,
+        beginTime: timeRange.begin_time,
+        endTime: timeRange.end_time,
+      })
+      navigate(`/statement/detail?${qs}`)
+    },
+    [navigate]
+  )
+
+  const getKey = useCallback((row) => `${row.digest}_${row.schema_name}`, [])
 
   return (
     <CardTableV2
@@ -66,7 +71,7 @@ export default function StatementsTable({
       columns={columns}
       items={statements}
       onRowClicked={handleRowClick}
-      getKey={(row) => row && `${row.digest}_${row.schema_name}`}
+      getKey={getKey}
     />
   )
 }

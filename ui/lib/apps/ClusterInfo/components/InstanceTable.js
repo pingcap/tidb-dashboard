@@ -165,7 +165,7 @@ export default function ListPage() {
       name: t('cluster_info.list.instance_table.columns.status'),
       key: 'status',
       minWidth: 100,
-      maxWidth: 150,
+      maxWidth: 100,
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: renderStatusColumn,
@@ -173,8 +173,8 @@ export default function ListPage() {
     {
       name: t('cluster_info.list.instance_table.columns.up_time'),
       key: 'start_timestamp',
-      minWidth: 150,
-      maxWidth: 200,
+      minWidth: 100,
+      maxWidth: 150,
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ start_timestamp: ts }) => {

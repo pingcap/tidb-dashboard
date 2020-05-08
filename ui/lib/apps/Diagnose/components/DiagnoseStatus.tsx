@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Descriptions, message, Skeleton, Progress, Button } from 'antd'
-import { Head } from '@lib/components'
+import { Head, AnimatedSkeleton } from '@lib/components'
 import { DateTime } from '@lib/components'
 import { DiagnoseReport } from '@lib/client'
 import { useTranslation } from 'react-i18next'
@@ -64,32 +64,32 @@ function DiagnoseStatus() {
         )
       }
     >
-      {!report ? (
-        <Skeleton active />
-      ) : (
+      <AnimatedSkeleton showSkeleton={!report}>
         <Descriptions column={1} bordered size="small">
           <Descriptions.Item label={t('diagnose.status.range_begin')}>
             <DateTime.Calendar
-              unixTimestampMs={new Date(report.start_time!).valueOf()}
+              unixTimestampMs={new Date(report!.start_time!).valueOf()}
             />
           </Descriptions.Item>
           <Descriptions.Item label={t('diagnose.status.range_end')}>
             <DateTime.Calendar
-              unixTimestampMs={new Date(report.end_time!).valueOf()}
+              unixTimestampMs={new Date(report!.end_time!).valueOf()}
             />
           </Descriptions.Item>
-          {report.compare_start_time && (
+          {report!.compare_start_time && (
             <Descriptions.Item label={t('diagnose.status.baseline_begin')}>
               <DateTime.Calendar
-                unixTimestampMs={new Date(report.compare_start_time!).valueOf()}
+                unixTimestampMs={new Date(
+                  report!.compare_start_time!
+                ).valueOf()}
               />
             </Descriptions.Item>
           )}
           <Descriptions.Item label={t('diagnose.status.progress')}>
-            <Progress style={{ width: 200 }} percent={report.progress || 0} />
+            <Progress style={{ width: 200 }} percent={report!.progress || 0} />
           </Descriptions.Item>
         </Descriptions>
-      )}
+      </AnimatedSkeleton>
     </Head>
   )
 }

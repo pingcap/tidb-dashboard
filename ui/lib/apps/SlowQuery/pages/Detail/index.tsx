@@ -18,6 +18,7 @@ import {
   Expand,
   CopyLink,
   CardTabs,
+  AnimatedSkeleton,
 } from '@lib/components'
 import TabBasic from './DetailTabBasic'
 import TabTime from './DetailTabTime'
@@ -59,105 +60,111 @@ function DetailPage() {
           </Link>
         }
       >
-        {isLoading && <Skeleton active />}
-        {!isLoading && !data && <Alert message="Error" type="error" showIcon />}
-        {!isLoading && !!data && (
-          <>
-            <Descriptions>
-              <Descriptions.Item
-                span={2}
-                multiline={sqlExpanded}
-                label={
-                  <Space size="middle">
-                    <TextWithInfo.TransKey transKey="slow_query.detail.head.sql" />
-                    <Expand.Link
-                      expanded={sqlExpanded}
-                      onClick={() => toggleSqlExpanded()}
-                    />
-                    <CopyLink data={formatSql(data.query!)} />
-                  </Space>
-                }
-              >
-                <Expand
-                  expanded={sqlExpanded}
-                  collapsedContent={<HighlightSQL sql={data.query!} compact />}
+        <AnimatedSkeleton showSkeleton={isLoading}>
+          {!data && <Alert message="Error" type="error" showIcon />}
+          {!!data && (
+            <>
+              <Descriptions>
+                <Descriptions.Item
+                  span={2}
+                  multiline={sqlExpanded}
+                  label={
+                    <Space size="middle">
+                      <TextWithInfo.TransKey transKey="slow_query.detail.head.sql" />
+                      <Expand.Link
+                        expanded={sqlExpanded}
+                        onClick={() => toggleSqlExpanded()}
+                      />
+                      <CopyLink data={formatSql(data.query!)} />
+                    </Space>
+                  }
                 >
-                  <HighlightSQL sql={data.query!} />
-                </Expand>
-              </Descriptions.Item>
-              {(() => {
-                if (!!data.prev_stmt && data.prev_stmt.length !== 0)
-                  return (
-                    <Descriptions.Item
-                      span={2}
-                      multiline={prevSqlExpanded}
-                      label={
-                        <Space size="middle">
-                          <TextWithInfo.TransKey transKey="slow_query.detail.head.previous_sql" />
-                          <Expand.Link
-                            expanded={prevSqlExpanded}
-                            onClick={() => togglePrevSqlExpanded()}
-                          />
-                          <CopyLink data={formatSql(data.prev_stmt!)} />
-                        </Space>
-                      }
-                    >
-                      <Expand
-                        expanded={prevSqlExpanded}
-                        collapsedContent={
-                          <HighlightSQL sql={data.prev_stmt!} compact />
+                  <Expand
+                    expanded={sqlExpanded}
+                    collapsedContent={
+                      <HighlightSQL sql={data.query!} compact />
+                    }
+                  >
+                    <HighlightSQL sql={data.query!} />
+                  </Expand>
+                </Descriptions.Item>
+                {(() => {
+                  if (!!data.prev_stmt && data.prev_stmt.length !== 0)
+                    return (
+                      <Descriptions.Item
+                        span={2}
+                        multiline={prevSqlExpanded}
+                        label={
+                          <Space size="middle">
+                            <TextWithInfo.TransKey transKey="slow_query.detail.head.previous_sql" />
+                            <Expand.Link
+                              expanded={prevSqlExpanded}
+                              onClick={() => togglePrevSqlExpanded()}
+                            />
+                            <CopyLink data={formatSql(data.prev_stmt!)} />
+                          </Space>
                         }
                       >
-                        <HighlightSQL sql={data.prev_stmt!} />
-                      </Expand>
-                    </Descriptions.Item>
-                  )
-              })()}
-              <Descriptions.Item
-                span={2}
-                multiline={planExpanded}
-                label={
-                  <Space size="middle">
-                    <TextWithInfo.TransKey transKey="slow_query.detail.head.plan" />
-                    <Expand.Link
-                      expanded={planExpanded}
-                      onClick={() => togglePlanExpanded()}
-                    />
-                    <CopyLink data={data.plan ?? ''} />
-                  </Space>
-                }
-              >
-                <Expand expanded={planExpanded}>
-                  <Pre noWrap>{data.plan}</Pre>
-                </Expand>
-              </Descriptions.Item>
-            </Descriptions>
+                        <Expand
+                          expanded={prevSqlExpanded}
+                          collapsedContent={
+                            <HighlightSQL sql={data.prev_stmt!} compact />
+                          }
+                        >
+                          <HighlightSQL sql={data.prev_stmt!} />
+                        </Expand>
+                      </Descriptions.Item>
+                    )
+                })()}
+                <Descriptions.Item
+                  span={2}
+                  multiline={planExpanded}
+                  label={
+                    <Space size="middle">
+                      <TextWithInfo.TransKey transKey="slow_query.detail.head.plan" />
+                      <Expand.Link
+                        expanded={planExpanded}
+                        onClick={() => togglePlanExpanded()}
+                      />
+                      <CopyLink data={data.plan ?? ''} />
+                    </Space>
+                  }
+                >
+                  <Expand expanded={planExpanded}>
+                    <Pre noWrap>{data.plan}</Pre>
+                  </Expand>
+                </Descriptions.Item>
+              </Descriptions>
 
-            <CardTabs animated={false}>
-              <CardTabs.TabPane
-                tab={t('slow_query.detail.tabs.basic')}
-                key="basic"
-              >
-                <TabBasic data={data} />
-              </CardTabs.TabPane>
-              <CardTabs.TabPane
-                tab={t('slow_query.detail.tabs.time')}
-                key="time"
-              >
-                <TabTime data={data} />
-              </CardTabs.TabPane>
-              <CardTabs.TabPane
-                tab={t('slow_query.detail.tabs.copr')}
-                key="copr"
-              >
-                <TabCopr data={data} />
-              </CardTabs.TabPane>
-              <CardTabs.TabPane tab={t('slow_query.detail.tabs.txn')} key="txn">
-                <TabTxn data={data} />
-              </CardTabs.TabPane>
-            </CardTabs>
-          </>
-        )}
+              <CardTabs animated={false}>
+                <CardTabs.TabPane
+                  tab={t('slow_query.detail.tabs.basic')}
+                  key="basic"
+                >
+                  <TabBasic data={data} />
+                </CardTabs.TabPane>
+                <CardTabs.TabPane
+                  tab={t('slow_query.detail.tabs.time')}
+                  key="time"
+                >
+                  <TabTime data={data} />
+                </CardTabs.TabPane>
+                <CardTabs.TabPane
+                  tab={t('slow_query.detail.tabs.copr')}
+                  key="copr"
+                >
+                  <TabCopr data={data} />
+                </CardTabs.TabPane>
+                <CardTabs.TabPane
+                  tab={t('slow_query.detail.tabs.txn')}
+                  key="txn"
+                >
+                  <TabTxn data={data} />
+                </CardTabs.TabPane>
+              </CardTabs>
+            </>
+          )}
+        </AnimatedSkeleton>
       </Head>
     </div>
   )

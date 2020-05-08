@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Select, Space, Tooltip, Input, Checkbox } from 'antd'
-import { ReloadOutlined } from '@ant-design/icons'
+import { ReloadOutlined, LoadingOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useLocalStorageState } from '@umijs/hooks'
@@ -53,6 +53,14 @@ function List() {
     SHOW_FULL_SQL,
     false
   )
+
+  const onChangeSort = useCallback((orderBy, desc) => {
+    setSavedQueryOptions({
+      ...savedQueryOptions,
+      orderBy,
+      desc,
+    })
+  }, [])
 
   useEffect(() => {
     async function getSchemas() {
@@ -130,7 +138,11 @@ function List() {
               />
             )}
             <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-              <ReloadOutlined onClick={refresh} />
+              {loadingSlowQueries ? (
+                <LoadingOutlined />
+              ) : (
+                <ReloadOutlined onClick={refresh} />
+              )}
             </Tooltip>
           </Space>
         </Toolbar>
@@ -144,13 +156,7 @@ function List() {
         showFullSQL={showFullSQL}
         visibleColumnKeys={visibleColumnKeys}
         onGetColumns={setColumns}
-        onChangeSort={(orderBy, desc) =>
-          setSavedQueryOptions({
-            ...savedQueryOptions,
-            orderBy,
-            desc,
-          })
-        }
+        onChangeSort={onChangeSort}
       />
     </ScrollablePane>
   )

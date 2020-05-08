@@ -1,7 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { Select, Space, Tooltip, Drawer, Button, Checkbox, Result } from 'antd'
 import { useLocalStorageState } from '@umijs/hooks'
-import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
+import {
+  SettingOutlined,
+  ReloadOutlined,
+  LoadingOutlined,
+} from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useTranslation } from 'react-i18next'
@@ -51,6 +55,14 @@ export default function StatementsOverview() {
     SHOW_FULL_SQL,
     false
   )
+
+  const onChangeSort = useCallback((orderBy, desc) => {
+    setSavedQueryOptions({
+      ...savedQueryOptions,
+      orderBy,
+      desc,
+    })
+  }, [])
 
   return (
     <ScrollablePane style={{ height: '100vh' }}>
@@ -132,7 +144,11 @@ export default function StatementsOverview() {
               <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
             <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-              <ReloadOutlined onClick={refresh} />
+              {loadingStatements ? (
+                <LoadingOutlined />
+              ) : (
+                <ReloadOutlined onClick={refresh} />
+              )}
             </Tooltip>
           </Space>
         </Toolbar>
@@ -148,13 +164,7 @@ export default function StatementsOverview() {
           showFullSQL={showFullSQL}
           visibleColumnKeys={visibleColumnKeys}
           onGetColumns={setColumns}
-          onChangeSort={(orderBy, desc) =>
-            setSavedQueryOptions({
-              ...savedQueryOptions,
-              orderBy,
-              desc,
-            })
-          }
+          onChangeSort={onChangeSort}
         />
       ) : (
         <Result

@@ -4,7 +4,7 @@ import { Select, Space, Tooltip, Input, Checkbox } from 'antd'
 import { ReloadOutlined, LoadingOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import { useLocalStorageState, usePersistFn } from '@umijs/hooks'
+import { useLocalStorageState } from '@umijs/hooks'
 
 import {
   Card,
@@ -36,11 +36,14 @@ function List() {
   const { t } = useTranslation()
 
   const {
-    savedQueryOptions,
-    setSavedQueryOptions,
+    queryOptions,
+    setQueryOptions,
+    orderOptions,
+    changeOrder,
+    refresh,
+
     loadingSlowQueries,
     slowQueries,
-    refresh,
   } = useSlowQuery()
 
   const [allSchemas, setAllSchemas] = useState<string[]>([])
@@ -54,14 +57,6 @@ function List() {
     SHOW_FULL_SQL,
     false
   )
-
-  const onChangeSort = usePersistFn((orderBy, desc) => {
-    setSavedQueryOptions({
-      ...savedQueryOptions,
-      orderBy,
-      desc,
-    })
-  })
 
   useEffect(() => {
     async function getSchemas() {
@@ -78,13 +73,13 @@ function List() {
           <Toolbar>
             <Space>
               <TimeRangeSelector
-                value={savedQueryOptions.timeRange}
+                value={queryOptions.timeRange}
                 onChange={(timeRange) =>
-                  setSavedQueryOptions({ ...savedQueryOptions, timeRange })
+                  setQueryOptions({ ...queryOptions, timeRange })
                 }
               />
               <Select
-                value={savedQueryOptions.schemas}
+                value={queryOptions.schemas}
                 mode="multiple"
                 allowClear
                 placeholder={t(
@@ -92,7 +87,7 @@ function List() {
                 )}
                 style={{ minWidth: 200 }}
                 onChange={(schemas) =>
-                  setSavedQueryOptions({ ...savedQueryOptions, schemas })
+                  setQueryOptions({ ...queryOptions, schemas })
                 }
               >
                 {allSchemas.map((item) => (
@@ -102,16 +97,16 @@ function List() {
                 ))}
               </Select>
               <Search
-                defaultValue={savedQueryOptions.searchText}
+                defaultValue={queryOptions.searchText}
                 onSearch={(searchText) =>
-                  setSavedQueryOptions({ ...savedQueryOptions, searchText })
+                  setQueryOptions({ ...queryOptions, searchText })
                 }
               />
               <Select
-                value={savedQueryOptions.limit}
+                value={queryOptions.limit}
                 style={{ width: 150 }}
                 onChange={(limit) =>
-                  setSavedQueryOptions({ ...savedQueryOptions, limit })
+                  setQueryOptions({ ...queryOptions, limit })
                 }
               >
                 {LIMITS.map((item) => (
@@ -156,12 +151,12 @@ function List() {
       <SlowQueriesTable
         loading={loadingSlowQueries}
         slowQueries={slowQueries}
-        orderBy={savedQueryOptions.orderBy}
-        desc={savedQueryOptions.desc}
+        orderBy={orderOptions.orderBy}
+        desc={orderOptions.desc}
         showFullSQL={showFullSQL}
         visibleColumnKeys={visibleColumnKeys}
         onGetColumns={setColumns}
-        onChangeSort={onChangeSort}
+        onChangeOrder={changeOrder}
       />
     </ScrollablePane>
   )

@@ -50,7 +50,7 @@ export interface ICardTableV2Props extends IDetailsListProps {
   // Handle sort
   orderBy?: string
   desc?: boolean
-  onChangeSort?: (orderBy: string, desc: boolean) => void
+  onChangeOrder?: (orderBy: string, desc: boolean) => void
 
   // Event triggered when a row is clicked.
   onRowClicked?: (item: any, itemIndex: number) => void
@@ -101,7 +101,7 @@ function CardTableV2(props: ICardTableV2Props) {
     visibleItemsCount,
     orderBy,
     desc = true,
-    onChangeSort,
+    onChangeOrder,
     onRowClicked,
     onGetColumns,
     columns,
@@ -112,13 +112,13 @@ function CardTableV2(props: ICardTableV2Props) {
 
   const onColumnClick = usePersistFn(
     (_ev: React.MouseEvent<HTMLElement>, column: IColumn) => {
-      if (!onChangeSort) {
+      if (!onChangeOrder) {
         return
       }
       if (column.key === orderBy) {
-        onChangeSort(orderBy, !desc)
+        onChangeOrder(orderBy, !desc)
       } else {
-        onChangeSort(column.key, true)
+        onChangeOrder(column.key, true)
       }
     }
   )

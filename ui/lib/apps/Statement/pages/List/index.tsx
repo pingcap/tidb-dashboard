@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Select, Space, Tooltip, Drawer, Button, Checkbox, Result } from 'antd'
-import { useLocalStorageState, usePersistFn } from '@umijs/hooks'
+import { useLocalStorageState } from '@umijs/hooks'
 import {
   SettingOutlined,
   ReloadOutlined,
@@ -34,8 +34,12 @@ export default function StatementsOverview() {
   const { t } = useTranslation()
 
   const {
-    savedQueryOptions,
-    setSavedQueryOptions,
+    queryOptions,
+    setQueryOptions,
+    orderOptions,
+    changeOrder,
+    refresh,
+
     enable,
     allTimeRanges,
     allSchemas,
@@ -43,7 +47,6 @@ export default function StatementsOverview() {
     validTimeRange,
     loadingStatements,
     statements,
-    refresh,
   } = useStatement()
 
   const [columns, setColumns] = useState<IColumn[]>([])
@@ -57,14 +60,6 @@ export default function StatementsOverview() {
     false
   )
 
-  const onChangeSort = usePersistFn((orderBy, desc) => {
-    setSavedQueryOptions({
-      ...savedQueryOptions,
-      orderBy,
-      desc,
-    })
-  })
-
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
@@ -72,17 +67,17 @@ export default function StatementsOverview() {
           <Toolbar>
             <Space>
               <TimeRangeSelector
-                value={savedQueryOptions.timeRange}
+                value={queryOptions.timeRange}
                 timeRanges={allTimeRanges}
                 onChange={(timeRange) =>
-                  setSavedQueryOptions({
-                    ...savedQueryOptions,
+                  setQueryOptions({
+                    ...queryOptions,
                     timeRange,
                   })
                 }
               />
               <Select
-                value={savedQueryOptions.schemas}
+                value={queryOptions.schemas}
                 mode="multiple"
                 allowClear
                 placeholder={t(
@@ -90,8 +85,8 @@ export default function StatementsOverview() {
                 )}
                 style={{ minWidth: 200 }}
                 onChange={(schemas) =>
-                  setSavedQueryOptions({
-                    ...savedQueryOptions,
+                  setQueryOptions({
+                    ...queryOptions,
                     schemas,
                   })
                 }
@@ -103,7 +98,7 @@ export default function StatementsOverview() {
                 ))}
               </Select>
               <Select
-                value={savedQueryOptions.stmtTypes}
+                value={queryOptions.stmtTypes}
                 mode="multiple"
                 allowClear
                 placeholder={t(
@@ -111,8 +106,8 @@ export default function StatementsOverview() {
                 )}
                 style={{ minWidth: 160 }}
                 onChange={(stmtTypes) =>
-                  setSavedQueryOptions({
-                    ...savedQueryOptions,
+                  setQueryOptions({
+                    ...queryOptions,
                     stmtTypes,
                   })
                 }
@@ -164,12 +159,12 @@ export default function StatementsOverview() {
           loading={loadingStatements}
           statements={statements}
           timeRange={validTimeRange}
-          orderBy={savedQueryOptions.orderBy}
-          desc={savedQueryOptions.desc}
+          orderBy={orderOptions.orderBy}
+          desc={orderOptions.desc}
           showFullSQL={showFullSQL}
           visibleColumnKeys={visibleColumnKeys}
           onGetColumns={setColumns}
-          onChangeSort={onChangeSort}
+          onChangeOrder={changeOrder}
         />
       ) : (
         <Result

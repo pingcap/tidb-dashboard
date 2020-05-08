@@ -9,12 +9,14 @@ import React from 'react'
 import { orange, red } from '@ant-design/colors'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { Bar, HighlightSQL, Pre, TextWithInfo, TextWrap } from '@lib/components'
+import { StatementModel } from '@lib/client'
+import * as useColumn from '@lib/utils/useColumn'
 
 function commonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`statement.fields.${fieldName}`} />
 }
 
-export function planDigestColumn(
+function planDigestColumn(
   _rows?: { plan_digest?: string }[] // used for type check only
 ): IColumn {
   return {
@@ -33,7 +35,7 @@ export function planDigestColumn(
   }
 }
 
-export function digestColumn(
+function digestColumn(
   _rows?: { digest_text?: string }[], // used for type check only
   showFullSQL?: boolean
 ): IColumn {
@@ -63,9 +65,7 @@ export function digestColumn(
   }
 }
 
-export function sumLatencyColumn(
-  rows?: { sum_latency?: number }[]
-): IColumn {
+function sumLatencyColumn(rows?: { sum_latency?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.sum_latency)) ?? 0 : 0
   const key = 'sum_latency'
   return {
@@ -83,7 +83,7 @@ export function sumLatencyColumn(
   }
 }
 
-export function avgMinMaxLatencyColumn(
+function avgMinMaxLatencyColumn(
   rows?: { max_latency?: number; min_latency?: number; avg_latency?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_latency)) ?? 0 : 0
@@ -117,7 +117,7 @@ Max:  ${getValueFormat('ns')(rec.max_latency, 1)}`
   }
 }
 
-export function execCountColumn(rows?: { exec_count?: number }[]): IColumn {
+function execCountColumn(rows?: { exec_count?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.exec_count)) ?? 0 : 0
   const key = 'exec_count'
   return {
@@ -135,7 +135,7 @@ export function execCountColumn(rows?: { exec_count?: number }[]): IColumn {
   }
 }
 
-export function avgMaxMemColumn(
+function avgMaxMemColumn(
   rows?: { avg_mem?: number; max_mem?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_mem)) ?? 0 : 0
@@ -167,7 +167,7 @@ Max:  ${getValueFormat('bytes')(rec.max_mem, 1)}`
   }
 }
 
-export function errorsWarningsColumn(
+function errorsWarningsColumn(
   rows?: { sum_errors?: number; sum_warnings?: number }[]
 ): IColumn {
   const capacity = rows
@@ -203,7 +203,7 @@ Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
   }
 }
 
-export function avgParseLatencyColumn(
+function avgParseLatencyColumn(
   rows?: { avg_parse_latency?: number; max_parse_latency?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_parse_latency)) ?? 0 : 0
@@ -235,7 +235,7 @@ Max:  ${getValueFormat('ns')(rec.max_parse_latency, 1)}`
   }
 }
 
-export function avgCompileLatencyColumn(
+function avgCompileLatencyColumn(
   rows?: { avg_compile_latency?: number; max_compile_latency?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_compile_latency)) ?? 0 : 0
@@ -266,7 +266,8 @@ Max:  ${getValueFormat('ns')(rec.max_compile_latency, 1)}`
     },
   }
 }
-export function avgCoprColumn(
+
+function avgCoprColumn(
   rows?: { avg_cop_process_time?: number; max_cop_process_time?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_cop_process_time)) ?? 0 : 0
@@ -298,7 +299,7 @@ Max:  ${getValueFormat('ns')(rec.max_cop_process_time, 1)}`
   }
 }
 
-export function relatedSchemasColumn(
+function relatedSchemasColumn(
   _rows?: { related_schemas?: string }[] // used for type check only
 ): IColumn {
   return {
@@ -314,4 +315,36 @@ export function relatedSchemasColumn(
       </Tooltip>
     ),
   }
+}
+
+////////////////////////////////////////////////
+
+export function statementsColumns(
+  rows: StatementModel[],
+  showFullSQL?: boolean
+): IColumn[] {
+  return [
+    digestColumn(rows, showFullSQL),
+    sumLatencyColumn(rows),
+    avgMinMaxLatencyColumn(rows),
+    execCountColumn(rows),
+    avgMaxMemColumn(rows),
+    errorsWarningsColumn(rows),
+    avgParseLatencyColumn(rows),
+    avgCompileLatencyColumn(rows),
+    avgCoprColumn(rows),
+    relatedSchemasColumn(rows),
+    useColumn.useDummyColumn(),
+  ]
+}
+
+export function planColumns(rows: StatementModel[]): IColumn[] {
+  return [
+    planDigestColumn(rows),
+    sumLatencyColumn(rows),
+    avgMinMaxLatencyColumn(rows),
+    execCountColumn(rows),
+    avgMaxMemColumn(rows),
+    useColumn.useDummyColumn(),
+  ]
 }

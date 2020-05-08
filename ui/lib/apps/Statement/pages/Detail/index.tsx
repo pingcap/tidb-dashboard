@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useMemo } from 'react'
 import { useLocation, Link } from 'react-router-dom'
 import client, { StatementModel } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -15,10 +15,9 @@ import {
 import { useTranslation } from 'react-i18next'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Space, Skeleton, Alert } from 'antd'
-import { IColumn, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
+import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Selection } from 'office-ui-fabric-react/lib/Selection'
-import * as useStatementColumn from '../../utils/statement-columns'
-import * as useColumn from '@lib/utils/useColumn'
+import { planColumns as genPlanColumns } from '../../utils/table-columns'
 import PlanDetail from './PlanDetail'
 import CopyLink from '@lib/components/CopyLink'
 import formatSql from '@lib/utils/formatSql'
@@ -29,17 +28,6 @@ export interface IPageQuery {
   schema?: string
   beginTime?: number
   endTime?: number
-}
-
-function usePlanColumns(rows: StatementModel[]): IColumn[] {
-  return [
-    useStatementColumn.planDigestColumn(rows),
-    useStatementColumn.sumLatencyColumn(rows),
-    useStatementColumn.avgMinMaxLatencyColumn(rows),
-    useStatementColumn.execCountColumn(rows),
-    useStatementColumn.avgMaxMemColumn(rows),
-    useColumn.useDummyColumn(),
-  ]
 }
 
 function DetailPage() {
@@ -56,7 +44,7 @@ function DetailPage() {
       )
   )
   const { t } = useTranslation()
-  const planColumns = usePlanColumns(plans || [])
+  const planColumns = useMemo(() => genPlanColumns(plans || []), [plans])
 
   const [selectedPlans, setSelectedPlans] = useState<string[]>([])
   const selection = useRef(
@@ -157,6 +145,7 @@ function DetailPage() {
                 {query.schema!}
               </Descriptions.Item>
             </Descriptions>
+
             <div
               style={{ display: plans && plans.length > 1 ? 'block' : 'none' }}
             >
@@ -177,6 +166,7 @@ function DetailPage() {
           </>
         )}
       </Head>
+
       {selectedPlans.length > 0 && plans && plans.length > 0 && (
         <PlanDetail
           query={{

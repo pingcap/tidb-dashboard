@@ -33,7 +33,7 @@ for (const key in translations) {
   })
 }
 
-export function useDummyColumn(): IColumn {
+export function dummyColumn(): IColumn {
   return {
     name: '',
     key: 'dummy',

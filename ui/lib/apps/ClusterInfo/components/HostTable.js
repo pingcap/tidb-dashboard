@@ -8,7 +8,7 @@ import { Tooltip, Typography } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { red } from '@ant-design/colors'
-import { useDummyColumn } from '@lib/utils/useColumn'
+import { dummyColumn } from '@lib/utils/useColumn'
 
 const { Text } = Typography
 
@@ -221,7 +221,7 @@ export default function HostTable() {
         })
       },
     },
-    useDummyColumn(),
+    dummyColumn(),
   ]
 
   return (

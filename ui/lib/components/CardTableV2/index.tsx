@@ -74,7 +74,6 @@ function CardTableV2(props: ICardTableV2Props) {
     onRowClicked,
     columns,
     items,
-    selectionMode,
     ...restProps
   } = props
 
@@ -122,7 +121,7 @@ function CardTableV2(props: ICardTableV2Props) {
     >
       <div className={styles.cardTableContent}>
         <ShimmeredDetailsList
-          selectionMode={selectionMode ?? SelectionMode.none}
+          selectionMode={SelectionMode.none}
           layoutMode={DetailsListLayoutMode.justified}
           onRenderDetailsHeader={renderStickyHeader}
           onRenderRow={onRowClicked ? renderClickableRow : undefined}

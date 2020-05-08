@@ -1,13 +1,14 @@
-import React from 'react'
 import { Tooltip } from 'antd'
-import {
-  IColumn,
-  ColumnActionsMode,
-} from 'office-ui-fabric-react/lib/DetailsList'
-import { useTranslation } from 'react-i18next'
 import { max } from 'lodash'
+import {
+  ColumnActionsMode,
+  IColumn,
+} from 'office-ui-fabric-react/lib/DetailsList'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { Pre, Bar } from '@lib/components'
+
+import { Bar, Pre, TextWithInfo } from '@lib/components'
 import { addTranslationResource } from './i18n'
 
 const translations = {
@@ -33,11 +34,22 @@ for (const key in translations) {
   })
 }
 
-const DEF_TRANSKEY_PREFIX = 'component.commonColumn.'
-
 function TransText({ transKey }: { transKey: string }) {
   const { t } = useTranslation()
-  return <span>{t(transKey, '')}</span>
+  return (
+    <span>
+      {t(transKey, {
+        defaultValue: '',
+        fallbackLng: '_',
+      })}
+    </span>
+  )
+}
+
+function commonColumnName(fieldName: string): any {
+  return (
+    <TextWithInfo.TransKey transKey={`component.commonColumn.${fieldName}`} />
+  )
 }
 
 export function dummyColumn(): IColumn {
@@ -53,7 +65,7 @@ export function dummyColumn(): IColumn {
 
 function fieldsKeyColumn(transKeyPrefix: string): IColumn {
   return {
-    name: (<TransText transKey={`${DEF_TRANSKEY_PREFIX}name`} />) as any,
+    name: commonColumnName('name'),
     key: 'key',
     minWidth: 150,
     maxWidth: 250,
@@ -70,7 +82,7 @@ function fieldsKeyColumn(transKeyPrefix: string): IColumn {
 
 function fieldsValueColumn(): IColumn {
   return {
-    name: (<TransText transKey={`${DEF_TRANSKEY_PREFIX}value`} />) as any,
+    name: commonColumnName('value'),
     key: 'value',
     fieldName: 'value',
     minWidth: 150,
@@ -87,7 +99,7 @@ function fieldsTimeValueColumn(
     ? max(rows.map((v) => max([v.max, v.min, v.avg, v.value]))) ?? 0
     : 0
   return {
-    name: (<TransText transKey={`${DEF_TRANSKEY_PREFIX}time`} />) as any,
+    name: commonColumnName('time'),
     key: 'time',
     minWidth: 150,
     maxWidth: 200,
@@ -132,7 +144,7 @@ function fieldsTimeValueColumn(
 
 function fieldsDescriptionColumn(transKeyPrefix: string): IColumn {
   return {
-    name: (<TransText transKey={`${DEF_TRANSKEY_PREFIX}desc`} />) as any,
+    name: commonColumnName('desc'),
     key: 'description',
     minWidth: 150,
     maxWidth: 300,

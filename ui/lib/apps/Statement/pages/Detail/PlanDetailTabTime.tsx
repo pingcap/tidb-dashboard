@@ -1,7 +1,7 @@
 import React from 'react'
 import { StatementModel } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
-import * as useColumn from '@lib/utils/useColumn'
+import { timeValueColumns } from '@lib/utils/useColumn'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'antd'
 
@@ -75,10 +75,6 @@ export default function TabBasic({ data }: ITabTimeProps) {
       max: data.max_latency,
     },
   ]
-  const columns = [
-    useColumn.useFieldsKeyColumn('statement.fields.'),
-    useColumn.useFieldsTimeValueColumn(items),
-    useColumn.useFieldsDescriptionColumn('statement.fields.'),
-  ]
+  const columns = timeValueColumns('statement.fields.', items)
   return <CardTableV2 cardNoMargin columns={columns} items={items} />
 }

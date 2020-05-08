@@ -1,5 +1,4 @@
 import React from 'react'
-import { useState } from 'react'
 import { TextWrap, Pre } from '@lib/components'
 import { useToggle } from '@umijs/hooks'
 

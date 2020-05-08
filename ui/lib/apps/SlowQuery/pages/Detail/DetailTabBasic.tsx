@@ -10,7 +10,7 @@ export interface ITabBasicProps {
 
 export default function TabBasic({ data }: ITabBasicProps) {
   // Here it is fine to not use useMemo() to cache data,
-  // because the detail data won't be refreshed often
+  // because the detail data won't be refreshed after loaded
   const items = [
     {
       key: 'timestamp',

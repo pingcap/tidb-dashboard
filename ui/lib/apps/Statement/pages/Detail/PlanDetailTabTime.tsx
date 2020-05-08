@@ -1,7 +1,7 @@
 import React from 'react'
 import { StatementModel } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
-import { timeValueColumns } from '@lib/utils/useColumn'
+import { timeValueColumns } from '@lib/utils/table-columns'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'antd'
 

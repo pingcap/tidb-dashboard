@@ -17,7 +17,7 @@ import {
   TextWithInfo,
   TextWrap,
 } from '@lib/components'
-import { dummyColumn } from '@lib/utils/useColumn'
+import { dummyColumn } from '@lib/utils/table-columns'
 
 function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
   const { t } = useTranslation()

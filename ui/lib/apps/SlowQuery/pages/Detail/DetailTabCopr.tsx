@@ -2,7 +2,7 @@ import React from 'react'
 import { SlowquerySlowQuery } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { valueColumns } from '@lib/utils/useColumn'
+import { valueColumns } from '@lib/utils/table-columns'
 
 export interface ITabCoprProps {
   data: SlowquerySlowQuery

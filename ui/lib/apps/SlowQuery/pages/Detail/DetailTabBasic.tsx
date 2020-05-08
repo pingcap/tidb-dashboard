@@ -2,13 +2,15 @@ import React from 'react'
 import { SlowquerySlowQuery } from '@lib/client'
 import { CardTableV2, DateTime } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { valueColumns } from '@lib/utils/useColumn'
+import { valueColumns } from '@lib/utils/table-columns'
 
 export interface ITabBasicProps {
   data: SlowquerySlowQuery
 }
 
 export default function TabBasic({ data }: ITabBasicProps) {
+  // Here it is fine to not use useMemo() to cache data,
+  // because the detail data won't be refreshed often
   const items = [
     {
       key: 'timestamp',

@@ -92,6 +92,7 @@ function fieldsTimeValueColumn(
     minWidth: 150,
     maxWidth: 200,
     isResizable: true,
+    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => {
       const tooltipContent: string[] = []
       if (rec.avg) {

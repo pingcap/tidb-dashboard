@@ -17,7 +17,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Space, Skeleton, Alert } from 'antd'
 import { IColumn, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Selection } from 'office-ui-fabric-react/lib/Selection'
-import * as useStatementColumn from '../../utils/useColumn'
+import * as useStatementColumn from '../../utils/statement-columns'
 import * as useColumn from '@lib/utils/useColumn'
 import PlanDetail from './PlanDetail'
 import CopyLink from '@lib/components/CopyLink'
@@ -33,11 +33,11 @@ export interface IPageQuery {
 
 function usePlanColumns(rows: StatementModel[]): IColumn[] {
   return [
-    useStatementColumn.usePlanDigestColumn(rows),
-    useStatementColumn.useSumLatencyColumn(rows),
-    useStatementColumn.useAvgMinMaxLatencyColumn(rows),
-    useStatementColumn.useExecCountColumn(rows),
-    useStatementColumn.useAvgMaxMemColumn(rows),
+    useStatementColumn.planDigestColumn(rows),
+    useStatementColumn.sumLatencyColumn(rows),
+    useStatementColumn.avgMinMaxLatencyColumn(rows),
+    useStatementColumn.execCountColumn(rows),
+    useStatementColumn.avgMaxMemColumn(rows),
     useColumn.useDummyColumn(),
   ]
 }

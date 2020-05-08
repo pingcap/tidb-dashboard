@@ -5,7 +5,7 @@ import { CardTableV2, ICardTableV2Props } from '@lib/components'
 import { StatementTimeRange, StatementModel } from '@lib/client'
 import * as useColumn from '@lib/utils/useColumn'
 
-import * as useStatementColumn from '../utils/useColumn'
+import * as useStatementColumn from '../utils/statement-columns'
 import DetailPage from '../pages/Detail'
 
 const tableColumns = (
@@ -13,16 +13,16 @@ const tableColumns = (
   showFullSQL?: boolean
 ): IColumn[] => {
   return [
-    useStatementColumn.useDigestColumn(rows, showFullSQL),
-    useStatementColumn.useSumLatencyColumn(rows),
-    useStatementColumn.useAvgMinMaxLatencyColumn(rows),
-    useStatementColumn.useExecCountColumn(rows),
-    useStatementColumn.useAvgMaxMemColumn(rows),
-    useStatementColumn.useErrorsWarningsColumn(rows),
-    useStatementColumn.useAvgParseLatencyColumn(rows),
-    useStatementColumn.useAvgCompileLatencyColumn(rows),
-    useStatementColumn.useAvgCoprColumn(rows),
-    useStatementColumn.useRelatedSchemasColumn(rows),
+    useStatementColumn.digestColumn(rows, showFullSQL),
+    useStatementColumn.sumLatencyColumn(rows),
+    useStatementColumn.avgMinMaxLatencyColumn(rows),
+    useStatementColumn.execCountColumn(rows),
+    useStatementColumn.avgMaxMemColumn(rows),
+    useStatementColumn.errorsWarningsColumn(rows),
+    useStatementColumn.avgParseLatencyColumn(rows),
+    useStatementColumn.avgCompileLatencyColumn(rows),
+    useStatementColumn.avgCoprColumn(rows),
+    useStatementColumn.relatedSchemasColumn(rows),
     useColumn.useDummyColumn(),
   ]
 }

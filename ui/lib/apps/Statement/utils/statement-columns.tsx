@@ -10,15 +10,15 @@ import { orange, red } from '@ant-design/colors'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { Bar, HighlightSQL, Pre, TextWithInfo, TextWrap } from '@lib/components'
 
-function useCommonColumnName(fieldName: string): any {
+function commonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`statement.fields.${fieldName}`} />
 }
 
-export function usePlanDigestColumn(
+export function planDigestColumn(
   _rows?: { plan_digest?: string }[] // used for type check only
 ): IColumn {
   return {
-    name: useCommonColumnName('plan_digest'),
+    name: commonColumnName('plan_digest'),
     key: 'plan_digest',
     fieldName: 'plan_digest',
     minWidth: 100,
@@ -33,12 +33,12 @@ export function usePlanDigestColumn(
   }
 }
 
-export function useDigestColumn(
+export function digestColumn(
   _rows?: { digest_text?: string }[], // used for type check only
   showFullSQL?: boolean
 ): IColumn {
   return {
-    name: useCommonColumnName('digest_text'),
+    name: commonColumnName('digest_text'),
     key: 'digest_text',
     fieldName: 'digest_text',
     minWidth: 100,
@@ -63,13 +63,13 @@ export function useDigestColumn(
   }
 }
 
-export function useSumLatencyColumn(
+export function sumLatencyColumn(
   rows?: { sum_latency?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.sum_latency)) ?? 0 : 0
   const key = 'sum_latency'
   return {
-    name: useCommonColumnName(key),
+    name: commonColumnName(key),
     key,
     fieldName: key,
     minWidth: 140,
@@ -83,13 +83,13 @@ export function useSumLatencyColumn(
   }
 }
 
-export function useAvgMinMaxLatencyColumn(
+export function avgMinMaxLatencyColumn(
   rows?: { max_latency?: number; min_latency?: number; avg_latency?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_latency)) ?? 0 : 0
   const key = 'avg_latency'
   return {
-    name: useCommonColumnName(key),
+    name: commonColumnName(key),
     key,
     fieldName: key,
     minWidth: 140,
@@ -117,11 +117,11 @@ Max:  ${getValueFormat('ns')(rec.max_latency, 1)}`
   }
 }
 
-export function useExecCountColumn(rows?: { exec_count?: number }[]): IColumn {
+export function execCountColumn(rows?: { exec_count?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.exec_count)) ?? 0 : 0
   const key = 'exec_count'
   return {
-    name: useCommonColumnName(key),
+    name: commonColumnName(key),
     key,
     fieldName: key,
     minWidth: 140,
@@ -135,13 +135,13 @@ export function useExecCountColumn(rows?: { exec_count?: number }[]): IColumn {
   }
 }
 
-export function useAvgMaxMemColumn(
+export function avgMaxMemColumn(
   rows?: { avg_mem?: number; max_mem?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_mem)) ?? 0 : 0
   const key = 'avg_mem'
   return {
-    name: useCommonColumnName(key),
+    name: commonColumnName(key),
     key,
     fieldName: key,
     minWidth: 140,
@@ -167,7 +167,7 @@ Max:  ${getValueFormat('bytes')(rec.max_mem, 1)}`
   }
 }
 
-export function useErrorsWarningsColumn(
+export function errorsWarningsColumn(
   rows?: { sum_errors?: number; sum_warnings?: number }[]
 ): IColumn {
   const capacity = rows
@@ -175,7 +175,7 @@ export function useErrorsWarningsColumn(
     : 0
   const key = 'sum_errors'
   return {
-    name: useCommonColumnName('errors_warnings'),
+    name: commonColumnName('errors_warnings'),
     key,
     fieldName: key,
     minWidth: 140,
@@ -203,13 +203,13 @@ Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
   }
 }
 
-export function useAvgParseLatencyColumn(
+export function avgParseLatencyColumn(
   rows?: { avg_parse_latency?: number; max_parse_latency?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_parse_latency)) ?? 0 : 0
   const key = 'avg_parse_latency'
   return {
-    name: useCommonColumnName('parse_latency'),
+    name: commonColumnName('parse_latency'),
     key,
     fieldName: key,
     minWidth: 140,
@@ -235,13 +235,13 @@ Max:  ${getValueFormat('ns')(rec.max_parse_latency, 1)}`
   }
 }
 
-export function useAvgCompileLatencyColumn(
+export function avgCompileLatencyColumn(
   rows?: { avg_compile_latency?: number; max_compile_latency?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_compile_latency)) ?? 0 : 0
   const key = 'avg_compile_latency'
   return {
-    name: useCommonColumnName('compile_latency'),
+    name: commonColumnName('compile_latency'),
     key,
     fieldName: key,
     minWidth: 140,
@@ -266,13 +266,13 @@ Max:  ${getValueFormat('ns')(rec.max_compile_latency, 1)}`
     },
   }
 }
-export function useAvgCoprColumn(
+export function avgCoprColumn(
   rows?: { avg_cop_process_time?: number; max_cop_process_time?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_cop_process_time)) ?? 0 : 0
   const key = 'avg_cop_process_time'
   return {
-    name: useCommonColumnName('process_time'),
+    name: commonColumnName('process_time'),
     key,
     fieldName: key,
     minWidth: 140,
@@ -298,11 +298,11 @@ Max:  ${getValueFormat('ns')(rec.max_cop_process_time, 1)}`
   }
 }
 
-export function useRelatedSchemasColumn(
+export function relatedSchemasColumn(
   _rows?: { related_schemas?: string }[] // used for type check only
 ): IColumn {
   return {
-    name: useCommonColumnName('related_schemas'),
+    name: commonColumnName('related_schemas'),
     key: 'related_schemas',
     minWidth: 160,
     maxWidth: 240,

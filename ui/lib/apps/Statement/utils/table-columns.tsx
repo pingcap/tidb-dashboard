@@ -5,11 +5,11 @@ import {
   IColumn,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
-
 import { orange, red } from '@ant-design/colors'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { Bar, HighlightSQL, Pre, TextWithInfo, TextWrap } from '@lib/components'
+
 import { StatementModel } from '@lib/client'
+import { Bar, HighlightSQL, Pre, TextWithInfo, TextWrap } from '@lib/components'
 import * as useColumn from '@lib/utils/useColumn'
 
 function commonColumnName(fieldName: string): any {

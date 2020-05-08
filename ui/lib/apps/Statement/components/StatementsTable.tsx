@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CardTableV2, ICardTableV2Props } from '@lib/components'
 import { StatementTimeRange, StatementModel } from '@lib/client'
-import { statementsColumns } from '../utils/table-columns'
+import { statementColumns } from '../utils/table-columns'
 import DetailPage from '../pages/Detail'
 
 interface Props extends Partial<ICardTableV2Props> {
@@ -22,7 +22,7 @@ export default function StatementsTable({
 }: Props) {
   const navigate = useNavigate()
 
-  const columns = useMemo(() => statementsColumns(statements, showFullSQL), [
+  const columns = useMemo(() => statementColumns(statements, showFullSQL), [
     statements,
     showFullSQL,
   ])

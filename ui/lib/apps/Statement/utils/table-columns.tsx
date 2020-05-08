@@ -319,7 +319,7 @@ function relatedSchemasColumn(
 
 ////////////////////////////////////////////////
 
-export function statementsColumns(
+export function statementColumns(
   rows: StatementModel[],
   showFullSQL?: boolean
 ): IColumn[] {

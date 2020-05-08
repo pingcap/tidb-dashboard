@@ -16,6 +16,13 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import { max } from 'lodash'
 import { useTranslation } from 'react-i18next'
 
+function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
+  const { t } = useTranslation()
+  return (
+    <Badge status={status} text={t(`slow_query.common.status.${status}`)} />
+  )
+}
+
 function useCommonColumnName(fieldName: string): any {
   return (
     <TextWithInfo.TransKey
@@ -127,7 +134,9 @@ export function useDBColumn(
 export function useSuccessColumn(
   _rows?: { success?: number }[] // used for type check only
 ): IColumn {
-  const { t } = useTranslation()
+  // !! Don't call `useTranslation()` directly to avoid this method become the custom hook
+  // !! So we can use this inside the useMemo(), useEffect() and useState(()=>{...})
+  // const { t } = useTranslation()
   return {
     name: useCommonColumnName('result'),
     key: 'Succ',
@@ -136,19 +145,14 @@ export function useSuccessColumn(
     maxWidth: 150,
     isResizable: true,
     columnActionsMode: ColumnActionsMode.disabled,
-    onRender: (rec) =>
-      rec.success === 1 ? (
-        <Badge status="success" text={t(`slow_query.common.status.success`)} />
-      ) : (
-        <Badge status="error" text={t(`slow_query.common.status.failed`)} />
-      ),
+    onRender: (rec) => (
+      <ResultStatusBadge status={rec.success === 1 ? 'success' : 'error'} />
+    ),
   }
 }
 
 export function useTimestampColumn(
-  _rows?: { timestamp?: number }[], // used for type check only
-  orderBy?: string,
-  desc?: boolean
+  _rows?: { timestamp?: number }[] // used for type check only
 ): IColumn {
   const key = 'Time'
   return {
@@ -158,8 +162,6 @@ export function useTimestampColumn(
     minWidth: 100,
     maxWidth: 150,
     isResizable: true,
-    isSorted: orderBy === key,
-    isSortedDescending: desc,
     onRender: (rec) => (
       <TextWrap>
         <DateTime.Calendar unixTimestampMs={rec.timestamp * 1000} />
@@ -168,11 +170,7 @@ export function useTimestampColumn(
   }
 }
 
-export function useQueryTimeColumn(
-  rows?: { query_time?: number }[],
-  orderBy?: string,
-  desc?: boolean
-): IColumn {
+export function useQueryTimeColumn(rows?: { query_time?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.query_time)) ?? 0 : 0
   const key = 'Query_time'
   return {
@@ -182,8 +180,6 @@ export function useQueryTimeColumn(
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: orderBy === key,
-    isSortedDescending: desc,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.query_time} capacity={capacity}>
         {getValueFormat('s')(rec.query_time, 1)}
@@ -192,11 +188,7 @@ export function useQueryTimeColumn(
   }
 }
 
-export function useParseTimeColumn(
-  rows?: { parse_time?: number }[],
-  orderBy?: string,
-  desc?: boolean
-): IColumn {
+export function useParseTimeColumn(rows?: { parse_time?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.parse_time)) ?? 0 : 0
   const key = 'Parse_time'
   return {
@@ -206,8 +198,6 @@ export function useParseTimeColumn(
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: orderBy === key,
-    isSortedDescending: desc,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.parse_time} capacity={capacity}>
         {getValueFormat('s')(rec.parse_time, 1)}
@@ -217,9 +207,7 @@ export function useParseTimeColumn(
 }
 
 export function useCompileTimeColumn(
-  rows?: { compile_time?: number }[],
-  orderBy?: string,
-  desc?: boolean
+  rows?: { compile_time?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.compile_time)) ?? 0 : 0
   const key = 'Compile_time'
@@ -230,8 +218,6 @@ export function useCompileTimeColumn(
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: orderBy === key,
-    isSortedDescending: desc,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.compile_time} capacity={capacity}>
         {getValueFormat('s')(rec.compile_time, 1)}
@@ -241,9 +227,7 @@ export function useCompileTimeColumn(
 }
 
 export function useProcessTimeColumn(
-  rows?: { process_time?: number }[],
-  orderBy?: string,
-  desc?: boolean
+  rows?: { process_time?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.process_time)) ?? 0 : 0
   const key = 'Process_time'
@@ -254,8 +238,6 @@ export function useProcessTimeColumn(
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: orderBy === key,
-    isSortedDescending: desc,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.process_time} capacity={capacity}>
         {getValueFormat('s')(rec.process_time, 1)}
@@ -264,11 +246,7 @@ export function useProcessTimeColumn(
   }
 }
 
-export function useMemoryColumn(
-  rows?: { memory_max?: number }[],
-  orderBy?: string,
-  desc?: boolean
-): IColumn {
+export function useMemoryColumn(rows?: { memory_max?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.memory_max)) ?? 0 : 0
   const key = 'Mem_max'
   return {
@@ -278,8 +256,6 @@ export function useMemoryColumn(
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: orderBy === key,
-    isSortedDescending: desc,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.memory_max} capacity={capacity}>
         {getValueFormat('bytes')(rec.memory_max, 1)}

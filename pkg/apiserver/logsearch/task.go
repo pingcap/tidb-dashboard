@@ -187,7 +187,13 @@ func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diag
 	if t.model.Error != nil {
 		return
 	}
-	stream, err := client.SearchLog(t.ctx, t.taskGroup.model.SearchRequest.ConvertToPB(targetType))
+	req := t.taskGroup.model.SearchRequest.ConvertToPB(targetType)
+	patterns := make([]string, len(req.Patterns))
+	for i, p := range req.Patterns {
+		patterns[i] = "(?i)" + p
+	}
+	req.Patterns = patterns
+	stream, err := client.SearchLog(t.ctx, req)
 	if err != nil {
 		t.setError(err)
 		return

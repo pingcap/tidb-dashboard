@@ -169,7 +169,6 @@ function DetailPage() {
                 cardNoMargin
                 columns={planColumns}
                 items={plans}
-                getKey={(row) => row.plan_digest}
                 selectionMode={SelectionMode.multiple}
                 selection={selection.current}
                 selectionPreservedOnEmptyClick

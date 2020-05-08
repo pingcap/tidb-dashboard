@@ -142,6 +142,8 @@ function List() {
         orderBy={savedQueryOptions.orderBy}
         desc={savedQueryOptions.desc}
         showFullSQL={showFullSQL}
+        visibleColumnKeys={visibleColumnKeys}
+        onGetColumns={setColumns}
         onChangeSort={(orderBy, desc) =>
           setSavedQueryOptions({
             ...savedQueryOptions,
@@ -149,8 +151,6 @@ function List() {
             desc,
           })
         }
-        onGetColumns={setColumns}
-        visibleColumnKeys={visibleColumnKeys}
       />
     </ScrollablePane>
   )

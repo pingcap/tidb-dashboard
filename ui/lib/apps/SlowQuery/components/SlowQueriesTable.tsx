@@ -62,7 +62,9 @@ export default function SlowQueriesTable({
       columns={columns}
       items={slowQueries}
       onRowClicked={handleRowClick}
-      getKey={(row) => row?.digest}
+      getKey={(row, idx) =>
+        `${row?.digest}_${row?.timestamp}_${row?.txn_start_ts}_${idx}`
+      }
     />
   )
 }

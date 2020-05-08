@@ -66,7 +66,9 @@ export default function StatementsTable({
       columns={columns}
       items={statements}
       onRowClicked={handleRowClick}
-      getKey={(row) => row?.digest}
+      getKey={(row, idx) =>
+        `${row?.digest}_${row?.sum_latency}_${row?.max_latency}_${idx}`
+      }
     />
   )
 }

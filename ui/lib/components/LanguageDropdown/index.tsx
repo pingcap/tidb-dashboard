@@ -1,11 +1,11 @@
 import { Dropdown, Menu } from 'antd'
 import _ from 'lodash'
-import React from 'react'
+import React, { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { ALL_LANGUAGES } from '@lib/utils/i18n'
 
-function LanguageDropdown() {
+function LanguageDropdown({ children }: { children: ReactNode }) {
   const { i18n } = useTranslation()
 
   function handleClick(e) {
@@ -22,7 +22,7 @@ function LanguageDropdown() {
 
   return (
     <Dropdown overlay={menu} placement="bottomRight">
-      {this.props.children}
+      {children}
     </Dropdown>
   )
 }

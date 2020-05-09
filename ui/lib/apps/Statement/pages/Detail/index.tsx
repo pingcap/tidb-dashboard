@@ -1,46 +1,36 @@
-import React, { useRef, useEffect, useState } from 'react'
-import { useLocation, Link } from 'react-router-dom'
-import client, { StatementModel } from '@lib/client'
-import { useClientRequest } from '@lib/utils/useClientRequest'
-import { parseQueryFn, buildQueryFn } from '@lib/utils/query'
-import {
-  Head,
-  Descriptions,
-  TextWithInfo,
-  DateTime,
-  CardTableV2,
-  HighlightSQL,
-  Expand,
-  AnimatedSkeleton,
-} from '@lib/components'
-import { useTranslation } from 'react-i18next'
-import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Space, Alert } from 'antd'
-import { IColumn, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
+import { Alert, Space } from 'antd'
+import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Selection } from 'office-ui-fabric-react/lib/Selection'
-import * as useStatementColumn from '../../utils/useColumn'
-import * as useColumn from '@lib/utils/useColumn'
-import PlanDetail from './PlanDetail'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useLocation } from 'react-router-dom'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { useToggle } from '@umijs/hooks'
+
+import client, { StatementModel } from '@lib/client'
+import {
+  AnimatedSkeleton,
+  CardTableV2,
+  DateTime,
+  Descriptions,
+  Expand,
+  Head,
+  HighlightSQL,
+  TextWithInfo,
+} from '@lib/components'
 import CopyLink from '@lib/components/CopyLink'
 import formatSql from '@lib/utils/formatSql'
-import { useToggle } from '@umijs/hooks'
+import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
+import { useClientRequest } from '@lib/utils/useClientRequest'
+
+import { planColumns as genPlanColumns } from '../../utils/tableColumns'
+import PlanDetail from './PlanDetail'
 
 export interface IPageQuery {
   digest?: string
   schema?: string
   beginTime?: number
   endTime?: number
-}
-
-function usePlanColumns(rows: StatementModel[]): IColumn[] {
-  return [
-    useStatementColumn.usePlanDigestColumn(rows),
-    useStatementColumn.useSumLatencyColumn(rows),
-    useStatementColumn.useAvgMinMaxLatencyColumn(rows),
-    useStatementColumn.useExecCountColumn(rows),
-    useStatementColumn.useAvgMaxMemColumn(rows),
-    useColumn.useDummyColumn(),
-  ]
 }
 
 function DetailPage() {
@@ -57,7 +47,7 @@ function DetailPage() {
       )
   )
   const { t } = useTranslation()
-  const planColumns = usePlanColumns(plans || [])
+  const planColumns = useMemo(() => genPlanColumns(plans || []), [plans])
 
   const [selectedPlans, setSelectedPlans] = useState<string[]>([])
   const selection = useRef(
@@ -181,6 +171,7 @@ function DetailPage() {
           )}
         </AnimatedSkeleton>
       </Head>
+
       {selectedPlans.length > 0 && plans && plans.length > 0 && (
         <PlanDetail
           query={{

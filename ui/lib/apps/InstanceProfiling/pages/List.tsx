@@ -1,13 +1,16 @@
-import React, { useState, useMemo } from 'react'
-import { message, Form, TreeSelect, Button, Select, Badge } from 'antd'
+import { Badge, Button, Form, message, Select, TreeSelect } from 'antd'
+import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
-import { Card, CardTableV2 } from '@lib/components'
+import { usePersistFn } from '@umijs/hooks'
+
 import client from '@lib/client'
-import { useClientRequest } from '@lib/utils/useClientRequest'
+import { Card, CardTableV2 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
+import openLink from '@lib/utils/openLink'
+import { useClientRequest } from '@lib/utils/useClientRequest'
 
 // FIXME: The following logic should be extracted into a common component.
 function getTreeData(topologyMap) {
@@ -16,7 +19,7 @@ function getTreeData(topologyMap) {
     tikv: [],
     pd: [],
   }
-  Object.values(topologyMap).forEach((target) => {
+  Object.values(topologyMap).forEach((target: any) => {
     if (!(target.kind in treeDataByKind)) {
       return
     }
@@ -55,7 +58,8 @@ function useTargetsMap() {
     if (!data) {
       return map
     }
-    data.tidb.nodes.forEach((node) => {
+    // FIXME, declare type
+    data.tidb?.nodes?.forEach((node) => {
       const display = `${node.ip}:${node.port}`
       const target = {
         kind: 'tidb',
@@ -65,7 +69,7 @@ function useTargetsMap() {
       }
       map[display] = target
     })
-    data.tikv.nodes.forEach((node) => {
+    data.tikv?.nodes?.forEach((node) => {
       const display = `${node.ip}:${node.port}`
       const target = {
         kind: 'tikv',
@@ -75,7 +79,7 @@ function useTargetsMap() {
       }
       map[display] = target
     })
-    data.pd.nodes.forEach((node) => {
+    data.pd?.nodes?.forEach((node) => {
       const display = `${node.ip}:${node.port}`
       const target = {
         kind: 'pd',
@@ -130,9 +134,11 @@ export default function Page() {
     setSubmitting(false)
   }
 
-  function handleRowClick(rec) {
-    navigate(`/instance_profiling/${rec.id}`)
-  }
+  const handleRowClick = usePersistFn(
+    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+      openLink(`/instance_profiling/${rec.id}`, ev, navigate)
+    }
+  )
 
   const historyTableColumns = [
     {
@@ -144,7 +150,7 @@ export default function Page() {
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: (rec) => {
         // TODO: Extract to utility function
-        const r = []
+        const r: string[] = []
         if (rec.target_stats.num_tidb_nodes) {
           r.push(`${rec.target_stats.num_tidb_nodes} TiDB`)
         }

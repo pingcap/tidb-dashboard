@@ -1,5 +1,9 @@
-import { DeleteOutlined } from '@ant-design/icons'
+import { Badge, Divider, Popconfirm, Tooltip } from 'antd'
 import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
+import React, { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
+import { DeleteOutlined } from '@ant-design/icons'
+
 import {
   STATUS_DOWN,
   STATUS_OFFLINE,
@@ -10,9 +14,6 @@ import client from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { Badge, Divider, Popconfirm, Tooltip } from 'antd'
-import React from 'react'
-import { useTranslation } from 'react-i18next'
 
 function useStatusColumnRender(handleHideTiDB) {
   const { t } = useTranslation()
@@ -21,7 +22,7 @@ function useStatusColumnRender(handleHideTiDB) {
       // Tree node
       return
     }
-    let statusNode = null
+    let statusNode: ReactNode = null
     switch (node.status) {
       case STATUS_DOWN:
         statusNode = (
@@ -106,8 +107,8 @@ function buildData(data) {
   if (data === undefined) {
     return {}
   }
-  const tableData = []
-  const groupData = []
+  const tableData: any[] = [] // FIXME
+  const groupData: any[] = [] // FIXME
   let startIndex = 0
   const kinds = ['tidb', 'tikv', 'pd', 'tiflash']
   kinds.forEach((nodeKind) => {
@@ -157,7 +158,9 @@ export default function ListPage() {
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: (node) => (
         <Tooltip title={`${node.ip}:${node.port}`}>
-          {node.ip}:{node.port}
+          <span>
+            {node.ip}:{node.port}
+          </span>
         </Tooltip>
       ),
     },

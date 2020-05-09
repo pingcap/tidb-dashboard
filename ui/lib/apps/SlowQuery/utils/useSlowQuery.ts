@@ -1,16 +1,21 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
+
 import client, { SlowqueryBase } from '@lib/client'
-import { TimeRange, DEF_TIME_RANGE, calcTimeRange } from '@lib/components'
+import { calcTimeRange, DEF_TIME_RANGE, TimeRange } from '@lib/components'
+import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
+
+const DEF_ORDER_OPTIONS: IOrderOptions = {
+  orderBy: 'Time',
+  desc: true,
+}
 
 export interface ISlowQueryOptions {
   timeRange: TimeRange
   schemas: string[]
   searchText: string
-  orderBy: string
-  desc: boolean
   limit: number
 
   digest: string
@@ -21,9 +26,8 @@ export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
   timeRange: DEF_TIME_RANGE,
   schemas: [],
   searchText: '',
-  orderBy: 'Time',
-  desc: true,
   limit: 100,
+
   digest: '',
   plans: [],
 }
@@ -32,22 +36,39 @@ export default function useSlowQuery(
   options?: ISlowQueryOptions,
   needSave: boolean = true
 ) {
-  const [queryOptions, setQueryOptions] = useState(
+  const { orderOptions, changeOrder } = useOrderState(
+    'slow_query',
+    needSave,
+    DEF_ORDER_OPTIONS
+  )
+
+  const [memoryQueryOptions, setMemoryQueryOptions] = useState(
     options || DEF_SLOW_QUERY_OPTIONS
   )
-  const [savedQueryOptions, setSavedQueryOptions] = useSessionStorageState(
+  const [sessionQueryOptions, setSessionQueryOptions] = useSessionStorageState(
     QUERY_OPTIONS,
     options || DEF_SLOW_QUERY_OPTIONS
   )
+  const queryOptions = useMemo(
+    () => (needSave ? sessionQueryOptions : memoryQueryOptions),
+    [needSave, memoryQueryOptions, sessionQueryOptions]
+  )
+  const queryTimeRange = useMemo(() => {
+    const [beginTime, endTime] = calcTimeRange(queryOptions.timeRange)
+    return { beginTime, endTime }
+  }, [queryOptions])
+
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
   const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])
   const [refreshTimes, setRefreshTimes] = useState(0)
 
-  const queryTimeRange = useMemo(() => {
-    let curOptions = needSave ? savedQueryOptions : queryOptions
-    const [beginTime, endTime] = calcTimeRange(curOptions.timeRange)
-    return { beginTime, endTime }
-  }, [queryOptions, savedQueryOptions, needSave])
+  function setQueryOptions(newOptions: ISlowQueryOptions) {
+    if (needSave) {
+      setSessionQueryOptions(newOptions)
+    } else {
+      setMemoryQueryOptions(newOptions)
+    }
+  }
 
   function refresh() {
     setRefreshTimes((prev) => prev + 1)
@@ -56,34 +77,34 @@ export default function useSlowQuery(
   useEffect(() => {
     async function getSlowQueryList() {
       setLoadingSlowQueries(true)
-      let curOptions = needSave ? savedQueryOptions : queryOptions
       const res = await client
         .getInstance()
         .slowQueryListGet(
-          curOptions.schemas,
-          curOptions.desc,
-          curOptions.digest,
-          curOptions.limit,
+          queryOptions.schemas,
+          orderOptions.desc,
+          queryOptions.digest,
+          queryOptions.limit,
           queryTimeRange.endTime,
           queryTimeRange.beginTime,
-          curOptions.orderBy,
-          curOptions.plans,
-          curOptions.searchText
+          orderOptions.orderBy,
+          queryOptions.plans,
+          queryOptions.searchText
         )
       setLoadingSlowQueries(false)
       setSlowQueries(res.data || [])
     }
     getSlowQueryList()
-  }, [queryOptions, savedQueryOptions, needSave, queryTimeRange, refreshTimes])
+  }, [queryOptions, orderOptions, queryTimeRange, refreshTimes])
 
   return {
     queryOptions,
     setQueryOptions,
-    savedQueryOptions,
-    setSavedQueryOptions,
+    orderOptions,
+    changeOrder,
+    refresh,
+
     loadingSlowQueries,
     slowQueries,
     queryTimeRange,
-    refresh,
   }
 }

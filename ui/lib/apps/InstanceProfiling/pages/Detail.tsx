@@ -46,6 +46,8 @@ export default function Page() {
       client.getInstance().getProfilingGroupDetail(id, { cancelToken }),
     {
       shouldPoll: (data) => !isFinished(data),
+      pollingInterval: 1000,
+      immediate: true,
     }
   )
 
@@ -57,7 +59,7 @@ export default function Page() {
     if (!token) {
       return
     }
-    window.location = `${client.getBasePath()}/profiling/group/download?token=${token}`
+    window.location = `${client.getBasePath()}/profiling/group/download?token=${token}` as any
   }, [id])
 
   const columns = useMemo(

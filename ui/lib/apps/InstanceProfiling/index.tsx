@@ -1,8 +1,10 @@
 import React from 'react'
-import { Root } from '@lib/components'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
-import ListPage from './pages/List'
+
+import { Root } from '@lib/components'
+
 import DetailPage from './pages/Detail'
+import ListPage from './pages/List'
 
 const App = () => (
   <Root>

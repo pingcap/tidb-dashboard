@@ -1,15 +1,19 @@
-import React, { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Badge } from 'antd'
-import { useTranslation } from 'react-i18next'
-import {
-  IColumn,
-  ColumnActionsMode,
-} from 'office-ui-fabric-react/lib/DetailsList'
 import dayjs from 'dayjs'
-import { CardTableV2, DateTime } from '@lib/components'
+import {
+  ColumnActionsMode,
+  IColumn,
+} from 'office-ui-fabric-react/lib/DetailsList'
+import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { usePersistFn } from '@umijs/hooks'
+
 import client, { DiagnoseReport } from '@lib/client'
+import { CardTableV2, DateTime } from '@lib/components'
+import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
+
 import type { TFunction } from 'i18next'
 
 const tableColumns = (t: TFunction): IColumn[] => [
@@ -109,9 +113,11 @@ export default function DiagnoseHistory() {
   )
   const columns = useMemo(() => tableColumns(t), [t])
 
-  function handleRowClick(rec) {
-    navigate(`/diagnose/${rec.id}`)
-  }
+  const handleRowClick = usePersistFn(
+    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+      openLink(`/diagnose/${rec.id}`, ev, navigate)
+    }
+  )
 
   return (
     <CardTableV2

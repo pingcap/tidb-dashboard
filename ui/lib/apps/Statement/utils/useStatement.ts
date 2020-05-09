@@ -1,40 +1,54 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
-import client, { StatementTimeRange, StatementModel } from '@lib/client'
+
+import client, { StatementModel, StatementTimeRange } from '@lib/client'
+import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
+
 import {
-  TimeRange,
-  DEF_TIME_RANGE,
   calcValidStatementTimeRange,
+  DEF_TIME_RANGE,
+  TimeRange,
 } from '../pages/List/TimeRangeSelector'
 
 const QUERY_OPTIONS = 'statement.query_options'
+
+const DEF_ORDER_OPTIONS: IOrderOptions = {
+  orderBy: 'sum_latency',
+  desc: true,
+}
 
 export interface IStatementQueryOptions {
   timeRange: TimeRange
   schemas: string[]
   stmtTypes: string[]
-  orderBy: string
-  desc: boolean
 }
 
 export const DEF_STMT_QUERY_OPTIONS: IStatementQueryOptions = {
   timeRange: DEF_TIME_RANGE,
   schemas: [],
   stmtTypes: [],
-  orderBy: 'sum_latency',
-  desc: true,
 }
 
 export default function useStatement(
   options?: IStatementQueryOptions,
   needSave: boolean = true
 ) {
-  const [queryOptions, setQueryOptions] = useState(
+  const { orderOptions, changeOrder } = useOrderState(
+    'statement',
+    needSave,
+    DEF_ORDER_OPTIONS
+  )
+
+  const [memoryQueryOptions, setMemoryQueryOptions] = useState(
     options || DEF_STMT_QUERY_OPTIONS
   )
-  const [savedQueryOptions, setSavedQueryOptions] = useSessionStorageState(
+  const [sessionQueryOptions, setSessionQueryOptions] = useSessionStorageState(
     QUERY_OPTIONS,
     options || DEF_STMT_QUERY_OPTIONS
+  )
+  const queryOptions = useMemo(
+    () => (needSave ? sessionQueryOptions : memoryQueryOptions),
+    [needSave, memoryQueryOptions, sessionQueryOptions]
   )
 
   const [enable, setEnable] = useState(true)
@@ -42,15 +56,23 @@ export default function useStatement(
   const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [allStmtTypes, setAllStmtTypes] = useState<string[]>([])
 
-  const validTimeRange = useMemo(() => {
-    let curOptions = needSave ? savedQueryOptions : queryOptions
-    return calcValidStatementTimeRange(curOptions.timeRange, allTimeRanges)
-  }, [needSave, queryOptions, savedQueryOptions, allTimeRanges])
+  const validTimeRange = useMemo(
+    () => calcValidStatementTimeRange(queryOptions.timeRange, allTimeRanges),
+    [queryOptions, allTimeRanges]
+  )
 
   const [loadingStatements, setLoadingStatements] = useState(true)
   const [statements, setStatements] = useState<StatementModel[]>([])
 
   const [refreshTimes, setRefreshTimes] = useState(0)
+
+  function setQueryOptions(newOptions: IStatementQueryOptions) {
+    if (needSave) {
+      setSessionQueryOptions(newOptions)
+    } else {
+      setMemoryQueryOptions(newOptions)
+    }
+  }
 
   function refresh() {
     setRefreshTimes((prev) => prev + 1)
@@ -89,35 +111,29 @@ export default function useStatement(
         setStatements([])
         return
       }
-      let curOptions = needSave ? savedQueryOptions : queryOptions
       setLoadingStatements(true)
       const res = await client
         .getInstance()
         .statementsOverviewsGet(
           validTimeRange.begin_time!,
           validTimeRange.end_time!,
-          curOptions.schemas,
-          curOptions.stmtTypes
+          queryOptions.schemas,
+          queryOptions.stmtTypes
         )
       setLoadingStatements(false)
       setStatements(res?.data || [])
     }
 
     queryStatementList()
-  }, [
-    needSave,
-    queryOptions,
-    savedQueryOptions,
-    allTimeRanges,
-    validTimeRange,
-    refreshTimes,
-  ])
+  }, [queryOptions, allTimeRanges, validTimeRange, refreshTimes])
 
   return {
     queryOptions,
     setQueryOptions,
-    savedQueryOptions,
-    setSavedQueryOptions,
+    orderOptions,
+    changeOrder,
+    refresh,
+
     enable,
     allTimeRanges,
     allSchemas,
@@ -125,6 +141,5 @@ export default function useStatement(
     validTimeRange,
     loadingStatements,
     statements,
-    refresh,
   }
 }

@@ -4,8 +4,7 @@ import {
   LogsearchTaskModel,
   ModelRequestTargetNode,
 } from '@lib/client'
-import { RangeValue } from 'rc-picker/lib/interface'
-import moment from 'moment'
+import { TimeRange } from '@lib/components'
 
 export const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
@@ -102,7 +101,7 @@ export function parseClusterInfo(
 }
 
 interface Params {
-  timeRange: RangeValue<moment.Moment>
+  timeRange: TimeRange
   logLevel: number
   components: ModelRequestTargetNode[]
   searchValue: string
@@ -112,11 +111,13 @@ export function parseSearchingParams(resp: LogsearchTaskGroupResponse): Params {
   const { task_group, tasks } = resp
   const { start_time, end_time, min_level, patterns } =
     task_group?.search_request || {}
-  const startTime = start_time ? moment(start_time) : null
-  const endTime = end_time ? moment(end_time) : null
+  let timeRange: TimeRange = {
+    type: 'absolute',
+    value: [start_time! / 1000, end_time! / 1000],
+  }
   return {
-    timeRange: [startTime, endTime] as RangeValue<moment.Moment>,
-    logLevel: min_level ?? 0,
+    timeRange: timeRange,
+    logLevel: min_level ?? 2,
     searchValue: patterns && patterns.length > 0 ? patterns.join(' ') : '',
     components: tasks && tasks.length > 0 ? getComponents(tasks) : [],
   }

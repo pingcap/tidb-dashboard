@@ -13,7 +13,6 @@ import {
   Bar,
   DateTime,
   HighlightSQL,
-  Pre,
   TextWithInfo,
   TextWrap,
 } from '@lib/components'
@@ -61,20 +60,21 @@ function sqlColumn(
     maxWidth: 500,
     isResizable: true,
     columnActionsMode: ColumnActionsMode.disabled,
-    onRender: (rec) => (
-      <Tooltip
-        title={<HighlightSQL sql={rec.query} theme="dark" />}
-        placement="right"
-      >
-        <TextWrap multiline={showFullSQL}>
-          {showFullSQL ? (
-            <HighlightSQL sql={rec.query} />
-          ) : (
-            <Pre>{rec.query}</Pre>
-          )}
+    onRender: (rec) =>
+      showFullSQL ? (
+        <TextWrap multiline>
+          <HighlightSQL sql={rec.query} />
         </TextWrap>
-      </Tooltip>
-    ),
+      ) : (
+        <Tooltip
+          title={<HighlightSQL sql={rec.query} theme="dark" />}
+          placement="right"
+        >
+          <TextWrap>
+            <HighlightSQL sql={rec.query} compact />
+          </TextWrap>
+        </Tooltip>
+      ),
   }
 }
 

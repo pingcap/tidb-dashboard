@@ -50,7 +50,7 @@ export default function App() {
   return (
     <Root>
       <Router>
-        <Row gutter={24}>
+        <Row>
           <Col span={18}>
             <MetricChart
               title={t('overview.metrics.total_requests')}

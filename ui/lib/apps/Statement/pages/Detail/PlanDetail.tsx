@@ -1,5 +1,5 @@
 import React from 'react'
-import { Space, Skeleton } from 'antd'
+import { Space } from 'antd'
 import { useToggle } from '@umijs/hooks'
 import { useTranslation } from 'react-i18next'
 import {
@@ -11,6 +11,7 @@ import {
   CardTabs,
   Expand,
   CopyLink,
+  AnimatedSkeleton,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
@@ -67,111 +68,112 @@ function PlanDetail({ query }: IPlanDetailProps) {
         n: query.plans.length,
       })}
     >
-      {isLoading && <Skeleton active />}
-      {!isLoading && data && (
-        <>
-          <Descriptions>
-            <Descriptions.Item
-              span={2}
-              multiline={sqlExpanded}
-              label={
-                <Space size="middle">
-                  <TextWithInfo.TransKey transKey="statement.fields.query_sample_text" />
-                  <Expand.Link
-                    expanded={sqlExpanded}
-                    onClick={() => toggleSqlExpanded()}
-                  />
-                  <CopyLink data={formatSql(data.query_sample_text)} />
-                </Space>
-              }
-            >
-              <Expand
-                expanded={sqlExpanded}
-                collapsedContent={
-                  <HighlightSQL sql={data.query_sample_text!} compact />
-                }
-              >
-                <HighlightSQL sql={data.query_sample_text!} />
-              </Expand>
-            </Descriptions.Item>
-            {data.prev_sample_text ? (
+      <AnimatedSkeleton showSkeleton={isLoading}>
+        {data && (
+          <>
+            <Descriptions>
               <Descriptions.Item
                 span={2}
-                multiline={prevSqlExpanded}
+                multiline={sqlExpanded}
                 label={
                   <Space size="middle">
-                    <TextWithInfo.TransKey transKey="statement.fields.prev_sample_text" />
+                    <TextWithInfo.TransKey transKey="statement.fields.query_sample_text" />
                     <Expand.Link
-                      expanded={prevSqlExpanded}
-                      onClick={() => togglePrevSqlExpanded()}
+                      expanded={sqlExpanded}
+                      onClick={() => toggleSqlExpanded()}
                     />
-                    <CopyLink data={formatSql(data.prev_sample_text)} />
+                    <CopyLink data={formatSql(data.query_sample_text)} />
                   </Space>
                 }
               >
                 <Expand
-                  expanded={prevSqlExpanded}
+                  expanded={sqlExpanded}
                   collapsedContent={
-                    <HighlightSQL sql={data.prev_sample_text!} compact />
+                    <HighlightSQL sql={data.query_sample_text!} compact />
                   }
                 >
-                  <HighlightSQL sql={data.prev_sample_text!} />
+                  <HighlightSQL sql={data.query_sample_text!} />
                 </Expand>
               </Descriptions.Item>
-            ) : null}
-            <Descriptions.Item
-              span={2}
-              multiline={planExpanded}
-              label={
-                <Space size="middle">
-                  <TextWithInfo.TransKey transKey="statement.fields.plan" />
-                  <Expand.Link
-                    expanded={planExpanded}
-                    onClick={() => togglePlanExpanded()}
-                  />
-                  <CopyLink data={data.plan ?? ''} />
-                </Space>
-              }
-            >
-              <Expand expanded={planExpanded}>
-                <Pre noWrap>{data.plan}</Pre>
-              </Expand>
-            </Descriptions.Item>
-          </Descriptions>
-          <CardTabs animated={false}>
-            <CardTabs.TabPane
-              tab={t('statement.pages.detail.tabs.basic')}
-              key="basic"
-            >
-              <TabBasic data={data} />
-            </CardTabs.TabPane>
-            <CardTabs.TabPane
-              tab={t('statement.pages.detail.tabs.time')}
-              key="time"
-            >
-              <TabTime data={data} />
-            </CardTabs.TabPane>
-            <CardTabs.TabPane
-              tab={t('statement.pages.detail.tabs.copr')}
-              key="copr"
-            >
-              <TabCopr data={data} />
-            </CardTabs.TabPane>
-            <CardTabs.TabPane
-              tab={t('statement.pages.detail.tabs.txn')}
-              key="txn"
-            >
-              <TabTxn data={data} />
-            </CardTabs.TabPane>
-            <CardTabs.TabPane
-              tab={t('statement.pages.detail.tabs.slow_query')}
-              key="slow_query"
-            >
-              <SlowQueryTab query={query} />
-            </CardTabs.TabPane>
-          </CardTabs>
-        </>
-      )}
+              {data.prev_sample_text ? (
+                <Descriptions.Item
+                  span={2}
+                  multiline={prevSqlExpanded}
+                  label={
+                    <Space size="middle">
+                      <TextWithInfo.TransKey transKey="statement.fields.prev_sample_text" />
+                      <Expand.Link
+                        expanded={prevSqlExpanded}
+                        onClick={() => togglePrevSqlExpanded()}
+                      />
+                      <CopyLink data={formatSql(data.prev_sample_text)} />
+                    </Space>
+                  }
+                >
+                  <Expand
+                    expanded={prevSqlExpanded}
+                    collapsedContent={
+                      <HighlightSQL sql={data.prev_sample_text!} compact />
+                    }
+                  >
+                    <HighlightSQL sql={data.prev_sample_text!} />
+                  </Expand>
+                </Descriptions.Item>
+              ) : null}
+              <Descriptions.Item
+                span={2}
+                multiline={planExpanded}
+                label={
+                  <Space size="middle">
+                    <TextWithInfo.TransKey transKey="statement.fields.plan" />
+                    <Expand.Link
+                      expanded={planExpanded}
+                      onClick={() => togglePlanExpanded()}
+                    />
+                    <CopyLink data={data.plan ?? ''} />
+                  </Space>
+                }
+              >
+                <Expand expanded={planExpanded}>
+                  <Pre noWrap>{data.plan}</Pre>
+                </Expand>
+              </Descriptions.Item>
+            </Descriptions>
+            <CardTabs animated={false}>
+              <CardTabs.TabPane
+                tab={t('statement.pages.detail.tabs.basic')}
+                key="basic"
+              >
+                <TabBasic data={data} />
+              </CardTabs.TabPane>
+              <CardTabs.TabPane
+                tab={t('statement.pages.detail.tabs.time')}
+                key="time"
+              >
+                <TabTime data={data} />
+              </CardTabs.TabPane>
+              <CardTabs.TabPane
+                tab={t('statement.pages.detail.tabs.copr')}
+                key="copr"
+              >
+                <TabCopr data={data} />
+              </CardTabs.TabPane>
+              <CardTabs.TabPane
+                tab={t('statement.pages.detail.tabs.txn')}
+                key="txn"
+              >
+                <TabTxn data={data} />
+              </CardTabs.TabPane>
+              <CardTabs.TabPane
+                tab={t('statement.pages.detail.tabs.slow_query')}
+                key="slow_query"
+              >
+                <SlowQueryTab query={query} />
+              </CardTabs.TabPane>
+            </CardTabs>
+          </>
+        )}
+      </AnimatedSkeleton>
     </Card>
   )
 }

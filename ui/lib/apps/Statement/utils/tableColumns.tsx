@@ -48,20 +48,21 @@ function digestColumn(
     isResizable: true,
     isMultiline: showFullSQL,
     columnActionsMode: ColumnActionsMode.disabled,
-    onRender: (rec) => (
-      <Tooltip
-        title={<HighlightSQL sql={rec.digest_text} theme="dark" />}
-        placement="right"
-      >
-        <TextWrap multiline={showFullSQL}>
-          {showFullSQL ? (
-            <HighlightSQL sql={rec.digest_text} />
-          ) : (
-            <Pre>{rec.digest_text}</Pre>
-          )}
+    onRender: (rec) =>
+      showFullSQL ? (
+        <TextWrap multiline>
+          <HighlightSQL sql={rec.digest_text} />
         </TextWrap>
-      </Tooltip>
-    ),
+      ) : (
+        <Tooltip
+          title={<HighlightSQL sql={rec.digest_text} theme="dark" />}
+          placement="right"
+        >
+          <TextWrap>
+            <HighlightSQL sql={rec.digest_text} compact />
+          </TextWrap>
+        </Tooltip>
+      ),
   }
 }
 

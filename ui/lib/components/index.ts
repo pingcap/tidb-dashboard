@@ -36,5 +36,7 @@ export * from './Toolbar'
 export { default as Toolbar } from './Toolbar'
 export * from './TimeRangeSelector'
 export { default as TimeRangeSelector } from './TimeRangeSelector'
+export * from './AnimatedSkeleton'
+export { default as AnimatedSkeleton } from './AnimatedSkeleton'
 
 export { default as LanguageDropdown } from './LanguageDropdown'

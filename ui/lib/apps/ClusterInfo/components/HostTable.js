@@ -32,7 +32,6 @@ export default function HostTable() {
       minWidth: 150,
       maxWidth: 200,
       isResizable: true,
-      isCollapsible: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ ip, unavailable }) => {
         if (unavailable) {
@@ -55,7 +54,6 @@ export default function HostTable() {
       minWidth: 60,
       maxWidth: 100,
       isResizable: true,
-      isCollapsible: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ cpu_core }) =>
         cpu_core !== undefined ? `${cpu_core} vCPU` : '',
@@ -66,7 +64,6 @@ export default function HostTable() {
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
-      isCollapsible: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ cpu_usage }) => {
         if (cpu_usage === undefined) {
@@ -93,7 +90,6 @@ export default function HostTable() {
       minWidth: 60,
       maxWidth: 100,
       isResizable: true,
-      isCollapsible: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ memory }) =>
         memory !== undefined ? getValueFormat('bytes')(memory.total, 1) : '',
@@ -104,7 +100,6 @@ export default function HostTable() {
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
-      isCollapsible: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ memory }) => {
         if (memory === undefined) {
@@ -131,7 +126,6 @@ export default function HostTable() {
       minWidth: 100,
       maxWidth: 200,
       isResizable: true,
-      isCollapsible: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
@@ -176,7 +170,6 @@ export default function HostTable() {
       minWidth: 80,
       maxWidth: 100,
       isResizable: true,
-      isCollapsible: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
@@ -197,7 +190,6 @@ export default function HostTable() {
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
-      isCollapsible: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {

@@ -1,14 +1,15 @@
-import { WarningOutlined } from '@ant-design/icons'
-import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
-import { getValueFormat } from '@baurine/grafana-value-formats'
-import client from '@lib/client'
-import { Bar, CardTableV2 } from '@lib/components'
-import { useClientRequest } from '@lib/utils/useClientRequest'
 import { Tooltip, Typography } from 'antd'
+import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { red } from '@ant-design/colors'
+import { WarningOutlined } from '@ant-design/icons'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+
+import client from '@lib/client'
+import { Bar, CardTableV2 } from '@lib/components'
 import { dummyColumn } from '@lib/utils/tableColumns'
+import { useClientRequest } from '@lib/utils/useClientRequest'
 
 const { Text } = Typography
 
@@ -110,7 +111,7 @@ export default function HostTable() {
         const title = (
           <div>
             Used: {getValueFormat('bytes')(used, 1)} (
-            {getValueFormat('percentunit')(usedPercent, 1)})
+            {getValueFormat('percentunit')(+usedPercent, 1)})
           </div>
         )
         return (
@@ -145,7 +146,7 @@ export default function HostTable() {
             }
             serverTotal[item.instance.server_type]++
           })
-          const serverInfos = []
+          const serverInfos: string[] = []
           if (serverTotal.tidb > 0) {
             serverInfos.push(`${serverTotal.tidb} TiDB`)
           }
@@ -202,7 +203,7 @@ export default function HostTable() {
           const title = (
             <div>
               Used: {getValueFormat('bytes')(used, 1)} (
-              {getValueFormat('percentunit')(usedPercent, 1)})
+              {getValueFormat('percentunit')(+usedPercent, 1)})
             </div>
           )
           return (

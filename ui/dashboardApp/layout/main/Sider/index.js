@@ -4,44 +4,26 @@ import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
 import { useEventListener } from '@umijs/hooks'
 import { useTranslation } from 'react-i18next'
-import { useTrail, useSpring, animated } from 'react-spring'
+import { useSpring, animated } from 'react-spring'
 import client from '@lib/client'
 
 import Banner from './Banner'
 import styles from './index.module.less'
 
-const AnimatedMenuItem = animated(Menu.Item)
-const AnimatedSubMenu = animated(Menu.SubMenu)
-
-function TrailMenu({ items, delay, ...props }) {
-  const trail = useTrail(items.length, {
-    opacity: 1,
-    transform: 'translate3d(0, 0, 0)',
-    from: { opacity: 0, transform: 'translate3d(0, 60px, 0)' },
-    delay,
-    config: { mass: 1, tension: 5000, friction: 200 },
-  })
-  return (
-    <Menu {...props}>{trail.map((style, idx) => items[idx]({ style }))}</Menu>
-  )
-}
-
-function useAnimatedAppMenuItem(registry, appId, title) {
+function useAppMenuItem(registry, appId, title) {
   const { t } = useTranslation()
-  return (animationProps) => {
-    const app = registry.apps[appId]
-    if (!app) {
-      return null
-    }
-    return (
-      <AnimatedMenuItem key={appId} {...animationProps}>
-        <Link to={app.indexRoute} id={appId}>
-          {app.icon ? <app.icon /> : null}
-          <span>{title ? title : t(`${appId}.nav_title`, appId)}</span>
-        </Link>
-      </AnimatedMenuItem>
-    )
+  const app = registry.apps[appId]
+  if (!app) {
+    return null
   }
+  return (
+    <Menu.Item key={appId}>
+      <Link to={app.indexRoute} id={appId}>
+        {app.icon ? <app.icon /> : null}
+        <span>{title ? title : t(`${appId}.nav_title`, appId)}</span>
+      </Link>
+    </Menu.Item>
+  )
 }
 
 function useActiveAppId(registry) {
@@ -69,7 +51,7 @@ function useCurrentLogin() {
   return login
 }
 
-export default function Sider({
+function Sider({
   registry,
   fullWidth,
   defaultCollapsed,
@@ -82,11 +64,9 @@ export default function Sider({
   const activeAppId = useActiveAppId(registry)
   const currentLogin = useCurrentLogin()
 
-  const debugSubMenuItems = [
-    useAnimatedAppMenuItem(registry, 'instance_profiling'),
-  ]
-  const debugSubMenu = (animationProps) => (
-    <AnimatedSubMenu
+  const debugSubMenuItems = [useAppMenuItem(registry, 'instance_profiling')]
+  const debugSubMenu = (
+    <Menu.SubMenu
       key="debug"
       title={
         <span>
@@ -94,26 +74,25 @@ export default function Sider({
           <span>{t('nav.sider.debug')}</span>
         </span>
       }
-      {...animationProps}
     >
-      {debugSubMenuItems.map((r) => r())}
-    </AnimatedSubMenu>
+      {debugSubMenuItems}
+    </Menu.SubMenu>
   )
 
   const menuItems = [
-    useAnimatedAppMenuItem(registry, 'overview'),
-    useAnimatedAppMenuItem(registry, 'cluster_info'),
-    useAnimatedAppMenuItem(registry, 'keyviz'),
-    useAnimatedAppMenuItem(registry, 'statement'),
-    useAnimatedAppMenuItem(registry, 'slow_query'),
-    useAnimatedAppMenuItem(registry, 'diagnose'),
-    useAnimatedAppMenuItem(registry, 'search_logs'),
+    useAppMenuItem(registry, 'overview'),
+    useAppMenuItem(registry, 'cluster_info'),
+    useAppMenuItem(registry, 'keyviz'),
+    useAppMenuItem(registry, 'statement'),
+    useAppMenuItem(registry, 'slow_query'),
+    useAppMenuItem(registry, 'diagnose'),
+    useAppMenuItem(registry, 'search_logs'),
     debugSubMenu,
   ]
 
   const extraMenuItems = [
-    useAnimatedAppMenuItem(registry, 'dashboard_settings'),
-    useAnimatedAppMenuItem(
+    useAppMenuItem(registry, 'dashboard_settings'),
+    useAppMenuItem(
       registry,
       'user_profile',
       currentLogin ? currentLogin.username : '...'
@@ -142,20 +121,24 @@ export default function Sider({
           fullWidth={fullWidth}
           collapsedWidth={collapsedWidth}
         />
-        <TrailMenu
-          items={menuItems}
+        <Menu
           delay={animationDelay}
           mode="inline"
           selectedKeys={[activeAppId]}
           style={{ flexGrow: 1 }}
-        />
-        <TrailMenu
-          items={extraMenuItems}
+        >
+          {menuItems}
+        </Menu>
+        <Menu
           delay={animationDelay + 200}
           mode="inline"
           selectedKeys={[activeAppId]}
-        />
+        >
+          {extraMenuItems}
+        </Menu>
       </Layout.Sider>
     </animated.div>
   )
 }
+
+export default Sider

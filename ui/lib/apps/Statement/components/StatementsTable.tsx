@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { CardTableV2, ICardTableV2Props } from '@lib/components'
@@ -7,6 +7,7 @@ import * as useColumn from '@lib/utils/useColumn'
 
 import * as useStatementColumn from '../utils/useColumn'
 import DetailPage from '../pages/Detail'
+import { usePersistFn } from '@umijs/hooks'
 
 const tableColumns = (
   rows: StatementModel[],
@@ -49,7 +50,7 @@ export default function StatementsTable({
     showFullSQL,
   ])
 
-  function handleRowClick(rec) {
+  const handleRowClick = usePersistFn((rec) => {
     const qs = DetailPage.buildQuery({
       digest: rec.digest,
       schema: rec.schema_name,
@@ -57,7 +58,9 @@ export default function StatementsTable({
       endTime: timeRange.end_time,
     })
     navigate(`/statement/detail?${qs}`)
-  }
+  })
+
+  const getKey = useCallback((row) => `${row.digest}_${row.schema_name}`, [])
 
   return (
     <CardTableV2
@@ -66,7 +69,7 @@ export default function StatementsTable({
       columns={columns}
       items={statements}
       onRowClicked={handleRowClick}
-      getKey={(row) => row && `${row.digest}_${row.schema_name}`}
+      getKey={getKey}
     />
   )
 }

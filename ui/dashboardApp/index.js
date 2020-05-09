@@ -1,3 +1,5 @@
+import './wdyr'
+
 import * as singleSpa from 'single-spa'
 import AppRegistry from '@dashboard/registry'
 import * as routing from '@dashboard/routing'

@@ -1,7 +1,11 @@
 import React, { useState } from 'react'
 import { Select, Space, Tooltip, Drawer, Button, Checkbox, Result } from 'antd'
-import { useLocalStorageState } from '@umijs/hooks'
-import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
+import { useLocalStorageState, usePersistFn } from '@umijs/hooks'
+import {
+  SettingOutlined,
+  ReloadOutlined,
+  LoadingOutlined,
+} from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useTranslation } from 'react-i18next'
@@ -10,6 +14,7 @@ import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
 import useStatement from '../../utils/useStatement'
+import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
 const { Option } = Select
 
@@ -52,91 +57,107 @@ export default function StatementsOverview() {
     false
   )
 
+  const onChangeSort = usePersistFn((orderBy, desc) => {
+    setSavedQueryOptions({
+      ...savedQueryOptions,
+      orderBy,
+      desc,
+    })
+  })
+
   return (
     <ScrollablePane style={{ height: '100vh' }}>
-      <Card>
-        <Toolbar>
-          <Space>
-            <TimeRangeSelector
-              value={savedQueryOptions.timeRange}
-              timeRanges={allTimeRanges}
-              onChange={(timeRange) =>
-                setSavedQueryOptions({
-                  ...savedQueryOptions,
-                  timeRange,
-                })
-              }
-            />
-            <Select
-              value={savedQueryOptions.schemas}
-              mode="multiple"
-              allowClear
-              placeholder={t('statement.pages.overview.toolbar.select_schemas')}
-              style={{ minWidth: 200 }}
-              onChange={(schemas) =>
-                setSavedQueryOptions({
-                  ...savedQueryOptions,
-                  schemas,
-                })
-              }
-            >
-              {allSchemas.map((item) => (
-                <Option value={item} key={item}>
-                  {item}
-                </Option>
-              ))}
-            </Select>
-            <Select
-              value={savedQueryOptions.stmtTypes}
-              mode="multiple"
-              allowClear
-              placeholder={t(
-                'statement.pages.overview.toolbar.select_stmt_types'
-              )}
-              style={{ minWidth: 160 }}
-              onChange={(stmtTypes) =>
-                setSavedQueryOptions({
-                  ...savedQueryOptions,
-                  stmtTypes,
-                })
-              }
-            >
-              {allStmtTypes.map((item) => (
-                <Option value={item} key={item}>
-                  {item.toUpperCase()}
-                </Option>
-              ))}
-            </Select>
-          </Space>
-
-          <Space>
-            {columns.length > 0 && (
-              <ColumnsSelector
-                columns={columns}
-                visibleColumnKeys={visibleColumnKeys}
-                resetColumnKeys={defColumnKeys}
-                onChange={setVisibleColumnKeys}
-                foot={
-                  <Checkbox
-                    checked={showFullSQL}
-                    onChange={(e) => setShowFullSQL(e.target.checked)}
-                  >
-                    {t(
-                      'statement.pages.overview.toolbar.select_columns.show_full_sql'
-                    )}
-                  </Checkbox>
+      <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
+        <Card>
+          <Toolbar>
+            <Space>
+              <TimeRangeSelector
+                value={savedQueryOptions.timeRange}
+                timeRanges={allTimeRanges}
+                onChange={(timeRange) =>
+                  setSavedQueryOptions({
+                    ...savedQueryOptions,
+                    timeRange,
+                  })
                 }
               />
-            )}
-            <Tooltip title={t('statement.settings.title')}>
-              <SettingOutlined onClick={() => setShowSettings(true)} />
-            </Tooltip>
-            <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-              <ReloadOutlined onClick={refresh} />
-            </Tooltip>
-          </Space>
-        </Toolbar>
-      </Card>
+              <Select
+                value={savedQueryOptions.schemas}
+                mode="multiple"
+                allowClear
+                placeholder={t(
+                  'statement.pages.overview.toolbar.select_schemas'
+                )}
+                style={{ minWidth: 200 }}
+                onChange={(schemas) =>
+                  setSavedQueryOptions({
+                    ...savedQueryOptions,
+                    schemas,
+                  })
+                }
+              >
+                {allSchemas.map((item) => (
+                  <Option value={item} key={item}>
+                    {item}
+                  </Option>
+                ))}
+              </Select>
+              <Select
+                value={savedQueryOptions.stmtTypes}
+                mode="multiple"
+                allowClear
+                placeholder={t(
+                  'statement.pages.overview.toolbar.select_stmt_types'
+                )}
+                style={{ minWidth: 160 }}
+                onChange={(stmtTypes) =>
+                  setSavedQueryOptions({
+                    ...savedQueryOptions,
+                    stmtTypes,
+                  })
+                }
+              >
+                {allStmtTypes.map((item) => (
+                  <Option value={item} key={item}>
+                    {item.toUpperCase()}
+                  </Option>
+                ))}
+              </Select>
+            </Space>
+
+            <Space>
+              {columns.length > 0 && (
+                <ColumnsSelector
+                  columns={columns}
+                  visibleColumnKeys={visibleColumnKeys}
+                  resetColumnKeys={defColumnKeys}
+                  onChange={setVisibleColumnKeys}
+                  foot={
+                    <Checkbox
+                      checked={showFullSQL}
+                      onChange={(e) => setShowFullSQL(e.target.checked)}
+                    >
+                      {t(
+                        'statement.pages.overview.toolbar.select_columns.show_full_sql'
+                      )}
+                    </Checkbox>
+                  }
+                />
+              )}
+              <Tooltip title={t('statement.settings.title')}>
+                <SettingOutlined onClick={() => setShowSettings(true)} />
+              </Tooltip>
+              <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
+                {loadingStatements ? (
+                  <LoadingOutlined />
+                ) : (
+                  <ReloadOutlined onClick={refresh} />
+                )}
+              </Tooltip>
+            </Space>
+          </Toolbar>
+        </Card>
+      </Sticky>
 
       {enable ? (
         <StatementsTable
@@ -148,13 +169,7 @@ export default function StatementsOverview() {
           showFullSQL={showFullSQL}
           visibleColumnKeys={visibleColumnKeys}
           onGetColumns={setColumns}
-          onChangeSort={(orderBy, desc) =>
-            setSavedQueryOptions({
-              ...savedQueryOptions,
-              orderBy,
-              desc,
-            })
-          }
+          onChangeSort={onChangeSort}
         />
       ) : (
         <Result

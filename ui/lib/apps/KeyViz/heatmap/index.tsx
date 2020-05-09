@@ -12,7 +12,7 @@ type HeatmapProps = {
   onChartInit: (any) => void
 }
 
-const _Heatmap: React.FunctionComponent<HeatmapProps> = (props) => {
+function _Heatmap(props) {
   const divRef: React.RefObject<HTMLDivElement> = useRef(null)
   const chart = useRef<any>(null)
 

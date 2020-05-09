@@ -6,12 +6,20 @@ import {
   SelectionMode,
   IDetailsListProps,
   IColumn,
+  DetailsList,
 } from 'office-ui-fabric-react/lib/DetailsList'
-import { ShimmeredDetailsList } from 'office-ui-fabric-react/lib/ShimmeredDetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
 import Card from '../Card'
 import styles from './index.module.less'
+import AnimatedSkeleton from '../AnimatedSkeleton'
+import { usePersistFn } from '@umijs/hooks'
+
+DetailsList.whyDidYouRender = {
+  customName: 'DetailsList',
+} as any
+
+const MemoDetailsList = React.memo(DetailsList)
 
 function copyAndSort<T>(
   items: T[],
@@ -100,8 +108,20 @@ function CardTableV2(props: ICardTableV2Props) {
     items,
     ...restProps
   } = props
-
   const renderClickableRow = useRenderClickableRow(onRowClicked)
+
+  const onColumnClick = usePersistFn(
+    (_ev: React.MouseEvent<HTMLElement>, column: IColumn) => {
+      if (!onChangeSort) {
+        return
+      }
+      if (column.key === orderBy) {
+        onChangeSort(orderBy, !desc)
+      } else {
+        onChangeSort(column.key, true)
+      }
+    }
+  )
 
   const finalColumns = useMemo(() => {
     let newColumns: IColumn[] = columns || []
@@ -115,15 +135,10 @@ function CardTableV2(props: ICardTableV2Props) {
       onColumnClick,
     }))
     return newColumns
-    // (ignore onColumnClick)
-    // eslint-disable-next-line
-  }, [columns, visibleColumnKeys, orderBy, desc])
+  }, [onColumnClick, columns, visibleColumnKeys, orderBy, desc])
 
   const finalItems = useMemo(() => {
     let newItems = items || []
-    if (visibleItemsCount != null) {
-      newItems = newItems.slice(0, visibleItemsCount)
-    }
     const curColumn = finalColumns.find((col) => col.key === orderBy)
     if (curColumn) {
       newItems = copyAndSort(
@@ -132,8 +147,11 @@ function CardTableV2(props: ICardTableV2Props) {
         curColumn.isSortedDescending
       )
     }
+    if (visibleItemsCount != null) {
+      newItems = newItems.slice(0, visibleItemsCount)
+    }
     return newItems
-  }, [items, visibleItemsCount, orderBy, finalColumns])
+  }, [visibleItemsCount, items, orderBy, finalColumns])
 
   useEffect(() => {
     onGetColumns && onGetColumns(columns || [])
@@ -141,17 +159,9 @@ function CardTableV2(props: ICardTableV2Props) {
     // eslint-disable-next-line
   }, [columns])
 
-  function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {
-    if (!onChangeSort) {
-      return
-    }
-
-    if (column.key === orderBy) {
-      onChangeSort(orderBy, !desc)
-    } else {
-      onChangeSort(column.key, true)
-    }
-  }
+  const onRenderCheckbox = useCallback((props) => {
+    return <Checkbox checked={props?.checked} />
+  }, [])
 
   return (
     <Card
@@ -162,21 +172,20 @@ function CardTableV2(props: ICardTableV2Props) {
       noMargin={cardNoMargin}
       extra={cardExtra}
     >
-      <div className={styles.cardTableContent}>
-        <ShimmeredDetailsList
-          selectionMode={SelectionMode.none}
-          layoutMode={DetailsListLayoutMode.justified}
-          onRenderDetailsHeader={renderStickyHeader}
-          onRenderRow={onRowClicked ? renderClickableRow : undefined}
-          onRenderCheckbox={(props) => {
-            return <Checkbox checked={props?.checked} />
-          }}
-          columns={finalColumns}
-          items={finalItems}
-          enableShimmer={finalItems.length > 0 ? false : loading}
-          {...restProps}
-        />
-      </div>
+      <AnimatedSkeleton showSkeleton={items.length === 0 && loading}>
+        <div className={styles.cardTableContent}>
+          <MemoDetailsList
+            selectionMode={SelectionMode.none}
+            layoutMode={DetailsListLayoutMode.justified}
+            onRenderDetailsHeader={renderStickyHeader}
+            onRenderRow={onRowClicked ? renderClickableRow : undefined}
+            onRenderCheckbox={onRenderCheckbox}
+            columns={finalColumns}
+            items={finalItems}
+            {...restProps}
+          />
+        </div>
+      </AnimatedSkeleton>
     </Card>
   )
 }

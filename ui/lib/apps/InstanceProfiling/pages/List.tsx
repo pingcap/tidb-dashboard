@@ -16,7 +16,7 @@ function getTreeData(topologyMap) {
     tikv: [],
     pd: [],
   }
-  Object.values(topologyMap).forEach((target) => {
+  Object.values(topologyMap).forEach((target: any) => {
     if (!(target.kind in treeDataByKind)) {
       return
     }
@@ -55,7 +55,8 @@ function useTargetsMap() {
     if (!data) {
       return map
     }
-    data.tidb.nodes.forEach((node) => {
+    // FIXME, declare type
+    data.tidb?.nodes?.forEach((node) => {
       const display = `${node.ip}:${node.port}`
       const target = {
         kind: 'tidb',
@@ -65,7 +66,7 @@ function useTargetsMap() {
       }
       map[display] = target
     })
-    data.tikv.nodes.forEach((node) => {
+    data.tikv?.nodes?.forEach((node) => {
       const display = `${node.ip}:${node.port}`
       const target = {
         kind: 'tikv',
@@ -75,7 +76,7 @@ function useTargetsMap() {
       }
       map[display] = target
     })
-    data.pd.nodes.forEach((node) => {
+    data.pd?.nodes?.forEach((node) => {
       const display = `${node.ip}:${node.port}`
       const target = {
         kind: 'pd',
@@ -144,7 +145,7 @@ export default function Page() {
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: (rec) => {
         // TODO: Extract to utility function
-        const r = []
+        const r: string[] = []
         if (rec.target_stats.num_tidb_nodes) {
           r.push(`${rec.target_stats.num_tidb_nodes} TiDB`)
         }

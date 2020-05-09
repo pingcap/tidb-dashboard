@@ -63,7 +63,7 @@ export default function LogSearchingDetail() {
         </Col>
         <Col span={6}>
           <SearchProgress
-            key={reloadKey}
+            key={`${reloadKey}`}
             toggleReload={toggleReload}
             taskGroupID={taskGroupID}
             tasks={tasks}

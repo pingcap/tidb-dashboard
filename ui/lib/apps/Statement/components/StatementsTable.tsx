@@ -1,10 +1,13 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CardTableV2, ICardTableV2Props } from '@lib/components'
-import { StatementTimeRange, StatementModel } from '@lib/client'
-import { statementColumns } from '../utils/tableColumns'
-import DetailPage from '../pages/Detail'
 import { usePersistFn } from '@umijs/hooks'
+
+import { StatementModel, StatementTimeRange } from '@lib/client'
+import { CardTableV2, ICardTableV2Props } from '@lib/components'
+import openLink from '@lib/utils/openLink'
+
+import DetailPage from '../pages/Detail'
+import { statementColumns } from '../utils/tableColumns'
 
 interface Props extends Partial<ICardTableV2Props> {
   loading: boolean
@@ -28,15 +31,17 @@ export default function StatementsTable({
     showFullSQL,
   ])
 
-  const handleRowClick = usePersistFn((rec) => {
-    const qs = DetailPage.buildQuery({
-      digest: rec.digest,
-      schema: rec.schema_name,
-      beginTime: timeRange.begin_time,
-      endTime: timeRange.end_time,
-    })
-    navigate(`/statement/detail?${qs}`)
-  })
+  const handleRowClick = usePersistFn(
+    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+      const qs = DetailPage.buildQuery({
+        digest: rec.digest,
+        schema: rec.schema_name,
+        beginTime: timeRange.begin_time,
+        endTime: timeRange.end_time,
+      })
+      openLink(`/statement/detail?${qs}`, ev, navigate)
+    }
+  )
 
   const getKey = useCallback((row) => `${row.digest}_${row.schema_name}`, [])
 

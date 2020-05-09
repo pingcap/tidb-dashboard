@@ -1,11 +1,13 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CardTableV2, ICardTableV2Props } from '@lib/components'
-import { SlowqueryBase } from '@lib/client'
-
-import { slowQueryColumns } from '../utils/tableColumns'
-import DetailPage from '../pages/Detail'
 import { usePersistFn } from '@umijs/hooks'
+
+import { SlowqueryBase } from '@lib/client'
+import { CardTableV2, ICardTableV2Props } from '@lib/components'
+import openLink from '@lib/utils/openLink'
+
+import DetailPage from '../pages/Detail'
+import { slowQueryColumns } from '../utils/tableColumns'
 
 interface Props extends Partial<ICardTableV2Props> {
   loading: boolean
@@ -26,14 +28,16 @@ function SlowQueriesTable({
     showFullSQL,
   ])
 
-  const handleRowClick = usePersistFn((rec) => {
-    const qs = DetailPage.buildQuery({
-      digest: rec.digest,
-      connectId: rec.connection_id,
-      time: rec.timestamp,
-    })
-    navigate(`/slow_query/detail?${qs}`)
-  })
+  const handleRowClick = usePersistFn(
+    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+      const qs = DetailPage.buildQuery({
+        digest: rec.digest,
+        connectId: rec.connection_id,
+        time: rec.timestamp,
+      })
+      openLink(`/slow_query/detail?${qs}`, ev, navigate)
+    }
+  )
 
   const getKey = useCallback((row) => `${row.digest}_${row.timestamp}`, [])
 

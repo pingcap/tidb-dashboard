@@ -53,7 +53,11 @@ export interface ICardTableV2Props extends IDetailsListProps {
   onChangeSort?: (orderBy: string, desc: boolean) => void
 
   // Event triggered when a row is clicked.
-  onRowClicked?: (item: any, itemIndex: number) => void
+  onRowClicked?: (
+    item: any,
+    itemIndex: number,
+    ev: React.MouseEvent<HTMLElement>
+  ) => void
 
   onGetColumns?: (columns: IColumn[]) => void
 }

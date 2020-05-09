@@ -23,30 +23,45 @@ import (
 	globalUtil "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
-var kvModeAuthResetCmd = &cobra.Command{
-	Use:   "auth-reset",
-	Short: "set or reset tikv mode auth secret key",
+var kvAuthCmd = &cobra.Command{
+	Use:   "kvauth",
+	Short: "kvauth related ops, including reset, revoke tikv mode auth key",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		if kvModeAuthKey == "" {
-			fmt.Println("Can not set empty auth key")
+		if !isHiddenVerify {
+			_ = cmd.Help()
+			os.Exit(0)
+		}
+
+		if kvAuthKey == "" {
+			fmt.Println("Can not use empty auth key")
 			_ = cmd.Help()
 			os.Exit(1)
 		}
+
 		client, err := pd.NewEtcdClientNoLC(cfg.CoreConfig)
 		if err != nil {
 			fmt.Println("Failed to create etcdClient")
 			os.Exit(1)
 		}
 
-		if globalUtil.ResetKvModeAuthKey(client, kvModeAuthKey) != nil {
-			fmt.Println("Failed to reset kv mode auth secret key")
+		if err := globalUtil.VerifyKvAuthKey(client, kvAuthKey); err != nil {
+			fmt.Println("Test auth failed: " + err.Error())
 			os.Exit(1)
+		} else {
+			fmt.Println("Test auth success")
+			os.Exit(0)
 		}
+
 	},
 }
 
+var kvAuthKey string
+var isHiddenVerify bool
+
 func init() {
-	kvModeCmd.AddCommand(kvModeAuthResetCmd)
-	kvModeAuthResetCmd.Flags().StringVarP(&kvModeAuthKey, "key", "k", "", "auth key")
+	rootCmd.AddCommand(kvAuthCmd)
+	kvAuthCmd.Flags().StringVarP(&kvAuthKey, "key", "k", "", "auth key")
+	kvAuthCmd.Flags().BoolVar(&isHiddenVerify, "hidden-test-auth", false, "do auth")
+	_ = kvAuthCmd.Flags().MarkHidden("hidden-test-auth")
 }

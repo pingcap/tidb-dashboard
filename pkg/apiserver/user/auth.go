@@ -62,7 +62,7 @@ func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder, etcdClien
 		if f.Username != "root" {
 			return nil, ErrSignInOther.NewWithNoMessage()
 		}
-		err := globalUtil.VerifyKvModeAuthKey(etcdClient, f.Password)
+		err := globalUtil.VerifyKvAuthKey(etcdClient, f.Password)
 		if err != nil {
 			return nil, ErrSignInOther.WrapWithNoMessage(err)
 		}

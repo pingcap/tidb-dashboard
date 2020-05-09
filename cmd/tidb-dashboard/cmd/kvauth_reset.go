@@ -23,24 +23,30 @@ import (
 	globalUtil "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
-var kvModeAuthClearCmd = &cobra.Command{
-	Use:   "auth-clear",
-	Short: "clear tikv mode auth secret key",
+var kvAuthResetCmd = &cobra.Command{
+	Use:   "reset",
+	Short: "set or reset kvauth secret key",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		if kvAuthKey == "" {
+			fmt.Println("Can not set empty auth key")
+			_ = cmd.Help()
+			os.Exit(1)
+		}
 		client, err := pd.NewEtcdClientNoLC(cfg.CoreConfig)
 		if err != nil {
 			fmt.Println("Failed to create etcdClient")
 			os.Exit(1)
 		}
 
-		if globalUtil.ClearKvModeAuthKey(client) != nil {
-			fmt.Println("Failed to clear kv mode auth secret key")
+		if globalUtil.ResetKvAuthKey(client, kvAuthKey) != nil {
+			fmt.Println("Failed to reset kv mode auth secret key")
 			os.Exit(1)
 		}
 	},
 }
 
 func init() {
-	kvModeCmd.AddCommand(kvModeAuthClearCmd)
+	kvAuthCmd.AddCommand(kvAuthResetCmd)
+	kvAuthResetCmd.Flags().StringVarP(&kvAuthKey, "key", "k", "", "auth key")
 }

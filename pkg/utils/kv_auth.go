@@ -22,22 +22,22 @@ import (
 	"go.etcd.io/etcd/clientv3"
 )
 
-const etcdKvModeAuthKeyPath = "/dashboard/kv_mode/auth_key"
+const etcdKvAuthKeyPath = "/dashboard/kv_auth"
 
-// ClearKvModeAuthKey delete the etcd path of KV mode user account
-func ClearKvModeAuthKey(etcdClient *clientv3.Client) error {
+// RevokeKvAuthKey delete the etcd path of KV mode user account
+func RevokeKvAuthKey(etcdClient *clientv3.Client) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	_, err := etcdClient.Delete(ctx, etcdKvModeAuthKeyPath)
+	_, err := etcdClient.Delete(ctx, etcdKvAuthKeyPath)
 	return err
 }
 
-// VerifyKvModeAuthKey get hashed pass from etcd and check
-func VerifyKvModeAuthKey(etcdClient *clientv3.Client, authKey string) error {
+// VerifyKvAuthKey get hashed pass from etcd and check
+func VerifyKvAuthKey(etcdClient *clientv3.Client, authKey string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	path := etcdKvModeAuthKeyPath
+	path := etcdKvAuthKeyPath
 	hashedPass := []byte("")
 	resp, err := etcdClient.Get(ctx, path)
 	if err != nil {
@@ -54,8 +54,8 @@ func VerifyKvModeAuthKey(etcdClient *clientv3.Client, authKey string) error {
 	return cryptopasta.CheckPasswordHash(hashedPass, []byte(authKey))
 }
 
-// ResetKvModeAuthKey set new auth key to etcd
-func ResetKvModeAuthKey(etcdClient *clientv3.Client, authKey string) error {
+// ResetKvAuthKey set new auth key to etcd
+func ResetKvAuthKey(etcdClient *clientv3.Client, authKey string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -63,6 +63,6 @@ func ResetKvModeAuthKey(etcdClient *clientv3.Client, authKey string) error {
 	if err != nil {
 		return err
 	}
-	_, err = etcdClient.Put(ctx, etcdKvModeAuthKeyPath, string(hashedPass))
+	_, err = etcdClient.Put(ctx, etcdKvAuthKeyPath, string(hashedPass))
 	return err
 }

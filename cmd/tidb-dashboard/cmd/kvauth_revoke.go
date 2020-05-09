@@ -23,47 +23,24 @@ import (
 	globalUtil "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
-//var cfg = &DashboardCLIConfig{}
-
-var kvModeCmd = &cobra.Command{
-	Use:   "kvmode",
-	Short: "tikv mode related ops, including reset, clear tikv mode username, password",
+var kvAuthRevokeCmd = &cobra.Command{
+	Use:   "revoke",
+	Short: "revoke kvauth secret key",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		if !kvModeDoAuth {
-			_ = cmd.Help()
-			os.Exit(0)
-		}
-
-		if kvModeAuthKey == "" {
-			fmt.Println("Can not use empty auth key")
-			_ = cmd.Help()
-			os.Exit(1)
-		}
-
 		client, err := pd.NewEtcdClientNoLC(cfg.CoreConfig)
 		if err != nil {
 			fmt.Println("Failed to create etcdClient")
 			os.Exit(1)
 		}
 
-		if err := globalUtil.VerifyKvModeAuthKey(client, kvModeAuthKey); err != nil {
-			fmt.Println("Test auth failed: " + err.Error())
+		if globalUtil.RevokeKvAuthKey(client) != nil {
+			fmt.Println("Failed to clear kv mode auth secret key")
 			os.Exit(1)
-		} else {
-			fmt.Println("Test auth success")
-			os.Exit(0)
 		}
-
 	},
 }
 
-var kvModeAuthKey string
-var kvModeDoAuth bool
-
 func init() {
-	rootCmd.AddCommand(kvModeCmd)
-	kvModeCmd.Flags().StringVarP(&kvModeAuthKey, "key", "k", "", "auth key")
-	kvModeCmd.Flags().BoolVar(&kvModeDoAuth, "hidden-test-auth", false, "do auth")
-	_ = kvModeCmd.Flags().MarkHidden("hidden-test-auth")
+	kvAuthCmd.AddCommand(kvAuthRevokeCmd)
 }

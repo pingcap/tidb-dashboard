@@ -1,7 +1,7 @@
 import client from '@lib/client'
 import { LogsearchTaskModel } from '@lib/client'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { Button, Modal, Tree, Skeleton } from 'antd'
+import { Button, Modal, Tree } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'

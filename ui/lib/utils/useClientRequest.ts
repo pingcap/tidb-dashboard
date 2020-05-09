@@ -1,5 +1,5 @@
 import { useMount, useUnmount } from '@umijs/hooks'
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { CancelToken, AxiosPromise, CancelTokenSource } from 'axios'
 import axios from 'axios'
 

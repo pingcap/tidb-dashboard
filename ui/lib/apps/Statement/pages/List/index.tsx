@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState } from 'react'
 import { Select, Space, Tooltip, Drawer, Button, Checkbox, Result } from 'antd'
-import { useLocalStorageState } from '@umijs/hooks'
+import { useLocalStorageState, usePersistFn } from '@umijs/hooks'
 import {
   SettingOutlined,
   ReloadOutlined,
@@ -57,13 +57,13 @@ export default function StatementsOverview() {
     false
   )
 
-  const onChangeSort = useCallback((orderBy, desc) => {
+  const onChangeSort = usePersistFn((orderBy, desc) => {
     setSavedQueryOptions({
       ...savedQueryOptions,
       orderBy,
       desc,
     })
-  }, [])
+  })
 
   return (
     <ScrollablePane style={{ height: '100vh' }}>

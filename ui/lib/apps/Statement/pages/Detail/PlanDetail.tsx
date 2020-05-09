@@ -1,5 +1,5 @@
 import React from 'react'
-import { Space, Skeleton } from 'antd'
+import { Space } from 'antd'
 import { useToggle } from '@umijs/hooks'
 import { useTranslation } from 'react-i18next'
 import {

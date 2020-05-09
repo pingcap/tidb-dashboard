@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Select, Space, Tooltip, Input, Checkbox } from 'antd'
 import { ReloadOutlined, LoadingOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import { useLocalStorageState } from '@umijs/hooks'
+import { useLocalStorageState, usePersistFn } from '@umijs/hooks'
 
 import {
   Card,
@@ -55,13 +55,13 @@ function List() {
     false
   )
 
-  const onChangeSort = useCallback((orderBy, desc) => {
+  const onChangeSort = usePersistFn((orderBy, desc) => {
     setSavedQueryOptions({
       ...savedQueryOptions,
       orderBy,
       desc,
     })
-  }, [])
+  })
 
   useEffect(() => {
     async function getSchemas() {

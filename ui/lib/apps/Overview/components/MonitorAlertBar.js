@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { RightOutlined } from '@ant-design/icons'
-import { Skeleton } from 'antd'
 import { Card, AnimatedSkeleton } from '@lib/components'
 import client from '@lib/client'
 import { Link } from 'react-router-dom'

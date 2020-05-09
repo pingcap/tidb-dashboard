@@ -4,7 +4,7 @@ import { Card, AnimatedSkeleton } from '@lib/components'
 import { useTranslation } from 'react-i18next'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
-import { Skeleton, Alert, Typography } from 'antd'
+import { Alert, Typography } from 'antd'
 import {
   STATUS_UP,
   STATUS_TOMBSTONE,

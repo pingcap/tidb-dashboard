@@ -1,5 +1,5 @@
 import React from 'react'
-import { Skeleton, Space, Alert } from 'antd'
+import { Space, Alert } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useLocation, Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'

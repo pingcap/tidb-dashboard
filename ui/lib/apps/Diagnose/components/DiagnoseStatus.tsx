@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Descriptions, message, Skeleton, Progress, Button } from 'antd'
+import { Descriptions, message, Progress, Button } from 'antd'
 import { Head, AnimatedSkeleton } from '@lib/components'
 import { DateTime } from '@lib/components'
 import { DiagnoseReport } from '@lib/client'

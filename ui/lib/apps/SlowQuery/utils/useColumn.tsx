@@ -9,7 +9,6 @@ import {
   TextWrap,
   Bar,
   DateTime,
-  Pre,
 } from '@lib/components'
 import { Tooltip, Badge } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'

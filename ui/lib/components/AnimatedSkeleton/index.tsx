@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import cx from 'classnames'
 import { Skeleton } from 'antd'
 import { SkeletonProps } from 'antd/lib/skeleton'
@@ -52,7 +52,7 @@ function AnimatedSkeleton({
 
   useEffect(() => {
     setProps(getTargetProps(showSkeleton))
-  }, [showSkeleton])
+  }, [showSkeleton, setProps])
 
   return (
     <div

@@ -1,13 +1,16 @@
-import React, { useState, useMemo } from 'react'
-import { message, Form, TreeSelect, Button, Select, Badge } from 'antd'
+import { Badge, Button, Form, message, Select, TreeSelect } from 'antd'
+import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
-import { Card, CardTableV2 } from '@lib/components'
+import { usePersistFn } from '@umijs/hooks'
+
 import client from '@lib/client'
-import { useClientRequest } from '@lib/utils/useClientRequest'
+import { Card, CardTableV2 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
+import openLink from '@lib/utils/openLink'
+import { useClientRequest } from '@lib/utils/useClientRequest'
 
 // FIXME: The following logic should be extracted into a common component.
 function getTreeData(topologyMap) {
@@ -131,9 +134,11 @@ export default function Page() {
     setSubmitting(false)
   }
 
-  function handleRowClick(rec) {
-    navigate(`/instance_profiling/${rec.id}`)
-  }
+  const handleRowClick = usePersistFn(
+    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+      openLink(`/instance_profiling/${rec.id}`, ev, navigate)
+    }
+  )
 
   const historyTableColumns = [
     {

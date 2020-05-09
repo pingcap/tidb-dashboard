@@ -65,30 +65,32 @@ function DiagnoseStatus() {
       }
     >
       <AnimatedSkeleton showSkeleton={!report}>
-        <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label={t('diagnose.status.range_begin')}>
-            <DateTime.Calendar
-              unixTimestampMs={new Date(report!.start_time!).valueOf()}
-            />
-          </Descriptions.Item>
-          <Descriptions.Item label={t('diagnose.status.range_end')}>
-            <DateTime.Calendar
-              unixTimestampMs={new Date(report!.end_time!).valueOf()}
-            />
-          </Descriptions.Item>
-          {report!.compare_start_time && (
-            <Descriptions.Item label={t('diagnose.status.baseline_begin')}>
+        {report && (
+          <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label={t('diagnose.status.range_begin')}>
               <DateTime.Calendar
-                unixTimestampMs={new Date(
-                  report!.compare_start_time!
-                ).valueOf()}
+                unixTimestampMs={new Date(report.start_time!).valueOf()}
               />
             </Descriptions.Item>
-          )}
-          <Descriptions.Item label={t('diagnose.status.progress')}>
-            <Progress style={{ width: 200 }} percent={report!.progress || 0} />
-          </Descriptions.Item>
-        </Descriptions>
+            <Descriptions.Item label={t('diagnose.status.range_end')}>
+              <DateTime.Calendar
+                unixTimestampMs={new Date(report.end_time!).valueOf()}
+              />
+            </Descriptions.Item>
+            {report.compare_start_time && (
+              <Descriptions.Item label={t('diagnose.status.baseline_begin')}>
+                <DateTime.Calendar
+                  unixTimestampMs={new Date(
+                    report.compare_start_time
+                  ).valueOf()}
+                />
+              </Descriptions.Item>
+            )}
+            <Descriptions.Item label={t('diagnose.status.progress')}>
+              <Progress style={{ width: 200 }} percent={report.progress || 0} />
+            </Descriptions.Item>
+          </Descriptions>
+        )}
       </AnimatedSkeleton>
     </Head>
   )

@@ -26,7 +26,7 @@ function simpleSqlMinify(str) {
     .replace(/\*\/\s{1,}/g, '*/')
 }
 
-function _HighlightSQL({ sql, compact, theme = 'light' }: Props) {
+function HighlightSQL({ sql, compact, theme = 'light' }: Props) {
   const formattedSql = useMemo(() => {
     let f = formatSql(sql)
     if (compact) {
@@ -51,6 +51,4 @@ function _HighlightSQL({ sql, compact, theme = 'light' }: Props) {
   )
 }
 
-const HighlightSQL = React.memo(_HighlightSQL)
-
-export default HighlightSQL
+export default React.memo(HighlightSQL)

@@ -15,6 +15,12 @@ import styles from './index.module.less'
 import AnimatedSkeleton from '../AnimatedSkeleton'
 import { usePersistFn } from '@umijs/hooks'
 
+DetailsList.whyDidYouRender = {
+  customName: 'DetailsList',
+} as any
+
+const MemoDetailsList = React.memo(DetailsList)
+
 function copyAndSort<T>(
   items: T[],
   columnKey: string,
@@ -168,7 +174,7 @@ function CardTableV2(props: ICardTableV2Props) {
     >
       <AnimatedSkeleton showSkeleton={items.length === 0 && loading}>
         <div className={styles.cardTableContent}>
-          <DetailsList
+          <MemoDetailsList
             selectionMode={SelectionMode.none}
             layoutMode={DetailsListLayoutMode.justified}
             onRenderDetailsHeader={renderStickyHeader}
@@ -183,7 +189,5 @@ function CardTableV2(props: ICardTableV2Props) {
     </Card>
   )
 }
-
-CardTableV2.whyDidYouRender = true
 
 export default CardTableV2

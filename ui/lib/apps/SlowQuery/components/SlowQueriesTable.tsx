@@ -69,6 +69,4 @@ function SlowQueriesTable({
   )
 }
 
-SlowQueriesTable.whyDidYouRender = true
-
 export default SlowQueriesTable

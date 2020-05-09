@@ -51,7 +51,7 @@ export interface ITimeRangeSelectorProps {
   onChange: (val: TimeRange) => void
 }
 
-export default function TimeRangeSelector({
+function TimeRangeSelector({
   value: curTimeRange,
   onChange,
 }: ITimeRangeSelectorProps) {
@@ -157,3 +157,5 @@ export default function TimeRangeSelector({
     </Dropdown>
   )
 }
+
+export default React.memo(TimeRangeSelector)

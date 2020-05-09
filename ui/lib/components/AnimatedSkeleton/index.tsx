@@ -87,6 +87,4 @@ function AnimatedSkeleton({
   )
 }
 
-AnimatedSkeleton.whyDidYouRender = true
-
 export default AnimatedSkeleton

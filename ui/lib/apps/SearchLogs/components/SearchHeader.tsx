@@ -60,7 +60,7 @@ function buildTreeData(targets: ModelRequestTargetNode[]) {
 }
 
 interface Props {
-  taskGroupID: number
+  taskGroupID?: number
 }
 
 const LOG_LEVELS = ['debug', 'info', 'warn', 'trace', 'critical', 'error']
@@ -73,8 +73,8 @@ export default function SearchHeader({ taskGroupID }: Props) {
   const [logLevel, setLogLevel] = useState(2)
   const [selectedComponents, setComponents] = useState<string[]>([])
   const [searchValue, setSearchValue] = useState('')
-
   const [allTargets, setAllTargets] = useState<ModelRequestTargetNode[]>([])
+
   useMount(() => {
     async function fetchData() {
       const res = await client.getInstance().topologyAllGet()

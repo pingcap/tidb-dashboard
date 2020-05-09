@@ -1,19 +1,19 @@
-import React, { useCallback, useMemo, useEffect } from 'react'
 import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
-  DetailsListLayoutMode,
-  SelectionMode,
-  IDetailsListProps,
-  IColumn,
   DetailsList,
+  DetailsListLayoutMode,
+  IColumn,
+  IDetailsListProps,
+  SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { usePersistFn } from '@umijs/hooks'
 
+import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
 import styles from './index.module.less'
-import AnimatedSkeleton from '../AnimatedSkeleton'
-import { usePersistFn } from '@umijs/hooks'
 
 DetailsList.whyDidYouRender = {
   customName: 'DetailsList',
@@ -50,7 +50,7 @@ export interface ICardTableV2Props extends IDetailsListProps {
   // Handle sort
   orderBy?: string
   desc?: boolean
-  onChangeSort?: (orderBy: string, desc: boolean) => void
+  onChangeOrder?: (orderBy: string, desc: boolean) => void
 
   // Event triggered when a row is clicked.
   onRowClicked?: (item: any, itemIndex: number) => void
@@ -101,7 +101,7 @@ function CardTableV2(props: ICardTableV2Props) {
     visibleItemsCount,
     orderBy,
     desc = true,
-    onChangeSort,
+    onChangeOrder,
     onRowClicked,
     onGetColumns,
     columns,
@@ -112,13 +112,13 @@ function CardTableV2(props: ICardTableV2Props) {
 
   const onColumnClick = usePersistFn(
     (_ev: React.MouseEvent<HTMLElement>, column: IColumn) => {
-      if (!onChangeSort) {
+      if (!onChangeOrder) {
         return
       }
       if (column.key === orderBy) {
-        onChangeSort(orderBy, !desc)
+        onChangeOrder(orderBy, !desc)
       } else {
-        onChangeSort(column.key, true)
+        onChangeOrder(column.key, true)
       }
     }
   )

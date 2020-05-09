@@ -1,19 +1,19 @@
-import React, { useCallback, useMemo, useEffect } from 'react'
 import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
-  DetailsListLayoutMode,
-  SelectionMode,
-  IDetailsListProps,
-  IColumn,
   DetailsList,
+  DetailsListLayoutMode,
+  IColumn,
+  IDetailsListProps,
+  SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { usePersistFn } from '@umijs/hooks'
 
+import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
 import styles from './index.module.less'
-import AnimatedSkeleton from '../AnimatedSkeleton'
-import { usePersistFn } from '@umijs/hooks'
 
 DetailsList.whyDidYouRender = {
   customName: 'DetailsList',

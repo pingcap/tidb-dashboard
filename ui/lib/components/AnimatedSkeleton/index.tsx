@@ -67,12 +67,7 @@ function AnimatedSkeleton({
         }}
       >
         <div ref={skeletonRef}>
-          <Skeleton
-            active
-            title={false}
-            paragraph={{ rows: 3 }}
-            {...restProps}
-          />
+          <Skeleton title={false} paragraph={{ rows: 3 }} {...restProps} />
         </div>
       </animated.div>
       <animated.div

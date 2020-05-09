@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TableDef, ExpandContext, TableRowDef } from '../types'
-const ReactMarkdown = require('react-markdown')
+import ReactMarkdown from 'react-markdown'
 
 function DiagnosisRow({ row }: { row: TableRowDef }) {
   const outsideExpand = useContext(ExpandContext)

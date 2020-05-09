@@ -1,32 +1,10 @@
 import React, { useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { CardTableV2, ICardTableV2Props } from '@lib/components'
 import { StatementTimeRange, StatementModel } from '@lib/client'
-import * as useColumn from '@lib/utils/useColumn'
-
-import * as useStatementColumn from '../utils/useColumn'
+import { statementColumns } from '../utils/tableColumns'
 import DetailPage from '../pages/Detail'
 import { usePersistFn } from '@umijs/hooks'
-
-const tableColumns = (
-  rows: StatementModel[],
-  showFullSQL?: boolean
-): IColumn[] => {
-  return [
-    useStatementColumn.useDigestColumn(rows, showFullSQL),
-    useStatementColumn.useSumLatencyColumn(rows),
-    useStatementColumn.useAvgMinMaxLatencyColumn(rows),
-    useStatementColumn.useExecCountColumn(rows),
-    useStatementColumn.useAvgMaxMemColumn(rows),
-    useStatementColumn.useErrorsWarningsColumn(rows),
-    useStatementColumn.useAvgParseLatencyColumn(rows),
-    useStatementColumn.useAvgCompileLatencyColumn(rows),
-    useStatementColumn.useAvgCoprColumn(rows),
-    useStatementColumn.useRelatedSchemasColumn(rows),
-    useColumn.useDummyColumn(),
-  ]
-}
 
 interface Props extends Partial<ICardTableV2Props> {
   loading: boolean
@@ -45,7 +23,7 @@ export default function StatementsTable({
 }: Props) {
   const navigate = useNavigate()
 
-  const columns = useMemo(() => tableColumns(statements, showFullSQL), [
+  const columns = useMemo(() => statementColumns(statements, showFullSQL), [
     statements,
     showFullSQL,
   ])

@@ -8,8 +8,8 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client from '@lib/client'
 import { Bar, CardTableV2 } from '@lib/components'
+import { dummyColumn } from '@lib/utils/tableColumns'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { useDummyColumn } from '@lib/utils/useColumn'
 
 const { Text } = Typography
 
@@ -214,7 +214,7 @@ export default function HostTable() {
         })
       },
     },
-    useDummyColumn(),
+    dummyColumn(),
   ]
 
   return (

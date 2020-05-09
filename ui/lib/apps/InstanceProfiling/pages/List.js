@@ -163,7 +163,6 @@ export default function Page() {
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
-      isCollapsible: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: (rec) => {
         if (rec.state === 1) {
@@ -189,7 +188,6 @@ export default function Page() {
       minWidth: 160,
       maxWidth: 220,
       isResizable: true,
-      isCollapsible: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: (rec) => {
         return <DateTime.Calendar unixTimestampMs={rec.started_at * 1000} />
@@ -202,7 +200,6 @@ export default function Page() {
       maxWidth: 150,
       fieldName: 'profile_duration_secs',
       isResizable: true,
-      isCollapsible: true,
       columnActionsMode: ColumnActionsMode.disabled,
     },
   ]

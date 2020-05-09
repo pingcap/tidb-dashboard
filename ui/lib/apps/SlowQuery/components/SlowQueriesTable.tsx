@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { CardTableV2, ICardTableV2Props } from '@lib/components'
@@ -7,6 +7,7 @@ import * as useColumn from '@lib/utils/useColumn'
 
 import * as useSlowQueryColumn from '../utils/useColumn'
 import DetailPage from '../pages/Detail'
+import { usePersistFn } from '@umijs/hooks'
 
 function tableColumns(rows: SlowqueryBase[], showFullSQL?: boolean): IColumn[] {
   return [
@@ -32,11 +33,10 @@ interface Props extends Partial<ICardTableV2Props> {
   showFullSQL?: boolean
 }
 
-export default function SlowQueriesTable({
+function SlowQueriesTable({
   loading,
   slowQueries,
   showFullSQL,
-
   ...restProps
 }: Props) {
   const navigate = useNavigate()
@@ -46,14 +46,16 @@ export default function SlowQueriesTable({
     showFullSQL,
   ])
 
-  function handleRowClick(rec) {
+  const handleRowClick = usePersistFn((rec) => {
     const qs = DetailPage.buildQuery({
       digest: rec.digest,
       connectId: rec.connection_id,
       time: rec.timestamp,
     })
     navigate(`/slow_query/detail?${qs}`)
-  }
+  })
+
+  const getKey = useCallback((row) => `${row.digest}_${row.timestamp}`, [])
 
   return (
     <CardTableV2
@@ -62,7 +64,9 @@ export default function SlowQueriesTable({
       columns={columns}
       items={slowQueries}
       onRowClicked={handleRowClick}
-      getKey={(row) => row && `${row.digest}_${row.timestamp}`}
+      getKey={getKey}
     />
   )
 }
+
+export default SlowQueriesTable

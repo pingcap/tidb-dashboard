@@ -87,6 +87,7 @@
     "react-app-rewire-multiple-entry": "^2.1.0",
     "react-app-rewire-yaml": "^1.1.0",
     "react-app-rewired": "^2.1.5",
+    "react-markdown": "^4.3.1",
     "react-scripts": "3.4.1",
     "typescript": "^3.7.4",
     "webpack-bundle-analyzer": "^3.7.0",

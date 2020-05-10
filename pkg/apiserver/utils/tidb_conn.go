@@ -1,4 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
+// Copyright 2021 PingCAP, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,7 +39,10 @@ func MWConnectTiDB(tidbForwarder *tidb.Forwarder) gin.HandlerFunc {
 		}
 
 		if !sessionUser.IsTiDBAuth {
-			c.Next()
+			// Only TiDBAuth is able to access. Raise error in this case.
+			// The error is privilege error instead of authorization error so that user will not be redirected.
+			MakeInsufficientPrivilegeError(c)
+			c.Abort()
 			return
 		}
 
@@ -81,25 +84,17 @@ func MWConnectTiDB(tidbForwarder *tidb.Forwarder) gin.HandlerFunc {
 //
 // The TiDB connection will no longer be closed automatically after all handlers are finished. You must manually
 // close the taken out connection.
-func TakeTiDBConnection(c *gin.Context) (*gorm.DB, error) {
-	db, err := GetTiDBConnection(c)
-	if err != nil {
-		return nil, err
-	}
+func TakeTiDBConnection(c *gin.Context) *gorm.DB {
+	db := GetTiDBConnection(c)
 	c.Set(tiDBConnectionKey, nil)
-	return db, nil
+	return db
 }
 
 // GetTiDBConnection gets the TiDB connection stored in the gin context by `MWConnectTiDB` middleware.
 //
 // The connection will be closed automatically after all handlers are finished. Thus you must not use it outside
 // the request lifetime. If you want to extend the lifetime, use `TakeTiDBConnection`.
-func GetTiDBConnection(c *gin.Context) (*gorm.DB, error) {
-	sessionUser := c.MustGet(SessionUserKey).(*SessionUser)
-	if !sessionUser.IsTiDBAuth {
-		return nil, ErrNotTidbAuth.NewWithNoMessage()
-	}
-
+func GetTiDBConnection(c *gin.Context) *gorm.DB {
 	db := c.MustGet(tiDBConnectionKey).(*gorm.DB)
-	return db, nil
+	return db
 }

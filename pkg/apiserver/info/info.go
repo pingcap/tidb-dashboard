@@ -92,13 +92,9 @@ type DatabaseResponse = []string
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) databasesHandler(c *gin.Context) {
-	db, err := utils.GetTiDBConnection(c)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
+	db := utils.GetTiDBConnection(c)
 	var result DatabaseResponse
-	err = db.Raw("show databases").Pluck("Databases", &result).Error
+	err := db.Raw("show databases").Pluck("Databases", &result).Error
 	if err != nil {
 		_ = c.Error(err)
 		return

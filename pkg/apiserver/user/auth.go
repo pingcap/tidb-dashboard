@@ -31,7 +31,7 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
-	globalUtil "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+	kvauth "github.com/pingcap-incubator/tidb-dashboard/pkg/utils/kvauth"
 )
 
 var (
@@ -62,7 +62,7 @@ func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder, etcdClien
 		if f.Username != "root" {
 			return nil, ErrSignInOther.NewWithNoMessage()
 		}
-		err := globalUtil.VerifyKvAuthKey(etcdClient, f.Password)
+		err := kvauth.VerifyKvAuthKey(etcdClient, f.Password)
 		if err != nil {
 			return nil, ErrSignInOther.WrapWithNoMessage(err)
 		}

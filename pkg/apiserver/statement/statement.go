@@ -56,11 +56,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) schemasHandler(c *gin.Context) {
-	db, err := utils.GetTiDBConnection(c)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
+	db := utils.GetTiDBConnection(c)
 	schemas, err := QuerySchemas(db)
 	if err != nil {
 		_ = c.Error(err)
@@ -77,11 +73,7 @@ func (s *Service) schemasHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) timeRangesHandler(c *gin.Context) {
-	db, err := utils.GetTiDBConnection(c)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
+	db := utils.GetTiDBConnection(c)
 	timeRanges, err := QueryTimeRanges(db)
 	if err != nil {
 		_ = c.Error(err)
@@ -98,11 +90,7 @@ func (s *Service) timeRangesHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) stmtTypesHandler(c *gin.Context) {
-	db, err := utils.GetTiDBConnection(c)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
+	db := utils.GetTiDBConnection(c)
 	stmtTypes, err := QueryStmtTypes(db)
 	if err != nil {
 		_ = c.Error(err)
@@ -137,11 +125,7 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 		stmtTypes = nil
 	}
 
-	db, err := utils.GetTiDBConnection(c)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
+	db := utils.GetTiDBConnection(c)
 	overviews, err := QueryStatementsOverview(db, beginTime, endTime, schemas, stmtTypes)
 	if err != nil {
 		_ = c.Error(err)
@@ -162,11 +146,7 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) detailHandler(c *gin.Context) {
-	db, err := utils.GetTiDBConnection(c)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
+	db := utils.GetTiDBConnection(c)
 	schema := c.Query("schema")
 	digest := c.Query("digest")
 	beginTime, endTime, err := parseTimeParams(c)
@@ -195,11 +175,7 @@ func (s *Service) detailHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) nodesHandler(c *gin.Context) {
-	db, err := utils.GetTiDBConnection(c)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
+	db := utils.GetTiDBConnection(c)
 	schema := c.Query("schema")
 	digest := c.Query("digest")
 	beginTime, endTime, err := parseTimeParams(c)

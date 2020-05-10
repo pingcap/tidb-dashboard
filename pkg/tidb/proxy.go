@@ -25,7 +25,7 @@ func (r *remote) becomeInactive() {
 	log.Debug("remote become inactive", zap.String("remote", r.addr))
 }
 
-func (r *remote) dial(timeout time.Duration) error {
+func (r *remote) checkAlive(timeout time.Duration) error {
 	conn, err := net.DialTimeout("tcp", r.addr, timeout)
 	if err != nil {
 		return err
@@ -182,7 +182,7 @@ func (p *proxy) doCheck() {
 				}
 				go func(r *remote) {
 					log.Debug("run remote check", zap.String("remote", r.addr))
-					if err := r.dial(p.dialTimeout); err != nil {
+					if err := r.checkAlive(p.dialTimeout); err != nil {
 						log.Warn("fail to recv activity from remote, stay inactive and wait to next checking round", zap.String("remote", r.addr), zap.Duration("interval", p.checkInterval), zap.Error(err))
 					} else {
 						log.Debug("remote become active", zap.String("remote", r.addr))

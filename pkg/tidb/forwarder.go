@@ -71,13 +71,13 @@ type Forwarder struct {
 }
 
 func (f *Forwarder) Open() error {
-	pr, err := f.createProxy(nil)
+	pr, err := f.createProxy()
 	if err != nil {
 		return err
 	}
 	f.tidbProxy = pr
 	f.tidbPort = pr.port()
-	pr, err = f.createProxy(nil)
+	pr, err = f.createProxy()
 	if err != nil {
 		return err
 	}
@@ -120,13 +120,13 @@ func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
 	return allTiDB, nil
 }
 
-func (f *Forwarder) createProxy(endpoints map[string]string) (*proxy, error) {
+func (f *Forwarder) createProxy() (*proxy, error) {
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		return nil, err
 	}
 	// TODO: config timeout?
-	proxy := newProxy(l, endpoints, f.config.CheckInterval, 0)
+	proxy := newProxy(l, nil, f.config.CheckInterval, 0)
 	return proxy, nil
 }
 

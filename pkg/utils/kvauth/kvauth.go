@@ -15,14 +15,20 @@ package kvauth
 
 import (
 	"context"
-	"errors"
 	"time"
+
+	"github.com/joomcode/errorx"
 
 	"github.com/gtank/cryptopasta"
 	"go.etcd.io/etcd/clientv3"
 )
 
 const etcdKvAuthKeyPath = "/dashboard/kv_auth"
+
+var (
+	ErrNS              = errorx.NewNamespace("error.kvauth")
+	ErrAccountNotFound = ErrNS.NewType("account_not_found")
+)
 
 // RevokeKvAuthKey delete the etcd path of KV mode user account
 func RevokeKvAuthKey(etcdClient *clientv3.Client) error {
@@ -48,7 +54,7 @@ func VerifyKvAuthKey(etcdClient *clientv3.Client, authKey string) error {
 	}
 
 	if string(hashedPass) == "" {
-		return errors.New("set auth key before verify")
+		return ErrAccountNotFound.NewWithNoMessage()
 	}
 
 	return cryptopasta.CheckPasswordHash(hashedPass, []byte(authKey))

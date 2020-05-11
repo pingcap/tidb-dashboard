@@ -1,7 +1,7 @@
 global:
   user: tidb
-  deploy_dir: "tidb-deploy"
-  data_dir: "tidb-data"
+  deploy_dir: tidb-deploy
+  data_dir: tidb-data
 
 server_configs:
   pd:

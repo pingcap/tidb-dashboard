@@ -1,7 +1,7 @@
 global:
   user: tidb
-  deploy_dir: "tidb-deploy"
-  data_dir: "tidb-data"
+  deploy_dir: tidb-deploy
+  data_dir: tidb-data
 
 server_configs:
   tikv:
@@ -14,7 +14,10 @@ server_configs:
     storage.block-cache.capacity: 256MB
     raftstore.capacity: 10GB
   pd:
-    replication.location-labels: ["zone", "rack", "host"]
+    replication.location-labels:
+      - zone
+      - rack
+      - host
 
 pd_servers:
   - host: 10.0.1.20
@@ -24,32 +27,32 @@ tikv_servers:
     port: 20160
     status_port: 20180
     config:
-      server.labels: { host: "tikv1", rack: "rack1" }
+      server.labels: { host: tikv1, rack: rack1 }
   - host: 10.0.1.20
     port: 20161
     status_port: 20181
     config:
-      server.labels: { host: "tikv1", rack: "rack1" }
+      server.labels: { host: tikv1, rack: rack1 }
   - host: 10.0.1.20
     port: 20162
     status_port: 20182
     config:
-      server.labels: { host: "tikv2", rack: "rack1" }
+      server.labels: { host: tikv2, rack: rack1 }
   - host: 10.0.1.20
     port: 20163
     status_port: 20183
     config:
-      server.labels: { host: "tikv2", rack: "rack1" }
+      server.labels: { host: tikv2, rack: rack1 }
   - host: 10.0.1.20
     port: 20164
     status_port: 20184
     config:
-      server.labels: { host: "tikv3", rack: "rack2" }
+      server.labels: { host: tikv3, rack: rack2 }
   - host: 10.0.1.20
     port: 20165
     status_port: 20185
     config:
-      server.labels: { host: "tikv3", rack: "rack2" }
+      server.labels: { host: tikv3, rack: rack2 }
 
 tidb_servers:
   - host: 10.0.1.20

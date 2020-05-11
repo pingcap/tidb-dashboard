@@ -13,6 +13,7 @@ import {
 import client from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
+import { dummyColumn } from '@lib/utils/tableColumns'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
 function useStatusColumnRender(handleHideTiDB) {
@@ -153,21 +154,18 @@ export default function ListPage() {
       name: t('cluster_info.list.instance_table.columns.node'),
       key: 'node',
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 160,
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
-      onRender: (node) => (
-        <Tooltip title={`${node.ip}:${node.port}`}>
-          <span>
-            {node.ip}:{node.port}
-          </span>
-        </Tooltip>
-      ),
+      onRender: ({ ip, port }) => {
+        const fullName = `${ip}:${port}`
+        return <Tooltip title={fullName}>{fullName as any}</Tooltip>
+      },
     },
     {
       name: t('cluster_info.list.instance_table.columns.status'),
       key: 'status',
-      minWidth: 100,
+      minWidth: 80,
       maxWidth: 100,
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
@@ -190,29 +188,37 @@ export default function ListPage() {
       name: t('cluster_info.list.instance_table.columns.version'),
       fieldName: 'version',
       key: 'version',
-      minWidth: 150,
-      maxWidth: 300,
+      minWidth: 100,
+      maxWidth: 250,
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
+      onRender: ({ version }) => <Tooltip title={version}>{version}</Tooltip>,
     },
     {
       name: t('cluster_info.list.instance_table.columns.deploy_path'),
       fieldName: 'deploy_path',
       key: 'deploy_path',
-      minWidth: 150,
-      maxWidth: 300,
+      minWidth: 100,
+      maxWidth: 200,
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
+      onRender: ({ deploy_path }) => (
+        <Tooltip title={deploy_path}>{deploy_path}</Tooltip>
+      ),
     },
     {
       name: t('cluster_info.list.instance_table.columns.git_hash'),
       fieldName: 'git_hash',
       key: 'git_hash',
-      minWidth: 150,
-      maxWidth: 300,
+      minWidth: 100,
+      maxWidth: 150,
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
+      onRender: ({ git_hash }) => (
+        <Tooltip title={git_hash}>{git_hash}</Tooltip>
+      ),
     },
+    dummyColumn(),
   ]
 
   return (

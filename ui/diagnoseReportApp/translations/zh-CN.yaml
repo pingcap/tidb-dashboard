@@ -18,7 +18,7 @@ diagnosis:
       error: 错误
     title:
       compare_diagnose: 诊断对比
-      compare_report_time_range: 诊断区间对比
+      compare_report_time_range: 对比诊断区间
       top_10_slow_query_in_time_range_t1: t1 中的 Top 10 慢查询
       top_10_slow_query_in_time_range_t2: t2 中的 Top 10 慢查询
       top_10_slow_query_group_by_digest_in_time_range_t1: 按 SQL 指纹聚合的 t1 Top 10 慢查询

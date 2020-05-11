@@ -28,9 +28,9 @@ export default function LogSearchingDetail() {
       return false
     }
     if (data.tasks.some((task) => task.state === TaskState.Running)) {
-      return true
+      return false
     }
-    return false
+    return true
   }
 
   const { data } = useClientRequestWithPolling(

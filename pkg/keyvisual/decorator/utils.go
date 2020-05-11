@@ -24,7 +24,6 @@ import (
 )
 
 const (
-	retryCnt       = 10
 	etcdGetTimeout = time.Second
 )
 

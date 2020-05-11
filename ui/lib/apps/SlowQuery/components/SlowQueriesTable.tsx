@@ -1,31 +1,13 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import { CardTableV2, ICardTableV2Props } from '@lib/components'
-import { SlowqueryBase } from '@lib/client'
-import * as useColumn from '@lib/utils/useColumn'
-
-import * as useSlowQueryColumn from '../utils/useColumn'
-import DetailPage from '../pages/Detail'
 import { usePersistFn } from '@umijs/hooks'
 
-function tableColumns(rows: SlowqueryBase[], showFullSQL?: boolean): IColumn[] {
-  return [
-    useSlowQueryColumn.useSqlColumn(rows, showFullSQL),
-    useSlowQueryColumn.useDigestColumn(rows),
-    useSlowQueryColumn.useInstanceColumn(rows),
-    useSlowQueryColumn.useDBColumn(rows),
-    useSlowQueryColumn.useSuccessColumn(rows),
-    useSlowQueryColumn.useTimestampColumn(rows),
-    useSlowQueryColumn.useQueryTimeColumn(rows),
-    useSlowQueryColumn.useParseTimeColumn(rows),
-    useSlowQueryColumn.useCompileTimeColumn(rows),
-    useSlowQueryColumn.useProcessTimeColumn(rows),
-    useSlowQueryColumn.useMemoryColumn(rows),
-    useSlowQueryColumn.useTxnStartTsColumn(rows),
-    useColumn.useDummyColumn(),
-  ]
-}
+import { SlowqueryBase } from '@lib/client'
+import { CardTableV2, ICardTableV2Props } from '@lib/components'
+import openLink from '@lib/utils/openLink'
+
+import DetailPage from '../pages/Detail'
+import { slowQueryColumns } from '../utils/tableColumns'
 
 interface Props extends Partial<ICardTableV2Props> {
   loading: boolean
@@ -41,19 +23,21 @@ function SlowQueriesTable({
 }: Props) {
   const navigate = useNavigate()
 
-  const columns = useMemo(() => tableColumns(slowQueries, showFullSQL), [
+  const columns = useMemo(() => slowQueryColumns(slowQueries, showFullSQL), [
     slowQueries,
     showFullSQL,
   ])
 
-  const handleRowClick = usePersistFn((rec) => {
-    const qs = DetailPage.buildQuery({
-      digest: rec.digest,
-      connectId: rec.connection_id,
-      time: rec.timestamp,
-    })
-    navigate(`/slow_query/detail?${qs}`)
-  })
+  const handleRowClick = usePersistFn(
+    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+      const qs = DetailPage.buildQuery({
+        digest: rec.digest,
+        connectId: rec.connection_id,
+        time: rec.timestamp,
+      })
+      openLink(`/slow_query/detail?${qs}`, ev, navigate)
+    }
+  )
 
   const getKey = useCallback((row) => `${row.digest}_${row.timestamp}`, [])
 

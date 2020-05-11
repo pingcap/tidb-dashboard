@@ -72,7 +72,7 @@ function parentNodeCheckable(tasks: LogsearchTaskModel[]) {
 interface Props {
   taskGroupID: number
   tasks: LogsearchTaskModel[]
-  toggleReload: () => {}
+  toggleReload: () => void
 }
 
 export default function SearchProgress({

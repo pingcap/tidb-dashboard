@@ -57,7 +57,7 @@ diagnosis:
       gc_info: GC 信息
       task_info: TiKV 任务信息
       snapshot_info: TiKV 快照信息
-      Coprocessor_info: Coprocessor 信息
+      coprocessor_info: Coprocessor 信息
       raft_info: Raft 信息
       tikv_error: TiKV 错误
       tidb_current_config: TiDB 当前配置
@@ -141,7 +141,7 @@ diagnosis:
         tikv_raft_proposals_total_num: Raft proposal 的总数量
         tikv_grpc_error_total_count: gRPC 消息失败的总数量
         tikv_critical_error_total_count: TiKV 临界误差的总数量
-        tikv_Coprocessor_request_error_total_count: Coprocessor 错误总数量
+        tikv_coprocessor_request_error_total_count: Coprocessor 错误总数量
         node_disk_write_latency: 磁盘写延迟
         node_disk_read_latency: 磁盘读取延迟
         sched_worker: 调度器工作线程
@@ -258,7 +258,7 @@ diagnosis:
         tikv_critical_error_total_count: TiKV 临界误差的总数量，标签是"实例"，"类型"。
         tikv_scheduler_is_busy_total_count: 使 TiKV 实例暂时不可用的调度器繁忙事件的总数量，标签是"实例"。
         tikv_channel_full_total_count: 通道完全错误的总数量，它将使 TiKV 实例暂时不可用，标签是"实例"。
-        tikv_Coprocessor_request_error_total_count: Coprocessor 错误的总数量，标签是"实例"，"原因"。
+        tikv_coprocessor_request_error_total_count: Coprocessor 错误的总数量，标签是"实例"，"原因"。
         tikv_engine_write_stall: 指示使 TiKV 实例暂时不可用的写失速事件，标签是"实例"。
         tikv_server_report_failures_total_count: 报告失败消息的总数量，标签是"实例"。
         tikv_storage_async_request_error: 存储请求错误的总数量，标签是"实例"，"状态"，"类型"。

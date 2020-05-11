@@ -20,11 +20,11 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
     {
       key: 'avg_write_keys',
-      value: getValueFormat('short')(data.avg_write_keys || 0, 1),
+      value: getValueFormat('short')(data.avg_write_keys || 0, 0, 1),
     },
     {
       key: 'max_write_keys',
-      value: getValueFormat('short')(data.max_write_keys || 0, 1),
+      value: getValueFormat('short')(data.max_write_keys || 0, 0, 1),
     },
     {
       key: 'avg_write_size',
@@ -36,11 +36,11 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
     {
       key: 'avg_prewrite_regions',
-      value: getValueFormat('short')(data.avg_prewrite_regions || 0, 1),
+      value: getValueFormat('short')(data.avg_prewrite_regions || 0, 0, 1),
     },
     {
       key: 'max_prewrite_regions',
-      value: getValueFormat('short')(data.max_prewrite_regions || 0, 1),
+      value: getValueFormat('short')(data.max_prewrite_regions || 0, 0, 1),
     },
     {
       key: 'avg_txn_retry',

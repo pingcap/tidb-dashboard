@@ -16,7 +16,7 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
     {
       key: 'write_keys',
-      value: getValueFormat('short')(data.write_keys || 0, 1),
+      value: getValueFormat('short')(data.write_keys || 0, 0, 1),
     },
     {
       key: 'write_size',
@@ -24,7 +24,7 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
     {
       key: 'prewrite_regions',
-      value: getValueFormat('short')(data.prewrite_region || 0, 1),
+      value: getValueFormat('short')(data.prewrite_region || 0, 0, 1),
     },
     {
       key: 'txn_retry',

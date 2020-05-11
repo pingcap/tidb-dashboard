@@ -16,11 +16,11 @@ export default function TabCopr({ data }: ITabCoprProps) {
     },
     {
       key: 'process_keys',
-      value: getValueFormat('short')(data.process_keys || 0, 1),
+      value: getValueFormat('short')(data.process_keys || 0, 0, 1),
     },
     {
       key: 'total_keys',
-      value: getValueFormat('short')(data.total_keys || 0, 1),
+      value: getValueFormat('short')(data.total_keys || 0, 0, 1),
     },
     {
       key: 'cop_proc_addr',

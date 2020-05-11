@@ -13,19 +13,19 @@ export default function TabCopr({ data }: ITabCoprProps) {
     { key: 'sum_cop_task_num', value: data.sum_cop_task_num },
     {
       key: 'avg_processed_keys',
-      value: getValueFormat('short')(data.avg_processed_keys || 0, 1),
+      value: getValueFormat('short')(data.avg_processed_keys || 0, 0, 1),
     },
     {
       key: 'max_processed_keys',
-      value: getValueFormat('short')(data.max_processed_keys || 0, 1),
+      value: getValueFormat('short')(data.max_processed_keys || 0, 0, 1),
     },
     {
       key: 'avg_total_keys',
-      value: getValueFormat('short')(data.avg_total_keys || 0, 1),
+      value: getValueFormat('short')(data.avg_total_keys || 0, 0, 1),
     },
     {
       key: 'max_total_keys',
-      value: getValueFormat('short')(data.max_total_keys || 0, 1),
+      value: getValueFormat('short')(data.max_total_keys || 0, 0, 1),
     },
   ]
   const columns = valueColumns('statement.fields.')

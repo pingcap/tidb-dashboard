@@ -71,7 +71,7 @@ diagnosis:
       store_status: TiKV 节点的存储状态
       cluster_status: 集群状态
       etcd_status: etcd 状态
-      cluster_info: 集群实例信息
+      cluster_info: 集群拓扑信息
       cache_hit: 缓存命中率
       cluster_hardware: 集群硬件信息
       rocksdb_time_consume: RocksDB 事件耗时

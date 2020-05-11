@@ -186,7 +186,7 @@ diagnosis:
         pd_client_cmd: PD 客户端命令的耗时，标签是"类型"。
         pd_handle_request: PD 处理请求的耗时，标签是"类型"。
         pd_grpc_completed_commands: PD 完成各种 gRPC 命令的耗时，标签是"gRPC 方法"。
-        pd_operator_finish: PD 完成各种 gRPC 命令的耗时，标签是"类型"。
+        pd_operator_finish: PD 完成各种调度命令的时间，标签是"类型"。
         pd_operator_step_finish: PD 完成操作步骤的耗时，标签是"类型"。
         pd_handle_transactions: PD 处理 etcd 事务的耗时，标签是"结果"。
         pd_region_heartbeat: 每个 TiKV 实例中心跳的耗时，标签是"服务地址"。

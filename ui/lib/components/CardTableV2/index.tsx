@@ -8,7 +8,8 @@ import {
   SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
+
 import { usePersistFn } from '@umijs/hooks'
 
 import AnimatedSkeleton from '../AnimatedSkeleton'
@@ -58,8 +59,6 @@ export interface ICardTableV2Props extends IDetailsListProps {
     itemIndex: number,
     ev: React.MouseEvent<HTMLElement>
   ) => void
-
-  onGetColumns?: (columns: IColumn[]) => void
 }
 
 function renderStickyHeader(props, defaultRender) {
@@ -107,7 +106,6 @@ function CardTableV2(props: ICardTableV2Props) {
     desc = true,
     onChangeOrder,
     onRowClicked,
-    onGetColumns,
     columns,
     items,
     ...restProps
@@ -156,12 +154,6 @@ function CardTableV2(props: ICardTableV2Props) {
     }
     return newItems
   }, [visibleItemsCount, items, orderBy, finalColumns])
-
-  useEffect(() => {
-    onGetColumns && onGetColumns(columns || [])
-    // (ignore onGetColumns)
-    // eslint-disable-next-line
-  }, [columns])
 
   const onRenderCheckbox = useCallback((props) => {
     return <Checkbox checked={props?.checked} />

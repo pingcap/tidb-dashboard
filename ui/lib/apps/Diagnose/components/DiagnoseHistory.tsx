@@ -8,13 +8,12 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { usePersistFn } from '@umijs/hooks'
+import type { TFunction } from 'i18next'
 
 import client, { DiagnoseReport } from '@lib/client'
 import { CardTableV2, DateTime } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-
-import type { TFunction } from 'i18next'
 
 const tableColumns = (t: TFunction): IColumn[] => [
   {
@@ -33,8 +32,10 @@ const tableColumns = (t: TFunction): IColumn[] => [
     maxWidth: 200,
     isResizable: true,
     columnActionsMode: ColumnActionsMode.disabled,
-    onRender: (rec) => (
-      <DateTime.Calendar unixTimestampMs={dayjs(rec.CreatedAt).unix() * 1000} />
+    onRender: (rec: DiagnoseReport) => (
+      <DateTime.Calendar
+        unixTimestampMs={dayjs(rec.created_at).unix() * 1000}
+      />
     ),
   },
   {

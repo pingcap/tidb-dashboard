@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/appleboy/gin-jwt/v2 v2.6.3
+	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/elazarl/go-bindata-assetfs v1.0.0
 	github.com/gin-contrib/gzip v0.0.1
@@ -27,9 +28,11 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.7.0
 	github.com/spf13/pflag v1.0.1
+	github.com/stretchr/testify v1.4.0
 	github.com/swaggo/http-swagger v0.0.0-20200103000832-0e9263c4b516
 	github.com/swaggo/swag v1.6.5
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
+	go.uber.org/atomic v1.5.0
 	go.uber.org/fx v1.10.0
 	go.uber.org/zap v1.13.0
 	google.golang.org/grpc v1.25.1

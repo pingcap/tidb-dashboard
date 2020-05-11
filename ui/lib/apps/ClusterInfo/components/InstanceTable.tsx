@@ -1,4 +1,9 @@
+import { Badge, Divider, Popconfirm, Tooltip } from 'antd'
+import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
+import React, { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DeleteOutlined } from '@ant-design/icons'
+
 import {
   STATUS_DOWN,
   STATUS_OFFLINE,
@@ -8,10 +13,8 @@ import {
 import client from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
+import { dummyColumn } from '@lib/utils/tableColumns'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { Badge, Divider, Popconfirm, Tooltip } from 'antd'
-import React from 'react'
-import { useTranslation } from 'react-i18next'
 
 function useStatusColumnRender(handleHideTiDB) {
   const { t } = useTranslation()
@@ -20,7 +23,7 @@ function useStatusColumnRender(handleHideTiDB) {
       // Tree node
       return
     }
-    let statusNode = null
+    let statusNode: ReactNode = null
     switch (node.status) {
       case STATUS_DOWN:
         statusNode = (
@@ -105,8 +108,8 @@ function buildData(data) {
   if (data === undefined) {
     return {}
   }
-  const tableData = []
-  const groupData = []
+  const tableData: any[] = [] // FIXME
+  const groupData: any[] = [] // FIXME
   let startIndex = 0
   const kinds = ['tidb', 'tikv', 'pd', 'tiflash']
   kinds.forEach((nodeKind) => {
@@ -151,28 +154,34 @@ export default function ListPage() {
       name: t('cluster_info.list.instance_table.columns.node'),
       key: 'node',
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 160,
       isResizable: true,
-      onRender: (node) => (
-        <Tooltip title={`${node.ip}:${node.port}`}>
-          {node.ip}:{node.port}
-        </Tooltip>
-      ),
+      columnActionsMode: ColumnActionsMode.disabled,
+      onRender: ({ ip, port }) => {
+        const fullName = `${ip}:${port}`
+        return (
+          <Tooltip title={fullName}>
+            <span>{fullName}</span>
+          </Tooltip>
+        )
+      },
     },
     {
       name: t('cluster_info.list.instance_table.columns.status'),
       key: 'status',
-      minWidth: 100,
-      maxWidth: 150,
+      minWidth: 80,
+      maxWidth: 100,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: renderStatusColumn,
     },
     {
       name: t('cluster_info.list.instance_table.columns.up_time'),
       key: 'start_timestamp',
-      minWidth: 150,
-      maxWidth: 200,
+      minWidth: 100,
+      maxWidth: 150,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ start_timestamp: ts }) => {
         if (ts !== undefined && ts !== 0) {
           return <DateTime.Calendar unixTimestampMs={ts * 1000} />
@@ -183,26 +192,45 @@ export default function ListPage() {
       name: t('cluster_info.list.instance_table.columns.version'),
       fieldName: 'version',
       key: 'version',
-      minWidth: 150,
-      maxWidth: 300,
+      minWidth: 100,
+      maxWidth: 250,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
+      onRender: ({ version }) => (
+        <Tooltip title={version}>
+          <span>{version}</span>
+        </Tooltip>
+      ),
     },
     {
       name: t('cluster_info.list.instance_table.columns.deploy_path'),
       fieldName: 'deploy_path',
       key: 'deploy_path',
-      minWidth: 150,
-      maxWidth: 300,
+      minWidth: 100,
+      maxWidth: 200,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
+      onRender: ({ deploy_path }) => (
+        <Tooltip title={deploy_path}>
+          <span>{deploy_path}</span>
+        </Tooltip>
+      ),
     },
     {
       name: t('cluster_info.list.instance_table.columns.git_hash'),
       fieldName: 'git_hash',
       key: 'git_hash',
-      minWidth: 150,
-      maxWidth: 300,
+      minWidth: 100,
+      maxWidth: 150,
       isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
+      onRender: ({ git_hash }) => (
+        <Tooltip title={git_hash}>
+          <span>{git_hash}</span>
+        </Tooltip>
+      ),
     },
+    dummyColumn(),
   ]
 
   return (

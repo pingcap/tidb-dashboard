@@ -12,8 +12,9 @@ export interface ISlowQueryTabProps {
 
 export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
   const {
-    queryOptions,
-    setQueryOptions,
+    orderOptions,
+    changeOrder,
+
     slowQueries,
     loadingSlowQueries,
   } = useSlowQuery(
@@ -38,11 +39,9 @@ export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
       loading={loadingSlowQueries}
       slowQueries={slowQueries}
       visibleColumnKeys={defSlowQueryColumnKeys}
-      onChangeSort={(orderBy, desc) =>
-        setQueryOptions({ ...queryOptions, orderBy, desc })
-      }
-      orderBy={queryOptions.orderBy}
-      desc={queryOptions.desc}
+      orderBy={orderOptions.orderBy}
+      desc={orderOptions.desc}
+      onChangeOrder={changeOrder}
     />
   )
 }

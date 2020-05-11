@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
 import React, { useMemo } from 'react'
-import { Card } from '@lib/components'
+import { Card, AnimatedSkeleton } from '@lib/components'
 import { useTranslation } from 'react-i18next'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
-import { Skeleton, Alert, Typography } from 'antd'
+import { Alert, Typography } from 'antd'
 import {
   STATUS_UP,
   STATUS_TOMBSTONE,
@@ -64,29 +64,30 @@ export default function Nodes() {
       }
       noMarginLeft
     >
-      {isLoading && <Skeleton active />}
-      {error && <Alert message="Error" type="error" showIcon />}
-      {data &&
-        statusMap.map((s) => {
-          return (
-            <p key={s.name}>
-              <span>{t(`overview.nodes.component.${s.name}`)}: </span>
-              {s.error && (
-                <Typography.Text type="danger">Error</Typography.Text>
-              )}
-              {!s.error && (
-                <span>
-                  {s.normals} Up /{' '}
-                  <Typography.Text
-                    type={s.abnormals > 0 ? 'danger' : undefined}
-                  >
-                    {s.abnormals} Down
-                  </Typography.Text>
-                </span>
-              )}
-            </p>
-          )
-        })}
+      <AnimatedSkeleton showSkeleton={isLoading}>
+        {error && <Alert message="Error" type="error" showIcon />}
+        {data &&
+          statusMap.map((s) => {
+            return (
+              <p key={s.name}>
+                <span>{t(`overview.nodes.component.${s.name}`)}: </span>
+                {s.error && (
+                  <Typography.Text type="danger">Error</Typography.Text>
+                )}
+                {!s.error && (
+                  <span>
+                    {s.normals} Up /{' '}
+                    <Typography.Text
+                      type={s.abnormals > 0 ? 'danger' : undefined}
+                    >
+                      {s.abnormals} Down
+                    </Typography.Text>
+                  </span>
+                )}
+              </p>
+            )
+          })}
+      </AnimatedSkeleton>
     </Card>
   )
 }

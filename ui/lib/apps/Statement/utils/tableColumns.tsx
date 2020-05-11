@@ -5,20 +5,22 @@ import {
   IColumn,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
-
 import { orange, red } from '@ant-design/colors'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { Bar, HighlightSQL, Pre, TextWithInfo, TextWrap } from '@lib/components'
 
-function useCommonColumnName(fieldName: string): any {
+import { StatementModel } from '@lib/client'
+import { Bar, HighlightSQL, Pre, TextWithInfo, TextWrap } from '@lib/components'
+import { dummyColumn } from '@lib/utils/tableColumns'
+
+function commonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`statement.fields.${fieldName}`} />
 }
 
-export function usePlanDigestColumn(
+function planDigestColumn(
   _rows?: { plan_digest?: string }[] // used for type check only
 ): IColumn {
   return {
-    name: useCommonColumnName('plan_digest'),
+    name: commonColumnName('plan_digest'),
     key: 'plan_digest',
     fieldName: 'plan_digest',
     minWidth: 100,
@@ -33,12 +35,12 @@ export function usePlanDigestColumn(
   }
 }
 
-export function useDigestColumn(
+function digestColumn(
   _rows?: { digest_text?: string }[], // used for type check only
   showFullSQL?: boolean
 ): IColumn {
   return {
-    name: useCommonColumnName('digest_text'),
+    name: commonColumnName('digest_text'),
     key: 'digest_text',
     fieldName: 'digest_text',
     minWidth: 100,
@@ -46,39 +48,34 @@ export function useDigestColumn(
     isResizable: true,
     isMultiline: showFullSQL,
     columnActionsMode: ColumnActionsMode.disabled,
-    onRender: (rec) => (
-      <Tooltip
-        title={<HighlightSQL sql={rec.digest_text} theme="dark" />}
-        placement="right"
-      >
-        <TextWrap multiline={showFullSQL}>
-          {showFullSQL ? (
-            <HighlightSQL sql={rec.digest_text} />
-          ) : (
-            <Pre>{rec.digest_text}</Pre>
-          )}
+    onRender: (rec) =>
+      showFullSQL ? (
+        <TextWrap multiline>
+          <HighlightSQL sql={rec.digest_text} />
         </TextWrap>
-      </Tooltip>
-    ),
+      ) : (
+        <Tooltip
+          title={<HighlightSQL sql={rec.digest_text} theme="dark" />}
+          placement="right"
+        >
+          <TextWrap>
+            <HighlightSQL sql={rec.digest_text} compact />
+          </TextWrap>
+        </Tooltip>
+      ),
   }
 }
 
-export function useSumLatencyColumn(
-  rows?: { sum_latency?: number }[],
-  orderBy?: string,
-  desc?: boolean
-): IColumn {
+function sumLatencyColumn(rows?: { sum_latency?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.sum_latency)) ?? 0 : 0
   const key = 'sum_latency'
   return {
-    name: useCommonColumnName(key),
+    name: commonColumnName(key),
     key,
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: key === orderBy,
-    isSortedDescending: desc,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.sum_latency} capacity={capacity}>
         {getValueFormat('ns')(rec.sum_latency, 1)}
@@ -87,22 +84,18 @@ export function useSumLatencyColumn(
   }
 }
 
-export function useAvgMinMaxLatencyColumn(
-  rows?: { max_latency?: number; min_latency?: number; avg_latency?: number }[],
-  orderBy?: string,
-  desc?: boolean
+function avgMinMaxLatencyColumn(
+  rows?: { max_latency?: number; min_latency?: number; avg_latency?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_latency)) ?? 0 : 0
   const key = 'avg_latency'
   return {
-    name: useCommonColumnName('avg_latency'),
+    name: commonColumnName(key),
     key,
-    fieldName: 'avg_latency',
+    fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: key === orderBy,
-    isSortedDescending: desc,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('ns')(rec.avg_latency, 1)}
@@ -125,22 +118,16 @@ Max:  ${getValueFormat('ns')(rec.max_latency, 1)}`
   }
 }
 
-export function useExecCountColumn(
-  rows?: { exec_count?: number }[],
-  orderBy?: string,
-  desc?: boolean
-): IColumn {
+function execCountColumn(rows?: { exec_count?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.exec_count)) ?? 0 : 0
   const key = 'exec_count'
   return {
-    name: useCommonColumnName(key),
+    name: commonColumnName(key),
     key,
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: key === orderBy,
-    isSortedDescending: desc,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.exec_count} capacity={capacity}>
         {getValueFormat('short')(rec.exec_count, 0, 1)}
@@ -149,22 +136,18 @@ export function useExecCountColumn(
   }
 }
 
-export function useAvgMaxMemColumn(
-  rows?: { avg_mem?: number; max_mem?: number }[],
-  orderBy?: string,
-  desc?: boolean
+function avgMaxMemColumn(
+  rows?: { avg_mem?: number; max_mem?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_mem)) ?? 0 : 0
   const key = 'avg_mem'
   return {
-    name: useCommonColumnName(key),
+    name: commonColumnName(key),
     key,
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: key === orderBy,
-    isSortedDescending: desc,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('bytes')(rec.avg_mem, 1)}
@@ -185,28 +168,24 @@ Max:  ${getValueFormat('bytes')(rec.max_mem, 1)}`
   }
 }
 
-export function useErrorsWarningsColumn(
-  rows?: { sum_errors?: number; sum_warnings?: number }[],
-  orderBy?: string,
-  desc?: boolean
+function errorsWarningsColumn(
+  rows?: { sum_errors?: number; sum_warnings?: number }[]
 ): IColumn {
   const capacity = rows
     ? max(rows.map((v) => v.sum_errors! + v.sum_warnings!)) ?? 0
     : 0
   const key = 'sum_errors'
   return {
-    name: useCommonColumnName('errors_warnings'),
+    name: commonColumnName('errors_warnings'),
     key,
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: key === orderBy,
-    isSortedDescending: desc,
     onRender: (rec) => {
       const tooltipContent = `
-Errors:   ${getValueFormat('short')(rec.sum_errors, 0)}
-Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
+Errors:   ${getValueFormat('short')(rec.sum_errors, 0, 1)}
+Warnings: ${getValueFormat('short')(rec.sum_warnings, 0, 1)}`
       return (
         <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
           <Bar
@@ -215,9 +194,9 @@ Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
             colors={[red[4], orange[4]]}
             capacity={capacity}
           >
-            {getValueFormat('short')(rec.sum_errors, 0)}
+            {getValueFormat('short')(rec.sum_errors, 0, 1)}
             {' / '}
-            {getValueFormat('short')(rec.sum_warnings, 0)}
+            {getValueFormat('short')(rec.sum_warnings, 0, 1)}
           </Bar>
         </Tooltip>
       )
@@ -225,22 +204,18 @@ Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
   }
 }
 
-export function useAvgParseLatencyColumn(
-  rows?: { avg_parse_latency?: number; max_parse_latency?: number }[],
-  orderBy?: string,
-  desc?: boolean
+function avgParseLatencyColumn(
+  rows?: { avg_parse_latency?: number; max_parse_latency?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_parse_latency)) ?? 0 : 0
   const key = 'avg_parse_latency'
   return {
-    name: useCommonColumnName('parse_latency'),
+    name: commonColumnName('parse_latency'),
     key,
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: key === orderBy,
-    isSortedDescending: desc,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('ns')(rec.avg_parse_latency, 1)}
@@ -261,22 +236,18 @@ Max:  ${getValueFormat('ns')(rec.max_parse_latency, 1)}`
   }
 }
 
-export function useAvgCompileLatencyColumn(
-  rows?: { avg_compile_latency?: number; max_compile_latency?: number }[],
-  orderBy?: string,
-  desc?: boolean
+function avgCompileLatencyColumn(
+  rows?: { avg_compile_latency?: number; max_compile_latency?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_compile_latency)) ?? 0 : 0
   const key = 'avg_compile_latency'
   return {
-    name: useCommonColumnName('compile_latency'),
+    name: commonColumnName('compile_latency'),
     key,
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: key === orderBy,
-    isSortedDescending: desc,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('ns')(rec.avg_compile_latency, 1)}
@@ -296,22 +267,19 @@ Max:  ${getValueFormat('ns')(rec.max_compile_latency, 1)}`
     },
   }
 }
-export function useAvgCoprColumn(
-  rows?: { avg_cop_process_time?: number; max_cop_process_time?: number }[],
-  orderBy?: string,
-  desc?: boolean
+
+function avgCoprColumn(
+  rows?: { avg_cop_process_time?: number; max_cop_process_time?: number }[]
 ): IColumn {
   const capacity = rows ? max(rows.map((v) => v.max_cop_process_time)) ?? 0 : 0
   const key = 'avg_cop_process_time'
   return {
-    name: useCommonColumnName('process_time'),
+    name: commonColumnName('process_time'),
     key,
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
-    isSorted: key === orderBy,
-    isSortedDescending: desc,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('ns')(rec.avg_cop_process_time, 1)}
@@ -332,11 +300,11 @@ Max:  ${getValueFormat('ns')(rec.max_cop_process_time, 1)}`
   }
 }
 
-export function useRelatedSchemasColumn(
+function relatedSchemasColumn(
   _rows?: { related_schemas?: string }[] // used for type check only
 ): IColumn {
   return {
-    name: useCommonColumnName('related_schemas'),
+    name: commonColumnName('related_schemas'),
     key: 'related_schemas',
     minWidth: 160,
     maxWidth: 240,
@@ -348,4 +316,36 @@ export function useRelatedSchemasColumn(
       </Tooltip>
     ),
   }
+}
+
+////////////////////////////////////////////////
+
+export function statementColumns(
+  rows: StatementModel[],
+  showFullSQL?: boolean
+): IColumn[] {
+  return [
+    digestColumn(rows, showFullSQL),
+    sumLatencyColumn(rows),
+    avgMinMaxLatencyColumn(rows),
+    execCountColumn(rows),
+    avgMaxMemColumn(rows),
+    errorsWarningsColumn(rows),
+    avgParseLatencyColumn(rows),
+    avgCompileLatencyColumn(rows),
+    avgCoprColumn(rows),
+    relatedSchemasColumn(rows),
+    dummyColumn(),
+  ]
+}
+
+export function planColumns(rows: StatementModel[]): IColumn[] {
+  return [
+    planDigestColumn(rows),
+    sumLatencyColumn(rows),
+    avgMinMaxLatencyColumn(rows),
+    execCountColumn(rows),
+    avgMaxMemColumn(rows),
+    dummyColumn(),
+  ]
 }

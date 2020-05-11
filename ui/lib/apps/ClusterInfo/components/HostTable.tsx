@@ -1,13 +1,15 @@
-import { WarningOutlined } from '@ant-design/icons'
-import { getValueFormat } from '@baurine/grafana-value-formats'
-import client from '@lib/client'
-import { Bar, CardTableV2 } from '@lib/components'
-import { useClientRequest } from '@lib/utils/useClientRequest'
 import { Tooltip, Typography } from 'antd'
+import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { red } from '@ant-design/colors'
-import { useDummyColumn } from '@lib/utils/useColumn'
+import { WarningOutlined } from '@ant-design/icons'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+
+import client from '@lib/client'
+import { Bar, CardTableV2, Pre } from '@lib/components'
+import { dummyColumn } from '@lib/utils/tableColumns'
+import { useClientRequest } from '@lib/utils/useClientRequest'
 
 const { Text } = Typography
 
@@ -28,10 +30,10 @@ export default function HostTable() {
     {
       name: t('cluster_info.list.host_table.columns.ip'),
       key: 'ip',
-      minWidth: 150,
-      maxWidth: 200,
+      minWidth: 100,
+      maxWidth: 150,
       isResizable: true,
-      isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ ip, unavailable }) => {
         if (unavailable) {
           return (
@@ -53,7 +55,7 @@ export default function HostTable() {
       minWidth: 60,
       maxWidth: 100,
       isResizable: true,
-      isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ cpu_core }) =>
         cpu_core !== undefined ? `${cpu_core} vCPU` : '',
     },
@@ -63,21 +65,18 @@ export default function HostTable() {
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
-      isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ cpu_usage }) => {
         if (cpu_usage === undefined) {
           return
         }
         const { system, idle } = cpu_usage
         const user = 1 - system - idle
-        const title = (
-          <>
-            <div>User: {getValueFormat('percentunit')(user)}</div>
-            <div>System: {getValueFormat('percentunit')(system)}</div>
-          </>
-        )
+        const tooltipContent = `
+User:   ${getValueFormat('percentunit')(user)}
+System: ${getValueFormat('percentunit')(system)}`
         return (
-          <Tooltip title={title}>
+          <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
             <Bar value={[user, system]} colors={[null, red[4]]} capacity={1} />
           </Tooltip>
         )
@@ -89,7 +88,7 @@ export default function HostTable() {
       minWidth: 60,
       maxWidth: 100,
       isResizable: true,
-      isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ memory }) =>
         memory !== undefined ? getValueFormat('bytes')(memory.total, 1) : '',
     },
@@ -99,7 +98,7 @@ export default function HostTable() {
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
-      isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ memory }) => {
         if (memory === undefined) {
           return
@@ -109,7 +108,7 @@ export default function HostTable() {
         const title = (
           <div>
             Used: {getValueFormat('bytes')(used, 1)} (
-            {getValueFormat('percentunit')(usedPercent, 1)})
+            {getValueFormat('percentunit')(+usedPercent, 1)})
           </div>
         )
         return (
@@ -125,7 +124,7 @@ export default function HostTable() {
       minWidth: 100,
       maxWidth: 200,
       isResizable: true,
-      isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return
@@ -144,7 +143,7 @@ export default function HostTable() {
             }
             serverTotal[item.instance.server_type]++
           })
-          const serverInfos = []
+          const serverInfos: string[] = []
           if (serverTotal.tidb > 0) {
             serverInfos.push(`${serverTotal.tidb} TiDB`)
           }
@@ -157,9 +156,14 @@ export default function HostTable() {
           if (serverTotal.tiflash > 0) {
             serverInfos.push(`${serverTotal.tiflash} TiFlash`)
           }
-          return `${serverInfos.join(
+          const content = `${serverInfos.join(
             ','
           )}: ${partition.partition.fstype.toUpperCase()} ${currentMountPoint}`
+          return (
+            <Tooltip title={content}>
+              <span>{content}</span>
+            </Tooltip>
+          )
         })
       },
     },
@@ -169,7 +173,7 @@ export default function HostTable() {
       minWidth: 80,
       maxWidth: 100,
       isResizable: true,
-      isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return
@@ -189,7 +193,7 @@ export default function HostTable() {
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
-      isCollapsible: true,
+      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return
@@ -201,7 +205,7 @@ export default function HostTable() {
           const title = (
             <div>
               Used: {getValueFormat('bytes')(used, 1)} (
-              {getValueFormat('percentunit')(usedPercent, 1)})
+              {getValueFormat('percentunit')(+usedPercent, 1)})
             </div>
           )
           return (
@@ -212,7 +216,7 @@ export default function HostTable() {
         })
       },
     },
-    useDummyColumn(),
+    dummyColumn(),
   ]
 
   return (

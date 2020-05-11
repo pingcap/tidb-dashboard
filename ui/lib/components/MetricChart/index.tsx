@@ -8,12 +8,12 @@ import React, { useMemo, useRef } from 'react'
 import ReactEchartsCore from 'echarts-for-react/lib/core'
 import client from '@lib/client'
 import { useBatchClientRequest } from '@lib/utils/useClientRequest'
-import { Skeleton, Alert, Space } from 'antd'
+import { Alert, Space } from 'antd'
 import dayjs from 'dayjs'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import _ from 'lodash'
 import { useInterval } from 'react-use'
-import { Card } from '@lib/components'
+import { Card, AnimatedSkeleton } from '@lib/components'
 import { ReloadOutlined, LoadingOutlined } from '@ant-design/icons'
 import format from 'string-template'
 
@@ -209,14 +209,12 @@ export default function MetricChart({
     }
   }, [data, valueFormatter, series, type])
 
+  const showSkeleton = isLoading && _.every(data, (d) => d === null)
+
   let inner
 
-  if (isLoading && _.every(data, (d) => d === null)) {
-    inner = (
-      <div style={{ height: HEIGHT }}>
-        <Skeleton active />
-      </div>
-    )
+  if (showSkeleton) {
+    inner = <div style={{ height: HEIGHT }} />
   } else if (
     _.every(
       _.zip(data, error),
@@ -252,7 +250,7 @@ export default function MetricChart({
 
   return (
     <Card title={title} subTitle={subTitle}>
-      {inner}
+      <AnimatedSkeleton showSkeleton={showSkeleton}>{inner}</AnimatedSkeleton>
     </Card>
   )
 }

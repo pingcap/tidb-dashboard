@@ -1,20 +1,22 @@
-import React from 'react'
+import { Badge, Tooltip } from 'antd'
+import { max } from 'lodash'
 import {
-  IColumn,
   ColumnActionsMode,
+  IColumn,
 } from 'office-ui-fabric-react/lib/DetailsList'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+
+import { SlowqueryBase } from '@lib/client'
 import {
-  TextWithInfo,
-  HighlightSQL,
-  TextWrap,
   Bar,
   DateTime,
-  Pre,
+  HighlightSQL,
+  TextWithInfo,
+  TextWrap,
 } from '@lib/components'
-import { Tooltip, Badge } from 'antd'
-import { getValueFormat } from '@baurine/grafana-value-formats'
-import { max } from 'lodash'
-import { useTranslation } from 'react-i18next'
+import { dummyColumn } from '@lib/utils/tableColumns'
 
 function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
   const { t } = useTranslation()
@@ -23,7 +25,7 @@ function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
   )
 }
 
-function useCommonColumnName(fieldName: string): any {
+function commonColumnName(fieldName: string): any {
   return (
     <TextWithInfo.TransKey
       transKey={`slow_query.common.columns.${fieldName}`}
@@ -31,54 +33,56 @@ function useCommonColumnName(fieldName: string): any {
   )
 }
 
-export function useConnectionIDColumn(
-  _rows?: { connection_id?: number }[] // used for type check only
-): IColumn {
-  return {
-    name: useCommonColumnName('connection_id'),
-    key: 'connection_id',
-    fieldName: 'connection_id',
-    minWidth: 100,
-    maxWidth: 120,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
-  }
-}
+// temporary not used
+// function connectionIDColumn(
+//   _rows?: { connection_id?: number }[] // used for type check only
+// ): IColumn {
+//   return {
+//     name: commonColumnName('connection_id'),
+//     key: 'connection_id',
+//     fieldName: 'connection_id',
+//     minWidth: 100,
+//     maxWidth: 120,
+//     isResizable: true,
+//     columnActionsMode: ColumnActionsMode.disabled,
+//   }
+// }
 
-export function useSqlColumn(
+function sqlColumn(
   _rows?: { query?: string }[], // used for type check only
   showFullSQL?: boolean
 ): IColumn {
   return {
-    name: useCommonColumnName('sql'),
+    name: commonColumnName('sql'),
     key: 'sql',
     fieldName: 'sql',
     minWidth: 200,
     maxWidth: 500,
     isResizable: true,
     columnActionsMode: ColumnActionsMode.disabled,
-    onRender: (rec) => (
-      <Tooltip
-        title={<HighlightSQL sql={rec.query} theme="dark" />}
-        placement="right"
-      >
-        <TextWrap multiline={showFullSQL}>
-          {showFullSQL ? (
-            <HighlightSQL sql={rec.query} />
-          ) : (
-            <Pre>{rec.query}</Pre>
-          )}
+    onRender: (rec) =>
+      showFullSQL ? (
+        <TextWrap multiline>
+          <HighlightSQL sql={rec.query} />
         </TextWrap>
-      </Tooltip>
-    ),
+      ) : (
+        <Tooltip
+          title={<HighlightSQL sql={rec.query} theme="dark" />}
+          placement="right"
+        >
+          <TextWrap>
+            <HighlightSQL sql={rec.query} compact />
+          </TextWrap>
+        </Tooltip>
+      ),
   }
 }
 
-export function useDigestColumn(
+function digestColumn(
   _rows?: { digest?: string }[] // used for type check only
 ): IColumn {
   return {
-    name: useCommonColumnName('digest'),
+    name: commonColumnName('digest'),
     key: 'Digest',
     fieldName: 'digest',
     minWidth: 100,
@@ -93,11 +97,11 @@ export function useDigestColumn(
   }
 }
 
-export function useInstanceColumn(
+function instanceColumn(
   _rows?: { instance?: string }[] // used for type check only
 ): IColumn {
   return {
-    name: useCommonColumnName('instance'),
+    name: commonColumnName('instance'),
     key: 'instance',
     fieldName: 'instance',
     minWidth: 100,
@@ -112,11 +116,11 @@ export function useInstanceColumn(
   }
 }
 
-export function useDBColumn(
+function dbColumn(
   _rows?: { db?: string }[] // used for type check only
 ): IColumn {
   return {
-    name: useCommonColumnName('db'),
+    name: commonColumnName('db'),
     key: 'DB',
     fieldName: 'db',
     minWidth: 100,
@@ -131,14 +135,14 @@ export function useDBColumn(
   }
 }
 
-export function useSuccessColumn(
+function successColumn(
   _rows?: { success?: number }[] // used for type check only
 ): IColumn {
   // !! Don't call `useTranslation()` directly to avoid this method become the custom hook
   // !! So we can use this inside the useMemo(), useEffect() and useState(()=>{...})
   // const { t } = useTranslation()
   return {
-    name: useCommonColumnName('result'),
+    name: commonColumnName('result'),
     key: 'Succ',
     fieldName: 'success',
     minWidth: 100,
@@ -151,12 +155,12 @@ export function useSuccessColumn(
   }
 }
 
-export function useTimestampColumn(
+function timestampColumn(
   _rows?: { timestamp?: number }[] // used for type check only
 ): IColumn {
   const key = 'Time'
   return {
-    name: useCommonColumnName('timestamp'),
+    name: commonColumnName('timestamp'),
     key,
     fieldName: 'timestamp',
     minWidth: 100,
@@ -170,11 +174,11 @@ export function useTimestampColumn(
   }
 }
 
-export function useQueryTimeColumn(rows?: { query_time?: number }[]): IColumn {
+function queryTimeColumn(rows?: { query_time?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.query_time)) ?? 0 : 0
   const key = 'Query_time'
   return {
-    name: useCommonColumnName('query_time'),
+    name: commonColumnName('query_time'),
     key,
     fieldName: 'query_time',
     minWidth: 140,
@@ -188,11 +192,11 @@ export function useQueryTimeColumn(rows?: { query_time?: number }[]): IColumn {
   }
 }
 
-export function useParseTimeColumn(rows?: { parse_time?: number }[]): IColumn {
+function parseTimeColumn(rows?: { parse_time?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.parse_time)) ?? 0 : 0
   const key = 'Parse_time'
   return {
-    name: useCommonColumnName('parse_time'),
+    name: commonColumnName('parse_time'),
     key,
     fieldName: 'parse_time',
     minWidth: 140,
@@ -206,13 +210,11 @@ export function useParseTimeColumn(rows?: { parse_time?: number }[]): IColumn {
   }
 }
 
-export function useCompileTimeColumn(
-  rows?: { compile_time?: number }[]
-): IColumn {
+function compileTimeColumn(rows?: { compile_time?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.compile_time)) ?? 0 : 0
   const key = 'Compile_time'
   return {
-    name: useCommonColumnName('compile_time'),
+    name: commonColumnName('compile_time'),
     key,
     fieldName: 'compile_time',
     minWidth: 140,
@@ -226,13 +228,11 @@ export function useCompileTimeColumn(
   }
 }
 
-export function useProcessTimeColumn(
-  rows?: { process_time?: number }[]
-): IColumn {
+function processTimeColumn(rows?: { process_time?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.process_time)) ?? 0 : 0
   const key = 'Process_time'
   return {
-    name: useCommonColumnName('process_time'),
+    name: commonColumnName('process_time'),
     key,
     fieldName: 'process_time',
     minWidth: 140,
@@ -246,11 +246,11 @@ export function useProcessTimeColumn(
   }
 }
 
-export function useMemoryColumn(rows?: { memory_max?: number }[]): IColumn {
+function memoryColumn(rows?: { memory_max?: number }[]): IColumn {
   const capacity = rows ? max(rows.map((v) => v.memory_max)) ?? 0 : 0
   const key = 'Mem_max'
   return {
-    name: useCommonColumnName('memory_max'),
+    name: commonColumnName('memory_max'),
     key,
     fieldName: 'memory_max',
     minWidth: 140,
@@ -264,11 +264,11 @@ export function useMemoryColumn(rows?: { memory_max?: number }[]): IColumn {
   }
 }
 
-export function useTxnStartTsColumn(
+function txnStartTsColumn(
   _rows?: { txn_start_ts?: number }[] // used for type check only
 ): IColumn {
   return {
-    name: useCommonColumnName('txn_start_ts'),
+    name: commonColumnName('txn_start_ts'),
     key: 'Txn_start_ts',
     fieldName: 'txn_start_ts',
     minWidth: 100,
@@ -281,4 +281,27 @@ export function useTxnStartTsColumn(
       </Tooltip>
     ),
   }
+}
+
+//////////////////////////////////////////
+
+export function slowQueryColumns(
+  rows: SlowqueryBase[],
+  showFullSQL?: boolean
+): IColumn[] {
+  return [
+    sqlColumn(rows, showFullSQL),
+    digestColumn(rows),
+    instanceColumn(rows),
+    dbColumn(rows),
+    successColumn(rows),
+    timestampColumn(rows),
+    queryTimeColumn(rows),
+    parseTimeColumn(rows),
+    compileTimeColumn(rows),
+    processTimeColumn(rows),
+    memoryColumn(rows),
+    txnStartTsColumn(rows),
+    dummyColumn(),
+  ]
 }

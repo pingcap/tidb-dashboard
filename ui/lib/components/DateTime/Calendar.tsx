@@ -62,4 +62,4 @@ export function format(unixTimestampMs: number) {
   })
 }
 
-export default Calendar
+export default React.memo(Calendar)

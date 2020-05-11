@@ -63,7 +63,7 @@ diagnosis:
       tidb_current_config: TiDB 当前配置
       pd_current_config: PD 当前配置
       tikv_current_config: TiKV 当前配置
-      node_load_info: 各实例负载信息
+      node_load_info: 服务器负载信息
       process_cpu_usage: 各实例 CPU 使用率
       process_memory_usage: 各实例内存消耗
       tidb/pd_goroutines_count: TiDB/PD 的 Goroutines 数量

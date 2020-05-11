@@ -28,7 +28,7 @@ diagnosis:
       diagnose_in_time_range_t1: t1 中的诊断信息
       diagnose_in_time_range_t2: t2 中的诊断信息
       max_diff_item: 最大不同项
-      slow_query_t2: t2 慢查询
+      slow_query_t2: t2 中的慢查询
       generate_report_error: 生成报告的报错
       report_time_range: 诊断区间
       diagnose: 诊断结果

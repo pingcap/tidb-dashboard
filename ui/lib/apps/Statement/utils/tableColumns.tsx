@@ -10,7 +10,6 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementModel } from '@lib/client'
 import { Bar, HighlightSQL, Pre, TextWithInfo, TextWrap } from '@lib/components'
-import friendFormatShortValue from '@lib/utils/friendFormatShortValue'
 import { dummyColumn } from '@lib/utils/tableColumns'
 
 function commonColumnName(fieldName: string): any {
@@ -131,7 +130,7 @@ function execCountColumn(rows?: { exec_count?: number }[]): IColumn {
     isResizable: true,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.exec_count} capacity={capacity}>
-        {friendFormatShortValue(rec.exec_count, 1)}
+        {getValueFormat('short')(rec.exec_count, 0, 1)}
       </Bar>
     ),
   }
@@ -185,8 +184,8 @@ function errorsWarningsColumn(
     isResizable: true,
     onRender: (rec) => {
       const tooltipContent = `
-Errors:   ${friendFormatShortValue(rec.sum_errors, 1)}
-Warnings: ${friendFormatShortValue(rec.sum_warnings, 1)}`
+Errors:   ${getValueFormat('short')(rec.sum_errors, 0)}
+Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
       return (
         <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
           <Bar
@@ -195,9 +194,9 @@ Warnings: ${friendFormatShortValue(rec.sum_warnings, 1)}`
             colors={[red[4], orange[4]]}
             capacity={capacity}
           >
-            {friendFormatShortValue(rec.sum_errors, 1)}
+            {getValueFormat('short')(rec.sum_errors, 0)}
             {' / '}
-            {friendFormatShortValue(rec.sum_warnings, 1)}
+            {getValueFormat('short')(rec.sum_warnings, 0)}
           </Bar>
         </Tooltip>
       )

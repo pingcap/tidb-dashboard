@@ -1,8 +1,7 @@
 import React from 'react'
-
 import { SlowquerySlowQuery } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
-import friendFormatShortValue from '@lib/utils/friendFormatShortValue'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabCoprProps {
@@ -17,11 +16,11 @@ export default function TabCopr({ data }: ITabCoprProps) {
     },
     {
       key: 'process_keys',
-      value: friendFormatShortValue(data.process_keys || 0, 1),
+      value: getValueFormat('short')(data.process_keys || 0, 1),
     },
     {
       key: 'total_keys',
-      value: friendFormatShortValue(data.total_keys || 0, 1),
+      value: getValueFormat('short')(data.total_keys || 0, 1),
     },
     {
       key: 'cop_proc_addr',

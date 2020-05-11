@@ -159,7 +159,11 @@ export default function ListPage() {
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ ip, port }) => {
         const fullName = `${ip}:${port}`
-        return <Tooltip title={fullName}>{fullName as any}</Tooltip>
+        return (
+          <Tooltip title={fullName}>
+            <span>{fullName}</span>
+          </Tooltip>
+        )
       },
     },
     {
@@ -192,7 +196,11 @@ export default function ListPage() {
       maxWidth: 250,
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
-      onRender: ({ version }) => <Tooltip title={version}>{version}</Tooltip>,
+      onRender: ({ version }) => (
+        <Tooltip title={version}>
+          <span>{version}</span>
+        </Tooltip>
+      ),
     },
     {
       name: t('cluster_info.list.instance_table.columns.deploy_path'),
@@ -203,7 +211,9 @@ export default function ListPage() {
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ deploy_path }) => (
-        <Tooltip title={deploy_path}>{deploy_path}</Tooltip>
+        <Tooltip title={deploy_path}>
+          <span>{deploy_path}</span>
+        </Tooltip>
       ),
     },
     {
@@ -215,7 +225,9 @@ export default function ListPage() {
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ git_hash }) => (
-        <Tooltip title={git_hash}>{git_hash}</Tooltip>
+        <Tooltip title={git_hash}>
+          <span>{git_hash}</span>
+        </Tooltip>
       ),
     },
     dummyColumn(),

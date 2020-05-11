@@ -159,7 +159,11 @@ System: ${getValueFormat('percentunit')(system)}`
           const content = `${serverInfos.join(
             ','
           )}: ${partition.partition.fstype.toUpperCase()} ${currentMountPoint}`
-          return <Tooltip title={content}>{content as any}</Tooltip>
+          return (
+            <Tooltip title={content}>
+              <span>{content}</span>
+            </Tooltip>
+          )
         })
       },
     },

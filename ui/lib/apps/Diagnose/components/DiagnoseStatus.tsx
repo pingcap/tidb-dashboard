@@ -1,45 +1,26 @@
-import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Descriptions, message, Progress, Button } from 'antd'
-import { Head, AnimatedSkeleton } from '@lib/components'
-import { DateTime } from '@lib/components'
-import { DiagnoseReport } from '@lib/client'
+import { Button, Descriptions, Progress } from 'antd'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link, useParams } from 'react-router-dom'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+
 import client from '@lib/client'
+import { AnimatedSkeleton, DateTime, Head } from '@lib/components'
+import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 
 function DiagnoseStatus() {
-  const [report, setReport] = useState<DiagnoseReport | undefined>(undefined)
   const { id } = useParams()
   const { t } = useTranslation()
 
-  useEffect(() => {
-    let t: ReturnType<typeof setTimeout> | null = null
-    if (!id) {
-      return
+  const { data: report, isLoading } = useClientRequestWithPolling(
+    (cancelToken) =>
+      client.getInstance().diagnoseReportsIdStatusGet(id, { cancelToken }),
+    {
+      shouldPoll: (data) => data?.progress! < 100,
+      pollingInterval: 1000,
+      immediate: true,
     }
-    async function fetchData() {
-      try {
-        const res = await client.getInstance().diagnoseReportsIdStatusGet(id!)
-        const { data } = res
-        setReport(data)
-        if (data.progress! >= 100) {
-          if (t !== null) {
-            clearInterval(t)
-          }
-        }
-      } catch (error) {
-        message.error(error.message)
-      }
-    }
-    t = setInterval(() => fetchData(), 1000)
-    fetchData()
-    return () => {
-      if (t !== null) {
-        clearInterval(t)
-      }
-    }
-  }, [id])
+  )
 
   return (
     <Head
@@ -64,7 +45,7 @@ function DiagnoseStatus() {
         )
       }
     >
-      <AnimatedSkeleton showSkeleton={!report}>
+      <AnimatedSkeleton showSkeleton={isLoading && !report}>
         {report && (
           <Descriptions column={1} bordered size="small">
             <Descriptions.Item label={t('diagnose.status.range_begin')}>

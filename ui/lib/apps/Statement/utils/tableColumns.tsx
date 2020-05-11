@@ -184,8 +184,8 @@ function errorsWarningsColumn(
     isResizable: true,
     onRender: (rec) => {
       const tooltipContent = `
-Errors:   ${getValueFormat('short')(rec.sum_errors, 0)}
-Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
+Errors:   ${getValueFormat('short')(rec.sum_errors, 0, 1)}
+Warnings: ${getValueFormat('short')(rec.sum_warnings, 0, 1)}`
       return (
         <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
           <Bar
@@ -194,9 +194,9 @@ Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
             colors={[red[4], orange[4]]}
             capacity={capacity}
           >
-            {getValueFormat('short')(rec.sum_errors, 0)}
+            {getValueFormat('short')(rec.sum_errors, 0, 1)}
             {' / '}
-            {getValueFormat('short')(rec.sum_warnings, 0)}
+            {getValueFormat('short')(rec.sum_warnings, 0, 1)}
           </Bar>
         </Tooltip>
       )

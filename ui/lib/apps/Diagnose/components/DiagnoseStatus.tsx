@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Descriptions, message, Skeleton, Progress, Button } from 'antd'
-import { Head } from '@lib/components'
+import { Descriptions, message, Progress, Button } from 'antd'
+import { Head, AnimatedSkeleton } from '@lib/components'
 import { DateTime } from '@lib/components'
 import { DiagnoseReport } from '@lib/client'
 import { useTranslation } from 'react-i18next'
@@ -54,7 +54,7 @@ function DiagnoseStatus() {
           <Button type="primary" disabled={report?.progress! < 100}>
             {/* Not using client basePath intentionally so that it can be handled by webpack-dev-server */}
             <a
-              href={`/dashboard/api/diagnose/reports/${report!['ID']}/detail`}
+              href={`/dashboard/api/diagnose/reports/${report.id}/detail`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -64,28 +64,34 @@ function DiagnoseStatus() {
         )
       }
     >
-      {!report ? (
-        <Skeleton active />
-      ) : (
-        <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label={t('diagnose.status.range_begin')}>
-            <DateTime.Calendar unixTimeStampMs={new Date(report.start_time!)} />
-          </Descriptions.Item>
-          <Descriptions.Item label={t('diagnose.status.range_end')}>
-            <DateTime.Calendar unixTimeStampMs={new Date(report.end_time!)} />
-          </Descriptions.Item>
-          {report.compare_start_time && (
-            <Descriptions.Item label={t('diagnose.status.baseline_begin')}>
+      <AnimatedSkeleton showSkeleton={!report}>
+        {report && (
+          <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label={t('diagnose.status.range_begin')}>
               <DateTime.Calendar
-                unixTimeStampMs={new Date(report.compare_start_time!)}
+                unixTimestampMs={new Date(report.start_time!).valueOf()}
               />
             </Descriptions.Item>
-          )}
-          <Descriptions.Item label={t('diagnose.status.progress')}>
-            <Progress style={{ width: 200 }} percent={report.progress || 0} />
-          </Descriptions.Item>
-        </Descriptions>
-      )}
+            <Descriptions.Item label={t('diagnose.status.range_end')}>
+              <DateTime.Calendar
+                unixTimestampMs={new Date(report.end_time!).valueOf()}
+              />
+            </Descriptions.Item>
+            {report.compare_start_time && (
+              <Descriptions.Item label={t('diagnose.status.baseline_begin')}>
+                <DateTime.Calendar
+                  unixTimestampMs={new Date(
+                    report.compare_start_time
+                  ).valueOf()}
+                />
+              </Descriptions.Item>
+            )}
+            <Descriptions.Item label={t('diagnose.status.progress')}>
+              <Progress style={{ width: 200 }} percent={report.progress || 0} />
+            </Descriptions.Item>
+          </Descriptions>
+        )}
+      </AnimatedSkeleton>
     </Head>
   )
 }

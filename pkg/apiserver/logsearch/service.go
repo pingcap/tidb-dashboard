@@ -24,6 +24,7 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
@@ -75,8 +76,8 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 type CreateTaskGroupRequest struct {
-	Request       SearchLogRequest `json:"request" binding:"required"`
-	SearchTargets []SearchTarget   `json:"search_targets" binding:"required"`
+	Request SearchLogRequest          `json:"request" binding:"required"`
+	Targets []model.RequestTargetNode `json:"targets" binding:"required"`
 }
 
 type TaskGroupResponse struct {
@@ -101,27 +102,28 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
 		return
 	}
-	if len(req.SearchTargets) == 0 {
+	if len(req.Targets) == 0 {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(utils.ErrInvalidRequest.NewWithNoMessage())
 		return
 	}
-
+	stats := model.NewRequestTargetStatisticsFromArray(&req.Targets)
 	taskGroup := TaskGroupModel{
 		SearchRequest: &req.Request,
 		State:         TaskGroupStateRunning,
+		TargetStats:   stats,
 	}
 	if err := s.db.Create(&taskGroup).Error; err != nil {
 		_ = c.Error(err)
 		return
 	}
-	tasks := make([]*TaskModel, 0, len(req.SearchTargets))
-	for _, t := range req.SearchTargets {
+	tasks := make([]*TaskModel, 0, len(req.Targets))
+	for _, t := range req.Targets {
 		target := t
 		task := &TaskModel{
-			TaskGroupID:  taskGroup.ID,
-			SearchTarget: &target,
-			State:        TaskStateRunning,
+			TaskGroupID: taskGroup.ID,
+			Target:      &target,
+			State:       TaskStateRunning,
 		}
 		// Ignore task creation errors
 		s.db.Create(task)
@@ -141,7 +143,7 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 // @Description list all log search taskgroups
 // @Produce json
 // @Security JwtAuth
-// @Success 200 {array} TaskGroupResponse
+// @Success 200 {array} TaskGroupModel
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroups [get]
@@ -152,21 +154,8 @@ func (s *Service) GetAllTaskGroups(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	var resp = make([]TaskGroupResponse, 0, len(taskGroups))
-	for _, taskGroup := range taskGroups {
-		var tasks []*TaskModel
-		err = s.db.Where("task_group_id = ?", taskGroup.ID).Find(&tasks).Error
-		if err != nil {
-			_ = c.Error(err)
-			return
-		}
-		resp = append(resp, TaskGroupResponse{
-			TaskGroup: *taskGroup,
-			Tasks:     tasks,
-		})
-	}
 
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, taskGroups)
 }
 
 // @Summary List tasks in a task group
@@ -330,7 +319,7 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 // @Summary Get download token
 // @Description get download token with multiple task IDs
 // @Produce plain
-// @Param id query []string false "task id"
+// @Param id query []string false "task id" collectionFormat(csv)
 // @Security JwtAuth
 // @Success 200 {string} string "xxx"
 // @Failure 400 {object} utils.APIError

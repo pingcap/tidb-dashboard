@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react'
 import * as d3 from 'd3'
-import useEventListener from '@use-it/event-listener'
+import { useEventListener } from '@umijs/hooks'
 import { heatmapChart } from './chart'
 import { HeatmapData, DataTag, HeatmapRange } from './types'
 
@@ -12,7 +12,7 @@ type HeatmapProps = {
   onChartInit: (any) => void
 }
 
-const _Heatmap: React.FunctionComponent<HeatmapProps> = (props) => {
+function _Heatmap(props) {
   const divRef: React.RefObject<HTMLDivElement> = useRef(null)
   const chart = useRef<any>(null)
 

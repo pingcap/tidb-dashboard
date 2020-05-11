@@ -16,6 +16,8 @@ package decorator
 
 import (
 	"encoding/hex"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
 // LabelKey is the decoration key.
@@ -26,6 +28,7 @@ type LabelKey struct {
 
 // LabelStrategy requires cross-border determination and key decoration scheme.
 type LabelStrategy interface {
+	ReloadConfig(cfg *config.KeyVisualConfig)
 	CrossBorder(startKey, endKey string) bool
 	Label(key string) LabelKey
 	LabelGlobalStart() LabelKey
@@ -34,6 +37,9 @@ type LabelStrategy interface {
 
 // NaiveLabelStrategy is one of the simplest LabelStrategy.
 type NaiveLabelStrategy struct{}
+
+func (s NaiveLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {
+}
 
 // CrossBorder always returns false. So NaiveLabelStrategy believes that there are no cross-border situations.
 func (s NaiveLabelStrategy) CrossBorder(startKey, endKey string) bool {

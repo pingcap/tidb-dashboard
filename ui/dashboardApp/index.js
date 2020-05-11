@@ -1,3 +1,5 @@
+import './wdyr'
+
 import * as singleSpa from 'single-spa'
 import AppRegistry from '@dashboard/registry'
 import * as routing from '@dashboard/routing'
@@ -18,6 +20,7 @@ import AppDiagnose from '@lib/apps/Diagnose/index.meta'
 import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
 import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
+import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 
 async function main() {
   client.init()
@@ -56,6 +59,7 @@ async function main() {
     .register(AppDiagnose)
     .register(AppSearchLogs)
     .register(AppInstanceProfiling)
+    .register(AppSlowQuery)
 
   if (routing.isLocationMatch('/')) {
     singleSpa.navigateToUrl('#' + registry.getDefaultRouter())

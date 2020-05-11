@@ -1,29 +1,65 @@
-import React, { useCallback, useMemo } from 'react'
-import { Skeleton, Checkbox } from 'antd'
+import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
   DetailsList,
   DetailsListLayoutMode,
-  SelectionMode,
-  IDetailsListProps,
   IColumn,
+  IDetailsListProps,
+  SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { usePersistFn } from '@umijs/hooks'
 
+import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
 import styles from './index.module.less'
 
+DetailsList.whyDidYouRender = {
+  customName: 'DetailsList',
+} as any
+
+const MemoDetailsList = React.memo(DetailsList)
+
+function copyAndSort<T>(
+  items: T[],
+  columnKey: string,
+  isSortedDescending?: boolean
+): T[] {
+  const key = columnKey as keyof T
+  return items
+    .slice(0)
+    .sort((a: T, b: T) =>
+      (isSortedDescending ? a[key] < b[key] : a[key] > b[key]) ? 1 : -1
+    )
+}
+
 export interface ICardTableV2Props extends IDetailsListProps {
   title?: React.ReactNode
+  subTitle?: React.ReactNode
   className?: string
   style?: object
   loading?: boolean
-  loadingSkeletonRows?: number
   cardExtra?: React.ReactNode
+  cardNoMargin?: boolean
+
   // The keys of visible columns. If null, all columns will be shown.
   visibleColumnKeys?: { [key: string]: boolean }
+  visibleItemsCount?: number
+
+  // Handle sort
+  orderBy?: string
+  desc?: boolean
+  onChangeOrder?: (orderBy: string, desc: boolean) => void
+
   // Event triggered when a row is clicked.
-  onRowClicked?: (item: any, itemIndex: number) => void
+  onRowClicked?: (
+    item: any,
+    itemIndex: number,
+    ev: React.MouseEvent<HTMLElement>
+  ) => void
+
+  onGetColumns?: (columns: IColumn[]) => void
 }
 
 function renderStickyHeader(props, defaultRender) {
@@ -56,95 +92,106 @@ function useRenderClickableRow(onRowClicked) {
   )
 }
 
-function renderColumnVisibilitySelection(
-  columns?: IColumn[],
-  visibleColumnKeys?: { [key: string]: boolean },
-  onChange?: (visibleKeys: { [key: string]: boolean }) => void
-) {
-  if (columns == null) {
-    return null
-  }
-  if (visibleColumnKeys == null) {
-    visibleColumnKeys = {}
-    columns.forEach((c) => {
-      visibleColumnKeys![c.key] = true
-    })
-  }
-  return (
-    <>
-      {columns.map((column) => (
-        <div key={column.key}>
-          <Checkbox
-            checked={visibleColumnKeys![column.key]}
-            onChange={(e) => {
-              if (!onChange) {
-                return
-              }
-              onChange({
-                ...visibleColumnKeys!,
-                [column.key]: e.target.checked,
-              })
-            }}
-          >
-            {column.name}
-          </Checkbox>
-        </div>
-      ))}
-    </>
-  )
-}
-
 function CardTableV2(props: ICardTableV2Props) {
   const {
     title,
+    subTitle,
     className,
     style,
     loading = false,
-    loadingSkeletonRows = 5,
     cardExtra,
+    cardNoMargin,
     visibleColumnKeys,
+    visibleItemsCount,
+    orderBy,
+    desc = true,
+    onChangeOrder,
     onRowClicked,
+    onGetColumns,
     columns,
+    items,
     ...restProps
   } = props
-
   const renderClickableRow = useRenderClickableRow(onRowClicked)
-  const filteredColumns = useMemo(() => {
-    if (columns == null || visibleColumnKeys == null) {
-      return columns
+
+  const onColumnClick = usePersistFn(
+    (_ev: React.MouseEvent<HTMLElement>, column: IColumn) => {
+      if (!onChangeOrder) {
+        return
+      }
+      if (column.key === orderBy) {
+        onChangeOrder(orderBy, !desc)
+      } else {
+        onChangeOrder(column.key, true)
+      }
     }
-    return columns.filter((c) => visibleColumnKeys[c.key])
-  }, [columns, visibleColumnKeys])
+  )
+
+  const finalColumns = useMemo(() => {
+    let newColumns: IColumn[] = columns || []
+    if (visibleColumnKeys != null) {
+      newColumns = newColumns.filter((c) => visibleColumnKeys[c.key])
+    }
+    newColumns = newColumns.map((c) => ({
+      ...c,
+      isSorted: c.key === orderBy,
+      isSortedDescending: desc,
+      onColumnClick,
+    }))
+    return newColumns
+  }, [onColumnClick, columns, visibleColumnKeys, orderBy, desc])
+
+  const finalItems = useMemo(() => {
+    let newItems = items || []
+    const curColumn = finalColumns.find((col) => col.key === orderBy)
+    if (curColumn) {
+      newItems = copyAndSort(
+        newItems,
+        curColumn.fieldName!,
+        curColumn.isSortedDescending
+      )
+    }
+    if (visibleItemsCount != null) {
+      newItems = newItems.slice(0, visibleItemsCount)
+    }
+    return newItems
+  }, [visibleItemsCount, items, orderBy, finalColumns])
+
+  useEffect(() => {
+    onGetColumns && onGetColumns(columns || [])
+    // (ignore onGetColumns)
+    // eslint-disable-next-line
+  }, [columns])
+
+  const onRenderCheckbox = useCallback((props) => {
+    return <Checkbox checked={props?.checked} />
+  }, [])
 
   return (
     <Card
       title={title}
+      subTitle={subTitle}
       style={style}
       className={cx(styles.cardTable, className)}
+      noMargin={cardNoMargin}
       extra={cardExtra}
     >
-      {loading ? (
-        <Skeleton
-          active
-          title={false}
-          paragraph={{ rows: loadingSkeletonRows }}
-        />
-      ) : (
+      <AnimatedSkeleton showSkeleton={items.length === 0 && loading}>
         <div className={styles.cardTableContent}>
-          <DetailsList
+          <MemoDetailsList
             selectionMode={SelectionMode.none}
             layoutMode={DetailsListLayoutMode.justified}
             onRenderDetailsHeader={renderStickyHeader}
             onRenderRow={onRowClicked ? renderClickableRow : undefined}
-            columns={filteredColumns}
+            onRenderCheckbox={onRenderCheckbox}
+            columns={finalColumns}
+            items={finalItems}
             {...restProps}
           />
         </div>
-      )}
+      </AnimatedSkeleton>
     </Card>
   )
 }
-
-CardTableV2.renderColumnVisibilitySelection = renderColumnVisibilitySelection
 
 export default CardTableV2

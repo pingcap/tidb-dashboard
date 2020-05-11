@@ -1,46 +1,29 @@
 import client from '@lib/client'
-import { LogsearchSearchTarget, LogsearchTaskGroupResponse } from '@lib/client'
-import { CardTable, Head } from '@lib/components'
+import { LogsearchTaskGroupModel } from '@lib/client'
+import { Head, CardTableV2 } from '@lib/components'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Badge, Button, Table } from 'antd'
+import { Badge, Button } from 'antd'
 import { RangeValue } from 'rc-picker/lib/interface'
-import { Moment } from 'moment'
+import moment, { Moment } from 'moment'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { DATE_TIME_FORMAT, LogLevelMap } from './utils'
 import {
-  DATE_TIME_FORMAT,
-  LogLevelMap,
-  parseSearchingParams,
-  ServerType,
-} from './utils'
+  Selection,
+  SelectionMode,
+} from 'office-ui-fabric-react/lib/DetailsList'
 
-const { Column } = Table
-
-type History = {
-  key: number
-  time?: RangeValue<Moment>
-  level?: string
-  components?: LogsearchSearchTarget[]
-  keywords?: string
-  size?: string
-  state?: number
-  action?: number
-}
-
-function componentRender(targets: LogsearchSearchTarget[]) {
-  const tidb = targets.filter((item) => item.kind === ServerType.TiDB)
-  const tikv = targets.filter((item) => item.kind === ServerType.TiKV)
-  const pd = targets.filter((item) => item.kind === ServerType.PD)
+function componentRender({ target_stats: stats }) {
   const r: Array<string> = []
-  if (tidb.length > 0) {
-    r.push(`${tidb.length} TiDB`)
+  if (stats?.num_tidb_nodes) {
+    r.push(`${stats.num_tidb_nodes} TiDB`)
   }
-  if (tikv.length > 0) {
-    r.push(`${tikv.length} TiKV`)
+  if (stats?.num_tikv_nodes) {
+    r.push(`${stats.num_tikv_nodes} TiKV`)
   }
-  if (pd.length > 0) {
-    r.push(`${pd.length} PD`)
+  if (stats?.num_pd_nodes) {
+    r.push(`${stats.num_pd_nodes} PD`)
   }
   return <span>{r.join(', ')}</span>
 }
@@ -52,7 +35,10 @@ function formatTime(time: Moment | null | undefined): string {
   return time.format(DATE_TIME_FORMAT)
 }
 
-function timeRender(timeRange: RangeValue<Moment>): string {
+function timeRender({ search_request: request }) {
+  const startTime = request.start_time ? moment(request.start_time) : null
+  const endTime = request.end_time ? moment(request.end_time) : null
+  const timeRange = [startTime, endTime] as RangeValue<moment.Moment>
   if (!timeRange?.[0] || !timeRange?.[1]) {
     return ''
   }
@@ -60,8 +46,8 @@ function timeRender(timeRange: RangeValue<Moment>): string {
 }
 
 export default function SearchHistory() {
-  const [taskGroups, setTaskGroups] = useState<LogsearchTaskGroupResponse[]>([])
-  const [selectedRowKeys, setRowKeys] = useState<string[] | number[]>([])
+  const [taskGroups, setTaskGroups] = useState<LogsearchTaskGroupModel[]>([])
+  const [selectedRowKeys, setRowKeys] = useState<string[]>([])
 
   const { t } = useTranslation()
 
@@ -70,10 +56,21 @@ export default function SearchHistory() {
       const res = await client.getInstance().logsTaskgroupsGet()
       setTaskGroups(res.data)
     }
+
     getData()
   }, [])
 
-  function stateRender(state: number | undefined) {
+  function levelRender({ search_request: request }) {
+    return LogLevelMap[request.min_level!]
+  }
+
+  function patternRender({ search_request: request }) {
+    return request.patterns && request.patterns.length > 0
+      ? request.patterns.join(' ')
+      : ''
+  }
+
+  function stateRender({ state }) {
     if (state === undefined || state < 1) {
       return
     }
@@ -91,28 +88,27 @@ export default function SearchHistory() {
     }
   }
 
-  function actionRender(taskGroupID: number) {
-    if (taskGroupID === 0) {
+  function actionRender(taskGroup: LogsearchTaskGroupModel) {
+    if (taskGroup.id === 0) {
       return
     }
     return (
-      <Link to={`/search_logs/detail/${taskGroupID}`}>
+      <Link to={`/search_logs/detail/${taskGroup.id}`}>
         {t('search_logs.history.detail')}
       </Link>
     )
   }
 
   async function handleDeleteSelected() {
-    for (const key of selectedRowKeys) {
-      const taskGroupID = key as number
-      await client.getInstance().logsTaskgroupsIdDelete(taskGroupID + '')
+    for (const taskGroupID of selectedRowKeys) {
+      await client.getInstance().logsTaskgroupsIdDelete(taskGroupID)
       const res = await client.getInstance().logsTaskgroupsGet()
       setTaskGroups(res.data)
     }
   }
 
   async function handleDeleteAll() {
-    const allKeys = taskGroups.map((taskGroup) => taskGroup.task_group?.id)
+    const allKeys = taskGroups.map((taskGroup) => taskGroup.id)
     for (const key of allKeys) {
       if (key === undefined) {
         continue
@@ -123,31 +119,57 @@ export default function SearchHistory() {
     setTaskGroups(res.data)
   }
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedRowKeys: any[]) => {
-      setRowKeys(selectedRowKeys)
+  const rowSelection = new Selection({
+    onSelectionChanged: () => {
+      const items = rowSelection.getSelection() as LogsearchTaskGroupModel[]
+      setRowKeys(items.map((item) => item.id!.toString()))
     },
-  }
-
-  const historyList: History[] = taskGroups.map((taskGroup) => {
-    const {
-      timeRange,
-      logLevel,
-      components,
-      searchValue,
-    } = parseSearchingParams(taskGroup)
-    const taskGroupID = taskGroup.task_group?.id || 0
-    return {
-      key: taskGroupID,
-      time: timeRange,
-      level: LogLevelMap[logLevel],
-      components: components,
-      keywords: searchValue,
-      state: taskGroup.task_group?.state,
-      action: taskGroupID,
-    }
   })
+
+  const columns = [
+    {
+      name: t('search_logs.common.time_range'),
+      key: 'time',
+      minWidth: 200,
+      maxWidth: 400,
+      onRender: timeRender,
+    },
+    {
+      name: t('search_logs.preview.level'),
+      key: 'level',
+      minWidth: 100,
+      maxWidth: 200,
+      onRender: levelRender,
+    },
+    {
+      name: t('search_logs.preview.component'),
+      key: 'target_stats',
+      minWidth: 150,
+      maxWidth: 230,
+      onRender: componentRender,
+    },
+    {
+      name: t('search_logs.common.keywords'),
+      key: 'keywords',
+      minWidth: 150,
+      maxWidth: 230,
+      onRender: patternRender,
+    },
+    {
+      name: t('search_logs.history.state'),
+      key: 'state',
+      minWidth: 150,
+      maxWidth: 230,
+      onRender: stateRender,
+    },
+    {
+      name: t('search_logs.history.action'),
+      key: 'action',
+      minWidth: 150,
+      maxWidth: 230,
+      onRender: actionRender,
+    },
+  ]
 
   return (
     <div>
@@ -175,49 +197,13 @@ export default function SearchHistory() {
         }
       />
       <div style={{ backgroundColor: '#FFFFFF' }}>
-        <CardTable
-          dataSource={historyList}
-          rowSelection={rowSelection}
-          pagination={{ pageSize: 100 }}
+        <CardTableV2
+          columns={columns}
+          items={taskGroups || []}
+          selection={rowSelection}
+          selectionMode={SelectionMode.multiple}
           style={{ marginTop: 0 }}
-        >
-          <Column
-            width={400}
-            title={t('search_logs.common.time_range')}
-            dataIndex="time"
-            key="time"
-            render={timeRender}
-          />
-          <Column
-            title={t('search_logs.preview.level')}
-            dataIndex="level"
-            key="level"
-          />
-          <Column
-            width={230}
-            title={t('search_logs.preview.component')}
-            dataIndex="components"
-            key="components"
-            render={componentRender}
-          />
-          <Column
-            title={t('search_logs.common.keywords')}
-            dataIndex="keywords"
-            key="keywords"
-          />
-          <Column
-            title={t('search_logs.history.state')}
-            dataIndex="state"
-            key="state"
-            render={stateRender}
-          />
-          <Column
-            title={t('search_logs.history.action')}
-            dataIndex="action"
-            key="action"
-            render={actionRender}
-          />
-        </CardTable>
+        />
       </div>
     </div>
   )

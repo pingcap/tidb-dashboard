@@ -36,6 +36,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/storage"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
@@ -69,36 +70,51 @@ type Service struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	config     *config.Config
-	provider   *region.PDDataProvider
-	httpClient *http.Client
-	db         *dbstore.DB
+	config       *config.Config
+	keyVisualCfg *config.KeyVisualConfig
+	cfgManager   *config.DynamicConfigManager
+	provider     *region.PDDataProvider
+	httpClient   *http.Client
+	db           *dbstore.DB
+	forwarder    *tidb.Forwarder
 
-	stat     *storage.Stat
-	strategy matrix.Strategy
+	stat          *storage.Stat
+	strategy      matrix.Strategy
+	labelStrategy decorator.LabelStrategy
 }
 
-func NewService(lc fx.Lifecycle, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client, db *dbstore.DB) *Service {
+func NewService(
+	lc fx.Lifecycle,
+	cfg *config.Config,
+	cfgManager *config.DynamicConfigManager,
+	provider *region.PDDataProvider,
+	httpClient *http.Client,
+	db *dbstore.DB,
+	forwarder *tidb.Forwarder,
+) *Service {
 	s := &Service{
 		status:     utils.NewServiceStatus(),
 		config:     cfg,
+		cfgManager: cfgManager,
 		provider:   provider,
 		httpClient: httpClient,
 		db:         db,
+		forwarder:  forwarder,
 	}
 
-	lc.Append(fx.Hook{
-		OnStart: s.Start,
-		OnStop:  s.Stop,
-	})
+	lc.Append(s.managerHook())
 
 	return s
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/keyvisual")
-	endpoint.Use(s.status.MWHandleStopped(stoppedHandler))
 	endpoint.Use(auth.MWAuthRequired())
+
+	endpoint.GET("/config", s.getDynamicConfig)
+	endpoint.PUT("/config", s.setDynamicConfig)
+
+	endpoint.Use(s.status.MWHandleStopped(stoppedHandler))
 	endpoint.GET("/heatmaps", s.heatmaps)
 }
 
@@ -121,9 +137,9 @@ func (s *Service) Start(ctx context.Context) error {
 			newStat,
 			s.provideLocals,
 			input.NewStatInput,
-			decorator.TiDBLabelStrategy,
+			s.newLabelStrategy,
 		),
-		fx.Populate(&s.stat, &s.strategy),
+		fx.Populate(&s.stat, &s.strategy, &s.labelStrategy),
 		fx.Invoke(
 			// Must be at the end
 			s.status.Register,
@@ -139,6 +155,27 @@ func (s *Service) Start(ctx context.Context) error {
 	return nil
 }
 
+func (s *Service) newLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client, forwarder *tidb.Forwarder) decorator.LabelStrategy {
+	switch s.keyVisualCfg.Policy {
+	case config.KeyVisualDBPolicy:
+		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy))
+		return decorator.TiDBLabelStrategy(lc, wg, cfg, provider, httpClient, forwarder)
+	case config.KeyVisualKVPolicy:
+		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy),
+			zap.String("separator", s.keyVisualCfg.PolicyKVSeparator))
+		return decorator.SeparatorLabelStrategy(s.keyVisualCfg)
+	default:
+		panic("unreachable")
+	}
+}
+
+func (s *Service) reloadKeyVisualConfig(cfg *config.KeyVisualConfig) {
+	s.keyVisualCfg = cfg
+	if s.labelStrategy != nil {
+		s.labelStrategy.ReloadConfig(s.keyVisualCfg)
+	}
+}
+
 func (s *Service) Stop(ctx context.Context) error {
 	if !s.IsRunning() {
 		return nil
@@ -151,6 +188,7 @@ func (s *Service) Stop(ctx context.Context) error {
 	s.app = nil
 	s.stat = nil
 	s.strategy = nil
+	s.labelStrategy = nil
 	s.ctx = nil
 	s.cancel = nil
 
@@ -233,8 +271,8 @@ func (s *Service) heatmaps(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (s *Service) provideLocals() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB) {
-	return s.config, s.provider, s.httpClient, s.db
+func (s *Service) provideLocals() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB, *tidb.Forwarder) {
+	return s.config, s.provider, s.httpClient, s.db, s.forwarder
 }
 
 func newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {
@@ -259,8 +297,8 @@ func newStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvide
 		OnStart: func(ctx context.Context) error {
 			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				in.Background(ctx, stat)
-				wg.Done()
 			}()
 			return nil
 		},

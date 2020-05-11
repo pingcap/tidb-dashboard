@@ -25,6 +25,7 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb/codec"
 )
 
@@ -40,30 +41,37 @@ type tidbLabelStrategy struct {
 	Provider   *region.PDDataProvider
 	HTTPClient *http.Client
 
-	TableMap    sync.Map
-	TidbAddress []string
+	TableMap      sync.Map
+	forwarder     *tidb.Forwarder
+	SchemaVersion int64
+	TidbAddress   []string
 }
 
 // TiDBLabelStrategy implements the LabelStrategy interface. Get Label Information from TiDB.
-func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client) LabelStrategy {
+func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client, forwarder *tidb.Forwarder) LabelStrategy {
 	s := &tidbLabelStrategy{
-		Config:     cfg,
-		Provider:   provider,
-		HTTPClient: httpClient,
+		Config:        cfg,
+		Provider:      provider,
+		HTTPClient:    httpClient,
+		forwarder:     forwarder,
+		SchemaVersion: -1,
 	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				s.Background(ctx)
-				wg.Done()
 			}()
 			return nil
 		},
 	})
 
 	return s
+}
+
+func (s *tidbLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {
 }
 
 func (s *tidbLabelStrategy) Background(ctx context.Context) {
@@ -74,8 +82,7 @@ func (s *tidbLabelStrategy) Background(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			s.updateAddress(ctx)
-			s.updateMap()
+			s.updateMap(ctx)
 		}
 	}
 }

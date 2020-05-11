@@ -1,5 +1,5 @@
 import { useMount, useUnmount } from '@umijs/hooks'
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { CancelToken, AxiosPromise, CancelTokenSource } from 'axios'
 import axios from 'axios'
 
@@ -27,28 +27,25 @@ export function useClientRequest<T>(
     options || {}
 
   const [state, setState] = useState<State<T>>({
-    isLoading: false,
+    isLoading: immediate,
   })
 
+  // If `cancelTokenSource` is null, it means there is no running requests.
   const cancelTokenSource = useRef<CancelTokenSource | null>(null)
   const mounted = useRef(false)
-
-  const stateRef = useRef(state)
-  useEffect(() => {
-    stateRef.current = state
-  }, [state])
 
   const sendRequest = async () => {
     if (!mounted.current) {
       return
     }
-    if (stateRef.current.isLoading) {
+    if (cancelTokenSource.current) {
       return
     }
 
     beforeRequest && beforeRequest()
 
     cancelTokenSource.current = axios.CancelToken.source()
+
     setState((s) => ({
       ...s,
       isLoading: true,
@@ -77,12 +74,100 @@ export function useClientRequest<T>(
     afterRequest && afterRequest()
   }
 
-  const cancelLastRequest = useCallback(() => {
+  useMount(() => {
+    mounted.current = true
+    if (immediate) {
+      sendRequest()
+    }
+  })
+
+  useUnmount(() => {
+    mounted.current = false
     if (cancelTokenSource.current != null) {
       cancelTokenSource.current.cancel()
       cancelTokenSource.current = null
     }
-  }, [])
+  })
+
+  return {
+    ...state,
+    sendRequest,
+  }
+}
+
+export interface BatchState<T> {
+  isLoading: boolean
+  data: (T | null)[]
+  error: (any | null)[]
+}
+
+export function useBatchClientRequest<T>(
+  reqFactories: RequestFactory<T>[],
+  options?: Options
+) {
+  const { immediate = true, afterRequest = null, beforeRequest = null } =
+    options || {}
+
+  const [state, setState] = useState<BatchState<T>>({
+    isLoading: immediate,
+    data: reqFactories.map((_) => null),
+    error: reqFactories.map((_) => null),
+  })
+
+  const cancelTokenSource = useRef<CancelTokenSource[] | null>(null)
+  const mounted = useRef(false)
+
+  const sendRequestEach = async (idx) => {
+    try {
+      const resp = await reqFactories[idx](
+        cancelTokenSource.current![idx].token
+      )
+      if (mounted.current) {
+        setState((s) => {
+          s.data[idx] = resp.data
+          return { ...s, data: [...s.data] }
+        })
+      }
+    } catch (e) {
+      if (mounted.current) {
+        setState((s) => {
+          s.error[idx] = e
+          return { ...s, error: [...s.error] }
+        })
+      }
+    }
+  }
+
+  const sendRequest = async () => {
+    if (!mounted.current) {
+      return
+    }
+    if (cancelTokenSource.current) {
+      return
+    }
+
+    beforeRequest && beforeRequest()
+
+    cancelTokenSource.current = reqFactories.map((_) =>
+      axios.CancelToken.source()
+    )
+    setState((s) => ({
+      ...s,
+      isLoading: true,
+      error: reqFactories.map((_) => null),
+    }))
+
+    const p = reqFactories.map((_, idx) => sendRequestEach(idx))
+    await Promise.all(p)
+    setState((s) => ({
+      ...s,
+      isLoading: false,
+    }))
+
+    cancelTokenSource.current = null
+
+    afterRequest && afterRequest()
+  }
 
   useMount(() => {
     mounted.current = true
@@ -93,7 +178,10 @@ export function useClientRequest<T>(
 
   useUnmount(() => {
     mounted.current = false
-    cancelLastRequest()
+    if (cancelTokenSource.current != null) {
+      cancelTokenSource.current.forEach((c) => c.cancel())
+      cancelTokenSource.current = null
+    }
   })
 
   return {

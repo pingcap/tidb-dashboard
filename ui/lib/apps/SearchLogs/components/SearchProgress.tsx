@@ -1,24 +1,14 @@
 import client from '@lib/client'
 import { LogsearchTaskModel } from '@lib/client'
-import { Button, Modal, Tree, Skeleton } from 'antd'
-import React, {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+import { Button, Modal, Tree } from 'antd'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import styles from './Styles.module.css'
-import {
-  getAddress,
-  namingMap,
-  ServerType,
-  ServerTypeList,
-  TaskState,
-} from './utils'
-import { Card } from '@lib/components'
+import { namingMap, NodeKind, NodeKindList, TaskState } from './utils'
+import { Card, AnimatedSkeleton } from '@lib/components'
+import _ from 'lodash'
 
 const { confirm } = Modal
 const { TreeNode } = Tree
@@ -47,7 +37,10 @@ function leafNodeProps(state: number | undefined) {
 
 function renderLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map((task) => {
-    const title = getAddress(task.search_target)
+    let title = task.target?.display_name ?? ''
+    if (task.size) {
+      title += ' (' + getValueFormat('bytes')(task.size!, 1) + ')'
+    }
     return (
       <TreeNode
         key={`${task.id}`}
@@ -76,65 +69,27 @@ function parentNodeCheckable(tasks: LogsearchTaskModel[]) {
   return tasks.some((task) => task.state === TaskState.Finished)
 }
 
-function useSetInterval(callback: () => void) {
-  const ref = useRef<() => void>(callback)
-
-  useEffect(() => {
-    ref.current = callback
-  })
-
-  useEffect(() => {
-    const cb = () => {
-      ref.current()
-    }
-    const timer = setInterval(cb, 1000)
-    return () => clearInterval(timer)
-  }, [])
-}
-
 interface Props {
   taskGroupID: number
   tasks: LogsearchTaskModel[]
-  setTasks: Dispatch<SetStateAction<LogsearchTaskModel[]>>
+  toggleReload: () => void
 }
 
 export default function SearchProgress({
   taskGroupID,
   tasks,
-  setTasks,
+  toggleReload,
 }: Props) {
   const [checkedKeys, setCheckedKeys] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+
   const { t } = useTranslation()
-  const [loading, setLoading] = useState(true)
-
-  async function getTasks(taskGroupID: number, tasks: LogsearchTaskModel[]) {
-    if (taskGroupID < 0) {
-      return
-    }
-    if (
-      tasks.length > 0 &&
-      taskGroupID === tasks[0].task_group_id &&
-      !tasks.some((task) => task.state === TaskState.Running)
-    ) {
-      return
-    }
-    const res = await client.getInstance().logsTaskgroupsIdGet(taskGroupID + '')
-    setTasks(res.data.tasks ?? [])
-  }
-
-  useSetInterval(() => {
-    getTasks(taskGroupID, tasks)
-  })
 
   useEffect(() => {
-    if (tasks.length > 0) {
-      setLoading(false)
+    if (tasks !== undefined && tasks.length > 0) {
+      setIsLoading(false)
     }
   }, [tasks])
-
-  useEffect(() => {
-    setLoading(true)
-  }, [taskGroupID])
 
   const descriptionArray = [
     t('search_logs.progress.running'),
@@ -158,24 +113,30 @@ export default function SearchProgress({
       const str = `${count} ${descriptionArray[index]}`
       res.push(str)
     })
-    return res.join('，')
+    return (
+      res.join('，') +
+      ' (' +
+      getValueFormat('bytes')(_.sumBy(tasks, 'size'), 1) +
+      ')'
+    )
   }
 
   function renderTreeNodes(tasks: LogsearchTaskModel[]) {
     const servers = {
-      [ServerType.TiDB]: [],
-      [ServerType.TiKV]: [],
-      [ServerType.PD]: [],
+      [NodeKind.TiDB]: [],
+      [NodeKind.TiKV]: [],
+      [NodeKind.PD]: [],
+      [NodeKind.TiFlash]: [],
     }
 
     tasks.forEach((task) => {
-      if (task.search_target?.kind === undefined) {
+      if (task.target?.kind === undefined) {
         return
       }
-      servers[task.search_target.kind].push(task)
+      servers[task.target.kind].push(task)
     })
 
-    return ServerTypeList.filter((kind) => servers[kind].length > 0).map(
+    return NodeKindList.filter((kind) => servers[kind].length > 0).map(
       (kind) => {
         const tasks: LogsearchTaskModel[] = servers[kind]
         const title = (
@@ -230,14 +191,7 @@ export default function SearchProgress({
       title: t('search_logs.confirm.cancel_tasks'),
       onOk() {
         client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + '')
-        setTasks(
-          tasks.map((task) => {
-            if (task.state === TaskState.Error) {
-              task.state = TaskState.Running
-            }
-            return task
-          })
-        )
+        toggleReload()
       },
     })
   }
@@ -250,19 +204,12 @@ export default function SearchProgress({
       title: t('search_logs.confirm.retry_tasks'),
       onOk() {
         client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + '')
-        setTasks(
-          tasks.map((task) => {
-            if (task.state === TaskState.Error) {
-              task.state = TaskState.Running
-            }
-            return task
-          })
-        )
+        toggleReload()
       },
     })
   }
 
-  const handleCheck = (checkedKeys, info) => {
+  const handleCheck = (checkedKeys) => {
     setCheckedKeys(checkedKeys as string[])
   }
 
@@ -272,46 +219,49 @@ export default function SearchProgress({
       style={{ marginLeft: -48 }}
       title={t('search_logs.common.progress')}
     >
-      {loading && <Skeleton active />}
-      {!loading && (
-        <>
-          <div>{progressDescription(tasks)}</div>
-          <div className={styles.buttons}>
-            <Button
-              type="primary"
-              onClick={handleDownload}
-              disabled={checkedKeys.length < 1}
+      <AnimatedSkeleton showSkeleton={isLoading}>
+        {tasks && (
+          <>
+            <div>{progressDescription(tasks)}</div>
+            <div className={styles.buttons}>
+              <Button
+                type="primary"
+                onClick={handleDownload}
+                disabled={checkedKeys.length < 1}
+              >
+                {t('search_logs.common.download_selected')}
+              </Button>
+              <Button
+                type="danger"
+                onClick={handleCancel}
+                disabled={
+                  !tasks.some((task) => task.state === TaskState.Running)
+                }
+              >
+                {t('search_logs.common.cancel')}
+              </Button>
+              <Button
+                onClick={handleRetry}
+                disabled={
+                  tasks.some((task) => task.state === TaskState.Running) ||
+                  !tasks.some((task) => task.state === TaskState.Error)
+                }
+              >
+                {t('search_logs.common.retry')}
+              </Button>
+            </div>
+            <Tree
+              checkable
+              expandedKeys={Object.values(namingMap)}
+              showIcon
+              onCheck={handleCheck}
+              style={{ overflowX: 'hidden' }}
             >
-              {t('search_logs.common.download_selected')}
-            </Button>
-            <Button
-              type="danger"
-              onClick={handleCancel}
-              disabled={!tasks.some((task) => task.state === TaskState.Running)}
-            >
-              {t('search_logs.common.cancel')}
-            </Button>
-            <Button
-              onClick={handleRetry}
-              disabled={
-                tasks.some((task) => task.state === TaskState.Running) ||
-                !tasks.some((task) => task.state === TaskState.Error)
-              }
-            >
-              {t('search_logs.common.retry')}
-            </Button>
-          </div>
-          <Tree
-            checkable
-            expandedKeys={Object.values(namingMap)}
-            showIcon
-            onCheck={handleCheck}
-            style={{ overflowX: 'hidden' }}
-          >
-            {renderTreeNodes(tasks)}
-          </Tree>
-        </>
-      )}
+              {renderTreeNodes(tasks)}
+            </Tree>
+          </>
+        )}
+      </AnimatedSkeleton>
     </Card>
   )
 }

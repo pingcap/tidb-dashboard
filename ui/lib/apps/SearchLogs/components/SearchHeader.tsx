@@ -1,52 +1,54 @@
 import client from '@lib/client'
 import {
   LogsearchCreateTaskGroupRequest,
-  LogsearchSearchTarget,
+  ModelRequestTargetNode,
 } from '@lib/client'
-import { Button, DatePicker, Form, Input, Select, TreeSelect } from 'antd'
-import { RangeValue } from 'rc-picker/lib/interface'
+import { Button, Form, Input, Select, TreeSelect } from 'antd'
 import { LegacyDataNode } from 'rc-tree-select/lib/interface'
-import moment from 'moment'
 import React, { ChangeEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useMount } from '@umijs/hooks'
 import styles from './Styles.module.css'
 import {
-  getAddress,
   namingMap,
+  NodeKind,
+  NodeKindList,
   parseClusterInfo,
   parseSearchingParams,
-  ServerType,
-  ServerTypeList,
-  DATE_TIME_FORMAT,
 } from './utils'
+import {
+  TimeRangeSelector,
+  TimeRange,
+  DEF_TIME_RANGE,
+  calcTimeRange,
+} from '@lib/components'
 
 const { SHOW_CHILD } = TreeSelect
-const { RangePicker } = DatePicker
 const { Option } = Select
 
-function buildTreeData(targets: LogsearchSearchTarget[]) {
+function buildTreeData(targets: ModelRequestTargetNode[]) {
   const servers = {
-    [ServerType.TiDB]: [],
-    [ServerType.TiKV]: [],
-    [ServerType.PD]: [],
+    [NodeKind.TiDB]: [],
+    [NodeKind.TiKV]: [],
+    [NodeKind.PD]: [],
+    [NodeKind.TiFlash]: [],
   }
 
   targets.forEach((item) => {
-    if (item.kind === undefined) {
+    if (item === undefined || item.kind === undefined) {
       return
     }
     servers[item.kind].push(item)
   })
 
-  return ServerTypeList.filter((kind) => servers[kind].length > 0).map(
+  return NodeKindList.filter((kind) => servers[kind].length > 0).map(
     (kind) => ({
       title: namingMap[kind],
       value: kind,
       key: kind,
-      children: servers[kind].map((item: LogsearchSearchTarget) => {
-        const addr = getAddress(item)
+      children: servers[kind].map((item: ModelRequestTargetNode) => {
+        const addr = item.display_name!
         return {
           title: addr,
           value: addr,
@@ -58,7 +60,7 @@ function buildTreeData(targets: LogsearchSearchTarget[]) {
 }
 
 interface Props {
-  taskGroupID: number
+  taskGroupID?: number
 }
 
 const LOG_LEVELS = ['debug', 'info', 'warn', 'trace', 'critical', 'error']
@@ -67,17 +69,18 @@ export default function SearchHeader({ taskGroupID }: Props) {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const [timeRange, setTimeRange] = useState<RangeValue<moment.Moment>>(null)
-  const [logLevel, setLogLevel] = useState<number>(3)
+  const [timeRange, setTimeRange] = useState<TimeRange>(DEF_TIME_RANGE)
+  const [logLevel, setLogLevel] = useState(2)
   const [selectedComponents, setComponents] = useState<string[]>([])
-  const [searchValue, setSearchValue] = useState<string>('')
+  const [searchValue, setSearchValue] = useState('')
+  const [allTargets, setAllTargets] = useState<ModelRequestTargetNode[]>([])
 
-  const [allTargets, setAllTargets] = useState<LogsearchSearchTarget[]>([])
   useMount(() => {
     async function fetchData() {
       const res = await client.getInstance().topologyAllGet()
       const targets = parseClusterInfo(res.data)
       setAllTargets(targets)
+      setComponents(targets.map((item) => item.display_name!))
       if (!taskGroupID) {
         return
       }
@@ -91,8 +94,8 @@ export default function SearchHeader({ taskGroupID }: Props) {
         searchValue,
       } = parseSearchingParams(res2.data)
       setTimeRange(timeRange)
-      setLogLevel(logLevel === 0 ? 3 : logLevel)
-      setComponents(components.map((item) => getAddress(item)))
+      setLogLevel(logLevel === 0 ? 2 : logLevel)
+      setComponents(components.map((item) => item.display_name ?? ''))
       setSearchValue(searchValue)
     }
     fetchData()
@@ -100,15 +103,16 @@ export default function SearchHeader({ taskGroupID }: Props) {
 
   async function createTaskGroup() {
     // TODO: check select at least one component
-    const searchTargets: LogsearchSearchTarget[] = allTargets.filter((item) =>
-      selectedComponents.some((addr) => addr === getAddress(item))
+    const targets: ModelRequestTargetNode[] = allTargets.filter((item) =>
+      selectedComponents.some((addr) => addr === item.display_name ?? '')
     )
 
-    let params: LogsearchCreateTaskGroupRequest = {
-      search_targets: searchTargets,
+    const [startTime, endTime] = calcTimeRange(timeRange)
+    const params: LogsearchCreateTaskGroupRequest = {
+      targets: targets,
       request: {
-        start_time: timeRange?.[0]?.valueOf(), // unix millionsecond
-        end_time: timeRange?.[1]?.valueOf(), // unix millionsecond
+        start_time: startTime * 1000, // unix millionsecond
+        end_time: endTime * 1000, // unix millionsecond
         min_level: logLevel,
         patterns: searchValue.split(/\s+/), // 'foo boo' => ['foo', 'boo']
       },
@@ -122,11 +126,8 @@ export default function SearchHeader({ taskGroupID }: Props) {
     navigate('/search_logs/detail/' + id)
   }
 
-  function handleTimeRangeChange(
-    values: RangeValue<moment.Moment>,
-    formatString: [string, string]
-  ) {
-    setTimeRange(values)
+  function handleTimeRangeChange(value: TimeRange) {
+    setTimeRange(value)
   }
 
   function handleLogLevelChange(value: number) {
@@ -161,21 +162,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
       style={{ display: 'flex', flexWrap: 'wrap' }}
     >
       <Form.Item>
-        <RangePicker
-          value={timeRange}
-          showTime={{
-            defaultValue: [
-              moment('00:00:00', 'HH:mm:ss'),
-              moment('11:59:59', 'HH:mm:ss'),
-            ],
-          }}
-          placeholder={[
-            t('search_logs.common.start_time'),
-            t('search_logs.common.end_time'),
-          ]}
-          format={DATE_TIME_FORMAT}
-          onChange={handleTimeRangeChange}
-        />
+        <TimeRangeSelector value={timeRange} onChange={handleTimeRangeChange} />
       </Form.Item>
       <Form.Item>
         <Select

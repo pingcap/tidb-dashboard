@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TableDef, ExpandContext, TableRowDef } from '../types'
+import ReactMarkdown from 'react-markdown'
 
 function DiagnosisRow({ row }: { row: TableRowDef }) {
   const outsideExpand = useContext(ExpandContext)
@@ -17,23 +18,24 @@ function DiagnosisRow({ row }: { row: TableRowDef }) {
       <tr>
         {(row.Values || []).map((val, valIdx) => (
           <td key={valIdx}>
-            {val}
-            {valIdx === 0 && row.Comment && (
-              <div className="dropdown is-hoverable is-up">
-                <div className="dropdown-trigger">
-                  <span className="icon has-text-info">
-                    <i className="fas fa-info-circle"></i>
-                  </span>
-                </div>
-                <div className="dropdown-menu">
-                  <div className="dropdown-content">
-                    <div className="dropdown-item">
-                      <p>{row.Comment}</p>
+            {t(`diagnosis.tables.table.name.${val}`, val)}
+            {valIdx === 0 &&
+              t(`diagnosis.tables.table.comment.${val}`, '') !== '' && (
+                <div className="dropdown is-hoverable is-up">
+                  <div className="dropdown-trigger">
+                    <span className="icon has-text-info">
+                      <i className="fas fa-info-circle"></i>
+                    </span>
+                  </div>
+                  <div className="dropdown-menu">
+                    <div className="dropdown-content">
+                      <div className="dropdown-item">
+                        <p>{t(`diagnosis.tables.table.comment.${val}`)}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
             {valIdx === 0 && (row.SubValues || []).length > 0 && (
               <>
                 &nbsp;&nbsp;&nbsp;
@@ -70,23 +72,30 @@ type Props = {
 }
 
 export default function DiagnosisTable({ diagnosis }: Props) {
-  const { Category, Title, Comment, Column, Rows } = diagnosis
+  const { Category, Title, Column, Rows } = diagnosis
   const { t } = useTranslation()
 
   return (
-    <div className="report-container">
+    <div className="report-container" id={Title}>
       {(Category || []).map((c, idx) => (
         <h1 className={`title is-size-${idx + 2}`} key={idx}>
           {c && t(`diagnosis.tables.category.${c}`)}
         </h1>
       ))}
       <h3 className="is-size-4">{t(`diagnosis.tables.title.${Title}`)}</h3>
-      {Comment && <p>{t(`diagnosis.tables.comment.${Comment}`)}</p>}
-      <table className="table is-bordered is-hoverable is-narrow is-fullwidth">
+      <p>
+        <ReactMarkdown source={t(`diagnosis.tables.comment.${Title}`, '')} />
+      </p>
+      <table
+        className="table is-bordered is-hoverable is-narrow is-fullwidth"
+        style={{ position: 'relative' }}
+      >
         <thead>
           <tr>
             {Column.map((col, colIdx) => (
-              <th key={colIdx}>{col}</th>
+              <th className="table-header-row" key={colIdx}>
+                {col}
+              </th>
             ))}
           </tr>
         </thead>

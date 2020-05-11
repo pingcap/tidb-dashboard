@@ -1,25 +1,22 @@
 import client from '@lib/client'
-import { LogsearchSearchTarget, LogsearchTaskModel } from '@lib/client'
-import { Card } from '@lib/components'
-import { Alert, Skeleton, Table, Tooltip } from 'antd'
+import { ModelRequestTargetNode, LogsearchTaskModel } from '@lib/client'
+import { CardTableV2 } from '@lib/components'
+import { Alert } from 'antd'
 import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-
 import { DATE_TIME_FORMAT, LogLevelMap, namingMap } from './utils'
-import styles from './SearchResult.module.css'
-
-const { Column } = Table
+import Log from './Log'
 
 type LogPreview = {
   key: number
   time?: string
   level?: string
-  component?: LogsearchSearchTarget | undefined
+  component?: ModelRequestTargetNode | undefined
   log?: string
 }
 
-function componentRender(target: LogsearchSearchTarget | undefined) {
+function componentRender({ component: target }) {
   if (target === undefined) {
     return ''
   }
@@ -27,27 +24,6 @@ function componentRender(target: LogsearchSearchTarget | undefined) {
     <div>
       {target.kind ? namingMap[target.kind] : ''} {target.ip}
     </div>
-  )
-}
-
-function logRender(log: string) {
-  function trimString(str: string) {
-    const len = 512
-    return str.length > len ? str.substring(0, len - 3) + '...' : str
-  }
-
-  return (
-    <Tooltip title={trimString(log)}>
-      <div
-        style={{
-          overflow: 'hidden',
-          whiteSpace: 'nowrap',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        <span>{log}</span>
-      </div>
-    </Tooltip>
   )
 }
 
@@ -65,7 +41,7 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
     function getComponent(id: number | undefined) {
       return tasks.find((task) => {
         return task.id !== undefined && task.id === id
-      })?.search_target
+      })?.target
     }
 
     async function getLogPreview() {
@@ -97,52 +73,51 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
     getLogPreview()
   }, [taskGroupID, tasks])
 
+  const columns = [
+    {
+      name: t('search_logs.preview.time'),
+      key: 'time',
+      fieldName: 'time',
+      minWidth: 160,
+      maxWidth: 300,
+    },
+    {
+      name: t('search_logs.preview.level'),
+      key: 'level',
+      fieldName: 'level',
+      minWidth: 60,
+      maxWidth: 120,
+    },
+    {
+      name: t('search_logs.preview.component'),
+      key: 'component',
+      minWidth: 120,
+      maxWidth: 200,
+      onRender: componentRender,
+    },
+    {
+      name: t('search_logs.preview.log'),
+      key: 'log',
+      minWidth: 500,
+      onRender: ({ log }) => <Log log={log} />,
+    },
+  ]
   return (
-    <Card id="logs_result">
-      {loading && <Skeleton active />}
+    <>
       {!loading && (
-        <>
-          <Alert
-            message={t('search_logs.page.tip')}
-            type="info"
-            showIcon
-            style={{ marginBottom: 24 }}
-          />
-          <Table
-            dataSource={logPreviews}
-            size="middle"
-            pagination={{ pageSize: 100 }}
-            className={styles.resultTable}
-          >
-            <Column
-              width={180}
-              title={t('search_logs.preview.time')}
-              dataIndex="time"
-              key="time"
-            />
-            <Column
-              width={80}
-              title={t('search_logs.preview.level')}
-              dataIndex="level"
-              key="level"
-            />
-            <Column
-              width={150}
-              title={t('search_logs.preview.component')}
-              dataIndex="component"
-              key="component"
-              render={componentRender}
-            />
-            <Column
-              ellipsis
-              title={t('search_logs.preview.log')}
-              dataIndex="log"
-              key="log"
-              render={logRender}
-            />
-          </Table>
-        </>
+        <Alert
+          message={t('search_logs.page.tip')}
+          type="info"
+          showIcon
+          style={{ marginLeft: 48, marginRight: 48 }}
+        />
       )}
-    </Card>
+      <CardTableV2
+        loading={loading}
+        columns={columns}
+        items={logPreviews || []}
+        style={{ marginTop: 0 }}
+      />
+    </>
   )
 }

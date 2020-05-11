@@ -5,22 +5,39 @@ import styles from './index.module.less'
 export interface ICardProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   title?: ReactNode
+  subTitle?: ReactNode
   extra?: ReactNode
+  noMargin?: boolean
+  noMarginLeft?: boolean
+  noMarginRight?: boolean
 }
 
 export default function Card({
   title,
+  subTitle,
   extra,
   className,
+  noMargin,
+  noMarginLeft,
+  noMarginRight,
   children,
   ...rest
 }: ICardProps) {
   return (
     <div className={cx(styles.cardContainer, className)} {...rest}>
-      <div className={styles.cardInner}>
-        {(title || extra) && (
+      <div
+        className={cx(styles.cardInner, {
+          [styles.noMargin]: noMargin,
+          [styles.noMarginLeft]: noMarginLeft,
+          [styles.noMarginRight]: noMarginRight,
+          [styles.hasTitle]: title || subTitle || extra,
+        })}
+      >
+        {(title || subTitle || extra) && (
           <div className={styles.cardTitleSection}>
             {title && <div className={styles.cardTitle}>{title}</div>}
+            {subTitle && <div className={styles.cardSubTitle}>{subTitle}</div>}
+            <div className={styles.cardTitleSpacer} />
             {extra && <div className={styles.cardTitleExtra}>{extra}</div>}
           </div>
         )}

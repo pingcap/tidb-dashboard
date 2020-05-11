@@ -15,23 +15,16 @@ package decorator
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"time"
+	"strconv"
 
 	"github.com/pingcap/log"
-	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
-
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
-type serverInfo struct {
-	ID         string `json:"ddl_id"`
-	IP         string `json:"ip"`
-	Port       uint   `json:"listening_port"`
-	StatusPort uint   `json:"status_port"`
-}
+const (
+	SchemaVersionPath = "/tidb/ddl/global_schema_version"
+)
 
 type dbInfo struct {
 	Name struct {
@@ -56,51 +49,44 @@ type tableInfo struct {
 	} `json:"index_info"`
 }
 
-func (s *tidbLabelStrategy) updateAddress(ctx context.Context) {
-	cli := s.Provider.EtcdClient
-	var info serverInfo
-	for i := 0; i < retryCnt; i++ {
-		var tidbAddress []string
-		ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
-		resp, err := cli.Get(ectx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
-		cancel()
-		if err != nil {
-			log.Warn("get key failed", zap.String("key", pd.TiDBServerInformationPath), zap.Error(err))
-			time.Sleep(200 * time.Millisecond)
-			continue
-		}
-		for _, kv := range resp.Kvs {
-			err = json.Unmarshal(kv.Value, &info)
-			if err != nil {
-				log.Warn("get key failed", zap.String("key", pd.TiDBServerInformationPath), zap.Error(err))
-				continue
-			}
-			tidbAddress = append(tidbAddress, fmt.Sprintf("%s:%d", info.IP, info.StatusPort))
-		}
-		if len(tidbAddress) > 0 {
-			s.TidbAddress = tidbAddress
-			break
-		}
+func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
+	// check schema version
+	ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
+	resp, err := s.Provider.EtcdClient.Get(ectx, SchemaVersionPath)
+	cancel()
+	if err != nil || len(resp.Kvs) != 1 {
+		log.Warn("failed to get tidb schema version", zap.Error(err))
+		return
 	}
-}
+	schemaVersion, err := strconv.ParseInt(string(resp.Kvs[0].Value), 10, 64)
+	if err != nil {
+		log.Warn("failed to get tidb schema version", zap.Error(err))
+		return
+	}
+	if schemaVersion == s.SchemaVersion {
+		log.Debug("schema version has not changed, skip this update")
+		return
+	}
 
-func (s *tidbLabelStrategy) updateMap() {
+	log.Debug("schema version has changed", zap.Int64("old", s.SchemaVersion), zap.Int64("new", schemaVersion))
+	s.SchemaVersion = schemaVersion
+
 	var dbInfos []*dbInfo
 	var tidbEndpoint string
 	reqScheme := "http"
 	if s.Config.ClusterTLSConfig != nil {
 		reqScheme = "https"
 	}
-	for _, addr := range s.TidbAddress {
-		reqEndpoint := fmt.Sprintf("%s://%s", reqScheme, addr)
-		if err := request(reqEndpoint, "schema", &dbInfos, s.HTTPClient); err == nil {
-			tidbEndpoint = reqEndpoint
-			break
+	hostname, port := s.forwarder.GetStatusConnProps()
+	target := fmt.Sprintf("%s:%d", hostname, port)
+	reqEndpoint := fmt.Sprintf("%s://%s", reqScheme, target)
+	if err := request(reqEndpoint, "schema", &dbInfos, s.HTTPClient); err != nil {
+		log.Error("fail to send schema reqeust to tidb", zap.String("endpoint", reqEndpoint), zap.Error(err))
+		if dbInfos == nil {
+			return
 		}
 	}
-	if dbInfos == nil {
-		return
-	}
+	tidbEndpoint = reqEndpoint
 
 	var tableInfos []*tableInfo
 	for _, db := range dbInfos {

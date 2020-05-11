@@ -27,6 +27,7 @@ const (
 )
 
 type PDInfo struct {
+	GitHash        string          `json:"git_hash"`
 	Version        string          `json:"version"`
 	IP             string          `json:"ip"`
 	Port           uint            `json:"port"`
@@ -36,20 +37,33 @@ type PDInfo struct {
 }
 
 type TiDBInfo struct {
+	GitHash        string          `json:"git_hash"`
 	Version        string          `json:"version"`
 	IP             string          `json:"ip"`
 	Port           uint            `json:"port"`
-	BinaryPath     string          `json:"binary_path"`
+	DeployPath     string          `json:"deploy_path"`
 	Status         ComponentStatus `json:"status"`
 	StatusPort     uint            `json:"status_port"`
 	StartTimestamp int64           `json:"start_timestamp"`
 }
 
 type TiKVInfo struct {
+	GitHash        string            `json:"git_hash"`
 	Version        string            `json:"version"`
 	IP             string            `json:"ip"`
 	Port           uint              `json:"port"`
-	BinaryPath     string            `json:"binary_path"`
+	DeployPath     string            `json:"deploy_path"`
+	Status         ComponentStatus   `json:"status"`
+	StatusPort     uint              `json:"status_port"`
+	Labels         map[string]string `json:"labels"`
+	StartTimestamp int64             `json:"start_timestamp"`
+}
+
+type TiFlashInfo struct {
+	Version        string            `json:"version"`
+	IP             string            `json:"ip"`
+	Port           uint              `json:"port"`
+	DeployPath     string            `json:"deploy_path"`
 	Status         ComponentStatus   `json:"status"`
 	StatusPort     uint              `json:"status_port"`
 	Labels         map[string]string `json:"labels"`
@@ -59,10 +73,16 @@ type TiKVInfo struct {
 type AlertManagerInfo struct {
 	IP         string `json:"ip"`
 	Port       uint   `json:"port"`
-	BinaryPath string `json:"binary_path"`
+	DeployPath string `json:"deploy_path"`
 }
 
 type GrafanaInfo struct {
+	IP         string `json:"ip"`
+	Port       uint   `json:"port"`
+	DeployPath string `json:"deploy_path"`
+}
+
+type PrometheusInfo struct {
 	IP         string `json:"ip"`
 	Port       uint   `json:"port"`
 	BinaryPath string `json:"binary_path"`

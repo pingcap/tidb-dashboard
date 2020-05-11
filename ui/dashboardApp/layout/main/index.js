@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Root } from '@lib/components'
-import { useToggle } from '@umijs/hooks'
+import { useLocalStorageState } from '@umijs/hooks'
 import { HashRouter as Router } from 'react-router-dom'
 import { useSpring, animated } from 'react-spring'
 
@@ -42,7 +42,11 @@ const useContentLeftOffset = (collapsed) => {
 }
 
 export default function App({ registry }) {
-  const { state: collapsed, toggle: toggleCollapsed } = useToggle()
+  const [collapsed, setCollapsed] = useLocalStorageState(
+    'layout.sider.collapsed',
+    false
+  )
+  const [defaultCollapsed] = useState(collapsed)
   const {
     contentLeftOffset,
     onAnimationStart,
@@ -50,7 +54,6 @@ export default function App({ registry }) {
   } = useContentLeftOffset(collapsed)
   const transContentBack = useSpring({
     x: collapsed ? collapsedContentOffset : 0,
-    from: { x: 0 },
     onStart: onAnimationStart,
     onFrame: onAnimationFrame,
   })
@@ -60,14 +63,19 @@ export default function App({ registry }) {
     delay: 100,
   })
 
+  const handleToggle = useCallback(() => {
+    setCollapsed((c) => !c)
+  }, [setCollapsed])
+
   return (
     <Root>
       <Router>
         <animated.div className={styles.container} style={transContainer}>
           <Sider
             registry={registry}
-            width={siderWidth}
-            onToggle={() => toggleCollapsed()}
+            fullWidth={siderWidth}
+            onToggle={handleToggle}
+            defaultCollapsed={defaultCollapsed}
             collapsed={collapsed}
             collapsedWidth={siderCollapsedWidth}
             animationDelay={0}

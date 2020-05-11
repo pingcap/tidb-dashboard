@@ -1,7 +1,9 @@
 import React from 'react'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+
 import { StatementModel } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
-import { getValueFormat } from '@baurine/grafana-value-formats'
+import friendFormatShortValue from '@lib/utils/friendFormatShortValue'
 import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabTxnProps {
@@ -20,11 +22,11 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
     {
       key: 'avg_write_keys',
-      value: getValueFormat('short')(data.avg_write_keys || 0, 1),
+      value: friendFormatShortValue(data.avg_write_keys || 0, 1),
     },
     {
       key: 'max_write_keys',
-      value: getValueFormat('short')(data.max_write_keys || 0, 1),
+      value: friendFormatShortValue(data.max_write_keys || 0, 1),
     },
     {
       key: 'avg_write_size',
@@ -36,11 +38,11 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
     {
       key: 'avg_prewrite_regions',
-      value: getValueFormat('short')(data.avg_prewrite_regions || 0, 1),
+      value: friendFormatShortValue(data.avg_prewrite_regions || 0, 1),
     },
     {
       key: 'max_prewrite_regions',
-      value: getValueFormat('short')(data.max_prewrite_regions || 0, 1),
+      value: friendFormatShortValue(data.max_prewrite_regions || 0, 1),
     },
     {
       key: 'avg_txn_retry',

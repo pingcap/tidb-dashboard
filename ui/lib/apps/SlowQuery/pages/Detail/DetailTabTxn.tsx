@@ -1,7 +1,9 @@
 import React from 'react'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+
 import { SlowquerySlowQuery } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
-import { getValueFormat } from '@baurine/grafana-value-formats'
+import friendFormatShortValue from '@lib/utils/friendFormatShortValue'
 import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabTxnProps {
@@ -16,7 +18,7 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
     {
       key: 'write_keys',
-      value: getValueFormat('short')(data.write_keys || 0, 1),
+      value: friendFormatShortValue(data.write_keys || 0, 1),
     },
     {
       key: 'write_size',
@@ -24,7 +26,7 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
     {
       key: 'prewrite_regions',
-      value: getValueFormat('short')(data.prewrite_region || 0, 1),
+      value: friendFormatShortValue(data.prewrite_region || 0, 1),
     },
     {
       key: 'txn_retry',

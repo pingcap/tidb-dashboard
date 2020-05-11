@@ -1,12 +1,11 @@
+import { Badge, Button, Progress } from 'antd'
 import React, { useCallback, useMemo } from 'react'
-import { useParams } from 'react-router-dom'
-import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Button, Badge, Progress } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
-import { Head } from '@lib/components'
-import { CardTableV2 } from '@lib/components'
+import { Link, useParams } from 'react-router-dom'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+
 import client from '@lib/client'
+import { CardTableV2, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 
 function mapData(data) {
@@ -31,10 +30,7 @@ function mapData(data) {
 }
 
 function isFinished(data) {
-  if (!data) {
-    return false
-  }
-  return data.task_group_status.state === 2
+  return data?.task_group_status?.state === 2
 }
 
 export default function Page() {

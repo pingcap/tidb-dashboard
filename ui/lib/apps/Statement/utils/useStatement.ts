@@ -125,7 +125,7 @@ export default function useStatement(
     }
 
     queryStatementList()
-  }, [queryOptions, allTimeRanges, validTimeRange, refreshTimes])
+  }, [queryOptions, allTimeRanges, validTimeRange])
 
   return {
     queryOptions,

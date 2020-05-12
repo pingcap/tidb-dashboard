@@ -161,7 +161,7 @@ diagnosis:
         tidb_transaction: The time cost of durations when executing a transaction, including retry. The label is [sql_type].
         tidb_transaction_local_latch_wait: The time cost of. The label is [instance].
         tidb_kv_backoff: The time cost of TiDB transaction latch wait time on key value storage. The label is [type].
-        tidb_kv_request: The time cost of kv requests durations. The label is [type].
+        tidb_kv_request: The time cost of KV requests durations. The label is [type].
         tidb_slow_query: The time cost of TiDB slow query. The label is [instance].
         tidb_slow_query_cop_process: The time cost of TiDB slow query total cop process time. The label is [instance].
         tidb_slow_query_cop_wait: The time cost of TiDB slow query total cop wait time. The label is [instance].
@@ -175,10 +175,10 @@ diagnosis:
         tidb_meta_operation: The time cost of TiDB meta operations, including get/set schema and ddl jobs. The label is [instance].
         tidb_auto_id_request: The time cost of TiDB auto id, handle id requests. The label is [type].
         tidb_statistics_auto_analyze: The time cost of TiDB auto analyze. The label is [type].
-        tidb_gc: The time cost of kv storage garbage collection. The label is [instance].
-        tidb_gc_push_task: The time cost of kv storage range worker processing one task. The label is [instance].
-        tidb_batch_client_unavailable: The time cost of kv storage batch processing unvailable. The label is [type].
-        tidb_batch_client_wait: The time cost of TiDB kv storage batch client wait request batch. The label is [instance].
+        tidb_gc: The time cost of KV storage garbage collection. The label is [instance].
+        tidb_gc_push_task: The time cost of KV storage range worker processing one task. The label is [instance].
+        tidb_batch_client_unavailable: The time cost of KV storage batch processing unavailable. The label is [type].
+        tidb_batch_client_wait: The time cost of TiDB KV storage batch client wait request batch. The label is [instance].
         pd_start_tso_wait: The time cost of waiting for getting the start timestamp oracle. The label is [instance].
         pd_tso_rpc: The time cost of sending TSO request until received the response. The label is [instance].
         pd_tso_wait: The time cost of client starting to wait for the TS until received the TS result. The label is [instance].
@@ -217,19 +217,19 @@ diagnosis:
         tikv_backup:
         tidb_transaction_retry_num: TiDB transaction retry count. The label is [instance].
         tidb_transaction_statement_num: The total count of TiDB statements numbers within one transaction. Internal means TiDB inner transaction. The label is [sql_type].
-        tidb_txn_region_num: the count of regions operates per transaction execution. The label is [instance].
-        tidb_txn_kv_write_num: kv write count per transaction execution. The label is [instance].
-        tidb_txn_kv_write_size: kv write size per transaction execution. The label is [instance].
+        tidb_txn_region_num: the count of Regions operates per transaction execution. The label is [instance].
+        tidb_txn_kv_write_num: KV write count per transaction execution. The label is [instance].
+        tidb_txn_kv_write_size: KV write size per transaction execution. The label is [instance].
         tidb_load_safepoint_total_num: The total count of safe point loading. The label is [instance].
         tidb_lock_resolver_total_num: The total count of lock resolve. The label is [instance].
         pseudo_estimation_total_count: The total count of TiDB optimizer using pseudo estimation. The label is [instance, type].
-        dump_feedback_total_count: The total count of operations that TiDB dumping statistics back to kv storage. The label is [instance, type].
-        store_query_feedback_total_count: The total count of TiDB store quering feedback. The label is [instance, type].
+        dump_feedback_total_count: The total count of operations that TiDB dumping statistics back to KV storage. The label is [instance, type].
+        store_query_feedback_total_count: The total count of TiDB store querying feedback. The label is [instance, type].
         update_stats_total_count: The total count of TiDB updating statistics using feed back. The label is [instance].
-        blance-leader-in: blance-leader-in is the total count of leader move into the tikv store. The label is [address].
-        blance-leader-out: blance-leader-out is the total count of leader move out the tikv store. The label is [address].
-        blance-region-in: blance-region-in is the total count of region move into the tikv store. The label is [address].
-        blance-region-out: blance-region-in is the total count of region move into the tikv store. The label is [address].
+        blance-leader-in: blance-leader-in is the total count of leader move into the TiKV store. The label is [address].
+        blance-leader-out: blance-leader-out is the total count of leader move out the TiKV store. The label is [address].
+        blance-region-in: blance-region-in is the total count of Regions move into the TiKV store. The label is [address].
+        blance-region-out: blance-region-in is the total count of Regions move into the TiKV store. The label is [address].
         Approximate Region size: The approximate Region size. The label is [instance].
         store size: The storage size. The label is [instance, type].
         tikv_scheduler_keys_read: The count of keys read by a command. The label is [instance, type].
@@ -237,7 +237,7 @@ diagnosis:
         tikv_scheduler_scan_details_total_num: The keys scan details of each CF when executing a command. The label is [instance,req,tag].
         tikv_scheduler_stage_total_num: the total count of scheduler state. The label is [instance,type,stage].
         tikv_gc_keys_total_num: The total count of keys in CF affected during GC. The label is [instance,cf,tag].
-        tidb_gc_worker_action_total_num: The total count of kv storage garbage collection. The label is [instance,type].
+        tidb_gc_worker_action_total_num: The total count of KV storage garbage collection. The label is [instance,type].
         tikv_worker_handled_tasks_total_num: Total count of tasks handled by worker. The label is [instance,name].
         tikv_worker_pending_tasks_total_num: Total count of pending and running tasks of worker. The label is [instance,name].
         tikv_futurepool_handled_tasks_total_num: Total count of tasks handled by future_pool. The label is [instance,name].
@@ -275,21 +275,21 @@ diagnosis:
         storage read pool normal: The CPU utilization TiKV storage read pool normal thread. The label is [instance].
         storage read pool high: The CPU utilization TiKV storage read pool high thread. The label is [instance].
         storage read pool low: The CPU utilization TiKV storage read pool low thread. The label is [instance].
-        cop: The CPU utilization of TiKV coporssesor. The label is [instance].
-        cop normal: The CPU utilization of TiKV coporssesor normal thread. The label is [instance].
-        cop high: The CPU utilization of TiKV coporssesor high thread. The label is [instance].
-        cop low: The CPU utilization of TiKV coporssesor low thread. The label is [instance].
+        cop: The CPU utilization of TiKV Coprocessor. The label is [instance].
+        cop normal: The CPU utilization of TiKV Coprocessor normal thread. The label is [instance].
+        cop high: The CPU utilization of TiKV Coprocessor high thread. The label is [instance].
+        cop low: The CPU utilization of TiKV Coprocessor low thread. The label is [instance].
         rocksdb: The CPU utilization TiKV rocksdb. The label is [instance].
         gc: The CPU utilization of TiKV gc. The label is [instance].
-        split_check: The CPU utilization of TiKV split_chec. The label is [instance].
-        region_score: The region score status of store. The label is [address].
+        split_check: The CPU utilization of TiKV split_check. The label is [instance].
+        region_score: The Region score status of store. The label is [address].
         leader_score: The leader score status of store. The label is [address].
-        region_count: The region count status of store. The label is [address].
+        region_count: The Region count status of store. The label is [address].
         leader_count: The leader score status of store. The label is [address].
-        region_size: The region size status of store. The label is [address].
+        region_size: The Region size status of store. The label is [address].
         leader_size: The leader size status of store. The label is [address].
         tikv_memtable_hit: The hit rate of memtable. The label is [instance].
-        tikv_block_all_cache_hit: The hit rate of all block cach. The label is [instance].
+        tikv_block_all_cache_hit: The hit rate of all block cache. The label is [instance].
         tikv_block_index_cache_hit: The hit rate of index block cache. The label is [instance].
         tikv_block_filter_cache_hit: The hit rate of filter block cache. The label is [instance].
         tikv_block_data_cache_hit: The hit rate of data block cache. The label is [instance].

@@ -145,7 +145,6 @@ export default function Page() {
       key: 'targets',
       minWidth: 150,
       maxWidth: 250,
-      isResizable: true,
       onRender: (rec) => {
         // TODO: Extract to utility function
         const r: string[] = []
@@ -166,7 +165,6 @@ export default function Page() {
       key: 'status',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
       onRender: (rec) => {
         if (rec.state === 1) {
           return (
@@ -190,7 +188,6 @@ export default function Page() {
       key: 'started_at',
       minWidth: 160,
       maxWidth: 220,
-      isResizable: true,
       onRender: (rec) => {
         return <DateTime.Calendar unixTimestampMs={rec.started_at * 1000} />
       },
@@ -201,7 +198,6 @@ export default function Page() {
       minWidth: 100,
       maxWidth: 150,
       fieldName: 'profile_duration_secs',
-      isResizable: true,
     },
   ]
 

@@ -154,7 +154,6 @@ export default function ListPage() {
       key: 'node',
       minWidth: 100,
       maxWidth: 160,
-      isResizable: true,
       onRender: ({ ip, port }) => {
         const fullName = `${ip}:${port}`
         return (
@@ -169,7 +168,6 @@ export default function ListPage() {
       key: 'status',
       minWidth: 80,
       maxWidth: 100,
-      isResizable: true,
       onRender: renderStatusColumn,
     },
     {
@@ -177,7 +175,6 @@ export default function ListPage() {
       key: 'start_timestamp',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
       onRender: ({ start_timestamp: ts }) => {
         if (ts !== undefined && ts !== 0) {
           return <DateTime.Calendar unixTimestampMs={ts * 1000} />
@@ -190,7 +187,6 @@ export default function ListPage() {
       key: 'version',
       minWidth: 100,
       maxWidth: 250,
-      isResizable: true,
       onRender: ({ version }) => (
         <Tooltip title={version}>
           <span>{version}</span>
@@ -203,7 +199,6 @@ export default function ListPage() {
       key: 'deploy_path',
       minWidth: 100,
       maxWidth: 200,
-      isResizable: true,
       onRender: ({ deploy_path }) => (
         <Tooltip title={deploy_path}>
           <span>{deploy_path}</span>
@@ -216,7 +211,6 @@ export default function ListPage() {
       key: 'git_hash',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
       onRender: ({ git_hash }) => (
         <Tooltip title={git_hash}>
           <span>{git_hash}</span>

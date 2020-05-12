@@ -31,7 +31,6 @@ export default function HostTable() {
       key: 'ip',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
       onRender: ({ ip, unavailable }) => {
         if (unavailable) {
           return (
@@ -52,7 +51,6 @@ export default function HostTable() {
       key: 'cpu_core',
       minWidth: 60,
       maxWidth: 100,
-      isResizable: true,
       onRender: ({ cpu_core }) =>
         cpu_core !== undefined ? `${cpu_core} vCPU` : '',
     },
@@ -61,7 +59,6 @@ export default function HostTable() {
       key: 'cpu_usage',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
       onRender: ({ cpu_usage }) => {
         if (cpu_usage === undefined) {
           return
@@ -83,7 +80,6 @@ System: ${getValueFormat('percentunit')(system)}`
       key: 'memory',
       minWidth: 60,
       maxWidth: 100,
-      isResizable: true,
       onRender: ({ memory }) =>
         memory !== undefined ? getValueFormat('bytes')(memory.total, 1) : '',
     },
@@ -92,7 +88,6 @@ System: ${getValueFormat('percentunit')(system)}`
       key: 'memory_usage',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
       onRender: ({ memory }) => {
         if (memory === undefined) {
           return
@@ -117,7 +112,6 @@ System: ${getValueFormat('percentunit')(system)}`
       key: 'deploy',
       minWidth: 100,
       maxWidth: 200,
-      isResizable: true,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return
@@ -165,7 +159,6 @@ System: ${getValueFormat('percentunit')(system)}`
       key: 'disk_size',
       minWidth: 80,
       maxWidth: 100,
-      isResizable: true,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return
@@ -184,7 +177,6 @@ System: ${getValueFormat('percentunit')(system)}`
       key: 'disk_usage',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return

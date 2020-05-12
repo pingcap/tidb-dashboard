@@ -25,7 +25,6 @@ function planDigestColumn(
     fieldName: 'plan_digest',
     minWidth: 100,
     maxWidth: 300,
-    isResizable: true,
     onRender: (rec) => (
       <Tooltip title={rec.plan_digest}>
         <TextWrap>{rec.plan_digest || '(none)'}</TextWrap>
@@ -44,7 +43,6 @@ function digestColumn(
     fieldName: 'digest_text',
     minWidth: 100,
     maxWidth: 500,
-    isResizable: true,
     isMultiline: showFullSQL,
     onRender: (rec) =>
       showFullSQL ? (
@@ -73,7 +71,6 @@ function sumLatencyColumn(rows?: { sum_latency?: number }[]): IColumn {
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.sum_latency} capacity={capacity}>
@@ -94,7 +91,6 @@ function avgMinMaxLatencyColumn(
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
       const tooltipContent = `
@@ -127,7 +123,6 @@ function execCountColumn(rows?: { exec_count?: number }[]): IColumn {
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.exec_count} capacity={capacity}>
@@ -148,7 +143,6 @@ function avgMaxMemColumn(
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
       const tooltipContent = `
@@ -183,7 +177,6 @@ function errorsWarningsColumn(
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
       const tooltipContent = `
@@ -218,7 +211,6 @@ function avgParseLatencyColumn(
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
       const tooltipContent = `
@@ -251,7 +243,6 @@ function avgCompileLatencyColumn(
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
       const tooltipContent = `
@@ -284,7 +275,6 @@ function avgCoprColumn(
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
       const tooltipContent = `
@@ -314,7 +304,6 @@ function relatedSchemasColumn(
     key: 'related_schemas',
     minWidth: 160,
     maxWidth: 240,
-    isResizable: true,
     onRender: (rec) => (
       <Tooltip title={rec.related_schemas}>
         <TextWrap>{rec.related_schemas}</TextWrap>

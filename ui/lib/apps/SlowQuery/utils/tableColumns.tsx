@@ -43,7 +43,6 @@ function commonColumnName(fieldName: string): any {
 //     fieldName: 'connection_id',
 //     minWidth: 100,
 //     maxWidth: 120,
-//     isResizable: true,
 //   }
 // }
 
@@ -57,7 +56,6 @@ function sqlColumn(
     fieldName: 'sql',
     minWidth: 200,
     maxWidth: 500,
-    isResizable: true,
     onRender: (rec) =>
       showFullSQL ? (
         <TextWrap multiline>
@@ -85,7 +83,6 @@ function digestColumn(
     fieldName: 'digest',
     minWidth: 100,
     maxWidth: 150,
-    isResizable: true,
     onRender: (rec) => (
       <Tooltip title={rec.digest}>
         <TextWrap>{rec.digest}</TextWrap>
@@ -103,7 +100,6 @@ function instanceColumn(
     fieldName: 'instance',
     minWidth: 100,
     maxWidth: 150,
-    isResizable: true,
     onRender: (rec) => (
       <Tooltip title={rec.instance}>
         <TextWrap>{rec.instance}</TextWrap>
@@ -121,7 +117,6 @@ function dbColumn(
     fieldName: 'db',
     minWidth: 100,
     maxWidth: 150,
-    isResizable: true,
     onRender: (rec) => (
       <Tooltip title={rec.db}>
         <TextWrap>{rec.db}</TextWrap>
@@ -142,7 +137,6 @@ function successColumn(
     fieldName: 'success',
     minWidth: 100,
     maxWidth: 150,
-    isResizable: true,
     onRender: (rec) => (
       <ResultStatusBadge status={rec.success === 1 ? 'success' : 'error'} />
     ),
@@ -159,7 +153,6 @@ function timestampColumn(
     fieldName: 'timestamp',
     minWidth: 100,
     maxWidth: 150,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <TextWrap>
@@ -178,7 +171,6 @@ function queryTimeColumn(rows?: { query_time?: number }[]): IColumn {
     fieldName: 'query_time',
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.query_time} capacity={capacity}>
@@ -197,7 +189,6 @@ function parseTimeColumn(rows?: { parse_time?: number }[]): IColumn {
     fieldName: 'parse_time',
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.parse_time} capacity={capacity}>
@@ -216,7 +207,6 @@ function compileTimeColumn(rows?: { compile_time?: number }[]): IColumn {
     fieldName: 'compile_time',
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.compile_time} capacity={capacity}>
@@ -235,7 +225,6 @@ function processTimeColumn(rows?: { process_time?: number }[]): IColumn {
     fieldName: 'process_time',
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.process_time} capacity={capacity}>
@@ -254,7 +243,6 @@ function memoryColumn(rows?: { memory_max?: number }[]): IColumn {
     fieldName: 'memory_max',
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.memory_max} capacity={capacity}>
@@ -273,7 +261,6 @@ function txnStartTsColumn(
     fieldName: 'txn_start_ts',
     minWidth: 100,
     maxWidth: 150,
-    isResizable: true,
     onRender: (rec) => (
       <Tooltip title={rec.txn_start_ts}>
         <TextWrap>{rec.txn_start_ts}</TextWrap>

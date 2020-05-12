@@ -133,6 +133,7 @@ function CardTableV2(props: ICardTableV2Props) {
     }
     newColumns = newColumns.map((c) => ({
       ...c,
+      isResizable: c.isResizable === false ? false : true,
       isSorted: c.key === orderBy,
       isSortedDescending: desc,
       onColumnClick,

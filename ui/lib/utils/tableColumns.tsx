@@ -67,7 +67,6 @@ function fieldsKeyColumn(transKeyPrefix: string): IColumn {
     key: 'key',
     minWidth: 150,
     maxWidth: 250,
-    isResizable: true,
     onRender: (rec) => {
       if (rec.keyDisplay) {
         return rec.keyDisplay
@@ -84,7 +83,6 @@ function fieldsValueColumn(): IColumn {
     fieldName: 'value',
     minWidth: 150,
     maxWidth: 250,
-    isResizable: true,
   }
 }
 
@@ -99,7 +97,6 @@ function fieldsTimeValueColumn(
     key: 'time',
     minWidth: 150,
     maxWidth: 200,
-    isResizable: true,
     onRender: (rec) => {
       const tooltipContent: string[] = []
       if (rec.avg) {
@@ -143,7 +140,6 @@ function fieldsDescriptionColumn(transKeyPrefix: string): IColumn {
     key: 'description',
     minWidth: 150,
     maxWidth: 300,
-    isResizable: true,
     onRender: (rec) => {
       return <TransText transKey={`${transKeyPrefix}${rec.key}_tooltip`} />
     },

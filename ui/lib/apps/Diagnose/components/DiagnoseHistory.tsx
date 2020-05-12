@@ -19,14 +19,12 @@ const tableColumns = (t: TFunction): IColumn[] => [
     fieldName: 'id',
     minWidth: 200,
     maxWidth: 350,
-    isResizable: true,
   },
   {
     name: t('diagnose.list_table.diagnose_create_time'),
     key: 'created_at',
     minWidth: 100,
     maxWidth: 200,
-    isResizable: true,
     onRender: (rec: DiagnoseReport) => (
       <DateTime.Calendar
         unixTimestampMs={dayjs(rec.created_at).unix() * 1000}
@@ -38,7 +36,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     key: 'progress',
     minWidth: 100,
     maxWidth: 150,
-    isResizable: true,
     onRender: (rec: DiagnoseReport) => {
       if (rec.progress! < 100) {
         return (
@@ -62,7 +59,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     key: 'start_time',
     minWidth: 200,
     maxWidth: 350,
-    isResizable: true,
     onRender: (rec: DiagnoseReport) => {
       return (
         <span>
@@ -82,7 +78,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     key: 'compare_start_time',
     minWidth: 200,
     maxWidth: 350,
-    isResizable: true,
     onRender: (rec: DiagnoseReport) =>
       rec.compare_start_time && (
         <span>

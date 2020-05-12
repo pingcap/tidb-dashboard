@@ -6,6 +6,7 @@ import {
   IColumn,
   IDetailsListProps,
   SelectionMode,
+  ColumnActionsMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import React, { useCallback, useMemo } from 'react'
@@ -135,6 +136,7 @@ function CardTableV2(props: ICardTableV2Props) {
       isSorted: c.key === orderBy,
       isSortedDescending: desc,
       onColumnClick,
+      columnActionsMode: c.columnActionsMode || ColumnActionsMode.disabled,
     }))
     return newColumns
   }, [onColumnClick, columns, visibleColumnKeys, orderBy, desc])

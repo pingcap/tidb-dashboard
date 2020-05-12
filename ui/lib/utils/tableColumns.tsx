@@ -1,7 +1,6 @@
 import { Tooltip } from 'antd'
 import { max } from 'lodash'
 import {
-  ColumnActionsMode,
   IColumn,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
@@ -58,7 +57,6 @@ export function dummyColumn(): IColumn {
     key: 'dummy',
     minWidth: 28,
     maxWidth: 28,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (_rec) => null,
   }
 }
@@ -70,7 +68,6 @@ function fieldsKeyColumn(transKeyPrefix: string): IColumn {
     minWidth: 150,
     maxWidth: 250,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => {
       if (rec.keyDisplay) {
         return rec.keyDisplay
@@ -88,7 +85,6 @@ function fieldsValueColumn(): IColumn {
     minWidth: 150,
     maxWidth: 250,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
   }
 }
 
@@ -104,7 +100,6 @@ function fieldsTimeValueColumn(
     minWidth: 150,
     maxWidth: 200,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => {
       const tooltipContent: string[] = []
       if (rec.avg) {
@@ -149,7 +144,6 @@ function fieldsDescriptionColumn(transKeyPrefix: string): IColumn {
     minWidth: 150,
     maxWidth: 300,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => {
       return <TransText transKey={`${transKeyPrefix}${rec.key}_tooltip`} />
     },

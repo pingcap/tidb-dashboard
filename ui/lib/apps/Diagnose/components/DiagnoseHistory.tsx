@@ -1,9 +1,6 @@
 import { Badge } from 'antd'
 import dayjs from 'dayjs'
-import {
-  ColumnActionsMode,
-  IColumn,
-} from 'office-ui-fabric-react/lib/DetailsList'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -23,7 +20,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     minWidth: 200,
     maxWidth: 350,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
   },
   {
     name: t('diagnose.list_table.diagnose_create_time'),
@@ -31,7 +27,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     minWidth: 100,
     maxWidth: 200,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec: DiagnoseReport) => (
       <DateTime.Calendar
         unixTimestampMs={dayjs(rec.created_at).unix() * 1000}
@@ -44,7 +39,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     minWidth: 100,
     maxWidth: 150,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec: DiagnoseReport) => {
       if (rec.progress! < 100) {
         return (
@@ -69,7 +63,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     minWidth: 200,
     maxWidth: 350,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec: DiagnoseReport) => {
       return (
         <span>
@@ -90,7 +83,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     minWidth: 200,
     maxWidth: 350,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec: DiagnoseReport) =>
       rec.compare_start_time && (
         <span>

@@ -1,8 +1,8 @@
 import { Badge, Tooltip } from 'antd'
 import { max } from 'lodash'
 import {
-  ColumnActionsMode,
   IColumn,
+  ColumnActionsMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -44,7 +44,6 @@ function commonColumnName(fieldName: string): any {
 //     minWidth: 100,
 //     maxWidth: 120,
 //     isResizable: true,
-//     columnActionsMode: ColumnActionsMode.disabled,
 //   }
 // }
 
@@ -59,7 +58,6 @@ function sqlColumn(
     minWidth: 200,
     maxWidth: 500,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) =>
       showFullSQL ? (
         <TextWrap multiline>
@@ -88,7 +86,6 @@ function digestColumn(
     minWidth: 100,
     maxWidth: 150,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip title={rec.digest}>
         <TextWrap>{rec.digest}</TextWrap>
@@ -107,7 +104,6 @@ function instanceColumn(
     minWidth: 100,
     maxWidth: 150,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip title={rec.instance}>
         <TextWrap>{rec.instance}</TextWrap>
@@ -126,7 +122,6 @@ function dbColumn(
     minWidth: 100,
     maxWidth: 150,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip title={rec.db}>
         <TextWrap>{rec.db}</TextWrap>
@@ -148,7 +143,6 @@ function successColumn(
     minWidth: 100,
     maxWidth: 150,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <ResultStatusBadge status={rec.success === 1 ? 'success' : 'error'} />
     ),
@@ -166,6 +160,7 @@ function timestampColumn(
     minWidth: 100,
     maxWidth: 150,
     isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <TextWrap>
         <DateTime.Calendar unixTimestampMs={rec.timestamp * 1000} />
@@ -184,6 +179,7 @@ function queryTimeColumn(rows?: { query_time?: number }[]): IColumn {
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.query_time} capacity={capacity}>
         {getValueFormat('s')(rec.query_time, 1)}
@@ -202,6 +198,7 @@ function parseTimeColumn(rows?: { parse_time?: number }[]): IColumn {
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.parse_time} capacity={capacity}>
         {getValueFormat('s')(rec.parse_time, 1)}
@@ -220,6 +217,7 @@ function compileTimeColumn(rows?: { compile_time?: number }[]): IColumn {
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.compile_time} capacity={capacity}>
         {getValueFormat('s')(rec.compile_time, 1)}
@@ -238,6 +236,7 @@ function processTimeColumn(rows?: { process_time?: number }[]): IColumn {
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.process_time} capacity={capacity}>
         {getValueFormat('s')(rec.process_time, 1)}
@@ -256,6 +255,7 @@ function memoryColumn(rows?: { memory_max?: number }[]): IColumn {
     minWidth: 140,
     maxWidth: 200,
     isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.memory_max} capacity={capacity}>
         {getValueFormat('bytes')(rec.memory_max, 1)}
@@ -274,7 +274,6 @@ function txnStartTsColumn(
     minWidth: 100,
     maxWidth: 150,
     isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip title={rec.txn_start_ts}>
         <TextWrap>{rec.txn_start_ts}</TextWrap>

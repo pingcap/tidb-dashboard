@@ -1,5 +1,4 @@
 import { Tooltip, Typography } from 'antd'
-import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { red } from '@ant-design/colors'
@@ -33,7 +32,6 @@ export default function HostTable() {
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ ip, unavailable }) => {
         if (unavailable) {
           return (
@@ -55,7 +53,6 @@ export default function HostTable() {
       minWidth: 60,
       maxWidth: 100,
       isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ cpu_core }) =>
         cpu_core !== undefined ? `${cpu_core} vCPU` : '',
     },
@@ -65,7 +62,6 @@ export default function HostTable() {
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ cpu_usage }) => {
         if (cpu_usage === undefined) {
           return
@@ -88,7 +84,6 @@ System: ${getValueFormat('percentunit')(system)}`
       minWidth: 60,
       maxWidth: 100,
       isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ memory }) =>
         memory !== undefined ? getValueFormat('bytes')(memory.total, 1) : '',
     },
@@ -98,7 +93,6 @@ System: ${getValueFormat('percentunit')(system)}`
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ memory }) => {
         if (memory === undefined) {
           return
@@ -124,7 +118,6 @@ System: ${getValueFormat('percentunit')(system)}`
       minWidth: 100,
       maxWidth: 200,
       isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return
@@ -173,7 +166,6 @@ System: ${getValueFormat('percentunit')(system)}`
       minWidth: 80,
       maxWidth: 100,
       isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return
@@ -193,7 +185,6 @@ System: ${getValueFormat('percentunit')(system)}`
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return

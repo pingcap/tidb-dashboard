@@ -8,6 +8,7 @@ import client, { ProfilingTaskModel } from '@lib/client'
 import { CardTableV2, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { dummyColumn } from '@lib/utils/tableColumns'
+import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
 
 function mapData(data) {
   if (!data) {
@@ -74,7 +75,10 @@ export default function Page() {
     if (!token) {
       return
     }
-    window.open(`${client.getBasePath()}/profiling/single/view?token=${token}`)
+    window.open(
+      `${client.getBasePath()}/profiling/single/view?token=${token}`,
+      '_blank'
+    )
   }, [])
 
   const columns = useMemo(
@@ -85,6 +89,7 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 400,
         isResizable: true,
+        columnActionsMode: ColumnActionsMode.disabled, // will move to CardTableV2
         onRender: (record) => record.target.display_name,
       },
       {
@@ -93,6 +98,7 @@ export default function Page() {
         minWidth: 100,
         maxWidth: 150,
         isResizable: true,
+        columnActionsMode: ColumnActionsMode.disabled,
         onRender: (record) => record.target.kind,
       },
       {
@@ -101,6 +107,7 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 200,
         isResizable: true,
+        columnActionsMode: ColumnActionsMode.disabled,
         onRender: (record) => {
           if (record.state === 1) {
             return (
@@ -125,18 +132,23 @@ export default function Page() {
         },
       },
       {
-        name: 'Action',
+        name: t('instance_profiling.common.actions.action'),
         key: 'action',
         minWidth: 100,
         maxWidth: 200,
         isResizable: true,
+        columnActionsMode: ColumnActionsMode.disabled,
         onRender: (record: ProfilingTaskModel) => {
           if (record.state === 2) {
             return (
               <div>
-                <a onClick={() => handleViewSingle(record.id)}>View</a>
+                <a onClick={() => handleViewSingle(record.id)}>
+                  {t('instance_profiling.common.actions.view')}
+                </a>
                 <Divider type="vertical"></Divider>
-                <a onClick={() => handleDownloadSingle(record.id)}>Download</a>
+                <a onClick={() => handleDownloadSingle(record.id)}>
+                  {t('instance_profiling.common.actions.download')}
+                </a>
               </div>
             )
           }

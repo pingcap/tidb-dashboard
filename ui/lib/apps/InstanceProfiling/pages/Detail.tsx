@@ -1,12 +1,13 @@
-import { Badge, Button, Progress } from 'antd'
+import { Badge, Button, Progress, Divider } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
-import client from '@lib/client'
+import client, { ProfilingTaskModel } from '@lib/client'
 import { CardTableV2, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
+import { dummyColumn } from '@lib/utils/tableColumns'
 
 function mapData(data) {
   if (!data) {
@@ -49,14 +50,32 @@ export default function Page() {
 
   const data = useMemo(() => mapData(respData), [respData])
 
-  const handleDownload = useCallback(async () => {
-    const res = await client.getInstance().getProfilingGroupDownloadToken(id)
+  const handleDownloadGroup = useCallback(async () => {
+    const res = await client.getInstance().getActionToken(id, 'group_download')
     const token = res.data
     if (!token) {
       return
     }
     window.location = `${client.getBasePath()}/profiling/group/download?token=${token}` as any
   }, [id])
+
+  const handleDownloadSingle = useCallback(async (id) => {
+    const res = await client.getInstance().getActionToken(id, 'single_download')
+    const token = res.data
+    if (!token) {
+      return
+    }
+    window.location = `${client.getBasePath()}/profiling/single/download?token=${token}` as any
+  }, [])
+
+  const handleViewSingle = useCallback(async (id) => {
+    const res = await client.getInstance().getActionToken(id, 'single_view')
+    const token = res.data
+    if (!token) {
+      return
+    }
+    window.open(`${client.getBasePath()}/profiling/single/view?token=${token}`)
+  }, [])
 
   const columns = useMemo(
     () => [
@@ -105,8 +124,27 @@ export default function Page() {
           }
         },
       },
+      {
+        name: 'Action',
+        key: 'action',
+        minWidth: 100,
+        maxWidth: 200,
+        isResizable: true,
+        onRender: (record: ProfilingTaskModel) => {
+          if (record.state === 2) {
+            return (
+              <div>
+                <a onClick={() => handleViewSingle(record.id)}>View</a>
+                <Divider type="vertical"></Divider>
+                <a onClick={() => handleDownloadSingle(record.id)}>Download</a>
+              </div>
+            )
+          }
+        },
+      },
+      dummyColumn(),
     ],
-    [t]
+    [t, handleDownloadSingle, handleViewSingle]
   )
 
   return (
@@ -122,7 +160,7 @@ export default function Page() {
           <Button
             disabled={!isFinished(data)}
             type="primary"
-            onClick={handleDownload}
+            onClick={handleDownloadGroup}
           >
             {t('instance_profiling.detail.download')}
           </Button>

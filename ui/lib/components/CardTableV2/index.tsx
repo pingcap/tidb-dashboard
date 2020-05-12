@@ -16,6 +16,7 @@ import { usePersistFn } from '@umijs/hooks'
 import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
 import styles from './index.module.less'
+import { dummyColumn } from '@lib/utils/tableColumns'
 
 DetailsList.whyDidYouRender = {
   customName: 'DetailsList',
@@ -139,6 +140,7 @@ function CardTableV2(props: ICardTableV2Props) {
       onColumnClick,
       columnActionsMode: c.columnActionsMode || ColumnActionsMode.disabled,
     }))
+    newColumns.push(dummyColumn())
     return newColumns
   }, [onColumnClick, columns, visibleColumnKeys, orderBy, desc])
 

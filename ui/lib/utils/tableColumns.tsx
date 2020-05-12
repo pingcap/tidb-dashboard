@@ -1,8 +1,6 @@
 import { Tooltip } from 'antd'
 import { max } from 'lodash'
-import {
-  IColumn,
-} from 'office-ui-fabric-react/lib/DetailsList'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'

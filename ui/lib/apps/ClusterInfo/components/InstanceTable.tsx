@@ -12,7 +12,6 @@ import {
 import client from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
-import { dummyColumn } from '@lib/utils/tableColumns'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
 function useStatusColumnRender(handleHideTiDB) {
@@ -217,7 +216,6 @@ export default function ListPage() {
         </Tooltip>
       ),
     },
-    dummyColumn(),
   ]
 
   return (

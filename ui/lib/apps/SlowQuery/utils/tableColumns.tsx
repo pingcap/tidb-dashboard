@@ -16,7 +16,6 @@ import {
   TextWithInfo,
   TextWrap,
 } from '@lib/components'
-import { dummyColumn } from '@lib/utils/tableColumns'
 
 function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
   const { t } = useTranslation()
@@ -288,6 +287,5 @@ export function slowQueryColumns(
     processTimeColumn(rows),
     memoryColumn(rows),
     txnStartTsColumn(rows),
-    dummyColumn(),
   ]
 }

@@ -7,7 +7,6 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client from '@lib/client'
 import { Bar, CardTableV2, Pre } from '@lib/components'
-import { dummyColumn } from '@lib/utils/tableColumns'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
 const { Text } = Typography
@@ -199,7 +198,6 @@ System: ${getValueFormat('percentunit')(system)}`
         })
       },
     },
-    dummyColumn(),
   ]
 
   return (

@@ -8,6 +8,7 @@ export interface ICardProps
   subTitle?: ReactNode
   extra?: ReactNode
   noMargin?: boolean
+  noMarginTop?: boolean
   noMarginLeft?: boolean
   noMarginRight?: boolean
 }
@@ -18,6 +19,7 @@ export default function Card({
   extra,
   className,
   noMargin,
+  noMarginTop,
   noMarginLeft,
   noMarginRight,
   children,
@@ -28,6 +30,7 @@ export default function Card({
       <div
         className={cx(styles.cardInner, {
           [styles.noMargin]: noMargin,
+          [styles.noMarginTop]: noMarginTop,
           [styles.noMarginLeft]: noMarginLeft,
           [styles.noMarginRight]: noMarginRight,
           [styles.hasTitle]: title || subTitle || extra,

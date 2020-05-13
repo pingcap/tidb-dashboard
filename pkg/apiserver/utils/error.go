@@ -15,6 +15,7 @@ package utils
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
@@ -50,8 +51,8 @@ func MWHandleErrors() gin.HandlerFunc {
 		}
 
 		statusCode := c.Writer.Status()
-		if statusCode == 200 {
-			statusCode = 500
+		if statusCode == http.StatusOK {
+			statusCode = http.StatusInternalServerError
 		}
 
 		innerErr := errorx.Cast(err.Err)

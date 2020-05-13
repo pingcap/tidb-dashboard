@@ -101,6 +101,10 @@ func (s *Service) queryHandler(c *gin.Context) {
 		return
 	}
 	defer promResp.Body.Close()
+	if promResp.StatusCode != http.StatusOK {
+		_ = c.Error(ErrPrometheusQueryFailed.New("failed to query Prometheus"))
+		return
+	}
 	body, err := ioutil.ReadAll(promResp.Body)
 	if err != nil {
 		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to query Prometheus"))

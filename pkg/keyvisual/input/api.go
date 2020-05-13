@@ -130,11 +130,12 @@ func NewAPIPeriodicGetter(pdAddr string, client *http.Client) regionpkg.RegionsI
 		if err == nil {
 			defer resp.Body.Close()
 			if resp.StatusCode != http.StatusOK {
-				body, err := ioutil.ReadAll(resp.Body)
+				var msg []byte
+				msg, err = ioutil.ReadAll(resp.Body)
 				if err != nil {
 					err = ErrPDHTTPRequestFailed.Wrap(err, "http status code: %d", resp.StatusCode)
 				} else {
-					err = ErrPDHTTPRequestFailed.New("http status code: %d, msg: %s", resp.StatusCode, body)
+					err = ErrPDHTTPRequestFailed.New("http status code: %d, msg: %s", resp.StatusCode, msg)
 				}
 			}
 		}

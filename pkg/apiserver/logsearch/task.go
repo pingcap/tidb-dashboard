@@ -47,7 +47,7 @@ type TaskGroup struct {
 	maxPreviewLinesPerTask int
 }
 
-func (tg *TaskGroup) InitTasks(taskModels []*TaskModel) {
+func (tg *TaskGroup) InitTasks(ctx context.Context, taskModels []*TaskModel) {
 	// Tasks are assigned after inserting into scheduler, thus it has a chance to run parallel with Abort.
 	tg.tasksMu.Lock()
 	defer tg.tasksMu.Unlock()
@@ -57,7 +57,7 @@ func (tg *TaskGroup) InitTasks(taskModels []*TaskModel) {
 	}
 	tg.tasks = make([]*Task, 0, len(taskModels))
 	for _, taskModel := range taskModels {
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithCancel(ctx)
 		tg.tasks = append(tg.tasks, &Task{
 			taskGroup: tg,
 			model:     taskModel,

@@ -70,7 +70,9 @@ type Forwarder struct {
 	pollInterval    time.Duration
 }
 
-func (f *Forwarder) Open() error {
+func (f *Forwarder) Start(ctx context.Context) error {
+	f.ctx = ctx
+
 	pr, err := f.createProxy()
 	if err != nil {
 		return err
@@ -89,10 +91,11 @@ func (f *Forwarder) Open() error {
 	return nil
 }
 
-func (f *Forwarder) Close() {
+func (f *Forwarder) Stop(context.Context) error {
 	f.tidbProxy.stop()
 	f.tidbStatusProxy.stop()
 	close(f.donec)
+	return nil
 }
 
 func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
@@ -172,19 +175,13 @@ func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3
 	f := &Forwarder{
 		etcdClient:   etcdClient,
 		config:       config,
-		ctx:          context.Background(),
 		donec:        make(chan struct{}),
 		pollInterval: 5 * time.Second, // TODO: add this into config?
 	}
 
 	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			return f.Open()
-		},
-		OnStop: func(context.Context) error {
-			f.Close()
-			return nil
-		},
+		OnStart: f.Start,
+		OnStop:  f.Stop,
 	})
 
 	return f

@@ -16,7 +16,6 @@ import {
 import client from '@lib/client'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQuery from '../../utils/useSlowQuery'
-import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
 const { Option } = Select
 const { Search } = Input

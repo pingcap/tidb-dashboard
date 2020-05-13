@@ -14,7 +14,6 @@ import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
 import useStatement from '../../utils/useStatement'
-import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
 const { Option } = Select
 

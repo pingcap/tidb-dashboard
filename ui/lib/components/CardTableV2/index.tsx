@@ -1,17 +1,19 @@
 import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
+  ColumnActionsMode,
+  ConstrainMode,
   DetailsList,
   DetailsListLayoutMode,
   IColumn,
   IDetailsListProps,
   SelectionMode,
-  ConstrainMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import React, { useCallback, useMemo } from 'react'
-
 import { usePersistFn } from '@umijs/hooks'
+
+import { dummyColumn } from '@lib/utils/tableColumns'
 
 import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
@@ -135,10 +137,13 @@ function CardTableV2(props: ICardTableV2Props) {
     }
     newColumns = newColumns.map((c) => ({
       ...c,
+      isResizable: c.isResizable === false ? false : true,
       isSorted: c.key === orderBy,
       isSortedDescending: desc,
       onColumnClick,
+      columnActionsMode: c.columnActionsMode || ColumnActionsMode.disabled,
     }))
+    newColumns.push(dummyColumn())
     return newColumns
   }, [onColumnClick, columns, visibleColumnKeys, orderBy, desc])
 

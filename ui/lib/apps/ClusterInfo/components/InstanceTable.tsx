@@ -1,5 +1,4 @@
 import { Badge, Divider, Popconfirm, Tooltip } from 'antd'
-import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
 import React, { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DeleteOutlined } from '@ant-design/icons'
@@ -13,7 +12,6 @@ import {
 import client from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
-import { dummyColumn } from '@lib/utils/tableColumns'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
 function useStatusColumnRender(handleHideTiDB) {
@@ -155,8 +153,6 @@ export default function ListPage() {
       key: 'node',
       minWidth: 100,
       maxWidth: 160,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ ip, port }) => {
         const fullName = `${ip}:${port}`
         return (
@@ -171,8 +167,6 @@ export default function ListPage() {
       key: 'status',
       minWidth: 80,
       maxWidth: 100,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: renderStatusColumn,
     },
     {
@@ -180,8 +174,6 @@ export default function ListPage() {
       key: 'start_timestamp',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ start_timestamp: ts }) => {
         if (ts !== undefined && ts !== 0) {
           return <DateTime.Calendar unixTimestampMs={ts * 1000} />
@@ -194,8 +186,6 @@ export default function ListPage() {
       key: 'version',
       minWidth: 100,
       maxWidth: 250,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ version }) => (
         <Tooltip title={version}>
           <span>{version}</span>
@@ -208,8 +198,6 @@ export default function ListPage() {
       key: 'deploy_path',
       minWidth: 100,
       maxWidth: 200,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ deploy_path }) => (
         <Tooltip title={deploy_path}>
           <span>{deploy_path}</span>
@@ -222,15 +210,12 @@ export default function ListPage() {
       key: 'git_hash',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ git_hash }) => (
         <Tooltip title={git_hash}>
           <span>{git_hash}</span>
         </Tooltip>
       ),
     },
-    dummyColumn(),
   ]
 
   return (

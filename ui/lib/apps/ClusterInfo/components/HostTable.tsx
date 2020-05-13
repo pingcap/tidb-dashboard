@@ -1,5 +1,4 @@
 import { Tooltip, Typography } from 'antd'
-import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { red } from '@ant-design/colors'
@@ -8,7 +7,6 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client from '@lib/client'
 import { Bar, CardTableV2, Pre } from '@lib/components'
-import { dummyColumn } from '@lib/utils/tableColumns'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
 const { Text } = Typography
@@ -32,8 +30,6 @@ export default function HostTable() {
       key: 'ip',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ ip, unavailable }) => {
         if (unavailable) {
           return (
@@ -54,8 +50,6 @@ export default function HostTable() {
       key: 'cpu_core',
       minWidth: 60,
       maxWidth: 100,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ cpu_core }) =>
         cpu_core !== undefined ? `${cpu_core} vCPU` : '',
     },
@@ -64,8 +58,6 @@ export default function HostTable() {
       key: 'cpu_usage',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ cpu_usage }) => {
         if (cpu_usage === undefined) {
           return
@@ -87,8 +79,6 @@ System: ${getValueFormat('percentunit')(system)}`
       key: 'memory',
       minWidth: 60,
       maxWidth: 100,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ memory }) =>
         memory !== undefined ? getValueFormat('bytes')(memory.total, 1) : '',
     },
@@ -97,8 +87,6 @@ System: ${getValueFormat('percentunit')(system)}`
       key: 'memory_usage',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ memory }) => {
         if (memory === undefined) {
           return
@@ -123,8 +111,6 @@ System: ${getValueFormat('percentunit')(system)}`
       key: 'deploy',
       minWidth: 100,
       maxWidth: 200,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return
@@ -172,8 +158,6 @@ System: ${getValueFormat('percentunit')(system)}`
       key: 'disk_size',
       minWidth: 80,
       maxWidth: 100,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return
@@ -192,8 +176,6 @@ System: ${getValueFormat('percentunit')(system)}`
       key: 'disk_usage',
       minWidth: 100,
       maxWidth: 150,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ partitions }) => {
         if (partitions === undefined || partitions.length === 0) {
           return
@@ -216,7 +198,6 @@ System: ${getValueFormat('percentunit')(system)}`
         })
       },
     },
-    dummyColumn(),
   ]
 
   return (

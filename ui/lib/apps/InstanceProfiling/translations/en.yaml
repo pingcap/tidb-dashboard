@@ -34,8 +34,3 @@ instance_profiling:
         status: Status
       status:
         finished: Finished
-  common:
-    actions:
-      action: Action
-      view: View
-      download: Download

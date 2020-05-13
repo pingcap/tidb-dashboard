@@ -1,14 +1,15 @@
-import { Badge, Button, Progress, Divider } from 'antd'
+import { Badge, Button, Progress } from 'antd'
+import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
+import { usePersistFn } from '@umijs/hooks'
 
-import client, { ProfilingTaskModel } from '@lib/client'
+import client from '@lib/client'
 import { CardTableV2, Head } from '@lib/components'
-import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { dummyColumn } from '@lib/utils/tableColumns'
-import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
+import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 
 function mapData(data) {
   if (!data) {
@@ -50,36 +51,6 @@ export default function Page() {
   )
 
   const data = useMemo(() => mapData(respData), [respData])
-
-  const handleDownloadGroup = useCallback(async () => {
-    const res = await client.getInstance().getActionToken(id, 'group_download')
-    const token = res.data
-    if (!token) {
-      return
-    }
-    window.location = `${client.getBasePath()}/profiling/group/download?token=${token}` as any
-  }, [id])
-
-  const handleDownloadSingle = useCallback(async (id) => {
-    const res = await client.getInstance().getActionToken(id, 'single_download')
-    const token = res.data
-    if (!token) {
-      return
-    }
-    window.location = `${client.getBasePath()}/profiling/single/download?token=${token}` as any
-  }, [])
-
-  const handleViewSingle = useCallback(async (id) => {
-    const res = await client.getInstance().getActionToken(id, 'single_view')
-    const token = res.data
-    if (!token) {
-      return
-    }
-    window.open(
-      `${client.getBasePath()}/profiling/single/view?token=${token}`,
-      '_blank'
-    )
-  }, [])
 
   const columns = useMemo(
     () => [
@@ -131,33 +102,35 @@ export default function Page() {
           }
         },
       },
-      {
-        name: t('instance_profiling.common.actions.action'),
-        key: 'action',
-        minWidth: 100,
-        maxWidth: 200,
-        isResizable: true,
-        columnActionsMode: ColumnActionsMode.disabled,
-        onRender: (record: ProfilingTaskModel) => {
-          if (record.state === 2) {
-            return (
-              <div>
-                <a onClick={() => handleViewSingle(record.id)}>
-                  {t('instance_profiling.common.actions.view')}
-                </a>
-                <Divider type="vertical"></Divider>
-                <a onClick={() => handleDownloadSingle(record.id)}>
-                  {t('instance_profiling.common.actions.download')}
-                </a>
-              </div>
-            )
-          }
-        },
-      },
       dummyColumn(),
     ],
-    [t, handleDownloadSingle, handleViewSingle]
+    [t]
   )
+
+  const handleRowClick = usePersistFn(
+    async (rec, _idx, _ev: React.MouseEvent<HTMLElement>) => {
+      const res = await client
+        .getInstance()
+        .getActionToken(rec.id, 'single_view')
+      const token = res.data
+      if (!token) {
+        return
+      }
+      window.open(
+        `${client.getBasePath()}/profiling/single/view?token=${token}`,
+        '_blank'
+      )
+    }
+  )
+
+  const handleDownloadGroup = useCallback(async () => {
+    const res = await client.getInstance().getActionToken(id, 'group_download')
+    const token = res.data
+    if (!token) {
+      return
+    }
+    window.location = `${client.getBasePath()}/profiling/group/download?token=${token}` as any
+  }, [id])
 
   return (
     <div>
@@ -182,6 +155,7 @@ export default function Page() {
         loading={isLoading && !data}
         columns={columns}
         items={data?.tasks_status || []}
+        onRowClicked={handleRowClick}
       />
     </div>
   )

@@ -3,6 +3,7 @@ import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
+import { usePersistFn } from '@umijs/hooks'
 
 import client from '@lib/client'
 import { CardTableV2, Head } from '@lib/components'
@@ -48,15 +49,6 @@ export default function Page() {
   )
 
   const data = useMemo(() => mapData(respData), [respData])
-
-  const handleDownload = useCallback(async () => {
-    const res = await client.getInstance().getProfilingGroupDownloadToken(id)
-    const token = res.data
-    if (!token) {
-      return
-    }
-    window.location = `${client.getBasePath()}/profiling/group/download?token=${token}` as any
-  }, [id])
 
   const columns = useMemo(
     () => [
@@ -106,6 +98,31 @@ export default function Page() {
     [t]
   )
 
+  const handleRowClick = usePersistFn(
+    async (rec, _idx, _ev: React.MouseEvent<HTMLElement>) => {
+      const res = await client
+        .getInstance()
+        .getActionToken(rec.id, 'single_view')
+      const token = res.data
+      if (!token) {
+        return
+      }
+      window.open(
+        `${client.getBasePath()}/profiling/single/view?token=${token}`,
+        '_blank'
+      )
+    }
+  )
+
+  const handleDownloadGroup = useCallback(async () => {
+    const res = await client.getInstance().getActionToken(id, 'group_download')
+    const token = res.data
+    if (!token) {
+      return
+    }
+    window.location = `${client.getBasePath()}/profiling/group/download?token=${token}` as any
+  }, [id])
+
   return (
     <div>
       <Head
@@ -119,7 +136,7 @@ export default function Page() {
           <Button
             disabled={!isFinished(data)}
             type="primary"
-            onClick={handleDownload}
+            onClick={handleDownloadGroup}
           >
             {t('instance_profiling.detail.download')}
           </Button>
@@ -129,6 +146,7 @@ export default function Page() {
         loading={isLoading && !data}
         columns={columns}
         items={data?.tasks_status || []}
+        onRowClicked={handleRowClick}
       />
     </div>
   )

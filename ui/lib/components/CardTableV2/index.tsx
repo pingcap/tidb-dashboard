@@ -6,6 +6,7 @@ import {
   IColumn,
   IDetailsListProps,
   SelectionMode,
+  ConstrainMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import React, { useCallback, useMemo } from 'react'
@@ -43,6 +44,7 @@ export interface ICardTableV2Props extends IDetailsListProps {
   loading?: boolean
   cardExtra?: React.ReactNode
   cardNoMargin?: boolean
+  cardNoMarginTop?: boolean
 
   // The keys of visible columns. If null, all columns will be shown.
   visibleColumnKeys?: { [key: string]: boolean }
@@ -100,6 +102,7 @@ function CardTableV2(props: ICardTableV2Props) {
     loading = false,
     cardExtra,
     cardNoMargin,
+    cardNoMarginTop,
     visibleColumnKeys,
     visibleItemsCount,
     orderBy,
@@ -166,12 +169,14 @@ function CardTableV2(props: ICardTableV2Props) {
       style={style}
       className={cx(styles.cardTable, className)}
       noMargin={cardNoMargin}
+      noMarginTop={cardNoMarginTop}
       extra={cardExtra}
     >
       <AnimatedSkeleton showSkeleton={items.length === 0 && loading}>
         <div className={styles.cardTableContent}>
           <MemoDetailsList
             selectionMode={SelectionMode.none}
+            constrainMode={ConstrainMode.unconstrained}
             layoutMode={DetailsListLayoutMode.justified}
             onRenderDetailsHeader={renderStickyHeader}
             onRenderRow={onRowClicked ? renderClickableRow : undefined}

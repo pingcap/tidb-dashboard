@@ -16,7 +16,6 @@ import {
 import client from '@lib/client'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQuery from '../../utils/useSlowQuery'
-import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
 const { Option } = Select
 const { Search } = Input
@@ -67,98 +66,97 @@ function List() {
   }, [])
 
   return (
-    <ScrollablePane style={{ height: '100vh' }}>
-      <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
-        <Card>
-          <Toolbar>
-            <Space>
-              <TimeRangeSelector
-                value={queryOptions.timeRange}
-                onChange={(timeRange) =>
-                  setQueryOptions({ ...queryOptions, timeRange })
-                }
-              />
-              <Select
-                value={queryOptions.schemas}
-                mode="multiple"
-                allowClear
-                placeholder={t(
-                  'statement.pages.overview.toolbar.select_schemas'
-                )}
-                style={{ minWidth: 200 }}
-                onChange={(schemas) =>
-                  setQueryOptions({ ...queryOptions, schemas })
-                }
-              >
-                {allSchemas.map((item) => (
-                  <Option value={item} key={item}>
-                    {item}
-                  </Option>
-                ))}
-              </Select>
-              <Search
-                defaultValue={queryOptions.searchText}
-                onSearch={(searchText) =>
-                  setQueryOptions({ ...queryOptions, searchText })
-                }
-              />
-              <Select
-                value={queryOptions.limit}
-                style={{ width: 150 }}
-                onChange={(limit) =>
-                  setQueryOptions({ ...queryOptions, limit })
-                }
-              >
-                {LIMITS.map((item) => (
-                  <Option value={item} key={item}>
-                    Limit {item}
-                  </Option>
-                ))}
-              </Select>
-            </Space>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Card>
+        <Toolbar>
+          <Space>
+            <TimeRangeSelector
+              value={queryOptions.timeRange}
+              onChange={(timeRange) =>
+                setQueryOptions({ ...queryOptions, timeRange })
+              }
+            />
+            <Select
+              value={queryOptions.schemas}
+              mode="multiple"
+              allowClear
+              placeholder={t('statement.pages.overview.toolbar.select_schemas')}
+              style={{ minWidth: 200 }}
+              onChange={(schemas) =>
+                setQueryOptions({ ...queryOptions, schemas })
+              }
+            >
+              {allSchemas.map((item) => (
+                <Option value={item} key={item}>
+                  {item}
+                </Option>
+              ))}
+            </Select>
+            <Search
+              defaultValue={queryOptions.searchText}
+              onSearch={(searchText) =>
+                setQueryOptions({ ...queryOptions, searchText })
+              }
+            />
+            <Select
+              value={queryOptions.limit}
+              style={{ width: 150 }}
+              onChange={(limit) => setQueryOptions({ ...queryOptions, limit })}
+            >
+              {LIMITS.map((item) => (
+                <Option value={item} key={item}>
+                  Limit {item}
+                </Option>
+              ))}
+            </Select>
+          </Space>
 
-            <Space>
-              {columns.length > 0 && (
-                <ColumnsSelector
-                  columns={columns}
-                  visibleColumnKeys={visibleColumnKeys}
-                  resetColumnKeys={defSlowQueryColumnKeys}
-                  onChange={setVisibleColumnKeys}
-                  foot={
-                    <Checkbox
-                      checked={showFullSQL}
-                      onChange={(e) => setShowFullSQL(e.target.checked)}
-                    >
-                      {t(
-                        'statement.pages.overview.toolbar.select_columns.show_full_sql'
-                      )}
-                    </Checkbox>
-                  }
-                />
+          <Space>
+            {columns.length > 0 && (
+              <ColumnsSelector
+                columns={columns}
+                visibleColumnKeys={visibleColumnKeys}
+                resetColumnKeys={defSlowQueryColumnKeys}
+                onChange={setVisibleColumnKeys}
+                foot={
+                  <Checkbox
+                    checked={showFullSQL}
+                    onChange={(e) => setShowFullSQL(e.target.checked)}
+                  >
+                    {t(
+                      'statement.pages.overview.toolbar.select_columns.show_full_sql'
+                    )}
+                  </Checkbox>
+                }
+              />
+            )}
+            <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
+              {loadingSlowQueries ? (
+                <LoadingOutlined />
+              ) : (
+                <ReloadOutlined onClick={refresh} />
               )}
-              <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-                {loadingSlowQueries ? (
-                  <LoadingOutlined />
-                ) : (
-                  <ReloadOutlined onClick={refresh} />
-                )}
-              </Tooltip>
-            </Space>
-          </Toolbar>
-        </Card>
-      </Sticky>
+            </Tooltip>
+          </Space>
+        </Toolbar>
+      </Card>
 
-      <SlowQueriesTable
-        loading={loadingSlowQueries}
-        slowQueries={slowQueries}
-        orderBy={orderOptions.orderBy}
-        desc={orderOptions.desc}
-        showFullSQL={showFullSQL}
-        visibleColumnKeys={visibleColumnKeys}
-        onGetColumns={setColumns}
-        onChangeOrder={changeOrder}
-      />
-    </ScrollablePane>
+      <div style={{ height: '100%', position: 'relative' }}>
+        <ScrollablePane>
+          <SlowQueriesTable
+            cardNoMarginTop
+            loading={loadingSlowQueries}
+            slowQueries={slowQueries}
+            orderBy={orderOptions.orderBy}
+            desc={orderOptions.desc}
+            showFullSQL={showFullSQL}
+            visibleColumnKeys={visibleColumnKeys}
+            onGetColumns={setColumns}
+            onChangeOrder={changeOrder}
+          />
+        </ScrollablePane>
+      </div>
+    </div>
   )
 }
 

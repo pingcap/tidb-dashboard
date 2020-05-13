@@ -18,10 +18,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"sort"
 
+	"github.com/joomcode/errorx"
+
 	regionpkg "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+)
+
+var (
+	ErrNS                  = errorx.NewNamespace("error.keyvisual")
+	ErrNSInput             = ErrNS.NewSubNamespace("input")
+	ErrPDHTTPRequestFailed = ErrNSInput.NewType("pd_http_request_failed")
 )
 
 // RegionInfo records detail region info for api usage.
@@ -119,8 +128,19 @@ func NewAPIPeriodicGetter(pdAddr string, client *http.Client) regionpkg.RegionsI
 	return func() (regionsInfo regionpkg.RegionsInfo, err error) {
 		resp, err := client.Get(addr) //nolint:bodyclose,gosec
 		if err == nil {
-			return read(resp.Body)
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				body, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					err = ErrPDHTTPRequestFailed.Wrap(err, "http status code: %d", resp.StatusCode)
+				} else {
+					err = ErrPDHTTPRequestFailed.New("http status code: %d, msg: %s", resp.StatusCode, body)
+				}
+			}
 		}
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
+		return read(resp.Body)
 	}
 }

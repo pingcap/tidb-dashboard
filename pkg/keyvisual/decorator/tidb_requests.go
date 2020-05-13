@@ -15,15 +15,26 @@ package decorator
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 )
 
 const (
-	SchemaVersionPath = "/tidb/ddl/global_schema_version"
+	schemaVersionPath = "/tidb/ddl/global_schema_version"
+	etcdGetTimeout    = time.Second
+)
+
+var (
+	ErrNS                    = errorx.NewNamespace("error.keyvisual")
+	ErrNSDecorator           = ErrNS.NewSubNamespace("decorator")
+	ErrTiDBHTTPRequestFailed = ErrNSDecorator.NewType("tidb_http_request_failed")
 )
 
 type dbInfo struct {
@@ -52,7 +63,7 @@ type tableInfo struct {
 func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	// check schema version
 	ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
-	resp, err := s.Provider.EtcdClient.Get(ectx, SchemaVersionPath)
+	resp, err := s.Provider.EtcdClient.Get(ectx, schemaVersionPath)
 	cancel()
 	if err != nil || len(resp.Kvs) != 1 {
 		log.Warn("failed to get tidb schema version", zap.Error(err))
@@ -72,21 +83,19 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	s.SchemaVersion = schemaVersion
 
 	var dbInfos []*dbInfo
-	var tidbEndpoint string
 	reqScheme := "http"
 	if s.Config.ClusterTLSConfig != nil {
 		reqScheme = "https"
 	}
 	hostname, port := s.forwarder.GetStatusConnProps()
 	target := fmt.Sprintf("%s:%d", hostname, port)
-	reqEndpoint := fmt.Sprintf("%s://%s", reqScheme, target)
-	if err := request(reqEndpoint, "schema", &dbInfos, s.HTTPClient); err != nil {
-		log.Error("fail to send schema reqeust to tidb", zap.String("endpoint", reqEndpoint), zap.Error(err))
+	tidbEndpoint := fmt.Sprintf("%s://%s", reqScheme, target)
+	if err := request(tidbEndpoint, "schema", &dbInfos, s.HTTPClient); err != nil {
+		log.Error("fail to send schema request to tidb", zap.String("endpoint", tidbEndpoint), zap.Error(err))
 		if dbInfos == nil {
 			return
 		}
 	}
-	tidbEndpoint = reqEndpoint
 
 	var tableInfos []*tableInfo
 	for _, db := range dbInfos {
@@ -110,4 +119,21 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 			s.TableMap.Store(table.ID, detail)
 		}
 	}
+}
+
+func request(endpoint string, uri string, v interface{}, httpClient *http.Client) error {
+	url := fmt.Sprintf("%s/%s", endpoint, uri)
+	resp, err := httpClient.Get(url) //nolint:gosec
+	if err == nil {
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			err = ErrTiDBHTTPRequestFailed.New("http status code: %d", resp.StatusCode)
+		}
+	}
+	if err != nil {
+		log.Warn("request failed", zap.String("url", url), zap.Error(err))
+		return err
+	}
+	decoder := json.NewDecoder(resp.Body)
+	return decoder.Decode(v)
 }

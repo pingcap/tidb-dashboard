@@ -1,4 +1,4 @@
-import { Head } from '@lib/components'
+import { Head, Card } from '@lib/components'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Col, Row } from 'antd'
 import React, { useMemo, useState } from 'react'
@@ -8,6 +8,7 @@ import { SearchHeader, SearchProgress, SearchResult } from './components'
 import client from '@lib/client'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { TaskState } from './components/utils'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 
 export default function LogSearchingDetail() {
   const { t } = useTranslation()
@@ -49,7 +50,11 @@ export default function LogSearchingDetail() {
     <Row>
       <Col
         span={18}
-        style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+        }}
       >
         <Head
           title={t('search_logs.nav.detail')}
@@ -58,10 +63,15 @@ export default function LogSearchingDetail() {
               <ArrowLeftOutlined /> {t('search_logs.nav.search_logs')}
             </Link>
           }
-        >
-          <SearchHeader taskGroupID={taskGroupID} />
-        </Head>
-        <SearchResult taskGroupID={taskGroupID} tasks={tasks} />
+        ></Head>
+        <div style={{ height: '100%', position: 'relative', marginRight: 4 }}>
+          <ScrollablePane>
+            <div style={{ marginLeft: 48, marginRight: 48, marginBottom: 24 }}>
+              <SearchHeader taskGroupID={taskGroupID} />
+            </div>
+            <SearchResult taskGroupID={taskGroupID} tasks={tasks} />
+          </ScrollablePane>
+        </div>
       </Col>
       <Col span={6}>
         <SearchProgress

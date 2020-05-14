@@ -134,18 +134,14 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
           <Alert message={t('search_logs.page.tip')} type="info" showIcon />
         </Card>
       )}
-      <div className={styles.tableContainer}>
-        <ScrollablePane>
-          <CardTableV2
-            cardNoMarginTop
-            loading={loading}
-            columns={columns}
-            items={logPreviews || []}
-            onRenderRow={renderRow}
-            extendLastColumn
-          />
-        </ScrollablePane>
-      </div>
+      <CardTableV2
+        cardNoMarginTop
+        loading={loading}
+        columns={columns}
+        items={logPreviews || []}
+        onRenderRow={renderRow}
+        extendLastColumn
+      />
     </>
   )
 }

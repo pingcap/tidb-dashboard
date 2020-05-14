@@ -29,7 +29,8 @@ import (
 
 const (
 	DynamicConfigPath = "/dashboard/dynamic_config"
-	Timeout           = 5 * time.Second
+	Timeout           = time.Second
+	MaxCheckInterval  = 5 * time.Second
 )
 
 var (
@@ -71,7 +72,7 @@ func (m *DynamicConfigManager) Start(ctx context.Context) error {
 		var err error
 		bo := backoff.NewExponentialBackOff()
 		// setting a reasonable interval to avoid probing a living service for too long each round
-		bo.MaxInterval = Timeout
+		bo.MaxInterval = MaxCheckInterval
 
 		_ = backoff.Retry(func() error {
 			dc, err = m.load()

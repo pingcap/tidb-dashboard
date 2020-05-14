@@ -182,6 +182,7 @@ func (t *Task) SyncRun() {
 
 	cli := diagnosticspb.NewDiagnosticsClient(conn)
 	t.searchLog(cli, diagnosticspb.SearchLogRequest_Normal)
+	// Only TiKV support searching slow log now
 	if t.model.Target.Kind == model.NodeKindTiKV {
 		t.searchLog(cli, diagnosticspb.SearchLogRequest_Slow)
 	}

@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
@@ -28,13 +29,14 @@ import (
 
 const (
 	DynamicConfigPath = "/dashboard/dynamic_config"
-	RetryCount        = 3
-	RetryInterval     = time.Second
+	Timeout           = time.Second
+	MaxCheckInterval  = 5 * time.Second
 )
 
 var (
 	ErrorNS         = errorx.NewNamespace("error.dynamic_config")
 	ErrUnableToLoad = ErrorNS.NewType("unable_to_load")
+	ErrNotReady     = ErrorNS.NewType("not_ready")
 )
 
 type DynamicConfigOption func(dc *DynamicConfig)
@@ -63,30 +65,50 @@ func NewDynamicConfigManager(lc fx.Lifecycle, config *Config, etcdClient *client
 }
 
 func (m *DynamicConfigManager) Start(ctx context.Context) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
 	m.ctx = ctx
 
-	var err error
-	for i := 0; i < RetryCount; i++ {
-		err = m.load()
-		if err == nil {
-			break
-		}
+	go func() {
+		var dc *DynamicConfig
+		var err error
+		bo := backoff.NewExponentialBackOff()
+		// setting a reasonable interval to avoid probing a living service for too long each round
+		bo.MaxInterval = MaxCheckInterval
 
-		select {
-		case <-ctx.Done():
+		_ = backoff.Retry(func() error {
+			dc, err = m.load()
+			select {
+			case <-m.ctx.Done():
+				return nil
+			default:
+			}
 			return err
-		default:
-			time.Sleep(RetryInterval)
+		}, bo)
+		if err != nil {
+			log.Error("Failed to start DynamicConfigManager", zap.Error(err))
+			return
 		}
-	}
-	if err != nil {
-		return err
-	}
 
-	m.dynamicConfig.Adjust()
-	return m.store()
+		if dc == nil {
+			dc = &DynamicConfig{}
+		}
+		dc.Adjust()
+
+		_ = backoff.Retry(func() error {
+			err = m.Set(dc)
+			select {
+			case <-m.ctx.Done():
+				return nil
+			default:
+			}
+			return err
+		}, bo)
+
+		if err != nil {
+			log.Error("Failed to start DynamicConfigManager", zap.Error(err))
+		}
+	}()
+
+	return nil
 }
 
 func (m *DynamicConfigManager) Stop(ctx context.Context) error {
@@ -101,22 +123,49 @@ func (m *DynamicConfigManager) Stop(ctx context.Context) error {
 func (m *DynamicConfigManager) NewPushChannel() <-chan *DynamicConfig {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
 	ch := make(chan *DynamicConfig, 1000)
-	ch <- m.dynamicConfig.Clone()
 	m.pushChannels = append(m.pushChannels, ch)
+
+	if m.dynamicConfig != nil {
+		ch <- m.dynamicConfig.Clone()
+	}
+
 	return ch
 }
 
-func (m *DynamicConfigManager) Get() *DynamicConfig {
+func (m *DynamicConfigManager) Get() (*DynamicConfig, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return m.dynamicConfig.Clone()
+	if m.dynamicConfig == nil {
+		return nil, ErrNotReady.NewWithNoMessage()
+	}
+	return m.dynamicConfig.Clone(), nil
 }
 
-func (m *DynamicConfigManager) Set(opts ...DynamicConfigOption) error {
+func (m *DynamicConfigManager) Set(newDc *DynamicConfig) error {
+	if err := m.store(newDc); err != nil {
+		return err
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	newDc := m.dynamicConfig.Clone()
+
+	m.dynamicConfig = newDc
+
+	for _, ch := range m.pushChannels {
+		ch <- m.dynamicConfig.Clone()
+	}
+
+	return nil
+}
+
+func (m *DynamicConfigManager) Modify(opts ...DynamicConfigOption) error {
+	newDc, err := m.Get()
+	if err != nil {
+		return err
+	}
+
 	for _, opt := range opts {
 		opt(newDc)
 	}
@@ -124,44 +173,44 @@ func (m *DynamicConfigManager) Set(opts ...DynamicConfigOption) error {
 		return err
 	}
 
-	oldDc := m.dynamicConfig
-	m.dynamicConfig = newDc
-	if err := m.store(); err != nil {
-		m.dynamicConfig = oldDc
-		return err
-	}
-	for _, ch := range m.pushChannels {
-		ch <- m.dynamicConfig.Clone()
-	}
-	return nil
+	return m.Set(newDc)
 }
 
-func (m *DynamicConfigManager) load() error {
-	resp, err := m.etcdClient.Get(m.ctx, DynamicConfigPath)
+func (m *DynamicConfigManager) load() (*DynamicConfig, error) {
+	ctx, cancel := context.WithTimeout(m.ctx, Timeout)
+	defer cancel()
+	resp, err := m.etcdClient.Get(ctx, DynamicConfigPath)
 	if err != nil {
-		return err
+		log.Warn("Failed to load dynamic config from etcd", zap.Error(err))
+		return nil, ErrUnableToLoad.WrapWithNoMessage(err)
 	}
-
-	m.dynamicConfig = &DynamicConfig{}
 	switch len(resp.Kvs) {
 	case 0:
 		log.Warn("Dynamic config does not exist in etcd")
-		return nil
+		return nil, nil
 	case 1:
 		log.Info("Load dynamic config from etcd", zap.ByteString("json", resp.Kvs[0].Value))
-		return json.Unmarshal(resp.Kvs[0].Value, m.dynamicConfig)
+		var dc DynamicConfig
+		if err = json.Unmarshal(resp.Kvs[0].Value, &dc); err != nil {
+			return nil, err
+		}
+		return &dc, nil
 	default:
-		log.Error("unreachable")
-		return ErrUnableToLoad.NewWithNoMessage()
+		log.Error("UNREACHABLE")
+		return nil, ErrUnableToLoad.New("unreachable")
 	}
 }
 
-func (m *DynamicConfigManager) store() error {
-	bs, err := json.Marshal(m.dynamicConfig)
+func (m *DynamicConfigManager) store(dc *DynamicConfig) error {
+	bs, err := json.Marshal(dc)
 	if err != nil {
 		return err
 	}
+
 	log.Info("Save dynamic config to etcd", zap.ByteString("json", bs))
-	_, err = m.etcdClient.Put(m.ctx, DynamicConfigPath, string(bs))
+	ctx, cancel := context.WithTimeout(m.ctx, Timeout)
+	defer cancel()
+	_, err = m.etcdClient.Put(ctx, DynamicConfigPath, string(bs))
+
 	return err
 }

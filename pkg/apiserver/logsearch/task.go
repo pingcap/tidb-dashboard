@@ -33,6 +33,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 )
 
 // MaxRecvMsgSize set max gRPC receive message size received from server. If any message size is larger than
@@ -180,7 +182,9 @@ func (t *Task) SyncRun() {
 
 	cli := diagnosticspb.NewDiagnosticsClient(conn)
 	t.searchLog(cli, diagnosticspb.SearchLogRequest_Normal)
-	t.searchLog(cli, diagnosticspb.SearchLogRequest_Slow)
+	if t.model.Target.Kind == model.NodeKindTiKV {
+		t.searchLog(cli, diagnosticspb.SearchLogRequest_Slow)
+	}
 }
 
 func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diagnosticspb.SearchLogRequest_Target) {

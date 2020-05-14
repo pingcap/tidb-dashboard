@@ -4,6 +4,8 @@ overview:
     title: Top SQL Statements
   recent_slow_query:
     title: Recent Slow Queries
+  status:
+    title: Alive Instances
   monitor_alert:
     title: Monitor
     view_monitor: View Metrics
@@ -15,10 +17,3 @@ overview:
   metrics:
     total_requests: QPS
     latency: Latency
-  nodes:
-    title: Nodes
-    component:
-      tidb: TiDB
-      tikv: TiKV
-      pd: PD
-      tiflash: TiFlash

@@ -1,93 +1,113 @@
 import { Link } from 'react-router-dom'
 import React, { useMemo } from 'react'
-import { Card, AnimatedSkeleton } from '@lib/components'
+import { Card, AnimatedSkeleton, Descriptions } from '@lib/components'
 import { useTranslation } from 'react-i18next'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
-import { Alert, Typography } from 'antd'
+import { Typography, Row, Col, Space } from 'antd'
 import {
   STATUS_UP,
   STATUS_TOMBSTONE,
   STATUS_OFFLINE,
 } from '@lib/apps/ClusterInfo/status/status'
-import { RightOutlined } from '@ant-design/icons'
+import { RightOutlined, WarningOutlined } from '@ant-design/icons'
+import { Stack } from 'office-ui-fabric-react/lib/Stack'
+
+function ComponentItem(props: {
+  name: string
+  resp: { data?: { status?: number }[]; isLoading: boolean; error?: any }
+}) {
+  const { name, resp } = props
+  const [upNums, allNums] = useMemo(() => {
+    if (!resp.data) {
+      return [0, 0]
+    }
+    let up = 0
+    let all = 0
+    for (const instance of resp.data) {
+      all++
+      if (
+        instance.status === STATUS_UP ||
+        instance.status === STATUS_TOMBSTONE ||
+        instance.status === STATUS_OFFLINE
+      ) {
+        up++
+      }
+    }
+    return [up, all]
+  }, [resp])
+
+  return (
+    <AnimatedSkeleton showSkeleton={resp.isLoading} paragraph={{ rows: 1 }}>
+      {!resp.error && (
+        <Descriptions column={1}>
+          <Descriptions.Item label={name}>
+            <Typography.Text type={upNums === allNums ? undefined : 'danger'}>
+              <big>{upNums}</big>
+              <small> / {allNums}</small>
+            </Typography.Text>
+          </Descriptions.Item>
+        </Descriptions>
+      )}
+      {resp.error && (
+        <Typography.Text type="danger">
+          <Space>
+            <WarningOutlined /> Error
+          </Space>
+        </Typography.Text>
+      )}
+    </AnimatedSkeleton>
+  )
+}
 
 export default function Nodes() {
   const { t } = useTranslation()
-  const { data, isLoading, error } = useClientRequest((cancelToken) =>
-    client.getInstance().topologyAllGet({ cancelToken })
+  const tidbResp = useClientRequest((cancelToken) =>
+    client.getInstance().getTiDBTopology({ cancelToken })
   )
-
-  const statusMap = useMemo(() => {
-    if (!data) {
-      return []
-    }
-    const r: any[] = []
-    const components = ['tidb', 'tikv', 'tiflash', 'pd']
-    components.forEach((componentName) => {
-      if (!data[componentName]) {
-        return
-      }
-      if (data[componentName].err) {
-        r.push({ name: componentName, error: true })
-        return
-      }
-
-      let normals = 0,
-        abnormals = 0
-      data[componentName].nodes.forEach((n) => {
-        if (
-          n.status === STATUS_UP ||
-          n.status === STATUS_TOMBSTONE ||
-          n.status === STATUS_OFFLINE
-        ) {
-          normals++
-        } else {
-          abnormals++
-        }
-      })
-
-      if (normals > 0 || abnormals > 0) {
-        r.push({ name: componentName, normals, abnormals })
-      }
-    })
-    return r
-  }, [data])
+  const storeResp = useClientRequest((cancelToken) =>
+    client.getInstance().getStoreTopology({ cancelToken })
+  )
+  const tiKVResp = {
+    ...storeResp,
+    data: storeResp.data?.tikv,
+  }
+  const tiFlashResp = {
+    ...storeResp,
+    data: storeResp.data?.tiflash,
+  }
+  const pdResp = useClientRequest((cancelToken) =>
+    client.getInstance().getPDTopology({ cancelToken })
+  )
 
   return (
     <Card
       title={
         <Link to="/cluster_info">
-          {t('overview.nodes.title')}
+          {t('overview.status.title')}
           <RightOutlined />
         </Link>
       }
       noMarginLeft
     >
-      <AnimatedSkeleton showSkeleton={isLoading}>
-        {error && <Alert message="Error" type="error" showIcon />}
-        {data &&
-          statusMap.map((s) => {
-            return (
-              <p key={s.name}>
-                <span>{t(`overview.nodes.component.${s.name}`)}: </span>
-                {s.error && (
-                  <Typography.Text type="danger">Error</Typography.Text>
-                )}
-                {!s.error && (
-                  <span>
-                    {s.normals} Up /{' '}
-                    <Typography.Text
-                      type={s.abnormals > 0 ? 'danger' : undefined}
-                    >
-                      {s.abnormals} Down
-                    </Typography.Text>
-                  </span>
-                )}
-              </p>
-            )
-          })}
-      </AnimatedSkeleton>
+      <Stack gap={16}>
+        <Row>
+          <Col span={12}>
+            <ComponentItem name="PD" resp={pdResp} />
+          </Col>
+          <Col span={12}>
+            <ComponentItem name="TiDB" resp={tidbResp} />
+          </Col>
+        </Row>
+        <Row>
+          <Col span={12}>
+            <ComponentItem name="TiKV" resp={tiKVResp} />
+          </Col>
+          <Col span={12}>
+            <ComponentItem name="TiFlash" resp={tiFlashResp} />
+          </Col>
+        </Row>
+      </Stack>
     </Card>
   )
 }

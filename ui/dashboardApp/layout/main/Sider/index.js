@@ -80,6 +80,7 @@ function Sider({
   )
 
   const menuItems = [
+    useAppMenuItem(registry, 'debug_playground'),
     useAppMenuItem(registry, 'overview'),
     useAppMenuItem(registry, 'cluster_info'),
     useAppMenuItem(registry, 'keyviz'),

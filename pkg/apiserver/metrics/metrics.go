@@ -1,8 +1,6 @@
 package metrics
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -15,15 +13,13 @@ import (
 	"go.etcd.io/etcd/clientv3"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
 )
 
 var (
-	ErrNS                        = errorx.NewNamespace("error.api.metrics")
-	ErrEtcdAccessFailed          = ErrNS.NewType("etcd_access_failed")
-	ErrPrometheusNotFound        = ErrNS.NewType("prometheus_not_found")
-	ErrPrometheusRegistryInvalid = ErrNS.NewType("prometheus_registry_invalid")
-	ErrPrometheusQueryFailed     = ErrNS.NewType("prometheus_query_failed")
+	ErrNS                    = errorx.NewNamespace("error.api.metrics")
+	ErrPrometheusNotFound    = ErrNS.NewType("prometheus_not_found")
+	ErrPrometheusQueryFailed = ErrNS.NewType("prometheus_query_failed")
 )
 
 type Service struct {
@@ -69,20 +65,13 @@ func (s *Service) queryHandler(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	resp, err := s.etcdClient.Get(ctx, "/topology/prometheus", clientv3.WithPrefix())
+	pi, err := topology.FetchPrometheusTopology(s.etcdClient)
 	if err != nil {
-		_ = c.Error(ErrEtcdAccessFailed.NewWithNoMessage())
+		_ = c.Error(err)
 		return
 	}
-	if resp.Count == 0 {
+	if pi == nil {
 		_ = c.Error(ErrPrometheusNotFound.NewWithNoMessage())
-		return
-	}
-	info := clusterinfo.PrometheusInfo{}
-	if err = json.Unmarshal(resp.Kvs[0].Value, &info); err != nil {
-		_ = c.Error(ErrPrometheusRegistryInvalid.NewWithNoMessage())
 		return
 	}
 
@@ -95,15 +84,15 @@ func (s *Service) queryHandler(c *gin.Context) {
 	client := http.Client{
 		Timeout: 10 * time.Second,
 	}
-	promResp, err := client.Get(fmt.Sprintf("http://%s:%d/api/v1/query_range?%s", info.IP, info.Port, params.Encode()))
+	promResp, err := client.Get(fmt.Sprintf("http://%s:%d/api/v1/query_range?%s", pi.IP, pi.Port, params.Encode()))
 	if err != nil {
-		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to query Prometheus"))
+		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to send requests to Prometheus"))
 		return
 	}
 	defer promResp.Body.Close()
 	body, err := ioutil.ReadAll(promResp.Body)
 	if err != nil {
-		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to query Prometheus"))
+		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to read Prometheus query result"))
 		return
 	}
 	c.Data(promResp.StatusCode, promResp.Header.Get("content-type"), body)

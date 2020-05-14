@@ -1,5 +1,4 @@
 import {
-  ClusterinfoClusterInfo,
   LogsearchTaskGroupResponse,
   LogsearchTaskModel,
   ModelRequestTargetNode,
@@ -40,65 +39,65 @@ export const namingMap = {
 
 export const AllLogLevel = [1, 2, 3, 4, 5, 6]
 
-export function parseClusterInfo(
-  info: ClusterinfoClusterInfo
-): ModelRequestTargetNode[] {
-  const targets: ModelRequestTargetNode[] = []
-  info?.tidb?.nodes?.forEach((item) => {
-    if (
-      item.ip === undefined ||
-      item.port === undefined ||
-      item.status_port === undefined
-    ) {
-      return
-    }
-    // TiDB has a different behavior: it use "status_port" for grpc, "port" for display.
-    targets.push({
-      kind: NodeKind.TiDB,
-      ip: item.ip,
-      port: item.status_port,
-      display_name: `${item.ip}:${item.port}`,
-    })
-  })
-  info?.tikv?.nodes?.forEach((item) => {
-    if (
-      item.ip === undefined ||
-      item.port === undefined ||
-      item.status_port === undefined
-    ) {
-      return
-    }
-    targets.push({
-      kind: NodeKind.TiKV,
-      ip: item.ip,
-      port: item.port,
-      display_name: `${item.ip}:${item.port}`,
-    })
-  })
-  info?.pd?.nodes?.forEach((item) => {
-    if (item.ip === undefined || item.port === undefined) {
-      return
-    }
-    targets.push({
-      kind: NodeKind.PD,
-      ip: item.ip,
-      port: item.port,
-      display_name: `${item.ip}:${item.port}`,
-    })
-  })
-  info?.tiflash?.nodes?.forEach((item) => {
-    if (!(item.ip && item.port)) {
-      return
-    }
-    targets.push({
-      kind: NodeKind.TiFlash,
-      ip: item.ip,
-      port: item.port,
-      display_name: `${item.ip}:${item.port}`,
-    })
-  })
-  return targets
-}
+// export function parseClusterInfo(
+//   info: ClusterinfoClusterInfo
+// ): ModelRequestTargetNode[] {
+//   const targets: ModelRequestTargetNode[] = []
+//   info?.tidb?.nodes?.forEach((item) => {
+//     if (
+//       item.ip === undefined ||
+//       item.port === undefined ||
+//       item.status_port === undefined
+//     ) {
+//       return
+//     }
+//     // TiDB has a different behavior: it use "status_port" for grpc, "port" for display.
+//     targets.push({
+//       kind: NodeKind.TiDB,
+//       ip: item.ip,
+//       port: item.status_port,
+//       display_name: `${item.ip}:${item.port}`,
+//     })
+//   })
+//   info?.tikv?.nodes?.forEach((item) => {
+//     if (
+//       item.ip === undefined ||
+//       item.port === undefined ||
+//       item.status_port === undefined
+//     ) {
+//       return
+//     }
+//     targets.push({
+//       kind: NodeKind.TiKV,
+//       ip: item.ip,
+//       port: item.port,
+//       display_name: `${item.ip}:${item.port}`,
+//     })
+//   })
+//   info?.pd?.nodes?.forEach((item) => {
+//     if (item.ip === undefined || item.port === undefined) {
+//       return
+//     }
+//     targets.push({
+//       kind: NodeKind.PD,
+//       ip: item.ip,
+//       port: item.port,
+//       display_name: `${item.ip}:${item.port}`,
+//     })
+//   })
+//   info?.tiflash?.nodes?.forEach((item) => {
+//     if (!(item.ip && item.port)) {
+//       return
+//     }
+//     targets.push({
+//       kind: NodeKind.TiFlash,
+//       ip: item.ip,
+//       port: item.port,
+//       display_name: `${item.ip}:${item.port}`,
+//     })
+//   })
+//   return targets
+// }
 
 interface Params {
   timeRange: TimeRange

@@ -1,11 +1,10 @@
 import { Col, Row } from 'antd'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { HashRouter as Router, Link } from 'react-router-dom'
 import { RightOutlined } from '@ant-design/icons'
 
 import { StatementsTable, useStatement } from '@lib/apps/Statement'
-import client, { ClusterinfoClusterInfo } from '@lib/client'
 import { DateTime, MetricChart, Root } from '@lib/components'
 
 import SlowQueriesTable from '../SlowQuery/components/SlowQueriesTable'
@@ -18,7 +17,6 @@ import Nodes from './components/Nodes'
 
 export default function App() {
   const { t } = useTranslation()
-  const [cluster, setCluster] = useState<ClusterinfoClusterInfo | null>(null)
   const {
     orderOptions: stmtOrderOptions,
     changeOrder: changeStmtOrder,
@@ -36,18 +34,6 @@ export default function App() {
     slowQueries,
     queryTimeRange,
   } = useSlowQuery({ ...DEF_SLOW_QUERY_OPTIONS, limit: 10 }, false)
-
-  useEffect(() => {
-    const fetchLoad = async () => {
-      try {
-        let res = await client.getInstance().topologyAllGet()
-        setCluster(res.data)
-      } catch (error) {
-        setCluster(null)
-      }
-    }
-    fetchLoad()
-  }, [])
 
   return (
     <Root>
@@ -149,7 +135,7 @@ export default function App() {
           </Col>
           <Col span={6}>
             <Nodes />
-            <MonitorAlertBar cluster={cluster} />
+            <MonitorAlertBar />
           </Col>
         </Row>
       </Router>

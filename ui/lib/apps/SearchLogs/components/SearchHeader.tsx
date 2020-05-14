@@ -14,7 +14,7 @@ import {
   namingMap,
   NodeKind,
   NodeKindList,
-  parseClusterInfo,
+  // parseClusterInfo,
   parseSearchingParams,
 } from './utils'
 import {
@@ -77,8 +77,10 @@ export default function SearchHeader({ taskGroupID }: Props) {
 
   useMount(() => {
     async function fetchData() {
-      const res = await client.getInstance().topologyAllGet()
-      const targets = parseClusterInfo(res.data)
+      const res = {} as any
+      // const res = await client.getInstance().topologyAllGet()
+      // const targets = parseClusterInfo(res.data)
+      const targets = [] as any
       setAllTargets(targets)
       setComponents(targets.map((item) => item.display_name!))
       if (!taskGroupID) {

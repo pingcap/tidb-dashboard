@@ -1,152 +1,96 @@
-import { Badge, Divider, Popconfirm, Tooltip } from 'antd'
+import { Divider, Popconfirm, Tooltip, Alert } from 'antd'
 import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
-import React, { ReactNode } from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DeleteOutlined } from '@ant-design/icons'
-
-import {
-  STATUS_DOWN,
-  STATUS_OFFLINE,
-  STATUS_TOMBSTONE,
-  STATUS_UP,
-} from '@lib/apps/ClusterInfo/status/status'
-import client from '@lib/client'
-import { CardTableV2 } from '@lib/components'
+import { CardTableV2, InstanceStatusBadge } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import { useClientRequest } from '@lib/utils/useClientRequest'
+import { usePersistFn } from '@umijs/hooks'
+import {
+  buildInstanceTable,
+  IInstanceTableItem,
+  InstanceStatus,
+} from '@lib/utils/instanceTable'
+import client from '@lib/client'
 
-function useStatusColumnRender(handleHideTiDB) {
+function StatusColumn({
+  node,
+  onHideTiDB,
+}: {
+  node: IInstanceTableItem
+  onHideTiDB: (node) => void
+}) {
   const { t } = useTranslation()
-  return (node) => {
-    if (node.status == null) {
-      // Tree node
-      return
-    }
-    let statusNode: ReactNode = null
-    switch (node.status) {
-      case STATUS_DOWN:
-        statusNode = (
-          <Badge
-            status="error"
-            text={t('cluster_info.list.instance_table.status.down')}
-          />
-        )
-        break
-      case STATUS_UP:
-        statusNode = (
-          <Badge
-            status="success"
-            text={t('cluster_info.list.instance_table.status.up')}
-          />
-        )
-        break
-      case STATUS_TOMBSTONE:
-        statusNode = (
-          <Badge
-            status="default"
-            text={t('cluster_info.list.instance_table.status.tombstone')}
-          />
-        )
-        break
-      case STATUS_OFFLINE:
-        statusNode = (
-          <Badge
-            status="processing"
-            text={t('cluster_info.list.instance_table.status.offline')}
-          />
-        )
-        break
-      default:
-        statusNode = (
-          <Badge
-            status="error"
-            text={t('cluster_info.list.instance_table.status.unknown')}
-          />
-        )
-        break
-    }
-    return (
-      <span>
-        {statusNode}
-        {node.nodeKind === 'tidb' && node.status !== STATUS_UP && (
-          <>
-            <Divider type="vertical" />
-            <Popconfirm
-              title={t(
-                'cluster_info.list.instance_table.actions.hide_db.confirm'
-              )}
-              onConfirm={() => handleHideTiDB(node)}
-            >
-              <Tooltip
-                title={t(
-                  'cluster_info.list.instance_table.actions.hide_db.tooltip'
-                )}
-              >
-                <a>
-                  <DeleteOutlined />
-                </a>
-              </Tooltip>
-            </Popconfirm>
-          </>
-        )}
-      </span>
-    )
-  }
-}
 
-function useHideTiDBHandler(updateData) {
-  return async (node) => {
-    await client
-      .getInstance()
-      .topologyTidbAddressDelete(`${node.ip}:${node.port}`)
-    updateData()
-  }
-}
-
-function buildData(data) {
-  if (data === undefined) {
-    return {}
-  }
-  const tableData: any[] = [] // FIXME
-  const groupData: any[] = [] // FIXME
-  let startIndex = 0
-  const kinds = ['tidb', 'tikv', 'pd', 'tiflash']
-  kinds.forEach((nodeKind) => {
-    const nodes = data[nodeKind]
-    if (nodes.err) {
-      return
-    }
-    const count = nodes.nodes.length
-    groupData.push({
-      key: nodeKind,
-      name: nodeKind,
-      startIndex: startIndex,
-      count: count,
-      level: 0,
-    })
-    startIndex += count
-    const children = nodes.nodes.map((node) => {
-      return {
-        key: `${node.ip}:${node.port}`,
-        ...node,
-        nodeKind,
-      }
-    })
-    tableData.push(...children)
+  const onConfirm = usePersistFn(() => {
+    onHideTiDB && onHideTiDB(node)
   })
-  return { tableData, groupData }
+
+  return (
+    <span>
+      <InstanceStatusBadge status={node.status} />
+      {node.instanceKind === 'tidb' && node.status !== InstanceStatus.Up && (
+        <>
+          <Divider type="vertical" />
+          <Popconfirm
+            title={t(
+              'cluster_info.list.instance_table.actions.hide_db.confirm'
+            )}
+            onConfirm={onConfirm}
+          >
+            <Tooltip
+              title={t(
+                'cluster_info.list.instance_table.actions.hide_db.tooltip'
+              )}
+            >
+              <a>
+                <DeleteOutlined />
+              </a>
+            </Tooltip>
+          </Popconfirm>
+        </>
+      )}
+    </span>
+  )
 }
 
 export default function ListPage() {
   const { t } = useTranslation()
-
-  const { data, isLoading, sendRequest } = useClientRequest((cancelToken) =>
-    client.getInstance().topologyAllGet({ cancelToken })
+  const {
+    data: dataTiDB,
+    isLoading: loadingTiDB,
+    error: errTiDB,
+    sendRequest,
+  } = useClientRequest((cancelToken) =>
+    client.getInstance().getTiDBTopology({ cancelToken })
   )
-  const { tableData, groupData } = buildData(data)
+  const {
+    data: dataStores,
+    isLoading: loadingStores,
+    error: errStores,
+  } = useClientRequest((cancelToken) =>
+    client.getInstance().getStoreTopology({ cancelToken })
+  )
+  const {
+    data: dataPD,
+    isLoading: loadingPD,
+    error: errPD,
+  } = useClientRequest((cancelToken) =>
+    client.getInstance().getPDTopology({ cancelToken })
+  )
 
-  const handleHideTiDB = useHideTiDBHandler(sendRequest)
-  const renderStatusColumn = useStatusColumnRender(handleHideTiDB)
+  const [tableData, groupData] = useMemo(
+    () =>
+      buildInstanceTable({
+        dataPD,
+        dataTiDB,
+        dataTiKV: dataStores?.tikv,
+        dataTiFlash: dataStores?.tiflash,
+        includeTiFlash: true,
+      }),
+    [dataTiDB, dataStores, dataPD]
+  )
 
   const columns = [
     {
@@ -171,13 +115,23 @@ export default function ListPage() {
       maxWidth: 100,
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
-      onRender: renderStatusColumn,
+      onRender: (node) => (
+        <StatusColumn
+          node={node}
+          onHideTiDB={async (node) => {
+            await client
+              .getInstance()
+              .topologyTidbAddressDelete(`${node.ip}:${node.port}`)
+            sendRequest()
+          }}
+        />
+      ),
     },
     {
       name: t('cluster_info.list.instance_table.columns.up_time'),
       key: 'start_timestamp',
       minWidth: 100,
-      maxWidth: 150,
+      maxWidth: 200,
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
       onRender: ({ start_timestamp: ts }) => {
@@ -190,8 +144,17 @@ export default function ListPage() {
       name: t('cluster_info.list.instance_table.columns.version'),
       fieldName: 'version',
       key: 'version',
-      minWidth: 150,
-      maxWidth: 300,
+      minWidth: 100,
+      maxWidth: 150,
+      isResizable: true,
+      columnActionsMode: ColumnActionsMode.disabled,
+    },
+    {
+      name: t('cluster_info.list.instance_table.columns.git_hash'),
+      fieldName: 'git_hash',
+      key: 'git_hash',
+      minWidth: 100,
+      maxWidth: 200,
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
     },
@@ -204,24 +167,30 @@ export default function ListPage() {
       isResizable: true,
       columnActionsMode: ColumnActionsMode.disabled,
     },
-    {
-      name: t('cluster_info.list.instance_table.columns.git_hash'),
-      fieldName: 'git_hash',
-      key: 'git_hash',
-      minWidth: 150,
-      maxWidth: 300,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
-    },
   ]
 
   return (
-    <CardTableV2
-      cardNoMargin
-      loading={isLoading}
-      columns={columns}
-      items={tableData || []}
-      groups={groupData || []}
-    />
+    <>
+      {errTiDB && (
+        <Alert message="Load TiDB instances failed" type="error" showIcon />
+      )}
+      {errStores && (
+        <Alert
+          message="Load TiKV / TiFlash instances failed"
+          type="error"
+          showIcon
+        />
+      )}
+      {errPD && (
+        <Alert message="Load PD instances failed" type="error" showIcon />
+      )}
+      <CardTableV2
+        cardNoMargin
+        loading={loadingTiDB || loadingStores || loadingPD}
+        columns={columns}
+        items={tableData}
+        groups={groupData}
+      />
+    </>
   )
 }

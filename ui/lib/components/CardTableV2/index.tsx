@@ -6,20 +6,52 @@ import {
   IColumn,
   IDetailsListProps,
   SelectionMode,
+  // IDetailsGroupDividerProps,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { usePersistFn } from '@umijs/hooks'
-
 import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
+
 import styles from './index.module.less'
+
+export { AntCheckboxGroupHeader } from './GroupHeader'
+// import { GroupSpacer } from 'office-ui-fabric-react/lib/GroupedList'
+// import { Icon } from 'office-ui-fabric-react/lib/Icon'
 
 DetailsList.whyDidYouRender = {
   customName: 'DetailsList',
 } as any
 
-const MemoDetailsList = React.memo(DetailsList)
+function renderStickyHeader(props, defaultRender) {
+  if (!props) {
+    return null
+  }
+  return (
+    <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
+      <div className={styles.tableHeader}>{defaultRender!(props)}</div>
+    </Sticky>
+  )
+}
+
+function renderCheckbox(props) {
+  return <Checkbox checked={props?.checked} />
+}
+
+export function ImprovedDetailsList(props: IDetailsListProps) {
+  return (
+    <DetailsList
+      onRenderDetailsHeader={renderStickyHeader}
+      onRenderCheckbox={renderCheckbox}
+      {...props}
+    />
+  )
+}
+
+ImprovedDetailsList.whyDidYouRender = true
+
+export const MemoDetailsList = React.memo(ImprovedDetailsList)
 
 function copyAndSort<T>(
   items: T[],
@@ -60,17 +92,6 @@ export interface ICardTableV2Props extends IDetailsListProps {
   ) => void
 
   onGetColumns?: (columns: IColumn[]) => void
-}
-
-function renderStickyHeader(props, defaultRender) {
-  if (!props) {
-    return null
-  }
-  return (
-    <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
-      <div className={styles.tableHeader}>{defaultRender!(props)}</div>
-    </Sticky>
-  )
 }
 
 function useRenderClickableRow(onRowClicked) {
@@ -163,10 +184,6 @@ function CardTableV2(props: ICardTableV2Props) {
     // eslint-disable-next-line
   }, [columns])
 
-  const onRenderCheckbox = useCallback((props) => {
-    return <Checkbox checked={props?.checked} />
-  }, [])
-
   return (
     <Card
       title={title}
@@ -181,9 +198,7 @@ function CardTableV2(props: ICardTableV2Props) {
           <MemoDetailsList
             selectionMode={SelectionMode.none}
             layoutMode={DetailsListLayoutMode.justified}
-            onRenderDetailsHeader={renderStickyHeader}
             onRenderRow={onRowClicked ? renderClickableRow : undefined}
-            onRenderCheckbox={onRenderCheckbox}
             columns={finalColumns}
             items={finalItems}
             {...restProps}

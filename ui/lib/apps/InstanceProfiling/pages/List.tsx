@@ -50,47 +50,48 @@ function filterTreeNode(inputValue, treeNode) {
 }
 
 function useTargetsMap() {
-  const { data } = useClientRequest((cancelToken) =>
-    client.getInstance().topologyAllGet({ cancelToken })
-  )
-  return useMemo(() => {
-    const map = {}
-    if (!data) {
-      return map
-    }
-    // FIXME, declare type
-    data.tidb?.nodes?.forEach((node) => {
-      const display = `${node.ip}:${node.port}`
-      const target = {
-        kind: 'tidb',
-        display_name: display,
-        ip: node.ip,
-        port: node.status_port,
-      }
-      map[display] = target
-    })
-    data.tikv?.nodes?.forEach((node) => {
-      const display = `${node.ip}:${node.port}`
-      const target = {
-        kind: 'tikv',
-        display_name: display,
-        ip: node.ip,
-        port: node.status_port,
-      }
-      map[display] = target
-    })
-    data.pd?.nodes?.forEach((node) => {
-      const display = `${node.ip}:${node.port}`
-      const target = {
-        kind: 'pd',
-        display_name: display,
-        ip: node.ip,
-        port: node.port,
-      }
-      map[display] = target
-    })
-    return map
-  }, [data])
+  return {}
+  // const { data } = useClientRequest((cancelToken) =>
+  //   client.getInstance().topologyAllGet({ cancelToken })
+  // )
+  // return useMemo(() => {
+  //   const map = {}
+  //   if (!data) {
+  //     return map
+  //   }
+  //   // FIXME, declare type
+  //   data.tidb?.nodes?.forEach((node) => {
+  //     const display = `${node.ip}:${node.port}`
+  //     const target = {
+  //       kind: 'tidb',
+  //       display_name: display,
+  //       ip: node.ip,
+  //       port: node.status_port,
+  //     }
+  //     map[display] = target
+  //   })
+  //   data.tikv?.nodes?.forEach((node) => {
+  //     const display = `${node.ip}:${node.port}`
+  //     const target = {
+  //       kind: 'tikv',
+  //       display_name: display,
+  //       ip: node.ip,
+  //       port: node.status_port,
+  //     }
+  //     map[display] = target
+  //   })
+  //   data.pd?.nodes?.forEach((node) => {
+  //     const display = `${node.ip}:${node.port}`
+  //     const target = {
+  //       kind: 'pd',
+  //       display_name: display,
+  //       ip: node.ip,
+  //       port: node.port,
+  //     }
+  //     map[display] = target
+  //   })
+  //   return map
+  // }, [data])
 }
 
 const profilingDurationsSec = [10, 30, 60, 120]

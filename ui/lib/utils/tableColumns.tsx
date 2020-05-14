@@ -49,16 +49,6 @@ function commonColumnName(fieldName: string): any {
   )
 }
 
-export function dummyColumn(): IColumn {
-  return {
-    name: '',
-    key: 'dummy',
-    minWidth: 28,
-    maxWidth: 28,
-    onRender: (_rec) => null,
-  }
-}
-
 function fieldsKeyColumn(transKeyPrefix: string): IColumn {
   return {
     name: commonColumnName('name'),

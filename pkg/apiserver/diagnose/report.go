@@ -1009,7 +1009,7 @@ func GetPDSchedulerInfo(startTime, endTime string, db *gorm.DB) (TableDef, error
 
 	table := TableDef{
 		Category:       []string{CategoryPD},
-		Title:          "blance_leader_region",
+		Title:          "balance_leader_region",
 		Comment:        "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},

@@ -25,6 +25,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.etcd.io/etcd/clientv3"
+	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -34,19 +35,28 @@ import (
 )
 
 type Service struct {
+	ctx context.Context
+
 	config        *config.Config
 	etcdClient    *clientv3.Client
 	httpClient    *http.Client
 	tidbForwarder *tidb.Forwarder
 }
 
-func NewService(config *config.Config, etcdClient *clientv3.Client, httpClient *http.Client, tidbForwarder *tidb.Forwarder) *Service {
-	return &Service{
+func NewService(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.Client, httpClient *http.Client, tidbForwarder *tidb.Forwarder) *Service {
+	s := &Service{
 		config:        config,
 		etcdClient:    etcdClient,
 		httpClient:    httpClient,
 		tidbForwarder: tidbForwarder,
 	}
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			s.ctx = ctx
+			return nil
+		},
+	})
+	return s
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -75,7 +85,7 @@ func (s *Service) deleteTiDBTopologyHandler(c *gin.Context) {
 	errorChannel := make(chan error, 2)
 	ttlKey := fmt.Sprintf("/topology/tidb/%v/ttl", address)
 	nonTTLKey := fmt.Sprintf("/topology/tidb/%v/info", address)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(s.ctx, time.Second*5)
 	defer cancel()
 
 	var wg sync.WaitGroup
@@ -113,7 +123,7 @@ func (s *Service) deleteTiDBTopologyHandler(c *gin.Context) {
 func (s *Service) topologyHandler(c *gin.Context) {
 	var returnObject ClusterInfo
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(s.ctx, 5*time.Second)
 	defer cancel()
 
 	fetchers := []func(ctx context.Context, service *Service, info *ClusterInfo){
@@ -163,7 +173,7 @@ func (s *Service) topologyGetAlertCount(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) hostHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(s.ctx, 5*time.Second)
 	defer cancel()
 
 	var wg sync.WaitGroup

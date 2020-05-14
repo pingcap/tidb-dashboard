@@ -1,6 +1,7 @@
 package tidb
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -33,8 +34,9 @@ func TestProxy(t *testing.T) {
 		t.Fatal(err)
 	}
 	p := newProxy(l, map[string]string{"test": fmt.Sprintf("%s:%s", u.Hostname(), u.Port())}, 0, 0)
-	go p.run()
-	defer p.stop()
+	ctx, cancel := context.WithCancel(context.Background())
+	go p.run(ctx)
+	defer cancel()
 
 	u.Host = l.Addr().String()
 	res, err := http.Get(u.String())
@@ -81,8 +83,9 @@ func TestProxyPick(t *testing.T) {
 		servers[idx] = server
 	}
 	p := newProxy(l, endpoints, 0, 0)
-	go p.run()
-	defer p.stop()
+	ctx, cancel := context.WithCancel(context.Background())
+	go p.run(ctx)
+	defer cancel()
 
 	for i := 0; i < n; i++ {
 		client := &http.Client{}

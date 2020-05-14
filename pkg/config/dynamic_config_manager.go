@@ -76,6 +76,12 @@ func (m *DynamicConfigManager) Start(ctx context.Context) error {
 				if err := m.Set(dc); err == nil {
 					return
 				}
+			} else {
+				select {
+				case <-m.ctx.Done():
+					return
+				default:
+				}
 			}
 		}
 	}()
@@ -153,6 +159,7 @@ func (m *DynamicConfigManager) load() (*DynamicConfig, error) {
 	defer cancel()
 	resp, err := m.etcdClient.Get(ctx, DynamicConfigPath)
 	if err != nil {
+		log.Warn("Failed to load dynamic config from etcd", zap.Error(err))
 		return nil, ErrUnableToLoad.WrapWithNoMessage(err)
 	}
 	switch len(resp.Kvs) {
@@ -167,7 +174,7 @@ func (m *DynamicConfigManager) load() (*DynamicConfig, error) {
 		}
 		return &dc, nil
 	default:
-		log.Error("unreachable")
+		log.Error("UNREACHABLE")
 		return nil, ErrUnableToLoad.New("unreachable")
 	}
 }

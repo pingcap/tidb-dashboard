@@ -20,7 +20,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
@@ -29,22 +28,31 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 )
 
-func packLogsAsTarball(tasks []*TaskModel, w io.Writer) error {
+func packLogsAsTarball(tasks []*TaskModel, w io.Writer) {
 	tw := tar.NewWriter(w)
 	defer tw.Close()
+
 	for _, task := range tasks {
-		if task.LogStorePath == nil {
+		if task.LogStorePath == nil && task.SlowLogStorePath == nil {
 			continue
 		}
-		err := dumpLog(*task.LogStorePath, tw)
-		if err != nil {
-			return err
+		if task.LogStorePath != nil {
+			if err := dumpLog(*task.LogStorePath, tw); err != nil {
+				log.Warn("Failed to pack log",
+					zap.Any("task", task),
+					zap.Error(err))
+				continue
+			}
 		}
-		if err = dumpLog(*task.SlowLogStorePath, tw); err != nil {
-			return err
+		if task.SlowLogStorePath != nil {
+			if err := dumpLog(*task.SlowLogStorePath, tw); err != nil {
+				log.Warn("Failed to pack slow log",
+					zap.Any("task", task),
+					zap.Error(err))
+				continue
+			}
 		}
 	}
-	return nil
 }
 
 func dumpLog(savedPath string, tw *tar.Writer) error {
@@ -75,41 +83,19 @@ func dumpLog(savedPath string, tw *tar.Writer) error {
 }
 
 func serveTaskForDownload(task *TaskModel, c *gin.Context) {
-	if task.LogStorePath == nil {
+	if task.LogStorePath == nil && task.SlowLogStorePath == nil {
 		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.New("Log is not available for this task"))
-		return
-	}
-	f, err := os.Open(*task.LogStorePath)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	stat, err := f.Stat()
-	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(utils.ErrInvalidRequest.New("Log is not available"))
 		return
 	}
 	reader, writer := io.Pipe()
 	go func() {
-		tw := tar.NewWriter(writer)
 		defer writer.Close()
-		defer tw.Close()
-		err := dumpLog(*task.LogStorePath, tw)
-		if err != nil {
-			log.Error("Error dumping logs from path", zap.String("path", *task.LogStorePath), zap.Error(err))
-			return
-		}
-		if task.SlowLogStorePath != nil {
-			if err = dumpLog(*task.SlowLogStorePath, tw); err != nil {
-				log.Error("Error dumping logs from path", zap.String("path", *task.SlowLogStorePath), zap.Error(err))
-				return
-			}
-		}
+		packLogsAsTarball([]*TaskModel{task}, writer)
 	}()
 	contentType := "application/tar"
 	extraHeaders := map[string]string{
-		"Content-Disposition": fmt.Sprintf(`attachment; filename="%s-logs.tar"`, strings.Split(stat.Name(), ".")[0]),
+		"Content-Disposition": fmt.Sprintf(`attachment; filename="logs-%s.tar"`, task.Target.FileName()),
 	}
 	c.DataFromReader(http.StatusOK, -1, contentType, reader, extraHeaders)
 }
@@ -117,11 +103,8 @@ func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
 	reader, writer := io.Pipe()
 	go func() {
-		err := packLogsAsTarball(tasks, writer)
-		defer writer.Close() //nolint:errcheck
-		if err != nil {
-			log.Warn("Pack log failed", zap.Error(err))
-		}
+		defer writer.Close()
+		packLogsAsTarball(tasks, writer)
 	}()
 	contentType := "application/tar"
 	extraHeaders := map[string]string{

@@ -27,14 +27,14 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
-
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 	"github.com/pingcap/log"
 	"github.com/pingcap/sysutil"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 )
 
 // MaxRecvMsgSize set max gRPC receive message size received from server. If any message size is larger than

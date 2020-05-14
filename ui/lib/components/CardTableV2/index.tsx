@@ -1,17 +1,29 @@
-import React, { useCallback, useMemo, useEffect } from 'react'
 import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
+  ColumnActionsMode,
+  ConstrainMode,
+  DetailsList,
   DetailsListLayoutMode,
-  SelectionMode,
-  IDetailsListProps,
   IColumn,
+  IDetailsListProps,
+  SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
-import { ShimmeredDetailsList } from 'office-ui-fabric-react/lib/ShimmeredDetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
+import React, { useCallback, useMemo } from 'react'
+import { usePersistFn } from '@umijs/hooks'
 
+import { dummyColumn } from '@lib/utils/tableColumns'
+
+import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
 import styles from './index.module.less'
+
+DetailsList.whyDidYouRender = {
+  customName: 'DetailsList',
+} as any
+
+const MemoDetailsList = React.memo(DetailsList)
 
 function copyAndSort<T>(
   items: T[],
@@ -34,6 +46,7 @@ export interface ICardTableV2Props extends IDetailsListProps {
   loading?: boolean
   cardExtra?: React.ReactNode
   cardNoMargin?: boolean
+  cardNoMarginTop?: boolean
 
   // The keys of visible columns. If null, all columns will be shown.
   visibleColumnKeys?: { [key: string]: boolean }
@@ -42,12 +55,14 @@ export interface ICardTableV2Props extends IDetailsListProps {
   // Handle sort
   orderBy?: string
   desc?: boolean
-  onChangeSort?: (orderBy: string, desc: boolean) => void
+  onChangeOrder?: (orderBy: string, desc: boolean) => void
 
   // Event triggered when a row is clicked.
-  onRowClicked?: (item: any, itemIndex: number) => void
-
-  onGetColumns?: (columns: IColumn[]) => void
+  onRowClicked?: (
+    item: any,
+    itemIndex: number,
+    ev: React.MouseEvent<HTMLElement>
+  ) => void
 }
 
 function renderStickyHeader(props, defaultRender) {
@@ -89,19 +104,31 @@ function CardTableV2(props: ICardTableV2Props) {
     loading = false,
     cardExtra,
     cardNoMargin,
+    cardNoMarginTop,
     visibleColumnKeys,
     visibleItemsCount,
     orderBy,
     desc = true,
-    onChangeSort,
+    onChangeOrder,
     onRowClicked,
-    onGetColumns,
     columns,
     items,
     ...restProps
   } = props
-
   const renderClickableRow = useRenderClickableRow(onRowClicked)
+
+  const onColumnClick = usePersistFn(
+    (_ev: React.MouseEvent<HTMLElement>, column: IColumn) => {
+      if (!onChangeOrder) {
+        return
+      }
+      if (column.key === orderBy) {
+        onChangeOrder(orderBy, !desc)
+      } else {
+        onChangeOrder(column.key, true)
+      }
+    }
+  )
 
   const finalColumns = useMemo(() => {
     let newColumns: IColumn[] = columns || []
@@ -110,20 +137,18 @@ function CardTableV2(props: ICardTableV2Props) {
     }
     newColumns = newColumns.map((c) => ({
       ...c,
+      isResizable: c.isResizable === false ? false : true,
       isSorted: c.key === orderBy,
       isSortedDescending: desc,
       onColumnClick,
+      columnActionsMode: c.columnActionsMode || ColumnActionsMode.disabled,
     }))
+    newColumns.push(dummyColumn())
     return newColumns
-    // (ignore onColumnClick)
-    // eslint-disable-next-line
-  }, [columns, visibleColumnKeys, orderBy, desc])
+  }, [onColumnClick, columns, visibleColumnKeys, orderBy, desc])
 
   const finalItems = useMemo(() => {
     let newItems = items || []
-    if (visibleItemsCount != null) {
-      newItems = newItems.slice(0, visibleItemsCount)
-    }
     const curColumn = finalColumns.find((col) => col.key === orderBy)
     if (curColumn) {
       newItems = copyAndSort(
@@ -132,26 +157,15 @@ function CardTableV2(props: ICardTableV2Props) {
         curColumn.isSortedDescending
       )
     }
+    if (visibleItemsCount != null) {
+      newItems = newItems.slice(0, visibleItemsCount)
+    }
     return newItems
-  }, [items, visibleItemsCount, orderBy, finalColumns])
+  }, [visibleItemsCount, items, orderBy, finalColumns])
 
-  useEffect(() => {
-    onGetColumns && onGetColumns(columns || [])
-    // (ignore onGetColumns)
-    // eslint-disable-next-line
-  }, [columns])
-
-  function onColumnClick(_ev: React.MouseEvent<HTMLElement>, column: IColumn) {
-    if (!onChangeSort) {
-      return
-    }
-
-    if (column.key === orderBy) {
-      onChangeSort(orderBy, !desc)
-    } else {
-      onChangeSort(column.key, true)
-    }
-  }
+  const onRenderCheckbox = useCallback((props) => {
+    return <Checkbox checked={props?.checked} />
+  }, [])
 
   return (
     <Card
@@ -160,23 +174,24 @@ function CardTableV2(props: ICardTableV2Props) {
       style={style}
       className={cx(styles.cardTable, className)}
       noMargin={cardNoMargin}
+      noMarginTop={cardNoMarginTop}
       extra={cardExtra}
     >
-      <div className={styles.cardTableContent}>
-        <ShimmeredDetailsList
-          selectionMode={SelectionMode.none}
-          layoutMode={DetailsListLayoutMode.justified}
-          onRenderDetailsHeader={renderStickyHeader}
-          onRenderRow={onRowClicked ? renderClickableRow : undefined}
-          onRenderCheckbox={(props) => {
-            return <Checkbox checked={props?.checked} />
-          }}
-          columns={finalColumns}
-          items={finalItems}
-          enableShimmer={finalItems.length > 0 ? false : loading}
-          {...restProps}
-        />
-      </div>
+      <AnimatedSkeleton showSkeleton={items.length === 0 && loading}>
+        <div className={styles.cardTableContent}>
+          <MemoDetailsList
+            selectionMode={SelectionMode.none}
+            constrainMode={ConstrainMode.unconstrained}
+            layoutMode={DetailsListLayoutMode.justified}
+            onRenderDetailsHeader={renderStickyHeader}
+            onRenderRow={onRowClicked ? renderClickableRow : undefined}
+            onRenderCheckbox={onRenderCheckbox}
+            columns={finalColumns}
+            items={finalItems}
+            {...restProps}
+          />
+        </div>
+      </AnimatedSkeleton>
     </Card>
   )
 }

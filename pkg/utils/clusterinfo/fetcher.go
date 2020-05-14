@@ -159,7 +159,7 @@ func getAllStoreNodes(endpoint string, httpClient *http.Client) ([]store, error)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("fetch stores got wrong status code")
 	}
 	defer resp.Body.Close()
@@ -329,7 +329,7 @@ func GetPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error)
 		return nil, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("fetch PD members got wrong status code")
 	}
 	data, err := ioutil.ReadAll(resp.Body)
@@ -393,7 +393,7 @@ func getPDStartTimestamp(pdEndPoint string, httpClient *http.Client) (int64, err
 		return 0, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return 0, fmt.Errorf("fetch PD %s status got wrong status code", pdEndPoint)
 	}
 	data, err := ioutil.ReadAll(resp.Body)

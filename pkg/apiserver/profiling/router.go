@@ -35,12 +35,14 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/group/detail/:groupId", auth.MWAuthRequired(), s.getGroupDetail)
 	endpoint.POST("/group/cancel/:groupId", auth.MWAuthRequired(), s.handleCancelGroup)
 	endpoint.DELETE("/group/delete/:groupId", auth.MWAuthRequired(), s.deleteGroup)
-	endpoint.GET("/group/download/acquire_token", auth.MWAuthRequired(), s.getGroupDownloadToken)
+
+	endpoint.GET("/action_token", auth.MWAuthRequired(), s.getActionToken)
 	endpoint.GET("/group/download", s.downloadGroup)
-	endpoint.GET("/single/download/acquire_token", auth.MWAuthRequired(), s.getSingleDownloadToken)
 	endpoint.GET("/single/download", s.downloadSingle)
-	endpoint.GET("/config", s.getDynamicConfig)
-	endpoint.PUT("/config", s.setDynamicConfig)
+	endpoint.GET("/single/view", s.viewSingle)
+
+	endpoint.GET("/config", auth.MWAuthRequired(), s.getDynamicConfig)
+	endpoint.PUT("/config", auth.MWAuthRequired(), s.setDynamicConfig)
 }
 
 // @ID startProfiling
@@ -183,19 +185,21 @@ func (s *Service) handleCancelGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
-// @ID getProfilingGroupDownloadToken
-// @Summary Get download token for group download
-// @Description Get download token with a given group ID
+// @ID getActionToken
+// @Summary Get action token for download or view
+// @Description Get token with a given group ID or task ID and action type
 // @Produce plain
-// @Param id query string false "group ID"
+// @Param id query string false "group or task ID"
+// @Param action query string false "action"
 // @Security JwtAuth
 // @Success 200 {string} string
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /profiling/group/download/acquire_token [get]
-func (s *Service) getGroupDownloadToken(c *gin.Context) {
+// @Router /profiling/action_token [get]
+func (s *Service) getActionToken(c *gin.Context) {
 	id := c.Query("id")
-	token, err := utils.NewJWTString("profiling/group_download", id)
+	action := c.Query("action") // group_download, single_download, single_view
+	token, err := utils.NewJWTString("profiling/"+action, id)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
@@ -260,27 +264,6 @@ func (s *Service) downloadGroup(c *gin.Context) {
 	c.FileAttachment(temp.Name(), fileName)
 }
 
-// @ID getProfilingSingleDownloadToken
-// @Summary Get download token for single download
-// @Description Get download token with a given task ID
-// @Produce plain
-// @Param id query string false "task ID"
-// @Security JwtAuth
-// @Success 200 {string} string
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-// @Router /profiling/single/download/acquire_token [get]
-func (s *Service) getSingleDownloadToken(c *gin.Context) {
-	id := c.Query("id")
-	token, err := utils.NewJWTString("profiling/single_download", id)
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
-		return
-	}
-	c.String(http.StatusOK, token)
-}
-
 // @ID downloadProfilingSingle
 // @Summary Download the result of a task
 // @Description Download the finished profiling result of a task
@@ -333,6 +316,47 @@ func (s *Service) downloadSingle(c *gin.Context) {
 	c.FileAttachment(temp.Name(), fileName)
 }
 
+// @ID viewProfilingSingle
+// @Summary View the result of a task
+// @Description View the finished profiling result of a task
+// @Produce html
+// @Param token query string true "download token"
+// @Security JwtAuth
+// @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
+// @Router /profiling/single/view [get]
+func (s *Service) viewSingle(c *gin.Context) {
+	token := c.Query("token")
+	str, err := utils.ParseJWTString("profiling/single_view", token)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		_ = c.Error(utils.ErrInvalidRequest.New(err.Error()))
+		return
+	}
+	taskID, err := strconv.Atoi(str)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(err)
+		return
+	}
+	task := TaskModel{}
+	err = s.db.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(err)
+		return
+	}
+
+	content, err := ioutil.ReadFile(task.FilePath)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		_ = c.Error(err)
+		return
+	}
+	c.Data(http.StatusOK, "image/svg+xml", content)
+}
+
 // @ID deleteProfilingGroup
 // @Summary Delete all tasks with a given group ID
 // @Description Delete all finished profiling tasks with a given group ID
@@ -376,8 +400,14 @@ func (s *Service) deleteGroup(c *gin.Context) {
 // @Router /profiling/config [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
 func (s *Service) getDynamicConfig(c *gin.Context) {
-	c.JSON(http.StatusOK, s.cfgManager.Get().Profiling)
+	dc, err := s.cfgManager.Get()
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, dc.Profiling)
 }
 
 // @Summary Set Profiling Dynamic Config
@@ -399,7 +429,7 @@ func (s *Service) setDynamicConfig(c *gin.Context) {
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {
 		dc.Profiling = req
 	}
-	if err := s.cfgManager.Set(opt); err != nil {
+	if err := s.cfgManager.Modify(opt); err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
 		return

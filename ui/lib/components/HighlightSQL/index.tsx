@@ -4,9 +4,9 @@ import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
 import sql from 'react-syntax-highlighter/dist/esm/languages/hljs/sql'
 import lightTheme from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light'
 import darkTheme from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark-reasonable'
-
 import Pre from '../Pre'
 import formatSql from '@lib/utils/formatSql'
+import moize from 'moize'
 
 SyntaxHighlighter.registerLanguage('sql', sql)
 
@@ -26,7 +26,7 @@ function simpleSqlMinify(str) {
     .replace(/\*\/\s{1,}/g, '*/')
 }
 
-export default function HighlightSQL({ sql, compact, theme = 'light' }: Props) {
+function HighlightSQL({ sql, compact, theme = 'light' }: Props) {
   const formattedSql = useMemo(() => {
     let f = formatSql(sql)
     if (compact) {
@@ -35,22 +35,22 @@ export default function HighlightSQL({ sql, compact, theme = 'light' }: Props) {
     return f
   }, [sql, compact])
 
-  const memoNode = useMemo(() => {
-    return (
-      <SyntaxHighlighter
-        language="sql"
-        style={theme === 'light' ? lightTheme : darkTheme}
-        customStyle={{
-          background: 'none',
-          padding: 0,
-          overflowX: 'hidden',
-        }}
-        PreTag={Pre}
-      >
-        {formattedSql}
-      </SyntaxHighlighter>
-    )
-  }, [theme, formattedSql])
-
-  return memoNode
+  return (
+    <SyntaxHighlighter
+      language="sql"
+      style={theme === 'light' ? lightTheme : darkTheme}
+      customStyle={{
+        background: 'none',
+        padding: 0,
+        overflowX: 'hidden',
+      }}
+      PreTag={Pre}
+    >
+      {formattedSql}
+    </SyntaxHighlighter>
+  )
 }
+
+export default moize.react(HighlightSQL, {
+  maxSize: 1000,
+})

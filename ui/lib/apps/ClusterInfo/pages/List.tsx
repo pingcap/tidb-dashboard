@@ -3,10 +3,12 @@ import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
+
+import { Card } from '@lib/components'
+import CardTabs from '@lib/components/CardTabs'
+
 import HostTable from '../components/HostTable'
 import InstanceTable from '../components/InstanceTable'
-import CardTabs from '@lib/components/CardTabs'
-import { Card } from '@lib/components'
 
 function renderTabBar(props, DefaultTabBar) {
   return (

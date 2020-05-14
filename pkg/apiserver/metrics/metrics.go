@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
 	"go.etcd.io/etcd/clientv3"
+	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
@@ -27,13 +28,24 @@ var (
 )
 
 type Service struct {
+	ctx context.Context
+
 	etcdClient *clientv3.Client
 }
 
-func NewService(etcdClient *clientv3.Client) *Service {
-	return &Service{
+func NewService(lc fx.Lifecycle, etcdClient *clientv3.Client) *Service {
+	s := &Service{
 		etcdClient: etcdClient,
 	}
+
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			s.ctx = ctx
+			return nil
+		},
+	})
+
+	return s
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -69,7 +81,7 @@ func (s *Service) queryHandler(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(s.ctx, 2*time.Second)
 	defer cancel()
 	resp, err := s.etcdClient.Get(ctx, "/topology/prometheus", clientv3.WithPrefix())
 	if err != nil {
@@ -101,6 +113,10 @@ func (s *Service) queryHandler(c *gin.Context) {
 		return
 	}
 	defer promResp.Body.Close()
+	if promResp.StatusCode != http.StatusOK {
+		_ = c.Error(ErrPrometheusQueryFailed.New("failed to query Prometheus"))
+		return
+	}
 	body, err := ioutil.ReadAll(promResp.Body)
 	if err != nil {
 		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to query Prometheus"))

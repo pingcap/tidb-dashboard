@@ -2,7 +2,7 @@ import React from 'react'
 import { SlowquerySlowQuery } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import * as useColumn from '@lib/utils/useColumn'
+import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabTxnProps {
   data: SlowquerySlowQuery
@@ -16,7 +16,7 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
     {
       key: 'write_keys',
-      value: getValueFormat('short')(data.write_keys || 0, 1),
+      value: getValueFormat('short')(data.write_keys || 0, 0, 1),
     },
     {
       key: 'write_size',
@@ -24,17 +24,13 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
     {
       key: 'prewrite_regions',
-      value: getValueFormat('short')(data.prewrite_region || 0, 1),
+      value: getValueFormat('short')(data.prewrite_region || 0, 0, 1),
     },
     {
       key: 'txn_retry',
       value: data.txn_retry,
     },
   ]
-  const columns = [
-    useColumn.useFieldsKeyColumn('slow_query.common.columns.'),
-    useColumn.useFieldsValueColumn(),
-    useColumn.useFieldsDescriptionColumn('slow_query.common.columns.'),
-  ]
+  const columns = valueColumns('slow_query.common.columns.')
   return <CardTableV2 cardNoMargin columns={columns} items={items} />
 }

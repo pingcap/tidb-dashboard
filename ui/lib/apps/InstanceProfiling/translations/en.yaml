@@ -16,7 +16,6 @@ instance_profiling:
         start_at: Start At
         duration: Duration (sec)
         status: Status
-        action: Action
       status:
         running: Running
         finished: Finished

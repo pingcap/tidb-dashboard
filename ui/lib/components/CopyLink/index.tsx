@@ -30,7 +30,7 @@ for (const key in translations) {
   })
 }
 
-export default function CopyLink({ data }: ICopyLinkProps) {
+function CopyLink({ data }: ICopyLinkProps) {
   const { t } = useTranslation()
   const [showCopied, setShowCopied] = useState(false)
 
@@ -60,3 +60,5 @@ export default function CopyLink({ data }: ICopyLinkProps) {
     </span>
   )
 }
+
+export default React.memo(CopyLink)

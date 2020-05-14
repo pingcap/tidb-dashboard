@@ -1,13 +1,11 @@
-import {
-  IColumn,
-  ColumnActionsMode,
-} from 'office-ui-fabric-react/lib/DetailsList'
-import { useTranslation } from 'react-i18next'
-import { max } from 'lodash'
-import { getValueFormat } from '@baurine/grafana-value-formats'
-import React from 'react'
 import { Tooltip } from 'antd'
-import { Pre, Bar } from '@lib/components'
+import { max } from 'lodash'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+
+import { Bar, Pre, TextWithInfo } from '@lib/components'
 import { addTranslationResource } from './i18n'
 
 const translations = {
@@ -33,61 +31,70 @@ for (const key in translations) {
   })
 }
 
-export function useDummyColumn(): IColumn {
+function TransText({ transKey }: { transKey: string }) {
+  const { t } = useTranslation()
+  return (
+    <span>
+      {t(transKey, {
+        defaultValue: '',
+        fallbackLng: '_',
+      })}
+    </span>
+  )
+}
+
+function commonColumnName(fieldName: string): any {
+  return (
+    <TextWithInfo.TransKey transKey={`component.commonColumn.${fieldName}`} />
+  )
+}
+
+export function dummyColumn(): IColumn {
   return {
     name: '',
     key: 'dummy',
     minWidth: 28,
     maxWidth: 28,
-    columnActionsMode: ColumnActionsMode.disabled,
-    onRender: (rec) => null,
+    onRender: (_rec) => null,
   }
 }
 
-export function useFieldsKeyColumn(translationPrefix: string): IColumn {
-  const { t } = useTranslation()
+function fieldsKeyColumn(transKeyPrefix: string): IColumn {
   return {
-    name: t('component.commonColumn.name'),
+    name: commonColumnName('name'),
     key: 'key',
     minWidth: 150,
     maxWidth: 250,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => {
       if (rec.keyDisplay) {
         return rec.keyDisplay
       }
-      return t(`${translationPrefix}${rec.key}`)
+      return <TransText transKey={`${transKeyPrefix}${rec.key}`} />
     },
   }
 }
 
-export function useFieldsValueColumn(): IColumn {
-  const { t } = useTranslation()
+function fieldsValueColumn(): IColumn {
   return {
-    name: t('component.commonColumn.value'),
+    name: commonColumnName('value'),
     key: 'value',
     fieldName: 'value',
     minWidth: 150,
     maxWidth: 250,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
   }
 }
 
-export function useFieldsTimeValueColumn(
+function fieldsTimeValueColumn(
   rows?: { avg?: number; min?: number; max?: number; value?: number }[]
 ): IColumn {
-  const { t } = useTranslation()
   const capacity = rows
     ? max(rows.map((v) => max([v.max, v.min, v.avg, v.value]))) ?? 0
     : 0
   return {
-    name: t('component.commonColumn.time'),
+    name: commonColumnName('time'),
     key: 'time',
     minWidth: 150,
     maxWidth: 200,
-    isResizable: true,
     onRender: (rec) => {
       const tooltipContent: string[] = []
       if (rec.avg) {
@@ -125,21 +132,35 @@ export function useFieldsTimeValueColumn(
   }
 }
 
-export function useFieldsDescriptionColumn(translationPrefix: string): IColumn {
-  const { t } = useTranslation()
+function fieldsDescriptionColumn(transKeyPrefix: string): IColumn {
   return {
-    name: t('component.commonColumn.desc'),
+    name: commonColumnName('desc'),
     key: 'description',
     minWidth: 150,
     maxWidth: 300,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => {
-      // Fallback to no language
-      return t(`${translationPrefix}${rec.key}_tooltip`, {
-        defaultValue: '',
-        fallbackLng: '_',
-      })
+      return <TransText transKey={`${transKeyPrefix}${rec.key}_tooltip`} />
     },
   }
+}
+
+////////////////////////////////////////////
+
+export function valueColumns(transKeyPrefix: string) {
+  return [
+    fieldsKeyColumn(transKeyPrefix),
+    fieldsValueColumn(),
+    fieldsDescriptionColumn(transKeyPrefix),
+  ]
+}
+
+export function timeValueColumns(
+  transKeyPrefix: string,
+  items?: { avg?: number; min?: number; max?: number; value?: number }[]
+) {
+  return [
+    fieldsKeyColumn(transKeyPrefix),
+    fieldsTimeValueColumn(items),
+    fieldsDescriptionColumn(transKeyPrefix),
+  ]
 }

@@ -103,16 +103,11 @@ func (s *Service) serviceLoop(ctx context.Context) {
 	s.sessionCh = make(chan *StartRequestSession, 1000)
 	defer close(s.sessionCh)
 
-	dc := <-cfgCh
-	var timeCh <-chan time.Time
-	if dc.Profiling.AutoCollectionDurationSecs > 0 {
-		timeCh = time.After(time.Duration(dc.Profiling.AutoCollectionIntervalSecs) * time.Second)
-	} else {
-		timeCh = make(chan time.Time, 1)
-	}
+	var dc *config.DynamicConfig
+	var timeCh <-chan time.Time = make(chan time.Time, 1)
 
 	newAutoRequest := func() *StartRequest {
-		if dc.Profiling.AutoCollectionDurationSecs == 0 {
+		if dc == nil || dc.Profiling.AutoCollectionDurationSecs == 0 {
 			timeCh = make(chan time.Time, 1)
 			return nil
 		}

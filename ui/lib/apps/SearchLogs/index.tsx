@@ -16,7 +16,7 @@ function DetailPageWrapper() {
   return <LogSearchingDetail key={id} />
 }
 
-const App = (props) => {
+const App = () => {
   return (
     <div>
       <Routes>

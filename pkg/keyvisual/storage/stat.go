@@ -206,7 +206,9 @@ func NewStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvide
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			_ = s.Restore()
+			if err := s.Restore(); err != nil {
+				return err
+			}
 			wg.Add(1)
 			go func() {
 				defer wg.Done()

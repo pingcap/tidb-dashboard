@@ -61,7 +61,10 @@ func (s *Stat) Restore() error {
 	// load data from db
 	for layerNum := uint8(0); ; layerNum++ {
 		axisModels, err := FindAxisModelsOrderByTime(s.db, layerNum)
-		if err != nil || len(axisModels) == 0 {
+		if err != nil {
+			return err
+		}
+		if len(axisModels) == 0 {
 			break
 		}
 		if layerNum >= uint8(len(s.layers)) {

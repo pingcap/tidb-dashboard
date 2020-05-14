@@ -69,9 +69,13 @@ func (m *DynamicConfigManager) Start(ctx context.Context) error {
 		for {
 			dc, err := m.load()
 			if err == nil {
+				if dc == nil {
+					dc = &DynamicConfig{}
+				}
 				dc.Adjust()
-				m.Set(dc)
-				return
+				if err := m.Set(dc); err == nil {
+					return
+				}
 			}
 		}
 	}()

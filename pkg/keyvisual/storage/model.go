@@ -21,7 +21,7 @@ func (AxisModel) TableName() string {
 	return tableAxisModelName
 }
 
-func NewPlane(layerNum uint8, time time.Time, axis matrix.Axis) (*AxisModel, error) {
+func NewAxisModel(layerNum uint8, time time.Time, axis matrix.Axis) (*AxisModel, error) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	err := enc.Encode(axis)
@@ -54,30 +54,30 @@ func (a *AxisModel) Delete(db *dbstore.DB) error {
 		Error
 }
 
-// If the table `Plane` exists, return true, nil
-// or create table `Plane`
-func CreateTablePlaneIfNotExists(db *dbstore.DB) (bool, error) {
+// If the table `AxisModel` exists, return true, nil
+// or create table `AxisModel`
+func CreateTableAxisModelIfNotExists(db *dbstore.DB) (bool, error) {
 	if db.HasTable(&AxisModel{}) {
 		return true, nil
 	}
 	return false, db.CreateTable(&AxisModel{}).Error
 }
 
-func ClearTablePlane(db *dbstore.DB) error {
+func ClearTableAxisModel(db *dbstore.DB) error {
 	return db.Delete(&AxisModel{}).Error
 }
 
-func FindPlanesOrderByTime(db *dbstore.DB, layerNum uint8) ([]*AxisModel, error) {
-	var planes []*AxisModel
+func FindAxisModelsOrderByTime(db *dbstore.DB, layerNum uint8) ([]*AxisModel, error) {
+	var axisModels []*AxisModel
 	err := db.
 		Where("layer_num = ?", layerNum).
 		Order("time").
-		Find(&planes).
+		Find(&axisModels).
 		Error
-	return planes, err
+	return axisModels, err
 }
 
-func DeletePlanesByLayerNum(db *dbstore.DB, layerNum uint8) error {
+func DeleteAxisModelsByLayerNum(db *dbstore.DB, layerNum uint8) error {
 	return db.
 		Where("layer_num = ?", layerNum).
 		Delete(&AxisModel{}).

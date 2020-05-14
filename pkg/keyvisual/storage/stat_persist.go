@@ -11,20 +11,20 @@ import (
 
 func (s *layerStat) InsertLastAxisToDb(axis matrix.Axis, endTime time.Time) error {
 	log.Debug("Insert Axis", zap.Uint8("layer num", s.LayerNum), zap.Time("time", endTime))
-	plane, err := NewPlane(s.LayerNum, endTime, axis)
+	axisModel, err := NewAxisModel(s.LayerNum, endTime, axis)
 	if err != nil {
 		return err
 	}
-	return plane.Insert(s.Db)
+	return axisModel.Insert(s.Db)
 }
 
 func (s *layerStat) DeleteFirstAxisFromDb() error {
 	log.Debug("Delete Axis", zap.Uint8("layer num", s.LayerNum), zap.Time("time", s.StartTime))
-	plane, err := NewPlane(s.LayerNum, s.StartTime, matrix.Axis{})
+	axisModel, err := NewAxisModel(s.LayerNum, s.StartTime, matrix.Axis{})
 	if err != nil {
 		return err
 	}
-	return plane.Delete(s.Db)
+	return axisModel.Delete(s.Db)
 }
 
 // Restore data from db the first time service starts
@@ -34,70 +34,70 @@ func (s *Stat) Restore() error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	// insert start `Plane` for each layer
-	createStartPlanes := func() error {
-		log.Debug("Create start plane for each layer")
+	// insert start `AxisModel` for each layer
+	createStartAxisModels := func() error {
+		log.Debug("Create start axisModel for each layer")
 		for i, layer := range s.layers {
-			startPlane, err := NewPlane(uint8(i), layer.StartTime, matrix.Axis{})
+			startAxisModel, err := NewAxisModel(uint8(i), layer.StartTime, matrix.Axis{})
 			if err != nil {
 				return err
 			}
-			if err := startPlane.Insert(s.db); err != nil {
+			if err := startAxisModel.Insert(s.db); err != nil {
 				return err
 			}
 		}
 		return nil
 	}
 
-	// table planes preprocess
-	isExist, err := CreateTablePlaneIfNotExists(s.db)
+	// table `AxisModel` preprocess
+	isExist, err := CreateTableAxisModelIfNotExists(s.db)
 	if err != nil {
 		return err
 	}
 	if !isExist {
-		return createStartPlanes()
+		return createStartAxisModels()
 	}
 
 	// load data from db
 	for layerNum := uint8(0); ; layerNum++ {
-		planes, err := FindPlanesOrderByTime(s.db, layerNum)
-		if err != nil || len(planes) == 0 {
+		axisModels, err := FindAxisModelsOrderByTime(s.db, layerNum)
+		if err != nil || len(axisModels) == 0 {
 			break
 		}
 		if layerNum >= uint8(len(s.layers)) {
-			log.Warn("Layer num is too large. Ignore and delete the redundant planes", zap.Uint8("layer num", layerNum), zap.Int("layers len", len(s.layers)))
-			_ = DeletePlanesByLayerNum(s.db, layerNum)
+			log.Warn("Layer num is too large. Ignore and delete the redundant axisModels", zap.Uint8("layer num", layerNum), zap.Int("layers len", len(s.layers)))
+			_ = DeleteAxisModelsByLayerNum(s.db, layerNum)
 			continue
 		}
 
-		if len(planes) > 1 {
+		if len(axisModels) > 1 {
 			s.layers[layerNum].Empty = false
 		} else if layerNum == 0 {
 			// no valid data was stored，clear
-			log.Debug("Clear table plane")
-			if err := ClearTablePlane(s.db); err != nil {
+			log.Debug("Clear table AxisModel")
+			if err := ClearTableAxisModel(s.db); err != nil {
 				return err
 			}
-			return createStartPlanes()
+			return createStartAxisModels()
 		}
-		log.Debug("Load planes", zap.Uint8("layer num", layerNum), zap.Int("len", len(planes)-1))
+		log.Debug("Load axisModels", zap.Uint8("layer num", layerNum), zap.Int("len", len(axisModels)-1))
 
-		// the first plane is only used to save starttime
-		s.layers[layerNum].StartTime = planes[0].Time
+		// the first axisModel is only used to save starttime
+		s.layers[layerNum].StartTime = axisModels[0].Time
 		s.layers[layerNum].Head = 0
-		n := len(planes) - 1
+		n := len(axisModels) - 1
 		if n > s.layers[layerNum].Len {
-			log.Warn("The number of plane is longer than layer's len", zap.Int("number", n), zap.Int("layer len", s.layers[layerNum].Len), zap.Uint8("layer num", layerNum))
-			for _, p := range planes[s.layers[layerNum].Len+1:] {
+			log.Warn("The number of axisModel is longer than layer's len", zap.Int("number", n), zap.Int("layer len", s.layers[layerNum].Len), zap.Uint8("layer num", layerNum))
+			for _, p := range axisModels[s.layers[layerNum].Len+1:] {
 				_ = p.Delete(s.db)
 			}
 			n = s.layers[layerNum].Len
 		}
-		s.layers[layerNum].EndTime = planes[n].Time
+		s.layers[layerNum].EndTime = axisModels[n].Time
 		s.layers[layerNum].Tail = (s.layers[layerNum].Head + n) % s.layers[layerNum].Len
-		for i, plane := range planes[1 : n+1] {
-			s.layers[layerNum].RingTimes[i] = plane.Time
-			axis, err := plane.UnmarshalAxis()
+		for i, axisModel := range axisModels[1 : n+1] {
+			s.layers[layerNum].RingTimes[i] = axisModel.Time
+			axis, err := axisModel.UnmarshalAxis()
 			if err != nil {
 				return err
 			}

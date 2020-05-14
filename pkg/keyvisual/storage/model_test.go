@@ -36,50 +36,50 @@ func (t *testDbstoreSuite) TearDownTest(c *C) {
 	_ = t.db.Close()
 }
 
-func (t *testDbstoreSuite) TestCreateTablePlaneIfNotExists(c *C) {
-	isExist, err := CreateTablePlaneIfNotExists(t.db)
+func (t *testDbstoreSuite) TestCreateTableAxisModelIfNotExists(c *C) {
+	isExist, err := CreateTableAxisModelIfNotExists(t.db)
 	c.Assert(isExist, Equals, false)
 	c.Assert(err, IsNil)
-	isExist, err = CreateTablePlaneIfNotExists(t.db)
+	isExist, err = CreateTableAxisModelIfNotExists(t.db)
 	c.Assert(isExist, Equals, true)
 	c.Assert(err, IsNil)
 }
 
-func (t *testDbstoreSuite) TestClearTablePlane(c *C) {
-	_, err := CreateTablePlaneIfNotExists(t.db)
+func (t *testDbstoreSuite) TestClearTableAxisModel(c *C) {
+	_, err := CreateTableAxisModelIfNotExists(t.db)
 	if err != nil {
-		c.Fatalf("Create table Plane error: %v", err)
+		c.Fatalf("Create table AxisModel error: %v", err)
 	}
-	plane, err := NewPlane(0, time.Now(), matrix.Axis{})
+	axisModel, err := NewAxisModel(0, time.Now(), matrix.Axis{})
 	if err != nil {
-		c.Fatalf("NewPlane error: %v", err)
+		c.Fatalf("NewAxisModel error: %v", err)
 	}
-	err = plane.Insert(t.db)
+	err = axisModel.Insert(t.db)
 	if err != nil {
-		c.Fatalf("Plane Insert error: %v", err)
+		c.Fatalf("AxisModel Insert error: %v", err)
 	}
 	var count int
 
 	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
-		c.Fatalf("Count table Plane error: %v", err)
+		c.Fatalf("Count table AxisModel error: %v", err)
 	}
 	c.Assert(count, Equals, 1)
 
-	err = ClearTablePlane(t.db)
+	err = ClearTableAxisModel(t.db)
 	c.Assert(err, IsNil)
 
 	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
-		c.Fatalf("Count table Plane error: %v", err)
+		c.Fatalf("Count table AxisModel error: %v", err)
 	}
 	c.Assert(count, Equals, 0)
 }
 
-func (t *testDbstoreSuite) TestPlaneFunc(c *C) {
-	_, err := CreateTablePlaneIfNotExists(t.db)
+func (t *testDbstoreSuite) TestAxisModelFunc(c *C) {
+	_, err := CreateTableAxisModelIfNotExists(t.db)
 	if err != nil {
-		c.Fatalf("Create table Plane error: %v", err)
+		c.Fatalf("Create table AxisModel error: %v", err)
 	}
 	var layerNum uint8 = 0
 	endTime := time.Now()
@@ -87,57 +87,57 @@ func (t *testDbstoreSuite) TestPlaneFunc(c *C) {
 		Keys:       []string{"a", "b"},
 		ValuesList: [][]uint64{{1}, {1}, {1}, {1}},
 	}
-	plane, err := NewPlane(layerNum, endTime, axis)
+	axisModel, err := NewAxisModel(layerNum, endTime, axis)
 	if err != nil {
-		c.Fatalf("NewPlane error: %v", err)
+		c.Fatalf("NewAxisModel error: %v", err)
 	}
-	err = plane.Insert(t.db)
+	err = axisModel.Insert(t.db)
 	c.Assert(err, IsNil)
-	planes, err := FindPlanesOrderByTime(t.db, layerNum)
+	axisModels, err := FindAxisModelsOrderByTime(t.db, layerNum)
 	if err != nil {
-		c.Fatalf("FindPlaneOrderByTime error: %v", err)
+		c.Fatalf("FindAxisModelOrderByTime error: %v", err)
 	}
-	c.Assert(len(planes), Equals, 1)
-	planeDeepEqual(planes[0], plane, c)
-	obtainedAxis, err := planes[0].UnmarshalAxis()
+	c.Assert(len(axisModels), Equals, 1)
+	axisModelDeepEqual(axisModels[0], axisModel, c)
+	obtainedAxis, err := axisModels[0].UnmarshalAxis()
 	if err != nil {
 		c.Fatalf("UnmarshalAxis error: %v", err)
 	}
 	c.Assert(obtainedAxis, DeepEquals, axis)
 
-	err = plane.Delete(t.db)
+	err = axisModel.Delete(t.db)
 	c.Assert(err, IsNil)
 
 	var count int
 	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
-		c.Fatalf("Count table Plane error: %v", err)
+		c.Fatalf("Count table AxisModel error: %v", err)
 	}
 	c.Assert(count, Equals, 0)
 
-	err = plane.Delete(t.db)
+	err = axisModel.Delete(t.db)
 	c.Assert(err, IsNil)
 }
 
-func (t *testDbstoreSuite) TestPlanesFindAndDelete(c *C) {
-	_, err := CreateTablePlaneIfNotExists(t.db)
+func (t *testDbstoreSuite) TestAxisModelsFindAndDelete(c *C) {
+	_, err := CreateTableAxisModelIfNotExists(t.db)
 	if err != nil {
-		c.Fatalf("Create table Plane error: %v", err)
+		c.Fatalf("Create table AxisModel error: %v", err)
 	}
 
 	var maxLayerNum uint8 = 2
-	var planeNumEachLayer = 3
-	var planeList = make([][]*AxisModel, maxLayerNum)
+	var axisModelNumEachLayer = 3
+	var axisModelList = make([][]*AxisModel, maxLayerNum)
 	for layerNum := uint8(0); layerNum < maxLayerNum; layerNum++ {
-		planeList[layerNum] = make([]*AxisModel, planeNumEachLayer)
-		for i := 0; i < planeNumEachLayer; i++ {
-			planeList[layerNum][i], err = NewPlane(layerNum, time.Now(), matrix.Axis{})
+		axisModelList[layerNum] = make([]*AxisModel, axisModelNumEachLayer)
+		for i := 0; i < axisModelNumEachLayer; i++ {
+			axisModelList[layerNum][i], err = NewAxisModel(layerNum, time.Now(), matrix.Axis{})
 			if err != nil {
-				c.Fatalf("NewPlane error: %v", err)
+				c.Fatalf("NewAxisModel error: %v", err)
 			}
-			err = planeList[layerNum][i].Insert(t.db)
+			err = axisModelList[layerNum][i].Insert(t.db)
 			if err != nil {
-				c.Fatalf("NewPlane error: %v", err)
+				c.Fatalf("NewAxisModel error: %v", err)
 			}
 		}
 	}
@@ -145,38 +145,38 @@ func (t *testDbstoreSuite) TestPlanesFindAndDelete(c *C) {
 	var count int
 	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
-		c.Fatalf("Count table Plane error: %v", err)
+		c.Fatalf("Count table AxisModel error: %v", err)
 	}
-	c.Assert(count, Equals, int(maxLayerNum)*planeNumEachLayer)
+	c.Assert(count, Equals, int(maxLayerNum)*axisModelNumEachLayer)
 
 	findLayerNum := maxLayerNum - 1
-	planes, err := FindPlanesOrderByTime(t.db, findLayerNum)
+	axisModels, err := FindAxisModelsOrderByTime(t.db, findLayerNum)
 	c.Assert(err, IsNil)
-	planesDeepEqual(planes, planeList[findLayerNum], c)
+	axisModelsDeepEqual(axisModels, axisModelList[findLayerNum], c)
 
-	err = DeletePlanesByLayerNum(t.db, findLayerNum)
+	err = DeleteAxisModelsByLayerNum(t.db, findLayerNum)
 	c.Assert(err, IsNil)
 
-	planes, err = FindPlanesOrderByTime(t.db, findLayerNum)
+	axisModels, err = FindAxisModelsOrderByTime(t.db, findLayerNum)
 	c.Assert(err, IsNil)
-	c.Assert(planes, HasLen, 0)
+	c.Assert(axisModels, HasLen, 0)
 
 	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
-		c.Fatalf("Count table Plane error: %v", err)
+		c.Fatalf("Count table AxisModel error: %v", err)
 	}
-	c.Assert(count, Equals, int(maxLayerNum-1)*planeNumEachLayer)
+	c.Assert(count, Equals, int(maxLayerNum-1)*axisModelNumEachLayer)
 }
 
-func planesDeepEqual(obtainedPlanes []*AxisModel, expectedPlanes []*AxisModel, c *C) {
-	c.Assert(len(obtainedPlanes), Equals, len(expectedPlanes))
-	for i := range obtainedPlanes {
-		planeDeepEqual(obtainedPlanes[i], expectedPlanes[i], c)
+func axisModelsDeepEqual(obtainedAxisModels []*AxisModel, expectedAxisModels []*AxisModel, c *C) {
+	c.Assert(len(obtainedAxisModels), Equals, len(expectedAxisModels))
+	for i := range obtainedAxisModels {
+		axisModelDeepEqual(obtainedAxisModels[i], expectedAxisModels[i], c)
 	}
 }
 
-func planeDeepEqual(obtainedPlane *AxisModel, expectedPlane *AxisModel, c *C) {
-	c.Assert(obtainedPlane.Time.Unix(), Equals, expectedPlane.Time.Unix())
-	obtainedPlane.Time = expectedPlane.Time
-	c.Assert(obtainedPlane, DeepEquals, expectedPlane)
+func axisModelDeepEqual(obtainedAxisModel *AxisModel, expectedAxisModel *AxisModel, c *C) {
+	c.Assert(obtainedAxisModel.Time.Unix(), Equals, expectedAxisModel.Time.Unix())
+	obtainedAxisModel.Time = expectedAxisModel.Time
+	c.Assert(obtainedAxisModel, DeepEquals, expectedAxisModel)
 }

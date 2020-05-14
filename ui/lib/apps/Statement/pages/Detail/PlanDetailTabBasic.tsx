@@ -2,8 +2,8 @@ import React from 'react'
 import { StatementModel } from '@lib/client'
 import { CardTableV2, DateTime, Pre, TextWrap } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import * as useColumn from '@lib/utils/useColumn'
 import { Tooltip } from 'antd'
+import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabBasicProps {
   data: StatementModel
@@ -51,10 +51,6 @@ export default function TabBasic({ data }: ITabBasicProps) {
       value: getValueFormat('bytes')(data.max_mem || 0, 1),
     },
   ]
-  const columns = [
-    useColumn.useFieldsKeyColumn('statement.fields.'),
-    useColumn.useFieldsValueColumn(),
-    useColumn.useFieldsDescriptionColumn('statement.fields.'),
-  ]
+  const columns = valueColumns('statement.fields.')
   return <CardTableV2 cardNoMargin columns={columns} items={items} />
 }

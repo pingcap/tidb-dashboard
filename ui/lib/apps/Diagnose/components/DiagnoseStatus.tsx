@@ -1,45 +1,26 @@
-import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Descriptions, message, Skeleton, Progress, Button } from 'antd'
-import { Head } from '@lib/components'
-import { DateTime } from '@lib/components'
-import { DiagnoseReport } from '@lib/client'
+import { Button, Descriptions, Progress } from 'antd'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link, useParams } from 'react-router-dom'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+
 import client from '@lib/client'
+import { AnimatedSkeleton, DateTime, Head } from '@lib/components'
+import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 
 function DiagnoseStatus() {
-  const [report, setReport] = useState<DiagnoseReport | undefined>(undefined)
   const { id } = useParams()
   const { t } = useTranslation()
 
-  useEffect(() => {
-    let t: ReturnType<typeof setTimeout> | null = null
-    if (!id) {
-      return
+  const { data: report, isLoading } = useClientRequestWithPolling(
+    (cancelToken) =>
+      client.getInstance().diagnoseReportsIdStatusGet(id, { cancelToken }),
+    {
+      shouldPoll: (data) => data?.progress! < 100,
+      pollingInterval: 1000,
+      immediate: true,
     }
-    async function fetchData() {
-      try {
-        const res = await client.getInstance().diagnoseReportsIdStatusGet(id!)
-        const { data } = res
-        setReport(data)
-        if (data.progress! >= 100) {
-          if (t !== null) {
-            clearInterval(t)
-          }
-        }
-      } catch (error) {
-        message.error(error.message)
-      }
-    }
-    t = setInterval(() => fetchData(), 1000)
-    fetchData()
-    return () => {
-      if (t !== null) {
-        clearInterval(t)
-      }
-    }
-  }, [id])
+  )
 
   return (
     <Head
@@ -64,32 +45,34 @@ function DiagnoseStatus() {
         )
       }
     >
-      {!report ? (
-        <Skeleton active />
-      ) : (
-        <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label={t('diagnose.status.range_begin')}>
-            <DateTime.Calendar
-              unixTimestampMs={new Date(report.start_time!).valueOf()}
-            />
-          </Descriptions.Item>
-          <Descriptions.Item label={t('diagnose.status.range_end')}>
-            <DateTime.Calendar
-              unixTimestampMs={new Date(report.end_time!).valueOf()}
-            />
-          </Descriptions.Item>
-          {report.compare_start_time && (
-            <Descriptions.Item label={t('diagnose.status.baseline_begin')}>
+      <AnimatedSkeleton showSkeleton={isLoading && !report}>
+        {report && (
+          <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label={t('diagnose.status.range_begin')}>
               <DateTime.Calendar
-                unixTimestampMs={new Date(report.compare_start_time!).valueOf()}
+                unixTimestampMs={new Date(report.start_time!).valueOf()}
               />
             </Descriptions.Item>
-          )}
-          <Descriptions.Item label={t('diagnose.status.progress')}>
-            <Progress style={{ width: 200 }} percent={report.progress || 0} />
-          </Descriptions.Item>
-        </Descriptions>
-      )}
+            <Descriptions.Item label={t('diagnose.status.range_end')}>
+              <DateTime.Calendar
+                unixTimestampMs={new Date(report.end_time!).valueOf()}
+              />
+            </Descriptions.Item>
+            {report.compare_start_time && (
+              <Descriptions.Item label={t('diagnose.status.baseline_begin')}>
+                <DateTime.Calendar
+                  unixTimestampMs={new Date(
+                    report.compare_start_time
+                  ).valueOf()}
+                />
+              </Descriptions.Item>
+            )}
+            <Descriptions.Item label={t('diagnose.status.progress')}>
+              <Progress style={{ width: 200 }} percent={report.progress || 0} />
+            </Descriptions.Item>
+          </Descriptions>
+        )}
+      </AnimatedSkeleton>
     </Head>
   )
 }

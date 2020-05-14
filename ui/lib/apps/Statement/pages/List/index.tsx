@@ -1,7 +1,11 @@
 import React, { useState } from 'react'
 import { Select, Space, Tooltip, Drawer, Button, Checkbox, Result } from 'antd'
-import { useLocalStorageState, useDebounceFn } from '@umijs/hooks'
-import { SettingOutlined, ReloadOutlined } from '@ant-design/icons'
+import { useLocalStorageState } from '@umijs/hooks'
+import {
+  SettingOutlined,
+  ReloadOutlined,
+  LoadingOutlined,
+} from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useTranslation } from 'react-i18next'
@@ -15,7 +19,6 @@ const { Option } = Select
 
 const VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const SHOW_FULL_SQL = 'statement.show_full_sql'
-const COLUMNS_WIDTH = 'statement.columns_width'
 
 const defColumnKeys: IColumnKeys = {
   digest_text: true,
@@ -30,8 +33,12 @@ export default function StatementsOverview() {
   const { t } = useTranslation()
 
   const {
-    savedQueryOptions,
-    setSavedQueryOptions,
+    queryOptions,
+    setQueryOptions,
+    orderOptions,
+    changeOrder,
+    refresh,
+
     enable,
     allTimeRanges,
     allSchemas,
@@ -39,12 +46,10 @@ export default function StatementsOverview() {
     validTimeRange,
     loadingStatements,
     statements,
-    refresh,
   } = useStatement()
 
   const [columns, setColumns] = useState<IColumn[]>([])
   const [showSettings, setShowSettings] = useState(false)
-
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     VISIBLE_COLUMN_KEYS,
     defColumnKeys
@@ -54,46 +59,30 @@ export default function StatementsOverview() {
     false
   )
 
-  const [columnsWidth, setColumnsWidth] = useLocalStorageState(
-    COLUMNS_WIDTH,
-    {}
-  )
-  function handleColumnResize(
-    column?: IColumn,
-    newWidth?: number,
-    _columnIndex?: number
-  ) {
-    setColumnsWidth({
-      ...columnsWidth,
-      [column!.key]: newWidth,
-    })
-  }
-  const { run } = useDebounceFn(handleColumnResize, 500)
-
   return (
-    <ScrollablePane style={{ height: '100vh' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Card>
         <Toolbar>
           <Space>
             <TimeRangeSelector
-              value={savedQueryOptions.timeRange}
+              value={queryOptions.timeRange}
               timeRanges={allTimeRanges}
               onChange={(timeRange) =>
-                setSavedQueryOptions({
-                  ...savedQueryOptions,
+                setQueryOptions({
+                  ...queryOptions,
                   timeRange,
                 })
               }
             />
             <Select
-              value={savedQueryOptions.schemas}
+              value={queryOptions.schemas}
               mode="multiple"
               allowClear
               placeholder={t('statement.pages.overview.toolbar.select_schemas')}
               style={{ minWidth: 200 }}
               onChange={(schemas) =>
-                setSavedQueryOptions({
-                  ...savedQueryOptions,
+                setQueryOptions({
+                  ...queryOptions,
                   schemas,
                 })
               }
@@ -105,7 +94,7 @@ export default function StatementsOverview() {
               ))}
             </Select>
             <Select
-              value={savedQueryOptions.stmtTypes}
+              value={queryOptions.stmtTypes}
               mode="multiple"
               allowClear
               placeholder={t(
@@ -113,8 +102,8 @@ export default function StatementsOverview() {
               )}
               style={{ minWidth: 160 }}
               onChange={(stmtTypes) =>
-                setSavedQueryOptions({
-                  ...savedQueryOptions,
+                setQueryOptions({
+                  ...queryOptions,
                   stmtTypes,
                 })
               }
@@ -150,32 +139,33 @@ export default function StatementsOverview() {
               <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
             <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-              <ReloadOutlined onClick={refresh} />
+              {loadingStatements ? (
+                <LoadingOutlined />
+              ) : (
+                <ReloadOutlined onClick={refresh} />
+              )}
             </Tooltip>
           </Space>
         </Toolbar>
       </Card>
 
       {enable ? (
-        <StatementsTable
-          statements={statements}
-          loading={loadingStatements}
-          timeRange={validTimeRange}
-          orderBy={savedQueryOptions.orderBy}
-          desc={savedQueryOptions.desc}
-          showFullSQL={showFullSQL}
-          visibleColumnKeys={visibleColumnKeys}
-          onGetColumns={setColumns}
-          onChangeSort={(orderBy, desc) =>
-            setSavedQueryOptions({
-              ...savedQueryOptions,
-              orderBy,
-              desc,
-            })
-          }
-          columnsWidth={columnsWidth}
-          onColumnResize={run}
-        />
+        <div style={{ height: '100%', position: 'relative' }}>
+          <ScrollablePane>
+            <StatementsTable
+              cardNoMarginTop
+              loading={loadingStatements}
+              statements={statements}
+              timeRange={validTimeRange}
+              orderBy={orderOptions.orderBy}
+              desc={orderOptions.desc}
+              showFullSQL={showFullSQL}
+              visibleColumnKeys={visibleColumnKeys}
+              onGetColumns={setColumns}
+              onChangeOrder={changeOrder}
+            />
+          </ScrollablePane>
+        </div>
       ) : (
         <Result
           title={t('statement.settings.disabled_result.title')}
@@ -201,6 +191,6 @@ export default function StatementsOverview() {
           onConfigUpdated={refresh}
         />
       </Drawer>
-    </ScrollablePane>
+    </div>
   )
 }

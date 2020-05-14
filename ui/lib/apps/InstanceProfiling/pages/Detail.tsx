@@ -1,12 +1,12 @@
+import { Badge, Button, Progress } from 'antd'
 import React, { useCallback, useMemo } from 'react'
-import { useParams } from 'react-router-dom'
-import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Button, Badge, Progress } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
-import { Head } from '@lib/components'
-import { CardTableV2 } from '@lib/components'
+import { Link, useParams } from 'react-router-dom'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { usePersistFn } from '@umijs/hooks'
+
 import client from '@lib/client'
+import { CardTableV2, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 
 function mapData(data) {
@@ -31,10 +31,7 @@ function mapData(data) {
 }
 
 function isFinished(data) {
-  if (!data) {
-    return false
-  }
-  return data.task_group_status.state === 2
+  return data?.task_group_status?.state === 2
 }
 
 export default function Page() {
@@ -46,19 +43,12 @@ export default function Page() {
       client.getInstance().getProfilingGroupDetail(id, { cancelToken }),
     {
       shouldPoll: (data) => !isFinished(data),
+      pollingInterval: 1000,
+      immediate: true,
     }
   )
 
   const data = useMemo(() => mapData(respData), [respData])
-
-  const handleDownload = useCallback(async () => {
-    const res = await client.getInstance().getProfilingGroupDownloadToken(id)
-    const token = res.data
-    if (!token) {
-      return
-    }
-    window.location = `${client.getBasePath()}/profiling/group/download?token=${token}`
-  }, [id])
 
   const columns = useMemo(
     () => [
@@ -67,7 +57,6 @@ export default function Page() {
         key: 'instance',
         minWidth: 150,
         maxWidth: 400,
-        isResizable: true,
         onRender: (record) => record.target.display_name,
       },
       {
@@ -75,7 +64,6 @@ export default function Page() {
         key: 'kind',
         minWidth: 100,
         maxWidth: 150,
-        isResizable: true,
         onRender: (record) => record.target.kind,
       },
       {
@@ -83,7 +71,6 @@ export default function Page() {
         key: 'status',
         minWidth: 150,
         maxWidth: 200,
-        isResizable: true,
         onRender: (record) => {
           if (record.state === 1) {
             return (
@@ -111,6 +98,31 @@ export default function Page() {
     [t]
   )
 
+  const handleRowClick = usePersistFn(
+    async (rec, _idx, _ev: React.MouseEvent<HTMLElement>) => {
+      const res = await client
+        .getInstance()
+        .getActionToken(rec.id, 'single_view')
+      const token = res.data
+      if (!token) {
+        return
+      }
+      window.open(
+        `${client.getBasePath()}/profiling/single/view?token=${token}`,
+        '_blank'
+      )
+    }
+  )
+
+  const handleDownloadGroup = useCallback(async () => {
+    const res = await client.getInstance().getActionToken(id, 'group_download')
+    const token = res.data
+    if (!token) {
+      return
+    }
+    window.location = `${client.getBasePath()}/profiling/group/download?token=${token}` as any
+  }, [id])
+
   return (
     <div>
       <Head
@@ -124,7 +136,7 @@ export default function Page() {
           <Button
             disabled={!isFinished(data)}
             type="primary"
-            onClick={handleDownload}
+            onClick={handleDownloadGroup}
           >
             {t('instance_profiling.detail.download')}
           </Button>
@@ -134,7 +146,7 @@ export default function Page() {
         loading={isLoading && !data}
         columns={columns}
         items={data?.tasks_status || []}
-        getKey={(row) => row.id}
+        onRowClicked={handleRowClick}
       />
     </div>
   )

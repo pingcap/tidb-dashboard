@@ -1,17 +1,42 @@
-import React, { useCallback, useMemo } from 'react'
 import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
+  ColumnActionsMode,
+  ConstrainMode,
+  DetailsList,
   DetailsListLayoutMode,
-  SelectionMode,
-  IDetailsListProps,
   IColumn,
+  IDetailsListProps,
+  SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
-import { ShimmeredDetailsList } from 'office-ui-fabric-react/lib/ShimmeredDetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
+import React, { useCallback, useMemo } from 'react'
+import { usePersistFn } from '@umijs/hooks'
 
+import { dummyColumn } from '@lib/utils/tableColumns'
+
+import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
 import styles from './index.module.less'
+
+DetailsList.whyDidYouRender = {
+  customName: 'DetailsList',
+} as any
+
+const MemoDetailsList = React.memo(DetailsList)
+
+function copyAndSort<T>(
+  items: T[],
+  columnKey: string,
+  isSortedDescending?: boolean
+): T[] {
+  const key = columnKey as keyof T
+  return items
+    .slice(0)
+    .sort((a: T, b: T) =>
+      (isSortedDescending ? a[key] < b[key] : a[key] > b[key]) ? 1 : -1
+    )
+}
 
 export interface ICardTableV2Props extends IDetailsListProps {
   title?: React.ReactNode
@@ -21,12 +46,23 @@ export interface ICardTableV2Props extends IDetailsListProps {
   loading?: boolean
   cardExtra?: React.ReactNode
   cardNoMargin?: boolean
+  cardNoMarginTop?: boolean
+
   // The keys of visible columns. If null, all columns will be shown.
   visibleColumnKeys?: { [key: string]: boolean }
   visibleItemsCount?: number
-  columnsWidth?: { [key: string]: number }
+
+  // Handle sort
+  orderBy?: string
+  desc?: boolean
+  onChangeOrder?: (orderBy: string, desc: boolean) => void
+
   // Event triggered when a row is clicked.
-  onRowClicked?: (item: any, itemIndex: number) => void
+  onRowClicked?: (
+    item: any,
+    itemIndex: number,
+    ev: React.MouseEvent<HTMLElement>
+  ) => void
 }
 
 function renderStickyHeader(props, defaultRender) {
@@ -68,48 +104,68 @@ function CardTableV2(props: ICardTableV2Props) {
     loading = false,
     cardExtra,
     cardNoMargin,
+    cardNoMarginTop,
     visibleColumnKeys,
     visibleItemsCount,
-    columnsWidth,
+    orderBy,
+    desc = true,
+    onChangeOrder,
     onRowClicked,
     columns,
     items,
     ...restProps
   } = props
-
   const renderClickableRow = useRenderClickableRow(onRowClicked)
+
+  const onColumnClick = usePersistFn(
+    (_ev: React.MouseEvent<HTMLElement>, column: IColumn) => {
+      if (!onChangeOrder) {
+        return
+      }
+      if (column.key === orderBy) {
+        onChangeOrder(orderBy, !desc)
+      } else {
+        onChangeOrder(column.key, true)
+      }
+    }
+  )
 
   const finalColumns = useMemo(() => {
     let newColumns: IColumn[] = columns || []
     if (visibleColumnKeys != null) {
       newColumns = newColumns.filter((c) => visibleColumnKeys[c.key])
     }
-    // https://github.com/microsoft/fluentui/issues/9287
-    // ms doesn't support initial the columns width
-    if (columnsWidth != null) {
-      newColumns = newColumns.map((c) =>
-        columnsWidth[c.key]
-          ? {
-              ...c,
-              style: {
-                width: `${columnsWidth[c.key]}px`,
-              }, // doesn't work
-              currentWidth: columnsWidth[c.key], // doesn't work
-              calculatedWidth: columnsWidth[c.key], // doesn't work
-            }
-          : c
+    newColumns = newColumns.map((c) => ({
+      ...c,
+      isResizable: c.isResizable === false ? false : true,
+      isSorted: c.key === orderBy,
+      isSortedDescending: desc,
+      onColumnClick,
+      columnActionsMode: c.columnActionsMode || ColumnActionsMode.disabled,
+    }))
+    newColumns.push(dummyColumn())
+    return newColumns
+  }, [onColumnClick, columns, visibleColumnKeys, orderBy, desc])
+
+  const finalItems = useMemo(() => {
+    let newItems = items || []
+    const curColumn = finalColumns.find((col) => col.key === orderBy)
+    if (curColumn) {
+      newItems = copyAndSort(
+        newItems,
+        curColumn.fieldName!,
+        curColumn.isSortedDescending
       )
     }
-    console.log(newColumns)
-    return newColumns
-  }, [columns, visibleColumnKeys, columnsWidth])
-
-  const filteredItems = useMemo(() => {
-    if (visibleItemsCount == null) {
-      return items
+    if (visibleItemsCount != null) {
+      newItems = newItems.slice(0, visibleItemsCount)
     }
-    return items.slice(0, visibleItemsCount)
-  }, [items, visibleItemsCount])
+    return newItems
+  }, [visibleItemsCount, items, orderBy, finalColumns])
+
+  const onRenderCheckbox = useCallback((props) => {
+    return <Checkbox checked={props?.checked} />
+  }, [])
 
   return (
     <Card
@@ -118,23 +174,24 @@ function CardTableV2(props: ICardTableV2Props) {
       style={style}
       className={cx(styles.cardTable, className)}
       noMargin={cardNoMargin}
+      noMarginTop={cardNoMarginTop}
       extra={cardExtra}
     >
-      <div className={styles.cardTableContent}>
-        <ShimmeredDetailsList
-          selectionMode={SelectionMode.none}
-          layoutMode={DetailsListLayoutMode.justified}
-          onRenderDetailsHeader={renderStickyHeader}
-          onRenderRow={onRowClicked ? renderClickableRow : undefined}
-          onRenderCheckbox={(props) => {
-            return <Checkbox checked={props?.checked} />
-          }}
-          columns={finalColumns}
-          items={filteredItems}
-          enableShimmer={filteredItems.length > 0 ? false : loading}
-          {...restProps}
-        />
-      </div>
+      <AnimatedSkeleton showSkeleton={items.length === 0 && loading}>
+        <div className={styles.cardTableContent}>
+          <MemoDetailsList
+            selectionMode={SelectionMode.none}
+            constrainMode={ConstrainMode.unconstrained}
+            layoutMode={DetailsListLayoutMode.justified}
+            onRenderDetailsHeader={renderStickyHeader}
+            onRenderRow={onRowClicked ? renderClickableRow : undefined}
+            onRenderCheckbox={onRenderCheckbox}
+            columns={finalColumns}
+            items={finalItems}
+            {...restProps}
+          />
+        </div>
+      </AnimatedSkeleton>
     </Card>
   )
 }

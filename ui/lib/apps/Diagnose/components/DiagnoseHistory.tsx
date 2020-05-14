@@ -1,13 +1,16 @@
-import React, { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Badge } from 'antd'
-import { useTranslation } from 'react-i18next'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import dayjs from 'dayjs'
-import { CardTableV2, DateTime } from '@lib/components'
-import client, { DiagnoseReport } from '@lib/client'
-import { useClientRequest } from '@lib/utils/useClientRequest'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { usePersistFn } from '@umijs/hooks'
 import type { TFunction } from 'i18next'
+
+import client, { DiagnoseReport } from '@lib/client'
+import { CardTableV2, DateTime } from '@lib/components'
+import openLink from '@lib/utils/openLink'
+import { useClientRequest } from '@lib/utils/useClientRequest'
 
 const tableColumns = (t: TFunction): IColumn[] => [
   {
@@ -16,16 +19,16 @@ const tableColumns = (t: TFunction): IColumn[] => [
     fieldName: 'id',
     minWidth: 200,
     maxWidth: 350,
-    isResizable: true,
   },
   {
     name: t('diagnose.list_table.diagnose_create_time'),
     key: 'created_at',
     minWidth: 100,
     maxWidth: 200,
-    isResizable: true,
-    onRender: (rec) => (
-      <DateTime.Calendar unixTimestampMs={dayjs(rec.CreatedAt).unix() * 1000} />
+    onRender: (rec: DiagnoseReport) => (
+      <DateTime.Calendar
+        unixTimestampMs={dayjs(rec.created_at).unix() * 1000}
+      />
     ),
   },
   {
@@ -33,7 +36,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     key: 'progress',
     minWidth: 100,
     maxWidth: 150,
-    isResizable: true,
     onRender: (rec: DiagnoseReport) => {
       if (rec.progress! < 100) {
         return (
@@ -57,7 +59,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     key: 'start_time',
     minWidth: 200,
     maxWidth: 350,
-    isResizable: true,
     onRender: (rec: DiagnoseReport) => {
       return (
         <span>
@@ -77,7 +78,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     key: 'compare_start_time',
     minWidth: 200,
     maxWidth: 350,
-    isResizable: true,
     onRender: (rec: DiagnoseReport) =>
       rec.compare_start_time && (
         <span>
@@ -101,9 +101,11 @@ export default function DiagnoseHistory() {
   )
   const columns = useMemo(() => tableColumns(t), [t])
 
-  function handleRowClick(rec) {
-    navigate(`/diagnose/${rec.id}`)
-  }
+  const handleRowClick = usePersistFn(
+    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+      openLink(`/diagnose/${rec.id}`, ev, navigate)
+    }
+  )
 
   return (
     <CardTableV2

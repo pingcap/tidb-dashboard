@@ -1,21 +1,23 @@
-import React from 'react'
 import {
   Button,
   DatePicker,
   Form,
-  Select,
-  Switch,
   Input,
   InputNumber,
   message,
+  Select,
+  Switch,
 } from 'antd'
-import { useTranslation } from 'react-i18next'
-import { Card } from '@lib/components'
-import { useNavigate } from 'react-router-dom'
-import client from '@lib/client'
-import DiagnoseHistory from './DiagnoseHistory'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { getValueFormat } from '@baurine/grafana-value-formats'
+
+import client from '@lib/client'
+import { Card } from '@lib/components'
+
+import DiagnoseHistory from './DiagnoseHistory'
 
 const useFinishHandler = (navigate) => {
   return async (fieldsValue) => {

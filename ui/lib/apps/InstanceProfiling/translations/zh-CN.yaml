@@ -16,7 +16,6 @@ instance_profiling:
         start_at: 开始时间
         duration: 时长 (秒)
         status: 状态
-        action: 操作
       status:
         running: 分析中
         finished: 完成

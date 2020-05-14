@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Select, Space, Tooltip, Input, Checkbox } from 'antd'
-import { ReloadOutlined } from '@ant-design/icons'
+import { ReloadOutlined, LoadingOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useLocalStorageState } from '@umijs/hooks'
@@ -35,11 +35,14 @@ function List() {
   const { t } = useTranslation()
 
   const {
-    savedQueryOptions,
-    setSavedQueryOptions,
+    queryOptions,
+    setQueryOptions,
+    orderOptions,
+    changeOrder,
+    refresh,
+
     loadingSlowQueries,
     slowQueries,
-    refresh,
   } = useSlowQuery()
 
   const [allSchemas, setAllSchemas] = useState<string[]>([])
@@ -63,24 +66,24 @@ function List() {
   }, [])
 
   return (
-    <ScrollablePane style={{ height: '100vh' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Card>
         <Toolbar>
           <Space>
             <TimeRangeSelector
-              value={savedQueryOptions.timeRange}
+              value={queryOptions.timeRange}
               onChange={(timeRange) =>
-                setSavedQueryOptions({ ...savedQueryOptions, timeRange })
+                setQueryOptions({ ...queryOptions, timeRange })
               }
             />
             <Select
-              value={savedQueryOptions.schemas}
+              value={queryOptions.schemas}
               mode="multiple"
               allowClear
               placeholder={t('statement.pages.overview.toolbar.select_schemas')}
               style={{ minWidth: 200 }}
               onChange={(schemas) =>
-                setSavedQueryOptions({ ...savedQueryOptions, schemas })
+                setQueryOptions({ ...queryOptions, schemas })
               }
             >
               {allSchemas.map((item) => (
@@ -90,17 +93,15 @@ function List() {
               ))}
             </Select>
             <Search
-              defaultValue={savedQueryOptions.searchText}
+              defaultValue={queryOptions.searchText}
               onSearch={(searchText) =>
-                setSavedQueryOptions({ ...savedQueryOptions, searchText })
+                setQueryOptions({ ...queryOptions, searchText })
               }
             />
             <Select
-              value={savedQueryOptions.limit}
+              value={queryOptions.limit}
               style={{ width: 150 }}
-              onChange={(limit) =>
-                setSavedQueryOptions({ ...savedQueryOptions, limit })
-              }
+              onChange={(limit) => setQueryOptions({ ...queryOptions, limit })}
             >
               {LIMITS.map((item) => (
                 <Option value={item} key={item}>
@@ -130,29 +131,32 @@ function List() {
               />
             )}
             <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-              <ReloadOutlined onClick={refresh} />
+              {loadingSlowQueries ? (
+                <LoadingOutlined />
+              ) : (
+                <ReloadOutlined onClick={refresh} />
+              )}
             </Tooltip>
           </Space>
         </Toolbar>
       </Card>
 
-      <SlowQueriesTable
-        loading={loadingSlowQueries}
-        slowQueries={slowQueries}
-        orderBy={savedQueryOptions.orderBy}
-        desc={savedQueryOptions.desc}
-        showFullSQL={showFullSQL}
-        onChangeSort={(orderBy, desc) =>
-          setSavedQueryOptions({
-            ...savedQueryOptions,
-            orderBy,
-            desc,
-          })
-        }
-        onGetColumns={setColumns}
-        visibleColumnKeys={visibleColumnKeys}
-      />
-    </ScrollablePane>
+      <div style={{ height: '100%', position: 'relative' }}>
+        <ScrollablePane>
+          <SlowQueriesTable
+            cardNoMarginTop
+            loading={loadingSlowQueries}
+            slowQueries={slowQueries}
+            orderBy={orderOptions.orderBy}
+            desc={orderOptions.desc}
+            showFullSQL={showFullSQL}
+            visibleColumnKeys={visibleColumnKeys}
+            onGetColumns={setColumns}
+            onChangeOrder={changeOrder}
+          />
+        </ScrollablePane>
+      </div>
+    </div>
   )
 }
 

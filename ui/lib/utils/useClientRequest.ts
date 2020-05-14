@@ -1,5 +1,5 @@
 import { useMount, useUnmount } from '@umijs/hooks'
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { CancelToken, AxiosPromise, CancelTokenSource } from 'axios'
 import axios from 'axios'
 
@@ -27,28 +27,25 @@ export function useClientRequest<T>(
     options || {}
 
   const [state, setState] = useState<State<T>>({
-    isLoading: false,
+    isLoading: immediate,
   })
 
+  // If `cancelTokenSource` is null, it means there is no running requests.
   const cancelTokenSource = useRef<CancelTokenSource | null>(null)
   const mounted = useRef(false)
-
-  const stateRef = useRef(state)
-  useEffect(() => {
-    stateRef.current = state
-  }, [state])
 
   const sendRequest = async () => {
     if (!mounted.current) {
       return
     }
-    if (stateRef.current.isLoading) {
+    if (cancelTokenSource.current) {
       return
     }
 
     beforeRequest && beforeRequest()
 
     cancelTokenSource.current = axios.CancelToken.source()
+
     setState((s) => ({
       ...s,
       isLoading: true,
@@ -77,13 +74,6 @@ export function useClientRequest<T>(
     afterRequest && afterRequest()
   }
 
-  const cancelLastRequest = useCallback(() => {
-    if (cancelTokenSource.current != null) {
-      cancelTokenSource.current.cancel()
-      cancelTokenSource.current = null
-    }
-  }, [])
-
   useMount(() => {
     mounted.current = true
     if (immediate) {
@@ -93,7 +83,10 @@ export function useClientRequest<T>(
 
   useUnmount(() => {
     mounted.current = false
-    cancelLastRequest()
+    if (cancelTokenSource.current != null) {
+      cancelTokenSource.current.cancel()
+      cancelTokenSource.current = null
+    }
   })
 
   return {
@@ -116,18 +109,13 @@ export function useBatchClientRequest<T>(
     options || {}
 
   const [state, setState] = useState<BatchState<T>>({
-    isLoading: false,
+    isLoading: immediate,
     data: reqFactories.map((_) => null),
     error: reqFactories.map((_) => null),
   })
 
   const cancelTokenSource = useRef<CancelTokenSource[] | null>(null)
   const mounted = useRef(false)
-
-  const stateRef = useRef(state)
-  useEffect(() => {
-    stateRef.current = state
-  }, [state])
 
   const sendRequestEach = async (idx) => {
     try {
@@ -154,7 +142,7 @@ export function useBatchClientRequest<T>(
     if (!mounted.current) {
       return
     }
-    if (stateRef.current.isLoading) {
+    if (cancelTokenSource.current) {
       return
     }
 
@@ -181,13 +169,6 @@ export function useBatchClientRequest<T>(
     afterRequest && afterRequest()
   }
 
-  const cancelLastRequest = useCallback(() => {
-    if (cancelTokenSource.current != null) {
-      cancelTokenSource.current.forEach((c) => c.cancel())
-      cancelTokenSource.current = null
-    }
-  }, [])
-
   useMount(() => {
     mounted.current = true
     if (immediate) {
@@ -197,7 +178,10 @@ export function useBatchClientRequest<T>(
 
   useUnmount(() => {
     mounted.current = false
-    cancelLastRequest()
+    if (cancelTokenSource.current != null) {
+      cancelTokenSource.current.forEach((c) => c.cancel())
+      cancelTokenSource.current = null
+    }
   })
 
   return {

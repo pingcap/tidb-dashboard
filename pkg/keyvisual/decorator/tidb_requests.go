@@ -17,26 +17,25 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
-	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
-
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
 const (
-	SchemaVersionPath = "/tidb/ddl/global_schema_version"
+	schemaVersionPath = "/tidb/ddl/global_schema_version"
+	etcdGetTimeout    = time.Second
 )
 
-type serverInfo struct {
-	ID         string `json:"ddl_id"`
-	IP         string `json:"ip"`
-	Port       uint   `json:"listening_port"`
-	StatusPort uint   `json:"status_port"`
-}
+var (
+	ErrNS                    = errorx.NewNamespace("error.keyvisual")
+	ErrNSDecorator           = ErrNS.NewSubNamespace("decorator")
+	ErrTiDBHTTPRequestFailed = ErrNSDecorator.NewType("tidb_http_request_failed")
+)
 
 type dbInfo struct {
 	Name struct {
@@ -61,38 +60,10 @@ type tableInfo struct {
 	} `json:"index_info"`
 }
 
-func (s *tidbLabelStrategy) updateAddress(ctx context.Context) {
-	cli := s.Provider.EtcdClient
-	var info serverInfo
-	for i := 0; i < retryCnt; i++ {
-		var tidbAddress []string
-		ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
-		resp, err := cli.Get(ectx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
-		cancel()
-		if err != nil {
-			log.Warn("get key failed", zap.String("key", pd.TiDBServerInformationPath), zap.Error(err))
-			time.Sleep(200 * time.Millisecond)
-			continue
-		}
-		for _, kv := range resp.Kvs {
-			err = json.Unmarshal(kv.Value, &info)
-			if err != nil {
-				log.Warn("get key failed", zap.String("key", pd.TiDBServerInformationPath), zap.Error(err))
-				continue
-			}
-			tidbAddress = append(tidbAddress, fmt.Sprintf("%s:%d", info.IP, info.StatusPort))
-		}
-		if len(tidbAddress) > 0 {
-			s.TidbAddress = tidbAddress
-			break
-		}
-	}
-}
-
 func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	// check schema version
 	ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
-	resp, err := s.Provider.EtcdClient.Get(ectx, SchemaVersionPath)
+	resp, err := s.Provider.EtcdClient.Get(ectx, schemaVersionPath)
 	cancel()
 	if err != nil || len(resp.Kvs) != 1 {
 		log.Warn("failed to get tidb schema version", zap.Error(err))
@@ -112,20 +83,18 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	s.SchemaVersion = schemaVersion
 
 	var dbInfos []*dbInfo
-	var tidbEndpoint string
 	reqScheme := "http"
 	if s.Config.ClusterTLSConfig != nil {
 		reqScheme = "https"
 	}
-	for _, addr := range s.TidbAddress {
-		reqEndpoint := fmt.Sprintf("%s://%s", reqScheme, addr)
-		if err := request(reqEndpoint, "schema", &dbInfos, s.HTTPClient); err == nil {
-			tidbEndpoint = reqEndpoint
-			break
+	hostname, port := s.forwarder.GetStatusConnProps()
+	target := fmt.Sprintf("%s:%d", hostname, port)
+	tidbEndpoint := fmt.Sprintf("%s://%s", reqScheme, target)
+	if err := request(tidbEndpoint, "schema", &dbInfos, s.HTTPClient); err != nil {
+		log.Error("fail to send schema request to tidb", zap.String("endpoint", tidbEndpoint), zap.Error(err))
+		if dbInfos == nil {
+			return
 		}
-	}
-	if dbInfos == nil {
-		return
 	}
 
 	var tableInfos []*tableInfo
@@ -150,4 +119,21 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 			s.TableMap.Store(table.ID, detail)
 		}
 	}
+}
+
+func request(endpoint string, uri string, v interface{}, httpClient *http.Client) error {
+	url := fmt.Sprintf("%s/%s", endpoint, uri)
+	resp, err := httpClient.Get(url) //nolint:gosec
+	if err == nil {
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			err = ErrTiDBHTTPRequestFailed.New("http status code: %d", resp.StatusCode)
+		}
+	}
+	if err != nil {
+		log.Warn("request failed", zap.String("url", url), zap.Error(err))
+		return err
+	}
+	decoder := json.NewDecoder(resp.Body)
+	return decoder.Decode(v)
 }

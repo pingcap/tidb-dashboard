@@ -21,4 +21,4 @@ export function format(unixTimestampMs: number) {
   return dayjs(unixTimestampMs).format('ll LTS')
 }
 
-export default Long
+export default React.memo(Long)

@@ -2,7 +2,7 @@ import React from 'react'
 import { StatementModel } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import * as useColumn from '@lib/utils/useColumn'
+import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabTxnProps {
   data: StatementModel
@@ -20,11 +20,11 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
     {
       key: 'avg_write_keys',
-      value: getValueFormat('short')(data.avg_write_keys || 0, 1),
+      value: getValueFormat('short')(data.avg_write_keys || 0, 0, 1),
     },
     {
       key: 'max_write_keys',
-      value: getValueFormat('short')(data.max_write_keys || 0, 1),
+      value: getValueFormat('short')(data.max_write_keys || 0, 0, 1),
     },
     {
       key: 'avg_write_size',
@@ -36,11 +36,11 @@ export default function TabCopr({ data }: ITabTxnProps) {
     },
     {
       key: 'avg_prewrite_regions',
-      value: getValueFormat('short')(data.avg_prewrite_regions || 0, 1),
+      value: getValueFormat('short')(data.avg_prewrite_regions || 0, 0, 1),
     },
     {
       key: 'max_prewrite_regions',
-      value: getValueFormat('short')(data.max_prewrite_regions || 0, 1),
+      value: getValueFormat('short')(data.max_prewrite_regions || 0, 0, 1),
     },
     {
       key: 'avg_txn_retry',
@@ -51,10 +51,6 @@ export default function TabCopr({ data }: ITabTxnProps) {
       value: data.max_txn_retry,
     },
   ]
-  const columns = [
-    useColumn.useFieldsKeyColumn('statement.fields.'),
-    useColumn.useFieldsValueColumn(),
-    useColumn.useFieldsDescriptionColumn('statement.fields.'),
-  ]
+  const columns = valueColumns('statement.fields.')
   return <CardTableV2 cardNoMargin columns={columns} items={items} />
 }

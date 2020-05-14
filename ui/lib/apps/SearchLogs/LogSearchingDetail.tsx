@@ -46,30 +46,31 @@ export default function LogSearchingDetail() {
   const tasks = useMemo(() => data?.tasks ?? [], [data])
 
   return (
-    <div>
-      <Row>
-        <Col span={18}>
-          <Head
-            title={t('search_logs.nav.detail')}
-            back={
-              <Link to={`/search_logs`}>
-                <ArrowLeftOutlined /> {t('search_logs.nav.search_logs')}
-              </Link>
-            }
-          >
-            <SearchHeader taskGroupID={taskGroupID} />
-          </Head>
-          <SearchResult taskGroupID={taskGroupID} tasks={tasks} />
-        </Col>
-        <Col span={6}>
-          <SearchProgress
-            key={`${reloadKey}`}
-            toggleReload={toggleReload}
-            taskGroupID={taskGroupID}
-            tasks={tasks}
-          />
-        </Col>
-      </Row>
-    </div>
+    <Row>
+      <Col
+        span={18}
+        style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}
+      >
+        <Head
+          title={t('search_logs.nav.detail')}
+          back={
+            <Link to={`/search_logs`}>
+              <ArrowLeftOutlined /> {t('search_logs.nav.search_logs')}
+            </Link>
+          }
+        >
+          <SearchHeader taskGroupID={taskGroupID} />
+        </Head>
+        <SearchResult taskGroupID={taskGroupID} tasks={tasks} />
+      </Col>
+      <Col span={6}>
+        <SearchProgress
+          key={`${reloadKey}`}
+          toggleReload={toggleReload}
+          taskGroupID={taskGroupID}
+          tasks={tasks}
+        />
+      </Col>
+    </Row>
   )
 }

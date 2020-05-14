@@ -16,23 +16,21 @@ function DetailPageWrapper() {
   return <LogSearchingDetail key={id} />
 }
 
-const App = () => {
-  return (
-    <div>
-      <Routes>
-        <Route path="/search_logs/*" element={<LogSearching />} />
-        <Route path="/search_logs/history" element={<LogSearchingHistory />} />
-        <Route path="/search_logs/detail/:id" element={<DetailPageWrapper />} />
-      </Routes>
-    </div>
-  )
-}
-
 export default function () {
   return (
     <Root>
       <Router>
-        <App />
+        <Routes>
+          <Route path="/search_logs/*" element={<LogSearching />} />
+          <Route
+            path="/search_logs/history"
+            element={<LogSearchingHistory />}
+          />
+          <Route
+            path="/search_logs/detail/:id"
+            element={<DetailPageWrapper />}
+          />
+        </Routes>
       </Router>
     </Root>
   )

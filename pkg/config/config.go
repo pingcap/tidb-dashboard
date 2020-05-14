@@ -15,7 +15,6 @@ package config
 
 import (
 	"crypto/tls"
-	"time"
 )
 
 type Config struct {
@@ -27,6 +26,4 @@ type Config struct {
 
 	// TLS config for mTLS authentication between TiDB and MySQL client.
 	TiDBTLSConfig *tls.Config
-
-	CheckInterval time.Duration
 }

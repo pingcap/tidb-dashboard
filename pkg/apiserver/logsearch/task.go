@@ -27,6 +27,8 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
+
 	"github.com/pingcap/kvproto/pkg/diagnosticspb"
 	"github.com/pingcap/log"
 	"github.com/pingcap/sysutil"
@@ -180,7 +182,10 @@ func (t *Task) SyncRun() {
 
 	cli := diagnosticspb.NewDiagnosticsClient(conn)
 	t.searchLog(cli, diagnosticspb.SearchLogRequest_Normal)
-	t.searchLog(cli, diagnosticspb.SearchLogRequest_Slow)
+	// Only TiKV support searching slow log now
+	if t.model.Target.Kind == model.NodeKindTiKV {
+		t.searchLog(cli, diagnosticspb.SearchLogRequest_Slow)
+	}
 }
 
 func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diagnosticspb.SearchLogRequest_Target) {

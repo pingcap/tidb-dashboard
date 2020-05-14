@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
@@ -66,23 +67,43 @@ func (m *DynamicConfigManager) Start(ctx context.Context) error {
 	m.ctx = ctx
 
 	go func() {
-		for {
-			dc, err := m.load()
-			if err == nil {
-				if dc == nil {
-					dc = &DynamicConfig{}
-				}
-				dc.Adjust()
-				if err := m.Set(dc); err == nil {
-					return
-				}
-			} else {
-				select {
-				case <-m.ctx.Done():
-					return
-				default:
-				}
+		var dc *DynamicConfig
+		var err error
+		bo := backoff.NewExponentialBackOff()
+		// setting a reasonable interval to avoid probing a living service for too long each round
+		bo.MaxInterval = Timeout
+
+		_ = backoff.Retry(func() error {
+			dc, err = m.load()
+			select {
+			case <-m.ctx.Done():
+				return nil
+			default:
 			}
+			return err
+		}, bo)
+		if err != nil {
+			log.Error("Failed to start DynamicConfigManager", zap.Error(err))
+			return
+		}
+
+		if dc == nil {
+			dc = &DynamicConfig{}
+		}
+		dc.Adjust()
+
+		_ = backoff.Retry(func() error {
+			err = m.Set(dc)
+			select {
+			case <-m.ctx.Done():
+				return nil
+			default:
+			}
+			return err
+		}, bo)
+
+		if err != nil {
+			log.Error("Failed to start DynamicConfigManager", zap.Error(err))
 		}
 	}()
 

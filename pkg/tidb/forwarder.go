@@ -59,14 +59,15 @@ func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
 }
 
 type Forwarder struct {
-	ctx             context.Context
-	config          *ForwarderConfig
-	etcdClient      *clientv3.Client
+	ctx context.Context
+
+	config     *ForwarderConfig
+	etcdClient *clientv3.Client
+
 	tidbProxy       *proxy
 	tidbStatusProxy *proxy
 	tidbPort        int
 	statusPort      int
-	donec           chan struct{}
 	pollInterval    time.Duration
 }
 
@@ -94,7 +95,6 @@ func (f *Forwarder) Start(ctx context.Context) error {
 func (f *Forwarder) Stop(context.Context) error {
 	f.tidbProxy.stop()
 	f.tidbStatusProxy.stop()
-	close(f.donec)
 	return nil
 }
 
@@ -107,7 +107,7 @@ func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
 		return nil, ErrPDAccessFailed.New("access PD failed: %s", err)
 	}
 
-	allTiDB := []*tidbServerInfo{}
+	allTiDB := make([]*tidbServerInfo, 0, len(resp.Kvs))
 	for _, kv := range resp.Kvs {
 		var info *tidbServerInfo
 		err = json.Unmarshal(kv.Value, &info)
@@ -142,10 +142,15 @@ func (f *Forwarder) pollingForTiDB() {
 			bo := backoff.NewExponentialBackOff()
 			// setting a reasonable interval to avoid probing a living service for too long each round
 			bo.MaxInterval = 5 * time.Second
-			err = backoff.Retry(func() error {
+			_ = backoff.Retry(func() error {
 				allTiDB, err = f.getServerInfo()
 				if err != nil {
 					log.Warn("Fail to get TiDB server info from PD", zap.Error(err))
+				}
+				select {
+				case <-f.ctx.Done():
+					return nil
+				default:
 				}
 				return err
 			}, bo)
@@ -165,7 +170,7 @@ func (f *Forwarder) pollingForTiDB() {
 			}
 			f.tidbProxy.updateRemotes(tidbEndpoints)
 			f.tidbStatusProxy.updateRemotes(statusEndpoints)
-		case <-f.donec:
+		case <-f.ctx.Done():
 			return
 		}
 	}
@@ -175,7 +180,6 @@ func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3
 	f := &Forwarder{
 		etcdClient:   etcdClient,
 		config:       config,
-		donec:        make(chan struct{}),
 		pollInterval: 5 * time.Second, // TODO: add this into config?
 	}
 

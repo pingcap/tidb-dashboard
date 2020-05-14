@@ -64,6 +64,12 @@ func (s *Stat) Restore() error {
 		if err != nil || len(planes) == 0 {
 			break
 		}
+		if layerNum >= uint8(len(s.layers)) {
+			log.Warn("Layer num is too large. Ignore and delete the redundant planes", zap.Uint8("layer num", layerNum), zap.Int("layers len", len(s.layers)))
+			_ = DeletePlanesByLayerNum(s.db, layerNum)
+			continue
+		}
+
 		if len(planes) > 1 {
 			s.layers[layerNum].Empty = false
 		} else if layerNum == 0 {
@@ -76,11 +82,6 @@ func (s *Stat) Restore() error {
 		}
 		log.Debug("Load planes", zap.Uint8("layer num", layerNum), zap.Int("len", len(planes)-1))
 
-		if layerNum >= uint8(len(s.layers)) {
-			log.Warn("Layer num is too large. Ignore and delete the redundant planes", zap.Uint8("layer num", layerNum), zap.Int("layers len", len(s.layers)))
-			_ = DeletePlanesByLayerNum(s.db, layerNum)
-			continue
-		}
 		// the first plane is only used to save starttime
 		s.layers[layerNum].StartTime = planes[0].Time
 		s.layers[layerNum].Head = 0

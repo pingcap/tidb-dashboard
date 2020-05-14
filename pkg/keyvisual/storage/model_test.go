@@ -60,7 +60,7 @@ func (t *testDbstoreSuite) TestClearTablePlane(c *C) {
 	}
 	var count int
 
-	err = t.db.Table(tablePlaneName).Count(&count).Error
+	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
 		c.Fatalf("Count table Plane error: %v", err)
 	}
@@ -69,7 +69,7 @@ func (t *testDbstoreSuite) TestClearTablePlane(c *C) {
 	err = ClearTablePlane(t.db)
 	c.Assert(err, IsNil)
 
-	err = t.db.Table(tablePlaneName).Count(&count).Error
+	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
 		c.Fatalf("Count table Plane error: %v", err)
 	}
@@ -109,7 +109,7 @@ func (t *testDbstoreSuite) TestPlaneFunc(c *C) {
 	c.Assert(err, IsNil)
 
 	var count int
-	err = t.db.Table(tablePlaneName).Count(&count).Error
+	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
 		c.Fatalf("Count table Plane error: %v", err)
 	}
@@ -127,9 +127,9 @@ func (t *testDbstoreSuite) TestPlanesFindAndDelete(c *C) {
 
 	var maxLayerNum uint8 = 2
 	var planeNumEachLayer = 3
-	var planeList = make([][]*Plane, maxLayerNum)
+	var planeList = make([][]*AxisModel, maxLayerNum)
 	for layerNum := uint8(0); layerNum < maxLayerNum; layerNum++ {
-		planeList[layerNum] = make([]*Plane, planeNumEachLayer)
+		planeList[layerNum] = make([]*AxisModel, planeNumEachLayer)
 		for i := 0; i < planeNumEachLayer; i++ {
 			planeList[layerNum][i], err = NewPlane(layerNum, time.Now(), matrix.Axis{})
 			if err != nil {
@@ -143,7 +143,7 @@ func (t *testDbstoreSuite) TestPlanesFindAndDelete(c *C) {
 	}
 
 	var count int
-	err = t.db.Table(tablePlaneName).Count(&count).Error
+	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
 		c.Fatalf("Count table Plane error: %v", err)
 	}
@@ -161,21 +161,21 @@ func (t *testDbstoreSuite) TestPlanesFindAndDelete(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(planes, HasLen, 0)
 
-	err = t.db.Table(tablePlaneName).Count(&count).Error
+	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
 		c.Fatalf("Count table Plane error: %v", err)
 	}
 	c.Assert(count, Equals, int(maxLayerNum-1)*planeNumEachLayer)
 }
 
-func planesDeepEqual(obtainedPlanes []*Plane, expectedPlanes []*Plane, c *C) {
+func planesDeepEqual(obtainedPlanes []*AxisModel, expectedPlanes []*AxisModel, c *C) {
 	c.Assert(len(obtainedPlanes), Equals, len(expectedPlanes))
 	for i := range obtainedPlanes {
 		planeDeepEqual(obtainedPlanes[i], expectedPlanes[i], c)
 	}
 }
 
-func planeDeepEqual(obtainedPlane *Plane, expectedPlane *Plane, c *C) {
+func planeDeepEqual(obtainedPlane *AxisModel, expectedPlane *AxisModel, c *C) {
 	c.Assert(obtainedPlane.Time.Unix(), Equals, expectedPlane.Time.Unix())
 	obtainedPlane.Time = expectedPlane.Time
 	c.Assert(obtainedPlane, DeepEquals, expectedPlane)

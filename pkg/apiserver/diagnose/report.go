@@ -15,7 +15,6 @@ package diagnose
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"runtime"
 	"sort"
@@ -266,7 +265,7 @@ func doGetTable(taskChan chan *task, resChan chan *tblAndErr, wg *sync.WaitGroup
 			defer func() {
 				if r := recover(); r != nil {
 					tbl.Title = fmt.Sprintf("panic_in_table_%v", task.taskID)
-					err = errors.New(fmt.Sprintf("panic: %v", r))
+					err = fmt.Errorf("panic: %v", r)
 				}
 			}()
 			tbl, err = f(startTime, endTime, db)

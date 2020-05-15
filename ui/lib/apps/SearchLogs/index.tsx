@@ -6,14 +6,13 @@ import {
   Routes,
   useParams,
 } from 'react-router-dom'
-import LogSearching from './LogSearching'
-import LogSearchingDetail from './LogSearchingDetail'
-import LogSearchingHistory from './LogSearchingHistory'
+
+import { LogSearch, LogSearchHistory, LogSearchDetail } from './pages'
 
 function DetailPageWrapper() {
   const { id } = useParams()
 
-  return <LogSearchingDetail key={id} />
+  return <LogSearchDetail key={id} />
 }
 
 export default function () {
@@ -21,11 +20,8 @@ export default function () {
     <Root>
       <Router>
         <Routes>
-          <Route path="/search_logs/*" element={<LogSearching />} />
-          <Route
-            path="/search_logs/history"
-            element={<LogSearchingHistory />}
-          />
+          <Route path="/search_logs/*" element={<LogSearch />} />
+          <Route path="/search_logs/history" element={<LogSearchHistory />} />
           <Route
             path="/search_logs/detail/:id"
             element={<DetailPageWrapper />}

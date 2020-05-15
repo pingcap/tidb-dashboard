@@ -21,7 +21,7 @@ import {
   NodeKindList,
   parseClusterInfo,
   parseSearchingParams,
-} from './utils'
+} from '../utils'
 
 import styles from './Styles.module.css'
 

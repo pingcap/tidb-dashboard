@@ -1,3 +1,2 @@
 .vagrant/
-shared_key
-shared_key.pub
+tiup-cluster-*.log

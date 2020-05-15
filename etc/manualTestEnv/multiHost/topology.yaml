@@ -4,6 +4,15 @@ global:
   data_dir: tidb-data
 
 server_configs:
+  tikv:
+    server.grpc-concurrency: 1
+    raftstore.apply-pool-size: 1
+    raftstore.store-pool-size: 1
+    readpool.unified.max-thread-count: 1
+    readpool.storage.use-unified-pool: false
+    readpool.coprocessor.use-unified-pool: true
+    storage.block-cache.capacity: 256MB
+    raftstore.capacity: 10GB
   pd:
     replication.enable-placement-rules: true
 

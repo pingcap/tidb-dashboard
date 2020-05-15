@@ -1,14 +1,8 @@
-# basicMultiHost
+# multiHost
 
-An environment with TiDB, PD, TiKV, TiFlash, each in different host.
+TiDB, PD, TiKV, TiFlash each in different hosts.
 
 ## Usage
-
-1. Generate shared SSH key (only need to do it once):
-
-   ```bash
-   ssh-keygen -t rsa -b 2048 -f ./shared_key -q -N ""
-   ```
 
 1. Start the box:
 
@@ -19,7 +13,7 @@ An environment with TiDB, PD, TiKV, TiFlash, each in different host.
 1. Use [TiUP](https://tiup.io/) to deploy the cluster to the box (only need to do it once):
 
    ```bash
-   tiup cluster deploy multiHost nightly topology.yaml -i shared_key -y --user vagrant
+   tiup cluster deploy multiHost nightly topology.yaml -i ../_shared/vagrant_key -y --user vagrant
    ```
 
 1. Start the cluster in the box:
@@ -33,3 +27,10 @@ An environment with TiDB, PD, TiKV, TiFlash, each in different host.
    ```bash
    bin/tidb-dashboard --pd http://10.0.1.11:2379
    ```
+
+## Cleanup
+
+```bash
+tiup cluster destroy multiHost -y
+vagrant destroy --force
+```

@@ -138,7 +138,7 @@ export default function HostTable() {
           pd: 0,
           tiflash: 0,
         }
-        return filterUniquePartitions(partitions).map((partition) => {
+        return filterUniquePartitions(partitions).map((partition, i) => {
           const currentMountPoint = partition.partition.path
           partitions.forEach((item) => {
             if (item.partition.path !== currentMountPoint) {
@@ -159,9 +159,14 @@ export default function HostTable() {
           if (serverTotal.tiflash > 0) {
             serverInfos.push(`${serverTotal.tiflash} TiFlash`)
           }
-          return `${serverInfos.join(
+          const content = `${serverInfos.join(
             ','
           )}: ${partition.partition.fstype.toUpperCase()} ${currentMountPoint}`
+          return (
+            <Tooltip title={content} key={i}>
+              <div>{content}</div>
+            </Tooltip>
+          )
         })
       },
     },

@@ -1,6 +1,6 @@
-# multiReplica
+# singleHost
 
-Multiple TiKV nodes in different labels.
+TiDB, PD, TiKV, TiFlash in the same host.
 
 ## Usage
 
@@ -13,24 +13,24 @@ Multiple TiKV nodes in different labels.
 1. Use [TiUP](https://tiup.io/) to deploy the cluster to the box (only need to do it once):
 
    ```bash
-   tiup cluster deploy multiReplica nightly topology.yaml -i ../_shared/vagrant_key -y --user vagrant
+   tiup cluster deploy singleHost nightly topology.yaml -i ../_shared/vagrant_key -y --user vagrant
    ```
 
 1. Start the cluster in the box:
 
    ```bash
-   tiup cluster start multiReplica
+   tiup cluster start singleHost
    ```
 
 1. Start TiDB Dashboard server:
 
    ```bash
-   bin/tidb-dashboard --pd http://10.0.1.20:2379
+   bin/tidb-dashboard --pd http://10.0.1.2:2379
    ```
 
 ## Cleanup
 
 ```bash
-tiup cluster destroy multiReplica -y
+tiup cluster destroy singleHost -y
 vagrant destroy --force
 ```

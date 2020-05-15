@@ -20,7 +20,7 @@ export default function () {
     <Root>
       <Router>
         <Routes>
-          <Route path="/search_logs/*" element={<LogSearch />} />
+          <Route path="/search_logs" element={<LogSearch />} />
           <Route path="/search_logs/history" element={<LogSearchHistory />} />
           <Route
             path="/search_logs/detail/:id"

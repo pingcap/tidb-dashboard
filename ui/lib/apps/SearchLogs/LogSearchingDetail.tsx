@@ -1,14 +1,15 @@
-import { Head, Card } from '@lib/components'
-import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Col, Row } from 'antd'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams, Link } from 'react-router-dom'
-import { SearchHeader, SearchProgress, SearchResult } from './components'
+import { Link, useParams } from 'react-router-dom'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+
 import client from '@lib/client'
+import { Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
+import { SearchHeader, SearchProgress, SearchResult } from './components'
 import { TaskState } from './components/utils'
-import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 
 export default function LogSearchingDetail() {
   const { t } = useTranslation()

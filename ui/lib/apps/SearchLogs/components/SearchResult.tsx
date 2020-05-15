@@ -1,6 +1,5 @@
 import { Alert } from 'antd'
 import moment from 'moment'
-import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 

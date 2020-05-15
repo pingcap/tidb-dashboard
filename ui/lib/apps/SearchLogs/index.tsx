@@ -21,7 +21,7 @@ export default function () {
     <Root>
       <Router>
         <Routes>
-          <Route path="/search_logs/*" element={<LogSearching />} />
+          <Route path="/search_logs" element={<LogSearching />} />
           <Route
             path="/search_logs/history"
             element={<LogSearchingHistory />}

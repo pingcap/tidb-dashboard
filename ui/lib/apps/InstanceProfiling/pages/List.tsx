@@ -202,7 +202,7 @@ export default function Page() {
   ]
 
   return (
-    <ScrollablePane style={{ height: '100vh' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Card title={t('instance_profiling.list.control_form.title')}>
         <Form layout="inline">
           <Form.Item
@@ -245,12 +245,18 @@ export default function Page() {
           </Form.Item>
         </Form>
       </Card>
-      <CardTableV2
-        loading={listLoading}
-        items={historyTable || []}
-        columns={historyTableColumns}
-        onRowClicked={handleRowClick}
-      />
-    </ScrollablePane>
+
+      <div style={{ height: '100%', position: 'relative' }}>
+        <ScrollablePane>
+          <CardTableV2
+            cardNoMarginTop
+            loading={listLoading}
+            items={historyTable || []}
+            columns={historyTableColumns}
+            onRowClicked={handleRowClick}
+          />
+        </ScrollablePane>
+      </div>
+    </div>
   )
 }

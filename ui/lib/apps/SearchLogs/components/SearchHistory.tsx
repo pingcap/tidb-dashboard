@@ -13,6 +13,7 @@ import {
   Selection,
   SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 
 function componentRender({ target_stats: stats }) {
   const r: Array<string> = []
@@ -172,7 +173,7 @@ export default function SearchHistory() {
   ]
 
   return (
-    <div>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Head
         title={t('search_logs.nav.history')}
         back={
@@ -196,14 +197,16 @@ export default function SearchHistory() {
           </>
         }
       />
-      <div style={{ backgroundColor: '#FFFFFF' }}>
-        <CardTableV2
-          columns={columns}
-          items={taskGroups || []}
-          selection={rowSelection}
-          selectionMode={SelectionMode.multiple}
-          style={{ marginTop: 0 }}
-        />
+      <div style={{ height: '100%', position: 'relative' }}>
+        <ScrollablePane>
+          <CardTableV2
+            cardNoMarginTop
+            columns={columns}
+            items={taskGroups || []}
+            selection={rowSelection}
+            selectionMode={SelectionMode.multiple}
+          />
+        </ScrollablePane>
       </div>
     </div>
   )

@@ -6,7 +6,15 @@
         > :first-child {
           padding-left: @padding-page;
         }
+      }
+    }
+  }
+}
 
+.cardTable.contentExtended {
+  :global {
+    .ms-DetailsRow {
+      > :first-child.ms-DetailsRow-fields {
         > :last-child {
           padding-right: @padding-page;
         }
@@ -24,14 +32,17 @@
         padding-left: @padding-page;
       }
 
-      > :nth-last-child(2) .ms-DetailsHeader-cellTitle {
-        padding-right: @padding-page;
-      }
+      // FIXME: For sticky headers, when there is `.contentExtended`, we
+      // need to add padding right.
 
-      &.is-resizingColumn > :nth-last-child(3) .ms-DetailsHeader-cellTitle {
-        // FIXME: This is highly magical
-        padding-right: @padding-page;
-      }
+      // > :nth-last-child(2) .ms-DetailsHeader-cellTitle {
+      //   padding-right: @padding-page;
+      // }
+
+      // &.is-resizingColumn > :nth-last-child(3) .ms-DetailsHeader-cellTitle {
+      //   // FIXME: This is highly magical
+      //   padding-right: @padding-page;
+      // }
     }
   }
 }

@@ -121,7 +121,7 @@ System: ${getValueFormat('percentunit')(system)}`
           pd: 0,
           tiflash: 0,
         }
-        return filterUniquePartitions(partitions).map((partition) => {
+        return filterUniquePartitions(partitions).map((partition, i) => {
           const currentMountPoint = partition.partition.path
           partitions.forEach((item) => {
             if (item.partition.path !== currentMountPoint) {
@@ -146,8 +146,8 @@ System: ${getValueFormat('percentunit')(system)}`
             ','
           )}: ${partition.partition.fstype.toUpperCase()} ${currentMountPoint}`
           return (
-            <Tooltip title={content}>
-              <span>{content}</span>
+            <Tooltip title={content} key={i}>
+              <div>{content}</div>
             </Tooltip>
           )
         })

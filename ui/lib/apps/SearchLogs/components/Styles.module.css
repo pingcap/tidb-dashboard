@@ -10,3 +10,11 @@
 .components > :global(div) {
   width: 100%;
 }
+
+.logText {
+  cursor: text;
+}
+
+.logRow {
+  cursor: pointer;
+}

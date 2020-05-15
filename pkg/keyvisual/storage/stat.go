@@ -22,6 +22,7 @@ import (
 
 	"go.uber.org/fx"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 )
@@ -40,26 +41,31 @@ type layerStat struct {
 	RingAxes  []matrix.Axis
 	RingTimes []time.Time
 
-	Head  int
-	Tail  int
-	Empty bool
-	Len   int
+	LayerNum uint8
+	Head     int
+	Tail     int
+	Empty    bool
+	Len      int
+
+	Db *dbstore.DB
 	// Hierarchical mechanism
 	Strategy matrix.Strategy
 	Ratio    int
 	Next     *layerStat
 }
 
-func newLayerStat(conf LayerConfig, strategy matrix.Strategy, startTime time.Time) *layerStat {
+func newLayerStat(layerNum uint8, conf LayerConfig, strategy matrix.Strategy, startTime time.Time, db *dbstore.DB) *layerStat {
 	return &layerStat{
 		StartTime: startTime,
 		EndTime:   startTime,
 		RingAxes:  make([]matrix.Axis, conf.Len),
 		RingTimes: make([]time.Time, conf.Len),
+		LayerNum:  layerNum,
 		Head:      0,
 		Tail:      0,
 		Empty:     true,
 		Len:       conf.Len,
+		Db:        db,
 		Strategy:  strategy,
 		Ratio:     conf.Ratio,
 		Next:      nil,
@@ -69,6 +75,8 @@ func newLayerStat(conf LayerConfig, strategy matrix.Strategy, startTime time.Tim
 // Reduce merges ratio axes and append to next layerStat
 func (s *layerStat) Reduce() {
 	if s.Ratio == 0 || s.Next == nil {
+		_ = s.DeleteFirstAxisFromDb()
+
 		s.StartTime = s.RingTimes[s.Head]
 		s.RingAxes[s.Head] = matrix.Axis{}
 		s.Head = (s.Head + 1) % s.Len
@@ -80,6 +88,8 @@ func (s *layerStat) Reduce() {
 	axes := make([]matrix.Axis, 0, s.Ratio)
 
 	for i := 0; i < s.Ratio; i++ {
+		_ = s.DeleteFirstAxisFromDb()
+
 		s.StartTime = s.RingTimes[s.Head]
 		times = append(times, s.StartTime)
 		axes = append(axes, s.RingAxes[s.Head])
@@ -100,6 +110,9 @@ func (s *layerStat) Append(axis matrix.Axis, endTime time.Time) {
 	if s.Head == s.Tail && !s.Empty {
 		s.Reduce()
 	}
+
+	_ = s.InsertLastAxisToDb(axis, endTime)
+
 	s.RingAxes[s.Tail] = axis
 	s.RingTimes[s.Tail] = endTime
 	s.Empty = false
@@ -171,13 +184,15 @@ type Stat struct {
 	strategy matrix.Strategy
 
 	provider *region.PDDataProvider
+
+	db *dbstore.DB
 }
 
 // NewStat generates a Stat based on the configuration.
-func NewStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, cfg StatConfig, strategy matrix.Strategy, startTime time.Time) *Stat {
+func NewStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, db *dbstore.DB, cfg StatConfig, strategy matrix.Strategy, startTime time.Time) *Stat {
 	layers := make([]*layerStat, len(cfg.LayersConfig))
 	for i, c := range cfg.LayersConfig {
-		layers[i] = newLayerStat(c, strategy, startTime)
+		layers[i] = newLayerStat(uint8(i), c, strategy, startTime, db)
 		if i > 0 {
 			layers[i-1].Next = layers[i]
 		}
@@ -186,10 +201,14 @@ func NewStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvide
 		layers:   layers,
 		strategy: strategy,
 		provider: provider,
+		db:       db,
 	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
+			if err := s.Restore(); err != nil {
+				return err
+			}
 			wg.Add(1)
 			go func() {
 				defer wg.Done()

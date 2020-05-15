@@ -3,10 +3,12 @@ import { ModelRequestTargetNode, LogsearchTaskModel } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import { Alert } from 'antd'
 import moment from 'moment'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DATE_TIME_FORMAT, LogLevelMap, namingMap } from './utils'
 import Log from './Log'
+
+import styles from './Styles.module.css'
 
 type LogPreview = {
   key: number
@@ -23,6 +25,18 @@ function componentRender({ component: target }) {
   return (
     <div>
       {target.kind ? namingMap[target.kind] : ''} {target.ip}
+    </div>
+  )
+}
+
+function Row({ renderer, props }) {
+  const [expanded, setExpanded] = useState(false)
+  const handleClick = useCallback(() => {
+    setExpanded((v) => !v)
+  }, [])
+  return (
+    <div onClick={handleClick} className={styles.logRow}>
+      {renderer({ ...props, item: { ...props.item, expanded } })}
     </div>
   )
 }
@@ -73,33 +87,41 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
     getLogPreview()
   }, [taskGroupID, tasks])
 
+  const renderRow = useCallback((props, defaultRender) => {
+    if (!props) {
+      return null
+    }
+    return <Row renderer={defaultRender!} props={props} />
+  }, [])
+
   const columns = [
     {
       name: t('search_logs.preview.time'),
       key: 'time',
       fieldName: 'time',
-      minWidth: 160,
-      maxWidth: 300,
+      minWidth: 150,
+      maxWidth: 200,
     },
     {
       name: t('search_logs.preview.level'),
       key: 'level',
       fieldName: 'level',
       minWidth: 60,
-      maxWidth: 120,
+      maxWidth: 60,
     },
     {
       name: t('search_logs.preview.component'),
       key: 'component',
-      minWidth: 120,
-      maxWidth: 200,
+      minWidth: 100,
+      maxWidth: 100,
       onRender: componentRender,
     },
     {
       name: t('search_logs.preview.log'),
       key: 'log',
-      minWidth: 500,
-      onRender: ({ log }) => <Log log={log} />,
+      minWidth: 200,
+      maxWidth: 400,
+      onRender: ({ log, expanded }) => <Log log={log} expanded={expanded} />,
     },
   ]
   return (
@@ -117,6 +139,8 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
         columns={columns}
         items={logPreviews || []}
         style={{ marginTop: 0 }}
+        onRenderRow={renderRow}
+        extendLastColumn
       />
     </>
   )

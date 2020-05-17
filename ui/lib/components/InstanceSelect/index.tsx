@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useMemo, useEffect, useState } from 'react'
-import { Tooltip, Typography } from 'antd'
+import { Tooltip } from 'antd'
 import { Selection } from 'office-ui-fabric-react/lib/Selection'
 import { BaseSelect, InstanceStatusBadge, TextWrap } from '../'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -12,7 +12,8 @@ import {
 } from '@lib/utils/instanceTable'
 
 import DropOverlay from './DropOverlay'
-import SelectDisplay from './SelectDisplay'
+import ValueDisplay from './ValueDisplay'
+import { useShallowCompareEffect } from 'react-use'
 
 export interface IInstanceSelectProps {
   enableTiFlash?: boolean
@@ -106,14 +107,33 @@ function InstanceSelect(
 
   const [selectedKeys, setSelectedKeys] = useState(props.value ?? [])
 
+  const onChange = usePersistFn((v: string[]) => {
+    console.log('onChange', v)
+    props.onChange?.(v)
+  })
+
   const selection = useRef(
     new Selection({
       onSelectionChanged: () => {
+        console.log('onSelectionChanged')
         const s = selection.current.getSelection() as IInstanceTableItem[]
-        setSelectedKeys(s.map((v) => v.key))
+        const keys = s.map((v) => v.key)
+        setSelectedKeys(keys)
+        onChange([...keys])
       },
     })
   )
+
+  useShallowCompareEffect(() => {
+    console.log('props.value changed')
+    // Update selection when value is changed
+    selection.current.setAllSelected(false)
+    if (props.value) {
+      for (const key of props.value) {
+        selection.current.setKeySelected(key, true, false)
+      }
+    }
+  }, [props.value])
 
   const dataHasLoaded = useRef(false)
 
@@ -139,7 +159,10 @@ function InstanceSelect(
   }))
 
   const renderValue = useCallback(() => {
-    return <SelectDisplay items={tableItems} selectedKeys={selectedKeys} />
+    if (tableItems.length === 0 || selectedKeys.length === 0) {
+      return null
+    }
+    return <ValueDisplay items={tableItems} selectedKeys={selectedKeys} />
   }, [tableItems, selectedKeys])
 
   const renderDropdown = useCallback(() => {
@@ -158,6 +181,7 @@ function InstanceSelect(
       dropdownRender={renderDropdown}
       valueRender={renderValue}
       disabled={loadingTiDB || loadingStores || loadingPD}
+      placeholder="Select Instances"
     />
   )
 }

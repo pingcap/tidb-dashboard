@@ -14,13 +14,17 @@ export interface IBaseSelectDropdownRenderProps<T> {
 }
 
 export interface IBaseSelectProps<T>
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
+  extends Omit<
+    React.HTMLAttributes<HTMLDivElement>,
+    'onChange' | 'placeholder'
+  > {
   dropdownRender: (
     renderProps: IBaseSelectDropdownRenderProps<T>
   ) => React.ReactElement
   value?: T
   valueRender: (value?: T) => React.ReactNode
   onChange?: (value: T) => void
+  placeholder?: React.ReactNode
   disabled?: boolean
   tabIndex?: number
   autoFocus?: boolean
@@ -31,6 +35,7 @@ function BaseSelect<T>({
   value,
   valueRender,
   onChange,
+  placeholder,
   disabled,
   tabIndex,
   autoFocus,
@@ -141,6 +146,9 @@ function BaseSelect<T>({
     })
   }, [disabled])
 
+  const renderedValue = valueRender(value)
+  const displayAsPlaceholder = renderedValue == null
+
   return (
     <Dropdown overlay={overlay} trigger={[]} visible={dropdownVisible}>
       <div
@@ -166,8 +174,14 @@ function BaseSelect<T>({
             autoFocus={autoFocus}
             readOnly
           />
-          <div className={styles.baseSelectValueDisplay}>
-            <TextWrap>{valueRender(value)}</TextWrap>
+          <div
+            className={cx(styles.baseSelectValueDisplay, {
+              [styles.isPlaceholder]: displayAsPlaceholder,
+            })}
+          >
+            <TextWrap>
+              {displayAsPlaceholder ? placeholder : renderedValue}
+            </TextWrap>
           </div>
         </div>
         <div className={styles.baseSelectArrow}>

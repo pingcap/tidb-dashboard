@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react'
 import { IInstanceTableItem, InstanceKind } from '@lib/utils/instanceTable'
-import { Typography } from 'antd'
 
 interface InstanceStat {
   all: number
@@ -14,13 +13,15 @@ function newInstanceStat(): InstanceStat {
   }
 }
 
-export default function SelectDisplay({
-  items,
-  selectedKeys,
-}: {
+export interface IValueDisplayProps {
   items: IInstanceTableItem[]
   selectedKeys: string[]
-}) {
+}
+
+export default function ValueDisplay({
+  items,
+  selectedKeys,
+}: IValueDisplayProps) {
   const text = useMemo(() => {
     const selectedKeysMap = {}
     selectedKeys.forEach((key) => (selectedKeysMap[key] = true))
@@ -59,10 +60,5 @@ export default function SelectDisplay({
     return p.join(', ')
   }, [items, selectedKeys])
 
-  if (items.length === 0 || selectedKeys.length === 0) {
-    // Not yet loaded
-    return <Typography.Text type="secondary">Select Instance</Typography.Text>
-  } else {
-    return <span>{text}</span>
-  }
+  return <>{text}</>
 }

@@ -1,12 +1,14 @@
-import client from '@lib/client'
-import { ModelRequestTargetNode, LogsearchTaskModel } from '@lib/client'
-import { CardTableV2 } from '@lib/components'
 import { Alert } from 'antd'
 import moment from 'moment'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DATE_TIME_FORMAT, LogLevelMap, namingMap } from './utils'
+
+import client, { LogsearchTaskModel, ModelRequestTargetNode } from '@lib/client'
+import { Card, CardTableV2 } from '@lib/components'
 import Log from './Log'
+import { DATE_TIME_FORMAT, LogLevelMap, namingMap } from './utils'
+
+import styles from './Styles.module.css'
 
 type LogPreview = {
   key: number
@@ -23,6 +25,18 @@ function componentRender({ component: target }) {
   return (
     <div>
       {target.kind ? namingMap[target.kind] : ''} {target.ip}
+    </div>
+  )
+}
+
+function Row({ renderer, props }) {
+  const [expanded, setExpanded] = useState(false)
+  const handleClick = useCallback(() => {
+    setExpanded((v) => !v)
+  }, [])
+  return (
+    <div onClick={handleClick} className={styles.logRow}>
+      {renderer({ ...props, item: { ...props.item, expanded } })}
     </div>
   )
 }
@@ -73,50 +87,59 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
     getLogPreview()
   }, [taskGroupID, tasks])
 
+  const renderRow = useCallback((props, defaultRender) => {
+    if (!props) {
+      return null
+    }
+    return <Row renderer={defaultRender!} props={props} />
+  }, [])
+
   const columns = [
     {
       name: t('search_logs.preview.time'),
       key: 'time',
       fieldName: 'time',
-      minWidth: 160,
-      maxWidth: 300,
+      minWidth: 150,
+      maxWidth: 200,
     },
     {
       name: t('search_logs.preview.level'),
       key: 'level',
       fieldName: 'level',
       minWidth: 60,
-      maxWidth: 120,
+      maxWidth: 60,
     },
     {
       name: t('search_logs.preview.component'),
       key: 'component',
-      minWidth: 120,
-      maxWidth: 200,
+      minWidth: 100,
+      maxWidth: 100,
       onRender: componentRender,
     },
     {
       name: t('search_logs.preview.log'),
       key: 'log',
-      minWidth: 500,
-      onRender: ({ log }) => <Log log={log} />,
+      minWidth: 200,
+      maxWidth: 400,
+      isResizable: false,
+      onRender: ({ log, expanded }) => <Log log={log} expanded={expanded} />,
     },
   ]
+
   return (
     <>
       {!loading && (
-        <Alert
-          message={t('search_logs.page.tip')}
-          type="info"
-          showIcon
-          style={{ marginLeft: 48, marginRight: 48 }}
-        />
+        <Card noMarginTop>
+          <Alert message={t('search_logs.page.tip')} type="info" showIcon />
+        </Card>
       )}
       <CardTableV2
+        cardNoMarginTop
         loading={loading}
         columns={columns}
         items={logPreviews || []}
-        style={{ marginTop: 0 }}
+        onRenderRow={renderRow}
+        extendLastColumn
       />
     </>
   )

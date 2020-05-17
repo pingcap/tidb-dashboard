@@ -1,14 +1,15 @@
-import client from '@lib/client'
-import { LogsearchTaskModel } from '@lib/client'
-import { getValueFormat } from '@baurine/grafana-value-formats'
 import { Button, Modal, Tree } from 'antd'
+import _ from 'lodash'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+
+import client, { LogsearchTaskModel } from '@lib/client'
+import { AnimatedSkeleton, Card } from '@lib/components'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
-import styles from './Styles.module.css'
 import { namingMap, NodeKind, NodeKindList, TaskState } from './utils'
-import { Card, AnimatedSkeleton } from '@lib/components'
-import _ from 'lodash'
+
+import styles from './Styles.module.css'
 
 const { confirm } = Modal
 const { TreeNode } = Tree

@@ -134,8 +134,8 @@ function successColumn(
     name: commonColumnName('result'),
     key: 'Succ',
     fieldName: 'success',
-    minWidth: 100,
-    maxWidth: 150,
+    minWidth: 50,
+    maxWidth: 100,
     onRender: (rec) => (
       <ResultStatusBadge status={rec.success === 1 ? 'success' : 'error'} />
     ),
@@ -279,7 +279,6 @@ export function slowQueryColumns(
     digestColumn(rows),
     instanceColumn(rows),
     dbColumn(rows),
-    successColumn(rows),
     timestampColumn(rows),
     queryTimeColumn(rows),
     parseTimeColumn(rows),
@@ -287,5 +286,6 @@ export function slowQueryColumns(
     processTimeColumn(rows),
     memoryColumn(rows),
     txnStartTsColumn(rows),
+    successColumn(rows),
   ]
 }

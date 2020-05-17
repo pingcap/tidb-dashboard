@@ -49,7 +49,7 @@ diagnosis:
       tikv_raftstore_initial_config: TiKV RaftStore Initial Config
       tikv_raftstore_change_config: TiKV RaftStore Config Change History
       pd_time_consume: Time Consumed by PD Component
-      blance_leader_region: Scheduled Leader/Region Count
+      balance_leader_region: Scheduled Leader/Region Count
       approximate_region_size: Approximate Region Size
       tikv_engine_size: TiKV Engine Size
       tikv_time_consume: Time Consumed by TiKV Component

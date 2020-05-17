@@ -42,9 +42,11 @@ type tidbServerInfo struct {
 }
 
 type ForwarderConfig struct {
-	TiDBRetrieveTimeout time.Duration
 	TiDBTLSConfig       *tls.Config
-	CheckInterval       time.Duration
+	TiDBRetrieveTimeout time.Duration
+	TiDBPollInterval    time.Duration
+	ProxyTimeout        time.Duration
+	ProxyCheckInterval  time.Duration
 }
 
 func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
@@ -52,9 +54,11 @@ func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
 		_ = mysql.RegisterTLSConfig("tidb", cfg.TiDBTLSConfig)
 	}
 	return &ForwarderConfig{
-		TiDBRetrieveTimeout: time.Second,
 		TiDBTLSConfig:       cfg.TiDBTLSConfig,
-		CheckInterval:       cfg.CheckInterval,
+		TiDBRetrieveTimeout: time.Second,
+		TiDBPollInterval:    5 * time.Second,
+		ProxyTimeout:        3 * time.Second,
+		ProxyCheckInterval:  2 * time.Second,
 	}
 }
 
@@ -68,7 +72,6 @@ type Forwarder struct {
 	tidbStatusProxy *proxy
 	tidbPort        int
 	statusPort      int
-	pollInterval    time.Duration
 }
 
 func (f *Forwarder) Start(ctx context.Context) error {
@@ -87,14 +90,8 @@ func (f *Forwarder) Start(ctx context.Context) error {
 	f.tidbStatusProxy = pr
 	f.statusPort = pr.port()
 	go f.pollingForTiDB()
-	go f.tidbProxy.run()
-	go f.tidbStatusProxy.run()
-	return nil
-}
-
-func (f *Forwarder) Stop(context.Context) error {
-	f.tidbProxy.stop()
-	f.tidbStatusProxy.stop()
+	go f.tidbProxy.run(ctx)
+	go f.tidbStatusProxy.run(ctx)
 	return nil
 }
 
@@ -128,15 +125,17 @@ func (f *Forwarder) createProxy() (*proxy, error) {
 	if err != nil {
 		return nil, err
 	}
-	// TODO: config timeout?
-	proxy := newProxy(l, nil, f.config.CheckInterval, 0)
+	proxy := newProxy(l, nil, f.config.ProxyCheckInterval, f.config.ProxyTimeout)
 	return proxy, nil
 }
 
 func (f *Forwarder) pollingForTiDB() {
+	var interval time.Duration = 0
 	for {
 		select {
-		case <-time.After(f.pollInterval):
+		case <-time.After(interval):
+			interval = f.config.TiDBPollInterval
+
 			var allTiDB []*tidbServerInfo
 			var err error
 			bo := backoff.NewExponentialBackOff()
@@ -145,23 +144,28 @@ func (f *Forwarder) pollingForTiDB() {
 			_ = backoff.Retry(func() error {
 				allTiDB, err = f.getServerInfo()
 				if err != nil {
+					if errorx.IsOfType(err, ErrNoAliveTiDB) {
+						return nil
+					}
+					select {
+					case <-f.ctx.Done():
+						return nil
+					default:
+					}
 					log.Warn("Fail to get TiDB server info from PD", zap.Error(err))
-				}
-				select {
-				case <-f.ctx.Done():
-					return nil
-				default:
 				}
 				return err
 			}, bo)
+
 			if err != nil {
 				if errorx.IsOfType(err, ErrNoAliveTiDB) {
-					log.Warn("no TiDB is alive now")
+					log.Warn("No TiDB is alive now")
 					f.tidbProxy.updateRemotes(nil)
 					f.tidbStatusProxy.updateRemotes(nil)
 				}
 				continue
 			}
+
 			statusEndpoints := make(map[string]string)
 			tidbEndpoints := make(map[string]string)
 			for _, server := range allTiDB {
@@ -178,14 +182,12 @@ func (f *Forwarder) pollingForTiDB() {
 
 func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3.Client) *Forwarder {
 	f := &Forwarder{
-		etcdClient:   etcdClient,
-		config:       config,
-		pollInterval: 5 * time.Second, // TODO: add this into config?
+		etcdClient: etcdClient,
+		config:     config,
 	}
 
 	lc.Append(fx.Hook{
 		OnStart: f.Start,
-		OnStop:  f.Stop,
 	})
 
 	return f

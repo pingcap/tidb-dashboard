@@ -1,6 +1,7 @@
 package tidb
 
 import (
+	"context"
 	"io"
 	"net"
 	"sync"
@@ -39,7 +40,6 @@ type proxy struct {
 	listener      net.Listener
 	checkInterval time.Duration
 	dialTimeout   time.Duration
-	doneCh        chan struct{}
 
 	remotes sync.Map
 	current string
@@ -47,14 +47,13 @@ type proxy struct {
 
 func newProxy(l net.Listener, endpoints map[string]string, checkInterval time.Duration, timeout time.Duration) *proxy {
 	if checkInterval <= 0 {
-		checkInterval = 5 * time.Second
+		checkInterval = 2 * time.Second
 	}
-	if timeout == 0 {
+	if timeout <= 0 {
 		timeout = 3 * time.Second
 	}
 	p := &proxy{
 		listener:      l,
-		doneCh:        make(chan struct{}),
 		remotes:       sync.Map{},
 		dialTimeout:   timeout,
 		checkInterval: checkInterval,
@@ -171,7 +170,7 @@ func (p *proxy) pick() *remote {
 	return picked
 }
 
-func (p *proxy) doCheck() {
+func (p *proxy) doCheck(ctx context.Context) {
 	for {
 		select {
 		case <-time.After(p.checkInterval):
@@ -190,13 +189,13 @@ func (p *proxy) doCheck() {
 				}(rmt)
 				return true
 			})
-		case <-p.doneCh:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (p *proxy) run() {
+func (p *proxy) run(ctx context.Context) {
 	endpoints := []string{}
 	p.remotes.Range(func(key, value interface{}) bool {
 		r := value.(*remote)
@@ -204,12 +203,12 @@ func (p *proxy) run() {
 		return true
 	})
 	log.Info("start serve requests to remotes", zap.String("endpoint", p.listener.Addr().String()), zap.Strings("remotes", endpoints))
-	go p.doCheck()
+	go p.doCheck(ctx)
 	// wait a check round before serve connections
 	time.Sleep(p.checkInterval + time.Second)
 	for {
 		select {
-		case <-p.doneCh:
+		case <-ctx.Done():
 			p.listener.Close()
 			return
 		default:
@@ -221,8 +220,4 @@ func (p *proxy) run() {
 			}
 		}
 	}
-}
-
-func (p *proxy) stop() {
-	close(p.doneCh)
 }

@@ -13,8 +13,6 @@ import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import React, { useCallback, useMemo } from 'react'
 import { usePersistFn } from '@umijs/hooks'
 
-import { dummyColumn } from '@lib/utils/tableColumns'
-
 import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
 import styles from './index.module.less'
@@ -47,6 +45,7 @@ export interface ICardTableV2Props extends IDetailsListProps {
   cardExtra?: React.ReactNode
   cardNoMargin?: boolean
   cardNoMarginTop?: boolean
+  extendLastColumn?: boolean
 
   // The keys of visible columns. If null, all columns will be shown.
   visibleColumnKeys?: { [key: string]: boolean }
@@ -95,6 +94,16 @@ function useRenderClickableRow(onRowClicked) {
   )
 }
 
+function dummyColumn(): IColumn {
+  return {
+    name: '',
+    key: 'dummy',
+    minWidth: 28,
+    maxWidth: 28,
+    onRender: (_rec) => null,
+  }
+}
+
 function CardTableV2(props: ICardTableV2Props) {
   const {
     title,
@@ -105,6 +114,7 @@ function CardTableV2(props: ICardTableV2Props) {
     cardExtra,
     cardNoMargin,
     cardNoMarginTop,
+    extendLastColumn,
     visibleColumnKeys,
     visibleItemsCount,
     orderBy,
@@ -143,9 +153,18 @@ function CardTableV2(props: ICardTableV2Props) {
       onColumnClick,
       columnActionsMode: c.columnActionsMode || ColumnActionsMode.disabled,
     }))
-    newColumns.push(dummyColumn())
+    if (!extendLastColumn) {
+      newColumns.push(dummyColumn())
+    }
     return newColumns
-  }, [onColumnClick, columns, visibleColumnKeys, orderBy, desc])
+  }, [
+    onColumnClick,
+    columns,
+    visibleColumnKeys,
+    orderBy,
+    desc,
+    extendLastColumn,
+  ])
 
   const finalItems = useMemo(() => {
     let newItems = items || []
@@ -172,7 +191,9 @@ function CardTableV2(props: ICardTableV2Props) {
       title={title}
       subTitle={subTitle}
       style={style}
-      className={cx(styles.cardTable, className)}
+      className={cx(styles.cardTable, className, {
+        [styles.contentExtended]: extendLastColumn,
+      })}
       noMargin={cardNoMargin}
       noMarginTop={cardNoMarginTop}
       extra={cardExtra}

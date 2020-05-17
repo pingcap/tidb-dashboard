@@ -5,7 +5,7 @@
 
     <script>
       const dashboardPrefix = '$DashboardPrefix$'
-      if (!dashboardPrefix.startsWith('{')) {
+      if (!dashboardPrefix.startsWith('$')) {
         window.dashboardPrefix = '/' + dashboardPrefix
       } else {
         window.dashboardPrefix = '/dashboard'

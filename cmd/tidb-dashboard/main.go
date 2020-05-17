@@ -204,7 +204,7 @@ func main() {
 	defer s.Stop(context.Background()) //nolint:errcheck
 
 	mux := http.DefaultServeMux
-	mux.Handle("/"+cliConfig.CoreConfig.Prefix, http.StripPrefix("/"+cliConfig.CoreConfig.Prefix, uiserver.Handler()))
+	mux.Handle("/"+cliConfig.CoreConfig.Prefix+"/", http.StripPrefix("/"+cliConfig.CoreConfig.Prefix, uiserver.Handler()))
 	mux.Handle("/"+cliConfig.CoreConfig.Prefix+"/api/", apiserver.Handler(s))
 	mux.Handle("/"+cliConfig.CoreConfig.Prefix+"/api/swagger/", swaggerserver.Handler())
 

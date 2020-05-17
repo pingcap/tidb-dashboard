@@ -33,6 +33,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 )
 
 // MaxRecvMsgSize set max gRPC receive message size received from server. If any message size is larger than
@@ -47,7 +49,7 @@ type TaskGroup struct {
 	maxPreviewLinesPerTask int
 }
 
-func (tg *TaskGroup) InitTasks(taskModels []*TaskModel) {
+func (tg *TaskGroup) InitTasks(ctx context.Context, taskModels []*TaskModel) {
 	// Tasks are assigned after inserting into scheduler, thus it has a chance to run parallel with Abort.
 	tg.tasksMu.Lock()
 	defer tg.tasksMu.Unlock()
@@ -57,7 +59,7 @@ func (tg *TaskGroup) InitTasks(taskModels []*TaskModel) {
 	}
 	tg.tasks = make([]*Task, 0, len(taskModels))
 	for _, taskModel := range taskModels {
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithCancel(ctx)
 		tg.tasks = append(tg.tasks, &Task{
 			taskGroup: tg,
 			model:     taskModel,
@@ -180,7 +182,10 @@ func (t *Task) SyncRun() {
 
 	cli := diagnosticspb.NewDiagnosticsClient(conn)
 	t.searchLog(cli, diagnosticspb.SearchLogRequest_Normal)
-	t.searchLog(cli, diagnosticspb.SearchLogRequest_Slow)
+	// Only TiKV support searching slow log now
+	if t.model.Target.Kind == model.NodeKindTiKV {
+		t.searchLog(cli, diagnosticspb.SearchLogRequest_Slow)
+	}
 }
 
 func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diagnosticspb.SearchLogRequest_Target) {

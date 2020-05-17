@@ -400,8 +400,14 @@ func (s *Service) deleteGroup(c *gin.Context) {
 // @Router /profiling/config [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
 func (s *Service) getDynamicConfig(c *gin.Context) {
-	c.JSON(http.StatusOK, s.cfgManager.Get().Profiling)
+	dc, err := s.cfgManager.Get()
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, dc.Profiling)
 }
 
 // @Summary Set Profiling Dynamic Config
@@ -423,7 +429,7 @@ func (s *Service) setDynamicConfig(c *gin.Context) {
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {
 		dc.Profiling = req
 	}
-	if err := s.cfgManager.Set(opt); err != nil {
+	if err := s.cfgManager.Modify(opt); err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
 		return

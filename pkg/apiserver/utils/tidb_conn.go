@@ -14,6 +14,8 @@
 package utils
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/joomcode/errorx"
@@ -56,7 +58,7 @@ func MWConnectTiDB(tidbForwarder *tidb.Forwarder) gin.HandlerFunc {
 			} else {
 				// For other kind of connection errors, for example, PD goes away, return these errors directly.
 				// In front-end we will simply display these errors but not ask user to login again.
-				c.Status(500)
+				c.Status(http.StatusInternalServerError)
 				_ = c.Error(err)
 			}
 			c.Abort()

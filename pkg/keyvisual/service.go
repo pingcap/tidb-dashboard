@@ -290,8 +290,8 @@ func newStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.La
 	return matrix.DistanceStrategy(lc, wg, labelStrategy, distanceStrategyRatio, distanceStrategyLevel, distanceStrategyCount)
 }
 
-func newStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, in input.StatInput, strategy matrix.Strategy) *storage.Stat {
-	stat := storage.NewStat(lc, wg, provider, defaultStatConfig, strategy, in.GetStartTime())
+func newStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, db *dbstore.DB, in input.StatInput, strategy matrix.Strategy) *storage.Stat {
+	stat := storage.NewStat(lc, wg, provider, db, defaultStatConfig, strategy, in.GetStartTime())
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {

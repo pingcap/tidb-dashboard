@@ -1,5 +1,4 @@
 import { Badge, Button, Progress } from 'antd'
-import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
@@ -8,7 +7,6 @@ import { usePersistFn } from '@umijs/hooks'
 
 import client from '@lib/client'
 import { CardTableV2, Head } from '@lib/components'
-import { dummyColumn } from '@lib/utils/tableColumns'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 
 function mapData(data) {
@@ -59,8 +57,6 @@ export default function Page() {
         key: 'instance',
         minWidth: 150,
         maxWidth: 400,
-        isResizable: true,
-        columnActionsMode: ColumnActionsMode.disabled, // will move to CardTableV2
         onRender: (record) => record.target.display_name,
       },
       {
@@ -68,8 +64,6 @@ export default function Page() {
         key: 'kind',
         minWidth: 100,
         maxWidth: 150,
-        isResizable: true,
-        columnActionsMode: ColumnActionsMode.disabled,
         onRender: (record) => record.target.kind,
       },
       {
@@ -77,8 +71,6 @@ export default function Page() {
         key: 'status',
         minWidth: 150,
         maxWidth: 200,
-        isResizable: true,
-        columnActionsMode: ColumnActionsMode.disabled,
         onRender: (record) => {
           if (record.state === 1) {
             return (
@@ -102,7 +94,6 @@ export default function Page() {
           }
         },
       },
-      dummyColumn(),
     ],
     [t]
   )

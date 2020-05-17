@@ -35,7 +35,7 @@ function DiagnoseStatus() {
           <Button type="primary" disabled={report?.progress! < 100}>
             {/* Not using client basePath intentionally so that it can be handled by webpack-dev-server */}
             <a
-              href={`/dashboard/api/diagnose/reports/${report.id}/detail`}
+              href={`${window.dashboardPrefix}/api/diagnose/reports/${report.id}/detail`}
               target="_blank"
               rel="noopener noreferrer"
             >

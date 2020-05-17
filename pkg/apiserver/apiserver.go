@@ -180,14 +180,14 @@ func (s *Service) provideLocals() (*config.Config, *assetfs.AssetFS) {
 	return s.config, s.uiAssetFS
 }
 
-func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGroup) {
+func newAPIHandlerEngine(config *config.Config) (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGroup) {
 	apiHandlerEngine = gin.New()
 	apiHandlerEngine.Use(gin.Recovery())
 	apiHandlerEngine.Use(cors.AllowAll())
 	apiHandlerEngine.Use(gzip.Gzip(gzip.BestSpeed))
 	apiHandlerEngine.Use(apiutils.MWHandleErrors())
 
-	endpoint = apiHandlerEngine.Group("/dashboard/api")
+	endpoint = apiHandlerEngine.Group(config.Prefix + "/api")
 
 	return
 }

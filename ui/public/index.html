@@ -2,6 +2,17 @@
 <html>
   <head>
     <meta charset="utf-8" />
+
+    <script>
+      const dashboardPrefix = '$DashboardPrefix$'
+      if (!dashboardPrefix.startsWith('{')) {
+        window.dashboardPrefix = '/' + dashboardPrefix
+      } else {
+        window.dashboardPrefix = '/dashboard'
+      }
+      console.log(`Start with prefix ${window.dashboardPrefix}`)
+    </script>
+
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="TiDB Dashboard" />

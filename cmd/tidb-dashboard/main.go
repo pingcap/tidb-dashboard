@@ -74,6 +74,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
 	flag.IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
 	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
+	flag.StringVar(&cfg.CoreConfig.Prefix, "prefix", "/dashboard", "Dashboard URL prefix")
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
 	flag.BoolVar(&cfg.EnableDebugLog, "debug", false, "Enable debug logs")
 	// debug for keyvisual，hide help information
@@ -117,6 +118,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 		pdEndPoint.Scheme = "https"
 	}
 	cfg.CoreConfig.PDEndPoint = pdEndPoint.String()
+	cfg.CoreConfig.Prefix = strings.Trim(cfg.CoreConfig.Prefix, "/")
 
 	if showVersion {
 		utils.PrintInfo()
@@ -182,6 +184,7 @@ func main() {
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
+	uiserver.InitAssetFS(cliConfig.CoreConfig.Prefix)
 	s := apiserver.NewService(
 		cliConfig.CoreConfig,
 		apiserver.StoppedHandler,
@@ -201,15 +204,15 @@ func main() {
 	defer s.Stop(context.Background()) //nolint:errcheck
 
 	mux := http.DefaultServeMux
-	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
-	mux.Handle("/dashboard/api/", apiserver.Handler(s))
-	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
+	mux.Handle("/"+cliConfig.CoreConfig.Prefix, http.StripPrefix("/"+cliConfig.CoreConfig.Prefix, uiserver.Handler()))
+	mux.Handle("/"+cliConfig.CoreConfig.Prefix+"/api/", apiserver.Handler(s))
+	mux.Handle("/"+cliConfig.CoreConfig.Prefix+"/api/swagger/", swaggerserver.Handler())
 
 	utils.LogInfo()
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
-	log.Info(fmt.Sprintf("UI:      http://127.0.0.1:%d/dashboard/", cliConfig.ListenPort))
-	log.Info(fmt.Sprintf("API:     http://127.0.0.1:%d/dashboard/api/", cliConfig.ListenPort))
-	log.Info(fmt.Sprintf("Swagger: http://127.0.0.1:%d/dashboard/api/swagger/", cliConfig.ListenPort))
+	log.Info(fmt.Sprintf("UI:      http://127.0.0.1:%d/%s/", cliConfig.ListenPort, cliConfig.CoreConfig.Prefix))
+	log.Info(fmt.Sprintf("API:     http://127.0.0.1:%d/%s/api/", cliConfig.ListenPort, cliConfig.CoreConfig.Prefix))
+	log.Info(fmt.Sprintf("Swagger: http://127.0.0.1:%d/%s/api/swagger/", cliConfig.ListenPort, cliConfig.CoreConfig.Prefix))
 
 	srv := &http.Server{Handler: mux}
 	var wg sync.WaitGroup

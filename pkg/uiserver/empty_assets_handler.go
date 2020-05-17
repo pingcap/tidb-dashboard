@@ -18,6 +18,8 @@ import (
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 )
 
+func InitAssetFS(prefix string) {}
+
 func assetFS() *assetfs.AssetFS {
 	return nil
 }

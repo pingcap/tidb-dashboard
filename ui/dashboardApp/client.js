@@ -42,7 +42,7 @@ export function init() {
     // Accept empty string as dashboard API URL as well.
     DASHBOARD_API_URL_PERFIX = process.env.REACT_APP_DASHBOARD_API_URL
   }
-  const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}/dashboard/api`
+  const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}${window.dashboardPrefix}/api`
 
   const dashboardClient = new DefaultApi(
     {

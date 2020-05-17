@@ -20,6 +20,7 @@ import (
 type Config struct {
 	DataDir    string
 	PDEndPoint string
+	Prefix     string
 
 	// TLS config for mTLS authentication between TiDB components.
 	ClusterTLSConfig *tls.Config

@@ -4,6 +4,7 @@ import {
   Selection,
   SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { RangeValue } from 'rc-picker/lib/interface'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -12,6 +13,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client, { LogsearchTaskGroupModel } from '@lib/client'
 import { CardTableV2, Head } from '@lib/components'
+
 import { DATE_TIME_FORMAT, LogLevelMap } from './utils'
 
 function componentRender({ target_stats: stats }) {
@@ -172,7 +174,7 @@ export default function SearchHistory() {
   ]
 
   return (
-    <div>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Head
         title={t('search_logs.nav.history')}
         back={
@@ -196,14 +198,16 @@ export default function SearchHistory() {
           </>
         }
       />
-      <div style={{ backgroundColor: '#FFFFFF' }}>
-        <CardTableV2
-          columns={columns}
-          items={taskGroups || []}
-          selection={rowSelection}
-          selectionMode={SelectionMode.multiple}
-          style={{ marginTop: 0 }}
-        />
+      <div style={{ height: '100%', position: 'relative' }}>
+        <ScrollablePane>
+          <CardTableV2
+            cardNoMarginTop
+            columns={columns}
+            items={taskGroups || []}
+            selection={rowSelection}
+            selectionMode={SelectionMode.multiple}
+          />
+        </ScrollablePane>
       </div>
     </div>
   )

@@ -57,7 +57,7 @@ export default function DiagnoseGenerator() {
   const handleFinish = useFinishHandler(navigate)
 
   return (
-    <ScrollablePane style={{ height: '100vh' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Card title={t('diagnose.generate.title')}>
         <Form
           layout="inline"
@@ -149,7 +149,12 @@ export default function DiagnoseGenerator() {
           </Form.Item>
         </Form>
       </Card>
-      <DiagnoseHistory />
-    </ScrollablePane>
+
+      <div style={{ height: '100%', position: 'relative' }}>
+        <ScrollablePane>
+          <DiagnoseHistory />
+        </ScrollablePane>
+      </div>
+    </div>
   )
 }

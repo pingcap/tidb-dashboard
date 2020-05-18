@@ -1,12 +1,14 @@
-import { Head } from '@lib/components'
-import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Col, Row } from 'antd'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams, Link } from 'react-router-dom'
-import { SearchHeader, SearchProgress, SearchResult } from './components'
+import { Link, useParams } from 'react-router-dom'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+
 import client from '@lib/client'
+import { Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
+import { SearchHeader, SearchProgress, SearchResult } from './components'
 import { TaskState } from './components/utils'
 
 export default function LogSearchingDetail() {
@@ -46,30 +48,40 @@ export default function LogSearchingDetail() {
   const tasks = useMemo(() => data?.tasks ?? [], [data])
 
   return (
-    <div>
-      <Row>
-        <Col span={18}>
-          <Head
-            title={t('search_logs.nav.detail')}
-            back={
-              <Link to={`/search_logs`}>
-                <ArrowLeftOutlined /> {t('search_logs.nav.search_logs')}
-              </Link>
-            }
-          >
-            <SearchHeader taskGroupID={taskGroupID} />
-          </Head>
-          <SearchResult taskGroupID={taskGroupID} tasks={tasks} />
-        </Col>
-        <Col span={6}>
-          <SearchProgress
-            key={`${reloadKey}`}
-            toggleReload={toggleReload}
-            taskGroupID={taskGroupID}
-            tasks={tasks}
-          />
-        </Col>
-      </Row>
-    </div>
+    <Row>
+      <Col
+        span={18}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+        }}
+      >
+        <Head
+          title={t('search_logs.nav.detail')}
+          back={
+            <Link to={`/search_logs`}>
+              <ArrowLeftOutlined /> {t('search_logs.nav.search_logs')}
+            </Link>
+          }
+        ></Head>
+        <div style={{ height: '100%', position: 'relative', marginRight: 4 }}>
+          <ScrollablePane>
+            <div style={{ marginLeft: 48, marginRight: 48, marginBottom: 24 }}>
+              <SearchHeader taskGroupID={taskGroupID} />
+            </div>
+            <SearchResult taskGroupID={taskGroupID} tasks={tasks} />
+          </ScrollablePane>
+        </div>
+      </Col>
+      <Col span={6}>
+        <SearchProgress
+          key={`${reloadKey}`}
+          toggleReload={toggleReload}
+          taskGroupID={taskGroupID}
+          tasks={tasks}
+        />
+      </Col>
+    </Row>
   )
 }

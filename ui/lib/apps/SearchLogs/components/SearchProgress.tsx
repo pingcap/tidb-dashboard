@@ -7,7 +7,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import client, { LogsearchTaskModel } from '@lib/client'
 import { AnimatedSkeleton, Card } from '@lib/components'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
-import { namingMap, NodeKind, NodeKindList, TaskState } from './utils'
+import { namingMap, NodeKind, NodeKindList, TaskState } from '../utils'
 
 import styles from './Styles.module.css'
 

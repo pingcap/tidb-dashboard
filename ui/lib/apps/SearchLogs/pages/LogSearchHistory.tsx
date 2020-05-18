@@ -13,8 +13,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client, { LogsearchTaskGroupModel } from '@lib/client'
 import { CardTableV2, Head } from '@lib/components'
-
-import { DATE_TIME_FORMAT, LogLevelMap } from './utils'
+import { DATE_TIME_FORMAT, LogLevelMap } from '../utils'
 
 function componentRender({ target_stats: stats }) {
   const r: Array<string> = []
@@ -47,7 +46,7 @@ function timeRender({ search_request: request }) {
   return `${formatTime(timeRange[0])} ~ ${formatTime(timeRange[1])}`
 }
 
-export default function SearchHistory() {
+export default function LogSearchingHistory() {
   const [taskGroups, setTaskGroups] = useState<LogsearchTaskGroupModel[]>([])
   const [selectedRowKeys, setRowKeys] = useState<string[]>([])
 

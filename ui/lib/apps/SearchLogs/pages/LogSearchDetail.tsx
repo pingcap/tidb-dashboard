@@ -8,8 +8,8 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import client from '@lib/client'
 import { Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
-import { SearchHeader, SearchProgress, SearchResult } from './components'
-import { TaskState } from './components/utils'
+import { SearchHeader, SearchProgress, SearchResult } from '../components'
+import { TaskState } from '../utils'
 
 export default function LogSearchingDetail() {
   const { t } = useTranslation()

@@ -165,15 +165,15 @@ diagnosis:
         tidb_slow_query: The time cost of TiDB slow query. The label is [instance].
         tidb_slow_query_cop_process: The time cost of TiDB slow query total cop process time. The label is [instance].
         tidb_slow_query_cop_wait: The time cost of TiDB slow query total cop wait time. The label is [instance].
-        tidb_ddl_handle_job: The time cost of handle TiDB DDL job. The label is [type].
+        tidb_ddl_handle_job: The time cost of TiDB DDL handling job. The label is [type].
         tidb_ddl_worker: The time cost of DDL worker handle job. The label is [action].
         tidb_ddl_update_self_version: The time cost of TiDB schema syncer version update. The label is [result].
         tidb_owner_handle_syncer: The time cost of TiDB DDL owner operations on etcd. The label is [type].
         tidb_ddl_batch_add_index: The time cost of TiDB batch add index. The label is [type].
-        tidb_ddl_deploy_syncer: The time cost of TiDB ddl schema syncer statistics, including init, start, watch, and clear. The label is [type].
+        tidb_ddl_deploy_syncer: The time cost of TiDB DDL schema syncer statistics, including init, start, watch, and clear. The label is [type].
         tidb_load_schema: The time cost of TiDB loading schema. The label is [type].
-        tidb_meta_operation: The time cost of TiDB meta operations, including get/set schema and ddl jobs. The label is [instance].
-        tidb_auto_id_request: The time cost of TiDB auto id, handle id requests. The label is [type].
+        tidb_meta_operation: The time cost of TiDB meta operations, including get/set schema and DDL jobs. The label is [instance].
+        tidb_auto_id_request: The time cost of handling requests for TiDB auto ID. The label is [type].
         tidb_statistics_auto_analyze: The time cost of TiDB auto analyze. The label is [type].
         tidb_gc: The time cost of KV storage garbage collection. The label is [instance].
         tidb_gc_push_task: The time cost of KV storage range worker processing one task. The label is [instance].

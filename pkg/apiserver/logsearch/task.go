@@ -131,6 +131,21 @@ func (t *Task) setError(err error) {
 	t.model.Error = &errStr
 }
 
+func (t *Task) accumulateLogSize(path *string) {
+	if path != nil {
+		stat, err := os.Stat(*path)
+		if err != nil {
+			log.Warn("Can NOT fetch log file size for LogSearchTask",
+				zap.String("dir", *path),
+				zap.Any("task", t),
+				zap.String("err", err.Error()),
+			)
+		} else {
+			t.model.Size += stat.Size()
+		}
+	}
+}
+
 func (t *Task) SyncRun() {
 	defer func() {
 		if t.model.Error != nil {
@@ -144,15 +159,8 @@ func (t *Task) SyncRun() {
 			return
 		}
 		t.model.State = TaskStateFinished
-		stat, err := os.Stat(*t.model.LogStorePath)
-		if err != nil {
-			log.Warn("Can NOT fetch log file size for LogSearchTask",
-				zap.Any("task", t),
-				zap.String("err", err.Error()),
-			)
-		} else {
-			t.model.Size = stat.Size()
-		}
+		t.accumulateLogSize(t.model.LogStorePath)
+		t.accumulateLogSize(t.model.SlowLogStorePath)
 		log.Debug("LogSearchTask finished", zap.Any("task", t))
 		t.taskGroup.service.db.Save(t.model)
 	}()
@@ -233,19 +241,20 @@ func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diag
 	bufWriter := bufio.NewWriterSize(writer, 16*1024*1024) // 16M buffer size
 	defer bufWriter.Flush()
 
-	if targetType == diagnosticspb.SearchLogRequest_Normal {
-		t.model.LogStorePath = &savedPath
-	} else {
-		t.model.SlowLogStorePath = &savedPath
-	}
 	t.model.State = TaskStateRunning
-
 	previewLogLinesCount := 0
 	for {
 		res, err := stream.Recv()
 		if err != nil {
 			if err != io.EOF {
 				t.setError(err)
+			}
+			if previewLogLinesCount != 0 {
+				if targetType == diagnosticspb.SearchLogRequest_Normal {
+					t.model.LogStorePath = &savedPath
+				} else {
+					t.model.SlowLogStorePath = &savedPath
+				}
 			}
 			return
 		}

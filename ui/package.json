@@ -51,7 +51,7 @@
       "pre-commit": "pretty-quick --staged --bail"
     }
   },
-  "homepage": "/$DashboardPrefix$",
+  "homepage": "/dashboard",
   "browserslist": {
     "production": [
       ">0.2%",

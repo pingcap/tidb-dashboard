@@ -12,7 +12,7 @@ func InitAssetFS(prefix string) {
 		panic("Asset index.html not found.")
 	}
 	tmplText := string(a.bytes)
-	updated := strings.ReplaceAll(tmplText, "$DashboardPrefix$", prefix)
+	updated := strings.ReplaceAll(tmplText, "__DASHBOARD_PREFIX__", prefix)
 	a.bytes = []byte(updated)
 	_bindata["build/index.html"] = func() (*asset, error) {
 		return a, nil

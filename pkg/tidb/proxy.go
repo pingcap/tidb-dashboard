@@ -173,6 +173,8 @@ func (p *proxy) pick() *remote {
 func (p *proxy) doCheck(ctx context.Context) {
 	for {
 		select {
+		case <-ctx.Done():
+			return
 		case <-time.After(p.checkInterval):
 			p.remotes.Range(func(key, value interface{}) bool {
 				rmt := value.(*remote)
@@ -189,8 +191,6 @@ func (p *proxy) doCheck(ctx context.Context) {
 				}(rmt)
 				return true
 			})
-		case <-ctx.Done():
-			return
 		}
 	}
 }

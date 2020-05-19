@@ -188,7 +188,7 @@ func (p *proxy) doCheck(ctx context.Context) {
 }
 
 func (p *proxy) run(ctx context.Context) {
-	var endpoints []string
+	endpoints := make([]string, 0)
 	p.remotes.Range(func(key, value interface{}) bool {
 		r := value.(*remote)
 		endpoints = append(endpoints, r.addr)

@@ -191,10 +191,10 @@ func (m *DynamicConfigManager) store(dc *DynamicConfig) error {
 		return err
 	}
 
-	log.Info("Save dynamic config to etcd", zap.ByteString("json", bs))
 	ctx, cancel := context.WithTimeout(m.ctx, Timeout)
 	defer cancel()
 	_, err = m.etcdClient.Put(ctx, DynamicConfigPath, string(bs))
+	log.Info("Save dynamic config to etcd", zap.ByteString("json", bs))
 
 	return err
 }

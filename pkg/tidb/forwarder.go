@@ -33,7 +33,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
-// FIXME: This is duplicated with the one in KeyVis.
 type tidbServerInfo struct {
 	ID         string `json:"ddl_id"`
 	IP         string `json:"ip"`
@@ -77,21 +76,21 @@ type Forwarder struct {
 func (f *Forwarder) Start(ctx context.Context) error {
 	f.ctx = ctx
 
-	pr, err := f.createProxy()
-	if err != nil {
+	var err error
+	if f.tidbProxy, err = f.createProxy(); err != nil {
 		return err
 	}
-	f.tidbProxy = pr
-	f.tidbPort = pr.port()
-	pr, err = f.createProxy()
-	if err != nil {
+	if f.tidbStatusProxy, err = f.createProxy(); err != nil {
 		return err
 	}
-	f.tidbStatusProxy = pr
-	f.statusPort = pr.port()
+
+	f.tidbPort = f.tidbProxy.port()
+	f.statusPort = f.tidbStatusProxy.port()
+
 	go f.pollingForTiDB()
 	go f.tidbProxy.run(ctx)
 	go f.tidbStatusProxy.run(ctx)
+
 	return nil
 }
 
@@ -151,11 +150,11 @@ func (f *Forwarder) pollingForTiDB() {
 			continue
 		}
 
-		statusEndpoints := make(map[string]string)
-		tidbEndpoints := make(map[string]string)
+		statusEndpoints := make(map[string]struct{}, len(allTiDB))
+		tidbEndpoints := make(map[string]struct{}, len(allTiDB))
 		for _, server := range allTiDB {
-			statusEndpoints[server.IP] = fmt.Sprintf("%s:%d", server.IP, server.StatusPort)
-			tidbEndpoints[server.IP] = fmt.Sprintf("%s:%d", server.IP, server.Port)
+			tidbEndpoints[fmt.Sprintf("%s:%d", server.IP, server.Port)] = struct{}{}
+			statusEndpoints[fmt.Sprintf("%s:%d", server.IP, server.StatusPort)] = struct{}{}
 		}
 		f.tidbProxy.updateRemotes(tidbEndpoints)
 		f.tidbStatusProxy.updateRemotes(statusEndpoints)

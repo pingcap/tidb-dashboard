@@ -2,10 +2,11 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="x-dashboard-prefix" content="__DASHBOARD_PREFIX__">
 
     <script>
-      const dashboardPrefix = '__DASHBOARD_PREFIX__'
-      if (!dashboardPrefix.startsWith('$')) {
+      const dashboardPrefix = document.querySelector('meta[name=x-dashboard-prefix]')?.getAttribute('content') ?? '/dashboard';
+      if (!dashboardPrefix.startsWith('__')) {
         window.dashboardPrefix = '/' + dashboardPrefix
       } else {
         window.dashboardPrefix = '/dashboard'

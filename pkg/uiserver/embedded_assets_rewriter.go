@@ -8,14 +8,18 @@ import (
 )
 
 func InitAssetFS(prefix string) {
-	a, err := _bindata["build/index.html"]()
-	if err != nil {
-		panic("Asset index.html not found.")
+	rewrite := func(assetPath string) {
+		a, err := _bindata[assetPath]()
+		if err != nil {
+			panic("Asset " + assetPath + " not found.")
+		}
+		tmplText := string(a.bytes)
+		updated := strings.ReplaceAll(tmplText, "__DASHBOARD_PREFIX__", html.EscapeString(prefix))
+		a.bytes = []byte(updated)
+		_bindata[assetPath] = func() (*asset, error) {
+			return a, nil
+		}
 	}
-	tmplText := string(a.bytes)
-	updated := strings.ReplaceAll(tmplText, "__DASHBOARD_PREFIX__", html.EscapeString(prefix))
-	a.bytes = []byte(updated)
-	_bindata["build/index.html"] = func() (*asset, error) {
-		return a, nil
-	}
+	rewrite("build/index.html")
+	rewrite("build/diagnoseReport.html")
 }

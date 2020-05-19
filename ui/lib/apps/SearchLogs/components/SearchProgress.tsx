@@ -22,7 +22,7 @@ const taskStateIcons = {
 function leafNodeProps(task: LogsearchTaskModel) {
   return {
     icon: taskStateIcons[task.state || TaskState.Error],
-    disableCheckbox: task.size ? task.state !== TaskState.Finished : true,
+    disableCheckbox: !task.size || task.state !== TaskState.Finished,
   }
 }
 

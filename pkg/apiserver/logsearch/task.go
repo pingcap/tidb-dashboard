@@ -131,12 +131,12 @@ func (t *Task) setError(err error) {
 	t.model.Error = &errStr
 }
 
-func (t *Task) accumulateLogSize(dir *string) {
-	if dir != nil {
-		stat, err := os.Stat(*dir)
+func (t *Task) accumulateLogSize(path *string) {
+	if path != nil {
+		stat, err := os.Stat(*path)
 		if err != nil {
 			log.Warn("Can NOT fetch log file size for LogSearchTask",
-				zap.String("dir", *dir),
+				zap.String("dir", *path),
 				zap.Any("task", t),
 				zap.String("err", err.Error()),
 			)

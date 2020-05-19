@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import client, { LogsearchTaskModel, ModelRequestTargetNode } from '@lib/client'
 import { Card, CardTableV2 } from '@lib/components'
 import Log from './Log'
-import { DATE_TIME_FORMAT, LogLevelMap, namingMap } from './utils'
+import { DATE_TIME_FORMAT, LogLevelMap, namingMap } from '../utils'
 
 import styles from './Styles.module.css'
 

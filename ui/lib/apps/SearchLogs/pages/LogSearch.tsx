@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { Card } from '@lib/components'
-import { SearchHeader } from './components'
+import { SearchHeader } from '../components'
 
-export default function LogSearchingPage() {
+export default function LogSearch() {
   const { t } = useTranslation()
 
   return (

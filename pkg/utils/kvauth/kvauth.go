@@ -31,44 +31,48 @@ var (
 )
 
 // RevokeKvAuthKey delete the etcd path of KV mode user account
-func RevokeKvAuthKey(etcdClient *clientv3.Client) error {
+func RevokeKvAuthKey(etcdClient *clientv3.Client, username string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	_, err := etcdClient.Delete(ctx, etcdKvAuthKeyPath)
+	path := etcdKvAuthKeyPath + "/" + username
+	_, err := etcdClient.Delete(ctx, path)
 	return err
 }
 
 // VerifyKvAuthKey get hashed pass from etcd and check
-func VerifyKvAuthKey(etcdClient *clientv3.Client, authKey string) error {
+func VerifyKvAuthKey(etcdClient *clientv3.Client, username string, authKey string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	path := etcdKvAuthKeyPath
+	path := etcdKvAuthKeyPath + "/" + username
 	hashedPass := []byte("")
 	resp, err := etcdClient.Get(ctx, path)
 	if err != nil {
 		return err
 	}
-	for _, kv := range resp.Kvs {
-		hashedPass = kv.Value
+
+	if len(resp.Kvs) == 0 {
+		return ErrAccountNotFound.NewWithNoMessage()
 	}
 
-	if string(hashedPass) == "" {
-		return ErrAccountNotFound.NewWithNoMessage()
+	for _, kv := range resp.Kvs {
+		hashedPass = kv.Value
 	}
 
 	return cryptopasta.CheckPasswordHash(hashedPass, []byte(authKey))
 }
 
 // ResetKvAuthKey set new auth key to etcd
-func ResetKvAuthKey(etcdClient *clientv3.Client, authKey string) error {
+func ResetKvAuthKey(etcdClient *clientv3.Client, username string, password string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	hashedPass, err := cryptopasta.HashPassword([]byte(authKey))
+	hashedPass, err := cryptopasta.HashPassword([]byte(password))
 	if err != nil {
 		return err
 	}
-	_, err = etcdClient.Put(ctx, etcdKvAuthKeyPath, string(hashedPass))
+
+	path := etcdKvAuthKeyPath + "/" + username
+	_, err = etcdClient.Put(ctx, path, string(hashedPass))
 	return err
 }

@@ -63,7 +63,7 @@ var showVersion bool
 var rootCmd = &cobra.Command{
 	Use:   "tidb-dashboard",
 	Short: "tidb-dashboard",
-	Long:  `tidb-dashboard which is a tool to monitor tidb cluster system status.`,
+	Long:  `CLI utility for TiDB Dashboard`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		run(cmd)

@@ -58,7 +58,6 @@ func main() {
 }
 
 var cfg = &DashboardCLIConfig{}
-var showVersion bool
 
 var rootCmd = &cobra.Command{
 	Use:   "tidb-dashboard",
@@ -116,12 +115,6 @@ func buildTLSConfig(caPath, keyPath, certPath *string) *tls.Config {
 }
 
 func run(runCmd *cobra.Command) {
-	if showVersion {
-		utils.PrintInfo()
-		_ = log.Sync()
-		os.Exit(0)
-	}
-
 	// Flushing any buffered log entries
 	defer log.Sync() //nolint:errcheck
 
@@ -187,7 +180,7 @@ func run(runCmd *cobra.Command) {
 
 func init() {
 	cfg.CoreConfig = &config.Config{}
-	rootCmd.Flags().BoolVarP(&showVersion, "version", "v", false, "Print version information and exit")
+	rootCmd.Version = utils.ReleaseVersion
 	rootCmd.Flags().StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
 	rootCmd.Flags().IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
 	rootCmd.Flags().StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")

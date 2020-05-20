@@ -204,15 +204,15 @@ func main() {
 	defer s.Stop(context.Background()) //nolint:errcheck
 
 	mux := http.DefaultServeMux
-	mux.Handle("/"+cliConfig.CoreConfig.Prefix+"/", http.StripPrefix("/"+cliConfig.CoreConfig.Prefix, uiserver.Handler()))
-	mux.Handle("/"+cliConfig.CoreConfig.Prefix+"/api/", apiserver.Handler(s))
-	mux.Handle("/"+cliConfig.CoreConfig.Prefix+"/api/swagger/", swaggerserver.Handler())
+	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
+	mux.Handle("/dashboard/api/", apiserver.Handler(s))
+	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 
 	utils.LogInfo()
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
-	log.Info(fmt.Sprintf("UI:      http://127.0.0.1:%d/%s/", cliConfig.ListenPort, cliConfig.CoreConfig.Prefix))
-	log.Info(fmt.Sprintf("API:     http://127.0.0.1:%d/%s/api/", cliConfig.ListenPort, cliConfig.CoreConfig.Prefix))
-	log.Info(fmt.Sprintf("Swagger: http://127.0.0.1:%d/%s/api/swagger/", cliConfig.ListenPort, cliConfig.CoreConfig.Prefix))
+	log.Info(fmt.Sprintf("UI:      http://127.0.0.1:%d/dashboard/", cliConfig.ListenPort))
+	log.Info(fmt.Sprintf("API:     http://127.0.0.1:%d/dashboard/api/", cliConfig.ListenPort))
+	log.Info(fmt.Sprintf("Swagger: http://127.0.0.1:%d/dashboard/api/swagger/", cliConfig.ListenPort))
 
 	srv := &http.Server{Handler: mux}
 	var wg sync.WaitGroup

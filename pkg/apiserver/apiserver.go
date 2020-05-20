@@ -187,7 +187,7 @@ func newAPIHandlerEngine(config *config.Config) (apiHandlerEngine *gin.Engine, e
 	apiHandlerEngine.Use(gzip.Gzip(gzip.BestSpeed))
 	apiHandlerEngine.Use(apiutils.MWHandleErrors())
 
-	endpoint = apiHandlerEngine.Group(config.Prefix + "/api")
+	endpoint = apiHandlerEngine.Group("dashboard/api")
 
 	return
 }

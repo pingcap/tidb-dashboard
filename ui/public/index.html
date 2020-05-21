@@ -5,8 +5,8 @@
     <meta name="x-dashboard-prefix" content="__DASHBOARD_PREFIX__">
 
     <script>
-      const dashboardPrefix = document.querySelector('meta[name=x-dashboard-prefix]')?.getAttribute('content') ?? '/dashboard';
-      if (!dashboardPrefix.startsWith('__')) {
+      const dashboardPrefix = document.querySelector('meta[name=x-dashboard-prefix]').getAttribute('content') || 'dashboard';
+      if (dashboardPrefix !== '__' + 'DASHBOARD_PREFIX__') {
         window.dashboardPrefix = '/' + dashboardPrefix
       } else {
         window.dashboardPrefix = '/dashboard'

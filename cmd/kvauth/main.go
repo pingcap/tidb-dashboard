@@ -18,10 +18,13 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"go.etcd.io/etcd/clientv3"
+	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/cmd/common"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/kvauth"
 )
 
@@ -30,6 +33,19 @@ func main() {
 }
 
 var coreConfig = &config.Config{}
+
+func provideCfg() *config.Config {
+	return coreConfig
+}
+
+func runFx(cmdRun func(client *clientv3.Client)) {
+	fx.New(
+		fx.Logger(utils.NewFxPrinter()),
+		fx.Provide(provideCfg),
+		fx.Provide(pd.NewEtcdClient),
+		fx.Invoke(cmdRun),
+	)
+}
 
 func execute() {
 	if err := rootCmd.Execute(); err != nil {
@@ -53,21 +69,18 @@ var kvAuthResetCmd = &cobra.Command{
 	Short: "set or reset kvauth username password",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		if kvAuthUsername == "" || kvAuthPassword == "" {
-			_ = cmd.Help()
-			os.Exit(0)
-		}
+		runFx(func(client *clientv3.Client) {
+			if kvAuthUsername == "" || kvAuthPassword == "" {
+				_ = cmd.Help()
+				os.Exit(0)
+			}
 
-		client, err := pd.NewEtcdClientNoLC(coreConfig)
-		if err != nil {
-			fmt.Println("Failed to create etcdClient")
-			os.Exit(1)
-		}
-
-		if kvauth.ResetKvAuthKey(client, kvAuthUsername, kvAuthPassword) != nil {
-			fmt.Println("Failed to reset kvauth")
-			os.Exit(1)
-		}
+			if kvauth.ResetKvAuthKey(client, kvAuthUsername, kvAuthPassword) != nil {
+				fmt.Println("Failed to reset kvauth")
+				os.Exit(1)
+			}
+			fmt.Println("reset success")
+		})
 	},
 }
 
@@ -76,21 +89,18 @@ var kvAuthRevokeCmd = &cobra.Command{
 	Short: "revoke kvauth account",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		if kvAuthUsername == "" {
-			_ = cmd.Help()
-			os.Exit(0)
-		}
+		runFx(func(client *clientv3.Client) {
+			if kvAuthUsername == "" {
+				_ = cmd.Help()
+				os.Exit(0)
+			}
 
-		client, err := pd.NewEtcdClientNoLC(coreConfig)
-		if err != nil {
-			fmt.Println("Failed to create etcdClient")
-			os.Exit(1)
-		}
-
-		if kvauth.RevokeKvAuthKey(client, kvAuthUsername) != nil {
-			fmt.Println("Failed to clear kv mode auth secret key")
-			os.Exit(1)
-		}
+			if kvauth.RevokeKvAuthKey(client, kvAuthUsername) != nil {
+				fmt.Println("Failed to clear kv mode auth secret key")
+				os.Exit(1)
+			}
+			fmt.Println("revoke success")
+		})
 	},
 }
 

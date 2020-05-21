@@ -45,7 +45,7 @@ func init() {
 	_ = zap.RegisterEncoder("etcd-client", newZapEncoder)
 }
 
-func NewEtcdClientNoLC(config *config.Config) (*clientv3.Client, error) {
+func NewEtcdClient(lc fx.Lifecycle, config *config.Config) (*clientv3.Client, error) {
 	// TODO: refactor
 	// Because etcd client does not support setting logger directly,
 	// the configuration of pingcap/log is copied here.
@@ -77,11 +77,7 @@ func NewEtcdClientNoLC(config *config.Config) (*clientv3.Client, error) {
 		TLS:       config.ClusterTLSConfig,
 		LogConfig: &zapCfg,
 	})
-	return cli, err
-}
 
-func NewEtcdClient(lc fx.Lifecycle, config *config.Config) (*clientv3.Client, error) {
-	cli, err := NewEtcdClientNoLC(config)
 	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {
 			return cli.Close()

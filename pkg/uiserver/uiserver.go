@@ -30,8 +30,7 @@ var (
 
 func Handler() http.Handler {
 	if fs != nil {
-		fileServer := http.FileServer(fs)
-		return newGzipHandler(fileServer)
+		return NewGzipHandler(fs)
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -44,11 +43,11 @@ func AssetFS() *assetfs.AssetFS {
 }
 
 type gzipHandler struct {
-	fs http.Handler  // The original FileServer
+	raw  http.Handler // The original FileServer
 	pool sync.Pool
 }
 
-func newGzipHandler(fs http.Handler) http.Handler {
+func NewGzipHandler(fs http.FileSystem) http.Handler {
 	var pool sync.Pool
 	pool.New = func() interface{} {
 		gz, err := gzip.NewWriterLevel(ioutil.Discard, gzip.BestSpeed)
@@ -57,7 +56,7 @@ func newGzipHandler(fs http.Handler) http.Handler {
 		}
 		return gz
 	}
-	return &gzipHandler{fs: fs, pool: pool}
+	return &gzipHandler{raw: http.FileServer(fs), pool: pool}
 }
 
 func (g *gzipHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -70,13 +69,13 @@ func (g *gzipHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}()
 		gz.Reset(w)
 		w.Header().Set("Content-Encoding", "gzip")
-		g.fs.ServeHTTP(&gzipWriter{
+		g.raw.ServeHTTP(&gzipWriter{
 			ResponseWriter: w,
 			writer:         gz,
 		}, r)
 		return
 	}
-	g.fs.ServeHTTP(w, r)
+	g.raw.ServeHTTP(w, r)
 }
 
 func (g *gzipHandler) shouldCompress(r *http.Request) bool {

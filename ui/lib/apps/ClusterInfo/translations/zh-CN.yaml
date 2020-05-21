@@ -4,7 +4,7 @@ cluster_info:
     instance_table:
       title: 实例
       columns:
-        node: 节点
+        node: 地址
         version: 版本
         status: 状态
         up_time: 启动时间

@@ -13,8 +13,8 @@ import { defSlowQueryColumnKeys } from '../SlowQuery/pages/List'
 import useSlowQuery, {
   DEF_SLOW_QUERY_OPTIONS,
 } from '../SlowQuery/utils/useSlowQuery'
-import MonitorAlertBar from './components/MonitorAlertBar'
-import Nodes from './components/Nodes'
+import MonitorAlert from './components/MonitorAlert'
+import Instances from './components/Instances'
 
 export default function App() {
   const { t } = useTranslation()
@@ -95,7 +95,7 @@ export default function App() {
                 avg_latency: true,
                 related_schemas: true,
               }}
-              visibleItemsCount={5}
+              visibleItemsCount={10}
               loading={loadingStatements}
               statements={statements}
               timeRange={validTimeRange}
@@ -148,8 +148,8 @@ export default function App() {
             />
           </Col>
           <Col span={6}>
-            <Nodes />
-            <MonitorAlertBar cluster={cluster} />
+            <Instances />
+            <MonitorAlert cluster={cluster} />
           </Col>
         </Row>
       </Router>

@@ -5,7 +5,7 @@ overview:
   recent_slow_query:
     title: Recent Slow Queries
   monitor_alert:
-    title: Monitor
+    title: Monitor & Alert
     view_monitor: View Metrics
     view_monitor_warn: Metrics is unavailable
     view_alerts: 'View {{alertCount}} Alerts'
@@ -15,8 +15,8 @@ overview:
   metrics:
     total_requests: QPS
     latency: Latency
-  nodes:
-    title: Nodes
+  instances:
+    title: Instances
     component:
       tidb: TiDB
       tikv: TiKV

@@ -15,6 +15,7 @@ package kvauth
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/joomcode/errorx"
@@ -30,23 +31,26 @@ var (
 	ErrAccountNotFound = ErrNS.NewType("account_not_found")
 )
 
+type Auth struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 // RevokeKvAuthKey delete the etcd path of KV mode user account
-func RevokeKvAuthKey(etcdClient *clientv3.Client, username string) error {
+func RevokeKvAuthKey(etcdClient *clientv3.Client) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	path := etcdKvAuthKeyPath + "/" + username
-	_, err := etcdClient.Delete(ctx, path)
+	_, err := etcdClient.Delete(ctx, etcdKvAuthKeyPath)
 	return err
 }
 
 // VerifyKvAuthKey get hashed pass from etcd and check
-func VerifyKvAuthKey(etcdClient *clientv3.Client, username string, authKey string) error {
+func VerifyKvAuthKey(etcdClient *clientv3.Client, username string, password string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	path := etcdKvAuthKeyPath + "/" + username
-	hashedPass := []byte("")
-	resp, err := etcdClient.Get(ctx, path)
+	content := []byte("")
+	resp, err := etcdClient.Get(ctx, etcdKvAuthKeyPath)
 	if err != nil {
 		return err
 	}
@@ -56,10 +60,20 @@ func VerifyKvAuthKey(etcdClient *clientv3.Client, username string, authKey strin
 	}
 
 	for _, kv := range resp.Kvs {
-		hashedPass = kv.Value
+		content = kv.Value
 	}
 
-	return cryptopasta.CheckPasswordHash(hashedPass, []byte(authKey))
+	var auth Auth
+	err = json.Unmarshal(content, &auth)
+	if err != nil {
+		return err
+	}
+
+	if auth.Username != username {
+		return ErrAccountNotFound.NewWithNoMessage()
+	}
+
+	return cryptopasta.CheckPasswordHash([]byte(auth.Password), []byte(password))
 }
 
 // ResetKvAuthKey set new auth key to etcd
@@ -72,7 +86,16 @@ func ResetKvAuthKey(etcdClient *clientv3.Client, username string, password strin
 		return err
 	}
 
-	path := etcdKvAuthKeyPath + "/" + username
-	_, err = etcdClient.Put(ctx, path, string(hashedPass))
+	auth := Auth{
+		Username: username,
+		Password: string(hashedPass),
+	}
+
+	content, err := json.Marshal(auth)
+	if err != nil {
+		return err
+	}
+
+	_, err = etcdClient.Put(ctx, etcdKvAuthKeyPath, string(content))
 	return err
 }

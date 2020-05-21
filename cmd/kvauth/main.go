@@ -90,12 +90,7 @@ var kvAuthRevokeCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		runFx(func(client *clientv3.Client) {
-			if kvAuthUsername == "" {
-				_ = cmd.Help()
-				os.Exit(0)
-			}
-
-			if kvauth.RevokeKvAuthKey(client, kvAuthUsername) != nil {
+			if kvauth.RevokeKvAuthKey(client) != nil {
 				fmt.Println("Failed to clear kv mode auth secret key")
 				os.Exit(1)
 			}
@@ -114,6 +109,5 @@ func init() {
 	kvAuthResetCmd.Flags().StringVarP(&kvAuthUsername, "username", "u", "", "username")
 	kvAuthResetCmd.Flags().StringVarP(&kvAuthPassword, "password", "p", "", "password")
 	rootCmd.AddCommand(kvAuthResetCmd)
-	kvAuthRevokeCmd.Flags().StringVarP(&kvAuthUsername, "username", "u", "", "username")
 	rootCmd.AddCommand(kvAuthRevokeCmd)
 }

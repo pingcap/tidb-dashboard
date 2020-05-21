@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { RightOutlined } from '@ant-design/icons'
-import { Card, AnimatedSkeleton } from '@lib/components'
-import client from '@lib/client'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import styles from './MonitorAlertBar.module.less'
+import { Link } from 'react-router-dom'
+import { RightOutlined } from '@ant-design/icons'
 
-export default function MonitorAlertBar({ cluster }) {
+import client from '@lib/client'
+import { AnimatedSkeleton, Card } from '@lib/components'
+
+import styles from './MonitorAlert.module.less'
+
+export default function MonitorAlert({ cluster }) {
   const { t } = useTranslation()
   const [alertCounter, setAlertCounter] = useState(0)
 

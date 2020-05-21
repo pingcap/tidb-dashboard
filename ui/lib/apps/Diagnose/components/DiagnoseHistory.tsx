@@ -109,6 +109,7 @@ export default function DiagnoseHistory() {
 
   return (
     <CardTableV2
+      cardNoMarginTop
       loading={isLoading}
       items={data || []}
       columns={columns}

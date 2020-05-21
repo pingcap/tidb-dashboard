@@ -1,12 +1,12 @@
-import client from '@lib/client'
-import { ModelRequestTargetNode, LogsearchTaskModel } from '@lib/client'
-import { CardTableV2 } from '@lib/components'
 import { Alert } from 'antd'
 import moment from 'moment'
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DATE_TIME_FORMAT, LogLevelMap, namingMap } from './utils'
+
+import client, { LogsearchTaskModel, ModelRequestTargetNode } from '@lib/client'
+import { Card, CardTableV2 } from '@lib/components'
 import Log from './Log'
+import { DATE_TIME_FORMAT, LogLevelMap, namingMap } from '../utils'
 
 import styles from './Styles.module.css'
 
@@ -121,24 +121,23 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
       key: 'log',
       minWidth: 200,
       maxWidth: 400,
+      isResizable: false,
       onRender: ({ log, expanded }) => <Log log={log} expanded={expanded} />,
     },
   ]
+
   return (
     <>
       {!loading && (
-        <Alert
-          message={t('search_logs.page.tip')}
-          type="info"
-          showIcon
-          style={{ marginLeft: 48, marginRight: 48 }}
-        />
+        <Card noMarginTop>
+          <Alert message={t('search_logs.page.tip')} type="info" showIcon />
+        </Card>
       )}
       <CardTableV2
+        cardNoMarginTop
         loading={loading}
         columns={columns}
         items={logPreviews || []}
-        style={{ marginTop: 0 }}
         onRenderRow={renderRow}
         extendLastColumn
       />

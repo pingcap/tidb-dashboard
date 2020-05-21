@@ -1,18 +1,19 @@
-import { Link } from 'react-router-dom'
-import React, { useMemo } from 'react'
-import { Card, AnimatedSkeleton } from '@lib/components'
-import { useTranslation } from 'react-i18next'
-import { useClientRequest } from '@lib/utils/useClientRequest'
-import client from '@lib/client'
 import { Alert, Typography } from 'antd'
-import {
-  STATUS_UP,
-  STATUS_TOMBSTONE,
-  STATUS_OFFLINE,
-} from '@lib/apps/ClusterInfo/status/status'
+import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { RightOutlined } from '@ant-design/icons'
 
-export default function Nodes() {
+import {
+  STATUS_OFFLINE,
+  STATUS_TOMBSTONE,
+  STATUS_UP,
+} from '@lib/apps/ClusterInfo/status/status'
+import client from '@lib/client'
+import { AnimatedSkeleton, Card } from '@lib/components'
+import { useClientRequest } from '@lib/utils/useClientRequest'
+
+export default function Instances() {
   const { t } = useTranslation()
   const { data, isLoading, error } = useClientRequest((cancelToken) =>
     client.getInstance().topologyAllGet({ cancelToken })
@@ -58,7 +59,7 @@ export default function Nodes() {
     <Card
       title={
         <Link to="/cluster_info">
-          {t('overview.nodes.title')}
+          {t('overview.instances.title')}
           <RightOutlined />
         </Link>
       }
@@ -70,7 +71,7 @@ export default function Nodes() {
           statusMap.map((s) => {
             return (
               <p key={s.name}>
-                <span>{t(`overview.nodes.component.${s.name}`)}: </span>
+                <span>{t(`overview.instances.component.${s.name}`)}: </span>
                 {s.error && (
                   <Typography.Text type="danger">Error</Typography.Text>
                 )}

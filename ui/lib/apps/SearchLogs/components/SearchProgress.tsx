@@ -1,37 +1,28 @@
-import client from '@lib/client'
-import { LogsearchTaskModel } from '@lib/client'
-import { getValueFormat } from '@baurine/grafana-value-formats'
 import { Button, Modal, Tree } from 'antd'
+import _ from 'lodash'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+
+import client, { LogsearchTaskModel } from '@lib/client'
+import { AnimatedSkeleton, Card } from '@lib/components'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
+import { namingMap, NodeKind, NodeKindList, TaskState } from '../utils'
+
 import styles from './Styles.module.css'
-import { namingMap, NodeKind, NodeKindList, TaskState } from './utils'
-import { Card, AnimatedSkeleton } from '@lib/components'
-import _ from 'lodash'
 
 const { confirm } = Modal
 const { TreeNode } = Tree
+const taskStateIcons = {
+  [TaskState.Running]: LoadingIcon,
+  [TaskState.Finished]: SuccessIcon,
+  [TaskState.Error]: FailIcon,
+}
 
-function leafNodeProps(state: number | undefined) {
-  switch (state) {
-    case TaskState.Running:
-      return {
-        icon: LoadingIcon,
-        disableCheckbox: true,
-      }
-    case TaskState.Finished:
-      return {
-        icon: SuccessIcon,
-        disableCheckbox: false,
-      }
-    case TaskState.Error:
-      return {
-        icon: FailIcon,
-        disableCheckbox: true,
-      }
-    default:
-      break
+function leafNodeProps(task: LogsearchTaskModel) {
+  return {
+    icon: taskStateIcons[task.state || TaskState.Error],
+    disableCheckbox: !task.size || task.state !== TaskState.Finished,
   }
 }
 
@@ -42,11 +33,7 @@ function renderLeafNodes(tasks: LogsearchTaskModel[]) {
       title += ' (' + getValueFormat('bytes')(task.size!, 1) + ')'
     }
     return (
-      <TreeNode
-        key={`${task.id}`}
-        title={title}
-        {...leafNodeProps(task.state)}
-      />
+      <TreeNode key={`${task.id}`} title={title} {...leafNodeProps(task)} />
     )
   })
 }
@@ -65,8 +52,11 @@ function parentNodeIcon(tasks: LogsearchTaskModel[]) {
 }
 
 function parentNodeCheckable(tasks: LogsearchTaskModel[]) {
-  // Checkable: at least one task has finished
-  return tasks.some((task) => task.state === TaskState.Finished)
+  // Checkable: at least one task has finished and the log must not be empty
+  return (
+    tasks.some((task) => task.state === TaskState.Finished) &&
+    tasks.reduce((acc, task) => (acc += task.size || 0), 0) > 0
+  )
 }
 
 interface Props {

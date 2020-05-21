@@ -27,8 +27,9 @@ import (
 const etcdKvAuthKeyPath = "/dashboard/kv_auth"
 
 var (
-	ErrNS              = errorx.NewNamespace("error.kvauth")
-	ErrAccountNotFound = ErrNS.NewType("account_not_found")
+	ErrNS               = errorx.NewNamespace("error.kvauth")
+	ErrAccountNotFound  = ErrNS.NewType("account_not_found")
+	ErrPasswordNotMatch = ErrNS.NewType("password_not_match")
 )
 
 type Auth struct {
@@ -73,7 +74,12 @@ func VerifyKvAuthKey(etcdClient *clientv3.Client, username string, password stri
 		return ErrAccountNotFound.NewWithNoMessage()
 	}
 
-	return cryptopasta.CheckPasswordHash([]byte(auth.Password), []byte(password))
+	err = cryptopasta.CheckPasswordHash([]byte(auth.Password), []byte(password))
+	if err != nil {
+		return ErrPasswordNotMatch.NewWithNoMessage()
+	}
+
+	return nil
 }
 
 // ResetKvAuthKey set new auth key to etcd

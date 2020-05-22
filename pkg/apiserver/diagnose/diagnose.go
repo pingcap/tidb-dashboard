@@ -15,10 +15,10 @@ package diagnose
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"time"
 
-	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
@@ -38,10 +38,10 @@ type Service struct {
 	config        *config.Config
 	db            *dbstore.DB
 	tidbForwarder *tidb.Forwarder
-	uiAssetFS     *assetfs.AssetFS
+	uiAssetFS     http.FileSystem
 }
 
-func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, uiAssetFS *assetfs.AssetFS) *Service {
+func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, uiAssetFS http.FileSystem) *Service {
 	err := autoMigrate(db)
 	if err != nil {
 		log.Fatal("Failed to initialize database", zap.Error(err))
@@ -181,7 +181,13 @@ func (s *Service) reportHTMLHandler(c *gin.Context) {
 	}
 
 	// Serve report html directly from assets
-	d, err := s.uiAssetFS.Asset("build/diagnoseReport.html")
+	f, err := s.uiAssetFS.Open("diagnoseReport.html")
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	defer f.Close()
+	d, err := ioutil.ReadAll(f)
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return

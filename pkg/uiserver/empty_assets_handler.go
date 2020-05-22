@@ -15,9 +15,7 @@
 package uiserver
 
 import (
-	assetfs "github.com/elazarl/go-bindata-assetfs"
+	"net/http"
 )
 
-func assetFS() *assetfs.AssetFS {
-	return nil
-}
+var assets http.FileSystem

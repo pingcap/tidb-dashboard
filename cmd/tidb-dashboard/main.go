@@ -118,7 +118,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 		pdEndPoint.Scheme = "https"
 	}
 	cfg.CoreConfig.PDEndPoint = pdEndPoint.String()
-	cfg.CoreConfig.Prefix = strings.Trim(cfg.CoreConfig.Prefix, "/")
+	cfg.CoreConfig.Prefix = strings.TrimRight(cfg.CoreConfig.Prefix, "/")
 
 	if showVersion {
 		utils.PrintInfo()

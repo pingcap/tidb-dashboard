@@ -5,7 +5,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client from '@lib/client'
-import { publicPathPrefix } from '@dashboard/prefix'
+import publicPathPrefix from '@dashboard/urlPrefix'
 import { AnimatedSkeleton, DateTime, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 

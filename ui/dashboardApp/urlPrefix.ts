@@ -6,4 +6,4 @@ if (publicPathPrefix === '__DASHBOARD_PREFIX__') {
   publicPathPrefix = '/dashboard'
 }
 
-export { publicPathPrefix }
+export default publicPathPrefix

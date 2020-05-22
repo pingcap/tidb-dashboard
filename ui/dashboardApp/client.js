@@ -5,7 +5,7 @@ import * as singleSpa from 'single-spa'
 import DashboardClient, { DefaultApi } from '@lib/client'
 import * as auth from '@lib/utils/auth'
 import * as routing from '@dashboard/routing'
-import { dashboardPrefix } from '@dashboard/prefix'
+import { publicPathPrefix } from '@dashboard/prefix'
 
 function initAxios() {
   const instance = axios.create()
@@ -43,7 +43,7 @@ export function init() {
     // Accept empty string as dashboard API URL as well.
     DASHBOARD_API_URL_PERFIX = process.env.REACT_APP_DASHBOARD_API_URL
   }
-  const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}${dashboardPrefix}/api`
+  const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}${publicPathPrefix}/api`
 
   const dashboardClient = new DefaultApi(
     {

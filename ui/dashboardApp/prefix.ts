@@ -1,9 +1,9 @@
-let dashboardPrefix =
+let publicPathPrefix =
   document
     .querySelector('meta[name=x-dashboard-prefix]')
     ?.getAttribute('content') || '/dashboard'
-if (dashboardPrefix === '__DASHBOARD_PREFIX__') {
-  dashboardPrefix = '/dashboard'
+if (publicPathPrefix === '__DASHBOARD_PREFIX__') {
+  publicPathPrefix = '/dashboard'
 }
 
-export { dashboardPrefix }
+export { publicPathPrefix }

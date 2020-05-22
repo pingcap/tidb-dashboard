@@ -1,2 +1,2 @@
 import publicPathPrefix from '@dashboard/urlPrefix'
-__webpack_public_path__ = publicPathPrefix
+__webpack_public_path__ = publicPathPrefix + '/'

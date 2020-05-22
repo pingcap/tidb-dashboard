@@ -30,7 +30,7 @@ instance_profiling:
     table:
       columns:
         instance: Instance
-        kind: Kind
+        kind: Component
         status: Status
       status:
         finished: Finished

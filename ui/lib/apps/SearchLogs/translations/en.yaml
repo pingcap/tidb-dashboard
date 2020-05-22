@@ -24,7 +24,7 @@ search_logs:
     cancel: Cancel
     retry: Retry
   progress:
-    running: is running
+    running: running
     success: completed
     failed: failed
   confirm:

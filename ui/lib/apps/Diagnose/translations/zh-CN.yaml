@@ -1,7 +1,7 @@
 diagnose:
   nav_title: 集群诊断
   generate:
-    title: 开始集群诊断
+    title: 生成诊断报告
     range_begin: 区间起始时间
     range_duration: 区间长度
     is_compare: 与基线区间对比

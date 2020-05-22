@@ -13,7 +13,7 @@ cluster_info:
       actions:
         hide_db:
           tooltip: 隐藏
-          confirm: 您确认要隐藏该 TiDB 节点吗?
+          confirm: 您确认要隐藏该 TiDB 实例吗?
       status:
         up: 在线
         down: 离线

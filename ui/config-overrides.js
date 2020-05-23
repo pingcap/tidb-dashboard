@@ -180,14 +180,12 @@ const resourceUseRelativePath = (config) => {
   for (const rule of config.module.rules) {
     for (const subRule of rule.oneOf ?? []) {
       for (const use of subRule.use ?? []) {
-        console.log(1, subRule.test, use)
         if (use?.loader === MiniCssExtractPlugin.loader) {
           use.options.publicPath = '../../'
         }
       }
     }
   }
-  console.dir(config, { depth: null })
   return config
 }
 

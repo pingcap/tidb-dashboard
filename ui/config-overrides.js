@@ -176,7 +176,7 @@ const addWebpackBundleSize = () => (config) => {
   return config
 }
 
-const resourceUseRelativePath = (config) => {
+const resourceUseRelativePath = () => (config) => {
   for (const rule of config.module.rules) {
     for (const subRule of rule.oneOf ?? []) {
       for (const use of subRule.use ?? []) {
@@ -236,5 +236,5 @@ module.exports = override(
   disableMinimizeByEnv(),
   addDiagnoseReportEntry(),
   buildAsLibrary(),
-  resourceUseRelativePath
+  resourceUseRelativePath()
 )

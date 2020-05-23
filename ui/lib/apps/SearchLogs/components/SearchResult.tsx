@@ -42,11 +42,12 @@ function Row({ renderer, props }) {
 }
 
 interface Props {
+  patterns: string[]
   taskGroupID: number
   tasks: LogsearchTaskModel[]
 }
 
-export default function SearchResult({ taskGroupID, tasks }: Props) {
+export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
   const [logPreviews, setData] = useState<LogPreview[]>([])
   const { t } = useTranslation()
   const [loading, setLoading] = useState(true)
@@ -122,7 +123,13 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
       minWidth: 200,
       maxWidth: 400,
       isResizable: false,
-      onRender: ({ log, expanded }) => <Log log={log} expanded={expanded} />,
+      onRender: ({ log, expanded }) => (
+        <Log
+          patterns={patterns.map((p) => new RegExp(p, 'gi'))}
+          log={log}
+          expanded={expanded}
+        />
+      ),
     },
   ]
 

@@ -70,7 +70,11 @@ export default function LogSearchingDetail() {
             <div style={{ marginLeft: 48, marginRight: 48, marginBottom: 24 }}>
               <SearchHeader taskGroupID={taskGroupID} />
             </div>
-            <SearchResult taskGroupID={taskGroupID} tasks={tasks} />
+            <SearchResult
+              patterns={data?.task_group?.search_request?.patterns || []}
+              taskGroupID={taskGroupID}
+              tasks={tasks}
+            />
           </ScrollablePane>
         </div>
       </Col>

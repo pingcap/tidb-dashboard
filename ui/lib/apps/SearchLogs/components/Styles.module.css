@@ -18,3 +18,7 @@
 .logRow {
   cursor: pointer;
 }
+
+.highlight {
+  background: #fffb8f;
+}

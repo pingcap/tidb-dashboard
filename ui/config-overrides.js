@@ -4,6 +4,7 @@ const {
   override,
   fixBabelImports,
   addLessLoader,
+  addWebpackModuleRule,
   addWebpackPlugin,
   addDecoratorsLegacy,
   addBundleVisualizer,
@@ -175,6 +176,21 @@ const addWebpackBundleSize = () => (config) => {
   return config
 }
 
+const resourceUseRelativePath = (config) => {
+  for (const rule of config.module.rules) {
+    for (const subRule of rule.oneOf ?? []) {
+      for (const use of subRule.use ?? []) {
+        console.log(1, subRule.test, use)
+        if (use?.loader === MiniCssExtractPlugin.loader) {
+          use.options.publicPath = '../../'
+        }
+      }
+    }
+  }
+  console.dir(config, { depth: null })
+  return config
+}
+
 module.exports = override(
   fixBabelImports('import', {
     libraryName: 'antd',
@@ -221,5 +237,6 @@ module.exports = override(
   ),
   disableMinimizeByEnv(),
   addDiagnoseReportEntry(),
-  buildAsLibrary()
+  buildAsLibrary(),
+  resourceUseRelativePath
 )

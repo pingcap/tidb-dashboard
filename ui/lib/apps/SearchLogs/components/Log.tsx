@@ -10,6 +10,9 @@ interface LogProps {
 }
 
 function highlight(patterns: RegExp[], s: string) {
+  if (patterns.length === 0) {
+    return s
+  }
   const intervals: number[][] = []
   for (const pattern of patterns) {
     while (true) {
@@ -24,10 +27,10 @@ function highlight(patterns: RegExp[], s: string) {
   intervals.sort((a, b) => a[0] - b[0])
   const merged: number[][] = []
   for (const [start, end] of intervals) {
-    const last = merged[merged.length - 1]
-    if (merged.length === 0 || last[1] < start) {
+    if (merged.length === 0 || merged[merged.length - 1][1] < start) {
       merged.push([start, end])
     } else {
+      const last = merged[merged.length - 1]
       last[1] = Math.max(last[1], end)
     }
   }

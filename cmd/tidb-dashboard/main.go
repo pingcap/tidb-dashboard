@@ -74,7 +74,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
 	flag.IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
 	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
-	flag.StringVar(&cfg.CoreConfig.Prefix, "prefix", "/dashboard", "Dashboard URL prefix")
+	flag.StringVar(&cfg.CoreConfig.PathPrefix, "path-prefix", "/dashboard", "Dashboard URL prefix")
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
 	flag.BoolVar(&cfg.EnableDebugLog, "debug", false, "Enable debug logs")
 	// debug for keyvisual，hide help information
@@ -118,7 +118,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 		pdEndPoint.Scheme = "https"
 	}
 	cfg.CoreConfig.PDEndPoint = pdEndPoint.String()
-	cfg.CoreConfig.Prefix = strings.TrimRight(cfg.CoreConfig.Prefix, "/")
+	cfg.CoreConfig.PathPrefix = strings.TrimRight(cfg.CoreConfig.PathPrefix, "/")
 
 	if showVersion {
 		utils.PrintInfo()
@@ -184,7 +184,7 @@ func main() {
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
-	uiserver.InitAssetFS(cliConfig.CoreConfig.Prefix)
+	uiserver.InitAssetFS(cliConfig.CoreConfig.PathPrefix)
 	s := apiserver.NewService(
 		cliConfig.CoreConfig,
 		apiserver.StoppedHandler,

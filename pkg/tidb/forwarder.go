@@ -33,7 +33,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
-// FIXME: This is duplicated with the one in KeyVis.
 type tidbServerInfo struct {
 	ID         string `json:"ddl_id"`
 	IP         string `json:"ip"`
@@ -77,21 +76,21 @@ type Forwarder struct {
 func (f *Forwarder) Start(ctx context.Context) error {
 	f.ctx = ctx
 
-	pr, err := f.createProxy()
-	if err != nil {
+	var err error
+	if f.tidbProxy, err = f.createProxy(); err != nil {
 		return err
 	}
-	f.tidbProxy = pr
-	f.tidbPort = pr.port()
-	pr, err = f.createProxy()
-	if err != nil {
+	if f.tidbStatusProxy, err = f.createProxy(); err != nil {
 		return err
 	}
-	f.tidbStatusProxy = pr
-	f.statusPort = pr.port()
+
+	f.tidbPort = f.tidbProxy.port()
+	f.statusPort = f.tidbStatusProxy.port()
+
 	go f.pollingForTiDB()
 	go f.tidbProxy.run(ctx)
 	go f.tidbStatusProxy.run(ctx)
+
 	return nil
 }
 
@@ -101,7 +100,8 @@ func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
 	cancel()
 
 	if err != nil {
-		return nil, ErrPDAccessFailed.New("access PD failed: %s", err)
+		log.Warn("Fail to get TiDB server info from PD", zap.Error(err))
+		return nil, ErrPDAccessFailed.WrapWithNoMessage(err)
 	}
 
 	allTiDB := make([]*tidbServerInfo, 0, len(resp.Kvs))
@@ -114,7 +114,8 @@ func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
 		allTiDB = append(allTiDB, info)
 	}
 	if len(allTiDB) == 0 {
-		return nil, ErrNoAliveTiDB.New("no TiDB is alive")
+		log.Warn("No TiDB is alive now")
+		return nil, backoff.Permanent(ErrNoAliveTiDB.NewWithNoMessage())
 	}
 
 	return allTiDB, nil
@@ -130,52 +131,38 @@ func (f *Forwarder) createProxy() (*proxy, error) {
 }
 
 func (f *Forwarder) pollingForTiDB() {
-	var interval time.Duration = 0
+	ebo := backoff.NewExponentialBackOff()
+	ebo.MaxInterval = f.config.TiDBPollInterval
+	bo := backoff.WithContext(ebo, f.ctx)
+
 	for {
-		select {
-		case <-time.After(interval):
-			interval = f.config.TiDBPollInterval
-
-			var allTiDB []*tidbServerInfo
+		var allTiDB []*tidbServerInfo
+		err := backoff.Retry(func() error {
 			var err error
-			bo := backoff.NewExponentialBackOff()
-			// setting a reasonable interval to avoid probing a living service for too long each round
-			bo.MaxInterval = 5 * time.Second
-			_ = backoff.Retry(func() error {
-				allTiDB, err = f.getServerInfo()
-				if err != nil {
-					if errorx.IsOfType(err, ErrNoAliveTiDB) {
-						return nil
-					}
-					select {
-					case <-f.ctx.Done():
-						return nil
-					default:
-					}
-					log.Warn("Fail to get TiDB server info from PD", zap.Error(err))
-				}
-				return err
-			}, bo)
-
-			if err != nil {
-				if errorx.IsOfType(err, ErrNoAliveTiDB) {
-					log.Warn("No TiDB is alive now")
-					f.tidbProxy.updateRemotes(nil)
-					f.tidbStatusProxy.updateRemotes(nil)
-				}
-				continue
+			allTiDB, err = f.getServerInfo()
+			return err
+		}, bo)
+		if err != nil {
+			if errorx.IsOfType(err, ErrNoAliveTiDB) {
+				f.tidbProxy.updateRemotes(nil)
+				f.tidbStatusProxy.updateRemotes(nil)
 			}
+			continue
+		}
 
-			statusEndpoints := make(map[string]string)
-			tidbEndpoints := make(map[string]string)
-			for _, server := range allTiDB {
-				statusEndpoints[server.IP] = fmt.Sprintf("%s:%d", server.IP, server.StatusPort)
-				tidbEndpoints[server.IP] = fmt.Sprintf("%s:%d", server.IP, server.Port)
-			}
-			f.tidbProxy.updateRemotes(tidbEndpoints)
-			f.tidbStatusProxy.updateRemotes(statusEndpoints)
+		statusEndpoints := make(map[string]struct{}, len(allTiDB))
+		tidbEndpoints := make(map[string]struct{}, len(allTiDB))
+		for _, server := range allTiDB {
+			tidbEndpoints[fmt.Sprintf("%s:%d", server.IP, server.Port)] = struct{}{}
+			statusEndpoints[fmt.Sprintf("%s:%d", server.IP, server.StatusPort)] = struct{}{}
+		}
+		f.tidbProxy.updateRemotes(tidbEndpoints)
+		f.tidbStatusProxy.updateRemotes(statusEndpoints)
+
+		select {
 		case <-f.ctx.Done():
 			return
+		case <-time.After(f.config.TiDBPollInterval):
 		}
 	}
 }

@@ -4,16 +4,16 @@ cluster_info:
     instance_table:
       title: Instances
       columns:
-        node: Node
+        node: Address
         version: Version
         status: Status
         up_time: Up Time
-        deploy_path: Deploy Directory
+        deploy_path: Deployment Directory
         git_hash: Git Hash
       actions:
         hide_db:
           tooltip: Hide
-          confirm: Do you want to hide this TiDB node?
+          confirm: Do you want to hide this TiDB instance?
       status:
         up: Up
         down: Down

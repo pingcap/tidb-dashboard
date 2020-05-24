@@ -21,8 +21,8 @@ search_logs:
     search: 搜索
     progress: 搜索进度
     download_selected: 下载选中日志
-    cancel_tasks: 取消任务
-    retry_tasks: 重试任务
+    cancel: 取消
+    retry: 重试
   progress:
     running: 正在运行
     success: 成功

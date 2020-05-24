@@ -68,8 +68,8 @@ func (p *proxy) port() int {
 	return p.listener.Addr().(*net.TCPAddr).Port
 }
 
-func (p *proxy) updateRemotes(remotes map[string]string) {
-	if remotes == nil {
+func (p *proxy) updateRemotes(remotes map[string]struct{}) {
+	if len(remotes) == 0 {
 		p.remotes.Range(func(key, value interface{}) bool {
 			p.remotes.Delete(key)
 			return true
@@ -77,28 +77,20 @@ func (p *proxy) updateRemotes(remotes map[string]string) {
 		return
 	}
 	// update or create new remote
-	for key, newRemote := range remotes {
-		if curRemote, ok := p.remotes.Load(key); !ok {
-			log.Debug("proxy adds new remote", zap.String("remote", newRemote))
-			p.remotes.Store(key, &remote{
-				addr:     newRemote,
+	for addr := range remotes {
+		if _, ok := p.remotes.Load(addr); !ok {
+			log.Debug("proxy adds new remote", zap.String("remote", addr))
+			p.remotes.Store(addr, &remote{
+				addr:     addr,
 				inactive: atomic.NewBool(true),
 			})
-		} else {
-			r := curRemote.(*remote)
-			if r.addr != newRemote {
-				log.Debug("proxy updates existing remote", zap.String("old", r.addr), zap.String("new", newRemote))
-				r.addr = newRemote // could cause data race but doesnt matter
-				r.becomeInactive()
-			}
 		}
 	}
 	// remove old remote
 	p.remotes.Range(func(key, value interface{}) bool {
-		k := key.(string)
-		r := value.(*remote)
-		if _, ok := remotes[k]; !ok {
-			log.Debug("proxy discards remote", zap.String("remote", r.addr))
+		addr := key.(string)
+		if _, ok := remotes[addr]; !ok {
+			log.Debug("proxy discards remote", zap.String("remote", addr))
 			p.remotes.Delete(key)
 		}
 		return true
@@ -173,6 +165,8 @@ func (p *proxy) pick() *remote {
 func (p *proxy) doCheck(ctx context.Context) {
 	for {
 		select {
+		case <-ctx.Done():
+			return
 		case <-time.After(p.checkInterval):
 			p.remotes.Range(func(key, value interface{}) bool {
 				rmt := value.(*remote)
@@ -189,14 +183,12 @@ func (p *proxy) doCheck(ctx context.Context) {
 				}(rmt)
 				return true
 			})
-		case <-ctx.Done():
-			return
 		}
 	}
 }
 
 func (p *proxy) run(ctx context.Context) {
-	endpoints := []string{}
+	endpoints := make([]string, 0)
 	p.remotes.Range(func(key, value interface{}) bool {
 		r := value.(*remote)
 		endpoints = append(endpoints, r.addr)
@@ -204,12 +196,18 @@ func (p *proxy) run(ctx context.Context) {
 	})
 	log.Info("start serve requests to remotes", zap.String("endpoint", p.listener.Addr().String()), zap.Strings("remotes", endpoints))
 	go p.doCheck(ctx)
+
+	defer p.listener.Close()
 	// wait a check round before serve connections
-	time.Sleep(p.checkInterval + time.Second)
+	select {
+	case <-ctx.Done():
+		return
+	case <-time.After(p.checkInterval + time.Second):
+	}
+	// serve
 	for {
 		select {
 		case <-ctx.Done():
-			p.listener.Close()
 			return
 		default:
 			incoming, err := p.listener.Accept()

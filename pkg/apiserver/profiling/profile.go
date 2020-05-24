@@ -65,6 +65,7 @@ func fetchPprof(ctx context.Context, httpClient *http.Client, target *model.Requ
 	if err := driver.PProf(&driver.Options{
 		Fetch:   &fetcher{ctx: ctx, httpClient: httpClient, target: target, output: tmpPath, schema: schema},
 		Flagset: f,
+		UI:      &blankPprofUI{},
 		Writer:  &oswriter{output: tmpPath},
 	}); err != nil {
 		return "", fmt.Errorf("failed to generate profile report: %v", err)
@@ -229,4 +230,29 @@ func fetchPprofSVG(ctx context.Context, httpClient *http.Client, target *model.R
 	}
 
 	return tmpPath, nil
+}
+
+// blankPprofUI is used to eliminate the pprof logs
+type blankPprofUI struct {
+}
+
+func (b blankPprofUI) ReadLine(prompt string) (string, error) {
+	panic("not support")
+}
+
+func (b blankPprofUI) Print(i ...interface{}) {
+}
+
+func (b blankPprofUI) PrintErr(i ...interface{}) {
+}
+
+func (b blankPprofUI) IsTerminal() bool {
+	return false
+}
+
+func (b blankPprofUI) WantBrowser() bool {
+	return false
+}
+
+func (b blankPprofUI) SetAutoComplete(complete func(string) string) {
 }

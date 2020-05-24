@@ -31,7 +31,7 @@ yarn_dependencies: install_tools
 
 ui: yarn_dependencies
 	cd ui &&\
-	REACT_APP_DASHBOARD_API_URL="" PUBLIC_URL="__DASHBOARD_PREFIX__" yarn build
+	REACT_APP_DASHBOARD_API_URL="" yarn build
 
 server: install_tools
 	scripts/generate_swagger_spec.sh

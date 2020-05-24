@@ -176,6 +176,13 @@ const addWebpackBundleSize = () => (config) => {
   return config
 }
 
+const supportDynamicPublicPath = () => (config) => {
+  if (!isBuildAsDevServer()) {
+    config.output.publicPath = '__DASHBOARD_PREFIX__'
+  }
+  return config
+}
+
 const resourceUseRelativePath = () => (config) => {
   for (const rule of config.module.rules) {
     for (const subRule of rule.oneOf ?? []) {
@@ -195,6 +202,7 @@ module.exports = override(
     libraryDirectory: 'es',
     style: true,
   }),
+  supportDynamicPublicPath(),
   ignoreMiniCssExtractOrder(),
   addLessLoader({
     javascriptEnabled: true,

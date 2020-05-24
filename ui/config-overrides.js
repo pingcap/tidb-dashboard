@@ -187,7 +187,7 @@ const resourceUseRelativePath = () => (config) => {
   for (const rule of config.module.rules) {
     for (const subRule of rule.oneOf || []) {
       for (const use of subRule.use || []) {
-        if (use?.loader === MiniCssExtractPlugin.loader) {
+        if (use.loader === MiniCssExtractPlugin.loader) {
           use.options.publicPath = '../../'
         }
       }

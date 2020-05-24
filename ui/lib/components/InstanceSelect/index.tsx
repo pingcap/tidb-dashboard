@@ -1,9 +1,17 @@
-import React, { useCallback, useRef, useMemo, useEffect, useState } from 'react'
+import React, { useCallback, useRef, useMemo, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useShallowCompareEffect } from 'react-use'
 import { Tooltip } from 'antd'
 import { Selection } from 'office-ui-fabric-react/lib/Selection'
-import { BaseSelect, InstanceStatusBadge, TextWrap } from '../'
+import {
+  IBaseSelectProps,
+  BaseSelect,
+  InstanceStatusBadge,
+  TextWrap,
+} from '../'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
+import { addTranslationResource } from '@lib/utils/i18n'
 import { usePersistFn } from '@umijs/hooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import {
@@ -13,23 +21,70 @@ import {
 
 import DropOverlay from './DropOverlay'
 import ValueDisplay from './ValueDisplay'
-import { useShallowCompareEffect } from 'react-use'
 
-export interface IInstanceSelectProps {
+export interface IInstanceSelectProps
+  extends Omit<IBaseSelectProps<string[]>, 'dropdownRender' | 'valueRender'> {
+  onChange?: (value: string[]) => void
   enableTiFlash?: boolean
   defaultSelectAll?: boolean
-  onChange?: (values: string[]) => void
-  value?: string[]
 }
 
 export interface IInstanceSelectRefProps {
-  mapValueToNode: (value: string) => void
+  getInstanceByKeys: (keys: string[]) => IInstanceTableItem[]
+  getInstanceByKey: (key: string) => IInstanceTableItem
+}
+
+const translations = {
+  en: {
+    placeholder: 'Select Instances',
+    selected: {
+      all: 'All Instances',
+      partial: {
+        n: '{{n}} {{component}}',
+        all: 'All {{component}}',
+      },
+    },
+    columns: {
+      key: 'Instance',
+      status: 'Status',
+    },
+  },
+  'zh-CN': {
+    placeholder: '选择实例',
+    selected: {
+      all: '所有实例',
+      partial: {
+        n: '{{n}} {{component}}',
+        all: '所有 {{component}}',
+      },
+    },
+    columns: {
+      key: '实例',
+      status: '状态',
+    },
+  },
+}
+
+for (const key in translations) {
+  addTranslationResource(key, {
+    component: {
+      instanceSelect: translations[key],
+    },
+  })
 }
 
 function InstanceSelect(
-  props: IInstanceSelectProps,
+  {
+    enableTiFlash,
+    defaultSelectAll,
+    onChange,
+    value,
+    ...restProps
+  }: IInstanceSelectProps,
   ref: React.Ref<IInstanceSelectRefProps>
 ) {
+  const { t } = useTranslation()
+
   const {
     data: dataTiDB,
     isLoading: loadingTiDB,
@@ -49,10 +104,10 @@ function InstanceSelect(
     client.getInstance().getPDTopology({ cancelToken })
   )
 
-  const columns = useMemo(() => {
-    const c: IColumn[] = [
+  const columns: IColumn[] = useMemo(
+    () => [
       {
-        name: 'Instance',
+        name: t('component.instanceSelect.columns.key'),
         key: 'key',
         minWidth: 160,
         maxWidth: 160,
@@ -67,7 +122,7 @@ function InstanceSelect(
         },
       },
       {
-        name: 'Status',
+        name: t('component.instanceSelect.columns.status'),
         key: 'status',
         minWidth: 100,
         maxWidth: 100,
@@ -79,9 +134,9 @@ function InstanceSelect(
           )
         },
       },
-    ]
-    return c
-  }, [])
+    ],
+    [t]
+  )
 
   const [tableItems, tableGroups] = useMemo(() => {
     if (loadingTiDB || loadingStores || loadingPD) {
@@ -92,11 +147,10 @@ function InstanceSelect(
       dataTiDB,
       dataTiKV: dataStores?.tikv,
       dataTiFlash: dataStores?.tiflash,
-      includeTiFlash: props.enableTiFlash,
+      includeTiFlash: enableTiFlash,
     })
   }, [
-    props.enableTiFlash,
-    props.defaultSelectAll,
+    enableTiFlash,
     dataTiDB,
     dataStores,
     dataPD,
@@ -105,83 +159,122 @@ function InstanceSelect(
     loadingPD,
   ])
 
-  const [selectedKeys, setSelectedKeys] = useState(props.value ?? [])
-
-  const onChange = usePersistFn((v: string[]) => {
-    console.log('onChange', v)
-    props.onChange?.(v)
+  const onChangePersist = usePersistFn((v: string[]) => {
+    onChange?.(v)
   })
 
   const selection = useRef(
     new Selection({
       onSelectionChanged: () => {
-        console.log('onSelectionChanged')
         const s = selection.current.getSelection() as IInstanceTableItem[]
         const keys = s.map((v) => v.key)
-        setSelectedKeys(keys)
-        onChange([...keys])
+        onChangePersist([...keys])
       },
     })
   )
 
   useShallowCompareEffect(() => {
-    console.log('props.value changed')
-    // Update selection when value is changed
-    selection.current.setAllSelected(false)
-    if (props.value) {
-      for (const key of props.value) {
-        selection.current.setKeySelected(key, true, false)
+    const sel = selection.current
+    if (value != null) {
+      const s = sel.getSelection() as IInstanceTableItem[]
+      if (
+        s.length === value.length &&
+        s.every((item, index) => value?.[index] === item.key)
+      ) {
+        return
       }
     }
-  }, [props.value])
+    // Update selection when value is changed
+    sel.setChangeEvents(false)
+    sel.setAllSelected(false)
+    if (value && value.length > 0) {
+      for (const key of value) {
+        sel.setKeySelected(key, true, false)
+      }
+    }
+    sel.setChangeEvents(true)
+  }, [value])
 
   const dataHasLoaded = useRef(false)
 
   useEffect(() => {
-    // Select all if `defaultSelectAll` is set.
+    // When data is loaded for the first time, we need to:
+    // - Select all if `defaultSelectAll` is set and value is not given.
+    // - Update selection according to value
     if (dataHasLoaded.current) {
       return
     }
     if (tableItems.length === 0) {
       return
     }
-    if (props.defaultSelectAll) {
-      selection.current.setItems(tableItems)
-      selection.current.setAllSelected(true)
+    const sel = selection.current
+    sel.setChangeEvents(false)
+    sel.setItems(tableItems)
+    if (value && value.length > 0) {
+      sel.setAllSelected(false)
+      for (const key of value) {
+        sel.setKeySelected(key, true, false)
+      }
+    } else if (defaultSelectAll) {
+      sel.setAllSelected(true)
     }
+    sel.setChangeEvents(true)
     dataHasLoaded.current = true
+    // [defaultSelectAll, value] is not needed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableItems])
 
-  const mapValueToNode = usePersistFn(() => {})
+  const getInstanceByKeys = usePersistFn((keys: string[]) => {
+    const keyToItemMap = {}
+    for (const item of tableItems) {
+      keyToItemMap[item.key] = item
+    }
+    return keys.map((key) => keyToItemMap[key])
+  })
+
+  const getInstanceByKey = usePersistFn((key: string) => {
+    return getInstanceByKeys([key])[0]
+  })
 
   React.useImperativeHandle(ref, () => ({
-    mapValueToNode,
+    getInstanceByKey,
+    getInstanceByKeys,
   }))
 
-  const renderValue = useCallback(() => {
-    if (tableItems.length === 0 || selectedKeys.length === 0) {
-      return null
-    }
-    return <ValueDisplay items={tableItems} selectedKeys={selectedKeys} />
-  }, [tableItems, selectedKeys])
+  const renderValue = useCallback(
+    (selectedKeys) => {
+      if (
+        tableItems.length === 0 ||
+        !selectedKeys ||
+        selectedKeys.length === 0
+      ) {
+        return null
+      }
+      return <ValueDisplay items={tableItems} selectedKeys={selectedKeys} />
+    },
+    [tableItems]
+  )
 
-  const renderDropdown = useCallback(() => {
-    return (
+  const renderDropdown = useCallback(
+    () => (
       <DropOverlay
         columns={columns}
         items={tableItems}
         groups={tableGroups}
         selection={selection.current}
       />
-    )
-  }, [columns, tableItems, tableGroups])
+    ),
+    [columns, tableItems, tableGroups]
+  )
 
   return (
     <BaseSelect
+      {...restProps}
       dropdownRender={renderDropdown}
+      value={value}
       valueRender={renderValue}
       disabled={loadingTiDB || loadingStores || loadingPD}
-      placeholder="Select Instances"
+      placeholder={t('component.instanceSelect.placeholder')}
     />
   )
 }

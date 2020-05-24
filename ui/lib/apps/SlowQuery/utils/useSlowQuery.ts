@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
 import client, { SlowqueryBase } from '@lib/client'
-import { calcTimeRange, DEF_TIME_RANGE, TimeRange } from '@lib/components'
+import { calcTimeRange, TimeRange } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
@@ -13,7 +13,7 @@ const DEF_ORDER_OPTIONS: IOrderOptions = {
 }
 
 export interface ISlowQueryOptions {
-  timeRange: TimeRange
+  timeRange?: TimeRange
   schemas: string[]
   searchText: string
   limit: number
@@ -23,7 +23,7 @@ export interface ISlowQueryOptions {
 }
 
 export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
-  timeRange: DEF_TIME_RANGE,
+  timeRange: undefined,
   schemas: [],
   searchText: '',
   limit: 100,

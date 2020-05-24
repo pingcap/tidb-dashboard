@@ -75,7 +75,6 @@ function BaseAntCheckboxGroupHeader(props: IGroupHeaderProps) {
         <button
           type="button"
           className={_classNames.check}
-          role="checkbox"
           onClick={_onToggleSelectGroupClick}
           {...props.selectAllButtonProps}
         >

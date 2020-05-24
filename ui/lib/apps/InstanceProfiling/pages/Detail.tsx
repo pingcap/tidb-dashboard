@@ -8,6 +8,7 @@ import { Head } from '@lib/components'
 import { CardTableV2 } from '@lib/components'
 import client from '@lib/client'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
+import { InstanceKindName } from '@lib/utils/instanceTable'
 
 function mapData(data) {
   if (!data) {
@@ -78,7 +79,9 @@ export default function Page() {
         minWidth: 100,
         maxWidth: 150,
         isResizable: true,
-        onRender: (record) => record.target.kind,
+        onRender: (record) => {
+          return InstanceKindName[record.target.kind]
+        },
       },
       {
         name: t('instance_profiling.detail.table.columns.status'),

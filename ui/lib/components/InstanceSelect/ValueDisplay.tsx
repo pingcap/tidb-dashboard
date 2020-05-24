@@ -1,5 +1,10 @@
 import React, { useMemo } from 'react'
-import { IInstanceTableItem, InstanceKind } from '@lib/utils/instanceTable'
+import {
+  IInstanceTableItem,
+  InstanceKind,
+  InstanceKindName,
+} from '@lib/utils/instanceTable'
+import { useTranslation } from 'react-i18next'
 
 interface InstanceStat {
   all: number
@@ -22,6 +27,8 @@ export default function ValueDisplay({
   items,
   selectedKeys,
 }: IValueDisplayProps) {
+  const { t } = useTranslation()
+
   const text = useMemo(() => {
     const selectedKeysMap = {}
     selectedKeys.forEach((key) => (selectedKeysMap[key] = true))
@@ -47,18 +54,28 @@ export default function ValueDisplay({
       }
       if (stats.selected > 0) {
         if (stats.all === stats.selected) {
-          p.push('All ' + ik)
+          p.push(
+            t('component.instanceSelect.selected.partial.all', {
+              component: InstanceKindName[ik],
+            })
+          )
         } else {
-          p.push(`${stats.selected} ${ik}`)
+          p.push(
+            t('component.instanceSelect.selected.partial.n', {
+              n: stats.selected,
+              component: InstanceKindName[ik],
+            })
+          )
         }
       }
     }
 
     if (!hasUnselected) {
-      return 'All Instances'
+      return t('component.instanceSelect.selected.all')
     }
+
     return p.join(', ')
-  }, [items, selectedKeys])
+  }, [t, items, selectedKeys])
 
   return <>{text}</>
 }

@@ -17,7 +17,7 @@ const groupProps = {
   onRenderHeader: (props) => <AntCheckboxGroupHeader {...props} />,
 }
 
-export default function DropOverlay({
+function DropOverlay({
   selection,
   columns,
   items,
@@ -54,3 +54,5 @@ export default function DropOverlay({
     </div>
   )
 }
+
+export default React.memo(DropOverlay)

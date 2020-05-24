@@ -1,45 +1,50 @@
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useRef, useMemo } from 'react'
 import cx from 'classnames'
-import { Dropdown } from 'antd'
 import { useEventListener } from '@umijs/hooks'
 import { DownOutlined } from '@ant-design/icons'
+import Trigger from 'rc-trigger'
 import KeyCode from 'rc-util/lib/KeyCode'
 import { TextWrap } from '..'
 
 import styles from './index.module.less'
-
-export interface IBaseSelectDropdownRenderProps<T> {
-  value?: T
-  triggerOnChange?: (value: T) => void
-}
 
 export interface IBaseSelectProps<T>
   extends Omit<
     React.HTMLAttributes<HTMLDivElement>,
     'onChange' | 'placeholder'
   > {
-  dropdownRender: (
-    renderProps: IBaseSelectDropdownRenderProps<T>
-  ) => React.ReactElement
+  dropdownRender: () => React.ReactElement
   value?: T
   valueRender: (value?: T) => React.ReactNode
-  onChange?: (value: T) => void
   placeholder?: React.ReactNode
+  overlayClassName?: string
   disabled?: boolean
   tabIndex?: number
   autoFocus?: boolean
+}
+
+const builtinPlacements = {
+  bottomLeft: {
+    ignoreShake: true,
+    points: ['tl', 'bl'],
+    offset: [0, 4],
+    overflow: {
+      adjustX: 0,
+      adjustY: 0,
+    },
+  },
 }
 
 function BaseSelect<T>({
   dropdownRender,
   value,
   valueRender,
-  onChange,
   placeholder,
   disabled,
   tabIndex,
   autoFocus,
   className,
+  overlayClassName,
   onFocus,
   onBlur,
   onKeyDown,
@@ -104,18 +109,17 @@ function BaseSelect<T>({
   const dropdownOverlayRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const overlay = (
-    <div
-      ref={dropdownOverlayRef}
-      onMouseDown={handleOverlayMouseDown}
-      className={styles.baseSelectOverlay}
-    >
-      {dropdownRender({
-        value,
-        triggerOnChange: onChange,
-      })}
-    </div>
-  )
+  const overlay = useMemo(() => {
+    return (
+      <div
+        ref={dropdownOverlayRef}
+        onMouseDown={handleOverlayMouseDown}
+        className={cx(styles.baseSelectOverlay, overlayClassName)}
+      >
+        {dropdownRender()}
+      </div>
+    )
+  }, [dropdownRender, overlayClassName, handleOverlayMouseDown])
 
   useEventListener('mousedown', (ev: MouseEvent) => {
     // Close the dropdown if click outside
@@ -141,7 +145,6 @@ function BaseSelect<T>({
       if (v && !disabled) {
         return false
       }
-      // Otherwise, unchanged
       return v
     })
   }, [disabled])
@@ -150,7 +153,16 @@ function BaseSelect<T>({
   const displayAsPlaceholder = renderedValue == null
 
   return (
-    <Dropdown overlay={overlay} trigger={[]} visible={dropdownVisible}>
+    <Trigger
+      prefixCls="ant-dropdown"
+      builtinPlacements={builtinPlacements}
+      showAction={[]}
+      hideAction={[]}
+      popupPlacement="bottomLeft"
+      popupTransitionName="slide-down"
+      popup={overlay}
+      popupVisible={dropdownVisible}
+    >
       <div
         className={cx(styles.baseSelect, className)}
         onFocus={handleContainerFocus}
@@ -188,10 +200,8 @@ function BaseSelect<T>({
           <DownOutlined />
         </div>
       </div>
-    </Dropdown>
+    </Trigger>
   )
 }
-
-BaseSelect.whyDidYouRender = true
 
 export default React.memo(BaseSelect)

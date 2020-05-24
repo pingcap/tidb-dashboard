@@ -3,9 +3,9 @@ import { ModelRequestTargetNode, LogsearchTaskModel } from '@lib/client'
 import { CardTableV2 } from '@lib/components'
 import { Alert } from 'antd'
 import moment from 'moment'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DATE_TIME_FORMAT, LogLevelMap, namingMap } from './utils'
+import { LogLevelText, namingMap } from './utils'
 import Log from './Log'
 
 type LogPreview = {
@@ -57,8 +57,8 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
           (value, index): LogPreview => {
             return {
               key: index,
-              time: moment(value.time).format(DATE_TIME_FORMAT),
-              level: LogLevelMap[value.level ?? 0],
+              time: moment(value.time).format('YYYY-MM-DD HH:mm:ss'),
+              level: LogLevelText[value.level ?? 0],
               component: getComponent(value.task_id),
               log: value.message,
             }
@@ -73,35 +73,39 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
     getLogPreview()
   }, [taskGroupID, tasks])
 
-  const columns = [
-    {
-      name: t('search_logs.preview.time'),
-      key: 'time',
-      fieldName: 'time',
-      minWidth: 160,
-      maxWidth: 300,
-    },
-    {
-      name: t('search_logs.preview.level'),
-      key: 'level',
-      fieldName: 'level',
-      minWidth: 60,
-      maxWidth: 120,
-    },
-    {
-      name: t('search_logs.preview.component'),
-      key: 'component',
-      minWidth: 120,
-      maxWidth: 200,
-      onRender: componentRender,
-    },
-    {
-      name: t('search_logs.preview.log'),
-      key: 'log',
-      minWidth: 500,
-      onRender: ({ log }) => <Log log={log} />,
-    },
-  ]
+  const columns = useMemo(
+    () => [
+      {
+        name: t('search_logs.preview.time'),
+        key: 'time',
+        fieldName: 'time',
+        minWidth: 160,
+        maxWidth: 300,
+      },
+      {
+        name: t('search_logs.preview.level'),
+        key: 'level',
+        fieldName: 'level',
+        minWidth: 60,
+        maxWidth: 120,
+      },
+      {
+        name: t('search_logs.preview.component'),
+        key: 'component',
+        minWidth: 120,
+        maxWidth: 200,
+        onRender: componentRender,
+      },
+      {
+        name: t('search_logs.preview.log'),
+        key: 'log',
+        minWidth: 500,
+        onRender: ({ log }) => <Log log={log} />,
+      },
+    ],
+    [t]
+  )
+
   return (
     <>
       {!loading && (

@@ -34,7 +34,7 @@ interface RangeTime {
 
 export type TimeRange = RecentSecTime | RangeTime
 
-export const DEF_TIME_RANGE: TimeRange = {
+export const DEFAULT_TIME_RANGE: TimeRange = {
   type: 'recent',
   value: 30 * 60,
 }

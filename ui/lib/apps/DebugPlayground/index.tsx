@@ -1,9 +1,38 @@
-import React, { useState } from 'react'
-import { Root, BaseSelect, InstanceSelect } from '@lib/components'
+import React, { useState, useRef } from 'react'
+import {
+  Root,
+  BaseSelect,
+  InstanceSelect,
+  IInstanceSelectRefProps,
+  Pre,
+} from '@lib/components'
 import { Select, Button } from 'antd'
 
-const App = () => {
+const InstanceSelectRegion = () => {
   const [instanceSelectValue, setInstanceSelectValue] = useState<string[]>([])
+  const s = useRef<IInstanceSelectRefProps>(null)
+
+  return (
+    <>
+      <h2>Instance Select</h2>
+      <InstanceSelect
+        value={instanceSelectValue}
+        onChange={setInstanceSelectValue}
+        defaultSelectAll
+        ref={s}
+      />
+      <Pre>Instance select value = {JSON.stringify(instanceSelectValue)}</Pre>
+      <Pre>
+        Instance select value instances ={' '}
+        {JSON.stringify(
+          s.current && s.current.getInstanceByKeys(instanceSelectValue)
+        )}
+      </Pre>
+    </>
+  )
+}
+
+const App = () => {
   return (
     <Root>
       <h1>Debug Playground</h1>
@@ -35,13 +64,7 @@ const App = () => {
       <Select defaultValue="disable" style={{ width: 120 }} disabled>
         <Select.Option value="disable">Disabled</Select.Option>
       </Select>
-      <h2>Instance Select</h2>
-      <InstanceSelect
-        value={instanceSelectValue}
-        onChange={setInstanceSelectValue}
-        defaultSelectAll
-      />
-      <pre>Instance select value = {JSON.stringify(instanceSelectValue)}</pre>
+      <InstanceSelectRegion />
       <h2>Misc</h2>
       <div
         style={{ background: '#f0f0f0', height: 100 }}

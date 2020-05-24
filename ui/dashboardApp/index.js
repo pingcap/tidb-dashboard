@@ -19,7 +19,7 @@ import AppKeyViz from '@lib/apps/KeyViz/index.meta'
 import AppStatement from '@lib/apps/Statement/index.meta'
 import AppDiagnose from '@lib/apps/Diagnose/index.meta'
 import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
-// import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
+import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 
@@ -60,7 +60,7 @@ async function main() {
     .register(AppClusterInfo)
     .register(AppDiagnose)
     .register(AppSearchLogs)
-    // .register(AppInstanceProfiling)
+    .register(AppInstanceProfiling)
     .register(AppSlowQuery)
 
   if (routing.isLocationMatch('/')) {

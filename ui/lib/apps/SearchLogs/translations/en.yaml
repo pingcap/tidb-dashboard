@@ -15,7 +15,6 @@ search_logs:
     end_time: End Time
     log_level: Log Level
     components: instances
-    components_placeholder: Select at least one instance
     keywords: Keywords
     keywords_placeholder: Keywords, Optional, separated by spaces
     search: Search
@@ -36,11 +35,12 @@ search_logs:
     component: Component
     log: Log
   history:
+    instances: Instances
     running: Running
     finished: Finished
     delete_selected: Delete selected
     delete_all: Delete All
-    state: State
+    status: Status
     action: Action
     detail: Detail
     delete: Delete

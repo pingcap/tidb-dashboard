@@ -41,6 +41,15 @@
   }
 }
 
+:global(.ant-form-item-has-error) {
+  .baseSelectInner {
+    border-color: @error-color !important;
+    &.focused {
+      .active(@error-color);
+    }
+  }
+}
+
 .baseSelectInput {
   opacity: 0;
   position: absolute;

@@ -17,7 +17,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import client from '@lib/client'
 import { Card } from '@lib/components'
 
-import DiagnoseHistory from './DiagnoseHistory'
+import DiagnoseHistory from '../components/DiagnoseHistory'
 
 const useFinishHandler = (navigate) => {
   return async (fieldsValue) => {

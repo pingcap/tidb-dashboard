@@ -124,11 +124,7 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
       maxWidth: 400,
       isResizable: false,
       onRender: ({ log, expanded }) => (
-        <Log
-          patterns={patterns.map((p) => new RegExp(p, 'gi'))}
-          log={log}
-          expanded={expanded}
-        />
+        <Log patterns={patterns} log={log} expanded={expanded} />
       ),
     },
   ]

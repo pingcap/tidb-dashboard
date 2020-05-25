@@ -38,5 +38,7 @@ export * from './TimeRangeSelector'
 export { default as TimeRangeSelector } from './TimeRangeSelector'
 export * from './AnimatedSkeleton'
 export { default as AnimatedSkeleton } from './AnimatedSkeleton'
+export * from './ParamPageWrapper'
+export { default as ParamPageWrapper } from './ParamPageWrapper'
 
 export { default as LanguageDropdown } from './LanguageDropdown'

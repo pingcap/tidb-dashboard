@@ -1,23 +1,21 @@
 import React from 'react'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 
-import { Root } from '@lib/components'
-
-import DetailPage from './pages/Detail'
-import ListPage from './pages/List'
+import { Root, ParamPageWrapper } from '@lib/components'
+import { Detail, List } from './pages'
 
 const App = () => (
   <Root>
     <Router>
       <Routes>
-        <Route
-          exact
-          path="/instance_profiling"
-          element={<ListPage key={Math.random()} />}
-        />
+        <Route path="/instance_profiling" element={<List />} />
         <Route
           path="/instance_profiling/:id"
-          element={<DetailPage key={Math.random()} />}
+          element={
+            <ParamPageWrapper>
+              <Detail />
+            </ParamPageWrapper>
+          }
         />
       </Routes>
     </Router>

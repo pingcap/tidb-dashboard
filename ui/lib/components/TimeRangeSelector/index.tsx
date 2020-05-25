@@ -69,6 +69,8 @@ function TimeRangeSelector({ value, onChange }: ITimeRangeSelectorProps) {
     if (!value) {
       onChange?.(DEFAULT_TIME_RANGE)
     }
+    // ignore [onChange]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
   const rangePickerValue = useMemo(() => {

@@ -3,14 +3,19 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/shurcooL/vfsgen"
 )
 
 func main() {
+	buildTag := ""
+	if len(os.Args) > 1 {
+		buildTag = os.Args[1]
+	}
 	var fs http.FileSystem = http.Dir("ui/build")
 	err := vfsgen.Generate(fs, vfsgen.Options{
-		BuildTags:    "ui_server",
+		BuildTags:    buildTag,
 		PackageName:  "uiserver",
 		VariableName: "assets",
 	})

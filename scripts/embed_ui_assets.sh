@@ -27,9 +27,15 @@ if [ ! -d "ui/build" ]; then
   exit 1
 fi
 
+if [ "${NO_ASSET_BUILD_TAG:-}" = "1" ]; then
+  BUILD_TAG_PARAMETER=""
+else
+  BUILD_TAG_PARAMETER=${ASSET_BUILD_TAG:-ui_server}
+fi
+
 echo "+ Embed UI assets"
 
-go build -o bin/assets_generate tools/assets_generate/main.go && bin/assets_generate
+go build -o bin/assets_generate tools/assets_generate/main.go && bin/assets_generate $BUILD_TAG_PARAMETER
 
 
 HANDLER_PATH=pkg/uiserver/embedded_assets_handler.go

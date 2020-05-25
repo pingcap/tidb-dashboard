@@ -1,1 +1,2 @@
+import './publicPath'
 import '@dashboard'

@@ -51,23 +51,17 @@ function TextWithInfo({
 
 export interface ITransKeyTextWithInfo {
   transKey: string
-  defaultText?: string
   placement?: TooltipPlacement
   type?: 'warning' | 'danger'
 }
 
-function TransKey({
-  transKey,
-  defaultText,
-  placement,
-  type,
-}: ITransKeyTextWithInfo) {
+function TransKey({ transKey, placement, type }: ITransKeyTextWithInfo) {
   const { t } = useTranslation()
+  const text = t(transKey)
   const tooltip = t(`${transKey}_tooltip`, {
     defaultValue: '',
     fallbackLng: '_',
   })
-  const text = t(transKey, defaultText)
   return (
     <TextWithInfo tooltip={tooltip} placement={placement} type={type}>
       {text}

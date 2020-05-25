@@ -64,10 +64,10 @@ export default function TabBasic({ data }: ITabTimeProps) {
       max: data.max_commit_backoff_time,
     },
     {
-      key: 'latency',
+      key: 'query_time2',
       keyDisplay: (
         <Typography.Text strong>
-          {t('statement.fields.latency')}
+          {t('statement.fields.query_time2')}
         </Typography.Text>
       ),
       avg: data.avg_latency,
@@ -76,5 +76,12 @@ export default function TabBasic({ data }: ITabTimeProps) {
     },
   ]
   const columns = timeValueColumns('statement.fields.', items)
-  return <CardTableV2 cardNoMargin columns={columns} items={items} />
+  return (
+    <CardTableV2
+      cardNoMargin
+      columns={columns}
+      items={items}
+      extendLastColumn
+    />
+  )
 }

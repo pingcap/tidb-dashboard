@@ -60,12 +60,19 @@ export default function TabBasic({ data }: ITabTimeProps) {
       key: 'query_time2',
       keyDisplay: (
         <Typography.Text strong>
-          {t('slow_query.common.columns.query_time2')}
+          {t('slow_query.fields.query_time2')}
         </Typography.Text>
       ),
       value: data.query_time! * 10e8,
     },
   ]
-  const columns = timeValueColumns('slow_query.common.columns.', items)
-  return <CardTableV2 cardNoMargin columns={columns} items={items} />
+  const columns = timeValueColumns('slow_query.fields.', items)
+  return (
+    <CardTableV2
+      cardNoMargin
+      columns={columns}
+      items={items}
+      extendLastColumn
+    />
+  )
 }

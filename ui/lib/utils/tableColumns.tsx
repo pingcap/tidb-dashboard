@@ -31,16 +31,22 @@ for (const key in translations) {
   })
 }
 
-function TransText({ transKey }: { transKey: string }) {
+function TransText({
+  transKey,
+  noFallback,
+}: {
+  transKey: string
+  noFallback?: boolean
+}) {
   const { t } = useTranslation()
-  return (
-    <span>
-      {t(transKey, {
-        defaultValue: '',
-        fallbackLng: '_',
-      })}
-    </span>
-  )
+  let opt
+  if (noFallback) {
+    opt = {
+      defaultValue: '',
+      fallbackLng: '_',
+    }
+  }
+  return <span>{t(transKey, opt)}</span>
 }
 
 function commonColumnName(fieldName: string): any {
@@ -129,7 +135,12 @@ function fieldsDescriptionColumn(transKeyPrefix: string): IColumn {
     minWidth: 150,
     maxWidth: 300,
     onRender: (rec) => {
-      return <TransText transKey={`${transKeyPrefix}${rec.key}_tooltip`} />
+      return (
+        <TransText
+          transKey={`${transKeyPrefix}${rec.key}_tooltip`}
+          noFallback
+        />
+      )
     },
   }
 }

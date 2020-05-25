@@ -27,6 +27,7 @@
     "react": "^16.13.1",
     "react-copy-to-clipboard": "^5.0.2",
     "react-dom": "^16.13.1",
+    "react-highlight-words": "^0.16.0",
     "react-i18next": "^11.3.5",
     "react-resize-detector": "^4.2.3",
     "react-router": "^6.0.0-alpha.3",

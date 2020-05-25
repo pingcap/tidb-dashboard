@@ -19,3 +19,5 @@ import (
 )
 
 var assets http.FileSystem
+func InitAssetFS(prefix string) {}
+

@@ -1,19 +1,8 @@
 import React from 'react'
-import { Root } from '@lib/components'
-import {
-  HashRouter as Router,
-  Route,
-  Routes,
-  useParams,
-} from 'react-router-dom'
+import { Root, ParamsPageWrapper } from '@lib/components'
+import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 
 import { LogSearch, LogSearchHistory, LogSearchDetail } from './pages'
-
-function DetailPageWrapper() {
-  const { id } = useParams()
-
-  return <LogSearchDetail key={id} />
-}
 
 export default function () {
   return (
@@ -24,7 +13,11 @@ export default function () {
           <Route path="/search_logs/history" element={<LogSearchHistory />} />
           <Route
             path="/search_logs/detail/:id"
-            element={<DetailPageWrapper />}
+            element={
+              <ParamsPageWrapper>
+                <LogSearchDetail />
+              </ParamsPageWrapper>
+            }
           />
         </Routes>
       </Router>

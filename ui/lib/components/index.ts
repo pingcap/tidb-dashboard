@@ -40,3 +40,4 @@ export * from './AnimatedSkeleton'
 export { default as AnimatedSkeleton } from './AnimatedSkeleton'
 
 export { default as LanguageDropdown } from './LanguageDropdown'
+export { default as ParamsPageWrapper } from './ParamsPageWrapper'

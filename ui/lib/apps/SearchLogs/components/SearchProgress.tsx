@@ -9,7 +9,7 @@ import { AnimatedSkeleton, Card } from '@lib/components'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import { namingMap, NodeKind, NodeKindList, TaskState } from '../utils'
 
-import styles from './Styles.module.css'
+import styles from './Styles.module.less'
 
 const { confirm } = Modal
 const { TreeNode } = Tree

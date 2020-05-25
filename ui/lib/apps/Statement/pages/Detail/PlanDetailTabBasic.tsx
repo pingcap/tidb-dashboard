@@ -52,5 +52,12 @@ export default function TabBasic({ data }: ITabBasicProps) {
     },
   ]
   const columns = valueColumns('statement.fields.')
-  return <CardTableV2 cardNoMargin columns={columns} items={items} />
+  return (
+    <CardTableV2
+      cardNoMargin
+      columns={columns}
+      items={items}
+      extendLastColumn
+    />
+  )
 }

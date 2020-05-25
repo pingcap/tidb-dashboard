@@ -175,6 +175,22 @@ const addWebpackBundleSize = () => (config) => {
   return config
 }
 
+const supportDynamicPublicPathPrefix = () => (config) => {
+  if (!isBuildAsLibrary() && !isBuildAsDevServer()) {
+    // Rewrite to use relative path for `url()` in CSS.
+    for (const rule of config.module.rules) {
+      for (const subRule of rule.oneOf || []) {
+        for (const use of subRule.use || []) {
+          if (use.loader === MiniCssExtractPlugin.loader) {
+            use.options.publicPath = '../../'
+          }
+        }
+      }
+    }
+  }
+  return config
+}
+
 module.exports = override(
   fixBabelImports('import', {
     libraryName: 'antd',
@@ -221,5 +237,6 @@ module.exports = override(
   ),
   disableMinimizeByEnv(),
   addDiagnoseReportEntry(),
-  buildAsLibrary()
+  buildAsLibrary(),
+  supportDynamicPublicPathPrefix()
 )

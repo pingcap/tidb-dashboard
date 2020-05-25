@@ -3,38 +3,41 @@
 package uiserver
 
 import (
+	"bytes"
+	"compress/gzip"
 	"html"
-	"os"
+	"io/ioutil"
 	"strings"
 )
 
-type modifiedFileInfo struct {
-	os.FileInfo
-	size int64
-}
-
-func (f modifiedFileInfo) Size() int64 {
-	return f.size
-}
-
-func (f modifiedFileInfo) Sys() interface{} {
-	return nil
-}
-
 func InitAssetFS(prefix string) {
 	rewrite := func(assetPath string) {
-		a, err := _bindata[assetPath]()
+		f, err := assets.Open(assetPath)
 		if err != nil {
 			panic("Asset " + assetPath + " not found.")
 		}
-		tmplText := string(a.bytes)
+		defer f.Close()
+		bs, err := ioutil.ReadAll(f)
+		if err != nil {
+			panic("Read Asset " + assetPath + " fail.")
+		}
+		tmplText := string(bs)
 		updated := strings.ReplaceAll(tmplText, "__PUBLIC_PATH_PREFIX__", html.EscapeString(prefix))
-		a.bytes = []byte(updated)
-		a.info = modifiedFileInfo{a.info, int64(len(a.bytes))}
-		_bindata[assetPath] = func() (*asset, error) {
-			return a, nil
+
+		var b bytes.Buffer
+		w := gzip.NewWriter(&b)
+		w.Write([]byte(updated))
+		w.Close()
+
+		fs := assets.(vfsgen۰FS)
+		oldFile := f.(*vfsgen۰CompressedFile)
+		fs[assetPath] = &vfsgen۰CompressedFileInfo{
+			name:              oldFile.name,
+			modTime:           oldFile.modTime,
+			uncompressedSize:  int64(len(updated)),
+			compressedContent: b.Bytes(),
 		}
 	}
-	rewrite("build/index.html")
-	rewrite("build/diagnoseReport.html")
+	rewrite("/index.html")
+	rewrite("/diagnoseReport.html")
 }

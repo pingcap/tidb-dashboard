@@ -15,12 +15,12 @@ package diagnose
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
+	"github.com/shurcooL/httpgzip"
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
@@ -179,21 +179,12 @@ func (s *Service) reportHTMLHandler(c *gin.Context) {
 		c.Data(http.StatusNotFound, "text/plain", []byte("UI is not built"))
 		return
 	}
+	defer func(old string) {
+		c.Request.URL.Path = old
+	}(c.Request.URL.Path)
 
-	// Serve report html directly from assets
-	f, err := s.uiAssetFS.Open("diagnoseReport.html")
-	if err != nil {
-		c.Status(http.StatusNotFound)
-		return
-	}
-	defer f.Close()
-	d, err := ioutil.ReadAll(f)
-	if err != nil {
-		c.Status(http.StatusNotFound)
-		return
-	}
-
-	c.Data(http.StatusOK, "text/html; charset=utf-8", d)
+	c.Request.URL.Path = "diagnoseReport.html"
+	httpgzip.FileServer(s.uiAssetFS, httpgzip.FileServerOptions{IndexHTML: true}).ServeHTTP(c.Writer, c.Request)
 }
 
 // @Summary SQL diagnosis report data

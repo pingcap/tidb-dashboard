@@ -35,7 +35,7 @@ fi
 
 echo "+ Embed UI assets"
 
-go build -o bin/assets_generate tools/assets_generate/main.go && bin/assets_generate $BUILD_TAG_PARAMETER
+go run tools/assets_generate/main.go $BUILD_TAG_PARAMETER
 
 
 HANDLER_PATH=pkg/uiserver/embedded_assets_handler.go

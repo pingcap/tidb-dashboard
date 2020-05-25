@@ -4,7 +4,6 @@ const {
   override,
   fixBabelImports,
   addLessLoader,
-  addWebpackModuleRule,
   addWebpackPlugin,
   addDecoratorsLegacy,
   addBundleVisualizer,
@@ -176,19 +175,15 @@ const addWebpackBundleSize = () => (config) => {
   return config
 }
 
-const supportDynamicPublicPath = () => (config) => {
-  if (!isBuildAsDevServer()) {
-    config.output.publicPath = '__DASHBOARD_PREFIX__'
-  }
-  return config
-}
-
-const resourceUseRelativePath = () => (config) => {
-  for (const rule of config.module.rules) {
-    for (const subRule of rule.oneOf || []) {
-      for (const use of subRule.use || []) {
-        if (use.loader === MiniCssExtractPlugin.loader) {
-          use.options.publicPath = '../../'
+const supportDynamicPublicPathPrefix = () => (config) => {
+  if (!isBuildAsLibrary() && !isBuildAsDevServer()) {
+    // Rewrite to use relative path for `url()` in CSS.
+    for (const rule of config.module.rules) {
+      for (const subRule of rule.oneOf || []) {
+        for (const use of subRule.use || []) {
+          if (use.loader === MiniCssExtractPlugin.loader) {
+            use.options.publicPath = '../../'
+          }
         }
       }
     }
@@ -202,7 +197,6 @@ module.exports = override(
     libraryDirectory: 'es',
     style: true,
   }),
-  supportDynamicPublicPath(),
   ignoreMiniCssExtractOrder(),
   addLessLoader({
     javascriptEnabled: true,
@@ -244,5 +238,5 @@ module.exports = override(
   disableMinimizeByEnv(),
   addDiagnoseReportEntry(),
   buildAsLibrary(),
-  resourceUseRelativePath()
+  supportDynamicPublicPathPrefix()
 )

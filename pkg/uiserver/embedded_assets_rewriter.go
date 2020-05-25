@@ -28,7 +28,7 @@ func InitAssetFS(prefix string) {
 			panic("Asset " + assetPath + " not found.")
 		}
 		tmplText := string(a.bytes)
-		updated := strings.ReplaceAll(tmplText, "__DASHBOARD_PREFIX__", html.EscapeString(prefix))
+		updated := strings.ReplaceAll(tmplText, "__PUBLIC_PATH_PREFIX__", html.EscapeString(prefix))
 		a.bytes = []byte(updated)
 		a.info = modifiedFileInfo{a.info, int64(len(a.bytes))}
 		_bindata[assetPath] = func() (*asset, error) {

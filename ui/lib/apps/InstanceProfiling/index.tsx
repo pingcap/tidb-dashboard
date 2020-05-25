@@ -1,7 +1,7 @@
 import React from 'react'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 
-import { Root, ParamPageWrapper } from '@lib/components'
+import { Root, ParamsPageWrapper } from '@lib/components'
 import { Detail, List } from './pages'
 
 const App = () => (
@@ -12,9 +12,9 @@ const App = () => (
         <Route
           path="/instance_profiling/:id"
           element={
-            <ParamPageWrapper>
+            <ParamsPageWrapper>
               <Detail />
-            </ParamPageWrapper>
+            </ParamsPageWrapper>
           }
         />
       </Routes>

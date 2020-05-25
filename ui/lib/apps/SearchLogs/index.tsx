@@ -1,5 +1,5 @@
 import React from 'react'
-import { Root, ParamPageWrapper } from '@lib/components'
+import { Root, ParamsPageWrapper } from '@lib/components'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 
 import { LogSearch, LogSearchHistory, LogSearchDetail } from './pages'
@@ -14,9 +14,9 @@ export default function () {
           <Route
             path="/search_logs/detail/:id"
             element={
-              <ParamPageWrapper>
+              <ParamsPageWrapper>
                 <LogSearchDetail />
-              </ParamPageWrapper>
+              </ParamsPageWrapper>
             }
           />
         </Routes>

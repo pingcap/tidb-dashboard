@@ -1,9 +1,9 @@
-import _ from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
 import client, { SlowqueryBase } from '@lib/client'
 import { calcTimeRange, DEF_TIME_RANGE, TimeRange } from '@lib/components'
+import getApiErrorsMsg from '@lib/utils/apiErrorsMsg'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
@@ -71,15 +71,8 @@ export default function useSlowQuery(
     }
   }
 
-  // FIXME: duplicated with useStatement
   const [errors, setErrors] = useState<any[]>([])
-  const errorMsg = useMemo(
-    () =>
-      _.uniq(_.map(errors, (err) => err.response?.data?.message || '')).join(
-        '; '
-      ),
-    [errors]
-  )
+  const errorMsg = useMemo(() => getApiErrorsMsg(errors), [errors])
 
   function refresh() {
     setErrors([])

@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/hypnoglow/gormzap"
 	"github.com/jinzhu/gorm"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
@@ -78,7 +77,6 @@ func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 		log.Warn("unknown error occurred while OpenTiDB", zap.Error(err))
 		return nil, err
 	}
-	db.SetLogger(gormzap.New(log.L(), gormzap.WithLevel(zap.WarnLevel)))
 
 	return db, nil
 }

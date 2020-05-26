@@ -1,6 +1,9 @@
 package utils
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 func EscapeSQL(sql string) string {
 	dest := make([]byte, 0, 2*len(sql))

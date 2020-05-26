@@ -175,7 +175,8 @@ func QueryStatementsOverview(
 		Table(statementsTable).
 		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
 		Group("schema_name, digest, digest_text").
-		Order("agg_sum_latency DESC")
+		Order("agg_sum_latency DESC").
+		Debug()
 
 	if len(schemas) > 0 {
 		regex := make([]string, 0, len(schemas))

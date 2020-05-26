@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
@@ -70,29 +71,46 @@ export default function useSlowQuery(
     }
   }
 
+  // FIXME: duplicated with useStatement
+  const [errors, setErrors] = useState<any[]>([])
+  const errorMsg = useMemo(
+    () =>
+      _.uniq(_.map(errors, (err) => err.response?.data?.message || '')).join(
+        '; '
+      ),
+    [errors]
+  )
+
   function refresh() {
+    setErrors([])
     setRefreshTimes((prev) => prev + 1)
   }
 
   useEffect(() => {
     async function getSlowQueryList() {
       setLoadingSlowQueries(true)
-      const res = await client
-        .getInstance()
-        .slowQueryListGet(
-          queryOptions.schemas,
-          orderOptions.desc,
-          queryOptions.digest,
-          queryOptions.limit,
-          queryTimeRange.endTime,
-          queryTimeRange.beginTime,
-          orderOptions.orderBy,
-          queryOptions.plans,
-          queryOptions.searchText
-        )
-      setLoadingSlowQueries(false)
-      setSlowQueries(res.data || [])
+      try {
+        const res = await client
+          .getInstance()
+          .slowQueryListGet(
+            queryOptions.schemas,
+            orderOptions.desc,
+            queryOptions.digest,
+            queryOptions.limit,
+            queryTimeRange.endTime,
+            queryTimeRange.beginTime,
+            orderOptions.orderBy,
+            queryOptions.plans,
+            queryOptions.searchText
+          )
+        setSlowQueries(res.data || [])
+      } catch (error) {
+        setErrors((prev) => [...prev, { ...error }])
+      } finally {
+        setLoadingSlowQueries(false)
+      }
     }
+
     getSlowQueryList()
   }, [queryOptions, orderOptions, queryTimeRange, refreshTimes])
 
@@ -106,5 +124,8 @@ export default function useSlowQuery(
     loadingSlowQueries,
     slowQueries,
     queryTimeRange,
+
+    errors,
+    errorMsg,
   }
 }

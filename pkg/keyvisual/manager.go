@@ -63,7 +63,7 @@ func (s *Service) managerLoop(ctx context.Context) {
 }
 
 func (s *Service) resetKeyVisualConfig(ctx context.Context, cfg *config.DynamicConfig) {
-	if cfg.KeyVisual.AutoCollectionEnabled {
+	if !cfg.KeyVisual.AutoCollectionDisabled {
 		if s.keyVisualCfg != nil && s.keyVisualCfg.Policy != cfg.KeyVisual.Policy {
 			s.stopService()
 		}

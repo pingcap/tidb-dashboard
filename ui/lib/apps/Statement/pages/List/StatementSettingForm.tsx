@@ -95,7 +95,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         content: t('statement.settings.close_statement_warning'),
         okText: t('statement.settings.actions.close'),
         cancelText: t('statement.settings.actions.cancel'),
-        okButtonProps: { type: 'danger' },
+        okButtonProps: { danger: true },
         onOk: () => updateConfig(values),
       })
     } else {

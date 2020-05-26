@@ -184,14 +184,14 @@ export default function LogSearchingHistory() {
         titleExtra={
           <>
             <Button
-              type="danger"
+              danger
               onClick={handleDeleteSelected}
               disabled={selectedRowKeys.length < 1}
               style={{ marginRight: 16 }}
             >
               {t('search_logs.history.delete_selected')}
             </Button>
-            <Button type="danger" onClick={handleDeleteAll}>
+            <Button danger onClick={handleDeleteAll}>
               {t('search_logs.history.delete_all')}
             </Button>
           </>

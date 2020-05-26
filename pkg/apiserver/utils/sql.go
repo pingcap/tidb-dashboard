@@ -46,7 +46,7 @@ func EscapeSQL(sql string) string {
 func EscapedStringList(params []string) string {
 	p := make([]string, 0)
 	for _, v := range params {
-		p = append(p, `"%s"`, EscapeSQL(v))
+		p = append(p, fmt.Sprintf(`"%s"`, EscapeSQL(v)))
 	}
 	return strings.Join(p, ", ")
 }

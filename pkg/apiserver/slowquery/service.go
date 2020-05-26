@@ -17,8 +17,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -66,9 +64,6 @@ func (s *Service) listHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-
-	log.Info("listHandler", zap.Any("results", results))
-
 	c.JSON(http.StatusOK, results)
 }
 

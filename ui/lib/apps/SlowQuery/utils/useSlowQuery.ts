@@ -97,6 +97,7 @@ export default function useSlowQuery(
             queryOptions.searchText
           )
         setSlowQueries(res.data || [])
+        setErrors([])
       } catch (error) {
         setErrors((prev) => [...prev, { ...error }])
       } finally {

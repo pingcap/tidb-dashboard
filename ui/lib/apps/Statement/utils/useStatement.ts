@@ -145,6 +145,7 @@ export default function useStatement(
             queryOptions.stmtTypes
           )
         setStatements(res?.data || [])
+        setErrors([])
       } catch (error) {
         setErrors((prev) => [...prev, { ...error }])
       } finally {

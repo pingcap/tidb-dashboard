@@ -59,7 +59,6 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	}
 
 	log.Debug("schema version has changed", zap.Int64("old", s.SchemaVersion), zap.Int64("new", schemaVersion))
-	s.SchemaVersion = schemaVersion
 
 	// get all database info
 	var dbInfos []*model.DBInfo
@@ -76,12 +75,14 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 
 	// get all table info
 	var tableInfos []*model.TableInfo
+	updateSuccess := true
 	for _, db := range dbInfos {
 		if db.State == model.StateNone {
 			continue
 		}
 		if err := request(tidbEndpoint, fmt.Sprintf("schema/%s", db.Name.O), &tableInfos, s.HTTPClient); err != nil {
 			log.Error("fail to send schema request to tidb", zap.String("endpoint", tidbEndpoint), zap.Error(err))
+			updateSuccess = false
 			continue
 		}
 		for _, table := range tableInfos {
@@ -108,6 +109,11 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 				}
 			}
 		}
+	}
+
+	// update schema version
+	if updateSuccess {
+		s.SchemaVersion = schemaVersion
 	}
 }
 

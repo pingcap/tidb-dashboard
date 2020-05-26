@@ -201,7 +201,9 @@ function CardTableV2(props: ICardTableV2Props) {
       noMarginTop={cardNoMarginTop}
       extra={cardExtra}
     >
-      <AnimatedSkeleton showSkeleton={items.length === 0 && loading && !errorMsg}>
+      <AnimatedSkeleton
+        showSkeleton={items.length === 0 && loading && !errorMsg}
+      >
         {errorMsg ? (
           <Alert message={errorMsg} type="error" showIcon />
         ) : (

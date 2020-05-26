@@ -19,6 +19,8 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 )
 
 const (
@@ -141,25 +143,89 @@ func isValidColumnName(name string) bool {
 	return false
 }
 
+//
+//func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
+//	tx := db.
+//		Table(SlowQueryTable).
+//		Select(SelectStmt).
+//		Where("time between from_unixtime(?) and from_unixtime(?)", req.LogStartTS, req.LogEndTS).
+//		Limit(req.Limit)
+//
+//	if req.Text != "" {
+//		lowerStr := strings.ToLower(req.Text)
+//		tx = tx.Where("txn_start_ts REGEXP ? OR LOWER(digest) REGEXP ? OR LOWER(CONVERT(prev_stmt USING utf8)) REGEXP ? OR LOWER(CONVERT(query USING utf8)) REGEXP ?",
+//			lowerStr,
+//			lowerStr,
+//			lowerStr,
+//			lowerStr,
+//		)
+//	}
+//
+//	if len(req.DB) > 0 {
+//		tx = tx.Where("DB IN (?)", req.DB)
+//	}
+//
+//	order := req.OrderBy
+//	if isValidColumnName(order) {
+//		if req.DESC {
+//			tx = tx.Order(fmt.Sprintf("%s desc", order))
+//		} else {
+//			tx = tx.Order(fmt.Sprintf("%s asc", order))
+//		}
+//	}
+//
+//	if len(req.Plans) > 0 {
+//		tx = tx.Where("Plan_digest IN (?)", req.Plans)
+//	}
+//
+//	if len(req.Digest) > 0 {
+//		tx = tx.Where("Digest = ?", req.Digest)
+//	}
+//
+//	var results []Base
+//	err := tx.Find(&results).Error
+//	if err != nil {
+//		return nil, err
+//	}
+//	return results, nil
+//}
+//
+//func QuerySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) {
+//	var result SlowQuery
+//	err := db.
+//		Table(SlowQueryTable).
+//		Select(SelectStmt).
+//		Where("Digest = ?", req.Digest).
+//		Where("Time = from_unixtime(?)", req.Time).
+//		Where("Conn_id = ?", req.ConnectID).
+//		First(&result).Error
+//	if err != nil {
+//		return nil, err
+//	}
+//	return &result, nil
+//}
+
+// FIXME: This is a highly risky workaround for https://github.com/pingcap/tidb/issues/17287
+
 func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
 	tx := db.
 		Table(SlowQueryTable).
 		Select(SelectStmt).
-		Where("time between from_unixtime(?) and from_unixtime(?)", req.LogStartTS, req.LogEndTS).
+		Where(fmt.Sprintf(`time between from_unixtime(%d) and from_unixtime(%d)`, req.LogStartTS, req.LogEndTS)).
 		Limit(req.Limit)
 
 	if req.Text != "" {
-		lowerStr := strings.ToLower(req.Text)
-		tx = tx.Where("txn_start_ts REGEXP ? OR LOWER(digest) REGEXP ? OR LOWER(CONVERT(prev_stmt USING utf8)) REGEXP ? OR LOWER(CONVERT(query USING utf8)) REGEXP ?",
+		lowerStr := utils.EscapeSQL(strings.ToLower(req.Text))
+		tx = tx.Where(fmt.Sprintf(`txn_start_ts REGEXP "%s" OR LOWER(digest) REGEXP "%s" OR LOWER(CONVERT(prev_stmt USING utf8)) REGEXP "%s" OR LOWER(CONVERT(query USING utf8)) REGEXP "%s"`,
 			lowerStr,
 			lowerStr,
 			lowerStr,
 			lowerStr,
-		)
+		))
 	}
 
 	if len(req.DB) > 0 {
-		tx = tx.Where("DB IN (?)", req.DB)
+		tx = tx.Where(fmt.Sprintf("DB IN (%s)", utils.EscapedStringList(req.DB)))
 	}
 
 	order := req.OrderBy
@@ -172,11 +238,11 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
 	}
 
 	if len(req.Plans) > 0 {
-		tx = tx.Where("Plan_digest IN (?)", req.Plans)
+		tx = tx.Where(fmt.Sprintf("Plan_digest IN (%s)", utils.EscapedStringList(req.Plans)))
 	}
 
 	if len(req.Digest) > 0 {
-		tx = tx.Where("Digest = ?", req.Digest)
+		tx = tx.Where(fmt.Sprintf(`Digest = "%s"`, utils.EscapeSQL(req.Digest)))
 	}
 
 	var results []Base
@@ -192,9 +258,9 @@ func QuerySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) 
 	err := db.
 		Table(SlowQueryTable).
 		Select(SelectStmt).
-		Where("Digest = ?", req.Digest).
-		Where("Time = from_unixtime(?)", req.Time).
-		Where("Conn_id = ?", req.ConnectID).
+		Where(fmt.Sprintf(`Digest = "%s"`, utils.EscapeSQL(req.Digest))).
+		Where(fmt.Sprintf("Time = from_unixtime(%f)", req.Time)).
+		Where(fmt.Sprintf("Conn_id = %d", req.ConnectID)).
 		First(&result).Error
 	if err != nil {
 		return nil, err

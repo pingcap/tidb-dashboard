@@ -21,6 +21,8 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 )
 
 const (
@@ -140,6 +142,110 @@ func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
 	return
 }
 
+//
+//// Sample params:
+//// beginTime: 1586844000
+//// endTime: 1586845800
+//// schemas: ["tpcc", "test"]
+//// stmtTypes: ["select", "update"]
+//func QueryStatementsOverview(
+//	db *gorm.DB,
+//	beginTime, endTime int,
+//	schemas, stmtTypes []string) (result []Model, err error) {
+//	fields := getAggrFields(
+//		"table_names",
+//		"schema_name",
+//		"digest",
+//		"digest_text",
+//		"sum_latency",
+//		"exec_count",
+//		"max_latency",
+//		"avg_latency",
+//		"min_latency",
+//		"avg_mem",
+//		"max_mem",
+//		"sum_errors",
+//		"sum_warnings",
+//		"avg_parse_latency",
+//		"max_parse_latency",
+//		"avg_compile_latency",
+//		"max_compile_latency",
+//		"avg_cop_process_time",
+//		"max_cop_process_time")
+//	// `table_names` is used to populate `related_schemas`.
+//	query := db.
+//		Select(strings.Join(fields, ", ")).
+//		Table(statementsTable).
+//		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
+//		Group("schema_name, digest, digest_text").
+//		Order("agg_sum_latency DESC")
+//
+//	if len(schemas) > 0 {
+//		regex := make([]string, 0, len(schemas))
+//		for _, schema := range schemas {
+//			regex = append(regex, fmt.Sprintf("\\b%s\\.", regexp.QuoteMeta(schema)))
+//		}
+//		regexAll := strings.Join(regex, "|")
+//		query = query.Where("table_names REGEXP ?", regexAll)
+//	}
+//
+//	if len(stmtTypes) > 0 {
+//		query = query.Where("stmt_type in (?)", stmtTypes)
+//	}
+//
+//	err = query.Find(&result).Error
+//	return
+//}
+//
+//func QueryPlans(
+//	db *gorm.DB,
+//	beginTime, endTime int,
+//	schemaName, digest string) (result []Model, err error) {
+//	fields := getAggrFields(
+//		"plan_digest",
+//		"schema_name",
+//		"digest_text",
+//		"digest",
+//		"sum_latency",
+//		"max_latency",
+//		"min_latency",
+//		"avg_latency",
+//		"exec_count",
+//		"avg_mem",
+//		"max_mem")
+//	err = db.
+//		Select(strings.Join(fields, ", ")).
+//		Table(statementsTable).
+//		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
+//		Where("schema_name = ?", schemaName).
+//		Where("digest = ?", digest).
+//		Group("plan_digest").
+//		Find(&result).
+//		Error
+//	return
+//}
+//
+//func QueryPlanDetail(
+//	db *gorm.DB,
+//	beginTime, endTime int,
+//	schemaName, digest string,
+//	plans []string) (result Model, err error) {
+//	fields := getAllAggrFields()
+//	query := db.
+//		Select(strings.Join(fields, ", ")).
+//		Table(statementsTable).
+//		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
+//		Where("schema_name = ?", schemaName).
+//		Where("digest = ?", digest)
+//	if len(plans) > 0 {
+//		query = query.Where("plan_digest in (?)", plans)
+//	}
+//	err = query.Scan(&result).Error
+//	return
+//}
+
+// FIXME: This is a highly risky workaround for https://github.com/pingcap/tidb/issues/17287
+
 // Sample params:
 // beginTime: 1586844000
 // endTime: 1586845800
@@ -173,7 +279,7 @@ func QueryStatementsOverview(
 	query := db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
+		Where(fmt.Sprintf("UNIX_TIMESTAMP(summary_begin_time) >= %d AND UNIX_TIMESTAMP(summary_end_time) <= %d", beginTime, endTime)).
 		Group("schema_name, digest, digest_text").
 		Order("agg_sum_latency DESC")
 
@@ -183,11 +289,11 @@ func QueryStatementsOverview(
 			regex = append(regex, fmt.Sprintf("\\b%s\\.", regexp.QuoteMeta(schema)))
 		}
 		regexAll := strings.Join(regex, "|")
-		query = query.Where("table_names REGEXP ?", regexAll)
+		query = query.Where(fmt.Sprintf(`table_names REGEXP "%s"`, utils.EscapeSQL(regexAll)))
 	}
 
 	if len(stmtTypes) > 0 {
-		query = query.Where("stmt_type in (?)", stmtTypes)
+		query = query.Where(fmt.Sprintf("stmt_type in (%s)", utils.EscapedStringList(stmtTypes)))
 	}
 
 	err = query.Find(&result).Error
@@ -213,9 +319,9 @@ func QueryPlans(
 	err = db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
-		Where("schema_name = ?", schemaName).
-		Where("digest = ?", digest).
+		Where(fmt.Sprintf("UNIX_TIMESTAMP(summary_begin_time) >= %d AND UNIX_TIMESTAMP(summary_end_time) <= %d", beginTime, endTime)).
+		Where(fmt.Sprintf(`schema_name = "%s"`, utils.EscapeSQL(schemaName))).
+		Where(fmt.Sprintf(`digest = "%s"`, utils.EscapeSQL(digest))).
 		Group("plan_digest").
 		Find(&result).
 		Error
@@ -231,11 +337,11 @@ func QueryPlanDetail(
 	query := db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
-		Where("schema_name = ?", schemaName).
-		Where("digest = ?", digest)
+		Where(fmt.Sprintf("UNIX_TIMESTAMP(summary_begin_time) >= %d AND UNIX_TIMESTAMP(summary_end_time) <= %d", beginTime, endTime)).
+		Where(fmt.Sprintf(`schema_name = "%s"`, utils.EscapeSQL(schemaName))).
+		Where(fmt.Sprintf(`digest = "%s"`, utils.EscapeSQL(digest)))
 	if len(plans) > 0 {
-		query = query.Where("plan_digest in (?)", plans)
+		query = query.Where(fmt.Sprintf("plan_digest in (%s)", utils.EscapedStringList(plans)))
 	}
 	err = query.Scan(&result).Error
 	return

@@ -100,9 +100,8 @@ export default function useSlowQuery(
         setErrors([])
       } catch (error) {
         setErrors((prev) => [...prev, { ...error }])
-      } finally {
-        setLoadingSlowQueries(false)
       }
+      setLoadingSlowQueries(false)
     }
 
     getSlowQueryList()

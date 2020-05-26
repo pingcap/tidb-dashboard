@@ -148,9 +148,8 @@ export default function useStatement(
         setErrors([])
       } catch (error) {
         setErrors((prev) => [...prev, { ...error }])
-      } finally {
-        setLoadingStatements(false)
       }
+      setLoadingStatements(false)
     }
 
     queryStatementList()

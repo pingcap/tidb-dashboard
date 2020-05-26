@@ -14,15 +14,24 @@
 package uiserver
 
 import (
+	"bytes"
+	"compress/gzip"
+	"html"
 	"io"
+	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/shurcooL/httpgzip"
 )
 
-func Handler() http.Handler {
-	if assets != nil {
-		return httpgzip.FileServer(assets, httpgzip.FileServerOptions{IndexHTML: true})
+func AssetFS() http.FileSystem {
+	return assets
+}
+
+func Handler(root http.FileSystem) http.Handler {
+	if root != nil {
+		return httpgzip.FileServer(root, httpgzip.FileServerOptions{IndexHTML: true})
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -30,6 +39,33 @@ func Handler() http.Handler {
 	})
 }
 
-func AssetFS() http.FileSystem {
-	return assets
+
+type UpdateContentFunc func(fs http.FileSystem, oldFile http.File, path, newContent string, zippedBytes []byte)
+
+func RewriteAssets(publicPath string, fs http.FileSystem, updater UpdateContentFunc) {
+	if fs == nil {
+		return
+	}
+	rewrite := func(assetPath string) {
+		f, err := fs.Open(assetPath)
+		if err != nil {
+			panic("Asset " + assetPath + " not found.")
+		}
+		defer f.Close()
+		bs, err := ioutil.ReadAll(f)
+		if err != nil {
+			panic("Read Asset " + assetPath + " fail.")
+		}
+		tmplText := string(bs)
+		updated := strings.ReplaceAll(tmplText, "__PUBLIC_PATH_PREFIX__", html.EscapeString(publicPath))
+
+		var b bytes.Buffer
+		w := gzip.NewWriter(&b)
+		w.Write([]byte(updated))
+		w.Close()
+
+		updater(fs, f, assetPath, updated, b.Bytes())
+	}
+	rewrite("/index.html")
+	rewrite("/diagnoseReport.html")
 }

@@ -19,5 +19,6 @@ import (
 )
 
 var assets http.FileSystem
-func InitAssetFS(prefix string) {}
+
+func RewriteAssetsPublicPath(_ string) {}
 

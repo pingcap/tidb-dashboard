@@ -147,17 +147,16 @@ func (f *Forwarder) pollingForTiDB() {
 				f.tidbProxy.updateRemotes(nil)
 				f.tidbStatusProxy.updateRemotes(nil)
 			}
-			continue
+		} else {
+			statusEndpoints := make(map[string]struct{}, len(allTiDB))
+			tidbEndpoints := make(map[string]struct{}, len(allTiDB))
+			for _, server := range allTiDB {
+				tidbEndpoints[fmt.Sprintf("%s:%d", server.IP, server.Port)] = struct{}{}
+				statusEndpoints[fmt.Sprintf("%s:%d", server.IP, server.StatusPort)] = struct{}{}
+			}
+			f.tidbProxy.updateRemotes(tidbEndpoints)
+			f.tidbStatusProxy.updateRemotes(statusEndpoints)
 		}
-
-		statusEndpoints := make(map[string]struct{}, len(allTiDB))
-		tidbEndpoints := make(map[string]struct{}, len(allTiDB))
-		for _, server := range allTiDB {
-			tidbEndpoints[fmt.Sprintf("%s:%d", server.IP, server.Port)] = struct{}{}
-			statusEndpoints[fmt.Sprintf("%s:%d", server.IP, server.StatusPort)] = struct{}{}
-		}
-		f.tidbProxy.updateRemotes(tidbEndpoints)
-		f.tidbStatusProxy.updateRemotes(statusEndpoints)
 
 		select {
 		case <-f.ctx.Done():

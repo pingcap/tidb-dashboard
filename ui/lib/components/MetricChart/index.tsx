@@ -83,6 +83,14 @@ export default function MetricChart({
         )
     )
   )
+  // FIXME: duplicated with useStatement
+  const errorMsg = useMemo(
+    () =>
+      _.uniq(
+        _.map(error || [], (err) => err?.response?.data?.message || '')
+      ).join('; '),
+    [error]
+  )
 
   const update = () => {
     timeParams.current = getTimeParams()
@@ -223,7 +231,7 @@ export default function MetricChart({
   ) {
     inner = (
       <div style={{ height: HEIGHT }}>
-        <Alert message="Error" type="error" showIcon />
+        <Alert message={errorMsg || 'Error'} type="error" showIcon />
       </div>
     )
   } else {

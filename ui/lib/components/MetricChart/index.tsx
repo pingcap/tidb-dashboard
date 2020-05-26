@@ -1,21 +1,24 @@
-import echarts from 'echarts/lib/echarts'
 import 'echarts/lib/chart/bar'
 import 'echarts/lib/chart/line'
 import 'echarts/lib/component/grid'
 import 'echarts/lib/component/legend'
 import 'echarts/lib/component/tooltip'
-import React, { useMemo, useRef } from 'react'
-import ReactEchartsCore from 'echarts-for-react/lib/core'
-import client from '@lib/client'
-import { useBatchClientRequest } from '@lib/utils/useClientRequest'
+
 import { Alert, Space } from 'antd'
 import dayjs from 'dayjs'
-import { getValueFormat } from '@baurine/grafana-value-formats'
+import ReactEchartsCore from 'echarts-for-react/lib/core'
+import echarts from 'echarts/lib/echarts'
 import _ from 'lodash'
+import React, { useMemo, useRef } from 'react'
 import { useInterval } from 'react-use'
-import { Card, AnimatedSkeleton } from '@lib/components'
-import { ReloadOutlined, LoadingOutlined } from '@ant-design/icons'
 import format from 'string-template'
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+
+import client from '@lib/client'
+import { AnimatedSkeleton, Card } from '@lib/components'
+import getApiErrorsMsg from '@lib/utils/apiErrorsMsg'
+import { useBatchClientRequest } from '@lib/utils/useClientRequest'
 
 export type GraphType = 'bar' | 'line'
 
@@ -83,6 +86,7 @@ export default function MetricChart({
         )
     )
   )
+  const errorMsg = useMemo(() => getApiErrorsMsg(error), [error])
 
   const update = () => {
     timeParams.current = getTimeParams()
@@ -223,7 +227,7 @@ export default function MetricChart({
   ) {
     inner = (
       <div style={{ height: HEIGHT }}>
-        <Alert message="Error" type="error" showIcon />
+        <Alert message={errorMsg || 'Error'} type="error" showIcon />
       </div>
     )
   } else {

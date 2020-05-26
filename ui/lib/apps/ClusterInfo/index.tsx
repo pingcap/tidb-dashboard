@@ -9,7 +9,6 @@ const App = () => {
       <Router>
         <Routes>
           <Route
-            exact
             path="/cluster_info"
             element={<Navigate to="/cluster_info/instance" replace />}
           />

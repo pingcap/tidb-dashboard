@@ -222,7 +222,7 @@ export default function SearchProgress({
                 {t('search_logs.common.download_selected')}
               </Button>
               <Button
-                type="danger"
+                danger
                 onClick={handleCancel}
                 disabled={
                   !tasks.some((task) => task.state === TaskState.Running)

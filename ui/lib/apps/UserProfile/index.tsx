@@ -32,7 +32,7 @@ function App() {
       <Head title={t('user_profile.title', login || '...')} />
       <Card>
         <AnimatedSkeleton showSkeleton={!login}>
-          <Button type="danger" onClick={handleLogout}>
+          <Button danger onClick={handleLogout}>
             <LogoutOutlined /> {t('user_profile.logout')}
           </Button>
         </AnimatedSkeleton>

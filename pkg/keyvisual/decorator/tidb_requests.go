@@ -24,6 +24,8 @@ import (
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb/model"
 )
 
 const (
@@ -36,29 +38,6 @@ var (
 	ErrNSDecorator           = ErrNS.NewSubNamespace("decorator")
 	ErrTiDBHTTPRequestFailed = ErrNSDecorator.NewType("tidb_http_request_failed")
 )
-
-type dbInfo struct {
-	Name struct {
-		O string `json:"O"`
-		L string `json:"L"`
-	} `json:"db_name"`
-	State int `json:"state"`
-}
-
-type tableInfo struct {
-	ID   int64 `json:"id"`
-	Name struct {
-		O string `json:"O"`
-		L string `json:"L"`
-	} `json:"name"`
-	Indices []struct {
-		ID   int64 `json:"id"`
-		Name struct {
-			O string `json:"O"`
-			L string `json:"L"`
-		} `json:"idx_name"`
-	} `json:"index_info"`
-}
 
 func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	// check schema version
@@ -82,27 +61,27 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	log.Debug("schema version has changed", zap.Int64("old", s.SchemaVersion), zap.Int64("new", schemaVersion))
 	s.SchemaVersion = schemaVersion
 
-	var dbInfos []*dbInfo
+	// get all database info
+	var dbInfos []*model.DBInfo
 	reqScheme := "http"
 	if s.Config.ClusterTLSConfig != nil {
 		reqScheme = "https"
 	}
 	hostname, port := s.forwarder.GetStatusConnProps()
-	target := fmt.Sprintf("%s:%d", hostname, port)
-	tidbEndpoint := fmt.Sprintf("%s://%s", reqScheme, target)
+	tidbEndpoint := fmt.Sprintf("%s://%s:%d", reqScheme, hostname, port)
 	if err := request(tidbEndpoint, "schema", &dbInfos, s.HTTPClient); err != nil {
 		log.Error("fail to send schema request to tidb", zap.String("endpoint", tidbEndpoint), zap.Error(err))
-		if dbInfos == nil {
-			return
-		}
+		return
 	}
 
-	var tableInfos []*tableInfo
+	// get all table info
+	var tableInfos []*model.TableInfo
 	for _, db := range dbInfos {
-		if db.State == 0 {
+		if db.State == model.StateNone {
 			continue
 		}
 		if err := request(tidbEndpoint, fmt.Sprintf("schema/%s", db.Name.O), &tableInfos, s.HTTPClient); err != nil {
+			log.Error("fail to send schema request to tidb", zap.String("endpoint", tidbEndpoint), zap.Error(err))
 			continue
 		}
 		for _, table := range tableInfos {
@@ -117,6 +96,17 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 				Indices: indices,
 			}
 			s.TableMap.Store(table.ID, detail)
+			if partition := table.GetPartitionInfo(); partition != nil {
+				for _, partitionDef := range partition.Definitions {
+					detail := &tableDetail{
+						Name:    fmt.Sprintf("%s/%s", table.Name.O, partitionDef.Name.O),
+						DB:      db.Name.O,
+						ID:      partitionDef.ID,
+						Indices: indices,
+					}
+					s.TableMap.Store(partitionDef.ID, detail)
+				}
+			}
 		}
 	}
 }

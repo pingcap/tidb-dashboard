@@ -27,6 +27,8 @@ export default function App() {
     validTimeRange,
     loadingStatements,
     statements,
+
+    errorMsg,
   } = useStatement(undefined, false)
   const {
     orderOptions,
@@ -97,6 +99,7 @@ export default function App() {
               }}
               visibleItemsCount={10}
               loading={loadingStatements}
+              errorMsg={errorMsg}
               statements={statements}
               timeRange={validTimeRange}
               orderBy={stmtOrderOptions.orderBy}

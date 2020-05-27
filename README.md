@@ -32,8 +32,8 @@ contributing code!
 If you have any questions about development, feel free to join [TiDB Dashboard SIG]
 (Special Interest Group):
 
-- Slack (English): [#sig-dashboard](https://tidbcommunity.slack.com/messages/sig-dashboard)
-- Slack (Chinese): [#sig-dashboard-china](https://tidbcommunity.slack.com/messages/sig-dashboard-china)
+- Slack (English): [#sig-dashboard](https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard&ref=github_dashboard_repo)
+- Slack (Chinese): [#sig-dashboard-china](https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard-china&ref=github_dashboard_repo)
 
 ## Architecture
 

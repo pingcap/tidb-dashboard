@@ -7,11 +7,11 @@ overview:
   monitor_alert:
     title: Monitor & Alert
     view_monitor: View Metrics
-    view_monitor_warn: Metrics is unavailable
+    view_monitor_warn: Metrics unavailable
     view_alerts: 'View {{alertCount}} Alerts'
     view_zero_alerts: 'View Alerts'
-    view_alerts_warn: Alert is unavailable
-    run_diagnose: Run Diagnonse
+    view_alerts_warn: Alert unavailable
+    run_diagnose: Run Diagnostics
   metrics:
     total_requests: QPS
     latency: Latency

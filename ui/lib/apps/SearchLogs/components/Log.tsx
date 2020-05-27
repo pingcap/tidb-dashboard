@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react'
-import Highlighter from 'react-highlight-words'
+import TextHighlighter from 'react-highlight-words'
 import { TextWrap, Pre } from '@lib/components'
 
-import styles from './Styles.module.css'
+import styles from './Styles.module.less'
 
 interface LogProps {
   patterns: string[]
@@ -21,7 +21,8 @@ export default function Log({ patterns, log, expanded }: LogProps) {
       className={styles.logText}
     >
       <Pre>
-        <Highlighter
+        <TextHighlighter
+          highlightClassName={styles.highlight}
           searchWords={patterns.map((p) => new RegExp(p, 'gi'))}
           textToHighlight={log}
         />

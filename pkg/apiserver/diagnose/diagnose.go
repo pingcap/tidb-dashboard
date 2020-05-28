@@ -19,9 +19,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	apiutils "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -51,7 +52,7 @@ func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstor
 		config:        config,
 		db:            db,
 		tidbForwarder: tidbForwarder,
-		fileServer: 	uiserver.Handler(uiAssetFS),
+		fileServer:    uiserver.Handler(uiAssetFS),
 	}
 }
 

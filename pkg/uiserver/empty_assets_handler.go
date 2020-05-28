@@ -15,11 +15,10 @@
 package uiserver
 
 import (
-	assetfs "github.com/elazarl/go-bindata-assetfs"
+	"net/http"
 )
 
-func InitAssetFS(prefix string) {}
+var assets http.FileSystem
 
-func assetFS() *assetfs.AssetFS {
-	return nil
-}
+func RewriteAssetsPublicPath(_ string) {}
+

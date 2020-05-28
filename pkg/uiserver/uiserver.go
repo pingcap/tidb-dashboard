@@ -14,23 +14,24 @@
 package uiserver
 
 import (
+	"bytes"
 	"compress/gzip"
+	"html"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"sync"
 
-	assetfs "github.com/elazarl/go-bindata-assetfs"
+	"github.com/shurcooL/httpgzip"
 )
 
-var (
-	fs = assetFS()
-)
+func AssetFS() http.FileSystem {
+	return assets
+}
 
-func Handler() http.Handler {
-	if fs != nil {
-		return NewGzipHandler(fs)
+func Handler(root http.FileSystem) http.Handler {
+	if root != nil {
+		return httpgzip.FileServer(root, httpgzip.FileServerOptions{IndexHTML: true})
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -38,55 +39,33 @@ func Handler() http.Handler {
 	})
 }
 
-func AssetFS() *assetfs.AssetFS {
-	return fs
-}
 
-type gzipHandler struct {
-	raw  http.Handler // The original FileServer
-	pool sync.Pool
-}
+type UpdateContentFunc func(fs http.FileSystem, oldFile http.File, path, newContent string, zippedBytes []byte)
 
-func NewGzipHandler(fs http.FileSystem) http.Handler {
-	var pool sync.Pool
-	pool.New = func() interface{} {
-		gz, err := gzip.NewWriterLevel(ioutil.Discard, gzip.BestSpeed)
-		if err != nil {
-			panic(err)
-		}
-		return gz
-	}
-	return &gzipHandler{raw: http.FileServer(fs), pool: pool}
-}
-
-func (g *gzipHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if g.shouldCompress(r) {
-		gz := g.pool.Get().(*gzip.Writer)
-		defer func() {
-			gz.Close()
-			gz.Reset(ioutil.Discard)
-			g.pool.Put(gz)
-		}()
-		gz.Reset(w)
-		w.Header().Set("Content-Encoding", "gzip")
-		g.raw.ServeHTTP(&gzipWriter{
-			ResponseWriter: w,
-			writer:         gz,
-		}, r)
+func RewriteAssets(publicPath string, fs http.FileSystem, updater UpdateContentFunc) {
+	if fs == nil {
 		return
 	}
-	g.raw.ServeHTTP(w, r)
-}
+	rewrite := func(assetPath string) {
+		f, err := fs.Open(assetPath)
+		if err != nil {
+			panic("Asset " + assetPath + " not found.")
+		}
+		defer f.Close()
+		bs, err := ioutil.ReadAll(f)
+		if err != nil {
+			panic("Read Asset " + assetPath + " fail.")
+		}
+		tmplText := string(bs)
+		updated := strings.ReplaceAll(tmplText, "__PUBLIC_PATH_PREFIX__", html.EscapeString(publicPath))
 
-func (g *gzipHandler) shouldCompress(r *http.Request) bool {
-	return strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
-}
+		var b bytes.Buffer
+		w := gzip.NewWriter(&b)
+		w.Write([]byte(updated))
+		w.Close()
 
-type gzipWriter struct {
-	http.ResponseWriter
-	writer *gzip.Writer
-}
-
-func (g *gzipWriter) Write(data []byte) (int, error) {
-	return g.writer.Write(data)
+		updater(fs, f, assetPath, updated, b.Bytes())
+	}
+	rewrite("/index.html")
+	rewrite("/diagnoseReport.html")
 }

@@ -29,14 +29,12 @@ assignees: ''
 
 
 
-### Value Score
-
 <!-- Range: 1~5 -->
 
-* 3
+- Score: 3
 
-### Workload Estimation
+## Workload Estimation
 
 <!-- Estimate how long this requirement can be implemented -->
 
-30 Person Day
+20 Person Day

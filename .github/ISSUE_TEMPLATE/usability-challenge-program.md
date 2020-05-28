@@ -1,8 +1,9 @@
 ---
 name: "\U0001F947 Challenge Program"
 about: Challenge Program issues
-labels: challenge-program-2
 title: 'UCP: '
+labels: challenge-program-2
+assignees: ''
 
 ---
 

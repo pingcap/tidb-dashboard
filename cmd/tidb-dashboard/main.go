@@ -184,7 +184,7 @@ func main() {
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
-	uiserver.InitAssetFS(cliConfig.CoreConfig.PathPrefix)
+	uiserver.RewriteAssetsPublicPath(cliConfig.CoreConfig.PathPrefix)
 	s := apiserver.NewService(
 		cliConfig.CoreConfig,
 		apiserver.StoppedHandler,
@@ -204,7 +204,7 @@ func main() {
 	defer s.Stop(context.Background()) //nolint:errcheck
 
 	mux := http.DefaultServeMux
-	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
+	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler(uiserver.AssetFS())))
 	mux.Handle("/dashboard/api/", apiserver.Handler(s))
 	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 

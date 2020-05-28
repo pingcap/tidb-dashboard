@@ -7,10 +7,8 @@ require (
 	github.com/appleboy/gin-jwt/v2 v2.6.3
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/elazarl/go-bindata-assetfs v1.0.0
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/gin v1.5.0
-	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/goccy/go-graphviz v0.0.5
 	github.com/google/pprof v0.0.0-20200407044318-7d83b28da2e9
@@ -27,6 +25,9 @@ require (
 	github.com/pingcap/sysutil v0.0.0-20200206130906-2bfa6dc40bcd
 	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.7.0
+	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
+	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
+	github.com/shurcooL/vfsgen v0.0.0-20181202132449-6a9ea43bcacd
 	github.com/spf13/pflag v1.0.1
 	github.com/stretchr/testify v1.4.0
 	github.com/swaggo/http-swagger v0.0.0-20200103000832-0e9263c4b516
@@ -35,6 +36,8 @@ require (
 	go.uber.org/atomic v1.5.0
 	go.uber.org/fx v1.10.0
 	go.uber.org/zap v1.13.0
+	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
+	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2 // indirect
 	google.golang.org/grpc v1.25.1
 )
 

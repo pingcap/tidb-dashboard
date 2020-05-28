@@ -127,12 +127,6 @@ func (s *Service) Start(ctx context.Context) error {
 		return nil
 	}
 
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-	}
-
 	s.ctx, s.cancel = context.WithCancel(ctx)
 
 	s.app = fx.New(
@@ -152,14 +146,11 @@ func (s *Service) Start(ctx context.Context) error {
 		),
 	)
 
-	if err := s.app.Err(); err != nil {
-		s.cleanAfterError()
-		return err
-	}
 	if err := s.app.Start(s.ctx); err != nil {
 		s.cleanAfterError()
 		return err
 	}
+
 	return nil
 }
 

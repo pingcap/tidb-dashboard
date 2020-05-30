@@ -1,15 +1,17 @@
 const path = require('path')
 const fs = require('fs')
+const md5 = require('md5')
+const glob = require('glob')
 const {
   override,
   fixBabelImports,
-  addLessLoader,
   addWebpackPlugin,
   addDecoratorsLegacy,
   addBundleVisualizer,
   addBabelPlugin,
   getBabelLoader,
 } = require('customize-cra')
+const postcssNormalize = require('postcss-normalize')
 const addYaml = require('react-app-rewire-yaml')
 const { alias, configPaths } = require('react-app-rewire-alias')
 const webpack = require('webpack')
@@ -47,15 +49,155 @@ const enableEslintIgnore = () => (config) => {
 const disableMinimize = () => (config) => {
   config.optimization.minimize = false
   config.optimization.splitChunks = false
+  config.optimization.runtimeChunk = false
   config.devtool = false
   getBabelLoader(config).options.compact = false
   return config
 }
 
 const disableMinimizeByEnv = () => (config) => {
+  // config.optimization.runtimeChunk = false
+  // config.optimization.minimize = false
+  // config.optimization.splitChunks = false
   if (process.env.NO_MINIMIZE) {
     disableMinimize()(config)
   }
+  return config
+}
+
+const addCustomLessLoader = (loaderOptions = {}, darkThemeGlobalVars = {}) => (
+  config
+) => {
+  const cssLoaderOptions = loaderOptions.cssLoaderOptions || {}
+
+  const lessRegex = /\.less$/
+  const lessModuleRegex = /\.module\.less$/
+  const darkThemeRegex = /\.dark\.less$/
+
+  const webpackEnv = process.env.NODE_ENV
+  const isEnvDevelopment = webpackEnv === 'development'
+  const isEnvProduction = webpackEnv === 'production'
+  const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
+  const publicPath = config.output.publicPath
+  const shouldUseRelativeAssetPaths = publicPath === './'
+  const customeCssModules = {
+    modules: {
+      getLocalIdent(context, localIdentName, localName, options) {
+        const h = md5(path.dirname(context.resourcePath)).substr(0, 5)
+        return `${localName}--${h}`
+      },
+    },
+  }
+  // copy from react-scripts
+  // https://github.com/facebook/create-react-app/blob/master/packages/react-scripts/config/webpack.config.js#L93
+  const getStyleLoaders = (
+    cssOptions,
+    preProcessor,
+    preProcessorOptions = loaderOptions
+  ) => {
+    const loaders = [
+      isEnvDevelopment && require.resolve('style-loader'),
+      isEnvProduction && {
+        loader: MiniCssExtractPlugin.loader,
+        options: shouldUseRelativeAssetPaths ? { publicPath: '../../' } : {},
+      },
+      {
+        loader: require.resolve('css-loader'),
+        options: cssOptions,
+      },
+      {
+        loader: require.resolve('postcss-loader'),
+        options: {
+          ident: 'postcss',
+          plugins: () => [
+            require('postcss-flexbugs-fixes'),
+            require('postcss-preset-env')({
+              autoprefixer: {
+                flexbox: 'no-2009',
+              },
+              stage: 3,
+            }),
+            postcssNormalize(),
+          ],
+          sourceMap: isEnvProduction && shouldUseSourceMap,
+        },
+      },
+    ].filter(Boolean)
+    if (preProcessor) {
+      loaders.push(
+        {
+          loader: require.resolve('resolve-url-loader'),
+          options: {
+            sourceMap: isEnvProduction && shouldUseSourceMap,
+          },
+        },
+        {
+          loader: require.resolve(preProcessor),
+          // not the same as react-scripts
+          options: Object.assign(
+            {
+              sourceMap: true,
+            },
+            preProcessorOptions
+          ),
+        }
+      )
+    }
+    return loaders
+  }
+
+  const loaders = config.module.rules.find((rule) => Array.isArray(rule.oneOf))
+    .oneOf
+
+  // Insert less-loader as the penultimate item of loaders (before file-loader)
+  loaders.splice(
+    loaders.length - 1,
+    0,
+    {
+      test: lessRegex,
+      exclude: /\.(module|dark)\.less$/,
+      use: getStyleLoaders(
+        Object.assign({
+          importLoaders: 2,
+          sourceMap: isEnvProduction && shouldUseSourceMap,
+        }),
+        'less-loader'
+      ),
+    },
+    {
+      test: lessModuleRegex,
+      use: getStyleLoaders(
+        Object.assign(
+          {
+            importLoaders: 2,
+            sourceMap: isEnvProduction && shouldUseSourceMap,
+          },
+          cssLoaderOptions,
+          customeCssModules
+        ),
+        'less-loader'
+      ),
+    },
+    {
+      test: darkThemeRegex,
+      use: getStyleLoaders(
+        Object.assign(
+          {
+            importLoaders: 2,
+            sourceMap: isEnvProduction && shouldUseSourceMap,
+          },
+          cssLoaderOptions,
+          customeCssModules
+        ),
+        'less-loader',
+        {
+          javascriptEnabled: true,
+          ...customeCssModules,
+          globalVars: darkThemeGlobalVars,
+        }
+      ),
+    }
+  )
   return config
 }
 
@@ -157,8 +299,10 @@ const ignoreMiniCssExtractOrder = () => (config) => {
   for (let i = 0; i < config.plugins.length; i++) {
     const p = config.plugins[i]
     if (!!p.constructor && p.constructor.name === 'MiniCssExtractPlugin') {
-      const miniCssExtractOptions = { ...p.options, ignoreOrder: true }
-      config.plugins[i] = new MiniCssExtractPlugin(miniCssExtractOptions)
+      config.plugins[i] = new MiniCssExtractPlugin({
+        filename: 'static/css/[name].[contenthash:8].css',
+        ignoreOrder: true,
+      })
       break
     }
   }
@@ -173,6 +317,117 @@ const addWebpackBundleSize = () => (config) => {
     openAnalyzer: false,
   })(config)
   return config
+}
+
+const addExtraConfig = () => (config) => {
+  config.entry['antd-dark'] = [path.join(__dirname, 'lib/antd.dark.less')]
+  glob
+    .sync(path.join(__dirname, 'lib/apps/*'))
+    .concat([
+      path.join(__dirname, 'dashboardApp'),
+      path.join(__dirname, 'lib/components'),
+    ])
+    .map((p) => ({
+      name: path.basename(p) + '-dark',
+      path: p,
+    }))
+    .forEach((p) => {
+      const entries = glob.sync(path.join(p.path, '**/*.module.dark.less'))
+      console.log(p, entries)
+      if (entries.length > 0) {
+        config.entry[p.name] = entries
+      }
+    })
+  console.log(config.entry)
+
+  // return null
+  return config
+  // config.entry['apps'] = glob.sync(path.join(__dirname, 'lib/apps'))
+  // config.optimization.splitChunks.cacheGroups = {
+  //   darkMode: {
+  //     name(module, chunks, cacheGroupKey) {
+  //       const moduleFileName = module.identifier().split('/').reduceRight(item => item);
+  //       const allChunksNames = chunks.map((item) => item.name).join('~');
+  //       return `${cacheGroupKey}-${allChunksNames}-${moduleFileName}`;
+  //     },
+  //     test: /\.module\.dark\.less$/,
+  //     chunks: 'all',
+  //     enforce: true,
+  //   }
+  // }
+  // for (let i = 0; i < config.module.rules.length; i += 1) {
+  //   const rule = config.module.rules[i]
+  //   if (rule.oneOf) {
+  //     for (let j = 0; j < rule.oneOf.length; j += 1) {
+  //       const subRule = rule.oneOf[j]
+  //       if (subRule.test && subRule.test.toString() == /\.less$/.toString()) {
+  //         subRule.exclude = /\.(module|dark)\.less$/
+  //       }
+  //       if (subRule.loader && subRule.loader.indexOf('file-loader') > 0) {
+  //         subRule.exclude.push(/\.less$/)
+  //       }
+  //       rule.oneOf[j] = subRule
+  //     }
+  //     rule.oneOf.push({
+  //       test: /\.dark\.less$/,
+  //       sideEffects: true,
+  //       use: [
+  //         {
+  //           loader: MiniCssExtractPlugin.loader,
+  //           options: { publicPath: '../../' },
+  //         },
+  //         {
+  //           loader: 'css-loader',
+  //           options: {
+  //             importLoaders: 2,
+  //             sourceMap: true,
+  //             modules: {
+  //               getLocalIdent(context, localIdentName, localName, options) {
+  //                 const h = md5(path.dirname(context.resourcePath)).substr(0, 5)
+  //                 return `${localName}--${h}`
+  //               },
+  //             },
+  //           },
+  //         },
+  //         {
+  //           loader: 'postcss-loader',
+  //           options: {
+  //             ident: 'postcss',
+  //             plugins: () => [
+  //               require('postcss-flexbugs-fixes'),
+  //               require('postcss-preset-env')({
+  //                 autoprefixer: {
+  //                   flexbox: 'no-2009',
+  //                 },
+  //                 stage: 3,
+  //               }),
+  //               postcssNormalize(),
+  //             ],
+  //             sourceMap: process.env.NODE_ENV !== 'development',
+  //           },
+  //         },
+  //         {
+  //           loader: 'resolve-url-loader',
+  //           options: { sourceMap: true },
+  //         },
+  //         {
+  //           loader: 'less-loader',
+  //           options: {
+  //             sourceMap: true,
+  //             javascriptEnabled: true,
+  //             modules: {
+  //               getLocalIdent(context, localIdentName, localName, options) {
+  //                 const h = md5(path.dirname(context.resourcePath)).substr(0, 5)
+  //                 return `${localName}--${h}`
+  //               },
+  //             },
+  //           },
+  //         },
+  //       ],
+  //     })
+  //   }
+  //   config.module.rules[i] = rule
+  // }
 }
 
 const supportDynamicPublicPathPrefix = () => (config) => {
@@ -198,15 +453,30 @@ module.exports = override(
     style: true,
   }),
   ignoreMiniCssExtractOrder(),
-  addLessLoader({
-    javascriptEnabled: true,
-    modifyVars: {
-      '@primary-color': '#3351ff',
-      '@body-background': '#f0f2f5',
-      '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
-      '@tooltip-max-width': '500px',
+  addCustomLessLoader(
+    {
+      javascriptEnabled: true,
+      modifyVars: {
+        '@primary-color': '#3351ff',
+        '@body-background': '#f0f2f5',
+        '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
+        '@tooltip-max-width': '500px',
+      },
+      globalVars: {
+        '@padding-page': '48px',
+        '@gray-1': '#fff',
+        '@gray-2': '#fafafa',
+        '@gray-3': '#f5f5f5',
+        '@gray-4': '#f0f0f0',
+        '@gray-5': '#d9d9d9',
+        '@gray-6': '#bfbfbf',
+        '@gray-7': '#8c8c8c',
+        '@gray-8': '#595959',
+        '@gray-9': '#262626',
+        '@gray-10': '#000',
+      },
     },
-    globalVars: {
+    {
       '@padding-page': '48px',
       '@gray-1': '#fff',
       '@gray-2': '#fafafa',
@@ -218,11 +488,8 @@ module.exports = override(
       '@gray-8': '#595959',
       '@gray-9': '#262626',
       '@gray-10': '#000',
-    },
-    modules: {
-      localIdentName: '[local]--[hash:base64:5]',
-    },
-  }),
+    }
+  ),
   addAlias(),
   addDecoratorsLegacy(),
   enableEslintIgnore(),
@@ -238,5 +505,6 @@ module.exports = override(
   disableMinimizeByEnv(),
   addDiagnoseReportEntry(),
   buildAsLibrary(),
-  supportDynamicPublicPathPrefix()
+  supportDynamicPublicPathPrefix(),
+  addExtraConfig()
 )

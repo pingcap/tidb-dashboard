@@ -22,6 +22,8 @@ import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 
+import { darkmodeEnabled, switchDarkMode } from '@lib/utils/themeSwitch'
+
 async function main() {
   client.init()
 
@@ -77,6 +79,11 @@ async function main() {
       }
     }
   })
+
+  if (darkmodeEnabled()) {
+    window.darkmode = true
+    switchDarkMode(true, true)
+  }
 
   singleSpa.start()
 }

@@ -3,3 +3,4 @@ dashboard_settings:
   i18n:
     title: Language & Localization
     language: Language
+  theme_switcher: Dark Mode

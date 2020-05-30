@@ -2,8 +2,10 @@ const path = require('path')
 const fs = require('fs')
 const md5 = require('md5')
 const glob = require('glob')
+const _ = require('lodash')
 const {
   override,
+  overrideDevServer,
   fixBabelImports,
   addWebpackPlugin,
   addDecoratorsLegacy,
@@ -18,6 +20,7 @@ const webpack = require('webpack')
 const WebpackBar = require('webpackbar')
 const nodeExternals = require('webpack-node-externals')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const ManifestPlugin = require('webpack-manifest-plugin')
 const GeneratePackageJsonPlugin = require('generate-package-json-webpack-plugin')
 
 function isBuildAsLibrary() {
@@ -56,11 +59,21 @@ const disableMinimize = () => (config) => {
 }
 
 const disableMinimizeByEnv = () => (config) => {
-  // config.optimization.runtimeChunk = false
-  // config.optimization.minimize = false
-  // config.optimization.splitChunks = false
   if (process.env.NO_MINIMIZE) {
     disableMinimize()(config)
+  }
+  return config
+}
+
+const addMiniCssExtractorPlugin = () => (config) => {
+  if (process.env.NODE_ENV === 'development') {
+    // Add CSS extract plugin for theme switching
+    addWebpackPlugin(
+      new MiniCssExtractPlugin({
+        filename: 'static/css/[name].[contenthash:8].css',
+        ignoreOrder: true,
+      })
+    )(config)
   }
   return config
 }
@@ -75,7 +88,7 @@ const addCustomLessLoader = (loaderOptions = {}, darkThemeGlobalVars = {}) => (
   const darkThemeRegex = /\.dark\.less$/
 
   const webpackEnv = process.env.NODE_ENV
-  const isEnvDevelopment = webpackEnv === 'development'
+  // const isEnvDevelopment = webpackEnv === 'development'
   const isEnvProduction = webpackEnv === 'production'
   const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
   const publicPath = config.output.publicPath
@@ -96,10 +109,17 @@ const addCustomLessLoader = (loaderOptions = {}, darkThemeGlobalVars = {}) => (
     preProcessorOptions = loaderOptions
   ) => {
     const loaders = [
-      isEnvDevelopment && require.resolve('style-loader'),
-      isEnvProduction && {
+      // isEnvDevelopment && require.resolve('style-loader'),
+      // isEnvProduction &&
+      {
         loader: MiniCssExtractPlugin.loader,
-        options: shouldUseRelativeAssetPaths ? { publicPath: '../../' } : {},
+        options: {
+          ...(shouldUseRelativeAssetPaths ? { publicPath: '../../' } : {}),
+          // only enable hot in development
+          hmr: process.env.NODE_ENV === 'development',
+          // if hmr does not work, this is a forceful method.
+          reloadAll: true,
+        },
       },
       {
         loader: require.resolve('css-loader'),
@@ -309,6 +329,63 @@ const ignoreMiniCssExtractOrder = () => (config) => {
   return config
 }
 
+const overrideManifestPlugin = () => (config) => {
+  const getPublicUrlOrPath = require('react-dev-utils/getPublicUrlOrPath')
+  // Make sure any symlinks in the project folder are resolved:
+  // https://github.com/facebook/create-react-app/issues/637
+  const appDirectory = fs.realpathSync(process.cwd())
+  const resolveApp = (relativePath) => path.resolve(appDirectory, relativePath)
+
+  // We use `PUBLIC_URL` environment variable or "homepage" field to infer
+  // "public path" at which the app is served.
+  // webpack needs to know it to put the right <script> hrefs into HTML even in
+  // single-page apps that may serve index.html for nested URLs like /todos/42.
+  // We can't use a relative path in HTML because we don't want to load something
+  // like /todos/42/static/js/bundle.7289d.js. We have to know the root.
+  const publicUrlOrPath = getPublicUrlOrPath(
+    process.env.NODE_ENV === 'development',
+    require(resolveApp('package.json')).homepage,
+    process.env.PUBLIC_URL
+  )
+  for (let i = 0; i < config.plugins.length; i++) {
+    const p = config.plugins[i]
+    if (!!p.constructor && p.constructor.name === 'ManifestPlugin') {
+      config.plugins[i] = new ManifestPlugin({
+        fileName: 'asset-manifest.json',
+        publicPath: publicUrlOrPath,
+        generate: (seed, files, entrypoints) => {
+          const manifestFiles = files.reduce((manifest, file) => {
+            manifest[file.name] = file.path
+            return manifest
+          }, seed)
+          const entrypointFiles = entrypoints.main.filter(
+            (fileName) => !fileName.endsWith('.map')
+          )
+          const darkstyles = Object.entries(manifestFiles).reduce(
+            (res, entry) => {
+              const r = /dark\.css$/
+              if (r.test(entry[0])) {
+                const key = _.snakeCase(entry[0].replace(/-dark\.css$/, ''))
+                res[key] = entry[1]
+              }
+              return res
+            },
+            {}
+          )
+
+          return {
+            files: manifestFiles,
+            entrypoints: entrypointFiles,
+            dark: darkstyles,
+          }
+        },
+      })
+      break
+    }
+  }
+  return config
+}
+
 const addWebpackBundleSize = () => (config) => {
   if (isBuildAsDevServer()) {
     return config
@@ -319,115 +396,24 @@ const addWebpackBundleSize = () => (config) => {
   return config
 }
 
-const addExtraConfig = () => (config) => {
+const addDarkmodeEntries = () => (config) => {
   config.entry['antd-dark'] = [path.join(__dirname, 'lib/antd.dark.less')]
+  config.entry['main-dark'] = ['dashboardApp', 'lib/components'].flatMap((p) =>
+    glob.sync(path.join(__dirname, p, '**/*.module.dark.less'))
+  )
   glob
     .sync(path.join(__dirname, 'lib/apps/*'))
-    .concat([
-      path.join(__dirname, 'dashboardApp'),
-      path.join(__dirname, 'lib/components'),
-    ])
     .map((p) => ({
       name: path.basename(p) + '-dark',
       path: p,
     }))
     .forEach((p) => {
       const entries = glob.sync(path.join(p.path, '**/*.module.dark.less'))
-      console.log(p, entries)
       if (entries.length > 0) {
         config.entry[p.name] = entries
       }
     })
-  console.log(config.entry)
-
-  // return null
   return config
-  // config.entry['apps'] = glob.sync(path.join(__dirname, 'lib/apps'))
-  // config.optimization.splitChunks.cacheGroups = {
-  //   darkMode: {
-  //     name(module, chunks, cacheGroupKey) {
-  //       const moduleFileName = module.identifier().split('/').reduceRight(item => item);
-  //       const allChunksNames = chunks.map((item) => item.name).join('~');
-  //       return `${cacheGroupKey}-${allChunksNames}-${moduleFileName}`;
-  //     },
-  //     test: /\.module\.dark\.less$/,
-  //     chunks: 'all',
-  //     enforce: true,
-  //   }
-  // }
-  // for (let i = 0; i < config.module.rules.length; i += 1) {
-  //   const rule = config.module.rules[i]
-  //   if (rule.oneOf) {
-  //     for (let j = 0; j < rule.oneOf.length; j += 1) {
-  //       const subRule = rule.oneOf[j]
-  //       if (subRule.test && subRule.test.toString() == /\.less$/.toString()) {
-  //         subRule.exclude = /\.(module|dark)\.less$/
-  //       }
-  //       if (subRule.loader && subRule.loader.indexOf('file-loader') > 0) {
-  //         subRule.exclude.push(/\.less$/)
-  //       }
-  //       rule.oneOf[j] = subRule
-  //     }
-  //     rule.oneOf.push({
-  //       test: /\.dark\.less$/,
-  //       sideEffects: true,
-  //       use: [
-  //         {
-  //           loader: MiniCssExtractPlugin.loader,
-  //           options: { publicPath: '../../' },
-  //         },
-  //         {
-  //           loader: 'css-loader',
-  //           options: {
-  //             importLoaders: 2,
-  //             sourceMap: true,
-  //             modules: {
-  //               getLocalIdent(context, localIdentName, localName, options) {
-  //                 const h = md5(path.dirname(context.resourcePath)).substr(0, 5)
-  //                 return `${localName}--${h}`
-  //               },
-  //             },
-  //           },
-  //         },
-  //         {
-  //           loader: 'postcss-loader',
-  //           options: {
-  //             ident: 'postcss',
-  //             plugins: () => [
-  //               require('postcss-flexbugs-fixes'),
-  //               require('postcss-preset-env')({
-  //                 autoprefixer: {
-  //                   flexbox: 'no-2009',
-  //                 },
-  //                 stage: 3,
-  //               }),
-  //               postcssNormalize(),
-  //             ],
-  //             sourceMap: process.env.NODE_ENV !== 'development',
-  //           },
-  //         },
-  //         {
-  //           loader: 'resolve-url-loader',
-  //           options: { sourceMap: true },
-  //         },
-  //         {
-  //           loader: 'less-loader',
-  //           options: {
-  //             sourceMap: true,
-  //             javascriptEnabled: true,
-  //             modules: {
-  //               getLocalIdent(context, localIdentName, localName, options) {
-  //                 const h = md5(path.dirname(context.resourcePath)).substr(0, 5)
-  //                 return `${localName}--${h}`
-  //               },
-  //             },
-  //           },
-  //         },
-  //       ],
-  //     })
-  //   }
-  //   config.module.rules[i] = rule
-  // }
 }
 
 const supportDynamicPublicPathPrefix = () => (config) => {
@@ -446,23 +432,42 @@ const supportDynamicPublicPathPrefix = () => (config) => {
   return config
 }
 
-module.exports = override(
-  fixBabelImports('import', {
-    libraryName: 'antd',
-    libraryDirectory: 'es',
-    style: true,
-  }),
-  ignoreMiniCssExtractOrder(),
-  addCustomLessLoader(
-    {
-      javascriptEnabled: true,
-      modifyVars: {
-        '@primary-color': '#3351ff',
-        '@body-background': '#f0f2f5',
-        '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
-        '@tooltip-max-width': '500px',
+const devServerOutput = () => (config) => {
+  return config
+}
+
+module.exports = {
+  webpack: override(
+    fixBabelImports('import', {
+      libraryName: 'antd',
+      libraryDirectory: 'es',
+      style: true,
+    }),
+    ignoreMiniCssExtractOrder(),
+    addCustomLessLoader(
+      {
+        javascriptEnabled: true,
+        modifyVars: {
+          '@primary-color': '#3351ff',
+          '@body-background': '#f0f2f5',
+          '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
+          '@tooltip-max-width': '500px',
+        },
+        globalVars: {
+          '@padding-page': '48px',
+          '@gray-1': '#fff',
+          '@gray-2': '#fafafa',
+          '@gray-3': '#f5f5f5',
+          '@gray-4': '#f0f0f0',
+          '@gray-5': '#d9d9d9',
+          '@gray-6': '#bfbfbf',
+          '@gray-7': '#8c8c8c',
+          '@gray-8': '#595959',
+          '@gray-9': '#262626',
+          '@gray-10': '#000',
+        },
       },
-      globalVars: {
+      {
         '@padding-page': '48px',
         '@gray-1': '#fff',
         '@gray-2': '#fafafa',
@@ -474,37 +479,27 @@ module.exports = override(
         '@gray-8': '#595959',
         '@gray-9': '#262626',
         '@gray-10': '#000',
-      },
-    },
-    {
-      '@padding-page': '48px',
-      '@gray-1': '#fff',
-      '@gray-2': '#fafafa',
-      '@gray-3': '#f5f5f5',
-      '@gray-4': '#f0f0f0',
-      '@gray-5': '#d9d9d9',
-      '@gray-6': '#bfbfbf',
-      '@gray-7': '#8c8c8c',
-      '@gray-8': '#595959',
-      '@gray-9': '#262626',
-      '@gray-10': '#000',
-    }
+      }
+    ),
+    addAlias(),
+    addDecoratorsLegacy(),
+    enableEslintIgnore(),
+    addYaml,
+    addWebpackBundleSize(),
+    addWebpackPlugin(new WebpackBar()),
+    addWebpackPlugin(
+      new webpack.NormalModuleReplacementPlugin(
+        /antd\/es\/style\/index\.less/,
+        path.resolve(__dirname, 'lib/antd.less')
+      )
+    ),
+    disableMinimizeByEnv(),
+    addDiagnoseReportEntry(),
+    buildAsLibrary(),
+    supportDynamicPublicPathPrefix(),
+    addDarkmodeEntries(),
+    addMiniCssExtractorPlugin(),
+    overrideManifestPlugin()
   ),
-  addAlias(),
-  addDecoratorsLegacy(),
-  enableEslintIgnore(),
-  addYaml,
-  addWebpackBundleSize(),
-  addWebpackPlugin(new WebpackBar()),
-  addWebpackPlugin(
-    new webpack.NormalModuleReplacementPlugin(
-      /antd\/es\/style\/index\.less/,
-      path.resolve(__dirname, 'lib/antd.less')
-    )
-  ),
-  disableMinimizeByEnv(),
-  addDiagnoseReportEntry(),
-  buildAsLibrary(),
-  supportDynamicPublicPathPrefix(),
-  addExtraConfig()
-)
+  devServer: overrideDevServer(devServerOutput()),
+}

@@ -27,7 +27,6 @@ var (
 	ErrUnauthorized          = ErrNS.NewType("unauthorized")
 	ErrInsufficientPrivilege = ErrNS.NewType("insufficient_privilege")
 	ErrInvalidRequest        = ErrNS.NewType("invalid_request")
-	ErrNotTidbAuth           = ErrNS.NewType("not_tidb_auth")
 )
 
 type APIError struct {

@@ -58,7 +58,7 @@ type TokenResponse struct {
 
 func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder, etcdClient *clientv3.Client) (*utils.SessionUser, error) {
 	if !*f.IsTiDBAuth {
-		err := kvauth.VerifyKvAuthKey(etcdClient, f.Username, f.Password)
+		err := kvauth.VerifyKvAuthAccount(etcdClient, f.Username, f.Password)
 		if err != nil {
 			return nil, ErrSignInOther.WrapWithNoMessage(err)
 		}

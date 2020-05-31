@@ -27,29 +27,22 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"net"
-	"net/http"
+	"strings"
+
 	_ "net/http/pprof" //nolint:gosec
 	"net/url"
 	"os"
 	"os/signal"
-	"strings"
-	"sync"
+
 	"syscall"
 
 	"github.com/pingcap/log"
 	"github.com/spf13/cobra"
-	"go.etcd.io/etcd/clientv3"
+
 	"go.etcd.io/etcd/pkg/transport"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	keyvisualinput "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
-	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
@@ -65,7 +58,8 @@ var rootCmd = &cobra.Command{
 	Long:  `CLI utility for TiDB Dashboard`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		run(cmd)
+		_ = cmd.Help()
+		os.Exit(0)
 	},
 }
 
@@ -114,74 +108,33 @@ func buildTLSConfig(caPath, keyPath, certPath *string) *tls.Config {
 	return tlsConfig
 }
 
-func run(runCmd *cobra.Command) {
-	// Flushing any buffered log entries
-	defer log.Sync() //nolint:errcheck
-
-	cliConfig := cfg
-	ctx := getContext()
-
-	if cliConfig.EnableDebugLog {
-		log.SetLevel(zapcore.DebugLevel)
-	}
-
-	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
-	listener, err := net.Listen("tcp", listenAddr)
+func setPDEndPoint(coreConfig *config.Config) {
+	pdEndPoint, err := url.Parse(coreConfig.PDEndPoint)
 	if err != nil {
-		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
+		log.Fatal("Invalid PD Endpoint", zap.Error(err))
 	}
-
-	uiserver.RewriteAssetsPublicPath(cliConfig.CoreConfig.PathPrefix)
-	s := apiserver.NewService(
-		cliConfig.CoreConfig,
-		apiserver.StoppedHandler,
-		uiserver.AssetFS(),
-		func(cfg *config.Config, httpClient *http.Client, etcdClient *clientv3.Client) *keyvisualregion.PDDataProvider {
-			return &keyvisualregion.PDDataProvider{
-				FileStartTime:  cliConfig.KVFileStartTime,
-				FileEndTime:    cliConfig.KVFileEndTime,
-				PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint, httpClient),
-				EtcdClient:     etcdClient,
-			}
-		},
-	)
-	if err := s.Start(ctx); err != nil {
-		log.Fatal("Can not start server", zap.Error(err))
+	pdEndPoint.Scheme = "http"
+	if coreConfig.ClusterTLSConfig != nil {
+		pdEndPoint.Scheme = "https"
 	}
-	defer s.Stop(context.Background()) //nolint:errcheck
+	coreConfig.PDEndPoint = pdEndPoint.String()
+}
 
-	mux := http.DefaultServeMux
-	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler(uiserver.AssetFS())))
-	mux.Handle("/dashboard/api/", apiserver.Handler(s))
-	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
+func setClusterTLS(rootCmd *cobra.Command, coreConfig *config.Config) {
+	clusterCaPath := rootCmd.PersistentFlags().String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
+	clusterCertPath := rootCmd.PersistentFlags().String("cluster-cert", "", "path of file that contains X509 certificate in PEM format.")
+	clusterKeyPath := rootCmd.PersistentFlags().String("cluster-key", "", "path of file that contains X509 key in PEM format.")
 
-	utils.LogInfo()
-	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
-	log.Info(fmt.Sprintf("UI:      http://127.0.0.1:%d/dashboard/", cliConfig.ListenPort))
-	log.Info(fmt.Sprintf("API:     http://127.0.0.1:%d/dashboard/api/", cliConfig.ListenPort))
-	log.Info(fmt.Sprintf("Swagger: http://127.0.0.1:%d/dashboard/api/swagger/", cliConfig.ListenPort))
-
-	srv := &http.Server{Handler: mux}
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		if err := srv.Serve(listener); err != http.ErrServerClosed {
-			log.Error("Server aborted with an error", zap.Error(err))
-		}
-		wg.Done()
-	}()
-
-	<-ctx.Done()
-	if err := srv.Shutdown(context.Background()); err != nil {
-		log.Error("Can not stop server", zap.Error(err))
+	// setup TLS config for TiDB components
+	if len(*clusterCaPath) != 0 && len(*clusterCertPath) != 0 && len(*clusterKeyPath) != 0 {
+		coreConfig.ClusterTLSConfig = buildTLSConfig(clusterCaPath, clusterKeyPath, clusterCertPath)
 	}
-	wg.Wait()
-	log.Info("Stop dashboard server")
 }
 
 func init() {
 	cfg.CoreConfig = &config.Config{}
 	rootCmd.Version = utils.ReleaseVersion
+
 	rootCmd.Flags().StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
 	rootCmd.Flags().IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
 	rootCmd.Flags().StringVar(&cfg.CoreConfig.PathPrefix, "path-prefix", "/dashboard", "Dashboard URL prefix")
@@ -238,4 +191,11 @@ func init() {
 			panic("keyviz-file-start must be smaller than keyviz-file-end, and none of them are 0")
 		}
 	}
+
+	rootCmd.AddCommand(runCmd)
+
+	rootCmd.AddCommand(kvAuthCmd)
+	kvAuthCmd.AddCommand(kvAuthResetCmd)
+	kvAuthCmd.AddCommand(kvAuthRevokeCmd)
+
 }

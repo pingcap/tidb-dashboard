@@ -37,16 +37,16 @@ type Auth struct {
 	Password string `json:"password"`
 }
 
-// RevokeKvAuthKey delete the etcd path of KV mode user account
-func RevokeKvAuthKey(etcdClient *clientv3.Client) error {
+// RevokeKvAuthAccount revokes the KV mode user account stored in etcd.
+func RevokeKvAuthAccount(etcdClient *clientv3.Client) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	_, err := etcdClient.Delete(ctx, etcdKvAuthKeyPath)
 	return err
 }
 
-// VerifyKvAuthKey get hashed pass from etcd and check
-func VerifyKvAuthKey(etcdClient *clientv3.Client, username string, password string) error {
+// VerifyKvAuthAccount verify the KV mode user account and  pass stored in etcd.
+func VerifyKvAuthAccount(etcdClient *clientv3.Client, username string, password string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -82,8 +82,8 @@ func VerifyKvAuthKey(etcdClient *clientv3.Client, username string, password stri
 	return nil
 }
 
-// ResetKvAuthKey set new auth key to etcd
-func ResetKvAuthKey(etcdClient *clientv3.Client, username string, password string) error {
+// ResetKvAuthAccount reset the KV mode user account stored in etcd.
+func ResetKvAuthAccount(etcdClient *clientv3.Client, username string, password string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 

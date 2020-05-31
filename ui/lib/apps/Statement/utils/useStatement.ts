@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
 import client, { StatementModel, StatementTimeRange } from '@lib/client'
+import getApiErrorsMsg from '@lib/utils/apiErrorsMsg'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 import {
@@ -74,29 +75,49 @@ export default function useStatement(
     }
   }
 
+  const [errors, setErrors] = useState<any[]>([])
+  const errorMsg = useMemo(() => getApiErrorsMsg(errors), [errors])
+
   function refresh() {
+    setErrors([])
     setRefreshTimes((prev) => prev + 1)
   }
 
   useEffect(() => {
     async function queryStatementStatus() {
-      const res = await client.getInstance().statementsConfigGet()
-      setEnable(res?.data.enable!)
+      try {
+        const res = await client.getInstance().statementsConfigGet()
+        setEnable(res?.data.enable!)
+      } catch (error) {
+        setErrors((prev) => [...prev, { ...error }])
+      }
     }
 
     async function querySchemas() {
-      const res = await client.getInstance().statementsSchemasGet()
-      setAllSchemas(res?.data || [])
+      try {
+        const res = await client.getInstance().statementsSchemasGet()
+        setAllSchemas(res?.data || [])
+      } catch (error) {
+        setErrors((prev) => [...prev, { ...error }])
+      }
     }
 
     async function queryTimeRanges() {
-      const res = await client.getInstance().statementsTimeRangesGet()
-      setAllTimeRanges(res?.data || [])
+      try {
+        const res = await client.getInstance().statementsTimeRangesGet()
+        setAllTimeRanges(res?.data || [])
+      } catch (error) {
+        setErrors((prev) => [...prev, { ...error }])
+      }
     }
 
     async function queryStmtTypes() {
-      const res = await client.getInstance().statementsStmtTypesGet()
-      setAllStmtTypes(res?.data || [])
+      try {
+        const res = await client.getInstance().statementsStmtTypesGet()
+        setAllStmtTypes(res?.data || [])
+      } catch (error) {
+        setErrors((prev) => [...prev, { ...error }])
+      }
     }
 
     queryStatementStatus()
@@ -109,19 +130,26 @@ export default function useStatement(
     async function queryStatementList() {
       if (allTimeRanges.length === 0) {
         setStatements([])
+        setLoadingStatements(false)
         return
       }
+
       setLoadingStatements(true)
-      const res = await client
-        .getInstance()
-        .statementsOverviewsGet(
-          validTimeRange.begin_time!,
-          validTimeRange.end_time!,
-          queryOptions.schemas,
-          queryOptions.stmtTypes
-        )
+      try {
+        const res = await client
+          .getInstance()
+          .statementsOverviewsGet(
+            validTimeRange.begin_time!,
+            validTimeRange.end_time!,
+            queryOptions.schemas,
+            queryOptions.stmtTypes
+          )
+        setStatements(res?.data || [])
+        setErrors([])
+      } catch (error) {
+        setErrors((prev) => [...prev, { ...error }])
+      }
       setLoadingStatements(false)
-      setStatements(res?.data || [])
     }
 
     queryStatementList()
@@ -141,5 +169,8 @@ export default function useStatement(
     validTimeRange,
     loadingStatements,
     statements,
+
+    errors,
+    errorMsg,
   }
 }

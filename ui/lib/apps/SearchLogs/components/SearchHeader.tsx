@@ -23,7 +23,7 @@ import {
   parseSearchingParams,
 } from '../utils'
 
-import styles from './Styles.module.css'
+import styles from './Styles.module.less'
 
 const { SHOW_CHILD } = TreeSelect
 const { Option } = Select

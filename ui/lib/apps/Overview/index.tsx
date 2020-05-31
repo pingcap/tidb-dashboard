@@ -27,6 +27,8 @@ export default function App() {
     validTimeRange,
     loadingStatements,
     statements,
+
+    errorMsg: stmtErrorMsg,
   } = useStatement(undefined, false)
   const {
     orderOptions,
@@ -35,6 +37,8 @@ export default function App() {
     loadingSlowQueries,
     slowQueries,
     queryTimeRange,
+
+    errorMsg,
   } = useSlowQuery({ ...DEF_SLOW_QUERY_OPTIONS, limit: 10 }, false)
 
   useEffect(() => {
@@ -97,6 +101,7 @@ export default function App() {
               }}
               visibleItemsCount={10}
               loading={loadingStatements}
+              errorMsg={stmtErrorMsg}
               statements={statements}
               timeRange={validTimeRange}
               orderBy={stmtOrderOptions.orderBy}
@@ -125,6 +130,7 @@ export default function App() {
               key={`slow_query_${slowQueries.length}`}
               visibleColumnKeys={defSlowQueryColumnKeys}
               loading={loadingSlowQueries}
+              errorMsg={errorMsg}
               slowQueries={slowQueries}
               orderBy={orderOptions.orderBy}
               desc={orderOptions.desc}

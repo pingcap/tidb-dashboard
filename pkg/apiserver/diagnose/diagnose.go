@@ -18,10 +18,11 @@ import (
 	"net/http"
 	"time"
 
-	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	apiutils "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -38,10 +39,10 @@ type Service struct {
 	config        *config.Config
 	db            *dbstore.DB
 	tidbForwarder *tidb.Forwarder
-	uiAssetFS     *assetfs.AssetFS
+	fileServer    http.Handler
 }
 
-func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, uiAssetFS *assetfs.AssetFS) *Service {
+func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, uiAssetFS http.FileSystem) *Service {
 	err := autoMigrate(db)
 	if err != nil {
 		log.Fatal("Failed to initialize database", zap.Error(err))
@@ -51,7 +52,7 @@ func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstor
 		config:        config,
 		db:            db,
 		tidbForwarder: tidbForwarder,
-		uiAssetFS:     uiAssetFS,
+		fileServer:    uiserver.Handler(uiAssetFS),
 	}
 }
 
@@ -175,19 +176,12 @@ func (s *Service) reportStatusHandler(c *gin.Context) {
 // @Success 200 {string} string
 // @Router /diagnose/reports/{id}/detail [get]
 func (s *Service) reportHTMLHandler(c *gin.Context) {
-	if s.uiAssetFS == nil {
-		c.Data(http.StatusNotFound, "text/plain", []byte("UI is not built"))
-		return
-	}
+	defer func(old string) {
+		c.Request.URL.Path = old
+	}(c.Request.URL.Path)
 
-	// Serve report html directly from assets
-	d, err := s.uiAssetFS.Asset("build/diagnoseReport.html")
-	if err != nil {
-		c.Status(http.StatusNotFound)
-		return
-	}
-
-	c.Data(http.StatusOK, "text/html; charset=utf-8", d)
+	c.Request.URL.Path = "diagnoseReport.html"
+	s.fileServer.ServeHTTP(c.Writer, c.Request)
 }
 
 // @Summary SQL diagnosis report data

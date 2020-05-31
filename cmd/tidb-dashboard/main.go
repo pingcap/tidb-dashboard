@@ -131,6 +131,7 @@ func run(runCmd *cobra.Command) {
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
+	uiserver.RewriteAssetsPublicPath(cliConfig.CoreConfig.PathPrefix)
 	s := apiserver.NewService(
 		cliConfig.CoreConfig,
 		apiserver.StoppedHandler,
@@ -150,7 +151,7 @@ func run(runCmd *cobra.Command) {
 	defer s.Stop(context.Background()) //nolint:errcheck
 
 	mux := http.DefaultServeMux
-	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler()))
+	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler(uiserver.AssetFS())))
 	mux.Handle("/dashboard/api/", apiserver.Handler(s))
 	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
 
@@ -183,6 +184,7 @@ func init() {
 	rootCmd.Version = utils.ReleaseVersion
 	rootCmd.Flags().StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
 	rootCmd.Flags().IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
+	rootCmd.Flags().StringVar(&cfg.CoreConfig.PathPrefix, "path-prefix", "/dashboard", "Dashboard URL prefix")
 	rootCmd.Flags().StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
 	rootCmd.PersistentFlags().StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
 	rootCmd.Flags().BoolVar(&cfg.EnableDebugLog, "debug", false, "Enable debug logs")
@@ -225,6 +227,7 @@ func init() {
 		pdEndPoint.Scheme = "https"
 	}
 	cfg.CoreConfig.PDEndPoint = pdEndPoint.String()
+	cfg.CoreConfig.PathPrefix = strings.TrimRight(cfg.CoreConfig.PathPrefix, "/")
 
 	// keyvisual
 	startTime := cfg.KVFileStartTime

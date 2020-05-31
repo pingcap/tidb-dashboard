@@ -9,7 +9,7 @@ statement:
         time_range: Selected Time Range
         plan_count: Execution Plans
         plans:
-          note: There are multiple execution plans for this kind of SQL. You can choose to view one or multiple of them.
+          note: There are multiple execution plans for this kind of SQL statement. You can choose to view one or multiple of them.
           title:
             one_for_all: Execution Detail
             all: Execution Detail of All Plans
@@ -23,9 +23,9 @@ statement:
     overview:
       toolbar:
         select_schemas: Select Database
-        select_stmt_types: Select SQL kind
+        select_stmt_types: Select Statement Kind
         select_columns:
-          show_full_sql: Show Full SQL
+          show_full_sql: Show Full Query Text
         refresh: Refresh
         time_range_selector:
           name: Select Time Range
@@ -52,51 +52,54 @@ statement:
   fields:
     table_names: Table Names
     related_schemas: Database
-    related_schemas_tooltip: Related databases of the SQL
+    related_schemas_tooltip: Related databases of the statement
     plan_digest: Plan ID
     plan_digest_tooltip: Different execution plans have different plan ID
-    digest_text: SQL Template
-    digest_text_tooltip: Similar SQL statements have same SQL template even for different query parameters
+    digest_text: Statement Template
+    digest_text_tooltip: Similar queries have same statement template even for different query parameters
     sum_latency: Total Latency
-    sum_latency_tooltip: Total execution time for this kind of SQL
+    sum_latency_tooltip: Total execution time for this kind of statement
     exec_count: Execution Count
-    exec_count_tooltip: Total execution count for this kind of SQL
+    exec_count_tooltip: Total execution count for this kind of statement
     avg_latency: Mean Latency
-    avg_latency_tooltip: Execution time of single SQL
+    avg_latency_tooltip: Execution time of single query
     avg_mem: Mean Memory
-    avg_mem_tooltip: Memory usage of single SQL
+    avg_mem_tooltip: Memory usage of single query
     max_mem: Max Memory
-    max_mem_tooltip: Maximum memory usage of single SQL
+    max_mem_tooltip: Maximum memory usage of single query
     index_names: Index Name
     index_names_tooltip: The name of the used index
     first_seen: First Seen
     last_seen: Last Seen
     sample_user: Execution User
-    sample_user_tooltip: The user that executes the SQL (sampled)
+    sample_user_tooltip: The user that executes the query (sampled)
     sum_errors: Total Errors
     sum_warnings: Total Warnings
     errors_warnings: Errors / Warnings
     errors_warnings_tooltip: Total Errors and Total Warnings
-    parse_latency: Parse
-    parse_latency_tooltip: Time consumed when parsing the SQL statement
+    parse_latency: Parse Time
+    parse_latency_tooltip: Time consumed when parsing the query
     compile_latency: Compile
-    compile_latency_tooltip: Time consumed when optimizing the SQL statement
-    wait_time: Coprocessor Wait
-    process_time: Coprocessor Execution
-    backoff_time: Backoff Retry
-    get_commit_ts_time: Get Commit Ts
-    local_latch_wait_time: Local Latch Wait
-    resolve_lock_time: Resolve Lock
-    prewrite_time: Prewrite
-    commit_time: Commit
-    commit_backoff_time: Commit Backoff Retry
+    compile_latency_tooltip: Time consumed when optimizing the query
+    wait_time: Coprocessor Wait Time
+    process_time: Coprocessor Execution Time
+    backoff_time: Backoff Retry Time
+    backoff_time_tooltip: The waiting time before retry when a query encounters errors that require a retry
+    get_commit_ts_time: Get Commit Ts Time
+    local_latch_wait_time: Local Latch Wait Time
+    resolve_lock_time: Resolve Lock Time
+    prewrite_time: Prewrite Time
+    commit_time: Commit Time
+    commit_backoff_time: Commit Backoff Retry Time
     latency: Query
+    query_time2: Query Time
+    query_time2_tooltip: The execution time of a query (due to the parallel execution, it may be significantly smaller than the above time)
     sum_cop_task_num: Total Coprocessor Tasks
-    avg_processed_keys: Mean Visible Versions per SQL
-    max_processed_keys: Max Visible Versions per SQL
-    avg_total_keys: Mean Meet Versions per SQL
+    avg_processed_keys: Mean Visible Versions per query
+    max_processed_keys: Max Visible Versions per query
+    avg_total_keys: Mean Meet Versions per query
     avg_total_keys_tooltip: Meet versions contains overwritten or deleted versions
-    max_total_keys: Max Meet Versions per SQL
+    max_total_keys: Max Meet Versions per query
     avg_affected_rows: Mean Affected Rows
     sum_backoff_times: Total Backoff Count
     avg_write_keys: Mean Written Keys
@@ -107,10 +110,10 @@ statement:
     max_prewrite_regions: Max Prewrite Regions
     avg_txn_retry: Mean Transaction Retries
     max_txn_retry: Max Transaction Retries
-    digest: SQL Template ID
-    digest_tooltip: a.k.a. SQL digest
+    digest: Query Template ID
+    digest_tooltip: a.k.a. Query digest
     schema_name: Execution Database
-    schema_name_tooltip: The database used to execute the SQL
-    query_sample_text: SQL Sample
-    prev_sample_text: Previous SQL Sample
+    schema_name_tooltip: The database used to execute the query
+    query_sample_text: Query Sample
+    prev_sample_text: Previous Query Sample
     plan: Execution Plan

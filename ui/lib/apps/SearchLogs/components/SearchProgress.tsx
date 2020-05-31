@@ -9,7 +9,7 @@ import { AnimatedSkeleton, Card } from '@lib/components'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
 import { namingMap, NodeKind, NodeKindList, TaskState } from '../utils'
 
-import styles from './Styles.module.css'
+import styles from './Styles.module.less'
 
 const { confirm } = Modal
 const { TreeNode } = Tree
@@ -222,7 +222,7 @@ export default function SearchProgress({
                 {t('search_logs.common.download_selected')}
               </Button>
               <Button
-                type="danger"
+                danger
                 onClick={handleCancel}
                 disabled={
                   !tasks.some((task) => task.state === TaskState.Running)

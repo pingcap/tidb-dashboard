@@ -31,6 +31,13 @@ export default function TabCopr({ data }: ITabTxnProps) {
       value: data.txn_retry,
     },
   ]
-  const columns = valueColumns('slow_query.common.columns.')
-  return <CardTableV2 cardNoMargin columns={columns} items={items} />
+  const columns = valueColumns('slow_query.fields.')
+  return (
+    <CardTableV2
+      cardNoMargin
+      columns={columns}
+      items={items}
+      extendLastColumn
+    />
+  )
 }

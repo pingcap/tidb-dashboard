@@ -3,13 +3,32 @@
 @sider-background: @menu-dark-bg;
 
 .sider {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  z-index: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  transition: none;
+  user-select: none;
   background: linear-gradient(@sider-background, @component-background);
   :global {
     .ant-menu-submenu-selected {
       color: #fff;
     }
+    .ant-layout-sider-children {
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 20px;
+    }
 
     .ant-menu-item {
+      &::after {
+        left: 0;
+        right: auto;
+        border-width: 5px;
+      }
       &:hover {
         background: rgba(darken(@sider-background, 30%), 0.15);
       }

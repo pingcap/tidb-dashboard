@@ -1,4 +1,5 @@
 import assetPrefix from '@dashboard/publicPathPrefix'
+import { fromEvent } from 'rxjs'
 
 const THEME_KEY = 'theme'
 const THEME_DARKMODE = 'dark'
@@ -17,25 +18,19 @@ declare global {
   }
 }
 
-export function switchDarkMode(
-  enableDark: boolean,
-  persist: boolean,
-  currentAppID?: string,
-  callback?: () => void
-): void {
-  if (persist) {
-    persistDarkmode(enableDark)
-  }
-  const head = document.getElementsByTagName('head')[0]
+const darkModeEventOb = fromEvent(window, 'enableDarkMode')
+
+export function subscribeToggleDarkMode(sub: (boolean) => void) {
+  return darkModeEventOb.subscribe((e: any) => sub(e.detail))
+}
+
+export function switchDarkMode(enableDark: boolean): void {
+  persistDarkmode(enableDark)
+  const head = document.head || document.getElementsByTagName('head')[0]
   const links = head.getElementsByTagName('link')
-  if (enableDark) {
+  if (darkmodeEnabled()) {
     // load global styles if necessary
     newGlobalDarkStyles(links).forEach((l) => head.appendChild(l))
-    if (currentAppID) {
-      const url = resolvePrefix(window.manifest.dark[currentAppID])
-      const link = newCSSLink(url)
-      head.appendChild(link)
-    }
   } else {
     const links = document.querySelectorAll(
       `link[${THEME_KEY}=${THEME_DARKMODE}]`
@@ -47,8 +42,14 @@ export function switchDarkMode(
       }
     }
   }
-  if (callback) {
-    callback()
+}
+
+export function loadAppDarkStyles(appID: string): void {
+  if (darkmodeEnabled() && window.manifest.dark[appID]) {
+    const head = document.head || document.getElementsByTagName('head')[0]
+    const url = resolvePrefix(window.manifest.dark[appID])
+    const link = newCSSLink(url)
+    head.appendChild(link)
   }
 }
 

@@ -99,26 +99,4 @@
   <div id="dashboard_page_spinner"></div>
   <div id="root"></div>
 </body>
-<script type="text/javascript">
-  function loadJSON(filelocation, callback) {
-    var xobj = new XMLHttpRequest();
-    xobj.overrideMimeType("application/json");
-    xobj.open('GET', filelocation, true);    xobj.onreadystatechange = function () {
-      if (xobj.readyState == 4 && xobj.status == "200") {
-        callback(xobj.responseText);
-      }
-    };
-    xobj.send(null);
-  }
-
-  function init() {
-    var location = "%PUBLIC_URL%/asset-manifest.json";
-    loadJSON(filelocation = location, function (response) {
-      window.manifest = JSON.parse(response)
-    });
-  }
-
-  init();
-</script>
-
 </html>

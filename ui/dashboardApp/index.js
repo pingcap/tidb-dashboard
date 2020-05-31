@@ -1,4 +1,4 @@
-import './wdyr'
+// import './wdyr'
 
 import * as singleSpa from 'single-spa'
 import AppRegistry from '@dashboard/registry'
@@ -23,8 +23,37 @@ import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 
 import { darkmodeEnabled, switchDarkMode } from '@lib/utils/themeSwitch'
+import publicPathPrefix from './publicPathPrefix'
+const path = require('path')
+
+function loadJSON(filelocation, callback) {
+  let xobj = new XMLHttpRequest()
+  xobj.overrideMimeType('application/json')
+  xobj.open('GET', filelocation, true)
+  const p = new Promise((resolve, reject) => {
+    xobj.onreadystatechange = function () {
+      if (xobj.readyState === 4 && xobj.status === 200) {
+        callback(xobj.responseText)
+        resolve()
+      }
+    }
+  })
+  xobj.send(null)
+  return p
+}
+
+async function initManifest() {
+  const location = path.join(publicPathPrefix, 'asset-manifest.json')
+  await loadJSON(location, (response) => {
+    window.manifest = JSON.parse(response)
+  })
+}
 
 async function main() {
+  await initManifest()
+  if (darkmodeEnabled()) {
+    switchDarkMode(true)
+  }
   client.init()
 
   i18n.addTranslations(
@@ -79,11 +108,6 @@ async function main() {
       }
     }
   })
-
-  if (darkmodeEnabled()) {
-    window.darkmode = true
-    switchDarkMode(true, true)
-  }
 
   singleSpa.start()
 }

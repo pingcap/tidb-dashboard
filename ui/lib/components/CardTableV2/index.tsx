@@ -16,6 +16,7 @@ import { usePersistFn } from '@umijs/hooks'
 import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
 import styles from './index.module.less'
+import Root from '../Root'
 
 DetailsList.whyDidYouRender = {
   customName: 'DetailsList',
@@ -190,39 +191,41 @@ function CardTableV2(props: ICardTableV2Props) {
   }, [])
 
   return (
-    <Card
-      title={title}
-      subTitle={subTitle}
-      style={style}
-      className={cx(styles.cardTable, className, {
-        [styles.contentExtended]: extendLastColumn,
-      })}
-      noMargin={cardNoMargin}
-      noMarginTop={cardNoMarginTop}
-      extra={cardExtra}
-    >
-      <AnimatedSkeleton
-        showSkeleton={items.length === 0 && loading && !errorMsg}
+    <Root>
+      <Card
+        title={title}
+        subTitle={subTitle}
+        style={style}
+        className={cx(styles.cardTable, className, {
+          [styles.contentExtended]: extendLastColumn,
+        })}
+        noMargin={cardNoMargin}
+        noMarginTop={cardNoMarginTop}
+        extra={cardExtra}
       >
-        {errorMsg ? (
-          <Alert message={errorMsg} type="error" showIcon />
-        ) : (
-          <div className={styles.cardTableContent}>
-            <MemoDetailsList
-              selectionMode={SelectionMode.none}
-              constrainMode={ConstrainMode.unconstrained}
-              layoutMode={DetailsListLayoutMode.justified}
-              onRenderDetailsHeader={renderStickyHeader}
-              onRenderRow={onRowClicked ? renderClickableRow : undefined}
-              onRenderCheckbox={onRenderCheckbox}
-              columns={finalColumns}
-              items={finalItems}
-              {...restProps}
-            />
-          </div>
-        )}
-      </AnimatedSkeleton>
-    </Card>
+        <AnimatedSkeleton
+          showSkeleton={items.length === 0 && loading && !errorMsg}
+        >
+          {errorMsg ? (
+            <Alert message={errorMsg} type="error" showIcon />
+          ) : (
+            <div className={styles.cardTableContent}>
+              <MemoDetailsList
+                selectionMode={SelectionMode.none}
+                constrainMode={ConstrainMode.unconstrained}
+                layoutMode={DetailsListLayoutMode.justified}
+                onRenderDetailsHeader={renderStickyHeader}
+                onRenderRow={onRowClicked ? renderClickableRow : undefined}
+                onRenderCheckbox={onRenderCheckbox}
+                columns={finalColumns}
+                items={finalItems}
+                {...restProps}
+              />
+            </div>
+          )}
+        </AnimatedSkeleton>
+      </Card>
+    </Root>
   )
 }
 

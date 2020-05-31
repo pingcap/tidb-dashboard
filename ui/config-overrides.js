@@ -5,7 +5,6 @@ const glob = require('glob')
 const _ = require('lodash')
 const {
   override,
-  overrideDevServer,
   fixBabelImports,
   addWebpackPlugin,
   addDecoratorsLegacy,
@@ -59,9 +58,9 @@ const disableMinimize = () => (config) => {
 }
 
 const disableMinimizeByEnv = () => (config) => {
-  if (process.env.NO_MINIMIZE) {
-    disableMinimize()(config)
-  }
+  // if (process.env.NO_MINIMIZE) {
+  disableMinimize()(config)
+  // }
   return config
 }
 
@@ -78,14 +77,15 @@ const addMiniCssExtractorPlugin = () => (config) => {
   return config
 }
 
-const addCustomLessLoader = (loaderOptions = {}, darkThemeGlobalVars = {}) => (
-  config
-) => {
+const addCustomLessLoader = (
+  loaderOptions = {},
+  darkThemeLoaderOptions = {}
+) => (config) => {
   const cssLoaderOptions = loaderOptions.cssLoaderOptions || {}
 
   const lessRegex = /\.less$/
   const lessModuleRegex = /\.module\.less$/
-  const darkThemeRegex = /\.dark\.less$/
+  const darkThemeRegex = /\.module\.dark\.less$/
 
   const webpackEnv = process.env.NODE_ENV
   // const isEnvDevelopment = webpackEnv === 'development'
@@ -175,7 +175,7 @@ const addCustomLessLoader = (loaderOptions = {}, darkThemeGlobalVars = {}) => (
     0,
     {
       test: lessRegex,
-      exclude: /\.(module|dark)\.less$/,
+      exclude: /\.(module|module\.dark)\.less$/,
       use: getStyleLoaders(
         Object.assign({
           importLoaders: 2,
@@ -211,9 +211,8 @@ const addCustomLessLoader = (loaderOptions = {}, darkThemeGlobalVars = {}) => (
         ),
         'less-loader',
         {
-          javascriptEnabled: true,
+          ...darkThemeLoaderOptions,
           ...customeCssModules,
-          globalVars: darkThemeGlobalVars,
         }
       ),
     }
@@ -432,10 +431,6 @@ const supportDynamicPublicPathPrefix = () => (config) => {
   return config
 }
 
-const devServerOutput = () => (config) => {
-  return config
-}
-
 module.exports = {
   webpack: override(
     fixBabelImports('import', {
@@ -468,17 +463,23 @@ module.exports = {
         },
       },
       {
-        '@padding-page': '48px',
-        '@gray-1': '#fff',
-        '@gray-2': '#fafafa',
-        '@gray-3': '#f5f5f5',
-        '@gray-4': '#f0f0f0',
-        '@gray-5': '#d9d9d9',
-        '@gray-6': '#bfbfbf',
-        '@gray-7': '#8c8c8c',
-        '@gray-8': '#595959',
-        '@gray-9': '#262626',
-        '@gray-10': '#000',
+        javascriptEnabled: true,
+        modifyVars: {
+          '@primary-color': '#3351ff',
+        },
+        globalVars: {
+          '@padding-page': '48px',
+          '@gray-10': '#fff',
+          '@gray-9': '#fafafa',
+          '@gray-8': '#f5f5f5',
+          '@gray-7': '#f0f0f0',
+          '@gray-6': '#d9d9d9',
+          '@gray-5': '#bfbfbf',
+          '@gray-4': '#8c8c8c',
+          '@gray-3': '#595959',
+          '@gray-2': '#262626',
+          '@gray-1': '#000',
+        },
       }
     ),
     addAlias(),
@@ -501,5 +502,4 @@ module.exports = {
     addMiniCssExtractorPlugin(),
     overrideManifestPlugin()
   ),
-  devServer: overrideDevServer(devServerOutput()),
 }

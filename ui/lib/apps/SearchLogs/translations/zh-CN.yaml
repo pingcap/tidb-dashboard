@@ -44,3 +44,6 @@ search_logs:
     action: 操作
     detail: 查看详情
     delete: 删除
+    delete_confirm_title: 删除搜索历史
+    delete_selected_confirm_content: 确认要删除选中的搜索历史吗？
+    delete_all_confirm_content: 确认要删除所有的搜索历史吗？

@@ -5,7 +5,6 @@ const glob = require('glob')
 const _ = require('lodash')
 const {
   override,
-  fixBabelImports,
   addWebpackPlugin,
   addDecoratorsLegacy,
   addBundleVisualizer,
@@ -417,11 +416,6 @@ addDarkThemeSupport = (funcs) => (config) => {
 
 module.exports = {
   webpack: override(
-    fixBabelImports('import', {
-      libraryName: 'antd',
-      libraryDirectory: 'es',
-      style: true,
-    }),
     ignoreMiniCssExtractOrder(),
     addCustomLessLoader(
       {

@@ -25,6 +25,8 @@ import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 
 import { darkmodeEnabled, switchDarkMode } from '@lib/utils/themeSwitch'
 import publicPathPrefix from './publicPathPrefix'
+import './index.less'
+
 const path = require('path')
 
 async function loadJSON(filelocation) {

@@ -1,4 +1,4 @@
-import { Badge, Button } from 'antd'
+import { Badge, Button, Modal, Space } from 'antd'
 import moment, { Moment } from 'moment'
 import {
   Selection,
@@ -9,7 +9,7 @@ import { RangeValue } from 'rc-picker/lib/interface'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 
 import client, { LogsearchTaskGroupModel } from '@lib/client'
 import { CardTableV2, Head } from '@lib/components'
@@ -101,23 +101,43 @@ export default function LogSearchingHistory() {
   }
 
   async function handleDeleteSelected() {
-    for (const taskGroupID of selectedRowKeys) {
-      await client.getInstance().logsTaskgroupsIdDelete(taskGroupID)
-      const res = await client.getInstance().logsTaskgroupsGet()
-      setTaskGroups(res.data)
-    }
+    Modal.confirm({
+      title: t('search_logs.history.delete_confirm_title'),
+      icon: <ExclamationCircleOutlined />,
+      content: t('search_logs.history.delete_selected_confirm_content'),
+      okText: t('search_logs.history.delete'),
+      cancelText: t('search_logs.common.cancel'),
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        for (const taskGroupID of selectedRowKeys) {
+          await client.getInstance().logsTaskgroupsIdDelete(taskGroupID)
+          const res = await client.getInstance().logsTaskgroupsGet()
+          setTaskGroups(res.data)
+        }
+      },
+    })
   }
 
   async function handleDeleteAll() {
-    const allKeys = taskGroups.map((taskGroup) => taskGroup.id)
-    for (const key of allKeys) {
-      if (key === undefined) {
-        continue
-      }
-      await client.getInstance().logsTaskgroupsIdDelete(key + '')
-    }
-    const res = await client.getInstance().logsTaskgroupsGet()
-    setTaskGroups(res.data)
+    Modal.confirm({
+      title: t('search_logs.history.delete_confirm_title'),
+      icon: <ExclamationCircleOutlined />,
+      content: t('search_logs.history.delete_all_confirm_content'),
+      okText: t('search_logs.history.delete'),
+      cancelText: t('search_logs.common.cancel'),
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        const allKeys = taskGroups.map((taskGroup) => taskGroup.id)
+        for (const key of allKeys) {
+          if (key === undefined) {
+            continue
+          }
+          await client.getInstance().logsTaskgroupsIdDelete(key + '')
+        }
+        const res = await client.getInstance().logsTaskgroupsGet()
+        setTaskGroups(res.data)
+      },
+    })
   }
 
   const rowSelection = new Selection({
@@ -182,19 +202,22 @@ export default function LogSearchingHistory() {
           </Link>
         }
         titleExtra={
-          <>
+          <Space>
             <Button
               danger
               onClick={handleDeleteSelected}
-              disabled={selectedRowKeys.length < 1}
-              style={{ marginRight: 16 }}
+              disabled={selectedRowKeys.length === 0}
             >
               {t('search_logs.history.delete_selected')}
             </Button>
-            <Button danger onClick={handleDeleteAll}>
+            <Button
+              danger
+              onClick={handleDeleteAll}
+              disabled={taskGroups?.length === 0}
+            >
               {t('search_logs.history.delete_all')}
             </Button>
-          </>
+          </Space>
         }
       />
       <div style={{ height: '100%', position: 'relative' }}>

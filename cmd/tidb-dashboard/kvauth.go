@@ -17,6 +17,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -71,6 +72,7 @@ var kvAuthResetCmd = &cobra.Command{
 			if err != nil {
 				panic(err)
 			}
+			kvAuthUsername = strings.TrimSuffix(kvAuthUsername, "\n")
 
 			fmt.Print("password: ")
 			rawPass, err = terminal.ReadPassword(syscall.Stdin)
@@ -107,4 +109,12 @@ var kvAuthRevokeCmd = &cobra.Command{
 			fmt.Println("revoke success")
 		})
 	},
+}
+
+func initKvAuthCmd(rootCmd *cobra.Command) {
+	kvAuthCmd.PersistentFlags().StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
+	processPdEndPoint(cfg)
+	rootCmd.AddCommand(kvAuthCmd)
+	kvAuthCmd.AddCommand(kvAuthResetCmd)
+	kvAuthCmd.AddCommand(kvAuthRevokeCmd)
 }

@@ -60,7 +60,10 @@ func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder, etcdClien
 	if !*f.IsTiDBAuth {
 		err := kvauth.VerifyKvAuthAccount(etcdClient, f.Username, f.Password)
 		if err != nil {
-			return nil, ErrSignInOther.WrapWithNoMessage(err)
+			// Possible errors could be:
+			// kvauth.ErrAccountNotFound
+			// kvauth.ErrPasswordNotMatch
+			return nil, err
 		}
 	} else {
 		db, err := tidbForwarder.OpenTiDB(f.Username, f.Password)

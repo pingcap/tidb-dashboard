@@ -32,7 +32,7 @@ var (
 	ErrPasswordNotMatch = ErrNS.NewType("password_not_match")
 )
 
-type Auth struct {
+type account struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
@@ -64,17 +64,17 @@ func VerifyKvAuthAccount(etcdClient *clientv3.Client, username string, password 
 		content = kv.Value
 	}
 
-	var auth Auth
-	err = json.Unmarshal(content, &auth)
+	var a account
+	err = json.Unmarshal(content, &a)
 	if err != nil {
 		return err
 	}
 
-	if auth.Username != username {
+	if a.Username != username {
 		return ErrAccountNotFound.NewWithNoMessage()
 	}
 
-	err = cryptopasta.CheckPasswordHash([]byte(auth.Password), []byte(password))
+	err = cryptopasta.CheckPasswordHash([]byte(a.Password), []byte(password))
 	if err != nil {
 		return ErrPasswordNotMatch.NewWithNoMessage()
 	}
@@ -92,7 +92,7 @@ func ResetKvAuthAccount(etcdClient *clientv3.Client, username string, password s
 		return err
 	}
 
-	auth := Auth{
+	auth := account{
 		Username: username,
 		Password: string(hashedPass),
 	}

@@ -25,15 +25,21 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
 	_ "net/http/pprof" //nolint:gosec
+	"os"
+	"os/signal"
+	"strings"
 	"sync"
+	"syscall"
 
 	"github.com/pingcap/log"
 	"github.com/spf13/cobra"
 	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/pkg/transport"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
@@ -54,6 +60,83 @@ var runCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		run(cmd)
 	},
+}
+
+func getContext() context.Context {
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		sc := make(chan os.Signal, 1)
+		signal.Notify(sc,
+			syscall.SIGHUP,
+			syscall.SIGINT,
+			syscall.SIGTERM,
+			syscall.SIGQUIT)
+		<-sc
+		cancel()
+	}()
+	return ctx
+}
+
+func buildTLSConfig(caPath, keyPath, certPath *string) *tls.Config {
+	tlsInfo := transport.TLSInfo{
+		TrustedCAFile: *caPath,
+		KeyFile:       *keyPath,
+		CertFile:      *certPath,
+	}
+	tlsConfig, err := tlsInfo.ClientConfig()
+	if err != nil {
+		log.Fatal("Failed to load certificates", zap.Error(err))
+	}
+	return tlsConfig
+}
+
+func initRunCmd(rootCmd *cobra.Command) {
+	runCmd.Flags().StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
+	runCmd.Flags().IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
+	runCmd.Flags().StringVar(&cfg.CoreConfig.PathPrefix, "path-prefix", "/dashboard", "Dashboard URL prefix")
+	runCmd.Flags().StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
+	runCmd.PersistentFlags().StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
+	runCmd.Flags().BoolVar(&cfg.EnableDebugLog, "debug", false, "Enable debug logs")
+	// debug for keyvisual，hide help information
+	runCmd.Flags().Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")
+	runCmd.Flags().Int64Var(&cfg.KVFileEndTime, "keyviz-file-end", 0, "(debug) end time for file range in file mode")
+
+	clusterCaPath := runCmd.PersistentFlags().String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
+	clusterCertPath := runCmd.PersistentFlags().String("cluster-cert", "", "path of file that contains X509 certificate in PEM format.")
+	clusterKeyPath := runCmd.PersistentFlags().String("cluster-key", "", "path of file that contains X509 key in PEM format.")
+
+	tidbCaPath := runCmd.Flags().String("tidb-ca", "", "path of file that contains list of trusted SSL CAs.")
+	tidbCertPath := runCmd.Flags().String("tidb-cert", "", "path of file that contains X509 certificate in PEM format.")
+	tidbKeyPath := runCmd.Flags().String("tidb-key", "", "path of file that contains X509 key in PEM format.")
+
+	_ = runCmd.Flags().MarkHidden("keyviz-file-start")
+	_ = runCmd.Flags().MarkHidden("keyviz-file-end")
+
+	// setup TLS config for TiDB components
+	if len(*clusterCaPath) != 0 && len(*clusterCertPath) != 0 && len(*clusterKeyPath) != 0 {
+		cfg.CoreConfig.ClusterTLSConfig = buildTLSConfig(clusterCaPath, clusterKeyPath, clusterCertPath)
+	}
+
+	// setup TLS config for MySQL client
+	// See https://github.com/pingcap/docs/blob/7a62321b3ce9318cbda8697503c920b2a01aeb3d/how-to/secure/enable-tls-clients.md#enable-authentication
+	if (len(*tidbCertPath) != 0 && len(*tidbKeyPath) != 0) || len(*tidbCaPath) != 0 {
+		cfg.CoreConfig.TiDBTLSConfig = buildTLSConfig(tidbCaPath, tidbKeyPath, tidbCertPath)
+	}
+
+	processPdEndPoint(cfg)
+	cfg.CoreConfig.PathPrefix = strings.TrimRight(cfg.CoreConfig.PathPrefix, "/")
+
+	// keyvisual
+	startTime := cfg.KVFileStartTime
+	endTime := cfg.KVFileEndTime
+	if startTime != 0 || endTime != 0 {
+		// file mode (debug)
+		if startTime == 0 || endTime == 0 || startTime >= endTime {
+			panic("keyviz-file-start must be smaller than keyviz-file-end, and none of them are 0")
+		}
+	}
+
+	rootCmd.AddCommand(runCmd)
 }
 
 func run(runCmd *cobra.Command) {

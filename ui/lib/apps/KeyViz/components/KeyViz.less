@@ -108,8 +108,12 @@
     .overviewLabel {
       margin: 20px 0;
       .subLabel {
-        display: block;
         padding: 1 3px;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 250px;
       }
     }
 

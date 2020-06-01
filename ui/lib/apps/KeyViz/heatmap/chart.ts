@@ -565,12 +565,6 @@ export async function heatmapChart(
     }
 
     function getTooltipOverviewLabel(keyIdx) {
-      function truncate(s) {
-        return _.truncate(s, {
-          length: 16,
-        })
-      }
-
       const startLabel = data.keyAxis[keyIdx]!.labels
       const endLabel = data.keyAxis[keyIdx - 1]!.labels
 
@@ -578,10 +572,10 @@ export async function heatmapChart(
         return []
       }
       if (!startLabel) {
-        return endLabel.map(truncate)
+        return endLabel
       }
       if (!endLabel || _.isEqual(startLabel, endLabel)) {
-        return startLabel.map(truncate)
+        return startLabel
       }
 
       const startLen = startLabel.length
@@ -593,7 +587,7 @@ export async function heatmapChart(
         startLen + 1 === endLen &&
         _.isEqual(startLabel, endLabel.slice(0, startLen))
       ) {
-        return endLabel.map(truncate)
+        return endLabel
       }
       // range
       if (
@@ -605,14 +599,12 @@ export async function heatmapChart(
         )
       ) {
         return [
-          ...startLabel.slice(0, startLen - 1).map(truncate),
-          `${truncate(startLabel[startLen - 1])} ~ ${truncate(
-            endLabel[startLen - 1]
-          )}`,
+          ...startLabel.slice(0, startLen - 1),
+          `${startLabel[startLen - 1]} ~ ${endLabel[startLen - 1]}`,
         ]
       }
       // Cross end boundary, only use start label
-      return startLabel.map(truncate)
+      return startLabel
     }
 
     function renderTooltip() {

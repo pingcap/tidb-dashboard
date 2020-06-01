@@ -38,6 +38,8 @@ export * from './TimeRangeSelector'
 export { default as TimeRangeSelector } from './TimeRangeSelector'
 export * from './AnimatedSkeleton'
 export { default as AnimatedSkeleton } from './AnimatedSkeleton'
+export * from './ShortValueWithTooltip'
+export { default as ShortValueWithTooltip } from './ShortValueWithTooltip'
 
 export { default as LanguageDropdown } from './LanguageDropdown'
 export { default as ParamsPageWrapper } from './ParamsPageWrapper'

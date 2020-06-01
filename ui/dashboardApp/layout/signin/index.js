@@ -175,7 +175,7 @@ function TiDBSignInForm({ registry }) {
         <AnimationItem>
           <div className={styles.extraLink}>
             <Dropdown overlay={menu}>
-              <a onClick={(e) => e.preventDefault()} >
+              <a onClick={(e) => e.preventDefault()}>
                 <UserSwitchOutlined /> {t('signin.form.auth.mode')}
                 <DownOutlined />
               </a>

@@ -73,7 +73,7 @@ var kvAuthResetCmd = &cobra.Command{
 			}
 
 			fmt.Print("password: ")
-			rawPass, err = terminal.ReadPassword(int(syscall.Stdin))
+			rawPass, err = terminal.ReadPassword(syscall.Stdin)
 			if err != nil {
 				panic(err)
 			}

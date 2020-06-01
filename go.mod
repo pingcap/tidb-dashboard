@@ -36,6 +36,7 @@ require (
 	go.uber.org/atomic v1.5.0
 	go.uber.org/fx v1.10.0
 	go.uber.org/zap v1.13.0
+	golang.org/x/crypto v0.0.0-20200204104054-c9f3fb736b72
 	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
 	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2 // indirect
 	google.golang.org/grpc v1.25.1

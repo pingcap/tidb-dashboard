@@ -108,29 +108,6 @@ func buildTLSConfig(caPath, keyPath, certPath *string) *tls.Config {
 	return tlsConfig
 }
 
-func setPDEndPoint(coreConfig *config.Config) {
-	pdEndPoint, err := url.Parse(coreConfig.PDEndPoint)
-	if err != nil {
-		log.Fatal("Invalid PD Endpoint", zap.Error(err))
-	}
-	pdEndPoint.Scheme = "http"
-	if coreConfig.ClusterTLSConfig != nil {
-		pdEndPoint.Scheme = "https"
-	}
-	coreConfig.PDEndPoint = pdEndPoint.String()
-}
-
-func setClusterTLS(rootCmd *cobra.Command, coreConfig *config.Config) {
-	clusterCaPath := rootCmd.PersistentFlags().String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
-	clusterCertPath := rootCmd.PersistentFlags().String("cluster-cert", "", "path of file that contains X509 certificate in PEM format.")
-	clusterKeyPath := rootCmd.PersistentFlags().String("cluster-key", "", "path of file that contains X509 key in PEM format.")
-
-	// setup TLS config for TiDB components
-	if len(*clusterCaPath) != 0 && len(*clusterCertPath) != 0 && len(*clusterKeyPath) != 0 {
-		coreConfig.ClusterTLSConfig = buildTLSConfig(clusterCaPath, clusterKeyPath, clusterCertPath)
-	}
-}
-
 func init() {
 	cfg.CoreConfig = &config.Config{}
 	rootCmd.Version = utils.ReleaseVersion
@@ -197,5 +174,4 @@ func init() {
 	rootCmd.AddCommand(kvAuthCmd)
 	kvAuthCmd.AddCommand(kvAuthResetCmd)
 	kvAuthCmd.AddCommand(kvAuthRevokeCmd)
-
 }

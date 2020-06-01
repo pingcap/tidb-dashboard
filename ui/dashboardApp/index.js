@@ -1,4 +1,4 @@
-// import './wdyr'
+import './wdyr'
 
 import axios from 'axios'
 import * as singleSpa from 'single-spa'

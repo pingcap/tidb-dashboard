@@ -19,7 +19,6 @@ const webpack = require('webpack')
 const WebpackBar = require('webpackbar')
 const nodeExternals = require('webpack-node-externals')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const ManifestPlugin = require('webpack-manifest-plugin')
 const GeneratePackageJsonPlugin = require('generate-package-json-webpack-plugin')
 
 function isBuildAsLibrary() {
@@ -58,17 +57,20 @@ const disableMinimize = () => (config) => {
 }
 
 const disableMinimizeByEnv = () => (config) => {
-  // if (process.env.NO_MINIMIZE) {
-  disableMinimize()(config)
-  // }
+  if (process.env.NO_MINIMIZE) {
+    disableMinimize()(config)
+  }
   return config
 }
 
-const addMiniCssExtractorPlugin = () => (config) => {
+// In dev mode, default create-react-app excludes the MiniCssExtractorPlugin.
+// This function is a tmp solution to add it back for developing dark theme
+const addMiniCssExtractorPluginInDev = () => (config) => {
   if (process.env.NODE_ENV === 'development') {
     // Add CSS extract plugin for theme switching
     addWebpackPlugin(
       new MiniCssExtractPlugin({
+        // This is the default naming rule in react-scripts
         filename: 'static/css/[name].[contenthash:8].css',
         ignoreOrder: true,
       })
@@ -77,30 +79,18 @@ const addMiniCssExtractorPlugin = () => (config) => {
   return config
 }
 
-const addCustomLessLoader = (
-  loaderOptions = {},
-  darkThemeLoaderOptions = {}
-) => (config) => {
-  const cssLoaderOptions = loaderOptions.cssLoaderOptions || {}
-
+const addCustomLessLoader = (loaderOptions = {}, darkThemeLoaderOptions) => (
+  config
+) => {
   const lessRegex = /\.less$/
-  const lessModuleRegex = /\.module\.less$/
-  const darkThemeRegex = /\.module\.dark\.less$/
+  const lightThemeModuleRegex = /\.module\.less$/
+  const darkThemeModuleRegex = /\.module\.dark\.less$/
 
   const webpackEnv = process.env.NODE_ENV
-  // const isEnvDevelopment = webpackEnv === 'development'
   const isEnvProduction = webpackEnv === 'production'
   const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
   const publicPath = config.output.publicPath
   const shouldUseRelativeAssetPaths = publicPath === './'
-  const customeCssModules = {
-    modules: {
-      getLocalIdent(context, localIdentName, localName, options) {
-        const h = md5(path.dirname(context.resourcePath)).substr(0, 5)
-        return `${localName}--${h}`
-      },
-    },
-  }
   // copy from react-scripts
   // https://github.com/facebook/create-react-app/blob/master/packages/react-scripts/config/webpack.config.js#L93
   const getStyleLoaders = (
@@ -109,8 +99,6 @@ const addCustomLessLoader = (
     preProcessorOptions = loaderOptions
   ) => {
     const loaders = [
-      // isEnvDevelopment && require.resolve('style-loader'),
-      // isEnvProduction &&
       {
         loader: MiniCssExtractPlugin.loader,
         options: {
@@ -169,54 +157,64 @@ const addCustomLessLoader = (
   const loaders = config.module.rules.find((rule) => Array.isArray(rule.oneOf))
     .oneOf
 
-  // Insert less-loader as the penultimate item of loaders (before file-loader)
-  loaders.splice(
-    loaders.length - 1,
-    0,
-    {
-      test: lessRegex,
-      exclude: /\.(module|module\.dark)\.less$/,
-      use: getStyleLoaders(
-        Object.assign({
-          importLoaders: 2,
-          sourceMap: isEnvProduction && shouldUseSourceMap,
-        }),
-        'less-loader'
-      ),
+  const baseCssLoaderOptions = {
+    importLoaders: 2,
+    sourceMap: isEnvProduction && shouldUseSourceMap,
+  }
+
+  const customCssModules = {
+    modules: {
+      // Use path as class ident to ensure both generated light and dark class names are same
+      getLocalIdent(context, localIdentName, localName) {
+        const h = md5(path.dirname(context.resourcePath)).substr(0, 5)
+        return `${localName}--${h}`
+      },
     },
-    {
-      test: lessModuleRegex,
-      use: getStyleLoaders(
-        Object.assign(
-          {
-            importLoaders: 2,
-            sourceMap: isEnvProduction && shouldUseSourceMap,
-          },
-          cssLoaderOptions,
-          customeCssModules
-        ),
-        'less-loader'
-      ),
-    },
-    {
-      test: darkThemeRegex,
-      use: getStyleLoaders(
-        Object.assign(
-          {
-            importLoaders: 2,
-            sourceMap: isEnvProduction && shouldUseSourceMap,
-          },
-          cssLoaderOptions,
-          customeCssModules
-        ),
-        'less-loader',
+  }
+  // loader for global styles .less
+  const normalLessLoader = {
+    test: lessRegex,
+    exclude: /\.(module|module\.dark)\.less$/,
+    use: getStyleLoaders(baseCssLoaderOptions, 'less-loader'),
+  }
+
+  // loader for light theme styles in apps and modules .module.less
+  const lightLessLoader = {
+    test: lightThemeModuleRegex,
+    use: getStyleLoaders(
+      {
+        ...baseCssLoaderOptions,
+        ...customCssModules,
+      },
+      'less-loader'
+    ),
+  }
+
+  const newLoaders = darkThemeLoaderOptions
+    ? [
+        normalLessLoader,
+        lightLessLoader,
+        // loader for dark theme styles in apps and modules .module.dark.less
         {
-          ...darkThemeLoaderOptions,
-          ...customeCssModules,
-        }
-      ),
-    }
-  )
+          ...lightLessLoader,
+          use: getStyleLoaders(
+            {
+              ...baseCssLoaderOptions,
+              ...customCssModules,
+            },
+            'less-loader',
+            {
+              ...darkThemeLoaderOptions,
+              ...customCssModules,
+            }
+          ),
+          test: darkThemeModuleRegex,
+        },
+      ]
+    : [normalLessLoader, lightLessLoader]
+
+  // Insert less-loader as the penultimate item of loaders (before file-loader)
+  loaders.splice(loaders.length - 1, 0, ...newLoaders)
   return config
 }
 
@@ -318,40 +316,21 @@ const ignoreMiniCssExtractOrder = () => (config) => {
   for (let i = 0; i < config.plugins.length; i++) {
     const p = config.plugins[i]
     if (!!p.constructor && p.constructor.name === 'MiniCssExtractPlugin') {
-      config.plugins[i] = new MiniCssExtractPlugin({
-        filename: 'static/css/[name].[contenthash:8].css',
-        ignoreOrder: true,
-      })
+      const miniCssExtractOptions = { ...p.options, ignoreOrder: true }
+      config.plugins[i] = new MiniCssExtractPlugin(miniCssExtractOptions)
       break
     }
   }
   return config
 }
 
-const overrideManifestPlugin = () => (config) => {
-  const getPublicUrlOrPath = require('react-dev-utils/getPublicUrlOrPath')
-  // Make sure any symlinks in the project folder are resolved:
-  // https://github.com/facebook/create-react-app/issues/637
-  const appDirectory = fs.realpathSync(process.cwd())
-  const resolveApp = (relativePath) => path.resolve(appDirectory, relativePath)
-
-  // We use `PUBLIC_URL` environment variable or "homepage" field to infer
-  // "public path" at which the app is served.
-  // webpack needs to know it to put the right <script> hrefs into HTML even in
-  // single-page apps that may serve index.html for nested URLs like /todos/42.
-  // We can't use a relative path in HTML because we don't want to load something
-  // like /todos/42/static/js/bundle.7289d.js. We have to know the root.
-  const publicUrlOrPath = getPublicUrlOrPath(
-    process.env.NODE_ENV === 'development',
-    require(resolveApp('package.json')).homepage,
-    process.env.PUBLIC_URL
-  )
+// Generate extra dark mode stylesheet info in asset-manifest.json
+const generateDarkModeManifest = () => (config) => {
   for (let i = 0; i < config.plugins.length; i++) {
     const p = config.plugins[i]
     if (!!p.constructor && p.constructor.name === 'ManifestPlugin') {
-      config.plugins[i] = new ManifestPlugin({
-        fileName: 'asset-manifest.json',
-        publicPath: publicUrlOrPath,
+      config.plugins[i].opts = {
+        ...p.opts,
         generate: (seed, files, entrypoints) => {
           const manifestFiles = files.reduce((manifest, file) => {
             manifest[file.name] = file.path
@@ -364,6 +343,7 @@ const overrideManifestPlugin = () => (config) => {
             (res, entry) => {
               const r = /dark\.css$/
               if (r.test(entry[0])) {
+                // Use app name as snake case to make this consistent with the app id
                 const key = _.snakeCase(entry[0].replace(/-dark\.css$/, ''))
                 res[key] = entry[1]
               }
@@ -378,7 +358,7 @@ const overrideManifestPlugin = () => (config) => {
             dark: darkstyles,
           }
         },
-      })
+      }
       break
     }
   }
@@ -395,7 +375,7 @@ const addWebpackBundleSize = () => (config) => {
   return config
 }
 
-const addDarkmodeEntries = () => (config) => {
+const addDarkModeEntries = () => (config) => {
   config.entry['antd-dark'] = [path.join(__dirname, 'lib/antd.dark.less')]
   config.entry['main-dark'] = ['dashboardApp', 'lib/components'].flatMap((p) =>
     glob.sync(path.join(__dirname, p, '**/*.module.dark.less'))
@@ -429,6 +409,10 @@ const supportDynamicPublicPathPrefix = () => (config) => {
     }
   }
   return config
+}
+
+addDarkThemeSupport = (funcs) => (config) => {
+  return funcs.reduce((c, f) => f(c), config)
 }
 
 module.exports = {
@@ -498,8 +482,11 @@ module.exports = {
     addDiagnoseReportEntry(),
     buildAsLibrary(),
     supportDynamicPublicPathPrefix(),
-    addDarkmodeEntries(),
-    addMiniCssExtractorPlugin(),
-    overrideManifestPlugin()
+    // Add all dark theme configs
+    addDarkThemeSupport([
+      addDarkModeEntries(),
+      addMiniCssExtractorPluginInDev(),
+      generateDarkModeManifest(),
+    ])
   ),
 }

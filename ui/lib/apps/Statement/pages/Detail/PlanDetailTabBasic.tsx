@@ -1,8 +1,15 @@
-import React from 'react'
-import { StatementModel } from '@lib/client'
-import { CardTableV2, DateTime, Pre, TextWrap } from '@lib/components'
-import { getValueFormat } from '@baurine/grafana-value-formats'
 import { Tooltip } from 'antd'
+import React from 'react'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+
+import { StatementModel } from '@lib/client'
+import {
+  CardTableV2,
+  DateTime,
+  Pre,
+  ShortValueWithTooltip,
+  TextWrap,
+} from '@lib/components'
 import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabBasicProps {
@@ -34,14 +41,23 @@ export default function TabBasic({ data }: ITabBasicProps) {
         <DateTime.Calendar unixTimestampMs={data.last_seen * 1000} />
       ),
     },
-    { key: 'exec_count', value: data.exec_count },
+    {
+      key: 'exec_count',
+      value: <ShortValueWithTooltip value={data.exec_count} />,
+    },
     {
       key: 'sum_latency',
       value: getValueFormat('ns')(data.sum_latency || 0, 1),
     },
     { key: 'sample_user', value: data.sample_user },
-    { key: 'sum_errors', value: data.sum_errors },
-    { key: 'sum_warnings', value: data.sum_warnings },
+    {
+      key: 'sum_errors',
+      value: <ShortValueWithTooltip value={data.sum_errors} />,
+    },
+    {
+      key: 'sum_warnings',
+      value: <ShortValueWithTooltip value={data.sum_warnings} />,
+    },
     {
       key: 'avg_mem',
       value: getValueFormat('bytes')(data.avg_mem || 0, 1),

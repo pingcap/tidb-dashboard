@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next'
 import { Card, Root } from '@lib/components'
 import { ALL_LANGUAGES } from '@lib/utils/i18n'
 import { darkmodeEnabled, switchDarkMode } from '@lib/utils/themeSwitch'
-// import { darkmodeEnabled } from '@lib/utils/themeSwitch'
 
 function LanguageForm() {
   const { t, i18n } = useTranslation()

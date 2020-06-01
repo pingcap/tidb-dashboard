@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import { useEventListener } from '@umijs/hooks'
 import {
   ArrowUpOutlined,
   ArrowDownOutlined,
@@ -15,10 +16,7 @@ import {
   Customizer,
   ICustomizations,
 } from 'office-ui-fabric-react/lib/Utilities'
-import {
-  darkmodeEnabled,
-  subscribeToggleDarkMode,
-} from '@lib/utils/themeSwitch'
+import { darkmodeEnabled } from '@lib/utils/themeSwitch'
 
 registerIcons({
   icons: {
@@ -118,11 +116,9 @@ const LightCustomizations: ICustomizations = {
 
 export default function Root({ children }) {
   const [darkMode, setDarkMode] = useState(darkmodeEnabled())
-  useEffect(() => {
-    setDarkMode(darkmodeEnabled())
-    const sub = subscribeToggleDarkMode(setDarkMode)
-    return () => sub.unsubscribe()
-  }, [])
+  useEventListener('enableDarkMode', (e) => {
+    setDarkMode(e.detail)
+  })
 
   if (darkMode) {
     return <Customizer {...DarkCustomizations}>{children}</Customizer>

@@ -1,5 +1,4 @@
 import assetPrefix from '@dashboard/publicPathPrefix'
-import { fromEvent } from 'rxjs'
 
 const THEME_KEY = 'theme'
 const THEME_DARKMODE = 'dark'
@@ -16,12 +15,6 @@ declare global {
     entrypoints: string[]
     dark: Object
   }
-}
-
-const darkModeEventOb = fromEvent(window, 'enableDarkMode')
-
-export function subscribeToggleDarkMode(sub: (boolean) => void) {
-  return darkModeEventOb.subscribe((e: any) => sub(e.detail))
 }
 
 export function switchDarkMode(enableDark: boolean): void {
@@ -62,7 +55,7 @@ function newCSSLink(href: string): HTMLLinkElement {
   return link
 }
 
-const persistDarkmodeKey = '@@tidb_dashboard_darkmode'
+const persistDarkmodeKey = 'darkmode'
 export function persistDarkmode(enabled: boolean): void {
   if (enabled) {
     localStorage.setItem(persistDarkmodeKey, '1')

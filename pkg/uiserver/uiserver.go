@@ -23,26 +23,13 @@ import (
 	"strings"
 
 	"github.com/shurcooL/httpgzip"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
-
-func AssetFS() http.FileSystem {
-	return assets
-}
-
-func Handler(root http.FileSystem) http.Handler {
-	if root != nil {
-		return httpgzip.FileServer(root, httpgzip.FileServerOptions{IndexHTML: true})
-	}
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _ = io.WriteString(w, "Dashboard UI is not built. Use `UI=1 make`.\n")
-	})
-}
-
 
 type UpdateContentFunc func(fs http.FileSystem, oldFile http.File, path, newContent string, zippedBytes []byte)
 
-func RewriteAssets(publicPath string, fs http.FileSystem, updater UpdateContentFunc) {
+func RewriteAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContentFunc) {
 	if fs == nil {
 		return
 	}
@@ -57,7 +44,7 @@ func RewriteAssets(publicPath string, fs http.FileSystem, updater UpdateContentF
 			panic("Read Asset " + assetPath + " fail.")
 		}
 		tmplText := string(bs)
-		updated := strings.ReplaceAll(tmplText, "__PUBLIC_PATH_PREFIX__", html.EscapeString(publicPath))
+		updated := strings.ReplaceAll(tmplText, "__PUBLIC_PATH_PREFIX__", html.EscapeString(cfg.PublicPathPrefix))
 
 		var b bytes.Buffer
 		w := gzip.NewWriter(&b)
@@ -68,4 +55,14 @@ func RewriteAssets(publicPath string, fs http.FileSystem, updater UpdateContentF
 	}
 	rewrite("/index.html")
 	rewrite("/diagnoseReport.html")
+}
+
+func Handler(root http.FileSystem) http.Handler {
+	if root != nil {
+		return httpgzip.FileServer(root, httpgzip.FileServerOptions{IndexHTML: true})
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.WriteString(w, "Dashboard UI is not built. Use `UI=1 make`.\n")
+	})
 }

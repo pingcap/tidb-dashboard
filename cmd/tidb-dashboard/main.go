@@ -171,11 +171,11 @@ func main() {
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
-	uiserver.RewriteAssetsPublicPath(cliConfig.CoreConfig.PublicPathPrefix)
+	assets := uiserver.Assets(cliConfig.CoreConfig)
 	s := apiserver.NewService(
 		cliConfig.CoreConfig,
 		apiserver.StoppedHandler,
-		uiserver.AssetFS(),
+		assets,
 		func(cfg *config.Config, httpClient *http.Client, etcdClient *clientv3.Client) *keyvisualregion.PDDataProvider {
 			return &keyvisualregion.PDDataProvider{
 				FileStartTime:  cliConfig.KVFileStartTime,
@@ -191,7 +191,7 @@ func main() {
 	defer s.Stop(context.Background()) //nolint:errcheck
 
 	mux := http.DefaultServeMux
-	uiHandler := http.StripPrefix(strings.TrimRight(config.UIPathPrefix, "/"), uiserver.Handler(uiserver.AssetFS()))
+	uiHandler := http.StripPrefix(strings.TrimRight(config.UIPathPrefix, "/"), uiserver.Handler(assets))
 	mux.Handle(config.UIPathPrefix, uiHandler)
 	mux.Handle(config.APIPathPrefix, apiserver.Handler(s))
 	mux.Handle(config.SwaggerPathPrefix, swaggerserver.Handler())

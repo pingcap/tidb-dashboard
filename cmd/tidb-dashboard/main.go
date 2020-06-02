@@ -67,14 +67,14 @@ func NewCLIConfig() *DashboardCLIConfig {
 	cfg := &DashboardCLIConfig{}
 	cfg.CoreConfig = &config.Config{}
 
-	flag.StringVarP(&cfg.ListenHost, "host", "H", "0.0.0.0", "The listen address of the Dashboard Server")
-	flag.IntVarP(&cfg.ListenPort, "port", "P", 12333, "The listen port of the Dashboard Server")
-	flag.BoolVarP(&cfg.EnableDebugLog, "debug", "D", false, "Enable debug logs")
+	flag.StringVarP(&cfg.ListenHost, "host", "h", "0.0.0.0", "The listen address of the Dashboard Server")
+	flag.IntVarP(&cfg.ListenPort, "port", "p", 12333, "The listen port of the Dashboard Server")
+	flag.BoolVarP(&cfg.EnableDebugLog, "debug", "d", false, "Enable debug logs")
 	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
 	flag.StringVar(&cfg.CoreConfig.PublicPathPrefix, "path-prefix", config.DefaultPublicPathPrefix, "Dashboard URL prefix")
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
 
-	showVersion := flag.BoolP("version", "V", false, "Print version information and exit")
+	showVersion := flag.BoolP("version", "v", false, "Print version information and exit")
 
 	clusterCaPath := flag.String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
 	clusterCertPath := flag.String("cluster-cert", "", "path of file that contains X509 certificate in PEM format.")

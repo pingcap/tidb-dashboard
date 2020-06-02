@@ -22,7 +22,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/pingcap/log"
 	"github.com/shurcooL/httpgzip"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
@@ -33,26 +35,33 @@ func RewriteAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContent
 	if fs == nil {
 		return
 	}
+
 	rewrite := func(assetPath string) {
 		f, err := fs.Open(assetPath)
 		if err != nil {
-			panic("Asset " + assetPath + " not found.")
+			log.Fatal("Asset not found", zap.String("path", assetPath), zap.Error(err))
 		}
 		defer f.Close()
+
 		bs, err := ioutil.ReadAll(f)
 		if err != nil {
-			panic("Read Asset " + assetPath + " fail.")
+			log.Fatal("Failed to read asset", zap.String("path", assetPath), zap.Error(err))
 		}
 		tmplText := string(bs)
 		updated := strings.ReplaceAll(tmplText, "__PUBLIC_PATH_PREFIX__", html.EscapeString(cfg.PublicPathPrefix))
 
 		var b bytes.Buffer
 		w := gzip.NewWriter(&b)
-		w.Write([]byte(updated))
-		w.Close()
+		if _, err := w.Write([]byte(updated)); err != nil {
+			log.Fatal("Failed to zip asset", zap.Error(err))
+		}
+		if err := w.Close(); err != nil {
+			log.Fatal("Failed to zip asset", zap.Error(err))
+		}
 
 		updater(fs, f, assetPath, updated, b.Bytes())
 	}
+
 	rewrite("/index.html")
 	rewrite("/diagnoseReport.html")
 }

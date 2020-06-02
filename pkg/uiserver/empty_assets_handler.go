@@ -16,9 +16,10 @@ package uiserver
 
 import (
 	"net/http"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
-var assets http.FileSystem
-
-func RewriteAssetsPublicPath(_ string) {}
-
+func Assets(*config.Config) http.FileSystem {
+	return nil
+}

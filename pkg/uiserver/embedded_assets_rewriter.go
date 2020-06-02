@@ -17,17 +17,25 @@ package uiserver
 import (
 	"net/http"
 	"os"
+	"sync"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
-func RewriteAssetsPublicPath(publicPath string) {
-	RewriteAssets(publicPath, AssetFS(), func(fs http.FileSystem, f http.File, path, newContent string, bs []byte) {
-		m := fs.(vfsgen۰FS)
-		fi := f.(os.FileInfo)
-		m[path] = &vfsgen۰CompressedFileInfo{
-			name:              fi.Name(),
-			modTime:           fi.ModTime(),
-			uncompressedSize:  int64(len(newContent)),
-			compressedContent: bs,
-		}
+var once sync.Once
+
+func Assets(cfg *config.Config) http.FileSystem {
+	once.Do(func() {
+		RewriteAssets(assets, cfg, func(fs http.FileSystem, f http.File, path, newContent string, bs []byte) {
+			m := fs.(vfsgen۰FS)
+			fi := f.(os.FileInfo)
+			m[path] = &vfsgen۰CompressedFileInfo{
+				name:              fi.Name(),
+				modTime:           fi.ModTime(),
+				uncompressedSize:  int64(len(newContent)),
+				compressedContent: bs,
+			}
+		})
 	})
+	return assets
 }

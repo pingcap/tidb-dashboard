@@ -30,8 +30,8 @@ require (
 	github.com/shurcooL/vfsgen v0.0.0-20181202132449-6a9ea43bcacd
 	github.com/spf13/pflag v1.0.1
 	github.com/stretchr/testify v1.4.0
-	github.com/swaggo/http-swagger v0.0.0-20200103000832-0e9263c4b516
-	github.com/swaggo/swag v1.6.5
+	github.com/swaggo/http-swagger v0.0.0-20200308142732-58ac5e232fba
+	github.com/swaggo/swag v1.6.6-0.20200529100950-7c765ddd0476
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	go.uber.org/atomic v1.5.0
 	go.uber.org/fx v1.10.0
@@ -40,5 +40,3 @@ require (
 	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2 // indirect
 	google.golang.org/grpc v1.25.1
 )
-
-replace github.com/swaggo/swag => github.com/breeswish/swag v1.6.6-0.20200420031958-719cfd8cfce1

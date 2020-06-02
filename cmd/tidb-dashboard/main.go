@@ -30,7 +30,6 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof" //nolint:gosec
-	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -68,31 +67,40 @@ func NewCLIConfig() *DashboardCLIConfig {
 	cfg := &DashboardCLIConfig{}
 	cfg.CoreConfig = &config.Config{}
 
-	var showVersion bool
-	flag.BoolVar(&showVersion, "v", false, "Print version information and exit")
-	flag.BoolVar(&showVersion, "version", false, "Print version information and exit")
-	flag.StringVar(&cfg.ListenHost, "host", "0.0.0.0", "The listen address of the Dashboard Server")
-	flag.IntVar(&cfg.ListenPort, "port", 12333, "The listen port of the Dashboard Server")
-	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
-	flag.StringVar(&cfg.CoreConfig.PathPrefix, "path-prefix", "/dashboard", "Dashboard URL prefix")
-	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
-	flag.BoolVar(&cfg.EnableDebugLog, "debug", false, "Enable debug logs")
+	flag.StringVarP(&cfg.ListenHost, "host", "h", "0.0.0.0", "listen host of the Dashboard Server")
+	flag.IntVarP(&cfg.ListenPort, "port", "p", 12333, "listen port of the Dashboard Server")
+	flag.BoolVarP(&cfg.EnableDebugLog, "debug", "d", false, "enable debug logs")
+	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "path to the Dashboard Server data directory")
+	flag.StringVar(&cfg.CoreConfig.PublicPathPrefix, "path-prefix", config.DefaultPublicPathPrefix, "public URL path prefix for reverse proxies")
+	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "PD endpoint address that Dashboard Server connects to")
+
+	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
+
+	clusterCaPath := flag.String("cluster-ca", "", "path of file that contains list of trusted SSL CAs")
+	clusterCertPath := flag.String("cluster-cert", "", "path of file that contains X509 certificate in PEM format")
+	clusterKeyPath := flag.String("cluster-key", "", "path of file that contains X509 key in PEM format")
+
+	tidbCaPath := flag.String("tidb-ca", "", "path of file that contains list of trusted SSL CAs")
+	tidbCertPath := flag.String("tidb-cert", "", "path of file that contains X509 certificate in PEM format")
+	tidbKeyPath := flag.String("tidb-key", "", "path of file that contains X509 key in PEM format")
+
 	// debug for keyvisual，hide help information
 	flag.Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")
 	flag.Int64Var(&cfg.KVFileEndTime, "keyviz-file-end", 0, "(debug) end time for file range in file mode")
-
-	clusterCaPath := flag.String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
-	clusterCertPath := flag.String("cluster-cert", "", "path of file that contains X509 certificate in PEM format.")
-	clusterKeyPath := flag.String("cluster-key", "", "path of file that contains X509 key in PEM format.")
-
-	tidbCaPath := flag.String("tidb-ca", "", "path of file that contains list of trusted SSL CAs.")
-	tidbCertPath := flag.String("tidb-cert", "", "path of file that contains X509 certificate in PEM format.")
-	tidbKeyPath := flag.String("tidb-key", "", "path of file that contains X509 key in PEM format.")
-
 	_ = flag.CommandLine.MarkHidden("keyviz-file-start")
 	_ = flag.CommandLine.MarkHidden("keyviz-file-end")
 
 	flag.Parse()
+	if *showVersion {
+		utils.PrintInfo()
+		_ = log.Sync()
+		os.Exit(0)
+	}
+
+	cfg.CoreConfig.NormalizePublicPathPrefix()
+	if err := cfg.CoreConfig.NormalizePDEndPoint(); err != nil {
+		log.Fatal("Invalid PD Endpoint", zap.Error(err))
+	}
 
 	// setup TLS config for TiDB components
 	if len(*clusterCaPath) != 0 && len(*clusterCertPath) != 0 && len(*clusterKeyPath) != 0 {
@@ -105,34 +113,13 @@ func NewCLIConfig() *DashboardCLIConfig {
 		cfg.CoreConfig.TiDBTLSConfig = buildTLSConfig(tidbCaPath, tidbKeyPath, tidbCertPath)
 	}
 
-	// normalize PDEndPoint
-	if !strings.HasPrefix(cfg.CoreConfig.PDEndPoint, "http") {
-		cfg.CoreConfig.PDEndPoint = fmt.Sprintf("http://%s", cfg.CoreConfig.PDEndPoint)
-	}
-	pdEndPoint, err := url.Parse(cfg.CoreConfig.PDEndPoint)
-	if err != nil {
-		log.Fatal("Invalid PD Endpoint", zap.Error(err))
-	}
-	pdEndPoint.Scheme = "http"
-	if cfg.CoreConfig.ClusterTLSConfig != nil {
-		pdEndPoint.Scheme = "https"
-	}
-	cfg.CoreConfig.PDEndPoint = pdEndPoint.String()
-	cfg.CoreConfig.PathPrefix = strings.TrimRight(cfg.CoreConfig.PathPrefix, "/")
-
-	if showVersion {
-		utils.PrintInfo()
-		_ = log.Sync()
-		os.Exit(0)
-	}
-
-	// keyvisual
+	// keyvisual check
 	startTime := cfg.KVFileStartTime
 	endTime := cfg.KVFileEndTime
 	if startTime != 0 || endTime != 0 {
 		// file mode (debug)
 		if startTime == 0 || endTime == 0 || startTime >= endTime {
-			panic("keyviz-file-start must be smaller than keyviz-file-end, and none of them are 0")
+			log.Fatal("keyviz-file-start must be smaller than keyviz-file-end, and none of them are 0")
 		}
 	}
 
@@ -184,11 +171,11 @@ func main() {
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
-	uiserver.RewriteAssetsPublicPath(cliConfig.CoreConfig.PathPrefix)
+	assets := uiserver.Assets(cliConfig.CoreConfig)
 	s := apiserver.NewService(
 		cliConfig.CoreConfig,
 		apiserver.StoppedHandler,
-		uiserver.AssetFS(),
+		assets,
 		func(cfg *config.Config, httpClient *http.Client, etcdClient *clientv3.Client) *keyvisualregion.PDDataProvider {
 			return &keyvisualregion.PDDataProvider{
 				FileStartTime:  cliConfig.KVFileStartTime,
@@ -204,9 +191,10 @@ func main() {
 	defer s.Stop(context.Background()) //nolint:errcheck
 
 	mux := http.DefaultServeMux
-	mux.Handle("/dashboard/", http.StripPrefix("/dashboard", uiserver.Handler(uiserver.AssetFS())))
-	mux.Handle("/dashboard/api/", apiserver.Handler(s))
-	mux.Handle("/dashboard/api/swagger/", swaggerserver.Handler())
+	uiHandler := http.StripPrefix(strings.TrimRight(config.UIPathPrefix, "/"), uiserver.Handler(assets))
+	mux.Handle(config.UIPathPrefix, uiHandler)
+	mux.Handle(config.APIPathPrefix, apiserver.Handler(s))
+	mux.Handle(config.SwaggerPathPrefix, swaggerserver.Handler())
 
 	utils.LogInfo()
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))

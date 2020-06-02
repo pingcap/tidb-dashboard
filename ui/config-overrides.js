@@ -1,15 +1,17 @@
 const path = require('path')
 const fs = require('fs')
+const md5 = require('md5')
+const glob = require('glob')
+const _ = require('lodash')
 const {
   override,
-  fixBabelImports,
-  addLessLoader,
   addWebpackPlugin,
   addDecoratorsLegacy,
   addBundleVisualizer,
   addBabelPlugin,
   getBabelLoader,
 } = require('customize-cra')
+const postcssNormalize = require('postcss-normalize')
 const addYaml = require('react-app-rewire-yaml')
 const { alias, configPaths } = require('react-app-rewire-alias')
 const webpack = require('webpack')
@@ -47,6 +49,7 @@ const enableEslintIgnore = () => (config) => {
 const disableMinimize = () => (config) => {
   config.optimization.minimize = false
   config.optimization.splitChunks = false
+  config.optimization.runtimeChunk = false
   config.devtool = false
   getBabelLoader(config).options.compact = false
   return config
@@ -56,6 +59,161 @@ const disableMinimizeByEnv = () => (config) => {
   if (process.env.NO_MINIMIZE) {
     disableMinimize()(config)
   }
+  return config
+}
+
+// In dev mode, default create-react-app excludes the MiniCssExtractorPlugin.
+// This function is a tmp solution to add it back for developing dark theme
+const addMiniCssExtractorPluginInDev = () => (config) => {
+  if (process.env.NODE_ENV === 'development') {
+    // Add CSS extract plugin for theme switching
+    addWebpackPlugin(
+      new MiniCssExtractPlugin({
+        // This is the default naming rule in react-scripts
+        filename: 'static/css/[name].[contenthash:8].css',
+        ignoreOrder: true,
+      })
+    )(config)
+  }
+  return config
+}
+
+const addCustomLessLoader = (loaderOptions = {}, darkThemeLoaderOptions) => (
+  config
+) => {
+  const lessRegex = /\.less$/
+  const lightThemeModuleRegex = /\.module\.less$/
+  const darkThemeModuleRegex = /\.module\.dark\.less$/
+
+  const webpackEnv = process.env.NODE_ENV
+  const isEnvProduction = webpackEnv === 'production'
+  const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
+  const publicPath = config.output.publicPath
+  const shouldUseRelativeAssetPaths = publicPath === './'
+  // copy from react-scripts
+  // https://github.com/facebook/create-react-app/blob/master/packages/react-scripts/config/webpack.config.js#L93
+  const getStyleLoaders = (
+    cssOptions,
+    preProcessor,
+    preProcessorOptions = loaderOptions
+  ) => {
+    const loaders = [
+      {
+        loader: MiniCssExtractPlugin.loader,
+        options: {
+          ...(shouldUseRelativeAssetPaths ? { publicPath: '../../' } : {}),
+          // only enable hot in development
+          hmr: process.env.NODE_ENV === 'development',
+          // if hmr does not work, this is a forceful method.
+          reloadAll: true,
+        },
+      },
+      {
+        loader: require.resolve('css-loader'),
+        options: cssOptions,
+      },
+      {
+        loader: require.resolve('postcss-loader'),
+        options: {
+          ident: 'postcss',
+          plugins: () => [
+            require('postcss-flexbugs-fixes'),
+            require('postcss-preset-env')({
+              autoprefixer: {
+                flexbox: 'no-2009',
+              },
+              stage: 3,
+            }),
+            postcssNormalize(),
+          ],
+          sourceMap: isEnvProduction && shouldUseSourceMap,
+        },
+      },
+    ].filter(Boolean)
+    if (preProcessor) {
+      loaders.push(
+        {
+          loader: require.resolve('resolve-url-loader'),
+          options: {
+            sourceMap: isEnvProduction && shouldUseSourceMap,
+          },
+        },
+        {
+          loader: require.resolve(preProcessor),
+          // not the same as react-scripts
+          options: Object.assign(
+            {
+              sourceMap: true,
+            },
+            preProcessorOptions
+          ),
+        }
+      )
+    }
+    return loaders
+  }
+
+  const loaders = config.module.rules.find((rule) => Array.isArray(rule.oneOf))
+    .oneOf
+
+  const baseCssLoaderOptions = {
+    importLoaders: 2,
+    sourceMap: isEnvProduction && shouldUseSourceMap,
+  }
+
+  const customCssModules = {
+    modules: {
+      // Use path as class ident to ensure both generated light and dark class names are same
+      getLocalIdent(context, localIdentName, localName) {
+        const h = md5(path.dirname(context.resourcePath)).substr(0, 5)
+        return `${localName}--${h}`
+      },
+    },
+  }
+  // loader for global styles .less
+  const normalLessLoader = {
+    test: lessRegex,
+    exclude: /\.(module|module\.dark)\.less$/,
+    use: getStyleLoaders(baseCssLoaderOptions, 'less-loader'),
+  }
+
+  // loader for light theme styles in apps and modules .module.less
+  const lightLessLoader = {
+    test: lightThemeModuleRegex,
+    use: getStyleLoaders(
+      {
+        ...baseCssLoaderOptions,
+        ...customCssModules,
+      },
+      'less-loader'
+    ),
+  }
+
+  const newLoaders = darkThemeLoaderOptions
+    ? [
+        normalLessLoader,
+        lightLessLoader,
+        // loader for dark theme styles in apps and modules .module.dark.less
+        {
+          ...lightLessLoader,
+          use: getStyleLoaders(
+            {
+              ...baseCssLoaderOptions,
+              ...customCssModules,
+            },
+            'less-loader',
+            {
+              ...darkThemeLoaderOptions,
+              ...customCssModules,
+            }
+          ),
+          test: darkThemeModuleRegex,
+        },
+      ]
+    : [normalLessLoader, lightLessLoader]
+
+  // Insert less-loader as the penultimate item of loaders (before file-loader)
+  loaders.splice(loaders.length - 1, 0, ...newLoaders)
   return config
 }
 
@@ -165,6 +323,47 @@ const ignoreMiniCssExtractOrder = () => (config) => {
   return config
 }
 
+// Generate extra dark mode stylesheet info in asset-manifest.json
+const generateDarkModeManifest = () => (config) => {
+  for (let i = 0; i < config.plugins.length; i++) {
+    const p = config.plugins[i]
+    if (!!p.constructor && p.constructor.name === 'ManifestPlugin') {
+      config.plugins[i].opts = {
+        ...p.opts,
+        generate: (seed, files, entrypoints) => {
+          const manifestFiles = files.reduce((manifest, file) => {
+            manifest[file.name] = file.path
+            return manifest
+          }, seed)
+          const entrypointFiles = entrypoints.main.filter(
+            (fileName) => !fileName.endsWith('.map')
+          )
+          const darkstyles = Object.entries(manifestFiles).reduce(
+            (res, entry) => {
+              const r = /dark\.css$/
+              if (r.test(entry[0])) {
+                // Use app name as snake case to make this consistent with the app id
+                const key = _.snakeCase(entry[0].replace(/-dark\.css$/, ''))
+                res[key] = entry[1]
+              }
+              return res
+            },
+            {}
+          )
+
+          return {
+            files: manifestFiles,
+            entrypoints: entrypointFiles,
+            dark: darkstyles,
+          }
+        },
+      }
+      break
+    }
+  }
+  return config
+}
+
 const addWebpackBundleSize = () => (config) => {
   if (isBuildAsDevServer()) {
     return config
@@ -172,6 +371,26 @@ const addWebpackBundleSize = () => (config) => {
   addBundleVisualizer({
     openAnalyzer: false,
   })(config)
+  return config
+}
+
+const addDarkModeEntries = () => (config) => {
+  config.entry['antd-dark'] = [path.join(__dirname, 'lib/antd.dark.less')]
+  config.entry['main-dark'] = ['dashboardApp', 'lib/components'].flatMap((p) =>
+    glob.sync(path.join(__dirname, p, '**/*.module.dark.less'))
+  )
+  glob
+    .sync(path.join(__dirname, 'lib/apps/*'))
+    .map((p) => ({
+      name: path.basename(p) + '-dark',
+      path: p,
+    }))
+    .forEach((p) => {
+      const entries = glob.sync(path.join(p.path, '**/*.module.dark.less'))
+      if (entries.length > 0) {
+        config.entry[p.name] = entries
+      }
+    })
   return config
 }
 
@@ -191,52 +410,77 @@ const supportDynamicPublicPathPrefix = () => (config) => {
   return config
 }
 
-module.exports = override(
-  fixBabelImports('import', {
-    libraryName: 'antd',
-    libraryDirectory: 'es',
-    style: true,
-  }),
-  ignoreMiniCssExtractOrder(),
-  addLessLoader({
-    javascriptEnabled: true,
-    modifyVars: {
-      '@primary-color': '#3351ff',
-      '@body-background': '#f0f2f5',
-      '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
-      '@tooltip-max-width': '500px',
-    },
-    globalVars: {
-      '@padding-page': '48px',
-      '@gray-1': '#fff',
-      '@gray-2': '#fafafa',
-      '@gray-3': '#f5f5f5',
-      '@gray-4': '#f0f0f0',
-      '@gray-5': '#d9d9d9',
-      '@gray-6': '#bfbfbf',
-      '@gray-7': '#8c8c8c',
-      '@gray-8': '#595959',
-      '@gray-9': '#262626',
-      '@gray-10': '#000',
-    },
-    modules: {
-      localIdentName: '[local]--[hash:base64:5]',
-    },
-  }),
-  addAlias(),
-  addDecoratorsLegacy(),
-  enableEslintIgnore(),
-  addYaml,
-  addWebpackBundleSize(),
-  addWebpackPlugin(new WebpackBar()),
-  addWebpackPlugin(
-    new webpack.NormalModuleReplacementPlugin(
-      /antd\/es\/style\/index\.less/,
-      path.resolve(__dirname, 'lib/antd.less')
-    )
+addDarkThemeSupport = (funcs) => (config) => {
+  return funcs.reduce((c, f) => f(c), config)
+}
+
+module.exports = {
+  webpack: override(
+    ignoreMiniCssExtractOrder(),
+    addCustomLessLoader(
+      {
+        javascriptEnabled: true,
+        modifyVars: {
+          '@primary-color': '#3351ff',
+          '@body-background': '#f0f2f5',
+          '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
+          '@tooltip-max-width': '500px',
+        },
+        globalVars: {
+          '@padding-page': '48px',
+          '@gray-1': '#fff',
+          '@gray-2': '#fafafa',
+          '@gray-3': '#f5f5f5',
+          '@gray-4': '#f0f0f0',
+          '@gray-5': '#d9d9d9',
+          '@gray-6': '#bfbfbf',
+          '@gray-7': '#8c8c8c',
+          '@gray-8': '#595959',
+          '@gray-9': '#262626',
+          '@gray-10': '#000',
+        },
+      },
+      {
+        javascriptEnabled: true,
+        modifyVars: {
+          '@primary-color': '#3351ff',
+        },
+        globalVars: {
+          '@padding-page': '48px',
+          '@gray-10': '#fff',
+          '@gray-9': '#fafafa',
+          '@gray-8': '#f5f5f5',
+          '@gray-7': '#f0f0f0',
+          '@gray-6': '#d9d9d9',
+          '@gray-5': '#bfbfbf',
+          '@gray-4': '#8c8c8c',
+          '@gray-3': '#595959',
+          '@gray-2': '#262626',
+          '@gray-1': '#000',
+        },
+      }
+    ),
+    addAlias(),
+    addDecoratorsLegacy(),
+    enableEslintIgnore(),
+    addYaml,
+    addWebpackBundleSize(),
+    addWebpackPlugin(new WebpackBar()),
+    addWebpackPlugin(
+      new webpack.NormalModuleReplacementPlugin(
+        /antd\/es\/style\/index\.less/,
+        path.resolve(__dirname, 'lib/antd.less')
+      )
+    ),
+    disableMinimizeByEnv(),
+    addDiagnoseReportEntry(),
+    buildAsLibrary(),
+    supportDynamicPublicPathPrefix(),
+    // Add all dark theme configs
+    addDarkThemeSupport([
+      addDarkModeEntries(),
+      addMiniCssExtractorPluginInDev(),
+      generateDarkModeManifest(),
+    ])
   ),
-  disableMinimizeByEnv(),
-  addDiagnoseReportEntry(),
-  buildAsLibrary(),
-  supportDynamicPublicPathPrefix()
-)
+}

@@ -4,6 +4,7 @@ import { useLocalStorageState } from '@umijs/hooks'
 import { HashRouter as Router } from 'react-router-dom'
 import { useSpring, animated } from 'react-spring'
 
+import '../../index.less'
 import Sider from './Sider'
 import styles from './index.module.less'
 

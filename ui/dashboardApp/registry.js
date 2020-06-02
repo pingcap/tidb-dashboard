@@ -4,6 +4,7 @@ import singleSpaReact from 'single-spa-react'
 import * as singleSpa from 'single-spa'
 import * as i18n from '@lib/utils/i18n'
 import * as routing from '@dashboard/routing'
+import { loadAppDarkStyles } from '@lib/utils/themeSwitch'
 
 // TODO: This part might be better in TS.
 export default class AppRegistry {
@@ -27,7 +28,12 @@ export default class AppRegistry {
     })
     return {
       bootstrap: [reactLifecycles.bootstrap],
-      mount: [reactLifecycles.mount],
+      mount: [
+        async (props) => {
+          loadAppDarkStyles(props.app?.id)
+          return <div>{reactLifecycles.mount(props)}</div>
+        },
+      ],
       unmount: [reactLifecycles.unmount],
     }
   }

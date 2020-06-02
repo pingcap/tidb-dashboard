@@ -1,5 +1,6 @@
 import './wdyr'
 
+import axios from 'axios'
 import * as singleSpa from 'single-spa'
 import AppRegistry from '@dashboard/registry'
 import * as routing from '@dashboard/routing'
@@ -22,7 +23,30 @@ import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 
+import { darkmodeEnabled, switchDarkMode } from '@lib/utils/themeSwitch'
+import publicPathPrefix from './publicPathPrefix'
+import './index.less'
+
+const path = require('path')
+
+async function loadJSON(filelocation) {
+  const res = await axios.get(filelocation)
+  if (res.status === 200) {
+    return res.data
+  }
+  return null
+}
+
+async function initManifest() {
+  const location = path.join(publicPathPrefix, 'asset-manifest.json')
+  window.manifest = await loadJSON(location)
+}
+
 async function main() {
+  await initManifest()
+  if (darkmodeEnabled()) {
+    switchDarkMode(true)
+  }
   client.init()
 
   i18n.addTranslations(

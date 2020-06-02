@@ -3,3 +3,4 @@ dashboard_settings:
   i18n:
     title: 语言和本地化
     language: 语言
+  theme_switcher: 夜间模式

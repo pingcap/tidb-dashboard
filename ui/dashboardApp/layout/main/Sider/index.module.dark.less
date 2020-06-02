@@ -1,0 +1,34 @@
+@import '~antd/es/style/themes/dark.less';
+
+@sider-background: @menu-dark-bg;
+
+.sider {
+  // If removing this, the sider posistion on dark theme will not be desired
+  position: fixed;
+  background: linear-gradient(@sider-background, @component-background);
+  :global {
+    .ant-menu-submenu-selected {
+      color: #fff;
+    }
+
+    .ant-menu-item {
+      &:hover {
+        background: rgba(darken(@sider-background, 30%), 0.15);
+      }
+      > a {
+        color: #666;
+
+        &:hover {
+          color: @primary-color;
+        }
+      }
+
+      &.ant-menu-item-selected {
+        background: rgba(darken(@sider-background, 30%), 0.15);
+        > a {
+          color: #fff;
+        }
+      }
+    }
+  }
+}

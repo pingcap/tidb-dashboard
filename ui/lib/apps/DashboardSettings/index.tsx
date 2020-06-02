@@ -1,17 +1,18 @@
-import { Form, Select } from 'antd'
+import { Switch, Form, Select } from 'antd'
 import _ from 'lodash'
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Card, Root } from '@lib/components'
 import { ALL_LANGUAGES } from '@lib/utils/i18n'
+import { darkmodeEnabled, switchDarkMode } from '@lib/utils/themeSwitch'
 
 function LanguageForm() {
   const { t, i18n } = useTranslation()
-
   function handleLanguageChange(langKey) {
     i18n.changeLanguage(langKey)
   }
+  const [darkMode, setDarkMode] = useState(darkmodeEnabled())
 
   return (
     <Card title={t('dashboard_settings.i18n.title')}>
@@ -29,6 +30,19 @@ function LanguageForm() {
               )
             })}
           </Select>
+        </Form.Item>
+        <Form.Item name="theme" label={t('dashboard_settings.theme_switcher')}>
+          <Switch
+            checked={darkMode}
+            onChange={(v) => {
+              switchDarkMode(v)
+              setDarkMode(v)
+              window.dispatchEvent(
+                new CustomEvent('enableDarkMode', { detail: v })
+              )
+              console.log(`Dark Mode ${v ? 'on' : 'off'}!`)
+            }}
+          />
         </Form.Item>
       </Form>
     </Card>

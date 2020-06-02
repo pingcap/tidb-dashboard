@@ -6,9 +6,9 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
 import { Typography, Row, Col, Space } from 'antd'
 import {
-  STATUS_UP,
-  STATUS_TOMBSTONE,
   STATUS_OFFLINE,
+  STATUS_TOMBSTONE,
+  STATUS_UP,
 } from '@lib/apps/ClusterInfo/status/status'
 import { RightOutlined, WarningOutlined } from '@ant-design/icons'
 import { Stack } from 'office-ui-fabric-react/lib/Stack'
@@ -84,7 +84,7 @@ export default function Nodes() {
     <Card
       title={
         <Link to="/cluster_info">
-          {t('overview.status.title')}
+          {t('overview.instances.title')}
           <RightOutlined />
         </Link>
       }

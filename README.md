@@ -19,21 +19,12 @@ for a list, in which we have also marked the difficulty level. We have prepared 
 For a detailed step-by-step contributing guide, or want to build TiDB Dashboard from source,
 see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-### ⭐️ TiDB Usability Challenge (March 2 ~ May 30) ⭐️
-
-TiDB Dashboard is also a project of TiDB Usability Challenge (UCP), where you can win prizes by
-contributing code!
-
-- Learn more about TiDB Usability Challenge (UCP): [Chinese](https://pingcap.com/community-cn/tidb-usability-challenge/), [English](https://pingcap.com/community/tidb-usability-challenge/)
-- See [TiDB Dashboard UCP issues](https://github.com/pingcap-incubator/tidb-dashboard/projects/17) that you can work with.
-
 ### Ask for Help
 
 If you have any questions about development, feel free to join [TiDB Dashboard SIG]
 (Special Interest Group):
 
-- Slack (English): [#sig-dashboard](https://tidbcommunity.slack.com/messages/sig-dashboard)
-- Slack (Chinese): [#sig-dashboard-china](https://tidbcommunity.slack.com/messages/sig-dashboard-china)
+- Slack: [#sig-dashboard](https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard&ref=github_dashboard_repo)
 
 ## Architecture
 

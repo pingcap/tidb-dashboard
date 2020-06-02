@@ -63,7 +63,7 @@ func (s *Service) managerLoop(ctx context.Context) {
 }
 
 func (s *Service) resetKeyVisualConfig(ctx context.Context, cfg *config.DynamicConfig) {
-	if cfg.KeyVisual.AutoCollectionEnabled {
+	if !cfg.KeyVisual.AutoCollectionDisabled {
 		if s.keyVisualCfg != nil && s.keyVisualCfg.Policy != cfg.KeyVisual.Policy {
 			s.stopService()
 		}
@@ -103,8 +103,14 @@ func (s *Service) stopService() {
 // @Router /keyvisual/config [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
 func (s *Service) getDynamicConfig(c *gin.Context) {
-	c.JSON(http.StatusOK, s.cfgManager.Get().KeyVisual)
+	dc, err := s.cfgManager.Get()
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, dc.KeyVisual)
 }
 
 // @Summary Set Key Visual Dynamic Config
@@ -126,7 +132,7 @@ func (s *Service) setDynamicConfig(c *gin.Context) {
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {
 		dc.KeyVisual = req
 	}
-	if err := s.cfgManager.Set(opt); err != nil {
+	if err := s.cfgManager.Modify(opt); err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
 		return

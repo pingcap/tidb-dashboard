@@ -10,7 +10,7 @@ const translations = {
       up: 'Up',
       down: 'Down',
       tombstone: 'Tombstone',
-      offline: 'Offline',
+      offline: 'Leaving',
       unknown: 'Unknown',
       unreachable: 'Unreachable',
     },

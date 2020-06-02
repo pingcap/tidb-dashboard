@@ -13,9 +13,8 @@ instance_profiling:
       columns:
         targets: 实例
         start_at: 开始时间
-        duration: 时长 (秒)
+        duration: 时长（秒）
         status: 状态
-        action: 操作
       status:
         running: 分析中
         finished: 完成
@@ -30,7 +29,7 @@ instance_profiling:
     table:
       columns:
         instance: 实例
-        kind: 类型
+        kind: 组件
         status: 状态
       status:
         finished: 完成

@@ -1,9 +1,6 @@
 import { Tooltip } from 'antd'
 import { max } from 'lodash'
-import {
-  ColumnActionsMode,
-  IColumn,
-} from 'office-ui-fabric-react/lib/DetailsList'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -34,16 +31,22 @@ for (const key in translations) {
   })
 }
 
-function TransText({ transKey }: { transKey: string }) {
+function TransText({
+  transKey,
+  noFallback,
+}: {
+  transKey: string
+  noFallback?: boolean
+}) {
   const { t } = useTranslation()
-  return (
-    <span>
-      {t(transKey, {
-        defaultValue: '',
-        fallbackLng: '_',
-      })}
-    </span>
-  )
+  let opt
+  if (noFallback) {
+    opt = {
+      defaultValue: '',
+      fallbackLng: '_',
+    }
+  }
+  return <span>{t(transKey, opt)}</span>
 }
 
 function commonColumnName(fieldName: string): any {
@@ -52,25 +55,12 @@ function commonColumnName(fieldName: string): any {
   )
 }
 
-export function dummyColumn(): IColumn {
-  return {
-    name: '',
-    key: 'dummy',
-    minWidth: 28,
-    maxWidth: 28,
-    columnActionsMode: ColumnActionsMode.disabled,
-    onRender: (_rec) => null,
-  }
-}
-
 function fieldsKeyColumn(transKeyPrefix: string): IColumn {
   return {
     name: commonColumnName('name'),
     key: 'key',
     minWidth: 150,
     maxWidth: 250,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => {
       if (rec.keyDisplay) {
         return rec.keyDisplay
@@ -87,8 +77,6 @@ function fieldsValueColumn(): IColumn {
     fieldName: 'value',
     minWidth: 150,
     maxWidth: 250,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
   }
 }
 
@@ -103,8 +91,6 @@ function fieldsTimeValueColumn(
     key: 'time',
     minWidth: 150,
     maxWidth: 200,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => {
       const tooltipContent: string[] = []
       if (rec.avg) {
@@ -148,10 +134,13 @@ function fieldsDescriptionColumn(transKeyPrefix: string): IColumn {
     key: 'description',
     minWidth: 150,
     maxWidth: 300,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => {
-      return <TransText transKey={`${transKeyPrefix}${rec.key}_tooltip`} />
+      return (
+        <TransText
+          transKey={`${transKeyPrefix}${rec.key}_tooltip`}
+          noFallback
+        />
+      )
     },
   }
 }

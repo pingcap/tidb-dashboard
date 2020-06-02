@@ -10,7 +10,6 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementModel } from '@lib/client'
 import { Bar, HighlightSQL, Pre, TextWithInfo, TextWrap } from '@lib/components'
-import { dummyColumn } from '@lib/utils/tableColumns'
 
 function commonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`statement.fields.${fieldName}`} />
@@ -25,8 +24,6 @@ function planDigestColumn(
     fieldName: 'plan_digest',
     minWidth: 100,
     maxWidth: 300,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip title={rec.plan_digest}>
         <TextWrap>{rec.plan_digest || '(none)'}</TextWrap>
@@ -45,9 +42,7 @@ function digestColumn(
     fieldName: 'digest_text',
     minWidth: 100,
     maxWidth: 500,
-    isResizable: true,
     isMultiline: showFullSQL,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) =>
       showFullSQL ? (
         <TextWrap multiline>
@@ -75,7 +70,7 @@ function sumLatencyColumn(rows?: { sum_latency?: number }[]): IColumn {
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.sum_latency} capacity={capacity}>
         {getValueFormat('ns')(rec.sum_latency, 1)}
@@ -95,7 +90,7 @@ function avgMinMaxLatencyColumn(
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('ns')(rec.avg_latency, 1)}
@@ -127,7 +122,7 @@ function execCountColumn(rows?: { exec_count?: number }[]): IColumn {
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => (
       <Bar textWidth={70} value={rec.exec_count} capacity={capacity}>
         {getValueFormat('short')(rec.exec_count, 0, 1)}
@@ -147,7 +142,7 @@ function avgMaxMemColumn(
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('bytes')(rec.avg_mem, 1)}
@@ -181,11 +176,11 @@ function errorsWarningsColumn(
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
       const tooltipContent = `
-Errors:   ${getValueFormat('short')(rec.sum_errors, 0)}
-Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
+Errors:   ${getValueFormat('short')(rec.sum_errors, 0, 1)}
+Warnings: ${getValueFormat('short')(rec.sum_warnings, 0, 1)}`
       return (
         <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
           <Bar
@@ -194,9 +189,9 @@ Warnings: ${getValueFormat('short')(rec.sum_warnings, 0)}`
             colors={[red[4], orange[4]]}
             capacity={capacity}
           >
-            {getValueFormat('short')(rec.sum_errors, 0)}
+            {getValueFormat('short')(rec.sum_errors, 0, 1)}
             {' / '}
-            {getValueFormat('short')(rec.sum_warnings, 0)}
+            {getValueFormat('short')(rec.sum_warnings, 0, 1)}
           </Bar>
         </Tooltip>
       )
@@ -215,7 +210,7 @@ function avgParseLatencyColumn(
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('ns')(rec.avg_parse_latency, 1)}
@@ -247,7 +242,7 @@ function avgCompileLatencyColumn(
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('ns')(rec.avg_compile_latency, 1)}
@@ -279,7 +274,7 @@ function avgCoprColumn(
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
-    isResizable: true,
+    columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
       const tooltipContent = `
 Mean: ${getValueFormat('ns')(rec.avg_cop_process_time, 1)}
@@ -308,8 +303,6 @@ function relatedSchemasColumn(
     key: 'related_schemas',
     minWidth: 160,
     maxWidth: 240,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec) => (
       <Tooltip title={rec.related_schemas}>
         <TextWrap>{rec.related_schemas}</TextWrap>
@@ -335,7 +328,6 @@ export function statementColumns(
     avgCompileLatencyColumn(rows),
     avgCoprColumn(rows),
     relatedSchemasColumn(rows),
-    dummyColumn(),
   ]
 }
 
@@ -346,6 +338,5 @@ export function planColumns(rows: StatementModel[]): IColumn[] {
     avgMinMaxLatencyColumn(rows),
     execCountColumn(rows),
     avgMaxMemColumn(rows),
-    dummyColumn(),
   ]
 }

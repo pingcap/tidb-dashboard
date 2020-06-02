@@ -26,6 +26,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.etcd.io/etcd/clientv3"
+	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -35,19 +36,28 @@ import (
 )
 
 type Service struct {
+	ctx context.Context
+
 	config        *config.Config
 	etcdClient    *clientv3.Client
 	httpClient    *http.Client
 	tidbForwarder *tidb.Forwarder
 }
 
-func NewService(config *config.Config, etcdClient *clientv3.Client, httpClient *http.Client, tidbForwarder *tidb.Forwarder) *Service {
-	return &Service{
+func NewService(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.Client, httpClient *http.Client, tidbForwarder *tidb.Forwarder) *Service {
+	s := &Service{
 		config:        config,
 		etcdClient:    etcdClient,
 		httpClient:    httpClient,
 		tidbForwarder: tidbForwarder,
 	}
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			s.ctx = ctx
+			return nil
+		},
+	})
+	return s
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -80,7 +90,7 @@ func (s *Service) deleteTiDBTopology(c *gin.Context) {
 	errorChannel := make(chan error, 2)
 	ttlKey := fmt.Sprintf("/topology/tidb/%v/ttl", address)
 	nonTTLKey := fmt.Sprintf("/topology/tidb/%v/info", address)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(s.ctx, time.Second*5)
 	defer cancel()
 
 	var wg sync.WaitGroup

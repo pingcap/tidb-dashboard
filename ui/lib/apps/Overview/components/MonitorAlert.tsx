@@ -8,7 +8,7 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import { Space, Typography } from 'antd'
 import { Stack } from 'office-ui-fabric-react/lib/Stack'
 
-export default function MonitorAlertBar() {
+export default function MonitorAlert() {
   const { t } = useTranslation()
   const [alertCounter, setAlertCounter] = useState(0)
 

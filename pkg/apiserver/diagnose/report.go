@@ -259,13 +259,22 @@ func doGetTable(taskChan chan *task, resChan chan *tblAndErr, wg *sync.WaitGroup
 	defer wg.Done()
 	for task := range taskChan {
 		f := task.t
-		tbl, err := f(startTime, endTime, db)
+		var tbl TableDef
+		var err error
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					tbl.Title = fmt.Sprintf("panic_in_table_%v", task.taskID)
+					err = fmt.Errorf("panic: %v", r)
+				}
+			}()
+			tbl, err = f(startTime, endTime, db)
+		}()
 		newProgress := atomic.AddInt32(progress, 1)
 		tblAndErr := tblAndErr{}
 		if err != nil {
 			category := strings.Join(tbl.Category, ",")
 			tblAndErr.err = &TableRowDef{Values: []string{category, tbl.Title, err.Error()}}
-			continue
 		}
 		if tbl.Rows != nil {
 			tblAndErr.tbl = &tbl
@@ -1009,7 +1018,7 @@ func GetPDSchedulerInfo(startTime, endTime string, db *gorm.DB) (TableDef, error
 
 	table := TableDef{
 		Category:       []string{CategoryPD},
-		Title:          "blance_leader_region",
+		Title:          "balance_leader_region",
 		Comment:        "",
 		joinColumns:    []int{0, 1},
 		compareColumns: []int{2},

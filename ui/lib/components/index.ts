@@ -42,5 +42,8 @@ export * from './BaseSelect'
 export { default as BaseSelect } from './BaseSelect'
 export * from './InstanceSelect'
 export { default as InstanceSelect } from './InstanceSelect'
+export * from './ShortValueWithTooltip'
+export { default as ShortValueWithTooltip } from './ShortValueWithTooltip'
 
 export { default as LanguageDropdown } from './LanguageDropdown'
+export { default as ParamsPageWrapper } from './ParamsPageWrapper'

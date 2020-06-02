@@ -15,18 +15,53 @@ package config
 
 import (
 	"crypto/tls"
-	"time"
+	"fmt"
+	"net/url"
+	"strings"
+)
+
+const (
+	DefaultPublicPathPrefix = "/dashboard"
+
+	UIPathPrefix      = "/dashboard/"
+	APIPathPrefix     = "/dashboard/api/"
+	SwaggerPathPrefix = "/dashboard/api/swagger/"
 )
 
 type Config struct {
-	DataDir    string
-	PDEndPoint string
+	DataDir          string
+	PDEndPoint       string
+	PublicPathPrefix string
 
 	// TLS config for mTLS authentication between TiDB components.
 	ClusterTLSConfig *tls.Config
 
 	// TLS config for mTLS authentication between TiDB and MySQL client.
 	TiDBTLSConfig *tls.Config
+}
 
-	CheckInterval time.Duration
+func (c *Config) NormalizePDEndPoint() error {
+	if !strings.HasPrefix(c.PDEndPoint, "http") {
+		c.PDEndPoint = fmt.Sprintf("http://%s", c.PDEndPoint)
+	}
+
+	pdEndPoint, err := url.Parse(c.PDEndPoint)
+	if err != nil {
+		return err
+	}
+
+	pdEndPoint.Scheme = "http"
+	if c.ClusterTLSConfig != nil {
+		pdEndPoint.Scheme = "https"
+	}
+
+	c.PDEndPoint = pdEndPoint.String()
+	return nil
+}
+
+func (c *Config) NormalizePublicPathPrefix() {
+	if c.PublicPathPrefix == "" {
+		c.PublicPathPrefix = DefaultPublicPathPrefix
+	}
+	c.PublicPathPrefix = strings.TrimRight(c.PublicPathPrefix, "/")
 }

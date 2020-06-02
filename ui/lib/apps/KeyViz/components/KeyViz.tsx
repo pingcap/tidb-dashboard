@@ -98,14 +98,14 @@ const KeyViz = () => {
   } = useBoolean(false)
   const { t } = useTranslation()
 
-  const enabled = config?.auto_collection_enabled === true
+  const enabled = config?.auto_collection_disabled !== true
 
   const updateServiceStatus = useCallback(async function () {
     setLoading(true)
     try {
       const resp = await client.getInstance().keyvisualConfigGet()
       const config = resp.data
-      const enabled = config?.auto_collection_enabled === true
+      const enabled = config?.auto_collection_disabled !== true
       if (!enabled) {
         setAutoRefreshSeconds(0)
       }

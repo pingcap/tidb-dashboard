@@ -5,6 +5,7 @@ import * as singleSpa from 'single-spa'
 import DashboardClient, { DefaultApi } from '@lib/client'
 import * as auth from '@lib/utils/auth'
 import * as routing from '@dashboard/routing'
+import publicPathPrefix from '@dashboard/publicPathPrefix'
 
 function initAxios() {
   const instance = axios.create()
@@ -37,21 +38,28 @@ function initAxios() {
 }
 
 export function init() {
-  let DASHBOARD_API_URL_PERFIX = 'http://127.0.0.1:12333'
-  if (process.env.REACT_APP_DASHBOARD_API_URL !== undefined) {
-    // Accept empty string as dashboard API URL as well.
-    DASHBOARD_API_URL_PERFIX = process.env.REACT_APP_DASHBOARD_API_URL
+  let apiPrefix
+  if (process.env.NODE_ENV === 'development') {
+    if (process.env.REACT_APP_DASHBOARD_API_URL) {
+      apiPrefix = `${process.env.REACT_APP_DASHBOARD_API_URL}/dashboard`
+    } else {
+      apiPrefix = 'http://127.0.0.1:12333/dashboard'
+    }
+  } else {
+    apiPrefix = publicPathPrefix
   }
-  const DASHBOARD_API_URL = `${DASHBOARD_API_URL_PERFIX}/dashboard/api`
+  const apiUrl = `${apiPrefix}/api`
+
+  console.log('API BasePath: %s', apiUrl)
 
   const dashboardClient = new DefaultApi(
     {
-      basePath: DASHBOARD_API_URL,
+      basePath: apiUrl,
       apiKey: () => auth.getAuthTokenAsBearer(),
     },
     undefined,
     initAxios()
   )
 
-  DashboardClient.init(DASHBOARD_API_URL, dashboardClient)
+  DashboardClient.init(apiUrl, dashboardClient)
 }

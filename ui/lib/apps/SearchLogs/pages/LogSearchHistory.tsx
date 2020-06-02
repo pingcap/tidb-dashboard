@@ -1,16 +1,17 @@
 import client from '@lib/client'
 import { LogsearchTaskGroupModel } from '@lib/client'
 import { Head, CardTableV2, DateTime } from '@lib/components'
-import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Badge, Button } from 'antd'
+import { ArrowLeftOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
+import { Badge, Button, Modal, Space } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { LogLevelText } from './utils'
 import {
   Selection,
   SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import { LogLevelText } from '../utils'
 
 function componentRender({ target_stats: stats }) {
   // FIXME: Extract common util
@@ -49,7 +50,7 @@ function patternRender({ search_request: request }: LogsearchTaskGroupModel) {
   return (request?.patterns ?? []).join(' ')
 }
 
-export default function SearchHistory() {
+export default function LogSearchingHistory() {
   const [taskGroups, setTaskGroups] = useState<LogsearchTaskGroupModel[]>([])
   const [selectedRowKeys, setRowKeys] = useState<string[]>([])
 
@@ -91,23 +92,43 @@ export default function SearchHistory() {
   }
 
   async function handleDeleteSelected() {
-    for (const taskGroupID of selectedRowKeys) {
-      await client.getInstance().logsTaskgroupsIdDelete(taskGroupID)
-    }
-    const res = await client.getInstance().logsTaskgroupsGet()
-    setTaskGroups(res.data)
+    Modal.confirm({
+      title: t('search_logs.history.delete_confirm_title'),
+      icon: <ExclamationCircleOutlined />,
+      content: t('search_logs.history.delete_selected_confirm_content'),
+      okText: t('search_logs.history.delete'),
+      cancelText: t('search_logs.common.cancel'),
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        for (const taskGroupID of selectedRowKeys) {
+          await client.getInstance().logsTaskgroupsIdDelete(taskGroupID)
+        }
+        const res = await client.getInstance().logsTaskgroupsGet()
+        setTaskGroups(res.data)
+      },
+    })
   }
 
   async function handleDeleteAll() {
-    const allKeys = taskGroups.map((taskGroup) => taskGroup.id)
-    for (const key of allKeys) {
-      if (key === undefined) {
-        continue
-      }
-      await client.getInstance().logsTaskgroupsIdDelete(String(key))
-    }
-    const res = await client.getInstance().logsTaskgroupsGet()
-    setTaskGroups(res.data)
+    Modal.confirm({
+      title: t('search_logs.history.delete_confirm_title'),
+      icon: <ExclamationCircleOutlined />,
+      content: t('search_logs.history.delete_all_confirm_content'),
+      okText: t('search_logs.history.delete'),
+      cancelText: t('search_logs.common.cancel'),
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        const allKeys = taskGroups.map((taskGroup) => taskGroup.id)
+        for (const key of allKeys) {
+          if (key === undefined) {
+            continue
+          }
+          await client.getInstance().logsTaskgroupsIdDelete(String(key))
+        }
+        const res = await client.getInstance().logsTaskgroupsGet()
+        setTaskGroups(res.data)
+      },
+    })
   }
 
   const rowSelection = new Selection({
@@ -163,7 +184,7 @@ export default function SearchHistory() {
   ]
 
   return (
-    <div>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Head
         title={t('search_logs.nav.history')}
         back={
@@ -172,28 +193,34 @@ export default function SearchHistory() {
           </Link>
         }
         titleExtra={
-          <>
+          <Space>
             <Button
-              type="danger"
+              danger
               onClick={handleDeleteSelected}
-              disabled={selectedRowKeys.length < 1}
-              style={{ marginRight: 16 }}
+              disabled={selectedRowKeys.length === 0}
             >
               {t('search_logs.history.delete_selected')}
             </Button>
-            <Button type="danger" onClick={handleDeleteAll}>
+            <Button
+              danger
+              onClick={handleDeleteAll}
+              disabled={taskGroups?.length === 0}
+            >
               {t('search_logs.history.delete_all')}
             </Button>
-          </>
+          </Space>
         }
       />
-      <CardTableV2
-        columns={columns}
-        items={taskGroups || []}
-        selection={rowSelection}
-        selectionMode={SelectionMode.multiple}
-        style={{ marginTop: 0 }}
-      />
+      <div style={{ height: '100%', position: 'relative' }}>
+        <ScrollablePane>
+          <CardTableV2
+            columns={columns}
+            items={taskGroups || []}
+            selection={rowSelection}
+            selectionMode={SelectionMode.multiple}
+          />
+        </ScrollablePane>
+      </div>
     </div>
   )
 }

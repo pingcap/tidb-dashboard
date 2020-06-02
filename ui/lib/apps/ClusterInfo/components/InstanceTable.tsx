@@ -1,6 +1,5 @@
 import { Divider, Popconfirm, Tooltip, Alert } from 'antd'
-import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DeleteOutlined } from '@ant-design/icons'
 import { CardTableV2, InstanceStatusBadge } from '@lib/components'
@@ -92,82 +91,91 @@ export default function ListPage() {
     [dataTiDB, dataStores, dataPD]
   )
 
-  const columns = [
-    {
-      name: t('cluster_info.list.instance_table.columns.node'),
-      key: 'node',
-      minWidth: 100,
-      maxWidth: 200,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
-      onRender: (node) => (
-        <Tooltip title={`${node.ip}:${node.port}`}>
-          <span>
-            {node.ip}:{node.port}
-          </span>
-        </Tooltip>
-      ),
+  const handleHideTiDB = useCallback(
+    async (node) => {
+      await client
+        .getInstance()
+        .topologyTidbAddressDelete(`${node.ip}:${node.port}`)
+      sendRequest()
     },
-    {
-      name: t('cluster_info.list.instance_table.columns.status'),
-      key: 'status',
-      minWidth: 100,
-      maxWidth: 100,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
-      onRender: (node) => (
-        <StatusColumn
-          node={node}
-          onHideTiDB={async (node) => {
-            await client
-              .getInstance()
-              .topologyTidbAddressDelete(`${node.ip}:${node.port}`)
-            sendRequest()
-          }}
-        />
-      ),
-    },
-    {
-      name: t('cluster_info.list.instance_table.columns.up_time'),
-      key: 'start_timestamp',
-      minWidth: 100,
-      maxWidth: 200,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
-      onRender: ({ start_timestamp: ts }) => {
-        if (ts !== undefined && ts !== 0) {
-          return <DateTime.Calendar unixTimestampMs={ts * 1000} />
-        }
+    [sendRequest]
+  )
+
+  const columns = useMemo(
+    () => [
+      {
+        name: t('cluster_info.list.instance_table.columns.node'),
+        key: 'node',
+        minWidth: 100,
+        maxWidth: 160,
+        onRender: ({ ip, port }) => {
+          const fullName = `${ip}:${port}`
+          return (
+            <Tooltip title={fullName}>
+              <span>{fullName}</span>
+            </Tooltip>
+          )
+        },
       },
-    },
-    {
-      name: t('cluster_info.list.instance_table.columns.version'),
-      fieldName: 'version',
-      key: 'version',
-      minWidth: 100,
-      maxWidth: 150,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
-    },
-    {
-      name: t('cluster_info.list.instance_table.columns.git_hash'),
-      fieldName: 'git_hash',
-      key: 'git_hash',
-      minWidth: 100,
-      maxWidth: 200,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
-    },
-    {
-      name: t('cluster_info.list.instance_table.columns.deploy_path'),
-      fieldName: 'deploy_path',
-      key: 'deploy_path',
-      minWidth: 150,
-      maxWidth: 300,
-      isResizable: true,
-      columnActionsMode: ColumnActionsMode.disabled,
-    },
-  ]
+      {
+        name: t('cluster_info.list.instance_table.columns.status'),
+        key: 'status',
+        minWidth: 80,
+        maxWidth: 100,
+        onRender: (node) => (
+          <StatusColumn node={node} onHideTiDB={handleHideTiDB} />
+        ),
+      },
+      {
+        name: t('cluster_info.list.instance_table.columns.up_time'),
+        key: 'start_timestamp',
+        minWidth: 100,
+        maxWidth: 150,
+        onRender: ({ start_timestamp: ts }) => {
+          if (ts !== undefined && ts !== 0) {
+            return <DateTime.Calendar unixTimestampMs={ts * 1000} />
+          }
+        },
+      },
+      {
+        name: t('cluster_info.list.instance_table.columns.version'),
+        fieldName: 'version',
+        key: 'version',
+        minWidth: 100,
+        maxWidth: 150,
+        onRender: ({ version }) => (
+          <Tooltip title={version}>
+            <span>{version}</span>
+          </Tooltip>
+        ),
+      },
+      {
+        name: t('cluster_info.list.instance_table.columns.git_hash'),
+        fieldName: 'git_hash',
+        key: 'git_hash',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: ({ git_hash }) => (
+          <Tooltip title={git_hash}>
+            <span>{git_hash}</span>
+          </Tooltip>
+        ),
+      },
+      {
+        name: t('cluster_info.list.instance_table.columns.deploy_path'),
+        fieldName: 'deploy_path',
+        key: 'deploy_path',
+        minWidth: 150,
+        maxWidth: 300,
+        onRender: ({ deploy_path }) => (
+          <Tooltip title={deploy_path}>
+            <span>{deploy_path}</span>
+          </Tooltip>
+        ),
+      },
+    ],
+    [t, handleHideTiDB]
+  )
 
   return (
     <>

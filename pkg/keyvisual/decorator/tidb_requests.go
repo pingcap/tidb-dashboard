@@ -15,44 +15,34 @@ package decorator
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb/model"
 )
 
 const (
-	SchemaVersionPath = "/tidb/ddl/global_schema_version"
+	schemaVersionPath = "/tidb/ddl/global_schema_version"
+	etcdGetTimeout    = time.Second
 )
 
-type dbInfo struct {
-	Name struct {
-		O string `json:"O"`
-		L string `json:"L"`
-	} `json:"db_name"`
-	State int `json:"state"`
-}
-
-type tableInfo struct {
-	ID   int64 `json:"id"`
-	Name struct {
-		O string `json:"O"`
-		L string `json:"L"`
-	} `json:"name"`
-	Indices []struct {
-		ID   int64 `json:"id"`
-		Name struct {
-			O string `json:"O"`
-			L string `json:"L"`
-		} `json:"idx_name"`
-	} `json:"index_info"`
-}
+var (
+	ErrNS                    = errorx.NewNamespace("error.keyvisual")
+	ErrNSDecorator           = ErrNS.NewSubNamespace("decorator")
+	ErrTiDBHTTPRequestFailed = ErrNSDecorator.NewType("tidb_http_request_failed")
+)
 
 func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	// check schema version
 	ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
-	resp, err := s.Provider.EtcdClient.Get(ectx, SchemaVersionPath)
+	resp, err := s.Provider.EtcdClient.Get(ectx, schemaVersionPath)
 	cancel()
 	if err != nil || len(resp.Kvs) != 1 {
 		log.Warn("failed to get tidb schema version", zap.Error(err))
@@ -69,31 +59,30 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	}
 
 	log.Debug("schema version has changed", zap.Int64("old", s.SchemaVersion), zap.Int64("new", schemaVersion))
-	s.SchemaVersion = schemaVersion
 
-	var dbInfos []*dbInfo
-	var tidbEndpoint string
+	// get all database info
+	var dbInfos []*model.DBInfo
 	reqScheme := "http"
 	if s.Config.ClusterTLSConfig != nil {
 		reqScheme = "https"
 	}
 	hostname, port := s.forwarder.GetStatusConnProps()
-	target := fmt.Sprintf("%s:%d", hostname, port)
-	reqEndpoint := fmt.Sprintf("%s://%s", reqScheme, target)
-	if err := request(reqEndpoint, "schema", &dbInfos, s.HTTPClient); err != nil {
-		log.Error("fail to send schema reqeust to tidb", zap.String("endpoint", reqEndpoint), zap.Error(err))
-		if dbInfos == nil {
-			return
-		}
+	tidbEndpoint := fmt.Sprintf("%s://%s:%d", reqScheme, hostname, port)
+	if err := request(tidbEndpoint, "schema", &dbInfos, s.HTTPClient); err != nil {
+		log.Error("fail to send schema request to tidb", zap.String("endpoint", tidbEndpoint), zap.Error(err))
+		return
 	}
-	tidbEndpoint = reqEndpoint
 
-	var tableInfos []*tableInfo
+	// get all table info
+	var tableInfos []*model.TableInfo
+	updateSuccess := true
 	for _, db := range dbInfos {
-		if db.State == 0 {
+		if db.State == model.StateNone {
 			continue
 		}
 		if err := request(tidbEndpoint, fmt.Sprintf("schema/%s", db.Name.O), &tableInfos, s.HTTPClient); err != nil {
+			log.Error("fail to send schema request to tidb", zap.String("endpoint", tidbEndpoint), zap.Error(err))
+			updateSuccess = false
 			continue
 		}
 		for _, table := range tableInfos {
@@ -108,6 +97,39 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 				Indices: indices,
 			}
 			s.TableMap.Store(table.ID, detail)
+			if partition := table.GetPartitionInfo(); partition != nil {
+				for _, partitionDef := range partition.Definitions {
+					detail := &tableDetail{
+						Name:    fmt.Sprintf("%s/%s", table.Name.O, partitionDef.Name.O),
+						DB:      db.Name.O,
+						ID:      partitionDef.ID,
+						Indices: indices,
+					}
+					s.TableMap.Store(partitionDef.ID, detail)
+				}
+			}
 		}
 	}
+
+	// update schema version
+	if updateSuccess {
+		s.SchemaVersion = schemaVersion
+	}
+}
+
+func request(endpoint string, uri string, v interface{}, httpClient *http.Client) error {
+	url := fmt.Sprintf("%s/%s", endpoint, uri)
+	resp, err := httpClient.Get(url) //nolint:gosec
+	if err == nil {
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			err = ErrTiDBHTTPRequestFailed.New("http status code: %d", resp.StatusCode)
+		}
+	}
+	if err != nil {
+		log.Warn("request failed", zap.String("url", url), zap.Error(err))
+		return err
+	}
+	decoder := json.NewDecoder(resp.Body)
+	return decoder.Decode(v)
 }

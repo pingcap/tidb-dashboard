@@ -33,6 +33,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 )
 
 // MaxRecvMsgSize set max gRPC receive message size received from server. If any message size is larger than
@@ -47,7 +49,7 @@ type TaskGroup struct {
 	maxPreviewLinesPerTask int
 }
 
-func (tg *TaskGroup) InitTasks(taskModels []*TaskModel) {
+func (tg *TaskGroup) InitTasks(ctx context.Context, taskModels []*TaskModel) {
 	// Tasks are assigned after inserting into scheduler, thus it has a chance to run parallel with Abort.
 	tg.tasksMu.Lock()
 	defer tg.tasksMu.Unlock()
@@ -57,7 +59,7 @@ func (tg *TaskGroup) InitTasks(taskModels []*TaskModel) {
 	}
 	tg.tasks = make([]*Task, 0, len(taskModels))
 	for _, taskModel := range taskModels {
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithCancel(ctx)
 		tg.tasks = append(tg.tasks, &Task{
 			taskGroup: tg,
 			model:     taskModel,
@@ -129,6 +131,21 @@ func (t *Task) setError(err error) {
 	t.model.Error = &errStr
 }
 
+func (t *Task) accumulateLogSize(path *string) {
+	if path != nil {
+		stat, err := os.Stat(*path)
+		if err != nil {
+			log.Warn("Can NOT fetch log file size for LogSearchTask",
+				zap.String("dir", *path),
+				zap.Any("task", t),
+				zap.String("err", err.Error()),
+			)
+		} else {
+			t.model.Size += stat.Size()
+		}
+	}
+}
+
 func (t *Task) SyncRun() {
 	defer func() {
 		if t.model.Error != nil {
@@ -142,15 +159,8 @@ func (t *Task) SyncRun() {
 			return
 		}
 		t.model.State = TaskStateFinished
-		stat, err := os.Stat(*t.model.LogStorePath)
-		if err != nil {
-			log.Warn("Can NOT fetch log file size for LogSearchTask",
-				zap.Any("task", t),
-				zap.String("err", err.Error()),
-			)
-		} else {
-			t.model.Size = stat.Size()
-		}
+		t.accumulateLogSize(t.model.LogStorePath)
+		t.accumulateLogSize(t.model.SlowLogStorePath)
 		log.Debug("LogSearchTask finished", zap.Any("task", t))
 		t.taskGroup.service.db.Save(t.model)
 	}()
@@ -180,7 +190,10 @@ func (t *Task) SyncRun() {
 
 	cli := diagnosticspb.NewDiagnosticsClient(conn)
 	t.searchLog(cli, diagnosticspb.SearchLogRequest_Normal)
-	t.searchLog(cli, diagnosticspb.SearchLogRequest_Slow)
+	// Only TiKV support searching slow log now
+	if t.model.Target.Kind == model.NodeKindTiKV {
+		t.searchLog(cli, diagnosticspb.SearchLogRequest_Slow)
+	}
 }
 
 func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diagnosticspb.SearchLogRequest_Target) {
@@ -228,19 +241,20 @@ func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diag
 	bufWriter := bufio.NewWriterSize(writer, 16*1024*1024) // 16M buffer size
 	defer bufWriter.Flush()
 
-	if targetType == diagnosticspb.SearchLogRequest_Normal {
-		t.model.LogStorePath = &savedPath
-	} else {
-		t.model.SlowLogStorePath = &savedPath
-	}
 	t.model.State = TaskStateRunning
-
 	previewLogLinesCount := 0
 	for {
 		res, err := stream.Recv()
 		if err != nil {
 			if err != io.EOF {
 				t.setError(err)
+			}
+			if previewLogLinesCount != 0 {
+				if targetType == diagnosticspb.SearchLogRequest_Normal {
+					t.model.LogStorePath = &savedPath
+				} else {
+					t.model.SlowLogStorePath = &savedPath
+				}
 			}
 			return
 		}

@@ -1,12 +1,15 @@
 import client from '@lib/client'
 import { ModelRequestTargetNode, LogsearchTaskModel } from '@lib/client'
-import { CardTableV2 } from '@lib/components'
+import { CardTableV2, Card } from '@lib/components'
 import { Alert } from 'antd'
 import moment from 'moment'
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LogLevelText, namingMap } from './utils'
+
+import { LogLevelText, namingMap } from '../utils'
 import Log from './Log'
+
+import styles from './Styles.module.less'
 
 type LogPreview = {
   key: number
@@ -27,12 +30,25 @@ function componentRender({ component: target }) {
   )
 }
 
+function Row({ renderer, props }) {
+  const [expanded, setExpanded] = useState(false)
+  const handleClick = useCallback(() => {
+    setExpanded((v) => !v)
+  }, [])
+  return (
+    <div onClick={handleClick} className={styles.logRow}>
+      {renderer({ ...props, item: { ...props.item, expanded } })}
+    </div>
+  )
+}
+
 interface Props {
+  patterns: string[]
   taskGroupID: number
   tasks: LogsearchTaskModel[]
 }
 
-export default function SearchResult({ taskGroupID, tasks }: Props) {
+export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
   const [logPreviews, setData] = useState<LogPreview[]>([])
   const { t } = useTranslation()
   const [loading, setLoading] = useState(true)
@@ -73,6 +89,13 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
     getLogPreview()
   }, [taskGroupID, tasks])
 
+  const renderRow = useCallback((props, defaultRender) => {
+    if (!props) {
+      return null
+    }
+    return <Row renderer={defaultRender!} props={props} />
+  }, [])
+
   const columns = useMemo(
     () => [
       {
@@ -100,27 +123,28 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
         name: t('search_logs.preview.log'),
         key: 'log',
         minWidth: 500,
-        onRender: ({ log }) => <Log log={log} />,
+        onRender: ({ log, expanded }) => (
+          <Log patterns={patterns} log={log} expanded={expanded} />
+        ),
       },
     ],
-    [t]
+    [t, patterns]
   )
 
   return (
     <>
       {!loading && (
-        <Alert
-          message={t('search_logs.page.tip')}
-          type="info"
-          showIcon
-          style={{ marginLeft: 48, marginRight: 48 }}
-        />
+        <Card noMarginTop>
+          <Alert message={t('search_logs.page.tip')} type="info" showIcon />
+        </Card>
       )}
       <CardTableV2
+        cardNoMarginTop
         loading={loading}
         columns={columns}
         items={logPreviews || []}
-        style={{ marginTop: 0 }}
+        onRenderRow={renderRow}
+        extendLastColumn
       />
     </>
   )

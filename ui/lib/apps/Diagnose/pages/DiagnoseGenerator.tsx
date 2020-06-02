@@ -1,21 +1,23 @@
-import React from 'react'
 import {
   Button,
   DatePicker,
   Form,
-  Select,
-  Switch,
   Input,
   InputNumber,
   message,
+  Select,
+  Switch,
 } from 'antd'
-import { useTranslation } from 'react-i18next'
-import { Card } from '@lib/components'
-import { useNavigate } from 'react-router-dom'
-import client from '@lib/client'
-import DiagnoseHistory from './DiagnoseHistory'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { getValueFormat } from '@baurine/grafana-value-formats'
+
+import client from '@lib/client'
+import { Card } from '@lib/components'
+
+import DiagnoseHistory from '../components/DiagnoseHistory'
 
 const useFinishHandler = (navigate) => {
   return async (fieldsValue) => {
@@ -55,7 +57,7 @@ export default function DiagnoseGenerator() {
   const handleFinish = useFinishHandler(navigate)
 
   return (
-    <ScrollablePane style={{ height: '100vh' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Card title={t('diagnose.generate.title')}>
         <Form
           layout="inline"
@@ -147,7 +149,12 @@ export default function DiagnoseGenerator() {
           </Form.Item>
         </Form>
       </Card>
-      <DiagnoseHistory />
-    </ScrollablePane>
+
+      <div style={{ height: '100%', position: 'relative' }}>
+        <ScrollablePane>
+          <DiagnoseHistory />
+        </ScrollablePane>
+      </div>
+    </div>
   )
 }

@@ -19,7 +19,6 @@ import (
 	"net/http"
 	"sync"
 
-	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -68,12 +67,12 @@ type Service struct {
 	config            *config.Config
 	newPDDataProvider PDDataProviderConstructor
 	stoppedHandler    http.Handler
-	uiAssetFS         *assetfs.AssetFS
+	uiAssetFS         http.FileSystem
 
 	apiHandlerEngine *gin.Engine
 }
 
-func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS *assetfs.AssetFS, newPDDataProvider PDDataProviderConstructor) *Service {
+func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS http.FileSystem, newPDDataProvider PDDataProviderConstructor) *Service {
 	once.Do(func() {
 		// These global modification will be effective only for the first invoke.
 		_ = godotenv.Load()
@@ -142,17 +141,26 @@ func (s *Service) Start(ctx context.Context) error {
 		),
 	)
 
-	if err := s.app.Err(); err != nil {
-		return err
-	}
 	if err := s.app.Start(s.ctx); err != nil {
+		s.cleanAfterError()
 		return err
 	}
+
 	return nil
 }
 
+func (s *Service) cleanAfterError() {
+	s.cancel()
+
+	// drop
+	s.app = nil
+	s.apiHandlerEngine = nil
+	s.ctx = nil
+	s.cancel = nil
+}
+
 func (s *Service) Stop(ctx context.Context) error {
-	if !s.IsRunning() {
+	if !s.IsRunning() || s.app == nil {
 		return nil
 	}
 
@@ -176,7 +184,7 @@ func (s *Service) handler(w http.ResponseWriter, r *http.Request) {
 	s.apiHandlerEngine.ServeHTTP(w, r)
 }
 
-func (s *Service) provideLocals() (*config.Config, *assetfs.AssetFS) {
+func (s *Service) provideLocals() (*config.Config, http.FileSystem) {
 	return s.config, s.uiAssetFS
 }
 

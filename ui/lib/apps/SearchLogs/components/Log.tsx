@@ -1,25 +1,32 @@
-import React from 'react'
+import React, { useCallback } from 'react'
+import TextHighlighter from 'react-highlight-words'
 import { TextWrap, Pre } from '@lib/components'
-import { useToggle } from '@umijs/hooks'
+
+import styles from './Styles.module.less'
 
 interface LogProps {
+  patterns: string[]
+  expanded: boolean
   log: string
 }
 
-export default function Log({ log }: LogProps) {
-  const { state: expanded, toggle: toggleExpanded } = useToggle(false)
-
-  const handleClick = () => {
-    toggleExpanded()
-  }
-
+export default function Log({ patterns, log, expanded }: LogProps) {
+  const handleClick = useCallback((ev: React.MouseEvent<HTMLDivElement>) => {
+    ev.stopPropagation()
+  }, [])
   return (
     <TextWrap
       multiline={expanded}
       onClick={handleClick}
-      style={{ cursor: 'pointer' }}
+      className={styles.logText}
     >
-      <Pre>{log}</Pre>
+      <Pre>
+        <TextHighlighter
+          highlightClassName={styles.highlight}
+          searchWords={patterns.map((p) => new RegExp(p, 'gi'))}
+          textToHighlight={log}
+        />
+      </Pre>
     </TextWrap>
   )
 }

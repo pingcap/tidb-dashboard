@@ -146,12 +146,11 @@ func (s *Service) Start(ctx context.Context) error {
 		),
 	)
 
-	if err := s.app.Err(); err != nil {
-		return err
-	}
 	if err := s.app.Start(s.ctx); err != nil {
+		s.cleanAfterError()
 		return err
 	}
+
 	return nil
 }
 
@@ -176,8 +175,20 @@ func (s *Service) reloadKeyVisualConfig(cfg *config.KeyVisualConfig) {
 	}
 }
 
+func (s *Service) cleanAfterError() {
+	s.cancel()
+
+	// drop
+	s.app = nil
+	s.stat = nil
+	s.strategy = nil
+	s.labelStrategy = nil
+	s.ctx = nil
+	s.cancel = nil
+}
+
 func (s *Service) Stop(ctx context.Context) error {
-	if !s.IsRunning() {
+	if !s.IsRunning() || s.app == nil {
 		return nil
 	}
 
@@ -290,8 +301,8 @@ func newStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.La
 	return matrix.DistanceStrategy(lc, wg, labelStrategy, distanceStrategyRatio, distanceStrategyLevel, distanceStrategyCount)
 }
 
-func newStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, in input.StatInput, strategy matrix.Strategy) *storage.Stat {
-	stat := storage.NewStat(lc, wg, provider, defaultStatConfig, strategy, in.GetStartTime())
+func newStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, db *dbstore.DB, in input.StatInput, strategy matrix.Strategy) *storage.Stat {
+	stat := storage.NewStat(lc, wg, provider, db, defaultStatConfig, strategy, in.GetStartTime())
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {

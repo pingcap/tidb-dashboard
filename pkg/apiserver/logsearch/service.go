@@ -14,6 +14,7 @@
 package logsearch
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -22,6 +23,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
@@ -32,13 +34,15 @@ import (
 )
 
 type Service struct {
+	ctx context.Context
+
 	config            *config.Config
 	logStoreDirectory string
 	db                *dbstore.DB
 	scheduler         *Scheduler
 }
 
-func NewService(config *config.Config, db *dbstore.DB) *Service {
+func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service {
 	dir, err := ioutil.TempDir("", "dashboard-logs")
 	if err != nil {
 		log.Fatal("Failed to create directory for storing logs", zap.Error(err))
@@ -57,6 +61,13 @@ func NewService(config *config.Config, db *dbstore.DB) *Service {
 	}
 	scheduler := NewScheduler(service)
 	service.scheduler = scheduler
+
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			service.ctx = ctx
+			return nil
+		},
+	})
 
 	return service
 }

@@ -4,8 +4,7 @@ Thanks for your interest in contributing to TiDB Dashboard! This document outlin
 
 If you need any help (for example, mentoring getting started or understanding the codebase), feel free to join the discussion of [TiDB Dashboard SIG] (Special Interest Group):
 
-- Slack (English): [#sig-dashboard](https://tidbcommunity.slack.com/messages/sig-dashboard)
-- Slack (Chinese): [#sig-dashboard-china](https://tidbcommunity.slack.com/messages/sig-dashboard-china)
+- Slack: [#sig-dashboard](https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard&ref=github_dashboard_repo)
 
 ## Setting up a development workspace
 

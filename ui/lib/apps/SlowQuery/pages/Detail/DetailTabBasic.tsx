@@ -34,6 +34,13 @@ export default function TabBasic({ data }: ITabBasicProps) {
     { key: 'user', value: data.user },
     { key: 'host', value: data.host },
   ]
-  const columns = valueColumns('slow_query.common.columns.')
-  return <CardTableV2 cardNoMargin columns={columns} items={items} />
+  const columns = valueColumns('slow_query.fields.')
+  return (
+    <CardTableV2
+      cardNoMargin
+      columns={columns}
+      items={items}
+      extendLastColumn
+    />
+  )
 }

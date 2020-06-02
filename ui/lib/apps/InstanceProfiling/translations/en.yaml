@@ -15,7 +15,6 @@ instance_profiling:
         start_at: Start At
         duration: Duration (sec)
         status: Status
-        action: Action
       status:
         running: Running
         finished: Finished
@@ -30,7 +29,7 @@ instance_profiling:
     table:
       columns:
         instance: Instance
-        kind: Kind
+        kind: Component
         status: Status
       status:
         finished: Finished

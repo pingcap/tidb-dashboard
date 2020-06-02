@@ -1,20 +1,16 @@
 import { Badge } from 'antd'
 import dayjs from 'dayjs'
-import {
-  ColumnActionsMode,
-  IColumn,
-} from 'office-ui-fabric-react/lib/DetailsList'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { usePersistFn } from '@umijs/hooks'
+import type { TFunction } from 'i18next'
 
 import client, { DiagnoseReport } from '@lib/client'
 import { CardTableV2, DateTime } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-
-import type { TFunction } from 'i18next'
 
 const tableColumns = (t: TFunction): IColumn[] => [
   {
@@ -23,18 +19,16 @@ const tableColumns = (t: TFunction): IColumn[] => [
     fieldName: 'id',
     minWidth: 200,
     maxWidth: 350,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
   },
   {
     name: t('diagnose.list_table.diagnose_create_time'),
     key: 'created_at',
     minWidth: 100,
     maxWidth: 200,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
-    onRender: (rec) => (
-      <DateTime.Calendar unixTimestampMs={dayjs(rec.CreatedAt).unix() * 1000} />
+    onRender: (rec: DiagnoseReport) => (
+      <DateTime.Calendar
+        unixTimestampMs={dayjs(rec.created_at).unix() * 1000}
+      />
     ),
   },
   {
@@ -42,8 +36,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     key: 'progress',
     minWidth: 100,
     maxWidth: 150,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec: DiagnoseReport) => {
       if (rec.progress! < 100) {
         return (
@@ -67,8 +59,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     key: 'start_time',
     minWidth: 200,
     maxWidth: 350,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec: DiagnoseReport) => {
       return (
         <span>
@@ -88,8 +78,6 @@ const tableColumns = (t: TFunction): IColumn[] => [
     key: 'compare_start_time',
     minWidth: 200,
     maxWidth: 350,
-    isResizable: true,
-    columnActionsMode: ColumnActionsMode.disabled,
     onRender: (rec: DiagnoseReport) =>
       rec.compare_start_time && (
         <span>
@@ -121,6 +109,7 @@ export default function DiagnoseHistory() {
 
   return (
     <CardTableV2
+      cardNoMarginTop
       loading={isLoading}
       items={data || []}
       columns={columns}

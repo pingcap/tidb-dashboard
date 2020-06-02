@@ -15,9 +15,11 @@
 package uiserver
 
 import (
-	assetfs "github.com/elazarl/go-bindata-assetfs"
+	"net/http"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
-func assetFS() *assetfs.AssetFS {
+func Assets(*config.Config) http.FileSystem {
 	return nil
 }

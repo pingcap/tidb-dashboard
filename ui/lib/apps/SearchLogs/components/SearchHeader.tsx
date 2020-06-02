@@ -16,7 +16,7 @@ import {
   IInstanceSelectRefProps,
 } from '@lib/components'
 
-import { ValidLogLevels, LogLevelText } from './utils'
+import { ValidLogLevels, LogLevelText } from '../utils'
 
 interface Props {
   taskGroupID?: number

@@ -67,22 +67,22 @@ func NewCLIConfig() *DashboardCLIConfig {
 	cfg := &DashboardCLIConfig{}
 	cfg.CoreConfig = &config.Config{}
 
-	flag.StringVarP(&cfg.ListenHost, "host", "h", "0.0.0.0", "The listen address of the Dashboard Server")
-	flag.IntVarP(&cfg.ListenPort, "port", "p", 12333, "The listen port of the Dashboard Server")
-	flag.BoolVarP(&cfg.EnableDebugLog, "debug", "d", false, "Enable debug logs")
-	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "Path to the Dashboard Server data directory")
-	flag.StringVar(&cfg.CoreConfig.PublicPathPrefix, "path-prefix", config.DefaultPublicPathPrefix, "Dashboard URL prefix")
-	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "The PD endpoint that Dashboard Server connects to")
+	flag.StringVarP(&cfg.ListenHost, "host", "h", "0.0.0.0", "listen host of the Dashboard Server")
+	flag.IntVarP(&cfg.ListenPort, "port", "p", 12333, "listen port of the Dashboard Server")
+	flag.BoolVarP(&cfg.EnableDebugLog, "debug", "d", false, "enable debug logs")
+	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "path to the Dashboard Server data directory")
+	flag.StringVar(&cfg.CoreConfig.PublicPathPrefix, "path-prefix", config.DefaultPublicPathPrefix, "public URL path prefix for reverse proxies")
+	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "PD endpoint address that Dashboard Server connects to")
 
-	showVersion := flag.BoolP("version", "v", false, "Print version information and exit")
+	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 
-	clusterCaPath := flag.String("cluster-ca", "", "path of file that contains list of trusted SSL CAs.")
-	clusterCertPath := flag.String("cluster-cert", "", "path of file that contains X509 certificate in PEM format.")
-	clusterKeyPath := flag.String("cluster-key", "", "path of file that contains X509 key in PEM format.")
+	clusterCaPath := flag.String("cluster-ca", "", "path of file that contains list of trusted SSL CAs")
+	clusterCertPath := flag.String("cluster-cert", "", "path of file that contains X509 certificate in PEM format")
+	clusterKeyPath := flag.String("cluster-key", "", "path of file that contains X509 key in PEM format")
 
-	tidbCaPath := flag.String("tidb-ca", "", "path of file that contains list of trusted SSL CAs.")
-	tidbCertPath := flag.String("tidb-cert", "", "path of file that contains X509 certificate in PEM format.")
-	tidbKeyPath := flag.String("tidb-key", "", "path of file that contains X509 key in PEM format.")
+	tidbCaPath := flag.String("tidb-ca", "", "path of file that contains list of trusted SSL CAs")
+	tidbCertPath := flag.String("tidb-cert", "", "path of file that contains X509 certificate in PEM format")
+	tidbKeyPath := flag.String("tidb-key", "", "path of file that contains X509 key in PEM format")
 
 	// debug for keyvisual，hide help information
 	flag.Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")

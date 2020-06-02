@@ -258,7 +258,7 @@ func (s *Service) getHostsInfo(c *gin.Context) {
 	}
 
 	hiList := make([]HostInfo, 0, len(hostsInfo))
-	for hostIP, _ := range allHostsMap {
+	for hostIP := range allHostsMap {
 		if hi, ok := hostsInfoMap[hostIP]; ok {
 			hiList = append(hiList, hi)
 		} else {

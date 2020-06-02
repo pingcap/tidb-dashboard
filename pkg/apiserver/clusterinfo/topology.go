@@ -9,8 +9,8 @@ import (
 )
 
 func fetchAlertManagerCounts(ctx context.Context, alertManagerAddr string, httpClient *http.Client) (int, error) {
-	apiUrl := fmt.Sprintf("http://%s/api/v2/alerts", alertManagerAddr)
-	req, err := http.NewRequestWithContext(ctx, "GET", apiUrl, nil)
+	uri := fmt.Sprintf("http://%s/api/v2/alerts", alertManagerAddr)
+	req, err := http.NewRequestWithContext(ctx, "GET", uri, nil)
 	if err != nil {
 		return 0, err
 	}

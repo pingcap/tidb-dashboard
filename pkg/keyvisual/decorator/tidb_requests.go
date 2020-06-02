@@ -117,11 +117,11 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	}
 }
 
-func request(endpoint string, uri string, v interface{}, httpClient *http.Client) error {
-	url := fmt.Sprintf("%s/%s", endpoint, uri)
+func request(endpoint string, path string, v interface{}, httpClient *http.Client) error {
+	uri := fmt.Sprintf("%s/%s", endpoint, path)
 
 	// FIXME: Better to assign a context
-	resp, err := httpClient.Get(url) //nolint:gosec
+	resp, err := httpClient.Get(uri) //nolint:gosec
 	if err != nil {
 		return ErrTiDBHTTPRequestFailed.Wrap(err, "TiDB HTTP API request failed")
 	}

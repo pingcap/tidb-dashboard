@@ -50,8 +50,8 @@ func NewPDClient(lc fx.Lifecycle, httpClient *http.Client, config *config.Config
 }
 
 func (pd *Client) SendRequest(path string) ([]byte, error) {
-	url := pd.endpointAddr + path
-	req, err := http.NewRequestWithContext(pd.lifecycleCtx, "GET", url, nil)
+	uri := pd.endpointAddr + path
+	req, err := http.NewRequestWithContext(pd.lifecycleCtx, "GET", uri, nil)
 	if err != nil {
 		return nil, ErrPDClientRequestFailed.Wrap(err, "failed to build request for PD API %s", path)
 	}

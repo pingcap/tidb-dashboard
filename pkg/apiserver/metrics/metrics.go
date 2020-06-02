@@ -103,9 +103,9 @@ func (s *Service) queryHandler(c *gin.Context) {
 		return
 	}
 
-	newHttpClient := *s.httpClient
-	newHttpClient.Timeout = 10 * time.Second
-	promResp, err := newHttpClient.Do(promReq)
+	newHTTPClient := *s.httpClient
+	newHTTPClient.Timeout = 10 * time.Second
+	promResp, err := newHTTPClient.Do(promReq)
 	if err != nil {
 		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to send requests to Prometheus"))
 		return

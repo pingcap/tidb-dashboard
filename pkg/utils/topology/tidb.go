@@ -133,7 +133,6 @@ func parseTiDBAliveness(value []byte) (bool, error) {
 	t := time.Unix(0, int64(unixTimestampNano))
 	if time.Since(t) > time.Second*45 {
 		return false, nil
-	} else {
-		return true, nil
 	}
+	return true, nil
 }

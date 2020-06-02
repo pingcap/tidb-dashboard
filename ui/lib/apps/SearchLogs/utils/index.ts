@@ -1,5 +1,3 @@
-export const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
-
 export enum LogLevel {
   Unknown = 0,
   Debug,
@@ -34,24 +32,3 @@ export enum TaskState {
   Finished,
   Error,
 }
-
-export enum NodeKind {
-  TiDB = 'tidb',
-  TiKV = 'tikv',
-  PD = 'pd',
-  TiFlash = 'tiflash',
-}
-
-export const namingMap = {
-  [NodeKind.TiDB]: 'TiDB',
-  [NodeKind.TiKV]: 'TiKV',
-  [NodeKind.PD]: 'PD',
-  [NodeKind.TiFlash]: 'TiFlash',
-}
-
-export const NodeKindList = [
-  NodeKind.TiDB,
-  NodeKind.TiKV,
-  NodeKind.PD,
-  NodeKind.TiFlash,
-]

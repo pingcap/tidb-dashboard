@@ -214,6 +214,7 @@ export default function LogSearchingHistory() {
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>
           <CardTableV2
+            cardNoMarginTop
             columns={columns}
             items={taskGroups || []}
             selection={rowSelection}

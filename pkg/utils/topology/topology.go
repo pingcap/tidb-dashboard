@@ -30,7 +30,7 @@ import (
 
 var (
 	ErrNS                  = errorx.NewNamespace("error.topology")
-	ErrPDAccessFailed      = ErrNS.NewType("pd_access_failed")
+	ErrEtcdRequestFailed   = ErrNS.NewType("pd_etcd_request_failed")
 	ErrInvalidTopologyData = ErrNS.NewType("invalid_topology_data")
 )
 
@@ -63,14 +63,14 @@ func parseHostAndPortFromAddressURL(urlString string) (string, uint, error) {
 	return u.Hostname(), uint(port), nil
 }
 
-func fetchStandardComponentTopology(componentName string, etcdClient *clientv3.Client) (*StandardComponentInfo, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), defaultFetchTimeout)
+func fetchStandardComponentTopology(ctx context.Context, componentName string, etcdClient *clientv3.Client) (*StandardComponentInfo, error) {
+	ctx2, cancel := context.WithTimeout(ctx, defaultFetchTimeout)
 	defer cancel()
 
 	key := "/topology/" + componentName
-	resp, err := etcdClient.Get(ctx, key, clientv3.WithPrefix())
+	resp, err := etcdClient.Get(ctx2, key, clientv3.WithPrefix())
 	if err != nil {
-		return nil, ErrPDAccessFailed.New("PD etcd get key %s failed", key)
+		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from PD etcd", key)
 	}
 	if resp.Count == 0 {
 		return nil, nil

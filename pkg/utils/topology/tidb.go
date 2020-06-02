@@ -28,13 +28,13 @@ import (
 
 const tidbTopologyKeyPrefix = "/topology/tidb/"
 
-func FetchTiDBTopology(etcdClient *clientv3.Client) ([]TiDBInfo, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), defaultFetchTimeout)
+func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDBInfo, error) {
+	ctx2, cancel := context.WithTimeout(ctx, defaultFetchTimeout)
 	defer cancel()
 
-	resp, err := etcdClient.Get(ctx, tidbTopologyKeyPrefix, clientv3.WithPrefix())
+	resp, err := etcdClient.Get(ctx2, tidbTopologyKeyPrefix, clientv3.WithPrefix())
 	if err != nil {
-		return nil, ErrPDAccessFailed.Wrap(err, "PD etcd get key %s failed", tidbTopologyKeyPrefix)
+		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from PD etcd", tidbTopologyKeyPrefix)
 	}
 
 	nodesAlive := map[string]bool{}

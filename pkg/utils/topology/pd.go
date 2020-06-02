@@ -15,31 +15,25 @@ package topology
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"net/http"
 	"sort"
 
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
-func FetchPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, error) {
+func FetchPDTopology(pdClient *pd.Client) ([]PDInfo, error) {
 	nodes := make([]PDInfo, 0)
-	healthMap, err := fetchPDHealth(pdEndPoint, httpClient)
+	healthMap, err := fetchPDHealth(pdClient)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := httpClient.Get(pdEndPoint + "/pd/api/v1/members")
+	data, err := pdClient.SendRequest("/pd/api/v1/members")
 	if err != nil {
-		return nil, ErrPDAccessFailed.Wrap(err, "PD members API HTTP get failed")
+		return nil, err
 	}
-	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, ErrPDAccessFailed.Wrap(err, "PD members API read failed")
-	}
-
 	ds := struct {
 		Count   int `json:"count"`
 		Members []struct {
@@ -63,7 +57,7 @@ func FetchPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, erro
 			continue
 		}
 
-		ts, err := fetchPDStartTimestamp(u, httpClient)
+		ts, err := fetchPDStartTimestamp(pdClient)
 		if err != nil {
 			log.Warn("Failed to fetch PD start timestamp", zap.String("targetPdNode", u), zap.Error(err))
 			ts = 0
@@ -94,15 +88,10 @@ func FetchPDTopology(pdEndPoint string, httpClient *http.Client) ([]PDInfo, erro
 	return nodes, nil
 }
 
-func fetchPDStartTimestamp(pdEndPoint string, httpClient *http.Client) (int64, error) {
-	resp, err := httpClient.Get(pdEndPoint + "/pd/api/v1/status")
+func fetchPDStartTimestamp(pdClient *pd.Client) (int64, error) {
+	data, err := pdClient.SendRequest("/pd/api/v1/status")
 	if err != nil {
-		return 0, ErrPDAccessFailed.Wrap(err, "PD status API HTTP get failed")
-	}
-	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return 0, ErrPDAccessFailed.Wrap(err, "PD status API read failed")
+		return 0, err
 	}
 
 	ds := struct {
@@ -116,18 +105,10 @@ func fetchPDStartTimestamp(pdEndPoint string, httpClient *http.Client) (int64, e
 	return ds.StartTimestamp, nil
 }
 
-func fetchPDHealth(pdEndPoint string, httpClient *http.Client) (map[string]struct{}, error) {
-	// health member set
-	memberHealth := map[string]struct{}{}
-	resp, err := httpClient.Get(pdEndPoint + "/pd/api/v1/health")
+func fetchPDHealth(pdClient *pd.Client) (map[string]struct{}, error) {
+	data, err := pdClient.SendRequest("/pd/api/v1/health")
 	if err != nil {
-		return nil, ErrPDAccessFailed.Wrap(err, "PD health API HTTP get failed")
-	}
-	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-		return nil, ErrPDAccessFailed.Wrap(err, "PD health API read failed")
+		return nil, err
 	}
 
 	var healths []struct {
@@ -139,6 +120,7 @@ func fetchPDHealth(pdEndPoint string, httpClient *http.Client) (map[string]struc
 		return nil, ErrInvalidTopologyData.Wrap(err, "PD health API unmarshal failed")
 	}
 
+	memberHealth := map[string]struct{}{}
 	for _, v := range healths {
 		memberHealth[v.MemberID.String()] = struct{}{}
 	}

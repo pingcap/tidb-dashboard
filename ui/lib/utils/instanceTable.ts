@@ -22,6 +22,8 @@ export const InstanceKindName: { [key in InstanceKind]: string } = {
   tiflash: 'TiFlash',
 }
 
+export const InstanceKinds = Object.keys(InstanceKindName) as InstanceKind[]
+
 export interface IInstanceTableItem
   extends TopologyPDInfo,
     TopologyTiDBInfo,

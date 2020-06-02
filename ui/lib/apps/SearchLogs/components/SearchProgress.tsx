@@ -1,40 +1,38 @@
 import { Button, Modal, Tree } from 'antd'
 import _ from 'lodash'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client, { LogsearchTaskModel } from '@lib/client'
 import { AnimatedSkeleton, Card } from '@lib/components'
 import { FailIcon, LoadingIcon, SuccessIcon } from './Icon'
-import { namingMap, NodeKind, NodeKindList, TaskState } from '../utils'
+import { TaskState } from '../utils'
 
 import styles from './Styles.module.less'
+import { InstanceKindName, InstanceKinds } from '@lib/utils/instanceTable'
 
 const { confirm } = Modal
-const { TreeNode } = Tree
 const taskStateIcons = {
   [TaskState.Running]: LoadingIcon,
   [TaskState.Finished]: SuccessIcon,
   [TaskState.Error]: FailIcon,
 }
 
-function leafNodeProps(task: LogsearchTaskModel) {
-  return {
-    icon: taskStateIcons[task.state || TaskState.Error],
-    disableCheckbox: !task.size || task.state !== TaskState.Finished,
-  }
-}
-
-function renderLeafNodes(tasks: LogsearchTaskModel[]) {
+function getLeafNodes(tasks: LogsearchTaskModel[]) {
   return tasks.map((task) => {
-    let title = task.target?.display_name ?? ''
-    if (task.size) {
-      title += ' (' + getValueFormat('bytes')(task.size!, 1) + ')'
-    }
-    return (
-      <TreeNode key={`${task.id}`} title={title} {...leafNodeProps(task)} />
+    const title = (
+      <span>
+        {task.target?.display_name ?? ''}{' '}
+        <small>({getValueFormat('bytes')(task.size!, 1)})</small>
+      </span>
     )
+    return {
+      key: String(task.id),
+      title,
+      icon: taskStateIcons[task.state || TaskState.Error],
+      disableCheckbox: !task.size || task.state !== TaskState.Finished,
+    }
   })
 }
 
@@ -81,79 +79,65 @@ export default function SearchProgress({
     }
   }, [tasks])
 
-  const descriptionArray = [
-    t('search_logs.progress.running'),
-    t('search_logs.progress.success'),
-    t('search_logs.progress.failed'),
-  ]
+  const descriptionArray = useMemo(
+    () => [
+      t('search_logs.progress.running'),
+      t('search_logs.progress.success'),
+      t('search_logs.progress.failed'),
+    ],
+    [t]
+  )
 
-  function progressDescription(tasks: LogsearchTaskModel[]) {
-    const arr = [0, 0, 0]
-    tasks.forEach((task) => {
-      const state = task.state
-      if (state !== undefined) {
-        arr[state - 1]++
-      }
-    })
-    const res: string[] = []
-    arr.forEach((count, index) => {
-      if (index < 1 || count <= 0) {
+  const describeProgress = useCallback(
+    (tasks: LogsearchTaskModel[]) => {
+      const arr = [0, 0, 0]
+      tasks.forEach((task) => {
+        const state = task.state
+        if (state !== undefined) {
+          arr[state - 1]++
+        }
+      })
+      const res: string[] = []
+      arr.forEach((count, index) => {
+        if (index < 1 || count <= 0) {
+          return
+        }
+        const str = `${count} ${descriptionArray[index]}`
+        res.push(str)
+      })
+      return (
+        res.join(', ') +
+        ' (' +
+        getValueFormat('bytes')(_.sumBy(tasks, 'size'), 1) +
+        ')'
+      )
+    },
+    [descriptionArray]
+  )
+
+  const treeData = useMemo(() => {
+    const data: any[] = []
+    const tasksByIK = _.groupBy(tasks, (t) => t.target?.kind)
+    InstanceKinds.forEach((ik) => {
+      const tasks = tasksByIK[ik]
+      if (!tasks) {
         return
       }
-      const str = `${count} ${descriptionArray[index]}`
-      res.push(str)
+      const title = (
+        <span>
+          {InstanceKindName[ik]} <small>{describeProgress(tasks)}</small>
+        </span>
+      )
+      data.push({
+        title,
+        key: ik,
+        icon: parentNodeIcon(tasks),
+        disableCheckbox: !parentNodeCheckable(tasks),
+        children: getLeafNodes(tasks),
+      })
     })
-    return (
-      res.join('，') +
-      ' (' +
-      getValueFormat('bytes')(_.sumBy(tasks, 'size'), 1) +
-      ')'
-    )
-  }
-
-  function renderTreeNodes(tasks: LogsearchTaskModel[]) {
-    const servers = {
-      [NodeKind.TiDB]: [],
-      [NodeKind.TiKV]: [],
-      [NodeKind.PD]: [],
-      [NodeKind.TiFlash]: [],
-    }
-
-    tasks.forEach((task) => {
-      if (task.target?.kind === undefined) {
-        return
-      }
-      servers[task.target.kind].push(task)
-    })
-
-    return NodeKindList.filter((kind) => servers[kind].length > 0).map(
-      (kind) => {
-        const tasks: LogsearchTaskModel[] = servers[kind]
-        const title = (
-          <span>
-            {namingMap[kind]}
-            <span
-              style={{
-                fontSize: '0.8em',
-                marginLeft: 5,
-              }}
-            >
-              {progressDescription(tasks)}
-            </span>
-          </span>
-        )
-        return (
-          <TreeNode
-            key={namingMap[kind]}
-            title={title}
-            icon={parentNodeIcon(tasks)}
-            disableCheckbox={!parentNodeCheckable(tasks)}
-            children={renderLeafNodes(tasks)}
-          />
-        )
-      }
-    )
-  }
+    return data
+  }, [tasks, describeProgress])
 
   async function handleDownload() {
     if (taskGroupID < 0) {
@@ -161,7 +145,7 @@ export default function SearchProgress({
     }
     // filter out all parent node
     const keys = checkedKeys.filter(
-      (key) => !Object.keys(namingMap).some((name) => name === key)
+      (key) => !InstanceKinds.some((ik) => ik === key)
     )
 
     const res = await client.getInstance().logsDownloadAcquireTokenGet(keys)
@@ -199,9 +183,9 @@ export default function SearchProgress({
     })
   }
 
-  const handleCheck = (checkedKeys) => {
+  const handleCheck = useCallback((checkedKeys) => {
     setCheckedKeys(checkedKeys as string[])
-  }
+  }, [])
 
   return (
     <Card
@@ -212,7 +196,7 @@ export default function SearchProgress({
       <AnimatedSkeleton showSkeleton={isLoading}>
         {tasks && (
           <>
-            <div>{progressDescription(tasks)}</div>
+            <div>{describeProgress(tasks)}</div>
             <div className={styles.buttons}>
               <Button
                 type="primary"
@@ -242,13 +226,14 @@ export default function SearchProgress({
             </div>
             <Tree
               checkable
-              expandedKeys={Object.values(namingMap)}
+              expandedKeys={[...InstanceKinds]}
+              selectable={false}
+              defaultExpandAll
               showIcon
               onCheck={handleCheck}
               style={{ overflowX: 'hidden' }}
-            >
-              {renderTreeNodes(tasks)}
-            </Tree>
+              treeData={treeData}
+            />
           </>
         )}
       </AnimatedSkeleton>

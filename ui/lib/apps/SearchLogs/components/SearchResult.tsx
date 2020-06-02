@@ -5,8 +5,9 @@ import { Alert } from 'antd'
 import moment from 'moment'
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { InstanceKindName } from '@lib/utils/instanceTable'
 
-import { LogLevelText, namingMap } from '../utils'
+import { LogLevelText } from '../utils'
 import Log from './Log'
 
 import styles from './Styles.module.less'
@@ -25,7 +26,7 @@ function componentRender({ component: target }) {
   }
   return (
     <div>
-      {target.kind ? namingMap[target.kind] : ''} {target.ip}
+      {target.kind ? InstanceKindName[target.kind] : '?'} {target.ip}
     </div>
   )
 }

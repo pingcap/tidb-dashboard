@@ -30,30 +30,30 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
 )
 
 type Service struct {
-	ctx context.Context
+	lifecycleCtx context.Context
 
-	config        *config.Config
+	pdClient      *pd.Client
 	etcdClient    *clientv3.Client
 	httpClient    *http.Client
 	tidbForwarder *tidb.Forwarder
 }
 
-func NewService(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.Client, httpClient *http.Client, tidbForwarder *tidb.Forwarder) *Service {
+func NewService(lc fx.Lifecycle, pdClient *pd.Client, etcdClient *clientv3.Client, httpClient *http.Client, tidbForwarder *tidb.Forwarder) *Service {
 	s := &Service{
-		config:        config,
+		pdClient:      pdClient,
 		etcdClient:    etcdClient,
 		httpClient:    httpClient,
 		tidbForwarder: tidbForwarder,
 	}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			s.ctx = ctx
+			s.lifecycleCtx = ctx
 			return nil
 		},
 	})
@@ -90,7 +90,7 @@ func (s *Service) deleteTiDBTopology(c *gin.Context) {
 	errorChannel := make(chan error, 2)
 	ttlKey := fmt.Sprintf("/topology/tidb/%v/ttl", address)
 	nonTTLKey := fmt.Sprintf("/topology/tidb/%v/info", address)
-	ctx, cancel := context.WithTimeout(s.ctx, time.Second*5)
+	ctx, cancel := context.WithTimeout(s.lifecycleCtx, time.Second*5)
 	defer cancel()
 
 	var wg sync.WaitGroup
@@ -127,7 +127,7 @@ func (s *Service) deleteTiDBTopology(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getTiDBTopology(c *gin.Context) {
-	instances, err := topology.FetchTiDBTopology(s.etcdClient)
+	instances, err := topology.FetchTiDBTopology(s.lifecycleCtx, s.etcdClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -149,7 +149,7 @@ type StoreTopologyResponse struct {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getStoreTopology(c *gin.Context) {
-	tikvInstances, tiFlashInstances, err := topology.FetchStoreTopology(s.config.PDEndPoint, s.httpClient)
+	tikvInstances, tiFlashInstances, err := topology.FetchStoreTopology(s.pdClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -169,7 +169,7 @@ func (s *Service) getStoreTopology(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getPDTopology(c *gin.Context) {
-	instances, err := topology.FetchPDTopology(s.config.PDEndPoint, s.httpClient)
+	instances, err := topology.FetchPDTopology(s.pdClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -186,7 +186,7 @@ func (s *Service) getPDTopology(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getAlertManagerTopology(c *gin.Context) {
-	instance, err := topology.FetchAlertManagerTopology(s.etcdClient)
+	instance, err := topology.FetchAlertManagerTopology(s.lifecycleCtx, s.etcdClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -203,7 +203,7 @@ func (s *Service) getAlertManagerTopology(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getGrafanaTopology(c *gin.Context) {
-	instance, err := topology.FetchGrafanaTopology(s.etcdClient)
+	instance, err := topology.FetchGrafanaTopology(s.lifecycleCtx, s.etcdClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -222,7 +222,7 @@ func (s *Service) getGrafanaTopology(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getAlertManagerCounts(c *gin.Context) {
 	address := c.Param("address")
-	cnt, err := fetchAlertManagerCounts(address, s.httpClient)
+	cnt, err := fetchAlertManagerCounts(s.lifecycleCtx, address, s.httpClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -278,7 +278,7 @@ func (s *Service) getHostsInfo(c *gin.Context) {
 
 func (s *Service) fetchAllInstanceHostsMap() (map[string]struct{}, error) {
 	allHosts := make(map[string]struct{})
-	pdInfo, err := topology.FetchPDTopology(s.config.PDEndPoint, s.httpClient)
+	pdInfo, err := topology.FetchPDTopology(s.pdClient)
 	if err != nil {
 		return nil, err
 	}
@@ -286,7 +286,7 @@ func (s *Service) fetchAllInstanceHostsMap() (map[string]struct{}, error) {
 		allHosts[i.IP] = struct{}{}
 	}
 
-	tikvInfo, tiFlashInfo, err := topology.FetchStoreTopology(s.config.PDEndPoint, s.httpClient)
+	tikvInfo, tiFlashInfo, err := topology.FetchStoreTopology(s.pdClient)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +297,7 @@ func (s *Service) fetchAllInstanceHostsMap() (map[string]struct{}, error) {
 		allHosts[i.IP] = struct{}{}
 	}
 
-	tidbInfo, err := topology.FetchTiDBTopology(s.etcdClient)
+	tidbInfo, err := topology.FetchTiDBTopology(s.lifecycleCtx, s.etcdClient)
 	if err != nil {
 		return nil, err
 	}

@@ -14,11 +14,13 @@
 package topology
 
 import (
+	"context"
+
 	"go.etcd.io/etcd/clientv3"
 )
 
-func FetchAlertManagerTopology(etcdClient *clientv3.Client) (*AlertManagerInfo, error) {
-	i, err := fetchStandardComponentTopology("alertmanager", etcdClient)
+func FetchAlertManagerTopology(ctx context.Context, etcdClient *clientv3.Client) (*AlertManagerInfo, error) {
+	i, err := fetchStandardComponentTopology(ctx, "alertmanager", etcdClient)
 	if err != nil {
 		return nil, err
 	}
@@ -28,8 +30,8 @@ func FetchAlertManagerTopology(etcdClient *clientv3.Client) (*AlertManagerInfo, 
 	return &AlertManagerInfo{StandardComponentInfo: *i}, nil
 }
 
-func FetchGrafanaTopology(etcdClient *clientv3.Client) (*GrafanaInfo, error) {
-	i, err := fetchStandardComponentTopology("grafana", etcdClient)
+func FetchGrafanaTopology(ctx context.Context, etcdClient *clientv3.Client) (*GrafanaInfo, error) {
+	i, err := fetchStandardComponentTopology(ctx, "grafana", etcdClient)
 	if err != nil {
 		return nil, err
 	}
@@ -39,8 +41,8 @@ func FetchGrafanaTopology(etcdClient *clientv3.Client) (*GrafanaInfo, error) {
 	return &GrafanaInfo{StandardComponentInfo: *i}, nil
 }
 
-func FetchPrometheusTopology(etcdClient *clientv3.Client) (*PrometheusInfo, error) {
-	i, err := fetchStandardComponentTopology("prometheus", etcdClient)
+func FetchPrometheusTopology(ctx context.Context, etcdClient *clientv3.Client) (*PrometheusInfo, error) {
+	i, err := fetchStandardComponentTopology(ctx, "prometheus", etcdClient)
 	if err != nil {
 		return nil, err
 	}

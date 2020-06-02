@@ -15,18 +15,18 @@ package topology
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"net/http"
 	"sort"
 	"strings"
 
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
 // FetchStoreTopology returns TiKV info and TiFlash info.
-func FetchStoreTopology(pdEndpoint string, httpClient *http.Client) ([]StoreInfo, []StoreInfo, error) {
-	stores, err := fetchStores(pdEndpoint, httpClient)
+func FetchStoreTopology(pdClient *pd.Client) ([]StoreInfo, []StoreInfo, error) {
+	stores, err := fetchStores(pdClient)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -104,26 +104,23 @@ type store struct {
 	StartTimestamp int64  `json:"start_timestamp"`
 }
 
-func fetchStores(endpoint string, httpClient *http.Client) ([]store, error) {
-	resp, err := httpClient.Get(endpoint + "/pd/api/v1/stores")
+func fetchStores(pdClient *pd.Client) ([]store, error) {
+	data, err := pdClient.SendRequest("/pd/api/v1/stores")
 	if err != nil {
-		return nil, ErrPDAccessFailed.Wrap(err, "PD stores API HTTP get failed")
+		return nil, err
 	}
-	defer resp.Body.Close()
+
 	storeResp := struct {
 		Count  int `json:"count"`
 		Stores []struct {
 			Store store
 		} `json:"stores"`
 	}{}
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, ErrPDAccessFailed.Wrap(err, "PD stores API read failed")
-	}
 	err = json.Unmarshal(data, &storeResp)
 	if err != nil {
 		return nil, ErrInvalidTopologyData.Wrap(err, "PD stores API unmarshal failed")
 	}
+
 	ret := make([]store, 0, storeResp.Count)
 	for _, s := range storeResp.Stores {
 		ret = append(ret, s.Store)

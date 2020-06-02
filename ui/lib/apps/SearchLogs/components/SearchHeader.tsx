@@ -63,76 +63,79 @@ export default function SearchHeader({ taskGroupID }: Props) {
     fetchData()
   })
 
-  const handleSearch = useCallback(async (fieldsValue: IFormProps) => {
-    if (
-      !fieldsValue.instances ||
-      fieldsValue.instances.length === 0 ||
-      !fieldsValue.logLevel ||
-      !fieldsValue.timeRange
-    ) {
-      Modal.error({
-        content: 'Some required fields are not filled',
-      })
-      return
-    }
-    if (!instanceSelect.current) {
-      Modal.error({
-        content: 'Internal error: Instance select is not ready',
-      })
-      return
-    }
-    setSubmitting(true)
-
-    const targets: ModelRequestTargetNode[] = instanceSelect
-      .current!.getInstanceByKeys(fieldsValue.instances)
-      .map((instance) => {
-        let port
-        switch (instance.instanceKind) {
-          case 'pd':
-          case 'tikv':
-          case 'tiflash':
-            port = instance.port
-            break
-          case 'tidb':
-            port = instance.status_port
-            break
-        }
-        return {
-          kind: instance.instanceKind,
-          display_name: instance.key,
-          ip: instance.ip,
-          port,
-        }
-      })
-      .filter((i) => i.port != null)
-
-    const [startTime, endTime] = calcTimeRange(fieldsValue.timeRange)
-
-    const req: LogsearchCreateTaskGroupRequest = {
-      targets,
-      request: {
-        start_time: startTime * 1000, // unix millionsecond
-        end_time: endTime * 1000, // unix millionsecond
-        min_level: fieldsValue.logLevel,
-        patterns: (fieldsValue.keywords ?? '').split(/\s+/), // 'foo boo' => ['foo', 'boo']
-      },
-    }
-
-    try {
-      const result = await client.getInstance().logsTaskgroupPut(req)
-      const id = result.data.task_group?.id
-      if (!id) {
-        throw new Error('Invalid server response')
+  const handleSearch = useCallback(
+    async (fieldsValue: IFormProps) => {
+      if (
+        !fieldsValue.instances ||
+        fieldsValue.instances.length === 0 ||
+        !fieldsValue.logLevel ||
+        !fieldsValue.timeRange
+      ) {
+        Modal.error({
+          content: 'Some required fields are not filled',
+        })
+        return
       }
-      navigate(`/search_logs/detail/${id}`)
-    } catch (e) {
-      // FIXME
-      Modal.error({
-        content: e.message,
-      })
-    }
-    setSubmitting(false)
-  }, [])
+      if (!instanceSelect.current) {
+        Modal.error({
+          content: 'Internal error: Instance select is not ready',
+        })
+        return
+      }
+      setSubmitting(true)
+
+      const targets: ModelRequestTargetNode[] = instanceSelect
+        .current!.getInstanceByKeys(fieldsValue.instances)
+        .map((instance) => {
+          let port
+          switch (instance.instanceKind) {
+            case 'pd':
+            case 'tikv':
+            case 'tiflash':
+              port = instance.port
+              break
+            case 'tidb':
+              port = instance.status_port
+              break
+          }
+          return {
+            kind: instance.instanceKind,
+            display_name: instance.key,
+            ip: instance.ip,
+            port,
+          }
+        })
+        .filter((i) => i.port != null)
+
+      const [startTime, endTime] = calcTimeRange(fieldsValue.timeRange)
+
+      const req: LogsearchCreateTaskGroupRequest = {
+        targets,
+        request: {
+          start_time: startTime * 1000, // unix millionsecond
+          end_time: endTime * 1000, // unix millionsecond
+          min_level: fieldsValue.logLevel,
+          patterns: (fieldsValue.keywords ?? '').split(/\s+/), // 'foo boo' => ['foo', 'boo']
+        },
+      }
+
+      try {
+        const result = await client.getInstance().logsTaskgroupPut(req)
+        const id = result.data.task_group?.id
+        if (!id) {
+          throw new Error('Invalid server response')
+        }
+        navigate(`/search_logs/detail/${id}`)
+      } catch (e) {
+        // FIXME
+        Modal.error({
+          content: e.message,
+        })
+      }
+      setSubmitting(false)
+    },
+    [navigate]
+  )
 
   return (
     <Form

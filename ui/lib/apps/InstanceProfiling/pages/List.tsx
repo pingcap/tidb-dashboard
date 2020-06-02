@@ -1,4 +1,4 @@
-import { Badge, Button, Form, message, Select, Modal } from 'antd'
+import { Badge, Button, Form, Select, Modal } from 'antd'
 import { ColumnActionsMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState, useCallback, useRef } from 'react'

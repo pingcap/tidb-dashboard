@@ -44,7 +44,7 @@ export default function ToggleBanner({
             <div className={styles.bannerContent}>
               <div className={styles.bannerTitle}>TiDB Dashboard</div>
               <div className={styles.bannerVersion}>
-                Dashboard version 4.0.0
+                Dashboard version 4.0.1
               </div>
             </div>
           </Flexbox>

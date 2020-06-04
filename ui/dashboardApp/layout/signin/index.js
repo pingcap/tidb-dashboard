@@ -1,6 +1,7 @@
 import * as singleSpa from 'single-spa'
 import { Root } from '@lib/components'
 import React, { useState, useEffect, useRef } from 'react'
+import { HashRouter as Router } from 'react-router-dom'
 import {
   DownOutlined,
   GlobalOutlined,
@@ -172,20 +173,22 @@ function TiDBSignInForm({ registry }) {
 function App({ registry }) {
   return (
     <Root>
-      <div className={styles.container}>
+      <Router>
         <TopLoadingBar />
-        <div className={styles.dialogContainer}>
-          <div className={styles.dialog}>
-            <TiDBSignInForm registry={registry} />
+        <div className={styles.container}>
+          <div className={styles.dialogContainer}>
+            <div className={styles.dialog}>
+              <TiDBSignInForm registry={registry} />
+            </div>
           </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ ease: 'easeOut', duration: 0.5 }}
+            className={styles.landing}
+          ></motion.div>
         </div>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ ease: 'easeOut', duration: 0.5 }}
-          className={styles.landing}
-        ></motion.div>
-      </div>
+      </Router>
     </Root>
   )
 }

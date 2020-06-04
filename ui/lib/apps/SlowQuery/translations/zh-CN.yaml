@@ -61,7 +61,7 @@ slow_query:
     cop_wait_addr_tooltip: 耗费最长时间等待 Coprocessor 请求的 TiKV 实例地址
 
     txn_start_ts: 事务号
-    txn_start_ts_tooltip: 事物开始的时间戳，也即是事物号
+    txn_start_ts_tooltip: 事务开始的时间戳，也即是事务号
     write_keys: 写入 Key 个数
     write_size: 写入数据量
     prewrite_regions: Prewrite 涉及 Regions 个数

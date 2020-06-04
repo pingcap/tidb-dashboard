@@ -34,6 +34,7 @@
     "react-router-dom": "^6.0.0-alpha.3",
     "react-spring": "^8.0.27",
     "react-syntax-highlighter": "^12.2.1",
+    "react-top-loading-bar": "^1.2.0",
     "react-use": "^14.2.0",
     "single-spa": "^5.3.4",
     "single-spa-react": "^2.14.0",

@@ -3,6 +3,7 @@ import { Root } from '@lib/components'
 import { useLocalStorageState } from '@umijs/hooks'
 import { HashRouter as Router } from 'react-router-dom'
 import { useSpring, animated } from 'react-spring'
+import { TopLoadingBar } from '@lib/components'
 
 import Sider from './Sider'
 import styles from './index.module.less'
@@ -70,6 +71,7 @@ export default function App({ registry }) {
   return (
     <Root>
       <Router>
+        <TopLoadingBar />
         <animated.div className={styles.container} style={transContainer}>
           <Sider
             registry={registry}

@@ -10,7 +10,7 @@ import {
 import { Form, Input, Button, message } from 'antd'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import LanguageDropdown from '@lib/components/LanguageDropdown'
+import { LanguageDropdown, TopLoadingBar } from '@lib/components'
 import client from '@lib/client'
 import * as auth from '@lib/utils/auth'
 
@@ -173,6 +173,7 @@ function App({ registry }) {
   return (
     <Root>
       <div className={styles.container}>
+        <TopLoadingBar />
         <div className={styles.dialogContainer}>
           <div className={styles.dialog}>
             <TiDBSignInForm registry={registry} />

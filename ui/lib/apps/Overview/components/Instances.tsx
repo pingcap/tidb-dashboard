@@ -12,12 +12,14 @@ import {
 import client from '@lib/client'
 import { AnimatedSkeleton, Card } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
+import getApiErrorsMsg from '@lib/utils/apiErrorsMsg'
 
 export default function Instances() {
   const { t } = useTranslation()
   const { data, isLoading, error } = useClientRequest((cancelToken) =>
     client.getInstance().topologyAllGet({ cancelToken })
   )
+  const errorMsg = useMemo(() => getApiErrorsMsg([error]), [error])
 
   const statusMap = useMemo(() => {
     if (!data) {
@@ -66,7 +68,7 @@ export default function Instances() {
       noMarginLeft
     >
       <AnimatedSkeleton showSkeleton={isLoading}>
-        {error && <Alert message="Error" type="error" showIcon />}
+        {error && <Alert message={errorMsg} type="error" showIcon />}
         {data &&
           statusMap.map((s) => {
             return (

@@ -204,23 +204,20 @@ function CardTableV2(props: ICardTableV2Props) {
       <AnimatedSkeleton
         showSkeleton={items.length === 0 && loading && !errorMsg}
       >
-        {errorMsg ? (
-          <Alert message={errorMsg} type="error" showIcon />
-        ) : (
-          <div className={styles.cardTableContent}>
-            <MemoDetailsList
-              selectionMode={SelectionMode.none}
-              constrainMode={ConstrainMode.unconstrained}
-              layoutMode={DetailsListLayoutMode.justified}
-              onRenderDetailsHeader={renderStickyHeader}
-              onRenderRow={onRowClicked ? renderClickableRow : undefined}
-              onRenderCheckbox={onRenderCheckbox}
-              columns={finalColumns}
-              items={finalItems}
-              {...restProps}
-            />
-          </div>
-        )}
+        {errorMsg && <Alert message={errorMsg} type="error" showIcon />}
+        <div className={styles.cardTableContent}>
+          <MemoDetailsList
+            selectionMode={SelectionMode.none}
+            constrainMode={ConstrainMode.unconstrained}
+            layoutMode={DetailsListLayoutMode.justified}
+            onRenderDetailsHeader={renderStickyHeader}
+            onRenderRow={onRowClicked ? renderClickableRow : undefined}
+            onRenderCheckbox={onRenderCheckbox}
+            columns={finalColumns}
+            items={finalItems}
+            {...restProps}
+          />
+        </div>
       </AnimatedSkeleton>
     </Card>
   )

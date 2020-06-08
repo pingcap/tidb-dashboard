@@ -33,14 +33,16 @@ async function main() {
 
   const registry = new AppRegistry()
 
-  singleSpa.registerApplication(
-    'layout',
-    AppRegistry.newReactSpaApp(() => LayoutMain, 'root'),
-    () => {
-      return !routing.isLocationMatchPrefix(auth.signInRoute)
-    },
-    { registry }
-  )
+  if (!appOptions.get().headless) {
+    singleSpa.registerApplication(
+      'layout',
+      AppRegistry.newReactSpaApp(() => LayoutMain, 'root'),
+      () => {
+        return !routing.isLocationMatchPrefix(auth.signInRoute)
+      },
+      { registry }
+    )
+  }
 
   singleSpa.registerApplication(
     'signin',

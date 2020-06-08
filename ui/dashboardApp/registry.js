@@ -4,6 +4,7 @@ import singleSpaReact from 'single-spa-react'
 import * as singleSpa from 'single-spa'
 import * as i18n from '@lib/utils/i18n'
 import * as routing from '@dashboard/routing'
+import * as appOptions from '@dashboard/appOptions'
 
 // TODO: This part might be better in TS.
 export default class AppRegistry {
@@ -52,9 +53,12 @@ export default class AppRegistry {
       i18n.addTranslations(app.translations)
     }
 
+    const containerId = appOptions.get().headless
+      ? '__full_spa_content__'
+      : '__spa_content__'
     singleSpa.registerApplication(
       app.id,
-      AppRegistry.newReactSpaApp(app.reactRoot, '__spa_content__'),
+      AppRegistry.newReactSpaApp(app.reactRoot, containerId),
       () => {
         return routing.isLocationMatchPrefix(app.routerPrefix)
       },

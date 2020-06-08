@@ -1,69 +1,100 @@
 import React, { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
-import { RightOutlined } from '@ant-design/icons'
-
+import { RightOutlined, WarningOutlined } from '@ant-design/icons'
+import { Card, AnimatedSkeleton } from '@lib/components'
 import client from '@lib/client'
-import { AnimatedSkeleton, Card } from '@lib/components'
+import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useClientRequest } from '@lib/utils/useClientRequest'
+import { Space, Typography } from 'antd'
+import { Stack } from 'office-ui-fabric-react/lib/Stack'
 
-import styles from './MonitorAlert.module.less'
-
-export default function MonitorAlert({ cluster }) {
+export default function MonitorAlert() {
   const { t } = useTranslation()
   const [alertCounter, setAlertCounter] = useState(0)
 
+  const {
+    data: amData,
+    isLoading: amIsLoading,
+  } = useClientRequest((cancelToken) =>
+    client.getInstance().getAlertManagerTopology({ cancelToken })
+  )
+  const {
+    data: grafanaData,
+    isLoading: grafanaIsLoading,
+  } = useClientRequest((cancelToken) =>
+    client.getInstance().getGrafanaTopology({ cancelToken })
+  )
+
   useEffect(() => {
-    const fetchNum = async () => {
-      if (!cluster || !cluster.alert_manager) {
-        return
-      }
+    if (!amData) {
+      return
+    }
+    async function fetch() {
       let resp = await client
         .getInstance()
-        .topologyAlertmanagerAddressCountGet(
-          `${cluster.alert_manager.ip}:${cluster.alert_manager.port}`
-        )
+        .getAlertManagerCounts(`${amData!.ip}:${amData!.port}`)
       setAlertCounter(resp.data)
     }
-    fetchNum()
-  }, [cluster])
+    fetch()
+  }, [amData])
 
   return (
     <Card title={t('overview.monitor_alert.title')} noMarginLeft>
-      <AnimatedSkeleton showSkeleton={!cluster}>
-        <p>
-          {!cluster || !cluster.grafana ? (
-            t('overview.monitor_alert.view_monitor_warn')
-          ) : (
-            <a href={`http://${cluster.grafana.ip}:${cluster.grafana.port}`}>
-              {t('overview.monitor_alert.view_monitor')}
-              <RightOutlined style={{ marginLeft: '5px' }} />
+      <Stack gap={16}>
+        <AnimatedSkeleton
+          showSkeleton={grafanaIsLoading}
+          paragraph={{ rows: 1 }}
+        >
+          {!grafanaData && (
+            <Typography.Text type="warning">
+              <Space>
+                <WarningOutlined />
+                {t('overview.monitor_alert.view_monitor_warn')}
+              </Space>
+            </Typography.Text>
+          )}
+          {grafanaData && (
+            <a href={`http://${grafanaData.ip}:${grafanaData.port}`}>
+              <Space>
+                {t('overview.monitor_alert.view_monitor')}
+                <RightOutlined />
+              </Space>
             </a>
           )}
-        </p>
-        <p>
-          {!cluster || !cluster.alert_manager ? (
-            t('overview.monitor_alert.view_alerts_warn')
-          ) : (
-            <a
-              href={`http://${cluster.alert_manager.ip}:${cluster.alert_manager.port}`}
-              className={alertCounter !== 0 ? styles.warn : undefined}
-            >
-              {alertCounter === 0
-                ? t('overview.monitor_alert.view_zero_alerts')
-                : t('overview.monitor_alert.view_alerts', {
-                    alertCount: alertCounter,
-                  })}
-              <RightOutlined style={{ marginLeft: '5px' }} />
+        </AnimatedSkeleton>
+        <AnimatedSkeleton showSkeleton={amIsLoading} paragraph={{ rows: 1 }}>
+          {!amData && (
+            <Typography.Text type="warning">
+              <Space>
+                <WarningOutlined />
+                {t('overview.monitor_alert.view_alerts_warn')}
+              </Space>
+            </Typography.Text>
+          )}
+          {amData && (
+            <a href={`http://${amData.ip}:${amData.port}`}>
+              <Space>
+                <Typography.Text type={alertCounter > 0 ? 'danger' : undefined}>
+                  {alertCounter === 0
+                    ? t('overview.monitor_alert.view_zero_alerts')
+                    : t('overview.monitor_alert.view_alerts', {
+                        alertCount: alertCounter,
+                      })}
+                </Typography.Text>
+                <RightOutlined />
+              </Space>
             </a>
           )}
-        </p>
-      </AnimatedSkeleton>
-      <p>
-        <Link to={`/diagnose`}>
-          {t('overview.monitor_alert.run_diagnose')}
-          <RightOutlined style={{ marginLeft: '5px' }} />
-        </Link>
-      </p>
+        </AnimatedSkeleton>
+        <div>
+          <Link to={`/diagnose`}>
+            <Space>
+              {t('overview.monitor_alert.run_diagnose')}
+              <RightOutlined />
+            </Space>
+          </Link>
+        </div>
+      </Stack>
     </Card>
   )
 }

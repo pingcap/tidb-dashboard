@@ -14,13 +14,6 @@ cluster_info:
         hide_db:
           tooltip: Hide
           confirm: Do you want to hide this TiDB instance?
-      status:
-        up: Up
-        down: Down
-        tombstone: Tombstone
-        offline: Leaving
-        unknown: Unknown
-        unreachable: Unreachable
     host_table:
       title: Hosts
       columns:

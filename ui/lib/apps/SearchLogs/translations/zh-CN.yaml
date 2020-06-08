@@ -15,7 +15,6 @@ search_logs:
     end_time: 结束时间
     log_level: 日志等级
     components: 选择实例
-    components_placeholder: 至少选择一个实例
     keywords: 关键字
     keywords_placeholder: 搜索关键字，可选，以空格分割
     search: 搜索
@@ -36,11 +35,12 @@ search_logs:
     component: 组件
     log: 日志
   history:
+    instances: 实例
     running: 正在搜索
     finished: 已完成
     delete_selected: 删除选中的任务
     delete_all: 删除全部任务
-    state: 状态
+    status: 状态
     action: 操作
     detail: 查看详情
     delete: 删除

@@ -69,7 +69,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	hostname, port := s.forwarder.GetStatusConnProps()
 	tidbEndpoint := fmt.Sprintf("%s://%s:%d", reqScheme, hostname, port)
 	if err := request(tidbEndpoint, "schema", &dbInfos, s.HTTPClient); err != nil {
-		log.Error("fail to send schema request to tidb", zap.String("endpoint", tidbEndpoint), zap.Error(err))
+		log.Error("fail to send schema request to TiDB", zap.String("endpoint", tidbEndpoint), zap.Error(err))
 		return
 	}
 
@@ -81,7 +81,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 			continue
 		}
 		if err := request(tidbEndpoint, fmt.Sprintf("schema/%s", db.Name.O), &tableInfos, s.HTTPClient); err != nil {
-			log.Error("fail to send schema request to tidb", zap.String("endpoint", tidbEndpoint), zap.Error(err))
+			log.Error("fail to send schema request to TiDB", zap.String("endpoint", tidbEndpoint), zap.Error(err))
 			updateSuccess = false
 			continue
 		}
@@ -117,19 +117,20 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	}
 }
 
-func request(endpoint string, uri string, v interface{}, httpClient *http.Client) error {
-	url := fmt.Sprintf("%s/%s", endpoint, uri)
-	resp, err := httpClient.Get(url) //nolint:gosec
-	if err == nil {
-		defer resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			err = ErrTiDBHTTPRequestFailed.New("http status code: %d", resp.StatusCode)
-		}
-	}
+func request(endpoint string, path string, v interface{}, httpClient *http.Client) error {
+	uri := fmt.Sprintf("%s/%s", endpoint, path)
+
+	// FIXME: Better to assign a context
+	resp, err := httpClient.Get(uri) //nolint:gosec
 	if err != nil {
-		log.Warn("request failed", zap.String("url", url), zap.Error(err))
-		return err
+		return ErrTiDBHTTPRequestFailed.Wrap(err, "TiDB HTTP API request failed")
 	}
+
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return ErrTiDBHTTPRequestFailed.New("TiDB HTTP API returns non success status code")
+	}
+
 	decoder := json.NewDecoder(resp.Body)
 	return decoder.Decode(v)
 }

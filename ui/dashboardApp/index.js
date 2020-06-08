@@ -13,6 +13,7 @@ import LayoutMain from '@dashboard/layout/main'
 import LayoutFull from '@dashboard/layout/full'
 import LayoutSignIn from '@dashboard/layout/signin'
 
+import AppDebugPlayground from '@lib/apps/DebugPlayground/index.meta'
 import AppDashboardSettings from '@lib/apps/DashboardSettings/index.meta'
 import AppUserProfile from '@lib/apps/UserProfile/index.meta'
 import AppOverview from '@lib/apps/Overview/index.meta'
@@ -56,6 +57,7 @@ async function main() {
   )
 
   registry
+    .register(AppDebugPlayground)
     .register(AppDashboardSettings)
     .register(AppUserProfile)
     .register(AppOverview)

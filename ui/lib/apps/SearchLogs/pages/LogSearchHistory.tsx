@@ -1,21 +1,20 @@
+import client from '@lib/client'
+import { LogsearchTaskGroupModel } from '@lib/client'
+import { Head, CardTableV2, DateTime } from '@lib/components'
+import { ArrowLeftOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import { Badge, Button, Modal, Space } from 'antd'
-import moment, { Moment } from 'moment'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import {
   Selection,
   SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import { RangeValue } from 'rc-picker/lib/interface'
-import React, { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
-import { ArrowLeftOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
-
-import client, { LogsearchTaskGroupModel } from '@lib/client'
-import { CardTableV2, Head } from '@lib/components'
-import { DATE_TIME_FORMAT, LogLevelMap } from '../utils'
+import { LogLevelText } from '../utils'
 
 function componentRender({ target_stats: stats }) {
+  // FIXME: Extract common util
   const r: Array<string> = []
   if (stats?.num_tidb_nodes) {
     r.push(`${stats.num_tidb_nodes} TiDB`)
@@ -29,21 +28,26 @@ function componentRender({ target_stats: stats }) {
   return <span>{r.join(', ')}</span>
 }
 
-function formatTime(time: Moment | null | undefined): string {
-  if (!time) {
-    return ''
-  }
-  return time.format(DATE_TIME_FORMAT)
+function timeRender({ search_request }: LogsearchTaskGroupModel) {
+  return (
+    <span>
+      {search_request?.start_time && (
+        <DateTime.Calendar unixTimestampMs={search_request?.start_time} />
+      )}
+      {' ~ '}
+      {search_request?.end_time && (
+        <DateTime.Calendar unixTimestampMs={search_request?.end_time} />
+      )}
+    </span>
+  )
 }
 
-function timeRender({ search_request: request }) {
-  const startTime = request.start_time ? moment(request.start_time) : null
-  const endTime = request.end_time ? moment(request.end_time) : null
-  const timeRange = [startTime, endTime] as RangeValue<moment.Moment>
-  if (!timeRange?.[0] || !timeRange?.[1]) {
-    return ''
-  }
-  return `${formatTime(timeRange[0])} ~ ${formatTime(timeRange[1])}`
+function levelRender({ search_request: request }: LogsearchTaskGroupModel) {
+  return LogLevelText[request?.min_level!]
+}
+
+function patternRender({ search_request: request }: LogsearchTaskGroupModel) {
+  return (request?.patterns ?? []).join(' ')
 }
 
 export default function LogSearchingHistory() {
@@ -61,20 +65,7 @@ export default function LogSearchingHistory() {
     getData()
   }, [])
 
-  function levelRender({ search_request: request }) {
-    return LogLevelMap[request.min_level!]
-  }
-
-  function patternRender({ search_request: request }) {
-    return request.patterns && request.patterns.length > 0
-      ? request.patterns.join(' ')
-      : ''
-  }
-
-  function stateRender({ state }) {
-    if (state === undefined || state < 1) {
-      return
-    }
+  function stateRender({ state }: LogsearchTaskGroupModel) {
     switch (state) {
       case 1:
         return (
@@ -111,9 +102,9 @@ export default function LogSearchingHistory() {
       onOk: async () => {
         for (const taskGroupID of selectedRowKeys) {
           await client.getInstance().logsTaskgroupsIdDelete(taskGroupID)
-          const res = await client.getInstance().logsTaskgroupsGet()
-          setTaskGroups(res.data)
         }
+        const res = await client.getInstance().logsTaskgroupsGet()
+        setTaskGroups(res.data)
       },
     })
   }
@@ -132,7 +123,7 @@ export default function LogSearchingHistory() {
           if (key === undefined) {
             continue
           }
-          await client.getInstance().logsTaskgroupsIdDelete(key + '')
+          await client.getInstance().logsTaskgroupsIdDelete(String(key))
         }
         const res = await client.getInstance().logsTaskgroupsGet()
         setTaskGroups(res.data)
@@ -152,42 +143,42 @@ export default function LogSearchingHistory() {
       name: t('search_logs.common.time_range'),
       key: 'time',
       minWidth: 200,
-      maxWidth: 400,
+      maxWidth: 300,
       onRender: timeRender,
     },
     {
       name: t('search_logs.preview.level'),
       key: 'level',
-      minWidth: 100,
-      maxWidth: 200,
+      minWidth: 70,
+      maxWidth: 120,
       onRender: levelRender,
     },
     {
-      name: t('search_logs.preview.component'),
+      name: t('search_logs.history.instances'),
       key: 'target_stats',
-      minWidth: 150,
-      maxWidth: 230,
+      minWidth: 100,
+      maxWidth: 250,
       onRender: componentRender,
     },
     {
       name: t('search_logs.common.keywords'),
       key: 'keywords',
-      minWidth: 150,
-      maxWidth: 230,
+      minWidth: 100,
+      maxWidth: 200,
       onRender: patternRender,
     },
     {
-      name: t('search_logs.history.state'),
+      name: t('search_logs.history.status'),
       key: 'state',
-      minWidth: 150,
-      maxWidth: 230,
+      minWidth: 100,
+      maxWidth: 150,
       onRender: stateRender,
     },
     {
       name: t('search_logs.history.action'),
       key: 'action',
-      minWidth: 150,
-      maxWidth: 230,
+      minWidth: 100,
+      maxWidth: 200,
       onRender: actionRender,
     },
   ]

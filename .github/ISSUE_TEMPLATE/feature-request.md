@@ -2,7 +2,7 @@
 name: "\U0001F680 Feature Request"
 about: I have a suggestion
 title: ''
-labels: status/discussion, type/enhancement
+labels: status/discussion, type/feature-request
 assignees: ''
 
 ---

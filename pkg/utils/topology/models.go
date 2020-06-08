@@ -11,19 +11,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package clusterinfo
+package topology
 
 type ComponentStatus uint
 
 const (
-	// ComponentStatusUnreachable means unreachable or disconnected
 	ComponentStatusUnreachable ComponentStatus = 0
 	ComponentStatusUp          ComponentStatus = 1
 	ComponentStatusTombstone   ComponentStatus = 2
 	ComponentStatusOffline     ComponentStatus = 3
-
-	// PD's Store may have state name down.
-	ComponentStatusDown ComponentStatus = 4
+	ComponentStatusDown        ComponentStatus = 4
 )
 
 type PDInfo struct {
@@ -33,7 +30,7 @@ type PDInfo struct {
 	Port           uint            `json:"port"`
 	DeployPath     string          `json:"deploy_path"`
 	Status         ComponentStatus `json:"status"`
-	StartTimestamp int64           `json:"start_timestamp"`
+	StartTimestamp int64           `json:"start_timestamp"` // Ts = 0 means unknown
 }
 
 type TiDBInfo struct {
@@ -47,7 +44,8 @@ type TiDBInfo struct {
 	StartTimestamp int64           `json:"start_timestamp"`
 }
 
-type TiKVInfo struct {
+// Store may be a TiKV store or TiFlash store
+type StoreInfo struct {
 	GitHash        string            `json:"git_hash"`
 	Version        string            `json:"version"`
 	IP             string            `json:"ip"`
@@ -59,31 +57,19 @@ type TiKVInfo struct {
 	StartTimestamp int64             `json:"start_timestamp"`
 }
 
-type TiFlashInfo struct {
-	Version        string            `json:"version"`
-	IP             string            `json:"ip"`
-	Port           uint              `json:"port"`
-	DeployPath     string            `json:"deploy_path"`
-	Status         ComponentStatus   `json:"status"`
-	StatusPort     uint              `json:"status_port"`
-	Labels         map[string]string `json:"labels"`
-	StartTimestamp int64             `json:"start_timestamp"`
+type StandardComponentInfo struct {
+	IP   string `json:"ip"`
+	Port uint   `json:"port"`
 }
 
 type AlertManagerInfo struct {
-	IP         string `json:"ip"`
-	Port       uint   `json:"port"`
-	DeployPath string `json:"deploy_path"`
+	StandardComponentInfo
 }
 
 type GrafanaInfo struct {
-	IP         string `json:"ip"`
-	Port       uint   `json:"port"`
-	DeployPath string `json:"deploy_path"`
+	StandardComponentInfo
 }
 
 type PrometheusInfo struct {
-	IP         string `json:"ip"`
-	Port       uint   `json:"port"`
-	BinaryPath string `json:"binary_path"`
+	StandardComponentInfo
 }

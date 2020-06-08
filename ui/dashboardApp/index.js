@@ -47,6 +47,7 @@ async function main() {
     { registry }
   )
 
+  // FIXME: Should we mount signin page when embeded by iframe?
   singleSpa.registerApplication(
     'signin',
     AppRegistry.newReactSpaApp(() => LayoutSignIn, 'root'),

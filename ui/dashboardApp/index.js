@@ -25,6 +25,9 @@ import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 
 async function main() {
   appOptions.parse()
+  if (appOptions.get().lang) {
+    i18n.changeLang(appOptions.get().lang)
+  }
   client.init()
 
   i18n.addTranslations(

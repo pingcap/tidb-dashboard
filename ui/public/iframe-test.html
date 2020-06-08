@@ -1,16 +1,39 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8"/>
-    <link rel="icon" href="/favicon.ico"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>TiDB Dashboard iframe Test</title>
+    <script>
+      function changeApp(app, lang) {
+        console.log('app:', app)
+        const dashboardUrl = 'http://192.168.188.12:3000/dashboard#/'
+        const access_token =
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTE2NzEzMjMsIm9yaWdfaWF0IjoxNTkxNTg0OTIzLCJwIjoiQlZIZXFvWFhDemV4ZlZBMDFyN2lveG1VS2c1Z01LcXVxWjduRDhxdEJKNWVkSS9EbDdlTmFoVi81SHZTc3B2WlN2dklaQjEreHhWaGhvSXppMWNmWmNWR3hxeERtNEJucjZHb1JJTS9ldE1KNTFibkFFZC8ifQ.186FlB6K8AgwgW7qQfrIi--hvP3PMC35y-DJO_QpiGs'
+        const fullUrl = `${dashboardUrl}${app}?access_token=${access_token}&headless=true&lang=${
+          lang || 'en'
+        }`
+        document.getElementById('dashboard').src = fullUrl
+      }
+      window.onload = function () {
+        changeApp('statement')
+      }
+    </script>
   </head>
   <body>
     <div style="margin: 20px;">
       <h1>iframe test</h1>
+      <div>
+        <a href="#" onclick="changeApp('statement'); return false;"
+          >Statement</a
+        > | 
+        <a href="#" onclick="changeApp('slow_query'); return false;"
+          >Slow Query</a
+        >
+      </div>
       <div style="border: 1px solid #52c41a; height: 80vh;">
-        <iframe id="dashboard" src="http://192.168.188.12:3000/dashboard#/statement?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTE2NzEzMjMsIm9yaWdfaWF0IjoxNTkxNTg0OTIzLCJwIjoiQlZIZXFvWFhDemV4ZlZBMDFyN2lveG1VS2c1Z01LcXVxWjduRDhxdEJKNWVkSS9EbDdlTmFoVi81SHZTc3B2WlN2dklaQjEreHhWaGhvSXppMWNmWmNWR3hxeERtNEJucjZHb1JJTS9ldE1KNTFibkFFZC8ifQ.186FlB6K8AgwgW7qQfrIi--hvP3PMC35y-DJO_QpiGs&headless=true&lang=en" width="100%" height="100%"/>
+        <iframe id="dashboard" width="100%" height="100%" />
       </div>
     </div>
   </body>

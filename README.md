@@ -1,6 +1,6 @@
 # TiDB Dashboard
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 TiDB Dashboard is a Web UI for monitoring, diagnosing and managing TiDB cluster.
@@ -46,12 +46,12 @@ Thank you to all the people who already contributed to TiDB Dashboard!
 <table>
   <tr>
     <td align="center"><a href="https://github.com/Fullstop000"><img src="https://avatars1.githubusercontent.com/u/12471960?v=4" width="100px;" alt=""/><br /><sub><b>Fullstop000</b></sub></a><br /><a href="https://github.com/pingcap-incubator/tidb-dashboard/commits?author=Fullstop000" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/zzh-wisdom"><img src="https://avatars2.githubusercontent.com/u/52516344?v=4" width="100px;" alt=""/><br /><sub><b>zzh-wisdom</b></sub></a><br /><a href="https://github.com/pingcap-incubator/tidb-dashboard/commits?author=zzh-wisdom" title="Code">💻</a></td>
   </tr>
 </table>
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Architecture

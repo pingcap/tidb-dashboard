@@ -49,6 +49,13 @@ function InstanceStatusBadge({ status }: IInstanceStatusBadgeProps) {
           text={t('component.instanceStatusBadge.status.down')}
         />
       )
+    case InstanceStatus.Unreachable:
+      return (
+        <Badge
+          status="error"
+          text={t('component.instanceStatusBadge.status.unreachable')}
+        />
+      )
     case InstanceStatus.Up:
       return (
         <Badge

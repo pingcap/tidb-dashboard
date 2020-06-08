@@ -18,11 +18,15 @@ server_configs:
 
 pd_servers:
   - host: 10.0.1.11
+  - host: 10.0.1.12
+  - host: 10.0.1.13
 
 tikv_servers:
   - host: 10.0.1.12
 
 tidb_servers:
+  - host: 10.0.1.11
+  - host: 10.0.1.12
   - host: 10.0.1.13
 
 tiflash_servers:

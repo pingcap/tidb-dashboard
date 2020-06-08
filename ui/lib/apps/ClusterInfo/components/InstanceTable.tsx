@@ -28,10 +28,8 @@ function StatusColumn({
 
   return (
     <span>
-      <InstanceStatusBadge status={node.status} />
       {node.instanceKind === 'tidb' && node.status !== InstanceStatus.Up && (
         <>
-          <Divider type="vertical" />
           <Popconfirm
             title={t(
               'cluster_info.list.instance_table.actions.hide_db.confirm'
@@ -48,8 +46,10 @@ function StatusColumn({
               </a>
             </Tooltip>
           </Popconfirm>
+          <Divider type="vertical" />
         </>
       )}
+      <InstanceStatusBadge status={node.status} />
     </span>
   )
 }
@@ -120,8 +120,8 @@ export default function ListPage() {
       {
         name: t('cluster_info.list.instance_table.columns.status'),
         key: 'status',
-        minWidth: 80,
-        maxWidth: 100,
+        minWidth: 100,
+        maxWidth: 120,
         onRender: (node) => (
           <StatusColumn node={node} onHideTiDB={handleHideTiDB} />
         ),
@@ -193,6 +193,7 @@ export default function ListPage() {
         <Alert message="Load PD instances failed" type="error" showIcon />
       )}
       <CardTableV2
+        disableSelectionZone
         cardNoMargin
         loading={loadingTiDB || loadingStores || loadingPD}
         columns={columns}

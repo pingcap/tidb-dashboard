@@ -37,11 +37,11 @@ func FetchPDTopology(pdClient *pd.Client) ([]PDInfo, error) {
 	ds := struct {
 		Count   int `json:"count"`
 		Members []struct {
-			GitHash       string      `json:"git_hash"`
-			ClientUrls    []string    `json:"client_urls"`
-			DeployPath    string      `json:"deploy_path"`
-			BinaryVersion string      `json:"binary_version"`
-			MemberID      json.Number `json:"member_id"`
+			GitHash       string   `json:"git_hash"`
+			ClientUrls    []string `json:"client_urls"`
+			DeployPath    string   `json:"deploy_path"`
+			BinaryVersion string   `json:"binary_version"`
+			MemberID      uint64   `json:"member_id"`
 		} `json:"members"`
 	}{}
 
@@ -64,7 +64,7 @@ func FetchPDTopology(pdClient *pd.Client) ([]PDInfo, error) {
 		}
 
 		var storeStatus ComponentStatus
-		if _, ok := healthMap[ds.MemberID.String()]; ok {
+		if _, ok := healthMap[ds.MemberID]; ok {
 			storeStatus = ComponentStatusUp
 		} else {
 			storeStatus = ComponentStatusUnreachable
@@ -105,14 +105,15 @@ func fetchPDStartTimestamp(pdClient *pd.Client) (int64, error) {
 	return ds.StartTimestamp, nil
 }
 
-func fetchPDHealth(pdClient *pd.Client) (map[string]struct{}, error) {
+func fetchPDHealth(pdClient *pd.Client) (map[uint64]struct{}, error) {
 	data, err := pdClient.SendRequest("/pd/api/v1/health")
 	if err != nil {
 		return nil, err
 	}
 
 	var healths []struct {
-		MemberID json.Number `json:"member_id"`
+		MemberID uint64 `json:"member_id"`
+		Health   bool   `json:"health"`
 	}
 
 	err = json.Unmarshal(data, &healths)
@@ -120,9 +121,11 @@ func fetchPDHealth(pdClient *pd.Client) (map[string]struct{}, error) {
 		return nil, ErrInvalidTopologyData.Wrap(err, "PD health API unmarshal failed")
 	}
 
-	memberHealth := map[string]struct{}{}
+	memberHealth := map[uint64]struct{}{}
 	for _, v := range healths {
-		memberHealth[v.MemberID.String()] = struct{}{}
+		if v.Health {
+			memberHealth[v.MemberID] = struct{}{}
+		}
 	}
 	return memberHealth, nil
 }

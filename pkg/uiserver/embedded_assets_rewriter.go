@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
@@ -31,7 +32,7 @@ func Assets(cfg *config.Config) http.FileSystem {
 			fi := f.(os.FileInfo)
 			m[path] = &vfsgen۰CompressedFileInfo{
 				name:              fi.Name(),
-				modTime:           fi.ModTime(),
+				modTime:           time.Now(),
 				uncompressedSize:  int64(len(newContent)),
 				compressedContent: bs,
 			}

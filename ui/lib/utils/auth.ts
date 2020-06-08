@@ -1,9 +1,11 @@
 const tokenKey = 'dashboard_auth_token'
+let memAuthToken = ''
 
 export const signInRoute = '/signin'
 
+// FIXME: use strategy design mode
 export function getAuthToken() {
-  return localStorage.getItem(tokenKey)
+  return localStorage.getItem(tokenKey) || memAuthToken
 }
 
 export function getAuthTokenAsBearer() {
@@ -14,10 +16,16 @@ export function getAuthTokenAsBearer() {
   return `Bearer ${token}`
 }
 
+// FIXME: use strategy design mode
+export function setMemAuthToken(token) {
+  memAuthToken = token
+}
+
 export function setAuthToken(token) {
   localStorage.setItem(tokenKey, token)
 }
 
 export function clearAuthToken() {
+  memAuthToken = ''
   localStorage.removeItem(tokenKey)
 }

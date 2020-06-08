@@ -5,6 +5,17 @@
 
 TiDB Dashboard is a Web UI for monitoring, diagnosing and managing TiDB cluster.
 
+## Documentation
+
+- [Product User Manual (Chinese)](https://pingcap.com/docs-cn/stable/dashboard/dashboard-intro/)
+- [FAQ (Chinese)](https://pingcap.com/docs-cn/stable/dashboard/dashboard-faq/)
+
+## Question, Suggestion, Support
+
+Feel free to open issues in this repo for questions, suggestions and support. You may also consider join our community chat in the Slack channel [#sig-dashboard](https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard&ref=github_dashboard_repo).
+
+For Chinese users, you may also consider visiting PingCAP official user forum [AskTUG.com](https://asktug.com/) to make life easier.
+
 ## Getting Started
 
 The most easy way to use TiDB Dashboard with an existing TiDB cluster is to use the one embedded
@@ -22,12 +33,26 @@ for a list, in which we have also marked the difficulty level. We have prepared 
 For a detailed step-by-step contributing guide, or want to build TiDB Dashboard from source,
 see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-### Ask for Help
-
 If you have any questions about development, feel free to join [TiDB Dashboard SIG]
 (Special Interest Group):
 
 - Slack: [#sig-dashboard](https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard&ref=github_dashboard_repo)
+
+Thank you to all the people who already contributed to TiDB Dashboard!
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/Fullstop000"><img src="https://avatars1.githubusercontent.com/u/12471960?v=4" width="100px;" alt=""/><br /><sub><b>Fullstop000</b></sub></a><br /><a href="https://github.com/pingcap-incubator/tidb-dashboard/commits?author=Fullstop000" title="Code">💻</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Architecture
 
@@ -38,7 +63,7 @@ TiDB Dashboard can also be integrated into PD, as follows:
 
 ![](etc/arch_overview.svg)
 
-## For Developers How To ...
+## For Developers How to ...
 
 ### Change the base URL of Dashboard API endpoint
 
@@ -93,21 +118,8 @@ change is merged to master.
 [tidb dashboard sig]: https://github.com/pingcap/community/tree/master/special-interest-groups/sig-dashboard
 [pd]: https://github.com/pingcap/pd
 
-## Contributors ✨
+## License
 
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+[Apache License](/LICENSE)
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tr>
-    <td align="center"><a href="https://github.com/Fullstop000"><img src="https://avatars1.githubusercontent.com/u/12471960?v=4" width="100px;" alt=""/><br /><sub><b>Fullstop000</b></sub></a><br /><a href="https://github.com/pingcap-incubator/tidb-dashboard/commits?author=Fullstop000" title="Code">💻</a></td>
-  </tr>
-</table>
-
-<!-- markdownlint-enable -->
-<!-- prettier-ignore-end -->
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+Copyright 2020 PingCAP, Inc.

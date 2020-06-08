@@ -1,0 +1,24 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "Fullstop000",
+      "name": "Fullstop000",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/12471960?v=4",
+      "profile": "https://github.com/Fullstop000",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "tidb-dashboard",
+  "projectOwner": "pingcap-incubator",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}

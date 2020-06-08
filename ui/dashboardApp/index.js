@@ -7,7 +7,7 @@ import * as routing from '@dashboard/routing'
 import * as auth from '@lib/utils/auth'
 import * as i18n from '@lib/utils/i18n'
 import * as client from '@dashboard/client'
-import * as appOptions from '@dashboard/appOptions'
+import * as appOptions from '@lib/utils/appOptions'
 
 import LayoutMain from '@dashboard/layout/main'
 import LayoutFull from '@dashboard/layout/full'
@@ -25,10 +25,7 @@ import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 
 async function main() {
-  appOptions.parse()
-  if (appOptions.get().lang) {
-    i18n.changeLang(appOptions.get().lang)
-  }
+  appOptions.init()
   client.init()
 
   i18n.addTranslations(
@@ -69,13 +66,6 @@ async function main() {
     .register(AppSearchLogs)
     .register(AppInstanceProfiling)
     .register(AppSlowQuery)
-
-  // token
-  if (!routing.isLocationMatchPrefix(auth.signInRoute)) {
-    if (appOptions.get().token) {
-      auth.setMemAuthToken(appOptions.get().token)
-    }
-  }
 
   if (routing.isLocationMatch('/')) {
     singleSpa.navigateToUrl('#' + registry.getDefaultRouter())

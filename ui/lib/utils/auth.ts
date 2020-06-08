@@ -1,11 +1,13 @@
-const tokenKey = 'dashboard_auth_token'
-let memAuthToken = ''
-
 export const signInRoute = '/signin'
 
-// FIXME: use strategy design mode
+let store: AuthTokenStore
+
+export function setStore(s: AuthTokenStore) {
+  store = s
+}
+
 export function getAuthToken() {
-  return localStorage.getItem(tokenKey) || memAuthToken
+  return store.getAuthToken()
 }
 
 export function getAuthTokenAsBearer() {
@@ -16,16 +18,50 @@ export function getAuthTokenAsBearer() {
   return `Bearer ${token}`
 }
 
-// FIXME: use strategy design mode
-export function setMemAuthToken(token) {
-  memAuthToken = token
-}
-
 export function setAuthToken(token) {
-  localStorage.setItem(tokenKey, token)
+  store.setAuthToken(token)
 }
 
 export function clearAuthToken() {
-  memAuthToken = ''
-  localStorage.removeItem(tokenKey)
+  store.clearAuthToken()
+}
+
+//////////////////////////////////////
+
+interface AuthTokenStore {
+  getAuthToken: () => string | null
+  setAuthToken: (token) => void
+  clearAuthToken: () => void
+}
+
+export class MemAuthTokenStore implements AuthTokenStore {
+  private memAuthToken: string | null = null
+
+  getAuthToken() {
+    return this.memAuthToken
+  }
+
+  setAuthToken(token) {
+    this.memAuthToken = token
+  }
+
+  clearAuthToken() {
+    this.memAuthToken = null
+  }
+}
+
+export class LocalStorageAuthTokenStore implements AuthTokenStore {
+  private readonly tokenKey = 'dashboard_auth_token'
+
+  getAuthToken() {
+    return localStorage.getItem(this.tokenKey)
+  }
+
+  setAuthToken(token) {
+    localStorage.setItem(this.tokenKey, token)
+  }
+
+  clearAuthToken() {
+    localStorage.removeItem(this.tokenKey)
+  }
 }

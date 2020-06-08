@@ -40,7 +40,7 @@ async function main() {
   singleSpa.registerApplication(
     'layout',
     AppRegistry.newReactSpaApp(
-      () => (appOptions.get().headless ? LayoutFull : LayoutMain),
+      () => (appOptions.get().hideNav ? LayoutFull : LayoutMain),
       'root'
     ),
     () => {

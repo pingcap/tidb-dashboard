@@ -11,7 +11,7 @@
         const dashboardUrl = 'http://192.168.188.12:3000/dashboard#/'
         const access_token =
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTE2NzEzMjMsIm9yaWdfaWF0IjoxNTkxNTg0OTIzLCJwIjoiQlZIZXFvWFhDemV4ZlZBMDFyN2lveG1VS2c1Z01LcXVxWjduRDhxdEJKNWVkSS9EbDdlTmFoVi81SHZTc3B2WlN2dklaQjEreHhWaGhvSXppMWNmWmNWR3hxeERtNEJucjZHb1JJTS9ldE1KNTFibkFFZC8ifQ.186FlB6K8AgwgW7qQfrIi--hvP3PMC35y-DJO_QpiGs'
-        const fullUrl = `${dashboardUrl}${app}?access_token=${access_token}&headless=true&lang=${
+        const fullUrl = `${dashboardUrl}${app}?access_token=${access_token}&hideNav=true&lang=${
           lang || 'en'
         }`
         document.getElementById('dashboard').src = fullUrl

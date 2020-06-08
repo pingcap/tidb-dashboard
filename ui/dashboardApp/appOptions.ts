@@ -1,12 +1,12 @@
 export interface AppOptions {
   token: string | null
-  headless: boolean
+  hideNav: boolean
   lang: string | null
 }
 
 let appOptions: AppOptions = {
   token: null,
-  headless: false,
+  hideNav: false,
   lang: null,
 }
 
@@ -24,7 +24,7 @@ export function parse() {
   const p = new URLSearchParams(q)
   appOptions = {
     token: p.get('access_token'),
-    headless: Boolean(p.get('headless')),
+    hideNav: p.get('hideNav') === 'true' || p.get('hideNav') === '1',
     lang: p.get('lang'),
   }
 }

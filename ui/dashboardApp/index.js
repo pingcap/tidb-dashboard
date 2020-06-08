@@ -10,6 +10,7 @@ import * as client from '@dashboard/client'
 import * as appOptions from '@dashboard/appOptions'
 
 import LayoutMain from '@dashboard/layout/main'
+import LayoutFull from '@dashboard/layout/full'
 import LayoutSignIn from '@dashboard/layout/signin'
 
 import AppDashboardSettings from '@lib/apps/DashboardSettings/index.meta'
@@ -36,16 +37,17 @@ async function main() {
 
   const registry = new AppRegistry()
 
-  if (!appOptions.get().headless) {
-    singleSpa.registerApplication(
-      'layout',
-      AppRegistry.newReactSpaApp(() => LayoutMain, 'root'),
-      () => {
-        return !routing.isLocationMatchPrefix(auth.signInRoute)
-      },
-      { registry }
-    )
-  }
+  singleSpa.registerApplication(
+    'layout',
+    AppRegistry.newReactSpaApp(
+      () => (appOptions.get().headless ? LayoutFull : LayoutMain),
+      'root'
+    ),
+    () => {
+      return !routing.isLocationMatchPrefix(auth.signInRoute)
+    },
+    { registry }
+  )
 
   singleSpa.registerApplication(
     'signin',

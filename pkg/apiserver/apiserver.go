@@ -107,6 +107,7 @@ func (s *Service) Start(ctx context.Context) error {
 			s.newPDDataProvider,
 			dbstore.NewDBStore,
 			pd.NewEtcdClient,
+			pd.NewPDClient,
 			config.NewDynamicConfigManager,
 			tidb.NewForwarderConfig,
 			tidb.NewForwarder,

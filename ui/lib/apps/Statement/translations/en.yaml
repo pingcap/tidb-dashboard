@@ -22,8 +22,8 @@ statement:
         slow_query: Slow Query
     overview:
       toolbar:
-        select_schemas: Select Database
-        select_stmt_types: Select Statement Kind
+        select_schemas: Database
+        select_stmt_types: Statement Kind
         select_columns:
           show_full_sql: Show Full Query Text
         refresh: Refresh

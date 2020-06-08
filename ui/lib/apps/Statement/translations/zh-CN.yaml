@@ -22,8 +22,8 @@ statement:
         slow_query: 慢查询
     overview:
       toolbar:
-        select_schemas: 选择数据库
-        select_stmt_types: 选择 SQL 类型
+        select_schemas: 数据库
+        select_stmt_types: SQL 语句类型
         select_columns:
           show_full_sql: 显示完整 SQL 文本
         refresh: 刷新

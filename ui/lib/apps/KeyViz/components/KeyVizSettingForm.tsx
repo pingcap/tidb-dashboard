@@ -12,7 +12,6 @@ import {
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import client, { ConfigKeyVisualConfig } from '@lib/client'
-import { setHidden } from '@lib/utils/form'
 
 const policyConfigurable = process.env.NODE_ENV === 'development'
 
@@ -175,17 +174,23 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
                   <Form.Item
                     name="policy"
                     label={t('keyviz.settings.policy')}
-                    {...setHidden(!policyConfigurable || !enabled)}
+                    style={{
+                      display:
+                        !policyConfigurable || !enabled ? 'none' : undefined,
+                    }}
                   >
                     <Radio.Group>{policyOptions}</Radio.Group>
                   </Form.Item>
                   <Form.Item
                     name="policy_kv_separator"
                     label={t('keyviz.settings.separator')}
+                    style={{
+                      display:
+                        !policyConfigurable || !enabled || policy !== 'kv'
+                          ? 'none'
+                          : undefined,
+                    }}
                     {...validateSeparator(separator)}
-                    {...setHidden(
-                      !policyConfigurable || !enabled || policy !== 'kv'
-                    )}
                   >
                     <Input
                       placeholder={t('keyviz.settings.separator_placeholder')}

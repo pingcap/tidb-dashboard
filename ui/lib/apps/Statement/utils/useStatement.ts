@@ -7,7 +7,7 @@ import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 import {
   calcValidStatementTimeRange,
-  DEF_TIME_RANGE,
+  DEFAULT_TIME_RANGE,
   TimeRange,
 } from '../pages/List/TimeRangeSelector'
 
@@ -25,7 +25,7 @@ export interface IStatementQueryOptions {
 }
 
 export const DEF_STMT_QUERY_OPTIONS: IStatementQueryOptions = {
-  timeRange: DEF_TIME_RANGE,
+  timeRange: DEFAULT_TIME_RANGE,
   schemas: [],
   stmtTypes: [],
 }

@@ -14,12 +14,21 @@ import styles from './TimeRangeSelector.module.less'
 // but they have totally different logic, so it prefers to not reuse their duplicated part
 
 const RECENT_SECONDS = [
+  15 * 60,
   30 * 60,
   60 * 60,
-  3 * 60 * 60,
+
+  2 * 60 * 60,
   6 * 60 * 60,
   12 * 60 * 60,
+
   24 * 60 * 60,
+  2 * 24 * 60 * 60,
+  3 * 24 * 60 * 60,
+
+  7 * 24 * 60 * 60,
+  14 * 24 * 60 * 60,
+  28 * 24 * 60 * 60,
 ]
 
 interface RecentSecTime {
@@ -34,7 +43,7 @@ interface RangeTime {
 
 export type TimeRange = RecentSecTime | RangeTime
 
-export const DEF_TIME_RANGE: TimeRange = {
+export const DEFAULT_TIME_RANGE: TimeRange = {
   type: 'recent',
   value: 30 * 60,
 }

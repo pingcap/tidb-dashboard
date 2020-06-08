@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -16,25 +15,25 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/clusterinfo"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
 )
 
 var (
-	ErrNS                        = errorx.NewNamespace("error.api.metrics")
-	ErrEtcdAccessFailed          = ErrNS.NewType("etcd_access_failed")
-	ErrPrometheusNotFound        = ErrNS.NewType("prometheus_not_found")
-	ErrPrometheusRegistryInvalid = ErrNS.NewType("prometheus_registry_invalid")
-	ErrPrometheusQueryFailed     = ErrNS.NewType("prometheus_query_failed")
+	ErrNS                    = errorx.NewNamespace("error.api.metrics")
+	ErrPrometheusNotFound    = ErrNS.NewType("prometheus_not_found")
+	ErrPrometheusQueryFailed = ErrNS.NewType("prometheus_query_failed")
 )
 
 type Service struct {
 	ctx context.Context
 
+	httpClient *http.Client
 	etcdClient *clientv3.Client
 }
 
-func NewService(lc fx.Lifecycle, etcdClient *clientv3.Client) *Service {
+func NewService(lc fx.Lifecycle, httpClient *http.Client, etcdClient *clientv3.Client) *Service {
 	s := &Service{
+		httpClient: httpClient,
 		etcdClient: etcdClient,
 	}
 
@@ -81,20 +80,13 @@ func (s *Service) queryHandler(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(s.ctx, 2*time.Second)
-	defer cancel()
-	resp, err := s.etcdClient.Get(ctx, "/topology/prometheus", clientv3.WithPrefix())
+	pi, err := topology.FetchPrometheusTopology(s.ctx, s.etcdClient)
 	if err != nil {
-		_ = c.Error(ErrEtcdAccessFailed.NewWithNoMessage())
+		_ = c.Error(err)
 		return
 	}
-	if resp.Count == 0 {
+	if pi == nil {
 		_ = c.Error(ErrPrometheusNotFound.NewWithNoMessage())
-		return
-	}
-	info := clusterinfo.PrometheusInfo{}
-	if err = json.Unmarshal(resp.Kvs[0].Value, &info); err != nil {
-		_ = c.Error(ErrPrometheusRegistryInvalid.NewWithNoMessage())
 		return
 	}
 
@@ -104,23 +96,32 @@ func (s *Service) queryHandler(c *gin.Context) {
 	params.Add("end", strconv.Itoa(req.EndTimeSec))
 	params.Add("step", strconv.Itoa(req.StepSec))
 
-	client := http.Client{
-		Timeout: 10 * time.Second,
-	}
-	promResp, err := client.Get(fmt.Sprintf("http://%s:%d/api/v1/query_range?%s", info.IP, info.Port, params.Encode()))
+	uri := fmt.Sprintf("http://%s:%d/api/v1/query_range?%s", pi.IP, pi.Port, params.Encode())
+	promReq, err := http.NewRequestWithContext(s.ctx, http.MethodGet, uri, nil)
 	if err != nil {
-		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to query Prometheus"))
+		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to build Prometheus request"))
 		return
 	}
+
+	newHTTPClient := *s.httpClient
+	newHTTPClient.Timeout = 10 * time.Second
+	promResp, err := newHTTPClient.Do(promReq)
+	if err != nil {
+		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to send requests to Prometheus"))
+		return
+	}
+
 	defer promResp.Body.Close()
 	if promResp.StatusCode != http.StatusOK {
 		_ = c.Error(ErrPrometheusQueryFailed.New("failed to query Prometheus"))
 		return
 	}
+
 	body, err := ioutil.ReadAll(promResp.Body)
 	if err != nil {
-		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to query Prometheus"))
+		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to read Prometheus query result"))
 		return
 	}
+
 	c.Data(promResp.StatusCode, promResp.Header.Get("content-type"), body)
 }

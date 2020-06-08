@@ -1,4 +1,4 @@
-import { useMount, useUnmount } from '@umijs/hooks'
+import { useMount, useUnmount, usePersistFn } from '@umijs/hooks'
 import { useState, useRef, useEffect } from 'react'
 import { CancelToken, AxiosPromise, CancelTokenSource } from 'axios'
 import axios from 'axios'
@@ -34,7 +34,7 @@ export function useClientRequest<T>(
   const cancelTokenSource = useRef<CancelTokenSource | null>(null)
   const mounted = useRef(false)
 
-  const sendRequest = async () => {
+  const sendRequest = usePersistFn(async () => {
     if (!mounted.current) {
       return
     }
@@ -72,7 +72,7 @@ export function useClientRequest<T>(
     cancelTokenSource.current = null
 
     afterRequest && afterRequest()
-  }
+  })
 
   useMount(() => {
     mounted.current = true
@@ -138,7 +138,7 @@ export function useBatchClientRequest<T>(
     }
   }
 
-  const sendRequest = async () => {
+  const sendRequest = usePersistFn(async () => {
     if (!mounted.current) {
       return
     }
@@ -167,7 +167,7 @@ export function useBatchClientRequest<T>(
     cancelTokenSource.current = null
 
     afterRequest && afterRequest()
-  }
+  })
 
   useMount(() => {
     mounted.current = true

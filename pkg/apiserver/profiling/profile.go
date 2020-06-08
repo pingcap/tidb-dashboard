@@ -125,11 +125,10 @@ func (f *fetcher) Fetch(src string, duration, timeout time.Duration) (*profile.P
 }
 
 func (f *fetcher) getProfile(target *model.RequestTargetNode, source string) (*profile.Profile, error) {
-	req, err := http.NewRequest(http.MethodGet, source, nil)
+	req, err := http.NewRequestWithContext(f.ctx, http.MethodGet, source, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a new request %s: %v", source, err)
 	}
-	req = req.WithContext(f.ctx)
 	if target.Kind == model.NodeKindPD {
 		// forbidden PD follower proxy
 		req.Header.Add("PD-Allow-follower-handle", "true")
@@ -161,19 +160,18 @@ func profileAndWriteSVG(ctx context.Context, target *model.RequestTargetNode, fi
 }
 
 func fetchTiKVFlameGraphSVG(ctx context.Context, httpClient *http.Client, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, schema string) (string, error) {
-	url := fmt.Sprintf("%s://%s:%d/debug/pprof/profile?seconds=%d", schema, target.IP, target.Port, profileDurationSecs)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	uri := fmt.Sprintf("%s://%s:%d/debug/pprof/profile?seconds=%d", schema, target.IP, target.Port, profileDurationSecs)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
 	if err != nil {
-		return "", fmt.Errorf("failed to create a new request %s: %v", url, err)
+		return "", fmt.Errorf("failed to create a new request %s: %v", uri, err)
 	}
-	req = req.WithContext(ctx)
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("request %s failed: %v", url, err)
+		return "", fmt.Errorf("request %s failed: %v", uri, err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("response of request %s is not ok: %s", url, resp.Status)
+		return "", fmt.Errorf("response of request %s is not ok: %s", uri, resp.Status)
 	}
 	svgFilePath, err := writePprofRsSVG(resp.Body, fileNameWithoutExt)
 	if err != nil {

@@ -12,16 +12,45 @@ import {
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import React, { useCallback, useMemo } from 'react'
 import { usePersistFn } from '@umijs/hooks'
-
 import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
+
 import styles from './index.module.less'
+
+export { AntCheckboxGroupHeader } from './GroupHeader'
 
 DetailsList.whyDidYouRender = {
   customName: 'DetailsList',
 } as any
 
-const MemoDetailsList = React.memo(DetailsList)
+function renderStickyHeader(props, defaultRender) {
+  if (!props) {
+    return null
+  }
+  return (
+    <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
+      <div className={styles.tableHeader}>{defaultRender!(props)}</div>
+    </Sticky>
+  )
+}
+
+function renderCheckbox(props) {
+  return <Checkbox checked={props?.checked} />
+}
+
+export function ImprovedDetailsList(props: IDetailsListProps) {
+  return (
+    <DetailsList
+      onRenderDetailsHeader={renderStickyHeader}
+      onRenderCheckbox={renderCheckbox}
+      {...props}
+    />
+  )
+}
+
+ImprovedDetailsList.whyDidYouRender = true
+
+export const MemoDetailsList = React.memo(ImprovedDetailsList)
 
 function copyAndSort<T>(
   items: T[],
@@ -64,17 +93,6 @@ export interface ICardTableV2Props extends IDetailsListProps {
     itemIndex: number,
     ev: React.MouseEvent<HTMLElement>
   ) => void
-}
-
-function renderStickyHeader(props, defaultRender) {
-  if (!props) {
-    return null
-  }
-  return (
-    <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
-      <div className={styles.tableHeader}>{defaultRender!(props)}</div>
-    </Sticky>
-  )
 }
 
 function useRenderClickableRow(onRowClicked) {
@@ -185,10 +203,6 @@ function CardTableV2(props: ICardTableV2Props) {
     return newItems
   }, [visibleItemsCount, items, orderBy, finalColumns])
 
-  const onRenderCheckbox = useCallback((props) => {
-    return <Checkbox checked={props?.checked} />
-  }, [])
-
   return (
     <Card
       title={title}
@@ -212,9 +226,7 @@ function CardTableV2(props: ICardTableV2Props) {
               selectionMode={SelectionMode.none}
               constrainMode={ConstrainMode.unconstrained}
               layoutMode={DetailsListLayoutMode.justified}
-              onRenderDetailsHeader={renderStickyHeader}
               onRenderRow={onRowClicked ? renderClickableRow : undefined}
-              onRenderCheckbox={onRenderCheckbox}
               columns={finalColumns}
               items={finalItems}
               {...restProps}

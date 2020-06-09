@@ -3,7 +3,6 @@ name: Release UI Assets
 on:
   push:
     branches:
-      - master
       - iframe
     paths:
       - "ui/.github_release_version"
@@ -13,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@master
+        uses: actions/checkout@iframe
       - uses: actions/setup-node@v1
         with:
           node-version: "12.x"

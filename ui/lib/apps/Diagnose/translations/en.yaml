@@ -1,7 +1,7 @@
 diagnose:
-  nav_title: Cluster Diagnose
+  nav_title: Cluster Diagnostics
   generate:
-    title: Start Diagnosis
+    title: New Diagnostic Report
     range_begin: Range Start Time
     range_duration: Range Duration
     is_compare: Compare by Baseline
@@ -17,8 +17,8 @@ diagnose:
     compare_range: Baseline Range
   status:
     head:
-      title: Diagnose Status
-      back: New Diagnose Report
+      title: Diagnostic Status
+      back: New Diagnostic Report
       view: View Full Report
     range_begin: Range Start Time
     range_end: Range End Time

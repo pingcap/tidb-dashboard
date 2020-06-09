@@ -25,11 +25,7 @@ function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
 }
 
 function commonColumnName(fieldName: string): any {
-  return (
-    <TextWithInfo.TransKey
-      transKey={`slow_query.common.columns.${fieldName}`}
-    />
-  )
+  return <TextWithInfo.TransKey transKey={`slow_query.fields.${fieldName}`} />
 }
 
 // temporary not used

@@ -65,6 +65,7 @@ func fetchPprof(ctx context.Context, httpClient *http.Client, target *model.Requ
 	if err := driver.PProf(&driver.Options{
 		Fetch:   &fetcher{ctx: ctx, httpClient: httpClient, target: target, output: tmpPath, schema: schema},
 		Flagset: f,
+		UI:      &blankPprofUI{},
 		Writer:  &oswriter{output: tmpPath},
 	}); err != nil {
 		return "", fmt.Errorf("failed to generate profile report: %v", err)
@@ -124,11 +125,10 @@ func (f *fetcher) Fetch(src string, duration, timeout time.Duration) (*profile.P
 }
 
 func (f *fetcher) getProfile(target *model.RequestTargetNode, source string) (*profile.Profile, error) {
-	req, err := http.NewRequest(http.MethodGet, source, nil)
+	req, err := http.NewRequestWithContext(f.ctx, http.MethodGet, source, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a new request %s: %v", source, err)
 	}
-	req = req.WithContext(f.ctx)
 	if target.Kind == model.NodeKindPD {
 		// forbidden PD follower proxy
 		req.Header.Add("PD-Allow-follower-handle", "true")
@@ -160,19 +160,18 @@ func profileAndWriteSVG(ctx context.Context, target *model.RequestTargetNode, fi
 }
 
 func fetchTiKVFlameGraphSVG(ctx context.Context, httpClient *http.Client, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, schema string) (string, error) {
-	url := fmt.Sprintf("%s://%s:%d/debug/pprof/profile?seconds=%d", schema, target.IP, target.Port, profileDurationSecs)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	uri := fmt.Sprintf("%s://%s:%d/debug/pprof/profile?seconds=%d", schema, target.IP, target.Port, profileDurationSecs)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
 	if err != nil {
-		return "", fmt.Errorf("failed to create a new request %s: %v", url, err)
+		return "", fmt.Errorf("failed to create a new request %s: %v", uri, err)
 	}
-	req = req.WithContext(ctx)
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("request %s failed: %v", url, err)
+		return "", fmt.Errorf("request %s failed: %v", uri, err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("response of request %s is not ok: %s", url, resp.Status)
+		return "", fmt.Errorf("response of request %s is not ok: %s", uri, resp.Status)
 	}
 	svgFilePath, err := writePprofRsSVG(resp.Body, fileNameWithoutExt)
 	if err != nil {
@@ -229,4 +228,29 @@ func fetchPprofSVG(ctx context.Context, httpClient *http.Client, target *model.R
 	}
 
 	return tmpPath, nil
+}
+
+// blankPprofUI is used to eliminate the pprof logs
+type blankPprofUI struct {
+}
+
+func (b blankPprofUI) ReadLine(prompt string) (string, error) {
+	panic("not support")
+}
+
+func (b blankPprofUI) Print(i ...interface{}) {
+}
+
+func (b blankPprofUI) PrintErr(i ...interface{}) {
+}
+
+func (b blankPprofUI) IsTerminal() bool {
+	return false
+}
+
+func (b blankPprofUI) WantBrowser() bool {
+	return false
+}
+
+func (b blankPprofUI) SetAutoComplete(complete func(string) string) {
 }

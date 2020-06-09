@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
 import client, { SlowqueryBase } from '@lib/client'
-import { calcTimeRange, DEF_TIME_RANGE, TimeRange } from '@lib/components'
+import { calcTimeRange, TimeRange } from '@lib/components'
+import getApiErrorsMsg from '@lib/utils/apiErrorsMsg'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
@@ -13,7 +14,7 @@ const DEF_ORDER_OPTIONS: IOrderOptions = {
 }
 
 export interface ISlowQueryOptions {
-  timeRange: TimeRange
+  timeRange?: TimeRange
   schemas: string[]
   searchText: string
   limit: number
@@ -23,7 +24,7 @@ export interface ISlowQueryOptions {
 }
 
 export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
-  timeRange: DEF_TIME_RANGE,
+  timeRange: undefined,
   schemas: [],
   searchText: '',
   limit: 100,
@@ -70,29 +71,39 @@ export default function useSlowQuery(
     }
   }
 
+  const [errors, setErrors] = useState<any[]>([])
+  const errorMsg = useMemo(() => getApiErrorsMsg(errors), [errors])
+
   function refresh() {
+    setErrors([])
     setRefreshTimes((prev) => prev + 1)
   }
 
   useEffect(() => {
     async function getSlowQueryList() {
       setLoadingSlowQueries(true)
-      const res = await client
-        .getInstance()
-        .slowQueryListGet(
-          queryOptions.schemas,
-          orderOptions.desc,
-          queryOptions.digest,
-          queryOptions.limit,
-          queryTimeRange.endTime,
-          queryTimeRange.beginTime,
-          orderOptions.orderBy,
-          queryOptions.plans,
-          queryOptions.searchText
-        )
+      try {
+        const res = await client
+          .getInstance()
+          .slowQueryListGet(
+            queryOptions.schemas,
+            orderOptions.desc,
+            queryOptions.digest,
+            queryOptions.limit,
+            queryTimeRange.endTime,
+            queryTimeRange.beginTime,
+            orderOptions.orderBy,
+            queryOptions.plans,
+            queryOptions.searchText
+          )
+        setSlowQueries(res.data || [])
+        setErrors([])
+      } catch (error) {
+        setErrors((prev) => [...prev, { ...error }])
+      }
       setLoadingSlowQueries(false)
-      setSlowQueries(res.data || [])
     }
+
     getSlowQueryList()
   }, [queryOptions, orderOptions, queryTimeRange, refreshTimes])
 
@@ -106,5 +117,8 @@ export default function useSlowQuery(
     loadingSlowQueries,
     slowQueries,
     queryTimeRange,
+
+    errors,
+    errorMsg,
   }
 }

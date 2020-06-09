@@ -23,7 +23,7 @@ import (
 
 const (
 	SlowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
-	SelectStmt     = "*, unix_timestamp(Time) as timestamp"
+	SelectStmt     = "*, (unix_timestamp(Time) + 0E0) as timestamp"
 )
 
 type Base struct {

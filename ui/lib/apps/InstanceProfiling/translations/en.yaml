@@ -3,9 +3,8 @@ instance_profiling:
   list:
     control_form:
       title: Start Profiling Instances
-      nodes:
+      instances:
         label: Select instances
-        placeholder: Please select the instance to profile
       duration:
         label: Duration
       submit: Start Profiling
@@ -30,7 +29,7 @@ instance_profiling:
     table:
       columns:
         instance: Instance
-        kind: Kind
+        kind: Component
         status: Status
       status:
         finished: Finished

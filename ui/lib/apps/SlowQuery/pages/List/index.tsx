@@ -43,6 +43,8 @@ function List() {
 
     loadingSlowQueries,
     slowQueries,
+
+    errorMsg,
   } = useSlowQuery()
 
   const [allSchemas, setAllSchemas] = useState<string[]>([])
@@ -146,6 +148,7 @@ function List() {
           <SlowQueriesTable
             cardNoMarginTop
             loading={loadingSlowQueries}
+            errorMsg={errorMsg}
             slowQueries={slowQueries}
             orderBy={orderOptions.orderBy}
             desc={orderOptions.desc}

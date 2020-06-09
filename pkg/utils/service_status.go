@@ -43,9 +43,14 @@ func (s *ServiceStatus) Stop() {
 
 func (s *ServiceStatus) Register(lc fx.Lifecycle) {
 	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			s.Start()
-			return nil
+		OnStart: func(ctx context.Context) error {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+				s.Start()
+				return nil
+			}
 		},
 		OnStop: func(context.Context) error {
 			s.Stop()

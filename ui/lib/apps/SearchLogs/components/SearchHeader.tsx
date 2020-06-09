@@ -1,212 +1,190 @@
-import { Button, Form, Input, Select, TreeSelect } from 'antd'
-import { LegacyDataNode } from 'rc-tree-select/lib/interface'
-import React, { ChangeEvent, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
-import { useMount } from '@umijs/hooks'
-
-import client, {
+import client from '@lib/client'
+import {
   LogsearchCreateTaskGroupRequest,
   ModelRequestTargetNode,
 } from '@lib/client'
+import { Button, Form, Input, Select, Modal } from 'antd'
+import React, { useState, useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { useMount } from '@umijs/hooks'
 import {
-  calcTimeRange,
-  DEF_TIME_RANGE,
-  TimeRange,
   TimeRangeSelector,
+  TimeRange,
+  calcTimeRange,
+  InstanceSelect,
+  IInstanceSelectRefProps,
 } from '@lib/components'
-import {
-  namingMap,
-  NodeKind,
-  NodeKindList,
-  parseClusterInfo,
-  parseSearchingParams,
-} from '../utils'
 
-import styles from './Styles.module.css'
-
-const { SHOW_CHILD } = TreeSelect
-const { Option } = Select
-
-function buildTreeData(targets: ModelRequestTargetNode[]) {
-  const servers = {
-    [NodeKind.TiDB]: [],
-    [NodeKind.TiKV]: [],
-    [NodeKind.PD]: [],
-    [NodeKind.TiFlash]: [],
-  }
-
-  targets.forEach((item) => {
-    if (item === undefined || item.kind === undefined) {
-      return
-    }
-    servers[item.kind].push(item)
-  })
-
-  return NodeKindList.filter((kind) => servers[kind].length > 0).map(
-    (kind) => ({
-      title: namingMap[kind],
-      value: kind,
-      key: kind,
-      children: servers[kind].map((item: ModelRequestTargetNode) => {
-        const addr = item.display_name!
-        return {
-          title: addr,
-          value: addr,
-          key: addr,
-        }
-      }),
-    })
-  )
-}
+import { ValidLogLevels, LogLevelText } from '../utils'
 
 interface Props {
   taskGroupID?: number
 }
 
-const LOG_LEVELS = ['debug', 'info', 'warn', 'trace', 'critical', 'error']
+interface IFormProps {
+  timeRange?: TimeRange
+  logLevel?: number
+  instances?: string[]
+  keywords?: string
+}
 
 export default function SearchHeader({ taskGroupID }: Props) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-
-  const [timeRange, setTimeRange] = useState<TimeRange>(DEF_TIME_RANGE)
-  const [logLevel, setLogLevel] = useState(2)
-  const [selectedComponents, setComponents] = useState<string[]>([])
-  const [searchValue, setSearchValue] = useState('')
-  const [allTargets, setAllTargets] = useState<ModelRequestTargetNode[]>([])
+  const [form] = Form.useForm()
+  const [isSubmitting, setSubmitting] = useState(false)
+  const instanceSelect = useRef<IInstanceSelectRefProps>(null)
 
   useMount(() => {
     async function fetchData() {
-      const res = await client.getInstance().topologyAllGet()
-      const targets = parseClusterInfo(res.data)
-      setAllTargets(targets)
-      setComponents(targets.map((item) => item.display_name!))
       if (!taskGroupID) {
         return
       }
-      const res2 = await client
+      const res = await client
         .getInstance()
-        .logsTaskgroupsIdGet(taskGroupID + '')
-      const {
-        timeRange,
-        logLevel,
-        components,
-        searchValue,
-      } = parseSearchingParams(res2.data)
-      setTimeRange(timeRange)
-      setLogLevel(logLevel === 0 ? 2 : logLevel)
-      setComponents(components.map((item) => item.display_name ?? ''))
-      setSearchValue(searchValue)
+        .logsTaskgroupsIdGet(String(taskGroupID))
+      const { task_group, tasks } = res.data
+      const { start_time, end_time, min_level, patterns } =
+        task_group?.search_request ?? {}
+      const fieldsValue: IFormProps = {
+        timeRange: {
+          type: 'absolute',
+          value: [start_time! / 1000, end_time! / 1000],
+        },
+        logLevel: min_level || 2,
+        instances: (tasks ?? [])
+          .filter((t) => t.target && t.target!.display_name)
+          .map((t) => t.target!.display_name!),
+        keywords: (patterns ?? []).join(' '),
+      }
+      form.setFieldsValue(fieldsValue)
     }
     fetchData()
   })
 
-  async function createTaskGroup() {
-    // TODO: check select at least one component
-    const targets: ModelRequestTargetNode[] = allTargets.filter((item) =>
-      selectedComponents.some((addr) => addr === item.display_name ?? '')
-    )
+  const handleSearch = useCallback(
+    async (fieldsValue: IFormProps) => {
+      if (
+        !fieldsValue.instances ||
+        fieldsValue.instances.length === 0 ||
+        !fieldsValue.logLevel ||
+        !fieldsValue.timeRange
+      ) {
+        Modal.error({
+          content: 'Some required fields are not filled',
+        })
+        return
+      }
+      if (!instanceSelect.current) {
+        Modal.error({
+          content: 'Internal error: Instance select is not ready',
+        })
+        return
+      }
+      setSubmitting(true)
 
-    const [startTime, endTime] = calcTimeRange(timeRange)
-    const params: LogsearchCreateTaskGroupRequest = {
-      targets: targets,
-      request: {
-        start_time: startTime * 1000, // unix millionsecond
-        end_time: endTime * 1000, // unix millionsecond
-        min_level: logLevel,
-        patterns: searchValue.split(/\s+/), // 'foo boo' => ['foo', 'boo']
-      },
-    }
-    const result = await client.getInstance().logsTaskgroupPut(params)
-    const id = result.data.task_group?.id
-    if (!id) {
-      // promp error here
-      return
-    }
-    navigate('/search_logs/detail/' + id)
-  }
+      const targets: ModelRequestTargetNode[] = instanceSelect
+        .current!.getInstanceByKeys(fieldsValue.instances)
+        .map((instance) => {
+          let port
+          switch (instance.instanceKind) {
+            case 'pd':
+            case 'tikv':
+            case 'tiflash':
+              port = instance.port
+              break
+            case 'tidb':
+              port = instance.status_port
+              break
+          }
+          return {
+            kind: instance.instanceKind,
+            display_name: instance.key,
+            ip: instance.ip,
+            port,
+          }
+        })
+        .filter((i) => i.port != null)
 
-  function handleTimeRangeChange(value: TimeRange) {
-    setTimeRange(value)
-  }
+      const [startTime, endTime] = calcTimeRange(fieldsValue.timeRange)
 
-  function handleLogLevelChange(value: number) {
-    setLogLevel(value)
-  }
+      const req: LogsearchCreateTaskGroupRequest = {
+        targets,
+        request: {
+          start_time: startTime * 1000, // unix millionsecond
+          end_time: endTime * 1000, // unix millionsecond
+          min_level: fieldsValue.logLevel,
+          patterns: (fieldsValue.keywords ?? '').split(/\s+/), // 'foo boo' => ['foo', 'boo']
+        },
+      }
 
-  function handleComponentChange(values: string[]) {
-    setComponents(values)
-  }
-
-  function handleSearchPatternChange(e: ChangeEvent<HTMLInputElement>) {
-    setSearchValue(e.target.value)
-  }
-
-  function handleSearch() {
-    createTaskGroup()
-  }
-
-  function filterTreeNode(
-    inputValue: string,
-    legacyDataNode?: LegacyDataNode
-  ): boolean {
-    const name = legacyDataNode?.key as string
-    return name.includes(inputValue)
-  }
+      try {
+        const result = await client.getInstance().logsTaskgroupPut(req)
+        const id = result.data.task_group?.id
+        if (!id) {
+          throw new Error('Invalid server response')
+        }
+        navigate(`/search_logs/detail/${id}`)
+      } catch (e) {
+        // FIXME
+        Modal.error({
+          content: e.message,
+        })
+      }
+      setSubmitting(false)
+    },
+    [navigate]
+  )
 
   return (
     <Form
       id="search_form"
       layout="inline"
       onFinish={handleSearch}
-      style={{ display: 'flex', flexWrap: 'wrap' }}
+      form={form}
+      initialValues={{
+        timeRange: null,
+        logLevel: 2,
+        instances: [],
+      }}
     >
-      <Form.Item>
-        <TimeRangeSelector value={timeRange} onChange={handleTimeRangeChange} />
+      <Form.Item name="timeRange" rules={[{ required: true }]}>
+        <TimeRangeSelector />
       </Form.Item>
-      <Form.Item>
-        <Select
-          id="log_level_selector"
-          value={logLevel}
-          style={{ width: 100 }}
-          onChange={handleLogLevelChange}
-        >
-          {LOG_LEVELS.map((val, idx) => (
-            <Option key={val} value={idx + 1}>
-              <div data-e2e={`level_${val}`}>{val.toUpperCase()}</div>
-            </Option>
+      <Form.Item name="logLevel" rules={[{ required: true }]}>
+        <Select id="log_level_selector" style={{ width: 100 }}>
+          {ValidLogLevels.map((val) => (
+            <Select.Option key={val} value={val}>
+              <div data-e2e={`level_${val}`}>{LogLevelText[val]}</div>
+            </Select.Option>
           ))}
         </Select>
       </Form.Item>
-      <Form.Item>
-        <Input
-          value={searchValue}
-          placeholder={t('search_logs.common.keywords_placeholder')}
-          onChange={handleSearchPatternChange}
+      <Form.Item
+        name="instances"
+        data-e2e="components_selector"
+        rules={[{ required: true }]}
+      >
+        <InstanceSelect
+          ref={instanceSelect}
+          defaultSelectAll
           style={{ width: 300 }}
         />
       </Form.Item>
-      <Form.Item
-        data-e2e="components_selector"
-        className={styles.components}
-        style={{ flex: 'auto', minWidth: 220 }}
-        validateStatus={selectedComponents.length > 0 ? '' : 'error'}
-      >
-        <TreeSelect
-          value={selectedComponents}
-          treeData={buildTreeData(allTargets)}
-          placeholder={t('search_logs.common.components_placeholder')}
-          onChange={handleComponentChange}
-          treeDefaultExpandAll={true}
-          treeCheckable={true}
-          showCheckedStrategy={SHOW_CHILD}
-          allowClear
-          filterTreeNode={filterTreeNode}
+      <Form.Item name="keywords">
+        <Input
+          placeholder={t('search_logs.common.keywords_placeholder')}
+          style={{ width: 300 }}
         />
       </Form.Item>
       <Form.Item>
-        <Button id="search_btn" type="primary" htmlType="submit">
+        <Button
+          id="search_btn"
+          type="primary"
+          htmlType="submit"
+          loading={isSubmitting}
+        >
           {t('search_logs.common.search')}
         </Button>
       </Form.Item>

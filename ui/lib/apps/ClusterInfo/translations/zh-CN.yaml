@@ -4,7 +4,7 @@ cluster_info:
     instance_table:
       title: 实例
       columns:
-        node: 节点
+        node: 地址
         version: 版本
         status: 状态
         up_time: 启动时间
@@ -13,14 +13,7 @@ cluster_info:
       actions:
         hide_db:
           tooltip: 隐藏
-          confirm: 您确认要隐藏该 TiDB 节点吗?
-      status:
-        up: 在线
-        down: 离线
-        tombstone: 已缩容下线
-        offline: 下线中
-        unknown: 未知
-        unreachable: 无法访问
+          confirm: 您确认要隐藏该 TiDB 实例吗?
     host_table:
       title: 主机
       columns:

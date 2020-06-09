@@ -1,14 +1,16 @@
+import client from '@lib/client'
+import { ModelRequestTargetNode, LogsearchTaskModel } from '@lib/client'
+import { CardTableV2, Card } from '@lib/components'
 import { Alert } from 'antd'
 import moment from 'moment'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { InstanceKindName } from '@lib/utils/instanceTable'
 
-import client, { LogsearchTaskModel, ModelRequestTargetNode } from '@lib/client'
-import { Card, CardTableV2 } from '@lib/components'
+import { LogLevelText } from '../utils'
 import Log from './Log'
-import { DATE_TIME_FORMAT, LogLevelMap, namingMap } from '../utils'
 
-import styles from './Styles.module.css'
+import styles from './Styles.module.less'
 
 type LogPreview = {
   key: number
@@ -24,7 +26,7 @@ function componentRender({ component: target }) {
   }
   return (
     <div>
-      {target.kind ? namingMap[target.kind] : ''} {target.ip}
+      {target.kind ? InstanceKindName[target.kind] : '?'} {target.ip}
     </div>
   )
 }
@@ -42,11 +44,12 @@ function Row({ renderer, props }) {
 }
 
 interface Props {
+  patterns: string[]
   taskGroupID: number
   tasks: LogsearchTaskModel[]
 }
 
-export default function SearchResult({ taskGroupID, tasks }: Props) {
+export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
   const [logPreviews, setData] = useState<LogPreview[]>([])
   const { t } = useTranslation()
   const [loading, setLoading] = useState(true)
@@ -71,8 +74,8 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
           (value, index): LogPreview => {
             return {
               key: index,
-              time: moment(value.time).format(DATE_TIME_FORMAT),
-              level: LogLevelMap[value.level ?? 0],
+              time: moment(value.time).format('YYYY-MM-DD HH:mm:ss'),
+              level: LogLevelText[value.level ?? 0],
               component: getComponent(value.task_id),
               log: value.message,
             }
@@ -94,37 +97,40 @@ export default function SearchResult({ taskGroupID, tasks }: Props) {
     return <Row renderer={defaultRender!} props={props} />
   }, [])
 
-  const columns = [
-    {
-      name: t('search_logs.preview.time'),
-      key: 'time',
-      fieldName: 'time',
-      minWidth: 150,
-      maxWidth: 200,
-    },
-    {
-      name: t('search_logs.preview.level'),
-      key: 'level',
-      fieldName: 'level',
-      minWidth: 60,
-      maxWidth: 60,
-    },
-    {
-      name: t('search_logs.preview.component'),
-      key: 'component',
-      minWidth: 100,
-      maxWidth: 100,
-      onRender: componentRender,
-    },
-    {
-      name: t('search_logs.preview.log'),
-      key: 'log',
-      minWidth: 200,
-      maxWidth: 400,
-      isResizable: false,
-      onRender: ({ log, expanded }) => <Log log={log} expanded={expanded} />,
-    },
-  ]
+  const columns = useMemo(
+    () => [
+      {
+        name: t('search_logs.preview.time'),
+        key: 'time',
+        fieldName: 'time',
+        minWidth: 160,
+        maxWidth: 300,
+      },
+      {
+        name: t('search_logs.preview.level'),
+        key: 'level',
+        fieldName: 'level',
+        minWidth: 60,
+        maxWidth: 120,
+      },
+      {
+        name: t('search_logs.preview.component'),
+        key: 'component',
+        minWidth: 120,
+        maxWidth: 200,
+        onRender: componentRender,
+      },
+      {
+        name: t('search_logs.preview.log'),
+        key: 'log',
+        minWidth: 500,
+        onRender: ({ log, expanded }) => (
+          <Log patterns={patterns} log={log} expanded={expanded} />
+        ),
+      },
+    ],
+    [t, patterns]
+  )
 
   return (
     <>

@@ -8,6 +8,7 @@ import { usePersistFn } from '@umijs/hooks'
 import client from '@lib/client'
 import { CardTableV2, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
+import { InstanceKindName } from '@lib/utils/instanceTable'
 
 function mapData(data) {
   if (!data) {
@@ -64,7 +65,9 @@ export default function Page() {
         key: 'kind',
         minWidth: 100,
         maxWidth: 150,
-        onRender: (record) => record.target.kind,
+        onRender: (record) => {
+          return InstanceKindName[record.target.kind]
+        },
       },
       {
         name: t('instance_profiling.detail.table.columns.status'),

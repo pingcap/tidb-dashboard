@@ -69,21 +69,15 @@ func (m *DynamicConfigManager) Start(ctx context.Context) error {
 
 	go func() {
 		var dc *DynamicConfig
-		var err error
-		bo := backoff.NewExponentialBackOff()
-		// setting a reasonable interval to avoid probing a living service for too long each round
-		bo.MaxInterval = MaxCheckInterval
+		ebo := backoff.NewExponentialBackOff()
+		ebo.MaxInterval = MaxCheckInterval
+		bo := backoff.WithContext(ebo, ctx)
 
-		_ = backoff.Retry(func() error {
+		if err := backoff.Retry(func() error {
+			var err error
 			dc, err = m.load()
-			select {
-			case <-m.ctx.Done():
-				return nil
-			default:
-			}
 			return err
-		}, bo)
-		if err != nil {
+		}, bo); err != nil {
 			log.Error("Failed to start DynamicConfigManager", zap.Error(err))
 			return
 		}
@@ -93,17 +87,7 @@ func (m *DynamicConfigManager) Start(ctx context.Context) error {
 		}
 		dc.Adjust()
 
-		_ = backoff.Retry(func() error {
-			err = m.Set(dc)
-			select {
-			case <-m.ctx.Done():
-				return nil
-			default:
-			}
-			return err
-		}, bo)
-
-		if err != nil {
+		if err := backoff.Retry(func() error { return m.Set(dc) }, bo); err != nil {
 			log.Error("Failed to start DynamicConfigManager", zap.Error(err))
 		}
 	}()
@@ -197,7 +181,7 @@ func (m *DynamicConfigManager) load() (*DynamicConfig, error) {
 		return &dc, nil
 	default:
 		log.Error("UNREACHABLE")
-		return nil, ErrUnableToLoad.New("unreachable")
+		return nil, backoff.Permanent(ErrUnableToLoad.New("unreachable"))
 	}
 }
 
@@ -207,10 +191,10 @@ func (m *DynamicConfigManager) store(dc *DynamicConfig) error {
 		return err
 	}
 
-	log.Info("Save dynamic config to etcd", zap.ByteString("json", bs))
 	ctx, cancel := context.WithTimeout(m.ctx, Timeout)
 	defer cancel()
 	_, err = m.etcdClient.Put(ctx, DynamicConfigPath, string(bs))
+	log.Info("Save dynamic config to etcd", zap.ByteString("json", bs))
 
 	return err
 }

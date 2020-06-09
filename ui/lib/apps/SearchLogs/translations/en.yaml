@@ -15,7 +15,6 @@ search_logs:
     end_time: End Time
     log_level: Log Level
     components: instances
-    components_placeholder: Select at least one instance
     keywords: Keywords
     keywords_placeholder: Keywords, Optional, separated by spaces
     search: Search
@@ -24,7 +23,7 @@ search_logs:
     cancel: Cancel
     retry: Retry
   progress:
-    running: is running
+    running: running
     success: completed
     failed: failed
   confirm:
@@ -36,11 +35,15 @@ search_logs:
     component: Component
     log: Log
   history:
+    instances: Instances
     running: Running
     finished: Finished
     delete_selected: Delete selected
     delete_all: Delete All
-    state: State
+    status: Status
     action: Action
     detail: Detail
     delete: Delete
+    delete_confirm_title: Delete Log Search Histories
+    delete_selected_confirm_content: Are you sure you want to delete selected log search histories?
+    delete_all_confirm_content: Are you sure you want to delete all log search histories?

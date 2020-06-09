@@ -26,7 +26,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb/codec"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb/model"
 )
 
 type tableDetail struct {
@@ -89,7 +89,7 @@ func (s *tidbLabelStrategy) Background(ctx context.Context) {
 
 // CrossBorder does not allow cross tables or cross indexes within a table.
 func (s *tidbLabelStrategy) CrossBorder(startKey, endKey string) bool {
-	startBytes, endBytes := codec.Key(region.Bytes(startKey)), codec.Key(region.Bytes(endKey))
+	startBytes, endBytes := model.Key(region.Bytes(startKey)), model.Key(region.Bytes(endKey))
 	startIsMeta, startTableID := startBytes.MetaOrTable()
 	endIsMeta, endTableID := endBytes.MetaOrTable()
 	if startIsMeta || endIsMeta {
@@ -107,7 +107,7 @@ func (s *tidbLabelStrategy) CrossBorder(startKey, endKey string) bool {
 func (s *tidbLabelStrategy) Label(key string) (label LabelKey) {
 	keyBytes := region.Bytes(key)
 	label.Key = hex.EncodeToString(keyBytes)
-	decodeKey := codec.Key(keyBytes)
+	decodeKey := model.Key(keyBytes)
 	isMeta, TableID := decodeKey.MetaOrTable()
 	if isMeta {
 		label.Labels = append(label.Labels, "meta")

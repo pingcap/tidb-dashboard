@@ -21,7 +21,7 @@ export default function HostTable() {
   const { t } = useTranslation()
 
   const { data: tableData, isLoading } = useClientRequest((cancelToken) =>
-    client.getInstance().hostAllGet({ cancelToken })
+    client.getInstance().getHostsInfo({ cancelToken })
   )
 
   const columns = [

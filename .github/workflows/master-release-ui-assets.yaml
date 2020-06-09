@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - iframe
     paths:
       - "ui/.github_release_version"
 

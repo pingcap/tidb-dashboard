@@ -127,7 +127,7 @@ func fetchStores(pdClient *pd.Client) ([]store, error) {
 	}
 
 	sort.Slice(ret, func(i, j int) bool {
-		return ret[i].Address > ret[j].Address
+		return ret[i].Address < ret[j].Address
 	})
 
 	return ret, nil

@@ -45,25 +45,25 @@ Thank you to all the people who already contributed to TiDB Dashboard!
 <table>
   <tr>
     <td align="center"><a href="https://github.com/Fullstop000"><img src="https://avatars1.githubusercontent.com/u/12471960?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://github.com/yikeke"><img src="https://avatars1.githubusercontent.com/u/40977455?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://github.com/qxhy123"><img src="https://avatars2.githubusercontent.com/u/518969?v=4" width="50px;" alt=""/></a></td>
     <td align="center"><a href="http://rleungx.github.io"><img src="https://avatars3.githubusercontent.com/u/35896542?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://github.com/SSebo"><img src="https://avatars0.githubusercontent.com/u/5784607?v=4" width="50px;" alt=""/></a></td>
+    <td align="center"><a href="https://github.com/zzh-wisdom"><img src="https://avatars2.githubusercontent.com/u/52516344?v=4" width="50px;" alt=""/></a></td>
     <td align="center"><a href="https://github.com/STRRL"><img src="https://avatars0.githubusercontent.com/u/20221408?v=4" width="50px;" alt=""/></a></td>
+    <td align="center"><a href="https://github.com/SSebo"><img src="https://avatars0.githubusercontent.com/u/5784607?v=4" width="50px;" alt=""/></a></td>
     <td align="center"><a href="https://yisaer.github.io/"><img src="https://avatars1.githubusercontent.com/u/13427348?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://weihanglo.tw/"><img src="https://avatars2.githubusercontent.com/u/14314532?v=4" width="50px;" alt=""/></a></td>
     <td align="center"><a href="https://github.com/gauss1314"><img src="https://avatars2.githubusercontent.com/u/3862518?v=4" width="50px;" alt=""/></a></td>
     <td align="center"><a href="https://github.com/leiysky"><img src="https://avatars2.githubusercontent.com/u/22445410?v=4" width="50px;" alt=""/></a></td>
+    <td align="center"><a href="https://github.com/niedhui"><img src="https://avatars0.githubusercontent.com/u/66329?v=4" width="50px;" alt=""/></a></td>
+    <td align="center"><a href="https://weihanglo.tw/"><img src="https://avatars2.githubusercontent.com/u/14314532?v=4" width="50px;" alt=""/></a></td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/niedhui"><img src="https://avatars0.githubusercontent.com/u/66329?v=4" width="50px;" alt=""/></a></td>
-    <td align="center"><a href="https://github.com/zzh-wisdom"><img src="https://avatars2.githubusercontent.com/u/52516344?v=4" width="50px;" alt=""/></a></td>
+    <td align="center"><a href="https://github.com/yikeke"><img src="https://avatars1.githubusercontent.com/u/40977455?v=4" width="50px;" alt=""/></a></td>
+    <td align="center"><a href="https://github.com/qxhy123"><img src="https://avatars2.githubusercontent.com/u/518969?v=4" width="50px;" alt=""/></a></td>
+    <td align="center"><a href="http://www.rustin.cn"><img src="https://avatars0.githubusercontent.com/u/29879298?v=4" width="50px;" alt=""/></a></td>
   </tr>
 </table>
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Architecture

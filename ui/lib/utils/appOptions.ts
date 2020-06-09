@@ -24,7 +24,7 @@ export function init() {
     let q = hash.substring(pos + 1)
     const p = new URLSearchParams(q)
     appOptions = {
-      token: p.get('access_token'),
+      token: p.get('token'),
       hideNav: p.get('hideNav') === 'true' || p.get('hideNav') === '1',
       lang: p.get('lang'),
     }

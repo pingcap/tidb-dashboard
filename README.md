@@ -1,42 +1,41 @@
 # TiDB Dashboard
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-TiDB Dashboard is a Web UI for monitoring, diagnosing and managing TiDB cluster.
+[![GitHub license](https://img.shields.io/github/license/pingcap-incubator/tidb-dashboard?style=flat-square)](https://github.com/pingcap-incubator/tidb-dashboard/blob/master/LICENSE)
+
+TiDB Dashboard is a Web UI for monitoring, diagnosing and managing the TiDB cluster.
 
 ## Documentation
 
 - [Product User Manual (Chinese)](https://pingcap.com/docs-cn/stable/dashboard/dashboard-intro/)
 - [FAQ (Chinese)](https://pingcap.com/docs-cn/stable/dashboard/dashboard-faq/)
 
-## Question, Suggestion, Support
+## Question, Suggestion
 
-Feel free to open issues in this repo for questions, suggestions and support. You may also consider join our community chat in the Slack channel [#sig-dashboard](https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard&ref=github_dashboard_repo).
+Feel free to [open GitHub issues](https://github.com/pingcap-incubator/tidb-dashboard/issues/new/choose)
+for questions, support and suggestions.
 
-For Chinese users, you may also consider visiting PingCAP official user forum [AskTUG.com](https://asktug.com/) to make life easier.
+You may also consider join our community chat in the Slack channel [#sig-dashboard].
+
+For Chinese users, you can visit the PingCAP official user forum [AskTUG.com] to make life easier.
 
 ## Getting Started
 
 The most easy way to use TiDB Dashboard with an existing TiDB cluster is to use the one embedded
-into [PD]: http://127.0.0.1:2379/dashboard. Currently you need PD
-master branch to use TiDB Dashboard.
+into [PD]: <http://127.0.0.1:2379/dashboard>. You need PD master branch or 4.0+ version to use
+TiDB Dashboard.
 
 Note: The TiDB Dashboard inside PD may be not up to date. To play with latest TiDB Dashboard, build
 it from source (see next section).
 
 ## Contributing & Developing
 
-If you're interested in contributing to TiDB Dashboard, checkout our [help wanted issues](https://github.com/pingcap-incubator/tidb-dashboard/issues?q=is%3Aopen+label%3Astatus%2Fhelp-wanted+sort%3Aupdated-desc)
-for a list, in which we have also marked the difficulty level. We have prepared many suitable tasks.
+Checkout our [help wanted issues](https://github.com/pingcap-incubator/tidb-dashboard/issues?q=is%3Aopen+label%3Astatus%2Fhelp-wanted+sort%3Aupdated-desc)
+for a list of recommended tasks, in which we have also marked the difficulty level.
 
-For a detailed step-by-step contributing guide, or want to build TiDB Dashboard from source,
-see [CONTRIBUTING.md](./CONTRIBUTING.md).
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for a detailed step-by-step contributing guide, or steps to
+build TiDB Dashboard from source.
 
-If you have any questions about development, feel free to join [TiDB Dashboard SIG]
-(Special Interest Group):
-
-- Slack: [#sig-dashboard](https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard&ref=github_dashboard_repo)
+If you need any help, feel free to community chat in the Slack channel [#sig-dashboard].
 
 Thank you to all the people who already contributed to TiDB Dashboard!
 
@@ -64,6 +63,7 @@ Thank you to all the people who already contributed to TiDB Dashboard!
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Architecture
@@ -79,7 +79,8 @@ TiDB Dashboard can also be integrated into PD, as follows:
 
 ### Change the base URL of Dashboard API endpoint
 
-By default, the base URL of Dashboard API is `http://127.0.0.1:12333` if using `yarn start` to set up the dashboard for development. Sometimes you just want to change the URL for some reasons:
+By default, the base URL of Dashboard API is `http://127.0.0.1:12333` if using `yarn start` to set
+up the dashboard for development. Sometimes you just want to change the URL for some reasons:
 
 1. Use `.env`
 
@@ -127,11 +128,12 @@ every 24 hours.
 Simply modify `ui/.github_release_version`. The assets will be released automatically after your
 change is merged to master.
 
-[tidb dashboard sig]: https://github.com/pingcap/community/tree/master/special-interest-groups/sig-dashboard
-[pd]: https://github.com/pingcap/pd
-
 ## License
 
 [Apache License](/LICENSE)
 
 Copyright 2020 PingCAP, Inc.
+
+[pd]: https://github.com/pingcap/pd
+[#sig-dashboard]: https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard&ref=github_dashboard_repo
+[asktug.com]: https://asktug.com/

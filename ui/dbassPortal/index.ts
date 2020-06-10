@@ -58,18 +58,20 @@ async function main() {
 
 /////////////////////////////////////////////////
 
+let inIframe = false
 let started = false
 auth.setStore(new auth.MemAuthTokenStore())
 window.addEventListener(
   'message',
   (event) => {
-    const appOptions = event.data
+    inIframe = true
 
     // To improve the security, we can limit the origin
     // if (process.env.NODE_ENV === 'production' && event.origin !== 'https://cloud.tidb.com') {
     //   return
     // }
 
+    const appOptions = event.data
     const { token, lang } = appOptions
     i18n.changeLang(lang || 'en')
     if (token !== undefined) {
@@ -80,3 +82,16 @@ window.addEventListener(
   },
   false
 )
+
+setTimeout(() => {
+  if (!inIframe) {
+    const spinner = document.getElementById('dashboard_page_spinner')
+    if (spinner) {
+      spinner.remove()
+    }
+    const root = document.getElementById('root')
+    if (root) {
+      root.innerHTML = '<h1>Permission denied!</h>'
+    }
+  }
+}, 2000)

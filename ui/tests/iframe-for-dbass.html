@@ -17,6 +17,11 @@
       }
 
       window.onload = function () {
+        // Let the portal know it runs in a iframe immediately
+        const dashboard = document.getElementById('dashboard')
+        dashboard.contentWindow.postMessage({}, '*')
+
+        // Wait some time to get the token by API
         // TODO:
         // If we want to continue to improve the security,
         // we can generate a random encryption key here.
@@ -24,7 +29,6 @@
         // Dashboard decrypt the token by the key
         const token =
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTE4NTc4MDIsIm9yaWdfaWF0IjoxNTkxNzcxNDAyLCJwIjoiRTBsWExYQTBoa3l5eHk5UFh4RzJmZlhkclByeENEWkwwZmNJbnBYYmNCYVQ2Mm9lRnNDR1ZiR2FzMEtKZDFPS2hqbG04aGVaZHdYajhhMzk4M0k2OTAyaUdMbUJ2M1FXcTJmRVMxUU5UY2lnSFE2OUpSWkwifQ.DhVqncvWGvWUeym0yVsdGq4wloZtoATZG8mUqpmr1NA'
-        const dashboard = document.getElementById('dashboard')
         dashboard.contentWindow.postMessage({ token }, '*')
       }
     </script>

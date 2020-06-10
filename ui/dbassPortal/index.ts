@@ -3,6 +3,7 @@ import '@lib/utils/wdyr'
 import * as singleSpa from 'single-spa'
 
 import LayoutMain from '@dbass/layout/main'
+import LayoutSignIn from '@dbass/layout/signin'
 
 import AppKeyViz from '@lib/apps/KeyViz/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
@@ -23,6 +24,16 @@ async function main() {
     AppRegistry.newReactSpaApp(() => LayoutMain, 'root'),
     () => {
       return !routing.isLocationMatchPrefix(auth.signInRoute)
+    },
+    { registry }
+  )
+
+  // FIXME: rename to error page
+  singleSpa.registerApplication(
+    'signin',
+    AppRegistry.newReactSpaApp(() => LayoutSignIn, 'root'),
+    () => {
+      return routing.isLocationMatchPrefix(auth.signInRoute)
     },
     { registry }
   )
@@ -56,6 +67,8 @@ window.addEventListener(
   (event) => {
     console.log('event:', event)
     if (event.data.token) {
+      auth.setStore(new auth.MemAuthTokenStore())
+      auth.setAuthToken(event.data.token)
       main()
     }
   },

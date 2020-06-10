@@ -6,7 +6,7 @@ import { Root } from '@lib/components'
 
 import styles from './index.module.less'
 
-export default function App({ registry }) {
+export default function App() {
   return (
     <Root>
       <Router>

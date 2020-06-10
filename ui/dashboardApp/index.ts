@@ -83,4 +83,5 @@ async function main() {
   singleSpa.start()
 }
 
+auth.setStore(new auth.LocalStorageAuthTokenStore())
 main()

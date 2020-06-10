@@ -3,7 +3,7 @@ import '@lib/utils/wdyr'
 import * as singleSpa from 'single-spa'
 
 import LayoutMain from '@dbass/layout/main'
-import LayoutSignIn from '@dbass/layout/signin'
+import LayoutError from '@dbass/layout/ErrorPage'
 
 import AppKeyViz from '@lib/apps/KeyViz/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
@@ -29,10 +29,9 @@ async function main() {
     { registry }
   )
 
-  // FIXME: rename to error page
   singleSpa.registerApplication(
     'signin',
-    AppRegistry.newReactSpaApp(() => LayoutSignIn, 'root'),
+    AppRegistry.newReactSpaApp(() => LayoutError, 'root'),
     () => {
       return routing.isLocationMatchPrefix(auth.signInRoute)
     },
@@ -40,10 +39,6 @@ async function main() {
   )
 
   registry.register(AppStatement).register(AppSlowQuery).register(AppKeyViz)
-
-  if (routing.isLocationMatch('/')) {
-    singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
-  }
 
   window.addEventListener('single-spa:app-change', () => {
     const spinner = document.getElementById('dashboard_page_spinner')
@@ -53,7 +48,6 @@ async function main() {
     if (!routing.isLocationMatchPrefix(auth.signInRoute)) {
       if (!auth.getAuthTokenAsBearer()) {
         singleSpa.navigateToUrl('#' + auth.signInRoute)
-        return
       }
     }
   })
@@ -69,15 +63,18 @@ window.addEventListener(
   'message',
   (event) => {
     const appOptions = event.data
-    console.log('options:', appOptions)
+
+    // To improve the security, we can limit the origin
+    // if (process.env.NODE_ENV === 'production' && event.origin !== 'xxxx') {
+    //   return
+    // }
 
     const { token, lang } = appOptions
+    i18n.changeLang(lang || 'en')
     if (token) {
       auth.setAuthToken(token)
       !started && main()
-    }
-    if (lang) {
-      i18n.changeLang(appOptions.lang)
+      started = true
     }
   },
   false

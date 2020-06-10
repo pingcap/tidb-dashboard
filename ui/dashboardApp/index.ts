@@ -75,13 +75,14 @@ async function main() {
     if (!routing.isLocationMatchPrefix(auth.signInRoute)) {
       if (!auth.getAuthTokenAsBearer()) {
         singleSpa.navigateToUrl('#' + auth.signInRoute)
-        return
       }
     }
   })
 
   singleSpa.start()
 }
+
+/////////////////////////////////////
 
 auth.setStore(new auth.LocalStorageAuthTokenStore())
 main()

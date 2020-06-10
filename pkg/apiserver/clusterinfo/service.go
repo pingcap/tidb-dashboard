@@ -270,7 +270,7 @@ func (s *Service) getHostsInfo(c *gin.Context) {
 	}
 
 	sort.Slice(hiList, func(i, j int) bool {
-		return hiList[i].IP > hiList[j].IP
+		return hiList[i].IP < hiList[j].IP
 	})
 
 	c.JSON(http.StatusOK, hiList)

@@ -36,6 +36,10 @@ export function addTranslationResource(lang, translations) {
   i18next.addResourceBundle(lang, 'translation', translations, true, false)
 }
 
+export function changeLang(lang) {
+  i18next.changeLanguage(lang)
+}
+
 export const ALL_LANGUAGES = {
   'zh-CN': '简体中文',
   en: 'English',
@@ -45,7 +49,7 @@ i18next
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: {},
+    resources: {}, // oh! this line is a big pitfall, we can't remove it, else it will cause strange crash!
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,

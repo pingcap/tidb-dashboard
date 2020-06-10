@@ -11,6 +11,7 @@ import AppStatement from '@lib/apps/Statement/index.meta'
 
 import * as client from '@lib/utils/apiClient'
 import * as auth from '@lib/utils/auth'
+import * as i18n from '@lib/utils/i18n'
 import AppRegistry from '@lib/utils/registry'
 import * as routing from '@lib/utils/routing'
 
@@ -62,14 +63,21 @@ async function main() {
 
 /////////////////////////////////////////////////
 
+let started = false
+auth.setStore(new auth.MemAuthTokenStore())
 window.addEventListener(
   'message',
   (event) => {
-    console.log('event:', event)
-    if (event.data.token) {
-      auth.setStore(new auth.MemAuthTokenStore())
-      auth.setAuthToken(event.data.token)
-      main()
+    const appOptions = event.data
+    console.log('options:', appOptions)
+
+    const { token, lang } = appOptions
+    if (token) {
+      auth.setAuthToken(token)
+      !started && main()
+    }
+    if (lang) {
+      i18n.changeLang(appOptions.lang)
     }
   },
   false

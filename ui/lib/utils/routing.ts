@@ -1,4 +1,4 @@
-export function isLocationMatch(s, matchPrefix) {
+export function isLocationMatch(s, matchPrefix = false) {
   let hash = window.location.hash
   if (!hash || hash === '#') {
     hash = '#/'

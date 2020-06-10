@@ -4,7 +4,7 @@ import { message } from 'antd'
 import * as singleSpa from 'single-spa'
 import DashboardClient, { DefaultApi } from '@lib/client'
 import * as auth from '@lib/utils/auth'
-import * as routing from '@dashboard/routing'
+import * as routing from '@lib/utils/routing'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 
 function initAxios() {
@@ -55,7 +55,7 @@ export function init() {
   const dashboardClient = new DefaultApi(
     {
       basePath: apiUrl,
-      apiKey: () => auth.getAuthTokenAsBearer(),
+      apiKey: () => auth.getAuthTokenAsBearer() || '',
     },
     undefined,
     initAxios()

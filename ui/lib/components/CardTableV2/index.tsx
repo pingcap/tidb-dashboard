@@ -18,8 +18,7 @@ import Card from '../Card'
 import styles from './index.module.less'
 
 export { AntCheckboxGroupHeader } from './GroupHeader'
-
-DetailsList.whyDidYouRender = {
+;(DetailsList as any).whyDidYouRender = {
   customName: 'DetailsList',
 } as any
 

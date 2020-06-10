@@ -1,4 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-ReactDOM.render(<div>DBass Portal</div>, document.getElementById('root'))
+window.addEventListener(
+  'message',
+  (event) => {
+    console.log('event:', event)
+    if (event.data.token) {
+      ReactDOM.render(
+        <div>DBass Portal: {event.data.token}</div>,
+        document.getElementById('root')
+      )
+    }
+  },
+  false
+)

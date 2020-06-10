@@ -8,16 +8,12 @@
     <script>
       function changeApp(app) {
         console.log('app:', app)
-
         const dashboard = document.getElementById('dashboard')
         if (app === 'error') {
           dashboard.contentWindow.postMessage({ token: 'hehe' }, '*')
           app = 'statement'
         }
-
-        const portalUrl = 'http://localhost:3000/dashboard/dbassPortal.html#/'
-        const fullUrl = `${portalUrl}${app}`
-        dashboard.src = fullUrl
+        dashboard.src = `http://localhost:3000/dashboard/dbassPortal.html#/${app}`
       }
 
       window.onload = function () {
@@ -49,7 +45,7 @@
           >KeyVisualizer</a
         >
         |
-        <a href="#" onclick="changeApp('error'); return false;">Error</a>
+        <a href="#" onclick="changeApp('error'); return false;">Clean Token</a>
       </div>
       <div style="border: 1px solid #52c41a; height: 80vh;">
         <iframe

@@ -29,6 +29,7 @@ async function main() {
     { registry }
   )
 
+  // TODO: Refine style
   singleSpa.registerApplication(
     'signin',
     AppRegistry.newReactSpaApp(() => LayoutError, 'root'),
@@ -65,13 +66,13 @@ window.addEventListener(
     const appOptions = event.data
 
     // To improve the security, we can limit the origin
-    // if (process.env.NODE_ENV === 'production' && event.origin !== 'xxxx') {
+    // if (process.env.NODE_ENV === 'production' && event.origin !== 'https://cloud.tidb.com') {
     //   return
     // }
 
     const { token, lang } = appOptions
     i18n.changeLang(lang || 'en')
-    if (token) {
+    if (token !== undefined) {
       auth.setAuthToken(token)
       !started && main()
       started = true

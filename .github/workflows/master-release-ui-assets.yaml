@@ -3,7 +3,7 @@ name: Release UI Assets
 on:
   push:
     branches:
-      - master
+      - dbass-portal
     paths:
       - "ui/.github_release_version"
 
@@ -48,7 +48,7 @@ jobs:
           echo "::set-output name=release_version::$(grep -v '^#' .github_release_version)"
       - name: Create asset release
         id: create_release
-        uses: actions/create-release@v1
+        uses: fleskesvor/create-release@feature/support-target-commitish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

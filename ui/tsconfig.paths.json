@@ -4,6 +4,7 @@
     "paths": {
       "@lib/*": ["lib/*"],
       "@dashboard/*": ["dashboardApp/*"],
+      "@dbass/*": ["dbassPortal/*"],
       "@diagnoseReport/*": ["diagnoseReportApp/*"]
     }
   }

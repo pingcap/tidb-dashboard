@@ -27,6 +27,7 @@
     "src",
     "lib",
     "dashboardApp",
+    "dbassPortal",
     "diagnoseReportApp"
   ]
 }

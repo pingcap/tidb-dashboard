@@ -66,7 +66,7 @@ const addAlias = () => (config) => {
   return config
 }
 
-const addDiagnoseReportEntry = () => (config) => {
+const addExtraEntries = () => (config) => {
   if (isBuildAsLibrary()) {
     return config
   }
@@ -75,6 +75,11 @@ const addDiagnoseReportEntry = () => (config) => {
       entry: 'diagnoseReportApp',
       template: 'public/diagnoseReport.html',
       outPath: '/diagnoseReport.html',
+    },
+    {
+      entry: './src/dbassPortal.ts',
+      template: 'public/dbassPortal.html',
+      outPath: '/dbassPortal.html',
     },
   ])
   e.addMultiEntry(config)
@@ -236,7 +241,7 @@ module.exports = override(
     )
   ),
   disableMinimizeByEnv(),
-  addDiagnoseReportEntry(),
+  addExtraEntries(),
   buildAsLibrary(),
   supportDynamicPublicPathPrefix()
 )

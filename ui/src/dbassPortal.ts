@@ -1,2 +1,2 @@
-// import './publicPath'
+import './publicPath'
 import '@dbass'

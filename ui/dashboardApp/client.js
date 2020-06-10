@@ -5,7 +5,7 @@ import * as singleSpa from 'single-spa'
 import DashboardClient, { DefaultApi } from '@lib/client'
 import * as auth from '@lib/utils/auth'
 import * as routing from '@dashboard/routing'
-import publicPathPrefix from '@dashboard/publicPathPrefix'
+import publicPathPrefix from '@lib/utils/publicPathPrefix'
 
 function initAxios() {
   const instance = axios.create()

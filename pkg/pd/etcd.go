@@ -22,11 +22,9 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/backoff"
-	"google.golang.org/grpc/keepalive"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
 const (
@@ -46,7 +44,6 @@ func init() {
 }
 
 func NewEtcdClient(lc fx.Lifecycle, config *config.Config) (*clientv3.Client, error) {
-	// TODO: refactor
 	// Because etcd client does not support setting logger directly,
 	// the configuration of pingcap/log is copied here.
 	zapCfg := zap.NewProductionConfig()
@@ -55,27 +52,15 @@ func NewEtcdClient(lc fx.Lifecycle, config *config.Config) (*clientv3.Client, er
 	zapCfg.ErrorOutputPaths = []string{"stderr"}
 
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:        []string{config.PDEndPoint},
-		AutoSyncInterval: 30 * time.Second,
-		DialTimeout:      5 * time.Second,
-		DialOptions: []grpc.DialOption{
-			grpc.WithConnectParams(grpc.ConnectParams{
-				Backoff: backoff.Config{
-					BaseDelay:  1.0 * time.Second,
-					Multiplier: 1.6,
-					Jitter:     0.2,
-					MaxDelay:   3 * time.Second,
-				},
-				MinConnectTimeout: 20 * time.Second,
-			}),
-			grpc.WithKeepaliveParams(keepalive.ClientParameters{
-				Time:                10 * time.Second,
-				Timeout:             3 * time.Second,
-				PermitWithoutStream: true,
-			}),
-		},
-		TLS:       config.ClusterTLSConfig,
-		LogConfig: &zapCfg,
+		Endpoints:            []string{config.PDEndPoint},
+		AutoSyncInterval:     30 * time.Second,
+		DialTimeout:          5 * time.Second,
+		DialKeepAliveTime:    10 * time.Second,
+		DialKeepAliveTimeout: 3 * time.Second,
+		PermitWithoutStream:  false,
+		DialOptions:          utils.DefaultGRPCDialOptions,
+		TLS:                  config.ClusterTLSConfig,
+		LogConfig:            &zapCfg,
 	})
 
 	lc.Append(fx.Hook{

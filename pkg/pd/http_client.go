@@ -49,7 +49,7 @@ func NewPDClient(lc fx.Lifecycle, httpClient *http.Client, config *config.Config
 	return client
 }
 
-func (pd *Client) SendRequest(path string) ([]byte, error) {
+func (pd *Client) SendGetRequest(path string) ([]byte, error) {
 	uri := pd.address + path
 	req, err := http.NewRequestWithContext(pd.lifecycleCtx, "GET", uri, nil)
 	if err != nil {

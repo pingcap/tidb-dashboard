@@ -30,7 +30,7 @@ func FetchPDTopology(pdClient *pd.Client) ([]PDInfo, error) {
 		return nil, err
 	}
 
-	data, err := pdClient.SendRequest("/pd/api/v1/members")
+	data, err := pdClient.SendGetRequest("/pd/api/v1/members")
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func FetchPDTopology(pdClient *pd.Client) ([]PDInfo, error) {
 }
 
 func fetchPDStartTimestamp(pdClient *pd.Client) (int64, error) {
-	data, err := pdClient.SendRequest("/pd/api/v1/status")
+	data, err := pdClient.SendGetRequest("/pd/api/v1/status")
 	if err != nil {
 		return 0, err
 	}
@@ -112,7 +112,7 @@ func fetchPDStartTimestamp(pdClient *pd.Client) (int64, error) {
 }
 
 func fetchPDHealth(pdClient *pd.Client) (map[uint64]struct{}, error) {
-	data, err := pdClient.SendRequest("/pd/api/v1/health")
+	data, err := pdClient.SendGetRequest("/pd/api/v1/health")
 	if err != nil {
 		return nil, err
 	}

@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"net/http"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -71,6 +72,8 @@ type Forwarder struct {
 
 	config     *ForwarderConfig
 	etcdClient *clientv3.Client
+	httpClient *http.Client
+	uriScheme  string
 
 	tidbProxy       *proxy
 	tidbStatusProxy *proxy
@@ -171,10 +174,17 @@ func (f *Forwarder) pollingForTiDB() {
 	}
 }
 
-func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3.Client) *Forwarder {
+func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3.Client, httpClient *http.Client) *Forwarder {
 	f := &Forwarder{
-		etcdClient: etcdClient,
 		config:     config,
+		etcdClient: etcdClient,
+		httpClient: httpClient,
+	}
+
+	if config.TiDBTLSConfig == nil {
+		f.uriScheme = "http"
+	} else {
+		f.uriScheme = "https"
 	}
 
 	lc.Append(fx.Hook{

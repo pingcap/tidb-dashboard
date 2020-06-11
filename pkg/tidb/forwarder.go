@@ -62,7 +62,7 @@ func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
 }
 
 type Forwarder struct {
-	ctx context.Context
+	lifecycleCtx context.Context
 
 	config     *ForwarderConfig
 	etcdClient *clientv3.Client
@@ -74,7 +74,7 @@ type Forwarder struct {
 }
 
 func (f *Forwarder) Start(ctx context.Context) error {
-	f.ctx = ctx
+	f.lifecycleCtx = ctx
 
 	var err error
 	if f.tidbProxy, err = f.createProxy(); err != nil {
@@ -95,7 +95,7 @@ func (f *Forwarder) Start(ctx context.Context) error {
 }
 
 func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
-	ctx, cancel := context.WithTimeout(f.ctx, f.config.TiDBRetrieveTimeout)
+	ctx, cancel := context.WithTimeout(f.lifecycleCtx, f.config.TiDBRetrieveTimeout)
 	resp, err := f.etcdClient.Get(ctx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
 	cancel()
 
@@ -133,7 +133,7 @@ func (f *Forwarder) createProxy() (*proxy, error) {
 func (f *Forwarder) pollingForTiDB() {
 	ebo := backoff.NewExponentialBackOff()
 	ebo.MaxInterval = f.config.TiDBPollInterval
-	bo := backoff.WithContext(ebo, f.ctx)
+	bo := backoff.WithContext(ebo, f.lifecycleCtx)
 
 	for {
 		var allTiDB []*tidbServerInfo
@@ -159,7 +159,7 @@ func (f *Forwarder) pollingForTiDB() {
 		}
 
 		select {
-		case <-f.ctx.Done():
+		case <-f.lifecycleCtx.Done():
 			return
 		case <-time.After(f.config.TiDBPollInterval):
 		}

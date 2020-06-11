@@ -58,7 +58,7 @@ func (s *Scheduler) AsyncStart(taskGroupModel *TaskGroupModel, tasksModel []*Tas
 		return false
 	}
 
-	taskGroup.InitTasks(s.service.ctx, tasksModel)
+	taskGroup.InitTasks(s.service.lifecycleCtx, tasksModel)
 
 	go func() {
 		taskGroup.SyncRun()

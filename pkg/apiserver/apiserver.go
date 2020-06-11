@@ -54,7 +54,7 @@ var (
 	once sync.Once
 )
 
-type DataProviderConstructor func(*config.Config, *http.Client) *keyvisualregion.DataProvider
+type KeyVisualProviderConstructor func(*config.Config, *http.Client) *keyvisualregion.DataProvider
 
 type Service struct {
 	app    *fx.App
@@ -63,15 +63,15 @@ type Service struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	config          *config.Config
-	newDataProvider DataProviderConstructor
-	stoppedHandler  http.Handler
-	uiAssetFS       http.FileSystem
+	config               *config.Config
+	newKeyVisualProvider KeyVisualProviderConstructor
+	stoppedHandler       http.Handler
+	uiAssetFS            http.FileSystem
 
 	apiHandlerEngine *gin.Engine
 }
 
-func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS http.FileSystem, newDataProvider DataProviderConstructor) *Service {
+func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS http.FileSystem, newKeyVisualProvider KeyVisualProviderConstructor) *Service {
 	once.Do(func() {
 		// These global modification will be effective only for the first invoke.
 		_ = godotenv.Load()
@@ -79,11 +79,11 @@ func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS http.
 	})
 
 	return &Service{
-		status:          utils.NewServiceStatus(),
-		config:          cfg,
-		newDataProvider: newDataProvider,
-		stoppedHandler:  stoppedHandler,
-		uiAssetFS:       uiAssetFS,
+		status:               utils.NewServiceStatus(),
+		config:               cfg,
+		newKeyVisualProvider: newKeyVisualProvider,
+		stoppedHandler:       stoppedHandler,
+		uiAssetFS:            uiAssetFS,
 	}
 }
 
@@ -103,7 +103,7 @@ func (s *Service) Start(ctx context.Context) error {
 		fx.Provide(
 			newAPIHandlerEngine,
 			s.provideLocals,
-			s.newDataProvider,
+			s.newKeyVisualProvider,
 			dbstore.NewDBStore,
 			pd.NewEtcdClient,
 			pd.NewPDClient,

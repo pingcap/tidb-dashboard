@@ -113,7 +113,7 @@ async function main(appOptions: AppOptions = defOptions) {
 
 /////////////////////////////////////
 
-if (window.__is_config_portal__) {
+if (window.location.pathname.endsWith('/portal')) {
   function handleConfigEvent(event) {
     const appOptions = event.data
     const { token, lang, hideNav } = appOptions

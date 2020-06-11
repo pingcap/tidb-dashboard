@@ -303,8 +303,8 @@ func (s *Service) heatmaps(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (s *Service) provideLocals() (*config.Config, *clientv3.Client, *dbstore.DB, *tidb.Forwarder) {
-	return s.config, s.etcdClient, s.db, s.forwarder
+func (s *Service) provideLocals() (*config.Config, *clientv3.Client, *pd.Client, *dbstore.DB, *tidb.Forwarder) {
+	return s.config, s.etcdClient, s.pdClient, s.db, s.forwarder
 }
 
 func newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {

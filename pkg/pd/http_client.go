@@ -15,6 +15,7 @@ package pd
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -50,7 +51,7 @@ func NewPDClient(lc fx.Lifecycle, httpClient *http.Client, config *config.Config
 }
 
 func (pd *Client) SendGetRequest(path string) ([]byte, error) {
-	uri := pd.address + path
+	uri := fmt.Sprintf("%s/pd/api/v1%s", pd.address, path)
 	req, err := http.NewRequestWithContext(pd.lifecycleCtx, "GET", uri, nil)
 	if err != nil {
 		return nil, ErrPDClientRequestFailed.Wrap(err, "failed to build request for PD API %s", path)

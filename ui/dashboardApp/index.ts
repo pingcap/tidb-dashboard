@@ -2,27 +2,27 @@ import '@lib/utils/wdyr'
 
 import * as singleSpa from 'single-spa'
 
+import AppRegistry from '@lib/utils/registry'
+import * as routing from '@lib/utils/routing'
+import * as auth from '@lib/utils/auth'
+import * as i18n from '@lib/utils/i18n'
+import * as apiClient from '@lib/utils/apiClient'
+
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
 import LayoutFull from '@dashboard/layout/full'
 
-import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
-import AppDashboardSettings from '@lib/apps/DashboardSettings/index.meta'
 import AppDebugPlayground from '@lib/apps/DebugPlayground/index.meta'
-import AppDiagnose from '@lib/apps/Diagnose/index.meta'
-import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
-import AppKeyViz from '@lib/apps/KeyViz/index.meta'
-import AppOverview from '@lib/apps/Overview/index.meta'
-import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
-import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
-import AppStatement from '@lib/apps/Statement/index.meta'
+import AppDashboardSettings from '@lib/apps/DashboardSettings/index.meta'
 import AppUserProfile from '@lib/apps/UserProfile/index.meta'
-
-import * as client from '@lib/utils/apiClient'
-import * as auth from '@lib/utils/auth'
-import * as i18n from '@lib/utils/i18n'
-import AppRegistry from '@lib/utils/registry'
-import * as routing from '@lib/utils/routing'
+import AppOverview from '@lib/apps/Overview/index.meta'
+import AppKeyViz from '@lib/apps/KeyViz/index.meta'
+import AppStatement from '@lib/apps/Statement/index.meta'
+import AppDiagnose from '@lib/apps/Diagnose/index.meta'
+import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
+import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
+import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
+import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 
 type AppOptions = {
   isPortal?: boolean
@@ -50,7 +50,7 @@ async function main(appOptions: AppOptions = defOptions) {
     i18n.changeLang(appOptions.lang)
   }
 
-  client.init()
+  apiClient.init()
 
   i18n.addTranslations(
     require.context('@dashboard/layout/translations/', false, /\.yaml$/)

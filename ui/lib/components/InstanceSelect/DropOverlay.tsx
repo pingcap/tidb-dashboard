@@ -1,40 +1,67 @@
-import React from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { MarqueeSelection } from 'office-ui-fabric-react/lib/MarqueeSelection'
-import { Selection, SelectionMode } from 'office-ui-fabric-react/lib/Selection'
+import { SelectionMode } from 'office-ui-fabric-react/lib/Selection'
 import { MemoDetailsList, AntCheckboxGroupHeader } from '../'
 import { useSize } from '@umijs/hooks'
 import {
   DetailsListLayoutMode,
   IColumn,
-  IGroup,
+  ISelection,
 } from 'office-ui-fabric-react/lib/DetailsList'
-import { IInstanceTableItem } from '@lib/utils/instanceTable'
+import {
+  IInstanceTableItem,
+  filterInstanceTable,
+} from '@lib/utils/instanceTable'
+import { Input } from 'antd'
 
 import styles from './DropOverlay.module.less'
+import { useTranslation } from 'react-i18next'
 
 const groupProps = {
   onRenderHeader: (props) => <AntCheckboxGroupHeader {...props} />,
 }
 
-function DropOverlay({
-  selection,
-  columns,
-  items,
-  groups,
-}: {
-  selection: Selection
+export interface IDropOverlayProps {
+  selection: ISelection
   columns: IColumn[]
   items: IInstanceTableItem[]
-  groups: IGroup[]
-}) {
+}
+
+function DropOverlay({ selection, columns, items }: IDropOverlayProps) {
+  const { t } = useTranslation()
+  const [keyword, setKeyword] = useState('')
+
+  const [finalItems, finalGroups] = useMemo(() => {
+    return filterInstanceTable(items, keyword)
+  }, [items, keyword])
+
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setKeyword(e.target.value)
+    },
+    []
+  )
+
+  // FIXME: We should put Input inside ScrollablePane after https://github.com/microsoft/fluentui/issues/13557 is resolved
+
   const [containerState, containerRef] = useSize<HTMLDivElement>()
+
   return (
-    <div
-      className={styles.instanceDropdown}
-      style={{ height: containerState.height, maxHeight: 400, width: 400 }}
-    >
-      <ScrollablePane>
+    <div className={styles.instanceDropdown}>
+      <Input
+        placeholder={t('component.instanceSelect.filterPlaceholder')}
+        allowClear
+        onChange={handleInputChange}
+      />
+      <ScrollablePane
+        style={{
+          position: 'relative',
+          height: containerState.height,
+          maxHeight: 300,
+          width: 400,
+        }}
+      >
         <div ref={containerRef}>
           <MarqueeSelection selection={selection} isDraggingConstrainedToRoot>
             <MemoDetailsList
@@ -43,9 +70,10 @@ function DropOverlay({
               selectionPreservedOnEmptyClick
               layoutMode={DetailsListLayoutMode.justified}
               columns={columns}
-              items={items}
-              groups={groups}
+              items={finalItems}
+              groups={finalGroups}
               groupProps={groupProps}
+              setKey="set"
               compact
             />
           </MarqueeSelection>

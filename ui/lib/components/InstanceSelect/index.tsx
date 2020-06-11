@@ -2,7 +2,6 @@ import React, { useCallback, useRef, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useShallowCompareEffect } from 'react-use'
 import { Tooltip } from 'antd'
-import { Selection } from 'office-ui-fabric-react/lib/Selection'
 import {
   IBaseSelectProps,
   BaseSelect,
@@ -18,6 +17,7 @@ import {
   buildInstanceTable,
   IInstanceTableItem,
 } from '@lib/utils/instanceTable'
+import SelectionWithFilter from '@lib/utils/selectionWithFilter'
 
 import DropOverlay from './DropOverlay'
 import ValueDisplay from './ValueDisplay'
@@ -37,6 +37,7 @@ export interface IInstanceSelectRefProps {
 const translations = {
   en: {
     placeholder: 'Select Instances',
+    filterPlaceholder: 'Filter instance',
     selected: {
       all: 'All Instances',
       partial: {
@@ -51,6 +52,7 @@ const translations = {
   },
   'zh-CN': {
     placeholder: '选择实例',
+    filterPlaceholder: '过滤实例',
     selected: {
       all: '所有实例',
       partial: {
@@ -138,7 +140,7 @@ function InstanceSelect(
     [t]
   )
 
-  const [tableItems, tableGroups] = useMemo(() => {
+  const [tableItems] = useMemo(() => {
     if (loadingTiDB || loadingStores || loadingPD) {
       return [[], []]
     }
@@ -164,9 +166,10 @@ function InstanceSelect(
   })
 
   const selection = useRef(
-    new Selection({
+    new SelectionWithFilter({
       onSelectionChanged: () => {
-        const s = selection.current.getSelection() as IInstanceTableItem[]
+        console.log('onSelectionChanged')
+        const s = selection.current.getAllSelection() as IInstanceTableItem[]
         const keys = s.map((v) => v.key)
         onChangePersist([...keys])
       },
@@ -174,25 +177,7 @@ function InstanceSelect(
   )
 
   useShallowCompareEffect(() => {
-    const sel = selection.current
-    if (value != null) {
-      const s = sel.getSelection() as IInstanceTableItem[]
-      if (
-        s.length === value.length &&
-        s.every((item, index) => value?.[index] === item.key)
-      ) {
-        return
-      }
-    }
-    // Update selection when value is changed
-    sel.setChangeEvents(false)
-    sel.setAllSelected(false)
-    if (value && value.length > 0) {
-      for (const key of value) {
-        sel.setKeySelected(key, true, false)
-      }
-    }
-    sel.setChangeEvents(true)
+    selection.current?.resetAllSelection(value ?? [])
   }, [value])
 
   const dataHasLoaded = useRef(false)
@@ -209,14 +194,11 @@ function InstanceSelect(
     }
     const sel = selection.current
     sel.setChangeEvents(false)
-    sel.setItems(tableItems)
+    sel.setAllItems(tableItems)
     if (value && value.length > 0) {
-      sel.setAllSelected(false)
-      for (const key of value) {
-        sel.setKeySelected(key, true, false)
-      }
+      sel.resetAllSelection(value)
     } else if (defaultSelectAll) {
-      sel.setAllSelected(true)
+      sel.setAllSelectionSelected(true)
     }
     sel.setChangeEvents(true)
     dataHasLoaded.current = true
@@ -260,11 +242,10 @@ function InstanceSelect(
       <DropOverlay
         columns={columns}
         items={tableItems}
-        groups={tableGroups}
         selection={selection.current}
       />
     ),
-    [columns, tableItems, tableGroups]
+    [columns, tableItems]
   )
 
   return (

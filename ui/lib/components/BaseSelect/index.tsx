@@ -64,7 +64,6 @@ function BaseSelect<T>({
 
   const handleDebouncedContainerFocus = useCallback(
     (ev: React.FocusEvent<HTMLDivElement>) => {
-      console.log('container focus')
       setFocused(true)
       onFocus && onFocus(ev)
     },
@@ -73,7 +72,6 @@ function BaseSelect<T>({
 
   const handleDebouncedContainerBlur = useCallback(
     (ev: React.FocusEvent<HTMLDivElement>) => {
-      console.log('Container Blur')
       setDropdownVisible(false)
       setFocused(false)
       onBlur && onBlur(ev)

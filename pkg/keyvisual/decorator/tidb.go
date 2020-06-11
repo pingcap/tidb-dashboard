@@ -17,7 +17,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"net/http"
 	"sync"
 	"time"
 
@@ -40,7 +39,6 @@ type tableDetail struct {
 type tidbLabelStrategy struct {
 	Config     *config.Config
 	EtcdClient *clientv3.Client
-	HTTPClient *http.Client
 
 	TableMap      sync.Map
 	forwarder     *tidb.Forwarder
@@ -49,11 +47,10 @@ type tidbLabelStrategy struct {
 }
 
 // TiDBLabelStrategy implements the LabelStrategy interface. Get Label Information from TiDB.
-func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, etcdClient *clientv3.Client, httpClient *http.Client, forwarder *tidb.Forwarder) LabelStrategy {
+func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, etcdClient *clientv3.Client, forwarder *tidb.Forwarder) LabelStrategy {
 	s := &tidbLabelStrategy{
 		Config:        cfg,
 		EtcdClient:    etcdClient,
-		HTTPClient:    httpClient,
 		forwarder:     forwarder,
 		SchemaVersion: -1,
 	}

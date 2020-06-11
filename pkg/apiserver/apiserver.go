@@ -54,8 +54,6 @@ var (
 	once sync.Once
 )
 
-type KeyVisualProviderConstructor func(*config.Config, *http.Client) *keyvisualregion.DataProvider
-
 type Service struct {
 	app    *fx.App
 	status *utils.ServiceStatus
@@ -63,15 +61,15 @@ type Service struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	config               *config.Config
-	newKeyVisualProvider KeyVisualProviderConstructor
-	stoppedHandler       http.Handler
-	uiAssetFS            http.FileSystem
+	config                  *config.Config
+	customKeyVisualProvider *keyvisualregion.DataProvider
+	stoppedHandler          http.Handler
+	uiAssetFS               http.FileSystem
 
 	apiHandlerEngine *gin.Engine
 }
 
-func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS http.FileSystem, newKeyVisualProvider KeyVisualProviderConstructor) *Service {
+func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS http.FileSystem, customKeyVisualProvider *keyvisualregion.DataProvider) *Service {
 	once.Do(func() {
 		// These global modification will be effective only for the first invoke.
 		_ = godotenv.Load()
@@ -79,11 +77,11 @@ func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS http.
 	})
 
 	return &Service{
-		status:               utils.NewServiceStatus(),
-		config:               cfg,
-		newKeyVisualProvider: newKeyVisualProvider,
-		stoppedHandler:       stoppedHandler,
-		uiAssetFS:            uiAssetFS,
+		status:                  utils.NewServiceStatus(),
+		config:                  cfg,
+		customKeyVisualProvider: customKeyVisualProvider,
+		stoppedHandler:          stoppedHandler,
+		uiAssetFS:               uiAssetFS,
 	}
 }
 
@@ -103,7 +101,6 @@ func (s *Service) Start(ctx context.Context) error {
 		fx.Provide(
 			newAPIHandlerEngine,
 			s.provideLocals,
-			s.newKeyVisualProvider,
 			dbstore.NewDBStore,
 			pd.NewEtcdClient,
 			pd.NewPDClient,
@@ -184,8 +181,8 @@ func (s *Service) handler(w http.ResponseWriter, r *http.Request) {
 	s.apiHandlerEngine.ServeHTTP(w, r)
 }
 
-func (s *Service) provideLocals() (*config.Config, http.FileSystem) {
-	return s.config, s.uiAssetFS
+func (s *Service) provideLocals() (*config.Config, http.FileSystem, *keyvisualregion.DataProvider) {
+	return s.config, s.uiAssetFS, s.customKeyVisualProvider
 }
 
 func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGroup) {

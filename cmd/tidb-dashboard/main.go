@@ -44,7 +44,6 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	keyvisualinput "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
 	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
@@ -170,18 +169,19 @@ func main() {
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
+	var customKeyVisualProvider *keyvisualregion.DataProvider
+	if cliConfig.KVFileStartTime > 0 {
+		customKeyVisualProvider = &keyvisualregion.DataProvider{
+			FileStartTime: cliConfig.KVFileStartTime,
+			FileEndTime:   cliConfig.KVFileEndTime,
+		}
+	}
 	assets := uiserver.Assets(cliConfig.CoreConfig)
 	s := apiserver.NewService(
 		cliConfig.CoreConfig,
 		apiserver.StoppedHandler,
 		assets,
-		func(cfg *config.Config, httpClient *http.Client) *keyvisualregion.DataProvider {
-			return &keyvisualregion.DataProvider{
-				FileStartTime:  cliConfig.KVFileStartTime,
-				FileEndTime:    cliConfig.KVFileEndTime,
-				PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint, httpClient),
-			}
-		},
+		customKeyVisualProvider,
 	)
 	if err := s.Start(ctx); err != nil {
 		log.Fatal("Can not start server", zap.Error(err))

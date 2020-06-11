@@ -21,6 +21,7 @@ import (
 	"sync"
 	"time"
 
+	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
@@ -38,7 +39,7 @@ type tableDetail struct {
 
 type tidbLabelStrategy struct {
 	Config     *config.Config
-	Provider   *region.PDDataProvider
+	EtcdClient *clientv3.Client
 	HTTPClient *http.Client
 
 	TableMap      sync.Map
@@ -48,10 +49,10 @@ type tidbLabelStrategy struct {
 }
 
 // TiDBLabelStrategy implements the LabelStrategy interface. Get Label Information from TiDB.
-func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client, forwarder *tidb.Forwarder) LabelStrategy {
+func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, etcdClient *clientv3.Client, httpClient *http.Client, forwarder *tidb.Forwarder) LabelStrategy {
 	s := &tidbLabelStrategy{
 		Config:        cfg,
-		Provider:      provider,
+		EtcdClient:    etcdClient,
 		HTTPClient:    httpClient,
 		forwarder:     forwarder,
 		SchemaVersion: -1,

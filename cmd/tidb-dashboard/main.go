@@ -38,7 +38,6 @@ import (
 
 	"github.com/pingcap/log"
 	flag "github.com/spf13/pflag"
-	"go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/pkg/transport"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -176,12 +175,11 @@ func main() {
 		cliConfig.CoreConfig,
 		apiserver.StoppedHandler,
 		assets,
-		func(cfg *config.Config, httpClient *http.Client, etcdClient *clientv3.Client) *keyvisualregion.PDDataProvider {
-			return &keyvisualregion.PDDataProvider{
+		func(cfg *config.Config, httpClient *http.Client) *keyvisualregion.DataProvider {
+			return &keyvisualregion.DataProvider{
 				FileStartTime:  cliConfig.KVFileStartTime,
 				FileEndTime:    cliConfig.KVFileEndTime,
 				PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint, httpClient),
-				EtcdClient:     etcdClient,
 			}
 		},
 	)

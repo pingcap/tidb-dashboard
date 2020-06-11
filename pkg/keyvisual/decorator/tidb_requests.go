@@ -42,7 +42,7 @@ var (
 func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	// check schema version
 	ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
-	resp, err := s.Provider.EtcdClient.Get(ectx, schemaVersionPath)
+	resp, err := s.EtcdClient.Get(ectx, schemaVersionPath)
 	cancel()
 	if err != nil || len(resp.Kvs) != 1 {
 		log.Warn("failed to get tidb schema version", zap.Error(err))

@@ -183,13 +183,11 @@ type Stat struct {
 	keyMap   matrix.KeyMap
 	strategy matrix.Strategy
 
-	provider *region.PDDataProvider
-
 	db *dbstore.DB
 }
 
 // NewStat generates a Stat based on the configuration.
-func NewStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, db *dbstore.DB, cfg StatConfig, strategy matrix.Strategy, startTime time.Time) *Stat {
+func NewStat(lc fx.Lifecycle, wg *sync.WaitGroup, db *dbstore.DB, cfg StatConfig, strategy matrix.Strategy, startTime time.Time) *Stat {
 	layers := make([]*layerStat, len(cfg.LayersConfig))
 	for i, c := range cfg.LayersConfig {
 		layers[i] = newLayerStat(uint8(i), c, strategy, startTime, db)
@@ -200,7 +198,6 @@ func NewStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvide
 	s := &Stat{
 		layers:   layers,
 		strategy: strategy,
-		provider: provider,
 		db:       db,
 	}
 

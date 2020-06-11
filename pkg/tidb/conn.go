@@ -42,10 +42,6 @@ var (
 	ErrTiDBClientRequestFailed = ErrNS.NewType("client_request_failed")
 )
 
-func (f *Forwarder) GetStatusConnProps() (string, int) {
-	return "127.0.0.1", f.statusPort
-}
-
 func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 	var addr string
 	addr = os.Getenv(envTidbOverrideEndpointKey)

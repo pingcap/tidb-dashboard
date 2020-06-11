@@ -4,6 +4,7 @@ import * as singleSpa from 'single-spa'
 
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
+import LayoutFull from '@dashboard/layout/full'
 
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppDashboardSettings from '@lib/apps/DashboardSettings/index.meta'
@@ -23,7 +24,32 @@ import * as i18n from '@lib/utils/i18n'
 import AppRegistry from '@lib/utils/registry'
 import * as routing from '@lib/utils/routing'
 
-async function main() {
+type AppOptions = {
+  isPortal?: boolean
+  token?: string
+  lang?: string
+  hideNav?: boolean
+}
+
+const defOptions: AppOptions = {
+  isPortal: false,
+  token: '',
+  lang: '',
+  hideNav: false,
+}
+
+async function main(appOptions: AppOptions = defOptions) {
+  // handle options
+  if (appOptions.isPortal) {
+    auth.setStore(new auth.MemAuthTokenStore())
+    auth.setAuthToken(appOptions.token)
+  } else {
+    auth.setStore(new auth.LocalStorageAuthTokenStore())
+  }
+  if (appOptions.lang) {
+    i18n.changeLang(appOptions.lang)
+  }
+
   client.init()
 
   i18n.addTranslations(
@@ -34,7 +60,10 @@ async function main() {
 
   singleSpa.registerApplication(
     'layout',
-    AppRegistry.newReactSpaApp(() => LayoutMain, 'root'),
+    AppRegistry.newReactSpaApp(
+      () => (appOptions.hideNav ? LayoutFull : LayoutMain),
+      'root'
+    ),
     () => {
       return !routing.isLocationMatchPrefix(auth.signInRoute)
     },
@@ -84,5 +113,19 @@ async function main() {
 
 /////////////////////////////////////
 
-auth.setStore(new auth.LocalStorageAuthTokenStore())
-main()
+if (window.__is_config_portal__) {
+  function handleConfigEvent(event) {
+    const appOptions = event.data
+    const { token, lang, hideNav } = appOptions
+    main({
+      isPortal: true,
+      token,
+      lang,
+      hideNav,
+    })
+    window.removeEventListener('message', handleConfigEvent)
+  }
+  window.addEventListener('message', handleConfigEvent)
+} else {
+  main()
+}

@@ -1,12 +1,11 @@
 import React from 'react'
+import { Root } from '@lib/components'
 import { HashRouter as Router } from 'react-router-dom'
 import { animated } from 'react-spring'
 
-import { Root } from '@lib/components'
-
 import styles from './index.module.less'
 
-export default function App() {
+export default function App({ registry }) {
   return (
     <Root>
       <Router>

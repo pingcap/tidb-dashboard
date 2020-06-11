@@ -13,6 +13,8 @@
 
 package pd
 
-import "github.com/joomcode/errorx"
+import (
+	"github.com/joomcode/errorx"
+)
 
 var ErrNS = errorx.NewNamespace("error.pd")

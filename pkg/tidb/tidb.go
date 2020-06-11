@@ -17,10 +17,4 @@ import (
 	"github.com/joomcode/errorx"
 )
 
-var (
-	ErrorNS           = errorx.NewNamespace("error.tidb")
-	ErrPDAccessFailed = ErrorNS.NewType("pd_access_failed")
-	ErrNoAliveTiDB    = ErrorNS.NewType("no_alive_tidb")
-	ErrTiDBConnFailed = ErrorNS.NewType("tidb_conn_failed")
-	ErrTiDBAuthFailed = ErrorNS.NewType("tidb_auth_failed")
-)
+var ErrNS = errorx.NewNamespace("error.tidb")

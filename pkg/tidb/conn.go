@@ -34,6 +34,11 @@ const (
 	envTidbOverrideEndpointKey = "TIDB_OVERRIDE_ENDPOINT"
 )
 
+var (
+	ErrTiDBConnFailed = ErrNS.NewType("tidb_conn_failed")
+	ErrTiDBAuthFailed = ErrNS.NewType("tidb_auth_failed")
+)
+
 func (f *Forwarder) GetDBConnProps() (string, int) {
 	return "127.0.0.1", f.tidbPort
 }

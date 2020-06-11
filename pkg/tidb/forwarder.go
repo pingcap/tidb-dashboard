@@ -33,6 +33,11 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
+var (
+	ErrPDAccessFailed = ErrNS.NewType("pd_access_failed")
+	ErrNoAliveTiDB    = ErrNS.NewType("no_alive_tidb")
+)
+
 type tidbServerInfo struct {
 	ID         string `json:"ddl_id"`
 	IP         string `json:"ip"`

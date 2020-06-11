@@ -250,12 +250,12 @@ function InstanceSelect(
 
   return (
     <BaseSelect
-      {...restProps}
       dropdownRender={renderDropdown}
       value={value}
       valueRender={renderValue}
       disabled={loadingTiDB || loadingStores || loadingPD}
       placeholder={t('component.instanceSelect.placeholder')}
+      {...restProps}
     />
   )
 }

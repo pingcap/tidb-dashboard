@@ -25,9 +25,9 @@ import (
 )
 
 var (
-	ErrNS                  = errorx.NewNamespace("error.keyvisual")
-	ErrNSInput             = ErrNS.NewSubNamespace("input")
-	ErrPDHTTPRequestFailed = ErrNSInput.NewType("pd_http_request_failed")
+	ErrNS          = errorx.NewNamespace("error.keyvisual")
+	ErrNSInput     = ErrNS.NewSubNamespace("input")
+	ErrInvalidData = ErrNSInput.NewType("invalid_data")
 )
 
 // RegionInfo records detail region info for api usage.
@@ -95,18 +95,18 @@ func (rs *RegionsInfo) GetValues(tag regionpkg.StatTag) []uint64 {
 func read(data []byte) (*RegionsInfo, error) {
 	regions := &RegionsInfo{}
 	if err := json.Unmarshal(data, regions); err != nil {
-		return nil, err
+		return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed")
 	}
 
 	for _, region := range regions.Regions {
 		startBytes, err := hex.DecodeString(region.StartKey)
 		if err != nil {
-			return nil, err
+			return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed")
 		}
 		region.StartKey = regionpkg.String(startBytes)
 		endBytes, err := hex.DecodeString(region.EndKey)
 		if err != nil {
-			return nil, err
+			return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed")
 		}
 		region.EndKey = regionpkg.String(endBytes)
 	}

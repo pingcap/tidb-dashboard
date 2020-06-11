@@ -89,7 +89,13 @@ func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDB
 	}
 
 	sort.Slice(nodes, func(i, j int) bool {
-		return nodes[i].IP > nodes[j].IP && nodes[i].Port > nodes[j].Port
+		if nodes[i].IP < nodes[j].IP {
+			return true
+		}
+		if nodes[i].IP > nodes[j].IP {
+			return false
+		}
+		return nodes[i].Port < nodes[j].Port
 	})
 
 	return nodes, nil

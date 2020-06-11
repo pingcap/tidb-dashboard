@@ -13,6 +13,8 @@ import {
 import { RightOutlined, WarningOutlined } from '@ant-design/icons'
 import { Stack } from 'office-ui-fabric-react/lib/Stack'
 
+import styles from './Styles.module.less'
+
 function ComponentItem(props: {
   name: string
   resp: { data?: { status?: number }[]; isLoading: boolean; error?: any }
@@ -43,7 +45,7 @@ function ComponentItem(props: {
         <Descriptions column={1}>
           <Descriptions.Item label={name}>
             <Typography.Text type={upNums === allNums ? undefined : 'danger'}>
-              <big>{upNums}</big>
+              <span className={styles.big}>{upNums}</span>
               <small> / {allNums}</small>
             </Typography.Text>
           </Descriptions.Item>

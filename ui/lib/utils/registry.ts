@@ -2,12 +2,14 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import singleSpaReact from 'single-spa-react'
 import * as singleSpa from 'single-spa'
-import * as i18n from '@lib/utils/i18n'
-import * as routing from '@lib/utils/routing'
+import * as i18n from './i18n'
+import * as routing from './routing'
+import { AppOptions } from './appOptions'
 
 export default class AppRegistry {
   private defaultRouter = ''
   private apps = {}
+  public constructor(public appOptions: AppOptions) {}
 
   static newReactSpaApp = function (rootComponentAsyncLoader, targetDomId) {
     const reactLifecycles = singleSpaReact({

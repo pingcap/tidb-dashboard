@@ -1,16 +1,21 @@
 import '@lib/utils/wdyr'
 
 import * as singleSpa from 'single-spa'
+import i18next from 'i18next'
 
 import AppRegistry from '@lib/utils/registry'
 import * as routing from '@lib/utils/routing'
 import * as auth from '@lib/utils/auth'
 import * as i18n from '@lib/utils/i18n'
 import * as apiClient from '@lib/utils/apiClient'
+import {
+  AppOptions,
+  saveAppOptions,
+  loadAppOptions,
+} from '@lib/utils/appOptions'
 
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
-import LayoutFull from '@dashboard/layout/full'
 
 import AppDebugPlayground from '@lib/apps/DebugPlayground/index.meta'
 import AppDashboardSettings from '@lib/apps/DashboardSettings/index.meta'
@@ -24,46 +29,21 @@ import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 
-type AppOptions = {
-  isPortal?: boolean
-  token?: string
-  lang?: string
-  hideNav?: boolean
-}
-
-const defOptions: AppOptions = {
-  isPortal: false,
-  token: '',
-  lang: '',
-  hideNav: false,
-}
-
-async function main(appOptions: AppOptions = defOptions) {
-  // handle options
-  if (appOptions.isPortal) {
-    auth.setStore(new auth.MemAuthTokenStore())
-    auth.setAuthToken(appOptions.token)
-  } else {
-    auth.setStore(new auth.LocalStorageAuthTokenStore())
+async function main(options: AppOptions) {
+  if (options.lang) {
+    i18next.changeLanguage(options.lang)
   }
-  if (appOptions.lang) {
-    i18n.changeLang(appOptions.lang)
-  }
-
-  apiClient.init()
-
   i18n.addTranslations(
     require.context('@dashboard/layout/translations/', false, /\.yaml$/)
   )
 
-  const registry = new AppRegistry()
+  apiClient.init()
+
+  const registry = new AppRegistry(options)
 
   singleSpa.registerApplication(
     'layout',
-    AppRegistry.newReactSpaApp(
-      () => (appOptions.hideNav ? LayoutFull : LayoutMain),
-      'root'
-    ),
+    AppRegistry.newReactSpaApp(() => LayoutMain, 'root'),
     () => {
       return !routing.isLocationMatchPrefix(auth.signInRoute)
     },
@@ -113,19 +93,51 @@ async function main(appOptions: AppOptions = defOptions) {
 
 /////////////////////////////////////
 
-if (window.location.pathname.endsWith('/portal')) {
-  function handleConfigEvent(event) {
-    const appOptions = event.data
-    const { token, lang, hideNav } = appOptions
-    main({
-      isPortal: true,
-      token,
-      lang,
-      hideNav,
-    })
-    window.removeEventListener('message', handleConfigEvent)
-  }
-  window.addEventListener('message', handleConfigEvent)
-} else {
-  main()
+// check whether this is a portal page
+function checkPortal(): boolean {
+  return window.location.pathname.endsWith('/portal')
 }
+
+// check whether the url has 'iframe' query parameter
+function checkIframe(): boolean {
+  const hash = window.location.hash
+  const pos = hash.indexOf('?')
+  if (pos === -1) {
+    return false
+  }
+  let q = hash.substring(pos + 1)
+  const p = new URLSearchParams(q)
+  return p.get('iframe') !== null
+}
+
+function start() {
+  // non portal page
+  if (!checkPortal()) {
+    main({ hideNav: false, lang: '' })
+    return
+  }
+
+  // use another auth token key for portal page
+  auth.setTokenKey(auth.portalTokenKey)
+
+  // portal page runs in iframe
+  if (checkIframe()) {
+    function handleConfigEvent(event) {
+      const { token, lang, hideNav } = event.data
+      auth.setAuthToken(token)
+      saveAppOptions({ hideNav, lang })
+      main({
+        hideNav,
+        lang,
+      })
+    }
+    window.addEventListener('message', handleConfigEvent, { once: true })
+    return
+  }
+
+  // portal page runs in a independent tab
+  const appOptions = loadAppOptions()
+  main(appOptions)
+}
+
+start()

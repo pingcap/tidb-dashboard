@@ -9,13 +9,13 @@
       function changeApp(app) {
         console.log('app:', app)
         const dashboard = document.getElementById('dashboard')
-        dashboard.src = `http://localhost:3000/dashboard/portal#/${app}`
+        dashboard.src = `http://localhost:3000/dashboard/portal#/${app}?iframe`
       }
 
       window.onload = function () {
         const dashboard = document.getElementById('dashboard')
         const token =
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTE5MzAxNjcsIm9yaWdfaWF0IjoxNTkxODQzNzY3LCJwIjoiTVAxbnBMYjcwWFdieFc2anB6Vnp6M2kwaGpIOXp4MUVSaTdhb2VDTWRRK2dQVzgyMTE4alUrTjBYQnAxZ2orUENRbFZLMUEwVGJMYlZIZE5zZHNIZUtYaEdVMGtaSXVnVUk1bmVKS2ZEc0JDTTlZckVMbVMifQ.TCqCgyNOLtTvXuSR1EkAZT2UQGkIlAXApTGAGnL-jw4'
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTE5MzM0MzEsIm9yaWdfaWF0IjoxNTkxODQ3MDMxLCJwIjoiWFRoVVJBSnVzd3FKeFdTMGhTU2hoT1hYZlJkbzdiaU9IZjhjM0NJbU9uZHN2L0RPSTlndExYaEpYaVJyTWlxUXl6UW1BaEJOMjhaeFVjSFpqRWEyL3BHUGk2cng5d0N5ejM4bUtBMU9UQlRib0owSndmZ3YifQ.ezjWqEj5nSjyUWjNpsLkEYgM6teHNyx5IPn9keWNtjQ'
         dashboard.contentWindow.postMessage(
           {
             token,
@@ -48,7 +48,7 @@
           id="dashboard"
           width="100%"
           height="100%"
-          src="http://localhost:3000/dashboard/portal#/statement"
+          src="http://localhost:3000/dashboard/portal#/statement?iframe"
         ></iframe>
       </div>
     </div>

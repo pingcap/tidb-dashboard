@@ -1,13 +1,23 @@
 export const signInRoute = '/signin'
+export const dashoardTokenKey = 'dashboard_auth_token'
+export const portalTokenKey = 'portal_auth_token'
 
-let store: AuthTokenStore
+let tokenKey = dashoardTokenKey
 
-export function setStore(s: AuthTokenStore) {
-  store = s
+export function setTokenKey(tk) {
+  tokenKey = tk
 }
 
 export function getAuthToken() {
-  return store.getAuthToken()
+  return localStorage.getItem(tokenKey)
+}
+
+export function setAuthToken(token) {
+  localStorage.setItem(tokenKey, token)
+}
+
+export function clearAuthToken() {
+  localStorage.removeItem(tokenKey)
 }
 
 export function getAuthTokenAsBearer() {
@@ -16,52 +26,4 @@ export function getAuthTokenAsBearer() {
     return null
   }
   return `Bearer ${token}`
-}
-
-export function setAuthToken(token) {
-  store.setAuthToken(token)
-}
-
-export function clearAuthToken() {
-  store.clearAuthToken()
-}
-
-//////////////////////////////////////
-
-interface AuthTokenStore {
-  getAuthToken: () => string | null
-  setAuthToken: (token) => void
-  clearAuthToken: () => void
-}
-
-export class MemAuthTokenStore implements AuthTokenStore {
-  private memAuthToken: string | null = null
-
-  getAuthToken() {
-    return this.memAuthToken
-  }
-
-  setAuthToken(token) {
-    this.memAuthToken = token
-  }
-
-  clearAuthToken() {
-    this.memAuthToken = null
-  }
-}
-
-export class LocalStorageAuthTokenStore implements AuthTokenStore {
-  private readonly tokenKey = 'dashboard_auth_token'
-
-  getAuthToken() {
-    return localStorage.getItem(this.tokenKey)
-  }
-
-  setAuthToken(token) {
-    localStorage.setItem(this.tokenKey, token)
-  }
-
-  clearAuthToken() {
-    localStorage.removeItem(this.tokenKey)
-  }
 }

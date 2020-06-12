@@ -16,7 +16,7 @@ export default function ToggleBanner({
   collapsed,
   onToggle,
 }) {
-  const [bannerSize, bannerRef] = useSize()
+  const [bannerSize, bannerRef] = useSize<HTMLDivElement>()
   const transBanner = useSpring({
     opacity: collapsed ? 0 : 1,
     height: collapsed ? toggleHeight : bannerSize.height || 0,

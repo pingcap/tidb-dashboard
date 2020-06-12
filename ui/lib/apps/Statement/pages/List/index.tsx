@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react'
-import { Select, Space, Tooltip, Drawer, Button, Checkbox, Result } from 'antd'
+import React, { useState } from 'react'
+import { Space, Tooltip, Drawer, Button, Checkbox, Result } from 'antd'
 import { useLocalStorageState } from '@umijs/hooks'
 import {
   SettingOutlined,

@@ -94,6 +94,14 @@ export default function MultiSelect<T extends IItem>(
   const selection = useRef(
     new SelectionWithFilter({
       onSelectionChanged: () => {
+        if (process.env.NODE_ENV === 'development') {
+          console.groupCollapsed(
+            'MultiSelect onSelectionChanged',
+            Math.random()
+          )
+          console.trace()
+          console.groupEnd()
+        }
         const s = selection.current.getAllSelection() as T[]
         const keys = s.map((v) => v.key)
         setInternalValPersist(keys)

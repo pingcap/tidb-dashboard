@@ -107,6 +107,14 @@ export default class SelectionWithFilter<T = IObjectWithKey>
       if (this._allItemsMap.has(key)) {
         this._itemKeysSet.add(key)
         itemSubset.push(item)
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(
+            'Warning: SelectionWithFilter::setItems is called with an item not in allItems',
+            item,
+            key
+          )
+        }
       }
     }
 
@@ -149,6 +157,10 @@ export default class SelectionWithFilter<T = IObjectWithKey>
   }
 
   private _handleSelectionChanged() {
+    this._triggerSelectionChanged()
+  }
+
+  private _triggerSelectionChanged() {
     this._allSelectionCache = null
     EventGroup.raise(this, SELECTION_CHANGE)
     if (this._onSelectionChangedOriginal) {
@@ -171,6 +183,14 @@ export default class SelectionWithFilter<T = IObjectWithKey>
       const key = this._inner.getKey(item)
       if (this._allItemsMap.has(key)) {
         newItems.push(item)
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(
+            'Note: SelectionWithFilter::setAllItems is filtering away an item previously in items but not in allItems',
+            item,
+            key
+          )
+        }
       }
     }
     if (filteredItems.length !== newItems.length) {
@@ -197,12 +217,25 @@ export default class SelectionWithFilter<T = IObjectWithKey>
           }
         }
       }
+      // Sync current selection to _allSelectedKeysSet. This is optional but
+      // can avoid unnecessary selectionChanged event when calling `resetAllSelection`
+      // again with the same selection.
+      this._allSelectedKeysSet.clear()
+      for (const key of this._allSelectionCache) {
+        this._allSelectedKeysSet.add(this._inner.getKey(key))
+      }
     }
 
     return this._allSelectionCache
   }
 
   resetAllSelection(selectedKeys: string[]) {
+    if (process.env.NODE_ENV === 'development') {
+      console.groupCollapsed('SelectionWithFilter.resetAllSelection')
+      console.log('selectedKeys', selectedKeys)
+      console.log('_allSelectedKeysSet', this._allSelectedKeysSet)
+      console.groupEnd()
+    }
     // Check whether update can be avoided
     let unChanged = true
     let validSelectedKeysCount = 0
@@ -237,7 +270,7 @@ export default class SelectionWithFilter<T = IObjectWithKey>
       }
     }
     this._inner.setChangeEvents(true, true)
-    this._handleSelectionChanged() // Force trigger a selection change anyway
+    this._triggerSelectionChanged() // Force trigger a selection change anyway
   }
 
   setAllSelectionSelected(isAllSelected: boolean) {
@@ -252,6 +285,6 @@ export default class SelectionWithFilter<T = IObjectWithKey>
       this._inner.setAllSelected(true)
     }
     this._inner.setChangeEvents(true, true)
-    this._handleSelectionChanged() // Force trigger a selection change anyway
+    this._triggerSelectionChanged() // Force trigger a selection change anyway
   }
 }

@@ -1,12 +1,6 @@
 export const signInRoute = '/signin'
-export const dashoardTokenKey = 'dashboard_auth_token'
-export const portalTokenKey = 'portal_auth_token'
 
-let tokenKey = dashoardTokenKey
-
-export function setTokenKey(tk) {
-  tokenKey = tk
-}
+const tokenKey = 'dashboard_auth_token'
 
 export function getAuthToken() {
   return localStorage.getItem(tokenKey)

@@ -1,4 +1,4 @@
-export function isLocationMatch(s, matchPrefix = false) {
+export function isLocationMatch(s, matchPrefix = false): boolean {
   let hash = window.location.hash
   if (!hash || hash === '#') {
     hash = '#/'
@@ -10,6 +10,10 @@ export function isLocationMatch(s, matchPrefix = false) {
   }
 }
 
-export function isLocationMatchPrefix(s) {
+export function isLocationMatchPrefix(s): boolean {
   return isLocationMatch(s, true)
+}
+
+export function isPortalPage(): boolean {
+  return window.location.pathname.endsWith('/portal')
 }

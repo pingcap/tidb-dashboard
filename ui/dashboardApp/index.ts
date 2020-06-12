@@ -93,51 +93,26 @@ async function main(options: AppOptions) {
 
 /////////////////////////////////////
 
-// check whether this is a portal page
-function checkPortal(): boolean {
-  return window.location.pathname.endsWith('/portal')
-}
-
-// check whether the url has 'iframe' query parameter
-function checkIframe(): boolean {
-  const hash = window.location.hash
-  const pos = hash.indexOf('?')
-  if (pos === -1) {
-    return false
-  }
-  let q = hash.substring(pos + 1)
-  const p = new URLSearchParams(q)
-  return p.get('iframe') !== null
-}
-
 function start() {
-  // non portal page
-  if (!checkPortal()) {
-    main({ hideNav: false, lang: '' })
-    return
-  }
-
-  // use another auth token key for portal page to avoid affect the non portal page
-  auth.setTokenKey(auth.portalTokenKey)
-
-  // portal page runs in iframe
-  if (checkIframe()) {
+  // the portal page is only used to receive options
+  if (routing.isPortalPage()) {
     function handleConfigEvent(event) {
-      const { token, lang, hideNav } = event.data
+      const { token, lang, hideNav, app } = event.data
       auth.setAuthToken(token)
       saveAppOptions({ hideNav, lang })
-      main({
-        hideNav,
-        lang,
-      })
+
+      // redirect
+      const { origin, pathname } = window.location
+      const homePath = pathname.replace('portal', '#/')
+      const appUrl = `${origin}${homePath}${app || 'statement'}`
+      window.location.replace(appUrl)
     }
+
     window.addEventListener('message', handleConfigEvent, { once: true })
     return
   }
 
-  // portal page runs in an independent tab
-  const appOptions = loadAppOptions()
-  main(appOptions)
+  main(loadAppOptions())
 }
 
 start()

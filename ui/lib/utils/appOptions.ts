@@ -3,12 +3,12 @@ export type AppOptions = {
   lang: string
 }
 
-const defPortalOptions: AppOptions = {
-  hideNav: true,
+const defAppOptions: AppOptions = {
+  hideNav: false,
   lang: '',
 }
 
-const optionsKey = 'portal_app_options'
+const optionsKey = 'dashboard_app_options'
 
 export function saveAppOptions(options: AppOptions) {
   localStorage.setItem(optionsKey, JSON.stringify(options))
@@ -17,11 +17,11 @@ export function saveAppOptions(options: AppOptions) {
 export function loadAppOptions(): AppOptions {
   const s = localStorage.getItem(optionsKey)
   if (s === null) {
-    return defPortalOptions
+    return defAppOptions
   }
   const opt = JSON.parse(s)
   if (!!opt && opt.constructor === Object) {
     return opt
   }
-  return defPortalOptions
+  return defAppOptions
 }

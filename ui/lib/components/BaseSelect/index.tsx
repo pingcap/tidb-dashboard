@@ -23,6 +23,10 @@ export interface IBaseSelectProps<T>
   disabled?: boolean
   tabIndex?: number
   autoFocus?: boolean
+  onOpen?: () => void
+  onOpened?: () => void
+  onClose?: () => void
+  onClosed?: () => void
 }
 
 const builtinPlacements = {
@@ -50,6 +54,10 @@ function BaseSelect<T>({
   onFocus,
   onBlur,
   onKeyDown,
+  onOpen,
+  onOpened,
+  onClose,
+  onClosed,
   ...restProps
 }: IBaseSelectProps<T>) {
   const [dropdownVisible, setDropdownVisible] = useState(false)
@@ -130,6 +138,28 @@ function BaseSelect<T>({
     []
   )
 
+  const handlePopupVisibleChange = useCallback(
+    (visible: boolean) => {
+      if (visible) {
+        onOpen?.()
+      } else {
+        onClose?.()
+      }
+    },
+    [onOpen, onClose]
+  )
+
+  const handleAfterPopupVisibleChange = useCallback(
+    (visible: boolean) => {
+      if (visible) {
+        onOpened?.()
+      } else {
+        onClosed?.()
+      }
+    },
+    [onOpened, onClosed]
+  )
+
   const dropdownOverlayRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -194,6 +224,8 @@ function BaseSelect<T>({
         popupTransitionName="slide-down"
         popup={overlay}
         popupVisible={dropdownVisible}
+        onPopupVisibleChange={handlePopupVisibleChange}
+        afterPopupVisibleChange={handleAfterPopupVisibleChange}
       >
         <div onMouseDown={handleSelectorMouseDown}>
           <div

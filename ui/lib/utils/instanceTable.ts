@@ -99,11 +99,14 @@ export function filterInstanceTable(
   const groupData: IGroup[] = []
   let startIndex = 0
 
+  const kw = filterKeyword.toLowerCase()
   const filteredItems = items.filter((i) => {
     if (filterKeyword.length === 0) {
       return true
     }
-    return i.key.indexOf(filterKeyword) !== -1
+    return (
+      i.key.toLowerCase().indexOf(kw) > -1 || i.instanceKind.indexOf(kw) > -1
+    )
   })
   const itemsByIk = _.groupBy(filteredItems, 'instanceKind') as {
     [key in InstanceKind]: IInstanceTableItem[]

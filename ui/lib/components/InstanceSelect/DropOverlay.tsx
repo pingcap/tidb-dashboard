@@ -6,7 +6,7 @@ import {
   filterInstanceTable,
 } from '@lib/utils/instanceTable'
 import { useTranslation } from 'react-i18next'
-import TableWithFilter from './TableWithFilter'
+import TableWithFilter, { ITableWithFilterRefProps } from './TableWithFilter'
 
 const groupProps = {
   onRenderHeader: (props) => <AntCheckboxGroupHeader {...props} />,
@@ -18,9 +18,15 @@ export interface IDropOverlayProps {
   selection: ISelection
   columns: IColumn[]
   items: IInstanceTableItem[]
+  filterTableRef?: React.Ref<ITableWithFilterRefProps>
 }
 
-function DropOverlay({ selection, columns, items }: IDropOverlayProps) {
+function DropOverlay({
+  selection,
+  columns,
+  items,
+  filterTableRef,
+}: IDropOverlayProps) {
   const { t } = useTranslation()
   const [keyword, setKeyword] = useState('')
 
@@ -41,6 +47,7 @@ function DropOverlay({ selection, columns, items }: IDropOverlayProps) {
       groups={finalGroups}
       groupProps={groupProps}
       containerStyle={containerStyle}
+      ref={filterTableRef}
     />
   )
 }

@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useRef } from 'react'
 import cx from 'classnames'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { MarqueeSelection } from 'office-ui-fabric-react/lib/MarqueeSelection'
@@ -14,7 +14,7 @@ import { MemoDetailsList } from '../'
 
 import styles from './TableWithFilter.module.less'
 
-export interface ITableWithFilter extends IDetailsListProps {
+export interface ITableWithFilterProps extends IDetailsListProps {
   selection: ISelection
   filterPlaceholder?: string
   filter?: string
@@ -25,23 +25,38 @@ export interface ITableWithFilter extends IDetailsListProps {
   containerStyle?: React.CSSProperties
 }
 
-function TableWithFilter({
-  selection,
-  filterPlaceholder,
-  filter,
-  onFilterChange,
-  tableMaxHeight,
-  tableWidth,
-  containerClassName,
-  containerStyle,
-  ...restProps
-}: ITableWithFilter) {
+export interface ITableWithFilterRefProps {
+  focusFilterInput: () => void
+}
+
+function TableWithFilter(
+  {
+    selection,
+    filterPlaceholder,
+    filter,
+    onFilterChange,
+    tableMaxHeight,
+    tableWidth,
+    containerClassName,
+    containerStyle,
+    ...restProps
+  }: ITableWithFilterProps,
+  ref: React.Ref<ITableWithFilterRefProps>
+) {
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       onFilterChange?.(e.target.value)
     },
     [onFilterChange]
   )
+
+  const inputRef = useRef<Input>(null)
+
+  React.useImperativeHandle(ref, () => ({
+    focusFilterInput() {
+      inputRef.current?.focus()
+    },
+  }))
 
   // FIXME: We should put Input inside ScrollablePane after https://github.com/microsoft/fluentui/issues/13557 is resolved
 
@@ -68,6 +83,7 @@ function TableWithFilter({
         allowClear
         onChange={handleInputChange}
         value={filter}
+        ref={inputRef}
       />
       <ScrollablePane style={paneStyle}>
         <div ref={containerRef}>
@@ -88,4 +104,4 @@ function TableWithFilter({
   )
 }
 
-export default React.memo(TableWithFilter)
+export default React.memo(React.forwardRef(TableWithFilter))

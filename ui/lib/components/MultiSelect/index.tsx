@@ -1,70 +1,121 @@
-import { IBaseSelectProps, BaseSelect } from '..'
-import React, { useMemo, useState, useRef, useCallback } from 'react'
+import { IBaseSelectProps, BaseSelect, TextWrap } from '..'
+import { ITableWithFilterRefProps } from '../InstanceSelect/TableWithFilter'
+import React, { useMemo, useRef, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { usePersistFn } from '@umijs/hooks'
+import { usePersistFn, useControllableValue } from '@umijs/hooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import SelectionWithFilter from '@lib/utils/selectionWithFilter'
 import { useShallowCompareEffect } from 'react-use'
-import TableWithFilter from '../InstanceSelect/TableWithFilter'
+import { addTranslationResource } from '@lib/utils/i18n'
+import { Tooltip } from 'antd'
 
 import DropOverlay from './DropOverlay'
+import PlainMultiSelect from './Plain'
 
-export interface IItemWithKey {
-  key: string
+const translations = {
+  en: {
+    filterPlaceholder: 'Filter',
+    selected: '{{n}} selected',
+    columnTitle: 'Items',
+  },
+  'zh-CN': {
+    filterPlaceholder: '过滤',
+    selected: '已选择 {{n}} 项',
+    columnTitle: '选择项',
+  },
 }
 
-export interface IMultiSelectProps<T extends IItemWithKey>
+for (const key in translations) {
+  addTranslationResource(key, {
+    component: {
+      multiSelect: translations[key],
+    },
+  })
+}
+
+export interface IItem {
+  key: string
+  label?: string
+}
+
+export interface IMultiSelectProps<T>
   extends Omit<IBaseSelectProps<string[]>, 'dropdownRender' | 'valueRender'> {
   items?: T[]
   filterFn?: (keyword: string, item: T) => boolean
-  onRenderItem?: (item: T) => React.ReactNode
   onChange?: (value: string[]) => void
+  selectedValueTransKey?: string
+  columnTitle?: string
 }
 
-export default function MultiSelect<T extends IItemWithKey>({
-  items,
-  filterFn,
-  onRenderItem,
-  onChange,
-  value,
-  ...restProps
-}: IMultiSelectProps<T>) {
+export default function MultiSelect<T extends IItem>(
+  props: IMultiSelectProps<T>
+) {
+  const [internalVal, setInternalVal] = useControllableValue<string[]>(props)
+  const setInternalValPersist = usePersistFn(setInternalVal)
+  const {
+    items,
+    filterFn,
+    selectedValueTransKey,
+    columnTitle,
+    placeholder,
+    value, // only to exclude from restProps
+    onChange, // only to exclude from restProps
+    ...restProps
+  } = props
+
   const { t } = useTranslation()
 
   const columns: IColumn[] = useMemo(
     () => [
       {
-        name: 'name',
+        name: columnTitle ?? t('component.multiSelect.columnTitle'),
         key: 'name',
-        minWidth: 100,
+        minWidth: 180,
         onRender: (node: T) => {
-          if (onRenderItem) {
-            return onRenderItem(node)
+          let label
+          if ('label' in node) {
+            label = node.label
+          } else {
+            label = node.key
           }
-          return node.key
+          return (
+            <TextWrap>
+              <Tooltip title={label}>
+                <span>{label}</span>
+              </Tooltip>
+            </TextWrap>
+          )
         },
       },
     ],
-    [t, onRenderItem]
+    [t, columnTitle]
   )
-
-  const onChangePersist = usePersistFn((v: string[]) => {
-    onChange?.(v)
-  })
 
   const selection = useRef(
     new SelectionWithFilter({
       onSelectionChanged: () => {
         const s = selection.current.getAllSelection() as T[]
         const keys = s.map((v) => v.key)
-        onChangePersist([...keys])
+        setInternalValPersist(keys)
       },
     })
   )
 
   useShallowCompareEffect(() => {
-    selection.current?.resetAllSelection(value ?? [])
-  }, [value])
+    selection.current?.resetAllSelection(internalVal ?? [])
+  }, [internalVal])
+
+  useEffect(() => {
+    selection.current?.setAllItems(items ?? [])
+    // We may receive value first and then receive items. In this case, we need to re-assign
+    // the selection according to value after receiving new items, so that values in newly appeared
+    // items can be selected.
+    selection.current?.resetAllSelection(internalVal ?? [])
+    // internalVal is not needed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items])
+
+  const filterTableRef = useRef<ITableWithFilterRefProps>(null)
 
   const renderDropdown = useCallback(
     () => (
@@ -73,17 +124,35 @@ export default function MultiSelect<T extends IItemWithKey>({
         items={items ?? []}
         selection={selection.current}
         filterFn={filterFn}
+        filterTableRef={filterTableRef}
       />
     ),
     [columns, items, filterFn]
   )
 
-  return null
-  // <BaseSelect
-  //   dropdownRender={renderDropdown}
-  //   value={value}
-  //   valueRender={renderValue}
-  //   placeholder={t('component.instanceSelect.placeholder')}
-  //   {...restProps}
-  // />
+  const handleOpened = useCallback(() => {
+    filterTableRef.current?.focusFilterInput()
+  }, [])
+
+  const renderValue = useCallback(() => {
+    if (placeholder && (!internalVal || internalVal.length === 0)) {
+      return null
+    }
+    return t(selectedValueTransKey ?? 'component.multiSelect.selected', {
+      n: internalVal?.length ?? 0,
+    })
+  }, [t, internalVal, selectedValueTransKey, placeholder])
+
+  return (
+    <BaseSelect
+      dropdownRender={renderDropdown}
+      value={internalVal}
+      valueRender={renderValue}
+      placeholder={placeholder}
+      onOpened={handleOpened}
+      {...restProps}
+    />
+  )
 }
+
+MultiSelect.Plain = PlainMultiSelect

@@ -45,7 +45,7 @@ async function main(options: AppOptions) {
     'layout',
     AppRegistry.newReactSpaApp(() => LayoutMain, 'root'),
     () => {
-      return !routing.isLocationMatchPrefix(auth.signInRoute)
+      return !routing.isSignInPage()
     },
     { registry }
   )
@@ -54,7 +54,7 @@ async function main(options: AppOptions) {
     'signin',
     AppRegistry.newReactSpaApp(() => LayoutSignIn, 'root'),
     () => {
-      return routing.isLocationMatchPrefix(auth.signInRoute)
+      return routing.isSignInPage()
     },
     { registry }
   )
@@ -81,9 +81,9 @@ async function main(options: AppOptions) {
     if (spinner) {
       spinner.remove()
     }
-    if (!routing.isLocationMatchPrefix(auth.signInRoute)) {
+    if (!routing.isSignInPage()) {
       if (!auth.getAuthTokenAsBearer()) {
-        singleSpa.navigateToUrl('#' + auth.signInRoute)
+        singleSpa.navigateToUrl('#' + routing.signInRoute)
       }
     }
   })
@@ -103,9 +103,9 @@ function start() {
 
       // redirect
       const { origin, pathname } = window.location
-      const homePath = pathname.replace('portal', '#/')
-      const appUrl = `${origin}${homePath}${app || 'statement'}`
-      window.location.replace(appUrl)
+      const appUrl = `${origin}${pathname}#/${app || 'statement'}`
+      window.location.href = appUrl
+      window.location.reload()
     }
 
     window.addEventListener('message', handleConfigEvent, { once: true })

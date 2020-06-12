@@ -1,3 +1,6 @@
+export const signInRoute = '/signin'
+export const portalRoute = '/portal'
+
 export function isLocationMatch(s, matchPrefix = false): boolean {
   let hash = window.location.hash
   if (!hash || hash === '#') {
@@ -14,6 +17,10 @@ export function isLocationMatchPrefix(s): boolean {
   return isLocationMatch(s, true)
 }
 
+export function isSignInPage(): boolean {
+  return isLocationMatchPrefix(signInRoute)
+}
+
 export function isPortalPage(): boolean {
-  return window.location.pathname.endsWith('/portal')
+  return isLocationMatchPrefix(portalRoute)
 }

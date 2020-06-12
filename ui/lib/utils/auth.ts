@@ -1,5 +1,3 @@
-export const signInRoute = '/signin'
-
 const tokenKey = 'dashboard_auth_token'
 
 export function getAuthToken() {

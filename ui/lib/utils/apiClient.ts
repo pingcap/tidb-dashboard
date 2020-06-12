@@ -18,14 +18,11 @@ function initAxios() {
       response.data &&
       response.data.code === 'error.api.unauthorized'
     ) {
-      if (
-        !routing.isLocationMatch('/') &&
-        !routing.isLocationMatchPrefix(auth.signInRoute)
-      ) {
+      if (!routing.isLocationMatch('/') && !routing.isSignInPage()) {
         message.error(i18next.t('error.message.unauthorized'))
       }
       auth.clearAuthToken()
-      singleSpa.navigateToUrl('#' + auth.signInRoute)
+      singleSpa.navigateToUrl('#' + routing.signInRoute)
       err.handled = true
     } else if (err.message === 'Network Error') {
       message.error(i18next.t('error.message.network'))

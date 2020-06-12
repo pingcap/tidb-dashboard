@@ -97,14 +97,12 @@ function start() {
   // the portal page is only used to receive options
   if (routing.isPortalPage()) {
     function handleConfigEvent(event) {
-      const { token, lang, hideNav, app } = event.data
+      const { token, lang, hideNav, redirectPath } = event.data
       auth.setAuthToken(token)
       saveAppOptions({ hideNav, lang })
 
       // redirect
-      const { origin, pathname } = window.location
-      const appUrl = `${origin}${pathname}#/${app || 'statement'}`
-      window.location.href = appUrl
+      window.location.hash = `#${redirectPath}`
       window.location.reload()
     }
 

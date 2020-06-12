@@ -7,8 +7,8 @@ import * as routing from './routing'
 import { AppOptions } from './appOptions'
 
 export default class AppRegistry {
-  private defaultRouter = ''
-  private apps = {}
+  public defaultRouter = ''
+  public apps = {}
   public constructor(public appOptions: AppOptions) {}
 
   static newReactSpaApp = function (rootComponentAsyncLoader, targetDomId) {

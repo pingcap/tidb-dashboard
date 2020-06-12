@@ -117,7 +117,7 @@ function start() {
     return
   }
 
-  // use another auth token key for portal page
+  // use another auth token key for portal page to avoid affect the non portal page
   auth.setTokenKey(auth.portalTokenKey)
 
   // portal page runs in iframe
@@ -135,7 +135,7 @@ function start() {
     return
   }
 
-  // portal page runs in a independent tab
+  // portal page runs in an independent tab
   const appOptions = loadAppOptions()
   main(appOptions)
 }

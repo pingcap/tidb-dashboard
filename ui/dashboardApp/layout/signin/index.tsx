@@ -33,7 +33,7 @@ function TiDBSignInForm({ registry }) {
   const [loading, setLoading] = useState(false)
   const [signInError, setSignInError] = useState(null)
 
-  const [form] = Form.useForm()
+  const [refForm] = Form.useForm()
   const refPassword = useRef<Input>(null)
 
   const signIn = async (form) => {
@@ -59,7 +59,7 @@ function TiDBSignInForm({ registry }) {
           msg = e.message
         }
         setSignInError(t('signin.message.error', { msg }))
-        form.setFieldsValue({ password: '' })
+        refForm.setFieldsValue({ password: '' })
         setTimeout(() => {
           // Focus after disable state is removed
           refPassword?.current?.focus()
@@ -87,7 +87,7 @@ function TiDBSignInForm({ registry }) {
       onFinish={handleSubmit}
       layout="vertical"
       initialValues={{ username: 'root' }}
-      form={form}
+      form={refForm}
     >
       <motion.div
         initial="initial"

@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"net/http"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -31,6 +32,11 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
+)
+
+var (
+	ErrPDAccessFailed = ErrNS.NewType("pd_access_failed")
+	ErrNoAliveTiDB    = ErrNS.NewType("no_alive_tidb")
 )
 
 type tidbServerInfo struct {
@@ -62,10 +68,12 @@ func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
 }
 
 type Forwarder struct {
-	ctx context.Context
+	lifecycleCtx context.Context
 
 	config     *ForwarderConfig
 	etcdClient *clientv3.Client
+	httpClient *http.Client
+	uriScheme  string
 
 	tidbProxy       *proxy
 	tidbStatusProxy *proxy
@@ -74,7 +82,7 @@ type Forwarder struct {
 }
 
 func (f *Forwarder) Start(ctx context.Context) error {
-	f.ctx = ctx
+	f.lifecycleCtx = ctx
 
 	var err error
 	if f.tidbProxy, err = f.createProxy(); err != nil {
@@ -95,7 +103,7 @@ func (f *Forwarder) Start(ctx context.Context) error {
 }
 
 func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
-	ctx, cancel := context.WithTimeout(f.ctx, f.config.TiDBRetrieveTimeout)
+	ctx, cancel := context.WithTimeout(f.lifecycleCtx, f.config.TiDBRetrieveTimeout)
 	resp, err := f.etcdClient.Get(ctx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
 	cancel()
 
@@ -133,7 +141,7 @@ func (f *Forwarder) createProxy() (*proxy, error) {
 func (f *Forwarder) pollingForTiDB() {
 	ebo := backoff.NewExponentialBackOff()
 	ebo.MaxInterval = f.config.TiDBPollInterval
-	bo := backoff.WithContext(ebo, f.ctx)
+	bo := backoff.WithContext(ebo, f.lifecycleCtx)
 
 	for {
 		var allTiDB []*tidbServerInfo
@@ -159,17 +167,24 @@ func (f *Forwarder) pollingForTiDB() {
 		}
 
 		select {
-		case <-f.ctx.Done():
+		case <-f.lifecycleCtx.Done():
 			return
 		case <-time.After(f.config.TiDBPollInterval):
 		}
 	}
 }
 
-func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3.Client) *Forwarder {
+func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3.Client, httpClient *http.Client) *Forwarder {
 	f := &Forwarder{
-		etcdClient: etcdClient,
 		config:     config,
+		etcdClient: etcdClient,
+		httpClient: httpClient,
+	}
+
+	if config.TiDBTLSConfig == nil {
+		f.uriScheme = "http"
+	} else {
+		f.uriScheme = "https"
 	}
 
 	lc.Append(fx.Hook{

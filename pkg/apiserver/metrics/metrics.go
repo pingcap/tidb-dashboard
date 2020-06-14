@@ -25,7 +25,7 @@ var (
 )
 
 type Service struct {
-	ctx context.Context
+	lifecycleCtx context.Context
 
 	httpClient *http.Client
 	etcdClient *clientv3.Client
@@ -39,7 +39,7 @@ func NewService(lc fx.Lifecycle, httpClient *http.Client, etcdClient *clientv3.C
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			s.ctx = ctx
+			s.lifecycleCtx = ctx
 			return nil
 		},
 	})
@@ -80,7 +80,7 @@ func (s *Service) queryHandler(c *gin.Context) {
 		return
 	}
 
-	pi, err := topology.FetchPrometheusTopology(s.ctx, s.etcdClient)
+	pi, err := topology.FetchPrometheusTopology(s.lifecycleCtx, s.etcdClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -97,7 +97,7 @@ func (s *Service) queryHandler(c *gin.Context) {
 	params.Add("step", strconv.Itoa(req.StepSec))
 
 	uri := fmt.Sprintf("http://%s:%d/api/v1/query_range?%s", pi.IP, pi.Port, params.Encode())
-	promReq, err := http.NewRequestWithContext(s.ctx, http.MethodGet, uri, nil)
+	promReq, err := http.NewRequestWithContext(s.lifecycleCtx, http.MethodGet, uri, nil)
 	if err != nil {
 		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to build Prometheus request"))
 		return

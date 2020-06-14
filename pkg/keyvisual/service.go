@@ -25,6 +25,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
+	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
@@ -36,6 +37,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/storage"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
@@ -70,13 +72,14 @@ type Service struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	config       *config.Config
-	keyVisualCfg *config.KeyVisualConfig
-	cfgManager   *config.DynamicConfigManager
-	provider     *region.PDDataProvider
-	httpClient   *http.Client
-	db           *dbstore.DB
-	forwarder    *tidb.Forwarder
+	config         *config.Config
+	keyVisualCfg   *config.KeyVisualConfig
+	cfgManager     *config.DynamicConfigManager
+	customProvider *region.DataProvider
+	etcdClient     *clientv3.Client
+	pdClient       *pd.Client
+	db             *dbstore.DB
+	forwarder      *tidb.Forwarder
 
 	stat          *storage.Stat
 	strategy      matrix.Strategy
@@ -87,19 +90,21 @@ func NewService(
 	lc fx.Lifecycle,
 	cfg *config.Config,
 	cfgManager *config.DynamicConfigManager,
-	provider *region.PDDataProvider,
-	httpClient *http.Client,
+	customProvider *region.DataProvider,
+	etcdClient *clientv3.Client,
+	pdClient *pd.Client,
 	db *dbstore.DB,
 	forwarder *tidb.Forwarder,
 ) *Service {
 	s := &Service{
-		status:     utils.NewServiceStatus(),
-		config:     cfg,
-		cfgManager: cfgManager,
-		provider:   provider,
-		httpClient: httpClient,
-		db:         db,
-		forwarder:  forwarder,
+		status:         utils.NewServiceStatus(),
+		config:         cfg,
+		cfgManager:     cfgManager,
+		customProvider: customProvider,
+		etcdClient:     etcdClient,
+		pdClient:       pdClient,
+		db:             db,
+		forwarder:      forwarder,
 	}
 
 	lc.Append(s.managerHook())
@@ -136,6 +141,7 @@ func (s *Service) Start(ctx context.Context) error {
 			newStrategy,
 			newStat,
 			s.provideLocals,
+			s.newProvider,
 			input.NewStatInput,
 			s.newLabelStrategy,
 		),
@@ -154,17 +160,32 @@ func (s *Service) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) newLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, provider *region.PDDataProvider, httpClient *http.Client, forwarder *tidb.Forwarder) decorator.LabelStrategy {
+func (s *Service) newLabelStrategy(
+	lc fx.Lifecycle,
+	wg *sync.WaitGroup,
+	cfg *config.Config,
+	etcdClient *clientv3.Client,
+	forwarder *tidb.Forwarder,
+) decorator.LabelStrategy {
 	switch s.keyVisualCfg.Policy {
 	case config.KeyVisualDBPolicy:
 		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy))
-		return decorator.TiDBLabelStrategy(lc, wg, cfg, provider, httpClient, forwarder)
+		return decorator.TiDBLabelStrategy(lc, wg, cfg, etcdClient, forwarder)
 	case config.KeyVisualKVPolicy:
 		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy),
 			zap.String("separator", s.keyVisualCfg.PolicyKVSeparator))
 		return decorator.SeparatorLabelStrategy(s.keyVisualCfg)
 	default:
 		panic("unreachable")
+	}
+}
+
+func (s *Service) newProvider(pdClient *pd.Client) *region.DataProvider {
+	if s.customProvider != nil {
+		return s.customProvider
+	}
+	return &region.DataProvider{
+		PeriodicGetter: input.NewAPIPeriodicGetter(pdClient),
 	}
 }
 
@@ -282,8 +303,8 @@ func (s *Service) heatmaps(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (s *Service) provideLocals() (*config.Config, *region.PDDataProvider, *http.Client, *dbstore.DB, *tidb.Forwarder) {
-	return s.config, s.provider, s.httpClient, s.db, s.forwarder
+func (s *Service) provideLocals() (*config.Config, *clientv3.Client, *pd.Client, *dbstore.DB, *tidb.Forwarder) {
+	return s.config, s.etcdClient, s.pdClient, s.db, s.forwarder
 }
 
 func newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {
@@ -301,8 +322,8 @@ func newStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.La
 	return matrix.DistanceStrategy(lc, wg, labelStrategy, distanceStrategyRatio, distanceStrategyLevel, distanceStrategyCount)
 }
 
-func newStat(lc fx.Lifecycle, wg *sync.WaitGroup, provider *region.PDDataProvider, db *dbstore.DB, in input.StatInput, strategy matrix.Strategy) *storage.Stat {
-	stat := storage.NewStat(lc, wg, provider, db, defaultStatConfig, strategy, in.GetStartTime())
+func newStat(lc fx.Lifecycle, wg *sync.WaitGroup, etcdClient *clientv3.Client, db *dbstore.DB, in input.StatInput, strategy matrix.Strategy) *storage.Stat {
+	stat := storage.NewStat(lc, wg, db, defaultStatConfig, strategy, in.GetStartTime())
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {

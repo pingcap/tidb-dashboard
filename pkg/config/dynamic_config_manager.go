@@ -44,9 +44,9 @@ type DynamicConfigOption func(dc *DynamicConfig)
 type DynamicConfigManager struct {
 	mu sync.RWMutex
 
-	ctx        context.Context
-	config     *Config
-	etcdClient *clientv3.Client
+	lifecycleCtx context.Context
+	config       *Config
+	etcdClient   *clientv3.Client
 
 	dynamicConfig *DynamicConfig
 	pushChannels  []chan *DynamicConfig
@@ -65,7 +65,7 @@ func NewDynamicConfigManager(lc fx.Lifecycle, config *Config, etcdClient *client
 }
 
 func (m *DynamicConfigManager) Start(ctx context.Context) error {
-	m.ctx = ctx
+	m.lifecycleCtx = ctx
 
 	go func() {
 		var dc *DynamicConfig
@@ -161,7 +161,7 @@ func (m *DynamicConfigManager) Modify(opts ...DynamicConfigOption) error {
 }
 
 func (m *DynamicConfigManager) load() (*DynamicConfig, error) {
-	ctx, cancel := context.WithTimeout(m.ctx, Timeout)
+	ctx, cancel := context.WithTimeout(m.lifecycleCtx, Timeout)
 	defer cancel()
 	resp, err := m.etcdClient.Get(ctx, DynamicConfigPath)
 	if err != nil {
@@ -191,7 +191,7 @@ func (m *DynamicConfigManager) store(dc *DynamicConfig) error {
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(m.ctx, Timeout)
+	ctx, cancel := context.WithTimeout(m.lifecycleCtx, Timeout)
 	defer cancel()
 	_, err = m.etcdClient.Put(ctx, DynamicConfigPath, string(bs))
 	log.Info("Save dynamic config to etcd", zap.ByteString("json", bs))

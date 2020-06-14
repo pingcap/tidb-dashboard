@@ -16,21 +16,18 @@ package input
 import (
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"sort"
 
 	"github.com/joomcode/errorx"
 
 	regionpkg "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 )
 
 var (
-	ErrNS                  = errorx.NewNamespace("error.keyvisual")
-	ErrNSInput             = ErrNS.NewSubNamespace("input")
-	ErrPDHTTPRequestFailed = ErrNSInput.NewType("pd_http_request_failed")
+	ErrNS          = errorx.NewNamespace("error.keyvisual")
+	ErrNSInput     = ErrNS.NewSubNamespace("input")
+	ErrInvalidData = ErrNSInput.NewType("invalid_data")
 )
 
 // RegionInfo records detail region info for api usage.
@@ -95,53 +92,38 @@ func (rs *RegionsInfo) GetValues(tag regionpkg.StatTag) []uint64 {
 	return values
 }
 
-func read(stream io.ReadCloser) (*RegionsInfo, error) {
-	defer stream.Close()
+func read(data []byte) (*RegionsInfo, error) {
 	regions := &RegionsInfo{}
-	decoder := json.NewDecoder(stream)
-	err := decoder.Decode(regions)
-	if err == nil {
-		var startBytes, endBytes []byte
-		for _, region := range regions.Regions {
-			startBytes, err = hex.DecodeString(region.StartKey)
-			if err != nil {
-				break
-			}
-			endBytes, err = hex.DecodeString(region.EndKey)
-			if err != nil {
-				break
-			}
-			region.StartKey = regionpkg.String(startBytes)
-			region.EndKey = regionpkg.String(endBytes)
+	if err := json.Unmarshal(data, regions); err != nil {
+		return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed")
+	}
+
+	for _, region := range regions.Regions {
+		startBytes, err := hex.DecodeString(region.StartKey)
+		if err != nil {
+			return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed")
 		}
+		region.StartKey = regionpkg.String(startBytes)
+		endBytes, err := hex.DecodeString(region.EndKey)
+		if err != nil {
+			return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed")
+		}
+		region.EndKey = regionpkg.String(endBytes)
 	}
-	if err == nil {
-		sort.Slice(regions.Regions, func(i, j int) bool {
-			return regions.Regions[i].StartKey < regions.Regions[j].StartKey
-		})
-	}
-	return regions, err
+
+	sort.Slice(regions.Regions, func(i, j int) bool {
+		return regions.Regions[i].StartKey < regions.Regions[j].StartKey
+	})
+
+	return regions, nil
 }
 
-func NewAPIPeriodicGetter(pdAddr string, client *http.Client) regionpkg.RegionsInfoGenerator {
-	addr := fmt.Sprintf("%s/pd/api/v1/regions", pdAddr)
-	return func() (regionsInfo regionpkg.RegionsInfo, err error) {
-		resp, err := client.Get(addr) //nolint:bodyclose,gosec
-		if err == nil {
-			defer resp.Body.Close()
-			if resp.StatusCode != http.StatusOK {
-				var msg []byte
-				msg, err = ioutil.ReadAll(resp.Body)
-				if err != nil {
-					err = ErrPDHTTPRequestFailed.Wrap(err, "http status code: %d", resp.StatusCode)
-				} else {
-					err = ErrPDHTTPRequestFailed.New("http status code: %d, msg: %s", resp.StatusCode, msg)
-				}
-			}
-		}
+func NewAPIPeriodicGetter(pdClient *pd.Client) regionpkg.RegionsInfoGenerator {
+	return func() (regionpkg.RegionsInfo, error) {
+		data, err := pdClient.SendGetRequest("/regions")
 		if err != nil {
 			return nil, err
 		}
-		return read(resp.Body)
+		return read(data)
 	}
 }

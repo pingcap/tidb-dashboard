@@ -34,7 +34,7 @@ import (
 )
 
 type Service struct {
-	ctx context.Context
+	lifecycleCtx context.Context
 
 	config            *config.Config
 	logStoreDirectory string
@@ -64,7 +64,7 @@ func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			service.ctx = ctx
+			service.lifecycleCtx = ctx
 			return nil
 		},
 	})

@@ -3,7 +3,7 @@ name: Release UI Assets
 on:
   push:
     branches:
-      - dbass-portal
+      - master
     paths:
       - "ui/.github_release_version"
 

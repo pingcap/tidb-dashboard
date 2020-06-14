@@ -17,7 +17,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"strconv"
 	"time"
 
@@ -34,15 +33,15 @@ const (
 )
 
 var (
-	ErrNS                    = errorx.NewNamespace("error.keyvisual")
-	ErrNSDecorator           = ErrNS.NewSubNamespace("decorator")
-	ErrTiDBHTTPRequestFailed = ErrNSDecorator.NewType("tidb_http_request_failed")
+	ErrNS          = errorx.NewNamespace("error.keyvisual")
+	ErrNSDecorator = ErrNS.NewSubNamespace("decorator")
+	ErrInvalidData = ErrNSDecorator.NewType("invalid_data")
 )
 
 func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	// check schema version
 	ectx, cancel := context.WithTimeout(ctx, etcdGetTimeout)
-	resp, err := s.Provider.EtcdClient.Get(ectx, schemaVersionPath)
+	resp, err := s.EtcdClient.Get(ectx, schemaVersionPath)
 	cancel()
 	if err != nil || len(resp.Kvs) != 1 {
 		log.Warn("failed to get tidb schema version", zap.Error(err))
@@ -62,26 +61,20 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 
 	// get all database info
 	var dbInfos []*model.DBInfo
-	reqScheme := "http"
-	if s.Config.ClusterTLSConfig != nil {
-		reqScheme = "https"
-	}
-	hostname, port := s.forwarder.GetStatusConnProps()
-	tidbEndpoint := fmt.Sprintf("%s://%s:%d", reqScheme, hostname, port)
-	if err := request(tidbEndpoint, "schema", &dbInfos, s.HTTPClient); err != nil {
-		log.Error("fail to send schema request to TiDB", zap.String("endpoint", tidbEndpoint), zap.Error(err))
+	if err := s.request("/schema", &dbInfos); err != nil {
+		log.Error("fail to send schema request to TiDB", zap.Error(err))
 		return
 	}
 
 	// get all table info
-	var tableInfos []*model.TableInfo
 	updateSuccess := true
 	for _, db := range dbInfos {
 		if db.State == model.StateNone {
 			continue
 		}
-		if err := request(tidbEndpoint, fmt.Sprintf("schema/%s", db.Name.O), &tableInfos, s.HTTPClient); err != nil {
-			log.Error("fail to send schema request to TiDB", zap.String("endpoint", tidbEndpoint), zap.Error(err))
+		var tableInfos []*model.TableInfo
+		if err := s.request(fmt.Sprintf("/schema/%s", db.Name.O), &tableInfos); err != nil {
+			log.Error("fail to send schema request to TiDB", zap.Error(err))
 			updateSuccess = false
 			continue
 		}
@@ -117,20 +110,13 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	}
 }
 
-func request(endpoint string, path string, v interface{}, httpClient *http.Client) error {
-	uri := fmt.Sprintf("%s/%s", endpoint, path)
-
-	// FIXME: Better to assign a context
-	resp, err := httpClient.Get(uri) //nolint:gosec
+func (s *tidbLabelStrategy) request(path string, v interface{}) error {
+	data, err := s.forwarder.SendGetRequest(path)
 	if err != nil {
-		return ErrTiDBHTTPRequestFailed.Wrap(err, "TiDB HTTP API request failed")
+		return err
 	}
-
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return ErrTiDBHTTPRequestFailed.New("TiDB HTTP API returns non success status code")
+	if err = json.Unmarshal(data, v); err != nil {
+		return ErrInvalidData.Wrap(err, "TiDB schema API unmarshal failed")
 	}
-
-	decoder := json.NewDecoder(resp.Body)
-	return decoder.Decode(v)
+	return nil
 }

@@ -16,7 +16,9 @@ package tidb
 import (
 	"database/sql/driver"
 	"fmt"
+	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -34,20 +36,17 @@ const (
 	envTidbOverrideEndpointKey = "TIDB_OVERRIDE_ENDPOINT"
 )
 
-func (f *Forwarder) GetDBConnProps() (string, int) {
-	return "127.0.0.1", f.tidbPort
-}
-
-func (f *Forwarder) GetStatusConnProps() (string, int) {
-	return "127.0.0.1", f.statusPort
-}
+var (
+	ErrTiDBConnFailed          = ErrNS.NewType("tidb_conn_failed")
+	ErrTiDBAuthFailed          = ErrNS.NewType("tidb_auth_failed")
+	ErrTiDBClientRequestFailed = ErrNS.NewType("client_request_failed")
+)
 
 func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 	var addr string
 	addr = os.Getenv(envTidbOverrideEndpointKey)
 	if len(addr) < 1 {
-		host, port := f.GetDBConnProps()
-		addr = fmt.Sprintf("%s:%d", host, port)
+		addr = fmt.Sprintf("127.0.0.1:%d", f.tidbPort)
 	}
 	dsnConfig := mysql.NewConfig()
 	dsnConfig.Net = "tcp"
@@ -79,4 +78,28 @@ func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 	}
 
 	return db, nil
+}
+
+func (f *Forwarder) SendGetRequest(path string) ([]byte, error) {
+	uri := fmt.Sprintf("%s://127.0.0.1:%d%s", f.uriScheme, f.statusPort, path)
+	req, err := http.NewRequestWithContext(f.lifecycleCtx, "GET", uri, nil)
+	if err != nil {
+		return nil, ErrTiDBClientRequestFailed.Wrap(err, "failed to build request for TiDB API %s", path)
+	}
+
+	resp, err := f.httpClient.Do(req)
+	if err != nil {
+		return nil, ErrTiDBClientRequestFailed.Wrap(err, "failed to send request to TiDB API %s", path)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, ErrTiDBClientRequestFailed.New("received non success status code %d from TiDB API %s", resp.StatusCode, path)
+	}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, ErrTiDBClientRequestFailed.Wrap(err, "failed to read response from TiDB API %s", path)
+	}
+
+	return data, nil
 }

@@ -38,14 +38,12 @@ import (
 
 	"github.com/pingcap/log"
 	flag "github.com/spf13/pflag"
-	"go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/pkg/transport"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	keyvisualinput "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
 	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
@@ -171,19 +169,19 @@ func main() {
 		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
+	var customKeyVisualProvider *keyvisualregion.DataProvider
+	if cliConfig.KVFileStartTime > 0 {
+		customKeyVisualProvider = &keyvisualregion.DataProvider{
+			FileStartTime: cliConfig.KVFileStartTime,
+			FileEndTime:   cliConfig.KVFileEndTime,
+		}
+	}
 	assets := uiserver.Assets(cliConfig.CoreConfig)
 	s := apiserver.NewService(
 		cliConfig.CoreConfig,
 		apiserver.StoppedHandler,
 		assets,
-		func(cfg *config.Config, httpClient *http.Client, etcdClient *clientv3.Client) *keyvisualregion.PDDataProvider {
-			return &keyvisualregion.PDDataProvider{
-				FileStartTime:  cliConfig.KVFileStartTime,
-				FileEndTime:    cliConfig.KVFileEndTime,
-				PeriodicGetter: keyvisualinput.NewAPIPeriodicGetter(cliConfig.CoreConfig.PDEndPoint, httpClient),
-				EtcdClient:     etcdClient,
-			}
-		},
+		customKeyVisualProvider,
 	)
 	if err := s.Start(ctx); err != nil {
 		log.Fatal("Can not start server", zap.Error(err))

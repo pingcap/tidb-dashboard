@@ -13,10 +13,6 @@
 
 package region
 
-import (
-	"go.etcd.io/etcd/clientv3"
-)
-
 type RegionsInfo interface {
 	Len() int
 	GetKeys() []string
@@ -25,13 +21,11 @@ type RegionsInfo interface {
 
 type RegionsInfoGenerator func() (RegionsInfo, error)
 
-type PDDataProvider struct {
+type DataProvider struct {
 	// File mode (debug)
 	FileStartTime int64
 	FileEndTime   int64
 	// API or Core mode
 	// This item takes effect only when both FileStartTime and FileEndTime are 0.
 	PeriodicGetter RegionsInfoGenerator
-
-	EtcdClient *clientv3.Client
 }

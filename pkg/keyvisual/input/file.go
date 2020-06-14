@@ -15,6 +15,7 @@ package input
 
 import (
 	"context"
+	"io/ioutil"
 	"os"
 	"time"
 
@@ -59,8 +60,13 @@ func (input *fileInput) Background(ctx context.Context, stat *storage.Stat) {
 func readFile(fileTime time.Time) (*RegionsInfo, error) {
 	fileName := fileTime.Format("./data/20060102-15-04.json")
 	file, err := os.Open(fileName)
-	if err == nil {
-		return read(file)
+	if err != nil {
+		return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed, from file %s", fileName)
 	}
-	return nil, err
+	defer file.Close()
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed, from file %s", fileName)
+	}
+	return read(data)
 }

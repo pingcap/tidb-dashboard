@@ -5,12 +5,12 @@ import { Link } from 'react-router-dom'
 import { useEventListener } from '@umijs/hooks'
 import { useTranslation } from 'react-i18next'
 import { useSpring, animated } from 'react-spring'
-import client from '@lib/client'
+import client, { InfoWhoAmIResponse } from '@lib/client'
 
 import Banner from './Banner'
 import styles from './index.module.less'
 
-function useAppMenuItem(registry, appId, title) {
+function useAppMenuItem(registry, appId, title?: string) {
   const { t } = useTranslation()
   const app = registry.apps[appId]
   if (!app) {
@@ -27,7 +27,7 @@ function useAppMenuItem(registry, appId, title) {
 }
 
 function useActiveAppId(registry) {
-  const [appId, set] = useState(null)
+  const [appId, set] = useState('')
   useEventListener('single-spa:routing-event', () => {
     const activeApp = registry.getActiveApp()
     if (activeApp) {
@@ -38,7 +38,7 @@ function useActiveAppId(registry) {
 }
 
 function useCurrentLogin() {
-  const [login, setLogin] = useState(null)
+  const [login, setLogin] = useState<InfoWhoAmIResponse | null>(null)
   useEffect(() => {
     async function fetch() {
       const resp = await client.getInstance().infoWhoamiGet()
@@ -123,7 +123,8 @@ function Sider({
           collapsedWidth={collapsedWidth}
         />
         <Menu
-          delay={animationDelay}
+          subMenuOpenDelay={animationDelay}
+          subMenuCloseDelay={animationDelay}
           mode="inline"
           selectedKeys={[activeAppId]}
           style={{ flexGrow: 1 }}
@@ -131,7 +132,8 @@ function Sider({
           {menuItems}
         </Menu>
         <Menu
-          delay={animationDelay + 200}
+          subMenuOpenDelay={animationDelay + 200}
+          subMenuCloseDelay={animationDelay + 200}
           mode="inline"
           selectedKeys={[activeAppId]}
         >

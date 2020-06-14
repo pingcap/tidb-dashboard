@@ -66,7 +66,7 @@ const addAlias = () => (config) => {
   return config
 }
 
-const addDiagnoseReportEntry = () => (config) => {
+const addExtraEntries = () => (config) => {
   if (isBuildAsLibrary()) {
     return config
   }
@@ -236,7 +236,7 @@ module.exports = override(
     )
   ),
   disableMinimizeByEnv(),
-  addDiagnoseReportEntry(),
+  addExtraEntries(),
   buildAsLibrary(),
   supportDynamicPublicPathPrefix()
 )

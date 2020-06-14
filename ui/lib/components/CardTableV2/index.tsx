@@ -19,9 +19,9 @@ import styles from './index.module.less'
 
 export { AntCheckboxGroupHeader } from './GroupHeader'
 
-DetailsList.whyDidYouRender = {
+DetailsList['whyDidYouRender'] = {
   customName: 'DetailsList',
-} as any
+}
 
 function renderStickyHeader(props, defaultRender) {
   if (!props) {

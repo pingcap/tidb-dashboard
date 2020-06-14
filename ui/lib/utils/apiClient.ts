@@ -4,8 +4,8 @@ import { message } from 'antd'
 import * as singleSpa from 'single-spa'
 import DashboardClient, { DefaultApi } from '@lib/client'
 import * as auth from '@lib/utils/auth'
-import * as routing from '@dashboard/routing'
-import publicPathPrefix from '@dashboard/publicPathPrefix'
+import * as routing from '@lib/utils/routing'
+import publicPathPrefix from '@lib/utils/publicPathPrefix'
 
 function initAxios() {
   const instance = axios.create()
@@ -18,14 +18,11 @@ function initAxios() {
       response.data &&
       response.data.code === 'error.api.unauthorized'
     ) {
-      if (
-        !routing.isLocationMatch('/') &&
-        !routing.isLocationMatchPrefix(auth.signInRoute)
-      ) {
+      if (!routing.isLocationMatch('/') && !routing.isSignInPage()) {
         message.error(i18next.t('error.message.unauthorized'))
       }
       auth.clearAuthToken()
-      singleSpa.navigateToUrl('#' + auth.signInRoute)
+      singleSpa.navigateToUrl('#' + routing.signInRoute)
       err.handled = true
     } else if (err.message === 'Network Error') {
       message.error(i18next.t('error.message.network'))
@@ -55,7 +52,7 @@ export function init() {
   const dashboardClient = new DefaultApi(
     {
       basePath: apiUrl,
-      apiKey: () => auth.getAuthTokenAsBearer(),
+      apiKey: () => auth.getAuthTokenAsBearer() || '',
     },
     undefined,
     initAxios()

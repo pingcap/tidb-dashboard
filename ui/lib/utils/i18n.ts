@@ -45,7 +45,7 @@ i18next
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: {},
+    resources: {}, // oh! this line is a big pitfall, we can't remove it, else it will cause strange crash!
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,

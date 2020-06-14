@@ -1,12 +1,18 @@
-import './wdyr'
+import '@lib/utils/wdyr'
 
 import * as singleSpa from 'single-spa'
-import AppRegistry from '@dashboard/registry'
-import * as routing from '@dashboard/routing'
+import i18next from 'i18next'
 
+import AppRegistry from '@lib/utils/registry'
+import * as routing from '@lib/utils/routing'
 import * as auth from '@lib/utils/auth'
 import * as i18n from '@lib/utils/i18n'
-import * as client from '@dashboard/client'
+import * as apiClient from '@lib/utils/apiClient'
+import {
+  AppOptions,
+  saveAppOptions,
+  loadAppOptions,
+} from '@lib/utils/appOptions'
 
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
@@ -23,20 +29,23 @@ import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 
-async function main() {
-  client.init()
-
+async function main(options: AppOptions) {
+  if (options.lang) {
+    i18next.changeLanguage(options.lang)
+  }
   i18n.addTranslations(
     require.context('@dashboard/layout/translations/', false, /\.yaml$/)
   )
 
-  const registry = new AppRegistry()
+  apiClient.init()
+
+  const registry = new AppRegistry(options)
 
   singleSpa.registerApplication(
     'layout',
     AppRegistry.newReactSpaApp(() => LayoutMain, 'root'),
     () => {
-      return !routing.isLocationMatchPrefix(auth.signInRoute)
+      return !routing.isSignInPage()
     },
     { registry }
   )
@@ -45,7 +54,7 @@ async function main() {
     'signin',
     AppRegistry.newReactSpaApp(() => LayoutSignIn, 'root'),
     () => {
-      return routing.isLocationMatchPrefix(auth.signInRoute)
+      return routing.isSignInPage()
     },
     { registry }
   )
@@ -72,10 +81,9 @@ async function main() {
     if (spinner) {
       spinner.remove()
     }
-    if (!routing.isLocationMatchPrefix(auth.signInRoute)) {
+    if (!routing.isSignInPage()) {
       if (!auth.getAuthTokenAsBearer()) {
-        singleSpa.navigateToUrl('#' + auth.signInRoute)
-        return
+        singleSpa.navigateToUrl('#' + routing.signInRoute)
       }
     }
   })
@@ -83,4 +91,26 @@ async function main() {
   singleSpa.start()
 }
 
-main()
+/////////////////////////////////////
+
+function start() {
+  // the portal page is only used to receive options
+  if (routing.isPortalPage()) {
+    function handleConfigEvent(event) {
+      const { token, lang, hideNav, redirectPath } = event.data
+      auth.setAuthToken(token)
+      saveAppOptions({ hideNav, lang })
+
+      // redirect
+      window.location.hash = `#${redirectPath}`
+      window.location.reload()
+    }
+
+    window.addEventListener('message', handleConfigEvent, { once: true })
+    return
+  }
+
+  main(loadAppOptions())
+}
+
+start()

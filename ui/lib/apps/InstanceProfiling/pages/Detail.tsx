@@ -123,7 +123,7 @@ export default function Page() {
     if (!token) {
       return
     }
-    window.location = `${client.getBasePath()}/profiling/group/download?token=${token}` as any
+    window.location.href = `${client.getBasePath()}/profiling/group/download?token=${token}`
   }, [id])
 
   return (

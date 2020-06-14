@@ -67,33 +67,43 @@ export default function App({ registry }) {
     setCollapsed((c) => !c)
   }, [setCollapsed])
 
+  const { appOptions } = registry
+
   return (
     <Root>
       <Router>
         <animated.div className={styles.container} style={transContainer}>
-          <Sider
-            registry={registry}
-            fullWidth={siderWidth}
-            onToggle={handleToggle}
-            defaultCollapsed={defaultCollapsed}
-            collapsed={collapsed}
-            collapsedWidth={siderCollapsedWidth}
-            animationDelay={0}
-          />
-          <animated.div
-            className={styles.contentBack}
-            style={{
-              left: `${siderWidth}px`,
-              transform: transContentBack.x.interpolate(
-                (x) => `translate3d(${x}px, 0, 0)`
-              ),
-            }}
-          ></animated.div>
+          {!appOptions.hideNav && (
+            <>
+              <Sider
+                registry={registry}
+                fullWidth={siderWidth}
+                onToggle={handleToggle}
+                defaultCollapsed={defaultCollapsed}
+                collapsed={collapsed}
+                collapsedWidth={siderCollapsedWidth}
+                animationDelay={0}
+              />
+              <animated.div
+                className={styles.contentBack}
+                style={{
+                  left: `${siderWidth}px`,
+                  transform: transContentBack.x.interpolate(
+                    (x) => `translate3d(${x}px, 0, 0)`
+                  ),
+                }}
+              ></animated.div>
+            </>
+          )}
           <div
             className={styles.content}
-            style={{
-              marginLeft: contentLeftOffset,
-            }}
+            style={
+              appOptions.hideNav
+                ? {}
+                : {
+                    marginLeft: contentLeftOffset,
+                  }
+            }
           >
             <div id="__spa_content__"></div>
           </div>

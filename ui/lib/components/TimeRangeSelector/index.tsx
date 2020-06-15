@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
-import { Dropdown, Button, DatePicker } from 'antd'
+import { Dropdown, Button } from 'antd'
+import DatePicker from '../DatePicker'
 import { ClockCircleOutlined, DownOutlined } from '@ant-design/icons'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import cx from 'classnames'
-import dayjs from 'dayjs'
-import moment, { Moment } from 'moment'
+import dayjs, { Dayjs } from 'dayjs'
 import { useTranslation } from 'react-i18next'
 
 import styles from './index.module.less'
@@ -77,7 +77,7 @@ function TimeRangeSelector({ value, onChange }: ITimeRangeSelectorProps) {
     if (value?.type !== 'absolute') {
       return null
     }
-    return value.value.map((sec) => moment(sec * 1000)) as [Moment, Moment]
+    return value.value.map((sec) => dayjs(sec * 1000)) as [Dayjs, Dayjs]
   }, [value])
 
   const handleRecentChange = useCallback(

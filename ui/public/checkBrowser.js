@@ -1,5 +1,5 @@
 function checkBrowser() {
-  if (window.__supported_browsers__.test(navigator.userAgent)) {
+  if (!window.__supported_browsers__.test(navigator.userAgent)) {
     var text
     if (navigator.language.indexOf('zh') === 0) {
       text =

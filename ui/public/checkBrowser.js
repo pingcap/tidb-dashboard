@@ -1,8 +1,5 @@
-// Run `yarn supportedBrowsers` to auto generate supportedBrowsers.ts
-import supportedBrowsers from './supportedBrowsers'
-
-export function checkBrowser() {
-  if (supportedBrowsers.test(navigator.userAgent)) {
+function checkBrowser() {
+  if (window.__supported_browsers__.test(navigator.userAgent)) {
     const content = `
       <div style="background: yellow;
                   width: 100%;
@@ -20,8 +17,8 @@ export function checkBrowser() {
     `
     var d = document.createElement('div')
     d.innerHTML = content
-    d.querySelector('a')!.onclick = function () {
-      d.querySelector('div')!.style.top = '-60px'
+    d.querySelector('a').onclick = function () {
+      d.querySelector('div').style.top = '-60px'
     }
     document.body.prepend(d)
   }

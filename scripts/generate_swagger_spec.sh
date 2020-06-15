@@ -15,4 +15,4 @@ export GOBIN=$PROJECT_DIR/bin
 export PATH=$GOBIN:$PATH
 
 echo "+ Generate swagger spec"
-swag init --generalInfo cmd/tidb-dashboard/main.go
+swag init --generalInfo cmd/tidb-dashboard/main.go --exclude ui --output swaggerspec

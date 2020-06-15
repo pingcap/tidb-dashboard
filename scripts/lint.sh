@@ -25,8 +25,11 @@ if [ "${NEED_DOWNLOAD}" = true ]; then
   curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v${REQUIRED_VERSION}
 fi
 
-echo "+ Run lints"
+echo "+ Run lints for Go source code"
 ${LINT_BIN} run --fix
 
 echo "+ Clean up go mod"
 go mod tidy
+
+echo "+ Run lints for docs"
+npx markdownlint-cli docs/**/*.md

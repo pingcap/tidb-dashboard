@@ -5,12 +5,12 @@ import { Alert } from 'antd'
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { InstanceKindName } from '@lib/utils/instanceTable'
+import dayjs from 'dayjs'
 
 import { LogLevelText } from '../utils'
 import Log from './Log'
 
 import styles from './Styles.module.less'
-import dayjs from 'dayjs'
 
 type LogPreview = {
   key: number

@@ -42,6 +42,8 @@ export * from './BaseSelect'
 export { default as BaseSelect } from './BaseSelect'
 export * from './InstanceSelect'
 export { default as InstanceSelect } from './InstanceSelect'
+export * from './MultiSelect'
+export { default as MultiSelect } from './MultiSelect'
 export * from './ShortValueWithTooltip'
 export { default as ShortValueWithTooltip } from './ShortValueWithTooltip'
 

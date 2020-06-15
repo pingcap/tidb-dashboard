@@ -22,8 +22,14 @@ statement:
         slow_query: 慢查询
     overview:
       toolbar:
-        select_schemas: 数据库
-        select_stmt_types: SQL 语句类型
+        schemas:
+          placeholder: 所有数据库
+          selected: '{{ n }} 数据库'
+          columnTitle: 数据库名
+        statement_types:
+          placeholder: 所有类型
+          selected: '{{ n }} 类型'
+          columnTitle: SQL 语句类型
         select_columns:
           show_full_sql: 显示完整 SQL 文本
         refresh: 刷新

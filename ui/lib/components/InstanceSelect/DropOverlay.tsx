@@ -1,57 +1,54 @@
-import React from 'react'
-import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import { MarqueeSelection } from 'office-ui-fabric-react/lib/MarqueeSelection'
-import { Selection, SelectionMode } from 'office-ui-fabric-react/lib/Selection'
-import { MemoDetailsList, AntCheckboxGroupHeader } from '../'
-import { useSize } from '@umijs/hooks'
+import React, { useState, useMemo } from 'react'
+import { AntCheckboxGroupHeader } from '../'
+import { IColumn, ISelection } from 'office-ui-fabric-react/lib/DetailsList'
 import {
-  DetailsListLayoutMode,
-  IColumn,
-  IGroup,
-} from 'office-ui-fabric-react/lib/DetailsList'
-import { IInstanceTableItem } from '@lib/utils/instanceTable'
-
-import styles from './DropOverlay.module.less'
+  IInstanceTableItem,
+  filterInstanceTable,
+} from '@lib/utils/instanceTable'
+import { useTranslation } from 'react-i18next'
+import TableWithFilter, { ITableWithFilterRefProps } from './TableWithFilter'
 
 const groupProps = {
   onRenderHeader: (props) => <AntCheckboxGroupHeader {...props} />,
+}
+
+const containerStyle = { fontSize: '0.8rem' }
+
+export interface IDropOverlayProps {
+  selection: ISelection
+  columns: IColumn[]
+  items: IInstanceTableItem[]
+  filterTableRef?: React.Ref<ITableWithFilterRefProps>
 }
 
 function DropOverlay({
   selection,
   columns,
   items,
-  groups,
-}: {
-  selection: Selection
-  columns: IColumn[]
-  items: IInstanceTableItem[]
-  groups: IGroup[]
-}) {
-  const [containerState, containerRef] = useSize<HTMLDivElement>()
+  filterTableRef,
+}: IDropOverlayProps) {
+  const { t } = useTranslation()
+  const [keyword, setKeyword] = useState('')
+
+  const [finalItems, finalGroups] = useMemo(() => {
+    return filterInstanceTable(items, keyword)
+  }, [items, keyword])
+
   return (
-    <div
-      className={styles.instanceDropdown}
-      style={{ height: containerState.height, maxHeight: 400, width: 400 }}
-    >
-      <ScrollablePane>
-        <div ref={containerRef}>
-          <MarqueeSelection selection={selection} isDraggingConstrainedToRoot>
-            <MemoDetailsList
-              selectionMode={SelectionMode.multiple}
-              selection={selection}
-              selectionPreservedOnEmptyClick
-              layoutMode={DetailsListLayoutMode.justified}
-              columns={columns}
-              items={items}
-              groups={groups}
-              groupProps={groupProps}
-              compact
-            />
-          </MarqueeSelection>
-        </div>
-      </ScrollablePane>
-    </div>
+    <TableWithFilter
+      selection={selection}
+      filterPlaceholder={t('component.instanceSelect.filterPlaceholder')}
+      filter={keyword}
+      onFilterChange={setKeyword}
+      tableMaxHeight={300}
+      tableWidth={400}
+      columns={columns}
+      items={finalItems}
+      groups={finalGroups}
+      groupProps={groupProps}
+      containerStyle={containerStyle}
+      ref={filterTableRef}
+    />
   )
 }
 

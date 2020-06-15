@@ -4,6 +4,8 @@ import { useEventListener } from '@umijs/hooks'
 import { DownOutlined } from '@ant-design/icons'
 import Trigger from 'rc-trigger'
 import KeyCode from 'rc-util/lib/KeyCode'
+import _ from 'lodash'
+
 import { TextWrap } from '..'
 
 import styles from './index.module.less'
@@ -21,6 +23,10 @@ export interface IBaseSelectProps<T>
   disabled?: boolean
   tabIndex?: number
   autoFocus?: boolean
+  onOpen?: () => void
+  onOpened?: () => void
+  onClose?: () => void
+  onClosed?: () => void
 }
 
 const builtinPlacements = {
@@ -48,7 +54,10 @@ function BaseSelect<T>({
   onFocus,
   onBlur,
   onKeyDown,
-  onMouseDown,
+  onOpen,
+  onOpened,
+  onClose,
+  onClosed,
   ...restProps
 }: IBaseSelectProps<T>) {
   const [dropdownVisible, setDropdownVisible] = useState(false)
@@ -61,7 +70,7 @@ function BaseSelect<T>({
 
   const [isFocused, setFocused] = useState(false)
 
-  const handleContainerFocus = useCallback(
+  const handleDebouncedContainerFocus = useCallback(
     (ev: React.FocusEvent<HTMLDivElement>) => {
       setFocused(true)
       onFocus && onFocus(ev)
@@ -69,13 +78,40 @@ function BaseSelect<T>({
     [onFocus]
   )
 
-  const handleContainerBlur = useCallback(
+  const handleDebouncedContainerBlur = useCallback(
     (ev: React.FocusEvent<HTMLDivElement>) => {
       setDropdownVisible(false)
       setFocused(false)
       onBlur && onBlur(ev)
     },
     [onBlur]
+  )
+
+  const debouncedFocusOrBlur = useMemo(() => {
+    return _.debounce(
+      (isFocus: boolean, ev: React.FocusEvent<HTMLDivElement>) => {
+        if (isFocus) {
+          handleDebouncedContainerFocus(ev)
+        } else {
+          handleDebouncedContainerBlur(ev)
+        }
+      },
+      50
+    )
+  }, [handleDebouncedContainerFocus, handleDebouncedContainerBlur])
+
+  const handleContainerFocus = useCallback(
+    (ev) => {
+      debouncedFocusOrBlur(true, ev)
+    },
+    [debouncedFocusOrBlur]
+  )
+
+  const handleContainerBlur = useCallback(
+    (ev) => {
+      debouncedFocusOrBlur(false, ev)
+    },
+    [debouncedFocusOrBlur]
   )
 
   const handleContainerKeyDown = useCallback(
@@ -90,13 +126,9 @@ function BaseSelect<T>({
     [toggleDropdownVisible, onKeyDown]
   )
 
-  const handleContainerMouseDown = useCallback(
-    (ev: React.MouseEvent<HTMLDivElement>) => {
-      toggleDropdownVisible()
-      onMouseDown && onMouseDown(ev)
-    },
-    [toggleDropdownVisible, onMouseDown]
-  )
+  const handleSelectorMouseDown = useCallback(() => {
+    toggleDropdownVisible()
+  }, [toggleDropdownVisible])
 
   const handleOverlayMouseDown = useCallback(
     (ev: React.MouseEvent<HTMLDivElement>) => {
@@ -104,6 +136,28 @@ function BaseSelect<T>({
       ev.preventDefault()
     },
     []
+  )
+
+  const handlePopupVisibleChange = useCallback(
+    (visible: boolean) => {
+      if (visible) {
+        onOpen?.()
+      } else {
+        onClose?.()
+      }
+    },
+    [onOpen, onClose]
+  )
+
+  const handleAfterPopupVisibleChange = useCallback(
+    (visible: boolean) => {
+      if (visible) {
+        onOpened?.()
+      } else {
+        onClosed?.()
+      }
+    },
+    [onOpened, onClosed]
   )
 
   const dropdownOverlayRef = useRef<HTMLDivElement>(null)
@@ -153,54 +207,57 @@ function BaseSelect<T>({
   const displayAsPlaceholder = renderedValue == null
 
   return (
-    <Trigger
-      prefixCls="ant-dropdown"
-      builtinPlacements={builtinPlacements}
-      showAction={[]}
-      hideAction={[]}
-      popupPlacement="bottomLeft"
-      popupTransitionName="slide-down"
-      popup={overlay}
-      popupVisible={dropdownVisible}
+    <div
+      className={cx(styles.baseSelect, className)}
+      onFocus={handleContainerFocus}
+      onBlur={handleContainerBlur}
+      onKeyDown={handleContainerKeyDown}
+      ref={containerRef}
+      {...restProps}
     >
-      <div
-        className={cx(styles.baseSelect, className)}
-        onFocus={handleContainerFocus}
-        onBlur={handleContainerBlur}
-        onKeyDown={handleContainerKeyDown}
-        onMouseDown={handleContainerMouseDown}
-        ref={containerRef}
-        {...restProps}
+      <Trigger
+        prefixCls="ant-dropdown"
+        builtinPlacements={builtinPlacements}
+        showAction={[]}
+        hideAction={[]}
+        popupPlacement="bottomLeft"
+        popupTransitionName="slide-down"
+        popup={overlay}
+        popupVisible={dropdownVisible}
+        onPopupVisibleChange={handlePopupVisibleChange}
+        afterPopupVisibleChange={handleAfterPopupVisibleChange}
       >
-        <div
-          className={cx(styles.baseSelectInner, {
-            [styles.focused]: isFocused,
-            [styles.disabled]: disabled,
-          })}
-        >
-          <input
-            autoComplete="off"
-            className={styles.baseSelectInput}
-            disabled={disabled}
-            tabIndex={tabIndex}
-            autoFocus={autoFocus}
-            readOnly
-          />
+        <div onMouseDown={handleSelectorMouseDown}>
           <div
-            className={cx(styles.baseSelectValueDisplay, {
-              [styles.isPlaceholder]: displayAsPlaceholder,
+            className={cx(styles.baseSelectInner, {
+              [styles.focused]: isFocused,
+              [styles.disabled]: disabled,
             })}
           >
-            <TextWrap>
-              {displayAsPlaceholder ? placeholder : renderedValue}
-            </TextWrap>
+            <input
+              autoComplete="off"
+              className={styles.baseSelectInput}
+              disabled={disabled}
+              tabIndex={tabIndex}
+              autoFocus={autoFocus}
+              readOnly
+            />
+            <div
+              className={cx(styles.baseSelectValueDisplay, {
+                [styles.isPlaceholder]: displayAsPlaceholder,
+              })}
+            >
+              <TextWrap>
+                {displayAsPlaceholder ? placeholder : renderedValue}
+              </TextWrap>
+            </div>
+          </div>
+          <div className={styles.baseSelectArrow}>
+            <DownOutlined />
           </div>
         </div>
-        <div className={styles.baseSelectArrow}>
-          <DownOutlined />
-        </div>
-      </div>
-    </Trigger>
+      </Trigger>
+    </div>
   )
 }
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Select, Space, Tooltip, Drawer, Button, Checkbox, Result } from 'antd'
+import { Space, Tooltip, Drawer, Button, Checkbox, Result } from 'antd'
 import { useLocalStorageState } from '@umijs/hooks'
 import {
   SettingOutlined,
@@ -9,13 +9,17 @@ import {
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useTranslation } from 'react-i18next'
-import { Card, ColumnsSelector, IColumnKeys, Toolbar } from '@lib/components'
+import {
+  Card,
+  ColumnsSelector,
+  IColumnKeys,
+  Toolbar,
+  MultiSelect,
+} from '@lib/components'
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
 import useStatement from '../../utils/useStatement'
-
-const { Option } = Select
 
 const VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const SHOW_FULL_SQL = 'statement.show_full_sql'
@@ -76,46 +80,42 @@ export default function StatementsOverview() {
                 })
               }
             />
-            <Select
+            <MultiSelect.Plain
+              placeholder={t(
+                'statement.pages.overview.toolbar.schemas.placeholder'
+              )}
+              selectedValueTransKey="statement.pages.overview.toolbar.schemas.selected"
+              columnTitle={t(
+                'statement.pages.overview.toolbar.schemas.columnTitle'
+              )}
               value={queryOptions.schemas}
-              mode="multiple"
-              allowClear
-              placeholder={t('statement.pages.overview.toolbar.select_schemas')}
-              style={{ minWidth: 200 }}
+              style={{ width: 150 }}
               onChange={(schemas) =>
                 setQueryOptions({
                   ...queryOptions,
                   schemas,
                 })
               }
-            >
-              {allSchemas.map((item) => (
-                <Option value={item} key={item}>
-                  {item}
-                </Option>
-              ))}
-            </Select>
-            <Select
-              value={queryOptions.stmtTypes}
-              mode="multiple"
-              allowClear
+              items={allSchemas}
+            />
+            <MultiSelect.Plain
               placeholder={t(
-                'statement.pages.overview.toolbar.select_stmt_types'
+                'statement.pages.overview.toolbar.statement_types.placeholder'
               )}
-              style={{ minWidth: 160 }}
+              selectedValueTransKey="statement.pages.overview.toolbar.statement_types.selected"
+              columnTitle={t(
+                'statement.pages.overview.toolbar.statement_types.columnTitle'
+              )}
+              value={queryOptions.stmtTypes}
+              style={{ width: 150 }}
               onChange={(stmtTypes) =>
                 setQueryOptions({
                   ...queryOptions,
                   stmtTypes,
                 })
               }
-            >
-              {allStmtTypes.map((item) => (
-                <Option value={item} key={item}>
-                  {item.toUpperCase()}
-                </Option>
-              ))}
-            </Select>
+              items={allStmtTypes}
+            />
           </Space>
 
           <Space>

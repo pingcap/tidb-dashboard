@@ -12,7 +12,7 @@ import InstanceTable from '../components/InstanceTable'
 
 function renderTabBar(props, DefaultTabBar) {
   return (
-    <Sticky stickyPosition={StickyPositionType.Both}>
+    <Sticky stickyPosition={StickyPositionType.Header}>
       <DefaultTabBar {...props} />
     </Sticky>
   )

@@ -22,8 +22,14 @@ statement:
         slow_query: Slow Query
     overview:
       toolbar:
-        select_schemas: Database
-        select_stmt_types: Statement Kind
+        schemas:
+          placeholder: All Databases
+          selected: '{{ n }} Databases'
+          columnTitle: Database Name
+        statement_types:
+          placeholder: All Kinds
+          selected: '{{ n }} Kinds'
+          columnTitle: Statement Kind
         select_columns:
           show_full_sql: Show Full Query Text
         refresh: Refresh

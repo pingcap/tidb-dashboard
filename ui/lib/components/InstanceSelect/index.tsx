@@ -2,7 +2,6 @@ import React, { useCallback, useRef, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useShallowCompareEffect } from 'react-use'
 import { Tooltip } from 'antd'
-import { Selection } from 'office-ui-fabric-react/lib/Selection'
 import {
   IBaseSelectProps,
   BaseSelect,
@@ -12,15 +11,17 @@ import {
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
 import { addTranslationResource } from '@lib/utils/i18n'
-import { usePersistFn } from '@umijs/hooks'
+import { usePersistFn, useControllableValue } from '@umijs/hooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import {
   buildInstanceTable,
   IInstanceTableItem,
 } from '@lib/utils/instanceTable'
+import SelectionWithFilter from '@lib/utils/selectionWithFilter'
 
 import DropOverlay from './DropOverlay'
 import ValueDisplay from './ValueDisplay'
+import { ITableWithFilterRefProps } from './TableWithFilter'
 
 export interface IInstanceSelectProps
   extends Omit<IBaseSelectProps<string[]>, 'dropdownRender' | 'valueRender'> {
@@ -37,6 +38,7 @@ export interface IInstanceSelectRefProps {
 const translations = {
   en: {
     placeholder: 'Select Instances',
+    filterPlaceholder: 'Filter instance',
     selected: {
       all: 'All Instances',
       partial: {
@@ -51,6 +53,7 @@ const translations = {
   },
   'zh-CN': {
     placeholder: '选择实例',
+    filterPlaceholder: '过滤实例',
     selected: {
       all: '所有实例',
       partial: {
@@ -74,15 +77,19 @@ for (const key in translations) {
 }
 
 function InstanceSelect(
-  {
-    enableTiFlash,
-    defaultSelectAll,
-    onChange,
-    value,
-    ...restProps
-  }: IInstanceSelectProps,
+  props: IInstanceSelectProps,
   ref: React.Ref<IInstanceSelectRefProps>
 ) {
+  const [internalVal, setInternalVal] = useControllableValue<string[]>(props)
+  const setInternalValPersist = usePersistFn(setInternalVal)
+  const {
+    enableTiFlash,
+    defaultSelectAll,
+    value, // only to exclude from restProps
+    onChange, // only to exclude from restProps
+    ...restProps
+  } = props
+
   const { t } = useTranslation()
 
   const {
@@ -109,8 +116,8 @@ function InstanceSelect(
       {
         name: t('component.instanceSelect.columns.key'),
         key: 'key',
-        minWidth: 160,
-        maxWidth: 160,
+        minWidth: 150,
+        maxWidth: 150,
         onRender: (node: IInstanceTableItem) => {
           return (
             <TextWrap>
@@ -138,7 +145,7 @@ function InstanceSelect(
     [t]
   )
 
-  const [tableItems, tableGroups] = useMemo(() => {
+  const [tableItems] = useMemo(() => {
     if (loadingTiDB || loadingStores || loadingPD) {
       return [[], []]
     }
@@ -159,41 +166,19 @@ function InstanceSelect(
     loadingPD,
   ])
 
-  const onChangePersist = usePersistFn((v: string[]) => {
-    onChange?.(v)
-  })
-
   const selection = useRef(
-    new Selection({
+    new SelectionWithFilter({
       onSelectionChanged: () => {
-        const s = selection.current.getSelection() as IInstanceTableItem[]
+        const s = selection.current.getAllSelection() as IInstanceTableItem[]
         const keys = s.map((v) => v.key)
-        onChangePersist([...keys])
+        setInternalValPersist([...keys])
       },
     })
   )
 
   useShallowCompareEffect(() => {
-    const sel = selection.current
-    if (value != null) {
-      const s = sel.getSelection() as IInstanceTableItem[]
-      if (
-        s.length === value.length &&
-        s.every((item, index) => value?.[index] === item.key)
-      ) {
-        return
-      }
-    }
-    // Update selection when value is changed
-    sel.setChangeEvents(false)
-    sel.setAllSelected(false)
-    if (value && value.length > 0) {
-      for (const key of value) {
-        sel.setKeySelected(key, true, false)
-      }
-    }
-    sel.setChangeEvents(true)
-  }, [value])
+    selection.current?.resetAllSelection(internalVal ?? [])
+  }, [internalVal])
 
   const dataHasLoaded = useRef(false)
 
@@ -209,18 +194,15 @@ function InstanceSelect(
     }
     const sel = selection.current
     sel.setChangeEvents(false)
-    sel.setItems(tableItems)
-    if (value && value.length > 0) {
-      sel.setAllSelected(false)
-      for (const key of value) {
-        sel.setKeySelected(key, true, false)
-      }
+    sel.setAllItems(tableItems)
+    if (internalVal && internalVal.length > 0) {
+      sel.resetAllSelection(internalVal)
     } else if (defaultSelectAll) {
-      sel.setAllSelected(true)
+      sel.setAllSelectionSelected(true)
     }
     sel.setChangeEvents(true)
     dataHasLoaded.current = true
-    // [defaultSelectAll, value] is not needed
+    // [defaultSelectAll, internalVal] is not needed
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableItems])
 
@@ -255,26 +237,33 @@ function InstanceSelect(
     [tableItems]
   )
 
+  const filterTableRef = useRef<ITableWithFilterRefProps>(null)
+
   const renderDropdown = useCallback(
     () => (
       <DropOverlay
         columns={columns}
         items={tableItems}
-        groups={tableGroups}
         selection={selection.current}
+        filterTableRef={filterTableRef}
       />
     ),
-    [columns, tableItems, tableGroups]
+    [columns, tableItems]
   )
+
+  const handleOpened = useCallback(() => {
+    filterTableRef.current?.focusFilterInput()
+  }, [])
 
   return (
     <BaseSelect
-      {...restProps}
       dropdownRender={renderDropdown}
-      value={value}
+      value={internalVal}
       valueRender={renderValue}
       disabled={loadingTiDB || loadingStores || loadingPD}
       placeholder={t('component.instanceSelect.placeholder')}
+      onOpened={handleOpened}
+      {...restProps}
     />
   )
 }

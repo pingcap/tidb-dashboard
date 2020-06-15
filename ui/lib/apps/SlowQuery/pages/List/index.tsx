@@ -12,6 +12,7 @@ import {
   IColumnKeys,
   TimeRangeSelector,
   Toolbar,
+  MultiSelect,
 } from '@lib/components'
 import client from '@lib/client'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
@@ -78,22 +79,24 @@ function List() {
                 setQueryOptions({ ...queryOptions, timeRange })
               }
             />
-            <Select
+            <MultiSelect.Plain
+              placeholder={t(
+                'statement.pages.overview.toolbar.schemas.placeholder'
+              )}
+              selectedValueTransKey="statement.pages.overview.toolbar.schemas.selected"
+              columnTitle={t(
+                'statement.pages.overview.toolbar.schemas.columnTitle'
+              )}
               value={queryOptions.schemas}
-              mode="multiple"
-              allowClear
-              placeholder={t('statement.pages.overview.toolbar.select_schemas')}
-              style={{ minWidth: 200 }}
+              style={{ width: 150 }}
               onChange={(schemas) =>
-                setQueryOptions({ ...queryOptions, schemas })
+                setQueryOptions({
+                  ...queryOptions,
+                  schemas,
+                })
               }
-            >
-              {allSchemas.map((item) => (
-                <Option value={item} key={item}>
-                  {item}
-                </Option>
-              ))}
-            </Select>
+              items={allSchemas}
+            />
             <Search
               defaultValue={queryOptions.searchText}
               onSearch={(searchText) =>

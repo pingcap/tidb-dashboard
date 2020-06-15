@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import {
   Root,
   BaseSelect,
   InstanceSelect,
   IInstanceSelectRefProps,
   Pre,
+  MultiSelect,
 } from '@lib/components'
 import { Select, Button } from 'antd'
 
@@ -21,13 +22,44 @@ const InstanceSelectRegion = () => {
         defaultSelectAll
         ref={s}
       />
-      <Pre>Instance select value = {JSON.stringify(instanceSelectValue)}</Pre>
-      <Pre>
-        Instance select value instances ={' '}
-        {JSON.stringify(
-          s.current && s.current.getInstanceByKeys(instanceSelectValue)
-        )}
-      </Pre>
+      <InstanceSelect placeholder="Uncontrolled Value" />
+      <div>
+        <Pre>Instance select value = {JSON.stringify(instanceSelectValue)}</Pre>
+        <Pre>
+          Instance select value instances ={' '}
+          {JSON.stringify(
+            s.current && s.current.getInstanceByKeys(instanceSelectValue)
+          )}
+        </Pre>
+      </div>
+    </>
+  )
+}
+
+const MultiSelectRegion = () => {
+  const [items, items2] = useMemo(() => {
+    const items: any[] = []
+    const items2: any[] = []
+    for (let i = 0; i < 100; i++) {
+      items.push({ key: String(i), label: `Item ${i}` })
+      items2.push({
+        key: String(i),
+        label: `Long Long Long Long Long Long Item ${i}`,
+      })
+    }
+    return [items, items2]
+  }, [])
+
+  const [value, setValue] = useState<string[]>([])
+
+  return (
+    <>
+      <h2>Multi Select</h2>
+      <MultiSelect placeholder="Uncontrolled Value" items={items} />
+      <MultiSelect onChange={setValue} items={items2} />
+      <div>
+        <Pre>Value = {JSON.stringify(value)}</Pre>
+      </div>
     </>
   )
 }
@@ -65,6 +97,7 @@ const App = () => {
         <Select.Option value="disable">Disabled</Select.Option>
       </Select>
       <InstanceSelectRegion />
+      <MultiSelectRegion />
       <h2>Misc</h2>
       <div
         style={{ background: '#f0f0f0', height: 100 }}

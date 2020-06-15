@@ -45,7 +45,8 @@
     "build": "gulp build",
     "build:library": "gulp build:library",
     "test": "react-app-rewired test",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "supportedBrowsers": "echo \"export default $(browserslist-useragent-regexp --allowHigherVersions);\" > ./lib/utils/supportedBrowsers.ts"
   },
   "husky": {
     "hooks": {
@@ -75,6 +76,7 @@
     "@types/webpack-env": "^1.15.2",
     "babel-plugin-dynamic-import-node": "^2.3.0",
     "babel-plugin-import": "^1.13.0",
+    "browserslist-useragent-regexp": "^2.1.0",
     "customize-cra": "^1.0.0-alpha.0",
     "esm": "^3.2.25",
     "generate-package-json-webpack-plugin": "^1.0.1",

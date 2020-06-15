@@ -1,3 +1,4 @@
+import '@lib/utils/checkBrowser'
 import '@lib/utils/wdyr'
 
 import * as singleSpa from 'single-spa'

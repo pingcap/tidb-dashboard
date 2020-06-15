@@ -31,7 +31,7 @@ task(
 task(
   'supportedBrowsers',
   shell.task(
-    'echo "window.__supported_browsers__ = $(browserslist-useragent-regexp --allowHigherVersions);" > ./public/supportedBrowsers.js'
+    'echo "window.__supported_browsers__ = $(browserslist-useragent-regexp --allowHigherVersions)" > ./public/supportedBrowsers.js'
   )
 )
 

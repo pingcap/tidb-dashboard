@@ -3,10 +3,10 @@ function checkBrowser() {
     var text
     if (navigator.language.indexOf('zh') === 0) {
       text =
-        '您的浏览器版本已过期，推荐使用最新版本的 Chrome 或 Edge 浏览器以便获得更好的体验。'
+        '您的浏览器版本已过期，使用最新版本的 Chrome/Edge/Firefox/Safari 浏览器以便获得更好的体验。'
     } else {
       text =
-        'Your browser version is outdated, recommend to use the latest Chrome or Edge to get better experience.'
+        'Your browser version is outdated, use the latest Chrome/Edge/Firefox/Safari to get better experience.'
     }
 
     const content =

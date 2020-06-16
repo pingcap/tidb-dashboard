@@ -64,7 +64,6 @@ func RewriteAssets(fs http.FileSystem, cfg *config.Config, updater UpdateContent
 
 	rewrite("/index.html")
 	rewrite("/diagnoseReport.html")
-	rewrite("/updateBrowser.html")
 }
 
 func Handler(root http.FileSystem) http.Handler {

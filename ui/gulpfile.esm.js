@@ -35,9 +35,24 @@ task(
   )
 )
 
+task(
+  'unSupportedBrowsers',
+  shell.task(
+    'echo "window.__unsupported_browsers__ = $(browserslist-useragent-regexp "dead, IE 11" --allowHigherVersions)" > ./public/unSupportedBrowsers.js'
+  )
+)
+
 //////////////////////////
 
-task('build', series('swagger:generate', 'supportedBrowsers', 'webpack:build'))
+task(
+  'build',
+  series(
+    'swagger:generate',
+    'supportedBrowsers',
+    'unSupportedBrowsers',
+    'webpack:build'
+  )
+)
 
 task('build:library', series('swagger:generate', 'webpack:build:library'))
 
@@ -46,6 +61,7 @@ task(
   series(
     'swagger:generate',
     'supportedBrowsers',
+    'unSupportedBrowsers',
     parallel('swagger:watch', 'webpack:dev')
   )
 )

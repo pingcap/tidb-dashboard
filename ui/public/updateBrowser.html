@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="TiDB Dashboard" />
+    <title>TiDB Dashboard</title>
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+      #root {
+        margin: 0;
+        padding-left: 24px;
+      }
+      ul.logos {
+        padding: 0;
+        padding-top: 8px;
+      }
+      ul.logos li {
+        float: left;
+        list-style: none;
+        padding: 12px;
+        background-color: #f5f5f5;
+        margin-right: 16px;
+      }
+      .logos a {
+        display: block;
+        width: 110px;
+        background-repeat: no-repeat;
+        background-size: 110px auto;
+        padding-top: 120px;
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+      }
+      .chrome {
+        background-image: url(./assets/img/chrome.png);
+      }
+      .edge {
+        background-image: url(./assets/img/edge.png);
+      }
+      .firefox {
+        background-image: url(./assets/img/firefox.png);
+      }
+      .safari {
+        background-image: url(./assets/img/safari.png);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <h1 id="title">Please update your browser</h1>
+      <p id="desc">
+        Your browser isn't supported anymore. Update it to get the best TiDB
+        Dashboard experience.
+      </p>
+      <div id="browsers">
+        <ul class="logos">
+          <li>
+            <a
+              class="chrome"
+              href="https://www.google.com/chrome/browser/desktop/"
+              ><span>Chrome</span></a
+            >
+          </li>
+          <li>
+            <a class="edge" href="https://www.microsoft.com/edge"
+              ><span>Edge</span></a
+            >
+          </li>
+          <li>
+            <a class="firefox" href="https://www.mozilla.org/firefox/new"
+              ><span>Firefox</span></a
+            >
+          </li>
+          <li>
+            <a class="safari" href="https://support.apple.com/downloads/safari"
+              ><span>Safari</span></a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      var lang =
+        (navigator.languages && navigator.languages[0]) ||
+        navigator.language ||
+        navigator.browserLanguage ||
+        navigator.userLanguage ||
+        'en'
+      if (lang.indexOf('zh') === 0) {
+        document.getElementById('title').innerText = '请升级您的浏览器'
+        document.getElementById('desc').innerText =
+          '您的浏览不再支持，请升级您的浏览器以便获得 TiDB Dashboard 最好的体验。'
+      }
+    </script>
+  </body>
+</html>

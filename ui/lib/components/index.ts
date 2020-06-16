@@ -46,6 +46,8 @@ export * from './MultiSelect'
 export { default as MultiSelect } from './MultiSelect'
 export * from './ShortValueWithTooltip'
 export { default as ShortValueWithTooltip } from './ShortValueWithTooltip'
+export * from './DatePicker'
+export { default as DatePicker } from './DatePicker'
 
 export { default as LanguageDropdown } from './LanguageDropdown'
 export { default as ParamsPageWrapper } from './ParamsPageWrapper'

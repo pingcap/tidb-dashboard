@@ -1,13 +1,4 @@
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  message,
-  Select,
-  Switch,
-} from 'antd'
+import { Button, Form, Input, InputNumber, message, Select, Switch } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -16,6 +7,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client from '@lib/client'
 import { Card } from '@lib/components'
+import { DatePicker } from '@lib/components'
 
 import DiagnoseHistory from '../components/DiagnoseHistory'
 

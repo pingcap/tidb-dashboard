@@ -2,10 +2,10 @@ import client from '@lib/client'
 import { ModelRequestTargetNode, LogsearchTaskModel } from '@lib/client'
 import { CardTableV2, Card } from '@lib/components'
 import { Alert } from 'antd'
-import moment from 'moment'
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { InstanceKindName } from '@lib/utils/instanceTable'
+import dayjs from 'dayjs'
 
 import { LogLevelText } from '../utils'
 import Log from './Log'
@@ -74,7 +74,7 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
           (value, index): LogPreview => {
             return {
               key: index,
-              time: moment(value.time).format('YYYY-MM-DD HH:mm:ss'),
+              time: dayjs(value.time).format('YYYY-MM-DD HH:mm:ss'),
               level: LogLevelText[value.level ?? 0],
               component: getComponent(value.task_id),
               log: value.message,

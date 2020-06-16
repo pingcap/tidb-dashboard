@@ -22,7 +22,7 @@ function checkBrowser() {
     }
 
     const content =
-      '<div style="background: yellow; width: 100%; position: absolute; top: 0; z-index: 4; padding: 8px; text-align: center; transition: top 2s;">' +
+      '<div style="background: #fadb14; width: 100%; position: absolute; top: 0; z-index: 4; padding: 8px; text-align: center; transition: top 2s;">' +
       '<b>' +
       text +
       '<a><span>X</span></a></b><div>'

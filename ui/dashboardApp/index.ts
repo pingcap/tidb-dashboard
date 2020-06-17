@@ -13,7 +13,7 @@ import {
   saveAppOptions,
   loadAppOptions,
 } from '@lib/utils/appOptions'
-import * as reportData from '@lib/utils/reportData'
+import * as telemetry from '@lib/utils/telemetry'
 
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
@@ -39,7 +39,7 @@ async function main(options: AppOptions) {
   )
 
   apiClient.init()
-  reportData.init()
+  await telemetry.init()
 
   const registry = new AppRegistry(options)
 
@@ -93,7 +93,7 @@ async function main(options: AppOptions) {
   window.addEventListener('single-spa:before-routing-event', () => {})
 
   window.addEventListener('single-spa:routing-event', () => {
-    reportData.report('EventPageChange', {})
+    telemetry.track('PageChange', {})
   })
 
   singleSpa.start()

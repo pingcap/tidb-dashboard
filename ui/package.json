@@ -96,6 +96,7 @@
     "react-markdown": "^4.3.1",
     "react-scripts": "3.4.1",
     "typescript": "^3.7.4",
+    "uuid": "^8.1.0",
     "webpack-bundle-analyzer": "^3.7.0",
     "webpack-node-externals": "^1.7.2",
     "webpackbar": "^4.0.0"

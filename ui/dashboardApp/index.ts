@@ -13,6 +13,7 @@ import {
   saveAppOptions,
   loadAppOptions,
 } from '@lib/utils/appOptions'
+import * as reportData from '@lib/utils/reportData'
 
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
@@ -38,6 +39,7 @@ async function main(options: AppOptions) {
   )
 
   apiClient.init()
+  reportData.init()
 
   const registry = new AppRegistry(options)
 

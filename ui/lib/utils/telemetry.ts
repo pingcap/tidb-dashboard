@@ -8,12 +8,12 @@ export async function init() {
   // check option
   const res = await client.getInstance().getInfo()
   if (res?.data?.disable_telemetry === false) {
-    mixpanel.opt_in_tracking()
     // https://developer.mixpanel.com/docs/javascript-full-api-reference#mixpanelset_config
     mixpanel.set_config({
       batch_requests: true,
       persistence: 'localStorage',
     })
+    mixpanel.opt_in_tracking()
   }
 }
 

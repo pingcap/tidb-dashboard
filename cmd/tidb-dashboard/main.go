@@ -71,6 +71,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "path to the Dashboard Server data directory")
 	flag.StringVar(&cfg.CoreConfig.PublicPathPrefix, "path-prefix", config.DefaultPublicPathPrefix, "public URL path prefix for reverse proxies")
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "PD endpoint address that Dashboard Server connects to")
+	flag.BoolVar(&cfg.CoreConfig.EnableReport, "enable-report", false, "enable client to report data")
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 

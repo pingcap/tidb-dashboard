@@ -1,11 +1,13 @@
 import mixpanel from 'mixpanel-browser'
+import client from '@lib/client'
 
-export function init() {
+export async function init() {
   mixpanel.init('cb1135f29a413c653332990f07b3586a', {
     opt_out_tracking_by_default: true,
   })
   // check option
-  if (true) {
+  const res = await client.getInstance().getInfo()
+  if (res?.data?.enable_report) {
     mixpanel.opt_in_tracking()
   }
 }

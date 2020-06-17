@@ -45,8 +45,9 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 type InfoResponse struct { //nolint:golint
-	Version    pkgutils.VersionInfo `json:"version"`
-	PDEndPoint string               `json:"pd_end_point"`
+	Version      pkgutils.VersionInfo `json:"version"`
+	PDEndPoint   string               `json:"pd_end_point"`
+	EnableReport bool                 `json:"enable_report"`
 }
 
 // @Summary Dashboard info
@@ -59,8 +60,9 @@ type InfoResponse struct { //nolint:golint
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
 	resp := InfoResponse{
-		Version:    pkgutils.GetVersionInfo(),
-		PDEndPoint: s.config.PDEndPoint,
+		Version:      pkgutils.GetVersionInfo(),
+		PDEndPoint:   s.config.PDEndPoint,
+		EnableReport: s.config.EnableReport,
 	}
 	c.JSON(http.StatusOK, resp)
 }

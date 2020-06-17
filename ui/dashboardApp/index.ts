@@ -90,6 +90,12 @@ async function main(options: AppOptions) {
     }
   })
 
+  window.addEventListener('single-spa:before-routing-event', () => {})
+
+  window.addEventListener('single-spa:routing-event', () => {
+    reportData.report('EventPageChange', {})
+  })
+
   singleSpa.start()
 }
 

@@ -15,6 +15,8 @@ package info
 
 import (
 	"net/http"
+	"sort"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -101,5 +103,9 @@ func (s *Service) databasesHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
+	for i, v := range result {
+		result[i] = strings.ToLower(v)
+	}
+	sort.Strings(result)
 	c.JSON(http.StatusOK, result)
 }

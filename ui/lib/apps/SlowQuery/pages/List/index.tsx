@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Select, Space, Tooltip, Input, Checkbox } from 'antd'
 import { ReloadOutlined, LoadingOutlined } from '@ant-design/icons'
@@ -14,7 +14,6 @@ import {
   Toolbar,
   MultiSelect,
 } from '@lib/components'
-import client from '@lib/client'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQuery from '../../utils/useSlowQuery'
 
@@ -42,13 +41,12 @@ function List() {
     changeOrder,
     refresh,
 
+    allSchemas,
     loadingSlowQueries,
     slowQueries,
 
     errorMsg,
   } = useSlowQuery()
-
-  const [allSchemas, setAllSchemas] = useState<string[]>([])
 
   const [columns, setColumns] = useState<IColumn[]>([])
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
@@ -59,14 +57,6 @@ function List() {
     SHOW_FULL_SQL,
     false
   )
-
-  useEffect(() => {
-    async function getSchemas() {
-      const res = await client.getInstance().statementsSchemasGet()
-      setAllSchemas(res?.data || [])
-    }
-    getSchemas()
-  }, [])
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>

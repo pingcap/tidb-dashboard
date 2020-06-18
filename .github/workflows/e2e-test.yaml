@@ -64,7 +64,7 @@ jobs:
         run: |
           cd ui/tests
           yarn
-          yarn test
+          REACT_APP_MIXPANEL_TOKEN="" yarn test
         env:
           SERVER_URL: http://127.0.0.1:12333/dashboard/
           CI: true

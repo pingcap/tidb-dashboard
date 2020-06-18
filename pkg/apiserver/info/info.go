@@ -38,15 +38,16 @@ func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstor
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/info")
-	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/info", s.infoHandler)
+	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/whoami", s.whoamiHandler)
 	endpoint.GET("/databases", utils.MWConnectTiDB(s.tidbForwarder), s.databasesHandler)
 }
 
 type InfoResponse struct { //nolint:golint
-	Version    pkgutils.VersionInfo `json:"version"`
-	PDEndPoint string               `json:"pd_end_point"`
+	Version          pkgutils.VersionInfo `json:"version"`
+	PDEndPoint       string               `json:"pd_end_point"`
+	DisableTelemetry bool                 `json:"disable_telemetry"`
 }
 
 // @Summary Dashboard info
@@ -59,8 +60,9 @@ type InfoResponse struct { //nolint:golint
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
 	resp := InfoResponse{
-		Version:    pkgutils.GetVersionInfo(),
-		PDEndPoint: s.config.PDEndPoint,
+		Version:          pkgutils.GetVersionInfo(),
+		PDEndPoint:       s.config.PDEndPoint,
+		DisableTelemetry: s.config.DisableTelemetry,
 	}
 	c.JSON(http.StatusOK, resp)
 }

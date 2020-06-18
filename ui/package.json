@@ -87,6 +87,7 @@
     "husky": "^4.2.5",
     "less": "^3.10.3",
     "less-loader": "^5.0.0",
+    "mixpanel-browser": "^2.38.0",
     "prettier": "^2.0.4",
     "pretty-quick": "^2.0.1",
     "react-app-rewire-alias": "^0.1.3",

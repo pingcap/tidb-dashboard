@@ -20,6 +20,8 @@ export async function init() {
       persistence: 'localStorage',
     })
     mixpanel.opt_in_tracking({
+      // it seems don't work
+      // create an issue for mixpanel: https://github.com/mixpanel/mixpanel-js/issues/259
       $current_url: getPathInUrlHash(),
     })
   }

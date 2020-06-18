@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Select, Space, Tooltip, Input, Checkbox } from 'antd'
 import { ReloadOutlined, LoadingOutlined } from '@ant-design/icons'

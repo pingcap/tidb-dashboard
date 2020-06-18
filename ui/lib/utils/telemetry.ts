@@ -5,9 +5,13 @@ import { getPathInLocationHash } from './routing'
 export { mixpanel }
 
 export async function init() {
-  // mixpanel token must be valid, else mixpanel will throw error and cause crash (not good)
-  mixpanel.init(process.env.REACT_APP_MIXPANEL_TOKEN, {
+  const token =
+    process.env.REACT_APP_MIXPANEL_TOKEN || '00000000000000000000000000000000'
+  mixpanel.init(token, {
+    autotrack: false,
     opt_out_tracking_by_default: true,
+    batch_requests: true,
+    persistence: 'localStorage',
     property_blacklist: [
       '$initial_referrer',
       '$initial_referring_domain',
@@ -15,17 +19,13 @@ export async function init() {
       '$referring_domain',
     ],
   })
-  // check option
   const res = await client.getInstance().getInfo()
   if (res?.data?.disable_telemetry === false) {
-    // https://developer.mixpanel.com/docs/javascript-full-api-reference#mixpanelset_config
-    mixpanel.set_config({
-      batch_requests: true,
-      persistence: 'localStorage',
-    })
     mixpanel.register({
       $current_url: getPathInLocationHash(),
     })
     mixpanel.opt_in_tracking()
+  } else {
+    mixpanel.opt_out_tracking()
   }
 }

@@ -54,7 +54,7 @@ jobs:
         env:
           NO_MINIMIZE: true
           CI: true
-          REACT_APP_MIXPANEL_TOKEN: 6b8d3fb93ffd04f2e76325540c838624 # change mixpanel token to dev env
+          REACT_APP_MIXPANEL_TOKEN: ""
       - name: Build and run backend in the background
         run: |
           make

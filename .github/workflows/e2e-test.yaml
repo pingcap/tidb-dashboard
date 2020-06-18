@@ -54,6 +54,7 @@ jobs:
         env:
           NO_MINIMIZE: true
           CI: true
+          REACT_APP_MIXPANEL_TOKEN: 6b8d3fb93ffd04f2e76325540c838624 # change mixpanel token to dev env
       - name: Build and run backend in the background
         run: |
           make
@@ -64,7 +65,7 @@ jobs:
         run: |
           cd ui/tests
           yarn
-          REACT_APP_MIXPANEL_TOKEN="" yarn test
+          yarn test
         env:
           SERVER_URL: http://127.0.0.1:12333/dashboard/
           CI: true

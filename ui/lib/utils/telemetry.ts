@@ -5,6 +5,7 @@ import { getPathInLocationHash } from './routing'
 export { mixpanel }
 
 export async function init() {
+  // mixpanel token must be valid, else mixpanel will throw error and cause crash (not good)
   mixpanel.init(process.env.REACT_APP_MIXPANEL_TOKEN, {
     opt_out_tracking_by_default: true,
     property_blacklist: [

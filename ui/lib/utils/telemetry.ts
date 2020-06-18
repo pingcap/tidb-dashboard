@@ -13,10 +13,31 @@ export async function init() {
       batch_requests: true,
       persistence: 'localStorage',
     })
+    mixpanel.register({
+      // $initial_referrer and $initial_referring_domain overrides don't work in register()
+      // $initial_referrer: '',
+      // $initial_referring_domain: '',
+      $referrer: '',
+      $referring_domain: '',
+    })
     mixpanel.opt_in_tracking()
   }
 }
 
-export function track(eventType: string, eventBody: object) {
-  mixpanel.track(eventType, eventBody)
+function getPathInUrlHash(): string {
+  const fullUrlHash = window.location.hash
+  const pos = fullUrlHash.indexOf('?')
+  if (pos === -1) {
+    return fullUrlHash
+  }
+  return fullUrlHash.substring(0, pos)
+}
+
+export function track(eventType: string, eventBody: object = {}) {
+  mixpanel.track(eventType, {
+    ...eventBody,
+    $current_url: getPathInUrlHash(),
+    $initial_referrer: '',
+    $initial_referring_domain: '',
+  })
 }

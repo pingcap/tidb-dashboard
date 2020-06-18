@@ -55,7 +55,7 @@ function getSeriesProps(type: GraphType) {
 // FIXME
 function getTimeParams() {
   return {
-    beginTimeSec: Math.floor((Date.now() - 1 * 60 * 60 * 1000) / 1000),
+    beginTimeSec: Math.floor((Date.now() - 60 * 60 * 1000) / 1000),
     endTimeSec: Math.floor(Date.now() / 1000),
   }
 }

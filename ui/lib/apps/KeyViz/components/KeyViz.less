@@ -63,7 +63,7 @@
       align-items: center;
 
       div.value {
-        margin: 0px;
+        margin: 0;
         padding: 7px;
         font-weight: bold;
         border-radius: 3px;
@@ -108,7 +108,7 @@
     .overviewLabel {
       margin: 20px 0;
       .subLabel {
-        padding: 1 3px;
+        padding: 1px 3px;
         display: block;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -141,8 +141,7 @@
 
   .heatmap {
     flex-grow: 1;
-    margin: @padding-page;
-    margin-top: -32px;
+    margin: -32px @padding-page @padding-page;
   }
 }
 

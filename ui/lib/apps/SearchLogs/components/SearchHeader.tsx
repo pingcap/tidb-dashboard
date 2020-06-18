@@ -119,18 +119,14 @@ export default function SearchHeader({ taskGroupID }: Props) {
         },
       }
 
-      try {
-        const result = await client.getInstance().logsTaskgroupPut(req)
-        const id = result.data.task_group?.id
-        if (!id) {
-          throw new Error('Invalid server response')
-        }
-        navigate(`/search_logs/detail/${id}`)
-      } catch (e) {
-        // FIXME
+      const result = await client.getInstance().logsTaskgroupPut(req)
+      const id = result.data.task_group?.id
+      if (!id) {
         Modal.error({
-          content: e.message,
+          content: 'Invalid server response',
         })
+      } else {
+        navigate(`/search_logs/detail/${id}`)
       }
       setSubmitting(false)
     },

@@ -22,10 +22,9 @@ export async function init() {
       batch_requests: true,
       persistence: 'localStorage',
     })
-    mixpanel.opt_in_tracking({
-      // it seems don't work
-      // create an issue for mixpanel: https://github.com/mixpanel/mixpanel-js/issues/259
+    mixpanel.register({
       $current_url: getPathInLocationHash(),
     })
+    mixpanel.opt_in_tracking()
   }
 }

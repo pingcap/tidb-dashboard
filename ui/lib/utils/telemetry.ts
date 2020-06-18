@@ -8,6 +8,7 @@ export async function init() {
   const token =
     process.env.REACT_APP_MIXPANEL_TOKEN || '00000000000000000000000000000000'
   mixpanel.init(token, {
+    api_host: process.env.REACT_APP_MIXPANEL_HOST,
     autotrack: false,
     opt_out_tracking_by_default: true,
     batch_requests: true,

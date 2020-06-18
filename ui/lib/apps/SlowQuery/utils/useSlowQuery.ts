@@ -59,6 +59,7 @@ export default function useSlowQuery(
     return { beginTime, endTime }
   }, [queryOptions])
 
+  const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
   const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])
   const [refreshTimes, setRefreshTimes] = useState(0)
@@ -78,6 +79,18 @@ export default function useSlowQuery(
     setErrors([])
     setRefreshTimes((prev) => prev + 1)
   }
+
+  useEffect(() => {
+    async function querySchemas() {
+      try {
+        const res = await client.getInstance().infoDatabasesGet()
+        setAllSchemas(res?.data || [])
+      } catch (error) {
+        setErrors((prev) => [...prev, { ...error }])
+      }
+    }
+    querySchemas()
+  }, [])
 
   useEffect(() => {
     async function getSlowQueryList() {
@@ -114,6 +127,7 @@ export default function useSlowQuery(
     changeOrder,
     refresh,
 
+    allSchemas,
     loadingSlowQueries,
     slowQueries,
     queryTimeRange,

@@ -39,7 +39,6 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
 	endpoint.GET("/config", s.configHandler)
 	endpoint.POST("/config", s.modifyConfigHandler)
-	endpoint.GET("/schemas", s.schemasHandler)
 	endpoint.GET("/time_ranges", s.timeRangesHandler)
 	endpoint.GET("/stmt_types", s.stmtTypesHandler)
 	endpoint.GET("/overviews", s.overviewsHandler)
@@ -84,23 +83,6 @@ func (s *Service) modifyConfigHandler(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusNoContent)
-}
-
-// @Summary TiDB databases
-// @Description Get all databases of TiDB
-// @Produce json
-// @Success 200 {array} string
-// @Router /statements/schemas [get]
-// @Security JwtAuth
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) schemasHandler(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
-	schemas, err := QuerySchemas(db)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	c.JSON(http.StatusOK, schemas)
 }
 
 // @Summary Statement time ranges

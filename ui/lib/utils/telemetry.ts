@@ -4,6 +4,12 @@ import client from '@lib/client'
 export async function init() {
   mixpanel.init(process.env.REACT_APP_MIXPANEL_TOKEN, {
     opt_out_tracking_by_default: true,
+    property_blacklist: [
+      '$initial_referrer',
+      '$initial_referring_domain',
+      '$referrer',
+      '$referring_domain',
+    ],
   })
   // check option
   const res = await client.getInstance().getInfo()
@@ -13,14 +19,9 @@ export async function init() {
       batch_requests: true,
       persistence: 'localStorage',
     })
-    mixpanel.register({
-      // $initial_referrer and $initial_referring_domain overrides don't work in register()
-      // $initial_referrer: '',
-      // $initial_referring_domain: '',
-      $referrer: '',
-      $referring_domain: '',
+    mixpanel.opt_in_tracking({
+      $current_url: getPathInUrlHash(),
     })
-    mixpanel.opt_in_tracking()
   }
 }
 
@@ -37,7 +38,5 @@ export function track(eventType: string, eventBody: object = {}) {
   mixpanel.track(eventType, {
     ...eventBody,
     $current_url: getPathInUrlHash(),
-    $initial_referrer: '',
-    $initial_referring_domain: '',
   })
 }

@@ -1,5 +1,8 @@
 import mixpanel from 'mixpanel-browser'
 import client from '@lib/client'
+import { getPathInLocationHash } from './routing'
+
+export { mixpanel }
 
 export async function init() {
   mixpanel.init(process.env.REACT_APP_MIXPANEL_TOKEN, {
@@ -22,23 +25,7 @@ export async function init() {
     mixpanel.opt_in_tracking({
       // it seems don't work
       // create an issue for mixpanel: https://github.com/mixpanel/mixpanel-js/issues/259
-      $current_url: getPathInUrlHash(),
+      $current_url: getPathInLocationHash(),
     })
   }
-}
-
-function getPathInUrlHash(): string {
-  const fullUrlHash = window.location.hash
-  const pos = fullUrlHash.indexOf('?')
-  if (pos === -1) {
-    return fullUrlHash
-  }
-  return fullUrlHash.substring(0, pos)
-}
-
-export function track(eventType: string, eventBody: object = {}) {
-  mixpanel.track(eventType, {
-    ...eventBody,
-    $current_url: getPathInUrlHash(),
-  })
 }

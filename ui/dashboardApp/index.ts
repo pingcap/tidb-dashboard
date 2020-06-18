@@ -93,7 +93,10 @@ async function main(options: AppOptions) {
   window.addEventListener('single-spa:before-routing-event', () => {})
 
   window.addEventListener('single-spa:routing-event', () => {
-    telemetry.track('PageChange', {})
+    telemetry.mixpanel.register({
+      $current_url: routing.getPathInLocationHash(),
+    })
+    telemetry.mixpanel.track('PageChange')
   })
 
   singleSpa.start()

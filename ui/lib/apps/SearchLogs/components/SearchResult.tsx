@@ -126,7 +126,7 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
       {
         name: t('search_logs.preview.log'),
         key: 'log',
-        minWidth: 500,
+        minWidth: 200,
         onRender: ({ log, expanded }) => (
           <Log patterns={patterns} log={log} expanded={expanded} />
         ),

@@ -20,13 +20,13 @@ export async function init() {
       '$referring_domain',
     ],
   })
+  // disable mixpanel to report data immediately
+  mixpanel.opt_out_tracking()
   const res = await client.getInstance().getInfo()
   if (res?.data?.disable_telemetry === false) {
     mixpanel.register({
       $current_url: getPathInLocationHash(),
     })
     mixpanel.opt_in_tracking()
-  } else {
-    mixpanel.opt_out_tracking()
   }
 }

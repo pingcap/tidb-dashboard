@@ -1,11 +1,11 @@
-name: Release UI Assets
+name: Release
 
 on:
   push:
     branches:
-      - master
+      - release
     paths:
-      - "ui/.github_release_version"
+      - ./release-version
 
 jobs:
   release_assets:
@@ -37,26 +37,25 @@ jobs:
       - name: Build UI
         run: |
           make ui
-      - name: Pack UI asset release
+      - name: Pack UI assets for release
         working-directory: ui/build
         run: |
           zip -r ../static-assets.zip .
-      - name: Lookup asset release version
+      - name: Lookup release version
         id: lookup_release_version
-        working-directory: ui
         run: |
-          echo "::set-output name=release_version::$(grep -v '^#' .github_release_version)"
-      - name: Create asset release
+          echo "::set-output name=release_version::$(grep -v '^#' ./release-version)"
+      - name: Create release
         id: create_release
         uses: fleskesvor/create-release@feature/support-target-commitish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ui_release_${{ steps.lookup_release_version.outputs.release_version }}
-          release_name: UI Release ${{ steps.lookup_release_version.outputs.release_version }}
+          tag_name: v${{ steps.lookup_release_version.outputs.release_version }}
+          release_name: TiDB Dashboard Internal Version ${{ steps.lookup_release_version.outputs.release_version }}
           draft: false
           prerelease: false
-      - name: Upload asset release
+      - name: Upload UI assets
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -65,14 +64,14 @@ jobs:
           asset_path: ./ui/static-assets.zip
           asset_name: static-assets.zip
           asset_content_type: application/zip
-      - name: Generate embedded assets
+      - name: Generate embedded UI assets
         run: |
           NO_ASSET_BUILD_TAG=1 scripts/embed_ui_assets.sh
           cp pkg/uiserver/embedded_assets_handler.go embedded_assets_handler.go
-      - name: Pack embedded assets
+      - name: Pack embedded assets for release
         run: |
           zip -r embedded-assets-golang.zip ./embedded_assets_handler.go
-      - name: Upload embedded asset release
+      - name: Upload embedded UI assets
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

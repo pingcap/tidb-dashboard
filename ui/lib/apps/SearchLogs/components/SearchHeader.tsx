@@ -120,7 +120,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
       }
 
       const result = await client.getInstance().logsTaskgroupPut(req)
-      const id = result.data.task_group?.id
+      const id = result?.data?.task_group?.id
       if (!id) {
         Modal.error({
           content: 'Invalid server response',

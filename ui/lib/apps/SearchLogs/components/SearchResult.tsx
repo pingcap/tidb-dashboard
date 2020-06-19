@@ -1,7 +1,7 @@
 import client from '@lib/client'
 import { ModelRequestTargetNode, LogsearchTaskModel } from '@lib/client'
-import { CardTableV2, Card } from '@lib/components'
-import { Alert } from 'antd'
+import { CardTableV2, Card, TextWrap } from '@lib/components'
+import { Alert, Tooltip } from 'antd'
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { InstanceKindName } from '@lib/utils/instanceTable'
@@ -25,9 +25,12 @@ function componentRender({ component: target }) {
     return ''
   }
   return (
-    <div>
-      {target.kind ? InstanceKindName[target.kind] : '?'} {target.ip}
-    </div>
+    <TextWrap>
+      {target.kind ? InstanceKindName[target.kind] : '?'}{' '}
+      <Tooltip title={target.ip}>
+        <span>{target.ip}</span>
+      </Tooltip>
+    </TextWrap>
   )
 }
 
@@ -103,21 +106,21 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
         name: t('search_logs.preview.time'),
         key: 'time',
         fieldName: 'time',
-        minWidth: 160,
-        maxWidth: 300,
+        minWidth: 120,
+        maxWidth: 180,
       },
       {
         name: t('search_logs.preview.level'),
         key: 'level',
         fieldName: 'level',
-        minWidth: 60,
-        maxWidth: 120,
+        minWidth: 40,
+        maxWidth: 80,
       },
       {
         name: t('search_logs.preview.component'),
         key: 'component',
-        minWidth: 120,
-        maxWidth: 200,
+        minWidth: 40,
+        maxWidth: 120,
         onRender: componentRender,
       },
       {

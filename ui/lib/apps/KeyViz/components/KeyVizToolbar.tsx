@@ -118,7 +118,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
   }
 
   handleBrightLevel = (exp: number) => {
-    this.props.onChangeBrightLevel(1 * Math.pow(2, exp))
+    this.props.onChangeBrightLevel(Math.pow(2, exp))
     this.setState({ exp })
   }
 
@@ -155,7 +155,7 @@ class KeyVizToolbar extends Component<IKeyVizToolbarProps & WithTranslation> {
     ]
 
     // in seconds
-    const autoRefreshOptions = [15, 30, 1 * 60, 2 * 60, 5 * 60, 10 * 60]
+    const autoRefreshOptions = [15, 30, 60, 2 * 60, 5 * 60, 10 * 60]
 
     const autoRefreshMenu = (
       <Menu

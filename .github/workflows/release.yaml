@@ -34,6 +34,10 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - name: Lookup release version
+        id: lookup_release_version
+        run: |
+          echo "::set-output name=release_version::$(grep -v '^#' ./release-version)"
       - name: Build UI
         run: |
           make ui
@@ -41,10 +45,6 @@ jobs:
         working-directory: ui/build
         run: |
           zip -r ../static-assets.zip .
-      - name: Lookup release version
-        id: lookup_release_version
-        run: |
-          echo "::set-output name=release_version::$(grep -v '^#' ./release-version)"
       - name: Create release
         id: create_release
         uses: fleskesvor/create-release@feature/support-target-commitish

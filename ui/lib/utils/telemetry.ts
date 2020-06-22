@@ -19,13 +19,19 @@ export async function init() {
       '$referring_domain',
     ],
   })
+  const customApiHost = process.env.REACT_APP_MIXPANEL_HOST
+  if (customApiHost) {
+    mixpanel.set_config({
+      api_host: customApiHost,
+    })
+  }
+  // disable mixpanel to report data immediately
+  mixpanel.opt_out_tracking()
   const res = await client.getInstance().getInfo()
   if (res?.data?.disable_telemetry === false) {
     mixpanel.register({
       $current_url: getPathInLocationHash(),
     })
     mixpanel.opt_in_tracking()
-  } else {
-    mixpanel.opt_out_tracking()
   }
 }

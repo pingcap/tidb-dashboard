@@ -16,7 +16,6 @@ package statement
 import (
 	"fmt"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -98,22 +97,6 @@ func UpdateStmtConfig(db *gorm.DB, config *Config) (err error) {
 		err = db.Exec(sql, config.HistorySize).Error
 	}
 	return
-}
-
-func QuerySchemas(db *gorm.DB) ([]string, error) {
-	sql := `SHOW DATABASES`
-
-	var schemas []string
-	err := db.Raw(sql).Pluck("Database", &schemas).Error
-	if err != nil {
-		return nil, err
-	}
-
-	for i, v := range schemas {
-		schemas[i] = strings.ToLower(v)
-	}
-	sort.Strings(schemas)
-	return schemas, nil
 }
 
 func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {

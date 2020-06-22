@@ -13,6 +13,7 @@ import {
   saveAppOptions,
   loadAppOptions,
 } from '@lib/utils/appOptions'
+import * as telemetry from '@lib/utils/telemetry'
 
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
@@ -38,6 +39,7 @@ async function main(options: AppOptions) {
   )
 
   apiClient.init()
+  await telemetry.init()
 
   const registry = new AppRegistry(options)
 
@@ -86,6 +88,15 @@ async function main(options: AppOptions) {
         singleSpa.navigateToUrl('#' + routing.signInRoute)
       }
     }
+  })
+
+  window.addEventListener('single-spa:before-routing-event', () => {})
+
+  window.addEventListener('single-spa:routing-event', () => {
+    telemetry.mixpanel.register({
+      $current_url: routing.getPathInLocationHash(),
+    })
+    telemetry.mixpanel.track('PageChange')
   })
 
   singleSpa.start()

@@ -1,0 +1,4 @@
+area/frontend:
+  - /ui
+area/backend:
+  - *.go

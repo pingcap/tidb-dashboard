@@ -54,6 +54,7 @@ jobs:
         env:
           NO_MINIMIZE: true
           CI: true
+          REACT_APP_MIXPANEL_TOKEN: ""
       - name: Build and run backend in the background
         run: |
           make

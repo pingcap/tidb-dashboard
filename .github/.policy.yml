@@ -1,0 +1,25 @@
+policy:
+  approval:
+    if:
+      targets_branch:
+        pattern: ^master$
+    options:
+      request_review:
+        enabled: true
+      methods:
+        comment_patterns:
+          - ^(LGTM|lgtm)$
+          - ^/approve$
+        github_review: true
+      ignore_update_merges: true
+      invalidate_on_push: false
+      allow_contributor: true
+    requires:
+      count: 1
+      users:
+        - baurine
+        - breeswish
+        - crazycs520
+        - HunDunDM
+      admins: true
+      write_collaborators: true

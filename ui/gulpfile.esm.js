@@ -28,6 +28,13 @@ task(
   shell.task('yarn react-app-rewired build --library')
 )
 
+task(
+  'supportedBrowsers',
+  shell.task(
+    'echo "checkBrowser($(browserslist-useragent-regexp --allowHigherVersions))" >> ./public/checkBrowser.js'
+  )
+)
+
 task('build', series('swagger:generate', 'webpack:build'))
 
 task('build:library', series('swagger:generate', 'webpack:build:library'))

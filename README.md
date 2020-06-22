@@ -40,6 +40,7 @@ If you need any help, feel free to community chat in the Slack channel [#sig-das
 Thank you to all the people who already contributed to TiDB Dashboard!
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <table>

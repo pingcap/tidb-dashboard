@@ -31,7 +31,9 @@ task(
 task(
   'supportedBrowsers',
   shell.task(
-    'echo "checkBrowser($(browserslist-useragent-regexp --allowHigherVersions))" >> ./public/checkBrowser.js'
+    'sed "/^;checkBrowser(/d" ./public/checkBrowser.js > ./_tmp.js && ' +
+      'echo ";checkBrowser($(browserslist-useragent-regexp --allowHigherVersions))" >> ./_tmp.js && ' +
+      'mv ./_tmp.js ./public/checkBrowser.js'
   )
 )
 

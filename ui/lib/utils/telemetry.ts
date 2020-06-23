@@ -7,7 +7,7 @@ export { mixpanel }
 export async function init() {
   const token =
     process.env.REACT_APP_MIXPANEL_TOKEN || '00000000000000000000000000000000'
-  mixpanel.init(token, {
+  let options = {
     autotrack: false,
     opt_out_tracking_by_default: true,
     batch_requests: true,
@@ -18,13 +18,12 @@ export async function init() {
       '$referrer',
       '$referring_domain',
     ],
-  })
-  const customApiHost = process.env.REACT_APP_MIXPANEL_HOST
-  if (customApiHost) {
-    mixpanel.set_config({
-      api_host: customApiHost,
-    })
   }
+  const apiHost = process.env.REACT_APP_MIXPANEL_HOST
+  if (apiHost) {
+    options['api_host'] = apiHost
+  }
+  mixpanel.init(token, options)
   // disable mixpanel to report data immediately
   mixpanel.opt_out_tracking()
   const res = await client.getInstance().getInfo()

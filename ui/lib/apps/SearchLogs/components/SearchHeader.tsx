@@ -152,7 +152,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
         <TimeRangeSelector />
       </Form.Item>
       <Form.Item name="logLevel" rules={[{ required: true }]}>
-        <Select id="log_level_selector" style={{ width: 100 }}>
+        <Select style={{ width: 100 }}>
           {ValidLogLevels.map((val) => (
             <Select.Option key={val} value={val}>
               <div data-e2e={`level_${val}`}>{LogLevelText[val]}</div>
@@ -160,11 +160,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
           ))}
         </Select>
       </Form.Item>
-      <Form.Item
-        name="instances"
-        data-e2e="components_selector"
-        rules={[{ required: true }]}
-      >
+      <Form.Item name="instances" rules={[{ required: true }]}>
         <InstanceSelect
           ref={instanceSelect}
           defaultSelectAll

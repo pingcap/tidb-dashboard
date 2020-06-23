@@ -56,7 +56,7 @@ describe('Search Logs', () => {
         'div[data-e2e="search-result"] div[role="presentation"]:last-child'
       )
       const content = await logsTable.evaluate((node) => node.innerText)
-      expect(content).toContain('Welcome to TiDB')
+      expect(content).toContain('["Welcome to TiDB."]')
       expect(content.includes('Welcome to TiKV')).toBe(false)
 
       // TODO: test download

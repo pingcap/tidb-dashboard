@@ -63,12 +63,10 @@ describe('Search Logs', () => {
       await ppExpect(searchForm).toClick('button#search_btn')
 
       // check search result
-      let url = await page.url()
-      console.log('current url:', url)
       let logsTable = await page.waitForSelector(
         'div[data-e2e="search-result"] div[role="presentation"]:first-child'
       )
-      url = await page.url()
+      const url = await page.url()
       console.log('current url:', url)
       let content = await logsTable.evaluate((node) => node.innerText)
       console.log(content)

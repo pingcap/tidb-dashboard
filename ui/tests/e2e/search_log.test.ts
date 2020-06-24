@@ -56,6 +56,8 @@ describe('Search Logs', () => {
         'div[data-e2e="search-result"] div[role="presentation"]:last-child'
       )
       console.log('get the result')
+      const url = await page.url()
+      console.log('current url:', url)
       const content = await logsTable.evaluate((node) => node.innerText)
       expect(content).toContain('Welcome to TiDB.')
       expect(content.includes('Welcome to TiKV')).toBe(false)

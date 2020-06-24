@@ -52,12 +52,20 @@ describe('Search Logs', () => {
       await ppExpect(searchForm).toClick('button#search_btn')
 
       // check search result
-      const logsTable = await page.waitForSelector(
+      let url = await page.url()
+      console.log('current url:', url)
+      let logsTable = await page.waitForSelector(
+        'div[data-e2e="search-result"] div[role="presentation"]:first-child'
+      )
+      url = await page.url()
+      console.log('current url:', url)
+      let content = await logsTable.evaluate((node) => node.innerText)
+      console.log(content)
+
+      logsTable = await page.waitForSelector(
         'div[data-e2e="search-result"] div[role="presentation"]:last-child'
       )
-      const url = await page.url()
-      console.log('current url:', url)
-      const content = await logsTable.evaluate((node) => node.innerText)
+      content = await logsTable.evaluate((node) => node.innerText)
       expect(content).toContain('Welcome to TiDB')
       expect(content.includes('Welcome to TiKV')).toBe(false)
     },

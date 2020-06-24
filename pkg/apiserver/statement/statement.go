@@ -124,6 +124,7 @@ type GetStatementsRequest struct {
 	StmtTypes []string `json:"stmt_types" form:"stmt_types"`
 	BeginTime int      `json:"begin_time" form:"begin_time"`
 	EndTime   int      `json:"end_time" form:"end_time"`
+	Text      string   `json:"text" form:"text"`
 }
 
 // @Summary Statements overview
@@ -142,7 +143,7 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	overviews, err := QueryStatementsOverview(db, req.BeginTime, req.EndTime, req.Schemas, req.StmtTypes)
+	overviews, err := QueryStatementsOverview(db, req.BeginTime, req.EndTime, req.Schemas, req.StmtTypes, req.Text)
 	if err != nil {
 		_ = c.Error(err)
 		return

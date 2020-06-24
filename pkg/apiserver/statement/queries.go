@@ -123,7 +123,7 @@ func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
 	return
 }
 
-// Sample params:
+// sample params:
 // beginTime: 1586844000
 // endTime: 1586845800
 // schemas: ["tpcc", "test"]
@@ -131,7 +131,8 @@ func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
 func QueryStatementsOverview(
 	db *gorm.DB,
 	beginTime, endTime int,
-	schemas, stmtTypes []string) (result []Model, err error) {
+	schemas, stmtTypes []string,
+	text string) (result []Model, err error) {
 	fields := getAggrFields(
 		"table_names",
 		"schema_name",
@@ -171,6 +172,18 @@ func QueryStatementsOverview(
 
 	if len(stmtTypes) > 0 {
 		query = query.Where("stmt_type in (?)", stmtTypes)
+	}
+
+	if len(text) > 0 {
+		lowerText := strings.ToLower(text)
+		query = query.Where(
+			`LOWER(digest_text) REGEXP ?
+			 OR LOWER(digest) REGEXP ?
+			 OR LOWER(schema_name) REGEXP ?
+			 OR LOWER(table_names) REGEXP ?
+			 OR LOWER(plan) REGEXP ?`,
+			lowerText, lowerText, lowerText, lowerText, lowerText,
+		)
 	}
 
 	err = query.Find(&result).Error

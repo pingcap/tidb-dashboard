@@ -22,12 +22,14 @@ export interface IStatementQueryOptions {
   timeRange: TimeRange
   schemas: string[]
   stmtTypes: string[]
+  searchText: string
 }
 
 export const DEF_STMT_QUERY_OPTIONS: IStatementQueryOptions = {
   timeRange: DEFAULT_TIME_RANGE,
   schemas: [],
   stmtTypes: [],
+  searchText: '',
 }
 
 export default function useStatement(
@@ -142,7 +144,8 @@ export default function useStatement(
             validTimeRange.begin_time!,
             validTimeRange.end_time!,
             queryOptions.schemas,
-            queryOptions.stmtTypes
+            queryOptions.stmtTypes,
+            queryOptions.searchText
           )
         setStatements(res?.data || [])
         setErrors([])

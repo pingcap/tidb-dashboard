@@ -61,6 +61,6 @@ describe('Search Logs', () => {
       expect(content).toContain('Welcome to TiDB')
       expect(content.includes('Welcome to TiKV')).toBe(false)
     },
-    20 * 1000
+    30 * 1000
   )
 })

@@ -32,6 +32,17 @@ describe('Search Logs', () => {
       // find search form
       const searchForm = await page.waitForSelector('form#search_form')
 
+      // choose time range
+      await ppExpect(searchForm).toClick(
+        'button[data-e2e="timerange-selector"]'
+      )
+      await ppExpect(page).toClick(
+        'div[data-e2e="common-timeranges"] div:last-child'
+      )
+      await ppExpect(searchForm).toClick(
+        'button[data-e2e="timerange-selector"]'
+      )
+
       // set log level to INFO
       await ppExpect(searchForm).toClick('#logLevel')
       await ppExpect(page).toClick('div[data-e2e="level_2"]')

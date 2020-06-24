@@ -114,7 +114,7 @@ function TimeRangeSelector({ value, onChange }: ITimeRangeSelectorProps) {
             'statement.pages.overview.toolbar.time_range_selector.usual_time_ranges'
           )}
         </span>
-        <div className={styles.time_range_items}>
+        <div className={styles.time_range_items} data-e2e="common-timeranges">
           {RECENT_SECONDS.map((seconds) => (
             <div
               tabIndex={-1}
@@ -156,7 +156,7 @@ function TimeRangeSelector({ value, onChange }: ITimeRangeSelectorProps) {
       visible={dropdownVisible}
       onVisibleChange={setDropdownVisible}
     >
-      <Button icon={<ClockCircleOutlined />}>
+      <Button icon={<ClockCircleOutlined />} data-e2e="timerange-selector">
         {value && value.type === 'recent' && (
           <span>
             {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}

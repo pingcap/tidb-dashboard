@@ -22,39 +22,41 @@ import (
 
 // Version information.
 var (
-	ReleaseVersion = "None"
-	BuildTS        = "None"
-	GitHash        = "None"
-	GitBranch      = "None"
+	InternalVersion = "Unknown"
+	PDVersion       = ""
+	BuildTS         = "Unknown"
+	GitHash         = "Unknown"
+	GitBranch       = "Unknown"
 )
 
 type VersionInfo struct {
-	ReleaseVersion string `json:"release_version"`
-	BuildTime      string `json:"build_time"`
-	BuildGitHash   string `json:"build_git_hash"`
-	BuildGitBranch string `json:"build_git_branch"`
+	InternalVersion string `json:"internal_version"`
+	PDVersion       string `json:"pd_version"`
+	BuildTime       string `json:"build_time"`
+	BuildGitHash    string `json:"build_git_hash"`
+	BuildGitBranch  string `json:"build_git_branch"`
 }
 
-func LogInfo() {
-	log.Info("Welcome to TiDB Dashboard")
-	log.Info("", zap.String("release-version", ReleaseVersion))
-	log.Info("", zap.String("git-hash", GitHash))
-	log.Info("", zap.String("git-branch", GitBranch))
-	log.Info("", zap.String("utc-build-time", BuildTS))
+func LogStandaloneModeInfo() {
+	log.Info("Welcome to TiDB Dashboard",
+		zap.String("internal-version", InternalVersion),
+		zap.String("git-hash", GitHash),
+		zap.String("git-branch", GitBranch),
+		zap.String("utc-build-time", BuildTS))
 }
 
-func PrintInfo() {
-	fmt.Println("Release Version:", ReleaseVersion)
+func PrintStandaloneModeInfo() {
+	fmt.Println("Internal Version:", InternalVersion)
 	fmt.Println("Git Commit Hash:", GitHash)
 	fmt.Println("Git Branch:", GitBranch)
 	fmt.Println("UTC Build Time: ", BuildTS)
 }
 
-func GetVersionInfo() VersionInfo {
+func GetStandaloneModeVersionInfo() VersionInfo {
 	return VersionInfo{
-		ReleaseVersion: ReleaseVersion,
-		BuildTime:      BuildTS,
-		BuildGitHash:   GitHash,
-		BuildGitBranch: GitBranch,
+		InternalVersion: InternalVersion,
+		BuildTime:       BuildTS,
+		BuildGitHash:    GitHash,
+		BuildGitBranch:  GitBranch,
 	}
 }

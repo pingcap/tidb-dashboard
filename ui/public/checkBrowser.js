@@ -19,7 +19,7 @@ function browserLang() {
 }
 
 function checkBrowser() {
-  if (__SUPPORTED_BROWSERS__.test(navigator.userAgent)) {
+  if (!__SUPPORTED_BROWSERS__.test(navigator.userAgent)) {
     var text
     if (browserLang().indexOf('zh') === 0) {
       text =

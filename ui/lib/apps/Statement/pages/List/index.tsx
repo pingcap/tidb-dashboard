@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Space, Tooltip, Drawer, Button, Checkbox, Result } from 'antd'
+import { Space, Tooltip, Drawer, Button, Checkbox, Result, Input } from 'antd'
 import { useLocalStorageState } from '@umijs/hooks'
 import {
   SettingOutlined,
@@ -20,6 +20,8 @@ import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
 import useStatement from '../../utils/useStatement'
+
+const { Search } = Input
 
 const VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const SHOW_FULL_SQL = 'statement.show_full_sql'
@@ -115,6 +117,12 @@ export default function StatementsOverview() {
                 })
               }
               items={allStmtTypes}
+            />
+            <Search
+              defaultValue={queryOptions.searchText}
+              onSearch={(searchText) =>
+                setQueryOptions({ ...queryOptions, searchText })
+              }
             />
           </Space>
 

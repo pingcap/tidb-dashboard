@@ -48,7 +48,7 @@
     "build:library": "gulp build:library",
     "test": "react-app-rewired test",
     "fmt": "prettier --write .",
-    "supportedBrowsers": "gulp supportedBrowsers"
+    "gen:browserlist": "gulp gen:browserlist"
   },
   "husky": {
     "hooks": {

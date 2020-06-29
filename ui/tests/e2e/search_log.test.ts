@@ -36,9 +36,11 @@ describe('Search Logs', () => {
       await ppExpect(searchForm).toClick(
         'button[data-e2e="timerange-selector"]'
       )
+      const secondsOf4weeks = 28 * 24 * 60 * 60
       await ppExpect(page).toClick(
-        'div[data-e2e="common-timeranges"] div:last-child'
+        `div[data-e2e="common-timeranges"] div[data-e2e="timerange-${secondsOf4weeks}"]`
       )
+      // to hide dropdown
       await ppExpect(searchForm).toClick(
         'button[data-e2e="timerange-selector"]'
       )
@@ -54,8 +56,12 @@ describe('Search Logs', () => {
       // components selector dropdown is a DOM node with absolute position
       // and its parent is body, failed to add id or data-e2e to it
       // cancel select PD and TiKV, and only remain TiDB
-      await ppExpect(page).toClick('span', { text: 'PD' })
-      await ppExpect(page).toClick('span', { text: 'TiKV' })
+      await ppExpect(page).toClick('div[data-e2e="table-with-filter"] span', {
+        text: 'PD',
+      })
+      await ppExpect(page).toClick('div[data-e2e="table-with-filter"] span', {
+        text: 'TiKV',
+      })
       // to hide dropdown
       await ppExpect(searchForm).toClick('div#instances')
 

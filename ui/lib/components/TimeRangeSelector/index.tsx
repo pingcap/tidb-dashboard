@@ -124,6 +124,7 @@ function TimeRangeSelector({ value, onChange }: ITimeRangeSelectorProps) {
                   value && value.type === 'recent' && value.value === seconds,
               })}
               onClick={() => handleRecentChange(seconds)}
+              data-e2e={`timerange-${seconds}`}
             >
               {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
               {getValueFormat('s')(seconds, 0)}

@@ -1,5 +1,7 @@
 import { task, watch, series, parallel, src, dest } from 'gulp'
 import shell from 'gulp-shell'
+import Stream from 'stream'
+import { getUserAgentRegExp } from 'browserslist-useragent-regexp'
 
 task('swagger:generate_spec', shell.task('../scripts/generate_swagger_spec.sh'))
 
@@ -38,9 +40,6 @@ task(
 )
 
 /////////////////////////////////
-
-import Stream from 'stream'
-import { getUserAgentRegExp } from 'browserslist-useragent-regexp'
 
 // inspired from: https://github.com/brwnll/gulp-version-filename/blob/master/index.js
 function updateBrowserList() {

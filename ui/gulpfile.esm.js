@@ -46,7 +46,7 @@ function updateBrowserList() {
   const stream = new Stream.Transform({ objectMode: true })
 
   stream._transform = function (file, _filetype, callback) {
-    let oriContents = file.contents.toString()
+    const oriContents = file.contents.toString()
     const pattern = 'var __SUPPORTED_BROWSERS__ ='
 
     if (oriContents.indexOf(pattern) < 0) {

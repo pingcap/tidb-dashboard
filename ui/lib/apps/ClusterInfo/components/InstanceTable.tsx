@@ -1,17 +1,18 @@
-import { Divider, Popconfirm, Tooltip, Alert } from 'antd'
-import React, { useMemo, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
 import { DeleteOutlined } from '@ant-design/icons'
+import { usePersistFn } from '@umijs/hooks'
+import { Divider, Popconfirm, Tooltip } from 'antd'
+import React, { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import client from '@lib/client'
 import { CardTableV2, InstanceStatusBadge } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
-import { useClientRequest } from '@lib/utils/useClientRequest'
-import { usePersistFn } from '@umijs/hooks'
 import {
   buildInstanceTable,
   IInstanceTableItem,
   InstanceStatus,
 } from '@lib/utils/instanceTable'
-import client from '@lib/client'
+import { useClientRequest } from '@lib/utils/useClientRequest'
 
 function StatusColumn({
   node,
@@ -78,6 +79,19 @@ export default function ListPage() {
   } = useClientRequest((cancelToken) =>
     client.getInstance().getPDTopology({ cancelToken })
   )
+  const errMessages = useMemo(() => {
+    let errMsgs: string[] = []
+    if (errTiDB) {
+      errMsgs.push('Load TiDB instances failed')
+    }
+    if (errStores) {
+      errMsgs.push('Load TiKV / TiFlash instances failed')
+    }
+    if (errPD) {
+      errMsgs.push('Load PD instances failed')
+    }
+    return errMsgs
+  }, [errTiDB, errStores, errPD])
 
   const [tableData, groupData] = useMemo(
     () =>
@@ -178,28 +192,14 @@ export default function ListPage() {
   )
 
   return (
-    <>
-      {errTiDB && (
-        <Alert message="Load TiDB instances failed" type="error" showIcon />
-      )}
-      {errStores && (
-        <Alert
-          message="Load TiKV / TiFlash instances failed"
-          type="error"
-          showIcon
-        />
-      )}
-      {errPD && (
-        <Alert message="Load PD instances failed" type="error" showIcon />
-      )}
-      <CardTableV2
-        disableSelectionZone
-        cardNoMargin
-        loading={loadingTiDB || loadingStores || loadingPD}
-        columns={columns}
-        items={tableData}
-        groups={groupData}
-      />
-    </>
+    <CardTableV2
+      disableSelectionZone
+      cardNoMargin
+      loading={loadingTiDB || loadingStores || loadingPD}
+      columns={columns}
+      items={tableData}
+      groups={groupData}
+      errMessages={errMessages}
+    />
   )
 }

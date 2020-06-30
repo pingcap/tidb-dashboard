@@ -36,7 +36,7 @@ export default function RecentStatements() {
       orderBy={orderOptions.orderBy}
       desc={orderOptions.desc}
       onChangeOrder={changeOrder}
-      errorMsg={errorMsg}
+      errMessages={[errorMsg]}
       title={
         <Link to="/statement">
           {t('overview.top_statements.title')} <RightOutlined />

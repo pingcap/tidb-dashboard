@@ -165,7 +165,7 @@ export default function StatementsOverview() {
             <StatementsTable
               cardNoMarginTop
               loading={loadingStatements}
-              errorMsg={errorMsg}
+              errMessages={[errorMsg]}
               statements={statements}
               timeRange={validTimeRange}
               orderBy={orderOptions.orderBy}

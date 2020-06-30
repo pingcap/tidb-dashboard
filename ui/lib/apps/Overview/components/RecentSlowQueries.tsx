@@ -30,7 +30,7 @@ export default function RecentSlowQueries() {
       orderBy={orderOptions.orderBy}
       desc={orderOptions.desc}
       onChangeOrder={changeOrder}
-      errorMsg={errorMsg}
+      errMessages={[errorMsg]}
       title={
         <Link to="/slow_query">
           {t('overview.recent_slow_query.title')} <RightOutlined />

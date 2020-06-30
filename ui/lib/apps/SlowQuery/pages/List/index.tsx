@@ -141,7 +141,7 @@ function List() {
           <SlowQueriesTable
             cardNoMarginTop
             loading={loadingSlowQueries}
-            errorMsg={errorMsg}
+            errMessages={[errorMsg]}
             slowQueries={slowQueries}
             orderBy={orderOptions.orderBy}
             desc={orderOptions.desc}

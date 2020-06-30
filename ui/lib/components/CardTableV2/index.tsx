@@ -1,5 +1,5 @@
 import { usePersistFn } from '@umijs/hooks'
-import { Checkbox } from 'antd'
+import { Checkbox, Alert } from 'antd'
 import cx from 'classnames'
 import {
   ColumnActionsMode,
@@ -72,6 +72,7 @@ export interface ICardTableV2Props extends IDetailsListProps {
   className?: string
   style?: object
   loading?: boolean
+  errMessages?: string[]
 
   cardExtra?: React.ReactNode
   cardNoMargin?: boolean
@@ -131,6 +132,7 @@ function CardTableV2(props: ICardTableV2Props) {
     className,
     style,
     loading = false,
+    errMessages = [],
     cardExtra,
     cardNoMargin,
     cardNoMarginTop,
@@ -214,6 +216,10 @@ function CardTableV2(props: ICardTableV2Props) {
       noMarginTop={cardNoMarginTop}
       extra={cardExtra}
     >
+      {errMessages.map(
+        (msg, idx) =>
+          msg && <Alert key={idx} message={msg} type="error" showIcon />
+      )}
       <AnimatedSkeleton showSkeleton={items.length === 0 && loading}>
         <div className={styles.cardTableContent}>
           <MemoDetailsList

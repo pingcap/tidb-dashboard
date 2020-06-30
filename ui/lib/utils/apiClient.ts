@@ -25,8 +25,10 @@ function initAxios() {
       singleSpa.navigateToUrl('#' + routing.signInRoute)
       err.handled = true
     } else if (err.message === 'Network Error') {
-      message.error(i18next.t('error.message.network'))
+      const content = i18next.t('error.message.network')
+      message.error({ content, key: 'network_error' }) // use the same key to avoid multiple message boxes
       err.handled = true
+      err.msg = content // use `err.message = content` doesn't work
     }
     return Promise.reject(err)
   })

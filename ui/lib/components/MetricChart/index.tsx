@@ -227,7 +227,7 @@ export default function MetricChart({
   ) {
     inner = (
       <div style={{ height: HEIGHT }}>
-        <Alert message={errorMsg || 'Error'} type="error" showIcon />
+        <Alert message={errorMsg} type="error" showIcon />
       </div>
     )
   } else {

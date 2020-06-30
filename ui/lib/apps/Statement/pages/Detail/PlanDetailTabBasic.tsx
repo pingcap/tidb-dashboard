@@ -4,7 +4,7 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementModel } from '@lib/client'
 import {
-  CardTableV2,
+  CardTable,
   DateTime,
   Pre,
   ShortValueWithTooltip,
@@ -69,11 +69,6 @@ export default function TabBasic({ data }: ITabBasicProps) {
   ]
   const columns = valueColumns('statement.fields.')
   return (
-    <CardTableV2
-      cardNoMargin
-      columns={columns}
-      items={items}
-      extendLastColumn
-    />
+    <CardTable cardNoMargin columns={columns} items={items} extendLastColumn />
   )
 }

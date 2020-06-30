@@ -66,7 +66,7 @@ function copyAndSort<T>(
     )
 }
 
-export interface ICardTableV2Props extends IDetailsListProps {
+export interface ICardTableProps extends IDetailsListProps {
   title?: React.ReactNode
   subTitle?: React.ReactNode
   className?: string
@@ -125,7 +125,7 @@ function dummyColumn(): IColumn {
   }
 }
 
-function CardTableV2(props: ICardTableV2Props) {
+export default function CardTable(props: ICardTableProps) {
   const {
     title,
     subTitle,
@@ -236,5 +236,3 @@ function CardTableV2(props: ICardTableV2Props) {
     </Card>
   )
 }
-
-export default CardTableV2

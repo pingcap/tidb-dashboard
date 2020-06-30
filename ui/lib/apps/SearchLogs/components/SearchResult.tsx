@@ -1,6 +1,6 @@
 import client from '@lib/client'
 import { ModelRequestTargetNode, LogsearchTaskModel } from '@lib/client'
-import { CardTableV2, Card, TextWrap } from '@lib/components'
+import { CardTable, Card, TextWrap } from '@lib/components'
 import { Alert, Tooltip } from 'antd'
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -142,7 +142,7 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
           <Alert message={t('search_logs.page.tip')} type="info" showIcon />
         </Card>
       )}
-      <CardTableV2
+      <CardTable
         cardNoMarginTop
         loading={loading}
         columns={columns}

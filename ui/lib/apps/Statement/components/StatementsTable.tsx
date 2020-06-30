@@ -4,13 +4,13 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { StatementModel, StatementTimeRange } from '@lib/client'
-import { CardTableV2, ICardTableV2Props } from '@lib/components'
+import { CardTable, ICardTableProps } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 
 import DetailPage from '../pages/Detail'
 import { statementColumns } from '../utils/tableColumns'
 
-interface Props extends Partial<ICardTableV2Props> {
+interface Props extends Partial<ICardTableProps> {
   loading: boolean
   statements: StatementModel[]
   timeRange: StatementTimeRange
@@ -52,7 +52,7 @@ export default function StatementsTable({
   const getKey = useCallback((row) => `${row.digest}_${row.schema_name}`, [])
 
   return (
-    <CardTableV2
+    <CardTable
       {...restPrpos}
       loading={loading}
       columns={columns}

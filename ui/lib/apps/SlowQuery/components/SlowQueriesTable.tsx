@@ -4,13 +4,13 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { SlowqueryBase } from '@lib/client'
-import { CardTableV2, ICardTableV2Props } from '@lib/components'
+import { CardTable, ICardTableProps } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 
 import DetailPage from '../pages/Detail'
 import { slowQueryColumns } from '../utils/tableColumns'
 
-interface Props extends Partial<ICardTableV2Props> {
+interface Props extends Partial<ICardTableProps> {
   loading: boolean
   slowQueries: SlowqueryBase[]
   showFullSQL?: boolean
@@ -49,7 +49,7 @@ function SlowQueriesTable({
   const getKey = useCallback((row) => `${row.digest}_${row.timestamp}`, [])
 
   return (
-    <CardTableV2
+    <CardTable
       {...restProps}
       loading={loading}
       columns={columns}

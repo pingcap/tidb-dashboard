@@ -6,7 +6,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import { usePersistFn } from '@umijs/hooks'
 
 import client from '@lib/client'
-import { CardTableV2, Head } from '@lib/components'
+import { CardTable, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
 
@@ -145,7 +145,7 @@ export default function Page() {
           </Button>
         }
       />
-      <CardTableV2
+      <CardTable
         loading={isLoading && !data}
         columns={columns}
         items={data?.tasks_status || []}

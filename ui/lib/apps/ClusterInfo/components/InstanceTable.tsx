@@ -5,7 +5,7 @@ import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import client from '@lib/client'
-import { CardTableV2, InstanceStatusBadge } from '@lib/components'
+import { CardTable, InstanceStatusBadge } from '@lib/components'
 import DateTime from '@lib/components/DateTime'
 import {
   buildInstanceTable,
@@ -192,7 +192,7 @@ export default function ListPage() {
   )
 
   return (
-    <CardTableV2
+    <CardTable
       disableSelectionZone
       cardNoMargin
       loading={loadingTiDB || loadingStores || loadingPD}

@@ -10,7 +10,7 @@ import { useToggle } from '@umijs/hooks'
 import client, { StatementModel } from '@lib/client'
 import {
   AnimatedSkeleton,
-  CardTableV2,
+  CardTable,
   DateTime,
   Descriptions,
   Expand,
@@ -158,7 +158,7 @@ function DetailPage() {
                   type="info"
                   showIcon
                 />
-                <CardTableV2
+                <CardTable
                   cardNoMargin
                   columns={planColumns}
                   items={plans}

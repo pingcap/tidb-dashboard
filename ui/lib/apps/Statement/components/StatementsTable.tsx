@@ -1,7 +1,8 @@
+import { usePersistFn } from '@umijs/hooks'
+import { Alert } from 'antd'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { usePersistFn } from '@umijs/hooks'
 
 import { StatementModel, StatementTimeRange } from '@lib/client'
 import { CardTableV2, ICardTableV2Props } from '@lib/components'
@@ -16,6 +17,7 @@ interface Props extends Partial<ICardTableV2Props> {
   timeRange: StatementTimeRange
   showFullSQL?: boolean
   onGetColumns?: (columns: IColumn[]) => void
+  errorMsg?: string
 }
 
 export default function StatementsTable({
@@ -24,7 +26,7 @@ export default function StatementsTable({
   timeRange,
   showFullSQL,
   onGetColumns,
-
+  errorMsg,
   ...restPrpos
 }: Props) {
   const navigate = useNavigate()
@@ -53,13 +55,16 @@ export default function StatementsTable({
   const getKey = useCallback((row) => `${row.digest}_${row.schema_name}`, [])
 
   return (
-    <CardTableV2
-      {...restPrpos}
-      loading={loading}
-      columns={columns}
-      items={statements}
-      onRowClicked={handleRowClick}
-      getKey={getKey}
-    />
+    <>
+      {errorMsg && <Alert message={errorMsg} type="error" showIcon />}
+      <CardTableV2
+        {...restPrpos}
+        loading={loading}
+        columns={columns}
+        items={statements}
+        onRowClicked={handleRowClick}
+        getKey={getKey}
+      />
+    </>
   )
 }

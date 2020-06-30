@@ -47,6 +47,7 @@ type tidbServerInfo struct {
 }
 
 type ForwarderConfig struct {
+	ClusterTLSConfig    *tls.Config
 	TiDBTLSConfig       *tls.Config
 	TiDBRetrieveTimeout time.Duration
 	TiDBPollInterval    time.Duration
@@ -59,6 +60,7 @@ func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
 		_ = mysql.RegisterTLSConfig("tidb", cfg.TiDBTLSConfig)
 	}
 	return &ForwarderConfig{
+		ClusterTLSConfig:    cfg.ClusterTLSConfig,
 		TiDBTLSConfig:       cfg.TiDBTLSConfig,
 		TiDBRetrieveTimeout: time.Second,
 		TiDBPollInterval:    5 * time.Second,
@@ -181,7 +183,7 @@ func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3
 		httpClient: httpClient,
 	}
 
-	if config.TiDBTLSConfig == nil {
+	if config.ClusterTLSConfig == nil {
 		f.uriScheme = "http"
 	} else {
 		f.uriScheme = "https"

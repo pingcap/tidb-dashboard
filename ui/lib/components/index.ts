@@ -51,3 +51,4 @@ export { default as DatePicker } from './DatePicker'
 
 export { default as LanguageDropdown } from './LanguageDropdown'
 export { default as ParamsPageWrapper } from './ParamsPageWrapper'
+export { default as TopLoadingBar } from './TopLoadingBar'

@@ -15,6 +15,7 @@ import {
 } from '@lib/utils/appOptions'
 import * as telemetry from '@lib/utils/telemetry'
 
+import LayoutRoot from '@dashboard/layout/root'
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
 
@@ -44,8 +45,15 @@ async function main(options: AppOptions) {
   const registry = new AppRegistry(options)
 
   singleSpa.registerApplication(
+    'root',
+    AppRegistry.newReactSpaApp(() => LayoutRoot, 'root'),
+    () => true,
+    { registry }
+  )
+
+  singleSpa.registerApplication(
     'layout',
-    AppRegistry.newReactSpaApp(() => LayoutMain, 'root'),
+    AppRegistry.newReactSpaApp(() => LayoutMain, '__spa__main__'),
     () => {
       return !routing.isSignInPage()
     },
@@ -54,7 +62,7 @@ async function main(options: AppOptions) {
 
   singleSpa.registerApplication(
     'signin',
-    AppRegistry.newReactSpaApp(() => LayoutSignIn, 'root'),
+    AppRegistry.newReactSpaApp(() => LayoutSignIn, '__spa__main__'),
     () => {
       return routing.isSignInPage()
     },

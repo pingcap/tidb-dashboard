@@ -97,12 +97,6 @@ export default function MetricChart({
 
   const valueFormatter = useMemo(() => getValueFormat(unit), [unit])
 
-  const [selectedLegends, setSelectedLegends] = useState({})
-
-  const handleLegendChange = ({ name, selected }) => {
-    setSelectedLegends(selected)
-  }
-
   const opt = useMemo(() => {
     const s: any[] = []
     data.forEach((dataBySeries, seriesIdx) => {
@@ -162,7 +156,6 @@ export default function MetricChart({
         orient: 'horizontal',
         x: 'left', // 'center' | 'left' | {number},
         y: 'bottom',
-        selected: selectedLegends,
       },
       yAxis: {
         type: 'value',
@@ -217,7 +210,7 @@ export default function MetricChart({
       },
       series: s,
     }
-  }, [data, valueFormatter, series, type, selectedLegends])
+  }, [data, valueFormatter, series, type])
 
   const showSkeleton = isLoading && _.every(data, (d) => d === null)
 
@@ -240,12 +233,10 @@ export default function MetricChart({
     inner = (
       <ReactEchartsCore
         echarts={echarts}
-        notMerge={true}
         lazyUpdate={true}
         style={{ height: HEIGHT }}
         option={opt}
         theme={'light'}
-        onEvents={{ legendselectchanged: handleLegendChange }}
       />
     )
   }

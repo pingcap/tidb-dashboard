@@ -65,7 +65,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	cfg := &DashboardCLIConfig{}
 	cfg.CoreConfig = &config.Config{}
 
-	flag.StringVarP(&cfg.ListenHost, "host", "h", "0.0.0.0", "listen host of the Dashboard Server")
+	flag.StringVarP(&cfg.ListenHost, "host", "h", "127.0.0.1", "listen host of the Dashboard Server")
 	flag.IntVarP(&cfg.ListenPort, "port", "p", 12333, "listen port of the Dashboard Server")
 	flag.BoolVarP(&cfg.EnableDebugLog, "debug", "d", false, "enable debug logs")
 	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "path to the Dashboard Server data directory")
@@ -91,7 +91,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 
 	flag.Parse()
 	if *showVersion {
-		utils.PrintInfo()
+		utils.PrintStandaloneModeInfo()
 		_ = log.Sync()
 		os.Exit(0)
 	}
@@ -167,7 +167,7 @@ func main() {
 	listenAddr := fmt.Sprintf("%s:%d", cliConfig.ListenHost, cliConfig.ListenPort)
 	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		log.Fatal("Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
+		log.Fatal("TiDB Dashboard server listen failed", zap.String("addr", listenAddr), zap.Error(err))
 	}
 
 	var customKeyVisualProvider *keyvisualregion.DataProvider
@@ -183,6 +183,7 @@ func main() {
 		apiserver.StoppedHandler,
 		assets,
 		customKeyVisualProvider,
+		utils.GetStandaloneModeVersionInfo(),
 	)
 	if err := s.Start(ctx); err != nil {
 		log.Fatal("Can not start server", zap.Error(err))
@@ -195,11 +196,11 @@ func main() {
 	mux.Handle(config.APIPathPrefix, apiserver.Handler(s))
 	mux.Handle(config.SwaggerPathPrefix, swaggerserver.Handler())
 
-	utils.LogInfo()
+	utils.LogStandaloneModeInfo()
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
-	log.Info(fmt.Sprintf("UI:      http://127.0.0.1:%d/dashboard/", cliConfig.ListenPort))
-	log.Info(fmt.Sprintf("API:     http://127.0.0.1:%d/dashboard/api/", cliConfig.ListenPort))
-	log.Info(fmt.Sprintf("Swagger: http://127.0.0.1:%d/dashboard/api/swagger/", cliConfig.ListenPort))
+	log.Info(fmt.Sprintf("UI:      http://%s:%d/dashboard/", cliConfig.ListenHost, cliConfig.ListenPort))
+	log.Info(fmt.Sprintf("API:     http://%s:%d/dashboard/api/", cliConfig.ListenHost, cliConfig.ListenPort))
+	log.Info(fmt.Sprintf("Swagger: http://%s:%d/dashboard/api/swagger/", cliConfig.ListenHost, cliConfig.ListenPort))
 
 	srv := &http.Server{Handler: mux}
 	var wg sync.WaitGroup

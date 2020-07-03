@@ -8,18 +8,13 @@ import * as routing from '@lib/utils/routing'
 import * as auth from '@lib/utils/auth'
 import * as i18n from '@lib/utils/i18n'
 import * as apiClient from '@lib/utils/apiClient'
-import {
-  AppOptions,
-  saveAppOptions,
-  loadAppOptions,
-} from '@lib/utils/appOptions'
+import { saveAppOptions, loadAppOptions } from '@lib/utils/appOptions'
 import * as telemetry from '@lib/utils/telemetry'
 
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
 
 import AppDebugPlayground from '@lib/apps/DebugPlayground/index.meta'
-import AppDashboardSettings from '@lib/apps/DashboardSettings/index.meta'
 import AppUserProfile from '@lib/apps/UserProfile/index.meta'
 import AppOverview from '@lib/apps/Overview/index.meta'
 import AppKeyViz from '@lib/apps/KeyViz/index.meta'
@@ -29,8 +24,18 @@ import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
 import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
+import client, { InfoInfoResponse } from '@lib/client'
+import { Modal } from 'antd'
 
-async function main(options: AppOptions) {
+function removeSpinner() {
+  const spinner = document.getElementById('dashboard_page_spinner')
+  if (spinner) {
+    spinner.remove()
+  }
+}
+
+async function main() {
+  const options = loadAppOptions()
   if (options.lang) {
     i18next.changeLanguage(options.lang)
   }
@@ -39,7 +44,24 @@ async function main(options: AppOptions) {
   )
 
   apiClient.init()
-  await telemetry.init()
+
+  let info: InfoInfoResponse
+
+  try {
+    const i = await client.getInstance().getInfo()
+    info = i.data
+  } catch (e) {
+    Modal.error({
+      title: 'Failed to connect to TiDB Dashboard server',
+      content: e.stack,
+      okText: 'Reload',
+      onOk: () => window.location.reload(),
+    })
+    removeSpinner()
+    return
+  }
+
+  await telemetry.init(info)
 
   const registry = new AppRegistry(options)
 
@@ -63,7 +85,6 @@ async function main(options: AppOptions) {
 
   registry
     .register(AppDebugPlayground)
-    .register(AppDashboardSettings)
     .register(AppUserProfile)
     .register(AppOverview)
     .register(AppKeyViz)
@@ -79,10 +100,7 @@ async function main(options: AppOptions) {
   }
 
   window.addEventListener('single-spa:app-change', () => {
-    const spinner = document.getElementById('dashboard_page_spinner')
-    if (spinner) {
-      spinner.remove()
-    }
+    removeSpinner()
     if (!routing.isSignInPage()) {
       if (!auth.getAuthTokenAsBearer()) {
         singleSpa.navigateToUrl('#' + routing.signInRoute)
@@ -104,24 +122,19 @@ async function main(options: AppOptions) {
 
 /////////////////////////////////////
 
-function start() {
+if (routing.isPortalPage()) {
   // the portal page is only used to receive options
-  if (routing.isPortalPage()) {
-    function handleConfigEvent(event) {
+  window.addEventListener(
+    'message',
+    (event) => {
       const { token, lang, hideNav, redirectPath } = event.data
       auth.setAuthToken(token)
       saveAppOptions({ hideNav, lang })
-
-      // redirect
       window.location.hash = `#${redirectPath}`
       window.location.reload()
-    }
-
-    window.addEventListener('message', handleConfigEvent, { once: true })
-    return
-  }
-
-  main(loadAppOptions())
+    },
+    { once: true }
+  )
+} else {
+  main()
 }
-
-start()

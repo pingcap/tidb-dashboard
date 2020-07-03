@@ -8,7 +8,7 @@ import { CheckOutlined, CopyOutlined } from '@ant-design/icons'
 import styles from './index.module.less'
 
 export interface ICopyLinkProps {
-  data: string
+  data?: string
 }
 
 const translations = {

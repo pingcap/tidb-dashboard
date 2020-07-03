@@ -1,40 +1,117 @@
-import { Button } from 'antd'
-import React, { useEffect, useState } from 'react'
+import { Button, Form, Select, Space } from 'antd'
+import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LogoutOutlined } from '@ant-design/icons'
-
-import client, { InfoWhoAmIResponse } from '@lib/client'
-import { AnimatedSkeleton, Card, Head, Root } from '@lib/components'
+import {
+  Card,
+  Root,
+  AnimatedSkeleton,
+  Descriptions,
+  CopyLink,
+  TextWithInfo,
+} from '@lib/components'
 import * as auth from '@lib/utils/auth'
+import { ALL_LANGUAGES } from '@lib/utils/i18n'
+import _ from 'lodash'
+import { useClientRequest } from '@lib/utils/useClientRequest'
+import client from '@lib/client'
 
 function App() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
-  const [login, setLogin] = useState<InfoWhoAmIResponse | null>(null)
+  const handleLanguageChange = useCallback(
+    (langKey) => {
+      i18n.changeLanguage(langKey)
+    },
+    [i18n]
+  )
 
-  useEffect(() => {
-    async function getInfo() {
-      const resp = await client.getInstance().infoWhoamiGet()
-      if (resp.data) {
-        setLogin(resp.data)
-      }
-    }
-    getInfo()
-  }, [])
-
-  function handleLogout() {
+  const handleLogout = useCallback(() => {
     auth.clearAuthToken()
     window.location.reload()
-  }
+  }, [])
+
+  const { data, isLoading } = useClientRequest((cancelToken) =>
+    client.getInstance().getInfo({ cancelToken })
+  )
 
   return (
     <Root>
-      <Head title={t('user_profile.title', login || '...')} />
-      <Card>
-        <AnimatedSkeleton showSkeleton={!login}>
-          <Button danger onClick={handleLogout}>
-            <LogoutOutlined /> {t('user_profile.logout')}
-          </Button>
+      <Card title={t('user_profile.user.title')}>
+        <Button danger onClick={handleLogout}>
+          <LogoutOutlined /> {t('user_profile.user.sign_out')}
+        </Button>
+      </Card>
+      <Card title={t('user_profile.i18n.title')}>
+        <Form layout="vertical" initialValues={{ language: i18n.language }}>
+          <Form.Item name="language" label={t('user_profile.i18n.language')}>
+            <Select onChange={handleLanguageChange} style={{ width: 200 }}>
+              {_.map(ALL_LANGUAGES, (name, key) => {
+                return (
+                  <Select.Option key={key} value={key}>
+                    {name}
+                  </Select.Option>
+                )
+              })}
+            </Select>
+          </Form.Item>
+        </Form>
+      </Card>
+      <Card title={t('user_profile.version.title')}>
+        <AnimatedSkeleton showSkeleton={isLoading}>
+          {data && (
+            <Descriptions>
+              <Descriptions.Item
+                span={2}
+                label={
+                  <Space size="middle">
+                    <TextWithInfo.TransKey transKey="user_profile.version.internal_version" />
+                    <CopyLink data={data.version?.internal_version} />
+                  </Space>
+                }
+              >
+                {data.version?.internal_version}
+              </Descriptions.Item>
+              <Descriptions.Item
+                span={2}
+                label={
+                  <Space size="middle">
+                    <TextWithInfo.TransKey transKey="user_profile.version.build_git_hash" />
+                    <CopyLink data={data.version?.build_git_hash} />
+                  </Space>
+                }
+              >
+                {data.version?.build_git_hash}
+              </Descriptions.Item>
+              <Descriptions.Item
+                span={2}
+                label={
+                  <TextWithInfo.TransKey transKey="user_profile.version.build_time" />
+                }
+              >
+                {data.version?.build_time}
+              </Descriptions.Item>
+              <Descriptions.Item
+                span={2}
+                label={
+                  <TextWithInfo.TransKey transKey="user_profile.version.standalone" />
+                }
+              >
+                {String(data.version?.standalone)}
+              </Descriptions.Item>
+              <Descriptions.Item
+                span={2}
+                label={
+                  <Space size="middle">
+                    <TextWithInfo.TransKey transKey="user_profile.version.pd_version" />
+                    <CopyLink data={data.version?.pd_version} />
+                  </Space>
+                }
+              >
+                {data.version?.pd_version}
+              </Descriptions.Item>
+            </Descriptions>
+          )}
         </AnimatedSkeleton>
       </Card>
     </Root>

@@ -20,43 +20,39 @@ import (
 	"go.uber.org/zap"
 )
 
-// Version information.
-var (
-	InternalVersion = "Unknown"
-	PDVersion       = ""
-	BuildTS         = "Unknown"
-	GitHash         = "Unknown"
-	GitBranch       = "Unknown"
-)
-
 type VersionInfo struct {
 	InternalVersion string `json:"internal_version"`
+	Standalone      bool   `json:"standalone"`
 	PDVersion       string `json:"pd_version"`
 	BuildTime       string `json:"build_time"`
 	BuildGitHash    string `json:"build_git_hash"`
-	BuildGitBranch  string `json:"build_git_branch"`
 }
+
+// Version information.
+var (
+	StandaloneInternalVersion = "Unknown"
+	StandaloneBuildTS         = "Unknown"
+	StandaloneGitHash         = "Unknown"
+)
 
 func LogStandaloneModeInfo() {
 	log.Info("Welcome to TiDB Dashboard",
-		zap.String("internal-version", InternalVersion),
-		zap.String("git-hash", GitHash),
-		zap.String("git-branch", GitBranch),
-		zap.String("utc-build-time", BuildTS))
+		zap.String("internal-version", StandaloneInternalVersion),
+		zap.String("git-hash", StandaloneGitHash),
+		zap.String("utc-build-time", StandaloneBuildTS))
 }
 
 func PrintStandaloneModeInfo() {
-	fmt.Println("Internal Version:", InternalVersion)
-	fmt.Println("Git Commit Hash:", GitHash)
-	fmt.Println("Git Branch:", GitBranch)
-	fmt.Println("UTC Build Time: ", BuildTS)
+	fmt.Println("Internal Version:", StandaloneInternalVersion)
+	fmt.Println("Git Commit Hash:", StandaloneGitHash)
+	fmt.Println("UTC Build Time: ", StandaloneBuildTS)
 }
 
-func GetStandaloneModeVersionInfo() VersionInfo {
-	return VersionInfo{
-		InternalVersion: InternalVersion,
-		BuildTime:       BuildTS,
-		BuildGitHash:    GitHash,
-		BuildGitBranch:  GitBranch,
+func GetStandaloneModeVersionInfo() *VersionInfo {
+	return &VersionInfo{
+		Standalone:      true,
+		InternalVersion: StandaloneInternalVersion,
+		BuildTime:       StandaloneBuildTS,
+		BuildGitHash:    StandaloneGitHash,
 	}
 }

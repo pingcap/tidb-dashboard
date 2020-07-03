@@ -77,6 +77,7 @@ function TableWithFilter(
     <div
       className={cx(styles.tableWithFilterContainer, containerClassName)}
       style={containerStyle}
+      data-e2e="table-with-filter"
     >
       <Input
         placeholder={filterPlaceholder}

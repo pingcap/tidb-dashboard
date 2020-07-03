@@ -2,6 +2,7 @@ import '@lib/utils/wdyr'
 
 import * as singleSpa from 'single-spa'
 import i18next from 'i18next'
+import { Modal } from 'antd'
 
 import AppRegistry from '@lib/utils/registry'
 import * as routing from '@lib/utils/routing'
@@ -10,7 +11,9 @@ import * as i18n from '@lib/utils/i18n'
 import * as apiClient from '@lib/utils/apiClient'
 import { saveAppOptions, loadAppOptions } from '@lib/utils/appOptions'
 import * as telemetry from '@lib/utils/telemetry'
+import client, { InfoInfoResponse } from '@lib/client'
 
+import LayoutRoot from '@dashboard/layout/root'
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
 
@@ -24,8 +27,6 @@ import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
 import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
-import client, { InfoInfoResponse } from '@lib/client'
-import { Modal } from 'antd'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
@@ -66,8 +67,15 @@ async function main() {
   const registry = new AppRegistry(options)
 
   singleSpa.registerApplication(
+    'root',
+    AppRegistry.newReactSpaApp(() => LayoutRoot, 'root'),
+    () => true,
+    { registry }
+  )
+
+  singleSpa.registerApplication(
     'layout',
-    AppRegistry.newReactSpaApp(() => LayoutMain, 'root'),
+    AppRegistry.newReactSpaApp(() => LayoutMain, '__spa__main__'),
     () => {
       return !routing.isSignInPage()
     },
@@ -76,7 +84,7 @@ async function main() {
 
   singleSpa.registerApplication(
     'signin',
-    AppRegistry.newReactSpaApp(() => LayoutSignIn, 'root'),
+    AppRegistry.newReactSpaApp(() => LayoutSignIn, '__spa__main__'),
     () => {
       return routing.isSignInPage()
     },
@@ -100,7 +108,6 @@ async function main() {
   }
 
   window.addEventListener('single-spa:app-change', () => {
-    removeSpinner()
     if (!routing.isSignInPage()) {
       if (!auth.getAuthTokenAsBearer()) {
         singleSpa.navigateToUrl('#' + routing.signInRoute)
@@ -111,6 +118,7 @@ async function main() {
   window.addEventListener('single-spa:before-routing-event', () => {})
 
   window.addEventListener('single-spa:routing-event', () => {
+    removeSpinner()
     telemetry.mixpanel.register({
       $current_url: routing.getPathInLocationHash(),
     })

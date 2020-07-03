@@ -136,7 +136,7 @@ The followings are required for developing TiDB Dashboard:
 
 1. That's it! You can access TiDB Dashboard now:
 
-   TiDB Dashboard UI: http://127.0.0.1:3000
+   TiDB Dashboard UI: http://127.0.0.1:3001
 
    Swagger UI for TiDB Dashboard APIs: http://localhost:12333/dashboard/api/swagger
 

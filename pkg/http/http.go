@@ -29,14 +29,14 @@ const (
 	Timeout = time.Second * 3
 )
 
-func NewHTTPClientWithConf(lc fx.Lifecycle, conf *config.Config) *http.Client {
+func NewHTTPClientWithConf(lc fx.Lifecycle, config *config.Config) *http.Client {
 	cli := &http.Client{
 		Transport: &http.Transport{
 			DialTLS: func(network, addr string) (net.Conn, error) {
-				conn, err := tls.Dial(network, addr, conf.ClusterTLSConfig)
+				conn, err := tls.Dial(network, addr, config.ClusterTLSConfig)
 				return conn, err
 			},
-			TLSClientConfig: conf.ClusterTLSConfig,
+			TLSClientConfig: config.ClusterTLSConfig,
 		},
 		Timeout: Timeout,
 	}

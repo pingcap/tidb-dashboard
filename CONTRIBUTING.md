@@ -31,7 +31,7 @@ Declare the global environment variable:
    > After the installation, TiUP displays the absolute path of the corresponding `profile` file. You need to modify the following `source` command according to the path.
 
 ```bash
-source .bash_profile
+source ~/.bash_profile
 ```
 
 Start a local TiDB cluster:

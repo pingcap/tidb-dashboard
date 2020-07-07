@@ -1,5 +1,3 @@
-# FIXME: E2E tests are broken currently
-
 name: Test
 
 on:

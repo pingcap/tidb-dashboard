@@ -121,7 +121,6 @@ export default function MetricChart({
           ...getSeriesProps(type),
         })
       })
-      return s
     })
 
     return {
@@ -234,7 +233,6 @@ export default function MetricChart({
     inner = (
       <ReactEchartsCore
         echarts={echarts}
-        notMerge={true}
         lazyUpdate={true}
         style={{ height: HEIGHT }}
         option={opt}

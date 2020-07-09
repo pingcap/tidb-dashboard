@@ -34,7 +34,7 @@ function parseVersion(i: InfoInfoResponse) {
 
   if (i.version.pd_version) {
     // PD v4.0.1
-    return `PD v${i.version.pd_version}`
+    return `PD ${i.version.pd_version}`
   }
 }
 

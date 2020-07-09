@@ -20,7 +20,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type VersionInfo struct {
+type Info struct {
 	InternalVersion string `json:"internal_version"`
 	Standalone      string `json:"standalone"`
 	PDVersion       string `json:"pd_version"`
@@ -46,8 +46,8 @@ func Print() {
 		zap.String("build-git-hash", BuildGitHash))
 }
 
-func GetVersionInfo() *VersionInfo {
-	return &VersionInfo{
+func GetInfo() *Info {
+	return &Info{
 		InternalVersion: InternalVersion,
 		Standalone:      Standalone,
 		PDVersion:       PDVersion,

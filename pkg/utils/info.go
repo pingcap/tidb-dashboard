@@ -28,6 +28,15 @@ type VersionInfo struct {
 	BuildGitHash    string `json:"build_git_hash"`
 }
 
+func (v *VersionInfo) Print() {
+	log.Info("TiDB Dashboard started",
+		zap.String("internal-version", v.InternalVersion),
+		zap.Bool("standalone", v.Standalone),
+		zap.String("pd-version", v.PDVersion),
+		zap.String("build-time", v.BuildTime),
+		zap.String("build-git-hash", v.BuildGitHash))
+}
+
 // Version information.
 var (
 	StandaloneInternalVersion = "Unknown"
@@ -35,17 +44,10 @@ var (
 	StandaloneGitHash         = "Unknown"
 )
 
-func LogStandaloneModeInfo() {
-	log.Info("Welcome to TiDB Dashboard",
-		zap.String("internal-version", StandaloneInternalVersion),
-		zap.String("git-hash", StandaloneGitHash),
-		zap.String("utc-build-time", StandaloneBuildTS))
-}
-
 func PrintStandaloneModeInfo() {
-	fmt.Println("Internal Version:", StandaloneInternalVersion)
-	fmt.Println("Git Commit Hash:", StandaloneGitHash)
-	fmt.Println("UTC Build Time: ", StandaloneBuildTS)
+	fmt.Println("Internal Version: ", StandaloneInternalVersion)
+	fmt.Println("Git Commit Hash:  ", StandaloneGitHash)
+	fmt.Println("UTC Build Time:   ", StandaloneBuildTS)
 }
 
 func GetStandaloneModeVersionInfo() *VersionInfo {

@@ -196,7 +196,6 @@ func main() {
 	mux.Handle(config.APIPathPrefix, apiserver.Handler(s))
 	mux.Handle(config.SwaggerPathPrefix, swaggerserver.Handler())
 
-	utils.LogStandaloneModeInfo()
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))
 	log.Info(fmt.Sprintf("UI:      http://%s:%d/dashboard/", cliConfig.ListenHost, cliConfig.ListenPort))
 	log.Info(fmt.Sprintf("API:     http://%s:%d/dashboard/api/", cliConfig.ListenHost, cliConfig.ListenPort))

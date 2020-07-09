@@ -145,6 +145,8 @@ func (s *Service) Start(ctx context.Context) error {
 		return err
 	}
 
+	s.version.Print()
+
 	return nil
 }
 

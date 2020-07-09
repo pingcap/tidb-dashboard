@@ -97,7 +97,7 @@ function App() {
                   <TextWithInfo.TransKey transKey="user_profile.version.standalone" />
                 }
               >
-                {String(data.version?.standalone)}
+                {data.version?.standalone}
               </Descriptions.Item>
               <Descriptions.Item
                 span={2}

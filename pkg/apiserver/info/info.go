@@ -25,18 +25,17 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
-	pkgutils "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/version"
 )
 
 type Service struct {
 	config        *config.Config
 	db            *dbstore.DB
 	tidbForwarder *tidb.Forwarder
-	version       *pkgutils.VersionInfo
 }
 
-func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, version *pkgutils.VersionInfo) *Service {
-	return &Service{config: config, db: db, tidbForwarder: tidbForwarder, version: version}
+func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB) *Service {
+	return &Service{config: config, db: db, tidbForwarder: tidbForwarder}
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -48,9 +47,9 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 type InfoResponse struct { //nolint:golint
-	Version          *pkgutils.VersionInfo `json:"version"`
-	PDEndPoint       string                `json:"pd_end_point"`
-	DisableTelemetry bool                  `json:"disable_telemetry"`
+	Version          *version.VersionInfo `json:"version"`
+	PDEndPoint       string               `json:"pd_end_point"`
+	DisableTelemetry bool                 `json:"disable_telemetry"`
 }
 
 // @Summary Dashboard info
@@ -63,7 +62,7 @@ type InfoResponse struct { //nolint:golint
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
 	resp := InfoResponse{
-		Version:          s.version,
+		Version:          version.GetVersionInfo(),
 		PDEndPoint:       s.config.PDEndPoint,
 		DisableTelemetry: s.config.DisableTelemetry,
 	}

@@ -47,7 +47,7 @@ import (
 	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/version"
 )
 
 type DashboardCLIConfig struct {
@@ -91,7 +91,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 
 	flag.Parse()
 	if *showVersion {
-		utils.PrintStandaloneModeInfo()
+		version.PrintStandaloneModeInfo()
 		_ = log.Sync()
 		os.Exit(0)
 	}
@@ -183,7 +183,6 @@ func main() {
 		apiserver.StoppedHandler,
 		assets,
 		customKeyVisualProvider,
-		utils.GetStandaloneModeVersionInfo(),
 	)
 	if err := s.Start(ctx); err != nil {
 		log.Fatal("Can not start server", zap.Error(err))

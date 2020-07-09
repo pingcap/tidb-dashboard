@@ -44,6 +44,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/version"
 )
 
 func Handler(s *Service) http.Handler {
@@ -65,12 +66,11 @@ type Service struct {
 	customKeyVisualProvider *keyvisualregion.DataProvider
 	stoppedHandler          http.Handler
 	uiAssetFS               http.FileSystem
-	version                 *utils.VersionInfo
 
 	apiHandlerEngine *gin.Engine
 }
 
-func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS http.FileSystem, customKeyVisualProvider *keyvisualregion.DataProvider, version *utils.VersionInfo) *Service {
+func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS http.FileSystem, customKeyVisualProvider *keyvisualregion.DataProvider) *Service {
 	once.Do(func() {
 		// These global modification will be effective only for the first invoke.
 		_ = godotenv.Load()
@@ -83,7 +83,6 @@ func NewService(cfg *config.Config, stoppedHandler http.Handler, uiAssetFS http.
 		customKeyVisualProvider: customKeyVisualProvider,
 		stoppedHandler:          stoppedHandler,
 		uiAssetFS:               uiAssetFS,
-		version:                 version,
 	}
 }
 
@@ -145,7 +144,7 @@ func (s *Service) Start(ctx context.Context) error {
 		return err
 	}
 
-	s.version.Print()
+	version.Print()
 
 	return nil
 }
@@ -185,8 +184,8 @@ func (s *Service) handler(w http.ResponseWriter, r *http.Request) {
 	s.apiHandlerEngine.ServeHTTP(w, r)
 }
 
-func (s *Service) provideLocals() (*config.Config, http.FileSystem, *keyvisualregion.DataProvider, *utils.VersionInfo) {
-	return s.config, s.uiAssetFS, s.customKeyVisualProvider, s.version
+func (s *Service) provideLocals() (*config.Config, http.FileSystem, *keyvisualregion.DataProvider) {
+	return s.config, s.uiAssetFS, s.customKeyVisualProvider
 }
 
 func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGroup) {

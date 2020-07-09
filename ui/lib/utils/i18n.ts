@@ -47,6 +47,7 @@ i18next
   .init({
     resources: {}, // oh! this line is a big pitfall, we can't remove it, else it will cause strange crash!
     fallbackLng: 'en',
+    whitelist: ['zh-CN', 'en'],
     interpolation: {
       escapeValue: false,
     },

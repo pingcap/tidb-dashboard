@@ -16,24 +16,25 @@ function parseVersion(i: InfoInfoResponse) {
   if (!i.version) {
     return null
   }
-  if (i.version.standalone) {
+  if (i.version.standalone !== 'No') {
+    // For Standalone == Yes / Unknown, display internal version
     if (i.version.internal_version === 'nightly') {
       let vPrefix = i.version.internal_version
       if (i.version.build_git_hash) {
         vPrefix += `-${i.version.build_git_hash.substr(0, 8)}`
       }
-      // nightly-xxxxxxxx
+      // e.g. nightly-xxxxxxxx
       return vPrefix
     }
     if (i.version.internal_version) {
-      // v2020.07.01.1
+      // e.g. v2020.07.01.1
       return `v${i.version.internal_version}`
     }
     return null
   }
 
   if (i.version.pd_version) {
-    // PD v4.0.1
+    // e.g. PD v4.0.1
     return `PD ${i.version.pd_version}`
   }
 }

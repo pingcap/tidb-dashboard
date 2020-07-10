@@ -1,10 +1,10 @@
 import mixpanel from 'mixpanel-browser'
-import client from '@lib/client'
+import { InfoInfoResponse } from '@lib/client'
 import { getPathInLocationHash } from './routing'
 
 export { mixpanel }
 
-export async function init() {
+export async function init(info: InfoInfoResponse) {
   const token =
     process.env.REACT_APP_MIXPANEL_TOKEN || '00000000000000000000000000000000'
   let options = {
@@ -26,8 +26,7 @@ export async function init() {
   mixpanel.init(token, options)
   // disable mixpanel to report data immediately
   mixpanel.opt_out_tracking()
-  const res = await client.getInstance().getInfo()
-  if (res?.data?.disable_telemetry === false) {
+  if (info?.disable_telemetry === false) {
     mixpanel.register({
       $current_url: getPathInLocationHash(),
     })

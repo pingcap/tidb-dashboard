@@ -26,7 +26,7 @@ const (
 	statementsTable        = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
 	stmtEnableVar          = "tidb_enable_stmt_summary"
 	stmtRefreshIntervalVar = "tidb_stmt_summary_refresh_interval"
-	stmtHistroySizeVar     = "tidb_stmt_summary_history_size"
+	stmtHistorySizeVar     = "tidb_stmt_summary_history_size"
 )
 
 // How to get sql variables by GORM
@@ -68,7 +68,7 @@ func QueryStmtConfig(db *gorm.DB) (*Config, error) {
 		config.RefreshInterval = refreshInterval
 	}
 
-	historySize, err := querySQLIntVariable(db, stmtHistroySizeVar)
+	historySize, err := querySQLIntVariable(db, stmtHistorySizeVar)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func UpdateStmtConfig(db *gorm.DB, config *Config) (err error) {
 		if err != nil {
 			return
 		}
-		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtHistroySizeVar)
+		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtHistorySizeVar)
 		err = db.Exec(sql, config.HistorySize).Error
 	}
 	return

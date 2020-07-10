@@ -202,7 +202,7 @@ module.exports = override(
     javascriptEnabled: true,
     modifyVars: {
       '@primary-color': '#3351ff',
-      '@body-background': '#f0f2f5',
+      '@body-background': '#fff',
       '@tooltip-bg': 'rgba(0, 0, 0, 0.9)',
       '@tooltip-max-width': '500px',
     },

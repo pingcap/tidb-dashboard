@@ -3,18 +3,96 @@
   <head>
     <meta charset="utf-8" />
     <meta name="x-public-path-prefix" content="__PUBLIC_PATH_PREFIX__" />
-
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="TiDB Dashboard" />
-    <!-- prettier-ignore -->
-    <style>body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Fira Sans','Droid Sans','Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;background:#f0f2f5}#dashboard_page_spinner{font-size:10px;text-indent:-9999em;width:8em;height:8em;position:fixed;margin-left:-4em;margin-top:-4em;left:50%;top:50%;border-radius:50%;background:#a1d8f8;background:-moz-linear-gradient(left,#a1d8f8 10%,rgba(161,216,248,0) 42%);background:-webkit-linear-gradient(left,#a1d8f8 10%,rgba(161,216,248,0) 42%);background:-o-linear-gradient(left,#a1d8f8 10%,rgba(161,216,248,0) 42%);background:-ms-linear-gradient(left,#a1d8f8 10%,rgba(161,216,248,0) 42%);background:linear-gradient(to right,#a1d8f8 10%,rgba(161,216,248,0) 42%);-webkit-animation:load3 1.4s infinite linear;animation:load3 1.4s infinite linear;-webkit-transform:translateZ(0);-ms-transform:translateZ(0);transform:translateZ(0)}#dashboard_page_spinner:before{width:50%;height:50%;background:#a1d8f8;border-radius:100% 0 0 0;position:absolute;top:0;left:0;content:''}#dashboard_page_spinner:after{background:#f0f2f5;width:75%;height:75%;border-radius:50%;content:'';margin:auto;position:absolute;top:0;left:0;bottom:0;right:0}@-webkit-keyframes load3{0%{-webkit-transform:rotate(0);transform:rotate(0)}100%{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes load3{0%{-webkit-transform:rotate(0);transform:rotate(0)}100%{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}</style>
+    <style>
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background: #fff;
+      }
+
+      #dashboard_page_spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+      }
+
+      .dot-flashing {
+        position: relative;
+        width: 10px;
+        height: 10px;
+        border-radius: 5px;
+        background-color: #aaa;
+        -webkit-animation: dot-flashing 1s infinite linear alternate;
+        animation: dot-flashing 1s infinite linear alternate;
+        -webkit-animation-delay: 0.5s;
+        animation-delay: 0.5s;
+      }
+
+      .dot-flashing::before,
+      .dot-flashing::after {
+        content: '';
+        display: inline-block;
+        position: absolute;
+        top: 0;
+      }
+
+      .dot-flashing::before {
+        left: -15px;
+        width: 10px;
+        height: 10px;
+        border-radius: 5px;
+        background-color: #aaa;
+        -webkit-animation: dot-flashing 1s infinite alternate;
+        animation: dot-flashing 1s infinite alternate;
+        -webkit-animation-delay: 0s;
+        animation-delay: 0s;
+      }
+
+      .dot-flashing::after {
+        left: 15px;
+        width: 10px;
+        height: 10px;
+        border-radius: 5px;
+        background-color: #aaa;
+        -webkit-animation: dot-flashing 1s infinite alternate;
+        animation: dot-flashing 1s infinite alternate;
+        -webkit-animation-delay: 1s;
+        animation-delay: 1s;
+      }
+
+      @-webkit-keyframes dot-flashing {
+        0% {
+          background-color: #aaa;
+        }
+        50%,
+        100% {
+          background-color: #ddd;
+        }
+      }
+
+      @keyframes dot-flashing {
+        0% {
+          background-color: #aaa;
+        }
+        50%,
+        100% {
+          background-color: #ddd;
+        }
+      }
+    </style>
     <title>TiDB Dashboard</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <script src="%PUBLIC_URL%/checkBrowser.js"></script>
-    <div id="dashboard_page_spinner"></div>
+    <div id="dashboard_page_spinner"><div class="dot-flashing"></div></div>
     <div id="root"></div>
   </body>
 </html>

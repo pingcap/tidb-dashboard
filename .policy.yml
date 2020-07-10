@@ -1,3 +1,0 @@
-remote: pingcap-incubator/tidb-dashboard
-path: .github/.policy.yml
-ref: master

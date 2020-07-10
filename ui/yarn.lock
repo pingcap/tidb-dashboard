@@ -4997,7 +4997,7 @@ ecc-jsbn@~0.1.1:
     jsbn "~0.1.0"
     safer-buffer "^2.1.0"
 
-echarts-for-react@^2.0.15-beta.1:
+echarts-for-react@^2.0.16:
   version "2.0.16"
   resolved "https://registry.yarnpkg.com/echarts-for-react/-/echarts-for-react-2.0.16.tgz#8134a53dff90882c1e6a95c45ceab21e00f6c9f5"
   integrity sha512-VmHCktay2qKt/+wpL/C7thbvIa7dYBEey0/U4Zaqo+qeA4wx+uiCd5NeCsPIhD/0Pv+2qqNswqiNiUCtcgccOw==
@@ -5005,7 +5005,7 @@ echarts-for-react@^2.0.15-beta.1:
     fast-deep-equal "^2.0.1"
     size-sensor "^1.0.0"
 
-echarts@^4.7.0:
+echarts@^4.8.0:
   version "4.8.0"
   resolved "https://registry.yarnpkg.com/echarts/-/echarts-4.8.0.tgz#b2c1cfb9229b13d368ee104fc8eea600b574d4c4"
   integrity sha512-YwShpug8fWngj/RlgxDaYrLBoD+LsZUArrusjNPHpAF+is+gGe38xx4W848AwWMGoi745t3OXM52JedNrv+F6g==

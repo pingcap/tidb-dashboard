@@ -1,3 +1,14 @@
 user_profile:
-  title: 'User: {{username}}'
-  logout: Logout
+  i18n:
+    title: Language & Localization
+    language: Language
+  user:
+    title: User
+    sign_out: Sign Out
+  version:
+    title: Version Information
+    internal_version: TiDB Dashboard Internal Version
+    build_git_hash: TiDB Dashboard Build Git Hash
+    build_time: TiDB Dashboard Build Time
+    standalone: TiDB Dashboard Run in Standalone Mode
+    pd_version: PD Version

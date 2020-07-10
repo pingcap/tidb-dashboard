@@ -14,7 +14,7 @@ const useLoadingBar = () => {
   return loadingBar
 }
 
-export default function TopLoadinngBar() {
+export default function TopLoadingBar() {
   const loadingBar = useLoadingBar()
-  return <LoadingBar ref={loadingBar} />
+  return <LoadingBar color="#ffc53d" ref={loadingBar} />
 }

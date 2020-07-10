@@ -1,0 +1,3 @@
+# This file specifies the TiDB Dashboard internal version, which will be printed in `--version`
+# and UI. In release branch, changing this file will result in publishing a new version and tag.
+nightly

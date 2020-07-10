@@ -24,7 +24,7 @@ const translations = {
     expandText: 'Expand',
     collapseText: 'Collapse',
   },
-  'zh-CN': {
+  zh: {
     expandText: '展开',
     collapseText: '收起',
   },

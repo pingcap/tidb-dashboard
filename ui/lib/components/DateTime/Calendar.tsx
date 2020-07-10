@@ -22,7 +22,7 @@ const translations = {
     lastWeek: '[Last] dddd h:mm A',
     sameElse: 'lll',
   },
-  'zh-CN': {
+  zh: {
     sameDay: '[今天] HH:mm',
     nextDay: '[明天] HH:mm',
     nextWeek: '[下]dddd HH:mm',

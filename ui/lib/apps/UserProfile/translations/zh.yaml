@@ -1,3 +1,14 @@
 user_profile:
-  title: '用户: {{username}}'
-  logout: 登出
+  i18n:
+    title: 语言和本地化
+    language: 语言
+  user:
+    title: 用户
+    sign_out: 登出
+  version:
+    title: 版本信息
+    internal_version: TiDB Dashboard 内部版本号
+    build_git_hash: TiDB Dashboard 编译 Git Hash
+    build_time: TiDB Dashboard 编译时间
+    standalone: TiDB Dashboard 运行于独立模式
+    pd_version: PD 版本号

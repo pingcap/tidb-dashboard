@@ -25,7 +25,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
-	pkgutils "github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/version"
 )
 
 type Service struct {
@@ -47,9 +47,9 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 type InfoResponse struct { //nolint:golint
-	Version          pkgutils.VersionInfo `json:"version"`
-	PDEndPoint       string               `json:"pd_end_point"`
-	DisableTelemetry bool                 `json:"disable_telemetry"`
+	Version          *version.Info `json:"version"`
+	PDEndPoint       string        `json:"pd_end_point"`
+	DisableTelemetry bool          `json:"disable_telemetry"`
 }
 
 // @Summary Dashboard info
@@ -62,7 +62,7 @@ type InfoResponse struct { //nolint:golint
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
 	resp := InfoResponse{
-		Version:          pkgutils.GetVersionInfo(),
+		Version:          version.GetInfo(),
 		PDEndPoint:       s.config.PDEndPoint,
 		DisableTelemetry: s.config.DisableTelemetry,
 	}

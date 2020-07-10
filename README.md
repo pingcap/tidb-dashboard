@@ -64,6 +64,7 @@ Thank you to all the people who already contributed to TiDB Dashboard!
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Architecture
@@ -74,59 +75,6 @@ This repository contains both Dashboard HTTP API and Dashboard UI. Dashboard HTT
 TiDB Dashboard can also be integrated into PD, as follows:
 
 ![](etc/arch_overview.svg)
-
-## For Developers How to ...
-
-### Change the base URL of Dashboard API endpoint
-
-By default, the base URL of Dashboard API is `http://127.0.0.1:12333` if using `yarn start` to set
-up the dashboard for development. Sometimes you just want to change the URL for some reasons:
-
-1. Use `.env`
-
-   Add setting below into your `.env` file ( create one under `ui` if you don't have one already)
-
-   ```shell
-   REACT_APP_DASHBOARD_API_URL=your_new_endpoint
-   ```
-
-2. Use a environment variable
-
-   Use a scoped or global environment variable to specify the `REACT_APP_DASHBOARD_API_URL` for convienience.
-
-   ```shell
-   REACT_APP_DASHBOARD_API_URL=your_new_endpoint yarn start
-   ```
-
-### Keep session valid after rebooting the server
-
-By default, the session secret key is generated dynamically when the server starts. This results in
-invalidating your previously acquired session token. For easier development, you can supply a fixed
-session secret key by setting `DASHBOARD_SESSION_SECRET` in the environment variable or in `.env`
-file like:
-
-```env
-DASHBOARD_SESSION_SECRET=aaaaaaaaaabbbbbbbbbbccccccccccdd
-```
-
-The supplied secret key must be 32 bytes, otherwise it will not be effective.
-
-Note: the maximum lifetime of a token is 24 hours by default, so you still need to acquire token
-every 24 hours.
-
-### Supply session token in the Swagger UI
-
-1. Acquire a token first through `/user/login` in the Swagger UI.
-
-2. Click the "Authorize" button in the Swagger UI, set value to `Bearer xxxx` where `xxxx` is the
-   token you acquired in step 1.
-
-   <img src="etc/readme_howto_swagger_session.jpg" width="400">
-
-### Release new UI assets
-
-Simply modify `ui/.github_release_version`. The assets will be released automatically after your
-change is merged to master.
 
 ## License
 

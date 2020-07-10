@@ -1,14 +1,43 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons'
 import { useSize } from '@umijs/hooks'
 import Flexbox from '@g07cha/flexbox-react'
 import { useSpring, animated } from 'react-spring'
+import { useClientRequest } from '@lib/utils/useClientRequest'
+import client, { InfoInfoResponse } from '@lib/client'
 
 import { ReactComponent as Logo } from './logo-icon-light.svg'
 import styles from './Banner.module.less'
 
 const toggleWidth = 40
 const toggleHeight = 50
+
+function parseVersion(i: InfoInfoResponse) {
+  if (!i.version) {
+    return null
+  }
+  if (i.version.standalone !== 'No') {
+    // For Standalone == Yes / Unknown, display internal version
+    if (i.version.internal_version === 'nightly') {
+      let vPrefix = i.version.internal_version
+      if (i.version.build_git_hash) {
+        vPrefix += `-${i.version.build_git_hash.substr(0, 8)}`
+      }
+      // e.g. nightly-xxxxxxxx
+      return vPrefix
+    }
+    if (i.version.internal_version) {
+      // e.g. v2020.07.01.1
+      return `v${i.version.internal_version}`
+    }
+    return null
+  }
+
+  if (i.version.pd_version) {
+    // e.g. PD v4.0.1
+    return `PD ${i.version.pd_version}`
+  }
+}
 
 export default function ToggleBanner({
   fullWidth,
@@ -25,6 +54,17 @@ export default function ToggleBanner({
     left: collapsed ? 0 : fullWidth - toggleWidth,
     width: collapsed ? collapsedWidth : toggleWidth,
   })
+
+  const { data, isLoading } = useClientRequest((cancelToken) =>
+    client.getInstance().getInfo({ cancelToken })
+  )
+
+  const version = useMemo(() => {
+    if (data) {
+      return parseVersion(data)
+    }
+    return null
+  }, [data])
 
   return (
     <div className={styles.banner} onClick={onToggle}>
@@ -44,7 +84,8 @@ export default function ToggleBanner({
             <div className={styles.bannerContent}>
               <div className={styles.bannerTitle}>TiDB Dashboard</div>
               <div className={styles.bannerVersion}>
-                Dashboard version 4.0.2
+                {isLoading && '...'}
+                {!isLoading && (version || 'Version unknown')}
               </div>
             </div>
           </Flexbox>

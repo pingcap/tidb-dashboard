@@ -44,6 +44,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/version"
 )
 
 func Handler(s *Service) http.Handler {
@@ -142,6 +143,8 @@ func (s *Service) Start(ctx context.Context) error {
 		s.cleanAfterError()
 		return err
 	}
+
+	version.Print()
 
 	return nil
 }

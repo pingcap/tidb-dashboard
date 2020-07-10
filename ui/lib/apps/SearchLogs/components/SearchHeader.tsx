@@ -164,6 +164,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
         <InstanceSelect
           ref={instanceSelect}
           defaultSelectAll
+          enableTiFlash
           style={{ width: 300 }}
         />
       </Form.Item>

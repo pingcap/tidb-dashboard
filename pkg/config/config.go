@@ -39,8 +39,8 @@ type Config struct {
 	// TLS config for mTLS authentication between TiDB and MySQL client.
 	TiDBTLSConfig *tls.Config
 
-	// Disable client to report data for analysis
-	DisableTelemetry bool
+	// enable client to report data for analysis
+	EnableTelemetry bool
 }
 
 func (c *Config) NormalizePDEndPoint() error {

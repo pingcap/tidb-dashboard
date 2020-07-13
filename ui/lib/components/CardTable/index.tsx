@@ -1,4 +1,5 @@
-import { Checkbox, Alert } from 'antd'
+import { usePersistFn } from '@umijs/hooks'
+import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
   ColumnActionsMode,
@@ -11,9 +12,10 @@ import {
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import React, { useCallback, useMemo } from 'react'
-import { usePersistFn } from '@umijs/hooks'
+
 import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
+import ErrorBar from '../ErrorBar'
 
 import styles from './index.module.less'
 
@@ -65,13 +67,13 @@ function copyAndSort<T>(
     )
 }
 
-export interface ICardTableV2Props extends IDetailsListProps {
+export interface ICardTableProps extends IDetailsListProps {
   title?: React.ReactNode
   subTitle?: React.ReactNode
   className?: string
   style?: object
   loading?: boolean
-  errorMsg?: string
+  errors?: any[]
 
   cardExtra?: React.ReactNode
   cardNoMargin?: boolean
@@ -124,14 +126,14 @@ function dummyColumn(): IColumn {
   }
 }
 
-function CardTableV2(props: ICardTableV2Props) {
+export default function CardTable(props: ICardTableProps) {
   const {
     title,
     subTitle,
     className,
     style,
     loading = false,
-    errorMsg,
+    errors = [],
     cardExtra,
     cardNoMargin,
     cardNoMarginTop,
@@ -215,27 +217,20 @@ function CardTableV2(props: ICardTableV2Props) {
       noMarginTop={cardNoMarginTop}
       extra={cardExtra}
     >
-      <AnimatedSkeleton
-        showSkeleton={items.length === 0 && loading && !errorMsg}
-      >
-        {errorMsg ? (
-          <Alert message={errorMsg} type="error" showIcon />
-        ) : (
-          <div className={styles.cardTableContent}>
-            <MemoDetailsList
-              selectionMode={SelectionMode.none}
-              constrainMode={ConstrainMode.unconstrained}
-              layoutMode={DetailsListLayoutMode.justified}
-              onRenderRow={onRowClicked ? renderClickableRow : undefined}
-              columns={finalColumns}
-              items={finalItems}
-              {...restProps}
-            />
-          </div>
-        )}
+      <ErrorBar errors={errors} />
+      <AnimatedSkeleton showSkeleton={items.length === 0 && loading}>
+        <div className={styles.cardTableContent}>
+          <MemoDetailsList
+            selectionMode={SelectionMode.none}
+            constrainMode={ConstrainMode.unconstrained}
+            layoutMode={DetailsListLayoutMode.justified}
+            onRenderRow={onRowClicked ? renderClickableRow : undefined}
+            columns={finalColumns}
+            items={finalItems}
+            {...restProps}
+          />
+        </div>
       </AnimatedSkeleton>
     </Card>
   )
 }
-
-export default CardTableV2

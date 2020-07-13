@@ -45,7 +45,7 @@ function List() {
     loadingSlowQueries,
     slowQueries,
 
-    errorMsg,
+    errors,
   } = useSlowQuery()
 
   const [columns, setColumns] = useState<IColumn[]>([])
@@ -141,7 +141,7 @@ function List() {
           <SlowQueriesTable
             cardNoMarginTop
             loading={loadingSlowQueries}
-            errorMsg={errorMsg}
+            errors={errors}
             slowQueries={slowQueries}
             orderBy={orderOptions.orderBy}
             desc={orderOptions.desc}

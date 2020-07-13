@@ -1,6 +1,6 @@
 import client from '@lib/client'
 import { LogsearchTaskGroupModel } from '@lib/client'
-import { Head, CardTableV2, DateTime } from '@lib/components'
+import { Head, CardTable, DateTime } from '@lib/components'
 import { ArrowLeftOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import { Badge, Button, Modal, Space } from 'antd'
 import React, { useEffect, useState } from 'react'
@@ -213,7 +213,7 @@ export default function LogSearchingHistory() {
       />
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>
-          <CardTableV2
+          <CardTable
             cardNoMarginTop
             columns={columns}
             items={taskGroups || []}

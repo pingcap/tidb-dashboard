@@ -26,7 +26,7 @@ export async function init(info: InfoInfoResponse) {
   mixpanel.init(token, options)
   // disable mixpanel to report data immediately
   mixpanel.opt_out_tracking()
-  if (info?.disable_telemetry === false) {
+  if (info?.enable_telemetry === true) {
     mixpanel.register({
       $current_url: getPathInLocationHash(),
     })

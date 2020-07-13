@@ -59,12 +59,12 @@ Thank you to all the people who already contributed to TiDB Dashboard!
     <td align="center"><a href="https://github.com/yikeke"><img src="https://avatars1.githubusercontent.com/u/40977455?v=4" width="50px;" alt=""/></a></td>
     <td align="center"><a href="https://github.com/qxhy123"><img src="https://avatars2.githubusercontent.com/u/518969?v=4" width="50px;" alt=""/></a></td>
     <td align="center"><a href="http://www.rustin.cn"><img src="https://avatars0.githubusercontent.com/u/29879298?v=4" width="50px;" alt=""/></a></td>
+    <td align="center"><a href="https://github.com/ericsyh"><img src="https://avatars3.githubusercontent.com/u/10498732?v=4" width="50px;" alt=""/></a></td>
   </tr>
 </table>
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Architecture

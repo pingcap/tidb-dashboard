@@ -15,6 +15,7 @@ import React, { useCallback, useMemo } from 'react'
 
 import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
+import ErrorBar from '../ErrorBar'
 
 import styles from './index.module.less'
 
@@ -72,7 +73,7 @@ export interface ICardTableProps extends IDetailsListProps {
   className?: string
   style?: object
   loading?: boolean
-  errMessages?: string[]
+  errors?: any[]
 
   cardExtra?: React.ReactNode
   cardNoMargin?: boolean
@@ -132,7 +133,7 @@ export default function CardTable(props: ICardTableProps) {
     className,
     style,
     loading = false,
-    errMessages = [],
+    errors = [],
     cardExtra,
     cardNoMargin,
     cardNoMarginTop,
@@ -216,10 +217,7 @@ export default function CardTable(props: ICardTableProps) {
       noMarginTop={cardNoMarginTop}
       extra={cardExtra}
     >
-      {errMessages.map(
-        (msg, idx) =>
-          msg && <Alert key={idx} message={msg} type="error" showIcon />
-      )}
+      <ErrorBar errors={errors} />
       <AnimatedSkeleton showSkeleton={items.length === 0 && loading}>
         <div className={styles.cardTableContent}>
           <MemoDetailsList

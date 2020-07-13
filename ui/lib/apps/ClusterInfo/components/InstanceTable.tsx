@@ -79,19 +79,6 @@ export default function ListPage() {
   } = useClientRequest((cancelToken) =>
     client.getInstance().getPDTopology({ cancelToken })
   )
-  const errMessages = useMemo(() => {
-    let errMsgs: string[] = []
-    if (errTiDB) {
-      errMsgs.push('Load TiDB instances failed')
-    }
-    if (errStores) {
-      errMsgs.push('Load TiKV / TiFlash instances failed')
-    }
-    if (errPD) {
-      errMsgs.push('Load PD instances failed')
-    }
-    return errMsgs
-  }, [errTiDB, errStores, errPD])
 
   const [tableData, groupData] = useMemo(
     () =>
@@ -199,7 +186,7 @@ export default function ListPage() {
       columns={columns}
       items={tableData}
       groups={groupData}
-      errMessages={errMessages}
+      errors={[errTiDB, errStores, errPD]}
     />
   )
 }

@@ -18,7 +18,7 @@ export default function RecentSlowQueries() {
     slowQueries,
     queryTimeRange,
 
-    errorMsg,
+    errors,
   } = useSlowQuery({ ...DEF_SLOW_QUERY_OPTIONS, limit: 10 }, false)
 
   return (
@@ -30,7 +30,7 @@ export default function RecentSlowQueries() {
       orderBy={orderOptions.orderBy}
       desc={orderOptions.desc}
       onChangeOrder={changeOrder}
-      errMessages={[errorMsg]}
+      errors={errors}
       title={
         <Link to="/slow_query">
           {t('overview.recent_slow_query.title')} <RightOutlined />

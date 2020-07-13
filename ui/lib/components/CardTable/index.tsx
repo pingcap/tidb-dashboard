@@ -1,5 +1,5 @@
 import { usePersistFn } from '@umijs/hooks'
-import { Checkbox, Alert } from 'antd'
+import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {
   ColumnActionsMode,

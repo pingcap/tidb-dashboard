@@ -17,7 +17,7 @@ export default function RecentStatements() {
     loadingStatements,
     statements,
 
-    errorMsg,
+    errors,
   } = useStatement(undefined, false)
 
   return (
@@ -36,7 +36,7 @@ export default function RecentStatements() {
       orderBy={orderOptions.orderBy}
       desc={orderOptions.desc}
       onChangeOrder={changeOrder}
-      errMessages={[errorMsg]}
+      errors={errors}
       title={
         <Link to="/statement">
           {t('overview.top_statements.title')} <RightOutlined />

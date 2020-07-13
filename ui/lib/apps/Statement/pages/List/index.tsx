@@ -53,7 +53,7 @@ export default function StatementsOverview() {
     loadingStatements,
     statements,
 
-    errorMsg,
+    errors,
   } = useStatement()
 
   const [columns, setColumns] = useState<IColumn[]>([])
@@ -165,7 +165,7 @@ export default function StatementsOverview() {
             <StatementsTable
               cardNoMarginTop
               loading={loadingStatements}
-              errMessages={[errorMsg]}
+              errors={errors}
               statements={statements}
               timeRange={validTimeRange}
               orderBy={orderOptions.orderBy}

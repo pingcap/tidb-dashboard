@@ -12,7 +12,9 @@ export default function ErrorBar({ errors }: IErrorBarProps) {
     () =>
       _.uniq(
         _.map(errors, (err) => err?.response?.data?.message || err?.msg || '')
-      ).slice(0, 3),
+      )
+        .filter((msg) => msg !== '')
+        .slice(0, 3),
     [errors]
   )
 
@@ -23,7 +25,7 @@ export default function ErrorBar({ errors }: IErrorBarProps) {
   } else {
     return (
       <Alert
-        message="Error"
+        message="Errors"
         showIcon
         type="error"
         description={

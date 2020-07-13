@@ -18,7 +18,7 @@ const translations = {
     selected: '{{n}} selected',
     columnTitle: 'Items',
   },
-  'zh-CN': {
+  zh: {
     filterPlaceholder: '过滤',
     selected: '已选择 {{n}} 项',
     columnTitle: '选择项',

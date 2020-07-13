@@ -37,7 +37,7 @@ export function addTranslationResource(lang, translations) {
 }
 
 export const ALL_LANGUAGES = {
-  'zh-CN': '简体中文',
+  zh: '简体中文',
   en: 'English',
 }
 
@@ -47,6 +47,7 @@ i18next
   .init({
     resources: {}, // oh! this line is a big pitfall, we can't remove it, else it will cause strange crash!
     fallbackLng: 'en',
+    whitelist: ['zh', 'en'],
     interpolation: {
       escapeValue: false,
     },

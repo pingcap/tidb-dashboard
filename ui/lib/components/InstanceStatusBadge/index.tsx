@@ -15,7 +15,7 @@ const translations = {
       unreachable: 'Unreachable',
     },
   },
-  'zh-CN': {
+  zh: {
     status: {
       up: '在线',
       down: '离线',

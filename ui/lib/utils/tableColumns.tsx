@@ -15,7 +15,7 @@ const translations = {
     time: 'Time',
     desc: 'Description',
   },
-  'zh-CN': {
+  zh: {
     name: '名称',
     value: '值',
     time: '时间',

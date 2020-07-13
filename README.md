@@ -64,6 +64,7 @@ Thank you to all the people who already contributed to TiDB Dashboard!
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Architecture

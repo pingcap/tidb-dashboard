@@ -16,7 +16,7 @@ const translations = {
     text: 'Copy',
     success: 'Copied',
   },
-  'zh-CN': {
+  zh: {
     text: '复制',
     success: '已复制',
   },

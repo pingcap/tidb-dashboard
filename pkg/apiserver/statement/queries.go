@@ -176,14 +176,17 @@ func QueryStatementsOverview(
 
 	if len(text) > 0 {
 		lowerText := strings.ToLower(text)
-		query = query.Where(
-			`LOWER(digest_text) REGEXP ?
-			 OR LOWER(digest) REGEXP ?
-			 OR LOWER(schema_name) REGEXP ?
-			 OR LOWER(table_names) REGEXP ?
-			 OR LOWER(plan) REGEXP ?`,
-			lowerText, lowerText, lowerText, lowerText, lowerText,
-		)
+		arr := strings.Fields(lowerText)
+		for _, v := range arr {
+			query = query.Where(
+				`LOWER(digest_text) REGEXP ?
+				 OR LOWER(digest) REGEXP ?
+				 OR LOWER(schema_name) REGEXP ?
+				 OR LOWER(table_names) REGEXP ?
+				 OR LOWER(plan) REGEXP ?`,
+				v, v, v, v, v,
+			)
+		}
 	}
 
 	err = query.Find(&result).Error

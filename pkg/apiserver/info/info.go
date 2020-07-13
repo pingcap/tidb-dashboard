@@ -48,7 +48,6 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 type InfoResponse struct { //nolint:golint
 	Version         *version.Info `json:"version"`
-	PDEndPoint      string        `json:"pd_end_point"`
 	EnableTelemetry bool          `json:"enable_telemetry"`
 }
 
@@ -63,7 +62,6 @@ type InfoResponse struct { //nolint:golint
 func (s *Service) infoHandler(c *gin.Context) {
 	resp := InfoResponse{
 		Version:         version.GetInfo(),
-		PDEndPoint:      s.config.PDEndPoint,
 		EnableTelemetry: s.config.EnableTelemetry,
 	}
 	c.JSON(http.StatusOK, resp)

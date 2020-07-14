@@ -49,7 +49,9 @@
     "build:library": "gulp build:library",
     "test": "react-app-rewired test",
     "fmt": "prettier --write .",
-    "gen:browserlist": "gulp gen:browserlist"
+    "gen:browserlist": "gulp gen:browserlist",
+    "storybook": "start-storybook -p 9009 -s public",
+    "build-storybook": "build-storybook -s public"
   },
   "husky": {
     "hooks": {
@@ -72,6 +74,11 @@
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.8.3",
     "@openapitools/openapi-generator-cli": "^1.0.12-4.3.0",
+    "@storybook/addon-actions": "^5.3.19",
+    "@storybook/addon-links": "^5.3.19",
+    "@storybook/addons": "^5.3.19",
+    "@storybook/preset-create-react-app": "^3.1.4",
+    "@storybook/react": "^5.3.19",
     "@types/d3": "^5.7.2",
     "@types/lodash": "^4.14.149",
     "@types/node": "^13.11.1",

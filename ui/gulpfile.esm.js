@@ -25,14 +25,7 @@ task('webpack:dev', shell.task('yarn react-app-rewired start'))
 
 task('webpack:build', shell.task('yarn react-app-rewired build'))
 
-task(
-  'webpack:build:library',
-  shell.task('yarn react-app-rewired build --library')
-)
-
 task('build', series('swagger:generate', 'webpack:build'))
-
-task('build:library', series('swagger:generate', 'webpack:build:library'))
 
 task(
   'dev',

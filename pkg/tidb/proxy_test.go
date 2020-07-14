@@ -110,7 +110,25 @@ func TestProxyPick(t *testing.T) {
 	// Shutdown current server to see if we can pick a new one
 	ps.Close()
 	client := &http.Client{}
-	res, err := client.Get("http://" + l.Addr().String())
+	target := "http://" + l.Addr().String()
+	assertRespData(t, client, responseData, target)
+
+	// Remove current picked from remotes and test out picking
+	p.remotes.Delete(strconv.Itoa(currentPicked))
+	ps = servers[currentPicked]
+	if ps == nil {
+		t.Fatal("Fail to get current picked server")
+	}
+	ps.Close()
+	// First conn will be dropped as the current picked remote is deleted
+	_, err = client.Get(target)
+	assert.NotNil(t, err)
+	// Then pick a new remote
+	assertRespData(t, client, responseData, target)
+}
+
+func assertRespData(t *testing.T, client *http.Client, expect string, target string) {
+	res, err := client.Get(target)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,5 +136,5 @@ func TestProxyPick(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, responseData, string(data))
+	assert.Equal(t, expect, string(data))
 }

@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	Timeout = time.Second * 3
+	Timeout = time.Second * 10
 )
 
 func NewHTTPClientWithConf(lc fx.Lifecycle, config *config.Config) *http.Client {

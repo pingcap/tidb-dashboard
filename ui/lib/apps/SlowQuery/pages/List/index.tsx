@@ -12,7 +12,7 @@ import {
   IColumnKeys,
   TimeRangeSelector,
   Toolbar,
-  MultiSelect,
+  PlainMultiSelect,
 } from '@lib/components'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQuery from '../../utils/useSlowQuery'
@@ -69,7 +69,7 @@ function List() {
                 setQueryOptions({ ...queryOptions, timeRange })
               }
             />
-            <MultiSelect.Plain
+            <PlainMultiSelect
               placeholder={t(
                 'statement.pages.overview.toolbar.schemas.placeholder'
               )}

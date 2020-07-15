@@ -163,4 +163,4 @@ export default function MultiSelect<T extends IItem>(
   )
 }
 
-MultiSelect.Plain = PlainMultiSelect
+export { PlainMultiSelect }

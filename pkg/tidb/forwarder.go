@@ -16,7 +16,6 @@ package tidb
 import (
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -25,26 +24,17 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/go-sql-driver/mysql"
 	"github.com/joomcode/errorx"
-	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
 )
 
 var (
 	ErrPDAccessFailed = ErrNS.NewType("pd_access_failed")
 	ErrNoAliveTiDB    = ErrNS.NewType("no_alive_tidb")
 )
-
-type tidbServerInfo struct {
-	ID         string `json:"ddl_id"`
-	IP         string `json:"ip"`
-	Port       int    `json:"listening_port"`
-	StatusPort uint   `json:"status_port"`
-}
 
 type ForwarderConfig struct {
 	ClusterTLSConfig    *tls.Config
@@ -104,33 +94,6 @@ func (f *Forwarder) Start(ctx context.Context) error {
 	return nil
 }
 
-func (f *Forwarder) getServerInfo() ([]*tidbServerInfo, error) {
-	ctx, cancel := context.WithTimeout(f.lifecycleCtx, f.config.TiDBRetrieveTimeout)
-	resp, err := f.etcdClient.Get(ctx, pd.TiDBServerInformationPath, clientv3.WithPrefix())
-	cancel()
-
-	if err != nil {
-		log.Warn("Fail to get TiDB server info from PD", zap.Error(err))
-		return nil, ErrPDAccessFailed.WrapWithNoMessage(err)
-	}
-
-	allTiDB := make([]*tidbServerInfo, 0, len(resp.Kvs))
-	for _, kv := range resp.Kvs {
-		var info *tidbServerInfo
-		err = json.Unmarshal(kv.Value, &info)
-		if err != nil {
-			continue
-		}
-		allTiDB = append(allTiDB, info)
-	}
-	if len(allTiDB) == 0 {
-		log.Warn("No TiDB is alive now")
-		return nil, backoff.Permanent(ErrNoAliveTiDB.NewWithNoMessage())
-	}
-
-	return allTiDB, nil
-}
-
 func (f *Forwarder) createProxy() (*proxy, error) {
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -146,10 +109,10 @@ func (f *Forwarder) pollingForTiDB() {
 	bo := backoff.WithContext(ebo, f.lifecycleCtx)
 
 	for {
-		var allTiDB []*tidbServerInfo
+		var allTiDB []topology.TiDBInfo
 		err := backoff.Retry(func() error {
 			var err error
-			allTiDB, err = f.getServerInfo()
+			allTiDB, err = topology.FetchTiDBTopology(bo.Context(), f.etcdClient)
 			return err
 		}, bo)
 		if err != nil {

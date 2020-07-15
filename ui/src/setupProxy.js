@@ -11,7 +11,7 @@ const dashboardApiPrefix =
 module.exports = function (app) {
   // Proxy the `data.js` trick to the backend server.
   // Proxy http://localhost:3001/dashboard/api/diagnose/reports/*/data.js to
-  // http://http://127.0.0.1:12333/dashboard/api/diagnose/reports/*/data.js
+  // http://127.0.0.1:12333/dashboard/api/diagnose/reports/*/data.js
   app.use(
     '/',
     createProxyMiddleware('/dashboard/api/diagnose/reports/*/data.js', {

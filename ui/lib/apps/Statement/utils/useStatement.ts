@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
 import client, { StatementModel, StatementTimeRange } from '@lib/client'
-import getApiErrorsMsg from '@lib/utils/apiErrorsMsg'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 import {
@@ -78,7 +77,6 @@ export default function useStatement(
   }
 
   const [errors, setErrors] = useState<any[]>([])
-  const errorMsg = useMemo(() => getApiErrorsMsg(errors), [errors])
 
   function refresh() {
     setErrors([])
@@ -174,6 +172,5 @@ export default function useStatement(
     statements,
 
     errors,
-    errorMsg,
   }
 }

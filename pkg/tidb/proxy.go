@@ -135,7 +135,7 @@ func (p *proxy) serve(in net.Conn) {
 	in.Close()
 }
 
-// pick returns an active remote. If there
+// pick returns an active remote if there is any
 func (p *proxy) pick() *remote {
 	var picked *remote
 	if p.current == "" {
@@ -157,6 +157,8 @@ func (p *proxy) pick() *remote {
 		r, ok := p.remotes.Load(p.current)
 		if ok {
 			picked = r.(*remote)
+		} else {
+			p.current = ""
 		}
 	}
 	return picked

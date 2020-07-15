@@ -1,6 +1,6 @@
 import React from 'react'
 import { SlowquerySlowQuery } from '@lib/client'
-import { CardTableV2 } from '@lib/components'
+import { CardTable } from '@lib/components'
 import { timeValueColumns } from '@lib/utils/tableColumns'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'antd'
@@ -68,11 +68,6 @@ export default function TabBasic({ data }: ITabTimeProps) {
   ]
   const columns = timeValueColumns('slow_query.fields.', items)
   return (
-    <CardTableV2
-      cardNoMargin
-      columns={columns}
-      items={items}
-      extendLastColumn
-    />
+    <CardTable cardNoMargin columns={columns} items={items} extendLastColumn />
   )
 }

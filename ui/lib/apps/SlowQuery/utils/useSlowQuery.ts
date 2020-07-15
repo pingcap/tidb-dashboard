@@ -3,7 +3,6 @@ import { useSessionStorageState } from '@umijs/hooks'
 
 import client, { SlowqueryBase } from '@lib/client'
 import { calcTimeRange, TimeRange } from '@lib/components'
-import getApiErrorsMsg from '@lib/utils/apiErrorsMsg'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
@@ -73,7 +72,6 @@ export default function useSlowQuery(
   }
 
   const [errors, setErrors] = useState<any[]>([])
-  const errorMsg = useMemo(() => getApiErrorsMsg(errors), [errors])
 
   function refresh() {
     setErrors([])
@@ -133,6 +131,5 @@ export default function useSlowQuery(
     queryTimeRange,
 
     errors,
-    errorMsg,
   }
 }

@@ -13,7 +13,7 @@ const translations = {
     select: 'Select',
     reset: 'Reset',
   },
-  'zh-CN': {
+  zh: {
     trigger_text: '选择列',
     select: '选择',
     reset: '重置',

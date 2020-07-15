@@ -51,7 +51,7 @@ const translations = {
       status: 'Status',
     },
   },
-  'zh-CN': {
+  zh: {
     placeholder: '选择实例',
     filterPlaceholder: '过滤实例',
     selected: {

@@ -74,16 +74,20 @@ func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/logs")
-
-	endpoint.GET("/download", s.DownloadLogs)
-	endpoint.GET("/download/acquire_token", auth.MWAuthRequired(), s.GetDownloadToken)
-	endpoint.PUT("/taskgroup", auth.MWAuthRequired(), s.CreateTaskGroup)
-	endpoint.GET("/taskgroups", auth.MWAuthRequired(), s.GetAllTaskGroups)
-	endpoint.GET("/taskgroups/:id", auth.MWAuthRequired(), s.GetTaskGroup)
-	endpoint.GET("/taskgroups/:id/preview", auth.MWAuthRequired(), s.GetTaskGroupPreview)
-	endpoint.POST("/taskgroups/:id/retry", auth.MWAuthRequired(), s.RetryTask)
-	endpoint.POST("/taskgroups/:id/cancel", auth.MWAuthRequired(), s.CancelTask)
-	endpoint.DELETE("/taskgroups/:id", auth.MWAuthRequired(), s.DeleteTaskGroup)
+	{
+		endpoint.GET("/download", s.DownloadLogs)
+		endpoint.Use(auth.MWAuthRequired())
+		{
+			endpoint.GET("/download/acquire_token", s.GetDownloadToken)
+			endpoint.PUT("/taskgroup", s.CreateTaskGroup)
+			endpoint.GET("/taskgroups", s.GetAllTaskGroups)
+			endpoint.GET("/taskgroups/:id", s.GetTaskGroup)
+			endpoint.GET("/taskgroups/:id/preview", s.GetTaskGroupPreview)
+			endpoint.POST("/taskgroups/:id/retry", s.RetryTask)
+			endpoint.POST("/taskgroups/:id/cancel", s.CancelTask)
+			endpoint.DELETE("/taskgroups/:id", s.DeleteTaskGroup)
+		}
+	}
 }
 
 type CreateTaskGroupRequest struct {

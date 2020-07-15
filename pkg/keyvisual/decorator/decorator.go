@@ -29,7 +29,10 @@ type LabelKey struct {
 // LabelStrategy requires cross-border determination and key decoration scheme.
 type LabelStrategy interface {
 	ReloadConfig(cfg *config.KeyVisualConfig)
+	// CrossBorder determines whether two keys not belong to the same logical range.
 	CrossBorder(startKey, endKey string) bool
+	// Label returns the Label information of the key.
+	// Note: When the key is "", need to use LabelGlobalStart or LabelGlobalEnd.
 	Label(key string) LabelKey
 	LabelGlobalStart() LabelKey
 	LabelGlobalEnd() LabelKey

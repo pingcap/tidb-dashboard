@@ -2,7 +2,7 @@ import React from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementModel } from '@lib/client'
-import { CardTableV2, ShortValueWithTooltip } from '@lib/components'
+import { CardTable, ShortValueWithTooltip } from '@lib/components'
 import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabTxnProps {
@@ -54,11 +54,6 @@ export default function TabCopr({ data }: ITabTxnProps) {
   ]
   const columns = valueColumns('statement.fields.')
   return (
-    <CardTableV2
-      cardNoMargin
-      columns={columns}
-      items={items}
-      extendLastColumn
-    />
+    <CardTable cardNoMargin columns={columns} items={items} extendLastColumn />
   )
 }

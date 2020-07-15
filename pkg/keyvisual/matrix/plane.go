@@ -75,7 +75,7 @@ func (plane *Plane) Pixel(strategy Strategy, target int, displayTags []string) M
 		chunks[i] = createChunk(axis.Keys, axis.ValuesList[0])
 	}
 	compactChunk, helper := compact(strategy, chunks)
-	baseKeys := compactChunk.Divide(strategy, target).Keys
+	baseKeys := compactChunk.Divide(strategy, target, NotMergeLogicalRange).Keys
 	matrix := CreateMatrix(strategy, plane.Times, baseKeys, valuesListLen)
 
 	var wg sync.WaitGroup

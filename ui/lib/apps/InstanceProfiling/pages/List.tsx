@@ -10,7 +10,7 @@ import client, {
 } from '@lib/client'
 import {
   Card,
-  CardTableV2,
+  CardTable,
   InstanceSelect,
   IInstanceSelectRefProps,
 } from '@lib/components'
@@ -199,7 +199,7 @@ export default function Page() {
 
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>
-          <CardTableV2
+          <CardTable
             cardNoMarginTop
             loading={listLoading}
             items={historyTable || []}

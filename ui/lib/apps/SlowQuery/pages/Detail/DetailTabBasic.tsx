@@ -1,6 +1,6 @@
 import React from 'react'
 import { SlowquerySlowQuery } from '@lib/client'
-import { CardTableV2, DateTime } from '@lib/components'
+import { CardTable, DateTime } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { valueColumns } from '@lib/utils/tableColumns'
 
@@ -36,11 +36,6 @@ export default function TabBasic({ data }: ITabBasicProps) {
   ]
   const columns = valueColumns('slow_query.fields.')
   return (
-    <CardTableV2
-      cardNoMargin
-      columns={columns}
-      items={items}
-      extendLastColumn
-    />
+    <CardTable cardNoMargin columns={columns} items={items} extendLastColumn />
   )
 }

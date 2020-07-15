@@ -8,7 +8,7 @@ import { usePersistFn } from '@umijs/hooks'
 import type { TFunction } from 'i18next'
 
 import client, { DiagnoseReport } from '@lib/client'
-import { CardTableV2, DateTime } from '@lib/components'
+import { CardTable, DateTime } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
@@ -108,7 +108,7 @@ export default function DiagnoseHistory() {
   )
 
   return (
-    <CardTableV2
+    <CardTable
       cardNoMarginTop
       loading={isLoading}
       items={data || []}

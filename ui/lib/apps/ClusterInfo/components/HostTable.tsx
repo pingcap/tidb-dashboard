@@ -6,7 +6,7 @@ import { WarningOutlined } from '@ant-design/icons'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client from '@lib/client'
-import { Bar, CardTableV2, Pre } from '@lib/components'
+import { Bar, CardTable, Pre } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
 const { Text } = Typography
@@ -201,7 +201,7 @@ System: ${getValueFormat('percentunit')(system)}`
   ]
 
   return (
-    <CardTableV2
+    <CardTable
       cardNoMargin
       loading={isLoading}
       columns={columns}

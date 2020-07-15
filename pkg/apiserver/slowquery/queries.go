@@ -150,12 +150,16 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
 
 	if req.Text != "" {
 		lowerStr := strings.ToLower(req.Text)
-		tx = tx.Where("txn_start_ts REGEXP ? OR LOWER(digest) REGEXP ? OR LOWER(CONVERT(prev_stmt USING utf8)) REGEXP ? OR LOWER(CONVERT(query USING utf8)) REGEXP ?",
-			lowerStr,
-			lowerStr,
-			lowerStr,
-			lowerStr,
-		)
+		arr := strings.Fields(lowerStr)
+		for _, v := range arr {
+			tx = tx.Where(
+				`txn_start_ts REGEXP ?
+				 OR LOWER(digest) REGEXP ?
+				 OR LOWER(CONVERT(prev_stmt USING utf8)) REGEXP ?
+				 OR LOWER(CONVERT(query USING utf8)) REGEXP ?`,
+				v, v, v, v,
+			)
+		}
 	}
 
 	if len(req.DB) > 0 {

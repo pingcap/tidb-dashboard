@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { SlowquerySlowQuery } from '@lib/client'
-import { CardTableV2, ShortValueWithTooltip } from '@lib/components'
+import { CardTable, ShortValueWithTooltip } from '@lib/components'
 import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabCoprProps {
@@ -33,11 +33,6 @@ export default function TabCopr({ data }: ITabCoprProps) {
   ]
   const columns = valueColumns('slow_query.fields.')
   return (
-    <CardTableV2
-      cardNoMargin
-      columns={columns}
-      items={items}
-      extendLastColumn
-    />
+    <CardTable cardNoMargin columns={columns} items={items} extendLastColumn />
   )
 }

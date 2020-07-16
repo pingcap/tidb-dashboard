@@ -14,7 +14,7 @@ import {
   ColumnsSelector,
   IColumnKeys,
   Toolbar,
-  PlainMultiSelect,
+  MultiSelect,
 } from '@lib/components'
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
@@ -82,7 +82,7 @@ export default function StatementsOverview() {
                 })
               }
             />
-            <PlainMultiSelect
+            <MultiSelect.Plain
               placeholder={t(
                 'statement.pages.overview.toolbar.schemas.placeholder'
               )}
@@ -100,7 +100,7 @@ export default function StatementsOverview() {
               }
               items={allSchemas}
             />
-            <PlainMultiSelect
+            <MultiSelect.Plain
               placeholder={t(
                 'statement.pages.overview.toolbar.statement_types.placeholder'
               )}

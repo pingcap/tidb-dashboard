@@ -21,7 +21,7 @@ export const longContent = () => (
   />
 )
 
-export const disabledContent = () => (
+export const disabled = () => (
   <BaseSelect
     disabled
     dropdownRender={() => <div>Content</div>}

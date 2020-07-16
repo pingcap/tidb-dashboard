@@ -1,9 +1,9 @@
 import React from 'react'
 import { Button } from 'antd'
-import BaseSelect from './'
+import BaseSelect from '.'
 
 export default {
-  title: 'Base Select',
+  title: 'Select/Base Select',
 }
 
 export const shortContent = () => (

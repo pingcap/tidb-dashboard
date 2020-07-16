@@ -2,7 +2,7 @@ import React from 'react'
 import { Select } from 'antd'
 
 export default {
-  title: 'Antd Select',
+  title: 'Select/Antd Select',
 }
 
 export const normal = () => (

@@ -11,8 +11,8 @@ function StoryRoot({ children }) {
     client
       .getInstance()
       .userLoginPost({
-        username: 'root',
-        password: '',
+        username: 'root', // TODO: put to env
+        password: '', // TODO: put to env
         is_tidb_auth: true,
       })
       .then((r) => auth.setAuthToken(r.data.token))

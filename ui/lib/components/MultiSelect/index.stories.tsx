@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Pre } from '@lib/components'
 
-import MultiSelect from './'
+import MultiSelect from '.'
 
 export default {
   title: 'Select/Multi Select',

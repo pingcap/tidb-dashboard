@@ -26,9 +26,9 @@ curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh
 
 Declare the global environment variable:
 
-   > **Note:**
-   >
-   > After the installation, TiUP displays the absolute path of the corresponding `profile` file. You need to modify the following `source` command according to the path.
+> **Note:**
+>
+> After the installation, TiUP displays the absolute path of the corresponding `profile` file. You need to modify the following `source` command according to the path.
 
 ```bash
 source ~/.bash_profile
@@ -161,6 +161,17 @@ cd ui/tests
 yarn
 yarn test
 ```
+
+### Step 5. Run Storybook Playground (optional)
+
+After finishing the above steps, we can run the storybook playground by following commands:
+
+```bash
+cd ui
+yarn storybook
+```
+
+You can add more stories for your components to the playground.
 
 ## Contribution flow
 

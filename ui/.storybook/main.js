@@ -1,7 +1,7 @@
 const path = require('path')
 
 function includeMorePaths(config) {
-  // fine rule to handle *.tsx files
+  // find rule to handle *.tsx files
   for (const rule of config.module.rules) {
     for (const subRule of rule.oneOf || []) {
       // /\.(js|mjs|jsx|ts|tsx)$/

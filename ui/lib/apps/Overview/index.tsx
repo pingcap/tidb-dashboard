@@ -65,7 +65,7 @@ function Latency() {
 export default function App() {
   return (
     <Root>
-      <ConfigProvider locale={i18next.language == 'en' ? enUS : zhCN}>
+      <ConfigProvider locale={i18next.language === 'en' ? enUS : zhCN}>
         <Router>
           <Row>
             <Col span={18}>

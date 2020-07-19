@@ -12,7 +12,7 @@ import zhCN from 'antd/es/locale/zh_CN'
 export default function () {
   return (
     <Root>
-      <ConfigProvider locale={i18next.language == 'en' ? enUS : zhCN}>
+      <ConfigProvider locale={i18next.language === 'en' ? enUS : zhCN}>
         <Router>
           <Routes>
             <Route path="/search_logs" element={<LogSearch />} />

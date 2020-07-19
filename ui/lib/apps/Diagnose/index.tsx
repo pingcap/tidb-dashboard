@@ -11,7 +11,7 @@ import zhCN from 'antd/es/locale/zh_CN'
 
 const App = () => (
   <Root>
-    <ConfigProvider locale={i18next.language == 'en' ? enUS : zhCN}>
+    <ConfigProvider locale={i18next.language === 'en' ? enUS : zhCN}>
       <Router>
         <Routes>
           <Route path="/diagnose" element={<DiagnoseGenerator />} />

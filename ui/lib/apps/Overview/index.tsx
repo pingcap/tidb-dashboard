@@ -10,6 +10,11 @@ import Instances from './components/Instances'
 import RecentStatements from './components/RecentStatements'
 import RecentSlowQueries from './components/RecentSlowQueries'
 
+import { ConfigProvider } from 'antd'
+import i18next from 'i18next'
+import enUS from 'antd/es/locale/en_US'
+import zhCN from 'antd/es/locale/zh_CN'
+
 function QPS() {
   const { t } = useTranslation()
 
@@ -60,20 +65,22 @@ function Latency() {
 export default function App() {
   return (
     <Root>
-      <Router>
-        <Row>
-          <Col span={18}>
-            <QPS />
-            <Latency />
-            <RecentStatements />
-            <RecentSlowQueries />
-          </Col>
-          <Col span={6}>
-            <Instances />
-            <MonitorAlert />
-          </Col>
-        </Row>
-      </Router>
+      <ConfigProvider locale={i18next.language == 'en' ? enUS : zhCN}>
+        <Router>
+          <Row>
+            <Col span={18}>
+              <QPS />
+              <Latency />
+              <RecentStatements />
+              <RecentSlowQueries />
+            </Col>
+            <Col span={6}>
+              <Instances />
+              <MonitorAlert />
+            </Col>
+          </Row>
+        </Router>
+      </ConfigProvider>
     </Root>
   )
 }

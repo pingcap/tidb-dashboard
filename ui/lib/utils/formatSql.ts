@@ -1,4 +1,4 @@
-import sqlFormatter from 'sql-formatter-plus-plus'
+import sqlFormatter from 'sql-formatter-plus'
 
 export default function formatSql(sql?: string): string {
   return sqlFormatter.format(sql || '', { uppercase: true })

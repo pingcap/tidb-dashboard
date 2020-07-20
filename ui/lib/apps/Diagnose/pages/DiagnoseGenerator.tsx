@@ -1,4 +1,4 @@
-import { Button, Form, Input, InputNumber, message, Select, Switch } from 'antd'
+import { Button, Form, Input, InputNumber, message, Select } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -8,8 +8,6 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import client from '@lib/client'
 import { Card } from '@lib/components'
 import { DatePicker } from '@lib/components'
-
-import DiagnoseHistory from '../components/DiagnoseHistory'
 
 const useFinishHandler = (navigate) => {
   return async (fieldsValue) => {
@@ -109,31 +107,6 @@ export default function DiagnoseGenerator() {
               </Form.Item>
             </Input.Group>
           </Form.Item>
-          <Form.Item
-            name="isCompare"
-            valuePropName="checked"
-            label={t('diagnose.generate.is_compare')}
-          >
-            <Switch />
-          </Form.Item>
-          <Form.Item
-            noStyle
-            shouldUpdate={(prev, cur) => prev.isCompare !== cur.isCompare}
-          >
-            {({ getFieldValue }) => {
-              return (
-                getFieldValue('isCompare') && (
-                  <Form.Item
-                    name="compareRangeBegin"
-                    rules={[{ required: true }]}
-                    label={t('diagnose.generate.compare_range_begin')}
-                  >
-                    <DatePicker showTime />
-                  </Form.Item>
-                )
-              )
-            }}
-          </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">
               {t('diagnose.generate.submit')}
@@ -143,9 +116,7 @@ export default function DiagnoseGenerator() {
       </Card>
 
       <div style={{ height: '100%', position: 'relative' }}>
-        <ScrollablePane>
-          <DiagnoseHistory />
-        </ScrollablePane>
+        <ScrollablePane></ScrollablePane>
       </div>
     </div>
   )

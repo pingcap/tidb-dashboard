@@ -30,7 +30,7 @@ Customizations.applySettings({ theme })
 
 export default function Root({ children }) {
   return (
-    <ConfigProvider locale={i18next.language == 'en' ? enUS : zhCN}>
+    <ConfigProvider locale={i18next.language === 'en' ? enUS : zhCN}>
       {children}
     </ConfigProvider>
   )

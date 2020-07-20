@@ -1,9 +1,9 @@
 import { SafetyCertificateOutlined } from '@ant-design/icons'
 
 export default {
-  id: 'diagnose',
-  routerPrefix: '/diagnose',
+  id: 'system_report',
+  routerPrefix: '/system_report',
   icon: SafetyCertificateOutlined,
   translations: require.context('./translations/', false, /\.yaml$/),
-  reactRoot: () => import(/* webpackChunkName: "app_diagnose" */ '.'),
+  reactRoot: () => import(/* webpackChunkName: "app_system_report" */ '.'),
 }

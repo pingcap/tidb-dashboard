@@ -34,7 +34,7 @@ const useFinishHandler = (navigate) => {
         compare_start_time,
         compare_end_time,
       })
-      navigate(`/diagnose/${res.data}`)
+      navigate(`/system_report/${res.data}`)
     } catch (error) {
       message.error(error.message)
     }
@@ -50,7 +50,7 @@ export default function DiagnoseGenerator() {
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Card title={t('diagnose.generate.title')}>
+      <Card title={t('system_report.generate.title')}>
         <Form
           layout="inline"
           onFinish={handleFinish}
@@ -59,11 +59,14 @@ export default function DiagnoseGenerator() {
           <Form.Item
             name="rangeBegin"
             rules={[{ required: true }]}
-            label={t('diagnose.generate.range_begin')}
+            label={t('system_report.generate.range_begin')}
           >
             <DatePicker showTime />
           </Form.Item>
-          <Form.Item label={t('diagnose.generate.range_duration')} required>
+          <Form.Item
+            label={t('system_report.generate.range_duration')}
+            required
+          >
             <Input.Group compact>
               <Form.Item
                 name="rangeDuration"
@@ -77,7 +80,7 @@ export default function DiagnoseGenerator() {
                     </Select.Option>
                   ))}
                   <Select.Option value={0}>
-                    {t('diagnose.time_duration.custom')}
+                    {t('system_report.time_duration.custom')}
                   </Select.Option>
                 </Select>
               </Form.Item>
@@ -112,7 +115,7 @@ export default function DiagnoseGenerator() {
           <Form.Item
             name="isCompare"
             valuePropName="checked"
-            label={t('diagnose.generate.is_compare')}
+            label={t('system_report.generate.is_compare')}
           >
             <Switch />
           </Form.Item>
@@ -126,7 +129,7 @@ export default function DiagnoseGenerator() {
                   <Form.Item
                     name="compareRangeBegin"
                     rules={[{ required: true }]}
-                    label={t('diagnose.generate.compare_range_begin')}
+                    label={t('system_report.generate.compare_range_begin')}
                   >
                     <DatePicker showTime />
                   </Form.Item>
@@ -136,7 +139,7 @@ export default function DiagnoseGenerator() {
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">
-              {t('diagnose.generate.submit')}
+              {t('system_report.generate.submit')}
             </Button>
           </Form.Item>
         </Form>

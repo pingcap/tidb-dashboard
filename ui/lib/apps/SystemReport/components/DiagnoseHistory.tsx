@@ -14,14 +14,14 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 
 const tableColumns = (t: TFunction): IColumn[] => [
   {
-    name: t('diagnose.list_table.id'),
+    name: t('system_report.list_table.id'),
     key: 'id',
     fieldName: 'id',
     minWidth: 200,
     maxWidth: 350,
   },
   {
-    name: t('diagnose.list_table.diagnose_create_time'),
+    name: t('system_report.list_table.diagnose_create_time'),
     key: 'created_at',
     minWidth: 100,
     maxWidth: 200,
@@ -32,7 +32,7 @@ const tableColumns = (t: TFunction): IColumn[] => [
     ),
   },
   {
-    name: t('diagnose.list_table.status'),
+    name: t('system_report.list_table.status'),
     key: 'progress',
     minWidth: 100,
     maxWidth: 150,
@@ -41,21 +41,21 @@ const tableColumns = (t: TFunction): IColumn[] => [
         return (
           <Badge
             status="processing"
-            text={t('diagnose.list_table.status_running')}
+            text={t('system_report.list_table.status_running')}
           />
         )
       } else {
         return (
           <Badge
             status="success"
-            text={t('diagnose.list_table.status_finish')}
+            text={t('system_report.list_table.status_finish')}
           />
         )
       }
     },
   },
   {
-    name: t('diagnose.list_table.range'),
+    name: t('system_report.list_table.range'),
     key: 'start_time',
     minWidth: 200,
     maxWidth: 350,
@@ -74,7 +74,7 @@ const tableColumns = (t: TFunction): IColumn[] => [
     },
   },
   {
-    name: t('diagnose.list_table.compare_range'),
+    name: t('system_report.list_table.compare_range'),
     key: 'compare_start_time',
     minWidth: 200,
     maxWidth: 350,
@@ -103,7 +103,7 @@ export default function DiagnoseHistory() {
 
   const handleRowClick = usePersistFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
-      openLink(`/diagnose/${rec.id}`, ev, navigate)
+      openLink(`/system_report/${rec.id}`, ev, navigate)
     }
   )
 

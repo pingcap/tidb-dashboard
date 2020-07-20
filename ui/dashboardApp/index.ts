@@ -22,6 +22,7 @@ import AppOverview from '@lib/apps/Overview/index.meta'
 import AppKeyViz from '@lib/apps/KeyViz/index.meta'
 import AppStatement from '@lib/apps/Statement/index.meta'
 import AppSystemReport from '@lib/apps/SystemReport/index.meta'
+import AppDiagnose from '@lib/apps/Diagnose/index.meta'
 import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
 import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
@@ -97,6 +98,7 @@ async function main() {
     .register(AppStatement)
     .register(AppClusterInfo)
     .register(AppSystemReport)
+    .register(AppDiagnose)
     .register(AppSearchLogs)
     .register(AppInstanceProfiling)
     .register(AppSlowQuery)

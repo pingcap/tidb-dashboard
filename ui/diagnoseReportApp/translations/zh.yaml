@@ -192,7 +192,7 @@ diagnosis:
         pd_region_heartbeat: 每个 TiKV 实例中心跳的耗时，标签是"服务地址"。
         etcd_wal_fsync: etcd 将 WAL 写入持久存储器的耗时，标签是"实例"。
         pd_peer_round_trip: 网络的延迟，标签是"实例"。
-        tikv_grpc_message: gRPC 报文的 TiKV 句柄的耗时，标签是"类型"。
+        tikv_grpc_message: gRPC 报文的 TiKV 处理耗时，标签是"类型"。
         tikv_cop_request: Coprocessor 处理读请求的时间开销，标签是"请求"。
         tikv_cop_handle: 处理 Coprocessor 请求的时间开销，标签是"请求"。
         tikv_cop_wait: Coprocessor 请求等待处理的耗时，标签是"请求"。

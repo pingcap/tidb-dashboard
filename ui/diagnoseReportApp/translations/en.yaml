@@ -191,7 +191,7 @@ diagnosis:
         pd_region_heartbeat: The time cost of heartbeats in each TiKV instance. The label is [address].
         etcd_wal_fsync: The time cost of etcd writing WAL into the persistent storage. The label is [instance].
         pd_peer_round_trip: The latency of the network. The label is [To].
-        tikv_grpc_message: The time cost of TiKV handle of gRPC message. The label is [type].
+        tikv_grpc_message: The time cost of handling TiKV gRPC messages. The label is [type].
         tikv_cop_request: The time cost of Coprocessor handling read requests. The label is [req].
         tikv_cop_handle: The time cost of handling Coprocessor requests. The label is [req].
         tikv_cop_wait: The time cost of Coprocessor requests that wait for being handled. The label is [req].

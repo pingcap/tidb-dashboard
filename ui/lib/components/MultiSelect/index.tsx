@@ -47,9 +47,7 @@ export interface IMultiSelectProps<T>
   columnTitle?: string
 }
 
-export default function MultiSelect<T extends IItem>(
-  props: IMultiSelectProps<T>
-) {
+function MultiSelect<T extends IItem>(props: IMultiSelectProps<T>) {
   const [internalVal, setInternalVal] = useControllableValue<string[]>(props)
   const setInternalValPersist = usePersistFn(setInternalVal)
   const {
@@ -164,3 +162,5 @@ export default function MultiSelect<T extends IItem>(
 }
 
 MultiSelect.Plain = PlainMultiSelect
+
+export default MultiSelect

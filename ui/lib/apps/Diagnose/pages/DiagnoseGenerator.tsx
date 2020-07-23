@@ -16,23 +16,15 @@ const useFinishHandler = (navigate) => {
     if (fieldsValue['rangeDuration'] === 0) {
       range_duration = fieldsValue['rangeDurationCustom']
     }
-    const is_compare = fieldsValue['isCompare']
-    const compare_range_begin = fieldsValue['compareRangeBegin']
 
     const end_time = start_time + range_duration * 60
-    const compare_start_time = is_compare ? compare_range_begin.unix() : 0
-    const compare_end_time = is_compare
-      ? compare_start_time + range_duration * 60
-      : 0
 
     try {
-      const res = await client.getInstance().diagnoseReportsPost({
+      await client.getInstance().diagnoseDiagnosisPost({
         start_time,
         end_time,
-        compare_start_time,
-        compare_end_time,
+        kind: 'profile',
       })
-      navigate(`/diagnose/${res.data}`)
     } catch (error) {
       message.error(error.message)
     }

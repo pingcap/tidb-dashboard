@@ -14,6 +14,7 @@ export default function DiagnosisTable({
   kind,
 }: IDiagnosisTableProps) {
   const [columns, setColumns] = useState<IColumn[]>([])
+  const [items, setItems] = useState<any[]>([])
 
   useEffect(() => {
     async function getData() {
@@ -28,15 +29,25 @@ export default function DiagnosisTable({
         })
         console.log('res.data:', res.data)
 
-        const _columns =
+        const _columns: IColumn[] =
           res?.data?.column?.map((col) => ({
             key: col,
             name: col,
             fieldName: col,
             minWidth: 100,
           })) || []
-        console.log('_columns:', _columns)
         setColumns(_columns)
+
+        const _items: any[] =
+          res?.data?.rows?.map((row) => {
+            let obj = {}
+            row.values?.forEach((v, idx) => {
+              const key = _columns[idx].name
+              obj[key] = v
+            })
+            return obj
+          }) || []
+        setItems(_items)
       } catch (error) {
         message.error(error.message)
       }
@@ -49,7 +60,7 @@ export default function DiagnosisTable({
       title={`${kind} diagnosis`}
       cardExtra={<Button>Start</Button>}
       columns={columns}
-      items={[]}
+      items={items}
     />
   )
 }

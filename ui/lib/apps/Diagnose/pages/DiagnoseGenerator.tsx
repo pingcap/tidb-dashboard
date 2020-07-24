@@ -1,16 +1,20 @@
-import { Button, Form, Input, InputNumber, message, Select } from 'antd'
+import { Button, Form, Input, InputNumber, Select } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import client from '@lib/client'
 import { Card } from '@lib/components'
 import { DatePicker } from '@lib/components'
+import DiagnosisTable from '../components/DiagnosisTable'
 
-const useFinishHandler = (navigate) => {
-  return async (fieldsValue) => {
+const DURATIONS = [5, 10, 30, 60, 24 * 60]
+
+export default function DiagnoseGenerator() {
+  const { t } = useTranslation()
+  const [timeRange, setTimeRange] = useState<[number, number]>([0, 0])
+
+  async function handleFinish(fieldsValue) {
     const start_time = fieldsValue['rangeBegin'].unix()
     let range_duration = fieldsValue['rangeDuration']
     if (fieldsValue['rangeDuration'] === 0) {
@@ -18,25 +22,8 @@ const useFinishHandler = (navigate) => {
     }
 
     const end_time = start_time + range_duration * 60
-
-    try {
-      await client.getInstance().diagnoseDiagnosisPost({
-        start_time,
-        end_time,
-        kind: 'profile',
-      })
-    } catch (error) {
-      message.error(error.message)
-    }
+    setTimeRange([start_time, end_time])
   }
-}
-
-const DURATIONS = [5, 10, 30, 60, 24 * 60]
-
-export default function DiagnoseGenerator() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const handleFinish = useFinishHandler(navigate)
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -108,7 +95,11 @@ export default function DiagnoseGenerator() {
       </Card>
 
       <div style={{ height: '100%', position: 'relative' }}>
-        <ScrollablePane></ScrollablePane>
+        <ScrollablePane>
+          <DiagnosisTable timeRange={timeRange} kind="config" />
+          <DiagnosisTable timeRange={timeRange} kind="error" />
+          <DiagnosisTable timeRange={timeRange} kind="profile" />
+        </ScrollablePane>
       </div>
     </div>
   )

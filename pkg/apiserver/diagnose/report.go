@@ -29,20 +29,20 @@ import (
 )
 
 type TableDef struct {
-	Category       []string // The category of the table, such as [TiDB]
-	Title          string
-	Comment        string // English Comment
+	Category       []string `json:"category"` // The category of the table, such as [TiDB]
+	Title          string   `json:"title"`
+	Comment        string   `json:"comment"`
 	joinColumns    []int
 	compareColumns []int
-	Column         []string // Column name
-	Rows           []TableRowDef
+	Column         []string      `json:"column"`
+	Rows           []TableRowDef `json:"rows"`
 }
 
 type TableRowDef struct {
-	Values    []string
-	SubValues [][]string // SubValues need fold default.
+	Values    []string   `json:"values"`
+	SubValues [][]string `json:"sub_values"` // SubValues need fold default.
 	ratio     float64
-	Comment   string
+	Comment   string `json:"comment"`
 }
 
 func (t TableDef) ColumnWidth() []int {

@@ -30,11 +30,13 @@ export default function DiagnosisTable({
         })
         console.log('res.data:', res.data)
 
+        const _columns =
+          res?.data?.column?.map((col) => col.toLocaleLowerCase()) || []
         const _items: any[] =
           res?.data?.rows?.map((row) => {
             let obj = {}
             row.values?.forEach((v, idx) => {
-              const key = columns[idx].fieldName || ''
+              const key = _columns[idx]
               obj[key] = v
             })
             return obj

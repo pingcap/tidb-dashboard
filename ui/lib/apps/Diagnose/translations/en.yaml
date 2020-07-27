@@ -26,3 +26,13 @@ diagnose:
     progress: Progress
   time_duration:
     custom: Custom
+  fields:
+    rule: Rule
+    item: Item
+    type: Type
+    instance: Instance
+    status_address: Status Address
+    value: Value
+    reference: Reference
+    severity: Severity
+    details: Details

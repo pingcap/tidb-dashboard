@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { CardTable } from '@lib/components'
 import { Button, message } from 'antd'
-import client, { DiagnoseTableDef, DiagnoseTableRowDef } from '@lib/client'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import client from '@lib/client'
+
+import { diagnosisColumns } from '../utils/tableColumns'
 
 export interface IDiagnosisTableProps {
   timeRange: [number, number]
@@ -13,8 +14,8 @@ export default function DiagnosisTable({
   timeRange,
   kind,
 }: IDiagnosisTableProps) {
-  const [columns, setColumns] = useState<IColumn[]>([])
   const [items, setItems] = useState<any[]>([])
+  const columns = useMemo(() => diagnosisColumns(items), [items])
 
   useEffect(() => {
     async function getData() {
@@ -29,20 +30,11 @@ export default function DiagnosisTable({
         })
         console.log('res.data:', res.data)
 
-        const _columns: IColumn[] =
-          res?.data?.column?.map((col) => ({
-            key: col,
-            name: col,
-            fieldName: col,
-            minWidth: 100,
-          })) || []
-        setColumns(_columns)
-
         const _items: any[] =
           res?.data?.rows?.map((row) => {
             let obj = {}
             row.values?.forEach((v, idx) => {
-              const key = _columns[idx].name
+              const key = columns[idx].fieldName || ''
               obj[key] = v
             })
             return obj
@@ -53,7 +45,7 @@ export default function DiagnosisTable({
       }
     }
     getData()
-  }, [timeRange])
+  }, [timeRange, kind])
 
   return (
     <CardTable

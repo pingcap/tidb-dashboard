@@ -28,19 +28,6 @@ function commonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`slow_query.fields.${fieldName}`} />
 }
 
-// temporary not used
-// function connectionIDColumn(
-//   _rows?: { connection_id?: number }[] // used for type check only
-// ): IColumn {
-//   return {
-//     name: commonColumnName('connection_id'),
-//     key: 'connection_id',
-//     fieldName: 'connection_id',
-//     minWidth: 100,
-//     maxWidth: 120,
-//   }
-// }
-
 function sqlColumn(
   _rows?: { query?: string }[], // used for type check only
   showFullSQL?: boolean

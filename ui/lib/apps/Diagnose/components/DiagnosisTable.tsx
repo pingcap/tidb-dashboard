@@ -28,8 +28,6 @@ export default function DiagnosisTable({
           end_time: timeRange[1],
           kind,
         })
-        console.log('res.data:', res.data)
-
         const _columns =
           res?.data?.column?.map((col) => col.toLocaleLowerCase()) || []
         const _items: any[] =
@@ -55,6 +53,7 @@ export default function DiagnosisTable({
       cardExtra={<Button>Start</Button>}
       columns={columns}
       items={items}
+      extendLastColumn
     />
   )
 }

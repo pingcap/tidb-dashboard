@@ -8,132 +8,84 @@ function commonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`diagnose.fields.${fieldName}`} />
 }
 
-function ruleColumn(_rows?: { rule?: string }[]): IColumn {
+function commonColumn(fieldName: string, minWidth: number, maxWidth?: number) {
   return {
-    name: commonColumnName('rule'),
-    key: 'rule',
-    fieldName: 'rule',
-    minWidth: 100,
-    maxWidth: 150,
-  }
-}
-
-function itemColumn(_rows?: { item?: string }[]): IColumn {
-  return {
-    name: commonColumnName('item'),
-    key: '_item',
-    fieldName: 'item',
-    minWidth: 100,
-    maxWidth: 120,
+    name: commonColumnName(fieldName),
+    key: fieldName,
+    fieldName,
+    minWidth,
+    maxWidth,
     onRender: (rec) => (
-      <Tooltip title={rec.item}>
-        <TextWrap>{rec.item}</TextWrap>
+      <Tooltip title={rec[fieldName]}>
+        <TextWrap>{rec[fieldName]}</TextWrap>
       </Tooltip>
     ),
   }
 }
 
-function typeColumn(_rows?: { type?: string }[]): IColumn {
-  return {
-    name: commonColumnName('type'),
-    key: '_type',
-    fieldName: 'type',
-    minWidth: 80,
-    maxWidth: 100,
-  }
+function ruleColumn(): IColumn {
+  return commonColumn('rule', 100, 150)
 }
 
-function instanceColumn(_rows?: { instance?: number }[]): IColumn {
-  return {
-    name: commonColumnName('instance'),
-    key: 'instance',
-    fieldName: 'instance',
-    minWidth: 100,
-    maxWidth: 200,
-    onRender: (rec) => (
-      <Tooltip title={rec.instance}>
-        <TextWrap>{rec.instance}</TextWrap>
-      </Tooltip>
-    ),
-  }
+function itemColumn(): IColumn {
+  return commonColumn('item', 100, 150)
 }
 
-function statusAddressColumn(_rows?: { status_address?: number }[]): IColumn {
-  return {
-    name: commonColumnName('status_address'),
-    key: 'status_address',
-    fieldName: 'status_address',
-    minWidth: 100,
-    maxWidth: 200,
-    onRender: (rec) => (
-      <Tooltip title={rec.status_address}>
-        <TextWrap>{rec.status_address}</TextWrap>
-      </Tooltip>
-    ),
-  }
+function typeColumn(): IColumn {
+  return commonColumn('type', 60, 80)
 }
 
-function valueColumn(_rows?: { value?: string }[]): IColumn {
-  return {
-    name: commonColumnName('value'),
-    key: '_value',
-    fieldName: 'value',
-    minWidth: 100,
-    maxWidth: 150,
-    onRender: (rec) => (
-      <Tooltip title={rec.value}>
-        <TextWrap>{rec.value}</TextWrap>
-      </Tooltip>
-    ),
-  }
+function instanceColumn(): IColumn {
+  return commonColumn('instance', 100, 200)
 }
 
-function referenceColumn(_rows?: { reference?: string }[]): IColumn {
-  return {
-    name: commonColumnName('reference'),
-    key: 'reference',
-    fieldName: 'reference',
-    minWidth: 100,
-    maxWidth: 150,
-  }
+function statusAddressColumn(): IColumn {
+  return commonColumn('status_address', 100, 200)
 }
 
-function severityColumn(_rows?: { severity?: string }[]): IColumn {
-  return {
-    name: commonColumnName('severity'),
-    key: 'severity',
-    fieldName: 'severity',
-    minWidth: 100,
-    maxWidth: 150,
-  }
+function valueColumn(): IColumn {
+  return commonColumn('value', 100, 150)
 }
 
-function detailsColumn(_rows?: { details?: string }[]): IColumn {
-  return {
-    name: commonColumnName('details'),
-    key: 'details',
-    fieldName: 'details',
-    minWidth: 200,
-    onRender: (rec) => (
-      <Tooltip title={rec.details}>
-        <TextWrap>{rec.details}</TextWrap>
-      </Tooltip>
-    ),
-  }
+function referenceColumn(): IColumn {
+  return commonColumn('reference', 100, 150)
+}
+
+function severityColumn(): IColumn {
+  return commonColumn('severity', 100, 120)
+}
+
+function detailsColumn(): IColumn {
+  return commonColumn('details', 200)
+}
+
+function categoryColumn(): IColumn {
+  return commonColumn('category', 100, 200)
+}
+
+function tableColumn(): IColumn {
+  return commonColumn('table', 100, 200)
+}
+
+function errorColumn(): IColumn {
+  return commonColumn('error', 200)
 }
 
 //////////////////////////////////////////
 
 export function diagnosisColumns(rows: any[]): IColumn[] {
+  if (rows.length > 0 && rows[0].error) {
+    return [categoryColumn(), tableColumn(), errorColumn()]
+  }
   return [
-    ruleColumn(rows),
-    itemColumn(rows),
-    typeColumn(rows),
-    instanceColumn(rows),
-    statusAddressColumn(rows),
-    valueColumn(rows),
-    referenceColumn(rows),
-    severityColumn(rows),
-    detailsColumn(rows),
+    ruleColumn(),
+    itemColumn(),
+    typeColumn(),
+    instanceColumn(),
+    statusAddressColumn(),
+    valueColumn(),
+    referenceColumn(),
+    severityColumn(),
+    detailsColumn(),
   ]
 }

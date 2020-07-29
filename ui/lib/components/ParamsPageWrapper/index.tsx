@@ -6,7 +6,7 @@ export default function ParamsPageWrapper({
 }: {
   children: ReactNode
 }) {
-  const search = useLocation().search
+  const { search } = useLocation()
   if (React.isValidElement(children)) {
     return React.cloneElement(children, { key: search })
   }

@@ -6,8 +6,9 @@ export default function useSearchParam(
   defValue: string = ''
 ): string {
   const { search } = useLocation()
-  const id = useMemo(() => new URLSearchParams(search).get(key) || defValue, [
-    search,
-  ])
-  return id
+  const param = useMemo(
+    () => new URLSearchParams(search).get(key) || defValue,
+    [search]
+  )
+  return param
 }

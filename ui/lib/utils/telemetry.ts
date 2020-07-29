@@ -29,6 +29,7 @@ export async function init(info: InfoInfoResponse) {
   if (info?.enable_telemetry) {
     mixpanel.register({
       $current_url: getPathInLocationHash(),
+      dashboard_version: info.version?.internal_version,
     })
     mixpanel.opt_in_tracking()
   }

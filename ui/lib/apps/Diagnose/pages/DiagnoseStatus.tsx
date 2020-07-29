@@ -1,20 +1,18 @@
 import { Button, Descriptions, Progress } from 'antd'
-import React, { useMemo } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client from '@lib/client'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { AnimatedSkeleton, DateTime, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
+import useSearchParam from '@lib/utils/useSearchParam'
 
 function DiagnoseStatus() {
   const { t } = useTranslation()
-  const { search } = useLocation()
-  const id = useMemo(() => new URLSearchParams(search).get('id') || '', [
-    search,
-  ])
+  const id = useSearchParam('id')
 
   const { data: report, isLoading } = useClientRequestWithPolling(
     (cancelToken) =>

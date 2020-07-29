@@ -8,11 +8,11 @@ import client from '@lib/client'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { AnimatedSkeleton, DateTime, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
-import useSearchParam from '@lib/utils/useSearchParam'
+import useQueryParams from '@lib/utils/useQueryParams'
 
 function DiagnoseStatus() {
   const { t } = useTranslation()
-  const id = useSearchParam('id')
+  const { id } = useQueryParams()
 
   const { data: report, isLoading } = useClientRequestWithPolling(
     (cancelToken) =>

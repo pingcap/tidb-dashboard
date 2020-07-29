@@ -9,7 +9,7 @@ import client from '@lib/client'
 import { CardTable, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
-import useSearchParam from '@lib/utils/useSearchParam'
+import useQueryParams from '@lib/utils/useQueryParams'
 
 function mapData(data) {
   if (!data) {
@@ -38,7 +38,7 @@ function isFinished(data) {
 
 export default function Page() {
   const { t } = useTranslation()
-  const id = useSearchParam('id')
+  const { id } = useQueryParams()
 
   const { data: respData, isLoading } = useClientRequestWithPolling(
     (cancelToken) =>

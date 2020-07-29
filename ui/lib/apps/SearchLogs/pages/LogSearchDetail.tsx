@@ -10,11 +10,11 @@ import { Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { SearchHeader, SearchProgress, SearchResult } from '../components'
 import { TaskState } from '../utils'
-import useSearchParam from '@lib/utils/useSearchParam'
+import useQueryParams from '@lib/utils/useQueryParams'
 
 export default function LogSearchingDetail() {
   const { t } = useTranslation()
-  const id = useSearchParam('id')
+  const { id } = useQueryParams()
   const [reloadKey, setReloadKey] = useState(false)
 
   function toggleReload() {

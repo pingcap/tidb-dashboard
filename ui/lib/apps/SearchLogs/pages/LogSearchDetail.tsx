@@ -13,7 +13,10 @@ import { TaskState } from '../utils'
 
 export default function LogSearchingDetail() {
   const { t } = useTranslation()
-  const id = new URLSearchParams(useLocation().search).get('id') || ''
+  const { search } = useLocation()
+  const id = useMemo(() => new URLSearchParams(search).get('id') || '', [
+    search,
+  ])
   const [reloadKey, setReloadKey] = useState(false)
 
   function toggleReload() {

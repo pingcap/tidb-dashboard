@@ -37,7 +37,10 @@ function isFinished(data) {
 
 export default function Page() {
   const { t } = useTranslation()
-  const id = new URLSearchParams(useLocation().search).get('id') || ''
+  const { search } = useLocation()
+  const id = useMemo(() => new URLSearchParams(search).get('id') || '', [
+    search,
+  ])
 
   const { data: respData, isLoading } = useClientRequestWithPolling(
     (cancelToken) =>

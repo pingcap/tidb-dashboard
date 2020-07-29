@@ -103,7 +103,7 @@ export default function DiagnoseHistory() {
 
   const handleRowClick = usePersistFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
-      openLink(`/diagnose/${rec.id}`, ev, navigate)
+      openLink(`/diagnose/detail?id=${rec.id}`, ev, navigate)
     }
   )
 

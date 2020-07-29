@@ -1,7 +1,7 @@
 import { Badge, Button, Progress } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { usePersistFn } from '@umijs/hooks'
 
@@ -37,7 +37,7 @@ function isFinished(data) {
 
 export default function Page() {
   const { t } = useTranslation()
-  const { id } = useParams()
+  const id = new URLSearchParams(useLocation().search)['id']
 
   const { data: respData, isLoading } = useClientRequestWithPolling(
     (cancelToken) =>

@@ -89,7 +89,7 @@ export default function Page() {
 
   const handleRowClick = usePersistFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
-      openLink(`/instance_profiling/${rec.id}`, ev, navigate)
+      openLink(`/instance_profiling/detail?id=${rec.id}`, ev, navigate)
     }
   )
 

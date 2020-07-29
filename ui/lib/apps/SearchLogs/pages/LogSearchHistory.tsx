@@ -85,7 +85,7 @@ export default function LogSearchingHistory() {
       return
     }
     return (
-      <Link to={`/search_logs/detail/${taskGroup.id}`}>
+      <Link to={`/search_logs/detail?id=${taskGroup.id}`}>
         {t('search_logs.history.detail')}
       </Link>
     )

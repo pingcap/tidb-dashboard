@@ -10,7 +10,7 @@ import { AnimatedSkeleton, DateTime, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 
 function DiagnoseStatus() {
-  const id = new URLSearchParams(useLocation().search)['id']
+  const id = new URLSearchParams(useLocation().search).get('id') || ''
   const { t } = useTranslation()
 
   const { data: report, isLoading } = useClientRequestWithPolling(

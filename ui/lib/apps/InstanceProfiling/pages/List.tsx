@@ -75,7 +75,7 @@ export default function Page() {
       }
       try {
         const res = await client.getInstance().startProfiling(req)
-        navigate(`/instance_profiling/${res.data.id}`)
+        navigate(`/instance_profiling/detail?id=${res.data.id}`)
       } catch (e) {
         // FIXME
         Modal.error({

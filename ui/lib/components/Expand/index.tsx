@@ -1,7 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { addTranslationResource } from '@lib/utils/i18n'
-// import ReactResizeDetector from 'react-resize-detector'
 
 export interface IExpandProps {
   expanded?: boolean
@@ -11,12 +10,7 @@ export interface IExpandProps {
 
 function Expand({ collapsedContent, children, expanded }: IExpandProps) {
   // FIXME: Animations
-  return (
-    <div>
-      {expanded ? children : collapsedContent ?? children}
-      {/* <ReactResizeDetector handleHeight onResize={handleResize} /> */}
-    </div>
-  )
+  return <div>{expanded ? children : collapsedContent ?? children}</div>
 }
 
 const translations = {

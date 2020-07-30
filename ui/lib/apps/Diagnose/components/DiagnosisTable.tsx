@@ -18,7 +18,7 @@ export default function DiagnosisTable({
   unstableTimeRange,
   kind,
 }: IDiagnosisTableProps) {
-  const [interalTimeRange, setInternalTimeRange] = useState<[number, number]>([
+  const [internalTimeRange, setInternalTimeRange] = useState<[number, number]>([
     0,
     0,
   ])
@@ -26,19 +26,23 @@ export default function DiagnosisTable({
   function handleStart() {
     setInternalTimeRange(unstableTimeRange)
   }
+  const timeChanged = useMemo(
+    () => internalTimeRange[0] !== unstableTimeRange[0],
+    [internalTimeRange, unstableTimeRange]
+  )
 
   const [items, setItems] = useState<any[]>([])
   const columns = useMemo(() => diagnosisColumns(items), [items])
 
   useEffect(() => {
     async function getData() {
-      if (interalTimeRange[0] === 0 || interalTimeRange[1] === 0) {
+      if (internalTimeRange[0] === 0 || internalTimeRange[1] === 0) {
         return
       }
       try {
         const res = await client.getInstance().diagnoseDiagnosisPost({
-          start_time: interalTimeRange[0],
-          end_time: interalTimeRange[1],
+          start_time: internalTimeRange[0],
+          end_time: internalTimeRange[1],
           kind,
         })
         const _columns =
@@ -58,12 +62,12 @@ export default function DiagnosisTable({
       }
     }
     getData()
-  }, [interalTimeRange, kind])
+  }, [internalTimeRange, kind])
 
   return (
     <CardTable
       title={`${kind} diagnosis`}
-      cardExtra={<Button onClick={handleStart}>Start</Button>}
+      cardExtra={timeChanged && <Button onClick={handleStart}>Start</Button>}
       columns={columns}
       items={items}
       extendLastColumn

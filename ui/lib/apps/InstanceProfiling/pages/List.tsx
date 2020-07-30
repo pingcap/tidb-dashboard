@@ -75,7 +75,7 @@ export default function Page() {
       }
       try {
         const res = await client.getInstance().startProfiling(req)
-        navigate(`/instance_profiling/${res.data.id}`)
+        navigate(`/instance_profiling/detail?id=${res.data.id}`)
       } catch (e) {
         // FIXME
         Modal.error({
@@ -89,7 +89,7 @@ export default function Page() {
 
   const handleRowClick = usePersistFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
-      openLink(`/instance_profiling/${rec.id}`, ev, navigate)
+      openLink(`/instance_profiling/detail?id=${rec.id}`, ev, navigate)
     }
   )
 

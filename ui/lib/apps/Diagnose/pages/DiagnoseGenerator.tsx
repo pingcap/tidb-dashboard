@@ -13,7 +13,7 @@ const DURATION_MINS = [5, 10, 30, 60, 24 * 60]
 const DEF_DURATION_MINS = 10
 
 function minsAgo(mins: number): Dayjs {
-  return dayjs((dayjs().unix() - mins * 60) * 1000)
+  return dayjs().subtract(mins, 'm')
 }
 
 export default function DiagnoseGenerator() {

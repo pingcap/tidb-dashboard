@@ -1,6 +1,7 @@
 import { Button, Form, Input, InputNumber, Select } from 'antd'
+import dayjs, { Dayjs } from 'dayjs'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
@@ -8,21 +9,30 @@ import { Card } from '@lib/components'
 import { DatePicker } from '@lib/components'
 import DiagnosisTable from '../components/DiagnosisTable'
 
-const DURATIONS = [5, 10, 30, 60, 24 * 60]
+const DURATION_MINS = [5, 10, 30, 60, 24 * 60]
+const DEF_DURATION_MINS = 10
+
+function minsAgo(mins: number): Dayjs {
+  return dayjs((dayjs().unix() - mins * 60) * 1000)
+}
 
 export default function DiagnoseGenerator() {
   const { t } = useTranslation()
-  const [timeRange, setTimeRange] = useState<[number, number]>([0, 0])
 
-  async function handleFinish(fieldsValue) {
-    const start_time = fieldsValue['rangeBegin'].unix()
-    let range_duration = fieldsValue['rangeDuration']
-    if (fieldsValue['rangeDuration'] === 0) {
-      range_duration = fieldsValue['rangeDurationCustom']
-    }
+  const [duration, setDuration] = useState(DEF_DURATION_MINS)
+  const [startTime, setStartTime] = useState<Dayjs>(() => minsAgo(duration))
+  const timeRange: [number, number] = useMemo(() => {
+    const _startTime = dayjs(startTime).unix()
+    return [_startTime, _startTime + duration * 60]
+  }, [startTime, duration])
 
-    const end_time = start_time + range_duration * 60
-    setTimeRange([start_time, end_time])
+  const [stableTimeRange, setStableTimeRange] = useState<[number, number]>([
+    0,
+    0,
+  ])
+
+  function handleFinish() {
+    setStableTimeRange(timeRange)
   }
 
   return (
@@ -31,14 +41,20 @@ export default function DiagnoseGenerator() {
         <Form
           layout="inline"
           onFinish={handleFinish}
-          initialValues={{ rangeDuration: 10, rangeDurationCustom: 10 }}
+          initialValues={{
+            rangeDuration: DEF_DURATION_MINS,
+            rangeDurationCustom: DEF_DURATION_MINS,
+          }}
         >
           <Form.Item
-            name="rangeBegin"
             rules={[{ required: true }]}
             label={t('diagnose.generate.range_begin')}
           >
-            <DatePicker showTime />
+            <DatePicker
+              value={startTime}
+              showTime
+              onChange={(val) => setStartTime(val || minsAgo(duration))}
+            />
           </Form.Item>
           <Form.Item label={t('diagnose.generate.range_duration')} required>
             <Input.Group compact>
@@ -47,8 +63,13 @@ export default function DiagnoseGenerator() {
                 rules={[{ required: true }]}
                 noStyle
               >
-                <Select style={{ width: 120 }}>
-                  {DURATIONS.map((val) => (
+                <Select
+                  style={{ width: 120 }}
+                  onChange={(val) =>
+                    setDuration((val as number) || DEF_DURATION_MINS)
+                  }
+                >
+                  {DURATION_MINS.map((val) => (
                     <Select.Option key={val} value={val}>
                       {getValueFormat('m')(val, 0)}
                     </Select.Option>
@@ -78,6 +99,7 @@ export default function DiagnoseGenerator() {
                           formatter={(value) => `${value} min`}
                           parser={(value) => value?.replace(/[^\d]/g, '') || ''}
                           style={{ width: 120 }}
+                          onChange={(val) => setDuration(val as number)}
                         />
                       </Form.Item>
                     )
@@ -96,9 +118,21 @@ export default function DiagnoseGenerator() {
 
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>
-          <DiagnosisTable timeRange={timeRange} kind="config" />
-          <DiagnosisTable timeRange={timeRange} kind="error" />
-          <DiagnosisTable timeRange={timeRange} kind="profile" />
+          <DiagnosisTable
+            stableTimeRange={stableTimeRange}
+            unstableTimeRange={timeRange}
+            kind="config"
+          />
+          <DiagnosisTable
+            stableTimeRange={stableTimeRange}
+            unstableTimeRange={timeRange}
+            kind="error"
+          />
+          <DiagnosisTable
+            stableTimeRange={stableTimeRange}
+            unstableTimeRange={timeRange}
+            kind="profile"
+          />
         </ScrollablePane>
       </div>
     </div>

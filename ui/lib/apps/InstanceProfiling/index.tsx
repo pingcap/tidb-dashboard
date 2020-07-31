@@ -10,7 +10,7 @@ const App = () => (
       <Routes>
         <Route path="/instance_profiling" element={<List />} />
         <Route
-          path="/instance_profiling/:id"
+          path="/instance_profiling/detail"
           element={
             <ParamsPageWrapper>
               <Detail />

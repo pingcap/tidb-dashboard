@@ -12,7 +12,7 @@ export default function () {
           <Route path="/search_logs" element={<LogSearch />} />
           <Route path="/search_logs/history" element={<LogSearchHistory />} />
           <Route
-            path="/search_logs/detail/:id"
+            path="/search_logs/detail"
             element={
               <ParamsPageWrapper>
                 <LogSearchDetail />

@@ -10,7 +10,7 @@ const App = () => (
       <Routes>
         <Route path="/diagnose" element={<DiagnoseGenerator />} />
         <Route
-          path="/diagnose/:id"
+          path="/diagnose/detail"
           element={
             <ParamsPageWrapper>
               <DiagnoseStatus />

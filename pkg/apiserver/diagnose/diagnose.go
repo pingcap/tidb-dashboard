@@ -210,7 +210,7 @@ func (s *Service) reportDataHandler(c *gin.Context) {
 type GenDiagnosisReportRequest struct {
 	StartTime int64  `json:"start_time"`
 	EndTime   int64  `json:"end_time"`
-	Kind      string `json:"kind"` // values: config, error, profile
+	Kind      string `json:"kind"` // values: config, error, performance
 }
 
 // @Summary SQL diagnosis report
@@ -238,7 +238,7 @@ func (s *Service) genDiagnosisHandler(c *gin.Context) {
 		rules = []string{"config", "version"}
 	case "error":
 		rules = []string{"critical-error"}
-	case "profile":
+	case "performance":
 		rules = []string{"node-load", "threshold-check"}
 	}
 

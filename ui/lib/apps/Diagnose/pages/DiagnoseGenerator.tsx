@@ -35,6 +35,13 @@ export default function DiagnoseGenerator() {
     setStableTimeRange(timeRange)
   }
 
+  const timeChanged = useMemo(
+    () =>
+      timeRange[0] !== stableTimeRange[0] ||
+      timeRange[1] !== stableTimeRange[1],
+    [timeRange, stableTimeRange]
+  )
+
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Card title={t('diagnose.generate.title')}>
@@ -108,11 +115,13 @@ export default function DiagnoseGenerator() {
               </Form.Item>
             </Input.Group>
           </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              {t('diagnose.generate.submit')}
-            </Button>
-          </Form.Item>
+          {timeChanged && (
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                {t('diagnose.generate.submit')}
+              </Button>
+            </Form.Item>
+          )}
         </Form>
       </Card>
 
@@ -131,7 +140,7 @@ export default function DiagnoseGenerator() {
           <DiagnosisTable
             stableTimeRange={stableTimeRange}
             unstableTimeRange={timeRange}
-            kind="profile"
+            kind="performance"
           />
         </ScrollablePane>
       </div>

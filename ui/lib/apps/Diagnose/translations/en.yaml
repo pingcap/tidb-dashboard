@@ -26,6 +26,10 @@ diagnose:
     progress: Progress
   time_duration:
     custom: Custom
+  table_title:
+    config_diagnosis: Config Diagnosis
+    error_diagnosis: Error Diagnosis
+    performance_diagnosis: Performance Diagnosis
   fields:
     rule: Rule
     item: Item

@@ -67,31 +67,46 @@ export default function DiagnosisTable({
     }
   }, [internalTimeRange])
 
-  const [items, columns] = useMemo(() => {
+  const allRows = useMemo(() => {
     const _columnHeaders =
       data?.column?.map((col) => col.toLocaleLowerCase()) || []
-    let _items: any[] = []
-    data?.rows?.forEach((row) => {
+    let _rows: any[] = []
+    data?.rows?.forEach((row, rowIdx) => {
       // values (array)
-      let obj = {}
-      row.values?.forEach((v, idx) => {
-        const key = _columnHeaders[idx]
-        obj[key] = v
+      let _newRow = { row_idx: rowIdx, is_sub: false }
+      row.values?.forEach((v, v_idx) => {
+        const key = _columnHeaders[v_idx]
+        _newRow[key] = v
       })
-      _items.push(obj)
 
       //subvalues (2 demensional array)
+      let _subRows: any[] = []
       row.sub_values?.forEach((sub_v) => {
-        obj = { is_sub: true }
+        let _subRow = { row_idx: rowIdx, is_sub: true }
         sub_v.forEach((v, idx) => {
           const key = _columnHeaders[idx]
-          obj[key] = v
+          _subRow[key] = v
         })
-        _items.push(obj)
+        _subRows.push(_subRow)
       })
+
+      _newRow['sub_rows'] = _subRows
+      _rows.push(_newRow)
     })
-    return [_items, diagnosisColumns(_items)]
+    return _rows
   }, [data])
+
+  const [items, setItems] = useState(allRows)
+
+  ////////////////
+
+  const [rowExpandStatus, setRowExpandStatus] = useState({})
+  function toggleExpand(rowIdx, expand) {
+    setRowExpandStatus((preStatus) => ({
+      ...preStatus,
+      [rowIdx]: expand,
+    }))
+  }
 
   function cardExtra() {
     if (isLoading) {

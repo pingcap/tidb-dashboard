@@ -24,7 +24,17 @@ function commonColumn(fieldName: string, minWidth: number, maxWidth?: number) {
 }
 
 function ruleColumn(): IColumn {
-  return commonColumn('rule', 100, 150)
+  return {
+    ...commonColumn('rule', 100, 150),
+    onRender: (rec) => (
+      <Tooltip title={rec.rule}>
+        <TextWrap>
+          {rec.is_sub && '|-- '}
+          {rec.rule}
+        </TextWrap>
+      </Tooltip>
+    ),
+  }
 }
 
 function itemColumn(): IColumn {

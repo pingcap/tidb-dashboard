@@ -68,16 +68,28 @@ export default function DiagnosisTable({
   }, [internalTimeRange])
 
   const [items, columns] = useMemo(() => {
-    const _columns = data?.column?.map((col) => col.toLocaleLowerCase()) || []
-    const _items: any[] =
-      data?.rows?.map((row) => {
-        let obj = {}
-        row.values?.forEach((v, idx) => {
-          const key = _columns[idx]
+    const _columnHeaders =
+      data?.column?.map((col) => col.toLocaleLowerCase()) || []
+    let _items: any[] = []
+    data?.rows?.forEach((row) => {
+      // values (array)
+      let obj = {}
+      row.values?.forEach((v, idx) => {
+        const key = _columnHeaders[idx]
+        obj[key] = v
+      })
+      _items.push(obj)
+
+      //subvalues (2 demensional array)
+      row.sub_values?.forEach((sub_v) => {
+        obj = { is_sub: true }
+        sub_v.forEach((v, idx) => {
+          const key = _columnHeaders[idx]
           obj[key] = v
         })
-        return obj
-      }) || []
+        _items.push(obj)
+      })
+    })
     return [_items, diagnosisColumns(_items)]
   }, [data])
 
@@ -86,7 +98,9 @@ export default function DiagnosisTable({
       return <LoadingOutlined />
     }
     if (timeChanged || error) {
-      return <Button onClick={handleStart}>Start</Button>
+      return (
+        <Button onClick={handleStart}>{t('diagnose.generate.submit')}</Button>
+      )
     }
     return null
   }

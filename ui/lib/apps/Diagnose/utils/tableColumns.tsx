@@ -4,7 +4,7 @@ import React from 'react'
 
 import { TextWithInfo, TextWrap } from '@lib/components'
 
-type ToggleExpandFn = (rowIdx: number, expand: boolean) => void
+type ToggleShowSubFn = (rowIdx: number, showSub: boolean) => void
 
 function commonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`diagnose.fields.${fieldName}`} />
@@ -25,7 +25,7 @@ function commonColumn(fieldName: string, minWidth: number, maxWidth?: number) {
   }
 }
 
-function ruleColumn(toggleExpand: ToggleExpandFn): IColumn {
+function ruleColumn(toggleShowSub: ToggleShowSubFn): IColumn {
   return {
     ...commonColumn('rule', 150, 200),
     onRender: (rec) => (
@@ -36,9 +36,9 @@ function ruleColumn(toggleExpand: ToggleExpandFn): IColumn {
           {!rec.is_sub && rec.sub_rows.length > 0 && (
             <Button
               type="link"
-              onClick={() => toggleExpand(rec.row_idx, !rec.expand)}
+              onClick={() => toggleShowSub(rec.row_idx, !rec.show_sub)}
             >
-              {rec.expand ? 'less' : 'more'}
+              {rec.show_sub ? 'less' : 'more'}
             </Button>
           )}
         </TextWrap>
@@ -95,13 +95,13 @@ function errorColumn(): IColumn {
 
 export function diagnosisColumns(
   rows: any[],
-  toggleExpand: ToggleExpandFn
+  toggleShowSub: ToggleShowSubFn
 ): IColumn[] {
   if (rows.length > 0 && rows[0].error) {
     return [categoryColumn(), tableColumn(), errorColumn()]
   }
   return [
-    ruleColumn(toggleExpand),
+    ruleColumn(toggleShowSub),
     itemColumn(),
     typeColumn(),
     instanceColumn(),

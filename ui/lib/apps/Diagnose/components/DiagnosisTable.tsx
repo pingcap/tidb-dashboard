@@ -75,7 +75,7 @@ export default function DiagnosisTable({
     let _rows: any[] = []
     data?.rows?.forEach((row, rowIdx) => {
       // values (array)
-      let _newRow = { row_idx: rowIdx, is_sub: false, expand: false }
+      let _newRow = { row_idx: rowIdx, is_sub: false, show_sub: false }
       row.values?.forEach((v, v_idx) => {
         const key = _columnHeaders[v_idx]
         _newRow[key] = v
@@ -103,8 +103,8 @@ export default function DiagnosisTable({
     setItems(allRows)
   }, [allRows])
 
-  const toggleExpand = useCallback(
-    (rowIdx, expand) => {
+  const toggleShowSub = useCallback(
+    (rowIdx, showSub) => {
       let newRows = [...items]
       let curRowPos = newRows.findIndex(
         (el) => el.row_idx === rowIdx && el.is_sub === false
@@ -115,12 +115,12 @@ export default function DiagnosisTable({
       let curRow = newRows[curRowPos]
 
       // update status
-      curRow.expand = expand
-      if (expand) {
-        // expand, insert sub rows
+      curRow.show_sub = showSub
+      if (showSub) {
+        // insert sub rows
         newRows.splice(curRowPos + 1, 0, ...curRow.sub_rows)
       } else {
-        // collpase, remove sub rows
+        // remove sub rows
         newRows.splice(curRowPos + 1, curRow.sub_rows.length)
       }
       setItems(newRows)
@@ -128,9 +128,9 @@ export default function DiagnosisTable({
     [items]
   )
 
-  const columns = useMemo(() => diagnosisColumns(items, toggleExpand), [
+  const columns = useMemo(() => diagnosisColumns(items, toggleShowSub), [
     items,
-    toggleExpand,
+    toggleShowSub,
   ])
 
   ////////////////

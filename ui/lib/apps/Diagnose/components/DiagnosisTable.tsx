@@ -21,16 +21,22 @@ export interface IDiagnosisTableProps {
 
 type ReqFnType = (cancel: CancelToken) => AxiosPromise<DiagnoseTableDef>
 
-// Copied from SearchResult.tsx
-// TODO: extract
+// Modified from SearchResult.tsx
 function Row({ renderer, props }) {
   const [expanded, setExpanded] = useState(false)
   const handleClick = useCallback(() => {
     setExpanded((v) => !v)
   }, [])
+
+  // https://stackoverflow.com/questions/53623294/how-to-conditionally-change-a-color-of-a-row-in-detailslist
+  const backgroundColor = props.item.is_sub ? 'lightcyan' : 'inhert'
   return (
     <div onClick={handleClick} style={{ cursor: 'pointer' }}>
-      {renderer({ ...props, item: { ...props.item, expanded } })}
+      {renderer({
+        ...props,
+        styles: { root: { backgroundColor } },
+        item: { ...props.item, expanded },
+      })}
     </div>
   )
 }
@@ -170,18 +176,22 @@ export default function DiagnosisTable({
     return null
   }
 
+  function subTitle() {
+    if (internalTimeRange[0] > 0) {
+      return (
+        <span>
+          <DateTime.Calendar unixTimestampMs={internalTimeRange[0] * 1000} /> ~{' '}
+          <DateTime.Calendar unixTimestampMs={internalTimeRange[1] * 1000} />
+        </span>
+      )
+    }
+    return null
+  }
+
   return (
     <CardTable
       title={t(`diagnose.table_title.${kind}_diagnosis`)}
-      subTitle={
-        internalTimeRange[0] > 0 && (
-          <span>
-            <DateTime.Calendar unixTimestampMs={internalTimeRange[0] * 1000} />{' '}
-            ~{' '}
-            <DateTime.Calendar unixTimestampMs={internalTimeRange[1] * 1000} />
-          </span>
-        )
-      }
+      subTitle={subTitle()}
       cardExtra={cardExtra()}
       errors={[error]}
       columns={columns}

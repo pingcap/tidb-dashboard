@@ -1,6 +1,7 @@
 import { Tooltip, Button } from 'antd'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
+import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 
 import { TextWithInfo, TextWrap } from '@lib/components'
 
@@ -17,30 +18,39 @@ function commonColumn(fieldName: string, minWidth: number, maxWidth?: number) {
     fieldName,
     minWidth,
     maxWidth,
-    onRender: (rec) => (
-      <Tooltip title={rec[fieldName]}>
-        <TextWrap>{rec[fieldName]}</TextWrap>
-      </Tooltip>
-    ),
+    onRender: (rec) => {
+      if (rec.expanded) {
+        return <TextWrap multiline={true}>{rec[fieldName]}</TextWrap>
+      } else {
+        return (
+          <Tooltip title={rec[fieldName]}>
+            <TextWrap>{rec[fieldName]}</TextWrap>
+          </Tooltip>
+        )
+      }
+    },
   }
 }
 
 function ruleColumn(toggleShowSub: ToggleShowSubFn): IColumn {
+  const handleClick = (ev: React.MouseEvent<HTMLSpanElement>, rec) => {
+    ev.stopPropagation()
+    toggleShowSub(rec.row_idx, !rec.show_sub)
+  }
   return {
     ...commonColumn('rule', 150, 200),
     onRender: (rec) => (
       <Tooltip title={rec.rule}>
-        <TextWrap>
-          {rec.is_sub && '|-- '}
+        <TextWrap multiline={rec.expanded}>
+          {rec.is_sub && '|--'}
+          {!rec.is_sub &&
+            rec.sub_rows.length > 0 &&
+            (rec.show_sub ? (
+              <MinusOutlined onClick={(ev) => handleClick(ev, rec)} />
+            ) : (
+              <PlusOutlined onClick={(ev) => handleClick(ev, rec)} />
+            ))}{' '}
           {rec.rule}
-          {!rec.is_sub && rec.sub_rows.length > 0 && (
-            <Button
-              type="link"
-              onClick={() => toggleShowSub(rec.row_idx, !rec.show_sub)}
-            >
-              {rec.show_sub ? 'less' : 'more'}
-            </Button>
-          )}
         </TextWrap>
       </Tooltip>
     ),

@@ -21,6 +21,20 @@ export interface IDiagnosisTableProps {
 
 type ReqFnType = (cancel: CancelToken) => AxiosPromise<DiagnoseTableDef>
 
+// Copied from SearchResult.tsx
+// TODO: extract
+function Row({ renderer, props }) {
+  const [expanded, setExpanded] = useState(false)
+  const handleClick = useCallback(() => {
+    setExpanded((v) => !v)
+  }, [])
+  return (
+    <div onClick={handleClick} style={{ cursor: 'pointer' }}>
+      {renderer({ ...props, item: { ...props.item, expanded } })}
+    </div>
+  )
+}
+
 export default function DiagnosisTable({
   stableTimeRange,
   unstableTimeRange,
@@ -135,6 +149,15 @@ export default function DiagnosisTable({
 
   ////////////////
 
+  const renderRow = useCallback((props, defaultRender) => {
+    if (!props) {
+      return null
+    }
+    return <Row renderer={defaultRender!} props={props} />
+  }, [])
+
+  ////////////////
+
   function cardExtra() {
     if (isLoading) {
       return <LoadingOutlined />
@@ -163,6 +186,7 @@ export default function DiagnosisTable({
       errors={[error]}
       columns={columns}
       items={items}
+      onRenderRow={renderRow}
       extendLastColumn
     />
   )

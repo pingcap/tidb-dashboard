@@ -79,14 +79,7 @@ function Sider({
     </Menu.SubMenu>
   )
 
-  const debugOnlyMenuItems = [useAppMenuItem(registry, 'debug_playground')]
-
-  if (process.env.NODE_ENV !== 'development') {
-    debugOnlyMenuItems.length = 0
-  }
-
   const menuItems = [
-    ...debugOnlyMenuItems,
     useAppMenuItem(registry, 'overview'),
     useAppMenuItem(registry, 'cluster_info'),
     useAppMenuItem(registry, 'keyviz'),

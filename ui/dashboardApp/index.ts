@@ -17,7 +17,6 @@ import LayoutRoot from '@dashboard/layout/root'
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
 
-import AppDebugPlayground from '@lib/apps/DebugPlayground/index.meta'
 import AppUserProfile from '@lib/apps/UserProfile/index.meta'
 import AppOverview from '@lib/apps/Overview/index.meta'
 import AppKeyViz from '@lib/apps/KeyViz/index.meta'
@@ -92,7 +91,6 @@ async function main() {
   )
 
   registry
-    .register(AppDebugPlayground)
     .register(AppUserProfile)
     .register(AppOverview)
     .register(AppKeyViz)

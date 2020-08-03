@@ -23,7 +23,7 @@
     "framer-motion": "^1.10.3",
     "i18next": "^19.4.2",
     "i18next-browser-languagedetector": "^4.0.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "moize": "^5.4.6",
     "office-ui-fabric-react": "^7.105.3",
     "react": "^16.13.1",
@@ -48,7 +48,8 @@
     "build": "gulp build",
     "test": "react-app-rewired test",
     "fmt": "prettier --write .",
-    "gen:browserlist": "gulp gen:browserlist"
+    "gen:browserlist": "gulp gen:browserlist",
+    "storybook": "start-storybook -p 9009 -s public"
   },
   "husky": {
     "hooks": {
@@ -71,6 +72,11 @@
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.8.3",
     "@openapitools/openapi-generator-cli": "^1.0.12-4.3.0",
+    "@storybook/addon-actions": "^6.0.0-rc.3",
+    "@storybook/addon-links": "^6.0.0-rc.3",
+    "@storybook/addons": "^6.0.0-rc.3",
+    "@storybook/preset-create-react-app": "^3.1.4",
+    "@storybook/react": "^6.0.0-rc.3",
     "@types/d3": "^5.7.2",
     "@types/lodash": "^4.14.149",
     "@types/node": "^13.11.1",

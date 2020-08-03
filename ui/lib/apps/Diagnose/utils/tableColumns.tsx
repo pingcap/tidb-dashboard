@@ -27,18 +27,18 @@ function commonColumn(fieldName: string, minWidth: number, maxWidth?: number) {
 
 function ruleColumn(toggleExpand: ToggleExpandFn): IColumn {
   return {
-    ...commonColumn('rule', 100, 150),
+    ...commonColumn('rule', 150, 200),
     onRender: (rec) => (
       <Tooltip title={rec.rule}>
         <TextWrap>
           {rec.is_sub && '|-- '}
-          {rec.rule}{' '}
-          {!rec.is_sub && (
+          {rec.rule}
+          {!rec.is_sub && rec.sub_rows.length > 0 && (
             <Button
               type="link"
               onClick={() => toggleExpand(rec.row_idx, !rec.expand)}
             >
-              {rec.expand ? 'Collapse' : 'Expand'}
+              {rec.expand ? 'less' : 'more'}
             </Button>
           )}
         </TextWrap>

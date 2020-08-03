@@ -1,6 +1,6 @@
 import { Button } from 'antd'
 import { AxiosPromise, CancelToken } from 'axios'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LoadingOutlined } from '@ant-design/icons'
 
@@ -65,7 +65,9 @@ export default function DiagnosisTable({
     if (internalTimeRange[0] !== 0) {
       sendRequest()
     }
-  }, [internalTimeRange])
+  }, [internalTimeRange, sendRequest])
+
+  ////////////////
 
   const allRows = useMemo(() => {
     const _columnHeaders =
@@ -73,7 +75,7 @@ export default function DiagnosisTable({
     let _rows: any[] = []
     data?.rows?.forEach((row, rowIdx) => {
       // values (array)
-      let _newRow = { row_idx: rowIdx, is_sub: false }
+      let _newRow = { row_idx: rowIdx, is_sub: false, expand: false }
       row.values?.forEach((v, v_idx) => {
         const key = _columnHeaders[v_idx]
         _newRow[key] = v
@@ -97,16 +99,41 @@ export default function DiagnosisTable({
   }, [data])
 
   const [items, setItems] = useState(allRows)
+  useEffect(() => {
+    setItems(allRows)
+  }, [allRows])
+
+  const toggleExpand = useCallback(
+    (rowIdx, expand) => {
+      let newRows = [...items]
+      let curRowPos = newRows.findIndex(
+        (el) => el.row_idx === rowIdx && el.is_sub === false
+      )
+      if (curRowPos === -1) {
+        return
+      }
+      let curRow = newRows[curRowPos]
+
+      // update status
+      curRow.expand = expand
+      if (expand) {
+        // expand, insert sub rows
+        newRows.splice(curRowPos + 1, 0, ...curRow.sub_rows)
+      } else {
+        // collpase, remove sub rows
+        newRows.splice(curRowPos + 1, curRow.sub_rows.length)
+      }
+      setItems(newRows)
+    },
+    [items]
+  )
+
+  const columns = useMemo(() => diagnosisColumns(items, toggleExpand), [
+    items,
+    toggleExpand,
+  ])
 
   ////////////////
-
-  const [rowExpandStatus, setRowExpandStatus] = useState({})
-  function toggleExpand(rowIdx, expand) {
-    setRowExpandStatus((preStatus) => ({
-      ...preStatus,
-      [rowIdx]: expand,
-    }))
-  }
 
   function cardExtra() {
     if (isLoading) {

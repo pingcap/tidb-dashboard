@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { QueryeditorRunResponse } from '@lib/client'
-import { CardTable, Card } from '@lib/components'
+import { CardTable } from '@lib/components'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 
@@ -21,7 +21,6 @@ function ResultTable({ results }: IResultTableProps) {
           name: 'Error',
           key: 'error',
           minWidth: 100,
-          // maxWidth: 500,
           fieldName: 'error',
           isMultiline: true,
         },
@@ -35,7 +34,7 @@ function ResultTable({ results }: IResultTableProps) {
         fieldName: String(idx),
       }))
     }
-  }, [results, results?.error_msg, results?.column_names])
+  }, [results])
 
   const items = useMemo(() => {
     if (!results) {
@@ -46,7 +45,7 @@ function ResultTable({ results }: IResultTableProps) {
     } else {
       return results.rows ?? []
     }
-  }, [results, results?.error_msg, results?.rows])
+  }, [results])
 
   return (
     <div className={styles.resultTable}>

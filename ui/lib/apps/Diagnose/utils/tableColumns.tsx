@@ -1,4 +1,4 @@
-import { Tooltip, Button } from 'antd'
+import { Tooltip } from 'antd'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
@@ -40,19 +40,21 @@ function ruleColumn(toggleShowSub: ToggleShowSubFn): IColumn {
   return {
     ...commonColumn('rule', 150, 200),
     onRender: (rec) => (
-      <Tooltip title={rec.rule}>
-        <TextWrap multiline={rec.expanded}>
-          {rec.is_sub && '|--'}
-          {!rec.is_sub &&
-            rec.sub_rows.length > 0 &&
-            (rec.show_sub ? (
-              <MinusOutlined onClick={(ev) => handleClick(ev, rec)} />
-            ) : (
-              <PlusOutlined onClick={(ev) => handleClick(ev, rec)} />
-            ))}{' '}
-          {rec.rule}
-        </TextWrap>
-      </Tooltip>
+      <TextWrap multiline={rec.expanded}>
+        {rec.is_sub && '|--'}
+        {!rec.is_sub &&
+          rec.sub_rows.length > 0 &&
+          (rec.show_sub ? (
+            <MinusOutlined onClick={(ev) => handleClick(ev, rec)} />
+          ) : (
+            <PlusOutlined onClick={(ev) => handleClick(ev, rec)} />
+          ))}{' '}
+        {rec.expanded ? (
+          rec.rule
+        ) : (
+          <Tooltip title={rec.rule}>{rec.rule}</Tooltip>
+        )}
+      </TextWrap>
     ),
   }
 }

@@ -9,6 +9,7 @@ import client, { InfoWhoAmIResponse } from '@lib/client'
 
 import Banner from './Banner'
 import styles from './index.module.less'
+import { useClientRequest } from '@lib/utils/useClientRequest'
 
 function useAppMenuItem(registry, appId, title?: string) {
   const { t } = useTranslation()
@@ -64,6 +65,10 @@ function Sider({
   const activeAppId = useActiveAppId(registry)
   const currentLogin = useCurrentLogin()
 
+  const { data } = useClientRequest((cancelToken) =>
+    client.getInstance().getInfo({ cancelToken })
+  )
+
   const debugSubMenuItems = [useAppMenuItem(registry, 'instance_profiling')]
   const debugSubMenu = (
     <Menu.SubMenu
@@ -103,8 +108,11 @@ function Sider({
     useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
     debugSubMenu,
-    experimentalSubMenu,
   ]
+
+  if (data?.enable_experimental) {
+    menuItems.push(experimentalSubMenu)
+  }
 
   const extraMenuItems = [
     useAppMenuItem(registry, 'dashboard_settings'),

@@ -36,6 +36,7 @@
     "react-i18next": "^11.7.0",
     "react-router": "^6.0.0-alpha.3",
     "react-router-dom": "^6.0.0-alpha.3",
+    "react-split": "^2.0.9",
     "react-spring": "^8.0.27",
     "react-syntax-highlighter": "^13.0.0",
     "react-use": "^15.3.3",

@@ -1,7 +1,7 @@
 import { Badge, Button, Progress } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { usePersistFn } from '@umijs/hooks'
 
@@ -9,6 +9,7 @@ import client from '@lib/client'
 import { CardTable, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { InstanceKindName } from '@lib/utils/instanceTable'
+import useQueryParams from '@lib/utils/useQueryParams'
 
 function mapData(data) {
   if (!data) {
@@ -37,7 +38,7 @@ function isFinished(data) {
 
 export default function Page() {
   const { t } = useTranslation()
-  const { id } = useParams()
+  const { id } = useQueryParams()
 
   const { data: respData, isLoading } = useClientRequestWithPolling(
     (cancelToken) =>

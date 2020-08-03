@@ -1,14 +1,14 @@
 import React, { ReactNode } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 export default function ParamsPageWrapper({
   children,
 }: {
   children: ReactNode
 }) {
-  const params = useParams()
+  const { search } = useLocation()
   if (React.isValidElement(children)) {
-    return React.cloneElement(children, { key: JSON.stringify(params) })
+    return React.cloneElement(children, { key: search })
   }
   return null
 }

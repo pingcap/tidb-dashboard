@@ -2,7 +2,7 @@ import { Col, Row } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client from '@lib/client'
@@ -10,10 +10,11 @@ import { Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import { SearchHeader, SearchProgress, SearchResult } from '../components'
 import { TaskState } from '../utils'
+import useQueryParams from '@lib/utils/useQueryParams'
 
 export default function LogSearchingDetail() {
   const { t } = useTranslation()
-  const { id } = useParams()
+  const { id } = useQueryParams()
   const [reloadKey, setReloadKey] = useState(false)
 
   function toggleReload() {

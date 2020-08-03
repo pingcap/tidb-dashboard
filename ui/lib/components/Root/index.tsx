@@ -8,6 +8,11 @@ import {
 import { createTheme, registerIcons } from 'office-ui-fabric-react/lib/Styling'
 import { Customizations } from 'office-ui-fabric-react/lib/Utilities'
 
+import { ConfigProvider } from 'antd'
+import i18next from 'i18next'
+import enUS from 'antd/es/locale/en_US'
+import zhCN from 'antd/es/locale/zh_CN'
+
 registerIcons({
   icons: {
     SortUp: <ArrowUpOutlined />,
@@ -24,5 +29,9 @@ const theme = createTheme({
 Customizations.applySettings({ theme })
 
 export default function Root({ children }) {
-  return <>{children}</>
+  return (
+    <ConfigProvider locale={i18next.language === 'en' ? enUS : zhCN}>
+      {children}
+    </ConfigProvider>
+  )
 }

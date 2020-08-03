@@ -1,16 +1,17 @@
 import { Button, Descriptions, Progress } from 'antd'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client from '@lib/client'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
 import { AnimatedSkeleton, DateTime, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
+import useQueryParams from '@lib/utils/useQueryParams'
 
 function DiagnoseStatus() {
-  const { id } = useParams()
+  const { id } = useQueryParams()
   const { t } = useTranslation()
 
   const { data: report, isLoading } = useClientRequestWithPolling(

@@ -135,12 +135,12 @@ export default function DiagnoseGenerator() {
           <DiagnosisTable
             stableTimeRange={stableTimeRange}
             unstableTimeRange={timeRange}
-            kind="error"
+            kind="performance"
           />
           <DiagnosisTable
             stableTimeRange={stableTimeRange}
             unstableTimeRange={timeRange}
-            kind="performance"
+            kind="error"
           />
         </ScrollablePane>
       </div>

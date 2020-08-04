@@ -50,6 +50,25 @@ func FetchStoreTopology(pdClient *pd.Client) ([]StoreInfo, []StoreInfo, error) {
 	return buildStoreTopology(tiKVStores), buildStoreTopology(tiFlashStores), nil
 }
 
+func FetchStoreLocation(pdClient *pd.Client) (*StoreLocation, error) {
+	locationLabels, err := fetchLocationLabels(pdClient)
+	if err != nil {
+		return nil, err
+	}
+
+	stores, err := fetchStores(pdClient)
+	if err != nil {
+		return nil, err
+	}
+
+	storeLocation := StoreLocation{
+		LocationLabels: locationLabels,
+		Stores:         stores,
+	}
+
+	return &storeLocation, nil
+}
+
 func buildStoreTopology(stores []store) []StoreInfo {
 	nodes := make([]StoreInfo, 0, len(stores))
 	for _, v := range stores {
@@ -81,7 +100,7 @@ func buildStoreTopology(stores []store) []StoreInfo {
 			StartTimestamp: v.StartTimestamp,
 		}
 		for _, v := range v.Labels {
-			node.Labels[v.Key] = node.Labels[v.Value]
+			node.Labels[v.Key] = v.Value
 		}
 		nodes = append(nodes, node)
 	}
@@ -95,7 +114,7 @@ type store struct {
 	Labels  []struct {
 		Key   string `json:"key"`
 		Value string `json:"value"`
-	}
+	} `json:"labels"`
 	StateName      string `json:"state_name"`
 	Version        string `json:"version"`
 	StatusAddress  string `json:"status_address"`

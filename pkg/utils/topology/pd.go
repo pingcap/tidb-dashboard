@@ -135,3 +135,19 @@ func fetchPDHealth(pdClient *pd.Client) (map[uint64]struct{}, error) {
 	}
 	return memberHealth, nil
 }
+
+func fetchLocationLabels(pdClient *pd.Client) (string, error) {
+	data, err := pdClient.SendGetRequest("/config/replicate")
+	if err != nil {
+		return "", err
+	}
+
+	var replicateConfig struct {
+		LocationLabels string `json:"location-labels"`
+	}
+	err = json.Unmarshal(data, &replicateConfig)
+	if err != nil {
+		return "", ErrInvalidTopologyData.Wrap(err, "PD config/replicate API unmarshal failed")
+	}
+	return replicateConfig.LocationLabels, nil
+}

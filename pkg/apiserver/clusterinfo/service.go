@@ -71,6 +71,8 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/alertmanager/:address/count", s.getAlertManagerCounts)
 	endpoint.GET("/grafana", s.getGrafanaTopology)
 
+	endpoint.GET("/store_location", s.getStoreLocationTopology)
+
 	endpoint = r.Group("/host")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
@@ -158,6 +160,23 @@ func (s *Service) getStoreTopology(c *gin.Context) {
 		TiKV:    tikvInstances,
 		TiFlash: tiFlashInstances,
 	})
+}
+
+// @ID getStoreLocationTopology
+// @Summary Get store location
+// @Description Get store location topology
+// @Produce json
+// @Success 200 {object} topology.StoreLocation
+// @Router /topology/store_location [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) getStoreLocationTopology(c *gin.Context) {
+	storeLocation, err := topology.FetchStoreLocation(s.pdClient)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, storeLocation)
 }
 
 // @ID getPDTopology

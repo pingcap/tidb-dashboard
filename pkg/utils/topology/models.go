@@ -57,6 +57,11 @@ type StoreInfo struct {
 	StartTimestamp int64             `json:"start_timestamp"`
 }
 
+type StoreLocation struct {
+	LocationLabels string  `json:"location_labels"`
+	Stores         []store `json:"stores"`
+}
+
 type StandardComponentInfo struct {
 	IP   string `json:"ip"`
 	Port uint   `json:"port"`

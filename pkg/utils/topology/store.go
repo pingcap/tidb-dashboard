@@ -61,9 +61,21 @@ func FetchStoreLocation(pdClient *pd.Client) (*StoreLocation, error) {
 		return nil, err
 	}
 
+	nodes := make([]StoreLabels, 0, len(stores))
+	for _, s := range stores {
+		node := StoreLabels{
+			Address: s.Address,
+			Labels:  map[string]string{},
+		}
+		for _, l := range s.Labels {
+			node.Labels[l.Key] = l.Value
+		}
+		nodes = append(nodes, node)
+	}
+
 	storeLocation := StoreLocation{
 		LocationLabels: locationLabels,
-		Stores:         stores,
+		Stores:         nodes,
 	}
 
 	return &storeLocation, nil

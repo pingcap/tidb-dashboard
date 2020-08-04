@@ -9,6 +9,7 @@ import CardTabs from '@lib/components/CardTabs'
 
 import HostTable from '../components/HostTable'
 import InstanceTable from '../components/InstanceTable'
+import StoreLocation from '../components/StoreLocation'
 
 function renderTabBar(props, DefaultTabBar) {
   return (
@@ -45,6 +46,9 @@ export default function ListPage() {
             key="host"
           >
             <HostTable />
+          </CardTabs.TabPane>
+          <CardTabs.TabPane tab="Store Location" key="store_location">
+            <StoreLocation />
           </CardTabs.TabPane>
         </CardTabs>
       </Card>

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { ExperimentOutlined } from '@ant-design/icons'
+import React, { useState, useEffect, useMemo } from 'react'
+import { ExperimentOutlined, BugOutlined } from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
 import { useEventListener } from '@umijs/hooks'
@@ -9,6 +9,7 @@ import client, { InfoWhoAmIResponse } from '@lib/client'
 
 import Banner from './Banner'
 import styles from './index.module.less'
+import { useClientRequest } from '@lib/utils/useClientRequest'
 
 function useAppMenuItem(registry, appId, title?: string) {
   const { t } = useTranslation()
@@ -64,18 +65,37 @@ function Sider({
   const activeAppId = useActiveAppId(registry)
   const currentLogin = useCurrentLogin()
 
+  const { data } = useClientRequest((cancelToken) =>
+    client.getInstance().getInfo({ cancelToken })
+  )
+
   const debugSubMenuItems = [useAppMenuItem(registry, 'instance_profiling')]
   const debugSubMenu = (
     <Menu.SubMenu
       key="debug"
       title={
         <span>
-          <ExperimentOutlined />
+          <BugOutlined />
           <span>{t('nav.sider.debug')}</span>
         </span>
       }
     >
       {debugSubMenuItems}
+    </Menu.SubMenu>
+  )
+
+  const experimentalSubMenuItems = [useAppMenuItem(registry, 'query_editor')]
+  const experimentalSubMenu = (
+    <Menu.SubMenu
+      key="experimental"
+      title={
+        <span>
+          <ExperimentOutlined />
+          <span>{t('nav.sider.experimental')}</span>
+        </span>
+      }
+    >
+      {experimentalSubMenuItems}
     </Menu.SubMenu>
   )
 
@@ -90,6 +110,10 @@ function Sider({
     debugSubMenu,
   ]
 
+  if (data?.enable_experimental) {
+    menuItems.push(experimentalSubMenu)
+  }
+
   const extraMenuItems = [
     useAppMenuItem(registry, 'dashboard_settings'),
     useAppMenuItem(
@@ -102,6 +126,14 @@ function Sider({
   const transSider = useSpring({
     width: collapsed ? collapsedWidth : fullWidth,
   })
+
+  const defaultOpenKeys = useMemo(() => {
+    if (defaultCollapsed) {
+      return []
+    } else {
+      return ['debug', 'experimental']
+    }
+  }, [defaultCollapsed])
 
   return (
     <animated.div style={transSider}>
@@ -127,6 +159,7 @@ function Sider({
           mode="inline"
           selectedKeys={[activeAppId]}
           style={{ flexGrow: 1 }}
+          defaultOpenKeys={defaultOpenKeys}
         >
           {menuItems}
         </Menu>

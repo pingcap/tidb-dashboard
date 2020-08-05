@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/VividCortex/mysqlerr"
 	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"github.com/pingcap/log"
@@ -56,6 +57,8 @@ func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 	dsnConfig.Timeout = time.Second
 	dsnConfig.ParseTime = true
 	dsnConfig.Loc = time.Local
+	dsnConfig.MultiStatements = true
+
 	if f.config.TiDBTLSConfig != nil {
 		dsnConfig.TLSConfig = "tidb"
 	}
@@ -65,15 +68,15 @@ func (f *Forwarder) OpenTiDB(user string, pass string) (*gorm.DB, error) {
 	if err != nil {
 		if _, ok := err.(*net.OpError); ok || err == driver.ErrBadConn {
 			if strings.HasPrefix(addr, "0.0.0.0:") {
-				log.Warn("The IP reported by TiDB is 0.0.0.0, which may not have the -advertise-address option")
+				log.Warn("TiDB reported its address to be 0.0.0.0. Please specify `-advertise-address` command line parameter when running TiDB")
 			}
 			return nil, ErrTiDBConnFailed.Wrap(err, "failed to connect to TiDB")
 		} else if mysqlErr, ok := err.(*mysql.MySQLError); ok {
-			if mysqlErr.Number == 1045 {
+			if mysqlErr.Number == mysqlerr.ER_ACCESS_DENIED_ERROR {
 				return nil, ErrTiDBAuthFailed.New("bad TiDB username or password")
 			}
 		}
-		log.Warn("unknown error occurred while OpenTiDB", zap.Error(err))
+		log.Warn("Unknown error occurred while opening TiDB connection", zap.Error(err))
 		return nil, err
 	}
 

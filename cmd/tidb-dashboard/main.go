@@ -25,7 +25,6 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -38,7 +37,6 @@ import (
 
 	"github.com/pingcap/log"
 	flag "github.com/spf13/pflag"
-	"go.etcd.io/etcd/pkg/transport"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
@@ -73,16 +71,17 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "PD endpoint address that Dashboard Server connects to")
 	flag.BoolVar(&cfg.CoreConfig.EnableTelemetry, "telemetry", true, "allow telemetry")
 	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", false, "allow experimental features")
+	flag.StringVar(&cfg.CoreConfig.PluginDir, "plugin-dir", "", "plugin directory")
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 
-	clusterCaPath := flag.String("cluster-ca", "", "path of file that contains list of trusted SSL CAs")
-	clusterCertPath := flag.String("cluster-cert", "", "path of file that contains X509 certificate in PEM format")
-	clusterKeyPath := flag.String("cluster-key", "", "path of file that contains X509 key in PEM format")
+	flag.StringVar(&cfg.CoreConfig.ClusterTLSInfo.TrustedCAFile, "cluster-ca", "", "path of file that contains list of trusted SSL CAs")
+	flag.StringVar(&cfg.CoreConfig.ClusterTLSInfo.CertFile, "cluster-cert", "", "path of file that contains X509 certificate in PEM format")
+	flag.StringVar(&cfg.CoreConfig.ClusterTLSInfo.KeyFile, "cluster-key", "", "path of file that contains X509 key in PEM format")
 
-	tidbCaPath := flag.String("tidb-ca", "", "path of file that contains list of trusted SSL CAs")
-	tidbCertPath := flag.String("tidb-cert", "", "path of file that contains X509 certificate in PEM format")
-	tidbKeyPath := flag.String("tidb-key", "", "path of file that contains X509 key in PEM format")
+	flag.StringVar(&cfg.CoreConfig.TiDBTLSInfo.TrustedCAFile, "tidb-ca", "", "path of file that contains list of trusted SSL CAs")
+	flag.StringVar(&cfg.CoreConfig.TiDBTLSInfo.CertFile, "tidb-cert", "", "path of file that contains X509 certificate in PEM format")
+	flag.StringVar(&cfg.CoreConfig.TiDBTLSInfo.KeyFile, "tidb-key", "", "path of file that contains X509 key in PEM format")
 
 	// debug for keyvisual，hide help information
 	flag.Int64Var(&cfg.KVFileStartTime, "keyviz-file-start", 0, "(debug) start time for file range in file mode")
@@ -97,20 +96,26 @@ func NewCLIConfig() *DashboardCLIConfig {
 		os.Exit(0)
 	}
 
+	// setup TLS config for TiDB components
+	var err error
+	cfg.CoreConfig.ClusterTLSConfig, err = config.BuildTLSConfig(&cfg.CoreConfig.ClusterTLSInfo)
+	if err != nil {
+		log.Fatal("Failed to load cluster certificates", zap.Error(err))
+	}
+
+	// setup TLS config for MySQL client
+	cfg.CoreConfig.TiDBTLSConfig, err = config.BuildTLSConfig(&cfg.CoreConfig.TiDBTLSInfo)
+	if err != nil {
+		log.Fatal("Failed to load TiDB certificates", zap.Error(err))
+	}
+
 	cfg.CoreConfig.NormalizePublicPathPrefix()
 	if err := cfg.CoreConfig.NormalizePDEndPoint(); err != nil {
 		log.Fatal("Invalid PD Endpoint", zap.Error(err))
 	}
 
-	// setup TLS config for TiDB components
-	if len(*clusterCaPath) != 0 && len(*clusterCertPath) != 0 && len(*clusterKeyPath) != 0 {
-		cfg.CoreConfig.ClusterTLSConfig = buildTLSConfig(clusterCaPath, clusterKeyPath, clusterCertPath)
-	}
-
-	// setup TLS config for MySQL client
-	// See https://github.com/pingcap/docs/blob/7a62321b3ce9318cbda8697503c920b2a01aeb3d/how-to/secure/enable-tls-clients.md#enable-authentication
-	if (len(*tidbCertPath) != 0 && len(*tidbKeyPath) != 0) || len(*tidbCaPath) != 0 {
-		cfg.CoreConfig.TiDBTLSConfig = buildTLSConfig(tidbCaPath, tidbKeyPath, tidbCertPath)
+	if err := cfg.CoreConfig.VerifyPluginDir(); err != nil {
+		log.Fatal("Invalid plugin directory", zap.Error(err))
 	}
 
 	// keyvisual check
@@ -139,19 +144,6 @@ func getContext() context.Context {
 		cancel()
 	}()
 	return ctx
-}
-
-func buildTLSConfig(caPath, keyPath, certPath *string) *tls.Config {
-	tlsInfo := transport.TLSInfo{
-		TrustedCAFile: *caPath,
-		KeyFile:       *keyPath,
-		CertFile:      *certPath,
-	}
-	tlsConfig, err := tlsInfo.ClientConfig()
-	if err != nil {
-		log.Fatal("Failed to load certificates", zap.Error(err))
-	}
-	return tlsConfig
 }
 
 func main() {

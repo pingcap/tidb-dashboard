@@ -17,7 +17,10 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
+
+	"go.etcd.io/etcd/pkg/transport"
 )
 
 const (
@@ -32,12 +35,26 @@ type Config struct {
 	DataDir          string
 	PDEndPoint       string
 	PublicPathPrefix string
+	PluginDir        string
 
+	ClusterTLSInfo   transport.TLSInfo
 	ClusterTLSConfig *tls.Config // TLS config for mTLS authentication between TiDB components.
+	TiDBTLSInfo      transport.TLSInfo
 	TiDBTLSConfig    *tls.Config // TLS config for mTLS authentication between TiDB and MySQL client.
 
 	EnableTelemetry    bool
 	EnableExperimental bool
+}
+
+func BuildTLSConfig(info *transport.TLSInfo) (*tls.Config, error) {
+	if info == nil {
+		return nil, nil
+	}
+	// See https://github.com/pingcap/docs/blob/7a62321b3ce9318cbda8697503c920b2a01aeb3d/how-to/secure/enable-tls-clients.md#enable-authentication
+	if len(info.TrustedCAFile) == 0 && (len(info.CertFile) == 0 || len(info.KeyFile) == 0) {
+		return nil, nil
+	}
+	return info.ClientConfig()
 }
 
 func (c *Config) NormalizePDEndPoint() error {
@@ -64,4 +81,20 @@ func (c *Config) NormalizePublicPathPrefix() {
 		c.PublicPathPrefix = DefaultPublicPathPrefix
 	}
 	c.PublicPathPrefix = strings.TrimRight(c.PublicPathPrefix, "/")
+}
+
+// VerifyPluginDir checks whether the plugin directory points to a valid local path.
+func (c *Config) VerifyPluginDir() error {
+	if len(c.PluginDir) == 0 {
+		return nil
+	}
+
+	stat, err := os.Stat(c.PluginDir)
+	if err != nil {
+		return err
+	}
+	if !stat.IsDir() {
+		return fmt.Errorf("%s is not a directory", c.PluginDir)
+	}
+	return nil
 }

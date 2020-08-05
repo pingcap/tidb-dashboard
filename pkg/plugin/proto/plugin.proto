@@ -1,0 +1,24 @@
+syntax = "proto3";
+package plugin;
+
+message TLSInfo {
+    string ca = 1;
+    string cert = 2;
+    string key = 3;
+}
+
+message InstallRequest {
+    string pd_endpoint = 1;
+    TLSInfo cluster_tls = 2;
+    TLSInfo tidb_tls = 3;
+    bool enable_telemetry = 4;
+    bool enable_experimental = 5;
+}
+
+message InstallResponse {
+    string http_host = 1;
+}
+
+service UIPluginService {
+    rpc InitializeUIPlugin(InstallRequest) returns (InstallResponse);
+}

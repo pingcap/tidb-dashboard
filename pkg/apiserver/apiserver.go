@@ -30,6 +30,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/metrics"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/plugin"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/profiling"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/queryeditor"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/slowquery"
@@ -110,6 +111,7 @@ func (s *Service) Start(ctx context.Context) error {
 			tidb.NewForwarder,
 			pkghttp.NewHTTPClientWithConf,
 			user.NewAuthService,
+			plugin.NewService,
 			info.NewService,
 			clusterinfo.NewService,
 			profiling.NewService,
@@ -124,6 +126,7 @@ func (s *Service) Start(ctx context.Context) error {
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			user.Register,
+			plugin.Register,
 			info.Register,
 			clusterinfo.Register,
 			profiling.Register,

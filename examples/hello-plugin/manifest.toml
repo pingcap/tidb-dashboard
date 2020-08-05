@@ -1,0 +1,9 @@
+name = 'Hello world'
+id = 'pingcap.example.hello-world'
+types = ['UI']
+version = '0.1.0'
+author = 'PingCAP, Inc.'
+license = 'MIT'
+description = '''
+An example UI plugin.
+'''

@@ -34,6 +34,9 @@ ui: yarn_dependencies
 	cd ui &&\
 	yarn build
 
+pkg/plugin/plugin.pb.go: pkg/plugin/proto/plugin.proto
+	protoc -I pkg/plugin/proto $^ --gogofaster_out=plugins=grpc:pkg/plugin
+
 server: install_tools
 	scripts/generate_swagger_spec.sh
 ifeq ($(UI),1)

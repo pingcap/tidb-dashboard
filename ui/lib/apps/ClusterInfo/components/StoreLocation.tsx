@@ -44,7 +44,7 @@ function buildTopology(data: TopologyStoreLocation | undefined) {
 }
 
 export default function StoreLocation() {
-  const { data, isLoading, error } = useClientRequest((cancelToken) =>
+  const { data } = useClientRequest((cancelToken) =>
     client.getInstance().getStoreLocationTopology({ cancelToken })
   )
   const locationTopology = useMemo(() => buildTopology(data), [data])

@@ -5,16 +5,18 @@ import { Pre } from '@lib/components'
 
 type TreeNode = {
   name: string
+  value: string
   children: TreeNode[]
 }
 
 function buildTopology(data: TopologyStoreLocation | undefined) {
-  let treeData: TreeNode = { name: '', children: [] }
+  let treeData: TreeNode = { name: '', value: '', children: [] }
   if ((data?.location_labels?.length || 0) > 0) {
     const locationLabels: string[] = data?.location_labels?.split(',') || []
     treeData.name = locationLabels[0]
 
     for (const store of data?.stores || []) {
+      // reset curNode, point to tree nodes beginning
       let curNode = treeData
       for (const curLabel of locationLabels) {
         const curLabelVal = store.labels![curLabel]
@@ -22,15 +24,20 @@ function buildTopology(data: TopologyStoreLocation | undefined) {
           continue
         }
         let subNode: TreeNode | undefined = curNode.children.find(
-          (el) => el.name === curLabelVal
+          (el) => el.name === curLabel && el.value === curLabelVal
         )
         if (subNode === undefined) {
-          subNode = { name: curLabelVal, children: [] }
+          subNode = { name: curLabel, value: curLabelVal, children: [] }
           curNode.children.push(subNode)
         }
+        // make curNode point to subNode
         curNode = subNode
       }
-      curNode.children.push({ name: store.address!, children: [] })
+      curNode.children.push({
+        name: 'address',
+        value: store.address!,
+        children: [],
+      })
     }
   }
   return treeData

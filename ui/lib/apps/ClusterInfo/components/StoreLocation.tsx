@@ -9,7 +9,7 @@ type TreeNode = {
   children: TreeNode[]
 }
 
-function buildTopology(data: TopologyStoreLocation | undefined) {
+function buildTreeData(data: TopologyStoreLocation | undefined): TreeNode {
   let treeData: TreeNode = { name: '', value: '', children: [] }
   if ((data?.location_labels?.length || 0) > 0) {
     const locationLabels: string[] = data?.location_labels || []
@@ -47,12 +47,12 @@ export default function StoreLocation() {
   const { data } = useClientRequest((cancelToken) =>
     client.getInstance().getStoreLocationTopology({ cancelToken })
   )
-  const locationTopology = useMemo(() => buildTopology(data), [data])
+  const treeData = useMemo(() => buildTreeData(data), [data])
 
   return (
     <div>
       <Pre>{JSON.stringify(data, undefined, 2)}</Pre>
-      <Pre>{JSON.stringify(locationTopology, undefined, 2)}</Pre>
+      <Pre>{JSON.stringify(treeData, undefined, 2)}</Pre>
     </div>
   )
 }

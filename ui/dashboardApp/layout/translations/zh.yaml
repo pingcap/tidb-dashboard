@@ -26,3 +26,4 @@ nav:
     signout: 登出
   sider:
     debug: 高级调试
+    experimental: 实验性功能

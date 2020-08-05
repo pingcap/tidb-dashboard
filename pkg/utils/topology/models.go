@@ -63,7 +63,7 @@ type StoreLabels struct {
 }
 
 type StoreLocation struct {
-	LocationLabels string        `json:"location_labels"`
+	LocationLabels []string      `json:"location_labels"`
 	Stores         []StoreLabels `json:"stores"`
 }
 

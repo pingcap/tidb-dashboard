@@ -12,7 +12,7 @@ type TreeNode = {
 function buildTopology(data: TopologyStoreLocation | undefined) {
   let treeData: TreeNode = { name: '', value: '', children: [] }
   if ((data?.location_labels?.length || 0) > 0) {
-    const locationLabels: string[] = data?.location_labels?.split(',') || []
+    const locationLabels: string[] = data?.location_labels || []
     treeData.name = locationLabels[0]
 
     for (const store of data?.stores || []) {

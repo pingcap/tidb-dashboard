@@ -34,7 +34,7 @@ export default function StoreLocation({
       //系列列表
       {
         type: 'tree',
-
+        
         data: [dataSource],
 
         top: '1%',

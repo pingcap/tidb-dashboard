@@ -47,8 +47,9 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 type InfoResponse struct { //nolint:golint
-	Version         *version.Info `json:"version"`
-	EnableTelemetry bool          `json:"enable_telemetry"`
+	Version            *version.Info `json:"version"`
+	EnableTelemetry    bool          `json:"enable_telemetry"`
+	EnableExperimental bool          `json:"enable_experimental"`
 }
 
 // @Summary Dashboard info
@@ -61,8 +62,9 @@ type InfoResponse struct { //nolint:golint
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) infoHandler(c *gin.Context) {
 	resp := InfoResponse{
-		Version:         version.GetInfo(),
-		EnableTelemetry: s.config.EnableTelemetry,
+		Version:            version.GetInfo(),
+		EnableTelemetry:    s.config.EnableTelemetry,
+		EnableExperimental: s.config.EnableExperimental,
 	}
 	c.JSON(http.StatusOK, resp)
 }

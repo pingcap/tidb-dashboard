@@ -44,9 +44,9 @@ type AuthService struct {
 }
 
 type authenticateForm struct {
-	IsTiDBAuth bool   `json:"is_tidb_auth" binding:"required"`
-	Username   string `json:"username" binding:"required"`
-	Password   string `json:"password"`
+	IsTiDBAuth bool   `json:"is_tidb_auth" binding:"required" example:"true"`
+	Username   string `json:"username" binding:"required" example:"root"`
+	Password   string `json:"password" example:""`
 }
 
 type TokenResponse struct {

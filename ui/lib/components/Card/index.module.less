@@ -20,6 +20,10 @@
     margin-top: 0;
   }
 
+  &.noMarginBottom {
+    margin-bottom: 0;
+  }
+
   &.noMarginLeft {
     margin-left: 0;
   }
@@ -54,4 +58,16 @@
 
 .hasTitle > .cardContent {
   margin-top: @padding-lg;
+}
+
+.cardContainer.flexGrow {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+
+  .cardInner,
+  .cardContent {
+    display: flex;
+    flex-grow: 1;
+  }
 }

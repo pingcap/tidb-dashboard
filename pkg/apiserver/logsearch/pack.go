@@ -83,21 +83,16 @@ func dumpLog(savedPath string, tw *tar.Writer) error {
 }
 
 func serveTaskForDownload(task *TaskModel, c *gin.Context) {
-	if task.LogStorePath == nil && task.SlowLogStorePath == nil {
+	logPath := task.LogStorePath
+	if logPath == nil {
+		logPath = task.SlowLogStorePath
+	}
+	if logPath == nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(utils.ErrInvalidRequest.New("Log is not available"))
 		return
 	}
-	reader, writer := io.Pipe()
-	go func() {
-		defer writer.Close()
-		packLogsAsTarball([]*TaskModel{task}, writer)
-	}()
-	contentType := "application/tar"
-	extraHeaders := map[string]string{
-		"Content-Disposition": fmt.Sprintf(`attachment; filename="logs-%s.tar"`, task.Target.FileName()),
-	}
-	c.DataFromReader(http.StatusOK, -1, contentType, reader, extraHeaders)
+	c.FileAttachment(*logPath, fmt.Sprintf("logs-%s.zip", task.Target.FileName()))
 }
 
 func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {

@@ -15,6 +15,7 @@ package logsearch
 
 import (
 	"archive/tar"
+	"archive/zip"
 	"fmt"
 	"io"
 	"net/http"
@@ -96,14 +97,32 @@ func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 }
 
 func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
-	reader, writer := io.Pipe()
-	go func() {
-		defer writer.Close()
-		packLogsAsTarball(tasks, writer)
-	}()
-	contentType := "application/tar"
-	extraHeaders := map[string]string{
-		"Content-Disposition": `attachment; filename="logs.tar"`,
-	}
-	c.DataFromReader(http.StatusOK, -1, contentType, reader, extraHeaders)
+	// ref: https://stackoverflow.com/a/57434338/2998877
+	c.Writer.Header().Set("Content-type", "application/octet-stream")
+	c.Writer.Header().Set("Content-Disposition", "attachment; filename='logs.zip'")
+	c.Stream(func(w io.Writer) bool {
+		ar := zip.NewWriter(w)
+		defer ar.Close()
+
+		for _, task := range tasks {
+			logPath := task.LogStorePath
+			if logPath == nil {
+				logPath = task.SlowLogStorePath
+			}
+			if logPath == nil {
+				continue
+			}
+			file, err := os.Open(*logPth)
+			if err != nil {
+				log.Warn("Failed to pack log",
+					zap.Any("task", task),
+					zap.Error(err))
+				continue
+			}
+			zipFile, err := ar.Create(task.Target.FileName() + ".zip")
+			io.Copy(zipFile, file)
+		}
+
+		return false
+	})
 }

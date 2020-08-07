@@ -157,7 +157,7 @@ func QueryStatementsOverview(
 	query := db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
-		Where("summary_begin_time <= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
+		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Group("schema_name, digest, digest_text").
 		Order("agg_sum_latency DESC")
 

@@ -230,7 +230,7 @@ func QueryPlanDetail(
 	query := db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
-		Where("summary_begin_time <= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
+		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Where("schema_name = ?", schemaName).
 		Where("digest = ?", digest)
 	if len(plans) > 0 {

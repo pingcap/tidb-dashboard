@@ -34,7 +34,7 @@ const useFinishHandler = (navigate) => {
         compare_start_time,
         compare_end_time,
       })
-      navigate(`/diagnose/${res.data}`)
+      navigate(`/diagnose/detail?id=${res.data}`)
     } catch (error) {
       message.error(error.message)
     }

@@ -14,13 +14,11 @@
 package logsearch
 
 import (
-	"archive/tar"
 	"archive/zip"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"path"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
@@ -28,60 +26,6 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 )
-
-func packLogsAsTarball(tasks []*TaskModel, w io.Writer) {
-	tw := tar.NewWriter(w)
-	defer tw.Close()
-
-	for _, task := range tasks {
-		if task.LogStorePath == nil && task.SlowLogStorePath == nil {
-			continue
-		}
-		if task.LogStorePath != nil {
-			if err := dumpLog(*task.LogStorePath, tw); err != nil {
-				log.Warn("Failed to pack log",
-					zap.Any("task", task),
-					zap.Error(err))
-				continue
-			}
-		}
-		if task.SlowLogStorePath != nil {
-			if err := dumpLog(*task.SlowLogStorePath, tw); err != nil {
-				log.Warn("Failed to pack slow log",
-					zap.Any("task", task),
-					zap.Error(err))
-				continue
-			}
-		}
-	}
-}
-
-func dumpLog(savedPath string, tw *tar.Writer) error {
-	f, err := os.Open(savedPath)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	fi, err := f.Stat()
-	if err != nil {
-		return err
-	}
-	err = tw.WriteHeader(&tar.Header{
-		Name:    path.Base(savedPath),
-		Mode:    int64(fi.Mode()),
-		ModTime: fi.ModTime(),
-		Size:    fi.Size(),
-	})
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(tw, f)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 	logPath := task.LogStorePath
@@ -112,14 +56,14 @@ func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
 			if logPath == nil {
 				continue
 			}
-			file, err := os.Open(*logPth)
+			file, err := os.Open(*logPath)
 			if err != nil {
 				log.Warn("Failed to pack log",
 					zap.Any("task", task),
 					zap.Error(err))
 				continue
 			}
-			zipFile, err := ar.Create(task.Target.FileName() + ".zip")
+			zipFile, _ := ar.Create(task.Target.FileName() + ".zip")
 			io.Copy(zipFile, file)
 		}
 

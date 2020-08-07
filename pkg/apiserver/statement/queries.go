@@ -157,7 +157,7 @@ func QueryStatementsOverview(
 	query := db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
+		Where("summary_begin_time <= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Group("schema_name, digest, digest_text").
 		Order("agg_sum_latency DESC")
 
@@ -212,7 +212,7 @@ func QueryPlans(
 	err = db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
+		Where("summary_begin_time <= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Where("schema_name = ?", schemaName).
 		Where("digest = ?", digest).
 		Group("plan_digest").
@@ -230,7 +230,7 @@ func QueryPlanDetail(
 	query := db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
+		Where("summary_begin_time <= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Where("schema_name = ?", schemaName).
 		Where("digest = ?", digest)
 	if len(plans) > 0 {

@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package profiling
+package utils
 
 import (
 	"archive/zip"
@@ -19,7 +19,7 @@ import (
 	"os"
 )
 
-func createZipPack(d *os.File, files []string) error {
+func CreateZipPack(d *os.File, files []string) error {
 	pack := zip.NewWriter(d)
 	defer pack.Close()
 

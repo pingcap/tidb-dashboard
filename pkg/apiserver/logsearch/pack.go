@@ -14,15 +14,11 @@
 package logsearch
 
 import (
-	"archive/zip"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 )
@@ -41,39 +37,34 @@ func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 }
 
 func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
-	// ref: https://stackoverflow.com/a/57434338/2998877
-	c.Writer.Header().Set("Content-type", "application/octet-stream")
-	c.Writer.Header().Set("Content-Disposition", "attachment; filename=logs.zip")
-	c.Stream(func(w io.Writer) bool {
-		ar := zip.NewWriter(w)
-		defer ar.Close()
-
-		for _, task := range tasks {
-			logPath := task.LogStorePath
-			if logPath == nil {
-				logPath = task.SlowLogStorePath
-			}
-			if logPath == nil {
-				continue
-			}
-			file, err := os.Open(*logPath)
-			if err != nil {
-				log.Warn("Failed to open log",
-					zap.Any("task", task),
-					zap.Error(err))
-				continue
-			}
-			defer file.Close()
-			zipFile, _ := ar.Create(task.Target.FileName() + ".zip")
-			_, err = io.Copy(zipFile, file)
-			if err != nil {
-				log.Warn("Failed to copy log",
-					zap.Any("task", task),
-					zap.Error(err))
-				continue
-			}
+	filePaths := make([]string, 0, len(tasks))
+	for _, task := range tasks {
+		logPath := task.LogStorePath
+		if logPath == nil {
+			logPath = task.SlowLogStorePath
 		}
+		if logPath == nil {
+			c.Status(http.StatusInternalServerError)
+			_ = c.Error(utils.ErrInvalidRequest.New("Some logs are not available"))
+			return
+		}
+		filePaths = append(filePaths, *logPath)
+	}
 
-		return false
-	})
+	temp, err := ioutil.TempFile("", "logs")
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		_ = c.Error(err)
+		return
+	}
+	defer temp.Close()
+
+	err = utils.CreateZipPack(temp, filePaths)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		_ = c.Error(err)
+		return
+	}
+
+	c.FileAttachment(temp.Name(), "logs.zip")
 }

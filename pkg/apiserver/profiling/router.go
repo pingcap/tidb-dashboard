@@ -253,7 +253,7 @@ func (s *Service) downloadGroup(c *gin.Context) {
 	}
 	defer temp.Close()
 
-	err = createZipPack(temp, filePathes)
+	err = utils.CreateZipPack(temp, filePathes)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
@@ -305,7 +305,7 @@ func (s *Service) downloadSingle(c *gin.Context) {
 	}
 	defer temp.Close()
 
-	err = createZipPack(temp, []string{task.FilePath})
+	err = utils.CreateZipPack(temp, []string{task.FilePath})
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)

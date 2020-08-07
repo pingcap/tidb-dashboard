@@ -57,6 +57,7 @@ func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
 				continue
 			}
 			file, err := os.Open(*logPath)
+			defer file.Close()
 			if err != nil {
 				log.Warn("Failed to open log",
 					zap.Any("task", task),

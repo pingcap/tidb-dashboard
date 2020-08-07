@@ -18,13 +18,15 @@ package plugin
 import (
 	"context"
 	"errors"
+	"log"
 	"net"
 	"net/http"
 	"sync/atomic"
 
 	"github.com/hashicorp/go-plugin"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"go.etcd.io/etcd/pkg/transport"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
 var handshakeConfig = plugin.HandshakeConfig{
@@ -103,7 +105,11 @@ func (p *uiPlugin) InitializeUIPlugin(ctx context.Context, req *InstallRequest) 
 	}
 	server := &http.Server{Handler: registry.serveMux}
 	p.destructors = append(p.destructors, server.Shutdown)
-	go server.Serve(listener)
+	go func() {
+		if err := server.Serve(listener); err != nil {
+			log.Println("plugin server is shutdown", err)
+		}
+	}()
 
 	// return
 	return &InstallResponse{

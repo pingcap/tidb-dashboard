@@ -25,11 +25,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+	"github.com/pingcap/log"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/plugin"
-	"go.uber.org/fx"
 )
 
 var (
@@ -174,9 +177,9 @@ func (s *Service) uninstallPlugin(c *gin.Context) {
 // @Summary Do plugin-defined actions
 // @Description Forwards the entire request to the plugin.
 // @Param name path string true "plugin file name"
-// @Produce any
+// @Produce octet-stream
 // @Failure 404 {object} utils.APIError "plugin not found"
-// @Router /plugin-do/{name}/...
+// @Router /plugin-do/{name}/... [any]
 func (s *Service) do(c *gin.Context) {
 	name := c.Param("name")
 	rawPlugin, ok := s.plugins.Load(name)
@@ -208,13 +211,15 @@ func (s *Service) do(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
+	defer resp.Body.Close()
 
 	targetHeaders := c.Writer.Header()
 	for srcKey, srcHeaders := range resp.Header {
 		targetHeaders[srcKey] = srcHeaders
 	}
 	c.Writer.WriteHeader(resp.StatusCode)
-	io.Copy(c.Writer, resp.Body)
-	resp.Body.Close()
+	if _, err = io.Copy(c.Writer, resp.Body); err != nil {
+		log.Debug("failed to copy plugin HTTP response back to host", zap.Error(err))
+	}
 	c.Writer.Flush()
 }

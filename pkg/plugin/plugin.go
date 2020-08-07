@@ -6,9 +6,10 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/go-plugin"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 )
 
 // GRPCServer implements plugin.GRPCPlugin.

@@ -31,10 +31,11 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/hashicorp/go-plugin"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
 // pluginFileName is the expected plugin name in the zip file for the current platform.

@@ -15,13 +15,12 @@ package config
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net/url"
 	"strings"
 )
 
 const (
-	DefaultPublicPathPrefix = "/dashboard"
+	defaultPublicPathPrefix = "/dashboard"
 
 	UIPathPrefix      = "/dashboard/"
 	APIPathPrefix     = "/dashboard/api/"
@@ -40,9 +39,29 @@ type Config struct {
 	EnableExperimental bool
 }
 
+func Default() *Config {
+	return &Config{
+		DataDir:            "/tmp/dashboard-data",
+		PDEndPoint:         "http://127.0.0.1:2379",
+		PublicPathPrefix:   defaultPublicPathPrefix,
+		ClusterTLSConfig:   nil,
+		TiDBTLSConfig:      nil,
+		EnableTelemetry:    true,
+		EnableExperimental: false,
+	}
+}
+
+func (c *Config) GetClusterHttpScheme() string {
+	if c.ClusterTLSConfig != nil {
+		return "https"
+	} else {
+		return "http"
+	}
+}
+
 func (c *Config) NormalizePDEndPoint() error {
-	if !strings.HasPrefix(c.PDEndPoint, "http") {
-		c.PDEndPoint = fmt.Sprintf("http://%s", c.PDEndPoint)
+	if !strings.HasPrefix(c.PDEndPoint, "http://") && !strings.HasPrefix(c.PDEndPoint, "https://") {
+		c.PDEndPoint = "http://" + c.PDEndPoint
 	}
 
 	pdEndPoint, err := url.Parse(c.PDEndPoint)
@@ -50,18 +69,14 @@ func (c *Config) NormalizePDEndPoint() error {
 		return err
 	}
 
-	pdEndPoint.Scheme = "http"
-	if c.ClusterTLSConfig != nil {
-		pdEndPoint.Scheme = "https"
-	}
-
+	pdEndPoint.Scheme = c.GetClusterHttpScheme()
 	c.PDEndPoint = pdEndPoint.String()
 	return nil
 }
 
 func (c *Config) NormalizePublicPathPrefix() {
 	if c.PublicPathPrefix == "" {
-		c.PublicPathPrefix = DefaultPublicPathPrefix
+		c.PublicPathPrefix = defaultPublicPathPrefix
 	}
 	c.PublicPathPrefix = strings.TrimRight(c.PublicPathPrefix, "/")
 }

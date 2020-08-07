@@ -30,27 +30,27 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
 )
 
-type Service struct {
-	lifecycleCtx context.Context
-
-	pdClient      *pd.Client
-	etcdClient    *clientv3.Client
-	httpClient    *http.Client
-	tidbForwarder *tidb.Forwarder
+type ServiceParams struct {
+	fx.In
+	PDClient   *pd.Client
+	EtcdClient *clientv3.Client
+	HTTPClient *httpc.Client
+	TiDBClient *tidb.Client
 }
 
-func NewService(lc fx.Lifecycle, pdClient *pd.Client, etcdClient *clientv3.Client, httpClient *http.Client, tidbForwarder *tidb.Forwarder) *Service {
-	s := &Service{
-		pdClient:      pdClient,
-		etcdClient:    etcdClient,
-		httpClient:    httpClient,
-		tidbForwarder: tidbForwarder,
-	}
+type Service struct {
+	params       ServiceParams
+	lifecycleCtx context.Context
+}
+
+func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
+	s := &Service{params: p}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.lifecycleCtx = ctx
@@ -73,7 +73,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 	endpoint = r.Group("/host")
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
+	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	endpoint.GET("/all", s.getHostsInfo)
 }
 
@@ -98,7 +98,7 @@ func (s *Service) deleteTiDBTopology(c *gin.Context) {
 		wg.Add(1)
 		go func(toDel string) {
 			defer wg.Done()
-			if _, err := s.etcdClient.Delete(ctx, toDel); err != nil {
+			if _, err := s.params.EtcdClient.Delete(ctx, toDel); err != nil {
 				errorChannel <- err
 			}
 		}(key)
@@ -127,7 +127,7 @@ func (s *Service) deleteTiDBTopology(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getTiDBTopology(c *gin.Context) {
-	instances, err := topology.FetchTiDBTopology(s.lifecycleCtx, s.etcdClient)
+	instances, err := topology.FetchTiDBTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -149,7 +149,7 @@ type StoreTopologyResponse struct {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getStoreTopology(c *gin.Context) {
-	tikvInstances, tiFlashInstances, err := topology.FetchStoreTopology(s.pdClient)
+	tikvInstances, tiFlashInstances, err := topology.FetchStoreTopology(s.params.PDClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -169,7 +169,7 @@ func (s *Service) getStoreTopology(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getPDTopology(c *gin.Context) {
-	instances, err := topology.FetchPDTopology(s.pdClient)
+	instances, err := topology.FetchPDTopology(s.params.PDClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -186,7 +186,7 @@ func (s *Service) getPDTopology(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getAlertManagerTopology(c *gin.Context) {
-	instance, err := topology.FetchAlertManagerTopology(s.lifecycleCtx, s.etcdClient)
+	instance, err := topology.FetchAlertManagerTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -203,7 +203,7 @@ func (s *Service) getAlertManagerTopology(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getGrafanaTopology(c *gin.Context) {
-	instance, err := topology.FetchGrafanaTopology(s.lifecycleCtx, s.etcdClient)
+	instance, err := topology.FetchGrafanaTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -222,7 +222,7 @@ func (s *Service) getGrafanaTopology(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getAlertManagerCounts(c *gin.Context) {
 	address := c.Param("address")
-	cnt, err := fetchAlertManagerCounts(s.lifecycleCtx, address, s.httpClient)
+	cnt, err := fetchAlertManagerCounts(s.lifecycleCtx, address, s.params.HTTPClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -278,7 +278,7 @@ func (s *Service) getHostsInfo(c *gin.Context) {
 
 func (s *Service) fetchAllInstanceHostsMap() (map[string]struct{}, error) {
 	allHosts := make(map[string]struct{})
-	pdInfo, err := topology.FetchPDTopology(s.pdClient)
+	pdInfo, err := topology.FetchPDTopology(s.params.PDClient)
 	if err != nil {
 		return nil, err
 	}
@@ -286,7 +286,7 @@ func (s *Service) fetchAllInstanceHostsMap() (map[string]struct{}, error) {
 		allHosts[i.IP] = struct{}{}
 	}
 
-	tikvInfo, tiFlashInfo, err := topology.FetchStoreTopology(s.pdClient)
+	tikvInfo, tiFlashInfo, err := topology.FetchStoreTopology(s.params.PDClient)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +297,7 @@ func (s *Service) fetchAllInstanceHostsMap() (map[string]struct{}, error) {
 		allHosts[i.IP] = struct{}{}
 	}
 
-	tidbInfo, err := topology.FetchTiDBTopology(s.lifecycleCtx, s.etcdClient)
+	tidbInfo, err := topology.FetchTiDBTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
 		return nil, err
 	}

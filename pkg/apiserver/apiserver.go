@@ -38,11 +38,12 @@ import (
 	apiutils "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
-	pkghttp "github.com/pingcap-incubator/tidb-dashboard/pkg/http"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
 	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/tikv"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/version"
 )
@@ -103,12 +104,12 @@ func (s *Service) Start(ctx context.Context) error {
 			newAPIHandlerEngine,
 			s.provideLocals,
 			dbstore.NewDBStore,
+			httpc.NewHTTPClient,
 			pd.NewEtcdClient,
 			pd.NewPDClient,
 			config.NewDynamicConfigManager,
-			tidb.NewForwarderConfig,
-			tidb.NewForwarder,
-			pkghttp.NewHTTPClientWithConf,
+			tidb.NewTiDBClient,
+			tikv.NewTiKVClient,
 			user.NewAuthService,
 			info.NewService,
 			clusterinfo.NewService,
@@ -120,6 +121,7 @@ func (s *Service) Start(ctx context.Context) error {
 			keyvisual.NewService,
 			metrics.NewService,
 			queryeditor.NewService,
+			//configuration.NewService,
 		),
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
@@ -134,6 +136,7 @@ func (s *Service) Start(ctx context.Context) error {
 			keyvisual.Register,
 			metrics.Register,
 			queryeditor.Register,
+			//configuration.Register,
 			// Must be at the end
 			s.status.Register,
 		),

@@ -15,7 +15,6 @@ package profiling
 
 import (
 	"context"
-	"net/http"
 	"sync"
 	"time"
 
@@ -27,6 +26,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
 )
 
 const (
@@ -51,35 +51,27 @@ type StartRequestSession struct {
 	err       error
 }
 
-// Service is used to provide a kind of feature.
+type ServiceParams struct {
+	fx.In
+	Config        *config.Config
+	ConfigManager *config.DynamicConfigManager
+	LocalStore    *dbstore.DB
+	HTTPClient    *httpc.Client
+}
+
 type Service struct {
-	wg sync.WaitGroup
-
-	config     *config.Config
-	cfgManager *config.DynamicConfigManager
-	db         *dbstore.DB
-	httpClient *http.Client
-
+	params        ServiceParams
+	wg            sync.WaitGroup
 	sessionCh     chan *StartRequestSession
 	lastTaskGroup *TaskGroup
 	tasks         sync.Map
 }
 
-// NewService creates a new service.
-func NewService(
-	lc fx.Lifecycle,
-	cfg *config.Config,
-	cfgManager *config.DynamicConfigManager,
-	db *dbstore.DB,
-	httpClient *http.Client,
-) (*Service, error) {
-	if err := autoMigrate(db); err != nil {
+func NewService(lc fx.Lifecycle, p ServiceParams) (*Service, error) {
+	if err := autoMigrate(p.LocalStore); err != nil {
 		return nil, err
 	}
-	// Change the default timeout
-	newHTTPClient := *httpClient
-	newHTTPClient.Timeout = 0
-	s := &Service{config: cfg, cfgManager: cfgManager, db: db, httpClient: &newHTTPClient}
+	s := &Service{params: p}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.wg.Add(1)
@@ -99,7 +91,7 @@ func NewService(
 }
 
 func (s *Service) serviceLoop(ctx context.Context) {
-	cfgCh := s.cfgManager.NewPushChannel()
+	cfgCh := s.params.ConfigManager.NewPushChannel()
 	s.sessionCh = make(chan *StartRequestSession, 1000)
 	defer close(s.sessionCh)
 
@@ -161,16 +153,16 @@ func (s *Service) exclusiveExecute(ctx context.Context, req *StartRequest) (*Tas
 }
 
 func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup, error) {
-	taskGroup := NewTaskGroup(s.db, req.DurationSecs, model.NewRequestTargetStatisticsFromArray(&req.Targets))
-	if err := s.db.Create(taskGroup.TaskGroupModel).Error; err != nil {
+	taskGroup := NewTaskGroup(s.params.LocalStore, req.DurationSecs, model.NewRequestTargetStatisticsFromArray(&req.Targets))
+	if err := s.params.LocalStore.Create(taskGroup.TaskGroupModel).Error; err != nil {
 		log.Warn("failed to start task group", zap.Error(err))
 		return nil, err
 	}
 
 	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		t := NewTask(ctx, taskGroup, target, s.config.ClusterTLSConfig != nil)
-		s.db.Create(t.TaskModel)
+		t := NewTask(ctx, taskGroup, target, s.params.Config.GetClusterHttpScheme())
+		s.params.LocalStore.Create(t.TaskModel)
 		s.tasks.Store(t.ID, t)
 		tasks = append(tasks, t)
 	}
@@ -183,13 +175,13 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 			wg.Add(1)
 			go func(idx int) {
 				defer wg.Done()
-				tasks[idx].run(s.httpClient)
+				tasks[idx].run(s.params.HTTPClient)
 				s.tasks.Delete(tasks[idx].ID)
 			}(i)
 		}
 		wg.Wait()
 		taskGroup.State = TaskStateFinish
-		s.db.Save(taskGroup.TaskGroupModel)
+		s.params.LocalStore.Save(taskGroup.TaskGroupModel)
 	}()
 
 	return taskGroup, nil
@@ -197,7 +189,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 
 func (s *Service) cancelGroup(taskGroupID uint) error {
 	var tasks []TaskModel
-	if err := s.db.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateRunning).Find(&tasks).Error; err != nil {
+	if err := s.params.LocalStore.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateRunning).Find(&tasks).Error; err != nil {
 		log.Warn("failed to cancel task group", zap.Error(err))
 		return err
 	}
@@ -214,7 +206,7 @@ func (s *Service) cancelGroup(taskGroupID uint) error {
 	defer ticker.Stop()
 	for {
 		var runningTasks []TaskModel
-		if err := s.db.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateRunning).Find(&runningTasks).Error; err != nil {
+		if err := s.params.LocalStore.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateRunning).Find(&runningTasks).Error; err != nil {
 			log.Warn("failed to cancel task group", zap.Error(err))
 			return err
 		}

@@ -43,7 +43,7 @@ func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
 	// ref: https://stackoverflow.com/a/57434338/2998877
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
-	c.Writer.Header().Set("Content-Disposition", "attachment; filename='logs.zip'")
+	c.Writer.Header().Set("Content-Disposition", "attachment; filename=logs.zip")
 	c.Stream(func(w io.Writer) bool {
 		ar := zip.NewWriter(w)
 		defer ar.Close()
@@ -58,13 +58,19 @@ func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
 			}
 			file, err := os.Open(*logPath)
 			if err != nil {
-				log.Warn("Failed to pack log",
+				log.Warn("Failed to open log",
 					zap.Any("task", task),
 					zap.Error(err))
 				continue
 			}
 			zipFile, _ := ar.Create(task.Target.FileName() + ".zip")
-			io.Copy(zipFile, file)
+			_, err = io.Copy(zipFile, file)
+			if err != nil {
+				log.Warn("Failed to copy log",
+					zap.Any("task", task),
+					zap.Error(err))
+				continue
+			}
 		}
 
 		return false

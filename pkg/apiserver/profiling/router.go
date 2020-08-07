@@ -251,16 +251,16 @@ func (s *Service) downloadGroup(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-
-	err = createTarball(temp, filePathes)
 	defer temp.Close()
+
+	err = createZipPack(temp, filePathes)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}
 
-	fileName := fmt.Sprintf("profiling_pack_%d.tar.gz", taskGroupID)
+	fileName := fmt.Sprintf("profiling_pack_%d.zip", taskGroupID)
 	c.FileAttachment(temp.Name(), fileName)
 }
 
@@ -303,16 +303,16 @@ func (s *Service) downloadSingle(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-
-	err = createTarball(temp, []string{task.FilePath})
 	defer temp.Close()
+
+	err = createZipPack(temp, []string{task.FilePath})
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}
 
-	fileName := fmt.Sprintf("profiling_%d.tar.gz", taskID)
+	fileName := fmt.Sprintf("profiling_%d.zip", taskID)
 	c.FileAttachment(temp.Name(), fileName)
 }
 

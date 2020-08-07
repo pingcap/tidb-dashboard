@@ -57,13 +57,13 @@ func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
 				continue
 			}
 			file, err := os.Open(*logPath)
-			defer file.Close()
 			if err != nil {
 				log.Warn("Failed to open log",
 					zap.Any("task", task),
 					zap.Error(err))
 				continue
 			}
+			defer file.Close()
 			zipFile, _ := ar.Create(task.Target.FileName() + ".zip")
 			_, err = io.Copy(zipFile, file)
 			if err != nil {

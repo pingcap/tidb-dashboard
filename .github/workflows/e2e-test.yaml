@@ -51,7 +51,7 @@ jobs:
       - name: check tiup
         run: |
           source /home/runner/.profile
-          tiup version
+          tiup --version
           ls /home/runner/.tiup/components/playground/
           ls /home/runner/.tiup/data/
           tiup playground display

@@ -46,7 +46,7 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
           source /home/runner/.profile
-          tiup update --nightly --all
+          tiup update --nightly
           tiup playground nightly --tiflash=0 &
       - name: Build UI
         run: |
@@ -55,6 +55,12 @@ jobs:
           NO_MINIMIZE: true
           CI: true
           REACT_APP_MIXPANEL_TOKEN: ""
+      - name: check tiup
+        run: |
+          tiup version
+          ls /home/runner/.tiup/components/playground/
+          ls /home/runner/.tiup/data/
+          tiup playground display
       - name: Build and run backend in the background
         run: |
           make

@@ -60,8 +60,12 @@ jobs:
           source /home/runner/.profile
           tiup --version
           ls /home/runner/.tiup/components/playground/
-          ls /home/runner/.tiup/data/
+          DATA_PATH=$(ls /home/runner/.tiup/data/)
+          echo $DATA_PATH
           tiup playground display
+          head -n 3 /home/runner/.tiup/data/$DATA_PATH/tidb-0/tidb.log
+          head -n 3 /home/runner/.tiup/data/$DATA_PATH/tikv-0/tikv.log
+          head -n 3 /home/runner/.tiup/data/$DATA_PATH/pd-0/pd.log
       - name: Build and run backend in the background
         run: |
           make

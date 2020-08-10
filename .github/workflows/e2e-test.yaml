@@ -63,8 +63,11 @@ jobs:
           DATA_PATH=$(ls /home/runner/.tiup/data/)
           echo $DATA_PATH
           tiup playground display
+          echo "==== TiDB Log ===="
           head -n 3 /home/runner/.tiup/data/$DATA_PATH/tidb-0/tidb.log
+          echo "==== TiKV Log ===="
           head -n 3 /home/runner/.tiup/data/$DATA_PATH/tikv-0/tikv.log
+          echo "==== PD Log ===="
           head -n 3 /home/runner/.tiup/data/$DATA_PATH/pd-0/pd.log
       - name: Build and run backend in the background
         run: |

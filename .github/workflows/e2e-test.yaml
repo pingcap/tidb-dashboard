@@ -55,7 +55,7 @@ jobs:
           NO_MINIMIZE: true
           CI: true
           REACT_APP_MIXPANEL_TOKEN: ""
-      - name: Check TiUP
+      - name: Debug TiUP
         run: |
           source /home/runner/.profile
           tiup --version

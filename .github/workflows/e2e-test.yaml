@@ -48,13 +48,6 @@ jobs:
           source /home/runner/.profile
           tiup update --nightly
           tiup playground nightly --tiflash=0 &
-      - name: check tiup
-        run: |
-          source /home/runner/.profile
-          tiup --version
-          ls /home/runner/.tiup/components/playground/
-          ls /home/runner/.tiup/data/
-          tiup playground display
       - name: Build UI
         run: |
           make ui
@@ -62,6 +55,13 @@ jobs:
           NO_MINIMIZE: true
           CI: true
           REACT_APP_MIXPANEL_TOKEN: ""
+      - name: check tiup
+        run: |
+          source /home/runner/.profile
+          tiup --version
+          ls /home/runner/.tiup/components/playground/
+          ls /home/runner/.tiup/data/
+          tiup playground display
       - name: Build and run backend in the background
         run: |
           make

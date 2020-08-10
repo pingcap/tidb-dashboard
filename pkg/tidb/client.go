@@ -141,5 +141,5 @@ func (c *Client) SendGetRequest(path string) ([]byte, error) {
 		addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.statusPort)
 	}
 	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, path)
-	return c.statusAPIHTTPClient.WithTimeout(c.statusAPITimeout).SendGetRequest(c.lifecycleCtx, uri, ErrTiDBClientRequestFailed, "TiDB")
+	return c.statusAPIHTTPClient.WithTimeout(c.statusAPITimeout).SendRequest(c.lifecycleCtx, uri, "GET", nil, ErrTiDBClientRequestFailed, "TiDB")
 }

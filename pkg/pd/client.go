@@ -16,6 +16,7 @@ package pd
 import (
 	"context"
 	"fmt"
+	"io"
 	"time"
 
 	"go.uber.org/fx"
@@ -65,5 +66,10 @@ func (c *Client) WithBaseURL(baseURL string) *Client {
 
 func (c *Client) SendGetRequest(path string) ([]byte, error) {
 	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, path)
-	return c.httpClient.WithTimeout(c.timeout).SendGetRequest(c.lifecycleCtx, uri, ErrPDClientRequestFailed, "PD")
+	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, "GET", nil, ErrPDClientRequestFailed, "PD")
+}
+
+func (c *Client) SendPostRequest(path string, body io.Reader) ([]byte, error) {
+	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, path)
+	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, "POST", body, ErrPDClientRequestFailed, "PD")
 }

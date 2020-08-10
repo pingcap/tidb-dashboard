@@ -16,6 +16,7 @@ package httpc
 import (
 	"context"
 	"crypto/tls"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -67,32 +68,40 @@ func (c *Client) WithTimeout(timeout time.Duration) *Client {
 	return &c2
 }
 
-func (c *Client) SendGetRequest(
+// TODO: Replace using go-resty
+func (c *Client) SendRequest(
 	ctx context.Context,
 	uri string,
+	method string,
+	body io.Reader,
 	errType *errorx.Type,
 	errOriginComponent string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", uri, nil)
+	req, err := http.NewRequestWithContext(ctx, method, uri, body)
 	if err != nil {
-		log.Warn("Build API request failed", zap.String("uri", uri), zap.Error(err))
-		return nil, errType.Wrap(err, "failed to build %s API request", errOriginComponent)
+		e := errType.Wrap(err, "Failed to build %s API request", errOriginComponent)
+		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(e))
+		return nil, e
 	}
 
 	resp, err := c.Do(req)
 	if err != nil {
-		log.Warn("Send API request failed", zap.String("uri", uri), zap.Error(err))
-		return nil, errType.Wrap(err, "failed to send request %s API request", errOriginComponent)
+		e := errType.Wrap(err, "Failed to send %s API request", errOriginComponent)
+		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
+		return nil, e
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		log.Warn("Receive non success API response", zap.String("uri", uri), zap.Int("statusCode", resp.StatusCode))
-		return nil, errType.New("received non success status code %d from %s API", resp.StatusCode, errOriginComponent)
-	}
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Warn("Read API response failed", zap.String("uri", uri), zap.Error(err))
-		return nil, errType.Wrap(err, "failed to read %s API response", errOriginComponent)
+		e := errType.Wrap(err, "Failed to read %s API response", errOriginComponent)
+		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
+		return nil, e
+	}
+
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		e := errType.New("Request failed with status code %d from %s API: %s", resp.StatusCode, errOriginComponent, string(data))
+		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
+		return nil, e
 	}
 
 	return data, nil

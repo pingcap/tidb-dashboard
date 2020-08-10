@@ -26,6 +26,7 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/clusterinfo"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/configuration"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
@@ -121,7 +122,7 @@ func (s *Service) Start(ctx context.Context) error {
 			keyvisual.NewService,
 			metrics.NewService,
 			queryeditor.NewService,
-			//configuration.NewService,
+			configuration.NewService,
 		),
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
@@ -136,7 +137,7 @@ func (s *Service) Start(ctx context.Context) error {
 			keyvisual.Register,
 			metrics.Register,
 			queryeditor.Register,
-			//configuration.Register,
+			configuration.Register,
 			// Must be at the end
 			s.status.Register,
 		),

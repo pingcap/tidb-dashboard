@@ -7,6 +7,7 @@ import { usePersistFn } from '@umijs/hooks'
 interface IInlineEditorProps {
   title?: string
   value: any
+  displayValue: string
   onSave?: (newValue: any) => Promise<boolean | void>
 }
 
@@ -21,7 +22,7 @@ function valueWithSameType(newValue, oldValue) {
     }
     return v
   } else if (typeof oldValue === 'boolean') {
-    switch (newValue.toLowerCase().trim()) {
+    switch (String(newValue).toLowerCase().trim()) {
       case 'true':
       case 'yes':
       case '1':
@@ -29,10 +30,9 @@ function valueWithSameType(newValue, oldValue) {
       case 'false':
       case 'no':
       case '0':
-      case null:
         return false
       default:
-        return Boolean(newValue)
+        throw new Error(`"${newValue}" is not a boolean`)
     }
   } else {
     // Otherwise, return as string
@@ -40,15 +40,20 @@ function valueWithSameType(newValue, oldValue) {
   }
 }
 
-function InlineEditor({ value, title, onSave }: IInlineEditorProps) {
+function InlineEditor({
+  value,
+  displayValue,
+  title,
+  onSave,
+}: IInlineEditorProps) {
   const [isVisible, setIsVisible] = useState(false)
-  const [inputVal, setInputVal] = useState(value)
+  const [inputVal, setInputVal] = useState(displayValue)
   const [isPosting, setIsPosting] = useState(false)
 
   const handleCancel = useCallback(() => {
     setIsVisible(false)
-    setInputVal(value)
-  }, [value])
+    setInputVal(displayValue)
+  }, [displayValue])
 
   const handleSave = usePersistFn(async () => {
     if (!onSave) {
@@ -65,14 +70,14 @@ function InlineEditor({ value, title, onSave }: IInlineEditorProps) {
         setIsVisible(false)
       } else {
         // When onSave returns false, popup is not hidden and value is reverted
-        setInputVal(value)
+        setInputVal(displayValue)
       }
     } catch (e) {
       Modal.error({
         content: e.message,
         zIndex: 2000, // higher than Popover
       })
-      setInputVal(value)
+      setInputVal(displayValue)
       setIsVisible(false)
     }
     setIsPosting(false)
@@ -83,8 +88,8 @@ function InlineEditor({ value, title, onSave }: IInlineEditorProps) {
   }, [])
 
   useEffect(() => {
-    setInputVal(value)
-  }, [value])
+    setInputVal(displayValue)
+  }, [displayValue])
 
   const renderPopover = usePersistFn(() => {
     return (
@@ -127,8 +132,8 @@ function InlineEditor({ value, title, onSave }: IInlineEditorProps) {
     >
       <a>
         <EditOutlined />{' '}
-        <Tooltip title={value}>
-          <code>{value}</code>
+        <Tooltip title={displayValue}>
+          <code>{displayValue}</code>
         </Tooltip>
       </a>
     </Popover>

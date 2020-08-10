@@ -49,24 +49,32 @@ function Value({ item, onSaved }: IValueProps) {
     onSaved?.()
   })
 
+  const stringValue = String(item.value)
+
   if (item.is_multi_value) {
     return (
       <span>
         <i>(multiple values)</i>{' '}
-        <Tooltip title={item.value}>
-          <code>{item.value}</code>
+        <Tooltip title={stringValue}>
+          <code>{stringValue}</code>
         </Tooltip>
       </span>
     )
   } else if (!item.is_editable) {
     return (
-      <Tooltip title={item.value}>
-        <code>{item.value}</code>
+      <Tooltip title={stringValue}>
+        <code>{stringValue}</code>
       </Tooltip>
     )
   } else {
+    // Note: We preserve the original value so that newValue's type can be inferred.
     return (
-      <InlineEditor value={item.value} title={item.id} onSave={handleSave} />
+      <InlineEditor
+        value={item.value}
+        displayValue={stringValue}
+        title={item.id}
+        onSave={handleSave}
+      />
     )
   }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { ExperimentOutlined, BugOutlined } from '@ant-design/icons'
+import { BugOutlined, AppstoreOutlined } from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
 import { useEventListener } from '@umijs/hooks'
@@ -84,27 +84,30 @@ function Sider({
     </Menu.SubMenu>
   )
 
-  const experimentalSubMenuItems = [
-    useAppMenuItem(registry, 'query_editor'),
-    useAppMenuItem(registry, 'configuration'),
+  let basicSubMenuItems = [
+    useAppMenuItem(registry, 'overview'),
+    useAppMenuItem(registry, 'cluster_info'),
   ]
-  const experimentalSubMenu = (
+  const experimentalBasicMenuItems = [useAppMenuItem(registry, 'metrics')]
+  if (data?.enable_experimental) {
+    basicSubMenuItems = [...basicSubMenuItems, ...experimentalBasicMenuItems]
+  }
+  const basicSubMenu = (
     <Menu.SubMenu
-      key="experimental"
+      key="basic"
       title={
         <span>
-          <ExperimentOutlined />
-          <span>{t('nav.sider.experimental')}</span>
+          <AppstoreOutlined />
+          <span>{t('nav.sider.basic')}</span>
         </span>
       }
     >
-      {experimentalSubMenuItems}
+      {basicSubMenuItems}
     </Menu.SubMenu>
   )
 
-  const menuItems = [
-    useAppMenuItem(registry, 'overview'),
-    useAppMenuItem(registry, 'cluster_info'),
+  let menuItems = [
+    basicSubMenu,
     useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
@@ -112,9 +115,12 @@ function Sider({
     useAppMenuItem(registry, 'search_logs'),
     debugSubMenu,
   ]
-
+  const experimentalMenuItems = [
+    useAppMenuItem(registry, 'query_editor'),
+    useAppMenuItem(registry, 'configuration'),
+  ]
   if (data?.enable_experimental) {
-    menuItems.push(experimentalSubMenu)
+    menuItems = [...menuItems, ...experimentalMenuItems]
   }
 
   const extraMenuItems = [
@@ -134,7 +140,7 @@ function Sider({
     if (defaultCollapsed) {
       return []
     } else {
-      return ['debug', 'experimental']
+      return ['basic', 'debug']
     }
   }, [defaultCollapsed])
 

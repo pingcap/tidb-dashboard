@@ -1,0 +1,5 @@
+metrics:
+  nav_title: 监控指标
+  toolbar:
+    refresh: 刷新
+    full: 查看高级监控指标

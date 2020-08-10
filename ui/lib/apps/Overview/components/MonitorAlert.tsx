@@ -25,6 +25,10 @@ export default function MonitorAlert() {
     client.getInstance().getGrafanaTopology({ cancelToken })
   )
 
+  const { data: infoData } = useClientRequest((cancelToken) =>
+    client.getInstance().getInfo({ cancelToken })
+  )
+
   useEffect(() => {
     if (!amData) {
       return
@@ -45,7 +49,15 @@ export default function MonitorAlert() {
           showSkeleton={grafanaIsLoading}
           paragraph={{ rows: 1 }}
         >
-          {!grafanaData && (
+          {infoData?.enable_experimental && (
+            <Link to={`/metrics`}>
+              <Space>
+                {t('overview.monitor_alert.view_monitor')}
+                <RightOutlined />
+              </Space>
+            </Link>
+          )}
+          {!infoData?.enable_experimental && !grafanaData && (
             <Typography.Text type="warning">
               <Space>
                 <WarningOutlined />
@@ -53,7 +65,7 @@ export default function MonitorAlert() {
               </Space>
             </Typography.Text>
           )}
-          {grafanaData && (
+          {!infoData?.enable_experimental && grafanaData && (
             <a href={`http://${grafanaData.ip}:${grafanaData.port}`}>
               <Space>
                 {t('overview.monitor_alert.view_monitor')}

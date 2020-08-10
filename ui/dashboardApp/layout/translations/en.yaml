@@ -26,4 +26,4 @@ nav:
     signout: Sign Out
   sider:
     debug: Advanced Debugging
-    experimental: Experimental Features
+    basic: Basic Information

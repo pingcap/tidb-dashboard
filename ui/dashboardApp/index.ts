@@ -19,6 +19,7 @@ import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
 
 import AppUserProfile from '@lib/apps/UserProfile/index.meta'
+import AppMetrics from '@lib/apps/Metrics/index.meta'
 import AppOverview from '@lib/apps/Overview/index.meta'
 import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppKeyViz from '@lib/apps/KeyViz/index.meta'
@@ -98,6 +99,7 @@ async function main() {
 
   registry
     .register(AppUserProfile)
+    .register(AppMetrics)
     .register(AppOverview)
     .register(AppClusterInfo)
     .register(AppKeyViz)

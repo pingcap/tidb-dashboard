@@ -3,23 +3,22 @@ import 'echarts/lib/chart/line'
 import 'echarts/lib/component/grid'
 import 'echarts/lib/component/legend'
 import 'echarts/lib/component/tooltip'
+import 'echarts/lib/component/legend/ScrollableLegendModel'
+import 'echarts/lib/component/legend/ScrollableLegendView'
+import 'echarts/lib/component/legend/scrollableLegendAction'
 
-import { Space } from 'antd'
 import dayjs from 'dayjs'
 import ReactEchartsCore from 'echarts-for-react/lib/core'
 import echarts from 'echarts/lib/echarts'
 import _ from 'lodash'
-import React, { useMemo, useRef } from 'react'
-import { useInterval } from 'react-use'
+import React, { useMemo, useRef, useEffect } from 'react'
 import format from 'string-template'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client from '@lib/client'
 import { AnimatedSkeleton, Card } from '@lib/components'
 import { useBatchClientRequest } from '@lib/utils/useClientRequest'
 import ErrorBar from '../ErrorBar'
-import New from './new'
 
 export type GraphType = 'bar' | 'line'
 
@@ -33,10 +32,11 @@ export interface IMetricChartProps {
 
   series: ISeries[]
   // stepSec: number
-  // beginTimeSec: number
-  // endTimeSec: number
+  beginTimeSec: number
+  endTimeSec: number
   unit: string
   type: GraphType
+  hideZero?: boolean
 }
 
 const HEIGHT = 250
@@ -53,47 +53,31 @@ function getSeriesProps(type: GraphType) {
   }
 }
 
-// FIXME
-function getTimeParams() {
-  return {
-    beginTimeSec: Math.floor((Date.now() - 60 * 60 * 1000) / 1000),
-    endTimeSec: Math.floor(Date.now() / 1000),
-  }
-}
-
-export default function MetricChart({
+export default function NewMetricChart({
   title,
   series,
   // stepSec,
-  // beginTimeSec,
-  // endTimeSec,
+  beginTimeSec,
+  endTimeSec,
   unit,
   type,
+  hideZero,
 }: IMetricChartProps) {
-  const timeParams = useRef(getTimeParams())
+  // const timeParams = useRef(getTimeParams())
 
   const { isLoading, data, error, sendRequest } = useBatchClientRequest(
     series.map((s) => (cancelToken) =>
       client
         .getInstance()
-        .metricsQueryGet(
-          timeParams.current.endTimeSec,
-          s.query,
-          timeParams.current.beginTimeSec,
-          30,
-          {
-            cancelToken,
-          }
-        )
+        .metricsQueryGet(endTimeSec, s.query, beginTimeSec, 10, {
+          cancelToken,
+        })
     )
   )
 
-  const update = () => {
-    timeParams.current = getTimeParams()
+  useEffect(() => {
     sendRequest()
-  }
-
-  useInterval(update, 60 * 1000)
+  }, [beginTimeSec, endTimeSec])
 
   const valueFormatter = useMemo(() => getValueFormat(unit), [unit])
 
@@ -111,6 +95,18 @@ export default function MetricChart({
         return
       }
       r.forEach((rData) => {
+        if (hideZero) {
+          let hasNonZero = false
+          for (const [ts, value] of rData.values) {
+            if (value != 0) {
+              hasNonZero = true
+              break
+            }
+          }
+          if (!hasNonZero) {
+            return
+          }
+        }
         s.push({
           name: format(series[seriesIdx].name, rData.metric),
           data:
@@ -126,6 +122,8 @@ export default function MetricChart({
     return {
       xAxis: {
         type: 'time',
+        min: beginTimeSec * 1000,
+        max: endTimeSec * 1000,
         splitLine: {
           show: true,
         },
@@ -156,12 +154,13 @@ export default function MetricChart({
         orient: 'horizontal',
         x: 'left', // 'center' | 'left' | {number},
         y: 'bottom',
+        type: 'scroll',
       },
       yAxis: {
         type: 'value',
         axisLabel: {
           formatter: (v) => {
-            return valueFormatter(v, 0)
+            return valueFormatter(v, 1)
           },
         },
         splitLine: {
@@ -204,13 +203,13 @@ export default function MetricChart({
       animation: false,
       grid: {
         top: 10,
-        left: 60,
+        left: 70,
         right: 0,
         bottom: 60,
       },
       series: s,
     }
-  }, [data, valueFormatter, series, type])
+  }, [data, valueFormatter, series, type, hideZero])
 
   const showSkeleton = isLoading && _.every(data, (d) => d === null)
 
@@ -241,20 +240,10 @@ export default function MetricChart({
     )
   }
 
-  const subTitle = (
-    <Space>
-      <a onClick={update}>
-        <ReloadOutlined />
-      </a>
-      {isLoading ? <LoadingOutlined /> : null}
-    </Space>
-  )
-
   return (
-    <Card title={title} subTitle={subTitle}>
+    <div>
+      <h3>{title}</h3>
       <AnimatedSkeleton showSkeleton={showSkeleton}>{inner}</AnimatedSkeleton>
-    </Card>
+    </div>
   )
 }
-
-MetricChart.New = New

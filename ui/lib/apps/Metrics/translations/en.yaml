@@ -1,0 +1,5 @@
+metrics:
+  nav_title: Metrics
+  toolbar:
+    refresh: Refresh
+    full: View Advanced Metrics

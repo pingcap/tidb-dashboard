@@ -35,7 +35,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: Load tiup cache
+      - name: Load TiUP cache
         uses: actions/cache@v1
         with:
           path: ~/.tiup/components
@@ -46,7 +46,7 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
           source /home/runner/.profile
-          tiup update --nightly --all
+          tiup update --nightly
           tiup playground nightly --tiflash=0 &
       - name: Build UI
         run: |
@@ -55,6 +55,20 @@ jobs:
           NO_MINIMIZE: true
           CI: true
           REACT_APP_MIXPANEL_TOKEN: ""
+      - name: Debug TiUP
+        run: |
+          source /home/runner/.profile
+          tiup --version
+          ls /home/runner/.tiup/components/playground/
+          DATA_PATH=$(ls /home/runner/.tiup/data/)
+          echo $DATA_PATH
+          tiup playground display
+          echo "==== TiDB Log ===="
+          head -n 3 /home/runner/.tiup/data/$DATA_PATH/tidb-0/tidb.log
+          echo "==== TiKV Log ===="
+          head -n 3 /home/runner/.tiup/data/$DATA_PATH/tikv-0/tikv.log
+          echo "==== PD Log ===="
+          head -n 3 /home/runner/.tiup/data/$DATA_PATH/pd-0/pd.log
       - name: Build and run backend in the background
         run: |
           make

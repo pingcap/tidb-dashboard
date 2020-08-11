@@ -36,9 +36,9 @@ describe('Search Logs', () => {
       await ppExpect(searchForm).toClick(
         'button[data-e2e="timerange-selector"]'
       )
-      const secondsOf4weeks = 28 * 24 * 60 * 60
+      const secondsOf1Hour = 60 * 60
       await ppExpect(page).toClick(
-        `div[data-e2e="common-timeranges"] div[data-e2e="timerange-${secondsOf4weeks}"]`
+        `div[data-e2e="common-timeranges"] div[data-e2e="timerange-${secondsOf1Hour}"]`
       )
       // to hide dropdown
       await ppExpect(searchForm).toClick(
@@ -64,6 +64,9 @@ describe('Search Logs', () => {
       })
       // to hide dropdown
       await ppExpect(searchForm).toClick('div#instances')
+
+      // input keyword
+      await ppExpect(page).toFill('input#keywords', 'welcome')
 
       // start search
       await ppExpect(searchForm).toClick('button#search_btn')

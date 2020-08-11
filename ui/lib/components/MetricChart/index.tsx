@@ -76,7 +76,7 @@ export default function MetricChart({
     series.map((s) => (cancelToken) =>
       client
         .getInstance()
-        .metricsQueryGet(
+        .metricsQuery(
           timeParams.current.endTimeSec,
           s.query,
           timeParams.current.beginTimeSec,

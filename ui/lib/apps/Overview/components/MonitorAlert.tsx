@@ -42,6 +42,19 @@ export default function MonitorAlert() {
     fetch()
   }, [amData])
 
+  const alertInner = (
+    <Space>
+      <Typography.Text type={alertCounter > 0 ? 'danger' : undefined}>
+        {alertCounter === 0
+          ? t('overview.monitor_alert.view_zero_alerts')
+          : t('overview.monitor_alert.view_alerts', {
+              alertCount: alertCounter,
+            })}
+      </Typography.Text>
+      <RightOutlined />
+    </Space>
+  )
+
   return (
     <Card title={t('overview.monitor_alert.title')} noMarginLeft>
       <Stack gap={16}>
@@ -83,19 +96,11 @@ export default function MonitorAlert() {
               </Space>
             </Typography.Text>
           )}
-          {amData && (
-            <a href={`http://${amData.ip}:${amData.port}`}>
-              <Space>
-                <Typography.Text type={alertCounter > 0 ? 'danger' : undefined}>
-                  {alertCounter === 0
-                    ? t('overview.monitor_alert.view_zero_alerts')
-                    : t('overview.monitor_alert.view_alerts', {
-                        alertCount: alertCounter,
-                      })}
-                </Typography.Text>
-                <RightOutlined />
-              </Space>
-            </a>
+          {amData && infoData?.enable_experimental && (
+            <Link to={`/alerts`}>{alertInner}</Link>
+          )}
+          {amData && !infoData?.enable_experimental && (
+            <a href={`http://${amData.ip}:${amData.port}`}>{alertInner}</a>
           )}
         </AnimatedSkeleton>
         <div>

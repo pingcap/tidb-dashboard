@@ -1,0 +1,4 @@
+alerts:
+  nav_title: 告警
+  toolbar:
+    config: 配置后台告警静默

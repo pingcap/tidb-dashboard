@@ -67,11 +67,9 @@ export default function NewMetricChart({
 
   const { isLoading, data, error, sendRequest } = useBatchClientRequest(
     series.map((s) => (cancelToken) =>
-      client
-        .getInstance()
-        .metricsQueryGet(endTimeSec, s.query, beginTimeSec, 10, {
-          cancelToken,
-        })
+      client.getInstance().metricsQuery(endTimeSec, s.query, beginTimeSec, 10, {
+        cancelToken,
+      })
     )
   )
 

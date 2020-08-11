@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joomcode/errorx"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
@@ -34,6 +35,10 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
+)
+
+var (
+	ErrNS = errorx.NewNamespace("error.api.cluster_info")
 )
 
 type ServiceParams struct {
@@ -222,12 +227,12 @@ func (s *Service) getGrafanaTopology(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getAlertManagerCounts(c *gin.Context) {
 	address := c.Param("address")
-	cnt, err := fetchAlertManagerCounts(s.lifecycleCtx, address, s.params.HTTPClient)
+	alerts, err := fetchAlertManagerAlerts(s.lifecycleCtx, address, s.params.HTTPClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, cnt)
+	c.JSON(http.StatusOK, len(alerts))
 }
 
 // @ID getHostsInfo

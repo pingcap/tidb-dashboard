@@ -88,7 +88,10 @@ function Sider({
     useAppMenuItem(registry, 'overview'),
     useAppMenuItem(registry, 'cluster_info'),
   ]
-  const experimentalBasicMenuItems = [useAppMenuItem(registry, 'metrics')]
+  const experimentalBasicMenuItems = [
+    useAppMenuItem(registry, 'metrics'),
+    useAppMenuItem(registry, 'alerts'),
+  ]
   if (data?.enable_experimental) {
     basicSubMenuItems = [...basicSubMenuItems, ...experimentalBasicMenuItems]
   }

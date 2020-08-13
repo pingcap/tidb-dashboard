@@ -1,9 +1,9 @@
-import { FileTextOutlined } from '@ant-design/icons'
+import { FileSearchOutlined } from '@ant-design/icons'
 
 export default {
   id: 'search_logs',
   routerPrefix: '/search_logs',
-  icon: FileTextOutlined,
+  icon: FileSearchOutlined,
   translations: require.context('./translations/', false, /\.yaml$/),
   reactRoot: () => import(/* webpackChunkName: "app_search_logs" */ '.'),
 }

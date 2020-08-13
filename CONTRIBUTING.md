@@ -2,9 +2,9 @@
 
 Thanks for your interest in contributing to TiDB Dashboard! This document outlines some of the conventions on building, running, and testing TiDB Dashboard, the development workflow, commit message formatting, contact points and other resources.
 
-If you need any help (for example, mentoring getting started or understanding the codebase), feel free to join the discussion of [TiDB Dashboard SIG] (Special Interest Group):
+If you need any help (for example, mentoring getting started or understanding the codebase), feel free to join the discussion of [Diagnosis SIG] (Special Interest Group):
 
-- Slack: [#sig-dashboard](https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard&ref=github_dashboard_repo)
+- Slack: [#sig-diagnosis](https://slack.tidb.io/invite?team=tidb-community&channel=sig-diagnosis&ref=github_dashboard_repo)
 
 ## Setting up a development workspace
 
@@ -251,7 +251,7 @@ If the change affects many subsystems, you can use `*` instead, like `*: foo`.
 
 The body of the commit message should describe why the change was made and at a high level, how the code works.
 
-[tidb dashboard sig]: https://github.com/pingcap/community/tree/master/special-interest-groups/sig-dashboard
+[diagnosis sig]: https://github.com/pingcap/community/tree/master/special-interest-groups/sig-diagnosis
 [pd]: https://github.com/pingcap/pd
 [tidb]: https://github.com/pingcap/tidb
 [tikv]: https://github.com/tikv/tikv

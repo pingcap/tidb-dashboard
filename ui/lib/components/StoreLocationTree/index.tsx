@@ -6,7 +6,7 @@ export interface IStoreLocationProps {
 }
 
 const width = 954
-const dx = 10
+const dx = 40
 let dy
 
 const tree = (data) => {
@@ -27,6 +27,7 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
     const root = tree(dataSource)
     let x0 = Infinity
     let x1 = -x0
+    // find max and min x position
     root.each((d) => {
       if (d.x > x1) x1 = d.x
       if (d.x < x0) x0 = d.x
@@ -39,20 +40,21 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
     const g = svg
       .append('g')
       .attr('font-family', 'sans-serif')
-      .attr('font-size', 10)
+      .attr('font-size', 16)
       .attr('transform', `translate(${dy / 3},${dx - x0})`)
 
-    const link = g
-      .append('g')
+    // links
+    g.append('g')
       .attr('fill', 'none')
       .attr('stroke', '#555')
       .attr('stroke-opacity', 0.4)
-      .attr('stroke-width', 1.5)
+      .attr('stroke-width', 2)
       .selectAll('path')
       .data(root.links())
       .join('path')
       .attr('d', diagonal as any)
 
+    // nodes
     const node = g
       .append('g')
       .attr('stroke-linejoin', 'round')
@@ -65,14 +67,19 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
     node
       .append('circle')
       .attr('fill', (d) => (d.children ? '#555' : '#999'))
-      .attr('r', 2.5)
+      .attr('r', 5)
 
     node
       .append('text')
       .attr('dy', '0.31em')
-      .attr('x', (d) => (d.children ? -6 : 6))
+      .attr('x', (d) => (d.children ? -8 : 8))
       .attr('text-anchor', (d) => (d.children ? 'end' : 'start'))
-      .text((d: any) => d.data.name)
+      .text(({ data }: any) => {
+        if (data.value) {
+          return `${data.name}: ${data.value}`
+        }
+        return data.name
+      })
       .clone(true)
       .lower()
       .attr('stroke', 'white')
@@ -80,3 +87,7 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
 
   return <svg ref={ref} />
 }
+
+// refs:
+// https://observablehq.com/@d3/tidy-tree
+// https://observablehq.com/@d3/collapsible-tree

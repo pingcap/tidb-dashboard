@@ -81,8 +81,8 @@ const dataSource2 = {
               value: 'h1',
               children: [
                 {
-                  name: 'address',
-                  value: '127.0.0.1:20160',
+                  name: '127.0.0.1:20160',
+                  value: '',
                   children: [],
                 },
               ],
@@ -92,8 +92,8 @@ const dataSource2 = {
               value: 'h2',
               children: [
                 {
-                  name: 'address',
-                  value: '127.0.0.1:20162',
+                  name: '127.0.0.1:20162',
+                  value: '',
                   children: [],
                 },
               ],
@@ -115,8 +115,8 @@ const dataSource2 = {
               value: 'h1',
               children: [
                 {
-                  name: 'address',
-                  value: '127.0.0.1:20161',
+                  name: '127.0.0.1:20161',
+                  value: '',
                   children: [],
                 },
               ],
@@ -124,8 +124,8 @@ const dataSource2 = {
           ],
         },
         {
-          name: 'address',
-          value: '127.0.0.1:3930',
+          name: '127.0.0.1:3930',
+          value: '',
           children: [],
         },
       ],

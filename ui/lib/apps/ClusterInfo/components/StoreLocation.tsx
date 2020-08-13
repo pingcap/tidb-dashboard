@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client, { TopologyStoreLocation } from '@lib/client'
-import { Pre } from '@lib/components'
+import { StoreLocationTree } from '@lib/components'
 
 type TreeNode = {
   name: string
@@ -10,10 +10,9 @@ type TreeNode = {
 }
 
 function buildTreeData(data: TopologyStoreLocation | undefined): TreeNode {
-  let treeData: TreeNode = { name: '', value: '', children: [] }
+  let treeData: TreeNode = { name: 'labels', value: '', children: [] }
   if ((data?.location_labels?.length || 0) > 0) {
     const locationLabels: string[] = data?.location_labels || []
-    treeData.name = locationLabels[0]
 
     for (const store of data?.stores || []) {
       // reset curNode, point to tree nodes beginning
@@ -49,10 +48,5 @@ export default function StoreLocation() {
   )
   const treeData = useMemo(() => buildTreeData(data), [data])
 
-  return (
-    <div>
-      <Pre>{JSON.stringify(data, undefined, 2)}</Pre>
-      <Pre>{JSON.stringify(treeData, undefined, 2)}</Pre>
-    </div>
-  )
+  return <StoreLocationTree dataSource={treeData} />
 }

@@ -10,8 +10,6 @@ export interface IStoreLocationProps {
   dataSource: any
 }
 
-const HEIGHT = 250
-
 export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
   const opt = {
     tooltip: {
@@ -32,22 +30,24 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
         symbolSize: 10,
 
         label: {
-          normal: {
-            position: 'left',
-            verticalAlign: 'middle',
-            align: 'right',
-            fontSize: 16,
-            fontWeight: 400,
+          position: 'left',
+          verticalAlign: 'middle',
+          align: 'right',
+          fontSize: 16,
+          fontWeight: 400,
+          formatter: ({ data: { name, value } }) => {
+            if (value) {
+              return `${name}: ${value}`
+            }
+            return name
           },
         },
 
         leaves: {
           label: {
-            normal: {
-              position: 'right',
-              verticalAlign: 'middle',
-              align: 'left',
-            },
+            position: 'right',
+            verticalAlign: 'middle',
+            align: 'left',
           },
         },
 
@@ -63,7 +63,6 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
     <ReactEchartsCore
       echarts={echarts}
       lazyUpdate={true}
-      style={{ height: HEIGHT }}
       option={opt}
       theme={'light'}
     />

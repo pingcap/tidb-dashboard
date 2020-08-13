@@ -1,8 +1,12 @@
 import React from 'react'
 import StoreLocationTree from '.'
 
-const dataSource = {
-  name: 'zone',
+export default {
+  title: 'StoreLocationTree',
+}
+
+const dataSource1 = {
+  name: 'labels',
   children: [
     {
       name: 'sh',
@@ -58,8 +62,75 @@ const dataSource = {
   ],
 }
 
-export default {
-  title: 'StoreLocationTree',
+export const onlyName = () => <StoreLocationTree dataSource={dataSource1} />
+
+const dataSource2 = {
+  name: 'labels',
+  value: '',
+  children: [
+    {
+      name: 'zone',
+      value: 'sh',
+      children: [
+        {
+          name: 'rack',
+          value: 'r1',
+          children: [
+            {
+              name: 'host',
+              value: 'h1',
+              children: [
+                {
+                  name: 'address',
+                  value: '127.0.0.1:20160',
+                  children: [],
+                },
+              ],
+            },
+            {
+              name: 'host',
+              value: 'h2',
+              children: [
+                {
+                  name: 'address',
+                  value: '127.0.0.1:20162',
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'zone',
+      value: 'bj',
+      children: [
+        {
+          name: 'rack',
+          value: 'r1',
+          children: [
+            {
+              name: 'host',
+              value: 'h1',
+              children: [
+                {
+                  name: 'address',
+                  value: '127.0.0.1:20161',
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'address',
+          value: '127.0.0.1:3930',
+          children: [],
+        },
+      ],
+    },
+  ],
 }
 
-export const simple = () => <StoreLocationTree dataSource={dataSource} />
+export const nameAndValue = () => <StoreLocationTree dataSource={dataSource2} />

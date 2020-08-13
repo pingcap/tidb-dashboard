@@ -1,5 +1,5 @@
 import React from 'react'
-import StoreLocation from '.'
+import StoreLocationTree from '.'
 
 const dataSource = {
   name: 'zone',
@@ -57,10 +57,9 @@ const dataSource = {
     },
   ],
 }
+
 export default {
-  title: 'StoreLocation',
+  title: 'StoreLocationTree',
 }
 
-export const SLT = () => (
-  <StoreLocation title="SLT" dataSource={dataSource} type="tree" />
-)
+export const simple = () => <StoreLocationTree dataSource={dataSource} />

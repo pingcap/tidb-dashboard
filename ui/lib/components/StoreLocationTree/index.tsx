@@ -2,28 +2,17 @@ import 'echarts/lib/chart/tree'
 import 'echarts/lib/component/grid'
 import 'echarts/lib/component/legend'
 import 'echarts/lib/component/tooltip'
-import { Space } from 'antd'
 import ReactEchartsCore from 'echarts-for-react/lib/core'
 import echarts from 'echarts/lib/echarts'
-import _ from 'lodash'
-import React, { useMemo, useRef } from 'react'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
-import { AnimatedSkeleton, Card } from '@lib/components'
-
-export type GraphType = 'tree'
+import React from 'react'
 
 export interface IStoreLocationProps {
   dataSource: any
-  title: React.ReactNode
-  type: GraphType
 }
+
 const HEIGHT = 250
 
-export default function StoreLocation({
-  dataSource,
-  title,
-  type,
-}: IStoreLocationProps) {
+export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
   const opt = {
     tooltip: {
       trigger: 'item',
@@ -68,9 +57,7 @@ export default function StoreLocation({
     ],
   }
 
-  let inner
-
-  inner = (
+  return (
     <ReactEchartsCore
       echarts={echarts}
       lazyUpdate={true}
@@ -78,20 +65,5 @@ export default function StoreLocation({
       option={opt}
       theme={'light'}
     />
-  )
-
-  const update = () => {}
-
-  const subTitle = (
-    <Space>
-      <a onClick={update}>
-        <ReloadOutlined />
-      </a>
-    </Space>
-  )
-  return (
-    <Card title={title} subTitle={subTitle}>
-      <AnimatedSkeleton>{inner}</AnimatedSkeleton>
-    </Card>
   )
 }

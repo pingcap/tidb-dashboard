@@ -27,7 +27,7 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
         bottom: '1%',
         right: '20%',
 
-        symbolSize: 10,
+        symbolSize: 14,
 
         label: {
           position: 'left',

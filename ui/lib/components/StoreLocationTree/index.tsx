@@ -29,14 +29,15 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
         bottom: '1%',
         right: '20%',
 
-        symbolSize: 7,
+        symbolSize: 10,
 
         label: {
           normal: {
             position: 'left',
             verticalAlign: 'middle',
             align: 'right',
-            fontSize: 9,
+            fontSize: 16,
+            fontWeight: 400,
           },
         },
 
@@ -50,6 +51,7 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
           },
         },
 
+        initialTreeDepth: -1,
         expandAndCollapse: true,
         animationDuration: 550,
         animationDurationUpdate: 750,

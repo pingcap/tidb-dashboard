@@ -162,7 +162,7 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
           return diagonal({ source: o, target: o } as any)
         })
 
-      // ttash the old positions for transition
+      // stash the old positions for transition
       root.eachBefore((d) => {
         d.x0 = d.x
         d.y0 = d.y

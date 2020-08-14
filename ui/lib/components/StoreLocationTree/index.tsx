@@ -96,8 +96,8 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
 
       nodeEnter
         .append('circle')
-        .attr('r', 5)
-        .attr('fill', (d: any) => (d._children ? '#555' : '#999'))
+        .attr('r', 6)
+        .attr('fill', (d: any) => (d._children ? '#ff4d4f' : '#3351ff'))
         .attr('stroke-width', 10)
 
       nodeEnter

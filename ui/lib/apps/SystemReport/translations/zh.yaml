@@ -9,7 +9,7 @@ system_report:
     submit: 开始
   list_table:
     id: 报告 ID
-    diagnose_create_time: 诊断时间
+    report_create_time: 报告时间
     status: 状态
     status_running: 诊断中
     status_finish: 完成
@@ -17,9 +17,9 @@ system_report:
     compare_range: 对比区间
   status:
     head:
-      title: 诊断状态
-      back: 生成诊断报告
-      view: 查看完整诊断报告
+      title: 报告状态
+      back: 生成系统报告
+      view: 查看完整系统报告
     range_begin: 区间起始时间
     range_end: 区间结束时间
     baseline_begin: 基线区间起始时间

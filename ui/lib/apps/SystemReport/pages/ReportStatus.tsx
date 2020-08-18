@@ -10,7 +10,7 @@ import { AnimatedSkeleton, DateTime, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import useQueryParams from '@lib/utils/useQueryParams'
 
-function DiagnoseStatus() {
+function ReportStatus() {
   const { id } = useQueryParams()
   const { t } = useTranslation()
 
@@ -81,4 +81,4 @@ function DiagnoseStatus() {
   )
 }
 
-export default DiagnoseStatus
+export default ReportStatus

@@ -9,7 +9,7 @@ import client from '@lib/client'
 import { Card } from '@lib/components'
 import { DatePicker } from '@lib/components'
 
-import DiagnoseHistory from '../components/DiagnoseHistory'
+import ReportHistory from '../components/ReportHistory'
 
 const useFinishHandler = (navigate) => {
   return async (fieldsValue) => {
@@ -43,7 +43,7 @@ const useFinishHandler = (navigate) => {
 
 const DURATIONS = [5, 10, 30, 60, 24 * 60]
 
-export default function DiagnoseGenerator() {
+export default function ReportGenerator() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const handleFinish = useFinishHandler(navigate)
@@ -147,7 +147,7 @@ export default function DiagnoseGenerator() {
 
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>
-          <DiagnoseHistory />
+          <ReportHistory />
         </ScrollablePane>
       </div>
     </div>

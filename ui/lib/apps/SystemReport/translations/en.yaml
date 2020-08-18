@@ -9,7 +9,7 @@ system_report:
     submit: Start
   list_table:
     id: Report ID
-    diagnose_create_time: Diagnose At
+    report_create_time: Report At
     status: Status
     status_running: Running
     status_finish: Finish
@@ -17,9 +17,9 @@ system_report:
     compare_range: Baseline Range
   status:
     head:
-      title: Diagnostic Status
-      back: New Diagnostic Report
-      view: View Full Report
+      title: Report Status
+      back: New System Report
+      view: View Full System Report
     range_begin: Range Start Time
     range_end: Range End Time
     baseline_begin: Baseline Range Start Time

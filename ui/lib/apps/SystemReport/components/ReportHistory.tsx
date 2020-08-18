@@ -21,7 +21,7 @@ const tableColumns = (t: TFunction): IColumn[] => [
     maxWidth: 350,
   },
   {
-    name: t('system_report.list_table.diagnose_create_time'),
+    name: t('system_report.list_table.report_create_time'),
     key: 'created_at',
     minWidth: 100,
     maxWidth: 200,
@@ -93,7 +93,7 @@ const tableColumns = (t: TFunction): IColumn[] => [
   },
 ]
 
-export default function DiagnoseHistory() {
+export default function ReportHistory() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { data, isLoading } = useClientRequest((cancelToken) =>

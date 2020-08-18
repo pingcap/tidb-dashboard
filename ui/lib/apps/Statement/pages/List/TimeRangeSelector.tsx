@@ -214,7 +214,7 @@ export default function TimeRangeSelector({
           value={[sliderTimeRange.begin_time!, sliderTimeRange.end_time!]}
           onChange={handleSliderChange}
           onAfterChange={handleSliderAfterChange}
-          tipFormatter={(val) => dayjs.unix(val).format('HH:mm')}
+          tipFormatter={(val) => dayjs.unix(val!).format('HH:mm')}
         />
         <span>
           {dayjs.unix(sliderTimeRange.begin_time!).format('MM-DD HH:mm')} ~{' '}

@@ -26,5 +26,7 @@ cluster_info:
         disk_size: Disk Size
         disk_usage: Disk Usage
       instanceUnavailable: Host information is unknow due to instance unreachable
+    store_location:
+      title: Store Location
   error:
     load: 'Load component {{comp}} error: {{cause}}'

@@ -63,7 +63,7 @@ func (s *Service) configHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, cfg)
 }
 
-// @Summary Statement configurationt
+// @Summary Statement configuration
 // @Description Modify configuration of statements
 // @Param request body statement.Config true "Request body"
 // @Success 204 {object} string

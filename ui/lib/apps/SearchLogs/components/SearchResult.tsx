@@ -27,8 +27,8 @@ function componentRender({ component: target }) {
   return (
     <TextWrap>
       {target.kind ? InstanceKindName[target.kind] : '?'}{' '}
-      <Tooltip title={target.ip}>
-        <span>{target.ip}</span>
+      <Tooltip title={target.display_name}>
+        <span>{target.display_name}</span>
       </Tooltip>
     </TextWrap>
   )

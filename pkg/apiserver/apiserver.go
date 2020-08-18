@@ -27,11 +27,11 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/clusterinfo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/foo"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/metrics"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/profiling"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/queryeditor"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
@@ -110,7 +110,6 @@ func (s *Service) Start(ctx context.Context) error {
 			tidb.NewForwarder,
 			pkghttp.NewHTTPClientWithConf,
 			user.NewAuthService,
-			foo.NewService,
 			info.NewService,
 			clusterinfo.NewService,
 			profiling.NewService,
@@ -120,11 +119,11 @@ func (s *Service) Start(ctx context.Context) error {
 			diagnose.NewService,
 			keyvisual.NewService,
 			metrics.NewService,
+			queryeditor.NewService,
 		),
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			user.Register,
-			foo.Register,
 			info.Register,
 			clusterinfo.Register,
 			profiling.Register,
@@ -134,6 +133,7 @@ func (s *Service) Start(ctx context.Context) error {
 			diagnose.Register,
 			keyvisual.Register,
 			metrics.Register,
+			queryeditor.Register,
 			// Must be at the end
 			s.status.Register,
 		),

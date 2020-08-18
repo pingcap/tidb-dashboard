@@ -33,14 +33,11 @@ type Config struct {
 	PDEndPoint       string
 	PublicPathPrefix string
 
-	// TLS config for mTLS authentication between TiDB components.
-	ClusterTLSConfig *tls.Config
+	ClusterTLSConfig *tls.Config // TLS config for mTLS authentication between TiDB components.
+	TiDBTLSConfig    *tls.Config // TLS config for mTLS authentication between TiDB and MySQL client.
 
-	// TLS config for mTLS authentication between TiDB and MySQL client.
-	TiDBTLSConfig *tls.Config
-
-	// Enable client to report data for analysis
-	EnableTelemetry bool
+	EnableTelemetry    bool
+	EnableExperimental bool
 }
 
 func (c *Config) NormalizePDEndPoint() error {

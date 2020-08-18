@@ -9,8 +9,10 @@ export interface ICardProps
   extra?: ReactNode
   noMargin?: boolean
   noMarginTop?: boolean
+  noMarginBottom?: boolean
   noMarginLeft?: boolean
   noMarginRight?: boolean
+  flexGrow?: boolean
 }
 
 export default function Card({
@@ -20,17 +22,25 @@ export default function Card({
   className,
   noMargin,
   noMarginTop,
+  noMarginBottom,
   noMarginLeft,
   noMarginRight,
+  flexGrow,
   children,
   ...rest
 }: ICardProps) {
   return (
-    <div className={cx(styles.cardContainer, className)} {...rest}>
+    <div
+      className={cx(styles.cardContainer, className, {
+        [styles.flexGrow]: flexGrow,
+      })}
+      {...rest}
+    >
       <div
         className={cx(styles.cardInner, {
           [styles.noMargin]: noMargin,
           [styles.noMarginTop]: noMarginTop,
+          [styles.noMarginBottom]: noMarginBottom,
           [styles.noMarginLeft]: noMarginLeft,
           [styles.noMarginRight]: noMarginRight,
           [styles.hasTitle]: title || subTitle || extra,

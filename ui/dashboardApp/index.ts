@@ -102,7 +102,6 @@ async function main() {
     .register(AppClusterInfo)
     .register(AppKeyViz)
     .register(AppStatement)
-    .register(AppClusterInfo)
     .register(AppSystemReport)
     .register(AppSlowQuery)
     .register(AppDiagnose)

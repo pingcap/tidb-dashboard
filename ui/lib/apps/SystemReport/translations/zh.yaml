@@ -13,7 +13,7 @@ system_report:
     status: 状态
     status_running: 诊断中
     status_finish: 完成
-    range: 诊断区间
+    range: 报告区间
     compare_range: 对比区间
   status:
     head:

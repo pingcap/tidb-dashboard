@@ -193,7 +193,7 @@ func (s *Service) getGlobalVariablesFromTiDB(db *gorm.DB) (map[string]interface{
 }
 
 type Item struct {
-	Id           string      `json:"id"`
+	ID           string      `json:"id"`
 	IsEditable   bool        `json:"is_editable"`
 	IsMultiValue bool        `json:"is_multi_value"` // TODO: Support per-instance config
 	Value        interface{} `json:"value"`          // When multi value present, this contains one of the value
@@ -299,14 +299,16 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 			}
 
 			result[kind] = append(result[kind], Item{
-				Id:           configKey,
+				ID:           configKey,
 				IsEditable:   isConfigItemEditable(kind, configKey),
 				IsMultiValue: isMultiValue,
 				Value:        value,
 			})
 		}
-		sort.Slice(result[kind], func(i, j int) bool {
-			return result[kind][i].Id < result[kind][j].Id
+
+		s := result[kind]
+		sort.Slice(s, func(i, j int) bool {
+			return s[i].ID < s[j].ID
 		})
 	}
 
@@ -322,14 +324,14 @@ func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue int
 	}
 	body := make(map[string]interface{})
 	body[id] = newValue
-	bodyJson, err := json.Marshal(&body)
+	bodyJSON, err := json.Marshal(&body)
 	if err != nil {
 		return nil, ErrEditFailed.WrapWithNoMessage(err)
 	}
 
 	switch kind {
 	case ItemKindPDConfig:
-		_, err := s.params.PDClient.SendPostRequest("/config", bytes.NewBuffer(bodyJson))
+		_, err := s.params.PDClient.SendPostRequest("/config", bytes.NewBuffer(bodyJSON))
 		if err != nil {
 			return nil, ErrEditFailed.WrapWithNoMessage(err)
 		}
@@ -341,7 +343,7 @@ func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue int
 		failures := make([]error, 0)
 		for _, kvStore := range tikvInfo {
 			// TODO: What about tombstone stores?
-			_, err := s.params.TiKVClient.SendPostRequest(kvStore.IP, int(kvStore.StatusPort), "/config", bytes.NewBuffer(bodyJson))
+			_, err := s.params.TiKVClient.SendPostRequest(kvStore.IP, int(kvStore.StatusPort), "/config", bytes.NewBuffer(bodyJSON))
 			if err != nil {
 				failures = append(failures, ErrEditFailed.Wrap(err, "Failed to edit config for TiKV instance `%s:%d`", kvStore.IP, kvStore.Port))
 			}
@@ -349,9 +351,8 @@ func (s *Service) editConfig(db *gorm.DB, kind ItemKind, id string, newValue int
 		if len(failures) == len(tikvInfo) {
 			if len(failures) > 0 {
 				return nil, failures[0]
-			} else {
-				return nil, nil
 			}
+			return nil, nil
 		}
 		warnings := make([]*utils.APIError, 0)
 		for _, err := range failures {

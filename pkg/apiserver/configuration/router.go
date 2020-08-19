@@ -52,7 +52,7 @@ func (s *Service) getHandler(c *gin.Context) {
 
 type EditRequest struct {
 	Kind     ItemKind    `json:"kind"`
-	Id       string      `json:"id"`
+	ID       string      `json:"id"`
 	NewValue interface{} `json:"new_value"`
 }
 
@@ -80,7 +80,7 @@ func (s *Service) editHandler(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	warnings, err := s.editConfig(db, req.Kind, req.Id, req.NewValue)
+	warnings, err := s.editConfig(db, req.Kind, req.ID, req.NewValue)
 	if err != nil {
 		_ = c.Error(err)
 		return

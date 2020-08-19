@@ -161,7 +161,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 
 	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		t := NewTask(ctx, taskGroup, target, s.params.Config.GetClusterHttpScheme())
+		t := NewTask(ctx, taskGroup, target, s.params.Config.GetClusterHTTPScheme())
 		s.params.LocalStore.Create(t.TaskModel)
 		s.tasks.Store(t.ID, t)
 		tasks = append(tasks, t)

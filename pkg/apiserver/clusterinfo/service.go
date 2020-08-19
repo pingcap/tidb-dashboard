@@ -171,7 +171,7 @@ func (s *Service) getStoreTopology(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getStoreLocationTopology(c *gin.Context) {
-	storeLocation, err := topology.FetchStoreLocation(s.pdClient)
+	storeLocation, err := topology.FetchStoreLocation(s.params.PDClient)
 	if err != nil {
 		_ = c.Error(err)
 		return

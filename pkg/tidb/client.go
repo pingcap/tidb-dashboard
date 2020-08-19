@@ -16,6 +16,7 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+
 	// MySQL driver used by gorm
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 
@@ -58,7 +59,7 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 	client := &Client{
 		lifecycleCtx:        nil,
 		forwarder:           newForwarder(lc, etcdClient),
-		statusAPIHTTPScheme: config.GetClusterHttpScheme(),
+		statusAPIHTTPScheme: config.GetClusterHTTPScheme(),
 		statusAPIAddress:    "",
 		statusAPIHTTPClient: httpClient,
 		statusAPITimeout:    defaultTiDBStatusAPITimeout,

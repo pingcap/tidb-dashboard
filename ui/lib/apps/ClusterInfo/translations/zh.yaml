@@ -26,7 +26,7 @@ cluster_info:
         disk_size: 磁盘容量
         disk_usage: 磁盘使用率
       instanceUnavailable: 获取该主机信息失败：无法访问实例
-    store_location:
-      title: 存储位置
+    store_topology:
+      title: 存储拓扑
   error:
     load: '加载组件 {{comp}} 失败: {{cause}}'

@@ -34,6 +34,7 @@ import (
 )
 
 type Service struct {
+	// FIXME: Use fx.In
 	lifecycleCtx context.Context
 
 	config            *config.Config

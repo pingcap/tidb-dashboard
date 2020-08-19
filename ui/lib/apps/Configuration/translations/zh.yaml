@@ -1,0 +1,8 @@
+configuration:
+  nav_title: 实例配置
+  common:
+    kind:
+      tidb_variable: TiDB 变量
+      pd_config: PD 配置
+      tikv_config: TiKV 配置
+      tidb_config: TiDB 配置

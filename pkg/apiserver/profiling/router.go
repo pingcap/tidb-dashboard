@@ -105,7 +105,7 @@ func (s *Service) handleStartGroup(c *gin.Context) {
 // @Router /profiling/group/list [get]
 func (s *Service) getGroupList(c *gin.Context) {
 	var resp []TaskGroupModel
-	err := s.db.Order("id DESC").Find(&resp).Error
+	err := s.params.LocalStore.Order("id DESC").Find(&resp).Error
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
@@ -138,7 +138,7 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 		return
 	}
 	var taskGroup TaskGroupModel
-	err = s.db.Where("id = ?", taskGroupID).Find(&taskGroup).Error
+	err = s.params.LocalStore.Where("id = ?", taskGroupID).Find(&taskGroup).Error
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
@@ -146,7 +146,7 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 	}
 
 	var tasks []TaskModel
-	err = s.db.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
+	err = s.params.LocalStore.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
@@ -233,7 +233,7 @@ func (s *Service) downloadGroup(c *gin.Context) {
 		return
 	}
 	var tasks []TaskModel
-	err = s.db.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateFinish).Find(&tasks).Error
+	err = s.params.LocalStore.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateFinish).Find(&tasks).Error
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
@@ -290,7 +290,7 @@ func (s *Service) downloadSingle(c *gin.Context) {
 		return
 	}
 	task := TaskModel{}
-	err = s.db.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
+	err = s.params.LocalStore.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
@@ -341,7 +341,7 @@ func (s *Service) viewSingle(c *gin.Context) {
 		return
 	}
 	task := TaskModel{}
-	err = s.db.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
+	err = s.params.LocalStore.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
 	if err != nil {
 		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
@@ -381,12 +381,12 @@ func (s *Service) deleteGroup(c *gin.Context) {
 		return
 	}
 
-	if err = s.db.Where("task_group_id = ?", taskGroupID).Delete(&TaskModel{}).Error; err != nil {
+	if err = s.params.LocalStore.Where("task_group_id = ?", taskGroupID).Delete(&TaskModel{}).Error; err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}
-	if err = s.db.Where("id = ?", taskGroupID).Delete(&TaskGroupModel{}).Error; err != nil {
+	if err = s.params.LocalStore.Where("id = ?", taskGroupID).Delete(&TaskGroupModel{}).Error; err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
@@ -402,7 +402,7 @@ func (s *Service) deleteGroup(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 func (s *Service) getDynamicConfig(c *gin.Context) {
-	dc, err := s.cfgManager.Get()
+	dc, err := s.params.ConfigManager.Get()
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -429,7 +429,7 @@ func (s *Service) setDynamicConfig(c *gin.Context) {
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {
 		dc.Profiling = req
 	}
-	if err := s.cfgManager.Modify(opt); err != nil {
+	if err := s.params.ConfigManager.Modify(opt); err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
 		return

@@ -37,6 +37,19 @@ type APIError struct {
 	FullText string `json:"full_text"`
 }
 
+func NewAPIError(err error) *APIError {
+	innerErr := errorx.Cast(err)
+	if innerErr == nil {
+		innerErr = ErrOther.WrapWithNoMessage(err)
+	}
+	return &APIError{
+		Error:    true,
+		Message:  innerErr.Error(),
+		Code:     errorx.GetTypeName(innerErr),
+		FullText: fmt.Sprintf("%+v", innerErr),
+	}
+}
+
 // MWHandleErrors creates a middleware that turns (last) error in the context into an APIError json response.
 // In handlers, `c.Error(err)` can be used to attach the error to the context.
 // When error is attached in the context:
@@ -56,16 +69,6 @@ func MWHandleErrors() gin.HandlerFunc {
 			statusCode = http.StatusInternalServerError
 		}
 
-		innerErr := errorx.Cast(err.Err)
-		if innerErr == nil {
-			innerErr = ErrOther.WrapWithNoMessage(err.Err)
-		}
-
-		c.AbortWithStatusJSON(statusCode, APIError{
-			Error:    true,
-			Message:  innerErr.Error(),
-			Code:     errorx.GetTypeName(innerErr),
-			FullText: fmt.Sprintf("%+v", innerErr),
-		})
+		c.AbortWithStatusJSON(statusCode, NewAPIError(err.Err))
 	}
 }

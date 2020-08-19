@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -28,14 +29,19 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/version"
 )
 
-type Service struct {
-	config        *config.Config
-	db            *dbstore.DB
-	tidbForwarder *tidb.Forwarder
+type ServiceParams struct {
+	fx.In
+	Config     *config.Config
+	LocalStore *dbstore.DB
+	TiDBClient *tidb.Client
 }
 
-func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB) *Service {
-	return &Service{config: config, db: db, tidbForwarder: tidbForwarder}
+type Service struct {
+	params ServiceParams
+}
+
+func NewService(p ServiceParams) *Service {
+	return &Service{params: p}
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -43,7 +49,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/info", s.infoHandler)
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/whoami", s.whoamiHandler)
-	endpoint.GET("/databases", utils.MWConnectTiDB(s.tidbForwarder), s.databasesHandler)
+	endpoint.GET("/databases", utils.MWConnectTiDB(s.params.TiDBClient), s.databasesHandler)
 }
 
 type InfoResponse struct { //nolint:golint
@@ -63,8 +69,8 @@ type InfoResponse struct { //nolint:golint
 func (s *Service) infoHandler(c *gin.Context) {
 	resp := InfoResponse{
 		Version:            version.GetInfo(),
-		EnableTelemetry:    s.config.EnableTelemetry,
-		EnableExperimental: s.config.EnableExperimental,
+		EnableTelemetry:    s.params.Config.EnableTelemetry,
+		EnableExperimental: s.params.Config.EnableExperimental,
 	}
 	c.JSON(http.StatusOK, resp)
 }

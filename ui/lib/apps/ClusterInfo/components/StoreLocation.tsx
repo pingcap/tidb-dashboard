@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client, { TopologyStoreLocation } from '@lib/client'
-import { StoreLocationTree, ErrorBar, AnimatedSkeleton } from '@lib/components'
+import { ErrorBar, AnimatedSkeleton } from '@lib/components'
+import StoreLocationTree from './StoreLocationTree'
 
 type TreeNode = {
   name: string
@@ -10,7 +11,7 @@ type TreeNode = {
 }
 
 function buildTreeData(data: TopologyStoreLocation | undefined): TreeNode {
-  let treeData: TreeNode = { name: 'labels', value: '', children: [] }
+  let treeData: TreeNode = { name: 'Stores', value: '', children: [] }
   if ((data?.location_labels?.length || 0) > 0) {
     const locationLabels: string[] = data?.location_labels || []
 

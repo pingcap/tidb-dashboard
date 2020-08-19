@@ -17,28 +17,30 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
 
-type Service struct {
-	config        *config.Config
-	db            *dbstore.DB
-	tidbForwarder *tidb.Forwarder
+type ServiceParams struct {
+	fx.In
+	TiDBClient *tidb.Client
 }
 
-func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB) *Service {
-	return &Service{config: config, db: db, tidbForwarder: tidbForwarder}
+type Service struct {
+	params ServiceParams
+}
+
+func NewService(p ServiceParams) *Service {
+	return &Service{params: p}
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/slow_query")
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
+	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	endpoint.GET("/list", s.listHandler)
 	endpoint.GET("/detail", s.detailhandler)
 }

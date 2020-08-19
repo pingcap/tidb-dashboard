@@ -36,23 +36,24 @@ const (
 )
 
 type Service struct {
-	config        *config.Config
-	db            *dbstore.DB
-	tidbForwarder *tidb.Forwarder
-	fileServer    http.Handler
+	// FIXME: Use fx.In
+	config     *config.Config
+	db         *dbstore.DB
+	tidbClient *tidb.Client
+	fileServer http.Handler
 }
 
-func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, uiAssetFS http.FileSystem) *Service {
+func NewService(config *config.Config, tidbClient *tidb.Client, db *dbstore.DB, uiAssetFS http.FileSystem) *Service {
 	err := autoMigrate(db)
 	if err != nil {
 		log.Fatal("Failed to initialize database", zap.Error(err))
 	}
 
 	return &Service{
-		config:        config,
-		db:            db,
-		tidbForwarder: tidbForwarder,
-		fileServer:    uiserver.Handler(uiAssetFS),
+		config:     config,
+		db:         db,
+		tidbClient: tidbClient,
+		fileServer: uiserver.Handler(uiAssetFS),
 	}
 }
 
@@ -63,7 +64,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		s.reportsHandler)
 	endpoint.POST("/reports",
 		auth.MWAuthRequired(),
-		apiutils.MWConnectTiDB(s.tidbForwarder),
+		apiutils.MWConnectTiDB(s.tidbClient),
 		s.genReportHandler)
 	endpoint.GET("/reports/:id/detail", s.reportHTMLHandler)
 	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)

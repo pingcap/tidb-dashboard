@@ -33,7 +33,7 @@ const (
 // and errors will be generated.
 //
 // This middleware must be placed after the `MWAuthRequired()` middleware, otherwise it will panic.
-func MWConnectTiDB(tidbForwarder *tidb.Forwarder) gin.HandlerFunc {
+func MWConnectTiDB(tidbClient *tidb.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionUser := c.MustGet(SessionUserKey).(*SessionUser)
 		if sessionUser == nil {
@@ -48,7 +48,7 @@ func MWConnectTiDB(tidbForwarder *tidb.Forwarder) gin.HandlerFunc {
 			return
 		}
 
-		db, err := tidbForwarder.OpenTiDB(sessionUser.TiDBUsername, sessionUser.TiDBPassword)
+		db, err := tidbClient.OpenSQLConn(sessionUser.TiDBUsername, sessionUser.TiDBPassword)
 
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {

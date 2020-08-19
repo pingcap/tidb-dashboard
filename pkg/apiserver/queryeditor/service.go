@@ -30,15 +30,19 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
 
-type Service struct {
-	lifecycleCtx context.Context
-
-	config        *config.Config
-	tidbForwarder *tidb.Forwarder
+type ServiceParams struct {
+	fx.In
+	Config     *config.Config
+	TiDBClient *tidb.Client
 }
 
-func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forwarder) *Service {
-	service := &Service{config: config, tidbForwarder: tidbForwarder}
+type Service struct {
+	params       ServiceParams
+	lifecycleCtx context.Context
+}
+
+func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
+	service := &Service{params: p}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			service.lifecycleCtx = ctx
@@ -52,7 +56,8 @@ func NewService(lc fx.Lifecycle, config *config.Config, tidbForwarder *tidb.Forw
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/query_editor")
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
+	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
+	endpoint.Use(utils.MWForbidByExperimentalFlag(s.params.Config.EnableExperimental))
 	endpoint.POST("/run", s.runHandler)
 }
 
@@ -128,12 +133,6 @@ func executeStatements(context context.Context, db *sql.DB, statements string) (
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 403 {object} utils.APIError "Experimental feature not enabled"
 func (s *Service) runHandler(c *gin.Context) {
-	if !s.config.EnableExperimental {
-		c.Status(http.StatusForbidden)
-		_ = c.Error(utils.ErrExpNotEnabled.NewWithNoMessage())
-		return
-	}
-
 	var req RunRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Status(http.StatusBadRequest)

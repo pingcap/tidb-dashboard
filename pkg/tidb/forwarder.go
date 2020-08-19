@@ -15,81 +15,58 @@ package tidb
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net"
-	"net/http"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	"github.com/go-sql-driver/mysql"
 	"github.com/joomcode/errorx"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
 )
 
 var (
-	ErrPDAccessFailed = ErrNS.NewType("pd_access_failed")
-	ErrNoAliveTiDB    = ErrNS.NewType("no_alive_tidb")
+	ErrNoAliveTiDB = ErrNS.NewType("no_alive_tidb")
 )
 
-type ForwarderConfig struct {
-	ClusterTLSConfig    *tls.Config
-	TiDBTLSConfig       *tls.Config
+type forwarderConfig struct {
 	TiDBRetrieveTimeout time.Duration
 	TiDBPollInterval    time.Duration
 	ProxyTimeout        time.Duration
 	ProxyCheckInterval  time.Duration
 }
 
-func NewForwarderConfig(cfg *config.Config) *ForwarderConfig {
-	if cfg.TiDBTLSConfig != nil {
-		_ = mysql.RegisterTLSConfig("tidb", cfg.TiDBTLSConfig)
-	}
-	return &ForwarderConfig{
-		ClusterTLSConfig:    cfg.ClusterTLSConfig,
-		TiDBTLSConfig:       cfg.TiDBTLSConfig,
-		TiDBRetrieveTimeout: time.Second,
-		TiDBPollInterval:    5 * time.Second,
-		ProxyTimeout:        3 * time.Second,
-		ProxyCheckInterval:  2 * time.Second,
-	}
-}
-
 type Forwarder struct {
 	lifecycleCtx context.Context
 
-	config     *ForwarderConfig
+	config     *forwarderConfig
 	etcdClient *clientv3.Client
-	httpClient *http.Client
-	uriScheme  string
 
-	tidbProxy       *proxy
-	tidbStatusProxy *proxy
-	tidbPort        int
-	statusPort      int
+	sqlProxy    *proxy
+	sqlPort     int
+	statusProxy *proxy
+	statusPort  int
 }
 
 func (f *Forwarder) Start(ctx context.Context) error {
 	f.lifecycleCtx = ctx
 
 	var err error
-	if f.tidbProxy, err = f.createProxy(); err != nil {
+	if f.sqlProxy, err = f.createProxy(); err != nil {
 		return err
 	}
-	if f.tidbStatusProxy, err = f.createProxy(); err != nil {
+	if f.statusProxy, err = f.createProxy(); err != nil {
 		return err
 	}
 
-	f.tidbPort = f.tidbProxy.port()
-	f.statusPort = f.tidbStatusProxy.port()
+	f.sqlPort = f.sqlProxy.port()
+	f.statusPort = f.statusProxy.port()
 
 	go f.pollingForTiDB()
-	go f.tidbProxy.run(ctx)
-	go f.tidbStatusProxy.run(ctx)
+	go f.sqlProxy.run(ctx)
+	go f.statusProxy.run(ctx)
 
 	return nil
 }
@@ -117,8 +94,8 @@ func (f *Forwarder) pollingForTiDB() {
 		}, bo)
 		if err != nil {
 			if errorx.IsOfType(err, ErrNoAliveTiDB) {
-				f.tidbProxy.updateRemotes(nil)
-				f.tidbStatusProxy.updateRemotes(nil)
+				f.sqlProxy.updateRemotes(nil)
+				f.statusProxy.updateRemotes(nil)
 			}
 		} else {
 			statusEndpoints := make(map[string]struct{}, len(allTiDB))
@@ -127,8 +104,8 @@ func (f *Forwarder) pollingForTiDB() {
 				tidbEndpoints[fmt.Sprintf("%s:%d", server.IP, server.Port)] = struct{}{}
 				statusEndpoints[fmt.Sprintf("%s:%d", server.IP, server.StatusPort)] = struct{}{}
 			}
-			f.tidbProxy.updateRemotes(tidbEndpoints)
-			f.tidbStatusProxy.updateRemotes(statusEndpoints)
+			f.sqlProxy.updateRemotes(tidbEndpoints)
+			f.statusProxy.updateRemotes(statusEndpoints)
 		}
 
 		select {
@@ -139,22 +116,18 @@ func (f *Forwarder) pollingForTiDB() {
 	}
 }
 
-func NewForwarder(lc fx.Lifecycle, config *ForwarderConfig, etcdClient *clientv3.Client, httpClient *http.Client) *Forwarder {
+func newForwarder(lc fx.Lifecycle, etcdClient *clientv3.Client) *Forwarder {
 	f := &Forwarder{
-		config:     config,
+		config: &forwarderConfig{
+			TiDBRetrieveTimeout: time.Second,
+			TiDBPollInterval:    5 * time.Second,
+			ProxyTimeout:        3 * time.Second,
+			ProxyCheckInterval:  2 * time.Second,
+		},
 		etcdClient: etcdClient,
-		httpClient: httpClient,
 	}
-
-	if config.ClusterTLSConfig == nil {
-		f.uriScheme = "http"
-	} else {
-		f.uriScheme = "https"
-	}
-
 	lc.Append(fx.Hook{
 		OnStart: f.Start,
 	})
-
 	return f
 }

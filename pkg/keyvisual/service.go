@@ -79,13 +79,14 @@ type Service struct {
 	etcdClient     *clientv3.Client
 	pdClient       *pd.Client
 	db             *dbstore.DB
-	forwarder      *tidb.Forwarder
+	tidbClient     *tidb.Client
 
 	stat          *storage.Stat
 	strategy      matrix.Strategy
 	labelStrategy decorator.LabelStrategy
 }
 
+// FIXME: Simplify these things
 func NewService(
 	lc fx.Lifecycle,
 	cfg *config.Config,
@@ -94,7 +95,7 @@ func NewService(
 	etcdClient *clientv3.Client,
 	pdClient *pd.Client,
 	db *dbstore.DB,
-	forwarder *tidb.Forwarder,
+	tidbClient *tidb.Client,
 ) *Service {
 	s := &Service{
 		status:         utils.NewServiceStatus(),
@@ -104,7 +105,7 @@ func NewService(
 		etcdClient:     etcdClient,
 		pdClient:       pdClient,
 		db:             db,
-		forwarder:      forwarder,
+		tidbClient:     tidbClient,
 	}
 
 	lc.Append(s.managerHook())
@@ -165,12 +166,12 @@ func (s *Service) newLabelStrategy(
 	wg *sync.WaitGroup,
 	cfg *config.Config,
 	etcdClient *clientv3.Client,
-	forwarder *tidb.Forwarder,
+	tidbClient *tidb.Client,
 ) decorator.LabelStrategy {
 	switch s.keyVisualCfg.Policy {
 	case config.KeyVisualDBPolicy:
 		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy))
-		return decorator.TiDBLabelStrategy(lc, wg, cfg, etcdClient, forwarder)
+		return decorator.TiDBLabelStrategy(lc, wg, cfg, etcdClient, tidbClient)
 	case config.KeyVisualKVPolicy:
 		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy),
 			zap.String("separator", s.keyVisualCfg.PolicyKVSeparator))
@@ -303,8 +304,8 @@ func (s *Service) heatmaps(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (s *Service) provideLocals() (*config.Config, *clientv3.Client, *pd.Client, *dbstore.DB, *tidb.Forwarder) {
-	return s.config, s.etcdClient, s.pdClient, s.db, s.forwarder
+func (s *Service) provideLocals() (*config.Config, *clientv3.Client, *pd.Client, *dbstore.DB, *tidb.Client) {
+	return s.config, s.etcdClient, s.pdClient, s.db, s.tidbClient
 }
 
 func newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {

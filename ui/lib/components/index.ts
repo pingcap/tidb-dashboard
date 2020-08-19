@@ -53,3 +53,4 @@ export { default as ErrorBar } from './ErrorBar'
 
 export { default as LanguageDropdown } from './LanguageDropdown'
 export { default as ParamsPageWrapper } from './ParamsPageWrapper'
+export { default as StoreLocationTree } from './StoreLocationTree'

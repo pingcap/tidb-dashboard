@@ -5,6 +5,6 @@ beforeAll(async () => {
   return authUsingDefaultCredential()
 })
 
-it('sums numbers', async () => {
+it('getDatabases()', async () => {
   console.log(await Database.getDatabases())
 })

@@ -61,7 +61,8 @@ export async function dropTable(dbName: string, tableName: string) {
 
 export type TableInfoColumn = {
   name: string
-  isNullable: boolean
+  fieldType: string
+  isNotNull: boolean
   defaultValue: string | null
   comment: string
 }
@@ -92,8 +93,8 @@ export async function getTableInfo(
   const columnsData = await evalSqlObj(`SHOW FULL COLUMNS FROM ${name}`)
   const columns = columnsData.map((column) => ({
     name: column.Field,
-    type: column.Type,
-    isNullable: column.Null === 'YES',
+    fieldType: column.Type,
+    isNotNull: column.Null === 'NO',
     defaultValue: column.Default,
     comment: column.Comment,
   }))
@@ -124,4 +125,195 @@ export async function getTableInfo(
     columns,
     indexes,
   }
+}
+
+export type NewColumnFieldTypeDefinition = {
+  typeName: FieldTypeName
+  length?: number
+  decimals?: number
+  isNotNull?: boolean
+  isUnsigned?: boolean
+}
+
+export enum FieldTypeName {
+  BIT = 'BIT',
+  TINYINT = 'TINYINT',
+  BOOL = 'BOOL',
+  SMALLINT = 'SMALLINT',
+  MEDIUMINT = 'MEDIUMINT',
+  INT = 'INT',
+  BIGINT = 'BIGINT',
+  DECIMAL = 'DECIMAL',
+  FLOAT = 'FLOAT',
+  DOUBLE = 'DOUBLE',
+  DATE = 'DATE',
+  DATETIME = 'DATETIME',
+  TIMESTAMP = 'TIMESTAMP',
+  TIME = 'TIME',
+  YEAR = 'YEAR',
+  CHAR = 'CHAR',
+  VARCHAR = 'VARCHAR',
+  BINARY = 'BINARY',
+  VARBINARY = 'VARBINARY',
+  TINYBLOB = 'TINYBLOB',
+  TINYTEXT = 'TINYTEXT',
+  BLOB = 'BLOB',
+  TEXT = 'TEXT',
+  MEDIUMBLOB = 'MEDIUMBLOB',
+  MEDIUMTEXT = 'MEDIUMTEXT',
+  LONGBLOB = 'LONGBLOB',
+  LONGTEXT = 'LONGTEXT',
+  ENUM = 'ENUM',
+  SET = 'SET',
+  JSON = 'JSON',
+}
+
+export function isFieldTypeNameSupportLength(typeName: FieldTypeName) {
+  return (
+    [
+      FieldTypeName.BIT,
+      FieldTypeName.TINYINT,
+      FieldTypeName.SMALLINT,
+      FieldTypeName.MEDIUMINT,
+      FieldTypeName.INT,
+      FieldTypeName.BIGINT,
+      FieldTypeName.DECIMAL,
+      FieldTypeName.FLOAT,
+      FieldTypeName.DOUBLE,
+      FieldTypeName.DATETIME,
+      FieldTypeName.TIMESTAMP,
+      FieldTypeName.TIME,
+      FieldTypeName.CHAR,
+      FieldTypeName.VARCHAR,
+      FieldTypeName.BINARY,
+      FieldTypeName.VARBINARY,
+      FieldTypeName.BLOB,
+      FieldTypeName.TEXT,
+    ].indexOf(typeName) > -1
+  )
+}
+
+export function isFieldTypeNameSupportUnsigned(typeName: FieldTypeName) {
+  return (
+    [
+      FieldTypeName.TINYINT,
+      FieldTypeName.SMALLINT,
+      FieldTypeName.MEDIUMINT,
+      FieldTypeName.INT,
+      FieldTypeName.BIGINT,
+      FieldTypeName.DECIMAL,
+      FieldTypeName.FLOAT,
+      FieldTypeName.DOUBLE,
+    ].indexOf(typeName) > -1
+  )
+}
+
+export function isFieldTypeNameSupportDecimal(typeName: FieldTypeName) {
+  return (
+    [FieldTypeName.DECIMAL, FieldTypeName.FLOAT, FieldTypeName.DOUBLE].indexOf(
+      typeName
+    ) > -1
+  )
+}
+
+export function isFieldTypeNameLengthRequired(typeName: FieldTypeName) {
+  return [FieldTypeName.VARCHAR, FieldTypeName.VARBINARY].indexOf(typeName) > -1
+}
+
+function buildFieldTypeDefinition(def: NewColumnFieldTypeDefinition): string {
+  // in case of calling from JS
+  const typeName = def.typeName.toUpperCase() as FieldTypeName
+  let r = typeName as string
+  let dec: number[] = []
+  if (def.length != null && isFieldTypeNameSupportLength(typeName)) {
+    dec.push(Math.floor(def.length))
+  }
+  if (def.decimals != null && isFieldTypeNameSupportDecimal(typeName)) {
+    dec.push(Math.floor(def.decimals))
+  }
+  if (dec.length === 0 && isFieldTypeNameLengthRequired(typeName)) {
+    dec.push(255)
+  }
+  if (dec.length > 0) {
+    r += ` (${dec.join(', ')})`
+  }
+  if (def.isUnsigned && isFieldTypeNameSupportUnsigned(typeName)) {
+    r += ' UNSIGNED'
+  }
+  if (def.isNotNull) {
+    r += ' NOT NULL'
+  }
+  return r
+}
+
+export type NewColumnDefinition = {
+  name: string
+  fieldType: NewColumnFieldTypeDefinition
+  defaultValue?: string
+  comment?: string
+}
+
+function buildColumnDefinition(def: NewColumnDefinition) {
+  let r = SqlString.escapeId(def.name)
+  r += ` ${buildFieldTypeDefinition(def.fieldType)}`
+  if (def.defaultValue != null) {
+    // FIXME: DEFAULT for TIME?
+    r += ` DEFAULT ${SqlString.escape(def.defaultValue)}`
+  }
+  if (def.comment != null) {
+    r += ` COMMENT ${SqlString.escape(def.comment)}`
+  }
+  return r
+}
+
+export async function addTableColumnAtTail(
+  dbName: string,
+  tableName: string,
+  newColumn: NewColumnDefinition
+) {
+  await evalSql(`ALTER TABLE
+    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ADD COLUMN
+    ${buildColumnDefinition(newColumn)}
+  `)
+}
+
+export async function addTableColumnAtHead(
+  dbName: string,
+  tableName: string,
+  newColumn: NewColumnDefinition
+) {
+  await evalSql(`ALTER TABLE
+    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ADD COLUMN
+    ${buildColumnDefinition(newColumn)}
+    FIRST
+  `)
+}
+
+export async function addTableColumnAfter(
+  dbName: string,
+  tableName: string,
+  newColumn: NewColumnDefinition,
+  afterThisColumnName: string
+) {
+  await evalSql(`ALTER TABLE
+    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ADD COLUMN
+    ${buildColumnDefinition(newColumn)}
+    AFTER
+    ${SqlString.escapeId(afterThisColumnName)}
+  `)
+}
+
+export async function dropTableColumn(
+  dbName: string,
+  tableName: string,
+  columnName: string
+) {
+  await evalSql(`ALTER TABLE
+    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    DROP COLUMN
+    ${SqlString.escapeId(columnName)}
+  `)
 }

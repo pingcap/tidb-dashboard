@@ -5,6 +5,7 @@ export async function evalSql(
   statements: string,
   maxRows?: number
 ): Promise<QueryeditorRunResponse> {
+  console.log('Evaluate SQL', statements)
   const r = await client.getInstance().queryEditorRun({
     statements: statements,
     max_rows: maxRows ?? 2000,

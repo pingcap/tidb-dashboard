@@ -1,57 +1,89 @@
+import SqlString from 'sqlstring'
 import * as Database from './database'
 import { authUsingDefaultCredential } from '@lib/utils/apiClient'
 import { evalSql } from './util'
 
-beforeAll(async () => {
-  return authUsingDefaultCredential()
-})
+const DB_NAME = 'DASHBOARD_TEST_DB'
 
 function newId(prefix) {
   return `${prefix}_${Math.floor(Math.random() * 1000000)}`
 }
 
+beforeAll(async () => {
+  await authUsingDefaultCredential()
+  await evalSql(`DROP DATABASE IF EXISTS ${SqlString.escapeId(DB_NAME)}`)
+  await Database.createDatabase(DB_NAME)
+})
+
+afterAll(async () => {
+  await evalSql(`DROP DATABASE IF EXISTS ${SqlString.escapeId(DB_NAME)}`)
+})
+
 it('create and drop database', async () => {
   const dbName = newId('db')
-
-  let databases = (await Database.getDatabases()).databases
-  expect(databases).not.toContain(dbName)
-
+  {
+    const databases = (await Database.getDatabases()).databases
+    expect(databases).not.toContain(dbName)
+  }
   await Database.createDatabase(dbName)
   try {
-    databases = (await Database.getDatabases()).databases
+    const databases = (await Database.getDatabases()).databases
     expect(databases).toContain(dbName)
   } finally {
     await Database.dropDatabase(dbName)
-    databases = (await Database.getDatabases()).databases
+    const databases = (await Database.getDatabases()).databases
     expect(databases).not.toContain(dbName)
   }
 })
 
 it('list table', async () => {
-  let tables = (await Database.getTables('INFORMATION_SCHEMA')).tables
-  expect(tables).toContain('CLUSTER_STATEMENTS_SUMMARY_HISTORY')
-
-  const tableName = newId('table')
-  tables = (await Database.getTables('test')).tables
-  expect(tables).not.toContain(tableName)
-
-  await evalSql(`CREATE TABLE test.${tableName} (id int);`)
-
-  try {
-    tables = (await Database.getTables('test')).tables
-    expect(tables).toContain(tableName)
-  } finally {
-    await Database.dropTable('test', tableName)
-    tables = (await Database.getTables('test')).tables
-    expect(tables).not.toContain(tableName)
+  {
+    const tables = (await Database.getTables('INFORMATION_SCHEMA')).tables
+    expect(tables).toContain('CLUSTER_STATEMENTS_SUMMARY_HISTORY')
+  }
+  {
+    const tableName = newId('table')
+    {
+      const tables = (await Database.getTables(DB_NAME)).tables
+      expect(tables).not.toContain(tableName)
+    }
+    {
+      await evalSql(`CREATE TABLE ${DB_NAME}.${tableName} (id int);`)
+      const tables = (await Database.getTables(DB_NAME)).tables
+      expect(tables).toContain(tableName)
+    }
+    {
+      await Database.dropTable(DB_NAME, tableName)
+      const tables = (await Database.getTables(DB_NAME)).tables
+      expect(tables).not.toContain(tableName)
+    }
+  }
+  {
+    // Rename
+    const tableName = newId('table')
+    await evalSql(`CREATE TABLE ${DB_NAME}.${tableName} (id int);`)
+    const originalTableName = tableName
+    let currentTableName = tableName
+    {
+      const newTableName = newId('table')
+      await Database.renameTable(DB_NAME, tableName, newTableName)
+      currentTableName = newTableName
+    }
+    {
+      await Database.dropTable(DB_NAME, currentTableName)
+      const tables = (await Database.getTables(DB_NAME)).tables
+      expect(tables).not.toContain(currentTableName)
+      expect(tables).not.toContain(originalTableName)
+    }
   }
 })
 
 it('get table info', async () => {
   // Basic schema
-  let tableName = newId('table')
-  await evalSql(`
-    CREATE TABLE test.${tableName} (
+  {
+    const tableName = newId('table')
+    await evalSql(`
+    CREATE TABLE ${DB_NAME}.${tableName} (
       id INT AUTO_INCREMENT PRIMARY KEY,
       c_char_1 VARCHAR(255) NOT NULL,
       c_char_2 VARCHAR(10) DEFAULT 'abc',
@@ -60,64 +92,63 @@ it('get table info', async () => {
       c_int_2 TINYINT UNSIGNED NOT NULL,
       c_text TEXT COMMENT 'description column',
       c_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )`)
-  try {
-    const d = await Database.getTableInfo('test', tableName)
+    )`)
+    const d = await Database.getTableInfo(DB_NAME, tableName)
     expect(d).toEqual({
       columns: [
         {
           name: 'id',
-          type: 'int(11)',
-          isNullable: false,
+          fieldType: 'int(11)',
+          isNotNull: true,
           defaultValue: null,
           comment: '',
         },
         {
           name: 'c_char_1',
-          type: 'varchar(255)',
-          isNullable: false,
+          fieldType: 'varchar(255)',
+          isNotNull: true,
           defaultValue: null,
           comment: '',
         },
         {
           name: 'c_char_2',
-          type: 'varchar(10)',
-          isNullable: true,
+          fieldType: 'varchar(10)',
+          isNotNull: false,
           defaultValue: 'abc',
           comment: '',
         },
         {
           name: 'c_date',
-          type: 'date',
-          isNullable: true,
+          fieldType: 'date',
+          isNotNull: false,
           defaultValue: null,
           comment: '',
         },
         {
           name: 'c_int_1',
-          type: 'tinyint(3) unsigned',
-          isNullable: false,
+          fieldType: 'tinyint(3) unsigned',
+          isNotNull: true,
           defaultValue: '3',
           comment: '',
         },
         {
           name: 'c_int_2',
-          type: 'tinyint(3) unsigned',
-          isNullable: false,
+          fieldType: 'tinyint(3) unsigned',
+          isNotNull: true,
           defaultValue: null,
           comment: '',
         },
         {
           name: 'c_text',
-          type: 'text',
-          isNullable: true,
+          fieldType: 'text',
+          isNotNull: false,
           defaultValue: null,
           comment: 'description column',
         },
         {
           name: 'c_timestamp',
-          type: 'timestamp',
-          isNullable: true,
+          fieldType: 'timestamp',
+          isNotNull: false,
           defaultValue: 'CURRENT_TIMESTAMP',
           comment: '',
         },
@@ -131,41 +162,40 @@ it('get table info', async () => {
         },
       ],
     })
-  } finally {
-    await Database.dropTable('test', tableName)
+    await Database.dropTable(DB_NAME, tableName)
   }
 
   // Primary key with multiple columns
-  tableName = newId('table')
-  await evalSql(`
-    CREATE TABLE test.${tableName} (
+  {
+    const tableName = newId('table')
+    await evalSql(`
+    CREATE TABLE ${DB_NAME}.${tableName} (
       a INT,
       b varchar(100),
       c int,
       PRIMARY KEY (a, c)
-  )`)
-  try {
-    const d = await Database.getTableInfo('test', tableName)
+    )`)
+    const d = await Database.getTableInfo(DB_NAME, tableName)
     expect(d).toEqual({
       columns: [
         {
           name: 'a',
-          type: 'int(11)',
-          isNullable: false,
+          fieldType: 'int(11)',
+          isNotNull: true,
           defaultValue: null,
           comment: '',
         },
         {
           name: 'b',
-          type: 'varchar(100)',
-          isNullable: true,
+          fieldType: 'varchar(100)',
+          isNotNull: false,
           defaultValue: null,
           comment: '',
         },
         {
           name: 'c',
-          type: 'int(11)',
-          isNullable: false,
+          fieldType: 'int(11)',
+          isNotNull: true,
           defaultValue: null,
           comment: '',
         },
@@ -179,14 +209,14 @@ it('get table info', async () => {
         },
       ],
     })
-  } finally {
-    await Database.dropTable('test', tableName)
+    await Database.dropTable(DB_NAME, tableName)
   }
 
   // Indexes
-  tableName = newId('table')
-  await evalSql(`
-    CREATE TABLE test.${tableName} (
+  {
+    const tableName = newId('table')
+    await evalSql(`
+    CREATE TABLE ${DB_NAME}.${tableName} (
       id int(11) NOT NULL AUTO_INCREMENT,
       c varchar(255) DEFAULT NULL,
       d varchar(255) DEFAULT NULL,
@@ -195,43 +225,42 @@ it('get table info', async () => {
       PRIMARY KEY (id),
       UNIQUE KEY cidx (c),
       KEY cidx2 (c,id)
-  )`)
-  try {
-    const d = await Database.getTableInfo('test', tableName)
+    )`)
+    const d = await Database.getTableInfo(DB_NAME, tableName)
     expect(d).toEqual({
       columns: [
         {
           name: 'id',
-          type: 'int(11)',
-          isNullable: false,
+          fieldType: 'int(11)',
+          isNotNull: true,
           defaultValue: null,
           comment: '',
         },
         {
           name: 'c',
-          type: 'varchar(255)',
-          isNullable: true,
+          fieldType: 'varchar(255)',
+          isNotNull: false,
           defaultValue: null,
           comment: '',
         },
         {
           name: 'd',
-          type: 'varchar(255)',
-          isNullable: true,
+          fieldType: 'varchar(255)',
+          isNotNull: false,
           defaultValue: null,
           comment: '',
         },
         {
           name: 'e',
-          type: 'varchar(255)',
-          isNullable: true,
+          fieldType: 'varchar(255)',
+          isNotNull: false,
           defaultValue: null,
           comment: '',
         },
         {
           name: 'g',
-          type: 'int(255) unsigned',
-          isNullable: true,
+          fieldType: 'int(255) unsigned',
+          isNotNull: false,
           defaultValue: null,
           comment: '',
         },
@@ -257,8 +286,7 @@ it('get table info', async () => {
         },
       ],
     })
-  } finally {
-    await Database.dropTable('test', tableName)
+    await Database.dropTable(DB_NAME, tableName)
   }
 })
 
@@ -267,4 +295,141 @@ it('get table info for native tables successfully', async () => {
   for (const tableName of tables) {
     await Database.getTableInfo('INFORMATION_SCHEMA', tableName)
   }
+})
+
+it('manipulate column', async () => {
+  const tableName = newId('table')
+  await evalSql(`
+  CREATE TABLE ${DB_NAME}.${tableName} (
+    a INT
+  )`)
+  {
+    // Add column
+    const colName = newId('col')
+    const newColumn = {
+      name: colName,
+      fieldType: {
+        typeName: 'int',
+      },
+    }
+    await Database.addTableColumnAtTail(DB_NAME, tableName, newColumn)
+    {
+      const d = await Database.getTableInfo(DB_NAME, tableName)
+      expect(d).toEqual({
+        columns: [
+          {
+            name: 'a',
+            fieldType: 'int(11)',
+            isNotNull: false,
+            defaultValue: null,
+            comment: '',
+          },
+          {
+            name: colName,
+            fieldType: 'int(11)',
+            isNotNull: false,
+            defaultValue: null,
+            comment: '',
+          },
+        ],
+        indexes: [],
+      })
+    }
+    // Drop column
+    await Database.dropTableColumn(DB_NAME, tableName, colName)
+    {
+      const d = await Database.getTableInfo(DB_NAME, tableName)
+      expect(d).toEqual({
+        columns: [
+          {
+            name: 'a',
+            fieldType: 'int(11)',
+            isNotNull: false,
+            defaultValue: null,
+            comment: '',
+          },
+        ],
+        indexes: [],
+      })
+    }
+  }
+  {
+    // Test VARCHAR becomes VARCHAR(255) by default
+    const colName = newId('col')
+    const newColumn = {
+      name: colName,
+      fieldType: {
+        typeName: 'varchar',
+        isUnsigned: true, // unsigned is ignored
+      },
+    }
+    await Database.addTableColumnAtHead(DB_NAME, tableName, newColumn)
+    {
+      const d = await Database.getTableInfo(DB_NAME, tableName)
+      expect(d.columns[0]).toEqual({
+        name: colName,
+        fieldType: 'varchar(255)',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      })
+    }
+    {
+      // Test inappropiate length is erased
+      const colName2 = newId('col')
+      const newColumn2 = {
+        name: colName2,
+        fieldType: {
+          typeName: 'year',
+          length: 123,
+          decimals: 5,
+        },
+        comment: 'This is a comment',
+      }
+      await Database.addTableColumnAfter(
+        DB_NAME,
+        tableName,
+        newColumn2,
+        colName
+      )
+      {
+        const d = await Database.getTableInfo(DB_NAME, tableName)
+        expect(d.columns[1]).toEqual({
+          name: colName2,
+          fieldType: 'year(4)',
+          isNotNull: false,
+          defaultValue: null,
+          comment: 'This is a comment',
+        })
+      }
+    }
+  }
+  {
+    // Test others
+    const colName = newId('col')
+    const newColumn = {
+      name: colName,
+      fieldType: {
+        typeName: 'float',
+        length: 10,
+        decimals: 5,
+        isUnsigned: true, // unsigned is reserved
+        isNotNull: true,
+      },
+      defaultValue: '123.4',
+    }
+    await Database.addTableColumnAtHead(DB_NAME, tableName, newColumn)
+    {
+      const d = await Database.getTableInfo(DB_NAME, tableName)
+      expect(d.columns[0]).toEqual({
+        name: colName,
+        fieldType: 'float(10,5) unsigned',
+        isNotNull: true,
+        defaultValue: '123.4',
+        comment: '',
+      })
+    }
+  }
+
+  await Database.dropTable(DB_NAME, tableName)
 })

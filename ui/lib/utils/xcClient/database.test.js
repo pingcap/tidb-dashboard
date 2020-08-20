@@ -19,3 +19,8 @@ it('create and drop database', async () => {
   databases = (await Database.getDatabases()).databases
   expect(databases).not.toContain(dbName)
 })
+
+it('get tables', async () => {
+  let tables = (await Database.getTables('INFORMATION_SCHEMA')).tables
+  expect(tables).toContain('CLUSTER_STATEMENTS_SUMMARY_HISTORY')
+})

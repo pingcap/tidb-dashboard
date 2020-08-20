@@ -6,9 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
 )
 
-func fetchAlertManagerCounts(ctx context.Context, alertManagerAddr string, httpClient *http.Client) (int, error) {
+func fetchAlertManagerCounts(ctx context.Context, alertManagerAddr string, httpClient *httpc.Client) (int, error) {
+	// FIXME: Use httpClient.SendGetRequest
+
 	uri := fmt.Sprintf("http://%s/api/v2/alerts", alertManagerAddr)
 	req, err := http.NewRequestWithContext(ctx, "GET", uri, nil)
 	if err != nil {

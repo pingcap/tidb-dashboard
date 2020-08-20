@@ -48,8 +48,8 @@ export default function ListPage() {
             <HostTable />
           </CardTabs.TabPane>
           <CardTabs.TabPane
-            tab={t('cluster_info.list.store_location.title')}
-            key="store_location"
+            tab={t('cluster_info.list.store_topology.title')}
+            key="store_topology"
           >
             <StoreLocation />
           </CardTabs.TabPane>

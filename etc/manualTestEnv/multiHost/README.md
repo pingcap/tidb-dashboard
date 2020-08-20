@@ -13,7 +13,7 @@ TiDB, PD, TiKV, TiFlash each in different hosts.
 1. Use [TiUP](https://tiup.io/) to deploy the cluster to the box (only need to do it once):
 
    ```bash
-   tiup cluster deploy multiHost v4.0.0 topology.yaml -i ../_shared/vagrant_key -y --user vagrant
+   tiup cluster deploy multiHost v4.0.4 topology.yaml -i ../_shared/vagrant_key -y --user vagrant
    ```
 
 1. Start the cluster in the box:

@@ -41,17 +41,17 @@ type tidbLabelStrategy struct {
 	EtcdClient *clientv3.Client
 
 	TableMap      sync.Map
-	forwarder     *tidb.Forwarder
+	tidbClient    *tidb.Client
 	SchemaVersion int64
 	TidbAddress   []string
 }
 
 // TiDBLabelStrategy implements the LabelStrategy interface. Get Label Information from TiDB.
-func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, etcdClient *clientv3.Client, forwarder *tidb.Forwarder) LabelStrategy {
+func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, etcdClient *clientv3.Client, tidbClient *tidb.Client) LabelStrategy {
 	s := &tidbLabelStrategy{
 		Config:        cfg,
 		EtcdClient:    etcdClient,
-		forwarder:     forwarder,
+		tidbClient:    tidbClient,
 		SchemaVersion: -1,
 	}
 

@@ -151,6 +151,7 @@ export default function Page() {
         columns={columns}
         items={data?.tasks_status || []}
         onRowClicked={handleRowClick}
+        extendLastColumn
       />
     </div>
   )

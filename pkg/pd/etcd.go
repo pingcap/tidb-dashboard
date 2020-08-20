@@ -27,10 +27,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
 )
 
-const (
-	TiDBServerInformationPath = "/tidb/server/info"
-)
-
 func newZapEncoder(zapcore.EncoderConfig) (zapcore.Encoder, error) {
 	logCfg := log.Config{
 		DisableTimestamp:    false,

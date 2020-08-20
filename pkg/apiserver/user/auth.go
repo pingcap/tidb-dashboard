@@ -54,12 +54,12 @@ type TokenResponse struct {
 	Expire time.Time `json:"expire"`
 }
 
-func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder) (*utils.SessionUser, error) {
+func (f *authenticateForm) Authenticate(tidbClient *tidb.Client) (*utils.SessionUser, error) {
 	// TODO: Support non TiDB auth
 	if !f.IsTiDBAuth {
 		return nil, ErrSignInUnsupportedAuthType.New("unsupported auth type, only TiDB auth is supported")
 	}
-	db, err := tidbForwarder.OpenTiDB(f.Username, f.Password)
+	db, err := tidbClient.OpenSQLConn(f.Username, f.Password)
 	if err != nil {
 		if errorx.Cast(err) == nil {
 			return nil, ErrSignInOther.WrapWithNoMessage(err)
@@ -81,7 +81,7 @@ func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder) (*utils.S
 	}, nil
 }
 
-func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
+func NewAuthService(tidbClient *tidb.Client) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -108,7 +108,7 @@ func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
 			if err := c.ShouldBindJSON(&form); err != nil {
 				return nil, utils.ErrInvalidRequest.WrapWithNoMessage(err)
 			}
-			u, err := form.Authenticate(tidbForwarder)
+			u, err := form.Authenticate(tidbClient)
 			if err != nil {
 				return nil, errorx.Decorate(err, "authenticate failed")
 			}

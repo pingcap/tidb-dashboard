@@ -43,6 +43,7 @@
     "single-spa": "^5.5.5",
     "single-spa-react": "^3.0.1",
     "sql-formatter-plus-plus": "^1.4.0",
+    "sqlstring": "^2.3.2",
     "string-template": "^1.0.0"
   },
   "scripts": {
@@ -94,6 +95,7 @@
     "@storybook/preset-create-react-app": "^3.1.4",
     "@storybook/react": "^6.0.0-rc.3",
     "@types/d3": "^5.7.2",
+    "@types/jest": "^26.0.10",
     "@types/lodash": "^4.14.158",
     "@types/node": "^14.0.27",
     "@types/react": "^16.9.43",

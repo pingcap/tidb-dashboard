@@ -1,4 +1,5 @@
 import { executeStatements } from './util'
+import SqlString from 'sqlstring'
 
 export type GetDatabaseResult = {
   databases: string[]
@@ -13,4 +14,12 @@ export async function getDatabases(): Promise<GetDatabaseResult> {
   return {
     databases: ret,
   }
+}
+
+export async function createDatabase(name: string) {
+  await executeStatements(`CREATE DATABASE ${SqlString.escapeId(name)}`)
+}
+
+export async function dropDatabase(name: string) {
+  await executeStatements(`DROP DATABASE ${SqlString.escapeId(name)}`)
 }

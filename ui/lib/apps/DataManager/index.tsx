@@ -14,9 +14,9 @@ const App = () => {
         <Routes>
           <Route path="/data" element={<DatabaseList />} />
           <Route path="/data/tables" element={<DBTableList />} />
+          <Route path="/data/table_new" element={<DBTableNew />} />
           <Route path="/data/table_detail" element={<DBTableDetail />} />
           <Route path="/data/table_structure" element={<DBTableStructure />} />
-          <Route path="/data/table_new" element={<DBTableNew />} />
         </Routes>
       </Router>
     </Root>

@@ -1,6 +1,6 @@
 import { Root } from '@lib/components'
 import React from 'react'
-import { HashRouter as Router, Navigate, Route, Routes } from 'react-router-dom'
+import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 import DatabaseList from './pages/DatabaseList'
 import DBTableList from './pages/DBTableList'
 import DBTableDetail from './pages/DBTableDetail'

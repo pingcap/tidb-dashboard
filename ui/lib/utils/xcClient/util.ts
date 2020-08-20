@@ -1,6 +1,7 @@
 import client, { QueryeditorRunResponse } from '@lib/client'
+import _ from 'lodash'
 
-export async function executeStatements(
+export async function evalSql(
   statements: string,
   maxRows?: number
 ): Promise<QueryeditorRunResponse> {
@@ -12,4 +13,12 @@ export async function executeStatements(
     throw new Error(r.data.error_msg)
   }
   return r.data
+}
+
+export async function evalSqlObj(
+  statements: string,
+  maxRows?: number
+): Promise<any[]> {
+  const r = await evalSql(statements, maxRows)
+  return r.rows?.map((row) => _.zipObject(r.column_names ?? [], row)) ?? []
 }

@@ -43,6 +43,7 @@
     "single-spa": "^5.5.5",
     "single-spa-react": "^3.0.1",
     "sql-formatter-plus-plus": "^1.4.0",
+    "sqlstring": "^2.3.2",
     "string-template": "^1.0.0"
   },
   "scripts": {
@@ -52,6 +53,20 @@
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
     "storybook": "start-storybook -p 9009 -s public"
+  },
+  "jest": {
+    "verbose": true,
+    "roots": [
+      "<rootDir>/lib"
+    ],
+    "testMatch": [
+      "<rootDir>/lib/**/__tests__/**/*.js?(x)",
+      "<rootDir>/lib/**/?(*.)(spec|test).js?(x)"
+    ],
+    "moduleNameMapper": {
+      "@lib/(.*)": "<rootDir>/lib/$1"
+    },
+    "testEnvironment": "node"
   },
   "husky": {
     "hooks": {
@@ -80,6 +95,7 @@
     "@storybook/preset-create-react-app": "^3.1.4",
     "@storybook/react": "^6.0.0-rc.3",
     "@types/d3": "^5.7.2",
+    "@types/jest": "^26.0.10",
     "@types/lodash": "^4.14.158",
     "@types/node": "^14.0.27",
     "@types/react": "^16.9.43",

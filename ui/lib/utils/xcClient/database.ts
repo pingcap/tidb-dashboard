@@ -317,3 +317,59 @@ export async function dropTableColumn(
     ${SqlString.escapeId(columnName)}
   `)
 }
+
+export type AddIndexOptionsColumn = {
+  columnName: string
+
+  // Optional, mostly it will be null or 0. Setting keyLength for inappropiate
+  // columns will result in errors.
+  keyLength?: number
+}
+
+export type AddIndexOptions = {
+  name: string // Index name
+  type: TableInfoIndexType // Must not be PRIMARY
+  columns: AddIndexOptionsColumn[]
+}
+
+export async function addTableIndex(
+  dbName: string,
+  tableName: string,
+  options: AddIndexOptions
+) {
+  if (options.type === TableInfoIndexType.Primary) {
+    throw new Error('Add PRIMARY index is not supported')
+  }
+
+  const keys = options.columns.map((col) => {
+    let k = SqlString.escapeId(col.columnName)
+    if (col.keyLength && col.keyLength > 0) {
+      k += `(${col.keyLength})`
+    }
+    return k
+  })
+
+  let indexTypeName
+  if (options.type === TableInfoIndexType.Normal) {
+    indexTypeName = ''
+  } else {
+    indexTypeName = 'UNIQUE'
+  }
+
+  await evalSql(`
+    CREATE ${indexTypeName} INDEX ${SqlString.escapeId(options.name)} ON
+    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    (${keys.join(', ')})
+  `)
+}
+
+export async function dropTableIndex(
+  dbName: string,
+  tableName: string,
+  indexName: string
+) {
+  await evalSql(`
+    DROP INDEX ${SqlString.escapeId(indexName)} ON
+    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+  `)
+}

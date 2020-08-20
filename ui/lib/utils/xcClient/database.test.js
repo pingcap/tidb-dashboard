@@ -438,3 +438,56 @@ it('add column with default values and complex types', async () => {
   }
   await Database.dropTable(DB_NAME, tableName)
 })
+
+it('add and drop index', async () => {
+  const tableName = newId('table')
+  await evalSql(`
+  CREATE TABLE ${DB_NAME}.${tableName} (
+    a INT,
+    b INT,
+    c INT
+  )`)
+  {
+    await Database.addTableIndex(DB_NAME, tableName, {
+      name: 'idx1',
+      type: Database.TableInfoIndexType.Normal,
+      columns: [{ columnName: 'a' }],
+    })
+    const { indexes } = await Database.getTableInfo(DB_NAME, tableName)
+    expect(indexes).toEqual([
+      {
+        name: 'idx1',
+        type: Database.TableInfoIndexType.Normal,
+        columns: ['a'],
+        isDeleteble: true,
+      },
+    ])
+  }
+  {
+    await Database.addTableIndex(DB_NAME, tableName, {
+      name: 'idx2',
+      type: Database.TableInfoIndexType.Unique,
+      columns: [{ columnName: 'b' }, { columnName: 'a' }],
+    })
+    const { indexes } = await Database.getTableInfo(DB_NAME, tableName)
+    expect(indexes[1]).toEqual({
+      name: 'idx2',
+      type: Database.TableInfoIndexType.Unique,
+      columns: ['b', 'a'],
+      isDeleteble: true,
+    })
+  }
+  {
+    await Database.dropTableIndex(DB_NAME, tableName, 'idx1')
+    const { indexes } = await Database.getTableInfo(DB_NAME, tableName)
+    expect(indexes).toEqual([
+      {
+        name: 'idx2',
+        type: Database.TableInfoIndexType.Unique,
+        columns: ['b', 'a'],
+        isDeleteble: true,
+      },
+    ])
+  }
+  await Database.dropTable(DB_NAME, tableName)
+})

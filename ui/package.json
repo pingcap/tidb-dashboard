@@ -53,6 +53,20 @@
     "gen:browserlist": "gulp gen:browserlist",
     "storybook": "start-storybook -p 9009 -s public"
   },
+  "jest": {
+    "verbose": true,
+    "roots": [
+      "<rootDir>/lib"
+    ],
+    "testMatch": [
+      "<rootDir>/lib/**/__tests__/**/*.js?(x)",
+      "<rootDir>/lib/**/?(*.)(spec|test).js?(x)"
+    ],
+    "moduleNameMapper": {
+      "@lib/(.*)": "<rootDir>/lib/$1"
+    },
+    "testEnvironment": "node"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "pretty-quick --staged --bail"

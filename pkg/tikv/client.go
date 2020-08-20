@@ -43,7 +43,7 @@ type Client struct {
 func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
 	client := &Client{
 		httpClient:   httpClient,
-		httpScheme:   config.GetClusterHttpScheme(),
+		httpScheme:   config.GetClusterHTTPScheme(),
 		lifecycleCtx: nil,
 		timeout:      defaultTiKVStatusAPITimeout,
 	}

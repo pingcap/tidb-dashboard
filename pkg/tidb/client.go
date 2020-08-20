@@ -16,6 +16,7 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+
 	// MySQL driver used by gorm
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 
@@ -33,8 +34,11 @@ const (
 	defaultTiDBStatusAPITimeout = time.Second * 10
 
 	// When this environment variable is set, SQL requests will be always sent to this specific TiDB instance.
-	// Calling `WithSQLAddress` to enforce a SQL request endpoint will fail when opening the connection.
+	// Calling `WithSQLAPIAddress` to enforce a SQL request endpoint will fail when opening the connection.
 	tidbOverrideSQLEndpointEnvVar = "TIDB_OVERRIDE_ENDPOINT"
+	// When this environment variable is set, status requests will be always sent to this specific TiDB instance.
+	// Calling `WithStatusAPIAddress` to enforce a status API request endpoint will fail when opening the connection.
+	tidbOverrideStatusEndpointEnvVar = "TIDB_OVERRIDE_STATUS_ENDPOINT"
 )
 
 type Client struct {
@@ -58,7 +62,7 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 	client := &Client{
 		lifecycleCtx:        nil,
 		forwarder:           newForwarder(lc, etcdClient),
-		statusAPIHTTPScheme: config.GetClusterHttpScheme(),
+		statusAPIHTTPScheme: config.GetClusterHTTPScheme(),
 		statusAPIAddress:    "",
 		statusAPIHTTPClient: httpClient,
 		statusAPITimeout:    defaultTiDBStatusAPITimeout,
@@ -91,7 +95,7 @@ func (c *Client) WithSQLAPIAddress(host string, sqlPort int) *Client {
 func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	overrideEndpoint := os.Getenv(tidbOverrideSQLEndpointEnvVar)
 	if overrideEndpoint != "" && c.sqlAPIAddress != "" {
-		log.Warn(fmt.Sprintf("Reject to establish a target specified TiDB connection since `%s` is set", tidbOverrideSQLEndpointEnvVar))
+		log.Warn(fmt.Sprintf("Reject to establish a target specified TiDB SQL connection since `%s` is set", tidbOverrideSQLEndpointEnvVar))
 		return nil, ErrTiDBConnFailed.New("TiDB Dashboard is configured to only connect to specified TiDB host")
 	}
 
@@ -136,10 +140,21 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 }
 
 func (c *Client) SendGetRequest(path string) ([]byte, error) {
+	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
+	if overrideEndpoint != "" && c.statusAPIAddress != "" {
+		log.Warn(fmt.Sprintf("Reject to establish a target specified TiDB status connection since `%s` is set", tidbOverrideStatusEndpointEnvVar))
+		return nil, ErrTiDBConnFailed.New("TiDB Dashboard is configured to only connect to specified TiDB host")
+	}
+
 	addr := c.statusAPIAddress
 	if addr == "" {
-		addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.statusPort)
+		if overrideEndpoint != "" {
+			addr = overrideEndpoint
+		} else {
+			addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.statusPort)
+		}
 	}
+
 	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, path)
 	return c.statusAPIHTTPClient.WithTimeout(c.statusAPITimeout).SendRequest(c.lifecycleCtx, uri, "GET", nil, ErrTiDBClientRequestFailed, "TiDB")
 }

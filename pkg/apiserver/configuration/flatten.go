@@ -27,9 +27,9 @@ func flattenRecursive(nestedConfig map[string]interface{}) map[string]interface{
 }
 
 func flatten(flatMap map[string]interface{}, nested interface{}, prefix string) {
-	switch nested.(type) {
+	switch n := nested.(type) {
 	case map[string]interface{}:
-		for k, v := range nested.(map[string]interface{}) {
+		for k, v := range n {
 			path := k
 			if prefix != "" {
 				path = prefix + "." + k
@@ -38,9 +38,9 @@ func flatten(flatMap map[string]interface{}, nested interface{}, prefix string) 
 		}
 	case []interface{}:
 		// For array, serialize as json string directly
-		j, err := json.Marshal(nested)
+		j, err := json.Marshal(n)
 		if err != nil {
-			log.Warn("Failed to serialize config value", zap.Any("value", nested), zap.Error(err))
+			log.Warn("Failed to serialize config value", zap.Any("value", n), zap.Error(err))
 			flatMap[prefix] = nil
 		} else {
 			flatMap[prefix] = string(j)

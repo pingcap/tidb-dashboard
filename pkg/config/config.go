@@ -51,12 +51,11 @@ func Default() *Config {
 	}
 }
 
-func (c *Config) GetClusterHttpScheme() string {
+func (c *Config) GetClusterHTTPScheme() string {
 	if c.ClusterTLSConfig != nil {
 		return "https"
-	} else {
-		return "http"
 	}
+	return "http"
 }
 
 func (c *Config) NormalizePDEndPoint() error {
@@ -69,7 +68,7 @@ func (c *Config) NormalizePDEndPoint() error {
 		return err
 	}
 
-	pdEndPoint.Scheme = c.GetClusterHttpScheme()
+	pdEndPoint.Scheme = c.GetClusterHTTPScheme()
 	c.PDEndPoint = pdEndPoint.String()
 	return nil
 }

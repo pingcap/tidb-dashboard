@@ -59,7 +59,7 @@ func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
 	}
 	defer temp.Close()
 
-	err = utils.CreateZipPack(temp, filePaths)
+	err = utils.CreateZipPack(temp, filePaths, false)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)

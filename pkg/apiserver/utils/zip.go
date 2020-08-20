@@ -19,7 +19,7 @@ import (
 	"os"
 )
 
-func CreateZipPack(d *os.File, files []string) error {
+func CreateZipPack(d *os.File, files []string, needCompress bool) error {
 	pack := zip.NewWriter(d)
 	defer pack.Close()
 
@@ -33,10 +33,19 @@ func CreateZipPack(d *os.File, files []string) error {
 		if err != nil {
 			return err
 		}
-		zipFile, err := pack.Create(fileInfo.Name())
+
+		zipMethod := zip.Store // no compress
+		if needCompress {
+			zipMethod = zip.Deflate // compress
+		}
+		zipFile, err := pack.CreateHeader(&zip.FileHeader{
+			Name:   fileInfo.Name(),
+			Method: zipMethod,
+		})
 		if err != nil {
 			return err
 		}
+
 		_, err = io.Copy(zipFile, f)
 		if err != nil {
 			return err

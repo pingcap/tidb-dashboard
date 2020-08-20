@@ -32,6 +32,7 @@ import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
 import AppConfiguration from '@lib/apps/Configuration/index.meta'
 import AppDataManager from '@lib/apps/DataManager/index.meta'
+import AppUsersManager from '@lib/apps/UsersManager/index.meta'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
@@ -114,6 +115,7 @@ async function main() {
     .register(AppQueryEditor)
     .register(AppConfiguration)
     .register(AppDataManager)
+    .register(AppUsersManager)
 
   if (routing.isLocationMatch('/')) {
     singleSpa.navigateToUrl('#' + registry.getDefaultRouter())

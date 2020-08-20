@@ -117,6 +117,7 @@ function Sider({
     useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
     useAppMenuItem(registry, 'data_manager'),
+    useAppMenuItem(registry, 'dbusers_manager'),
     debugSubMenu,
   ]
   const experimentalMenuItems = [

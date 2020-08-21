@@ -297,139 +297,197 @@ it('get table info for native tables successfully', async () => {
   }
 })
 
-it('manipulate column', async () => {
+it('add and drop column', async () => {
   const tableName = newId('table')
   await evalSql(`
   CREATE TABLE ${DB_NAME}.${tableName} (
     a INT
   )`)
-  {
-    // Add column
-    const colName = newId('col')
-    const newColumn = {
-      name: colName,
-      fieldType: {
-        typeName: 'int',
-      },
-    }
-    await Database.addTableColumnAtTail(DB_NAME, tableName, newColumn)
-    {
-      const d = await Database.getTableInfo(DB_NAME, tableName)
-      expect(d).toEqual({
-        columns: [
-          {
-            name: 'a',
-            fieldType: 'int(11)',
-            isNotNull: false,
-            defaultValue: null,
-            comment: '',
-          },
-          {
-            name: colName,
-            fieldType: 'int(11)',
-            isNotNull: false,
-            defaultValue: null,
-            comment: '',
-          },
-        ],
-        indexes: [],
-      })
-    }
-    // Drop column
-    await Database.dropTableColumn(DB_NAME, tableName, colName)
-    {
-      const d = await Database.getTableInfo(DB_NAME, tableName)
-      expect(d).toEqual({
-        columns: [
-          {
-            name: 'a',
-            fieldType: 'int(11)',
-            isNotNull: false,
-            defaultValue: null,
-            comment: '',
-          },
-        ],
-        indexes: [],
-      })
-    }
+  const colName = newId('col')
+  const newColumn = {
+    name: colName,
+    fieldType: {
+      typeName: 'int',
+    },
   }
+  await Database.addTableColumnAtTail(DB_NAME, tableName, newColumn)
   {
-    // Test VARCHAR becomes VARCHAR(255) by default
-    const colName = newId('col')
-    const newColumn = {
-      name: colName,
-      fieldType: {
-        typeName: 'varchar',
-        isUnsigned: true, // unsigned is ignored
-      },
-    }
-    await Database.addTableColumnAtHead(DB_NAME, tableName, newColumn)
-    {
-      const d = await Database.getTableInfo(DB_NAME, tableName)
-      expect(d.columns[0]).toEqual({
-        name: colName,
-        fieldType: 'varchar(255)',
-        isNotNull: false,
-        defaultValue: null,
-        comment: '',
-      })
-    }
-    {
-      // Test inappropiate length is erased
-      const colName2 = newId('col')
-      const newColumn2 = {
-        name: colName2,
-        fieldType: {
-          typeName: 'year',
-          length: 123,
-          decimals: 5,
-        },
-        comment: 'This is a comment',
-      }
-      await Database.addTableColumnAfter(
-        DB_NAME,
-        tableName,
-        newColumn2,
-        colName
-      )
-      {
-        const d = await Database.getTableInfo(DB_NAME, tableName)
-        expect(d.columns[1]).toEqual({
-          name: colName2,
-          fieldType: 'year(4)',
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d).toEqual({
+      columns: [
+        {
+          name: 'a',
+          fieldType: 'int(11)',
           isNotNull: false,
           defaultValue: null,
-          comment: 'This is a comment',
-        })
-      }
-    }
-  }
-  {
-    // Test others
-    const colName = newId('col')
-    const newColumn = {
-      name: colName,
-      fieldType: {
-        typeName: 'float',
-        length: 10,
-        decimals: 5,
-        isUnsigned: true, // unsigned is reserved
-        isNotNull: true,
-      },
-      defaultValue: '123.4',
-    }
-    await Database.addTableColumnAtHead(DB_NAME, tableName, newColumn)
-    {
-      const d = await Database.getTableInfo(DB_NAME, tableName)
-      expect(d.columns[0]).toEqual({
-        name: colName,
-        fieldType: 'float(10,5) unsigned',
-        isNotNull: true,
-        defaultValue: '123.4',
-        comment: '',
-      })
-    }
+          comment: '',
+        },
+        {
+          name: colName,
+          fieldType: 'int(11)',
+          isNotNull: false,
+          defaultValue: null,
+          comment: '',
+        },
+      ],
+      indexes: [],
+    })
   }
 
+  await Database.dropTableColumn(DB_NAME, tableName, colName)
+  {
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d).toEqual({
+      columns: [
+        {
+          name: 'a',
+          fieldType: 'int(11)',
+          isNotNull: false,
+          defaultValue: null,
+          comment: '',
+        },
+      ],
+      indexes: [],
+    })
+  }
+
+  await Database.dropTable(DB_NAME, tableName)
+})
+
+it('add column with auto fixed length', async () => {
+  const tableName = newId('table')
+  await evalSql(`
+  CREATE TABLE ${DB_NAME}.${tableName} (
+    a INT
+  )`)
+  // Test VARCHAR becomes VARCHAR(255) by default
+  const colName = newId('col')
+  const newColumn = {
+    name: colName,
+    fieldType: {
+      typeName: 'varchar',
+      isUnsigned: true, // unsigned is ignored
+    },
+  }
+  await Database.addTableColumnAtHead(DB_NAME, tableName, newColumn)
+  {
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d.columns[0]).toEqual({
+      name: colName,
+      fieldType: 'varchar(255)',
+      isNotNull: false,
+      defaultValue: null,
+      comment: '',
+    })
+  }
+
+  // Test inappropiate length is erased
+  const colName2 = newId('col')
+  const newColumn2 = {
+    name: colName2,
+    fieldType: {
+      typeName: 'year',
+      length: 123,
+      decimals: 5,
+    },
+    comment: 'This is a comment',
+  }
+  await Database.addTableColumnAfter(DB_NAME, tableName, newColumn2, colName)
+  {
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d.columns[1]).toEqual({
+      name: colName2,
+      fieldType: 'year(4)',
+      isNotNull: false,
+      defaultValue: null,
+      comment: 'This is a comment',
+    })
+  }
+
+  await Database.dropTable(DB_NAME, tableName)
+})
+
+it('add column with default values and complex types', async () => {
+  const tableName = newId('table')
+  await evalSql(`
+  CREATE TABLE ${DB_NAME}.${tableName} (
+    a INT
+  )`)
+  const colName = newId('col')
+  const newColumn = {
+    name: colName,
+    fieldType: {
+      typeName: 'float',
+      length: 10,
+      decimals: 5,
+      isUnsigned: true, // unsigned is reserved
+      isNotNull: true,
+    },
+    defaultValue: '123.4',
+  }
+  await Database.addTableColumnAtHead(DB_NAME, tableName, newColumn)
+  {
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d.columns[0]).toEqual({
+      name: colName,
+      fieldType: 'float(10,5) unsigned',
+      isNotNull: true,
+      defaultValue: '123.4',
+      comment: '',
+    })
+  }
+  await Database.dropTable(DB_NAME, tableName)
+})
+
+it('add and drop index', async () => {
+  const tableName = newId('table')
+  await evalSql(`
+  CREATE TABLE ${DB_NAME}.${tableName} (
+    a INT,
+    b INT,
+    c INT
+  )`)
+  {
+    await Database.addTableIndex(DB_NAME, tableName, {
+      name: 'idx1',
+      type: Database.TableInfoIndexType.Normal,
+      columns: [{ columnName: 'a' }],
+    })
+    const { indexes } = await Database.getTableInfo(DB_NAME, tableName)
+    expect(indexes).toEqual([
+      {
+        name: 'idx1',
+        type: Database.TableInfoIndexType.Normal,
+        columns: ['a'],
+        isDeleteble: true,
+      },
+    ])
+  }
+  {
+    await Database.addTableIndex(DB_NAME, tableName, {
+      name: 'idx2',
+      type: Database.TableInfoIndexType.Unique,
+      columns: [{ columnName: 'b' }, { columnName: 'a' }],
+    })
+    const { indexes } = await Database.getTableInfo(DB_NAME, tableName)
+    expect(indexes[1]).toEqual({
+      name: 'idx2',
+      type: Database.TableInfoIndexType.Unique,
+      columns: ['b', 'a'],
+      isDeleteble: true,
+    })
+  }
+  {
+    await Database.dropTableIndex(DB_NAME, tableName, 'idx1')
+    const { indexes } = await Database.getTableInfo(DB_NAME, tableName)
+    expect(indexes).toEqual([
+      {
+        name: 'idx2',
+        type: Database.TableInfoIndexType.Unique,
+        columns: ['b', 'a'],
+        isDeleteble: true,
+      },
+    ])
+  }
   await Database.dropTable(DB_NAME, tableName)
 })

@@ -1,22 +1,32 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { Space } from 'antd'
+import React, { useState, useEffect } from 'react'
+// import { Link } from 'react-router-dom'
+// import { Space } from 'antd'
+import { CardTable } from '@lib/components'
+import * as Database from '@lib/utils/xcClient/database'
 
 // route: /data
 export default function DatabaseList() {
-  return (
-    <div>
-      <h1>DatabaseListPage</h1>
-      <Space>
-        <Link to="/data/tables?db=test_db">Tables</Link>
-        <Link to="/data/table_new?db=test_db">New Table</Link>
-        <Link to="/data/table_detail?db=test_db&table=test_tl">
-          TableDetail
-        </Link>
-        <Link to="/data/table_structure?db=test_db&table=test_tl">
-          TableStructure
-        </Link>
-      </Space>
-    </div>
-  )
+  const [databaseList, setDatabaseList] = useState<string[]>([])
+
+  useEffect(() => {
+    async function fetchDatabaseList() {
+      const data = (await Database.getDatabases()).databases
+      setDatabaseList(data)
+    }
+    fetchDatabaseList()
+  }, [])
+
+  const columns = [
+    {
+      name: 'DATABASE',
+      key: 'database',
+      minWidth: 100,
+      maxWidth: 300,
+      onRender: (database) => {
+        return database
+      },
+    },
+  ]
+
+  return <CardTable columns={columns} items={databaseList || []} />
 }

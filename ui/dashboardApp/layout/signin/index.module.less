@@ -1,3 +1,5 @@
+@import '~antd/es/style/themes/default.less';
+
 @dialog-width: 400px;
 
 .container {
@@ -55,5 +57,18 @@
     &:hover {
       color: #666;
     }
+  }
+}
+
+.container :global {
+  .formAnimation {
+    animation: 0.2s @ease-out-circ 0.5s antZoomBigIn;
+    animation-fill-mode: both;
+    animation-iteration-count: 1;
+  }
+  .landingAnimation {
+    animation: 0.5s linear 0 antFadeIn;
+    animation-fill-mode: both;
+    animation-iteration-count: 1;
   }
 }

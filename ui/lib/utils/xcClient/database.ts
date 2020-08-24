@@ -92,15 +92,15 @@ export async function getTableInfo(
   const name = `${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}`
   const columnsData = await evalSqlObj(`SHOW FULL COLUMNS FROM ${name}`)
   const columns = columnsData.map((column) => ({
-    name: column.Field,
-    fieldType: column.Type,
-    isNotNull: column.Null === 'NO',
-    defaultValue: column.Default,
-    comment: column.Comment,
+    name: column.FIELD,
+    fieldType: column.TYPE,
+    isNotNull: column.NULL === 'NO',
+    defaultValue: column.DEFAULT,
+    comment: column.COMMENT,
   }))
 
   const indexesData = await evalSqlObj(`SHOW INDEX FROM ${name}`)
-  const indexesByName = _.groupBy(indexesData, 'Key_name')
+  const indexesByName = _.groupBy(indexesData, 'KEY_NAME')
   const indexes: TableInfoIndex[] = []
 
   for (const indexName in indexesByName) {
@@ -108,12 +108,12 @@ export async function getTableInfo(
     let type
     if (indexName.toUpperCase().trim() === 'PRIMARY') {
       type = TableInfoIndexType.Primary
-    } else if (Number(meta.Non_unique) === 1) {
+    } else if (Number(meta.NON_UNIQUE) === 1) {
       type = TableInfoIndexType.Normal
     } else {
       type = TableInfoIndexType.Unique
     }
-    const columns = indexesByName[indexName].map((item) => item.Column_name)
+    const columns = indexesByName[indexName].map((item) => item.COLUMN_NAME)
     indexes.push({
       name: indexName,
       type,
@@ -640,4 +640,194 @@ export async function insertTableRow(
   VALUES
     (${fieldValues.join(', ')})
   `)
+}
+
+type UserSummary = {
+  user: string
+  host: string
+}
+
+type GetUserListResult = {
+  users: UserSummary[]
+}
+
+export async function getUserList(): Promise<GetUserListResult> {
+  const d = await evalSqlObj(`SELECT user, host FROM mysql.user`)
+  return {
+    users: d.map((o) => ({
+      user: o.USER,
+      host: o.HOST,
+    })),
+  }
+}
+
+export enum UserPrivilegeId {
+  ALTER = 'ALTER',
+  ALTER_ROUTINE = 'ALTER_ROUTINE',
+  CONFIG = 'CONFIG',
+  CREATE = 'CREATE',
+  CREATE_ROLE = 'CREATE_ROLE',
+  CREATE_ROUTINE = 'CREATE_ROUTINE',
+  CREATE_TMP_TABLE = 'CREATE_TMP_TABLE',
+  CREATE_USER = 'CREATE_USER',
+  CREATE_VIEW = 'CREATE_VIEW',
+  DELETE = 'DELETE',
+  DROP = 'DROP',
+  DROP_ROLE = 'DROP_ROLE',
+  EVENT = 'EVENT',
+  EXECUTE = 'EXECUTE',
+  FILE = 'FILE',
+  GRANT = 'GRANT',
+  INDEX = 'INDEX',
+  INSERT = 'INSERT',
+  LOCK_TABLES = 'LOCK_TABLES',
+  PROCESS = 'PROCESS',
+  REFERENCES = 'REFERENCES',
+  RELOAD = 'RELOAD',
+  SELECT = 'SELECT',
+  SHOW_DB = 'SHOW_DB',
+  SHOW_VIEW = 'SHOW_VIEW',
+  SHUTDOWN = 'SHUTDOWN',
+  SUPER = 'SUPER',
+  TRIGGER = 'TRIGGER',
+  UPDATE = 'UPDATE',
+}
+
+// This name can be used for display
+export const UserPrivilegeNames: Record<UserPrivilegeId, string> = {
+  ALTER: 'ALTER',
+  ALTER_ROUTINE: 'ALTER ROUTINE',
+  CONFIG: 'CONFIG',
+  CREATE: 'CREATE',
+  CREATE_ROLE: 'CREATE ROLE',
+  CREATE_ROUTINE: 'CREATE ROUTINE',
+  CREATE_TMP_TABLE: 'CREATE TEMPORARY TABLES',
+  CREATE_USER: 'CREATE USER',
+  CREATE_VIEW: 'CREATE VIEW',
+  DELETE: 'DELETE',
+  DROP: 'DROP',
+  DROP_ROLE: 'DROP ROLE',
+  EVENT: 'EVENT',
+  EXECUTE: 'EXECUTE',
+  FILE: 'FILE',
+  GRANT: 'GRANT',
+  INDEX: 'INDEX',
+  INSERT: 'INSERT',
+  LOCK_TABLES: 'LOCK TABLES',
+  PROCESS: 'PROCESS',
+  REFERENCES: 'REFERENCES',
+  RELOAD: 'RELOAD',
+  SELECT: 'SELECT',
+  SHOW_DB: 'SHOW DATABASES',
+  SHOW_VIEW: 'SHOW VIEW',
+  SHUTDOWN: 'SHUTDOWN',
+  SUPER: 'SUPER',
+  TRIGGER: 'TRIGGER',
+  UPDATE: 'UPDATE',
+}
+
+type UserDetail = {
+  grantedPrivileges: UserPrivilegeId[]
+}
+
+export async function getUserDetail(
+  user: string,
+  host: string
+): Promise<UserDetail> {
+  const selections: string[] = []
+  for (const priv of Object.values(UserPrivilegeId)) {
+    selections.push(SqlString.escapeId(`${priv}_PRIV`))
+  }
+  const u = await evalSqlObj(`
+    SELECT ${selections.join(', ')} FROM mysql.user
+    WHERE user = ${SqlString.escape(user)} AND host = ${SqlString.escape(host)}
+  `)
+  if (u.length === 0) {
+    throw new Error(`User ${user}@${host} not found`)
+  }
+  const grantedPrivileges: UserPrivilegeId[] = []
+  for (const priv of Object.values(UserPrivilegeId)) {
+    if (u[0][`${priv}_PRIV`] === 'Y') {
+      grantedPrivileges.push(priv)
+    }
+  }
+  return {
+    grantedPrivileges,
+  }
+}
+
+// export async function renameUser(
+//   user: string,
+//   host: string,
+//   newUser: string,
+//   newHost: string
+// ) {
+//   await evalSql(`
+//     RENAME USER
+//       ${SqlString.escape(user)}@${SqlString.escape(host)}
+//     TO
+//       ${SqlString.escape(newUser)}@${SqlString.escape(newHost)}
+//   `)
+// }
+
+export async function dropUser(user: string, host: string) {
+  await evalSql(`DROP USER ${SqlString.escape(user)}@${SqlString.escape(host)}`)
+}
+
+// Password can be empty string.
+export async function createUser(
+  user: string,
+  host: string,
+  password: string,
+  privileges: UserPrivilegeId[]
+) {
+  const id = `${SqlString.escape(user)}@${SqlString.escape(host)}`
+
+  let sql = `CREATE USER ${id}`
+  if (password.length > 0) {
+    sql += ` IDENTIFIED BY ${SqlString.escape(password)}`
+  }
+  await evalSql(sql, { debug: false })
+
+  if (privileges.length > 0) {
+    const privString = privileges.map((id) => UserPrivilegeNames[id]).join(', ')
+    await evalSql(`GRANT ${privString} ON *.* TO ${id}`)
+  }
+}
+
+// Note: unlisted privileges will be revoked.
+export async function resetUserPrivileges(
+  user: string,
+  host: string,
+  privileges: UserPrivilegeId[]
+) {
+  const id = `${SqlString.escape(user)}@${SqlString.escape(host)}`
+  const current = await getUserDetail(user, host)
+
+  const privilegeToRevoke = _.difference(current.grantedPrivileges, privileges)
+  if (privilegeToRevoke.length > 0) {
+    const privString = privilegeToRevoke
+      .map((id) => UserPrivilegeNames[id])
+      .join(', ')
+    await evalSql(`REVOKE ${privString} ON *.* FROM ${id}`)
+  }
+  const privilegeToGrant = _.difference(privileges, current.grantedPrivileges)
+  if (privilegeToGrant.length > 0) {
+    const privString = privilegeToGrant
+      .map((id) => UserPrivilegeNames[id])
+      .join(', ')
+    await evalSql(`GRANT ${privString} ON *.* TO ${id}`)
+  }
+}
+
+// Password can be empty string.
+export async function setUserPassword(
+  user: string,
+  host: string,
+  newPassword: string
+) {
+  const id = `${SqlString.escape(user)}@${SqlString.escape(host)}`
+  await evalSql(`SET PASSWORD FOR ${id} = ${SqlString.escape(newPassword)}`, {
+    debug: false,
+  })
 }

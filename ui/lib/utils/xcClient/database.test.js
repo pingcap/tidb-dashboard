@@ -737,3 +737,65 @@ it('select from a table with multi-column PK', async () => {
     },
   ])
 })
+
+it('select users', async () => {
+  const d = await Database.getUserList()
+  expect(d.users).toContainEqual({ user: 'root', host: '%' })
+})
+
+it('select user detail', async () => {
+  const d = await Database.getUserDetail('root', '%')
+  expect(d).toEqual({
+    grantedPrivileges: Object.values(Database.UserPrivilegeId),
+  })
+})
+
+it('create user and grant privileges', async () => {
+  const username = newId('user')
+  try {
+    await Database.createUser(username, '%', '', [
+      Database.UserPrivilegeId.CREATE_TMP_TABLE,
+      Database.UserPrivilegeId.DROP,
+    ])
+    {
+      const d = await Database.getUserList()
+      expect(d.users).toContainEqual({ user: username, host: '%' })
+    }
+    {
+      const p = Database.getUserDetail(username, '')
+      await expect(p).rejects.toThrowError(`User ${username}@ not found`)
+    }
+    {
+      const d = await Database.getUserDetail(username, '%')
+      expect(d).toEqual({
+        grantedPrivileges: [
+          Database.UserPrivilegeId.CREATE_TMP_TABLE,
+          Database.UserPrivilegeId.DROP,
+        ],
+      })
+    }
+    await Database.resetUserPrivileges(username, '%', [
+      Database.UserPrivilegeId.DROP,
+      Database.UserPrivilegeId.DROP_ROLE,
+    ])
+    {
+      const d = await Database.getUserDetail(username, '%')
+      expect(d).toEqual({
+        grantedPrivileges: [
+          Database.UserPrivilegeId.DROP,
+          Database.UserPrivilegeId.DROP_ROLE,
+        ],
+      })
+    }
+  } finally {
+    await Database.dropUser(username, '%')
+  }
+  {
+    const p = Database.getUserDetail(username, '%')
+    await expect(p).rejects.toThrowError(`User ${username}@% not found`)
+  }
+  {
+    const d = await Database.getUserList()
+    expect(d.users).not.toContainEqual({ user: username, host: '%' })
+  }
+})

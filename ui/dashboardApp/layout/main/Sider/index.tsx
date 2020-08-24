@@ -117,13 +117,14 @@ function Sider({
     menuItems.push(experimentalSubMenu)
   }
 
+  let displayName = currentLogin?.username ?? '...'
+  if (currentLogin?.is_shared) {
+    displayName += ' (Shared)'
+  }
+
   const extraMenuItems = [
     useAppMenuItem(registry, 'dashboard_settings'),
-    useAppMenuItem(
-      registry,
-      'user_profile',
-      currentLogin ? currentLogin.username : '...'
-    ),
+    useAppMenuItem(registry, 'user_profile', displayName),
   ]
 
   const transSider = useSpring({

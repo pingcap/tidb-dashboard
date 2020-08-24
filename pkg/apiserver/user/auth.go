@@ -152,6 +152,9 @@ func NewAuthService(tidbClient *tidb.Client) *AuthService {
 			if user == nil {
 				return false
 			}
+			if user.IsShared && time.Now().After(user.SharedSessionExpireAt) {
+				return false
+			}
 			return true
 		},
 		HTTPStatusMessageFunc: func(e error, c *gin.Context) string {

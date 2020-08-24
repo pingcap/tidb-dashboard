@@ -1,7 +1,23 @@
-import { Button, Form, Select, Space, Modal, Alert, Divider } from 'antd'
+import {
+  Button,
+  Form,
+  Select,
+  Space,
+  Modal,
+  Alert,
+  Divider,
+  Tooltip,
+} from 'antd'
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LogoutOutlined, ShareAltOutlined } from '@ant-design/icons'
+import { CopyToClipboard } from 'react-copy-to-clipboard'
+import {
+  LogoutOutlined,
+  ShareAltOutlined,
+  CopyOutlined,
+  CheckOutlined,
+  QuestionCircleOutlined,
+} from '@ant-design/icons'
 import {
   Card,
   Root,
@@ -9,6 +25,7 @@ import {
   Descriptions,
   CopyLink,
   TextWithInfo,
+  Pre,
 } from '@lib/components'
 import * as auth from '@lib/utils/auth'
 import { ALL_LANGUAGES } from '@lib/utils/i18n'
@@ -18,10 +35,18 @@ import client from '@lib/client'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import ReactMarkdown from 'react-markdown'
 
-const SHARE_SESSION_EXPIRY_HOURS = [0.25, 0.5, 1, 2, 6, 12, 24]
+const SHARE_SESSION_EXPIRY_HOURS = [0.25, 0.5, 1, 2, 3, 6, 12, 24]
 
 function ShareSessionButton() {
+  const { t } = useTranslation()
   const [visible, setVisible] = useState(false)
+  const [isPosting, setIsPosting] = useState(false)
+  const [code, setCode] = useState<string | undefined>(undefined)
+  const [isCopied, setIsCopied] = useState(false)
+
+  const { data } = useClientRequest((cancelToken) =>
+    client.getInstance().infoWhoami({ cancelToken })
+  )
 
   const handleOpen = useCallback(() => {
     setVisible(true)
@@ -29,20 +54,96 @@ function ShareSessionButton() {
 
   const handleClose = useCallback(() => {
     setVisible(false)
+    setCode(undefined)
+    setIsPosting(false)
+    setIsCopied(false)
   }, [])
 
-  const { t } = useTranslation()
+  const handleFinish = useCallback(async (values) => {
+    setIsPosting(true)
+    try {
+      const r = await client.getInstance().userShareSession({
+        expire_in_sec: values.expire * 60 * 60,
+      })
+      setCode(r.data.code)
+    } catch (e) {
+      // TODO: Extract to a common component
+      Modal.error({
+        content: <Pre>{e?.response?.data?.message ?? e.message}</Pre>,
+      })
+    } finally {
+      setIsPosting(false)
+    }
+  }, [])
+
+  const handleCopy = useCallback(() => {
+    setIsCopied(true)
+  }, [])
+
+  let button = (
+    <Button onClick={handleOpen} disabled={!data || data.is_shared}>
+      <ShareAltOutlined /> {t('user_profile.session.share')}
+      {data?.is_shared && <QuestionCircleOutlined />}
+    </Button>
+  )
+
+  if (data?.is_shared) {
+    button = (
+      <Tooltip title={t('user_profile.session.share_unavailable_tooltip')}>
+        {button}
+      </Tooltip>
+    )
+  }
+
   return (
     <>
-      <Button onClick={handleOpen}>
-        <ShareAltOutlined /> {t('user_profile.session.share')}
-      </Button>
+      {button}
+      <Modal
+        closable={false}
+        destroyOnClose
+        footer={
+          <Space>
+            <CopyToClipboard text={code} onCopy={handleCopy}>
+              <Button type={isCopied ? 'default' : 'primary'}>
+                {isCopied && (
+                  <span>
+                    <CheckOutlined />{' '}
+                    {t('user_profile.share_session.success_dialog.copied')}
+                  </span>
+                )}
+                {!isCopied && (
+                  <span>
+                    <CopyOutlined />{' '}
+                    {t('user_profile.share_session.success_dialog.copy')}
+                  </span>
+                )}
+              </Button>
+            </CopyToClipboard>
+            <Button onClick={handleClose}>
+              {t('user_profile.share_session.close')}
+            </Button>
+          </Space>
+        }
+        visible={!!code}
+      >
+        <Alert
+          message={t('user_profile.share_session.success_dialog.title')}
+          description={<Pre>{code}</Pre>}
+          type="success"
+          showIcon
+        />
+      </Modal>
       <Modal
         title={t('user_profile.session.share')}
         visible={visible}
         destroyOnClose
-        footer={<Button onClick={handleClose}>Close</Button>}
+        footer={
+          <Button onClick={handleClose}>
+            {t('user_profile.share_session.close')}
+          </Button>
+        }
         onCancel={handleClose}
+        width={600}
       >
         <ReactMarkdown source={t('user_profile.share_session.text')} />
         <Alert
@@ -51,10 +152,14 @@ function ShareSessionButton() {
           showIcon
         />
         <Divider />
-        <Form layout="inline" initialValues={{ expire: 1 }}>
+        <Form
+          layout="inline"
+          initialValues={{ expire: 3 }}
+          onFinish={handleFinish}
+        >
           <Form.Item
             name="expire"
-            label={'Expire in'}
+            label={t('user_profile.share_session.form.expire')}
             rules={[{ required: true }]}
           >
             <Select style={{ width: 120 }}>
@@ -66,8 +171,8 @@ function ShareSessionButton() {
             </Select>
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Generate Authorization Code
+            <Button type="primary" htmlType="submit" loading={isPosting}>
+              {t('user_profile.share_session.form.submit')}
             </Button>
           </Form.Item>
         </Form>

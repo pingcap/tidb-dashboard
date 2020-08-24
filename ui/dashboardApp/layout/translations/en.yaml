@@ -8,6 +8,9 @@ error:
     tidb_conn_failed: Failed to connect to TiDB
     tidb_auth_failed: TiDB authentication failed
   api:
+    user:
+      signin:
+        invalid_code: Authorization Code is invalid or expired
     other: Other error
 signin:
   message:

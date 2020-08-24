@@ -14,12 +14,11 @@
 package utils
 
 import (
-	"bytes"
-	"encoding/gob"
 	"encoding/hex"
 	"time"
 
 	"github.com/gtank/cryptopasta"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type SessionUser struct {
@@ -30,7 +29,8 @@ type SessionUser struct {
 	// Whether this session is shared, i.e. built from another existing session.
 	// For security consideration, we do not allow shared session to be shared again
 	// since sharing can extend session lifetime.
-	IsShared bool
+	IsShared              bool      `msgpack:"-"`
+	SharedSessionExpireAt time.Time `msgpack:"-"`
 
 	// TODO: Add privilege table fields
 }
@@ -67,17 +67,17 @@ func (session *SessionUser) ToSharingCode(expireIn time.Duration) *string {
 		ExpireAt: time.Now().Add(expireIn),
 	}
 
-	var b bytes.Buffer
-	e := gob.NewEncoder(&b)
-	if err := e.Encode(shared); err != nil {
+	b, err := msgpack.Marshal(&shared)
+	if err != nil {
 		// Do not output anything about how serialization is failed to avoid potential leaks.
 		return nil
 	}
 
-	encrypted, err := cryptopasta.Encrypt(b.Bytes(), sharingCodeSecret)
+	encrypted, err := cryptopasta.Encrypt(b, sharingCodeSecret)
 	if err != nil {
 		return nil
 	}
+
 	codeInHex := hex.EncodeToString(encrypted)
 	return &codeInHex
 }
@@ -94,8 +94,7 @@ func NewSessionFromSharingCode(codeInHex string) *SessionUser {
 	}
 
 	var shared sharedSession
-	d := gob.NewDecoder(bytes.NewBuffer(b))
-	if err := d.Decode(&shared); err != nil {
+	if err := msgpack.Unmarshal(b, &shared); err != nil {
 		return nil
 	}
 
@@ -104,5 +103,6 @@ func NewSessionFromSharingCode(codeInHex string) *SessionUser {
 	}
 
 	shared.Session.IsShared = true
+	shared.Session.SharedSessionExpireAt = shared.ExpireAt
 	return shared.Session
 }

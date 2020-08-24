@@ -15,13 +15,15 @@ import {
 import { Form, Input, Button, message, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
 import LanguageDropdown from '@lib/components/LanguageDropdown'
-import client from '@lib/client'
+import client, { UserAuthenticateForm } from '@lib/client'
 import * as auth from '@lib/utils/auth'
 
 import { ReactComponent as Logo } from './logo.svg'
 import styles from './index.module.less'
 import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
+import { FormInstance } from 'antd/lib/form'
+import { usePersistFn } from '@umijs/hooks'
 
 enum DisplayFormType {
   tidbCredential,
@@ -131,52 +133,66 @@ function AlternativeAuthForm({
   )
 }
 
-function TiDBSignInForm({ successRoute, onClickAlternative }) {
+function useSignInSubmit(
+  successRoute,
+  fnLoginForm: (form) => UserAuthenticateForm,
+  onFailure: () => void
+) {
   const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
-  const [signInError, setSignInError] = useState(null)
+  const [error, setError] = useState(null)
+
+  const clearErrorMsg = useCallback(() => {
+    setError(null)
+  }, [])
+
+  const handleSubmit = usePersistFn(async (form) => {
+    setLoading(true)
+    clearErrorMsg()
+
+    try {
+      const r = await client.getInstance().userLogin(fnLoginForm(form))
+      auth.setAuthToken(r.data.token)
+      message.success(t('signin.message.success'))
+      singleSpa.navigateToUrl(successRoute)
+    } catch (e) {
+      console.log(e)
+      if (!e.handled) {
+        let msg
+        if (e.response.data) {
+          msg = t(e.response.data.code)
+        } else {
+          msg = e.message
+        }
+        setError(t('signin.message.error', { msg }))
+        onFailure()
+      }
+    }
+    setLoading(false)
+  })
+
+  return { handleSubmit, loading, errorMsg: error, clearErrorMsg }
+}
+
+function TiDBSignInForm({ successRoute, onClickAlternative }) {
+  const { t } = useTranslation()
 
   const [refForm] = Form.useForm()
   const refPassword = useRef<Input>(null)
 
-  const clearErrorMessages = useCallback(() => {
-    setSignInError(null)
-  }, [])
-
-  const handleSubmit = useCallback(
-    async (form) => {
-      setLoading(true)
-      clearErrorMessages()
-
-      try {
-        const r = await client.getInstance().userLogin({
-          username: form.username,
-          password: form.password,
-          type: 0,
-        })
-        auth.setAuthToken(r.data.token)
-        message.success(t('signin.message.success'))
-        singleSpa.navigateToUrl(successRoute)
-      } catch (e) {
-        console.log(e)
-        if (!e.handled) {
-          let msg
-          if (e.response.data) {
-            msg = t(e.response.data.code)
-          } else {
-            msg = e.message
-          }
-          setSignInError(t('signin.message.error', { msg }))
-          refForm.setFieldsValue({ password: '' })
-          setTimeout(() => {
-            // Focus after disable state is removed
-            refPassword.current?.focus()
-          }, 0)
-        }
-      }
-      setLoading(false)
-    },
-    [successRoute, clearErrorMessages, refForm, t]
+  const { handleSubmit, loading, errorMsg, clearErrorMsg } = useSignInSubmit(
+    successRoute,
+    (form) => ({
+      username: form.username,
+      password: form.password,
+      type: 0,
+    }),
+    () => {
+      refForm.setFieldsValue({ password: '' })
+      setTimeout(() => {
+        refPassword.current?.focus()
+      }, 0)
+    }
   )
 
   useMount(() => {
@@ -202,17 +218,13 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
             label={t('signin.form.username')}
             rules={[{ required: true }]}
           >
-            <Input
-              onInput={clearErrorMessages}
-              prefix={<UserOutlined />}
-              disabled
-            />
+            <Input onInput={clearErrorMsg} prefix={<UserOutlined />} disabled />
           </Form.Item>
           <Form.Item
             name="password"
             label={t('signin.form.password')}
-            {...(signInError && {
-              help: signInError,
+            {...(errorMsg && {
+              help: errorMsg,
               validateStatus: 'error',
             })}
           >
@@ -220,7 +232,7 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
               prefix={<KeyOutlined />}
               type="password"
               disabled={loading}
-              onInput={clearErrorMessages}
+              onInput={clearErrorMsg}
               ref={refPassword}
             />
           </Form.Item>
@@ -247,15 +259,23 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
 
 function CodeSignInForm({ successRoute, onClickAlternative }) {
   const { t } = useTranslation()
-  const [loading, setLoading] = useState(false)
-  const [signInError, setSignInError] = useState(null)
 
   const [refForm] = Form.useForm()
   const refPassword = useRef<Input>(null)
 
-  const clearErrorMessages = useCallback(() => {
-    setSignInError(null)
-  }, [])
+  const { handleSubmit, loading, errorMsg, clearErrorMsg } = useSignInSubmit(
+    successRoute,
+    (form) => ({
+      password: form.code,
+      type: 1,
+    }),
+    () => {
+      refForm.setFieldsValue({ code: '' })
+      setTimeout(() => {
+        refPassword.current?.focus()
+      }, 0)
+    }
+  )
 
   useMount(() => {
     refPassword?.current?.focus()
@@ -264,11 +284,7 @@ function CodeSignInForm({ successRoute, onClickAlternative }) {
   return (
     <div className={styles.dialogContainer}>
       <div className={styles.dialog}>
-        <Form
-          // onFinish={handleSubmit}
-          layout="vertical"
-          form={refForm}
-        >
+        <Form onFinish={handleSubmit} layout="vertical" form={refForm}>
           <Logo className={styles.logo} />
           <Form.Item>
             <h2>{t('signin.form.code_auth.title')}</h2>
@@ -276,17 +292,18 @@ function CodeSignInForm({ successRoute, onClickAlternative }) {
           <Form.Item
             name="code"
             label={t('signin.form.code_auth.code')}
-            {...(signInError && {
-              help: signInError,
+            {...(errorMsg && {
+              help: errorMsg,
               validateStatus: 'error',
             })}
           >
             <Input
               prefix={<KeyOutlined />}
               type="password"
-              onInput={clearErrorMessages}
+              onInput={clearErrorMsg}
               disabled={loading}
               ref={refPassword}
+              allowClear
             />
           </Form.Item>
           <Form.Item>

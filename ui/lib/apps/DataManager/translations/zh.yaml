@@ -1,2 +1,16 @@
 data_manager:
   nav_title: 数据管理
+  db_name_column: 数据库名
+  action: 操作
+  create_db: 创建数据库
+  db_name_input: 数据库名称
+  create_success_txt: 创建成功
+  create_failed_txt: 创建失败
+  delete_db_title: 删除数据库
+  confirm_delete_txt: 确认删除
+  delete_success_txt: 删除成功
+  delete_failed_txt: 删除失败
+  submit: 提交
+  delete: 删除
+  confirm: 确认
+  cancel: 取消

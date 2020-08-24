@@ -1,2 +1,16 @@
 data_manager:
   nav_title: Data Manager
+  db_name_column: Database Name
+  action: Actions
+  create_db: Create Database
+  db_name_input: Database Name
+  create_success_txt: Create Success
+  create_failed_txt: Create Failed
+  delete_db_title: Delete Database
+  confirm_delete_txt: Confirm to delete
+  delete_success_txt: Delete Failed
+  delete_failed_txt: Delete Success
+  submit: Submit
+  delete: Delete
+  confirm: Confirm
+  cancel: Cancel

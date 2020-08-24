@@ -28,5 +28,10 @@
     "lib",
     "dashboardApp",
     "diagnoseReportApp"
-  ]
+  ],
+  "typeAcquisition": {
+    "include": [
+      "jest"
+    ]
+  }
 }

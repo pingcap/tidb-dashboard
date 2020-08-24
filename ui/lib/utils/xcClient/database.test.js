@@ -491,3 +491,98 @@ it('add and drop index', async () => {
   }
   await Database.dropTable(DB_NAME, tableName)
 })
+
+it('select from a system table', async () => {
+  const d = await Database.selectTable('INFORMATION_SCHEMA', 'TABLES')
+  expect(d.isUpdatable).toEqual(false)
+  expect(d.isPaginationUnavailable).toEqual(true)
+  expect(d.rows.length > 0).toEqual(true)
+})
+
+it('select from a table without PK', async () => {
+  const tableName = newId('table')
+  await evalSql(`
+  CREATE TABLE ${DB_NAME}.${tableName} (
+    c int,
+    d text
+  )`)
+  await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (100, "a")`)
+  const d = await Database.selectTable(DB_NAME, tableName)
+  expect(d.rows).toEqual([['100', 'a']])
+  expect(d.isUpdatable).toEqual(true)
+  expect(d.handles).toEqual([
+    { whereColumns: [{ columnName: '_TIDB_ROWID', columnValue: '1' }] },
+  ])
+})
+
+it('select from a table with PK', async () => {
+  const tableName = newId('table')
+  await evalSql(`
+  CREATE TABLE ${DB_NAME}.${tableName} (
+    c int,
+    d text,
+    e int PRIMARY KEY
+  )`)
+  await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (100, "a", 30)`)
+  await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (101, "b", 20)`)
+  const d = await Database.selectTable(DB_NAME, tableName)
+  expect(d.rows).toEqual([
+    ['101', 'b', '20'],
+    ['100', 'a', '30'],
+  ])
+  expect(d.isUpdatable).toEqual(true)
+  expect(d.handles).toEqual([
+    { whereColumns: [{ columnName: 'E', columnValue: '20' }] },
+    { whereColumns: [{ columnName: 'E', columnValue: '30' }] },
+  ])
+})
+
+it('select from a table with multi-column PK', async () => {
+  const tableName = newId('table')
+  await evalSql(`
+  CREATE TABLE ${DB_NAME}.${tableName} (
+    c int,
+    d text,
+    e int,
+    PRIMARY KEY (e, c)
+  )`)
+  await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (99, "a", 30)`)
+  await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (101, "a", 30)`)
+  await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (100, "a", 30)`)
+  await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (102, "b", 20)`)
+  const d = await Database.selectTable(DB_NAME, tableName)
+  console.log(JSON.stringify(d))
+  expect(d.rows).toEqual([
+    ['102', 'b', '20'],
+    ['99', 'a', '30'],
+    ['100', 'a', '30'],
+    ['101', 'a', '30'],
+  ])
+  expect(d.isUpdatable).toEqual(true)
+  expect(d.handles).toEqual([
+    {
+      whereColumns: [
+        { columnName: 'E', columnValue: '20' },
+        { columnName: 'C', columnValue: '102' },
+      ],
+    },
+    {
+      whereColumns: [
+        { columnName: 'E', columnValue: '30' },
+        { columnName: 'C', columnValue: '99' },
+      ],
+    },
+    {
+      whereColumns: [
+        { columnName: 'E', columnValue: '30' },
+        { columnName: 'C', columnValue: '100' },
+      ],
+    },
+    {
+      whereColumns: [
+        { columnName: 'E', columnValue: '30' },
+        { columnName: 'C', columnValue: '101' },
+      ],
+    },
+  ])
+})

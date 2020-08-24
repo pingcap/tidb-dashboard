@@ -373,3 +373,189 @@ export async function dropTableIndex(
     ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
   `)
 }
+
+// FIXME: handle Binary
+export type Datum = string | null
+
+export type UpdateHandleWhereColumn = {
+  columnName: string
+  columnValue: Datum
+}
+
+export type UpdateHandle = {
+  whereColumns: UpdateHandleWhereColumn[]
+}
+
+const SelectRowsPerPage = 1000
+
+export type SelectTableResult = {
+  columns: TableInfoColumn[]
+  rows: Datum[][]
+
+  isUpdatable: boolean
+  // When a table can be updated or deleted, a handle will be given for
+  // each row. Pass this handle to `updateTable` or `deleteTable` to
+  // specify which row to update.
+  handles?: UpdateHandle[]
+
+  // In some rare cases, we cannot safely provide pagination.
+  isPaginationUnavailable: boolean
+  // When pagination is not available, we only display first N rows. This field
+  // indicate all number of rows available.
+  allRowsBeforeTruncation?: number
+}
+
+export async function selectTable(
+  dbName: string,
+  tableName: string,
+  // page0 starts from 0
+  page0: number
+): Promise<SelectTableResult> {
+  // To keep result stable, there will be a sorting.
+  // For tables have PK, sort by PK. Otherwise, sort by _tidb_rowid
+  const tableInfo = await getTableInfo(dbName, tableName)
+  let primaryIndex: TableInfoIndex | null = null
+  for (const index of tableInfo.indexes) {
+    if (index.type === TableInfoIndexType.Primary) {
+      primaryIndex = index
+      break
+    }
+  }
+
+  const columnNames: string[] = []
+  for (const column of tableInfo.columns) {
+    columnNames.push(column.name.toUpperCase())
+  }
+  if (primaryIndex == null) {
+    columnNames.push('_tidb_rowid'.toUpperCase())
+  }
+  const columnNamesEscaped = columnNames.map((n) => SqlString.escapeId(n))
+  const columnIndexByName = {}
+  for (let i = 0; i < columnNames.length; i++) {
+    columnIndexByName[columnNames[i]] = i
+  }
+
+  const orderBy: string[] = []
+  if (primaryIndex != null) {
+    for (const indexColumn of primaryIndex.columns) {
+      orderBy.push(indexColumn.toUpperCase())
+    }
+  } else {
+    orderBy.push('_tidb_rowid'.toUpperCase())
+  }
+  const orderByEscaped = orderBy.map((n) => SqlString.escapeId(n))
+
+  try {
+    const data = await evalSql(`
+    SELECT
+      ${columnNamesEscaped.join(', ')}
+    FROM
+      ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ORDER BY
+      ${orderByEscaped.join(', ')}
+    LIMIT
+      ${(page0 || 0) * SelectRowsPerPage}, ${SelectRowsPerPage}
+    `)
+
+    const handles = (data.rows ?? []).map((row) => {
+      const whereColumns = orderBy.map((column) => {
+        return {
+          columnName: column,
+          columnValue: (row[columnIndexByName[column]] as any) as Datum,
+        }
+      })
+      return {
+        whereColumns,
+      }
+    })
+
+    const visibleColumnsLen = tableInfo.columns.length
+
+    return {
+      columns: tableInfo.columns,
+      rows: (data.rows ?? []).map((row) =>
+        row.slice(0, visibleColumnsLen)
+      ) as any,
+      isUpdatable: true,
+      handles,
+      isPaginationUnavailable: false,
+    }
+  } catch (e) {
+    if (e.message.indexOf(`Unknown column '_tidb_rowid'`) > -1) {
+      // _tidb_rowid column is not available. This might be a system table. Do not project it or order by it.
+
+      // No order by and no limit
+      columnNamesEscaped.length = columnNamesEscaped.length - 1
+      const data = await evalSql(`
+        SELECT
+          ${columnNamesEscaped.join(', ')}
+        FROM
+          ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+      `)
+
+      return {
+        columns: tableInfo.columns,
+        rows: (data.rows ?? []) as any,
+        isUpdatable: false,
+        isPaginationUnavailable: true,
+        allRowsBeforeTruncation: data.actual_rows,
+      }
+    } else {
+      throw e
+    }
+  }
+}
+
+export type UpdateColumnSpec = {
+  columnName: string
+  value: Datum
+}
+
+function buildWhereStatementFromUpdateHandle(handle: UpdateHandle) {
+  const where: string[] = []
+  for (const c of handle.whereColumns) {
+    where.push(
+      `${SqlString.escapeId(c.columnName)} = ${SqlString.escape(c.columnValue)}`
+    )
+  }
+  return where.join(' AND ')
+}
+
+export async function updateTable(
+  dbName: string,
+  tableName: string,
+  handle: UpdateHandle,
+  // Some columns may be not touched or updatable.
+  columnsToUpdate: UpdateColumnSpec[]
+) {
+  const updates: string[] = []
+  for (const c of columnsToUpdate) {
+    updates.push(
+      `${SqlString.escapeId(c.columnName)} = ${SqlString.escape(c.value)}`
+    )
+  }
+
+  const whereStatement = buildWhereStatementFromUpdateHandle(handle)
+  await evalSql(`
+  UPDATE
+    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+  SET
+    ${updates.join(', ')}
+  WHERE
+    ${whereStatement}
+  `)
+}
+
+export async function deleteTable(
+  dbName: string,
+  tableName: string,
+  handle: UpdateHandle
+) {
+  const whereStatement = buildWhereStatementFromUpdateHandle(handle)
+  await evalSql(`
+  DELETE FROM
+    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+  WHERE
+    ${whereStatement}
+  `)
+}

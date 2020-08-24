@@ -42,7 +42,7 @@ function useCurrentLogin() {
   const [login, setLogin] = useState<InfoWhoAmIResponse | null>(null)
   useEffect(() => {
     async function fetch() {
-      const resp = await client.getInstance().infoWhoamiGet()
+      const resp = await client.getInstance().infoWhoami()
       if (resp.data) {
         setLogin(resp.data)
       }
@@ -66,7 +66,7 @@ function Sider({
   const currentLogin = useCurrentLogin()
 
   const { data } = useClientRequest((cancelToken) =>
-    client.getInstance().getInfo({ cancelToken })
+    client.getInstance().infoGet({ cancelToken })
   )
 
   const debugSubMenuItems = [useAppMenuItem(registry, 'instance_profiling')]

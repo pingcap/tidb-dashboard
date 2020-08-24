@@ -122,9 +122,7 @@ func executeStatements(context context.Context, db *sql.DB, statements string) (
 }
 
 // @ID queryEditorRun
-// @Summary Run
-// @Description Run statements
-// @Produce json
+// @Summary Run statements
 // @Param request body RunRequest true "Request body"
 // @Success 200 {object} RunResponse
 // @Router /query_editor/run [post]
@@ -135,8 +133,7 @@ func executeStatements(context context.Context, db *sql.DB, statements string) (
 func (s *Service) runHandler(c *gin.Context) {
 	var req RunRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 

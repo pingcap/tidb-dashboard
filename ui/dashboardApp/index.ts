@@ -51,7 +51,7 @@ async function main() {
   let info: InfoInfoResponse
 
   try {
-    const i = await client.getInstance().getInfo()
+    const i = await client.getInstance().infoGet()
     info = i.data
   } catch (e) {
     Modal.error({

@@ -19,8 +19,19 @@ signin:
     button: 登录
     tidb_auth:
       title: SQL 用户登录
-      check:
-        message: 请输入用户名
+      switch:
+        title: SQL 用户
+        description: 我知道数据库的登录用户名和密码
+    code_auth:
+      title: 授权码登录
+      switch:
+        title: 授权码
+        description: 其他人通过授权码邀请我使用
+      code: 授权码
+    use_alternative: 使用其他登录方式
+    alternative:
+      title: 选择登录方式
+
 nav:
   user:
     signout: 登出

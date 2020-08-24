@@ -2,9 +2,10 @@ user_profile:
   i18n:
     title: 语言和本地化
     language: 语言
-  user:
-    title: 用户
+  session:
+    title: 会话
     sign_out: 登出
+    share: 分享当前会话
   version:
     title: 版本信息
     internal_version: TiDB Dashboard 内部版本号

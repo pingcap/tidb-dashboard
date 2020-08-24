@@ -95,7 +95,7 @@ export default function useStatement(
 
     async function querySchemas() {
       try {
-        const res = await client.getInstance().infoDatabasesGet()
+        const res = await client.getInstance().infoListDatabases()
         setAllSchemas(res?.data || [])
       } catch (error) {
         setErrors((prev) => [...prev, { ...error }])

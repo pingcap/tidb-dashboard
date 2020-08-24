@@ -1,6 +1,7 @@
 @import '~antd/es/style/themes/default.less';
+@import '~antd/es/button/style/mixin.less';
 
-@dialog-width: 400px;
+@content-width: 400px;
 
 .container {
   position: fixed;
@@ -13,10 +14,15 @@
   align-items: stretch;
 }
 
-.dialogContainer {
-  min-width: @dialog-width;
+.contantContainer {
+  min-width: @content-width;
   width: 38%;
   background: #fff;
+  position: relative;
+}
+
+.dialogContainer {
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -53,9 +59,97 @@
   font-size: 0.8rem;
   margin: 15px 0;
   a {
-    color: #888;
+    color: @gray-7;
     &:hover {
-      color: #666;
+      color: @gray-7;
+    }
+  }
+
+  &.clickable {
+    a:hover {
+      color: @link-hover-color;
+    }
+  }
+}
+
+.alternativeFormLayer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  z-index: 2;
+}
+
+.alternativeCloseButton {
+  font-size: 1rem;
+  border: 0;
+  background: #fff;
+  color: @text-color;
+  cursor: pointer;
+  padding: @padding-xss;
+  padding-right: 0;
+
+  &:hover,
+  &:active,
+  &:focus {
+    color: @link-hover-color;
+    outline: 0;
+  }
+}
+
+.alternativeButton {
+  .btn;
+  .btn-default;
+
+  height: auto;
+  width: 100%;
+  color: @text-color;
+
+  margin-bottom: @padding-sm;
+  text-align: left;
+  padding: @padding-md;
+  padding-right: 50px + @padding-md;
+  position: relative;
+  word-wrap: normal;
+  white-space: normal;
+  line-height: 1;
+
+  &:hover,
+  &:active,
+  &:focus {
+    color: @text-color;
+  }
+
+  .title {
+    color: @heading-color;
+    margin-bottom: @padding-sm;
+  }
+
+  .icon {
+    font-size: 1.3rem;
+    position: absolute;
+    right: 0;
+    width: 50px;
+    text-align: center;
+    opacity: 0;
+    transform: translateX(-5px);
+    transition: opacity 0.2s linear, transform 0.2s linear;
+    color: @gray-6;
+
+    // For vertical align
+    top: 50%;
+    margin-top: -20px;
+    line-height: 40px;
+  }
+
+  &:hover,
+  &:active,
+  &:focus {
+    .icon {
+      opacity: 1;
+      transform: none;
     }
   }
 }

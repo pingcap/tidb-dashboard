@@ -33,7 +33,6 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 // @ID configurationGetAll
 // @Summary Get all configurations
-// @Produce json
 // @Success 200 {object} AllConfigItems
 // @Router /configuration/all [get]
 // @Security JwtAuth
@@ -63,19 +62,17 @@ type EditResponse struct {
 // @ID configurationEdit
 // @Summary Edit a configuration
 // @Param request body EditRequest true "Request body"
-// @Produce json
 // @Success 200 {object} EditResponse
 // @Router /configuration/edit [post]
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError
+// @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 403 {object} utils.APIError "Experimental feature not enabled"
 // @Failure 500 {object} utils.APIError "Internal error"
 func (s *Service) editHandler(c *gin.Context) {
 	var req EditRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 

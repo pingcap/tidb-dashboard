@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import cx from 'classnames'
 import { Skeleton } from 'antd'
 import { SkeletonProps } from 'antd/lib/skeleton'
+import { AppearAnimate } from '..'
 
 import styles from './index.module.less'
 
@@ -40,7 +41,9 @@ function AnimatedSkeleton({
           />
         </div>
       )}
-      {!showSkeleton && <div className="contentAnimation">{children}</div>}
+      {!showSkeleton && (
+        <AppearAnimate motionName="contentAnimation">{children}</AppearAnimate>
+      )}
     </div>
   )
 }

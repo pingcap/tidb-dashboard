@@ -405,7 +405,7 @@ export type SelectTableResult = {
   allRowsBeforeTruncation?: number
 }
 
-export async function selectTable(
+export async function selectTableRow(
   dbName: string,
   tableName: string,
   // page0 starts from 0
@@ -521,7 +521,7 @@ function buildWhereStatementFromUpdateHandle(handle: UpdateHandle) {
   return where.join(' AND ')
 }
 
-export async function updateTable(
+export async function updateTableRow(
   dbName: string,
   tableName: string,
   handle: UpdateHandle,
@@ -546,7 +546,7 @@ export async function updateTable(
   `)
 }
 
-export async function deleteTable(
+export async function deleteRowRow(
   dbName: string,
   tableName: string,
   handle: UpdateHandle

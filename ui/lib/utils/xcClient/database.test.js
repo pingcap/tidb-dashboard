@@ -493,7 +493,7 @@ it('add and drop index', async () => {
 })
 
 it('select from a system table', async () => {
-  const d = await Database.selectTable('INFORMATION_SCHEMA', 'TABLES')
+  const d = await Database.selectTableRow('INFORMATION_SCHEMA', 'TABLES')
   expect(d.isUpdatable).toEqual(false)
   expect(d.isPaginationUnavailable).toEqual(true)
   expect(d.rows.length > 0).toEqual(true)
@@ -507,7 +507,7 @@ it('select from a table without PK', async () => {
     d text
   )`)
   await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (100, "a")`)
-  const d = await Database.selectTable(DB_NAME, tableName)
+  const d = await Database.selectTableRow(DB_NAME, tableName)
   expect(d.rows).toEqual([['100', 'a']])
   expect(d.isUpdatable).toEqual(true)
   expect(d.handles).toEqual([
@@ -525,7 +525,7 @@ it('select from a table with PK', async () => {
   )`)
   await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (100, "a", 30)`)
   await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (101, "b", 20)`)
-  const d = await Database.selectTable(DB_NAME, tableName)
+  const d = await Database.selectTableRow(DB_NAME, tableName)
   expect(d.rows).toEqual([
     ['101', 'b', '20'],
     ['100', 'a', '30'],
@@ -550,7 +550,7 @@ it('select from a table with multi-column PK', async () => {
   await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (101, "a", 30)`)
   await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (100, "a", 30)`)
   await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (102, "b", 20)`)
-  const d = await Database.selectTable(DB_NAME, tableName)
+  const d = await Database.selectTableRow(DB_NAME, tableName)
   console.log(JSON.stringify(d))
   expect(d.rows).toEqual([
     ['102', 'b', '20'],

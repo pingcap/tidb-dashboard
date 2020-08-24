@@ -17,13 +17,12 @@ import { useTranslation } from 'react-i18next'
 import LanguageDropdown from '@lib/components/LanguageDropdown'
 import client, { UserAuthenticateForm } from '@lib/client'
 import * as auth from '@lib/utils/auth'
+import { useMount } from 'react-use'
+import Flexbox from '@g07cha/flexbox-react'
+import { usePersistFn } from '@umijs/hooks'
 
 import { ReactComponent as Logo } from './logo.svg'
 import styles from './index.module.less'
-import { useMount } from 'react-use'
-import Flexbox from '@g07cha/flexbox-react'
-import { FormInstance } from 'antd/lib/form'
-import { usePersistFn } from '@umijs/hooks'
 
 enum DisplayFormType {
   tidbCredential,

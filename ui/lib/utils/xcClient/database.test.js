@@ -492,6 +492,158 @@ it('add and drop index', async () => {
   await Database.dropTable(DB_NAME, tableName)
 })
 
+it('create simple table', async () => {
+  const tableName = newId('table')
+  await Database.createTable({
+    dbName: DB_NAME,
+    tableName,
+    columns: [
+      {
+        name: 'a',
+        fieldType: { typeName: 'INT' },
+      },
+    ],
+  })
+  const d = await Database.getTableInfo(DB_NAME, tableName)
+  expect(d).toEqual({
+    columns: [
+      {
+        name: 'a',
+        fieldType: 'int(11)',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+    ],
+    indexes: [],
+  })
+  await Database.dropTable(DB_NAME, tableName)
+})
+
+it('create table with primary key', async () => {
+  const tableName = newId('table')
+  await Database.createTable({
+    dbName: DB_NAME,
+    tableName,
+    columns: [
+      {
+        name: 'a',
+        fieldType: { typeName: 'INT' },
+        isAutoIncrement: true,
+      },
+    ],
+    primaryKeys: [{ columnName: 'a' }],
+  })
+  const d = await Database.getTableInfo(DB_NAME, tableName)
+  expect(d).toEqual({
+    columns: [
+      {
+        name: 'a',
+        fieldType: 'int(11)',
+        isNotNull: true,
+        defaultValue: null,
+        comment: '',
+      },
+    ],
+    indexes: [
+      {
+        name: 'PRIMARY',
+        type: Database.TableInfoIndexType.Primary,
+        columns: ['a'],
+        isDeleteble: false,
+      },
+    ],
+  })
+  await Database.dropTable(DB_NAME, tableName)
+})
+
+it('create table with multi column primary key', async () => {
+  const tableName = newId('table')
+  await Database.createTable({
+    dbName: DB_NAME,
+    tableName,
+    columns: [
+      {
+        name: 'a',
+        fieldType: { typeName: 'INT' },
+      },
+      {
+        name: 'b',
+        fieldType: { typeName: 'VARCHAR' },
+      },
+      {
+        name: 'c',
+        fieldType: { typeName: 'INT' },
+      },
+    ],
+    primaryKeys: [{ columnName: 'b' }, { columnName: 'a' }],
+  })
+  const d = await Database.getTableInfo(DB_NAME, tableName)
+  expect(d).toEqual({
+    columns: [
+      {
+        name: 'a',
+        fieldType: 'int(11)',
+        isNotNull: true,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: 'b',
+        fieldType: 'varchar(255)',
+        isNotNull: true,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: 'c',
+        fieldType: 'int(11)',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+    ],
+    indexes: [
+      {
+        name: 'PRIMARY',
+        type: Database.TableInfoIndexType.Primary,
+        columns: ['b', 'a'],
+        isDeleteble: false,
+      },
+    ],
+  })
+  await Database.dropTable(DB_NAME, tableName)
+})
+
+it('create table with comment', async () => {
+  const tableName = newId('table')
+  await Database.createTable({
+    dbName: DB_NAME,
+    tableName,
+    columns: [
+      {
+        name: 'a',
+        fieldType: { typeName: 'INT' },
+      },
+    ],
+    comment: 'foo',
+  })
+  const d = await Database.getTableInfo(DB_NAME, tableName)
+  expect(d).toEqual({
+    columns: [
+      {
+        name: 'a',
+        fieldType: 'int(11)',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+    ],
+    indexes: [],
+  })
+  await Database.dropTable(DB_NAME, tableName)
+})
+
 it('select from a system table', async () => {
   const d = await Database.selectTableRow('INFORMATION_SCHEMA', 'TABLES')
   expect(d.isUpdatable).toEqual(false)
@@ -551,7 +703,6 @@ it('select from a table with multi-column PK', async () => {
   await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (100, "a", 30)`)
   await evalSql(`INSERT INTO ${DB_NAME}.${tableName} VALUES (102, "b", 20)`)
   const d = await Database.selectTableRow(DB_NAME, tableName)
-  console.log(JSON.stringify(d))
   expect(d.rows).toEqual([
     ['102', 'b', '20'],
     ['99', 'a', '30'],

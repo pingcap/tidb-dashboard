@@ -163,8 +163,9 @@ export enum FieldTypeName {
   MEDIUMTEXT = 'MEDIUMTEXT',
   LONGBLOB = 'LONGBLOB',
   LONGTEXT = 'LONGTEXT',
-  ENUM = 'ENUM',
-  SET = 'SET',
+  // FIXME: Support ENUM and SET
+  // ENUM = 'ENUM',
+  // SET = 'SET',
   JSON = 'JSON',
 }
 
@@ -202,6 +203,20 @@ export function isFieldTypeNameSupportUnsigned(typeName: FieldTypeName) {
       FieldTypeName.INT,
       FieldTypeName.BIGINT,
       FieldTypeName.DECIMAL,
+      FieldTypeName.FLOAT,
+      FieldTypeName.DOUBLE,
+    ].indexOf(typeName) > -1
+  )
+}
+
+export function isFieldTypeNameSupportAutoIncrement(typeName: FieldTypeName) {
+  return (
+    [
+      FieldTypeName.TINYINT,
+      FieldTypeName.SMALLINT,
+      FieldTypeName.MEDIUMINT,
+      FieldTypeName.INT,
+      FieldTypeName.BIGINT,
       FieldTypeName.FLOAT,
       FieldTypeName.DOUBLE,
     ].indexOf(typeName) > -1
@@ -249,13 +264,24 @@ function buildFieldTypeDefinition(def: NewColumnFieldTypeDefinition): string {
 export type NewColumnDefinition = {
   name: string
   fieldType: NewColumnFieldTypeDefinition
+  isAutoIncrement?: boolean // Note: This is respected only in CREATE TABLE.
   defaultValue?: string
   comment?: string
 }
 
-function buildColumnDefinition(def: NewColumnDefinition) {
+function buildColumnDefinition(
+  def: NewColumnDefinition,
+  respectAutoIncrement?: boolean
+): string {
   let r = SqlString.escapeId(def.name)
   r += ` ${buildFieldTypeDefinition(def.fieldType)}`
+  if (
+    respectAutoIncrement &&
+    isFieldTypeNameSupportAutoIncrement(def.fieldType.typeName) &&
+    def.isAutoIncrement
+  ) {
+    r += ` AUTO_INCREMENT`
+  }
   if (def.defaultValue != null) {
     // FIXME: DEFAULT for TIME?
     r += ` DEFAULT ${SqlString.escape(def.defaultValue)}`
@@ -326,6 +352,14 @@ export type AddIndexOptionsColumn = {
   keyLength?: number
 }
 
+function buildIndexDefinition(col: AddIndexOptionsColumn): string {
+  let k = SqlString.escapeId(col.columnName)
+  if (col.keyLength && col.keyLength > 0) {
+    k += `(${col.keyLength})`
+  }
+  return k
+}
+
 export type AddIndexOptions = {
   name: string // Index name
   type: TableInfoIndexType // Must not be PRIMARY
@@ -341,13 +375,7 @@ export async function addTableIndex(
     throw new Error('Add PRIMARY index is not supported')
   }
 
-  const keys = options.columns.map((col) => {
-    let k = SqlString.escapeId(col.columnName)
-    if (col.keyLength && col.keyLength > 0) {
-      k += `(${col.keyLength})`
-    }
-    return k
-  })
+  const keys = options.columns.map((col) => buildIndexDefinition(col))
 
   let indexTypeName
   if (options.type === TableInfoIndexType.Normal) {
@@ -372,6 +400,41 @@ export async function dropTableIndex(
     DROP INDEX ${SqlString.escapeId(indexName)} ON
     ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
   `)
+}
+
+export type CreateTableOptions = {
+  dbName: string
+  tableName: string
+  comment?: string
+  columns: NewColumnDefinition[]
+  primaryKeys?: AddIndexOptionsColumn[]
+}
+
+export async function createTable(options: CreateTableOptions) {
+  let items: string[] = []
+  for (const col of options.columns) {
+    items.push(buildColumnDefinition(col, true))
+  }
+  if (options.primaryKeys) {
+    items.push(
+      `PRIMARY KEY (` +
+        options.primaryKeys.map((k) => buildIndexDefinition(k)).join(', ') +
+        `)`
+    )
+  }
+
+  const id = [options.dbName, options.tableName]
+    .map((n) => SqlString.escapeId(n))
+    .join('.')
+
+  let sql = `CREATE TABLE ${id} (
+    ${items.join(', \n')}
+  )`
+  if (options.comment) {
+    sql += ' COMMENT = ' + SqlString.escape(options.comment)
+  }
+
+  await evalSql(sql)
 }
 
 // FIXME: handle Binary

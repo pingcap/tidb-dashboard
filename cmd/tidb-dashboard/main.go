@@ -61,17 +61,17 @@ type DashboardCLIConfig struct {
 // NewCLIConfig generates the configuration of the dashboard in standalone mode.
 func NewCLIConfig() *DashboardCLIConfig {
 	cfg := &DashboardCLIConfig{}
-	cfg.CoreConfig = &config.Config{}
+	cfg.CoreConfig = config.Default()
 
 	flag.StringVarP(&cfg.ListenHost, "host", "h", "127.0.0.1", "listen host of the Dashboard Server")
 	flag.IntVarP(&cfg.ListenPort, "port", "p", 12333, "listen port of the Dashboard Server")
 	flag.BoolVarP(&cfg.EnableDebugLog, "debug", "d", false, "enable debug logs")
-	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", "/tmp/dashboard-data", "path to the Dashboard Server data directory")
-	flag.StringVar(&cfg.CoreConfig.PublicPathPrefix, "path-prefix", config.DefaultPublicPathPrefix, "public URL path prefix for reverse proxies")
-	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", "http://127.0.0.1:2379", "PD endpoint address that Dashboard Server connects to")
-	flag.BoolVar(&cfg.CoreConfig.EnableTelemetry, "telemetry", true, "allow telemetry")
-	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", false, "allow experimental features")
-	flag.StringVar(&cfg.CoreConfig.PluginDir, "plugin-dir", "", "plugin directory")
+	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", cfg.CoreConfig.DataDir, "path to the Dashboard Server data directory")
+	flag.StringVar(&cfg.CoreConfig.PublicPathPrefix, "path-prefix", cfg.CoreConfig.PublicPathPrefix, "public URL path prefix for reverse proxies")
+	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", cfg.CoreConfig.PDEndPoint, "PD endpoint address that Dashboard Server connects to")
+	flag.BoolVar(&cfg.CoreConfig.EnableTelemetry, "telemetry", cfg.CoreConfig.EnableTelemetry, "allow telemetry")
+	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", cfg.CoreConfig.EnableExperimental, "allow experimental features")
+	flag.StringVar(&cfg.CoreConfig.PluginDir, "plugin-dir", cfg.CoreConfig.PluginDir, "plugin directory")
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 

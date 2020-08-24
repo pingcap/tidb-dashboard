@@ -16,6 +16,7 @@ package topology
 import (
 	"encoding/json"
 	"sort"
+	"strings"
 
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
@@ -134,4 +135,21 @@ func fetchPDHealth(pdClient *pd.Client) (map[uint64]struct{}, error) {
 		}
 	}
 	return memberHealth, nil
+}
+
+func fetchLocationLabels(pdClient *pd.Client) ([]string, error) {
+	data, err := pdClient.SendGetRequest("/config/replicate")
+	if err != nil {
+		return nil, err
+	}
+
+	var replicateConfig struct {
+		LocationLabels string `json:"location-labels"`
+	}
+	err = json.Unmarshal(data, &replicateConfig)
+	if err != nil {
+		return nil, ErrInvalidTopologyData.Wrap(err, "PD config/replicate API unmarshal failed")
+	}
+	labels := strings.Split(replicateConfig.LocationLabels, ",")
+	return labels, nil
 }

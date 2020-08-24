@@ -1,5 +1,6 @@
 import client, { QueryeditorRunResponse } from '@lib/client'
 import _ from 'lodash'
+import { NewColumnFieldTypeDefinition } from './database'
 
 export interface IEvalSqlOptions {
   maxRows?: number
@@ -30,4 +31,27 @@ export async function evalSqlObj(
   const r = await evalSql(statements, options)
   const cn = (r.column_names ?? []).map((n) => n.toUpperCase())
   return r.rows?.map((row) => _.zipObject(cn, row)) ?? []
+}
+
+export const parseColumnRelatedValues = (values: any) => {
+  const { typeName, length, decimals, isNotNull, isUnsigned } = values
+
+  const fieldType: NewColumnFieldTypeDefinition = {
+    typeName,
+    length,
+    decimals,
+    isNotNull,
+    isUnsigned,
+  }
+
+  delete values.typeName
+  delete values.length
+  delete values.decimals
+  delete values.isNotNull
+  delete values.isUnsigned
+
+  return {
+    ...values,
+    ...{ fieldType },
+  }
 }

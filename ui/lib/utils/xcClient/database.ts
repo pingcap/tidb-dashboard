@@ -546,7 +546,7 @@ export async function updateTableRow(
   `)
 }
 
-export async function deleteRowRow(
+export async function deleteTableRow(
   dbName: string,
   tableName: string,
   handle: UpdateHandle
@@ -557,5 +557,24 @@ export async function deleteRowRow(
     ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
   WHERE
     ${whereStatement}
+  `)
+}
+
+export async function insertTableRow(
+  dbName: string,
+  tableName: string,
+  // Specify all columns, include NULL columns.
+  columnsToInsert: UpdateColumnSpec[]
+) {
+  const fieldNames = columnsToInsert.map((c) =>
+    SqlString.escapeId(c.columnName)
+  )
+  const fieldValues = columnsToInsert.map((c) => SqlString.escape(c.value))
+  await evalSql(`
+  INSERT INTO
+    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    (${fieldNames.join(', ')})
+  VALUES
+    (${fieldValues.join(', ')})
   `)
 }

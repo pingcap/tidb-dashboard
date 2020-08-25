@@ -129,6 +129,19 @@ export default function DBTableList() {
           })
         }
         break
+      case 'deleteView':
+        try {
+          await xcClient.dropView(db, modalInfo.tableName)
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
+          })
+        } catch (e) {
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
+          })
+        }
+        break
       default:
         break
     }
@@ -145,6 +158,14 @@ export default function DBTableList() {
   const handleDeleteTable = (name) => () => {
     showModal({
       type: 'deleteTable',
+      title: `${t('data_manager.delete')} ${name}`,
+      tableName: name,
+    })()
+  }
+
+  const handleDeleteView = (name) => () => {
+    showModal({
+      type: 'deleteView',
       title: `${t('data_manager.delete')} ${name}`,
       tableName: name,
     })()
@@ -226,11 +247,20 @@ export default function DBTableList() {
                               </a>
                             </Menu.Item>
                           )}
-                          {record.type !== xcClient.TableType.SYSTEM_VIEW && (
+                          {record.type === xcClient.TableType.TABLE && (
                             <Menu.Item>
                               <a onClick={handleDeleteTable(record.name)}>
                                 <Typography.Text type="danger">
                                   {t('data_manager.view_db.op_drop')}
+                                </Typography.Text>
+                              </a>
+                            </Menu.Item>
+                          )}
+                          {record.type === xcClient.TableType.VIEW && (
+                            <Menu.Item>
+                              <a onClick={handleDeleteView(record.name)}>
+                                <Typography.Text type="danger">
+                                  {t('data_manager.view_db.op_drop_view')}
                                 </Typography.Text>
                               </a>
                             </Menu.Item>

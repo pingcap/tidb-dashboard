@@ -49,9 +49,10 @@ data_manager:
     collation: Collation
     comment: Comment
     operation: Operation
-    op_structure: View Table Structure
-    op_rename: Rename Table
+    op_structure: View Structure
+    op_rename: Rename
     op_drop: Drop Table
+    op_drop_view: Drop View
   db_structure:
     op_insert: Insert Column After Current Column
     op_drop: Drop Column

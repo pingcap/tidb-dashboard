@@ -91,6 +91,12 @@ export async function dropTable(dbName: string, tableName: string) {
   )
 }
 
+export async function dropView(dbName: string, tableName: string) {
+  await evalSql(
+    `DROP VIEW ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}`
+  )
+}
+
 export type TableInfoColumn = {
   name: string
   fieldType: string

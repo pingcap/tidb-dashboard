@@ -49,9 +49,10 @@ data_manager:
     collation: 比较规则
     comment: 注释
     operation: 操作
-    op_structure: 查看表结构
-    op_rename: 修改表名称
+    op_structure: 查看结构
+    op_rename: 修改名称
     op_drop: 删除该表
+    op_drop_view: 删除该视图
   db_structure:
     op_insert: 在当前列之后插入列
     op_drop: 删除当前列

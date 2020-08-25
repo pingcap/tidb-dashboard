@@ -1,2 +1,20 @@
 dbusers_manager:
   nav_title: Users Manager
+  user_name: User Name
+  host: Host
+  action: Actions
+  delete: Delete
+  create_user_title: Create User
+  delete_user_title: Delete User
+  submit: Submit
+  cancel: Cancel
+  create_form:
+    name_label: User Name
+    host_label: Host
+    pwd_label: Password
+    confirm_pwd:
+      label: Confirm Password
+      error: The two passwords that you entered do not match!
+    privileges:
+      label: Gobal Privileges
+      placeholder: Choose user privileges

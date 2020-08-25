@@ -81,7 +81,6 @@ export default function DatabaseList() {
         onCancel={handleCancel}
         cancelText={t('data_manager.cancel')}
         okText={t('data_manager.delete')}
-        closable
       >
         <p>
           {t('data_manager.confirm_delete_txt')}{' '}
@@ -116,7 +115,7 @@ export default function DatabaseList() {
       handleCreateDB()
     }
 
-    const oncancel = () => {
+    const onCancel = () => {
       setCreateModalVisible(false)
     }
 
@@ -124,8 +123,7 @@ export default function DatabaseList() {
       <Modal
         title={t('data_manager.create_db')}
         visible={createModalVisible}
-        closable
-        onCancel={oncancel}
+        onCancel={onCancel}
         cancelText={t('data_manager.cancel')}
         okText={t('data_manager.submit')}
         footer={null}

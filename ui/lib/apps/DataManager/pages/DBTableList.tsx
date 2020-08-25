@@ -36,6 +36,65 @@ import { useTranslation } from 'react-i18next'
 
 const { Option } = Select
 
+function CreateViewButton({ db, reload }) {
+  const { t } = useTranslation()
+  const [visible, setVisible] = useState(false)
+  const [refForm] = Form.useForm()
+
+  async function handleFinish(f) {
+    try {
+      await xcClient.createView(db, f.name, f.view_def)
+      setVisible(false)
+      Modal.success({
+        content: t('data_manager.create_success_txt'),
+      })
+      reload()
+    } catch (e) {
+      Modal.error({
+        title: t('data_manager.create_failed_txt'),
+        content: <Pre>{e.message}</Pre>,
+      })
+    }
+  }
+
+  return (
+    <>
+      <Button
+        onClick={() => {
+          setVisible(true)
+          refForm.resetFields()
+        }}
+      >
+        <EyeOutlined /> {t('data_manager.create_view')}
+      </Button>
+      <Modal
+        title={t('data_manager.create_view_modal.title')}
+        visible={visible}
+        onOk={refForm.submit}
+        onCancel={() => setVisible(false)}
+        destroyOnClose
+      >
+        <Form layout="vertical" form={refForm} onFinish={handleFinish}>
+          <Form.Item
+            name="name"
+            label={t('data_manager.name')}
+            rules={[{ required: true }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="view_def"
+            label={t('data_manager.create_view_modal.view_def')}
+            rules={[{ required: true }]}
+          >
+            <Input.TextArea placeholder="SELECT ... FROM ..." />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
+  )
+}
+
 // route: /data/tables?db=xxx
 export default function DBTableList() {
   const navigate = useNavigate()
@@ -198,9 +257,7 @@ export default function DBTableList() {
             >
               <TableOutlined /> {t('data_manager.create_table')}
             </Button>
-            <Button>
-              <EyeOutlined /> {t('data_manager.create_view')}
-            </Button>
+            <CreateViewButton db={db} reload={fetchTables} />
           </Space>
         }
       />

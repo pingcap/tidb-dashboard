@@ -61,5 +61,8 @@ data_manager:
   delete: Delete
   confirm: Confirm
   cancel: Cancel
+  create_view_modal:
+    title: Create View
+    view_def: View Definition
 
   head_back_all_databases: All databases

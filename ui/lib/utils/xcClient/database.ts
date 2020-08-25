@@ -97,6 +97,19 @@ export async function dropView(dbName: string, tableName: string) {
   )
 }
 
+// Warning: highly unsafe!
+export async function createView(
+  dbName: string,
+  tableName: string,
+  viewDef: string
+) {
+  await evalSql(
+    `USE ${SqlString.escapeId(dbName)};
+    CREATE VIEW ${SqlString.escapeId(tableName)}
+    AS ${viewDef};`
+  )
+}
+
 export type TableInfoColumn = {
   name: string
   fieldType: string

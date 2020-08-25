@@ -62,5 +62,8 @@ data_manager:
   delete: 删除
   confirm: 确认
   cancel: 取消
+  create_view_modal:
+    title: 创建视图
+    view_def: 视图定义
 
   head_back_all_databases: 所有数据库

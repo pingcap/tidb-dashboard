@@ -56,7 +56,7 @@ export default function ToggleBanner({
   })
 
   const { data, isLoading } = useClientRequest((cancelToken) =>
-    client.getInstance().getInfo({ cancelToken })
+    client.getInstance().infoGet({ cancelToken })
   )
 
   const version = useMemo(() => {

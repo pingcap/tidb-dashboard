@@ -230,7 +230,6 @@ func (s *Service) Stop(ctx context.Context) error {
 
 // @Summary Key Visual Heatmaps
 // @Description Heatmaps in a given range to visualize TiKV usage
-// @Produce json
 // @Param startkey query string false "The start of the key range"
 // @Param endkey query string false "The end of the key range"
 // @Param starttime query int false "The start of the time range (Unix)"

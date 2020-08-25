@@ -1,15 +1,45 @@
 data_manager:
   nav_title: 数据管理
+
   db_name_column: 数据库名
-  action: 操作
   create_db: 创建数据库
   db_name_input: 数据库名称
+  delete_db_title: 删除数据库
+
+  create_table: 创建数据表
+
+  columns: 列
+  field_type: 字段类型
+  length: 长度
+  decimal: 精度
+  not_null: 非空
+  unsigned: 无符号
+  default_value: 默认值
+  auto_increment: 自增
+  primary_key: 主键
+  add_column: 添加列
+  delete_column: 删除列
+  insert_column: 插入列
+  insert_column_at_head: 在头部插入列
+  insert_column_at_tail: 在尾部插入列
+
+  indexes: 索引
+  add_index: 添加索引
+  delete_index: 删除索引
+
   create_success_txt: 创建成功
   create_failed_txt: 创建失败
-  delete_db_title: 删除数据库
+  update_success_txt: 修改成功
+  update_failed_txt: 修改失败
   confirm_delete_txt: 确认删除
   delete_success_txt: 删除成功
   delete_failed_txt: 删除失败
+
+  action: 操作
+  name: 名称
+  structure: 结构
+  comment: 注释
+  edit: 修改
   submit: 提交
   delete: 删除
   confirm: 确认

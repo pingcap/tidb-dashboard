@@ -1,15 +1,45 @@
 data_manager:
   nav_title: Data Manager
+
   db_name_column: Database Name
-  action: Actions
   create_db: Create Database
   db_name_input: Database Name
-  create_success_txt: Create Success
-  create_failed_txt: Create Failed
   delete_db_title: Delete Database
+
+  create_table: Create Table
+
+  columns: Columns
+  field_type: Field Type
+  length: Length
+  decimal: Decimal
+  not_null: Not Null
+  unsigned: Unsigned
+  default_value: Default Value
+  auto_increment: Auto Increment
+  primary_key: Primary Key
+  add_column: Add Column
+  delete_column: Delete Column
+  insert_column: Insert Column
+  insert_column_at_head: Insert Column at Head
+  insert_column_at_tail: Insert Column at Tail
+
+  indexes: Indexes
+  add_index: Add Index
+  delete_index: Delete Index
+
+  create_success_txt: Created Successfully
+  create_failed_txt: Failed to create
+  update_success_txt: Successfully updated
+  update_failed_txt: Failed to update
   confirm_delete_txt: Confirm to delete
-  delete_success_txt: Delete Failed
-  delete_failed_txt: Delete Success
+  delete_success_txt: Failed to delete
+  delete_failed_txt: Successfully deleted
+
+  action: Actions
+  name: Name
+  structure: Structure
+  comment: Comment
+  edit: Edit
   submit: Submit
   delete: Delete
   confirm: Confirm

@@ -25,6 +25,7 @@ import { Card } from '@lib/components'
 import { parseColumnRelatedValues } from '@lib/utils/xcClient/util'
 import { useNavigate } from 'react-router-dom'
 import useQueryParams from '@lib/utils/useQueryParams'
+import { useTranslation } from 'react-i18next'
 
 const { Option } = Select
 
@@ -32,6 +33,10 @@ const { Option } = Select
 export default function DBTableList() {
   const navigate = useNavigate()
   const { db } = useQueryParams()
+
+  const { t } = useTranslation()
+
+  const [form] = Form.useForm()
 
   const [tables, setTables] = useState<string[]>()
   const [visible, setVisible] = useState(false)
@@ -72,10 +77,12 @@ export default function DBTableList() {
         console.log(_values)
         try {
           await xcClient.createTable({ ..._values, ...{ dbName: db } })
-          notification.success({ message: 'Created successfully' })
+          notification.success({
+            message: t('data_manager.create_success_txt'),
+          })
         } catch (e) {
           notification.error({
-            message: 'Fail to create table',
+            message: t('data_manager.create_failed_txt'),
             description: e.toString(),
           })
         }
@@ -83,10 +90,12 @@ export default function DBTableList() {
       case 'editTable':
         try {
           await xcClient.renameTable(db, modalInfo.tableName, values.tableName)
-          notification.success({ message: 'Successfully updated' })
+          notification.success({
+            message: t('data_manager.update_success_txt'),
+          })
         } catch (e) {
           notification.error({
-            message: 'Fail to execute edit operation',
+            message: t('data_manager.update_failed_txt'),
             description: e.toString(),
           })
         }
@@ -94,10 +103,12 @@ export default function DBTableList() {
       case 'deleteTable':
         try {
           await xcClient.dropTable(db, modalInfo.tableName)
-          notification.success({ message: 'Successfully deleted' })
+          notification.success({
+            message: t('data_manager.delete_success_txt'),
+          })
         } catch (e) {
           notification.error({
-            message: 'Fail to delete table',
+            message: t('data_manager.delete_failed_txt'),
             description: e.toString(),
           })
         }
@@ -112,12 +123,13 @@ export default function DBTableList() {
 
   const handleCancel = () => {
     setVisible(false)
+    form.resetFields()
   }
 
   const handleDeleteTable = (name) => () => {
     showModal({
       type: 'deleteTable',
-      title: `Delete Table ${name}`,
+      title: `${t('data_manager.delete')} ${name}`,
       tableName: name,
     })()
   }
@@ -125,7 +137,7 @@ export default function DBTableList() {
   const handleEditTable = (name) => () => {
     showModal({
       type: 'editTable',
-      title: `Edit Table ${name}`,
+      title: `${t('data_manager.edit')} ${name}`,
       tableName: name,
     })()
   }
@@ -137,9 +149,12 @@ export default function DBTableList() {
         <Button
           type="primary"
           style={{ marginBottom: '1rem' }}
-          onClick={showModal({ title: 'Create Table', type: 'newTable' })}
+          onClick={showModal({
+            title: t('data_manager.create_table'),
+            type: 'newTable',
+          })}
         >
-          Create Table
+          {t('data_manager.create_table')}
         </Button>
         {tables && (
           <Table
@@ -149,12 +164,12 @@ export default function DBTableList() {
             }))}
             columns={[
               {
-                title: 'Name',
+                title: t('data_manager.name'),
                 dataIndex: 'name',
                 key: 'name',
               },
               {
-                title: 'Structure',
+                title: t('data_manager.structure'),
                 key: 'structure',
                 fixed: 'right',
                 width: 150,
@@ -167,7 +182,7 @@ export default function DBTableList() {
                 ),
               },
               {
-                title: 'Edit',
+                title: t('data_manager.edit'),
                 key: 'edit',
                 fixed: 'right',
                 width: 150,
@@ -180,7 +195,7 @@ export default function DBTableList() {
                 ),
               },
               {
-                title: 'Delete',
+                title: t('data_manager.delete'),
                 key: 'delete',
                 fixed: 'right',
                 width: 150,
@@ -201,26 +216,27 @@ export default function DBTableList() {
         visible={visible}
         title={modalInfo.title}
         width={1024}
+        onOk={form.submit}
         onCancel={handleCancel}
-        footer={null}
       >
         <Form
+          form={form}
           {...{
-            labelCol: { span: 6 },
-            wrapperCol: { span: 18 },
+            labelCol: { span: 4 },
+            wrapperCol: { span: 20 },
           }}
           onFinish={handleOk}
         >
           {modalInfo.type === 'newTable' && (
             <>
               <Form.Item
-                label="Name"
+                label={t('data_manager.name')}
                 name="tableName"
                 rules={[{ required: true }]}
               >
                 <Input />
               </Form.Item>
-              <Form.Item label="Comment" name="comment">
+              <Form.Item label={t('data_manager.comment')} name="comment">
                 <Input />
               </Form.Item>
               <Form.List name="columns">
@@ -232,17 +248,17 @@ export default function DBTableList() {
                         {...(i > 0
                           ? {
                               wrapperCol: {
-                                offset: 6,
+                                offset: 4,
                               },
                             }
                           : null)}
-                        label={i === 0 ? 'Columns' : ''}
+                        label={i === 0 ? t('data_manager.columns') : ''}
                       >
                         <Form.Item
                           name={[f.name, 'name']}
                           fieldKey={[f.fieldKey, 'name'] as any}
                         >
-                          <Input placeholder="Name" />
+                          <Input placeholder={t('data_manager.name')} />
                         </Form.Item>
                         <Form.Item>
                           <Space
@@ -252,7 +268,10 @@ export default function DBTableList() {
                               name={[f.name, 'typeName']}
                               fieldKey={[f.fieldKey, 'typeName'] as any}
                             >
-                              <Select style={{ width: 150 }}>
+                              <Select
+                                style={{ width: 150 }}
+                                placeholder={t('data_manager.field_type')}
+                              >
                                 {Object.values(xcClient.FieldTypeName).map(
                                   (t) => (
                                     <Option key={t} value={t}>
@@ -267,14 +286,20 @@ export default function DBTableList() {
                               name={[f.name, 'length']}
                               fieldKey={[f.fieldKey, 'length'] as any}
                             >
-                              <Input type="number" placeholder="Length" />
+                              <Input
+                                type="number"
+                                placeholder={t('data_manager.length')}
+                              />
                             </Form.Item>
 
                             <Form.Item
                               name={[f.name, 'decimals']}
                               fieldKey={[f.fieldKey, 'decimals'] as any}
                             >
-                              <Input type="number" placeholder="Decimals" />
+                              <Input
+                                type="number"
+                                placeholder={t('data_manager.decimal')}
+                              />
                             </Form.Item>
 
                             <Form.Item
@@ -282,7 +307,7 @@ export default function DBTableList() {
                               fieldKey={[f.fieldKey, 'isNotNull'] as any}
                               valuePropName="checked"
                             >
-                              <Checkbox>Not Null?</Checkbox>
+                              <Checkbox>{t('data_manager.not_null')}?</Checkbox>
                             </Form.Item>
 
                             <Form.Item
@@ -290,7 +315,7 @@ export default function DBTableList() {
                               fieldKey={[f.fieldKey, 'isUnsigned'] as any}
                               valuePropName="checked"
                             >
-                              <Checkbox>Unsigned?</Checkbox>
+                              <Checkbox>{t('data_manager.unsigned')}?</Checkbox>
                             </Form.Item>
                           </Space>
                         </Form.Item>
@@ -299,26 +324,30 @@ export default function DBTableList() {
                           fieldKey={[f.fieldKey, 'isAutoIncrement'] as any}
                           valuePropName="checked"
                         >
-                          <Checkbox>Auto Increment?</Checkbox>
+                          <Checkbox>
+                            {t('data_manager.auto_increment')}?
+                          </Checkbox>
                         </Form.Item>
                         <Form.Item
                           name={[f.name, 'isPrimaryKey']}
                           fieldKey={[f.fieldKey, 'isPrimaryKey'] as any}
                           valuePropName="checked"
                         >
-                          <Checkbox>Primary Key?</Checkbox>
+                          <Checkbox>{t('data_manager.primary_key')}?</Checkbox>
                         </Form.Item>
                         <Form.Item
                           name={[f.name, 'defaultValue']}
                           fieldKey={[f.fieldKey, 'defaultValue'] as any}
                         >
-                          <Input placeholder="Default Value" />
+                          <Input
+                            placeholder={t('data_manager.default_value')}
+                          />
                         </Form.Item>
                         <Form.Item
                           name={[f.name, 'comment']}
                           fieldKey={[f.fieldKey, 'comment'] as any}
                         >
-                          <Input placeholder="Comment" />
+                          <Input placeholder={t('data_manager.comment')} />
                         </Form.Item>
                         <MinusSquareTwoTone
                           twoToneColor="#ff4d4f"
@@ -333,7 +362,7 @@ export default function DBTableList() {
                           add()
                         }}
                       >
-                        <PlusOutlined /> Add Column
+                        <PlusOutlined /> {t('data_manager.add_column')}
                       </Button>
                     </Form.Item>
                   </>
@@ -344,7 +373,7 @@ export default function DBTableList() {
           {modalInfo.type === 'editTable' && (
             <>
               <Form.Item
-                label="Name"
+                label={t('data_manager.name')}
                 name="tableName"
                 rules={[{ required: true }]}
               >
@@ -352,16 +381,6 @@ export default function DBTableList() {
               </Form.Item>
             </>
           )}
-          <Form.Item style={{ marginBottom: 0 }}>
-            <Space>
-              <Button key="back" onClick={handleCancel}>
-                Cancel
-              </Button>
-              <Button key="submit" type="primary" htmlType="submit">
-                Submit
-              </Button>
-            </Space>
-          </Form.Item>
         </Form>
       </Modal>
     </>

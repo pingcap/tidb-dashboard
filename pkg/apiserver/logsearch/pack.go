@@ -84,8 +84,7 @@ func dumpLog(savedPath string, tw *tar.Writer) error {
 
 func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 	if task.LogStorePath == nil && task.SlowLogStorePath == nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.New("Log is not available"))
+		utils.MakeInvalidRequestErrorWithMessage(c, "Log is not ready")
 		return
 	}
 	reader, writer := io.Pipe()

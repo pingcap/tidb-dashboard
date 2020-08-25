@@ -37,16 +37,27 @@ var (
 	ErrNSSignIn                  = ErrNS.NewSubNamespace("signin")
 	ErrSignInUnsupportedAuthType = ErrNSSignIn.NewType("unsupported_auth_type")
 	ErrSignInOther               = ErrNSSignIn.NewType("other")
+	ErrSignInInvalidCode         = ErrNSSignIn.NewType("invalid_code") // Invalid or expired
+	ErrShareFailed               = ErrNS.NewType("share_failed")
 )
 
 type AuthService struct {
 	middleware *jwt.GinJWTMiddleware
+	tidbClient *tidb.Client
 }
 
+type AuthType int
+
+const (
+	AuthTypeSQLUser AuthType = iota
+	AuthTypeSharingCode
+	// TODO: Add more auth type
+)
+
 type authenticateForm struct {
-	IsTiDBAuth bool   `json:"is_tidb_auth" binding:"required" example:"true"`
-	Username   string `json:"username" binding:"required" example:"root"`
-	Password   string `json:"password" example:""`
+	Type     AuthType `json:"type" example:"0"`
+	Username string   `json:"username" example:"root"` // Does not present for AuthTypeSharingCode
+	Password string   `json:"password"`
 }
 
 type TokenResponse struct {
@@ -54,34 +65,7 @@ type TokenResponse struct {
 	Expire time.Time `json:"expire"`
 }
 
-func (f *authenticateForm) Authenticate(tidbForwarder *tidb.Forwarder) (*utils.SessionUser, error) {
-	// TODO: Support non TiDB auth
-	if !f.IsTiDBAuth {
-		return nil, ErrSignInUnsupportedAuthType.New("unsupported auth type, only TiDB auth is supported")
-	}
-	db, err := tidbForwarder.OpenTiDB(f.Username, f.Password)
-	if err != nil {
-		if errorx.Cast(err) == nil {
-			return nil, ErrSignInOther.WrapWithNoMessage(err)
-		}
-		// Possible errors could be:
-		// tidb.ErrNoAliveTiDB
-		// tidb.ErrPDAccessFailed
-		// tidb.ErrTiDBConnFailed
-		// tidb.ErrTiDBAuthFailed
-		return nil, err
-	}
-	defer db.Close() //nolint:errcheck
-
-	// TODO: Fill privilege tables here
-	return &utils.SessionUser{
-		IsTiDBAuth:   f.IsTiDBAuth,
-		TiDBUsername: f.Username,
-		TiDBPassword: f.Password,
-	}, nil
-}
-
-func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
+func NewAuthService(tidbClient *tidb.Client) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -97,6 +81,11 @@ func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
 		secret = cryptopasta.NewEncryptionKey()
 	}
 
+	service := &AuthService{
+		middleware: nil,
+		tidbClient: tidbClient,
+	}
+
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		IdentityKey: utils.SessionUserKey,
 		Realm:       "dashboard",
@@ -108,7 +97,7 @@ func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
 			if err := c.ShouldBindJSON(&form); err != nil {
 				return nil, utils.ErrInvalidRequest.WrapWithNoMessage(err)
 			}
-			u, err := form.Authenticate(tidbForwarder)
+			u, err := service.authForm(&form)
 			if err != nil {
 				return nil, errorx.Decorate(err, "authenticate failed")
 			}
@@ -163,8 +152,7 @@ func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
 			if user == nil {
 				return false
 			}
-			// Currently we don't support privileges, so only root user is allowed to sign in.
-			if user.TiDBUsername != "root" {
+			if user.IsShared && time.Now().After(user.SharedSessionExpireAt) {
 				return false
 			}
 			return true
@@ -200,12 +188,67 @@ func NewAuthService(tidbForwarder *tidb.Forwarder) *AuthService {
 		log.Fatal("Failed to configure auth service", zap.Error(err))
 	}
 
-	return &AuthService{middleware: middleware}
+	service.middleware = middleware
+
+	return service
+}
+
+func (s *AuthService) authForm(f *authenticateForm) (*utils.SessionUser, error) {
+	switch f.Type {
+	case AuthTypeSQLUser:
+		return s.authSQLForm(f)
+	case AuthTypeSharingCode:
+		return s.authSharingCodeForm(f)
+	default:
+		return nil, ErrSignInUnsupportedAuthType.NewWithNoMessage()
+	}
+}
+
+func (s *AuthService) authSQLForm(f *authenticateForm) (*utils.SessionUser, error) {
+	if f.Type != AuthTypeSQLUser {
+		panic("Expect AuthTypeSQLUser")
+	}
+	// Currently we don't support privileges, so only root user is allowed to sign in.
+	if f.Username != "root" {
+		return nil, ErrSignInOther.New("non root user is not allowed")
+	}
+	db, err := s.tidbClient.OpenSQLConn(f.Username, f.Password)
+	if err != nil {
+		if errorx.Cast(err) == nil {
+			return nil, ErrSignInOther.WrapWithNoMessage(err)
+		}
+		// Possible errors could be:
+		// tidb.ErrNoAliveTiDB
+		// tidb.ErrPDAccessFailed
+		// tidb.ErrTiDBConnFailed
+		// tidb.ErrTiDBAuthFailed
+		return nil, err
+	}
+	defer db.Close() //nolint:errcheck
+
+	return &utils.SessionUser{
+		HasTiDBAuth:  true,
+		TiDBUsername: f.Username,
+		TiDBPassword: f.Password,
+		IsShared:     false,
+	}, nil
+}
+
+func (s *AuthService) authSharingCodeForm(f *authenticateForm) (*utils.SessionUser, error) {
+	if f.Type != AuthTypeSharingCode {
+		panic("Expect AuthTypeSharingCode")
+	}
+	session := utils.NewSessionFromSharingCode(f.Password)
+	if session == nil {
+		return nil, ErrSignInInvalidCode.NewWithNoMessage()
+	}
+	return session, nil
 }
 
 func Register(r *gin.RouterGroup, s *AuthService) {
 	endpoint := r.Group("/user")
 	endpoint.POST("/login", s.loginHandler)
+	endpoint.POST("/share", s.MWAuthRequired(), s.shareSessionHandler)
 }
 
 // MWAuthRequired creates a middleware that verifies the authentication token (JWT) in the request. If the token
@@ -215,13 +258,55 @@ func (s *AuthService) MWAuthRequired() gin.HandlerFunc {
 	return s.middleware.MiddlewareFunc()
 }
 
+// @ID userLogin
 // @Summary Log in
-// @Description Log into dashboard.
-// @Accept json
 // @Param message body authenticateForm true "Credentials"
 // @Success 200 {object} TokenResponse
-// @Failure 401 {object} utils.APIError "Login failure"
+// @Failure 401 {object} utils.APIError
 // @Router /user/login [post]
 func (s *AuthService) loginHandler(c *gin.Context) {
 	s.middleware.LoginHandler(c)
+}
+
+type ShareRequest struct {
+	ExpireInSeconds int64 `json:"expire_in_sec"`
+}
+
+type ShareResponse struct {
+	Code string `json:"code"`
+}
+
+// @ID userShareSession
+// @Summary Share current session and generate a sharing code
+// @Param request body ShareRequest true "Request body"
+// @Security JwtAuth
+// @Success 200 {object} ShareResponse
+// @Router /user/share [post]
+func (s *AuthService) shareSessionHandler(c *gin.Context) {
+	var req ShareRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.MakeInvalidRequestErrorFromError(c, err)
+		return
+	}
+
+	expiry := time.Second * time.Duration(req.ExpireInSeconds)
+
+	if expiry > utils.MaxSessionShareExpiry || expiry < 0 {
+		utils.MakeInvalidRequestErrorWithMessage(c, "Invalid share expiry")
+		return
+	}
+
+	sessionUser := c.MustGet(utils.SessionUserKey).(*utils.SessionUser)
+	if sessionUser.IsShared {
+		utils.MakeInvalidRequestErrorWithMessage(c, "Shared session cannot be shared again")
+		return
+	}
+
+	code := sessionUser.ToSharingCode(expiry)
+	if code == nil {
+		_ = c.Error(ErrShareFailed.NewWithNoMessage())
+		return
+	}
+
+	c.JSON(http.StatusOK, ShareResponse{Code: *code})
 }

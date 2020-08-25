@@ -17,26 +17,30 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
 
-type Service struct {
-	config        *config.Config
-	tidbForwarder *tidb.Forwarder
+type ServiceParams struct {
+	fx.In
+	TiDBClient *tidb.Client
 }
 
-func NewService(config *config.Config, tidbForwarder *tidb.Forwarder) *Service {
-	return &Service{config: config, tidbForwarder: tidbForwarder}
+type Service struct {
+	params ServiceParams
+}
+
+func NewService(p ServiceParams) *Service {
+	return &Service{params: p}
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
+	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	endpoint.GET("/config", s.configHandler)
 	endpoint.POST("/config", s.modifyConfigHandler)
 	endpoint.GET("/time_ranges", s.timeRangesHandler)
@@ -46,9 +50,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/plan/detail", s.getPlanDetailHandler)
 }
 
-// @Summary Statement configuration
-// @Description Get configuration of statements
-// @Produce json
+// @Summary Get statement configurations
 // @Success 200 {object} statement.Config
 // @Router /statements/config [get]
 // @Security JwtAuth
@@ -63,8 +65,7 @@ func (s *Service) configHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, cfg)
 }
 
-// @Summary Statement configuration
-// @Description Modify configuration of statements
+// @Summary Update statement configurations
 // @Param request body statement.Config true "Request body"
 // @Success 204 {object} string
 // @Router /statements/config [post]
@@ -73,7 +74,7 @@ func (s *Service) configHandler(c *gin.Context) {
 func (s *Service) modifyConfigHandler(c *gin.Context) {
 	var req Config
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	db := utils.GetTiDBConnection(c)
@@ -85,9 +86,7 @@ func (s *Service) modifyConfigHandler(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-// @Summary Statement time ranges
-// @Description Get all time ranges of the statements
-// @Produce json
+// @Summary Get available statement time ranges
 // @Success 200 {array} statement.TimeRange
 // @Router /statements/time_ranges [get]
 // @Security JwtAuth
@@ -102,9 +101,7 @@ func (s *Service) timeRangesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, timeRanges)
 }
 
-// @Summary Statement types
-// @Description Get all statement types
-// @Produce json
+// @Summary Get all statement types
 // @Success 200 {array} string
 // @Router /statements/stmt_types [get]
 // @Security JwtAuth
@@ -127,9 +124,7 @@ type GetStatementsRequest struct {
 	Text      string   `json:"text" form:"text"`
 }
 
-// @Summary Statements overview
-// @Description Get statements overview
-// @Produce json
+// @Summary Get a list of statement overviews
 // @Param q query GetStatementsRequest true "Query"
 // @Success 200 {array} Model
 // @Router /statements/overviews [get]
@@ -138,8 +133,7 @@ type GetStatementsRequest struct {
 func (s *Service) overviewsHandler(c *gin.Context) {
 	var req GetStatementsRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	db := utils.GetTiDBConnection(c)
@@ -158,9 +152,7 @@ type GetPlansRequest struct {
 	EndTime    int    `json:"end_time" form:"end_time"`
 }
 
-// @Summary Get statement plans
-// @Description Get statement plans
-// @Produce json
+// @Summary Get execution plans of a statement
 // @Param q query GetPlansRequest true "Query"
 // @Success 200 {array} Model
 // @Router /statements/plans [get]
@@ -169,8 +161,7 @@ type GetPlansRequest struct {
 func (s *Service) getPlansHandler(c *gin.Context) {
 	var req GetPlansRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	db := utils.GetTiDBConnection(c)
@@ -187,9 +178,7 @@ type GetPlanDetailRequest struct {
 	Plans []string `json:"plans" form:"plans"`
 }
 
-// @Summary Get statement plan detail
-// @Description Get statement plan detail
-// @Produce json
+// @Summary Get details of a statement in an execution plan
 // @Param q query GetPlanDetailRequest true "Query"
 // @Success 200 {object} Model
 // @Router /statements/plan/detail [get]
@@ -198,8 +187,7 @@ type GetPlanDetailRequest struct {
 func (s *Service) getPlanDetailHandler(c *gin.Context) {
 	var req GetPlanDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	db := utils.GetTiDBConnection(c)

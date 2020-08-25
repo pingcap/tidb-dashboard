@@ -25,7 +25,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
-	apiutils "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
@@ -36,23 +36,24 @@ const (
 )
 
 type Service struct {
-	config        *config.Config
-	db            *dbstore.DB
-	tidbForwarder *tidb.Forwarder
-	fileServer    http.Handler
+	// FIXME: Use fx.In
+	config     *config.Config
+	db         *dbstore.DB
+	tidbClient *tidb.Client
+	fileServer http.Handler
 }
 
-func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB, uiAssetFS http.FileSystem) *Service {
+func NewService(config *config.Config, tidbClient *tidb.Client, db *dbstore.DB, uiAssetFS http.FileSystem) *Service {
 	err := autoMigrate(db)
 	if err != nil {
 		log.Fatal("Failed to initialize database", zap.Error(err))
 	}
 
 	return &Service{
-		config:        config,
-		db:            db,
-		tidbForwarder: tidbForwarder,
-		fileServer:    uiserver.Handler(uiAssetFS),
+		config:     config,
+		db:         db,
+		tidbClient: tidbClient,
+		fileServer: uiserver.Handler(uiAssetFS),
 	}
 }
 
@@ -63,7 +64,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		s.reportsHandler)
 	endpoint.POST("/reports",
 		auth.MWAuthRequired(),
-		apiutils.MWConnectTiDB(s.tidbForwarder),
+		utils.MWConnectTiDB(s.tidbClient),
 		s.genReportHandler)
 	endpoint.GET("/reports/:id/detail", s.reportHTMLHandler)
 	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)
@@ -81,7 +82,6 @@ type GenerateReportRequest struct {
 
 // @Summary SQL diagnosis reports history
 // @Description Get sql diagnosis reports history
-// @Produce json
 // @Success 200 {array} Report
 // @Router /diagnose/reports [get]
 // @Security JwtAuth
@@ -97,17 +97,16 @@ func (s *Service) reportsHandler(c *gin.Context) {
 
 // @Summary SQL diagnosis report
 // @Description Generate sql diagnosis report
-// @Produce json
 // @Param request body GenerateReportRequest true "Request body"
 // @Success 200 {object} int
 // @Router /diagnose/reports [post]
 // @Security JwtAuth
+// @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) genReportHandler(c *gin.Context) {
 	var req GenerateReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(apiutils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
@@ -127,7 +126,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		return
 	}
 
-	db := apiutils.TakeTiDBConnection(c)
+	db := utils.TakeTiDBConnection(c)
 
 	go func() {
 		defer db.Close()
@@ -153,7 +152,6 @@ func (s *Service) genReportHandler(c *gin.Context) {
 
 // @Summary Diagnosis report status
 // @Description Get diagnosis report status
-// @Produce json
 // @Param id path string true "report id"
 // @Success 200 {object} Report
 // @Router /diagnose/reports/{id}/status [get]

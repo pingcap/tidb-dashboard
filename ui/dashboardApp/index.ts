@@ -28,6 +28,7 @@ import AppDiagnose from '@lib/apps/Diagnose/index.meta'
 import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
 import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
+import AppConfiguration from '@lib/apps/Configuration/index.meta'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
@@ -50,7 +51,7 @@ async function main() {
   let info: InfoInfoResponse
 
   try {
-    const i = await client.getInstance().getInfo()
+    const i = await client.getInstance().infoGet()
     info = i.data
   } catch (e) {
     Modal.error({
@@ -106,6 +107,7 @@ async function main() {
     .register(AppSearchLogs)
     .register(AppInstanceProfiling)
     .register(AppQueryEditor)
+    .register(AppConfiguration)
 
   if (routing.isLocationMatch('/')) {
     singleSpa.navigateToUrl('#' + registry.getDefaultRouter())

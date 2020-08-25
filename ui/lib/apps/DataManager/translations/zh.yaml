@@ -36,6 +36,7 @@ data_manager:
   delete_failed_txt: 删除失败
 
   action: 操作
+  name: 名称
   view_db:
     name: 名称
     type: 类型

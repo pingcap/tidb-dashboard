@@ -67,10 +67,10 @@ export function init() {
 }
 
 export async function authUsingDefaultCredential() {
-  const r = await DashboardClient.getInstance().userLoginPost({
+  const r = await DashboardClient.getInstance().userLogin({
     username: 'root',
     password: '',
-    is_tidb_auth: true,
+    type: 0,
   })
   auth.setAuthToken(r.data.token)
 }

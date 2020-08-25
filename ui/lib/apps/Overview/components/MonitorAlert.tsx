@@ -26,7 +26,7 @@ export default function MonitorAlert() {
   )
 
   const { data: infoData } = useClientRequest((cancelToken) =>
-    client.getInstance().getInfo({ cancelToken })
+    client.getInstance().infoGet({ cancelToken })
   )
 
   useEffect(() => {

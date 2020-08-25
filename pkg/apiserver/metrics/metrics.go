@@ -15,6 +15,7 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
 )
@@ -75,7 +76,6 @@ type QueryResponse struct {
 // @ID metricsQuery
 // @Summary Query metrics
 // @Description Query metrics in the given range
-// @Produce json
 // @Param q query QueryRequest true "Query"
 // @Success 200 {object} QueryResponse
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
@@ -84,7 +84,7 @@ type QueryResponse struct {
 func (s *Service) queryHandler(c *gin.Context) {
 	var req QueryRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 

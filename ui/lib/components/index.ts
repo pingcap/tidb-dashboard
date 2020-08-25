@@ -50,6 +50,8 @@ export * from './DatePicker'
 export { default as DatePicker } from './DatePicker'
 export * from './ErrorBar'
 export { default as ErrorBar } from './ErrorBar'
+export * from './AppearAnimate'
+export { default as AppearAnimate } from './AppearAnimate'
 
 export { default as LanguageDropdown } from './LanguageDropdown'
 export { default as ParamsPageWrapper } from './ParamsPageWrapper'

@@ -45,9 +45,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/detail", s.detailhandler)
 }
 
-// @Summary Example: Get all databases
-// @Description Get all databases.
-// @Produce json
+// @Summary List all slow queries
 // @Param q query GetListRequest true "Query"
 // @Success 200 {array} Base
 // @Router /slow_query/list [get]
@@ -56,7 +54,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 func (s *Service) listHandler(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
@@ -69,9 +67,7 @@ func (s *Service) listHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, results)
 }
 
-// @Summary Example: Get all databases
-// @Description Get all databases.
-// @Produce json
+// @Summary Get details of a slow query
 // @Param q query GetDetailRequest true "Query"
 // @Success 200 {object} SlowQuery
 // @Router /slow_query/detail [get]
@@ -80,8 +76,7 @@ func (s *Service) listHandler(c *gin.Context) {
 func (s *Service) detailhandler(c *gin.Context) {
 	var req GetDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 

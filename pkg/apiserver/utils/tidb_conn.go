@@ -40,7 +40,7 @@ func MWConnectTiDB(tidbClient *tidb.Client) gin.HandlerFunc {
 			panic("invalid sessionUser")
 		}
 
-		if !sessionUser.IsTiDBAuth {
+		if !sessionUser.HasTiDBAuth {
 			// Only TiDBAuth is able to access. Raise error in this case.
 			// The error is privilege error instead of authorization error so that user will not be redirected.
 			MakeInsufficientPrivilegeError(c)

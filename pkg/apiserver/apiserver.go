@@ -196,7 +196,7 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 	apiHandlerEngine = gin.New()
 	apiHandlerEngine.Use(gin.Recovery())
 	apiHandlerEngine.Use(cors.AllowAll())
-	apiHandlerEngine.Use(gzip.Gzip(gzip.BestSpeed))
+	apiHandlerEngine.Use(gzip.Gzip(gzip.DefaultCompression))
 	apiHandlerEngine.Use(apiutils.MWHandleErrors())
 
 	endpoint = apiHandlerEngine.Group("/dashboard/api")

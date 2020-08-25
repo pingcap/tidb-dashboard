@@ -33,7 +33,7 @@ export default function DBTableList() {
   const navigate = useNavigate()
   const { db } = useQueryParams()
 
-  const [tables, setTables] = useState<string[]>()
+  const [tables, setTables] = useState<xcClient.TableInfo[]>()
   const [visible, setVisible] = useState(false)
   const [modalInfo, setModalInfo] = useState<any>({
     type: '',
@@ -143,10 +143,8 @@ export default function DBTableList() {
         </Button>
         {tables && (
           <Table
-            dataSource={tables.map((d, i) => ({
-              key: d + i,
-              name: d,
-            }))}
+            dataSource={tables}
+            rowKey="name"
             columns={[
               {
                 title: 'Name',
@@ -154,15 +152,36 @@ export default function DBTableList() {
                 key: 'name',
               },
               {
+                title: 'Type',
+                dataIndex: 'type',
+                key: 'type',
+                render: (text) => text,
+              },
+              {
+                title: 'Create Time',
+                dataIndex: 'createTime',
+                key: 'createTime',
+              },
+              {
+                title: 'Collation',
+                dataIndex: 'collation',
+                key: 'collation',
+              },
+              {
+                title: 'Comment',
+                dataIndex: 'comment',
+                key: 'comment',
+              },
+              {
                 title: 'Structure',
                 key: 'structure',
                 fixed: 'right',
                 width: 150,
-                render: (_: any, __: any, i) => (
+                render: (_: any, record: any) => (
                   <Button
                     type="link"
                     icon={<AppstoreOutlined />}
-                    href={`#/data/table_structure?db=${db}&table=${tables[i]}`}
+                    href={`#/data/table_structure?db=${db}&table=${record.name}`}
                   />
                 ),
               },

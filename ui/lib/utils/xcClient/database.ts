@@ -25,18 +25,46 @@ export async function dropDatabase(name: string) {
   await evalSql(`DROP DATABASE ${SqlString.escapeId(name)}`)
 }
 
+export enum TableType {
+  SYSTEM_VIEW = 'SYSTEM VIEW',
+  TABLE = 'BASE TABLE',
+  VIEW = 'VIEW',
+}
+
+export type TableInfo = {
+  name: string
+  type: TableType
+  createTime: string
+  collation: string
+  comment: string
+}
+
 export type GetTablesResult = {
-  tables: string[]
+  tables: TableInfo[]
 }
 
 export async function getTables(dbName: string): Promise<GetTablesResult> {
-  const data = await evalSql(`USE ${SqlString.escapeId(dbName)}; SHOW TABLES;`)
-  const ret: string[] = []
-  for (const row of data.rows ?? []) {
-    ret.push((row[0] as unknown) as string)
-  }
+  const data = await evalSqlObj(
+    SqlString.format(
+      `
+    SELECT
+      TABLE_NAME, TABLE_TYPE, CREATE_TIME, TABLE_COLLATION, TABLE_COMMENT
+    FROM
+      INFORMATION_SCHEMA.TABLES
+    WHERE UPPER(TABLE_SCHEMA) = ?
+  `,
+      [dbName.toUpperCase()]
+    )
+  )
+
   return {
-    tables: ret,
+    tables: data.map((row) => ({
+      name: row.TABLE_NAME,
+      type: row.TABLE_TYPE,
+      createTime: row.CREATE_TIME,
+      collation: row.TABLE_COLLATION,
+      comment: row.TABLE_COMMENT,
+    })),
   }
 }
 

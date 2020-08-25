@@ -39,23 +39,40 @@ it('create and drop database', async () => {
 it('list table', async () => {
   {
     const tables = (await Database.getTables('INFORMATION_SCHEMA')).tables
-    expect(tables).toContain('CLUSTER_STATEMENTS_SUMMARY_HISTORY')
+    expect(tables).toContainEqual(
+      expect.objectContaining({
+        name: 'CLUSTER_STATEMENTS_SUMMARY_HISTORY',
+        type: Database.TableType.SYSTEM_VIEW,
+      })
+    )
   }
   {
     const tableName = newId('table')
     {
       const tables = (await Database.getTables(DB_NAME)).tables
-      expect(tables).not.toContain(tableName)
+      expect(tables).not.toContainEqual(
+        expect.objectContaining({ name: tableName })
+      )
     }
     {
       await evalSql(`CREATE TABLE ${DB_NAME}.${tableName} (id int);`)
       const tables = (await Database.getTables(DB_NAME)).tables
-      expect(tables).toContain(tableName)
+      expect(tables).toContainEqual(
+        expect.objectContaining({
+          name: tableName,
+          type: Database.TableType.TABLE,
+        })
+      )
     }
     {
       await Database.dropTable(DB_NAME, tableName)
       const tables = (await Database.getTables(DB_NAME)).tables
-      expect(tables).not.toContain(tableName)
+      expect(tables).not.toContainEqual(
+        expect.objectContaining({
+          name: tableName,
+          type: Database.TableType.TABLE,
+        })
+      )
     }
   }
   {
@@ -72,8 +89,12 @@ it('list table', async () => {
     {
       await Database.dropTable(DB_NAME, currentTableName)
       const tables = (await Database.getTables(DB_NAME)).tables
-      expect(tables).not.toContain(currentTableName)
-      expect(tables).not.toContain(originalTableName)
+      expect(tables).not.toContainEqual(
+        expect.objectContaining({ name: currentTableName })
+      )
+      expect(tables).not.toContainEqual(
+        expect.objectContaining({ name: originalTableName })
+      )
     }
   }
 })
@@ -292,8 +313,8 @@ it('get table info', async () => {
 
 it('get table info for native tables successfully', async () => {
   const tables = (await Database.getTables('INFORMATION_SCHEMA')).tables
-  for (const tableName of tables) {
-    await Database.getTableInfo('INFORMATION_SCHEMA', tableName)
+  for (const table of tables) {
+    await Database.getTableInfo('INFORMATION_SCHEMA', table.name)
   }
 })
 

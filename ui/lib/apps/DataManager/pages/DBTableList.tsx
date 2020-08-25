@@ -3,6 +3,7 @@ import * as xcClient from '@lib/utils/xcClient/database'
 import {
   Button,
   Checkbox,
+  Divider,
   Form,
   Input,
   Modal,
@@ -10,16 +11,10 @@ import {
   Select,
   Space,
   Table,
-  notification,
   Typography,
-  Divider,
+  notification,
 } from 'antd'
-import {
-  CloseSquareOutlined,
-  EditOutlined,
-  MinusSquareTwoTone,
-  PlusOutlined,
-} from '@ant-design/icons'
+import { MinusSquareTwoTone, PlusOutlined } from '@ant-design/icons'
 import React, { useEffect, useState } from 'react'
 
 import { AppstoreOutlined } from '@ant-design/icons'
@@ -62,6 +57,15 @@ export default function DBTableList() {
   const handleOk = async (values) => {
     let _values
     if (modalInfo.type === 'newTable') {
+      if (!values.columns) {
+        notification.error({
+          message: `${t('data_manager.please_input')}${t(
+            'data_manager.columns'
+          )}`,
+        })
+        return
+      }
+
       const columns = values.columns.map(parseColumnRelatedValues)
       _values = {
         ...values,
@@ -120,7 +124,7 @@ export default function DBTableList() {
     }
 
     setTimeout(fetchTables, 1000)
-    setVisible(false)
+    handleCancel()
   }
 
   const handleCancel = () => {
@@ -264,6 +268,14 @@ export default function DBTableList() {
                         <Form.Item
                           name={[f.name, 'name']}
                           fieldKey={[f.fieldKey, 'name'] as any}
+                          rules={[
+                            {
+                              required: true,
+                              message: `${t('data_manager.please_input')}${t(
+                                'data_manager.name'
+                              )}`,
+                            },
+                          ]}
                         >
                           <Input placeholder={t('data_manager.name')} />
                         </Form.Item>
@@ -274,6 +286,14 @@ export default function DBTableList() {
                             <Form.Item
                               name={[f.name, 'typeName']}
                               fieldKey={[f.fieldKey, 'typeName'] as any}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: `${t(
+                                    'data_manager.please_input'
+                                  )}${t('data_manager.field_type')}`,
+                                },
+                              ]}
                             >
                               <Select
                                 style={{ width: 150 }}
@@ -388,6 +408,8 @@ export default function DBTableList() {
               </Form.Item>
             </>
           )}
+          {modalInfo.type === 'deleteTable' &&
+            `${t('data_manager.confirm_delete_txt')} ${modalInfo.tableName}`}
         </Form>
       </Modal>
     </>

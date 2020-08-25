@@ -35,8 +35,10 @@ data_manager:
   delete_success_txt: Failed to delete
   delete_failed_txt: Successfully deleted
 
+  please_input: Please input 
   action: Actions
   name: Name
+  type: Type
   view_db:
     name: Name
     type: Type

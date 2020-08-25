@@ -35,8 +35,10 @@ data_manager:
   delete_success_txt: 删除成功
   delete_failed_txt: 删除失败
 
+  please_input: 请填写
   action: 操作
   name: 名称
+  type: 类型
   view_db:
     name: 名称
     type: 类型

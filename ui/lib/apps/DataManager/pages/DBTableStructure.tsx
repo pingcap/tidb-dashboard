@@ -125,11 +125,17 @@ export default function DBTableStructure() {
         }
         break
       case 'addIndex':
-        try {
-          await xcClient.addTableIndex(db, table, {
-            ...values,
-            ...{ columns: values.columns.map((c) => ({ columnName: c })) },
+        if (!values.columns) {
+          notification.error({
+            message: `${t('data_manager.please_input')}${t(
+              'data_manager.columns'
+            )}`,
           })
+          return
+        }
+
+        try {
+          await xcClient.addTableIndex(db, table, values)
           notification.success({
             message: t('data_manager.create_success_txt'),
           })
@@ -158,7 +164,7 @@ export default function DBTableStructure() {
     }
 
     setTimeout(fetchTableInfo, 1000)
-    setVisible(false)
+    handleCancel()
   }
 
   const handleCancel = () => {
@@ -169,7 +175,7 @@ export default function DBTableStructure() {
   const handleDeleteColumn = (name) => () => {
     showModal({
       type: 'deleteColumn',
-      title: `${t('data_manager.delete_column)')} ${name}`,
+      title: `${t('data_manager.delete_column')} ${name}`,
       columnName: name,
     })()
   }
@@ -185,7 +191,7 @@ export default function DBTableStructure() {
   const handleDeleteIndex = (name) => () => {
     showModal({
       type: 'deleteIndex',
-      title: `${t('data_manager.delete_index)')} ${name}`,
+      title: `${t('data_manager.delete_index')} ${name}`,
       indexName: name,
     })()
   }
@@ -331,6 +337,8 @@ export default function DBTableStructure() {
                 title: 'Type',
                 dataIndex: 'type',
                 key: 'type',
+                render: (_: any, record: any) =>
+                  xcClient.TableInfoIndexType[record.type],
               },
               {
                 title: t('data_manager.columns'),
@@ -364,8 +372,8 @@ export default function DBTableStructure() {
         <Form
           form={form}
           {...{
-            labelCol: { span: 6 },
-            wrapperCol: { span: 18 },
+            labelCol: { span: 4 },
+            wrapperCol: { span: 20 },
           }}
           onFinish={handleOk}
         >
@@ -382,7 +390,17 @@ export default function DBTableStructure() {
               </Form.Item>
               <Form.Item label={t('data_manager.field_type')}>
                 <Space style={{ display: 'flex', alignItems: 'center' }}>
-                  <Form.Item name="typeName">
+                  <Form.Item
+                    name="typeName"
+                    rules={[
+                      {
+                        required: true,
+                        message: `${t('data_manager.please_input')}${t(
+                          'data_manager.field_type'
+                        )}`,
+                      },
+                    ]}
+                  >
                     <Select
                       style={{ width: 150 }}
                       placeholder={t('data_manager.field_type')}
@@ -438,10 +456,15 @@ export default function DBTableStructure() {
               >
                 <Input />
               </Form.Item>
-              <Form.Item name="type" label="Type" rules={[{ required: true }]}>
+              <Form.Item
+                name="type"
+                label={t('data_manager.type')}
+                rules={[{ required: true }]}
+              >
                 <Select>
                   {Object.entries(xcClient.TableInfoIndexType)
                     .filter((t) => typeof t[1] === 'number')
+                    .filter((t) => t[0] !== 'Primary')
                     .map((t) => (
                       <Option key={t[0]} value={t[1]}>
                         {t[0]}
@@ -458,26 +481,69 @@ export default function DBTableStructure() {
                         {...(i > 0
                           ? {
                               wrapperCol: {
-                                offset: 6,
+                                offset: 4,
                               },
                             }
                           : null)}
                         label={i === 0 ? t('data_manager.columns') : ''}
                       >
-                        <Form.Item {...f} noStyle>
-                          <Input style={{ width: '80%' }} />
-                        </Form.Item>
-                        <MinusSquareTwoTone
-                          twoToneColor="#ff4d4f"
-                          style={{ marginLeft: '1rem' }}
-                          onClick={() => remove(f.name)}
-                        />
+                        <Space>
+                          <Form.Item
+                            name={[f.name, 'columnName']}
+                            fieldKey={[f.fieldKey, 'columnName'] as any}
+                            rules={[
+                              {
+                                required: true,
+                                message: `${t('data_manager.please_input')}${t(
+                                  'data_manager.name'
+                                )}`,
+                              },
+                            ]}
+                            noStyle
+                          >
+                            <Select style={{ width: 100 }}>
+                              {tableInfo &&
+                                (form.getFieldValue('columns')
+                                  ? tableInfo.columns.filter(
+                                      (c) =>
+                                        !form
+                                          .getFieldValue('columns')
+                                          .filter((d) => d !== undefined)
+                                          .map((c) => c.columnName)
+                                          .includes(c.name)
+                                    )
+                                  : tableInfo.columns
+                                )
+                                  .map((c) => c.name)
+                                  .map((d, i) => (
+                                    <Option key={d + i} value={d}>
+                                      {d}
+                                    </Option>
+                                  ))}
+                            </Select>
+                          </Form.Item>
+                          <Form.Item
+                            name={[f.name, 'keyLength']}
+                            fieldKey={[f.fieldKey, 'keyLength'] as any}
+                            noStyle
+                          >
+                            <Input
+                              type="number"
+                              placeholder={t('data_manager.length')}
+                            />
+                          </Form.Item>
+                          <MinusSquareTwoTone
+                            twoToneColor="#ff4d4f"
+                            onClick={() => remove(f.name)}
+                          />
+                        </Space>
                       </Form.Item>
                     ))}
                     <Form.Item>
                       <Button
                         type="dashed"
                         onClick={() => {
+                          console.log(form.getFieldValue('columns'))
                           add()
                         }}
                       >
@@ -489,6 +555,10 @@ export default function DBTableStructure() {
               </Form.List>
             </>
           )}
+          {modalInfo.type === 'deleteColumn' &&
+            `${t('data_manager.confirm_delete_txt')} ${modalInfo.columnName}`}
+          {modalInfo.type === 'deleteIndex' &&
+            `${t('data_manager.confirm_delete_txt')} ${modalInfo.indexName}`}
         </Form>
       </Modal>
     </>

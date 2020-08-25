@@ -1,2 +1,20 @@
 dbusers_manager:
   nav_title: 用户管理
+  user_name: 用户名
+  host: 主机
+  action: 操作
+  delete: 删除
+  create_user_title: 添加用户
+  delete_user_title: 删除用户
+  submit: 提交
+  cancel: 取消
+  create_form:
+    name_label: 用户名称
+    host_label: 主机
+    pwd_label: 密码
+    confirm_pwd:
+      label: 确认密码
+      error: 输入的两个密码不匹配！
+    privileges:
+      label: 全局权限
+      placeholder: 请选择用户权限

@@ -10,10 +10,10 @@ function StoryRoot({ children }) {
     apiClient.init()
     client
       .getInstance()
-      .userLoginPost({
+      .userLogin({
         username: 'root',
         password: '',
-        is_tidb_auth: true,
+        type: 0,
       })
       .then((r) => auth.setAuthToken(r.data.token))
   }, [])

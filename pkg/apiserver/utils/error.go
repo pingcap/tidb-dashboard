@@ -22,13 +22,37 @@ import (
 )
 
 var (
-	ErrNS                    = errorx.NewNamespace("error.api")
-	ErrOther                 = ErrNS.NewType("other")
-	ErrUnauthorized          = ErrNS.NewType("unauthorized")
-	ErrInsufficientPrivilege = ErrNS.NewType("insufficient_privilege")
-	ErrInvalidRequest        = ErrNS.NewType("invalid_request")
-	ErrExpNotEnabled         = ErrNS.NewType("experimental_feature_not_enabled")
+	ErrNS    = errorx.NewNamespace("error.api")
+	ErrOther = ErrNS.NewType("other")
 )
+
+var ErrUnauthorized = ErrNS.NewType("unauthorized")
+
+func MakeUnauthorizedError(c *gin.Context) {
+	_ = c.Error(ErrUnauthorized.NewWithNoMessage())
+	c.Status(http.StatusUnauthorized)
+}
+
+var ErrInsufficientPrivilege = ErrNS.NewType("insufficient_privilege")
+
+func MakeInsufficientPrivilegeError(c *gin.Context) {
+	_ = c.Error(ErrInsufficientPrivilege.NewWithNoMessage())
+	c.Status(http.StatusForbidden)
+}
+
+var ErrInvalidRequest = ErrNS.NewType("invalid_request")
+
+func MakeInvalidRequestErrorWithMessage(c *gin.Context, message string, args ...interface{}) {
+	_ = c.Error(ErrInvalidRequest.New(message, args...))
+	c.Status(http.StatusBadRequest)
+}
+
+func MakeInvalidRequestErrorFromError(c *gin.Context, err error) {
+	_ = c.Error(ErrInvalidRequest.WrapWithNoMessage(err))
+	c.Status(http.StatusBadRequest)
+}
+
+var ErrExpNotEnabled = ErrNS.NewType("experimental_feature_not_enabled")
 
 type APIError struct {
 	Error    bool   `json:"error"`

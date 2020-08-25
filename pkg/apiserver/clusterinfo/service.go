@@ -84,9 +84,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/all", s.getHostsInfo)
 }
 
-// @Summary Delete etcd's tidb key.
-// @Description Delete etcd's TiDB key with ip:port.
-// @Produce json
+// @Summary Hide a TiDB instance
 // @Param address path string true "ip:port"
 // @Success 200 "delete ok"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
@@ -126,9 +124,7 @@ func (s *Service) deleteTiDBTopology(c *gin.Context) {
 }
 
 // @ID getTiDBTopology
-// @Summary Get TiDB instances
-// @Description Get TiDB instances topology
-// @Produce json
+// @Summary Get all TiDB instances
 // @Success 200 {array} topology.TiDBInfo
 // @Router /topology/tidb [get]
 // @Security JwtAuth
@@ -148,9 +144,7 @@ type StoreTopologyResponse struct {
 }
 
 // @ID getStoreTopology
-// @Summary Get TiKV / TiFlash instances
-// @Description Get TiKV / TiFlash instances topology
-// @Produce json
+// @Summary Get all TiKV / TiFlash instances
 // @Success 200 {object} StoreTopologyResponse
 // @Router /topology/store [get]
 // @Security JwtAuth
@@ -168,9 +162,7 @@ func (s *Service) getStoreTopology(c *gin.Context) {
 }
 
 // @ID getStoreLocationTopology
-// @Summary Get store location
-// @Description Get store location topology
-// @Produce json
+// @Summary Get location labels of all TiKV / TiFlash instances
 // @Success 200 {object} topology.StoreLocation
 // @Router /topology/store_location [get]
 // @Security JwtAuth
@@ -185,9 +177,7 @@ func (s *Service) getStoreLocationTopology(c *gin.Context) {
 }
 
 // @ID getPDTopology
-// @Summary Get PD instances
-// @Description Get PD instances topology
-// @Produce json
+// @Summary Get all PD instances
 // @Success 200 {array} topology.PDInfo
 // @Router /topology/pd [get]
 // @Security JwtAuth
@@ -203,8 +193,6 @@ func (s *Service) getPDTopology(c *gin.Context) {
 
 // @ID getAlertManagerTopology
 // @Summary Get AlertManager instance
-// @Description Get AlertManager instance topology
-// @Produce json
 // @Success 200 {object} topology.AlertManagerInfo
 // @Router /topology/alertmanager [get]
 // @Security JwtAuth
@@ -220,8 +208,6 @@ func (s *Service) getAlertManagerTopology(c *gin.Context) {
 
 // @ID getGrafanaTopology
 // @Summary Get Grafana instance
-// @Description Get Grafana instance topology
-// @Produce json
 // @Success 200 {object} topology.GrafanaInfo
 // @Router /topology/grafana [get]
 // @Security JwtAuth
@@ -236,9 +222,7 @@ func (s *Service) getGrafanaTopology(c *gin.Context) {
 }
 
 // @ID getAlertManagerCounts
-// @Summary Get alert count
-// @Description Get alert count from alert manager
-// @Produce json
+// @Summary Get current alert count from AlertManager
 // @Success 200 {object} int
 // @Param address path string true "ip:port"
 // @Router /topology/alertmanager/{address}/count [get]
@@ -255,9 +239,8 @@ func (s *Service) getAlertManagerCounts(c *gin.Context) {
 }
 
 // @ID getHostsInfo
-// @Summary Get all host information in the cluster
+// @Summary Get information of all hosts
 // @Description Get information about host in the cluster
-// @Produce json
 // @Success 200 {array} HostInfo
 // @Router /host/all [get]
 // @Security JwtAuth

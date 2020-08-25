@@ -2,9 +2,32 @@ user_profile:
   i18n:
     title: Language & Localization
     language: Language
-  user:
-    title: User
+  session:
+    title: Session
     sign_out: Sign Out
+    share: Share Current Session
+    share_unavailable_tooltip: Current session is a shared session and it cannot be shared again
+  share_session:
+    text: >
+      You can invite others to access this TiDB Dashboard by sharing your
+      current session via an **Authorization Code**:
+
+      - The Authorization Code can be used multiple times.
+
+      - The shared session will be invalidated after the expiry time you specified.
+
+      - The shared session has the same privilege as your current session.
+    warning: >
+      Warning: Shared session will remain valid and cannot be revoked until it is expired.
+      Keep the Authorization Code safe!
+    form:
+      expire: Expire in
+      submit: Generate Authorization Code
+    close: Close
+    success_dialog:
+      title: Authorization Code Generated
+      copy: Copy
+      copied: Copied
   version:
     title: Version Information
     internal_version: TiDB Dashboard Internal Version

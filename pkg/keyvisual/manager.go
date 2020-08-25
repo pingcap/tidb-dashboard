@@ -98,7 +98,6 @@ func (s *Service) stopService() {
 }
 
 // @Summary Get Key Visual Dynamic Config
-// @Produce json
 // @Success 200 {object} config.KeyVisualConfig
 // @Router /keyvisual/config [get]
 // @Security JwtAuth
@@ -114,7 +113,6 @@ func (s *Service) getDynamicConfig(c *gin.Context) {
 }
 
 // @Summary Set Key Visual Dynamic Config
-// @Produce json
 // @Param request body config.KeyVisualConfig true "Request body"
 // @Success 200 {object} config.KeyVisualConfig
 // @Router /keyvisual/config [put]
@@ -125,16 +123,14 @@ func (s *Service) getDynamicConfig(c *gin.Context) {
 func (s *Service) setDynamicConfig(c *gin.Context) {
 	var req config.KeyVisualConfig
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {
 		dc.KeyVisual = req
 	}
 	if err := s.cfgManager.Modify(opt); err != nil {
-		c.Status(http.StatusInternalServerError)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusOK, req)

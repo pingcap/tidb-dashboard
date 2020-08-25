@@ -14,7 +14,7 @@
 package utils
 
 import (
-	"errors"
+	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -29,19 +29,23 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func newClaims(issuer string, data string) *Claims {
+func newClaims(issuer string, data string, expireIn time.Duration) *Claims {
 	return &Claims{
 		Data: data,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+			ExpiresAt: time.Now().Add(expireIn).Unix(),
 			Issuer:    issuer,
 		},
 	}
 }
 
-// NewJWTString create a JWT string by given data
+// NewJWTString create a JWT string by given data, expire in 24 hours.
 func NewJWTString(issuer string, data string) (string, error) {
-	claims := newClaims(issuer, data)
+	return NewJWTStringWithExpire(issuer, data, 24*time.Hour)
+}
+
+func NewJWTStringWithExpire(issuer string, data string, expireIn time.Duration) (string, error) {
+	claims := newClaims(issuer, data, expireIn)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(hmacSampleSecret[:])
 	if err != nil {
@@ -60,10 +64,10 @@ func ParseJWTString(requiredIssuer string, tokenStr string) (string, error) {
 		return "", err
 	}
 	if !token.Valid {
-		return "", errors.New("token is invalid")
+		return "", fmt.Errorf("token is invalid")
 	}
 	if claims.Issuer != requiredIssuer {
-		return "", errors.New("invalid issuer")
+		return "", fmt.Errorf("invalid issuer")
 	}
 	return claims.Data, nil
 }

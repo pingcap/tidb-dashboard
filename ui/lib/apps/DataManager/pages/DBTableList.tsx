@@ -28,7 +28,7 @@ import {
 import React, { useEffect, useState } from 'react'
 
 import { AppstoreOutlined } from '@ant-design/icons'
-import { Card, Head } from '@lib/components'
+import { Card, Head, Pre } from '@lib/components'
 import { parseColumnRelatedValues } from '@lib/utils/xcClient/util'
 import { useNavigate } from 'react-router-dom'
 import useQueryParams from '@lib/utils/useQueryParams'
@@ -68,8 +68,8 @@ export default function DBTableList() {
     let _values
     if (modalInfo.type === 'newTable') {
       if (!values.columns) {
-        notification.error({
-          message: `${t('data_manager.please_input')}${t(
+        Modal.error({
+          content: `${t('data_manager.please_input')}${t(
             'data_manager.columns'
           )}`,
         })
@@ -93,39 +93,39 @@ export default function DBTableList() {
         console.log(_values)
         try {
           await xcClient.createTable({ ..._values, ...{ dbName: db } })
-          notification.success({
-            message: t('data_manager.create_success_txt'),
+          Modal.success({
+            content: t('data_manager.create_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.create_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.create_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
       case 'editTable':
         try {
           await xcClient.renameTable(db, modalInfo.tableName, values.tableName)
-          notification.success({
-            message: t('data_manager.update_success_txt'),
+          Modal.success({
+            content: t('data_manager.update_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.update_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.update_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
       case 'deleteTable':
         try {
           await xcClient.dropTable(db, modalInfo.tableName)
-          notification.success({
-            message: t('data_manager.delete_success_txt'),
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.delete_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break

@@ -77,26 +77,26 @@ export default function DBTableStructure() {
       case 'insertColumnAtHead':
         try {
           await xcClient.addTableColumnAtHead(db, table, _values)
-          notification.success({
-            message: t('data_manager.create_success_txt'),
+          Modal.success({
+            content: t('data_manager.create_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.create_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.create_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
       case 'insertColumnAtTail':
         try {
           await xcClient.addTableColumnAtTail(db, table, _values)
-          notification.success({
-            message: t('data_manager.create_success_txt'),
+          Modal.success({
+            content: t('data_manager.create_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.create_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.create_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
@@ -108,33 +108,33 @@ export default function DBTableStructure() {
             _values,
             modalInfo.columnName
           )
-          notification.success({
-            message: t('data_manager.create_success_txt'),
+          Modal.success({
+            content: t('data_manager.create_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.create_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.create_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
       case 'deleteColumn':
         try {
           await xcClient.dropTableColumn(db, table, modalInfo.columnName)
-          notification.success({
-            message: t('data_manager.delete_success_txt'),
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.delete_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
       case 'addIndex':
         if (!values.columns) {
-          notification.error({
-            message: `${t('data_manager.please_input')}${t(
+          Modal.error({
+            content: `${t('data_manager.please_input')}${t(
               'data_manager.columns'
             )}`,
           })
@@ -143,26 +143,26 @@ export default function DBTableStructure() {
 
         try {
           await xcClient.addTableIndex(db, table, values)
-          notification.success({
-            message: t('data_manager.create_success_txt'),
+          Modal.success({
+            content: t('data_manager.create_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.create_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.create_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
       case 'deleteIndex':
         try {
           await xcClient.dropTableIndex(db, table, modalInfo.indexName)
-          notification.success({
-            message: t('data_manager.delete_success_txt'),
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.delete_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break

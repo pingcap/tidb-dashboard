@@ -37,9 +37,17 @@ data_manager:
 
   action: Actions
   name: Name
-  structure: Structure
+  view_db:
+    name: Name
+    type: Type
+    createTime: Create At
+    collation: Collation
+    comment: Comment
+    operation: Operation
+    op_view_structure: Structure
+    op_rename: Rename
+    op_drop: Drop
   comment: Comment
-  edit: Edit
   submit: Submit
   delete: Delete
   confirm: Confirm

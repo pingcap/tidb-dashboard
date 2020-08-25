@@ -11,6 +11,8 @@ import {
   Space,
   Table,
   notification,
+  Typography,
+  Divider,
 } from 'antd'
 import {
   CloseSquareOutlined,
@@ -38,7 +40,7 @@ export default function DBTableList() {
 
   const [form] = Form.useForm()
 
-  const [tables, setTables] = useState<string[]>()
+  const [tables, setTables] = useState<xcClient.TableInfo[]>()
   const [visible, setVisible] = useState(false)
   const [modalInfo, setModalInfo] = useState<any>({
     type: '',
@@ -158,54 +160,59 @@ export default function DBTableList() {
         </Button>
         {tables && (
           <Table
-            dataSource={tables.map((d, i) => ({
-              key: d + i,
-              name: d,
-            }))}
+            dataSource={tables}
+            rowKey="name"
             columns={[
               {
-                title: t('data_manager.name'),
+                title: t('data_manager.view_db.name'),
                 dataIndex: 'name',
                 key: 'name',
+                render: (_, record) => {
+                  return (
+                    <a
+                      href={`#/data/table_structure?db=${db}&table=${record.name}`}
+                    >
+                      {record.name}
+                    </a>
+                  )
+                },
               },
               {
-                title: t('data_manager.structure'),
-                key: 'structure',
-                fixed: 'right',
-                width: 150,
-                render: (_: any, __: any, i) => (
-                  <Button
-                    type="link"
-                    icon={<AppstoreOutlined />}
-                    href={`#/data/table_structure?db=${db}&table=${tables[i]}`}
-                  />
-                ),
+                title: t('data_manager.view_db.type'),
+                dataIndex: 'type',
+                key: 'type',
+                render: (text) => text,
               },
               {
-                title: t('data_manager.edit'),
-                key: 'edit',
-                fixed: 'right',
-                width: 150,
+                title: t('data_manager.view_db.createTime'),
+                dataIndex: 'createTime',
+                key: 'createTime',
+              },
+              {
+                title: t('data_manager.view_db.collation'),
+                dataIndex: 'collation',
+                key: 'collation',
+              },
+              {
+                title: t('data_manager.view_db.comment'),
+                dataIndex: 'comment',
+                key: 'comment',
+              },
+              {
+                title: t('data_manager.view_db.operation'),
+                key: 'operation',
                 render: (_: any, record: any) => (
-                  <Button
-                    type="link"
-                    icon={<EditOutlined />}
-                    onClick={handleEditTable(record.name)}
-                  />
-                ),
-              },
-              {
-                title: t('data_manager.delete'),
-                key: 'delete',
-                fixed: 'right',
-                width: 150,
-                render: (_: any, record: any) => (
-                  <Button
-                    type="link"
-                    danger
-                    icon={<CloseSquareOutlined />}
-                    onClick={handleDeleteTable(record.name)}
-                  />
+                  <>
+                    <a onClick={handleEditTable(record.name)}>
+                      {t('data_manager.view_db.op_rename')}
+                    </a>
+                    <Divider type="vertical" />
+                    <a onClick={handleDeleteTable(record.name)}>
+                      <Typography.Text type="danger">
+                        {t('data_manager.view_db.op_drop')}
+                      </Typography.Text>
+                    </a>
+                  </>
                 ),
               },
             ]}
@@ -373,7 +380,7 @@ export default function DBTableList() {
           {modalInfo.type === 'editTable' && (
             <>
               <Form.Item
-                label={t('data_manager.name')}
+                label={t('data_manager.view_db.name')}
                 name="tableName"
                 rules={[{ required: true }]}
               >

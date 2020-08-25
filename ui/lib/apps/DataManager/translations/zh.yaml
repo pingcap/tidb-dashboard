@@ -37,7 +37,16 @@ data_manager:
 
   action: 操作
   name: 名称
-  structure: 结构
+  view_db:
+    name: 名称
+    type: 类型
+    createTime: 创建时间
+    collation: 比较规则
+    comment: 注释
+    operation: 操作
+    op_view_structure: 查看结构
+    op_rename: 重命名
+    op_drop: 删除
   comment: 注释
   edit: 修改
   submit: 提交

@@ -14,6 +14,7 @@ import {
 } from 'antd'
 import {
   CloseSquareOutlined,
+  EditOutlined,
   MinusSquareTwoTone,
   PlusOutlined,
 } from '@ant-design/icons'
@@ -79,6 +80,17 @@ export default function DBTableList() {
           })
         }
         break
+      case 'editTable':
+        try {
+          await xcClient.renameTable(db, modalInfo.tableName, values.tableName)
+          notification.success({ message: 'Successfully updated' })
+        } catch (e) {
+          notification.error({
+            message: 'Fail to execute edit operation',
+            description: e.toString(),
+          })
+        }
+        break
       case 'deleteTable':
         try {
           await xcClient.dropTable(db, modalInfo.tableName)
@@ -106,6 +118,14 @@ export default function DBTableList() {
     showModal({
       type: 'deleteTable',
       title: `Delete Table ${name}`,
+      tableName: name,
+    })()
+  }
+
+  const handleEditTable = (name) => () => {
+    showModal({
+      type: 'editTable',
+      title: `Edit Table ${name}`,
       tableName: name,
     })()
   }
@@ -140,8 +160,22 @@ export default function DBTableList() {
                 width: 150,
                 render: (_: any, __: any, i) => (
                   <Button
+                    type="link"
                     icon={<AppstoreOutlined />}
                     href={`#/data/table_structure?db=${db}&table=${tables[i]}`}
+                  />
+                ),
+              },
+              {
+                title: 'Edit',
+                key: 'edit',
+                fixed: 'right',
+                width: 150,
+                render: (_: any, record: any) => (
+                  <Button
+                    type="link"
+                    icon={<EditOutlined />}
+                    onClick={handleEditTable(record.name)}
                   />
                 ),
               },
@@ -305,6 +339,17 @@ export default function DBTableList() {
                   </>
                 )}
               </Form.List>
+            </>
+          )}
+          {modalInfo.type === 'editTable' && (
+            <>
+              <Form.Item
+                label="Name"
+                name="tableName"
+                rules={[{ required: true }]}
+              >
+                <Input />
+              </Form.Item>
             </>
           )}
           <Form.Item style={{ marginBottom: 0 }}>

@@ -13,12 +13,22 @@ import {
   Table,
   Typography,
   notification,
+  Dropdown,
+  Menu,
 } from 'antd'
-import { MinusSquareTwoTone, PlusOutlined } from '@ant-design/icons'
+import {
+  MinusSquareTwoTone,
+  PlusOutlined,
+  ArrowLeftOutlined,
+  TableOutlined,
+  EyeOutlined,
+  EllipsisOutlined,
+  DownOutlined,
+} from '@ant-design/icons'
 import React, { useEffect, useState } from 'react'
 
 import { AppstoreOutlined } from '@ant-design/icons'
-import { Card } from '@lib/components'
+import { Card, Head } from '@lib/components'
 import { parseColumnRelatedValues } from '@lib/utils/xcClient/util'
 import { useNavigate } from 'react-router-dom'
 import useQueryParams from '@lib/utils/useQueryParams'
@@ -150,18 +160,30 @@ export default function DBTableList() {
 
   return (
     <>
-      <PageHeader onBack={() => navigate(-1)} title={db} />
-      <Card noMarginTop>
-        <Button
-          type="primary"
-          style={{ marginBottom: '1rem' }}
-          onClick={showModal({
-            title: t('data_manager.create_table'),
-            type: 'newTable',
-          })}
-        >
-          {t('data_manager.create_table')}
-        </Button>
+      <Head
+        title={db}
+        back={
+          <a onClick={() => navigate(-1)}>
+            <ArrowLeftOutlined /> {t('data_manager.head_back_all_databases')}
+          </a>
+        }
+        titleExtra={
+          <Space>
+            <Button
+              onClick={showModal({
+                title: t('data_manager.create_table'),
+                type: 'newTable',
+              })}
+            >
+              <TableOutlined /> {t('data_manager.create_table')}
+            </Button>
+            <Button>
+              <EyeOutlined /> {t('data_manager.create_view')}
+            </Button>
+          </Space>
+        }
+      />
+      <Card>
         {tables && (
           <Table
             dataSource={tables}
@@ -171,31 +193,11 @@ export default function DBTableList() {
                 title: t('data_manager.view_db.name'),
                 dataIndex: 'name',
                 key: 'name',
-                render: (_, record) => {
-                  return (
-                    <a
-                      href={`#/data/table_structure?db=${db}&table=${record.name}`}
-                    >
-                      {record.name}
-                    </a>
-                  )
-                },
               },
               {
                 title: t('data_manager.view_db.type'),
                 dataIndex: 'type',
                 key: 'type',
-                render: (text) => text,
-              },
-              {
-                title: t('data_manager.view_db.createTime'),
-                dataIndex: 'createTime',
-                key: 'createTime',
-              },
-              {
-                title: t('data_manager.view_db.collation'),
-                dataIndex: 'collation',
-                key: 'collation',
               },
               {
                 title: t('data_manager.view_db.comment'),
@@ -205,19 +207,43 @@ export default function DBTableList() {
               {
                 title: t('data_manager.view_db.operation'),
                 key: 'operation',
-                render: (_: any, record: any) => (
-                  <>
-                    <a onClick={handleEditTable(record.name)}>
-                      {t('data_manager.view_db.op_rename')}
-                    </a>
-                    <Divider type="vertical" />
-                    <a onClick={handleDeleteTable(record.name)}>
-                      <Typography.Text type="danger">
-                        {t('data_manager.view_db.op_drop')}
-                      </Typography.Text>
-                    </a>
-                  </>
-                ),
+                render: (_: any, record: any) => {
+                  return (
+                    <Dropdown
+                      overlay={
+                        <Menu>
+                          <Menu.Item>
+                            <a
+                              href={`#/data/table_structure?db=${db}&table=${record.name}`}
+                            >
+                              {t('data_manager.view_db.op_structure')}
+                            </a>
+                          </Menu.Item>
+                          {record.type !== xcClient.TableType.SYSTEM_VIEW && (
+                            <Menu.Item>
+                              <a onClick={handleEditTable(record.name)}>
+                                {t('data_manager.view_db.op_rename')}
+                              </a>
+                            </Menu.Item>
+                          )}
+                          {record.type !== xcClient.TableType.SYSTEM_VIEW && (
+                            <Menu.Item>
+                              <a onClick={handleDeleteTable(record.name)}>
+                                <Typography.Text type="danger">
+                                  {t('data_manager.view_db.op_drop')}
+                                </Typography.Text>
+                              </a>
+                            </Menu.Item>
+                          )}
+                        </Menu>
+                      }
+                    >
+                      <a>
+                        {t('data_manager.view_db.operation')} <DownOutlined />
+                      </a>
+                    </Dropdown>
+                  )
+                },
               },
             ]}
           />

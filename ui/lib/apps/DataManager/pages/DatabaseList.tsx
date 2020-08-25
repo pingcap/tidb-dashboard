@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import * as Database from '@lib/utils/xcClient/database'
-import { Table, Button, Modal, Form, Input, notification } from 'antd'
-import { Card, Pre } from '@lib/components'
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  notification,
+  Typography,
+} from 'antd'
+import { Card, Pre, Head } from '@lib/components'
 import { useTranslation } from 'react-i18next'
+import { DatabaseOutlined } from '@ant-design/icons'
 
 // route: /data
 export default function DatabaseList() {
@@ -135,30 +144,36 @@ export default function DatabaseList() {
       key: 'action',
       render: (database) => (
         <a onClick={() => handleDelete(database.database_name)}>
-          {t('data_manager.delete')}
+          <Typography.Text type="danger">
+            {t('data_manager.delete')}
+          </Typography.Text>
         </a>
       ),
     },
   ]
 
   return (
-    <Card>
-      <Button
-        type="primary"
-        style={{ marginBottom: `2rem` }}
-        onClick={() => setCreateModalVisible(true)}
-      >
-        {t('data_manager.create_db')}
-      </Button>
-      <DeleteDBModal />
-      <CreateDBModal />
-      <Table
-        dataSource={dbList.map((db, i) => ({
-          ...{ key: i },
-          ...{ database_name: db },
-        }))}
-        columns={columns}
+    <>
+      <Head
+        title={t('data_manager.all_databases')}
+        titleExtra={
+          <Button onClick={() => setCreateModalVisible(true)}>
+            <DatabaseOutlined /> {t('data_manager.create_db')}
+          </Button>
+        }
       />
-    </Card>
+      <Card></Card>
+      <Card>
+        <DeleteDBModal />
+        <CreateDBModal />
+        <Table
+          dataSource={dbList.map((db, i) => ({
+            ...{ key: i },
+            ...{ database_name: db },
+          }))}
+          columns={columns}
+        />
+      </Card>
+    </>
   )
 }

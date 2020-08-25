@@ -115,74 +115,77 @@ it('get table info', async () => {
       c_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`)
     const d = await Database.getTableInfo(DB_NAME, tableName)
-    expect(d).toEqual({
-      columns: [
-        {
-          name: 'id',
-          fieldType: 'int(11)',
-          isNotNull: true,
-          defaultValue: null,
-          comment: '',
-        },
-        {
-          name: 'c_char_1',
-          fieldType: 'varchar(255)',
-          isNotNull: true,
-          defaultValue: null,
-          comment: '',
-        },
-        {
-          name: 'c_char_2',
-          fieldType: 'varchar(10)',
-          isNotNull: false,
-          defaultValue: 'abc',
-          comment: '',
-        },
-        {
-          name: 'c_date',
-          fieldType: 'date',
-          isNotNull: false,
-          defaultValue: null,
-          comment: '',
-        },
-        {
-          name: 'c_int_1',
-          fieldType: 'tinyint(3) unsigned',
-          isNotNull: true,
-          defaultValue: '3',
-          comment: '',
-        },
-        {
-          name: 'c_int_2',
-          fieldType: 'tinyint(3) unsigned',
-          isNotNull: true,
-          defaultValue: null,
-          comment: '',
-        },
-        {
-          name: 'c_text',
-          fieldType: 'text',
-          isNotNull: false,
-          defaultValue: null,
-          comment: 'description column',
-        },
-        {
-          name: 'c_timestamp',
-          fieldType: 'timestamp',
-          isNotNull: false,
-          defaultValue: 'CURRENT_TIMESTAMP',
-          comment: '',
-        },
-      ],
-      indexes: [
-        {
-          name: 'PRIMARY',
-          type: Database.TableInfoIndexType.Primary,
-          columns: ['id'],
-          isDeleteble: false,
-        },
-      ],
-    })
+    expect(d.columns).toEqual([
+      {
+        name: 'id',
+        fieldType: 'int(11)',
+        isNotNull: true,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: 'c_char_1',
+        fieldType: 'varchar(255)',
+        isNotNull: true,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: 'c_char_2',
+        fieldType: 'varchar(10)',
+        isNotNull: false,
+        defaultValue: 'abc',
+        comment: '',
+      },
+      {
+        name: 'c_date',
+        fieldType: 'date',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: 'c_int_1',
+        fieldType: 'tinyint(3) unsigned',
+        isNotNull: true,
+        defaultValue: '3',
+        comment: '',
+      },
+      {
+        name: 'c_int_2',
+        fieldType: 'tinyint(3) unsigned',
+        isNotNull: true,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: 'c_text',
+        fieldType: 'text',
+        isNotNull: false,
+        defaultValue: null,
+        comment: 'description column',
+      },
+      {
+        name: 'c_timestamp',
+        fieldType: 'timestamp',
+        isNotNull: false,
+        defaultValue: 'CURRENT_TIMESTAMP',
+        comment: '',
+      },
+    ])
+    expect(d.indexes).toEqual([
+      {
+        name: 'PRIMARY',
+        type: Database.TableInfoIndexType.Primary,
+        columns: ['id'],
+        isDeleteble: false,
+      },
+    ])
+    expect(d.info).toEqual(
+      expect.objectContaining({
+        type: 'BASE TABLE',
+      })
+    )
     await Database.dropTable(DB_NAME, tableName)
   }
 
@@ -197,39 +200,42 @@ it('get table info', async () => {
       PRIMARY KEY (a, c)
     )`)
     const d = await Database.getTableInfo(DB_NAME, tableName)
-    expect(d).toEqual({
-      columns: [
-        {
-          name: 'a',
-          fieldType: 'int(11)',
-          isNotNull: true,
-          defaultValue: null,
-          comment: '',
-        },
-        {
-          name: 'b',
-          fieldType: 'varchar(100)',
-          isNotNull: false,
-          defaultValue: null,
-          comment: '',
-        },
-        {
-          name: 'c',
-          fieldType: 'int(11)',
-          isNotNull: true,
-          defaultValue: null,
-          comment: '',
-        },
-      ],
-      indexes: [
-        {
-          name: 'PRIMARY',
-          type: Database.TableInfoIndexType.Primary,
-          columns: ['a', 'c'],
-          isDeleteble: false,
-        },
-      ],
-    })
+    expect(d.columns).toEqual([
+      {
+        name: 'a',
+        fieldType: 'int(11)',
+        isNotNull: true,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: 'b',
+        fieldType: 'varchar(100)',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: 'c',
+        fieldType: 'int(11)',
+        isNotNull: true,
+        defaultValue: null,
+        comment: '',
+      },
+    ])
+    expect(d.indexes).toEqual([
+      {
+        name: 'PRIMARY',
+        type: Database.TableInfoIndexType.Primary,
+        columns: ['a', 'c'],
+        isDeleteble: false,
+      },
+    ])
+    expect(d.info).toEqual(
+      expect.objectContaining({
+        type: 'BASE TABLE',
+      })
+    )
     await Database.dropTable(DB_NAME, tableName)
   }
 
@@ -248,65 +254,68 @@ it('get table info', async () => {
       KEY cidx2 (c,id)
     )`)
     const d = await Database.getTableInfo(DB_NAME, tableName)
-    expect(d).toEqual({
-      columns: [
-        {
-          name: 'id',
-          fieldType: 'int(11)',
-          isNotNull: true,
-          defaultValue: null,
-          comment: '',
-        },
-        {
-          name: 'c',
-          fieldType: 'varchar(255)',
-          isNotNull: false,
-          defaultValue: null,
-          comment: '',
-        },
-        {
-          name: 'd',
-          fieldType: 'varchar(255)',
-          isNotNull: false,
-          defaultValue: null,
-          comment: '',
-        },
-        {
-          name: 'e',
-          fieldType: 'varchar(255)',
-          isNotNull: false,
-          defaultValue: null,
-          comment: '',
-        },
-        {
-          name: 'g',
-          fieldType: 'int(255) unsigned',
-          isNotNull: false,
-          defaultValue: null,
-          comment: '',
-        },
-      ],
-      indexes: [
-        {
-          name: 'PRIMARY',
-          type: Database.TableInfoIndexType.Primary,
-          columns: ['id'],
-          isDeleteble: false,
-        },
-        {
-          name: 'cidx',
-          type: Database.TableInfoIndexType.Unique,
-          columns: ['c'],
-          isDeleteble: true,
-        },
-        {
-          name: 'cidx2',
-          type: Database.TableInfoIndexType.Normal,
-          columns: ['c', 'id'],
-          isDeleteble: true,
-        },
-      ],
-    })
+    expect(d.columns).toEqual([
+      {
+        name: 'id',
+        fieldType: 'int(11)',
+        isNotNull: true,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: 'c',
+        fieldType: 'varchar(255)',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: 'd',
+        fieldType: 'varchar(255)',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: 'e',
+        fieldType: 'varchar(255)',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: 'g',
+        fieldType: 'int(255) unsigned',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+    ])
+    expect(d.indexes).toEqual([
+      {
+        name: 'PRIMARY',
+        type: Database.TableInfoIndexType.Primary,
+        columns: ['id'],
+        isDeleteble: false,
+      },
+      {
+        name: 'cidx',
+        type: Database.TableInfoIndexType.Unique,
+        columns: ['c'],
+        isDeleteble: true,
+      },
+      {
+        name: 'cidx2',
+        type: Database.TableInfoIndexType.Normal,
+        columns: ['c', 'id'],
+        isDeleteble: true,
+      },
+    ])
+    expect(d.info).toEqual(
+      expect.objectContaining({
+        type: 'BASE TABLE',
+      })
+    )
     await Database.dropTable(DB_NAME, tableName)
   }
 })
@@ -334,42 +343,48 @@ it('add and drop column', async () => {
   await Database.addTableColumnAtTail(DB_NAME, tableName, newColumn)
   {
     const d = await Database.getTableInfo(DB_NAME, tableName)
-    expect(d).toEqual({
-      columns: [
-        {
-          name: 'a',
-          fieldType: 'int(11)',
-          isNotNull: false,
-          defaultValue: null,
-          comment: '',
-        },
-        {
-          name: colName,
-          fieldType: 'int(11)',
-          isNotNull: false,
-          defaultValue: null,
-          comment: '',
-        },
-      ],
-      indexes: [],
-    })
+    expect(d.columns).toEqual([
+      {
+        name: 'a',
+        fieldType: 'int(11)',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+      {
+        name: colName,
+        fieldType: 'int(11)',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+    ])
+    expect(d.indexes).toEqual([])
+    expect(d.info).toEqual(
+      expect.objectContaining({
+        type: 'BASE TABLE',
+      })
+    )
   }
 
   await Database.dropTableColumn(DB_NAME, tableName, colName)
   {
     const d = await Database.getTableInfo(DB_NAME, tableName)
-    expect(d).toEqual({
-      columns: [
-        {
-          name: 'a',
-          fieldType: 'int(11)',
-          isNotNull: false,
-          defaultValue: null,
-          comment: '',
-        },
-      ],
-      indexes: [],
-    })
+    expect(d.columns).toEqual([
+      {
+        name: 'a',
+        fieldType: 'int(11)',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+    ])
+    expect(d.indexes).toEqual([])
+    expect(d.info).toEqual(
+      expect.objectContaining({
+        type: 'BASE TABLE',
+      })
+    )
   }
 
   await Database.dropTable(DB_NAME, tableName)
@@ -526,18 +541,21 @@ it('create simple table', async () => {
     ],
   })
   const d = await Database.getTableInfo(DB_NAME, tableName)
-  expect(d).toEqual({
-    columns: [
-      {
-        name: 'a',
-        fieldType: 'int(11)',
-        isNotNull: false,
-        defaultValue: null,
-        comment: '',
-      },
-    ],
-    indexes: [],
-  })
+  expect(d.columns).toEqual([
+    {
+      name: 'a',
+      fieldType: 'int(11)',
+      isNotNull: false,
+      defaultValue: null,
+      comment: '',
+    },
+  ])
+  expect(d.indexes).toEqual([])
+  expect(d.info).toEqual(
+    expect.objectContaining({
+      type: 'BASE TABLE',
+    })
+  )
   await Database.dropTable(DB_NAME, tableName)
 })
 
@@ -556,25 +574,28 @@ it('create table with primary key', async () => {
     primaryKeys: [{ columnName: 'a' }],
   })
   const d = await Database.getTableInfo(DB_NAME, tableName)
-  expect(d).toEqual({
-    columns: [
-      {
-        name: 'a',
-        fieldType: 'int(11)',
-        isNotNull: true,
-        defaultValue: null,
-        comment: '',
-      },
-    ],
-    indexes: [
-      {
-        name: 'PRIMARY',
-        type: Database.TableInfoIndexType.Primary,
-        columns: ['a'],
-        isDeleteble: false,
-      },
-    ],
-  })
+  expect(d.columns).toEqual([
+    {
+      name: 'a',
+      fieldType: 'int(11)',
+      isNotNull: true,
+      defaultValue: null,
+      comment: '',
+    },
+  ])
+  expect(d.indexes).toEqual([
+    {
+      name: 'PRIMARY',
+      type: Database.TableInfoIndexType.Primary,
+      columns: ['a'],
+      isDeleteble: false,
+    },
+  ])
+  expect(d.info).toEqual(
+    expect.objectContaining({
+      type: 'BASE TABLE',
+    })
+  )
   await Database.dropTable(DB_NAME, tableName)
 })
 
@@ -600,39 +621,42 @@ it('create table with multi column primary key', async () => {
     primaryKeys: [{ columnName: 'b' }, { columnName: 'a' }],
   })
   const d = await Database.getTableInfo(DB_NAME, tableName)
-  expect(d).toEqual({
-    columns: [
-      {
-        name: 'a',
-        fieldType: 'int(11)',
-        isNotNull: true,
-        defaultValue: null,
-        comment: '',
-      },
-      {
-        name: 'b',
-        fieldType: 'varchar(255)',
-        isNotNull: true,
-        defaultValue: null,
-        comment: '',
-      },
-      {
-        name: 'c',
-        fieldType: 'int(11)',
-        isNotNull: false,
-        defaultValue: null,
-        comment: '',
-      },
-    ],
-    indexes: [
+  expect(d.columns).toEqual([
+    {
+      name: 'a',
+      fieldType: 'int(11)',
+      isNotNull: true,
+      defaultValue: null,
+      comment: '',
+    },
+    {
+      name: 'b',
+      fieldType: 'varchar(255)',
+      isNotNull: true,
+      defaultValue: null,
+      comment: '',
+    },
+    {
+      name: 'c',
+      fieldType: 'int(11)',
+      isNotNull: false,
+      defaultValue: null,
+      comment: '',
+    },
+  ]),
+    expect(d.indexes).toEqual([
       {
         name: 'PRIMARY',
         type: Database.TableInfoIndexType.Primary,
         columns: ['b', 'a'],
         isDeleteble: false,
       },
-    ],
-  })
+    ])
+  expect(d.info).toEqual(
+    expect.objectContaining({
+      type: 'BASE TABLE',
+    })
+  )
   await Database.dropTable(DB_NAME, tableName)
 })
 
@@ -650,18 +674,21 @@ it('create table with comment', async () => {
     comment: 'foo',
   })
   const d = await Database.getTableInfo(DB_NAME, tableName)
-  expect(d).toEqual({
-    columns: [
-      {
-        name: 'a',
-        fieldType: 'int(11)',
-        isNotNull: false,
-        defaultValue: null,
-        comment: '',
-      },
-    ],
-    indexes: [],
-  })
+  expect(d.columns).toEqual([
+    {
+      name: 'a',
+      fieldType: 'int(11)',
+      isNotNull: false,
+      defaultValue: null,
+      comment: '',
+    },
+  ])
+  expect(d.indexes).toEqual([])
+  expect(d.info).toEqual(
+    expect.objectContaining({
+      type: 'BASE TABLE',
+    })
+  )
   await Database.dropTable(DB_NAME, tableName)
 })
 

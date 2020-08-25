@@ -43,19 +43,23 @@ export type GetTablesResult = {
   tables: TableInfo[]
 }
 
-export async function getTables(dbName: string): Promise<GetTablesResult> {
-  const data = await evalSqlObj(
-    SqlString.format(
-      `
-    SELECT
-      TABLE_NAME, TABLE_TYPE, CREATE_TIME, TABLE_COLLATION, TABLE_COMMENT
-    FROM
-      INFORMATION_SCHEMA.TABLES
-    WHERE UPPER(TABLE_SCHEMA) = ?
-  `,
-      [dbName.toUpperCase()]
-    )
-  )
+export async function getTables(
+  dbName: string,
+  tableName?: string
+): Promise<GetTablesResult> {
+  let sql = `
+  SELECT
+    TABLE_NAME, TABLE_TYPE, CREATE_TIME, TABLE_COLLATION, TABLE_COMMENT
+  FROM
+    INFORMATION_SCHEMA.TABLES
+  WHERE UPPER(TABLE_SCHEMA) = ?
+`
+  let params = [dbName.toUpperCase()]
+  if ((tableName?.length ?? 0) > 0) {
+    sql += ` AND UPPER(TABLE_NAME) = ?`
+    params.push(tableName!.toUpperCase())
+  }
+  const data = await evalSqlObj(SqlString.format(sql, params))
 
   return {
     tables: data.map((row) => ({
@@ -109,6 +113,8 @@ export type TableInfoIndex = {
 }
 
 export type GetTableInfoResult = {
+  info: TableInfo
+  viewDefinition?: string
   columns: TableInfoColumn[]
   indexes: TableInfoIndex[]
 }
@@ -117,6 +123,32 @@ export async function getTableInfo(
   dbName: string,
   tableName: string
 ): Promise<GetTableInfoResult> {
+  let info: TableInfo
+  {
+    const d = await getTables(dbName, tableName)
+    if (d.tables.length === 0) {
+      throw new Error(`Table ${dbName}.${tableName} not found`)
+    }
+    info = d.tables[0]
+  }
+  let viewDefinition
+  if (info.type === TableType.VIEW) {
+    const d = await evalSqlObj(
+      SqlString.format(
+        `
+      SELECT
+        VIEW_DEFINITION
+      FROM
+        INFORMATION_SCHEMA.VIEWS
+      WHERE UPPER(TABLE_SCHEMA) = ? AND UPPER(TABLE_NAME) = ?`,
+        [dbName.toUpperCase(), tableName.toUpperCase()]
+      )
+    )
+    if (d.length > 0) {
+      viewDefinition = d[0].VIEW_DEFINITION
+    }
+  }
+
   const name = `${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}`
   const columnsData = await evalSqlObj(`SHOW FULL COLUMNS FROM ${name}`)
   const columns = columnsData.map((column) => ({
@@ -150,6 +182,8 @@ export async function getTableInfo(
     })
   }
   return {
+    info,
+    viewDefinition,
     columns,
     indexes,
   }
@@ -443,10 +477,10 @@ export async function createTable(options: CreateTableOptions) {
   for (const col of options.columns) {
     items.push(buildColumnDefinition(col, true))
   }
-  if (options.primaryKeys) {
+  if ((options.primaryKeys?.length ?? 0) > 0) {
     items.push(
       `PRIMARY KEY (` +
-        options.primaryKeys.map((k) => buildIndexDefinition(k)).join(', ') +
+        options.primaryKeys!.map((k) => buildIndexDefinition(k)).join(', ') +
         `)`
     )
   }
@@ -766,10 +800,14 @@ export async function getUserDetail(
   for (const priv of Object.values(UserPrivilegeId)) {
     selections.push(SqlString.escapeId(`${priv}_PRIV`))
   }
-  const u = await evalSqlObj(`
-    SELECT ${selections.join(', ')} FROM mysql.user
-    WHERE user = ${SqlString.escape(user)} AND host = ${SqlString.escape(host)}
-  `)
+  const u = await evalSqlObj(
+    SqlString.format(
+      `SELECT
+        ${selections.join(', ')}
+      FROM mysql.user WHERE user = ? AND host = ?`,
+      [user, host]
+    )
+  )
   if (u.length === 0) {
     throw new Error(`User ${user}@${host} not found`)
   }
@@ -783,20 +821,6 @@ export async function getUserDetail(
     grantedPrivileges,
   }
 }
-
-// export async function renameUser(
-//   user: string,
-//   host: string,
-//   newUser: string,
-//   newHost: string
-// ) {
-//   await evalSql(`
-//     RENAME USER
-//       ${SqlString.escape(user)}@${SqlString.escape(host)}
-//     TO
-//       ${SqlString.escape(newUser)}@${SqlString.escape(newHost)}
-//   `)
-// }
 
 export async function dropUser(user: string, host: string) {
   await evalSql(`DROP USER ${SqlString.escape(user)}@${SqlString.escape(host)}`)

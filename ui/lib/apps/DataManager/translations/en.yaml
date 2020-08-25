@@ -1,12 +1,15 @@
 data_manager:
   nav_title: Data Manager
 
+  all_databases: All Databases
   db_name_column: Database Name
   create_db: Create Database
   db_name_input: Database Name
   delete_db_title: Delete Database
 
   create_table: Create Table
+  create_view: Create View
+  view_definition: View Definition
 
   columns: Columns
   field_type: Field Type
@@ -35,7 +38,7 @@ data_manager:
   delete_success_txt: Failed to delete
   delete_failed_txt: Successfully deleted
 
-  please_input: Please input 
+  please_input: Please input
   action: Actions
   name: Name
   type: Type
@@ -46,11 +49,16 @@ data_manager:
     collation: Collation
     comment: Comment
     operation: Operation
-    op_view_structure: Structure
-    op_rename: Rename
-    op_drop: Drop
+    op_structure: View Table Structure
+    op_rename: Rename Table
+    op_drop: Drop Table
+  db_structure:
+    op_insert: Insert Column After Current Column
+    op_drop: Drop Column
   comment: Comment
   submit: Submit
   delete: Delete
   confirm: Confirm
   cancel: Cancel
+
+  head_back_all_databases: All databases

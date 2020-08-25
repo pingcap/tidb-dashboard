@@ -1,6 +1,7 @@
 import client, { QueryeditorRunResponse } from '@lib/client'
 import _ from 'lodash'
 import { NewColumnFieldTypeDefinition } from './database'
+import formatSql from '../formatSql'
 
 export interface IEvalSqlOptions {
   maxRows?: number
@@ -19,7 +20,15 @@ export async function evalSql(
     max_rows: options?.maxRows ?? 2000,
   })
   if (r?.data?.error_msg) {
-    throw new Error(r.data.error_msg)
+    let errMsg = r.data.error_msg
+    if (options?.debug ?? true) {
+      errMsg =
+        'Execute SQL statement failed.\n\n' +
+        formatSql(statements) +
+        '\n\nMessage: ' +
+        errMsg
+    }
+    throw new Error(errMsg)
   }
   return r.data
 }

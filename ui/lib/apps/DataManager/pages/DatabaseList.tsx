@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import * as Database from '@lib/utils/xcClient/database'
 import { Table, Button, Modal, Form, Input, notification } from 'antd'
-import { Card } from '@lib/components'
+import { Card, Pre } from '@lib/components'
 import { useTranslation } from 'react-i18next'
 
 // route: /data
@@ -31,13 +31,6 @@ export default function DatabaseList() {
     fetchDatabaseList()
   }, [])
 
-  const openNotificationWithIcon = (type, title, error) => {
-    notification[type]({
-      message: title,
-      description: error.message,
-    })
-  }
-
   const handleDelete = (dbName) => {
     setDeleteDBName(dbName)
     setDeleteModalVisible(true)
@@ -48,17 +41,12 @@ export default function DatabaseList() {
       try {
         await Database.dropDatabase(deleteDBName)
         fetchDatabaseList()
-        openNotificationWithIcon(
-          'success',
-          `${t('data_manager.delete_success_txt')}`,
-          ''
-        )
+        Modal.success({ title: t('data_manager.delete_success_txt') })
       } catch (error) {
-        openNotificationWithIcon(
-          'error',
-          `${t('data_manager.delete_failed_txt')}`,
-          error
-        )
+        Modal.error({
+          title: t('data_manager.delete_failed_txt'),
+          content: <Pre>{error.message}</Pre>,
+        })
       }
 
       setDeleteModalVisible(false)
@@ -97,17 +85,12 @@ export default function DatabaseList() {
         try {
           await Database.createDatabase(values.database_name)
           fetchDatabaseList()
-          openNotificationWithIcon(
-            'success',
-            `${t('data_manager.create_success_txt')}`,
-            ''
-          )
+          Modal.success({ title: t('data_manager.create_success_txt') })
         } catch (error) {
-          openNotificationWithIcon(
-            'error',
-            `${t('data_manager.create_failed_txt')}`,
-            error
-          )
+          Modal.error({
+            title: t('data_manager.create_failed_txt'),
+            content: <Pre>{error.message}</Pre>,
+          })
         }
 
         setCreateModalVisible(false)

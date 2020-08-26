@@ -132,7 +132,7 @@ function DetailPage() {
                 </Descriptions.Item>
                 <Descriptions.Item
                   label={
-                    <TextWithInfo.TransKey transKey="statement.pages.detail.desc.plan_count" />
+                    <TextWithInfo.TransKey transKey="statement.fields.plan_count" />
                   }
                 >
                   {plans.length}

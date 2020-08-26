@@ -34,6 +34,7 @@ type TimeRange struct {
 }
 
 type Model struct {
+	AggPlanCount             int    `json:"plan_count" agg:"COUNT(DISTINCT plan_digest)"`
 	AggExecCount             int    `json:"exec_count" agg:"SUM(exec_count)"`
 	AggSumErrors             int    `json:"sum_errors" agg:"SUM(sum_errors)"`
 	AggSumWarnings           int    `json:"sum_warnings" agg:"SUM(sum_warnings)"`

@@ -89,7 +89,9 @@ export default function DBUserList() {
                   userInfo: user,
                 })}
               >
-                {t('data_manager.delete')}
+                <Typography.Text type="danger">
+                  {t('data_manager.delete')}
+                </Typography.Text>
               </a>
 
               <Divider type="vertical" />
@@ -101,9 +103,7 @@ export default function DBUserList() {
               userInfo: user,
             })}
           >
-            <Typography.Text type="danger">
-              {t('dbusers_manager.edit')}
-            </Typography.Text>
+            {t('dbusers_manager.edit')}
           </a>
         </>
       ),

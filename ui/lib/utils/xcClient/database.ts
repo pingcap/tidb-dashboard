@@ -271,6 +271,47 @@ export async function getTableInfo(
   }
 }
 
+// Only RANGE and LIST partition can be dropped
+export async function dropPartition(
+  dbName: string,
+  tableName: string,
+  partitionName: string
+) {
+  await evalSql(`
+  ALTER TABLE
+    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+  DROP PARTITION ${SqlString.escapeId(partitionName)}
+  `)
+}
+
+export async function addRangePartition(
+  dbName: string,
+  tableName: string,
+  newPartition: RangePartitionDefinition
+) {
+  await evalSql(`
+  ALTER TABLE
+    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+  ADD PARTITION (
+    ${buildRangePartitionStatement(newPartition)}
+  )
+  `)
+}
+
+export async function addListPartition(
+  dbName: string,
+  tableName: string,
+  newPartition: ListPartitionDefinition
+) {
+  await evalSql(`
+  ALTER TABLE
+    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+  ADD PARTITION (
+    ${buildListPartitionStatement(newPartition)}
+  )
+  `)
+}
+
 export type NewColumnFieldTypeDefinition = {
   typeName: FieldTypeName
   length?: number
@@ -556,7 +597,7 @@ export type RangePartitionDefinition = {
   name: string
 
   // If LESS THAN MAXVALUE, supply NULL in this field.
-  boundaryValue?: number
+  boundaryValue?: string
 }
 
 export type PartitionByRangeDefinition = {
@@ -594,6 +635,19 @@ export type CreateTableOptions = {
   columns: NewColumnDefinition[]
   primaryKeys?: AddIndexOptionsColumn[]
   partition?: PartitionBy
+}
+
+function buildRangePartitionStatement(p: RangePartitionDefinition): string {
+  let l = `PARTITION ${SqlString.escapeId(p.name)} VALUES `
+  if (p.boundaryValue != null) {
+    return l + `LESS THAN (${p.boundaryValue})`
+  } else {
+    return l + `LESS THAN MAXVALUE`
+  }
+}
+
+function buildListPartitionStatement(p: ListPartitionDefinition): string {
+  return `PARTITION ${SqlString.escapeId(p.name)} VALUES IN (${p.values})`
 }
 
 // WARN: Supplying partition expr is dangerous
@@ -634,14 +688,7 @@ export async function createTable(options: CreateTableOptions) {
                 return partition.boundaryValue!
               }
             }
-          ).map((partition) => {
-            let l = `PARTITION ${partition.name} VALUES `
-            if (partition.boundaryValue != null) {
-              return l + `LESS THAN (${partition.boundaryValue})`
-            } else {
-              return l + `LESS THAN MAXVALUE`
-            }
-          })
+          ).map(buildRangePartitionStatement)
           sql += ` PARTITION BY RANGE(${options.partition.expr}) (
             ${pDef.join(',\n')}
           )`
@@ -654,9 +701,9 @@ export async function createTable(options: CreateTableOptions) {
         break
       case PartitionType.LIST:
         {
-          const pDef = options.partition.partitions.map((partition) => {
-            return `PARTITION ${partition.name} VALUES IN (${partition.values})`
-          })
+          const pDef = options.partition.partitions.map(
+            buildListPartitionStatement
+          )
           sql += ` PARTITION BY LIST(${options.partition.expr}) (
             ${pDef.join(',\n')}
           )`

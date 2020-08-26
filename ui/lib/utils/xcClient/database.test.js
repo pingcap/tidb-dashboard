@@ -848,7 +848,7 @@ it('create user and grant privileges', async () => {
   }
 })
 
-it('create table with range partition', async () => {
+it('create table with range partition and drop partition', async () => {
   const tableName = newId('table')
   await Database.createTable({
     dbName: DB_NAME,
@@ -868,11 +868,11 @@ it('create table with range partition', async () => {
       partitions: [
         {
           name: 'p0',
-          boundaryValue: 1,
+          boundaryValue: '1',
         },
         {
           name: 'p1',
-          boundaryValue: 5,
+          boundaryValue: '5',
         },
         {
           name: 'p2',
@@ -881,25 +881,107 @@ it('create table with range partition', async () => {
       ],
     },
   })
-  const d = await Database.getTableInfo(DB_NAME, tableName)
-  expect(d.partition).toEqual({
-    type: Database.PartitionType.RANGE,
-    expr: '`foo`',
-    partitions: [
+  {
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d.partition).toEqual({
+      type: Database.PartitionType.RANGE,
+      expr: '`foo`',
+      partitions: [
+        {
+          name: 'p0',
+          boundaryValue: '1',
+        },
+        {
+          name: 'p1',
+          boundaryValue: '5',
+        },
+        {
+          name: 'p2',
+          boundaryValue: undefined,
+        },
+      ],
+    })
+  }
+  await Database.dropPartition(DB_NAME, tableName, 'p1')
+  {
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d.partition).toEqual({
+      type: Database.PartitionType.RANGE,
+      expr: '`foo`',
+      partitions: [
+        {
+          name: 'p0',
+          boundaryValue: '1',
+        },
+        {
+          name: 'p2',
+          boundaryValue: undefined,
+        },
+      ],
+    })
+  }
+  await Database.dropTable(DB_NAME, tableName)
+})
+
+it('add range partition', async () => {
+  const tableName = newId('table')
+  await Database.createTable({
+    dbName: DB_NAME,
+    tableName,
+    comment: 'xx',
+    columns: [
       {
-        name: 'p0',
-        boundaryValue: '1',
-      },
-      {
-        name: 'p1',
-        boundaryValue: '5',
-      },
-      {
-        name: 'p2',
-        boundaryValue: undefined,
+        name: 'foo',
+        fieldType: {
+          typeName: Database.FieldTypeName.INT,
+        },
       },
     ],
+    partition: {
+      type: Database.PartitionType.RANGE,
+      expr: 'foo',
+      partitions: [
+        {
+          name: 'p0',
+          boundaryValue: '1',
+        },
+      ],
+    },
   })
+  {
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d.partition).toEqual({
+      type: Database.PartitionType.RANGE,
+      expr: '`foo`',
+      partitions: [
+        {
+          name: 'p0',
+          boundaryValue: '1',
+        },
+      ],
+    })
+  }
+  await Database.addRangePartition(DB_NAME, tableName, {
+    name: 'p1',
+    boundaryValue: '3',
+  })
+  {
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d.partition).toEqual({
+      type: Database.PartitionType.RANGE,
+      expr: '`foo`',
+      partitions: [
+        {
+          name: 'p0',
+          boundaryValue: '1',
+        },
+        {
+          name: 'p1',
+          boundaryValue: '3',
+        },
+      ],
+    })
+  }
   await Database.dropTable(DB_NAME, tableName)
 })
 
@@ -932,7 +1014,7 @@ it('create table with hash partition', async () => {
   await Database.dropTable(DB_NAME, tableName)
 })
 
-it('create table with list partition', async () => {
+it('create table with list partition and drop partition', async () => {
   const tableName = newId('table')
   await Database.createTable({
     dbName: DB_NAME,
@@ -952,17 +1034,49 @@ it('create table with list partition', async () => {
       partitions: [
         { name: 'p0', values: '1, 4, 2' },
         { name: 'p1', values: '5, null' },
+        { name: 'p2', values: '7, 3' },
       ],
     },
   })
-  const d = await Database.getTableInfo(DB_NAME, tableName)
-  expect(d.partition).toEqual({
-    type: Database.PartitionType.LIST,
-    expr: '`foo`',
-    partitions: [
-      { name: 'p0', values: '1,4,2' },
-      { name: 'p1', values: '5,NULL' },
-    ],
+  {
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d.partition).toEqual({
+      type: Database.PartitionType.LIST,
+      expr: '`foo`',
+      partitions: [
+        { name: 'p0', values: '1,4,2' },
+        { name: 'p1', values: '5,NULL' },
+        { name: 'p2', values: '7,3' },
+      ],
+    })
+  }
+  await Database.dropPartition(DB_NAME, tableName, 'p1')
+  {
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d.partition).toEqual({
+      type: Database.PartitionType.LIST,
+      expr: '`foo`',
+      partitions: [
+        { name: 'p0', values: '1,4,2' },
+        { name: 'p2', values: '7,3' },
+      ],
+    })
+  }
+  await Database.addListPartition(DB_NAME, tableName, {
+    name: 'p3',
+    values: '5, 6, null',
   })
+  {
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d.partition).toEqual({
+      type: Database.PartitionType.LIST,
+      expr: '`foo`',
+      partitions: [
+        { name: 'p0', values: '1,4,2' },
+        { name: 'p2', values: '7,3' },
+        { name: 'p3', values: '5,6,NULL' },
+      ],
+    })
+  }
   await Database.dropTable(DB_NAME, tableName)
 })

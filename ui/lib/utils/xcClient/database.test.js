@@ -847,3 +847,122 @@ it('create user and grant privileges', async () => {
     expect(d.users).not.toContainEqual({ user: username, host: '%' })
   }
 })
+
+it('create table with range partition', async () => {
+  const tableName = newId('table')
+  await Database.createTable({
+    dbName: DB_NAME,
+    tableName,
+    comment: 'xx',
+    columns: [
+      {
+        name: 'foo',
+        fieldType: {
+          typeName: Database.FieldTypeName.INT,
+        },
+      },
+    ],
+    partition: {
+      type: Database.PartitionType.RANGE,
+      expr: 'foo',
+      partitions: [
+        {
+          name: 'p0',
+          boundaryValue: 1,
+        },
+        {
+          name: 'p1',
+          boundaryValue: 5,
+        },
+        {
+          name: 'p2',
+          boundaryValue: null,
+        },
+      ],
+    },
+  })
+  const d = await Database.getTableInfo(DB_NAME, tableName)
+  expect(d.partition).toEqual({
+    type: Database.PartitionType.RANGE,
+    expr: '`foo`',
+    partitions: [
+      {
+        name: 'p0',
+        boundaryValue: '1',
+      },
+      {
+        name: 'p1',
+        boundaryValue: '5',
+      },
+      {
+        name: 'p2',
+        boundaryValue: undefined,
+      },
+    ],
+  })
+  await Database.dropTable(DB_NAME, tableName)
+})
+
+it('create table with hash partition', async () => {
+  const tableName = newId('table')
+  await Database.createTable({
+    dbName: DB_NAME,
+    tableName,
+    comment: 'xx',
+    columns: [
+      {
+        name: 'foo',
+        fieldType: {
+          typeName: Database.FieldTypeName.INT,
+        },
+      },
+    ],
+    partition: {
+      type: Database.PartitionType.HASH,
+      expr: 'foo',
+      numberOfPartitions: 10,
+    },
+  })
+  const d = await Database.getTableInfo(DB_NAME, tableName)
+  expect(d.partition).toEqual({
+    type: Database.PartitionType.HASH,
+    expr: '`foo`',
+    numberOfPartitions: 10,
+  })
+  await Database.dropTable(DB_NAME, tableName)
+})
+
+it('create table with list partition', async () => {
+  const tableName = newId('table')
+  await Database.createTable({
+    dbName: DB_NAME,
+    tableName,
+    comment: 'xx',
+    columns: [
+      {
+        name: 'foo',
+        fieldType: {
+          typeName: Database.FieldTypeName.INT,
+        },
+      },
+    ],
+    partition: {
+      type: Database.PartitionType.LIST,
+      expr: 'foo',
+      partitions: [
+        { name: 'p0', values: '1, 4, 2' },
+        { name: 'p1', values: '5, null' },
+      ],
+    },
+  })
+  const d = await Database.getTableInfo(DB_NAME, tableName)
+  expect(d.partition).toEqual({
+    type: Database.PartitionType.LIST,
+    expr: '`foo`',
+    partitions: [
+      { name: 'p0', values: '1,4,2' },
+      { name: 'p1', values: '5,NULL' },
+    ],
+  })
+  await Database.dropTable(DB_NAME, tableName)
+})

@@ -12,8 +12,12 @@ export async function evalSql(
   statements: string,
   options?: IEvalSqlOptions
 ): Promise<QueryeditorRunResponse> {
+  let formatted = statements
+  try {
+    formatted = formatSql(statements)
+  } catch (e) {}
   if (options?.debug ?? true) {
-    console.log('Evaluate SQL', statements)
+    console.log('Evaluate: %s', formatted)
   }
   const r = await client.getInstance().queryEditorRun({
     statements: statements,
@@ -24,7 +28,7 @@ export async function evalSql(
     if (options?.debug ?? true) {
       errMsg =
         'Execute SQL statement failed.\n\n' +
-        formatSql(statements) +
+        formatted +
         '\n\nMessage: ' +
         errMsg
     }

@@ -136,6 +136,7 @@ export type GetTableInfoResult = {
   viewDefinition?: string
   columns: TableInfoColumn[]
   indexes: TableInfoIndex[]
+  partition?: PartitionBy
 }
 
 export async function getTableInfo(
@@ -150,7 +151,7 @@ export async function getTableInfo(
     }
     info = d.tables[0]
   }
-  let viewDefinition
+  let viewDefinition: string | undefined
   if (info.type === TableType.VIEW) {
     const d = await evalSqlObj(
       SqlString.format(
@@ -200,11 +201,73 @@ export async function getTableInfo(
       isDeleteble: type !== TableInfoIndexType.Primary,
     })
   }
+
+  let partition: PartitionBy | undefined
+  {
+    const d = await evalSqlObj(
+      SqlString.format(
+        `
+      SELECT
+        PARTITION_METHOD, PARTITION_NAME, PARTITION_EXPRESSION, PARTITION_DESCRIPTION
+      FROM
+        INFORMATION_SCHEMA.PARTITIONS
+      WHERE UPPER(TABLE_SCHEMA) = ? AND UPPER(TABLE_NAME) = ?
+      ORDER BY PARTITION_ORDINAL_POSITION`,
+        [dbName.toUpperCase(), tableName.toUpperCase()]
+      )
+    )
+    if (d.length > 0) {
+      switch (d[0].PARTITION_METHOD) {
+        case 'LIST': {
+          let p: PartitionByListDefinition = {
+            type: PartitionType.LIST,
+            expr: d[0].PARTITION_EXPRESSION,
+            partitions: d.map((partition) => {
+              return {
+                name: partition.PARTITION_NAME,
+                values: partition.PARTITION_DESCRIPTION,
+              }
+            }),
+          }
+          partition = p
+          break
+        }
+        case 'HASH': {
+          let p: PartitionByHashDefinition = {
+            type: PartitionType.HASH,
+            expr: d[0].PARTITION_EXPRESSION,
+            numberOfPartitions: d.length,
+          }
+          partition = p
+          break
+        }
+        case 'RANGE': {
+          let p: PartitionByRangeDefinition = {
+            type: PartitionType.RANGE,
+            expr: d[0].PARTITION_EXPRESSION,
+            partitions: d.map((partition) => {
+              return {
+                name: partition.PARTITION_NAME,
+                boundaryValue:
+                  partition.PARTITION_DESCRIPTION === 'MAXVALUE'
+                    ? undefined
+                    : partition.PARTITION_DESCRIPTION,
+              }
+            }),
+          }
+          partition = p
+          break
+        }
+      }
+    }
+  }
+
   return {
     info,
     viewDefinition,
     columns,
     indexes,
+    partition,
   }
 }
 
@@ -483,14 +546,57 @@ export async function dropTableIndex(
   `)
 }
 
+export enum PartitionType {
+  RANGE = 'RANGE',
+  HASH = 'HASH',
+  LIST = 'LIST',
+}
+
+export type RangePartitionDefinition = {
+  name: string
+
+  // If LESS THAN MAXVALUE, supply NULL in this field.
+  boundaryValue?: number
+}
+
+export type PartitionByRangeDefinition = {
+  type: PartitionType.RANGE
+  expr: string
+  partitions: RangePartitionDefinition[]
+}
+
+export type PartitionByHashDefinition = {
+  type: PartitionType.HASH
+  expr: string
+  numberOfPartitions: number
+}
+
+export type ListPartitionDefinition = {
+  name: string
+  values: string // e.g. "1, 2", or "5, null"
+}
+
+export type PartitionByListDefinition = {
+  type: PartitionType.LIST
+  expr: string
+  partitions: ListPartitionDefinition[]
+}
+
+export type PartitionBy =
+  | PartitionByRangeDefinition
+  | PartitionByHashDefinition
+  | PartitionByListDefinition
+
 export type CreateTableOptions = {
   dbName: string
   tableName: string
   comment?: string
   columns: NewColumnDefinition[]
   primaryKeys?: AddIndexOptionsColumn[]
+  partition?: PartitionBy
 }
 
+// WARN: Supplying partition expr is dangerous
 export async function createTable(options: CreateTableOptions) {
   let items: string[] = []
   for (const col of options.columns) {
@@ -513,6 +619,52 @@ export async function createTable(options: CreateTableOptions) {
   )`
   if (options.comment) {
     sql += ' COMMENT = ' + SqlString.escape(options.comment)
+  }
+
+  if (options.partition != null) {
+    switch (options.partition.type) {
+      case PartitionType.RANGE:
+        {
+          const pDef = _.sortBy(
+            [...options.partition.partitions],
+            (partition) => {
+              if (partition.boundaryValue == null) {
+                return Number.MAX_SAFE_INTEGER
+              } else {
+                return partition.boundaryValue!
+              }
+            }
+          ).map((partition) => {
+            let l = `PARTITION ${partition.name} VALUES `
+            if (partition.boundaryValue != null) {
+              return l + `LESS THAN (${partition.boundaryValue})`
+            } else {
+              return l + `LESS THAN MAXVALUE`
+            }
+          })
+          sql += ` PARTITION BY RANGE(${options.partition.expr}) (
+            ${pDef.join(',\n')}
+          )`
+        }
+        break
+      case PartitionType.HASH:
+        {
+          sql += ` PARTITION BY HASH(${options.partition.expr}) PARTITIONS ${options.partition.numberOfPartitions}`
+        }
+        break
+      case PartitionType.LIST:
+        {
+          const pDef = options.partition.partitions.map((partition) => {
+            return `PARTITION ${partition.name} VALUES IN (${partition.values})`
+          })
+          sql += ` PARTITION BY LIST(${options.partition.expr}) (
+            ${pDef.join(',\n')}
+          )`
+        }
+        break
+      default:
+        throw new Error('Unsupported partition')
+    }
   }
 
   await evalSql(sql)

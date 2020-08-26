@@ -4,17 +4,25 @@ dbusers_manager:
   host: Host
   action: Actions
   delete: Delete
+  edit: Edit
   create_user_title: Create User
   delete_user_title: Delete User
+  edit_user_title: Edit User
   submit: Submit
   cancel: Cancel
   create_form:
     name_label: User Name
     host_label: Host
     pwd_label: Password
+    reset_password_label: Reset Password
+    reset_password_success_txt: Reset Password Success
+    reset_password_failed_txt: Reset Password Failed
     confirm_pwd:
       label: Confirm Password
       error: The two passwords that you entered do not match!
     privileges:
       label: Gobal Privileges
+      update_privileges: Update Privileges
+      update_privileges_success_txt: Update Privileges Success
+      update_privileges_failed_txt: Update Privileges Failed
       placeholder: Choose user privileges

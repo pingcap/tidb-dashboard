@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import * as Database from '@lib/utils/xcClient/database'
-import {
-  Table,
-  Button,
-  Modal,
-  Form,
-  Input,
-  notification,
-  Typography,
-} from 'antd'
-import { Card, Pre, Head } from '@lib/components'
+import { Table, Button, Modal, Form, Input, Typography } from 'antd'
+import { Card, Pre } from '@lib/components'
 import { useTranslation } from 'react-i18next'
 import { DatabaseOutlined } from '@ant-design/icons'
 

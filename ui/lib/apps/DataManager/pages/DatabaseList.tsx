@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import * as Database from '@lib/utils/xcClient/database'
-import { Table, Button, Modal, Form, Input, notification } from 'antd'
+import { Table, Button, Modal, Form, Input, Typography } from 'antd'
 import { Card, Pre } from '@lib/components'
 import { useTranslation } from 'react-i18next'
 
@@ -135,7 +135,9 @@ export default function DatabaseList() {
       key: 'action',
       render: (database) => (
         <a onClick={() => handleDelete(database.database_name)}>
-          {t('data_manager.delete')}
+          <Typography.Text type="danger">
+            {t('data_manager.delete')}
+          </Typography.Text>
         </a>
       ),
     },

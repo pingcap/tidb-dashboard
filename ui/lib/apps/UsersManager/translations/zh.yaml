@@ -4,17 +4,25 @@ dbusers_manager:
   host: 主机
   action: 操作
   delete: 删除
+  edit: 修改
   create_user_title: 添加用户
   delete_user_title: 删除用户
+  edit_user_title: 修改用户
   submit: 提交
   cancel: 取消
   create_form:
     name_label: 用户名称
     host_label: 主机
     pwd_label: 密码
+    reset_password_label: 重置密码
+    reset_password_success_txt: 密码重置成功
+    reset_password_failed_txt: 密码重置失败
     confirm_pwd:
       label: 确认密码
       error: 输入的两个密码不匹配！
     privileges:
       label: 全局权限
+      update_privileges: 更新权限
+      update_privileges_success_txt: 权限更新成功
+      update_privileges_failed_txt: 权限更新失败
       placeholder: 请选择用户权限

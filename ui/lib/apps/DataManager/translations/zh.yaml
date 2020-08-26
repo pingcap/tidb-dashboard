@@ -1,12 +1,15 @@
 data_manager:
   nav_title: 数据管理
 
+  all_databases: 所有数据库
   db_name_column: 数据库名
   create_db: 创建数据库
   db_name_input: 数据库名称
   delete_db_title: 删除数据库
 
-  create_table: 创建数据表
+  create_table: 创建表
+  create_view: 创建视图
+  view_definition: 视图定义
 
   columns: 列
   field_type: 字段类型
@@ -35,8 +38,10 @@ data_manager:
   delete_success_txt: 删除成功
   delete_failed_txt: 删除失败
 
+  please_input: 请填写
   action: 操作
   name: 名称
+  type: 类型
   view_db:
     name: 名称
     type: 类型
@@ -44,12 +49,21 @@ data_manager:
     collation: 比较规则
     comment: 注释
     operation: 操作
-    op_view_structure: 查看结构
-    op_rename: 重命名
-    op_drop: 删除
+    op_structure: 查看结构
+    op_rename: 修改名称
+    op_drop: 删除该表
+    op_drop_view: 删除该视图
+  db_structure:
+    op_insert: 在当前列之后插入列
+    op_drop: 删除当前列
   comment: 注释
   edit: 修改
   submit: 提交
   delete: 删除
   confirm: 确认
   cancel: 取消
+  create_view_modal:
+    title: 创建视图
+    view_def: 视图定义
+
+  head_back_all_databases: 所有数据库

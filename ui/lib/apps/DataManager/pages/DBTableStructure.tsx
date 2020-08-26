@@ -11,16 +11,23 @@ import {
   Space,
   Table,
   notification,
+  Typography,
+  Divider,
+  Dropdown,
+  Menu,
 } from 'antd'
 import {
   CloseSquareOutlined,
   MinusSquareTwoTone,
   PlusOutlined,
   PlusSquareOutlined,
+  ArrowLeftOutlined,
+  CheckOutlined,
+  DownOutlined,
 } from '@ant-design/icons'
 import React, { useEffect, useState } from 'react'
 
-import { Card } from '@lib/components'
+import { Card, Head, Pre } from '@lib/components'
 import { parseColumnRelatedValues } from '@lib/utils/xcClient/util'
 import { useNavigate } from 'react-router-dom'
 import useQueryParams from '@lib/utils/useQueryParams'
@@ -70,26 +77,26 @@ export default function DBTableStructure() {
       case 'insertColumnAtHead':
         try {
           await xcClient.addTableColumnAtHead(db, table, _values)
-          notification.success({
-            message: t('data_manager.create_success_txt'),
+          Modal.success({
+            content: t('data_manager.create_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.create_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.create_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
       case 'insertColumnAtTail':
         try {
           await xcClient.addTableColumnAtTail(db, table, _values)
-          notification.success({
-            message: t('data_manager.create_success_txt'),
+          Modal.success({
+            content: t('data_manager.create_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.create_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.create_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
@@ -101,55 +108,61 @@ export default function DBTableStructure() {
             _values,
             modalInfo.columnName
           )
-          notification.success({
-            message: t('data_manager.create_success_txt'),
+          Modal.success({
+            content: t('data_manager.create_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.create_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.create_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
       case 'deleteColumn':
         try {
           await xcClient.dropTableColumn(db, table, modalInfo.columnName)
-          notification.success({
-            message: t('data_manager.delete_success_txt'),
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.delete_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
       case 'addIndex':
-        try {
-          await xcClient.addTableIndex(db, table, {
-            ...values,
-            ...{ columns: values.columns.map((c) => ({ columnName: c })) },
+        if (!values.columns) {
+          Modal.error({
+            content: `${t('data_manager.please_input')}${t(
+              'data_manager.columns'
+            )}`,
           })
-          notification.success({
-            message: t('data_manager.create_success_txt'),
+          return
+        }
+
+        try {
+          await xcClient.addTableIndex(db, table, values)
+          Modal.success({
+            content: t('data_manager.create_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.create_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.create_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
       case 'deleteIndex':
         try {
           await xcClient.dropTableIndex(db, table, modalInfo.indexName)
-          notification.success({
-            message: t('data_manager.delete_success_txt'),
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.delete_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
@@ -158,7 +171,7 @@ export default function DBTableStructure() {
     }
 
     setTimeout(fetchTableInfo, 1000)
-    setVisible(false)
+    handleCancel()
   }
 
   const handleCancel = () => {
@@ -169,7 +182,7 @@ export default function DBTableStructure() {
   const handleDeleteColumn = (name) => () => {
     showModal({
       type: 'deleteColumn',
-      title: `${t('data_manager.delete_column)')} ${name}`,
+      title: `${t('data_manager.delete_column')} ${name}`,
       columnName: name,
     })()
   }
@@ -185,55 +198,57 @@ export default function DBTableStructure() {
   const handleDeleteIndex = (name) => () => {
     showModal({
       type: 'deleteIndex',
-      title: `${t('data_manager.delete_index)')} ${name}`,
+      title: `${t('data_manager.delete_index')} ${name}`,
       indexName: name,
     })()
   }
 
   return (
     <>
-      <PageHeader onBack={() => navigate(-1)} title={table} subTitle={db} />
-      <Card noMarginTop>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <PageHeader
-            title={t('data_manager.columns')}
-            style={{ padding: '0px 0px 16px 8px' }}
-          />
-          <Space>
-            <Button
-              type="primary"
-              onClick={showModal({
-                type: 'insertColumnAtHead',
-                title: t('data_manager.insert_column_at_head'),
-              })}
-            >
-              {t('data_manager.insert_column_at_head')}
-            </Button>
-            <Button
-              type="primary"
-              onClick={showModal({
-                type: 'insertColumnAtTail',
-                title: t('data_manager.insert_column_at_tail'),
-              })}
-            >
-              {t('data_manager.insert_column_at_tail')}
-            </Button>
-          </Space>
-        </div>
+      <Head
+        title={table}
+        back={
+          <a onClick={() => navigate(-1)}>
+            <ArrowLeftOutlined /> {db}
+          </a>
+        }
+      />
+      {tableInfo?.viewDefinition && (
+        <Card title={t('data_manager.view_definition')}>
+          <Pre>{tableInfo?.viewDefinition}</Pre>
+        </Card>
+      )}
+      <Card
+        title={t('data_manager.columns')}
+        extra={
+          tableInfo?.info.type === xcClient.TableType.TABLE && (
+            <Space>
+              <Button
+                type="primary"
+                onClick={showModal({
+                  type: 'insertColumnAtHead',
+                  title: t('data_manager.insert_column_at_head'),
+                })}
+              >
+                {t('data_manager.insert_column_at_head')}
+              </Button>
+              <Button
+                type="primary"
+                onClick={showModal({
+                  type: 'insertColumnAtTail',
+                  title: t('data_manager.insert_column_at_tail'),
+                })}
+              >
+                {t('data_manager.insert_column_at_tail')}
+              </Button>
+            </Space>
+          )
+        }
+      >
         {tableInfo && (
           <Table
-            dataSource={tableInfo.columns.map((d, i) => ({
-              ...{ key: d.name + i },
-              ...d,
-              ...{ isNotNull: d.isNotNull.toString() },
-            }))}
+            dataSource={tableInfo.columns}
+            rowKey="name"
             columns={[
               {
                 title: t('data_manager.name'),
@@ -249,6 +264,13 @@ export default function DBTableStructure() {
                 title: t('data_manager.not_null'),
                 dataIndex: 'isNotNull',
                 key: 'isNotNull',
+                render: (v) => {
+                  if (v) {
+                    return <CheckOutlined />
+                  } else {
+                    return ''
+                  }
+                },
               },
               {
                 title: t('data_manager.default_value'),
@@ -261,99 +283,103 @@ export default function DBTableStructure() {
                 key: 'comment',
               },
               {
-                title: t('data_manager.insert_column'),
-                key: 'AddColumnAfter',
-                fixed: 'right',
-                width: 150,
-                render: (_: any, record: any) => (
-                  <Button
-                    type="link"
-                    icon={<PlusSquareOutlined />}
-                    onClick={handleAddColumnAfter(record.name)}
-                  />
-                ),
-              },
-              {
-                title: t('data_manager.delete'),
-                key: 'Delete',
-                fixed: 'right',
-                width: 150,
-                render: (_: any, record: any) => (
-                  <Button
-                    type="link"
-                    danger
-                    icon={<CloseSquareOutlined />}
-                    onClick={handleDeleteColumn(record.name)}
-                  />
-                ),
-              },
-            ]}
-          />
-        )}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <PageHeader
-            title={t('data_manager.indexes')}
-            style={{ padding: '0px 0px 16px 8px' }}
-          />
-          <Space>
-            <Button
-              type="primary"
-              onClick={showModal({
-                type: 'addIndex',
-                title: t('data_manager.add_index'),
-              })}
-            >
-              {t('data_manager.add_index')}
-            </Button>
-          </Space>
-        </div>
-        {tableInfo && (
-          <Table
-            dataSource={tableInfo.indexes.map((d, i) => ({
-              ...{ key: d.name + i },
-              ...d,
-              ...{ columns: d.columns.join(', ') },
-            }))}
-            columns={[
-              {
-                title: t('data_manager.name'),
-                dataIndex: 'name',
-                key: 'name',
-              },
-              {
-                title: 'Type',
-                dataIndex: 'type',
-                key: 'type',
-              },
-              {
-                title: t('data_manager.columns'),
-                dataIndex: 'columns',
-                key: 'columns',
-              },
-              {
-                title: t('data_manager.delete'),
-                key: 'isDeleteble',
-                render: (_: any, record: any) => (
-                  <Button
-                    type="link"
-                    danger
-                    disabled={!record.isDeleteble}
-                    icon={<CloseSquareOutlined />}
-                    onClick={handleDeleteIndex(record.name)}
-                  />
-                ),
+                title: t('data_manager.view_db.operation'),
+                key: 'operation',
+                render: (_: any, record: any) => {
+                  return (
+                    tableInfo?.info.type === xcClient.TableType.TABLE && (
+                      <Dropdown
+                        overlay={
+                          <Menu>
+                            <Menu.Item>
+                              <a onClick={handleAddColumnAfter(record.name)}>
+                                {t('data_manager.db_structure.op_insert')}
+                              </a>
+                            </Menu.Item>
+                            <Menu.Item>
+                              <a onClick={handleDeleteColumn(record.name)}>
+                                <Typography.Text type="danger">
+                                  {t('data_manager.db_structure.op_drop')}
+                                </Typography.Text>
+                              </a>
+                            </Menu.Item>
+                          </Menu>
+                        }
+                      >
+                        <a>
+                          {t('data_manager.view_db.operation')} <DownOutlined />
+                        </a>
+                      </Dropdown>
+                    )
+                  )
+                },
               },
             ]}
           />
         )}
       </Card>
+      {tableInfo?.info.type !== xcClient.TableType.VIEW && (
+        <Card
+          title={t('data_manager.indexes')}
+          extra={
+            tableInfo?.info.type === xcClient.TableType.TABLE && (
+              <Space>
+                <Button
+                  type="primary"
+                  onClick={showModal({
+                    type: 'addIndex',
+                    title: t('data_manager.add_index'),
+                  })}
+                >
+                  {t('data_manager.add_index')}
+                </Button>
+              </Space>
+            )
+          }
+        >
+          {tableInfo && (
+            <Table
+              dataSource={tableInfo.indexes.map((d, i) => ({
+                ...{ key: d.name + i },
+                ...d,
+                ...{ columns: d.columns.join(', ') },
+              }))}
+              columns={[
+                {
+                  title: t('data_manager.name'),
+                  dataIndex: 'name',
+                  key: 'name',
+                },
+                {
+                  title: 'Type',
+                  dataIndex: 'type',
+                  key: 'type',
+                  render: (_: any, record: any) =>
+                    xcClient.TableInfoIndexType[record.type],
+                },
+                {
+                  title: t('data_manager.columns'),
+                  dataIndex: 'columns',
+                  key: 'columns',
+                },
+                {
+                  title: t('data_manager.delete'),
+                  key: 'isDeleteble',
+                  render: (_: any, record: any) => (
+                    <Button
+                      type="link"
+                      danger
+                      disabled={!record.isDeleteble}
+                      icon={<CloseSquareOutlined />}
+                      onClick={handleDeleteIndex(record.name)}
+                    />
+                  ),
+                },
+              ]}
+            />
+          )}
+        </Card>
+      )}
       <Modal
         visible={visible}
         title={modalInfo.title}
@@ -364,8 +390,8 @@ export default function DBTableStructure() {
         <Form
           form={form}
           {...{
-            labelCol: { span: 6 },
-            wrapperCol: { span: 18 },
+            labelCol: { span: 4 },
+            wrapperCol: { span: 20 },
           }}
           onFinish={handleOk}
         >
@@ -382,7 +408,17 @@ export default function DBTableStructure() {
               </Form.Item>
               <Form.Item label={t('data_manager.field_type')}>
                 <Space style={{ display: 'flex', alignItems: 'center' }}>
-                  <Form.Item name="typeName">
+                  <Form.Item
+                    name="typeName"
+                    rules={[
+                      {
+                        required: true,
+                        message: `${t('data_manager.please_input')}${t(
+                          'data_manager.field_type'
+                        )}`,
+                      },
+                    ]}
+                  >
                     <Select
                       style={{ width: 150 }}
                       placeholder={t('data_manager.field_type')}
@@ -438,10 +474,15 @@ export default function DBTableStructure() {
               >
                 <Input />
               </Form.Item>
-              <Form.Item name="type" label="Type" rules={[{ required: true }]}>
+              <Form.Item
+                name="type"
+                label={t('data_manager.type')}
+                rules={[{ required: true }]}
+              >
                 <Select>
                   {Object.entries(xcClient.TableInfoIndexType)
                     .filter((t) => typeof t[1] === 'number')
+                    .filter((t) => t[0] !== 'Primary')
                     .map((t) => (
                       <Option key={t[0]} value={t[1]}>
                         {t[0]}
@@ -458,26 +499,69 @@ export default function DBTableStructure() {
                         {...(i > 0
                           ? {
                               wrapperCol: {
-                                offset: 6,
+                                offset: 4,
                               },
                             }
                           : null)}
                         label={i === 0 ? t('data_manager.columns') : ''}
                       >
-                        <Form.Item {...f} noStyle>
-                          <Input style={{ width: '80%' }} />
-                        </Form.Item>
-                        <MinusSquareTwoTone
-                          twoToneColor="#ff4d4f"
-                          style={{ marginLeft: '1rem' }}
-                          onClick={() => remove(f.name)}
-                        />
+                        <Space>
+                          <Form.Item
+                            name={[f.name, 'columnName']}
+                            fieldKey={[f.fieldKey, 'columnName'] as any}
+                            rules={[
+                              {
+                                required: true,
+                                message: `${t('data_manager.please_input')}${t(
+                                  'data_manager.name'
+                                )}`,
+                              },
+                            ]}
+                            noStyle
+                          >
+                            <Select style={{ width: 100 }}>
+                              {tableInfo &&
+                                (form.getFieldValue('columns')
+                                  ? tableInfo.columns.filter(
+                                      (c) =>
+                                        !form
+                                          .getFieldValue('columns')
+                                          .filter((d) => d !== undefined)
+                                          .map((c) => c.columnName)
+                                          .includes(c.name)
+                                    )
+                                  : tableInfo.columns
+                                )
+                                  .map((c) => c.name)
+                                  .map((d, i) => (
+                                    <Option key={d + i} value={d}>
+                                      {d}
+                                    </Option>
+                                  ))}
+                            </Select>
+                          </Form.Item>
+                          <Form.Item
+                            name={[f.name, 'keyLength']}
+                            fieldKey={[f.fieldKey, 'keyLength'] as any}
+                            noStyle
+                          >
+                            <Input
+                              type="number"
+                              placeholder={t('data_manager.length')}
+                            />
+                          </Form.Item>
+                          <MinusSquareTwoTone
+                            twoToneColor="#ff4d4f"
+                            onClick={() => remove(f.name)}
+                          />
+                        </Space>
                       </Form.Item>
                     ))}
                     <Form.Item>
                       <Button
                         type="dashed"
                         onClick={() => {
+                          console.log(form.getFieldValue('columns'))
                           add()
                         }}
                       >
@@ -489,6 +573,10 @@ export default function DBTableStructure() {
               </Form.List>
             </>
           )}
+          {modalInfo.type === 'deleteColumn' &&
+            `${t('data_manager.confirm_delete_txt')} ${modalInfo.columnName}`}
+          {modalInfo.type === 'deleteIndex' &&
+            `${t('data_manager.confirm_delete_txt')} ${modalInfo.indexName}`}
         </Form>
       </Modal>
     </>

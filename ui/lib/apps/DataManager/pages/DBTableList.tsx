@@ -3,6 +3,7 @@ import * as xcClient from '@lib/utils/xcClient/database'
 import {
   Button,
   Checkbox,
+  Divider,
   Form,
   Input,
   Modal,
@@ -10,26 +11,89 @@ import {
   Select,
   Space,
   Table,
-  notification,
   Typography,
-  Divider,
+  notification,
+  Dropdown,
+  Menu,
 } from 'antd'
 import {
-  CloseSquareOutlined,
-  EditOutlined,
   MinusSquareTwoTone,
   PlusOutlined,
+  ArrowLeftOutlined,
+  TableOutlined,
+  EyeOutlined,
+  EllipsisOutlined,
+  DownOutlined,
 } from '@ant-design/icons'
 import React, { useEffect, useState } from 'react'
 
 import { AppstoreOutlined } from '@ant-design/icons'
-import { Card } from '@lib/components'
+import { Card, Head, Pre } from '@lib/components'
 import { parseColumnRelatedValues } from '@lib/utils/xcClient/util'
 import { useNavigate } from 'react-router-dom'
 import useQueryParams from '@lib/utils/useQueryParams'
 import { useTranslation } from 'react-i18next'
 
 const { Option } = Select
+
+function CreateViewButton({ db, reload }) {
+  const { t } = useTranslation()
+  const [visible, setVisible] = useState(false)
+  const [refForm] = Form.useForm()
+
+  async function handleFinish(f) {
+    try {
+      await xcClient.createView(db, f.name, f.view_def)
+      setVisible(false)
+      Modal.success({
+        content: t('data_manager.create_success_txt'),
+      })
+      reload()
+    } catch (e) {
+      Modal.error({
+        title: t('data_manager.create_failed_txt'),
+        content: <Pre>{e.message}</Pre>,
+      })
+    }
+  }
+
+  return (
+    <>
+      <Button
+        onClick={() => {
+          setVisible(true)
+          refForm.resetFields()
+        }}
+      >
+        <EyeOutlined /> {t('data_manager.create_view')}
+      </Button>
+      <Modal
+        title={t('data_manager.create_view_modal.title')}
+        visible={visible}
+        onOk={refForm.submit}
+        onCancel={() => setVisible(false)}
+        destroyOnClose
+      >
+        <Form layout="vertical" form={refForm} onFinish={handleFinish}>
+          <Form.Item
+            name="name"
+            label={t('data_manager.name')}
+            rules={[{ required: true }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="view_def"
+            label={t('data_manager.create_view_modal.view_def')}
+            rules={[{ required: true }]}
+          >
+            <Input.TextArea placeholder="SELECT ... FROM ..." />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
+  )
+}
 
 // route: /data/tables?db=xxx
 export default function DBTableList() {
@@ -62,6 +126,15 @@ export default function DBTableList() {
   const handleOk = async (values) => {
     let _values
     if (modalInfo.type === 'newTable') {
+      if (!values.columns) {
+        Modal.error({
+          content: `${t('data_manager.please_input')}${t(
+            'data_manager.columns'
+          )}`,
+        })
+        return
+      }
+
       const columns = values.columns.map(parseColumnRelatedValues)
       _values = {
         ...values,
@@ -79,39 +152,52 @@ export default function DBTableList() {
         console.log(_values)
         try {
           await xcClient.createTable({ ..._values, ...{ dbName: db } })
-          notification.success({
-            message: t('data_manager.create_success_txt'),
+          Modal.success({
+            content: t('data_manager.create_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.create_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.create_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
       case 'editTable':
         try {
           await xcClient.renameTable(db, modalInfo.tableName, values.tableName)
-          notification.success({
-            message: t('data_manager.update_success_txt'),
+          Modal.success({
+            content: t('data_manager.update_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.update_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.update_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
       case 'deleteTable':
         try {
           await xcClient.dropTable(db, modalInfo.tableName)
-          notification.success({
-            message: t('data_manager.delete_success_txt'),
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
           })
         } catch (e) {
-          notification.error({
-            message: t('data_manager.delete_failed_txt'),
-            description: e.toString(),
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
+          })
+        }
+        break
+      case 'deleteView':
+        try {
+          await xcClient.dropView(db, modalInfo.tableName)
+          Modal.success({
+            content: t('data_manager.delete_success_txt'),
+          })
+        } catch (e) {
+          Modal.error({
+            title: t('data_manager.delete_failed_txt'),
+            content: <Pre>{e.message}</Pre>,
           })
         }
         break
@@ -120,7 +206,7 @@ export default function DBTableList() {
     }
 
     setTimeout(fetchTables, 1000)
-    setVisible(false)
+    handleCancel()
   }
 
   const handleCancel = () => {
@@ -136,6 +222,14 @@ export default function DBTableList() {
     })()
   }
 
+  const handleDeleteView = (name) => () => {
+    showModal({
+      type: 'deleteView',
+      title: `${t('data_manager.delete')} ${name}`,
+      tableName: name,
+    })()
+  }
+
   const handleEditTable = (name) => () => {
     showModal({
       type: 'editTable',
@@ -146,18 +240,28 @@ export default function DBTableList() {
 
   return (
     <>
-      <PageHeader onBack={() => navigate(-1)} title={db} />
-      <Card noMarginTop>
-        <Button
-          type="primary"
-          style={{ marginBottom: '1rem' }}
-          onClick={showModal({
-            title: t('data_manager.create_table'),
-            type: 'newTable',
-          })}
-        >
-          {t('data_manager.create_table')}
-        </Button>
+      <Head
+        title={db}
+        back={
+          <a onClick={() => navigate(-1)}>
+            <ArrowLeftOutlined /> {t('data_manager.head_back_all_databases')}
+          </a>
+        }
+        titleExtra={
+          <Space>
+            <Button
+              onClick={showModal({
+                title: t('data_manager.create_table'),
+                type: 'newTable',
+              })}
+            >
+              <TableOutlined /> {t('data_manager.create_table')}
+            </Button>
+            <CreateViewButton db={db} reload={fetchTables} />
+          </Space>
+        }
+      />
+      <Card>
         {tables && (
           <Table
             dataSource={tables}
@@ -167,31 +271,11 @@ export default function DBTableList() {
                 title: t('data_manager.view_db.name'),
                 dataIndex: 'name',
                 key: 'name',
-                render: (_, record) => {
-                  return (
-                    <a
-                      href={`#/data/table_structure?db=${db}&table=${record.name}`}
-                    >
-                      {record.name}
-                    </a>
-                  )
-                },
               },
               {
                 title: t('data_manager.view_db.type'),
                 dataIndex: 'type',
                 key: 'type',
-                render: (text) => text,
-              },
-              {
-                title: t('data_manager.view_db.createTime'),
-                dataIndex: 'createTime',
-                key: 'createTime',
-              },
-              {
-                title: t('data_manager.view_db.collation'),
-                dataIndex: 'collation',
-                key: 'collation',
               },
               {
                 title: t('data_manager.view_db.comment'),
@@ -201,19 +285,52 @@ export default function DBTableList() {
               {
                 title: t('data_manager.view_db.operation'),
                 key: 'operation',
-                render: (_: any, record: any) => (
-                  <>
-                    <a onClick={handleEditTable(record.name)}>
-                      {t('data_manager.view_db.op_rename')}
-                    </a>
-                    <Divider type="vertical" />
-                    <a onClick={handleDeleteTable(record.name)}>
-                      <Typography.Text type="danger">
-                        {t('data_manager.view_db.op_drop')}
-                      </Typography.Text>
-                    </a>
-                  </>
-                ),
+                render: (_: any, record: any) => {
+                  return (
+                    <Dropdown
+                      overlay={
+                        <Menu>
+                          <Menu.Item>
+                            <a
+                              href={`#/data/table_structure?db=${db}&table=${record.name}`}
+                            >
+                              {t('data_manager.view_db.op_structure')}
+                            </a>
+                          </Menu.Item>
+                          {record.type !== xcClient.TableType.SYSTEM_VIEW && (
+                            <Menu.Item>
+                              <a onClick={handleEditTable(record.name)}>
+                                {t('data_manager.view_db.op_rename')}
+                              </a>
+                            </Menu.Item>
+                          )}
+                          {record.type === xcClient.TableType.TABLE && (
+                            <Menu.Item>
+                              <a onClick={handleDeleteTable(record.name)}>
+                                <Typography.Text type="danger">
+                                  {t('data_manager.view_db.op_drop')}
+                                </Typography.Text>
+                              </a>
+                            </Menu.Item>
+                          )}
+                          {record.type === xcClient.TableType.VIEW && (
+                            <Menu.Item>
+                              <a onClick={handleDeleteView(record.name)}>
+                                <Typography.Text type="danger">
+                                  {t('data_manager.view_db.op_drop_view')}
+                                </Typography.Text>
+                              </a>
+                            </Menu.Item>
+                          )}
+                        </Menu>
+                      }
+                    >
+                      <a>
+                        {t('data_manager.view_db.operation')} <DownOutlined />
+                      </a>
+                    </Dropdown>
+                  )
+                },
               },
             ]}
           />
@@ -264,6 +381,14 @@ export default function DBTableList() {
                         <Form.Item
                           name={[f.name, 'name']}
                           fieldKey={[f.fieldKey, 'name'] as any}
+                          rules={[
+                            {
+                              required: true,
+                              message: `${t('data_manager.please_input')}${t(
+                                'data_manager.name'
+                              )}`,
+                            },
+                          ]}
                         >
                           <Input placeholder={t('data_manager.name')} />
                         </Form.Item>
@@ -274,6 +399,14 @@ export default function DBTableList() {
                             <Form.Item
                               name={[f.name, 'typeName']}
                               fieldKey={[f.fieldKey, 'typeName'] as any}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: `${t(
+                                    'data_manager.please_input'
+                                  )}${t('data_manager.field_type')}`,
+                                },
+                              ]}
                             >
                               <Select
                                 style={{ width: 150 }}
@@ -388,6 +521,8 @@ export default function DBTableList() {
               </Form.Item>
             </>
           )}
+          {modalInfo.type === 'deleteTable' &&
+            `${t('data_manager.confirm_delete_txt')} ${modalInfo.tableName}`}
         </Form>
       </Modal>
     </>

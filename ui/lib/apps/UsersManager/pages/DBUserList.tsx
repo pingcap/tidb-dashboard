@@ -80,16 +80,21 @@ export default function DBUserList() {
       key: 'action',
       render: (user) => (
         <>
-          <a
-            onClick={showConfirmModal({
-              title: t('dbusers_manager.delete_user_title'),
-              message: t('dbusers_manager.delete_user_title'),
-              userInfo: user,
-            })}
-          >
-            {t('data_manager.delete')}
-          </a>
-          <Divider type="vertical" />
+          {user.user != 'root' && (
+            <>
+              <a
+                onClick={showConfirmModal({
+                  title: t('dbusers_manager.delete_user_title'),
+                  message: t('dbusers_manager.delete_user_title'),
+                  userInfo: user,
+                })}
+              >
+                {t('data_manager.delete')}
+              </a>
+
+              <Divider type="vertical" />
+            </>
+          )}
           <a
             onClick={showFormModal({
               title: t('dbusers_manager.edit_user_title'),
@@ -126,7 +131,6 @@ export default function DBUserList() {
   }
 
   const onFinish = async (values) => {
-    delete values['confirm']
     const { user, host, password, privileges } = values
     try {
       await Database.createUser(user, host, password, privileges)
@@ -140,6 +144,47 @@ export default function DBUserList() {
     }
 
     setFormModalVisible(false)
+  }
+
+  const PasswordItem = () => {
+    return (
+      <>
+        <Form.Item
+          name="password"
+          label={t('dbusers_manager.create_form.pwd_label')}
+          hasFeedback
+        >
+          <Input.Password />
+        </Form.Item>
+        <Form.Item
+          name="confirm"
+          label={t('dbusers_manager.create_form.confirm_pwd.label')}
+          dependencies={['password']}
+          hasFeedback
+          rules={[
+            ({ getFieldValue }) => ({
+              validator(rule, value) {
+                console.log('password', getFieldValue('password'))
+
+                console.log('confirm password', value)
+                if (
+                  (getFieldValue('password') &&
+                    getFieldValue('password') === value) ||
+                  (!getFieldValue('password') && !value)
+                ) {
+                  return Promise.resolve()
+                }
+                return Promise.reject(
+                  t('dbusers_manager.create_form.confirm_pwd.error')
+                )
+              },
+            }),
+          ]}
+        >
+          <Input.Password />
+        </Form.Item>
+      </>
+    )
   }
 
   const CreateUserFormOnModal = () => {
@@ -159,33 +204,7 @@ export default function DBUserList() {
         >
           <Input />
         </Form.Item>
-        <Form.Item
-          name="password"
-          label={t('dbusers_manager.create_form.pwd_label')}
-          hasFeedback
-        >
-          <Input.Password />
-        </Form.Item>
-        <Form.Item
-          name="confirm"
-          label={t('dbusers_manager.create_form.confirm_pwd.label')}
-          dependencies={['password']}
-          hasFeedback
-          rules={[
-            ({ getFieldValue }) => ({
-              validator(rule, value) {
-                if (!value || getFieldValue('password') === value) {
-                  return Promise.resolve()
-                }
-                return Promise.reject(
-                  t('dbusers_manager.create_form.confirm_pwd.error')
-                )
-              },
-            }),
-          ]}
-        >
-          <Input.Password />
-        </Form.Item>
+        <PasswordItem />
         <Form.Item
           name="privileges"
           label={t('dbusers_manager.create_form.privileges.label')}
@@ -255,7 +274,6 @@ export default function DBUserList() {
     }
 
     const resetPassword = async (values) => {
-      delete values['confirm']
       const { user, host } = formModalInfo.userInfo
 
       try {
@@ -315,33 +333,7 @@ export default function DBUserList() {
           onFinish={resetPassword}
           initialValues={{ password: '' }}
         >
-          <Form.Item
-            name="password"
-            label={t('dbusers_manager.create_form.pwd_label')}
-            hasFeedback
-          >
-            <Input.Password />
-          </Form.Item>
-          <Form.Item
-            name="confirm"
-            label={t('dbusers_manager.create_form.confirm_pwd.label')}
-            dependencies={['password']}
-            hasFeedback
-            rules={[
-              ({ getFieldValue }) => ({
-                validator(rule, value) {
-                  if (!value || getFieldValue('password') === value) {
-                    return Promise.resolve()
-                  }
-                  return Promise.reject(
-                    t('dbusers_manager.create_form.confirm_pwd.error')
-                  )
-                },
-              }),
-            ]}
-          >
-            <Input.Password />
-          </Form.Item>
+          <PasswordItem />
           <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 6 }}>
             <Space>
               <Button key="submit" type="primary" htmlType="submit">

@@ -40,3 +40,5 @@ nav:
   sider:
     debug: Advanced Debugging
     basic: Basic Information
+    manage: Management
+    diagnose: Diagnosis

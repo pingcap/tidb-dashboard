@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { BugOutlined, AppstoreOutlined } from '@ant-design/icons'
+import {
+  BugOutlined,
+  AppstoreOutlined,
+  SettingOutlined,
+  CompassOutlined,
+} from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
 import { useEventListener } from '@umijs/hooks'
@@ -109,24 +114,53 @@ function Sider({
     </Menu.SubMenu>
   )
 
-  let menuItems = [
-    basicSubMenu,
+  let manageSubMenuItems = [
+    useAppMenuItem(registry, 'query_editor'),
+    useAppMenuItem(registry, 'data_manager'),
+    useAppMenuItem(registry, 'dbusers_manager'),
+    useAppMenuItem(registry, 'configuration'),
+  ]
+  const manageSubMenu = (
+    <Menu.SubMenu
+      key="manage"
+      title={
+        <span>
+          <SettingOutlined />
+          <span>{t('nav.sider.manage')}</span>
+        </span>
+      }
+    >
+      {manageSubMenuItems}
+    </Menu.SubMenu>
+  )
+
+  let manageItems: any[] = []
+  if (data?.enable_experimental) {
+    manageItems = [manageSubMenu]
+  }
+
+  const diagnoseSubMenuItems = [
     useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
     useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
-    useAppMenuItem(registry, 'data_manager'),
-    useAppMenuItem(registry, 'dbusers_manager'),
-    debugSubMenu,
   ]
-  const experimentalMenuItems = [
-    useAppMenuItem(registry, 'query_editor'),
-    useAppMenuItem(registry, 'configuration'),
-  ]
-  if (data?.enable_experimental) {
-    menuItems = [...menuItems, ...experimentalMenuItems]
-  }
+  const diagnoseSubMenu = (
+    <Menu.SubMenu
+      key="diagnose"
+      title={
+        <span>
+          <CompassOutlined />
+          <span>{t('nav.sider.diagnose')}</span>
+        </span>
+      }
+    >
+      {diagnoseSubMenuItems}
+    </Menu.SubMenu>
+  )
+
+  let menuItems = [basicSubMenu, ...manageItems, diagnoseSubMenu, debugSubMenu]
 
   let displayName = currentLogin?.username ?? '...'
   if (currentLogin?.is_shared) {
@@ -146,7 +180,7 @@ function Sider({
     if (defaultCollapsed) {
       return []
     } else {
-      return ['basic', 'debug']
+      return ['basic', 'manage', 'diagnose', 'debug']
     }
   }, [defaultCollapsed])
 

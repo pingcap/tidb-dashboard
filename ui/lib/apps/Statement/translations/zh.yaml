@@ -7,7 +7,6 @@ statement:
         title: SQL 语句信息
       desc:
         time_range: 时间范围
-        plan_count: 执行计划数
         plans:
           note: 该 SQL 模板在选定的时间范围内有多个执行计划，您可以选择查看其中一个或多个执行计划。
           title:
@@ -66,6 +65,8 @@ statement:
     sum_latency_tooltip: 该类 SQL 语句在时间段内的累计执行时间
     exec_count: 执行次数
     exec_count_tooltip: 该类 SQL 语句在时间段内被执行的总次数
+    plan_count: 计划数
+    plan_count_tooltip: 该类 SQL 语句在时间段内的不同执行计划数量
     avg_latency: 平均耗时
     avg_latency_tooltip: 单条 SQL 查询的执行时间
     avg_mem: 平均内存

@@ -24,6 +24,7 @@ import {
   EyeOutlined,
   EllipsisOutlined,
   DownOutlined,
+  ExportOutlined,
 } from '@ant-design/icons'
 import React, { useEffect, useState } from 'react'
 
@@ -258,6 +259,9 @@ export default function DBTableList() {
               <TableOutlined /> {t('data_manager.create_table')}
             </Button>
             <CreateViewButton db={db} reload={fetchTables} />
+            <Button onClick={() => navigate(`/data/export?db=${db}`)}>
+              <ExportOutlined /> {t('data_manager.export_database')}
+            </Button>
           </Space>
         }
       />
@@ -297,6 +301,14 @@ export default function DBTableList() {
                               {t('data_manager.view_db.op_structure')}
                             </a>
                           </Menu.Item>
+                          <Menu.Item>
+                            <a
+                              href={`#/data/export?db=${db}&table=${record.name}`}
+                            >
+                              {t('data_manager.view_db.op_export')}
+                            </a>
+                          </Menu.Item>
+                          <Menu.Divider />
                           {record.type !== xcClient.TableType.SYSTEM_VIEW && (
                             <Menu.Item>
                               <a onClick={handleEditTable(record.name)}>

@@ -53,6 +53,7 @@ data_manager:
     op_rename: 修改名称
     op_drop: 删除该表
     op_drop_view: 删除该视图
+    op_export: 导出数据
   db_structure:
     op_insert: 在当前列之后插入列
     op_drop: 删除当前列
@@ -67,3 +68,14 @@ data_manager:
     view_def: 视图定义
 
   head_back_all_databases: 所有数据库
+  export_database: 导出该数据库
+  export_tables:
+    title: 导出数据为 CSV
+    export_success: 导出成功
+    export_download: 下载
+    export_failed: 导出失败
+    form:
+      tables: 表
+      tables_placeholder: 选择需要导出的表
+      select_all: 选择所有表
+      submit: 开始导出

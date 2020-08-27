@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import * as Database from '@lib/utils/xcClient/database'
-import { Table, Button, Modal, Form, Input, Typography } from 'antd'
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Typography,
+  Dropdown,
+  Menu,
+} from 'antd'
 import { Card, Pre, Head } from '@lib/components'
 import { useTranslation } from 'react-i18next'
-import { DatabaseOutlined } from '@ant-design/icons'
+import { DatabaseOutlined, DownOutlined } from '@ant-design/icons'
 
 // route: /data
 export default function DatabaseList() {
@@ -135,11 +144,29 @@ export default function DatabaseList() {
       title: t('data_manager.action'),
       key: 'action',
       render: (database) => (
-        <a onClick={() => handleDelete(database.database_name)}>
-          <Typography.Text type="danger">
-            {t('data_manager.delete')}
-          </Typography.Text>
-        </a>
+        <Dropdown
+          overlay={
+            <Menu>
+              <Menu.Item>
+                <a href={`#/data/export?db=${database.database_name}`}>
+                  {t('data_manager.export_database')}
+                </a>
+              </Menu.Item>
+              <Menu.Divider />
+              <Menu.Item>
+                <a onClick={() => handleDelete(database.database_name)}>
+                  <Typography.Text type="danger">
+                    {t('data_manager.delete')}
+                  </Typography.Text>
+                </a>
+              </Menu.Item>
+            </Menu>
+          }
+        >
+          <a>
+            {t('data_manager.action')} <DownOutlined />
+          </a>
+        </Dropdown>
       ),
     },
   ]

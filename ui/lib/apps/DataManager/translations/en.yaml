@@ -53,6 +53,7 @@ data_manager:
     op_rename: Rename
     op_drop: Drop Table
     op_drop_view: Drop View
+    op_export: Export
   db_structure:
     op_insert: Insert Column After Current Column
     op_drop: Drop Column
@@ -66,3 +67,15 @@ data_manager:
     view_def: View Definition
 
   head_back_all_databases: All databases
+
+  export_database: Export This Database
+  export_tables:
+    title: Export as CSV
+    export_success: Export Succeeded
+    export_download: Download
+    export_failed: Export Failed
+    form:
+      tables: Tables
+      tables_placeholder: Select tables to export
+      select_all: Select All Tables
+      submit: Start Exporting

@@ -15,6 +15,19 @@ function commonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`statement.fields.${fieldName}`} />
 }
 
+function planCountColumn(
+  _rows?: { plan_count?: number }[] // used for type check only
+): IColumn {
+  return {
+    name: commonColumnName('plan_count'),
+    key: 'plan_count',
+    fieldName: 'plan_count',
+    minWidth: 100,
+    maxWidth: 300,
+    columnActionsMode: ColumnActionsMode.clickable,
+  }
+}
+
 function planDigestColumn(
   _rows?: { plan_digest?: string }[] // used for type check only
 ): IColumn {
@@ -322,6 +335,7 @@ export function statementColumns(
     sumLatencyColumn(rows),
     avgMinMaxLatencyColumn(rows),
     execCountColumn(rows),
+    planCountColumn(rows),
     avgMaxMemColumn(rows),
     errorsWarningsColumn(rows),
     avgParseLatencyColumn(rows),

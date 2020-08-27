@@ -7,7 +7,6 @@ statement:
         title: Statement Information
       desc:
         time_range: Selected Time Range
-        plan_count: Execution Plans
         plans:
           note: There are multiple execution plans for this kind of SQL statement. You can choose to view one or multiple of them.
           title:
@@ -65,8 +64,10 @@ statement:
     digest_text_tooltip: Similar queries have same statement template even for different query parameters
     sum_latency: Total Latency
     sum_latency_tooltip: Total execution time for this kind of statement
-    exec_count: Execution Count
+    exec_count: '# Exec'
     exec_count_tooltip: Total execution count for this kind of statement
+    plan_count: '# Plans'
+    plan_count_tooltip: Number of distinct execution plans of this statement in current time range
     avg_latency: Mean Latency
     avg_latency_tooltip: Execution time of single query
     avg_mem: Mean Memory

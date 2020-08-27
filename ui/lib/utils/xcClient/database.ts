@@ -2,6 +2,14 @@ import { evalSql, evalSqlObj } from './util'
 import SqlString from 'sqlstring'
 import _ from 'lodash'
 
+function eid(n: string): string {
+  return SqlString.escapeId(n, true)
+}
+
+function e(n: any): string {
+  return SqlString.escape(n)
+}
+
 export type GetDatabasesResult = {
   databases: string[]
 }
@@ -18,11 +26,11 @@ export async function getDatabases(): Promise<GetDatabasesResult> {
 }
 
 export async function createDatabase(name: string) {
-  await evalSql(`CREATE DATABASE ${SqlString.escapeId(name)}`)
+  await evalSql(`CREATE DATABASE ${eid(name)}`)
 }
 
 export async function dropDatabase(name: string) {
-  await evalSql(`DROP DATABASE ${SqlString.escapeId(name)}`)
+  await evalSql(`DROP DATABASE ${eid(name)}`)
 }
 
 export enum TableType {
@@ -78,23 +86,17 @@ export async function renameTable(
   newTableName: string
 ) {
   await evalSql(`
-    USE ${SqlString.escapeId(dbName)};
-    RENAME TABLE ${SqlString.escapeId(oldTableName)} TO ${SqlString.escapeId(
-    newTableName
-  )};
+    USE ${eid(dbName)};
+    RENAME TABLE ${eid(oldTableName)} TO ${eid(newTableName)};
   `)
 }
 
 export async function dropTable(dbName: string, tableName: string) {
-  await evalSql(
-    `DROP TABLE ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}`
-  )
+  await evalSql(`DROP TABLE ${eid(dbName)}.${eid(tableName)}`)
 }
 
 export async function dropView(dbName: string, tableName: string) {
-  await evalSql(
-    `DROP VIEW ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}`
-  )
+  await evalSql(`DROP VIEW ${eid(dbName)}.${eid(tableName)}`)
 }
 
 // Warning: highly unsafe!
@@ -104,8 +106,8 @@ export async function createView(
   viewDef: string
 ) {
   await evalSql(
-    `USE ${SqlString.escapeId(dbName)};
-    CREATE VIEW ${SqlString.escapeId(tableName)}
+    `USE ${eid(dbName)};
+    CREATE VIEW ${eid(tableName)}
     AS ${viewDef};`
   )
 }
@@ -169,7 +171,7 @@ export async function getTableInfo(
     }
   }
 
-  const name = `${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}`
+  const name = `${eid(dbName)}.${eid(tableName)}`
   const columnsData = await evalSqlObj(`SHOW FULL COLUMNS FROM ${name}`)
   const columns = columnsData.map((column) => ({
     name: column.FIELD,
@@ -279,8 +281,8 @@ export async function dropPartition(
 ) {
   await evalSql(`
   ALTER TABLE
-    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
-  DROP PARTITION ${SqlString.escapeId(partitionName)}
+    ${eid(dbName)}.${eid(tableName)}
+  DROP PARTITION ${eid(partitionName)}
   `)
 }
 
@@ -291,7 +293,7 @@ export async function addRangePartition(
 ) {
   await evalSql(`
   ALTER TABLE
-    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ${eid(dbName)}.${eid(tableName)}
   ADD PARTITION (
     ${buildRangePartitionStatement(newPartition)}
   )
@@ -305,7 +307,7 @@ export async function addListPartition(
 ) {
   await evalSql(`
   ALTER TABLE
-    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ${eid(dbName)}.${eid(tableName)}
   ADD PARTITION (
     ${buildListPartitionStatement(newPartition)}
   )
@@ -458,7 +460,7 @@ function buildColumnDefinition(
   def: NewColumnDefinition,
   respectAutoIncrement?: boolean
 ): string {
-  let r = SqlString.escapeId(def.name)
+  let r = eid(def.name)
   r += ` ${buildFieldTypeDefinition(def.fieldType)}`
   if (
     respectAutoIncrement &&
@@ -469,10 +471,10 @@ function buildColumnDefinition(
   }
   if (def.defaultValue != null) {
     // FIXME: DEFAULT for TIME?
-    r += ` DEFAULT ${SqlString.escape(def.defaultValue)}`
+    r += ` DEFAULT ${e(def.defaultValue)}`
   }
   if (def.comment != null) {
-    r += ` COMMENT ${SqlString.escape(def.comment)}`
+    r += ` COMMENT ${e(def.comment)}`
   }
   return r
 }
@@ -483,7 +485,7 @@ export async function addTableColumnAtTail(
   newColumn: NewColumnDefinition
 ) {
   await evalSql(`ALTER TABLE
-    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ${eid(dbName)}.${eid(tableName)}
     ADD COLUMN
     ${buildColumnDefinition(newColumn)}
   `)
@@ -495,7 +497,7 @@ export async function addTableColumnAtHead(
   newColumn: NewColumnDefinition
 ) {
   await evalSql(`ALTER TABLE
-    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ${eid(dbName)}.${eid(tableName)}
     ADD COLUMN
     ${buildColumnDefinition(newColumn)}
     FIRST
@@ -509,11 +511,11 @@ export async function addTableColumnAfter(
   afterThisColumnName: string
 ) {
   await evalSql(`ALTER TABLE
-    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ${eid(dbName)}.${eid(tableName)}
     ADD COLUMN
     ${buildColumnDefinition(newColumn)}
     AFTER
-    ${SqlString.escapeId(afterThisColumnName)}
+    ${eid(afterThisColumnName)}
   `)
 }
 
@@ -523,9 +525,9 @@ export async function dropTableColumn(
   columnName: string
 ) {
   await evalSql(`ALTER TABLE
-    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ${eid(dbName)}.${eid(tableName)}
     DROP COLUMN
-    ${SqlString.escapeId(columnName)}
+    ${eid(columnName)}
   `)
 }
 
@@ -538,7 +540,7 @@ export type AddIndexOptionsColumn = {
 }
 
 function buildIndexDefinition(col: AddIndexOptionsColumn): string {
-  let k = SqlString.escapeId(col.columnName)
+  let k = eid(col.columnName)
   if (col.keyLength && col.keyLength > 0) {
     k += `(${col.keyLength})`
   }
@@ -570,8 +572,8 @@ export async function addTableIndex(
   }
 
   await evalSql(`
-    CREATE ${indexTypeName} INDEX ${SqlString.escapeId(options.name)} ON
-    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    CREATE ${indexTypeName} INDEX ${eid(options.name)} ON
+    ${eid(dbName)}.${eid(tableName)}
     (${keys.join(', ')})
   `)
 }
@@ -582,8 +584,8 @@ export async function dropTableIndex(
   indexName: string
 ) {
   await evalSql(`
-    DROP INDEX ${SqlString.escapeId(indexName)} ON
-    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    DROP INDEX ${eid(indexName)} ON
+    ${eid(dbName)}.${eid(tableName)}
   `)
 }
 
@@ -638,7 +640,7 @@ export type CreateTableOptions = {
 }
 
 function buildRangePartitionStatement(p: RangePartitionDefinition): string {
-  let l = `PARTITION ${SqlString.escapeId(p.name)} VALUES `
+  let l = `PARTITION ${eid(p.name)} VALUES `
   if (p.boundaryValue != null) {
     return l + `LESS THAN (${p.boundaryValue})`
   } else {
@@ -647,7 +649,7 @@ function buildRangePartitionStatement(p: RangePartitionDefinition): string {
 }
 
 function buildListPartitionStatement(p: ListPartitionDefinition): string {
-  return `PARTITION ${SqlString.escapeId(p.name)} VALUES IN (${p.values})`
+  return `PARTITION ${eid(p.name)} VALUES IN (${p.values})`
 }
 
 // WARN: Supplying partition expr is dangerous
@@ -664,15 +666,13 @@ export async function createTable(options: CreateTableOptions) {
     )
   }
 
-  const id = [options.dbName, options.tableName]
-    .map((n) => SqlString.escapeId(n))
-    .join('.')
+  const id = [options.dbName, options.tableName].map((n) => eid(n)).join('.')
 
   let sql = `CREATE TABLE ${id} (
     ${items.join(', \n')}
   )`
   if (options.comment) {
-    sql += ' COMMENT = ' + SqlString.escape(options.comment)
+    sql += ' COMMENT = ' + e(options.comment)
   }
 
   if (options.partition != null) {
@@ -772,7 +772,7 @@ export async function selectTableRow(
   if (primaryIndex == null) {
     columnNames.push('_tidb_rowid'.toUpperCase())
   }
-  const columnNamesEscaped = columnNames.map((n) => SqlString.escapeId(n))
+  const columnNamesEscaped = columnNames.map((n) => eid(n))
   const columnIndexByName = {}
   for (let i = 0; i < columnNames.length; i++) {
     columnIndexByName[columnNames[i]] = i
@@ -786,14 +786,14 @@ export async function selectTableRow(
   } else {
     orderBy.push('_tidb_rowid'.toUpperCase())
   }
-  const orderByEscaped = orderBy.map((n) => SqlString.escapeId(n))
+  const orderByEscaped = orderBy.map((n) => eid(n))
 
   try {
     const data = await evalSql(`
     SELECT
       ${columnNamesEscaped.join(', ')}
     FROM
-      ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+      ${eid(dbName)}.${eid(tableName)}
     ORDER BY
       ${orderByEscaped.join(', ')}
     LIMIT
@@ -833,7 +833,7 @@ export async function selectTableRow(
         SELECT
           ${columnNamesEscaped.join(', ')}
         FROM
-          ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+          ${eid(dbName)}.${eid(tableName)}
       `)
 
       return {
@@ -857,9 +857,7 @@ export type UpdateColumnSpec = {
 function buildWhereStatementFromUpdateHandle(handle: UpdateHandle) {
   const where: string[] = []
   for (const c of handle.whereColumns) {
-    where.push(
-      `${SqlString.escapeId(c.columnName)} = ${SqlString.escape(c.columnValue)}`
-    )
+    where.push(`${eid(c.columnName)} = ${e(c.columnValue)}`)
   }
   return where.join(' AND ')
 }
@@ -873,15 +871,13 @@ export async function updateTableRow(
 ) {
   const updates: string[] = []
   for (const c of columnsToUpdate) {
-    updates.push(
-      `${SqlString.escapeId(c.columnName)} = ${SqlString.escape(c.value)}`
-    )
+    updates.push(`${eid(c.columnName)} = ${e(c.value)}`)
   }
 
   const whereStatement = buildWhereStatementFromUpdateHandle(handle)
   await evalSql(`
   UPDATE
-    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ${eid(dbName)}.${eid(tableName)}
   SET
     ${updates.join(', ')}
   WHERE
@@ -897,7 +893,7 @@ export async function deleteTableRow(
   const whereStatement = buildWhereStatementFromUpdateHandle(handle)
   await evalSql(`
   DELETE FROM
-    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ${eid(dbName)}.${eid(tableName)}
   WHERE
     ${whereStatement}
   `)
@@ -909,13 +905,11 @@ export async function insertTableRow(
   // Specify all columns, include NULL columns.
   columnsToInsert: UpdateColumnSpec[]
 ) {
-  const fieldNames = columnsToInsert.map((c) =>
-    SqlString.escapeId(c.columnName)
-  )
-  const fieldValues = columnsToInsert.map((c) => SqlString.escape(c.value))
+  const fieldNames = columnsToInsert.map((c) => eid(c.columnName))
+  const fieldValues = columnsToInsert.map((c) => e(c.value))
   await evalSql(`
   INSERT INTO
-    ${SqlString.escapeId(dbName)}.${SqlString.escapeId(tableName)}
+    ${eid(dbName)}.${eid(tableName)}
     (${fieldNames.join(', ')})
   VALUES
     (${fieldValues.join(', ')})
@@ -1016,7 +1010,7 @@ export async function getUserDetail(
 ): Promise<UserDetail> {
   const selections: string[] = []
   for (const priv of Object.values(UserPrivilegeId)) {
-    selections.push(SqlString.escapeId(`${priv}_PRIV`))
+    selections.push(eid(`${priv}_PRIV`))
   }
   const u = await evalSqlObj(
     SqlString.format(
@@ -1041,7 +1035,7 @@ export async function getUserDetail(
 }
 
 export async function dropUser(user: string, host: string) {
-  await evalSql(`DROP USER ${SqlString.escape(user)}@${SqlString.escape(host)}`)
+  await evalSql(`DROP USER ${e(user)}@${e(host)}`)
 }
 
 // Password can be empty string.
@@ -1051,11 +1045,11 @@ export async function createUser(
   password: string,
   privileges: UserPrivilegeId[]
 ) {
-  const id = `${SqlString.escape(user)}@${SqlString.escape(host)}`
+  const id = `${e(user)}@${e(host)}`
 
   let sql = `CREATE USER ${id}`
   if (password.length > 0) {
-    sql += ` IDENTIFIED BY ${SqlString.escape(password)}`
+    sql += ` IDENTIFIED BY ${e(password)}`
   }
   await evalSql(sql, { debug: false })
 
@@ -1071,7 +1065,7 @@ export async function resetUserPrivileges(
   host: string,
   privileges: UserPrivilegeId[]
 ) {
-  const id = `${SqlString.escape(user)}@${SqlString.escape(host)}`
+  const id = `${e(user)}@${e(host)}`
   const current = await getUserDetail(user, host)
 
   const privilegeToRevoke = _.difference(current.grantedPrivileges, privileges)
@@ -1096,8 +1090,8 @@ export async function setUserPassword(
   host: string,
   newPassword: string
 ) {
-  const id = `${SqlString.escape(user)}@${SqlString.escape(host)}`
-  await evalSql(`SET PASSWORD FOR ${id} = ${SqlString.escape(newPassword)}`, {
+  const id = `${e(user)}@${e(host)}`
+  await evalSql(`SET PASSWORD FOR ${id} = ${e(newPassword)}`, {
     debug: false,
   })
 }

@@ -3,6 +3,7 @@ import React from 'react'
 import { HashRouter as Router, Route, Routes } from 'react-router-dom'
 import DatabaseList from './pages/DatabaseList'
 import DBTableList from './pages/DBTableList'
+import CreateTable from './pages/CreateTable'
 import DBTableDetail from './pages/DBTableDetail'
 import DBTableStructure from './pages/DBTableStructure'
 import ExportTables from './pages/ExportTables'
@@ -15,6 +16,7 @@ const App = () => {
           <Route path="/data" element={<DatabaseList />} />
           <Route path="/data/export" element={<ExportTables />} />
           <Route path="/data/tables" element={<DBTableList />} />
+          <Route path="/data/tables/create" element={<CreateTable />} />
           <Route path="/data/table_detail" element={<DBTableDetail />} />
           <Route path="/data/table_structure" element={<DBTableStructure />} />
         </Routes>

@@ -7,6 +7,7 @@ data_manager:
   db_name_input: 数据库名称
   delete_db_title: 删除数据库
 
+  all_tables: 所有表
   create_table: 创建表
   create_view: 创建视图
   view_definition: 视图定义
@@ -25,6 +26,15 @@ data_manager:
   insert_column: 插入列
   insert_column_at_head: 在头部插入列
   insert_column_at_tail: 在尾部插入列
+
+  partition_table: 分区表
+  add_partition_table: 添加分区表
+  partition_type: 分区类型
+  partition_expr: 表达式
+  add_partition: 添加分区
+  partitions: 分区
+  partition_value: 值
+  number_of_partitions: 分区数
 
   indexes: 索引
   add_index: 添加索引

@@ -7,6 +7,7 @@ data_manager:
   db_name_input: Database Name
   delete_db_title: Delete Database
 
+  all_tables: All Tables
   create_table: Create Table
   create_view: Create View
   view_definition: View Definition
@@ -25,6 +26,15 @@ data_manager:
   insert_column: Insert Column
   insert_column_at_head: Insert Column at Head
   insert_column_at_tail: Insert Column at Tail
+
+  partition_table: Partition Table
+  add_partition_table: Add Partition Table
+  partition_type: Partition Type
+  partition_expr: Expression
+  add_partition: Add Partition
+  partitions: Partitions
+  partition_value: Value
+  number_of_partitions: Number Of Partitions
 
   indexes: Indexes
   add_index: Add Index

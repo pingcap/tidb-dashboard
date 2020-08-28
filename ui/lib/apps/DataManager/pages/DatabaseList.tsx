@@ -152,6 +152,11 @@ export default function DatabaseList() {
                   {t('data_manager.export_database')}
                 </a>
               </Menu.Item>
+              {/* <Menu.Item>
+                <a href={`#/data/dump?db=${database.database_name}`}>
+                  {t('data_manager.dump_database')}
+                </a>
+              </Menu.Item> */}
               <Menu.Divider />
               <Menu.Item>
                 <a onClick={() => handleDelete(database.database_name)}>

@@ -6,6 +6,7 @@ import {
   EyeOutlined,
   TableOutlined,
   ExportOutlined,
+  FolderOutlined,
 } from '@ant-design/icons'
 import {
   Button,
@@ -207,8 +208,11 @@ export default function DBTableList() {
             </Button>
             <CreateViewButton db={db} reload={fetchTables} />
             <Button onClick={() => navigate(`/data/export?db=${db}`)}>
-              <ExportOutlined /> {t('data_manager.export_database')}
+              <ExportOutlined /> {t('data_manager.export_database_short')}
             </Button>
+            {/* <Button onClick={() => navigate(`/data/dump?db=${db}`)}>
+              <FolderOutlined /> {t('data_manager.dump_database_short')}
+            </Button> */}
           </Space>
         }
       />

@@ -2,3 +2,9 @@ alerts:
   nav_title: Alerts
   toolbar:
     config: Configure Silences
+    refresh: Refresh
+  column:
+    pending: Pending Alert
+    level: Level
+    name: Name
+    instances: Alert Instances

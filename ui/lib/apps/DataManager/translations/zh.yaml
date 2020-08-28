@@ -84,7 +84,11 @@ data_manager:
     edit_row: 修改行
     delete_row: 删除行
     is_empty_warning: 不能为空
-  export_database: 导出该数据库
+  
+  export_database_short: 导出
+  export_database: 导出该数据库为 CSV 文件
+  dump_database_short: 转储
+  dump_database: 转储该数据库为 SQL 文件
   export_tables:
     title: 导出数据为 CSV
     export_success: 导出成功

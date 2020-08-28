@@ -2,3 +2,9 @@ alerts:
   nav_title: 告警
   toolbar:
     config: 配置后台告警静默
+    refresh: 刷新
+  column:
+    pending: 该项即将触发报警
+    level: 等级
+    name: 名称
+    instances: 告警实例

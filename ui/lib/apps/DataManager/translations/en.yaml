@@ -84,7 +84,10 @@ data_manager:
     delete_row: Delete Row
     is_empty_warning: Can not be empty
 
-  export_database: Export This Database
+  export_database_short: Export
+  export_database: Export this database as CSV file
+  dump_database_short: Dump
+  dump_database: Dump this database as SQL file
   export_tables:
     title: Export as CSV
     export_success: Export Succeeded

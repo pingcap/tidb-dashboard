@@ -80,7 +80,7 @@ export default function DBUserList() {
       key: 'action',
       render: (user) => (
         <>
-          {user.user != 'root' && (
+          {user.user !== 'root' && (
             <>
               <a
                 onClick={showConfirmModal({

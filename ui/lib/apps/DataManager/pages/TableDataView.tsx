@@ -83,8 +83,6 @@ export default function TableDataView() {
   const editCol = (row, index, type) => {
     const { name, isNotNull, canBeEmpty } = row
 
-    console.log('row', row, tableInfo, isNotNull)
-
     return (
       <>
         {type === 'checkbox' ? (
@@ -178,10 +176,8 @@ export default function TableDataView() {
 
   const handleInsertOrEditRow = (values) => {
     const columnsToInsert = tableInfo.columns.map((c, idx) => {
-      console.log('c', c, idx, values, values[`checkbox-${c.name}-${idx}`])
       let _value
       if (values[`checkbox-${c.name}-${idx}`]) {
-        console.log('select null')
         _value = null
       } else {
         _value = values[`input-${c.name}-${idx}`]
@@ -191,8 +187,6 @@ export default function TableDataView() {
         ...{ value: _value },
       }
     })
-
-    console.log('columns to insert', columnsToInsert)
 
     async function insertOrInsertTableRow() {
       try {
@@ -326,7 +320,7 @@ export default function TableDataView() {
     return (
       <>
         {(tableInfo.rows.length > 0 ||
-          (tableInfo.rows.length == 0 && pageNum > 1)) && (
+          (tableInfo.rows.length === 0 && pageNum > 1)) && (
           <Form onFinish={submitPage} style={{ marginTop: '2rem' }}>
             <BackwardOutlined
               onClick={() =>

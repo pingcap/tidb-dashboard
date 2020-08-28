@@ -81,7 +81,9 @@ export default function TableDataView() {
   }, [pageNum])
 
   const editCol = (row, index, type) => {
-    const { name, isNotNull } = row
+    const { name, isNotNull, canBeEmpty } = row
+
+    console.log('row', row, tableInfo, isNotNull)
 
     return (
       <>
@@ -100,7 +102,7 @@ export default function TableDataView() {
               return getFieldValue(`checkbox-${name}-${index}`) ? (
                 <Form.Item
                   name={`input-${name}-${index}`}
-                  rules={isNotNull && [{ required: true }]}
+                  rules={isNotNull ? [{ required: true }] : []}
                   noStyle
                 >
                   <Input disabled />
@@ -110,14 +112,18 @@ export default function TableDataView() {
                   {modalInfo.type === 'editRow' ? (
                     <Form.Item
                       name={`input-${name}-${index}`}
-                      rules={[
-                        {
-                          required: true,
-                          message: t(
-                            'data_manage.select_table.is_empty_warning'
-                          ),
-                        },
-                      ]}
+                      rules={
+                        canBeEmpty
+                          ? []
+                          : [
+                              {
+                                required: true,
+                                message: t(
+                                  'data_manager.select_table.is_empty_warning'
+                                ),
+                              },
+                            ]
+                      }
                       initialValue={modalInfo.rowInfo[index]}
                       noStyle
                     >
@@ -126,7 +132,7 @@ export default function TableDataView() {
                   ) : (
                     <Form.Item
                       name={`input-${name}-${index}`}
-                      rules={[{ required: true }]}
+                      rules={canBeEmpty ? [] : [{ required: true }]}
                       noStyle
                     >
                       <Input />
@@ -172,11 +178,21 @@ export default function TableDataView() {
 
   const handleInsertOrEditRow = (values) => {
     const columnsToInsert = tableInfo.columns.map((c, idx) => {
+      console.log('c', c, idx, values, values[`checkbox-${c.name}-${idx}`])
+      let _value
+      if (values[`checkbox-${c.name}-${idx}`]) {
+        console.log('select null')
+        _value = null
+      } else {
+        _value = values[`input-${c.name}-${idx}`]
+      }
       return {
         ...{ columnName: c.name },
-        ...{ value: values[`input-${c.name}-${idx}`] },
+        ...{ value: _value },
       }
     })
+
+    console.log('columns to insert', columnsToInsert)
 
     async function insertOrInsertTableRow() {
       try {
@@ -249,7 +265,7 @@ export default function TableDataView() {
 
   const onCancel = () => {
     setFormModalVisible(false)
-    setFormModalVisible(false)
+    setConfirmModalVisible(false)
   }
 
   const FormModal = () => {
@@ -262,6 +278,7 @@ export default function TableDataView() {
         }
         visible={formModalVisible}
         onCancel={onCancel}
+        width={1024}
         footer={null}
       >
         <InsertRowFormOnModal />
@@ -334,7 +351,7 @@ export default function TableDataView() {
               tableInfo.allRowsBeforeTruncation < tableInfo.rows.length && (
                 <Tooltip
                   placement="leftTop"
-                  title={`该表仅能显示前 ${tableInfo.allRowsBeforeTruncation} 行记录，可使用 SQL 语句自行查询更多行。`}
+                  title={t('data_manager.select_table.pagination_tips')}
                 >
                   <QuestionCircleOutlined />
                 </Tooltip>

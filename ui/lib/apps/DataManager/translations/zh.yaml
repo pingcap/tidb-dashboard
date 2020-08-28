@@ -84,7 +84,8 @@ data_manager:
     edit_row: 修改行
     delete_row: 删除行
     is_empty_warning: 不能为空
-  
+    pagination_tips: 该表仅能显示前 {{ allRowsBeforeTruncation }} 行记录，可使用 SQL 语句自行查询更多行
+
   export_database_short: 导出
   export_database: 导出该数据库为 CSV 文件
   dump_database_short: 转储

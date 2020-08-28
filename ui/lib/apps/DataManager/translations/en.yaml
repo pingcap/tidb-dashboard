@@ -83,6 +83,7 @@ data_manager:
     edit_row: Edit Row
     delete_row: Delete Row
     is_empty_warning: Can not be empty
+    pagination_tips: This table only display {{ allRowsBeforeTruncation }} rows, can use SQL statement to query more
 
   export_database_short: Export
   export_database: Export this database as CSV file

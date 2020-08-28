@@ -4,8 +4,14 @@ import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { orderBy } from 'lodash'
-import { CheckCircleFilled, WarningFilled } from '@ant-design/icons'
-import { Space, Button } from 'antd'
+import {
+  CheckCircleFilled,
+  WarningFilled,
+  ExclamationCircleOutlined,
+  LoadingOutlined,
+  ReloadOutlined,
+} from '@ant-design/icons'
+import { Space, Button, Tooltip, Spin } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
@@ -21,7 +27,7 @@ const levelToOrder = {
 export default function () {
   const { t } = useTranslation()
 
-  const { data, isLoading } = useClientRequest((cancelToken) => {
+  const { data, isLoading, sendRequest } = useClientRequest((cancelToken) => {
     return client.getInstance().metricsGetAlerts({ cancelToken })
   })
 
@@ -34,6 +40,10 @@ export default function () {
       window.location.href = `http://${amData.ip}:${amData.port}`
     }
   }, [amData])
+
+  const handleRefresh = useCallback(() => {
+    sendRequest()
+  }, [sendRequest])
 
   const items = useMemo(() => {
     if (!data) {
@@ -48,7 +58,12 @@ export default function () {
       for (const rule of group?.rules ?? []) {
         if (rule?.type === 'alerting') {
           // pseudo field for sorting
-          rule._hasAlerts = rule?.alerts?.length > 0 ? 1 : 0
+          rule._hasAlerts =
+            rule?.alerts?.filter((a) => a.state === 'firing').length > 0 ? 1 : 0
+          rule._hasPendingAlerts =
+            rule?.alerts?.filter((a) => a.state === 'pending').length > 0
+              ? 1
+              : 0
           rule._levelOrder = levelToOrder[rule.labels?.level] ?? 0
           items.push(rule)
         }
@@ -57,8 +72,8 @@ export default function () {
 
     return orderBy(
       items,
-      ['_hasAlerts', '_levelOrder', 'name'],
-      ['desc', 'desc', 'asc']
+      ['_hasAlerts', '_hasPendingAlerts', '_levelOrder', 'name'],
+      ['desc', 'desc', 'desc', 'asc']
     )
   }, [data])
 
@@ -66,34 +81,42 @@ export default function () {
     const c: IColumn[] = [
       {
         key: 'level',
-        name: 'Level',
+        name: t('alerts.column.level'),
         minWidth: 150,
         maxWidth: 150,
         onRender: (item) => {
-          const icon = !item._hasAlerts ? (
-            <CheckCircleFilled className={styles.success} />
-          ) : (
-            <WarningFilled
-              className={styles[item.labels?.level ?? 'unknown']}
-            />
-          )
+          const icon =
+            !item._hasAlerts && !item._hasPendingAlerts ? (
+              <CheckCircleFilled className={styles.success} />
+            ) : (
+              <WarningFilled
+                className={styles[item.labels?.level ?? 'unknown']}
+              />
+            )
+
+          const suffix = item._hasPendingAlerts ? (
+            <Tooltip title={t('alerts.column.pending')}>
+              <ExclamationCircleOutlined />
+            </Tooltip>
+          ) : null
+
           return (
             <span>
-              {icon} {item.labels?.level ?? 'unknown'}
+              {icon} {item.labels?.level ?? 'unknown'} {suffix}
             </span>
           )
         },
       },
       {
         key: 'name',
-        name: 'Name',
+        name: t('alerts.column.name'),
         minWidth: 150,
         maxWidth: 300,
         fieldName: 'name',
       },
       {
         key: 'alert_instances',
-        name: 'Alert Instances',
+        name: t('alerts.column.instances'),
         minWidth: 150,
         maxWidth: 300,
         onRender: (item) => {
@@ -117,6 +140,16 @@ export default function () {
                 <Button onClick={handleAlertManagerLinkClick}>
                   {t('alerts.toolbar.config')}
                 </Button>
+                <Button onClick={handleRefresh}>
+                  <ReloadOutlined /> {t('alerts.toolbar.refresh')}
+                </Button>
+                {isLoading && (
+                  <Spin
+                    indicator={
+                      <LoadingOutlined style={{ fontSize: 24 }} spin />
+                    }
+                  />
+                )}
               </Space>
             </Card>
           </div>

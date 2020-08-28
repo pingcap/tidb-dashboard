@@ -78,7 +78,10 @@ data_manager:
     view_def: 视图定义
 
   head_back_all_databases: 所有数据库
-  export_database: 导出该数据库
+  export_database_short: 导出
+  export_database: 导出该数据库为 CSV 文件
+  dump_database_short: 转储
+  dump_database: 转储该数据库为 SQL 文件
   export_tables:
     title: 导出数据为 CSV
     export_success: 导出成功

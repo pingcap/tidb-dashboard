@@ -7,6 +7,7 @@ import CreateTable from './pages/CreateTable'
 import DBTableDetail from './pages/DBTableDetail'
 import DBTableStructure from './pages/DBTableStructure'
 import ExportTables from './pages/ExportTables'
+import DumpTables from './pages/DumpTables'
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
         <Routes>
           <Route path="/data" element={<DatabaseList />} />
           <Route path="/data/export" element={<ExportTables />} />
+          <Route path="/data/dump" element={<DumpTables />} />
           <Route path="/data/tables" element={<DBTableList />} />
           <Route path="/data/tables/create" element={<CreateTable />} />
           <Route path="/data/table_detail" element={<DBTableDetail />} />

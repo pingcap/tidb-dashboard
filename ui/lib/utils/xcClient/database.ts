@@ -116,6 +116,7 @@ export type TableInfoColumn = {
   name: string
   fieldType: string
   isNotNull: boolean
+  canBeEmpty: boolean
   defaultValue: string | null
   comment: string
 }
@@ -173,13 +174,21 @@ export async function getTableInfo(
 
   const name = `${eid(dbName)}.${eid(tableName)}`
   const columnsData = await evalSqlObj(`SHOW FULL COLUMNS FROM ${name}`)
-  const columns = columnsData.map((column) => ({
-    name: column.FIELD,
-    fieldType: column.TYPE,
-    isNotNull: column.NULL === 'NO',
-    defaultValue: column.DEFAULT,
-    comment: column.COMMENT,
-  }))
+
+  const columns = columnsData.map((column) => {
+    const canBeEmpty = isFieldTypeNameAcceptEmptyContent(
+      (column.TYPE ?? '').toUpperCase().split('(')[0]
+    )
+
+    return {
+      name: column.FIELD,
+      fieldType: column.TYPE,
+      isNotNull: column.NULL === 'NO',
+      canBeEmpty,
+      defaultValue: column.DEFAULT,
+      comment: column.COMMENT,
+    }
+  })
 
   const indexesData = await evalSqlObj(`SHOW INDEX FROM ${name}`)
   const indexesByName = _.groupBy(indexesData, 'KEY_NAME')
@@ -420,6 +429,25 @@ export function isFieldTypeNameSupportDecimal(typeName: FieldTypeName) {
 
 export function isFieldTypeNameLengthRequired(typeName: FieldTypeName) {
   return [FieldTypeName.VARCHAR, FieldTypeName.VARBINARY].indexOf(typeName) > -1
+}
+
+export function isFieldTypeNameAcceptEmptyContent(typeName: FieldTypeName) {
+  return (
+    [
+      FieldTypeName.CHAR,
+      FieldTypeName.VARCHAR,
+      FieldTypeName.BINARY,
+      FieldTypeName.VARBINARY,
+      FieldTypeName.TINYBLOB,
+      FieldTypeName.TINYTEXT,
+      FieldTypeName.BLOB,
+      FieldTypeName.TEXT,
+      FieldTypeName.MEDIUMBLOB,
+      FieldTypeName.MEDIUMTEXT,
+      FieldTypeName.LONGBLOB,
+      FieldTypeName.LONGTEXT,
+    ].indexOf(typeName) > -1
+  )
 }
 
 function buildFieldTypeDefinition(def: NewColumnFieldTypeDefinition): string {

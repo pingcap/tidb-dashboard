@@ -86,7 +86,11 @@ export default function TableDataView() {
     return (
       <>
         {type === 'checkbox' ? (
-          <Form.Item name={`checkbox-${name}-${index}`} valuePropName="checked">
+          <Form.Item
+            name={`checkbox-${name}-${index}`}
+            valuePropName="checked"
+            initialValue={modalInfo.rowInfo[index] ? false : true}
+          >
             <Checkbox disabled={isNotNull ? true : false} />
           </Form.Item>
         ) : (

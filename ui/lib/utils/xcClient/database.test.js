@@ -119,6 +119,7 @@ it('get table info', async () => {
       {
         name: 'id',
         fieldType: 'int(11)',
+        canBeEmpty: false,
         isNotNull: true,
         defaultValue: null,
         comment: '',
@@ -126,6 +127,7 @@ it('get table info', async () => {
       {
         name: 'c_char_1',
         fieldType: 'varchar(255)',
+        canBeEmpty: true,
         isNotNull: true,
         defaultValue: null,
         comment: '',
@@ -133,6 +135,7 @@ it('get table info', async () => {
       {
         name: 'c_char_2',
         fieldType: 'varchar(10)',
+        canBeEmpty: true,
         isNotNull: false,
         defaultValue: 'abc',
         comment: '',
@@ -140,6 +143,7 @@ it('get table info', async () => {
       {
         name: 'c_date',
         fieldType: 'date',
+        canBeEmpty: false,
         isNotNull: false,
         defaultValue: null,
         comment: '',
@@ -147,6 +151,7 @@ it('get table info', async () => {
       {
         name: 'c_int_1',
         fieldType: 'tinyint(3) unsigned',
+        canBeEmpty: false,
         isNotNull: true,
         defaultValue: '3',
         comment: '',
@@ -154,6 +159,7 @@ it('get table info', async () => {
       {
         name: 'c_int_2',
         fieldType: 'tinyint(3) unsigned',
+        canBeEmpty: false,
         isNotNull: true,
         defaultValue: null,
         comment: '',
@@ -161,6 +167,7 @@ it('get table info', async () => {
       {
         name: 'c_text',
         fieldType: 'text',
+        canBeEmpty: true,
         isNotNull: false,
         defaultValue: null,
         comment: 'description column',
@@ -168,6 +175,7 @@ it('get table info', async () => {
       {
         name: 'c_timestamp',
         fieldType: 'timestamp',
+        canBeEmpty: false,
         isNotNull: false,
         defaultValue: 'CURRENT_TIMESTAMP',
         comment: '',
@@ -204,6 +212,7 @@ it('get table info', async () => {
       {
         name: 'a',
         fieldType: 'int(11)',
+        canBeEmpty: false,
         isNotNull: true,
         defaultValue: null,
         comment: '',
@@ -211,6 +220,7 @@ it('get table info', async () => {
       {
         name: 'b',
         fieldType: 'varchar(100)',
+        canBeEmpty: true,
         isNotNull: false,
         defaultValue: null,
         comment: '',
@@ -218,6 +228,7 @@ it('get table info', async () => {
       {
         name: 'c',
         fieldType: 'int(11)',
+        canBeEmpty: false,
         isNotNull: true,
         defaultValue: null,
         comment: '',
@@ -258,6 +269,7 @@ it('get table info', async () => {
       {
         name: 'id',
         fieldType: 'int(11)',
+        canBeEmpty: false,
         isNotNull: true,
         defaultValue: null,
         comment: '',
@@ -265,6 +277,7 @@ it('get table info', async () => {
       {
         name: 'c',
         fieldType: 'varchar(255)',
+        canBeEmpty: true,
         isNotNull: false,
         defaultValue: null,
         comment: '',
@@ -272,6 +285,7 @@ it('get table info', async () => {
       {
         name: 'd',
         fieldType: 'varchar(255)',
+        canBeEmpty: true,
         isNotNull: false,
         defaultValue: null,
         comment: '',
@@ -279,6 +293,7 @@ it('get table info', async () => {
       {
         name: 'e',
         fieldType: 'varchar(255)',
+        canBeEmpty: true,
         isNotNull: false,
         defaultValue: null,
         comment: '',
@@ -286,6 +301,7 @@ it('get table info', async () => {
       {
         name: 'g',
         fieldType: 'int(255) unsigned',
+        canBeEmpty: false,
         isNotNull: false,
         defaultValue: null,
         comment: '',
@@ -347,6 +363,7 @@ it('add and drop column', async () => {
       {
         name: 'a',
         fieldType: 'int(11)',
+        canBeEmpty: false,
         isNotNull: false,
         defaultValue: null,
         comment: '',
@@ -354,6 +371,7 @@ it('add and drop column', async () => {
       {
         name: colName,
         fieldType: 'int(11)',
+        canBeEmpty: false,
         isNotNull: false,
         defaultValue: null,
         comment: '',
@@ -374,6 +392,7 @@ it('add and drop column', async () => {
       {
         name: 'a',
         fieldType: 'int(11)',
+        canBeEmpty: false,
         isNotNull: false,
         defaultValue: null,
         comment: '',
@@ -411,6 +430,7 @@ it('add column with auto fixed length', async () => {
     expect(d.columns[0]).toEqual({
       name: colName,
       fieldType: 'varchar(255)',
+      canBeEmpty: true,
       isNotNull: false,
       defaultValue: null,
       comment: '',
@@ -434,6 +454,7 @@ it('add column with auto fixed length', async () => {
     expect(d.columns[1]).toEqual({
       name: colName2,
       fieldType: 'year(4)',
+      canBeEmpty: false,
       isNotNull: false,
       defaultValue: null,
       comment: 'This is a comment',
@@ -467,6 +488,7 @@ it('add column with default values and complex types', async () => {
     expect(d.columns[0]).toEqual({
       name: colName,
       fieldType: 'float(10,5) unsigned',
+      canBeEmpty: false,
       isNotNull: true,
       defaultValue: '123.4',
       comment: '',
@@ -545,6 +567,7 @@ it('create simple table', async () => {
     {
       name: 'a',
       fieldType: 'int(11)',
+      canBeEmpty: false,
       isNotNull: false,
       defaultValue: null,
       comment: '',
@@ -578,6 +601,7 @@ it('create table with primary key', async () => {
     {
       name: 'a',
       fieldType: 'int(11)',
+      canBeEmpty: false,
       isNotNull: true,
       defaultValue: null,
       comment: '',
@@ -625,6 +649,7 @@ it('create table with multi column primary key', async () => {
     {
       name: 'a',
       fieldType: 'int(11)',
+      canBeEmpty: false,
       isNotNull: true,
       defaultValue: null,
       comment: '',
@@ -632,6 +657,7 @@ it('create table with multi column primary key', async () => {
     {
       name: 'b',
       fieldType: 'varchar(255)',
+      canBeEmpty: true,
       isNotNull: true,
       defaultValue: null,
       comment: '',
@@ -639,6 +665,7 @@ it('create table with multi column primary key', async () => {
     {
       name: 'c',
       fieldType: 'int(11)',
+      canBeEmpty: false,
       isNotNull: false,
       defaultValue: null,
       comment: '',
@@ -678,6 +705,7 @@ it('create table with comment', async () => {
     {
       name: 'a',
       fieldType: 'int(11)',
+      canBeEmpty: false,
       isNotNull: false,
       defaultValue: null,
       comment: '',
@@ -1110,6 +1138,7 @@ it('escape correctly', async () => {
       {
         name: 'foo',
         fieldType: 'int(11)',
+        canBeEmpty: false,
         isNotNull: false,
         defaultValue: null,
         comment: '',

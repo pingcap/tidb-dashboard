@@ -1,33 +1,30 @@
 import * as xcClient from '@lib/utils/xcClient/database'
 
 import {
+  ArrowLeftOutlined,
+  CheckOutlined,
+  CloseSquareOutlined,
+  DownOutlined,
+  MinusSquareTwoTone,
+  PlusOutlined,
+} from '@ant-design/icons'
+import {
   Button,
   Checkbox,
+  Descriptions,
+  Dropdown,
   Form,
   Input,
+  Menu,
   Modal,
-  PageHeader,
   Select,
   Space,
   Table,
-  notification,
   Typography,
-  Divider,
-  Dropdown,
-  Menu,
 } from 'antd'
-import {
-  CloseSquareOutlined,
-  MinusSquareTwoTone,
-  PlusOutlined,
-  PlusSquareOutlined,
-  ArrowLeftOutlined,
-  CheckOutlined,
-  DownOutlined,
-} from '@ant-design/icons'
+import { Card, Head, Pre } from '@lib/components'
 import React, { useEffect, useState } from 'react'
 
-import { Card, Head, Pre } from '@lib/components'
 import { parseColumnRelatedValues } from '@lib/utils/xcClient/util'
 import { useNavigate } from 'react-router-dom'
 import useQueryParams from '@lib/utils/useQueryParams'
@@ -56,6 +53,7 @@ export default function DBTableStructure() {
 
   useEffect(() => {
     fetchTableInfo()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const showModal = (info) => () => {
@@ -380,6 +378,65 @@ export default function DBTableStructure() {
           )}
         </Card>
       )}
+
+      {tableInfo?.partition && (
+        <Card title={t('data_manager.partition_table')}>
+          <Descriptions layout="vertical" bordered>
+            <Descriptions.Item label={t('data_manager.partition_type')}>
+              {tableInfo.partition.type}
+            </Descriptions.Item>
+            <Descriptions.Item label={t('data_manager.partition_expr')}>
+              {tableInfo.partition.expr}
+            </Descriptions.Item>
+            {tableInfo.partition.type === xcClient.PartitionType.RANGE && (
+              <Descriptions.Item label={t('data_manager.partitions')}>
+                <Table
+                  dataSource={tableInfo.partition.partitions}
+                  columns={[
+                    {
+                      title: t('data_manager.name'),
+                      dataIndex: 'name',
+                      key: 'name',
+                    },
+                    {
+                      title: t('data_manager.partition_value'),
+                      dataIndex: 'boundaryValue',
+                      key: 'boundaryValue',
+                      render: (_: any, record: any) =>
+                        record.boundaryValue || 'MAXVALUE',
+                    },
+                  ]}
+                />
+              </Descriptions.Item>
+            )}
+            {tableInfo.partition.type === xcClient.PartitionType.HASH && (
+              <Descriptions.Item label={t('data_manager.number_of_partitions')}>
+                {tableInfo.partition.numberOfPartitions}
+              </Descriptions.Item>
+            )}
+            {tableInfo.partition.type === xcClient.PartitionType.LIST && (
+              <Descriptions.Item label={t('data_manager.partitions')}>
+                <Table
+                  dataSource={tableInfo.partition.partitions}
+                  columns={[
+                    {
+                      title: t('data_manager.name'),
+                      dataIndex: 'name',
+                      key: 'name',
+                    },
+                    {
+                      title: t('data_manager.value'),
+                      dataIndex: 'values',
+                      key: 'values',
+                    },
+                  ]}
+                />
+              </Descriptions.Item>
+            )}
+          </Descriptions>
+        </Card>
+      )}
+
       <Modal
         visible={visible}
         title={modalInfo.title}

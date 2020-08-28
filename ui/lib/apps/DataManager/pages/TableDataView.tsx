@@ -110,7 +110,14 @@ export default function TableDataView() {
                   {modalInfo.type === 'editRow' ? (
                     <Form.Item
                       name={`input-${name}-${index}`}
-                      rules={[{ required: true }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: t(
+                            'data_manage.select_table.is_empty_warning'
+                          ),
+                        },
+                      ]}
                       initialValue={modalInfo.rowInfo[index]}
                       noStyle
                     >

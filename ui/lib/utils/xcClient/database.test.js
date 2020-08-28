@@ -1080,3 +1080,40 @@ it('create table with list partition and drop partition', async () => {
   }
   await Database.dropTable(DB_NAME, tableName)
 })
+
+it('escape correctly', async () => {
+  const tableName = newId('table') + '.abc`def'
+  await Database.createTable({
+    dbName: DB_NAME,
+    tableName,
+    columns: [
+      {
+        name: 'foo',
+        fieldType: {
+          typeName: Database.FieldTypeName.INT,
+        },
+      },
+    ],
+  })
+  {
+    const d = await Database.getTables(DB_NAME)
+    expect(d.tables).toContainEqual(
+      expect.objectContaining({
+        name: tableName,
+        type: 'BASE TABLE',
+      })
+    )
+  }
+  {
+    const d = await Database.getTableInfo(DB_NAME, tableName)
+    expect(d.columns).toEqual([
+      {
+        name: 'foo',
+        fieldType: 'int(11)',
+        isNotNull: false,
+        defaultValue: null,
+        comment: '',
+      },
+    ])
+  }
+})

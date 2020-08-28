@@ -7,6 +7,7 @@ data_manager:
   db_name_input: 数据库名称
   delete_db_title: 删除数据库
 
+  all_tables: 所有表
   create_table: 创建表
   create_view: 创建视图
   view_definition: 视图定义
@@ -25,6 +26,15 @@ data_manager:
   insert_column: 插入列
   insert_column_at_head: 在头部插入列
   insert_column_at_tail: 在尾部插入列
+
+  partition_table: 分区表
+  add_partition_table: 添加分区表
+  partition_type: 分区类型
+  partition_expr: 表达式
+  add_partition: 添加分区
+  partitions: 分区
+  partition_value: 值
+  number_of_partitions: 分区数
 
   indexes: 索引
   add_index: 添加索引
@@ -53,6 +63,7 @@ data_manager:
     op_rename: 修改名称
     op_drop: 删除该表
     op_drop_view: 删除该视图
+    op_export: 导出数据
   db_structure:
     op_insert: 在当前列之后插入列
     op_drop: 删除当前列
@@ -73,3 +84,14 @@ data_manager:
     edit_row: 修改行
     delete_row: 删除行
     is_empty_warning: 不能为空
+  export_database: 导出该数据库
+  export_tables:
+    title: 导出数据为 CSV
+    export_success: 导出成功
+    export_download: 下载
+    export_failed: 导出失败
+    form:
+      tables: 表
+      tables_placeholder: 选择需要导出的表
+      select_all: 选择所有表
+      submit: 开始导出

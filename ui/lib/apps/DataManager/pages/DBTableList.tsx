@@ -1,40 +1,29 @@
 import * as xcClient from '@lib/utils/xcClient/database'
 
 import {
+  ArrowLeftOutlined,
+  DownOutlined,
+  EyeOutlined,
+  TableOutlined,
+  ExportOutlined,
+} from '@ant-design/icons'
+import {
   Button,
-  Checkbox,
-  Divider,
+  Dropdown,
   Form,
   Input,
+  Menu,
   Modal,
-  PageHeader,
-  Select,
   Space,
   Table,
   Typography,
-  notification,
-  Dropdown,
-  Menu,
 } from 'antd'
-import {
-  MinusSquareTwoTone,
-  PlusOutlined,
-  ArrowLeftOutlined,
-  TableOutlined,
-  EyeOutlined,
-  EllipsisOutlined,
-  DownOutlined,
-} from '@ant-design/icons'
+import { Card, Head, Pre } from '@lib/components'
 import React, { useEffect, useState } from 'react'
 
-import { AppstoreOutlined } from '@ant-design/icons'
-import { Card, Head, Pre } from '@lib/components'
-import { parseColumnRelatedValues } from '@lib/utils/xcClient/util'
 import { useNavigate } from 'react-router-dom'
 import useQueryParams from '@lib/utils/useQueryParams'
 import { useTranslation } from 'react-i18next'
-
-const { Option } = Select
 
 function CreateViewButton({ db, reload }) {
   const { t } = useTranslation()
@@ -116,6 +105,7 @@ export default function DBTableList() {
 
   useEffect(() => {
     fetchTables()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const showModal = (info) => () => {
@@ -124,44 +114,7 @@ export default function DBTableList() {
   }
 
   const handleOk = async (values) => {
-    let _values
-    if (modalInfo.type === 'newTable') {
-      if (!values.columns) {
-        Modal.error({
-          content: `${t('data_manager.please_input')}${t(
-            'data_manager.columns'
-          )}`,
-        })
-        return
-      }
-
-      const columns = values.columns.map(parseColumnRelatedValues)
-      _values = {
-        ...values,
-        ...{
-          columns,
-          primaryKeys: columns
-            .map((c) => (c.isPrimaryKey ? { columnName: c.name } : undefined))
-            .filter((d) => d !== undefined),
-        },
-      }
-    }
-
     switch (modalInfo.type) {
-      case 'newTable':
-        console.log(_values)
-        try {
-          await xcClient.createTable({ ..._values, ...{ dbName: db } })
-          Modal.success({
-            content: t('data_manager.create_success_txt'),
-          })
-        } catch (e) {
-          Modal.error({
-            title: t('data_manager.create_failed_txt'),
-            content: <Pre>{e.message}</Pre>,
-          })
-        }
-        break
       case 'editTable':
         try {
           await xcClient.renameTable(db, modalInfo.tableName, values.tableName)
@@ -244,20 +197,18 @@ export default function DBTableList() {
         title={db}
         back={
           <a onClick={() => navigate(-1)}>
-            <ArrowLeftOutlined /> {t('data_manager.head_back_all_databases')}
+            <ArrowLeftOutlined /> {t('data_manager.all_databases')}
           </a>
         }
         titleExtra={
           <Space>
-            <Button
-              onClick={showModal({
-                title: t('data_manager.create_table'),
-                type: 'newTable',
-              })}
-            >
+            <Button href={`#/data/tables/create?db=${db}`}>
               <TableOutlined /> {t('data_manager.create_table')}
             </Button>
             <CreateViewButton db={db} reload={fetchTables} />
+            <Button onClick={() => navigate(`/data/export?db=${db}`)}>
+              <ExportOutlined /> {t('data_manager.export_database')}
+            </Button>
           </Space>
         }
       />
@@ -302,6 +253,14 @@ export default function DBTableList() {
                               {t('data_manager.view_db.op_structure')}
                             </a>
                           </Menu.Item>
+                          <Menu.Item>
+                            <a
+                              href={`#/data/export?db=${db}&table=${record.name}`}
+                            >
+                              {t('data_manager.view_db.op_export')}
+                            </a>
+                          </Menu.Item>
+                          <Menu.Divider />
                           {record.type !== xcClient.TableType.SYSTEM_VIEW && (
                             <Menu.Item>
                               <a onClick={handleEditTable(record.name)}>
@@ -356,165 +315,6 @@ export default function DBTableList() {
           }}
           onFinish={handleOk}
         >
-          {modalInfo.type === 'newTable' && (
-            <>
-              <Form.Item
-                label={t('data_manager.name')}
-                name="tableName"
-                rules={[{ required: true }]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item label={t('data_manager.comment')} name="comment">
-                <Input />
-              </Form.Item>
-              <Form.List name="columns">
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map((f, i) => (
-                      <Form.Item
-                        key={f.key}
-                        {...(i > 0
-                          ? {
-                              wrapperCol: {
-                                offset: 4,
-                              },
-                            }
-                          : null)}
-                        label={i === 0 ? t('data_manager.columns') : ''}
-                      >
-                        <Form.Item
-                          name={[f.name, 'name']}
-                          fieldKey={[f.fieldKey, 'name'] as any}
-                          rules={[
-                            {
-                              required: true,
-                              message: `${t('data_manager.please_input')}${t(
-                                'data_manager.name'
-                              )}`,
-                            },
-                          ]}
-                        >
-                          <Input placeholder={t('data_manager.name')} />
-                        </Form.Item>
-                        <Form.Item>
-                          <Space
-                            style={{ display: 'flex', alignItems: 'center' }}
-                          >
-                            <Form.Item
-                              name={[f.name, 'typeName']}
-                              fieldKey={[f.fieldKey, 'typeName'] as any}
-                              rules={[
-                                {
-                                  required: true,
-                                  message: `${t(
-                                    'data_manager.please_input'
-                                  )}${t('data_manager.field_type')}`,
-                                },
-                              ]}
-                            >
-                              <Select
-                                style={{ width: 150 }}
-                                placeholder={t('data_manager.field_type')}
-                              >
-                                {Object.values(xcClient.FieldTypeName).map(
-                                  (t) => (
-                                    <Option key={t} value={t}>
-                                      {t}
-                                    </Option>
-                                  )
-                                )}
-                              </Select>
-                            </Form.Item>
-
-                            <Form.Item
-                              name={[f.name, 'length']}
-                              fieldKey={[f.fieldKey, 'length'] as any}
-                            >
-                              <Input
-                                type="number"
-                                placeholder={t('data_manager.length')}
-                              />
-                            </Form.Item>
-
-                            <Form.Item
-                              name={[f.name, 'decimals']}
-                              fieldKey={[f.fieldKey, 'decimals'] as any}
-                            >
-                              <Input
-                                type="number"
-                                placeholder={t('data_manager.decimal')}
-                              />
-                            </Form.Item>
-
-                            <Form.Item
-                              name={[f.name, 'isNotNull']}
-                              fieldKey={[f.fieldKey, 'isNotNull'] as any}
-                              valuePropName="checked"
-                            >
-                              <Checkbox>{t('data_manager.not_null')}?</Checkbox>
-                            </Form.Item>
-
-                            <Form.Item
-                              name={[f.name, 'isUnsigned']}
-                              fieldKey={[f.fieldKey, 'isUnsigned'] as any}
-                              valuePropName="checked"
-                            >
-                              <Checkbox>{t('data_manager.unsigned')}?</Checkbox>
-                            </Form.Item>
-                          </Space>
-                        </Form.Item>
-                        <Form.Item
-                          name={[f.name, 'isAutoIncrement']}
-                          fieldKey={[f.fieldKey, 'isAutoIncrement'] as any}
-                          valuePropName="checked"
-                        >
-                          <Checkbox>
-                            {t('data_manager.auto_increment')}?
-                          </Checkbox>
-                        </Form.Item>
-                        <Form.Item
-                          name={[f.name, 'isPrimaryKey']}
-                          fieldKey={[f.fieldKey, 'isPrimaryKey'] as any}
-                          valuePropName="checked"
-                        >
-                          <Checkbox>{t('data_manager.primary_key')}?</Checkbox>
-                        </Form.Item>
-                        <Form.Item
-                          name={[f.name, 'defaultValue']}
-                          fieldKey={[f.fieldKey, 'defaultValue'] as any}
-                        >
-                          <Input
-                            placeholder={t('data_manager.default_value')}
-                          />
-                        </Form.Item>
-                        <Form.Item
-                          name={[f.name, 'comment']}
-                          fieldKey={[f.fieldKey, 'comment'] as any}
-                        >
-                          <Input placeholder={t('data_manager.comment')} />
-                        </Form.Item>
-                        <MinusSquareTwoTone
-                          twoToneColor="#ff4d4f"
-                          onClick={() => remove(f.name)}
-                        />
-                      </Form.Item>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => {
-                          add()
-                        }}
-                      >
-                        <PlusOutlined /> {t('data_manager.add_column')}
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
-            </>
-          )}
           {modalInfo.type === 'editTable' && (
             <>
               <Form.Item

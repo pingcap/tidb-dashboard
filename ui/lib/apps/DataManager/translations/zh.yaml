@@ -67,3 +67,9 @@ data_manager:
     view_def: 视图定义
 
   head_back_all_databases: 所有数据库
+  head_back_all_tables: 所有表
+  select_table:
+    insert_row: 插入行
+    edit_row: 修改行
+    delete_row: 删除行
+    is_empty_warning: 不能为空

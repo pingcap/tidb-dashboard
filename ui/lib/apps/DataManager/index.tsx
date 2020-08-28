@@ -5,6 +5,7 @@ import DatabaseList from './pages/DatabaseList'
 import DBTableList from './pages/DBTableList'
 import DBTableDetail from './pages/DBTableDetail'
 import DBTableStructure from './pages/DBTableStructure'
+import TableDataView from './pages/TableDataView'
 
 const App = () => {
   return (
@@ -12,6 +13,7 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/data" element={<DatabaseList />} />
+          <Route path="/data/view" element={<TableDataView />} />
           <Route path="/data/tables" element={<DBTableList />} />
           <Route path="/data/table_detail" element={<DBTableDetail />} />
           <Route path="/data/table_structure" element={<DBTableStructure />} />

@@ -271,6 +271,11 @@ export default function DBTableList() {
                 title: t('data_manager.view_db.name'),
                 dataIndex: 'name',
                 key: 'name',
+                render: (name) => {
+                  return (
+                    <a href={`#/data/view?db=${db}&table=${name}`}>{name}</a>
+                  )
+                },
               },
               {
                 title: t('data_manager.view_db.type'),

@@ -66,3 +66,9 @@ data_manager:
     view_def: View Definition
 
   head_back_all_databases: All databases
+  head_back_all_tables: All tables
+  select_table:
+    insert_row: Insert Row
+    edit_row: Edit Row
+    delete_row: Delete Row
+    is_empty_warning: Can not be empty

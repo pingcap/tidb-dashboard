@@ -265,6 +265,146 @@ function avgTotalProcessColumn(
   )
 }
 
+function avgTotalWaitColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_wait_time',
+    'max_wait_time',
+    'total_wait_time',
+    'ns',
+    rows
+  )
+}
+
+function avgBackoffColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_backoff_time',
+    'max_backoff_time',
+    'backoff_time',
+    'ns',
+    rows
+  )
+}
+
+function avgWriteKeysColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_write_keys',
+    'max_write_keys',
+    'write_keys',
+    'short',
+    rows
+  )
+}
+
+function avgProcessedKeysColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_processed_keys',
+    'max_processed_keys',
+    'processed_keys',
+    'short',
+    rows
+  )
+}
+
+function avgTotalKeysColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_total_keys',
+    'max_total_keys',
+    'total_keys',
+    'short',
+    rows
+  )
+}
+
+function avgPreWriteColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_prewrite_time',
+    'max_prewrite_time',
+    'prewrite_time',
+    'ns',
+    rows
+  )
+}
+
+function avgCommitColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_commit_time',
+    'max_commit_time',
+    'commit_time',
+    'ns',
+    rows
+  )
+}
+
+function avgGetCommitTsColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_get_commit_ts_time',
+    'max_get_commit_ts_time',
+    'get_commit_ts_time',
+    'ns',
+    rows
+  )
+}
+
+function avgCommitBackoffColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_commit_backoff_time',
+    'max_commit_backoff_time',
+    'commit_backoff_time',
+    'ns',
+    rows
+  )
+}
+
+function avgResolveLockColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_resolve_lock_time',
+    'max_resolve_lock_time',
+    'resolve_lock_time',
+    'ns',
+    rows
+  )
+}
+
+function avgLocalLatchWaitColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_local_latch_wait_time',
+    'max_local_latch_wait_time',
+    'local_latch_wait_time',
+    'ns',
+    rows
+  )
+}
+
+function avgWriteSizeColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_write_size',
+    'max_write_size',
+    'write_size',
+    'bytes',
+    rows
+  )
+}
+
+function avgPreWriteRegionsColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_prewrite_regions',
+    'max_prewrite_regions',
+    'prewrite_regions',
+    'short',
+    rows
+  )
+}
+
+function avgTxnRetryColumn(rows?: any[]): IColumn {
+  return avgMaxColumn(
+    'avg_txn_retry',
+    'max_txn_retry',
+    'txn_retry',
+    'short',
+    rows
+  )
+}
+
 function relatedSchemasColumn(
   _rows?: { related_schemas?: string }[] // used for type check only
 ): IColumn {
@@ -340,6 +480,21 @@ export function statementColumns(
     avgCoprColumn(rows),
     avgCopWaitColumn(rows),
     avgTotalProcessColumn(rows),
+    avgTotalWaitColumn(rows),
+    avgBackoffColumn(rows),
+    avgWriteKeysColumn(rows),
+    avgProcessedKeysColumn(rows),
+    avgTotalKeysColumn(rows),
+    avgPreWriteColumn(rows),
+    avgCommitColumn(rows),
+    avgGetCommitTsColumn(rows),
+    avgCommitBackoffColumn(rows),
+    avgResolveLockColumn(rows),
+    avgLocalLatchWaitColumn(rows),
+    avgWriteSizeColumn(rows),
+    avgPreWriteRegionsColumn(rows),
+    avgTxnRetryColumn(rows),
+
     relatedSchemasColumn(rows),
   ]
 }

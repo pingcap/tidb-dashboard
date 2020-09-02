@@ -82,21 +82,7 @@ function digestColumn(
 }
 
 function sumLatencyColumn(rows?: { sum_latency?: number }[]): IColumn {
-  const capacity = rows ? max(rows.map((v) => v.sum_latency)) ?? 0 : 0
-  const key = 'sum_latency'
-  return {
-    name: commonColumnName(key),
-    key,
-    fieldName: key,
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => (
-      <Bar textWidth={70} value={rec.sum_latency} capacity={capacity}>
-        {getValueFormat('ns')(rec.sum_latency, 1)}
-      </Bar>
-    ),
-  }
+  return singleNumColumn('sum_latency', 'ns', rows)
 }
 
 function avgMinMaxLatencyColumn(
@@ -134,21 +120,7 @@ Max:  ${getValueFormat('ns')(rec.max_latency, 1)}`
 }
 
 function execCountColumn(rows?: { exec_count?: number }[]): IColumn {
-  const capacity = rows ? max(rows.map((v) => v.exec_count)) ?? 0 : 0
-  const key = 'exec_count'
-  return {
-    name: commonColumnName(key),
-    key,
-    fieldName: key,
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => (
-      <Bar textWidth={70} value={rec.exec_count} capacity={capacity}>
-        {getValueFormat('short')(rec.exec_count, 0, 1)}
-      </Bar>
-    ),
-  }
+  return singleNumColumn('exec_count', 'short', rows)
 }
 
 function avgMaxMemColumn(
@@ -217,16 +189,8 @@ function avgCompileLatencyColumn(
   )
 }
 
-function sumCopTaskNumColumn(_rows?: { sum_cop_task_num?: number }[]): IColumn {
-  const key = 'sum_cop_task_num'
-  return {
-    name: commonColumnName(key),
-    key,
-    fieldName: key,
-    minWidth: 100,
-    maxWidth: 300,
-    columnActionsMode: ColumnActionsMode.clickable,
-  }
+function sumCopTaskNumColumn(rows?: any[]): IColumn {
+  return singleNumColumn('sum_cop_task_num', 'short', rows)
 }
 
 function avgCoprColumn(
@@ -405,6 +369,10 @@ function avgTxnRetryColumn(rows?: any[]): IColumn {
   )
 }
 
+function sumBackoffTimesColumn(rows?: any[]): IColumn {
+  return singleNumColumn('sum_backoff_times', 'short', rows)
+}
+
 function relatedSchemasColumn(
   _rows?: { related_schemas?: string }[] // used for type check only
 ): IColumn {
@@ -424,26 +392,64 @@ function relatedSchemasColumn(
 ////////////////////////////////////////////////
 // util methods
 
-function avgMaxColumn(
-  avgKey: string,
-  maxKey: string,
-  columnNameKey: string,
+function singleNumColumn(
+  columnKey: string,
   unit: string,
   rows?: any[]
 ): IColumn {
-  const capacity = rows ? max(rows.map((v) => v[maxKey])) ?? 0 : 0
-  const key = avgKey
+  const capacity = rows ? max(rows.map((v) => v[columnKey])) ?? 0 : 0
+  const key = columnKey
   return {
-    name: commonColumnName(columnNameKey),
+    name: commonColumnName(key),
     key,
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
+      const formatFn = getValueFormat(unit)
+      const fmtVal =
+        unit === 'short'
+          ? formatFn(rec[columnKey], 0, 1)
+          : formatFn(rec[columnKey], 1)
+      return (
+        <Bar textWidth={70} value={rec[columnKey]} capacity={capacity}>
+          {fmtVal}
+        </Bar>
+      )
+    },
+  }
+}
+
+function avgMaxColumn(
+  avgKey: string,
+  maxKey: string,
+  columnName: string,
+  unit: string,
+  rows?: any[]
+): IColumn {
+  const capacity = rows ? max(rows.map((v) => v[maxKey])) ?? 0 : 0
+  const key = avgKey
+  return {
+    name: commonColumnName(columnName),
+    key,
+    fieldName: key,
+    minWidth: 140,
+    maxWidth: 200,
+    columnActionsMode: ColumnActionsMode.clickable,
+    onRender: (rec) => {
+      const formatFn = getValueFormat(unit)
+      const mean =
+        unit === 'short'
+          ? formatFn(rec[avgKey], 0, 1)
+          : formatFn(rec[avgKey], 1)
+      const max =
+        unit === 'short'
+          ? formatFn(rec[maxKey], 0, 1)
+          : formatFn(rec[maxKey], 1)
       const tooltipContent = `
-Mean: ${getValueFormat(unit)(rec[avgKey], 1)}
-Max:  ${getValueFormat(unit)(rec[maxKey], 1)}`
+Mean: ${mean}
+Max:  ${max}`
       return (
         <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
           <Bar
@@ -452,7 +458,7 @@ Max:  ${getValueFormat(unit)(rec[maxKey], 1)}`
             max={rec[maxKey]}
             capacity={capacity}
           >
-            {getValueFormat(unit)(rec[avgKey], 1)}
+            {mean}
           </Bar>
         </Tooltip>
       )
@@ -494,6 +500,7 @@ export function statementColumns(
     avgWriteSizeColumn(rows),
     avgPreWriteRegionsColumn(rows),
     avgTxnRetryColumn(rows),
+    sumBackoffTimesColumn(rows),
 
     relatedSchemasColumn(rows),
   ]

@@ -90,6 +90,7 @@ statement:
     compile_latency_tooltip: Time consumed when optimizing the query
     wait_time: Coprocessor Wait Time
     process_time: Coprocessor Execution Time
+    total_process_time: Total Execution Time
     backoff_time: Backoff Retry Time
     backoff_time_tooltip: The waiting time before retry when a query encounters errors that require a retry
     get_commit_ts_time: Get Commit Ts Time

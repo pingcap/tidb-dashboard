@@ -154,33 +154,7 @@ function execCountColumn(rows?: { exec_count?: number }[]): IColumn {
 function avgMaxMemColumn(
   rows?: { avg_mem?: number; max_mem?: number }[]
 ): IColumn {
-  const capacity = rows ? max(rows.map((v) => v.max_mem)) ?? 0 : 0
-  const key = 'avg_mem'
-  return {
-    name: commonColumnName(key),
-    key,
-    fieldName: key,
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => {
-      const tooltipContent = `
-Mean: ${getValueFormat('bytes')(rec.avg_mem, 1)}
-Max:  ${getValueFormat('bytes')(rec.max_mem, 1)}`
-      return (
-        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
-          <Bar
-            textWidth={70}
-            value={rec.avg_mem}
-            max={rec.max_mem}
-            capacity={capacity}
-          >
-            {getValueFormat('bytes')(rec.avg_mem, 1)}
-          </Bar>
-        </Tooltip>
-      )
-    },
-  }
+  return avgMaxColumn('avg_mem', 'max_mem', 'avg_mem', 'bytes', rows)
 }
 
 function errorsWarningsColumn(
@@ -222,97 +196,73 @@ Warnings: ${getValueFormat('short')(rec.sum_warnings, 0, 1)}`
 function avgParseLatencyColumn(
   rows?: { avg_parse_latency?: number; max_parse_latency?: number }[]
 ): IColumn {
-  const capacity = rows ? max(rows.map((v) => v.max_parse_latency)) ?? 0 : 0
-  const key = 'avg_parse_latency'
-  return {
-    name: commonColumnName('parse_latency'),
-    key,
-    fieldName: key,
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => {
-      const tooltipContent = `
-Mean: ${getValueFormat('ns')(rec.avg_parse_latency, 1)}
-Max:  ${getValueFormat('ns')(rec.max_parse_latency, 1)}`
-      return (
-        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
-          <Bar
-            textWidth={70}
-            value={rec.avg_parse_latency}
-            max={rec.max_parse_latency}
-            capacity={capacity}
-          >
-            {getValueFormat('ns')(rec.avg_parse_latency, 1)}
-          </Bar>
-        </Tooltip>
-      )
-    },
-  }
+  return avgMaxColumn(
+    'avg_parse_latency',
+    'max_parse_latency',
+    'parse_latency',
+    'ns',
+    rows
+  )
 }
 
 function avgCompileLatencyColumn(
   rows?: { avg_compile_latency?: number; max_compile_latency?: number }[]
 ): IColumn {
-  const capacity = rows ? max(rows.map((v) => v.max_compile_latency)) ?? 0 : 0
-  const key = 'avg_compile_latency'
+  return avgMaxColumn(
+    'avg_compile_latency',
+    'max_compile_latency',
+    'compile_latency',
+    'ns',
+    rows
+  )
+}
+
+function sumCopTaskNumColumn(_rows?: { sum_cop_task_num?: number }[]): IColumn {
+  const key = 'sum_cop_task_num'
   return {
-    name: commonColumnName('compile_latency'),
+    name: commonColumnName(key),
     key,
     fieldName: key,
-    minWidth: 140,
-    maxWidth: 200,
+    minWidth: 100,
+    maxWidth: 300,
     columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => {
-      const tooltipContent = `
-Mean: ${getValueFormat('ns')(rec.avg_compile_latency, 1)}
-Max:  ${getValueFormat('ns')(rec.max_compile_latency, 1)}`
-      return (
-        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
-          <Bar
-            textWidth={70}
-            value={rec.avg_compile_latency}
-            max={rec.max_compile_latency}
-            capacity={capacity}
-          >
-            {getValueFormat('ns')(rec.avg_compile_latency, 1)}
-          </Bar>
-        </Tooltip>
-      )
-    },
   }
 }
 
 function avgCoprColumn(
   rows?: { avg_cop_process_time?: number; max_cop_process_time?: number }[]
 ): IColumn {
-  const capacity = rows ? max(rows.map((v) => v.max_cop_process_time)) ?? 0 : 0
-  const key = 'avg_cop_process_time'
-  return {
-    name: commonColumnName('process_time'),
-    key,
-    fieldName: key,
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => {
-      const tooltipContent = `
-Mean: ${getValueFormat('ns')(rec.avg_cop_process_time, 1)}
-Max:  ${getValueFormat('ns')(rec.max_cop_process_time, 1)}`
-      return (
-        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
-          <Bar
-            textWidth={70}
-            value={rec.avg_cop_process_time}
-            max={rec.max_cop_process_time}
-            capacity={capacity}
-          >
-            {getValueFormat('ns')(rec.avg_cop_process_time, 1)}
-          </Bar>
-        </Tooltip>
-      )
-    },
-  }
+  return avgMaxColumn(
+    'avg_cop_process_time',
+    'max_cop_process_time',
+    'process_time',
+    'ns',
+    rows
+  )
+}
+
+function avgCopWaitColumn(
+  rows?: { avg_cop_wait_time?: number; max_cop_wait_time?: number }[]
+): IColumn {
+  return avgMaxColumn(
+    'avg_cop_wait_time',
+    'max_cop_wait_time',
+    'wait_time',
+    'ns',
+    rows
+  )
+}
+
+function avgTotalProcessColumn(
+  rows?: { avg_process_time?: number; max_process_time?: number }[]
+): IColumn {
+  return avgMaxColumn(
+    'avg_process_time',
+    'max_process_time',
+    'total_process_time',
+    'ns',
+    rows
+  )
 }
 
 function relatedSchemasColumn(
@@ -332,6 +282,45 @@ function relatedSchemasColumn(
 }
 
 ////////////////////////////////////////////////
+// util methods
+
+function avgMaxColumn(
+  avgKey: string,
+  maxKey: string,
+  columnNameKey: string,
+  unit: string,
+  rows?: any[]
+): IColumn {
+  const capacity = rows ? max(rows.map((v) => v[maxKey])) ?? 0 : 0
+  const key = avgKey
+  return {
+    name: commonColumnName(columnNameKey),
+    key,
+    fieldName: key,
+    minWidth: 140,
+    maxWidth: 200,
+    columnActionsMode: ColumnActionsMode.clickable,
+    onRender: (rec) => {
+      const tooltipContent = `
+Mean: ${getValueFormat(unit)(rec[avgKey], 1)}
+Max:  ${getValueFormat(unit)(rec[maxKey], 1)}`
+      return (
+        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
+          <Bar
+            textWidth={70}
+            value={rec[avgKey]}
+            max={rec[maxKey]}
+            capacity={capacity}
+          >
+            {getValueFormat(unit)(rec[avgKey], 1)}
+          </Bar>
+        </Tooltip>
+      )
+    },
+  }
+}
+
+////////////////////////////////////////////////
 
 export function statementColumns(
   rows: StatementModel[],
@@ -347,7 +336,10 @@ export function statementColumns(
     errorsWarningsColumn(rows),
     avgParseLatencyColumn(rows),
     avgCompileLatencyColumn(rows),
+    sumCopTaskNumColumn(rows),
     avgCoprColumn(rows),
+    avgCopWaitColumn(rows),
+    avgTotalProcessColumn(rows),
     relatedSchemasColumn(rows),
   ]
 }
@@ -371,6 +363,9 @@ export const STMT_COLUMN_REFS: { [key: string]: string[] } = {
   avg_parse_latency: ['avg_parse_latency', 'max_parse_latency'],
   avg_compile_latency: ['avg_compile_latency', 'max_compile_latency'],
   avg_cop_process_time: ['avg_cop_process_time', 'max_cop_process_time'],
+  avg_cop_wait_time: ['avg_cop_wait_time', 'max_cop_wait_time'],
+  avg_process_time: ['avg_process_time', 'max_process_time'],
+
   related_schemas: ['table_names'],
 }
 

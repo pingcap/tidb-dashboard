@@ -91,6 +91,7 @@ statement:
     wait_time: Coprocessor Wait Time
     process_time: Coprocessor Execution Time
     total_process_time: Total Execution Time
+    total_wait_time: Total Wait Time
     backoff_time: Backoff Retry Time
     backoff_time_tooltip: The waiting time before retry when a query encounters errors that require a retry
     get_commit_ts_time: Get Commit Ts Time
@@ -103,11 +104,11 @@ statement:
     query_time2: Query Time
     query_time2_tooltip: The execution time of a query (due to the parallel execution, it may be significantly smaller than the above time)
     sum_cop_task_num: Total Coprocessor Tasks
-    avg_processed_keys: Mean Visible Versions per query
-    max_processed_keys: Max Visible Versions per query
-    avg_total_keys: Mean Meet Versions per query
+    avg_processed_keys: Mean Visible Versions Per Query
+    max_processed_keys: Max Visible Versions Per Query
+    avg_total_keys: Mean Meet Versions Per Query
     avg_total_keys_tooltip: Meet versions contains overwritten or deleted versions
-    max_total_keys: Max Meet Versions per query
+    max_total_keys: Max Meet Versions Per Query
     avg_affected_rows: Mean Affected Rows
     sum_backoff_times: Total Backoff Count
     avg_write_keys: Mean Written Keys

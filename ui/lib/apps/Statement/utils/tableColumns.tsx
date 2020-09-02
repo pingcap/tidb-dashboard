@@ -289,7 +289,7 @@ function avgWriteKeysColumn(rows?: any[]): IColumn {
   return avgMaxColumn(
     'avg_write_keys',
     'max_write_keys',
-    'write_keys',
+    'avg_write_keys',
     'short',
     rows
   )
@@ -299,7 +299,7 @@ function avgProcessedKeysColumn(rows?: any[]): IColumn {
   return avgMaxColumn(
     'avg_processed_keys',
     'max_processed_keys',
-    'processed_keys',
+    'avg_processed_keys',
     'short',
     rows
   )
@@ -309,7 +309,7 @@ function avgTotalKeysColumn(rows?: any[]): IColumn {
   return avgMaxColumn(
     'avg_total_keys',
     'max_total_keys',
-    'total_keys',
+    'avg_total_keys',
     'short',
     rows
   )
@@ -379,7 +379,7 @@ function avgWriteSizeColumn(rows?: any[]): IColumn {
   return avgMaxColumn(
     'avg_write_size',
     'max_write_size',
-    'write_size',
+    'avg_write_size',
     'bytes',
     rows
   )
@@ -389,7 +389,7 @@ function avgPreWriteRegionsColumn(rows?: any[]): IColumn {
   return avgMaxColumn(
     'avg_prewrite_regions',
     'max_prewrite_regions',
-    'prewrite_regions',
+    'avg_prewrite_regions',
     'short',
     rows
   )
@@ -399,7 +399,7 @@ function avgTxnRetryColumn(rows?: any[]): IColumn {
   return avgMaxColumn(
     'avg_txn_retry',
     'max_txn_retry',
-    'txn_retry',
+    'avg_txn_retry',
     'short',
     rows
   )
@@ -520,6 +520,27 @@ export const STMT_COLUMN_REFS: { [key: string]: string[] } = {
   avg_cop_process_time: ['avg_cop_process_time', 'max_cop_process_time'],
   avg_cop_wait_time: ['avg_cop_wait_time', 'max_cop_wait_time'],
   avg_process_time: ['avg_process_time', 'max_process_time'],
+
+  avg_wait_time: ['avg_wait_time', 'max_wait_time'],
+  avg_backoff_time: ['avg_backoff_time', 'max_backoff_time'],
+  avg_write_keys: ['avg_write_keys', 'max_write_keys'],
+  avg_processed_keys: ['avg_processed_keys', 'max_processed_keys'],
+  avg_total_keys: ['avg_total_keys', 'max_total_keys'],
+  avg_prewrite_time: ['avg_prewrite_time', 'max_prewrite_time'],
+  avg_commit_time: ['avg_commit_time', 'max_commit_time'],
+  avg_get_commit_ts_time: ['avg_get_commit_ts_time', 'max_get_commit_ts_time'],
+  avg_commit_backoff_time: [
+    'avg_commit_backoff_time',
+    'max_commit_backoff_time',
+  ],
+  avg_resolve_lock_time: ['avg_resolve_lock_time', 'max_resolve_lock_time'],
+  avg_local_latch_wait_time: [
+    'avg_local_latch_wait_time',
+    'max_local_latch_wait_time',
+  ],
+  avg_write_size: ['avg_write_size', 'max_write_size'],
+  avg_prewrite_regions: ['avg_prewrite_regions', 'max_prewrite_regions'],
+  avg_txn_retry: ['avg_txn_retry', 'max_txn_retry'],
 
   related_schemas: ['table_names'],
 }

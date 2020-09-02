@@ -139,7 +139,10 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	fileds := strings.Split(req.Fields, ",")
+	fileds := []string{}
+	if strings.TrimSpace(req.Fields) != "" {
+		fileds = strings.Split(req.Fields, ",")
+	}
 	overviews, err := QueryStatementsOverview(
 		db,
 		req.BeginTime, req.EndTime,

@@ -4,7 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { StatementsTable, useStatement } from '@lib/apps/Statement'
-import { DateTime } from '@lib/components'
+import { DateTime, IColumnKeys } from '@lib/components'
+
+const visibleColumnKeys: IColumnKeys = {
+  digest_text: true,
+  sum_latency: true,
+  avg_latency: true,
+  related_schemas: true,
+}
 
 export default function RecentStatements() {
   const { t } = useTranslation()
@@ -18,17 +25,12 @@ export default function RecentStatements() {
     statements,
 
     errors,
-  } = useStatement(undefined, false)
+  } = useStatement(visibleColumnKeys, undefined, false)
 
   return (
     <StatementsTable
       key={`statement_${statements.length}`}
-      visibleColumnKeys={{
-        digest_text: true,
-        sum_latency: true,
-        avg_latency: true,
-        related_schemas: true,
-      }}
+      visibleColumnKeys={visibleColumnKeys}
       visibleItemsCount={10}
       loading={loadingStatements}
       statements={statements}

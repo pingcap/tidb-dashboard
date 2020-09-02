@@ -9,6 +9,8 @@ import {
   DEFAULT_TIME_RANGE,
   TimeRange,
 } from '../pages/List/TimeRangeSelector'
+import { IColumnKeys } from '@lib/components'
+import { STMT_COLUMN_REFS } from './tableColumns'
 
 const QUERY_OPTIONS = 'statement.query_options'
 
@@ -32,6 +34,7 @@ export const DEF_STMT_QUERY_OPTIONS: IStatementQueryOptions = {
 }
 
 export default function useStatement(
+  visibleColumnKeys: IColumnKeys,
   options?: IStatementQueryOptions,
   needSave: boolean = true
 ) {
@@ -134,6 +137,18 @@ export default function useStatement(
         return
       }
 
+      let fields: string[] = []
+      Object.keys(visibleColumnKeys).forEach((k) => {
+        if (visibleColumnKeys[k] === true) {
+          const refFields = STMT_COLUMN_REFS[k]
+          if (refFields !== undefined) {
+            fields = fields.concat(refFields)
+          } else {
+            fields.push(k)
+          }
+        }
+      })
+
       setLoadingStatements(true)
       try {
         const res = await client
@@ -141,6 +156,7 @@ export default function useStatement(
           .statementsOverviewsGet(
             validTimeRange.begin_time!,
             validTimeRange.end_time!,
+            fields.join(','),
             queryOptions.schemas,
             queryOptions.stmtTypes,
             queryOptions.searchText
@@ -154,7 +170,7 @@ export default function useStatement(
     }
 
     queryStatementList()
-  }, [queryOptions, allTimeRanges, validTimeRange])
+  }, [queryOptions, allTimeRanges, validTimeRange, visibleColumnKeys])
 
   return {
     queryOptions,

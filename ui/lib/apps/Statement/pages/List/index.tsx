@@ -9,34 +9,31 @@ import {
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useTranslation } from 'react-i18next'
-import {
-  Card,
-  ColumnsSelector,
-  IColumnKeys,
-  Toolbar,
-  MultiSelect,
-} from '@lib/components'
+import { Card, ColumnsSelector, Toolbar, MultiSelect } from '@lib/components'
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
 import useStatement from '../../utils/useStatement'
+import { DEF_STMT_COLUMN_KEYS } from '../../utils/tableColumns'
 
 const { Search } = Input
 
-const VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
-const SHOW_FULL_SQL = 'statement.show_full_sql'
-
-const defColumnKeys: IColumnKeys = {
-  digest_text: true,
-  sum_latency: true,
-  avg_latency: true,
-  exec_count: true,
-  plan_count: true,
-  related_schemas: true,
-}
+const STMT_VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
+const STMT_SHOW_FULL_SQL = 'statement.show_full_sql'
 
 export default function StatementsOverview() {
   const { t } = useTranslation()
+
+  const [columns, setColumns] = useState<IColumn[]>([])
+  const [showSettings, setShowSettings] = useState(false)
+  const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
+    STMT_VISIBLE_COLUMN_KEYS,
+    DEF_STMT_COLUMN_KEYS
+  )
+  const [showFullSQL, setShowFullSQL] = useLocalStorageState(
+    STMT_SHOW_FULL_SQL,
+    false
+  )
 
   const {
     queryOptions,
@@ -54,18 +51,7 @@ export default function StatementsOverview() {
     statements,
 
     errors,
-  } = useStatement()
-
-  const [columns, setColumns] = useState<IColumn[]>([])
-  const [showSettings, setShowSettings] = useState(false)
-  const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
-    VISIBLE_COLUMN_KEYS,
-    defColumnKeys
-  )
-  const [showFullSQL, setShowFullSQL] = useLocalStorageState(
-    SHOW_FULL_SQL,
-    false
-  )
+  } = useStatement(visibleColumnKeys)
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -131,7 +117,7 @@ export default function StatementsOverview() {
               <ColumnsSelector
                 columns={columns}
                 visibleColumnKeys={visibleColumnKeys}
-                resetColumnKeys={defColumnKeys}
+                resetColumnKeys={DEF_STMT_COLUMN_KEYS}
                 onChange={setVisibleColumnKeys}
                 foot={
                   <Checkbox

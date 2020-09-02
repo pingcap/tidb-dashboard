@@ -15,6 +15,7 @@ package statement
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
@@ -122,6 +123,7 @@ type GetStatementsRequest struct {
 	BeginTime int      `json:"begin_time" form:"begin_time"`
 	EndTime   int      `json:"end_time" form:"end_time"`
 	Text      string   `json:"text" form:"text"`
+	Fields    string   `json:"fields" form:"fields"`
 }
 
 // @Summary Get a list of statement overviews
@@ -137,7 +139,14 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	overviews, err := QueryStatementsOverview(db, req.BeginTime, req.EndTime, req.Schemas, req.StmtTypes, req.Text)
+	fileds := strings.Split(req.Fields, ",")
+	overviews, err := QueryStatementsOverview(
+		db,
+		req.BeginTime, req.EndTime,
+		req.Schemas,
+		req.StmtTypes,
+		req.Text,
+		fileds)
 	if err != nil {
 		_ = c.Error(err)
 		return

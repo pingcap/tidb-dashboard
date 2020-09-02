@@ -9,7 +9,14 @@ import { orange, red } from '@ant-design/colors'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementModel } from '@lib/client'
-import { Bar, HighlightSQL, Pre, TextWithInfo, TextWrap } from '@lib/components'
+import {
+  Bar,
+  HighlightSQL,
+  Pre,
+  TextWithInfo,
+  TextWrap,
+  IColumnKeys,
+} from '@lib/components'
 
 function commonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`statement.fields.${fieldName}`} />
@@ -353,4 +360,25 @@ export function planColumns(rows: StatementModel[]): IColumn[] {
     execCountColumn(rows),
     avgMaxMemColumn(rows),
   ]
+}
+
+////////////////////////////////////////////////
+
+export const STMT_COLUMN_REFS: { [key: string]: string[] } = {
+  avg_latency: ['avg_latency', 'min_latency', 'max_latency'],
+  avg_mem: ['avg_mem', 'max_mem'],
+  sum_errors: ['sum_errors', 'sum_warnings'],
+  avg_parse_latency: ['avg_parse_latency', 'max_parse_latency'],
+  avg_compile_latency: ['avg_compile_latency', 'max_compile_latency'],
+  avg_cop_process_time: ['avg_cop_process_time', 'max_cop_process_time'],
+  related_schemas: ['table_names'],
+}
+
+export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
+  digest_text: true,
+  sum_latency: true,
+  avg_latency: true,
+  exec_count: true,
+  plan_count: true,
+  related_schemas: true,
 }

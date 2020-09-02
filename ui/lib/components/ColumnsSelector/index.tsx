@@ -119,19 +119,28 @@ export default function ColumnsSelector({
   )
 
   const content = (
-    <Space direction="vertical">
-      {filteredColumns.map((column) => (
-        <Checkbox
-          key={column.key}
-          checked={visibleKeys[column.key]}
-          onChange={(e) => handleCheckChange(e, column)}
-        >
-          {column.name}
-        </Checkbox>
-      ))}
-
+    <div style={{ marginTop: -12 }}>
+      <Space
+        direction="vertical"
+        style={{
+          maxHeight: 400,
+          overflow: 'auto',
+          paddingTop: 8,
+          paddingBottom: 8,
+        }}
+      >
+        {filteredColumns.map((column) => (
+          <Checkbox
+            key={column.key}
+            checked={visibleKeys[column.key]}
+            onChange={(e) => handleCheckChange(e, column)}
+          >
+            {column.name}
+          </Checkbox>
+        ))}
+      </Space>
       {foot && <div className={styles.foot_container}>{foot}</div>}
-    </Space>
+    </div>
   )
 
   return (

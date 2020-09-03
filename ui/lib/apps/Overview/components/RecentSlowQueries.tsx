@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom'
 
 import { DateTime } from '@lib/components'
 import { SlowQueriesTable, useSlowQuery } from '@lib/apps/SlowQuery'
-import { defSlowQueryColumnKeys } from '@lib/apps/SlowQuery/pages/List'
 import { DEF_SLOW_QUERY_OPTIONS } from '@lib/apps/SlowQuery/utils/useSlowQuery'
+import { DEF_SLOW_QUERY_COLUMN_KEYS } from '@lib/apps/SlowQuery/utils/tableColumns'
 
 export default function RecentSlowQueries() {
   const { t } = useTranslation()
@@ -19,12 +19,16 @@ export default function RecentSlowQueries() {
     queryTimeRange,
 
     errors,
-  } = useSlowQuery({ ...DEF_SLOW_QUERY_OPTIONS, limit: 10 }, false)
+  } = useSlowQuery(
+    DEF_SLOW_QUERY_COLUMN_KEYS,
+    { ...DEF_SLOW_QUERY_OPTIONS, limit: 10 },
+    false
+  )
 
   return (
     <SlowQueriesTable
       key={`slow_query_${slowQueries.length}`}
-      visibleColumnKeys={defSlowQueryColumnKeys}
+      visibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
       loading={loadingSlowQueries}
       slowQueries={slowQueries}
       orderBy={orderOptions.orderBy}

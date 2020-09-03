@@ -9,13 +9,13 @@ import { useLocalStorageState } from '@umijs/hooks'
 import {
   Card,
   ColumnsSelector,
-  IColumnKeys,
   TimeRangeSelector,
   Toolbar,
   MultiSelect,
 } from '@lib/components'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQuery from '../../utils/useSlowQuery'
+import { DEF_SLOW_QUERY_COLUMN_KEYS } from '../../utils/tableColumns'
 
 const { Option } = Select
 const { Search } = Input
@@ -24,15 +24,18 @@ const SLOW_QUERY_VISIBLE_COLUMN_KEYS = 'slow_query.visible_column_keys'
 const SLOW_QUERY_SHOW_FULL_SQL = 'slow_query.show_full_sql'
 const LIMITS = [100, 200, 500, 1000]
 
-export const defSlowQueryColumnKeys: IColumnKeys = {
-  sql: true,
-  Time: true,
-  Query_time: true,
-  Mem_max: true,
-}
-
 function List() {
   const { t } = useTranslation()
+
+  const [columns, setColumns] = useState<IColumn[]>([])
+  const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
+    SLOW_QUERY_VISIBLE_COLUMN_KEYS,
+    DEF_SLOW_QUERY_COLUMN_KEYS
+  )
+  const [showFullSQL, setShowFullSQL] = useLocalStorageState(
+    SLOW_QUERY_SHOW_FULL_SQL,
+    false
+  )
 
   const {
     queryOptions,
@@ -46,17 +49,7 @@ function List() {
     slowQueries,
 
     errors,
-  } = useSlowQuery()
-
-  const [columns, setColumns] = useState<IColumn[]>([])
-  const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
-    SLOW_QUERY_VISIBLE_COLUMN_KEYS,
-    defSlowQueryColumnKeys
-  )
-  const [showFullSQL, setShowFullSQL] = useLocalStorageState(
-    SLOW_QUERY_SHOW_FULL_SQL,
-    false
-  )
+  } = useSlowQuery(visibleColumnKeys)
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -111,7 +104,7 @@ function List() {
               <ColumnsSelector
                 columns={columns}
                 visibleColumnKeys={visibleColumnKeys}
-                resetColumnKeys={defSlowQueryColumnKeys}
+                resetColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
                 onChange={setVisibleColumnKeys}
                 foot={
                   <Checkbox

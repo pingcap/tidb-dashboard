@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
 import client, { SlowqueryBase } from '@lib/client'
-import { calcTimeRange, TimeRange } from '@lib/components'
+import { calcTimeRange, TimeRange, IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
@@ -33,6 +33,7 @@ export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
 }
 
 export default function useSlowQuery(
+  visibleColumnKeys: IColumnKeys,
   options?: ISlowQueryOptions,
   needSave: boolean = true
 ) {
@@ -92,6 +93,10 @@ export default function useSlowQuery(
 
   useEffect(() => {
     async function getSlowQueryList() {
+      const fields = Object.keys(visibleColumnKeys).filter(
+        (k) => visibleColumnKeys[k]
+      )
+
       setLoadingSlowQueries(true)
       try {
         const res = await client
@@ -100,7 +105,7 @@ export default function useSlowQuery(
             queryOptions.schemas,
             orderOptions.desc,
             queryOptions.digest,
-            '   Query,Digest ',
+            fields.join(','),
             queryOptions.limit,
             queryTimeRange.endTime,
             queryTimeRange.beginTime,
@@ -117,7 +122,13 @@ export default function useSlowQuery(
     }
 
     getSlowQueryList()
-  }, [queryOptions, orderOptions, queryTimeRange, refreshTimes])
+  }, [
+    visibleColumnKeys,
+    queryOptions,
+    orderOptions,
+    queryTimeRange,
+    refreshTimes,
+  ])
 
   return {
     queryOptions,

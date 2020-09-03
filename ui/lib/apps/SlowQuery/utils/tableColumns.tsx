@@ -15,6 +15,7 @@ import {
   HighlightSQL,
   TextWithInfo,
   TextWrap,
+  IColumnKeys,
 } from '@lib/components'
 
 function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
@@ -271,4 +272,13 @@ export function slowQueryColumns(
     txnStartTsColumn(rows),
     successColumn(rows),
   ]
+}
+
+//////////////////////////////////////////
+
+export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
+  sql: true,
+  Time: true,
+  Query_time: true,
+  Mem_max: true,
 }

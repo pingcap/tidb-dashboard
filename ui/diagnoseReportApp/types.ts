@@ -1,20 +1,17 @@
 import { createContext } from 'react'
 
 export interface TableRowDef {
-  Values: string[]
-  SubValues: string[][]
-  ratio: number
-  Comment: string
+  values: string[]
+  sub_values: string[][]
+  comment: string
 }
 
 export interface TableDef {
-  Category: string[]
-  Title: string
-  Comment: string
-  joinColumns: number[]
-  compareColumns: number[]
-  Column: string[]
-  Rows: TableRowDef[]
+  category: string[]
+  title: string
+  comment: string
+  column: string[]
+  rows: TableRowDef[]
 }
 
 export const ExpandContext = createContext(false)

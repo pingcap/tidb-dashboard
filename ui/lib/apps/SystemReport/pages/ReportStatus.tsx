@@ -10,9 +10,9 @@ import { AnimatedSkeleton, DateTime, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import useQueryParams from '@lib/utils/useQueryParams'
 
-function DiagnoseStatus() {
-  const { t } = useTranslation()
+function ReportStatus() {
   const { id } = useQueryParams()
+  const { t } = useTranslation()
 
   const { data: report, isLoading } = useClientRequestWithPolling(
     (cancelToken) =>
@@ -26,10 +26,10 @@ function DiagnoseStatus() {
 
   return (
     <Head
-      title={t('diagnose.status.head.title')}
+      title={t('system_report.status.head.title')}
       back={
-        <Link to={`/diagnose`}>
-          <ArrowLeftOutlined /> {t('diagnose.status.head.back')}
+        <Link to={`/system_report`}>
+          <ArrowLeftOutlined /> {t('system_report.status.head.back')}
         </Link>
       }
       titleExtra={
@@ -41,7 +41,7 @@ function DiagnoseStatus() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              {t('diagnose.status.head.view')}
+              {t('system_report.status.head.view')}
             </a>
           </Button>
         )
@@ -50,18 +50,20 @@ function DiagnoseStatus() {
       <AnimatedSkeleton showSkeleton={isLoading && !report}>
         {report && (
           <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label={t('diagnose.status.range_begin')}>
+            <Descriptions.Item label={t('system_report.status.range_begin')}>
               <DateTime.Calendar
                 unixTimestampMs={new Date(report.start_time!).valueOf()}
               />
             </Descriptions.Item>
-            <Descriptions.Item label={t('diagnose.status.range_end')}>
+            <Descriptions.Item label={t('system_report.status.range_end')}>
               <DateTime.Calendar
                 unixTimestampMs={new Date(report.end_time!).valueOf()}
               />
             </Descriptions.Item>
             {report.compare_start_time && (
-              <Descriptions.Item label={t('diagnose.status.baseline_begin')}>
+              <Descriptions.Item
+                label={t('system_report.status.baseline_begin')}
+              >
                 <DateTime.Calendar
                   unixTimestampMs={new Date(
                     report.compare_start_time
@@ -69,7 +71,7 @@ function DiagnoseStatus() {
                 />
               </Descriptions.Item>
             )}
-            <Descriptions.Item label={t('diagnose.status.progress')}>
+            <Descriptions.Item label={t('system_report.status.progress')}>
               <Progress style={{ width: 200 }} percent={report.progress || 0} />
             </Descriptions.Item>
           </Descriptions>
@@ -79,4 +81,4 @@ function DiagnoseStatus() {
   )
 }
 
-export default DiagnoseStatus
+export default ReportStatus

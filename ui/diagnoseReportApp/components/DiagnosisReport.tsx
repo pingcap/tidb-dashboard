@@ -42,17 +42,17 @@ function TablesNavMenu({ diagnosisTables }: Props) {
           }}
         >
           {diagnosisTables.map((item) => (
-            <React.Fragment key={item.Title}>
+            <React.Fragment key={item.title}>
               <h2 style={{ paddingLeft: 16 }}>
-                {item.Category[0] &&
-                  t(`diagnosis.tables.category.${item.Category[0]}`)}
+                {item.category[0] &&
+                  t(`diagnosis.tables.category.${item.category[0]}`)}
               </h2>
               <a
                 style={{ paddingLeft: 32 }}
                 className="dropdown-item"
-                href={`#${item.Title}`}
+                href={`#${item.title}`}
               >
-                {t(`diagnosis.tables.title.${item.Title}`)}
+                {t(`diagnosis.tables.title.${item.title}`)}
               </a>
             </React.Fragment>
           ))}

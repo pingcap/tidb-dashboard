@@ -58,10 +58,8 @@ type InfoResponse struct { //nolint:golint
 	EnableExperimental bool          `json:"enable_experimental"`
 }
 
-// @Summary Dashboard info
-// @Description Get information about the dashboard service.
-// @ID getInfo
-// @Produce json
+// @ID infoGet
+// @Summary Get information about this TiDB Dashboard
 // @Success 200 {object} InfoResponse
 // @Router /info/info [get]
 // @Security JwtAuth
@@ -77,26 +75,28 @@ func (s *Service) infoHandler(c *gin.Context) {
 
 type WhoAmIResponse struct {
 	Username string `json:"username"`
+	IsShared bool   `json:"is_shared"`
 }
 
-// @Summary Current login
-// @Description Get current login session
-// @Produce json
+// @ID infoWhoami
+// @Summary Get information about current session
 // @Success 200 {object} WhoAmIResponse
 // @Router /info/whoami [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) whoamiHandler(c *gin.Context) {
 	sessionUser := c.MustGet(utils.SessionUserKey).(*utils.SessionUser)
-	resp := WhoAmIResponse{Username: sessionUser.TiDBUsername}
+	resp := WhoAmIResponse{
+		Username: sessionUser.TiDBUsername,
+		IsShared: sessionUser.IsShared,
+	}
 	c.JSON(http.StatusOK, resp)
 }
 
 type DatabaseResponse = []string
 
-// @Summary Example: Get all databases
-// @Description Get all databases.
-// @Produce json
+// @ID infoListDatabases
+// @Summary List all databases
 // @Success 200 {object} DatabaseResponse
 // @Router /info/databases [get]
 // @Security JwtAuth

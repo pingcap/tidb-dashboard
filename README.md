@@ -6,15 +6,17 @@ TiDB Dashboard is a Web UI for monitoring, diagnosing and managing the TiDB clus
 
 ## Documentation
 
-- [Product User Manual (Chinese)](https://pingcap.com/docs-cn/stable/dashboard/dashboard-intro/)
-- [FAQ (Chinese)](https://pingcap.com/docs-cn/stable/dashboard/dashboard-faq/)
+- [Product User Manual (English)](https://docs.pingcap.com/tidb/stable/dashboard-intro)
+- [Product User Manual (Chinese)](https://docs.pingcap.com/zh/tidb/stable/dashboard-intro)
+- [FAQ (English)](https://docs.pingcap.com/tidb/stable/dashboard-faq)
+- [FAQ (Chinese)](https://docs.pingcap.com/zh/tidb/stable/dashboard-faq)
 
 ## Question, Suggestion
 
 Feel free to [open GitHub issues](https://github.com/pingcap-incubator/tidb-dashboard/issues/new/choose)
 for questions, support and suggestions.
 
-You may also consider join our community chat in the Slack channel [#sig-dashboard].
+You may also consider join our community chat in the Slack channel [#sig-diagnosis].
 
 For Chinese users, you can visit the PingCAP official user forum [AskTUG.com] to make life easier.
 
@@ -35,7 +37,7 @@ for a list of recommended tasks, in which we have also marked the difficulty lev
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for a detailed step-by-step contributing guide, or steps to
 build TiDB Dashboard from source.
 
-If you need any help, feel free to community chat in the Slack channel [#sig-dashboard].
+If you need any help, feel free to community chat in the Slack channel [#sig-diagnosis].
 
 Thank you to all the people who already contributed to TiDB Dashboard!
 
@@ -65,6 +67,7 @@ Thank you to all the people who already contributed to TiDB Dashboard!
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Architecture
@@ -83,5 +86,5 @@ TiDB Dashboard can also be integrated into PD, as follows:
 Copyright 2020 PingCAP, Inc.
 
 [pd]: https://github.com/pingcap/pd
-[#sig-dashboard]: https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard&ref=github_dashboard_repo
+[#sig-diagnosis]: https://slack.tidb.io/invite?team=tidb-community&channel=sig-diagnosis&ref=github_dashboard_repo
 [asktug.com]: https://asktug.com/

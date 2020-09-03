@@ -16,11 +16,16 @@ import {
   TextWithInfo,
   TextWrap,
   IColumnKeys,
+  DateTime,
 } from '@lib/components'
 
 function commonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`statement.fields.${fieldName}`} />
 }
+
+///////////////////////////////////////
+// statements order list in local by fieldName of IColumn
+// slow query order list in backend by key of IColumn
 
 function planCountColumn(
   _rows?: { plan_count?: number }[] // used for type check only
@@ -52,7 +57,7 @@ function planDigestColumn(
   }
 }
 
-function digestColumn(
+function digestTextColumn(
   _rows?: { digest_text?: string }[], // used for type check only
   showFullSQL?: boolean
 ): IColumn {
@@ -466,6 +471,40 @@ Max:  ${max}`
   }
 }
 
+function timestampColumn(columnName: string): IColumn {
+  return {
+    name: commonColumnName(columnName),
+    key: columnName,
+    fieldName: columnName,
+    minWidth: 100,
+    maxWidth: 150,
+    columnActionsMode: ColumnActionsMode.clickable,
+    onRender: (rec) => (
+      <TextWrap>
+        <DateTime.Calendar unixTimestampMs={rec[columnName] * 1000} />
+      </TextWrap>
+    ),
+  }
+}
+
+function textWithTooltipColumn(
+  columnName: string // case-sensitive
+): IColumn {
+  const objFieldName = columnName.toLowerCase()
+  return {
+    name: commonColumnName(objFieldName),
+    key: columnName,
+    fieldName: objFieldName,
+    minWidth: 100,
+    maxWidth: 150,
+    onRender: (rec) => (
+      <Tooltip title={rec[objFieldName]}>
+        <TextWrap>{rec[objFieldName]}</TextWrap>
+      </Tooltip>
+    ),
+  }
+}
+
 ////////////////////////////////////////////////
 
 export function statementColumns(
@@ -473,7 +512,8 @@ export function statementColumns(
   showFullSQL?: boolean
 ): IColumn[] {
   return [
-    digestColumn(rows, showFullSQL),
+    digestTextColumn(rows, showFullSQL),
+    textWithTooltipColumn('digest'),
     sumLatencyColumn(rows),
     avgMinMaxLatencyColumn(rows),
     execCountColumn(rows),
@@ -501,6 +541,19 @@ export function statementColumns(
     avgPreWriteRegionsColumn(rows),
     avgTxnRetryColumn(rows),
     sumBackoffTimesColumn(rows),
+    singleNumColumn('avg_affected_rows', 'short', rows),
+
+    timestampColumn('first_seen'),
+    timestampColumn('last_seen'),
+    textWithTooltipColumn('sample_user'),
+    textWithTooltipColumn('query_sample_text'),
+    textWithTooltipColumn('prev_sample_text'),
+    textWithTooltipColumn('schema_name'),
+    textWithTooltipColumn('table_names'),
+    textWithTooltipColumn('index_names'),
+
+    textWithTooltipColumn('plan_digest'),
+    textWithTooltipColumn('plan'),
 
     relatedSchemasColumn(rows),
   ]

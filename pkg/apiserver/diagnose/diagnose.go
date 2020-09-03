@@ -74,7 +74,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 	endpoint.POST("/diagnosis",
 		auth.MWAuthRequired(),
-		apiutils.MWConnectTiDB((s.tidbClient)),
+		utils.MWConnectTiDB((s.tidbClient)),
 		s.genDiagnosisHandler)
 }
 
@@ -223,7 +223,7 @@ func (s *Service) genDiagnosisHandler(c *gin.Context) {
 	var req GenDiagnosisReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Status(http.StatusBadRequest)
-		_ = c.Error(apiutils.ErrInvalidRequest.WrapWithNoMessage(err))
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
 		return
 	}
 
@@ -240,7 +240,7 @@ func (s *Service) genDiagnosisHandler(c *gin.Context) {
 		rules = []string{"node-load", "threshold-check"}
 	}
 
-	db := apiutils.TakeTiDBConnection(c)
+	db := utils.TakeTiDBConnection(c)
 	defer db.Close()
 	table, err := GetDiagnoseReport(startTime.Format(timeLayout), endTime.Format(timeLayout), db, rules)
 	if err != nil {

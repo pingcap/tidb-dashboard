@@ -42,7 +42,7 @@ type Base struct {
 	CompileTime float64 `gorm:"column:Compile_time" json:"compile_time"`
 	ProcessTime float64 `gorm:"column:Process_time" json:"process_time"`
 
-	MemoryMax  int  `gorm:"column:Mem_max" json:"memory_max"`
+	MemoryMax  int  `gorm:"column:Mem_max" json:"mem_max"`
 	TxnStartTS uint `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
 }
 
@@ -117,8 +117,8 @@ type GetDetailRequest struct {
 
 func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	finalFields := strings.TrimRight(
-		"Time,(unix_timestamp(Time) + 0E0) as timestamp,"+strings.TrimSpace(req.Fields),
-		",")
+		"Digest,Conn_id,Time,(unix_timestamp(Time) + 0E0) as timestamp,"+strings.TrimSpace(req.Fields),
+		",") // Digest, Conn_id, Time are for query detail
 	tx := db.
 		Table(SlowQueryTable).
 		Select(finalFields).

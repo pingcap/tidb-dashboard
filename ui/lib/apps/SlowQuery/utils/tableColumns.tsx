@@ -29,14 +29,20 @@ function commonColumnName(fieldName: string): any {
   return <TextWithInfo.TransKey transKey={`slow_query.fields.${fieldName}`} />
 }
 
+//////////////////////////////////////////
+// Notice:
+// The key field value in the following methods is case-sensitive
+// They should keep the same as the column name in the slow query table
+// Ref: pkg/apiserver/slowquery/queries.go SlowQuery struct
+
 function sqlColumn(
   _rows?: { query?: string }[], // used for type check only
   showFullSQL?: boolean
 ): IColumn {
   return {
     name: commonColumnName('sql'),
-    key: 'sql',
-    fieldName: 'sql',
+    key: 'Query',
+    fieldName: 'query', // fieldName is used for sort
     minWidth: 200,
     maxWidth: 500,
     onRender: (rec) =>
@@ -79,7 +85,7 @@ function instanceColumn(
 ): IColumn {
   return {
     name: commonColumnName('instance'),
-    key: 'instance',
+    key: 'INSTANCE',
     fieldName: 'instance',
     minWidth: 100,
     maxWidth: 150,
@@ -111,9 +117,6 @@ function dbColumn(
 function successColumn(
   _rows?: { success?: number }[] // used for type check only
 ): IColumn {
-  // !! Don't call `useTranslation()` directly to avoid this method become the custom hook
-  // !! So we can use this inside the useMemo(), useEffect() and useState(()=>{...})
-  // const { t } = useTranslation()
   return {
     name: commonColumnName('result'),
     key: 'Succ',
@@ -146,93 +149,23 @@ function timestampColumn(
 }
 
 function queryTimeColumn(rows?: { query_time?: number }[]): IColumn {
-  const capacity = rows ? max(rows.map((v) => v.query_time)) ?? 0 : 0
-  const key = 'Query_time'
-  return {
-    name: commonColumnName('query_time'),
-    key,
-    fieldName: 'query_time',
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => (
-      <Bar textWidth={70} value={rec.query_time} capacity={capacity}>
-        {getValueFormat('s')(rec.query_time, 1)}
-      </Bar>
-    ),
-  }
+  return singleNumColumn('Query_time', 's', rows)
 }
 
 function parseTimeColumn(rows?: { parse_time?: number }[]): IColumn {
-  const capacity = rows ? max(rows.map((v) => v.parse_time)) ?? 0 : 0
-  const key = 'Parse_time'
-  return {
-    name: commonColumnName('parse_time'),
-    key,
-    fieldName: 'parse_time',
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => (
-      <Bar textWidth={70} value={rec.parse_time} capacity={capacity}>
-        {getValueFormat('s')(rec.parse_time, 1)}
-      </Bar>
-    ),
-  }
+  return singleNumColumn('Parse_time', 's', rows)
 }
 
 function compileTimeColumn(rows?: { compile_time?: number }[]): IColumn {
-  const capacity = rows ? max(rows.map((v) => v.compile_time)) ?? 0 : 0
-  const key = 'Compile_time'
-  return {
-    name: commonColumnName('compile_time'),
-    key,
-    fieldName: 'compile_time',
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => (
-      <Bar textWidth={70} value={rec.compile_time} capacity={capacity}>
-        {getValueFormat('s')(rec.compile_time, 1)}
-      </Bar>
-    ),
-  }
+  return singleNumColumn('Compile_time', 's', rows)
 }
 
 function processTimeColumn(rows?: { process_time?: number }[]): IColumn {
-  const capacity = rows ? max(rows.map((v) => v.process_time)) ?? 0 : 0
-  const key = 'Process_time'
-  return {
-    name: commonColumnName('process_time'),
-    key,
-    fieldName: 'process_time',
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => (
-      <Bar textWidth={70} value={rec.process_time} capacity={capacity}>
-        {getValueFormat('s')(rec.process_time, 1)}
-      </Bar>
-    ),
-  }
+  return singleNumColumn('Process_time', 's', rows)
 }
 
-function memoryColumn(rows?: { memory_max?: number }[]): IColumn {
-  const capacity = rows ? max(rows.map((v) => v.memory_max)) ?? 0 : 0
-  const key = 'Mem_max'
-  return {
-    name: commonColumnName('memory_max'),
-    key,
-    fieldName: 'memory_max',
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => (
-      <Bar textWidth={70} value={rec.memory_max} capacity={capacity}>
-        {getValueFormat('bytes')(rec.memory_max, 1)}
-      </Bar>
-    ),
-  }
+function memoryColumn(rows?: { mem_max?: number }[]): IColumn {
+  return singleNumColumn('Mem_max', 'bytes', rows)
 }
 
 function txnStartTsColumn(
@@ -249,6 +182,40 @@ function txnStartTsColumn(
         <TextWrap>{rec.txn_start_ts}</TextWrap>
       </Tooltip>
     ),
+  }
+}
+
+////////////////////////////////////////////////
+// util methods
+
+// FIXME: duplicated with statement
+// Move to utils tableColumns
+function singleNumColumn(
+  columnName: string, // case-sensitive
+  unit: string,
+  rows?: any[]
+): IColumn {
+  const objFieldName = columnName.toLowerCase()
+  const capacity = rows ? max(rows.map((v) => v[objFieldName])) ?? 0 : 0
+  return {
+    name: commonColumnName(objFieldName),
+    key: columnName,
+    fieldName: objFieldName,
+    minWidth: 140,
+    maxWidth: 200,
+    columnActionsMode: ColumnActionsMode.clickable,
+    onRender: (rec) => {
+      const formatFn = getValueFormat(unit)
+      const fmtVal =
+        unit === 'short'
+          ? formatFn(rec[objFieldName], 0, 1)
+          : formatFn(rec[objFieldName], 1)
+      return (
+        <Bar textWidth={70} value={rec[objFieldName]} capacity={capacity}>
+          {fmtVal}
+        </Bar>
+      )
+    },
   }
 }
 
@@ -275,9 +242,13 @@ export function slowQueryColumns(
 }
 
 //////////////////////////////////////////
+// Notice:
+// The keys in the following object are case-senstive.
+// They should keep the same as the column name in the slow query table
+// Ref: pkg/apiserver/slowquery/queries.go SlowQuery struct
 
 export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
-  sql: true,
+  Query: true,
   Time: true,
   Query_time: true,
   Mem_max: true,

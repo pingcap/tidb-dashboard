@@ -26,8 +26,8 @@ export default function TabBasic({ data }: ITabBasicProps) {
     { key: 'stats', value: data.stats },
     { key: 'backoff_types', value: data.backoff_types },
     {
-      key: 'memory_max',
-      value: getValueFormat('bytes')(data.memory_max || 0, 1),
+      key: 'mem_max',
+      value: getValueFormat('bytes')(data.mem_max || 0, 1),
     },
     { key: 'instance', value: data.instance },
     { key: 'connection_id', value: data.connection_id },

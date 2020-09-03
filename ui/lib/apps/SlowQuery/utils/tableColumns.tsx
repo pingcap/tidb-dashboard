@@ -18,6 +18,8 @@ import {
   IColumnKeys,
 } from '@lib/components'
 
+//////////////////////////////////////////
+
 function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
   const { t } = useTranslation()
   return (
@@ -66,52 +68,19 @@ function sqlColumn(
 function digestColumn(
   _rows?: { digest?: string }[] // used for type check only
 ): IColumn {
-  return {
-    name: commonColumnName('digest'),
-    key: 'Digest',
-    fieldName: 'digest',
-    minWidth: 100,
-    maxWidth: 150,
-    onRender: (rec) => (
-      <Tooltip title={rec.digest}>
-        <TextWrap>{rec.digest}</TextWrap>
-      </Tooltip>
-    ),
-  }
+  return textWithTooltipColumn('Digest')
 }
 
 function instanceColumn(
   _rows?: { instance?: string }[] // used for type check only
 ): IColumn {
-  return {
-    name: commonColumnName('instance'),
-    key: 'INSTANCE',
-    fieldName: 'instance',
-    minWidth: 100,
-    maxWidth: 150,
-    onRender: (rec) => (
-      <Tooltip title={rec.instance}>
-        <TextWrap>{rec.instance}</TextWrap>
-      </Tooltip>
-    ),
-  }
+  return textWithTooltipColumn('INSTANCE')
 }
 
 function dbColumn(
   _rows?: { db?: string }[] // used for type check only
 ): IColumn {
-  return {
-    name: commonColumnName('db'),
-    key: 'DB',
-    fieldName: 'db',
-    minWidth: 100,
-    maxWidth: 150,
-    onRender: (rec) => (
-      <Tooltip title={rec.db}>
-        <TextWrap>{rec.db}</TextWrap>
-      </Tooltip>
-    ),
-  }
+  return textWithTooltipColumn('DB')
 }
 
 function successColumn(
@@ -171,18 +140,7 @@ function memoryColumn(rows?: { mem_max?: number }[]): IColumn {
 function txnStartTsColumn(
   _rows?: { txn_start_ts?: number }[] // used for type check only
 ): IColumn {
-  return {
-    name: commonColumnName('txn_start_ts'),
-    key: 'Txn_start_ts',
-    fieldName: 'txn_start_ts',
-    minWidth: 100,
-    maxWidth: 150,
-    onRender: (rec) => (
-      <Tooltip title={rec.txn_start_ts}>
-        <TextWrap>{rec.txn_start_ts}</TextWrap>
-      </Tooltip>
-    ),
-  }
+  return textWithTooltipColumn('Txn_start_ts')
 }
 
 ////////////////////////////////////////////////
@@ -216,6 +174,24 @@ function singleNumColumn(
         </Bar>
       )
     },
+  }
+}
+
+function textWithTooltipColumn(
+  columnName: string // case-sensitive
+): IColumn {
+  const objFieldName = columnName.toLowerCase()
+  return {
+    name: commonColumnName(objFieldName),
+    key: columnName,
+    fieldName: objFieldName,
+    minWidth: 100,
+    maxWidth: 150,
+    onRender: (rec) => (
+      <Tooltip title={rec[objFieldName]}>
+        <TextWrap>{rec[objFieldName]}</TextWrap>
+      </Tooltip>
+    ),
   }
 }
 

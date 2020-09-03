@@ -108,6 +108,7 @@ function Sider({
     useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
+    useAppMenuItem(registry, 'system_report'),
     useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
     debugSubMenu,

@@ -1,0 +1,28 @@
+system_report:
+  nav_title: System Report
+  generate:
+    title: New System Report
+    range_begin: Range Start Time
+    range_duration: Range Duration
+    is_compare: Compare by Baseline
+    compare_range_begin: Baseline Range Start Time
+    submit: Start
+  list_table:
+    id: Report ID
+    report_create_time: Report At
+    status: Status
+    status_running: Running
+    status_finish: Finish
+    range: Range
+    compare_range: Baseline Range
+  status:
+    head:
+      title: Report Status
+      back: New System Report
+      view: View Full System Report
+    range_begin: Range Start Time
+    range_end: Range End Time
+    baseline_begin: Baseline Range Start Time
+    progress: Progress
+  time_duration:
+    custom: Custom

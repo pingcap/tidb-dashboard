@@ -8,7 +8,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import { SlowqueryBase } from '@lib/client'
+import { SlowquerySlowQuery } from '@lib/client'
 import {
   Bar,
   DateTime,
@@ -143,6 +143,19 @@ function txnStartTsColumn(
   return textWithTooltipColumn('Txn_start_ts')
 }
 
+function isInternalColumn(
+  _rows?: { is_internal?: number }[] // used for type check only
+): IColumn {
+  return {
+    name: commonColumnName('is_internal'),
+    key: 'Is_internal',
+    fieldName: 'is_internal',
+    minWidth: 50,
+    maxWidth: 100,
+    onRender: (rec) => (rec.is_internal === 1 ? 'Yes' : 'No'),
+  }
+}
+
 ////////////////////////////////////////////////
 // util methods
 
@@ -198,7 +211,7 @@ function textWithTooltipColumn(
 //////////////////////////////////////////
 
 export function slowQueryColumns(
-  rows: SlowqueryBase[],
+  rows: SlowquerySlowQuery[],
   showFullSQL?: boolean
 ): IColumn[] {
   return [
@@ -214,6 +227,38 @@ export function slowQueryColumns(
     memoryColumn(rows),
     txnStartTsColumn(rows),
     successColumn(rows),
+    // detail
+    textWithTooltipColumn('Prev_stmt'),
+    textWithTooltipColumn('Plan'),
+    // basic
+    isInternalColumn(rows),
+    textWithTooltipColumn('Index_names'),
+    textWithTooltipColumn('Stats'),
+    textWithTooltipColumn('Backoff_types'),
+    // connection
+    textWithTooltipColumn('User'),
+    textWithTooltipColumn('Host'),
+    // time
+    singleNumColumn('Wait_time', 'ns', rows),
+    singleNumColumn('backoff_time', 'ns', rows),
+    singleNumColumn('Get_commit_ts_time', 'ns', rows),
+    singleNumColumn('Local_latch_wait_time', 'ns', rows),
+    singleNumColumn('Prewrite_time', 'ns', rows),
+    singleNumColumn('Commit_time', 'ns', rows),
+    singleNumColumn('Commit_backoff_time', 'ns', rows),
+    singleNumColumn('Resolve_lock_time', 'ns', rows),
+    // cop: TODO
+    // transaction
+    singleNumColumn('Write_keys', 'short', rows),
+    singleNumColumn('Write_size', 'bytes', rows),
+    singleNumColumn('Prewrite_region', 'short', rows),
+    singleNumColumn('Txn_retry', 'short', rows),
+    // cop?
+    singleNumColumn('Request_count', 'short', rows),
+    singleNumColumn('Process_keys', 'short', rows),
+    singleNumColumn('Total_keys', 'short', rows),
+    textWithTooltipColumn('Cop_proc_addr'),
+    textWithTooltipColumn('Cop_wait_addr'),
   ]
 }
 

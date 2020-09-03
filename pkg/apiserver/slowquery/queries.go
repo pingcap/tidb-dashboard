@@ -55,7 +55,7 @@ type SlowQuery struct {
 
 	// Basic
 	IsInternal   int    `gorm:"column:Is_internal" json:"is_internal"`
-	IndexNames   string `gorm:"column:Index_name" json:"index_names"`
+	IndexNames   string `gorm:"column:Index_names" json:"index_names"`
 	Stats        string `gorm:"column:Stats" json:"stats"`
 	BackoffTypes string `gorm:"column:Backoff_types" json:"backoff_types"`
 

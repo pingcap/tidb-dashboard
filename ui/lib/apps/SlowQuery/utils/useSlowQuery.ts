@@ -100,6 +100,7 @@ export default function useSlowQuery(
             queryOptions.schemas,
             orderOptions.desc,
             queryOptions.digest,
+            '   Query,Digest ',
             queryOptions.limit,
             queryTimeRange.endTime,
             queryTimeRange.beginTime,

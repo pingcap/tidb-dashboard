@@ -15,7 +15,6 @@ package slowquery
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -106,6 +105,8 @@ type GetListRequest struct {
 	// for showing slow queries in the statement detail page
 	Plans  []string `json:"plans" form:"plans"`
 	Digest string   `json:"digest" form:"digest"`
+
+	Fields string `json:"fields" form:"fields"` // example: "Query,Digest"
 }
 
 type GetDetailRequest struct {
@@ -114,37 +115,13 @@ type GetDetailRequest struct {
 	ConnectID int64   `json:"connect_id" form:"connect_id"`
 }
 
-func getAllColumnNames() []string {
-	t := reflect.TypeOf(Base{})
-	fieldsNum := t.NumField()
-	ret := make([]string, 0, fieldsNum)
-	for i := 0; i < fieldsNum; i++ {
-		field := t.Field(i)
-		if s, ok := field.Tag.Lookup("gorm"); ok {
-			list := strings.Split(s, ":")
-			if len(list) < 1 {
-				panic(fmt.Sprintf("Unknown gorm tag field: %s", s))
-			}
-			ret = append(ret, list[1])
-		}
-	}
-	ret = append(ret, "Time")
-	return ret
-}
-
-func isValidColumnName(name string) bool {
-	for _, item := range getAllColumnNames() {
-		if name == item {
-			return true
-		}
-	}
-	return false
-}
-
-func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
+func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
+	finalFields := strings.TrimRight(
+		"Time,(unix_timestamp(Time) + 0E0) as timestamp,"+strings.TrimSpace(req.Fields),
+		",")
 	tx := db.
 		Table(SlowQueryTable).
-		Select(SelectStmt).
+		Select(finalFields).
 		Where("time between from_unixtime(?) and from_unixtime(?)", req.LogStartTS, req.LogEndTS).
 		Limit(req.Limit)
 
@@ -167,12 +144,10 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
 	}
 
 	order := req.OrderBy
-	if isValidColumnName(order) {
-		if req.DESC {
-			tx = tx.Order(fmt.Sprintf("%s desc", order))
-		} else {
-			tx = tx.Order(fmt.Sprintf("%s asc", order))
-		}
+	if req.DESC {
+		tx = tx.Order(fmt.Sprintf("%s desc", order))
+	} else {
+		tx = tx.Order(fmt.Sprintf("%s asc", order))
 	}
 
 	if len(req.Plans) > 0 {
@@ -183,7 +158,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
 		tx = tx.Where("Digest = ?", req.Digest)
 	}
 
-	var results []Base
+	var results []SlowQuery
 	err := tx.Find(&results).Error
 	if err != nil {
 		return nil, err

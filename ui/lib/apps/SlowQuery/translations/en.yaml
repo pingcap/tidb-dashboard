@@ -65,6 +65,9 @@ slow_query:
 
     prev_stmt: Previous Query
     plan: Execution Plan
+
+    cop_proc_avg: Mean Cop Proc # ?
+    cop_wait_avg: Mean Cop Wait # ?
   common:
     status:
       success: Success

@@ -64,8 +64,11 @@ slow_query:
     txn_start_ts_tooltip: 事务开始的时间戳，也即是事务号
     write_keys: 写入 Key 个数
     write_size: 写入数据量
-    prewrite_regions: Prewrite 涉及 Regions 个数
+    prewrite_region: Prewrite 涉及 Regions 个数
     txn_retry: 事务重试次数
+
+    prev_stmt: 前一条 SQL 查询
+    plan: 执行计划
   common:
     status:
       success: 成功

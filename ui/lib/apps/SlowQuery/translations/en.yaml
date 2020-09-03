@@ -60,8 +60,11 @@ slow_query:
     txn_start_ts_tooltip: Transaction start timestamp, a.k.a. Transaction ID
     write_keys: Write Keys
     write_size: Write Size
-    prewrite_regions: Prewrite Regions
+    prewrite_region: Prewrite Region
     txn_retry: Transaction Retries
+
+    prev_stmt: Previous Query
+    plan: Execution Plan
   common:
     status:
       success: Success

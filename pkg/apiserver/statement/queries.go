@@ -136,7 +136,7 @@ func QueryStatementsOverview(
 	text string,
 	fields []string,
 ) (result []Model, err error) {
-	fields = append(fields, "schema_name", "digest", "sum_latency") // "sum_latency" for order
+	fields = append(fields, "schema_name", "digest", "sum_latency") // "schema_name", "digest" for group, "sum_latency" for order
 	aggrFields := getAggrFields(fields...)
 
 	// `table_names` is used to populate `related_schemas`.

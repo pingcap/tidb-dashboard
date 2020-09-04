@@ -45,7 +45,7 @@ function sqlColumn(
   return {
     name: commonColumnName('sql'),
     key: 'Query',
-    fieldName: 'query', // fieldName is used for sort
+    fieldName: 'query',
     minWidth: 200,
     maxWidth: 500,
     onRender: (rec) =>
@@ -82,6 +82,18 @@ function dbColumn(
   _rows?: { db?: string }[] // used for type check only
 ): IColumn {
   return textWithTooltipColumn('DB')
+}
+
+function connectionIDColumn(
+  _rows?: { connection_id?: number }[] // used for type check only
+): IColumn {
+  return {
+    name: commonColumnName('connection_id'),
+    key: 'Conn_ID',
+    fieldName: 'connection_id',
+    minWidth: 100,
+    maxWidth: 120,
+  }
 }
 
 function successColumn(
@@ -274,6 +286,7 @@ export function slowQueryColumns(
     digestColumn(rows),
     instanceColumn(rows),
     dbColumn(rows),
+    connectionIDColumn(rows),
     timestampColumn(rows),
     queryTimeColumn(rows),
     parseTimeColumn(rows),

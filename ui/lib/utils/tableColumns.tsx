@@ -1,11 +1,14 @@
 import { Tooltip } from 'antd'
 import { max } from 'lodash'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import {
+  IColumn,
+  ColumnActionsMode,
+} from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import { Bar, Pre, TextWithInfo } from '@lib/components'
+import { Bar, Pre, TextWithInfo, TextWrap, DateTime } from '@lib/components'
 import { addTranslationResource } from './i18n'
 
 const translations = {
@@ -49,15 +52,17 @@ function TransText({
   return <span>{t(transKey, opt)}</span>
 }
 
-function commonColumnName(fieldName: string): any {
-  return (
-    <TextWithInfo.TransKey transKey={`component.commonColumn.${fieldName}`} />
-  )
+export function commonColumnName(transPrefix: string, fieldName: string): any {
+  const fullTransKey = `${transPrefix}.${fieldName}`
+  return <TextWithInfo.TransKey transKey={fullTransKey} />
 }
+
+////////////////////////////////////
+const TRANS_KEY_PREFIX = 'component.commonColumn'
 
 function fieldsKeyColumn(transKeyPrefix: string): IColumn {
   return {
-    name: commonColumnName('name'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'name'),
     key: 'key',
     minWidth: 150,
     maxWidth: 250,
@@ -72,7 +77,7 @@ function fieldsKeyColumn(transKeyPrefix: string): IColumn {
 
 function fieldsValueColumn(): IColumn {
   return {
-    name: commonColumnName('value'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'value'),
     key: 'value',
     fieldName: 'value',
     minWidth: 150,
@@ -87,7 +92,7 @@ function fieldsTimeValueColumn(
     ? max(rows.map((v) => max([v.max, v.min, v.avg, v.value]))) ?? 0
     : 0
   return {
-    name: commonColumnName('time'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'time'),
     key: 'time',
     minWidth: 150,
     maxWidth: 200,
@@ -130,7 +135,7 @@ function fieldsTimeValueColumn(
 
 function fieldsDescriptionColumn(transKeyPrefix: string): IColumn {
   return {
-    name: commonColumnName('desc'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'desc'),
     key: 'description',
     minWidth: 150,
     maxWidth: 300,
@@ -164,4 +169,76 @@ export function timeValueColumns(
     fieldsTimeValueColumn(items),
     fieldsDescriptionColumn(transKeyPrefix),
   ]
+}
+
+////////////////////////////////////////////
+// shared util column methods for statement tableColumns and slow query tableColumns
+
+export function numWithBarColumn(
+  transPrefix: string,
+  columnName: string, // case-sensitive
+  unit: string,
+  rows?: any[]
+): IColumn {
+  const objFieldName = columnName.toLowerCase()
+  const capacity = rows ? max(rows.map((v) => v[objFieldName])) ?? 0 : 0
+  return {
+    name: commonColumnName(transPrefix, objFieldName),
+    key: columnName,
+    fieldName: objFieldName,
+    minWidth: 140,
+    maxWidth: 200,
+    columnActionsMode: ColumnActionsMode.clickable,
+    onRender: (rec) => {
+      const formatFn = getValueFormat(unit)
+      const fmtVal =
+        unit === 'short'
+          ? formatFn(rec[objFieldName], 0, 1)
+          : formatFn(rec[objFieldName], 1)
+      return (
+        <Bar textWidth={70} value={rec[objFieldName]} capacity={capacity}>
+          {fmtVal}
+        </Bar>
+      )
+    },
+  }
+}
+
+export function textWithTooltipColumn(
+  transPrefix: string,
+  columnName: string // case-sensitive
+): IColumn {
+  const objFieldName = columnName.toLowerCase()
+  return {
+    name: commonColumnName(transPrefix, objFieldName),
+    key: columnName,
+    fieldName: objFieldName,
+    minWidth: 100,
+    maxWidth: 150,
+    onRender: (rec) => (
+      <Tooltip title={rec[objFieldName]}>
+        <TextWrap>{rec[objFieldName]}</TextWrap>
+      </Tooltip>
+    ),
+  }
+}
+
+export function timestampColumn(
+  transPrefix: string,
+  columnName: string // case-sensitive
+): IColumn {
+  const objFieldName = columnName.toLowerCase()
+  return {
+    name: commonColumnName(transPrefix, objFieldName),
+    key: columnName,
+    fieldName: objFieldName,
+    minWidth: 100,
+    maxWidth: 150,
+    columnActionsMode: ColumnActionsMode.clickable,
+    onRender: (rec) => (
+      <TextWrap>
+        <DateTime.Calendar unixTimestampMs={rec[objFieldName] * 1000} />
+      </TextWrap>
+    ),
+  }
 }

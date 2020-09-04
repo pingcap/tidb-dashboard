@@ -9,29 +9,24 @@ import { orange, red } from '@ant-design/colors'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementModel } from '@lib/client'
+import { Bar, HighlightSQL, Pre, TextWrap, IColumnKeys } from '@lib/components'
 import {
-  Bar,
-  HighlightSQL,
-  Pre,
-  TextWithInfo,
-  TextWrap,
-  IColumnKeys,
-  DateTime,
-} from '@lib/components'
-
-function commonColumnName(fieldName: string): any {
-  return <TextWithInfo.TransKey transKey={`statement.fields.${fieldName}`} />
-}
+  commonColumnName,
+  numWithBarColumn,
+  textWithTooltipColumn,
+  timestampColumn,
+} from '@lib/utils/tableColumns'
 
 ///////////////////////////////////////
 // statements order list in local by fieldName of IColumn
 // slow query order list in backend by key of IColumn
+const TRANS_KEY_PREFIX = 'statement.fields'
 
 function planCountColumn(
   _rows?: { plan_count?: number }[] // used for type check only
 ): IColumn {
   return {
-    name: commonColumnName('plan_count'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'plan_count'),
     key: 'plan_count',
     fieldName: 'plan_count',
     minWidth: 100,
@@ -44,7 +39,7 @@ function planDigestColumn(
   _rows?: { plan_digest?: string }[] // used for type check only
 ): IColumn {
   return {
-    name: commonColumnName('plan_digest'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'plan_digest'),
     key: 'plan_digest',
     fieldName: 'plan_digest',
     minWidth: 100,
@@ -62,7 +57,7 @@ function digestTextColumn(
   showFullSQL?: boolean
 ): IColumn {
   return {
-    name: commonColumnName('digest_text'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'digest_text'),
     key: 'digest_text',
     fieldName: 'digest_text',
     minWidth: 100,
@@ -87,7 +82,7 @@ function digestTextColumn(
 }
 
 function sumLatencyColumn(rows?: { sum_latency?: number }[]): IColumn {
-  return singleNumColumn('sum_latency', 'ns', rows)
+  return numWithBarColumn(TRANS_KEY_PREFIX, 'sum_latency', 'ns', rows)
 }
 
 function avgMinMaxLatencyColumn(
@@ -96,7 +91,7 @@ function avgMinMaxLatencyColumn(
   const capacity = rows ? max(rows.map((v) => v.max_latency)) ?? 0 : 0
   const key = 'avg_latency'
   return {
-    name: commonColumnName(key),
+    name: commonColumnName(TRANS_KEY_PREFIX, key),
     key,
     fieldName: key,
     minWidth: 140,
@@ -125,7 +120,7 @@ Max:  ${getValueFormat('ns')(rec.max_latency, 1)}`
 }
 
 function execCountColumn(rows?: { exec_count?: number }[]): IColumn {
-  return singleNumColumn('exec_count', 'short', rows)
+  return numWithBarColumn(TRANS_KEY_PREFIX, 'exec_count', 'short', rows)
 }
 
 function avgMaxMemColumn(
@@ -142,7 +137,7 @@ function errorsWarningsColumn(
     : 0
   const key = 'sum_errors'
   return {
-    name: commonColumnName('errors_warnings'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'errors_warnings'),
     key,
     fieldName: key,
     minWidth: 140,
@@ -192,10 +187,6 @@ function avgCompileLatencyColumn(
     'ns',
     rows
   )
-}
-
-function sumCopTaskNumColumn(rows?: any[]): IColumn {
-  return singleNumColumn('sum_cop_task_num', 'short', rows)
 }
 
 function avgCoprColumn(
@@ -374,15 +365,11 @@ function avgTxnRetryColumn(rows?: any[]): IColumn {
   )
 }
 
-function sumBackoffTimesColumn(rows?: any[]): IColumn {
-  return singleNumColumn('sum_backoff_times', 'short', rows)
-}
-
 function relatedSchemasColumn(
   _rows?: { related_schemas?: string }[] // used for type check only
 ): IColumn {
   return {
-    name: commonColumnName('related_schemas'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'related_schemas'),
     key: 'related_schemas',
     minWidth: 160,
     maxWidth: 240,
@@ -397,35 +384,6 @@ function relatedSchemasColumn(
 ////////////////////////////////////////////////
 // util methods
 
-function singleNumColumn(
-  columnKey: string,
-  unit: string,
-  rows?: any[]
-): IColumn {
-  const capacity = rows ? max(rows.map((v) => v[columnKey])) ?? 0 : 0
-  const key = columnKey
-  return {
-    name: commonColumnName(key),
-    key,
-    fieldName: key,
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => {
-      const formatFn = getValueFormat(unit)
-      const fmtVal =
-        unit === 'short'
-          ? formatFn(rec[columnKey], 0, 1)
-          : formatFn(rec[columnKey], 1)
-      return (
-        <Bar textWidth={70} value={rec[columnKey]} capacity={capacity}>
-          {fmtVal}
-        </Bar>
-      )
-    },
-  }
-}
-
 function avgMaxColumn(
   avgKey: string,
   maxKey: string,
@@ -436,7 +394,7 @@ function avgMaxColumn(
   const capacity = rows ? max(rows.map((v) => v[maxKey])) ?? 0 : 0
   const key = avgKey
   return {
-    name: commonColumnName(columnName),
+    name: commonColumnName(TRANS_KEY_PREFIX, columnName),
     key,
     fieldName: key,
     minWidth: 140,
@@ -471,40 +429,6 @@ Max:  ${max}`
   }
 }
 
-function timestampColumn(columnName: string): IColumn {
-  return {
-    name: commonColumnName(columnName),
-    key: columnName,
-    fieldName: columnName,
-    minWidth: 100,
-    maxWidth: 150,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => (
-      <TextWrap>
-        <DateTime.Calendar unixTimestampMs={rec[columnName] * 1000} />
-      </TextWrap>
-    ),
-  }
-}
-
-function textWithTooltipColumn(
-  columnName: string // case-sensitive
-): IColumn {
-  const objFieldName = columnName.toLowerCase()
-  return {
-    name: commonColumnName(objFieldName),
-    key: columnName,
-    fieldName: objFieldName,
-    minWidth: 100,
-    maxWidth: 150,
-    onRender: (rec) => (
-      <Tooltip title={rec[objFieldName]}>
-        <TextWrap>{rec[objFieldName]}</TextWrap>
-      </Tooltip>
-    ),
-  }
-}
-
 ////////////////////////////////////////////////
 
 export function statementColumns(
@@ -513,7 +437,7 @@ export function statementColumns(
 ): IColumn[] {
   return [
     digestTextColumn(rows, showFullSQL),
-    textWithTooltipColumn('digest'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'digest'),
     sumLatencyColumn(rows),
     avgMinMaxLatencyColumn(rows),
     execCountColumn(rows),
@@ -522,7 +446,7 @@ export function statementColumns(
     errorsWarningsColumn(rows),
     avgParseLatencyColumn(rows),
     avgCompileLatencyColumn(rows),
-    sumCopTaskNumColumn(rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'sum_cop_task_num', 'short', rows),
     avgCoprColumn(rows),
     avgCopWaitColumn(rows),
     avgTotalProcessColumn(rows),
@@ -540,20 +464,20 @@ export function statementColumns(
     avgWriteSizeColumn(rows),
     avgPreWriteRegionsColumn(rows),
     avgTxnRetryColumn(rows),
-    sumBackoffTimesColumn(rows),
-    singleNumColumn('avg_affected_rows', 'short', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'sum_backoff_times', 'short', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'avg_affected_rows', 'short', rows),
 
-    timestampColumn('first_seen'),
-    timestampColumn('last_seen'),
-    textWithTooltipColumn('sample_user'),
-    textWithTooltipColumn('query_sample_text'),
-    textWithTooltipColumn('prev_sample_text'),
-    textWithTooltipColumn('schema_name'),
-    textWithTooltipColumn('table_names'),
-    textWithTooltipColumn('index_names'),
+    timestampColumn(TRANS_KEY_PREFIX, 'first_seen'),
+    timestampColumn(TRANS_KEY_PREFIX, 'last_seen'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'sample_user'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'query_sample_text'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'prev_sample_text'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'schema_name'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'table_names'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'index_names'),
 
-    textWithTooltipColumn('plan_digest'),
-    textWithTooltipColumn('plan'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'plan_digest'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'plan'),
 
     relatedSchemasColumn(rows),
   ]

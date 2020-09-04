@@ -9,15 +9,13 @@ import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { SlowquerySlowQuery } from '@lib/client'
+import { Bar, HighlightSQL, TextWrap, IColumnKeys, Pre } from '@lib/components'
 import {
-  Bar,
-  DateTime,
-  HighlightSQL,
-  TextWithInfo,
-  TextWrap,
-  IColumnKeys,
-  Pre,
-} from '@lib/components'
+  commonColumnName,
+  numWithBarColumn,
+  textWithTooltipColumn,
+  timestampColumn,
+} from '@lib/utils/tableColumns'
 
 //////////////////////////////////////////
 
@@ -28,22 +26,19 @@ function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
   )
 }
 
-function commonColumnName(fieldName: string): any {
-  return <TextWithInfo.TransKey transKey={`slow_query.fields.${fieldName}`} />
-}
-
 //////////////////////////////////////////
 // Notice:
 // The key field value in the following methods is case-sensitive
 // They should keep the same as the column name in the slow query table
 // Ref: pkg/apiserver/slowquery/queries.go SlowQuery struct
+const TRANS_KEY_PREFIX = 'slow_query.fields'
 
 function sqlColumn(
   _rows?: { query?: string }[], // used for type check only
   showFullSQL?: boolean
 ): IColumn {
   return {
-    name: commonColumnName('sql'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'sql'),
     key: 'Query',
     fieldName: 'query',
     minWidth: 200,
@@ -66,29 +61,11 @@ function sqlColumn(
   }
 }
 
-function digestColumn(
-  _rows?: { digest?: string }[] // used for type check only
-): IColumn {
-  return textWithTooltipColumn('Digest')
-}
-
-function instanceColumn(
-  _rows?: { instance?: string }[] // used for type check only
-): IColumn {
-  return textWithTooltipColumn('INSTANCE')
-}
-
-function dbColumn(
-  _rows?: { db?: string }[] // used for type check only
-): IColumn {
-  return textWithTooltipColumn('DB')
-}
-
 function connectionIDColumn(
   _rows?: { connection_id?: number }[] // used for type check only
 ): IColumn {
   return {
-    name: commonColumnName('connection_id'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'connection_id'),
     key: 'Conn_ID',
     fieldName: 'connection_id',
     minWidth: 100,
@@ -96,11 +73,19 @@ function connectionIDColumn(
   }
 }
 
+function _timestampColumn(
+  _rows?: { timestamp?: number }[] // used for type check only
+): IColumn {
+  const column = timestampColumn(TRANS_KEY_PREFIX, 'timestamp')
+  column.key = 'Time'
+  return column
+}
+
 function successColumn(
   _rows?: { success?: number }[] // used for type check only
 ): IColumn {
   return {
-    name: commonColumnName('result'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'result'),
     key: 'Succ',
     fieldName: 'success',
     minWidth: 50,
@@ -111,56 +96,11 @@ function successColumn(
   }
 }
 
-function timestampColumn(
-  _rows?: { timestamp?: number }[] // used for type check only
-): IColumn {
-  const key = 'Time'
-  return {
-    name: commonColumnName('timestamp'),
-    key,
-    fieldName: 'timestamp',
-    minWidth: 100,
-    maxWidth: 150,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => (
-      <TextWrap>
-        <DateTime.Calendar unixTimestampMs={rec.timestamp * 1000} />
-      </TextWrap>
-    ),
-  }
-}
-
-function queryTimeColumn(rows?: { query_time?: number }[]): IColumn {
-  return singleNumColumn('Query_time', 's', rows)
-}
-
-function parseTimeColumn(rows?: { parse_time?: number }[]): IColumn {
-  return singleNumColumn('Parse_time', 's', rows)
-}
-
-function compileTimeColumn(rows?: { compile_time?: number }[]): IColumn {
-  return singleNumColumn('Compile_time', 's', rows)
-}
-
-function processTimeColumn(rows?: { process_time?: number }[]): IColumn {
-  return singleNumColumn('Process_time', 's', rows)
-}
-
-function memoryColumn(rows?: { mem_max?: number }[]): IColumn {
-  return singleNumColumn('Mem_max', 'bytes', rows)
-}
-
-function txnStartTsColumn(
-  _rows?: { txn_start_ts?: number }[] // used for type check only
-): IColumn {
-  return textWithTooltipColumn('Txn_start_ts')
-}
-
 function isInternalColumn(
   _rows?: { is_internal?: number }[] // used for type check only
 ): IColumn {
   return {
-    name: commonColumnName('is_internal'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'is_internal'),
     key: 'Is_internal',
     fieldName: 'is_internal',
     minWidth: 50,
@@ -169,77 +109,8 @@ function isInternalColumn(
   }
 }
 
-function copProcColumn(
-  _rows?: {
-    cop_proc_avg?: number
-    cop_proc_p90?: number
-    cop_proc_max?: number
-  }[] // used for type check only
-): IColumn {
-  return avgP90MaxColumn('Cop_proc', _rows)
-}
-
-function copWaitColumn(
-  _rows?: {
-    cop_wait_avg?: number
-    cop_wait_p90?: number
-    cop_wait_max?: number
-  }[] // used for type check only
-): IColumn {
-  return avgP90MaxColumn('Cop_wait', _rows)
-}
-
 ////////////////////////////////////////////////
 // util methods
-
-// FIXME: duplicated with statement
-// Move to utils tableColumns
-function singleNumColumn(
-  columnName: string, // case-sensitive
-  unit: string,
-  rows?: any[]
-): IColumn {
-  const objFieldName = columnName.toLowerCase()
-  const capacity = rows ? max(rows.map((v) => v[objFieldName])) ?? 0 : 0
-  return {
-    name: commonColumnName(objFieldName),
-    key: columnName,
-    fieldName: objFieldName,
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => {
-      const formatFn = getValueFormat(unit)
-      const fmtVal =
-        unit === 'short'
-          ? formatFn(rec[objFieldName], 0, 1)
-          : formatFn(rec[objFieldName], 1)
-      return (
-        <Bar textWidth={70} value={rec[objFieldName]} capacity={capacity}>
-          {fmtVal}
-        </Bar>
-      )
-    },
-  }
-}
-
-function textWithTooltipColumn(
-  columnName: string // case-sensitive
-): IColumn {
-  const objFieldName = columnName.toLowerCase()
-  return {
-    name: commonColumnName(objFieldName),
-    key: columnName,
-    fieldName: objFieldName,
-    minWidth: 100,
-    maxWidth: 150,
-    onRender: (rec) => (
-      <Tooltip title={rec[objFieldName]}>
-        <TextWrap>{rec[objFieldName]}</TextWrap>
-      </Tooltip>
-    ),
-  }
-}
 
 function avgP90MaxColumn(columnNamePrefix: string, rows?: any[]): IColumn {
   const avgFiledName = `${columnNamePrefix}_avg`.toLowerCase()
@@ -247,7 +118,7 @@ function avgP90MaxColumn(columnNamePrefix: string, rows?: any[]): IColumn {
   const maxFiledName = `${columnNamePrefix}_max`.toLowerCase()
   const capacity = rows ? max(rows.map((v) => v[maxFiledName])) ?? 0 : 0
   return {
-    name: commonColumnName(avgFiledName),
+    name: commonColumnName(TRANS_KEY_PREFIX, avgFiledName),
     key: `${columnNamePrefix}_avg`,
     fieldName: avgFiledName,
     minWidth: 140,
@@ -283,52 +154,52 @@ export function slowQueryColumns(
 ): IColumn[] {
   return [
     sqlColumn(rows, showFullSQL),
-    digestColumn(rows),
-    instanceColumn(rows),
-    dbColumn(rows),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'Digest'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'INSTANCE'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'DB'),
     connectionIDColumn(rows),
-    timestampColumn(rows),
-    queryTimeColumn(rows),
-    parseTimeColumn(rows),
-    compileTimeColumn(rows),
-    processTimeColumn(rows),
-    memoryColumn(rows),
-    txnStartTsColumn(rows),
+    _timestampColumn(rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Query_time', 's', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Parse_time', 's', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Compile_time', 's', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Process_time', 's', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Mem_max', 'bytes', rows),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'Txn_start_ts'),
     successColumn(rows),
     // detail
-    textWithTooltipColumn('Prev_stmt'),
-    textWithTooltipColumn('Plan'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'Prev_stmt'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'Plan'),
     // basic
     isInternalColumn(rows),
-    textWithTooltipColumn('Index_names'),
-    textWithTooltipColumn('Stats'),
-    textWithTooltipColumn('Backoff_types'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'Index_names'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'Stats'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'Backoff_types'),
     // connection
-    textWithTooltipColumn('User'),
-    textWithTooltipColumn('Host'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'User'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'Host'),
     // time
-    singleNumColumn('Wait_time', 'ns', rows),
-    singleNumColumn('backoff_time', 'ns', rows),
-    singleNumColumn('Get_commit_ts_time', 'ns', rows),
-    singleNumColumn('Local_latch_wait_time', 'ns', rows),
-    singleNumColumn('Prewrite_time', 'ns', rows),
-    singleNumColumn('Commit_time', 'ns', rows),
-    singleNumColumn('Commit_backoff_time', 'ns', rows),
-    singleNumColumn('Resolve_lock_time', 'ns', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Wait_time', 'ns', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'backoff_time', 'ns', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Get_commit_ts_time', 'ns', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Local_latch_wait_time', 'ns', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Prewrite_time', 'ns', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Commit_time', 'ns', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Commit_backoff_time', 'ns', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Resolve_lock_time', 'ns', rows),
     // cop
-    copProcColumn(rows),
-    copWaitColumn(rows),
+    avgP90MaxColumn('Cop_proc', rows),
+    avgP90MaxColumn('Cop_wait', rows),
     // transaction
-    singleNumColumn('Write_keys', 'short', rows),
-    singleNumColumn('Write_size', 'bytes', rows),
-    singleNumColumn('Prewrite_region', 'short', rows),
-    singleNumColumn('Txn_retry', 'short', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Write_keys', 'short', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Write_size', 'bytes', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Prewrite_region', 'short', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Txn_retry', 'short', rows),
     // cop?
-    singleNumColumn('Request_count', 'short', rows),
-    singleNumColumn('Process_keys', 'short', rows),
-    singleNumColumn('Total_keys', 'short', rows),
-    textWithTooltipColumn('Cop_proc_addr'),
-    textWithTooltipColumn('Cop_wait_addr'),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Request_count', 'short', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Process_keys', 'short', rows),
+    numWithBarColumn(TRANS_KEY_PREFIX, 'Total_keys', 'short', rows),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'Cop_proc_addr'),
+    textWithTooltipColumn(TRANS_KEY_PREFIX, 'Cop_wait_addr'),
   ]
 }
 

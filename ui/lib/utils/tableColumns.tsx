@@ -282,6 +282,25 @@ export function sqlTextColumn(
   }
 }
 
+export function planColumn(
+  transPrefix: string,
+  columnName: string // case-sensitive
+): IColumn {
+  const objFieldName = columnName.toLowerCase()
+  return {
+    name: commonColumnName(transPrefix, objFieldName),
+    key: columnName,
+    fieldName: objFieldName,
+    minWidth: 100,
+    maxWidth: 150,
+    onRender: (rec) => (
+      <Tooltip title={<Pre noWrap>{rec[objFieldName]}</Pre>}>
+        <TextWrap>{rec[objFieldName]}</TextWrap>
+      </Tooltip>
+    ),
+  }
+}
+
 ////////////////////////////////////////////
 
 export function getSelectedColumns(

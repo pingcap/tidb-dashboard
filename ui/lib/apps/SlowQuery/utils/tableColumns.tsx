@@ -16,6 +16,7 @@ import {
   textWithTooltipColumn,
   timestampColumn,
   sqlTextColumn,
+  planColumn,
 } from '@lib/utils/tableColumns'
 
 //////////////////////////////////////////
@@ -150,7 +151,7 @@ export function slowQueryColumns(
     successColumn(rows),
     // detail
     sqlTextColumn(TRANS_KEY_PREFIX, 'Prev_stmt', showFullSQL),
-    textWithTooltipColumn(TRANS_KEY_PREFIX, 'Plan'),
+    planColumn(TRANS_KEY_PREFIX, 'Plan'),
     // basic
     isInternalColumn(rows),
     textWithTooltipColumn(TRANS_KEY_PREFIX, 'Index_names'),

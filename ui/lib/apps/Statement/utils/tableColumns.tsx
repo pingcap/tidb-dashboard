@@ -16,6 +16,7 @@ import {
   textWithTooltipColumn,
   timestampColumn,
   sqlTextColumn,
+  planColumn,
 } from '@lib/utils/tableColumns'
 
 ///////////////////////////////////////
@@ -458,7 +459,7 @@ export function statementColumns(
     textWithTooltipColumn(TRANS_KEY_PREFIX, 'index_names'),
 
     textWithTooltipColumn(TRANS_KEY_PREFIX, 'plan_digest'),
-    textWithTooltipColumn(TRANS_KEY_PREFIX, 'plan'),
+    planColumn(TRANS_KEY_PREFIX, 'plan'),
 
     relatedSchemasColumn(rows),
   ]

@@ -9,12 +9,13 @@ import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { SlowquerySlowQuery } from '@lib/client'
-import { Bar, HighlightSQL, TextWrap, IColumnKeys, Pre } from '@lib/components'
+import { Bar, IColumnKeys, Pre } from '@lib/components'
 import {
   commonColumnName,
   numWithBarColumn,
   textWithTooltipColumn,
   timestampColumn,
+  sqlTextColumn,
 } from '@lib/utils/tableColumns'
 
 //////////////////////////////////////////
@@ -37,28 +38,9 @@ function sqlColumn(
   _rows?: { query?: string }[], // used for type check only
   showFullSQL?: boolean
 ): IColumn {
-  return {
-    name: commonColumnName(TRANS_KEY_PREFIX, 'sql'),
-    key: 'Query',
-    fieldName: 'query',
-    minWidth: 200,
-    maxWidth: 500,
-    onRender: (rec) =>
-      showFullSQL ? (
-        <TextWrap multiline>
-          <HighlightSQL sql={rec.query} />
-        </TextWrap>
-      ) : (
-        <Tooltip
-          title={<HighlightSQL sql={rec.query} theme="dark" />}
-          placement="right"
-        >
-          <TextWrap>
-            <HighlightSQL sql={rec.query} compact />
-          </TextWrap>
-        </Tooltip>
-      ),
-  }
+  const column = sqlTextColumn(TRANS_KEY_PREFIX, 'Query', showFullSQL)
+  column.name = commonColumnName(TRANS_KEY_PREFIX, 'sql')
+  return column
 }
 
 function connectionIDColumn(
@@ -167,7 +149,7 @@ export function slowQueryColumns(
     textWithTooltipColumn(TRANS_KEY_PREFIX, 'Txn_start_ts'),
     successColumn(rows),
     // detail
-    textWithTooltipColumn(TRANS_KEY_PREFIX, 'Prev_stmt'),
+    sqlTextColumn(TRANS_KEY_PREFIX, 'Prev_stmt', showFullSQL),
     textWithTooltipColumn(TRANS_KEY_PREFIX, 'Plan'),
     // basic
     isInternalColumn(rows),

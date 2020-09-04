@@ -9,12 +9,13 @@ import { orange, red } from '@ant-design/colors'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementModel } from '@lib/client'
-import { Bar, HighlightSQL, Pre, TextWrap, IColumnKeys } from '@lib/components'
+import { Bar, Pre, TextWrap, IColumnKeys } from '@lib/components'
 import {
   commonColumnName,
   numWithBarColumn,
   textWithTooltipColumn,
   timestampColumn,
+  sqlTextColumn,
 } from '@lib/utils/tableColumns'
 
 ///////////////////////////////////////
@@ -56,29 +57,7 @@ function digestTextColumn(
   _rows?: { digest_text?: string }[], // used for type check only
   showFullSQL?: boolean
 ): IColumn {
-  return {
-    name: commonColumnName(TRANS_KEY_PREFIX, 'digest_text'),
-    key: 'digest_text',
-    fieldName: 'digest_text',
-    minWidth: 100,
-    maxWidth: 500,
-    isMultiline: showFullSQL,
-    onRender: (rec) =>
-      showFullSQL ? (
-        <TextWrap multiline>
-          <HighlightSQL sql={rec.digest_text} />
-        </TextWrap>
-      ) : (
-        <Tooltip
-          title={<HighlightSQL sql={rec.digest_text} theme="dark" />}
-          placement="right"
-        >
-          <TextWrap>
-            <HighlightSQL sql={rec.digest_text} compact />
-          </TextWrap>
-        </Tooltip>
-      ),
-  }
+  return sqlTextColumn(TRANS_KEY_PREFIX, 'digest_text', showFullSQL)
 }
 
 function sumLatencyColumn(rows?: { sum_latency?: number }[]): IColumn {
@@ -470,8 +449,10 @@ export function statementColumns(
     timestampColumn(TRANS_KEY_PREFIX, 'first_seen'),
     timestampColumn(TRANS_KEY_PREFIX, 'last_seen'),
     textWithTooltipColumn(TRANS_KEY_PREFIX, 'sample_user'),
-    textWithTooltipColumn(TRANS_KEY_PREFIX, 'query_sample_text'),
-    textWithTooltipColumn(TRANS_KEY_PREFIX, 'prev_sample_text'),
+
+    sqlTextColumn(TRANS_KEY_PREFIX, 'query_sample_text', showFullSQL),
+    sqlTextColumn(TRANS_KEY_PREFIX, 'prev_sample_text', showFullSQL),
+
     textWithTooltipColumn(TRANS_KEY_PREFIX, 'schema_name'),
     textWithTooltipColumn(TRANS_KEY_PREFIX, 'table_names'),
     textWithTooltipColumn(TRANS_KEY_PREFIX, 'index_names'),

@@ -15,6 +15,7 @@ import {
   TextWrap,
   DateTime,
   IColumnKeys,
+  HighlightSQL,
 } from '@lib/components'
 import { addTranslationResource } from './i18n'
 
@@ -247,6 +248,37 @@ export function timestampColumn(
         <DateTime.Calendar unixTimestampMs={rec[objFieldName] * 1000} />
       </TextWrap>
     ),
+  }
+}
+
+export function sqlTextColumn(
+  transPrefix: string,
+  columnName: string, // case-sensitive
+  showFullSQL?: boolean
+): IColumn {
+  const objFieldName = columnName.toLowerCase()
+  return {
+    name: commonColumnName(transPrefix, objFieldName),
+    key: columnName,
+    fieldName: objFieldName,
+    minWidth: 100,
+    maxWidth: 500,
+    isMultiline: showFullSQL,
+    onRender: (rec) =>
+      showFullSQL ? (
+        <TextWrap multiline>
+          <HighlightSQL sql={rec[objFieldName]} />
+        </TextWrap>
+      ) : (
+        <Tooltip
+          title={<HighlightSQL sql={rec[objFieldName]} theme="dark" />}
+          placement="right"
+        >
+          <TextWrap>
+            <HighlightSQL sql={rec[objFieldName]} compact />
+          </TextWrap>
+        </Tooltip>
+      ),
   }
 }
 

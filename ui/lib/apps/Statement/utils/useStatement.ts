@@ -2,14 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
 import client, { StatementModel, StatementTimeRange } from '@lib/client'
+import { IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
+import { getSelectedColumns } from '@lib/utils/tableColumns'
 
 import {
   calcValidStatementTimeRange,
   DEFAULT_TIME_RANGE,
   TimeRange,
 } from '../pages/List/TimeRangeSelector'
-import { IColumnKeys } from '@lib/components'
 import { STMT_COLUMN_REFS } from './tableColumns'
 
 const QUERY_OPTIONS = 'statement.query_options'
@@ -137,17 +138,7 @@ export default function useStatement(
         return
       }
 
-      let fields: string[] = []
-      Object.keys(visibleColumnKeys).forEach((k) => {
-        if (visibleColumnKeys[k] === true) {
-          const refFields = STMT_COLUMN_REFS[k]
-          if (refFields !== undefined) {
-            fields = fields.concat(refFields)
-          } else {
-            fields.push(k)
-          }
-        }
-      })
+      const fields = getSelectedColumns(visibleColumnKeys, STMT_COLUMN_REFS)
 
       setLoadingStatements(true)
       try {

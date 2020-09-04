@@ -4,6 +4,8 @@ import { useSessionStorageState } from '@umijs/hooks'
 import client, { SlowqueryBase } from '@lib/client'
 import { calcTimeRange, TimeRange, IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
+import { getSelectedColumns } from '@lib/utils/tableColumns'
+
 import { SLOW_QUERY_COLUMN_REFS } from './tableColumns'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
@@ -94,18 +96,10 @@ export default function useSlowQuery(
 
   useEffect(() => {
     async function getSlowQueryList() {
-      // FIXME: duplicated with useStatement
-      let fields: string[] = []
-      Object.keys(visibleColumnKeys).forEach((k) => {
-        if (visibleColumnKeys[k] === true) {
-          const refFields = SLOW_QUERY_COLUMN_REFS[k]
-          if (refFields !== undefined) {
-            fields = fields.concat(refFields)
-          } else {
-            fields.push(k)
-          }
-        }
-      })
+      const fields = getSelectedColumns(
+        visibleColumnKeys,
+        SLOW_QUERY_COLUMN_REFS
+      )
 
       setLoadingSlowQueries(true)
       try {

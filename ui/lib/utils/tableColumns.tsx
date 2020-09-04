@@ -8,7 +8,14 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import { Bar, Pre, TextWithInfo, TextWrap, DateTime } from '@lib/components'
+import {
+  Bar,
+  Pre,
+  TextWithInfo,
+  TextWrap,
+  DateTime,
+  IColumnKeys,
+} from '@lib/components'
 import { addTranslationResource } from './i18n'
 
 const translations = {
@@ -241,4 +248,24 @@ export function timestampColumn(
       </TextWrap>
     ),
   }
+}
+
+////////////////////////////////////////////
+
+export function getSelectedColumns(
+  visibleColumnKeys: IColumnKeys,
+  columnRefs: { [key: string]: string[] }
+) {
+  let fields: string[] = []
+  Object.keys(visibleColumnKeys).forEach((k) => {
+    if (visibleColumnKeys[k] === true) {
+      const refFields = columnRefs[k]
+      if (refFields !== undefined) {
+        fields = fields.concat(refFields)
+      } else {
+        fields.push(k)
+      }
+    }
+  })
+  return fields
 }

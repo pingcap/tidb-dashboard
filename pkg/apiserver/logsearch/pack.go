@@ -29,8 +29,7 @@ func serveTaskForDownload(task *TaskModel, c *gin.Context) {
 		logPath = task.SlowLogStorePath
 	}
 	if logPath == nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.New("Log is not available"))
+		utils.MakeInvalidRequestErrorWithMessage(c, "Log is not ready")
 		return
 	}
 	c.FileAttachment(*logPath, fmt.Sprintf("logs-%s.zip", task.Target.FileName()))

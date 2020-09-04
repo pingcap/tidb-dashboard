@@ -42,7 +42,7 @@ function useCurrentLogin() {
   const [login, setLogin] = useState<InfoWhoAmIResponse | null>(null)
   useEffect(() => {
     async function fetch() {
-      const resp = await client.getInstance().infoWhoamiGet()
+      const resp = await client.getInstance().infoWhoami()
       if (resp.data) {
         setLogin(resp.data)
       }
@@ -66,7 +66,7 @@ function Sider({
   const currentLogin = useCurrentLogin()
 
   const { data } = useClientRequest((cancelToken) =>
-    client.getInstance().getInfo({ cancelToken })
+    client.getInstance().infoGet({ cancelToken })
   )
 
   const debugSubMenuItems = [useAppMenuItem(registry, 'instance_profiling')]
@@ -108,6 +108,7 @@ function Sider({
     useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
+    useAppMenuItem(registry, 'system_report'),
     useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
     debugSubMenu,
@@ -117,13 +118,14 @@ function Sider({
     menuItems.push(experimentalSubMenu)
   }
 
+  let displayName = currentLogin?.username ?? '...'
+  if (currentLogin?.is_shared) {
+    displayName += ' (Shared)'
+  }
+
   const extraMenuItems = [
     useAppMenuItem(registry, 'dashboard_settings'),
-    useAppMenuItem(
-      registry,
-      'user_profile',
-      currentLogin ? currentLogin.username : '...'
-    ),
+    useAppMenuItem(registry, 'user_profile', displayName),
   ]
 
   const transSider = useSpring({

@@ -25,7 +25,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
-	apiutils "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
@@ -64,13 +64,18 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		s.reportsHandler)
 	endpoint.POST("/reports",
 		auth.MWAuthRequired(),
-		apiutils.MWConnectTiDB(s.tidbClient),
+		utils.MWConnectTiDB(s.tidbClient),
 		s.genReportHandler)
 	endpoint.GET("/reports/:id/detail", s.reportHTMLHandler)
 	endpoint.GET("/reports/:id/data.js", s.reportDataHandler)
 	endpoint.GET("/reports/:id/status",
 		auth.MWAuthRequired(),
 		s.reportStatusHandler)
+
+	endpoint.POST("/diagnosis",
+		auth.MWAuthRequired(),
+		utils.MWConnectTiDB((s.tidbClient)),
+		s.genDiagnosisHandler)
 }
 
 type GenerateReportRequest struct {
@@ -82,7 +87,6 @@ type GenerateReportRequest struct {
 
 // @Summary SQL diagnosis reports history
 // @Description Get sql diagnosis reports history
-// @Produce json
 // @Success 200 {array} Report
 // @Router /diagnose/reports [get]
 // @Security JwtAuth
@@ -98,17 +102,16 @@ func (s *Service) reportsHandler(c *gin.Context) {
 
 // @Summary SQL diagnosis report
 // @Description Generate sql diagnosis report
-// @Produce json
 // @Param request body GenerateReportRequest true "Request body"
 // @Success 200 {object} int
 // @Router /diagnose/reports [post]
 // @Security JwtAuth
+// @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) genReportHandler(c *gin.Context) {
 	var req GenerateReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(apiutils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
@@ -128,7 +131,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 		return
 	}
 
-	db := apiutils.TakeTiDBConnection(c)
+	db := utils.TakeTiDBConnection(c)
 
 	go func() {
 		defer db.Close()
@@ -154,7 +157,6 @@ func (s *Service) genReportHandler(c *gin.Context) {
 
 // @Summary Diagnosis report status
 // @Description Get diagnosis report status
-// @Produce json
 // @Param id path string true "report id"
 // @Success 200 {object} Report
 // @Router /diagnose/reports/{id}/status [get]
@@ -201,4 +203,49 @@ func (s *Service) reportDataHandler(c *gin.Context) {
 
 	data := "window.__diagnosis_data__ = " + report.Content
 	c.Data(http.StatusOK, "text/javascript", []byte(data))
+}
+
+type GenDiagnosisReportRequest struct {
+	StartTime int64  `json:"start_time"`
+	EndTime   int64  `json:"end_time"`
+	Kind      string `json:"kind"` // values: config, error, performance
+}
+
+// @Summary SQL diagnosis report
+// @Description Generate sql diagnosis report
+// @Produce json
+// @Param request body GenDiagnosisReportRequest true "Request body"
+// @Success 200 {object} TableDef
+// @Router /diagnose/diagnosis [post]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) genDiagnosisHandler(c *gin.Context) {
+	var req GenDiagnosisReportRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		return
+	}
+
+	startTime := time.Unix(req.StartTime, 0)
+	endTime := time.Unix(req.EndTime, 0)
+
+	var rules []string
+	switch req.Kind {
+	case "config":
+		rules = []string{"config", "version"}
+	case "error":
+		rules = []string{"critical-error"}
+	case "performance":
+		rules = []string{"node-load", "threshold-check"}
+	}
+
+	db := utils.TakeTiDBConnection(c)
+	defer db.Close()
+	table, err := GetDiagnoseReport(startTime.Format(timeLayout), endTime.Format(timeLayout), db, rules)
+	if err != nil {
+		tableErr := TableRowDef{Values: []string{CategoryDiagnose, "diagnose", err.Error()}}
+		table = *GenerateReportError([]TableRowDef{tableErr})
+	}
+	c.JSON(http.StatusOK, table)
 }

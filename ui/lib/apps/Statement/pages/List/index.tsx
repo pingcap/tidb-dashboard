@@ -31,7 +31,7 @@ const defColumnKeys: IColumnKeys = {
   sum_latency: true,
   avg_latency: true,
   exec_count: true,
-  avg_mem: true,
+  plan_count: true,
   related_schemas: true,
 }
 

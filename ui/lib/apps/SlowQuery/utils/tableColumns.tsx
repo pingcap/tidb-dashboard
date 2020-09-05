@@ -5,10 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import { SlowquerySlowQuery } from '@lib/client'
 import { IColumnKeys } from '@lib/components'
-import {
-  TableColumnFactory,
-  commonColumnName,
-} from '@lib/utils/tableColumnFactory'
+import { TableColumnFactory } from '@lib/utils/tableColumnFactory'
 
 //////////////////////////////////////////
 
@@ -23,10 +20,11 @@ function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
 const TRANS_KEY_PREFIX = 'slow_query.fields'
 
 function successColumn(
+  tcf: TableColumnFactory,
   _rows?: { success?: number }[] // used for type check only
 ): IColumn {
   return {
-    name: commonColumnName(TRANS_KEY_PREFIX, 'result'),
+    name: tcf.columnName('result'),
     key: 'success',
     fieldName: 'success',
     minWidth: 50,
@@ -38,11 +36,12 @@ function successColumn(
 }
 
 function isInternalColumn(
+  tcf: TableColumnFactory,
   _rows?: { is_internal?: number }[] // used for type check only
 ): IColumn {
   const fieldName = 'is_internal'
   return {
-    name: commonColumnName(TRANS_KEY_PREFIX, fieldName),
+    name: tcf.columnName(fieldName),
     key: fieldName,
     fieldName: fieldName,
     minWidth: 50,
@@ -57,43 +56,42 @@ export function slowQueryColumns(
   rows: SlowquerySlowQuery[],
   showFullSQL?: boolean
 ): IColumn[] {
-  const columnFactory = new TableColumnFactory(TRANS_KEY_PREFIX)
+  const tcf = new TableColumnFactory(TRANS_KEY_PREFIX)
   return [
-    columnFactory.sqlText('query', showFullSQL),
-    columnFactory.textWithTooltip('digest'),
-    columnFactory.textWithTooltip('instance'),
-    columnFactory.textWithTooltip('db'),
-    columnFactory.textWithTooltip('connection_id'),
-    columnFactory.timestamp('timestamp'),
+    tcf.sqlText('query', showFullSQL),
+    tcf.textWithTooltip('digest'),
+    tcf.textWithTooltip('instance'),
+    tcf.textWithTooltip('db'),
+    tcf.textWithTooltip('connection_id'),
+    tcf.timestamp('timestamp'),
 
-    columnFactory.bar.single('query_time', 's', rows),
-    columnFactory.bar.single('parse_time', 's', rows),
-    columnFactory.bar.single('compile_time', 's', rows),
-    columnFactory.bar.single('process_time', 's', rows),
-    columnFactory.bar.single('memory_max', 'bytes', rows),
+    tcf.bar.single('query_time', 's', rows),
+    tcf.bar.single('parse_time', 's', rows),
+    tcf.bar.single('compile_time', 's', rows),
+    tcf.bar.single('process_time', 's', rows),
+    tcf.bar.single('memory_max', 'bytes', rows),
 
-    columnFactory.textWithTooltip('txn_start_ts'),
-    successColumn(rows),
+    tcf.textWithTooltip('txn_start_ts'),
+    successColumn(tcf, rows),
     // basic
-    isInternalColumn(rows),
-    columnFactory.textWithTooltip('index_names'),
-    columnFactory.textWithTooltip('stats'),
-    columnFactory.textWithTooltip('backoff_types'),
+    isInternalColumn(tcf, rows),
+    tcf.textWithTooltip('index_names'),
+    tcf.textWithTooltip('stats'),
+    tcf.textWithTooltip('backoff_types'),
     // connection
-    columnFactory.textWithTooltip('user'),
-    columnFactory.textWithTooltip('host'),
+    tcf.textWithTooltip('user'),
+    tcf.textWithTooltip('host'),
     // time
-    columnFactory.bar.single('wait_time', 'ns', rows),
-    columnFactory.bar.single('backoff_time', 'ns', rows),
-    columnFactory.bar.single('get_commit_ts_time', 'ns', rows),
-    columnFactory.bar.single('local_latch_wait_time', 'ns', rows),
-    columnFactory.bar.single('prewrite_time', 'ns', rows),
-    columnFactory.bar.single('commit_time', 'ns', rows),
-    columnFactory.bar.single('commit_backoff_time', 'ns', rows),
-    columnFactory.bar.single('resolve_lock_time', 'ns', rows),
+    tcf.bar.single('wait_time', 'ns', rows),
+    tcf.bar.single('backoff_time', 'ns', rows),
+    tcf.bar.single('get_commit_ts_time', 'ns', rows),
+    tcf.bar.single('local_latch_wait_time', 'ns', rows),
+    tcf.bar.single('prewrite_time', 'ns', rows),
+    tcf.bar.single('commit_time', 'ns', rows),
+    tcf.bar.single('commit_backoff_time', 'ns', rows),
+    tcf.bar.single('resolve_lock_time', 'ns', rows),
     // cop
-    columnFactory.bar.multiple(
-      'ns',
+    tcf.bar.multiple(
       {
         avg: { fieldName: 'cop_proc_avg', tooltipPrefix: 'Mean:' },
         max: {
@@ -105,10 +103,10 @@ export function slowQueryColumns(
           tooltipPrefix: 'P90: ',
         },
       },
+      'ns',
       rows
     ),
-    columnFactory.bar.multiple(
-      'ns',
+    tcf.bar.multiple(
       {
         avg: { fieldName: 'cop_wait_avg', tooltipPrefix: 'Mean:' },
         max: {
@@ -120,19 +118,20 @@ export function slowQueryColumns(
           tooltipPrefix: 'P90: ',
         },
       },
+      'ns',
       rows
     ),
     // transaction
-    columnFactory.bar.single('write_keys', 'short', rows),
-    columnFactory.bar.single('write_size', 'bytes', rows),
-    columnFactory.bar.single('prewrite_region', 'short', rows),
-    columnFactory.bar.single('txn_retry', 'short', rows),
+    tcf.bar.single('write_keys', 'short', rows),
+    tcf.bar.single('write_size', 'bytes', rows),
+    tcf.bar.single('prewrite_region', 'short', rows),
+    tcf.bar.single('txn_retry', 'short', rows),
     // cop?
-    columnFactory.bar.single('request_count', 'short', rows),
-    columnFactory.bar.single('process_keys', 'short', rows),
-    columnFactory.bar.single('total_keys', 'short', rows),
-    columnFactory.textWithTooltip('cop_proc_addr'),
-    columnFactory.textWithTooltip('cop_wait_addr'),
+    tcf.bar.single('request_count', 'short', rows),
+    tcf.bar.single('process_keys', 'short', rows),
+    tcf.bar.single('total_keys', 'short', rows),
+    tcf.textWithTooltip('cop_proc_addr'),
+    tcf.textWithTooltip('cop_wait_addr'),
   ]
 }
 

@@ -6,14 +6,10 @@ import {
 } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { orange, red } from '@ant-design/colors'
-import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementModel } from '@lib/client'
 import { Bar, Pre, IColumnKeys } from '@lib/components'
-import {
-  TableColumnFactory,
-  commonColumnName,
-} from '@lib/utils/tableColumnFactory'
+import { TableColumnFactory, formatVal } from '@lib/utils/tableColumnFactory'
 
 ///////////////////////////////////////
 // statements order list in local by fieldName of IColumn
@@ -21,10 +17,11 @@ import {
 const TRANS_KEY_PREFIX = 'statement.fields'
 
 function planCountColumn(
+  tcf: TableColumnFactory,
   _rows?: { plan_count?: number }[] // used for type check only
 ): IColumn {
   return {
-    name: commonColumnName(TRANS_KEY_PREFIX, 'plan_count'),
+    name: tcf.columnName('plan_count'),
     key: 'plan_count',
     fieldName: 'plan_count',
     minWidth: 100,
@@ -34,11 +31,10 @@ function planCountColumn(
 }
 
 function avgMinMaxLatencyColumn(
-  tableColumnFactory: TableColumnFactory,
+  tcf: TableColumnFactory,
   rows?: { max_latency?: number; min_latency?: number; avg_latency?: number }[]
 ): IColumn {
-  return tableColumnFactory.bar.multiple(
-    'ns',
+  return tcf.bar.multiple(
     {
       avg: {
         fieldName: 'avg_latency',
@@ -53,25 +49,20 @@ function avgMinMaxLatencyColumn(
         tooltipPrefix: 'Min: ',
       },
     },
+    'ns',
     rows
   )
 }
 
 function avgMaxMemColumn(
-  tableColumnFactory: TableColumnFactory,
+  tcf: TableColumnFactory,
   rows?: { avg_mem?: number; max_mem?: number }[]
 ): IColumn {
-  return avgMaxColumn(
-    tableColumnFactory,
-    'avg_mem',
-    'max_mem',
-    'avg_mem',
-    'bytes',
-    rows
-  )
+  return avgMaxColumn(tcf, 'avg_mem', 'max_mem', 'avg_mem', 'bytes', rows)
 }
 
 function errorsWarningsColumn(
+  tcf: TableColumnFactory,
   rows?: { sum_errors?: number; sum_warnings?: number }[]
 ): IColumn {
   const capacity = rows
@@ -79,16 +70,18 @@ function errorsWarningsColumn(
     : 0
   const key = 'sum_errors'
   return {
-    name: commonColumnName(TRANS_KEY_PREFIX, 'errors_warnings'),
+    name: tcf.columnName('errors_warnings'),
     key,
     fieldName: key,
     minWidth: 140,
     maxWidth: 200,
     columnActionsMode: ColumnActionsMode.clickable,
     onRender: (rec) => {
+      const errorsFmtVal = formatVal(rec.sum_errors, 'short')
+      const warningsFmtVal = formatVal(rec.sum_warnings, 'short')
       const tooltipContent = `
-Errors:   ${getValueFormat('short')(rec.sum_errors, 0, 1)}
-Warnings: ${getValueFormat('short')(rec.sum_warnings, 0, 1)}`
+Errors:   ${errorsFmtVal}
+Warnings: ${warningsFmtVal}`
       return (
         <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
           <Bar
@@ -97,9 +90,7 @@ Warnings: ${getValueFormat('short')(rec.sum_warnings, 0, 1)}`
             colors={[red[4], orange[4]]}
             capacity={capacity}
           >
-            {getValueFormat('short')(rec.sum_errors, 0, 1)}
-            {' / '}
-            {getValueFormat('short')(rec.sum_warnings, 0, 1)}
+            {`${errorsFmtVal} / ${warningsFmtVal}`}
           </Bar>
         </Tooltip>
       )
@@ -108,11 +99,11 @@ Warnings: ${getValueFormat('short')(rec.sum_warnings, 0, 1)}`
 }
 
 function avgParseLatencyColumn(
-  tableColumnFactory: TableColumnFactory,
+  tcf: TableColumnFactory,
   rows?: { avg_parse_latency?: number; max_parse_latency?: number }[]
 ): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_parse_latency',
     'max_parse_latency',
     'parse_latency',
@@ -122,11 +113,11 @@ function avgParseLatencyColumn(
 }
 
 function avgCompileLatencyColumn(
-  tableColumnFactory: TableColumnFactory,
+  tcf: TableColumnFactory,
   rows?: { avg_compile_latency?: number; max_compile_latency?: number }[]
 ): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_compile_latency',
     'max_compile_latency',
     'compile_latency',
@@ -136,11 +127,11 @@ function avgCompileLatencyColumn(
 }
 
 function avgCoprColumn(
-  tableColumnFactory: TableColumnFactory,
+  tcf: TableColumnFactory,
   rows?: { avg_cop_process_time?: number; max_cop_process_time?: number }[]
 ): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_cop_process_time',
     'max_cop_process_time',
     'process_time',
@@ -150,11 +141,11 @@ function avgCoprColumn(
 }
 
 function avgCopWaitColumn(
-  tableColumnFactory: TableColumnFactory,
+  tcf: TableColumnFactory,
   rows?: { avg_cop_wait_time?: number; max_cop_wait_time?: number }[]
 ): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_cop_wait_time',
     'max_cop_wait_time',
     'wait_time',
@@ -164,11 +155,11 @@ function avgCopWaitColumn(
 }
 
 function avgTotalProcessColumn(
-  tableColumnFactory: TableColumnFactory,
+  tcf: TableColumnFactory,
   rows?: { avg_process_time?: number; max_process_time?: number }[]
 ): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_process_time',
     'max_process_time',
     'total_process_time',
@@ -177,12 +168,9 @@ function avgTotalProcessColumn(
   )
 }
 
-function avgTotalWaitColumn(
-  tableColumnFactory: TableColumnFactory,
-  rows?: any[]
-): IColumn {
+function avgTotalWaitColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_wait_time',
     'max_wait_time',
     'total_wait_time',
@@ -191,12 +179,9 @@ function avgTotalWaitColumn(
   )
 }
 
-function avgBackoffColumn(
-  tableColumnFactory: TableColumnFactory,
-  rows?: any[]
-): IColumn {
+function avgBackoffColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_backoff_time',
     'max_backoff_time',
     'backoff_time',
@@ -205,12 +190,9 @@ function avgBackoffColumn(
   )
 }
 
-function avgWriteKeysColumn(
-  tableColumnFactory: TableColumnFactory,
-  rows?: any[]
-): IColumn {
+function avgWriteKeysColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_write_keys',
     'max_write_keys',
     'avg_write_keys',
@@ -220,11 +202,11 @@ function avgWriteKeysColumn(
 }
 
 function avgProcessedKeysColumn(
-  tableColumnFactory: TableColumnFactory,
+  tcf: TableColumnFactory,
   rows?: any[]
 ): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_processed_keys',
     'max_processed_keys',
     'avg_processed_keys',
@@ -233,12 +215,9 @@ function avgProcessedKeysColumn(
   )
 }
 
-function avgTotalKeysColumn(
-  tableColumnFactory: TableColumnFactory,
-  rows?: any[]
-): IColumn {
+function avgTotalKeysColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_total_keys',
     'max_total_keys',
     'avg_total_keys',
@@ -247,12 +226,9 @@ function avgTotalKeysColumn(
   )
 }
 
-function avgPreWriteColumn(
-  tableColumnFactory: TableColumnFactory,
-  rows?: any[]
-): IColumn {
+function avgPreWriteColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_prewrite_time',
     'max_prewrite_time',
     'prewrite_time',
@@ -261,12 +237,9 @@ function avgPreWriteColumn(
   )
 }
 
-function avgCommitColumn(
-  tableColumnFactory: TableColumnFactory,
-  rows?: any[]
-): IColumn {
+function avgCommitColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_commit_time',
     'max_commit_time',
     'commit_time',
@@ -275,12 +248,9 @@ function avgCommitColumn(
   )
 }
 
-function avgGetCommitTsColumn(
-  tableColumnFactory: TableColumnFactory,
-  rows?: any[]
-): IColumn {
+function avgGetCommitTsColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_get_commit_ts_time',
     'max_get_commit_ts_time',
     'get_commit_ts_time',
@@ -290,11 +260,11 @@ function avgGetCommitTsColumn(
 }
 
 function avgCommitBackoffColumn(
-  tableColumnFactory: TableColumnFactory,
+  tcf: TableColumnFactory,
   rows?: any[]
 ): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_commit_backoff_time',
     'max_commit_backoff_time',
     'commit_backoff_time',
@@ -303,12 +273,9 @@ function avgCommitBackoffColumn(
   )
 }
 
-function avgResolveLockColumn(
-  tableColumnFactory: TableColumnFactory,
-  rows?: any[]
-): IColumn {
+function avgResolveLockColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_resolve_lock_time',
     'max_resolve_lock_time',
     'resolve_lock_time',
@@ -318,11 +285,11 @@ function avgResolveLockColumn(
 }
 
 function avgLocalLatchWaitColumn(
-  tableColumnFactory: TableColumnFactory,
+  tcf: TableColumnFactory,
   rows?: any[]
 ): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_local_latch_wait_time',
     'max_local_latch_wait_time',
     'local_latch_wait_time',
@@ -331,12 +298,9 @@ function avgLocalLatchWaitColumn(
   )
 }
 
-function avgWriteSizeColumn(
-  tableColumnFactory: TableColumnFactory,
-  rows?: any[]
-): IColumn {
+function avgWriteSizeColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_write_size',
     'max_write_size',
     'avg_write_size',
@@ -346,11 +310,11 @@ function avgWriteSizeColumn(
 }
 
 function avgPreWriteRegionsColumn(
-  tableColumnFactory: TableColumnFactory,
+  tcf: TableColumnFactory,
   rows?: any[]
 ): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_prewrite_regions',
     'max_prewrite_regions',
     'avg_prewrite_regions',
@@ -359,12 +323,9 @@ function avgPreWriteRegionsColumn(
   )
 }
 
-function avgTxnRetryColumn(
-  tableColumnFactory: TableColumnFactory,
-  rows?: any[]
-): IColumn {
+function avgTxnRetryColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
   return avgMaxColumn(
-    tableColumnFactory,
+    tcf,
     'avg_txn_retry',
     'max_txn_retry',
     'avg_txn_retry',
@@ -377,15 +338,14 @@ function avgTxnRetryColumn(
 // util methods
 
 function avgMaxColumn(
-  tableColumnFactory: TableColumnFactory,
+  tcf: TableColumnFactory,
   avgKey: string,
   maxKey: string,
   displayTransKey: string,
   unit: string,
   rows?: any[]
 ): IColumn {
-  return tableColumnFactory.bar.multiple(
-    unit,
+  return tcf.bar.multiple(
     {
       displayTransKey,
       avg: {
@@ -397,6 +357,7 @@ function avgMaxColumn(
         tooltipPrefix: 'Max: ',
       },
     },
+    unit,
     rows
   )
 }
@@ -407,59 +368,58 @@ export function statementColumns(
   rows: StatementModel[],
   showFullSQL?: boolean
 ): IColumn[] {
-  const columnFactory = new TableColumnFactory(TRANS_KEY_PREFIX)
+  const tcf = new TableColumnFactory(TRANS_KEY_PREFIX)
 
   return [
-    columnFactory.sqlText('digest_text', showFullSQL),
-    columnFactory.textWithTooltip('digest'),
-    columnFactory.bar.single('sum_latency', 'ns', rows),
-    avgMinMaxLatencyColumn(columnFactory, rows),
-    columnFactory.bar.single('exec_count', 'short', rows),
+    tcf.sqlText('digest_text', showFullSQL),
+    tcf.textWithTooltip('digest'),
+    tcf.bar.single('sum_latency', 'ns', rows),
+    avgMinMaxLatencyColumn(tcf, rows),
+    tcf.bar.single('exec_count', 'short', rows),
 
-    planCountColumn(rows),
-    avgMaxMemColumn(columnFactory, rows),
-    errorsWarningsColumn(rows),
-    avgParseLatencyColumn(columnFactory, rows),
-    avgCompileLatencyColumn(columnFactory, rows),
-    columnFactory.bar.single('sum_cop_task_num', 'short', rows),
-    avgCoprColumn(columnFactory, rows),
-    avgCopWaitColumn(columnFactory, rows),
-    avgTotalProcessColumn(columnFactory, rows),
-    avgTotalWaitColumn(columnFactory, rows),
-    avgBackoffColumn(columnFactory, rows),
-    avgWriteKeysColumn(columnFactory, rows),
-    avgProcessedKeysColumn(columnFactory, rows),
-    avgTotalKeysColumn(columnFactory, rows),
-    avgPreWriteColumn(columnFactory, rows),
-    avgCommitColumn(columnFactory, rows),
-    avgGetCommitTsColumn(columnFactory, rows),
-    avgCommitBackoffColumn(columnFactory, rows),
-    avgResolveLockColumn(columnFactory, rows),
-    avgLocalLatchWaitColumn(columnFactory, rows),
-    avgWriteSizeColumn(columnFactory, rows),
-    avgPreWriteRegionsColumn(columnFactory, rows),
-    avgTxnRetryColumn(columnFactory, rows),
+    planCountColumn(tcf, rows),
+    avgMaxMemColumn(tcf, rows),
+    errorsWarningsColumn(tcf, rows),
+    avgParseLatencyColumn(tcf, rows),
+    avgCompileLatencyColumn(tcf, rows),
+    tcf.bar.single('sum_cop_task_num', 'short', rows),
+    avgCoprColumn(tcf, rows),
+    avgCopWaitColumn(tcf, rows),
+    avgTotalProcessColumn(tcf, rows),
+    avgTotalWaitColumn(tcf, rows),
+    avgBackoffColumn(tcf, rows),
+    avgWriteKeysColumn(tcf, rows),
+    avgProcessedKeysColumn(tcf, rows),
+    avgTotalKeysColumn(tcf, rows),
+    avgPreWriteColumn(tcf, rows),
+    avgCommitColumn(tcf, rows),
+    avgGetCommitTsColumn(tcf, rows),
+    avgCommitBackoffColumn(tcf, rows),
+    avgResolveLockColumn(tcf, rows),
+    avgLocalLatchWaitColumn(tcf, rows),
+    avgWriteSizeColumn(tcf, rows),
+    avgPreWriteRegionsColumn(tcf, rows),
+    avgTxnRetryColumn(tcf, rows),
 
-    columnFactory.bar.single('sum_backoff_times', 'short', rows),
-    columnFactory.bar.single('avg_affected_rows', 'short', rows),
+    tcf.bar.single('sum_backoff_times', 'short', rows),
+    tcf.bar.single('avg_affected_rows', 'short', rows),
 
-    columnFactory.timestamp('first_seen'),
-    columnFactory.timestamp('last_seen'),
+    tcf.timestamp('first_seen'),
+    tcf.timestamp('last_seen'),
+    tcf.textWithTooltip('sample_user'),
 
-    columnFactory.textWithTooltip('sample_user'),
+    tcf.sqlText('query_sample_text', showFullSQL),
+    tcf.sqlText('prev_sample_text', showFullSQL),
 
-    columnFactory.sqlText('query_sample_text', showFullSQL),
-    columnFactory.sqlText('prev_sample_text', showFullSQL),
+    tcf.textWithTooltip('schema_name'),
+    tcf.textWithTooltip('table_names'),
+    tcf.textWithTooltip('index_names'),
 
-    columnFactory.textWithTooltip('schema_name'),
-    columnFactory.textWithTooltip('table_names'),
-    columnFactory.textWithTooltip('index_names'),
-
-    columnFactory.textWithTooltip('plan_digest'),
-    columnFactory.plan('plan'),
+    tcf.textWithTooltip('plan_digest'),
+    tcf.plan('plan'),
 
     {
-      ...columnFactory.textWithTooltip('related_schemas'),
+      ...tcf.textWithTooltip('related_schemas'),
       minWidth: 160,
       maxWidth: 240,
     },
@@ -467,18 +427,18 @@ export function statementColumns(
 }
 
 export function planColumns(rows: StatementModel[]): IColumn[] {
-  const columnFactory = new TableColumnFactory(TRANS_KEY_PREFIX)
+  const tcf = new TableColumnFactory(TRANS_KEY_PREFIX)
 
   return [
     {
-      ...columnFactory.textWithTooltip('plan_digest'),
+      ...tcf.textWithTooltip('plan_digest'),
       minWidth: 100,
       maxWidth: 300,
     },
-    columnFactory.bar.single('sum_latency', 'ns', rows),
-    avgMinMaxLatencyColumn(columnFactory, rows),
-    columnFactory.bar.single('exec_count', 'short', rows),
-    avgMaxMemColumn(columnFactory, rows),
+    tcf.bar.single('sum_latency', 'ns', rows),
+    avgMinMaxLatencyColumn(tcf, rows),
+    tcf.bar.single('exec_count', 'short', rows),
+    avgMaxMemColumn(tcf, rows),
   ]
 }
 

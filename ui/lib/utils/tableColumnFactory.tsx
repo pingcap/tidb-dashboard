@@ -24,7 +24,7 @@ type Bars = {
   min?: BarField
 }
 
-function formatVal(unit: string, val: number) {
+export function formatVal(val: number, unit: string) {
   const formatFn = getValueFormat(unit)
   return unit === 'short' ? formatFn(val, 0, 1) : formatFn(val, 1)
 }
@@ -72,7 +72,7 @@ export class TableColumnFactory {
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
       onRender: (rec) => {
-        const fmtVal = formatVal(unit, rec[fieldName])
+        const fmtVal = formatVal(rec[fieldName], unit)
         return (
           <Bar textWidth={70} value={rec[fieldName]} capacity={capacity}>
             {fmtVal}
@@ -82,7 +82,7 @@ export class TableColumnFactory {
     }
   }
 
-  multipleBar(unit: string, bars: Bars, rows?: any[]): IColumn {
+  multipleBar(bars: Bars, unit: string, rows?: any[]): IColumn {
     const { displayTransKey, avg, max, min } = bars
     const capacity = rows ? _max(rows.map((v) => v[max.fieldName])) ?? 0 : 0
     return {
@@ -100,7 +100,7 @@ export class TableColumnFactory {
           .filter((el) => el !== undefined)
           .map(
             (bar) =>
-              `${bar!.tooltipPrefix} ${formatVal(unit, rec[bar!.fieldName])}`
+              `${bar!.tooltipPrefix} ${formatVal(rec[bar!.fieldName], unit)}`
           )
           .join('\n')
         return (
@@ -112,7 +112,7 @@ export class TableColumnFactory {
               min={minVal}
               capacity={capacity}
             >
-              {formatVal(unit, avgVal)}
+              {formatVal(avgVal, unit)}
             </Bar>
           </Tooltip>
         )
@@ -185,7 +185,7 @@ export class BarColumn {
     return this.factory.singleBar(fieldName, unit, rows)
   }
 
-  multiple(unit: string, bars: Bars, rows?: any[]) {
-    return this.factory.multipleBar(unit, bars, rows)
+  multiple(bars: Bars, unit: string, rows?: any[]) {
+    return this.factory.multipleBar(bars, unit, rows)
   }
 }

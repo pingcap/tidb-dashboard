@@ -23,7 +23,7 @@ import (
 
 const (
 	SlowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
-	SelectStmt     = "*, (unix_timestamp(Time) + 0E0) as timestamp"
+	SelectStmt     = "*, (unix_timestamp(Time) + 0E0) as time"
 )
 
 type SlowQuery struct {
@@ -35,7 +35,8 @@ type SlowQuery struct {
 	ConnectionID uint   `gorm:"column:Conn_ID" json:"connection_id"`
 	Success      int    `gorm:"column:Succ" json:"success"`
 
-	Timestamp   float64 `gorm:"column:Time" convert:"(unix_timestamp(Time) + 0E0)" json:"timestamp"` // finish time
+	// notice the related gorm:column is lower-case "time", not "Time", because the final sql is "(unix_timestamp(Time)+0E0) as time"
+	Time        float64 `gorm:"column:time" convert:"(unix_timestamp(Time) + 0E0)" json:"timestamp"` // finish time
 	QueryTime   float64 `gorm:"column:Query_time" json:"query_time"`                                 // latency
 	ParseTime   float64 `gorm:"column:Parse_time" json:"parse_time"`
 	CompileTime float64 `gorm:"column:Compile_time" json:"compile_time"`
@@ -133,6 +134,25 @@ func getRefColumns(jsonFields ...string) []string {
 	return ret
 }
 
+func getRefColumn(jsonField string) string {
+	t := reflect.TypeOf(SlowQuery{})
+	fieldsNum := t.NumField()
+	for i := 0; i < fieldsNum; i++ {
+		field := t.Field(i)
+		if field.Tag.Get("json") == jsonField {
+			if s, ok := field.Tag.Lookup("gorm"); ok {
+				list := strings.Split(s, ":")
+				if len(list) < 1 {
+					panic(fmt.Sprintf("unknown gorm tag field: %s", s))
+				}
+				return list[1]
+			}
+			panic(fmt.Sprintf("field %s cannot find ref column", jsonField))
+		}
+	}
+	return ""
+}
+
 type GetDetailRequest struct {
 	Digest    string  `json:"digest" form:"digest"`
 	Timestamp float64 `json:"timestamp" form:"timestamp"`
@@ -140,13 +160,16 @@ type GetDetailRequest struct {
 }
 
 func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
-	sqlFields := strings.Split(req.Fields, ",")
-	refColumns := getRefColumns(sqlFields...)
-	refColumns = append(refColumns, getRefColumns("digest", "connection_id", "timestamp")...) // "digest", "connection_id", "timestamp" for detail
+	refColumns := getRefColumns("digest", "connection_id", "timestamp") // "digest", "connection_id", "timestamp" for detail
+	if strings.TrimSpace(req.Fields) != "" {
+		sqlFields := strings.Split(req.Fields, ",")
+		refColumns = append(refColumns, getRefColumns(sqlFields...)...)
+	}
+
 	tx := db.
 		Table(SlowQueryTable).
 		Select(strings.Join(refColumns, ", ")).
-		Where("time between from_unixtime(?) and from_unixtime(?)", req.LogStartTS, req.LogEndTS).
+		Where("Time between from_unixtime(?) and from_unixtime(?)", req.LogStartTS, req.LogEndTS).
 		Limit(req.Limit)
 
 	if req.Text != "" {
@@ -167,11 +190,13 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		tx = tx.Where("DB IN (?)", req.DB)
 	}
 
-	order := getRefColumns(req.OrderBy)[0]
-	if req.DESC {
-		tx = tx.Order(fmt.Sprintf("%s desc", order))
-	} else {
-		tx = tx.Order(fmt.Sprintf("%s asc", order))
+	order := getRefColumn(req.OrderBy)
+	if len(order) > 0 {
+		if req.DESC {
+			tx = tx.Order(fmt.Sprintf("%s desc", order))
+		} else {
+			tx = tx.Order(fmt.Sprintf("%s asc", order))
+		}
 	}
 
 	if len(req.Plans) > 0 {

@@ -166,7 +166,7 @@ export function timeValueColumns(
 
 ////////////////////////////////////////////
 
-export function getSelectedColumns(
+export function getVisibleColumns(
   visibleColumnKeys: IColumnKeys,
   columnRefs: { [key: string]: string[] }
 ) {

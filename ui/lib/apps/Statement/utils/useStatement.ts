@@ -4,7 +4,7 @@ import { useSessionStorageState } from '@umijs/hooks'
 import client, { StatementModel, StatementTimeRange } from '@lib/client'
 import { IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
-import { getSelectedColumns } from '@lib/utils/tableColumns'
+import { getVisibleColumns } from '@lib/utils/tableColumns'
 
 import {
   calcValidStatementTimeRange,
@@ -138,7 +138,7 @@ export default function useStatement(
         return
       }
 
-      const fields = getSelectedColumns(visibleColumnKeys, STMT_COLUMN_REFS)
+      const fields = getVisibleColumns(visibleColumnKeys, STMT_COLUMN_REFS)
 
       setLoadingStatements(true)
       try {

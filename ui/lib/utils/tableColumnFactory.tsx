@@ -5,7 +5,6 @@ import {
   ColumnActionsMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
-import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import {
@@ -14,12 +13,16 @@ import {
   TextWithInfo,
   TextWrap,
   DateTime,
-  IColumnKeys,
   HighlightSQL,
 } from '@lib/components'
-import { addTranslationResource } from './i18n'
 
 type BarField = { fieldName: string; tooltipPrefix: string }
+type Bars = {
+  displayTransKey?: string // it is same as avg.fieldName default
+  avg: BarField
+  max: BarField
+  min?: BarField
+}
 
 function formatVal(unit: string, val: number) {
   const formatFn = getValueFormat(unit)
@@ -75,16 +78,11 @@ export class TableColumnFactory {
     }
   }
 
-  multipleBar(
-    unit: string,
-    avg: BarField,
-    max: BarField,
-    min?: BarField,
-    rows?: any[]
-  ): IColumn {
+  multipleBar(unit: string, bars: Bars, rows?: any[]): IColumn {
+    const { displayTransKey, avg, max, min } = bars
     const capacity = rows ? _max(rows.map((v) => v[max.fieldName])) ?? 0 : 0
     return {
-      name: this.commonColumnName(avg.fieldName),
+      name: this.commonColumnName(displayTransKey || avg.fieldName),
       key: avg.fieldName,
       fieldName: avg.fieldName,
       minWidth: 140,
@@ -100,7 +98,7 @@ export class TableColumnFactory {
             (bar) =>
               `${bar!.tooltipPrefix} ${formatVal(unit, rec[bar!.fieldName])}`
           )
-          .join('<br>')
+          .join('\n')
         return (
           <Tooltip title={<Pre>{tooltips.trim()}</Pre>}>
             <Bar
@@ -183,13 +181,7 @@ export class BarColumn {
     return this.factory.singleBar(fieldName, unit, rows)
   }
 
-  multiple(
-    unit: string,
-    avg: BarField,
-    max: BarField,
-    min?: BarField,
-    rows?: any[]
-  ) {
-    return this.factory.multipleBar(unit, avg, max, min, rows)
+  multiple(unit: string, bars: Bars, rows?: any[]) {
+    return this.factory.multipleBar(unit, bars, rows)
   }
 }

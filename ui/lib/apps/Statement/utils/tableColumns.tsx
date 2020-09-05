@@ -31,61 +31,35 @@ function planCountColumn(
   }
 }
 
-function planDigestColumn(
-  _rows?: { plan_digest?: string }[] // used for type check only
-): IColumn {
-  return {
-    name: commonColumnName(TRANS_KEY_PREFIX, 'plan_digest'),
-    key: 'plan_digest',
-    fieldName: 'plan_digest',
-    minWidth: 100,
-    maxWidth: 300,
-    onRender: (rec) => (
-      <Tooltip title={rec.plan_digest}>
-        <TextWrap>{rec.plan_digest || '(none)'}</TextWrap>
-      </Tooltip>
-    ),
-  }
-}
-
 function avgMinMaxLatencyColumn(
+  tableColumnFactory: TableColumnFactory,
   rows?: { max_latency?: number; min_latency?: number; avg_latency?: number }[]
 ): IColumn {
-  const capacity = rows ? max(rows.map((v) => v.max_latency)) ?? 0 : 0
-  const key = 'avg_latency'
-  return {
-    name: commonColumnName(TRANS_KEY_PREFIX, key),
-    key,
-    fieldName: key,
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => {
-      const tooltipContent = `
-Mean: ${getValueFormat('ns')(rec.avg_latency, 1)}
-Min:  ${getValueFormat('ns')(rec.min_latency, 1)}
-Max:  ${getValueFormat('ns')(rec.max_latency, 1)}`
-      return (
-        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
-          <Bar
-            textWidth={70}
-            value={rec.avg_latency}
-            max={rec.max_latency}
-            min={rec.min_latency}
-            capacity={capacity}
-          >
-            {getValueFormat('ns')(rec.avg_latency, 1)}
-          </Bar>
-        </Tooltip>
-      )
+  return tableColumnFactory.bar.multiple(
+    'ns',
+    {
+      avg: {
+        fieldName: 'avg_latency',
+        tooltipPrefix: 'Mean:',
+      },
+      max: {
+        fieldName: 'max_latency',
+        tooltipPrefix: 'Max: ',
+      },
+      min: {
+        fieldName: 'min_latency',
+        tooltipPrefix: 'Min: ',
+      },
     },
-  }
+    rows
+  )
 }
 
 function avgMaxMemColumn(
   rows?: { avg_mem?: number; max_mem?: number }[]
 ): IColumn {
-  return avgMaxColumn('avg_mem', 'max_mem', 'avg_mem', 'bytes', rows)
+  return
+  avgMaxColumn('avg_mem', 'max_mem', 'avg_mem', 'bytes', rows)
 }
 
 function errorsWarningsColumn(
@@ -324,68 +298,32 @@ function avgTxnRetryColumn(rows?: any[]): IColumn {
   )
 }
 
-function relatedSchemasColumn(
-  _rows?: { related_schemas?: string }[] // used for type check only
-): IColumn {
-  return {
-    name: commonColumnName(TRANS_KEY_PREFIX, 'related_schemas'),
-    key: 'related_schemas',
-    minWidth: 160,
-    maxWidth: 240,
-    onRender: (rec) => (
-      <Tooltip title={rec.related_schemas}>
-        <TextWrap>{rec.related_schemas}</TextWrap>
-      </Tooltip>
-    ),
-  }
-}
-
 ////////////////////////////////////////////////
 // util methods
 
 function avgMaxColumn(
+  tableColumnFactory: TableColumnFactory,
   avgKey: string,
   maxKey: string,
-  columnName: string,
+  displayTransKey: string,
   unit: string,
   rows?: any[]
 ): IColumn {
-  const capacity = rows ? max(rows.map((v) => v[maxKey])) ?? 0 : 0
-  const key = avgKey
-  return {
-    name: commonColumnName(TRANS_KEY_PREFIX, columnName),
-    key,
-    fieldName: key,
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => {
-      const formatFn = getValueFormat(unit)
-      const mean =
-        unit === 'short'
-          ? formatFn(rec[avgKey], 0, 1)
-          : formatFn(rec[avgKey], 1)
-      const max =
-        unit === 'short'
-          ? formatFn(rec[maxKey], 0, 1)
-          : formatFn(rec[maxKey], 1)
-      const tooltipContent = `
-Mean: ${mean}
-Max:  ${max}`
-      return (
-        <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
-          <Bar
-            textWidth={70}
-            value={rec[avgKey]}
-            max={rec[maxKey]}
-            capacity={capacity}
-          >
-            {mean}
-          </Bar>
-        </Tooltip>
-      )
+  return tableColumnFactory.bar.multiple(
+    unit,
+    {
+      displayTransKey,
+      avg: {
+        fieldName: avgKey,
+        tooltipPrefix: 'Mean:',
+      },
+      max: {
+        fieldName: maxKey,
+        tooltipPrefix: 'Max: ',
+      },
     },
-  }
+    rows
+  )
 }
 
 ////////////////////////////////////////////////
@@ -400,7 +338,7 @@ export function statementColumns(
     columnFactory.sqlTextColumn('digest_text', showFullSQL),
     columnFactory.textWithTooltip('digest'),
     columnFactory.bar.single('sum_latency', 'ns', rows),
-    avgMinMaxLatencyColumn(rows),
+    avgMinMaxLatencyColumn(columnFactory, rows),
     columnFactory.bar.single('exec_count', 'short', rows),
 
     planCountColumn(rows),
@@ -426,6 +364,7 @@ export function statementColumns(
     avgWriteSizeColumn(rows),
     avgPreWriteRegionsColumn(rows),
     avgTxnRetryColumn(rows),
+
     columnFactory.bar.single('sum_backoff_times', 'short', rows),
     columnFactory.bar.single('avg_affected_rows', 'short', rows),
 
@@ -444,7 +383,11 @@ export function statementColumns(
     columnFactory.textWithTooltip('plan_digest'),
     columnFactory.planColumn('plan'),
 
-    relatedSchemasColumn(rows),
+    {
+      ...columnFactory.textWithTooltip('related_schemas'),
+      minWidth: 160,
+      maxWidth: 240,
+    },
   ]
 }
 
@@ -452,9 +395,13 @@ export function planColumns(rows: StatementModel[]): IColumn[] {
   const columnFactory = new TableColumnFactory(TRANS_KEY_PREFIX)
 
   return [
-    planDigestColumn(rows),
+    {
+      ...columnFactory.textWithTooltip('plan_digest'),
+      minWidth: 100,
+      maxWidth: 300,
+    },
     columnFactory.bar.single('sum_latency', 'ns', rows),
-    avgMinMaxLatencyColumn(rows),
+    avgMinMaxLatencyColumn(columnFactory, rows),
     columnFactory.bar.single('exec_count', 'short', rows),
     avgMaxMemColumn(rows),
   ]

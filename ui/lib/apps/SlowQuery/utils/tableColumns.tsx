@@ -20,18 +20,6 @@ function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
 //////////////////////////////////////////
 const TRANS_KEY_PREFIX = 'slow_query.fields'
 
-function connectionIDColumn(
-  _rows?: { connection_id?: number }[] // used for type check only
-): IColumn {
-  return {
-    name: commonColumnName(TRANS_KEY_PREFIX, 'connection_id'),
-    key: 'connection_id',
-    fieldName: 'connection_id',
-    minWidth: 100,
-    maxWidth: 120,
-  }
-}
-
 function successColumn(
   _rows?: { success?: number }[] // used for type check only
 ): IColumn {
@@ -72,7 +60,7 @@ export function slowQueryColumns(
     columnFactory.textWithTooltip('digest'),
     columnFactory.textWithTooltip('instance'),
     columnFactory.textWithTooltip('db'),
-    connectionIDColumn(rows),
+    columnFactory.textWithTooltip('connection_id'),
     columnFactory.timestampColumn('timestamp'),
 
     columnFactory.bar.single('query_time', 's', rows),
@@ -101,8 +89,36 @@ export function slowQueryColumns(
     columnFactory.bar.single('commit_backoff_time', 'ns', rows),
     columnFactory.bar.single('resolve_lock_time', 'ns', rows),
     // cop
-    // avgP90MaxColumn('cop_proc', rows),
-    // avgP90MaxColumn('cop_wait', rows),
+    columnFactory.bar.multiple(
+      'ns',
+      {
+        avg: { fieldName: 'cop_proc_avg', tooltipPrefix: 'Mean:' },
+        max: {
+          fieldName: 'cop_proc_max',
+          tooltipPrefix: 'Max: ',
+        },
+        min: {
+          fieldName: 'cop_proc_p90',
+          tooltipPrefix: 'P90: ',
+        },
+      },
+      rows
+    ),
+    columnFactory.bar.multiple(
+      'ns',
+      {
+        avg: { fieldName: 'cop_wait_avg', tooltipPrefix: 'Mean:' },
+        max: {
+          fieldName: 'cop_wait_max',
+          tooltipPrefix: 'Max: ',
+        },
+        min: {
+          fieldName: 'cop_wait_p90',
+          tooltipPrefix: 'P90: ',
+        },
+      },
+      rows
+    ),
     // transaction
     columnFactory.bar.single('write_keys', 'short', rows),
     columnFactory.bar.single('write_size', 'bytes', rows),
@@ -119,8 +135,8 @@ export function slowQueryColumns(
 
 //////////////////////////////////////////
 export const SLOW_QUERY_COLUMN_REFS: { [key: string]: string[] } = {
-  cop_proc: ['cop_proc_avg', 'cop_proc_p90', 'cop_proc_max'],
-  cop_wait: ['cop_wait_avg', 'cop_wait_p90', 'cop_wait_max'],
+  cop_proc_avg: ['cop_proc_avg', 'cop_proc_p90', 'cop_proc_max'],
+  cop_wait_avg: ['cop_wait_avg', 'cop_wait_p90', 'cop_wait_max'],
 }
 
 export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {

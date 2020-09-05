@@ -3,7 +3,7 @@ import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { SlowqueryBase } from '@lib/client'
+import { SlowquerySlowQuery } from '@lib/client'
 import { CardTable, ICardTableProps } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 
@@ -12,7 +12,7 @@ import { slowQueryColumns } from '../utils/tableColumns'
 
 interface Props extends Partial<ICardTableProps> {
   loading: boolean
-  slowQueries: SlowqueryBase[]
+  slowQueries: SlowquerySlowQuery[]
   showFullSQL?: boolean
   onGetColumns?: (columns: IColumn[]) => void
 }
@@ -40,7 +40,7 @@ function SlowQueriesTable({
       const qs = DetailPage.buildQuery({
         digest: rec.digest,
         connectId: rec.connection_id,
-        time: rec.timestamp,
+        timestamp: rec.timestamp,
       })
       openLink(`/slow_query/detail?${qs}`, ev, navigate)
     }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
-import client, { SlowqueryBase } from '@lib/client'
+import client, { SlowquerySlowQuery } from '@lib/client'
 import { calcTimeRange, TimeRange, IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 import { getSelectedColumns } from '@lib/utils/tableColumns'
@@ -64,7 +64,7 @@ export default function useSlowQuery(
 
   const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
-  const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])
+  const [slowQueries, setSlowQueries] = useState<SlowquerySlowQuery[]>([])
   const [refreshTimes, setRefreshTimes] = useState(0)
 
   function setQueryOptions(newOptions: ISlowQueryOptions) {

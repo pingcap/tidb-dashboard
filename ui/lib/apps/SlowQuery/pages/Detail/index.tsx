@@ -28,7 +28,7 @@ import TabTxn from './DetailTabTxn'
 export interface IPageQuery {
   connectId?: number
   digest?: string
-  time?: number
+  timestamp?: number
 }
 
 function DetailPage() {
@@ -39,7 +39,7 @@ function DetailPage() {
   const { data, isLoading } = useClientRequest((cancelToken) =>
     client
       .getInstance()
-      .slowQueryDetailGet(query.connectId!, query.digest!, query.time!, {
+      .slowQueryDetailGet(query.connectId!, query.digest!, query.timestamp!, {
         cancelToken,
       })
   )

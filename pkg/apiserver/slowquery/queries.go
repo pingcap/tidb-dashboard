@@ -15,6 +15,7 @@ package slowquery
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -25,8 +26,7 @@ const (
 	SelectStmt     = "*, (unix_timestamp(Time) + 0E0) as timestamp"
 )
 
-type Base struct {
-	// list fields
+type SlowQuery struct {
 	Digest string `gorm:"column:Digest" json:"digest"`
 	Query  string `gorm:"column:Query" json:"query"`
 
@@ -35,19 +35,14 @@ type Base struct {
 	ConnectionID uint   `gorm:"column:Conn_ID" json:"connection_id"`
 	Success      int    `gorm:"column:Succ" json:"success"`
 
-	Time        string  `gorm:"column:Time" json:"time_str"`         // finish time
-	Timestamp   float64 `gorm:"column:timestamp" json:"timestamp"`   // unix_timestamp(Time) as timestamp
-	QueryTime   float64 `gorm:"column:Query_time" json:"query_time"` // latency
+	Timestamp   float64 `gorm:"column:Time" convert:"(unix_timestamp(Time) + 0E0)" json:"timestamp"` // finish time
+	QueryTime   float64 `gorm:"column:Query_time" json:"query_time"`                                 // latency
 	ParseTime   float64 `gorm:"column:Parse_time" json:"parse_time"`
 	CompileTime float64 `gorm:"column:Compile_time" json:"compile_time"`
 	ProcessTime float64 `gorm:"column:Process_time" json:"process_time"`
 
 	MemoryMax  int  `gorm:"column:Mem_max" json:"mem_max"`
 	TxnStartTS uint `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
-}
-
-type SlowQuery struct {
-	*Base `gorm:"embedded"`
 
 	// Detail
 	PrevStmt string `gorm:"column:Prev_stmt" json:"prev_stmt"`
@@ -109,19 +104,48 @@ type GetListRequest struct {
 	Fields string `json:"fields" form:"fields"` // example: "Query,Digest"
 }
 
+func getRefColumns(jsonFields ...string) []string {
+	fields := make(map[string]*reflect.StructField)
+	t := reflect.TypeOf(SlowQuery{})
+	fieldsNum := t.NumField()
+	for i := 0; i < fieldsNum; i++ {
+		field := t.Field(i)
+		fields[strings.ToLower(field.Tag.Get("json"))] = &field
+	}
+	ret := make([]string, 0, len(jsonFields))
+	for _, fieldName := range jsonFields {
+		if field, ok := fields[strings.ToLower(fieldName)]; ok {
+			if convert, ok := field.Tag.Lookup("convert"); ok {
+				ret = append(ret, fmt.Sprintf("%s AS %s", convert, gorm.ToColumnName(field.Name)))
+			} else if s, ok := field.Tag.Lookup("gorm"); ok {
+				list := strings.Split(s, ":")
+				if len(list) < 1 {
+					panic(fmt.Sprintf("unknown gorm tag field: %s", s))
+				}
+				ret = append(ret, list[1])
+			} else {
+				panic(fmt.Sprintf("field %s cannot find ref column", fieldName))
+			}
+		} else {
+			panic(fmt.Sprintf("unknown field %s", fieldName))
+		}
+	}
+	return ret
+}
+
 type GetDetailRequest struct {
 	Digest    string  `json:"digest" form:"digest"`
-	Time      float64 `json:"time" form:"time"`
+	Timestamp float64 `json:"timestamp" form:"timestamp"`
 	ConnectID int64   `json:"connect_id" form:"connect_id"`
 }
 
 func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
-	finalFields := strings.TrimRight(
-		"Digest,Conn_id,Time,(unix_timestamp(Time) + 0E0) as timestamp,"+strings.TrimSpace(req.Fields),
-		",") // Digest, Conn_id, Time are for query detail
+	sqlFields := strings.Split(req.Fields, ",")
+	refColumns := getRefColumns(sqlFields...)
+	refColumns = append(refColumns, getRefColumns("digest", "connection_id", "timestamp")...) // "digest", "connection_id", "timestamp" for detail
 	tx := db.
 		Table(SlowQueryTable).
-		Select(finalFields).
+		Select(strings.Join(refColumns, ", ")).
 		Where("time between from_unixtime(?) and from_unixtime(?)", req.LogStartTS, req.LogEndTS).
 		Limit(req.Limit)
 
@@ -143,7 +167,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		tx = tx.Where("DB IN (?)", req.DB)
 	}
 
-	order := req.OrderBy
+	order := getRefColumns(req.OrderBy)[0]
 	if req.DESC {
 		tx = tx.Order(fmt.Sprintf("%s desc", order))
 	} else {
@@ -172,7 +196,7 @@ func QuerySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) 
 		Table(SlowQueryTable).
 		Select(SelectStmt).
 		Where("Digest = ?", req.Digest).
-		Where("Time = from_unixtime(?)", req.Time).
+		Where("Time = from_unixtime(?)", req.Timestamp).
 		Where("Conn_id = ?", req.ConnectID).
 		First(&result).Error
 	if err != nil {

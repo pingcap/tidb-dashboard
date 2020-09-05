@@ -9,9 +9,11 @@ import { orange, red } from '@ant-design/colors'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementModel } from '@lib/client'
-import { Bar, Pre, TextWrap, IColumnKeys } from '@lib/components'
-import { commonColumnName } from '@lib/utils/tableColumns'
-import { TableColumnFactory } from '@lib/utils/tableColumnFactory'
+import { Bar, Pre, IColumnKeys } from '@lib/components'
+import {
+  TableColumnFactory,
+  commonColumnName,
+} from '@lib/utils/tableColumnFactory'
 
 ///////////////////////////////////////
 // statements order list in local by fieldName of IColumn
@@ -56,10 +58,17 @@ function avgMinMaxLatencyColumn(
 }
 
 function avgMaxMemColumn(
+  tableColumnFactory: TableColumnFactory,
   rows?: { avg_mem?: number; max_mem?: number }[]
 ): IColumn {
-  return
-  avgMaxColumn('avg_mem', 'max_mem', 'avg_mem', 'bytes', rows)
+  return avgMaxColumn(
+    tableColumnFactory,
+    'avg_mem',
+    'max_mem',
+    'avg_mem',
+    'bytes',
+    rows
+  )
 }
 
 function errorsWarningsColumn(
@@ -99,9 +108,11 @@ Warnings: ${getValueFormat('short')(rec.sum_warnings, 0, 1)}`
 }
 
 function avgParseLatencyColumn(
+  tableColumnFactory: TableColumnFactory,
   rows?: { avg_parse_latency?: number; max_parse_latency?: number }[]
 ): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_parse_latency',
     'max_parse_latency',
     'parse_latency',
@@ -111,9 +122,11 @@ function avgParseLatencyColumn(
 }
 
 function avgCompileLatencyColumn(
+  tableColumnFactory: TableColumnFactory,
   rows?: { avg_compile_latency?: number; max_compile_latency?: number }[]
 ): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_compile_latency',
     'max_compile_latency',
     'compile_latency',
@@ -123,9 +136,11 @@ function avgCompileLatencyColumn(
 }
 
 function avgCoprColumn(
+  tableColumnFactory: TableColumnFactory,
   rows?: { avg_cop_process_time?: number; max_cop_process_time?: number }[]
 ): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_cop_process_time',
     'max_cop_process_time',
     'process_time',
@@ -135,9 +150,11 @@ function avgCoprColumn(
 }
 
 function avgCopWaitColumn(
+  tableColumnFactory: TableColumnFactory,
   rows?: { avg_cop_wait_time?: number; max_cop_wait_time?: number }[]
 ): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_cop_wait_time',
     'max_cop_wait_time',
     'wait_time',
@@ -147,9 +164,11 @@ function avgCopWaitColumn(
 }
 
 function avgTotalProcessColumn(
+  tableColumnFactory: TableColumnFactory,
   rows?: { avg_process_time?: number; max_process_time?: number }[]
 ): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_process_time',
     'max_process_time',
     'total_process_time',
@@ -158,8 +177,12 @@ function avgTotalProcessColumn(
   )
 }
 
-function avgTotalWaitColumn(rows?: any[]): IColumn {
+function avgTotalWaitColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_wait_time',
     'max_wait_time',
     'total_wait_time',
@@ -168,8 +191,12 @@ function avgTotalWaitColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgBackoffColumn(rows?: any[]): IColumn {
+function avgBackoffColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_backoff_time',
     'max_backoff_time',
     'backoff_time',
@@ -178,8 +205,12 @@ function avgBackoffColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgWriteKeysColumn(rows?: any[]): IColumn {
+function avgWriteKeysColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_write_keys',
     'max_write_keys',
     'avg_write_keys',
@@ -188,8 +219,12 @@ function avgWriteKeysColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgProcessedKeysColumn(rows?: any[]): IColumn {
+function avgProcessedKeysColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_processed_keys',
     'max_processed_keys',
     'avg_processed_keys',
@@ -198,8 +233,12 @@ function avgProcessedKeysColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgTotalKeysColumn(rows?: any[]): IColumn {
+function avgTotalKeysColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_total_keys',
     'max_total_keys',
     'avg_total_keys',
@@ -208,8 +247,12 @@ function avgTotalKeysColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgPreWriteColumn(rows?: any[]): IColumn {
+function avgPreWriteColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_prewrite_time',
     'max_prewrite_time',
     'prewrite_time',
@@ -218,8 +261,12 @@ function avgPreWriteColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgCommitColumn(rows?: any[]): IColumn {
+function avgCommitColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_commit_time',
     'max_commit_time',
     'commit_time',
@@ -228,8 +275,12 @@ function avgCommitColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgGetCommitTsColumn(rows?: any[]): IColumn {
+function avgGetCommitTsColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_get_commit_ts_time',
     'max_get_commit_ts_time',
     'get_commit_ts_time',
@@ -238,8 +289,12 @@ function avgGetCommitTsColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgCommitBackoffColumn(rows?: any[]): IColumn {
+function avgCommitBackoffColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_commit_backoff_time',
     'max_commit_backoff_time',
     'commit_backoff_time',
@@ -248,8 +303,12 @@ function avgCommitBackoffColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgResolveLockColumn(rows?: any[]): IColumn {
+function avgResolveLockColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_resolve_lock_time',
     'max_resolve_lock_time',
     'resolve_lock_time',
@@ -258,8 +317,12 @@ function avgResolveLockColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgLocalLatchWaitColumn(rows?: any[]): IColumn {
+function avgLocalLatchWaitColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_local_latch_wait_time',
     'max_local_latch_wait_time',
     'local_latch_wait_time',
@@ -268,8 +331,12 @@ function avgLocalLatchWaitColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgWriteSizeColumn(rows?: any[]): IColumn {
+function avgWriteSizeColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_write_size',
     'max_write_size',
     'avg_write_size',
@@ -278,8 +345,12 @@ function avgWriteSizeColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgPreWriteRegionsColumn(rows?: any[]): IColumn {
+function avgPreWriteRegionsColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_prewrite_regions',
     'max_prewrite_regions',
     'avg_prewrite_regions',
@@ -288,8 +359,12 @@ function avgPreWriteRegionsColumn(rows?: any[]): IColumn {
   )
 }
 
-function avgTxnRetryColumn(rows?: any[]): IColumn {
+function avgTxnRetryColumn(
+  tableColumnFactory: TableColumnFactory,
+  rows?: any[]
+): IColumn {
   return avgMaxColumn(
+    tableColumnFactory,
     'avg_txn_retry',
     'max_txn_retry',
     'avg_txn_retry',
@@ -342,28 +417,28 @@ export function statementColumns(
     columnFactory.bar.single('exec_count', 'short', rows),
 
     planCountColumn(rows),
-    avgMaxMemColumn(rows),
+    avgMaxMemColumn(columnFactory, rows),
     errorsWarningsColumn(rows),
-    avgParseLatencyColumn(rows),
-    avgCompileLatencyColumn(rows),
+    avgParseLatencyColumn(columnFactory, rows),
+    avgCompileLatencyColumn(columnFactory, rows),
     columnFactory.bar.single('sum_cop_task_num', 'short', rows),
-    avgCoprColumn(rows),
-    avgCopWaitColumn(rows),
-    avgTotalProcessColumn(rows),
-    avgTotalWaitColumn(rows),
-    avgBackoffColumn(rows),
-    avgWriteKeysColumn(rows),
-    avgProcessedKeysColumn(rows),
-    avgTotalKeysColumn(rows),
-    avgPreWriteColumn(rows),
-    avgCommitColumn(rows),
-    avgGetCommitTsColumn(rows),
-    avgCommitBackoffColumn(rows),
-    avgResolveLockColumn(rows),
-    avgLocalLatchWaitColumn(rows),
-    avgWriteSizeColumn(rows),
-    avgPreWriteRegionsColumn(rows),
-    avgTxnRetryColumn(rows),
+    avgCoprColumn(columnFactory, rows),
+    avgCopWaitColumn(columnFactory, rows),
+    avgTotalProcessColumn(columnFactory, rows),
+    avgTotalWaitColumn(columnFactory, rows),
+    avgBackoffColumn(columnFactory, rows),
+    avgWriteKeysColumn(columnFactory, rows),
+    avgProcessedKeysColumn(columnFactory, rows),
+    avgTotalKeysColumn(columnFactory, rows),
+    avgPreWriteColumn(columnFactory, rows),
+    avgCommitColumn(columnFactory, rows),
+    avgGetCommitTsColumn(columnFactory, rows),
+    avgCommitBackoffColumn(columnFactory, rows),
+    avgResolveLockColumn(columnFactory, rows),
+    avgLocalLatchWaitColumn(columnFactory, rows),
+    avgWriteSizeColumn(columnFactory, rows),
+    avgPreWriteRegionsColumn(columnFactory, rows),
+    avgTxnRetryColumn(columnFactory, rows),
 
     columnFactory.bar.single('sum_backoff_times', 'short', rows),
     columnFactory.bar.single('avg_affected_rows', 'short', rows),
@@ -403,7 +478,7 @@ export function planColumns(rows: StatementModel[]): IColumn[] {
     columnFactory.bar.single('sum_latency', 'ns', rows),
     avgMinMaxLatencyColumn(columnFactory, rows),
     columnFactory.bar.single('exec_count', 'short', rows),
-    avgMaxMemColumn(rows),
+    avgMaxMemColumn(columnFactory, rows),
   ]
 }
 

@@ -29,6 +29,11 @@ function formatVal(unit: string, val: number) {
   return unit === 'short' ? formatFn(val, 0, 1) : formatFn(val, 1)
 }
 
+export function commonColumnName(transPrefix: string, fieldName: string): any {
+  const fullTransKey = `${transPrefix}.${fieldName}`
+  return <TextWithInfo.TransKey transKey={fullTransKey} />
+}
+
 export class TableColumnFactory {
   transPrefix: string
   bar: BarColumn
@@ -38,14 +43,13 @@ export class TableColumnFactory {
     this.bar = new BarColumn(this)
   }
 
-  commonColumnName(fieldName: string): any {
-    const fullTransKey = `${this.transPrefix}.${fieldName}`
-    return <TextWithInfo.TransKey transKey={fullTransKey} />
+  columnName(fieldName: string): any {
+    return commonColumnName(this.transPrefix, fieldName)
   }
 
   textWithTooltip(fieldName: string): IColumn {
     return {
-      name: this.commonColumnName(fieldName),
+      name: this.columnName(fieldName),
       key: fieldName,
       fieldName: fieldName,
       minWidth: 100,
@@ -61,7 +65,7 @@ export class TableColumnFactory {
   singleBar(fieldName: string, unit: string, rows?: any[]): IColumn {
     const capacity = rows ? _max(rows.map((v) => v[fieldName])) ?? 0 : 0
     return {
-      name: this.commonColumnName(fieldName),
+      name: this.columnName(fieldName),
       key: fieldName,
       fieldName: fieldName,
       minWidth: 140,
@@ -82,7 +86,7 @@ export class TableColumnFactory {
     const { displayTransKey, avg, max, min } = bars
     const capacity = rows ? _max(rows.map((v) => v[max.fieldName])) ?? 0 : 0
     return {
-      name: this.commonColumnName(displayTransKey || avg.fieldName),
+      name: this.columnName(displayTransKey || avg.fieldName),
       key: avg.fieldName,
       fieldName: avg.fieldName,
       minWidth: 140,
@@ -118,7 +122,7 @@ export class TableColumnFactory {
 
   timestampColumn(fieldName: string): IColumn {
     return {
-      name: this.commonColumnName(fieldName),
+      name: this.columnName(fieldName),
       key: fieldName,
       fieldName: fieldName,
       minWidth: 100,
@@ -134,7 +138,7 @@ export class TableColumnFactory {
 
   sqlTextColumn(fieldName: string, showFullSQL?: boolean): IColumn {
     return {
-      name: this.commonColumnName(fieldName),
+      name: this.columnName(fieldName),
       key: fieldName,
       fieldName: fieldName,
       minWidth: 100,
@@ -160,7 +164,7 @@ export class TableColumnFactory {
 
   planColumn(fieldName: string): IColumn {
     return {
-      name: this.commonColumnName(fieldName),
+      name: this.columnName(fieldName),
       key: fieldName,
       fieldName: fieldName,
       minWidth: 100,

@@ -1,24 +1,13 @@
 import { Tooltip } from 'antd'
 import { max } from 'lodash'
-import {
-  IColumn,
-  ColumnActionsMode,
-} from 'office-ui-fabric-react/lib/DetailsList'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import {
-  Bar,
-  Pre,
-  TextWithInfo,
-  TextWrap,
-  DateTime,
-  IColumnKeys,
-  HighlightSQL,
-} from '@lib/components'
+import { Bar, Pre, IColumnKeys } from '@lib/components'
 import { addTranslationResource } from './i18n'
-import { TableColumnFactory } from './tableColumnFactory'
+import { commonColumnName } from './tableColumnFactory'
 
 const translations = {
   en: {
@@ -59,11 +48,6 @@ function TransText({
     }
   }
   return <span>{t(transKey, opt)}</span>
-}
-
-export function commonColumnName(transPrefix: string, fieldName: string): any {
-  const fullTransKey = `${transPrefix}.${fieldName}`
-  return <TextWithInfo.TransKey transKey={fullTransKey} />
 }
 
 ////////////////////////////////////

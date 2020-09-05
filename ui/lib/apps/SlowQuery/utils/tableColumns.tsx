@@ -5,8 +5,10 @@ import { useTranslation } from 'react-i18next'
 
 import { SlowquerySlowQuery } from '@lib/client'
 import { IColumnKeys } from '@lib/components'
-import { commonColumnName } from '@lib/utils/tableColumns'
-import { TableColumnFactory } from '@lib/utils/tableColumnFactory'
+import {
+  TableColumnFactory,
+  commonColumnName,
+} from '@lib/utils/tableColumnFactory'
 
 //////////////////////////////////////////
 

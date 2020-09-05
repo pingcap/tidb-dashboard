@@ -410,7 +410,7 @@ export function statementColumns(
   const columnFactory = new TableColumnFactory(TRANS_KEY_PREFIX)
 
   return [
-    columnFactory.sqlTextColumn('digest_text', showFullSQL),
+    columnFactory.sqlText('digest_text', showFullSQL),
     columnFactory.textWithTooltip('digest'),
     columnFactory.bar.single('sum_latency', 'ns', rows),
     avgMinMaxLatencyColumn(columnFactory, rows),
@@ -443,20 +443,20 @@ export function statementColumns(
     columnFactory.bar.single('sum_backoff_times', 'short', rows),
     columnFactory.bar.single('avg_affected_rows', 'short', rows),
 
-    columnFactory.timestampColumn('first_seen'),
-    columnFactory.timestampColumn('last_seen'),
+    columnFactory.timestamp('first_seen'),
+    columnFactory.timestamp('last_seen'),
 
     columnFactory.textWithTooltip('sample_user'),
 
-    columnFactory.sqlTextColumn('query_sample_text', showFullSQL),
-    columnFactory.sqlTextColumn('prev_sample_text', showFullSQL),
+    columnFactory.sqlText('query_sample_text', showFullSQL),
+    columnFactory.sqlText('prev_sample_text', showFullSQL),
 
     columnFactory.textWithTooltip('schema_name'),
     columnFactory.textWithTooltip('table_names'),
     columnFactory.textWithTooltip('index_names'),
 
     columnFactory.textWithTooltip('plan_digest'),
-    columnFactory.planColumn('plan'),
+    columnFactory.plan('plan'),
 
     {
       ...columnFactory.textWithTooltip('related_schemas'),

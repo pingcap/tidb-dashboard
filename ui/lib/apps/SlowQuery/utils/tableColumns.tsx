@@ -58,12 +58,12 @@ export function slowQueryColumns(
 ): IColumn[] {
   const columnFactory = new TableColumnFactory(TRANS_KEY_PREFIX)
   return [
-    columnFactory.sqlTextColumn('query', showFullSQL),
+    columnFactory.sqlText('query', showFullSQL),
     columnFactory.textWithTooltip('digest'),
     columnFactory.textWithTooltip('instance'),
     columnFactory.textWithTooltip('db'),
     columnFactory.textWithTooltip('connection_id'),
-    columnFactory.timestampColumn('timestamp'),
+    columnFactory.timestamp('timestamp'),
 
     columnFactory.bar.single('query_time', 's', rows),
     columnFactory.bar.single('parse_time', 's', rows),

@@ -120,7 +120,7 @@ export class TableColumnFactory {
     }
   }
 
-  timestampColumn(fieldName: string): IColumn {
+  timestamp(fieldName: string): IColumn {
     return {
       name: this.columnName(fieldName),
       key: fieldName,
@@ -136,7 +136,7 @@ export class TableColumnFactory {
     }
   }
 
-  sqlTextColumn(fieldName: string, showFullSQL?: boolean): IColumn {
+  sqlText(fieldName: string, showFullSQL?: boolean): IColumn {
     return {
       name: this.columnName(fieldName),
       key: fieldName,
@@ -162,7 +162,7 @@ export class TableColumnFactory {
     }
   }
 
-  planColumn(fieldName: string): IColumn {
+  plan(fieldName: string): IColumn {
     return {
       name: this.columnName(fieldName),
       key: fieldName,

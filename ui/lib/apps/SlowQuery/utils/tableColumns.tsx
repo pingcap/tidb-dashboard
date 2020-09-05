@@ -40,10 +40,11 @@ function successColumn(
 function isInternalColumn(
   _rows?: { is_internal?: number }[] // used for type check only
 ): IColumn {
+  const fieldName = 'is_internal'
   return {
-    name: commonColumnName(TRANS_KEY_PREFIX, 'is_internal'),
-    key: 'Is_internal',
-    fieldName: 'is_internal',
+    name: commonColumnName(TRANS_KEY_PREFIX, fieldName),
+    key: fieldName,
+    fieldName: fieldName,
     minWidth: 50,
     maxWidth: 100,
     onRender: (rec) => (rec.is_internal === 1 ? 'Yes' : 'No'),

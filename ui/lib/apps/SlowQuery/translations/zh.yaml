@@ -6,6 +6,7 @@ slow_query:
     connection_id: 连接号
     connection_id_tooltip: SQL 查询客户端连接 ID
     sql: SQL
+    query: SQL
     sql_tooltip: SQL
     timestamp: 结束运行时间
     timestamp_tooltip: 该 SQL 查询结束运行时的时间

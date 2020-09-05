@@ -10,14 +10,8 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import { StatementModel } from '@lib/client'
 import { Bar, Pre, TextWrap, IColumnKeys } from '@lib/components'
-import {
-  commonColumnName,
-  numWithBarColumn,
-  textWithTooltipColumn,
-  timestampColumn,
-  sqlTextColumn,
-  planColumn,
-} from '@lib/utils/tableColumns'
+import { commonColumnName } from '@lib/utils/tableColumns'
+import { TableColumnFactory } from '@lib/utils/tableColumnFactory'
 
 ///////////////////////////////////////
 // statements order list in local by fieldName of IColumn
@@ -54,17 +48,6 @@ function planDigestColumn(
   }
 }
 
-function digestTextColumn(
-  _rows?: { digest_text?: string }[], // used for type check only
-  showFullSQL?: boolean
-): IColumn {
-  return sqlTextColumn(TRANS_KEY_PREFIX, 'digest_text', showFullSQL)
-}
-
-function sumLatencyColumn(rows?: { sum_latency?: number }[]): IColumn {
-  return numWithBarColumn(TRANS_KEY_PREFIX, 'sum_latency', 'ns', rows)
-}
-
 function avgMinMaxLatencyColumn(
   rows?: { max_latency?: number; min_latency?: number; avg_latency?: number }[]
 ): IColumn {
@@ -97,10 +80,6 @@ Max:  ${getValueFormat('ns')(rec.max_latency, 1)}`
       )
     },
   }
-}
-
-function execCountColumn(rows?: { exec_count?: number }[]): IColumn {
-  return numWithBarColumn(TRANS_KEY_PREFIX, 'exec_count', 'short', rows)
 }
 
 function avgMaxMemColumn(
@@ -415,18 +394,21 @@ export function statementColumns(
   rows: StatementModel[],
   showFullSQL?: boolean
 ): IColumn[] {
+  const columnFactory = new TableColumnFactory(TRANS_KEY_PREFIX)
+
   return [
-    digestTextColumn(rows, showFullSQL),
-    textWithTooltipColumn(TRANS_KEY_PREFIX, 'digest'),
-    sumLatencyColumn(rows),
+    columnFactory.sqlTextColumn('digest_text', showFullSQL),
+    columnFactory.textWithTooltip('digest'),
+    columnFactory.bar.single('sum_latency', 'ns', rows),
     avgMinMaxLatencyColumn(rows),
-    execCountColumn(rows),
+    columnFactory.bar.single('exec_count', 'short', rows),
+
     planCountColumn(rows),
     avgMaxMemColumn(rows),
     errorsWarningsColumn(rows),
     avgParseLatencyColumn(rows),
     avgCompileLatencyColumn(rows),
-    numWithBarColumn(TRANS_KEY_PREFIX, 'sum_cop_task_num', 'short', rows),
+    columnFactory.bar.single('sum_cop_task_num', 'short', rows),
     avgCoprColumn(rows),
     avgCopWaitColumn(rows),
     avgTotalProcessColumn(rows),
@@ -444,33 +426,36 @@ export function statementColumns(
     avgWriteSizeColumn(rows),
     avgPreWriteRegionsColumn(rows),
     avgTxnRetryColumn(rows),
-    numWithBarColumn(TRANS_KEY_PREFIX, 'sum_backoff_times', 'short', rows),
-    numWithBarColumn(TRANS_KEY_PREFIX, 'avg_affected_rows', 'short', rows),
+    columnFactory.bar.single('sum_backoff_times', 'short', rows),
+    columnFactory.bar.single('avg_affected_rows', 'short', rows),
 
-    timestampColumn(TRANS_KEY_PREFIX, 'first_seen'),
-    timestampColumn(TRANS_KEY_PREFIX, 'last_seen'),
-    textWithTooltipColumn(TRANS_KEY_PREFIX, 'sample_user'),
+    columnFactory.timestampColumn('first_seen'),
+    columnFactory.timestampColumn('last_seen'),
 
-    sqlTextColumn(TRANS_KEY_PREFIX, 'query_sample_text', showFullSQL),
-    sqlTextColumn(TRANS_KEY_PREFIX, 'prev_sample_text', showFullSQL),
+    columnFactory.textWithTooltip('sample_user'),
 
-    textWithTooltipColumn(TRANS_KEY_PREFIX, 'schema_name'),
-    textWithTooltipColumn(TRANS_KEY_PREFIX, 'table_names'),
-    textWithTooltipColumn(TRANS_KEY_PREFIX, 'index_names'),
+    columnFactory.sqlTextColumn('query_sample_text', showFullSQL),
+    columnFactory.sqlTextColumn('prev_sample_text', showFullSQL),
 
-    textWithTooltipColumn(TRANS_KEY_PREFIX, 'plan_digest'),
-    planColumn(TRANS_KEY_PREFIX, 'plan'),
+    columnFactory.textWithTooltip('schema_name'),
+    columnFactory.textWithTooltip('table_names'),
+    columnFactory.textWithTooltip('index_names'),
+
+    columnFactory.textWithTooltip('plan_digest'),
+    columnFactory.planColumn('plan'),
 
     relatedSchemasColumn(rows),
   ]
 }
 
 export function planColumns(rows: StatementModel[]): IColumn[] {
+  const columnFactory = new TableColumnFactory(TRANS_KEY_PREFIX)
+
   return [
     planDigestColumn(rows),
-    sumLatencyColumn(rows),
+    columnFactory.bar.single('sum_latency', 'ns', rows),
     avgMinMaxLatencyColumn(rows),
-    execCountColumn(rows),
+    columnFactory.bar.single('exec_count', 'short', rows),
     avgMaxMemColumn(rows),
   ]
 }

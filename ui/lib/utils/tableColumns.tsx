@@ -18,6 +18,7 @@ import {
   HighlightSQL,
 } from '@lib/components'
 import { addTranslationResource } from './i18n'
+import { TableColumnFactory } from './tableColumnFactory'
 
 const translations = {
   en: {
@@ -177,128 +178,6 @@ export function timeValueColumns(
     fieldsTimeValueColumn(items),
     fieldsDescriptionColumn(transKeyPrefix),
   ]
-}
-
-////////////////////////////////////////////
-// shared util column methods for statement tableColumns and slow query tableColumns
-
-export function numWithBarColumn(
-  transPrefix: string,
-  columnName: string, // case-sensitive
-  unit: string,
-  rows?: any[]
-): IColumn {
-  const objFieldName = columnName.toLowerCase()
-  const capacity = rows ? max(rows.map((v) => v[objFieldName])) ?? 0 : 0
-  return {
-    name: commonColumnName(transPrefix, objFieldName),
-    key: columnName,
-    fieldName: objFieldName,
-    minWidth: 140,
-    maxWidth: 200,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => {
-      const formatFn = getValueFormat(unit)
-      const fmtVal =
-        unit === 'short'
-          ? formatFn(rec[objFieldName], 0, 1)
-          : formatFn(rec[objFieldName], 1)
-      return (
-        <Bar textWidth={70} value={rec[objFieldName]} capacity={capacity}>
-          {fmtVal}
-        </Bar>
-      )
-    },
-  }
-}
-
-export function textWithTooltipColumn(
-  transPrefix: string,
-  columnName: string // case-sensitive
-): IColumn {
-  const objFieldName = columnName.toLowerCase()
-  return {
-    name: commonColumnName(transPrefix, objFieldName),
-    key: columnName,
-    fieldName: objFieldName,
-    minWidth: 100,
-    maxWidth: 150,
-    onRender: (rec) => (
-      <Tooltip title={rec[objFieldName]}>
-        <TextWrap>{rec[objFieldName]}</TextWrap>
-      </Tooltip>
-    ),
-  }
-}
-
-export function timestampColumn(
-  transPrefix: string,
-  columnName: string // case-sensitive
-): IColumn {
-  const objFieldName = columnName.toLowerCase()
-  return {
-    name: commonColumnName(transPrefix, objFieldName),
-    key: columnName,
-    fieldName: objFieldName,
-    minWidth: 100,
-    maxWidth: 150,
-    columnActionsMode: ColumnActionsMode.clickable,
-    onRender: (rec) => (
-      <TextWrap>
-        <DateTime.Calendar unixTimestampMs={rec[objFieldName] * 1000} />
-      </TextWrap>
-    ),
-  }
-}
-
-export function sqlTextColumn(
-  transPrefix: string,
-  columnName: string, // case-sensitive
-  showFullSQL?: boolean
-): IColumn {
-  const objFieldName = columnName.toLowerCase()
-  return {
-    name: commonColumnName(transPrefix, objFieldName),
-    key: columnName,
-    fieldName: objFieldName,
-    minWidth: 100,
-    maxWidth: 500,
-    isMultiline: showFullSQL,
-    onRender: (rec) =>
-      showFullSQL ? (
-        <TextWrap multiline>
-          <HighlightSQL sql={rec[objFieldName]} />
-        </TextWrap>
-      ) : (
-        <Tooltip
-          title={<HighlightSQL sql={rec[objFieldName]} theme="dark" />}
-          placement="right"
-        >
-          <TextWrap>
-            <HighlightSQL sql={rec[objFieldName]} compact />
-          </TextWrap>
-        </Tooltip>
-      ),
-  }
-}
-
-export function planColumn(
-  transPrefix: string,
-  columnName: string // case-sensitive
-): IColumn {
-  const objFieldName = columnName.toLowerCase()
-  return {
-    name: commonColumnName(transPrefix, objFieldName),
-    key: columnName,
-    fieldName: objFieldName,
-    minWidth: 100,
-    maxWidth: 150,
-    onRender: (rec) => (
-      <Tooltip title={<Pre noWrap>{rec[objFieldName]}</Pre>}>
-        <TextWrap>{rec[objFieldName]}</TextWrap>
-      </Tooltip>
-    ),
-  }
 }
 
 ////////////////////////////////////////////

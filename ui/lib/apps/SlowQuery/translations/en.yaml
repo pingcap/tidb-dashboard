@@ -6,6 +6,7 @@ slow_query:
     connection_id: Connection ID
     connection_id_tooltip: Unique connection ID of the query
     sql: Query
+    query: Query
     timestamp: Finish Time
     timestamp_tooltip: The time this query finished execution
     query_time: Latency

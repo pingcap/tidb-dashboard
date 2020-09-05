@@ -69,7 +69,7 @@ export function slowQueryColumns(
     columnFactory.bar.single('parse_time', 's', rows),
     columnFactory.bar.single('compile_time', 's', rows),
     columnFactory.bar.single('process_time', 's', rows),
-    columnFactory.bar.single('mem_max', 'bytes', rows),
+    columnFactory.bar.single('memory_max', 'bytes', rows),
 
     columnFactory.textWithTooltip('txn_start_ts'),
     successColumn(rows),
@@ -145,5 +145,5 @@ export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
   query: true,
   timestamp: true,
   query_time: true,
-  mem_max: true,
+  memory_max: true,
 }

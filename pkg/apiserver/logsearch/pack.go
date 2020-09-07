@@ -61,7 +61,7 @@ func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
 	defer temp.Close()
 
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
-	c.Writer.Header().Set("Content-Disposition", "attachment; filename='logs.zip'")
+	c.Writer.Header().Set("Content-Disposition", "attachment; filename=\"logs.zip\"")
 	err = utils.StreamZipPack(c.Writer, filePaths, false)
 	if err != nil {
 		log.Error("Stream zip pack failed", zap.Error(err))

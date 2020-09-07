@@ -232,7 +232,7 @@ func (s *Service) downloadGroup(c *gin.Context) {
 
 	fileName := fmt.Sprintf("profiling_pack_%d.zip", taskGroupID)
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
-	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename='%s'", fileName))
+	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
 	err = utils.StreamZipPack(c.Writer, filePathes, true)
 	if err != nil {
 		log.Error("Stream zip pack failed", zap.Error(err))
@@ -271,7 +271,7 @@ func (s *Service) downloadSingle(c *gin.Context) {
 
 	fileName := fmt.Sprintf("profiling_%d.zip", taskID)
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
-	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename='%s'", fileName))
+	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
 	err = utils.StreamZipPack(c.Writer, []string{task.FilePath}, true)
 	if err != nil {
 		log.Error("Stream zip pack failed", zap.Error(err))

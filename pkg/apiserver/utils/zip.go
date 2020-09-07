@@ -19,8 +19,8 @@ import (
 	"os"
 )
 
-func CreateZipPack(d *os.File, files []string, needCompress bool) error {
-	pack := zip.NewWriter(d)
+func StreamZipPack(w io.Writer, files []string, needCompress bool) error {
+	pack := zip.NewWriter(w)
 	defer pack.Close()
 
 	for _, file := range files {

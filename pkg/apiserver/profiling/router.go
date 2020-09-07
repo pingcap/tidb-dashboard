@@ -21,6 +21,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -228,21 +230,13 @@ func (s *Service) downloadGroup(c *gin.Context) {
 		filePathes[i] = task.FilePath
 	}
 
-	temp, err := ioutil.TempFile("", fmt.Sprintf("taskgroup_%d", taskGroupID))
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	defer temp.Close()
-
-	err = utils.CreateZipPack(temp, filePathes, true)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
 	fileName := fmt.Sprintf("profiling_pack_%d.zip", taskGroupID)
-	c.FileAttachment(temp.Name(), fileName)
+	c.Writer.Header().Set("Content-type", "application/octet-stream")
+	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename='%s'", fileName))
+	err = utils.StreamZipPack(c.Writer, filePathes, true)
+	if err != nil {
+		log.Error("Stream zip pack failed", zap.Error(err))
+	}
 }
 
 // @ID downloadProfilingSingle
@@ -275,21 +269,13 @@ func (s *Service) downloadSingle(c *gin.Context) {
 		return
 	}
 
-	temp, err := ioutil.TempFile("", fmt.Sprintf("task_%d", taskID))
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	defer temp.Close()
-
-	err = utils.CreateZipPack(temp, []string{task.FilePath}, true)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
 	fileName := fmt.Sprintf("profiling_%d.zip", taskID)
-	c.FileAttachment(temp.Name(), fileName)
+	c.Writer.Header().Set("Content-type", "application/octet-stream")
+	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename='%s'", fileName))
+	err = utils.StreamZipPack(c.Writer, []string{task.FilePath}, true)
+	if err != nil {
+		log.Error("Stream zip pack failed", zap.Error(err))
+	}
 }
 
 // @ID viewProfilingSingle

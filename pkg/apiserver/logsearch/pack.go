@@ -19,6 +19,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 )
@@ -58,12 +60,10 @@ func serveMultipleTaskForDownload(tasks []*TaskModel, c *gin.Context) {
 	}
 	defer temp.Close()
 
-	err = utils.CreateZipPack(temp, filePaths, false)
+	c.Writer.Header().Set("Content-type", "application/octet-stream")
+	c.Writer.Header().Set("Content-Disposition", "attachment; filename='logs.zip'")
+	err = utils.StreamZipPack(c.Writer, filePaths, false)
 	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		_ = c.Error(err)
-		return
+		log.Error("Stream zip pack failed", zap.Error(err))
 	}
-
-	c.FileAttachment(temp.Name(), "logs.zip")
 }

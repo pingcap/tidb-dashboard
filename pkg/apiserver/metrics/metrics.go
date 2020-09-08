@@ -15,6 +15,8 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
 )
 
@@ -24,18 +26,23 @@ var (
 	ErrPrometheusQueryFailed = ErrNS.NewType("prometheus_query_failed")
 )
 
-type Service struct {
-	lifecycleCtx context.Context
+const (
+	defaultPromQueryTimeout = time.Second * 30
+)
 
-	httpClient *http.Client
-	etcdClient *clientv3.Client
+type ServiceParams struct {
+	fx.In
+	HTTPClient *httpc.Client
+	EtcdClient *clientv3.Client
 }
 
-func NewService(lc fx.Lifecycle, httpClient *http.Client, etcdClient *clientv3.Client) *Service {
-	s := &Service{
-		httpClient: httpClient,
-		etcdClient: etcdClient,
-	}
+type Service struct {
+	params       ServiceParams
+	lifecycleCtx context.Context
+}
+
+func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
+	s := &Service{params: p}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -67,7 +74,6 @@ type QueryResponse struct {
 
 // @Summary Query metrics
 // @Description Query metrics in the given range
-// @Produce json
 // @Param q query QueryRequest true "Query"
 // @Success 200 {object} QueryResponse
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
@@ -76,11 +82,11 @@ type QueryResponse struct {
 func (s *Service) queryHandler(c *gin.Context) {
 	var req QueryRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
-	pi, err := topology.FetchPrometheusTopology(s.lifecycleCtx, s.etcdClient)
+	pi, err := topology.FetchPrometheusTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -103,9 +109,7 @@ func (s *Service) queryHandler(c *gin.Context) {
 		return
 	}
 
-	newHTTPClient := *s.httpClient
-	newHTTPClient.Timeout = 10 * time.Second
-	promResp, err := newHTTPClient.Do(promReq)
+	promResp, err := s.params.HTTPClient.WithTimeout(defaultPromQueryTimeout).Do(promReq)
 	if err != nil {
 		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to send requests to Prometheus"))
 		return

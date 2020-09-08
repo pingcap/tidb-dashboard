@@ -8,6 +8,9 @@ error:
     tidb_conn_failed: 无法连接到 TiDB
     tidb_auth_failed: TiDB 登录验证失败
   api:
+    user:
+      signin:
+        invalid_code: 授权码无效或已过期
     other: 其他错误
 signin:
   message:
@@ -19,10 +22,22 @@ signin:
     button: 登录
     tidb_auth:
       title: SQL 用户登录
-      check:
-        message: 请输入用户名
+      switch:
+        title: SQL 用户
+        description: 我知道数据库的登录用户名和密码
+    code_auth:
+      title: 授权码登录
+      switch:
+        title: 授权码
+        description: 其他人通过授权码邀请我使用
+      code: 授权码
+    use_alternative: 使用其他登录方式
+    alternative:
+      title: 选择登录方式
+
 nav:
   user:
     signout: 登出
   sider:
     debug: 高级调试
+    experimental: 实验性功能

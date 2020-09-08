@@ -134,6 +134,7 @@ func QueryStatementsOverview(
 	schemas, stmtTypes []string,
 	text string) (result []Model, err error) {
 	fields := getAggrFields(
+		"plan_count",
 		"table_names",
 		"schema_name",
 		"digest",
@@ -157,8 +158,8 @@ func QueryStatementsOverview(
 	query := db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
-		Group("schema_name, digest, digest_text").
+		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
+		Group("schema_name, digest").
 		Order("agg_sum_latency DESC")
 
 	if len(schemas) > 0 {
@@ -212,7 +213,7 @@ func QueryPlans(
 	err = db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
+		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Where("schema_name = ?", schemaName).
 		Where("digest = ?", digest).
 		Group("plan_digest").
@@ -230,7 +231,7 @@ func QueryPlanDetail(
 	query := db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
-		Where("UNIX_TIMESTAMP(summary_begin_time) >= ? AND UNIX_TIMESTAMP(summary_end_time) <= ?", beginTime, endTime).
+		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Where("schema_name = ?", schemaName).
 		Where("digest = ?", digest)
 	if len(plans) > 0 {

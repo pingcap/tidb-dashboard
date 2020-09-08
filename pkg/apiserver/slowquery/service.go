@@ -17,35 +17,35 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 )
 
-type Service struct {
-	config        *config.Config
-	db            *dbstore.DB
-	tidbForwarder *tidb.Forwarder
+type ServiceParams struct {
+	fx.In
+	TiDBClient *tidb.Client
 }
 
-func NewService(config *config.Config, tidbForwarder *tidb.Forwarder, db *dbstore.DB) *Service {
-	return &Service{config: config, db: db, tidbForwarder: tidbForwarder}
+type Service struct {
+	params ServiceParams
+}
+
+func NewService(p ServiceParams) *Service {
+	return &Service{params: p}
 }
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/slow_query")
 	endpoint.Use(auth.MWAuthRequired())
-	endpoint.Use(utils.MWConnectTiDB(s.tidbForwarder))
+	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	endpoint.GET("/list", s.listHandler)
 	endpoint.GET("/detail", s.detailhandler)
 }
 
-// @Summary Example: Get all databases
-// @Description Get all databases.
-// @Produce json
+// @Summary List all slow queries
 // @Param q query GetListRequest true "Query"
 // @Success 200 {array} Base
 // @Router /slow_query/list [get]
@@ -54,7 +54,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 func (s *Service) listHandler(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
@@ -67,9 +67,7 @@ func (s *Service) listHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, results)
 }
 
-// @Summary Example: Get all databases
-// @Description Get all databases.
-// @Produce json
+// @Summary Get details of a slow query
 // @Param q query GetDetailRequest true "Query"
 // @Success 200 {object} SlowQuery
 // @Router /slow_query/detail [get]
@@ -78,8 +76,7 @@ func (s *Service) listHandler(c *gin.Context) {
 func (s *Service) detailhandler(c *gin.Context) {
 	var req GetDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 

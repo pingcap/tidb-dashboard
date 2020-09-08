@@ -21,6 +21,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -48,24 +50,21 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @ID startProfiling
 // @Summary Start profiling
 // @Description Start a profiling task group
-// @Produce json
 // @Param req body StartRequest true "profiling request"
 // @Security JwtAuth
 // @Success 200 {object} TaskGroupModel "task group"
-// @Failure 400 {object} utils.APIError
+// @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /profiling/group/start [post]
 func (s *Service) handleStartGroup(c *gin.Context) {
 	var req StartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	if len(req.Targets) == 0 {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.NewWithNoMessage())
+		utils.MakeInvalidRequestErrorWithMessage(c, "Expect at least 1 target")
 		return
 	}
 
@@ -84,13 +83,11 @@ func (s *Service) handleStartGroup(c *gin.Context) {
 	select {
 	case <-session.ch:
 		if session.err != nil {
-			c.Status(http.StatusInternalServerError)
 			_ = c.Error(session.err)
 		} else {
 			c.JSON(http.StatusOK, session.taskGroup.TaskGroupModel)
 		}
 	case <-time.After(Timeout):
-		c.Status(http.StatusInternalServerError)
 		_ = c.Error(ErrTimeout.NewWithNoMessage())
 	}
 }
@@ -98,16 +95,14 @@ func (s *Service) handleStartGroup(c *gin.Context) {
 // @ID getProfilingGroups
 // @Summary List all profiling groups
 // @Description List all profiling groups
-// @Produce json
 // @Security JwtAuth
 // @Success 200 {array} TaskGroupModel
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /profiling/group/list [get]
 func (s *Service) getGroupList(c *gin.Context) {
 	var resp []TaskGroupModel
-	err := s.db.Order("id DESC").Find(&resp).Error
+	err := s.params.LocalStore.Order("id DESC").Find(&resp).Error
 	if err != nil {
-		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}
@@ -123,7 +118,6 @@ type GroupDetailResponse struct {
 // @ID getProfilingGroupDetail
 // @Summary List all tasks with a given group ID
 // @Description List all profiling tasks with a given group ID
-// @Produce json
 // @Param groupId path string true "group ID"
 // @Security JwtAuth
 // @Success 200 {object} GroupDetailResponse
@@ -133,22 +127,19 @@ type GroupDetailResponse struct {
 func (s *Service) getGroupDetail(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	var taskGroup TaskGroupModel
-	err = s.db.Where("id = ?", taskGroupID).Find(&taskGroup).Error
+	err = s.params.LocalStore.Where("id = ?", taskGroupID).Find(&taskGroup).Error
 	if err != nil {
-		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
 
 	var tasks []TaskModel
-	err = s.db.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
+	err = s.params.LocalStore.Where("task_group_id = ?", taskGroupID).Find(&tasks).Error
 	if err != nil {
-		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
@@ -163,7 +154,6 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 // @ID cancelProfilingGroup
 // @Summary Cancel all tasks with a given group ID
 // @Description Cancel all profling tasks with a given group ID
-// @Produce json
 // @Param groupId path string true "group ID"
 // @Security JwtAuth
 // @Success 200 {object} utils.APIEmptyResponse
@@ -173,12 +163,10 @@ func (s *Service) getGroupDetail(c *gin.Context) {
 func (s *Service) handleCancelGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	if err := s.cancelGroup(uint(taskGroupID)); err != nil {
-		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
@@ -195,14 +183,14 @@ func (s *Service) handleCancelGroup(c *gin.Context) {
 // @Success 200 {string} string
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError
 // @Router /profiling/action_token [get]
 func (s *Service) getActionToken(c *gin.Context) {
 	id := c.Query("id")
 	action := c.Query("action") // group_download, single_download, single_view
 	token, err := utils.NewJWTString("profiling/"+action, id)
 	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		_ = c.Error(err)
 		return
 	}
 	c.String(http.StatusOK, token)
@@ -222,20 +210,17 @@ func (s *Service) downloadGroup(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/group_download", token)
 	if err != nil {
-		c.Status(http.StatusUnauthorized)
-		_ = c.Error(utils.ErrInvalidRequest.New(err.Error()))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	taskGroupID, err := strconv.Atoi(str)
 	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	var tasks []TaskModel
-	err = s.db.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateFinish).Find(&tasks).Error
+	err = s.params.LocalStore.Where("task_group_id = ? AND state = ?", taskGroupID, TaskStateFinish).Find(&tasks).Error
 	if err != nil {
-		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
@@ -245,23 +230,13 @@ func (s *Service) downloadGroup(c *gin.Context) {
 		filePathes[i] = task.FilePath
 	}
 
-	temp, err := ioutil.TempFile("", fmt.Sprintf("taskgroup_%d", taskGroupID))
+	fileName := fmt.Sprintf("profiling_pack_%d.zip", taskGroupID)
+	c.Writer.Header().Set("Content-type", "application/octet-stream")
+	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
+	err = utils.StreamZipPack(c.Writer, filePathes, true)
 	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		_ = c.Error(err)
-		return
+		log.Error("Stream zip pack failed", zap.Error(err))
 	}
-
-	err = createTarball(temp, filePathes)
-	defer temp.Close()
-	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		_ = c.Error(err)
-		return
-	}
-
-	fileName := fmt.Sprintf("profiling_pack_%d.tar.gz", taskGroupID)
-	c.FileAttachment(temp.Name(), fileName)
 }
 
 // @ID downloadProfilingSingle
@@ -279,41 +254,28 @@ func (s *Service) downloadSingle(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/single_download", token)
 	if err != nil {
-		c.Status(http.StatusUnauthorized)
-		_ = c.Error(utils.ErrInvalidRequest.New(err.Error()))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	taskID, err := strconv.Atoi(str)
 	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	task := TaskModel{}
-	err = s.db.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
+	err = s.params.LocalStore.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
 	if err != nil {
-		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
 
-	temp, err := ioutil.TempFile("", fmt.Sprintf("task_%d", taskID))
+	fileName := fmt.Sprintf("profiling_%d.zip", taskID)
+	c.Writer.Header().Set("Content-type", "application/octet-stream")
+	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
+	err = utils.StreamZipPack(c.Writer, []string{task.FilePath}, true)
 	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		_ = c.Error(err)
-		return
+		log.Error("Stream zip pack failed", zap.Error(err))
 	}
-
-	err = createTarball(temp, []string{task.FilePath})
-	defer temp.Close()
-	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		_ = c.Error(err)
-		return
-	}
-
-	fileName := fmt.Sprintf("profiling_%d.tar.gz", taskID)
-	c.FileAttachment(temp.Name(), fileName)
 }
 
 // @ID viewProfilingSingle
@@ -330,27 +292,23 @@ func (s *Service) viewSingle(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("profiling/single_view", token)
 	if err != nil {
-		c.Status(http.StatusUnauthorized)
-		_ = c.Error(utils.ErrInvalidRequest.New(err.Error()))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	taskID, err := strconv.Atoi(str)
 	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	task := TaskModel{}
-	err = s.db.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
+	err = s.params.LocalStore.Where("id = ? AND state = ?", taskID, TaskStateFinish).First(&task).Error
 	if err != nil {
-		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
 
 	content, err := ioutil.ReadFile(task.FilePath)
 	if err != nil {
-		c.Status(http.StatusInternalServerError)
 		_ = c.Error(err)
 		return
 	}
@@ -360,7 +318,6 @@ func (s *Service) viewSingle(c *gin.Context) {
 // @ID deleteProfilingGroup
 // @Summary Delete all tasks with a given group ID
 // @Description Delete all finished profiling tasks with a given group ID
-// @Produce json
 // @Param groupId path string true "group ID"
 // @Security JwtAuth
 // @Success 200 {object} utils.APIEmptyResponse
@@ -371,23 +328,19 @@ func (s *Service) viewSingle(c *gin.Context) {
 func (s *Service) deleteGroup(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	if err := s.cancelGroup(uint(taskGroupID)); err != nil {
-		c.Status(http.StatusBadRequest)
 		_ = c.Error(err)
 		return
 	}
 
-	if err = s.db.Where("task_group_id = ?", taskGroupID).Delete(&TaskModel{}).Error; err != nil {
-		c.Status(http.StatusInternalServerError)
+	if err = s.params.LocalStore.Where("task_group_id = ?", taskGroupID).Delete(&TaskModel{}).Error; err != nil {
 		_ = c.Error(err)
 		return
 	}
-	if err = s.db.Where("id = ?", taskGroupID).Delete(&TaskGroupModel{}).Error; err != nil {
-		c.Status(http.StatusInternalServerError)
+	if err = s.params.LocalStore.Where("id = ?", taskGroupID).Delete(&TaskGroupModel{}).Error; err != nil {
 		_ = c.Error(err)
 		return
 	}
@@ -395,14 +348,13 @@ func (s *Service) deleteGroup(c *gin.Context) {
 }
 
 // @Summary Get Profiling Dynamic Config
-// @Produce json
 // @Success 200 {object} config.ProfilingConfig
 // @Router /profiling/config [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 func (s *Service) getDynamicConfig(c *gin.Context) {
-	dc, err := s.cfgManager.Get()
+	dc, err := s.params.ConfigManager.Get()
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -411,27 +363,24 @@ func (s *Service) getDynamicConfig(c *gin.Context) {
 }
 
 // @Summary Set Profiling Dynamic Config
-// @Produce json
 // @Param request body config.ProfilingConfig true "Request body"
 // @Success 200 {object} config.ProfilingConfig
 // @Router /profiling/config [put]
 // @Security JwtAuth
-// @Failure 400 {object} utils.APIError
+// @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 func (s *Service) setDynamicConfig(c *gin.Context) {
 	var req config.ProfilingConfig
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	var opt config.DynamicConfigOption = func(dc *config.DynamicConfig) {
 		dc.Profiling = req
 	}
-	if err := s.cfgManager.Modify(opt); err != nil {
-		c.Status(http.StatusInternalServerError)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+	if err := s.params.ConfigManager.Modify(opt); err != nil {
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusOK, req)

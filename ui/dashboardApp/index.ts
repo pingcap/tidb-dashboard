@@ -3,6 +3,8 @@ import '@lib/utils/wdyr'
 import * as singleSpa from 'single-spa'
 import i18next from 'i18next'
 import { Modal } from 'antd'
+import NProgress from 'nprogress'
+import './nprogress.less'
 
 import AppRegistry from '@lib/utils/registry'
 import * as routing from '@lib/utils/routing'
@@ -13,19 +15,20 @@ import { saveAppOptions, loadAppOptions } from '@lib/utils/appOptions'
 import * as telemetry from '@lib/utils/telemetry'
 import client, { InfoInfoResponse } from '@lib/client'
 
-import LayoutRoot from '@dashboard/layout/root'
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
 
 import AppUserProfile from '@lib/apps/UserProfile/index.meta'
 import AppOverview from '@lib/apps/Overview/index.meta'
+import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
 import AppKeyViz from '@lib/apps/KeyViz/index.meta'
 import AppStatement from '@lib/apps/Statement/index.meta'
+import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
 import AppDiagnose from '@lib/apps/Diagnose/index.meta'
 import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
 import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
-import AppClusterInfo from '@lib/apps/ClusterInfo/index.meta'
-import AppSlowQuery from '@lib/apps/SlowQuery/index.meta'
+import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
+import AppConfiguration from '@lib/apps/Configuration/index.meta'
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
@@ -48,7 +51,7 @@ async function main() {
   let info: InfoInfoResponse
 
   try {
-    const i = await client.getInstance().getInfo()
+    const i = await client.getInstance().infoGet()
     info = i.data
   } catch (e) {
     Modal.error({
@@ -65,16 +68,19 @@ async function main() {
 
   const registry = new AppRegistry(options)
 
-  singleSpa.registerApplication(
-    'root',
-    AppRegistry.newReactSpaApp(() => LayoutRoot, 'root'),
-    () => true,
-    { registry }
-  )
+  NProgress.configure({
+    showSpinner: false,
+  })
+  window.addEventListener('single-spa:before-routing-event', () => {
+    NProgress.set(0.2)
+  })
+  window.addEventListener('single-spa:routing-event', () => {
+    NProgress.done(true)
+  })
 
   singleSpa.registerApplication(
     'layout',
-    AppRegistry.newReactSpaApp(() => LayoutMain, '__spa__main__'),
+    AppRegistry.newReactSpaApp(() => LayoutMain, 'root'),
     () => {
       return !routing.isSignInPage()
     },
@@ -83,7 +89,7 @@ async function main() {
 
   singleSpa.registerApplication(
     'signin',
-    AppRegistry.newReactSpaApp(() => LayoutSignIn, '__spa__main__'),
+    AppRegistry.newReactSpaApp(() => LayoutSignIn, 'root'),
     () => {
       return routing.isSignInPage()
     },
@@ -93,13 +99,15 @@ async function main() {
   registry
     .register(AppUserProfile)
     .register(AppOverview)
+    .register(AppClusterInfo)
     .register(AppKeyViz)
     .register(AppStatement)
-    .register(AppClusterInfo)
+    .register(AppSlowQuery)
     .register(AppDiagnose)
     .register(AppSearchLogs)
     .register(AppInstanceProfiling)
-    .register(AppSlowQuery)
+    .register(AppQueryEditor)
+    .register(AppConfiguration)
 
   if (routing.isLocationMatch('/')) {
     singleSpa.navigateToUrl('#' + registry.getDefaultRouter())

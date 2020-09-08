@@ -15,7 +15,6 @@ package logsearch
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -34,6 +33,7 @@ import (
 )
 
 type Service struct {
+	// FIXME: Use fx.In
 	lifecycleCtx context.Context
 
 	config            *config.Config
@@ -100,26 +100,22 @@ type TaskGroupResponse struct {
 	Tasks     []*TaskModel   `json:"tasks"`
 }
 
-// @Summary Create and run task group
-// @Description Create and run task group
-// @Produce json
+// @Summary Create and run a new log search task group
 // @Param request body CreateTaskGroupRequest true "Request body"
 // @Security JwtAuth
 // @Success 200 {object} TaskGroupResponse
-// @Failure 400 {object} utils.APIError
+// @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /logs/taskgroup [put]
 func (s *Service) CreateTaskGroup(c *gin.Context) {
 	var req CreateTaskGroupRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	if len(req.Targets) == 0 {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.NewWithNoMessage())
+		utils.MakeInvalidRequestErrorWithMessage(c, "Expect at least 1 target")
 		return
 	}
 	stats := model.NewRequestTargetStatisticsFromArray(&req.Targets)
@@ -154,9 +150,7 @@ func (s *Service) CreateTaskGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// @Summary List all task groups
-// @Description list all log search taskgroups
-// @Produce json
+// @Summary List all log search task groups
 // @Security JwtAuth
 // @Success 200 {array} TaskGroupModel
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
@@ -173,9 +167,7 @@ func (s *Service) GetAllTaskGroups(c *gin.Context) {
 	c.JSON(http.StatusOK, taskGroups)
 }
 
-// @Summary List tasks in a task group
-// @Description list all log search tasks in a task group by providing task group ID
-// @Produce json
+// @Summary List tasks in a log search task group
 // @Param id path string true "Task Group ID"
 // @Security JwtAuth
 // @Success 200 {object} TaskGroupResponse
@@ -203,9 +195,7 @@ func (s *Service) GetTaskGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// @Summary Preview logs in a task group
-// @Description preview fetched logs in a task group by providing task group ID
-// @Produce json
+// @Summary Preview a log search task group
 // @Param id path string true "task group id"
 // @Security JwtAuth
 // @Success 200 {array} PreviewModel
@@ -227,9 +217,7 @@ func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 	c.JSON(http.StatusOK, lines)
 }
 
-// @Summary Retry failed tasks
-// @Description retry tasks that has been failed in a task group
-// @Produce json
+// @Summary Retry failed tasks in a log search task group
 // @Param id path string true "task group id"
 // @Security JwtAuth
 // @Success 200 {object} utils.APIEmptyResponse
@@ -240,8 +228,7 @@ func (s *Service) GetTaskGroupPreview(c *gin.Context) {
 func (s *Service) RetryTask(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
@@ -279,9 +266,7 @@ func (s *Service) RetryTask(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
-// @Summary Cancel running tasks
-// @Description cancel all running tasks in a task group
-// @Produce json
+// @Summary Cancel running tasks in a log search task group
 // @Param id path string true "task group id"
 // @Security JwtAuth
 // @Success 200 {object} utils.APIEmptyResponse
@@ -291,8 +276,7 @@ func (s *Service) RetryTask(c *gin.Context) {
 func (s *Service) CancelTask(c *gin.Context) {
 	taskGroupID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	taskGroup := TaskGroupModel{}
@@ -302,17 +286,14 @@ func (s *Service) CancelTask(c *gin.Context) {
 		return
 	}
 	if taskGroup.State != TaskGroupStateRunning {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(fmt.Errorf("taskGroup is not running"))
+		utils.MakeInvalidRequestErrorWithMessage(c, "Task is not running")
 		return
 	}
 	s.scheduler.AsyncAbort(uint(taskGroupID))
 	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
-// @Summary Delete task group
-// @Description delete a task group by providing task group ID
-// @Produce json
+// @Summary Delete a log search task group
 // @Param id path string true "task group id"
 // @Security JwtAuth
 // @Success 200 {object} utils.APIEmptyResponse
@@ -331,8 +312,7 @@ func (s *Service) DeleteTaskGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
 }
 
-// @Summary Get download token
-// @Description get download token with multiple task IDs
+// @Summary Generate a download token for downloading logs
 // @Produce plain
 // @Param id query []string false "task id" collectionFormat(csv)
 // @Security JwtAuth
@@ -345,15 +325,13 @@ func (s *Service) GetDownloadToken(c *gin.Context) {
 	str := strings.Join(ids, ",")
 	token, err := utils.NewJWTString("logs/download", str)
 	if err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.WrapWithNoMessage(err))
+		_ = c.Error(err)
 		return
 	}
 	c.String(http.StatusOK, token)
 }
 
-// @Summary Download
-// @Description download logs by multiple task IDs
+// @Summary Download logs
 // @Produce application/x-tar,application/zip
 // @Param token query string true "download token"
 // @Failure 400 {object} utils.APIError
@@ -364,8 +342,7 @@ func (s *Service) DownloadLogs(c *gin.Context) {
 	token := c.Query("token")
 	str, err := utils.ParseJWTString("logs/download", token)
 	if err != nil {
-		c.Status(http.StatusUnauthorized)
-		_ = c.Error(utils.ErrInvalidRequest.New(err.Error()))
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	ids := strings.Split(str, ",")
@@ -383,8 +360,7 @@ func (s *Service) DownloadLogs(c *gin.Context) {
 
 	switch len(tasks) {
 	case 0:
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(utils.ErrInvalidRequest.New("At least one target should be provided"))
+		utils.MakeInvalidRequestErrorWithMessage(c, "Expect at least 1 target")
 	case 1:
 		serveTaskForDownload(tasks[0], c)
 	default:

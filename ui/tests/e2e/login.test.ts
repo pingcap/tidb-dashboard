@@ -21,6 +21,13 @@ describe('Login', () => {
       await ppExpect(page).toFill('input#tidb_signin_password', 'any')
       await ppExpect(page).toClick('button#signin_btn')
       await ppExpect(page).toMatch('TiDB authentication failed')
+
+      // test
+      const failedReason = await page.waitForSelector(
+        'form#tidb_signin div.ant-form-item-explain'
+      )
+      const content = await failedReason.evaluate((n) => n.innerText)
+      console.log(content)
     },
     10 * 1000
   )

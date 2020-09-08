@@ -62,7 +62,7 @@ jobs:
           source /home/runner/.profile
           tiup --version
           sudo snap install loop-rs --beta
-          /snap/bin/loop-rs --every 15s --until-success --num 20 -- tiup playground display
+          /snap/bin/loop-rs --every 15s --until-success --num 20 -- 'tiup playground display'
           ls /home/runner/.tiup/components/playground/
           DATA_PATH=$(ls /home/runner/.tiup/data/)
           echo $DATA_PATH

@@ -22,7 +22,7 @@ describe('Login', () => {
       await ppExpect(page).toClick('button#signin_btn')
 
       const failReason = await page.waitForSelector(
-        'form#tidb_signin div[data-e2e="password"] div.ant-form-item-explain'
+        'form#tidb_signin div[data-e2e="password"] div:last-child'
       )
       const content = await failReason.evaluate((n) => n.innerText)
       console.log('fail reason:', content)

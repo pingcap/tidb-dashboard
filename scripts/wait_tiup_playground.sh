@@ -12,6 +12,8 @@ if ([ -z "${INTERVAL}" ] || [ -z "${MAX_TIMES}" ]); then
   exit 1
 fi
 
+source /home/runner/.profile
+
 for ((i=0; i<${MAX_TIMES}; i++)); do
   tiup playground display
   if [ $? -eq 0 ]; then

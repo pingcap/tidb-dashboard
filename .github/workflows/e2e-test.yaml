@@ -46,6 +46,7 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
           source /home/runner/.profile
+          tiup install tidb:v4.0.5 tikv pd prometheus
           tiup update --all
           tiup update --self
           source /home/runner/.profile

@@ -24,32 +24,42 @@ func StreamZipPack(w io.Writer, files []string, needCompress bool) error {
 	defer pack.Close()
 
 	for _, file := range files {
-		f, err := os.Open(file)
+		err := streamZipFile(pack, file, needCompress)
 		if err != nil {
 			return err
 		}
-		defer f.Close()
-		fileInfo, err := f.Stat()
-		if err != nil {
-			return err
-		}
+	}
 
-		zipMethod := zip.Store // no compress
-		if needCompress {
-			zipMethod = zip.Deflate // compress
-		}
-		zipFile, err := pack.CreateHeader(&zip.FileHeader{
-			Name:   fileInfo.Name(),
-			Method: zipMethod,
-		})
-		if err != nil {
-			return err
-		}
+	return nil
+}
 
-		_, err = io.Copy(zipFile, f)
-		if err != nil {
-			return err
-		}
+func streamZipFile(zipPack *zip.Writer, file string, needCompress bool) error {
+	f, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	fileInfo, err := f.Stat()
+	if err != nil {
+		return err
+	}
+
+	zipMethod := zip.Store // no compress
+	if needCompress {
+		zipMethod = zip.Deflate // compress
+	}
+	zipFile, err := zipPack.CreateHeader(&zip.FileHeader{
+		Name:   fileInfo.Name(),
+		Method: zipMethod,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(zipFile, f)
+	if err != nil {
+		return err
 	}
 
 	return nil

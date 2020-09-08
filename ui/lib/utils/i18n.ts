@@ -8,7 +8,11 @@ import { initReactI18next } from 'react-i18next'
 
 i18next.on('languageChanged', function (lng) {
   console.log('Language', lng)
-  dayjs.locale(lng.toLowerCase())
+  if (lng.startsWith('zh')) {
+    dayjs.locale('zh-cn')
+  } else {
+    dayjs.locale('en')
+  }
 })
 
 export function addTranslations(requireContext) {

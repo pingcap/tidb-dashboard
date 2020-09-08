@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
-# Wait unitl `tiup playground` command run success
+# Wait unitl `tiup playground` command runs success
 
 INTERVAL=$1
 MAX_TIMES=$2
-
-echo $INTERVAL
-echo ${MAX_TIMES}
 
 if ([ -z "${INTERVAL}" ] || [ -z "${MAX_TIMES}" ]); then
   echo "Usage: command <interval> <max_times>"

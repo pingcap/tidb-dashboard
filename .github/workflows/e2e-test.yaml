@@ -61,10 +61,11 @@ jobs:
         run: |
           source /home/runner/.profile
           tiup --version
+          snap install loop-rs --beta
+          /snap/bin/loop-rs --every 15s --until-success --num 20 -- tiup playground display
           ls /home/runner/.tiup/components/playground/
           DATA_PATH=$(ls /home/runner/.tiup/data/)
           echo $DATA_PATH
-          tiup playground display
           echo "==== TiDB Log ===="
           head -n 3 /home/runner/.tiup/data/$DATA_PATH/tidb-0/tidb.log
           echo "==== TiKV Log ===="

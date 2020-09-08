@@ -50,6 +50,10 @@ jobs:
           tiup update --self
           source /home/runner/.profile
           tiup playground --tiflash=0 &
+      - name: Wait TiUP
+        run: |
+          chmod u+x scripts/wait_tiup_playground.sh
+          scripts/wait_tiup_playground.sh 15 20
       - name: Build UI
         run: |
           make ui
@@ -61,8 +65,6 @@ jobs:
         run: |
           source /home/runner/.profile
           tiup --version
-          sudo snap install loop-rs --beta
-          /snap/bin/loop-rs --every 15s --until-success --num 20 -- 'tiup playground display'
           ls /home/runner/.tiup/components/playground/
           DATA_PATH=$(ls /home/runner/.tiup/data/)
           echo $DATA_PATH

@@ -40,7 +40,6 @@ describe('Login', () => {
       await page.goto(LOGIN_URL)
 
       const title = await page.title()
-      console.log('title:', title)
       expect(title).toBe('TiDB Dashboard')
 
       const loginBtn = await page.waitForSelector('button#signin_btn')

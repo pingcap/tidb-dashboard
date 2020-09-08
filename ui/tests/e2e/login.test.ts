@@ -20,14 +20,15 @@ describe('Login', () => {
 
       await ppExpect(page).toFill('input#tidb_signin_password', 'any')
       await ppExpect(page).toClick('button#signin_btn')
-      await ppExpect(page).toMatch('TiDB authentication failed')
 
       // test
       const failedReason = await page.waitForSelector(
         'form#tidb_signin div.ant-form-item-explain'
       )
       const content = await failedReason.evaluate((n) => n.innerText)
-      console.log(content)
+      console.log('fail reason:', content)
+
+      await ppExpect(page).toMatch('TiDB authentication failed')
     },
     10 * 1000
   )
@@ -39,6 +40,7 @@ describe('Login', () => {
       await page.goto(LOGIN_URL)
 
       const title = await page.title()
+      console.log('title:', title)
       expect(title).toBe('TiDB Dashboard')
 
       const loginBtn = await page.waitForSelector('button#signin_btn')

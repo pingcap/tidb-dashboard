@@ -25,6 +25,8 @@ export default function RecentStatements() {
     statements,
 
     errors,
+
+    tableColumns,
   } = useStatement(visibleColumnKeys, undefined, false)
 
   return (
@@ -34,6 +36,7 @@ export default function RecentStatements() {
       visibleItemsCount={10}
       loading={loadingStatements}
       statements={statements}
+      columns={tableColumns}
       timeRange={validTimeRange}
       orderBy={orderOptions.orderBy}
       desc={orderOptions.desc}

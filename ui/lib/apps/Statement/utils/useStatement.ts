@@ -4,14 +4,14 @@ import { useSessionStorageState } from '@umijs/hooks'
 import client, { StatementModel, StatementTimeRange } from '@lib/client'
 import { IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
-import { getVisibleColumns } from '@lib/utils/tableColumns'
 
 import {
   calcValidStatementTimeRange,
   DEFAULT_TIME_RANGE,
   TimeRange,
 } from '../pages/List/TimeRangeSelector'
-import { STMT_COLUMN_REFS } from './tableColumns'
+import { statementColumns } from './tableColumns'
+import { getSelectedDBFields } from '@lib/utils/tableColumnFactory'
 
 const QUERY_OPTIONS = 'statement.query_options'
 
@@ -130,6 +130,15 @@ export default function useStatement(
     queryStmtTypes()
   }, [refreshTimes])
 
+  // Notice: statements, tableColumns, selectedFields make loop dependencies
+  const tableColumns = useMemo(() => statementColumns(statements, false), [
+    statements,
+  ])
+  // make selectedFields as a string instead of an array to avoid infinite loop
+  const selectedFields = useMemo(
+    () => getSelectedDBFields(visibleColumnKeys, tableColumns).join(','),
+    [visibleColumnKeys, tableColumns]
+  )
   useEffect(() => {
     async function queryStatementList() {
       if (allTimeRanges.length === 0) {
@@ -138,8 +147,6 @@ export default function useStatement(
         return
       }
 
-      const fields = getVisibleColumns(visibleColumnKeys, STMT_COLUMN_REFS)
-
       setLoadingStatements(true)
       try {
         const res = await client
@@ -147,7 +154,7 @@ export default function useStatement(
           .statementsOverviewsGet(
             validTimeRange.begin_time!,
             validTimeRange.end_time!,
-            fields.join(','),
+            selectedFields,
             queryOptions.schemas,
             queryOptions.stmtTypes,
             queryOptions.searchText
@@ -161,7 +168,7 @@ export default function useStatement(
     }
 
     queryStatementList()
-  }, [queryOptions, allTimeRanges, validTimeRange, visibleColumnKeys])
+  }, [queryOptions, allTimeRanges, validTimeRange, selectedFields])
 
   return {
     queryOptions,
@@ -179,5 +186,7 @@ export default function useStatement(
     statements,
 
     errors,
+
+    tableColumns,
   }
 }

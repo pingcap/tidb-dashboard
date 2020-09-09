@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Select, Space, Tooltip, Input, Checkbox } from 'antd'
 import { ReloadOutlined, LoadingOutlined } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useLocalStorageState } from '@umijs/hooks'
 
 import {
@@ -27,7 +26,6 @@ const LIMITS = [100, 200, 500, 1000]
 function List() {
   const { t } = useTranslation()
 
-  const [columns, setColumns] = useState<IColumn[]>([])
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     SLOW_QUERY_VISIBLE_COLUMN_KEYS,
     DEF_SLOW_QUERY_COLUMN_KEYS
@@ -102,9 +100,9 @@ function List() {
           </Space>
 
           <Space>
-            {columns.length > 0 && (
+            {tableColumns.length > 0 && (
               <ColumnsSelector
-                columns={columns}
+                columns={tableColumns}
                 visibleColumnKeys={visibleColumnKeys}
                 resetColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
                 onChange={setVisibleColumnKeys}

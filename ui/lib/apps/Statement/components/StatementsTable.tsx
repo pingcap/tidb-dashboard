@@ -1,6 +1,6 @@
 import { usePersistFn } from '@umijs/hooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { StatementModel, StatementTimeRange } from '@lib/client'
@@ -8,34 +8,22 @@ import { CardTable, ICardTableProps } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 
 import DetailPage from '../pages/Detail'
-import { statementColumns } from '../utils/tableColumns'
 
 interface Props extends Partial<ICardTableProps> {
   loading: boolean
   statements: StatementModel[]
   timeRange: StatementTimeRange
-  showFullSQL?: boolean
-  onGetColumns?: (columns: IColumn[]) => void
+  columns: IColumn[]
 }
 
 export default function StatementsTable({
   loading,
   statements,
   timeRange,
-  showFullSQL,
-  onGetColumns,
+  columns,
   ...restPrpos
 }: Props) {
   const navigate = useNavigate()
-
-  const columns = useMemo(() => statementColumns(statements, showFullSQL), [
-    statements,
-    showFullSQL,
-  ])
-
-  useEffect(() => {
-    onGetColumns && onGetColumns(columns || [])
-  }, [onGetColumns, columns])
 
   const handleRowClick = usePersistFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {

@@ -7,7 +7,6 @@ import {
   LoadingOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { useTranslation } from 'react-i18next'
 import { Card, ColumnsSelector, Toolbar, MultiSelect } from '@lib/components'
 import { StatementsTable } from '../../components'
@@ -24,7 +23,6 @@ const STMT_SHOW_FULL_SQL = 'statement.show_full_sql'
 export default function StatementsOverview() {
   const { t } = useTranslation()
 
-  const [columns, setColumns] = useState<IColumn[]>([])
   const [showSettings, setShowSettings] = useState(false)
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     STMT_VISIBLE_COLUMN_KEYS,
@@ -51,6 +49,8 @@ export default function StatementsOverview() {
     statements,
 
     errors,
+
+    tableColumns,
   } = useStatement(visibleColumnKeys)
 
   return (
@@ -113,9 +113,9 @@ export default function StatementsOverview() {
           </Space>
 
           <Space>
-            {columns.length > 0 && (
+            {tableColumns.length > 0 && (
               <ColumnsSelector
-                columns={columns}
+                columns={tableColumns}
                 visibleColumnKeys={visibleColumnKeys}
                 resetColumnKeys={DEF_STMT_COLUMN_KEYS}
                 onChange={setVisibleColumnKeys}
@@ -153,12 +153,11 @@ export default function StatementsOverview() {
               loading={loadingStatements}
               errors={errors}
               statements={statements}
+              columns={tableColumns}
               timeRange={validTimeRange}
               orderBy={orderOptions.orderBy}
               desc={orderOptions.desc}
-              showFullSQL={showFullSQL}
               visibleColumnKeys={visibleColumnKeys}
-              onGetColumns={setColumns}
               onChangeOrder={changeOrder}
             />
           </ScrollablePane>

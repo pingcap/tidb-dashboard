@@ -5,7 +5,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import { Bar, Pre, IColumnKeys } from '@lib/components'
+import { Bar, Pre } from '@lib/components'
 import { addTranslationResource } from './i18n'
 import { commonColumnName } from './tableColumnFactory'
 

@@ -105,7 +105,7 @@ type GetListRequest struct {
 	Fields string `json:"fields" form:"fields"` // example: "Query,Digest"
 }
 
-func getRefColumns(jsonFields ...string) []string {
+func getRefColumns(jsonFields ...string) ([]string, error) {
 	fields := make(map[string]*reflect.StructField)
 	t := reflect.TypeOf(SlowQuery{})
 	fieldsNum := t.NumField()
@@ -121,20 +121,20 @@ func getRefColumns(jsonFields ...string) []string {
 			} else if s, ok := field.Tag.Lookup("gorm"); ok {
 				list := strings.Split(s, ":")
 				if len(list) < 1 {
-					panic(fmt.Sprintf("unknown gorm tag field: %s", s))
+					return nil, fmt.Errorf("unknown gorm tag field: %s", s)
 				}
 				ret = append(ret, list[1])
 			} else {
-				panic(fmt.Sprintf("field %s cannot find ref column", fieldName))
+				return nil, fmt.Errorf("field %s cannot find ref column", fieldName)
 			}
 		} else {
-			panic(fmt.Sprintf("unknown field %s", fieldName))
+			return nil, fmt.Errorf("unknown field %s", fieldName)
 		}
 	}
-	return ret
+	return ret, nil
 }
 
-func getRefColumn(jsonField string) string {
+func getRefColumn(jsonField string) (string, error) {
 	t := reflect.TypeOf(SlowQuery{})
 	fieldsNum := t.NumField()
 	for i := 0; i < fieldsNum; i++ {
@@ -143,14 +143,14 @@ func getRefColumn(jsonField string) string {
 			if s, ok := field.Tag.Lookup("gorm"); ok {
 				list := strings.Split(s, ":")
 				if len(list) < 1 {
-					panic(fmt.Sprintf("unknown gorm tag field: %s", s))
+					return "", fmt.Errorf("unknown gorm tag field: %s", s)
 				}
-				return list[1]
+				return list[1], nil
 			}
-			panic(fmt.Sprintf("field %s cannot find ref column", jsonField))
+			return "", fmt.Errorf("field %s cannot find ref column", jsonField)
 		}
 	}
-	return ""
+	return "", nil
 }
 
 type GetDetailRequest struct {
@@ -160,10 +160,14 @@ type GetDetailRequest struct {
 }
 
 func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
-	refColumns := getRefColumns("digest", "connection_id", "timestamp") // "digest", "connection_id", "timestamp" for detail
+	refColumns, _ := getRefColumns("digest", "connection_id", "timestamp") // "digest", "connection_id", "timestamp" for detail
 	if strings.TrimSpace(req.Fields) != "" {
 		sqlFields := strings.Split(req.Fields, ",")
-		refColumns = append(refColumns, getRefColumns(sqlFields...)...)
+		columns, err := getRefColumns(sqlFields...)
+		if err != nil {
+			return nil, err
+		}
+		refColumns = append(refColumns, columns...)
 	}
 
 	tx := db.
@@ -190,7 +194,10 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		tx = tx.Where("DB IN (?)", req.DB)
 	}
 
-	order := getRefColumn(req.OrderBy)
+	order, err := getRefColumn(req.OrderBy)
+	if err != nil {
+		return nil, err
+	}
 	if len(order) > 0 {
 		if req.DESC {
 			tx = tx.Order(fmt.Sprintf("%s desc", order))
@@ -208,7 +215,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	}
 
 	var results []SlowQuery
-	err := tx.Find(&results).Error
+	err = tx.Find(&results).Error
 	if err != nil {
 		return nil, err
 	}

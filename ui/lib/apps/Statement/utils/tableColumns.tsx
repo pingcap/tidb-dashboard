@@ -70,7 +70,7 @@ function errorsWarningsColumn(
     name: tcf.columnName('errors_warnings'),
     key,
     fieldName: key,
-    refDBFields: ['sum_errors', 'sum_warnings'],
+    refFields: ['sum_errors', 'sum_warnings'],
     minWidth: 140,
     maxWidth: 200,
     columnActionsMode: ColumnActionsMode.clickable,
@@ -413,7 +413,7 @@ export function statementColumns(
       ...tcf.textWithTooltip('related_schemas'),
       minWidth: 160,
       maxWidth: 240,
-      refDBFields: ['table_names'],
+      refFields: ['table_names'],
     },
   ]
 }

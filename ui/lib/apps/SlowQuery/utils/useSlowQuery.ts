@@ -6,7 +6,7 @@ import { calcTimeRange, TimeRange, IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 import { slowQueryColumns } from './tableColumns'
-import { getSelectedDBFields } from '@lib/utils/tableColumnFactory'
+import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
 
@@ -104,7 +104,7 @@ export default function useSlowQuery(
   // I have verified that it will cause infinite loop if we return selectedFields as an array
   // so it is better to use the basic type (string, number...) instead of object as the dependency
   const selectedFields = useMemo(
-    () => getSelectedDBFields(visibleColumnKeys, tableColumns).join(','),
+    () => getSelectedFields(visibleColumnKeys, tableColumns).join(','),
     [visibleColumnKeys, tableColumns]
   )
   useEffect(() => {

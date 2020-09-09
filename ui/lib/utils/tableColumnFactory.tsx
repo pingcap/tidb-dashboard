@@ -24,7 +24,7 @@ type BarsConfig = {
 }
 
 export type IExtendColumn = IColumn & {
-  refDBFields?: string[]
+  refFields?: string[]
 }
 
 function capitalize(s: string) {
@@ -89,11 +89,15 @@ export class TableColumnFactory {
     }
   }
 
-  multipleBar(bars: BarsConfig, unit: string, rows?: any[]): IExtendColumn {
+  multipleBar(
+    barsConfig: BarsConfig,
+    unit: string,
+    rows?: any[]
+  ): IExtendColumn {
     const {
       displayTransKey,
       bars: [avg_, max_, min_],
-    } = bars
+    } = barsConfig
 
     const tooltioPrefixLens: number[] = []
     const avg = {
@@ -119,15 +123,15 @@ export class TableColumnFactory {
     const maxTooltipPrefixLen = _max(tooltioPrefixLens) || 0
 
     const capacity = rows ? _max(rows.map((v) => v[max.fieldName])) ?? 0 : 0
-    let refDBFields = [avg.fieldName, max.fieldName]
+    let refFields = [avg.fieldName, max.fieldName]
     if (min) {
-      refDBFields.push(min.fieldName)
+      refFields.push(min.fieldName)
     }
     return {
       name: this.columnName(displayTransKey || avg.fieldName),
       key: avg.fieldName,
       fieldName: avg.fieldName,
-      refDBFields,
+      refFields,
       minWidth: 140,
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
@@ -234,15 +238,15 @@ export class BarColumn {
 
 ////////////////////////////////////////////
 
-export function getSelectedDBFields(
+export function getSelectedFields(
   visibleColumnKeys: IColumnKeys,
   columns: IExtendColumn[]
 ) {
   let fields: string[] = []
   columns.forEach((c) => {
     if (visibleColumnKeys[c.key] === true) {
-      if (c.refDBFields !== undefined) {
-        fields = fields.concat(c.refDBFields)
+      if (c.refFields !== undefined) {
+        fields = fields.concat(c.refFields)
       } else {
         fields.push(c.key)
       }

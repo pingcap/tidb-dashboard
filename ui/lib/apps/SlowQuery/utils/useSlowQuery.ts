@@ -4,9 +4,9 @@ import { useSessionStorageState } from '@umijs/hooks'
 import client, { SlowquerySlowQuery } from '@lib/client'
 import { calcTimeRange, TimeRange, IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
-import { getVisibleColumns } from '@lib/utils/tableColumns'
 
-import { SLOW_QUERY_COLUMN_REFS } from './tableColumns'
+import { slowQueryColumns } from './tableColumns'
+import { getSelectedDBFields } from '@lib/utils/tableColumnFactory'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
 
@@ -94,13 +94,17 @@ export default function useSlowQuery(
     querySchemas()
   }, [])
 
+  // Notice: slowQueries, tableColumns, selectedFields make loop dependencies
+  const tableColumns = useMemo(() => slowQueryColumns(slowQueries, false), [
+    slowQueries,
+  ])
+  // make selectedFields as a string instead of an array to avoid infinite loop
+  const selectedFields = useMemo(
+    () => getSelectedDBFields(visibleColumnKeys, tableColumns).join(','),
+    [visibleColumnKeys, tableColumns]
+  )
   useEffect(() => {
     async function getSlowQueryList() {
-      const fields = getVisibleColumns(
-        visibleColumnKeys,
-        SLOW_QUERY_COLUMN_REFS
-      )
-
       setLoadingSlowQueries(true)
       try {
         const res = await client
@@ -109,7 +113,7 @@ export default function useSlowQuery(
             queryOptions.schemas,
             orderOptions.desc,
             queryOptions.digest,
-            fields.join(','),
+            selectedFields,
             queryOptions.limit,
             queryTimeRange.endTime,
             queryTimeRange.beginTime,
@@ -126,13 +130,7 @@ export default function useSlowQuery(
     }
 
     getSlowQueryList()
-  }, [
-    visibleColumnKeys,
-    queryOptions,
-    orderOptions,
-    queryTimeRange,
-    refreshTimes,
-  ])
+  }, [queryOptions, orderOptions, queryTimeRange, refreshTimes, selectedFields])
 
   return {
     queryOptions,
@@ -147,5 +145,7 @@ export default function useSlowQuery(
     queryTimeRange,
 
     errors,
+
+    tableColumns,
   }
 }

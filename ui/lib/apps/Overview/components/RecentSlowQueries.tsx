@@ -19,6 +19,8 @@ export default function RecentSlowQueries() {
     queryTimeRange,
 
     errors,
+
+    tableColumns,
   } = useSlowQuery(
     DEF_SLOW_QUERY_COLUMN_KEYS,
     { ...DEF_SLOW_QUERY_OPTIONS, limit: 10 },
@@ -31,6 +33,7 @@ export default function RecentSlowQueries() {
       visibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
       loading={loadingSlowQueries}
       slowQueries={slowQueries}
+      columns={tableColumns}
       orderBy={orderOptions.orderBy}
       desc={orderOptions.desc}
       onChangeOrder={changeOrder}

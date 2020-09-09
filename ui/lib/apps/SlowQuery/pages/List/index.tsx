@@ -49,6 +49,8 @@ function List() {
     slowQueries,
 
     errors,
+
+    tableColumns,
   } = useSlowQuery(visibleColumnKeys)
 
   return (
@@ -136,11 +138,10 @@ function List() {
             loading={loadingSlowQueries}
             errors={errors}
             slowQueries={slowQueries}
+            columns={tableColumns}
             orderBy={orderOptions.orderBy}
             desc={orderOptions.desc}
-            showFullSQL={showFullSQL}
             visibleColumnKeys={visibleColumnKeys}
-            onGetColumns={setColumns}
             onChangeOrder={changeOrder}
           />
         </ScrollablePane>

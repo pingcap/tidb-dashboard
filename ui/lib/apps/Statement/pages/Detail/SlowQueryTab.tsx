@@ -17,6 +17,8 @@ export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
 
     slowQueries,
     loadingSlowQueries,
+
+    tableColumns,
   } = useSlowQuery(
     DEF_SLOW_QUERY_COLUMN_KEYS,
     {
@@ -39,6 +41,7 @@ export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
       key={`slow_query_${slowQueries.length}`}
       loading={loadingSlowQueries}
       slowQueries={slowQueries}
+      columns={tableColumns}
       visibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
       orderBy={orderOptions.orderBy}
       desc={orderOptions.desc}

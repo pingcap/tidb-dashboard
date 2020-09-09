@@ -1,6 +1,6 @@
 import { usePersistFn } from '@umijs/hooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { SlowquerySlowQuery } from '@lib/client'
@@ -8,32 +8,20 @@ import { CardTable, ICardTableProps } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 
 import DetailPage from '../pages/Detail'
-import { slowQueryColumns } from '../utils/tableColumns'
 
 interface Props extends Partial<ICardTableProps> {
   loading: boolean
   slowQueries: SlowquerySlowQuery[]
-  showFullSQL?: boolean
-  onGetColumns?: (columns: IColumn[]) => void
+  columns: IColumn[]
 }
 
 function SlowQueriesTable({
   loading,
   slowQueries,
-  showFullSQL,
-  onGetColumns,
+  columns,
   ...restProps
 }: Props) {
   const navigate = useNavigate()
-
-  const columns = useMemo(() => slowQueryColumns(slowQueries, showFullSQL), [
-    slowQueries,
-    showFullSQL,
-  ])
-
-  useEffect(() => {
-    onGetColumns && onGetColumns(columns || [])
-  }, [onGetColumns, columns])
 
   const handleRowClick = usePersistFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {

@@ -17,16 +17,18 @@ import {
   IColumnKeys,
 } from '@lib/components'
 
-type BarField = { fieldName: string; tooltipPrefix: string }
-type Bars = {
-  displayTransKey?: string // it is same as avg.fieldName default
-  avg: BarField
-  max: BarField
-  min?: BarField
+type Bar = { [key: string]: string }
+type BarsConfig = {
+  displayTransKey?: string // it is same as avg field name default
+  bars: [Bar, Bar, Bar?] // [avg, max, min?]
 }
 
 export type IExtendColumn = IColumn & {
   refDBFields?: string[]
+}
+
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 export function formatVal(val: number, unit: string) {
@@ -87,12 +89,39 @@ export class TableColumnFactory {
     }
   }
 
-  multipleBar(bars: Bars, unit: string, rows?: any[]): IExtendColumn {
-    const { displayTransKey, avg, max, min } = bars
+  multipleBar(bars: BarsConfig, unit: string, rows?: any[]): IExtendColumn {
+    const {
+      displayTransKey,
+      bars: [avg_, max_, min_],
+    } = bars
+
+    const tooltioPrefixLens: number[] = []
+    const avg = {
+      fieldName: Object.values(avg_)[0],
+      tooltipPrefix: Object.keys(avg_)[0],
+    }
+    tooltioPrefixLens.push(avg.tooltipPrefix.length)
+    const max = {
+      fieldName: Object.values(max_)[0],
+      tooltipPrefix: Object.keys(max_)[0],
+    }
+    tooltioPrefixLens.push(max.tooltipPrefix.length)
+    let min
+    if (min_) {
+      min = {
+        fieldName: Object.values(min_)[0],
+        tooltipPrefix: Object.keys(min_)[0],
+      }
+      tooltioPrefixLens.push(min.tooltipPrefix.length)
+    } else {
+      min = undefined
+    }
+    const maxTooltipPrefixLen = _max(tooltioPrefixLens) || 0
+
     const capacity = rows ? _max(rows.map((v) => v[max.fieldName])) ?? 0 : 0
-    let refDBFields = [bars.avg.fieldName, bars.max.fieldName]
-    if (bars.min) {
-      refDBFields.push(bars.min.fieldName)
+    let refDBFields = [avg.fieldName, max.fieldName]
+    if (min) {
+      refDBFields.push(min.fieldName)
     }
     return {
       name: this.columnName(displayTransKey || avg.fieldName),
@@ -108,10 +137,13 @@ export class TableColumnFactory {
         const minVal = min ? rec[min.fieldName] : undefined
         const tooltips = [avg, min, max]
           .filter((el) => el !== undefined)
-          .map(
-            (bar) =>
-              `${bar!.tooltipPrefix} ${formatVal(rec[bar!.fieldName], unit)}`
-          )
+          .map((bar) => {
+            const prefix = capitalize(bar!.tooltipPrefix + ':').padEnd(
+              maxTooltipPrefixLen + 2
+            )
+            const fmtVal = formatVal(rec[bar!.fieldName], unit)
+            return `${prefix}${fmtVal}`
+          })
           .join('\n')
         return (
           <Tooltip title={<Pre>{tooltips.trim()}</Pre>}>
@@ -195,7 +227,7 @@ export class BarColumn {
     return this.factory.singleBar(fieldName, unit, rows)
   }
 
-  multiple(bars: Bars, unit: string, rows?: any[]) {
+  multiple(bars: BarsConfig, unit: string, rows?: any[]) {
     return this.factory.multipleBar(bars, unit, rows)
   }
 }

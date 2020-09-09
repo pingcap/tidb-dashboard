@@ -40,18 +40,11 @@ function avgMinMaxLatencyColumn(
 ): IColumn {
   return tcf.bar.multiple(
     {
-      avg: {
-        fieldName: 'avg_latency',
-        tooltipPrefix: 'Mean:',
-      },
-      max: {
-        fieldName: 'max_latency',
-        tooltipPrefix: 'Max: ',
-      },
-      min: {
-        fieldName: 'min_latency',
-        tooltipPrefix: 'Min: ',
-      },
+      bars: [
+        { mean: 'avg_latency' },
+        { max: 'max_latency' },
+        { min: 'min_latency' },
+      ],
     },
     'ns',
     rows
@@ -353,14 +346,7 @@ function avgMaxColumn(
   return tcf.bar.multiple(
     {
       displayTransKey,
-      avg: {
-        fieldName: avgKey,
-        tooltipPrefix: 'Mean:',
-      },
-      max: {
-        fieldName: maxKey,
-        tooltipPrefix: 'Max: ',
-      },
+      bars: [{ mean: avgKey }, { max: maxKey }],
     },
     unit,
     rows

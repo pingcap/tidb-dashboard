@@ -93,30 +93,22 @@ export function slowQueryColumns(
     // cop
     tcf.bar.multiple(
       {
-        avg: { fieldName: 'cop_proc_avg', tooltipPrefix: 'Mean:' },
-        max: {
-          fieldName: 'cop_proc_max',
-          tooltipPrefix: 'Max: ',
-        },
-        min: {
-          fieldName: 'cop_proc_p90',
-          tooltipPrefix: 'P90: ',
-        },
+        bars: [
+          { mean: 'cop_proc_avg' },
+          { max: 'cop_proc_max' },
+          { p90: 'cop_proc_p90' },
+        ],
       },
       'ns',
       rows
     ),
     tcf.bar.multiple(
       {
-        avg: { fieldName: 'cop_wait_avg', tooltipPrefix: 'Mean:' },
-        max: {
-          fieldName: 'cop_wait_max',
-          tooltipPrefix: 'Max: ',
-        },
-        min: {
-          fieldName: 'cop_wait_p90',
-          tooltipPrefix: 'P90: ',
-        },
+        bars: [
+          { mean: 'cop_wait_avg' },
+          { max: 'cop_wait_avg' },
+          { p90: 'cop_wait_avg' },
+        ],
       },
       'ns',
       rows

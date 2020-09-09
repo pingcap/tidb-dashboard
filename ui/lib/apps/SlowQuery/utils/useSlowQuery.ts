@@ -11,7 +11,7 @@ import { getSelectedDBFields } from '@lib/utils/tableColumnFactory'
 const QUERY_OPTIONS = 'slow_query.query_options'
 
 const DEF_ORDER_OPTIONS: IOrderOptions = {
-  orderBy: 'Time',
+  orderBy: 'timestamp',
   desc: true,
 }
 

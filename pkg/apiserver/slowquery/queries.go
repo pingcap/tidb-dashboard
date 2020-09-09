@@ -19,6 +19,8 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 )
 
 const (
@@ -196,7 +198,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 
 	order, err := getRefColumn(req.OrderBy)
 	if err != nil {
-		return nil, err
+		log.Error("req.OrderBy is invalid", zap.String("orderBy", req.OrderBy), zap.Error(err))
 	}
 	if len(order) > 0 {
 		if req.DESC {

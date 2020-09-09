@@ -14,6 +14,7 @@ import {
   TextWrap,
   DateTime,
   HighlightSQL,
+  IColumnKeys,
 } from '@lib/components'
 
 type BarField = { fieldName: string; tooltipPrefix: string }
@@ -22,6 +23,10 @@ type Bars = {
   avg: BarField
   max: BarField
   min?: BarField
+}
+
+export type IExtendColumn = IColumn & {
+  refDBFields?: string[]
 }
 
 export function formatVal(val: number, unit: string) {
@@ -47,7 +52,7 @@ export class TableColumnFactory {
     return commonColumnName(this.transPrefix, fieldName)
   }
 
-  textWithTooltip(fieldName: string): IColumn {
+  textWithTooltip(fieldName: string): IExtendColumn {
     return {
       name: this.columnName(fieldName),
       key: fieldName,
@@ -62,7 +67,7 @@ export class TableColumnFactory {
     }
   }
 
-  singleBar(fieldName: string, unit: string, rows?: any[]): IColumn {
+  singleBar(fieldName: string, unit: string, rows?: any[]): IExtendColumn {
     const capacity = rows ? _max(rows.map((v) => v[fieldName])) ?? 0 : 0
     return {
       name: this.columnName(fieldName),
@@ -82,13 +87,18 @@ export class TableColumnFactory {
     }
   }
 
-  multipleBar(bars: Bars, unit: string, rows?: any[]): IColumn {
+  multipleBar(bars: Bars, unit: string, rows?: any[]): IExtendColumn {
     const { displayTransKey, avg, max, min } = bars
     const capacity = rows ? _max(rows.map((v) => v[max.fieldName])) ?? 0 : 0
+    let refDBFields = [bars.avg.fieldName, bars.max.fieldName]
+    if (bars.min) {
+      refDBFields.push(bars.min.fieldName)
+    }
     return {
       name: this.columnName(displayTransKey || avg.fieldName),
       key: avg.fieldName,
       fieldName: avg.fieldName,
+      refDBFields,
       minWidth: 140,
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
@@ -120,7 +130,7 @@ export class TableColumnFactory {
     }
   }
 
-  timestamp(fieldName: string): IColumn {
+  timestamp(fieldName: string): IExtendColumn {
     return {
       name: this.columnName(fieldName),
       key: fieldName,
@@ -136,7 +146,7 @@ export class TableColumnFactory {
     }
   }
 
-  sqlText(fieldName: string, showFullSQL?: boolean): IColumn {
+  sqlText(fieldName: string, showFullSQL?: boolean): IExtendColumn {
     return {
       name: this.columnName(fieldName),
       key: fieldName,
@@ -162,7 +172,7 @@ export class TableColumnFactory {
     }
   }
 
-  plan(fieldName: string): IColumn {
+  plan(fieldName: string): IExtendColumn {
     return {
       name: this.columnName(fieldName),
       key: fieldName,
@@ -188,4 +198,23 @@ export class BarColumn {
   multiple(bars: Bars, unit: string, rows?: any[]) {
     return this.factory.multipleBar(bars, unit, rows)
   }
+}
+
+////////////////////////////////////////////
+
+export function getSelectedDBFields(
+  visibleColumnKeys: IColumnKeys,
+  columns: IExtendColumn[]
+) {
+  let fields: string[] = []
+  columns.forEach((c) => {
+    if (visibleColumnKeys[c.key] === true) {
+      if (c.refDBFields !== undefined) {
+        fields = fields.concat(c.refDBFields)
+      } else {
+        fields.push(c.key)
+      }
+    }
+  })
+  return fields
 }

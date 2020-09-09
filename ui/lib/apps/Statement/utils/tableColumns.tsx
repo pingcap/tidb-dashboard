@@ -9,7 +9,11 @@ import { orange, red } from '@ant-design/colors'
 
 import { StatementModel } from '@lib/client'
 import { Bar, Pre, IColumnKeys } from '@lib/components'
-import { TableColumnFactory, formatVal } from '@lib/utils/tableColumnFactory'
+import {
+  TableColumnFactory,
+  formatVal,
+  IExtendColumn,
+} from '@lib/utils/tableColumnFactory'
 
 ///////////////////////////////////////
 // statements order list in local by fieldName of IColumn
@@ -64,7 +68,7 @@ function avgMaxMemColumn(
 function errorsWarningsColumn(
   tcf: TableColumnFactory,
   rows?: { sum_errors?: number; sum_warnings?: number }[]
-): IColumn {
+): IExtendColumn {
   const capacity = rows
     ? max(rows.map((v) => v.sum_errors! + v.sum_warnings!)) ?? 0
     : 0
@@ -73,6 +77,7 @@ function errorsWarningsColumn(
     name: tcf.columnName('errors_warnings'),
     key,
     fieldName: key,
+    refDBFields: ['sum_errors', 'sum_warnings'],
     minWidth: 140,
     maxWidth: 200,
     columnActionsMode: ColumnActionsMode.clickable,
@@ -367,7 +372,7 @@ function avgMaxColumn(
 export function statementColumns(
   rows: StatementModel[],
   showFullSQL?: boolean
-): IColumn[] {
+): IExtendColumn[] {
   const tcf = new TableColumnFactory(TRANS_KEY_PREFIX)
 
   return [
@@ -422,6 +427,7 @@ export function statementColumns(
       ...tcf.textWithTooltip('related_schemas'),
       minWidth: 160,
       maxWidth: 240,
+      refDBFields: ['table_names'],
     },
   ]
 }
@@ -443,40 +449,6 @@ export function planColumns(rows: StatementModel[]): IColumn[] {
 }
 
 ////////////////////////////////////////////////
-
-export const STMT_COLUMN_REFS: { [key: string]: string[] } = {
-  avg_latency: ['avg_latency', 'min_latency', 'max_latency'],
-  avg_mem: ['avg_mem', 'max_mem'],
-  sum_errors: ['sum_errors', 'sum_warnings'],
-  avg_parse_latency: ['avg_parse_latency', 'max_parse_latency'],
-  avg_compile_latency: ['avg_compile_latency', 'max_compile_latency'],
-  avg_cop_process_time: ['avg_cop_process_time', 'max_cop_process_time'],
-  avg_cop_wait_time: ['avg_cop_wait_time', 'max_cop_wait_time'],
-  avg_process_time: ['avg_process_time', 'max_process_time'],
-
-  avg_wait_time: ['avg_wait_time', 'max_wait_time'],
-  avg_backoff_time: ['avg_backoff_time', 'max_backoff_time'],
-  avg_write_keys: ['avg_write_keys', 'max_write_keys'],
-  avg_processed_keys: ['avg_processed_keys', 'max_processed_keys'],
-  avg_total_keys: ['avg_total_keys', 'max_total_keys'],
-  avg_prewrite_time: ['avg_prewrite_time', 'max_prewrite_time'],
-  avg_commit_time: ['avg_commit_time', 'max_commit_time'],
-  avg_get_commit_ts_time: ['avg_get_commit_ts_time', 'max_get_commit_ts_time'],
-  avg_commit_backoff_time: [
-    'avg_commit_backoff_time',
-    'max_commit_backoff_time',
-  ],
-  avg_resolve_lock_time: ['avg_resolve_lock_time', 'max_resolve_lock_time'],
-  avg_local_latch_wait_time: [
-    'avg_local_latch_wait_time',
-    'max_local_latch_wait_time',
-  ],
-  avg_write_size: ['avg_write_size', 'max_write_size'],
-  avg_prewrite_regions: ['avg_prewrite_regions', 'max_prewrite_regions'],
-  avg_txn_retry: ['avg_txn_retry', 'max_txn_retry'],
-
-  related_schemas: ['table_names'],
-}
 
 export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
   digest_text: true,

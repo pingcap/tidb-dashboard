@@ -136,10 +136,6 @@ export function slowQueryColumns(
 }
 
 //////////////////////////////////////////
-export const SLOW_QUERY_COLUMN_REFS: { [key: string]: string[] } = {
-  cop_proc_avg: ['cop_proc_avg', 'cop_proc_p90', 'cop_proc_max'],
-  cop_wait_avg: ['cop_wait_avg', 'cop_wait_p90', 'cop_wait_max'],
-}
 
 export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
   query: true,

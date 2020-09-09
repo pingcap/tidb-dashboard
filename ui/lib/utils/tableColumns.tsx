@@ -163,23 +163,3 @@ export function timeValueColumns(
     fieldsDescriptionColumn(transKeyPrefix),
   ]
 }
-
-////////////////////////////////////////////
-
-export function getVisibleColumns(
-  visibleColumnKeys: IColumnKeys,
-  columnRefs: { [key: string]: string[] }
-) {
-  let fields: string[] = []
-  Object.keys(visibleColumnKeys).forEach((k) => {
-    if (visibleColumnKeys[k] === true) {
-      const refFields = columnRefs[k]
-      if (refFields !== undefined) {
-        fields = fields.concat(refFields)
-      } else {
-        fields.push(k)
-      }
-    }
-  })
-  return fields
-}

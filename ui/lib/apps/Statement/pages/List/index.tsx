@@ -51,7 +51,7 @@ export default function StatementsOverview() {
     errors,
 
     tableColumns,
-  } = useStatement(visibleColumnKeys)
+  } = useStatement(visibleColumnKeys, showFullSQL)
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>

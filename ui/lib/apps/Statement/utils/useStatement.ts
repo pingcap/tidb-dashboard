@@ -36,6 +36,7 @@ export const DEF_STMT_QUERY_OPTIONS: IStatementQueryOptions = {
 
 export default function useStatement(
   visibleColumnKeys: IColumnKeys,
+  showFullSQL: boolean,
   options?: IStatementQueryOptions,
   needSave: boolean = true
 ) {
@@ -131,9 +132,10 @@ export default function useStatement(
   }, [refreshTimes])
 
   // Notice: statements, tableColumns, selectedFields make loop dependencies
-  const tableColumns = useMemo(() => statementColumns(statements, false), [
-    statements,
-  ])
+  const tableColumns = useMemo(
+    () => statementColumns(statements, showFullSQL),
+    [statements, showFullSQL]
+  )
   // make selectedFields as a string instead of an array to avoid infinite loop
   // I have verified that it will cause infinite loop if we return selectedFields as an array
   // so it is better to use the basic type (string, number...) instead of object as the dependency

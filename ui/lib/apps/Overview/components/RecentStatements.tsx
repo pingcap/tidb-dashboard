@@ -27,7 +27,7 @@ export default function RecentStatements() {
     errors,
 
     tableColumns,
-  } = useStatement(visibleColumnKeys, undefined, false)
+  } = useStatement(visibleColumnKeys, false, undefined, false)
 
   return (
     <StatementsTable

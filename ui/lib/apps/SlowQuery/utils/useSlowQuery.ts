@@ -37,6 +37,7 @@ export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
 
 export default function useSlowQuery(
   visibleColumnKeys: IColumnKeys,
+  showFullSQL: boolean,
   options?: ISlowQueryOptions,
   needSave: boolean = true
 ) {
@@ -95,9 +96,10 @@ export default function useSlowQuery(
   }, [])
 
   // Notice: slowQueries, tableColumns, selectedFields make loop dependencies
-  const tableColumns = useMemo(() => slowQueryColumns(slowQueries, false), [
-    slowQueries,
-  ])
+  const tableColumns = useMemo(
+    () => slowQueryColumns(slowQueries, showFullSQL),
+    [slowQueries, showFullSQL]
+  )
   // make selectedFields as a string instead of an array to avoid infinite loop
   // I have verified that it will cause infinite loop if we return selectedFields as an array
   // so it is better to use the basic type (string, number...) instead of object as the dependency

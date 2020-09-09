@@ -49,7 +49,7 @@ function List() {
     errors,
 
     tableColumns,
-  } = useSlowQuery(visibleColumnKeys)
+  } = useSlowQuery(visibleColumnKeys, showFullSQL)
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>

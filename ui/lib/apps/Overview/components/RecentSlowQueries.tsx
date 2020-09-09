@@ -23,6 +23,7 @@ export default function RecentSlowQueries() {
     tableColumns,
   } = useSlowQuery(
     DEF_SLOW_QUERY_COLUMN_KEYS,
+    false,
     { ...DEF_SLOW_QUERY_OPTIONS, limit: 10 },
     false
   )

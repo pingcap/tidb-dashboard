@@ -21,6 +21,7 @@ export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
     tableColumns,
   } = useSlowQuery(
     DEF_SLOW_QUERY_COLUMN_KEYS,
+    false,
     {
       ...DEF_SLOW_QUERY_OPTIONS,
       timeRange: {

@@ -99,6 +99,8 @@ export default function useSlowQuery(
     slowQueries,
   ])
   // make selectedFields as a string instead of an array to avoid infinite loop
+  // I have verified that it will cause infinite loop if we return selectedFields as an array
+  // so it is better to use the basic type (string, number...) instead of object as the dependency
   const selectedFields = useMemo(
     () => getSelectedDBFields(visibleColumnKeys, tableColumns).join(','),
     [visibleColumnKeys, tableColumns]

@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
-import client, { StatementModel, StatementTimeRange } from '@lib/client'
+import client, {
+  HandleErrorWay,
+  StatementModel,
+  StatementTimeRange,
+} from '@lib/client'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 import {
@@ -86,7 +90,9 @@ export default function useStatement(
   useEffect(() => {
     async function queryStatementStatus() {
       try {
-        const res = await client.getInstance().statementsConfigGet()
+        const res = await client.getInstance().statementsConfigGet({
+          handleErrorWay: 'custom' as HandleErrorWay,
+        })
         setEnable(res?.data.enable!)
       } catch (error) {
         setErrors((prev) => [...prev, { ...error }])
@@ -95,7 +101,9 @@ export default function useStatement(
 
     async function querySchemas() {
       try {
-        const res = await client.getInstance().infoListDatabases()
+        const res = await client.getInstance().infoListDatabases({
+          handleErrorWay: 'custom' as HandleErrorWay,
+        })
         setAllSchemas(res?.data || [])
       } catch (error) {
         setErrors((prev) => [...prev, { ...error }])
@@ -104,7 +112,9 @@ export default function useStatement(
 
     async function queryTimeRanges() {
       try {
-        const res = await client.getInstance().statementsTimeRangesGet()
+        const res = await client.getInstance().statementsTimeRangesGet({
+          handleErrorWay: 'custom' as HandleErrorWay,
+        })
         setAllTimeRanges(res?.data || [])
       } catch (error) {
         setErrors((prev) => [...prev, { ...error }])
@@ -113,7 +123,9 @@ export default function useStatement(
 
     async function queryStmtTypes() {
       try {
-        const res = await client.getInstance().statementsStmtTypesGet()
+        const res = await client.getInstance().statementsStmtTypesGet({
+          handleErrorWay: 'custom' as HandleErrorWay,
+        })
         setAllStmtTypes(res?.data || [])
       } catch (error) {
         setErrors((prev) => [...prev, { ...error }])
@@ -143,7 +155,10 @@ export default function useStatement(
             validTimeRange.end_time!,
             queryOptions.schemas,
             queryOptions.stmtTypes,
-            queryOptions.searchText
+            queryOptions.searchText,
+            {
+              handleErrorWay: 'custom' as HandleErrorWay,
+            }
           )
         setStatements(res?.data || [])
         setErrors([])

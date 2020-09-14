@@ -15,7 +15,7 @@ import {
 import { Form, Input, Button, message, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
 import LanguageDropdown from '@lib/components/LanguageDropdown'
-import client, { UserAuthenticateForm } from '@lib/client'
+import client, { HandleErrorWay, UserAuthenticateForm } from '@lib/client'
 import * as auth from '@lib/utils/auth'
 import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
@@ -150,7 +150,9 @@ function useSignInSubmit(
     clearErrorMsg()
 
     try {
-      const r = await client.getInstance().userLogin(fnLoginForm(form))
+      const r = await client.getInstance().userLogin(fnLoginForm(form), {
+        handleErrorWay: 'custom' as HandleErrorWay,
+      })
       auth.setAuthToken(r.data.token)
       message.success(t('signin.message.success'))
       singleSpa.navigateToUrl(successRoute)

@@ -1,7 +1,9 @@
 error:
   message:
+    title: Error
     network: Network connection error
     unauthorized: Session is expired. Please sign in again.
+    unknown: Unknown error
   tidb:
     no_alive_tidb: No live TiDB instance in the cluster
     pd_access_failed: Failed to access PD node

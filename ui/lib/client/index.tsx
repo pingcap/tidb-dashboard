@@ -1,6 +1,7 @@
+import React from 'react'
 import i18next from 'i18next'
 import axios from 'axios'
-import { message } from 'antd'
+import { message, notification } from 'antd'
 import * as singleSpa from 'single-spa'
 
 import * as auth from '@lib/utils/auth'
@@ -33,11 +34,15 @@ export default { getInstance, getBasePath }
 
 //////////////////////////////
 
+export type HandleErrorWay = 'notification' | 'message' | 'custom'
+
 function initAxios() {
   const instance = axios.create()
 
   instance.interceptors.response.use(undefined, function (err) {
-    const { response } = err
+    const { response, config } = err
+    const handleErrorWay = config.handleErrorWay as HandleErrorWay
+
     // Handle unauthorized error in a unified way
     if (
       response &&
@@ -55,6 +60,28 @@ function initAxios() {
       message.error({ content, key: 'network_error' }) // use the same key to avoid multiple message boxes
       err.handled = true
       err.msg = content // use `err.message = content` doesn't work
+    } else if (handleErrorWay !== 'custom') {
+      const fullUrl = config.url as string
+      const API = fullUrl.replace(getBasePath(), '').split('?')[0]
+      const errCode = response?.data?.code || 'error.message.unknown'
+      const content = i18next.t(errCode)
+
+      if (handleErrorWay === 'notification') {
+        notification.error({
+          key: API,
+          message: i18next.t('error.message.title'),
+          description: (
+            <span>
+              API: {API}
+              <br />
+              {content}
+            </span>
+          ),
+        })
+      } else if (handleErrorWay === 'message') {
+        message.error({ key: API, content })
+      }
+      err.handled = true
     }
     return Promise.reject(err)
   })
@@ -74,12 +101,14 @@ function init() {
     apiPrefix = publicPathPrefix
   }
   const apiUrl = `${apiPrefix}/api`
-  console.log('API BasePath: %s', apiUrl)
 
   const dashboardClient = new DefaultApi(
     {
       basePath: apiUrl,
       apiKey: () => auth.getAuthTokenAsBearer() || '',
+      baseOptions: {
+        handleErrorWay: 'notification' as HandleErrorWay,
+      },
     },
     undefined,
     initAxios()

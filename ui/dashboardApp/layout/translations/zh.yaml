@@ -1,7 +1,9 @@
 error:
   message:
+    title: 错误
     network: 网络连接失败
     unauthorized: 会话已过期，请重新登录
+    unknown: 未知错误
   tidb:
     no_alive_tidb: 集群未启动 TiDB 实例
     pd_access_failed: 无法访问 PD 节点

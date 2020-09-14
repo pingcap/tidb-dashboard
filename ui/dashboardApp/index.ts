@@ -10,7 +10,6 @@ import AppRegistry from '@lib/utils/registry'
 import * as routing from '@lib/utils/routing'
 import * as auth from '@lib/utils/auth'
 import * as i18n from '@lib/utils/i18n'
-import * as apiClient from '@lib/utils/apiClient'
 import { saveAppOptions, loadAppOptions } from '@lib/utils/appOptions'
 import * as telemetry from '@lib/utils/telemetry'
 import client, { InfoInfoResponse } from '@lib/client'
@@ -46,8 +45,6 @@ async function main() {
   i18n.addTranslations(
     require.context('@dashboard/layout/translations/', false, /\.yaml$/)
   )
-
-  apiClient.init()
 
   let info: InfoInfoResponse
 

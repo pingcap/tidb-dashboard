@@ -1,9 +1,22 @@
+import i18next from 'i18next'
+import axios from 'axios'
+import { message } from 'antd'
+import * as singleSpa from 'single-spa'
+
+import * as auth from '@lib/utils/auth'
+import * as routing from '@lib/utils/routing'
+import publicPathPrefix from '@lib/utils/publicPathPrefix'
+
 import { DefaultApi } from './api'
 
-let apiClientInstance: DefaultApi
-let basePath: string
+export * from './api'
 
-function init(instanceBasePath: string, instance: DefaultApi) {
+//////////////////////////////
+
+let basePath: string
+let apiClientInstance: DefaultApi
+
+function save(instanceBasePath: string, instance: DefaultApi) {
   basePath = instanceBasePath
   apiClientInstance = instance
 }
@@ -16,6 +29,63 @@ function getBasePath(): string {
   return basePath
 }
 
-export default { init, getInstance, getBasePath }
+export default { getInstance, getBasePath }
 
-export * from './api'
+//////////////////////////////
+
+function initAxios() {
+  const instance = axios.create()
+
+  instance.interceptors.response.use(undefined, function (err) {
+    const { response } = err
+    // Handle unauthorized error in a unified way
+    if (
+      response &&
+      response.data &&
+      response.data.code === 'error.api.unauthorized'
+    ) {
+      if (!routing.isLocationMatch('/') && !routing.isSignInPage()) {
+        message.error(i18next.t('error.message.unauthorized'))
+      }
+      auth.clearAuthToken()
+      singleSpa.navigateToUrl('#' + routing.signInRoute)
+      err.handled = true
+    } else if (err.message === 'Network Error') {
+      const content = i18next.t('error.message.network')
+      message.error({ content, key: 'network_error' }) // use the same key to avoid multiple message boxes
+      err.handled = true
+      err.msg = content // use `err.message = content` doesn't work
+    }
+    return Promise.reject(err)
+  })
+
+  return instance
+}
+
+function init() {
+  let apiPrefix
+  if (process.env.NODE_ENV === 'development') {
+    if (process.env.REACT_APP_DASHBOARD_API_URL) {
+      apiPrefix = `${process.env.REACT_APP_DASHBOARD_API_URL}/dashboard`
+    } else {
+      apiPrefix = 'http://127.0.0.1:12333/dashboard'
+    }
+  } else {
+    apiPrefix = publicPathPrefix
+  }
+  const apiUrl = `${apiPrefix}/api`
+  console.log('API BasePath: %s', apiUrl)
+
+  const dashboardClient = new DefaultApi(
+    {
+      basePath: apiUrl,
+      apiKey: () => auth.getAuthTokenAsBearer() || '',
+    },
+    undefined,
+    initAxios()
+  )
+
+  save(apiUrl, dashboardClient)
+}
+
+init()

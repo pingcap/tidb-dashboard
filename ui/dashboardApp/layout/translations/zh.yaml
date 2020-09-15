@@ -1,9 +1,3 @@
-error:
-  tidb:
-    no_alive_tidb: 集群未启动 TiDB 实例
-    pd_access_failed: 无法访问 PD 节点
-    tidb_conn_failed: 无法连接到 TiDB
-    tidb_auth_failed: TiDB 登录验证失败
 signin:
   message:
     error: '登录失败: {{ msg }}'

@@ -46,12 +46,9 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh
           source /home/runner/.profile
-          tiup install tidb:v4.0.5 tikv pd prometheus
-          tiup install playground
-          tiup update --all
-          tiup update --self
+          tiup update playground
           source /home/runner/.profile
-          tiup playground --tiflash=0 &
+          tiup playground v4.0.5 --tiflash=0 &
       - name: Build UI
         run: |
           make ui
@@ -59,10 +56,10 @@ jobs:
           NO_MINIMIZE: true
           CI: true
           REACT_APP_MIXPANEL_TOKEN: ""
-      # - name: Wait TiUP Playground
-      #   run: |
-      #     chmod u+x scripts/wait_tiup_playground.sh
-      #     scripts/wait_tiup_playground.sh 15 20
+      - name: Wait TiUP Playground
+        run: |
+          chmod u+x scripts/wait_tiup_playground.sh
+          scripts/wait_tiup_playground.sh 15 20
       - name: Debug TiUP
         run: |
           source /home/runner/.profile

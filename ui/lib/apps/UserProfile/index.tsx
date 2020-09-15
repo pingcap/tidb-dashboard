@@ -66,14 +66,8 @@ function ShareSessionButton() {
         expire_in_sec: values.expire * 60 * 60,
       })
       setCode(r.data.code)
-    } catch (e) {
-      // TODO: Extract to a common component
-      Modal.error({
-        content: <Pre>{e?.response?.data?.message ?? e.message}</Pre>,
-      })
-    } finally {
-      setIsPosting(false)
-    }
+    } catch (e) {}
+    setIsPosting(false)
   }, [])
 
   const handleCopy = useCallback(() => {

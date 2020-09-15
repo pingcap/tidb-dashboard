@@ -53,7 +53,7 @@ function initAxios() {
     if (err.message === 'Network Error') {
       errCode = 'error.network'
     } else {
-      errCode = response?.data?.code || 'error.api.unknown'
+      errCode = response?.data?.code || err.message || 'error.api.other'
     }
     const content = i18next.t(errCode)
     err.msg = content
@@ -85,6 +85,7 @@ function initAxios() {
         Modal.error({
           title: i18next.t('error.title'),
           content: content,
+          zIndex: 2000, // higher than popover
         })
       }
       err.handled = true

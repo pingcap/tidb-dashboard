@@ -126,11 +126,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
           throw new Error('Invalid server response')
         }
         navigate(`/search_logs/detail?id=${id}`)
-      } catch (e) {
-        Modal.error({
-          content: e.message,
-        })
-      }
+      } catch (e) {}
       setSubmitting(false)
     },
     [navigate]

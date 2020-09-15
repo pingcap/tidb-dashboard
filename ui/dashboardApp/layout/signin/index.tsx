@@ -157,7 +157,6 @@ function useSignInSubmit(
       message.success(t('signin.message.success'))
       singleSpa.navigateToUrl(successRoute)
     } catch (e) {
-      console.log(e)
       if (!e.handled) {
         const msg = e.msg || e.message
         setError(t('signin.message.error', { msg }))

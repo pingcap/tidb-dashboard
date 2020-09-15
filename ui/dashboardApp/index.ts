@@ -12,7 +12,7 @@ import * as auth from '@lib/utils/auth'
 import * as i18n from '@lib/utils/i18n'
 import { saveAppOptions, loadAppOptions } from '@lib/utils/appOptions'
 import * as telemetry from '@lib/utils/telemetry'
-import client, { InfoInfoResponse } from '@lib/client'
+import client, { ErrorStrategy, InfoInfoResponse } from '@lib/client'
 
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
@@ -49,7 +49,9 @@ async function main() {
   let info: InfoInfoResponse
 
   try {
-    const i = await client.getInstance().infoGet()
+    const i = await client.getInstance().infoGet({
+      errorStrategy: ErrorStrategy.Custom,
+    })
     info = i.data
   } catch (e) {
     Modal.error({

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import React from 'react'
 import { EditOutlined } from '@ant-design/icons'
-import { Input, Popover, Button, Space, Tooltip, Modal } from 'antd'
+import { Input, Popover, Button, Space, Tooltip } from 'antd'
 import { usePersistFn } from '@umijs/hooks'
 
 interface IInlineEditorProps {
@@ -73,10 +73,6 @@ function InlineEditor({
         setInputVal(displayValue)
       }
     } catch (e) {
-      Modal.error({
-        content: e.message,
-        zIndex: 2000, // higher than Popover
-      })
       setInputVal(displayValue)
       setIsVisible(false)
     }

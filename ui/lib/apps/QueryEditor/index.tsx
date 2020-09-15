@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef } from 'react'
 import cx from 'classnames'
 import { Root, Card } from '@lib/components'
 import Split from 'react-split'
-import { Button, Modal, Space, Typography } from 'antd'
+import { Button, Space, Typography } from 'antd'
 import {
   CaretRightOutlined,
   LoadingOutlined,
@@ -38,11 +38,7 @@ function App() {
         statements: editor.current?.editor.getValue(),
       })
       setResults(resp.data)
-    } catch (ex) {
-      Modal.error({
-        content: ex.message,
-      })
-    }
+    } catch (ex) {}
     setRunning(false)
     editor.current?.editor.focus()
   }, [])

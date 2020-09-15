@@ -1,0 +1,10 @@
+error:
+  title: Error
+  network: Network connection error
+  api:
+    unknown: Unknown error
+    unauthorized: Session is expired. Please sign in again.
+    user:
+      signin:
+        invalid_code: Authorization Code is invalid or expired
+    other: Other error

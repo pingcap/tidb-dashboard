@@ -15,7 +15,7 @@ import format from 'string-template'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import client, { HandleErrorWay } from '@lib/client'
+import client, { ErrorStrategy } from '@lib/client'
 import { AnimatedSkeleton, Card } from '@lib/components'
 import { useBatchClientRequest } from '@lib/utils/useClientRequest'
 import ErrorBar from '../ErrorBar'
@@ -82,7 +82,7 @@ export default function MetricChart({
           30,
           {
             cancelToken,
-            handleErrorWay: 'custom' as HandleErrorWay,
+            errorStrategy: ErrorStrategy.Custom,
           }
         )
     )

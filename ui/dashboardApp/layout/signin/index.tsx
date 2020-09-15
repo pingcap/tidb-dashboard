@@ -15,7 +15,7 @@ import {
 import { Form, Input, Button, message, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
 import LanguageDropdown from '@lib/components/LanguageDropdown'
-import client, { HandleErrorWay, UserAuthenticateForm } from '@lib/client'
+import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
 import * as auth from '@lib/utils/auth'
 import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
@@ -151,7 +151,7 @@ function useSignInSubmit(
 
     try {
       const r = await client.getInstance().userLogin(fnLoginForm(form), {
-        handleErrorWay: 'custom' as HandleErrorWay,
+        errorStrategy: ErrorStrategy.Custom,
       })
       auth.setAuthToken(r.data.token)
       message.success(t('signin.message.success'))
@@ -159,12 +159,7 @@ function useSignInSubmit(
     } catch (e) {
       console.log(e)
       if (!e.handled) {
-        let msg
-        if (e.response.data) {
-          msg = t(e.response.data.code)
-        } else {
-          msg = e.message
-        }
+        const msg = e.msg || e.message
         setError(t('signin.message.error', { msg }))
         onFailure()
       }

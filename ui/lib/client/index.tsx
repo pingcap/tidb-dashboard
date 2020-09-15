@@ -34,14 +34,17 @@ export default { getInstance, getBasePath }
 
 //////////////////////////////
 
-export type HandleErrorWay = 'notification' | 'message' | 'custom'
+export enum ErrorStrategy {
+  Default = 'default',
+  Custom = 'custom',
+}
 
 function initAxios() {
   const instance = axios.create()
 
   instance.interceptors.response.use(undefined, function (err) {
     const { response, config } = err
-    const handleErrorWay = config.handleErrorWay as HandleErrorWay
+    const errorStrategy = config.errorStrategy as ErrorStrategy
 
     // Handle unauthorized error in a unified way
     if (
@@ -55,18 +58,20 @@ function initAxios() {
       auth.clearAuthToken()
       singleSpa.navigateToUrl('#' + routing.signInRoute)
       err.handled = true
-    } else if (err.message === 'Network Error') {
-      const content = i18next.t('error.message.network')
-      message.error({ content, key: 'network_error' }) // use the same key to avoid multiple message boxes
-      err.handled = true
-      err.msg = content // use `err.message = content` doesn't work
-    } else if (handleErrorWay !== 'custom') {
-      const fullUrl = config.url as string
-      const API = fullUrl.replace(getBasePath(), '').split('?')[0]
-      const errCode = response?.data?.code || 'error.message.unknown'
+    } else {
+      let errCode: string
+      if (err.message === 'Network Error') {
+        errCode = 'error.message.network'
+      } else {
+        errCode = response?.data?.code || 'error.message.unknown'
+      }
       const content = i18next.t(errCode)
+      err.msg = content
 
-      if (handleErrorWay === 'notification') {
+      if (errorStrategy === ErrorStrategy.Default) {
+        const fullUrl = config.url as string
+        const API = fullUrl.replace(getBasePath(), '').split('?')[0]
+
         notification.error({
           key: API,
           message: i18next.t('error.message.title'),
@@ -78,10 +83,8 @@ function initAxios() {
             </span>
           ),
         })
-      } else if (handleErrorWay === 'message') {
-        message.error({ key: API, content })
+        err.handled = true
       }
-      err.handled = true
     }
     return Promise.reject(err)
   })
@@ -107,7 +110,7 @@ function init() {
       basePath: apiUrl,
       apiKey: () => auth.getAuthTokenAsBearer() || '',
       baseOptions: {
-        handleErrorWay: 'notification' as HandleErrorWay,
+        errorStrategy: ErrorStrategy.Default,
       },
     },
     undefined,

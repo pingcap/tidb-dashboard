@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
 import client, {
-  HandleErrorWay,
+  ErrorStrategy,
   StatementModel,
   StatementTimeRange,
 } from '@lib/client'
@@ -91,7 +91,7 @@ export default function useStatement(
     async function queryStatementStatus() {
       try {
         const res = await client.getInstance().statementsConfigGet({
-          handleErrorWay: 'custom' as HandleErrorWay,
+          errorStrategy: ErrorStrategy.Custom,
         })
         setEnable(res?.data.enable!)
       } catch (error) {
@@ -102,7 +102,7 @@ export default function useStatement(
     async function querySchemas() {
       try {
         const res = await client.getInstance().infoListDatabases({
-          handleErrorWay: 'custom' as HandleErrorWay,
+          errorStrategy: ErrorStrategy.Custom,
         })
         setAllSchemas(res?.data || [])
       } catch (error) {
@@ -113,7 +113,7 @@ export default function useStatement(
     async function queryTimeRanges() {
       try {
         const res = await client.getInstance().statementsTimeRangesGet({
-          handleErrorWay: 'custom' as HandleErrorWay,
+          errorStrategy: ErrorStrategy.Custom,
         })
         setAllTimeRanges(res?.data || [])
       } catch (error) {
@@ -124,7 +124,7 @@ export default function useStatement(
     async function queryStmtTypes() {
       try {
         const res = await client.getInstance().statementsStmtTypesGet({
-          handleErrorWay: 'custom' as HandleErrorWay,
+          errorStrategy: ErrorStrategy.Custom,
         })
         setAllStmtTypes(res?.data || [])
       } catch (error) {
@@ -157,7 +157,7 @@ export default function useStatement(
             queryOptions.stmtTypes,
             queryOptions.searchText,
             {
-              handleErrorWay: 'custom' as HandleErrorWay,
+              errorStrategy: ErrorStrategy.Custom,
             }
           )
         setStatements(res?.data || [])

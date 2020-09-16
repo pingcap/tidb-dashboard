@@ -64,11 +64,11 @@ function ComponentItem(props: {
 
 export default function Nodes() {
   const { t } = useTranslation()
-  const tidbResp = useClientRequest((cancelToken) =>
-    client.getInstance().getTiDBTopology({ cancelToken })
+  const tidbResp = useClientRequest((reqConfig) =>
+    client.getInstance().getTiDBTopology(reqConfig)
   )
-  const storeResp = useClientRequest((cancelToken) =>
-    client.getInstance().getStoreTopology({ cancelToken })
+  const storeResp = useClientRequest((reqConfig) =>
+    client.getInstance().getStoreTopology(reqConfig)
   )
   const tiKVResp = {
     ...storeResp,
@@ -78,8 +78,8 @@ export default function Nodes() {
     ...storeResp,
     data: storeResp.data?.tiflash,
   }
-  const pdResp = useClientRequest((cancelToken) =>
-    client.getInstance().getPDTopology({ cancelToken })
+  const pdResp = useClientRequest((reqConfig) =>
+    client.getInstance().getPDTopology(reqConfig)
   )
 
   return (

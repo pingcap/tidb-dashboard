@@ -35,7 +35,7 @@ export interface IPlanDetailProps {
 
 function PlanDetail({ query }: IPlanDetailProps) {
   const { t } = useTranslation()
-  const { data, isLoading } = useClientRequest((cancelToken) =>
+  const { data, isLoading } = useClientRequest((reqConfig) =>
     client
       .getInstance()
       .statementsPlanDetailGet(
@@ -44,7 +44,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
         query.endTime!,
         query.plans,
         query.schema!,
-        { cancelToken }
+        reqConfig
       )
   )
   const { state: sqlExpanded, toggle: toggleSqlExpanded } = useToggle(false)

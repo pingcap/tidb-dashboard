@@ -65,8 +65,8 @@ function Sider({
   const activeAppId = useActiveAppId(registry)
   const currentLogin = useCurrentLogin()
 
-  const { data } = useClientRequest((cancelToken) =>
-    client.getInstance().infoGet({ cancelToken })
+  const { data } = useClientRequest((reqConfig) =>
+    client.getInstance().infoGet(reqConfig)
   )
 
   const debugSubMenuItems = [useAppMenuItem(registry, 'instance_profiling')]

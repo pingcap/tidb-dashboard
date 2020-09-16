@@ -36,12 +36,15 @@ function DetailPage() {
 
   const { t } = useTranslation()
 
-  const { data, isLoading } = useClientRequest((cancelToken) =>
+  const { data, isLoading } = useClientRequest((reqConfig) =>
     client
       .getInstance()
-      .slowQueryDetailGet(query.connectId!, query.digest!, query.time!, {
-        cancelToken,
-      })
+      .slowQueryDetailGet(
+        query.connectId!,
+        query.digest!,
+        query.time!,
+        reqConfig
+      )
   )
 
   const { state: sqlExpanded, toggle: toggleSqlExpanded } = useToggle(false)

@@ -15,7 +15,7 @@ import format from 'string-template'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import client, { ErrorStrategy } from '@lib/client'
+import client from '@lib/client'
 import { AnimatedSkeleton, Card } from '@lib/components'
 import { useBatchClientRequest } from '@lib/utils/useClientRequest'
 import ErrorBar from '../ErrorBar'
@@ -72,7 +72,7 @@ export default function MetricChart({
   const timeParams = useRef(getTimeParams())
 
   const { isLoading, data, error, sendRequest } = useBatchClientRequest(
-    series.map((s) => (cancelToken) =>
+    series.map((s) => (reqConfig) =>
       client
         .getInstance()
         .metricsQueryGet(
@@ -80,12 +80,10 @@ export default function MetricChart({
           s.query,
           timeParams.current.beginTimeSec,
           30,
-          {
-            cancelToken,
-            errorStrategy: ErrorStrategy.Custom,
-          }
+          reqConfig
         )
-    )
+    ),
+    { handleError: false }
   )
 
   const update = () => {

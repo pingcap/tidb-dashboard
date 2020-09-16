@@ -25,8 +25,8 @@ export default function Page() {
   const {
     data: historyTable,
     isLoading: listLoading,
-  } = useClientRequest((cancelToken) =>
-    client.getInstance().getProfilingGroups({ cancelToken })
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getProfilingGroups(reqConfig)
   )
   const { t } = useTranslation()
   const navigate = useNavigate()

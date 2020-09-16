@@ -44,8 +44,8 @@ function ShareSessionButton() {
   const [code, setCode] = useState<string | undefined>(undefined)
   const [isCopied, setIsCopied] = useState(false)
 
-  const { data } = useClientRequest((cancelToken) =>
-    client.getInstance().infoWhoami({ cancelToken })
+  const { data } = useClientRequest((reqConfig) =>
+    client.getInstance().infoWhoami(reqConfig)
   )
 
   const handleOpen = useCallback(() => {
@@ -190,8 +190,8 @@ function App() {
     window.location.reload()
   }, [])
 
-  const { data: info, isLoading } = useClientRequest((cancelToken) =>
-    client.getInstance().infoGet({ cancelToken })
+  const { data: info, isLoading } = useClientRequest((reqConfig) =>
+    client.getInstance().infoGet(reqConfig)
   )
 
   return (

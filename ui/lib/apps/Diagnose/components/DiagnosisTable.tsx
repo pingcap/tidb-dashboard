@@ -1,12 +1,11 @@
 import { Button } from 'antd'
-import { AxiosPromise, CancelToken } from 'axios'
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import client, { DiagnoseTableDef } from '@lib/client'
 import { CardTable, DateTime } from '@lib/components'
-import { useClientRequest } from '@lib/utils/useClientRequest'
+import { useClientRequest, RequestFactory } from '@lib/utils/useClientRequest'
 
 import { diagnosisColumns } from '../utils/tableColumns'
 
@@ -19,7 +18,7 @@ export interface IDiagnosisTableProps {
   kind: string
 }
 
-type ReqFnType = (cancel: CancelToken) => AxiosPromise<DiagnoseTableDef>
+type ReqFnType = RequestFactory<DiagnoseTableDef>
 
 // Modified from SearchResult.tsx
 function Row({ renderer, props }) {
@@ -65,21 +64,23 @@ export default function DiagnosisTable({
 
   const reqFn = useRef<ReqFnType | null>(null)
   useEffect(() => {
-    reqFn.current = (cancelToken) =>
+    reqFn.current = (reqConfig) =>
       client.getInstance().diagnoseDiagnosisPost(
         {
           start_time: internalTimeRange[0],
           end_time: internalTimeRange[1],
           kind,
         },
-        { cancelToken }
+        reqConfig
       )
   }, [internalTimeRange, kind])
 
-  const { data, isLoading, error, sendRequest } = useClientRequest(
-    (cancelToken) => reqFn.current!(cancelToken),
-    { immediate: false }
-  )
+  const {
+    data,
+    isLoading,
+    error,
+    sendRequest,
+  } = useClientRequest(reqFn.current!, { immediate: false, handleError: false })
 
   useEffect(() => {
     if (internalTimeRange[0] !== 0) {

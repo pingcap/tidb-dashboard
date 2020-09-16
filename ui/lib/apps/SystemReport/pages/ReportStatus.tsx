@@ -15,12 +15,10 @@ function ReportStatus() {
   const { t } = useTranslation()
 
   const { data: report, isLoading } = useClientRequestWithPolling(
-    (cancelToken) =>
-      client.getInstance().diagnoseReportsIdStatusGet(id, { cancelToken }),
+    (reqConfig) =>
+      client.getInstance().diagnoseReportsIdStatusGet(id, reqConfig),
     {
       shouldPoll: (data) => data?.progress! < 100,
-      pollingInterval: 1000,
-      immediate: true,
     }
   )
 

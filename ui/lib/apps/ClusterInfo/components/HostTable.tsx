@@ -20,8 +20,8 @@ function filterUniquePartitions(items) {
 export default function HostTable() {
   const { t } = useTranslation()
 
-  const { data: tableData, isLoading } = useClientRequest((cancelToken) =>
-    client.getInstance().getHostsInfo({ cancelToken })
+  const { data: tableData, isLoading } = useClientRequest((reqConfig) =>
+    client.getInstance().getHostsInfo(reqConfig)
   )
 
   const columns = [

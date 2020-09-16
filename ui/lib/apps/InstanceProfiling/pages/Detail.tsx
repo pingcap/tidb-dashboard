@@ -41,12 +41,9 @@ export default function Page() {
   const { id } = useQueryParams()
 
   const { data: respData, isLoading } = useClientRequestWithPolling(
-    (cancelToken) =>
-      client.getInstance().getProfilingGroupDetail(id, { cancelToken }),
+    (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
     {
       shouldPoll: (data) => !isFinished(data),
-      pollingInterval: 1000,
-      immediate: true,
     }
   )
 

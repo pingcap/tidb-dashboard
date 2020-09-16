@@ -35,7 +35,7 @@ export interface IPageQuery {
 
 function DetailPage() {
   const query = DetailPage.parseQuery(useLocation().search)
-  const { data: plans, isLoading } = useClientRequest((cancelToken) =>
+  const { data: plans, isLoading } = useClientRequest((reqConfig) =>
     client
       .getInstance()
       .statementsPlansGet(
@@ -43,7 +43,7 @@ function DetailPage() {
         query.digest!,
         query.endTime!,
         query.schema!,
-        { cancelToken }
+        reqConfig
       )
   )
   const { t } = useTranslation()

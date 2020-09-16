@@ -1,14 +1,21 @@
 import { useMount, useUnmount, usePersistFn } from '@umijs/hooks'
 import { useState, useRef, useEffect } from 'react'
-import { CancelToken, AxiosPromise, CancelTokenSource } from 'axios'
-import axios from 'axios'
+import axios, { CancelToken, AxiosPromise, CancelTokenSource } from 'axios'
 
-interface RequestFactory<T> {
-  (token: CancelToken): AxiosPromise<T>
+import { ErrorStrategy } from '@lib/client'
+
+export interface ReqConfig {
+  cancelToken: CancelToken
+  errorStrategy: ErrorStrategy
+}
+
+export interface RequestFactory<T> {
+  (reqConfig: ReqConfig): AxiosPromise<T>
 }
 
 interface Options {
-  immediate: boolean
+  immediate?: boolean
+  handleError?: boolean // true: axios handle error inside, false: component handle error by itself. default is true
   afterRequest?: () => void
   beforeRequest?: () => void
 }
@@ -23,8 +30,12 @@ export function useClientRequest<T>(
   reqFactory: RequestFactory<T>,
   options?: Options
 ) {
-  const { immediate = true, afterRequest = null, beforeRequest = null } =
-    options || {}
+  const {
+    immediate = true,
+    handleError = true,
+    afterRequest = null,
+    beforeRequest = null,
+  } = options || {}
 
   const [state, setState] = useState<State<T>>({
     isLoading: immediate,
@@ -53,7 +64,13 @@ export function useClientRequest<T>(
     }))
 
     try {
-      const resp = await reqFactory(cancelTokenSource.current.token)
+      const reqConfig: ReqConfig = {
+        cancelToken: cancelTokenSource.current.token,
+        errorStrategy: handleError
+          ? ErrorStrategy.Default
+          : ErrorStrategy.Custom,
+      }
+      const resp = await reqFactory(reqConfig)
       if (mounted.current) {
         setState({
           data: resp.data,
@@ -105,8 +122,12 @@ export function useBatchClientRequest<T>(
   reqFactories: RequestFactory<T>[],
   options?: Options
 ) {
-  const { immediate = true, afterRequest = null, beforeRequest = null } =
-    options || {}
+  const {
+    immediate = true,
+    handleError = true,
+    afterRequest = null,
+    beforeRequest = null,
+  } = options || {}
 
   const [state, setState] = useState<BatchState<T>>({
     isLoading: immediate,
@@ -119,9 +140,13 @@ export function useBatchClientRequest<T>(
 
   const sendRequestEach = async (idx) => {
     try {
-      const resp = await reqFactories[idx](
-        cancelTokenSource.current![idx].token
-      )
+      const reqConfig: ReqConfig = {
+        cancelToken: cancelTokenSource.current![idx].token,
+        errorStrategy: handleError
+          ? ErrorStrategy.Default
+          : ErrorStrategy.Custom,
+      }
+      const resp = await reqFactories[idx](reqConfig)
       if (mounted.current) {
         setState((s) => {
           s.data[idx] = resp.data
@@ -191,8 +216,8 @@ export function useBatchClientRequest<T>(
 }
 
 interface OptionsWithPolling<T> extends Options {
-  pollingInterval: number
-  shouldPoll: ((data: T) => boolean) | null
+  pollingInterval?: number
+  shouldPoll?: ((data: T) => boolean) | null
 }
 
 export function useClientRequestWithPolling<T = any>(
@@ -205,6 +230,7 @@ export function useClientRequestWithPolling<T = any>(
     afterRequest = null,
     beforeRequest = null,
     immediate = true,
+    handleError = true,
   } = options || {}
   const mounted = useRef(false)
   const pollingTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -245,6 +271,7 @@ export function useClientRequestWithPolling<T = any>(
 
   const ret = useClientRequest(reqFactory, {
     immediate,
+    handleError,
     beforeRequest: myBeforeRequest,
     afterRequest: myAfterRequest,
   })

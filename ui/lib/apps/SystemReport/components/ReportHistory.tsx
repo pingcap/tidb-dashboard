@@ -96,8 +96,8 @@ const tableColumns = (t: TFunction): IColumn[] => [
 export default function ReportHistory() {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { data, isLoading } = useClientRequest((cancelToken) =>
-    client.getInstance().diagnoseReportsGet({ cancelToken })
+  const { data, isLoading } = useClientRequest((reqConfig) =>
+    client.getInstance().diagnoseReportsGet(reqConfig)
   )
   const columns = useMemo(() => tableColumns(t), [t])
 

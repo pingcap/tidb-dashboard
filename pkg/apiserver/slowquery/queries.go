@@ -36,7 +36,6 @@ type SlowQuery struct {
 	ConnectionID uint   `gorm:"column:Conn_ID" json:"connection_id"`
 	Success      int    `gorm:"column:Succ" json:"success"`
 
-	// notice the related gorm:column is lower-case "time", not "Time", because the final sql is "(unix_timestamp(Time)+0E0) as time"
 	Timestamp   float64 `gorm:"column:timestamp" proj:"(unix_timestamp(Time) + 0E0)" json:"timestamp"` // finish time
 	QueryTime   float64 `gorm:"column:Query_time" json:"query_time"`                                   // latency
 	ParseTime   float64 `gorm:"column:Parse_time" json:"parse_time"`

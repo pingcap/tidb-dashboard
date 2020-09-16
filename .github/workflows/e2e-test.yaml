@@ -48,7 +48,7 @@ jobs:
           source /home/runner/.profile
           tiup update playground
           source /home/runner/.profile
-          tiup playground v4.0.5 --tiflash=0 &
+          tiup playground v4.0.6 --tiflash=0 &
       - name: Build UI
         run: |
           make ui

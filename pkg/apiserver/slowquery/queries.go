@@ -19,13 +19,12 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
+	"github.com/thoas/go-funk"
 )
 
 const (
 	SlowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
-	SelectStmt     = "*, (unix_timestamp(Time) + 0E0) as time"
+	SelectStmt     = "*, (unix_timestamp(Time) + 0E0) as timestamp"
 )
 
 type SlowQuery struct {
@@ -38,8 +37,8 @@ type SlowQuery struct {
 	Success      int    `gorm:"column:Succ" json:"success"`
 
 	// notice the related gorm:column is lower-case "time", not "Time", because the final sql is "(unix_timestamp(Time)+0E0) as time"
-	Time        float64 `gorm:"column:time" convert:"(unix_timestamp(Time) + 0E0)" json:"timestamp"` // finish time
-	QueryTime   float64 `gorm:"column:Query_time" json:"query_time"`                                 // latency
+	Timestamp   float64 `gorm:"column:timestamp" proj:"(unix_timestamp(Time) + 0E0)" json:"timestamp"` // finish time
+	QueryTime   float64 `gorm:"column:Query_time" json:"query_time"`                                   // latency
 	ParseTime   float64 `gorm:"column:Parse_time" json:"parse_time"`
 	CompileTime float64 `gorm:"column:Compile_time" json:"compile_time"`
 	ProcessTime float64 `gorm:"column:Process_time" json:"process_time"`
@@ -118,14 +117,15 @@ func getRefColumns(jsonFields ...string) ([]string, error) {
 	ret := make([]string, 0, len(jsonFields))
 	for _, fieldName := range jsonFields {
 		if field, ok := fields[strings.ToLower(fieldName)]; ok {
-			if convert, ok := field.Tag.Lookup("convert"); ok {
-				ret = append(ret, fmt.Sprintf("%s AS %s", convert, gorm.ToColumnName(field.Name)))
+			if proj, ok := field.Tag.Lookup("proj"); ok {
+				ret = append(ret, fmt.Sprintf("%s AS %s", proj, gorm.ToColumnName(field.Name)))
 			} else if s, ok := field.Tag.Lookup("gorm"); ok {
 				list := strings.Split(s, ":")
-				if len(list) < 1 {
+				if len(list) == 2 && list[0] == "column" {
+					ret = append(ret, list[1])
+				} else {
 					return nil, fmt.Errorf("unknown gorm tag field: %s", s)
 				}
-				ret = append(ret, list[1])
 			} else {
 				return nil, fmt.Errorf("field %s cannot find ref column", fieldName)
 			}
@@ -136,25 +136,6 @@ func getRefColumns(jsonFields ...string) ([]string, error) {
 	return ret, nil
 }
 
-func getRefColumn(jsonField string) (string, error) {
-	t := reflect.TypeOf(SlowQuery{})
-	fieldsNum := t.NumField()
-	for i := 0; i < fieldsNum; i++ {
-		field := t.Field(i)
-		if field.Tag.Get("json") == jsonField {
-			if s, ok := field.Tag.Lookup("gorm"); ok {
-				list := strings.Split(s, ":")
-				if len(list) < 1 {
-					return "", fmt.Errorf("unknown gorm tag field: %s", s)
-				}
-				return list[1], nil
-			}
-			return "", fmt.Errorf("field %s cannot find ref column", jsonField)
-		}
-	}
-	return "", nil
-}
-
 type GetDetailRequest struct {
 	Digest    string  `json:"digest" form:"digest"`
 	Timestamp float64 `json:"timestamp" form:"timestamp"`
@@ -162,14 +143,14 @@ type GetDetailRequest struct {
 }
 
 func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
-	refColumns, _ := getRefColumns("digest", "connection_id", "timestamp") // "digest", "connection_id", "timestamp" for detail
+	sqlFields := []string{"digest", "connection_id", "timestamp"}
 	if strings.TrimSpace(req.Fields) != "" {
-		sqlFields := strings.Split(req.Fields, ",")
-		columns, err := getRefColumns(sqlFields...)
-		if err != nil {
-			return nil, err
-		}
-		refColumns = append(refColumns, columns...)
+		sqlFields = append(sqlFields, strings.Split(req.Fields, ",")...)
+		sqlFields = funk.UniqString(sqlFields)
+	}
+	refColumns, err := getRefColumns(sqlFields...)
+	if err != nil {
+		return nil, err
 	}
 
 	tx := db.
@@ -196,16 +177,19 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		tx = tx.Where("DB IN (?)", req.DB)
 	}
 
-	order, err := getRefColumn(req.OrderBy)
+	order, err := getRefColumns(req.OrderBy)
 	if err != nil {
-		log.Error("req.OrderBy is invalid", zap.String("orderBy", req.OrderBy), zap.Error(err))
+		return nil, err
 	}
-	if len(order) > 0 {
-		if req.DESC {
-			tx = tx.Order(fmt.Sprintf("%s desc", order))
-		} else {
-			tx = tx.Order(fmt.Sprintf("%s asc", order))
-		}
+	// to handle the special case: timestamp
+	// if req.OrderBy is "timestamp", then the order is "(unix_timestamp(Time) + 0E0) AS timestamp"
+	if strings.Contains(order[0], " AS ") {
+		order[0] = req.OrderBy
+	}
+	if req.DESC {
+		tx = tx.Order(fmt.Sprintf("%s desc", order[0]))
+	} else {
+		tx = tx.Order(fmt.Sprintf("%s asc", order[0]))
 	}
 
 	if len(req.Plans) > 0 {

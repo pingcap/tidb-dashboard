@@ -39,7 +39,7 @@ export const ALL_LANGUAGES = {
   en: 'English',
 }
 
-export function getEffetiveLang(): string {
+export function getEffectiveLang(): string {
   const effetiveLangs = Object.keys(ALL_LANGUAGES)
   const detectedLang = i18next.language
   if (effetiveLangs.includes(detectedLang)) {
@@ -63,4 +63,4 @@ i18next
   })
 
 // init dayjs locale
-dayjs.locale(getEffetiveLang().toLowerCase())
+dayjs.locale(getEffectiveLang().toLowerCase())

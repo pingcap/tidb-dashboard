@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import DiagnosisTable from './DiagnosisTable'
 import { ExpandContext, TableDef } from '../types'
-import { ALL_LANGUAGES, getEffetiveLang } from '@lib/utils/i18n'
+import { ALL_LANGUAGES, getEffectiveLang } from '@lib/utils/i18n'
 
 function LangDropdown() {
   const { i18n } = useTranslation()
@@ -10,7 +10,7 @@ function LangDropdown() {
     <div className="select">
       <select
         onChange={(e) => i18n.changeLanguage(e.target.value)}
-        defaultValue={getEffetiveLang()}
+        defaultValue={getEffectiveLang()}
       >
         {Object.keys(ALL_LANGUAGES).map((langKey) => (
           <option value={langKey} key={langKey}>

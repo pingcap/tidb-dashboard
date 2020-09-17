@@ -1,14 +1,12 @@
-import zh from 'dayjs/locale/zh-cn'
+import 'dayjs/locale/zh-cn'
 
 import dayjs from 'dayjs'
 import i18next from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
-const DAYJS_LOCALES = { zh }
-
 i18next.on('languageChanged', function (lng) {
-  dayjs.locale(DAYJS_LOCALES[lng.toLocaleLowerCase()] || 'en')
+  dayjs.locale(lng.toLocaleLowerCase())
 })
 
 export function addTranslations(requireContext) {
@@ -37,8 +35,20 @@ export function addTranslationResource(lang, translations) {
 }
 
 export const ALL_LANGUAGES = {
-  zh: '简体中文',
+  'zh-CN': '简体中文',
   en: 'English',
+}
+
+export function getEffetiveLang(): string {
+  const effetiveLangs = Object.keys(ALL_LANGUAGES)
+  const detectedLang = i18next.language
+  if (effetiveLangs.includes(detectedLang)) {
+    return detectedLang
+  }
+  if (detectedLang.startsWith('zh')) {
+    return 'zh-CN'
+  }
+  return 'en'
 }
 
 i18next
@@ -46,9 +56,11 @@ i18next
   .use(initReactI18next)
   .init({
     resources: {}, // oh! this line is a big pitfall, we can't remove it, else it will cause strange crash!
-    fallbackLng: 'en',
-    whitelist: ['zh', 'en'],
+    fallbackLng: 'en', // fallbackLng won't change the detected language
     interpolation: {
       escapeValue: false,
     },
   })
+
+// init dayjs locale
+dayjs.locale(getEffetiveLang().toLocaleLowerCase())

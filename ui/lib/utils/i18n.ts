@@ -1,18 +1,14 @@
-import 'dayjs/locale/en'
-import 'dayjs/locale/zh-cn'
+import zh from 'dayjs/locale/zh-cn'
 
 import dayjs from 'dayjs'
 import i18next from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
+const DAYJS_LOCALES = { zh }
+
 i18next.on('languageChanged', function (lng) {
-  console.log('Language', lng)
-  if (lng.startsWith('zh')) {
-    dayjs.locale('zh-cn')
-  } else {
-    dayjs.locale('en')
-  }
+  dayjs.locale(DAYJS_LOCALES[lng.toLocaleLowerCase()] || 'en')
 })
 
 export function addTranslations(requireContext) {

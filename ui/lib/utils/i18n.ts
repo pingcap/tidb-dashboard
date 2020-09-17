@@ -6,7 +6,7 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
 i18next.on('languageChanged', function (lng) {
-  dayjs.locale(lng.toLocaleLowerCase())
+  dayjs.locale(lng.toLowerCase())
 })
 
 export function addTranslations(requireContext) {
@@ -63,4 +63,4 @@ i18next
   })
 
 // init dayjs locale
-dayjs.locale(getEffetiveLang().toLocaleLowerCase())
+dayjs.locale(getEffetiveLang().toLowerCase())

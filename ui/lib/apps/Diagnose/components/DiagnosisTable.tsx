@@ -80,7 +80,7 @@ export default function DiagnosisTable({
     isLoading,
     error,
     sendRequest,
-  } = useClientRequest(reqFn.current!, { immediate: false, handleError: false })
+  } = useClientRequest(reqFn.current!, { immediate: false })
 
   useEffect(() => {
     if (internalTimeRange[0] !== 0) {

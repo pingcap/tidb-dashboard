@@ -82,8 +82,7 @@ export default function MetricChart({
           30,
           reqConfig
         )
-    ),
-    { handleError: false }
+    )
   )
 
   const update = () => {

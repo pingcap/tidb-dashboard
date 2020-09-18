@@ -15,7 +15,6 @@ export interface RequestFactory<T> {
 
 interface Options {
   immediate?: boolean
-  handleError?: boolean // true: axios handle error inside, false: component handle error by itself. default is true
   afterRequest?: () => void
   beforeRequest?: () => void
 }
@@ -30,12 +29,8 @@ export function useClientRequest<T>(
   reqFactory: RequestFactory<T>,
   options?: Options
 ) {
-  const {
-    immediate = true,
-    handleError = true,
-    afterRequest = null,
-    beforeRequest = null,
-  } = options || {}
+  const { immediate = true, afterRequest = null, beforeRequest = null } =
+    options || {}
 
   const [state, setState] = useState<State<T>>({
     isLoading: immediate,
@@ -66,9 +61,7 @@ export function useClientRequest<T>(
     try {
       const reqConfig: ReqConfig = {
         cancelToken: cancelTokenSource.current.token,
-        errorStrategy: handleError
-          ? ErrorStrategy.Default
-          : ErrorStrategy.Custom,
+        errorStrategy: ErrorStrategy.Custom, // handle the error by component self
       }
       const resp = await reqFactory(reqConfig)
       if (mounted.current) {
@@ -122,12 +115,8 @@ export function useBatchClientRequest<T>(
   reqFactories: RequestFactory<T>[],
   options?: Options
 ) {
-  const {
-    immediate = true,
-    handleError = true,
-    afterRequest = null,
-    beforeRequest = null,
-  } = options || {}
+  const { immediate = true, afterRequest = null, beforeRequest = null } =
+    options || {}
 
   const [state, setState] = useState<BatchState<T>>({
     isLoading: immediate,
@@ -142,9 +131,7 @@ export function useBatchClientRequest<T>(
     try {
       const reqConfig: ReqConfig = {
         cancelToken: cancelTokenSource.current![idx].token,
-        errorStrategy: handleError
-          ? ErrorStrategy.Default
-          : ErrorStrategy.Custom,
+        errorStrategy: ErrorStrategy.Custom,
       }
       const resp = await reqFactories[idx](reqConfig)
       if (mounted.current) {
@@ -230,7 +217,6 @@ export function useClientRequestWithPolling<T = any>(
     afterRequest = null,
     beforeRequest = null,
     immediate = true,
-    handleError = true,
   } = options || {}
   const mounted = useRef(false)
   const pollingTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -271,7 +257,6 @@ export function useClientRequestWithPolling<T = any>(
 
   const ret = useClientRequest(reqFactory, {
     immediate,
-    handleError,
     beforeRequest: myBeforeRequest,
     afterRequest: myAfterRequest,
   })

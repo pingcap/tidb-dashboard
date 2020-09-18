@@ -62,25 +62,22 @@ export default function ListPage() {
     isLoading: loadingTiDB,
     error: errTiDB,
     sendRequest,
-  } = useClientRequest(
-    (reqConfig) => client.getInstance().getTiDBTopology(reqConfig),
-    { handleError: false }
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getTiDBTopology(reqConfig)
   )
   const {
     data: dataStores,
     isLoading: loadingStores,
     error: errStores,
-  } = useClientRequest(
-    (reqConfig) => client.getInstance().getStoreTopology(reqConfig),
-    { handleError: false }
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getStoreTopology(reqConfig)
   )
   const {
     data: dataPD,
     isLoading: loadingPD,
     error: errPD,
-  } = useClientRequest(
-    (reqConfig) => client.getInstance().getPDTopology(reqConfig),
-    { handleError: false }
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getPDTopology(reqConfig)
   )
 
   const [tableData, groupData] = useMemo(

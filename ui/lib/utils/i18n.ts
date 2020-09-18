@@ -1,4 +1,4 @@
-import 'dayjs/locale/zh-cn'
+import 'dayjs/locale/zh'
 
 import dayjs from 'dayjs'
 import i18next from 'i18next'
@@ -35,20 +35,8 @@ export function addTranslationResource(lang, translations) {
 }
 
 export const ALL_LANGUAGES = {
-  'zh-CN': '简体中文',
+  zh: '简体中文',
   en: 'English',
-}
-
-export function getEffectiveLang(): string {
-  const effetiveLangs = Object.keys(ALL_LANGUAGES)
-  const detectedLang = i18next.language
-  if (effetiveLangs.includes(detectedLang)) {
-    return detectedLang
-  }
-  if (detectedLang.startsWith('zh')) {
-    return 'zh-CN'
-  }
-  return 'en'
 }
 
 i18next
@@ -57,10 +45,8 @@ i18next
   .init({
     resources: {}, // oh! this line is a big pitfall, we can't remove it, else it will cause strange crash!
     fallbackLng: 'en', // fallbackLng won't change the detected language
+    whitelist: ['zh', 'en'], // whitelist will change the detected lanuage
     interpolation: {
       escapeValue: false,
     },
   })
-
-// init dayjs locale
-dayjs.locale(getEffectiveLang().toLowerCase())

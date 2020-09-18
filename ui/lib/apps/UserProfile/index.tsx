@@ -28,7 +28,7 @@ import {
   Pre,
 } from '@lib/components'
 import * as auth from '@lib/utils/auth'
-import { ALL_LANGUAGES, getEffectiveLang } from '@lib/utils/i18n'
+import { ALL_LANGUAGES } from '@lib/utils/i18n'
 import _ from 'lodash'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
@@ -211,10 +211,7 @@ function App() {
         </Space>
       </Card>
       <Card title={t('user_profile.i18n.title')}>
-        <Form
-          layout="vertical"
-          initialValues={{ language: getEffectiveLang() }}
-        >
+        <Form layout="vertical" initialValues={{ language: i18n.language }}>
           <Form.Item name="language" label={t('user_profile.i18n.language')}>
             <Select onChange={handleLanguageChange} style={{ width: 200 }}>
               {_.map(ALL_LANGUAGES, (name, key) => {

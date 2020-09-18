@@ -20,7 +20,6 @@ function filterUniquePartitions(items) {
 export default function HostTable() {
   const { t } = useTranslation()
 
-  // ==MARK==
   const { data: tableData, isLoading, error } = useClientRequest((reqConfig) =>
     client.getInstance().getHostsInfo(reqConfig)
   )

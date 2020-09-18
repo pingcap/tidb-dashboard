@@ -40,7 +40,6 @@ export default function Page() {
   const { t } = useTranslation()
   const { id } = useQueryParams()
 
-  // ==MARK==
   const { data: respData, isLoading, error } = useClientRequestWithPolling(
     (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
     {
@@ -101,7 +100,6 @@ export default function Page() {
   )
 
   const handleRowClick = usePersistFn(
-    // ==MARK==
     async (rec, _idx, _ev: React.MouseEvent<HTMLElement>) => {
       const res = await client
         .getInstance()
@@ -118,7 +116,6 @@ export default function Page() {
   )
 
   const handleDownloadGroup = useCallback(async () => {
-    // ==MARK==
     const res = await client.getInstance().getActionToken(id, 'group_download')
     const token = res.data
     if (!token) {

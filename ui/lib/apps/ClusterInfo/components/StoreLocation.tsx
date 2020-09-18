@@ -44,7 +44,6 @@ function buildTreeData(data: TopologyStoreLocation | undefined): TreeNode {
 }
 
 export default function StoreLocation() {
-  // ==MARK==
   const { data, isLoading, error } = useClientRequest((reqConfig) =>
     client.getInstance().getStoreLocationTopology(reqConfig)
   )

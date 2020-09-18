@@ -103,7 +103,6 @@ const KeyViz = () => {
   const updateServiceStatus = useCallback(async function () {
     setLoading(true)
     try {
-      // ==MARK==
       const resp = await client.getInstance().keyvisualConfigGet()
       const config = resp.data
       const enabled = config?.auto_collection_disabled !== true

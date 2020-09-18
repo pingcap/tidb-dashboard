@@ -56,7 +56,6 @@ export default function ToggleBanner({
   })
 
   const { data, isLoading } = useClientRequest((reqConfig) =>
-    // ==MARK==
     client.getInstance().infoGet(reqConfig)
   )
 

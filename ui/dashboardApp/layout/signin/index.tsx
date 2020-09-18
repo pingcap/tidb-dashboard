@@ -150,7 +150,6 @@ function useSignInSubmit(
     clearErrorMsg()
 
     try {
-      // ==MARK==
       const r = await client.getInstance().userLogin(fnLoginForm(form), {
         errorStrategy: ErrorStrategy.Custom,
       })

@@ -50,7 +50,6 @@ function Sider({
   const { t } = useTranslation()
   const activeAppId = useActiveAppId(registry)
 
-  // ==MARK==
   const { data: currentLogin } = useClientRequest((reqConfig) =>
     client.getInstance().infoWhoami(reqConfig)
   )

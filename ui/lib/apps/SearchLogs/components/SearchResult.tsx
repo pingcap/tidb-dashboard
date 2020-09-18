@@ -69,7 +69,6 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
         return
       }
 
-      // ==MARK==
       try {
         const res = await client
           .getInstance()

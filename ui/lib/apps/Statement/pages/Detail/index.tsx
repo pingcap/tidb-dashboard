@@ -17,6 +17,7 @@ import {
   Head,
   HighlightSQL,
   TextWithInfo,
+  ErrorBar,
 } from '@lib/components'
 import CopyLink from '@lib/components/CopyLink'
 import formatSql from '@lib/utils/formatSql'
@@ -35,7 +36,7 @@ export interface IPageQuery {
 
 function DetailPage() {
   const query = DetailPage.parseQuery(useLocation().search)
-  const { data: plans, isLoading } = useClientRequest((reqConfig) =>
+  const { data: plans, isLoading, error } = useClientRequest((reqConfig) =>
     client
       .getInstance()
       .statementsPlansGet(
@@ -78,9 +79,7 @@ function DetailPage() {
         }
       >
         <AnimatedSkeleton showSkeleton={isLoading}>
-          {(!plans || plans.length === 0) && (
-            <Alert message="Error" type="error" showIcon />
-          )}
+          {error && <ErrorBar errors={[error]} />}
           {plans && plans.length > 0 && (
             <>
               <Descriptions>

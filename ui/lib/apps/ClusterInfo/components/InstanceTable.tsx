@@ -57,6 +57,7 @@ function StatusColumn({
 
 export default function ListPage() {
   const { t } = useTranslation()
+  // ==MARK==
   const {
     data: dataTiDB,
     isLoading: loadingTiDB,
@@ -65,6 +66,7 @@ export default function ListPage() {
   } = useClientRequest((reqConfig) =>
     client.getInstance().getTiDBTopology(reqConfig)
   )
+  // ==MARK==
   const {
     data: dataStores,
     isLoading: loadingStores,
@@ -72,6 +74,7 @@ export default function ListPage() {
   } = useClientRequest((reqConfig) =>
     client.getInstance().getStoreTopology(reqConfig)
   )
+  // ==MARK==
   const {
     data: dataPD,
     isLoading: loadingPD,
@@ -92,6 +95,7 @@ export default function ListPage() {
     [dataTiDB, dataStores, dataPD]
   )
 
+  // ==MARK==
   const handleHideTiDB = useCallback(
     async (node) => {
       await client

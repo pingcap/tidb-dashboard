@@ -65,6 +65,7 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
   const [config, setConfig] = useState<ConfigKeyVisualConfig | null>(null)
   const { t } = useTranslation()
 
+  // ==MARK==
   const onFetchServiceStatus = () => {
     setLoading(true)
     client
@@ -81,6 +82,7 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
       )
   }
 
+  // ==MARK==
   const onSubmitted = () => {
     client
       .getInstance()
@@ -98,6 +100,7 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
       )
   }
 
+  // ==MARK==
   const onUpdateServiceStatus = (values) => {
     setSubmitting(true)
     client

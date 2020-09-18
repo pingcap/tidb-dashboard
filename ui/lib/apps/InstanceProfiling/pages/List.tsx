@@ -22,9 +22,11 @@ const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
 
 export default function Page() {
+  // ==MARK==
   const {
     data: historyTable,
     isLoading: listLoading,
+    error: historyError,
   } = useClientRequest((reqConfig) =>
     client.getInstance().getProfilingGroups(reqConfig)
   )
@@ -74,6 +76,7 @@ export default function Page() {
         duration_secs: fieldsValue.duration,
       }
       try {
+        // ==MARK==
         const res = await client.getInstance().startProfiling(req)
         navigate(`/instance_profiling/detail?id=${res.data.id}`)
       } catch (e) {}
@@ -199,6 +202,7 @@ export default function Page() {
             loading={listLoading}
             items={historyTable || []}
             columns={historyTableColumns}
+            errors={[historyError]}
             onRowClicked={handleRowClick}
           />
         </ScrollablePane>

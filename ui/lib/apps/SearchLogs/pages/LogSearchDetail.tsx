@@ -36,6 +36,7 @@ export default function LogSearchingDetail() {
     return true
   }
 
+  // ==MARK==
   const { data } = useClientRequestWithPolling(
     (reqConfig) => client.getInstance().logsTaskgroupsIdGet(id, reqConfig),
     {

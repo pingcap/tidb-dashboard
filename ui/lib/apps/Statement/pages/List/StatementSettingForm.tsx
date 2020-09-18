@@ -78,12 +78,12 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         (values.keep_duration * 24 * 60) / values.refresh_interval
       ),
     }
-    const res = await client.getInstance().statementsConfigPost(newConfig)
-    setSubmitting(false)
-    if (res) {
+    try {
+      await client.getInstance().statementsConfigPost(newConfig)
       onClose()
       onConfigUpdated()
-    }
+    } catch (e) {}
+    setSubmitting(false)
   }
 
   function handleSubmit(values) {

@@ -69,22 +69,25 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
         return
       }
 
-      const res = await client
-        .getInstance()
-        .logsTaskgroupsIdPreviewGet(taskGroupID + '')
-      setData(
-        res.data.map(
-          (value, index): LogPreview => {
-            return {
-              key: index,
-              time: dayjs(value.time).format('YYYY-MM-DD HH:mm:ss'),
-              level: LogLevelText[value.level ?? 0],
-              component: getComponent(value.task_id),
-              log: value.message,
+      // ==MARK==
+      try {
+        const res = await client
+          .getInstance()
+          .logsTaskgroupsIdPreviewGet(taskGroupID + '')
+        setData(
+          res.data.map(
+            (value, index): LogPreview => {
+              return {
+                key: index,
+                time: dayjs(value.time).format('YYYY-MM-DD HH:mm:ss'),
+                level: LogLevelText[value.level ?? 0],
+                component: getComponent(value.task_id),
+                log: value.message,
+              }
             }
-          }
+          )
         )
-      )
+      } catch (e) {}
       setLoading(false)
     }
     if (tasks.length > 0 && taskGroupID !== tasks[0].task_group_id) {

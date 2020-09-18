@@ -148,6 +148,7 @@ export default function SearchProgress({
       (key) => !InstanceKinds.some((ik) => ik === key)
     )
 
+    // ==MARK==
     const res = await client.getInstance().logsDownloadAcquireTokenGet(keys)
     const token = res.data
     if (!token) {
@@ -164,6 +165,7 @@ export default function SearchProgress({
     confirm({
       title: t('search_logs.confirm.cancel_tasks'),
       onOk() {
+        // ==MARK==
         client.getInstance().logsTaskgroupsIdCancelPost(taskGroupID + '')
         toggleReload()
       },
@@ -177,6 +179,7 @@ export default function SearchProgress({
     confirm({
       title: t('search_logs.confirm.retry_tasks'),
       onOk() {
+        // ==MARK==
         client.getInstance().logsTaskgroupsIdRetryPost(taskGroupID + '')
         toggleReload()
       },

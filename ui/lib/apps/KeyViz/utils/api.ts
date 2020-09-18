@@ -5,6 +5,7 @@ export async function fetchHeatmap(
   selection?: HeatmapRange,
   type: DataTag = 'written_bytes'
 ): Promise<HeatmapData> {
+  // ==MARK==
   const resp = await client
     .getInstance()
     .keyvisualHeatmapsGet(

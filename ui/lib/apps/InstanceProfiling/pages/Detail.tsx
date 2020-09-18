@@ -40,7 +40,8 @@ export default function Page() {
   const { t } = useTranslation()
   const { id } = useQueryParams()
 
-  const { data: respData, isLoading } = useClientRequestWithPolling(
+  // ==MARK==
+  const { data: respData, isLoading, error } = useClientRequestWithPolling(
     (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
     {
       shouldPoll: (data) => !isFinished(data),
@@ -100,6 +101,7 @@ export default function Page() {
   )
 
   const handleRowClick = usePersistFn(
+    // ==MARK==
     async (rec, _idx, _ev: React.MouseEvent<HTMLElement>) => {
       const res = await client
         .getInstance()
@@ -116,6 +118,7 @@ export default function Page() {
   )
 
   const handleDownloadGroup = useCallback(async () => {
+    // ==MARK==
     const res = await client.getInstance().getActionToken(id, 'group_download')
     const token = res.data
     if (!token) {
@@ -144,9 +147,10 @@ export default function Page() {
         }
       />
       <CardTable
-        loading={isLoading && !data}
+        loading={isLoading}
         columns={columns}
         items={data?.tasks_status || []}
+        errors={[error]}
         onRowClicked={handleRowClick}
         extendLastColumn
       />

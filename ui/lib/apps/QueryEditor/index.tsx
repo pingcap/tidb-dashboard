@@ -32,6 +32,7 @@ function App() {
   const handleRun = useCallback(async () => {
     setRunning(true)
     setResults(undefined)
+    // ==MARK==
     try {
       const resp = await client.getInstance().queryEditorRun({
         max_rows: MAX_DISPLAY_ROWS,

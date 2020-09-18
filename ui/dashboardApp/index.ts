@@ -49,6 +49,7 @@ async function main() {
   let info: InfoInfoResponse
 
   try {
+    // ==MARK==
     const i = await client.getInstance().infoGet({
       errorStrategy: ErrorStrategy.Custom,
     })

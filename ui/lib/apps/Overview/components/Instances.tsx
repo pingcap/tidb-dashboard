@@ -64,9 +64,11 @@ function ComponentItem(props: {
 
 export default function Nodes() {
   const { t } = useTranslation()
+  // ==MARK==
   const tidbResp = useClientRequest((reqConfig) =>
     client.getInstance().getTiDBTopology(reqConfig)
   )
+  // ==MARK==
   const storeResp = useClientRequest((reqConfig) =>
     client.getInstance().getStoreTopology(reqConfig)
   )
@@ -78,6 +80,7 @@ export default function Nodes() {
     ...storeResp,
     data: storeResp.data?.tiflash,
   }
+  // ==MARK==
   const pdResp = useClientRequest((reqConfig) =>
     client.getInstance().getPDTopology(reqConfig)
   )

@@ -12,12 +12,14 @@ export default function MonitorAlert() {
   const { t } = useTranslation()
   const [alertCounter, setAlertCounter] = useState(0)
 
+  // ==MARK==
   const {
     data: amData,
     isLoading: amIsLoading,
   } = useClientRequest((reqConfig) =>
     client.getInstance().getAlertManagerTopology(reqConfig)
   )
+  // ==MARK==
   const {
     data: grafanaData,
     isLoading: grafanaIsLoading,
@@ -29,11 +31,14 @@ export default function MonitorAlert() {
     if (!amData) {
       return
     }
+    // ==MARK==
     async function fetch() {
-      let resp = await client
-        .getInstance()
-        .getAlertManagerCounts(`${amData!.ip}:${amData!.port}`)
-      setAlertCounter(resp.data)
+      try {
+        let resp = await client
+          .getInstance()
+          .getAlertManagerCounts(`${amData!.ip}:${amData!.port}`)
+        setAlertCounter(resp.data)
+      } catch (e) {}
     }
     fetch()
   }, [amData])

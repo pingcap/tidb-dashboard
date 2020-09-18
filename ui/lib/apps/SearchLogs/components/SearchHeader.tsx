@@ -41,6 +41,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
       if (!taskGroupID) {
         return
       }
+      // ==MARK==
       const res = await client
         .getInstance()
         .logsTaskgroupsIdGet(String(taskGroupID))
@@ -120,12 +121,12 @@ export default function SearchHeader({ taskGroupID }: Props) {
       }
 
       try {
+        // ==MARK==
         const result = await client.getInstance().logsTaskgroupPut(req)
         const id = result?.data?.task_group?.id
-        if (!id) {
-          throw new Error('Invalid server response')
+        if (id) {
+          navigate(`/search_logs/detail?id=${id}`)
         }
-        navigate(`/search_logs/detail?id=${id}`)
       } catch (e) {}
       setSubmitting(false)
     },

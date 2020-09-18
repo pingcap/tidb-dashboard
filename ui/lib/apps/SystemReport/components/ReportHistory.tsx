@@ -96,7 +96,7 @@ const tableColumns = (t: TFunction): IColumn[] => [
 export default function ReportHistory() {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { data, isLoading } = useClientRequest((reqConfig) =>
+  const { data, isLoading, error } = useClientRequest((reqConfig) =>
     client.getInstance().diagnoseReportsGet(reqConfig)
   )
   const columns = useMemo(() => tableColumns(t), [t])
@@ -113,6 +113,7 @@ export default function ReportHistory() {
       loading={isLoading}
       items={data || []}
       columns={columns}
+      errors={[error]}
       onRowClicked={handleRowClick}
     />
   )

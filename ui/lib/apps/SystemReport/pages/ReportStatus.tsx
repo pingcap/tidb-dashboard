@@ -6,7 +6,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client from '@lib/client'
 import publicPathPrefix from '@lib/utils/publicPathPrefix'
-import { AnimatedSkeleton, DateTime, Head } from '@lib/components'
+import { AnimatedSkeleton, DateTime, ErrorBar, Head } from '@lib/components'
 import { useClientRequestWithPolling } from '@lib/utils/useClientRequest'
 import useQueryParams from '@lib/utils/useQueryParams'
 
@@ -14,7 +14,7 @@ function ReportStatus() {
   const { id } = useQueryParams()
   const { t } = useTranslation()
 
-  const { data: report, isLoading } = useClientRequestWithPolling(
+  const { data: report, isLoading, error } = useClientRequestWithPolling(
     (reqConfig) =>
       client.getInstance().diagnoseReportsIdStatusGet(id, reqConfig),
     {
@@ -46,6 +46,7 @@ function ReportStatus() {
       }
     >
       <AnimatedSkeleton showSkeleton={isLoading && !report}>
+        {error && <ErrorBar errors={[error]} />}
         {report && (
           <Descriptions column={1} bordered size="small">
             <Descriptions.Item label={t('system_report.status.range_begin')}>

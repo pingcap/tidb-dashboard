@@ -150,6 +150,7 @@ function useSignInSubmit(
     clearErrorMsg()
 
     try {
+      // ==MARK==
       const r = await client.getInstance().userLogin(fnLoginForm(form), {
         errorStrategy: ErrorStrategy.Custom,
       })
@@ -158,8 +159,7 @@ function useSignInSubmit(
       singleSpa.navigateToUrl(successRoute)
     } catch (e) {
       if (!e.handled) {
-        const msg = e.msg || e.message
-        setError(t('signin.message.error', { msg }))
+        setError(t('signin.message.error', { msg: e.msg }))
         onFailure()
       }
     }

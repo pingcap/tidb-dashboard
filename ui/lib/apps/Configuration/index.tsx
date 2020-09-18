@@ -25,6 +25,7 @@ const loadingSpinner = <LoadingOutlined style={{ fontSize: 48 }} spin />
 function Value({ item, onSaved }: IValueProps) {
   const handleSave = usePersistFn(async (newValue) => {
     try {
+      // ==MARK==
       const resp = await client.getInstance().configurationEdit({
         id: item.id,
         kind: item.kind,
@@ -79,6 +80,7 @@ function getKey(item: IRow) {
 }
 
 export default function () {
+  // ==MARK==
   const {
     data,
     isLoading,

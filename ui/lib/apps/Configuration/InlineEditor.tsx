@@ -60,8 +60,8 @@ function InlineEditor({
       setIsVisible(false)
       return
     }
-    setIsPosting(true)
     try {
+      setIsPosting(true)
       // PD only accept modified config in the same value type,
       // i.e. true => false, but not true => "false"
       const r = await onSave(valueWithSameType(inputVal, value))
@@ -75,8 +75,9 @@ function InlineEditor({
     } catch (e) {
       setInputVal(displayValue)
       setIsVisible(false)
+    } finally {
+      setIsPosting(false)
     }
-    setIsPosting(false)
   })
 
   const handleInputValueChange = useCallback((e) => {

@@ -146,10 +146,9 @@ function useSignInSubmit(
   }, [])
 
   const handleSubmit = usePersistFn(async (form) => {
-    setLoading(true)
-    clearErrorMsg()
-
     try {
+      clearErrorMsg()
+      setLoading(true)
       const r = await client.getInstance().userLogin(fnLoginForm(form), {
         errorStrategy: ErrorStrategy.Custom,
       })
@@ -161,8 +160,9 @@ function useSignInSubmit(
         setError(t('signin.message.error', { msg: e.msg }))
         onFailure()
       }
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   })
 
   return { handleSubmit, loading, errorMsg: error, clearErrorMsg }

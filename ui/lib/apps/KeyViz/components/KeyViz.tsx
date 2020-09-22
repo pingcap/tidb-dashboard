@@ -101,8 +101,8 @@ const KeyViz = () => {
   const enabled = config?.auto_collection_disabled !== true
 
   const updateServiceStatus = useCallback(async function () {
-    setLoading(true)
     try {
+      setLoading(true)
       const resp = await client.getInstance().keyvisualConfigGet()
       const config = resp.data
       const enabled = config?.auto_collection_disabled !== true
@@ -111,8 +111,8 @@ const KeyViz = () => {
       }
       setConfig(config)
     } finally {
+      setLoading(false)
     }
-    setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -122,9 +122,9 @@ const KeyViz = () => {
     if (getAutoRefreshSeconds() > 0) {
       setRemainingRefreshSeconds(getAutoRefreshSeconds())
     }
-    setLoading(true)
-    setOnBrush(false)
     try {
+      setLoading(true)
+      setOnBrush(false)
       const metricType = getMetricType()
       const data = await cache.fetch(
         getSelection() || getDateRange(),
@@ -132,8 +132,8 @@ const KeyViz = () => {
       )
       setChartState({ heatmapData: data!, metricType })
     } finally {
+      setLoading(false)
     }
-    setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

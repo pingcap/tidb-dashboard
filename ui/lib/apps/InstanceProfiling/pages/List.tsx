@@ -73,13 +73,13 @@ export default function Page() {
         targets,
         duration_secs: fieldsValue.duration,
       }
-      setSubmitting(true)
       try {
+        setSubmitting(true)
         const res = await client.getInstance().startProfiling(req)
         navigate(`/instance_profiling/detail?id=${res.data.id}`)
       } finally {
+        setSubmitting(false)
       }
-      setSubmitting(false)
     },
     [navigate]
   )

@@ -60,15 +60,15 @@ function ShareSessionButton() {
   }, [])
 
   const handleFinish = useCallback(async (values) => {
-    setIsPosting(true)
     try {
+      setIsPosting(true)
       const r = await client.getInstance().userShareSession({
         expire_in_sec: values.expire * 60 * 60,
       })
       setCode(r.data.code)
     } finally {
+      setIsPosting(false)
     }
-    setIsPosting(false)
   }, [])
 
   const handleCopy = useCallback(() => {

@@ -118,16 +118,16 @@ export default function SearchHeader({ taskGroupID }: Props) {
         },
       }
 
-      setSubmitting(true)
       try {
+        setSubmitting(true)
         const result = await client.getInstance().logsTaskgroupPut(req)
         const id = result?.data?.task_group?.id
         if (id) {
           navigate(`/search_logs/detail?id=${id}`)
         }
       } finally {
+        setSubmitting(false)
       }
-      setSubmitting(false)
     },
     [navigate]
   )

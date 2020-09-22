@@ -43,8 +43,8 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
 
   useEffect(() => {
     async function fetchConfig() {
-      setLoading(true)
       try {
+        setLoading(true)
         const res = await client.getInstance().statementsConfigGet()
         if (res?.data) {
           const oriConfig = res.data
@@ -66,8 +66,8 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
           })
         }
       } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     fetchConfig()
   }, [])
@@ -80,14 +80,14 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         (values.keep_duration * 24 * 60) / values.refresh_interval
       ),
     }
-    setSubmitting(true)
     try {
+      setSubmitting(true)
       await client.getInstance().statementsConfigPost(newConfig)
       onClose()
       onConfigUpdated()
     } finally {
+      setSubmitting(false)
     }
-    setSubmitting(false)
   }
 
   function handleSubmit(values) {

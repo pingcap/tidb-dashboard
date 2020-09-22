@@ -30,17 +30,17 @@ function App() {
     (!results.error_msg && (!results.column_names?.length || !results.rows))
 
   const handleRun = useCallback(async () => {
-    setRunning(true)
-    setResults(undefined)
     try {
+      setRunning(true)
+      setResults(undefined)
       const resp = await client.getInstance().queryEditorRun({
         max_rows: MAX_DISPLAY_ROWS,
         statements: editor.current?.editor.getValue(),
       })
       setResults(resp.data)
     } finally {
+      setRunning(false)
     }
-    setRunning(false)
     editor.current?.editor.focus()
   }, [])
 

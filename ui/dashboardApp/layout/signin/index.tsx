@@ -15,7 +15,7 @@ import {
 import { Form, Input, Button, message, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
 import LanguageDropdown from '@lib/components/LanguageDropdown'
-import client, { UserAuthenticateForm } from '@lib/client'
+import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
 import * as auth from '@lib/utils/auth'
 import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
@@ -146,28 +146,23 @@ function useSignInSubmit(
   }, [])
 
   const handleSubmit = usePersistFn(async (form) => {
-    setLoading(true)
-    clearErrorMsg()
-
     try {
-      const r = await client.getInstance().userLogin(fnLoginForm(form))
+      clearErrorMsg()
+      setLoading(true)
+      const r = await client.getInstance().userLogin(fnLoginForm(form), {
+        errorStrategy: ErrorStrategy.Custom,
+      })
       auth.setAuthToken(r.data.token)
       message.success(t('signin.message.success'))
       singleSpa.navigateToUrl(successRoute)
     } catch (e) {
-      console.log(e)
       if (!e.handled) {
-        let msg
-        if (e.response.data) {
-          msg = t(e.response.data.code)
-        } else {
-          msg = e.message
-        }
-        setError(t('signin.message.error', { msg }))
+        setError(t('signin.message.error', { msg: e.message }))
         onFailure()
       }
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   })
 
   return { handleSubmit, loading, errorMsg: error, clearErrorMsg }

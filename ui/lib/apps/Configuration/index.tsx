@@ -39,11 +39,6 @@ function Value({ item, onSaved }: IValueProps) {
         })
       }
     } catch (e) {
-      Modal.error({
-        title: 'Edit configuration failed',
-        content: <Pre>{e?.response?.data?.message ?? e.message}</Pre>,
-        zIndex: 2000, // higher than Popover
-      })
       return false
     }
     onSaved?.()
@@ -89,8 +84,8 @@ export default function () {
     isLoading,
     error,
     sendRequest,
-  } = useClientRequest((cancelToken) =>
-    client.getInstance().configurationGetAll({ cancelToken })
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().configurationGetAll(reqConfig)
   )
 
   const { t } = useTranslation()

@@ -95,20 +95,17 @@ function InstanceSelect(
   const {
     data: dataTiDB,
     isLoading: loadingTiDB,
-  } = useClientRequest((cancelToken) =>
-    client.getInstance().getTiDBTopology({ cancelToken })
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getTiDBTopology(reqConfig)
   )
   const {
     data: dataStores,
     isLoading: loadingStores,
-  } = useClientRequest((cancelToken) =>
-    client.getInstance().getStoreTopology({ cancelToken })
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getStoreTopology(reqConfig)
   )
-  const {
-    data: dataPD,
-    isLoading: loadingPD,
-  } = useClientRequest((cancelToken) =>
-    client.getInstance().getPDTopology({ cancelToken })
+  const { data: dataPD, isLoading: loadingPD } = useClientRequest((reqConfig) =>
+    client.getInstance().getPDTopology(reqConfig)
   )
 
   const columns: IColumn[] = useMemo(

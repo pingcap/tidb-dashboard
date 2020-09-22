@@ -25,8 +25,9 @@ export default function Page() {
   const {
     data: historyTable,
     isLoading: listLoading,
-  } = useClientRequest((cancelToken) =>
-    client.getInstance().getProfilingGroups({ cancelToken })
+    error: historyError,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getProfilingGroups(reqConfig)
   )
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -47,7 +48,6 @@ export default function Page() {
         })
         return
       }
-      setSubmitting(true)
       const targets: ModelRequestTargetNode[] = instanceSelect
         .current!.getInstanceByKeys(fieldsValue.instances)
         .map((instance) => {
@@ -74,15 +74,12 @@ export default function Page() {
         duration_secs: fieldsValue.duration,
       }
       try {
+        setSubmitting(true)
         const res = await client.getInstance().startProfiling(req)
         navigate(`/instance_profiling/detail?id=${res.data.id}`)
-      } catch (e) {
-        // FIXME
-        Modal.error({
-          content: e.message,
-        })
+      } finally {
+        setSubmitting(false)
       }
-      setSubmitting(false)
     },
     [navigate]
   )
@@ -204,6 +201,7 @@ export default function Page() {
             loading={listLoading}
             items={historyTable || []}
             columns={historyTableColumns}
+            errors={[historyError]}
             onRowClicked={handleRowClick}
           />
         </ScrollablePane>

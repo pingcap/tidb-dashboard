@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
-import client, { SlowqueryBase } from '@lib/client'
+import client, { ErrorStrategy, SlowqueryBase } from '@lib/client'
 import { calcTimeRange, TimeRange } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
@@ -81,10 +81,12 @@ export default function useSlowQuery(
   useEffect(() => {
     async function querySchemas() {
       try {
-        const res = await client.getInstance().infoListDatabases()
+        const res = await client.getInstance().infoListDatabases({
+          errorStrategy: ErrorStrategy.Custom,
+        })
         setAllSchemas(res?.data || [])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
     }
     querySchemas()
@@ -105,12 +107,15 @@ export default function useSlowQuery(
             queryTimeRange.beginTime,
             orderOptions.orderBy,
             queryOptions.plans,
-            queryOptions.searchText
+            queryOptions.searchText,
+            {
+              errorStrategy: ErrorStrategy.Custom,
+            }
           )
         setSlowQueries(res.data || [])
         setErrors([])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
       setLoadingSlowQueries(false)
     }

@@ -82,7 +82,6 @@ export default function SearchHeader({ taskGroupID }: Props) {
         })
         return
       }
-      setSubmitting(true)
 
       const targets: ModelRequestTargetNode[] = instanceSelect
         .current!.getInstanceByKeys(fieldsValue.instances)
@@ -120,18 +119,15 @@ export default function SearchHeader({ taskGroupID }: Props) {
       }
 
       try {
+        setSubmitting(true)
         const result = await client.getInstance().logsTaskgroupPut(req)
         const id = result?.data?.task_group?.id
-        if (!id) {
-          throw new Error('Invalid server response')
+        if (id) {
+          navigate(`/search_logs/detail?id=${id}`)
         }
-        navigate(`/search_logs/detail?id=${id}`)
-      } catch (e) {
-        Modal.error({
-          content: e.message,
-        })
+      } finally {
+        setSubmitting(false)
       }
-      setSubmitting(false)
     },
     [navigate]
   )

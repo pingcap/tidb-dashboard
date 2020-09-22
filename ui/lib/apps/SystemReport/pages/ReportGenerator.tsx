@@ -1,4 +1,4 @@
-import { Button, Form, Input, InputNumber, message, Select, Switch } from 'antd'
+import { Button, Form, Input, InputNumber, Select, Switch } from 'antd'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -27,17 +27,13 @@ const useFinishHandler = (navigate) => {
       ? compare_start_time + range_duration * 60
       : 0
 
-    try {
-      const res = await client.getInstance().diagnoseReportsPost({
-        start_time,
-        end_time,
-        compare_start_time,
-        compare_end_time,
-      })
-      navigate(`/system_report/detail?id=${res.data}`)
-    } catch (error) {
-      message.error(error.message)
-    }
+    const res = await client.getInstance().diagnoseReportsPost({
+      start_time,
+      end_time,
+      compare_start_time,
+      compare_end_time,
+    })
+    navigate(`/system_report/detail?id=${res.data}`)
   }
 }
 

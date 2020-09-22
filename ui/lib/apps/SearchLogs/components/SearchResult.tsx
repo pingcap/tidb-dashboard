@@ -86,7 +86,8 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
             }
           )
         )
-      } catch (e) {}
+      } finally {
+      }
       setLoading(false)
     }
     if (tasks.length > 0 && taskGroupID !== tasks[0].task_group_id) {

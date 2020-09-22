@@ -110,7 +110,8 @@ const KeyViz = () => {
         setAutoRefreshSeconds(0)
       }
       setConfig(config)
-    } catch (e) {}
+    } finally {
+    }
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -130,7 +131,8 @@ const KeyViz = () => {
         metricType
       )
       setChartState({ heatmapData: data!, metricType })
-    } catch (e) {}
+    } finally {
+    }
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

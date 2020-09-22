@@ -66,7 +66,8 @@ function ShareSessionButton() {
         expire_in_sec: values.expire * 60 * 60,
       })
       setCode(r.data.code)
-    } catch (e) {}
+    } finally {
+    }
     setIsPosting(false)
   }, [])
 

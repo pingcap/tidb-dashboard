@@ -48,7 +48,6 @@ export default function Page() {
         })
         return
       }
-      setSubmitting(true)
       const targets: ModelRequestTargetNode[] = instanceSelect
         .current!.getInstanceByKeys(fieldsValue.instances)
         .map((instance) => {
@@ -74,10 +73,12 @@ export default function Page() {
         targets,
         duration_secs: fieldsValue.duration,
       }
+      setSubmitting(true)
       try {
         const res = await client.getInstance().startProfiling(req)
         navigate(`/instance_profiling/detail?id=${res.data.id}`)
-      } catch (e) {}
+      } finally {
+      }
       setSubmitting(false)
     },
     [navigate]

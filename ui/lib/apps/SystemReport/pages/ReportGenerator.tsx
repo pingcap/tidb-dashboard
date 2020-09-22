@@ -27,15 +27,13 @@ const useFinishHandler = (navigate) => {
       ? compare_start_time + range_duration * 60
       : 0
 
-    try {
-      const res = await client.getInstance().diagnoseReportsPost({
-        start_time,
-        end_time,
-        compare_start_time,
-        compare_end_time,
-      })
-      navigate(`/system_report/detail?id=${res.data}`)
-    } catch (e) {}
+    const res = await client.getInstance().diagnoseReportsPost({
+      start_time,
+      end_time,
+      compare_start_time,
+      compare_end_time,
+    })
+    navigate(`/system_report/detail?id=${res.data}`)
   }
 }
 

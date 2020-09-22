@@ -44,25 +44,28 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
   useEffect(() => {
     async function fetchConfig() {
       setLoading(true)
-      const res = await client.getInstance().statementsConfigGet()
-      if (res?.data) {
-        const oriConfig = res.data
-        setOriConfig(oriConfig)
+      try {
+        const res = await client.getInstance().statementsConfigGet()
+        if (res?.data) {
+          const oriConfig = res.data
+          setOriConfig(oriConfig)
 
-        const refresh_interval = Math.ceil(oriConfig.refresh_interval! / 60)
-        const max_refresh_interval = Math.max(refresh_interval, 60)
-        const keep_duration = Math.ceil(
-          (oriConfig.refresh_interval! * oriConfig.history_size!) /
-            (24 * 60 * 60)
-        )
-        const max_keep_duration = Math.max(keep_duration, 30)
-        setConfig({
-          ...oriConfig,
-          refresh_interval,
-          keep_duration,
-          max_refresh_interval,
-          max_keep_duration,
-        })
+          const refresh_interval = Math.ceil(oriConfig.refresh_interval! / 60)
+          const max_refresh_interval = Math.max(refresh_interval, 60)
+          const keep_duration = Math.ceil(
+            (oriConfig.refresh_interval! * oriConfig.history_size!) /
+              (24 * 60 * 60)
+          )
+          const max_keep_duration = Math.max(keep_duration, 30)
+          setConfig({
+            ...oriConfig,
+            refresh_interval,
+            keep_duration,
+            max_refresh_interval,
+            max_keep_duration,
+          })
+        }
+      } finally {
       }
       setLoading(false)
     }
@@ -70,7 +73,6 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
   }, [])
 
   async function updateConfig(values) {
-    setSubmitting(true)
     const newConfig: StatementConfig = {
       enable: values.enable,
       refresh_interval: values.refresh_interval * 60,
@@ -78,11 +80,13 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         (values.keep_duration * 24 * 60) / values.refresh_interval
       ),
     }
+    setSubmitting(true)
     try {
       await client.getInstance().statementsConfigPost(newConfig)
       onClose()
       onConfigUpdated()
-    } catch (e) {}
+    } finally {
+    }
     setSubmitting(false)
   }
 

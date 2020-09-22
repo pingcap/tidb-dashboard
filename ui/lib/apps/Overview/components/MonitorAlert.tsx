@@ -30,12 +30,10 @@ export default function MonitorAlert() {
       return
     }
     async function fetch() {
-      try {
-        let resp = await client
-          .getInstance()
-          .getAlertManagerCounts(`${amData!.ip}:${amData!.port}`)
-        setAlertCounter(resp.data)
-      } catch (e) {}
+      let resp = await client
+        .getInstance()
+        .getAlertManagerCounts(`${amData!.ip}:${amData!.port}`)
+      setAlertCounter(resp.data)
     }
     fetch()
   }, [amData])

@@ -82,7 +82,6 @@ export default function SearchHeader({ taskGroupID }: Props) {
         })
         return
       }
-      setSubmitting(true)
 
       const targets: ModelRequestTargetNode[] = instanceSelect
         .current!.getInstanceByKeys(fieldsValue.instances)
@@ -119,13 +118,15 @@ export default function SearchHeader({ taskGroupID }: Props) {
         },
       }
 
+      setSubmitting(true)
       try {
         const result = await client.getInstance().logsTaskgroupPut(req)
         const id = result?.data?.task_group?.id
         if (id) {
           navigate(`/search_logs/detail?id=${id}`)
         }
-      } catch (e) {}
+      } finally {
+      }
       setSubmitting(false)
     },
     [navigate]

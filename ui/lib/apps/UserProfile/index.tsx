@@ -26,6 +26,7 @@ import {
   CopyLink,
   TextWithInfo,
   Pre,
+  ErrorBar,
 } from '@lib/components'
 import * as auth from '@lib/utils/auth'
 import { ALL_LANGUAGES } from '@lib/utils/i18n'
@@ -44,8 +45,8 @@ function ShareSessionButton() {
   const [code, setCode] = useState<string | undefined>(undefined)
   const [isCopied, setIsCopied] = useState(false)
 
-  const { data } = useClientRequest((cancelToken) =>
-    client.getInstance().infoWhoami({ cancelToken })
+  const { data } = useClientRequest((reqConfig) =>
+    client.getInstance().infoWhoami(reqConfig)
   )
 
   const handleOpen = useCallback(() => {
@@ -60,17 +61,12 @@ function ShareSessionButton() {
   }, [])
 
   const handleFinish = useCallback(async (values) => {
-    setIsPosting(true)
     try {
+      setIsPosting(true)
       const r = await client.getInstance().userShareSession({
         expire_in_sec: values.expire * 60 * 60,
       })
       setCode(r.data.code)
-    } catch (e) {
-      // TODO: Extract to a common component
-      Modal.error({
-        content: <Pre>{e?.response?.data?.message ?? e.message}</Pre>,
-      })
     } finally {
       setIsPosting(false)
     }
@@ -196,8 +192,8 @@ function App() {
     window.location.reload()
   }, [])
 
-  const { data: info, isLoading } = useClientRequest((cancelToken) =>
-    client.getInstance().infoGet({ cancelToken })
+  const { data: info, isLoading, error } = useClientRequest((reqConfig) =>
+    client.getInstance().infoGet(reqConfig)
   )
 
   return (
@@ -227,6 +223,7 @@ function App() {
       </Card>
       <Card title={t('user_profile.version.title')}>
         <AnimatedSkeleton showSkeleton={isLoading}>
+          {error && <ErrorBar errors={[error]} />}
           {info && (
             <Descriptions>
               <Descriptions.Item

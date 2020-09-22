@@ -12,6 +12,7 @@ import {
   Expand,
   CopyLink,
   AnimatedSkeleton,
+  ErrorBar,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
@@ -35,7 +36,7 @@ export interface IPlanDetailProps {
 
 function PlanDetail({ query }: IPlanDetailProps) {
   const { t } = useTranslation()
-  const { data, isLoading } = useClientRequest((cancelToken) =>
+  const { data, isLoading, error } = useClientRequest((reqConfig) =>
     client
       .getInstance()
       .statementsPlanDetailGet(
@@ -44,7 +45,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
         query.endTime!,
         query.plans,
         query.schema!,
-        { cancelToken }
+        reqConfig
       )
   )
   const { state: sqlExpanded, toggle: toggleSqlExpanded } = useToggle(false)
@@ -69,6 +70,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
       })}
     >
       <AnimatedSkeleton showSkeleton={isLoading}>
+        {error && <ErrorBar errors={[error]} />}
         {data && (
           <>
             <Descriptions>

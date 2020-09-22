@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
   Form,
   InputNumber,
@@ -13,6 +13,8 @@ import {
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import client, { StatementConfig } from '@lib/client'
+import { useClientRequest } from '@lib/utils/useClientRequest'
+import { ErrorBar } from '@lib/components'
 
 interface Props {
   onClose: () => void
@@ -35,42 +37,38 @@ const REFRESH_INTERVAL_MARKS = convertArrToObj([1, 5, 15, 30, 60])
 const KEEP_DURATION_MARKS = convertArrToObj([1, 2, 5, 10, 20, 30])
 
 function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
-  const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [oriConfig, setOriConfig] = useState<StatementConfig | null>(null)
-  const [config, setConfig] = useState<InternalStatementConfig | null>(null)
   const { t } = useTranslation()
 
-  useEffect(() => {
-    async function fetchConfig() {
-      setLoading(true)
-      const res = await client.getInstance().statementsConfigGet()
-      if (res?.data) {
-        const oriConfig = res.data
-        setOriConfig(oriConfig)
+  const {
+    data: oriConfig,
+    isLoading: loading,
+    error,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().statementsConfigGet(reqConfig)
+  )
 
-        const refresh_interval = Math.ceil(oriConfig.refresh_interval! / 60)
-        const max_refresh_interval = Math.max(refresh_interval, 60)
-        const keep_duration = Math.ceil(
-          (oriConfig.refresh_interval! * oriConfig.history_size!) /
-            (24 * 60 * 60)
-        )
-        const max_keep_duration = Math.max(keep_duration, 30)
-        setConfig({
-          ...oriConfig,
-          refresh_interval,
-          keep_duration,
-          max_refresh_interval,
-          max_keep_duration,
-        })
-      }
-      setLoading(false)
+  const config = useMemo(() => {
+    if (oriConfig) {
+      const refresh_interval = Math.ceil(oriConfig.refresh_interval! / 60)
+      const max_refresh_interval = Math.max(refresh_interval, 60)
+      const keep_duration = Math.ceil(
+        (oriConfig.refresh_interval! * oriConfig.history_size!) / (24 * 60 * 60)
+      )
+      const max_keep_duration = Math.max(keep_duration, 30)
+
+      return {
+        ...oriConfig,
+        refresh_interval,
+        keep_duration,
+        max_refresh_interval,
+        max_keep_duration,
+      } as InternalStatementConfig
     }
-    fetchConfig()
-  }, [])
+    return null
+  }, [oriConfig])
 
   async function updateConfig(values) {
-    setSubmitting(true)
     const newConfig: StatementConfig = {
       enable: values.enable,
       refresh_interval: values.refresh_interval * 60,
@@ -78,11 +76,13 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         (values.keep_duration * 24 * 60) / values.refresh_interval
       ),
     }
-    const res = await client.getInstance().statementsConfigPost(newConfig)
-    setSubmitting(false)
-    if (res) {
+    try {
+      setSubmitting(true)
+      await client.getInstance().statementsConfigPost(newConfig)
       onClose()
       onConfigUpdated()
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -105,6 +105,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
 
   return (
     <>
+      {error && <ErrorBar errors={[error]} />}
       {loading && <Skeleton active={true} paragraph={{ rows: 5 }} />}
       {!loading && config && (
         <Form layout="vertical" initialValues={config} onFinish={handleSubmit}>

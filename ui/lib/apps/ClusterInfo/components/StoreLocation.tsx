@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client, { TopologyStoreLocation } from '@lib/client'
-import { ErrorBar, AnimatedSkeleton } from '@lib/components'
+import { AnimatedSkeleton, ErrorBar } from '@lib/components'
 import StoreLocationTree from './StoreLocationTree'
 
 type TreeNode = {
@@ -44,14 +44,14 @@ function buildTreeData(data: TopologyStoreLocation | undefined): TreeNode {
 }
 
 export default function StoreLocation() {
-  const { data, isLoading, error } = useClientRequest((cancelToken) =>
-    client.getInstance().getStoreLocationTopology({ cancelToken })
+  const { data, isLoading, error } = useClientRequest((reqConfig) =>
+    client.getInstance().getStoreLocationTopology(reqConfig)
   )
   const treeData = useMemo(() => buildTreeData(data), [data])
 
   return (
     <div>
-      <ErrorBar errors={[error]}></ErrorBar>
+      <ErrorBar errors={[error]} />
       <AnimatedSkeleton showSkeleton={isLoading}>
         <StoreLocationTree dataSource={treeData} />
       </AnimatedSkeleton>

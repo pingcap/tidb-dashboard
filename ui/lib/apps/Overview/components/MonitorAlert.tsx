@@ -15,14 +15,14 @@ export default function MonitorAlert() {
   const {
     data: amData,
     isLoading: amIsLoading,
-  } = useClientRequest((cancelToken) =>
-    client.getInstance().getAlertManagerTopology({ cancelToken })
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getAlertManagerTopology(reqConfig)
   )
   const {
     data: grafanaData,
     isLoading: grafanaIsLoading,
-  } = useClientRequest((cancelToken) =>
-    client.getInstance().getGrafanaTopology({ cancelToken })
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getGrafanaTopology(reqConfig)
   )
 
   useEffect(() => {

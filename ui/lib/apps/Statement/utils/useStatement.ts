@@ -94,8 +94,8 @@ export default function useStatement(
           errorStrategy: ErrorStrategy.Custom,
         })
         setEnable(res?.data.enable!)
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
     }
 
@@ -105,8 +105,8 @@ export default function useStatement(
           errorStrategy: ErrorStrategy.Custom,
         })
         setAllSchemas(res?.data || [])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
     }
 
@@ -116,8 +116,8 @@ export default function useStatement(
           errorStrategy: ErrorStrategy.Custom,
         })
         setAllTimeRanges(res?.data || [])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
     }
 
@@ -127,8 +127,8 @@ export default function useStatement(
           errorStrategy: ErrorStrategy.Custom,
         })
         setAllStmtTypes(res?.data || [])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
     }
 
@@ -162,8 +162,8 @@ export default function useStatement(
           )
         setStatements(res?.data || [])
         setErrors([])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
       setLoadingStatements(false)
     }

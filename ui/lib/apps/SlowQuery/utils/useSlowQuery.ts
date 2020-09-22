@@ -85,8 +85,8 @@ export default function useSlowQuery(
           errorStrategy: ErrorStrategy.Custom,
         })
         setAllSchemas(res?.data || [])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
     }
     querySchemas()
@@ -114,8 +114,8 @@ export default function useSlowQuery(
           )
         setSlowQueries(res.data || [])
         setErrors([])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
       setLoadingSlowQueries(false)
     }

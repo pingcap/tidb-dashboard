@@ -38,7 +38,7 @@ function App() {
         statements: editor.current?.editor.getValue(),
       })
       setResults(resp.data)
-    } catch (ex) {}
+    } catch (e) {}
     setRunning(false)
     editor.current?.editor.focus()
   }, [])

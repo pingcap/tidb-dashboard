@@ -8,10 +8,9 @@ export interface IErrorBarProps {
 
 export default function ErrorBar({ errors }: IErrorBarProps) {
   // show at most 3 kinds of errors
-  // if error comes from API request, it has msg field that stores the error reason
   const errorMsgs = useMemo(
     () =>
-      _.uniq(_.map(errors, (err) => err?.msg || err?.message || ''))
+      _.uniq(_.map(errors, (err) => err?.message || ''))
         .filter((msg) => msg !== '')
         .slice(0, 3),
     [errors]

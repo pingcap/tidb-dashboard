@@ -59,7 +59,7 @@ function initAxios() {
       }
     }
     const content = i18next.t(errCode)
-    err.msg = content
+    err.message = content
 
     if (errCode === 'error.api.unauthorized') {
       // Handle unauthorized error in a unified way

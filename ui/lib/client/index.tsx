@@ -53,7 +53,10 @@ function initAxios() {
     if (err.message === 'Network Error') {
       errCode = 'error.network'
     } else {
-      errCode = response?.data?.code || err.message || 'error.api.other'
+      errCode = response?.data?.code || 'error.api.other'
+      if (errCode === 'error.api.other') {
+        errCode = response?.data?.message || err.message
+      }
     }
     const content = i18next.t(errCode)
     err.msg = content

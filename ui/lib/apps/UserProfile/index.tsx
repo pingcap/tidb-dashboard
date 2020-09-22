@@ -26,6 +26,7 @@ import {
   CopyLink,
   TextWithInfo,
   Pre,
+  ErrorBar,
 } from '@lib/components'
 import * as auth from '@lib/utils/auth'
 import { ALL_LANGUAGES } from '@lib/utils/i18n'
@@ -191,7 +192,7 @@ function App() {
     window.location.reload()
   }, [])
 
-  const { data: info, isLoading } = useClientRequest((reqConfig) =>
+  const { data: info, isLoading, error } = useClientRequest((reqConfig) =>
     client.getInstance().infoGet(reqConfig)
   )
 
@@ -222,6 +223,7 @@ function App() {
       </Card>
       <Card title={t('user_profile.version.title')}>
         <AnimatedSkeleton showSkeleton={isLoading}>
+          {error && <ErrorBar errors={[error]} />}
           {info && (
             <Descriptions>
               <Descriptions.Item

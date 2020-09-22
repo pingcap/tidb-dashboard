@@ -12,6 +12,8 @@ import {
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import client, { ConfigKeyVisualConfig } from '@lib/client'
+import { useClientRequest } from '@lib/utils/useClientRequest'
+import { ErrorBar } from '@lib/components'
 
 const policyConfigurable = process.env.NODE_ENV === 'development'
 
@@ -60,50 +62,26 @@ function getPolicyOptions(t) {
 }
 
 function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
-  const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [config, setConfig] = useState<ConfigKeyVisualConfig | null>(null)
   const { t } = useTranslation()
 
-  const onFetchServiceStatus = () => {
-    setLoading(true)
-    client
-      .getInstance()
-      .keyvisualConfigGet()
-      .then(
-        (r) => {
-          setConfig({ ...r.data })
-          setLoading(false)
-        },
-        () => {
-          setLoading(false)
-        }
-      )
-  }
+  const {
+    data: config,
+    isLoading: loading,
+    error,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().keyvisualConfigGet(reqConfig)
+  )
 
-  const onSubmitted = () => {
-    client
-      .getInstance()
-      .keyvisualConfigGet()
-      .then(
-        (r) => {
-          setConfig({ ...r.data })
-          setSubmitting(false)
-          onClose()
-          setTimeout(onConfigUpdated, 500)
-        },
-        () => {
-          setSubmitting(false)
-        }
-      )
-  }
-
-  const onUpdateServiceStatus = (values) => {
-    setSubmitting(true)
-    client
-      .getInstance()
-      .keyvisualConfigPut(values)
-      .then(onSubmitted, onSubmitted)
+  const onUpdateServiceStatus = async (values) => {
+    try {
+      setSubmitting(true)
+      await client.getInstance().keyvisualConfigPut(values)
+      onClose()
+      onConfigUpdated()
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const onSubmit = (values) => {
@@ -124,8 +102,6 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
       onUpdateServiceStatus(values)
     }
   }
-
-  useEffect(onFetchServiceStatus, [])
 
   const [form] = Form.useForm()
   const onValuesChange = useCallback(
@@ -148,6 +124,7 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
 
   return (
     <>
+      {error && <ErrorBar errors={[error]} />}
       {loading && <Skeleton active={true} paragraph={{ rows: 5 }} />}
       {!loading && config && (
         <Form

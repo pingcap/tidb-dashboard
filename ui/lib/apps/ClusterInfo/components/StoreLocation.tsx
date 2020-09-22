@@ -51,7 +51,7 @@ export default function StoreLocation() {
 
   return (
     <div>
-      <ErrorBar errors={[error]}></ErrorBar>
+      <ErrorBar errors={[error]} />
       <AnimatedSkeleton showSkeleton={isLoading}>
         <StoreLocationTree dataSource={treeData} />
       </AnimatedSkeleton>

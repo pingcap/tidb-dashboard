@@ -64,8 +64,8 @@ export function doEventsOnYield(generator): Promise<undefined> {
       try {
         let r = g.next()
         if (r.done) resolve()
-      } catch (ex) {
-        reject(ex)
+      } catch (e) {
+        reject(e)
       }
       setTimeout(advance, 0)
     }

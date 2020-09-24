@@ -1,5 +1,4 @@
-import 'dayjs/locale/en'
-import 'dayjs/locale/zh-cn'
+import 'dayjs/locale/zh'
 
 import dayjs from 'dayjs'
 import i18next from 'i18next'
@@ -7,7 +6,6 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
 i18next.on('languageChanged', function (lng) {
-  console.log('Language', lng)
   dayjs.locale(lng.toLowerCase())
 })
 
@@ -46,8 +44,8 @@ i18next
   .use(initReactI18next)
   .init({
     resources: {}, // oh! this line is a big pitfall, we can't remove it, else it will cause strange crash!
-    fallbackLng: 'en',
-    whitelist: ['zh', 'en'],
+    fallbackLng: 'en', // fallbackLng won't change the detected language
+    whitelist: ['zh', 'en'], // whitelist will change the detected lanuage
     interpolation: {
       escapeValue: false,
     },

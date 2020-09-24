@@ -1,5 +1,5 @@
 import React from 'react'
-import { Space, Alert } from 'antd'
+import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useLocation, Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -19,6 +19,7 @@ import {
   CopyLink,
   CardTabs,
   AnimatedSkeleton,
+  ErrorBar,
 } from '@lib/components'
 import TabBasic from './DetailTabBasic'
 import TabTime from './DetailTabTime'
@@ -36,12 +37,15 @@ function DetailPage() {
 
   const { t } = useTranslation()
 
-  const { data, isLoading } = useClientRequest((cancelToken) =>
+  const { data, isLoading, error } = useClientRequest((reqConfig) =>
     client
       .getInstance()
-      .slowQueryDetailGet(query.connectId!, query.digest!, query.timestamp!, {
-        cancelToken,
-      })
+      .slowQueryDetailGet(
+        query.connectId!,
+        query.digest!,
+        query.timestamp!,
+        reqConfig
+      )
   )
 
   const { state: sqlExpanded, toggle: toggleSqlExpanded } = useToggle(false)
@@ -61,7 +65,7 @@ function DetailPage() {
         }
       >
         <AnimatedSkeleton showSkeleton={isLoading}>
-          {!data && <Alert message="Error" type="error" showIcon />}
+          {error && <ErrorBar errors={[error]} />}
           {!!data && (
             <>
               <Descriptions>

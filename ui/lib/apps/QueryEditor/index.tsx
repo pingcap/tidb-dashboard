@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef } from 'react'
 import cx from 'classnames'
 import { Root, Card } from '@lib/components'
 import Split from 'react-split'
-import { Button, Modal, Space, Typography } from 'antd'
+import { Button, Space, Typography } from 'antd'
 import {
   CaretRightOutlined,
   LoadingOutlined,
@@ -30,20 +30,17 @@ function App() {
     (!results.error_msg && (!results.column_names?.length || !results.rows))
 
   const handleRun = useCallback(async () => {
-    setRunning(true)
-    setResults(undefined)
     try {
+      setRunning(true)
+      setResults(undefined)
       const resp = await client.getInstance().queryEditorRun({
         max_rows: MAX_DISPLAY_ROWS,
         statements: editor.current?.editor.getValue(),
       })
       setResults(resp.data)
-    } catch (ex) {
-      Modal.error({
-        content: ex.message,
-      })
+    } finally {
+      setRunning(false)
     }
-    setRunning(false)
     editor.current?.editor.focus()
   }, [])
 

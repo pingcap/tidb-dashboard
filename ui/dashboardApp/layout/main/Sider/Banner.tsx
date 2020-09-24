@@ -55,8 +55,8 @@ export default function ToggleBanner({
     width: collapsed ? collapsedWidth : toggleWidth,
   })
 
-  const { data, isLoading } = useClientRequest((cancelToken) =>
-    client.getInstance().infoGet({ cancelToken })
+  const { data, isLoading } = useClientRequest((reqConfig) =>
+    client.getInstance().infoGet(reqConfig)
   )
 
   const version = useMemo(() => {

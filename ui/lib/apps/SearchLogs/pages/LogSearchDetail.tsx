@@ -37,12 +37,9 @@ export default function LogSearchingDetail() {
   }
 
   const { data } = useClientRequestWithPolling(
-    (cancelToken) =>
-      client.getInstance().logsTaskgroupsIdGet(id, { cancelToken }),
+    (reqConfig) => client.getInstance().logsTaskgroupsIdGet(id, reqConfig),
     {
       shouldPoll: (data) => !isFinished(data),
-      pollingInterval: 1000,
-      immediate: true,
     }
   )
 

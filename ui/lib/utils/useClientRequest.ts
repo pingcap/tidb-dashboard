@@ -1,14 +1,20 @@
 import { useMount, useUnmount, usePersistFn } from '@umijs/hooks'
 import { useState, useRef, useEffect } from 'react'
-import { CancelToken, AxiosPromise, CancelTokenSource } from 'axios'
-import axios from 'axios'
+import axios, { CancelToken, AxiosPromise, CancelTokenSource } from 'axios'
 
-interface RequestFactory<T> {
-  (token: CancelToken): AxiosPromise<T>
+import { ErrorStrategy } from '@lib/client'
+
+export interface ReqConfig {
+  cancelToken: CancelToken
+  errorStrategy: ErrorStrategy
+}
+
+export interface RequestFactory<T> {
+  (reqConfig: ReqConfig): AxiosPromise<T>
 }
 
 interface Options {
-  immediate: boolean
+  immediate?: boolean
   afterRequest?: () => void
   beforeRequest?: () => void
 }
@@ -53,7 +59,11 @@ export function useClientRequest<T>(
     }))
 
     try {
-      const resp = await reqFactory(cancelTokenSource.current.token)
+      const reqConfig: ReqConfig = {
+        cancelToken: cancelTokenSource.current.token,
+        errorStrategy: ErrorStrategy.Custom, // handle the error by component self
+      }
+      const resp = await reqFactory(reqConfig)
       if (mounted.current) {
         setState({
           data: resp.data,
@@ -119,9 +129,11 @@ export function useBatchClientRequest<T>(
 
   const sendRequestEach = async (idx) => {
     try {
-      const resp = await reqFactories[idx](
-        cancelTokenSource.current![idx].token
-      )
+      const reqConfig: ReqConfig = {
+        cancelToken: cancelTokenSource.current![idx].token,
+        errorStrategy: ErrorStrategy.Custom,
+      }
+      const resp = await reqFactories[idx](reqConfig)
       if (mounted.current) {
         setState((s) => {
           s.data[idx] = resp.data
@@ -191,8 +203,8 @@ export function useBatchClientRequest<T>(
 }
 
 interface OptionsWithPolling<T> extends Options {
-  pollingInterval: number
-  shouldPoll: ((data: T) => boolean) | null
+  pollingInterval?: number
+  shouldPoll?: ((data: T) => boolean) | null
 }
 
 export function useClientRequestWithPolling<T = any>(

@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
 
-import client, { StatementModel, StatementTimeRange } from '@lib/client'
+import client, {
+  ErrorStrategy,
+  StatementModel,
+  StatementTimeRange,
+} from '@lib/client'
 import { IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
@@ -91,37 +95,45 @@ export default function useStatement(
   useEffect(() => {
     async function queryStatementStatus() {
       try {
-        const res = await client.getInstance().statementsConfigGet()
+        const res = await client.getInstance().statementsConfigGet({
+          errorStrategy: ErrorStrategy.Custom,
+        })
         setEnable(res?.data.enable!)
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
     }
 
     async function querySchemas() {
       try {
-        const res = await client.getInstance().infoListDatabases()
+        const res = await client.getInstance().infoListDatabases({
+          errorStrategy: ErrorStrategy.Custom,
+        })
         setAllSchemas(res?.data || [])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
     }
 
     async function queryTimeRanges() {
       try {
-        const res = await client.getInstance().statementsTimeRangesGet()
+        const res = await client.getInstance().statementsTimeRangesGet({
+          errorStrategy: ErrorStrategy.Custom,
+        })
         setAllTimeRanges(res?.data || [])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
     }
 
     async function queryStmtTypes() {
       try {
-        const res = await client.getInstance().statementsStmtTypesGet()
+        const res = await client.getInstance().statementsStmtTypesGet({
+          errorStrategy: ErrorStrategy.Custom,
+        })
         setAllStmtTypes(res?.data || [])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
     }
 
@@ -161,12 +173,15 @@ export default function useStatement(
             selectedFields,
             queryOptions.schemas,
             queryOptions.stmtTypes,
-            queryOptions.searchText
+            queryOptions.searchText,
+            {
+              errorStrategy: ErrorStrategy.Custom,
+            }
           )
         setStatements(res?.data || [])
         setErrors([])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => [...prev, { ...e }])
       }
       setLoadingStatements(false)
     }

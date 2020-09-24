@@ -72,7 +72,7 @@ export default function MetricChart({
   const timeParams = useRef(getTimeParams())
 
   const { isLoading, data, error, sendRequest } = useBatchClientRequest(
-    series.map((s) => (cancelToken) =>
+    series.map((s) => (reqConfig) =>
       client
         .getInstance()
         .metricsQueryGet(
@@ -80,9 +80,7 @@ export default function MetricChart({
           s.query,
           timeParams.current.beginTimeSec,
           30,
-          {
-            cancelToken,
-          }
+          reqConfig
         )
     )
   )

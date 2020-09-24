@@ -2,12 +2,10 @@ import React, { useEffect } from 'react'
 import { addDecorator } from '@storybook/react'
 import { Root } from '@lib/components'
 import client from '@lib/client'
-import * as apiClient from '@lib/utils/apiClient'
 import * as auth from '@lib/utils/auth'
 
 function StoryRoot({ children }) {
   useEffect(() => {
-    apiClient.init()
     client
       .getInstance()
       .userLogin({

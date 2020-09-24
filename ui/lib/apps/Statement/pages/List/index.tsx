@@ -12,7 +12,7 @@ import { Card, ColumnsSelector, Toolbar, MultiSelect } from '@lib/components'
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
-import useStatement from '../../utils/useStatement'
+import useStatementTableController from '../../utils/useStatementTableController'
 import { DEF_STMT_COLUMN_KEYS } from '../../utils/tableColumns'
 
 const { Search } = Input
@@ -51,7 +51,7 @@ export default function StatementsOverview() {
     errors,
 
     tableColumns,
-  } = useStatement(visibleColumnKeys, showFullSQL)
+  } = useStatementTableController(visibleColumnKeys, showFullSQL)
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>

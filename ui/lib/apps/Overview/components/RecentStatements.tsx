@@ -3,7 +3,10 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
-import { StatementsTable, useStatement } from '@lib/apps/Statement'
+import {
+  StatementsTable,
+  useStatementTableController,
+} from '@lib/apps/Statement'
 import { DateTime, IColumnKeys } from '@lib/components'
 
 const visibleColumnKeys: IColumnKeys = {
@@ -27,7 +30,7 @@ export default function RecentStatements() {
     errors,
 
     tableColumns,
-  } = useStatement(visibleColumnKeys, false, undefined, false)
+  } = useStatementTableController(visibleColumnKeys, false, undefined, false)
 
   return (
     <StatementsTable

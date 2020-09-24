@@ -38,7 +38,7 @@ export const DEF_STMT_QUERY_OPTIONS: IStatementQueryOptions = {
   searchText: '',
 }
 
-export default function useStatement(
+export default function useStatementTableController(
   visibleColumnKeys: IColumnKeys,
   showFullSQL: boolean,
   options?: IStatementQueryOptions,

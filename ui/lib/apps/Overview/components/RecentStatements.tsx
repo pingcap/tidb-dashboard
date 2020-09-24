@@ -18,33 +18,21 @@ const visibleColumnKeys: IColumnKeys = {
 
 export default function RecentStatements() {
   const { t } = useTranslation()
+  const controller = useStatementTableController(
+    visibleColumnKeys,
+    false,
+    undefined,
+    false
+  )
   const {
-    orderOptions,
-    changeOrder,
-
     allTimeRanges,
-    validTimeRange,
-    loadingStatements,
-    statements,
-
-    errors,
-
-    tableColumns,
-  } = useStatementTableController(visibleColumnKeys, false, undefined, false)
+    validTimeRange: { begin_time, end_time },
+  } = controller
 
   return (
     <StatementsTable
-      key={`statement_${statements.length}`}
-      visibleColumnKeys={visibleColumnKeys}
       visibleItemsCount={10}
-      loading={loadingStatements}
-      statements={statements}
-      columns={tableColumns}
-      timeRange={validTimeRange}
-      orderBy={orderOptions.orderBy}
-      desc={orderOptions.desc}
-      onChangeOrder={changeOrder}
-      errors={errors}
+      controller={controller}
       title={
         <Link to="/statement">
           {t('overview.top_statements.title')} <RightOutlined />
@@ -53,13 +41,8 @@ export default function RecentStatements() {
       subTitle={
         allTimeRanges.length > 0 && (
           <span>
-            <DateTime.Calendar
-              unixTimestampMs={(validTimeRange.begin_time ?? 0) * 1000}
-            />{' '}
-            ~{' '}
-            <DateTime.Calendar
-              unixTimestampMs={(validTimeRange.end_time ?? 0) * 1000}
-            />
+            <DateTime.Calendar unixTimestampMs={(begin_time ?? 0) * 1000} /> ~{' '}
+            <DateTime.Calendar unixTimestampMs={(end_time ?? 0) * 1000} />
           </span>
         )
       }

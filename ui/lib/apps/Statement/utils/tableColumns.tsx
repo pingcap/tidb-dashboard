@@ -8,7 +8,7 @@ import React from 'react'
 import { orange, red } from '@ant-design/colors'
 
 import { StatementModel } from '@lib/client'
-import { Bar, Pre, IColumnKeys } from '@lib/components'
+import { Bar, Pre } from '@lib/components'
 import {
   TableColumnFactory,
   formatVal,
@@ -432,15 +432,4 @@ export function planColumns(rows: StatementModel[]): IColumn[] {
     tcf.bar.single('exec_count', 'short', rows),
     avgMaxMemColumn(tcf, rows),
   ]
-}
-
-////////////////////////////////////////////////
-
-export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
-  digest_text: true,
-  sum_latency: true,
-  avg_latency: true,
-  exec_count: true,
-  plan_count: true,
-  related_schemas: true,
 }

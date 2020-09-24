@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
 import client, { ErrorStrategy, SlowquerySlowQuery } from '@lib/client'
 import { calcTimeRange, TimeRange, IColumnKeys } from '@lib/components'
@@ -7,7 +8,6 @@ import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 import { slowQueryColumns } from './tableColumns'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
 export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
   query: true,
@@ -45,7 +45,7 @@ export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
 
 export interface ISlowQueryTableController {
   queryOptions: ISlowQueryOptions
-  setQueryOptions: (ISlowQueryOptions) => void
+  setQueryOptions: (options: ISlowQueryOptions) => void
   orderOptions: IOrderOptions
   changeOrder: (orderBy: string, desc: boolean) => void
   refresh: () => void

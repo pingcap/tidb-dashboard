@@ -13,8 +13,17 @@ interface Props extends Partial<ICardTableProps> {
 }
 
 function SlowQueriesTable({ controller, ...restProps }: Props) {
-  const navigate = useNavigate()
+  const {
+    loadingSlowQueries,
+    tableColumns,
+    slowQueries,
+    orderOptions: { orderBy, desc },
+    changeOrder,
+    errors,
+    visibleColumnKeys,
+  } = controller
 
+  const navigate = useNavigate()
   const handleRowClick = usePersistFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
       const qs = DetailPage.buildQuery({
@@ -27,16 +36,6 @@ function SlowQueriesTable({ controller, ...restProps }: Props) {
   )
 
   const getKey = useCallback((row) => `${row.digest}_${row.timestamp}`, [])
-
-  const {
-    loadingSlowQueries,
-    tableColumns,
-    slowQueries,
-    orderOptions: { orderBy, desc },
-    changeOrder,
-    errors,
-    visibleColumnKeys,
-  } = controller
 
   return (
     <CardTable

@@ -8,12 +8,15 @@ import {
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useTranslation } from 'react-i18next'
+
 import { Card, ColumnsSelector, Toolbar, MultiSelect } from '@lib/components'
+
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
 import TimeRangeSelector from './TimeRangeSelector'
-import useStatementTableController from '../../utils/useStatementTableController'
-import { DEF_STMT_COLUMN_KEYS } from '../../utils/tableColumns'
+import useStatementTableController, {
+  DEF_STMT_COLUMN_KEYS,
+} from '../../utils/useStatementTableController'
 
 const { Search } = Input
 
@@ -33,25 +36,18 @@ export default function StatementsOverview() {
     false
   )
 
+  const controller = useStatementTableController(visibleColumnKeys, showFullSQL)
   const {
     queryOptions,
     setQueryOptions,
-    orderOptions,
-    changeOrder,
     refresh,
-
     enable,
     allTimeRanges,
     allSchemas,
     allStmtTypes,
-    validTimeRange,
     loadingStatements,
-    statements,
-
-    errors,
-
     tableColumns,
-  } = useStatementTableController(visibleColumnKeys, showFullSQL)
+  } = controller
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -148,18 +144,7 @@ export default function StatementsOverview() {
       {enable ? (
         <div style={{ height: '100%', position: 'relative' }}>
           <ScrollablePane>
-            <StatementsTable
-              cardNoMarginTop
-              loading={loadingStatements}
-              errors={errors}
-              statements={statements}
-              columns={tableColumns}
-              timeRange={validTimeRange}
-              orderBy={orderOptions.orderBy}
-              desc={orderOptions.desc}
-              visibleColumnKeys={visibleColumnKeys}
-              onChangeOrder={changeOrder}
-            />
+            <StatementsTable cardNoMarginTop controller={controller} />
           </ScrollablePane>
         </div>
       ) : (

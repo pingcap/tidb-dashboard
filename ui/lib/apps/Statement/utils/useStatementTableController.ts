@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
 import client, {
   ErrorStrategy,
@@ -16,6 +17,15 @@ import {
 } from '../pages/List/TimeRangeSelector'
 import { statementColumns } from './tableColumns'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
+
+export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
+  digest_text: true,
+  sum_latency: true,
+  avg_latency: true,
+  exec_count: true,
+  plan_count: true,
+  related_schemas: true,
+}
 
 const QUERY_OPTIONS = 'statement.query_options'
 
@@ -38,12 +48,33 @@ export const DEF_STMT_QUERY_OPTIONS: IStatementQueryOptions = {
   searchText: '',
 }
 
+export interface IStatementTableController {
+  queryOptions: IStatementQueryOptions
+  setQueryOptions: (options: IStatementQueryOptions) => void
+  orderOptions: IOrderOptions
+  changeOrder: (orderBy: string, desc: boolean) => void
+  refresh: () => void
+
+  enable: boolean
+  allTimeRanges: StatementTimeRange[]
+  allSchemas: string[]
+  allStmtTypes: string[]
+  validTimeRange: StatementTimeRange
+  loadingStatements: boolean
+  statements: StatementModel[]
+
+  errors: Error[]
+
+  tableColumns: IColumn[]
+  visibleColumnKeys: IColumnKeys
+}
+
 export default function useStatementTableController(
   visibleColumnKeys: IColumnKeys,
   showFullSQL: boolean,
   options?: IStatementQueryOptions,
   needSave: boolean = true
-) {
+): IStatementTableController {
   const { orderOptions, changeOrder } = useOrderState(
     'statement',
     needSave,
@@ -207,5 +238,6 @@ export default function useStatementTableController(
     errors,
 
     tableColumns,
+    visibleColumnKeys,
   }
 }

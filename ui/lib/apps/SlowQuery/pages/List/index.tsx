@@ -12,6 +12,7 @@ import {
   Toolbar,
   MultiSelect,
 } from '@lib/components'
+
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQueryTableController, {
   DEF_SLOW_QUERY_COLUMN_KEYS,

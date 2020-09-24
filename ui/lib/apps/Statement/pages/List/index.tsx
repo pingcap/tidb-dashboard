@@ -113,7 +113,7 @@ export default function StatementsOverview() {
               <ColumnsSelector
                 columns={tableColumns}
                 visibleColumnKeys={visibleColumnKeys}
-                resetColumnKeys={DEF_STMT_COLUMN_KEYS}
+                defaultColumnKeys={DEF_STMT_COLUMN_KEYS}
                 onChange={setVisibleColumnKeys}
                 foot={
                   <Checkbox

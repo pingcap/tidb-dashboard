@@ -35,7 +35,7 @@ export interface IColumnKeys {
 export interface IColumnsSelectorProps {
   columns: IColumn[]
   visibleColumnKeys?: IColumnKeys
-  resetColumnKeys?: IColumnKeys
+  defaultColumnKeys?: IColumnKeys
   onChange?: (visibleKeys: IColumnKeys) => void
   foot?: ReactNode
 }
@@ -43,7 +43,7 @@ export interface IColumnsSelectorProps {
 export default function ColumnsSelector({
   columns,
   visibleColumnKeys,
-  resetColumnKeys,
+  defaultColumnKeys,
   onChange,
   foot,
 }: IColumnsSelectorProps) {
@@ -107,10 +107,10 @@ export default function ColumnsSelector({
       >
         {t('component.columnsSelector.select')}
       </Checkbox>
-      {resetColumnKeys && (
+      {defaultColumnKeys && (
         <Button
           type="link"
-          onClick={() => onChange && onChange(resetColumnKeys)}
+          onClick={() => onChange && onChange(defaultColumnKeys)}
         >
           {t('component.columnsSelector.reset')}
         </Button>

@@ -7,41 +7,25 @@ import { DateTime } from '@lib/components'
 import {
   SlowQueriesTable,
   useSlowQueryTableController,
+  DEF_SLOW_QUERY_COLUMN_KEYS,
+  DEF_SLOW_QUERY_OPTIONS,
 } from '@lib/apps/SlowQuery'
-import { DEF_SLOW_QUERY_OPTIONS } from '@lib/apps/SlowQuery/utils/useSlowQueryTableController'
-import { DEF_SLOW_QUERY_COLUMN_KEYS } from '@lib/apps/SlowQuery/utils/tableColumns'
 
 export default function RecentSlowQueries() {
   const { t } = useTranslation()
-  const {
-    orderOptions,
-    changeOrder,
-
-    loadingSlowQueries,
-    slowQueries,
-    queryTimeRange,
-
-    errors,
-
-    tableColumns,
-  } = useSlowQueryTableController(
+  const controller = useSlowQueryTableController(
     DEF_SLOW_QUERY_COLUMN_KEYS,
     false,
     { ...DEF_SLOW_QUERY_OPTIONS, limit: 10 },
     false
   )
+  const {
+    queryTimeRange: { beginTime, endTime },
+  } = controller
 
   return (
     <SlowQueriesTable
-      key={`slow_query_${slowQueries.length}`}
-      visibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
-      loading={loadingSlowQueries}
-      slowQueries={slowQueries}
-      columns={tableColumns}
-      orderBy={orderOptions.orderBy}
-      desc={orderOptions.desc}
-      onChangeOrder={changeOrder}
-      errors={errors}
+      controller={controller}
       title={
         <Link to="/slow_query">
           {t('overview.recent_slow_query.title')} <RightOutlined />
@@ -49,11 +33,8 @@ export default function RecentSlowQueries() {
       }
       subTitle={
         <span>
-          <DateTime.Calendar
-            unixTimestampMs={queryTimeRange.beginTime * 1000}
-          />{' '}
-          ~{' '}
-          <DateTime.Calendar unixTimestampMs={queryTimeRange.endTime * 1000} />
+          <DateTime.Calendar unixTimestampMs={beginTime * 1000} /> ~{' '}
+          <DateTime.Calendar unixTimestampMs={endTime * 1000} />
         </span>
       }
     />

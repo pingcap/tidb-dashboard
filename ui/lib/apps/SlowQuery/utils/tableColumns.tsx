@@ -4,7 +4,6 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { SlowquerySlowQuery } from '@lib/client'
-import { IColumnKeys } from '@lib/components'
 import { TableColumnFactory } from '@lib/utils/tableColumnFactory'
 
 //////////////////////////////////////////
@@ -125,13 +124,4 @@ export function slowQueryColumns(
     tcf.textWithTooltip('cop_proc_addr'),
     tcf.textWithTooltip('cop_wait_addr'),
   ]
-}
-
-//////////////////////////////////////////
-
-export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
-  query: true,
-  timestamp: true,
-  query_time: true,
-  memory_max: true,
 }

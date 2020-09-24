@@ -13,8 +13,9 @@ import {
   MultiSelect,
 } from '@lib/components'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
-import useSlowQueryTableController from '../../utils/useSlowQueryTableController'
-import { DEF_SLOW_QUERY_COLUMN_KEYS } from '../../utils/tableColumns'
+import useSlowQueryTableController, {
+  DEF_SLOW_QUERY_COLUMN_KEYS,
+} from '../../utils/useSlowQueryTableController'
 
 const { Option } = Select
 const { Search } = Input
@@ -35,21 +36,15 @@ function List() {
     false
   )
 
+  const controller = useSlowQueryTableController(visibleColumnKeys, showFullSQL)
   const {
     queryOptions,
     setQueryOptions,
-    orderOptions,
-    changeOrder,
     refresh,
-
     allSchemas,
     loadingSlowQueries,
-    slowQueries,
-
-    errors,
-
     tableColumns,
-  } = useSlowQueryTableController(visibleColumnKeys, showFullSQL)
+  } = controller
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -59,7 +54,10 @@ function List() {
             <TimeRangeSelector
               value={queryOptions.timeRange}
               onChange={(timeRange) =>
-                setQueryOptions({ ...queryOptions, timeRange })
+                setQueryOptions({
+                  ...queryOptions,
+                  timeRange,
+                })
               }
             />
             <MultiSelect.Plain
@@ -131,17 +129,7 @@ function List() {
 
       <div style={{ height: '100%', position: 'relative' }}>
         <ScrollablePane>
-          <SlowQueriesTable
-            cardNoMarginTop
-            loading={loadingSlowQueries}
-            errors={errors}
-            slowQueries={slowQueries}
-            columns={tableColumns}
-            orderBy={orderOptions.orderBy}
-            desc={orderOptions.desc}
-            visibleColumnKeys={visibleColumnKeys}
-            onChangeOrder={changeOrder}
-          />
+          <SlowQueriesTable cardNoMarginTop controller={controller} />
         </ScrollablePane>
       </div>
     </div>

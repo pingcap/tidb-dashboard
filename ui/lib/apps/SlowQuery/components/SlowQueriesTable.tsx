@@ -1,26 +1,18 @@
 import { usePersistFn } from '@umijs/hooks'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { SlowquerySlowQuery } from '@lib/client'
 import { CardTable, ICardTableProps } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 
 import DetailPage from '../pages/Detail'
+import { ISlowQueryTableController } from '../utils/useSlowQueryTableController'
 
 interface Props extends Partial<ICardTableProps> {
-  loading: boolean
-  slowQueries: SlowquerySlowQuery[]
-  columns: IColumn[]
+  controller: ISlowQueryTableController
 }
 
-function SlowQueriesTable({
-  loading,
-  slowQueries,
-  columns,
-  ...restProps
-}: Props) {
+function SlowQueriesTable({ controller, ...restProps }: Props) {
   const navigate = useNavigate()
 
   const handleRowClick = usePersistFn(
@@ -36,12 +28,27 @@ function SlowQueriesTable({
 
   const getKey = useCallback((row) => `${row.digest}_${row.timestamp}`, [])
 
+  const {
+    loadingSlowQueries,
+    tableColumns,
+    slowQueries,
+    orderOptions: { orderBy, desc },
+    changeOrder,
+    errors,
+    visibleColumnKeys,
+  } = controller
+
   return (
     <CardTable
       {...restProps}
-      loading={loading}
-      columns={columns}
+      loading={loadingSlowQueries}
+      columns={tableColumns}
       items={slowQueries}
+      orderBy={orderBy}
+      desc={desc}
+      onChangeOrder={changeOrder}
+      errors={errors}
+      visibleColumnKeys={visibleColumnKeys}
       onRowClicked={handleRowClick}
       getKey={getKey}
     />

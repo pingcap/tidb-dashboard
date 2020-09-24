@@ -9,6 +9,13 @@ import { slowQueryColumns } from './tableColumns'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
+export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
+  query: true,
+  timestamp: true,
+  query_time: true,
+  memory_max: true,
+}
+
 const QUERY_OPTIONS = 'slow_query.query_options'
 
 const DEF_ORDER_OPTIONS: IOrderOptions = {
@@ -51,6 +58,7 @@ export interface ISlowQueryTableController {
   errors: Error[]
 
   tableColumns: IColumn[]
+  visibleColumnKeys: IColumnKeys
 }
 
 export default function useSlowQueryTableController(
@@ -174,5 +182,6 @@ export default function useSlowQueryTableController(
     errors,
 
     tableColumns,
+    visibleColumnKeys,
   }
 }

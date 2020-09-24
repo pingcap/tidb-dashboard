@@ -103,7 +103,7 @@ function List() {
               <ColumnsSelector
                 columns={tableColumns}
                 visibleColumnKeys={visibleColumnKeys}
-                defaultColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
+                defaultVisibleColumnKeys={DEF_SLOW_QUERY_COLUMN_KEYS}
                 onChange={setVisibleColumnKeys}
                 foot={
                   <Checkbox

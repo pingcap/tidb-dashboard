@@ -115,21 +115,23 @@ func getRefColumns(jsonFields ...string) ([]string, error) {
 	}
 	ret := make([]string, 0, len(jsonFields))
 	for _, fieldName := range jsonFields {
-		if field, ok := fields[strings.ToLower(fieldName)]; ok {
-			if proj, ok := field.Tag.Lookup("proj"); ok {
-				ret = append(ret, fmt.Sprintf("%s AS %s", proj, gorm.ToColumnName(field.Name)))
-			} else if s, ok := field.Tag.Lookup("gorm"); ok {
-				list := strings.Split(s, ":")
-				if len(list) == 2 && list[0] == "column" {
-					ret = append(ret, list[1])
-				} else {
-					return nil, fmt.Errorf("unknown gorm tag field: %s", s)
-				}
-			} else {
-				return nil, fmt.Errorf("field %s cannot find ref column", fieldName)
-			}
-		} else {
+		field, ok := fields[strings.ToLower(fieldName)]
+		if !ok {
 			return nil, fmt.Errorf("unknown field %s", fieldName)
+		}
+		s, ok := field.Tag.Lookup("gorm")
+		if !ok {
+			return nil, fmt.Errorf("field %s cannot find ref column", fieldName)
+		}
+		list := strings.Split(s, ":")
+		if len(list) != 2 || list[0] != "column" {
+			return nil, fmt.Errorf("unknown gorm tag field: %s", s)
+		}
+		sourceField := list[1]
+		if proj, ok := field.Tag.Lookup("proj"); ok {
+			ret = append(ret, fmt.Sprintf("%s AS %s", proj, sourceField))
+		} else {
+			ret = append(ret, sourceField)
 		}
 	}
 	return ret, nil

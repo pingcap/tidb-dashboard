@@ -119,15 +119,10 @@ func getRefColumns(jsonFields ...string) ([]string, error) {
 		if !ok {
 			return nil, fmt.Errorf("unknown field %s", fieldName)
 		}
-		s, ok := field.Tag.Lookup("gorm")
-		if !ok {
-			return nil, fmt.Errorf("field %s cannot find ref column", fieldName)
-		}
-		list := strings.Split(s, ":")
-		if len(list) != 2 || list[0] != "column" {
-			return nil, fmt.Errorf("unknown gorm tag field: %s", s)
-		}
-		sourceField := list[1]
+		// ignore to check error because the field is defined by ourself
+		// we can confirm that it has "gorm" tag and fixed structure
+		s, _ := field.Tag.Lookup("gorm")
+		sourceField := strings.Split(s, ":")[1]
 		if proj, ok := field.Tag.Lookup("proj"); ok {
 			ret = append(ret, fmt.Sprintf("%s AS %s", proj, sourceField))
 		} else {

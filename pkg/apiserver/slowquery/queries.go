@@ -105,7 +105,7 @@ type GetListRequest struct {
 	Fields string `json:"fields" form:"fields"` // example: "Query,Digest"
 }
 
-func getRefColumns(jsonFields ...string) ([]string, error) {
+func getProjectionsByFields(jsonFields ...string) ([]string, error) {
 	fields := make(map[string]*reflect.StructField)
 	t := reflect.TypeOf(SlowQuery{})
 	fieldsNum := t.NumField()
@@ -144,14 +144,14 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		sqlFields = append(sqlFields, strings.Split(req.Fields, ",")...)
 		sqlFields = funk.UniqString(sqlFields)
 	}
-	refColumns, err := getRefColumns(sqlFields...)
+	projections, err := getProjectionsByFields(sqlFields...)
 	if err != nil {
 		return nil, err
 	}
 
 	tx := db.
 		Table(SlowQueryTable).
-		Select(strings.Join(refColumns, ", ")).
+		Select(strings.Join(projections, ", ")).
 		Where("Time between from_unixtime(?) and from_unixtime(?)", req.LogStartTS, req.LogEndTS).
 		Limit(req.Limit)
 
@@ -173,7 +173,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		tx = tx.Where("DB IN (?)", req.DB)
 	}
 
-	order, err := getRefColumns(req.OrderBy)
+	order, err := getProjectionsByFields(req.OrderBy)
 	if err != nil {
 		return nil, err
 	}

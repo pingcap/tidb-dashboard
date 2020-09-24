@@ -139,9 +139,9 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	fileds := []string{}
+	fields := []string{}
 	if strings.TrimSpace(req.Fields) != "" {
-		fileds = strings.Split(req.Fields, ",")
+		fields = strings.Split(req.Fields, ",")
 	}
 	overviews, err := QueryStatementsOverview(
 		db,
@@ -149,7 +149,7 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 		req.Schemas,
 		req.StmtTypes,
 		req.Text,
-		fileds)
+		fields)
 	if err != nil {
 		_ = c.Error(err)
 		return

@@ -7,6 +7,7 @@ import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 import { slowQueryColumns } from './tableColumns'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
 const QUERY_OPTIONS = 'slow_query.query_options'
 
@@ -35,12 +36,29 @@ export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
   plans: [],
 }
 
-export default function useSlowQuery(
+export interface ISlowQueryTableController {
+  queryOptions: ISlowQueryOptions
+  setQueryOptions: (ISlowQueryOptions) => void
+  orderOptions: IOrderOptions
+  changeOrder: (orderBy: string, desc: boolean) => void
+  refresh: () => void
+
+  allSchemas: string[]
+  loadingSlowQueries: boolean
+  slowQueries: SlowquerySlowQuery[]
+  queryTimeRange: { beginTime: number; endTime: number }
+
+  errors: Error[]
+
+  tableColumns: IColumn[]
+}
+
+export default function useSlowQueryTableController(
   visibleColumnKeys: IColumnKeys,
   showFullSQL: boolean,
   options?: ISlowQueryOptions,
   needSave: boolean = true
-) {
+): ISlowQueryTableController {
   const { orderOptions, changeOrder } = useOrderState(
     'slow_query',
     needSave,
@@ -76,7 +94,7 @@ export default function useSlowQuery(
     }
   }
 
-  const [errors, setErrors] = useState<any[]>([])
+  const [errors, setErrors] = useState<Error[]>([])
 
   function refresh() {
     setErrors([])

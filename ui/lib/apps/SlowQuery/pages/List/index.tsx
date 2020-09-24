@@ -13,7 +13,7 @@ import {
   MultiSelect,
 } from '@lib/components'
 import SlowQueriesTable from '../../components/SlowQueriesTable'
-import useSlowQuery from '../../utils/useSlowQuery'
+import useSlowQueryTableController from '../../utils/useSlowQueryTableController'
 import { DEF_SLOW_QUERY_COLUMN_KEYS } from '../../utils/tableColumns'
 
 const { Option } = Select
@@ -49,7 +49,7 @@ function List() {
     errors,
 
     tableColumns,
-  } = useSlowQuery(visibleColumnKeys, showFullSQL)
+  } = useSlowQueryTableController(visibleColumnKeys, showFullSQL)
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>

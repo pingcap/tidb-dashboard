@@ -4,8 +4,11 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { DateTime } from '@lib/components'
-import { SlowQueriesTable, useSlowQuery } from '@lib/apps/SlowQuery'
-import { DEF_SLOW_QUERY_OPTIONS } from '@lib/apps/SlowQuery/utils/useSlowQuery'
+import {
+  SlowQueriesTable,
+  useSlowQueryTableController,
+} from '@lib/apps/SlowQuery'
+import { DEF_SLOW_QUERY_OPTIONS } from '@lib/apps/SlowQuery/utils/useSlowQueryTableController'
 import { DEF_SLOW_QUERY_COLUMN_KEYS } from '@lib/apps/SlowQuery/utils/tableColumns'
 
 export default function RecentSlowQueries() {
@@ -21,7 +24,7 @@ export default function RecentSlowQueries() {
     errors,
 
     tableColumns,
-  } = useSlowQuery(
+  } = useSlowQueryTableController(
     DEF_SLOW_QUERY_COLUMN_KEYS,
     false,
     { ...DEF_SLOW_QUERY_OPTIONS, limit: 10 },

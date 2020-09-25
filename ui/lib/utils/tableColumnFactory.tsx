@@ -23,8 +23,8 @@ type BarsConfig = {
   bars: [Bar, Bar, Bar?] // [avg, max, min?]
 }
 
-export type IExtendColumn = IColumn & {
-  refFields?: string[]
+export type IColumnWithSourceFields = IColumn & {
+  sourceFields?: string[]
 }
 
 function capitalize(s: string) {
@@ -54,11 +54,17 @@ export class TableColumnFactory {
     return commonColumnName(this.transPrefix, fieldName)
   }
 
-  textWithTooltip(fieldName: string): IExtendColumn {
+  columnFromField(fieldName: string) {
     return {
       name: this.columnName(fieldName),
       key: fieldName,
       fieldName: fieldName,
+    }
+  }
+
+  textWithTooltip(fieldName: string): IColumnWithSourceFields {
+    return {
+      ...this.columnFromField(fieldName),
       minWidth: 100,
       maxWidth: 150,
       onRender: (rec) => (
@@ -69,12 +75,14 @@ export class TableColumnFactory {
     }
   }
 
-  singleBar(fieldName: string, unit: string, rows?: any[]): IExtendColumn {
+  singleBar(
+    fieldName: string,
+    unit: string,
+    rows?: any[]
+  ): IColumnWithSourceFields {
     const capacity = rows ? _max(rows.map((v) => v[fieldName])) ?? 0 : 0
     return {
-      name: this.columnName(fieldName),
-      key: fieldName,
-      fieldName: fieldName,
+      ...this.columnFromField(fieldName),
       minWidth: 140,
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
@@ -93,7 +101,7 @@ export class TableColumnFactory {
     barsConfig: BarsConfig,
     unit: string,
     rows?: any[]
-  ): IExtendColumn {
+  ): IColumnWithSourceFields {
     const {
       displayTransKey,
       bars: [avg_, max_, min_],
@@ -128,10 +136,9 @@ export class TableColumnFactory {
       refFields.push(min.fieldName)
     }
     return {
+      ...this.columnFromField(avg.fieldName),
       name: this.columnName(displayTransKey || avg.fieldName),
-      key: avg.fieldName,
-      fieldName: avg.fieldName,
-      refFields,
+      sourceFields: refFields,
       minWidth: 140,
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
@@ -166,11 +173,9 @@ export class TableColumnFactory {
     }
   }
 
-  timestamp(fieldName: string): IExtendColumn {
+  timestamp(fieldName: string): IColumnWithSourceFields {
     return {
-      name: this.columnName(fieldName),
-      key: fieldName,
-      fieldName: fieldName,
+      ...this.columnFromField(fieldName),
       minWidth: 100,
       maxWidth: 150,
       columnActionsMode: ColumnActionsMode.clickable,
@@ -182,11 +187,9 @@ export class TableColumnFactory {
     }
   }
 
-  sqlText(fieldName: string, showFullSQL?: boolean): IExtendColumn {
+  sqlText(fieldName: string, showFullSQL?: boolean): IColumnWithSourceFields {
     return {
-      name: this.columnName(fieldName),
-      key: fieldName,
-      fieldName: fieldName,
+      ...this.columnFromField(fieldName),
       minWidth: 100,
       maxWidth: 500,
       isMultiline: showFullSQL,
@@ -225,13 +228,13 @@ export class BarColumn {
 
 export function getSelectedFields(
   visibleColumnKeys: IColumnKeys,
-  columns: IExtendColumn[]
+  columns: IColumnWithSourceFields[]
 ) {
   let fields: string[] = []
   columns.forEach((c) => {
     if (visibleColumnKeys[c.key] === true) {
-      if (c.refFields !== undefined) {
-        fields = fields.concat(c.refFields)
+      if (c.sourceFields !== undefined) {
+        fields = fields.concat(c.sourceFields)
       } else {
         fields.push(c.key)
       }

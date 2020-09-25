@@ -12,7 +12,7 @@ import { Bar, Pre } from '@lib/components'
 import {
   TableColumnFactory,
   formatVal,
-  IExtendColumn,
+  IColumnWithSourceFields,
 } from '@lib/utils/tableColumnFactory'
 
 ///////////////////////////////////////
@@ -61,7 +61,7 @@ function avgMaxMemColumn(
 function errorsWarningsColumn(
   tcf: TableColumnFactory,
   rows?: { sum_errors?: number; sum_warnings?: number }[]
-): IExtendColumn {
+): IColumnWithSourceFields {
   const capacity = rows
     ? max(rows.map((v) => v.sum_errors! + v.sum_warnings!)) ?? 0
     : 0
@@ -70,7 +70,7 @@ function errorsWarningsColumn(
     name: tcf.columnName('errors_warnings'),
     key,
     fieldName: key,
-    refFields: ['sum_errors', 'sum_warnings'],
+    sourceFields: ['sum_errors', 'sum_warnings'],
     minWidth: 140,
     maxWidth: 200,
     columnActionsMode: ColumnActionsMode.clickable,
@@ -358,7 +358,7 @@ function avgMaxColumn(
 export function statementColumns(
   rows: StatementModel[],
   showFullSQL?: boolean
-): IExtendColumn[] {
+): IColumnWithSourceFields[] {
   const tcf = new TableColumnFactory(TRANS_KEY_PREFIX)
 
   return [
@@ -412,7 +412,7 @@ export function statementColumns(
       ...tcf.textWithTooltip('related_schemas'),
       minWidth: 160,
       maxWidth: 240,
-      refFields: ['table_names'],
+      sourceFields: ['table_names'],
     },
   ]
 }

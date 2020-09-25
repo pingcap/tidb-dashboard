@@ -362,8 +362,8 @@ export function statementColumns(
   const tcf = new TableColumnFactory(TRANS_KEY_PREFIX)
 
   return [
-    tcf.sqlText('digest_text', showFullSQL),
-    tcf.textWithTooltip('digest'),
+    tcf.sqlText('digest_text', showFullSQL, rows),
+    tcf.textWithTooltip('digest', rows),
     tcf.bar.single('sum_latency', 'ns', rows),
     avgMinMaxLatencyColumn(tcf, rows),
     tcf.bar.single('exec_count', 'short', rows),
@@ -395,21 +395,21 @@ export function statementColumns(
     tcf.bar.single('sum_backoff_times', 'short', rows),
     tcf.bar.single('avg_affected_rows', 'short', rows),
 
-    tcf.timestamp('first_seen'),
-    tcf.timestamp('last_seen'),
-    tcf.textWithTooltip('sample_user'),
+    tcf.timestamp('first_seen', rows),
+    tcf.timestamp('last_seen', rows),
+    tcf.textWithTooltip('sample_user', rows),
 
-    tcf.sqlText('query_sample_text', showFullSQL),
-    tcf.sqlText('prev_sample_text', showFullSQL),
+    tcf.sqlText('query_sample_text', showFullSQL, rows),
+    tcf.sqlText('prev_sample_text', showFullSQL, rows),
 
-    tcf.textWithTooltip('schema_name'),
-    tcf.textWithTooltip('table_names'),
-    tcf.textWithTooltip('index_names'),
+    tcf.textWithTooltip('schema_name', rows),
+    tcf.textWithTooltip('table_names', rows),
+    tcf.textWithTooltip('index_names', rows),
 
-    tcf.textWithTooltip('plan_digest'),
+    tcf.textWithTooltip('plan_digest', rows),
 
     {
-      ...tcf.textWithTooltip('related_schemas'),
+      ...tcf.textWithTooltip('related_schemas', rows),
       minWidth: 160,
       maxWidth: 240,
       sourceFields: ['table_names'],

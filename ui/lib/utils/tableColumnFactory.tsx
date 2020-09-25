@@ -17,10 +17,10 @@ import {
   IColumnKeys,
 } from '@lib/components'
 
-type Bar = { [key: string]: string }
-type BarsConfig = {
+type Bar<T> = { [key: string]: keyof T }
+type BarsConfig<T> = {
   displayTransKey?: string // it is same as avg field name default
-  bars: [Bar, Bar, Bar?] // [avg, max, min?]
+  bars: [Bar<T>, Bar<T>, Bar<T>?] // [avg, max, min?]
 }
 
 export type IColumnWithSourceFields = IColumn & {
@@ -62,12 +62,15 @@ export class TableColumnFactory {
     }
   }
 
-  textWithTooltip(fieldName: string): IColumnWithSourceFields {
+  textWithTooltip<T extends string, U extends { [K in T]?: any }>(
+    fieldName: T,
+    _rows?: U[]
+  ): IColumnWithSourceFields {
     return {
       ...this.columnFromField(fieldName),
       minWidth: 100,
       maxWidth: 150,
-      onRender: (rec) => (
+      onRender: (rec: U) => (
         <Tooltip title={rec[fieldName]}>
           <TextWrap>{rec[fieldName]}</TextWrap>
         </Tooltip>
@@ -75,10 +78,10 @@ export class TableColumnFactory {
     }
   }
 
-  singleBar(
-    fieldName: string,
+  singleBar<T extends string, U extends { [K in T]?: number }>(
+    fieldName: T,
     unit: string,
-    rows?: any[]
+    rows?: U[]
   ): IColumnWithSourceFields {
     const capacity = rows ? _max(rows.map((v) => v[fieldName])) ?? 0 : 0
     return {
@@ -86,10 +89,10 @@ export class TableColumnFactory {
       minWidth: 140,
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
-      onRender: (rec) => {
-        const fmtVal = formatVal(rec[fieldName], unit)
+      onRender: (rec: U) => {
+        const fmtVal = formatVal(rec[fieldName]!, unit)
         return (
-          <Bar textWidth={70} value={rec[fieldName]} capacity={capacity}>
+          <Bar textWidth={70} value={rec[fieldName]!} capacity={capacity}>
             {fmtVal}
           </Bar>
         )
@@ -97,10 +100,10 @@ export class TableColumnFactory {
     }
   }
 
-  multipleBar(
-    barsConfig: BarsConfig,
+  multipleBar<T>(
+    barsConfig: BarsConfig<T>,
     unit: string,
-    rows?: any[]
+    rows?: T[]
   ): IColumnWithSourceFields {
     const {
       displayTransKey,
@@ -131,14 +134,14 @@ export class TableColumnFactory {
     const maxTooltipPrefixLen = _max(tooltioPrefixLens) || 0
 
     const capacity = rows ? _max(rows.map((v) => v[max.fieldName])) ?? 0 : 0
-    let refFields = [avg.fieldName, max.fieldName]
+    let sourceFields = [avg.fieldName, max.fieldName] as string[]
     if (min) {
-      refFields.push(min.fieldName)
+      sourceFields.push(min.fieldName)
     }
     return {
-      ...this.columnFromField(avg.fieldName),
-      name: this.columnName(displayTransKey || avg.fieldName),
-      sourceFields: refFields,
+      ...this.columnFromField(avg.fieldName as string),
+      name: this.columnName((displayTransKey || avg.fieldName) as string),
+      sourceFields,
       minWidth: 140,
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
@@ -163,7 +166,7 @@ export class TableColumnFactory {
               value={avgVal}
               max={maxVal}
               min={minVal}
-              capacity={capacity}
+              capacity={capacity as number}
             >
               {formatVal(avgVal, unit)}
             </Bar>
@@ -173,38 +176,45 @@ export class TableColumnFactory {
     }
   }
 
-  timestamp(fieldName: string): IColumnWithSourceFields {
+  timestamp<T extends string, U extends { [K in T]?: number }>(
+    fieldName: T,
+    _rows?: U[]
+  ): IColumnWithSourceFields {
     return {
       ...this.columnFromField(fieldName),
       minWidth: 100,
       maxWidth: 150,
       columnActionsMode: ColumnActionsMode.clickable,
-      onRender: (rec) => (
+      onRender: (rec: U) => (
         <TextWrap>
-          <DateTime.Calendar unixTimestampMs={rec[fieldName] * 1000} />
+          <DateTime.Calendar unixTimestampMs={rec[fieldName]! * 1000} />
         </TextWrap>
       ),
     }
   }
 
-  sqlText(fieldName: string, showFullSQL?: boolean): IColumnWithSourceFields {
+  sqlText<T extends string, U extends { [K in T]?: string }>(
+    fieldName: T,
+    showFullSQL?: boolean,
+    _rows?: U[]
+  ): IColumnWithSourceFields {
     return {
       ...this.columnFromField(fieldName),
       minWidth: 100,
       maxWidth: 500,
       isMultiline: showFullSQL,
-      onRender: (rec) =>
+      onRender: (rec: U) =>
         showFullSQL ? (
           <TextWrap multiline>
-            <HighlightSQL sql={rec[fieldName]} />
+            <HighlightSQL sql={rec[fieldName]!} />
           </TextWrap>
         ) : (
           <Tooltip
-            title={<HighlightSQL sql={rec[fieldName]} theme="dark" />}
+            title={<HighlightSQL sql={rec[fieldName]!} theme="dark" />}
             placement="right"
           >
             <TextWrap>
-              <HighlightSQL sql={rec[fieldName]} compact />
+              <HighlightSQL sql={rec[fieldName]!} compact />
             </TextWrap>
           </Tooltip>
         ),
@@ -215,11 +225,15 @@ export class TableColumnFactory {
 export class BarColumn {
   constructor(public factory: TableColumnFactory) {}
 
-  single(fieldName: string, unit: string, rows?: any[]) {
+  single<T extends string, U extends { [K in T]?: number }>(
+    fieldName: T,
+    unit: string,
+    rows?: U[]
+  ) {
     return this.factory.singleBar(fieldName, unit, rows)
   }
 
-  multiple(bars: BarsConfig, unit: string, rows?: any[]) {
+  multiple<T>(bars: BarsConfig<T>, unit: string, rows?: T[]) {
     return this.factory.multipleBar(bars, unit, rows)
   }
 }

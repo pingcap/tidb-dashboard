@@ -18,51 +18,18 @@ function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
 //////////////////////////////////////////
 const TRANS_KEY_PREFIX = 'slow_query.fields'
 
-function successColumn(
-  tcf: TableColumnFactory,
-  _rows?: { success?: number }[] // used for type check only
-): IColumn {
-  return {
-    name: tcf.columnName('result'),
-    key: 'success',
-    fieldName: 'success',
-    minWidth: 50,
-    maxWidth: 100,
-    onRender: (rec) => (
-      <ResultStatusBadge status={rec.success === 1 ? 'success' : 'error'} />
-    ),
-  }
-}
-
-function isInternalColumn(
-  tcf: TableColumnFactory,
-  _rows?: { is_internal?: number }[] // used for type check only
-): IColumn {
-  const fieldName = 'is_internal'
-  return {
-    name: tcf.columnName(fieldName),
-    key: fieldName,
-    fieldName: fieldName,
-    minWidth: 50,
-    maxWidth: 100,
-    onRender: (rec) => (rec.is_internal === 1 ? 'Yes' : 'No'),
-  }
-}
-
-//////////////////////////////////////////
-
 export function slowQueryColumns(
   rows: SlowquerySlowQuery[],
   showFullSQL?: boolean
 ): IColumn[] {
   const tcf = new TableColumnFactory(TRANS_KEY_PREFIX)
   return [
-    tcf.sqlText('query', showFullSQL),
-    tcf.textWithTooltip('digest'),
-    tcf.textWithTooltip('instance'),
-    tcf.textWithTooltip('db'),
-    tcf.textWithTooltip('connection_id'),
-    tcf.timestamp('timestamp'),
+    tcf.sqlText('query', showFullSQL, rows),
+    tcf.textWithTooltip('digest', rows),
+    tcf.textWithTooltip('instance', rows),
+    tcf.textWithTooltip('db', rows),
+    tcf.textWithTooltip('connection_id', rows),
+    tcf.timestamp('timestamp', rows),
 
     tcf.bar.single('query_time', 's', rows),
     tcf.bar.single('parse_time', 's', rows),
@@ -70,16 +37,32 @@ export function slowQueryColumns(
     tcf.bar.single('process_time', 's', rows),
     tcf.bar.single('memory_max', 'bytes', rows),
 
-    tcf.textWithTooltip('txn_start_ts'),
-    successColumn(tcf, rows),
+    tcf.textWithTooltip('txn_start_ts', rows),
+    // success columnn
+    {
+      ...tcf.textWithTooltip('success', rows),
+      name: tcf.columnName('result'),
+      minWidth: 50,
+      maxWidth: 100,
+      onRender: (rec) => (
+        <ResultStatusBadge status={rec.success === 1 ? 'success' : 'error'} />
+      ),
+    },
+
     // basic
-    isInternalColumn(tcf, rows),
-    tcf.textWithTooltip('index_names'),
-    tcf.textWithTooltip('stats'),
-    tcf.textWithTooltip('backoff_types'),
+    // is_internal column
+    {
+      ...tcf.textWithTooltip('is_internal', rows),
+      minWidth: 50,
+      maxWidth: 100,
+      onRender: (rec) => (rec.is_internal === 1 ? 'Yes' : 'No'),
+    },
+    tcf.textWithTooltip('index_names', rows),
+    tcf.textWithTooltip('stats', rows),
+    tcf.textWithTooltip('backoff_types', rows),
     // connection
-    tcf.textWithTooltip('user'),
-    tcf.textWithTooltip('host'),
+    tcf.textWithTooltip('user', rows),
+    tcf.textWithTooltip('host', rows),
     // time
     tcf.bar.single('wait_time', 'ns', rows),
     tcf.bar.single('backoff_time', 'ns', rows),
@@ -121,7 +104,7 @@ export function slowQueryColumns(
     tcf.bar.single('request_count', 'short', rows),
     tcf.bar.single('process_keys', 'short', rows),
     tcf.bar.single('total_keys', 'short', rows),
-    tcf.textWithTooltip('cop_proc_addr'),
-    tcf.textWithTooltip('cop_wait_addr'),
+    tcf.textWithTooltip('cop_proc_addr', rows),
+    tcf.textWithTooltip('cop_wait_addr', rows),
   ]
 }

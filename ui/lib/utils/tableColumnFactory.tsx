@@ -1,5 +1,5 @@
 import { Tooltip } from 'antd'
-import { max as _max } from 'lodash'
+import { max as _max, capitalize } from 'lodash'
 import {
   IColumn,
   ColumnActionsMode,
@@ -25,10 +25,6 @@ type BarsConfig<T> = {
 
 export type IColumnWithSourceFields = IColumn & {
   sourceFields?: string[]
-}
-
-function capitalize(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 export function formatVal(val: number, unit: string) {

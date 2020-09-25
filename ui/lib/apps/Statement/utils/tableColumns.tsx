@@ -407,7 +407,6 @@ export function statementColumns(
     tcf.textWithTooltip('index_names'),
 
     tcf.textWithTooltip('plan_digest'),
-    tcf.plan('plan'),
 
     {
       ...tcf.textWithTooltip('related_schemas'),

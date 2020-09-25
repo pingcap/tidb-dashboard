@@ -207,21 +207,6 @@ export class TableColumnFactory {
         ),
     }
   }
-
-  plan(fieldName: string): IExtendColumn {
-    return {
-      name: this.columnName(fieldName),
-      key: fieldName,
-      fieldName: fieldName,
-      minWidth: 100,
-      maxWidth: 150,
-      onRender: (rec) => (
-        <Tooltip title={<Pre noWrap>{rec[fieldName]}</Pre>}>
-          <TextWrap>{rec[fieldName]}</TextWrap>
-        </Tooltip>
-      ),
-    }
-  }
 }
 
 export class BarColumn {

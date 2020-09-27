@@ -20,20 +20,6 @@ import {
 // slow query order list in backend by key of IColumn
 const TRANS_KEY_PREFIX = 'statement.fields'
 
-function planCountColumn(
-  tcf: TableColumnFactory,
-  _rows?: { plan_count?: number }[] // used for type check only
-): IColumn {
-  return {
-    name: tcf.columnName('plan_count'),
-    key: 'plan_count',
-    fieldName: 'plan_count',
-    minWidth: 100,
-    maxWidth: 300,
-    columnActionsMode: ColumnActionsMode.clickable,
-  }
-}
-
 function avgMinMaxLatencyColumn(
   tcf: TableColumnFactory,
   rows?: { max_latency?: number; min_latency?: number; avg_latency?: number }[]
@@ -49,13 +35,6 @@ function avgMinMaxLatencyColumn(
     'ns',
     rows
   )
-}
-
-function avgMaxMemColumn(
-  tcf: TableColumnFactory,
-  rows?: { avg_mem?: number; max_mem?: number }[]
-): IColumn {
-  return avgMaxColumn(tcf, 'avg_mem', 'max_mem', 'avg_mem', 'bytes', rows)
 }
 
 function errorsWarningsColumn(
@@ -96,252 +75,16 @@ Warnings: ${warningsFmtVal}`
   }
 }
 
-function avgParseLatencyColumn(
-  tcf: TableColumnFactory,
-  rows?: { avg_parse_latency?: number; max_parse_latency?: number }[]
-): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_parse_latency',
-    'max_parse_latency',
-    'parse_latency',
-    'ns',
-    rows
-  )
-}
-
-function avgCompileLatencyColumn(
-  tcf: TableColumnFactory,
-  rows?: { avg_compile_latency?: number; max_compile_latency?: number }[]
-): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_compile_latency',
-    'max_compile_latency',
-    'compile_latency',
-    'ns',
-    rows
-  )
-}
-
-function avgCoprColumn(
-  tcf: TableColumnFactory,
-  rows?: { avg_cop_process_time?: number; max_cop_process_time?: number }[]
-): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_cop_process_time',
-    'max_cop_process_time',
-    'process_time',
-    'ns',
-    rows
-  )
-}
-
-function avgCopWaitColumn(
-  tcf: TableColumnFactory,
-  rows?: { avg_cop_wait_time?: number; max_cop_wait_time?: number }[]
-): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_cop_wait_time',
-    'max_cop_wait_time',
-    'wait_time',
-    'ns',
-    rows
-  )
-}
-
-function avgTotalProcessColumn(
-  tcf: TableColumnFactory,
-  rows?: { avg_process_time?: number; max_process_time?: number }[]
-): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_process_time',
-    'max_process_time',
-    'total_process_time',
-    'ns',
-    rows
-  )
-}
-
-function avgTotalWaitColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_wait_time',
-    'max_wait_time',
-    'total_wait_time',
-    'ns',
-    rows
-  )
-}
-
-function avgBackoffColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_backoff_time',
-    'max_backoff_time',
-    'backoff_time',
-    'ns',
-    rows
-  )
-}
-
-function avgWriteKeysColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_write_keys',
-    'max_write_keys',
-    'avg_write_keys',
-    'short',
-    rows
-  )
-}
-
-function avgProcessedKeysColumn(
-  tcf: TableColumnFactory,
-  rows?: any[]
-): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_processed_keys',
-    'max_processed_keys',
-    'avg_processed_keys',
-    'short',
-    rows
-  )
-}
-
-function avgTotalKeysColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_total_keys',
-    'max_total_keys',
-    'avg_total_keys',
-    'short',
-    rows
-  )
-}
-
-function avgPreWriteColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_prewrite_time',
-    'max_prewrite_time',
-    'prewrite_time',
-    'ns',
-    rows
-  )
-}
-
-function avgCommitColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_commit_time',
-    'max_commit_time',
-    'commit_time',
-    'ns',
-    rows
-  )
-}
-
-function avgGetCommitTsColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_get_commit_ts_time',
-    'max_get_commit_ts_time',
-    'get_commit_ts_time',
-    'ns',
-    rows
-  )
-}
-
-function avgCommitBackoffColumn(
-  tcf: TableColumnFactory,
-  rows?: any[]
-): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_commit_backoff_time',
-    'max_commit_backoff_time',
-    'commit_backoff_time',
-    'ns',
-    rows
-  )
-}
-
-function avgResolveLockColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_resolve_lock_time',
-    'max_resolve_lock_time',
-    'resolve_lock_time',
-    'ns',
-    rows
-  )
-}
-
-function avgLocalLatchWaitColumn(
-  tcf: TableColumnFactory,
-  rows?: any[]
-): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_local_latch_wait_time',
-    'max_local_latch_wait_time',
-    'local_latch_wait_time',
-    'ns',
-    rows
-  )
-}
-
-function avgWriteSizeColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_write_size',
-    'max_write_size',
-    'avg_write_size',
-    'bytes',
-    rows
-  )
-}
-
-function avgPreWriteRegionsColumn(
-  tcf: TableColumnFactory,
-  rows?: any[]
-): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_prewrite_regions',
-    'max_prewrite_regions',
-    'avg_prewrite_regions',
-    'short',
-    rows
-  )
-}
-
-function avgTxnRetryColumn(tcf: TableColumnFactory, rows?: any[]): IColumn {
-  return avgMaxColumn(
-    tcf,
-    'avg_txn_retry',
-    'max_txn_retry',
-    'avg_txn_retry',
-    'short',
-    rows
-  )
-}
-
 ////////////////////////////////////////////////
 // util methods
 
-function avgMaxColumn(
+function avgMaxColumn<T>(
   tcf: TableColumnFactory,
-  avgKey: string,
-  maxKey: string,
+  avgKey: keyof T,
+  maxKey: keyof T,
   displayTransKey: string,
   unit: string,
-  rows?: any[]
+  rows?: T[]
 ): IColumn {
   return tcf.bar.multiple(
     {
@@ -367,30 +110,167 @@ export function statementColumns(
     tcf.bar.single('sum_latency', 'ns', rows),
     avgMinMaxLatencyColumn(tcf, rows),
     tcf.bar.single('exec_count', 'short', rows),
-
-    planCountColumn(tcf, rows),
-    avgMaxMemColumn(tcf, rows),
+    {
+      ...tcf.textWithTooltip('plan_count', rows),
+      minWidth: 100,
+      maxWidth: 300,
+      columnActionsMode: ColumnActionsMode.clickable,
+    },
+    avgMaxColumn(tcf, 'avg_mem', 'max_mem', 'avg_mem', 'bytes', rows),
     errorsWarningsColumn(tcf, rows),
-    avgParseLatencyColumn(tcf, rows),
-    avgCompileLatencyColumn(tcf, rows),
+    avgMaxColumn(
+      tcf,
+      'avg_parse_latency',
+      'max_parse_latency',
+      'parse_latency',
+      'ns',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_compile_latency',
+      'max_compile_latency',
+      'compile_latency',
+      'ns',
+      rows
+    ),
     tcf.bar.single('sum_cop_task_num', 'short', rows),
-    avgCoprColumn(tcf, rows),
-    avgCopWaitColumn(tcf, rows),
-    avgTotalProcessColumn(tcf, rows),
-    avgTotalWaitColumn(tcf, rows),
-    avgBackoffColumn(tcf, rows),
-    avgWriteKeysColumn(tcf, rows),
-    avgProcessedKeysColumn(tcf, rows),
-    avgTotalKeysColumn(tcf, rows),
-    avgPreWriteColumn(tcf, rows),
-    avgCommitColumn(tcf, rows),
-    avgGetCommitTsColumn(tcf, rows),
-    avgCommitBackoffColumn(tcf, rows),
-    avgResolveLockColumn(tcf, rows),
-    avgLocalLatchWaitColumn(tcf, rows),
-    avgWriteSizeColumn(tcf, rows),
-    avgPreWriteRegionsColumn(tcf, rows),
-    avgTxnRetryColumn(tcf, rows),
+    avgMaxColumn(
+      tcf,
+      'avg_cop_process_time',
+      'max_cop_process_time',
+      'process_time',
+      'ns',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_cop_wait_time',
+      'max_cop_wait_time',
+      'wait_time',
+      'ns',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_process_time',
+      'max_process_time',
+      'total_process_time',
+      'ns',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_wait_time',
+      'max_wait_time',
+      'total_wait_time',
+      'ns',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_backoff_time',
+      'max_backoff_time',
+      'backoff_time',
+      'ns',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_write_keys',
+      'max_write_keys',
+      'avg_write_keys',
+      'short',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_processed_keys',
+      'max_processed_keys',
+      'avg_processed_keys',
+      'short',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_total_keys',
+      'max_total_keys',
+      'avg_total_keys',
+      'short',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_prewrite_time',
+      'max_prewrite_time',
+      'prewrite_time',
+      'ns',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_commit_time',
+      'max_commit_time',
+      'commit_time',
+      'ns',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_get_commit_ts_time',
+      'max_get_commit_ts_time',
+      'get_commit_ts_time',
+      'ns',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_commit_backoff_time',
+      'max_commit_backoff_time',
+      'commit_backoff_time',
+      'ns',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_resolve_lock_time',
+      'max_resolve_lock_time',
+      'resolve_lock_time',
+      'ns',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_local_latch_wait_time',
+      'max_local_latch_wait_time',
+      'local_latch_wait_time',
+      'ns',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_write_size',
+      'max_write_size',
+      'avg_write_size',
+      'bytes',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_prewrite_regions',
+      'max_prewrite_regions',
+      'avg_prewrite_regions',
+      'short',
+      rows
+    ),
+    avgMaxColumn(
+      tcf,
+      'avg_txn_retry',
+      'max_txn_retry',
+      'avg_txn_retry',
+      'short',
+      rows
+    ),
 
     tcf.bar.single('sum_backoff_times', 'short', rows),
     tcf.bar.single('avg_affected_rows', 'short', rows),
@@ -429,6 +309,6 @@ export function planColumns(rows: StatementModel[]): IColumn[] {
     tcf.bar.single('sum_latency', 'ns', rows),
     avgMinMaxLatencyColumn(tcf, rows),
     tcf.bar.single('exec_count', 'short', rows),
-    avgMaxMemColumn(tcf, rows),
+    avgMaxColumn(tcf, 'avg_mem', 'max_mem', 'avg_mem', 'bytes', rows),
   ]
 }

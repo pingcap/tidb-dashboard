@@ -27,9 +27,9 @@ export type IColumnWithSourceFields = IColumn & {
   sourceFields?: string[]
 }
 
-export function formatVal(val: number, unit: string) {
+export function formatVal(val: number, unit: string, decimals: number = 1) {
   const formatFn = getValueFormat(unit)
-  return unit === 'short' ? formatFn(val, 0, 1) : formatFn(val, 1)
+  return unit === 'short' ? formatFn(val, 0, decimals) : formatFn(val, decimals)
 }
 
 export function commonColumnName(transPrefix: string, fieldName: string): any {

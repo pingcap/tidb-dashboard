@@ -6,6 +6,7 @@ slow_query:
     connection_id: 连接号
     connection_id_tooltip: SQL 查询客户端连接 ID
     sql: SQL
+    query: SQL
     sql_tooltip: SQL
     timestamp: 结束运行时间
     timestamp_tooltip: 该 SQL 查询结束运行时的时间
@@ -64,8 +65,14 @@ slow_query:
     txn_start_ts_tooltip: 事务开始的时间戳，也即是事务号
     write_keys: 写入 Key 个数
     write_size: 写入数据量
-    prewrite_regions: Prewrite 涉及 Regions 个数
+    prewrite_region: Prewrite 涉及 Regions 个数
     txn_retry: 事务重试次数
+
+    prev_stmt: 前一条 SQL 查询
+    plan: 执行计划
+
+    cop_proc_avg: 平均处理 # ?
+    cop_wait_avg: 平均等待 # ?
   common:
     status:
       success: 成功

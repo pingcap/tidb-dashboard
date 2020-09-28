@@ -92,6 +92,8 @@ statement:
     wait_time_tooltip: SQL 查询在 TiKV Coprocessor 上被等待执行的耗时，单个 SQL 查询所有 Coprocessor 任务累计后计算
     process_time: Coprocessor 执行耗时
     process_time_tooltip: SQL 查询在 TiKV Coprocessor 上的执行耗时，单个 SQL 查询所有 Coprocessor 任务累计后计算
+    total_process_time: 所有执行耗时
+    total_wait_time: 所有等待耗时
     backoff_time: 重试等待耗时
     backoff_time_tooltip: 单个 SQL 查询所有重试累计后计算
     get_commit_ts_time: 取 Commit Ts 耗时

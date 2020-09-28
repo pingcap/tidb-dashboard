@@ -1,23 +1,19 @@
 import React from 'react'
 import SlowQueriesTable from '@lib/apps/SlowQuery/components/SlowQueriesTable'
 import { IQuery } from './PlanDetail'
-import useSlowQuery, {
+import useSlowQueryTableController, {
   DEF_SLOW_QUERY_OPTIONS,
-} from '@lib/apps/SlowQuery/utils/useSlowQuery'
-import { defSlowQueryColumnKeys } from '@lib/apps/SlowQuery/pages/List'
+  DEF_SLOW_QUERY_COLUMN_KEYS,
+} from '@lib/apps/SlowQuery/utils/useSlowQueryTableController'
 
 export interface ISlowQueryTabProps {
   query: IQuery
 }
 
 export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
-  const {
-    orderOptions,
-    changeOrder,
-
-    slowQueries,
-    loadingSlowQueries,
-  } = useSlowQuery(
+  const controller = useSlowQueryTableController(
+    DEF_SLOW_QUERY_COLUMN_KEYS,
+    false,
     {
       ...DEF_SLOW_QUERY_OPTIONS,
       timeRange: {
@@ -32,16 +28,5 @@ export default function SlowQueryTab({ query }: ISlowQueryTabProps) {
     false
   )
 
-  return (
-    <SlowQueriesTable
-      cardNoMargin
-      key={`slow_query_${slowQueries.length}`}
-      loading={loadingSlowQueries}
-      slowQueries={slowQueries}
-      visibleColumnKeys={defSlowQueryColumnKeys}
-      orderBy={orderOptions.orderBy}
-      desc={orderOptions.desc}
-      onChangeOrder={changeOrder}
-    />
-  )
+  return <SlowQueriesTable cardNoMargin controller={controller} />
 }

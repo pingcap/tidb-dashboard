@@ -24,7 +24,7 @@ export default function TabCopr({ data }: ITabTxnProps) {
       value: getValueFormat('bytes')(data.write_size || 0, 1),
     },
     {
-      key: 'prewrite_regions',
+      key: 'prewrite_region',
       value: <ShortValueWithTooltip value={data.prewrite_region} />,
     },
     {

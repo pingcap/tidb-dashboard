@@ -6,6 +6,7 @@ slow_query:
     connection_id: Connection ID
     connection_id_tooltip: Unique connection ID of the query
     sql: Query
+    query: Query
     timestamp: Finish Time
     timestamp_tooltip: The time this query finished execution
     query_time: Latency
@@ -60,8 +61,14 @@ slow_query:
     txn_start_ts_tooltip: Transaction start timestamp, a.k.a. Transaction ID
     write_keys: Write Keys
     write_size: Write Size
-    prewrite_regions: Prewrite Regions
+    prewrite_region: Prewrite Regions
     txn_retry: Transaction Retries
+
+    prev_stmt: Previous Query
+    plan: Execution Plan
+
+    cop_proc_avg: Mean Cop Proc # ?
+    cop_wait_avg: Mean Cop Wait # ?
   common:
     status:
       success: Success

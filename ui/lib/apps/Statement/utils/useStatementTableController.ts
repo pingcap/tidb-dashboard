@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
 import client, {
   ErrorStrategy,
   StatementModel,
   StatementTimeRange,
 } from '@lib/client'
+import { IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 import {
@@ -13,6 +15,17 @@ import {
   DEFAULT_TIME_RANGE,
   TimeRange,
 } from '../pages/List/TimeRangeSelector'
+import { statementColumns } from './tableColumns'
+import { getSelectedFields } from '@lib/utils/tableColumnFactory'
+
+export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
+  digest_text: true,
+  sum_latency: true,
+  avg_latency: true,
+  exec_count: true,
+  plan_count: true,
+  related_schemas: true,
+}
 
 const QUERY_OPTIONS = 'statement.query_options'
 
@@ -35,10 +48,33 @@ export const DEF_STMT_QUERY_OPTIONS: IStatementQueryOptions = {
   searchText: '',
 }
 
-export default function useStatement(
+export interface IStatementTableController {
+  queryOptions: IStatementQueryOptions
+  setQueryOptions: (options: IStatementQueryOptions) => void
+  orderOptions: IOrderOptions
+  changeOrder: (orderBy: string, desc: boolean) => void
+  refresh: () => void
+
+  enable: boolean
+  allTimeRanges: StatementTimeRange[]
+  allSchemas: string[]
+  allStmtTypes: string[]
+  validTimeRange: StatementTimeRange
+  loadingStatements: boolean
+  statements: StatementModel[]
+
+  errors: Error[]
+
+  tableColumns: IColumn[]
+  visibleColumnKeys: IColumnKeys
+}
+
+export default function useStatementTableController(
+  visibleColumnKeys: IColumnKeys,
+  showFullSQL: boolean,
   options?: IStatementQueryOptions,
   needSave: boolean = true
-) {
+): IStatementTableController {
   const { orderOptions, changeOrder } = useOrderState(
     'statement',
     needSave,
@@ -138,6 +174,18 @@ export default function useStatement(
     queryStmtTypes()
   }, [refreshTimes])
 
+  // Notice: statements, tableColumns, selectedFields make loop dependencies
+  const tableColumns = useMemo(
+    () => statementColumns(statements, showFullSQL),
+    [statements, showFullSQL]
+  )
+  // make selectedFields as a string instead of an array to avoid infinite loop
+  // I have verified that it will cause infinite loop if we return selectedFields as an array
+  // so it is better to use the basic type (string, number...) instead of object as the dependency
+  const selectedFields = useMemo(
+    () => getSelectedFields(visibleColumnKeys, tableColumns).join(','),
+    [visibleColumnKeys, tableColumns]
+  )
   useEffect(() => {
     async function queryStatementList() {
       if (allTimeRanges.length === 0) {
@@ -153,6 +201,7 @@ export default function useStatement(
           .statementsOverviewsGet(
             validTimeRange.begin_time!,
             validTimeRange.end_time!,
+            selectedFields,
             queryOptions.schemas,
             queryOptions.stmtTypes,
             queryOptions.searchText,
@@ -169,7 +218,7 @@ export default function useStatement(
     }
 
     queryStatementList()
-  }, [queryOptions, allTimeRanges, validTimeRange])
+  }, [queryOptions, allTimeRanges, validTimeRange, selectedFields])
 
   return {
     queryOptions,
@@ -187,5 +236,8 @@ export default function useStatement(
     statements,
 
     errors,
+
+    tableColumns,
+    visibleColumnKeys,
   }
 }

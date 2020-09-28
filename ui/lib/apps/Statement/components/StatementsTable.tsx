@@ -1,49 +1,37 @@
 import { usePersistFn } from '@umijs/hooks'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { StatementModel, StatementTimeRange } from '@lib/client'
 import { CardTable, ICardTableProps } from '@lib/components'
 import openLink from '@lib/utils/openLink'
 
 import DetailPage from '../pages/Detail'
-import { statementColumns } from '../utils/tableColumns'
+import { IStatementTableController } from '../utils/useStatementTableController'
 
 interface Props extends Partial<ICardTableProps> {
-  loading: boolean
-  statements: StatementModel[]
-  timeRange: StatementTimeRange
-  showFullSQL?: boolean
-  onGetColumns?: (columns: IColumn[]) => void
+  controller: IStatementTableController
 }
 
-export default function StatementsTable({
-  loading,
-  statements,
-  timeRange,
-  showFullSQL,
-  onGetColumns,
-  ...restPrpos
-}: Props) {
-  const navigate = useNavigate()
-
-  const columns = useMemo(() => statementColumns(statements, showFullSQL), [
+export default function StatementsTable({ controller, ...restPrpos }: Props) {
+  const {
+    orderOptions,
+    changeOrder,
+    validTimeRange: { begin_time, end_time },
+    loadingStatements,
     statements,
-    showFullSQL,
-  ])
+    errors,
+    tableColumns,
+    visibleColumnKeys,
+  } = controller
 
-  useEffect(() => {
-    onGetColumns && onGetColumns(columns || [])
-  }, [onGetColumns, columns])
-
+  const navigate = useNavigate()
   const handleRowClick = usePersistFn(
     (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
       const qs = DetailPage.buildQuery({
         digest: rec.digest,
         schema: rec.schema_name,
-        beginTime: timeRange.begin_time,
-        endTime: timeRange.end_time,
+        beginTime: begin_time,
+        endTime: end_time,
       })
       openLink(`/statement/detail?${qs}`, ev, navigate)
     }
@@ -54,9 +42,14 @@ export default function StatementsTable({
   return (
     <CardTable
       {...restPrpos}
-      loading={loading}
-      columns={columns}
+      loading={loadingStatements}
+      columns={tableColumns}
       items={statements}
+      orderBy={orderOptions.orderBy}
+      desc={orderOptions.desc}
+      onChangeOrder={changeOrder}
+      errors={errors}
+      visibleColumnKeys={visibleColumnKeys}
       onRowClicked={handleRowClick}
       getKey={getKey}
     />

@@ -29,7 +29,7 @@ import TabTxn from './DetailTabTxn'
 export interface IPageQuery {
   connectId?: number
   digest?: string
-  time?: number
+  timestamp?: number
 }
 
 function DetailPage() {
@@ -43,7 +43,7 @@ function DetailPage() {
       .slowQueryDetailGet(
         query.connectId!,
         query.digest!,
-        query.time!,
+        query.timestamp!,
         reqConfig
       )
   )

@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"github.com/thoas/go-funk"
 )
 
 const (
@@ -26,8 +27,7 @@ const (
 	SelectStmt     = "*, (unix_timestamp(Time) + 0E0) as timestamp"
 )
 
-type Base struct {
-	// list fields
+type SlowQuery struct {
 	Digest string `gorm:"column:Digest" json:"digest"`
 	Query  string `gorm:"column:Query" json:"query"`
 
@@ -36,19 +36,14 @@ type Base struct {
 	ConnectionID uint   `gorm:"column:Conn_ID" json:"connection_id"`
 	Success      int    `gorm:"column:Succ" json:"success"`
 
-	Time        string  `gorm:"column:Time" json:"time_str"`         // finish time
-	Timestamp   float64 `gorm:"column:timestamp" json:"timestamp"`   // unix_timestamp(Time) as timestamp
-	QueryTime   float64 `gorm:"column:Query_time" json:"query_time"` // latency
+	Timestamp   float64 `gorm:"column:timestamp" proj:"(unix_timestamp(Time) + 0E0)" json:"timestamp"` // finish time
+	QueryTime   float64 `gorm:"column:Query_time" json:"query_time"`                                   // latency
 	ParseTime   float64 `gorm:"column:Parse_time" json:"parse_time"`
 	CompileTime float64 `gorm:"column:Compile_time" json:"compile_time"`
 	ProcessTime float64 `gorm:"column:Process_time" json:"process_time"`
 
 	MemoryMax  int  `gorm:"column:Mem_max" json:"memory_max"`
 	TxnStartTS uint `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
-}
-
-type SlowQuery struct {
-	*Base `gorm:"embedded"`
 
 	// Detail
 	PrevStmt string `gorm:"column:Prev_stmt" json:"prev_stmt"`
@@ -56,7 +51,7 @@ type SlowQuery struct {
 
 	// Basic
 	IsInternal   int    `gorm:"column:Is_internal" json:"is_internal"`
-	IndexNames   string `gorm:"column:Index_name" json:"index_names"`
+	IndexNames   string `gorm:"column:Index_names" json:"index_names"`
 	Stats        string `gorm:"column:Stats" json:"stats"`
 	BackoffTypes string `gorm:"column:Backoff_types" json:"backoff_types"`
 
@@ -106,46 +101,58 @@ type GetListRequest struct {
 	// for showing slow queries in the statement detail page
 	Plans  []string `json:"plans" form:"plans"`
 	Digest string   `json:"digest" form:"digest"`
+
+	Fields string `json:"fields" form:"fields"` // example: "Query,Digest"
+}
+
+func getProjectionsByFields(jsonFields ...string) ([]string, error) {
+	fields := make(map[string]*reflect.StructField)
+	t := reflect.TypeOf(SlowQuery{})
+	fieldsNum := t.NumField()
+	for i := 0; i < fieldsNum; i++ {
+		field := t.Field(i)
+		fields[strings.ToLower(field.Tag.Get("json"))] = &field
+	}
+	ret := make([]string, 0, len(jsonFields))
+	for _, fieldName := range jsonFields {
+		field, ok := fields[strings.ToLower(fieldName)]
+		if !ok {
+			return nil, fmt.Errorf("unknown field %s", fieldName)
+		}
+		// ignore to check error because the field is defined by ourself
+		// we can confirm that it has "gorm" tag and fixed structure
+		s, _ := field.Tag.Lookup("gorm")
+		sourceField := strings.Split(s, ":")[1]
+		if proj, ok := field.Tag.Lookup("proj"); ok {
+			ret = append(ret, fmt.Sprintf("%s AS %s", proj, sourceField))
+		} else {
+			ret = append(ret, sourceField)
+		}
+	}
+	return ret, nil
 }
 
 type GetDetailRequest struct {
 	Digest    string  `json:"digest" form:"digest"`
-	Time      float64 `json:"time" form:"time"`
+	Timestamp float64 `json:"timestamp" form:"timestamp"`
 	ConnectID int64   `json:"connect_id" form:"connect_id"`
 }
 
-func getAllColumnNames() []string {
-	t := reflect.TypeOf(Base{})
-	fieldsNum := t.NumField()
-	ret := make([]string, 0, fieldsNum)
-	for i := 0; i < fieldsNum; i++ {
-		field := t.Field(i)
-		if s, ok := field.Tag.Lookup("gorm"); ok {
-			list := strings.Split(s, ":")
-			if len(list) < 1 {
-				panic(fmt.Sprintf("Unknown gorm tag field: %s", s))
-			}
-			ret = append(ret, list[1])
-		}
+func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
+	sqlFields := []string{"digest", "connection_id", "timestamp"}
+	if strings.TrimSpace(req.Fields) != "" {
+		sqlFields = append(sqlFields, strings.Split(req.Fields, ",")...)
+		sqlFields = funk.UniqString(sqlFields)
 	}
-	ret = append(ret, "Time")
-	return ret
-}
-
-func isValidColumnName(name string) bool {
-	for _, item := range getAllColumnNames() {
-		if name == item {
-			return true
-		}
+	projections, err := getProjectionsByFields(sqlFields...)
+	if err != nil {
+		return nil, err
 	}
-	return false
-}
 
-func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
 	tx := db.
 		Table(SlowQueryTable).
-		Select(SelectStmt).
-		Where("time between from_unixtime(?) and from_unixtime(?)", req.LogStartTS, req.LogEndTS).
+		Select(strings.Join(projections, ", ")).
+		Where("Time between from_unixtime(?) and from_unixtime(?)", req.LogStartTS, req.LogEndTS).
 		Limit(req.Limit)
 
 	if req.Text != "" {
@@ -166,13 +173,19 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
 		tx = tx.Where("DB IN (?)", req.DB)
 	}
 
-	order := req.OrderBy
-	if isValidColumnName(order) {
-		if req.DESC {
-			tx = tx.Order(fmt.Sprintf("%s desc", order))
-		} else {
-			tx = tx.Order(fmt.Sprintf("%s asc", order))
-		}
+	order, err := getProjectionsByFields(req.OrderBy)
+	if err != nil {
+		return nil, err
+	}
+	// to handle the special case: timestamp
+	// if req.OrderBy is "timestamp", then the order is "(unix_timestamp(Time) + 0E0) AS timestamp"
+	if strings.Contains(order[0], " AS ") {
+		order[0] = req.OrderBy
+	}
+	if req.DESC {
+		tx = tx.Order(fmt.Sprintf("%s desc", order[0]))
+	} else {
+		tx = tx.Order(fmt.Sprintf("%s asc", order[0]))
 	}
 
 	if len(req.Plans) > 0 {
@@ -183,8 +196,8 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]Base, error) {
 		tx = tx.Where("Digest = ?", req.Digest)
 	}
 
-	var results []Base
-	err := tx.Find(&results).Error
+	var results []SlowQuery
+	err = tx.Find(&results).Error
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +210,7 @@ func QuerySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) 
 		Table(SlowQueryTable).
 		Select(SelectStmt).
 		Where("Digest = ?", req.Digest).
-		Where("Time = from_unixtime(?)", req.Time).
+		Where("Time = from_unixtime(?)", req.Timestamp).
 		Where("Conn_id = ?", req.ConnectID).
 		First(&result).Error
 	if err != nil {

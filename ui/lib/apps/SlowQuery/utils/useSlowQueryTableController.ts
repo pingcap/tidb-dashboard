@@ -1,14 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
-import client, { ErrorStrategy, SlowqueryBase } from '@lib/client'
-import { calcTimeRange, TimeRange } from '@lib/components'
+import client, { ErrorStrategy, SlowquerySlowQuery } from '@lib/client'
+import { calcTimeRange, TimeRange, IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
+
+import { slowQueryColumns } from './tableColumns'
+import { getSelectedFields } from '@lib/utils/tableColumnFactory'
+
+export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
+  query: true,
+  timestamp: true,
+  query_time: true,
+  memory_max: true,
+}
 
 const QUERY_OPTIONS = 'slow_query.query_options'
 
 const DEF_ORDER_OPTIONS: IOrderOptions = {
-  orderBy: 'Time',
+  orderBy: 'timestamp',
   desc: true,
 }
 
@@ -32,10 +43,30 @@ export const DEF_SLOW_QUERY_OPTIONS: ISlowQueryOptions = {
   plans: [],
 }
 
-export default function useSlowQuery(
+export interface ISlowQueryTableController {
+  queryOptions: ISlowQueryOptions
+  setQueryOptions: (options: ISlowQueryOptions) => void
+  orderOptions: IOrderOptions
+  changeOrder: (orderBy: string, desc: boolean) => void
+  refresh: () => void
+
+  allSchemas: string[]
+  loadingSlowQueries: boolean
+  slowQueries: SlowquerySlowQuery[]
+  queryTimeRange: { beginTime: number; endTime: number }
+
+  errors: Error[]
+
+  tableColumns: IColumn[]
+  visibleColumnKeys: IColumnKeys
+}
+
+export default function useSlowQueryTableController(
+  visibleColumnKeys: IColumnKeys,
+  showFullSQL: boolean,
   options?: ISlowQueryOptions,
   needSave: boolean = true
-) {
+): ISlowQueryTableController {
   const { orderOptions, changeOrder } = useOrderState(
     'slow_query',
     needSave,
@@ -60,7 +91,7 @@ export default function useSlowQuery(
 
   const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
-  const [slowQueries, setSlowQueries] = useState<SlowqueryBase[]>([])
+  const [slowQueries, setSlowQueries] = useState<SlowquerySlowQuery[]>([])
   const [refreshTimes, setRefreshTimes] = useState(0)
 
   function setQueryOptions(newOptions: ISlowQueryOptions) {
@@ -71,7 +102,7 @@ export default function useSlowQuery(
     }
   }
 
-  const [errors, setErrors] = useState<any[]>([])
+  const [errors, setErrors] = useState<Error[]>([])
 
   function refresh() {
     setErrors([])
@@ -92,6 +123,18 @@ export default function useSlowQuery(
     querySchemas()
   }, [])
 
+  // Notice: slowQueries, tableColumns, selectedFields make loop dependencies
+  const tableColumns = useMemo(
+    () => slowQueryColumns(slowQueries, showFullSQL),
+    [slowQueries, showFullSQL]
+  )
+  // make selectedFields as a string instead of an array to avoid infinite loop
+  // I have verified that it will cause infinite loop if we return selectedFields as an array
+  // so it is better to use the basic type (string, number...) instead of object as the dependency
+  const selectedFields = useMemo(
+    () => getSelectedFields(visibleColumnKeys, tableColumns).join(','),
+    [visibleColumnKeys, tableColumns]
+  )
   useEffect(() => {
     async function getSlowQueryList() {
       setLoadingSlowQueries(true)
@@ -102,6 +145,7 @@ export default function useSlowQuery(
             queryOptions.schemas,
             orderOptions.desc,
             queryOptions.digest,
+            selectedFields,
             queryOptions.limit,
             queryTimeRange.endTime,
             queryTimeRange.beginTime,
@@ -121,7 +165,7 @@ export default function useSlowQuery(
     }
 
     getSlowQueryList()
-  }, [queryOptions, orderOptions, queryTimeRange, refreshTimes])
+  }, [queryOptions, orderOptions, queryTimeRange, refreshTimes, selectedFields])
 
   return {
     queryOptions,
@@ -136,5 +180,8 @@ export default function useSlowQuery(
     queryTimeRange,
 
     errors,
+
+    tableColumns,
+    visibleColumnKeys,
   }
 }

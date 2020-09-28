@@ -35,7 +35,7 @@ export interface IColumnKeys {
 export interface IColumnsSelectorProps {
   columns: IColumn[]
   visibleColumnKeys?: IColumnKeys
-  resetColumnKeys?: IColumnKeys
+  defaultVisibleColumnKeys?: IColumnKeys
   onChange?: (visibleKeys: IColumnKeys) => void
   foot?: ReactNode
 }
@@ -43,7 +43,7 @@ export interface IColumnsSelectorProps {
 export default function ColumnsSelector({
   columns,
   visibleColumnKeys,
-  resetColumnKeys,
+  defaultVisibleColumnKeys,
   onChange,
   foot,
 }: IColumnsSelectorProps) {
@@ -107,10 +107,10 @@ export default function ColumnsSelector({
       >
         {t('component.columnsSelector.select')}
       </Checkbox>
-      {resetColumnKeys && (
+      {defaultVisibleColumnKeys && (
         <Button
           type="link"
-          onClick={() => onChange && onChange(resetColumnKeys)}
+          onClick={() => onChange && onChange(defaultVisibleColumnKeys)}
         >
           {t('component.columnsSelector.reset')}
         </Button>
@@ -119,19 +119,28 @@ export default function ColumnsSelector({
   )
 
   const content = (
-    <Space direction="vertical">
-      {filteredColumns.map((column) => (
-        <Checkbox
-          key={column.key}
-          checked={visibleKeys[column.key]}
-          onChange={(e) => handleCheckChange(e, column)}
-        >
-          {column.name}
-        </Checkbox>
-      ))}
-
+    <div style={{ marginTop: -12 }}>
+      <Space
+        direction="vertical"
+        style={{
+          maxHeight: 400,
+          overflow: 'auto',
+          paddingTop: 8,
+          paddingBottom: 8,
+        }}
+      >
+        {filteredColumns.map((column) => (
+          <Checkbox
+            key={column.key}
+            checked={visibleKeys[column.key]}
+            onChange={(e) => handleCheckChange(e, column)}
+          >
+            {column.name}
+          </Checkbox>
+        ))}
+      </Space>
       {foot && <div className={styles.foot_container}>{foot}</div>}
-    </Space>
+    </div>
   )
 
   return (

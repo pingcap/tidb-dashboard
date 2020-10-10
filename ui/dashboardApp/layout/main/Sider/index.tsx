@@ -1,10 +1,9 @@
-import React, { useState, useMemo } from 'react'
-import { ExperimentOutlined, BugOutlined } from '@ant-design/icons'
+import React, { useMemo, useState } from 'react'
+import { BugOutlined, ExperimentOutlined } from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
 import { useEventListener } from '@umijs/hooks'
 import { useTranslation } from 'react-i18next'
-import { useSpring, animated } from 'react-spring'
 import client from '@lib/client'
 
 import Banner from './Banner'
@@ -116,9 +115,9 @@ function Sider({
     useAppMenuItem(registry, 'user_profile', displayName),
   ]
 
-  const transSider = useSpring({
+  const siderStyle = {
     width: collapsed ? collapsedWidth : fullWidth,
-  })
+  }
 
   const defaultOpenKeys = useMemo(() => {
     if (defaultCollapsed) {
@@ -129,7 +128,7 @@ function Sider({
   }, [defaultCollapsed])
 
   return (
-    <animated.div style={transSider}>
+    <div className={styles.wrapper} style={siderStyle}>
       <Layout.Sider
         className={styles.sider}
         width={fullWidth}
@@ -165,7 +164,7 @@ function Sider({
           {extraMenuItems}
         </Menu>
       </Layout.Sider>
-    </animated.div>
+    </div>
   )
 }
 

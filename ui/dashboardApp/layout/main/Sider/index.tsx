@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { BugOutlined, ExperimentOutlined } from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
@@ -35,6 +35,12 @@ function useActiveAppId(registry) {
     }
   })
   return appId
+}
+
+function triggerResizeEvent() {
+  const event = document.createEvent('HTMLEvents')
+  event.initEvent('resize', true, false)
+  window.dispatchEvent(event)
 }
 
 function Sider({
@@ -127,8 +133,17 @@ function Sider({
     }
   }, [defaultCollapsed])
 
+  const wrapperRef = useCallback((wrapper) => {
+    if (wrapper !== null) {
+      wrapper.addEventListener('transitionend', (e) => {
+        if (e.target !== wrapper || e.propertyName !== 'width') return
+        triggerResizeEvent()
+      })
+    }
+  }, [])
+
   return (
-    <div className={styles.wrapper} style={siderStyle}>
+    <div className={styles.wrapper} style={siderStyle} ref={wrapperRef}>
       <Layout.Sider
         className={styles.sider}
         width={fullWidth}

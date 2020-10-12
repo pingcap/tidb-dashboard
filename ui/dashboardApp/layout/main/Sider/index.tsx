@@ -17,10 +17,9 @@ function useAppMenuItem(registry, appId, title?: string) {
     return null
   }
   return (
-    <Menu.Item key={appId}>
+    <Menu.Item key={appId} icon={app.icon ? <app.icon /> : null}>
       <Link to={app.indexRoute} id={appId}>
-        {app.icon ? <app.icon /> : null}
-        <span>{title ? title : t(`${appId}.nav_title`, appId)}</span>
+        {title ? title : t(`${appId}.nav_title`, appId)}
       </Link>
     </Menu.Item>
   )
@@ -66,12 +65,8 @@ function Sider({
   const debugSubMenu = (
     <Menu.SubMenu
       key="debug"
-      title={
-        <span>
-          <BugOutlined />
-          <span>{t('nav.sider.debug')}</span>
-        </span>
-      }
+      icon={<BugOutlined />}
+      title={t('nav.sider.debug')}
     >
       {debugSubMenuItems}
     </Menu.SubMenu>
@@ -84,12 +79,8 @@ function Sider({
   const experimentalSubMenu = (
     <Menu.SubMenu
       key="experimental"
-      title={
-        <span>
-          <ExperimentOutlined />
-          <span>{t('nav.sider.experimental')}</span>
-        </span>
-      }
+      icon={<ExperimentOutlined />}
+      title={t('nav.sider.experimental')}
     >
       {experimentalSubMenuItems}
     </Menu.SubMenu>
@@ -162,7 +153,7 @@ function Sider({
         />
         <Menu
           subMenuOpenDelay={animationDelay}
-          subMenuCloseDelay={animationDelay}
+          subMenuCloseDelay={animationDelay + 0.1}
           mode="inline"
           selectedKeys={[activeAppId]}
           style={{ flexGrow: 1 }}
@@ -171,8 +162,8 @@ function Sider({
           {menuItems}
         </Menu>
         <Menu
-          subMenuOpenDelay={animationDelay + 200}
-          subMenuCloseDelay={animationDelay + 200}
+          subMenuOpenDelay={animationDelay}
+          subMenuCloseDelay={animationDelay}
           mode="inline"
           selectedKeys={[activeAppId]}
         >

@@ -1,10 +1,9 @@
-import React, { useState, useMemo } from 'react'
-import { ExperimentOutlined, BugOutlined } from '@ant-design/icons'
+import React, { useCallback, useMemo, useState } from 'react'
+import { BugOutlined, ExperimentOutlined } from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
 import { useEventListener } from '@umijs/hooks'
 import { useTranslation } from 'react-i18next'
-import { useSpring, animated } from 'react-spring'
 import client from '@lib/client'
 
 import Banner from './Banner'
@@ -18,10 +17,9 @@ function useAppMenuItem(registry, appId, title?: string) {
     return null
   }
   return (
-    <Menu.Item key={appId}>
+    <Menu.Item key={appId} icon={app.icon ? <app.icon /> : null}>
       <Link to={app.indexRoute} id={appId}>
-        {app.icon ? <app.icon /> : null}
-        <span>{title ? title : t(`${appId}.nav_title`, appId)}</span>
+        {title ? title : t(`${appId}.nav_title`, appId)}
       </Link>
     </Menu.Item>
   )
@@ -36,6 +34,12 @@ function useActiveAppId(registry) {
     }
   })
   return appId
+}
+
+function triggerResizeEvent() {
+  const event = document.createEvent('HTMLEvents')
+  event.initEvent('resize', true, false)
+  window.dispatchEvent(event)
 }
 
 function Sider({
@@ -61,12 +65,8 @@ function Sider({
   const debugSubMenu = (
     <Menu.SubMenu
       key="debug"
-      title={
-        <span>
-          <BugOutlined />
-          <span>{t('nav.sider.debug')}</span>
-        </span>
-      }
+      icon={<BugOutlined />}
+      title={t('nav.sider.debug')}
     >
       {debugSubMenuItems}
     </Menu.SubMenu>
@@ -79,12 +79,8 @@ function Sider({
   const experimentalSubMenu = (
     <Menu.SubMenu
       key="experimental"
-      title={
-        <span>
-          <ExperimentOutlined />
-          <span>{t('nav.sider.experimental')}</span>
-        </span>
-      }
+      icon={<ExperimentOutlined />}
+      title={t('nav.sider.experimental')}
     >
       {experimentalSubMenuItems}
     </Menu.SubMenu>
@@ -115,9 +111,9 @@ function Sider({
     useAppMenuItem(registry, 'user_profile', displayName),
   ]
 
-  const transSider = useSpring({
+  const siderStyle = {
     width: collapsed ? collapsedWidth : fullWidth,
-  })
+  }
 
   const defaultOpenKeys = useMemo(() => {
     if (defaultCollapsed) {
@@ -127,8 +123,17 @@ function Sider({
     }
   }, [defaultCollapsed])
 
+  const wrapperRef = useCallback((wrapper) => {
+    if (wrapper !== null) {
+      wrapper.addEventListener('transitionend', (e) => {
+        if (e.target !== wrapper || e.propertyName !== 'width') return
+        triggerResizeEvent()
+      })
+    }
+  }, [])
+
   return (
-    <animated.div style={transSider}>
+    <div className={styles.wrapper} style={siderStyle} ref={wrapperRef}>
       <Layout.Sider
         className={styles.sider}
         width={fullWidth}
@@ -147,7 +152,7 @@ function Sider({
         />
         <Menu
           subMenuOpenDelay={animationDelay}
-          subMenuCloseDelay={animationDelay}
+          subMenuCloseDelay={animationDelay + 0.1}
           mode="inline"
           selectedKeys={[activeAppId]}
           style={{ flexGrow: 1 }}
@@ -156,15 +161,15 @@ function Sider({
           {menuItems}
         </Menu>
         <Menu
-          subMenuOpenDelay={animationDelay + 200}
-          subMenuCloseDelay={animationDelay + 200}
+          subMenuOpenDelay={animationDelay}
+          subMenuCloseDelay={animationDelay}
           mode="inline"
           selectedKeys={[activeAppId]}
         >
           {extraMenuItems}
         </Menu>
       </Layout.Sider>
-    </animated.div>
+    </div>
   )
 }
 

@@ -99,7 +99,7 @@ export default function ColumnsSelector({
   }
 
   const title = (
-    <div className={styles.title_container}>
+    <div className={styles.titleContainer}>
       <Checkbox
         indeterminate={indeterminate}
         checked={checkedAll}
@@ -139,7 +139,7 @@ export default function ColumnsSelector({
           </Checkbox>
         ))}
       </Space>
-      {foot && <div className={styles.foot_container}>{foot}</div>}
+      {foot && <div className={styles.footContainer}>{foot}</div>}
     </div>
   )
 

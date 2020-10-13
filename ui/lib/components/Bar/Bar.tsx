@@ -73,7 +73,7 @@ function Bar({
           {children}
         </div>
       )}
-      <div className={styles.bar_container}>
+      <div className={styles.barContainer}>
         {clampedValues.map(([offset, value], idx) => (
           <div
             className={cx(styles.bar)}
@@ -87,7 +87,7 @@ function Bar({
         ))}
         {min != null && (
           <div
-            className={cx(styles.error_bar, styles.min_bar)}
+            className={cx(styles.errorBar, styles.minBar)}
             style={{
               left: `${(min / capacity) * 100}%`,
               width: `${((valuesSum - min) / capacity) * 100}%`,
@@ -96,7 +96,7 @@ function Bar({
         )}
         {max != null && (
           <div
-            className={cx(styles.error_bar, styles.max_bar)}
+            className={cx(styles.errorBar, styles.maxBar)}
             style={{
               left: `${(valuesSum / capacity) * 100}%`,
               width: `${((max - valuesSum) / capacity) * 100}%`,

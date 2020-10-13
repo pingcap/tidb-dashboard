@@ -107,20 +107,20 @@ function TimeRangeSelector({ value, onChange }: ITimeRangeSelectorProps) {
   )
 
   const dropdownContent = (
-    <div className={styles.dropdown_content_container}>
-      <div className={styles.usual_time_ranges}>
+    <div className={styles.dropdownContentContainer}>
+      <div className={styles.usualTimeRanges}>
         <span>
           {t(
             'statement.pages.overview.toolbar.time_range_selector.usual_time_ranges'
           )}
         </span>
-        <div className={styles.time_range_items} data-e2e="common-timeranges">
+        <div className={styles.timeRangeItems} data-e2e="common-timeranges">
           {RECENT_SECONDS.map((seconds) => (
             <div
               tabIndex={-1}
               key={seconds}
-              className={cx(styles.time_range_item, {
-                [styles.time_range_item_active]:
+              className={cx(styles.timeRangeItem, {
+                [styles.timeRangeItemActive]:
                   value && value.type === 'recent' && value.value === seconds,
               })}
               onClick={() => handleRecentChange(seconds)}
@@ -132,7 +132,7 @@ function TimeRangeSelector({ value, onChange }: ITimeRangeSelectorProps) {
           ))}
         </div>
       </div>
-      <div className={styles.custom_time_ranges}>
+      <div className={styles.customTimeRanges}>
         <span>
           {t(
             'statement.pages.overview.toolbar.time_range_selector.custom_time_ranges'

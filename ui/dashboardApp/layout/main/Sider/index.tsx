@@ -134,7 +134,7 @@ function Sider({
   }, [])
 
   return (
-    <div className={styles.wrapper} style={siderStyle} ref={wrapperRef}>
+    <div className={styles.siderWrapper} style={siderStyle} ref={wrapperRef}>
       <Layout.Sider
         className={styles.sider}
         width={fullWidth}

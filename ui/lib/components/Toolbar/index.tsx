@@ -6,7 +6,7 @@ import styles from './index.module.less'
 
 export default function Toolbar(props: React.HTMLAttributes<HTMLDivElement>) {
   const { className, children, ...rest } = props
-  const c = cx(className, styles.toolbar_container)
+  const c = cx(className, styles.toolbarContainer)
 
   // https://stackoverflow.com/questions/27366077
   React.Children.forEach(children, (child) => {
@@ -21,7 +21,7 @@ export default function Toolbar(props: React.HTMLAttributes<HTMLDivElement>) {
         // https://stackoverflow.com/questions/42261783
         if (React.isValidElement(child) && child.type === Space) {
           const extraClassName =
-            idx === 0 ? styles.left_space : styles.right_space
+            idx === 0 ? styles.leftSpace : styles.rightSpace
           return React.cloneElement(child, {
             className: cx(child.props.className, extraClassName),
             size: child.props.size || 'middle',

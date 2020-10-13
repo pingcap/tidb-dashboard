@@ -29,8 +29,8 @@ function AnimatedSkeleton({
       {showSkeleton && (
         <div
           className={cx({
-            skeletonAnimationFirstTime: skeletonAppears === 1,
-            skeletonAnimationNotFirstTime: skeletonAppears > 1,
+            [styles.skeletonAnimationFirstTime]: skeletonAppears === 1,
+            [styles.skeletonAnimationNotFirstTime]: skeletonAppears > 1,
           })}
         >
           <Skeleton
@@ -42,7 +42,9 @@ function AnimatedSkeleton({
         </div>
       )}
       {!showSkeleton && (
-        <AppearAnimate motionName="contentAnimation">{children}</AppearAnimate>
+        <AppearAnimate motionName={styles.contentAnimation}>
+          {children}
+        </AppearAnimate>
       )}
     </div>
   )

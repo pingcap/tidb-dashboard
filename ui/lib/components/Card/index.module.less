@@ -1,6 +1,6 @@
 @import '~antd/es/style/themes/default.less';
 
-.cardContainer {
+.card-container {
   // &:before,
   // &:after {
   //   // Handle margin collapse
@@ -9,64 +9,64 @@
   // }
 }
 
-.cardInner {
+.card-inner {
   margin: @padding-page;
 
-  &.noMargin {
+  &.no-margin {
     margin: 0;
   }
 
-  &.noMarginTop {
+  &.no-margin-top {
     margin-top: 0;
   }
 
-  &.noMarginBottom {
+  &.no-margin-bottom {
     margin-bottom: 0;
   }
 
-  &.noMarginLeft {
+  &.no-margin-left {
     margin-left: 0;
   }
 
-  &.noMarginRight {
+  &.no-margin-right {
     margin-left: 0;
   }
 }
 
-.cardTitleSection {
+.card-title-section {
   margin: @padding-lg 0;
   display: flex;
   flex-direction: row;
   align-items: center;
 }
 
-.cardTitle {
+.card-title {
   color: @heading-color;
   font-size: @heading-4-size;
   line-height: 32px;
   margin-right: @padding-md;
 }
 
-.cardSubTitle {
+.card-sub-title {
   margin-left: @padding-md;
   margin-right: @padding-md;
 }
 
-.cardTitleSpacer {
+.card-title-spacer {
   flex-grow: 1;
 }
 
-.hasTitle > .cardContent {
+.has-title > .card-content {
   margin-top: @padding-lg;
 }
 
-.cardContainer.flexGrow {
+.card-container.flex-grow {
   display: flex;
   flex-grow: 1;
   flex-direction: column;
 
-  .cardInner,
-  .cardContent {
+  .card-inner,
+  .card-content {
     display: flex;
     flex-grow: 1;
   }

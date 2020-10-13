@@ -137,6 +137,9 @@ module.exports = override(
     modules: {
       localIdentName: '[local]--[hash:base64:5]',
     },
+    cssLoaderOptions: {
+      localsConvention: 'camelCase',
+    },
   }),
   addAlias(),
   addDecoratorsLegacy(),

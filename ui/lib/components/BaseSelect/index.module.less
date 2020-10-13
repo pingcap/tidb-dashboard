@@ -3,13 +3,13 @@
 @import '~antd/es/input/style/mixin';
 @import '~antd/es/select/style/index';
 
-.baseSelect {
+.base-select {
   .reset-component;
   position: relative;
   display: inline-block;
 }
 
-.baseSelectInner {
+.base-select-inner {
   position: relative;
   background-color: @select-background;
   border: @border-width-base @border-style-base @select-border-color;
@@ -31,7 +31,7 @@
     background: @input-disabled-bg;
     cursor: not-allowed;
 
-    .baseSelectInput {
+    .base-select-input {
       cursor: not-allowed;
     }
   }
@@ -42,7 +42,7 @@
 }
 
 :global(.ant-form-item-has-error) {
-  .baseSelectInner {
+  .base-select-inner {
     border-color: @error-color !important;
     &.focused {
       .active(@error-color);
@@ -50,7 +50,7 @@
   }
 }
 
-.baseSelectInput {
+.base-select-input {
   opacity: 0;
   position: absolute;
   top: 0;
@@ -63,7 +63,7 @@
   height: @select-height-without-border;
 }
 
-.baseSelectValueDisplay {
+.base-select-value-display {
   position: relative;
   display: block;
   padding-right: @selection-item-padding;
@@ -74,12 +74,12 @@
   pointer-events: none;
   width: 100%;
 
-  &.isPlaceholder {
+  &.is-placeholder {
     opacity: 0.4;
   }
 }
 
-.baseSelectArrow {
+.base-select-arrow {
   position: absolute;
   top: 53%; // The same as Ant-design's select
   right: @input-padding-horizontal-base;
@@ -93,7 +93,7 @@
   pointer-events: none;
 }
 
-.baseSelectOverlay {
+.base-select-overlay {
   background-color: @select-dropdown-bg;
   border-radius: @border-radius-base;
   outline: none;

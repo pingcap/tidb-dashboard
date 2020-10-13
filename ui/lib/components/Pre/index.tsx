@@ -14,7 +14,7 @@ export default function Pre({
 }: IPreProps) {
   return (
     <pre
-      className={cx(styles.pre, className, { [styles.preNoWrap]: noWrap })}
+      className={cx(styles.pre, className, { [styles.preNowrap]: noWrap })}
       {...rest}
     >
       {children}

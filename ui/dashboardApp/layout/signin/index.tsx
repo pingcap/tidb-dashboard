@@ -345,7 +345,7 @@ function App({ registry }) {
     <Root>
       <div className={styles.container}>
         <AppearAnimate
-          className={styles.contantContainer}
+          className={styles.contentContainer}
           motionName="formAnimation"
         >
           <CSSMotion visible={alternativeVisible} motionName="fade">

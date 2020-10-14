@@ -346,7 +346,7 @@ function App({ registry }) {
       <div className={styles.container}>
         <AppearAnimate
           className={styles.contentContainer}
-          motionName="formAnimation"
+          motionName={styles.formAnimation}
         >
           <CSSMotion visible={alternativeVisible} motionName="fade">
             {({ style, className }) => (
@@ -373,7 +373,7 @@ function App({ registry }) {
         </AppearAnimate>
         <AppearAnimate
           className={styles.landing}
-          motionName="landingAnimation"
+          motionName={styles.landingAnimation}
         />
       </div>
     </Root>

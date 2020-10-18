@@ -11,7 +11,7 @@ import { StatementModel } from '@lib/client'
 import { Bar, Pre } from '@lib/components'
 import {
   formatVal,
-  genDerivedBar,
+  genDerivedBarSources,
   IColumnWithSourceFields,
   TableColumnFactory,
 } from '@lib/utils/tableColumnFactory'
@@ -22,42 +22,58 @@ import {
 const TRANS_KEY_PREFIX = 'statement.fields'
 
 export const derivedFields = {
-  avg_latency: genDerivedBar('avg_latency', 'max_latency', 'min_latency'),
-  parse_latency: genDerivedBar('avg_parse_latency', 'max_parse_latency'),
-  compile_latency: genDerivedBar('avg_compile_latency', 'max_compile_latency'),
-  process_time: genDerivedBar('avg_cop_process_time', 'max_cop_process_time'),
-  wait_time: genDerivedBar('avg_cop_wait_time', 'max_cop_wait_time'),
-  total_process_time: genDerivedBar('avg_process_time', 'max_process_time'),
-  total_wait_time: genDerivedBar('avg_wait_time', 'max_wait_time'),
-  backoff_time: genDerivedBar('avg_backoff_time', 'max_backoff_time'),
-  avg_write_keys: genDerivedBar('avg_write_keys', 'max_write_keys'),
-  avg_processed_keys: genDerivedBar('avg_processed_keys', 'max_processed_keys'),
-  avg_total_keys: genDerivedBar('avg_total_keys', 'max_total_keys'),
-  prewrite_time: genDerivedBar('avg_prewrite_time', 'max_prewrite_time'),
-  commit_time: genDerivedBar('avg_commit_time', 'max_commit_time'),
-  get_commit_ts_time: genDerivedBar(
+  avg_latency: genDerivedBarSources(
+    'avg_latency',
+    'max_latency',
+    'min_latency'
+  ),
+  parse_latency: genDerivedBarSources('avg_parse_latency', 'max_parse_latency'),
+  compile_latency: genDerivedBarSources(
+    'avg_compile_latency',
+    'max_compile_latency'
+  ),
+  process_time: genDerivedBarSources(
+    'avg_cop_process_time',
+    'max_cop_process_time'
+  ),
+  wait_time: genDerivedBarSources('avg_cop_wait_time', 'max_cop_wait_time'),
+  total_process_time: genDerivedBarSources(
+    'avg_process_time',
+    'max_process_time'
+  ),
+  total_wait_time: genDerivedBarSources('avg_wait_time', 'max_wait_time'),
+  backoff_time: genDerivedBarSources('avg_backoff_time', 'max_backoff_time'),
+  avg_write_keys: genDerivedBarSources('avg_write_keys', 'max_write_keys'),
+  avg_processed_keys: genDerivedBarSources(
+    'avg_processed_keys',
+    'max_processed_keys'
+  ),
+  avg_total_keys: genDerivedBarSources('avg_total_keys', 'max_total_keys'),
+  prewrite_time: genDerivedBarSources('avg_prewrite_time', 'max_prewrite_time'),
+  commit_time: genDerivedBarSources('avg_commit_time', 'max_commit_time'),
+  get_commit_ts_time: genDerivedBarSources(
     'avg_get_commit_ts_time',
     'max_get_commit_ts_time'
   ),
-  commit_backoff_time: genDerivedBar(
+  commit_backoff_time: genDerivedBarSources(
     'avg_commit_backoff_time',
     'max_commit_backoff_time'
   ),
-  resolve_lock_time: genDerivedBar(
+  resolve_lock_time: genDerivedBarSources(
     'avg_resolve_lock_time',
     'max_resolve_lock_time'
   ),
-  local_latch_wait_time: genDerivedBar(
+  local_latch_wait_time: genDerivedBarSources(
     'avg_local_latch_wait_time',
     'max_local_latch_wait_time'
   ),
-  avg_write_size: genDerivedBar('avg_write_size', 'max_write_size'),
-  avg_prewrite_regions: genDerivedBar(
+  avg_write_size: genDerivedBarSources('avg_write_size', 'max_write_size'),
+  avg_prewrite_regions: genDerivedBarSources(
     'avg_prewrite_regions',
     'max_prewrite_regions'
   ),
-  avg_txn_retry: genDerivedBar('avg_txn_retry', 'max_txn_retry'),
-  avg_mem: genDerivedBar('avg_mem', 'max_mem'),
+  avg_txn_retry: genDerivedBarSources('avg_txn_retry', 'max_txn_retry'),
+  avg_mem: genDerivedBarSources('avg_mem', 'max_mem'),
   sum_errors: ['sum_errors', 'sum_warnings'],
   related_schemas: ['table_names'],
 }

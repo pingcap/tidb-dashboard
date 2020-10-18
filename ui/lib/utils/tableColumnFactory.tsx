@@ -237,7 +237,7 @@ export type DerivedFields = Record<
   DerivedBar['sources'] | DerivedCol['sources']
 >
 
-export function genDerivedBar(
+export function genDerivedBarSources(
   avg: string,
   max: string,
   min?: string
@@ -261,7 +261,7 @@ export function genDerivedBar(
   return res
 }
 
-function isBars(v: any[]): v is Bar[] {
+function isDerivedBarSources(v: any): v is DerivedBar['sources'] {
   return !!v[0].fieldName
 }
 
@@ -274,7 +274,7 @@ export function getSelectedFields(
   for (const columnKey in visibleColumnKeys) {
     if (visibleColumnKeys[columnKey]) {
       if ((sources = derivedFields[columnKey])) {
-        if (isBars(sources)) {
+        if (isDerivedBarSources(sources)) {
           fields.push(...sources.map((b) => b.fieldName))
         } else {
           fields.push(...sources)

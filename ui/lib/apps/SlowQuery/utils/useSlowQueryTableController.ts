@@ -6,7 +6,7 @@ import client, { ErrorStrategy, SlowquerySlowQuery } from '@lib/client'
 import { calcTimeRange, TimeRange, IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
-import { slowQueryColumns } from './tableColumns'
+import { derivedFields, slowQueryColumns } from './tableColumns'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 
 export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
@@ -123,18 +123,16 @@ export default function useSlowQueryTableController(
     querySchemas()
   }, [])
 
-  // Notice: slowQueries, tableColumns, selectedFields make loop dependencies
+  const selectedFields = useMemo(
+    () => getSelectedFields(visibleColumnKeys, derivedFields).join(','),
+    [visibleColumnKeys]
+  )
+
   const tableColumns = useMemo(
     () => slowQueryColumns(slowQueries, showFullSQL),
     [slowQueries, showFullSQL]
   )
-  // make selectedFields as a string instead of an array to avoid infinite loop
-  // I have verified that it will cause infinite loop if we return selectedFields as an array
-  // so it is better to use the basic type (string, number...) instead of object as the dependency
-  const selectedFields = useMemo(
-    () => getSelectedFields(visibleColumnKeys, tableColumns).join(','),
-    [visibleColumnKeys, tableColumns]
-  )
+
   useEffect(() => {
     async function getSlowQueryList() {
       setLoadingSlowQueries(true)

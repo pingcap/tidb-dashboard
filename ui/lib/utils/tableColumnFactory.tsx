@@ -17,11 +17,19 @@ import {
   IColumnKeys,
 } from '@lib/components'
 
-type Bar<T> = { [key: string]: keyof T }
-type BarsConfig<T> = {
-  displayTransKey?: string // it is same as avg field name default
-  bars: [Bar<T>, Bar<T>, Bar<T>?] // [avg, max, min?]
+type Bar = {
+  tooltipPrefix: string
+  fieldName: string
 }
+
+export type DerivedField<T> = {
+  displayTransKey?: string // it is same as avg field name default
+  sources: T[]
+}
+
+export type DerivedBar = DerivedField<Bar>
+
+export type DerivedCol = DerivedField<string>
 
 export type IColumnWithSourceFields = IColumn & {
   sourceFields?: string[]
@@ -97,46 +105,34 @@ export class TableColumnFactory {
   }
 
   multipleBar<T>(
-    barsConfig: BarsConfig<T>,
+    barsConfig: DerivedBar,
     unit: string,
     rows?: T[]
   ): IColumnWithSourceFields {
     const {
       displayTransKey,
-      bars: [avg_, max_, min_],
+      sources: [avg, max, min],
     } = barsConfig
 
-    const tooltioPrefixLens: number[] = []
-    const avg = {
-      fieldName: Object.values(avg_)[0],
-      tooltipPrefix: Object.keys(avg_)[0],
+    const tooltipPrefixLens: number[] = []
+
+    tooltipPrefixLens.push(avg.tooltipPrefix.length)
+    tooltipPrefixLens.push(max.tooltipPrefix.length)
+    if (min) {
+      tooltipPrefixLens.push(min.tooltipPrefix.length)
     }
-    tooltioPrefixLens.push(avg.tooltipPrefix.length)
-    const max = {
-      fieldName: Object.values(max_)[0],
-      tooltipPrefix: Object.keys(max_)[0],
-    }
-    tooltioPrefixLens.push(max.tooltipPrefix.length)
-    let min
-    if (min_) {
-      min = {
-        fieldName: Object.values(min_)[0],
-        tooltipPrefix: Object.keys(min_)[0],
-      }
-      tooltioPrefixLens.push(min.tooltipPrefix.length)
-    } else {
-      min = undefined
-    }
-    const maxTooltipPrefixLen = _max(tooltioPrefixLens) || 0
+
+    const maxTooltipPrefixLen = _max(tooltipPrefixLens) || 0
 
     const capacity = rows ? _max(rows.map((v) => v[max.fieldName])) ?? 0 : 0
-    let sourceFields = [avg.fieldName, max.fieldName] as string[]
+    let sourceFields = [avg.fieldName, max.fieldName]
     if (min) {
       sourceFields.push(min.fieldName)
     }
+
     return {
-      ...this.columnFromField(avg.fieldName as string),
-      name: this.columnName((displayTransKey || avg.fieldName) as string),
+      ...this.columnFromField(avg.fieldName),
+      name: this.columnName(displayTransKey || avg.fieldName),
       sourceFields,
       minWidth: 140,
       maxWidth: 200,
@@ -229,26 +225,64 @@ export class BarColumn {
     return this.factory.singleBar(fieldName, unit, rows)
   }
 
-  multiple<T>(bars: BarsConfig<T>, unit: string, rows?: T[]) {
+  multiple<T>(bars: DerivedBar, unit: string, rows?: T[]) {
     return this.factory.multipleBar(bars, unit, rows)
   }
 }
 
 ////////////////////////////////////////////
 
+export type DerivedFields = Record<
+  string,
+  DerivedBar['sources'] | DerivedCol['sources']
+>
+
+export function genDerivedBar(
+  avg: string,
+  max: string,
+  min?: string
+): DerivedBar['sources'] {
+  const res = [
+    {
+      tooltipPrefix: 'mean',
+      fieldName: avg,
+    },
+    {
+      tooltipPrefix: 'max',
+      fieldName: max,
+    },
+  ]
+  if (min) {
+    res.push({
+      tooltipPrefix: 'min',
+      fieldName: min,
+    })
+  }
+  return res
+}
+
+function isBars(v: any[]): v is Bar[] {
+  return !!v[0].fieldName
+}
+
 export function getSelectedFields(
   visibleColumnKeys: IColumnKeys,
-  columns: IColumnWithSourceFields[]
+  derivedFields: DerivedFields
 ) {
   let fields: string[] = []
-  columns.forEach((c) => {
-    if (visibleColumnKeys[c.key] === true) {
-      if (c.sourceFields !== undefined) {
-        fields = fields.concat(c.sourceFields)
+  let sources: DerivedFields[keyof DerivedFields]
+  for (const columnKey in visibleColumnKeys) {
+    if (visibleColumnKeys[columnKey]) {
+      if ((sources = derivedFields[columnKey])) {
+        if (isBars(sources)) {
+          fields.push(...sources.map((b) => b.fieldName))
+        } else {
+          fields.push(...sources)
+        }
       } else {
-        fields.push(c.key)
+        fields.push(columnKey)
       }
     }
-  })
+  }
   return fields
 }

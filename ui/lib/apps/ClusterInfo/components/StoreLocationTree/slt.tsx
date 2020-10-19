@@ -5,7 +5,7 @@ export interface IStoreLocationProps {
   dataSource: any
 }
 
-const margin = { left: 60, right: 40, top: 40, bottom: 40 }
+const margin = { left: 60, right: 40, top: 60, bottom: 60 }
 const dx = 40
 
 const diagonal = d3
@@ -60,6 +60,19 @@ export default function SLT({ dataSource }: IStoreLocationProps) {
       .append('g')
       .attr('cursor', 'pointer')
       .attr('pointer-events', 'all')
+
+    // zoom
+    const zoom = d3
+      .zoom()
+      .scaleExtent([0.1, 5])
+      .on('zoom', () => {
+        const t = d3.event.transform
+        bound.attr(
+          'transform',
+          `translate(${t.x + margin.left}, ${t.y + margin.top}) scale(${t.k})`
+        )
+      })
+    svg.call(zoom as any)
 
     update(root)
 

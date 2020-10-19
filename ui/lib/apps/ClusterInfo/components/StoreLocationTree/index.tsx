@@ -71,6 +71,9 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
           'transform',
           `translate(${t.x + margin.left}, ${t.y + margin.top}) scale(${t.k})`
         )
+
+        // this will cause unexpected result when dragging
+        // svg.attr('transform', d3.event.transform)
       })
     svg.call(zoom as any)
 

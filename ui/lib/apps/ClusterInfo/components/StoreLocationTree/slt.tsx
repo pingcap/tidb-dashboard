@@ -38,18 +38,31 @@ export default function SLT({ dataSource }: IStoreLocationProps) {
       .attr('viewBox', [-margin.left, -margin.top, width, dx] as any)
       .style('font', '16px sans-serif')
       .style('user-select', 'none')
+    const bound = svg.append('g')
 
-    const gLink = svg
+    const gLink = bound
       .append('g')
       .attr('fill', 'none')
       .attr('stroke', '#555')
       .attr('stroke-opacity', 0.4)
       .attr('stroke-width', 2)
 
-    const gNode = svg
+    const gNode = bound
       .append('g')
       .attr('cursor', 'pointer')
       .attr('pointer-events', 'all')
+
+    // zoom
+    const zoom = d3
+      .zoom()
+      .scaleExtent([0.1, 5])
+      .on('zoom', () => {
+        bound.attr('transform', d3.event.transform)
+
+        // this will cause unexpected result when dragging
+        // svg.attr('transform', d3.event.transform)
+      })
+    svg.call(zoom as any)
 
     function update(source) {
       const duration = d3.event && d3.event.altKey ? 2500 : 250

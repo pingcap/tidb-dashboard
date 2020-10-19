@@ -5,76 +5,51 @@ export interface IStoreLocationProps {
   dataSource: any
 }
 
-const margin = { left: 60, right: 40, top: 60, bottom: 60 }
+const margin = { top: 40, right: 120, bottom: 10, left: 80 }
+const width = 954
 const dx = 40
+const dy = width / 6
+
+const tree = d3.tree().nodeSize([dx, dy])
 
 const diagonal = d3
   .linkHorizontal()
   .x((d: any) => d.y)
   .y((d: any) => d.x)
 
-function calcHeight(root) {
-  let x0 = Infinity
-  let x1 = -x0
-  root.each((d) => {
-    if (d.x > x1) x1 = d.x
-    if (d.x < x0) x0 = d.x
-  })
-  return x1 - x0
-}
-
+// original implementation, temporary keep it
 export default function SLT({ dataSource }: IStoreLocationProps) {
-  const divRef = useRef<HTMLDivElement>(null)
+  const ref = useRef(null)
 
   useEffect(() => {
-    let divWidth = divRef.current?.clientWidth || 0
     const root = d3.hierarchy(dataSource) as any
+    root.x0 = dy / 2
+    root.y0 = 0
     root.descendants().forEach((d, i) => {
       d.id = i
       d._children = d.children
       // collapse all nodes default
       // if (d.depth) d.children = null
     })
-    const dy = divWidth / (root.height + 2)
-    let tree = d3.tree().nodeSize([dx, dy])
 
-    const div = d3.select(divRef.current)
-    div.select('svg').remove()
-    const svg = div
-      .append('svg')
-      .attr('width', divWidth)
-      .attr('height', dx + margin.top + margin.bottom)
-      .style('font', '14px sans-serif')
+    const svg = d3.select(ref.current)
+    svg.selectAll('g').remove()
+    svg
+      .attr('viewBox', [-margin.left, -margin.top, width, dx] as any)
+      .style('font', '16px sans-serif')
       .style('user-select', 'none')
 
-    const bound = svg
-      .append('g')
-      .attr('transform', `translate(${margin.left}, ${margin.top})`)
-    const gLink = bound
+    const gLink = svg
       .append('g')
       .attr('fill', 'none')
       .attr('stroke', '#555')
       .attr('stroke-opacity', 0.4)
       .attr('stroke-width', 2)
-    const gNode = bound
+
+    const gNode = svg
       .append('g')
       .attr('cursor', 'pointer')
       .attr('pointer-events', 'all')
-
-    // zoom
-    const zoom = d3
-      .zoom()
-      .scaleExtent([0.1, 5])
-      .on('zoom', () => {
-        const t = d3.event.transform
-        bound.attr(
-          'transform',
-          `translate(${t.x + margin.left}, ${t.y + margin.top}) scale(${t.k})`
-        )
-      })
-    svg.call(zoom as any)
-
-    update(root)
 
     function update(source) {
       const duration = d3.event && d3.event.altKey ? 2500 : 250
@@ -84,18 +59,26 @@ export default function SLT({ dataSource }: IStoreLocationProps) {
       // compute the new tree layout
       // it modifies root self
       tree(root)
-      const boundHeight = calcHeight(root)
-      root.descendants().forEach((d, i) => {
-        d.x += boundHeight / 2
+
+      let left = root
+      let right = root
+      root.eachBefore((node) => {
+        if (node.x < left.x) left = node
+        if (node.x > right.x) right = node
       })
-      root.x0 = root.x
-      root.y0 = root.y
+
+      const height = right.x - left.x + margin.top + margin.bottom
 
       const transition = svg
         .transition()
         .duration(duration)
-        .attr('width', divWidth)
-        .attr('height', boundHeight + margin.top + margin.bottom)
+        .attr('viewBox', [
+          -margin.left,
+          left.x - margin.top,
+          width,
+          height,
+        ] as any)
+        .tween('resize', () => () => svg.dispatch('toggle'))
 
       // update the nodes
       const node = gNode.selectAll('g').data(nodes, (d: any) => d.id)
@@ -187,20 +170,10 @@ export default function SLT({ dataSource }: IStoreLocationProps) {
       })
     }
 
-    function resizeHandler() {
-      divWidth = divRef.current?.clientWidth || 0
-      const dy = divWidth / (root.height + 2)
-      tree = d3.tree().nodeSize([dx, dy])
-      update(root)
-    }
-
-    window.addEventListener('resize', resizeHandler)
-    return () => {
-      window.removeEventListener('resize', resizeHandler)
-    }
+    update(root)
   }, [dataSource])
 
-  return <div ref={divRef}></div>
+  return <svg ref={ref} />
 }
 
 // refs:

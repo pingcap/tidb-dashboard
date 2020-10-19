@@ -1,5 +1,6 @@
 import React from 'react'
 import StoreLocationTree from '.'
+import SLT from './slt'
 
 export default {
   title: 'StoreLocationTree',
@@ -134,3 +135,4 @@ const dataSource2 = {
 }
 
 export const nameAndValue = () => <StoreLocationTree dataSource={dataSource2} />
+export const slt = () => <SLT dataSource={dataSource2} />

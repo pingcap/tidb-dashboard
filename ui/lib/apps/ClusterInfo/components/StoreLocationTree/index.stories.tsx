@@ -135,4 +135,4 @@ const dataSource2 = {
 }
 
 export const nameAndValue = () => <StoreLocationTree dataSource={dataSource2} />
-export const slt = () => <SLT dataSource={dataSource2} />
+export const autoScale = () => <SLT dataSource={dataSource2} />

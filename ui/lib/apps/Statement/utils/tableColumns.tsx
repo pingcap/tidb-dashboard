@@ -12,7 +12,6 @@ import { Bar, Pre } from '@lib/components'
 import {
   formatVal,
   genDerivedBarSources,
-  IColumnWithSourceFields,
   TableColumnFactory,
 } from '@lib/utils/tableColumnFactory'
 
@@ -90,7 +89,7 @@ function avgMinMaxLatencyColumn(
 function errorsWarningsColumn(
   tcf: TableColumnFactory,
   rows?: { sum_errors?: number; sum_warnings?: number }[]
-): IColumnWithSourceFields {
+): IColumn {
   const capacity = rows
     ? max(rows.map((v) => v.sum_errors! + v.sum_warnings!)) ?? 0
     : 0
@@ -99,7 +98,6 @@ function errorsWarningsColumn(
     name: tcf.columnName('errors_warnings'),
     key,
     fieldName: key,
-    sourceFields: derivedFields.sum_errors,
     minWidth: 140,
     maxWidth: 200,
     columnActionsMode: ColumnActionsMode.clickable,
@@ -149,7 +147,7 @@ function avgMaxColumn<T>(
 export function statementColumns(
   rows: StatementModel[],
   showFullSQL?: boolean
-): IColumnWithSourceFields[] {
+): IColumn[] {
   const tcf = new TableColumnFactory(TRANS_KEY_PREFIX)
 
   return [
@@ -207,7 +205,6 @@ export function statementColumns(
       ...tcf.textWithTooltip('related_schemas', rows),
       minWidth: 160,
       maxWidth: 240,
-      sourceFields: derivedFields.related_schemas,
     },
   ]
 }

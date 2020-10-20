@@ -31,10 +31,6 @@ export type DerivedBar = DerivedField<Bar>
 
 export type DerivedCol = DerivedField<string>
 
-export type IColumnWithSourceFields = IColumn & {
-  sourceFields?: string[]
-}
-
 export function formatVal(val: number, unit: string, decimals: number = 1) {
   const formatFn = getValueFormat(unit)
   return unit === 'short' ? formatFn(val, 0, decimals) : formatFn(val, decimals)
@@ -69,7 +65,7 @@ export class TableColumnFactory {
   textWithTooltip<T extends string, U extends { [K in T]?: any }>(
     fieldName: T,
     _rows?: U[]
-  ): IColumnWithSourceFields {
+  ): IColumn {
     return {
       ...this.columnFromField(fieldName),
       minWidth: 100,
@@ -86,7 +82,7 @@ export class TableColumnFactory {
     fieldName: T,
     unit: string,
     rows?: U[]
-  ): IColumnWithSourceFields {
+  ): IColumn {
     const capacity = rows ? _max(rows.map((v) => v[fieldName])) ?? 0 : 0
     return {
       ...this.columnFromField(fieldName),
@@ -104,11 +100,7 @@ export class TableColumnFactory {
     }
   }
 
-  multipleBar<T>(
-    barsConfig: DerivedBar,
-    unit: string,
-    rows?: T[]
-  ): IColumnWithSourceFields {
+  multipleBar<T>(barsConfig: DerivedBar, unit: string, rows?: T[]): IColumn {
     const {
       displayTransKey,
       sources: [avg, max, min],
@@ -125,15 +117,10 @@ export class TableColumnFactory {
     const maxTooltipPrefixLen = _max(tooltipPrefixLens) || 0
 
     const capacity = rows ? _max(rows.map((v) => v[max.fieldName])) ?? 0 : 0
-    let sourceFields = [avg.fieldName, max.fieldName]
-    if (min) {
-      sourceFields.push(min.fieldName)
-    }
 
     return {
       ...this.columnFromField(avg.fieldName),
       name: this.columnName(displayTransKey || avg.fieldName),
-      sourceFields,
       minWidth: 140,
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
@@ -171,7 +158,7 @@ export class TableColumnFactory {
   timestamp<T extends string, U extends { [K in T]?: number }>(
     fieldName: T,
     _rows?: U[]
-  ): IColumnWithSourceFields {
+  ): IColumn {
     return {
       ...this.columnFromField(fieldName),
       minWidth: 100,
@@ -189,7 +176,7 @@ export class TableColumnFactory {
     fieldName: T,
     showFullSQL?: boolean,
     _rows?: U[]
-  ): IColumnWithSourceFields {
+  ): IColumn {
     return {
       ...this.columnFromField(fieldName),
       minWidth: 100,

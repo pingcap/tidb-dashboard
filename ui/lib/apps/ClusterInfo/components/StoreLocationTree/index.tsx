@@ -4,8 +4,9 @@ import {
   ZoomInOutlined,
   ZoomOutOutlined,
   ReloadOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons'
-import { Space } from 'antd'
+import { Space, Tooltip } from 'antd'
 
 export interface IStoreLocationProps {
   dataSource: any
@@ -72,6 +73,12 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
     const zoom = d3
       .zoom()
       .scaleExtent([0.1, 5])
+      .filter(function () {
+        // ref: https://godbasin.github.io/2018/02/07/d3-tree-notes-4-zoom-amd-drag/
+        // only zoom when pressing CTRL
+        const isWheelEvent = d3.event instanceof WheelEvent
+        return !isWheelEvent || (isWheelEvent && d3.event.ctrlKey)
+      })
       .on('zoom', () => {
         const t = d3.event.transform
         bound.attr(
@@ -224,10 +231,13 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
 
   return (
     <div ref={divRef}>
-      <Space style={{ cursor: 'pointer' }}>
-        <ZoomInOutlined id="slt-zoom-in" style={{ fontSize: 18 }} />
-        <ZoomOutOutlined id="slt-zoom-out" style={{ fontSize: 18 }} />
-        <ReloadOutlined id="slt-zoom-reset" style={{ fontSize: 18 }} />
+      <Space style={{ cursor: 'pointer', fontSize: 18 }}>
+        <ZoomInOutlined id="slt-zoom-in" />
+        <ZoomOutOutlined id="slt-zoom-out" />
+        <ReloadOutlined id="slt-zoom-reset" />
+        <Tooltip title="You can also zoom in or out by pressing CTRL and scrolling mouse">
+          <QuestionCircleOutlined />
+        </Tooltip>
       </Space>
     </div>
   )

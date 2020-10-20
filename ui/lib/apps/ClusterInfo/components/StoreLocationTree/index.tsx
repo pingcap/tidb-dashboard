@@ -1,5 +1,11 @@
 import React, { useRef, useEffect } from 'react'
 import * as d3 from 'd3'
+import {
+  ZoomInOutlined,
+  ZoomOutOutlined,
+  ReloadOutlined,
+} from '@ant-design/icons'
+import { Space } from 'antd'
 
 export interface IStoreLocationProps {
   dataSource: any
@@ -39,9 +45,10 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
     let tree = d3.tree().nodeSize([dx, dy])
 
     const div = d3.select(divRef.current)
-    div.select('svg').remove()
+    div.select('svg#slt').remove()
     const svg = div
       .append('svg')
+      .attr('id', 'slt')
       .attr('width', divWidth)
       .attr('height', dx + margin.top + margin.bottom)
       .style('font', '14px sans-serif')
@@ -76,6 +83,18 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
         // svg.attr('transform', d3.event.transform)
       })
     svg.call(zoom as any)
+
+    // zoom actions
+    d3.select('#slt-zoom-in').on('click', function () {
+      zoom.scaleBy(svg.transition().duration(750) as any, 1.2)
+    })
+    d3.select('#slt-zoom-out').on('click', function () {
+      zoom.scaleBy(svg.transition().duration(750) as any, 0.8)
+    })
+    d3.select('#slt-zoom-reset').on('click', function () {
+      // https://stackoverflow.com/a/51981636/2998877
+      svg.call(zoom.transform as any, d3.zoomIdentity)
+    })
 
     update(root)
 
@@ -203,7 +222,15 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
     }
   }, [dataSource])
 
-  return <div ref={divRef}></div>
+  return (
+    <div ref={divRef}>
+      <Space style={{ cursor: 'pointer' }}>
+        <ZoomInOutlined id="slt-zoom-in" style={{ fontSize: 18 }} />
+        <ZoomOutOutlined id="slt-zoom-out" style={{ fontSize: 18 }} />
+        <ReloadOutlined id="slt-zoom-reset" style={{ fontSize: 18 }} />
+      </Space>
+    </div>
+  )
 }
 
 // refs:

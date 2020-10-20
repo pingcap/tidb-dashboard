@@ -12,7 +12,7 @@ export interface IStoreLocationProps {
   dataSource: any
 }
 
-const margin = { left: 60, right: 40, top: 60, bottom: 60 }
+const margin = { left: 60, right: 40, top: 60, bottom: 100 }
 const dx = 40
 
 const diagonal = d3
@@ -100,7 +100,10 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
     })
     d3.select('#slt-zoom-reset').on('click', function () {
       // https://stackoverflow.com/a/51981636/2998877
-      svg.call(zoom.transform as any, d3.zoomIdentity)
+      svg
+        .transition()
+        .duration(750)
+        .call(zoom.transform as any, d3.zoomIdentity)
     })
 
     update(root)
@@ -114,6 +117,8 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
       // it modifies root self
       tree(root)
       const boundHeight = calcHeight(root)
+      // node.x represent the y axes position actually
+      // [root.y, root.x] is [0, 0], we need to move it to [0, boundHeight/2]
       root.descendants().forEach((d, i) => {
         d.x += boundHeight / 2
       })
@@ -230,8 +235,14 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
   }, [dataSource])
 
   return (
-    <div ref={divRef}>
-      <Space style={{ cursor: 'pointer', fontSize: 18 }}>
+    <div ref={divRef} style={{ position: 'relative' }}>
+      <Space
+        style={{
+          cursor: 'pointer',
+          fontSize: 18,
+          position: 'absolute',
+        }}
+      >
         <ZoomInOutlined id="slt-zoom-in" />
         <ZoomOutOutlined id="slt-zoom-out" />
         <ReloadOutlined id="slt-zoom-reset" />

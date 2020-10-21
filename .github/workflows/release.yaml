@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - release
-    paths:
-      - release-version
 
 jobs:
   release:

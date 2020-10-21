@@ -93,23 +93,24 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
 
     // zoom actions
     d3.select('#slt-zoom-in').on('click', function () {
-      zoom.scaleBy(svg.transition().duration(750) as any, 1.2)
+      zoom.scaleBy(svg.transition().duration(500) as any, 1.2)
     })
     d3.select('#slt-zoom-out').on('click', function () {
-      zoom.scaleBy(svg.transition().duration(750) as any, 0.8)
+      zoom.scaleBy(svg.transition().duration(500) as any, 0.8)
     })
     d3.select('#slt-zoom-reset').on('click', function () {
       // https://stackoverflow.com/a/51981636/2998877
       svg
         .transition()
-        .duration(750)
+        .duration(500)
         .call(zoom.transform as any, d3.zoomIdentity)
     })
 
     update(root)
 
     function update(source) {
-      const duration = d3.event && d3.event.altKey ? 2500 : 250
+      // use altKey to slow down the animation, interesting!
+      const duration = d3.event && d3.event.altKey ? 2500 : 500
       const nodes = root.descendants().reverse()
       const links = root.links()
 
@@ -122,8 +123,11 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
       root.descendants().forEach((d, i) => {
         d.x += boundHeight / 2
       })
-      root.x0 = root.x
-      root.y0 = root.y
+      if (root.x0 === undefined) {
+        // initial root.x0, root.y0, only need to set it once
+        root.x0 = root.x
+        root.y0 = root.y
+      }
 
       const transition = svg
         .transition()

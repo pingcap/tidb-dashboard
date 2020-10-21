@@ -17,17 +17,15 @@ import {
   IColumnKeys,
 } from '@lib/components'
 
-type Bar = {
-  tooltipPrefix: string
-  fieldName: string
-}
-
 export type DerivedField<T> = {
   displayTransKey?: string // it is same as avg field name default
   sources: T[]
 }
 
-export type DerivedBar = DerivedField<Bar>
+export type DerivedBar = DerivedField<{
+  tooltipPrefix: string
+  fieldName: string
+}>
 
 export type DerivedCol = DerivedField<string>
 

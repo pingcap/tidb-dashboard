@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - master
+      - release
 
 jobs:
   e2e_test:

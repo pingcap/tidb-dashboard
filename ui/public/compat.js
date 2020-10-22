@@ -40,8 +40,25 @@ function checkBrowser() {
     d.getElementsByTagName('a')[0].onclick = function () {
       d.getElementsByTagName('div')[0].style.top = '-60px'
     }
-    document.body.prepend(d)
+    document.body.insertBefore(d, document.body.firstChild)
   }
 }
 
 checkBrowser()
+
+// Dealing with compatibility issues manually for special cases
+
+// Object.entries
+// see https://github.com/pingcap-incubator/tidb-dashboard/issues/770
+// polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries
+if (!Object.entries) {
+  Object.entries = function( obj ){
+    var ownProps = Object.keys( obj ),
+      i = ownProps.length,
+      resArray = new Array(i); // preallocate the Array
+    while (i--)
+      resArray[i] = [ownProps[i], obj[ownProps[i]]];
+
+    return resArray;
+  };
+}

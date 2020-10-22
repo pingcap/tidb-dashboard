@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { useToggle } from '@umijs/hooks'
+import { useLocalStorageState } from '@umijs/hooks'
 
 import client, { StatementModel } from '@lib/client'
 import {
@@ -13,11 +13,11 @@ import {
   CardTable,
   DateTime,
   Descriptions,
+  ErrorBar,
   Expand,
   Head,
   HighlightSQL,
   TextWithInfo,
-  ErrorBar,
 } from '@lib/components'
 import CopyLink from '@lib/components/CopyLink'
 import formatSql from '@lib/utils/formatSql'
@@ -33,6 +33,8 @@ export interface IPageQuery {
   beginTime?: number
   endTime?: number
 }
+
+const STMT_DETAIL_EXPAND = 'statement.detail_expand'
 
 function DetailPage() {
   const query = DetailPage.parseQuery(useLocation().search)
@@ -60,7 +62,11 @@ function DetailPage() {
     })
   )
 
-  const { state: sqlExpanded, toggle: toggleSqlExpanded } = useToggle(false)
+  const [sqlExpanded, setSqlExpanded] = useLocalStorageState(
+    STMT_DETAIL_EXPAND,
+    false
+  )
+  const toggleSqlExpanded = () => setSqlExpanded((prev) => !prev)
 
   useEffect(() => {
     if (plans && plans.length > 0) {
@@ -91,7 +97,7 @@ function DetailPage() {
                       <TextWithInfo.TransKey transKey="statement.fields.digest_text" />
                       <Expand.Link
                         expanded={sqlExpanded}
-                        onClick={() => toggleSqlExpanded()}
+                        onClick={toggleSqlExpanded}
                       />
                       <CopyLink data={formatSql(plans[0].digest_text!)} />
                     </Space>

@@ -15,7 +15,7 @@ import {
   DEFAULT_TIME_RANGE,
   TimeRange,
 } from '../pages/List/TimeRangeSelector'
-import { statementColumns } from './tableColumns'
+import { derivedFields, statementColumns } from './tableColumns'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 
 export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
@@ -174,18 +174,16 @@ export default function useStatementTableController(
     queryStmtTypes()
   }, [refreshTimes])
 
-  // Notice: statements, tableColumns, selectedFields make loop dependencies
+  const selectedFields = useMemo(
+    () => getSelectedFields(visibleColumnKeys, derivedFields).join(','),
+    [visibleColumnKeys]
+  )
+
   const tableColumns = useMemo(
     () => statementColumns(statements, showFullSQL),
     [statements, showFullSQL]
   )
-  // make selectedFields as a string instead of an array to avoid infinite loop
-  // I have verified that it will cause infinite loop if we return selectedFields as an array
-  // so it is better to use the basic type (string, number...) instead of object as the dependency
-  const selectedFields = useMemo(
-    () => getSelectedFields(visibleColumnKeys, tableColumns).join(','),
-    [visibleColumnKeys, tableColumns]
-  )
+
   useEffect(() => {
     async function queryStatementList() {
       if (allTimeRanges.length === 0) {

@@ -106,6 +106,9 @@ export default function StatementsOverview() {
                 setQueryOptions({ ...queryOptions, searchText })
               }
             />
+            <Button type="primary">
+              {t('statement.pages.overview.toolbar.export')}
+            </Button>
           </Space>
 
           <Space>

@@ -37,6 +37,7 @@ statement:
           recent: Recent
           usual_time_ranges: Common
           custom_time_ranges: Custom
+        export: export
   settings:
     title: Settings
     disabled_result:

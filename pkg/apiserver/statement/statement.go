@@ -14,6 +14,7 @@
 package statement
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -40,15 +41,23 @@ func NewService(p ServiceParams) *Service {
 
 func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
-	endpoint.Use(auth.MWAuthRequired())
-	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
-	endpoint.GET("/config", s.configHandler)
-	endpoint.POST("/config", s.modifyConfigHandler)
-	endpoint.GET("/time_ranges", s.timeRangesHandler)
-	endpoint.GET("/stmt_types", s.stmtTypesHandler)
-	endpoint.GET("/overviews", s.overviewsHandler)
-	endpoint.GET("/plans", s.getPlansHandler)
-	endpoint.GET("/plan/detail", s.getPlanDetailHandler)
+	{
+		endpoint.GET("/download", s.downloadHandler)
+
+		endpoint.Use(auth.MWAuthRequired())
+		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
+		{
+			endpoint.GET("/config", s.configHandler)
+			endpoint.POST("/config", s.modifyConfigHandler)
+			endpoint.GET("/time_ranges", s.timeRangesHandler)
+			endpoint.GET("/stmt_types", s.stmtTypesHandler)
+			endpoint.GET("/overviews", s.overviewsHandler)
+			endpoint.GET("/plans", s.getPlansHandler)
+			endpoint.GET("/plan/detail", s.getPlanDetailHandler)
+
+			endpoint.GET("/download/acquire_token", s.downloadTokenHandler)
+		}
+	}
 }
 
 // @Summary Get statement configurations
@@ -209,4 +218,68 @@ func (s *Service) getPlanDetailHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, result)
+}
+
+// @Router /statements/download/acquire_token [get]
+// @Summary Generate a download token for downloading statements
+// @Produce plain
+// @Param time query string true "Query"
+// @Success 200 {string} string "xxx"
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) downloadTokenHandler(c *gin.Context) {
+	time := c.Query("time")
+	token, err := utils.NewJWTString("statements/download", time)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.String(http.StatusOK, token)
+}
+
+type DownloadStatementsRequest struct {
+	GetStatementsRequest
+	Token string `json:"token" form:"token"`
+}
+
+// @Router /statements/download [get]
+// @Summary Download statements
+// @Produce application/x-tar,application/zip
+// @Param q query DownloadStatementsRequest true "Query"
+// @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) downloadHandler(c *gin.Context) {
+	var req DownloadStatementsRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		utils.MakeInvalidRequestErrorFromError(c, err)
+		return
+	}
+	str, err := utils.ParseJWTString("statements/download", req.Token)
+	if err != nil {
+		utils.MakeInvalidRequestErrorFromError(c, err)
+		return
+	}
+	time := string(req.BeginTime) + "-" + string(req.EndTime)
+	if str != time {
+		utils.MakeInvalidRequestErrorFromError(c, errors.New("invalid token"))
+		return
+	}
+
+	db := utils.GetTiDBConnection(c)
+	fields := []string{}
+	if strings.TrimSpace(req.Fields) != "" {
+		fields = strings.Split(req.Fields, ",")
+	}
+	overviews, err := QueryStatementsOverview(
+		db,
+		req.BeginTime, req.EndTime,
+		req.Schemas,
+		req.StmtTypes,
+		req.Text,
+		fields)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	// TODO
 }

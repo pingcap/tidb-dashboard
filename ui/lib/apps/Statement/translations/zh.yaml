@@ -37,6 +37,7 @@ statement:
           recent: 最近
           usual_time_ranges: 常用时间范围
           custom_time_ranges: 自定义时间范围
+        export: 导出
   settings:
     title: 设置
     disabled_result:

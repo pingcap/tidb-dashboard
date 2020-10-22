@@ -59,7 +59,7 @@ function updateBrowserList() {
 }
 
 task('gen:browserlist', () => {
-  return src('public/checkBrowser.js')
+  return src('public/compat.js')
     .pipe(updateBrowserList())
     .pipe(dest('public', { overwrite: true }))
 })

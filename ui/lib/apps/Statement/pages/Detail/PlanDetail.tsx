@@ -1,18 +1,18 @@
 import React from 'react'
 import { Space } from 'antd'
-import { useToggle } from '@umijs/hooks'
+import { useLocalStorageState } from '@umijs/hooks'
 import { useTranslation } from 'react-i18next'
 import {
-  Card,
-  Descriptions,
-  HighlightSQL,
-  TextWithInfo,
-  Pre,
-  CardTabs,
-  Expand,
-  CopyLink,
   AnimatedSkeleton,
+  Card,
+  CardTabs,
+  CopyLink,
+  Descriptions,
   ErrorBar,
+  Expand,
+  HighlightSQL,
+  Pre,
+  TextWithInfo,
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
@@ -34,6 +34,8 @@ export interface IPlanDetailProps {
   query: IQuery
 }
 
+const STMT_DETAIL_PLAN_EXPAND = 'statement.detail_plan_expand'
+
 function PlanDetail({ query }: IPlanDetailProps) {
   const { t } = useTranslation()
   const { data, isLoading, error } = useClientRequest((reqConfig) =>
@@ -48,11 +50,22 @@ function PlanDetail({ query }: IPlanDetailProps) {
         reqConfig
       )
   )
-  const { state: sqlExpanded, toggle: toggleSqlExpanded } = useToggle(false)
-  const { state: prevSqlExpanded, toggle: togglePrevSqlExpanded } = useToggle(
-    false
+
+  const [detailExpand, setDetailExpand] = useLocalStorageState(
+    STMT_DETAIL_PLAN_EXPAND,
+    {
+      prev_query: false,
+      query: false,
+      plan: false,
+    }
   )
-  const { state: planExpanded, toggle: togglePlanExpanded } = useToggle(false)
+
+  const togglePrevQuery = () =>
+    setDetailExpand((prev) => ({ ...prev, prev_query: !prev.prev_query }))
+  const toggleQuery = () =>
+    setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
+  const togglePlan = () =>
+    setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
   let title_key
   if (query.allPlans === 1) {
@@ -62,7 +75,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
   } else {
     title_key = 'some'
   }
-
   return (
     <Card
       title={t(`statement.pages.detail.desc.plans.title.${title_key}`, {
@@ -76,20 +88,20 @@ function PlanDetail({ query }: IPlanDetailProps) {
             <Descriptions>
               <Descriptions.Item
                 span={2}
-                multiline={sqlExpanded}
+                multiline={detailExpand.query}
                 label={
                   <Space size="middle">
                     <TextWithInfo.TransKey transKey="statement.fields.query_sample_text" />
                     <Expand.Link
-                      expanded={sqlExpanded}
-                      onClick={() => toggleSqlExpanded()}
+                      expanded={detailExpand.query}
+                      onClick={toggleQuery}
                     />
                     <CopyLink data={formatSql(data.query_sample_text)} />
                   </Space>
                 }
               >
                 <Expand
-                  expanded={sqlExpanded}
+                  expanded={detailExpand.query}
                   collapsedContent={
                     <HighlightSQL sql={data.query_sample_text!} compact />
                   }
@@ -100,20 +112,20 @@ function PlanDetail({ query }: IPlanDetailProps) {
               {data.prev_sample_text ? (
                 <Descriptions.Item
                   span={2}
-                  multiline={prevSqlExpanded}
+                  multiline={detailExpand.prev_query}
                   label={
                     <Space size="middle">
                       <TextWithInfo.TransKey transKey="statement.fields.prev_sample_text" />
                       <Expand.Link
-                        expanded={prevSqlExpanded}
-                        onClick={() => togglePrevSqlExpanded()}
+                        expanded={detailExpand.prev_query}
+                        onClick={togglePrevQuery}
                       />
                       <CopyLink data={formatSql(data.prev_sample_text)} />
                     </Space>
                   }
                 >
                   <Expand
-                    expanded={prevSqlExpanded}
+                    expanded={detailExpand.prev_query}
                     collapsedContent={
                       <HighlightSQL sql={data.prev_sample_text!} compact />
                     }
@@ -124,19 +136,19 @@ function PlanDetail({ query }: IPlanDetailProps) {
               ) : null}
               <Descriptions.Item
                 span={2}
-                multiline={planExpanded}
+                multiline={detailExpand.plan}
                 label={
                   <Space size="middle">
                     <TextWithInfo.TransKey transKey="statement.fields.plan" />
                     <Expand.Link
-                      expanded={planExpanded}
-                      onClick={() => togglePlanExpanded()}
+                      expanded={detailExpand.plan}
+                      onClick={togglePlan}
                     />
                     <CopyLink data={data.plan ?? ''} />
                   </Space>
                 }
               >
-                <Expand expanded={planExpanded}>
+                <Expand expanded={detailExpand.plan}>
                   <Pre noWrap>{data.plan}</Pre>
                 </Expand>
               </Descriptions.Item>

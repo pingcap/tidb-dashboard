@@ -74,6 +74,10 @@ statement:
     avg_mem_tooltip: Memory usage of single query
     max_mem: Max Memory
     max_mem_tooltip: Maximum memory usage of single query
+    avg_disk: Mean Disk
+    avg_disk_tooltip: Disk usage of single query
+    max_disk: Max Disk
+    max_disk_tooltip: Maximum disk usage of single query
     index_names: Index Name
     index_names_tooltip: The name of the used index
     first_seen: First Seen

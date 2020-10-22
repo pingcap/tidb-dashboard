@@ -84,6 +84,8 @@ type Model struct {
 	AggSumBackoffTimes       int    `json:"sum_backoff_times" agg:"SUM(sum_backoff_times)"`
 	AggAvgMem                int    `json:"avg_mem" agg:"ROUND(SUM(exec_count * avg_mem) / SUM(exec_count))"`
 	AggMaxMem                int    `json:"max_mem" agg:"MAX(max_mem)"`
+	AggAvgDisk               int    `json:"avg_disk" agg:"ROUND(SUM(exec_count * avg_disk) / SUM(exec_count))"`
+	AggMaxDisk               int    `json:"max_disk" agg:"MAX(max_disk)"`
 	AggAvgAffectedRows       int    `json:"avg_affected_rows" agg:"ROUND(SUM(exec_count * avg_affected_rows) / SUM(exec_count))"`
 	AggFirstSeen             int    `json:"first_seen" agg:"UNIX_TIMESTAMP(MIN(first_seen))"`
 	AggLastSeen              int    `json:"last_seen" agg:"UNIX_TIMESTAMP(MAX(last_seen))"`

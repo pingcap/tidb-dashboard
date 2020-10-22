@@ -43,6 +43,7 @@ type SlowQuery struct {
 	ProcessTime float64 `gorm:"column:Process_time" json:"process_time"`
 
 	MemoryMax  int  `gorm:"column:Mem_max" json:"memory_max"`
+	DiskMax    int  `gorm:"column:Disk_max" json:"disk_max"`
 	TxnStartTS uint `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
 
 	// Detail

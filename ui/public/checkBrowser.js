@@ -40,7 +40,7 @@ function checkBrowser() {
     d.getElementsByTagName('a')[0].onclick = function () {
       d.getElementsByTagName('div')[0].style.top = '-60px'
     }
-    document.body.prepend ? document.body.prepend(d) : document.body.insertBefore(d, document.body.firstChild)
+    document.body.insertBefore(d, document.body.firstChild)
   }
 }
 

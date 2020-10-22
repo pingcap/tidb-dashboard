@@ -18,6 +18,21 @@ function ResultStatusBadge({ status }: { status: 'success' | 'error' }) {
 //////////////////////////////////////////
 const TRANS_KEY_PREFIX = 'slow_query.fields'
 
+export const derivedFields = {
+  cop_proc_avg: [
+    { tooltipPrefix: 'mean', fieldName: 'cop_proc_avg' },
+    { tooltipPrefix: 'max', fieldName: 'cop_proc_max' },
+    { tooltipPrefix: 'p90', fieldName: 'cop_proc_p90' },
+  ],
+  cop_wait_avg: [
+    { tooltipPrefix: 'mean', fieldName: 'cop_wait_avg' },
+    { tooltipPrefix: 'max', fieldName: 'cop_wait_max' },
+    { tooltipPrefix: 'p90', fieldName: 'cop_wait_p90' },
+  ],
+}
+
+//////////////////////////////////////////
+
 export function slowQueryColumns(
   rows: SlowquerySlowQuery[],
   showFullSQL?: boolean
@@ -73,28 +88,8 @@ export function slowQueryColumns(
     tcf.bar.single('commit_backoff_time', 'ns', rows),
     tcf.bar.single('resolve_lock_time', 'ns', rows),
     // cop
-    tcf.bar.multiple(
-      {
-        bars: [
-          { mean: 'cop_proc_avg' },
-          { max: 'cop_proc_max' },
-          { p90: 'cop_proc_p90' },
-        ],
-      },
-      'ns',
-      rows
-    ),
-    tcf.bar.multiple(
-      {
-        bars: [
-          { mean: 'cop_wait_avg' },
-          { max: 'cop_wait_avg' },
-          { p90: 'cop_wait_avg' },
-        ],
-      },
-      'ns',
-      rows
-    ),
+    tcf.bar.multiple({ sources: derivedFields.cop_proc_avg }, 'ns', rows),
+    tcf.bar.multiple({ sources: derivedFields.cop_wait_avg }, 'ns', rows),
     // transaction
     tcf.bar.single('write_keys', 'short', rows),
     tcf.bar.single('write_size', 'bytes', rows),

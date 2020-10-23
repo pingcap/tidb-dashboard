@@ -17,6 +17,7 @@ import TimeRangeSelector from './TimeRangeSelector'
 import useStatementTableController, {
   DEF_STMT_COLUMN_KEYS,
 } from '../../utils/useStatementTableController'
+import client from '@lib/client'
 
 const { Search } = Input
 
@@ -47,7 +48,18 @@ export default function StatementsOverview() {
     allStmtTypes,
     loadingStatements,
     tableColumns,
+    getDownloadToken,
   } = controller
+
+  async function exportCSV() {
+    const res = await getDownloadToken()
+    const token = res.data
+    if (!token) {
+      return
+    }
+    const url = `${client.getBasePath()}/statements/download?token=${token}`
+    window.open(url)
+  }
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -106,7 +118,7 @@ export default function StatementsOverview() {
                 setQueryOptions({ ...queryOptions, searchText })
               }
             />
-            <Button type="primary">
+            <Button type="primary" onClick={exportCSV}>
               {t('statement.pages.overview.toolbar.export')}
             </Button>
           </Space>

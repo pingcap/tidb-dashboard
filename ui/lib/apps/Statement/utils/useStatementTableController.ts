@@ -67,6 +67,8 @@ export interface IStatementTableController {
 
   tableColumns: IColumn[]
   visibleColumnKeys: IColumnKeys
+
+  getDownloadToken: () => Promise<any>
 }
 
 export default function useStatementTableController(
@@ -218,6 +220,19 @@ export default function useStatementTableController(
     queryStatementList()
   }, [queryOptions, allTimeRanges, validTimeRange, selectedFields])
 
+  function getDownloadToken() {
+    return client
+      .getInstance()
+      .statementsDownloadAcquireTokenGet(
+        validTimeRange.begin_time!,
+        validTimeRange.end_time!,
+        selectedFields,
+        queryOptions.schemas,
+        queryOptions.stmtTypes,
+        queryOptions.searchText
+      )
+  }
+
   return {
     queryOptions,
     setQueryOptions,
@@ -237,5 +252,7 @@ export default function useStatementTableController(
 
     tableColumns,
     visibleColumnKeys,
+
+    getDownloadToken,
   }
 }

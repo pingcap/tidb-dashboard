@@ -14,8 +14,13 @@
 package statement
 
 import (
+	"encoding/csv"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -223,48 +228,16 @@ func (s *Service) getPlanDetailHandler(c *gin.Context) {
 // @Router /statements/download/acquire_token [get]
 // @Summary Generate a download token for downloading statements
 // @Produce plain
-// @Param time query string true "Query"
+// @Param q query GetStatementsRequest true "Query"
 // @Success 200 {string} string "xxx"
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) downloadTokenHandler(c *gin.Context) {
-	time := c.Query("time")
-	token, err := utils.NewJWTString("statements/download", time)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	c.String(http.StatusOK, token)
-}
-
-type DownloadStatementsRequest struct {
-	GetStatementsRequest
-	Token string `json:"token" form:"token"`
-}
-
-// @Router /statements/download [get]
-// @Summary Download statements
-// @Produce application/x-tar,application/zip
-// @Param q query DownloadStatementsRequest true "Query"
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) downloadHandler(c *gin.Context) {
-	var req DownloadStatementsRequest
+	var req GetStatementsRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
-	str, err := utils.ParseJWTString("statements/download", req.Token)
-	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
-		return
-	}
-	time := string(req.BeginTime) + "-" + string(req.EndTime)
-	if str != time {
-		utils.MakeInvalidRequestErrorFromError(c, errors.New("invalid token"))
-		return
-	}
-
 	db := utils.GetTiDBConnection(c)
 	fields := []string{}
 	if strings.TrimSpace(req.Fields) != "" {
@@ -281,5 +254,74 @@ func (s *Service) downloadHandler(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
+	if len(overviews) == 0 {
+		utils.MakeInvalidRequestErrorFromError(c, errors.New("no data to export"))
+		return
+	}
+
 	// TODO
+	// convert data
+	fieldsMap := make(map[string]string)
+	t := reflect.TypeOf(overviews[0])
+	fieldsNum := t.NumField()
+	for i := 0; i < fieldsNum; i++ {
+		field := t.Field(i)
+		fieldsMap[strings.ToLower(field.Tag.Get("json"))] = field.Name
+	}
+
+	csvData := [][]string{fields}
+	for _, overview := range overviews {
+		row := []string{}
+		v := reflect.ValueOf(overview)
+		for _, field := range fields {
+			filedName := fieldsMap[field]
+			s := v.FieldByName(filedName)
+			var val string
+			switch s.Interface().(type) {
+			case int:
+				val = strconv.FormatInt(s.Int(), 10)
+			case string:
+				val = s.String()
+			}
+			row = append(row, val)
+		}
+		csvData = append(csvData, row)
+	}
+
+	// generate csv
+	// get token by filename
+	tmpfile, err := ioutil.TempFile("", "statements")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	defer tmpfile.Close()
+	csvwriter := csv.NewWriter(tmpfile)
+	for _, csvRow := range csvData {
+		_ = csvwriter.Write(csvRow)
+	}
+	csvwriter.Flush()
+	fmt.Println("name:", tmpfile.Name())
+
+	// generate token
+	token, err := utils.NewJWTString("statements/download", tmpfile.Name())
+	c.String(http.StatusOK, token)
+}
+
+// @Router /statements/download [get]
+// @Summary Download statements
+// @Produce application/x-tar,application/zip
+// @Param token query string true "download token"
+// @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) downloadHandler(c *gin.Context) {
+	token := c.Query("token")
+	str, err := utils.ParseJWTString("statements/download", token)
+	if err != nil {
+		utils.MakeInvalidRequestErrorFromError(c, err)
+		return
+	}
+	// str is filename
+	// send back this file
+	c.String(http.StatusOK, str)
 }

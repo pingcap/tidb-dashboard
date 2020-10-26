@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -318,6 +319,12 @@ func (s *Service) downloadHandler(c *gin.Context) {
 	fielPath, err := utils.ParseJWTString("statements/download", token)
 	if err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
+		return
+	}
+
+	_, err = os.Stat(fielPath)
+	if err != nil {
+		_ = c.Error(err)
 		return
 	}
 

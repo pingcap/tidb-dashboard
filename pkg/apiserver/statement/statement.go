@@ -305,6 +305,10 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 
 	// generate token by filepath
 	token, err := utils.NewJWTString("statements/download", tmpfile.Name())
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 	c.String(http.StatusOK, token)
 }
 

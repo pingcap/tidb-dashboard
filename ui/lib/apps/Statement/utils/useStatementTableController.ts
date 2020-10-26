@@ -69,6 +69,7 @@ export interface IStatementTableController {
   visibleColumnKeys: IColumnKeys
 
   getDownloadToken: () => Promise<any>
+  downloading: boolean
 }
 
 export default function useStatementTableController(
@@ -220,17 +221,26 @@ export default function useStatementTableController(
     queryStatementList()
   }, [queryOptions, allTimeRanges, validTimeRange, selectedFields])
 
-  function getDownloadToken() {
-    return client
-      .getInstance()
-      .statementsDownloadAcquireTokenGet(
-        validTimeRange.begin_time!,
-        validTimeRange.end_time!,
-        selectedFields,
-        queryOptions.schemas,
-        queryOptions.stmtTypes,
-        queryOptions.searchText
-      )
+  const [downloading, setDownloading] = useState(false)
+  async function getDownloadToken() {
+    let token = ''
+    try {
+      setDownloading(true)
+      const res = await client
+        .getInstance()
+        .statementsDownloadAcquireTokenGet(
+          validTimeRange.begin_time!,
+          validTimeRange.end_time!,
+          selectedFields,
+          queryOptions.schemas,
+          queryOptions.stmtTypes,
+          queryOptions.searchText
+        )
+      token = res.data
+    } finally {
+      setDownloading(false)
+    }
+    return token
   }
 
   return {
@@ -254,5 +264,6 @@ export default function useStatementTableController(
     visibleColumnKeys,
 
     getDownloadToken,
+    downloading,
   }
 }

@@ -48,17 +48,17 @@ export default function StatementsOverview() {
     allStmtTypes,
     loadingStatements,
     tableColumns,
+
     getDownloadToken,
+    downloading,
   } = controller
 
   async function exportCSV() {
-    const res = await getDownloadToken()
-    const token = res.data
-    if (!token) {
-      return
+    const token = await getDownloadToken()
+    if (token) {
+      const url = `${client.getBasePath()}/statements/download?token=${token}`
+      window.open(url)
     }
-    const url = `${client.getBasePath()}/statements/download?token=${token}`
-    window.open(url)
   }
 
   return (
@@ -118,7 +118,7 @@ export default function StatementsOverview() {
                 setQueryOptions({ ...queryOptions, searchText })
               }
             />
-            <Button type="primary" onClick={exportCSV}>
+            <Button type="primary" onClick={exportCSV} loading={downloading}>
               {t('statement.pages.overview.toolbar.export')}
             </Button>
           </Space>

@@ -24,7 +24,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pingcap/log"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
@@ -259,7 +261,6 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		return
 	}
 
-	// TODO
 	// convert data
 	fieldsMap := make(map[string]string)
 	t := reflect.TypeOf(overviews[0])
@@ -280,7 +281,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 			switch s.Interface().(type) {
 			case int:
 				val = strconv.FormatInt(s.Int(), 10)
-			case string:
+			default:
 				val = s.String()
 			}
 			row = append(row, val)
@@ -289,8 +290,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	}
 
 	// generate csv
-	// get token by filename
-	tmpfile, err := ioutil.TempFile("", "statements")
+	tmpfile, err := ioutil.TempFile("", fmt.Sprintf("statements_%d_%d_*.csv", req.BeginTime, req.EndTime))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -301,27 +301,30 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		_ = csvwriter.Write(csvRow)
 	}
 	csvwriter.Flush()
-	fmt.Println("name:", tmpfile.Name())
 
-	// generate token
+	// generate token by filepath
 	token, err := utils.NewJWTString("statements/download", tmpfile.Name())
 	c.String(http.StatusOK, token)
 }
 
 // @Router /statements/download [get]
 // @Summary Download statements
-// @Produce application/x-tar,application/zip
+// @Produce application/zip
 // @Param token query string true "download token"
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) downloadHandler(c *gin.Context) {
 	token := c.Query("token")
-	str, err := utils.ParseJWTString("statements/download", token)
+	fielPath, err := utils.ParseJWTString("statements/download", token)
 	if err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
-	// str is filename
-	// send back this file
-	c.String(http.StatusOK, str)
+
+	c.Writer.Header().Set("Content-type", "application/octet-stream")
+	c.Writer.Header().Set("Content-Disposition", "attachment; filename=\"statements.zip\"")
+	err = utils.StreamZipPack(c.Writer, []string{fielPath}, true)
+	if err != nil {
+		log.Error("Stream zip pack failed", zap.Error(err))
+	}
 }

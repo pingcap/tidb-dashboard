@@ -230,7 +230,7 @@ func (s *Service) getPlanDetailHandler(c *gin.Context) {
 }
 
 // @Router /statements/download/acquire_token [get]
-// @Summary Generate a download token for downloading statements
+// @Summary Generate a download token for exported statements
 // @Produce plain
 // @Param q query GetStatementsRequest true "Query"
 // @Success 200 {string} string "xxx"

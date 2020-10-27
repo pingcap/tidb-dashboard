@@ -1,83 +1,139 @@
 import React, { useRef, useEffect } from 'react'
 import * as d3 from 'd3'
+import {
+  ZoomInOutlined,
+  ZoomOutOutlined,
+  ReloadOutlined,
+  QuestionCircleOutlined,
+} from '@ant-design/icons'
+import { Space, Tooltip } from 'antd'
 
 export interface IStoreLocationProps {
   dataSource: any
 }
 
-const margin = { top: 40, right: 120, bottom: 10, left: 80 }
-const width = 954
+const margin = { left: 60, right: 40, top: 60, bottom: 100 }
 const dx = 40
-const dy = width / 6
-
-const tree = d3.tree().nodeSize([dx, dy])
 
 const diagonal = d3
   .linkHorizontal()
   .x((d: any) => d.y)
   .y((d: any) => d.x)
 
+function calcHeight(root) {
+  let x0 = Infinity
+  let x1 = -x0
+  root.each((d) => {
+    if (d.x > x1) x1 = d.x
+    if (d.x < x0) x0 = d.x
+  })
+  return x1 - x0
+}
+
 export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
-  const ref = useRef(null)
+  const divRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    let divWidth = divRef.current?.clientWidth || 0
     const root = d3.hierarchy(dataSource) as any
-    root.x0 = dy / 2
-    root.y0 = 0
     root.descendants().forEach((d, i) => {
       d.id = i
       d._children = d.children
       // collapse all nodes default
       // if (d.depth) d.children = null
     })
+    const dy = divWidth / (root.height + 2)
+    let tree = d3.tree().nodeSize([dx, dy])
 
-    const svg = d3.select(ref.current)
-    svg.selectAll('g').remove()
-    svg
-      .attr('viewBox', [-margin.left, -margin.top, width, dx] as any)
-      .style('font', '16px sans-serif')
+    const div = d3.select(divRef.current)
+    div.select('svg#slt').remove()
+    const svg = div
+      .append('svg')
+      .attr('id', 'slt')
+      .attr('width', divWidth)
+      .attr('height', dx + margin.top + margin.bottom)
+      .style('font', '14px sans-serif')
       .style('user-select', 'none')
 
-    const gLink = svg
+    const bound = svg
+      .append('g')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`)
+    const gLink = bound
       .append('g')
       .attr('fill', 'none')
       .attr('stroke', '#555')
       .attr('stroke-opacity', 0.4)
       .attr('stroke-width', 2)
-
-    const gNode = svg
+    const gNode = bound
       .append('g')
       .attr('cursor', 'pointer')
       .attr('pointer-events', 'all')
 
+    // zoom
+    const zoom = d3
+      .zoom()
+      .scaleExtent([0.1, 5])
+      .filter(function () {
+        // ref: https://godbasin.github.io/2018/02/07/d3-tree-notes-4-zoom-amd-drag/
+        // only zoom when pressing CTRL
+        const isWheelEvent = d3.event instanceof WheelEvent
+        return !isWheelEvent || (isWheelEvent && d3.event.ctrlKey)
+      })
+      .on('zoom', () => {
+        const t = d3.event.transform
+        bound.attr(
+          'transform',
+          `translate(${t.x + margin.left}, ${t.y + margin.top}) scale(${t.k})`
+        )
+
+        // this will cause unexpected result when dragging
+        // svg.attr('transform', d3.event.transform)
+      })
+    svg.call(zoom as any)
+
+    // zoom actions
+    d3.select('#slt-zoom-in').on('click', function () {
+      zoom.scaleBy(svg.transition().duration(500) as any, 1.2)
+    })
+    d3.select('#slt-zoom-out').on('click', function () {
+      zoom.scaleBy(svg.transition().duration(500) as any, 0.8)
+    })
+    d3.select('#slt-zoom-reset').on('click', function () {
+      // https://stackoverflow.com/a/51981636/2998877
+      svg
+        .transition()
+        .duration(500)
+        .call(zoom.transform as any, d3.zoomIdentity)
+    })
+
+    update(root)
+
     function update(source) {
-      const duration = d3.event && d3.event.altKey ? 2500 : 250
+      // use altKey to slow down the animation, interesting!
+      const duration = d3.event && d3.event.altKey ? 2500 : 500
       const nodes = root.descendants().reverse()
       const links = root.links()
 
       // compute the new tree layout
       // it modifies root self
       tree(root)
-
-      let left = root
-      let right = root
-      root.eachBefore((node) => {
-        if (node.x < left.x) left = node
-        if (node.x > right.x) right = node
+      const boundHeight = calcHeight(root)
+      // node.x represent the y axes position actually
+      // [root.y, root.x] is [0, 0], we need to move it to [0, boundHeight/2]
+      root.descendants().forEach((d, i) => {
+        d.x += boundHeight / 2
       })
-
-      const height = right.x - left.x + margin.top + margin.bottom
+      if (root.x0 === undefined) {
+        // initial root.x0, root.y0, only need to set it once
+        root.x0 = root.x
+        root.y0 = root.y
+      }
 
       const transition = svg
         .transition()
         .duration(duration)
-        .attr('viewBox', [
-          -margin.left,
-          left.x - margin.top,
-          width,
-          height,
-        ] as any)
-        .tween('resize', () => () => svg.dispatch('toggle'))
+        .attr('width', divWidth)
+        .attr('height', boundHeight + margin.top + margin.bottom)
 
       // update the nodes
       const node = gNode.selectAll('g').data(nodes, (d: any) => d.id)
@@ -169,10 +225,37 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
       })
     }
 
-    update(root)
+    function resizeHandler() {
+      divWidth = divRef.current?.clientWidth || 0
+      const dy = divWidth / (root.height + 2)
+      tree = d3.tree().nodeSize([dx, dy])
+      update(root)
+    }
+
+    window.addEventListener('resize', resizeHandler)
+    return () => {
+      window.removeEventListener('resize', resizeHandler)
+    }
   }, [dataSource])
 
-  return <svg ref={ref} />
+  return (
+    <div ref={divRef} style={{ position: 'relative' }}>
+      <Space
+        style={{
+          cursor: 'pointer',
+          fontSize: 18,
+          position: 'absolute',
+        }}
+      >
+        <ZoomInOutlined id="slt-zoom-in" />
+        <ZoomOutOutlined id="slt-zoom-out" />
+        <ReloadOutlined id="slt-zoom-reset" />
+        <Tooltip title="You can also zoom in or out by pressing CTRL and scrolling mouse">
+          <QuestionCircleOutlined />
+        </Tooltip>
+      </Space>
+    </div>
+  )
 }
 
 // refs:

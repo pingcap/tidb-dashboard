@@ -23,6 +23,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pingcap/log"
@@ -291,7 +292,10 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	}
 
 	// generate csv
-	tmpfile, err := ioutil.TempFile("", fmt.Sprintf("statements_%d_%d_*.csv", req.BeginTime, req.EndTime))
+	timeLayout := "01021504"
+	beginTime := time.Unix(int64(req.BeginTime), 0).Format(timeLayout)
+	endTime := time.Unix(int64(req.EndTime), 0).Format(timeLayout)
+	tmpfile, err := ioutil.TempFile("", fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime))
 	if err != nil {
 		_ = c.Error(err)
 		return

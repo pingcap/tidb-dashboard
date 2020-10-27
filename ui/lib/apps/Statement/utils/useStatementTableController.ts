@@ -68,7 +68,7 @@ export interface IStatementTableController {
   tableColumns: IColumn[]
   visibleColumnKeys: IColumnKeys
 
-  getDownloadToken: () => Promise<any>
+  getDownloadToken: () => Promise<string>
   downloading: boolean
 }
 

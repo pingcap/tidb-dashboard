@@ -73,6 +73,7 @@ export const derivedFields = {
   ),
   avg_txn_retry: genDerivedBarSources('avg_txn_retry', 'max_txn_retry'),
   avg_mem: genDerivedBarSources('avg_mem', 'max_mem'),
+  avg_disk: genDerivedBarSources('avg_disk', 'max_disk'),
   sum_errors: ['sum_errors', 'sum_warnings'],
   related_schemas: ['table_names'],
 }
@@ -163,6 +164,7 @@ export function statementColumns(
       columnActionsMode: ColumnActionsMode.clickable,
     },
     avgMaxColumn(tcf, 'avg_mem', 'bytes', rows),
+    avgMaxColumn(tcf, 'avg_disk', 'bytes', rows),
     errorsWarningsColumn(tcf, rows),
     avgMaxColumn(tcf, 'parse_latency', 'ns', rows),
     avgMaxColumn(tcf, 'compile_latency', 'ns', rows),

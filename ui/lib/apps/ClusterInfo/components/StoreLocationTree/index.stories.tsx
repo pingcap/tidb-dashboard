@@ -6,7 +6,7 @@ export default {
 }
 
 const dataSource1 = {
-  name: 'labels',
+  name: 'Stores',
   children: [
     {
       name: 'sh',
@@ -65,7 +65,7 @@ const dataSource1 = {
 export const onlyName = () => <StoreLocationTree dataSource={dataSource1} />
 
 const dataSource2 = {
-  name: 'labels',
+  name: 'Stores',
   value: '',
   children: [
     {

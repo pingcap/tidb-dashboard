@@ -14,6 +14,8 @@ slow_query:
     query_time_tooltip: 该 SQL 查询总的执行时间
     memory_max: 最大内存
     memory_max_tooltip: 该 SQL 查询执行时占用的最大内存空间
+    disk_max: 最大磁盘空间
+    disk_max_tooltip: 该 SQL 查询执行时占用的最大磁盘空间
     digest: SQL 模板 ID
     digest_tooltip: SQL 模板的唯一标识（SQL 指纹）
     is_internal: 是否为内部 SQL 查询

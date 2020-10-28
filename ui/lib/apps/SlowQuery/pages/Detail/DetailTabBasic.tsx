@@ -29,6 +29,10 @@ export default function TabBasic({ data }: ITabBasicProps) {
       key: 'memory_max',
       value: getValueFormat('bytes')(data.memory_max || 0, 1),
     },
+    {
+      key: 'disk_max',
+      value: getValueFormat('bytes')(data.disk_max || 0, 1),
+    },
     { key: 'instance', value: data.instance },
     { key: 'connection_id', value: data.connection_id },
     { key: 'user', value: data.user },

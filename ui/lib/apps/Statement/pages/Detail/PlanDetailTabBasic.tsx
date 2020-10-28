@@ -66,6 +66,14 @@ export default function TabBasic({ data }: ITabBasicProps) {
       key: 'max_mem',
       value: getValueFormat('bytes')(data.max_mem || 0, 1),
     },
+    {
+      key: 'avg_disk',
+      value: getValueFormat('bytes')(data.avg_disk || 0, 1),
+    },
+    {
+      key: 'max_disk',
+      value: getValueFormat('bytes')(data.max_disk || 0, 1),
+    },
   ]
   const columns = valueColumns('statement.fields.')
   return (

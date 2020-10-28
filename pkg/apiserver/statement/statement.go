@@ -14,6 +14,8 @@
 package statement
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -26,6 +28,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gtank/cryptopasta"
 	"github.com/pingcap/log"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -64,7 +67,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 			endpoint.GET("/plans", s.getPlansHandler)
 			endpoint.GET("/plan/detail", s.getPlanDetailHandler)
 
-			endpoint.GET("/download/acquire_token", s.downloadTokenHandler)
+			endpoint.POST("/download/token", s.downloadTokenHandler)
 		}
 	}
 }
@@ -229,16 +232,16 @@ func (s *Service) getPlanDetailHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// @Router /statements/download/acquire_token [get]
+// @Router /statements/download/token [post]
 // @Summary Generate a download token for exported statements
 // @Produce plain
-// @Param q query GetStatementsRequest true "Query"
+// @Param request body GetStatementsRequest true "Request body"
 // @Success 200 {string} string "xxx"
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) downloadTokenHandler(c *gin.Context) {
 	var req GetStatementsRequest
-	if err := c.ShouldBindQuery(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
@@ -291,24 +294,42 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		csvData = append(csvData, row)
 	}
 
-	// generate csv
+	// generate temp file that persist encrypted data
 	timeLayout := "01021504"
 	beginTime := time.Unix(int64(req.BeginTime), 0).Format(timeLayout)
 	endTime := time.Unix(int64(req.EndTime), 0).Format(timeLayout)
-	tmpfile, err := ioutil.TempFile("", fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime))
+	csvFile, err := ioutil.TempFile("", fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime))
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	defer tmpfile.Close()
-	csvwriter := csv.NewWriter(tmpfile)
+	defer csvFile.Close()
+	// generate buf writer for tmpfile
+	csvBuf := bufio.NewWriter(csvFile)
+	// generate encrypted key
+	secretKey := cryptopasta.NewEncryptionKey()
+
+	rowBuf := bytes.NewBuffer(nil)
+	csvwriter := csv.NewWriter(rowBuf)
 	for _, csvRow := range csvData {
 		_ = csvwriter.Write(csvRow)
+		csvwriter.Flush()
+		row := make([]byte, len(rowBuf.String()))
+		_, _ = rowBuf.Read(row)
+
+		encrypted, err := cryptopasta.Encrypt(row, secretKey)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+		csvBuf.Write(encrypted)
 	}
-	csvwriter.Flush()
+	csvBuf.Flush()
+
+	// zip file and encrypt
 
 	// generate token by filepath
-	token, err := utils.NewJWTString("statements/download", tmpfile.Name())
+	token, err := utils.NewJWTString("statements/download", csvFile.Name())
 	if err != nil {
 		_ = c.Error(err)
 		return

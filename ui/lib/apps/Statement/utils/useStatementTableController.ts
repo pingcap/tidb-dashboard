@@ -226,16 +226,14 @@ export default function useStatementTableController(
     let token = ''
     try {
       setDownloading(true)
-      const res = await client
-        .getInstance()
-        .statementsDownloadAcquireTokenGet(
-          validTimeRange.begin_time!,
-          validTimeRange.end_time!,
-          selectedFields,
-          queryOptions.schemas,
-          queryOptions.stmtTypes,
-          queryOptions.searchText
-        )
+      const res = await client.getInstance().statementsDownloadTokenPost({
+        begin_time: validTimeRange.begin_time,
+        end_time: validTimeRange.end_time,
+        fields: selectedFields,
+        schemas: queryOptions.schemas,
+        stmt_types: queryOptions.stmtTypes,
+        text: queryOptions.searchText,
+      })
       token = res.data
     } finally {
       setDownloading(false)

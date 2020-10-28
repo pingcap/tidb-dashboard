@@ -22,7 +22,10 @@ function includeMorePaths(config) {
 const custom = require('../config-overrides')
 
 module.exports = {
-  stories: ['../lib/components/**/*.stories.@(ts|tsx|js|jsx)'],
+  stories: [
+    '../lib/components/**/*.stories.@(ts|tsx|js|jsx)',
+    '../lib/apps/**/*.stories.@(ts|tsx|js|jsx)',
+  ],
   addons: [
     '@storybook/preset-create-react-app',
     '@storybook/addon-actions',

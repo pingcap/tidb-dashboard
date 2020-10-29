@@ -10,7 +10,6 @@ import {
   Dropdown,
   Menu,
   message,
-  Modal,
 } from 'antd'
 import { useLocalStorageState } from '@umijs/hooks'
 import {
@@ -35,6 +34,12 @@ const { Search } = Input
 
 const STMT_VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const STMT_SHOW_FULL_SQL = 'statement.show_full_sql'
+
+function downloadByLink(url: string) {
+  const downloadLink = document.createElement('a')
+  downloadLink.href = url
+  downloadLink.click()
+}
 
 export default function StatementsOverview() {
   const { t } = useTranslation()
@@ -66,18 +71,13 @@ export default function StatementsOverview() {
   } = controller
 
   async function exportCSV() {
-    message.info('exporting...', 1)
+    message.info(t('statement.pages.overview.toolbar.exporting') + '...', 2)
     const token = await getDownloadToken()
     if (token) {
       const url = `${client.getBasePath()}/statements/download?token=${token}`
-      Modal.success({
-        title: 'Export finished',
-        okText: 'Download',
-        onOk: () => {
-          window.open(url)
-          return Promise.resolve('')
-        },
-      })
+      // `window.open(url)` would cause browser popup interception if getDownloadToken takes long time
+      // window.open(url)
+      downloadByLink(url)
     }
   }
 
@@ -96,8 +96,9 @@ export default function StatementsOverview() {
     <Menu onClick={menuItemClick}>
       <Menu.Item key="settings">{t('statement.settings.title')}</Menu.Item>
       <Menu.Item key="export" disabled={downloading}>
-        {/* {t('statement.pages.overview.toolbar.export')} */}
-        {downloading ? 'Exporting' : 'Export'}
+        {downloading
+          ? t('statement.pages.overview.toolbar.exporting')
+          : t('statement.pages.overview.toolbar.export')}
       </Menu.Item>
     </Menu>
   )

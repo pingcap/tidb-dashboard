@@ -14,11 +14,10 @@
 package statement
 
 import (
-	"bufio"
-	"bytes"
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -33,6 +32,7 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
+	aesctr "github.com/Xeoncross/go-aesctr-with-hmac"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
@@ -304,31 +304,23 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		return
 	}
 	defer csvFile.Close()
-	// generate buf writer for tmpfile
-	csvBuf := bufio.NewWriter(csvFile)
-	// generate encrypted key
+
+	// generate encryption key
 	secretKey := cryptopasta.NewEncryptionKey()
 
-	rowBuf := bytes.NewBuffer(nil)
-	csvwriter := csv.NewWriter(rowBuf)
-	for _, csvRow := range csvData {
-		_ = csvwriter.Write(csvRow)
-		csvwriter.Flush()
-		row := make([]byte, len(rowBuf.String()))
-		_, _ = rowBuf.Read(row)
-
-		encrypted, err := cryptopasta.Encrypt(row, secretKey)
-		if err != nil {
-			_ = c.Error(err)
-			return
-		}
-		csvBuf.Write(encrypted)
+	pr, pw := io.Pipe()
+	go func() {
+		csvwriter := csv.NewWriter(pw)
+		_ = csvwriter.WriteAll(csvData)
+		pw.Close()
+	}()
+	err = aesctr.Encrypt(pr, csvFile, (*secretKey)[0:16], (*secretKey)[16:])
+	if err != nil {
+		_ = c.Error(err)
+		return
 	}
-	csvBuf.Flush()
 
-	// zip file and encrypt
-
-	// generate token by filepath
+	// generate token by filepath and secretKey
 	token, err := utils.NewJWTString("statements/download", csvFile.Name())
 	if err != nil {
 		_ = c.Error(err)

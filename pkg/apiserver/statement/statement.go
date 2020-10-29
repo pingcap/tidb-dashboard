@@ -23,7 +23,6 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 
@@ -34,6 +33,9 @@ import (
 	"go.uber.org/zap"
 
 	aesctr "github.com/Xeoncross/go-aesctr-with-hmac"
+
+	"gopkg.in/oleiade/reflections.v1"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
@@ -279,16 +281,15 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	csvData := [][]string{fields}
 	for _, overview := range overviews {
 		row := []string{}
-		v := reflect.ValueOf(overview)
 		for _, field := range fields {
 			filedName := fieldsMap[field]
-			s := v.FieldByName(filedName)
+			s, _ := reflections.GetField(overview, filedName)
 			var val string
-			switch s.Interface().(type) {
+			switch s.(type) {
 			case int:
-				val = strconv.FormatInt(s.Int(), 10)
+				val = fmt.Sprintf("%d", s)
 			default:
-				val = s.String()
+				val = fmt.Sprintf("%s", s)
 			}
 			row = append(row, val)
 		}
@@ -333,7 +334,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 
 // @Router /statements/download [get]
 // @Summary Download statements
-// @Produce application/zip
+// @Produce application/octet-stream
 // @Param token query string true "download token"
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"

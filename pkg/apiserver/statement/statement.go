@@ -14,6 +14,7 @@
 package statement
 
 import (
+	"encoding/base64"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -306,7 +307,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	defer csvFile.Close()
 
 	// generate encryption key
-	secretKey := cryptopasta.NewEncryptionKey()
+	secretKey := *cryptopasta.NewEncryptionKey()
 
 	pr, pw := io.Pipe()
 	go func() {
@@ -314,14 +315,15 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		_ = csvwriter.WriteAll(csvData)
 		pw.Close()
 	}()
-	err = aesctr.Encrypt(pr, csvFile, (*secretKey)[0:16], (*secretKey)[16:])
+	err = aesctr.Encrypt(pr, csvFile, secretKey[0:16], secretKey[16:])
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
 	// generate token by filepath and secretKey
-	token, err := utils.NewJWTString("statements/download", csvFile.Name())
+	secretKeyStr := base64.StdEncoding.EncodeToString(secretKey[:])
+	token, err := utils.NewJWTString("statements/download", secretKeyStr+" "+csvFile.Name())
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -337,22 +339,41 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) downloadHandler(c *gin.Context) {
 	token := c.Query("token")
-	fielPath, err := utils.ParseJWTString("statements/download", token)
+	tokenPlain, err := utils.ParseJWTString("statements/download", token)
+	if err != nil {
+		utils.MakeInvalidRequestErrorFromError(c, err)
+		return
+	}
+	arr := strings.Fields(tokenPlain)
+	if len(arr) != 2 {
+		utils.MakeInvalidRequestErrorFromError(c, errors.New("invalid token"))
+		return
+	}
+	secretKey, err := base64.StdEncoding.DecodeString(arr[0])
 	if err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
-	_, err = os.Stat(fielPath)
+	filePath := arr[1]
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	f, err := os.Open(filePath)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
 	c.Writer.Header().Set("Content-type", "application/octet-stream")
-	c.Writer.Header().Set("Content-Disposition", "attachment; filename=\"statements.zip\"")
-	err = utils.StreamZipPack(c.Writer, []string{fielPath}, true)
+	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileInfo.Name()))
+	err = aesctr.Decrypt(f, c.Writer, secretKey[0:16], secretKey[16:])
 	if err != nil {
-		log.Error("Stream zip pack failed", zap.Error(err))
+		log.Error("decrypt csv failed", zap.Error(err))
 	}
+	// delete it anyway
+	f.Close()
+	_ = os.Remove(filePath)
 }

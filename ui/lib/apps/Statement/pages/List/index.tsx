@@ -1,10 +1,22 @@
 import React, { useState } from 'react'
-import { Space, Tooltip, Drawer, Button, Checkbox, Result, Input } from 'antd'
+import {
+  Space,
+  Tooltip,
+  Drawer,
+  Button,
+  Checkbox,
+  Result,
+  Input,
+  Dropdown,
+  Menu,
+  message,
+  Modal,
+} from 'antd'
 import { useLocalStorageState } from '@umijs/hooks'
 import {
-  SettingOutlined,
   ReloadOutlined,
   LoadingOutlined,
+  MenuOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useTranslation } from 'react-i18next'
@@ -54,12 +66,41 @@ export default function StatementsOverview() {
   } = controller
 
   async function exportCSV() {
+    message.info('exporting...', 1)
     const token = await getDownloadToken()
     if (token) {
       const url = `${client.getBasePath()}/statements/download?token=${token}`
-      window.open(url)
+      Modal.success({
+        title: 'Export finished',
+        okText: 'Download',
+        onOk: () => {
+          window.open(url)
+          return Promise.resolve('')
+        },
+      })
     }
   }
+
+  function menuItemClick({ key }) {
+    switch (key) {
+      case 'settings':
+        setShowSettings(true)
+        break
+      case 'export':
+        exportCSV()
+        break
+    }
+  }
+
+  const dropdownMenu = (
+    <Menu onClick={menuItemClick}>
+      <Menu.Item key="settings">{t('statement.settings.title')}</Menu.Item>
+      <Menu.Item key="export" disabled={downloading}>
+        {/* {t('statement.pages.overview.toolbar.export')} */}
+        {downloading ? 'Exporting' : 'Export'}
+      </Menu.Item>
+    </Menu>
+  )
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -118,9 +159,6 @@ export default function StatementsOverview() {
                 setQueryOptions({ ...queryOptions, searchText })
               }
             />
-            <Button type="primary" onClick={exportCSV} loading={downloading}>
-              {t('statement.pages.overview.toolbar.export')}
-            </Button>
           </Space>
 
           <Space>
@@ -142,9 +180,6 @@ export default function StatementsOverview() {
                 }
               />
             )}
-            <Tooltip title={t('statement.settings.title')}>
-              <SettingOutlined onClick={() => setShowSettings(true)} />
-            </Tooltip>
             <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
               {loadingStatements ? (
                 <LoadingOutlined />
@@ -152,6 +187,11 @@ export default function StatementsOverview() {
                 <ReloadOutlined onClick={refresh} />
               )}
             </Tooltip>
+            <Dropdown overlay={dropdownMenu} placement="bottomRight">
+              <div style={{ cursor: 'pointer' }}>
+                <MenuOutlined />
+              </div>
+            </Dropdown>
           </Space>
         </Toolbar>
       </Card>

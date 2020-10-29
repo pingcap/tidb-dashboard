@@ -334,7 +334,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 
 // @Router /statements/download [get]
 // @Summary Download statements
-// @Produce application/octet-stream
+// @Produce text/csv
 // @Param token query string true "download token"
 // @Failure 400 {object} utils.APIError
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
@@ -368,7 +368,7 @@ func (s *Service) downloadHandler(c *gin.Context) {
 		return
 	}
 
-	c.Writer.Header().Set("Content-type", "application/octet-stream")
+	c.Writer.Header().Set("Content-type", "text/csv")
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileInfo.Name()))
 	err = aesctr.Decrypt(f, c.Writer, secretKey[0:16], secretKey[16:])
 	if err != nil {

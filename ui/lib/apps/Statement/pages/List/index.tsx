@@ -16,6 +16,8 @@ import {
   ReloadOutlined,
   LoadingOutlined,
   MenuOutlined,
+  SettingOutlined,
+  ExportOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useTranslation } from 'react-i18next'
@@ -71,13 +73,17 @@ export default function StatementsOverview() {
   } = controller
 
   async function exportCSV() {
-    message.info(t('statement.pages.overview.toolbar.exporting') + '...', 2)
+    const hide = message.loading(
+      t('statement.pages.overview.toolbar.exporting') + '...',
+      0
+    )
     const token = await genDownloadToken()
     if (token) {
       const url = `${client.getBasePath()}/statements/download?token=${token}`
       // `window.open(url)` would cause browser popup interception if genDownloadToken takes long time
       // window.open(url)
       downloadByLink(url)
+      hide()
     }
   }
 
@@ -94,8 +100,10 @@ export default function StatementsOverview() {
 
   const dropdownMenu = (
     <Menu onClick={menuItemClick}>
-      <Menu.Item key="settings">{t('statement.settings.title')}</Menu.Item>
-      <Menu.Item key="export" disabled={downloading}>
+      <Menu.Item key="settings" icon={<SettingOutlined />}>
+        {t('statement.settings.title')}
+      </Menu.Item>
+      <Menu.Item key="export" disabled={downloading} icon={<ExportOutlined />}>
         {downloading
           ? t('statement.pages.overview.toolbar.exporting')
           : t('statement.pages.overview.toolbar.export')}

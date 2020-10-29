@@ -68,7 +68,7 @@ export interface IStatementTableController {
   tableColumns: IColumn[]
   visibleColumnKeys: IColumnKeys
 
-  getDownloadToken: () => Promise<string>
+  genDownloadToken: () => Promise<string>
   downloading: boolean
 }
 
@@ -222,7 +222,7 @@ export default function useStatementTableController(
   }, [queryOptions, allTimeRanges, validTimeRange, selectedFields])
 
   const [downloading, setDownloading] = useState(false)
-  async function getDownloadToken() {
+  async function genDownloadToken() {
     let token = ''
     try {
       setDownloading(true)
@@ -261,7 +261,7 @@ export default function useStatementTableController(
     tableColumns,
     visibleColumnKeys,
 
-    getDownloadToken,
+    genDownloadToken,
     downloading,
   }
 }

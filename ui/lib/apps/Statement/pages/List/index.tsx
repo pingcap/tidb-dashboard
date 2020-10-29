@@ -66,16 +66,16 @@ export default function StatementsOverview() {
     loadingStatements,
     tableColumns,
 
-    getDownloadToken,
+    genDownloadToken,
     downloading,
   } = controller
 
   async function exportCSV() {
     message.info(t('statement.pages.overview.toolbar.exporting') + '...', 2)
-    const token = await getDownloadToken()
+    const token = await genDownloadToken()
     if (token) {
       const url = `${client.getBasePath()}/statements/download?token=${token}`
-      // `window.open(url)` would cause browser popup interception if getDownloadToken takes long time
+      // `window.open(url)` would cause browser popup interception if genDownloadToken takes long time
       // window.open(url)
       downloadByLink(url)
     }

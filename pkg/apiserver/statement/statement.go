@@ -284,6 +284,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	}
 
 	csvData := [][]string{fields}
+	timeLayout := "01-02 15:04:05"
 	for _, overview := range overviews {
 		row := []string{}
 		for _, field := range fields {
@@ -292,7 +293,11 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 			var val string
 			switch s.(type) {
 			case int:
-				val = fmt.Sprintf("%d", s)
+				if field == "first_seen" || field == "last_seen" {
+					val = time.Unix(int64(s.(int)), 0).Format(timeLayout)
+				} else {
+					val = fmt.Sprintf("%d", s)
+				}
 			default:
 				val = fmt.Sprintf("%s", s)
 			}
@@ -302,7 +307,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	}
 
 	// generate temp file that persist encrypted data
-	timeLayout := "01021504"
+	timeLayout = "01021504"
 	beginTime := time.Unix(int64(req.BeginTime), 0).Format(timeLayout)
 	endTime := time.Unix(int64(req.EndTime), 0).Format(timeLayout)
 	csvFile, err := ioutil.TempFile("", fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime))

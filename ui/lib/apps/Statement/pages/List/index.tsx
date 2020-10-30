@@ -37,12 +37,6 @@ const { Search } = Input
 const STMT_VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
 const STMT_SHOW_FULL_SQL = 'statement.show_full_sql'
 
-function downloadByLink(url: string) {
-  const downloadLink = document.createElement('a')
-  downloadLink.href = url
-  downloadLink.click()
-}
-
 export default function StatementsOverview() {
   const { t } = useTranslation()
 
@@ -82,7 +76,7 @@ export default function StatementsOverview() {
       const url = `${client.getBasePath()}/statements/download?token=${token}`
       // `window.open(url)` would cause browser popup interception if genDownloadToken takes long time
       // window.open(url)
-      downloadByLink(url)
+      window.location.href = url
       hide()
     }
   }

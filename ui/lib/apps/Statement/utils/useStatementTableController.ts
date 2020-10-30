@@ -199,7 +199,7 @@ export default function useStatementTableController(
       try {
         const res = await client
           .getInstance()
-          .statementsOverviewsGet(
+          .statementsListGet(
             validTimeRange.begin_time!,
             validTimeRange.end_time!,
             selectedFields,
@@ -229,7 +229,7 @@ export default function useStatementTableController(
       const res = await client.getInstance().statementsDownloadTokenPost({
         begin_time: validTimeRange.begin_time,
         end_time: validTimeRange.end_time,
-        fields: selectedFields,
+        fields: '*',
         schemas: queryOptions.schemas,
         stmt_types: queryOptions.stmtTypes,
         text: queryOptions.searchText,

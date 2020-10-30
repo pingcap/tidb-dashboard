@@ -22,6 +22,7 @@ import {
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useTranslation } from 'react-i18next'
 
+import client from '@lib/client'
 import { Card, ColumnsSelector, Toolbar, MultiSelect } from '@lib/components'
 
 import { StatementsTable } from '../../components'
@@ -30,7 +31,6 @@ import TimeRangeSelector from './TimeRangeSelector'
 import useStatementTableController, {
   DEF_STMT_COLUMN_KEYS,
 } from '../../utils/useStatementTableController'
-import client from '@lib/client'
 
 const { Search } = Input
 
@@ -71,12 +71,15 @@ export default function StatementsOverview() {
       t('statement.pages.overview.toolbar.exporting') + '...',
       0
     )
-    const token = await genDownloadToken()
-    if (token) {
-      const url = `${client.getBasePath()}/statements/download?token=${token}`
-      // `window.open(url)` would cause browser popup interception if genDownloadToken takes long time
-      // window.open(url)
-      window.location.href = url
+    try {
+      const token = await genDownloadToken()
+      if (token) {
+        const url = `${client.getBasePath()}/statements/download?token=${token}`
+        // `window.open(url)` would cause browser popup interception if genDownloadToken takes long time
+        // window.open(url)
+        window.location.href = url
+      }
+    } finally {
       hide()
     }
   }

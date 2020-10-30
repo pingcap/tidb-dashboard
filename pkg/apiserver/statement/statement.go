@@ -66,9 +66,9 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 			endpoint.POST("/config", s.modifyConfigHandler)
 			endpoint.GET("/time_ranges", s.timeRangesHandler)
 			endpoint.GET("/stmt_types", s.stmtTypesHandler)
-			endpoint.GET("/overviews", s.overviewsHandler)
-			endpoint.GET("/plans", s.getPlansHandler)
-			endpoint.GET("/plan/detail", s.getPlanDetailHandler)
+			endpoint.GET("/list", s.listHandler)
+			endpoint.GET("/plans", s.plansHandler)
+			endpoint.GET("/plan/detail", s.planDetailHandler)
 
 			endpoint.POST("/download/token", s.downloadTokenHandler)
 		}
@@ -150,13 +150,13 @@ type GetStatementsRequest struct {
 	Fields    string   `json:"fields" form:"fields"`
 }
 
-// @Summary Get a list of statement overviews
+// @Summary Get a list of statements
 // @Param q query GetStatementsRequest true "Query"
 // @Success 200 {array} Model
-// @Router /statements/overviews [get]
+// @Router /statements/list [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) overviewsHandler(c *gin.Context) {
+func (s *Service) listHandler(c *gin.Context) {
 	var req GetStatementsRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
@@ -167,7 +167,7 @@ func (s *Service) overviewsHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	overviews, err := QueryStatementsOverview(
+	overviews, err := QueryStatements(
 		db,
 		req.BeginTime, req.EndTime,
 		req.Schemas,
@@ -194,7 +194,7 @@ type GetPlansRequest struct {
 // @Router /statements/plans [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) getPlansHandler(c *gin.Context) {
+func (s *Service) plansHandler(c *gin.Context) {
 	var req GetPlansRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
@@ -220,7 +220,7 @@ type GetPlanDetailRequest struct {
 // @Router /statements/plan/detail [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) getPlanDetailHandler(c *gin.Context) {
+func (s *Service) planDetailHandler(c *gin.Context) {
 	var req GetPlanDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
@@ -253,7 +253,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	overviews, err := QueryStatementsOverview(
+	overviews, err := QueryStatements(
 		db,
 		req.BeginTime, req.EndTime,
 		req.Schemas,
@@ -273,9 +273,14 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	fieldsMap := make(map[string]string)
 	t := reflect.TypeOf(overviews[0])
 	fieldsNum := t.NumField()
+	allFields := make([]string, fieldsNum)
 	for i := 0; i < fieldsNum; i++ {
 		field := t.Field(i)
-		fieldsMap[strings.ToLower(field.Tag.Get("json"))] = field.Name
+		allFields[i] = strings.ToLower(field.Tag.Get("json"))
+		fieldsMap[allFields[i]] = field.Name
+	}
+	if len(fields) == 1 && fields[0] == "*" {
+		fields = allFields
 	}
 
 	csvData := [][]string{fields}

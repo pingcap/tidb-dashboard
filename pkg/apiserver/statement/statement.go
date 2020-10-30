@@ -291,15 +291,15 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 			filedName := fieldsMap[field]
 			s, _ := reflections.GetField(overview, filedName)
 			var val string
-			switch s.(type) {
+			switch t := s.(type) {
 			case int:
 				if field == "first_seen" || field == "last_seen" {
-					val = time.Unix(int64(s.(int)), 0).Format(timeLayout)
+					val = time.Unix(int64(t), 0).Format(timeLayout)
 				} else {
-					val = fmt.Sprintf("%d", s)
+					val = fmt.Sprintf("%d", t)
 				}
 			default:
-				val = fmt.Sprintf("%s", s)
+				val = fmt.Sprintf("%s", t)
 			}
 			row = append(row, val)
 		}

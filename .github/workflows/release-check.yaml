@@ -14,4 +14,6 @@ jobs:
         with:
           fetch-depth: 0
       - name: Check release version
-        run: '! (git diff --name-only --exit-code origin/release -- ./release-version) || (echo "Please update the release-version file" && false)'
+        run: >
+          ! (git diff --name-only --exit-code origin/release -- ./release-version)
+          || (echo "Please update the release-version file" && false)

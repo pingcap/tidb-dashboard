@@ -13,6 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
       - name: Check release version
-        run: git diff --name-only --exit-code ./release-version || (echo "Please update the release version file" && false)
+        run: git diff --name-only --exit-code release -- ./release-version || (echo "Please update the release version file" && false)

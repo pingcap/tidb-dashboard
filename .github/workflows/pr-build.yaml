@@ -32,7 +32,6 @@ jobs:
       - name: Check uncommitted lint changes
         run: |
           git diff --exit-code
-
   frontend:
     name: frontend
     runs-on: ubuntu-latest

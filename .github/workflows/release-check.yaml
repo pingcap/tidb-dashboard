@@ -1,18 +1,17 @@
 name: Release Check
 
 on:
-  push:
-    branches:
-      - release
   pull_request:
     branches:
       - release
 
 jobs:
-  release:
+  check_release_version:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout code and release repo
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Check release version
-        run: git diff --name-only --exit-code release -- ./release-version || (echo "Please update the release version file" && false)
+        run: '! (git diff --name-only --exit-code origin/release -- ./release-version) || (echo "Please update the release-version file" && false)'

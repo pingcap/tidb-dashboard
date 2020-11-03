@@ -9,7 +9,7 @@ jobs:
   check_release_version:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code and release repo
+      - name: Checkout code and release branch
         uses: actions/checkout@v2
         with:
           fetch-depth: 0

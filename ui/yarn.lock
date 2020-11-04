@@ -2019,9 +2019,9 @@
     to-fast-properties "^2.0.0"
 
 "@baurine/grafana-value-formats@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@baurine/grafana-value-formats/-/grafana-value-formats-1.0.0.tgz#030e19a602799d364814d5f010a55ca2ea67b140"
-  integrity sha512-dJqzIgBOrEfxioROhMfIoUsfFGYH4mzPOEV3VLnX0rtnkNrkjQzemtuEQ+T0N0saPg3vozIBhehHCcKa8417pA==
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@baurine/grafana-value-formats/-/grafana-value-formats-1.0.2.tgz#f1129cf19ca0a887b77451cdefa31f94afc8500a"
+  integrity sha512-LdT/B7mHGSQ/k+o6B0oEjGpRRqMlLvnTezerp71wWW8Io89eePd1q/Lk0JWj/Vspv2RIdQzhE1Z7HZJtjc3IFg==
 
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"

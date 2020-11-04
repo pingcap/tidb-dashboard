@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - master
+      - release
 
 jobs:
   e2e_test:
@@ -12,7 +13,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: "12.x"

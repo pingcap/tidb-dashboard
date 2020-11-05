@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/VividCortex/mysqlerr v0.0.0-20200629151747-c28746d985dd
+	github.com/Xeoncross/go-aesctr-with-hmac v0.0.0-20200623134604-12b17a7ff502
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/appleboy/gin-jwt/v2 v2.6.3
 	github.com/cenkalti/backoff/v4 v4.0.2
@@ -19,6 +20,7 @@ require (
 	github.com/jinzhu/gorm v1.9.12
 	github.com/joho/godotenv v1.3.0
 	github.com/joomcode/errorx v1.0.1
+	github.com/oleiade/reflections v1.0.0 // indirect
 	github.com/pingcap/check v0.0.0-20191216031241-8a5a85928f12
 	github.com/pingcap/errors v0.11.5-0.20190809092503-95897b64e011
 	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
@@ -42,4 +44,5 @@ require (
 	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
 	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2 // indirect
 	google.golang.org/grpc v1.25.1
+	gopkg.in/oleiade/reflections.v1 v1.0.0
 )

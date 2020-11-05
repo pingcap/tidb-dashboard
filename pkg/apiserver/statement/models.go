@@ -34,7 +34,8 @@ type TimeRange struct {
 }
 
 type Model struct {
-	AggPlanCount             int    `json:"plan_count" agg:"COUNT(DISTINCT plan_digest)"`
+	AggDigestText            string `json:"digest_text" agg:"ANY_VALUE(digest_text)"`
+	AggDigest                string `json:"digest" agg:"ANY_VALUE(digest)"`
 	AggExecCount             int    `json:"exec_count" agg:"SUM(exec_count)"`
 	AggSumErrors             int    `json:"sum_errors" agg:"SUM(sum_errors)"`
 	AggSumWarnings           int    `json:"sum_warnings" agg:"SUM(sum_warnings)"`
@@ -95,10 +96,9 @@ type Model struct {
 	AggSchemaName            string `json:"schema_name" agg:"ANY_VALUE(schema_name)"`
 	AggTableNames            string `json:"table_names" agg:"ANY_VALUE(table_names)"`
 	AggIndexNames            string `json:"index_names" agg:"ANY_VALUE(index_names)"`
-	AggDigestText            string `json:"digest_text" agg:"ANY_VALUE(digest_text)"`
-	AggDigest                string `json:"digest" agg:"ANY_VALUE(digest)"`
-	AggPlanDigest            string `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
+	AggPlanCount             int    `json:"plan_count" agg:"COUNT(DISTINCT plan_digest)"`
 	AggPlan                  string `json:"plan" agg:"ANY_VALUE(plan)"`
+	AggPlanDigest            string `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
 	// Computed fields
 	RelatedSchemas string `json:"related_schemas"`
 }

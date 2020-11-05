@@ -130,15 +130,20 @@ func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
 // schemas: ["tpcc", "test"]
 // stmtTypes: ["select", "update"]
 // fields: ["digest_text", "sum_latency"]
-func QueryStatementsOverview(
+func QueryStatements(
 	db *gorm.DB,
 	beginTime, endTime int,
 	schemas, stmtTypes []string,
 	text string,
 	fields []string,
 ) (result []Model, err error) {
-	fields = funk.UniqString(append(fields, "schema_name", "digest", "sum_latency")) // "schema_name", "digest" for group, "sum_latency" for order
-	aggrFields := getAggrFields(fields...)
+	var aggrFields []string
+	if len(fields) == 1 && fields[0] == "*" {
+		aggrFields = getAllAggrFields()
+	} else {
+		fields = funk.UniqString(append(fields, "schema_name", "digest", "sum_latency")) // "schema_name", "digest" for group, "sum_latency" for order
+		aggrFields = getAggrFields(fields...)
+	}
 
 	query := db.
 		Select(strings.Join(aggrFields, ", ")).

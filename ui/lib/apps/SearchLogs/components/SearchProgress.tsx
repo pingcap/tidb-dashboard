@@ -154,7 +154,7 @@ export default function SearchProgress({
       return
     }
     const url = `${client.getBasePath()}/logs/download?token=${token}`
-    window.open(url)
+    window.location.href = url
   }
 
   async function handleCancel() {

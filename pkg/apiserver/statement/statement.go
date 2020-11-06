@@ -17,7 +17,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"reflect"
 	"strings"
 	"time"
 
@@ -27,8 +26,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"go.uber.org/fx"
-
-	"gopkg.in/oleiade/reflections.v1"
 )
 
 type ServiceParams struct {
@@ -259,45 +256,17 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		return
 	}
 
-	// convert data
-	fieldsMap := make(map[string]string)
-	t := reflect.TypeOf(overviews[0])
-	fieldsNum := t.NumField()
-	allFields := make([]string, fieldsNum)
-	for i := 0; i < fieldsNum; i++ {
-		field := t.Field(i)
-		allFields[i] = strings.ToLower(field.Tag.Get("json"))
-		fieldsMap[allFields[i]] = field.Name
-	}
-	if len(fields) == 1 && fields[0] == "*" {
-		fields = allFields
+	// interface{} tricky
+	rawData := make([]interface{}, len(overviews))
+	for i, v := range overviews {
+		rawData[i] = v
 	}
 
-	csvData := [][]string{fields}
-	timeLayout := "01-02 15:04:05"
-	for _, overview := range overviews {
-		row := []string{}
-		for _, field := range fields {
-			filedName := fieldsMap[field]
-			s, _ := reflections.GetField(overview, filedName)
-			var val string
-			switch t := s.(type) {
-			case int:
-				if field == "first_seen" || field == "last_seen" {
-					val = time.Unix(int64(t), 0).Format(timeLayout)
-				} else {
-					val = fmt.Sprintf("%d", t)
-				}
-			default:
-				val = fmt.Sprintf("%s", t)
-			}
-			row = append(row, val)
-		}
-		csvData = append(csvData, row)
-	}
+	// convert data
+	csvData := utils.GenerateCSVFromRaw(rawData, fields, []string{"first_seen", "last_seen"})
 
 	// generate temp file that persist encrypted data
-	timeLayout = "01021504"
+	timeLayout := "01021504"
 	beginTime := time.Unix(int64(req.BeginTime), 0).Format(timeLayout)
 	endTime := time.Unix(int64(req.EndTime), 0).Format(timeLayout)
 	token, err := utils.ExportCSV(csvData,

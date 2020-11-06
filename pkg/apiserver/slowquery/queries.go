@@ -142,8 +142,7 @@ type GetDetailRequest struct {
 func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	sqlFields := []string{"digest", "connection_id", "timestamp"}
 	if strings.TrimSpace(req.Fields) != "" {
-		sqlFields = append(sqlFields, strings.Split(req.Fields, ",")...)
-		sqlFields = funk.UniqString(sqlFields)
+		sqlFields = funk.UniqString(append(sqlFields, strings.Split(req.Fields, ",")...))
 	}
 	projections, err := getProjectionsByFields(sqlFields...)
 	if err != nil {

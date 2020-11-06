@@ -126,17 +126,22 @@ func getAggrFields(sqlFields ...string) []string {
 	return ret
 }
 
+var cachedAllAggrFields []string
+
 func getAllAggrFields() []string {
-	t := reflect.TypeOf(Model{})
-	fieldsNum := t.NumField()
-	ret := make([]string, 0, fieldsNum)
-	for i := 0; i < fieldsNum; i++ {
-		field := t.Field(i)
-		if agg, ok := field.Tag.Lookup("agg"); ok {
-			ret = append(ret, fmt.Sprintf("%s AS %s", agg, gorm.ToColumnName(field.Name)))
+	if cachedAllAggrFields == nil {
+		t := reflect.TypeOf(Model{})
+		fieldsNum := t.NumField()
+		ret := make([]string, 0, fieldsNum)
+		for i := 0; i < fieldsNum; i++ {
+			field := t.Field(i)
+			if agg, ok := field.Tag.Lookup("agg"); ok {
+				ret = append(ret, fmt.Sprintf("%s AS %s", agg, gorm.ToColumnName(field.Name)))
+			}
 		}
+		cachedAllAggrFields = ret
 	}
-	return ret
+	return cachedAllAggrFields
 }
 
 // tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"

@@ -5,16 +5,63 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	aesctr "github.com/Xeoncross/go-aesctr-with-hmac"
+	"github.com/Xeoncross/go-aesctr-with-hmac"
 	"github.com/gin-gonic/gin"
 	"github.com/gtank/cryptopasta"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
+	"gopkg.in/oleiade/reflections.v1"
 	"io"
 	"io/ioutil"
 	"os"
+	"reflect"
 	"strings"
+	"time"
 )
+
+func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []string) (data [][]string) {
+	timeFieldsMap := make(map[string]struct{})
+	for _, f := range timeFields {
+		timeFieldsMap[f] = struct{}{}
+	}
+
+	fieldsMap := make(map[string]string)
+	t := reflect.TypeOf(rawData[0])
+	fieldsNum := t.NumField()
+	allFields := make([]string, fieldsNum)
+	for i := 0; i < fieldsNum; i++ {
+		field := t.Field(i)
+		allFields[i] = strings.ToLower(field.Tag.Get("json"))
+		fieldsMap[allFields[i]] = field.Name
+	}
+	if len(fields) == 1 && fields[0] == "*" {
+		fields = allFields
+	}
+
+	data = [][]string{fields}
+	timeLayout := "01-02 15:04:05"
+	for _, overview := range rawData {
+		row := []string{}
+		for _, field := range fields {
+			fieldName := fieldsMap[field]
+			s, _ := reflections.GetField(overview, fieldName)
+			var val string
+			switch t := s.(type) {
+			case int:
+				if _, ok := timeFieldsMap[field]; ok {
+					val = time.Unix(int64(t), 0).Format(timeLayout)
+				} else {
+					val = fmt.Sprintf("%d", t)
+				}
+			default:
+				val = fmt.Sprintf("%s", t)
+			}
+			row = append(row, val)
+		}
+		data = append(data, row)
+	}
+	return
+}
 
 func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, err error) {
 	csvFile, err := ioutil.TempFile("", filename)
@@ -73,7 +120,7 @@ func DownloadByToken(token, tokenNamespace string, c *gin.Context) {
 	}
 
 	c.Writer.Header().Set("Content-type", "text/csv")
-	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileInfo.Name()))
+	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, fileInfo.Name()))
 	err = aesctr.Decrypt(f, c.Writer, secretKey[0:16], secretKey[16:])
 	if err != nil {
 		log.Error("decrypt csv failed", zap.Error(err))

@@ -14,31 +14,21 @@
 package statement
 
 import (
-	"encoding/base64"
-	"encoding/csv"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
-	"os"
 	"reflect"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gtank/cryptopasta"
-	"github.com/pingcap/log"
-	"go.uber.org/fx"
-	"go.uber.org/zap"
-
-	aesctr "github.com/Xeoncross/go-aesctr-with-hmac"
-
-	"gopkg.in/oleiade/reflections.v1"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
+	"go.uber.org/fx"
+
+	"gopkg.in/oleiade/reflections.v1"
 )
 
 type ServiceParams struct {
@@ -310,31 +300,10 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	timeLayout = "01021504"
 	beginTime := time.Unix(int64(req.BeginTime), 0).Format(timeLayout)
 	endTime := time.Unix(int64(req.EndTime), 0).Format(timeLayout)
-	csvFile, err := ioutil.TempFile("", fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime))
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	defer csvFile.Close()
+	token, err := utils.ExportCSV(csvData,
+		fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime),
+		"statements/download")
 
-	// generate encryption key
-	secretKey := *cryptopasta.NewEncryptionKey()
-
-	pr, pw := io.Pipe()
-	go func() {
-		csvwriter := csv.NewWriter(pw)
-		_ = csvwriter.WriteAll(csvData)
-		pw.Close()
-	}()
-	err = aesctr.Encrypt(pr, csvFile, secretKey[0:16], secretKey[16:])
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	// generate token by filepath and secretKey
-	secretKeyStr := base64.StdEncoding.EncodeToString(secretKey[:])
-	token, err := utils.NewJWTString("statements/download", secretKeyStr+" "+csvFile.Name())
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -350,41 +319,5 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) downloadHandler(c *gin.Context) {
 	token := c.Query("token")
-	tokenPlain, err := utils.ParseJWTString("statements/download", token)
-	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
-		return
-	}
-	arr := strings.Fields(tokenPlain)
-	if len(arr) != 2 {
-		utils.MakeInvalidRequestErrorFromError(c, errors.New("invalid token"))
-		return
-	}
-	secretKey, err := base64.StdEncoding.DecodeString(arr[0])
-	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
-		return
-	}
-
-	filePath := arr[1]
-	fileInfo, err := os.Stat(filePath)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	f, err := os.Open(filePath)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	c.Writer.Header().Set("Content-type", "text/csv")
-	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileInfo.Name()))
-	err = aesctr.Decrypt(f, c.Writer, secretKey[0:16], secretKey[16:])
-	if err != nil {
-		log.Error("decrypt csv failed", zap.Error(err))
-	}
-	// delete it anyway
-	f.Close()
-	_ = os.Remove(filePath)
+	utils.DownloadByToken(token, "statements/download", c)
 }

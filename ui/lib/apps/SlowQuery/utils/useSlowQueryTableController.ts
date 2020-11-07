@@ -59,6 +59,9 @@ export interface ISlowQueryTableController {
 
   tableColumns: IColumn[]
   visibleColumnKeys: IColumnKeys
+
+  downloadCSV: () => Promise<void>
+  downloading: boolean
 }
 
 export default function useSlowQueryTableController(
@@ -120,6 +123,7 @@ export default function useSlowQueryTableController(
         setErrors((prev) => [...prev, { ...e }])
       }
     }
+
     querySchemas()
   }, [])
 
@@ -165,6 +169,29 @@ export default function useSlowQueryTableController(
     getSlowQueryList()
   }, [queryOptions, orderOptions, queryTimeRange, refreshTimes, selectedFields])
 
+  const [downloading, setDownloading] = useState(false)
+
+  async function downloadCSV() {
+    try {
+      setDownloading(true)
+      const res = await client.getInstance().slowQueryDownloadTokenPost({
+        fields: '*',
+        db: queryOptions.schemas,
+        digest: queryOptions.digest,
+        text: queryOptions.searchText,
+        limit: queryOptions.limit,
+        plans: queryOptions.plans,
+      })
+      const token = res.data
+      if (token) {
+        window.location.href = `${client.getBasePath()}/slow_query/download?token=${token}`
+      }
+    } finally {
+      setDownloading(false)
+    }
+    return
+  }
+
   return {
     queryOptions,
     setQueryOptions,
@@ -181,5 +208,8 @@ export default function useSlowQueryTableController(
 
     tableColumns,
     visibleColumnKeys,
+
+    downloading,
+    downloadCSV,
   }
 }

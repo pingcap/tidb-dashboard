@@ -181,6 +181,10 @@ export default function useSlowQueryTableController(
         text: queryOptions.searchText,
         limit: queryOptions.limit,
         plans: queryOptions.plans,
+        orderBy: orderOptions.orderBy,
+        desc: orderOptions.desc,
+        logEndTS: queryTimeRange.endTime,
+        logStartTS: queryTimeRange.beginTime,
       })
       const token = res.data
       if (token) {

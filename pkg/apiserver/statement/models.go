@@ -103,22 +103,31 @@ type Model struct {
 	RelatedSchemas string `json:"related_schemas"`
 }
 
-func getAggrFields(sqlFields ...string) []string {
-	fields := make(map[string]*reflect.StructField)
-	t := reflect.TypeOf(Model{})
-	fieldsNum := t.NumField()
-	for i := 0; i < fieldsNum; i++ {
-		field := t.Field(i)
-		fields[strings.ToLower(field.Tag.Get("json"))] = &field
+var cachedAggrMap map[string]string // jsonFieldName => aggr
+
+func getAggrMap() map[string]string {
+	if cachedAggrMap == nil {
+		t := reflect.TypeOf(Model{})
+		fieldsNum := t.NumField()
+		ret := map[string]string{}
+		for i := 0; i < fieldsNum; i++ {
+			field := t.Field(i)
+			jsonField := strings.ToLower(field.Tag.Get("json"))
+			if agg, ok := field.Tag.Lookup("agg"); ok {
+				ret[jsonField] = fmt.Sprintf("%s AS %s", agg, gorm.ToColumnName(field.Name))
+			}
+		}
+		cachedAggrMap = ret
 	}
+	return cachedAggrMap
+}
+
+func getAggrFields(sqlFields ...string) []string {
+	aggrMap := getAggrMap()
 	ret := make([]string, 0, len(sqlFields))
 	for _, fieldName := range sqlFields {
-		if field, ok := fields[strings.ToLower(fieldName)]; ok {
-			if agg, ok := field.Tag.Lookup("agg"); ok {
-				ret = append(ret, fmt.Sprintf("%s AS %s", agg, gorm.ToColumnName(field.Name)))
-			} else {
-				panic(fmt.Sprintf("field %s cannot be aggregated", fieldName))
-			}
+		if aggr, ok := aggrMap[strings.ToLower(fieldName)]; ok {
+			ret = append(ret, aggr)
 		} else {
 			panic(fmt.Sprintf("unknown aggregation field %s", fieldName))
 		}
@@ -130,14 +139,10 @@ var cachedAllAggrFields []string
 
 func getAllAggrFields() []string {
 	if cachedAllAggrFields == nil {
-		t := reflect.TypeOf(Model{})
-		fieldsNum := t.NumField()
-		ret := make([]string, 0, fieldsNum)
-		for i := 0; i < fieldsNum; i++ {
-			field := t.Field(i)
-			if agg, ok := field.Tag.Lookup("agg"); ok {
-				ret = append(ret, fmt.Sprintf("%s AS %s", agg, gorm.ToColumnName(field.Name)))
-			}
+		aggrMap := getAggrMap()
+		ret := make([]string, 0, len(aggrMap))
+		for _, aggr := range aggrMap {
+			ret = append(ret, aggr)
 		}
 		cachedAllAggrFields = ret
 	}

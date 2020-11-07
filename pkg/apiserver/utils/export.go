@@ -53,6 +53,10 @@ func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []str
 				} else {
 					val = fmt.Sprintf("%d", t)
 				}
+			case uint:
+				val = fmt.Sprintf("%d", t)
+			case float64:
+				val = fmt.Sprintf("%f", t)
 			default:
 				val = fmt.Sprintf("%s", t)
 			}

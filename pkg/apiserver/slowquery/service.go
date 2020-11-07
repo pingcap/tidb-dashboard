@@ -141,7 +141,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	timeLayout := "0102150405"
 	currentTime := time.Now().Format(timeLayout)
 	token, err := utils.ExportCSV(csvData,
-		fmt.Sprintf("slowquery%s_*.csv", currentTime),
+		fmt.Sprintf("slowquery_%s_*.csv", currentTime),
 		"slowquery/download")
 
 	if err != nil {

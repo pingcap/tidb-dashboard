@@ -22,7 +22,6 @@ import {
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useTranslation } from 'react-i18next'
 
-import client from '@lib/client'
 import { Card, ColumnsSelector, Toolbar, MultiSelect } from '@lib/components'
 
 import { StatementsTable } from '../../components'

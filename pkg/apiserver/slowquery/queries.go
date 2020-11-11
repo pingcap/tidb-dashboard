@@ -156,7 +156,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	tx := db.
 		Table(SlowQueryTable).
 		Select(strings.Join(projections, ", ")).
-		Where("time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.RangeBeginTs, req.RangeEndTs).
+		Where("Time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.RangeBeginTs, req.RangeEndTs).
 		Limit(req.Limit)
 
 	if req.Text != "" {
@@ -164,17 +164,17 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		arr := strings.Fields(lowerStr)
 		for _, v := range arr {
 			tx = tx.Where(
-				`txn_start_ts REGEXP ?
-				 OR LOWER(digest) REGEXP ?
-				 OR LOWER(CONVERT(prev_stmt USING utf8)) REGEXP ?
-				 OR LOWER(CONVERT(query USING utf8)) REGEXP ?`,
+				`Txn_start_ts REGEXP ?
+				 OR LOWER(Digest) REGEXP ?
+				 OR LOWER(CONVERT(Prev_stmt USING utf8)) REGEXP ?
+				 OR LOWER(CONVERT(Query USING utf8)) REGEXP ?`,
 				v, v, v, v,
 			)
 		}
 	}
 
 	if len(req.DB) > 0 {
-		tx = tx.Where("db IN (?)", req.DB)
+		tx = tx.Where("DB IN (?)", req.DB)
 	}
 
 	order, err := getProjectionsByFields(req.OrderBy)
@@ -193,11 +193,11 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	}
 
 	if len(req.Plans) > 0 {
-		tx = tx.Where("plan_digest IN (?)", req.Plans)
+		tx = tx.Where("Plan_digest IN (?)", req.Plans)
 	}
 
 	if len(req.Digest) > 0 {
-		tx = tx.Where("digest = ?", req.Digest)
+		tx = tx.Where("Digest = ?", req.Digest)
 	}
 
 	var results []SlowQuery
@@ -213,9 +213,9 @@ func QuerySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) 
 	err := db.
 		Table(SlowQueryTable).
 		Select(SelectStmt).
-		Where("digest = ?", req.Digest).
-		Where("time = FROM_UNIXTIME(?)", req.Timestamp).
-		Where("conn_id = ?", req.ConnectID).
+		Where("Digest = ?", req.Digest).
+		Where("Time = FROM_UNIXTIME(?)", req.Timestamp).
+		Where("Conn_id = ?", req.ConnectID).
 		First(&result).Error
 	if err != nil {
 		return nil, err

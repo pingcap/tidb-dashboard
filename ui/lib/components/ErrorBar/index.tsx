@@ -10,7 +10,7 @@ export default function ErrorBar({ errors }: IErrorBarProps) {
   // show at most 3 kinds of errors
   const errorMsgs = useMemo(
     () =>
-      _.uniq(_.map(errors, (err) => err?.message || ''))
+      _.uniq(_.map(errors, (err) => err?.msg || err?.message || ''))
         .filter((msg) => msg !== '')
         .slice(0, 3),
     [errors]

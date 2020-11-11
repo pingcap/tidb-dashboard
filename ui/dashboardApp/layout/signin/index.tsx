@@ -157,7 +157,7 @@ function useSignInSubmit(
       singleSpa.navigateToUrl(successRoute)
     } catch (e) {
       if (!e.handled) {
-        setError(t('signin.message.error', { msg: e.message }))
+        setError(t('signin.message.error', { msg: e.msg }))
         onFailure()
       }
     } finally {

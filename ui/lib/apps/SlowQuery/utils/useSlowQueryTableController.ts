@@ -145,10 +145,10 @@ export default function useSlowQueryTableController(
             queryOptions.digest,
             selectedFields,
             queryOptions.limit,
-            queryTimeRange.endTime,
-            queryTimeRange.beginTime,
             orderOptions.orderBy,
             queryOptions.plans,
+            queryTimeRange.beginTime,
+            queryTimeRange.endTime,
             queryOptions.searchText,
             {
               errorStrategy: ErrorStrategy.Custom,

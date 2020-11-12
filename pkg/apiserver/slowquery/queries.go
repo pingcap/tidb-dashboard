@@ -24,27 +24,29 @@ import (
 
 const (
 	SlowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
-	SelectStmt     = "*, (unix_timestamp(Time) + 0E0) as timestamp"
+	SelectStmt     = "*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp"
 )
 
 type SlowQuery struct {
 	Digest string `gorm:"column:Digest" json:"digest"`
 	Query  string `gorm:"column:Query" json:"query"`
 
-	Instance     string `gorm:"column:INSTANCE" json:"instance"`
-	DB           string `gorm:"column:DB" json:"db"`
-	ConnectionID uint   `gorm:"column:Conn_ID" json:"connection_id"`
+	Instance string `gorm:"column:INSTANCE" json:"instance"`
+	DB       string `gorm:"column:DB" json:"db"`
+	// TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
+	ConnectionID string `gorm:"column:Conn_ID" json:"connection_id"`
 	Success      int    `gorm:"column:Succ" json:"success"`
 
-	Timestamp   float64 `gorm:"column:timestamp" proj:"(unix_timestamp(Time) + 0E0)" json:"timestamp"` // finish time
+	Timestamp   float64 `gorm:"column:timestamp" proj:"(UNIX_TIMESTAMP(Time) + 0E0)" json:"timestamp"` // finish time
 	QueryTime   float64 `gorm:"column:Query_time" json:"query_time"`                                   // latency
 	ParseTime   float64 `gorm:"column:Parse_time" json:"parse_time"`
 	CompileTime float64 `gorm:"column:Compile_time" json:"compile_time"`
 	ProcessTime float64 `gorm:"column:Process_time" json:"process_time"`
 
-	MemoryMax  int  `gorm:"column:Mem_max" json:"memory_max"`
-	DiskMax    int  `gorm:"column:Disk_max" json:"disk_max"`
-	TxnStartTS uint `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
+	MemoryMax int `gorm:"column:Mem_max" json:"memory_max"`
+	DiskMax   int `gorm:"column:Disk_max" json:"disk_max"`
+	// TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
+	TxnStartTS string `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
 
 	// Detail
 	PrevStmt string `gorm:"column:Prev_stmt" json:"prev_stmt"`
@@ -161,7 +163,8 @@ func getAllProjections() []string {
 type GetDetailRequest struct {
 	Digest    string  `json:"digest" form:"digest"`
 	Timestamp float64 `json:"timestamp" form:"timestamp"`
-	ConnectID int64   `json:"connect_id" form:"connect_id"`
+	// TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
+	ConnectID string `json:"connect_id" form:"connect_id"`
 }
 
 func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
@@ -194,10 +197,10 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		arr := strings.Fields(lowerStr)
 		for _, v := range arr {
 			tx = tx.Where(
-				`txn_start_ts REGEXP ?
-				 OR LOWER(digest) REGEXP ?
-				 OR LOWER(CONVERT(prev_stmt USING utf8)) REGEXP ?
-				 OR LOWER(CONVERT(query USING utf8)) REGEXP ?`,
+				`Txn_start_ts REGEXP ?
+				 OR LOWER(Digest) REGEXP ?
+				 OR LOWER(CONVERT(Prev_stmt USING utf8)) REGEXP ?
+				 OR LOWER(CONVERT(Query USING utf8)) REGEXP ?`,
 				v, v, v, v,
 			)
 		}
@@ -222,9 +225,9 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		order[0] = req.OrderBy
 	}
 	if req.DESC {
-		tx = tx.Order(fmt.Sprintf("%s desc", order[0]))
+		tx = tx.Order(fmt.Sprintf("%s DESC", order[0]))
 	} else {
-		tx = tx.Order(fmt.Sprintf("%s asc", order[0]))
+		tx = tx.Order(fmt.Sprintf("%s ASC", order[0]))
 	}
 
 	if len(req.Plans) > 0 {
@@ -249,7 +252,7 @@ func QuerySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) 
 		Table(SlowQueryTable).
 		Select(SelectStmt).
 		Where("Digest = ?", req.Digest).
-		Where("Time = from_unixtime(?)", req.Timestamp).
+		Where("Time = FROM_UNIXTIME(?)", req.Timestamp).
 		Where("Conn_id = ?", req.ConnectID).
 		First(&result).Error
 	if err != nil {

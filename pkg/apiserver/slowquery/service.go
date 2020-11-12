@@ -48,8 +48,8 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		endpoint.Use(auth.MWAuthRequired())
 		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 		{
-			endpoint.GET("/list", s.listHandler)
-			endpoint.GET("/detail", s.detailhandler)
+			endpoint.GET("/list", s.getList)
+			endpoint.GET("/detail", s.getDetails)
 
 			endpoint.POST("/download/token", s.downloadTokenHandler)
 		}
@@ -62,7 +62,7 @@ func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Router /slow_query/list [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) listHandler(c *gin.Context) {
+func (s *Service) getList(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
@@ -84,7 +84,7 @@ func (s *Service) listHandler(c *gin.Context) {
 // @Router /slow_query/detail [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) detailhandler(c *gin.Context) {
+func (s *Service) getDetails(c *gin.Context) {
 	var req GetDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)

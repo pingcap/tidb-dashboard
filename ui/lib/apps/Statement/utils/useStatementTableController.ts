@@ -241,7 +241,6 @@ export default function useStatementTableController(
     } finally {
       setDownloading(false)
     }
-    return
   }
 
   return {

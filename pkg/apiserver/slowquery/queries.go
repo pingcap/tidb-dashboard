@@ -183,8 +183,11 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	tx := db.
 		Table(SlowQueryTable).
 		Select(strings.Join(projections, ", ")).
-		Where("Time between from_unixtime(?) and from_unixtime(?)", req.BeginTime, req.EndTime).
-		Limit(req.Limit)
+		Where("Time between from_unixtime(?) and from_unixtime(?)", req.BeginTime, req.EndTime)
+
+	if req.Limit > 0 {
+		tx = tx.Limit(req.Limit)
+	}
 
 	if req.Text != "" {
 		lowerStr := strings.ToLower(req.Text)

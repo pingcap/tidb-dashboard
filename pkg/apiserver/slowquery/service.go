@@ -139,9 +139,10 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 
 	// generate temp file that persist encrypted data
 	timeLayout := "0102150405"
-	currentTime := time.Now().Format(timeLayout)
+	beginTime := time.Unix(int64(req.BeginTime), 0).Format(timeLayout)
+	endTime := time.Unix(int64(req.EndTime), 0).Format(timeLayout)
 	token, err := utils.ExportCSV(csvData,
-		fmt.Sprintf("slowquery_%s_*.csv", currentTime),
+		fmt.Sprintf("slowquery_%s_%s_*.csv", beginTime, endTime),
 		"slowquery/download")
 
 	if err != nil {

@@ -144,13 +144,13 @@ export default function useSlowQueryTableController(
         const res = await client
           .getInstance()
           .slowQueryListGet(
+            queryTimeRange.beginTime,
             queryOptions.schemas,
             orderOptions.desc,
             queryOptions.digest,
+            queryTimeRange.endTime,
             selectedFields,
             queryOptions.limit,
-            queryTimeRange.endTime,
-            queryTimeRange.beginTime,
             orderOptions.orderBy,
             queryOptions.plans,
             queryOptions.searchText,
@@ -179,12 +179,11 @@ export default function useSlowQueryTableController(
         db: queryOptions.schemas,
         digest: queryOptions.digest,
         text: queryOptions.searchText,
-        limit: queryOptions.limit,
         plans: queryOptions.plans,
         orderBy: orderOptions.orderBy,
         desc: orderOptions.desc,
-        logEndTS: queryTimeRange.endTime,
-        logStartTS: queryTimeRange.beginTime,
+        end_time: queryTimeRange.endTime,
+        begin_time: queryTimeRange.beginTime,
       })
       const token = res.data
       if (token) {

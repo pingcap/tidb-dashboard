@@ -59,9 +59,7 @@ function initAxios() {
       }
     }
     const content = i18next.t(errCode)
-    // err.message = content // sometimes we can't change err.message at all, still don't know the exact reason
-    err.msg = content
-    // console.log('err', { ...err }) // you can't see message but msg field in the log
+    err.message = content
 
     if (errCode === 'error.api.unauthorized') {
       // Handle unauthorized error in a unified way

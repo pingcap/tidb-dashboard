@@ -96,10 +96,10 @@ type GetListRequest struct {
 	BeginTime int      `json:"begin_time" form:"begin_time"`
 	EndTime   int      `json:"end_time" form:"end_time"`
 	DB        []string `json:"db" form:"db"`
-	Limit     int      `json:"limit" form:"limit"`
+	Limit     uint     `json:"limit" form:"limit"`
 	Text      string   `json:"text" form:"text"`
 	OrderBy   string   `json:"orderBy" form:"orderBy"`
-	DESC      bool     `json:"desc" form:"desc"`
+	IsDesc    bool     `json:"desc" form:"desc"`
 
 	// for showing slow queries in the statement detail page
 	Plans  []string `json:"plans" form:"plans"`
@@ -186,7 +186,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	tx := db.
 		Table(SlowQueryTable).
 		Select(strings.Join(projections, ", ")).
-		Where("Time between from_unixtime(?) and from_unixtime(?)", req.BeginTime, req.EndTime)
+		Where("Time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime)
 
 	if req.Limit > 0 {
 		tx = tx.Limit(req.Limit)
@@ -224,7 +224,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	if strings.Contains(order[0], " AS ") {
 		order[0] = req.OrderBy
 	}
-	if req.DESC {
+	if req.IsDesc {
 		tx = tx.Order(fmt.Sprintf("%s DESC", order[0]))
 	} else {
 		tx = tx.Order(fmt.Sprintf("%s ASC", order[0]))

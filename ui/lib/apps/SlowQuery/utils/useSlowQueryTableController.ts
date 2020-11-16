@@ -192,7 +192,6 @@ export default function useSlowQueryTableController(
     } finally {
       setDownloading(false)
     }
-    return
   }
 
   return {

@@ -206,6 +206,21 @@ function App() {
           </Button>
         </Space>
       </Card>
+      <Card title={t('user_profile.service_endpoints.title')}>
+        <Form layout="vertical" initialValues={{ language: i18n.language }}>
+          <Form.Item name="prometheus" label={t('user_profile.service_endpoints.prometheus')}>
+            {/* <Select onChange={handleLanguageChange} style={{ width: 200 }}>
+              {_.map(ALL_LANGUAGES, (name, key) => {
+                return (
+                  <Select.Option key={key} value={key}>
+                    {name}
+                  </Select.Option>
+                )
+              })}
+            </Select> */}
+          </Form.Item>
+        </Form>
+      </Card>
       <Card title={t('user_profile.i18n.title')}>
         <Form layout="vertical" initialValues={{ language: i18n.language }}>
           <Form.Item name="language" label={t('user_profile.i18n.language')}>

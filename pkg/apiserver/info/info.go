@@ -44,7 +44,7 @@ func NewService(p ServiceParams) *Service {
 	return &Service{params: p}
 }
 
-func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/info")
 	endpoint.GET("/info", s.infoHandler)
 	endpoint.Use(auth.MWAuthRequired())

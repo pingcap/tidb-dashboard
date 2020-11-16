@@ -1,4 +1,6 @@
 user_profile:
+  service_endpoints:
+    title: Service Endpoints
   i18n:
     title: Language & Localization
     language: Language

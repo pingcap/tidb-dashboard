@@ -1,4 +1,6 @@
 user_profile:
+  service_endpoints:
+    title: 服务端点
   i18n:
     title: 语言和本地化
     language: 语言

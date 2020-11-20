@@ -16,7 +16,6 @@ import {
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
-import formatSql from '@lib/utils/formatSql'
 
 import { IPageQuery } from '.'
 import TabBasic from './PlanDetailTabBasic'
@@ -96,7 +95,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       expanded={detailExpand.query}
                       onClick={toggleQuery}
                     />
-                    <CopyLink data={formatSql(data.query_sample_text)} />
+                    <CopyLink data={data.query_sample_text} />
                   </Space>
                 }
               >
@@ -120,7 +119,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
                         expanded={detailExpand.prev_query}
                         onClick={togglePrevQuery}
                       />
-                      <CopyLink data={formatSql(data.prev_sample_text)} />
+                      <CopyLink data={data.prev_sample_text} />
                     </Space>
                   }
                 >

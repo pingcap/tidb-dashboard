@@ -39,6 +39,7 @@ export enum ErrorStrategy {
   Default = 'default',
   Custom = 'custom',
 }
+const ERR_CODE_OTHER = 'error.api.other'
 
 function initAxios() {
   i18n.addTranslations(require.context('./translations/', false, /\.yaml$/))
@@ -50,15 +51,18 @@ function initAxios() {
     const method = (config.method as string).toLowerCase()
 
     let errCode: string
+    let content: string
     if (err.message === 'Network Error') {
       errCode = 'error.network'
     } else {
-      errCode = response?.data?.code || 'error.api.other'
-      if (errCode === 'error.api.other') {
-        errCode = response?.data?.message || err.message
-      }
+      errCode = response?.data?.code
     }
-    const content = i18next.t(errCode)
+    if (errCode !== ERR_CODE_OTHER && i18next.exists(errCode)) {
+      content = i18next.t(errCode)
+    } else {
+      content =
+        response?.data?.message || err.message || i18next.t(ERR_CODE_OTHER)
+    }
     err.message = content
 
     if (errCode === 'error.api.unauthorized') {

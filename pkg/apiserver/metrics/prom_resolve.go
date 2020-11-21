@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/pingcap/log"
@@ -45,9 +46,15 @@ type pdConfig struct {
 
 // Check and normalize a Prometheus address supplied by user.
 func normalizeCustomizedPromAddress(addr string) (string, error) {
+	if !strings.HasPrefix(addr, "http://") && !strings.HasPrefix(addr, "https://") {
+		addr = "http://" + addr
+	}
 	u, err := url.Parse(addr)
 	if err != nil {
-		return "", fmt.Errorf("parse Prometheus address failed: %v", err)
+		return "", fmt.Errorf("Invalid Prometheus address format: %v", err)
+	}
+	if len(u.Host) == 0 || len(u.Scheme) == 0 {
+		return "", fmt.Errorf("Invalid Prometheus address format")
 	}
 	// Normalize the address, remove unnecessary parts.
 	addr = fmt.Sprintf("%s://%s", u.Scheme, u.Host)
@@ -163,12 +170,12 @@ func (s *Service) getPromAddressFromCache() (string, error) {
 
 // Set the customized Prometheus address. Address can be empty or a valid address like `http://host:port`.
 // If address is set to empty, address from deployment tools will be used later.
-func (s *Service) setCustomPromAddress(addr string) error {
+func (s *Service) setCustomPromAddress(addr string) (string, error) {
 	var err error
 	if len(addr) > 0 {
 		addr, err = normalizeCustomizedPromAddress(addr)
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
 
@@ -176,9 +183,12 @@ func (s *Service) setCustomPromAddress(addr string) error {
 	body["metric-storage"] = addr
 	bodyJSON, err := json.Marshal(&body)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	_, err = s.params.PDClient.SendPostRequest("/config", bytes.NewBuffer(bodyJSON))
-	return err
+	if err != nil {
+		return "", err
+	}
+	return addr, nil
 }

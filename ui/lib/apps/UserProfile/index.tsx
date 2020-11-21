@@ -7,8 +7,11 @@ import {
   Alert,
   Divider,
   Tooltip,
+  Radio,
+  Input,
+  Typography,
 } from 'antd'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 import {
@@ -36,6 +39,7 @@ import client from '@lib/client'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import ReactMarkdown from 'react-markdown'
 
+const DEFAULT_FORM_ITEM_STYLE = { width: 200 }
 const SHARE_SESSION_EXPIRY_HOURS = [0.25, 0.5, 1, 2, 3, 6, 12, 24]
 
 function ShareSessionButton() {
@@ -177,6 +181,111 @@ function ShareSessionButton() {
   )
 }
 
+function PrometheusAddressForm() {
+  const { t } = useTranslation()
+  const [isChanged, setIsChanged] = useState(false)
+  const [isPosting, setIsPosting] = useState(false)
+  const handleValuesChange = useCallback(() => setIsChanged(true), [])
+  const { error, isLoading, data } = useClientRequest((reqConfig) =>
+    client.getInstance().metricsGetPromAddress(reqConfig)
+  )
+  const isInitialLoad = useRef(true)
+  const [form] = Form.useForm()
+
+  useEffect(() => {
+    if (data && isInitialLoad.current) {
+      isInitialLoad.current = false
+      form.setFieldsValue({
+        sourceType:
+          (data.customized_addr?.length ?? 0) > 0 ? 'custom' : 'deployment',
+        customAddr: data.customized_addr,
+      })
+    }
+  }, [data, form])
+
+  const handleFinish = useCallback(
+    async (values) => {
+      let address = ''
+      if (values.sourceType === 'custom') {
+        address = values.customAddr || ''
+      }
+      try {
+        setIsPosting(true)
+        const resp = await client.getInstance().metricsSetCustomPromAddress({
+          address,
+        })
+        form.setFieldsValue({
+          customAddr: resp?.data?.normalized_address ?? '',
+        })
+        setIsChanged(false)
+      } finally {
+        setIsPosting(false)
+      }
+    },
+    [form]
+  )
+
+  return (
+    <Form
+      layout="vertical"
+      onValuesChange={handleValuesChange}
+      form={form}
+      onFinish={handleFinish}
+    >
+      <AnimatedSkeleton loading={isLoading}>
+        <Form.Item
+          name="sourceType"
+          label={t('user_profile.service_endpoints.prometheus')}
+        >
+          <Radio.Group disabled={isLoading || error || !data}>
+            <Space direction="vertical">
+              {error && <ErrorBar errors={[error]} />}
+              <Radio value="deployment">
+                <Space>
+                  <span>Use deployed address</span>
+                  <span>
+                    {(data?.deployed_addr?.length ?? 0) > 0 &&
+                      `(${data!.deployed_addr})`}
+                    {data && data.deployed_addr?.length === 0 && (
+                      <Typography.Text type="secondary">
+                        (Prometheus is not deployed)
+                      </Typography.Text>
+                    )}
+                  </span>
+                </Space>
+              </Radio>
+              <Radio value="custom">Custom</Radio>
+            </Space>
+          </Radio.Group>
+        </Form.Item>
+      </AnimatedSkeleton>
+      <Form.Item noStyle shouldUpdate>
+        {(f) =>
+          f.getFieldValue('sourceType') === 'custom' && (
+            <Form.Item
+              name="customAddr"
+              label="Custom Prometheus Address"
+              rules={[{ required: true }]}
+            >
+              <Input
+                style={DEFAULT_FORM_ITEM_STYLE}
+                placeholder="http://IP:PORT"
+              />
+            </Form.Item>
+          )
+        }
+      </Form.Item>
+      {isChanged && (
+        <Form.Item>
+          <Button type="primary" htmlType="submit" loading={isPosting}>
+            Update
+          </Button>
+        </Form.Item>
+      )}
+    </Form>
+  )
+}
+
 function App() {
   const { t, i18n } = useTranslation()
 
@@ -207,24 +316,15 @@ function App() {
         </Space>
       </Card>
       <Card title={t('user_profile.service_endpoints.title')}>
-        <Form layout="vertical" initialValues={{ language: i18n.language }}>
-          <Form.Item name="prometheus" label={t('user_profile.service_endpoints.prometheus')}>
-            {/* <Select onChange={handleLanguageChange} style={{ width: 200 }}>
-              {_.map(ALL_LANGUAGES, (name, key) => {
-                return (
-                  <Select.Option key={key} value={key}>
-                    {name}
-                  </Select.Option>
-                )
-              })}
-            </Select> */}
-          </Form.Item>
-        </Form>
+        <PrometheusAddressForm />
       </Card>
       <Card title={t('user_profile.i18n.title')}>
         <Form layout="vertical" initialValues={{ language: i18n.language }}>
           <Form.Item name="language" label={t('user_profile.i18n.language')}>
-            <Select onChange={handleLanguageChange} style={{ width: 200 }}>
+            <Select
+              onChange={handleLanguageChange}
+              style={DEFAULT_FORM_ITEM_STYLE}
+            >
               {_.map(ALL_LANGUAGES, (name, key) => {
                 return (
                   <Select.Option key={key} value={key}>

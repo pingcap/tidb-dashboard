@@ -109,6 +109,7 @@ type GetPromAddressConfigResponse struct {
 	DeployedAddr   string `json:"deployed_addr"`
 }
 
+// @ID metricsGetPromAddress
 // @Summary Get the Prometheus address cluster config
 // @Success 200 {object} GetPromAddressConfigResponse
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
@@ -135,9 +136,14 @@ type PutCustomPromAddressRequest struct {
 	Addr string `json:"address"`
 }
 
+type PutCustomPromAddressResponse struct {
+	NormalizedAddr string `json:"normalized_address"`
+}
+
+// @ID metricsSetCustomPromAddress
 // @Summary Set or clear the customized Prometheus address
 // @Param request body PutCustomPromAddressRequest true "Request body"
-// @Success 200 {object} utils.APIEmptyResponse
+// @Success 200 {object} PutCustomPromAddressResponse
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Security JwtAuth
 // @Router /metrics/prom_address [put]
@@ -147,6 +153,12 @@ func (s *Service) putCustomPromAddress(c *gin.Context) {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
-
-	c.JSON(http.StatusOK, utils.APIEmptyResponse{})
+	addr, err := s.setCustomPromAddress(req.Addr)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, PutCustomPromAddressResponse{
+		NormalizedAddr: addr,
+	})
 }

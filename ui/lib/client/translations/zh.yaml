@@ -7,6 +7,8 @@ error:
     user:
       signin:
         invalid_code: 授权码无效或已过期
+    export:
+      no_data: 没有可导出数据
     other: 其他错误
   tidb:
     no_alive_tidb: 集群未启动 TiDB 实例

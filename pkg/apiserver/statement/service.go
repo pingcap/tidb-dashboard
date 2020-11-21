@@ -14,8 +14,8 @@
 package statement
 
 import (
-	"errors"
 	"fmt"
+	"github.com/joomcode/errorx"
 	"net/http"
 	"strings"
 	"time"
@@ -27,6 +27,11 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
+)
+
+var (
+	ErrNS     = errorx.NewNamespace("error.api.export")
+	ErrNoData = ErrNS.NewType("no_data")
 )
 
 type ServiceParams struct {
@@ -253,7 +258,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		return
 	}
 	if len(overviews) == 0 {
-		utils.MakeInvalidRequestErrorFromError(c, errors.New("no data to export"))
+		_ = c.Error(ErrNoData.NewWithNoMessage())
 		return
 	}
 

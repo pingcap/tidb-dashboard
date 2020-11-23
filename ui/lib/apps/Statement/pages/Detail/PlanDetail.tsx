@@ -97,11 +97,11 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       onClick={toggleQuery}
                     />
                     <CopyLink
-                      textTransKey="copyFormatted"
+                      displayVariant="formatted_sql"
                       data={formatSql(data.query_sample_text)}
                     />
                     <CopyLink
-                      textTransKey="copyOriginal"
+                      displayVariant="original_sql"
                       data={data.query_sample_text}
                     />
                   </Space>
@@ -128,11 +128,11 @@ function PlanDetail({ query }: IPlanDetailProps) {
                         onClick={togglePrevQuery}
                       />
                       <CopyLink
-                        textTransKey="copyFormatted"
+                        displayVariant="formatted_sql"
                         data={formatSql(data.prev_sample_text)}
                       />
                       <CopyLink
-                        textTransKey="copyOriginal"
+                        displayVariant="original_sql"
                         data={data.prev_sample_text}
                       />
                     </Space>

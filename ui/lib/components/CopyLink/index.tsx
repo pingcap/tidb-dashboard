@@ -8,9 +8,16 @@ import { addTranslationResource } from '@lib/utils/i18n'
 
 import styles from './index.module.less'
 
+type DisplayVariant = 'default' | 'original_sql' | 'formatted_sql'
+const transKeys: { [K in DisplayVariant]: string } = {
+  default: 'copy',
+  original_sql: 'copyOriginal',
+  formatted_sql: 'copyFormatted',
+}
+
 export interface ICopyLinkProps {
   data?: string
-  textTransKey?: 'copy' | 'copyOriginal' | 'copyFormatted'
+  displayVariant?: DisplayVariant
 }
 
 const translations = {
@@ -38,7 +45,7 @@ for (const key in translations) {
   })
 }
 
-function CopyLink({ data, textTransKey = 'copy' }: ICopyLinkProps) {
+function CopyLink({ data, displayVariant = 'default' }: ICopyLinkProps) {
   const { t } = useTranslation()
   const [showCopied, setShowCopied] = useState(false)
 
@@ -54,17 +61,17 @@ function CopyLink({ data, textTransKey = 'copy' }: ICopyLinkProps) {
   const copyBtn = (
     <CopyToClipboard text={data} onCopy={handleCopy}>
       <a>
-        {t(`component.copyLink.${textTransKey}`)} <CopyOutlined />
+        {t(`component.copyLink.${transKeys[displayVariant]}`)} <CopyOutlined />
       </a>
     </CopyToClipboard>
   )
 
   return (
     <span>
-      {!showCopied && textTransKey === 'copyOriginal' && (
+      {!showCopied && displayVariant === 'original_sql' && (
         <Tooltip title={t('component.copyLink.tooltip')}>{copyBtn}</Tooltip>
       )}
-      {!showCopied && textTransKey !== 'copyOriginal' && copyBtn}
+      {!showCopied && displayVariant !== 'original_sql' && copyBtn}
       {showCopied && (
         <span className={styles.copiedText}>
           <CheckOutlined /> {t('component.copyLink.success')}

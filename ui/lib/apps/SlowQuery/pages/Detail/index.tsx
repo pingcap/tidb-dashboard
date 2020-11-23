@@ -92,11 +92,11 @@ function DetailPage() {
                         onClick={toggleQuery}
                       />
                       <CopyLink
-                        textTransKey="copyFormatted"
+                        displayVariant="formatted_sql"
                         data={formatSql(data.query!)}
                       />
                       <CopyLink
-                        textTransKey="copyOriginal"
+                        displayVariant="original_sql"
                         data={data.query!}
                       />
                     </Space>
@@ -125,11 +125,11 @@ function DetailPage() {
                               onClick={togglePrevQuery}
                             />
                             <CopyLink
-                              textTransKey="copyFormatted"
+                              displayVariant="formatted_sql"
                               data={formatSql(data.prev_stmt!)}
                             />
                             <CopyLink
-                              textTransKey="copyOriginal"
+                              displayVariant="original_sql"
                               data={data.prev_stmt!}
                             />
                           </Space>

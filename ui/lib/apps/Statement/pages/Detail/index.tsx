@@ -100,11 +100,11 @@ function DetailPage() {
                         onClick={toggleSqlExpanded}
                       />
                       <CopyLink
-                        textTransKey="copyFormatted"
+                        displayVariant="formatted_sql"
                         data={formatSql(plans[0].digest_text!)}
                       />
                       <CopyLink
-                        textTransKey="copyOriginal"
+                        displayVariant="original_sql"
                         data={plans[0].digest_text!}
                       />
                     </Space>

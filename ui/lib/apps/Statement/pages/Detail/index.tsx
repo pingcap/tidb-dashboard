@@ -99,7 +99,14 @@ function DetailPage() {
                         expanded={sqlExpanded}
                         onClick={toggleSqlExpanded}
                       />
-                      <CopyLink data={formatSql(plans[0].digest_text!)} />
+                      <CopyLink
+                        textTransKey="copyFormatted"
+                        data={formatSql(plans[0].digest_text!)}
+                      />
+                      <CopyLink
+                        textTransKey="copyOriginal"
+                        data={plans[0].digest_text!}
+                      />
                     </Space>
                   }
                 >

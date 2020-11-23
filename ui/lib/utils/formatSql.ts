@@ -1,5 +1,7 @@
-import sqlFormatter from 'sql-formatter-plus-plus'
+import MySqlFormatter from './MySqlFormatter/MySqlFormatter'
+
+const mySqlFormatter = new MySqlFormatter({ uppercase: true })
 
 export default function formatSql(sql?: string): string {
-  return sqlFormatter.format(sql || '', { uppercase: true })
+  return mySqlFormatter.format(sql || '')
 }

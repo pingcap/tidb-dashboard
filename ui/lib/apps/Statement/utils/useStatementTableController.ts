@@ -134,7 +134,7 @@ export default function useStatementTableController(
         })
         setEnable(res?.data.enable!)
       } catch (e) {
-        setErrors((prev) => [...prev, { ...e }])
+        setErrors((prev) => prev.concat(e))
       }
     }
 
@@ -145,7 +145,7 @@ export default function useStatementTableController(
         })
         setAllSchemas(res?.data || [])
       } catch (e) {
-        setErrors((prev) => [...prev, { ...e }])
+        setErrors((prev) => prev.concat(e))
       }
     }
 
@@ -156,7 +156,7 @@ export default function useStatementTableController(
         })
         setAllTimeRanges(res?.data || [])
       } catch (e) {
-        setErrors((prev) => [...prev, { ...e }])
+        setErrors((prev) => prev.concat(e))
       }
     }
 
@@ -167,7 +167,7 @@ export default function useStatementTableController(
         })
         setAllStmtTypes(res?.data || [])
       } catch (e) {
-        setErrors((prev) => [...prev, { ...e }])
+        setErrors((prev) => prev.concat(e))
       }
     }
 
@@ -213,7 +213,7 @@ export default function useStatementTableController(
         setStatements(res?.data || [])
         setErrors([])
       } catch (e) {
-        setErrors((prev) => [...prev, { ...e }])
+        setErrors((prev) => prev.concat(e))
       }
       setLoadingStatements(false)
     }

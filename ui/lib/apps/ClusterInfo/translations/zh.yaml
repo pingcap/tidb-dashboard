@@ -28,5 +28,6 @@ cluster_info:
       instanceUnavailable: 获取该主机信息失败：无法访问实例
     store_topology:
       title: 存储拓扑
+      tooltip: 通过按住Ctrl并滑动鼠标滚轮也可缩放
   error:
     load: '加载组件 {{comp}} 失败: {{cause}}'

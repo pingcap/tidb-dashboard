@@ -56,10 +56,12 @@ export interface ITransKeyTextWithInfo {
 }
 
 function TransKey({ transKey, placement, type }: ITransKeyTextWithInfo) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const text = t(transKey)
-  const tooltipKey = `${transKey}_tooltip`
-  const tooltip = i18n.exists(tooltipKey) ? t(tooltipKey) : ''
+  const tooltip = t(`${transKey}_tooltip`, {
+    defaultValue: '',
+    fallbackLng: '_',
+  })
   return (
     <TextWithInfo tooltip={tooltip} placement={placement} type={type}>
       {text}

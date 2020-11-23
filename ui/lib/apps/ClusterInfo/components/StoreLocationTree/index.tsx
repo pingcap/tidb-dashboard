@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 
 export interface IStoreLocationProps {
   dataSource: any
+  getMinHeight?: () => number
 }
 
 const margin = { left: 60, right: 40, top: 60, bottom: 100 }
@@ -31,7 +32,10 @@ function calcHeight(root) {
   return x1 - x0
 }
 
-export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
+export default function StoreLocationTree({
+  dataSource,
+  getMinHeight,
+}: IStoreLocationProps) {
   const divRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
 
@@ -131,15 +135,14 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
         root.y0 = root.y
       }
 
-      const minHeight = document.documentElement.clientHeight - 80 - 48 * 2 // 48 = margin of cardInner
       const contentHeight = boundHeight + margin.top + margin.bottom
 
       const transition = svg
         .transition()
         .duration(duration)
         .attr('width', divWidth)
-        .attr('height', minHeight >= contentHeight ? minHeight : contentHeight)
-
+        .attr('height', Math.max(getMinHeight?.() || 0, contentHeight))
+      console.log(getMinHeight?.())
       // update the nodes
       const node = gNode.selectAll('g').data(nodes, (d: any) => d.id)
 
@@ -241,7 +244,7 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
     return () => {
       window.removeEventListener('resize', resizeHandler)
     }
-  }, [dataSource])
+  }, [dataSource, getMinHeight])
 
   return (
     <div ref={divRef} style={{ position: 'relative' }}>

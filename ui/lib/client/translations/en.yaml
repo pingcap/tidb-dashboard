@@ -7,8 +7,10 @@ error:
     user:
       signin:
         invalid_code: Authorization Code is invalid or expired
-    export:
-      no_data: No data can be exported
+    slow_query:
+      export_no_data: No slow queires can be exported
+    statement:
+      export_no_data: No statements can be exported
     other: Other error
   tidb:
     no_alive_tidb: No live TiDB instance in the cluster

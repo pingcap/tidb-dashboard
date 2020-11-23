@@ -8,6 +8,7 @@ import { useLocalStorageState } from '@umijs/hooks'
 import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
+import formatSql from '@lib/utils/formatSql'
 import {
   AnimatedSkeleton,
   CardTabs,
@@ -90,7 +91,7 @@ function DetailPage() {
                         expanded={detailExpand.query}
                         onClick={toggleQuery}
                       />
-                      <CopyLink data={data.query!} />
+                      <CopyLink data={formatSql(data.query!)} />
                     </Space>
                   }
                 >
@@ -116,7 +117,7 @@ function DetailPage() {
                               expanded={detailExpand.prev_query}
                               onClick={togglePrevQuery}
                             />
-                            <CopyLink data={data.prev_stmt!} />
+                            <CopyLink data={formatSql(data.prev_stmt!)} />
                           </Space>
                         }
                       >

@@ -30,6 +30,7 @@ import {
   TextWithInfo,
   Pre,
   ErrorBar,
+  Blink,
 } from '@lib/components'
 import * as auth from '@lib/utils/auth'
 import { ALL_LANGUAGES } from '@lib/utils/i18n'
@@ -190,6 +191,7 @@ function PrometheusAddressForm() {
     client.getInstance().metricsGetPromAddress(reqConfig)
   )
   const isInitialLoad = useRef(true)
+  const initialForm = useRef<any>(null) // Used for "Cancel" behaviour
   const [form] = Form.useForm()
 
   useEffect(() => {
@@ -200,6 +202,7 @@ function PrometheusAddressForm() {
           (data.customized_addr?.length ?? 0) > 0 ? 'custom' : 'deployment',
         customAddr: data.customized_addr,
       })
+      initialForm.current = { ...form.getFieldsValue() }
     }
   }, [data, form])
 
@@ -214,9 +217,9 @@ function PrometheusAddressForm() {
         const resp = await client.getInstance().metricsSetCustomPromAddress({
           address,
         })
-        form.setFieldsValue({
-          customAddr: resp?.data?.normalized_address ?? '',
-        })
+        const customAddr = resp?.data?.normalized_address ?? ''
+        form.setFieldsValue({ customAddr })
+        initialForm.current = { ...form.getFieldsValue() }
         setIsChanged(false)
       } finally {
         setIsPosting(false)
@@ -225,64 +228,74 @@ function PrometheusAddressForm() {
     [form]
   )
 
+  const handleCancel = useCallback(() => {
+    form.setFieldsValue({ ...initialForm.current })
+    setIsChanged(false)
+  }, [form])
+
   return (
-    <Form
-      layout="vertical"
-      onValuesChange={handleValuesChange}
-      form={form}
-      onFinish={handleFinish}
-    >
-      <AnimatedSkeleton loading={isLoading}>
-        <Form.Item
-          name="sourceType"
-          label={t('user_profile.service_endpoints.prometheus')}
-        >
-          <Radio.Group disabled={isLoading || error || !data}>
-            <Space direction="vertical">
-              {error && <ErrorBar errors={[error]} />}
-              <Radio value="deployment">
-                <Space>
-                  <span>Use deployed address</span>
-                  <span>
-                    {(data?.deployed_addr?.length ?? 0) > 0 &&
-                      `(${data!.deployed_addr})`}
-                    {data && data.deployed_addr?.length === 0 && (
-                      <Typography.Text type="secondary">
-                        (Prometheus is not deployed)
-                      </Typography.Text>
-                    )}
-                  </span>
-                </Space>
-              </Radio>
-              <Radio value="custom">Custom</Radio>
+    <Blink activeId="profile.prometheus">
+      <Form
+        layout="vertical"
+        onValuesChange={handleValuesChange}
+        form={form}
+        onFinish={handleFinish}
+      >
+        <AnimatedSkeleton loading={isLoading}>
+          <Form.Item
+            name="sourceType"
+            label={t('user_profile.service_endpoints.prometheus')}
+          >
+            <Radio.Group disabled={isLoading || error || !data}>
+              <Space direction="vertical">
+                {error && <ErrorBar errors={[error]} />}
+                <Radio value="deployment">
+                  <Space>
+                    <span>Use deployed address</span>
+                    <span>
+                      {(data?.deployed_addr?.length ?? 0) > 0 &&
+                        `(${data!.deployed_addr})`}
+                      {data && data.deployed_addr?.length === 0 && (
+                        <Typography.Text type="secondary">
+                          (Prometheus is not deployed)
+                        </Typography.Text>
+                      )}
+                    </span>
+                  </Space>
+                </Radio>
+                <Radio value="custom">Custom</Radio>
+              </Space>
+            </Radio.Group>
+          </Form.Item>
+        </AnimatedSkeleton>
+        <Form.Item noStyle shouldUpdate>
+          {(f) =>
+            f.getFieldValue('sourceType') === 'custom' && (
+              <Form.Item
+                name="customAddr"
+                label="Custom Prometheus Address"
+                rules={[{ required: true }]}
+              >
+                <Input
+                  style={DEFAULT_FORM_ITEM_STYLE}
+                  placeholder="http://IP:PORT"
+                />
+              </Form.Item>
+            )
+          }
+        </Form.Item>
+        {isChanged && (
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit" loading={isPosting}>
+                Update
+              </Button>
+              <Button onClick={handleCancel}>Cancel</Button>
             </Space>
-          </Radio.Group>
-        </Form.Item>
-      </AnimatedSkeleton>
-      <Form.Item noStyle shouldUpdate>
-        {(f) =>
-          f.getFieldValue('sourceType') === 'custom' && (
-            <Form.Item
-              name="customAddr"
-              label="Custom Prometheus Address"
-              rules={[{ required: true }]}
-            >
-              <Input
-                style={DEFAULT_FORM_ITEM_STYLE}
-                placeholder="http://IP:PORT"
-              />
-            </Form.Item>
-          )
-        }
-      </Form.Item>
-      {isChanged && (
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={isPosting}>
-            Update
-          </Button>
-        </Form.Item>
-      )}
-    </Form>
+          </Form.Item>
+        )}
+      </Form>
+    </Blink>
   )
 }
 

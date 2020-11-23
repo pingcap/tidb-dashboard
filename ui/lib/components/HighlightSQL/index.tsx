@@ -5,7 +5,7 @@ import sql from 'react-syntax-highlighter/dist/esm/languages/hljs/sql'
 import lightTheme from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light'
 import darkTheme from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark'
 import Pre from '../Pre'
-import formatSql from '@lib/utils/formatSql'
+import formatSql from '@lib/utils/TiDBSQLFormatter/formatSql'
 import moize from 'moize'
 
 SyntaxHighlighter.registerLanguage('sql', sql)

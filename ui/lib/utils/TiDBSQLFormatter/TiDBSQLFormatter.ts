@@ -336,7 +336,7 @@ const reservedNewlineWords = [
 
 let tokenizer
 
-export default class MySqlFormatter {
+export default class TiDBSQLFormatter {
   /**
    * @param {Object} cfg Different set of configurations
    */

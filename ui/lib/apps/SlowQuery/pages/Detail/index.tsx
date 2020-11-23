@@ -8,7 +8,7 @@ import { useLocalStorageState } from '@umijs/hooks'
 import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
-import formatSql from '@lib/utils/formatSql'
+import formatSql from '@lib/utils/TiDBSQLFormatter/formatSql'
 import {
   AnimatedSkeleton,
   CardTabs,

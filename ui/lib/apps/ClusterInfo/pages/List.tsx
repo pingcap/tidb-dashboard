@@ -11,10 +11,12 @@ import HostTable from '../components/HostTable'
 import InstanceTable from '../components/InstanceTable'
 import StoreLocation from '../components/StoreLocation'
 
+import styles from './List.module.less'
+
 function renderTabBar(props, DefaultTabBar) {
   return (
     <Sticky stickyPosition={StickyPositionType.Header}>
-      <DefaultTabBar {...props} />
+      <DefaultTabBar {...props} className={styles.sticky_tabs_header} />
     </Sticky>
   )
 }

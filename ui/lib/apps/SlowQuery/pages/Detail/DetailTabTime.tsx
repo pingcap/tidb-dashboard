@@ -85,6 +85,10 @@ export default function TabBasic({ data }: ITabTimeProps) {
       value: data.write_sql_response_total! * 10e8,
     },
     {
+      key: 'exec_retry_time',
+      value: data.exec_retry_time! * 10e8,
+    },
+    {
       key: 'query_time2',
       keyDisplay: (
         <Typography.Text strong>

@@ -91,7 +91,14 @@ function DetailPage() {
                         expanded={detailExpand.query}
                         onClick={toggleQuery}
                       />
-                      <CopyLink data={formatSql(data.query!)} />
+                      <CopyLink
+                        displayVariant="formatted_sql"
+                        data={formatSql(data.query!)}
+                      />
+                      <CopyLink
+                        displayVariant="original_sql"
+                        data={data.query!}
+                      />
                     </Space>
                   }
                 >
@@ -117,7 +124,14 @@ function DetailPage() {
                               expanded={detailExpand.prev_query}
                               onClick={togglePrevQuery}
                             />
-                            <CopyLink data={formatSql(data.prev_stmt!)} />
+                            <CopyLink
+                              displayVariant="formatted_sql"
+                              data={formatSql(data.prev_stmt!)}
+                            />
+                            <CopyLink
+                              displayVariant="original_sql"
+                              data={data.prev_stmt!}
+                            />
                           </Space>
                         }
                       >

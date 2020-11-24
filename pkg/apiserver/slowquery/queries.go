@@ -93,13 +93,13 @@ type SlowQuery struct {
 }
 
 type GetListRequest struct {
-	RangeBeginTs uint     `json:"rangeBeginTs" form:"rangeBeginTs"`
-	RangeEndTs   uint     `json:"rangeEndTs" form:"rangeEndTs"`
-	DB           []string `json:"db" form:"db"`
-	Limit        uint     `json:"limit" form:"limit"`
-	Text         string   `json:"text" form:"text"`
-	OrderBy      string   `json:"orderBy" form:"orderBy"`
-	IsDesc       bool     `json:"desc" form:"desc"`
+	BeginTime int      `json:"begin_time" form:"begin_time"`
+	EndTime   int      `json:"end_time" form:"end_time"`
+	DB        []string `json:"db" form:"db"`
+	Limit     uint     `json:"limit" form:"limit"`
+	Text      string   `json:"text" form:"text"`
+	OrderBy   string   `json:"orderBy" form:"orderBy"`
+	IsDesc    bool     `json:"desc" form:"desc"`
 
 	// for showing slow queries in the statement detail page
 	Plans  []string `json:"plans" form:"plans"`
@@ -108,31 +108,56 @@ type GetListRequest struct {
 	Fields string `json:"fields" form:"fields"` // example: "Query,Digest"
 }
 
-func getProjectionsByFields(jsonFields ...string) ([]string, error) {
-	fields := make(map[string]*reflect.StructField)
-	t := reflect.TypeOf(SlowQuery{})
-	fieldsNum := t.NumField()
-	for i := 0; i < fieldsNum; i++ {
-		field := t.Field(i)
-		fields[strings.ToLower(field.Tag.Get("json"))] = &field
+var cachedProjectionsMap map[string]string
+
+func getProjectionsMap() map[string]string {
+	if cachedProjectionsMap == nil {
+		t := reflect.TypeOf(SlowQuery{})
+		fieldsNum := t.NumField()
+		ret := map[string]string{}
+		for i := 0; i < fieldsNum; i++ {
+			field := t.Field(i)
+			// ignore to check error because the field is defined by ourself
+			// we can confirm that it has "gorm" tag and fixed structure
+			s, _ := field.Tag.Lookup("gorm")
+			jsonField := strings.ToLower(field.Tag.Get("json"))
+			sourceField := strings.Split(s, ":")[1]
+			if proj, ok := field.Tag.Lookup("proj"); ok {
+				ret[jsonField] = fmt.Sprintf("%s AS %s", proj, sourceField)
+			} else {
+				ret[jsonField] = sourceField
+			}
+		}
+		cachedProjectionsMap = ret
 	}
+	return cachedProjectionsMap
+}
+
+func getProjectionsByFields(jsonFields ...string) ([]string, error) {
+	projMap := getProjectionsMap()
 	ret := make([]string, 0, len(jsonFields))
 	for _, fieldName := range jsonFields {
-		field, ok := fields[strings.ToLower(fieldName)]
+		field, ok := projMap[strings.ToLower(fieldName)]
 		if !ok {
 			return nil, fmt.Errorf("unknown field %s", fieldName)
 		}
-		// ignore to check error because the field is defined by ourself
-		// we can confirm that it has "gorm" tag and fixed structure
-		s, _ := field.Tag.Lookup("gorm")
-		sourceField := strings.Split(s, ":")[1]
-		if proj, ok := field.Tag.Lookup("proj"); ok {
-			ret = append(ret, fmt.Sprintf("%s AS %s", proj, sourceField))
-		} else {
-			ret = append(ret, sourceField)
-		}
+		ret = append(ret, field)
 	}
 	return ret, nil
+}
+
+var cachedAllProjections []string
+
+func getAllProjections() []string {
+	if cachedAllProjections == nil {
+		projMap := getProjectionsMap()
+		ret := make([]string, 0, len(projMap))
+		for _, proj := range projMap {
+			ret = append(ret, proj)
+		}
+		cachedAllProjections = ret
+	}
+	return cachedAllProjections
 }
 
 type GetDetailRequest struct {
@@ -143,21 +168,29 @@ type GetDetailRequest struct {
 }
 
 func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
-	sqlFields := []string{"digest", "connection_id", "timestamp"}
-	if strings.TrimSpace(req.Fields) != "" {
-		sqlFields = append(sqlFields, strings.Split(req.Fields, ",")...)
-		sqlFields = funk.UniqString(sqlFields)
-	}
-	projections, err := getProjectionsByFields(sqlFields...)
-	if err != nil {
-		return nil, err
+	var projections []string
+	var err error
+	reqFields := strings.Split(req.Fields, ",")
+	if len(reqFields) == 1 && reqFields[0] == "*" {
+		projections = getAllProjections()
+	} else {
+		projections, err = getProjectionsByFields(
+			funk.UniqString(
+				append([]string{"digest", "connection_id", "timestamp"}, reqFields...),
+			)...)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	tx := db.
 		Table(SlowQueryTable).
 		Select(strings.Join(projections, ", ")).
-		Where("Time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.RangeBeginTs, req.RangeEndTs).
-		Limit(req.Limit)
+		Where("Time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime)
+
+	if req.Limit > 0 {
+		tx = tx.Limit(req.Limit)
+	}
 
 	if req.Text != "" {
 		lowerStr := strings.ToLower(req.Text)
@@ -175,6 +208,11 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 
 	if len(req.DB) > 0 {
 		tx = tx.Where("DB IN (?)", req.DB)
+	}
+
+	// more robust
+	if req.OrderBy == "" {
+		req.OrderBy = "timestamp"
 	}
 
 	order, err := getProjectionsByFields(req.OrderBy)

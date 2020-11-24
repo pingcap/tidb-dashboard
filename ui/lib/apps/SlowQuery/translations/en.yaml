@@ -87,3 +87,13 @@ slow_query:
       time: Time
       copr: Coprocessor
       txn: Transaction
+  toolbar:
+    schemas:
+      placeholder: All Databases
+      selected: '{{ n }} Databases'
+      columnTitle: Database Name
+    select_columns:
+      show_full_sql: Show Full Query Text
+    refresh: Refresh
+    export: Export
+    exporting: Exporting

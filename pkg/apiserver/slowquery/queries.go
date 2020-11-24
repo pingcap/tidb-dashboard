@@ -24,27 +24,29 @@ import (
 
 const (
 	SlowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
-	SelectStmt     = "*, (unix_timestamp(Time) + 0E0) as timestamp"
+	SelectStmt     = "*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp"
 )
 
 type SlowQuery struct {
 	Digest string `gorm:"column:Digest" json:"digest"`
 	Query  string `gorm:"column:Query" json:"query"`
 
-	Instance     string `gorm:"column:INSTANCE" json:"instance"`
-	DB           string `gorm:"column:DB" json:"db"`
-	ConnectionID uint   `gorm:"column:Conn_ID" json:"connection_id"`
+	Instance string `gorm:"column:INSTANCE" json:"instance"`
+	DB       string `gorm:"column:DB" json:"db"`
+	// TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
+	ConnectionID string `gorm:"column:Conn_ID" json:"connection_id"`
 	Success      int    `gorm:"column:Succ" json:"success"`
 
-	Timestamp   float64 `gorm:"column:timestamp" proj:"(unix_timestamp(Time) + 0E0)" json:"timestamp"` // finish time
+	Timestamp   float64 `gorm:"column:timestamp" proj:"(UNIX_TIMESTAMP(Time) + 0E0)" json:"timestamp"` // finish time
 	QueryTime   float64 `gorm:"column:Query_time" json:"query_time"`                                   // latency
 	ParseTime   float64 `gorm:"column:Parse_time" json:"parse_time"`
 	CompileTime float64 `gorm:"column:Compile_time" json:"compile_time"`
 	ProcessTime float64 `gorm:"column:Process_time" json:"process_time"`
 
-	MemoryMax  int  `gorm:"column:Mem_max" json:"memory_max"`
-	DiskMax    int  `gorm:"column:Disk_max" json:"disk_max"`
-	TxnStartTS uint `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
+	MemoryMax int `gorm:"column:Mem_max" json:"memory_max"`
+	DiskMax   int `gorm:"column:Disk_max" json:"disk_max"`
+	// TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
+	TxnStartTS string `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
 
 	// Detail
 	PrevStmt string `gorm:"column:Prev_stmt" json:"prev_stmt"`
@@ -91,13 +93,13 @@ type SlowQuery struct {
 }
 
 type GetListRequest struct {
-	LogStartTS int64    `json:"logStartTS" form:"logStartTS"`
-	LogEndTS   int64    `json:"logEndTS" form:"logEndTS"`
-	DB         []string `json:"db" form:"db"`
-	Limit      int      `json:"limit" form:"limit"`
-	Text       string   `json:"text" form:"text"`
-	OrderBy    string   `json:"orderBy" form:"orderBy"`
-	DESC       bool     `json:"desc" form:"desc"`
+	BeginTime int      `json:"begin_time" form:"begin_time"`
+	EndTime   int      `json:"end_time" form:"end_time"`
+	DB        []string `json:"db" form:"db"`
+	Limit     uint     `json:"limit" form:"limit"`
+	Text      string   `json:"text" form:"text"`
+	OrderBy   string   `json:"orderBy" form:"orderBy"`
+	IsDesc    bool     `json:"desc" form:"desc"`
 
 	// for showing slow queries in the statement detail page
 	Plans  []string `json:"plans" form:"plans"`
@@ -106,65 +108,99 @@ type GetListRequest struct {
 	Fields string `json:"fields" form:"fields"` // example: "Query,Digest"
 }
 
-func getProjectionsByFields(jsonFields ...string) ([]string, error) {
-	fields := make(map[string]*reflect.StructField)
-	t := reflect.TypeOf(SlowQuery{})
-	fieldsNum := t.NumField()
-	for i := 0; i < fieldsNum; i++ {
-		field := t.Field(i)
-		fields[strings.ToLower(field.Tag.Get("json"))] = &field
+var cachedProjectionsMap map[string]string
+
+func getProjectionsMap() map[string]string {
+	if cachedProjectionsMap == nil {
+		t := reflect.TypeOf(SlowQuery{})
+		fieldsNum := t.NumField()
+		ret := map[string]string{}
+		for i := 0; i < fieldsNum; i++ {
+			field := t.Field(i)
+			// ignore to check error because the field is defined by ourself
+			// we can confirm that it has "gorm" tag and fixed structure
+			s, _ := field.Tag.Lookup("gorm")
+			jsonField := strings.ToLower(field.Tag.Get("json"))
+			sourceField := strings.Split(s, ":")[1]
+			if proj, ok := field.Tag.Lookup("proj"); ok {
+				ret[jsonField] = fmt.Sprintf("%s AS %s", proj, sourceField)
+			} else {
+				ret[jsonField] = sourceField
+			}
+		}
+		cachedProjectionsMap = ret
 	}
+	return cachedProjectionsMap
+}
+
+func getProjectionsByFields(jsonFields ...string) ([]string, error) {
+	projMap := getProjectionsMap()
 	ret := make([]string, 0, len(jsonFields))
 	for _, fieldName := range jsonFields {
-		field, ok := fields[strings.ToLower(fieldName)]
+		field, ok := projMap[strings.ToLower(fieldName)]
 		if !ok {
 			return nil, fmt.Errorf("unknown field %s", fieldName)
 		}
-		// ignore to check error because the field is defined by ourself
-		// we can confirm that it has "gorm" tag and fixed structure
-		s, _ := field.Tag.Lookup("gorm")
-		sourceField := strings.Split(s, ":")[1]
-		if proj, ok := field.Tag.Lookup("proj"); ok {
-			ret = append(ret, fmt.Sprintf("%s AS %s", proj, sourceField))
-		} else {
-			ret = append(ret, sourceField)
-		}
+		ret = append(ret, field)
 	}
 	return ret, nil
+}
+
+var cachedAllProjections []string
+
+func getAllProjections() []string {
+	if cachedAllProjections == nil {
+		projMap := getProjectionsMap()
+		ret := make([]string, 0, len(projMap))
+		for _, proj := range projMap {
+			ret = append(ret, proj)
+		}
+		cachedAllProjections = ret
+	}
+	return cachedAllProjections
 }
 
 type GetDetailRequest struct {
 	Digest    string  `json:"digest" form:"digest"`
 	Timestamp float64 `json:"timestamp" form:"timestamp"`
-	ConnectID int64   `json:"connect_id" form:"connect_id"`
+	// TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
+	ConnectID string `json:"connect_id" form:"connect_id"`
 }
 
 func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
-	sqlFields := []string{"digest", "connection_id", "timestamp"}
-	if strings.TrimSpace(req.Fields) != "" {
-		sqlFields = append(sqlFields, strings.Split(req.Fields, ",")...)
-		sqlFields = funk.UniqString(sqlFields)
-	}
-	projections, err := getProjectionsByFields(sqlFields...)
-	if err != nil {
-		return nil, err
+	var projections []string
+	var err error
+	reqFields := strings.Split(req.Fields, ",")
+	if len(reqFields) == 1 && reqFields[0] == "*" {
+		projections = getAllProjections()
+	} else {
+		projections, err = getProjectionsByFields(
+			funk.UniqString(
+				append([]string{"digest", "connection_id", "timestamp"}, reqFields...),
+			)...)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	tx := db.
 		Table(SlowQueryTable).
 		Select(strings.Join(projections, ", ")).
-		Where("Time between from_unixtime(?) and from_unixtime(?)", req.LogStartTS, req.LogEndTS).
-		Limit(req.Limit)
+		Where("Time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime)
+
+	if req.Limit > 0 {
+		tx = tx.Limit(req.Limit)
+	}
 
 	if req.Text != "" {
 		lowerStr := strings.ToLower(req.Text)
 		arr := strings.Fields(lowerStr)
 		for _, v := range arr {
 			tx = tx.Where(
-				`txn_start_ts REGEXP ?
-				 OR LOWER(digest) REGEXP ?
-				 OR LOWER(CONVERT(prev_stmt USING utf8)) REGEXP ?
-				 OR LOWER(CONVERT(query USING utf8)) REGEXP ?`,
+				`Txn_start_ts REGEXP ?
+				 OR LOWER(Digest) REGEXP ?
+				 OR LOWER(CONVERT(Prev_stmt USING utf8)) REGEXP ?
+				 OR LOWER(CONVERT(Query USING utf8)) REGEXP ?`,
 				v, v, v, v,
 			)
 		}
@@ -172,6 +208,11 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 
 	if len(req.DB) > 0 {
 		tx = tx.Where("DB IN (?)", req.DB)
+	}
+
+	// more robust
+	if req.OrderBy == "" {
+		req.OrderBy = "timestamp"
 	}
 
 	order, err := getProjectionsByFields(req.OrderBy)
@@ -183,10 +224,10 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	if strings.Contains(order[0], " AS ") {
 		order[0] = req.OrderBy
 	}
-	if req.DESC {
-		tx = tx.Order(fmt.Sprintf("%s desc", order[0]))
+	if req.IsDesc {
+		tx = tx.Order(fmt.Sprintf("%s DESC", order[0]))
 	} else {
-		tx = tx.Order(fmt.Sprintf("%s asc", order[0]))
+		tx = tx.Order(fmt.Sprintf("%s ASC", order[0]))
 	}
 
 	if len(req.Plans) > 0 {
@@ -211,7 +252,7 @@ func QuerySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) 
 		Table(SlowQueryTable).
 		Select(SelectStmt).
 		Where("Digest = ?", req.Digest).
-		Where("Time = from_unixtime(?)", req.Timestamp).
+		Where("Time = FROM_UNIXTIME(?)", req.Timestamp).
 		Where("Conn_id = ?", req.ConnectID).
 		First(&result).Error
 	if err != nil {

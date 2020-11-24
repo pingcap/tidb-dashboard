@@ -59,6 +59,9 @@ export interface ISlowQueryTableController {
 
   tableColumns: IColumn[]
   visibleColumnKeys: IColumnKeys
+
+  downloadCSV: () => Promise<void>
+  downloading: boolean
 }
 
 export default function useSlowQueryTableController(
@@ -117,9 +120,10 @@ export default function useSlowQueryTableController(
         })
         setAllSchemas(res?.data || [])
       } catch (e) {
-        setErrors((prev) => [...prev, { ...e }])
+        setErrors((prev) => prev.concat(e))
       }
     }
+
     querySchemas()
   }, [])
 
@@ -140,13 +144,13 @@ export default function useSlowQueryTableController(
         const res = await client
           .getInstance()
           .slowQueryListGet(
+            queryTimeRange.beginTime,
             queryOptions.schemas,
             orderOptions.desc,
             queryOptions.digest,
+            queryTimeRange.endTime,
             selectedFields,
             queryOptions.limit,
-            queryTimeRange.endTime,
-            queryTimeRange.beginTime,
             orderOptions.orderBy,
             queryOptions.plans,
             queryOptions.searchText,
@@ -157,13 +161,38 @@ export default function useSlowQueryTableController(
         setSlowQueries(res.data || [])
         setErrors([])
       } catch (e) {
-        setErrors((prev) => [...prev, { ...e }])
+        setErrors((prev) => prev.concat(e))
       }
       setLoadingSlowQueries(false)
     }
 
     getSlowQueryList()
   }, [queryOptions, orderOptions, queryTimeRange, refreshTimes, selectedFields])
+
+  const [downloading, setDownloading] = useState(false)
+
+  async function downloadCSV() {
+    try {
+      setDownloading(true)
+      const res = await client.getInstance().slowQueryDownloadTokenPost({
+        fields: '*',
+        db: queryOptions.schemas,
+        digest: queryOptions.digest,
+        text: queryOptions.searchText,
+        plans: queryOptions.plans,
+        orderBy: orderOptions.orderBy,
+        desc: orderOptions.desc,
+        end_time: queryTimeRange.endTime,
+        begin_time: queryTimeRange.beginTime,
+      })
+      const token = res.data
+      if (token) {
+        window.location.href = `${client.getBasePath()}/slow_query/download?token=${token}`
+      }
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return {
     queryOptions,
@@ -181,5 +210,8 @@ export default function useSlowQueryTableController(
 
     tableColumns,
     visibleColumnKeys,
+
+    downloading,
+    downloadCSV,
   }
 }

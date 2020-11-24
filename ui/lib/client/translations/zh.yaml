@@ -3,9 +3,14 @@ error:
   network: 网络连接失败
   api:
     unauthorized: 会话已过期，请重新登录
+    invalid_request: 请求出错
     user:
       signin:
         invalid_code: 授权码无效或已过期
+    slow_query:
+      export_no_data: 没有可导出的慢查询日志
+    statement:
+      export_no_data: 没有可导出的语句
     other: 其他错误
   tidb:
     no_alive_tidb: 集群未启动 TiDB 实例

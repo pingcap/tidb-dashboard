@@ -27,7 +27,7 @@ import TabCopr from './DetailTabCopr'
 import TabTxn from './DetailTabTxn'
 
 export interface IPageQuery {
-  connectId?: number
+  connectId?: string
   digest?: string
   timestamp?: number
 }

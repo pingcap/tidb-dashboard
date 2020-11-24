@@ -14,31 +14,25 @@
 package statement
 
 import (
-	"encoding/base64"
-	"encoding/csv"
-	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
-	"os"
-	"reflect"
 	"strings"
 	"time"
 
+	"github.com/joomcode/errorx"
+
 	"github.com/gin-gonic/gin"
-	"github.com/gtank/cryptopasta"
-	"github.com/pingcap/log"
+
 	"go.uber.org/fx"
-	"go.uber.org/zap"
-
-	aesctr "github.com/Xeoncross/go-aesctr-with-hmac"
-
-	"gopkg.in/oleiade/reflections.v1"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
+)
+
+var (
+	ErrNS     = errorx.NewNamespace("error.api.statement")
+	ErrNoData = ErrNS.NewType("export_no_data")
 )
 
 type ServiceParams struct {
@@ -265,76 +259,27 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		return
 	}
 	if len(overviews) == 0 {
-		utils.MakeInvalidRequestErrorFromError(c, errors.New("no data to export"))
+		_ = c.Error(ErrNoData.NewWithNoMessage())
 		return
+	}
+
+	// interface{} tricky
+	rawData := make([]interface{}, len(overviews))
+	for i, v := range overviews {
+		rawData[i] = v
 	}
 
 	// convert data
-	fieldsMap := make(map[string]string)
-	t := reflect.TypeOf(overviews[0])
-	fieldsNum := t.NumField()
-	allFields := make([]string, fieldsNum)
-	for i := 0; i < fieldsNum; i++ {
-		field := t.Field(i)
-		allFields[i] = strings.ToLower(field.Tag.Get("json"))
-		fieldsMap[allFields[i]] = field.Name
-	}
-	if len(fields) == 1 && fields[0] == "*" {
-		fields = allFields
-	}
-
-	csvData := [][]string{fields}
-	timeLayout := "01-02 15:04:05"
-	for _, overview := range overviews {
-		row := []string{}
-		for _, field := range fields {
-			filedName := fieldsMap[field]
-			s, _ := reflections.GetField(overview, filedName)
-			var val string
-			switch t := s.(type) {
-			case int:
-				if field == "first_seen" || field == "last_seen" {
-					val = time.Unix(int64(t), 0).Format(timeLayout)
-				} else {
-					val = fmt.Sprintf("%d", t)
-				}
-			default:
-				val = fmt.Sprintf("%s", t)
-			}
-			row = append(row, val)
-		}
-		csvData = append(csvData, row)
-	}
+	csvData := utils.GenerateCSVFromRaw(rawData, fields, []string{"first_seen", "last_seen"})
 
 	// generate temp file that persist encrypted data
-	timeLayout = "01021504"
+	timeLayout := "01021504"
 	beginTime := time.Unix(int64(req.BeginTime), 0).Format(timeLayout)
 	endTime := time.Unix(int64(req.EndTime), 0).Format(timeLayout)
-	csvFile, err := ioutil.TempFile("", fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime))
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	defer csvFile.Close()
+	token, err := utils.ExportCSV(csvData,
+		fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime),
+		"statements/download")
 
-	// generate encryption key
-	secretKey := *cryptopasta.NewEncryptionKey()
-
-	pr, pw := io.Pipe()
-	go func() {
-		csvwriter := csv.NewWriter(pw)
-		_ = csvwriter.WriteAll(csvData)
-		pw.Close()
-	}()
-	err = aesctr.Encrypt(pr, csvFile, secretKey[0:16], secretKey[16:])
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	// generate token by filepath and secretKey
-	secretKeyStr := base64.StdEncoding.EncodeToString(secretKey[:])
-	token, err := utils.NewJWTString("statements/download", secretKeyStr+" "+csvFile.Name())
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -350,41 +295,5 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) downloadHandler(c *gin.Context) {
 	token := c.Query("token")
-	tokenPlain, err := utils.ParseJWTString("statements/download", token)
-	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
-		return
-	}
-	arr := strings.Fields(tokenPlain)
-	if len(arr) != 2 {
-		utils.MakeInvalidRequestErrorFromError(c, errors.New("invalid token"))
-		return
-	}
-	secretKey, err := base64.StdEncoding.DecodeString(arr[0])
-	if err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
-		return
-	}
-
-	filePath := arr[1]
-	fileInfo, err := os.Stat(filePath)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	f, err := os.Open(filePath)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	c.Writer.Header().Set("Content-type", "text/csv")
-	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileInfo.Name()))
-	err = aesctr.Decrypt(f, c.Writer, secretKey[0:16], secretKey[16:])
-	if err != nil {
-		log.Error("decrypt csv failed", zap.Error(err))
-	}
-	// delete it anyway
-	f.Close()
-	_ = os.Remove(filePath)
+	utils.DownloadByToken(token, "statements/download", c)
 }

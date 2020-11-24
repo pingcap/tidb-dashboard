@@ -15,10 +15,11 @@ package statement
 
 import (
 	"fmt"
-	"github.com/joomcode/errorx"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/joomcode/errorx"
 
 	"github.com/gin-gonic/gin"
 
@@ -30,8 +31,8 @@ import (
 )
 
 var (
-	ErrNS     = errorx.NewNamespace("error.api.export")
-	ErrNoData = ErrNS.NewType("no_data")
+	ErrNS     = errorx.NewNamespace("error.api.statement")
+	ErrNoData = ErrNS.NewType("export_no_data")
 )
 
 type ServiceParams struct {

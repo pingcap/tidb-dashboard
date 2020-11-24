@@ -15,10 +15,11 @@ package slowquery
 
 import (
 	"fmt"
-	"github.com/joomcode/errorx"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/joomcode/errorx"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
@@ -29,8 +30,8 @@ import (
 )
 
 var (
-	ErrNS     = errorx.NewNamespace("error.api.export")
-	ErrNoData = ErrNS.NewType("no_data")
+	ErrNS     = errorx.NewNamespace("error.api.slow_query")
+	ErrNoData = ErrNS.NewType("export_no_data")
 )
 
 type ServiceParams struct {

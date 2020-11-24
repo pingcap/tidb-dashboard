@@ -89,9 +89,9 @@ function Sider({
   const menuItems = [
     useAppMenuItem(registry, 'overview'),
     useAppMenuItem(registry, 'cluster_info'),
-    useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
+    useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'system_report'),
     useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),

@@ -21,9 +21,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
-
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
 )
 
@@ -51,10 +48,10 @@ func normalizeCustomizedPromAddress(addr string) (string, error) {
 	}
 	u, err := url.Parse(addr)
 	if err != nil {
-		return "", fmt.Errorf("Invalid Prometheus address format: %v", err)
+		return "", fmt.Errorf("invalid Prometheus address format: %v", err)
 	}
 	if len(u.Host) == 0 || len(u.Scheme) == 0 {
-		return "", fmt.Errorf("Invalid Prometheus address format")
+		return "", fmt.Errorf("invalid Prometheus address format")
 	}
 	// Normalize the address, remove unnecessary parts.
 	addr = fmt.Sprintf("%s://%s", u.Scheme, u.Host)
@@ -125,27 +122,17 @@ func (s *Service) resolveFinalPromAddress() (string, error) {
 // Get the final Prometheus address from cache. If cache item is not valid, the address will be resolved from PD
 // or etcd and then the cache will be updated.
 func (s *Service) getPromAddressFromCache() (string, error) {
-	log.Info("getPromAddressFromCache")
-
 	fn := func() (string, error) {
-		log.Info("getPromAddressFromCache -> promRequestGroup.Do func")
-
 		// Check whether cache is valid, and use the cache if possible.
 		if v := s.promAddressCache.Load(); v != nil {
 			entity := v.(*promAddressCacheEntity)
 			if entity.cacheAt.Add(promCacheTTL).After(time.Now()) {
-				log.Info("getPromAddressFromCache -> promRequestGroup.Do func -> Load Cache Success")
 				return entity.address, nil
-			} else {
-				log.Info("getPromAddressFromCache -> promRequestGroup.Do func -> Load Cache Success, but TTL passed")
 			}
 		}
 
-		log.Info("getPromAddressFromCache -> promRequestGroup.Do func -> Load Cache Fail !!")
-
 		// Cache is not valid, read from PD and etcd.
 		addr, err := s.resolveFinalPromAddress()
-		log.Info("resolvePromAddressDirect", zap.Any("addr", addr))
 
 		if err != nil {
 			return "", err
@@ -190,5 +177,12 @@ func (s *Service) setCustomPromAddress(addr string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	// Invalidate cache immediately.
+	s.promAddressCache.Value.Store(&promAddressCacheEntity{
+		address: addr,
+		cacheAt: time.Time{},
+	})
+
 	return addr, nil
 }

@@ -1,19 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
-import { createHashHistory } from 'history'
-
-const history = createHashHistory()
+import { useMemo } from 'react'
+import { useLocation } from 'react-router'
 
 export default function useQueryParams() {
-  // Instead of using `useLocation`, this hook access history directly, so that it can work
-  // without a `<Router>` in the tree.
-  const [search, setSearch] = useState(history.location.search)
-  useEffect(
-    () =>
-      history.listen(({ location }) => {
-        setSearch(location.search)
-      }),
-    []
-  )
+  // Note: seems that history.location can be outdated sometimes.
+
+  const { search } = useLocation()
 
   const params = useMemo(() => {
     const searchParams = new URLSearchParams(search)

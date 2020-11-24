@@ -215,7 +215,7 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
             <Input onInput={clearErrorMsg} prefix={<UserOutlined />} disabled />
           </Form.Item>
           <Form.Item
-            data-e2e="password"
+            data-e2e="signin_password_form_item"
             name="password"
             label={t('signin.form.password')}
             {...(errorMsg && {
@@ -229,11 +229,12 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
               disabled={loading}
               onInput={clearErrorMsg}
               ref={refPassword}
+              data-e2e="signin_password_input"
             />
           </Form.Item>
           <Form.Item>
             <Button
-              id="signin_btn"
+              data-e2e="signin_submit"
               type="primary"
               htmlType="submit"
               size="large"

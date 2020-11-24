@@ -14,6 +14,7 @@ import {
 import React, { useCallback, useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
+import { HashRouter as Router } from 'react-router-dom'
 import {
   LogoutOutlined,
   ShareAltOutlined,
@@ -334,93 +335,95 @@ function App() {
 
   return (
     <Root>
-      <Card title={t('user_profile.session.title')}>
-        <Space>
-          <ShareSessionButton />
-          <Button danger onClick={handleLogout}>
-            <LogoutOutlined /> {t('user_profile.session.sign_out')}
-          </Button>
-        </Space>
-      </Card>
-      <Card title={t('user_profile.service_endpoints.title')}>
-        <PrometheusAddressForm />
-      </Card>
-      <Card title={t('user_profile.i18n.title')}>
-        <Form layout="vertical" initialValues={{ language: i18n.language }}>
-          <Form.Item name="language" label={t('user_profile.i18n.language')}>
-            <Select
-              onChange={handleLanguageChange}
-              style={DEFAULT_FORM_ITEM_STYLE}
-            >
-              {_.map(ALL_LANGUAGES, (name, key) => {
-                return (
-                  <Select.Option key={key} value={key}>
-                    {name}
-                  </Select.Option>
-                )
-              })}
-            </Select>
-          </Form.Item>
-        </Form>
-      </Card>
-      <Card title={t('user_profile.version.title')}>
-        <AnimatedSkeleton showSkeleton={isLoading}>
-          {error && <ErrorBar errors={[error]} />}
-          {info && (
-            <Descriptions>
-              <Descriptions.Item
-                span={2}
-                label={
-                  <Space size="middle">
-                    <TextWithInfo.TransKey transKey="user_profile.version.internal_version" />
-                    <CopyLink data={info.version?.internal_version} />
-                  </Space>
-                }
+      <Router>
+        <Card title={t('user_profile.session.title')}>
+          <Space>
+            <ShareSessionButton />
+            <Button danger onClick={handleLogout}>
+              <LogoutOutlined /> {t('user_profile.session.sign_out')}
+            </Button>
+          </Space>
+        </Card>
+        <Card title={t('user_profile.service_endpoints.title')}>
+          <PrometheusAddressForm />
+        </Card>
+        <Card title={t('user_profile.i18n.title')}>
+          <Form layout="vertical" initialValues={{ language: i18n.language }}>
+            <Form.Item name="language" label={t('user_profile.i18n.language')}>
+              <Select
+                onChange={handleLanguageChange}
+                style={DEFAULT_FORM_ITEM_STYLE}
               >
-                {info.version?.internal_version}
-              </Descriptions.Item>
-              <Descriptions.Item
-                span={2}
-                label={
-                  <Space size="middle">
-                    <TextWithInfo.TransKey transKey="user_profile.version.build_git_hash" />
-                    <CopyLink data={info.version?.build_git_hash} />
-                  </Space>
-                }
-              >
-                {info.version?.build_git_hash}
-              </Descriptions.Item>
-              <Descriptions.Item
-                span={2}
-                label={
-                  <TextWithInfo.TransKey transKey="user_profile.version.build_time" />
-                }
-              >
-                {info.version?.build_time}
-              </Descriptions.Item>
-              <Descriptions.Item
-                span={2}
-                label={
-                  <TextWithInfo.TransKey transKey="user_profile.version.standalone" />
-                }
-              >
-                {info.version?.standalone}
-              </Descriptions.Item>
-              <Descriptions.Item
-                span={2}
-                label={
-                  <Space size="middle">
-                    <TextWithInfo.TransKey transKey="user_profile.version.pd_version" />
-                    <CopyLink data={info.version?.pd_version} />
-                  </Space>
-                }
-              >
-                {info.version?.pd_version}
-              </Descriptions.Item>
-            </Descriptions>
-          )}
-        </AnimatedSkeleton>
-      </Card>
+                {_.map(ALL_LANGUAGES, (name, key) => {
+                  return (
+                    <Select.Option key={key} value={key}>
+                      {name}
+                    </Select.Option>
+                  )
+                })}
+              </Select>
+            </Form.Item>
+          </Form>
+        </Card>
+        <Card title={t('user_profile.version.title')}>
+          <AnimatedSkeleton showSkeleton={isLoading}>
+            {error && <ErrorBar errors={[error]} />}
+            {info && (
+              <Descriptions>
+                <Descriptions.Item
+                  span={2}
+                  label={
+                    <Space size="middle">
+                      <TextWithInfo.TransKey transKey="user_profile.version.internal_version" />
+                      <CopyLink data={info.version?.internal_version} />
+                    </Space>
+                  }
+                >
+                  {info.version?.internal_version}
+                </Descriptions.Item>
+                <Descriptions.Item
+                  span={2}
+                  label={
+                    <Space size="middle">
+                      <TextWithInfo.TransKey transKey="user_profile.version.build_git_hash" />
+                      <CopyLink data={info.version?.build_git_hash} />
+                    </Space>
+                  }
+                >
+                  {info.version?.build_git_hash}
+                </Descriptions.Item>
+                <Descriptions.Item
+                  span={2}
+                  label={
+                    <TextWithInfo.TransKey transKey="user_profile.version.build_time" />
+                  }
+                >
+                  {info.version?.build_time}
+                </Descriptions.Item>
+                <Descriptions.Item
+                  span={2}
+                  label={
+                    <TextWithInfo.TransKey transKey="user_profile.version.standalone" />
+                  }
+                >
+                  {info.version?.standalone}
+                </Descriptions.Item>
+                <Descriptions.Item
+                  span={2}
+                  label={
+                    <Space size="middle">
+                      <TextWithInfo.TransKey transKey="user_profile.version.pd_version" />
+                      <CopyLink data={info.version?.pd_version} />
+                    </Space>
+                  }
+                >
+                  {info.version?.pd_version}
+                </Descriptions.Item>
+              </Descriptions>
+            )}
+          </AnimatedSkeleton>
+        </Card>
+      </Router>
     </Root>
   )
 }

@@ -151,7 +151,7 @@ export default function SearchHeader({ taskGroupID }: Props) {
         <Select style={{ width: 100 }}>
           {ValidLogLevels.map((val) => (
             <Select.Option key={val} value={val}>
-              <div data-e2e={`level_${val}`}>{LogLevelText[val]}</div>
+              {LogLevelText[val]}
             </Select.Option>
           ))}
         </Select>
@@ -162,17 +162,22 @@ export default function SearchHeader({ taskGroupID }: Props) {
           defaultSelectAll
           enableTiFlash
           style={{ width: 300 }}
+          data-e2e="log_search_instances"
+          dropContainerProps={
+            { 'data-e2e': 'log_search_instances_drop' } as any
+          }
         />
       </Form.Item>
       <Form.Item name="keywords">
         <Input
+          data-e2e="log_search_keywords"
           placeholder={t('search_logs.common.keywords_placeholder')}
           style={{ width: 300 }}
         />
       </Form.Item>
       <Form.Item>
         <Button
-          id="search_btn"
+          data-e2e="log_search_submit"
           type="primary"
           htmlType="submit"
           loading={isSubmitting}

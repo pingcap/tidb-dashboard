@@ -28,5 +28,6 @@ cluster_info:
       instanceUnavailable: Host information is unknow due to instance unreachable
     store_topology:
       title: Store Topology
+      tooltip: You can also zoom in or out by pressing CTRL and scrolling mouse
   error:
     load: 'Load component {{comp}} error: {{cause}}'

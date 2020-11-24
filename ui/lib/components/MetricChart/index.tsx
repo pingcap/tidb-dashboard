@@ -19,8 +19,47 @@ import client from '@lib/client'
 import { AnimatedSkeleton, Card } from '@lib/components'
 import { useBatchClientRequest } from '@lib/utils/useClientRequest'
 import ErrorBar from '../ErrorBar'
+import { addTranslationResource } from '@lib/utils/i18n'
+import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 export type GraphType = 'bar' | 'line'
+
+const translations = {
+  en: {
+    error: {
+      api: {
+        metrics: {
+          prom_not_found:
+            'Prometheus is not deployed in the cluster. Metrics are unavailable.',
+        },
+      },
+    },
+    components: {
+      metricChart: {
+        changePromButton: 'Change Prometheus Source',
+      },
+    },
+  },
+  zh: {
+    error: {
+      api: {
+        metrics: {
+          prom_not_found: '集群中未部署 Prometheus 组件，监控不可用。',
+        },
+      },
+    },
+    components: {
+      metricChart: {
+        changePromButton: '修改 Prometheus 源',
+      },
+    },
+  },
+}
+
+for (const key in translations) {
+  addTranslationResource(key, translations[key])
+}
 
 export interface ISeries {
   query: string
@@ -70,6 +109,7 @@ export default function MetricChart({
   type,
 }: IMetricChartProps) {
   const timeParams = useRef(getTimeParams())
+  const { t } = useTranslation()
 
   const { isLoading, data, error, sendRequest } = useBatchClientRequest(
     series.map((s) => (reqConfig) =>
@@ -214,7 +254,7 @@ export default function MetricChart({
   let inner
 
   if (showSkeleton) {
-    inner = <div style={{ height: HEIGHT }} />
+    inner = null
   } else if (
     _.every(
       _.zip(data, error),
@@ -223,7 +263,12 @@ export default function MetricChart({
   ) {
     inner = (
       <div style={{ height: HEIGHT }}>
-        <ErrorBar errors={error} />
+        <Space direction="vertical">
+          <ErrorBar errors={error} />
+          <Link to="/user_profile?blink=profile.prometheus">
+            {t('components.metricChart.changePromButton')}
+          </Link>
+        </Space>
       </div>
     )
   } else {
@@ -249,7 +294,9 @@ export default function MetricChart({
 
   return (
     <Card title={title} subTitle={subTitle}>
-      <AnimatedSkeleton showSkeleton={showSkeleton}>{inner}</AnimatedSkeleton>
+      <AnimatedSkeleton showSkeleton={showSkeleton} style={{ height: HEIGHT }}>
+        {inner}
+      </AnimatedSkeleton>
     </Card>
   )
 }

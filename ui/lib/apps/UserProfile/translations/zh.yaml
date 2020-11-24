@@ -1,6 +1,16 @@
 user_profile:
   service_endpoints:
     title: 服务端点
+    prometheus:
+      title: Prometheus 数据源
+      form:
+        deployed: 使用已部署的 Prometheus 地址
+        not_deployed: 未部署 Prometheus 组件
+        custom: 自定义地址
+        update: 更新
+        cancel: 取消
+      custom_form:
+        address: 自定义 Prometheus 数据源地址
   i18n:
     title: 语言和本地化
     language: 语言

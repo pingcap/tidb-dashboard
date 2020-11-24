@@ -244,26 +244,36 @@ function PrometheusAddressForm() {
         <AnimatedSkeleton loading={isLoading}>
           <Form.Item
             name="sourceType"
-            label={t('user_profile.service_endpoints.prometheus')}
+            label={t('user_profile.service_endpoints.prometheus.title')}
           >
             <Radio.Group disabled={isLoading || error || !data}>
               <Space direction="vertical">
                 {error && <ErrorBar errors={[error]} />}
                 <Radio value="deployment">
                   <Space>
-                    <span>Use deployed address</span>
+                    <span>
+                      {t(
+                        'user_profile.service_endpoints.prometheus.form.deployed'
+                      )}
+                    </span>
                     <span>
                       {(data?.deployed_addr?.length ?? 0) > 0 &&
                         `(${data!.deployed_addr})`}
                       {data && data.deployed_addr?.length === 0 && (
                         <Typography.Text type="secondary">
-                          (Prometheus is not deployed)
+                          (
+                          {t(
+                            'user_profile.service_endpoints.prometheus.form.not_deployed'
+                          )}
+                          )
                         </Typography.Text>
                       )}
                     </span>
                   </Space>
                 </Radio>
-                <Radio value="custom">Custom</Radio>
+                <Radio value="custom">
+                  {t('user_profile.service_endpoints.prometheus.form.custom')}
+                </Radio>
               </Space>
             </Radio.Group>
           </Form.Item>
@@ -273,7 +283,9 @@ function PrometheusAddressForm() {
             f.getFieldValue('sourceType') === 'custom' && (
               <Form.Item
                 name="customAddr"
-                label="Custom Prometheus Address"
+                label={t(
+                  'user_profile.service_endpoints.prometheus.custom_form.address'
+                )}
                 rules={[{ required: true }]}
               >
                 <Input
@@ -288,9 +300,11 @@ function PrometheusAddressForm() {
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit" loading={isPosting}>
-                Update
+                {t('user_profile.service_endpoints.prometheus.form.update')}
               </Button>
-              <Button onClick={handleCancel}>Cancel</Button>
+              <Button onClick={handleCancel}>
+                {t('user_profile.service_endpoints.prometheus.form.cancel')}
+              </Button>
             </Space>
           </Form.Item>
         )}

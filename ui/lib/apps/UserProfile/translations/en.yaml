@@ -1,6 +1,16 @@
 user_profile:
   service_endpoints:
     title: Service Endpoints
+    prometheus:
+      title: Prometheus Source
+      form:
+        deployed: Use deployed address
+        not_deployed: Prometheus is not deployed
+        custom: Custom
+        update: Update
+        cancel: Cancel
+      custom_form:
+        address: Custom Prometheus Address
   i18n:
     title: Language & Localization
     language: Language

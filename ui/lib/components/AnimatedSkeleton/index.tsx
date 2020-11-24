@@ -9,11 +9,13 @@ import styles from './index.module.less'
 export interface IAnimatedSkeletonProps extends SkeletonProps {
   showSkeleton?: boolean
   children?: React.ReactNode
+  style?: React.CSSProperties
 }
 
 function AnimatedSkeleton({
   showSkeleton,
   children,
+  style,
   ...restProps
 }: IAnimatedSkeletonProps) {
   const [skeletonAppears, setSkeletonAppears] = useState(0)
@@ -25,7 +27,7 @@ function AnimatedSkeleton({
   }, [showSkeleton])
 
   return (
-    <div className={cx(styles.container)}>
+    <div className={cx(styles.container)} style={style}>
       {showSkeleton && (
         <div
           className={cx({

@@ -38,7 +38,6 @@ type SlowQuery struct {
 	Success      int    `gorm:"column:Succ" json:"success"`
 
 	Timestamp             float64 `gorm:"column:timestamp" proj:"(UNIX_TIMESTAMP(Time) + 0E0)" json:"timestamp"` // finish time
-	ExecRetryTime         float64 `gorm:"column:Exec_retry_time" json:"exec_retry_time"`                         // latency
 	QueryTime             float64 `gorm:"column:Query_time" json:"query_time"`                                   // latency
 	ParseTime             float64 `gorm:"column:Parse_time" json:"parse_time"`
 	CompileTime           float64 `gorm:"column:Compile_time" json:"compile_time"`
@@ -48,6 +47,7 @@ type SlowQuery struct {
 	CopTime               float64 `gorm:"column:Cop_time" json:"cop_time"`
 	LockKeysTime          float64 `gorm:"column:LockKeys_time" json:"lock_keys_time"`
 	WriteRespTime         float64 `gorm:"column:Write_sql_response_total" json:"write_sql_response_total"`
+	ExecRetryTime         float64 `gorm:"column:Exec_retry_time" json:"exec_retry_time"`
 
 	MemoryMax int `gorm:"column:Mem_max" json:"memory_max"`
 	DiskMax   int `gorm:"column:Disk_max" json:"disk_max"`

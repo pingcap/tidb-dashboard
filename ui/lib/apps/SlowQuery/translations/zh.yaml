@@ -91,3 +91,13 @@ slow_query:
       time: 执行时间
       copr: Coprocessor 读取
       txn: 事务
+  toolbar:
+    schemas:
+      placeholder: 所有数据库
+      selected: '{{ n }} 数据库'
+      columnTitle: 数据库名
+    select_columns:
+      show_full_sql: 显示完整 SQL 文本
+    refresh: 刷新
+    export: 导出
+    exporting: 正在导出

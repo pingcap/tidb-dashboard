@@ -16,7 +16,7 @@ import {
 } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
-import formatSql from '@lib/utils/formatSql'
+import formatSql from '@lib/utils/sqlFormatter'
 
 import { IPageQuery } from '.'
 import TabBasic from './PlanDetailTabBasic'

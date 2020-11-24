@@ -36,8 +36,14 @@ slow_query:
 
     parse_time: Parse Time
     parse_time_tooltip: Time consumed when parsing the query
-    compile_time: Compile Time
-    compile_time_tooltip: Time consumed when optimizing the query
+    compile_time: Generate plan Time
+    compile_time_tooltip: Time consumed when generating plan of the query
+    rewrite_time: Rewrite plan Time
+    preproc_subqueries_time: Preprocess subquery Time
+    optimize_time: Optimize plan Time
+    cop_time: Cop request Time
+    lock_keys_time: Lock keys Time
+    lock_keys_time_tooltip: Time consumed when locking keys in pessimistic transaction
     wait_time: Coprocessor Wait Time
     process_time: Coprocessor Process Time
     backoff_time: Backoff Retry Time
@@ -46,10 +52,13 @@ slow_query:
     local_latch_wait_time: Local Latch Wait Time
     resolve_lock_time: Resolve Lock Time
     prewrite_time: Prewrite Time
+    wait_prewrite_binlog_time: Wait binlog prewrite Time
     commit_time: Commit Time
     commit_backoff_time: Commit Backoff Time
     query_time2: Query Time
     query_time2_tooltip: The execution time of a query (due to the parallel execution, it may be significantly smaller than the above time)
+    write_sql_response_total: Send response Time
+    write_sql_response_total_tooltip: Time consumed when sending response to the client.
 
     request_count: Request Count
     process_keys: Process Keys

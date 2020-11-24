@@ -21,6 +21,26 @@ export default function TabBasic({ data }: ITabTimeProps) {
       value: data.compile_time! * 10e8,
     },
     {
+      key: 'rewrite_time',
+      value: data.rewrite_time! * 10e8,
+    },
+    {
+      key: 'preproc_subqueries_time',
+      value: data.preproc_subqueries_time! * 10e8,
+    },
+    {
+      key: 'optimize_time',
+      value: data.optimize_time! * 10e8,
+    },
+    {
+      key: 'cop_time',
+      value: data.cop_time! * 10e8,
+    },
+    {
+      key: 'lock_keys_time',
+      value: data.lock_keys_time! * 10e8,
+    },
+    {
       key: 'wait_time',
       value: data.wait_time! * 10e8,
     },
@@ -49,12 +69,20 @@ export default function TabBasic({ data }: ITabTimeProps) {
       value: data.prewrite_time! * 10e8,
     },
     {
+      key: 'wait_prewrite_binlog_time',
+      value: data.wait_prewrite_binlog_time! * 10e8,
+    },
+    {
       key: 'commit_time',
       value: data.commit_time! * 10e8,
     },
     {
       key: 'commit_backoff_time',
       value: data.commit_backoff_time! * 10e8,
+    },
+    {
+      key: 'write_sql_response_total',
+      value: data.write_sql_response_total! * 10e8,
     },
     {
       key: 'query_time2',

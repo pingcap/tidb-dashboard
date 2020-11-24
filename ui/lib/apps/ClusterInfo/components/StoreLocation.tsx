@@ -56,7 +56,7 @@ export default function StoreLocation() {
         <StoreLocationTree
           dataSource={treeData}
           getMinHeight={
-            () => document.documentElement.clientHeight - 80 - 48 * 2 // 48 = margin of cardInner}
+            () => document.documentElement.clientHeight - 80 - 48 * 2 // 48 = margin of cardInner
           }
         />
       </AnimatedSkeleton>

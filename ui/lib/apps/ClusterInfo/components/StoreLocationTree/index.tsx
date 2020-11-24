@@ -142,7 +142,7 @@ export default function StoreLocationTree({
         .duration(duration)
         .attr('width', divWidth)
         .attr('height', Math.max(getMinHeight?.() || 0, contentHeight))
-      console.log(getMinHeight?.())
+
       // update the nodes
       const node = gNode.selectAll('g').data(nodes, (d: any) => d.id)
 

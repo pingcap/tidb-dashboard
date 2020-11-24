@@ -20,7 +20,7 @@ import {
   TextWithInfo,
 } from '@lib/components'
 import CopyLink from '@lib/components/CopyLink'
-import formatSql from '@lib/utils/TiDBSQLFormatter/formatSql'
+import formatSql from '@lib/utils/sqlFormatter'
 import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 

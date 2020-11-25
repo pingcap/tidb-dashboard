@@ -44,6 +44,7 @@ type SlowQuery struct {
 	RewriteTime           float64 `gorm:"column:Rewrite_time" json:"rewrite_time"`
 	PreprocSubqueriesTime float64 `gorm:"column:Preproc_subqueries_time" json:"preproc_subqueries_time"`
 	OptimizeTime          float64 `gorm:"column:Optimize_time" json:"optimize_time"`
+	WaitTSTime            float64 `gorm:"column:Wait_TS" json:"wait_ts"`
 	CopTime               float64 `gorm:"column:Cop_time" json:"cop_time"`
 	LockKeysTime          float64 `gorm:"column:LockKeys_time" json:"lock_keys_time"`
 	WriteRespTime         float64 `gorm:"column:Write_sql_response_total" json:"write_sql_response_total"`

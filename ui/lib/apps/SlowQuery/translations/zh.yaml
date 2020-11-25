@@ -63,6 +63,8 @@ slow_query:
     write_sql_response_total_tooltip: 发送 SQL 结果给客户端的耗时
     exec_retry_time: 执行重试耗时
     exec_retry_time_tooltip: 执行失败时时执行重试耗时
+    wait_ts: 等待事务开始时间戳耗时
+    wait_ts_tooltip: 等待获取事务开始的时间戳的耗时
 
     request_count: Coprocessor 请求数
     process_keys: 可见版本数

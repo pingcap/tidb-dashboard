@@ -33,6 +33,10 @@ export default function TabBasic({ data }: ITabTimeProps) {
       value: data.optimize_time! * 10e8,
     },
     {
+      key: 'wait_ts',
+      value: data.wait_ts! * 10e8,
+    },
+    {
       key: 'cop_time',
       value: data.cop_time! * 10e8,
     },

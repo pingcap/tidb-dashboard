@@ -61,6 +61,8 @@ slow_query:
     write_sql_response_total_tooltip: Time consumed when sending response to the client
     exec_retry_time: Retry execution Time
     exec_retry_time_tooltip: Time consumed of retry execution
+    wait_ts: Wait Txn StartTS Time
+    wait_ts_tooltip: Time consumed of waiting transaction start ts
 
     request_count: Request Count
     process_keys: Process Keys

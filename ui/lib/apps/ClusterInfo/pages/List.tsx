@@ -40,22 +40,19 @@ export default function ListPage() {
           <CardTabs.TabPane
             tab={t('cluster_info.list.instance_table.title')}
             key="instance"
-          >
-            <InstanceTable />
-          </CardTabs.TabPane>
+          ></CardTabs.TabPane>
           <CardTabs.TabPane
             tab={t('cluster_info.list.host_table.title')}
             key="host"
-          >
-            <HostTable />
-          </CardTabs.TabPane>
+          ></CardTabs.TabPane>
           <CardTabs.TabPane
             tab={t('cluster_info.list.store_topology.title')}
             key="store_topology"
-          >
-            <StoreLocation />
-          </CardTabs.TabPane>
+          ></CardTabs.TabPane>
         </CardTabs>
+        {tabKey === 'instance' && <InstanceTable />}
+        {tabKey === 'host' && <HostTable />}
+        {tabKey === 'store_topology' && <StoreLocation />}
       </Card>
     </ScrollablePane>
   )

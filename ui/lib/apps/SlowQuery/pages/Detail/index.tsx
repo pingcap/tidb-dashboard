@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
@@ -38,6 +38,8 @@ function DetailPage() {
   const query = DetailPage.parseQuery(useLocation().search)
 
   const { t } = useTranslation()
+
+  const [tabKey, setTabKey] = useState('basic')
 
   const { data, isLoading, error } = useClientRequest((reqConfig) =>
     client
@@ -152,32 +154,32 @@ function DetailPage() {
                 </Descriptions.Item>
               </Descriptions>
 
-              <CardTabs animated={false}>
+              <CardTabs
+                defaultActiveKey={tabKey}
+                onChange={setTabKey}
+                animated={false}
+              >
                 <CardTabs.TabPane
                   tab={t('slow_query.detail.tabs.basic')}
                   key="basic"
-                >
-                  <TabBasic data={data} />
-                </CardTabs.TabPane>
+                ></CardTabs.TabPane>
                 <CardTabs.TabPane
                   tab={t('slow_query.detail.tabs.time')}
                   key="time"
-                >
-                  <TabTime data={data} />
-                </CardTabs.TabPane>
+                ></CardTabs.TabPane>
                 <CardTabs.TabPane
                   tab={t('slow_query.detail.tabs.copr')}
                   key="copr"
-                >
-                  <TabCopr data={data} />
-                </CardTabs.TabPane>
+                ></CardTabs.TabPane>
                 <CardTabs.TabPane
                   tab={t('slow_query.detail.tabs.txn')}
                   key="txn"
-                >
-                  <TabTxn data={data} />
-                </CardTabs.TabPane>
+                ></CardTabs.TabPane>
               </CardTabs>
+              {tabKey === 'basic' && <TabBasic data={data} />}
+              {tabKey === 'time' && <TabTime data={data} />}
+              {tabKey === 'copr' && <TabCopr data={data} />}
+              {tabKey === 'txn' && <TabTxn data={data} />}
             </>
           )}
         </AnimatedSkeleton>

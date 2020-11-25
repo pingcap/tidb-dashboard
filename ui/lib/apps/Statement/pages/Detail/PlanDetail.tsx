@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Space } from 'antd'
 import { useLocalStorageState } from '@umijs/hooks'
 import { useTranslation } from 'react-i18next'
@@ -37,6 +37,7 @@ export interface IPlanDetailProps {
 const STMT_DETAIL_PLAN_EXPAND = 'statement.detail_plan_expand'
 
 function PlanDetail({ query }: IPlanDetailProps) {
+  const [tabKey, setTabKey] = useState('basic')
   const { t } = useTranslation()
   const { data, isLoading, error } = useClientRequest((reqConfig) =>
     client
@@ -67,17 +68,18 @@ function PlanDetail({ query }: IPlanDetailProps) {
   const togglePlan = () =>
     setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
-  let title_key
+  let titleKey
   if (query.allPlans === 1) {
-    title_key = 'one_for_all'
+    titleKey = 'one_for_all'
   } else if (query.plans.length === query.allPlans) {
-    title_key = 'all'
+    titleKey = 'all'
   } else {
-    title_key = 'some'
+    titleKey = 'some'
   }
+
   return (
     <Card
-      title={t(`statement.pages.detail.desc.plans.title.${title_key}`, {
+      title={t(`statement.pages.detail.desc.plans.title.${titleKey}`, {
         n: query.plans.length,
       })}
     >
@@ -153,38 +155,38 @@ function PlanDetail({ query }: IPlanDetailProps) {
                 </Expand>
               </Descriptions.Item>
             </Descriptions>
-            <CardTabs animated={false}>
+
+            <CardTabs
+              defaultActiveKey={tabKey}
+              onChange={setTabKey}
+              animated={false}
+            >
               <CardTabs.TabPane
                 tab={t('statement.pages.detail.tabs.basic')}
                 key="basic"
-              >
-                <TabBasic data={data} />
-              </CardTabs.TabPane>
+              ></CardTabs.TabPane>
               <CardTabs.TabPane
                 tab={t('statement.pages.detail.tabs.time')}
                 key="time"
-              >
-                <TabTime data={data} />
-              </CardTabs.TabPane>
+              ></CardTabs.TabPane>
               <CardTabs.TabPane
                 tab={t('statement.pages.detail.tabs.copr')}
                 key="copr"
-              >
-                <TabCopr data={data} />
-              </CardTabs.TabPane>
+              ></CardTabs.TabPane>
               <CardTabs.TabPane
                 tab={t('statement.pages.detail.tabs.txn')}
                 key="txn"
-              >
-                <TabTxn data={data} />
-              </CardTabs.TabPane>
+              ></CardTabs.TabPane>
               <CardTabs.TabPane
                 tab={t('statement.pages.detail.tabs.slow_query')}
                 key="slow_query"
-              >
-                <SlowQueryTab query={query} />
-              </CardTabs.TabPane>
+              ></CardTabs.TabPane>
             </CardTabs>
+            {tabKey === 'basic' && <TabBasic data={data} />}
+            {tabKey === 'time' && <TabTime data={data} />}
+            {tabKey === 'copr' && <TabCopr data={data} />}
+            {tabKey === 'txn' && <TabTxn data={data} />}
+            {tabKey === 'slow_query' && <SlowQueryTab query={query} />}
           </>
         )}
       </AnimatedSkeleton>

@@ -98,7 +98,14 @@ function PlanDetail({ query }: IPlanDetailProps) {
                       expanded={detailExpand.query}
                       onClick={toggleQuery}
                     />
-                    <CopyLink data={formatSql(data.query_sample_text)} />
+                    <CopyLink
+                      displayVariant="formatted_sql"
+                      data={formatSql(data.query_sample_text)}
+                    />
+                    <CopyLink
+                      displayVariant="original_sql"
+                      data={data.query_sample_text}
+                    />
                   </Space>
                 }
               >
@@ -122,7 +129,14 @@ function PlanDetail({ query }: IPlanDetailProps) {
                         expanded={detailExpand.prev_query}
                         onClick={togglePrevQuery}
                       />
-                      <CopyLink data={formatSql(data.prev_sample_text)} />
+                      <CopyLink
+                        displayVariant="formatted_sql"
+                        data={formatSql(data.prev_sample_text)}
+                      />
+                      <CopyLink
+                        displayVariant="original_sql"
+                        data={data.prev_sample_text}
+                      />
                     </Space>
                   }
                 >

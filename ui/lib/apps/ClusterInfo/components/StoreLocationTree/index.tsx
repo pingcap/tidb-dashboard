@@ -7,9 +7,11 @@ import {
   QuestionCircleOutlined,
 } from '@ant-design/icons'
 import { Space, Tooltip } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 export interface IStoreLocationProps {
   dataSource: any
+  getMinHeight?: () => number
 }
 
 const margin = { left: 60, right: 40, top: 60, bottom: 100 }
@@ -30,8 +32,12 @@ function calcHeight(root) {
   return x1 - x0
 }
 
-export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
+export default function StoreLocationTree({
+  dataSource,
+  getMinHeight,
+}: IStoreLocationProps) {
   const divRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation()
 
   useEffect(() => {
     let divWidth = divRef.current?.clientWidth || 0
@@ -129,11 +135,13 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
         root.y0 = root.y
       }
 
+      const contentHeight = boundHeight + margin.top + margin.bottom
+
       const transition = svg
         .transition()
         .duration(duration)
         .attr('width', divWidth)
-        .attr('height', boundHeight + margin.top + margin.bottom)
+        .attr('height', Math.max(getMinHeight?.() || 0, contentHeight))
 
       // update the nodes
       const node = gNode.selectAll('g').data(nodes, (d: any) => d.id)
@@ -236,7 +244,7 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
     return () => {
       window.removeEventListener('resize', resizeHandler)
     }
-  }, [dataSource])
+  }, [dataSource, getMinHeight])
 
   return (
     <div ref={divRef} style={{ position: 'relative' }}>
@@ -250,7 +258,7 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
         <ZoomInOutlined id="slt-zoom-in" />
         <ZoomOutOutlined id="slt-zoom-out" />
         <ReloadOutlined id="slt-zoom-reset" />
-        <Tooltip title="You can also zoom in or out by pressing CTRL and scrolling mouse">
+        <Tooltip title={t('cluster_info.list.store_topology.tooltip')}>
           <QuestionCircleOutlined />
         </Tooltip>
       </Space>

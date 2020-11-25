@@ -34,37 +34,37 @@ slow_query:
     db: 执行数据库
     db_tooltip: 执行该 SQL 查询时使用的数据库名称
 
-    parse_time: 解析耗时
-    parse_time_tooltip: 解析该 SQL 查询的耗时
-    compile_time: 生成执行计划耗时
-    compile_time_tooltip: 生成该 SQL 的执行计划的耗时
-    rewrite_time: 重写执行计划耗时
-    preproc_subqueries_time: 子查询预处理耗时
-    optimize_time: 优化执行计划耗时
-    cop_time: cop 请求耗时
-    lock_keys_time: 上锁耗时
-    wait_time: Coprocessor 累计等待耗时
-    process_time: Coprocessor 累计执行耗时
-    process_time_tooltip: Coprocessor 累计执行耗时
-    backoff_time: 累计重试等待耗时
-    get_commit_ts_time: 取 Commit Ts 耗时
-    get_commit_ts_time_tooltip: 从 PD 取递交时间戳（事务号）步骤的耗时
-    local_latch_wait_time: Local Latch Wait 耗时
-    local_latch_wait_time_tooltip: 事务在 TiDB 本地与其他事务产生了锁冲突并等待的耗时
-    resolve_lock_time: Resolve Lock 耗时
-    resolve_lock_time_tooltip: 事务在 TiKV 与其他事务产生了锁冲突并处理锁冲突的耗时
-    prewrite_time: Prewrite 阶段耗时
-    wait_prewrite_binlog_time: 等 binlog 预写入耗时
-    commit_time: Commit 阶段耗时
-    commit_backoff_time: Commit 重试等待耗时
     query_time2: SQL 执行时间
     query_time2_tooltip: 由于存在并行执行，因此 SQL 执行时间可能远小于上述各项时间
+    parse_time: 　　解析耗时
+    parse_time_tooltip: 解析该 SQL 查询的耗时
+    compile_time: 　　生成执行计划耗时
+    compile_time_tooltip: 生成该 SQL 的执行计划的耗时
+    rewrite_time: 　　　　重写执行计划耗时
+    preproc_subqueries_time: 　　　　　　子查询预处理耗时
+    optimize_time: 　　　　优化执行计划耗时
+    wait_ts: 　　等待事务开始时间戳耗时
+    wait_ts_tooltip: 等待获取事务开始的时间戳的耗时
+    cop_time: 　　Coprocessor 请求耗时
+    wait_time: 　　　　Coprocessor 累计等待耗时
+    process_time: 　　　　Coprocessor 累计执行耗时
+    process_time_tooltip: Coprocessor 累计执行耗时
+    lock_keys_time: 　　上锁耗时
+    backoff_time: 　　累计重试等待耗时
+    get_commit_ts_time: 　　取 Commit Ts 耗时
+    get_commit_ts_time_tooltip: 从 PD 取递交时间戳（事务号）步骤的耗时
+    local_latch_wait_time: 　　Local Latch Wait 耗时
+    local_latch_wait_time_tooltip: 事务在 TiDB 本地与其他事务产生了锁冲突并等待的耗时
+    resolve_lock_time: 　　Resolve Lock 耗时
+    resolve_lock_time_tooltip: 事务在 TiKV 与其他事务产生了锁冲突并处理锁冲突的耗时
+    prewrite_time: 　　Prewrite 阶段耗时
+    wait_prewrite_binlog_time: 　　等 binlog 预写入耗时
+    commit_time: 　　Commit 阶段耗时
+    commit_backoff_time: 　　Commit 重试等待耗时
     write_sql_response_total: 发送结果耗时
     write_sql_response_total_tooltip: 发送 SQL 结果给客户端的耗时
     exec_retry_time: 执行重试耗时
     exec_retry_time_tooltip: 执行失败时时执行重试耗时
-    wait_ts: 等待事务开始时间戳耗时
-    wait_ts_tooltip: 等待获取事务开始的时间戳的耗时
 
     request_count: Coprocessor 请求数
     process_keys: 可见版本数

@@ -60,7 +60,7 @@ func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
 	return s
 }
 
-func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/topology")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/tidb", s.getTiDBTopology)

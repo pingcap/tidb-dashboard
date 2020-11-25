@@ -28,6 +28,7 @@ export interface IInstanceSelectProps
   onChange?: (value: string[]) => void
   enableTiFlash?: boolean
   defaultSelectAll?: boolean
+  dropContainerProps?: React.HTMLAttributes<HTMLDivElement>
 }
 
 export interface IInstanceSelectRefProps {
@@ -85,6 +86,7 @@ function InstanceSelect(
   const {
     enableTiFlash,
     defaultSelectAll,
+    dropContainerProps,
     value, // only to exclude from restProps
     onChange, // only to exclude from restProps
     ...restProps
@@ -243,9 +245,10 @@ function InstanceSelect(
         items={tableItems}
         selection={selection.current}
         filterTableRef={filterTableRef}
+        containerProps={dropContainerProps}
       />
     ),
-    [columns, tableItems]
+    [columns, tableItems, dropContainerProps]
   )
 
   const handleOpened = useCallback(() => {

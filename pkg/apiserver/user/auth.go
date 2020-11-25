@@ -245,7 +245,7 @@ func (s *AuthService) authSharingCodeForm(f *authenticateForm) (*utils.SessionUs
 	return session, nil
 }
 
-func Register(r *gin.RouterGroup, s *AuthService) {
+func RegisterRouter(r *gin.RouterGroup, s *AuthService) {
 	endpoint := r.Group("/user")
 	endpoint.POST("/login", s.loginHandler)
 	endpoint.POST("/share", s.MWAuthRequired(), s.shareSessionHandler)

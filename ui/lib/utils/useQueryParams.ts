@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import { useLocation } from 'react-router'
 
 export default function useQueryParams() {
+  // Note: seems that history.location can be outdated sometimes.
+
   const { search } = useLocation()
 
   const params = useMemo(() => {

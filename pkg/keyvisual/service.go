@@ -113,7 +113,7 @@ func NewService(
 	return s
 }
 
-func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/keyvisual")
 	endpoint.Use(auth.MWAuthRequired())
 

@@ -1,12 +1,12 @@
 .sticky_tabs_header {
-  padding-left: 48px;
-  height: 48px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #f0f0f0;
+  padding-left: @padding-page; // 48px
+  height: @padding-page; // 48px
+  margin-bottom: @padding-md; // 16px
+  border-bottom: 1px solid @gray-4;
 
   :global {
     .ant-tabs-ink-bar {
-      height: 2px;
+      height: @outline-width; // 2px
     }
   }
 }

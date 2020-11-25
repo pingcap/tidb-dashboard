@@ -35,34 +35,45 @@ slow_query:
     db_tooltip: The database used to execute the query
 
     query_time2: Query Time
-    query_time2_tooltip: The execution time of a query (due to the parallel execution, it may be significantly smaller than the above time)
+    query_time2_tooltip: The execution time of a query (due to the parallel execution, it may be significantly smaller than the following time)
     parse_time: 　　Parse Time
     parse_time_tooltip: Time consumed when parsing the query
     compile_time: 　　Generate plan Time
     compile_time_tooltip: Time consumed when generating plan of the query
     rewrite_time: 　　　　Rewrite plan Time
     preproc_subqueries_time: 　　　　　　Preprocess subquery Time
+    preproc_subqueries_time_tooltip: The time consumed of pre-process the subquery during the rewrite plan phase
     optimize_time: 　　　　Optimize plan Time
     wait_ts: 　　Wait Txn StartTS Time
     wait_ts_tooltip: Time consumed of waiting transaction start ts
     cop_time: 　　Coprocessor request Time
+    cop_time_tooltip: Time consumed of TiDB sending cop request
     wait_time: 　　　　Coprocessor Wait Time
+    wait_time_tooltip: The total waiting time of cop request in TiKV. Because the Coprocessor of TiKV runs a limited number of threads, cop requests might queue up when all threads of Coprocessor are working
     process_time: 　　　　Coprocessor Process Time
+    process_time_tooltip: The total processing time of a SQL statement in TiKV. Because data is sent to TiKV concurrently, this value might exceed the query time
     backoff_time: 　　Backoff Retry Time
     backoff_time_tooltip: The waiting time before retry when a query encounters errors that require a retry
     lock_keys_time: 　　Lock keys Time
     lock_keys_time_tooltip: Time consumed when locking keys in pessimistic transaction
     get_commit_ts_time: 　　Get Commit Ts Time
+    get_commit_ts_time_tooltip: The time spent on getting commit_ts during the second phase (commit) of the two-phase transaction commit
     local_latch_wait_time: 　　Local Latch Wait Time
+    local_latch_wait_time_tooltip: The time that TiDB spends on waiting for the lock before the second phase (commit) of the two-phase transaction commit
     resolve_lock_time: 　　Resolve Lock Time
+    resolve_lock_time_tooltip: The time that TiDB resolves locks when prewrite encounters locks.
     prewrite_time: 　　Prewrite Time
+    prewrite_time_tooltip: The duration of the first phase (prewrite) of the two-phase transaction commit
     wait_prewrite_binlog_time: 　　Wait binlog prewrite Time
+    wait_prewrite_binlog_time_tooltip: The duration of waiting prewrite binlog finish
     commit_time: 　　Commit Time
+    commit_time_tooltip: The duration of the second phase (commit) of the two-phase transaction commit
     commit_backoff_time: 　　Commit Backoff Time
+    commit_backoff_time_tooltip: The waiting time when the two-phase transaction commit encounters errors
     write_sql_response_total: Send response Time
     write_sql_response_total_tooltip: Time consumed when sending response to the client
     exec_retry_time: Retry execution Time
-    exec_retry_time_tooltip: Time consumed of retry execution
+    exec_retry_time_tooltip: Time consumed of retry execution that cause by locks or errors.
 
     request_count: Request Count
     process_keys: Process Keys

@@ -70,16 +70,16 @@ export default function TabBasic({ data }: ITabTimeProps) {
       value: data.lock_keys_time! * 10e8,
     },
     {
-      key: 'local_latch_wait_time',
-      value: data.local_latch_wait_time! * 10e8,
-    },
-    {
       key: 'backoff_time',
       value: data.backoff_time! * 10e8,
     },
     {
       key: 'prewrite_time',
       value: data.prewrite_time! * 10e8,
+    },
+    {
+      key: 'local_latch_wait_time',
+      value: data.local_latch_wait_time! * 10e8,
     },
     {
       key: 'wait_prewrite_binlog_time',

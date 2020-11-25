@@ -14,8 +14,6 @@ Although TiDB Dashboard can also be integrated into [PD], this form is not conve
 
 ### Step 1. Start a TiDB cluster
 
-#### Solution A. Use TiUP (Recommended)
-
 [TiUP] is the offical component manager for [TiDB]. It can help you set up a local TiDB cluster in a few minutes.
 
 Download and install TiUP:
@@ -40,73 +38,7 @@ Start a local TiDB cluster:
 tiup playground nightly
 ```
 
-> Note: you might notice that there is already a TiDB Dashboard integrated into the PD started by TiUP. For development purpose, we will not use the that TiDB Dashboard. Please keep following the rest of the steps in this document.
-
-#### Solution B. Download and Run Binary Manually
-
-<details>
-
-Alternatively, you can deploy a cluster with binary files manually.
-
-1. Download binaries
-
-   Linux:
-
-   ```bash
-   mkdir tidb_cluster
-   cd tidb_cluster
-   wget https://download.pingcap.org/tidb-nightly-linux-amd64.tar.gz
-   tar -xzf tidb-nightly-linux-amd64.tar.gz
-   cd tidb-nightly-linux-amd64
-   ```
-
-   MacOS:
-
-   ```bash
-   mkdir tidb_cluster
-   cd tidb_cluster
-   wget https://download.pingcap.org/tidb-nightly-darwin-amd64.tar.gz
-   wget https://download.pingcap.org/tikv-nightly-darwin-amd64.tar.gz
-   wget https://download.pingcap.org/pd-nightly-darwin-amd64.tar.gz
-   mkdir tidb-nightly-darwin-amd64
-   tar -xzf tidb-nightly-darwin-amd64.tar.gz -C tidb-nightly-darwin-amd64 --strip-components=1
-   tar -xzf tikv-nightly-darwin-amd64.tar.gz -C tidb-nightly-darwin-amd64 --strip-components=1
-   tar -xzf pd-nightly-darwin-amd64.tar.gz -C tidb-nightly-darwin-amd64 --strip-components=1
-   cd tidb-nightly-darwin-amd64
-   ```
-
-2. Start a PD server
-
-   ```bash
-   ./bin/pd-server --name=pd --data-dir=pd --client-urls=http://127.0.0.1:2379 --log-file=pd.log
-   # Now pd-server is listen on port 2379
-   ```
-
-3. Start a TiKV server
-
-   Open a new terminal:
-
-   ```bash
-   ./bin/tikv-server --addr="127.0.0.1:20160" --pd-endpoints="127.0.0.1:2379" --data-dir=tikv --log-file=./tikv.log
-   # Now tikv-server is listen on port 20160
-   ```
-
-4. Start a TiDB server
-
-   Open a new terminal:
-
-   ```bash
-   ./bin/tidb-server --store=tikv --path="127.0.0.1:2379" --log-file=tidb.log
-   # Now tidb-server is listen on port 4000
-   ```
-
-5. Use mysql-client to check everything works fine:
-
-   ```bash
-   mysql -h 127.0.0.1 -P 4000 -uroot
-   ```
-
-</details>
+You might notice that there is already a TiDB Dashboard integrated into the PD started by TiUP. For development purpose, it will not be used intentionally.
 
 ### Step 2. Prepare Prerequisites
 
@@ -124,7 +56,7 @@ The followings are required for developing TiDB Dashboard:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/pingcap-incubator/tidb-dashboard.git
+   git clone https://github.com/pingcap/tidb-dashboard.git
    cd tidb-dashboard
    ```
 
@@ -144,17 +76,11 @@ The followings are required for developing TiDB Dashboard:
    yarn start
    ```
 
-1. That's it! You can access TiDB Dashboard now:
-
-   TiDB Dashboard UI: http://127.0.0.1:3001
-
-   Swagger UI for TiDB Dashboard APIs: http://localhost:12333/dashboard/api/swagger
+1. That's it! You can access TiDB Dashboard now: http://127.0.0.1:3001
 
 ### Step 4. Run E2E Tests (optional)
 
-Now we have only a few e2e tests in the `ui/tests` folder, you can contribute more for it.
-
-After finishing the above steps, we can run the tests by following commands:
+When back-end server and front-end server are both started, E2E tests can be run by:
 
 ```bash
 cd ui/tests
@@ -162,16 +88,30 @@ yarn
 yarn test
 ```
 
-### Step 5. Run Storybook Playground (optional)
+> Now we have only a few e2e tests. Contributions are welcome!
 
-After finishing the above steps, we can run the storybook playground by following commands:
+## Additional Guides
+
+### Swagger UI
+
+We use [Swagger] to generate the API server and corresponding clients. Swagger provides a web UI in which you can
+see all TiDB Dashboard API endpoints and specifications, or even send API requests.
+
+Swagger UI is available at http://localhost:12333/dashboard/api/swagger after the above Step 3 is finished.
+
+### Storybook
+
+We expose some UI components in a playground provided by [React Storybook]. In the playground you can see what
+components look like and how to use them.
+
+Storybook can be started using the following commands:
 
 ```bash
 cd ui
 yarn storybook
 ```
 
-You can add more stories for your components to the playground.
+> We have not yet make all components available in the Storybook. Contributions are welcome!
 
 ## Contribution flow
 
@@ -256,3 +196,5 @@ The body of the commit message should describe why the change was made and at a 
 [tidb]: https://github.com/pingcap/tidb
 [tikv]: https://github.com/tikv/tikv
 [tiup]: https://tiup.io
+[Swagger]: https://swagger.io
+[React Storybook]: https://storybook.js.org

@@ -44,15 +44,15 @@ slow_query:
     preproc_subqueries_time_tooltip: Time consumed when pre-processing the subquery during the rewrite plan phase
     optimize_time: 　　　　Optimize Plan Time
     wait_ts: 　　Get Start Ts Time
-    wait_ts_tooltip: Time consumed of retrieving the transaction start timestamp when transaction begins
+    wait_ts_tooltip: Time consumed when getting a start timestamp when transaction begins
     cop_time: 　　Coprocessor Executor Time
     cop_time_tooltip: 'The elapsed wall time when TiDB Coprocessor executor waiting all Coprocessor requests to finish (note: when there are JOIN in SQL statement, multiple TiDB Coprocessor executors may be running in parallel, which may cause this time not being a wall time)'
     wait_time: 　　　　Coprocessor Wait Time
-    wait_time_tooltip: The total waiting time of Coprocessor request in TiKV
+    wait_time_tooltip: 'The total time of Coprocessor request is prepared and wait to execute in TiKV, which may happen when retrieving a snapshot though Raft concensus protocol (note: TiKV waits requests in parallel so that this is not a wall time)'
     process_time: 　　　　Coprocessor Process Time
     process_time_tooltip: 'The total time of Coprocessor request being executed in TiKV (note: TiKV executes requests in parallel so that this is not a wall time)'
-    backoff_time: 　　Backoff Retry Time
-    backoff_time_tooltip: 'The total waiting time before retry when a query encounters errors and requires a retry (note: there may be multiple backoff running in parallel so that this may not be a wall time)'
+    backoff_time: 　　Execution Backoff Time
+    backoff_time_tooltip: 'The total backoff waiting time before retry when a query encounters errors (note: there may be multiple backoffs in parallel so that this may not be a wall time)'
     lock_keys_time: 　　Lock Keys Time
     lock_keys_time_tooltip: Time consumed when locking keys in pessimistic transaction
     get_commit_ts_time: 　　Get Commit Ts Time
@@ -68,11 +68,11 @@ slow_query:
     commit_time: 　　Commit Time
     commit_time_tooltip: Time consumed in 2PC commit phase when transaction commits
     commit_backoff_time: 　　Commit Backoff Time
-    commit_backoff_time_tooltip: Total backoff waiting time when 2PC commit encounters errors when transaction commits
+    commit_backoff_time_tooltip: 'The total backoff waiting time when 2PC commit encounters errors (note: there may be multiple backoffs in parallel so that this may not be a wall time)'
     write_sql_response_total: 　　Send response Time
     write_sql_response_total_tooltip: Time consumed when sending response to the SQL client
-    exec_retry_time: 　　Retry execution Time
-    exec_retry_time_tooltip: Time consumed when retrying the SQL statement execution caused by locks or errors
+    exec_retry_time: 　　Retried execution Time
+    exec_retry_time_tooltip: Wall time consumed when SQL statement is retried and executed again, except for the last exection
 
     request_count: Request Count
     process_keys: Process Keys

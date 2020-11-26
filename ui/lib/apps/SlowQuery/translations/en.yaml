@@ -38,7 +38,7 @@ slow_query:
     query_time2_tooltip: The execution time of a query (due to the parallel execution, it may be significantly smaller than the following time)
     parse_time: 　　Parse Time
     parse_time_tooltip: Time consumed when parsing the query
-    compile_time: 　　Generate plan Time
+    compile_time: 　　Generate Plan Time
     compile_time_tooltip: Time consumed when generating plan of the query
     rewrite_time: 　　　　Rewrite plan Time
     preproc_subqueries_time: 　　　　　　Preprocess subquery Time

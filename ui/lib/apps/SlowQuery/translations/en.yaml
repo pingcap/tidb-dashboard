@@ -50,7 +50,7 @@ slow_query:
     wait_time: 　　　　Coprocessor Wait Time
     wait_time_tooltip: The total waiting time of cop request in TiKV.
     process_time: 　　　　Coprocessor Process Time
-    process_time_tooltip: The total processing time of a SQL statement in TiKV. Because data is sent to TiKV concurrently, this value might exceed the query time
+    process_time_tooltip: The total execution time of a SQL statement executed in TiKV. Because TiKV process SQL statement partials concurrently, this value can exceed the query time
     backoff_time: 　　Backoff Retry Time
     backoff_time_tooltip: The waiting time before retry when a query encounters errors that require a retry
     lock_keys_time: 　　Lock Keys Time

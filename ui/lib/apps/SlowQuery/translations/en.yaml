@@ -69,7 +69,7 @@ slow_query:
     commit_time: 　　Commit Time
     commit_time_tooltip: The duration of the second phase (commit) of the two-phase transaction commit
     commit_backoff_time: 　　Commit Backoff Time
-    commit_backoff_time_tooltip: The waiting time when the two-phase transaction commit encounters errors
+    commit_backoff_time_tooltip: Total backoff waiting time when 2PC commit encounters errors when transaction commits
     write_sql_response_total: Send response Time
     write_sql_response_total_tooltip: Time consumed when sending response to the SQL client
     exec_retry_time: Retry execution Time

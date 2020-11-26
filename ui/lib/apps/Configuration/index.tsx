@@ -90,7 +90,7 @@ export default function () {
 
   const { t } = useTranslation()
   const [filterValueLower, setFilterValueLower] = useState('')
-  const debouncedFilterValue = useDebounce(filterValueLower, 200)
+  const debouncedFilterValue = useDebounce(filterValueLower, { wait: 200 })
 
   const handleSaved = useCallback(() => {
     sendRequest()

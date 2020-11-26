@@ -1,5 +1,5 @@
 import cx from 'classnames'
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import { useEventListener } from 'ahooks'
 
 export interface IAppearAnimateProps
@@ -20,10 +20,8 @@ function AppearAnimate({
     setIsFirst(false)
   }, [])
 
-  const ref = useEventListener<HTMLDivElement>(
-    'animationend',
-    handleAnimationEnd
-  )
+  const ref = useRef(null)
+  useEventListener('animationend', handleAnimationEnd, { target: ref })
 
   return (
     <div ref={ref} className={cx(className, { [motionName]: isFirst })}>

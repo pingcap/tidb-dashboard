@@ -46,7 +46,7 @@ slow_query:
     optimize_time: 　　　　Optimize plan Time
     wait_ts: 　　Wait Txn StartTS Time
     wait_ts_tooltip: Time consumed of waiting transaction start ts
-    cop_time: 　　Coprocessor request Time
+    cop_time: 　　Coprocessor Request Time
     cop_time_tooltip: Time consumed of TiDB sending cop request
     wait_time: 　　　　Coprocessor Wait Time
     wait_time_tooltip: The total waiting time of cop request in TiKV. Because the Coprocessor of TiKV runs a limited number of threads, cop requests might queue up when all threads of Coprocessor are working

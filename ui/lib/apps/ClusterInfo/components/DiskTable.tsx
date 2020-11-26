@@ -2,7 +2,7 @@ import { Tooltip, Typography } from 'antd'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import client, { HostinfoHostInfo, HostinfoPartitionInfo } from '@lib/client'
+import client, { HostinfoInfo, HostinfoPartitionInfo } from '@lib/client'
 import { Bar, CardTable } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
@@ -19,7 +19,7 @@ interface IExpandedDiskItem extends HostinfoPartitionInfo {
   instancesCount: Record<InstanceKind, number>
 }
 
-function expandDisksItems(rows: HostinfoHostInfo[]): IExpandedDiskItem[] {
+function expandDisksItems(rows: HostinfoInfo[]): IExpandedDiskItem[] {
   const expanded: IExpandedDiskItem[] = []
   rows.forEach((row) => {
     const instancesPerPartition: Record<

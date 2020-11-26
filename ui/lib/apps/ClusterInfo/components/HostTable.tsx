@@ -3,7 +3,7 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { red } from '@ant-design/colors'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import client, { HostinfoHostInfo } from '@lib/client'
+import client, { HostinfoInfo } from '@lib/client'
 import { Bar, CardTable, Pre } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
@@ -14,12 +14,12 @@ import {
 } from '@lib/utils/instanceTable'
 import { WarningOutlined } from '@ant-design/icons'
 
-interface IExpandedHostItem extends HostinfoHostInfo {
+interface IExpandedHostItem extends HostinfoInfo {
   key: string
   instancesCount: Record<InstanceKind, number>
 }
 
-function expandHostItems(rows: HostinfoHostInfo[]): IExpandedHostItem[] {
+function expandHostItems(rows: HostinfoInfo[]): IExpandedHostItem[] {
   const expanded: IExpandedHostItem[] = []
   rows.forEach((row) => {
     const instancesCount: Record<InstanceKind, number> = {

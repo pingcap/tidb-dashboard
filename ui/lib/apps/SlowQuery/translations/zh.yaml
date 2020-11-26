@@ -45,19 +45,19 @@ slow_query:
     preproc_subqueries_time: 　　　　　　子查询预处理耗时
     optimize_time: 　　　　优化执行计划耗时
     optimize_time_tooltip: 优化器寻找执行计划的耗时，包括规则优化和物理优化的耗时
-    wait_ts: 　　等待事务开始时间戳耗时
+    wait_ts: 　　取事务 Start Ts 耗时
     wait_ts_tooltip: 从 PD 取事务开始时间戳步骤的耗时
-    cop_time: 　　Coprocessor 请求耗时
-    cop_time_tooltip: TiDB 发送 cop 请求的耗时
+    cop_time: 　　Coprocessor 执行耗时
+    cop_time_tooltip: TiDB 执行 cop 请求的耗时
     wait_time: 　　　　Coprocessor 累计等待耗时
-    wait_time_tooltip: 在 TiKV Coprocessor 的等待时间之和，因为 TiKV 的 Coprocessor 线程数是有限的，当所有的 Coprocessor 线程都在工作的时候，cop 请求会排队；
+    wait_time_tooltip: 在 TiKV Coprocessor 的等待时间之和
     process_time: 　　　　Coprocessor 累计执行耗时
     process_time_tooltip: 在 TiKV Coprocessor 的处理时间之和，因为请求会并行的发到 TiKV 执行，这个值可能会超过 SQL 执行时间
     lock_keys_time: 　　上锁耗时
     lock_keys_time_tooltip: 悲观事务中对相关行数据进行上锁的耗时
     backoff_time: 　　累计重试等待耗时
     backoff_time_tooltip: 执行过程中遇到锁或者错误后的等待耗时
-    get_commit_ts_time: 　　取 Commit Ts 耗时
+    get_commit_ts_time: 　　取事务 Commit Ts 耗时
     get_commit_ts_time_tooltip: 从 PD 取提交时间戳（事务号）步骤的耗时
     local_latch_wait_time: 　　Local Latch Wait 耗时
     local_latch_wait_time_tooltip: 事务在 TiDB 本地与其他事务产生了锁冲突并等待的耗时

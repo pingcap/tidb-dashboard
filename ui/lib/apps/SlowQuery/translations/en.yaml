@@ -43,10 +43,10 @@ slow_query:
     preproc_subqueries_time: 　　　　　　Preprocess Sub-Query Time
     preproc_subqueries_time_tooltip: The time consumed of pre-process the subquery during the rewrite plan phase
     optimize_time: 　　　　Optimize Plan Time
-    wait_ts: 　　Wait Txn StartTS Time
+    wait_ts: 　　Get Txn Start Ts Time
     wait_ts_tooltip: Time consumed of retrieving transaction start ts
-    cop_time: 　　Coprocessor Request Time
-    cop_time_tooltip: Time consumed of TiDB sending cop request
+    cop_time: 　　Coprocessor Executor Time
+    cop_time_tooltip: Time consumed of TiDB executing cop request
     wait_time: 　　　　Coprocessor Wait Time
     wait_time_tooltip: The total waiting time of cop request in TiKV.
     process_time: 　　　　Coprocessor Process Time

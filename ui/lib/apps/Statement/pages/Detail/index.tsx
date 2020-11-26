@@ -3,9 +3,8 @@ import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Selection } from 'office-ui-fabric-react/lib/Selection'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router-dom'
-import { ArrowLeftOutlined } from '@ant-design/icons'
-import { useToggle } from '@umijs/hooks'
+import { useLocation } from 'react-router-dom'
+import { useLocalStorageState } from '@umijs/hooks'
 
 import client, { StatementModel } from '@lib/client'
 import {
@@ -13,13 +12,14 @@ import {
   CardTable,
   DateTime,
   Descriptions,
+  ErrorBar,
   Expand,
   Head,
   HighlightSQL,
   TextWithInfo,
 } from '@lib/components'
 import CopyLink from '@lib/components/CopyLink'
-import formatSql from '@lib/utils/formatSql'
+import formatSql from '@lib/utils/sqlFormatter'
 import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 
@@ -33,9 +33,11 @@ export interface IPageQuery {
   endTime?: number
 }
 
+const STMT_DETAIL_EXPAND = 'statement.detail_expand'
+
 function DetailPage() {
   const query = DetailPage.parseQuery(useLocation().search)
-  const { data: plans, isLoading } = useClientRequest((cancelToken) =>
+  const { data: plans, isLoading, error } = useClientRequest((reqConfig) =>
     client
       .getInstance()
       .statementsPlansGet(
@@ -43,7 +45,7 @@ function DetailPage() {
         query.digest!,
         query.endTime!,
         query.schema!,
-        { cancelToken }
+        reqConfig
       )
   )
   const { t } = useTranslation()
@@ -59,7 +61,11 @@ function DetailPage() {
     })
   )
 
-  const { state: sqlExpanded, toggle: toggleSqlExpanded } = useToggle(false)
+  const [sqlExpanded, setSqlExpanded] = useLocalStorageState(
+    STMT_DETAIL_EXPAND,
+    false
+  )
+  const toggleSqlExpanded = () => setSqlExpanded((prev) => !prev)
 
   useEffect(() => {
     if (plans && plans.length > 0) {
@@ -69,18 +75,9 @@ function DetailPage() {
 
   return (
     <div>
-      <Head
-        title={t('statement.pages.detail.head.title')}
-        back={
-          <Link to={`/statement`}>
-            <ArrowLeftOutlined /> {t('statement.pages.detail.head.back')}
-          </Link>
-        }
-      >
+      <Head title={t('statement.pages.detail.head.title')}>
         <AnimatedSkeleton showSkeleton={isLoading}>
-          {(!plans || plans.length === 0) && (
-            <Alert message="Error" type="error" showIcon />
-          )}
+          {error && <ErrorBar errors={[error]} />}
           {plans && plans.length > 0 && (
             <>
               <Descriptions>
@@ -92,9 +89,16 @@ function DetailPage() {
                       <TextWithInfo.TransKey transKey="statement.fields.digest_text" />
                       <Expand.Link
                         expanded={sqlExpanded}
-                        onClick={() => toggleSqlExpanded()}
+                        onClick={toggleSqlExpanded}
                       />
-                      <CopyLink data={formatSql(plans[0].digest_text!)} />
+                      <CopyLink
+                        displayVariant="formatted_sql"
+                        data={formatSql(plans[0].digest_text!)}
+                      />
+                      <CopyLink
+                        displayVariant="original_sql"
+                        data={plans[0].digest_text!}
+                      />
                     </Space>
                   }
                 >

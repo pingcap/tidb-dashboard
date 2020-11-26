@@ -37,6 +37,8 @@ statement:
           recent: Recent
           usual_time_ranges: Common
           custom_time_ranges: Custom
+        export: Export
+        exporting: Exporting
   settings:
     title: Settings
     disabled_result:
@@ -74,6 +76,10 @@ statement:
     avg_mem_tooltip: Memory usage of single query
     max_mem: Max Memory
     max_mem_tooltip: Maximum memory usage of single query
+    avg_disk: Mean Disk
+    avg_disk_tooltip: Disk usage of single query
+    max_disk: Max Disk
+    max_disk_tooltip: Maximum disk usage of single query
     index_names: Index Name
     index_names_tooltip: The name of the used index
     first_seen: First Seen
@@ -90,6 +96,8 @@ statement:
     compile_latency_tooltip: Time consumed when optimizing the query
     wait_time: Coprocessor Wait Time
     process_time: Coprocessor Execution Time
+    total_process_time: Total Execution Time
+    total_wait_time: Total Wait Time
     backoff_time: Backoff Retry Time
     backoff_time_tooltip: The waiting time before retry when a query encounters errors that require a retry
     get_commit_ts_time: Get Commit Ts Time
@@ -102,11 +110,11 @@ statement:
     query_time2: Query Time
     query_time2_tooltip: The execution time of a query (due to the parallel execution, it may be significantly smaller than the above time)
     sum_cop_task_num: Total Coprocessor Tasks
-    avg_processed_keys: Mean Visible Versions per query
-    max_processed_keys: Max Visible Versions per query
-    avg_total_keys: Mean Meet Versions per query
+    avg_processed_keys: Mean Visible Versions Per Query
+    max_processed_keys: Max Visible Versions Per Query
+    avg_total_keys: Mean Meet Versions Per Query
     avg_total_keys_tooltip: Meet versions contains overwritten or deleted versions
-    max_total_keys: Max Meet Versions per query
+    max_total_keys: Max Meet Versions Per Query
     avg_affected_rows: Mean Affected Rows
     sum_backoff_times: Total Backoff Count
     avg_write_keys: Mean Written Keys

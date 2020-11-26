@@ -14,14 +14,25 @@
 package statement
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
+	"time"
+
+	"github.com/joomcode/errorx"
 
 	"github.com/gin-gonic/gin"
+
 	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
+)
+
+var (
+	ErrNS     = errorx.NewNamespace("error.api.statement")
+	ErrNoData = ErrNS.NewType("export_no_data")
 )
 
 type ServiceParams struct {
@@ -37,17 +48,25 @@ func NewService(p ServiceParams) *Service {
 	return &Service{params: p}
 }
 
-func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
-	endpoint.Use(auth.MWAuthRequired())
-	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
-	endpoint.GET("/config", s.configHandler)
-	endpoint.POST("/config", s.modifyConfigHandler)
-	endpoint.GET("/time_ranges", s.timeRangesHandler)
-	endpoint.GET("/stmt_types", s.stmtTypesHandler)
-	endpoint.GET("/overviews", s.overviewsHandler)
-	endpoint.GET("/plans", s.getPlansHandler)
-	endpoint.GET("/plan/detail", s.getPlanDetailHandler)
+	{
+		endpoint.GET("/download", s.downloadHandler)
+
+		endpoint.Use(auth.MWAuthRequired())
+		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
+		{
+			endpoint.GET("/config", s.configHandler)
+			endpoint.POST("/config", s.modifyConfigHandler)
+			endpoint.GET("/time_ranges", s.timeRangesHandler)
+			endpoint.GET("/stmt_types", s.stmtTypesHandler)
+			endpoint.GET("/list", s.listHandler)
+			endpoint.GET("/plans", s.plansHandler)
+			endpoint.GET("/plan/detail", s.planDetailHandler)
+
+			endpoint.POST("/download/token", s.downloadTokenHandler)
+		}
+	}
 }
 
 // @Summary Get statement configurations
@@ -122,22 +141,33 @@ type GetStatementsRequest struct {
 	BeginTime int      `json:"begin_time" form:"begin_time"`
 	EndTime   int      `json:"end_time" form:"end_time"`
 	Text      string   `json:"text" form:"text"`
+	Fields    string   `json:"fields" form:"fields"`
 }
 
-// @Summary Get a list of statement overviews
+// @Summary Get a list of statements
 // @Param q query GetStatementsRequest true "Query"
 // @Success 200 {array} Model
-// @Router /statements/overviews [get]
+// @Router /statements/list [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) overviewsHandler(c *gin.Context) {
+func (s *Service) listHandler(c *gin.Context) {
 	var req GetStatementsRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	overviews, err := QueryStatementsOverview(db, req.BeginTime, req.EndTime, req.Schemas, req.StmtTypes, req.Text)
+	fields := []string{}
+	if strings.TrimSpace(req.Fields) != "" {
+		fields = strings.Split(req.Fields, ",")
+	}
+	overviews, err := QueryStatements(
+		db,
+		req.BeginTime, req.EndTime,
+		req.Schemas,
+		req.StmtTypes,
+		req.Text,
+		fields)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -158,7 +188,7 @@ type GetPlansRequest struct {
 // @Router /statements/plans [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) getPlansHandler(c *gin.Context) {
+func (s *Service) plansHandler(c *gin.Context) {
 	var req GetPlansRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
@@ -184,7 +214,7 @@ type GetPlanDetailRequest struct {
 // @Router /statements/plan/detail [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) getPlanDetailHandler(c *gin.Context) {
+func (s *Service) planDetailHandler(c *gin.Context) {
 	var req GetPlanDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
@@ -197,4 +227,73 @@ func (s *Service) getPlanDetailHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, result)
+}
+
+// @Router /statements/download/token [post]
+// @Summary Generate a download token for exported statements
+// @Produce plain
+// @Param request body GetStatementsRequest true "Request body"
+// @Success 200 {string} string "xxx"
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) downloadTokenHandler(c *gin.Context) {
+	var req GetStatementsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.MakeInvalidRequestErrorFromError(c, err)
+		return
+	}
+	db := utils.GetTiDBConnection(c)
+	fields := []string{}
+	if strings.TrimSpace(req.Fields) != "" {
+		fields = strings.Split(req.Fields, ",")
+	}
+	overviews, err := QueryStatements(
+		db,
+		req.BeginTime, req.EndTime,
+		req.Schemas,
+		req.StmtTypes,
+		req.Text,
+		fields)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if len(overviews) == 0 {
+		_ = c.Error(ErrNoData.NewWithNoMessage())
+		return
+	}
+
+	// interface{} tricky
+	rawData := make([]interface{}, len(overviews))
+	for i, v := range overviews {
+		rawData[i] = v
+	}
+
+	// convert data
+	csvData := utils.GenerateCSVFromRaw(rawData, fields, []string{"first_seen", "last_seen"})
+
+	// generate temp file that persist encrypted data
+	timeLayout := "01021504"
+	beginTime := time.Unix(int64(req.BeginTime), 0).Format(timeLayout)
+	endTime := time.Unix(int64(req.EndTime), 0).Format(timeLayout)
+	token, err := utils.ExportCSV(csvData,
+		fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime),
+		"statements/download")
+
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.String(http.StatusOK, token)
+}
+
+// @Router /statements/download [get]
+// @Summary Download statements
+// @Produce text/csv
+// @Param token query string true "download token"
+// @Failure 400 {object} utils.APIError
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) downloadHandler(c *gin.Context) {
+	token := c.Query("token")
+	utils.DownloadByToken(token, "statements/download", c)
 }

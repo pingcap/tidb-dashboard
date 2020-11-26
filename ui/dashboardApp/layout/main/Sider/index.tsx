@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { ExperimentOutlined, BugOutlined } from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
 import { useEventListener } from '@umijs/hooks'
 import { useTranslation } from 'react-i18next'
 import { useSpring, animated } from 'react-spring'
-import client, { InfoWhoAmIResponse } from '@lib/client'
+import client from '@lib/client'
 
 import Banner from './Banner'
 import styles from './index.module.less'
@@ -38,20 +38,6 @@ function useActiveAppId(registry) {
   return appId
 }
 
-function useCurrentLogin() {
-  const [login, setLogin] = useState<InfoWhoAmIResponse | null>(null)
-  useEffect(() => {
-    async function fetch() {
-      const resp = await client.getInstance().infoWhoami()
-      if (resp.data) {
-        setLogin(resp.data)
-      }
-    }
-    fetch()
-  }, [])
-  return login
-}
-
 function Sider({
   registry,
   fullWidth,
@@ -63,10 +49,12 @@ function Sider({
 }) {
   const { t } = useTranslation()
   const activeAppId = useActiveAppId(registry)
-  const currentLogin = useCurrentLogin()
 
-  const { data } = useClientRequest((cancelToken) =>
-    client.getInstance().infoGet({ cancelToken })
+  const { data: currentLogin } = useClientRequest((reqConfig) =>
+    client.getInstance().infoWhoami(reqConfig)
+  )
+  const { data: info } = useClientRequest((reqConfig) =>
+    client.getInstance().infoGet(reqConfig)
   )
 
   const debugSubMenuItems = [useAppMenuItem(registry, 'instance_profiling')]
@@ -105,15 +93,15 @@ function Sider({
   const menuItems = [
     useAppMenuItem(registry, 'overview'),
     useAppMenuItem(registry, 'cluster_info'),
-    useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'statement'),
     useAppMenuItem(registry, 'slow_query'),
+    useAppMenuItem(registry, 'keyviz'),
     useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
     debugSubMenu,
   ]
 
-  if (data?.enable_experimental) {
+  if (info?.enable_experimental) {
     menuItems.push(experimentalSubMenu)
   }
 

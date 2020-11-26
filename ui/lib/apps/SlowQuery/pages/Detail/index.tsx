@@ -1,24 +1,24 @@
 import React from 'react'
-import { Space, Alert } from 'antd'
+import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { useLocation, Link } from 'react-router-dom'
-import { ArrowLeftOutlined } from '@ant-design/icons'
-import { useToggle } from '@umijs/hooks'
+import { useLocation } from 'react-router-dom'
+import { useLocalStorageState } from '@umijs/hooks'
 
 import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import { parseQueryFn, buildQueryFn } from '@lib/utils/query'
-import formatSql from '@lib/utils/formatSql'
+import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
+import formatSql from '@lib/utils/sqlFormatter'
 import {
-  Head,
-  Descriptions,
-  TextWithInfo,
-  Pre,
-  HighlightSQL,
-  Expand,
-  CopyLink,
-  CardTabs,
   AnimatedSkeleton,
+  CardTabs,
+  CopyLink,
+  Descriptions,
+  ErrorBar,
+  Expand,
+  Head,
+  HighlightSQL,
+  Pre,
+  TextWithInfo,
 } from '@lib/components'
 import TabBasic from './DetailTabBasic'
 import TabTime from './DetailTabTime'
@@ -26,61 +26,76 @@ import TabCopr from './DetailTabCopr'
 import TabTxn from './DetailTabTxn'
 
 export interface IPageQuery {
-  connectId?: number
+  connectId?: string
   digest?: string
-  time?: number
+  timestamp?: number
 }
+
+const SLOW_QUERY_DETAIL_EXPAND = 'slow_query.detail_expand'
 
 function DetailPage() {
   const query = DetailPage.parseQuery(useLocation().search)
 
   const { t } = useTranslation()
 
-  const { data, isLoading } = useClientRequest((cancelToken) =>
+  const { data, isLoading, error } = useClientRequest((reqConfig) =>
     client
       .getInstance()
-      .slowQueryDetailGet(query.connectId!, query.digest!, query.time!, {
-        cancelToken,
-      })
+      .slowQueryDetailGet(
+        query.connectId!,
+        query.digest!,
+        query.timestamp!,
+        reqConfig
+      )
   )
 
-  const { state: sqlExpanded, toggle: toggleSqlExpanded } = useToggle(false)
-  const { state: prevSqlExpanded, toggle: togglePrevSqlExpanded } = useToggle(
-    false
+  const [detailExpand, setDetailExpand] = useLocalStorageState(
+    SLOW_QUERY_DETAIL_EXPAND,
+    {
+      prev_query: false,
+      query: false,
+      plan: false,
+    }
   )
-  const { state: planExpanded, toggle: togglePlanExpanded } = useToggle(false)
+
+  const togglePrevQuery = () =>
+    setDetailExpand((prev) => ({ ...prev, prev_query: !prev.prev_query }))
+  const toggleQuery = () =>
+    setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
+  const togglePlan = () =>
+    setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
   return (
     <div>
-      <Head
-        title={t('slow_query.detail.head.title')}
-        back={
-          <Link to={`/slow_query`}>
-            <ArrowLeftOutlined /> {t('slow_query.detail.head.back')}
-          </Link>
-        }
-      >
+      <Head title={t('slow_query.detail.head.title')}>
         <AnimatedSkeleton showSkeleton={isLoading}>
-          {!data && <Alert message="Error" type="error" showIcon />}
+          {error && <ErrorBar errors={[error]} />}
           {!!data && (
             <>
               <Descriptions>
                 <Descriptions.Item
                   span={2}
-                  multiline={sqlExpanded}
+                  multiline={detailExpand.query}
                   label={
                     <Space size="middle">
                       <TextWithInfo.TransKey transKey="slow_query.detail.head.sql" />
                       <Expand.Link
-                        expanded={sqlExpanded}
-                        onClick={() => toggleSqlExpanded()}
+                        expanded={detailExpand.query}
+                        onClick={toggleQuery}
                       />
-                      <CopyLink data={formatSql(data.query!)} />
+                      <CopyLink
+                        displayVariant="formatted_sql"
+                        data={formatSql(data.query!)}
+                      />
+                      <CopyLink
+                        displayVariant="original_sql"
+                        data={data.query!}
+                      />
                     </Space>
                   }
                 >
                   <Expand
-                    expanded={sqlExpanded}
+                    expanded={detailExpand.query}
                     collapsedContent={
                       <HighlightSQL sql={data.query!} compact />
                     }
@@ -93,20 +108,27 @@ function DetailPage() {
                     return (
                       <Descriptions.Item
                         span={2}
-                        multiline={prevSqlExpanded}
+                        multiline={detailExpand.prev_query}
                         label={
                           <Space size="middle">
                             <TextWithInfo.TransKey transKey="slow_query.detail.head.previous_sql" />
                             <Expand.Link
-                              expanded={prevSqlExpanded}
-                              onClick={() => togglePrevSqlExpanded()}
+                              expanded={detailExpand.prev_query}
+                              onClick={togglePrevQuery}
                             />
-                            <CopyLink data={formatSql(data.prev_stmt!)} />
+                            <CopyLink
+                              displayVariant="formatted_sql"
+                              data={formatSql(data.prev_stmt!)}
+                            />
+                            <CopyLink
+                              displayVariant="original_sql"
+                              data={data.prev_stmt!}
+                            />
                           </Space>
                         }
                       >
                         <Expand
-                          expanded={prevSqlExpanded}
+                          expanded={detailExpand.prev_query}
                           collapsedContent={
                             <HighlightSQL sql={data.prev_stmt!} compact />
                           }
@@ -118,19 +140,19 @@ function DetailPage() {
                 })()}
                 <Descriptions.Item
                   span={2}
-                  multiline={planExpanded}
+                  multiline={detailExpand.plan}
                   label={
                     <Space size="middle">
                       <TextWithInfo.TransKey transKey="slow_query.detail.head.plan" />
                       <Expand.Link
-                        expanded={planExpanded}
-                        onClick={() => togglePlanExpanded()}
+                        expanded={detailExpand.plan}
+                        onClick={togglePlan}
                       />
                       <CopyLink data={data.plan ?? ''} />
                     </Space>
                   }
                 >
-                  <Expand expanded={planExpanded}>
+                  <Expand expanded={detailExpand.plan}>
                     <Pre noWrap>{data.plan}</Pre>
                   </Expand>
                 </Descriptions.Item>

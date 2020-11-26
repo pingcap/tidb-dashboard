@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"github.com/thoas/go-funk"
 )
 
 const (
@@ -128,35 +129,24 @@ func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
 // endTime: 1586845800
 // schemas: ["tpcc", "test"]
 // stmtTypes: ["select", "update"]
-func QueryStatementsOverview(
+// fields: ["digest_text", "sum_latency"]
+func QueryStatements(
 	db *gorm.DB,
 	beginTime, endTime int,
 	schemas, stmtTypes []string,
-	text string) (result []Model, err error) {
-	fields := getAggrFields(
-		"plan_count",
-		"table_names",
-		"schema_name",
-		"digest",
-		"digest_text",
-		"sum_latency",
-		"exec_count",
-		"max_latency",
-		"avg_latency",
-		"min_latency",
-		"avg_mem",
-		"max_mem",
-		"sum_errors",
-		"sum_warnings",
-		"avg_parse_latency",
-		"max_parse_latency",
-		"avg_compile_latency",
-		"max_compile_latency",
-		"avg_cop_process_time",
-		"max_cop_process_time")
-	// `table_names` is used to populate `related_schemas`.
+	text string,
+	fields []string,
+) (result []Model, err error) {
+	var aggrFields []string
+	if len(fields) == 1 && fields[0] == "*" {
+		aggrFields = getAllAggrFields()
+	} else {
+		fields = funk.UniqString(append(fields, "schema_name", "digest", "sum_latency")) // "schema_name", "digest" for group, "sum_latency" for order
+		aggrFields = getAggrFields(fields...)
+	}
+
 	query := db.
-		Select(strings.Join(fields, ", ")).
+		Select(strings.Join(aggrFields, ", ")).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Group("schema_name, digest").

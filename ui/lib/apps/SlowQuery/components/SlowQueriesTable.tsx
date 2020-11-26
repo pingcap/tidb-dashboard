@@ -1,59 +1,46 @@
 import { usePersistFn } from '@umijs/hooks'
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-import React, { useCallback, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-
-import { SlowqueryBase } from '@lib/client'
+import React, { useCallback } from 'react'
 import { CardTable, ICardTableProps } from '@lib/components'
-import openLink from '@lib/utils/openLink'
-
 import DetailPage from '../pages/Detail'
-import { slowQueryColumns } from '../utils/tableColumns'
+import { ISlowQueryTableController } from '../utils/useSlowQueryTableController'
 
 interface Props extends Partial<ICardTableProps> {
-  loading: boolean
-  slowQueries: SlowqueryBase[]
-  showFullSQL?: boolean
-  onGetColumns?: (columns: IColumn[]) => void
+  controller: ISlowQueryTableController
 }
 
-function SlowQueriesTable({
-  loading,
-  slowQueries,
-  showFullSQL,
-  onGetColumns,
-  ...restProps
-}: Props) {
-  const navigate = useNavigate()
-
-  const columns = useMemo(() => slowQueryColumns(slowQueries, showFullSQL), [
+function SlowQueriesTable({ controller, ...restProps }: Props) {
+  const {
+    loadingSlowQueries,
+    tableColumns,
     slowQueries,
-    showFullSQL,
-  ])
+    orderOptions: { orderBy, desc },
+    changeOrder,
+    errors,
+    visibleColumnKeys,
+  } = controller
 
-  useEffect(() => {
-    onGetColumns && onGetColumns(columns || [])
-  }, [onGetColumns, columns])
-
-  const handleRowClick = usePersistFn(
-    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
-      const qs = DetailPage.buildQuery({
-        digest: rec.digest,
-        connectId: rec.connection_id,
-        time: rec.timestamp,
-      })
-      openLink(`/slow_query/detail?${qs}`, ev, navigate)
-    }
-  )
+  const handleRowClick = usePersistFn((rec) => {
+    const qs = DetailPage.buildQuery({
+      digest: rec.digest,
+      connectId: rec.connection_id,
+      timestamp: rec.timestamp,
+    })
+    window.open(`#/slow_query/detail?${qs}`, '_blank')
+  })
 
   const getKey = useCallback((row) => `${row.digest}_${row.timestamp}`, [])
 
   return (
     <CardTable
       {...restProps}
-      loading={loading}
-      columns={columns}
+      loading={loadingSlowQueries}
+      columns={tableColumns}
       items={slowQueries}
+      orderBy={orderBy}
+      desc={desc}
+      onChangeOrder={changeOrder}
+      errors={errors}
+      visibleColumnKeys={visibleColumnKeys}
       onRowClicked={handleRowClick}
       getKey={getKey}
     />

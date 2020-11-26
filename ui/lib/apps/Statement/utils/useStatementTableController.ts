@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from '@umijs/hooks'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
-import client, { StatementModel, StatementTimeRange } from '@lib/client'
+import client, {
+  ErrorStrategy,
+  StatementModel,
+  StatementTimeRange,
+} from '@lib/client'
+import { IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 import {
@@ -9,6 +15,17 @@ import {
   DEFAULT_TIME_RANGE,
   TimeRange,
 } from '../pages/List/TimeRangeSelector'
+import { derivedFields, statementColumns } from './tableColumns'
+import { getSelectedFields } from '@lib/utils/tableColumnFactory'
+
+export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
+  digest_text: true,
+  sum_latency: true,
+  avg_latency: true,
+  exec_count: true,
+  plan_count: true,
+  related_schemas: true,
+}
 
 const QUERY_OPTIONS = 'statement.query_options'
 
@@ -31,10 +48,36 @@ export const DEF_STMT_QUERY_OPTIONS: IStatementQueryOptions = {
   searchText: '',
 }
 
-export default function useStatement(
+export interface IStatementTableController {
+  queryOptions: IStatementQueryOptions
+  setQueryOptions: (options: IStatementQueryOptions) => void
+  orderOptions: IOrderOptions
+  changeOrder: (orderBy: string, desc: boolean) => void
+  refresh: () => void
+
+  enable: boolean
+  allTimeRanges: StatementTimeRange[]
+  allSchemas: string[]
+  allStmtTypes: string[]
+  validTimeRange: StatementTimeRange
+  loadingStatements: boolean
+  statements: StatementModel[]
+
+  errors: Error[]
+
+  tableColumns: IColumn[]
+  visibleColumnKeys: IColumnKeys
+
+  downloadCSV: () => Promise<void>
+  downloading: boolean
+}
+
+export default function useStatementTableController(
+  visibleColumnKeys: IColumnKeys,
+  showFullSQL: boolean,
   options?: IStatementQueryOptions,
   needSave: boolean = true
-) {
+): IStatementTableController {
   const { orderOptions, changeOrder } = useOrderState(
     'statement',
     needSave,
@@ -86,37 +129,45 @@ export default function useStatement(
   useEffect(() => {
     async function queryStatementStatus() {
       try {
-        const res = await client.getInstance().statementsConfigGet()
+        const res = await client.getInstance().statementsConfigGet({
+          errorStrategy: ErrorStrategy.Custom,
+        })
         setEnable(res?.data.enable!)
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => prev.concat(e))
       }
     }
 
     async function querySchemas() {
       try {
-        const res = await client.getInstance().infoListDatabases()
+        const res = await client.getInstance().infoListDatabases({
+          errorStrategy: ErrorStrategy.Custom,
+        })
         setAllSchemas(res?.data || [])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => prev.concat(e))
       }
     }
 
     async function queryTimeRanges() {
       try {
-        const res = await client.getInstance().statementsTimeRangesGet()
+        const res = await client.getInstance().statementsTimeRangesGet({
+          errorStrategy: ErrorStrategy.Custom,
+        })
         setAllTimeRanges(res?.data || [])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => prev.concat(e))
       }
     }
 
     async function queryStmtTypes() {
       try {
-        const res = await client.getInstance().statementsStmtTypesGet()
+        const res = await client.getInstance().statementsStmtTypesGet({
+          errorStrategy: ErrorStrategy.Custom,
+        })
         setAllStmtTypes(res?.data || [])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => prev.concat(e))
       }
     }
 
@@ -125,6 +176,16 @@ export default function useStatement(
     queryTimeRanges()
     queryStmtTypes()
   }, [refreshTimes])
+
+  const selectedFields = useMemo(
+    () => getSelectedFields(visibleColumnKeys, derivedFields).join(','),
+    [visibleColumnKeys]
+  )
+
+  const tableColumns = useMemo(
+    () => statementColumns(statements, showFullSQL),
+    [statements, showFullSQL]
+  )
 
   useEffect(() => {
     async function queryStatementList() {
@@ -138,23 +199,49 @@ export default function useStatement(
       try {
         const res = await client
           .getInstance()
-          .statementsOverviewsGet(
+          .statementsListGet(
             validTimeRange.begin_time!,
             validTimeRange.end_time!,
+            selectedFields,
             queryOptions.schemas,
             queryOptions.stmtTypes,
-            queryOptions.searchText
+            queryOptions.searchText,
+            {
+              errorStrategy: ErrorStrategy.Custom,
+            }
           )
         setStatements(res?.data || [])
         setErrors([])
-      } catch (error) {
-        setErrors((prev) => [...prev, { ...error }])
+      } catch (e) {
+        setErrors((prev) => prev.concat(e))
       }
       setLoadingStatements(false)
     }
 
     queryStatementList()
-  }, [queryOptions, allTimeRanges, validTimeRange])
+  }, [queryOptions, allTimeRanges, validTimeRange, selectedFields])
+
+  const [downloading, setDownloading] = useState(false)
+
+  async function downloadCSV() {
+    try {
+      setDownloading(true)
+      const res = await client.getInstance().statementsDownloadTokenPost({
+        begin_time: validTimeRange.begin_time,
+        end_time: validTimeRange.end_time,
+        fields: '*',
+        schemas: queryOptions.schemas,
+        stmt_types: queryOptions.stmtTypes,
+        text: queryOptions.searchText,
+      })
+      const token = res.data
+      if (token) {
+        window.location.href = `${client.getBasePath()}/statements/download?token=${token}`
+      }
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return {
     queryOptions,
@@ -172,5 +259,11 @@ export default function useStatement(
     statements,
 
     errors,
+
+    tableColumns,
+    visibleColumnKeys,
+
+    downloadCSV,
+    downloading,
   }
 }

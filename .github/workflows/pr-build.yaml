@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
       - uses: actions/setup-go@v1
         with:
           go-version: "1.13.5"
@@ -32,13 +32,12 @@ jobs:
       - name: Check uncommitted lint changes
         run: |
           git diff --exit-code
-
   frontend:
     name: frontend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: "12.x"

@@ -8,8 +8,10 @@ import { Card } from '@lib/components'
 import CardTabs from '@lib/components/CardTabs'
 
 import HostTable from '../components/HostTable'
+import DiskTable from '../components/DiskTable'
 import InstanceTable from '../components/InstanceTable'
 import StoreLocation from '../components/StoreLocation'
+import Statistics from '../components/Statistics'
 
 function renderTabBar(props, DefaultTabBar) {
   return (
@@ -48,10 +50,22 @@ export default function ListPage() {
             <HostTable />
           </CardTabs.TabPane>
           <CardTabs.TabPane
+            tab={t('cluster_info.list.disk_table.title')}
+            key="disk"
+          >
+            <DiskTable />
+          </CardTabs.TabPane>
+          <CardTabs.TabPane
             tab={t('cluster_info.list.store_topology.title')}
             key="store_topology"
           >
             <StoreLocation />
+          </CardTabs.TabPane>
+          <CardTabs.TabPane
+            tab={t('cluster_info.list.statistics.title')}
+            key="statistics"
+          >
+            <Statistics />
           </CardTabs.TabPane>
         </CardTabs>
       </Card>

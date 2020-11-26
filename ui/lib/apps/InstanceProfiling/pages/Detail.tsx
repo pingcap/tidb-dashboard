@@ -40,13 +40,10 @@ export default function Page() {
   const { t } = useTranslation()
   const { id } = useQueryParams()
 
-  const { data: respData, isLoading } = useClientRequestWithPolling(
-    (cancelToken) =>
-      client.getInstance().getProfilingGroupDetail(id, { cancelToken }),
+  const { data: respData, isLoading, error } = useClientRequestWithPolling(
+    (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
     {
       shouldPoll: (data) => !isFinished(data),
-      pollingInterval: 1000,
-      immediate: true,
     }
   )
 
@@ -147,10 +144,12 @@ export default function Page() {
         }
       />
       <CardTable
-        loading={isLoading && !data}
+        loading={isLoading}
         columns={columns}
         items={data?.tasks_status || []}
+        errors={[error]}
         onRowClicked={handleRowClick}
+        hideLoadingWhenNotEmpty
         extendLastColumn
       />
     </div>

@@ -69,23 +69,26 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
         return
       }
 
-      const res = await client
-        .getInstance()
-        .logsTaskgroupsIdPreviewGet(taskGroupID + '')
-      setData(
-        res.data.map(
-          (value, index): LogPreview => {
-            return {
-              key: index,
-              time: dayjs(value.time).format('YYYY-MM-DD HH:mm:ss'),
-              level: LogLevelText[value.level ?? 0],
-              component: getComponent(value.task_id),
-              log: value.message,
+      try {
+        const res = await client
+          .getInstance()
+          .logsTaskgroupsIdPreviewGet(taskGroupID + '')
+        setData(
+          res.data.map(
+            (value, index): LogPreview => {
+              return {
+                key: index,
+                time: dayjs(value.time).format('YYYY-MM-DD HH:mm:ss'),
+                level: LogLevelText[value.level ?? 0],
+                component: getComponent(value.task_id),
+                log: value.message,
+              }
             }
-          }
+          )
         )
-      )
-      setLoading(false)
+      } finally {
+        setLoading(false)
+      }
     }
     if (tasks.length > 0 && taskGroupID !== tasks[0].task_group_id) {
       setLoading(true)
@@ -136,7 +139,7 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
   )
 
   return (
-    <div data-e2e="search-result">
+    <div data-e2e="log_search_result">
       {!loading && (
         <Card noMarginTop>
           <Alert message={t('search_logs.page.tip')} type="info" showIcon />
@@ -149,6 +152,7 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
         items={logPreviews || []}
         onRenderRow={renderRow}
         extendLastColumn
+        hideLoadingWhenNotEmpty
       />
     </div>
   )

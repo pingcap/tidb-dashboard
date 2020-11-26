@@ -16,10 +16,6 @@ package topology
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"net/url"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/joomcode/errorx"
@@ -35,33 +31,6 @@ var (
 )
 
 const defaultFetchTimeout = 2 * time.Second
-
-// address should be like "ip:port" as "127.0.0.1:2379".
-// return error if string is not like "ip:port".
-func parseHostAndPortFromAddress(address string) (string, uint, error) {
-	addresses := strings.Split(address, ":")
-	if len(addresses) != 2 {
-		return "", 0, fmt.Errorf("invalid address %s", address)
-	}
-	port, err := strconv.Atoi(addresses[1])
-	if err != nil {
-		return "", 0, err
-	}
-	return addresses[0], uint(port), nil
-}
-
-// address should be like "protocol://ip:port" as "http://127.0.0.1:2379".
-func parseHostAndPortFromAddressURL(urlString string) (string, uint, error) {
-	u, err := url.Parse(urlString)
-	if err != nil {
-		return "", 0, err
-	}
-	port, err := strconv.Atoi(u.Port())
-	if err != nil {
-		return "", 0, err
-	}
-	return u.Hostname(), uint(port), nil
-}
 
 func fetchStandardComponentTopology(ctx context.Context, componentName string, etcdClient *clientv3.Client) (*StandardComponentInfo, error) {
 	ctx2, cancel := context.WithTimeout(ctx, defaultFetchTimeout)

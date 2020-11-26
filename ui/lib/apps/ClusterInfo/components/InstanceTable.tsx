@@ -57,27 +57,30 @@ function StatusColumn({
 
 export default function ListPage() {
   const { t } = useTranslation()
+
   const {
     data: dataTiDB,
     isLoading: loadingTiDB,
     error: errTiDB,
     sendRequest,
-  } = useClientRequest((cancelToken) =>
-    client.getInstance().getTiDBTopology({ cancelToken })
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getTiDBTopology(reqConfig)
   )
+
   const {
     data: dataStores,
     isLoading: loadingStores,
     error: errStores,
-  } = useClientRequest((cancelToken) =>
-    client.getInstance().getStoreTopology({ cancelToken })
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getStoreTopology(reqConfig)
   )
+
   const {
     data: dataPD,
     isLoading: loadingPD,
     error: errPD,
-  } = useClientRequest((cancelToken) =>
-    client.getInstance().getPDTopology({ cancelToken })
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getPDTopology(reqConfig)
   )
 
   const [tableData, groupData] = useMemo(

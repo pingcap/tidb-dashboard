@@ -3,7 +3,6 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 
 import { Root } from '@lib/components'
 import { List, Detail } from './pages'
-import useStatement from './utils/useStatement'
 
 export default function () {
   return (
@@ -20,4 +19,5 @@ export default function () {
 
 export * from './components'
 export * from './pages'
-export { useStatement }
+export * from './utils/useStatementTableController'
+export { default as useStatementTableController } from './utils/useStatementTableController'

@@ -5,8 +5,9 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import { Bar, Pre, TextWithInfo } from '@lib/components'
+import { Bar, Pre } from '@lib/components'
 import { addTranslationResource } from './i18n'
+import { commonColumnName } from './tableColumnFactory'
 
 const translations = {
   en: {
@@ -49,15 +50,12 @@ function TransText({
   return <span>{t(transKey, opt)}</span>
 }
 
-function commonColumnName(fieldName: string): any {
-  return (
-    <TextWithInfo.TransKey transKey={`component.commonColumn.${fieldName}`} />
-  )
-}
+////////////////////////////////////
+const TRANS_KEY_PREFIX = 'component.commonColumn'
 
 function fieldsKeyColumn(transKeyPrefix: string): IColumn {
   return {
-    name: commonColumnName('name'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'name'),
     key: 'key',
     minWidth: 150,
     maxWidth: 250,
@@ -72,7 +70,7 @@ function fieldsKeyColumn(transKeyPrefix: string): IColumn {
 
 function fieldsValueColumn(): IColumn {
   return {
-    name: commonColumnName('value'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'value'),
     key: 'value',
     fieldName: 'value',
     minWidth: 150,
@@ -87,7 +85,7 @@ function fieldsTimeValueColumn(
     ? max(rows.map((v) => max([v.max, v.min, v.avg, v.value]))) ?? 0
     : 0
   return {
-    name: commonColumnName('time'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'time'),
     key: 'time',
     minWidth: 150,
     maxWidth: 200,
@@ -130,16 +128,21 @@ function fieldsTimeValueColumn(
 
 function fieldsDescriptionColumn(transKeyPrefix: string): IColumn {
   return {
-    name: commonColumnName('desc'),
+    name: commonColumnName(TRANS_KEY_PREFIX, 'desc'),
     key: 'description',
     minWidth: 150,
     maxWidth: 300,
     onRender: (rec) => {
-      return (
+      const content = (
         <TransText
           transKey={`${transKeyPrefix}${rec.key}_tooltip`}
           noFallback
         />
+      )
+      return (
+        <Tooltip title={content}>
+          <span>{content}</span>
+        </Tooltip>
       )
     },
   }

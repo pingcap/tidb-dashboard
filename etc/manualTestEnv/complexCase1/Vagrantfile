@@ -1,0 +1,40 @@
+load "#{File.dirname(__FILE__)}/../_shared/Vagrantfile.partial.pubKey.rb"
+
+Vagrant.configure("2") do |config|
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 1024
+    v.cpus = 1
+  end
+
+  (1..5).each do |i|
+    config.vm.define "node#{i}" do |node|
+      node.vm.network "private_network", ip: "10.0.1.#{i+30}"
+      (1..4).each do |j|
+        node.vm.disk :disk, size: "10GB", name: "disk-#{i}-#{j}"
+      end
+    end
+  end
+
+  config.vm.provision "disk", type: "shell", privileged: false, inline: <<-SHELL
+    echo "Formatting disks"
+    sudo mkfs.ext4 -j -L hdd1 /dev/sdb
+    sudo mkfs.ext4 -j -L hdd2 /dev/sdc
+    sudo mkfs.ext4 -j -L hdd3 /dev/sdd
+    sudo mkfs.ext4 -j -L hdd4 /dev/sde
+
+    echo "Mounting directories"
+    sudo mkdir -p /pingcap/tidb-data
+    echo "/dev/sdb /pingcap/tidb-data ext4 defaults 0 0" | sudo tee -a /etc/fstab
+    sudo mount /pingcap/tidb-data
+
+    sudo mkdir -p /pingcap/tidb-deploy
+    sudo mkdir -p /pingcap/tidb-data/tikv-1
+    sudo mkdir -p /pingcap/tidb-data/tikv-2
+    echo "/dev/sdc /pingcap/tidb-deploy ext4 defaults 0 0" | sudo tee -a /etc/fstab
+    echo "/dev/sdd /pingcap/tidb-data/tikv-1 ext4 defaults 0 0" | sudo tee -a /etc/fstab
+    echo "/dev/sde /pingcap/tidb-data/tikv-2 ext4 defaults 0 0" | sudo tee -a /etc/fstab
+    sudo mount /pingcap/tidb-deploy
+    sudo mount /pingcap/tidb-data/tikv-1
+    sudo mount /pingcap/tidb-data/tikv-2
+  SHELL
+end

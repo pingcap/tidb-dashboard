@@ -37,6 +37,8 @@ statement:
           recent: 最近
           usual_time_ranges: 常用时间范围
           custom_time_ranges: 自定义时间范围
+        export: 导出
+        exporting: 正在导出
   settings:
     title: 设置
     disabled_result:
@@ -73,6 +75,10 @@ statement:
     avg_mem_tooltip: 单条 SQL 查询的消耗内存大小
     max_mem: 最大内存
     max_mem_tooltip: 最大单条 SQL 查询消耗内存大小
+    avg_disk: 平均磁盘空间
+    avg_disk_tooltip: 单条 SQL 查询占用的磁盘空间大小
+    max_disk: 最大磁盘空间
+    max_disk_tooltip: 最大单条 SQL 查询占用的磁盘空间大小
     table_names: 表名
     index_names: 索引名
     index_names_tooltip: SQL 执行时使用的索引名称
@@ -92,6 +98,8 @@ statement:
     wait_time_tooltip: SQL 查询在 TiKV Coprocessor 上被等待执行的耗时，单个 SQL 查询所有 Coprocessor 任务累计后计算
     process_time: Coprocessor 执行耗时
     process_time_tooltip: SQL 查询在 TiKV Coprocessor 上的执行耗时，单个 SQL 查询所有 Coprocessor 任务累计后计算
+    total_process_time: 所有执行耗时
+    total_wait_time: 所有等待耗时
     backoff_time: 重试等待耗时
     backoff_time_tooltip: 单个 SQL 查询所有重试累计后计算
     get_commit_ts_time: 取 Commit Ts 耗时

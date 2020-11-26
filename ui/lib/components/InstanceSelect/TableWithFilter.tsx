@@ -21,8 +21,7 @@ export interface ITableWithFilterProps extends IDetailsListProps {
   onFilterChange?: (value: string) => void
   tableMaxHeight?: number
   tableWidth?: number
-  containerClassName?: string
-  containerStyle?: React.CSSProperties
+  containerProps?: React.HTMLAttributes<HTMLDivElement>
 }
 
 export interface ITableWithFilterRefProps {
@@ -37,8 +36,7 @@ function TableWithFilter(
     onFilterChange,
     tableMaxHeight,
     tableWidth,
-    containerClassName,
-    containerStyle,
+    containerProps,
     ...restProps
   }: ITableWithFilterProps,
   ref: React.Ref<ITableWithFilterRefProps>
@@ -73,11 +71,17 @@ function TableWithFilter(
     [containerState.height, tableMaxHeight, tableWidth]
   )
 
+  const {
+    className: containerClassName,
+    style: containerStyle,
+    ...containerRestProps
+  } = containerProps ?? {}
+
   return (
     <div
       className={cx(styles.tableWithFilterContainer, containerClassName)}
       style={containerStyle}
-      data-e2e="table-with-filter"
+      {...containerRestProps}
     >
       <Input
         placeholder={filterPlaceholder}

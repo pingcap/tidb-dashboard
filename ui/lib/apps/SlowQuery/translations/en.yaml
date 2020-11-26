@@ -63,7 +63,7 @@ slow_query:
     resolve_lock_time_tooltip: Time consumed when TiDB resolves locks from other transactions in 2PC prewrite phase when transaction commits
     prewrite_time: 　　Prewrite Time
     prewrite_time_tooltip: Time consumed in 2PC prewrite phase when transaction commits
-    wait_prewrite_binlog_time: 　　Wait binlog prewrite Time
+    wait_prewrite_binlog_time: 　　Wait Binlog Prewrite Time
     wait_prewrite_binlog_time_tooltip: The duration of waiting prewrite binlog finish
     commit_time: 　　Commit Time
     commit_time_tooltip: Time consumed in 2PC commit phase when transaction commits

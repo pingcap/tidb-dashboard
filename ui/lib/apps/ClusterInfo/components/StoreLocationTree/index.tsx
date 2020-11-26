@@ -7,6 +7,7 @@ import {
   QuestionCircleOutlined,
 } from '@ant-design/icons'
 import { Space, Tooltip } from 'antd'
+import { cyan } from '@ant-design/colors'
 import { useTranslation } from 'react-i18next'
 
 export interface IStoreLocationProps {
@@ -67,8 +68,7 @@ export default function StoreLocationTree({
     const gLink = bound
       .append('g')
       .attr('fill', 'none')
-      .attr('stroke', '#555')
-      .attr('stroke-opacity', 0.4)
+      .attr('stroke', cyan[3])
       .attr('stroke-width', 2)
     const gNode = bound
       .append('g')
@@ -160,14 +160,15 @@ export default function StoreLocationTree({
 
       nodeEnter
         .append('circle')
-        .attr('r', 6)
-        .attr('fill', (d: any) => (d._children ? '#ff4d4f' : '#3351ff'))
-        .attr('stroke-width', 10)
+        .attr('r', 8)
+        .attr('fill', '#fff')
+        .attr('stroke', (d: any) => (d._children ? cyan[5] : '#ddd'))
+        .attr('stroke-width', 3)
 
       nodeEnter
         .append('text')
         .attr('dy', '0.31em')
-        .attr('x', (d: any) => (d._children ? -8 : 8))
+        .attr('x', (d: any) => (d._children ? -15 : 15))
         .attr('text-anchor', (d: any) => (d._children ? 'end' : 'start'))
         .text(({ data: { name, value } }: any) => {
           if (value) {

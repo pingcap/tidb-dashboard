@@ -17,17 +17,37 @@ cluster_info:
     host_table:
       title: 主机
       columns:
-        ip: 主机地址
+        host: 主机地址
         cpu: CPU
         cpu_usage: CPU 使用率
         memory: 物理内存
         memory_usage: 内存使用率
-        deploy: 部署磁盘
+        instances: 实例
+      instanceUnavailable: 由于该主机上没有实例存活，因此无法获取主机信息
+    disk_table:
+      title: 磁盘
+      columns:
+        host: 主机地址
+        mount_dir: 磁盘挂载点
+        fs: 文件系统
         disk_size: 磁盘容量
         disk_usage: 磁盘使用率
-      instanceUnavailable: 获取该主机信息失败：无法访问实例
+        instances: 实例
     store_topology:
       title: 存储拓扑
       tooltip: 按住 Ctrl 键并滑动鼠标滚轮可以缩放
+    statistics:
+      title: 统计
+      summary_title: 集群总计
+      field:
+        version: 版本
+        instances: 总实例数量
+        hosts: 实例部署的总机器数量
+        memory_capacity: 内存总量总和 (按实例部署的机器计算)
+        physical_cores: CPU 物理核心数总和 (按实例部署的机器计算)
+        logical_cores: CPU 逻辑核心数总和 (按实例部署的机器计算)
+      message:
+        instance_down: '由于有 {{n}} 台机器上的所有实例都未启动或无法访问，因此统计中关于机器的指标可能会不准确。'
+        sub_statistics: 子统计按不同实例类型分别计算。当一个机器上部署了不同类型实例时，以下子统计的机器指标累加起来会超过“集群总计”数量。
   error:
     load: '加载组件 {{comp}} 失败: {{cause}}'

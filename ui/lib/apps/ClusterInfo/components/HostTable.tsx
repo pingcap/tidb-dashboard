@@ -1,212 +1,200 @@
 import { Tooltip, Typography } from 'antd'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { red } from '@ant-design/colors'
-import { WarningOutlined } from '@ant-design/icons'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-
-import client from '@lib/client'
+import client, { HostinfoInfo } from '@lib/client'
 import { Bar, CardTable, Pre } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
+import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
+import {
+  InstanceKind,
+  InstanceKinds,
+  InstanceKindName,
+} from '@lib/utils/instanceTable'
+import { WarningOutlined } from '@ant-design/icons'
 
-const { Text } = Typography
+interface IExpandedHostItem extends HostinfoInfo {
+  key: string
+  instancesCount: Record<InstanceKind, number>
+}
 
-function filterUniquePartitions(items) {
-  return items.filter(
-    (x, i, a) => a.findIndex((y) => y.partition.path === x.partition.path) === i
-  )
+function expandHostItems(rows: HostinfoInfo[]): IExpandedHostItem[] {
+  const expanded: IExpandedHostItem[] = []
+  rows.forEach((row) => {
+    const instancesCount: Record<InstanceKind, number> = {
+      pd: 0,
+      tidb: 0,
+      tikv: 0,
+      tiflash: 0,
+    }
+
+    Object.values(row.instances ?? {}).forEach((i) => {
+      if (!i) {
+        return
+      }
+      instancesCount[i.type!]++
+    })
+
+    expanded.push({
+      key: row.host ?? '',
+      instancesCount,
+      ...row,
+    })
+  })
+  return expanded
 }
 
 export default function HostTable() {
   const { t } = useTranslation()
 
-  const { data: tableData, isLoading, error } = useClientRequest((reqConfig) =>
-    client.getInstance().getHostsInfo(reqConfig)
+  const { data, isLoading, error } = useClientRequest((reqConfig) =>
+    client.getInstance().clusterInfoGetHostsInfo(reqConfig)
   )
 
-  const columns = [
-    {
-      name: t('cluster_info.list.host_table.columns.ip'),
-      key: 'ip',
-      minWidth: 100,
-      maxWidth: 150,
-      onRender: ({ ip, unavailable }) => {
-        if (unavailable) {
+  const hostData = useMemo(() => expandHostItems(data?.hosts ?? []), [data])
+
+  const columns: IColumn[] = useMemo(
+    () => [
+      {
+        name: t('cluster_info.list.host_table.columns.host'),
+        key: 'host',
+        minWidth: 100,
+        maxWidth: 150,
+        onRender: (row: IExpandedHostItem) => {
+          if (!row.cpu_info) {
+            // We assume that CPU info must be successfully retrieved.
+            return (
+              <Tooltip
+                title={t('cluster_info.list.host_table.instanceUnavailable')}
+              >
+                <Typography.Text type="danger">
+                  <WarningOutlined /> {row.host}
+                </Typography.Text>
+              </Tooltip>
+            )
+          }
           return (
-            <Tooltip
-              title={t('cluster_info.list.host_table.instanceUnavailable')}
-            >
-              <Text type="warning">
-                <WarningOutlined /> {ip}
-              </Text>
+            <Tooltip title={row.host}>
+              <span>{row.host}</span>
             </Tooltip>
           )
-        }
-        return ip
+        },
       },
-    },
-    {
-      name: t('cluster_info.list.host_table.columns.cpu'),
-      key: 'cpu_core',
-      minWidth: 60,
-      maxWidth: 100,
-      onRender: ({ cpu_core }) =>
-        cpu_core !== undefined ? `${cpu_core} vCPU` : '',
-    },
-    {
-      name: t('cluster_info.list.host_table.columns.cpu_usage'),
-      key: 'cpu_usage',
-      minWidth: 100,
-      maxWidth: 150,
-      onRender: ({ cpu_usage }) => {
-        if (cpu_usage === undefined) {
-          return
-        }
-        const { system, idle } = cpu_usage
-        const user = 1 - system - idle
-        const tooltipContent = `
+      {
+        name: t('cluster_info.list.host_table.columns.cpu'),
+        key: 'cpu',
+        minWidth: 100,
+        maxWidth: 150,
+        onRender: (row: IExpandedHostItem) => {
+          const { cpu_info: c } = row
+          if (!c) {
+            return
+          }
+          const tooltipContent = `
+Physical Cores: ${c.physical_cores}
+Logical Cores:  ${c.logical_cores}`
+          return (
+            <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
+              <span>{`${c.physical_cores!} (${c.logical_cores!} vCore)`}</span>
+            </Tooltip>
+          )
+        },
+      },
+      {
+        name: t('cluster_info.list.host_table.columns.cpu_usage'),
+        key: 'cpu_usage',
+        minWidth: 100,
+        maxWidth: 150,
+        onRender: (row: IExpandedHostItem) => {
+          if (!row.cpu_usage) {
+            return
+          }
+          const system = row.cpu_usage.system ?? 0
+          const idle = row.cpu_usage.idle ?? 1
+          const user = 1 - system - idle
+          const tooltipContent = `
 User:   ${getValueFormat('percentunit')(user)}
 System: ${getValueFormat('percentunit')(system)}`
-        return (
-          <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
-            <Bar value={[user, system]} colors={[null, red[4]]} capacity={1} />
-          </Tooltip>
-        )
-      },
-    },
-    {
-      name: t('cluster_info.list.host_table.columns.memory'),
-      key: 'memory',
-      minWidth: 60,
-      maxWidth: 100,
-      onRender: ({ memory }) =>
-        memory !== undefined ? getValueFormat('bytes')(memory.total, 1) : '',
-    },
-    {
-      name: t('cluster_info.list.host_table.columns.memory_usage'),
-      key: 'memory_usage',
-      minWidth: 100,
-      maxWidth: 150,
-      onRender: ({ memory }) => {
-        if (memory === undefined) {
-          return
-        }
-        const { total, used } = memory
-        const usedPercent = (used / total).toFixed(3)
-        const title = (
-          <div>
-            Used: {getValueFormat('bytes')(used, 1)} (
-            {getValueFormat('percentunit')(+usedPercent, 1)})
-          </div>
-        )
-        return (
-          <Tooltip title={title}>
-            <Bar value={used} capacity={total} />
-          </Tooltip>
-        )
-      },
-    },
-    {
-      name: t('cluster_info.list.host_table.columns.deploy'),
-      key: 'deploy',
-      minWidth: 100,
-      maxWidth: 200,
-      onRender: ({ partitions }) => {
-        if (partitions === undefined || partitions.length === 0) {
-          return
-        }
-        const serverTotal = {
-          tidb: 0,
-          tikv: 0,
-          pd: 0,
-          tiflash: 0,
-        }
-        return filterUniquePartitions(partitions).map((partition, i) => {
-          const currentMountPoint = partition.partition.path
-          partitions.forEach((item) => {
-            if (item.partition.path !== currentMountPoint) {
-              return
-            }
-            serverTotal[item.instance.server_type]++
-          })
-          const serverInfos: string[] = []
-          if (serverTotal.tidb > 0) {
-            serverInfos.push(`${serverTotal.tidb} TiDB`)
-          }
-          if (serverTotal.tikv > 0) {
-            serverInfos.push(`${serverTotal.tikv} TiKV`)
-          }
-          if (serverTotal.pd > 0) {
-            serverInfos.push(`${serverTotal.pd} PD`)
-          }
-          if (serverTotal.tiflash > 0) {
-            serverInfos.push(`${serverTotal.tiflash} TiFlash`)
-          }
-          const content = `${serverInfos.join(
-            ','
-          )}: ${partition.partition.fstype.toUpperCase()} ${currentMountPoint}`
           return (
-            <Tooltip title={content} key={i}>
-              <div>{content}</div>
+            <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
+              <Bar
+                value={[user, system]}
+                colors={[null, red[4]]}
+                capacity={1}
+              />
             </Tooltip>
           )
-        })
+        },
       },
-    },
-    {
-      name: t('cluster_info.list.host_table.columns.disk_size'),
-      key: 'disk_size',
-      minWidth: 80,
-      maxWidth: 100,
-      onRender: ({ partitions }) => {
-        if (partitions === undefined || partitions.length === 0) {
-          return
-        }
-        return filterUniquePartitions(partitions).map((partiton, i) => {
-          return (
-            <div key={i}>
-              {getValueFormat('bytes')(partiton.partition.total, 1)}
-            </div>
-          )
-        })
+      {
+        name: t('cluster_info.list.host_table.columns.memory'),
+        key: 'memory',
+        minWidth: 60,
+        maxWidth: 100,
+        onRender: (row: IExpandedHostItem) => {
+          if (!row.memory_usage) {
+            return
+          }
+          return getValueFormat('bytes')(row.memory_usage.total ?? 0, 1)
+        },
       },
-    },
-    {
-      name: t('cluster_info.list.host_table.columns.disk_usage'),
-      key: 'disk_usage',
-      minWidth: 100,
-      maxWidth: 150,
-      onRender: ({ partitions }) => {
-        if (partitions === undefined || partitions.length === 0) {
-          return
-        }
-        return filterUniquePartitions(partitions).map((partiton, i) => {
-          const { total, free } = partiton.partition
-          const used = total - free
-          const usedPercent = (used / total).toFixed(3)
+      {
+        name: t('cluster_info.list.host_table.columns.memory_usage'),
+        key: 'memory_usage',
+        minWidth: 100,
+        maxWidth: 150,
+        onRender: (row: IExpandedHostItem) => {
+          if (!row.memory_usage) {
+            return
+          }
+          const { total, used } = row.memory_usage
+          const usedPercent = (used! / total!).toFixed(3)
           const title = (
             <div>
-              Used: {getValueFormat('bytes')(used, 1)} (
+              Used: {getValueFormat('bytes')(used!, 1)} (
               {getValueFormat('percentunit')(+usedPercent, 1)})
             </div>
           )
           return (
-            <Tooltip title={title} key={i}>
-              <Bar value={used} capacity={total} />
+            <Tooltip title={title}>
+              <Bar value={used!} capacity={total!} />
             </Tooltip>
           )
-        })
+        },
       },
-    },
-  ]
+      {
+        name: t('cluster_info.list.host_table.columns.instances'),
+        key: 'instances',
+        minWidth: 100,
+        maxWidth: 200,
+        onRender: (row: IExpandedHostItem) => {
+          const item = InstanceKinds.map((ik) => {
+            if (row.instancesCount[ik] > 0) {
+              return `${row.instancesCount[ik]} ${InstanceKindName[ik]}`
+            } else {
+              return ''
+            }
+          })
+          const content = item.filter((v) => v.length > 0).join(', ')
+          return (
+            <Tooltip title={content}>
+              <span>{content}</span>
+            </Tooltip>
+          )
+        },
+      },
+    ],
+    [t]
+  )
 
   return (
     <CardTable
       cardNoMargin
       loading={isLoading}
       columns={columns}
-      items={tableData || []}
-      errors={[error]}
+      items={hostData}
+      errors={[error, data?.warning]}
     />
   )
 }

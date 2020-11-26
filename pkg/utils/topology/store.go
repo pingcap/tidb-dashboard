@@ -22,6 +22,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/host"
 )
 
 // FetchStoreTopology returns TiKV info and TiFlash info.
@@ -84,12 +85,12 @@ func FetchStoreLocation(pdClient *pd.Client) (*StoreLocation, error) {
 func buildStoreTopology(stores []store) []StoreInfo {
 	nodes := make([]StoreInfo, 0, len(stores))
 	for _, v := range stores {
-		host, port, err := parseHostAndPortFromAddress(v.Address)
+		hostname, port, err := host.ParseHostAndPortFromAddress(v.Address)
 		if err != nil {
 			log.Warn("Failed to parse store address", zap.Any("store", v))
 			continue
 		}
-		_, statusPort, err := parseHostAndPortFromAddress(v.StatusAddress)
+		_, statusPort, err := host.ParseHostAndPortFromAddress(v.StatusAddress)
 		if err != nil {
 			log.Warn("Failed to parse store status address", zap.Any("store", v))
 			continue
@@ -102,7 +103,7 @@ func buildStoreTopology(stores []store) []StoreInfo {
 		}
 		node := StoreInfo{
 			Version:        version,
-			IP:             host,
+			IP:             hostname,
 			Port:           port,
 			GitHash:        v.GitHash,
 			DeployPath:     v.DeployPath,

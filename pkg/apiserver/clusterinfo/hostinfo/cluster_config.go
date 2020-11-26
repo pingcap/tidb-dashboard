@@ -28,7 +28,7 @@ type clusterConfigModel struct {
 	Value    string `gorm:"column:VALUE"`
 }
 
-func FillInstances(db *gorm.DB, m HostInfoMap) error {
+func FillInstances(db *gorm.DB, m InfoMap) error {
 	var rows []clusterConfigModel
 	if err := db.
 		Table("INFORMATION_SCHEMA.CLUSTER_CONFIG").

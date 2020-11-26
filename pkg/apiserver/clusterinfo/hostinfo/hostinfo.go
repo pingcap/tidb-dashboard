@@ -43,7 +43,7 @@ type InstanceInfo struct {
 	PartitionPathL string `json:"partition_path_lower"`
 }
 
-type HostInfo struct {
+type Info struct {
 	Host        string           `json:"host"`
 	CPUInfo     *CPUInfo         `json:"cpu_info"`
 	CPUUsage    *CPUUsageInfo    `json:"cpu_usage"`
@@ -59,7 +59,7 @@ type HostInfo struct {
 	Instances map[string]*InstanceInfo `json:"instances"`
 }
 
-type HostInfoMap = map[string]*HostInfo
+type InfoMap = map[string]*Info
 
 var clusterTableQueryTemplate = template.Must(template.New("").Parse(`
 SELECT
@@ -83,11 +83,11 @@ type clusterTableModel struct {
 	Instance   string `gorm:"column:INSTANCE"`    // Example: 127.0.0.1:4000
 	DeviceType string `gorm:"column:DEVICE_TYPE"` // Example: cpu
 	DeviceName string `gorm:"column:DEVICE_NAME"` // Example: usage
-	JsonValue  string `gorm:"column:JSON_VALUE"`  // Only exists by using `clusterTableQueryTemplate`.
+	JSONValue  string `gorm:"column:JSON_VALUE"`  // Only exists by using `clusterTableQueryTemplate`.
 }
 
-func NewHostInfo(hostname string) *HostInfo {
-	return &HostInfo{
+func NewHostInfo(hostname string) *Info {
+	return &Info{
 		Host:       hostname,
 		Partitions: make(map[string]*PartitionInfo),
 		Instances:  make(map[string]*InstanceInfo),

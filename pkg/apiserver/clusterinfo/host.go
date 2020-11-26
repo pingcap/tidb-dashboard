@@ -63,13 +63,13 @@ func (s *Service) fetchAllInstanceHosts() ([]string, error) {
 
 // fetchAllHostsInfo fetches all hosts and their information.
 // Note: The returned data and error may both exist.
-func (s *Service) fetchAllHostsInfo(db *gorm.DB) ([]*hostinfo.HostInfo, error) {
+func (s *Service) fetchAllHostsInfo(db *gorm.DB) ([]*hostinfo.Info, error) {
 	allHosts, err := s.fetchAllInstanceHosts()
 	if err != nil {
 		return nil, err
 	}
 
-	allHostsInfoMap := make(map[string]*hostinfo.HostInfo)
+	allHostsInfoMap := make(map[string]*hostinfo.Info)
 	if e := hostinfo.FillFromClusterLoadTable(db, allHostsInfoMap); e != nil {
 		log.Warn("Failed to read cluster_load table", zap.Error(e))
 		err = e
@@ -83,7 +83,7 @@ func (s *Service) fetchAllHostsInfo(db *gorm.DB) ([]*hostinfo.HostInfo, error) {
 		err = e
 	}
 
-	r := make([]*hostinfo.HostInfo, 0, len(allHosts))
+	r := make([]*hostinfo.Info, 0, len(allHosts))
 	for _, host := range allHosts {
 		if im, ok := allHostsInfoMap[host]; ok {
 			r = append(r, im)

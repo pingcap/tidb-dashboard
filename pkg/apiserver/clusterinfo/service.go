@@ -235,8 +235,8 @@ func (s *Service) getAlertManagerCounts(c *gin.Context) {
 }
 
 type GetHostsInfoResponse struct {
-	Hosts   []*hostinfo.HostInfo `json:"hosts"`
-	Warning *utils.APIError      `json:"warning"`
+	Hosts   []*hostinfo.Info `json:"hosts"`
+	Warning *utils.APIError  `json:"warning"`
 }
 
 // @ID clusterInfoGetHostsInfo

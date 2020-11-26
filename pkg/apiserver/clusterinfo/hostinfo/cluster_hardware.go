@@ -24,7 +24,7 @@ import (
 )
 
 // Used to deserialize from JSON_VALUE
-type clusterHardwareCpuInfoModel struct {
+type clusterHardwareCPUInfoModel struct {
 	LogicalCores  int `json:"cpu-logical-cores,string"`
 	PhysicalCores int `json:"cpu-physical-cores,string"`
 }
@@ -37,7 +37,7 @@ type clusterHardwareDiskModel struct {
 	Total  int    `json:"total,string"`
 }
 
-func FillFromClusterHardwareTable(db *gorm.DB, m HostInfoMap) error {
+func FillFromClusterHardwareTable(db *gorm.DB, m InfoMap) error {
 	var rows []clusterTableModel
 
 	var sqlQuery bytes.Buffer
@@ -69,8 +69,8 @@ func FillFromClusterHardwareTable(db *gorm.DB, m HostInfoMap) error {
 			if m[hostname].CPUInfo != nil {
 				continue
 			}
-			var v clusterHardwareCpuInfoModel
-			err := json.Unmarshal([]byte(row.JsonValue), &v)
+			var v clusterHardwareCPUInfoModel
+			err := json.Unmarshal([]byte(row.JSONValue), &v)
 			if err != nil {
 				continue
 			}
@@ -88,7 +88,7 @@ func FillFromClusterHardwareTable(db *gorm.DB, m HostInfoMap) error {
 				continue
 			}
 			var v clusterHardwareDiskModel
-			err := json.Unmarshal([]byte(row.JsonValue), &v)
+			err := json.Unmarshal([]byte(row.JSONValue), &v)
 			if err != nil {
 				continue
 			}
@@ -115,7 +115,7 @@ func FillFromClusterHardwareTable(db *gorm.DB, m HostInfoMap) error {
 	tiFlashDiskInfo := make(map[string]tiFlashDiskEntity) // key is TiFlash instance address
 	for _, d := range tiFlashDisks {
 		var v clusterHardwareDiskModel
-		err := json.Unmarshal([]byte(d.JsonValue), &v)
+		err := json.Unmarshal([]byte(d.JSONValue), &v)
 		if err != nil {
 			continue
 		}

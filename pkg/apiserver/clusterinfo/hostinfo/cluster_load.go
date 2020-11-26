@@ -23,7 +23,7 @@ import (
 )
 
 // Used to deserialize from JSON_VALUE
-type clusterLoadCpuUsageModel struct {
+type clusterLoadCPUUsageModel struct {
 	Idle   float64 `json:"idle,string"`
 	System float64 `json:"system,string"`
 }
@@ -34,7 +34,7 @@ type clusterLoadMemoryVirtualModel struct {
 	Total int `json:"total,string"`
 }
 
-func FillFromClusterLoadTable(db *gorm.DB, m HostInfoMap) error {
+func FillFromClusterLoadTable(db *gorm.DB, m InfoMap) error {
 	var rows []clusterTableModel
 
 	var sqlQuery bytes.Buffer
@@ -65,7 +65,7 @@ func FillFromClusterLoadTable(db *gorm.DB, m HostInfoMap) error {
 				continue
 			}
 			var v clusterLoadMemoryVirtualModel
-			err := json.Unmarshal([]byte(row.JsonValue), &v)
+			err := json.Unmarshal([]byte(row.JSONValue), &v)
 			if err != nil {
 				continue
 			}
@@ -77,8 +77,8 @@ func FillFromClusterLoadTable(db *gorm.DB, m HostInfoMap) error {
 			if m[hostname].CPUUsage != nil {
 				continue
 			}
-			var v clusterLoadCpuUsageModel
-			err := json.Unmarshal([]byte(row.JsonValue), &v)
+			var v clusterLoadCPUUsageModel
+			err := json.Unmarshal([]byte(row.JSONValue), &v)
 			if err != nil {
 				continue
 			}

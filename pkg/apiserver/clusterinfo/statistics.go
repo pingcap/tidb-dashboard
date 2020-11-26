@@ -125,7 +125,7 @@ func (s *Service) calculateStatistics(db *gorm.DB) (*ClusterStatistics, error) {
 	}
 
 	// Fill from hardware info
-	allHostsInfoMap := make(map[string]*hostinfo.HostInfo)
+	allHostsInfoMap := make(map[string]*hostinfo.Info)
 	if e := hostinfo.FillFromClusterLoadTable(db, allHostsInfoMap); e != nil {
 		return nil, err
 	}

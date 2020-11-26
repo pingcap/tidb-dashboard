@@ -149,6 +149,7 @@ export default function Page() {
         items={data?.tasks_status || []}
         errors={[error]}
         onRowClicked={handleRowClick}
+        hideLoadingWhenNotEmpty
         extendLastColumn
       />
     </div>

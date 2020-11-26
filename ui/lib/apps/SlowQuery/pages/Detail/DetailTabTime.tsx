@@ -13,14 +13,6 @@ export default function TabBasic({ data }: ITabTimeProps) {
   const { t } = useTranslation()
   const items = [
     {
-      key: 'write_sql_response_total',
-      value: data.write_sql_response_total! * 10e8,
-    },
-    {
-      key: 'exec_retry_time',
-      value: data.exec_retry_time! * 10e8,
-    },
-    {
       key: 'query_time2',
       keyDisplay: (
         <Typography.Text strong>
@@ -100,6 +92,14 @@ export default function TabBasic({ data }: ITabTimeProps) {
     {
       key: 'commit_backoff_time',
       value: data.commit_backoff_time! * 10e8,
+    },
+    {
+      key: 'exec_retry_time',
+      value: data.exec_retry_time! * 10e8,
+    },
+    {
+      key: 'write_sql_response_total',
+      value: data.write_sql_response_total! * 10e8,
     },
   ]
   const columns = timeValueColumns('slow_query.fields.', items)

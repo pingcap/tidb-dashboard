@@ -69,9 +69,9 @@ slow_query:
     commit_time_tooltip: Time consumed in 2PC commit phase when transaction commits
     commit_backoff_time: 　　Commit Backoff Time
     commit_backoff_time_tooltip: Total backoff waiting time when 2PC commit encounters errors when transaction commits
-    write_sql_response_total: Send response Time
+    write_sql_response_total: 　　Send response Time
     write_sql_response_total_tooltip: Time consumed when sending response to the SQL client
-    exec_retry_time: Retry execution Time
+    exec_retry_time: 　　Retry execution Time
     exec_retry_time_tooltip: Time consumed when retrying the SQL statement execution caused by locks or errors.
 
     request_count: Request Count

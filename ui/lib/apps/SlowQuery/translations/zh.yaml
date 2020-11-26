@@ -71,9 +71,9 @@ slow_query:
     commit_time_tooltip: 事务两阶段提交中第二阶段（commit 阶段）的耗时
     commit_backoff_time: 　　Commit 重试等待耗时
     commit_backoff_time_tooltip: 事务两阶段提交过程中遇到锁或者错误后的等待耗时
-    write_sql_response_total: 发送结果耗时
+    write_sql_response_total: 　　发送结果耗时
     write_sql_response_total_tooltip: 发送 SQL 结果给客户端的耗时
-    exec_retry_time: 执行重试耗时
+    exec_retry_time: 　　执行重试耗时
     exec_retry_time_tooltip: 由于锁冲突或者某些错误导致执行失败的执行耗时
 
     request_count: Coprocessor 请求数

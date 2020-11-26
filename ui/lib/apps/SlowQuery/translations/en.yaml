@@ -42,7 +42,7 @@ slow_query:
     rewrite_time: 　　　　Rewrite Plan Time
     preproc_subqueries_time: 　　　　　　Preprocess Sub-Query Time
     preproc_subqueries_time_tooltip: The time consumed of pre-process the subquery during the rewrite plan phase
-    optimize_time: 　　　　Optimize plan Time
+    optimize_time: 　　　　Optimize Plan Time
     wait_ts: 　　Wait Txn StartTS Time
     wait_ts_tooltip: Time consumed of waiting transaction start ts
     cop_time: 　　Coprocessor Request Time

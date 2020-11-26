@@ -73,7 +73,7 @@ slow_query:
     write_sql_response_total: Send response Time
     write_sql_response_total_tooltip: Time consumed when sending response to the SQL client
     exec_retry_time: Retry execution Time
-    exec_retry_time_tooltip: Time consumed of retry execution that cause by locks or errors.
+    exec_retry_time_tooltip: Time consumed when retrying the SQL statement execution caused by locks or errors.
 
     request_count: Request Count
     process_keys: Process Keys

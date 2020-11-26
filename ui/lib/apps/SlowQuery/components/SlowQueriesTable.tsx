@@ -1,10 +1,6 @@
 import { usePersistFn } from '@umijs/hooks'
 import React, { useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-
 import { CardTable, ICardTableProps } from '@lib/components'
-import openLink from '@lib/utils/openLink'
-
 import DetailPage from '../pages/Detail'
 import { ISlowQueryTableController } from '../utils/useSlowQueryTableController'
 
@@ -23,17 +19,14 @@ function SlowQueriesTable({ controller, ...restProps }: Props) {
     visibleColumnKeys,
   } = controller
 
-  const navigate = useNavigate()
-  const handleRowClick = usePersistFn(
-    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
-      const qs = DetailPage.buildQuery({
-        digest: rec.digest,
-        connectId: rec.connection_id,
-        timestamp: rec.timestamp,
-      })
-      openLink(`/slow_query/detail?${qs}`, ev, navigate)
-    }
-  )
+  const handleRowClick = usePersistFn((rec) => {
+    const qs = DetailPage.buildQuery({
+      digest: rec.digest,
+      connectId: rec.connection_id,
+      timestamp: rec.timestamp,
+    })
+    window.open(`#/slow_query/detail?${qs}`, '_blank')
+  })
 
   const getKey = useCallback((row) => `${row.digest}_${row.timestamp}`, [])
 

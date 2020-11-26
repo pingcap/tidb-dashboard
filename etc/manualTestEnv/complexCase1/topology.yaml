@@ -1,0 +1,85 @@
+global:
+  user: tidb
+  deploy_dir: /pingcap/tidb-deploy
+  data_dir: /pingcap/tidb-data
+
+server_configs:
+  tikv:
+    server.grpc-concurrency: 1
+    raftstore.apply-pool-size: 1
+    raftstore.store-pool-size: 1
+    readpool.unified.max-thread-count: 1
+    readpool.storage.use-unified-pool: false
+    readpool.coprocessor.use-unified-pool: true
+    storage.block-cache.capacity: 256MB
+    raftstore.capacity: 5GB
+
+# Overview:
+#   31: 1 PD, 1 TiDB, 2 TiKV
+#   32:       1 TiDB, 2 TiKV
+#   33: 1 PD,                 1 TiFlash
+#   34:               2 TiKV, 1 TiFlash
+#   35:                       1 TiFlash
+
+pd_servers:
+  - host: 10.0.1.31
+  - host: 10.0.1.33
+
+tikv_servers:
+  - host: 10.0.1.31
+    port: 20160
+    status_port: 20180
+    data_dir: /pingcap/tidb-data/tikv-1/tikv-20160
+    config:
+      server.labels: { host: "tikv1" }
+  - host: 10.0.1.31
+    port: 20161
+    status_port: 20181
+    data_dir: /pingcap/tidb-data/tikv-2/tikv-20161
+    config:
+      server.labels: { host: "tikv2" }
+  - host: 10.0.1.32
+    port: 20160
+    status_port: 20180
+    data_dir: /pingcap/tidb-data/tikv-1/tikv-20160
+    config:
+      server.labels: { host: "tikv1" }
+  - host: 10.0.1.32
+    port: 20161
+    status_port: 20181
+    data_dir: /pingcap/tidb-data/tikv-2/tikv-20161
+    config:
+      server.labels: { host: "tikv2" }
+  - host: 10.0.1.34
+    port: 20160
+    status_port: 20180
+    data_dir: /pingcap/tidb-data/tikv-1/tikv-20160
+    config:
+      server.labels: { host: "tikv1" }
+  - host: 10.0.1.34
+    port: 20161
+    status_port: 20181
+    data_dir: /pingcap/tidb-data/tikv-2/tikv-20161
+    config:
+      server.labels: { host: "tikv2" }
+
+tiflash_servers:
+  - host: 10.0.1.33
+    data_dir: /pingcap/tidb-data/tikv-1/tiflash
+  - host: 10.0.1.34
+    data_dir: /pingcap/tidb-data/tikv-2/tiflash
+  - host: 10.0.1.35
+    data_dir: /pingcap/tidb-data/tikv-1/tiflash
+
+tidb_servers:
+  - host: 10.0.1.31
+  - host: 10.0.1.32
+
+grafana_servers:
+  - host: 10.0.1.31
+
+monitoring_servers:
+  - host: 10.0.1.31
+
+alertmanager_servers:
+  - host: 10.0.1.31

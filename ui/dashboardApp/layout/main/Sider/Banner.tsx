@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react'
-import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
+import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons'
 import { useSize } from '@umijs/hooks'
 import Flexbox from '@g07cha/flexbox-react'
+import { useSpring, animated } from 'react-spring'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client, { InfoInfoResponse } from '@lib/client'
 
@@ -45,14 +46,14 @@ export default function ToggleBanner({
   onToggle,
 }) {
   const [bannerSize, bannerRef] = useSize<HTMLDivElement>()
-  const bannerStyle = {
+  const transBanner = useSpring({
     opacity: collapsed ? 0 : 1,
     height: collapsed ? toggleHeight : bannerSize.height || 0,
-  }
-  const buttonStyle = {
+  })
+  const transButton = useSpring({
     left: collapsed ? 0 : fullWidth - toggleWidth,
     width: collapsed ? collapsedWidth : toggleWidth,
-  }
+  })
 
   const { data, isLoading } = useClientRequest((reqConfig) =>
     client.getInstance().infoGet(reqConfig)
@@ -67,7 +68,10 @@ export default function ToggleBanner({
 
   return (
     <div className={styles.banner} onClick={onToggle}>
-      <div style={bannerStyle}>
+      <animated.div
+        style={transBanner}
+        className={styles.bannerLeftAnimationWrapper}
+      >
         <div
           ref={bannerRef}
           className={styles.bannerLeft}
@@ -86,14 +90,14 @@ export default function ToggleBanner({
             </div>
           </Flexbox>
         </div>
-      </div>
-      <div style={buttonStyle} className={styles.bannerRight}>
+      </animated.div>
+      <animated.div style={transButton} className={styles.bannerRight}>
         {collapsed ? (
           <MenuUnfoldOutlined style={{ margin: 'auto' }} />
         ) : (
           <MenuFoldOutlined style={{ margin: 'auto' }} />
         )}
-      </div>
+      </animated.div>
     </div>
   )
 }

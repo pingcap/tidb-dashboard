@@ -139,7 +139,7 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
   )
 
   return (
-    <div data-e2e="search-result">
+    <div data-e2e="log_search_result">
       {!loading && (
         <Card noMarginTop>
           <Alert message={t('search_logs.page.tip')} type="info" showIcon />
@@ -152,6 +152,7 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
         items={logPreviews || []}
         onRenderRow={renderRow}
         extendLastColumn
+        hideLoadingWhenNotEmpty
       />
     </div>
   )

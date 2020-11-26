@@ -57,7 +57,7 @@ func NewService(config *config.Config, tidbClient *tidb.Client, db *dbstore.DB, 
 	}
 }
 
-func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/diagnose")
 	endpoint.GET("/reports",
 		auth.MWAuthRequired(),

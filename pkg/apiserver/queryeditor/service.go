@@ -53,7 +53,7 @@ func NewService(lc fx.Lifecycle, p ServiceParams) *Service {
 	return service
 }
 
-func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/query_editor")
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))

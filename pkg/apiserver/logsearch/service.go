@@ -72,7 +72,7 @@ func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service
 	return service
 }
 
-func Register(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/logs")
 	{
 		endpoint.GET("/download", s.DownloadLogs)

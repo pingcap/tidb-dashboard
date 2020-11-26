@@ -7,9 +7,12 @@ import {
   QuestionCircleOutlined,
 } from '@ant-design/icons'
 import { Space, Tooltip } from 'antd'
+import { cyan } from '@ant-design/colors'
+import { useTranslation } from 'react-i18next'
 
 export interface IStoreLocationProps {
   dataSource: any
+  getMinHeight?: () => number
 }
 
 const margin = { left: 60, right: 40, top: 60, bottom: 100 }
@@ -30,8 +33,12 @@ function calcHeight(root) {
   return x1 - x0
 }
 
-export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
+export default function StoreLocationTree({
+  dataSource,
+  getMinHeight,
+}: IStoreLocationProps) {
   const divRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation()
 
   useEffect(() => {
     let divWidth = divRef.current?.clientWidth || 0
@@ -61,8 +68,7 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
     const gLink = bound
       .append('g')
       .attr('fill', 'none')
-      .attr('stroke', '#555')
-      .attr('stroke-opacity', 0.4)
+      .attr('stroke', cyan[3])
       .attr('stroke-width', 2)
     const gNode = bound
       .append('g')
@@ -129,11 +135,13 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
         root.y0 = root.y
       }
 
+      const contentHeight = boundHeight + margin.top + margin.bottom
+
       const transition = svg
         .transition()
         .duration(duration)
         .attr('width', divWidth)
-        .attr('height', boundHeight + margin.top + margin.bottom)
+        .attr('height', Math.max(getMinHeight?.() || 0, contentHeight))
 
       // update the nodes
       const node = gNode.selectAll('g').data(nodes, (d: any) => d.id)
@@ -152,14 +160,15 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
 
       nodeEnter
         .append('circle')
-        .attr('r', 6)
-        .attr('fill', (d: any) => (d._children ? '#ff4d4f' : '#3351ff'))
-        .attr('stroke-width', 10)
+        .attr('r', 8)
+        .attr('fill', '#fff')
+        .attr('stroke', (d: any) => (d._children ? cyan[5] : '#ddd'))
+        .attr('stroke-width', 3)
 
       nodeEnter
         .append('text')
         .attr('dy', '0.31em')
-        .attr('x', (d: any) => (d._children ? -8 : 8))
+        .attr('x', (d: any) => (d._children ? -15 : 15))
         .attr('text-anchor', (d: any) => (d._children ? 'end' : 'start'))
         .text(({ data: { name, value } }: any) => {
           if (value) {
@@ -236,7 +245,7 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
     return () => {
       window.removeEventListener('resize', resizeHandler)
     }
-  }, [dataSource])
+  }, [dataSource, getMinHeight])
 
   return (
     <div ref={divRef} style={{ position: 'relative' }}>
@@ -250,7 +259,7 @@ export default function StoreLocationTree({ dataSource }: IStoreLocationProps) {
         <ZoomInOutlined id="slt-zoom-in" />
         <ZoomOutOutlined id="slt-zoom-out" />
         <ReloadOutlined id="slt-zoom-reset" />
-        <Tooltip title="You can also zoom in or out by pressing CTRL and scrolling mouse">
+        <Tooltip title={t('cluster_info.list.store_topology.tooltip')}>
           <QuestionCircleOutlined />
         </Tooltip>
       </Space>

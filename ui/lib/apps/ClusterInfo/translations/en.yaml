@@ -17,17 +17,37 @@ cluster_info:
     host_table:
       title: Hosts
       columns:
-        ip: Address
+        host: Host Address
         cpu: CPU
         cpu_usage: CPU Usage
         memory: Memory
         memory_usage: Memory Usage
-        deploy: Disk
-        disk_size: Disk Size
+        instances: Instances
+      instanceUnavailable: Host information is unavailable due to instances on the host is down
+    disk_table:
+      title: Disks
+      columns:
+        host: Host Address
+        mount_dir: Mount Directory
+        fs: File System
+        disk_size: Disk Capacity
         disk_usage: Disk Usage
-      instanceUnavailable: Host information is unknow due to instance unreachable
+        instances: Instances
     store_topology:
       title: Store Topology
       tooltip: You can also zoom in or out by pressing CTRL and scrolling mouse
+    statistics:
+      title: Statistics
+      summary_title: Cluster Summary
+      field:
+        version: Version
+        instances: '# Instances'
+        hosts: '# Hosts that instances deployed'
+        memory_capacity: Σ Memory capacity (of all hosts)
+        physical_cores: Σ CPU physical cores (of all hosts)
+        logical_cores: Σ CPU logical cores (of all hosts)
+      message:
+        instance_down: 'Some instances are down in {{n}} host(s) so that host related information may be inccurate.'
+        sub_statistics: Sub-statistics below are counted by instance kinds. The sum of host metrics in sub-statistics can be larger "Cluster Summary" when different instances are deployed in the same host.
   error:
     load: 'Load component {{comp}} error: {{cause}}'

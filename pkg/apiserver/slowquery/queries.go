@@ -37,11 +37,18 @@ type SlowQuery struct {
 	ConnectionID string `gorm:"column:Conn_ID" json:"connection_id"`
 	Success      int    `gorm:"column:Succ" json:"success"`
 
-	Timestamp   float64 `gorm:"column:timestamp" proj:"(UNIX_TIMESTAMP(Time) + 0E0)" json:"timestamp"` // finish time
-	QueryTime   float64 `gorm:"column:Query_time" json:"query_time"`                                   // latency
-	ParseTime   float64 `gorm:"column:Parse_time" json:"parse_time"`
-	CompileTime float64 `gorm:"column:Compile_time" json:"compile_time"`
-	ProcessTime float64 `gorm:"column:Process_time" json:"process_time"`
+	Timestamp             float64 `gorm:"column:timestamp" proj:"(UNIX_TIMESTAMP(Time) + 0E0)" json:"timestamp"` // finish time
+	QueryTime             float64 `gorm:"column:Query_time" json:"query_time"`                                   // latency
+	ParseTime             float64 `gorm:"column:Parse_time" json:"parse_time"`
+	CompileTime           float64 `gorm:"column:Compile_time" json:"compile_time"`
+	RewriteTime           float64 `gorm:"column:Rewrite_time" json:"rewrite_time"`
+	PreprocSubqueriesTime float64 `gorm:"column:Preproc_subqueries_time" json:"preproc_subqueries_time"`
+	OptimizeTime          float64 `gorm:"column:Optimize_time" json:"optimize_time"`
+	WaitTSTime            float64 `gorm:"column:Wait_TS" json:"wait_ts"`
+	CopTime               float64 `gorm:"column:Cop_time" json:"cop_time"`
+	LockKeysTime          float64 `gorm:"column:LockKeys_time" json:"lock_keys_time"`
+	WriteRespTime         float64 `gorm:"column:Write_sql_response_total" json:"write_sql_response_total"`
+	ExecRetryTime         float64 `gorm:"column:Exec_retry_time" json:"exec_retry_time"`
 
 	MemoryMax int `gorm:"column:Mem_max" json:"memory_max"`
 	DiskMax   int `gorm:"column:Disk_max" json:"disk_max"`
@@ -63,20 +70,22 @@ type SlowQuery struct {
 	Host string `gorm:"column:Host" json:"host"`
 
 	// Time
-	WaitTime           float64 `gorm:"column:Wait_time" json:"wait_time"`
-	BackoffTime        float64 `gorm:"column:Backoff_time" json:"backoff_time"`
-	GetCommitTSTime    float64 `gorm:"column:Get_commit_ts_time" json:"get_commit_ts_time"`
-	LocalLatchWaitTime float64 `gorm:"column:Local_latch_wait_time" json:"local_latch_wait_time"`
-	ResolveLockTime    float64 `gorm:"column:Resolve_lock_time" json:"resolve_lock_time"`
-	PrewriteTime       float64 `gorm:"column:Prewrite_time" json:"prewrite_time"`
-	CommitTime         float64 `gorm:"column:Commit_time" json:"commit_time"`
-	CommitBackoffTime  float64 `gorm:"column:Commit_backoff_time" json:"commit_backoff_time"`
-	CopProcAvg         float64 `gorm:"column:Cop_proc_avg" json:"cop_proc_avg"`
-	CopProcP90         float64 `gorm:"column:Cop_proc_p90" json:"cop_proc_p90"`
-	CopProcMax         float64 `gorm:"column:Cop_proc_max" json:"cop_proc_max"`
-	CopWaitAvg         float64 `gorm:"column:Cop_wait_avg" json:"cop_wait_avg"`
-	CopWaitP90         float64 `gorm:"column:Cop_wait_p90" json:"cop_wait_p90"`
-	CopWaitMax         float64 `gorm:"column:Cop_wait_max" json:"cop_wait_max"`
+	ProcessTime            float64 `gorm:"column:Process_time" json:"process_time"`
+	WaitTime               float64 `gorm:"column:Wait_time" json:"wait_time"`
+	BackoffTime            float64 `gorm:"column:Backoff_time" json:"backoff_time"`
+	GetCommitTSTime        float64 `gorm:"column:Get_commit_ts_time" json:"get_commit_ts_time"`
+	LocalLatchWaitTime     float64 `gorm:"column:Local_latch_wait_time" json:"local_latch_wait_time"`
+	ResolveLockTime        float64 `gorm:"column:Resolve_lock_time" json:"resolve_lock_time"`
+	PrewriteTime           float64 `gorm:"column:Prewrite_time" json:"prewrite_time"`
+	WaitPreWriteBinlogTime float64 `gorm:"column:Wait_prewrite_binlog_time" json:"wait_prewrite_binlog_time"`
+	CommitTime             float64 `gorm:"column:Commit_time" json:"commit_time"`
+	CommitBackoffTime      float64 `gorm:"column:Commit_backoff_time" json:"commit_backoff_time"`
+	CopProcAvg             float64 `gorm:"column:Cop_proc_avg" json:"cop_proc_avg"`
+	CopProcP90             float64 `gorm:"column:Cop_proc_p90" json:"cop_proc_p90"`
+	CopProcMax             float64 `gorm:"column:Cop_proc_max" json:"cop_proc_max"`
+	CopWaitAvg             float64 `gorm:"column:Cop_wait_avg" json:"cop_wait_avg"`
+	CopWaitP90             float64 `gorm:"column:Cop_wait_p90" json:"cop_wait_p90"`
+	CopWaitMax             float64 `gorm:"column:Cop_wait_max" json:"cop_wait_max"`
 
 	// Transaction
 	WriteKeys      int `gorm:"column:Write_keys" json:"write_keys"`

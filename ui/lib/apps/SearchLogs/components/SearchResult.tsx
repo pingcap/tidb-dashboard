@@ -152,6 +152,7 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
         items={logPreviews || []}
         onRenderRow={renderRow}
         extendLastColumn
+        hideLoadingWhenNotEmpty
       />
     </div>
   )

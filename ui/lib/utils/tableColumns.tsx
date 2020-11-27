@@ -133,11 +133,16 @@ function fieldsDescriptionColumn(transKeyPrefix: string): IColumn {
     minWidth: 150,
     maxWidth: 300,
     onRender: (rec) => {
-      return (
+      const content = (
         <TransText
           transKey={`${transKeyPrefix}${rec.key}_tooltip`}
           noFallback
         />
+      )
+      return (
+        <Tooltip title={content}>
+          <span>{content}</span>
+        </Tooltip>
       )
     },
   }

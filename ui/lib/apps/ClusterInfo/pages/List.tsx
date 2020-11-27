@@ -7,9 +7,11 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Card } from '@lib/components'
 import CardTabs from '@lib/components/CardTabs'
 
-import HostTable from '../components/HostTable'
 import InstanceTable from '../components/InstanceTable'
+import HostTable from '../components/HostTable'
+import DiskTable from '../components/DiskTable'
 import StoreLocation from '../components/StoreLocation'
+import Statistics from '../components/Statistics'
 
 import styles from './List.module.less'
 
@@ -46,13 +48,23 @@ export default function ListPage() {
             key="host"
           ></CardTabs.TabPane>
           <CardTabs.TabPane
+            tab={t('cluster_info.list.disk_table.title')}
+            key="disk"
+          ></CardTabs.TabPane>
+          <CardTabs.TabPane
             tab={t('cluster_info.list.store_topology.title')}
             key="store_topology"
+          ></CardTabs.TabPane>
+          <CardTabs.TabPane
+            tab={t('cluster_info.list.statistics.title')}
+            key="statistics"
           ></CardTabs.TabPane>
         </CardTabs>
         {tabKey === 'instance' && <InstanceTable />}
         {tabKey === 'host' && <HostTable />}
+        {tabKey === 'disk' && <DiskTable />}
         {tabKey === 'store_topology' && <StoreLocation />}
+        {tabKey === 'statistics' && <Statistics />}
       </Card>
     </ScrollablePane>
   )

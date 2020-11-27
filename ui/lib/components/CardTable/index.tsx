@@ -73,6 +73,7 @@ export interface ICardTableProps extends IDetailsListProps {
   className?: string
   style?: object
   loading?: boolean
+  hideLoadingWhenNotEmpty?: boolean // Whether loading animation should not show when data is not empty
   errors?: any[]
 
   cardExtra?: React.ReactNode
@@ -133,6 +134,7 @@ export default function CardTable(props: ICardTableProps) {
     className,
     style,
     loading = false,
+    hideLoadingWhenNotEmpty,
     errors = [],
     cardExtra,
     cardNoMargin,
@@ -218,7 +220,12 @@ export default function CardTable(props: ICardTableProps) {
       extra={cardExtra}
     >
       <ErrorBar errors={errors} />
-      <AnimatedSkeleton showSkeleton={items.length === 0 && loading}>
+      <AnimatedSkeleton
+        showSkeleton={
+          (!hideLoadingWhenNotEmpty && loading) ||
+          (items.length === 0 && loading)
+        }
+      >
         <div className={styles.cardTableContent}>
           <MemoDetailsList
             selectionMode={SelectionMode.none}

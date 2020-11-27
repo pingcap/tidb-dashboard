@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
@@ -38,8 +38,6 @@ function DetailPage() {
 
   const { t } = useTranslation()
 
-  const [tabKey, setTabKey] = useState('basic')
-
   const { data, isLoading, error } = useClientRequest((reqConfig) =>
     client
       .getInstance()
@@ -66,6 +64,29 @@ function DetailPage() {
     setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
   const togglePlan = () =>
     setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
+
+  const tabs = [
+    {
+      key: 'basic',
+      title: t('slow_query.detail.tabs.basic'),
+      content: () => <TabBasic data={data!} />,
+    },
+    {
+      key: 'time',
+      title: t('slow_query.detail.tabs.time'),
+      content: () => <TabTime data={data!} />,
+    },
+    {
+      key: 'copr',
+      title: t('slow_query.detail.tabs.copr'),
+      content: () => <TabCopr data={data!} />,
+    },
+    {
+      key: 'txn',
+      title: t('slow_query.detail.tabs.txn'),
+      content: () => <TabTxn data={data!} />,
+    },
+  ]
 
   return (
     <div>
@@ -160,32 +181,7 @@ function DetailPage() {
                 </Descriptions.Item>
               </Descriptions>
 
-              <CardTabs
-                defaultActiveKey={tabKey}
-                onChange={setTabKey}
-                animated={false}
-              >
-                <CardTabs.TabPane
-                  tab={t('slow_query.detail.tabs.basic')}
-                  key="basic"
-                ></CardTabs.TabPane>
-                <CardTabs.TabPane
-                  tab={t('slow_query.detail.tabs.time')}
-                  key="time"
-                ></CardTabs.TabPane>
-                <CardTabs.TabPane
-                  tab={t('slow_query.detail.tabs.copr')}
-                  key="copr"
-                ></CardTabs.TabPane>
-                <CardTabs.TabPane
-                  tab={t('slow_query.detail.tabs.txn')}
-                  key="txn"
-                ></CardTabs.TabPane>
-              </CardTabs>
-              {tabKey === 'basic' && <TabBasic data={data} />}
-              {tabKey === 'time' && <TabTime data={data} />}
-              {tabKey === 'copr' && <TabCopr data={data} />}
-              {tabKey === 'txn' && <TabTxn data={data} />}
+              <CardTabs animated={false} tabs={tabs} />
             </>
           )}
         </AnimatedSkeleton>

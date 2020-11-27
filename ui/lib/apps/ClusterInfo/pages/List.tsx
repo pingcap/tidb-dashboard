@@ -28,6 +28,34 @@ export default function ListPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
+  const tabs = [
+    {
+      key: 'instance',
+      title: t('cluster_info.list.instance_table.title'),
+      content: () => <InstanceTable />,
+    },
+    {
+      key: 'host',
+      title: t('cluster_info.list.host_table.title'),
+      content: () => <HostTable />,
+    },
+    {
+      key: 'disk',
+      title: t('cluster_info.list.disk_table.title'),
+      content: () => <DiskTable />,
+    },
+    {
+      key: 'store_topology',
+      title: t('cluster_info.list.store_topology.title'),
+      content: () => <StoreLocation />,
+    },
+    {
+      key: 'statistics',
+      title: t('cluster_info.list.statistics.title'),
+      content: () => <Statistics />,
+    },
+  ]
+
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Card>
@@ -38,33 +66,8 @@ export default function ListPage() {
           }}
           renderTabBar={renderTabBar}
           animated={false}
-        >
-          <CardTabs.TabPane
-            tab={t('cluster_info.list.instance_table.title')}
-            key="instance"
-          ></CardTabs.TabPane>
-          <CardTabs.TabPane
-            tab={t('cluster_info.list.host_table.title')}
-            key="host"
-          ></CardTabs.TabPane>
-          <CardTabs.TabPane
-            tab={t('cluster_info.list.disk_table.title')}
-            key="disk"
-          ></CardTabs.TabPane>
-          <CardTabs.TabPane
-            tab={t('cluster_info.list.store_topology.title')}
-            key="store_topology"
-          ></CardTabs.TabPane>
-          <CardTabs.TabPane
-            tab={t('cluster_info.list.statistics.title')}
-            key="statistics"
-          ></CardTabs.TabPane>
-        </CardTabs>
-        {tabKey === 'instance' && <InstanceTable />}
-        {tabKey === 'host' && <HostTable />}
-        {tabKey === 'disk' && <DiskTable />}
-        {tabKey === 'store_topology' && <StoreLocation />}
-        {tabKey === 'statistics' && <Statistics />}
+          tabs={tabs}
+        />
       </Card>
     </ScrollablePane>
   )

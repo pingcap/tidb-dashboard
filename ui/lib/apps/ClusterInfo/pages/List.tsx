@@ -18,7 +18,7 @@ import styles from './List.module.less'
 function renderTabBar(props, DefaultTabBar) {
   return (
     <Sticky stickyPosition={StickyPositionType.Header}>
-      <DefaultTabBar {...props} className={styles.sticky_tabs_header} />
+      <DefaultTabBar {...props} className={styles.card_tab_navs} />
     </Sticky>
   )
 }

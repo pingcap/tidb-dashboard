@@ -15,11 +15,16 @@ export interface ICardTabsProps extends TabsProps {
   tabs: Tab[]
 }
 
+function renderCardTabBar(props, DefaultTabBar) {
+  return <DefaultTabBar {...props} className={styles.card_tab_navs} />
+}
+
 function CardTabs({
   className,
   tabs,
   defaultActiveKey,
   onChange,
+  renderTabBar,
   ...restProps
 }: ICardTabsProps) {
   const [tabKey, setTabKey] = useState(defaultActiveKey || tabs[0].key)
@@ -35,12 +40,13 @@ function CardTabs({
     <>
       <Tabs
         className={c}
-        {...restProps}
         defaultActiveKey={tabKey}
         onChange={changeTab}
+        renderTabBar={renderTabBar || renderCardTabBar}
+        {...restProps}
       >
         {tabs.map((tab) => (
-          <Tabs.TabPane tab={tab.title} key={tab.key}></Tabs.TabPane>
+          <Tabs.TabPane tab={tab.title} key={tab.key} />
         ))}
       </Tabs>
       {selectedTab?.content()}

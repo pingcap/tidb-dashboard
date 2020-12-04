@@ -99,6 +99,10 @@ type SlowQuery struct {
 	TotalKeys    uint   `gorm:"column:Total_keys" json:"total_keys"`
 	CopProcAddr  string `gorm:"column:Cop_proc_addr" json:"cop_proc_addr"`
 	CopWaitAddr  string `gorm:"column:Cop_wait_addr" json:"cop_wait_addr"`
+
+	// Tracing
+	// TODO: Switch back to uint64 when modern browser as well as Swagger handles BigInt well.
+	TraceID string `gorm:"column:Trace_ID" json:"trace_id"`
 }
 
 type GetListRequest struct {

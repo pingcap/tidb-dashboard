@@ -33,6 +33,8 @@ slow_query:
     host_tooltip: 发送 SQL 查询的客户端地址
     db: 执行数据库
     db_tooltip: 执行该 SQL 查询时使用的数据库名称
+    trace_id: 追踪 ID
+    trace_id_tooltip: SQL 查询追踪 ID
 
     query_time2: SQL 执行时间
     query_time2_tooltip: 执行 SQL 耗费的自然时间

@@ -11,7 +11,8 @@ export default function Timeline() {
   useEffect(() => {
     if (overviewChartRef.current) {
       overviewChart.current = new TimelineOverviewChart(
-        overviewChartRef.current!
+        overviewChartRef.current!,
+        8000
       )
     }
   }, [])

@@ -2,6 +2,7 @@ package trace
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -56,24 +57,29 @@ type ReportRequest struct {
 }
 
 // @Summary Report tracing results
-// @Param req body ReportRequest true "Request body"
+// @Accept octet-stream
 // @Success 200 {object} utils.APIEmptyResponse
 // @Failure 400 {object} utils.APIError
 // @Router /trace/report [post]
 func (s *Service) reportTrace(c *gin.Context) {
-	var req ReportRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	pb, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
 	traceDetail := kvrpcpb.TraceDetail{}
-	if err := proto.Unmarshal(req.TraceDetail, &traceDetail); err != nil {
+	if err := proto.Unmarshal(pb, &traceDetail); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
-	model := mapPbToModel(req.TraceID, traceDetail)
+	if len(traceDetail.SpanSets) == 0{
+		utils.MakeInvalidRequestErrorWithMessage(c, "empty trace detail")
+		return
+	}
+
+	model := mapPbToModel(traceDetail.SpanSets[0].TraceId, traceDetail)
 	if err := s.params.LocalStore.Create(&model).Error; err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return

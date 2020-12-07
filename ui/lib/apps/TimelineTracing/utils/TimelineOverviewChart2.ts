@@ -247,8 +247,7 @@ export class TimelineOverviewChart {
     if (this.mouseDownPos) return
 
     const { left, right } = this.curWindow
-    // outside of canvas
-    if (loc.x < 0 || loc.y < 0 || loc.x > this.width || loc.y > this.height) {
+    if (this.mouseOutsideCanvas(loc)) {
       this.action = Action.None
     } else if (loc.y > this.dragAreaHeight) {
       this.action = Action.SelectWindow
@@ -383,10 +382,7 @@ export class TimelineOverviewChart {
     // to keep same as the chrome dev tool
     if (
       this.action !== Action.SelectWindow ||
-      this.curMousePos.x < 0 ||
-      this.curMousePos.x > this.width ||
-      this.curMousePos.y < 0 ||
-      this.curMousePos.y > this.height
+      this.mouseOutsideCanvas(this.curMousePos)
     ) {
       return
     }
@@ -402,8 +398,9 @@ export class TimelineOverviewChart {
   }
 
   drawSelectedWindow() {
-    if (this.mouseDownPos === null || this.action !== Action.SelectWindow)
+    if (this.mouseDownPos === null || this.action !== Action.SelectWindow) {
       return
+    }
 
     this.context.save()
     this.context.globalAlpha = 0.3
@@ -441,5 +438,9 @@ export class TimelineOverviewChart {
       start: this.timeLenScale.invert(window.left),
       end: this.timeLenScale.invert(window.right),
     }
+  }
+
+  mouseOutsideCanvas(loc: Pos) {
+    return loc.x < 0 || loc.y < 0 || loc.x > this.width || loc.y > this.height
   }
 }

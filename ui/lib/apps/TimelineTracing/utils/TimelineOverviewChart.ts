@@ -68,13 +68,19 @@ export class TimelineOverviewChart {
     this.context = canvas.getContext('2d')!
     container.append(canvas)
 
+    this.setTimeDuration(timeDuration)
     this.setDimensions()
     this.fixPixelRatio()
-    this.setTimeDuration(timeDuration)
     this.setTimeLenScale()
 
     this.draw()
     this.registerHanlers()
+  }
+
+  setTimeDuration(timeDuration: number) {
+    this.timeDuration = timeDuration
+    this.minSelectedTimeDuration = this.timeDuration / 1000
+    this.selectedTimeRange = { start: 0, end: timeDuration }
   }
 
   setDimensions() {
@@ -94,12 +100,6 @@ export class TimelineOverviewChart {
     this.context.canvas.height = this.height * dpr
 
     this.context.scale(dpr, dpr)
-  }
-
-  setTimeDuration(timeDuration: number) {
-    this.timeDuration = timeDuration
-    this.minSelectedTimeDuration = this.timeDuration / 1000
-    this.selectedTimeRange = { start: 0, end: timeDuration }
   }
 
   // call it when timeDuration or width change

@@ -74,7 +74,7 @@ func (s *Service) reportTrace(c *gin.Context) {
 		return
 	}
 
-	if len(traceDetail.SpanSets) == 0{
+	if len(traceDetail.SpanSets) == 0 {
 		utils.MakeInvalidRequestErrorWithMessage(c, "empty trace detail")
 		return
 	}

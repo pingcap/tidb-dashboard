@@ -1,3 +1,5 @@
+import { ScaleLinear, scaleLinear } from 'd3'
+
 type Pos = {
   x: number
   y: number
@@ -6,7 +8,10 @@ type Window = {
   left: number
   right: number
 }
-
+type TimeRange = {
+  start: number
+  end: number
+}
 enum Action {
   None,
   SelectWindow,
@@ -16,176 +21,350 @@ enum Action {
 }
 
 export class TimelineOverviewChart {
-  private canvas: HTMLCanvasElement
   private context: CanvasRenderingContext2D
-  private width: number
-  private height: number
-  private windowLeft: number
-  private windowRight: number
+
+  // dimensions
+  private width: number = 0
+  private height: number = 0
+  private dragAreaHeight: number = 0
+
+  // timeDuration
+  private timeDuration: number = 0 // unit?
+  private minSelectedTimeDuration: number = 0
+  private selectedTimeRange: TimeRange = { start: 0, end: 0 }
+  private timeLenScale: ScaleLinear<number, number> = scaleLinear()
+
+  // window
+  private curWindow: Window = { left: 0, right: 0 }
   private mouseDownWindow: Window = { left: 0, right: 0 }
-  private mouseDownPos: Pos | null = null
+
+  // mouse pos
   private curMousePos: Pos = { x: 0, y: 0 }
+  private mouseDownPos: Pos | null = null
+
+  // action
   private action = Action.None
 
-  constructor(container: HTMLDivElement) {
-    // https://developer.mozilla.org/zh-CN/docs/Web/API/Window/devicePixelRatio
-    const dpr = window.devicePixelRatio
-    this.canvas = document.createElement('canvas')
-    this.width = container.clientWidth
-    this.height = container.clientHeight
-    this.canvas.style.width = container.clientWidth + 'px'
-    this.canvas.style.height = container.clientHeight + 'px'
-    this.canvas.width = container.clientWidth * dpr
-    this.canvas.height = container.clientHeight * dpr
-    this.context = this.canvas.getContext('2d')!
-    this.context.scale(dpr, dpr)
+  // draw dimensions and style
+  static WINDOW_MIN_WIDTH = 6
+  static WINDOW_RESIZE_LINE_WIDTH = 4
+  static WINDOW_RESIZE_LINE_WIDTH_HALF =
+    TimelineOverviewChart.WINDOW_RESIZE_LINE_WIDTH / 2
+  static WINDOW_RESIZE_STROKE_STYLE = '#ccc'
+  static WINDOW_BORDER_STORKE_STYLE = '#d0d0d0'
+  static WINDOW_BORDER_ALPHA = 1.0
+  static WINDOW_BORDER_WIDTH = 1
+  static UNSELECTED_WINDOW_FILL_STYLE = '#f0f0f0'
+  static UNSELECTED_WINDOW_ALPHA = 0.6
+  static SELECTED_WINDOW_FILL_STYLE = 'cornflowerblue'
+  static SELECTED_WINDOW_ALPHA = 0.3
+  static MOVED_VERTICAL_LINE_STROKE_STYLE = 'cornflowerblue'
+  static MOVED_VERTICAL_LINE_WIDTH = 2
 
-    this.windowLeft = this.width * 0.3
-    this.windowRight = this.width * 0.6
+  /////////////////////////////////////
+  // setup
+  constructor(container: HTMLDivElement, timeDuration: number) {
+    const canvas = document.createElement('canvas')
+    this.context = canvas.getContext('2d')!
+    container.append(canvas)
 
-    container.append(this.canvas)
+    this.setDimensions()
+    this.fixPixelRatio()
+    this.setTimeDuration(timeDuration)
+    this.setTimeLenScale()
+
     this.draw()
-
-    this.canvas.addEventListener('mousewheel', (event) => {
-      const ev = event as WheelEvent
-      // console.log(ev)
-      if (ev.deltaY > 0) {
-        this.windowLeft -= 10
-        this.windowRight += 10
-      } else {
-        this.windowLeft += 10
-        this.windowRight -= 10
-      }
-      this.draw()
-    })
-    this.canvas.addEventListener('mousedown', (event) => {
-      const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
-      this.mouseDownPos = loc
-      this.mouseDownWindow = { left: this.windowLeft, right: this.windowRight }
-    })
-    this.canvas.addEventListener('mouseout', (event) => {
-      const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
-      this.updateCursor(loc)
-      this.curMousePos = loc
-      this.draw()
-    })
-    this.canvas.addEventListener('mousemove', (event) => {
-      if (this.mouseDownPos) return
-
-      const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
-      this.updateCursor(loc)
-      this.curMousePos = loc
-      this.draw()
-    })
-    window.addEventListener('mousemove', (event) => {
-      if (this.mouseDownPos === null) return
-
-      const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
-      this.updateCursor(loc)
-      this.curMousePos = loc
-
-      if (this.action === Action.MoveWindowLeft) {
-        this.windowLeft = loc.x
-      } else if (this.action === Action.MoveWindowRight) {
-        this.windowRight = loc.x
-      } else if (this.action === Action.MoveWindow) {
-        this.windowLeft =
-          this.mouseDownWindow.left + (loc.x - this.mouseDownPos.x)
-        this.windowRight =
-          this.mouseDownWindow.right + (loc.x - this.mouseDownPos.x)
-      }
-
-      this.draw()
-    })
-    window.addEventListener('mouseup', (event) => {
-      const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
-      this.updateCursor(loc)
-      this.curMousePos = loc
-
-      // set window
-      if (this.action === Action.SelectWindow) {
-        this.windowLeft = Math.min(this.mouseDownPos!.x, loc.x)
-        this.windowRight = Math.max(this.mouseDownPos!.x, loc.x)
-      }
-
-      this.mouseDownPos = null
-      this.draw()
-    })
+    this.registerHanlers()
   }
 
-  updateCursor(loc: Pos) {
+  setDimensions() {
+    const container = this.context.canvas.parentElement
+    this.width = container!.clientWidth
+    this.height = container!.clientHeight
+    this.dragAreaHeight = Math.floor(this.height / 5)
+  }
+
+  fixPixelRatio() {
+    // https://developer.mozilla.org/zh-CN/docs/Web/API/Window/devicePixelRatio
+    const dpr = window.devicePixelRatio || 1
+
+    this.context.canvas.style.width = this.width + 'px'
+    this.context.canvas.style.height = this.height + 'px'
+    this.context.canvas.width = this.width * dpr
+    this.context.canvas.height = this.height * dpr
+
+    this.context.scale(dpr, dpr)
+  }
+
+  setTimeDuration(timeDuration: number) {
+    this.timeDuration = timeDuration
+    this.minSelectedTimeDuration = this.timeDuration / 1000
+    this.selectedTimeRange = { start: 0, end: timeDuration }
+  }
+
+  // call it when timeDuration or width change
+  setTimeLenScale() {
+    this.timeLenScale = scaleLinear()
+      .domain([0, this.timeDuration])
+      .range([0, this.width])
+
+    // update window
+    const window = this.timeRangeToWindow(this.selectedTimeRange)
+    if (window.right - window.left >= TimelineOverviewChart.WINDOW_MIN_WIDTH) {
+      this.curWindow = window
+    }
+  }
+
+  /////////////////////////////////////
+  // event handlers: mousedown, mousemove, mouseup, mousewheel, resize
+  registerHanlers() {
+    window.addEventListener('resize', this.onResize)
+    this.context.canvas.addEventListener('mousewheel', this.onMouseWheel)
+    this.context.canvas.addEventListener('mousedown', this.onMouseDown)
+    this.context.canvas.addEventListener('mousemove', this.onCanvasMouseMove)
+    this.context.canvas.addEventListener('mouseout', this.onCanvasMouseOut)
+    window.addEventListener('mousemove', this.onWindowMouseMove)
+    window.addEventListener('mouseup', this.onMouseUp)
+  }
+
+  onResize = () => {
+    this.setDimensions()
+    this.fixPixelRatio()
+    this.setTimeLenScale()
+    this.draw()
+  }
+
+  // save initial pos and window
+  onMouseDown = (event) => {
+    event.preventDefault() // prevent selection
+
+    const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
+    this.mouseDownPos = loc
+    this.mouseDownWindow = { ...this.curWindow }
+  }
+
+  // recover mouse cursor
+  onCanvasMouseOut = (event) => {
+    event.preventDefault()
+
+    const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
+    this.updateAction(loc)
+    this.curMousePos = loc
+    this.draw()
+  }
+
+  // save action type
+  onCanvasMouseMove = (event) => {
+    event.preventDefault()
+
+    // when mouse is down, the event will propagate to window
     if (this.mouseDownPos) return
 
-    // https://developer.mozilla.org/zh-CN/docs/Web/CSS/cursor
+    const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
+    this.updateAction(loc)
+    this.curMousePos = loc
+    this.draw()
+  }
 
-    // outside of canvas
-    if (loc.x < 0 || loc.y < 0 || loc.x > this.width || loc.y > this.height) {
-      document.body.style.cursor = 'initial'
+  // handle kinds of action
+  onWindowMouseMove = (event) => {
+    event.preventDefault()
+
+    // only response when mouse is down
+    if (this.mouseDownPos === null) return
+
+    const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
+    this.updateWindow(loc)
+    this.curMousePos = loc
+    this.draw()
+  }
+
+  // update action type and window both
+  onMouseUp = (event) => {
+    event.preventDefault()
+
+    const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
+    this.updateAction(loc)
+    this.curMousePos = loc
+
+    // update window
+    if (this.action === Action.SelectWindow && this.mouseDownPos) {
+      let { x } = loc
+      if (x < 0) x = 0
+      if (x > this.width) x = this.width
+      let newLeft = Math.min(this.mouseDownPos.x, x)
+      let newRight = Math.max(this.mouseDownPos.x, x)
+      if (newRight - newLeft < 2 * TimelineOverviewChart.WINDOW_MIN_WIDTH) {
+        newLeft = Math.max(0, newLeft - TimelineOverviewChart.WINDOW_MIN_WIDTH)
+        newRight = Math.min(
+          this.width,
+          newRight + TimelineOverviewChart.WINDOW_MIN_WIDTH
+        )
+      }
+      this.curWindow = { left: newLeft, right: newRight }
+      this.selectedTimeRange = this.windowToTimeRange(this.curWindow)
+    }
+
+    // release mouse
+    this.mouseDownPos = null
+    this.draw()
+  }
+
+  onMouseWheel = (event) => {
+    event.preventDefault()
+
+    const ev = event as WheelEvent
+    const { start, end } = this.selectedTimeRange
+    const byDelta = (end - start) / 10
+    let newStart = start
+    let newEnd = end
+    if (ev.deltaY > 0) {
+      // enlarge selected window
+      newStart = start - byDelta
+      let unUsedDelta = 0
+      if (newStart < 0) {
+        unUsedDelta = -newStart
+        newStart = 0
+      }
+      newEnd = end + byDelta + unUsedDelta
+      if (newEnd > this.timeDuration) {
+        newEnd = this.timeDuration
+      }
+    } else {
+      // shrink selected window
+      if (end - start <= this.minSelectedTimeDuration) {
+        // can't shrink more
+        return
+      }
+      newStart = start + byDelta
+      newEnd = end - byDelta
+      if (newEnd - newStart <= this.minSelectedTimeDuration) {
+        newEnd = newStart + this.minSelectedTimeDuration
+      }
+    }
+    this.selectedTimeRange = { start: newStart, end: newEnd }
+
+    // update window
+    const window = this.timeRangeToWindow(this.selectedTimeRange)
+    if (window.right - window.left >= TimelineOverviewChart.WINDOW_MIN_WIDTH) {
+      this.curWindow = window
+    }
+
+    this.draw()
+  }
+
+  updateAction(loc: Pos) {
+    // only change it when mouse isn't down
+    if (this.mouseDownPos) return
+
+    const { left, right } = this.curWindow
+    if (this.mouseOutsideCanvas(loc)) {
       this.action = Action.None
-      return
-    }
-    if (loc.y > 20) {
-      document.body.style.cursor = 'text'
+    } else if (loc.y > this.dragAreaHeight) {
       this.action = Action.SelectWindow
-      return
-    }
-    if (loc.x > this.windowLeft - 2 && loc.x < this.windowLeft + 2) {
-      document.body.style.cursor = 'ew-resize'
+    } else if (
+      loc.x > left - TimelineOverviewChart.WINDOW_RESIZE_LINE_WIDTH_HALF &&
+      loc.x < left + TimelineOverviewChart.WINDOW_RESIZE_LINE_WIDTH_HALF
+    ) {
       this.action = Action.MoveWindowLeft
-      return
-    }
-    if (loc.x > this.windowRight - 2 && loc.x < this.windowRight + 2) {
-      document.body.style.cursor = 'ew-resize'
+    } else if (
+      loc.x > right - TimelineOverviewChart.WINDOW_RESIZE_LINE_WIDTH_HALF &&
+      loc.x < right + TimelineOverviewChart.WINDOW_RESIZE_LINE_WIDTH_HALF
+    ) {
       this.action = Action.MoveWindowRight
-      return
+    } else {
+      this.action = Action.MoveWindow
     }
-    document.body.style.cursor = 'grab'
-    this.action = Action.MoveWindow
+    this.updateCursor()
   }
 
-  windowToCanvasLoc(windowX: number, windowY: number) {
-    const canvasBox = this.canvas.getBoundingClientRect()
-    return {
-      x: windowX - canvasBox.left,
-      y: windowY - canvasBox.top,
+  updateCursor() {
+    // https://developer.mozilla.org/zh-CN/docs/Web/CSS/cursor
+    let cursor: string
+    switch (this.action) {
+      case Action.SelectWindow:
+        cursor = 'text'
+        break
+      case Action.MoveWindowLeft:
+      case Action.MoveWindowRight:
+        cursor = 'ew-resize'
+        break
+      case Action.MoveWindow:
+        cursor = 'grab'
+        break
+      default:
+        cursor = 'initial'
+        break
+    }
+    document.body.style.cursor = cursor
+  }
+
+  updateWindow(loc: Pos) {
+    const { left, right } = this.curWindow
+    let newLeft: number = left
+    let newRight: number = right
+    if (this.action === Action.MoveWindowLeft) {
+      if (loc.x < 0) {
+        newLeft = 0
+      } else if (loc.x > right - TimelineOverviewChart.WINDOW_MIN_WIDTH) {
+        newLeft = right - TimelineOverviewChart.WINDOW_MIN_WIDTH
+      } else {
+        newLeft = loc.x
+      }
+    } else if (this.action === Action.MoveWindowRight) {
+      if (loc.x > this.width) {
+        newRight = this.width
+      } else if (loc.x < left + TimelineOverviewChart.WINDOW_MIN_WIDTH) {
+        newRight = left + TimelineOverviewChart.WINDOW_MIN_WIDTH
+      } else {
+        newRight = loc.x
+      }
+    } else if (this.action === Action.MoveWindow) {
+      let delta = loc.x - this.mouseDownPos!.x
+      const { left, right } = this.mouseDownWindow
+      if (delta < -left) {
+        delta = -left
+      } else if (delta > this.width - right) {
+        delta = this.width - right
+      }
+      newLeft = left + delta
+      newRight = right + delta
+    }
+
+    if (this.mouseDownPos !== null) {
+      this.curWindow = { left: newLeft, right: newRight }
+      this.selectedTimeRange = this.windowToTimeRange(this.curWindow)
     }
   }
 
+  /////////////////////////////////////
+  // draw
   draw() {
     this.context.clearRect(0, 0, this.width, this.height)
-    this.drawVerticalLines()
-    this.drawTimePoints()
+    this.drawTimePointsAndVerticalLines()
     this.drawWindow()
     this.drawMoveVerticalLine()
     this.drawSelectedWindow()
   }
 
-  drawVerticalLines() {
+  drawTimePointsAndVerticalLines() {
     this.context.save()
+    this.context.textAlign = 'end'
+    this.context.textBaseline = 'top'
+
     this.context.strokeStyle = '#ccc'
     this.context.lineWidth = 0.5
 
     let x = 100
     while (x < this.width) {
+      const time = this.timeLenScale.invert(x)
+      this.context.fillText(`${time.toFixed(2)} ms`, x - 2, 2)
+
       this.context.beginPath()
       this.context.moveTo(x + 0.5, 0)
       this.context.lineTo(x + 0.5, this.height)
       this.context.stroke()
-      x += 100
-    }
 
-    this.context.restore()
-  }
-
-  drawTimePoints() {
-    this.context.save()
-    this.context.font = '12px sans-serif'
-    this.context.textAlign = 'end'
-    this.context.textBaseline = 'top'
-
-    let x = 100
-    while (x < this.width) {
-      this.context.fillText(`${x * 10} ms`, x - 2, 4)
       x += 100
     }
 
@@ -193,50 +372,58 @@ export class TimelineOverviewChart {
   }
 
   drawWindow() {
+    const { left, right } = this.curWindow
+
     this.context.save()
 
-    this.context.globalAlpha = 0.6
-    this.context.fillStyle = '#f0f0f0'
-    // this.context.fillStyle = 'rgba(128,128,128, 0.2)'
-    this.context.fillRect(0, 0, this.windowLeft, this.height)
-    this.context.fillRect(this.windowRight, 0, this.width, this.height)
+    // draw unselected window area
+    this.context.globalAlpha = TimelineOverviewChart.UNSELECTED_WINDOW_ALPHA
+    this.context.fillStyle = TimelineOverviewChart.UNSELECTED_WINDOW_FILL_STYLE
+    this.context.fillRect(0, 0, left, this.height)
+    this.context.fillRect(right, 0, this.width, this.height)
 
-    this.context.globalAlpha = 1.0
-    // this.context.strokeStyle = 'rgba(128,128,128, 0.5)'
-    this.context.strokeStyle = '#d0d0d0'
-    this.context.lineWidth = 1
+    // draw window left and right borders
+    this.context.globalAlpha = TimelineOverviewChart.WINDOW_BORDER_ALPHA
+    this.context.strokeStyle = TimelineOverviewChart.WINDOW_BORDER_STORKE_STYLE
+    this.context.lineWidth = TimelineOverviewChart.WINDOW_BORDER_WIDTH
     this.context.beginPath()
-    this.context.moveTo(this.windowLeft, 0)
-    this.context.lineTo(this.windowLeft, this.height)
+    this.context.moveTo(left, 0)
+    this.context.lineTo(left, this.height)
     this.context.stroke()
     this.context.beginPath()
-    this.context.moveTo(this.windowRight, 0)
-    this.context.lineTo(this.windowRight, this.height)
+    this.context.moveTo(right, 0)
+    this.context.lineTo(right, this.height)
     this.context.stroke()
 
-    //
-    this.context.strokeStyle = '#ccc'
-    this.context.lineWidth = 4
+    // draw resize area
+    this.context.strokeStyle = TimelineOverviewChart.WINDOW_RESIZE_STROKE_STYLE
+    this.context.lineWidth = TimelineOverviewChart.WINDOW_RESIZE_LINE_WIDTH
     this.context.beginPath()
-    this.context.moveTo(this.windowLeft, 0)
-    this.context.lineTo(this.windowLeft, 20)
+    this.context.moveTo(left, 0)
+    this.context.lineTo(left, this.dragAreaHeight)
     this.context.stroke()
     this.context.beginPath()
-    this.context.moveTo(this.windowRight, 0)
-    this.context.lineTo(this.windowRight, 20)
+    this.context.moveTo(right, 0)
+    this.context.lineTo(right, this.dragAreaHeight)
     this.context.stroke()
 
     this.context.restore()
   }
 
   drawMoveVerticalLine() {
-    if (this.action !== Action.SelectWindow) {
+    // not draw it when mouse move outside the canvas
+    // to keep same as the chrome dev tool
+    if (
+      this.action !== Action.SelectWindow ||
+      this.mouseOutsideCanvas(this.curMousePos)
+    ) {
       return
     }
 
     this.context.save()
-    this.context.strokeStyle = 'cornflowerblue'
-    this.context.lineWidth = 2
+    this.context.strokeStyle =
+      TimelineOverviewChart.MOVED_VERTICAL_LINE_STROKE_STYLE
+    this.context.lineWidth = TimelineOverviewChart.MOVED_VERTICAL_LINE_WIDTH
     this.context.beginPath()
     this.context.moveTo(this.curMousePos.x, 0)
     this.context.lineTo(this.curMousePos.x, this.height)
@@ -245,12 +432,13 @@ export class TimelineOverviewChart {
   }
 
   drawSelectedWindow() {
-    if (this.mouseDownPos === null || this.action !== Action.SelectWindow)
+    if (this.mouseDownPos === null || this.action !== Action.SelectWindow) {
       return
+    }
 
     this.context.save()
-    this.context.globalAlpha = 0.3
-    this.context.fillStyle = 'cornflowerblue'
+    this.context.globalAlpha = TimelineOverviewChart.SELECTED_WINDOW_ALPHA
+    this.context.fillStyle = TimelineOverviewChart.SELECTED_WINDOW_FILL_STYLE
     if (this.curMousePos.x > this.mouseDownPos.x) {
       this.context.fillRect(
         this.mouseDownPos.x,
@@ -269,5 +457,32 @@ export class TimelineOverviewChart {
     this.context.restore()
   }
 
-  update() {}
+  /////////////////////////////////////////
+  // utils
+  windowToCanvasLoc(windowX: number, windowY: number) {
+    const canvasBox = this.context.canvas.getBoundingClientRect()
+    return {
+      x: windowX - canvasBox.left,
+      y: windowY - canvasBox.top,
+    }
+  }
+
+  windowToTimeRange(window: Window): TimeRange {
+    return {
+      start: this.timeLenScale.invert(window.left),
+      end: this.timeLenScale.invert(window.right),
+    }
+  }
+
+  timeRangeToWindow(timeRange: TimeRange): Window {
+    const { start, end } = timeRange
+    return {
+      left: this.timeLenScale(start),
+      right: this.timeLenScale(end),
+    }
+  }
+
+  mouseOutsideCanvas(loc: Pos) {
+    return loc.x < 0 || loc.y < 0 || loc.x > this.width || loc.y > this.height
+  }
 }

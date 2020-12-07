@@ -89,9 +89,9 @@ export class TimelineOverviewChart {
     const dpr = window.devicePixelRatio || 1
 
     this.context.canvas.style.width = this.width + 'px'
-    this.context.canvas.style.height = this.width + 'px'
+    this.context.canvas.style.height = this.height + 'px'
     this.context.canvas.width = this.width * dpr
-    this.context.canvas.height = this.width * dpr
+    this.context.canvas.height = this.height * dpr
 
     this.context.scale(dpr, dpr)
   }
@@ -150,6 +150,7 @@ export class TimelineOverviewChart {
     const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
     this.updateAction(loc)
     this.curMousePos = loc
+    this.draw()
   }
 
   // save action type

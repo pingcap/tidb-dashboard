@@ -349,25 +349,29 @@ export class TimelineOverviewChart {
 
   drawTimePointsAndVerticalLines() {
     this.context.save()
+    // text
     this.context.textAlign = 'end'
     this.context.textBaseline = 'top'
-
+    // vertical lines
     this.context.strokeStyle = '#ccc'
     this.context.lineWidth = 0.5
 
-    let x = 100
-    while (x < this.width) {
-      const time = this.timeLenScale.invert(x)
-      this.context.fillText(`${time.toFixed(2)} ms`, x - 2, 2)
-
+    let timeDelta = this.calcXAxisTimeDelta()
+    let i = 0
+    while (true) {
+      i++
+      const x = Math.round(this.timeLenScale(timeDelta * i))
+      if (x > this.width) {
+        break
+      }
+      // text
+      this.context.fillText(`${timeDelta * i} ms`, x - 2, 2)
+      // vertical line
       this.context.beginPath()
       this.context.moveTo(x + 0.5, 0)
       this.context.lineTo(x + 0.5, this.height)
       this.context.stroke()
-
-      x += 100
     }
-
     this.context.restore()
   }
 
@@ -484,5 +488,21 @@ export class TimelineOverviewChart {
 
   mouseOutsideCanvas(loc: Pos) {
     return loc.x < 0 || loc.y < 0 || loc.x > this.width || loc.y > this.height
+  }
+
+  calcXAxisTimeDelta() {
+    const defTimeDelta = this.timeLenScale.invert(100) // how long the 100px represents
+    // nice the defTimeDelta, for example: 1980ms -> 2000ms
+    let timeDelta = defTimeDelta
+    let step = 1
+    while (timeDelta > 10) {
+      timeDelta /= 10
+      step *= 10
+    }
+    // TODO: handle situation when timeDelta < 10
+    if (step > 1) {
+      timeDelta = Math.round(timeDelta) * step
+    }
+    return timeDelta
   }
 }

@@ -107,12 +107,11 @@ export class TimelineOverviewChart {
     this.timeLenScale = scaleLinear()
       .domain([0, this.timeDuration])
       .range([0, this.width])
-    const { start, end } = this.selectedTimeRange
-    // FIXME, left and right can't be smaller than WINDOW_MIN_WIDTH
-    // abstract a method: timeRangeToWindow
-    this.curWindow = {
-      left: this.timeLenScale(start),
-      right: this.timeLenScale(end),
+
+    // update window
+    const window = this.timeRangeToWindow(this.selectedTimeRange)
+    if (window.right - window.left >= TimelineOverviewChart.WINDOW_MIN_WIDTH) {
+      this.curWindow = window
     }
   }
 
@@ -236,13 +235,11 @@ export class TimelineOverviewChart {
     }
     this.selectedTimeRange = { start: newStart, end: newEnd }
 
-    const newLeft = this.timeLenScale(newStart)
-    const newRight = this.timeLenScale(newEnd)
-    if (newRight - newLeft <= TimelineOverviewChart.WINDOW_MIN_WIDTH) {
-      // not change this.curWindow
-      return
+    // update window
+    const window = this.timeRangeToWindow(this.selectedTimeRange)
+    if (window.right - window.left >= TimelineOverviewChart.WINDOW_MIN_WIDTH) {
+      this.curWindow = window
     }
-    this.curWindow = { left: newLeft, right: newRight }
 
     this.draw()
   }
@@ -443,6 +440,14 @@ export class TimelineOverviewChart {
     return {
       start: this.timeLenScale.invert(window.left),
       end: this.timeLenScale.invert(window.right),
+    }
+  }
+
+  timeRangeToWindow(timeRange: TimeRange): Window {
+    const { start, end } = timeRange
+    return {
+      left: this.timeLenScale(start),
+      right: this.timeLenScale(end),
     }
   }
 

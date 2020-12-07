@@ -119,7 +119,8 @@ export class TimelineOverviewChart {
   // event handlers: mousedown, mousemove, mouseup, mousewheel, resize
   registerHanlers() {
     window.addEventListener('resize', this.onResize)
-    this.context.canvas.addEventListener('mousewheel', this.onMouseWheel)
+    // https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
+    this.context.canvas.addEventListener('wheel', this.onMouseWheel)
     this.context.canvas.addEventListener('mousedown', this.onMouseDown)
     this.context.canvas.addEventListener('mousemove', this.onCanvasMouseMove)
     this.context.canvas.addEventListener('mouseout', this.onCanvasMouseOut)

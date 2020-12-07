@@ -56,6 +56,10 @@ export class TimelineOverviewChart {
   static WINDOW_BORDER_WIDTH = 1
   static UNSELECTED_WINDOW_FILL_STYLE = '#f0f0f0'
   static UNSELECTED_WINDOW_ALPHA = 0.6
+  static SELECTED_WINDOW_FILL_STYLE = 'cornflowerblue'
+  static SELECTED_WINDOW_ALPHA = 0.3
+  static MOVED_VERTICAL_LINE_STROKE_STYLE = 'cornflowerblue'
+  static MOVED_VERTICAL_LINE_WIDTH = 2
 
   /////////////////////////////////////
   // setup
@@ -388,8 +392,9 @@ export class TimelineOverviewChart {
     }
 
     this.context.save()
-    this.context.strokeStyle = 'cornflowerblue'
-    this.context.lineWidth = 2
+    this.context.strokeStyle =
+      TimelineOverviewChart.MOVED_VERTICAL_LINE_STROKE_STYLE
+    this.context.lineWidth = TimelineOverviewChart.MOVED_VERTICAL_LINE_WIDTH
     this.context.beginPath()
     this.context.moveTo(this.curMousePos.x, 0)
     this.context.lineTo(this.curMousePos.x, this.height)
@@ -403,8 +408,8 @@ export class TimelineOverviewChart {
     }
 
     this.context.save()
-    this.context.globalAlpha = 0.3
-    this.context.fillStyle = 'cornflowerblue'
+    this.context.globalAlpha = TimelineOverviewChart.SELECTED_WINDOW_ALPHA
+    this.context.fillStyle = TimelineOverviewChart.SELECTED_WINDOW_FILL_STYLE
     if (this.curMousePos.x > this.mouseDownPos.x) {
       this.context.fillRect(
         this.mouseDownPos.x,

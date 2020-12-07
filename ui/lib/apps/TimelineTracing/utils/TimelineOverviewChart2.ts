@@ -146,6 +146,7 @@ export class TimelineOverviewChart {
   // recover mouse cursor
   onCanvasMouseOut = (event) => {
     event.preventDefault()
+
     const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
     this.updateAction(loc)
     this.curMousePos = loc
@@ -187,12 +188,20 @@ export class TimelineOverviewChart {
     this.curMousePos = loc
 
     // update window
-    if (this.action === Action.SelectWindow) {
+    if (this.action === Action.SelectWindow && this.mouseDownPos) {
       let { x } = loc
       if (x < 0) x = 0
       if (x > this.width) x = this.width
-      this.curWindow.left = Math.min(this.mouseDownPos!.x, x)
-      this.curWindow.right = Math.max(this.mouseDownPos!.x, x)
+      let newLeft = Math.min(this.mouseDownPos.x, x)
+      let newRight = Math.max(this.mouseDownPos.x, x)
+      if (newRight - newLeft < 2 * TimelineOverviewChart.WINDOW_MIN_WIDTH) {
+        newLeft = Math.max(0, newLeft - TimelineOverviewChart.WINDOW_MIN_WIDTH)
+        newRight = Math.min(
+          this.width,
+          newRight + TimelineOverviewChart.WINDOW_MIN_WIDTH
+        )
+      }
+      this.curWindow = { left: newLeft, right: newRight }
       this.selectedTimeRange = this.windowToTimeRange(this.curWindow)
     }
 

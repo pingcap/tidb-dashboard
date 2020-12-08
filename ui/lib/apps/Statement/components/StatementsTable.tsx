@@ -3,6 +3,8 @@ import React, { useCallback } from 'react'
 import { CardTable, ICardTableProps } from '@lib/components'
 import DetailPage from '../pages/Detail'
 import { IStatementTableController } from '../utils/useStatementTableController'
+import { useNavigate } from 'react-router-dom'
+import openLink from '@lib/utils/openLink'
 
 interface Props extends Partial<ICardTableProps> {
   controller: IStatementTableController
@@ -20,15 +22,18 @@ export default function StatementsTable({ controller, ...restPrpos }: Props) {
     visibleColumnKeys,
   } = controller
 
-  const handleRowClick = usePersistFn((rec) => {
-    const qs = DetailPage.buildQuery({
-      digest: rec.digest,
-      schema: rec.schema_name,
-      beginTime: begin_time,
-      endTime: end_time,
-    })
-    window.open(`#/statement/detail?${qs}`, '_blank')
-  })
+  const navigate = useNavigate()
+  const handleRowClick = usePersistFn(
+    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+      const qs = DetailPage.buildQuery({
+        digest: rec.digest,
+        schema: rec.schema_name,
+        beginTime: begin_time,
+        endTime: end_time,
+      })
+      openLink(`/statement/detail?${qs}`, ev, navigate)
+    }
+  )
 
   const getKey = useCallback((row) => `${row.digest}_${row.schema_name}`, [])
 

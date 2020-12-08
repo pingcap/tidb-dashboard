@@ -1,7 +1,7 @@
 import React from 'react'
 import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useLocalStorageState } from '@umijs/hooks'
 
 import client from '@lib/client'
@@ -24,6 +24,7 @@ import TabBasic from './DetailTabBasic'
 import TabTime from './DetailTabTime'
 import TabCopr from './DetailTabCopr'
 import TabTxn from './DetailTabTxn'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
 export interface IPageQuery {
   connectId?: string
@@ -31,9 +32,13 @@ export interface IPageQuery {
   timestamp?: number
 }
 
+export interface DetailPageProps {
+  style?: React.CSSProperties
+}
+
 const SLOW_QUERY_DETAIL_EXPAND = 'slow_query.detail_expand'
 
-function DetailPage() {
+function DetailPage({ style }: DetailPageProps) {
   const query = DetailPage.parseQuery(useLocation().search)
 
   const { t } = useTranslation()
@@ -66,8 +71,15 @@ function DetailPage() {
     setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
   return (
-    <div>
-      <Head title={t('slow_query.detail.head.title')}>
+    <div style={style}>
+      <Head
+        title={t('slow_query.detail.head.title')}
+        back={
+          <Link to={`/slow_query`}>
+            <ArrowLeftOutlined /> {t('slow_query.detail.head.back')}
+          </Link>
+        }
+      >
         <AnimatedSkeleton showSkeleton={isLoading}>
           {error && <ErrorBar errors={[error]} />}
           {!!data && (

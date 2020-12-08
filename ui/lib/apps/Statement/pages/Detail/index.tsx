@@ -3,7 +3,7 @@ import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Selection } from 'office-ui-fabric-react/lib/Selection'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useLocalStorageState } from '@umijs/hooks'
 
 import client, { StatementModel } from '@lib/client'
@@ -25,6 +25,7 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 
 import { planColumns as genPlanColumns } from '../../utils/tableColumns'
 import PlanDetail from './PlanDetail'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
 export interface IPageQuery {
   digest?: string
@@ -33,9 +34,13 @@ export interface IPageQuery {
   endTime?: number
 }
 
+export interface DetailPageProps {
+  style?: React.CSSProperties
+}
+
 const STMT_DETAIL_EXPAND = 'statement.detail_expand'
 
-function DetailPage() {
+function DetailPage({ style }: DetailPageProps) {
   const query = DetailPage.parseQuery(useLocation().search)
   const { data: plans, isLoading, error } = useClientRequest((reqConfig) =>
     client
@@ -74,8 +79,15 @@ function DetailPage() {
   }, [plans])
 
   return (
-    <div>
-      <Head title={t('statement.pages.detail.head.title')}>
+    <div style={style}>
+      <Head
+        title={t('statement.pages.detail.head.title')}
+        back={
+          <Link to={`/statement`}>
+            <ArrowLeftOutlined /> {t('statement.pages.detail.head.back')}
+          </Link>
+        }
+      >
         <AnimatedSkeleton showSkeleton={isLoading}>
           {error && <ErrorBar errors={[error]} />}
           {plans && plans.length > 0 && (

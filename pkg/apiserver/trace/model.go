@@ -21,7 +21,7 @@ type SpanSet struct {
 type Span struct {
 	SpanID          uint64     `json:"span_id"`
 	ParentID        uint64     `json:"parent_id"`
-	BeginUnixTimeNs uint64     `json:"begin_unix_time_us"`
+	BeginUnixTimeNs uint64     `json:"begin_unix_time_ns"`
 	DurationNs      uint64     `json:"duration_ns"`
 	Event           string     `json:"event"`
 	Properties      []Property `json:"properties,omitempty"`

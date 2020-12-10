@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { Card } from '@lib/components'
-import { TimelineOverviewChart } from '../utils'
+import { TimelineOverviewChart, genFlameGraph } from '../utils'
 
 import styles from './Timeline.module.less'
 

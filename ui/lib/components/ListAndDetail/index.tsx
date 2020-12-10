@@ -3,7 +3,7 @@ import React from 'react'
 
 export interface ListAndDetailProps {
   ListComponent: React.FunctionComponent
-  DetailComponent: React.FunctionComponent<{ style: React.CSSProperties }>
+  DetailComponent: React.FunctionComponent
   detailPathMatcher: (path: string) => boolean
 }
 
@@ -13,7 +13,6 @@ export default function ({
   detailPathMatcher,
 }: ListAndDetailProps) {
   const location = useLocation()
-  console.log('rendered')
   return (
     <div
       style={{
@@ -22,7 +21,7 @@ export default function ({
     >
       <ListComponent />
       {detailPathMatcher(location.pathname) && (
-        <DetailComponent
+        <div
           style={{
             zIndex: 99,
             position: 'absolute',
@@ -32,7 +31,9 @@ export default function ({
             width: '100%',
             transition: 'none',
           }}
-        />
+        >
+          <DetailComponent />
+        </div>
       )}
     </div>
   )

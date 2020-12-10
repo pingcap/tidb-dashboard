@@ -34,13 +34,9 @@ export interface IPageQuery {
   endTime?: number
 }
 
-export interface DetailPageProps {
-  style?: React.CSSProperties
-}
-
 const STMT_DETAIL_EXPAND = 'statement.detail_expand'
 
-function DetailPage({ style }: DetailPageProps) {
+function DetailPage() {
   const query = DetailPage.parseQuery(useLocation().search)
   const { data: plans, isLoading, error } = useClientRequest((reqConfig) =>
     client
@@ -79,7 +75,7 @@ function DetailPage({ style }: DetailPageProps) {
   }, [plans])
 
   return (
-    <div style={style}>
+    <div>
       <Head
         title={t('statement.pages.detail.head.title')}
         back={

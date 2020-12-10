@@ -32,13 +32,9 @@ export interface IPageQuery {
   timestamp?: number
 }
 
-export interface DetailPageProps {
-  style?: React.CSSProperties
-}
-
 const SLOW_QUERY_DETAIL_EXPAND = 'slow_query.detail_expand'
 
-function DetailPage({ style }: DetailPageProps) {
+function DetailPage() {
   const query = DetailPage.parseQuery(useLocation().search)
 
   const { t } = useTranslation()
@@ -71,7 +67,7 @@ function DetailPage({ style }: DetailPageProps) {
     setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
   return (
-    <div style={style}>
+    <div>
       <Head
         title={t('slow_query.detail.head.title')}
         back={

@@ -1,2 +1,2 @@
 export * from './TimelineOverviewChart'
-export * from './spanConverter'
+export * from './flameGraph'

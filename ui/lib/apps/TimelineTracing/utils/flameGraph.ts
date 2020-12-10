@@ -1,5 +1,5 @@
 import { TraceQueryTraceResponse, TraceSpan } from '@lib/client'
-// import * as d3 from 'd3'
+import * as d3 from 'd3'
 
 // for test
 import testData from './test-data.json'
@@ -12,10 +12,19 @@ interface IFullSpan extends TraceSpan {
   end_unix_time_ns: number
   max_end_time_ns: number // include children span
   height: number // max chilren layers, leaf node which has no children is 0
-  depth: number // in which layer, rootSpan is 0
+  depth: number // which layer it is drawed in, rootSpan is 0
+  // used to decide whether need to draw a vertical line to point to parent
+  // when depth - parentDepth > 1, need to draw a vertical line
+  parentDepth: number
 }
 
-export function genFlameGraph(source: TraceQueryTraceResponse): IFullSpan {
+interface IFlameGraph {
+  startTime: number
+  maxDepth: number
+  rootSpan: IFullSpan
+}
+
+export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
   // step 1: flatten the spans
   const allSpans: IFullSpan[] = []
   source.span_sets?.forEach((spanSet) => {
@@ -30,6 +39,7 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFullSpan {
         max_end_time_ns: 0,
         height: 0,
         depth: 0,
+        parentDepth: 0,
       })
     })
   })
@@ -46,8 +56,8 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFullSpan {
   })
   findChildren(rootSpan, allSpans)
   console.log('rootNode:', rootSpan)
-  // const root = d3.hierarchy(rootSpan)
-  // console.log('root:', root)
+  const root = d3.hierarchy(rootSpan)
+  console.log('root:', root)
 
   calcMaxEndTime(rootSpan)
   // console.log('rootNode after calcMaxTime', rootSpan)
@@ -56,7 +66,14 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFullSpan {
   calcDepth(rootSpan)
   // console.log('rootNode after calcDepth', rootSpan)
 
-  return rootSpan
+  console.log('max depth:', calcMaxDepth(rootSpan))
+
+  // return rootSpan
+  return {
+    startTime,
+    maxDepth: 20,
+    rootSpan,
+  }
 }
 
 function findChildren(parentSpan: IFullSpan, allSpans: IFullSpan[]) {
@@ -102,19 +119,34 @@ function calcDepth(parentSpan: IFullSpan) {
   const childrenMaxIdx = parentSpan.children.length - 1
   for (let i = childrenMaxIdx; i >= 0; i--) {
     const curSpan = parentSpan.children[i]
+    curSpan.parentDepth = parentSpan.depth
     if (i === childrenMaxIdx) {
       curSpan.depth = parentSpan.depth + 1
-      continue
-    }
-    const lastSpan = parentSpan.children[i + 1]
-    if (curSpan.max_end_time_ns > lastSpan.begin_unix_time_ns!) {
-      curSpan.depth = lastSpan.depth + lastSpan.height + 2
     } else {
-      curSpan.depth = parentSpan.depth + 1
+      const lastSpan = parentSpan.children[i + 1]
+      if (curSpan.max_end_time_ns > lastSpan.begin_unix_time_ns!) {
+        curSpan.depth = lastSpan.depth + lastSpan.height + 2
+      } else {
+        curSpan.depth = parentSpan.depth + 1
+      }
     }
+    // console.log('cur span:', curSpan.event)
+    // console.log('cur depth:', curSpan.depth)
+    // console.log('cur height:', curSpan.height)
   }
 
   parentSpan.children.forEach((span) => calcDepth(span))
+}
+
+// only search left node
+function calcMaxDepth(span: IFullSpan) {
+  if (span.children.length === 0) {
+    return span.depth
+  }
+
+  const childrenDepths = span.children.map((span) => calcMaxDepth(span))
+  const maxDepth = Math.max(...childrenDepths)
+  return maxDepth
 }
 
 //////////////////////

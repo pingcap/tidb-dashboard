@@ -1,4 +1,5 @@
 import { ScaleLinear, scaleLinear } from 'd3'
+import { IFlameGraph, IFullSpan } from './flameGraph'
 
 type Pos = {
   x: number
@@ -61,20 +62,25 @@ export class TimelineDetailChart {
   static MOVED_VERTICAL_LINE_STROKE_STYLE = 'cornflowerblue'
   static MOVED_VERTICAL_LINE_WIDTH = 2
 
+  // flameGraph
+  private flameGraph: IFlameGraph
+
   /////////////////////////////////////
   // setup
-  constructor(container: HTMLDivElement, timeDuration: number) {
+  constructor(container: HTMLDivElement, flameGraph: IFlameGraph) {
     const canvas = document.createElement('canvas')
     this.context = canvas.getContext('2d')!
     container.append(canvas)
 
-    this.setTimeDuration(timeDuration)
+    this.flameGraph = flameGraph
+
+    this.setTimeDuration(flameGraph.rootSpan.duration_ns!)
     this.setDimensions()
     this.fixPixelRatio()
     this.setTimeLenScale()
 
     this.draw()
-    this.registerHanlers()
+    // this.registerHanlers()
   }
 
   setTimeDuration(timeDuration: number) {
@@ -342,10 +348,11 @@ export class TimelineDetailChart {
   // draw
   draw() {
     this.context.clearRect(0, 0, this.width, this.height)
-    this.drawTimePointsAndVerticalLines()
-    this.drawWindow()
-    this.drawMoveVerticalLine()
-    this.drawSelectedWindow()
+    // this.drawTimePointsAndVerticalLines()
+    // this.drawWindow()
+    // this.drawMoveVerticalLine()
+    // this.drawSelectedWindow()
+    this.drawFlameGraph()
   }
 
   drawTimePointsAndVerticalLines() {
@@ -460,6 +467,37 @@ export class TimelineDetailChart {
       )
     }
     this.context.restore()
+  }
+
+  drawFlameGraph() {
+    this.context.save()
+    this.drawSpan(this.flameGraph.rootSpan)
+    this.context.restore()
+  }
+
+  drawSpan(span: IFullSpan) {
+    if (span.node_type === 'TiDB') {
+      this.context.fillStyle = '#aab254'
+      // this.context.strokeStyle = '#B6E2D3'
+    } else {
+      this.context.fillStyle = '#507359'
+      // this.context.strokeStyle = '#FAE8E0'
+    }
+    const x = this.timeLenScale(span.begin_unix_time_ns!)
+    const y = span.depth * 20
+    const width = this.timeLenScale(span.duration_ns!)
+    const height = 19
+    this.context.fillRect(x, y, width, height)
+
+    // text
+    if (width > this.context.measureText(span.event!).width) {
+      this.context.textAlign = 'left'
+      this.context.textBaseline = 'middle'
+      this.context.fillStyle = 'white'
+      this.context.fillText(span.event!, x + 2, y + 10)
+    }
+
+    span.children.forEach((s) => this.drawSpan(s))
   }
 
   /////////////////////////////////////////

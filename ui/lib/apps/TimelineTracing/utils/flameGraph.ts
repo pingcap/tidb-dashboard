@@ -2,9 +2,9 @@ import { TraceQueryTraceResponse, TraceSpan } from '@lib/client'
 import * as d3 from 'd3'
 
 // for test
-import testData from './test-data.json'
+// import testData from './test-data.json'
 
-interface IFullSpan extends TraceSpan {
+export interface IFullSpan extends TraceSpan {
   node_type: string
   children: IFullSpan[]
 
@@ -18,7 +18,7 @@ interface IFullSpan extends TraceSpan {
   parentDepth: number
 }
 
-interface IFlameGraph {
+export interface IFlameGraph {
   startTime: number
   maxDepth: number
   rootSpan: IFullSpan
@@ -152,4 +152,4 @@ function calcMaxDepth(span: IFullSpan) {
 //////////////////////
 // test
 
-genFlameGraph(testData)
+// genFlameGraph(testData)

@@ -50,13 +50,11 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFullSpan {
   // console.log('root:', root)
 
   calcMaxEndTime(rootSpan)
-  console.log('rootNode after calcMaxTime', rootSpan)
-
+  // console.log('rootNode after calcMaxTime', rootSpan)
   calcHeight(rootSpan)
-  console.log('rootNode after calcHeight', rootSpan)
-
+  // console.log('rootNode after calcHeight', rootSpan)
   calcDepth(rootSpan)
-  console.log('rootNode after calcDepth', rootSpan)
+  // console.log('rootNode after calcDepth', rootSpan)
 
   return rootSpan
 }
@@ -115,6 +113,8 @@ function calcDepth(parentSpan: IFullSpan) {
       curSpan.depth = parentSpan.depth + 1
     }
   }
+
+  parentSpan.children.forEach((span) => calcDepth(span))
 }
 
 //////////////////////

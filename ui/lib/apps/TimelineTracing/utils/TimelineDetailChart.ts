@@ -110,15 +110,26 @@ export class TimelineDetailChart {
 
   // call it when timeDuration or width change
   setTimeLenScale() {
+    const { start, end } = this.selectedTimeRange
     this.timeLenScale = scaleLinear()
-      .domain([0, this.timeDuration])
+      .domain([start, end])
       .range([0, this.width])
 
-    // update window
-    const window = this.timeRangeToWindow(this.selectedTimeRange)
-    if (window.right - window.left >= TimelineDetailChart.WINDOW_MIN_WIDTH) {
-      this.curWindow = window
-    }
+    console.log('new timerange:', this.selectedTimeRange)
+    console.log('1:', this.timeLenScale(start))
+    console.log('2:', this.timeLenScale(end))
+    console.log('3:', this.timeLenScale(start - 1 * 1000 * 1000))
+    console.log('4:', this.timeLenScale(end + 1 * 1000 * 1000))
+  }
+
+  /////////////////////////////////////
+  //
+  setTimeRange(newTimeRange: TimeRange) {
+    console.log('new timerange:', newTimeRange)
+
+    this.selectedTimeRange = newTimeRange
+    this.setTimeLenScale()
+    this.draw()
   }
 
   /////////////////////////////////////
@@ -476,25 +487,32 @@ export class TimelineDetailChart {
   }
 
   drawSpan(span: IFullSpan) {
-    if (span.node_type === 'TiDB') {
-      this.context.fillStyle = '#aab254'
-      // this.context.strokeStyle = '#B6E2D3'
-    } else {
-      this.context.fillStyle = '#507359'
-      // this.context.strokeStyle = '#FAE8E0'
-    }
-    const x = this.timeLenScale(span.begin_unix_time_ns!)
-    const y = span.depth * 20
-    const width = this.timeLenScale(span.duration_ns!)
-    const height = 19
-    this.context.fillRect(x, y, width, height)
+    const { start, end } = this.selectedTimeRange
+    const inside =
+      span.end_unix_time_ns > start || span.begin_unix_time_ns! < end
 
-    // text
-    if (width > this.context.measureText(span.event!).width) {
-      this.context.textAlign = 'left'
-      this.context.textBaseline = 'middle'
-      this.context.fillStyle = 'white'
-      this.context.fillText(span.event!, x + 2, y + 10)
+    if (inside) {
+      if (span.node_type === 'TiDB') {
+        this.context.fillStyle = '#aab254'
+      } else {
+        this.context.fillStyle = '#507359'
+      }
+      let x = this.timeLenScale(span.begin_unix_time_ns!)
+      if (x < 0) {
+        x = 0
+      }
+      const y = span.depth * 20
+      const width = this.timeLenScale(span.end_unix_time_ns!) - x
+      const height = 19
+
+      this.context.fillRect(x, y, width, height)
+      // text
+      if (width > this.context.measureText(span.event!).width) {
+        this.context.textAlign = 'left'
+        this.context.textBaseline = 'middle'
+        this.context.fillStyle = 'white'
+        this.context.fillText(span.event!, x + 2, y + 10)
+      }
     }
 
     span.children.forEach((s) => this.drawSpan(s))

@@ -22,6 +22,8 @@ enum Action {
   MoveWindow,
 }
 
+export type TimeRangeChangeListener = (timeRange: TimeRange) => void
+
 export class TimelineOverviewChart {
   private context: CanvasRenderingContext2D
   private offscreenContext: CanvasRenderingContext2D
@@ -69,6 +71,9 @@ export class TimelineOverviewChart {
 
   // flameGraph
   private flameGraph: IFlameGraph
+
+  //
+  private timeRangeListeners: TimeRangeChangeListener[] = []
 
   /////////////////////////////////////
   // setup
@@ -229,6 +234,7 @@ export class TimelineOverviewChart {
       }
       this.curWindow = { left: newLeft, right: newRight }
       this.selectedTimeRange = this.windowToTimeRange(this.curWindow)
+      this.notifyTimeRangeListeners(this.selectedTimeRange)
     }
 
     // release mouse
@@ -269,6 +275,7 @@ export class TimelineOverviewChart {
       }
     }
     this.selectedTimeRange = { start: newStart, end: newEnd }
+    this.notifyTimeRangeListeners(this.selectedTimeRange)
 
     // update window
     const window = this.timeRangeToWindow(this.selectedTimeRange)
@@ -357,9 +364,11 @@ export class TimelineOverviewChart {
       newRight = right + delta
     }
 
-    if (this.mouseDownPos !== null) {
+    // if (this.mouseDownPos !== null) {
+    if (newLeft !== left || newRight !== right) {
       this.curWindow = { left: newLeft, right: newRight }
       this.selectedTimeRange = this.windowToTimeRange(this.curWindow)
+      this.notifyTimeRangeListeners(this.selectedTimeRange)
     }
   }
 
@@ -573,5 +582,21 @@ export class TimelineOverviewChart {
       timeDelta = Math.round(timeDelta) * step
     }
     return timeDelta
+  }
+
+  //////////////////////////////////
+  // listeners
+  addTimeRangeListener(listener: TimeRangeChangeListener) {
+    this.timeRangeListeners.push(listener)
+    listener(this.selectedTimeRange)
+    return () => {
+      this.timeRangeListeners = this.timeRangeListeners.filter(
+        (l) => l !== listener
+      )
+    }
+  }
+
+  notifyTimeRangeListeners(newTimeRange: TimeRange) {
+    this.timeRangeListeners.forEach((l) => l(newTimeRange))
   }
 }

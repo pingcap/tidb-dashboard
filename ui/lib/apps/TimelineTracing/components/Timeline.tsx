@@ -29,6 +29,9 @@ export default function Timeline() {
         overviewChartRef.current!,
         flameGraph!
       )
+      overviewChart.current.addTimeRangeListener((newTimeRange) => {
+        detailChart.current?.setTimeRange(newTimeRange)
+      })
     }
     if (detailChartRef.current) {
       detailChart.current = new TimelineDetailChart(

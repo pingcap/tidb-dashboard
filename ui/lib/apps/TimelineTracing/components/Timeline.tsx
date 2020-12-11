@@ -27,7 +27,7 @@ export default function Timeline() {
     if (overviewChartRef.current) {
       overviewChart.current = new TimelineOverviewChart(
         overviewChartRef.current!,
-        8000
+        flameGraph!
       )
     }
     if (detailChartRef.current) {

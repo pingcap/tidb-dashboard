@@ -80,7 +80,7 @@ export class TimelineDetailChart {
     this.setTimeLenScale()
 
     this.draw()
-    // this.registerHanlers()
+    this.registerHanlers()
   }
 
   setTimeDuration(timeDuration: number) {
@@ -126,12 +126,12 @@ export class TimelineDetailChart {
   registerHanlers() {
     window.addEventListener('resize', this.onResize)
     // https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
-    this.context.canvas.addEventListener('wheel', this.onMouseWheel)
-    this.context.canvas.addEventListener('mousedown', this.onMouseDown)
-    this.context.canvas.addEventListener('mousemove', this.onCanvasMouseMove)
-    this.context.canvas.addEventListener('mouseout', this.onCanvasMouseOut)
-    window.addEventListener('mousemove', this.onWindowMouseMove)
-    window.addEventListener('mouseup', this.onMouseUp)
+    // this.context.canvas.addEventListener('wheel', this.onMouseWheel)
+    // this.context.canvas.addEventListener('mousedown', this.onMouseDown)
+    // this.context.canvas.addEventListener('mousemove', this.onCanvasMouseMove)
+    // this.context.canvas.addEventListener('mouseout', this.onCanvasMouseOut)
+    // window.addEventListener('mousemove', this.onWindowMouseMove)
+    // window.addEventListener('mouseup', this.onMouseUp)
   }
 
   onResize = () => {

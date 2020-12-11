@@ -1,4 +1,6 @@
 import { ScaleLinear, scaleLinear } from 'd3'
+import { getValueFormat } from '@baurine/grafana-value-formats'
+import { IFlameGraph, IFullSpan } from './flameGraph'
 
 type Pos = {
   x: number
@@ -22,11 +24,13 @@ enum Action {
 
 export class TimelineOverviewChart {
   private context: CanvasRenderingContext2D
+  private offscreenContext: CanvasRenderingContext2D
 
   // dimensions
   private width: number = 0
   private height: number = 0
   private dragAreaHeight: number = 0
+  private offscreenCanvasHeight: number = 0
 
   // timeDuration
   private timeDuration: number = 0 // unit?
@@ -61,18 +65,30 @@ export class TimelineOverviewChart {
   static MOVED_VERTICAL_LINE_STROKE_STYLE = 'cornflowerblue'
   static MOVED_VERTICAL_LINE_WIDTH = 2
 
+  static OFFSCREEN_CANVAS_LAYER_HEIGHT = 20
+
+  // flameGraph
+  private flameGraph: IFlameGraph
+
   /////////////////////////////////////
   // setup
-  constructor(container: HTMLDivElement, timeDuration: number) {
+  constructor(container: HTMLDivElement, flameGraph: IFlameGraph) {
+    this.flameGraph = flameGraph
+
     const canvas = document.createElement('canvas')
     this.context = canvas.getContext('2d')!
     container.append(canvas)
 
-    this.setTimeDuration(timeDuration)
+    // offscreen
+    const offscreenCanvas = document.createElement('canvas')
+    this.offscreenContext = offscreenCanvas.getContext('2d')!
+
+    this.setTimeDuration(flameGraph.rootSpan.duration_ns!)
     this.setDimensions()
     this.fixPixelRatio()
     this.setTimeLenScale()
 
+    this.drawOffscreenCanvas()
     this.draw()
     this.registerHanlers()
   }
@@ -88,6 +104,10 @@ export class TimelineOverviewChart {
     this.width = container!.clientWidth
     this.height = container!.clientHeight
     this.dragAreaHeight = Math.floor(this.height / 5)
+
+    this.offscreenCanvasHeight =
+      (this.flameGraph.maxDepth + 1) *
+      TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT
   }
 
   fixPixelRatio() {
@@ -98,8 +118,12 @@ export class TimelineOverviewChart {
     this.context.canvas.style.height = this.height + 'px'
     this.context.canvas.width = this.width * dpr
     this.context.canvas.height = this.height * dpr
-
     this.context.scale(dpr, dpr)
+
+    // offscreen
+    // offscreen doesn't need to fix pixel ratio
+    this.offscreenContext.canvas.width = this.width
+    this.offscreenContext.canvas.height = this.offscreenCanvasHeight
   }
 
   // call it when timeDuration or width change
@@ -132,6 +156,7 @@ export class TimelineOverviewChart {
     this.setDimensions()
     this.fixPixelRatio()
     this.setTimeLenScale()
+    this.drawOffscreenCanvas()
     this.draw()
   }
 
@@ -343,6 +368,7 @@ export class TimelineOverviewChart {
   draw() {
     this.context.clearRect(0, 0, this.width, this.height)
     this.drawTimePointsAndVerticalLines()
+    this.drawFlameGraph()
     this.drawWindow()
     this.drawMoveVerticalLine()
     this.drawSelectedWindow()
@@ -366,7 +392,8 @@ export class TimelineOverviewChart {
         break
       }
       // text
-      this.context.fillText(`${timeDelta * i} ms`, x - 2, 2)
+      const timeStr = getValueFormat('ns')(timeDelta * i, 0)
+      this.context.fillText(timeStr, x - 2, 2)
       // vertical line
       this.context.beginPath()
       this.context.moveTo(x + 0.5, 0)
@@ -460,6 +487,47 @@ export class TimelineOverviewChart {
       )
     }
     this.context.restore()
+  }
+
+  drawFlameGraph() {
+    // copy from offscreen
+    this.context.save()
+    this.context.drawImage(
+      this.offscreenContext.canvas,
+      0,
+      0,
+      this.width,
+      this.offscreenCanvasHeight,
+      0,
+      16,
+      this.width,
+      this.height - 16
+    )
+    this.context.restore()
+  }
+
+  //////////////
+  // offscreen canvas
+
+  drawOffscreenCanvas() {
+    this.offscreenContext.save()
+    this.drawSpan(this.flameGraph.rootSpan, this.offscreenContext)
+    this.offscreenContext.restore()
+  }
+
+  drawSpan(span: IFullSpan, ctx: CanvasRenderingContext2D) {
+    if (span.node_type === 'TiDB') {
+      ctx.fillStyle = '#aab254'
+    } else {
+      ctx.fillStyle = '#507359'
+    }
+    const x = this.timeLenScale(span.begin_unix_time_ns!)
+    const y = span.depth * TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT
+    const width = this.timeLenScale(span.duration_ns!)
+    const height = TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT - 1
+    ctx.fillRect(x, y, width, height)
+
+    span.children.forEach((s) => this.drawSpan(s, ctx))
   }
 
   /////////////////////////////////////////

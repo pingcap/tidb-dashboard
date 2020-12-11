@@ -66,12 +66,13 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
   calcDepth(rootSpan)
   // console.log('rootNode after calcDepth', rootSpan)
 
-  console.log('max depth:', calcMaxDepth(rootSpan))
+  const maxDepth = calcMaxDepth(rootSpan)
+  console.log('max depth:', maxDepth)
 
   // return rootSpan
   return {
     startTime,
-    maxDepth: 20,
+    maxDepth,
     rootSpan,
   }
 }

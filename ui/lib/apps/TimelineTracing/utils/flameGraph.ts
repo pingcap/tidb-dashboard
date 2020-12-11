@@ -125,7 +125,7 @@ function calcDepth(parentSpan: IFullSpan) {
     } else {
       const lastSpan = parentSpan.children[i + 1]
       if (curSpan.max_end_time_ns > lastSpan.begin_unix_time_ns!) {
-        curSpan.depth = lastSpan.depth + lastSpan.height + 2
+        curSpan.depth = lastSpan.depth + lastSpan.height + 1
       } else {
         curSpan.depth = parentSpan.depth + 1
       }

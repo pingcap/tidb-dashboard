@@ -5,7 +5,11 @@ import { TimelineOverviewChart, genFlameGraph } from '../utils'
 import styles from './Timeline.module.less'
 import { TimelineDetailChart } from '../utils/TimelineDetailChart'
 
-import testData from '../utils/test-data.json'
+import selectCount from '../test-data/select-count.json'
+import insertInto from '../test-data/insert_into.json'
+
+import selectFromTt from '../test-data/select_from_tt_order_by_c1_asc_c2_desc.json'
+import insertIntoTt from '../test-data/insert_into_tt_select_from_tt.json'
 
 export default function Timeline() {
   const overviewChartRef = useRef(null)
@@ -15,7 +19,10 @@ export default function Timeline() {
   const detailChart = useRef<TimelineDetailChart>()
 
   useEffect(() => {
-    const flameGraph = genFlameGraph(testData)
+    // const flameGraph = genFlameGraph(selectCount)
+    // const flameGraph = genFlameGraph(insertInto)
+    // const flameGraph = genFlameGraph(selectFromTt)
+    const flameGraph = genFlameGraph(insertIntoTt)
 
     if (overviewChartRef.current) {
       overviewChart.current = new TimelineOverviewChart(

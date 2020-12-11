@@ -131,7 +131,7 @@ export class TimelineDetailChart {
   registerHanlers() {
     window.addEventListener('resize', this.onResize)
     // https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
-    // this.context.canvas.addEventListener('wheel', this.onMouseWheel)
+    this.context.canvas.addEventListener('wheel', this.onMouseWheel)
     // this.context.canvas.addEventListener('mousedown', this.onMouseDown)
     // this.context.canvas.addEventListener('mousemove', this.onCanvasMouseMove)
     // this.context.canvas.addEventListener('mouseout', this.onCanvasMouseOut)
@@ -254,15 +254,7 @@ export class TimelineDetailChart {
         newEnd = newStart + this.minSelectedTimeDuration
       }
     }
-    this.selectedTimeRange = { start: newStart, end: newEnd }
-
-    // update window
-    const window = this.timeRangeToWindow(this.selectedTimeRange)
-    if (window.right - window.left >= TimelineDetailChart.WINDOW_MIN_WIDTH) {
-      this.curWindow = window
-    }
-
-    this.draw()
+    this.setTimeRange({ start: newStart, end: newEnd })
   }
 
   updateAction(loc: Pos) {

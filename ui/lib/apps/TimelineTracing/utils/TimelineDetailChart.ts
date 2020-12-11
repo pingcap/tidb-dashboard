@@ -62,6 +62,8 @@ export class TimelineDetailChart {
   static MOVED_VERTICAL_LINE_STROKE_STYLE = 'cornflowerblue'
   static MOVED_VERTICAL_LINE_WIDTH = 2
 
+  static LAYER_HEIGHT = 20
+
   // flameGraph
   private flameGraph: IFlameGraph
 
@@ -92,8 +94,8 @@ export class TimelineDetailChart {
   setDimensions() {
     const container = this.context.canvas.parentElement
     this.width = container!.clientWidth
-    this.height = container!.clientHeight
-    this.dragAreaHeight = Math.floor(this.height / 5)
+    this.height =
+      TimelineDetailChart.LAYER_HEIGHT * (this.flameGraph.maxDepth + 1)
   }
 
   fixPixelRatio() {
@@ -114,19 +116,11 @@ export class TimelineDetailChart {
     this.timeLenScale = scaleLinear()
       .domain([start, end])
       .range([0, this.width])
-
-    console.log('new timerange:', this.selectedTimeRange)
-    console.log('1:', this.timeLenScale(start))
-    console.log('2:', this.timeLenScale(end))
-    console.log('3:', this.timeLenScale(start - 1 * 1000 * 1000))
-    console.log('4:', this.timeLenScale(end + 1 * 1000 * 1000))
   }
 
   /////////////////////////////////////
   //
   setTimeRange(newTimeRange: TimeRange) {
-    console.log('new timerange:', newTimeRange)
-
     this.selectedTimeRange = newTimeRange
     this.setTimeLenScale()
     this.draw()
@@ -502,10 +496,24 @@ export class TimelineDetailChart {
         x = 0
       }
       const y = span.depth * 20
-      const width = this.timeLenScale(span.end_unix_time_ns!) - x
+      const width = Math.max(this.timeLenScale(span.end_unix_time_ns!) - x, 0.5)
       const height = 19
 
       this.context.fillRect(x, y, width, height)
+
+      const deltaDepth = span.depth - span.parentDepth
+      if (deltaDepth > 1) {
+        this.context.strokeStyle = this.context.fillStyle
+        this.context.lineWidth = 0.5
+        this.context.beginPath()
+        this.context.moveTo(x, y)
+        this.context.lineTo(
+          x,
+          y - deltaDepth * TimelineDetailChart.LAYER_HEIGHT
+        )
+        this.context.stroke()
+      }
+
       // text
       if (width > this.context.measureText(span.event!).width) {
         this.context.textAlign = 'left'

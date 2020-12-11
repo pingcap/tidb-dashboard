@@ -532,9 +532,22 @@ export class TimelineOverviewChart {
     }
     const x = this.timeLenScale(span.begin_unix_time_ns!)
     const y = span.depth * TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT
-    const width = this.timeLenScale(span.duration_ns!)
+    let width = Math.max(this.timeLenScale(span.duration_ns!), 0.5)
     const height = TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT - 1
     ctx.fillRect(x, y, width, height)
+
+    const deltaDepth = span.depth - span.parentDepth
+    if (deltaDepth > 1) {
+      ctx.strokeStyle = ctx.fillStyle
+      ctx.lineWidth = 0.5
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+      ctx.lineTo(
+        x,
+        y - deltaDepth * TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT
+      )
+      ctx.stroke()
+    }
 
     span.children.forEach((s) => this.drawSpan(s, ctx))
   }

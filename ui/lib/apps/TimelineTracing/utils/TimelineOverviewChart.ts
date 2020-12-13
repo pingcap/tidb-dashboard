@@ -2,28 +2,13 @@ import { ScaleLinear, scaleLinear } from 'd3'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { IFlameGraph, IFullSpan } from './flameGraph'
 
-type Pos = {
-  x: number
-  y: number
-}
-type Window = {
-  left: number
-  right: number
-}
-type TimeRange = {
-  start: number
-  end: number
-}
-enum Action {
-  None,
-  SelectWindow,
-  MoveWindowLeft,
-  MoveWindowRight,
-  MoveWindow,
-}
-
-export type TimeRangeChangeListener = (timeRange: TimeRange) => void
-
+import {
+  Pos,
+  Window,
+  TimeRange,
+  Action,
+  TimeRangeChangeListener,
+} from './timelineTypes'
 export class TimelineOverviewChart {
   private context: CanvasRenderingContext2D
   private offscreenContext: CanvasRenderingContext2D
@@ -142,6 +127,19 @@ export class TimelineOverviewChart {
     if (window.right - window.left >= TimelineOverviewChart.WINDOW_MIN_WIDTH) {
       this.curWindow = window
     }
+  }
+
+  /////////////////////////////////////
+  //
+  setTimeRange(newTimeRange: TimeRange) {
+    this.selectedTimeRange = newTimeRange
+    // TODO: extract a setWindow() method
+    // update window
+    const window = this.timeRangeToWindow(this.selectedTimeRange)
+    if (window.right - window.left >= TimelineOverviewChart.WINDOW_MIN_WIDTH) {
+      this.curWindow = window
+    }
+    this.draw()
   }
 
   /////////////////////////////////////

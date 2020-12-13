@@ -1,25 +1,13 @@
 import { ScaleLinear, scaleLinear } from 'd3'
 import { IFlameGraph, IFullSpan } from './flameGraph'
 
-type Pos = {
-  x: number
-  y: number
-}
-type Window = {
-  left: number
-  right: number
-}
-type TimeRange = {
-  start: number
-  end: number
-}
-enum Action {
-  None,
-  SelectWindow,
-  MoveWindowLeft,
-  MoveWindowRight,
-  MoveWindow,
-}
+import {
+  Pos,
+  Window,
+  TimeRange,
+  Action,
+  TimeRangeChangeListener,
+} from './timelineTypes'
 
 export class TimelineDetailChart {
   private context: CanvasRenderingContext2D
@@ -66,6 +54,9 @@ export class TimelineDetailChart {
 
   // flameGraph
   private flameGraph: IFlameGraph
+
+  //
+  private timeRangeListeners: TimeRangeChangeListener[] = []
 
   /////////////////////////////////////
   // setup
@@ -254,7 +245,9 @@ export class TimelineDetailChart {
         newEnd = newStart + this.minSelectedTimeDuration
       }
     }
-    this.setTimeRange({ start: newStart, end: newEnd })
+    const newTimeRange = { start: newStart, end: newEnd }
+    this.setTimeRange(newTimeRange)
+    this.notifyTimeRangeListeners(newTimeRange)
   }
 
   updateAction(loc: Pos) {
@@ -561,5 +554,21 @@ export class TimelineDetailChart {
       timeDelta = Math.round(timeDelta) * step
     }
     return timeDelta
+  }
+
+  //////////////////////////////////
+  // listeners
+  addTimeRangeListener(listener: TimeRangeChangeListener) {
+    this.timeRangeListeners.push(listener)
+    listener(this.selectedTimeRange)
+    return () => {
+      this.timeRangeListeners = this.timeRangeListeners.filter(
+        (l) => l !== listener
+      )
+    }
+  }
+
+  notifyTimeRangeListeners(newTimeRange: TimeRange) {
+    this.timeRangeListeners.forEach((l) => l(newTimeRange))
   }
 }

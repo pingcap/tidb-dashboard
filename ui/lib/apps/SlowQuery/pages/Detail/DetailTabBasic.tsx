@@ -1,5 +1,7 @@
 import React from 'react'
-import client, { SlowquerySlowQuery } from '@lib/client'
+import { useNavigate } from 'react-router'
+
+import { SlowquerySlowQuery } from '@lib/client'
 import { CardTable, DateTime } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { valueColumns } from '@lib/utils/tableColumns'
@@ -9,6 +11,8 @@ export interface ITabBasicProps {
 }
 
 export default function TabBasic({ data }: ITabBasicProps) {
+  const navigate = useNavigate()
+
   // Here it is fine to not use useMemo() to cache data,
   // because the detail data won't be refreshed after loaded
   const items = [
@@ -43,10 +47,7 @@ export default function TabBasic({ data }: ITabBasicProps) {
         <a
           onClick={() => {
             if (data.trace_id && data.trace_id !== '0') {
-              window.open(
-                `${client.getBasePath()}/trace/query/${data.trace_id}`,
-                '_blank'
-              )
+              navigate(`/timeline?trace_id=${data.trace_id}`)
             }
           }}
         >

@@ -47,10 +47,14 @@ export class TimelineDetailChart {
   // flameGraph
   private flameGraph: IFlameGraph
   private clickedSpan: IFullSpan | null = null
+  private hoverSpan: IFullSpan | null = null
 
   //
   private timeRangeListeners: TimeRangeChangeListener[] = []
   private spanClickListeners: SpanClickListener[] = []
+
+  //
+  private tooltipDomElement: HTMLDivElement | null = null
 
   /////////////////////////////////////
   // setup
@@ -111,6 +115,10 @@ export class TimelineDetailChart {
     this.draw()
   }
 
+  setTooltipElement(tooltip: HTMLDivElement) {
+    this.tooltipDomElement = tooltip
+  }
+
   /////////////////////////////////////
   // event handlers: mousedown, mousemove, mouseup, mousewheel, resize
   registerHanlers() {
@@ -149,6 +157,8 @@ export class TimelineDetailChart {
 
     const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
     this.curMousePos = loc
+    this.hoverSpan = null
+    this.showTooltip({ x: event.clientX, y: event.clientY })
     this.draw()
   }
 
@@ -161,6 +171,8 @@ export class TimelineDetailChart {
 
     const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
     this.curMousePos = loc
+    this.hoverSpan = this.getSpanInPos(this.flameGraph.rootSpan, loc)
+    this.showTooltip({ x: event.clientX, y: event.clientY })
     this.draw()
   }
 
@@ -315,6 +327,11 @@ export class TimelineDetailChart {
       span.end_unix_time_ns > start || span.begin_unix_time_ns! < end
 
     if (inside) {
+      if (span === this.hoverSpan) {
+        this.context.globalAlpha = 1.0
+      } else {
+        this.context.globalAlpha = 0.9
+      }
       if (span.node_type === 'TiDB') {
         this.context.fillStyle = '#aab254'
       } else {
@@ -355,6 +372,7 @@ export class TimelineDetailChart {
       this.context.textAlign = 'start'
       this.context.textBaseline = 'middle'
       this.context.fillStyle = 'white'
+      this.context.globalAlpha = 1.0
       if (width >= fullStrWidth + 4) {
         // show full event and duration
 
@@ -407,6 +425,25 @@ export class TimelineDetailChart {
     this.context.strokeRect(x, y, width, TimelineDetailChart.LAYER_HEIGHT - 1)
 
     this.context.restore()
+  }
+
+  /////////////////////////////////////////
+  //
+  showTooltip(windowPos: Pos) {
+    if (this.tooltipDomElement === null) return
+
+    if (this.hoverSpan === null) {
+      this.tooltipDomElement.style.opacity = '0.0'
+    } else {
+      this.tooltipDomElement.style.opacity = '1.0'
+      this.tooltipDomElement.style.transform = `translate(${
+        windowPos.x + 8
+      }px, ${windowPos.y + 8}px)`
+      this.tooltipDomElement.innerHTML = `<span>${getValueFormat('ns')(
+        this.hoverSpan.duration_ns!,
+        2
+      )}</span>&nbsp;&nbsp;${this.hoverSpan.event!}`
+    }
   }
 
   /////////////////////////////////////////

@@ -18,6 +18,8 @@ export default function Timeline() {
   const detailChartRef = useRef(null)
   const detailChart = useRef<TimelineDetailChart>()
 
+  const spanTooltipRef = useRef(null)
+
   const [clickedSpan, setClickedSpan] = useState<IFullSpan | null>(null)
 
   useEffect(() => {
@@ -46,6 +48,7 @@ export default function Timeline() {
       detailChart.current.addSpanClickListener((span) => {
         setClickedSpan(span)
       })
+      detailChart.current.setTooltipElement(spanTooltipRef.current!)
     }
   }, [])
 
@@ -55,6 +58,8 @@ export default function Timeline() {
       <div ref={overviewChartRef} className={styles.overview_chart_container} />
       <br />
       <div ref={detailChartRef} className={styles.detail_chart_container} />
+
+      <div ref={spanTooltipRef} className={styles.span_tooltip_container} />
 
       <br />
       {clickedSpan && (

@@ -2,13 +2,7 @@ import { ScaleLinear, scaleLinear } from 'd3'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { IFlameGraph, IFullSpan } from './flameGraph'
 
-import {
-  Pos,
-  Window,
-  TimeRange,
-  Action,
-  TimeRangeChangeListener,
-} from './timelineTypes'
+import { Pos, TimeRange, TimeRangeChangeListener } from './timelineTypes'
 
 export class TimelineDetailChart {
   private context: CanvasRenderingContext2D
@@ -29,9 +23,6 @@ export class TimelineDetailChart {
   // mouse pos
   private curMousePos: Pos = { x: 0, y: 0 }
   private mouseDownPos: Pos | null = null
-
-  // action
-  private action = Action.None
 
   // draw dimensions and style
   static WINDOW_MIN_WIDTH = 6
@@ -270,7 +261,6 @@ export class TimelineDetailChart {
   draw() {
     this.context.clearRect(0, 0, this.width, this.height)
     // this.drawTimePointsAndVerticalLines()
-    // this.drawMoveVerticalLine()
     this.drawFlameGraph()
   }
 
@@ -299,27 +289,6 @@ export class TimelineDetailChart {
       this.context.lineTo(x + 0.5, this.height)
       this.context.stroke()
     }
-    this.context.restore()
-  }
-
-  drawMoveVerticalLine() {
-    // not draw it when mouse move outside the canvas
-    // to keep same as the chrome dev tool
-    if (
-      this.action !== Action.SelectWindow ||
-      this.mouseOutsideCanvas(this.curMousePos)
-    ) {
-      return
-    }
-
-    this.context.save()
-    this.context.strokeStyle =
-      TimelineDetailChart.MOVED_VERTICAL_LINE_STROKE_STYLE
-    this.context.lineWidth = TimelineDetailChart.MOVED_VERTICAL_LINE_WIDTH
-    this.context.beginPath()
-    this.context.moveTo(this.curMousePos.x, 0)
-    this.context.lineTo(this.curMousePos.x, this.height)
-    this.context.stroke()
     this.context.restore()
   }
 
@@ -407,21 +376,6 @@ export class TimelineDetailChart {
     return {
       x: windowX - canvasBox.left,
       y: windowY - canvasBox.top,
-    }
-  }
-
-  windowToTimeRange(window: Window): TimeRange {
-    return {
-      start: this.timeLenScale.invert(window.left),
-      end: this.timeLenScale.invert(window.right),
-    }
-  }
-
-  timeRangeToWindow(timeRange: TimeRange): Window {
-    const { start, end } = timeRange
-    return {
-      left: this.timeLenScale(start),
-      right: this.timeLenScale(end),
     }
   }
 

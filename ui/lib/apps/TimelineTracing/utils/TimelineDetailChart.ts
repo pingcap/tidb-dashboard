@@ -4,6 +4,8 @@ import { IFlameGraph, IFullSpan } from './flameGraph'
 
 import { Pos, TimeRange, TimeRangeChangeListener } from './timelineTypes'
 
+export type SpanClickListener = (span: IFullSpan | null) => void
+
 export class TimelineDetailChart {
   private context: CanvasRenderingContext2D
 
@@ -48,6 +50,7 @@ export class TimelineDetailChart {
 
   //
   private timeRangeListeners: TimeRangeChangeListener[] = []
+  private spanClickListeners: SpanClickListener[] = []
 
   /////////////////////////////////////
   // setup
@@ -218,6 +221,7 @@ export class TimelineDetailChart {
     // handle click
     if (loc.x === this.mouseDownPos?.x && loc.y === this.mouseDownPos?.y) {
       this.clickedSpan = this.getSpanInPos(this.flameGraph.rootSpan, loc)
+      this.notifySpanClickListeners(this.clickedSpan)
     }
 
     // release mouse
@@ -472,5 +476,19 @@ export class TimelineDetailChart {
 
   notifyTimeRangeListeners(newTimeRange: TimeRange) {
     this.timeRangeListeners.forEach((l) => l(newTimeRange))
+  }
+
+  addSpanClickListener(listener: SpanClickListener) {
+    this.spanClickListeners.push(listener)
+    listener(this.clickedSpan)
+    return () => {
+      this.spanClickListeners = this.spanClickListeners.filter(
+        (l) => l !== listener
+      )
+    }
+  }
+
+  notifySpanClickListeners(span: IFullSpan | null) {
+    this.spanClickListeners.forEach((l) => l(span))
   }
 }

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Card } from '@lib/components'
-import { TimelineOverviewChart, genFlameGraph } from '../utils'
+import { TimelineOverviewChart, genFlameGraph, IFullSpan } from '../utils'
 
 import styles from './Timeline.module.less'
 import { TimelineDetailChart } from '../utils/TimelineDetailChart'
@@ -17,6 +17,8 @@ export default function Timeline() {
 
   const detailChartRef = useRef(null)
   const detailChart = useRef<TimelineDetailChart>()
+
+  const [clickedSpan, setClickedSpan] = useState<IFullSpan | null>(null)
 
   useEffect(() => {
     // const flameGraph = genFlameGraph(selectCount)
@@ -41,6 +43,9 @@ export default function Timeline() {
       detailChart.current.addTimeRangeListener((newTimeRange) => {
         overviewChart.current?.setTimeRange(newTimeRange)
       })
+      detailChart.current.addSpanClickListener((span) => {
+        setClickedSpan(span)
+      })
     }
   }, [])
 
@@ -50,6 +55,15 @@ export default function Timeline() {
       <div ref={overviewChartRef} className={styles.overview_chart_container} />
       <br />
       <div ref={detailChartRef} className={styles.detail_chart_container} />
+
+      <br />
+      {clickedSpan && (
+        <div>
+          <p>event: {clickedSpan.event}</p>
+          <p>span_id: {clickedSpan.span_id}</p>
+          <p>parent_id: {clickedSpan.parent_id}</p>
+        </div>
+      )}
     </Card>
   )
 }

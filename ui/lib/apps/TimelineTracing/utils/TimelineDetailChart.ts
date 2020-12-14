@@ -1,4 +1,5 @@
 import { ScaleLinear, scaleLinear } from 'd3'
+import { getValueFormat } from '@baurine/grafana-value-formats'
 import { IFlameGraph, IFullSpan } from './flameGraph'
 
 import {
@@ -344,7 +345,10 @@ export class TimelineDetailChart {
         x = 0
       }
       const y = span.depth * 20
-      const width = Math.max(this.timeLenScale(span.end_unix_time_ns!) - x, 0.5)
+      let width = Math.max(this.timeLenScale(span.end_unix_time_ns!) - x, 0.5)
+      if (x + width > this.width) {
+        width = this.width - x
+      }
       const height = 19
 
       this.context.fillRect(x, y, width, height)
@@ -363,11 +367,33 @@ export class TimelineDetailChart {
       }
 
       // text
-      if (width > this.context.measureText(span.event!).width) {
-        this.context.textAlign = 'left'
-        this.context.textBaseline = 'middle'
-        this.context.fillStyle = 'white'
+      const durationStr = getValueFormat('ns')(span.duration_ns!, 2)
+      const fullStr = `${span.event!} ${durationStr}`
+      const fullStrWidth = this.context.measureText(fullStr).width
+      const eventStrWidth = this.context.measureText(span.event!).width
+      const singleCharWidth = this.context.measureText('n').width
+      this.context.textAlign = 'start'
+      this.context.textBaseline = 'middle'
+      this.context.fillStyle = 'white'
+      if (width >= fullStrWidth + 4) {
+        // show full event and duration
+
+        // full event
         this.context.fillText(span.event!, x + 2, y + 10)
+
+        // duration
+        this.context.textAlign = 'end'
+        this.context.fillText(durationStr, x + width - 2, y + 10)
+      } else if (width >= eventStrWidth + 2) {
+        // extract
+        this.context.fillText(span.event!, x + 2, y + 10)
+      } else {
+        // not very accurate
+        const charCount = Math.floor((width - 10) / singleCharWidth)
+        if (charCount > 1) {
+          const str = `${span.event!.slice(0, charCount)}...`
+          this.context.fillText(str, x + 2, y + 10)
+        }
       }
     }
 

@@ -44,6 +44,7 @@ export class TimelineDetailChart {
 
   // flameGraph
   private flameGraph: IFlameGraph
+  private clickedSpan: IFullSpan | null = null
 
   //
   private timeRangeListeners: TimeRangeChangeListener[] = []
@@ -214,6 +215,11 @@ export class TimelineDetailChart {
     const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
     this.curMousePos = loc
 
+    // handle click
+    if (loc.x === this.mouseDownPos?.x && loc.y === this.mouseDownPos?.y) {
+      this.clickedSpan = this.getSpanInPos(this.flameGraph.rootSpan, loc)
+    }
+
     // release mouse
     this.mouseDownPos = null
     this.draw()
@@ -262,6 +268,7 @@ export class TimelineDetailChart {
     this.context.clearRect(0, 0, this.width, this.height)
     // this.drawTimePointsAndVerticalLines()
     this.drawFlameGraph()
+    this.drawClickedSpan()
   }
 
   drawTimePointsAndVerticalLines() {
@@ -369,6 +376,35 @@ export class TimelineDetailChart {
     span.children.forEach((s) => this.drawSpan(s))
   }
 
+  drawClickedSpan() {
+    if (this.clickedSpan === null) return
+
+    if (
+      this.clickedSpan.end_unix_time_ns < this.selectedTimeRange.start ||
+      this.clickedSpan.begin_unix_time_ns! > this.selectedTimeRange.end
+    ) {
+      return
+    }
+
+    this.context.save()
+
+    this.context.strokeStyle = '#DC2626'
+    this.context.lineWidth = 2
+
+    let x = this.timeLenScale(this.clickedSpan.begin_unix_time_ns!)
+    if (x < 0) {
+      x = 0
+    }
+    const y = this.clickedSpan.depth * TimelineDetailChart.LAYER_HEIGHT
+    let width = this.timeLenScale(this.clickedSpan.end_unix_time_ns) - x
+    if (width > this.width) {
+      width = this.width
+    }
+    this.context.strokeRect(x, y, width, TimelineDetailChart.LAYER_HEIGHT - 1)
+
+    this.context.restore()
+  }
+
   /////////////////////////////////////////
   // utils
   windowToCanvasLoc(windowX: number, windowY: number) {
@@ -397,6 +433,29 @@ export class TimelineDetailChart {
       timeDelta = Math.round(timeDelta) * step
     }
     return timeDelta
+  }
+
+  getSpanInPos(span: IFullSpan, pos: Pos): IFullSpan | null {
+    const { x, y } = pos
+    const x1 = this.timeLenScale(span.begin_unix_time_ns!)
+    const x2 = this.timeLenScale(span.end_unix_time_ns!)
+    const y1 = span.depth * TimelineDetailChart.LAYER_HEIGHT
+    const y2 = y1 + TimelineDetailChart.LAYER_HEIGHT - 1
+    if (x <= x2 && x >= x1 && y <= y2 && y >= y1) {
+      return span
+    }
+    if (span.children.length === 0) {
+      return null
+    }
+
+    // traverse children
+    for (let i = 0; i < span.children.length; i++) {
+      const targetSpan = this.getSpanInPos(span.children[i], pos)
+      if (targetSpan) {
+        return targetSpan
+      }
+    }
+    return null
   }
 
   //////////////////////////////////

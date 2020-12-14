@@ -65,6 +65,29 @@ function DetailPage() {
   const togglePlan = () =>
     setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
 
+  const tabs = [
+    {
+      key: 'basic',
+      title: t('slow_query.detail.tabs.basic'),
+      content: () => <TabBasic data={data!} />,
+    },
+    {
+      key: 'time',
+      title: t('slow_query.detail.tabs.time'),
+      content: () => <TabTime data={data!} />,
+    },
+    {
+      key: 'copr',
+      title: t('slow_query.detail.tabs.copr'),
+      content: () => <TabCopr data={data!} />,
+    },
+    {
+      key: 'txn',
+      title: t('slow_query.detail.tabs.txn'),
+      content: () => <TabTxn data={data!} />,
+    },
+  ]
+
   return (
     <div>
       <Head title={t('slow_query.detail.head.title')}>
@@ -158,32 +181,7 @@ function DetailPage() {
                 </Descriptions.Item>
               </Descriptions>
 
-              <CardTabs animated={false}>
-                <CardTabs.TabPane
-                  tab={t('slow_query.detail.tabs.basic')}
-                  key="basic"
-                >
-                  <TabBasic data={data} />
-                </CardTabs.TabPane>
-                <CardTabs.TabPane
-                  tab={t('slow_query.detail.tabs.time')}
-                  key="time"
-                >
-                  <TabTime data={data} />
-                </CardTabs.TabPane>
-                <CardTabs.TabPane
-                  tab={t('slow_query.detail.tabs.copr')}
-                  key="copr"
-                >
-                  <TabCopr data={data} />
-                </CardTabs.TabPane>
-                <CardTabs.TabPane
-                  tab={t('slow_query.detail.tabs.txn')}
-                  key="txn"
-                >
-                  <TabTxn data={data} />
-                </CardTabs.TabPane>
-              </CardTabs>
+              <CardTabs animated={false} tabs={tabs} />
             </>
           )}
         </AnimatedSkeleton>

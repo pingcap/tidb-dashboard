@@ -149,6 +149,10 @@ export class TimelineDetailChart {
 
     // cursor
     document.body.style.cursor = 'grab'
+
+    // tooltip
+    this.hoverSpan = null
+    this.showTooltip({ x: event.clientX, y: event.clientY })
   }
 
   // recover mouse cursor

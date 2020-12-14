@@ -1,11 +1,16 @@
 import React from 'react'
-import { Root } from '@lib/components'
-import Timeline from './components/Timeline'
+import { HashRouter as Router } from 'react-router-dom'
+import { ParamsPageWrapper, Root } from '@lib/components'
+import Timeline from './pages/Timeline'
 
 export default () => {
   return (
     <Root>
-      <Timeline />
+      <Router>
+        <ParamsPageWrapper>
+          <Timeline />
+        </ParamsPageWrapper>
+      </Router>
     </Root>
   )
 }

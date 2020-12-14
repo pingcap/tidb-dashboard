@@ -1,33 +1,54 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Card } from '@lib/components'
-import { TimelineOverviewChart, genFlameGraph, IFullSpan } from '../utils'
+import useQueryParams from '@lib/utils/useQueryParams'
+
+import {
+  TimelineOverviewChart,
+  TimelineDetailChart,
+  genFlameGraph,
+  IFullSpan,
+  IFlameGraph,
+} from '../utils'
 
 import styles from './Timeline.module.less'
-import { TimelineDetailChart } from '../utils/TimelineDetailChart'
-
-import selectCount from '../test-data/select-count.json'
-import insertInto from '../test-data/insert_into.json'
 
 import selectFromTt from '../test-data/select_from_tt_order_by_c1_asc_c2_desc.json'
 import insertIntoTt from '../test-data/insert_into_tt_select_from_tt.json'
+import client from '@lib/client'
 
 export default function Timeline() {
+  const { trace_id } = useQueryParams()
+
   const overviewChartRef = useRef(null)
   const overviewChart = useRef<TimelineOverviewChart>()
 
   const detailChartRef = useRef(null)
   const detailChart = useRef<TimelineDetailChart>()
 
-  const spanTooltipRef = useRef(null)
+  const tooltipRef = useRef(null)
 
   const [clickedSpan, setClickedSpan] = useState<IFullSpan | null>(null)
 
   useEffect(() => {
-    // const flameGraph = genFlameGraph(selectCount)
-    // const flameGraph = genFlameGraph(insertInto)
-    // const flameGraph = genFlameGraph(selectFromTt)
-    const flameGraph = genFlameGraph(insertIntoTt)
+    async function queryTraces() {
+      if (trace_id === undefined) {
+        return
+      }
+      if (trace_id === 'test_select') {
+        setupCharts(genFlameGraph(selectFromTt))
+      } else if (trace_id === 'test_insert') {
+        setupCharts(genFlameGraph(insertIntoTt))
+      } else {
+        const res = await client.getInstance().traceQueryTraceIdGet(trace_id)
+        if (res.data) {
+          setupCharts(genFlameGraph(res.data))
+        }
+      }
+    }
+    queryTraces()
+  }, [trace_id])
 
+  function setupCharts(flameGraph: IFlameGraph) {
     if (overviewChartRef.current) {
       overviewChart.current = new TimelineOverviewChart(
         overviewChartRef.current!,
@@ -48,19 +69,16 @@ export default function Timeline() {
       detailChart.current.addSpanClickListener((span) => {
         setClickedSpan(span)
       })
-      detailChart.current.setTooltipElement(spanTooltipRef.current!)
+      detailChart.current.setTooltipElement(tooltipRef.current!)
     }
-  }, [])
+  }
 
   return (
     <Card>
-      <h1>Timeline</h1>
       <div ref={overviewChartRef} className={styles.overview_chart_container} />
       <br />
       <div ref={detailChartRef} className={styles.detail_chart_container} />
-
-      <div ref={spanTooltipRef} className={styles.span_tooltip_container} />
-
+      <div ref={tooltipRef} className={styles.tooltip_container} />
       <br />
       {clickedSpan && (
         <div>

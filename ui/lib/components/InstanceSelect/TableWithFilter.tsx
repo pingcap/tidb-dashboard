@@ -3,7 +3,7 @@ import cx from 'classnames'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { MarqueeSelection } from 'office-ui-fabric-react/lib/MarqueeSelection'
 import { SelectionMode } from 'office-ui-fabric-react/lib/Selection'
-import { useSize } from '@umijs/hooks'
+import { useSize } from 'ahooks'
 import {
   DetailsListLayoutMode,
   ISelection,

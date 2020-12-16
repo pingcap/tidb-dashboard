@@ -20,7 +20,7 @@ import { getStyles } from 'office-ui-fabric-react/lib/components/GroupedList/Gro
 
 import { Icon } from 'office-ui-fabric-react/lib/Icon'
 import { Checkbox } from 'antd'
-import { usePersistFn } from '@umijs/hooks'
+import { usePersistFn } from 'ahooks'
 
 const getClassNames = classNamesFunction<
   IGroupHeaderStyleProps,

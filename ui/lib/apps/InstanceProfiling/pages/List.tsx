@@ -3,7 +3,7 @@ import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import React, { useMemo, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { usePersistFn } from '@umijs/hooks'
+import { usePersistFn } from 'ahooks'
 import client, {
   ProfilingStartRequest,
   ModelRequestTargetNode,

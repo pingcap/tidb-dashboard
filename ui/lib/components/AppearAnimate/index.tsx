@@ -1,6 +1,6 @@
 import cx from 'classnames'
 import React, { useState, useCallback } from 'react'
-import { useEventListener } from '@umijs/hooks'
+import { useEventListener } from 'ahooks'
 
 export interface IAppearAnimateProps
   extends React.HTMLAttributes<HTMLDivElement> {

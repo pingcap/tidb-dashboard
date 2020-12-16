@@ -3,7 +3,7 @@ import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { usePersistFn } from '@umijs/hooks'
+import { usePersistFn } from 'ahooks'
 
 import client from '@lib/client'
 import { CardTable, Head } from '@lib/components'

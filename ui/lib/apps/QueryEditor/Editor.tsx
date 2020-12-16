@@ -1,6 +1,6 @@
 import React from 'react'
 import AceEditor, { IAceEditorProps } from 'react-ace'
-import { useSize } from '@umijs/hooks'
+import { useSize } from 'ahooks'
 
 import 'ace-builds/src-noconflict/mode-sql'
 import 'ace-builds/src-noconflict/ext-searchbox'

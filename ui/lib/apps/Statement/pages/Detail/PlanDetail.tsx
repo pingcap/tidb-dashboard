@@ -1,6 +1,6 @@
 import React from 'react'
 import { Space } from 'antd'
-import { useLocalStorageState } from '@umijs/hooks'
+import { useLocalStorageState } from 'ahooks'
 import { useTranslation } from 'react-i18next'
 import {
   AnimatedSkeleton,

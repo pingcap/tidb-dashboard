@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { Button, Drawer, Result } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useGetSet, useMount, useInterval } from 'react-use'
-import { useBoolean } from '@umijs/hooks'
+import { useBoolean } from 'ahooks'
 
 import client, { ConfigKeyVisualConfig } from '@lib/client'
 import { Heatmap } from '../heatmap'

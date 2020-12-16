@@ -19,7 +19,7 @@ import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
 import * as auth from '@lib/utils/auth'
 import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
-import { usePersistFn } from '@umijs/hooks'
+import { usePersistFn } from 'ahooks'
 
 import { ReactComponent as Logo } from './logo.svg'
 import styles from './index.module.less'

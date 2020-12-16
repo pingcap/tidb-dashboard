@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons'
-import { useSize } from '@umijs/hooks'
+import { useSize } from 'ahooks'
 import Flexbox from '@g07cha/flexbox-react'
 import { useSpring, animated } from 'react-spring'
 import { useClientRequest } from '@lib/utils/useClientRequest'

@@ -4,7 +4,7 @@ import { Selection } from 'office-ui-fabric-react/lib/Selection'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
-import { useLocalStorageState } from '@umijs/hooks'
+import { useLocalStorageState } from 'ahooks'
 
 import client, { StatementModel } from '@lib/client'
 import {

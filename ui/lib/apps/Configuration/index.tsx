@@ -6,7 +6,7 @@ import { IGroup, IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import InlineEditor from './InlineEditor'
 import { Modal, Spin, Tooltip, Input } from 'antd'
-import { usePersistFn, useDebounce } from '@umijs/hooks'
+import { usePersistFn, useDebounce } from 'ahooks'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 import { useTranslation } from 'react-i18next'
@@ -90,7 +90,7 @@ export default function () {
 
   const { t } = useTranslation()
   const [filterValueLower, setFilterValueLower] = useState('')
-  const debouncedFilterValue = useDebounce(filterValueLower, 200)
+  const debouncedFilterValue = useDebounce(filterValueLower, { wait: 200 })
 
   const handleSaved = useCallback(() => {
     sendRequest()

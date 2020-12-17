@@ -1,13 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
 import client, { ErrorStrategy, SlowquerySlowQuery } from '@lib/client'
-import { calcTimeRange, TimeRange, IColumnKeys } from '@lib/components'
+import {
+  calcTimeRange,
+  TimeRange,
+  IColumnKeys,
+  stringfyTimeRange,
+} from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
-import { derivedFields, slowQueryColumns } from './tableColumns'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
+import { CacheMgr } from '@lib/utils/useCache'
+
+import { derivedFields, slowQueryColumns } from './tableColumns'
 
 export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
   query: true,
@@ -65,6 +72,7 @@ export interface ISlowQueryTableController {
 }
 
 export default function useSlowQueryTableController(
+  slowQueryCacheMgr: CacheMgr | null,
   visibleColumnKeys: IColumnKeys,
   showFullSQL: boolean,
   options?: ISlowQueryOptions,
@@ -93,9 +101,8 @@ export default function useSlowQueryTableController(
   }, [queryOptions])
 
   const [allSchemas, setAllSchemas] = useState<string[]>([])
-  const [loadingSlowQueries, setLoadingSlowQueries] = useState(true)
+  const [loadingSlowQueries, setLoadingSlowQueries] = useState(false)
   const [slowQueries, setSlowQueries] = useState<SlowquerySlowQuery[]>([])
-  const [refreshTimes, setRefreshTimes] = useState(0)
 
   function setQueryOptions(newOptions: ISlowQueryOptions) {
     if (needSave) {
@@ -109,7 +116,7 @@ export default function useSlowQueryTableController(
 
   function refresh() {
     setErrors([])
-    setRefreshTimes((prev) => prev + 1)
+    fetchSlowQueryList(true)
   }
 
   useEffect(() => {
@@ -137,37 +144,66 @@ export default function useSlowQueryTableController(
     [slowQueries, showFullSQL]
   )
 
-  useEffect(() => {
-    async function getSlowQueryList() {
+  const fetchSlowQueryList = useCallback(
+    async (force: boolean) => {
+      const {
+        schemas,
+        digest,
+        limit,
+        plans,
+        searchText,
+        timeRange,
+      } = queryOptions
+      const { desc, orderBy } = orderOptions
+      const { beginTime, endTime } = queryTimeRange
+      const cacheKey = `${schemas.join('_')}_${digest}_${limit}_${plans.join(
+        '_'
+      )}_${searchText}_${stringfyTimeRange(timeRange)}_${desc}_${orderBy}`
+      const cacheItem = slowQueryCacheMgr?.get(cacheKey)
+      if (cacheItem && !force) {
+        setSlowQueries(cacheItem)
+        return
+      }
+
       setLoadingSlowQueries(true)
       try {
         const res = await client
           .getInstance()
           .slowQueryListGet(
-            queryTimeRange.beginTime,
-            queryOptions.schemas,
-            orderOptions.desc,
-            queryOptions.digest,
-            queryTimeRange.endTime,
+            beginTime,
+            schemas,
+            desc,
+            digest,
+            endTime,
             selectedFields,
-            queryOptions.limit,
-            orderOptions.orderBy,
-            queryOptions.plans,
-            queryOptions.searchText,
+            limit,
+            orderBy,
+            plans,
+            searchText,
             {
               errorStrategy: ErrorStrategy.Custom,
             }
           )
         setSlowQueries(res.data || [])
+        slowQueryCacheMgr?.set(cacheKey, res.data || [])
         setErrors([])
       } catch (e) {
         setErrors((prev) => prev.concat(e))
       }
       setLoadingSlowQueries(false)
-    }
+    },
+    [
+      queryOptions,
+      orderOptions,
+      queryTimeRange,
+      selectedFields,
+      slowQueryCacheMgr,
+    ]
+  )
 
-    getSlowQueryList()
-  }, [queryOptions, orderOptions, queryTimeRange, refreshTimes, selectedFields])
+  useEffect(() => {
+    fetchSlowQueryList(false)
+  }, [fetchSlowQueryList])
 
   const [downloading, setDownloading] = useState(false)
 

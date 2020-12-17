@@ -1,5 +1,5 @@
 import { DeleteOutlined } from '@ant-design/icons'
-import { usePersistFn } from '@umijs/hooks'
+import { usePersistFn } from 'ahooks'
 import { Divider, Popconfirm, Tooltip } from 'antd'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'

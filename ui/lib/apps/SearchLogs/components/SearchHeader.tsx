@@ -7,7 +7,7 @@ import { Button, Form, Input, Select, Modal } from 'antd'
 import React, { useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { useMount } from '@umijs/hooks'
+import { useMount } from 'ahooks'
 import {
   TimeRangeSelector,
   TimeRange,

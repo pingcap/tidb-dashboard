@@ -2,7 +2,7 @@ import React from 'react'
 import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
-import { useLocalStorageState } from '@umijs/hooks'
+import { useLocalStorageState } from 'ahooks'
 
 import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'

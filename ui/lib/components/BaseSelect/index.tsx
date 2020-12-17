@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react'
 import cx from 'classnames'
-import { useEventListener } from '@umijs/hooks'
+import { useEventListener } from 'ahooks'
 import { DownOutlined } from '@ant-design/icons'
 import Trigger from 'rc-trigger'
 import KeyCode from 'rc-util/lib/KeyCode'

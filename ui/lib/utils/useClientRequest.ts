@@ -1,4 +1,4 @@
-import { useMount, useUnmount, usePersistFn } from '@umijs/hooks'
+import { useMount, useUnmount, usePersistFn } from 'ahooks'
 import { useState, useRef, useEffect } from 'react'
 import axios, { CancelToken, AxiosPromise, CancelTokenSource } from 'axios'
 

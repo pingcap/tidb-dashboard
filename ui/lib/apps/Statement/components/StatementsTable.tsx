@@ -1,4 +1,4 @@
-import { usePersistFn } from '@umijs/hooks'
+import { usePersistFn } from 'ahooks'
 import React, { useCallback } from 'react'
 import { CardTable, ICardTableProps } from '@lib/components'
 import DetailPage from '../pages/Detail'

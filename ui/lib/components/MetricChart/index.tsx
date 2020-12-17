@@ -198,7 +198,7 @@ export default function MetricChart({
         type: 'value',
         axisLabel: {
           formatter: (v) => {
-            return valueFormatter(v, 0)
+            return valueFormatter(v, 1)
           },
         },
         splitLine: {

@@ -1,4 +1,4 @@
-import { usePersistFn } from '@umijs/hooks'
+import { usePersistFn } from 'ahooks'
 import { Checkbox } from 'antd'
 import cx from 'classnames'
 import {

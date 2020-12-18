@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, createContext } from 'react'
 
 type CacheItem = {
   expireAt: number
@@ -13,6 +13,8 @@ export type CacheMgr = {
   get: (key: string) => any
   set: (key: string, val: any, expire?: number) => void
 }
+
+export const CacheContext = createContext<CacheMgr | null>(null)
 
 export default function useCache(
   capacity: number = 1,

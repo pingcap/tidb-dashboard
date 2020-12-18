@@ -1,20 +1,24 @@
 import React from 'react'
-import { HashRouter as Router } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 
 import { Root } from '@lib/components'
+import useCache, { CacheContext } from '@lib/utils/useCache'
+
 import { Detail, List } from './pages'
-import ListAndDetail from '@lib/components/ListAndDetail'
 
 export default function () {
+  const statementCacheMgr = useCache()
+
   return (
     <Root>
-      <Router>
-        <ListAndDetail
-          DetailComponent={Detail}
-          ListComponent={List}
-          detailPathMatcher={(path) => path.startsWith('/statement/detail')}
-        />
-      </Router>
+      <CacheContext.Provider value={statementCacheMgr}>
+        <Router>
+          <Routes>
+            <Route path="/statement" element={<List />} />
+            <Route path="/statement/detail" element={<Detail />} />
+          </Routes>
+        </Router>
+      </CacheContext.Provider>
     </Root>
   )
 }

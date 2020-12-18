@@ -9,6 +9,8 @@ import client, {
 } from '@lib/client'
 import { IColumnKeys } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
+import { getSelectedFields } from '@lib/utils/tableColumnFactory'
+import { CacheMgr } from '@lib/utils/useCache'
 
 import {
   calcValidStatementTimeRange,
@@ -16,7 +18,6 @@ import {
   TimeRange,
 } from '../pages/List/TimeRangeSelector'
 import { derivedFields, statementColumns } from './tableColumns'
-import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 
 export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
   digest_text: true,
@@ -73,6 +74,7 @@ export interface IStatementTableController {
 }
 
 export default function useStatementTableController(
+  statementCacheMgr: CacheMgr | null,
   visibleColumnKeys: IColumnKeys,
   showFullSQL: boolean,
   options?: IStatementQueryOptions,
@@ -106,7 +108,7 @@ export default function useStatementTableController(
     [queryOptions, allTimeRanges]
   )
 
-  const [loadingStatements, setLoadingStatements] = useState(true)
+  const [loadingStatements, setLoadingStatements] = useState(false)
   const [statements, setStatements] = useState<StatementModel[]>([])
 
   const [refreshTimes, setRefreshTimes] = useState(0)

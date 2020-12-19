@@ -12,6 +12,7 @@ const ONE_HOUR_TIME = 1 * 60 * 60 * 1000
 export type CacheMgr = {
   get: (key: string) => any
   set: (key: string, val: any, expire?: number) => void
+  remove: (key: string) => void
 }
 
 export const CacheContext = createContext<CacheMgr | null>(null)
@@ -64,5 +65,5 @@ export default function useCache(
     cacheItemKeys.current = cacheItemKeys.current.filter((k) => k !== key)
   }
 
-  return { get, set }
+  return { get, set, remove }
 }

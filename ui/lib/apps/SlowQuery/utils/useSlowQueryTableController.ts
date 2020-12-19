@@ -7,7 +7,7 @@ import {
   calcTimeRange,
   TimeRange,
   IColumnKeys,
-  stringfyTimeRange,
+  stringifyTimeRange,
 } from '@lib/components'
 import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
@@ -158,7 +158,7 @@ export default function useSlowQueryTableController(
       const { beginTime, endTime } = queryTimeRange
       const cacheKey = `${schemas.join('_')}_${digest}_${limit}_${plans.join(
         '_'
-      )}_${searchText}_${stringfyTimeRange(timeRange)}_${desc}_${orderBy}`
+      )}_${searchText}_${stringifyTimeRange(timeRange)}_${desc}_${orderBy}`
       const cacheItem = slowQueryCacheMgr?.get(cacheKey)
       if (cacheItem && !force) {
         setSlowQueries(cacheItem)

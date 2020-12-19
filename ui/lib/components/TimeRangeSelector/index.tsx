@@ -56,7 +56,7 @@ export function calcTimeRange(timeRange?: TimeRange): [number, number] {
   }
 }
 
-export function stringfyTimeRange(timeRange?: TimeRange): string {
+export function stringifyTimeRange(timeRange?: TimeRange): string {
   let t2 = timeRange ?? DEFAULT_TIME_RANGE
   if (t2.type === 'absolute') {
     return `${t2.type}_${t2.value[0]}_${t2.value[1]}`

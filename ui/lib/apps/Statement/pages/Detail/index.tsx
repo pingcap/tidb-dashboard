@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { useLocalStorageState } from 'ahooks'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client, { StatementModel } from '@lib/client'
 import {
@@ -25,7 +26,6 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 
 import { planColumns as genPlanColumns } from '../../utils/tableColumns'
 import PlanDetail from './PlanDetail'
-import { ArrowLeftOutlined } from '@ant-design/icons'
 
 export interface IPageQuery {
   digest?: string

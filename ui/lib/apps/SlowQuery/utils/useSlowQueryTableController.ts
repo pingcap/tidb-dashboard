@@ -139,8 +139,9 @@ export default function useSlowQueryTableController(
   }, [queryOptions, orderOptions, selectedFields])
 
   function refresh() {
-    setErrors([])
     cacheMgr?.remove(cacheKey)
+
+    setErrors([])
     setRefreshTimes((prev) => prev + 1)
   }
 

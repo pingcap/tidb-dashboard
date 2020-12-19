@@ -3,6 +3,7 @@ import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { useLocalStorageState } from 'ahooks'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -24,7 +25,6 @@ import TabBasic from './DetailTabBasic'
 import TabTime from './DetailTabTime'
 import TabCopr from './DetailTabCopr'
 import TabTxn from './DetailTabTxn'
-import { ArrowLeftOutlined } from '@ant-design/icons'
 
 export interface IPageQuery {
   connectId?: string

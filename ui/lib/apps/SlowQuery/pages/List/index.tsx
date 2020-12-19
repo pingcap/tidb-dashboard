@@ -26,12 +26,12 @@ import {
   Toolbar,
   MultiSelect,
 } from '@lib/components'
+import { CacheContext } from '@lib/utils/useCache'
 
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQueryTableController, {
   DEF_SLOW_QUERY_COLUMN_KEYS,
 } from '../../utils/useSlowQueryTableController'
-import { CacheContext } from '@lib/utils/useCache'
 
 const { Option } = Select
 const { Search } = Input

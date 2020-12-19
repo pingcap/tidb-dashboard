@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
@@ -72,7 +72,7 @@ export interface ISlowQueryTableController {
 }
 
 export default function useSlowQueryTableController(
-  slowQueryCacheMgr: CacheMgr | null,
+  cacheMgr: CacheMgr | null,
   visibleColumnKeys: IColumnKeys,
   showFullSQL: boolean,
   options?: ISlowQueryOptions,
@@ -103,6 +103,7 @@ export default function useSlowQueryTableController(
   const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(false)
   const [slowQueries, setSlowQueries] = useState<SlowquerySlowQuery[]>([])
+  const [refreshTimes, setRefreshTimes] = useState(0)
 
   function setQueryOptions(newOptions: ISlowQueryOptions) {
     if (needSave) {
@@ -114,9 +115,33 @@ export default function useSlowQueryTableController(
 
   const [errors, setErrors] = useState<Error[]>([])
 
+  const selectedFields = useMemo(
+    () => getSelectedFields(visibleColumnKeys, derivedFields).join(','),
+    [visibleColumnKeys]
+  )
+
+  const cacheKey = useMemo(() => {
+    const {
+      schemas,
+      digest,
+      limit,
+      plans,
+      searchText,
+      timeRange,
+    } = queryOptions
+    const { desc, orderBy } = orderOptions
+    const cacheKey = `${schemas.join(',')}_${digest}_${limit}_${plans.join(
+      ','
+    )}_${searchText}_${stringifyTimeRange(
+      timeRange
+    )}_${desc}_${orderBy}_${selectedFields}`
+    return cacheKey
+  }, [queryOptions, orderOptions, selectedFields])
+
   function refresh() {
     setErrors([])
-    fetchSlowQueryList(true)
+    cacheMgr?.remove(cacheKey)
+    setRefreshTimes((prev) => prev + 1)
   }
 
   useEffect(() => {
@@ -134,33 +159,15 @@ export default function useSlowQueryTableController(
     querySchemas()
   }, [])
 
-  const selectedFields = useMemo(
-    () => getSelectedFields(visibleColumnKeys, derivedFields).join(','),
-    [visibleColumnKeys]
-  )
-
   const tableColumns = useMemo(
     () => slowQueryColumns(slowQueries, showFullSQL),
     [slowQueries, showFullSQL]
   )
 
-  const fetchSlowQueryList = useCallback(
-    async (force: boolean) => {
-      const {
-        schemas,
-        digest,
-        limit,
-        plans,
-        searchText,
-        timeRange,
-      } = queryOptions
-      const { desc, orderBy } = orderOptions
-      const { beginTime, endTime } = queryTimeRange
-      const cacheKey = `${schemas.join('_')}_${digest}_${limit}_${plans.join(
-        '_'
-      )}_${searchText}_${stringifyTimeRange(timeRange)}_${desc}_${orderBy}`
-      const cacheItem = slowQueryCacheMgr?.get(cacheKey)
-      if (cacheItem && !force) {
+  useEffect(() => {
+    async function getSlowQueryList() {
+      const cacheItem = cacheMgr?.get(cacheKey)
+      if (cacheItem) {
         setSlowQueries(cacheItem)
         return
       }
@@ -170,40 +177,38 @@ export default function useSlowQueryTableController(
         const res = await client
           .getInstance()
           .slowQueryListGet(
-            beginTime,
-            schemas,
-            desc,
-            digest,
-            endTime,
+            queryTimeRange.beginTime,
+            queryOptions.schemas,
+            orderOptions.desc,
+            queryOptions.digest,
+            queryTimeRange.endTime,
             selectedFields,
-            limit,
-            orderBy,
-            plans,
-            searchText,
+            queryOptions.limit,
+            orderOptions.orderBy,
+            queryOptions.plans,
+            queryOptions.searchText,
             {
               errorStrategy: ErrorStrategy.Custom,
             }
           )
         setSlowQueries(res.data || [])
-        slowQueryCacheMgr?.set(cacheKey, res.data || [])
+        cacheMgr?.set(cacheKey, res.data || [])
         setErrors([])
       } catch (e) {
         setErrors((prev) => prev.concat(e))
       }
       setLoadingSlowQueries(false)
-    },
-    [
-      queryOptions,
-      orderOptions,
-      queryTimeRange,
-      selectedFields,
-      slowQueryCacheMgr,
-    ]
-  )
-
-  useEffect(() => {
-    fetchSlowQueryList(false)
-  }, [fetchSlowQueryList])
+    }
+    getSlowQueryList()
+  }, [
+    queryOptions,
+    orderOptions,
+    queryTimeRange,
+    selectedFields,
+    refreshTimes,
+    cacheKey,
+    cacheMgr,
+  ])
 
   const [downloading, setDownloading] = useState(false)
 

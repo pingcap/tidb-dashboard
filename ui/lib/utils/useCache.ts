@@ -54,8 +54,8 @@ export default function useCache(
       .filter((k) => k !== key)
       .concat(key)
     // if size beyonds the capacity
-    // remove the first one
-    if (cacheItemKeys.current.length > capacity) {
+    // remove the old ones
+    while (capacity > 0 && cacheItemKeys.current.length > capacity) {
       remove(cacheItemKeys.current[0])
     }
   }

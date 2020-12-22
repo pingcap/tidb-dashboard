@@ -16,7 +16,6 @@ export type FullSpanMap = Record<string, IFullSpan>
 
 export interface IFlameGraph {
   startTime: number
-  maxDepth: number
   rootSpan: IFullSpan
 }
 
@@ -57,13 +56,9 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
   calcDepth(rootSpan, spansObj)
   // console.log('rootNode after calcDepth', rootSpan)
 
-  const maxDepth = calcMaxDepth(rootSpan)
-  console.log('max depth:', maxDepth)
-
   // return rootSpan
   return {
     startTime,
-    maxDepth,
     rootSpan,
   }
 }
@@ -185,15 +180,4 @@ function calcDepth(parentSpan: IFullSpan, spansObj: FullSpanMap) {
     updateParentChildDepth(curSpan, spansObj)
     calcDepth(curSpan, spansObj)
   }
-}
-
-// only search left node
-function calcMaxDepth(span: IFullSpan) {
-  if (span.children.length === 0) {
-    return span.depth
-  }
-
-  const childrenDepths = span.children.map((span) => calcMaxDepth(span))
-  const maxDepth = Math.max(...childrenDepths)
-  return maxDepth
 }

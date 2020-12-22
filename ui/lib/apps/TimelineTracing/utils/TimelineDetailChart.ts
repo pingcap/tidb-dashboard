@@ -84,7 +84,8 @@ export class TimelineDetailChart {
     const container = this.context.canvas.parentElement
     this.width = container!.clientWidth
     this.height =
-      TimelineDetailChart.LAYER_HEIGHT * (this.flameGraph.maxDepth + 1)
+      TimelineDetailChart.LAYER_HEIGHT *
+      (this.flameGraph.rootSpan.max_child_depth + 1)
   }
 
   fixPixelRatio() {

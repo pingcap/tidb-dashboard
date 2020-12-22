@@ -96,7 +96,7 @@ export class TimelineOverviewChart {
     this.dragAreaHeight = Math.floor(this.height / 5)
 
     this.offscreenCanvasHeight =
-      (this.flameGraph.maxDepth + 1) *
+      (this.flameGraph.rootSpan.max_child_depth + 1) *
       TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT
   }
 

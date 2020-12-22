@@ -1,9 +1,6 @@
 import { TraceQueryTraceResponse, TraceSpan } from '@lib/client'
 import * as d3 from 'd3'
 
-// for test
-// import testData from './test-data.json'
-
 export interface IFullSpan extends TraceSpan {
   node_type: string
   children: IFullSpan[]
@@ -17,6 +14,8 @@ export interface IFullSpan extends TraceSpan {
   // when depth - parentDepth > 1, need to draw a vertical line
   parentDepth: number
 }
+
+type FullSpanMap = Record<string, IFullSpan>
 
 export interface IFlameGraph {
   startTime: number
@@ -43,18 +42,6 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
       })
     })
   })
-  // sort, can't sort it by span_id
-  allSpans.sort((a, b) => {
-    let delta = a.begin_unix_time_ns! - b.begin_unix_time_ns!
-    if (delta === 0) {
-      // make the span with longer duration in the front when they have the same begin time
-      // so we can draw the span with shorter duration first
-      // to make them closer to the parent span
-      delta = b.duration_ns! - a.duration_ns!
-    }
-    return delta
-  })
-  console.log('all spans:', allSpans)
 
   // step 2: iterator, to build a tree
   const rootSpan = allSpans.find((span) => span.parent_id === 0)!
@@ -63,10 +50,8 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
     span.begin_unix_time_ns = span.begin_unix_time_ns! - startTime
     span.end_unix_time_ns = span.begin_unix_time_ns + span.duration_ns!
   })
-  findChildren(rootSpan, allSpans)
+  buildTree(allSpans)
   console.log('rootNode:', rootSpan)
-  const root = d3.hierarchy(rootSpan)
-  console.log('root:', root)
 
   calcMaxEndTime(rootSpan)
   // console.log('rootNode after calcMaxTime', rootSpan)
@@ -86,12 +71,35 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
   }
 }
 
-function findChildren(parentSpan: IFullSpan, allSpans: IFullSpan[]) {
-  // TODO: refine to improve performance
-  parentSpan.children = allSpans.filter(
-    (span) => span.parent_id === parentSpan.span_id
-  )
-  parentSpan.children.forEach((child) => findChildren(child, allSpans))
+function buildTree(allSpans: IFullSpan[]) {
+  let spansObj = allSpans.reduce((accu, cur) => {
+    accu[cur.span_id!] = cur
+    return accu
+  }, {} as FullSpanMap)
+
+  // set children
+  Object.values(spansObj).forEach((span) => {
+    const parent = spansObj[span.parent_id!]
+    // the root span has no parent
+    if (parent) {
+      parent.children.push(span)
+    }
+  })
+
+  // sort children
+  // notice: we can't sort it by span_id
+  Object.values(spansObj).forEach((span) => {
+    span.children.sort((a, b) => {
+      let delta = a.begin_unix_time_ns! - b.begin_unix_time_ns!
+      if (delta === 0) {
+        // make the span with longer duration in the front when they have the same begin time
+        // so we can draw the span with shorter duration first
+        // to make them closer to the parent span
+        delta = b.duration_ns! - a.duration_ns!
+      }
+      return delta
+    })
+  })
 }
 
 function calcMaxEndTime(span: IFullSpan) {

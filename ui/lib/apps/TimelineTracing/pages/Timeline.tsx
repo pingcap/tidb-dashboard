@@ -69,6 +69,7 @@ export default function Timeline() {
       })
       detailChart.current.addSpanClickListener((span) => {
         setClickedSpan(span)
+        console.log('clicked span:', span)
       })
       detailChart.current.setTooltipElement(tooltipRef.current!)
     }

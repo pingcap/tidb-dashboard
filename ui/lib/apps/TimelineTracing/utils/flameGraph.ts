@@ -44,7 +44,16 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
     })
   })
   // sort, can't sort it by span_id
-  allSpans.sort((a, b) => a.begin_unix_time_ns! - b.begin_unix_time_ns!)
+  allSpans.sort((a, b) => {
+    let delta = a.begin_unix_time_ns! - b.begin_unix_time_ns!
+    if (delta === 0) {
+      // make the span with longer duration in the front when they have the same begin time
+      // so we can draw the span with shorter duration first
+      // to make them closer to the parent span
+      delta = b.duration_ns! - a.duration_ns!
+    }
+    return delta
+  })
   console.log('all spans:', allSpans)
 
   // step 2: iterator, to build a tree
@@ -125,8 +134,20 @@ function calcDepth(parentSpan: IFullSpan) {
       curSpan.depth = parentSpan.depth + 1
     } else {
       const lastSpan = parentSpan.children[i + 1]
-      if (curSpan.max_end_time_ns > lastSpan.begin_unix_time_ns!) {
-        curSpan.depth = lastSpan.depth + lastSpan.height + 1
+      if (
+        curSpan.max_end_time_ns > lastSpan.begin_unix_time_ns! ||
+        curSpan.begin_unix_time_ns! === lastSpan.begin_unix_time_ns!
+      ) {
+        if (lastSpan.height === 0) {
+          curSpan.depth = lastSpan.depth + 1
+        } else {
+          curSpan.depth = lastSpan.depth + lastSpan.height + 2
+        }
+        // curSpan.depth = lastSpan.depth + lastSpan.height + 1
+        // // keep same as the datadog
+        // if (lastSpan.height >= 1) {
+        //   curSpan.depth += 1
+        // }
       } else {
         curSpan.depth = parentSpan.depth + 1
       }

@@ -1,7 +1,7 @@
 import { ScaleLinear, scaleLinear } from 'd3'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { IFlameGraph, IFullSpan } from './flameGraph'
 
+import { IFlameGraph, IFullSpan } from './flameGraph'
 import { Pos, TimeRange, TimeRangeChangeListener } from './timelineTypes'
 
 export type SpanClickListener = (span: IFullSpan | null) => void
@@ -18,30 +18,14 @@ export class TimelineDetailChart {
   private minSelectedTimeDuration: number = 0
   private timeLenScale: ScaleLinear<number, number> = scaleLinear()
 
-  //
+  // time range
   private selectedTimeRange: TimeRange = { start: 0, end: 0 }
   private mouseDownTimeRange: TimeRange = { start: 0, end: 0 }
 
   // mouse pos
-  private curMousePos: Pos = { x: 0, y: 0 }
   private mouseDownPos: Pos | null = null
 
   // draw dimensions and style
-  static WINDOW_MIN_WIDTH = 6
-  static WINDOW_RESIZE_LINE_WIDTH = 4
-  static WINDOW_RESIZE_LINE_WIDTH_HALF =
-    TimelineDetailChart.WINDOW_RESIZE_LINE_WIDTH / 2
-  static WINDOW_RESIZE_STROKE_STYLE = '#ccc'
-  static WINDOW_BORDER_STORKE_STYLE = '#d0d0d0'
-  static WINDOW_BORDER_ALPHA = 1.0
-  static WINDOW_BORDER_WIDTH = 1
-  static UNSELECTED_WINDOW_FILL_STYLE = '#f0f0f0'
-  static UNSELECTED_WINDOW_ALPHA = 0.6
-  static SELECTED_WINDOW_FILL_STYLE = 'cornflowerblue'
-  static SELECTED_WINDOW_ALPHA = 0.3
-  static MOVED_VERTICAL_LINE_STROKE_STYLE = 'cornflowerblue'
-  static MOVED_VERTICAL_LINE_WIDTH = 2
-
   static LAYER_HEIGHT = 20
 
   // flameGraph
@@ -49,11 +33,11 @@ export class TimelineDetailChart {
   private clickedSpan: IFullSpan | null = null
   private hoverSpan: IFullSpan | null = null
 
-  //
+  // listeners
   private timeRangeListeners: TimeRangeChangeListener[] = []
   private spanClickListeners: SpanClickListener[] = []
 
-  //
+  // tooltip
   private tooltipDomElement: HTMLDivElement | null = null
 
   /////////////////////////////////////
@@ -160,8 +144,6 @@ export class TimelineDetailChart {
   onCanvasMouseOut = (event) => {
     event.preventDefault()
 
-    const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
-    this.curMousePos = loc
     this.hoverSpan = null
     this.showTooltip({ x: event.clientX, y: event.clientY })
     this.draw()
@@ -175,7 +157,6 @@ export class TimelineDetailChart {
     if (this.mouseDownPos) return
 
     const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
-    this.curMousePos = loc
     this.hoverSpan = this.getSpanInPos(this.flameGraph.rootSpan, loc)
     this.showTooltip({ x: event.clientX, y: event.clientY })
     this.draw()
@@ -189,7 +170,6 @@ export class TimelineDetailChart {
     if (this.mouseDownPos === null) return
 
     const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
-    this.curMousePos = loc
 
     // drag selected time range
     const { start, end } = this.mouseDownTimeRange
@@ -233,7 +213,6 @@ export class TimelineDetailChart {
     document.body.style.cursor = 'initial'
 
     const loc = this.windowToCanvasLoc(event.clientX, event.clientY)
-    this.curMousePos = loc
 
     // handle click
     if (loc.x === this.mouseDownPos?.x && loc.y === this.mouseDownPos?.y) {
@@ -287,37 +266,8 @@ export class TimelineDetailChart {
   // draw
   draw() {
     this.context.clearRect(0, 0, this.width, this.height)
-    // this.drawTimePointsAndVerticalLines()
     this.drawFlameGraph()
     this.drawClickedSpan()
-  }
-
-  drawTimePointsAndVerticalLines() {
-    this.context.save()
-    // text
-    this.context.textAlign = 'end'
-    this.context.textBaseline = 'top'
-    // vertical lines
-    this.context.strokeStyle = '#ccc'
-    this.context.lineWidth = 0.5
-
-    let timeDelta = this.calcXAxisTimeDelta()
-    let i = 0
-    while (true) {
-      i++
-      const x = Math.round(this.timeLenScale(timeDelta * i))
-      if (x > this.width) {
-        break
-      }
-      // text
-      this.context.fillText(`${timeDelta * i} ms`, x - 2, 2)
-      // vertical line
-      this.context.beginPath()
-      this.context.moveTo(x + 0.5, 0)
-      this.context.lineTo(x + 0.5, this.height)
-      this.context.stroke()
-    }
-    this.context.restore()
   }
 
   drawFlameGraph() {

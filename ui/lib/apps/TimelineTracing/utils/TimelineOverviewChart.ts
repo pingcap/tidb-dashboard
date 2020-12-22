@@ -1,7 +1,7 @@
 import { ScaleLinear, scaleLinear } from 'd3'
 import { getValueFormat } from '@baurine/grafana-value-formats'
-import { IFlameGraph, IFullSpan } from './flameGraph'
 
+import { IFlameGraph, IFullSpan } from './flameGraph'
 import {
   Pos,
   Window,
@@ -9,6 +9,7 @@ import {
   Action,
   TimeRangeChangeListener,
 } from './timelineTypes'
+
 export class TimelineOverviewChart {
   private context: CanvasRenderingContext2D
   private offscreenContext: CanvasRenderingContext2D
@@ -51,13 +52,12 @@ export class TimelineOverviewChart {
   static SELECTED_WINDOW_ALPHA = 0.3
   static MOVED_VERTICAL_LINE_STROKE_STYLE = 'cornflowerblue'
   static MOVED_VERTICAL_LINE_WIDTH = 2
-
   static OFFSCREEN_CANVAS_LAYER_HEIGHT = 20
 
   // flameGraph
   private flameGraph: IFlameGraph
 
-  //
+  // listeners
   private timeRangeListeners: TimeRangeChangeListener[] = []
 
   /////////////////////////////////////
@@ -362,7 +362,7 @@ export class TimelineOverviewChart {
       newRight = right + delta
     }
 
-    // if (this.mouseDownPos !== null) {
+    // if move
     if (newLeft !== left || newRight !== right) {
       this.curWindow = { left: newLeft, right: newRight }
       this.selectedTimeRange = this.windowToTimeRange(this.curWindow)
@@ -588,7 +588,7 @@ export class TimelineOverviewChart {
       timeDelta /= 10
       step *= 10
     }
-    // TODO: handle situation when timeDelta < 10
+    // TODO: handle situation when timeDelta < 10, currently has no this case
     if (step > 1) {
       timeDelta = Math.round(timeDelta) * step
     }

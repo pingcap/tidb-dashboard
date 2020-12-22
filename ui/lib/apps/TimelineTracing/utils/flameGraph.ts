@@ -3,18 +3,16 @@ import { TraceQueryTraceResponse, TraceSpan } from '@lib/client'
 export interface IFullSpan extends TraceSpan {
   node_type: string
   children: IFullSpan[]
+  parent?: IFullSpan
 
-  //
   end_unix_time_ns: number
   max_end_time_ns: number // include children span
-  height: number // max chilren layers, leaf node which has no children is 0
+
   depth: number // which layer it is drawed in, rootSpan is 0
-  // used to decide whether need to draw a vertical line to point to parent
-  // when depth - parentDepth > 1, need to draw a vertical line
-  parentDepth: number
+  max_child_depth: number
 }
 
-type FullSpanMap = Record<string, IFullSpan>
+export type FullSpanMap = Record<string, IFullSpan>
 
 export interface IFlameGraph {
   startTime: number
@@ -35,9 +33,8 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
 
         end_unix_time_ns: 0,
         max_end_time_ns: 0,
-        height: 0,
         depth: 0,
-        parentDepth: 0,
+        max_child_depth: 0,
       })
     })
   })
@@ -55,9 +52,9 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
 
   calcMaxEndTime(spansObj)
   // console.log('rootNode after calcMaxTime', rootSpan)
-  calcHeight(rootSpan)
+  // calcHeight(rootSpan)
   // console.log('rootNode after calcHeight', rootSpan)
-  calcDepth(rootSpan)
+  calcDepth(rootSpan, spansObj)
   // console.log('rootNode after calcDepth', rootSpan)
 
   const maxDepth = calcMaxDepth(rootSpan)
@@ -71,6 +68,8 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
   }
 }
 
+//////////////////
+
 function buildTree(allSpans: IFullSpan[]): FullSpanMap {
   let spansObj = allSpans.reduce((accu, cur) => {
     accu[cur.span_id!] = cur
@@ -80,6 +79,7 @@ function buildTree(allSpans: IFullSpan[]): FullSpanMap {
   // set children
   Object.values(spansObj).forEach((span) => {
     const parent = spansObj[span.parent_id!]
+    span.parent = parent
     // the root span has no parent
     if (parent) {
       parent.children.push(span)
@@ -108,10 +108,10 @@ function buildTree(allSpans: IFullSpan[]): FullSpanMap {
 function calcMaxEndTime(spansObj: FullSpanMap) {
   Object.values(spansObj)
     .filter((span) => span.children.length === 0) // find leaf spans
-    .forEach((span) => calcSpanMaxEndTime(span, spansObj))
+    .forEach((span) => calcParentMaxEndTime(span, spansObj))
 }
 
-function calcSpanMaxEndTime(span: IFullSpan, spansObj: FullSpanMap) {
+function calcParentMaxEndTime(span: IFullSpan, spansObj: FullSpanMap) {
   // find parent
   const parent = spansObj[span.parent_id!]
   if (parent === undefined) return
@@ -125,33 +125,44 @@ function calcSpanMaxEndTime(span: IFullSpan, spansObj: FullSpanMap) {
   if (span.max_end_time_ns > parent.max_end_time_ns) {
     parent.max_end_time_ns = span.max_end_time_ns
   }
-  calcSpanMaxEndTime(parent, spansObj)
+  calcParentMaxEndTime(parent, spansObj)
 }
 
 /////////////////////
 
-function calcHeight(span: IFullSpan) {
-  // return condition
-  if (span.children.length === 0) {
-    span.height = 0 // leaf node
-    return 0
-  }
+function updateParentChildDepth(span: IFullSpan, spansObj: FullSpanMap) {
+  // find parent
+  const parent = spansObj[span.parent_id!]
+  if (parent === undefined) return
 
-  const childrenHeight = span.children.map((childSpan) => calcHeight(childSpan))
-  const maxHeight = Math.max(...childrenHeight) + 1
-  span.height = maxHeight
-  return maxHeight
+  if (span.max_child_depth > parent.max_child_depth) {
+    parent.max_child_depth = span.max_child_depth
+    updateParentChildDepth(parent, spansObj)
+  }
 }
+
+// function calcHeight(span: IFullSpan) {
+//   // return condition
+//   if (span.children.length === 0) {
+//     span.height = 0 // leaf node
+//     return 0
+//   }
+
+//   const childrenHeight = span.children.map((childSpan) => calcHeight(childSpan))
+//   const maxHeight = Math.max(...childrenHeight) + 1
+//   span.height = maxHeight
+//   return maxHeight
+// }
 
 // keep the same logic as datadog
 // compare the spans from right to left
 // span.max_end_time_ns > lastSpan.begin_unix_time_ns => span.depth = parentSpan.depth + 1
 // else => span.depth = lastSpan.depth + lastSpan.height + 2
-function calcDepth(parentSpan: IFullSpan) {
+function calcDepth(parentSpan: IFullSpan, spansObj: FullSpanMap) {
   const childrenMaxIdx = parentSpan.children.length - 1
   for (let i = childrenMaxIdx; i >= 0; i--) {
     const curSpan = parentSpan.children[i]
-    curSpan.parentDepth = parentSpan.depth
+
     if (i === childrenMaxIdx) {
       curSpan.depth = parentSpan.depth + 1
     } else {
@@ -160,26 +171,20 @@ function calcDepth(parentSpan: IFullSpan) {
         curSpan.max_end_time_ns > lastSpan.begin_unix_time_ns! ||
         curSpan.begin_unix_time_ns! === lastSpan.begin_unix_time_ns!
       ) {
-        if (lastSpan.height === 0) {
-          curSpan.depth = lastSpan.depth + 1
+        if (lastSpan.max_child_depth === lastSpan.depth) {
+          // lastSpan has no children
+          curSpan.depth = lastSpan.max_child_depth + 1
         } else {
-          curSpan.depth = lastSpan.depth + lastSpan.height + 2
+          curSpan.depth = lastSpan.max_child_depth + 2
         }
-        // curSpan.depth = lastSpan.depth + lastSpan.height + 1
-        // // keep same as the datadog
-        // if (lastSpan.height >= 1) {
-        //   curSpan.depth += 1
-        // }
       } else {
         curSpan.depth = parentSpan.depth + 1
       }
     }
-    // console.log('cur span:', curSpan.event)
-    // console.log('cur depth:', curSpan.depth)
-    // console.log('cur height:', curSpan.height)
+    curSpan.max_child_depth = curSpan.depth
+    updateParentChildDepth(curSpan, spansObj)
+    calcDepth(curSpan, spansObj)
   }
-
-  parentSpan.children.forEach((span) => calcDepth(span))
 }
 
 // only search left node

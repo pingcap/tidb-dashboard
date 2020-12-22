@@ -354,7 +354,7 @@ export class TimelineDetailChart {
 
       this.context.fillRect(x, y, width, height)
 
-      const deltaDepth = span.depth - span.parentDepth
+      const deltaDepth = span.depth - (span.parent?.depth || 0)
       if (deltaDepth > 1) {
         this.context.strokeStyle = this.context.fillStyle
         this.context.lineWidth = 0.5

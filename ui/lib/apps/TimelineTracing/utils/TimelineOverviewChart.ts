@@ -534,7 +534,7 @@ export class TimelineOverviewChart {
     const height = TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT - 1
     ctx.fillRect(x, y, width, height)
 
-    const deltaDepth = span.depth - span.parentDepth
+    const deltaDepth = span.depth - (span.parent?.depth || 0)
     if (deltaDepth > 1) {
       ctx.strokeStyle = ctx.fillStyle
       ctx.lineWidth = 0.5

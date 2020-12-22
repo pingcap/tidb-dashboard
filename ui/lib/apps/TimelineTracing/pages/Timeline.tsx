@@ -77,23 +77,28 @@ export default function Timeline() {
 
   return (
     <Card>
-      <div ref={overviewChartRef} className={styles.overview_chart_container} />
-      <br />
-      <div ref={detailChartRef} className={styles.detail_chart_container} />
-      <div ref={tooltipRef} className={styles.tooltip_container} />
-      <br />
-      {clickedSpan && (
-        <div>
-          <p>event: {clickedSpan.event}</p>
-          <p>span_id: {clickedSpan.span_id}</p>
-          <p>parent_id: {clickedSpan.parent_id}</p>
-          <p>
-            start_time:{' '}
-            {getValueFormat('ns')(clickedSpan.begin_unix_time_ns!, 2)}
-          </p>
-          <p>duration: {getValueFormat('ns')(clickedSpan.duration_ns!, 2)}</p>
-        </div>
-      )}
+      <div style={{ overflowY: 'scroll' }}>
+        <div
+          ref={overviewChartRef}
+          className={styles.overview_chart_container}
+        />
+        <br />
+        <div ref={detailChartRef} className={styles.detail_chart_container} />
+        <div ref={tooltipRef} className={styles.tooltip_container} />
+        <br />
+        {clickedSpan && (
+          <div>
+            <p>event: {clickedSpan.event}</p>
+            <p>span_id: {clickedSpan.span_id}</p>
+            <p>parent_id: {clickedSpan.parent_id}</p>
+            <p>
+              start_time:{' '}
+              {getValueFormat('ns')(clickedSpan.begin_unix_time_ns!, 2)}
+            </p>
+            <p>duration: {getValueFormat('ns')(clickedSpan.duration_ns!, 2)}</p>
+          </div>
+        )}
+      </div>
     </Card>
   )
 }

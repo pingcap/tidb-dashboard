@@ -1,5 +1,4 @@
 import { TraceQueryTraceResponse, TraceSpan } from '@lib/client'
-import * as d3 from 'd3'
 
 export interface IFullSpan extends TraceSpan {
   node_type: string
@@ -49,11 +48,12 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
   allSpans.forEach((span) => {
     span.begin_unix_time_ns = span.begin_unix_time_ns! - startTime
     span.end_unix_time_ns = span.begin_unix_time_ns + span.duration_ns!
+    span.max_end_time_ns = span.end_unix_time_ns
   })
-  buildTree(allSpans)
+  const spansObj = buildTree(allSpans)
   console.log('rootNode:', rootSpan)
 
-  calcMaxEndTime(rootSpan)
+  calcMaxEndTime(spansObj)
   // console.log('rootNode after calcMaxTime', rootSpan)
   calcHeight(rootSpan)
   // console.log('rootNode after calcHeight', rootSpan)
@@ -71,7 +71,7 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
   }
 }
 
-function buildTree(allSpans: IFullSpan[]) {
+function buildTree(allSpans: IFullSpan[]): FullSpanMap {
   let spansObj = allSpans.reduce((accu, cur) => {
     accu[cur.span_id!] = cur
     return accu
@@ -100,21 +100,35 @@ function buildTree(allSpans: IFullSpan[]) {
       return delta
     })
   })
+  return spansObj
 }
 
-function calcMaxEndTime(span: IFullSpan) {
-  // return condition
-  if (span.children.length === 0) {
-    span.max_end_time_ns = span.end_unix_time_ns
-    return span.end_unix_time_ns
-  }
-  const childrenTime = span.children
-    .map((childSpan) => calcMaxEndTime(childSpan))
-    .concat(span.end_unix_time_ns)
-  const maxTime = Math.max(...childrenTime)
-  span.max_end_time_ns = maxTime
-  return maxTime
+//////////////////
+
+function calcMaxEndTime(spansObj: FullSpanMap) {
+  Object.values(spansObj)
+    .filter((span) => span.children.length === 0) // find leaf spans
+    .forEach((span) => calcSpanMaxEndTime(span, spansObj))
 }
+
+function calcSpanMaxEndTime(span: IFullSpan, spansObj: FullSpanMap) {
+  // find parent
+  const parent = spansObj[span.parent_id!]
+  if (parent === undefined) return
+
+  // check whether it is the parent's last child
+  // nope!
+  // other children may have larger max_end_time_ns
+  // const lastSlibing = parent.children[parent.children.length - 1]
+  // if (lastSlibing.span_id !== span.span_id) return
+
+  if (span.max_end_time_ns > parent.max_end_time_ns) {
+    parent.max_end_time_ns = span.max_end_time_ns
+  }
+  calcSpanMaxEndTime(parent, spansObj)
+}
+
+/////////////////////
 
 function calcHeight(span: IFullSpan) {
   // return condition
@@ -178,8 +192,3 @@ function calcMaxDepth(span: IFullSpan) {
   const maxDepth = Math.max(...childrenDepths)
   return maxDepth
 }
-
-//////////////////////
-// test
-
-// genFlameGraph(testData)

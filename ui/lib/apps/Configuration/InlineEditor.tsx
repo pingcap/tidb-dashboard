@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import React from 'react'
 import { EditOutlined } from '@ant-design/icons'
 import { Input, Popover, Button, Space, Tooltip } from 'antd'
-import { usePersistFn } from '@umijs/hooks'
+import { usePersistFn } from 'ahooks'
 
 interface IInlineEditorProps {
   title?: string

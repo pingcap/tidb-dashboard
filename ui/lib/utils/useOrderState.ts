@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useLocalStorageState } from '@umijs/hooks'
+import { useLocalStorageState } from 'ahooks'
 
 export interface IOrderOptions {
   orderBy: string

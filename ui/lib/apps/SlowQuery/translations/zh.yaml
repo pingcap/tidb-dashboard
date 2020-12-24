@@ -36,44 +36,44 @@ slow_query:
 
     query_time2: SQL 执行时间
     query_time2_tooltip: 执行 SQL 耗费的自然时间
-    parse_time: 　　解析耗时
+    parse_time: 解析耗时
     parse_time_tooltip: 解析该 SQL 查询的耗时
-    compile_time: 　　生成执行计划耗时
+    compile_time: 生成执行计划耗时
     compile_time_tooltip: 生成该 SQL 的执行计划的耗时
-    rewrite_time: 　　　　重写执行计划耗时
+    rewrite_time: 重写执行计划耗时
     rewrite_time_tooltip: 重写执行计划的耗时，例如常量折叠等
-    preproc_subqueries_time: 　　　　　　子查询预处理耗时
-    optimize_time: 　　　　优化执行计划耗时
+    preproc_subqueries_time: 子查询预处理耗时
+    optimize_time: 优化执行计划耗时
     optimize_time_tooltip: 优化器寻找执行计划的耗时，包括规则优化和物理优化的耗时
-    wait_ts: 　　取事务 Start Ts 耗时
+    wait_ts: 取事务 Start Ts 耗时
     wait_ts_tooltip: 从 PD 取事务开始时间戳步骤的耗时
-    cop_time: 　　Coprocessor 执行耗时
+    cop_time: Coprocessor 执行耗时
     cop_time_tooltip: TiDB Coprocessor 算子等待所有任务在 TiKV 上并行执行完毕耗费的自然时间（注：当 SQL 语句中包含 JOIN 时，多个 TiDB Coprocessor 算子可能会并行执行，此时不再等同于自然时间）
-    wait_time: 　　　　Coprocessor 累计等待耗时
+    wait_time: Coprocessor 累计等待耗时
     wait_time_tooltip: TiKV 准备并等待 Coprocessor 任务执行的累计时间，等待过程中包括通过 Raft 一致性协议取快照等（注：TiKV 会并行等待任务，因此该时间不是自然流逝时间）
-    process_time: 　　　　Coprocessor 累计执行耗时
+    process_time: Coprocessor 累计执行耗时
     process_time_tooltip: TiKV 执行 Coprocessor 任务的累计处理时间（注：TiKV 会并行处理任务，因此该时间不是自然流逝时间）
-    lock_keys_time: 　　上锁耗时
+    lock_keys_time: 上锁耗时
     lock_keys_time_tooltip: 悲观事务中对相关行数据进行上锁的耗时
-    backoff_time: 　　执行阶段累计 Backoff 耗时
+    backoff_time: 执行阶段累计 Backoff 耗时
     backoff_time_tooltip: 在执行失败时，Backoff 机制等待一段时间再重试时的 Backoff 累计耗时（注：可能同时存在多个 Backoff，因此该时间可能不是自然流逝时间）
-    get_commit_ts_time: 　　取事务 Commit Ts 耗时
+    get_commit_ts_time: 取事务 Commit Ts 耗时
     get_commit_ts_time_tooltip: 从 PD 取提交时间戳（事务号）步骤的耗时
-    local_latch_wait_time: 　　TiDB 本地等锁耗时
+    local_latch_wait_time: TiDB 本地等锁耗时
     local_latch_wait_time_tooltip: 事务在 TiDB 本地与其他事务产生了锁冲突并等待的耗时
-    resolve_lock_time: 　　解锁耗时
+    resolve_lock_time: 解锁耗时
     resolve_lock_time_tooltip: 事务在提交过程中与其他事务产生了锁冲突并处理锁冲突的耗时
-    prewrite_time: 　　Prewrite 阶段耗时
+    prewrite_time: Prewrite 阶段耗时
     prewrite_time_tooltip: 事务两阶段提交中第一阶段（prewrite 阶段）的耗时
-    wait_prewrite_binlog_time: 　　Binlog Prewrite 等待耗时
+    wait_prewrite_binlog_time: Binlog Prewrite 等待耗时
     wait_prewrite_binlog_time_tooltip: 等待 Binlog Prewrite 完成的耗时
-    commit_time: 　　Commit 阶段耗时
+    commit_time: Commit 阶段耗时
     commit_time_tooltip: 事务两阶段提交中第二阶段（commit 阶段）的耗时
-    commit_backoff_time: 　　Commit 阶段累计 Backoff 耗时
+    commit_backoff_time: Commit 阶段累计 Backoff 耗时
     commit_backoff_time_tooltip: 事务递交失败时，Backoff 机制等待一段时间再重试时的 Backoff 累计耗时（注：可能同时存在多个 Backoff，因此该时间可能不是自然流逝时间）
-    write_sql_response_total: 　　发送结果耗时
+    write_sql_response_total: 发送结果耗时
     write_sql_response_total_tooltip: 发送 SQL 语句执行结果给客户端的耗时
-    exec_retry_time: 　　前序执行耗时
+    exec_retry_time: 前序执行耗时
     exec_retry_time_tooltip: 由于锁冲突或错误，计划可能会执行失败并重试执行多次，该时间是不包含最后一次执行的前序执行自然时间（注：执行计划中的时间不含该前序时间）
 
     request_count: Coprocessor 请求数

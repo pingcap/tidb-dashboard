@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Divider, Skeleton, Space, Typography } from 'antd'
+import { Divider, Skeleton, Typography } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client from '@lib/client'

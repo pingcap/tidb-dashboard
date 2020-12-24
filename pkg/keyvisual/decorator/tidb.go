@@ -115,7 +115,11 @@ func (s *tidbLabelStrategy) Label(key string) (label LabelKey) {
 		if rowID := decodeKey.RowID(); rowID != 0 {
 			label.Labels = append(label.Labels, fmt.Sprintf("row_%d", rowID))
 		} else if indexID := decodeKey.IndexID(); indexID != 0 {
-			label.Labels = append(label.Labels, detail.Indices[indexID])
+			if name, ok := detail.Indices[indexID]; ok {
+				label.Labels = append(label.Labels, name)
+			} else {
+				label.Labels = append(label.Labels, fmt.Sprintf("index_%d", indexID))
+			}
 		}
 	} else {
 		label.Labels = append(label.Labels, fmt.Sprintf("table_%d", TableID))

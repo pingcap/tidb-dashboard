@@ -1,5 +1,4 @@
 import React from 'react'
-import { useNavigate } from 'react-router'
 
 import { CardTable, DateTime } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -30,7 +29,7 @@ export default function TabBasic({ data }: ITabBasicProps) {
     {
       key: 'absolute_start_time',
       value: (
-        <DateTime.Calendar
+        <DateTime.Long
           unixTimestampMs={data.begin_unix_time_ns! / (1000 * 1000)}
         />
       ),

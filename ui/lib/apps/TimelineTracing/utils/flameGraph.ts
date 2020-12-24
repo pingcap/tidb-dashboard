@@ -13,12 +13,12 @@ export interface IFullSpan extends TraceSpan {
   max_child_depth: number
 }
 
-export interface IFlameGraph {
-  startTime: number
-  rootSpan: IFullSpan
-}
+export type FullSpanMap = Record<string, IFullSpan>
 
-type FullSpanMap = Record<string, IFullSpan>
+export interface IFlameGraph {
+  rootSpan: IFullSpan
+  spansObj: FullSpanMap
+}
 
 export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
   // step 1: flatten the spans
@@ -56,8 +56,8 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
   calcDepth(rootSpan)
 
   return {
-    startTime,
     rootSpan,
+    spansObj,
   }
 }
 

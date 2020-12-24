@@ -36,42 +36,42 @@ slow_query:
 
     query_time2: Query Time
     query_time2_tooltip: The elapsed wall time when execution the query
-    parse_time: 　　Parse Time
+    parse_time: Parse Time
     parse_time_tooltip: Time consumed when parsing the query
-    compile_time: 　　Generate Plan Time
-    rewrite_time: 　　　　Rewrite Plan Time
-    preproc_subqueries_time: 　　　　　　Preprocess Sub-Query Time
+    compile_time: Generate Plan Time
+    rewrite_time: Rewrite Plan Time
+    preproc_subqueries_time: Preprocess Sub-Query Time
     preproc_subqueries_time_tooltip: Time consumed when pre-processing the subquery during the rewrite plan phase
-    optimize_time: 　　　　Optimize Plan Time
-    wait_ts: 　　Get Start Ts Time
+    optimize_time: Optimize Plan Time
+    wait_ts: Get Start Ts Time
     wait_ts_tooltip: Time consumed when getting a start timestamp when transaction begins
-    cop_time: 　　Coprocessor Executor Time
+    cop_time: Coprocessor Executor Time
     cop_time_tooltip: 'The elapsed wall time when TiDB Coprocessor executor waiting all Coprocessor requests to finish (note: when there are JOIN in SQL statement, multiple TiDB Coprocessor executors may be running in parallel, which may cause this time not being a wall time)'
-    wait_time: 　　　　Coprocessor Wait Time
+    wait_time: Coprocessor Wait Time
     wait_time_tooltip: 'The total time of Coprocessor request is prepared and wait to execute in TiKV, which may happen when retrieving a snapshot though Raft concensus protocol (note: TiKV waits requests in parallel so that this is not a wall time)'
-    process_time: 　　　　Coprocessor Process Time
+    process_time: Coprocessor Process Time
     process_time_tooltip: 'The total time of Coprocessor request being executed in TiKV (note: TiKV executes requests in parallel so that this is not a wall time)'
-    backoff_time: 　　Execution Backoff Time
+    backoff_time: Execution Backoff Time
     backoff_time_tooltip: 'The total backoff waiting time before retry when a query encounters errors (note: there may be multiple backoffs in parallel so that this may not be a wall time)'
-    lock_keys_time: 　　Lock Keys Time
+    lock_keys_time: Lock Keys Time
     lock_keys_time_tooltip: Time consumed when locking keys in pessimistic transaction
-    get_commit_ts_time: 　　Get Commit Ts Time
+    get_commit_ts_time: Get Commit Ts Time
     get_commit_ts_time_tooltip: Time consumed when getting a commit timestamp for 2PC commit phase when transaction commits
-    local_latch_wait_time: 　　Local Latch Wait Time
+    local_latch_wait_time: Local Latch Wait Time
     local_latch_wait_time_tooltip: Time consumed when TiDB waits for the lock in the current TiDB instance before 2PC commit phase when transaction commits
-    resolve_lock_time: 　　Resolve Lock Time
+    resolve_lock_time: Resolve Lock Time
     resolve_lock_time_tooltip: Time consumed when TiDB resolves locks from other transactions in 2PC prewrite phase when transaction commits
-    prewrite_time: 　　Prewrite Time
+    prewrite_time: Prewrite Time
     prewrite_time_tooltip: Time consumed in 2PC prewrite phase when transaction commits
-    wait_prewrite_binlog_time: 　　Wait Binlog Prewrite Time
+    wait_prewrite_binlog_time: Wait Binlog Prewrite Time
     wait_prewrite_binlog_time_tooltip: Time consumed when waiting Binlog prewrite to finish
-    commit_time: 　　Commit Time
+    commit_time: Commit Time
     commit_time_tooltip: Time consumed in 2PC commit phase when transaction commits
-    commit_backoff_time: 　　Commit Backoff Time
+    commit_backoff_time: Commit Backoff Time
     commit_backoff_time_tooltip: 'The total backoff waiting time when 2PC commit encounters errors (note: there may be multiple backoffs in parallel so that this may not be a wall time)'
-    write_sql_response_total: 　　Send response Time
+    write_sql_response_total: Send response Time
     write_sql_response_total_tooltip: Time consumed when sending response to the SQL client
-    exec_retry_time: 　　Retried execution Time
+    exec_retry_time: Retried execution Time
     exec_retry_time_tooltip: Wall time consumed when SQL statement is retried and executed again, except for the last exection
 
     request_count: Request Count

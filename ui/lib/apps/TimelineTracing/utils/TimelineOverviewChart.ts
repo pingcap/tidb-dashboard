@@ -52,7 +52,9 @@ export class TimelineOverviewChart {
   static SELECTED_WINDOW_ALPHA = 0.3
   static MOVED_VERTICAL_LINE_STROKE_STYLE = 'cornflowerblue'
   static MOVED_VERTICAL_LINE_WIDTH = 2
+
   static OFFSCREEN_CANVAS_LAYER_HEIGHT = 20
+  static OFFSCREEN_CANVAS_SPAN_WIDTH = 2
 
   // flameGraph
   private flameGraph: IFlameGraph
@@ -530,7 +532,10 @@ export class TimelineOverviewChart {
     }
     const x = this.timeLenScale(span.relative_begin_unix_time_ns)
     const y = span.depth * TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT
-    let width = Math.max(this.timeLenScale(span.duration_ns!), 0.5)
+    let width = Math.max(
+      this.timeLenScale(span.duration_ns!),
+      TimelineOverviewChart.OFFSCREEN_CANVAS_SPAN_WIDTH
+    )
     const height = TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT - 1
     ctx.fillRect(x, y, width, height)
 

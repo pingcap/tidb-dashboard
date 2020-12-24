@@ -27,6 +27,7 @@ export class TimelineDetailChart {
 
   // draw dimensions and style
   static LAYER_HEIGHT = 20
+  static MIN_SPAN_WIDTH = 2
 
   // flameGraph
   private flameGraph: IFlameGraph
@@ -300,12 +301,12 @@ export class TimelineDetailChart {
       const y = span.depth * 20
       let width = Math.max(
         this.timeLenScale(span.relative_end_unix_time_ns) - x,
-        0.5
+        TimelineDetailChart.MIN_SPAN_WIDTH
       )
       if (x + width > this.width) {
         width = this.width - x
       }
-      const height = 19
+      const height = TimelineDetailChart.LAYER_HEIGHT - 1
 
       this.context.fillRect(x, y, width, height)
 
@@ -378,8 +379,10 @@ export class TimelineDetailChart {
       x = 0
     }
     const y = this.clickedSpan.depth * TimelineDetailChart.LAYER_HEIGHT
-    let width =
-      this.timeLenScale(this.clickedSpan.relative_end_unix_time_ns) - x
+    let width = Math.max(
+      this.timeLenScale(this.clickedSpan.relative_end_unix_time_ns) - x,
+      TimelineDetailChart.MIN_SPAN_WIDTH
+    )
     if (width > this.width) {
       width = this.width
     }
@@ -440,7 +443,11 @@ export class TimelineDetailChart {
   getSpanInPos(span: IFullSpan, pos: Pos): IFullSpan | null {
     const { x, y } = pos
     const x1 = this.timeLenScale(span.relative_begin_unix_time_ns)
-    const x2 = this.timeLenScale(span.relative_end_unix_time_ns)
+    let x2 = this.timeLenScale(span.relative_end_unix_time_ns)
+    if (x2 === x1) {
+      x2 = x1 + TimelineDetailChart.MIN_SPAN_WIDTH
+    }
+
     const y1 = span.depth * TimelineDetailChart.LAYER_HEIGHT
     const y2 = y1 + TimelineDetailChart.LAYER_HEIGHT - 1
     if (x <= x2 && x >= x1 && y <= y2 && y >= y1) {

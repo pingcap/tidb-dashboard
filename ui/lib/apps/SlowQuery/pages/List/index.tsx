@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Select,
@@ -26,6 +26,7 @@ import {
   Toolbar,
   MultiSelect,
 } from '@lib/components'
+import { CacheContext } from '@lib/utils/useCache'
 
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQueryTableController, {
@@ -42,6 +43,8 @@ const LIMITS = [100, 200, 500, 1000]
 function List() {
   const { t } = useTranslation()
 
+  const slowQueryCacheMgr = useContext(CacheContext)
+
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     SLOW_QUERY_VISIBLE_COLUMN_KEYS,
     DEF_SLOW_QUERY_COLUMN_KEYS
@@ -51,7 +54,11 @@ function List() {
     false
   )
 
-  const controller = useSlowQueryTableController(visibleColumnKeys, showFullSQL)
+  const controller = useSlowQueryTableController(
+    slowQueryCacheMgr,
+    visibleColumnKeys,
+    showFullSQL
+  )
   const {
     queryOptions,
     setQueryOptions,

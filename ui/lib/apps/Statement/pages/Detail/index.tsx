@@ -3,8 +3,9 @@ import { SelectionMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { Selection } from 'office-ui-fabric-react/lib/Selection'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useLocalStorageState } from 'ahooks'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client, { StatementModel } from '@lib/client'
 import {
@@ -75,7 +76,14 @@ function DetailPage() {
 
   return (
     <div>
-      <Head title={t('statement.pages.detail.head.title')}>
+      <Head
+        title={t('statement.pages.detail.head.title')}
+        back={
+          <Link to={`/statement`}>
+            <ArrowLeftOutlined /> {t('statement.pages.detail.head.back')}
+          </Link>
+        }
+      >
         <AnimatedSkeleton showSkeleton={isLoading}>
           {error && <ErrorBar errors={[error]} />}
           {plans && plans.length > 0 && (

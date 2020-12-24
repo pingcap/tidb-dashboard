@@ -542,7 +542,8 @@ export class TimelineOverviewChart {
       ctx.moveTo(x, y)
       ctx.lineTo(
         x,
-        y - deltaDepth * TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT
+        y -
+          (deltaDepth - 1) * TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT
       )
       ctx.stroke()
     }

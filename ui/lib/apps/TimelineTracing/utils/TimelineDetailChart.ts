@@ -317,7 +317,7 @@ export class TimelineDetailChart {
         this.context.moveTo(x, y)
         this.context.lineTo(
           x,
-          y - deltaDepth * TimelineDetailChart.LAYER_HEIGHT
+          y - (deltaDepth - 1) * TimelineDetailChart.LAYER_HEIGHT
         )
         this.context.stroke()
       }

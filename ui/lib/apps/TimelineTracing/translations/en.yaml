@@ -1,2 +1,9 @@
 timeline:
   nav_title: Timeline Tracing
+  fields:
+    event: Event
+    span_id: Span ID
+    parent_id: Parent Span ID
+    relative_start_time: Relative Start Time
+    absolute_start_time: Absolute Start Time
+    duration: Duration

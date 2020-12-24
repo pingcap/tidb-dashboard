@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import client from '@lib/client'
 import { Card } from '@lib/components'
 import useQueryParams from '@lib/utils/useQueryParams'
-import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import {
   TimelineOverviewChart,
@@ -16,6 +15,7 @@ import styles from './Timeline.module.less'
 
 import selectFromTt from '../test-data/select_from_tt_order_by_c1_asc_c2_desc.json'
 import insertIntoTt from '../test-data/insert_into_tt_select_from_tt.json'
+import TabBasic from './DetailTabBasic'
 
 export default function Timeline() {
   const { trace_id } = useQueryParams()
@@ -86,19 +86,8 @@ export default function Timeline() {
         <div ref={detailChartRef} className={styles.detail_chart_container} />
         <div ref={tooltipRef} className={styles.tooltip_container} />
         <br />
-        {clickedSpan && (
-          <div>
-            <p>event: {clickedSpan.event}</p>
-            <p>span_id: {clickedSpan.span_id}</p>
-            <p>parent_id: {clickedSpan.parent_id}</p>
-            <p>
-              start_time:{' '}
-              {getValueFormat('ns')(clickedSpan.begin_unix_time_ns!, 2)}
-            </p>
-            <p>duration: {getValueFormat('ns')(clickedSpan.duration_ns!, 2)}</p>
-          </div>
-        )}
       </div>
+      {clickedSpan && <TabBasic data={clickedSpan} />}
     </Card>
   )
 }

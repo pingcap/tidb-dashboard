@@ -1,2 +1,9 @@
 timeline:
   nav_title: 全链路追踪
+  fields:
+    event: 事件
+    span_id: Span ID
+    parent_id: 父 Span ID
+    relative_start_time: 相对开始时间
+    absolute_start_time: 绝对开始时间
+    duration: 持续时长

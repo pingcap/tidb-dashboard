@@ -41,7 +41,9 @@ export default function TabBasic({ data }: ITabBasicProps) {
     { key: 'connection_id', value: data.connection_id },
     { key: 'user', value: data.user },
     { key: 'host', value: data.host },
-    {
+  ]
+  if (data.trace_id) {
+    items.push({
       key: 'trace_id',
       value: (
         <a
@@ -54,8 +56,8 @@ export default function TabBasic({ data }: ITabBasicProps) {
           {data.trace_id}
         </a>
       ),
-    },
-  ]
+    })
+  }
   const columns = valueColumns('slow_query.fields.')
   return (
     <CardTable cardNoMargin columns={columns} items={items} extendLastColumn />

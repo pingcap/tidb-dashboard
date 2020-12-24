@@ -64,7 +64,7 @@ function TransKey({ transKey, placement, type }: ITransKeyTextWithInfo) {
   })
   return (
     <TextWithInfo tooltip={tooltip} placement={placement} type={type}>
-      {text.trim()}
+      {text}
     </TextWithInfo>
   )
 }

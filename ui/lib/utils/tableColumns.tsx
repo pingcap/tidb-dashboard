@@ -60,12 +60,9 @@ function fieldsKeyColumn(transKeyPrefix: string): IColumn {
     minWidth: 150,
     maxWidth: 250,
     onRender: (rec) => {
-      const indent = Array(rec.indentLevel || 0)
-        .fill('\t')
-        .join('')
       return (
         <>
-          <span style={{ whiteSpace: 'pre' }}>{indent}</span>
+          <span style={{ paddingLeft: (rec.indentLevel || 0) * 24 }}></span>
           {rec.keyDisplay ?? (
             <TransText transKey={`${transKeyPrefix}${rec.key}`} />
           )}

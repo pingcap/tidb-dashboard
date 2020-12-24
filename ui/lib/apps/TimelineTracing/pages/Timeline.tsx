@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Divider, Skeleton, Typography } from 'antd'
+import { Divider, Skeleton, Space, Typography } from 'antd'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
 import client from '@lib/client'
@@ -19,6 +19,7 @@ import styles from './Timeline.module.less'
 
 import selectFromTt from '../test-data/select_from_tt_order_by_c1_asc_c2_desc.json'
 import insertIntoTt from '../test-data/insert_into_tt_select_from_tt.json'
+import { Link } from 'react-router-dom'
 
 export default function Timeline() {
   const { trace_id } = useQueryParams()
@@ -79,6 +80,18 @@ export default function Timeline() {
       })
       detailChart.current.setTooltipElement(tooltipRef.current!)
     }
+  }
+
+  if (!trace_id) {
+    return (
+      <Card>
+        <Space>
+          Examples:
+          <Link to="/timeline?trace_id=test_select">Select</Link>
+          <Link to="/timeline?trace_id=test_insert">Insert</Link>
+        </Space>
+      </Card>
+    )
   }
 
   return (

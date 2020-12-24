@@ -60,10 +60,17 @@ function fieldsKeyColumn(transKeyPrefix: string): IColumn {
     minWidth: 150,
     maxWidth: 250,
     onRender: (rec) => {
-      if (rec.keyDisplay) {
-        return rec.keyDisplay
-      }
-      return <TransText transKey={`${transKeyPrefix}${rec.key}`} />
+      const indent = Array(rec.indentLevel || 0)
+        .fill('\t')
+        .join('')
+      return (
+        <>
+          <span style={{ whiteSpace: 'pre' }}>{indent}</span>
+          {rec.keyDisplay ?? (
+            <TransText transKey={`${transKeyPrefix}${rec.key}`} />
+          )}
+        </>
+      )
     },
   }
 }

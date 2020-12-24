@@ -29,11 +29,15 @@ export default function TabBasic({ data }: ITabBasicProps) {
     },
     {
       key: 'absolute_start_time',
-      value: getValueFormat('ns')(data.begin_unix_time_ns!, 2),
+      value: (
+        <DateTime.Calendar
+          unixTimestampMs={data.begin_unix_time_ns! / (1000 * 1000)}
+        />
+      ),
     },
     {
       key: 'relative_start_time',
-      value: getValueFormat('ns')(data.begin_unix_time_ns!, 2),
+      value: getValueFormat('ns')(data.relative_begin_unix_time_ns, 2),
     },
     {
       key: 'duration',

@@ -528,7 +528,7 @@ export class TimelineOverviewChart {
     } else {
       ctx.fillStyle = '#507359'
     }
-    const x = this.timeLenScale(span.begin_unix_time_ns!)
+    const x = this.timeLenScale(span.relative_begin_unix_time_ns)
     const y = span.depth * TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT
     let width = Math.max(this.timeLenScale(span.duration_ns!), 0.5)
     const height = TimelineOverviewChart.OFFSCREEN_CANVAS_LAYER_HEIGHT - 1

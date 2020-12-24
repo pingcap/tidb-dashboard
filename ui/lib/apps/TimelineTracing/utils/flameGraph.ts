@@ -5,8 +5,9 @@ export interface IFullSpan extends TraceSpan {
   children: IFullSpan[]
   parent?: IFullSpan
 
-  end_unix_time_ns: number
-  max_end_time_ns: number // include children span
+  relative_begin_unix_time_ns: number
+  relative_end_unix_time_ns: number
+  max_relative_end_time_ns: number // include children span
 
   depth: number // which layer it should be drawed in, rootSpan is 0
   max_child_depth: number
@@ -30,8 +31,9 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
         node_type: spanSet.node_type!,
         children: [],
 
-        end_unix_time_ns: 0,
-        max_end_time_ns: 0,
+        relative_begin_unix_time_ns: 0,
+        relative_end_unix_time_ns: 0,
+        max_relative_end_time_ns: 0,
         depth: 0,
         max_child_depth: 0,
       })
@@ -42,9 +44,10 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
   const rootSpan = allSpans.find((span) => span.parent_id === 0)!
   const startTime = rootSpan.begin_unix_time_ns!
   allSpans.forEach((span) => {
-    span.begin_unix_time_ns = span.begin_unix_time_ns! - startTime
-    span.end_unix_time_ns = span.begin_unix_time_ns + span.duration_ns!
-    span.max_end_time_ns = span.end_unix_time_ns
+    span.relative_begin_unix_time_ns = span.begin_unix_time_ns! - startTime
+    span.relative_end_unix_time_ns =
+      span.relative_begin_unix_time_ns + span.duration_ns!
+    span.max_relative_end_time_ns = span.relative_end_unix_time_ns
   })
 
   // step 3: build tree
@@ -80,7 +83,7 @@ function buildTree(allSpans: IFullSpan[]): FullSpanMap {
   // notice: we can't sort it by span_id
   Object.values(spansObj).forEach((span) => {
     span.children.sort((a, b) => {
-      let delta = a.begin_unix_time_ns! - b.begin_unix_time_ns!
+      let delta = a.relative_begin_unix_time_ns - b.relative_begin_unix_time_ns
       if (delta === 0) {
         // make the span with longer duration in the front when they have the same begin time
         // so we can draw the span with shorter duration first
@@ -113,8 +116,8 @@ function calcParentMaxEndTime(span: IFullSpan) {
   // const lastSlibing = parent.children[parent.children.length - 1]
   // if (lastSlibing.span_id !== span.span_id) return
 
-  if (span.max_end_time_ns > parent.max_end_time_ns) {
-    parent.max_end_time_ns = span.max_end_time_ns
+  if (span.max_relative_end_time_ns > parent.max_relative_end_time_ns) {
+    parent.max_relative_end_time_ns = span.max_relative_end_time_ns
   }
   calcParentMaxEndTime(parent)
 }
@@ -134,8 +137,10 @@ function calcDepth(parentSpan: IFullSpan) {
     } else {
       const lastSpan = parentSpan.children[i + 1]
       if (
-        curSpan.max_end_time_ns > lastSpan.begin_unix_time_ns! ||
-        curSpan.begin_unix_time_ns! === lastSpan.begin_unix_time_ns!
+        curSpan.max_relative_end_time_ns >
+          lastSpan.relative_begin_unix_time_ns ||
+        curSpan.relative_begin_unix_time_ns ===
+          lastSpan.relative_begin_unix_time_ns
       ) {
         if (lastSpan.max_child_depth === lastSpan.depth) {
           // lastSpan has no children

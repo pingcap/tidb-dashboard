@@ -279,7 +279,8 @@ export class TimelineDetailChart {
   drawSpan(span: IFullSpan) {
     const { start, end } = this.selectedTimeRange
     const inside =
-      span.end_unix_time_ns > start || span.begin_unix_time_ns! < end
+      span.relative_end_unix_time_ns > start ||
+      span.relative_begin_unix_time_ns < end
 
     if (inside) {
       if (span === this.hoverSpan) {
@@ -292,12 +293,15 @@ export class TimelineDetailChart {
       } else {
         this.context.fillStyle = '#507359'
       }
-      let x = this.timeLenScale(span.begin_unix_time_ns!)
+      let x = this.timeLenScale(span.relative_begin_unix_time_ns)
       if (x < 0) {
         x = 0
       }
       const y = span.depth * 20
-      let width = Math.max(this.timeLenScale(span.end_unix_time_ns!) - x, 0.5)
+      let width = Math.max(
+        this.timeLenScale(span.relative_end_unix_time_ns) - x,
+        0.5
+      )
       if (x + width > this.width) {
         width = this.width - x
       }
@@ -357,8 +361,9 @@ export class TimelineDetailChart {
     if (this.clickedSpan === null) return
 
     if (
-      this.clickedSpan.end_unix_time_ns < this.selectedTimeRange.start ||
-      this.clickedSpan.begin_unix_time_ns! > this.selectedTimeRange.end
+      this.clickedSpan.relative_end_unix_time_ns <
+        this.selectedTimeRange.start ||
+      this.clickedSpan.relative_begin_unix_time_ns > this.selectedTimeRange.end
     ) {
       return
     }
@@ -368,12 +373,13 @@ export class TimelineDetailChart {
     this.context.strokeStyle = '#DC2626'
     this.context.lineWidth = 2
 
-    let x = this.timeLenScale(this.clickedSpan.begin_unix_time_ns!)
+    let x = this.timeLenScale(this.clickedSpan.relative_begin_unix_time_ns)
     if (x < 0) {
       x = 0
     }
     const y = this.clickedSpan.depth * TimelineDetailChart.LAYER_HEIGHT
-    let width = this.timeLenScale(this.clickedSpan.end_unix_time_ns) - x
+    let width =
+      this.timeLenScale(this.clickedSpan.relative_end_unix_time_ns) - x
     if (width > this.width) {
       width = this.width
     }
@@ -433,8 +439,8 @@ export class TimelineDetailChart {
 
   getSpanInPos(span: IFullSpan, pos: Pos): IFullSpan | null {
     const { x, y } = pos
-    const x1 = this.timeLenScale(span.begin_unix_time_ns!)
-    const x2 = this.timeLenScale(span.end_unix_time_ns!)
+    const x1 = this.timeLenScale(span.relative_begin_unix_time_ns)
+    const x2 = this.timeLenScale(span.relative_end_unix_time_ns)
     const y1 = span.depth * TimelineDetailChart.LAYER_HEIGHT
     const y2 = y1 + TimelineDetailChart.LAYER_HEIGHT - 1
     if (x <= x2 && x >= x1 && y <= y2 && y >= y1) {

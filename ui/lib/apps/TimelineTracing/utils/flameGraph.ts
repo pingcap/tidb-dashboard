@@ -53,6 +53,7 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
   // step 3: build tree
   const spansObj = buildTree(allSpans)
   calcMaxEndTime(spansObj)
+
   calcDepth(rootSpan)
 
   return {
@@ -160,6 +161,7 @@ function calcDepth(parentSpan: IFullSpan) {
   }
 }
 
+// from bottom to top
 function updateParentChildDepth(span: IFullSpan) {
   const parent = span.parent
   if (parent === undefined) return

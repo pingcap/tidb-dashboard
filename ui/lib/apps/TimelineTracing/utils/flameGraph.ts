@@ -53,7 +53,6 @@ export function genFlameGraph(source: TraceQueryTraceResponse): IFlameGraph {
   // step 3: build tree
   const spansObj = buildTree(allSpans)
   calcMaxEndTime(spansObj)
-
   calcDepth(rootSpan)
 
   return {

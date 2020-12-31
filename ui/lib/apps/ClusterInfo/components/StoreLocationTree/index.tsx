@@ -162,25 +162,44 @@ export default function StoreLocationTree({
         .append('circle')
         .attr('r', 8)
         .attr('fill', '#fff')
-        .attr('stroke', (d: any) => (d._children ? cyan[5] : '#ddd'))
+        .attr('stroke', (d: any) => {
+          if (d._children) {
+            return cyan[5]
+          }
+          if (d.data.value === 'TiFlash') {
+            return '#444'
+          }
+          return '#ddd'
+        })
         .attr('stroke-width', 3)
 
+      // text for non-leaf nodes
       nodeEnter
+        .filter((d: any) => d._children !== undefined)
         .append('text')
         .attr('dy', '0.31em')
-        .attr('x', (d: any) => (d._children ? -15 : 15))
-        .attr('text-anchor', (d: any) => (d._children ? 'end' : 'start'))
-        .text(({ data: { name, value } }: any) => {
-          if (value) {
-            return `${name}: ${value}`
-          }
-          return name
-        })
+        .attr('x', -15)
+        .attr('text-anchor', 'end')
+        .text(({ data: { name, value } }: any) => `${name}: ${value}`)
         .clone(true)
         .lower()
         .attr('stroke-linejoin', 'round')
         .attr('stroke-width', 3)
         .attr('stroke', 'white')
+      // text for leaf nodes
+      const leafNodeText = nodeEnter
+        .filter((d: any) => d._children === undefined)
+        .append('text')
+      leafNodeText
+        .append('tspan')
+        .text(({ data: { value } }: any) => value)
+        .attr('x', 15)
+        .attr('dy', '-0.2em')
+      leafNodeText
+        .append('tspan')
+        .text(({ data: { name } }: any) => name)
+        .attr('x', 15)
+        .attr('dy', '1em')
 
       // transition nodes to their new position
       node

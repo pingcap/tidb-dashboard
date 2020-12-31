@@ -11,7 +11,8 @@ type TreeNode = {
 }
 
 function buildTreeData(data: TopologyStoreLocation | undefined): TreeNode {
-  let treeData: TreeNode = { name: 'Stores', value: '', children: [] }
+  const treeData: TreeNode = { name: 'Stores', value: '', children: [] }
+
   if ((data?.location_labels?.length || 0) > 0) {
     const locationLabels: string[] = data?.location_labels || []
 
@@ -33,9 +34,10 @@ function buildTreeData(data: TopologyStoreLocation | undefined): TreeNode {
         // make curNode point to subNode
         curNode = subNode
       }
+      const storeType = store.labels!['engine'] ? 'TiFlash' : 'TiKV'
       curNode.children.push({
         name: store.address!,
-        value: '',
+        value: storeType,
         children: [],
       })
     }

@@ -13,9 +13,10 @@ import { useTranslation } from 'react-i18next'
 export interface IStoreLocationProps {
   dataSource: any
   getMinHeight?: () => number
+  onReload?: () => void
 }
 
-const margin = { left: 60, right: 40, top: 60, bottom: 100 }
+const margin = { left: 60, right: 40, top: 80, bottom: 100 }
 const dx = 40
 
 const diagonal = d3
@@ -36,6 +37,7 @@ function calcHeight(root) {
 export default function StoreLocationTree({
   dataSource,
   getMinHeight,
+  onReload,
 }: IStoreLocationProps) {
   const divRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
@@ -110,6 +112,7 @@ export default function StoreLocationTree({
         .transition()
         .duration(500)
         .call(zoom.transform as any, d3.zoomIdentity)
+      onReload?.()
     })
 
     update(root)
@@ -275,12 +278,19 @@ export default function StoreLocationTree({
           position: 'absolute',
         }}
       >
+        <ReloadOutlined id="slt-zoom-reset" />
         <ZoomInOutlined id="slt-zoom-in" />
         <ZoomOutOutlined id="slt-zoom-out" />
-        <ReloadOutlined id="slt-zoom-reset" />
-        <Tooltip title={t('cluster_info.list.store_topology.tooltip')}>
-          <QuestionCircleOutlined />
-        </Tooltip>
+        <span
+          style={{
+            fontStyle: 'italic',
+            fontSize: 12,
+            display: 'block',
+            margin: '0 auto',
+          }}
+        >
+          *{t('cluster_info.list.store_topology.tooltip')}
+        </span>
       </Space>
     </div>
   )

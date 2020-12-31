@@ -46,7 +46,12 @@ function buildTreeData(data: TopologyStoreLocation | undefined): TreeNode {
 }
 
 export default function StoreLocation() {
-  const { data, isLoading, error } = useClientRequest((reqConfig) =>
+  const {
+    data,
+    isLoading,
+    error,
+    sendRequest,
+  } = useClientRequest((reqConfig) =>
     client.getInstance().getStoreLocationTopology(reqConfig)
   )
   const treeData = useMemo(() => buildTreeData(data), [data])
@@ -60,6 +65,7 @@ export default function StoreLocation() {
           getMinHeight={
             () => document.documentElement.clientHeight - 80 - 48 * 2 // 48 = margin of cardInner
           }
+          onReload={sendRequest}
         />
       </AnimatedSkeleton>
     </div>

@@ -4,9 +4,8 @@ import {
   ZoomInOutlined,
   ZoomOutOutlined,
   ReloadOutlined,
-  QuestionCircleOutlined,
 } from '@ant-design/icons'
-import { Space, Tooltip } from 'antd'
+import { Space } from 'antd'
 import { cyan } from '@ant-design/colors'
 import { useTranslation } from 'react-i18next'
 
@@ -267,7 +266,7 @@ export default function StoreLocationTree({
     return () => {
       window.removeEventListener('resize', resizeHandler)
     }
-  }, [dataSource, getMinHeight])
+  }, [dataSource, getMinHeight, onReload])
 
   return (
     <div ref={divRef} style={{ position: 'relative' }}>

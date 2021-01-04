@@ -17,7 +17,7 @@ import {
   ExportOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import { useLocalStorageState } from '@umijs/hooks'
+import { useLocalStorageState } from 'ahooks'
 
 import {
   Card,

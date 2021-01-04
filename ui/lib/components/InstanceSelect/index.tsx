@@ -11,7 +11,7 @@ import {
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
 import { addTranslationResource } from '@lib/utils/i18n'
-import { usePersistFn, useControllableValue } from '@umijs/hooks'
+import { usePersistFn, useControllableValue } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import {
   buildInstanceTable,

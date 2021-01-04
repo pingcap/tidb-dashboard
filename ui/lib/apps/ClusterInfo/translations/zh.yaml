@@ -35,7 +35,7 @@ cluster_info:
         instances: 实例
     store_topology:
       title: 存储拓扑
-      tooltip: 按住 Ctrl 键并滑动鼠标滚轮可以缩放
+      tooltip: 按住 Ctrl 键并滑动鼠标滚轮也可以缩放
     statistics:
       title: 统计
       summary_title: 集群总计

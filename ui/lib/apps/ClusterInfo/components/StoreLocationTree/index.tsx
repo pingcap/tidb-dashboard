@@ -4,18 +4,18 @@ import {
   ZoomInOutlined,
   ZoomOutOutlined,
   ReloadOutlined,
-  QuestionCircleOutlined,
 } from '@ant-design/icons'
-import { Space, Tooltip } from 'antd'
-import { cyan } from '@ant-design/colors'
+import { Space } from 'antd'
+import { cyan, magenta, grey } from '@ant-design/colors'
 import { useTranslation } from 'react-i18next'
 
 export interface IStoreLocationProps {
   dataSource: any
   getMinHeight?: () => number
+  onReload?: () => void
 }
 
-const margin = { left: 60, right: 40, top: 60, bottom: 100 }
+const margin = { left: 60, right: 40, top: 80, bottom: 100 }
 const dx = 40
 
 const diagonal = d3
@@ -36,6 +36,7 @@ function calcHeight(root) {
 export default function StoreLocationTree({
   dataSource,
   getMinHeight,
+  onReload,
 }: IStoreLocationProps) {
   const divRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
@@ -68,7 +69,7 @@ export default function StoreLocationTree({
     const gLink = bound
       .append('g')
       .attr('fill', 'none')
-      .attr('stroke', cyan[3])
+      .attr('stroke', '#ddd')
       .attr('stroke-width', 2)
     const gNode = bound
       .append('g')
@@ -110,6 +111,7 @@ export default function StoreLocationTree({
         .transition()
         .duration(500)
         .call(zoom.transform as any, d3.zoomIdentity)
+      onReload?.()
     })
 
     update(root)
@@ -162,25 +164,44 @@ export default function StoreLocationTree({
         .append('circle')
         .attr('r', 8)
         .attr('fill', '#fff')
-        .attr('stroke', (d: any) => (d._children ? cyan[5] : '#ddd'))
+        .attr('stroke', (d: any) => {
+          if (d._children) {
+            return grey[1]
+          }
+          if (d.data.value === 'TiFlash') {
+            return magenta[4]
+          }
+          return cyan[5]
+        })
         .attr('stroke-width', 3)
 
+      // text for non-leaf nodes
       nodeEnter
+        .filter((d: any) => d._children !== undefined)
         .append('text')
         .attr('dy', '0.31em')
-        .attr('x', (d: any) => (d._children ? -15 : 15))
-        .attr('text-anchor', (d: any) => (d._children ? 'end' : 'start'))
-        .text(({ data: { name, value } }: any) => {
-          if (value) {
-            return `${name}: ${value}`
-          }
-          return name
-        })
+        .attr('x', -15)
+        .attr('text-anchor', 'end')
+        .text(({ data: { name, value } }: any) => `${name}: ${value}`)
         .clone(true)
         .lower()
         .attr('stroke-linejoin', 'round')
         .attr('stroke-width', 3)
         .attr('stroke', 'white')
+      // text for leaf nodes
+      const leafNodeText = nodeEnter
+        .filter((d: any) => d._children === undefined)
+        .append('text')
+      leafNodeText
+        .append('tspan')
+        .text(({ data: { value } }: any) => value)
+        .attr('x', 15)
+        .attr('dy', '-0.2em')
+      leafNodeText
+        .append('tspan')
+        .text(({ data: { name } }: any) => name)
+        .attr('x', 15)
+        .attr('dy', '1em')
 
       // transition nodes to their new position
       node
@@ -245,7 +266,7 @@ export default function StoreLocationTree({
     return () => {
       window.removeEventListener('resize', resizeHandler)
     }
-  }, [dataSource, getMinHeight])
+  }, [dataSource, getMinHeight, onReload])
 
   return (
     <div ref={divRef} style={{ position: 'relative' }}>
@@ -256,12 +277,19 @@ export default function StoreLocationTree({
           position: 'absolute',
         }}
       >
+        <ReloadOutlined id="slt-zoom-reset" />
         <ZoomInOutlined id="slt-zoom-in" />
         <ZoomOutOutlined id="slt-zoom-out" />
-        <ReloadOutlined id="slt-zoom-reset" />
-        <Tooltip title={t('cluster_info.list.store_topology.tooltip')}>
-          <QuestionCircleOutlined />
-        </Tooltip>
+        <span
+          style={{
+            fontStyle: 'italic',
+            fontSize: 12,
+            display: 'block',
+            margin: '0 auto',
+          }}
+        >
+          *{t('cluster_info.list.store_topology.tooltip')}
+        </span>
       </Space>
     </div>
   )

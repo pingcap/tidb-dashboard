@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons'
-import { useSize } from '@umijs/hooks'
+import { useSize } from 'ahooks'
 import Flexbox from '@g07cha/flexbox-react'
 import { useSpring, animated } from 'react-spring'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -45,7 +45,8 @@ export default function ToggleBanner({
   collapsed,
   onToggle,
 }) {
-  const [bannerSize, bannerRef] = useSize<HTMLDivElement>()
+  const bannerRef = useRef(null)
+  const bannerSize = useSize(bannerRef)
   const transBanner = useSpring({
     opacity: collapsed ? 0 : 1,
     height: collapsed ? toggleHeight : bannerSize.height || 0,

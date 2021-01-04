@@ -6,7 +6,7 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons'
 import { Space } from 'antd'
-import { cyan, magenta, orange } from '@ant-design/colors'
+import { cyan, magenta, grey } from '@ant-design/colors'
 import { useTranslation } from 'react-i18next'
 
 export interface IStoreLocationProps {
@@ -69,7 +69,7 @@ export default function StoreLocationTree({
     const gLink = bound
       .append('g')
       .attr('fill', 'none')
-      .attr('stroke', cyan[3])
+      .attr('stroke', '#ddd')
       .attr('stroke-width', 2)
     const gNode = bound
       .append('g')
@@ -166,12 +166,12 @@ export default function StoreLocationTree({
         .attr('fill', '#fff')
         .attr('stroke', (d: any) => {
           if (d._children) {
-            return cyan[5]
+            return grey[1]
           }
           if (d.data.value === 'TiFlash') {
-            return magenta[5]
+            return magenta[4]
           }
-          return orange[5]
+          return cyan[5]
         })
         .attr('stroke-width', 3)
 

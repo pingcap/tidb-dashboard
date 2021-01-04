@@ -11,7 +11,8 @@ type TreeNode = {
 }
 
 function buildTreeData(data: TopologyStoreLocation | undefined): TreeNode {
-  let treeData: TreeNode = { name: 'Stores', value: '', children: [] }
+  const treeData: TreeNode = { name: 'Stores', value: '', children: [] }
+
   if ((data?.location_labels?.length || 0) > 0) {
     const locationLabels: string[] = data?.location_labels || []
 
@@ -33,9 +34,10 @@ function buildTreeData(data: TopologyStoreLocation | undefined): TreeNode {
         // make curNode point to subNode
         curNode = subNode
       }
+      const storeType = store.labels!['engine'] ? 'TiFlash' : 'TiKV'
       curNode.children.push({
         name: store.address!,
-        value: '',
+        value: storeType,
         children: [],
       })
     }
@@ -44,7 +46,12 @@ function buildTreeData(data: TopologyStoreLocation | undefined): TreeNode {
 }
 
 export default function StoreLocation() {
-  const { data, isLoading, error } = useClientRequest((reqConfig) =>
+  const {
+    data,
+    isLoading,
+    error,
+    sendRequest,
+  } = useClientRequest((reqConfig) =>
     client.getInstance().getStoreLocationTopology(reqConfig)
   )
   const treeData = useMemo(() => buildTreeData(data), [data])
@@ -58,6 +65,7 @@ export default function StoreLocation() {
           getMinHeight={
             () => document.documentElement.clientHeight - 80 - 48 * 2 // 48 = margin of cardInner
           }
+          onReload={sendRequest}
         />
       </AnimatedSkeleton>
     </div>

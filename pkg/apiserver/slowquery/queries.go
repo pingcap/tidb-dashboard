@@ -219,24 +219,10 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		tx = tx.Where("DB IN (?)", req.DB)
 	}
 
-	// more robust
-	if req.OrderBy == "" {
-		req.OrderBy = "timestamp"
-	}
-
-	order, err := getProjectionsByFields(req.OrderBy)
-	if err != nil {
-		return nil, err
-	}
-	// to handle the special case: timestamp
-	// if req.OrderBy is "timestamp", then the order is "(unix_timestamp(Time) + 0E0) AS timestamp"
-	if strings.Contains(order[0], " AS ") {
-		order[0] = req.OrderBy
-	}
 	if req.IsDesc {
-		tx = tx.Order(fmt.Sprintf("%s DESC", order[0]))
+		tx = tx.Order("Time DESC")
 	} else {
-		tx = tx.Order(fmt.Sprintf("%s ASC", order[0]))
+		tx = tx.Order("Time ASC")
 	}
 
 	if len(req.Plans) > 0 {

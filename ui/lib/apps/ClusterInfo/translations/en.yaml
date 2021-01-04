@@ -35,7 +35,7 @@ cluster_info:
         instances: Instances
     store_topology:
       title: Store Topology
-      tooltip: You can also zoom in or out by pressing CTRL and scrolling mouse
+      tooltip: You can also zoom in or out by pressing CTRL and scrolling mouse wheel
     statistics:
       title: Statistics
       summary_title: Cluster Summary

@@ -6,7 +6,7 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons'
 import { Space } from 'antd'
-import { cyan } from '@ant-design/colors'
+import { cyan, magenta, orange } from '@ant-design/colors'
 import { useTranslation } from 'react-i18next'
 
 export interface IStoreLocationProps {
@@ -169,9 +169,9 @@ export default function StoreLocationTree({
             return cyan[5]
           }
           if (d.data.value === 'TiFlash') {
-            return '#444'
+            return magenta[5]
           }
-          return '#ddd'
+          return orange[5]
         })
         .attr('stroke-width', 3)
 

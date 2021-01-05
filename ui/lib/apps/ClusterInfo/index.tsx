@@ -1,6 +1,7 @@
-import { Root } from '@lib/components'
 import React from 'react'
-import { HashRouter as Router, Navigate, Route, Routes } from 'react-router-dom'
+import { HashRouter as Router, Route, Routes } from 'react-router-dom'
+
+import { Root, ParamsPageWrapper } from '@lib/components'
 import ListPage from './pages/List'
 
 const App = () => {
@@ -9,10 +10,14 @@ const App = () => {
       <Router>
         <Routes>
           <Route
-            path="/cluster_info"
-            element={<Navigate to="/cluster_info/instance" replace />}
+            path="/cluster_info/:tabKey"
+            element={
+              <ParamsPageWrapper>
+                <ListPage />
+              </ParamsPageWrapper>
+            }
           />
-          <Route path="/cluster_info/:tabKey" element={<ListPage />} />
+          <Route path="/cluster_info" element={<ListPage />} />
         </Routes>
       </Router>
     </Root>

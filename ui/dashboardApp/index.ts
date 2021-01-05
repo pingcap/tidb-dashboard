@@ -122,14 +122,18 @@ async function main() {
     }
   })
 
-  window.addEventListener('single-spa:before-routing-event', () => {})
-
+  let preRoute = ''
   window.addEventListener('single-spa:routing-event', () => {
     removeSpinner()
-    telemetry.mixpanel.register({
-      $current_url: routing.getPathInLocationHash(),
-    })
-    telemetry.mixpanel.track('PageChange')
+
+    const curRoute = routing.getPathInLocationHash()
+    if (curRoute !== preRoute) {
+      telemetry.mixpanel.register({
+        $current_url: curRoute,
+      })
+      telemetry.mixpanel.track('PageChange')
+      preRoute = curRoute
+    }
   })
 
   singleSpa.start()

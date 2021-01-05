@@ -90,7 +90,7 @@ export default function Statistics() {
           </Card>
           {InstanceKinds.map((ik) => {
             return (
-              <Card title={InstanceKindName[ik]}>
+              <Card title={InstanceKindName[ik]} key={ik}>
                 <PartialInfo data={data.stats_by_instance_kind?.[ik]} />
               </Card>
             )

@@ -233,6 +233,10 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	if strings.Contains(order[0], " AS ") {
 		order[0] = req.OrderBy
 	}
+	if order[0] == "timestamp" {
+		order[0] = "Time"
+	}
+
 	if req.IsDesc {
 		tx = tx.Order(fmt.Sprintf("%s DESC", order[0]))
 	} else {

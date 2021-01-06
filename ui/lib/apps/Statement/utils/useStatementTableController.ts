@@ -232,6 +232,7 @@ export default function useStatementTableController(
           )
         setStatements(res?.data || [])
         cacheMgr?.set(cacheKey, res?.data || [])
+        saveClickedItemIndex(-1)
         setErrors([])
       } catch (e) {
         setErrors((prev) => prev.concat(e))

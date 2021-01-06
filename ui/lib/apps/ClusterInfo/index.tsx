@@ -1,7 +1,7 @@
 import React from 'react'
 import { HashRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
 
-import { Root, ParamsPageWrapper } from '@lib/components'
+import { Root } from '@lib/components'
 import ListPage from './pages/List'
 
 const App = () => {

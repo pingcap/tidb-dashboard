@@ -71,6 +71,9 @@ export interface IStatementTableController {
 
   downloadCSV: () => Promise<void>
   downloading: boolean
+
+  saveClickedItemIndex: (idx: number) => void
+  getClickedItemIndex: () => number
 }
 
 export default function useStatementTableController(
@@ -268,6 +271,14 @@ export default function useStatementTableController(
     }
   }
 
+  const CLICKED_ITEM_INDEX = 'clicked_item_index'
+  function saveClickedItemIndex(idx: number) {
+    cacheMgr?.set(CLICKED_ITEM_INDEX, idx)
+  }
+  function getClickedItemIndex(): number {
+    return cacheMgr?.get(CLICKED_ITEM_INDEX) || -1
+  }
+
   return {
     queryOptions,
     setQueryOptions,
@@ -290,5 +301,8 @@ export default function useStatementTableController(
 
     downloadCSV,
     downloading,
+
+    saveClickedItemIndex,
+    getClickedItemIndex,
   }
 }

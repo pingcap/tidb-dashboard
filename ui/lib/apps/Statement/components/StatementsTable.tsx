@@ -22,11 +22,15 @@ export default function StatementsTable({ controller, ...restPrpos }: Props) {
     errors,
     tableColumns,
     visibleColumnKeys,
+
+    getClickedItemIndex,
+    saveClickedItemIndex,
   } = controller
 
   const navigate = useNavigate()
   const handleRowClick = usePersistFn(
-    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+    (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
+      saveClickedItemIndex(idx)
       const qs = DetailPage.buildQuery({
         digest: rec.digest,
         schema: rec.schema_name,
@@ -52,6 +56,7 @@ export default function StatementsTable({ controller, ...restPrpos }: Props) {
       visibleColumnKeys={visibleColumnKeys}
       onRowClicked={handleRowClick}
       getKey={getKey}
+      initialFocusedIndex={getClickedItemIndex()}
     />
   )
 }

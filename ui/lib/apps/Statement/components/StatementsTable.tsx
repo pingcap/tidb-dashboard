@@ -1,6 +1,7 @@
 import { usePersistFn } from 'ahooks'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { IDetailsList } from 'office-ui-fabric-react/lib/DetailsList'
 
 import openLink from '@lib/utils/openLink'
 import { CardTable, ICardTableProps } from '@lib/components'
@@ -43,6 +44,11 @@ export default function StatementsTable({ controller, ...restPrpos }: Props) {
 
   const getKey = useCallback((row) => `${row.digest}_${row.schema_name}`, [])
 
+  const tableRef = useRef<IDetailsList>(null)
+  useEffect(() => {
+    tableRef.current?.scrollToIndex(getClickedItemIndex())
+  }, [getClickedItemIndex])
+
   return (
     <CardTable
       {...restPrpos}
@@ -56,7 +62,8 @@ export default function StatementsTable({ controller, ...restPrpos }: Props) {
       visibleColumnKeys={visibleColumnKeys}
       onRowClicked={handleRowClick}
       getKey={getKey}
-      initialFocusedIndex={getClickedItemIndex()}
+      componentRef={tableRef}
+      clickedRowIndex={getClickedItemIndex()}
     />
   )
 }

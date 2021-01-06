@@ -96,6 +96,7 @@ export interface ICardTableProps extends IDetailsListProps {
     itemIndex: number,
     ev: React.MouseEvent<HTMLElement>
   ) => void
+  clickedRowIndex?: number
 }
 
 function useRenderClickableRow(onRowClicked, clickedRowIdx) {
@@ -148,14 +149,14 @@ export default function CardTable(props: ICardTableProps) {
     desc = true,
     onChangeOrder,
     onRowClicked,
+    clickedRowIndex,
     columns,
     items,
-    initialFocusedIndex,
     ...restProps
   } = props
   const renderClickableRow = useRenderClickableRow(
     onRowClicked,
-    initialFocusedIndex || -1
+    clickedRowIndex || -1
   )
 
   const onColumnClick = usePersistFn(
@@ -240,7 +241,6 @@ export default function CardTable(props: ICardTableProps) {
             onRenderRow={onRowClicked ? renderClickableRow : undefined}
             columns={finalColumns}
             items={finalItems}
-            initialFocusedIndex={initialFocusedIndex}
             {...restProps}
           />
         </div>

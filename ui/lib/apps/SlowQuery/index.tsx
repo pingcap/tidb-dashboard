@@ -6,7 +6,7 @@ import useCache, { CacheContext } from '@lib/utils/useCache'
 import { List, Detail } from './pages'
 
 export default function () {
-  const slowQueryCacheMgr = useCache()
+  const slowQueryCacheMgr = useCache(2)
 
   return (
     <Root>

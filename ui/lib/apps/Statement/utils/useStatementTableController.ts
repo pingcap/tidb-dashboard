@@ -8,9 +8,10 @@ import client, {
   StatementTimeRange,
 } from '@lib/client'
 import { IColumnKeys, stringifyTimeRange } from '@lib/components'
-import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 import { CacheMgr } from '@lib/utils/useCache'
+import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
+import useCacheItemIndex from '@lib/utils/useCacheItemIndex'
 
 import {
   calcValidStatementTimeRange,
@@ -271,13 +272,9 @@ export default function useStatementTableController(
     }
   }
 
-  const CLICKED_ITEM_INDEX = 'clicked_item_index'
-  function saveClickedItemIndex(idx: number) {
-    cacheMgr?.set(CLICKED_ITEM_INDEX, idx)
-  }
-  function getClickedItemIndex(): number {
-    return cacheMgr?.get(CLICKED_ITEM_INDEX) || -1
-  }
+  const { saveClickedItemIndex, getClickedItemIndex } = useCacheItemIndex(
+    cacheMgr
+  )
 
   return {
     queryOptions,

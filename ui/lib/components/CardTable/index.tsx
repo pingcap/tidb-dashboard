@@ -7,11 +7,12 @@ import {
   DetailsList,
   DetailsListLayoutMode,
   IColumn,
+  IDetailsList,
   IDetailsListProps,
   SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
@@ -214,6 +215,13 @@ export default function CardTable(props: ICardTableProps) {
     return newItems
   }, [visibleItemsCount, items, orderBy, finalColumns])
 
+  const tableRef = useRef<IDetailsList>(null)
+  useEffect(() => {
+    if ((clickedRowIndex ?? -1) > 0) {
+      tableRef.current?.scrollToIndex(clickedRowIndex!)
+    }
+  })
+
   return (
     <Card
       title={title}
@@ -241,6 +249,7 @@ export default function CardTable(props: ICardTableProps) {
             onRenderRow={onRowClicked ? renderClickableRow : undefined}
             columns={finalColumns}
             items={finalItems}
+            componentRef={tableRef}
             {...restProps}
           />
         </div>

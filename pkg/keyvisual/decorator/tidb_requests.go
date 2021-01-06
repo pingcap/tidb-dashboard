@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -73,7 +74,8 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 			continue
 		}
 		var tableInfos []*model.TableInfo
-		if err := s.request(fmt.Sprintf("/schema/%s", db.Name.O), &tableInfos); err != nil {
+		encodeName := url.PathEscape(db.Name.O)
+		if err := s.request(fmt.Sprintf("/schema/%s", encodeName), &tableInfos); err != nil {
 			log.Error("fail to send schema request to TiDB", zap.Error(err))
 			updateSuccess = false
 			continue

@@ -234,6 +234,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		order[0] = req.OrderBy
 	}
 	if order[0] == "timestamp" {
+		// Order by column instead of expression, see related optimization in TiDB: https://github.com/pingcap/tidb/pull/20750
 		order[0] = "Time"
 	}
 

@@ -24,7 +24,7 @@ function renderTabBar(props, DefaultTabBar) {
 }
 
 export default function ListPage() {
-  const tabKey = useParams()['tabKey'] || 'instance'
+  const { tabKey } = useParams()
   const navigate = useNavigate()
   const { t } = useTranslation()
 
@@ -56,20 +56,14 @@ export default function ListPage() {
     },
   ]
 
-  function clickTab(tabKey) {
-    if (tabKey === 'instance') {
-      navigate('/cluster_info')
-    } else {
-      navigate(`/cluster_info/${tabKey}`)
-    }
-  }
-
   return (
     <ScrollablePane style={{ height: '100vh' }}>
       <Card>
         <CardTabs
           defaultActiveKey={tabKey}
-          onChange={clickTab}
+          onChange={(key) => {
+            navigate(`/cluster_info/${key}`)
+          }}
           renderTabBar={renderTabBar}
           animated={false}
           tabs={tabs}

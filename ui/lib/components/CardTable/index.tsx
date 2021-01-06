@@ -115,7 +115,7 @@ function useRenderClickableRow(onRowClicked, clickedRowIdx) {
         </div>
       )
     },
-    [onRowClicked]
+    [onRowClicked, clickedRowIdx]
   )
 }
 

@@ -13,6 +13,7 @@ import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 import { CacheMgr } from '@lib/utils/useCache'
+import useCacheItemIndex from '@lib/utils/useCacheItemIndex'
 
 import { derivedFields, slowQueryColumns } from './tableColumns'
 
@@ -69,6 +70,9 @@ export interface ISlowQueryTableController {
 
   downloadCSV: () => Promise<void>
   downloading: boolean
+
+  saveClickedItemIndex: (idx: number) => void
+  getClickedItemIndex: () => number
 }
 
 export default function useSlowQueryTableController(
@@ -236,6 +240,10 @@ export default function useSlowQueryTableController(
     }
   }
 
+  const { saveClickedItemIndex, getClickedItemIndex } = useCacheItemIndex(
+    cacheMgr
+  )
+
   return {
     queryOptions,
     setQueryOptions,
@@ -255,5 +263,8 @@ export default function useSlowQueryTableController(
 
     downloading,
     downloadCSV,
+
+    saveClickedItemIndex,
+    getClickedItemIndex,
   }
 }

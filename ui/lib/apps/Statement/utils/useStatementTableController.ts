@@ -8,9 +8,10 @@ import client, {
   StatementTimeRange,
 } from '@lib/client'
 import { IColumnKeys, stringifyTimeRange } from '@lib/components'
-import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
 import { CacheMgr } from '@lib/utils/useCache'
+import useOrderState, { IOrderOptions } from '@lib/utils/useOrderState'
+import useCacheItemIndex from '@lib/utils/useCacheItemIndex'
 
 import {
   calcValidStatementTimeRange,
@@ -71,6 +72,9 @@ export interface IStatementTableController {
 
   downloadCSV: () => Promise<void>
   downloading: boolean
+
+  saveClickedItemIndex: (idx: number) => void
+  getClickedItemIndex: () => number
 }
 
 export default function useStatementTableController(
@@ -268,6 +272,10 @@ export default function useStatementTableController(
     }
   }
 
+  const { saveClickedItemIndex, getClickedItemIndex } = useCacheItemIndex(
+    cacheMgr
+  )
+
   return {
     queryOptions,
     setQueryOptions,
@@ -290,5 +298,8 @@ export default function useStatementTableController(
 
     downloadCSV,
     downloading,
+
+    saveClickedItemIndex,
+    getClickedItemIndex,
   }
 }

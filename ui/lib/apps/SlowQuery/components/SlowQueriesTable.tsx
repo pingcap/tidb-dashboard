@@ -19,11 +19,15 @@ function SlowQueriesTable({ controller, ...restProps }: Props) {
     changeOrder,
     errors,
     visibleColumnKeys,
+
+    saveClickedItemIndex,
+    getClickedItemIndex,
   } = controller
 
   const navigate = useNavigate()
   const handleRowClick = usePersistFn(
-    (rec, _idx, ev: React.MouseEvent<HTMLElement>) => {
+    (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
+      saveClickedItemIndex(idx)
       const qs = DetailPage.buildQuery({
         digest: rec.digest,
         connectId: rec.connection_id,
@@ -47,6 +51,7 @@ function SlowQueriesTable({ controller, ...restProps }: Props) {
       errors={errors}
       visibleColumnKeys={visibleColumnKeys}
       onRowClicked={handleRowClick}
+      clickedRowIndex={getClickedItemIndex()}
       getKey={getKey}
     />
   )

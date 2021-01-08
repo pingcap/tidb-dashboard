@@ -7,7 +7,7 @@ import useCache, { CacheContext } from '@lib/utils/useCache'
 import { Detail, List } from './pages'
 
 export default function () {
-  const statementCacheMgr = useCache()
+  const statementCacheMgr = useCache(2)
 
   return (
     <Root>

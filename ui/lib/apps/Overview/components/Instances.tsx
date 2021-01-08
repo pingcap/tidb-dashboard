@@ -92,7 +92,7 @@ export default function Nodes() {
       }
       noMarginLeft
     >
-      <Stack gap={16}>
+      <Stack tokens={{ childrenGap: 16 }}>
         <Row>
           <Col span={12}>
             <ComponentItem name="PD" resp={pdResp} />

@@ -82,7 +82,7 @@ type Service struct {
 	tidbClient     *tidb.Client
 
 	stat          *storage.Stat
-	strategy      matrix.Strategy
+	strategy      *matrix.Strategy
 	labelStrategy decorator.LabelStrategy
 }
 
@@ -164,14 +164,13 @@ func (s *Service) Start(ctx context.Context) error {
 func (s *Service) newLabelStrategy(
 	lc fx.Lifecycle,
 	wg *sync.WaitGroup,
-	cfg *config.Config,
 	etcdClient *clientv3.Client,
 	tidbClient *tidb.Client,
 ) decorator.LabelStrategy {
 	switch s.keyVisualCfg.Policy {
 	case config.KeyVisualDBPolicy:
 		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy))
-		return decorator.TiDBLabelStrategy(lc, wg, cfg, etcdClient, tidbClient)
+		return decorator.TiDBLabelStrategy(lc, wg, etcdClient, tidbClient)
 	case config.KeyVisualKVPolicy:
 		log.Debug("New LabelStrategy", zap.String("policy", s.keyVisualCfg.Policy),
 			zap.String("separator", s.keyVisualCfg.PolicyKVSeparator))
@@ -318,8 +317,16 @@ func newWaitGroup(lc fx.Lifecycle) *sync.WaitGroup {
 	return wg
 }
 
-func newStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.LabelStrategy) matrix.Strategy {
-	return matrix.DistanceStrategy(lc, wg, labelStrategy, distanceStrategyRatio, distanceStrategyLevel, distanceStrategyCount)
+func newStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.LabelStrategy) *matrix.Strategy {
+	return &matrix.Strategy{
+		LabelStrategy: labelStrategy,
+		SplitStrategy: matrix.DistanceSplitStrategy(
+			lc, wg,
+			distanceStrategyRatio,
+			distanceStrategyLevel,
+			distanceStrategyCount,
+		),
+	}
 }
 
 func newStat(lc fx.Lifecycle, wg *sync.WaitGroup, etcdClient *clientv3.Client, db *dbstore.DB, in input.StatInput, strategy matrix.Strategy) *storage.Stat {

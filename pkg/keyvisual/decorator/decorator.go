@@ -41,12 +41,6 @@ type Labeler interface {
 	Label(keys []string) []LabelKey
 }
 
-var (
-	_ LabelStrategy = (*naiveLabelStrategy)(nil)
-	_ LabelStrategy = (*tidbLabelStrategy)(nil)
-	_ LabelStrategy = (*separatorLabelStrategy)(nil)
-)
-
 // NaiveLabelStrategy is one of the simplest LabelStrategy.
 func NaiveLabelStrategy() LabelStrategy {
 	return naiveLabelStrategy{}

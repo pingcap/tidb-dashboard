@@ -43,12 +43,12 @@ func CreateEmptyPlane(startTime, endTime time.Time, startKey, endKey string, val
 }
 
 // Compact compacts Plane into an axis.
-func (plane *Plane) Compact(strategy Strategy) Axis {
+func (plane *Plane) Compact(strategy *Strategy) Axis {
 	chunks := make([]chunk, len(plane.Axes))
 	for i, axis := range plane.Axes {
 		chunks[i] = createChunk(axis.Keys, axis.ValuesList[0])
 	}
-	compactChunk, helper := compact(strategy, chunks)
+	compactChunk, splitter := compact(strategy, chunks)
 	valuesListLen := len(plane.Axes[0].ValuesList)
 	valuesList := make([][]uint64, valuesListLen)
 	valuesList[0] = compactChunk.Values
@@ -56,7 +56,7 @@ func (plane *Plane) Compact(strategy Strategy) Axis {
 		compactChunk.SetZeroValues()
 		for i, axis := range plane.Axes {
 			chunks[i].SetValues(axis.ValuesList[j])
-			strategy.Split(compactChunk, chunks[i], splitAdd, i, helper)
+			splitter.Split(compactChunk, chunks[i], splitAdd, i)
 		}
 		valuesList[j] = compactChunk.Values
 	}
@@ -64,7 +64,7 @@ func (plane *Plane) Compact(strategy Strategy) Axis {
 }
 
 // Pixel pixelates Plane into a matrix with a number of rows close to the target.
-func (plane *Plane) Pixel(strategy Strategy, target int, displayTags []string) Matrix {
+func (plane *Plane) Pixel(strategy *Strategy, target int, displayTags []string) Matrix {
 	valuesListLen := len(plane.Axes[0].ValuesList)
 	if valuesListLen != len(displayTags) {
 		panic("the length of displayTags and valuesList should be equal")
@@ -74,9 +74,10 @@ func (plane *Plane) Pixel(strategy Strategy, target int, displayTags []string) M
 	for i, axis := range plane.Axes {
 		chunks[i] = createChunk(axis.Keys, axis.ValuesList[0])
 	}
-	compactChunk, helper := compact(strategy, chunks)
-	baseKeys := compactChunk.Divide(strategy, target, NotMergeLogicalRange).Keys
-	matrix := CreateMatrix(strategy, plane.Times, baseKeys, valuesListLen)
+	compactChunk, splitter := compact(strategy, chunks)
+	labeler := strategy.NewLabeler()
+	baseKeys := compactChunk.Divide(labeler, target, NotMergeLogicalRange).Keys
+	matrix := CreateMatrix(labeler, plane.Times, baseKeys, valuesListLen)
 
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
@@ -86,7 +87,7 @@ func (plane *Plane) Pixel(strategy Strategy, target int, displayTags []string) M
 		goCompactChunk := createZeroChunk(compactChunk.Keys)
 		for i, axis := range plane.Axes {
 			goCompactChunk.Clear()
-			strategy.Split(goCompactChunk, createChunk(chunks[i].Keys, axis.ValuesList[j]), splitTo, i, helper)
+			splitter.Split(goCompactChunk, createChunk(chunks[i].Keys, axis.ValuesList[j]), splitTo, i)
 			data[i] = goCompactChunk.Reduce(baseKeys).Values
 		}
 		mutex.Lock()
@@ -103,7 +104,7 @@ func (plane *Plane) Pixel(strategy Strategy, target int, displayTags []string) M
 	return matrix
 }
 
-func compact(strategy Strategy, chunks []chunk) (compactChunk chunk, helper interface{}) {
+func compact(strategy SplitStrategy, chunks []chunk) (compactChunk chunk, splitter Splitter) {
 	// get compact chunk keys
 	keySet := make(map[string]struct{})
 	unlimitedEnd := false
@@ -128,9 +129,9 @@ func compact(strategy Strategy, chunks []chunk) (compactChunk chunk, helper inte
 	}
 	compactChunk = createZeroChunk(compactKeys)
 
-	helper = strategy.GenerateHelper(chunks, compactChunk.Keys)
+	splitter = strategy.NewSplitter(chunks, compactChunk.Keys)
 	for i, c := range chunks {
-		strategy.Split(compactChunk, c, splitAdd, i, helper)
+		splitter.Split(compactChunk, c, splitAdd, i)
 	}
 	return
 }

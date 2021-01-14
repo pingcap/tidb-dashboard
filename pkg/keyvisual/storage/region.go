@@ -17,6 +17,7 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 )
@@ -27,11 +28,11 @@ const (
 	// preRatioTarget = 512
 	preTarget = 3072
 
-	dirtyWrittenBytes = 1 << 32
+	dirtyWrittenBytes uint64 = 1 << 32
 )
 
 // CreateStorageAxis converts the RegionsInfo to a StorageAxis.
-func CreateStorageAxis(regions region.RegionsInfo, strategy matrix.Strategy) matrix.Axis {
+func CreateStorageAxis(regions region.RegionsInfo, labeler decorator.Labeler) matrix.Axis {
 	regionsLen := regions.Len()
 	if regionsLen <= 0 {
 		panic("At least one RegionInfo")
@@ -46,15 +47,15 @@ func CreateStorageAxis(regions region.RegionsInfo, strategy matrix.Strategy) mat
 	preAxis := matrix.CreateAxis(keys, valuesList)
 	wash(&preAxis)
 
-	axis := IntoStorageAxis(preAxis, strategy)
+	axis := IntoStorageAxis(preAxis, labeler)
 	log.Debug("New StorageAxis", zap.Int("region length", regionsLen), zap.Int("focus keys length", len(axis.Keys)))
 	return axis
 }
 
 // IntoStorageAxis converts ResponseAxis to StorageAxis.
-func IntoStorageAxis(responseAxis matrix.Axis, strategy matrix.Strategy) matrix.Axis {
+func IntoStorageAxis(responseAxis matrix.Axis, labeler decorator.Labeler) matrix.Axis {
 	// axis := preAxis.Focus(strategy, preThreshold, len(keys)/preRatioTarget, preTarget)
-	axis := responseAxis.Divide(strategy, preTarget)
+	axis := responseAxis.Divide(labeler, preTarget)
 	var storageValuesList [][]uint64
 	storageValuesList = append(storageValuesList, axis.ValuesList[1:]...)
 	return matrix.CreateAxis(axis.Keys, storageValuesList)

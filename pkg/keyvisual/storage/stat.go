@@ -23,6 +23,7 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
 )
@@ -49,31 +50,37 @@ type layerStat struct {
 
 	Db *dbstore.DB
 	// Hierarchical mechanism
-	Strategy matrix.Strategy
-	Ratio    int
-	Next     *layerStat
+	SplitStrategy matrix.SplitStrategy
+	Ratio         int
+	Next          *layerStat
 }
 
-func newLayerStat(layerNum uint8, conf LayerConfig, strategy matrix.Strategy, startTime time.Time, db *dbstore.DB) *layerStat {
+func newLayerStat(
+	layerNum uint8,
+	conf LayerConfig,
+	splitStrategy matrix.SplitStrategy,
+	startTime time.Time,
+	db *dbstore.DB,
+) *layerStat {
 	return &layerStat{
-		StartTime: startTime,
-		EndTime:   startTime,
-		RingAxes:  make([]matrix.Axis, conf.Len),
-		RingTimes: make([]time.Time, conf.Len),
-		LayerNum:  layerNum,
-		Head:      0,
-		Tail:      0,
-		Empty:     true,
-		Len:       conf.Len,
-		Db:        db,
-		Strategy:  strategy,
-		Ratio:     conf.Ratio,
-		Next:      nil,
+		StartTime:     startTime,
+		EndTime:       startTime,
+		RingAxes:      make([]matrix.Axis, conf.Len),
+		RingTimes:     make([]time.Time, conf.Len),
+		LayerNum:      layerNum,
+		Head:          0,
+		Tail:          0,
+		Empty:         true,
+		Len:           conf.Len,
+		Db:            db,
+		SplitStrategy: splitStrategy,
+		Ratio:         conf.Ratio,
+		Next:          nil,
 	}
 }
 
 // Reduce merges ratio axes and append to next layerStat
-func (s *layerStat) Reduce() {
+func (s *layerStat) Reduce(labeler decorator.Labeler) {
 	if s.Ratio == 0 || s.Next == nil {
 		_ = s.DeleteFirstAxisFromDb()
 
@@ -98,17 +105,17 @@ func (s *layerStat) Reduce() {
 	}
 
 	plane := matrix.CreatePlane(times, axes)
-	newAxis := plane.Compact(s.Strategy)
+	newAxis := plane.Compact(s.SplitStrategy)
 	newAxis = IntoResponseAxis(newAxis, region.Integration)
-	newAxis = IntoStorageAxis(newAxis, s.Strategy)
+	newAxis = IntoStorageAxis(newAxis, labeler)
 	newAxis.Shrink(uint64(s.Ratio))
-	s.Next.Append(newAxis, s.StartTime)
+	s.Next.Append(newAxis, s.StartTime, labeler)
 }
 
 // Append appends a key axis to layerStat.
-func (s *layerStat) Append(axis matrix.Axis, endTime time.Time) {
+func (s *layerStat) Append(axis matrix.Axis, endTime time.Time, labeler decorator.Labeler) {
 	if s.Head == s.Tail && !s.Empty {
-		s.Reduce()
+		s.Reduce(labeler)
 	}
 
 	_ = s.InsertLastAxisToDb(axis, endTime)
@@ -181,13 +188,20 @@ type Stat struct {
 	layers []*layerStat
 
 	keyMap   matrix.KeyMap
-	strategy matrix.Strategy
+	strategy *matrix.Strategy
 
 	db *dbstore.DB
 }
 
 // NewStat generates a Stat based on the configuration.
-func NewStat(lc fx.Lifecycle, wg *sync.WaitGroup, db *dbstore.DB, cfg StatConfig, strategy matrix.Strategy, startTime time.Time) *Stat {
+func NewStat(
+	lc fx.Lifecycle,
+	wg *sync.WaitGroup,
+	db *dbstore.DB,
+	cfg StatConfig,
+	strategy *matrix.Strategy,
+	startTime time.Time,
+) *Stat {
 	layers := make([]*layerStat, len(cfg.LayersConfig))
 	for i, c := range cfg.LayersConfig {
 		layers[i] = newLayerStat(uint8(i), c, strategy, startTime, db)
@@ -253,7 +267,8 @@ func (s *Stat) Append(regions region.RegionsInfo, endTime time.Time) {
 	if regions.Len() == 0 {
 		return
 	}
-	axis := CreateStorageAxis(regions, s.strategy)
+	labeler := s.strategy.NewLabeler()
+	axis := CreateStorageAxis(regions, labeler)
 
 	s.keyMap.RLock()
 	defer s.keyMap.RUnlock()
@@ -261,7 +276,7 @@ func (s *Stat) Append(regions region.RegionsInfo, endTime time.Time) {
 
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	s.layers[0].Append(axis, endTime)
+	s.layers[0].Append(axis, endTime, labeler)
 }
 
 func (s *Stat) rangeRoot(startTime, endTime time.Time) ([]time.Time, []matrix.Axis) {

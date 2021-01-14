@@ -329,7 +329,14 @@ func newStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, labelStrategy decorator.La
 	}
 }
 
-func newStat(lc fx.Lifecycle, wg *sync.WaitGroup, etcdClient *clientv3.Client, db *dbstore.DB, in input.StatInput, strategy matrix.Strategy) *storage.Stat {
+func newStat(
+	lc fx.Lifecycle,
+	wg *sync.WaitGroup,
+	etcdClient *clientv3.Client,
+	db *dbstore.DB,
+	in input.StatInput,
+	strategy *matrix.Strategy,
+) *storage.Stat {
 	stat := storage.NewStat(lc, wg, db, defaultStatConfig, strategy, in.GetStartTime())
 
 	lc.Append(fx.Hook{

@@ -43,7 +43,7 @@ func CreateEmptyPlane(startTime, endTime time.Time, startKey, endKey string, val
 }
 
 // Compact compacts Plane into an axis.
-func (plane *Plane) Compact(strategy *Strategy) Axis {
+func (plane *Plane) Compact(strategy SplitStrategy) Axis {
 	chunks := make([]chunk, len(plane.Axes))
 	for i, axis := range plane.Axes {
 		chunks[i] = createChunk(axis.Keys, axis.ValuesList[0])

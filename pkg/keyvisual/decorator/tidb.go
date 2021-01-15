@@ -70,6 +70,7 @@ type tidbLabelStrategy struct {
 
 type tidbLabeler struct {
 	TableMap *sync.Map
+	Buffer   model.KeyInfoBuffer
 }
 
 func (s *tidbLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {}
@@ -95,17 +96,20 @@ func (s *tidbLabelStrategy) NewLabeler() Labeler {
 
 // CrossBorder does not allow cross tables or cross indexes within a table.
 func (e *tidbLabeler) CrossBorder(startKey, endKey string) bool {
-	startBytes, endBytes := model.Key(region.Bytes(startKey)), model.Key(region.Bytes(endKey))
-	startIsMeta, startTableID := startBytes.MetaOrTable()
-	endIsMeta, endTableID := endBytes.MetaOrTable()
+	startInfo, _ := e.Buffer.DecodeKey(region.Bytes(startKey))
+	startIsMeta, startTableID := startInfo.MetaOrTable()
+	startIndex := startInfo.IndexInfo()
+
+	endInfo, _ := e.Buffer.DecodeKey(region.Bytes(endKey))
+	endIsMeta, endTableID := endInfo.MetaOrTable()
+	endIndex := endInfo.IndexInfo()
+
 	if startIsMeta || endIsMeta {
 		return startIsMeta != endIsMeta
 	}
 	if startTableID != endTableID {
 		return true
 	}
-	startIndex := startBytes.IndexID()
-	endIndex := endBytes.IndexID()
 	return startIndex != endIndex
 }
 
@@ -130,16 +134,16 @@ func (e *tidbLabeler) Label(keys []string) []LabelKey {
 func (e *tidbLabeler) label(key string) (label LabelKey) {
 	keyBytes := region.Bytes(key)
 	label.Key = hex.EncodeToString(keyBytes)
-	decodeKey := model.Key(keyBytes)
-	isMeta, TableID := decodeKey.MetaOrTable()
+	keyInfo, _ := e.Buffer.DecodeKey(keyBytes)
+	isMeta, TableID := keyInfo.MetaOrTable()
 	if isMeta {
 		label.Labels = append(label.Labels, "meta")
 	} else if v, ok := e.TableMap.Load(TableID); ok {
 		detail := v.(*tableDetail)
 		label.Labels = append(label.Labels, detail.DB, detail.Name)
-		if rowID := decodeKey.RowID(); rowID != 0 {
+		if rowID := keyInfo.RowInfo(); rowID != 0 {
 			label.Labels = append(label.Labels, fmt.Sprintf("row_%d", rowID))
-		} else if indexID := decodeKey.IndexID(); indexID != 0 {
+		} else if indexID := keyInfo.IndexInfo(); indexID != 0 {
 			if name, ok := detail.Indices[indexID]; ok {
 				label.Labels = append(label.Labels, name)
 			} else {
@@ -148,9 +152,9 @@ func (e *tidbLabeler) label(key string) (label LabelKey) {
 		}
 	} else {
 		label.Labels = append(label.Labels, fmt.Sprintf("table_%d", TableID))
-		if rowID := decodeKey.RowID(); rowID != 0 {
+		if rowID := keyInfo.RowInfo(); rowID != 0 {
 			label.Labels = append(label.Labels, fmt.Sprintf("row_%d", rowID))
-		} else if indexID := decodeKey.IndexID(); indexID != 0 {
+		} else if indexID := keyInfo.IndexInfo(); indexID != 0 {
 			label.Labels = append(label.Labels, fmt.Sprintf("index_%d", indexID))
 		}
 	}

@@ -59,13 +59,13 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 type HelloResponse struct {
-	echo      string
-	databases []string
+	Echo      string   `json:"echo"`
+	Databases []string `json:"databases"`
 }
 
 // @Summary List all databases
-// @Success 200 {object} HelloResponse
 // @Router /scaffold/hello [get]
+// @Success 200 {object} scaffold.HelloResponse
 // @Param name query string true "name"
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
@@ -86,7 +86,7 @@ func (s *Service) helloHandler(c *gin.Context) {
 	sort.Strings(databases)
 
 	c.JSON(http.StatusOK, HelloResponse{
-		echo:      echo,
-		databases: databases,
+		Echo:      echo,
+		Databases: databases,
 	})
 }

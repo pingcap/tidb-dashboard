@@ -33,6 +33,7 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/metrics"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/profiling"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/queryeditor"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/scaffold"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
@@ -123,6 +124,7 @@ func (s *Service) Start(ctx context.Context) error {
 			metrics.NewService,
 			queryeditor.NewService,
 			configuration.NewService,
+			scaffold.NewService,
 		),
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
@@ -138,6 +140,7 @@ func (s *Service) Start(ctx context.Context) error {
 			metrics.RegisterRouter,
 			queryeditor.RegisterRouter,
 			configuration.RegisterRouter,
+			scaffold.RegisterRouter,
 			// Must be at the end
 			s.status.Register,
 		),

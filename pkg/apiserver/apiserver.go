@@ -125,6 +125,8 @@ func (s *Service) Start(ctx context.Context) error {
 			queryeditor.NewService,
 			configuration.NewService,
 			scaffold.NewService,
+			// __APP_NAME__.NewService,
+			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 		),
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
@@ -141,6 +143,8 @@ func (s *Service) Start(ctx context.Context) error {
 			queryeditor.RegisterRouter,
 			configuration.RegisterRouter,
 			scaffold.RegisterRouter,
+			// __APP_NAME__.RegisterRouter,
+			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 			// Must be at the end
 			s.status.Register,
 		),

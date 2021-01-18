@@ -33,7 +33,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/metrics"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/profiling"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/queryeditor"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/scaffold"
 
 	// "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/__APP_NAME__"
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator
@@ -127,7 +126,6 @@ func (s *Service) Start(ctx context.Context) error {
 			metrics.NewService,
 			queryeditor.NewService,
 			configuration.NewService,
-			scaffold.NewService,
 			// __APP_NAME__.NewService,
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 		),
@@ -145,7 +143,6 @@ func (s *Service) Start(ctx context.Context) error {
 			metrics.RegisterRouter,
 			queryeditor.RegisterRouter,
 			configuration.RegisterRouter,
-			scaffold.RegisterRouter,
 			// __APP_NAME__.RegisterRouter,
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 			// Must be at the end

@@ -99,6 +99,8 @@ function Sider({
     useAppMenuItem(registry, 'system_report'),
     useAppMenuItem(registry, 'diagnose'),
     useAppMenuItem(registry, 'search_logs'),
+    // useAppMenuItem(registry, '__APP_NAME__'),
+    // NOTE: Don't remove above comment line, it is a placeholder for code generator
     debugSubMenu,
   ]
 

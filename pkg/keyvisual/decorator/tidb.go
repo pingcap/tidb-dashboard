@@ -135,26 +135,31 @@ func (e *tidbLabeler) label(key string) (label LabelKey) {
 	keyBytes := region.Bytes(key)
 	label.Key = hex.EncodeToString(keyBytes)
 	keyInfo, _ := e.Buffer.DecodeKey(keyBytes)
-	isMeta, TableID := keyInfo.MetaOrTable()
+
+	isMeta, tableID := keyInfo.MetaOrTable()
 	if isMeta {
 		label.Labels = append(label.Labels, "meta")
-	} else if v, ok := e.TableMap.Load(TableID); ok {
-		detail := v.(*tableDetail)
+		return
+	}
+
+	var detail *tableDetail
+	if v, ok := e.TableMap.Load(tableID); ok {
+		detail = v.(*tableDetail)
 		label.Labels = append(label.Labels, detail.DB, detail.Name)
-		if rowID := keyInfo.RowInfo(); rowID != 0 {
-			label.Labels = append(label.Labels, fmt.Sprintf("row_%d", rowID))
-		} else if indexID := keyInfo.IndexInfo(); indexID != 0 {
-			if name, ok := detail.Indices[indexID]; ok {
-				label.Labels = append(label.Labels, name)
-			} else {
-				label.Labels = append(label.Labels, fmt.Sprintf("index_%d", indexID))
-			}
-		}
 	} else {
-		label.Labels = append(label.Labels, fmt.Sprintf("table_%d", TableID))
-		if rowID := keyInfo.RowInfo(); rowID != 0 {
-			label.Labels = append(label.Labels, fmt.Sprintf("row_%d", rowID))
-		} else if indexID := keyInfo.IndexInfo(); indexID != 0 {
+		label.Labels = append(label.Labels, fmt.Sprintf("table_%d", tableID))
+	}
+
+	if isCommonHandle, rowID := keyInfo.RowInfo(); isCommonHandle {
+		label.Labels = append(label.Labels, "row")
+	} else if rowID != 0 {
+		label.Labels = append(label.Labels, fmt.Sprintf("row_%d", rowID))
+	} else if indexID := keyInfo.IndexInfo(); indexID != 0 {
+		if detail == nil {
+			label.Labels = append(label.Labels, fmt.Sprintf("index_%d", indexID))
+		} else if name, ok := detail.Indices[indexID]; ok {
+			label.Labels = append(label.Labels, name)
+		} else {
 			label.Labels = append(label.Labels, fmt.Sprintf("index_%d", indexID))
 		}
 	}

@@ -68,11 +68,14 @@ func (buf KeyInfoBuffer) MetaOrTable() (isMeta bool, tableID int64) {
 }
 
 // RowInfo returns the row ID of the key, if the key is not table key, returns 0.
-func (buf KeyInfoBuffer) RowInfo() (rowID int64) {
+func (buf KeyInfoBuffer) RowInfo() (isCommonHandle bool, rowID int64) {
 	if !bytes.HasPrefix(buf, tablePrefix) || len(buf) < 19 || !(buf[9] == '_' && buf[10] == 'r') {
 		return
 	}
-	_, rowID, _ = decodeInt(buf[11:19])
+	isCommonHandle = len(buf) != 19
+	if !isCommonHandle {
+		_, rowID, _ = decodeInt(buf[11:19])
+	}
 	return
 }
 
@@ -82,7 +85,7 @@ func (buf KeyInfoBuffer) IndexInfo() (indexID int64) {
 		return
 	}
 	_, indexID, _ = decodeInt(buf[11:19])
-	return indexID
+	return
 }
 
 // GenerateTableKey generates a table split key.

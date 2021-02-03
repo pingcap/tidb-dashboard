@@ -213,6 +213,7 @@ export default function useStatementTableController(
       const cacheItem = cacheMgr?.get(cacheKey)
       if (cacheItem) {
         setStatements(cacheItem)
+        setLoadingStatements(false)
         return
       }
 

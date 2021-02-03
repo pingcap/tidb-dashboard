@@ -127,6 +127,10 @@ export default function useStatementTableController(
 
   const [errors, setErrors] = useState<any[]>([])
 
+  useEffect(() => {
+    errors.length && setLoadingStatements(false)
+  }, [errors])
+
   const selectedFields = useMemo(
     () => getSelectedFields(visibleColumnKeys, derivedFields).join(','),
     [visibleColumnKeys]

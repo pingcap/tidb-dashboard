@@ -112,7 +112,7 @@ export default function useStatementTableController(
     [queryOptions, allTimeRanges]
   )
 
-  const [loadingStatements, setLoadingStatements] = useState(false)
+  const [loadingStatements, setLoadingStatements] = useState(true)
   const [statements, setStatements] = useState<StatementModel[]>([])
 
   const [refreshTimes, setRefreshTimes] = useState(0)
@@ -213,7 +213,6 @@ export default function useStatementTableController(
       }
 
       if (allTimeRanges.length === 0) {
-        setLoadingStatements(false)
         return
       }
       setLoadingStatements(true)

@@ -40,7 +40,7 @@ const (
 	SessionUserKey = "user"
 
 	// Max permitted lifetime of a shared session.
-	MaxSessionShareExpiry = time.Hour * 24
+	MaxSessionShareExpiry = time.Hour * 24 * 30
 )
 
 // The secret is always regenerated each time starting TiDB Dashboard.

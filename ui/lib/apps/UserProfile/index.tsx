@@ -42,7 +42,19 @@ import { getValueFormat } from '@baurine/grafana-value-formats'
 import ReactMarkdown from 'react-markdown'
 
 const DEFAULT_FORM_ITEM_STYLE = { width: 200 }
-const SHARE_SESSION_EXPIRY_HOURS = [0.25, 0.5, 1, 2, 3, 6, 12, 24]
+const SHARE_SESSION_EXPIRY_HOURS = [
+  0.25,
+  0.5,
+  1,
+  2,
+  3,
+  6,
+  12,
+  24,
+  24 * 3,
+  24 * 7,
+  24 * 30,
+]
 
 function ShareSessionButton() {
   const { t } = useTranslation()

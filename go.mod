@@ -20,7 +20,7 @@ require (
 	github.com/jinzhu/gorm v1.9.12
 	github.com/joho/godotenv v1.3.0
 	github.com/joomcode/errorx v1.0.1
-	github.com/oleiade/reflections v1.0.0 // indirect
+	github.com/oleiade/reflections v1.0.1 // indirect
 	github.com/pingcap/check v0.0.0-20191216031241-8a5a85928f12
 	github.com/pingcap/errors v0.11.5-0.20190809092503-95897b64e011
 	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
@@ -45,5 +45,4 @@ require (
 	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2 // indirect
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 	google.golang.org/grpc v1.25.1
-	gopkg.in/oleiade/reflections.v1 v1.0.0
 )

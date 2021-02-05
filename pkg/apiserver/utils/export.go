@@ -15,7 +15,7 @@ import (
 	"github.com/gtank/cryptopasta"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
-	"gopkg.in/oleiade/reflections.v1"
+	"github.com/oleiade/reflections"
 
 	"reflect"
 	"time"

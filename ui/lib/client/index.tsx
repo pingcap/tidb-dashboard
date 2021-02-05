@@ -110,7 +110,7 @@ function init() {
     if (process.env.REACT_APP_DASHBOARD_API_URL) {
       apiPrefix = `${process.env.REACT_APP_DASHBOARD_API_URL}/dashboard`
     } else {
-      apiPrefix = 'http://127.0.0.1:12333/dashboard'
+      apiPrefix = 'http://localhost:12333/dashboard'
     }
   } else {
     apiPrefix = publicPathPrefix

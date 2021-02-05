@@ -1,0 +1,28 @@
+// Modified from github.com/microsoft/SandDance under the MIT license.
+.sanddance-app-static-content {
+  display: none;
+}
+
+.sanddance-app {
+  display: grid;
+  grid-template-rows: 100% 0;
+  height: 100%;
+}
+
+.sanddance-export {
+  .ms-Button {
+    margin-bottom: 1em;
+    margin-top: 0.5em;
+  }
+}
+
+.sanddance-datasource-picker {
+  width: 100%;
+}
+
+@import '../node_modules/@msrvida/sanddance-explorer/dist/css/sanddance-explorer.css';
+.sanddance-sidebar {
+  .sanddance-datascope {
+    min-height: 7em;
+  }
+}

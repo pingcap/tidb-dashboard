@@ -18,8 +18,11 @@ package clusterinfo
 
 import (
 	"context"
+	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -70,6 +73,9 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/alertmanager", s.getAlertManagerTopology)
 	endpoint.GET("/alertmanager/:address/count", s.getAlertManagerCounts)
 	endpoint.GET("/grafana", s.getGrafanaTopology)
+
+	endpoint.GET("/region", s.getRegions)
+	endpoint.GET("/region/top", s.getTopNRegions)
 
 	endpoint.GET("/store_location", s.getStoreLocationTopology)
 
@@ -215,6 +221,88 @@ func (s *Service) getGrafanaTopology(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, instance)
+}
+
+// @ID getRegions
+// @Summary Get Regions
+// @Param type query string true "region data type"
+// @Param format query string false "data format"
+// @Router /topology/region [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) getRegions(c *gin.Context) {
+	rawRegionsJson, err := topology.FetchRegions(s.params.PDClient)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	var regions topology.RawRegionsInfo
+	if err = json.Unmarshal(rawRegionsJson, &regions); err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	var data []interface{}
+
+	switch typ := c.Query("type"); typ {
+	case "replications":
+		data, err = topology.GetReplicationsInfo(s.params.PDClient, regions.Regions)
+	case "regions":
+		data, err = topology.GetRegionsInfo(regions.Regions)
+	default:
+		_ = c.Error(utils.ErrInvalidRequest.New("type must be specified"))
+		return
+	}
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	switch format := c.Query("format"); format {
+	case "csv":
+		csvData := topology.GenerateRegionDataCSV(data, []string{})
+		c.Status(http.StatusOK)
+		c.Header("Content-type", "text/csv")
+		csvWriter := csv.NewWriter(c.Writer)
+		_ = csvWriter.WriteAll(csvData)
+	default:
+		// default json
+		c.JSON(http.StatusOK, data)
+	}
+}
+
+// @ID getTopNRegions
+// @Summary Get Top N Regions
+// @Success 200 {object} topology.RawRegionsInfo
+// @Router /topology/region/top [get]
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) getTopNRegions(c *gin.Context) {
+	limit := 0
+	if limitStr := c.Query("limit"); limitStr != "" {
+		var err error
+		if limit, err = strconv.Atoi(limitStr); err != nil {
+			_ = c.Error(err)
+			return
+		}
+	}
+	var order topology.RegionOrder
+	switch c.Query("order") {
+	case "write":
+		order = topology.RegionOrderWrite
+	case "read":
+		order = topology.RegionOrderRead
+	default:
+		_ = c.Error(utils.ErrInvalidRequest.New("bad order"))
+		return
+	}
+
+	regions, err := topology.FetchTopNRegions(s.params.PDClient, limit, order)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Data(http.StatusOK, "application/json", regions)
 }
 
 // @ID getAlertManagerCounts

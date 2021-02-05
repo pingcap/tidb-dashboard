@@ -27,6 +27,7 @@
     "src",
     "lib",
     "dashboardApp",
-    "diagnoseReportApp"
+    "diagnoseReportApp",
+    "dataVizApp"
   ]
 }

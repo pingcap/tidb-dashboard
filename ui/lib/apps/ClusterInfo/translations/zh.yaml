@@ -49,5 +49,8 @@ cluster_info:
       message:
         instance_down: '由于有 {{n}} 台机器上的所有实例都未启动或无法访问，因此统计中关于机器的指标可能会不准确。'
         sub_statistics: 子统计按不同实例类型分别计算。当一个机器上部署了不同类型实例时，以下子统计的机器指标累加起来会超过“集群总计”数量。
+    regions:
+      title: Regions
+      open: 打开数据可视化窗口
   error:
     load: '加载组件 {{comp}} 失败: {{cause}}'

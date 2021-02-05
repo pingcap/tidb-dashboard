@@ -49,5 +49,8 @@ cluster_info:
       message:
         instance_down: 'Some instances are down in {{n}} host(s) so that host related information may be inccurate.'
         sub_statistics: Sub-statistics below are counted by instance kinds. The sum of host metrics in sub-statistics can be larger "Cluster Summary" when different instances are deployed in the same host.
+    regions:
+      title: Regions
+      open: Open Data Explorer in New Window
   error:
     load: 'Load component {{comp}} error: {{cause}}'

@@ -27,6 +27,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/toolserver"
 	"net"
 	"net/http"
 	_ "net/http/pprof" //nolint:gosec
@@ -193,7 +194,9 @@ func main() {
 	mux := http.DefaultServeMux
 	uiHandler := http.StripPrefix(strings.TrimRight(config.UIPathPrefix, "/"), uiserver.Handler(assets))
 	mux.Handle(config.UIPathPrefix, uiHandler)
-	mux.Handle(config.APIPathPrefix, apiserver.Handler(s))
+	apiHandler := apiserver.Handler(s)
+	mux.Handle(config.APIPathPrefix, apiHandler)
+	mux.Handle(config.ToolsPathPrefix, toolserver.Handler(uiHandler, apiHandler))
 	mux.Handle(config.SwaggerPathPrefix, swaggerserver.Handler())
 
 	log.Info(fmt.Sprintf("Dashboard server is listening at %s", listenAddr))

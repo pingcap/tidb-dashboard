@@ -96,7 +96,7 @@ export default function useSlowQueryTableController(
     options || DEF_SLOW_QUERY_OPTIONS
   )
   const queryOptions = useMemo(
-    () => (needSave ? sessionQueryOptions : memoryQueryOptions),
+    () => (needSave ? sessionQueryOptions : memoryQueryOptions)!,
     [needSave, memoryQueryOptions, sessionQueryOptions]
   )
   const queryTimeRange = useMemo(() => {

@@ -98,7 +98,7 @@ export default function useStatementTableController(
     options || DEF_STMT_QUERY_OPTIONS
   )
   const queryOptions = useMemo(
-    () => (needSave ? sessionQueryOptions : memoryQueryOptions),
+    () => (needSave ? sessionQueryOptions : memoryQueryOptions)!,
     [needSave, memoryQueryOptions, sessionQueryOptions]
   )
 

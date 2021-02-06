@@ -34,9 +34,11 @@ const i18nStrings = {
     labelSnapshotsExportMarkdownDescription:
       'Markdown is a language used by many blogging platforms. Exports a Markdown file with thumbnails of these snapshots which link back to the SandDance website.',
     labelSnapshotsShortcut: '提示：您的 .snapshots JSON 文件也可以被预加载',
-    labelShare: '分享',
+    labelGetLink: '获取 URL',
     labelLink: 'link',
-    labelLinkDescription: '点击后复制当前页面链接即可分享',
+    labelLinkDescription: '复制快照 URL 到剪贴板',
+    msgCopyLinkSuccess: '复制成功',
+    msgCopyLinkFail: '请手动复制以下 URL',
     labelUrl: 'Url',
     labelDataFormat: '数据格式',
     labelDataUrlShortcut: '提示：您的数据文件也可以被预加载',
@@ -48,17 +50,27 @@ const i18nStrings = {
     errorNoUrl: '请输入 URL',
     errorUrlHttp: 'URL 必须以 http 开头',
     errorDownloadFailure: '数据无法被导出',
-    errorDataSourceFromLocal: (ds: DataSource) =>
-      `无法从本地文件导入 ${ds.type}`,
-    errorDataSourceFromUrl: (ds: DataSource) =>
-      `无法从 ${ds.dataUrl} 导入 ${ds.type}`,
+    errorDataSourceFromLocal: (ds: DataSource, e: Error) => [
+      `无法从本地文件导入 ${ds.type} 数据`,
+      `原因: ${e.message}`,
+    ],
+    errorDataSourceFromDashboard: (ds: DataSource, e: Error) => [
+      `无法从 TiDB-Dashboard 中导入 ${ds.id} 数据`,
+      `原因: ${
+        e.message.includes('401') ? '请先登录 TiDB-Dashboard !' : e.message
+      }`,
+    ],
+    errorDataSourceFromUrl: (ds: DataSource, e: Error) => [
+      `无法从 ${ds.dataUrl} 导入 ${ds.type} 数据`,
+      `原因: ${e.message}`,
+    ],
   },
   en: {
     buttonLoadData: 'Load data',
     buttonThemeDark: 'Dark',
     buttonThemeLight: 'Light',
     buttonExport: 'Export',
-    menuUserData: 'Other data',
+    menuUserData: 'Other Source',
     menuLocal: 'From local file',
     menuUrl: 'From URL',
     menuSnapshotsExportAsJSON: 'Export as .snapshots JSON file',
@@ -89,9 +101,11 @@ const i18nStrings = {
       'Markdown is a language used by many blogging platforms. Exports a Markdown file with thumbnails of these snapshots which link back to the SandDance website.',
     labelSnapshotsShortcut:
       'Tip: Your .snapshots JSON file can also be pre-loaded with this',
-    labelShare: 'share',
+    labelGetLink: 'Get link',
     labelLink: 'link',
-    labelLinkDescription: 'A URL to revive this snapshot.',
+    labelLinkDescription: 'Copy snapshot link to clipboard',
+    msgCopyLinkSuccess: 'Successfully copied!',
+    msgCopyLinkFail: 'Please copy link manually',
     labelUrl: 'Url',
     labelDataFormat: 'Data format',
     labelDataUrlShortcut:
@@ -104,15 +118,27 @@ const i18nStrings = {
     errorNoUrl: 'Please enter a url',
     errorUrlHttp: 'Url must begin with "http"',
     errorDownloadFailure: 'Data could not be prepared for download.',
-    errorDataSourceFromLocal: (ds: DataSource) =>
-      `Could not load ${ds.type} from local file.`,
-    errorDataSourceFromUrl: (ds: DataSource) =>
-      `Could not load ${ds.type} from ${ds.dataUrl}`,
+    errorDataSourceFromLocal: (ds: DataSource, e: Error) => [
+      `Could not load ${ds.type} data from local file.`,
+      `Error: ${e.message}`,
+    ],
+    errorDataSourceFromDashboard: (ds: DataSource, e: Error) => [
+      `Could not load ${ds.id} data from TiDB-Dashboard.`,
+      `Error: ${
+        e.message.includes('401')
+          ? 'Please login TiDB-Dashboard first!'
+          : e.message
+      }`,
+    ],
+    errorDataSourceFromUrl: (ds: DataSource, e: Error) => [
+      `Could not load ${ds.type} data from ${ds.dataUrl}`,
+      `Error: ${e.message}`,
+    ],
   },
 }
 
 // To avoid bundling unnecessary packages, hard code the field name in localstorage of language instead of importing i18n
 const LANGUAGE_KEY = 'i18nextLng'
 
-export const strings =
+export const strings: typeof i18nStrings['en'] =
   i18nStrings[localStorage.getItem(LANGUAGE_KEY) || 'en'] || i18nStrings.en

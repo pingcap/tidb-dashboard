@@ -9,13 +9,20 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import * as vega from 'vega'
 import './index.less'
-import { defaultDataSources, insightPresets, optionPresets } from './presets'
+import {
+  defaultDataSources,
+  insightPresets,
+  optionPresets,
+  defaultColumnsTransformers,
+} from './presets'
+import './overrides'
 
 use(fluentUI, vega, deck, layers, luma)
 
 ReactDOM.render(
   <SandDanceApp
     themeColors={{}}
+    columnsTransformers={defaultColumnsTransformers}
     insights={insightPresets}
     initialOptions={optionPresets}
     dataSources={defaultDataSources}

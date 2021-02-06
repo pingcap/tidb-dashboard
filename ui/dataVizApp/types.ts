@@ -3,11 +3,14 @@ import { DataFile, SandDance } from '@msrvida/sanddance-explorer'
 
 export type DataSourceType = 'dashboard' | 'local' | 'url'
 
+export type ColumnsTransformer = (columns: SandDance.types.Column[]) => void
+
+export type ColumnsTransformers = Record<string, ColumnsTransformer>
+
 export interface DataSource extends DataFile {
   dataSourceType: DataSourceType
   id: string
   withToken?: boolean
-  columnsTransformer?: (columns: SandDance.types.Column[]) => void
 }
 
 export interface InsightMap {

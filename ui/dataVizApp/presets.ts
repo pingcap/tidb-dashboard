@@ -1,6 +1,7 @@
-import { DataSource, InsightMap } from './types'
+import { ColumnsTransformers, DataSource, InsightMap } from './types'
 import { Prefs, SandDance } from '@msrvida/sanddance-explorer'
 
+// @lib/client/index.tsx import antd, so to avoid import antd in this app, just copy some code from it
 let apiPrefix: string
 
 if (process.env.NODE_ENV === 'development') {
@@ -11,12 +12,6 @@ if (process.env.NODE_ENV === 'development') {
   }
 } else {
   apiPrefix = '/dashboard/api'
-}
-
-function forceIDAsText(columns: SandDance.types.Column[]) {
-  for (const column of columns) {
-    if (column.name.includes('id')) column.quantitative = false
-  }
 }
 
 const REPLICATION_DATA_ID = 'replications'
@@ -30,7 +25,6 @@ export const defaultDataSources: DataSource[] = [
     dataUrl: `${apiPrefix}/topology/region?type=replications`,
     type: 'json',
     withToken: true,
-    columnsTransformer: forceIDAsText,
   },
   {
     dataSourceType: 'dashboard',
@@ -39,9 +33,19 @@ export const defaultDataSources: DataSource[] = [
     dataUrl: `${apiPrefix}/topology/region?type=regions`,
     type: 'json',
     withToken: true,
-    columnsTransformer: forceIDAsText,
   },
 ]
+
+function forceIDAsText(columns: SandDance.types.Column[]) {
+  for (const column of columns) {
+    if (column.name.includes('id')) column.quantitative = false
+  }
+}
+
+export const defaultColumnsTransformers: ColumnsTransformers = {
+  [REGION_DATA_ID]: forceIDAsText,
+  [REPLICATION_DATA_ID]: forceIDAsText,
+}
 
 export const insightPresets: InsightMap = {
   [REGION_DATA_ID]: {
@@ -61,7 +65,7 @@ export const insightPresets: InsightMap = {
       color: 'read_keys',
       sort: 'read_keys',
     },
-    scheme: 'spectral',
+    scheme: 'orangered',
     chart: 'barchartV',
     view: '2d',
   },

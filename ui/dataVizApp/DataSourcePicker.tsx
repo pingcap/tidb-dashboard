@@ -2,7 +2,7 @@
 import { base } from './base'
 import { strings } from './language'
 import { DataSource, DataSourceSnapshot, DataSourceType } from './types'
-import { invalidUrlError } from './url'
+import { invalidUrlError } from './utils'
 import { FluentUITypes } from '@msrvida/fluentui-react-cdn-typings'
 import { controls, DataFileType } from '@msrvida/sanddance-explorer'
 import React from 'react'
@@ -32,7 +32,7 @@ export function DataSourceButton(props: ButtonProps) {
               key: ds.id,
               text: ds.displayName,
               onClick: (e) => {
-                picker.changeDataSource(ds)
+                picker.changeDataSource(ds).then()
               },
             }
             return item
@@ -49,12 +49,12 @@ export function DataSourceButton(props: ButtonProps) {
             {
               key: 'local',
               text: strings.menuLocal,
-              onClick: (e) => picker.setState({ dialogMode: 'local' }),
+              onClick: () => picker.setState({ dialogMode: 'local' }),
             },
             {
               key: 'url',
               text: strings.menuUrl,
-              onClick: (e) => picker.setState({ dialogMode: 'url' }),
+              onClick: () => picker.setState({ dialogMode: 'url' }),
             },
           ],
         },
@@ -64,10 +64,9 @@ export function DataSourceButton(props: ButtonProps) {
   return (
     <base.fluentUI.PrimaryButton
       className="sanddance-datasource-picker"
-      // @ts-ignore
       text={dataSourcePrefix(
         props.dataSource.dataSourceType,
-        props.dataSource.displayName
+        props.dataSource.displayName || ''
       )}
       menuProps={menuProps}
     />
@@ -112,8 +111,7 @@ export class DataSourcePicker extends React.Component<DialogProps, State> {
             working: false,
             uploadFormatError: '',
             urlError: '',
-            // @ts-ignore
-            dialogMode: null,
+            dialogMode: undefined,
           })
           resolve()
         })
@@ -165,8 +163,7 @@ export class DataSourcePicker extends React.Component<DialogProps, State> {
       displayName: url,
       id: url,
       dataUrl: url,
-      // @ts-ignore
-      type: this.state.urlType,
+      type: this.state.urlType || 'json',
     }
     this.changeDataSource(ds).catch((e: Error) => {
       this.setState({ urlError: e.message })
@@ -191,8 +188,7 @@ export class DataSourcePicker extends React.Component<DialogProps, State> {
 
   render() {
     const closeDialog = () => {
-      // @ts-ignore
-      this.setState({ dialogMode: null })
+      this.setState({ dialogMode: undefined })
     }
     let shortcut: string = ''
     if (
@@ -268,13 +264,9 @@ export class DataSourcePicker extends React.Component<DialogProps, State> {
                 checked: i === 0,
               } as FluentUITypes.IChoiceGroupOption
             })}
-            // @ts-ignore
-            onChange={(
-              ev: React.FormEvent<HTMLInputElement>,
-              option: FluentUITypes.IChoiceGroupOption
-            ) =>
+            onChange={(ev, option) =>
               this.setState({
-                urlType: option.text as DataFileType,
+                urlType: option!.text as DataFileType,
                 urlError: '',
               })
             }
@@ -284,7 +276,6 @@ export class DataSourcePicker extends React.Component<DialogProps, State> {
         <section
           className="tip"
           style={{
-            // @ts-ignore
             visibility:
               !invalidUrlError(this.state.url) && !this.state.urlError
                 ? 'visible'

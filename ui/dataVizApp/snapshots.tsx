@@ -3,7 +3,7 @@ import { base } from './base'
 import { downloadData } from './download'
 import { strings } from './language'
 import { DataSource, DataSourceSnapshot } from './types'
-import { invalidUrlError } from './url'
+import { invalidUrlError } from './utils'
 import {
   controls,
   Explorer_Class,
@@ -271,7 +271,7 @@ export class SnapshotImportRemote extends React.Component<
                 title={strings.labelLinkDescription}
                 aria-label={strings.labelLinkDescription}
               >
-                {strings.labelShare}
+                {strings.labelGetLink}
               </a>
             </section>
           )}

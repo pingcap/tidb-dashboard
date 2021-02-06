@@ -23,7 +23,7 @@ export const defaultDataSources: DataSource[] = [
     id: REPLICATION_DATA_ID,
     displayName: 'Replications',
     dataUrl: `${apiPrefix}/topology/region?type=replications`,
-    type: 'json',
+    type: 'csv',
     withToken: true,
   },
   {
@@ -31,7 +31,7 @@ export const defaultDataSources: DataSource[] = [
     id: REGION_DATA_ID,
     displayName: 'Regions',
     dataUrl: `${apiPrefix}/topology/region?type=regions`,
-    type: 'json',
+    type: 'csv',
     withToken: true,
   },
 ]

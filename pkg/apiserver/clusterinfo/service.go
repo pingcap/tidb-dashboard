@@ -259,15 +259,15 @@ func (s *Service) getRegions(c *gin.Context) {
 	}
 
 	switch format := c.Query("format"); format {
-	case "csv":
-		csvData := topology.GenerateRegionDataCSV(data, []string{})
+	case "json":
+		c.JSON(http.StatusOK, data)
+	default:
+		// default csv
+		csvData := topology.GenerateRegionDataCSV(data)
 		c.Status(http.StatusOK)
 		c.Header("Content-type", "text/csv")
 		csvWriter := csv.NewWriter(c.Writer)
 		_ = csvWriter.WriteAll(csvData)
-	default:
-		// default json
-		c.JSON(http.StatusOK, data)
 	}
 }
 

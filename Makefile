@@ -34,7 +34,7 @@ ui: yarn_dependencies
 	cd ui &&\
 	yarn build
 
-server:
+server: install_tools
 	scripts/generate_swagger_spec.sh
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh

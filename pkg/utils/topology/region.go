@@ -31,7 +31,7 @@ func FetchTopNRegions(pdClient *pd.Client, n int, order RegionOrder) ([]byte, er
 	return pdClient.SendGetRequest(url)
 }
 
-func GenerateRegionDataCSV(rawData []interface{}, forceStringFields []string) (data [][]string) {
+func GenerateRegionDataCSV(rawData []interface{}) (data [][]string) {
 	fieldsMap := make(map[string]string)
 	t := reflect.TypeOf(rawData[0])
 	fieldsNum := t.NumField()
@@ -40,10 +40,6 @@ func GenerateRegionDataCSV(rawData []interface{}, forceStringFields []string) (d
 		field := t.Field(i)
 		allFields[i] = strings.ToLower(field.Tag.Get("json"))
 		fieldsMap[allFields[i]] = field.Name
-	}
-	forceStringMap := make(map[string]struct{})
-	for _, field := range forceStringFields {
-		forceStringMap[field] = struct{}{}
 	}
 	data = make([][]string, 0, len(rawData)+1)
 	data = append(data, allFields)
@@ -65,11 +61,7 @@ func GenerateRegionDataCSV(rawData []interface{}, forceStringFields []string) (d
 			default:
 				val = fmt.Sprintf("%s", t)
 			}
-			if _, ok := forceStringMap[field]; ok {
-				row = append(row, fmt.Sprintf("%s\t", val))
-			} else {
-				row = append(row, val)
-			}
+			row = append(row, val)
 		}
 		data = append(data, row)
 	}

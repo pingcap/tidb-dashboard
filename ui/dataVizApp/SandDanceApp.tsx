@@ -93,9 +93,10 @@ function getDefaultDataSource(dataSources: DataSource[]): DataSource {
   const defaultID = new URLSearchParams(window.location.search).get('default')
   const snapshotOnLoad = getSnapshotFromHash()
   return (
-    (defaultID && defaultID === snapshotOnLoad?.dataSource?.id
-      ? snapshotOnLoad.dataSource
-      : dataSources.find((d) => d.id === defaultID)) ||
+    (defaultID &&
+      (defaultID === snapshotOnLoad?.dataSource?.id
+        ? snapshotOnLoad.dataSource
+        : dataSources.find((d) => d.id === defaultID))) ||
     snapshotOnLoad?.dataSource ||
     dataSources[0]
   )
@@ -336,7 +337,7 @@ export class SandDanceApp extends React.Component<Props, State> {
                 element = <span key={`link${i}`} />
               } else {
                 const url =
-                  window.location.href.split('#')[0] +
+                  window.location.href.split('?')[0] +
                   '#' +
                   serializeSnapshot(snapshot)
                 element = (

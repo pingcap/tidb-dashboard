@@ -231,13 +231,13 @@ func (s *Service) getGrafanaTopology(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getRegions(c *gin.Context) {
-	rawRegionsJson, err := topology.FetchRegions(s.params.PDClient)
+	rawRegionsJSON, err := topology.FetchRegions(s.params.PDClient)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 	var regions topology.RawRegionsInfo
-	if err = json.Unmarshal(rawRegionsJson, &regions); err != nil {
+	if err = json.Unmarshal(rawRegionsJSON, &regions); err != nil {
 		_ = c.Error(err)
 		return
 	}

@@ -3,6 +3,8 @@ package topology
 import (
 	"fmt"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
+	"github.com/pingcap/kvproto/pkg/metapb"
+	"github.com/pingcap/kvproto/pkg/pdpb"
 	"gopkg.in/oleiade/reflections.v1"
 	"reflect"
 	"strings"
@@ -100,7 +102,7 @@ func GetReplicationsInfo(pdClient *pd.Client, regions []RawRegionInfo) ([]interf
 	return tmp, nil
 }
 
-func getReplicationsString(raw []Peer) string {
+func getReplicationsString(raw []metapb.Peer) string {
 	if len(raw) == 0 {
 		return ""
 	}
@@ -111,7 +113,7 @@ func getReplicationsString(raw []Peer) string {
 	return strings.Join(tmp, ", ")
 }
 
-func getReplicationsStateString(raw []PeerStats) string {
+func getReplicationsStateString(raw []pdpb.PeerStats) string {
 	if len(raw) == 0 {
 		return ""
 	}

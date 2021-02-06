@@ -13,6 +13,11 @@
 
 package topology
 
+import (
+	"github.com/pingcap/kvproto/pkg/metapb"
+	"github.com/pingcap/kvproto/pkg/pdpb"
+)
+
 type ComponentStatus uint
 
 const (
@@ -84,50 +89,23 @@ type PrometheusInfo struct {
 	StandardComponentInfo
 }
 
-// ReplicationStatus represents the replication mode status of the region.
-type ReplicationStatus struct {
-	State   string `json:"state"`
-	StateID uint64 `json:"state_id"`
-}
-
-// RegionEpoch from metapb.RegionEpoch
-type RegionEpoch struct {
-	// Conf change version, auto increment when add or remove peer
-	ConfVer uint64 `json:"conf_ver,omitempty"`
-	// Region version, auto increment when split or merge
-	Version uint64 `json:"version,omitempty"`
-}
-
-// Peer from metapb.Peer
-type Peer struct {
-	Id        uint64 `json:"id,omitempty"`
-	StoreId   uint64 `json:"store_id,omitempty"`
-	IsLearner bool   `json:"is_learner,omitempty"`
-}
-
-// PeerStats from pdpb.PeerStats
-type PeerStats struct {
-	Peer        Peer   `json:"peer,omitempty"`
-	DownSeconds uint64 `json:"down_seconds,omitempty"`
-}
-
 // RawRegionInfo records detail region info for api usage.
 type RawRegionInfo struct {
-	ID          uint64      `json:"id"`
-	StartKey    string      `json:"start_key"`
-	EndKey      string      `json:"end_key"`
-	RegionEpoch RegionEpoch `json:"epoch,omitempty"`
-	Peers       []Peer      `json:"peers,omitempty"`
+	ID          uint64             `json:"id"`
+	StartKey    string             `json:"start_key"`
+	EndKey      string             `json:"end_key"`
+	RegionEpoch metapb.RegionEpoch `json:"epoch,omitempty"`
+	Peers       []metapb.Peer      `json:"peers,omitempty"`
 
-	Leader          Peer        `json:"leader,omitempty"`
-	DownPeers       []PeerStats `json:"down_peers,omitempty"`
-	PendingPeers    []Peer      `json:"pending_peers,omitempty"`
-	WrittenBytes    uint64      `json:"written_bytes"`
-	ReadBytes       uint64      `json:"read_bytes"`
-	WrittenKeys     uint64      `json:"written_keys"`
-	ReadKeys        uint64      `json:"read_keys"`
-	ApproximateSize int64       `json:"approximate_size"`
-	ApproximateKeys int64       `json:"approximate_keys"`
+	Leader          metapb.Peer      `json:"leader,omitempty"`
+	DownPeers       []pdpb.PeerStats `json:"down_peers,omitempty"`
+	PendingPeers    []metapb.Peer    `json:"pending_peers,omitempty"`
+	WrittenBytes    uint64           `json:"written_bytes"`
+	ReadBytes       uint64           `json:"read_bytes"`
+	WrittenKeys     uint64           `json:"written_keys"`
+	ReadKeys        uint64           `json:"read_keys"`
+	ApproximateSize int64            `json:"approximate_size"`
+	ApproximateKeys int64            `json:"approximate_keys"`
 
 	//ReplicationStatus ReplicationStatus `json:"replication_status,omitempty"`
 }
@@ -151,7 +129,7 @@ type ReplicationInfo struct {
 	StoreAddress string `json:"store_address"`
 
 	// Region Common Meta
-	LeaderID      uint64 `json:"leader_id"`
+	LeaderID uint64 `json:"leader_id"`
 
 	StartKey string `json:"start_key"`
 	EndKey   string `json:"end_key"`

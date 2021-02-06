@@ -123,7 +123,7 @@ func buildStoreTopology(stores []store) []StoreInfo {
 
 type store struct {
 	Address string `json:"address"`
-	ID      uint64    `json:"id"`
+	ID      uint64 `json:"id"`
 	Labels  []struct {
 		Key   string `json:"key"`
 		Value string `json:"value"`

@@ -16,16 +16,16 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-a-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-a-
       - name: Load golangci-lint cache
         uses: actions/cache@v1
         with:
           path: ~/.cache/golangci-lint
-          key: ${{ runner.os }}-golint
+          key: ${{ runner.os }}-golint-a
           restore-keys: |
-            ${{ runner.os }}-golint
+            ${{ runner.os }}-golint-a
       - name: Lint and build
         run: |
           make dev

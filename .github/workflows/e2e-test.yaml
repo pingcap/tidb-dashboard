@@ -33,16 +33,16 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-a-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-a-
       - name: Load TiUP cache
         uses: actions/cache@v1
         with:
           path: ~/.tiup/components
-          key: ${{ runner.os }}-tiup
+          key: ${{ runner.os }}-tiup-a
           restore-keys: |
-            ${{ runner.os }}-tiup
+            ${{ runner.os }}-tiup-a
       - name: Install and run TiUP in the background
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh

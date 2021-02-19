@@ -1,4 +1,6 @@
 import React from 'react'
+import { useNavigate } from 'react-router'
+
 import { SlowquerySlowQuery } from '@lib/client'
 import { CardTable, DateTime } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
@@ -9,6 +11,8 @@ export interface ITabBasicProps {
 }
 
 export default function TabBasic({ data }: ITabBasicProps) {
+  const navigate = useNavigate()
+
   // Here it is fine to not use useMemo() to cache data,
   // because the detail data won't be refreshed after loaded
   const items = [
@@ -38,6 +42,22 @@ export default function TabBasic({ data }: ITabBasicProps) {
     { key: 'user', value: data.user },
     { key: 'host', value: data.host },
   ]
+  if (data.trace_id) {
+    items.push({
+      key: 'trace_id',
+      value: (
+        <a
+          onClick={() => {
+            if (data.trace_id && data.trace_id !== '0') {
+              navigate(`/timeline?trace_id=${data.trace_id}`)
+            }
+          }}
+        >
+          {data.trace_id}
+        </a>
+      ),
+    })
+  }
   const columns = valueColumns('slow_query.fields.')
   return (
     <CardTable cardNoMargin columns={columns} items={items} extendLastColumn />

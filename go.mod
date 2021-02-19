@@ -13,6 +13,7 @@ require (
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/goccy/go-graphviz v0.0.5
+	github.com/gogo/protobuf v1.3.1
 	github.com/google/pprof v0.0.0-20200407044318-7d83b28da2e9
 	github.com/google/uuid v1.0.0
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
@@ -23,7 +24,7 @@ require (
 	github.com/oleiade/reflections v1.0.0 // indirect
 	github.com/pingcap/check v0.0.0-20191216031241-8a5a85928f12
 	github.com/pingcap/errors v0.11.5-0.20190809092503-95897b64e011
-	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
+	github.com/pingcap/kvproto v0.0.0-20201204091901-9f99fec750fc
 	github.com/pingcap/log v0.0.0-20200117041106-d28c14d3b1cd
 	github.com/pingcap/sysutil v0.0.0-20200206130906-2bfa6dc40bcd
 	github.com/pkg/errors v0.9.1

@@ -38,6 +38,7 @@ import (
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/statement"
+	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/trace"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
 	apiutils "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
@@ -126,6 +127,7 @@ func (s *Service) Start(ctx context.Context) error {
 			metrics.NewService,
 			queryeditor.NewService,
 			configuration.NewService,
+			trace.NewService,
 			// __APP_NAME__.NewService,
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 		),
@@ -143,6 +145,7 @@ func (s *Service) Start(ctx context.Context) error {
 			metrics.RegisterRouter,
 			queryeditor.RegisterRouter,
 			configuration.RegisterRouter,
+			trace.RegisterRouter,
 			// __APP_NAME__.RegisterRouter,
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 			// Must be at the end

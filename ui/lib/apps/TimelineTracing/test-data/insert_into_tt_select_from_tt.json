@@ -1,0 +1,305 @@
+{
+  "trace_id": 797871658054719269,
+  "span_sets": [
+    {
+      "node_type": "TiKV",
+      "spans": [
+        {
+          "span_id": 393253,
+          "parent_id": 266,
+          "begin_unix_time_ns": 1607658246188374674,
+          "duration_ns": 2787247,
+          "event": "coprocessor"
+        }
+      ]
+    },
+    {
+      "node_type": "TiKV",
+      "spans": [
+        {
+          "span_id": 589852,
+          "parent_id": 273,
+          "begin_unix_time_ns": 1607658246192356595,
+          "duration_ns": 4859405,
+          "event": "kv_prewrite"
+        }
+      ]
+    },
+    {
+      "node_type": "TiKV",
+      "spans": [
+        {
+          "span_id": 37,
+          "parent_id": 36,
+          "begin_unix_time_ns": 1607658246198064792,
+          "duration_ns": 235009,
+          "event": "RaftKv::async_snapshot"
+        },
+        {
+          "span_id": 38,
+          "parent_id": 37,
+          "begin_unix_time_ns": 1607658246198064792,
+          "duration_ns": 235009,
+          "event": "LocalReader::propose_raft_command"
+        },
+        {
+          "span_id": 39,
+          "parent_id": 38,
+          "begin_unix_time_ns": 1607658246198232752,
+          "duration_ns": 0,
+          "event": "RaftKv::on_read_result"
+        },
+        {
+          "span_id": 458789,
+          "parent_id": 41,
+          "begin_unix_time_ns": 1607658246198299801,
+          "duration_ns": 2832334,
+          "event": "Scheduler::process_write"
+        },
+        {
+          "span_id": 458790,
+          "parent_id": 458789,
+          "begin_unix_time_ns": 1607658246200868514,
+          "duration_ns": 229663,
+          "event": "RaftKv::exec_write_requests"
+        },
+        {
+          "span_id": 196733,
+          "parent_id": 36,
+          "begin_unix_time_ns": 1607658246201244369,
+          "duration_ns": 318292,
+          "event": "PeerFsmDelegate::propose_raft_command"
+        },
+        {
+          "span_id": 196734,
+          "parent_id": 196733,
+          "begin_unix_time_ns": 1607658246201244369,
+          "duration_ns": 13885,
+          "event": "PeerFsmDelegate::pre_propose_raft_command"
+        },
+        {
+          "span_id": 196735,
+          "parent_id": 36,
+          "begin_unix_time_ns": 1607658246201792783,
+          "duration_ns": 0,
+          "event": "PeerFsmDelegate::handle_raft_ready_apply"
+        },
+        {
+          "span_id": 196736,
+          "parent_id": 36,
+          "begin_unix_time_ns": 1607658246201792783,
+          "duration_ns": 433443,
+          "event": "RaftPoller::handle_raft_ready"
+        },
+        {
+          "span_id": 196737,
+          "parent_id": 196736,
+          "begin_unix_time_ns": 1607658246201792783,
+          "duration_ns": 0,
+          "event": "RaftPoller::trans.flush"
+        },
+        {
+          "span_id": 196738,
+          "parent_id": 196736,
+          "begin_unix_time_ns": 1607658246201792783,
+          "duration_ns": 292731,
+          "event": "RaftPoller::engines.raft.consume_and_shrink"
+        },
+        {
+          "span_id": 196739,
+          "parent_id": 196736,
+          "begin_unix_time_ns": 1607658246202085514,
+          "duration_ns": 140712,
+          "event": "PeerFsmDelegate::post_raft_ready_append"
+        },
+        {
+          "span_id": 36,
+          "parent_id": 277,
+          "begin_unix_time_ns": 1607658246197835041,
+          "duration_ns": 7414191,
+          "event": "kv_commit"
+        },
+        {
+          "span_id": 41,
+          "parent_id": 38,
+          "begin_unix_time_ns": 1607658246198232752,
+          "duration_ns": 2899383,
+          "event": "Scheduler.process_by_worker"
+        }
+      ]
+    },
+    {
+      "node_type": "TiDB",
+      "spans": [
+        {
+          "span_id": 266,
+          "parent_id": 262,
+          "begin_unix_time_ns": 1607658246188277167,
+          "duration_ns": 3297843,
+          "event": "regionRequest.SendReqCtx"
+        },
+        {
+          "span_id": 267,
+          "parent_id": 266,
+          "begin_unix_time_ns": 1607658246188302338,
+          "duration_ns": 3266076,
+          "event": "rpcClient.SendRequest, region ID: 2, type: Cop"
+        },
+        {
+          "span_id": 255,
+          "parent_id": 0,
+          "begin_unix_time_ns": 1607658246187857000,
+          "duration_ns": 17929816,
+          "event": "insert into tt select * from tt"
+        },
+        {
+          "span_id": 256,
+          "parent_id": 255,
+          "begin_unix_time_ns": 1607658246187883159,
+          "duration_ns": 35986,
+          "event": "session.ParseSQL"
+        },
+        {
+          "span_id": 257,
+          "parent_id": 255,
+          "begin_unix_time_ns": 1607658246187922115,
+          "duration_ns": 17831079,
+          "event": "session.ExecuteStmt"
+        },
+        {
+          "span_id": 258,
+          "parent_id": 257,
+          "begin_unix_time_ns": 1607658246187929458,
+          "duration_ns": 217067,
+          "event": "executor.Compile"
+        },
+        {
+          "span_id": 259,
+          "parent_id": 258,
+          "begin_unix_time_ns": 1607658246187937465,
+          "duration_ns": 9914,
+          "event": "session.getTxnFuture"
+        },
+        {
+          "span_id": 260,
+          "parent_id": 257,
+          "begin_unix_time_ns": 1607658246188150533,
+          "duration_ns": 17602417,
+          "event": "session.runStmt"
+        },
+        {
+          "span_id": 261,
+          "parent_id": 260,
+          "begin_unix_time_ns": 1607658246188192094,
+          "duration_ns": 27376,
+          "event": "TableReaderExecutor.Open"
+        },
+        {
+          "span_id": 262,
+          "parent_id": 261,
+          "begin_unix_time_ns": 1607658246188203909,
+          "duration_ns": 15082,
+          "event": "distsql.Select"
+        },
+        {
+          "span_id": 263,
+          "parent_id": 260,
+          "begin_unix_time_ns": 1607658246188245828,
+          "duration_ns": 3716862,
+          "event": "executor.handleNoDelayExecutor"
+        },
+        {
+          "span_id": 264,
+          "parent_id": 263,
+          "begin_unix_time_ns": 1607658246188248635,
+          "duration_ns": 3706396,
+          "event": "*executor.InsertExec.Next"
+        },
+        {
+          "span_id": 265,
+          "parent_id": 264,
+          "begin_unix_time_ns": 1607658246188253121,
+          "duration_ns": 3385686,
+          "event": "*executor.TableReaderExecutor.Next"
+        },
+        {
+          "span_id": 268,
+          "parent_id": 264,
+          "begin_unix_time_ns": 1607658246191947602,
+          "duration_ns": 7148,
+          "event": "*executor.TableReaderExecutor.Next"
+        },
+        {
+          "span_id": 269,
+          "parent_id": 260,
+          "begin_unix_time_ns": 1607658246191966972,
+          "duration_ns": 13639880,
+          "event": "session.CommitTxn"
+        },
+        {
+          "span_id": 270,
+          "parent_id": 269,
+          "begin_unix_time_ns": 1607658246191968309,
+          "duration_ns": 13637635,
+          "event": "session.doCommitWithRetry"
+        },
+        {
+          "span_id": 271,
+          "parent_id": 270,
+          "begin_unix_time_ns": 1607658246191973480,
+          "duration_ns": 13627471,
+          "event": "tikvTxn.Commit"
+        },
+        {
+          "span_id": 272,
+          "parent_id": 271,
+          "begin_unix_time_ns": 1607658246191984267,
+          "duration_ns": 5475171,
+          "event": "twoPhaseCommitter.prewriteMutations"
+        },
+        {
+          "span_id": 273,
+          "parent_id": 272,
+          "begin_unix_time_ns": 1607658246192005519,
+          "duration_ns": 5452734,
+          "event": "regionRequest.SendReqCtx"
+        },
+        {
+          "span_id": 274,
+          "parent_id": 273,
+          "begin_unix_time_ns": 1607658246192013370,
+          "duration_ns": 5443567,
+          "event": "rpcClient.SendRequest, region ID: 2, type: Prewrite"
+        },
+        {
+          "span_id": 275,
+          "parent_id": 271,
+          "begin_unix_time_ns": 1607658246197463085,
+          "duration_ns": 142806,
+          "event": "tikvStore.getTimestampWithRetry"
+        },
+        {
+          "span_id": 276,
+          "parent_id": 271,
+          "begin_unix_time_ns": 1607658246197611652,
+          "duration_ns": 7984141,
+          "event": "twoPhaseCommitter.commitMutations"
+        },
+        {
+          "span_id": 277,
+          "parent_id": 276,
+          "begin_unix_time_ns": 1607658246197625448,
+          "duration_ns": 7964325,
+          "event": "regionRequest.SendReqCtx"
+        },
+        {
+          "span_id": 278,
+          "parent_id": 277,
+          "begin_unix_time_ns": 1607658246197638778,
+          "duration_ns": 7949481,
+          "event": "rpcClient.SendRequest, region ID: 2, type: Commit"
+        }
+      ]
+    }
+  ]
+}

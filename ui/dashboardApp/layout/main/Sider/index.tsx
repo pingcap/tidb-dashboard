@@ -75,6 +75,7 @@ function Sider({
   const experimentalSubMenuItems = [
     useAppMenuItem(registry, 'query_editor'),
     useAppMenuItem(registry, 'configuration'),
+    useAppMenuItem(registry, 'timeline'),
   ]
   const experimentalSubMenu = (
     <Menu.SubMenu

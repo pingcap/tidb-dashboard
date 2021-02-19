@@ -1,0 +1,323 @@
+{
+  "trace_id": 5796316316865205225,
+  "span_sets": [
+    {
+      "node_type": "TiKV",
+      "spans": [
+        {
+          "span_id": 393276,
+          "parent_id": 393275,
+          "begin_unix_time_ns": 1607658272409814199,
+          "duration_ns": 302332,
+          "event": "Endpoint::parse_and_handle_unary_request"
+        },
+        {
+          "span_id": 917515,
+          "parent_id": 393278,
+          "begin_unix_time_ns": 1607658272410116531,
+          "duration_ns": 134483,
+          "event": "RaftKv::async_snapshot"
+        },
+        {
+          "span_id": 917516,
+          "parent_id": 917515,
+          "begin_unix_time_ns": 1607658272410116531,
+          "duration_ns": 134483,
+          "event": "LocalReader::propose_raft_command"
+        },
+        {
+          "span_id": 196771,
+          "parent_id": 917518,
+          "begin_unix_time_ns": 1607658272410283187,
+          "duration_ns": 66620,
+          "event": "PeerFsmDelegate::propose_raft_command"
+        },
+        {
+          "span_id": 196772,
+          "parent_id": 196771,
+          "begin_unix_time_ns": 1607658272410283187,
+          "duration_ns": 0,
+          "event": "PeerFsmDelegate::pre_propose_raft_command"
+        },
+        {
+          "span_id": 196773,
+          "parent_id": 917518,
+          "begin_unix_time_ns": 1607658272410399304,
+          "duration_ns": 0,
+          "event": "PeerFsmDelegate::handle_raft_ready_apply"
+        },
+        {
+          "span_id": 196774,
+          "parent_id": 917518,
+          "begin_unix_time_ns": 1607658272410399304,
+          "duration_ns": 118243,
+          "event": "RaftPoller::handle_raft_ready"
+        },
+        {
+          "span_id": 196775,
+          "parent_id": 196774,
+          "begin_unix_time_ns": 1607658272410399304,
+          "duration_ns": 118243,
+          "event": "PeerFsmDelegate::post_raft_ready_append"
+        },
+        {
+          "span_id": 196776,
+          "parent_id": 196775,
+          "begin_unix_time_ns": 1607658272410399304,
+          "duration_ns": 0,
+          "event": "RaftKv::on_read_result"
+        },
+        {
+          "span_id": 786448,
+          "parent_id": 393278,
+          "begin_unix_time_ns": 1607658272410748801,
+          "duration_ns": 1842627,
+          "event": "BatchLimitExecutor::next_batch"
+        },
+        {
+          "span_id": 786449,
+          "parent_id": 786448,
+          "begin_unix_time_ns": 1607658272410748801,
+          "duration_ns": 1842627,
+          "event": "BatchTableScanExecutor::next_batch"
+        },
+        {
+          "span_id": 786450,
+          "parent_id": 393278,
+          "begin_unix_time_ns": 1607658272412719150,
+          "duration_ns": 1021219,
+          "event": "BatchLimitExecutor::next_batch"
+        },
+        {
+          "span_id": 786451,
+          "parent_id": 786450,
+          "begin_unix_time_ns": 1607658272412719150,
+          "duration_ns": 1021219,
+          "event": "BatchTableScanExecutor::next_batch"
+        },
+        {
+          "span_id": 786452,
+          "parent_id": 393278,
+          "begin_unix_time_ns": 1607658272413744267,
+          "duration_ns": 2158529,
+          "event": "BatchLimitExecutor::next_batch"
+        },
+        {
+          "span_id": 786453,
+          "parent_id": 786452,
+          "begin_unix_time_ns": 1607658272413744267,
+          "duration_ns": 2156523,
+          "event": "BatchTableScanExecutor::next_batch"
+        },
+        {
+          "span_id": 786454,
+          "parent_id": 393278,
+          "begin_unix_time_ns": 1607658272416251615,
+          "duration_ns": 3674876,
+          "event": "BatchLimitExecutor::next_batch"
+        },
+        {
+          "span_id": 786455,
+          "parent_id": 786454,
+          "begin_unix_time_ns": 1607658272416251615,
+          "duration_ns": 3674876,
+          "event": "BatchTableScanExecutor::next_batch"
+        },
+        {
+          "span_id": 786456,
+          "parent_id": 393278,
+          "begin_unix_time_ns": 1607658272420633878,
+          "duration_ns": 8148514,
+          "event": "BatchLimitExecutor::next_batch"
+        },
+        {
+          "span_id": 786457,
+          "parent_id": 786456,
+          "begin_unix_time_ns": 1607658272420633878,
+          "duration_ns": 8148514,
+          "event": "BatchTableScanExecutor::next_batch"
+        },
+        {
+          "span_id": 786458,
+          "parent_id": 393278,
+          "begin_unix_time_ns": 1607658272430749528,
+          "duration_ns": 17693335,
+          "event": "BatchLimitExecutor::next_batch"
+        },
+        {
+          "span_id": 786459,
+          "parent_id": 786458,
+          "begin_unix_time_ns": 1607658272430749528,
+          "duration_ns": 17693335,
+          "event": "BatchTableScanExecutor::next_batch"
+        },
+        {
+          "span_id": 786460,
+          "parent_id": 393278,
+          "begin_unix_time_ns": 1607658272451276110,
+          "duration_ns": 8525911,
+          "event": "BatchLimitExecutor::next_batch"
+        },
+        {
+          "span_id": 786461,
+          "parent_id": 786460,
+          "begin_unix_time_ns": 1607658272451276110,
+          "duration_ns": 8525911,
+          "event": "BatchTableScanExecutor::next_batch"
+        },
+        {
+          "span_id": 393275,
+          "parent_id": 392,
+          "begin_unix_time_ns": 1607658272409814199,
+          "duration_ns": 51911801,
+          "event": "coprocessor"
+        },
+        {
+          "span_id": 917518,
+          "parent_id": 917516,
+          "begin_unix_time_ns": 1607658272410186719,
+          "duration_ns": 330828,
+          "event": "PeerMsg::RaftCommand"
+        },
+        {
+          "span_id": 393278,
+          "parent_id": 393276,
+          "begin_unix_time_ns": 1607658272410045252,
+          "duration_ns": 51680748,
+          "event": "Endpoint.handle_unary_request_impl"
+        }
+      ]
+    },
+    {
+      "node_type": "TiDB",
+      "spans": [
+        {
+          "span_id": 392,
+          "parent_id": 391,
+          "begin_unix_time_ns": 1607658272409485037,
+          "duration_ns": 52919793,
+          "event": "regionRequest.SendReqCtx"
+        },
+        {
+          "span_id": 395,
+          "parent_id": 392,
+          "begin_unix_time_ns": 1607658272409508506,
+          "duration_ns": 52891079,
+          "event": "rpcClient.SendRequest, region ID: 2, type: Cop"
+        },
+        {
+          "span_id": 384,
+          "parent_id": 0,
+          "begin_unix_time_ns": 1607658272408986000,
+          "duration_ns": 54708761,
+          "event": "select * from tt order by c1 asc, c2 desc"
+        },
+        {
+          "span_id": 385,
+          "parent_id": 384,
+          "begin_unix_time_ns": 1607658272409025030,
+          "duration_ns": 60665,
+          "event": "session.ParseSQL"
+        },
+        {
+          "span_id": 386,
+          "parent_id": 384,
+          "begin_unix_time_ns": 1607658272409089608,
+          "duration_ns": 386698,
+          "event": "session.ExecuteStmt"
+        },
+        {
+          "span_id": 387,
+          "parent_id": 386,
+          "begin_unix_time_ns": 1607658272409101320,
+          "duration_ns": 179135,
+          "event": "executor.Compile"
+        },
+        {
+          "span_id": 388,
+          "parent_id": 387,
+          "begin_unix_time_ns": 1607658272409116357,
+          "duration_ns": 12245,
+          "event": "session.getTxnFuture"
+        },
+        {
+          "span_id": 389,
+          "parent_id": 386,
+          "begin_unix_time_ns": 1607658272409285123,
+          "duration_ns": 190897,
+          "event": "session.runStmt"
+        },
+        {
+          "span_id": 390,
+          "parent_id": 389,
+          "begin_unix_time_ns": 1607658272409392767,
+          "duration_ns": 35094,
+          "event": "TableReaderExecutor.Open"
+        },
+        {
+          "span_id": 391,
+          "parent_id": 390,
+          "begin_unix_time_ns": 1607658272409407133,
+          "duration_ns": 20154,
+          "event": "distsql.Select"
+        },
+        {
+          "span_id": 393,
+          "parent_id": 384,
+          "begin_unix_time_ns": 1607658272409485123,
+          "duration_ns": 53376039,
+          "event": "*executor.SortExec.Next"
+        },
+        {
+          "span_id": 394,
+          "parent_id": 393,
+          "begin_unix_time_ns": 1607658272409500445,
+          "duration_ns": 52997174,
+          "event": "*executor.TableReaderExecutor.Next"
+        },
+        {
+          "span_id": 396,
+          "parent_id": 393,
+          "begin_unix_time_ns": 1607658272462508224,
+          "duration_ns": 9040,
+          "event": "*executor.TableReaderExecutor.Next"
+        },
+        {
+          "span_id": 397,
+          "parent_id": 393,
+          "begin_unix_time_ns": 1607658272462519337,
+          "duration_ns": 15595,
+          "event": "*executor.TableReaderExecutor.Next"
+        },
+        {
+          "span_id": 398,
+          "parent_id": 393,
+          "begin_unix_time_ns": 1607658272462537152,
+          "duration_ns": 2051,
+          "event": "*executor.TableReaderExecutor.Next"
+        },
+        {
+          "span_id": 399,
+          "parent_id": 384,
+          "begin_unix_time_ns": 1607658272463054653,
+          "duration_ns": 121665,
+          "event": "*executor.SortExec.Next"
+        },
+        {
+          "span_id": 400,
+          "parent_id": 384,
+          "begin_unix_time_ns": 1607658272463346818,
+          "duration_ns": 63520,
+          "event": "*executor.SortExec.Next"
+        },
+        {
+          "span_id": 401,
+          "parent_id": 384,
+          "begin_unix_time_ns": 1607658272463492765,
+          "duration_ns": 111,
+          "event": "*executor.SortExec.Next"
+        }
+      ]
+    }
+  ]
+}

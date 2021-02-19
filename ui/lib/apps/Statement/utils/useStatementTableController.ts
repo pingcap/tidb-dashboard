@@ -112,7 +112,7 @@ export default function useStatementTableController(
     [queryOptions, allTimeRanges]
   )
 
-  const [loadingStatements, setLoadingStatements] = useState(false)
+  const [loadingStatements, setLoadingStatements] = useState(true)
   const [statements, setStatements] = useState<StatementModel[]>([])
 
   const [refreshTimes, setRefreshTimes] = useState(0)
@@ -126,6 +126,10 @@ export default function useStatementTableController(
   }
 
   const [errors, setErrors] = useState<any[]>([])
+
+  useEffect(() => {
+    errors.length && setLoadingStatements(false)
+  }, [errors])
 
   const selectedFields = useMemo(
     () => getSelectedFields(visibleColumnKeys, derivedFields).join(','),
@@ -209,11 +213,11 @@ export default function useStatementTableController(
       const cacheItem = cacheMgr?.get(cacheKey)
       if (cacheItem) {
         setStatements(cacheItem)
+        setLoadingStatements(false)
         return
       }
 
       if (allTimeRanges.length === 0) {
-        setLoadingStatements(false)
         return
       }
       setLoadingStatements(true)

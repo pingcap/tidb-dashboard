@@ -7,11 +7,12 @@ import {
   DetailsList,
   DetailsListLayoutMode,
   IColumn,
+  IDetailsList,
   IDetailsListProps,
   SelectionMode,
 } from 'office-ui-fabric-react/lib/DetailsList'
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import AnimatedSkeleton from '../AnimatedSkeleton'
 import Card from '../Card'
@@ -96,9 +97,10 @@ export interface ICardTableProps extends IDetailsListProps {
     itemIndex: number,
     ev: React.MouseEvent<HTMLElement>
   ) => void
+  clickedRowIndex?: number
 }
 
-function useRenderClickableRow(onRowClicked) {
+function useRenderClickableRow(onRowClicked, clickedRowIdx) {
   return useCallback(
     (props, defaultRender) => {
       if (!props) {
@@ -106,14 +108,16 @@ function useRenderClickableRow(onRowClicked) {
       }
       return (
         <div
-          className={styles.clickableTableRow}
+          className={cx(styles.clickableTableRow, {
+            [styles.highlightRow]: clickedRowIdx === props.itemIndex,
+          })}
           onClick={(ev) => onRowClicked?.(props.item, props.itemIndex, ev)}
         >
           {defaultRender!(props)}
         </div>
       )
     },
-    [onRowClicked]
+    [onRowClicked, clickedRowIdx]
   )
 }
 
@@ -146,11 +150,15 @@ export default function CardTable(props: ICardTableProps) {
     desc = true,
     onChangeOrder,
     onRowClicked,
+    clickedRowIndex,
     columns,
     items,
     ...restProps
   } = props
-  const renderClickableRow = useRenderClickableRow(onRowClicked)
+  const renderClickableRow = useRenderClickableRow(
+    onRowClicked,
+    clickedRowIndex || -1
+  )
 
   const onColumnClick = usePersistFn(
     (_ev: React.MouseEvent<HTMLElement>, column: IColumn) => {
@@ -207,6 +215,13 @@ export default function CardTable(props: ICardTableProps) {
     return newItems
   }, [visibleItemsCount, items, orderBy, finalColumns])
 
+  const tableRef = useRef<IDetailsList>(null)
+  useEffect(() => {
+    if ((clickedRowIndex ?? -1) > 0) {
+      tableRef.current?.scrollToIndex(clickedRowIndex!)
+    }
+  })
+
   return (
     <Card
       title={title}
@@ -234,6 +249,7 @@ export default function CardTable(props: ICardTableProps) {
             onRenderRow={onRowClicked ? renderClickableRow : undefined}
             columns={finalColumns}
             items={finalItems}
+            componentRef={tableRef}
             {...restProps}
           />
         </div>

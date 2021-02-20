@@ -7,8 +7,8 @@ const targetNameMap = {
   num_tiflash_nodes: 'TiFlash',
 }
 
-export const combineTargetStats = (targetStats: ModelRequestTargetStatistics) =>
-  Object.entries(targetStats)
+export const combineTargetStats = (stats: ModelRequestTargetStatistics) =>
+  Object.entries(stats)
     .reduce((prev, [key, stat]) => {
       const targetName = targetNameMap[key]
       targetName && prev.push(`${stat} ${targetName}`)

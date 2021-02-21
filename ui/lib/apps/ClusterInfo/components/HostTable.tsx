@@ -102,6 +102,24 @@ Logical Cores:  ${c.logical_cores}`
         },
       },
       {
+        name: t('cluster_info.list.host_table.columns.cpu_arch'),
+        key: 'cpu',
+        minWidth: 100,
+        maxWidth: 150,
+        onRender: (row: IExpandedHostItem) => {
+          const { cpu_info: c } = row
+          if (!c) {
+            return
+          }
+          const tooltipContent = `CPU Arch:${c.arch}`
+          return (
+            <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>
+              <span>{`${c.arch}`}</span>
+            </Tooltip>
+          )
+        },
+      },
+      {
         name: t('cluster_info.list.host_table.columns.cpu_usage'),
         key: 'cpu_usage',
         minWidth: 100,

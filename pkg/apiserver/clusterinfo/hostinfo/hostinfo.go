@@ -26,9 +26,9 @@ type MemoryUsageInfo struct {
 }
 
 type CPUInfo struct {
-	Arch		  string	`json:"arch"`
-	LogicalCores  int 		`json:"logical_cores"`
-	PhysicalCores int 		`json:"physical_cores"`
+	Arch          string `json:"arch"`
+	LogicalCores  int    `json:"logical_cores"`
+	PhysicalCores int    `json:"physical_cores"`
 }
 
 type PartitionInfo struct {

@@ -25,9 +25,9 @@ import (
 
 // Used to deserialize from JSON_VALUE
 type clusterHardwareCPUInfoModel struct {
-	Arch 		  string `json:"cpu-arch,string"`
-	LogicalCores  int	 `json:"cpu-logical-cores,string"`
-	PhysicalCores int	 `json:"cpu-physical-cores,string"`
+	Arch          string `json:"cpu-arch"`
+	LogicalCores  int    `json:"cpu-logical-cores,string"`
+	PhysicalCores int    `json:"cpu-physical-cores,string"`
 }
 
 // Used to deserialize from JSON_VALUE
@@ -76,7 +76,7 @@ func FillFromClusterHardwareTable(db *gorm.DB, m InfoMap) error {
 				continue
 			}
 			m[hostname].CPUInfo = &CPUInfo{
-				arch:v.Arch,
+				Arch:          v.Arch,
 				LogicalCores:  v.LogicalCores,
 				PhysicalCores: v.PhysicalCores,
 			}

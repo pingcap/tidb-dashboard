@@ -111,6 +111,9 @@ Logical Cores:  ${c.logical_cores}`
           if (!c) {
             return
           }
+          if (c.arch==="") {
+            c.arch="Unknown"
+          }
           const tooltipContent = `CPU Arch:${c.arch}`
           return (
             <Tooltip title={<Pre>{tooltipContent.trim()}</Pre>}>

@@ -102,6 +102,19 @@ Logical Cores:  ${c.logical_cores}`
         },
       },
       {
+        name: t('cluster_info.list.host_table.columns.cpu_arch'),
+        key: 'cpu-arch',
+        minWidth: 60,
+        maxWidth: 100,
+        onRender: (row: IExpandedHostItem) => {
+          const { cpu_info: c } = row
+          if (!c || !c.arch) {
+            return <span>{'Unknow'}</span>
+          }
+          return <span>{`${c.arch}`}</span>
+        },
+      },
+      {
         name: t('cluster_info.list.host_table.columns.cpu_usage'),
         key: 'cpu_usage',
         minWidth: 100,

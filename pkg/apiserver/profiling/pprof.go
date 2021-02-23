@@ -44,7 +44,6 @@ type pprofOptions struct {
 }
 
 func fetchPprofSVG(op *pprofOptions) (string, error) {
-	// TODO: Switch to use tidb.Client or pd.Client
 	f, err := fetchPprof(op, "dot")
 	if err != nil {
 		return "", fmt.Errorf("failed to get DOT output from file: %v", err)

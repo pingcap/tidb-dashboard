@@ -23,8 +23,8 @@ import (
 )
 
 type flameGraphOptions struct {
-	duration           uint
-	frequency          uint
+	duration uint
+	// frequency          uint
 	fileNameWithoutExt string
 
 	target  *model.RequestTargetNode

@@ -74,10 +74,11 @@ type Task struct {
 	cancel     context.CancelFunc
 	taskGroup  *TaskGroup
 	httpScheme string
+	fetchers   *fetchers
 }
 
 // NewTask creates a new profiling task.
-func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, httpScheme string) *Task {
+func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, httpScheme string, fts *fetchers) *Task {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Task{
 		TaskModel: &TaskModel{
@@ -90,12 +91,13 @@ func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTarg
 		cancel:     cancel,
 		taskGroup:  taskGroup,
 		httpScheme: httpScheme,
+		fetchers:   fts,
 	}
 }
 
 func (t *Task) run(httpClient *httpc.Client) {
 	fileNameWithoutExt := fmt.Sprintf("profiling_%d_%d_%s", t.TaskGroupID, t.ID, t.Target.FileName())
-	svgFilePath, err := profileAndWriteSVG(t.ctx, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs, httpClient, t.httpScheme)
+	svgFilePath, err := profileAndWriteSVG(t.ctx, t.fetchers, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs, httpClient, t.httpScheme)
 	if err != nil {
 		t.Error = err.Error()
 		t.State = TaskStateError

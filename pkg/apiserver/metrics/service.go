@@ -23,8 +23,8 @@ import (
 	"go.uber.org/fx"
 	"golang.org/x/sync/singleflight"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
 )
 
 var (

@@ -25,7 +25,7 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb/model"
+	"github.com/pingcap/tidb-dashboard/pkg/tidb/model"
 )
 
 const (

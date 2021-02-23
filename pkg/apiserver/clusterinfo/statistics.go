@@ -20,8 +20,8 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/thoas/go-funk"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/clusterinfo/hostinfo"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo/hostinfo"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
 type ClusterStatisticsPartial struct {

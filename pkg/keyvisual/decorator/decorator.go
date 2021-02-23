@@ -17,7 +17,7 @@ package decorator
 import (
 	"encoding/hex"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
 // LabelKey is the decoration key.

@@ -136,7 +136,7 @@
   "contributorsSortAlphabetically": true,
   "contributorTemplate": "<a href=\"<%= contributor.profile %>\"><img src=\"<%= contributor.avatar_url %>\" width=\"<%= options.imageSize %>px;\" alt=\"\"/></a>",
   "projectName": "tidb-dashboard",
-  "projectOwner": "pingcap-incubator",
+  "projectOwner": "pingcap",
   "repoType": "github",
   "repoHost": "https://github.com",
   "skipCi": true,

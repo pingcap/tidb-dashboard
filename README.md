@@ -1,6 +1,6 @@
 # TiDB Dashboard
 
-[![GitHub license](https://img.shields.io/github/license/pingcap-incubator/tidb-dashboard?style=flat-square)](https://github.com/pingcap-incubator/tidb-dashboard/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/github/license/pingcap/tidb-dashboard?style=flat-square)](https://github.com/pingcap/tidb-dashboard/blob/master/LICENSE)
 
 TiDB Dashboard is a Web UI for monitoring, diagnosing and managing the TiDB cluster.
 
@@ -13,7 +13,7 @@ TiDB Dashboard is a Web UI for monitoring, diagnosing and managing the TiDB clus
 
 ## Question, Suggestion
 
-Feel free to [open GitHub issues](https://github.com/pingcap-incubator/tidb-dashboard/issues/new/choose)
+Feel free to [open GitHub issues](https://github.com/pingcap/tidb-dashboard/issues/new/choose)
 for questions, support and suggestions.
 
 You may also consider join our community chat in the Slack channel [#sig-diagnosis].
@@ -31,7 +31,7 @@ it from source (see next section).
 
 ## Contributing & Developing
 
-Checkout our [help wanted issues](https://github.com/pingcap-incubator/tidb-dashboard/issues?q=is%3Aopen+label%3Astatus%2Fhelp-wanted+sort%3Aupdated-desc)
+Checkout our [help wanted issues](https://github.com/pingcap/tidb-dashboard/issues?q=is%3Aopen+label%3Astatus%2Fhelp-wanted+sort%3Aupdated-desc)
 for a list of recommended tasks, in which we have also marked the difficulty level.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for a detailed step-by-step contributing guide, or steps to

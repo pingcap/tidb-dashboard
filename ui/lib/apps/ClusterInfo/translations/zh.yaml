@@ -19,6 +19,7 @@ cluster_info:
       columns:
         host: 主机地址
         cpu: CPU
+        cpu_arch: CPU 架构
         cpu_usage: CPU 使用率
         memory: 物理内存
         memory_usage: 内存使用率

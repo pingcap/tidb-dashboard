@@ -18,12 +18,13 @@ import (
 	"net/http"
 	"time"
 
+	"go.uber.org/fx"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tiflash"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/tikv"
-	"go.uber.org/fx"
 )
 
 const (

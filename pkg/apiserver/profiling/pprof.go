@@ -26,6 +26,7 @@ import (
 	"github.com/goccy/go-graphviz"
 	"github.com/google/pprof/driver"
 	"github.com/google/pprof/profile"
+
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 )
 

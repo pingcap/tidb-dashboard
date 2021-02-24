@@ -17,6 +17,7 @@ import {
 import DateTime from '@lib/components/DateTime'
 import openLink from '@lib/utils/openLink'
 import { useClientRequest } from '@lib/utils/useClientRequest'
+import { combineTargetStats } from '../utils'
 
 const profilingDurationsSec = [10, 30, 60, 120]
 const defaultProfilingDuration = 30
@@ -58,6 +59,7 @@ export default function Page() {
               break
             case 'tidb':
             case 'tikv':
+            case 'tiflash':
               port = instance.status_port
               break
           }
@@ -98,18 +100,8 @@ export default function Page() {
         minWidth: 150,
         maxWidth: 250,
         onRender: (rec) => {
-          // TODO: Extract to utility function
-          const r: string[] = []
-          if (rec.target_stats.num_tidb_nodes) {
-            r.push(`${rec.target_stats.num_tidb_nodes} TiDB`)
-          }
-          if (rec.target_stats.num_tikv_nodes) {
-            r.push(`${rec.target_stats.num_tikv_nodes} TiKV`)
-          }
-          if (rec.target_stats.num_pd_nodes) {
-            r.push(`${rec.target_stats.num_pd_nodes} PD`)
-          }
-          return <span>{r.join(', ')}</span>
+          const s = combineTargetStats(rec.target_stats)
+          return <span>{s}</span>
         },
       },
       {
@@ -171,7 +163,11 @@ export default function Page() {
             label={t('instance_profiling.list.control_form.instances.label')}
             rules={[{ required: true }]}
           >
-            <InstanceSelect ref={instanceSelect} style={{ width: 200 }} />
+            <InstanceSelect
+              enableTiFlash={true}
+              ref={instanceSelect}
+              style={{ width: 200 }}
+            />
           </Form.Item>
           <Form.Item
             name="duration"

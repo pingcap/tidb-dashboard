@@ -26,7 +26,6 @@ import (
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
 )
 
 const (
@@ -53,10 +52,8 @@ type StartRequestSession struct {
 
 type ServiceParams struct {
 	fx.In
-	Config        *config.Config
 	ConfigManager *config.DynamicConfigManager
 	LocalStore    *dbstore.DB
-	HTTPClient    *httpc.Client
 }
 
 type Service struct {
@@ -162,7 +159,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 
 	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		t := NewTask(ctx, taskGroup, target, s.params.Config.GetClusterHTTPScheme(), s.fetchers)
+		t := NewTask(ctx, taskGroup, target, s.fetchers)
 		s.params.LocalStore.Create(t.TaskModel)
 		s.tasks.Store(t.ID, t)
 		tasks = append(tasks, t)
@@ -176,7 +173,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 			wg.Add(1)
 			go func(idx int) {
 				defer wg.Done()
-				tasks[idx].run(s.params.HTTPClient)
+				tasks[idx].run()
 				s.tasks.Delete(tasks[idx].ID)
 			}(i)
 		}

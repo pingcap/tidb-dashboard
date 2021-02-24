@@ -18,10 +18,9 @@ import (
 	"fmt"
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
 )
 
-func profileAndWriteSVG(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, httpClient *httpc.Client, httpScheme string) (string, error) {
+func profileAndWriteSVG(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
 	switch target.Kind {
 	case model.NodeKindTiKV:
 		return fetchFlameGraphSVG(&flameGraphOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tikv})

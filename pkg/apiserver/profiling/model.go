@@ -20,7 +20,6 @@ import (
 
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
 )
 
 // TaskState is used to represent the task/task group state.
@@ -70,15 +69,14 @@ func autoMigrate(db *dbstore.DB) error {
 // Task is the unit to fetch profiling information.
 type Task struct {
 	*TaskModel
-	ctx        context.Context
-	cancel     context.CancelFunc
-	taskGroup  *TaskGroup
-	httpScheme string
-	fetchers   *fetchers
+	ctx       context.Context
+	cancel    context.CancelFunc
+	taskGroup *TaskGroup
+	fetchers  *fetchers
 }
 
 // NewTask creates a new profiling task.
-func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, httpScheme string, fts *fetchers) *Task {
+func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, fts *fetchers) *Task {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Task{
 		TaskModel: &TaskModel{
@@ -87,17 +85,16 @@ func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTarg
 			Target:      target,
 			StartedAt:   time.Now().Unix(),
 		},
-		ctx:        ctx,
-		cancel:     cancel,
-		taskGroup:  taskGroup,
-		httpScheme: httpScheme,
-		fetchers:   fts,
+		ctx:       ctx,
+		cancel:    cancel,
+		taskGroup: taskGroup,
+		fetchers:  fts,
 	}
 }
 
-func (t *Task) run(httpClient *httpc.Client) {
+func (t *Task) run() {
 	fileNameWithoutExt := fmt.Sprintf("profiling_%d_%d_%s", t.TaskGroupID, t.ID, t.Target.FileName())
-	svgFilePath, err := profileAndWriteSVG(t.ctx, t.fetchers, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs, httpClient, t.httpScheme)
+	svgFilePath, err := profileAndWriteSVG(t.ctx, t.fetchers, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs)
 	if err != nil {
 		t.Error = err.Error()
 		t.State = TaskStateError

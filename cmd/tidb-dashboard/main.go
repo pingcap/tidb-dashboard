@@ -192,6 +192,7 @@ func main() {
 
 	mux := http.DefaultServeMux
 	uiHandler := http.StripPrefix(strings.TrimRight(config.UIPathPrefix, "/"), uiserver.Handler(assets))
+	mux.Handle("/", http.RedirectHandler(config.UIPathPrefix, http.StatusFound))
 	mux.Handle(config.UIPathPrefix, uiHandler)
 	mux.Handle(config.APIPathPrefix, apiserver.Handler(s))
 	mux.Handle(config.SwaggerPathPrefix, swaggerserver.Handler())

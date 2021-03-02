@@ -21,8 +21,8 @@ import (
 	"github.com/thoas/go-funk"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/clusterinfo/hostinfo"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo/hostinfo"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
 // fetchAllInstanceHosts fetches all hosts in the cluster and return in ascending order.

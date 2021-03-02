@@ -17,7 +17,7 @@ package uiserver
 import (
 	"net/http"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
 func Assets(*config.Config) http.FileSystem {

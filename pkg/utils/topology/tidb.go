@@ -25,7 +25,7 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/host"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
 )
 
 const tidbTopologyKeyPrefix = "/topology/tidb/"

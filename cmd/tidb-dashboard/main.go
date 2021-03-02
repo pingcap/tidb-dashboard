@@ -42,12 +42,12 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/swaggerserver"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/uiserver"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/version"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
+	keyvisualregion "github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap/tidb-dashboard/pkg/swaggerserver"
+	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
 type DashboardCLIConfig struct {

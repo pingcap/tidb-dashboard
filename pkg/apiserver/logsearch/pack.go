@@ -21,7 +21,7 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
 func serveTaskForDownload(task *TaskModel, c *gin.Context) {

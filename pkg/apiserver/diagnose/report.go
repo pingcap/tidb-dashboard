@@ -25,7 +25,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 )
 
 type TableDef struct {

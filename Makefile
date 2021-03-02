@@ -1,6 +1,6 @@
 .PHONY: install_tools lint dev yarn_dependencies ui server run
 
-DASHBOARD_PKG := github.com/pingcap-incubator/tidb-dashboard
+DASHBOARD_PKG := github.com/pingcap/tidb-dashboard
 
 BUILD_TAGS ?=
 

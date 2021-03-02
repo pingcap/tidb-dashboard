@@ -21,8 +21,8 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/host"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
 )
 
 // FetchStoreTopology returns TiKV info and TiFlash info.

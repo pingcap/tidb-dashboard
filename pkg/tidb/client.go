@@ -20,8 +20,8 @@ import (
 	// MySQL driver used by gorm
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
 var (

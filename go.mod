@@ -1,4 +1,4 @@
-module github.com/pingcap-incubator/tidb-dashboard
+module github.com/pingcap/tidb-dashboard
 
 go 1.13
 

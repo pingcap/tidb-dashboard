@@ -13,7 +13,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/pingcap/errors"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 )
 
 func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2 string, db *gorm.DB, sqliteDB *dbstore.DB, reportID string) []*TableDef {

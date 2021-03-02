@@ -26,7 +26,7 @@ import (
 	. "github.com/pingcap/check"
 	"go.uber.org/fx"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/decorator"
 )
 
 var _ = Suite(&testDistanceSuite{})

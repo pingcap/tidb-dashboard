@@ -14,7 +14,7 @@
 package matrix
 
 import (
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/decorator"
 )
 
 type averageHelper struct {

@@ -20,8 +20,8 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/storage"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/storage"
 )
 
 type periodicInput struct {

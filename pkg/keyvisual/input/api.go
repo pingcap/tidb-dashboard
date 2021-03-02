@@ -20,8 +20,8 @@ import (
 
 	"github.com/joomcode/errorx"
 
-	regionpkg "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
+	regionpkg "github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
 )
 
 var (

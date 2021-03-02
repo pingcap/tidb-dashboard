@@ -7,7 +7,7 @@ import (
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
 // NaiveLabelStrategy is one of the simplest LabelStrategy.

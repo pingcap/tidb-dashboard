@@ -22,9 +22,9 @@ import (
 
 	"go.uber.org/fx"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/matrix"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
 )
 
 // LayerConfig is the configuration of layerStat.

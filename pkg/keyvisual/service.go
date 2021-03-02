@@ -29,17 +29,17 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/input"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/matrix"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/storage"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/decorator"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/input"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/matrix"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/storage"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
+	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
 const (

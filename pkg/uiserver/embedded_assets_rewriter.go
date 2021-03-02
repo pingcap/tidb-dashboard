@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
 var once sync.Once

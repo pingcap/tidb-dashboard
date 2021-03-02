@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tikv
+package tiflash
 
 import (
 	"context"
@@ -27,11 +27,11 @@ import (
 )
 
 var (
-	ErrTiKVClientRequestFailed = ErrNS.NewType("client_request_failed")
+	ErrFlashClientRequestFailed = ErrNS.NewType("client_request_failed")
 )
 
 const (
-	defaultTiKVStatusAPITimeout = time.Second * 10
+	defaultTiFlashStatusAPITimeout = time.Second * 10
 )
 
 type Client struct {
@@ -41,12 +41,12 @@ type Client struct {
 	timeout      time.Duration
 }
 
-func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
+func NewTiFlashClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
 	client := &Client{
 		httpClient:   httpClient,
 		httpScheme:   config.GetClusterHTTPScheme(),
 		lifecycleCtx: nil,
-		timeout:      defaultTiKVStatusAPITimeout,
+		timeout:      defaultTiFlashStatusAPITimeout,
 	}
 
 	lc.Append(fx.Hook{
@@ -67,10 +67,10 @@ func (c *Client) WithTimeout(timeout time.Duration) *Client {
 
 func (c *Client) SendGetRequest(host string, statusPort int, path string) ([]byte, error) {
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, path)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiKVClientRequestFailed, "TiKV")
+	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrFlashClientRequestFailed, "TiFlash")
 }
 
 func (c *Client) SendPostRequest(host string, statusPort int, path string, body io.Reader) ([]byte, error) {
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, path)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrTiKVClientRequestFailed, "TiKV")
+	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrFlashClientRequestFailed, "TiFlash")
 }

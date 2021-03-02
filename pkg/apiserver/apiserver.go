@@ -34,6 +34,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/metrics"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/queryeditor"
+	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator
@@ -115,11 +116,11 @@ func (s *Service) Start(ctx context.Context) error {
 			config.NewDynamicConfigManager,
 			tidb.NewTiDBClient,
 			tikv.NewTiKVClient,
+			tiflash.NewTiFlashClient,
 			utils.NewSysSchema,
 			user.NewAuthService,
 			info.NewService,
 			clusterinfo.NewService,
-			profiling.NewService,
 			logsearch.NewService,
 			diagnose.NewService,
 			keyvisual.NewService,
@@ -132,6 +133,7 @@ func (s *Service) Start(ctx context.Context) error {
 		statement.Module,
 		slowquery.Module,
 		debugapi.Module,
+		profiling.Module,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			user.RegisterRouter,

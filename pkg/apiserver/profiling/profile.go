@@ -15,27 +15,9 @@ package profiling
 
 import (
 	"context"
-	"flag"
 	"fmt"
-	"sync"
-	"time"
 
-	"github.com/google/pprof/driver"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
-)
-
-var (
-	_  driver.Fetcher = (*fetcher)(nil)
-	mu sync.Mutex
-)
-
-type flagSet struct {
-	*flag.FlagSet
-	args []string
-}
-
-const (
-	maxProfilingTimeout = time.Minute * 5
 )
 
 func profileAndWriteSVG(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {

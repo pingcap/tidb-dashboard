@@ -16,20 +16,7 @@ package uiserver
 
 import (
 	"embed"
-	"io/fs"
-	"net/http"
-
-	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
 //go:embed ui-build
 var embededFiles embed.FS
-
-func Assets(cfg *config.Config) http.FileSystem {
-	fsys, err := fs.Sub(embededFiles, "ui-build")
-	if err != nil {
-		panic(err)
-	}
-
-	return http.FS(fsys)
-}

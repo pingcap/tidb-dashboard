@@ -15,11 +15,7 @@
 package uiserver
 
 import (
-	"net/http"
-
-	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"embed"
 )
 
-func Assets(*config.Config) http.FileSystem {
-	return nil
-}
+var embededFiles embed.FS

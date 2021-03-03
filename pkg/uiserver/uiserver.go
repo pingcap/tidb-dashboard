@@ -17,14 +17,25 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"io/fs"
 	"net/http"
 	"path"
 	"strings"
 
 	"github.com/pingcap/log"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/shurcooL/httpgzip"
 	"go.uber.org/zap"
 )
+
+func Assets(cfg *config.Config) http.FileSystem {
+	fsys, err := fs.Sub(embededFiles, "ui-build")
+	if err != nil {
+		panic(err)
+	}
+
+	return http.FS(fsys)
+}
 
 func Handler(root http.FileSystem, publicPathPrefix string) http.Handler {
 	rewrite := func(assetPath string) (string, error) {

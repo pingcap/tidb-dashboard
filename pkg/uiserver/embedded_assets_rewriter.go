@@ -15,28 +15,21 @@
 package uiserver
 
 import (
+	"embed"
+	"io/fs"
 	"net/http"
-	"os"
-	"sync"
-	"time"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
-var once sync.Once
+//go:embed ui-build
+var embededFiles embed.FS
 
 func Assets(cfg *config.Config) http.FileSystem {
-	once.Do(func() {
-		RewriteAssets(assets, cfg, func(fs http.FileSystem, f http.File, path, newContent string, bs []byte) {
-			m := fs.(vfsgen۰FS)
-			fi := f.(os.FileInfo)
-			m[path] = &vfsgen۰CompressedFileInfo{
-				name:              fi.Name(),
-				modTime:           time.Now(),
-				uncompressedSize:  int64(len(newContent)),
-				compressedContent: bs,
-			}
-		})
-	})
-	return assets
+	fsys, err := fs.Sub(embededFiles, "ui-build")
+	if err != nil {
+		panic(err)
+	}
+
+	return http.FS(fsys)
 }

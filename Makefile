@@ -39,7 +39,7 @@ server: install_tools
 ifeq ($(UI),1)
 	@rm -rf pkg/uiserver/ui-build && cp -r ui/build pkg/uiserver/ui-build
 endif
-	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
+	go build -mod=mod -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 
 run:
 	bin/tidb-dashboard --debug --experimental

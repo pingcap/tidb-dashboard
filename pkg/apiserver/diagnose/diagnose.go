@@ -53,7 +53,7 @@ func NewService(config *config.Config, tidbClient *tidb.Client, db *dbstore.DB, 
 		config:     config,
 		db:         db,
 		tidbClient: tidbClient,
-		fileServer: uiserver.Handler(uiAssetFS),
+		fileServer: uiserver.Handler(uiAssetFS, config.PublicPathPrefix),
 	}
 }
 

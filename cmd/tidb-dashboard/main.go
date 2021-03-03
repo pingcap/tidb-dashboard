@@ -191,7 +191,7 @@ func main() {
 	defer s.Stop(context.Background()) //nolint:errcheck
 
 	mux := http.DefaultServeMux
-	uiHandler := http.StripPrefix(strings.TrimRight(config.UIPathPrefix, "/"), uiserver.Handler(assets))
+	uiHandler := http.StripPrefix(strings.TrimRight(config.UIPathPrefix, "/"), uiserver.Handler(assets, cliConfig.CoreConfig.PublicPathPrefix))
 	mux.Handle("/", http.RedirectHandler(config.UIPathPrefix, http.StatusFound))
 	mux.Handle(config.UIPathPrefix, uiHandler)
 	mux.Handle(config.APIPathPrefix, apiserver.Handler(s))

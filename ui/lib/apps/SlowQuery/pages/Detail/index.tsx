@@ -2,7 +2,7 @@ import React from 'react'
 import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
-import { useLocalStorageState } from 'ahooks'
+import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client from '@lib/client'

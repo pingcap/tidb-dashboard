@@ -62,6 +62,11 @@ const addExtraEntries = () => (config) => {
       template: 'public/diagnoseReport.html',
       outPath: '/diagnoseReport.html',
     },
+    {
+      entry: 'dataVizApp',
+      template: 'public/dataViz.html',
+      outPath: '/dataViz.html',
+    },
   ])
   e.addMultiEntry(config)
   return config

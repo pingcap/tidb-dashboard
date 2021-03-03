@@ -77,7 +77,7 @@ function expandDisksItems(rows: HostinfoInfo[]): IExpandedDiskItem[] {
   return expanded
 }
 
-export default function HostTable() {
+export default function DiskTable() {
   const { t } = useTranslation()
 
   const { data, isLoading, error } = useClientRequest((reqConfig) =>

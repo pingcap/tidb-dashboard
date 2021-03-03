@@ -11,7 +11,7 @@ import {
   Menu,
   message,
 } from 'antd'
-import { useLocalStorageState } from 'ahooks'
+import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 import {
   ReloadOutlined,
   LoadingOutlined,

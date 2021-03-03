@@ -630,8 +630,8 @@ export async function heatmapChart(
       const xRescale = zoomTransform.rescaleX(xScale)
       const yRescale = zoomTransform.rescaleY(yScale)
       const canvasOffset = [
-        xRescale(tooltipStatus.x),
-        yRescale(tooltipStatus.y),
+        xRescale(tooltipStatus.x)!,
+        yRescale(tooltipStatus.y)!,
       ]
 
       let tooltipDiv = tooltipLayer.selectAll('div').data([null])
@@ -783,8 +783,8 @@ export async function heatmapChart(
         const xRescale = zoomTransform.rescaleX(xScale)
         const yRescale = zoomTransform.rescaleY(yScale)
         const canvasOffset = [
-          xRescale(tooltipStatus.x),
-          yRescale(tooltipStatus.y),
+          xRescale(tooltipStatus.x)!,
+          yRescale(tooltipStatus.y)!,
         ]
         const crossCenterPadding = 3
         const crossBorder = 1

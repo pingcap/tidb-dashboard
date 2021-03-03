@@ -24,6 +24,7 @@ const (
 
 	UIPathPrefix      = "/dashboard/"
 	APIPathPrefix     = "/dashboard/api/"
+	ToolsPathPrefix   = "/dashboard/tools/"
 	SwaggerPathPrefix = "/dashboard/api/swagger/"
 )
 

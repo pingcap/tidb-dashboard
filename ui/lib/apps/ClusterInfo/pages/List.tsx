@@ -14,6 +14,7 @@ import StoreLocation from '../components/StoreLocation'
 import Statistics from '../components/Statistics'
 
 import styles from './List.module.less'
+import Regions from '@lib/apps/ClusterInfo/components/Regions'
 
 function renderTabBar(props, DefaultTabBar) {
   return (
@@ -53,6 +54,11 @@ export default function ListPage() {
       key: 'statistics',
       title: t('cluster_info.list.statistics.title'),
       content: () => <Statistics />,
+    },
+    {
+      key: 'regions',
+      title: t('cluster_info.list.regions.title'),
+      content: () => <Regions />,
     },
   ]
 

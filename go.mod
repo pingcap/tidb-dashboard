@@ -1,6 +1,6 @@
 module github.com/pingcap/tidb-dashboard
 
-go 1.13
+go 1.16
 
 require (
 	github.com/VividCortex/mysqlerr v0.0.0-20200629151747-c28746d985dd

@@ -37,7 +37,7 @@ ui: yarn_dependencies
 server: install_tools
 	scripts/generate_swagger_spec.sh
 ifeq ($(UI),1)
-	scripts/embed_ui_assets.sh
+	@rm -rf pkg/uiserver/ui-build && cp -r ui/build uiserver/ui-build
 endif
 	go build -o bin/tidb-dashboard -ldflags '$(LDFLAGS)' -tags "${BUILD_TAGS}" cmd/tidb-dashboard/main.go
 

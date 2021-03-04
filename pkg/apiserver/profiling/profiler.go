@@ -14,30 +14,23 @@
 package profiling
 
 import (
-	"io"
-
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 )
 
 type profiler struct {
 	Fetcher fetcher.ProfileFetcher
-	Writer  io.Writer
+	Writer  Writer
 }
 
 type profileOptions struct {
 	fetcher.ProfileFetchOptions
 }
 
-func (p *profiler) Profile(op *profileOptions) error {
+func (p *profiler) Profile(op *profileOptions) (string, error) {
 	resp, err := p.Fetcher.Fetch(&op.ProfileFetchOptions)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	_, err = p.Writer.Write(resp)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return p.Writer.Write(resp)
 }

@@ -20,10 +20,8 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 
-	"github.com/goccy/go-graphviz"
 	"github.com/google/pprof/driver"
 	"github.com/google/pprof/profile"
 
@@ -31,9 +29,8 @@ import (
 )
 
 var (
-	_  driver.Fetcher = (*pprofFetcher)(nil)
-	_  ProfileFetcher = (*Pprof)(nil)
-	mu sync.Mutex
+	_ driver.Fetcher = (*pprofFetcher)(nil)
+	_ ProfileFetcher = (*Pprof)(nil)
 )
 
 type Pprof struct {
@@ -80,62 +77,6 @@ func (p *Pprof) Fetch(op *ProfileFetchOptions) (d []byte, err error) {
 
 	return
 }
-
-type GraphvizSVGWriter struct {
-	Path string
-}
-
-func (w *GraphvizSVGWriter) Write(b []byte) (int, error) {
-	tmpfile, err := ioutil.TempFile("", w.Path)
-	if err != nil {
-		return 0, fmt.Errorf("failed to create temp file: %v", err)
-	}
-	defer tmpfile.Close()
-
-	g := graphviz.New()
-	mu.Lock()
-	defer mu.Unlock()
-	graph, err := graphviz.ParseBytes(b)
-	if err != nil {
-		return 0, fmt.Errorf("failed to parse DOT file: %v", err)
-	}
-
-	if err := g.RenderFilename(graph, graphviz.SVG, tmpfile.Name()); err != nil {
-		return 0, fmt.Errorf("failed to render SVG: %v", err)
-	}
-
-	return len(b), nil
-}
-
-// func fetchPprofSVG(op *ProfileFetchOptions) (string, error) {
-// f, err := fetchPprof(op, "dot")
-
-// b, err := ioutil.ReadFile(f)
-// if err != nil {
-// 	return "", fmt.Errorf("failed to get DOT output from file: %v", err)
-// }
-
-// tmpfile, err := ioutil.TempFile("", op.fileNameWithoutExt)
-// if err != nil {
-// 	return "", fmt.Errorf("failed to create temp file: %v", err)
-// }
-// defer tmpfile.Close()
-// tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), "svg")
-
-// g := graphviz.New()
-// mu.Lock()
-// defer mu.Unlock()
-// graph, err := graphviz.ParseBytes(b)
-// if err != nil {
-// 	return "", fmt.Errorf("failed to parse DOT file: %v", err)
-// }
-
-// if err := g.RenderFilename(graph, graphviz.SVG, tmpPath); err != nil {
-// 	return "", fmt.Errorf("failed to render SVG: %v", err)
-// }
-
-// return tmpPath, nil
-// }
 
 type flagSet struct {
 	*flag.FlagSet

@@ -70,14 +70,14 @@ func autoMigrate(db *dbstore.DB) error {
 // Task is the unit to fetch profiling information.
 type Task struct {
 	*TaskModel
-	ctx        context.Context
-	cancel     context.CancelFunc
-	taskGroup  *TaskGroup
-	fetcherMap *fetcher.ClientFetcherMap
+	ctx       context.Context
+	cancel    context.CancelFunc
+	taskGroup *TaskGroup
+	clientMap *fetcher.ClientMap
 }
 
 // NewTask creates a new profiling task.
-func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, fm *fetcher.ClientFetcherMap) *Task {
+func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, cm *fetcher.ClientMap) *Task {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Task{
 		TaskModel: &TaskModel{
@@ -86,16 +86,16 @@ func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTarg
 			Target:      target,
 			StartedAt:   time.Now().Unix(),
 		},
-		ctx:        ctx,
-		cancel:     cancel,
-		taskGroup:  taskGroup,
-		fetcherMap: fm,
+		ctx:       ctx,
+		cancel:    cancel,
+		taskGroup: taskGroup,
+		clientMap: cm,
 	}
 }
 
 func (t *Task) run() {
 	fileNameWithoutExt := fmt.Sprintf("profiling_%d_%d_%s", t.TaskGroupID, t.ID, t.Target.FileName())
-	svgFilePath, err := profileAndWriteSVG(t.ctx, t.fetcherMap, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs)
+	svgFilePath, err := profileAndWriteSVG(t.ctx, t.clientMap, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs)
 	if err != nil {
 		t.Error = err.Error()
 		t.State = TaskStateError

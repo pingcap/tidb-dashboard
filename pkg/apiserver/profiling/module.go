@@ -21,7 +21,7 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(
-		fetcher.NewClientFetcherMap,
+		fetcher.NewClientMap,
 		newService,
 	),
 )

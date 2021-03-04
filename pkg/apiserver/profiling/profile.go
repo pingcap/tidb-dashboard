@@ -24,8 +24,8 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 )
 
-func profileAndWriteSVG(ctx context.Context, fm *fetcher.ClientFetcherMap, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
-	f, err := fm.Get(target.Kind)
+func profileAndWriteSVG(ctx context.Context, cm *fetcher.ClientMap, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
+	c, err := cm.Get(target.Kind)
 	if err != nil {
 		return "", err
 	}
@@ -36,15 +36,15 @@ func profileAndWriteSVG(ctx context.Context, fm *fetcher.ClientFetcherMap, targe
 	case model.NodeKindTiKV, model.NodeKindTiFlash:
 		p = &profiler{
 			Fetcher: &fetcher.FlameGraph{
-				Fetcher: f,
-				Target:  target,
+				Client: c,
+				Target: target,
 			},
 			Writer: &fileWriter{fileNameWithoutExt: fileNameWithoutExt, ext: "svg"},
 		}
 	case model.NodeKindTiDB, model.NodeKindPD:
 		p = &profiler{
 			Fetcher: &fetcher.Pprof{
-				Fetcher:            f,
+				Client:             c,
 				Target:             target,
 				FileNameWithoutExt: fileNameWithoutExt,
 			},

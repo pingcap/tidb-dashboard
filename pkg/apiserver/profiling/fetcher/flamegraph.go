@@ -22,11 +22,11 @@ import (
 var _ ProfileFetcher = (*FlameGraph)(nil)
 
 type FlameGraph struct {
-	Fetcher *ClientFetcher
-	Target  *model.RequestTargetNode
+	Client *Client
+	Target *model.RequestTargetNode
 }
 
 func (f *FlameGraph) Fetch(op *ProfileFetchOptions) ([]byte, error) {
 	path := fmt.Sprintf("/debug/pprof/profile?seconds=%d", op.Duration)
-	return (*f.Fetcher).Fetch(&ClientFetchOptions{IP: f.Target.IP, Port: f.Target.Port, Path: path})
+	return (*f.Client).Fetch(&ClientFetchOptions{IP: f.Target.IP, Port: f.Target.Port, Path: path})
 }

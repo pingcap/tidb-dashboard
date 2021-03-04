@@ -34,7 +34,7 @@ var (
 )
 
 type Pprof struct {
-	Fetcher            *ClientFetcher
+	Client             *Client
 	Target             *model.RequestTargetNode
 	FileNameWithoutExt string
 }
@@ -117,7 +117,7 @@ func (f *pprofFetcher) Fetch(src string, duration, timeout time.Duration) (*prof
 	secs := strconv.Itoa(int(duration / time.Second))
 	url := "/debug/pprof/profile?seconds=" + secs
 
-	resp, err := (*f.Fetcher).Fetch(&ClientFetchOptions{IP: f.Target.IP, Port: f.Target.Port, Path: url})
+	resp, err := (*f.Client).Fetch(&ClientFetchOptions{IP: f.Target.IP, Port: f.Target.Port, Path: url})
 	if err != nil {
 		return nil, url, err
 	}

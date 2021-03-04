@@ -36,7 +36,7 @@ type ClientFetchOptions struct {
 	Path string
 }
 
-type ClientFetcher interface {
+type Client interface {
 	Fetch(op *ClientFetchOptions) ([]byte, error)
 }
 
@@ -48,9 +48,9 @@ type ProfileFetcher interface {
 	Fetch(op *ProfileFetchOptions) ([]byte, error)
 }
 
-type ClientFetcherMap map[model.NodeKind]ClientFetcher
+type ClientMap map[model.NodeKind]Client
 
-func (fm *ClientFetcherMap) Get(kind model.NodeKind) (*ClientFetcher, error) {
+func (fm *ClientMap) Get(kind model.NodeKind) (*Client, error) {
 	f, ok := (*fm)[kind]
 	if !ok {
 		return nil, fmt.Errorf("unsupported target %s", kind)
@@ -58,14 +58,14 @@ func (fm *ClientFetcherMap) Get(kind model.NodeKind) (*ClientFetcher, error) {
 	return &f, nil
 }
 
-func NewClientFetcherMap(
+func NewClientMap(
 	tikvClient *tikv.Client,
 	tidbClient *tidb.Client,
 	pdClient *pd.Client,
 	tiflashClient *tiflash.Client,
 	config *config.Config,
-) *ClientFetcherMap {
-	return &ClientFetcherMap{
+) *ClientMap {
+	return &ClientMap{
 		model.NodeKindTiKV: &tikvFetcher{
 			client: tikvClient,
 		},

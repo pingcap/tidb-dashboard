@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 )
 
@@ -69,14 +70,14 @@ func autoMigrate(db *dbstore.DB) error {
 // Task is the unit to fetch profiling information.
 type Task struct {
 	*TaskModel
-	ctx       context.Context
-	cancel    context.CancelFunc
-	taskGroup *TaskGroup
-	fetchers  *fetchers
+	ctx        context.Context
+	cancel     context.CancelFunc
+	taskGroup  *TaskGroup
+	fetcherMap *fetcher.FetcherMap
 }
 
 // NewTask creates a new profiling task.
-func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, fts *fetchers) *Task {
+func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, fm *fetcher.FetcherMap) *Task {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Task{
 		TaskModel: &TaskModel{
@@ -85,16 +86,16 @@ func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTarg
 			Target:      target,
 			StartedAt:   time.Now().Unix(),
 		},
-		ctx:       ctx,
-		cancel:    cancel,
-		taskGroup: taskGroup,
-		fetchers:  fts,
+		ctx:        ctx,
+		cancel:     cancel,
+		taskGroup:  taskGroup,
+		fetcherMap: fm,
 	}
 }
 
 func (t *Task) run() {
 	fileNameWithoutExt := fmt.Sprintf("profiling_%d_%d_%s", t.TaskGroupID, t.ID, t.Target.FileName())
-	svgFilePath, err := profileAndWriteSVG(t.ctx, t.fetchers, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs)
+	svgFilePath, err := profileAndWriteSVG(t.ctx, t.fetcherMap, &t.Target, fileNameWithoutExt, t.taskGroup.ProfileDurationSecs)
 	if err != nil {
 		t.Error = err.Error()
 		t.State = TaskStateError

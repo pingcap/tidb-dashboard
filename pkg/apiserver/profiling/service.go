@@ -24,6 +24,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 )
@@ -62,14 +63,14 @@ type Service struct {
 	sessionCh     chan *StartRequestSession
 	lastTaskGroup *TaskGroup
 	tasks         sync.Map
-	fetchers      *fetchers
+	fetcherMap    *fetcher.FetcherMap
 }
 
-var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers) (*Service, error) {
+func newService(lc fx.Lifecycle, p ServiceParams, fm *fetcher.FetcherMap) (*Service, error) {
 	if err := autoMigrate(p.LocalStore); err != nil {
 		return nil, err
 	}
-	s := &Service{params: p, fetchers: fts}
+	s := &Service{params: p, fetcherMap: fm}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.wg.Add(1)
@@ -86,7 +87,7 @@ var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers
 	})
 
 	return s, nil
-})
+}
 
 func (s *Service) serviceLoop(ctx context.Context) {
 	cfgCh := s.params.ConfigManager.NewPushChannel()
@@ -159,7 +160,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 
 	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		t := NewTask(ctx, taskGroup, target, s.fetchers)
+		t := NewTask(ctx, taskGroup, target, s.fetcherMap)
 		s.params.LocalStore.Create(t.TaskModel)
 		s.tasks.Store(t.ID, t)
 		tasks = append(tasks, t)

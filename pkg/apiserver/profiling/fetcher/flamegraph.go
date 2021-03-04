@@ -11,16 +11,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package profiling
+package fetcher
 
 import (
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
-	"go.uber.org/fx"
+	"fmt"
+
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
-var Module = fx.Options(
-	fx.Provide(
-		fetcher.NewFetcherMap,
-		newService,
-	),
-)
+var _ ProfileFetcher = (*FlameGraph)(nil)
+
+type FlameGraph struct {
+	Fetcher *ClientFetcher
+	Target  *model.RequestTargetNode
+}
+
+func (f *FlameGraph) Fetch(op *ProfileFetchOptions) ([]byte, error) {
+	path := fmt.Sprintf("/debug/pprof/profile?seconds=%d", op.Duration)
+	return (*f.Fetcher).Fetch(&ClientFetchOptions{IP: f.Target.IP, Port: f.Target.Port, Path: path})
+}

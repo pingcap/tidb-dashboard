@@ -16,21 +16,59 @@ package profiling
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"time"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 )
 
-func profileAndWriteSVG(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
+func profileAndWriteSVG(ctx context.Context, fm *fetcher.FetcherMap, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (path string, err error) {
+	f, err := fm.Get(target.Kind)
+	if err != nil {
+		return "", err
+	}
+
+	var p *profiler
+
+	path = fmt.Sprintf("%s.%s", fileNameWithoutExt, "svg")
+
 	switch target.Kind {
-	case model.NodeKindTiKV:
-		return fetchFlameGraphSVG(&flameGraphOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tikv})
-	case model.NodeKindTiFlash:
-		return fetchFlameGraphSVG(&flameGraphOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tiflash})
-	case model.NodeKindTiDB:
-		return fetchPprofSVG(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tidb})
-	case model.NodeKindPD:
-		return fetchPprofSVG(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.pd})
+	case model.NodeKindTiKV, model.NodeKindTiFlash:
+		p = &profiler{
+			Fetcher: &fetcher.FlameGraph{
+				Fetcher: f,
+				Target:  target,
+			},
+			Writer: &fileWriter{path: path},
+		}
+	case model.NodeKindTiDB, model.NodeKindPD:
+		p = &profiler{
+			Fetcher: &fetcher.Pprof{
+				Fetcher:            f,
+				Target:             target,
+				FileNameWithoutExt: fileNameWithoutExt,
+			},
+			Writer: &fetcher.GraphvizSVGWriter{Path: path},
+		}
 	default:
 		return "", fmt.Errorf("unsupported target %s", target)
 	}
+
+	err = p.Profile(&profileOptions{ProfileFetchOptions: fetcher.ProfileFetchOptions{Duration: time.Duration(profileDurationSecs)}})
+
+	return path, err
+}
+
+type fileWriter struct {
+	path string
+}
+
+func (w *fileWriter) Write(p []byte) (int, error) {
+	f, err := ioutil.TempFile("", w.path)
+	if err != nil {
+		return 0, err
+	}
+
+	return f.Write(p)
 }

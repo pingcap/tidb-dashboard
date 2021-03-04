@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc.
+// Copyright 2020 PingCAP, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +14,30 @@
 package profiling
 
 import (
+	"io"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
-	"go.uber.org/fx"
 )
 
-var Module = fx.Options(
-	fx.Provide(
-		fetcher.NewFetcherMap,
-		newService,
-	),
-)
+type profiler struct {
+	Fetcher fetcher.ProfileFetcher
+	Writer  io.Writer
+}
+
+type profileOptions struct {
+	fetcher.ProfileFetchOptions
+}
+
+func (p *profiler) Profile(op *profileOptions) error {
+	resp, err := p.Fetcher.Fetch(&op.ProfileFetchOptions)
+	if err != nil {
+		return err
+	}
+
+	_, err = p.Writer.Write(resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

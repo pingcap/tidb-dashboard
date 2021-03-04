@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goccy/go-graphviz"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 )
@@ -46,7 +47,7 @@ func profileAndWriteSVG(ctx context.Context, fm *fetcher.FetcherMap, target *mod
 				Target:             target,
 				FileNameWithoutExt: fileNameWithoutExt,
 			},
-			Writer: &graphvizSVGWriter{fileNameWithoutExt: fileNameWithoutExt},
+			Writer: &graphvizSVGWriter{fileNameWithoutExt: fileNameWithoutExt, ext: graphviz.SVG},
 		}
 	default:
 		return "", fmt.Errorf("unsupported target %s", target)

@@ -40,15 +40,23 @@ func (w *fileWriter) Write(p []byte) (string, error) {
 	}
 	defer f.Close()
 
+	_, err = f.Write(p)
+	if err != nil {
+		return "", fmt.Errorf("failed to write temp file: %v", err)
+	}
+
 	path := fmt.Sprintf("%s.%s", f.Name(), w.ext)
-	os.Rename(f.Name(), path)
-	f.Write(p)
+	err = os.Rename(f.Name(), path)
+	if err != nil {
+		return "", fmt.Errorf("failed to write %s from temp file: %v", w.ext, err)
+	}
 
 	return path, nil
 }
 
 type graphvizSVGWriter struct {
 	fileNameWithoutExt string
+	ext                graphviz.Format
 }
 
 func (w *graphvizSVGWriter) Write(b []byte) (string, error) {
@@ -67,8 +75,8 @@ func (w *graphvizSVGWriter) Write(b []byte) (string, error) {
 		return "", fmt.Errorf("failed to parse DOT file: %v", err)
 	}
 
-	if err := g.RenderFilename(graph, graphviz.SVG, tmpPath); err != nil {
-		return "", fmt.Errorf("failed to render SVG: %v", err)
+	if err := g.RenderFilename(graph, w.ext, tmpPath); err != nil {
+		return "", fmt.Errorf("failed to render %s: %v", w.ext, err)
 	}
 
 	return tmpPath, nil

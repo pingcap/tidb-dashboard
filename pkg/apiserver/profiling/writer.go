@@ -1,4 +1,4 @@
-// Copyright 2020 PingCAP, Inc.
+// Copyright 2021 PingCAP, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -54,18 +54,18 @@ func (w *fileWriter) Write(p []byte) (string, error) {
 	return path, nil
 }
 
-type graphvizSVGWriter struct {
+type graphvizWriter struct {
 	fileNameWithoutExt string
 	ext                graphviz.Format
 }
 
-func (w *graphvizSVGWriter) Write(b []byte) (string, error) {
+func (w *graphvizWriter) Write(b []byte) (string, error) {
 	tmpfile, err := ioutil.TempFile("", w.fileNameWithoutExt)
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %v", err)
 	}
 	defer tmpfile.Close()
-	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), "svg")
+	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), w.ext)
 
 	g := graphviz.New()
 	mu.Lock()

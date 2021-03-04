@@ -48,7 +48,7 @@ func profileAndWriteSVG(ctx context.Context, cm *fetcher.ClientMap, target *mode
 				Target:             target,
 				FileNameWithoutExt: fileNameWithoutExt,
 			},
-			Writer: &graphvizSVGWriter{fileNameWithoutExt: fileNameWithoutExt, ext: graphviz.SVG},
+			Writer: &graphvizWriter{fileNameWithoutExt: fileNameWithoutExt, ext: graphviz.SVG},
 		}
 	default:
 		return "", fmt.Errorf("unsupported target %s", target)

@@ -19,11 +19,12 @@ import (
 	"time"
 
 	"github.com/goccy/go-graphviz"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 )
 
-func profileAndWriteSVG(ctx context.Context, fm *fetcher.FetcherMap, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
+func profileAndWriteSVG(ctx context.Context, fm *fetcher.ClientFetcherMap, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
 	f, err := fm.Get(target.Kind)
 	if err != nil {
 		return "", err

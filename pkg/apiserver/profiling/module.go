@@ -14,13 +14,14 @@
 package profiling
 
 import (
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 	"go.uber.org/fx"
+
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 )
 
 var Module = fx.Options(
 	fx.Provide(
-		fetcher.NewFetcherMap,
+		fetcher.NewClientFetcherMap,
 		newService,
 	),
 )

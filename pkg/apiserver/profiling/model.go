@@ -73,11 +73,11 @@ type Task struct {
 	ctx        context.Context
 	cancel     context.CancelFunc
 	taskGroup  *TaskGroup
-	fetcherMap *fetcher.FetcherMap
+	fetcherMap *fetcher.ClientFetcherMap
 }
 
 // NewTask creates a new profiling task.
-func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, fm *fetcher.FetcherMap) *Task {
+func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, fm *fetcher.ClientFetcherMap) *Task {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Task{
 		TaskModel: &TaskModel{

@@ -63,10 +63,10 @@ type Service struct {
 	sessionCh     chan *StartRequestSession
 	lastTaskGroup *TaskGroup
 	tasks         sync.Map
-	fetcherMap    *fetcher.FetcherMap
+	fetcherMap    *fetcher.ClientFetcherMap
 }
 
-func newService(lc fx.Lifecycle, p ServiceParams, fm *fetcher.FetcherMap) (*Service, error) {
+func newService(lc fx.Lifecycle, p ServiceParams, fm *fetcher.ClientFetcherMap) (*Service, error) {
 	if err := autoMigrate(p.LocalStore); err != nil {
 		return nil, err
 	}

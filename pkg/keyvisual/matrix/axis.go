@@ -14,7 +14,7 @@
 package matrix
 
 import (
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/decorator"
 )
 
 // Axis stores consecutive buckets. Each bucket has StartKey, EndKey, and some statistics. The EndKey of each bucket is

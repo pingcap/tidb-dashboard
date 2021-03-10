@@ -19,6 +19,8 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/thoas/go-funk"
 )
 
 type Config struct {
@@ -96,7 +98,7 @@ type Model struct {
 	AggSchemaName            string `json:"schema_name" agg:"ANY_VALUE(schema_name)"`
 	AggTableNames            string `json:"table_names" agg:"ANY_VALUE(table_names)"`
 	AggIndexNames            string `json:"index_names" agg:"ANY_VALUE(index_names)"`
-	AggPlanCount             int    `json:"plan_count" agg:"COUNT(DISTINCT plan_digest)"`
+	AggPlanCount             int    `json:"plan_count" agg:"COUNT(DISTINCT plan_digest)" related:"plan_digest"`
 	AggPlan                  string `json:"plan" agg:"ANY_VALUE(plan)"`
 	AggPlanDigest            string `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
 	// Computed fields
@@ -105,15 +107,24 @@ type Model struct {
 
 var cachedAggrMap map[string]string // jsonFieldName => aggr
 
-func getAggrMap() map[string]string {
+func getAggrMap(db *gorm.DB) map[string]string {
 	if cachedAggrMap == nil {
 		t := reflect.TypeOf(Model{})
 		fieldsNum := t.NumField()
 		ret := map[string]string{}
+
 		for i := 0; i < fieldsNum; i++ {
 			field := t.Field(i)
 			jsonField := strings.ToLower(field.Tag.Get("json"))
-			if agg, ok := field.Tag.Lookup("agg"); ok {
+			rf, ok := field.Tag.Lookup("related")
+			var rfs []string
+			if ok {
+				rfs = strings.Split(rf, ",")
+			} else {
+				rfs = append(rfs, jsonField)
+			}
+
+			if agg, ok := field.Tag.Lookup("agg"); ok && verifiedAggr(db, rfs) {
 				ret[jsonField] = fmt.Sprintf("%s AS %s", agg, gorm.ToColumnName(field.Name))
 			}
 		}
@@ -122,14 +133,25 @@ func getAggrMap() map[string]string {
 	return cachedAggrMap
 }
 
-func getAggrFields(sqlFields ...string) []string {
-	aggrMap := getAggrMap()
+var tableSchemaFields []string
+
+func verifiedAggr(db *gorm.DB, relatedFields []string) bool {
+	if len(tableSchemaFields) == 0 {
+		tableSchemas, _ := utils.FetchTableSchema(db, statementsTable)
+		for _, s := range tableSchemas {
+			tableSchemaFields = append(tableSchemaFields, strings.ToLower(s.Field))
+		}
+	}
+
+	return len(funk.Intersect(tableSchemaFields, relatedFields).([]string)) == len(relatedFields)
+}
+
+func getAggrFields(db *gorm.DB, sqlFields ...string) []string {
+	aggrMap := getAggrMap(db)
 	ret := make([]string, 0, len(sqlFields))
 	for _, fieldName := range sqlFields {
 		if aggr, ok := aggrMap[strings.ToLower(fieldName)]; ok {
 			ret = append(ret, aggr)
-		} else {
-			panic(fmt.Sprintf("unknown aggregation field %s", fieldName))
 		}
 	}
 	return ret
@@ -137,9 +159,9 @@ func getAggrFields(sqlFields ...string) []string {
 
 var cachedAllAggrFields []string
 
-func getAllAggrFields() []string {
+func getAllAggrFields(db *gorm.DB) []string {
 	if cachedAllAggrFields == nil {
-		aggrMap := getAggrMap()
+		aggrMap := getAggrMap(db)
 		ret := make([]string, 0, len(aggrMap))
 		for _, aggr := range aggrMap {
 			ret = append(ret, aggr)

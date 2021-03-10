@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/thoas/go-funk"
 )
 
@@ -56,8 +57,9 @@ type SlowQuery struct {
 	TxnStartTS string `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
 
 	// Detail
-	PrevStmt string `gorm:"column:Prev_stmt" json:"prev_stmt"`
-	Plan     string `gorm:"column:Plan" json:"plan"`
+	PrevStmt        string `gorm:"column:Prev_stmt" json:"prev_stmt"`
+	Plan            string `gorm:"column:Plan" json:"plan"`
+	PlanFromBinding string `gorm:"column:Plan_from_binding" json:"plan_from_binding"`
 
 	// Basic
 	IsInternal   int    `gorm:"column:Is_internal" json:"is_internal"`
@@ -99,6 +101,13 @@ type SlowQuery struct {
 	TotalKeys    uint   `gorm:"column:Total_keys" json:"total_keys"`
 	CopProcAddr  string `gorm:"column:Cop_proc_addr" json:"cop_proc_addr"`
 	CopWaitAddr  string `gorm:"column:Cop_wait_addr" json:"cop_wait_addr"`
+
+	// RocksDB
+	RocksdbDeleteSkippedCount uint `gorm:"column:Rocksdb_delete_skipped_count" json:"rocksdb_delete_skipped_count"`
+	RocksdbKeySkippedCount    uint `gorm:"column:Rocksdb_key_skipped_count" json:"rocksdb_key_skipped_count"`
+	RocksdbBlockCacheHitCount uint `gorm:"column:Rocksdb_block_cache_hit_count" json:"rocksdb_block_cache_hit_count"`
+	RocksdbBlockReadCount     uint `gorm:"column:Rocksdb_block_read_count" json:"rocksdb_block_read_count"`
+	RocksdbBlockReadByte      uint `gorm:"column:Rocksdb_block_read_byte" json:"rocksdb_block_read_byte"`
 }
 
 type GetListRequest struct {
@@ -119,11 +128,22 @@ type GetListRequest struct {
 
 var cachedProjectionsMap map[string]string
 
-func getProjectionsMap() map[string]string {
+func getProjectionsMap(db *gorm.DB) map[string]string {
 	if cachedProjectionsMap == nil {
 		t := reflect.TypeOf(SlowQuery{})
 		fieldsNum := t.NumField()
 		ret := map[string]string{}
+		tableSchemas, err := utils.FetchTableSchema(db, SlowQueryTable)
+		// TODO: err handler
+		if err != nil {
+			return nil
+		}
+
+		tfs := []string{}
+		for _, s := range tableSchemas {
+			tfs = append(tfs, s.Field)
+		}
+
 		for i := 0; i < fieldsNum; i++ {
 			field := t.Field(i)
 			// ignore to check error because the field is defined by ourself
@@ -134,7 +154,9 @@ func getProjectionsMap() map[string]string {
 			if proj, ok := field.Tag.Lookup("proj"); ok {
 				ret[jsonField] = fmt.Sprintf("%s AS %s", proj, sourceField)
 			} else {
-				ret[jsonField] = sourceField
+				if funk.Contains(tfs, sourceField) {
+					ret[jsonField] = sourceField
+				}
 			}
 		}
 		cachedProjectionsMap = ret
@@ -142,8 +164,8 @@ func getProjectionsMap() map[string]string {
 	return cachedProjectionsMap
 }
 
-func getProjectionsByFields(jsonFields ...string) ([]string, error) {
-	projMap := getProjectionsMap()
+func getProjectionsByFields(db *gorm.DB, jsonFields ...string) ([]string, error) {
+	projMap := getProjectionsMap(db)
 	ret := make([]string, 0, len(jsonFields))
 	for _, fieldName := range jsonFields {
 		field, ok := projMap[strings.ToLower(fieldName)]
@@ -157,9 +179,9 @@ func getProjectionsByFields(jsonFields ...string) ([]string, error) {
 
 var cachedAllProjections []string
 
-func getAllProjections() []string {
+func getAllProjections(db *gorm.DB) []string {
 	if cachedAllProjections == nil {
-		projMap := getProjectionsMap()
+		projMap := getProjectionsMap(db)
 		ret := make([]string, 0, len(projMap))
 		for _, proj := range projMap {
 			ret = append(ret, proj)
@@ -176,16 +198,18 @@ type GetDetailRequest struct {
 	ConnectID string `json:"connect_id" form:"connect_id"`
 }
 
+var constFields = []string{"digest", "connection_id", "timestamp"}
+
 func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	var projections []string
 	var err error
 	reqFields := strings.Split(req.Fields, ",")
 	if len(reqFields) == 1 && reqFields[0] == "*" {
-		projections = getAllProjections()
+		projections = getAllProjections(db)
 	} else {
-		projections, err = getProjectionsByFields(
+		projections, err = getProjectionsByFields(db,
 			funk.UniqString(
-				append([]string{"digest", "connection_id", "timestamp"}, reqFields...),
+				append(constFields, reqFields...),
 			)...)
 		if err != nil {
 			return nil, err
@@ -224,7 +248,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		req.OrderBy = "timestamp"
 	}
 
-	order, err := getProjectionsByFields(req.OrderBy)
+	order, err := getProjectionsByFields(db, req.OrderBy)
 	if err != nil {
 		return nil, err
 	}

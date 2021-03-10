@@ -139,10 +139,10 @@ func QueryStatements(
 ) (result []Model, err error) {
 	var aggrFields []string
 	if len(fields) == 1 && fields[0] == "*" {
-		aggrFields = getAllAggrFields()
+		aggrFields = getAllAggrFields(db)
 	} else {
 		fields = funk.UniqString(append(fields, "schema_name", "digest", "sum_latency")) // "schema_name", "digest" for group, "sum_latency" for order
-		aggrFields = getAggrFields(fields...)
+		aggrFields = getAggrFields(db, fields...)
 	}
 
 	query := db.
@@ -189,6 +189,7 @@ func QueryPlans(
 	beginTime, endTime int,
 	schemaName, digest string) (result []Model, err error) {
 	fields := getAggrFields(
+		db,
 		"plan_digest",
 		"schema_name",
 		"digest_text",
@@ -217,7 +218,7 @@ func QueryPlanDetail(
 	beginTime, endTime int,
 	schemaName, digest string,
 	plans []string) (result Model, err error) {
-	fields := getAllAggrFields()
+	fields := getAllAggrFields(db)
 	query := db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).

@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
 const (

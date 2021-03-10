@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -20,8 +21,8 @@ import (
 	// MySQL driver used by gorm
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
 var (
@@ -78,6 +79,12 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 	})
 
 	return client
+}
+
+func (c *Client) WithStatusAPITimeout(timeout time.Duration) *Client {
+	c2 := *c
+	c2.statusAPITimeout = timeout
+	return &c2
 }
 
 func (c *Client) WithStatusAPIAddress(host string, statusPort int) *Client {
@@ -156,5 +163,5 @@ func (c *Client) SendGetRequest(path string) ([]byte, error) {
 	}
 
 	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, path)
-	return c.statusAPIHTTPClient.WithTimeout(c.statusAPITimeout).SendRequest(c.lifecycleCtx, uri, "GET", nil, ErrTiDBClientRequestFailed, "TiDB")
+	return c.statusAPIHTTPClient.WithTimeout(c.statusAPITimeout).SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, "TiDB")
 }

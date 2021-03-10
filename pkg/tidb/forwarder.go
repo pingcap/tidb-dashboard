@@ -24,7 +24,7 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
 var (

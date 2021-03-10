@@ -18,7 +18,7 @@ import (
 
 	httpSwagger "github.com/swaggo/http-swagger"
 	// Swagger doc
-	_ "github.com/pingcap-incubator/tidb-dashboard/swaggerspec"
+	_ "github.com/pingcap/tidb-dashboard/swaggerspec"
 )
 
 func Handler() http.Handler {

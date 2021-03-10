@@ -27,7 +27,7 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
 const (
@@ -36,6 +36,7 @@ const (
 
 type Client struct {
 	http.Client
+	BeforeRequest func(req *http.Request)
 }
 
 func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
@@ -68,6 +69,12 @@ func (c *Client) WithTimeout(timeout time.Duration) *Client {
 	return &c2
 }
 
+func (c *Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
+	c2 := *c
+	c2.BeforeRequest = callback
+	return &c2
+}
+
 // TODO: Replace using go-resty
 func (c *Client) SendRequest(
 	ctx context.Context,
@@ -81,6 +88,10 @@ func (c *Client) SendRequest(
 		e := errType.Wrap(err, "Failed to build %s API request", errOriginComponent)
 		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(e))
 		return nil, e
+	}
+
+	if c.BeforeRequest != nil {
+		c.BeforeRequest(req)
 	}
 
 	resp, err := c.Do(req)

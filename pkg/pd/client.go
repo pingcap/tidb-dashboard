@@ -17,12 +17,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"time"
 
 	"go.uber.org/fx"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
 var (
@@ -64,12 +65,24 @@ func (c *Client) WithBaseURL(baseURL string) *Client {
 	return &c2
 }
 
+func (c *Client) WithTimeout(timeout time.Duration) *Client {
+	c2 := *c
+	c2.timeout = timeout
+	return &c2
+}
+
+func (c *Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
+	c2 := *c
+	c2.httpClient.BeforeRequest = callback
+	return &c2
+}
+
 func (c *Client) SendGetRequest(path string) ([]byte, error) {
 	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, path)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, "GET", nil, ErrPDClientRequestFailed, "PD")
+	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrPDClientRequestFailed, "PD")
 }
 
 func (c *Client) SendPostRequest(path string, body io.Reader) ([]byte, error) {
 	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, path)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, "POST", body, ErrPDClientRequestFailed, "PD")
+	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrPDClientRequestFailed, "PD")
 }

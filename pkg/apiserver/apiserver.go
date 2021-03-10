@@ -25,31 +25,32 @@ import (
 	cors "github.com/rs/cors/wrapper/gin"
 	"go.uber.org/fx"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/clusterinfo"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/configuration"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/diagnose"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/info"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/logsearch"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/metrics"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/profiling"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/queryeditor"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/configuration"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/diagnose"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/logsearch"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/metrics"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/queryeditor"
+	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 
-	// "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/__APP_NAME__"
+	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/slowquery"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/statement"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
-	apiutils "github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual"
-	keyvisualregion "github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/region"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/tikv"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/version"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/slowquery"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/statement"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	apiutils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual"
+	keyvisualregion "github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
+	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/pkg/tikv"
+	"github.com/pingcap/tidb-dashboard/pkg/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
 func Handler(s *Service) http.Handler {
@@ -114,10 +115,10 @@ func (s *Service) Start(ctx context.Context) error {
 			config.NewDynamicConfigManager,
 			tidb.NewTiDBClient,
 			tikv.NewTiKVClient,
+			tiflash.NewTiFlashClient,
 			user.NewAuthService,
 			info.NewService,
 			clusterinfo.NewService,
-			profiling.NewService,
 			logsearch.NewService,
 			slowquery.NewService,
 			statement.NewService,
@@ -129,6 +130,7 @@ func (s *Service) Start(ctx context.Context) error {
 			// __APP_NAME__.NewService,
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 		),
+		profiling.Module,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			user.RegisterRouter,

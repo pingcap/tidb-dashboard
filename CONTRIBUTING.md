@@ -160,7 +160,7 @@ Thanks for your contributions!
 
 ### Finding something to work on
 
-For beginners, we have prepared many suitable tasks for you. Checkout our [help wanted issues](https://github.com/pingcap-incubator/tidb-dashboard/issues?q=is%3Aopen+label%3Astatus%2Fhelp-wanted+sort%3Aupdated-desc) for a list, in which we have also marked the difficulty level.
+For beginners, we have prepared many suitable tasks for you. Checkout our [help wanted issues](https://github.com/pingcap/tidb-dashboard/issues?q=is%3Aopen+label%3Astatus%2Fhelp-wanted+sort%3Aupdated-desc) for a list, in which we have also marked the difficulty level.
 
 If you are planning something big, for example, relates to multiple components or changes current behaviors, make sure to open an issue to discuss with us before going on.
 
@@ -196,5 +196,5 @@ The body of the commit message should describe why the change was made and at a 
 [tidb]: https://github.com/pingcap/tidb
 [tikv]: https://github.com/tikv/tikv
 [tiup]: https://tiup.io
-[Swagger]: https://swagger.io
-[React Storybook]: https://storybook.js.org
+[swagger]: https://swagger.io
+[react storybook]: https://storybook.js.org

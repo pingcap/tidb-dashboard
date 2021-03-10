@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
 func fetchAlertManagerCounts(ctx context.Context, alertManagerAddr string, httpClient *httpc.Client) (int, error) {

@@ -19,6 +19,7 @@ cluster_info:
       columns:
         host: Host Address
         cpu: CPU
+        cpu_arch: CPU Arch
         cpu_usage: CPU Usage
         memory: Memory
         memory_usage: Memory Usage

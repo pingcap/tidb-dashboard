@@ -20,13 +20,14 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/host"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
 )
 
 // Used to deserialize from JSON_VALUE
 type clusterHardwareCPUInfoModel struct {
-	LogicalCores  int `json:"cpu-logical-cores,string"`
-	PhysicalCores int `json:"cpu-physical-cores,string"`
+	Arch          string `json:"cpu-arch"`
+	LogicalCores  int    `json:"cpu-logical-cores,string"`
+	PhysicalCores int    `json:"cpu-physical-cores,string"`
 }
 
 // Used to deserialize from JSON_VALUE
@@ -75,6 +76,7 @@ func FillFromClusterHardwareTable(db *gorm.DB, m InfoMap) error {
 				continue
 			}
 			m[hostname].CPUInfo = &CPUInfo{
+				Arch:          v.Arch,
 				LogicalCores:  v.LogicalCores,
 				PhysicalCores: v.PhysicalCores,
 			}

@@ -10,16 +10,13 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// +build !ui_server
 
-package uiserver
+package tiflash
 
 import (
-	"net/http"
-
-	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/joomcode/errorx"
 )
 
-func Assets(*config.Config) http.FileSystem {
-	return nil
-}
+var (
+	ErrNS = errorx.NewNamespace("error.tiflash")
+)

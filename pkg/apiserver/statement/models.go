@@ -19,8 +19,13 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/thoas/go-funk"
+
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+)
+
+const (
+	RelatedTag = "related"
 )
 
 type Config struct {
@@ -107,7 +112,7 @@ type Model struct {
 
 var cachedAggrMap map[string]string // jsonFieldName => aggr
 
-func getAggrMap(db *gorm.DB) map[string]string {
+func getAggrMap(tableSchemas *[]utils.TableSchema) map[string]string {
 	if cachedAggrMap == nil {
 		t := reflect.TypeOf(Model{})
 		fieldsNum := t.NumField()
@@ -116,7 +121,7 @@ func getAggrMap(db *gorm.DB) map[string]string {
 		for i := 0; i < fieldsNum; i++ {
 			field := t.Field(i)
 			jsonField := strings.ToLower(field.Tag.Get("json"))
-			rf, ok := field.Tag.Lookup("related")
+			rf, ok := field.Tag.Lookup(RelatedTag)
 			var rfs []string
 			if ok {
 				rfs = strings.Split(rf, ",")
@@ -124,7 +129,8 @@ func getAggrMap(db *gorm.DB) map[string]string {
 				rfs = append(rfs, jsonField)
 			}
 
-			if agg, ok := field.Tag.Lookup("agg"); ok && verifiedAggr(db, rfs) {
+			// Filtering fields that are not in the table fields
+			if agg, ok := field.Tag.Lookup("agg"); ok && verifiedAggr(tableSchemas, rfs) {
 				ret[jsonField] = fmt.Sprintf("%s AS %s", agg, gorm.ToColumnName(field.Name))
 			}
 		}
@@ -135,19 +141,18 @@ func getAggrMap(db *gorm.DB) map[string]string {
 
 var tableSchemaFields []string
 
-func verifiedAggr(db *gorm.DB, relatedFields []string) bool {
+func verifiedAggr(tableSchemas *[]utils.TableSchema, relatedFields []string) bool {
 	if len(tableSchemaFields) == 0 {
-		tableSchemas, _ := utils.FetchTableSchema(db, statementsTable)
-		for _, s := range tableSchemas {
+		for _, s := range *tableSchemas {
 			tableSchemaFields = append(tableSchemaFields, strings.ToLower(s.Field))
 		}
 	}
 
-	return len(funk.Intersect(tableSchemaFields, relatedFields).([]string)) == len(relatedFields)
+	return len(funk.Join(tableSchemaFields, relatedFields, funk.InnerJoin).([]string)) == len(relatedFields)
 }
 
-func getAggrFields(db *gorm.DB, sqlFields ...string) []string {
-	aggrMap := getAggrMap(db)
+func getAggrFields(tableSchemas *[]utils.TableSchema, sqlFields ...string) []string {
+	aggrMap := getAggrMap(tableSchemas)
 	ret := make([]string, 0, len(sqlFields))
 	for _, fieldName := range sqlFields {
 		if aggr, ok := aggrMap[strings.ToLower(fieldName)]; ok {
@@ -159,9 +164,9 @@ func getAggrFields(db *gorm.DB, sqlFields ...string) []string {
 
 var cachedAllAggrFields []string
 
-func getAllAggrFields(db *gorm.DB) []string {
+func getAllAggrFields(tableSchemas *[]utils.TableSchema) []string {
 	if cachedAllAggrFields == nil {
-		aggrMap := getAggrMap(db)
+		aggrMap := getAggrMap(tableSchemas)
 		ret := make([]string, 0, len(aggrMap))
 		for _, aggr := range aggrMap {
 			ret = append(ret, aggr)

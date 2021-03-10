@@ -19,13 +19,15 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/thoas/go-funk"
+
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
 const (
 	SlowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
 	SelectStmt     = "*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp"
+	ProjectionTag  = "proj"
 )
 
 type SlowQuery struct {
@@ -126,21 +128,21 @@ type GetListRequest struct {
 	Fields string `json:"fields" form:"fields"` // example: "Query,Digest"
 }
 
-var cachedProjectionsMap map[string]string
+func projectionTransform(field reflect.StructField, to string) (string, bool) {
+	p, ok := field.Tag.Lookup(ProjectionTag)
+	return fmt.Sprintf("%s AS %s", p, to), ok
+}
 
-func getProjectionsMap(db *gorm.DB) map[string]string {
-	if cachedProjectionsMap == nil {
+var cachedFieldMap map[string]string
+
+func getFieldMap(tableSchemas *[]utils.TableSchema) map[string]string {
+	if cachedFieldMap == nil {
 		t := reflect.TypeOf(SlowQuery{})
 		fieldsNum := t.NumField()
 		ret := map[string]string{}
-		tableSchemas, err := utils.FetchTableSchema(db, SlowQueryTable)
-		// TODO: err handler
-		if err != nil {
-			return nil
-		}
 
 		tfs := []string{}
-		for _, s := range tableSchemas {
+		for _, s := range *tableSchemas {
 			tfs = append(tfs, s.Field)
 		}
 
@@ -151,21 +153,20 @@ func getProjectionsMap(db *gorm.DB) map[string]string {
 			s, _ := field.Tag.Lookup("gorm")
 			jsonField := strings.ToLower(field.Tag.Get("json"))
 			sourceField := strings.Split(s, ":")[1]
-			if proj, ok := field.Tag.Lookup("proj"); ok {
-				ret[jsonField] = fmt.Sprintf("%s AS %s", proj, sourceField)
-			} else {
-				if funk.Contains(tfs, sourceField) {
-					ret[jsonField] = sourceField
-				}
+			if s, ok := projectionTransform(field, sourceField); ok {
+				ret[jsonField] = s
+				// Filtering fields that are not in the table fields
+			} else if funk.Contains(tfs, sourceField) {
+				ret[jsonField] = sourceField
 			}
 		}
-		cachedProjectionsMap = ret
+		cachedFieldMap = ret
 	}
-	return cachedProjectionsMap
+	return cachedFieldMap
 }
 
-func getProjectionsByFields(db *gorm.DB, jsonFields ...string) ([]string, error) {
-	projMap := getProjectionsMap(db)
+func getProjectionsByFields(tableSchemas *[]utils.TableSchema, jsonFields ...string) ([]string, error) {
+	projMap := getFieldMap(tableSchemas)
 	ret := make([]string, 0, len(jsonFields))
 	for _, fieldName := range jsonFields {
 		field, ok := projMap[strings.ToLower(fieldName)]
@@ -179,9 +180,9 @@ func getProjectionsByFields(db *gorm.DB, jsonFields ...string) ([]string, error)
 
 var cachedAllProjections []string
 
-func getAllProjections(db *gorm.DB) []string {
+func getAllProjections(tableSchemas *[]utils.TableSchema) []string {
 	if cachedAllProjections == nil {
-		projMap := getProjectionsMap(db)
+		projMap := getFieldMap(tableSchemas)
 		ret := make([]string, 0, len(projMap))
 		for _, proj := range projMap {
 			ret = append(ret, proj)
@@ -200,14 +201,19 @@ type GetDetailRequest struct {
 
 var constFields = []string{"digest", "connection_id", "timestamp"}
 
-func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
+func querySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	var projections []string
 	var err error
 	reqFields := strings.Split(req.Fields, ",")
+	ts, err := utils.FetchTableSchema(db, SlowQueryTable)
+	if err != nil {
+		return nil, err
+	}
+
 	if len(reqFields) == 1 && reqFields[0] == "*" {
-		projections = getAllProjections(db)
+		projections = getAllProjections(&ts)
 	} else {
-		projections, err = getProjectionsByFields(db,
+		projections, err = getProjectionsByFields(&ts,
 			funk.UniqString(
 				append(constFields, reqFields...),
 			)...)
@@ -248,7 +254,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		req.OrderBy = "timestamp"
 	}
 
-	order, err := getProjectionsByFields(db, req.OrderBy)
+	order, err := getProjectionsByFields(&ts, req.OrderBy)
 	if err != nil {
 		return nil, err
 	}
@@ -284,7 +290,7 @@ func QuerySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	return results, nil
 }
 
-func QuerySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) {
+func querySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) {
 	var result SlowQuery
 	err := db.
 		Table(SlowQueryTable).

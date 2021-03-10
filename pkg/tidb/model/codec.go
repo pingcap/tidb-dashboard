@@ -43,13 +43,15 @@ type KeyInfoBuffer []byte
 
 // DecodeKey obtains the KeyInfoBuffer from a TiDB Key
 func (buf *KeyInfoBuffer) DecodeKey(key Key) (KeyInfoBuffer, error) {
-	if _, result, err := decodeBytes(key, *buf); err != nil {
+	_, result, err := decodeBytes(key, *buf)
+
+	if err != nil {
 		*buf = (*buf)[:0]
 		return nil, err
-	} else {
-		*buf = result
-		return result, nil
 	}
+
+	*buf = result
+	return result, nil
 }
 
 // MetaOrTable checks if the key is a meta key or table key.

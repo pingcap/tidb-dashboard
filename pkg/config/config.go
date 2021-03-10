@@ -15,8 +15,12 @@ package config
 
 import (
 	"crypto/tls"
+	"io/ioutil"
+	"log"
 	"net/url"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
 const (
@@ -29,6 +33,7 @@ const (
 
 type Config struct {
 	DataDir          string
+	LogDir           string
 	PDEndPoint       string
 	PublicPathPrefix string
 
@@ -40,8 +45,13 @@ type Config struct {
 }
 
 func Default() *Config {
+	dir, err := ioutil.TempDir("", "dashboard-logs")
+	if err != nil {
+		log.Fatal("Failed to create directory for storing logs", zap.Error(err))
+	}
 	return &Config{
 		DataDir:            "/tmp/dashboard-data",
+		LogDir:             dir,
 		PDEndPoint:         "http://127.0.0.1:2379",
 		PublicPathPrefix:   defaultPublicPathPrefix,
 		ClusterTLSConfig:   nil,

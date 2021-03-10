@@ -43,11 +43,15 @@ type Service struct {
 }
 
 func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service {
-	dir, err := ioutil.TempDir("", "dashboard-logs")
-	if err != nil {
-		log.Fatal("Failed to create directory for storing logs", zap.Error(err))
+	dir := config.LogDir
+	if dir == "" {
+		var err error
+		dir, err = ioutil.TempDir("", "dashboard-logs")
+		if err != nil {
+			log.Fatal("Failed to create directory for storing logs", zap.Error(err))
+		}
 	}
-	err = autoMigrate(db)
+	err := autoMigrate(db)
 	if err != nil {
 		log.Fatal("Failed to initialize database", zap.Error(err))
 	}

@@ -324,7 +324,7 @@ func (s *Service) downloadHandler(c *gin.Context) {
 
 // @Summary Query schema
 // @Description Query statement table schema
-// @Success 200 {object} utils.TableSchema
+// @Success 200 {array} utils.TableSchema
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Security JwtAuth
 // @Router /statements/schema [get]

@@ -20,7 +20,7 @@ import (
 )
 
 type TableSchema struct {
-	Field string `gorm:"column:Field"`
+	Field string `gorm:"column:Field" json:"field"`
 }
 
 func FetchTableSchema(db *gorm.DB, table string) ([]TableSchema, error) {

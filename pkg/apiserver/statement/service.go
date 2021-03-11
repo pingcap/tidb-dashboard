@@ -19,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/joomcode/errorx"
 
 	"github.com/gin-gonic/gin"
@@ -52,6 +53,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
 	{
 		endpoint.GET("/download", s.downloadHandler)
+		endpoint.GET("schema", s.querySchema)
 
 		endpoint.Use(auth.MWAuthRequired())
 		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
@@ -157,6 +159,11 @@ func (s *Service) listHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
+	schema, err := getStatementSchema(db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 	fields := []string{}
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
@@ -167,7 +174,8 @@ func (s *Service) listHandler(c *gin.Context) {
 		req.Schemas,
 		req.StmtTypes,
 		req.Text,
-		fields)
+		fields,
+		schema)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -195,7 +203,12 @@ func (s *Service) plansHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	plans, err := QueryPlans(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest)
+	schema, err := getStatementSchema(db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	plans, err := QueryPlans(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, schema)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -221,7 +234,12 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	result, err := QueryPlanDetail(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans)
+	schema, err := getStatementSchema(db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	result, err := QueryPlanDetail(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans, schema)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -243,6 +261,11 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
+	schema, err := getStatementSchema(db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 	fields := []string{}
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
@@ -253,7 +276,8 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		req.Schemas,
 		req.StmtTypes,
 		req.Text,
-		fields)
+		fields,
+		schema)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -296,4 +320,34 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 func (s *Service) downloadHandler(c *gin.Context) {
 	token := c.Query("token")
 	utils.DownloadByToken(token, "statements/download", c)
+}
+
+// @Summary Query schema
+// @Description Query statement table schema
+// @Success 200 {object} utils.TableSchema
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Security JwtAuth
+// @Router /statements/schema [get]
+func (s *Service) querySchema(c *gin.Context) {
+	db := utils.GetTiDBConnection(c)
+	schema, err := getStatementSchema(db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, schema)
+}
+
+var statementSchema []utils.TableSchema
+
+func getStatementSchema(db *gorm.DB) (*[]utils.TableSchema, error) {
+	if statementSchema == nil {
+		ss, err := utils.FetchTableSchema(db, statementsTable)
+		if err != nil {
+			return nil, err
+		}
+		statementSchema = ss
+	}
+
+	return &statementSchema, nil
 }

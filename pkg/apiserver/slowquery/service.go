@@ -19,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/joomcode/errorx"
 
 	"github.com/gin-gonic/gin"
@@ -51,6 +52,8 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/slow_query")
 	{
 		endpoint.GET("/download", s.downloadHandler)
+		endpoint.GET("schema", s.querySchema)
+
 		endpoint.Use(auth.MWAuthRequired())
 		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 		{
@@ -76,7 +79,12 @@ func (s *Service) getList(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	results, err := querySlowLogList(db, &req)
+	schema, err := getSlowquerySchema(db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	results, err := querySlowLogList(db, &req, schema)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -124,7 +132,12 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	list, err := querySlowLogList(db, &req)
+	schema, err := getSlowquerySchema(db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	list, err := querySlowLogList(db, &req, schema)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -167,4 +180,34 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 func (s *Service) downloadHandler(c *gin.Context) {
 	token := c.Query("token")
 	utils.DownloadByToken(token, "slowquery/download", c)
+}
+
+// @Summary Query schema
+// @Description Query slowquery table schema
+// @Success 200 {object} utils.TableSchema
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Security JwtAuth
+// @Router /slowquery/schema [get]
+func (s *Service) querySchema(c *gin.Context) {
+	db := utils.GetTiDBConnection(c)
+	schema, err := getSlowquerySchema(db)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, schema)
+}
+
+var slowquerySchema []utils.TableSchema
+
+func getSlowquerySchema(db *gorm.DB) (*[]utils.TableSchema, error) {
+	if slowquerySchema == nil {
+		ss, err := utils.FetchTableSchema(db, SlowQueryTable)
+		if err != nil {
+			return nil, err
+		}
+		slowquerySchema = ss
+	}
+
+	return &slowquerySchema, nil
 }

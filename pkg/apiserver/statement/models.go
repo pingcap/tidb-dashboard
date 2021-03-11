@@ -106,6 +106,12 @@ type Model struct {
 	AggPlanCount             int    `json:"plan_count" agg:"COUNT(DISTINCT plan_digest)" related:"plan_digest"`
 	AggPlan                  string `json:"plan" agg:"ANY_VALUE(plan)"`
 	AggPlanDigest            string `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
+	// RocksDB
+	AggRocksdbDeleteSkippedCount uint `json:"rocksdb_delete_skipped_count" agg:"ANY_VALUE(Rocksdb_delete_skipped_count)"`
+	AggRocksdbKeySkippedCount    uint `json:"rocksdb_key_skipped_count" agg:"ANY_VALUE(Rocksdb_key_skipped_count)"`
+	AggRocksdbBlockCacheHitCount uint `json:"rocksdb_block_cache_hit_count" agg:"ANY_VALUE(Rocksdb_block_cache_hit_count)"`
+	AggRocksdbBlockReadCount     uint `json:"rocksdb_block_read_count" agg:"ANY_VALUE(Rocksdb_block_read_count)"`
+	AggRocksdbBlockReadByte      uint `json:"rocksdb_block_read_byte" agg:"ANY_VALUE(Rocksdb_block_read_byte)"`
 	// Computed fields
 	RelatedSchemas string `json:"related_schemas"`
 }
@@ -151,8 +157,8 @@ func verifiedAggr(tableSchemas *[]utils.TableSchema, relatedFields []string) boo
 	return len(funk.Join(tableSchemaFields, relatedFields, funk.InnerJoin).([]string)) == len(relatedFields)
 }
 
-func getAggrFields(tableSchemas *[]utils.TableSchema, sqlFields ...string) []string {
-	aggrMap := getAggrMap(tableSchemas)
+func getAggrFields(schema *[]utils.TableSchema, sqlFields ...string) []string {
+	aggrMap := getAggrMap(schema)
 	ret := make([]string, 0, len(sqlFields))
 	for _, fieldName := range sqlFields {
 		if aggr, ok := aggrMap[strings.ToLower(fieldName)]; ok {
@@ -164,9 +170,9 @@ func getAggrFields(tableSchemas *[]utils.TableSchema, sqlFields ...string) []str
 
 var cachedAllAggrFields []string
 
-func getAllAggrFields(tableSchemas *[]utils.TableSchema) []string {
+func getAllAggrFields(schema *[]utils.TableSchema) []string {
 	if cachedAllAggrFields == nil {
-		aggrMap := getAggrMap(tableSchemas)
+		aggrMap := getAggrMap(schema)
 		ret := make([]string, 0, len(aggrMap))
 		for _, aggr := range aggrMap {
 			ret = append(ret, aggr)

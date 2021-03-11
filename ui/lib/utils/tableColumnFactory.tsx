@@ -16,6 +16,7 @@ import {
   HighlightSQL,
   IColumnKeys,
 } from '@lib/components'
+import { UtilsTableSchema } from '@lib/client'
 
 export type DerivedField<T> = {
   displayTransKey?: string // it is same as avg field name default
@@ -39,32 +40,60 @@ export function commonColumnName(transPrefix: string, fieldName: string): any {
   return <TextWithInfo.TransKey transKey={fullTransKey} />
 }
 
-export class TableColumnFactory {
-  transPrefix: string
-  bar: BarColumn
+interface Configurable {
+  setConfig(config: Partial<IColumn>): TableColumnFactory
+}
 
-  constructor(transKeyPrefix: string) {
-    this.transPrefix = transKeyPrefix
-    this.bar = new BarColumn(this)
+export class TableColumnFactory implements Configurable {
+  bar: BarColumn = new BarColumn(this)
+
+  private currentConfig: Partial<IColumn> = {}
+  private schemaFieldsMap: { [f: string]: boolean }
+
+  constructor(
+    private transPrefix: string,
+    private schemaFields: UtilsTableSchema[] = []
+  ) {
+    this.schemaFieldsMap = schemaFields
+      .map((f) => f.field!.toLowerCase())
+      .reduce((prev, f) => {
+        prev[f] = true
+        return prev
+      }, {} as { [f: string]: boolean })
   }
 
-  columnName(fieldName: string): any {
-    return commonColumnName(this.transPrefix, fieldName)
+  setConfig(config: Partial<IColumn>) {
+    const c = this.currentConfig
+    this.currentConfig = { ...c, ...config }
+    return this
   }
 
-  columnFromField(fieldName: string) {
-    return {
-      name: this.columnName(fieldName),
-      key: fieldName,
-      fieldName: fieldName,
+  column(column: IColumn): IColumn {
+    const combinedConfig = {
+      ...column,
+      ...this.currentConfig,
     }
+    this.currentConfig = {}
+    return {
+      ...combinedConfig,
+      // translate name
+      name: commonColumnName(this.transPrefix, combinedConfig.name),
+    }
+  }
+
+  columns(...columns: IColumn[]): IColumn[] {
+    const needFilterColumnBySchema = this.schemaFields.length
+    if (!needFilterColumnBySchema) {
+      return columns
+    }
+    return columns.filter((c) => this.schemaFieldsMap[c.fieldName!])
   }
 
   textWithTooltip<T extends string, U extends { [K in T]?: any }>(
     fieldName: T,
     _rows?: U[]
   ): IColumn {
-    return {
+    return this.column({
       ...this.columnFromField(fieldName),
       minWidth: 100,
       maxWidth: 150,
@@ -73,7 +102,7 @@ export class TableColumnFactory {
           <TextWrap>{rec[fieldName]}</TextWrap>
         </Tooltip>
       ),
-    }
+    })
   }
 
   singleBar<T extends string, U extends { [K in T]?: number }>(
@@ -82,7 +111,7 @@ export class TableColumnFactory {
     rows?: U[]
   ): IColumn {
     const capacity = rows ? _max(rows.map((v) => v[fieldName])) ?? 0 : 0
-    return {
+    return this.column({
       ...this.columnFromField(fieldName),
       minWidth: 140,
       maxWidth: 200,
@@ -95,7 +124,7 @@ export class TableColumnFactory {
           </Bar>
         )
       },
-    }
+    })
   }
 
   multipleBar<T>(barsConfig: DerivedBar, unit: string, rows?: T[]): IColumn {
@@ -116,9 +145,9 @@ export class TableColumnFactory {
 
     const capacity = rows ? _max(rows.map((v) => v[max.fieldName])) ?? 0 : 0
 
-    return {
+    return this.column({
       ...this.columnFromField(avg.fieldName),
-      name: this.columnName(displayTransKey || avg.fieldName),
+      name: displayTransKey || avg.fieldName,
       minWidth: 140,
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
@@ -150,14 +179,14 @@ export class TableColumnFactory {
           </Tooltip>
         )
       },
-    }
+    })
   }
 
   timestamp<T extends string, U extends { [K in T]?: number }>(
     fieldName: T,
     _rows?: U[]
   ): IColumn {
-    return {
+    return this.column({
       ...this.columnFromField(fieldName),
       minWidth: 100,
       maxWidth: 150,
@@ -167,7 +196,7 @@ export class TableColumnFactory {
           <DateTime.Calendar unixTimestampMs={rec[fieldName]! * 1000} />
         </TextWrap>
       ),
-    }
+    })
   }
 
   sqlText<T extends string, U extends { [K in T]?: string }>(
@@ -175,7 +204,7 @@ export class TableColumnFactory {
     showFullSQL?: boolean,
     _rows?: U[]
   ): IColumn {
-    return {
+    return this.column({
       ...this.columnFromField(fieldName),
       minWidth: 100,
       maxWidth: 500,
@@ -195,12 +224,24 @@ export class TableColumnFactory {
             </TextWrap>
           </Tooltip>
         ),
+    })
+  }
+
+  private columnFromField(fieldName: string) {
+    return {
+      name: fieldName,
+      key: fieldName,
+      fieldName: fieldName,
     }
   }
 }
 
-export class BarColumn {
+export class BarColumn implements Configurable {
   constructor(public factory: TableColumnFactory) {}
+
+  setConfig(config: Partial<IColumn>) {
+    return this.factory.setConfig(config)
+  }
 
   single<T extends string, U extends { [K in T]?: number }>(
     fieldName: T,

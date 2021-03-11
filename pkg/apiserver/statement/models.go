@@ -107,11 +107,16 @@ type Model struct {
 	AggPlan                  string `json:"plan" agg:"ANY_VALUE(plan)"`
 	AggPlanDigest            string `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
 	// RocksDB
-	AggRocksdbDeleteSkippedCount uint `json:"rocksdb_delete_skipped_count" agg:"ANY_VALUE(Rocksdb_delete_skipped_count)"`
-	AggRocksdbKeySkippedCount    uint `json:"rocksdb_key_skipped_count" agg:"ANY_VALUE(Rocksdb_key_skipped_count)"`
-	AggRocksdbBlockCacheHitCount uint `json:"rocksdb_block_cache_hit_count" agg:"ANY_VALUE(Rocksdb_block_cache_hit_count)"`
-	AggRocksdbBlockReadCount     uint `json:"rocksdb_block_read_count" agg:"ANY_VALUE(Rocksdb_block_read_count)"`
-	AggRocksdbBlockReadByte      uint `json:"rocksdb_block_read_byte" agg:"ANY_VALUE(Rocksdb_block_read_byte)"`
+	AggMaxRocksdbDeleteSkippedCount uint `json:"max_rocksdb_delete_skipped_count" agg:"MAX(max_rocksdb_delete_skipped_count)"`
+	AggAvgRocksdbDeleteSkippedCount uint `json:"avg_rocksdb_delete_skipped_count" agg:"CAST(SUM(exec_count * avg_rocksdb_delete_skipped_count) / SUM(exec_count) as SIGNED)"`
+	AggMaxRocksdbKeySkippedCount    uint `json:"max_rocksdb_key_skipped_count" agg:"MAX(max_rocksdb_key_skipped_count)"`
+	AggAvgRocksdbKeySkippedCount    uint `json:"avg_rocksdb_key_skipped_count" agg:"CAST(SUM(exec_count * avg_rocksdb_key_skipped_count) / SUM(exec_count) as SIGNED)"`
+	AggMaxRocksdbBlockCacheHitCount uint `json:"max_rocksdb_block_cache_hit_count" agg:"MAX(max_rocksdb_block_cache_hit_count)"`
+	AggAvgRocksdbBlockCacheHitCount uint `json:"avg_rocksdb_block_cache_hit_count" agg:"CAST(SUM(exec_count * avg_rocksdb_block_cache_hit_count) / SUM(exec_count) as SIGNED)"`
+	AggMaxRocksdbBlockReadCount     uint `json:"max_rocksdb_block_read_count" agg:"MAX(max_rocksdb_block_read_count)"`
+	AggAvgRocksdbBlockReadCount     uint `json:"avg_rocksdb_block_read_count" agg:"CAST(SUM(exec_count * avg_rocksdb_block_read_count) / SUM(exec_count) as SIGNED)"`
+	AggMaxRocksdbBlockReadByte      uint `json:"max_rocksdb_block_read_byte" agg:"MAX(max_rocksdb_block_read_byte)"`
+	AggAvgRocksdbBlockReadByte      uint `json:"avg_rocksdb_block_read_byte" agg:"CAST(SUM(exec_count * avg_rocksdb_block_read_byte) / SUM(exec_count) as SIGNED)"`
 	// Computed fields
 	RelatedSchemas string `json:"related_schemas"`
 }

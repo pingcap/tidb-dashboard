@@ -53,7 +53,6 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
 	{
 		endpoint.GET("/download", s.downloadHandler)
-		endpoint.GET("schema", s.querySchema)
 
 		endpoint.Use(auth.MWAuthRequired())
 		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
@@ -67,6 +66,8 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 			endpoint.GET("/plan/detail", s.planDetailHandler)
 
 			endpoint.POST("/download/token", s.downloadTokenHandler)
+
+			endpoint.GET("/schema", s.querySchema)
 		}
 	}
 }
@@ -335,7 +336,7 @@ func (s *Service) querySchema(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, schema)
+	c.JSON(http.StatusOK, *schema)
 }
 
 var statementSchema []utils.TableSchema

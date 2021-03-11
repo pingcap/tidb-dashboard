@@ -52,7 +52,6 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/slow_query")
 	{
 		endpoint.GET("/download", s.downloadHandler)
-		endpoint.GET("schema", s.querySchema)
 
 		endpoint.Use(auth.MWAuthRequired())
 		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
@@ -61,6 +60,8 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 			endpoint.GET("/detail", s.getDetails)
 
 			endpoint.POST("/download/token", s.downloadTokenHandler)
+
+			endpoint.GET("/schema", s.querySchema)
 		}
 	}
 }
@@ -187,7 +188,7 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Success 200 {array} utils.TableSchema
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Security JwtAuth
-// @Router /slowquery/schema [get]
+// @Router /slow_query/schema [get]
 func (s *Service) querySchema(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	schema, err := getSlowquerySchema(db)
@@ -195,7 +196,7 @@ func (s *Service) querySchema(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, schema)
+	c.JSON(http.StatusOK, *schema)
 }
 
 var slowquerySchema []utils.TableSchema

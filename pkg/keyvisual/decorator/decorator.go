@@ -27,41 +27,49 @@ type LabelKey struct {
 }
 
 // LabelStrategy requires cross-border determination and key decoration scheme.
+// It supports dynamic reload configuration and generation of an actuator.
 type LabelStrategy interface {
 	ReloadConfig(cfg *config.KeyVisualConfig)
+	NewLabeler() Labeler
+}
+
+// Labeler is an executor of LabelStrategy, and its functions should not be called concurrently.
+type Labeler interface {
 	// CrossBorder determines whether two keys not belong to the same logical range.
 	CrossBorder(startKey, endKey string) bool
-	// Label returns the Label information of the key.
-	// Note: When the key is "", need to use LabelGlobalStart or LabelGlobalEnd.
-	Label(key string) LabelKey
-	LabelGlobalStart() LabelKey
-	LabelGlobalEnd() LabelKey
+	// Label returns the Label information of the keys.
+	Label(keys []string) []LabelKey
 }
 
 // NaiveLabelStrategy is one of the simplest LabelStrategy.
-type NaiveLabelStrategy struct{}
-
-func (s NaiveLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {
+func NaiveLabelStrategy() LabelStrategy {
+	return naiveLabelStrategy{}
 }
 
-// CrossBorder always returns false. So NaiveLabelStrategy believes that there are no cross-border situations.
-func (s NaiveLabelStrategy) CrossBorder(startKey, endKey string) bool {
+type naiveLabelStrategy struct{}
+
+type naiveLabeler struct{}
+
+func (s naiveLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {}
+
+func (s naiveLabelStrategy) NewLabeler() Labeler {
+	return naiveLabeler{}
+}
+
+// CrossBorder always returns false. So naiveLabelStrategy believes that there are no cross-border situations.
+func (e naiveLabeler) CrossBorder(startKey, endKey string) bool {
 	return false
 }
 
-// Label only decodes the key.
-func (s NaiveLabelStrategy) Label(key string) LabelKey {
-	str := hex.EncodeToString([]byte(key))
-	return LabelKey{
-		Key:    str,
-		Labels: []string{str},
+// Label only encodes the keys.
+func (e naiveLabeler) Label(keys []string) []LabelKey {
+	labelKeys := make([]LabelKey, len(keys))
+	for i, key := range keys {
+		str := hex.EncodeToString([]byte(key))
+		labelKeys[i] = LabelKey{
+			Key:    str,
+			Labels: []string{str},
+		}
 	}
-}
-
-func (s NaiveLabelStrategy) LabelGlobalStart() LabelKey {
-	return s.Label("")
-}
-
-func (s NaiveLabelStrategy) LabelGlobalEnd() LabelKey {
-	return s.Label("")
+	return labelKeys
 }

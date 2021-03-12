@@ -29,27 +29,9 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tidb/model"
 )
 
-type tableDetail struct {
-	Name    string
-	DB      string
-	ID      int64
-	Indices map[int64]string
-}
-
-type tidbLabelStrategy struct {
-	Config     *config.Config
-	EtcdClient *clientv3.Client
-
-	TableMap      sync.Map
-	tidbClient    *tidb.Client
-	SchemaVersion int64
-	TidbAddress   []string
-}
-
-// TiDBLabelStrategy implements the LabelStrategy interface. Get Label Information from TiDB.
-func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, etcdClient *clientv3.Client, tidbClient *tidb.Client) LabelStrategy {
+// TiDBLabelStrategy implements the LabelStrategy interface. It obtains Label Information from TiDB.
+func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, etcdClient *clientv3.Client, tidbClient *tidb.Client) LabelStrategy {
 	s := &tidbLabelStrategy{
-		Config:        cfg,
 		EtcdClient:    etcdClient,
 		tidbClient:    tidbClient,
 		SchemaVersion: -1,
@@ -69,8 +51,29 @@ func TiDBLabelStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, cfg *config.Config, 
 	return s
 }
 
-func (s *tidbLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {
+type tableDetail struct {
+	Name    string
+	DB      string
+	ID      int64
+	Indices map[int64]string
 }
+
+type tidbLabelStrategy struct {
+	Config     *config.Config
+	EtcdClient *clientv3.Client
+
+	TableMap      sync.Map
+	tidbClient    *tidb.Client
+	SchemaVersion int64
+	TidbAddress   []string
+}
+
+type tidbLabeler struct {
+	TableMap *sync.Map
+	Buffer   model.KeyInfoBuffer
+}
+
+func (s *tidbLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {}
 
 func (s *tidbLabelStrategy) Background(ctx context.Context) {
 	ticker := time.NewTicker(time.Minute)
@@ -85,43 +88,78 @@ func (s *tidbLabelStrategy) Background(ctx context.Context) {
 	}
 }
 
+func (s *tidbLabelStrategy) NewLabeler() Labeler {
+	return &tidbLabeler{
+		TableMap: &s.TableMap,
+	}
+}
+
 // CrossBorder does not allow cross tables or cross indexes within a table.
-func (s *tidbLabelStrategy) CrossBorder(startKey, endKey string) bool {
-	startBytes, endBytes := model.Key(region.Bytes(startKey)), model.Key(region.Bytes(endKey))
-	startIsMeta, startTableID := startBytes.MetaOrTable()
-	endIsMeta, endTableID := endBytes.MetaOrTable()
+func (e *tidbLabeler) CrossBorder(startKey, endKey string) bool {
+	startInfo, _ := e.Buffer.DecodeKey(region.Bytes(startKey))
+	startIsMeta, startTableID := startInfo.MetaOrTable()
+	startIndex := startInfo.IndexInfo()
+
+	endInfo, _ := e.Buffer.DecodeKey(region.Bytes(endKey))
+	endIsMeta, endTableID := endInfo.MetaOrTable()
+	endIndex := endInfo.IndexInfo()
+
 	if startIsMeta || endIsMeta {
 		return startIsMeta != endIsMeta
 	}
 	if startTableID != endTableID {
 		return true
 	}
-	startIndex := startBytes.IndexID()
-	endIndex := endBytes.IndexID()
 	return startIndex != endIndex
 }
 
 // Label will parse the ID information of the table and index.
-func (s *tidbLabelStrategy) Label(key string) (label LabelKey) {
+func (e *tidbLabeler) Label(keys []string) []LabelKey {
+	labelKeys := make([]LabelKey, len(keys))
+	for i, key := range keys {
+		labelKeys[i] = e.label(key)
+	}
+
+	if keys[0] == "" {
+		labelKeys[0] = globalStart
+	}
+	endIndex := len(keys) - 1
+	if keys[endIndex] == "" {
+		labelKeys[endIndex] = globalEnd
+	}
+
+	return labelKeys
+}
+
+func (e *tidbLabeler) label(key string) (label LabelKey) {
 	keyBytes := region.Bytes(key)
 	label.Key = hex.EncodeToString(keyBytes)
-	decodeKey := model.Key(keyBytes)
-	isMeta, TableID := decodeKey.MetaOrTable()
+	keyInfo, _ := e.Buffer.DecodeKey(keyBytes)
+
+	isMeta, tableID := keyInfo.MetaOrTable()
 	if isMeta {
 		label.Labels = append(label.Labels, "meta")
-	} else if v, ok := s.TableMap.Load(TableID); ok {
-		detail := v.(*tableDetail)
+		return
+	}
+
+	var detail *tableDetail
+	if v, ok := e.TableMap.Load(tableID); ok {
+		detail = v.(*tableDetail)
 		label.Labels = append(label.Labels, detail.DB, detail.Name)
-		if rowID := decodeKey.RowID(); rowID != 0 {
-			label.Labels = append(label.Labels, fmt.Sprintf("row_%d", rowID))
-		} else if indexID := decodeKey.IndexID(); indexID != 0 {
-			label.Labels = append(label.Labels, detail.Indices[indexID])
-		}
 	} else {
-		label.Labels = append(label.Labels, fmt.Sprintf("table_%d", TableID))
-		if rowID := decodeKey.RowID(); rowID != 0 {
-			label.Labels = append(label.Labels, fmt.Sprintf("row_%d", rowID))
-		} else if indexID := decodeKey.IndexID(); indexID != 0 {
+		label.Labels = append(label.Labels, fmt.Sprintf("table_%d", tableID))
+	}
+
+	if isCommonHandle, rowID := keyInfo.RowInfo(); isCommonHandle {
+		label.Labels = append(label.Labels, "row")
+	} else if rowID != 0 {
+		label.Labels = append(label.Labels, fmt.Sprintf("row_%d", rowID))
+	} else if indexID := keyInfo.IndexInfo(); indexID != 0 {
+		if detail == nil {
+			label.Labels = append(label.Labels, fmt.Sprintf("index_%d", indexID))
+		} else if name, ok := detail.Indices[indexID]; ok {
+			label.Labels = append(label.Labels, name)
+		} else {
 			label.Labels = append(label.Labels, fmt.Sprintf("index_%d", indexID))
 		}
 	}
@@ -136,12 +174,4 @@ var globalStart = LabelKey{
 var globalEnd = LabelKey{
 	Key:    "",
 	Labels: []string{},
-}
-
-func (s *tidbLabelStrategy) LabelGlobalStart() LabelKey {
-	return globalStart
-}
-
-func (s *tidbLabelStrategy) LabelGlobalEnd() LabelKey {
-	return globalEnd
 }

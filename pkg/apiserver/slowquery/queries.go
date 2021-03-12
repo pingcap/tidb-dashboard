@@ -19,8 +19,9 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/thoas/go-funk"
+
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
 const (

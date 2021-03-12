@@ -29,7 +29,7 @@ func FetchTableColumns(db *gorm.DB, table string) ([]string, error) {
 		return nil, err
 	}
 
-	var cs []string
+	cs := []string{}
 	for _, s := range ts {
 		cs = append(cs, s.Field)
 	}

@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/thoas/go-funk"
 )
 
@@ -133,15 +134,15 @@ func projectionTransform(field reflect.StructField, to string) (string, bool) {
 
 var cachedFieldMap map[string]string
 
-func getFieldMap(tableColumns []string) map[string]string {
+func getFieldMap() (map[string]string, error) {
 	if cachedFieldMap == nil {
 		t := reflect.TypeOf(SlowQuery{})
 		fieldsNum := t.NumField()
 		ret := map[string]string{}
 
-		tfs := []string{}
-		for _, c := range tableColumns {
-			tfs = append(tfs, c)
+		tfs, err := utils.GetTableColumns(SlowQueryTable)
+		if err != nil {
+			return nil, err
 		}
 
 		for i := 0; i < fieldsNum; i++ {
@@ -160,11 +161,15 @@ func getFieldMap(tableColumns []string) map[string]string {
 		}
 		cachedFieldMap = ret
 	}
-	return cachedFieldMap
+	return cachedFieldMap, nil
 }
 
-func getProjectionsByFields(tableColumns []string, jsonFields ...string) ([]string, error) {
-	projMap := getFieldMap(tableColumns)
+func getProjectionsByFields(jsonFields ...string) ([]string, error) {
+	projMap, err := getFieldMap()
+	if err != nil {
+		return nil, err
+	}
+
 	ret := make([]string, 0, len(jsonFields))
 	for _, fieldName := range jsonFields {
 		field, ok := projMap[strings.ToLower(fieldName)]
@@ -178,16 +183,20 @@ func getProjectionsByFields(tableColumns []string, jsonFields ...string) ([]stri
 
 var cachedAllProjections []string
 
-func getAllProjections(tableColumns []string) []string {
+func getAllProjections() ([]string, error) {
 	if cachedAllProjections == nil {
-		projMap := getFieldMap(tableColumns)
+		projMap, err := getFieldMap()
+		if err != nil {
+			return nil, err
+		}
+
 		ret := make([]string, 0, len(projMap))
 		for _, proj := range projMap {
 			ret = append(ret, proj)
 		}
 		cachedAllProjections = ret
 	}
-	return cachedAllProjections
+	return cachedAllProjections, nil
 }
 
 type GetDetailRequest struct {
@@ -199,7 +208,7 @@ type GetDetailRequest struct {
 
 var constFields = []string{"digest", "connection_id", "timestamp"}
 
-func querySlowLogList(db *gorm.DB, req *GetListRequest, tableColumns []string) ([]SlowQuery, error) {
+func querySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	var projections []string
 	var err error
 	reqFields := strings.Split(req.Fields, ",")
@@ -208,9 +217,12 @@ func querySlowLogList(db *gorm.DB, req *GetListRequest, tableColumns []string) (
 	}
 
 	if len(reqFields) == 1 && reqFields[0] == "*" {
-		projections = getAllProjections(tableColumns)
+		projections, err = getAllProjections()
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		projections, err = getProjectionsByFields(tableColumns,
+		projections, err = getProjectionsByFields(
 			funk.UniqString(
 				append(constFields, reqFields...),
 			)...)
@@ -251,7 +263,7 @@ func querySlowLogList(db *gorm.DB, req *GetListRequest, tableColumns []string) (
 		req.OrderBy = "timestamp"
 	}
 
-	order, err := getProjectionsByFields(tableColumns, req.OrderBy)
+	order, err := getProjectionsByFields(req.OrderBy)
 	if err != nil {
 		return nil, err
 	}

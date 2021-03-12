@@ -19,7 +19,7 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/schema"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/thoas/go-funk"
 )
 
@@ -155,12 +155,17 @@ func getAggrMap() (map[string]string, error) {
 }
 
 func verifiedAggr(relatedFields []string) (bool, error) {
-	tcs, err := getTableColumns()
+	tcs, err := utils.GetTableColumns(statementsTable)
 	if err != nil {
 		return false, err
 	}
 
-	return len(funk.Join(tcs, relatedFields, funk.InnerJoin).([]string)) == len(relatedFields), nil
+	var lowcaseTcs []string
+	for _, c := range tcs {
+		lowcaseTcs = append(lowcaseTcs, strings.ToLower(c))
+	}
+
+	return len(funk.Join(lowcaseTcs, relatedFields, funk.InnerJoin).([]string)) == len(relatedFields), nil
 }
 
 func getAggrFields(sqlFields ...string) ([]string, error) {
@@ -219,27 +224,4 @@ func (m *Model) AfterFind() error {
 		m.RelatedSchemas = extractSchemasFromTableNames(m.AggTableNames)
 	}
 	return nil
-}
-
-var cachedTableColumns []string
-
-func getTableColumns() ([]string, error) {
-	if cachedTableColumns == nil {
-		return nil, fmt.Errorf("table columns are not initialized")
-	}
-	return cachedTableColumns, nil
-}
-
-func cacheTableColumns(db *gorm.DB) ([]string, error) {
-	if cachedTableColumns == nil {
-		tcs, err := schema.FetchTableColumns(db, statementsTable)
-		if err != nil {
-			return nil, err
-		}
-		for _, c := range tcs {
-			cachedTableColumns = append(cachedTableColumns, strings.ToLower(c))
-		}
-	}
-
-	return cachedTableColumns, nil
 }

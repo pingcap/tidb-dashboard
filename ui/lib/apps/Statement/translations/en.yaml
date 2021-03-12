@@ -132,8 +132,14 @@ statement:
     query_sample_text: Query Sample
     prev_sample_text: Previous Query Sample
     plan: Execution Plan
-    rocksdb_delete_skipped_count: RocksDB Skipped Rows of Deleted
-    rocksdb_key_skipped_count: RocksDB Total Rows of Scanned
-    rocksdb_block_cache_hit_count: RocksDB Block Cache Hit Count
-    rocksdb_block_read_count: RocksDB Block Read Count
-    rocksdb_block_read_byte: RocksDB Block Read Byte
+
+    rocksdb_delete_skipped_count: RocksDB Deleted Keys
+    rocksdb_delete_skipped_count_tooltip: Total number of deleted (a.k.a. tombstone) keys that are iterated (RocksDB delete_skipped_count)
+    rocksdb_key_skipped_count: RocksDB Keys
+    rocksdb_key_skipped_count_tooltip: Total number of iterated keys (RocksDB key_skipped_count)
+    rocksdb_block_cache_hit_count: RocksDB Block Cache Hits
+    rocksdb_block_cache_hit_count_tooltip: Total number of reads from the block cache (RocksDB block_cache_hit_count)
+    rocksdb_block_read_count: RocksDB FS Reads
+    rocksdb_block_read_count_tooltip: Total number of reads from the File System (RocksDB block_read_count)
+    rocksdb_block_read_byte: RocksDB FS Read Size
+    rocksdb_block_read_byte_tooltip: Total bytes read from the File System (RocksDB block_read_byte)

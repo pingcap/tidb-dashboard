@@ -24,9 +24,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 
-	"github.com/pingcap/log"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
@@ -75,10 +73,9 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 func mwCacheTableColumns(c *gin.Context) {
-	if tc, _ := getTableColumns(); tc == nil {
+	if tc, _ := utils.GetTableColumns(statementsTable); tc == nil {
 		db := utils.GetTiDBConnection(c)
-		cacheTableColumns(db)
-		log.Info("cache table columns", zap.String("cache", "success"))
+		utils.CacheTableColumns(db, statementsTable)
 	}
 }
 
@@ -318,7 +315,7 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Router /statements/table_columns [get]
 func (s *Service) queryTableColumns(c *gin.Context) {
-	cs, err := getTableColumns()
+	cs, err := utils.GetTableColumns(statementsTable)
 	if err != nil {
 		_ = c.Error(err)
 		return

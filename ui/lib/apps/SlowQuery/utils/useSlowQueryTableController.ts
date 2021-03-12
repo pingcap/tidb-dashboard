@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
-import client, { ErrorStrategy, SlowquerySlowQuery } from '@lib/client'
+import client, {
+  ErrorStrategy,
+  SlowquerySlowQuery,
+  UtilsTableSchema,
+} from '@lib/client'
 import {
   calcTimeRange,
   TimeRange,
@@ -164,12 +168,25 @@ export default function useSlowQueryTableController(
     querySchemas()
   }, [])
 
+  const [tableSchema, setTableSchema] = useState<UtilsTableSchema[]>([])
+
   const tableColumns = useMemo(
-    () => slowQueryColumns(slowQueries, showFullSQL),
-    [slowQueries, showFullSQL]
+    () => slowQueryColumns(slowQueries, tableSchema, showFullSQL),
+    [slowQueries, tableSchema, showFullSQL]
   )
 
   useEffect(() => {
+    if (!selectedFields.length) {
+      setSlowQueries([])
+      setLoadingSlowQueries(false)
+      return
+    }
+
+    async function queryTableSchema() {
+      const { data: schema } = await client.getInstance().slowQuerySchemaGet()
+      setTableSchema(schema)
+    }
+
     async function getSlowQueryList() {
       const cacheItem = cacheMgr?.get(cacheKey)
       if (cacheItem) {
@@ -179,6 +196,7 @@ export default function useSlowQueryTableController(
 
       setLoadingSlowQueries(true)
       try {
+        await queryTableSchema()
         const res = await client
           .getInstance()
           .slowQueryListGet(

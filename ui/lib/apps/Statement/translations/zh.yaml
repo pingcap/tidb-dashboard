@@ -140,3 +140,8 @@ statement:
     prev_sample_text: 前一条 SQL 查询样例
     prev_sample_text_tooltip: 一般来说你可能只需要看 COMMIT 语句的前一条 SQL 查询
     plan: 执行计划
+    rocksdb_delete_skipped_count: RocksDB 已删除数据跳过行数
+    rocksdb_key_skipped_count: RocksDB 总数据扫描行数
+    rocksdb_block_cache_hit_count: RocksDB Block Cache 命中次数
+    rocksdb_block_read_count: RocksDB 文件系统读取 block 次数
+    rocksdb_block_read_byte: RocksDB 文件系统读取 block 数据量

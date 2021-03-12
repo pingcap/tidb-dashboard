@@ -3,7 +3,7 @@ import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { SlowquerySlowQuery } from '@lib/client'
+import { SlowquerySlowQuery, UtilsTableSchema } from '@lib/client'
 import { TableColumnFactory } from '@lib/utils/tableColumnFactory'
 
 //////////////////////////////////////////
@@ -35,10 +35,11 @@ export const derivedFields = {
 
 export function slowQueryColumns(
   rows: SlowquerySlowQuery[],
+  tableSchema: UtilsTableSchema[],
   showFullSQL?: boolean
 ): IColumn[] {
-  const tcf = new TableColumnFactory(TRANS_KEY_PREFIX)
-  return [
+  const tcf = new TableColumnFactory(TRANS_KEY_PREFIX, tableSchema)
+  return tcf.columns(
     tcf.sqlText('query', showFullSQL, rows),
     tcf.textWithTooltip('digest', rows),
     tcf.textWithTooltip('instance', rows),
@@ -55,24 +56,26 @@ export function slowQueryColumns(
 
     tcf.textWithTooltip('txn_start_ts', rows),
     // success columnn
-    {
-      ...tcf.textWithTooltip('success', rows),
-      name: tcf.columnName('result'),
-      minWidth: 50,
-      maxWidth: 100,
-      onRender: (rec) => (
-        <ResultStatusBadge status={rec.success === 1 ? 'success' : 'error'} />
-      ),
-    },
+    tcf
+      .setConfig({
+        name: 'result',
+        minWidth: 50,
+        maxWidth: 100,
+        onRender: (rec) => (
+          <ResultStatusBadge status={rec.success === 1 ? 'success' : 'error'} />
+        ),
+      })
+      .textWithTooltip('success', rows),
 
     // basic
     // is_internal column
-    {
-      ...tcf.textWithTooltip('is_internal', rows),
-      minWidth: 50,
-      maxWidth: 100,
-      onRender: (rec) => (rec.is_internal === 1 ? 'Yes' : 'No'),
-    },
+    tcf
+      .setConfig({
+        minWidth: 50,
+        maxWidth: 100,
+        onRender: (rec) => (rec.is_internal === 1 ? 'Yes' : 'No'),
+      })
+      .textWithTooltip('is_internal', rows),
     tcf.textWithTooltip('index_names', rows),
     tcf.textWithTooltip('stats', rows),
     tcf.textWithTooltip('backoff_types', rows),
@@ -102,5 +105,36 @@ export function slowQueryColumns(
     tcf.bar.single('total_keys', 'short', rows),
     tcf.textWithTooltip('cop_proc_addr', rows),
     tcf.textWithTooltip('cop_wait_addr', rows),
-  ]
+    // rocksdb
+    tcf
+      .setConfig({
+        minWidth: 220,
+        maxWidth: 250,
+      })
+      .bar.single('rocksdb_delete_skipped_count', 'short', rows),
+    tcf
+      .setConfig({
+        minWidth: 220,
+        maxWidth: 250,
+      })
+      .bar.single('rocksdb_key_skipped_count', 'short', rows),
+    tcf
+      .setConfig({
+        minWidth: 220,
+        maxWidth: 250,
+      })
+      .bar.single('rocksdb_block_cache_hit_count', 'short', rows),
+    tcf
+      .setConfig({
+        minWidth: 220,
+        maxWidth: 250,
+      })
+      .bar.single('rocksdb_block_read_count', 'short', rows),
+    tcf
+      .setConfig({
+        minWidth: 220,
+        maxWidth: 250,
+      })
+      .bar.single('rocksdb_block_read_byte', 'bytes', rows)
+  )
 }

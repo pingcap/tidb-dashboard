@@ -16,7 +16,6 @@ import {
   HighlightSQL,
   IColumnKeys,
 } from '@lib/components'
-import { UtilsTableSchema } from '@lib/client'
 
 export type DerivedField<T> = {
   displayTransKey?: string // it is same as avg field name default
@@ -52,10 +51,10 @@ export class TableColumnFactory implements Configurable {
 
   constructor(
     private transPrefix: string,
-    private schemaFields: UtilsTableSchema[] = []
+    private tableSchemaColumns: string[] = []
   ) {
-    this.schemaFieldsMap = schemaFields
-      .map((f) => f.field!.toLowerCase())
+    this.schemaFieldsMap = tableSchemaColumns
+      .map((f) => f.toLowerCase())
       .reduce((prev, f) => {
         prev[f] = true
         return prev
@@ -82,7 +81,7 @@ export class TableColumnFactory implements Configurable {
   }
 
   columns(...columns: IColumn[]): IColumn[] {
-    const needFilterColumnBySchema = this.schemaFields.length
+    const needFilterColumnBySchema = this.tableSchemaColumns.length
     if (!needFilterColumnBySchema) {
       return columns
     }

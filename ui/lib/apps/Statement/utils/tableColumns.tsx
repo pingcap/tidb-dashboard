@@ -7,7 +7,7 @@ import {
 import React from 'react'
 import { orange, red } from '@ant-design/colors'
 
-import { StatementModel, UtilsTableSchema } from '@lib/client'
+import { StatementModel } from '@lib/client'
 import { Bar, Pre } from '@lib/components'
 import {
   formatVal,
@@ -167,10 +167,10 @@ function avgMaxColumn<T>(
 
 export function statementColumns(
   rows: StatementModel[],
-  tableSchema: UtilsTableSchema[],
+  tableSchemaColumns: string[],
   showFullSQL?: boolean
 ): IColumn[] {
-  const tcf = new TableColumnFactory(TRANS_KEY_PREFIX, tableSchema)
+  const tcf = new TableColumnFactory(TRANS_KEY_PREFIX, tableSchemaColumns)
 
   return tcf.columns(
     tcf.sqlText('digest_text', showFullSQL, rows),

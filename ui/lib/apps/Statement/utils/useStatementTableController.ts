@@ -6,7 +6,6 @@ import client, {
   ErrorStrategy,
   StatementModel,
   StatementTimeRange,
-  UtilsTableSchema,
 } from '@lib/client'
 import { IColumnKeys, stringifyTimeRange } from '@lib/components'
 import { getSelectedFields } from '@lib/utils/tableColumnFactory'
@@ -204,11 +203,11 @@ export default function useStatementTableController(
     queryStmtTypes()
   }, [refreshTimes])
 
-  const [tableSchema, setTableSchema] = useState<UtilsTableSchema[]>([])
+  const [tableSchemaColumns, setTableSchemaColumns] = useState<string[]>([])
 
   const tableColumns = useMemo(
-    () => statementColumns(statements, tableSchema, showFullSQL),
-    [statements, tableSchema, showFullSQL]
+    () => statementColumns(statements, tableSchemaColumns, showFullSQL),
+    [statements, tableSchemaColumns, showFullSQL]
   )
 
   useEffect(() => {
@@ -219,8 +218,10 @@ export default function useStatementTableController(
     }
 
     async function queryTableSchema() {
-      const { data: schema } = await client.getInstance().statementsSchemaGet()
-      setTableSchema(schema)
+      const {
+        data: schema,
+      } = await client.getInstance().statementsTableColumnsGet()
+      setTableSchemaColumns(schema)
     }
 
     async function queryStatementList() {

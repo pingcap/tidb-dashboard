@@ -29,8 +29,8 @@ import (
 	"github.com/google/pprof/driver"
 	"github.com/google/pprof/profile"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
 var (

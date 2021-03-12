@@ -25,7 +25,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/dbstore"
+	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 )
 
 type TableDef struct {
@@ -745,7 +745,7 @@ func GetPDConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 func GetPDConfigChangeInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf(`select t1.* from
 		(select min(time) as time,type,value from metrics_schema.pd_scheduler_config where time>='%[1]s' and time<'%[2]s' group by type,value order by type) as t1 join
-		(select type, count(distinct value) as count from metrics_schema.pd_scheduler_config where time>='%[1]s' and time<'%[2]s' group by type order by count desc) as t2 
+		(select type, count(distinct value) as count from metrics_schema.pd_scheduler_config where time>='%[1]s' and time<'%[2]s' group by type order by count desc) as t2
 		where t1.type=t2.type and t2.count > 1 order by t2.count desc, t1.time;`, startTime, endTime)
 
 	table := TableDef{
@@ -788,7 +788,7 @@ func GetTiDBGCConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef, erro
 func GetTiDBGCConfigChangeInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf(`select t1.* from
 		(select min(time) as time,type,value from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' and value > 0 group by type,value order by type) as t1 join
-		(select type, count(distinct value) as count from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' and value > 0 group by type order by count desc) as t2 
+		(select type, count(distinct value) as count from metrics_schema.tidb_gc_config where time>='%[1]s' and time<'%[2]s' and value > 0 group by type order by count desc) as t2
 		where t1.type=t2.type and t2.count>1 order by t2.count desc, t1.time;`, startTime, endTime)
 
 	table := TableDef{
@@ -869,7 +869,7 @@ func GetTiKVRocksDBConfigInfo(startTime, endTime string, db *gorm.DB) (TableDef,
 func GetTiKVRocksDBConfigChangeInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf(`select t1.* from
 		(select min(time) as time,concat(name,' , ',cf) as name,instance,value from metrics_schema.tikv_config_rocksdb where time>='%[1]s' and time<'%[2]s'         group by name,cf,instance,value order by name) as t1 join
-		(select concat(name,' , ',cf) as name,instance, count(distinct value) as count from metrics_schema.tikv_config_rocksdb where time>='%[1]s' and time<'%[2]s' group by name,cf,instance order by count desc) as t2 
+		(select concat(name,' , ',cf) as name,instance, count(distinct value) as count from metrics_schema.tikv_config_rocksdb where time>='%[1]s' and time<'%[2]s' group by name,cf,instance order by count desc) as t2
 		where t1.name=t2.name and t1.instance = t2.instance and t2.count>1 order by t1.name,instance, t2.count desc, t1.time;`, startTime, endTime)
 
 	table := TableDef{
@@ -951,7 +951,7 @@ func GetTiKVRaftStoreConfigInfo(startTime, endTime string, db *gorm.DB) (TableDe
 func GetTiKVRaftStoreConfigChangeInfo(startTime, endTime string, db *gorm.DB) (TableDef, error) {
 	sql := fmt.Sprintf(`select t1.* from
 		(select min(time) as time,name,instance,value from metrics_schema.tikv_config_raftstore where time>='%[1]s' and time<'%[2]s'         group by name,instance,value order by name) as t1 join
-		(select name,instance, count(distinct value) as count from metrics_schema.tikv_config_raftstore where time>='%[1]s' and time<'%[2]s' group by name,instance order by count desc) as t2 
+		(select name,instance, count(distinct value) as count from metrics_schema.tikv_config_raftstore where time>='%[1]s' and time<'%[2]s' group by name,instance order by count desc) as t2
 		where t1.name=t2.name and t1.instance = t2.instance and t2.count>1 order by t1.name,instance,t2.count desc, t1.time;`, startTime, endTime)
 
 	table := TableDef{
@@ -1710,7 +1710,7 @@ func getAvgMaxMinCPUUsage(startTime, endTime string, db *gorm.DB) (*TableRowDef,
 
 func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowDef, error) {
 	condition := fmt.Sprintf("where time >= '%s' and time < '%s' ", startTime, endTime)
-	sql := fmt.Sprintf(`select 'node_mem_usage','', 100*(1-t1.avg_value/t2.total),100*(1-t1.min_value/t2.total), 100*(1-t1.max_value/t2.total) from 
+	sql := fmt.Sprintf(`select 'node_mem_usage','', 100*(1-t1.avg_value/t2.total),100*(1-t1.min_value/t2.total), 100*(1-t1.max_value/t2.total) from
 			(select avg(value) as avg_value,max(value) as max_value,min(value) as min_value from metrics_schema.node_memory_available %[1]s) as t1 join
 			(select max(value) as total from metrics_schema.node_total_memory %[1]s) as t2;`, condition)
 	rows, err := querySQL(db, sql)
@@ -1720,7 +1720,7 @@ func getAvgMaxMinMemoryUsage(startTime, endTime string, db *gorm.DB) (*TableRowD
 	if len(rows) == 0 {
 		return nil, nil
 	}
-	sql = fmt.Sprintf(`select 'node_mem_usage',t1.instance, 100*(1-t1.avg_value/t2.total) as avg_value, 100*(1-t1.min_value/t2.total), 100*(1-t1.max_value/t2.total)  from 
+	sql = fmt.Sprintf(`select 'node_mem_usage',t1.instance, 100*(1-t1.avg_value/t2.total) as avg_value, 100*(1-t1.min_value/t2.total), 100*(1-t1.max_value/t2.total)  from
 			(select instance, avg(value) as avg_value,max(value) as max_value,min(value) as min_value from metrics_schema.node_memory_available %[1]s GROUP BY instance) as t1 join
 			(select instance, max(value) as total from metrics_schema.node_total_memory %[1]s GROUP BY instance) as t2 where t1.instance = t2.instance order by avg_value desc;`, condition)
 	subRows, err := querySQL(db, sql)
@@ -2123,7 +2123,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (TableD
 	sql := `SELECT instance,type,NAME,VALUE
 		FROM information_schema.CLUSTER_HARDWARE
 		WHERE device_type='cpu'
-		group by instance,type,VALUE,NAME HAVING NAME = 'cpu-physical-cores' 
+		group by instance,type,VALUE,NAME HAVING NAME = 'cpu-physical-cores'
 		OR NAME = 'cpu-logical-cores' ORDER BY INSTANCE `
 	rows, err := querySQL(db, sql)
 	if err != nil {

@@ -13,29 +13,20 @@
 
 package matrix
 
-import (
-	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/decorator"
-)
-
-type averageHelper struct {
+// AverageSplitStrategy adopts the strategy of equal distribution when buckets are split.
+func AverageSplitStrategy() SplitStrategy {
+	return averageSplitStrategy{}
 }
 
-type averageStrategy struct {
-	decorator.LabelStrategy
+type averageSplitStrategy struct{}
+
+type averageSplitter struct{}
+
+func (averageSplitStrategy) NewSplitter(chunks []chunk, compactKeys []string) Splitter {
+	return averageSplitter{}
 }
 
-// AverageStrategy adopts the strategy of equal distribution when buckets are split.
-func AverageStrategy(label decorator.LabelStrategy) Strategy {
-	return averageStrategy{
-		LabelStrategy: label,
-	}
-}
-
-func (averageStrategy) GenerateHelper(chunks []chunk, compactKeys []string) interface{} {
-	return averageHelper{}
-}
-
-func (averageStrategy) Split(dst, src chunk, tag splitTag, axesIndex int, helper interface{}) {
+func (averageSplitter) Split(dst, src chunk, tag splitTag, axesIndex int) {
 	CheckPartOf(dst.Keys, src.Keys)
 
 	if len(dst.Keys) == len(src.Keys) {

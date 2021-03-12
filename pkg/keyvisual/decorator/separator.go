@@ -1,3 +1,16 @@
+// Copyright 2019 PingCAP, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package decorator
 
 import (
@@ -10,15 +23,19 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
-// NaiveLabelStrategy is one of the simplest LabelStrategy.
-type separatorLabelStrategy struct {
-	Separator atomic.Value
-}
-
+// SeparatorLabelStrategy implements the LabelStrategy interface. It obtains label information after splitting the key.
 func SeparatorLabelStrategy(cfg *config.KeyVisualConfig) LabelStrategy {
 	s := &separatorLabelStrategy{}
 	s.Separator.Store(cfg.PolicyKVSeparator)
 	return s
+}
+
+type separatorLabelStrategy struct {
+	Separator atomic.Value
+}
+
+type separatorLabeler struct {
+	Separator string
 }
 
 // ReloadConfig reset separator
@@ -27,27 +44,31 @@ func (s *separatorLabelStrategy) ReloadConfig(cfg *config.KeyVisualConfig) {
 	log.Debug("Reload config", zap.String("separator", cfg.PolicyKVSeparator))
 }
 
+func (s *separatorLabelStrategy) NewLabeler() Labeler {
+	return &separatorLabeler{
+		Separator: s.Separator.Load().(string),
+	}
+}
+
 // CrossBorder is temporarily not considering cross-border logic
-func (s *separatorLabelStrategy) CrossBorder(startKey, endKey string) bool {
+func (e *separatorLabeler) CrossBorder(startKey, endKey string) bool {
 	return false
 }
 
 // Label uses separator to split key
-func (s *separatorLabelStrategy) Label(key string) (label LabelKey) {
-	label.Key = key
-	separator := s.Separator.Load().(string)
-	if separator == "" {
-		label.Labels = []string{key}
-		return
+func (e *separatorLabeler) Label(keys []string) []LabelKey {
+	labelKeys := make([]LabelKey, len(keys))
+	for i, key := range keys {
+		var labels []string
+		if e.Separator == "" {
+			labels = []string{key}
+		} else {
+			labels = strings.Split(key, e.Separator)
+		}
+		labelKeys[i] = LabelKey{
+			Key:    key,
+			Labels: labels,
+		}
 	}
-	label.Labels = strings.Split(key, separator)
-	return
-}
-
-func (s *separatorLabelStrategy) LabelGlobalStart() LabelKey {
-	return s.Label("")
-}
-
-func (s *separatorLabelStrategy) LabelGlobalEnd() LabelKey {
-	return s.Label("")
+	return labelKeys
 }

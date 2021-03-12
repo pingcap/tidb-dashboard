@@ -13,6 +13,10 @@
 
 package matrix
 
+import (
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/decorator"
+)
+
 // Axis stores consecutive buckets. Each bucket has StartKey, EndKey, and some statistics. The EndKey of each bucket is
 // the StartKey of its next bucket. The actual data structure is stored in columns. Therefore satisfies:
 // len(Keys) == len(ValuesList[i]) + 1. In particular, ValuesList[0] is the base column.
@@ -77,13 +81,13 @@ func (axis *Axis) Range(startKey string, endKey string) Axis {
 
 // Focus uses the base column as the chunk for the Focus operation to obtain the partitioning scheme, and uses this to
 // reduce other columns.
-func (axis *Axis) Focus(strategy Strategy, threshold uint64, ratio int, target int) Axis {
+func (axis *Axis) Focus(labeler decorator.Labeler, threshold uint64, ratio int, target int) Axis {
 	if target >= len(axis.Keys)-1 {
 		return *axis
 	}
 
 	baseChunk := createChunk(axis.Keys, axis.ValuesList[0])
-	newChunk := baseChunk.Focus(strategy, threshold, ratio, target, MergeColdLogicalRange)
+	newChunk := baseChunk.Focus(labeler, threshold, ratio, target, MergeColdLogicalRange)
 	valuesListLen := len(axis.ValuesList)
 	newValuesList := make([][]uint64, valuesListLen)
 	newValuesList[0] = newChunk.Values
@@ -96,13 +100,13 @@ func (axis *Axis) Focus(strategy Strategy, threshold uint64, ratio int, target i
 
 // Divide uses the base column as the chunk for the Divide operation to obtain the partitioning scheme, and uses this to
 // reduce other columns.
-func (axis *Axis) Divide(strategy Strategy, target int) Axis {
+func (axis *Axis) Divide(labeler decorator.Labeler, target int) Axis {
 	if target >= len(axis.Keys)-1 {
 		return *axis
 	}
 
 	baseChunk := createChunk(axis.Keys, axis.ValuesList[0])
-	newChunk := baseChunk.Divide(strategy, target, MergeColdLogicalRange)
+	newChunk := baseChunk.Divide(labeler, target, MergeColdLogicalRange)
 	valuesListLen := len(axis.ValuesList)
 	newValuesList := make([][]uint64, valuesListLen)
 	newValuesList[0] = newChunk.Values
@@ -216,7 +220,7 @@ func (c *chunk) GetFocusRows(threshold uint64) (count int) {
 // Given a `threshold`, merge the rows with less traffic,
 // and merge the most `ratio` rows at a time.
 // `target` is the estimated final number of rows.
-func (c *chunk) Focus(strategy Strategy, threshold uint64, ratio int, target int, mode FocusMode) chunk {
+func (c *chunk) Focus(labeler decorator.Labeler, threshold uint64, ratio int, target int, mode FocusMode) chunk {
 	newKeys := make([]string, 0, target)
 	newValues := make([]uint64, 0, target)
 	newKeys = append(newKeys, c.Keys[0])
@@ -236,7 +240,7 @@ func (c *chunk) Focus(strategy Strategy, threshold uint64, ratio int, target int
 		if value >= threshold ||
 			bucketSum >= threshold ||
 			i-start >= ratio ||
-			strategy.CrossBorder(c.Keys[start], c.Keys[i]) {
+			labeler.CrossBorder(c.Keys[start], c.Keys[i]) {
 			generateBucket(i)
 		}
 		bucketSum += value
@@ -245,12 +249,12 @@ func (c *chunk) Focus(strategy Strategy, threshold uint64, ratio int, target int
 
 	newChunk := createChunk(newKeys, newValues)
 	if mode == MergeColdLogicalRange && len(newValues) >= target {
-		newChunk = newChunk.MergeColdLogicalRange(strategy, threshold, target)
+		newChunk = newChunk.MergeColdLogicalRange(labeler, threshold, target)
 	}
 	return newChunk
 }
 
-func (c *chunk) MergeColdLogicalRange(strategy Strategy, threshold uint64, target int) chunk {
+func (c *chunk) MergeColdLogicalRange(labeler decorator.Labeler, threshold uint64, target int) chunk {
 	threshold /= 4 // TODO: This var can be adjusted
 
 	newKeys := make([]string, 0, target)
@@ -291,7 +295,7 @@ func (c *chunk) MergeColdLogicalRange(strategy Strategy, threshold uint64, targe
 	}
 
 	for i := range c.Values {
-		if strategy.CrossBorder(c.Keys[i], c.Keys[i+1]) {
+		if labeler.CrossBorder(c.Keys[i], c.Keys[i+1]) {
 			generateRange(i + 1)
 		}
 	}
@@ -302,7 +306,7 @@ func (c *chunk) MergeColdLogicalRange(strategy Strategy, threshold uint64, targe
 }
 
 // Divide uses binary search to find a suitable threshold, which can reduce the number of buckets of Axis to near the target.
-func (c *chunk) Divide(strategy Strategy, target int, mode FocusMode) chunk {
+func (c *chunk) Divide(labeler decorator.Labeler, target int, mode FocusMode) chunk {
 	if target >= len(c.Values) {
 		return *c
 	}
@@ -326,5 +330,5 @@ func (c *chunk) Divide(strategy Strategy, target int, mode FocusMode) chunk {
 	threshold := lowerThreshold
 	focusRows := c.GetFocusRows(threshold)
 	ratio := len(c.Values)/(target-focusRows) + 1
-	return c.Focus(strategy, threshold, ratio, target, mode)
+	return c.Focus(labeler, threshold, ratio, target, mode)
 }

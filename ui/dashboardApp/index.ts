@@ -28,6 +28,8 @@ import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
 import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
 import AppConfiguration from '@lib/apps/Configuration/index.meta'
+// import __APP_NAME__ from '@lib/apps/__APP_NAME__/index.meta'
+// NOTE: Don't remove above comment line, it is a placeholder for code generator
 
 function removeSpinner() {
   const spinner = document.getElementById('dashboard_page_spinner')
@@ -107,6 +109,8 @@ async function main() {
     .register(AppInstanceProfiling)
     .register(AppQueryEditor)
     .register(AppConfiguration)
+  // .register(__APP_NAME__)
+  // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
   if (routing.isLocationMatch('/')) {
     singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
@@ -120,14 +124,18 @@ async function main() {
     }
   })
 
-  window.addEventListener('single-spa:before-routing-event', () => {})
-
+  let preRoute = ''
   window.addEventListener('single-spa:routing-event', () => {
     removeSpinner()
-    telemetry.mixpanel.register({
-      $current_url: routing.getPathInLocationHash(),
-    })
-    telemetry.mixpanel.track('PageChange')
+
+    const curRoute = routing.getPathInLocationHash()
+    if (curRoute !== preRoute) {
+      telemetry.mixpanel.register({
+        $current_url: curRoute,
+      })
+      telemetry.mixpanel.track('PageChange')
+      preRoute = curRoute
+    }
   })
 
   singleSpa.start()

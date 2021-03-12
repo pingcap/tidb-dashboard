@@ -48,6 +48,15 @@ export const DEFAULT_TIME_RANGE: TimeRange = {
   value: 30 * 60,
 }
 
+export function stringifyTimeRange(timeRange?: TimeRange): string {
+  let t2 = timeRange ?? DEFAULT_TIME_RANGE
+  if (t2.type === 'absolute') {
+    return `${t2.type}_${t2.value[0]}_${t2.value[1]}`
+  } else {
+    return `${t2.type}_${t2.value}`
+  }
+}
+
 // timePoints are descent array
 function findNearTimePoint(timePoint: number, timePoints: number[]): number {
   if (timePoints.length === 0) {

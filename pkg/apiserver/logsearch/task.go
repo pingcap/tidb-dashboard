@@ -34,7 +34,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
 // MaxRecvMsgSize set max gRPC receive message size received from server. If any message size is larger than

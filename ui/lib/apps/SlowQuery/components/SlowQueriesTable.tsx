@@ -3,6 +3,8 @@ import React, { useCallback } from 'react'
 import { CardTable, ICardTableProps } from '@lib/components'
 import DetailPage from '../pages/Detail'
 import { ISlowQueryTableController } from '../utils/useSlowQueryTableController'
+import openLink from '@lib/utils/openLink'
+import { useNavigate } from 'react-router-dom'
 
 interface Props extends Partial<ICardTableProps> {
   controller: ISlowQueryTableController
@@ -17,16 +19,23 @@ function SlowQueriesTable({ controller, ...restProps }: Props) {
     changeOrder,
     errors,
     visibleColumnKeys,
+
+    saveClickedItemIndex,
+    getClickedItemIndex,
   } = controller
 
-  const handleRowClick = usePersistFn((rec) => {
-    const qs = DetailPage.buildQuery({
-      digest: rec.digest,
-      connectId: rec.connection_id,
-      timestamp: rec.timestamp,
-    })
-    window.open(`#/slow_query/detail?${qs}`, '_blank')
-  })
+  const navigate = useNavigate()
+  const handleRowClick = usePersistFn(
+    (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
+      saveClickedItemIndex(idx)
+      const qs = DetailPage.buildQuery({
+        digest: rec.digest,
+        connectId: rec.connection_id,
+        timestamp: rec.timestamp,
+      })
+      openLink(`/slow_query/detail?${qs}`, ev, navigate)
+    }
+  )
 
   const getKey = useCallback((row) => `${row.digest}_${row.timestamp}`, [])
 
@@ -42,6 +51,7 @@ function SlowQueriesTable({ controller, ...restProps }: Props) {
       errors={errors}
       visibleColumnKeys={visibleColumnKeys}
       onRowClicked={handleRowClick}
+      clickedRowIndex={getClickedItemIndex()}
       getKey={getKey}
     />
   )

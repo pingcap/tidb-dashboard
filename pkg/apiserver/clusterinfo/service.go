@@ -27,13 +27,13 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/clusterinfo/hostinfo"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/pd"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/tidb"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/topology"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo/hostinfo"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
+	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
 type ServiceParams struct {

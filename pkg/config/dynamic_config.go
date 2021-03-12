@@ -14,7 +14,7 @@
 package config
 
 import (
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
 const (

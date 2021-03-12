@@ -17,7 +17,7 @@ package matrix
 import (
 	"time"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/keyvisual/decorator"
+	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/decorator"
 )
 
 // Matrix is the front end displays the required data.
@@ -29,22 +29,10 @@ type Matrix struct {
 }
 
 // CreateMatrix uses the specified times and keys to build an initial matrix with no data.
-func CreateMatrix(strategy Strategy, times []time.Time, keys []string, valuesListLen int) Matrix {
+func CreateMatrix(labeler decorator.Labeler, times []time.Time, keys []string, valuesListLen int) Matrix {
 	dataMap := make(map[string][][]uint64, valuesListLen)
 	// collect label keys
-	keyAxis := make([]decorator.LabelKey, len(keys))
-	for i, key := range keys {
-		keyAxis[i] = strategy.Label(key)
-	}
-
-	if keys[0] == "" {
-		keyAxis[0] = strategy.LabelGlobalStart()
-	}
-	endIndex := len(keys) - 1
-	if keys[endIndex] == "" {
-		keyAxis[endIndex] = strategy.LabelGlobalEnd()
-	}
-
+	keyAxis := labeler.Label(keys)
 	// collect unix times
 	timeAxis := make([]int64, len(times))
 	for i, t := range times {

@@ -11,7 +11,7 @@ label: "type/question"
 Thanks for using TiDB Dashboard! Before asking a question, please take a look in the following places:
 
 - GitHub issues
-  https://github.com/pingcap-incubator/tidb-dashboard/issues?q=is%3Aissue
+  https://github.com/pingcap/tidb-dashboard/issues?q=is%3Aissue
 - Documentation (English)
   https://docs.pingcap.com/tidb/stable/dashboard-intro
 - Documentation (Chinese)

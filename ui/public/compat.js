@@ -49,16 +49,15 @@ checkBrowser()
 // Dealing with compatibility issues manually for special cases
 
 // Object.entries
-// see https://github.com/pingcap-incubator/tidb-dashboard/issues/770
+// see https://github.com/pingcap/tidb-dashboard/issues/770
 // polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries
 if (!Object.entries) {
-  Object.entries = function( obj ){
-    var ownProps = Object.keys( obj ),
+  Object.entries = function (obj) {
+    var ownProps = Object.keys(obj),
       i = ownProps.length,
-      resArray = new Array(i); // preallocate the Array
-    while (i--)
-      resArray[i] = [ownProps[i], obj[ownProps[i]]];
+      resArray = new Array(i) // preallocate the Array
+    while (i--) resArray[i] = [ownProps[i], obj[ownProps[i]]]
 
-    return resArray;
-  };
+    return resArray
+  }
 }

@@ -30,7 +30,8 @@ import (
 const (
 	DynamicConfigPath = "/dashboard/dynamic_config"
 	Timeout           = time.Second
-	MaxCheckInterval  = 5 * time.Second
+	MaxCheckInterval  = 30 * time.Second
+	MaxElapsedTime    = 0 // never stop if MaxElapsedTime == 0
 )
 
 var (
@@ -71,6 +72,7 @@ func (m *DynamicConfigManager) Start(ctx context.Context) error {
 		var dc *DynamicConfig
 		ebo := backoff.NewExponentialBackOff()
 		ebo.MaxInterval = MaxCheckInterval
+		ebo.MaxElapsedTime = MaxElapsedTime
 		bo := backoff.WithContext(ebo, ctx)
 
 		if err := backoff.Retry(func() error {

@@ -1,8 +1,9 @@
 import React from 'react'
 import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useLocalStorageState } from 'ahooks'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -90,7 +91,14 @@ function DetailPage() {
 
   return (
     <div>
-      <Head title={t('slow_query.detail.head.title')}>
+      <Head
+        title={t('slow_query.detail.head.title')}
+        back={
+          <Link to={`/slow_query`}>
+            <ArrowLeftOutlined /> {t('slow_query.detail.head.back')}
+          </Link>
+        }
+      >
         <AnimatedSkeleton showSkeleton={isLoading}>
           {error && <ErrorBar errors={[error]} />}
           {!!data && (

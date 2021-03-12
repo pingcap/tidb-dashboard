@@ -21,8 +21,8 @@ import (
 
 	"go.uber.org/fx"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/config"
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
 var (

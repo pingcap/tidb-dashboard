@@ -19,7 +19,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/pingcap-incubator/tidb-dashboard/pkg/utils/host"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
 )
 
 // Used to deserialize from JSON_VALUE

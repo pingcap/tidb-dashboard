@@ -1,6 +1,10 @@
 import { usePersistFn } from 'ahooks'
 import React, { useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+import openLink from '@lib/utils/openLink'
 import { CardTable, ICardTableProps } from '@lib/components'
+
 import DetailPage from '../pages/Detail'
 import { IStatementTableController } from '../utils/useStatementTableController'
 
@@ -18,17 +22,24 @@ export default function StatementsTable({ controller, ...restPrpos }: Props) {
     errors,
     tableColumns,
     visibleColumnKeys,
+
+    getClickedItemIndex,
+    saveClickedItemIndex,
   } = controller
 
-  const handleRowClick = usePersistFn((rec) => {
-    const qs = DetailPage.buildQuery({
-      digest: rec.digest,
-      schema: rec.schema_name,
-      beginTime: begin_time,
-      endTime: end_time,
-    })
-    window.open(`#/statement/detail?${qs}`, '_blank')
-  })
+  const navigate = useNavigate()
+  const handleRowClick = usePersistFn(
+    (rec, idx, ev: React.MouseEvent<HTMLElement>) => {
+      saveClickedItemIndex(idx)
+      const qs = DetailPage.buildQuery({
+        digest: rec.digest,
+        schema: rec.schema_name,
+        beginTime: begin_time,
+        endTime: end_time,
+      })
+      openLink(`/statement/detail?${qs}`, ev, navigate)
+    }
+  )
 
   const getKey = useCallback((row) => `${row.digest}_${row.schema_name}`, [])
 
@@ -45,6 +56,7 @@ export default function StatementsTable({ controller, ...restPrpos }: Props) {
       visibleColumnKeys={visibleColumnKeys}
       onRowClicked={handleRowClick}
       getKey={getKey}
+      clickedRowIndex={getClickedItemIndex()}
     />
   )
 }

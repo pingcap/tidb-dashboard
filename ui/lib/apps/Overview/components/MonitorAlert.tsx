@@ -40,7 +40,7 @@ export default function MonitorAlert() {
 
   return (
     <Card title={t('overview.monitor_alert.title')} noMarginLeft>
-      <Stack gap={16}>
+      <Stack tokens={{ childrenGap: 16 }}>
         <AnimatedSkeleton
           showSkeleton={grafanaIsLoading}
           paragraph={{ rows: 1 }}

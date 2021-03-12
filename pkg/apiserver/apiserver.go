@@ -136,7 +136,6 @@ func (s *Service) Start(ctx context.Context) error {
 			user.RegisterRouter,
 			info.RegisterRouter,
 			clusterinfo.RegisterRouter,
-			profiling.RegisterRouter,
 			logsearch.RegisterRouter,
 			slowquery.RegisterRouter,
 			statement.RegisterRouter,

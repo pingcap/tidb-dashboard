@@ -24,4 +24,5 @@ var Module = fx.Options(
 		fetcher.NewClientMap,
 		newService,
 	),
+	fx.Invoke(registerRouter),
 )

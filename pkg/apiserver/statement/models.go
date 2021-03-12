@@ -19,9 +19,8 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/schema"
 	"github.com/thoas/go-funk"
-
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
 const (
@@ -123,7 +122,7 @@ type Model struct {
 
 var cachedAggrMap map[string]string // jsonFieldName => aggr
 
-func getAggrMap(tableSchemas *[]utils.TableSchema) map[string]string {
+func getAggrMap() (map[string]string, error) {
 	if cachedAggrMap == nil {
 		t := reflect.TypeOf(Model{})
 		fieldsNum := t.NumField()
@@ -141,50 +140,60 @@ func getAggrMap(tableSchemas *[]utils.TableSchema) map[string]string {
 			}
 
 			// Filtering fields that are not in the table fields
-			if agg, ok := field.Tag.Lookup("agg"); ok && verifiedAggr(tableSchemas, rfs) {
+			verified, err := verifiedAggr(rfs)
+			if err != nil {
+				return nil, err
+			}
+
+			if agg, ok := field.Tag.Lookup("agg"); ok && verified {
 				ret[jsonField] = fmt.Sprintf("%s AS %s", agg, gorm.ToColumnName(field.Name))
 			}
 		}
 		cachedAggrMap = ret
 	}
-	return cachedAggrMap
+	return cachedAggrMap, nil
 }
 
-var tableSchemaFields []string
-
-func verifiedAggr(tableSchemas *[]utils.TableSchema, relatedFields []string) bool {
-	if len(tableSchemaFields) == 0 {
-		for _, s := range *tableSchemas {
-			tableSchemaFields = append(tableSchemaFields, strings.ToLower(s.Field))
-		}
+func verifiedAggr(relatedFields []string) (bool, error) {
+	tcs, err := getTableColumns()
+	if err != nil {
+		return false, err
 	}
 
-	return len(funk.Join(tableSchemaFields, relatedFields, funk.InnerJoin).([]string)) == len(relatedFields)
+	return len(funk.Join(tcs, relatedFields, funk.InnerJoin).([]string)) == len(relatedFields), nil
 }
 
-func getAggrFields(schema *[]utils.TableSchema, sqlFields ...string) []string {
-	aggrMap := getAggrMap(schema)
+func getAggrFields(sqlFields ...string) ([]string, error) {
+	aggrMap, err := getAggrMap()
+	if err != nil {
+		return nil, err
+	}
+
 	ret := make([]string, 0, len(sqlFields))
 	for _, fieldName := range sqlFields {
 		if aggr, ok := aggrMap[strings.ToLower(fieldName)]; ok {
 			ret = append(ret, aggr)
 		}
 	}
-	return ret
+	return ret, nil
 }
 
 var cachedAllAggrFields []string
 
-func getAllAggrFields(schema *[]utils.TableSchema) []string {
+func getAllAggrFields() ([]string, error) {
 	if cachedAllAggrFields == nil {
-		aggrMap := getAggrMap(schema)
+		aggrMap, err := getAggrMap()
+		if err != nil {
+			return nil, err
+		}
+
 		ret := make([]string, 0, len(aggrMap))
 		for _, aggr := range aggrMap {
 			ret = append(ret, aggr)
 		}
 		cachedAllAggrFields = ret
 	}
-	return cachedAllAggrFields
+	return cachedAllAggrFields, nil
 }
 
 // tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"
@@ -210,4 +219,27 @@ func (m *Model) AfterFind() error {
 		m.RelatedSchemas = extractSchemasFromTableNames(m.AggTableNames)
 	}
 	return nil
+}
+
+var cachedTableColumns []string
+
+func getTableColumns() ([]string, error) {
+	if cachedTableColumns == nil {
+		return nil, fmt.Errorf("table columns are not initialized")
+	}
+	return cachedTableColumns, nil
+}
+
+func cacheTableColumns(db *gorm.DB) ([]string, error) {
+	if cachedTableColumns == nil {
+		tcs, err := schema.FetchTableColumns(db, statementsTable)
+		if err != nil {
+			return nil, err
+		}
+		for _, c := range tcs {
+			cachedTableColumns = append(cachedTableColumns, strings.ToLower(c))
+		}
+	}
+
+	return cachedTableColumns, nil
 }

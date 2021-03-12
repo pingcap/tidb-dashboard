@@ -11,24 +11,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package utils
+package statement
 
-import (
-	"fmt"
+import "go.uber.org/fx"
 
-	"github.com/jinzhu/gorm"
+var Module = fx.Options(
+	fx.Provide(newService),
+	fx.Invoke(registerRouter),
 )
-
-type TableSchema struct {
-	Field string `gorm:"column:Field" json:"field"`
-}
-
-func FetchTableSchema(db *gorm.DB, table string) ([]TableSchema, error) {
-	var ts []TableSchema
-	err := db.Raw(fmt.Sprintf("DESC %s", table)).Scan(&ts).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return ts, nil
-}

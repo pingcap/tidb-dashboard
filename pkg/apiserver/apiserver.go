@@ -121,7 +121,6 @@ func (s *Service) Start(ctx context.Context) error {
 			clusterinfo.NewService,
 			logsearch.NewService,
 			slowquery.NewService,
-			statement.NewService,
 			diagnose.NewService,
 			keyvisual.NewService,
 			metrics.NewService,
@@ -131,6 +130,7 @@ func (s *Service) Start(ctx context.Context) error {
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 		),
 		profiling.Module,
+		statement.Module,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			user.RegisterRouter,
@@ -139,7 +139,6 @@ func (s *Service) Start(ctx context.Context) error {
 			profiling.RegisterRouter,
 			logsearch.RegisterRouter,
 			slowquery.RegisterRouter,
-			statement.RegisterRouter,
 			diagnose.RegisterRouter,
 			keyvisual.RegisterRouter,
 			metrics.RegisterRouter,

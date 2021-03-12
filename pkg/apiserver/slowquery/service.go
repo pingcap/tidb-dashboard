@@ -67,7 +67,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 func mwCacheTableColumns(c *gin.Context) {
-	if tc, _ := utils.GetTableColumns(SlowQueryTable); tc == nil {
+	if _, err := utils.GetTableColumns(SlowQueryTable); err != nil {
 		db := utils.GetTiDBConnection(c)
 		utils.CacheTableColumns(db, SlowQueryTable)
 	}

@@ -73,7 +73,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 func mwCacheTableColumns(c *gin.Context) {
-	if tc, _ := utils.GetTableColumns(statementsTable); tc == nil {
+	if _, err := utils.GetTableColumns(statementsTable); err != nil {
 		db := utils.GetTiDBConnection(c)
 		utils.CacheTableColumns(db, statementsTable)
 	}

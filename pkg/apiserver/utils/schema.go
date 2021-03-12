@@ -17,10 +17,11 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
+
 	"github.com/pingcap/tidb-dashboard/pkg/utils/schema"
 )
 
-var cachedTableColumnsMap map[string][]string
+var cachedTableColumnsMap map[string][]string = make(map[string][]string)
 
 func GetTableColumns(tableName string) ([]string, error) {
 	tcs, ok := cachedTableColumnsMap[tableName]
@@ -30,15 +31,13 @@ func GetTableColumns(tableName string) ([]string, error) {
 	return tcs, nil
 }
 
-func CacheTableColumns(db *gorm.DB, tableName string) ([]string, error) {
-	cachedTcs, ok := cachedTableColumnsMap[tableName]
+func CacheTableColumns(db *gorm.DB, tableName string) {
+	_, ok := cachedTableColumnsMap[tableName]
 	if !ok {
 		tcs, err := schema.FetchTableColumns(db, tableName)
 		if err != nil {
-			return nil, err
+			return
 		}
 		cachedTableColumnsMap[tableName] = tcs
 	}
-
-	return cachedTcs, nil
 }

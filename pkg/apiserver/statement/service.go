@@ -19,13 +19,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jinzhu/gorm"
 	"github.com/joomcode/errorx"
 
 	"github.com/gin-gonic/gin"
 
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 
+	"github.com/pingcap/log"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
@@ -45,17 +46,18 @@ type Service struct {
 	params ServiceParams
 }
 
-func NewService(p ServiceParams) *Service {
+func newService(p ServiceParams) *Service {
 	return &Service{params: p}
 }
 
-func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
 	{
 		endpoint.GET("/download", s.downloadHandler)
 
 		endpoint.Use(auth.MWAuthRequired())
 		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
+		endpoint.Use(mwCacheTableColumns)
 		{
 			endpoint.GET("/config", s.configHandler)
 			endpoint.POST("/config", s.modifyConfigHandler)
@@ -67,8 +69,16 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 			endpoint.POST("/download/token", s.downloadTokenHandler)
 
-			endpoint.GET("/schema", s.querySchema)
+			endpoint.GET("/table_columns", s.queryTableColumns)
 		}
+	}
+}
+
+func mwCacheTableColumns(c *gin.Context) {
+	if tc, _ := getTableColumns(); tc == nil {
+		db := utils.GetTiDBConnection(c)
+		cacheTableColumns(db)
+		log.Info("cache table columns", zap.String("cache", "success"))
 	}
 }
 
@@ -160,11 +170,6 @@ func (s *Service) listHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	schema, err := getStatementSchema(db)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
 	fields := []string{}
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
@@ -175,8 +180,7 @@ func (s *Service) listHandler(c *gin.Context) {
 		req.Schemas,
 		req.StmtTypes,
 		req.Text,
-		fields,
-		schema)
+		fields)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -204,12 +208,7 @@ func (s *Service) plansHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	schema, err := getStatementSchema(db)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	plans, err := QueryPlans(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, schema)
+	plans, err := QueryPlans(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -235,12 +234,7 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	schema, err := getStatementSchema(db)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	result, err := QueryPlanDetail(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans, schema)
+	result, err := QueryPlanDetail(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -262,11 +256,6 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	schema, err := getStatementSchema(db)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
 	fields := []string{}
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
@@ -277,8 +266,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		req.Schemas,
 		req.StmtTypes,
 		req.Text,
-		fields,
-		schema)
+		fields)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -323,32 +311,17 @@ func (s *Service) downloadHandler(c *gin.Context) {
 	utils.DownloadByToken(token, "statements/download", c)
 }
 
-// @Summary Query schema
-// @Description Query statement table schema
-// @Success 200 {array} utils.TableSchema
+// @Summary Query table columns
+// @Description Query statements table columns
+// @Success 200 {array} string
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Security JwtAuth
-// @Router /statements/schema [get]
-func (s *Service) querySchema(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
-	schema, err := getStatementSchema(db)
+// @Router /statements/table_columns [get]
+func (s *Service) queryTableColumns(c *gin.Context) {
+	cs, err := getTableColumns()
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, *schema)
-}
-
-var statementSchema []utils.TableSchema
-
-func getStatementSchema(db *gorm.DB) (*[]utils.TableSchema, error) {
-	if statementSchema == nil {
-		ss, err := utils.FetchTableSchema(db, statementsTable)
-		if err != nil {
-			return nil, err
-		}
-		statementSchema = ss
-	}
-
-	return &statementSchema, nil
+	c.JSON(http.StatusOK, cs)
 }

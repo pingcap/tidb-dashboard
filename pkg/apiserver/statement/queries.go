@@ -21,8 +21,6 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/thoas/go-funk"
-
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
 const (
@@ -138,15 +136,17 @@ func QueryStatements(
 	schemas, stmtTypes []string,
 	text string,
 	fields []string,
-	schema *[]utils.TableSchema,
 ) (result []Model, err error) {
 	var aggrFields []string
 
 	if len(fields) == 1 && fields[0] == "*" {
-		aggrFields = getAllAggrFields(schema)
+		aggrFields, err = getAllAggrFields()
 	} else {
 		fields = funk.UniqString(append(fields, "schema_name", "digest", "sum_latency")) // "schema_name", "digest" for group, "sum_latency" for order
-		aggrFields = getAggrFields(schema, fields...)
+		aggrFields, err = getAggrFields(fields...)
+	}
+	if err != nil {
+		return
 	}
 
 	query := db.
@@ -192,10 +192,8 @@ func QueryPlans(
 	db *gorm.DB,
 	beginTime, endTime int,
 	schemaName, digest string,
-	schema *[]utils.TableSchema,
 ) (result []Model, err error) {
-	fields := getAggrFields(
-		schema,
+	fields, err := getAggrFields(
 		"plan_digest",
 		"schema_name",
 		"digest_text",
@@ -207,6 +205,10 @@ func QueryPlans(
 		"exec_count",
 		"avg_mem",
 		"max_mem")
+	if err != nil {
+		return
+	}
+
 	err = db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
@@ -224,9 +226,11 @@ func QueryPlanDetail(
 	beginTime, endTime int,
 	schemaName, digest string,
 	plans []string,
-	schema *[]utils.TableSchema,
 ) (result Model, err error) {
-	fields := getAllAggrFields(schema)
+	fields, err := getAllAggrFields()
+	if err != nil {
+		return
+	}
 	query := db.
 		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).

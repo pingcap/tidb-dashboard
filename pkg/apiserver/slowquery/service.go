@@ -28,6 +28,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/schema"
 )
 
 var (
@@ -61,7 +62,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 			endpoint.POST("/download/token", s.downloadTokenHandler)
 
-			endpoint.GET("/schema", s.querySchema)
+			endpoint.GET("/table_column", s.queryTableColumns)
 		}
 	}
 }
@@ -80,12 +81,12 @@ func (s *Service) getList(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	schema, err := getSlowquerySchema(db)
+	tcs, err := getTableColumns(db)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	results, err := querySlowLogList(db, &req, schema)
+	results, err := querySlowLogList(db, &req, tcs)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -133,12 +134,12 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	schema, err := getSlowquerySchema(db)
+	tcs, err := getTableColumns(db)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	list, err := querySlowLogList(db, &req, schema)
+	list, err := querySlowLogList(db, &req, tcs)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -183,32 +184,32 @@ func (s *Service) downloadHandler(c *gin.Context) {
 	utils.DownloadByToken(token, "slowquery/download", c)
 }
 
-// @Summary Query schema
-// @Description Query slowquery table schema
-// @Success 200 {array} utils.TableSchema
+// @Summary Query table columns
+// @Description Query slowquery table columns
+// @Success 200 {array} string
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Security JwtAuth
-// @Router /slow_query/schema [get]
-func (s *Service) querySchema(c *gin.Context) {
+// @Router /slow_query/table_columns [get]
+func (s *Service) queryTableColumns(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	schema, err := getSlowquerySchema(db)
+	cs, err := getTableColumns(db)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, *schema)
+	c.JSON(http.StatusOK, cs)
 }
 
-var slowquerySchema []utils.TableSchema
+var cachedTableColumns []string
 
-func getSlowquerySchema(db *gorm.DB) (*[]utils.TableSchema, error) {
-	if slowquerySchema == nil {
-		ss, err := utils.FetchTableSchema(db, SlowQueryTable)
+func getTableColumns(db *gorm.DB) ([]string, error) {
+	if cachedTableColumns == nil {
+		cs, err := schema.FetchTableColumns(db, SlowQueryTable)
 		if err != nil {
 			return nil, err
 		}
-		slowquerySchema = ss
+		cachedTableColumns = cs
 	}
 
-	return &slowquerySchema, nil
+	return cachedTableColumns, nil
 }

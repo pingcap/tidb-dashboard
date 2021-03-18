@@ -158,6 +158,12 @@ func main() {
 	// Flushing any buffered log entries
 	defer log.Sync() //nolint:errcheck
 
+	// init log will register the `pingcap-log` logfmt for
+	_, _, err := log.InitLogger(&log.Config{})
+	if err != nil {
+		log.Fatal("failed to init log", zap.Error(err))
+	}
+
 	cliConfig := NewCLIConfig()
 	ctx := getContext()
 

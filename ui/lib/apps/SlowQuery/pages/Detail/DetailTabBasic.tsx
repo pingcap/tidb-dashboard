@@ -37,6 +37,23 @@ export default function TabBasic({ data }: ITabBasicProps) {
     { key: 'connection_id', value: data.connection_id },
     { key: 'user', value: data.user },
     { key: 'host', value: data.host },
+    {
+      key: 'trace_id',
+      value: (
+        <a
+          onClick={() => {
+            if (data.trace_id && data.trace_id !== '0') {
+              window.open(
+                `http://${data.instance}/trace/${data.trace_id}`,
+                '_blank'
+              )
+            }
+          }}
+        >
+          {data.trace_id}
+        </a>
+      ),
+    },
   ]
   const columns = valueColumns('slow_query.fields.')
   return (

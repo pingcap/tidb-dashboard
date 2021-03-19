@@ -33,6 +33,8 @@ slow_query:
     host_tooltip: The address of the client that sends the query
     db: Execution Database
     db_tooltip: The database used to execute the query
+    trace_id: Trace ID
+    trace_id_tooltip: Unique trace ID of the query
 
     query_time2: Query Time
     query_time2_tooltip: The elapsed wall time when execution the query

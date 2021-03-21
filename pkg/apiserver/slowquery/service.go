@@ -27,6 +27,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/sysschema"
 )
 
 var (
@@ -36,25 +37,25 @@ var (
 
 type ServiceParams struct {
 	fx.In
-	TiDBClient *tidb.Client
+	TiDBClient         *tidb.Client
+	SchemaCacheService *sysschema.CacheService
 }
 
 type Service struct {
 	params ServiceParams
 }
 
-func NewService(p ServiceParams) *Service {
+func newService(p ServiceParams) *Service {
 	return &Service{params: p}
 }
 
-func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/slow_query")
 	{
 		endpoint.GET("/download", s.downloadHandler)
 
 		endpoint.Use(auth.MWAuthRequired())
 		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
-		endpoint.Use(mwCacheTableColumns)
 		{
 			endpoint.GET("/list", s.getList)
 			endpoint.GET("/detail", s.getDetails)
@@ -63,13 +64,6 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 			endpoint.GET("/table_columns", s.queryTableColumns)
 		}
-	}
-}
-
-func mwCacheTableColumns(c *gin.Context) {
-	if _, err := utils.GetTableColumns(SlowQueryTable); err != nil {
-		db := utils.GetTiDBConnection(c)
-		utils.CacheTableColumns(db, SlowQueryTable)
 	}
 }
 
@@ -87,7 +81,7 @@ func (s *Service) getList(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	results, err := querySlowLogList(db, &req)
+	results, err := querySlowLogList(db, s.params.SchemaCacheService, &req)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -135,7 +129,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	list, err := querySlowLogList(db, &req)
+	list, err := querySlowLogList(db, s.params.SchemaCacheService, &req)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -187,7 +181,8 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Router /slow_query/table_columns [get]
 func (s *Service) queryTableColumns(c *gin.Context) {
-	cs, err := utils.GetTableColumns(SlowQueryTable)
+	db := utils.GetTiDBConnection(c)
+	cs, err := s.params.SchemaCacheService.GetTableColumnNames(db, slowQueryTable)
 	if err != nil {
 		_ = c.Error(err)
 		return

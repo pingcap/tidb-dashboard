@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package schema
+package sysschema
 
 import (
 	"fmt"
@@ -19,29 +19,16 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type TableSchema struct {
+type ColumnInfo struct {
 	Field string `gorm:"column:Field" json:"field"`
 }
 
-func FetchTableColumns(db *gorm.DB, table string) ([]string, error) {
-	ts, err := FetchTableSchema(db, table)
+func FetchTableSchema(db *gorm.DB, table string) ([]ColumnInfo, error) {
+	var cs []ColumnInfo
+	err := db.Raw(fmt.Sprintf("DESC %s", table)).Scan(&cs).Error
 	if err != nil {
 		return nil, err
 	}
 
-	cs := []string{}
-	for _, s := range ts {
-		cs = append(cs, s.Field)
-	}
 	return cs, nil
-}
-
-func FetchTableSchema(db *gorm.DB, table string) ([]TableSchema, error) {
-	var ts []TableSchema
-	err := db.Raw(fmt.Sprintf("DESC %s", table)).Scan(&ts).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return ts, nil
 }

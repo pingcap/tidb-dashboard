@@ -14,18 +14,7 @@
 package statement
 
 import (
-	"fmt"
-	"reflect"
 	"strings"
-
-	"github.com/jinzhu/gorm"
-	"github.com/thoas/go-funk"
-
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-)
-
-const (
-	RelatedTag = "related"
 )
 
 type Config struct {
@@ -119,87 +108,6 @@ type Model struct {
 	AggAvgRocksdbBlockReadByte      uint `json:"avg_rocksdb_block_read_byte" agg:"CAST(SUM(exec_count * avg_rocksdb_block_read_byte) / SUM(exec_count) as SIGNED)"`
 	// Computed fields
 	RelatedSchemas string `json:"related_schemas"`
-}
-
-var cachedAggrMap map[string]string // jsonFieldName => aggr
-
-func getAggrMap() (map[string]string, error) {
-	if cachedAggrMap == nil {
-		t := reflect.TypeOf(Model{})
-		fieldsNum := t.NumField()
-		ret := map[string]string{}
-
-		for i := 0; i < fieldsNum; i++ {
-			field := t.Field(i)
-			jsonField := strings.ToLower(field.Tag.Get("json"))
-			rf, ok := field.Tag.Lookup(RelatedTag)
-			var rfs []string
-			if ok {
-				rfs = strings.Split(rf, ",")
-			} else {
-				rfs = append(rfs, jsonField)
-			}
-
-			// Filtering fields that are not in the table fields
-			verified, err := verifiedAggr(rfs)
-			if err != nil {
-				return nil, err
-			}
-
-			if agg, ok := field.Tag.Lookup("agg"); ok && verified {
-				ret[jsonField] = fmt.Sprintf("%s AS %s", agg, gorm.ToColumnName(field.Name))
-			}
-		}
-		cachedAggrMap = ret
-	}
-	return cachedAggrMap, nil
-}
-
-func verifiedAggr(relatedFields []string) (bool, error) {
-	tcs, err := utils.GetTableColumns(statementsTable)
-	if err != nil {
-		return false, err
-	}
-
-	lowcaseTcs := []string{}
-	for _, c := range tcs {
-		lowcaseTcs = append(lowcaseTcs, strings.ToLower(c))
-	}
-
-	return len(funk.Join(lowcaseTcs, relatedFields, funk.InnerJoin).([]string)) == len(relatedFields), nil
-}
-
-func getAggrFields(sqlFields ...string) ([]string, error) {
-	aggrMap, err := getAggrMap()
-	if err != nil {
-		return nil, err
-	}
-
-	ret := make([]string, 0, len(sqlFields))
-	for _, fieldName := range sqlFields {
-		if aggr, ok := aggrMap[strings.ToLower(fieldName)]; ok {
-			ret = append(ret, aggr)
-		}
-	}
-	return ret, nil
-}
-
-var cachedAllAggrFields []string
-
-func getAllAggrFields() ([]string, error) {
-	if cachedAllAggrFields == nil {
-		aggrMap, err := getAggrMap()
-		if err != nil {
-			return nil, err
-		}
-
-		ret := make([]string, 0, len(aggrMap))
-		for _, aggr := range aggrMap {
-			ret = append(ret, aggr)
-		}
-		cachedAllAggrFields = ret
-	}
-	return cachedAllAggrFields, nil
 }
 
 // tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"

@@ -50,6 +50,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
 	"github.com/pingcap/tidb-dashboard/pkg/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/sysschema"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
@@ -116,11 +117,11 @@ func (s *Service) Start(ctx context.Context) error {
 			tidb.NewTiDBClient,
 			tikv.NewTiKVClient,
 			tiflash.NewTiFlashClient,
+			sysschema.NewCacheService,
 			user.NewAuthService,
 			info.NewService,
 			clusterinfo.NewService,
 			logsearch.NewService,
-			slowquery.NewService,
 			diagnose.NewService,
 			keyvisual.NewService,
 			metrics.NewService,
@@ -131,6 +132,7 @@ func (s *Service) Start(ctx context.Context) error {
 		),
 		profiling.Module,
 		statement.Module,
+		slowquery.Module,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			user.RegisterRouter,
@@ -138,7 +140,6 @@ func (s *Service) Start(ctx context.Context) error {
 			clusterinfo.RegisterRouter,
 			profiling.RegisterRouter,
 			logsearch.RegisterRouter,
-			slowquery.RegisterRouter,
 			diagnose.RegisterRouter,
 			keyvisual.RegisterRouter,
 			metrics.RegisterRouter,

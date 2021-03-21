@@ -15,19 +15,17 @@ package slowquery
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/jinzhu/gorm"
 	"github.com/thoas/go-funk"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/sysschema"
 )
 
 const (
-	SlowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
-	SelectStmt     = "*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp"
-	ProjectionTag  = "proj"
+	slowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
+	selectStmt     = "*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp"
 )
 
 type SlowQuery struct {
@@ -59,9 +57,8 @@ type SlowQuery struct {
 	TxnStartTS string `gorm:"column:Txn_start_ts" json:"txn_start_ts"`
 
 	// Detail
-	PrevStmt        string `gorm:"column:Prev_stmt" json:"prev_stmt"`
-	Plan            string `gorm:"column:Plan" json:"plan"`
-	PlanFromBinding string `gorm:"column:Plan_from_binding" json:"plan_from_binding"`
+	PrevStmt string `gorm:"column:Prev_stmt" json:"prev_stmt"`
+	Plan     string `gorm:"column:Plan" json:"plan"`
 
 	// Basic
 	IsInternal   int    `gorm:"column:Is_internal" json:"is_internal"`
@@ -128,78 +125,6 @@ type GetListRequest struct {
 	Fields string `json:"fields" form:"fields"` // example: "Query,Digest"
 }
 
-func projectionTransform(field reflect.StructField, to string) (string, bool) {
-	p, ok := field.Tag.Lookup(ProjectionTag)
-	return fmt.Sprintf("%s AS %s", p, to), ok
-}
-
-var cachedFieldMap map[string]string
-
-func getFieldMap() (map[string]string, error) {
-	if cachedFieldMap == nil {
-		t := reflect.TypeOf(SlowQuery{})
-		fieldsNum := t.NumField()
-		ret := map[string]string{}
-
-		tfs, err := utils.GetTableColumns(SlowQueryTable)
-		if err != nil {
-			return nil, err
-		}
-
-		for i := 0; i < fieldsNum; i++ {
-			field := t.Field(i)
-			// ignore to check error because the field is defined by ourself
-			// we can confirm that it has "gorm" tag and fixed structure
-			s, _ := field.Tag.Lookup("gorm")
-			jsonField := strings.ToLower(field.Tag.Get("json"))
-			sourceField := strings.Split(s, ":")[1]
-			if s, ok := projectionTransform(field, sourceField); ok {
-				ret[jsonField] = s
-				// Filtering fields that are not in the table fields
-			} else if funk.Contains(tfs, sourceField) {
-				ret[jsonField] = sourceField
-			}
-		}
-		cachedFieldMap = ret
-	}
-	return cachedFieldMap, nil
-}
-
-func getProjectionsByFields(jsonFields ...string) ([]string, error) {
-	projMap, err := getFieldMap()
-	if err != nil {
-		return nil, err
-	}
-
-	ret := make([]string, 0, len(jsonFields))
-	for _, fieldName := range jsonFields {
-		field, ok := projMap[strings.ToLower(fieldName)]
-		if !ok {
-			return nil, fmt.Errorf("unknown field %s", fieldName)
-		}
-		ret = append(ret, field)
-	}
-	return ret, nil
-}
-
-var cachedAllProjections []string
-
-func getAllProjections() ([]string, error) {
-	if cachedAllProjections == nil {
-		projMap, err := getFieldMap()
-		if err != nil {
-			return nil, err
-		}
-
-		ret := make([]string, 0, len(projMap))
-		for _, proj := range projMap {
-			ret = append(ret, proj)
-		}
-		cachedAllProjections = ret
-	}
-	return cachedAllProjections, nil
-}
-
 type GetDetailRequest struct {
 	Digest    string  `json:"digest" form:"digest"`
 	Timestamp float64 `json:"timestamp" form:"timestamp"`
@@ -209,32 +134,34 @@ type GetDetailRequest struct {
 
 var constFields = []string{"digest", "connection_id", "timestamp"}
 
-func querySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
-	var projections []string
+func querySlowLogList(db *gorm.DB, cacheService *sysschema.CacheService, req *GetListRequest) ([]SlowQuery, error) {
+	var columnNames []string
 	var err error
 	reqFields := strings.Split(req.Fields, ",")
 	if err != nil {
 		return nil, err
 	}
 
+	cnService, err := newColumnNameService(db, cacheService)
+	if err != nil {
+		return nil, err
+	}
+
 	if len(reqFields) == 1 && reqFields[0] == "*" {
-		projections, err = getAllProjections()
-		if err != nil {
-			return nil, err
-		}
+		columnNames, err = cnService.getColumnNames()
 	} else {
-		projections, err = getProjectionsByFields(
+		columnNames, err = cnService.getColumnNames(
 			funk.UniqString(
 				append(constFields, reqFields...),
 			)...)
-		if err != nil {
-			return nil, err
-		}
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	tx := db.
-		Table(SlowQueryTable).
-		Select(strings.Join(projections, ", ")).
+		Table(slowQueryTable).
+		Select(strings.Join(columnNames, ", ")).
 		Where("Time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime)
 
 	if req.Limit > 0 {
@@ -264,7 +191,7 @@ func querySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 		req.OrderBy = "timestamp"
 	}
 
-	order, err := getProjectionsByFields(req.OrderBy)
+	order, err := cnService.getColumnNames(req.OrderBy)
 	if err != nil {
 		return nil, err
 	}
@@ -303,8 +230,8 @@ func querySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 func querySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) {
 	var result SlowQuery
 	err := db.
-		Table(SlowQueryTable).
-		Select(SelectStmt).
+		Table(slowQueryTable).
+		Select(selectStmt).
 		Where("Digest = ?", req.Digest).
 		Where("Time = FROM_UNIXTIME(?)", req.Timestamp).
 		Where("Conn_id = ?", req.ConnectID).

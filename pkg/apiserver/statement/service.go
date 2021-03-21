@@ -28,6 +28,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/sysschema"
 )
 
 var (
@@ -37,7 +38,8 @@ var (
 
 type ServiceParams struct {
 	fx.In
-	TiDBClient *tidb.Client
+	TiDBClient         *tidb.Client
+	SchemaCacheService *sysschema.CacheService
 }
 
 type Service struct {
@@ -55,7 +57,6 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 		endpoint.Use(auth.MWAuthRequired())
 		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
-		endpoint.Use(mwCacheTableColumns)
 		{
 			endpoint.GET("/config", s.configHandler)
 			endpoint.POST("/config", s.modifyConfigHandler)
@@ -69,13 +70,6 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 			endpoint.GET("/table_columns", s.queryTableColumns)
 		}
-	}
-}
-
-func mwCacheTableColumns(c *gin.Context) {
-	if _, err := utils.GetTableColumns(statementsTable); err != nil {
-		db := utils.GetTiDBConnection(c)
-		utils.CacheTableColumns(db, statementsTable)
 	}
 }
 
@@ -173,6 +167,7 @@ func (s *Service) listHandler(c *gin.Context) {
 	}
 	overviews, err := QueryStatements(
 		db,
+		s.params.SchemaCacheService,
 		req.BeginTime, req.EndTime,
 		req.Schemas,
 		req.StmtTypes,
@@ -205,7 +200,7 @@ func (s *Service) plansHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	plans, err := QueryPlans(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest)
+	plans, err := QueryPlans(db, s.params.SchemaCacheService, req.BeginTime, req.EndTime, req.SchemaName, req.Digest)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -231,7 +226,7 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	result, err := QueryPlanDetail(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans)
+	result, err := QueryPlanDetail(db, s.params.SchemaCacheService, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -259,6 +254,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	}
 	overviews, err := QueryStatements(
 		db,
+		s.params.SchemaCacheService,
 		req.BeginTime, req.EndTime,
 		req.Schemas,
 		req.StmtTypes,
@@ -315,7 +311,8 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Router /statements/table_columns [get]
 func (s *Service) queryTableColumns(c *gin.Context) {
-	cs, err := utils.GetTableColumns(statementsTable)
+	db := utils.GetTiDBConnection(c)
+	cs, err := s.params.SchemaCacheService.GetTableColumnNames(db, statementsTable)
 	if err != nil {
 		_ = c.Error(err)
 		return

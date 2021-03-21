@@ -21,6 +21,8 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/thoas/go-funk"
+
+	"github.com/pingcap/tidb-dashboard/pkg/utils/sysschema"
 )
 
 const (
@@ -132,18 +134,23 @@ func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
 // fields: ["digest_text", "sum_latency"]
 func QueryStatements(
 	db *gorm.DB,
+	cacheService *sysschema.CacheService,
 	beginTime, endTime int,
 	schemas, stmtTypes []string,
 	text string,
 	fields []string,
 ) (result []Model, err error) {
 	var aggrFields []string
+	aService, err := newAggrService(db, cacheService)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(fields) == 1 && fields[0] == "*" {
-		aggrFields, err = getAllAggrFields()
+		aggrFields, err = aService.getAggrs()
 	} else {
 		fields = funk.UniqString(append(fields, "schema_name", "digest", "sum_latency")) // "schema_name", "digest" for group, "sum_latency" for order
-		aggrFields, err = getAggrFields(fields...)
+		aggrFields, err = aService.getAggrs(fields...)
 	}
 	if err != nil {
 		return
@@ -190,10 +197,15 @@ func QueryStatements(
 
 func QueryPlans(
 	db *gorm.DB,
+	cacheService *sysschema.CacheService,
 	beginTime, endTime int,
 	schemaName, digest string,
 ) (result []Model, err error) {
-	fields, err := getAggrFields(
+	aService, err := newAggrService(db, cacheService)
+	if err != nil {
+		return nil, err
+	}
+	fields, err := aService.getAggrs(
 		"plan_digest",
 		"schema_name",
 		"digest_text",
@@ -223,11 +235,16 @@ func QueryPlans(
 
 func QueryPlanDetail(
 	db *gorm.DB,
+	cacheService *sysschema.CacheService,
 	beginTime, endTime int,
 	schemaName, digest string,
 	plans []string,
 ) (result Model, err error) {
-	fields, err := getAllAggrFields()
+	aService, err := newAggrService(db, cacheService)
+	if err != nil {
+		return
+	}
+	fields, err := aService.getAggrs()
 	if err != nil {
 		return
 	}

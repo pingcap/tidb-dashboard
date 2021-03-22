@@ -41,8 +41,6 @@ require (
 	go.uber.org/atomic v1.6.0
 	go.uber.org/fx v1.10.0
 	go.uber.org/zap v1.15.0
-	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
-	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.25.1
 )

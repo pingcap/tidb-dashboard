@@ -58,7 +58,6 @@ func (s *columnNameService) getFieldSchema() map[string]fieldSchema {
 		// we can confirm that it has "gorm" tag and fixed structure
 		gormField := f.Tag.Get("gorm")
 		dbName := strings.Split(gormField, ":")[1]
-		json := strings.ToLower(f.Tag.Get("json"))
 		projection := f.Tag.Get("proj")
 
 		// filter columns by db schema & projection
@@ -68,6 +67,7 @@ func (s *columnNameService) getFieldSchema() map[string]fieldSchema {
 			continue
 		}
 
+		json := strings.ToLower(f.Tag.Get("json"))
 		fs[json] = fieldSchema{DBName: dbName, JSON: json, Projection: projection}
 	}
 

@@ -58,9 +58,10 @@ func (s *aggrService) getFieldSchema() map[string]fieldSchema {
 		if !ok {
 			continue
 		}
-		rf, ok := f.Tag.Lookup("related")
+
 		json := strings.ToLower(f.Tag.Get("json"))
 		rfs := []string{json}
+		rf, ok := f.Tag.Lookup("related")
 		if ok {
 			rfs = strings.Split(rf, ",")
 		}

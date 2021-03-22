@@ -27,7 +27,6 @@ const (
 	commonTTL            = 1 * time.Minute
 )
 
-// TODO: use ttl based cache
 type CacheService struct {
 	singleflight.Group
 	ttl *ttlcache.Cache

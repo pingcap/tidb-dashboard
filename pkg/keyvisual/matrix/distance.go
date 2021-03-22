@@ -21,39 +21,18 @@ import (
 	"sync"
 
 	"go.uber.org/fx"
-
-	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/decorator"
 )
 
 // TODO:
 // * Multiplexing data between requests
 // * Limit memory usage
 
-type distanceHelper struct {
-	Scale [][]float64
-}
-
-type distanceStrategy struct {
-	decorator.LabelStrategy
-
-	SplitRatio float64
-	SplitLevel int
-	SplitCount int
-
-	SplitRatioPow []float64
-
-	ScaleWorkerCh chan *scaleTask
-}
-
-// DistanceStrategy adopts the strategy that the closer the split time is to the current time, the more traffic is
-// allocated, when buckets are split.
-func DistanceStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, label decorator.LabelStrategy, ratio float64, level int, count int) Strategy {
+func DistanceSplitStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, ratio float64, level int, count int) SplitStrategy {
 	pow := make([]float64, level)
 	for i := range pow {
 		pow[i] = math.Pow(ratio, float64(i))
 	}
-	s := &distanceStrategy{
-		LabelStrategy: label,
+	s := &distanceSplitStrategy{
 		SplitRatio:    ratio,
 		SplitLevel:    level,
 		SplitCount:    count,
@@ -74,7 +53,21 @@ func DistanceStrategy(lc fx.Lifecycle, wg *sync.WaitGroup, label decorator.Label
 	return s
 }
 
-func (s *distanceStrategy) GenerateHelper(chunks []chunk, compactKeys []string) interface{} {
+type distanceSplitStrategy struct {
+	SplitRatio float64
+	SplitLevel int
+	SplitCount int
+
+	SplitRatioPow []float64
+
+	ScaleWorkerCh chan *scaleTask
+}
+
+type distanceSplitter struct {
+	Scale [][]float64
+}
+
+func (s *distanceSplitStrategy) NewSplitter(chunks []chunk, compactKeys []string) Splitter {
 	axesLen := len(chunks)
 	keysLen := len(compactKeys)
 
@@ -100,12 +93,12 @@ func (s *distanceStrategy) GenerateHelper(chunks []chunk, compactKeys []string) 
 		updateRightDis(dis[i], dis[i+1], chunks[i].Keys, compactKeys)
 	}
 
-	return distanceHelper{
+	return &distanceSplitter{
 		Scale: s.GenerateScale(chunks, compactKeys, dis),
 	}
 }
 
-func (s *distanceStrategy) Split(dst, src chunk, tag splitTag, axesIndex int, helper interface{}) {
+func (e *distanceSplitter) Split(dst, src chunk, tag splitTag, axesIndex int) {
 	CheckPartOf(dst.Keys, src.Keys)
 
 	if len(dst.Keys) == len(src.Keys) {
@@ -127,7 +120,6 @@ func (s *distanceStrategy) Split(dst, src chunk, tag splitTag, axesIndex int, he
 		start++
 	}
 	end := start + 1
-	scale := helper.(distanceHelper).Scale
 
 	switch tag {
 	case splitTo:
@@ -137,7 +129,7 @@ func (s *distanceStrategy) Split(dst, src chunk, tag splitTag, axesIndex int, he
 			}
 			value := src.Values[i]
 			for ; start < end; start++ {
-				dst.Values[start] = uint64(float64(value) * scale[axesIndex][start])
+				dst.Values[start] = uint64(float64(value) * e.Scale[axesIndex][start])
 			}
 			end++
 		}
@@ -148,7 +140,7 @@ func (s *distanceStrategy) Split(dst, src chunk, tag splitTag, axesIndex int, he
 			}
 			value := src.Values[i]
 			for ; start < end; start++ {
-				dst.Values[start] += uint64(float64(value) * scale[axesIndex][start])
+				dst.Values[start] += uint64(float64(value) * e.Scale[axesIndex][start])
 			}
 			end++
 		}
@@ -175,7 +167,7 @@ type scaleTask struct {
 	Scale       *[]float64
 }
 
-func (s *distanceStrategy) StartWorkers(ctx context.Context, wg *sync.WaitGroup) {
+func (s *distanceSplitStrategy) StartWorkers(ctx context.Context, wg *sync.WaitGroup) {
 	s.ScaleWorkerCh = make(chan *scaleTask, workerCount*100)
 	wg.Add(workerCount)
 	for i := 0; i < workerCount; i++ {
@@ -186,11 +178,11 @@ func (s *distanceStrategy) StartWorkers(ctx context.Context, wg *sync.WaitGroup)
 	}
 }
 
-func (s *distanceStrategy) StopWorkers() {
+func (s *distanceSplitStrategy) StopWorkers() {
 	close(s.ScaleWorkerCh)
 }
 
-func (s *distanceStrategy) GenerateScale(chunks []chunk, compactKeys []string, dis [][]int) [][]float64 {
+func (s *distanceSplitStrategy) GenerateScale(chunks []chunk, compactKeys []string, dis [][]int) [][]float64 {
 	var wg sync.WaitGroup
 	axesLen := len(chunks)
 	scale := make([][]float64, axesLen)
@@ -208,7 +200,7 @@ func (s *distanceStrategy) GenerateScale(chunks []chunk, compactKeys []string, d
 	return scale
 }
 
-func (s *distanceStrategy) GenerateScaleColumnWork(ctx context.Context, ch <-chan *scaleTask) {
+func (s *distanceSplitStrategy) GenerateScaleColumnWork(ctx context.Context, ch <-chan *scaleTask) {
 	var maxDis int
 	// Each split interval needs to be sorted after copying to tempDis
 	var tempDis []int

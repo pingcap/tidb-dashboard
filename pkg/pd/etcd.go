@@ -21,31 +21,14 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
-func newZapEncoder(zapcore.EncoderConfig) (zapcore.Encoder, error) {
-	logCfg := log.Config{
-		DisableTimestamp:    false,
-		DisableErrorVerbose: false,
-	}
-	return log.NewTextEncoder(&logCfg), nil
-}
-
-func init() {
-	_ = zap.RegisterEncoder("etcd-client", newZapEncoder)
-}
-
 func NewEtcdClient(lc fx.Lifecycle, config *config.Config) (*clientv3.Client, error) {
-	// Because etcd client does not support setting logger directly,
-	// the configuration of pingcap/log is copied here.
 	zapCfg := zap.NewProductionConfig()
-	zapCfg.Encoding = "etcd-client"
-	zapCfg.OutputPaths = []string{"stderr"}
-	zapCfg.ErrorOutputPaths = []string{"stderr"}
+	zapCfg.Encoding = log.ZapEncodingName
 
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:            []string{config.PDEndPoint},

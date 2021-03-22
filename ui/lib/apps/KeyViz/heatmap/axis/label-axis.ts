@@ -62,7 +62,7 @@ export function labelAxisGroup(keyAxis: KeyAxisEntry[]) {
         ctx.stroke()
         ctx.closePath()
 
-        if (shouleShowLabelText(label)) {
+        if (shouldShowLabelText(label)) {
           ctx.font = label.focus ? focusFont : font
           ctx.fillStyle = label.focus ? textFillFocus : textFill
           ctx.translate(
@@ -81,7 +81,7 @@ export function labelAxisGroup(keyAxis: KeyAxisEntry[]) {
   return labelAxisGroup
 }
 
-function shouleShowLabelText(label: DisplayLabel): boolean {
+function shouldShowLabelText(label: DisplayLabel): boolean {
   return (
     label.endPos - label.startPos >= minTextHeight && label.val?.length !== 0
   )

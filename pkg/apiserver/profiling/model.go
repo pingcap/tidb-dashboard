@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 )
 
@@ -73,11 +72,11 @@ type Task struct {
 	ctx       context.Context
 	cancel    context.CancelFunc
 	taskGroup *TaskGroup
-	clientMap *fetcher.ClientMap
+	clientMap *clientMap
 }
 
 // NewTask creates a new profiling task.
-func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, cm *fetcher.ClientMap) *Task {
+func NewTask(ctx context.Context, taskGroup *TaskGroup, target model.RequestTargetNode, cm *clientMap) *Task {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Task{
 		TaskModel: &TaskModel{

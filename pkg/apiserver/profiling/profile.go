@@ -24,7 +24,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 )
 
-func profileAndWriteSVG(ctx context.Context, cm *fetcher.ClientMap, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
+func profileAndWriteSVG(ctx context.Context, cm *clientMap, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
 	c, err := cm.Get(target.Kind)
 	if err != nil {
 		return "", err

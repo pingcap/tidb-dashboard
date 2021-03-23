@@ -24,7 +24,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 )
@@ -63,10 +62,10 @@ type Service struct {
 	sessionCh     chan *StartRequestSession
 	lastTaskGroup *TaskGroup
 	tasks         sync.Map
-	clientMap     *fetcher.ClientMap
+	clientMap     *clientMap
 }
 
-func newService(lc fx.Lifecycle, p ServiceParams, cm *fetcher.ClientMap) (*Service, error) {
+func newService(lc fx.Lifecycle, p ServiceParams, cm *clientMap) (*Service, error) {
 	if err := autoMigrate(p.LocalStore); err != nil {
 		return nil, err
 	}

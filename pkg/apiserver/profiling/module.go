@@ -15,13 +15,11 @@ package profiling
 
 import (
 	"go.uber.org/fx"
-
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 )
 
 var Module = fx.Options(
 	fx.Provide(
-		fetcher.NewClientMap,
+		newClientMap,
 		newService,
 	),
 	fx.Invoke(registerRouter),

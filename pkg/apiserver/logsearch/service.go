@@ -43,7 +43,7 @@ type Service struct {
 }
 
 func NewService(lc fx.Lifecycle, config *config.Config, db *dbstore.DB) *Service {
-	dir := config.LogDir
+	dir := config.TempDir
 	if dir == "" {
 		var err error
 		dir, err = ioutil.TempDir("", "dashboard-logs")

@@ -19,14 +19,11 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
-var _ ProfileFetcher = (*FlameGraph)(nil)
+var _ Fetcher = (*FlameGraph)(nil)
 
-type FlameGraph struct {
-	Client *Client
-	Target *model.RequestTargetNode
-}
+type FlameGraph struct{}
 
-func (f *FlameGraph) Fetch(op *ProfileFetchOptions) ([]byte, error) {
+func (f *FlameGraph) Fetch(client Client, target *model.RequestTargetNode, op *ProfileFetchOptions) ([]byte, error) {
 	path := fmt.Sprintf("/debug/pprof/profile?seconds=%d", op.Duration)
-	return (*f.Client).Fetch(&ClientFetchOptions{IP: f.Target.IP, Port: f.Target.Port, Path: path})
+	return client.Fetch(&ClientFetchOptions{IP: target.IP, Port: target.Port, Path: path})
 }

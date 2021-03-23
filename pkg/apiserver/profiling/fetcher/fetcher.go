@@ -15,12 +15,45 @@ package fetcher
 
 import (
 	"time"
+
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
 type ProfileFetchOptions struct {
 	Duration time.Duration
 }
 
-type ProfileFetcher interface {
+type ProfilerFetcher interface {
 	Fetch(op *ProfileFetchOptions) ([]byte, error)
+}
+
+type Fetcher interface {
+	Fetch(client Client, target *model.RequestTargetNode, op *ProfileFetchOptions) ([]byte, error)
+}
+
+type profilerFetcher struct {
+	fetcher Fetcher
+	client  Client
+	target  *model.RequestTargetNode
+}
+
+func (p *profilerFetcher) Fetch(op *ProfileFetchOptions) ([]byte, error) {
+	return p.fetcher.Fetch(p.client, p.target, op)
+}
+
+type FetcherFactory struct {
+	client Client
+	target *model.RequestTargetNode
+}
+
+func (ff *FetcherFactory) Create(fetcher Fetcher) ProfilerFetcher {
+	return &profilerFetcher{
+		fetcher: fetcher,
+		client:  ff.client,
+		target:  ff.target,
+	}
+}
+
+func NewFetcherFactory(client Client, target *model.RequestTargetNode) *FetcherFactory {
+	return &FetcherFactory{client: client, target: target}
 }

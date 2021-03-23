@@ -42,33 +42,33 @@ type Client interface {
 
 type ClientMap map[model.NodeKind]Client
 
-func (fm *ClientMap) Get(kind model.NodeKind) (*Client, error) {
+func (fm *ClientMap) Get(kind model.NodeKind) (Client, error) {
 	f, ok := (*fm)[kind]
 	if !ok {
 		return nil, fmt.Errorf("unsupported target %s", kind)
 	}
-	return &f, nil
+	return f, nil
 }
 
 func NewClientMap(
-	tikvc *tikv.Client,
-	tidbc *tidb.Client,
-	pdc *pd.Client,
-	tiflashc *tiflash.Client,
+	tikvHttpClient *tikv.Client,
+	tiflashHttpClient *tiflash.Client,
+	tidbHttpClient *tidb.Client,
+	pdHttpClient *pd.Client,
 	config *config.Config,
 ) *ClientMap {
 	return &ClientMap{
 		model.NodeKindTiKV: &tikvClient{
-			client: tikvc,
+			client: tikvHttpClient,
 		},
 		model.NodeKindTiFlash: &tiflashClient{
-			client: tiflashc,
+			client: tiflashHttpClient,
 		},
 		model.NodeKindTiDB: &tidbClient{
-			client: tidbc,
+			client: tidbHttpClient,
 		},
 		model.NodeKindPD: &pdClient{
-			client:              pdc,
+			client:              pdHttpClient,
 			statusAPIHTTPScheme: config.GetClusterHTTPScheme(),
 		},
 	}

@@ -30,29 +30,21 @@ func profileAndWriteSVG(ctx context.Context, cm *fetcher.ClientMap, target *mode
 		return "", err
 	}
 
-	var p *profiler
+	ff := fetcher.NewFetcherFactory(c, target)
 
+	var f fetcher.ProfilerFetcher
+	var w Writer
 	switch target.Kind {
 	case model.NodeKindTiKV, model.NodeKindTiFlash:
-		p = &profiler{
-			Fetcher: &fetcher.FlameGraph{
-				Client: c,
-				Target: target,
-			},
-			Writer: &fileWriter{fileNameWithoutExt: fileNameWithoutExt, ext: "svg"},
-		}
+		f = ff.Create(&fetcher.FlameGraph{})
+		w = &fileWriter{fileNameWithoutExt: fileNameWithoutExt, ext: "svg"}
 	case model.NodeKindTiDB, model.NodeKindPD:
-		p = &profiler{
-			Fetcher: &fetcher.Pprof{
-				Client:             c,
-				Target:             target,
-				FileNameWithoutExt: fileNameWithoutExt,
-			},
-			Writer: &graphvizWriter{fileNameWithoutExt: fileNameWithoutExt, ext: graphviz.SVG},
-		}
+		f = ff.Create(&fetcher.Pprof{FileNameWithoutExt: fileNameWithoutExt})
+		w = &graphvizWriter{fileNameWithoutExt: fileNameWithoutExt, ext: graphviz.SVG}
 	default:
 		return "", fmt.Errorf("unsupported target %s", target)
 	}
 
-	return p.Profile(&profileOptions{ProfileFetchOptions: fetcher.ProfileFetchOptions{Duration: time.Duration(profileDurationSecs)}})
+	p := newProfiler(f, w)
+	return p.Profile(&profileOptions{Duration: time.Duration(profileDurationSecs)})
 }

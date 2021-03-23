@@ -30,16 +30,14 @@ import (
 
 var (
 	_ driver.Fetcher = (*pprofFetcher)(nil)
-	_ ProfileFetcher = (*Pprof)(nil)
+	_ Fetcher        = (*Pprof)(nil)
 )
 
 type Pprof struct {
-	Client             *Client
-	Target             *model.RequestTargetNode
 	FileNameWithoutExt string
 }
 
-func (p *Pprof) Fetch(op *ProfileFetchOptions) (d []byte, err error) {
+func (p *Pprof) Fetch(client Client, target *model.RequestTargetNode, op *ProfileFetchOptions) (d []byte, err error) {
 	tmpfile, err := ioutil.TempFile("", p.FileNameWithoutExt)
 	if err != nil {
 		return d, fmt.Errorf("failed to create temp file: %v", err)
@@ -55,14 +53,14 @@ func (p *Pprof) Fetch(op *ProfileFetchOptions) (d []byte, err error) {
 		"-output", "dummy",
 		"-seconds", strconv.Itoa(int(op.Duration)),
 	}
-	address := fmt.Sprintf("%s:%d", p.Target.IP, p.Target.Port)
+	address := fmt.Sprintf("%s:%d", target.IP, target.Port)
 	args = append(args, address)
 	f := &flagSet{
 		FlagSet: flag.NewFlagSet("pprof", flag.PanicOnError),
 		args:    args,
 	}
 	if err := driver.PProf(&driver.Options{
-		Fetch:   &pprofFetcher{Pprof: p},
+		Fetch:   &pprofFetcher{client: client, target: target},
 		Flagset: f,
 		UI:      &blankPprofUI{},
 		Writer:  &oswriter{output: tmpPath},
@@ -110,14 +108,15 @@ func (o *oswriter) Open(name string) (io.WriteCloser, error) {
 }
 
 type pprofFetcher struct {
-	*Pprof
+	client Client
+	target *model.RequestTargetNode
 }
 
 func (f *pprofFetcher) Fetch(src string, duration, timeout time.Duration) (*profile.Profile, string, error) {
 	secs := strconv.Itoa(int(duration / time.Second))
 	url := "/debug/pprof/profile?seconds=" + secs
 
-	resp, err := (*f.Client).Fetch(&ClientFetchOptions{IP: f.Target.IP, Port: f.Target.Port, Path: url})
+	resp, err := f.client.Fetch(&ClientFetchOptions{IP: f.target.IP, Port: f.target.Port, Path: url})
 	if err != nil {
 		return nil, url, err
 	}

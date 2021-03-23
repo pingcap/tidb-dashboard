@@ -41,12 +41,12 @@ func (p *profilerFetcher) Fetch(op *ProfileFetchOptions) ([]byte, error) {
 	return p.fetcher.Fetch(p.client, p.target, op)
 }
 
-type FetcherFactory struct {
+type Factory struct {
 	client Client
 	target *model.RequestTargetNode
 }
 
-func (ff *FetcherFactory) Create(fetcher Fetcher) ProfilerFetcher {
+func (ff *Factory) Create(fetcher Fetcher) ProfilerFetcher {
 	return &profilerFetcher{
 		fetcher: fetcher,
 		client:  ff.client,
@@ -54,6 +54,6 @@ func (ff *FetcherFactory) Create(fetcher Fetcher) ProfilerFetcher {
 	}
 }
 
-func NewFetcherFactory(client Client, target *model.RequestTargetNode) *FetcherFactory {
-	return &FetcherFactory{client: client, target: target}
+func NewFetcherFactory(client Client, target *model.RequestTargetNode) *Factory {
+	return &Factory{client: client, target: target}
 }

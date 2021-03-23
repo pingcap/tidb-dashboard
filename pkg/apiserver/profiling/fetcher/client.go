@@ -51,24 +51,24 @@ func (fm *ClientMap) Get(kind model.NodeKind) (Client, error) {
 }
 
 func NewClientMap(
-	tikvHttpClient *tikv.Client,
-	tiflashHttpClient *tiflash.Client,
-	tidbHttpClient *tidb.Client,
-	pdHttpClient *pd.Client,
+	tikvHTTPClient *tikv.Client,
+	tiflashHTTPClient *tiflash.Client,
+	tidbHTTPClient *tidb.Client,
+	pdHTTPClient *pd.Client,
 	config *config.Config,
 ) *ClientMap {
 	return &ClientMap{
 		model.NodeKindTiKV: &tikvClient{
-			client: tikvHttpClient,
+			client: tikvHTTPClient,
 		},
 		model.NodeKindTiFlash: &tiflashClient{
-			client: tiflashHttpClient,
+			client: tiflashHTTPClient,
 		},
 		model.NodeKindTiDB: &tidbClient{
-			client: tidbHttpClient,
+			client: tidbHTTPClient,
 		},
 		model.NodeKindPD: &pdClient{
-			client:              pdHttpClient,
+			client:              pdHTTPClient,
 			statusAPIHTTPScheme: config.GetClusterHTTPScheme(),
 		},
 	}

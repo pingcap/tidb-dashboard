@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/jinzhu/gorm"
 	"github.com/thoas/go-funk"
@@ -25,6 +26,7 @@ import (
 )
 
 type aggrService struct {
+	rw        sync.RWMutex
 	dbColumns []string
 	aggrCache map[string]fieldSchema
 }
@@ -44,9 +46,15 @@ type fieldSchema struct {
 }
 
 func (s *aggrService) getFieldSchema() map[string]fieldSchema {
+	s.rw.RLock()
 	if s.aggrCache != nil {
+		s.rw.RUnlock()
 		return s.aggrCache
 	}
+	s.rw.RUnlock()
+
+	s.rw.Lock()
+	defer s.rw.Unlock()
 
 	t := reflect.TypeOf(Model{})
 	fieldsNum := t.NumField()

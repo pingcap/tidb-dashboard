@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/jinzhu/gorm"
 	"github.com/thoas/go-funk"
@@ -25,6 +26,7 @@ import (
 )
 
 type columnNameService struct {
+	rw               sync.RWMutex
 	dbColumns        []string
 	fieldSchemaCache map[string]fieldSchema
 }
@@ -44,9 +46,15 @@ type fieldSchema struct {
 }
 
 func (s *columnNameService) getFieldSchema() map[string]fieldSchema {
+	s.rw.RLock()
 	if s.fieldSchemaCache != nil {
+		s.rw.RUnlock()
 		return s.fieldSchemaCache
 	}
+	s.rw.RUnlock()
+
+	s.rw.Lock()
+	defer s.rw.Unlock()
 
 	t := reflect.TypeOf(SlowQuery{})
 	fieldsNum := t.NumField()

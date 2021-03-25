@@ -120,7 +120,7 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	dsnConfig.Addr = addr
 	dsnConfig.User = user
 	dsnConfig.Passwd = pass
-	dsnConfig.Timeout = time.Second
+	dsnConfig.Timeout = time.Second * 60
 	dsnConfig.ParseTime = true
 	dsnConfig.Loc = time.Local
 	dsnConfig.MultiStatements = true

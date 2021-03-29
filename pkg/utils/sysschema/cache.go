@@ -19,16 +19,14 @@ import (
 
 	"github.com/ReneKroon/ttlcache/v2"
 	"github.com/jinzhu/gorm"
-	"golang.org/x/sync/singleflight"
 )
 
 const (
-	sysschemaCachePrefix = "sysschema_cache"
-	commonTTL            = 1 * time.Minute
+	sysSchemaCachePrefix = "sys_schema_cache"
+	sysSchemaTTL         = 1 * time.Minute
 )
 
 type CacheService struct {
-	singleflight.Group
 	ttl *ttlcache.Cache
 }
 
@@ -41,52 +39,46 @@ func NewCacheService() *CacheService {
 }
 
 func (c *CacheService) GetTableColumnNames(db *gorm.DB, tableName string) ([]string, error) {
-	key := fmt.Sprintf("%s_%s_tcn", sysschemaCachePrefix, tableName)
-	sharedValue, err, _ := c.Do(key, func() (interface{}, error) {
-		cnsCache, notExists := c.ttl.Get(key)
-		if notExists == nil {
-			return cnsCache, nil
-		}
+	key := fmt.Sprintf("%s_%s_tcn", sysSchemaCachePrefix, tableName)
+	cnsCache, notExists := c.ttl.Get(key)
+	if notExists == nil {
+		return cnsCache.([]string), nil
+	}
 
-		cns := []string{}
-		cs, err := c.GetTableColumns(db, tableName)
-		if err != nil {
-			return nil, err
-		}
+	cns := []string{}
+	cs, err := c.GetTableColumns(db, tableName)
+	if err != nil {
+		return nil, err
+	}
 
-		for _, c := range cs {
-			cns = append(cns, c.Field)
-		}
+	for _, c := range cs {
+		cns = append(cns, c.Field)
+	}
 
-		err = c.ttl.SetWithTTL(key, cns, commonTTL)
-		if err != nil {
-			return nil, err
-		}
+	err = c.ttl.SetWithTTL(key, cns, sysSchemaTTL)
+	if err != nil {
+		return nil, err
+	}
 
-		return cns, nil
-	})
-	return sharedValue.([]string), err
+	return cns, nil
 }
 
 func (c *CacheService) GetTableColumns(db *gorm.DB, tableName string) ([]ColumnInfo, error) {
-	key := fmt.Sprintf("%s_%s_tc", sysschemaCachePrefix, tableName)
-	sharedValue, err, _ := c.Do(key, func() (interface{}, error) {
-		csCache, notExists := c.ttl.Get(key)
-		if notExists == nil {
-			return csCache, nil
-		}
+	key := fmt.Sprintf("%s_%s_tc", sysSchemaCachePrefix, tableName)
+	csCache, notExists := c.ttl.Get(key)
+	if notExists == nil {
+		return csCache.([]ColumnInfo), nil
+	}
 
-		cs, err := FetchTableSchema(db, tableName)
-		if err != nil {
-			return nil, err
-		}
+	cs, err := FetchTableSchema(db, tableName)
+	if err != nil {
+		return nil, err
+	}
 
-		err = c.ttl.SetWithTTL(key, cs, commonTTL)
-		if err != nil {
-			return nil, err
-		}
+	err = c.ttl.SetWithTTL(key, cs, sysSchemaTTL)
+	if err != nil {
+		return nil, err
+	}
 
-		return cs, nil
-	})
-	return sharedValue.([]ColumnInfo), err
+	return cs, nil
 }

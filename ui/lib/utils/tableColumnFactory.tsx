@@ -89,7 +89,10 @@ export class TableColumnFactory {
 
   private allowColumnsMap: { [f: string]: boolean }
 
-  constructor(private transPrefix: string, allowColumns: string[] = []) {
+  constructor(
+    private transPrefix: string,
+    private allowColumns: string[] = []
+  ) {
     this.allowColumnsMap = allowColumns
       .map((f) => f.toLowerCase())
       .reduce((prev, f) => {
@@ -107,8 +110,8 @@ export class TableColumnFactory {
   }
 
   columns(controlsConfig: any[]): IColumn[] {
-    const needFilterColumn = this.allowColumnsMap.length
     const columns = this.array(controlsConfig).getConfig()
+    const needFilterColumn = this.allowColumns.length
     if (!needFilterColumn) {
       return columns
     }
@@ -119,7 +122,8 @@ export class TableColumnFactory {
     fieldName: T,
     _rows?: U[]
   ): Column {
-    return this.control(this.getDefaultColumnConfig(fieldName)).patchConfig({
+    return this.control({
+      ...this.getDefaultColumnConfig(fieldName),
       maxWidth: 150,
       onRender: (rec: U) => (
         <Tooltip title={rec[fieldName]}>
@@ -135,7 +139,8 @@ export class TableColumnFactory {
     rows?: U[]
   ): Column {
     const capacity = rows ? _max(rows.map((v) => v[fieldName])) ?? 0 : 0
-    return this.control(this.getDefaultColumnConfig(fieldName)).patchConfig({
+    return this.control({
+      ...this.getDefaultColumnConfig(fieldName),
       minWidth: 140,
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
@@ -168,49 +173,49 @@ export class TableColumnFactory {
 
     const capacity = rows ? _max(rows.map((v) => v[max.fieldName])) ?? 0 : 0
 
-    return this.control(this.getDefaultColumnConfig(avg.fieldName)).patchConfig(
-      {
-        name: displayTransKey || avg.fieldName,
-        minWidth: 140,
-        maxWidth: 200,
-        columnActionsMode: ColumnActionsMode.clickable,
-        onRender: (rec) => {
-          const avgVal = rec[avg.fieldName]
-          const maxVal = rec[max.fieldName]
-          const minVal = min ? rec[min.fieldName] : undefined
-          const tooltips = [avg, min, max]
-            .filter((el) => el !== undefined)
-            .map((bar) => {
-              const prefix = capitalize(bar!.tooltipPrefix + ':').padEnd(
-                maxTooltipPrefixLen + 2
-              )
-              const fmtVal = formatVal(rec[bar!.fieldName], unit)
-              return `${prefix}${fmtVal}`
-            })
-            .join('\n')
-          return (
-            <Tooltip title={<Pre>{tooltips.trim()}</Pre>}>
-              <Bar
-                textWidth={70}
-                value={avgVal}
-                max={maxVal}
-                min={minVal}
-                capacity={capacity as number}
-              >
-                {formatVal(avgVal, unit)}
-              </Bar>
-            </Tooltip>
-          )
-        },
-      }
-    )
+    return this.control({
+      ...this.getDefaultColumnConfig(avg.fieldName),
+      name: displayTransKey || avg.fieldName,
+      minWidth: 140,
+      maxWidth: 200,
+      columnActionsMode: ColumnActionsMode.clickable,
+      onRender: (rec) => {
+        const avgVal = rec[avg.fieldName]
+        const maxVal = rec[max.fieldName]
+        const minVal = min ? rec[min.fieldName] : undefined
+        const tooltips = [avg, min, max]
+          .filter((el) => el !== undefined)
+          .map((bar) => {
+            const prefix = capitalize(bar!.tooltipPrefix + ':').padEnd(
+              maxTooltipPrefixLen + 2
+            )
+            const fmtVal = formatVal(rec[bar!.fieldName], unit)
+            return `${prefix}${fmtVal}`
+          })
+          .join('\n')
+        return (
+          <Tooltip title={<Pre>{tooltips.trim()}</Pre>}>
+            <Bar
+              textWidth={70}
+              value={avgVal}
+              max={maxVal}
+              min={minVal}
+              capacity={capacity as number}
+            >
+              {formatVal(avgVal, unit)}
+            </Bar>
+          </Tooltip>
+        )
+      },
+    })
   }
 
   timestamp<T extends string, U extends { [K in T]?: number }>(
     fieldName: T,
     _rows?: U[]
   ): Column {
-    return this.control(this.getDefaultColumnConfig(fieldName)).patchConfig({
+    return this.control({
+      ...this.getDefaultColumnConfig(fieldName),
       maxWidth: 150,
       columnActionsMode: ColumnActionsMode.clickable,
       onRender: (rec: U) => (
@@ -226,7 +231,8 @@ export class TableColumnFactory {
     showFullSQL?: boolean,
     _rows?: U[]
   ): Column {
-    return this.control(this.getDefaultColumnConfig(fieldName)).patchConfig({
+    return this.control({
+      ...this.getDefaultColumnConfig(fieldName),
       maxWidth: 500,
       isMultiline: showFullSQL,
       onRender: (rec: U) =>

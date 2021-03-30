@@ -51,7 +51,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
 	"github.com/pingcap/tidb-dashboard/pkg/utils"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/sysschema"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
@@ -118,7 +117,7 @@ func (s *Service) Start(ctx context.Context) error {
 			tidb.NewTiDBClient,
 			tikv.NewTiKVClient,
 			tiflash.NewTiFlashClient,
-			sysschema.NewCacheService,
+			utils.NewSysSchema,
 			user.NewAuthService,
 			info.NewService,
 			clusterinfo.NewService,

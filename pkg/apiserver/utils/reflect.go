@@ -11,24 +11,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package sysschema
+package utils
 
-import (
-	"fmt"
+import "reflect"
 
-	"github.com/jinzhu/gorm"
-)
+type callbackFn func(f reflect.StructField)
 
-type ColumnInfo struct {
-	Field string `gorm:"column:Field" json:"field"`
-}
-
-func FetchTableSchema(db *gorm.DB, table string) ([]ColumnInfo, error) {
-	var cs []ColumnInfo
-	err := db.Raw(fmt.Sprintf("DESC %s", table)).Scan(&cs).Error
-	if err != nil {
-		return nil, err
+func ForEachField(s interface{}, fn callbackFn) {
+	t := reflect.TypeOf(s)
+	num := t.NumField()
+	for i := 0; i < num; i++ {
+		f := t.Field(i)
+		fn(f)
 	}
-
-	return cs, nil
 }

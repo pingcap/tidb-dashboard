@@ -28,7 +28,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/sysschema"
+	commonUtils "github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
 var (
@@ -38,8 +38,8 @@ var (
 
 type ServiceParams struct {
 	fx.In
-	TiDBClient         *tidb.Client
-	SchemaCacheService *sysschema.CacheService
+	TiDBClient *tidb.Client
+	SysSchema  *commonUtils.SysSchema
 }
 
 type Service struct {
@@ -167,7 +167,7 @@ func (s *Service) listHandler(c *gin.Context) {
 	}
 	overviews, err := QueryStatements(
 		db,
-		s.params.SchemaCacheService,
+		s.params.SysSchema,
 		req.BeginTime, req.EndTime,
 		req.Schemas,
 		req.StmtTypes,
@@ -200,7 +200,7 @@ func (s *Service) plansHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	plans, err := QueryPlans(db, s.params.SchemaCacheService, req.BeginTime, req.EndTime, req.SchemaName, req.Digest)
+	plans, err := QueryPlans(db, s.params.SysSchema, req.BeginTime, req.EndTime, req.SchemaName, req.Digest)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -226,7 +226,7 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	result, err := QueryPlanDetail(db, s.params.SchemaCacheService, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans)
+	result, err := QueryPlanDetail(db, s.params.SysSchema, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -254,7 +254,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	}
 	overviews, err := QueryStatements(
 		db,
-		s.params.SchemaCacheService,
+		s.params.SysSchema,
 		req.BeginTime, req.EndTime,
 		req.Schemas,
 		req.StmtTypes,
@@ -312,7 +312,7 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Router /statements/table_columns [get]
 func (s *Service) queryTableColumns(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	cs, err := s.params.SchemaCacheService.GetTableColumnNames(db, statementsTable)
+	cs, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
 	if err != nil {
 		_ = c.Error(err)
 		return

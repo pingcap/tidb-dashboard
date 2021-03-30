@@ -20,7 +20,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/thoas/go-funk"
 
-	"github.com/pingcap/tidb-dashboard/pkg/utils/sysschema"
+	"github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
 const (
@@ -134,23 +134,23 @@ type GetDetailRequest struct {
 
 var constFields = []string{"digest", "connection_id", "timestamp"}
 
-func querySlowLogList(db *gorm.DB, cacheService *sysschema.CacheService, req *GetListRequest) ([]SlowQuery, error) {
-	var columnNames []string
+func querySlowLogList(db *gorm.DB, sysSchema *utils.SysSchema, req *GetListRequest) ([]SlowQuery, error) {
+	var fields []string
 	var err error
 	reqFields := strings.Split(req.Fields, ",")
 	if err != nil {
 		return nil, err
 	}
 
-	cnService, err := newColumnNameService(db, cacheService)
+	tableColumns, err := sysSchema.GetTableColumnNames(db, slowQueryTable)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(reqFields) == 1 && reqFields[0] == "*" {
-		columnNames, err = cnService.getColumnNames()
+		fields, err = filterFieldsBy(tableColumns)
 	} else {
-		columnNames, err = cnService.getColumnNames(
+		fields, err = filterFieldsBy(tableColumns,
 			funk.UniqString(
 				append(constFields, reqFields...),
 			)...)
@@ -161,7 +161,7 @@ func querySlowLogList(db *gorm.DB, cacheService *sysschema.CacheService, req *Ge
 
 	tx := db.
 		Table(slowQueryTable).
-		Select(strings.Join(columnNames, ", ")).
+		Select(strings.Join(fields, ", ")).
 		Where("Time BETWEEN FROM_UNIXTIME(?) AND FROM_UNIXTIME(?)", req.BeginTime, req.EndTime)
 
 	if req.Limit > 0 {
@@ -191,7 +191,7 @@ func querySlowLogList(db *gorm.DB, cacheService *sysschema.CacheService, req *Ge
 		req.OrderBy = "timestamp"
 	}
 
-	order, err := cnService.getColumnNames(req.OrderBy)
+	order, err := filterFieldsBy(tableColumns, req.OrderBy)
 	if err != nil {
 		return nil, err
 	}

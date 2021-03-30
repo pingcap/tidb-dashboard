@@ -22,7 +22,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/thoas/go-funk"
 
-	"github.com/pingcap/tidb-dashboard/pkg/utils/sysschema"
+	"github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
 const (
@@ -134,30 +134,30 @@ func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
 // fields: ["digest_text", "sum_latency"]
 func QueryStatements(
 	db *gorm.DB,
-	cacheService *sysschema.CacheService,
+	sysSchema *utils.SysSchema,
 	beginTime, endTime int,
 	schemas, stmtTypes []string,
 	text string,
-	fields []string,
+	reqFields []string,
 ) (result []Model, err error) {
-	var aggrFields []string
-	aService, err := newAggrService(db, cacheService)
+	var fields []string
+	tableColumns, err := sysSchema.GetTableColumnNames(db, statementsTable)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(fields) == 1 && fields[0] == "*" {
-		aggrFields, err = aService.getAggrs()
+	if len(reqFields) == 1 && reqFields[0] == "*" {
+		fields, err = filterFieldsBy(tableColumns)
 	} else {
-		fields = funk.UniqString(append(fields, "schema_name", "digest", "sum_latency")) // "schema_name", "digest" for group, "sum_latency" for order
-		aggrFields, err = aService.getAggrs(fields...)
+		reqFields = funk.UniqString(append(reqFields, "schema_name", "digest", "sum_latency")) // "schema_name", "digest" for group, "sum_latency" for order
+		fields, err = filterFieldsBy(tableColumns, reqFields...)
 	}
 	if err != nil {
 		return
 	}
 
 	query := db.
-		Select(strings.Join(aggrFields, ", ")).
+		Select(strings.Join(fields, ", ")).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Group("schema_name, digest").
@@ -197,15 +197,15 @@ func QueryStatements(
 
 func QueryPlans(
 	db *gorm.DB,
-	cacheService *sysschema.CacheService,
+	sysSchema *utils.SysSchema,
 	beginTime, endTime int,
 	schemaName, digest string,
 ) (result []Model, err error) {
-	aService, err := newAggrService(db, cacheService)
+	tableColumns, err := sysSchema.GetTableColumnNames(db, statementsTable)
 	if err != nil {
 		return nil, err
 	}
-	fields, err := aService.getAggrs(
+	fields, err := filterFieldsBy(tableColumns,
 		"plan_digest",
 		"schema_name",
 		"digest_text",
@@ -235,16 +235,16 @@ func QueryPlans(
 
 func QueryPlanDetail(
 	db *gorm.DB,
-	cacheService *sysschema.CacheService,
+	sysSchema *utils.SysSchema,
 	beginTime, endTime int,
 	schemaName, digest string,
 	plans []string,
 ) (result Model, err error) {
-	aService, err := newAggrService(db, cacheService)
+	tableColumns, err := sysSchema.GetTableColumnNames(db, statementsTable)
 	if err != nil {
 		return
 	}
-	fields, err := aService.getAggrs()
+	fields, err := filterFieldsBy(tableColumns)
 	if err != nil {
 		return
 	}

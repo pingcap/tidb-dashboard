@@ -27,7 +27,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/sysschema"
+	commonUtils "github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
 var (
@@ -37,8 +37,8 @@ var (
 
 type ServiceParams struct {
 	fx.In
-	TiDBClient         *tidb.Client
-	SchemaCacheService *sysschema.CacheService
+	TiDBClient *tidb.Client
+	SysSchema  *commonUtils.SysSchema
 }
 
 type Service struct {
@@ -81,7 +81,7 @@ func (s *Service) getList(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	results, err := querySlowLogList(db, s.params.SchemaCacheService, &req)
+	results, err := querySlowLogList(db, s.params.SysSchema, &req)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -129,7 +129,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	list, err := querySlowLogList(db, s.params.SchemaCacheService, &req)
+	list, err := querySlowLogList(db, s.params.SysSchema, &req)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -182,7 +182,7 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Router /slow_query/table_columns [get]
 func (s *Service) queryTableColumns(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	cs, err := s.params.SchemaCacheService.GetTableColumnNames(db, slowQueryTable)
+	cs, err := s.params.SysSchema.GetTableColumnNames(db, slowQueryTable)
 	if err != nil {
 		_ = c.Error(err)
 		return

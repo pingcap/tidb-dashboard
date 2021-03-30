@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package sysschema
+package utils
 
 import (
 	"fmt"
@@ -22,24 +22,24 @@ import (
 )
 
 const (
-	sysSchemaCachePrefix = "sys_schema_cache"
-	sysSchemaTTL         = 1 * time.Minute
+	cachePrefix = "sys_schema"
+	cacheTTL    = 1 * time.Minute
 )
 
-type CacheService struct {
+type SysSchema struct {
 	ttl *ttlcache.Cache
 }
 
-func NewCacheService() *CacheService {
+func NewSysSchema() *SysSchema {
 	ttl := ttlcache.NewCache()
 	ttl.SkipTTLExtensionOnHit(true)
-	return &CacheService{
+	return &SysSchema{
 		ttl: ttl,
 	}
 }
 
-func (c *CacheService) GetTableColumnNames(db *gorm.DB, tableName string) ([]string, error) {
-	key := fmt.Sprintf("%s_%s_tcn", sysSchemaCachePrefix, tableName)
+func (c *SysSchema) GetTableColumnNames(db *gorm.DB, tableName string) ([]string, error) {
+	key := fmt.Sprintf("%s_%s_tcn", cachePrefix, tableName)
 	cnsCache, notExists := c.ttl.Get(key)
 	if notExists == nil {
 		return cnsCache.([]string), nil
@@ -55,7 +55,7 @@ func (c *CacheService) GetTableColumnNames(db *gorm.DB, tableName string) ([]str
 		cns = append(cns, c.Field)
 	}
 
-	err = c.ttl.SetWithTTL(key, cns, sysSchemaTTL)
+	err = c.ttl.SetWithTTL(key, cns, cacheTTL)
 	if err != nil {
 		return nil, err
 	}
@@ -63,19 +63,33 @@ func (c *CacheService) GetTableColumnNames(db *gorm.DB, tableName string) ([]str
 	return cns, nil
 }
 
-func (c *CacheService) GetTableColumns(db *gorm.DB, tableName string) ([]ColumnInfo, error) {
-	key := fmt.Sprintf("%s_%s_tc", sysSchemaCachePrefix, tableName)
+type ColumnInfo struct {
+	Field string `gorm:"column:Field" json:"field"`
+}
+
+func (c *SysSchema) GetTableColumns(db *gorm.DB, tableName string) ([]ColumnInfo, error) {
+	key := fmt.Sprintf("%s_%s_tc", cachePrefix, tableName)
 	csCache, notExists := c.ttl.Get(key)
 	if notExists == nil {
 		return csCache.([]ColumnInfo), nil
 	}
 
-	cs, err := FetchTableSchema(db, tableName)
+	cs, err := fetchTableSchema(db, tableName)
 	if err != nil {
 		return nil, err
 	}
 
-	err = c.ttl.SetWithTTL(key, cs, sysSchemaTTL)
+	err = c.ttl.SetWithTTL(key, cs, cacheTTL)
+	if err != nil {
+		return nil, err
+	}
+
+	return cs, nil
+}
+
+func fetchTableSchema(db *gorm.DB, table string) ([]ColumnInfo, error) {
+	var cs []ColumnInfo
+	err := db.Raw(fmt.Sprintf("DESC %s", table)).Scan(&cs).Error
 	if err != nil {
 		return nil, err
 	}

@@ -132,8 +132,6 @@ type GetDetailRequest struct {
 	ConnectID string `json:"connect_id" form:"connect_id"`
 }
 
-var constFields = []string{"digest", "connection_id", "timestamp"}
-
 func querySlowLogList(db *gorm.DB, sysSchema *utils.SysSchema, req *GetListRequest) ([]SlowQuery, error) {
 	var fields []string
 	var err error
@@ -150,9 +148,10 @@ func querySlowLogList(db *gorm.DB, sysSchema *utils.SysSchema, req *GetListReque
 	if len(reqFields) == 1 && reqFields[0] == "*" {
 		fields, err = filterFieldsBy(SlowQuery{}, tableColumns)
 	} else {
+		mustContainsFields := []string{"digest", "connection_id", "timestamp"}
 		fields, err = filterFieldsBy(SlowQuery{}, tableColumns,
 			funk.UniqString(
-				append(constFields, reqFields...),
+				append(mustContainsFields, reqFields...),
 			)...)
 	}
 	if err != nil {

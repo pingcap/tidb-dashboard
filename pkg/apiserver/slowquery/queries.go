@@ -148,9 +148,9 @@ func querySlowLogList(db *gorm.DB, sysSchema *utils.SysSchema, req *GetListReque
 	}
 
 	if len(reqFields) == 1 && reqFields[0] == "*" {
-		fields, err = filterFieldsBy(tableColumns)
+		fields, err = filterFieldsBy(SlowQuery{}, tableColumns)
 	} else {
-		fields, err = filterFieldsBy(tableColumns,
+		fields, err = filterFieldsBy(SlowQuery{}, tableColumns,
 			funk.UniqString(
 				append(constFields, reqFields...),
 			)...)
@@ -191,7 +191,7 @@ func querySlowLogList(db *gorm.DB, sysSchema *utils.SysSchema, req *GetListReque
 		req.OrderBy = "timestamp"
 	}
 
-	order, err := filterFieldsBy(tableColumns, req.OrderBy)
+	order, err := filterFieldsBy(SlowQuery{}, tableColumns, req.OrderBy)
 	if err != nil {
 		return nil, err
 	}

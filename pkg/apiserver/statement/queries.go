@@ -147,10 +147,10 @@ func QueryStatements(
 	}
 
 	if len(reqFields) == 1 && reqFields[0] == "*" {
-		fields, err = filterFieldsBy(tableColumns)
+		fields, err = filterFieldsBy(Model{}, tableColumns)
 	} else {
 		reqFields = funk.UniqString(append(reqFields, "schema_name", "digest", "sum_latency")) // "schema_name", "digest" for group, "sum_latency" for order
-		fields, err = filterFieldsBy(tableColumns, reqFields...)
+		fields, err = filterFieldsBy(Model{}, tableColumns, reqFields...)
 	}
 	if err != nil {
 		return
@@ -205,7 +205,7 @@ func QueryPlans(
 	if err != nil {
 		return nil, err
 	}
-	fields, err := filterFieldsBy(tableColumns,
+	fields, err := filterFieldsBy(Model{}, tableColumns,
 		"plan_digest",
 		"schema_name",
 		"digest_text",
@@ -244,7 +244,7 @@ func QueryPlanDetail(
 	if err != nil {
 		return
 	}
-	fields, err := filterFieldsBy(tableColumns)
+	fields, err := filterFieldsBy(Model{}, tableColumns)
 	if err != nil {
 		return
 	}

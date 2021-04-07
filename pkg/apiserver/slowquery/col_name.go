@@ -15,7 +15,6 @@ package slowquery
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/thoas/go-funk"
@@ -23,50 +22,47 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
-type fieldSchema struct {
-	DBName     string
-	JSON       string
-	Projection string
+type tagStruct struct {
+	Gorm       string `tag:"gorm"`
+	JSON       string `tag:"json"`
+	Projection string `tag:"proj"`
 }
 
-func getFieldSchema() map[string]fieldSchema {
-	fs := map[string]fieldSchema{}
-
-	utils.ForEachField(SlowQuery{}, func(f reflect.StructField) {
-		// ignore to check error because the field is defined by ourself
-		// we can confirm that it has "gorm" tag and fixed structure
-		gormField := f.Tag.Get("gorm")
-		dbName := strings.Split(gormField, ":")[1]
-		projection := f.Tag.Get("proj")
-		json := strings.ToLower(f.Tag.Get("json"))
-		fs[json] = fieldSchema{DBName: dbName, JSON: json, Projection: projection}
-	})
-
-	return fs
-}
-
-func filterFieldsBy(dbColumns []string, allowlist ...string) ([]string, error) {
-	fs := map[string]fieldSchema{}
-	originFs := getFieldSchema()
-	haveAllowlist := len(allowlist) != 0
-
-	for k, v := range originFs {
-		// Filter the column when it is not in the table schema and there is no Projection tag
-		if !funk.Contains(dbColumns, v.DBName) && v.Projection == "" {
-			continue
-		}
-
-		if haveAllowlist && !funk.Contains(allowlist, k) {
-			return nil, fmt.Errorf("unknown field %s", k)
-		}
-
-		fs[k] = v
+func filterFieldsBy(obj interface{}, filterList []string, allowlist ...string) ([]string, error) {
+	tagMap, err := utils.GetFieldTags(obj, tagStruct{})
+	if err != nil {
+		return nil, err
 	}
 
-	return funk.Map(fs, func(k string, v fieldSchema) string {
-		if v.Projection == "" {
-			return v.DBName
+	haveAllowlist := len(allowlist) != 0
+	tagMap = tagMap.Filter(func(k string, v map[string]string) bool {
+		isColumnInFilterList := funk.Contains(filterList, getGormColumnName(v["Gorm"]))
+		haveProjection := v["Projection"] != ""
+		haveNotAllowlistOrIsJSONInAllowlist := !haveAllowlist || funk.Contains(allowlist, v["JSON"])
+		// for readable, we should keep if/else
+		if (isColumnInFilterList || haveProjection) && haveNotAllowlistOrIsJSONInAllowlist {
+			return true
 		}
-		return fmt.Sprintf("%s AS %s", v.Projection, v.DBName)
+
+		return false
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return funk.Map(tagMap, func(k string, v map[string]string) string {
+		projection := v["Projection"]
+		columnName := getGormColumnName(v["Gorm"])
+		if projection == "" {
+			return columnName
+		}
+		return fmt.Sprintf("%s AS %s", projection, columnName)
 	}).([]string), nil
+}
+
+func getGormColumnName(gormStr string) string {
+	// TODO: use go-gorm/gorm/schema ParseTagSetting. Prerequisite: Upgrade to the latest version
+	columnName := strings.Split(gormStr, ":")[1]
+	return columnName
 }

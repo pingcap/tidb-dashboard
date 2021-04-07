@@ -15,7 +15,6 @@ package statement
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -24,66 +23,51 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
-type fieldSchema struct {
-	DBName  string
-	JSON    string
-	Agg     string
-	Related []string
+type tagStruct struct {
+	JSON    string   `tag:"json"`
+	Agg     string   `tag:"agg"`
+	Related []string `tag:"related"` // `related` tag is used to verify a non-existent column, which is aggregated from the columns represented by related.
 }
 
-func getFieldSchema() map[string]fieldSchema {
-	fs := map[string]fieldSchema{}
-
-	utils.ForEachField(Model{}, func(f reflect.StructField) {
-		agg, ok := f.Tag.Lookup("agg")
-		if !ok {
-			return
-		}
-
-		json := strings.ToLower(f.Tag.Get("json"))
-		related := []string{json}
-		rf, ok := f.Tag.Lookup("related")
-		if ok {
-			related = strings.Split(rf, ",")
-		}
-
-		fs[json] = fieldSchema{DBName: gorm.ToColumnName(f.Name), JSON: json, Agg: agg, Related: related}
-	})
-
-	return fs
-}
-
-func filterFieldsBy(dbColumns []string, allowlist ...string) ([]string, error) {
-	fs := map[string]fieldSchema{}
-	originFs := getFieldSchema()
-	haveAllowlist := len(allowlist) != 0
-
-	for k, v := range originFs {
-		if !verifyRelatedFields(dbColumns, v.Related) {
-			continue
-		}
-
-		if haveAllowlist && !funk.Contains(allowlist, k) {
-			return nil, fmt.Errorf("unknown field %s", k)
-		}
-
-		fs[k] = v
+func filterFieldsBy(obj interface{}, filterList []string, allowlist ...string) ([]string, error) {
+	tagMap, err := utils.GetFieldTags(obj, tagStruct{})
+	if err != nil {
+		return nil, err
 	}
 
-	return funk.Map(fs, func(k string, v fieldSchema) string {
-		if v.Agg == "" {
-			return v.JSON
+	haveAllowlist := len(allowlist) != 0
+
+	tagMap = tagMap.Filter(func(k string, v map[string]string) bool {
+		haveRelatedColumns := v["Related"] != ""
+		isColumnInFilterList := !haveRelatedColumns && isSubsets(filterList, []string{v["JSON"]})
+		isRelatedColumnsInFilterList := haveRelatedColumns && isSubsets(filterList, strings.Split(v["Related"], ","))
+		haveNotAllowlistOrIsJSONInAllowlist := !haveAllowlist || funk.Contains(allowlist, v["JSON"])
+		// for readable, we should keep if/else
+		if (isColumnInFilterList || isRelatedColumnsInFilterList) && haveNotAllowlistOrIsJSONInAllowlist {
+			return true
 		}
-		return fmt.Sprintf("%s AS %s", v.Agg, v.DBName)
+
+		return false
+	})
+
+	return funk.Map(tagMap, func(k string, v map[string]string) string {
+		agg := v["Agg"]
+		json := v["JSON"]
+		if agg == "" {
+			return json
+		}
+		columnName := gorm.ToColumnName(k)
+		return fmt.Sprintf("%s AS %s", agg, columnName)
 	}).([]string), nil
 }
 
-// Verify that the field associated with the aggregated field exists
-func verifyRelatedFields(dbColumns []string, relatedFields []string) bool {
-	lowercaseCs := []string{}
-	for _, c := range dbColumns {
-		lowercaseCs = append(lowercaseCs, strings.ToLower(c))
-	}
+func isSubsets(a []string, b []string) bool {
+	lowercaseA := funk.Map(a, func(x string) string {
+		return strings.ToLower(x)
+	}).([]string)
+	lowercaseB := funk.Map(b, func(x string) string {
+		return strings.ToLower(x)
+	}).([]string)
 
-	return len(funk.Join(lowercaseCs, relatedFields, funk.InnerJoin).([]string)) == len(relatedFields)
+	return len(funk.Join(lowercaseA, lowercaseB, funk.InnerJoin).([]string)) == len(lowercaseB)
 }

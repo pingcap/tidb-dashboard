@@ -35,7 +35,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/http-swagger v0.0.0-20200308142732-58ac5e232fba
 	github.com/swaggo/swag v1.6.6-0.20200529100950-7c765ddd0476
-	github.com/thoas/go-funk v0.7.0
+	github.com/thoas/go-funk v0.8.0
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.1
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	go.uber.org/atomic v1.6.0
@@ -43,4 +43,5 @@ require (
 	go.uber.org/zap v1.15.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.25.1
+	gopkg.in/go-playground/assert.v1 v1.2.1
 )

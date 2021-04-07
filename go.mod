@@ -43,5 +43,4 @@ require (
 	go.uber.org/zap v1.15.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.25.1
-	gopkg.in/go-playground/assert.v1 v1.2.1
 )

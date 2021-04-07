@@ -16,8 +16,8 @@ package slowquery
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/thoas/go-funk"
-	"gopkg.in/go-playground/assert.v1"
 )
 
 type TestStruct struct {

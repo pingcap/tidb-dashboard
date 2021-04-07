@@ -22,8 +22,7 @@ import (
 )
 
 const (
-	cachePrefix = "sys_schema"
-	cacheTTL    = 1 * time.Minute
+	cacheTTL = 1 * time.Minute
 )
 
 type SysSchema struct {
@@ -39,14 +38,13 @@ func NewSysSchema() *SysSchema {
 }
 
 func (c *SysSchema) GetTableColumnNames(db *gorm.DB, tableName string) ([]string, error) {
-	key := fmt.Sprintf("%s_%s_tcn", cachePrefix, tableName)
-	cnsCache, notExists := c.ttl.Get(key)
-	if notExists == nil {
+	cnsCache, _ := c.ttl.Get(tableName)
+	if cnsCache != nil {
 		return cnsCache.([]string), nil
 	}
 
 	cns := []string{}
-	cs, err := c.GetTableColumns(db, tableName)
+	cs, err := fetchTableSchema(db, tableName)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +53,7 @@ func (c *SysSchema) GetTableColumnNames(db *gorm.DB, tableName string) ([]string
 		cns = append(cns, c.Field)
 	}
 
-	err = c.ttl.SetWithTTL(key, cns, cacheTTL)
+	err = c.ttl.SetWithTTL(tableName, cns, cacheTTL)
 	if err != nil {
 		return nil, err
 	}
@@ -63,32 +61,12 @@ func (c *SysSchema) GetTableColumnNames(db *gorm.DB, tableName string) ([]string
 	return cns, nil
 }
 
-type ColumnInfo struct {
+type columnInfo struct {
 	Field string `gorm:"column:Field" json:"field"`
 }
 
-func (c *SysSchema) GetTableColumns(db *gorm.DB, tableName string) ([]ColumnInfo, error) {
-	key := fmt.Sprintf("%s_%s_tc", cachePrefix, tableName)
-	csCache, notExists := c.ttl.Get(key)
-	if notExists == nil {
-		return csCache.([]ColumnInfo), nil
-	}
-
-	cs, err := fetchTableSchema(db, tableName)
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.ttl.SetWithTTL(key, cs, cacheTTL)
-	if err != nil {
-		return nil, err
-	}
-
-	return cs, nil
-}
-
-func fetchTableSchema(db *gorm.DB, table string) ([]ColumnInfo, error) {
-	var cs []ColumnInfo
+func fetchTableSchema(db *gorm.DB, table string) ([]columnInfo, error) {
+	var cs []columnInfo
 	err := db.Raw(fmt.Sprintf("DESC %s", table)).Scan(&cs).Error
 	if err != nil {
 		return nil, err

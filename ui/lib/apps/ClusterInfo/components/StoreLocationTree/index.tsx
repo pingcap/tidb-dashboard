@@ -49,19 +49,16 @@ export function getShortStrMap(
     allShortStrMap = Object.assign(allShortStrMap, shortStrMap)
   })
 
-  // tikv nodes address
-  const tikvNodeAddrs = (data.stores || [])
-    .filter((s) => s.labels!.engine !== 'tiflash')
-    .map((s) => s.address!)
-  const tikvShortStrMap = getArrShortStrMap(tikvNodeAddrs)
-  allShortStrMap = Object.assign(allShortStrMap, tikvShortStrMap)
-
-  // tiflash nodes address
-  const tiflashNodeAddrs = (data.stores || [])
-    .filter((s) => s.labels!.engine === 'tiflash')
-    .map((s) => s.address!)
-  const tiflashShortStrMap = getArrShortStrMap(tiflashNodeAddrs)
-  allShortStrMap = Object.assign(allShortStrMap, tiflashShortStrMap)
+  // tikv & tiflash nodes address
+  const addresses = (data.stores || []).map((s) => s.address!)
+  addresses.forEach((addr) => {
+    if (addr.startsWith('db-')) {
+      const shortStr = addr.split('.').shift()
+      if (shortStr) {
+        allShortStrMap[addr] = shortStr
+      }
+    }
+  })
 
   return allShortStrMap
 }

@@ -1,5 +1,9 @@
 import React from 'react'
-import StoreLocationTree, { getArrShortStrMap, getShortStrMap } from '.'
+import StoreLocationTree, {
+  buildTreeData,
+  getArrShortStrMap,
+  getShortStrMap,
+} from '.'
 
 export default {
   title: 'StoreLocationTree',
@@ -222,4 +226,12 @@ const data1 = {
   ],
 }
 
-console.log(getShortStrMap(data1))
+const dataSource = buildTreeData(data1)
+const shortStrMap = getShortStrMap(data1)
+console.log(shortStrMap)
+
+export const KubernetesByShort = () => (
+  <StoreLocationTree dataSource={dataSource} shortStrMap={shortStrMap} />
+)
+
+/////////////////////////////

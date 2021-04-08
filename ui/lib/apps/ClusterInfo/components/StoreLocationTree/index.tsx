@@ -193,6 +193,7 @@ export function buildTreeData(
 
 export interface IStoreLocationProps {
   dataSource: any
+  shortStrMap?: ShortStrMap
   getMinHeight?: () => number
   onReload?: () => void
 }
@@ -217,6 +218,7 @@ function calcHeight(root) {
 
 export default function StoreLocationTree({
   dataSource,
+  shortStrMap = {},
   getMinHeight,
   onReload,
 }: IStoreLocationProps) {
@@ -365,7 +367,18 @@ export default function StoreLocationTree({
         .attr('x', -15)
         .attr('text-anchor', 'end')
         .text(({ data: { name, value } }: any) =>
-          value ? `${name}: ${value}` : name
+          // value ? `${name}: ${value}` : name
+          {
+            const shortName = shortStrMap[name] ?? name
+            let shortValue = value
+            if (shortValue && shortValue.length > 16) {
+              shortValue = shortStrMap[value] ?? value
+              if (shortValue.length > 16) {
+                shortValue = shortValue.slice(0, 14) + '...'
+              }
+            }
+            return shortValue ? `${shortName}: ${shortValue}` : shortName
+          }
         )
         .clone(true)
         .lower()
@@ -383,7 +396,7 @@ export default function StoreLocationTree({
         .attr('dy', '-0.2em')
       leafNodeText
         .append('tspan')
-        .text(({ data: { value } }: any) => value)
+        .text(({ data: { value } }: any) => shortStrMap[value] ?? value)
         .attr('x', 15)
         .attr('dy', '1em')
 

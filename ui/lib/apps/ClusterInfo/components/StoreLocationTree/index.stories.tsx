@@ -1,70 +1,11 @@
 import React from 'react'
-import StoreLocationTree from '.'
+import StoreLocationTree, { getArrShortStrMap, getShortStrMap } from '.'
 
 export default {
   title: 'StoreLocationTree',
 }
 
 const dataSource1 = {
-  name: 'Stores',
-  children: [
-    {
-      name: 'sh',
-      children: [
-        {
-          name: 'r1',
-          children: [
-            {
-              name: 'h1',
-              children: [
-                {
-                  name: '127.0.0.1:20160',
-                  children: [],
-                },
-              ],
-            },
-            {
-              name: 'h2',
-              children: [
-                {
-                  name: '127.0.0.1:20161',
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'bj',
-      children: [
-        {
-          name: 'r1',
-          children: [
-            {
-              name: 'h1',
-              children: [
-                {
-                  name: '127.0.0.1:20162',
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          name: '127.0.0.1:3930',
-          children: [],
-        },
-      ],
-    },
-  ],
-}
-
-export const onlyName = () => <StoreLocationTree dataSource={dataSource1} />
-
-const dataSource2 = {
   name: 'Stores',
   value: '',
   children: [
@@ -81,8 +22,8 @@ const dataSource2 = {
               value: 'h1',
               children: [
                 {
-                  name: '127.0.0.1:20160',
-                  value: '',
+                  name: 'TiKV',
+                  value: '127.0.0.1:20160',
                   children: [],
                 },
               ],
@@ -92,8 +33,8 @@ const dataSource2 = {
               value: 'h2',
               children: [
                 {
-                  name: '127.0.0.1:20162',
-                  value: '',
+                  name: 'TiKV',
+                  value: '127.0.0.1:20162',
                   children: [],
                 },
               ],
@@ -115,8 +56,8 @@ const dataSource2 = {
               value: 'h1',
               children: [
                 {
-                  name: '127.0.0.1:20161',
-                  value: '',
+                  name: 'TiKV',
+                  value: '127.0.0.1:20161',
                   children: [],
                 },
               ],
@@ -124,8 +65,8 @@ const dataSource2 = {
           ],
         },
         {
-          name: '127.0.0.1:3930',
-          value: '',
+          name: 'TiFlash',
+          value: '127.0.0.1:3930',
           children: [],
         },
       ],
@@ -133,4 +74,152 @@ const dataSource2 = {
   ],
 }
 
-export const nameAndValue = () => <StoreLocationTree dataSource={dataSource2} />
+export const Normal = () => <StoreLocationTree dataSource={dataSource1} />
+
+const dataSource2 = {
+  name: 'Stores',
+  value: '',
+  children: [
+    {
+      name: 'failure-domain.beta.kubernetes.io/region',
+      value: 'us-west1',
+      children: [
+        {
+          name: 'failure-domain.beta.kubernetes.io/zone',
+          value: 'us-west1-a',
+          children: [
+            {
+              name: 'kubernetes.io/hostname',
+              value: 'shoot--stating--a13df0bd-56f54530-z1-111111-tkq7r',
+              children: [
+                {
+                  name: 'TiFlash',
+                  value: 'db-tiflash-0.db-tiflash-peer.tidb1373',
+                  children: [],
+                },
+              ],
+            },
+            {
+              name: 'kubernetes.io/hostname',
+              value: 'shoot--stating--a13df0bd-b8cdec65-z1-22222-fdsaf',
+              children: [
+                {
+                  name: 'TiKV',
+                  value: 'db-tikv-0.db-tikv-peer.tidb1373',
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'failure-domain.beta.kubernetes.io/zone',
+          value: 'us-west1-b',
+          children: [
+            {
+              name: 'kubernetes.io/hostname',
+              value: 'shoot--stating--a13df0bd-xxxxxxxxxx-z1-33333-xxxxx',
+              children: [
+                {
+                  name: 'TiKV',
+                  value: 'db-tikv-1.db-tikv-peer.tidb1373',
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'failure-domain.beta.kubernetes.io/zone',
+          value: 'us-west1-c',
+          children: [
+            {
+              name: 'kubernetes.io/hostname',
+              value: 'shoot--stating--a13df0bd-yyyyy-z1-33333-mmmm',
+              children: [
+                {
+                  name: 'TiKV',
+                  value: 'db-tikv-2.db-tikv-peer.tidb1373',
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+
+export const Kubernetes = () => <StoreLocationTree dataSource={dataSource2} />
+
+/////////////////////////////
+
+const arr1 = [
+  'aaa-bbbb-111a.abc.123',
+  'aaa-bbbb-222a.abc.123',
+  'aaa-bbbb-333a.abc.123',
+]
+const arr2 = ['aaa-111a.abc.123', 'aaa-222a.abc.123', 'aaa-333a.abc.123']
+const arr3 = []
+const arr4 = ['abc']
+const arr5 = ['abcd', 'abce']
+console.log(getArrShortStrMap(arr1))
+console.log(getArrShortStrMap(arr2))
+console.log(getArrShortStrMap(arr3))
+console.log(getArrShortStrMap(arr4))
+console.log(getArrShortStrMap(arr5))
+
+/////////////////////////////
+
+const data1 = {
+  location_labels: [
+    'failure-domain.beta.kubernetes.io/region',
+    'failure-domain.beta.kubernetes.io/zone',
+    'kubernetes.io/hostname',
+  ],
+  stores: [
+    {
+      address: 'db-tiflash-0.db-tiflash-peer.tidb1373',
+      labels: {
+        engine: 'tiflash',
+        'failure-domain.beta.kubernetes.io/region': 'us-west1',
+        'failure-domain.beta.kubernetes.io/zone': 'us-west1-a',
+        'kubernetes.io/hostname':
+          'shoot--stating--a13df0bd-56f54530-z1-111111-tkq7r',
+      },
+    },
+    {
+      address: 'db-tikv-0.db-tikv-peer.tidb1373',
+      labels: {
+        engine: '',
+        'failure-domain.beta.kubernetes.io/region': 'us-west1',
+        'failure-domain.beta.kubernetes.io/zone': 'us-west1-a',
+        'kubernetes.io/hostname':
+          'shoot--stating--a13df0bd-b8cdec65-z1-22222-fdsaf',
+      },
+    },
+    {
+      address: 'db-tikv-1.db-tikv-peer.tidb1373',
+      labels: {
+        engine: '',
+        'failure-domain.beta.kubernetes.io/region': 'us-west1',
+        'failure-domain.beta.kubernetes.io/zone': 'us-west1-b',
+        'kubernetes.io/hostname':
+          'shoot--stating--a13df0bd-xxxxxxxxxx-z1-33333-xxxxx',
+      },
+    },
+    {
+      address: 'db-tikv-2.db-tikv-peer.tidb1373',
+      labels: {
+        engine: '',
+        'failure-domain.beta.kubernetes.io/region': 'us-west1',
+        'failure-domain.beta.kubernetes.io/zone': 'us-west1-c',
+        'kubernetes.io/hostname':
+          'shoot--stating--a13df0bd-yyyyy-z1-33333-mmmm',
+      },
+    },
+  ],
+}
+
+console.log(getShortStrMap(data1))

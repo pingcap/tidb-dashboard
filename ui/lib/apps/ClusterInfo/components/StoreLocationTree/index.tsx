@@ -9,6 +9,191 @@ import { Space } from 'antd'
 import { cyan, magenta, grey } from '@ant-design/colors'
 import { useTranslation } from 'react-i18next'
 
+import { TopologyStoreLocation } from '@lib/client'
+
+//////////////////////////////////////
+
+type ShortStrMap = Record<string, string>
+
+export function getShortStrMap(
+  data: TopologyStoreLocation | undefined
+): ShortStrMap {
+  let allShortStrMap: ShortStrMap = {}
+
+  if (data === undefined) {
+    return allShortStrMap
+  }
+
+  // location labels
+  // failure-domain.beta.kubernetes.io/region => region
+  data.location_labels?.forEach((label) => {
+    if (label.indexOf('/') >= 0) {
+      const shortStr = label.split('/').pop()
+      if (shortStr) {
+        allShortStrMap[label] = shortStr
+      }
+    }
+  })
+
+  // location labels value
+  data.location_labels?.forEach((label) => {
+    // get label values
+    const labelValues: string[] = []
+    data.stores?.forEach((store) => {
+      const val = store.labels?.[label]
+      if (val) {
+        labelValues.push(val)
+      }
+    })
+    const shortStrMap = getArrShortStrMap(labelValues)
+    allShortStrMap = Object.assign(allShortStrMap, shortStrMap)
+  })
+
+  // tikv nodes address
+  const tikvNodeAddrs = (data.stores || [])
+    .filter((s) => s.labels!.engine !== 'tiflash')
+    .map((s) => s.address!)
+  const tikvShortStrMap = getArrShortStrMap(tikvNodeAddrs)
+  allShortStrMap = Object.assign(allShortStrMap, tikvShortStrMap)
+
+  // tiflash nodes address
+  const tiflashNodeAddrs = (data.stores || [])
+    .filter((s) => s.labels!.engine === 'tiflash')
+    .map((s) => s.address!)
+  const tiflashShortStrMap = getArrShortStrMap(tiflashNodeAddrs)
+  allShortStrMap = Object.assign(allShortStrMap, tiflashShortStrMap)
+
+  return allShortStrMap
+}
+
+// input: ['aaa-111a.abc.123', 'aaa-222a.abc.123', 'aaa-333a.abc.123'], items in the array have either the same prefix or suffix, or both.
+// output:
+// {
+//   "aaa-111a.abc.123":"aaa-111a",
+//   "aaa-222a.abc.123":"aaa-222a",
+//   "aaa-333a.abc.123":"aaa-333a"
+// }
+export function getArrShortStrMap(strArr: string[]): ShortStrMap {
+  const shortStrMap: ShortStrMap = {}
+  const strSet = new Set(strArr)
+  if (strSet.size < 2) {
+    return shortStrMap
+  }
+
+  let i = 0
+  let c
+  const charSet = new Set()
+  // calc the prefix length
+  let headDotOrMinusPos = -1
+  while (true) {
+    charSet.clear()
+    for (let str of strSet) {
+      c = str[i]
+      if (c === undefined) {
+        break
+      }
+      charSet.add(c)
+    }
+    if (c === undefined) {
+      break
+    }
+    if (charSet.size > 1) {
+      break
+    }
+    if (c === '.' || c === '-') {
+      headDotOrMinusPos = i
+    }
+    i++
+  }
+
+  // calc the suffix length
+  i = 0
+  let tailDotOrMinusPos = -1
+  while (true) {
+    charSet.clear()
+    for (let str of strSet) {
+      c = str[str.length - 1 - i]
+      if (c === undefined) {
+        break
+      }
+      charSet.add(c)
+    }
+    if (c === undefined) {
+      break
+    }
+    if (charSet.size > 1) {
+      break
+    }
+    if (c === '.' || c === '-') {
+      tailDotOrMinusPos = i
+    }
+    i++
+  }
+
+  // compare
+  if (headDotOrMinusPos > -1 && headDotOrMinusPos >= tailDotOrMinusPos) {
+    strSet.forEach((s) => {
+      const short = s.slice(headDotOrMinusPos + 1)
+      shortStrMap[s] = short
+    })
+  } else if (tailDotOrMinusPos > -1 && tailDotOrMinusPos >= headDotOrMinusPos) {
+    strSet.forEach((s) => {
+      const short = s.slice(0, s.length - tailDotOrMinusPos - 1)
+      shortStrMap[s] = short
+    })
+  }
+
+  return shortStrMap
+}
+
+//////////////////////////////////////
+
+type TreeNode = {
+  name: string
+  value: string
+  children: TreeNode[]
+}
+
+export function buildTreeData(
+  data: TopologyStoreLocation | undefined
+): TreeNode {
+  const treeData: TreeNode = { name: 'Stores', value: '', children: [] }
+
+  if ((data?.location_labels?.length || 0) > 0) {
+    const locationLabels: string[] = data?.location_labels || []
+
+    for (const store of data?.stores || []) {
+      // reset curNode, point to tree nodes beginning
+      let curNode = treeData
+      for (const curLabel of locationLabels) {
+        const curLabelVal = store.labels![curLabel]
+        if (curLabelVal === undefined) {
+          continue
+        }
+        let subNode: TreeNode | undefined = curNode.children.find(
+          (el) => el.name === curLabel && el.value === curLabelVal
+        )
+        if (subNode === undefined) {
+          subNode = { name: curLabel, value: curLabelVal, children: [] }
+          curNode.children.push(subNode)
+        }
+        // make curNode point to subNode
+        curNode = subNode
+      }
+      const storeType =
+        store.labels!['engine'] === 'tiflash' ? 'TiFlash' : 'TiKV'
+      curNode.children.push({
+        name: storeType,
+        value: store.address!,
+        children: [],
+      })
+    }
+  }
+  return treeData
+}
+
+//////////////////////////////////////
+
 export interface IStoreLocationProps {
   dataSource: any
   getMinHeight?: () => number
@@ -168,7 +353,7 @@ export default function StoreLocationTree({
           if (d._children) {
             return grey[1]
           }
-          if (d.data.value === 'TiFlash') {
+          if (d.data.name === 'TiFlash') {
             return magenta[4]
           }
           return cyan[5]
@@ -182,7 +367,9 @@ export default function StoreLocationTree({
         .attr('dy', '0.31em')
         .attr('x', -15)
         .attr('text-anchor', 'end')
-        .text(({ data: { name, value } }: any) => `${name}: ${value}`)
+        .text(({ data: { name, value } }: any) =>
+          value ? `${name}: ${value}` : name
+        )
         .clone(true)
         .lower()
         .attr('stroke-linejoin', 'round')
@@ -194,12 +381,12 @@ export default function StoreLocationTree({
         .append('text')
       leafNodeText
         .append('tspan')
-        .text(({ data: { value } }: any) => value)
+        .text(({ data: { name } }: any) => name)
         .attr('x', 15)
         .attr('dy', '-0.2em')
       leafNodeText
         .append('tspan')
-        .text(({ data: { name } }: any) => name)
+        .text(({ data: { value } }: any) => value)
         .attr('x', 15)
         .attr('dy', '1em')
 

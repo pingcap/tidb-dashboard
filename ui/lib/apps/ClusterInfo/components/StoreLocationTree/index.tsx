@@ -359,35 +359,40 @@ export default function StoreLocationTree({
         })
         .attr('stroke-width', 3)
 
-      // text for non-leaf nodes
+      // text for root node
       nodeEnter
-        .filter((d: any) => d._children !== undefined)
+        .filter(({ data: { name } }: any) => name === 'Stores')
         .append('text')
         .attr('dy', '0.31em')
         .attr('x', -15)
         .attr('text-anchor', 'end')
-        .text(({ data: { name, value } }: any) =>
-          // value ? `${name}: ${value}` : name
-          {
-            const shortName = shortStrMap[name] ?? name
-            let shortValue = value
-            if (shortValue && shortValue.length > 16) {
-              shortValue = shortStrMap[value] ?? value
-              if (shortValue.length > 16) {
-                shortValue = shortValue.slice(0, 14) + '...'
-              }
-            }
-            return shortValue ? `${shortName}: ${shortValue}` : shortName
-          }
+        .text(({ data: { name } }: any) => name)
+
+      // text for non-root and non-leaf nodes
+      const middleNodeText = nodeEnter
+        .filter(
+          ({ data: { name } }: any) =>
+            name !== 'Stores' && name !== 'TiFlash' && name !== 'TiKV'
         )
-        .clone(true)
-        .lower()
-        .attr('stroke-linejoin', 'round')
-        .attr('stroke-width', 3)
-        .attr('stroke', 'white')
+        .append('text')
+      middleNodeText
+        .append('tspan')
+        .text(({ data: { name } }: any) => shortStrMap[name] ?? name)
+        .attr('x', -15)
+        .attr('dy', '-0.2em')
+        .attr('text-anchor', 'end')
+      middleNodeText
+        .append('tspan')
+        .text(({ data: { value } }: any) => shortStrMap[value] ?? value)
+        .attr('x', -15)
+        .attr('dy', '1em')
+        .attr('text-anchor', 'end')
+
       // text for leaf nodes
       const leafNodeText = nodeEnter
-        .filter((d: any) => d._children === undefined)
+        .filter(
+          ({ data: { name } }: any) => name === 'TiFlash' || name === 'TiKV'
+        )
         .append('text')
       leafNodeText
         .append('tspan')
@@ -463,7 +468,7 @@ export default function StoreLocationTree({
     return () => {
       window.removeEventListener('resize', resizeHandler)
     }
-  }, [dataSource, getMinHeight, onReload])
+  }, [dataSource, getMinHeight, onReload, shortStrMap])
 
   return (
     <div ref={divRef} style={{ position: 'relative' }}>

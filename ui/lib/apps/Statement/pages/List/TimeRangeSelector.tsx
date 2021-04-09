@@ -124,6 +124,44 @@ export function calcValidStatementTimeRange(
   }
 }
 
+function calcCommonTimeRange(
+  minServerDataTime: number,
+  maxServerDataTime: number
+): { enabled: boolean; value: number }[] {
+  if (!maxServerDataTime) {
+    return RECENT_SECONDS.map((s) => ({ enabled: false, value: s }))
+  }
+
+  const calcInterval =
+    maxServerDataTime +
+    getLocalTimeInterval(maxServerDataTime) -
+    minServerDataTime
+
+  return RECENT_SECONDS.map((s) => ({ enabled: s <= calcInterval, value: s }))
+}
+
+// use time interval to calculate valid time range when dropdown change visible state
+//
+// ----first time open drop down----------...---------every time open drop down----
+//                                (time interval)
+// -----------Date.now()------------------...------------------Date.now()----------
+let getLocalTimeInterval = (time: number): number => {
+  let firstTime: number
+  if (!!time) {
+    firstTime = calcAbsIntervalFromNow(time)
+  }
+
+  getLocalTimeInterval = (time: number): number => {
+    return calcAbsIntervalFromNow(time) - firstTime
+  }
+
+  return getLocalTimeInterval(time)
+}
+
+function calcAbsIntervalFromNow(timestamp: number) {
+  return Math.abs(Date.now() - timestamp)
+}
+
 export interface ITimeRangeSelectorProps {
   value: TimeRange
   timeRanges: StatementTimeRange[]
@@ -143,6 +181,12 @@ export default function TimeRangeSelector({
     () => calcValidStatementTimeRange(curTimeRange, timeRanges)
   )
   const [dropdownVisible, setDropdownVisible] = useState(false)
+  const commonTimeRange = useMemo(
+    () => calcCommonTimeRange(minBeginTime, maxEndTime),
+    // recalculate when dropdown triggered
+    // eslint-disable-next-line
+    [dropdownVisible]
+  )
 
   useEffect(() => {
     setSliderTimeRange(calcValidStatementTimeRange(curTimeRange, timeRanges))
@@ -192,16 +236,17 @@ export default function TimeRangeSelector({
           )}
         </span>
         <div className={styles.time_range_items}>
-          {RECENT_SECONDS.map((seconds) => (
+          {commonTimeRange.map(({ enabled, value: seconds }) => (
             <div
               tabIndex={-1}
               key={seconds}
               className={cx(styles.time_range_item, {
+                [styles.time_range_item_disabled]: !enabled,
                 [styles.time_range_item_active]:
                   curTimeRange.type === 'recent' &&
                   curTimeRange.value === seconds,
               })}
-              onClick={() => handleRecentChange(seconds)}
+              onClick={() => enabled && handleRecentChange(seconds)}
             >
               {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
               {getValueFormat('s')(seconds, 0)}

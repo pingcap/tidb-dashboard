@@ -39,7 +39,7 @@ var secondField FieldTags = FieldTags{
 	},
 }
 
-func TestGetFieldTags_with_single_tag(t *testing.T) {
+func TestGetFieldTags(t *testing.T) {
 	rst := GetFieldsAndTags(MyStruct{})
 
 	assert.Equal(t, rst, []FieldTags{firstField, secondField})

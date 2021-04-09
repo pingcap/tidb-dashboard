@@ -23,40 +23,30 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
-type tagStruct struct {
-	JSON    string   `tag:"json"`
-	Agg     string   `tag:"agg"`
-	Related []string `tag:"related"` // `related` tag is used to verify a non-existent column, which is aggregated from the columns represented by related.
-}
-
-func filterFieldsBy(obj interface{}, filterList []string, allowlist ...string) ([]string, error) {
-	tagMap, err := utils.GetFieldTags(obj, tagStruct{})
-	if err != nil {
-		return nil, err
-	}
-
+func filterFieldsBy(obj interface{}, retainList []string, allowlist ...string) ([]string, error) {
+	fieldTags := utils.GetFieldsAndTags(obj)
 	haveAllowlist := len(allowlist) != 0
-
-	tagMap = tagMap.Filter(func(k string, v map[string]string) bool {
-		haveRelatedColumns := v["Related"] != ""
-		isColumnInFilterList := !haveRelatedColumns && isSubsets(filterList, []string{v["JSON"]})
-		isRelatedColumnsInFilterList := haveRelatedColumns && isSubsets(filterList, strings.Split(v["Related"], ","))
-		haveNotAllowlistOrIsJSONInAllowlist := !haveAllowlist || funk.Contains(allowlist, v["JSON"])
+	fieldTags = funk.Filter(fieldTags, func(ft utils.FieldTags) bool {
+		// `related` tag is used to verify a non-existent column, which is aggregated from the columns represented by related.
+		haveRelatedColumns := ft.Tag("related") != ""
+		isColumnInRetainList := !haveRelatedColumns && isSubsets(retainList, []string{ft.Tag("json")})
+		isRelatedColumnsInRetainList := haveRelatedColumns && isSubsets(retainList, strings.Split(ft.Tag("related"), ","))
+		noAllowListOrIsJSONInAllowList := !haveAllowlist || funk.Contains(allowlist, ft.Tag("json"))
 		// for readable, we should keep if/else
-		if (isColumnInFilterList || isRelatedColumnsInFilterList) && haveNotAllowlistOrIsJSONInAllowlist {
+		if (isColumnInRetainList || isRelatedColumnsInRetainList) && noAllowListOrIsJSONInAllowList {
 			return true
 		}
 
 		return false
-	})
+	}).([]utils.FieldTags)
 
-	return funk.Map(tagMap, func(k string, v map[string]string) string {
-		agg := v["Agg"]
-		json := v["JSON"]
+	return funk.Map(fieldTags, func(ft utils.FieldTags) string {
+		agg := ft.Tag("agg")
+		json := ft.Tag("json")
 		if agg == "" {
 			return json
 		}
-		columnName := gorm.ToColumnName(k)
+		columnName := gorm.ToColumnName(ft.FieldName())
 		return fmt.Sprintf("%s AS %s", agg, columnName)
 	}).([]string), nil
 }

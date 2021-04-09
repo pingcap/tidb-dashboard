@@ -21,8 +21,6 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/thoas/go-funk"
-
-	"github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
 const (
@@ -52,7 +50,7 @@ func querySQLIntVariable(db *gorm.DB, name string) (int, error) {
 	return intVal, nil
 }
 
-func QueryStmtConfig(db *gorm.DB) (*Config, error) {
+func queryStmtConfig(db *gorm.DB) (*Config, error) {
 	config := Config{}
 
 	enable, err := querySQLIntVariable(db, stmtEnableVar)
@@ -84,7 +82,7 @@ func QueryStmtConfig(db *gorm.DB) (*Config, error) {
 	return &config, err
 }
 
-func UpdateStmtConfig(db *gorm.DB, config *Config) (err error) {
+func updateStmtConfig(db *gorm.DB, config *Config) (err error) {
 	var sql string
 	sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtEnableVar)
 	err = db.Exec(sql, config.Enable).Error
@@ -102,7 +100,7 @@ func UpdateStmtConfig(db *gorm.DB, config *Config) (err error) {
 	return
 }
 
-func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
+func queryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 	err = db.
 		Select(`
 			DISTINCT
@@ -115,7 +113,7 @@ func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 	return
 }
 
-func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
+func queryStmtTypes(db *gorm.DB) (result []string, err error) {
 	// why should put DISTINCT inside the `Pluck()` method, see here:
 	// https://github.com/jinzhu/gorm/issues/496
 	err = db.
@@ -132,16 +130,15 @@ func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
 // schemas: ["tpcc", "test"]
 // stmtTypes: ["select", "update"]
 // fields: ["digest_text", "sum_latency"]
-func QueryStatements(
+func (s *Service) queryStatements(
 	db *gorm.DB,
-	sysSchema *utils.SysSchema,
 	beginTime, endTime int,
 	schemas, stmtTypes []string,
 	text string,
 	reqFields []string,
 ) (result []Model, err error) {
 	var fields []string
-	tableColumns, err := sysSchema.GetTableColumnNames(db, statementsTable)
+	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
 	if err != nil {
 		return nil, err
 	}
@@ -195,13 +192,12 @@ func QueryStatements(
 	return
 }
 
-func QueryPlans(
+func (s *Service) queryPlans(
 	db *gorm.DB,
-	sysSchema *utils.SysSchema,
 	beginTime, endTime int,
 	schemaName, digest string,
 ) (result []Model, err error) {
-	tableColumns, err := sysSchema.GetTableColumnNames(db, statementsTable)
+	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
 	if err != nil {
 		return nil, err
 	}
@@ -233,14 +229,13 @@ func QueryPlans(
 	return
 }
 
-func QueryPlanDetail(
+func (s *Service) queryPlanDetail(
 	db *gorm.DB,
-	sysSchema *utils.SysSchema,
 	beginTime, endTime int,
 	schemaName, digest string,
 	plans []string,
 ) (result Model, err error) {
-	tableColumns, err := sysSchema.GetTableColumnNames(db, statementsTable)
+	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
 	if err != nil {
 		return
 	}

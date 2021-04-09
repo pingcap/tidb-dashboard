@@ -80,7 +80,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) configHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	cfg, err := QueryStmtConfig(db)
+	cfg, err := queryStmtConfig(db)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -101,7 +101,7 @@ func (s *Service) modifyConfigHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	err := UpdateStmtConfig(db, &req)
+	err := updateStmtConfig(db, &req)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -116,7 +116,7 @@ func (s *Service) modifyConfigHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) timeRangesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	timeRanges, err := QueryTimeRanges(db)
+	timeRanges, err := queryTimeRanges(db)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -131,7 +131,7 @@ func (s *Service) timeRangesHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) stmtTypesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	stmtTypes, err := QueryStmtTypes(db)
+	stmtTypes, err := queryStmtTypes(db)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -165,9 +165,8 @@ func (s *Service) listHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	overviews, err := QueryStatements(
+	overviews, err := s.queryStatements(
 		db,
-		s.params.SysSchema,
 		req.BeginTime, req.EndTime,
 		req.Schemas,
 		req.StmtTypes,
@@ -200,7 +199,7 @@ func (s *Service) plansHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	plans, err := QueryPlans(db, s.params.SysSchema, req.BeginTime, req.EndTime, req.SchemaName, req.Digest)
+	plans, err := s.queryPlans(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -226,7 +225,7 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	result, err := QueryPlanDetail(db, s.params.SysSchema, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans)
+	result, err := s.queryPlanDetail(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -252,9 +251,8 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	overviews, err := QueryStatements(
+	overviews, err := s.queryStatements(
 		db,
-		s.params.SysSchema,
 		req.BeginTime, req.EndTime,
 		req.Schemas,
 		req.StmtTypes,

@@ -22,38 +22,24 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
-type tagStruct struct {
-	Gorm       string `tag:"gorm"`
-	JSON       string `tag:"json"`
-	Projection string `tag:"proj"`
-}
-
-func filterFieldsBy(obj interface{}, filterList []string, allowlist ...string) ([]string, error) {
-	tagMap, err := utils.GetFieldTags(obj, tagStruct{})
-	if err != nil {
-		return nil, err
-	}
-
+func filterFieldsBy(obj interface{}, retainList []string, allowlist ...string) ([]string, error) {
+	fieldTags := utils.GetFieldsAndTags(obj)
 	haveAllowlist := len(allowlist) != 0
-	tagMap = tagMap.Filter(func(k string, v map[string]string) bool {
-		isColumnInFilterList := funk.Contains(filterList, getGormColumnName(v["Gorm"]))
-		haveProjection := v["Projection"] != ""
-		haveNotAllowlistOrIsJSONInAllowlist := !haveAllowlist || funk.Contains(allowlist, v["JSON"])
+	fieldTags = funk.Filter(fieldTags, func(ft utils.FieldTags) bool {
+		isColumnInRetainList := funk.Contains(retainList, getGormColumnName(ft.Tag("gorm")))
+		haveProjection := ft.Tag("projection") != ""
+		noAllowListOrIsJSONInAllowList := !haveAllowlist || funk.Contains(allowlist, ft.Tag("json"))
 		// for readable, we should keep if/else
-		if (isColumnInFilterList || haveProjection) && haveNotAllowlistOrIsJSONInAllowlist {
+		if (isColumnInRetainList || haveProjection) && noAllowListOrIsJSONInAllowList {
 			return true
 		}
 
 		return false
-	})
+	}).([]utils.FieldTags)
 
-	if err != nil {
-		return nil, err
-	}
-
-	return funk.Map(tagMap, func(k string, v map[string]string) string {
-		projection := v["Projection"]
-		columnName := getGormColumnName(v["Gorm"])
+	return funk.Map(fieldTags, func(ft utils.FieldTags) string {
+		projection := ft.Tag("proj")
+		columnName := getGormColumnName(ft.Tag("gorm"))
 		if projection == "" {
 			return columnName
 		}

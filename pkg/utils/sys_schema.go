@@ -26,19 +26,19 @@ const (
 )
 
 type SysSchema struct {
-	ttl *ttlcache.Cache
+	cache *ttlcache.Cache
 }
 
 func NewSysSchema() *SysSchema {
-	ttl := ttlcache.NewCache()
-	ttl.SkipTTLExtensionOnHit(true)
+	c := ttlcache.NewCache()
+	c.SkipTTLExtensionOnHit(true)
 	return &SysSchema{
-		ttl: ttl,
+		cache: c,
 	}
 }
 
 func (c *SysSchema) GetTableColumnNames(db *gorm.DB, tableName string) ([]string, error) {
-	cnsCache, _ := c.ttl.Get(tableName)
+	cnsCache, _ := c.cache.Get(tableName)
 	if cnsCache != nil {
 		return cnsCache.([]string), nil
 	}
@@ -53,7 +53,7 @@ func (c *SysSchema) GetTableColumnNames(db *gorm.DB, tableName string) ([]string
 		cns = append(cns, c.Field)
 	}
 
-	err = c.ttl.SetWithTTL(tableName, cns, cacheTTL)
+	err = c.cache.SetWithTTL(tableName, cns, cacheTTL)
 	if err != nil {
 		return nil, err
 	}

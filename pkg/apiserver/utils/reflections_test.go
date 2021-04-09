@@ -24,79 +24,26 @@ type MyStruct struct {
 	SecondField string `matched:"second tag" value:"another whatever"`
 }
 
+var firstField FieldTags = FieldTags{
+	fieldName: "FirstField",
+	tags: map[string]string{
+		"matched": "first tag",
+		"value":   "whatever",
+	},
+}
+var secondField FieldTags = FieldTags{
+	fieldName: "SecondField",
+	tags: map[string]string{
+		"matched": "second tag",
+		"value":   "another whatever",
+	},
+}
+
 func TestGetFieldTags_with_single_tag(t *testing.T) {
-	rst, _ := GetFieldTags(MyStruct{}, struct {
-		Matched string `tag:"matched"`
-	}{})
+	rst := GetFieldsAndTags(MyStruct{})
 
-	assert.Equal(t, rst, TagMap{
-		"FirstField": map[string]string{
-			"Matched": "first tag",
-		},
-		"SecondField": map[string]string{
-			"Matched": "second tag",
-		},
-	})
+	assert.Equal(t, rst, []FieldTags{firstField, secondField})
 }
 
-func TestGetFieldTags_with_multi_tag(t *testing.T) {
-	rst, _ := GetFieldTags(MyStruct{}, struct {
-		Matched string `tag:"matched"`
-		Desc    string `tag:"value"`
-	}{})
-
-	assert.Equal(t, rst, TagMap{
-		"FirstField": map[string]string{
-			"Matched": "first tag",
-			"Desc":    "whatever",
-		},
-		"SecondField": map[string]string{
-			"Matched": "second tag",
-			"Desc":    "another whatever",
-		},
-	})
-}
-
-func TestGetFieldTags_with_undefined_tag(t *testing.T) {
-	rst, _ := GetFieldTags(MyStruct{}, struct {
-		Matched      string `tag:"matched"`
-		Desc         string `tag:"value"`
-		UndefinedTag string `tag:"undefined"`
-		EmptyTag     string
-	}{})
-
-	assert.Equal(t, rst, TagMap{
-		"FirstField": map[string]string{
-			"Matched":      "first tag",
-			"Desc":         "whatever",
-			"UndefinedTag": "",
-			"EmptyTag":     "",
-		},
-		"SecondField": map[string]string{
-			"Matched":      "second tag",
-			"Desc":         "another whatever",
-			"UndefinedTag": "",
-			"EmptyTag":     "",
-		},
-	})
-}
-
-func TestGetFieldTags_filter(t *testing.T) {
-	rst, _ := GetFieldTags(MyStruct{}, struct {
-		Matched string `tag:"matched"`
-		Desc    string `tag:"value"`
-	}{})
-	rst = rst.Filter(func(k string, v map[string]string) bool {
-		return k == "FirstField"
-	})
-
-	assert.Equal(t, rst, TagMap{
-		"FirstField": map[string]string{
-			"Matched": "first tag",
-			"Desc":    "whatever",
-		},
-	})
-}
-
-// TODO: support nested struct
-func TestGetFieldTags_with_nested_struct(t *testing.T) {}
+// // TODO: support nested struct
+// func TestGetFieldTags_with_nested_struct(t *testing.T) {}

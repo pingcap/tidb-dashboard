@@ -19,8 +19,6 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/thoas/go-funk"
-
-	"github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
 const (
@@ -132,7 +130,7 @@ type GetDetailRequest struct {
 	ConnectID string `json:"connect_id" form:"connect_id"`
 }
 
-func querySlowLogList(db *gorm.DB, sysSchema *utils.SysSchema, req *GetListRequest) ([]SlowQuery, error) {
+func (s *Service) querySlowLogList(db *gorm.DB, req *GetListRequest) ([]SlowQuery, error) {
 	var fields []string
 	var err error
 	reqFields := strings.Split(req.Fields, ",")
@@ -140,7 +138,7 @@ func querySlowLogList(db *gorm.DB, sysSchema *utils.SysSchema, req *GetListReque
 		return nil, err
 	}
 
-	tableColumns, err := sysSchema.GetTableColumnNames(db, slowQueryTable)
+	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, slowQueryTable)
 	if err != nil {
 		return nil, err
 	}
@@ -226,7 +224,7 @@ func querySlowLogList(db *gorm.DB, sysSchema *utils.SysSchema, req *GetListReque
 	return results, nil
 }
 
-func querySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) {
+func (s *Service) querySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*SlowQuery, error) {
 	var result SlowQuery
 	err := db.
 		Table(slowQueryTable).

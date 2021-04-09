@@ -81,7 +81,7 @@ func (s *Service) getList(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	results, err := querySlowLogList(db, s.params.SysSchema, &req)
+	results, err := s.querySlowLogList(db, &req)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -103,7 +103,7 @@ func (s *Service) getDetails(c *gin.Context) {
 	}
 
 	db := utils.GetTiDBConnection(c)
-	result, err := querySlowLogDetail(db, &req)
+	result, err := s.querySlowLogDetail(db, &req)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -129,7 +129,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	list, err := querySlowLogList(db, s.params.SysSchema, &req)
+	list, err := s.querySlowLogList(db, &req)
 	if err != nil {
 		_ = c.Error(err)
 		return

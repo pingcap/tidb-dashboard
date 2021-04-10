@@ -56,11 +56,8 @@ func (s *Service) querySlowLogList(db *gorm.DB, req *GetListRequest) ([]Model, e
 	if err != nil {
 		return nil, err
 	}
-	selectStmt, err := s.genSelectStmt(tableColumns, reqFields)
-	if err != nil {
-		return nil, err
-	}
 
+	selectStmt := s.genSelectStmt(tableColumns, reqFields)
 	tx := db.
 		Table(slowQueryTable).
 		Select(selectStmt).
@@ -93,10 +90,7 @@ func (s *Service) querySlowLogList(db *gorm.DB, req *GetListRequest) ([]Model, e
 		req.OrderBy = "timestamp"
 	}
 
-	orderStmt, err := s.genOrderStmt(req.OrderBy, req.IsDesc)
-	if err != nil {
-		return nil, err
-	}
+	orderStmt := s.genOrderStmt(req.OrderBy, req.IsDesc)
 	tx.Order(orderStmt)
 
 	if len(req.Plans) > 0 {

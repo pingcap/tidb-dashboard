@@ -20,7 +20,7 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-func (s *Service) genSelectStmt(tableColumns []string, reqFields []string) (string, error) {
+func (s *Service) genSelectStmt(tableColumns []string, reqFields []string) string {
 	fields := getFieldsAndTags()
 
 	// use reqFields filter when not all fields are requested
@@ -45,10 +45,10 @@ func (s *Service) genSelectStmt(tableColumns []string, reqFields []string) (stri
 		}
 		return fmt.Sprintf("%s AS %s", f.Projection, f.ColumnName)
 	}).([]string)
-	return strings.Join(stmt, ", "), nil
+	return strings.Join(stmt, ", ")
 }
 
-func (s *Service) genOrderStmt(orderBy string, isDesc bool) (string, error) {
+func (s *Service) genOrderStmt(orderBy string, isDesc bool) string {
 	var order string
 	// to handle the special case: timestamp
 	// Order by column instead of expression, see related optimization in TiDB: https://github.com/pingcap/tidb/pull/20750
@@ -68,5 +68,5 @@ func (s *Service) genOrderStmt(orderBy string, isDesc bool) (string, error) {
 		order = fmt.Sprintf("%s ASC", order)
 	}
 
-	return order, nil
+	return order
 }

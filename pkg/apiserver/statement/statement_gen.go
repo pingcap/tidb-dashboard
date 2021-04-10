@@ -20,7 +20,7 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-func (s *Service) genSelectStmt(tableColumns []string, reqFields []string) (string, error) {
+func (s *Service) genSelectStmt(tableColumns []string, reqFields []string) string {
 	fields := getFieldsAndTags()
 
 	// use reqFields filter when not all fields are requested
@@ -46,7 +46,7 @@ func (s *Service) genSelectStmt(tableColumns []string, reqFields []string) (stri
 		}
 		return fmt.Sprintf("%s AS %s", f.Aggregation, f.ColumnName)
 	}).([]string)
-	return strings.Join(stmt, ", "), nil
+	return strings.Join(stmt, ", ")
 }
 
 func isSubsets(a []string, b []string) bool {

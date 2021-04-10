@@ -1,11 +1,11 @@
 import React from 'react'
 
-import { SlowquerySlowQuery } from '@lib/client'
+import { SlowqueryModel } from '@lib/client'
 import { CardTable, ShortValueWithTooltip } from '@lib/components'
 import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabCoprProps {
-  data: SlowquerySlowQuery
+  data: SlowqueryModel
 }
 
 export default function TabCopr({ data }: ITabCoprProps) {

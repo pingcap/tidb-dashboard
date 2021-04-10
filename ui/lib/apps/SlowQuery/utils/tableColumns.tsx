@@ -3,7 +3,7 @@ import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { SlowquerySlowQuery } from '@lib/client'
+import { SlowqueryModel } from '@lib/client'
 import { TableColumnFactory } from '@lib/utils/tableColumnFactory'
 
 //////////////////////////////////////////
@@ -34,7 +34,7 @@ export const derivedFields = {
 //////////////////////////////////////////
 
 export function slowQueryColumns(
-  rows: SlowquerySlowQuery[],
+  rows: SlowqueryModel[],
   tableSchemaColumns: string[],
   showFullSQL?: boolean
 ): IColumn[] {

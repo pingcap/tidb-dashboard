@@ -24,25 +24,26 @@ type MyStruct struct {
 	SecondField string `matched:"second tag" value:"another whatever"`
 }
 
-var firstField FieldTags = FieldTags{
-	fieldName: "FirstField",
-	tags: map[string]string{
-		"matched": "first tag",
-		"value":   "whatever",
-	},
-}
-var secondField FieldTags = FieldTags{
-	fieldName: "SecondField",
-	tags: map[string]string{
-		"matched": "second tag",
-		"value":   "another whatever",
-	},
-}
-
 func TestGetFieldTags(t *testing.T) {
-	rst := GetFieldsAndTags(MyStruct{})
+	rst := GetFieldsAndTags(MyStruct{}, []string{"matched", "value"})
 
-	assert.Equal(t, rst, []FieldTags{firstField, secondField})
+	assert.Equal(t, rst, []Field{
+		{
+			Name: "FirstField",
+			Tags: map[string]string{
+				"matched": "first tag",
+				"value":   "whatever",
+			},
+		},
+		{
+
+			Name: "SecondField",
+			Tags: map[string]string{
+				"matched": "second tag",
+				"value":   "another whatever",
+			},
+		},
+	})
 }
 
 // // TODO: support nested struct

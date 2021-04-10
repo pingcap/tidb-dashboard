@@ -69,7 +69,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 
 // @Summary List all slow queries
 // @Param q query GetListRequest true "Query"
-// @Success 200 {array} SlowQuery
+// @Success 200 {array} Model
 // @Router /slow_query/list [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
@@ -91,7 +91,7 @@ func (s *Service) getList(c *gin.Context) {
 
 // @Summary Get details of a slow query
 // @Param q query GetDetailRequest true "Query"
-// @Success 200 {object} SlowQuery
+// @Success 200 {object} Model
 // @Router /slow_query/detail [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"

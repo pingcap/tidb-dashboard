@@ -15,6 +15,10 @@ package statement
 
 import (
 	"strings"
+
+	"github.com/jinzhu/gorm"
+
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
 type Config struct {
@@ -92,10 +96,9 @@ type Model struct {
 	AggSchemaName            string `json:"schema_name" agg:"ANY_VALUE(schema_name)"`
 	AggTableNames            string `json:"table_names" agg:"ANY_VALUE(table_names)"`
 	AggIndexNames            string `json:"index_names" agg:"ANY_VALUE(index_names)"`
-	// `related` tag is used to verify a non-existent column, which is aggregated from the columns represented by related.
-	AggPlanCount  int    `json:"plan_count" agg:"COUNT(DISTINCT plan_digest)" related:"plan_digest"`
-	AggPlan       string `json:"plan" agg:"ANY_VALUE(plan)"`
-	AggPlanDigest string `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
+	AggPlanCount             int    `json:"plan_count" agg:"COUNT(DISTINCT plan_digest)" related:"plan_digest"`
+	AggPlan                  string `json:"plan" agg:"ANY_VALUE(plan)"`
+	AggPlanDigest            string `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
 	// RocksDB
 	AggMaxRocksdbDeleteSkippedCount uint `json:"max_rocksdb_delete_skipped_count" agg:"MAX(max_rocksdb_delete_skipped_count)"`
 	AggAvgRocksdbDeleteSkippedCount uint `json:"avg_rocksdb_delete_skipped_count" agg:"CAST(SUM(exec_count * avg_rocksdb_delete_skipped_count) / SUM(exec_count) as SIGNED)"`
@@ -134,4 +137,32 @@ func (m *Model) AfterFind() error {
 		m.RelatedSchemas = extractSchemasFromTableNames(m.AggTableNames)
 	}
 	return nil
+}
+
+type Field struct {
+	Raw utils.Field
+
+	ColumnName string
+	// `related` tag is used to verify a non-existent column, which is aggregated from the columns represented by related.
+	Related     string
+	Aggregation string
+	JSON        string
+}
+
+func getFieldsAndTags() (stmtFields []Field) {
+	fields := utils.GetFieldsAndTags(Model{}, []string{"related", "agg", "json"})
+
+	for _, f := range fields {
+		sf := Field{
+			Raw: f,
+		}
+		sf.ColumnName = gorm.ToColumnName(f.Name)
+		sf.Related = f.Tags["related"]
+		sf.Aggregation = f.Tags["agg"]
+		sf.JSON = f.Tags["json"]
+
+		stmtFields = append(stmtFields, sf)
+	}
+
+	return
 }

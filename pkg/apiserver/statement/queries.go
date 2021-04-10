@@ -20,7 +20,6 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	"github.com/thoas/go-funk"
 )
 
 const (
@@ -137,24 +136,17 @@ func (s *Service) queryStatements(
 	text string,
 	reqFields []string,
 ) (result []Model, err error) {
-	var fields []string
 	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
 	if err != nil {
 		return nil, err
 	}
-
-	if len(reqFields) == 1 && reqFields[0] == "*" {
-		fields, err = filterFieldsBy(Model{}, tableColumns)
-	} else {
-		reqFields = funk.UniqString(append(reqFields, "schema_name", "digest", "sum_latency")) // "schema_name", "digest" for group, "sum_latency" for order
-		fields, err = filterFieldsBy(Model{}, tableColumns, reqFields...)
-	}
+	selectStmt, err := s.genSelectStmt(tableColumns, reqFields)
 	if err != nil {
 		return
 	}
 
 	query := db.
-		Select(strings.Join(fields, ", ")).
+		Select(selectStmt).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Group("schema_name, digest").
@@ -201,7 +193,7 @@ func (s *Service) queryPlans(
 	if err != nil {
 		return nil, err
 	}
-	fields, err := filterFieldsBy(Model{}, tableColumns,
+	selectStmt, err := s.genSelectStmt(tableColumns, []string{
 		"plan_digest",
 		"schema_name",
 		"digest_text",
@@ -212,13 +204,13 @@ func (s *Service) queryPlans(
 		"avg_latency",
 		"exec_count",
 		"avg_mem",
-		"max_mem")
+		"max_mem"})
 	if err != nil {
 		return
 	}
 
 	err = db.
-		Select(strings.Join(fields, ", ")).
+		Select(selectStmt).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Where("schema_name = ?", schemaName).
@@ -239,12 +231,12 @@ func (s *Service) queryPlanDetail(
 	if err != nil {
 		return
 	}
-	fields, err := filterFieldsBy(Model{}, tableColumns)
+	selectStmt, err := s.genSelectStmt(tableColumns, []string{"*"})
 	if err != nil {
 		return
 	}
 	query := db.
-		Select(strings.Join(fields, ", ")).
+		Select(selectStmt).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Where("schema_name = ?", schemaName).

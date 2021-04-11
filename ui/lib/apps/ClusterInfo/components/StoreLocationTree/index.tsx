@@ -373,7 +373,7 @@ export default function StoreLocationTree({
         tooltip.select('#store-location-tooltip-value').text(value)
 
         const x = datum.y + margin.left
-        const y = datum.x + margin.top - 10
+        const y = datum.x + margin.top - 20
         tooltip.style(
           'transform',
           `translate(calc(-50% + ${x}px), calc(-100% + ${y}px))`

@@ -25,9 +25,9 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	apiutils "github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
-	commonUtils "github.com/pingcap/tidb-dashboard/pkg/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
 var (
@@ -38,7 +38,7 @@ var (
 type ServiceParams struct {
 	fx.In
 	TiDBClient *tidb.Client
-	SysSchema  *commonUtils.SysSchema
+	SysSchema  *utils.SysSchema
 }
 
 type Service struct {
@@ -55,7 +55,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		endpoint.GET("/download", s.downloadHandler)
 
 		endpoint.Use(auth.MWAuthRequired())
-		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
+		endpoint.Use(apiutils.MWConnectTiDB(s.params.TiDBClient))
 		{
 			endpoint.GET("/list", s.getList)
 			endpoint.GET("/detail", s.getDetails)
@@ -76,11 +76,11 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 func (s *Service) getList(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		apiutils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
-	db := utils.GetTiDBConnection(c)
+	db := apiutils.GetTiDBConnection(c)
 	results, err := s.querySlowLogList(db, &req)
 	if err != nil {
 		_ = c.Error(err)
@@ -98,11 +98,11 @@ func (s *Service) getList(c *gin.Context) {
 func (s *Service) getDetails(c *gin.Context) {
 	var req GetDetailRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		apiutils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
-	db := utils.GetTiDBConnection(c)
+	db := apiutils.GetTiDBConnection(c)
 	result, err := s.querySlowLogDetail(db, &req)
 	if err != nil {
 		_ = c.Error(err)
@@ -121,10 +121,10 @@ func (s *Service) getDetails(c *gin.Context) {
 func (s *Service) downloadTokenHandler(c *gin.Context) {
 	var req GetListRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.MakeInvalidRequestErrorFromError(c, err)
+		apiutils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
-	db := utils.GetTiDBConnection(c)
+	db := apiutils.GetTiDBConnection(c)
 	fields := []string{}
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
@@ -146,13 +146,13 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	}
 
 	// convert data
-	csvData := utils.GenerateCSVFromRaw(rawData, fields, []string{})
+	csvData := apiutils.GenerateCSVFromRaw(rawData, fields, []string{})
 
 	// generate temp file that persist encrypted data
 	timeLayout := "0102150405"
 	beginTime := time.Unix(int64(req.BeginTime), 0).Format(timeLayout)
 	endTime := time.Unix(int64(req.EndTime), 0).Format(timeLayout)
-	token, err := utils.ExportCSV(csvData,
+	token, err := apiutils.ExportCSV(csvData,
 		fmt.Sprintf("slowquery_%s_%s_*.csv", beginTime, endTime),
 		"slowquery/download")
 
@@ -171,7 +171,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) downloadHandler(c *gin.Context) {
 	token := c.Query("token")
-	utils.DownloadByToken(token, "slowquery/download", c)
+	apiutils.DownloadByToken(token, "slowquery/download", c)
 }
 
 // @Summary Query table columns
@@ -181,7 +181,7 @@ func (s *Service) downloadHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Router /slow_query/table_columns [get]
 func (s *Service) queryTableColumns(c *gin.Context) {
-	db := utils.GetTiDBConnection(c)
+	db := apiutils.GetTiDBConnection(c)
 	cs, err := s.params.SysSchema.GetTableColumnNames(db, slowQueryTable)
 	if err != nil {
 		_ = c.Error(err)

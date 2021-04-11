@@ -101,11 +101,9 @@ type Model struct {
 }
 
 type Field struct {
-	Raw utils.Field
-
 	ColumnName string
+	JSONName   string
 	Projection string
-	JSON       string
 }
 
 func getFieldsAndTags() (slowQueryFields []Field) {
@@ -113,11 +111,10 @@ func getFieldsAndTags() (slowQueryFields []Field) {
 
 	for _, f := range fields {
 		sqf := Field{
-			Raw: f,
+			ColumnName: getGormColumnName(f.Tags["gorm"]),
+			JSONName:   f.Tags["json"],
+			Projection: f.Tags["proj"],
 		}
-		sqf.ColumnName = getGormColumnName(f.Tags["gorm"])
-		sqf.Projection = f.Tags["proj"]
-		sqf.JSON = f.Tags["json"]
 
 		slowQueryFields = append(slowQueryFields, sqf)
 	}

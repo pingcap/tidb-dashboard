@@ -20,33 +20,37 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-func (s *Service) genSelectStmt(tableColumns []string, reqFields []string) string {
+func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) (string, error) {
 	fields := getFieldsAndTags()
 
-	// use reqFields filter when not all fields are requested
-	if reqFields[0] != "*" {
+	// use required fields filter when not all fields are requested
+	if reqJSONColumns[0] != "*" {
 		// "schema_name", "digest" for group, "sum_latency" for order
-		reqFields = funk.UniqString(append(reqFields, "schema_name", "digest", "sum_latency"))
+		requiredFields := funk.UniqString(append(reqJSONColumns, "schema_name", "digest", "sum_latency"))
 		fields = funk.Filter(fields, func(f Field) bool {
-			return funk.Contains(reqFields, f.JSON)
+			return funk.Contains(requiredFields, f.JSONName)
 		}).([]Field)
 	}
 
-	// filter by tableColumns
+	// We have both TiDB 4.x and TiDB 5.x columns listed in the model. Filter out columns that do not exist in current version TiDB schema.
 	fields = funk.Filter(fields, func(f Field) bool {
-		haveRelatedColumns := f.Related != ""
-		isValidTableColumn := !haveRelatedColumns && isSubsets(tableColumns, []string{f.JSON})
-		isRelatedColumnsValid := haveRelatedColumns && isSubsets(tableColumns, strings.Split(f.Related, ","))
-		return isValidTableColumn || isRelatedColumnsValid
+		hasRelatedColumns := len(f.Related) != 0
+		isTableColumnValid := !hasRelatedColumns && isSubsets(tableColumns, []string{f.JSONName})
+		isRelatedColumnsValid := hasRelatedColumns && isSubsets(tableColumns, f.Related)
+		return isTableColumnValid || isRelatedColumnsValid
 	}).([]Field)
+
+	if len(fields) == 0 {
+		return "", fmt.Errorf("unknown request columns: %q", reqJSONColumns)
+	}
 
 	stmt := funk.Map(fields, func(f Field) string {
 		if f.Aggregation == "" {
-			return f.JSON
+			return f.JSONName
 		}
 		return fmt.Sprintf("%s AS %s", f.Aggregation, f.ColumnName)
 	}).([]string)
-	return strings.Join(stmt, ", ")
+	return strings.Join(stmt, ", "), nil
 }
 
 func isSubsets(a []string, b []string) bool {

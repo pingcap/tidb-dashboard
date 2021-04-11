@@ -140,13 +140,11 @@ func (m *Model) AfterFind() error {
 }
 
 type Field struct {
-	Raw utils.Field
-
 	ColumnName string
+	JSONName   string
 	// `related` tag is used to verify a non-existent column, which is aggregated from the columns represented by related.
-	Related     string
+	Related     []string
 	Aggregation string
-	JSON        string
 }
 
 func getFieldsAndTags() (stmtFields []Field) {
@@ -154,12 +152,15 @@ func getFieldsAndTags() (stmtFields []Field) {
 
 	for _, f := range fields {
 		sf := Field{
-			Raw: f,
+			ColumnName:  gorm.ToColumnName(f.Name),
+			JSONName:    f.Tags["json"],
+			Related:     []string{},
+			Aggregation: f.Tags["agg"],
 		}
-		sf.ColumnName = gorm.ToColumnName(f.Name)
-		sf.Related = f.Tags["related"]
-		sf.Aggregation = f.Tags["agg"]
-		sf.JSON = f.Tags["json"]
+
+		if f.Tags["related"] != "" {
+			sf.Related = strings.Split(f.Tags["related"], ",")
+		}
 
 		stmtFields = append(stmtFields, sf)
 	}

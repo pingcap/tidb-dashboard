@@ -21,7 +21,6 @@ import (
 
 const (
 	slowQueryTable = "INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY"
-	selectStmt     = "*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp"
 )
 
 type GetListRequest struct {
@@ -52,12 +51,13 @@ func (s *Service) querySlowLogList(db *gorm.DB, req *GetListRequest) ([]Model, e
 	if err != nil {
 		return nil, err
 	}
+
 	reqFields := strings.Split(req.Fields, ",")
+	selectStmt, err := s.genSelectStmt(tableColumns, reqFields)
 	if err != nil {
 		return nil, err
 	}
 
-	selectStmt := s.genSelectStmt(tableColumns, reqFields)
 	tx := db.
 		Table(slowQueryTable).
 		Select(selectStmt).
@@ -90,8 +90,12 @@ func (s *Service) querySlowLogList(db *gorm.DB, req *GetListRequest) ([]Model, e
 		req.OrderBy = "timestamp"
 	}
 
-	orderStmt := s.genOrderStmt(req.OrderBy, req.IsDesc)
-	tx.Order(orderStmt)
+	orderStmt, err := s.genOrderStmt(tableColumns, req.OrderBy, req.IsDesc)
+	if err != nil {
+		return nil, err
+	}
+
+	tx = tx.Order(orderStmt)
 
 	if len(req.Plans) > 0 {
 		tx = tx.Where("Plan_digest IN (?)", req.Plans)
@@ -113,7 +117,7 @@ func (s *Service) querySlowLogDetail(db *gorm.DB, req *GetDetailRequest) (*Model
 	var result Model
 	err := db.
 		Table(slowQueryTable).
-		Select(selectStmt).
+		Select("*, (UNIX_TIMESTAMP(Time) + 0E0) AS timestamp").
 		Where("Digest = ?", req.Digest).
 		Where("Time = FROM_UNIXTIME(?)", req.Timestamp).
 		Where("Conn_id = ?", req.ConnectID).

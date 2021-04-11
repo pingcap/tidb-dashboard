@@ -141,7 +141,11 @@ func (s *Service) queryStatements(
 		return nil, err
 	}
 
-	selectStmt := s.genSelectStmt(tableColumns, reqFields)
+	selectStmt, err := s.genSelectStmt(tableColumns, reqFields)
+	if err != nil {
+		return nil, err
+	}
+
 	query := db.
 		Select(selectStmt).
 		Table(statementsTable).
@@ -191,7 +195,7 @@ func (s *Service) queryPlans(
 		return nil, err
 	}
 
-	selectStmt := s.genSelectStmt(tableColumns, []string{
+	selectStmt, err := s.genSelectStmt(tableColumns, []string{
 		"plan_digest",
 		"schema_name",
 		"digest_text",
@@ -203,6 +207,10 @@ func (s *Service) queryPlans(
 		"exec_count",
 		"avg_mem",
 		"max_mem"})
+	if err != nil {
+		return nil, err
+	}
+
 	err = db.
 		Select(selectStmt).
 		Table(statementsTable).
@@ -226,7 +234,11 @@ func (s *Service) queryPlanDetail(
 		return
 	}
 
-	selectStmt := s.genSelectStmt(tableColumns, []string{"*"})
+	selectStmt, err := s.genSelectStmt(tableColumns, []string{"*"})
+	if err != nil {
+		return
+	}
+
 	query := db.
 		Select(selectStmt).
 		Table(statementsTable).

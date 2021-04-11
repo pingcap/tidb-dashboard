@@ -132,35 +132,18 @@ function calcCommonTimeRange(
     return RECENT_SECONDS.map((s) => ({ enabled: false, value: s }))
   }
 
-  const calcInterval =
-    maxServerDataTime +
-    getLocalTimeInterval(maxServerDataTime) -
-    minServerDataTime
+  const validTimeRange =
+    maxServerDataTime + getLocalTimeInterval() - minServerDataTime
 
-  return RECENT_SECONDS.map((s) => ({ enabled: s <= calcInterval, value: s }))
+  return RECENT_SECONDS.map((s) => ({ enabled: s <= validTimeRange, value: s }))
 }
 
-// use time interval to calculate valid time range when dropdown change visible state
-//
-// ----first time open drop down----------...---------every time open drop down----
-//                                (time interval)
-// -----------Date.now()------------------...------------------Date.now()----------
-let getLocalTimeInterval = (time: number): number => {
-  let firstTime: number
-  if (!!time) {
-    firstTime = calcAbsIntervalFromNow(time)
-  }
-
-  getLocalTimeInterval = (time: number): number => {
-    return calcAbsIntervalFromNow(time) - firstTime
-  }
-
-  return getLocalTimeInterval(time)
-}
-
-function calcAbsIntervalFromNow(timestamp: number) {
-  return Math.abs(Date.now() - timestamp)
-}
+// use time interval to calculate valid time range when dropdown change visible state,
+// avoid error time setting on the client
+const getLocalTimeInterval = (() => {
+  let firstTimestamp = Date.now()
+  return (): number => Date.now() - firstTimestamp
+})()
 
 export interface ITimeRangeSelectorProps {
   value: TimeRange

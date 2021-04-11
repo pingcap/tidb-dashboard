@@ -11,6 +11,8 @@ import { useTranslation } from 'react-i18next'
 
 import { TopologyStoreLocation } from '@lib/client'
 
+import styles from './index.module.less'
+
 //////////////////////////////////////
 
 type ShortStrMap = Record<string, string>
@@ -198,6 +200,8 @@ export interface IStoreLocationProps {
   onReload?: () => void
 }
 
+const MAX_STR_LENGTH = 16
+
 const margin = { left: 60, right: 40, top: 80, bottom: 100 }
 const dx = 40
 
@@ -224,6 +228,9 @@ export default function StoreLocationTree({
 }: IStoreLocationProps) {
   const divRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
+
+  const enableTooltip = useRef<boolean>()
+  enableTooltip.current = true
 
   useEffect(() => {
     let divWidth = divRef.current?.clientWidth || 0
@@ -276,6 +283,9 @@ export default function StoreLocationTree({
           'transform',
           `translate(${t.x + margin.left}, ${t.y + margin.top}) scale(${t.k})`
         )
+
+        // don't show tooltip if zoom or drag
+        enableTooltip.current = t.x === 0 && t.y === 0 && t.k === 1
 
         // this will cause unexpected result when dragging
         // svg.attr('transform', d3.event.transform)
@@ -343,7 +353,41 @@ export default function StoreLocationTree({
           d.children = d.children ? null : d._children
           update(d)
         })
+        .on('mouseenter', onMouseEnter)
+        .on('mouseleave', onMouseLeave)
 
+      // tooltip
+      const tooltip = d3.select('#store-location-tooltip')
+      function onMouseEnter(datum) {
+        if (enableTooltip.current === false) {
+          return
+        }
+
+        const { name, value } = datum.data
+        if (
+          shortStrMap[name] === undefined &&
+          shortStrMap[value] === undefined
+        ) {
+          return
+        }
+
+        tooltip.select('#store-location-tooltip-name').text(name)
+        tooltip.select('#store-location-tooltip-value').text(value)
+
+        const x = datum.y + margin.left
+        const y = datum.x + margin.top - 10
+        tooltip.style(
+          'transform',
+          `translate(calc(-50% + ${x}px), calc(-100% + ${y}px))`
+        )
+
+        tooltip.style('opacity', 1)
+      }
+      function onMouseLeave() {
+        tooltip.style('opacity', 0)
+      }
+
+      // circle
       nodeEnter
         .append('circle')
         .attr('r', 8)
@@ -383,7 +427,12 @@ export default function StoreLocationTree({
         .attr('text-anchor', 'end')
       middleNodeText
         .append('tspan')
-        .text(({ data: { value } }: any) => shortStrMap[value] ?? value)
+        .text(({ data: { value } }: any) => {
+          if (value.length <= MAX_STR_LENGTH) {
+            return value
+          }
+          return shortStrMap[value] ?? value
+        })
         .attr('x', -15)
         .attr('dy', '1em')
         .attr('text-anchor', 'end')
@@ -493,6 +542,11 @@ export default function StoreLocationTree({
           *{t('cluster_info.list.store_topology.tooltip')}
         </span>
       </Space>
+
+      <div id="store-location-tooltip" className={styles.tooltip}>
+        <div id="store-location-tooltip-name"></div>
+        <div id="store-location-tooltip-value"></div>
+      </div>
     </div>
   )
 }

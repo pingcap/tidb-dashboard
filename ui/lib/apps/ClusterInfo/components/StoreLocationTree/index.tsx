@@ -68,9 +68,9 @@ export function getShortStrMap(
 // input: ['aaa-111a.abc.123', 'aaa-222a.abc.123', 'aaa-333a.abc.123'], items in the array have either the same prefix or suffix, or both.
 // output:
 // {
-//   "aaa-111a.abc.123":"aaa-111a",
-//   "aaa-222a.abc.123":"aaa-222a",
-//   "aaa-333a.abc.123":"aaa-333a"
+//   "aaa-111a.abc.123":"111a",
+//   "aaa-222a.abc.123":"222a",
+//   "aaa-333a.abc.123":"333a"
 // }
 export function getArrShortStrMap(strArr: string[]): ShortStrMap {
   const shortStrMap: ShortStrMap = {}

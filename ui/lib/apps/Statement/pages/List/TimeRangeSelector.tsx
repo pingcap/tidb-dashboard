@@ -141,7 +141,7 @@ function calcCommonTimeRange(
 // use time interval to calculate valid time range when dropdown change visible state,
 // avoid error time setting on the client
 const getLocalTimeInterval = (() => {
-  let firstTimestamp = Date.now()
+  const firstTimestamp = Date.now()
   return (): number => Date.now() - firstTimestamp
 })()
 

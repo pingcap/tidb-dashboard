@@ -129,18 +129,16 @@ export function getArrShortStrMap(strArr: string[]): ShortStrMap {
     i++
   }
 
-  // compare
-  if (headDotOrMinusPos > -1 && headDotOrMinusPos >= tailDotOrMinusPos) {
-    strSet.forEach((s) => {
-      const short = s.slice(headDotOrMinusPos + 1)
-      shortStrMap[s] = short
-    })
-  } else if (tailDotOrMinusPos > -1 && tailDotOrMinusPos >= headDotOrMinusPos) {
-    strSet.forEach((s) => {
-      const short = s.slice(0, s.length - tailDotOrMinusPos - 1)
-      shortStrMap[s] = short
-    })
+  if (headDotOrMinusPos === -1 && tailDotOrMinusPos === -1) {
+    return shortStrMap
   }
+  strSet.forEach((s) => {
+    const startIdx = headDotOrMinusPos + 1
+    const endIdx =
+      tailDotOrMinusPos === -1 ? s.length : s.length - 1 - tailDotOrMinusPos
+    const short = s.slice(startIdx, endIdx)
+    shortStrMap[s] = short
+  })
 
   return shortStrMap
 }
@@ -431,7 +429,15 @@ export default function StoreLocationTree({
           if (value.length <= MAX_STR_LENGTH) {
             return value
           }
-          return shortStrMap[value] ?? value
+          let shortStr = shortStrMap[value] ?? value
+          if (shortStr.length > MAX_STR_LENGTH) {
+            const midIdx = Math.round(MAX_STR_LENGTH / 2) - 1
+            shortStr =
+              shortStr.slice(0, midIdx) +
+              '..' +
+              shortStr.slice(shortStr.length - midIdx, shortStr.length)
+          }
+          return shortStr
         })
         .attr('x', -15)
         .attr('dy', '1em')

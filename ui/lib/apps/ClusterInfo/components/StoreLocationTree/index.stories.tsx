@@ -94,7 +94,8 @@ const dataSource2 = {
           children: [
             {
               name: 'kubernetes.io/hostname',
-              value: 'shoot--stating--a13df0bd-56f54530-z1-111111-tkq7r',
+              value:
+                'shoot--stating--a13df0bd-56f54530-z1-111111-tkq7r.internal',
               children: [
                 {
                   name: 'TiFlash',
@@ -105,7 +106,8 @@ const dataSource2 = {
             },
             {
               name: 'kubernetes.io/hostname',
-              value: 'shoot--stating--a13df0bd-b8cdec65-z1-22222-fdsaf',
+              value:
+                'shoot--stating--a13df0bd-b8cdec65-z1-22222-fdsaf.internal',
               children: [
                 {
                   name: 'TiKV',
@@ -122,7 +124,8 @@ const dataSource2 = {
           children: [
             {
               name: 'kubernetes.io/hostname',
-              value: 'shoot--stating--a13df0bd-xxxxxxxxxx-z1-33333-xxxxx',
+              value:
+                'shoot--stating--a13df0bd-xxxxxxxxxx-z1-33333-xxxxx.internal',
               children: [
                 {
                   name: 'TiKV',
@@ -139,7 +142,7 @@ const dataSource2 = {
           children: [
             {
               name: 'kubernetes.io/hostname',
-              value: 'shoot--stating--a13df0bd-yyyyy-z1-33333-mmmm',
+              value: 'shoot--stating--a13df0bd-yyyyy-z1-33333-mmmm.internal',
               children: [
                 {
                   name: 'TiKV',
@@ -190,7 +193,7 @@ const data1 = {
         'failure-domain.beta.kubernetes.io/region': 'us-west1',
         'failure-domain.beta.kubernetes.io/zone': 'us-west1-a',
         'kubernetes.io/hostname':
-          'shoot--stating--a13df0bd-56f54530-z1-111111-tkq7r',
+          'shoot--stating--a13df0bd-56f54530-z1-111111-tkq7r.internal',
       },
     },
     {
@@ -200,7 +203,7 @@ const data1 = {
         'failure-domain.beta.kubernetes.io/region': 'us-west1',
         'failure-domain.beta.kubernetes.io/zone': 'us-west1-a',
         'kubernetes.io/hostname':
-          'shoot--stating--a13df0bd-b8cdec65-z1-22222-fdsaf',
+          'shoot--stating--a13df0bd-b8cdec65-z1-22222-fdsaf.internal',
       },
     },
     {
@@ -210,7 +213,7 @@ const data1 = {
         'failure-domain.beta.kubernetes.io/region': 'us-west1',
         'failure-domain.beta.kubernetes.io/zone': 'us-west1-b',
         'kubernetes.io/hostname':
-          'shoot--stating--a13df0bd-xxxxxxxxxx-z1-33333-xxxxx',
+          'shoot--stating--a13df0bd-xxxxxxxxxx-z1-33333-xxxxx.internal',
       },
     },
     {
@@ -220,7 +223,7 @@ const data1 = {
         'failure-domain.beta.kubernetes.io/region': 'us-west1',
         'failure-domain.beta.kubernetes.io/zone': 'us-west1-c',
         'kubernetes.io/hostname':
-          'shoot--stating--a13df0bd-yyyyy-z1-33333-mmmm',
+          'shoot--stating--a13df0bd-yyyyy-z1-33333-mmmm.internal',
       },
     },
   ],

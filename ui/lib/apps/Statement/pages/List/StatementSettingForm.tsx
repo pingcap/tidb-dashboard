@@ -34,7 +34,28 @@ const convertArrToObj = (arr: number[]) =>
   }, {})
 
 const REFRESH_INTERVAL_MARKS = convertArrToObj([1, 5, 15, 30, 60])
-const KEEP_DURATION_MARKS = convertArrToObj([1, 2, 5, 10, 20, 30])
+const KEEP_DURATION_MARKS = {
+  4: '4h',
+  24: '1d',
+  48: '2d',
+  120: '5d',
+  240: '10d',
+}
+
+const inputNumberFormatter = (value: number | string | undefined): string => {
+  const day = Math.floor((value as number) / 24)
+  const hour = (value as number) % 24
+  return `${day} day ${hour} hour`
+}
+
+const inputNumberParser = (
+  displayValue: string | undefined
+): number | string => {
+  const arr = displayValue?.split(' ') || []
+  const day = parseInt(arr[0]) || 0
+  const hour = parseInt(arr[2]) || 0
+  return day * 24 + hour
+}
 
 function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
   const [submitting, setSubmitting] = useState(false)
@@ -53,9 +74,9 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
       const refresh_interval = Math.ceil(oriConfig.refresh_interval! / 60)
       const max_refresh_interval = Math.max(refresh_interval, 60)
       const keep_duration = Math.ceil(
-        (oriConfig.refresh_interval! * oriConfig.history_size!) / (24 * 60 * 60)
+        (oriConfig.refresh_interval! * oriConfig.history_size!) / (60 * 60)
       )
-      const max_keep_duration = Math.max(keep_duration, 30)
+      const max_keep_duration = Math.max(keep_duration, 10 * 24)
 
       return {
         ...oriConfig,
@@ -69,12 +90,22 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
   }, [oriConfig])
 
   async function updateConfig(values) {
+    const historySize = Math.ceil(
+      (values.keep_duration * 60) / values.refresh_interval
+    )
+    if (historySize > 255) {
+      Modal.error({
+        title: t('statement.settings.setting_error_modal.title'),
+        content: t('statement.settings.setting_error_modal.content', {
+          historySize,
+        }),
+      })
+      return
+    }
     const newConfig: StatementConfig = {
       enable: values.enable,
       refresh_interval: values.refresh_interval * 60,
-      history_size: Math.ceil(
-        (values.keep_duration * 24 * 60) / values.refresh_interval
-      ),
+      history_size: historySize,
     }
     try {
       setSubmitting(true)
@@ -152,21 +183,22 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                       <Input.Group>
                         <Form.Item noStyle name="keep_duration">
                           <InputNumber
-                            min={1}
+                            style={{ width: 140 }}
+                            min={4}
                             max={config.max_keep_duration}
-                            formatter={(value) => `${value} day`}
-                            parser={(value) =>
-                              value?.replace(/[^\d]/g, '') || ''
-                            }
+                            step={4}
+                            formatter={inputNumberFormatter}
+                            parser={inputNumberParser}
                           />
                         </Form.Item>
                         <Form.Item noStyle name="keep_duration">
                           <Slider
-                            min={1}
+                            min={4}
                             max={config.max_keep_duration}
+                            step={4}
                             marks={{
+                              [config.max_keep_duration]: `${config.max_keep_duration}h`,
                               ...KEEP_DURATION_MARKS,
-                              [config.max_keep_duration]: `${config.max_keep_duration}`,
                             }}
                           />
                         </Form.Item>

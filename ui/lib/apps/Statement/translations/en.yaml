@@ -56,6 +56,9 @@ statement:
       save: Save
       close: Close
       cancel: Cancel
+    setting_error_modal:
+      title: Invalid Setting Values
+      content: 'The amount of statements to save is too large, you need to increase collect interval or decrease data retain duration. The value of "Data retain duration * 60 / Collect interval" should be less than 256, currently it is {{historySize}}.'
   fields:
     table_names: Table Names
     related_schemas: Database

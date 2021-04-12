@@ -57,9 +57,6 @@ statement:
       save: 保存
       close: 关闭
       cancel: 取消
-    setting_error_modal:
-      title: 参数设置错误
-      content: '数据保存量过大，需要增大数据收集周期或减小数据保留时间。"数据保留时间*60/数据收集周期" 的值应小于 256，当前值 {{historySize}}。'
   fields:
     related_schemas: 数据库
     related_schemas_tooltip: SQL 语句涉及的数据库

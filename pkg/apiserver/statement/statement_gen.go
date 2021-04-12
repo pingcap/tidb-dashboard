@@ -34,10 +34,14 @@ func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) 
 
 	// We have both TiDB 4.x and TiDB 5.x columns listed in the model. Filter out columns that do not exist in current version TiDB schema.
 	fields = funk.Filter(fields, func(f Field) bool {
-		hasRelatedColumns := len(f.Related) != 0
-		isTableColumnValid := !hasRelatedColumns && isSubsets(tableColumns, []string{f.JSONName})
-		isRelatedColumnsValid := hasRelatedColumns && isSubsets(tableColumns, f.Related)
-		return isTableColumnValid || isRelatedColumnsValid
+		var representedColumns []string
+		if len(f.Related) != 0 {
+			representedColumns = f.Related
+		} else {
+			representedColumns = []string{f.JSONName}
+		}
+
+		return isSubsets(tableColumns, representedColumns)
 	}).([]Field)
 
 	if len(fields) == 0 {

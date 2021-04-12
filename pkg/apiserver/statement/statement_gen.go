@@ -20,6 +20,10 @@ import (
 	"github.com/thoas/go-funk"
 )
 
+var (
+	ErrUnknownColumn = ErrNS.NewType("unknown_column")
+)
+
 func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) (string, error) {
 	fields := getFieldsAndTags()
 
@@ -45,7 +49,7 @@ func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) 
 	}).([]Field)
 
 	if len(fields) == 0 {
-		return "", fmt.Errorf("unknown request columns: %q", reqJSONColumns)
+		return "", ErrUnknownColumn.New("all columns are not included in the current version TiDB schema, columns: %q", reqJSONColumns)
 	}
 
 	stmt := funk.Map(fields, func(f Field) string {

@@ -153,6 +153,7 @@ type GetStatementsRequest struct {
 // @Success 200 {array} Model
 // @Router /statements/list [get]
 // @Security JwtAuth
+// @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) listHandler(c *gin.Context) {
 	var req GetStatementsRequest
@@ -173,7 +174,7 @@ func (s *Service) listHandler(c *gin.Context) {
 		req.Text,
 		fields)
 	if err != nil {
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, overviews)
@@ -239,6 +240,7 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 // @Param request body GetStatementsRequest true "Request body"
 // @Success 200 {string} string "xxx"
 // @Security JwtAuth
+// @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) downloadTokenHandler(c *gin.Context) {
 	var req GetStatementsRequest
@@ -259,7 +261,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		req.Text,
 		fields)
 	if err != nil {
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	if len(overviews) == 0 {

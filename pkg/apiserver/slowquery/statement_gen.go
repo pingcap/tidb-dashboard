@@ -20,6 +20,10 @@ import (
 	"github.com/thoas/go-funk"
 )
 
+var (
+	ErrUnknownColumn = ErrNS.NewType("unknown_column")
+)
+
 func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) (string, error) {
 	fields := getFieldsAndTags()
 
@@ -40,7 +44,7 @@ func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) 
 	}).([]Field)
 
 	if len(fields) == 0 {
-		return "", fmt.Errorf("unknown request fields: %q", reqJSONColumns)
+		return "", ErrUnknownColumn.New("all columns are not included in the current version TiDB schema, columns: %q", reqJSONColumns)
 	}
 
 	stmt := funk.Map(fields, func(f Field) string {
@@ -67,7 +71,7 @@ func (s *Service) genOrderStmt(tableColumns []string, orderBy string, isDesc boo
 			return f.JSONName == orderBy
 		})
 		if orderField == nil {
-			return "", fmt.Errorf("unknown order by %s", orderBy)
+			return "", ErrUnknownColumn.New("unknown order by %s", orderBy)
 		}
 
 		order = orderField.(Field).ColumnName

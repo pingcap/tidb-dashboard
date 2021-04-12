@@ -1,12 +1,12 @@
 import React from 'react'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 
-import { SlowquerySlowQuery } from '@lib/client'
+import { SlowqueryModel } from '@lib/client'
 import { CardTable, ShortValueWithTooltip } from '@lib/components'
 import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabTxnProps {
-  data: SlowquerySlowQuery
+  data: SlowqueryModel
 }
 
 export default function TabCopr({ data }: ITabTxnProps) {

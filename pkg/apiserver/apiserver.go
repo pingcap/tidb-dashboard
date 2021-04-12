@@ -36,6 +36,7 @@ import (
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -114,13 +115,12 @@ func (s *Service) Start(ctx context.Context) error {
 			config.NewDynamicConfigManager,
 			tidb.NewTiDBClient,
 			tikv.NewTiKVClient,
+			utils.NewSysSchema,
 			user.NewAuthService,
 			info.NewService,
 			clusterinfo.NewService,
 			profiling.NewService,
 			logsearch.NewService,
-			slowquery.NewService,
-			statement.NewService,
 			diagnose.NewService,
 			keyvisual.NewService,
 			metrics.NewService,
@@ -129,6 +129,8 @@ func (s *Service) Start(ctx context.Context) error {
 			// __APP_NAME__.NewService,
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 		),
+		statement.Module,
+		slowquery.Module,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			user.RegisterRouter,
@@ -136,8 +138,6 @@ func (s *Service) Start(ctx context.Context) error {
 			clusterinfo.RegisterRouter,
 			profiling.RegisterRouter,
 			logsearch.RegisterRouter,
-			slowquery.RegisterRouter,
-			statement.RegisterRouter,
 			diagnose.RegisterRouter,
 			keyvisual.RegisterRouter,
 			metrics.RegisterRouter,

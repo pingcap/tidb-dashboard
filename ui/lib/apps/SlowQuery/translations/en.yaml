@@ -94,6 +94,17 @@ slow_query:
 
     cop_proc_avg: Mean Cop Proc # ?
     cop_wait_avg: Mean Cop Wait # ?
+
+    rocksdb_delete_skipped_count: RocksDB Skipped Deletions
+    rocksdb_delete_skipped_count_tooltip: Total number of deleted (a.k.a. tombstone) key versions that are skipped during iteration (RocksDB delete_skipped_count)
+    rocksdb_key_skipped_count: RocksDB Skipped Keys
+    rocksdb_key_skipped_count_tooltip: Total number of keys skipped during iteration (RocksDB key_skipped_count)
+    rocksdb_block_cache_hit_count: RocksDB Block Cache Hits
+    rocksdb_block_cache_hit_count_tooltip: Total number of hits from the block cache (RocksDB block_cache_hit_count)
+    rocksdb_block_read_count: RocksDB Block Reads
+    rocksdb_block_read_count_tooltip: Total number of blocks RocksDB read from file (RocksDB block_read_count)
+    rocksdb_block_read_byte: RocksDB Read Size
+    rocksdb_block_read_byte_tooltip: Total number of bytes RocksDB read from file (RocksDB block_read_byte)
   common:
     status:
       success: Success

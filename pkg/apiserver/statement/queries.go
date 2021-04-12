@@ -20,7 +20,6 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	"github.com/thoas/go-funk"
 )
 
 const (
@@ -50,7 +49,7 @@ func querySQLIntVariable(db *gorm.DB, name string) (int, error) {
 	return intVal, nil
 }
 
-func QueryStmtConfig(db *gorm.DB) (*Config, error) {
+func queryStmtConfig(db *gorm.DB) (*Config, error) {
 	config := Config{}
 
 	enable, err := querySQLIntVariable(db, stmtEnableVar)
@@ -82,7 +81,7 @@ func QueryStmtConfig(db *gorm.DB) (*Config, error) {
 	return &config, err
 }
 
-func UpdateStmtConfig(db *gorm.DB, config *Config) (err error) {
+func updateStmtConfig(db *gorm.DB, config *Config) (err error) {
 	var sql string
 	sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtEnableVar)
 	err = db.Exec(sql, config.Enable).Error
@@ -100,7 +99,7 @@ func UpdateStmtConfig(db *gorm.DB, config *Config) (err error) {
 	return
 }
 
-func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
+func queryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 	err = db.
 		Select(`
 			DISTINCT
@@ -113,7 +112,7 @@ func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 	return
 }
 
-func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
+func queryStmtTypes(db *gorm.DB) (result []string, err error) {
 	// why should put DISTINCT inside the `Pluck()` method, see here:
 	// https://github.com/jinzhu/gorm/issues/496
 	err = db.
@@ -130,23 +129,25 @@ func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
 // schemas: ["tpcc", "test"]
 // stmtTypes: ["select", "update"]
 // fields: ["digest_text", "sum_latency"]
-func QueryStatements(
+func (s *Service) queryStatements(
 	db *gorm.DB,
 	beginTime, endTime int,
 	schemas, stmtTypes []string,
 	text string,
-	fields []string,
+	reqFields []string,
 ) (result []Model, err error) {
-	var aggrFields []string
-	if len(fields) == 1 && fields[0] == "*" {
-		aggrFields = getAllAggrFields()
-	} else {
-		fields = funk.UniqString(append(fields, "schema_name", "digest", "sum_latency")) // "schema_name", "digest" for group, "sum_latency" for order
-		aggrFields = getAggrFields(fields...)
+	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
+	if err != nil {
+		return nil, err
+	}
+
+	selectStmt, err := s.genSelectStmt(tableColumns, reqFields)
+	if err != nil {
+		return nil, err
 	}
 
 	query := db.
-		Select(strings.Join(aggrFields, ", ")).
+		Select(selectStmt).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Group("schema_name, digest").
@@ -184,11 +185,17 @@ func QueryStatements(
 	return
 }
 
-func QueryPlans(
+func (s *Service) queryPlans(
 	db *gorm.DB,
 	beginTime, endTime int,
-	schemaName, digest string) (result []Model, err error) {
-	fields := getAggrFields(
+	schemaName, digest string,
+) (result []Model, err error) {
+	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
+	if err != nil {
+		return nil, err
+	}
+
+	selectStmt, err := s.genSelectStmt(tableColumns, []string{
 		"plan_digest",
 		"schema_name",
 		"digest_text",
@@ -199,9 +206,13 @@ func QueryPlans(
 		"avg_latency",
 		"exec_count",
 		"avg_mem",
-		"max_mem")
+		"max_mem"})
+	if err != nil {
+		return nil, err
+	}
+
 	err = db.
-		Select(strings.Join(fields, ", ")).
+		Select(selectStmt).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Where("schema_name = ?", schemaName).
@@ -212,14 +223,24 @@ func QueryPlans(
 	return
 }
 
-func QueryPlanDetail(
+func (s *Service) queryPlanDetail(
 	db *gorm.DB,
 	beginTime, endTime int,
 	schemaName, digest string,
-	plans []string) (result Model, err error) {
-	fields := getAllAggrFields()
+	plans []string,
+) (result Model, err error) {
+	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
+	if err != nil {
+		return
+	}
+
+	selectStmt, err := s.genSelectStmt(tableColumns, []string{"*"})
+	if err != nil {
+		return
+	}
+
 	query := db.
-		Select(strings.Join(fields, ", ")).
+		Select(selectStmt).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Where("schema_name = ?", schemaName).

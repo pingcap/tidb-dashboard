@@ -131,19 +131,9 @@ function calcCommonTimeRange(
   if (!maxServerDataTime) {
     return RECENT_SECONDS.map((s) => ({ enabled: false, value: s }))
   }
-
-  const validTimeRange =
-    maxServerDataTime + getLocalTimeInterval() - minServerDataTime
-
+  const validTimeRange = maxServerDataTime - minServerDataTime
   return RECENT_SECONDS.map((s) => ({ enabled: s <= validTimeRange, value: s }))
 }
-
-// use time interval to calculate valid time range when dropdown change visible state,
-// avoid error time setting on the client
-const getLocalTimeInterval = (() => {
-  const firstTimestamp = Date.now()
-  return (): number => Date.now() - firstTimestamp
-})()
 
 export interface ITimeRangeSelectorProps {
   value: TimeRange
@@ -166,9 +156,7 @@ export default function TimeRangeSelector({
   const [dropdownVisible, setDropdownVisible] = useState(false)
   const commonTimeRange = useMemo(
     () => calcCommonTimeRange(minBeginTime, maxEndTime),
-    // recalculate when dropdown triggered
-    // eslint-disable-next-line
-    [dropdownVisible]
+    [minBeginTime, maxEndTime]
   )
 
   useEffect(() => {

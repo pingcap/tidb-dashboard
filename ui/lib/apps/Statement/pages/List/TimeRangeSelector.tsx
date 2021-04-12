@@ -166,7 +166,7 @@ export default function TimeRangeSelector({
   const [dropdownVisible, setDropdownVisible] = useState(false)
   const commonTimeRange = useMemo(
     () => calcCommonTimeRange(minBeginTime, maxEndTime),
-    // recalculate when dropdown triggered
+    // It is enough to recalculate after the dropdown click
     // eslint-disable-next-line
     [dropdownVisible]
   )

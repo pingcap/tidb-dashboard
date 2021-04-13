@@ -3,6 +3,7 @@ import { useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
 import client, {
+  download,
   ErrorStrategy,
   StatementModel,
   StatementTimeRange,
@@ -284,9 +285,7 @@ export default function useStatementTableController(
         text: queryOptions.searchText,
       })
       const token = res.data
-      if (token) {
-        window.location.href = `${client.getBasePath()}/statements/download?token=${token}`
-      }
+      token && download(token)
     } finally {
       setDownloading(false)
     }

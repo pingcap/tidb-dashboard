@@ -51,20 +51,14 @@ func newService(p ServiceParams) *Service {
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/slow_query")
-	{
-		endpoint.GET("/download", s.downloadHandler)
+	endpoint.Use(auth.MWAuthRequired(),
+		utils.MWConnectTiDB(s.params.TiDBClient))
 
-		endpoint.Use(auth.MWAuthRequired())
-		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
-		{
-			endpoint.GET("/list", s.getList)
-			endpoint.GET("/detail", s.getDetails)
+	endpoint.GET("/list", s.getList)
+	endpoint.GET("/detail", s.getDetails)
+	endpoint.GET("/table_columns", s.queryTableColumns)
 
-			endpoint.POST("/download/token", s.downloadTokenHandler)
-
-			endpoint.GET("/table_columns", s.queryTableColumns)
-		}
-	}
+	endpoint.POST("/download/token", s.downloadTokenHandler)
 }
 
 // @Summary List all slow queries
@@ -155,8 +149,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	beginTime := time.Unix(int64(req.BeginTime), 0).Format(timeLayout)
 	endTime := time.Unix(int64(req.EndTime), 0).Format(timeLayout)
 	token, err := utils.ExportCSV(csvData,
-		fmt.Sprintf("slowquery_%s_%s_*.csv", beginTime, endTime),
-		"slowquery/download")
+		fmt.Sprintf("slowquery_%s_%s_*.csv", beginTime, endTime))
 
 	if err != nil {
 		_ = c.Error(err)
@@ -165,16 +158,6 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	c.String(http.StatusOK, token)
 }
 
-// @Router /slow_query/download [get]
-// @Summary Download slow query statements
-// @Produce text/csv
-// @Param token query string true "download token"
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) downloadHandler(c *gin.Context) {
-	token := c.Query("token")
-	utils.DownloadByToken(token, "slowquery/download", c)
-}
 
 // @Summary Query table columns
 // @Description Query slowquery table columns

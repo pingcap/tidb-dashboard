@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
-
-import client, { ErrorStrategy, SlowqueryModel } from '@lib/client'
+import client, { download, ErrorStrategy, SlowqueryModel } from '@lib/client'
 import {
   calcTimeRange,
   TimeRange,
@@ -248,9 +247,7 @@ export default function useSlowQueryTableController(
         begin_time: queryTimeRange.beginTime,
       })
       const token = res.data
-      if (token) {
-        window.location.href = `${client.getBasePath()}/slow_query/download?token=${token}`
-      }
+      token && download(token)
     } finally {
       setDownloading(false)
     }

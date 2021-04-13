@@ -28,6 +28,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/configuration"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/diagnose"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/files"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/logsearch"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/metrics"
@@ -127,6 +128,7 @@ func (s *Service) Start(ctx context.Context) error {
 			metrics.NewService,
 			queryeditor.NewService,
 			configuration.NewService,
+			files.NewService,
 			// __APP_NAME__.NewService,
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 		),
@@ -145,6 +147,7 @@ func (s *Service) Start(ctx context.Context) error {
 			metrics.RegisterRouter,
 			queryeditor.RegisterRouter,
 			configuration.RegisterRouter,
+			files.RegisterRouter,
 			// __APP_NAME__.RegisterRouter,
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 			// Must be at the end

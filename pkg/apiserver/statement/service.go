@@ -52,25 +52,19 @@ func newService(p ServiceParams) *Service {
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
-	{
-		endpoint.GET("/download", s.downloadHandler)
+	endpoint.Use(auth.MWAuthRequired(),
+		utils.MWConnectTiDB(s.params.TiDBClient))
 
-		endpoint.Use(auth.MWAuthRequired())
-		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
-		{
-			endpoint.GET("/config", s.configHandler)
-			endpoint.POST("/config", s.modifyConfigHandler)
-			endpoint.GET("/time_ranges", s.timeRangesHandler)
-			endpoint.GET("/stmt_types", s.stmtTypesHandler)
-			endpoint.GET("/list", s.listHandler)
-			endpoint.GET("/plans", s.plansHandler)
-			endpoint.GET("/plan/detail", s.planDetailHandler)
+	endpoint.GET("/config", s.configHandler)
+	endpoint.POST("/config", s.modifyConfigHandler)
+	endpoint.GET("/time_ranges", s.timeRangesHandler)
+	endpoint.GET("/stmt_types", s.stmtTypesHandler)
+	endpoint.GET("/list", s.listHandler)
+	endpoint.GET("/plans", s.plansHandler)
+	endpoint.GET("/plan/detail", s.planDetailHandler)
+	endpoint.GET("/table_columns", s.queryTableColumns)
 
-			endpoint.POST("/download/token", s.downloadTokenHandler)
-
-			endpoint.GET("/table_columns", s.queryTableColumns)
-		}
-	}
+	endpoint.POST("/download/token", s.downloadTokenHandler)
 }
 
 // @Summary Get statement configurations
@@ -283,25 +277,13 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	beginTime := time.Unix(int64(req.BeginTime), 0).Format(timeLayout)
 	endTime := time.Unix(int64(req.EndTime), 0).Format(timeLayout)
 	token, err := utils.ExportCSV(csvData,
-		fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime),
-		"statements/download")
+		fmt.Sprintf("statements_%s_%s_*.csv", beginTime, endTime))
 
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 	c.String(http.StatusOK, token)
-}
-
-// @Router /statements/download [get]
-// @Summary Download statements
-// @Produce text/csv
-// @Param token query string true "download token"
-// @Failure 400 {object} utils.APIError
-// @Failure 401 {object} utils.APIError "Unauthorized failure"
-func (s *Service) downloadHandler(c *gin.Context) {
-	token := c.Query("token")
-	utils.DownloadByToken(token, "statements/download", c)
 }
 
 // @Summary Query table columns

@@ -1,9 +1,10 @@
 package files
 
 import (
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+
 	"github.com/gin-gonic/gin"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"go.uber.org/fx"
 )
 

@@ -158,7 +158,6 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	c.String(http.StatusOK, token)
 }
 
-
 // @Summary Query table columns
 // @Description Query slowquery table columns
 // @Success 200 {array} string

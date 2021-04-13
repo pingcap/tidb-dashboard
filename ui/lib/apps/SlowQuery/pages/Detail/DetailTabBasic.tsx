@@ -1,11 +1,11 @@
 import React from 'react'
-import { SlowquerySlowQuery } from '@lib/client'
+import { SlowqueryModel } from '@lib/client'
 import { CardTable, DateTime } from '@lib/components'
 import { getValueFormat } from '@baurine/grafana-value-formats'
 import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabBasicProps {
-  data: SlowquerySlowQuery
+  data: SlowqueryModel
 }
 
 export default function TabBasic({ data }: ITabBasicProps) {

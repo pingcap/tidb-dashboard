@@ -9,7 +9,6 @@ import {
   Space,
   Button,
   Modal,
-  Typography,
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
@@ -186,9 +185,9 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                       </Input.Group>
                     </Form.Item>
                     <Form.Item label={t('statement.settings.keep_duration')}>
-                      <Typography.Text disabled>
+                      <span style={{ color: '#555' }}>
                         {dataRetainDuration}
-                      </Typography.Text>
+                      </span>
                     </Form.Item>
                   </Form.Item>
                 )

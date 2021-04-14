@@ -32,6 +32,8 @@ import useStatementTableController, {
   DEF_STMT_COLUMN_KEYS,
 } from '../../utils/useStatementTableController'
 
+import styles from './List.module.less'
+
 const { Search } = Input
 
 const STMT_VISIBLE_COLUMN_KEYS = 'statement.visible_column_keys'
@@ -99,9 +101,9 @@ export default function StatementsOverview() {
   )
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className={styles.list_container}>
       <Card>
-        <Toolbar>
+        <Toolbar className={styles.list_toolbar}>
           <Space>
             <TimeRangeSelector
               value={queryOptions.timeRange}

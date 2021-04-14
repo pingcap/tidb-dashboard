@@ -33,6 +33,8 @@ import useSlowQueryTableController, {
   DEF_SLOW_QUERY_COLUMN_KEYS,
 } from '../../utils/useSlowQueryTableController'
 
+import styles from './List.module.less'
+
 const { Option } = Select
 const { Search } = Input
 
@@ -97,9 +99,9 @@ function List() {
   )
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className={styles.list_container}>
       <Card>
-        <Toolbar>
+        <Toolbar className={styles.list_toolbar}>
           <Space>
             <TimeRangeSelector
               value={queryOptions.timeRange}

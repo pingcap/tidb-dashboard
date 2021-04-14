@@ -174,13 +174,8 @@ export default function TimeRangeSelector({
     setDropdownVisible(false)
   }
 
-  function handleSliderChange(values) {
-    // when disable statements, values will become [0, 0]
-    // weird, why this writing doesn't work
-    // if (values === [0, 0]) {
-    //   return
-    // }
-    if (values[0] === 0 && values[1] === 0) {
+  function handleSliderChange(values: [number, number]) {
+    if (values.every((v) => v === 0)) {
       return
     }
 

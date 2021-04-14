@@ -15,9 +15,9 @@ import { useLocalStorageState } from 'ahooks'
 import {
   ReloadOutlined,
   LoadingOutlined,
-  MenuOutlined,
   SettingOutlined,
   ExportOutlined,
+  MoreOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useTranslation } from 'react-i18next'
@@ -82,9 +82,6 @@ export default function StatementsOverview() {
 
   function menuItemClick({ key }) {
     switch (key) {
-      case 'settings':
-        setShowSettings(true)
-        break
       case 'export':
         exportCSV()
         break
@@ -93,9 +90,6 @@ export default function StatementsOverview() {
 
   const dropdownMenu = (
     <Menu onClick={menuItemClick}>
-      <Menu.Item key="settings" icon={<SettingOutlined />}>
-        {t('statement.settings.title')}
-      </Menu.Item>
       <Menu.Item key="export" disabled={downloading} icon={<ExportOutlined />}>
         {downloading
           ? t('statement.pages.overview.toolbar.exporting')
@@ -189,9 +183,12 @@ export default function StatementsOverview() {
                 <ReloadOutlined onClick={refresh} />
               )}
             </Tooltip>
+            <Tooltip title={t('statement.settings.title')}>
+              <SettingOutlined onClick={() => setShowSettings(true)} />
+            </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">
               <div style={{ cursor: 'pointer' }}>
-                <MenuOutlined />
+                <MoreOutlined />
               </div>
             </Dropdown>
           </Space>

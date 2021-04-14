@@ -17,7 +17,7 @@ import {
   LoadingOutlined,
   SettingOutlined,
   ExportOutlined,
-  MoreOutlined,
+  MenuOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useTranslation } from 'react-i18next'
@@ -190,7 +190,7 @@ export default function StatementsOverview() {
             </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">
               <div style={{ cursor: 'pointer' }}>
-                <MoreOutlined />
+                <MenuOutlined />
               </div>
             </Dropdown>
           </Space>

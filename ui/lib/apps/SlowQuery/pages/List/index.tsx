@@ -14,7 +14,7 @@ import {
   ReloadOutlined,
   LoadingOutlined,
   ExportOutlined,
-  MoreOutlined,
+  MenuOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useLocalStorageState } from 'ahooks'
@@ -177,7 +177,7 @@ function List() {
             </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">
               <div style={{ cursor: 'pointer' }}>
-                <MoreOutlined />
+                <MenuOutlined />
               </div>
             </Dropdown>
           </Space>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useContext } from 'react'
 import { ExperimentOutlined, BugOutlined } from '@ant-design/icons'
 import { Layout, Menu } from 'antd'
 import { Link } from 'react-router-dom'
@@ -10,6 +10,11 @@ import client from '@lib/client'
 import Banner from './Banner'
 import styles from './index.module.less'
 import { useClientRequest } from '@lib/utils/useClientRequest'
+import {
+  SiderService,
+  SIDER_WIDTH,
+  SIDER_COLLAPSED_WIDTH,
+} from './SiderService'
 
 function useAppMenuItem(registry, appId, title?: string) {
   const { t } = useTranslation()
@@ -38,15 +43,7 @@ function useActiveAppId(registry) {
   return appId
 }
 
-function Sider({
-  registry,
-  fullWidth,
-  defaultCollapsed,
-  collapsed,
-  collapsedWidth,
-  onToggle,
-  animationDelay,
-}) {
+function Sider({ registry, animationDelay }) {
   const { t } = useTranslation()
   const activeAppId = useActiveAppId(registry)
 
@@ -118,8 +115,14 @@ function Sider({
     useAppMenuItem(registry, 'user_profile', displayName),
   ]
 
+  const {
+    collapsed,
+    defaultCollapsed,
+
+    setCollapsedOnce,
+  } = useContext(SiderService)
   const transSider = useSpring({
-    width: collapsed ? collapsedWidth : fullWidth,
+    width: collapsed ? SIDER_COLLAPSED_WIDTH : SIDER_WIDTH,
   })
 
   const defaultOpenKeys = useMemo(() => {
@@ -134,19 +137,19 @@ function Sider({
     <animated.div style={transSider}>
       <Layout.Sider
         className={styles.sider}
-        width={fullWidth}
+        width={SIDER_WIDTH}
         trigger={null}
         collapsible
+        breakpoint="md"
+        onBreakpoint={(broken) => setCollapsedOnce(broken)}
         collapsed={collapsed}
-        collapsedWidth={fullWidth}
+        collapsedWidth={SIDER_WIDTH}
         defaultCollapsed={defaultCollapsed}
         theme="light"
       >
         <Banner
-          collapsed={collapsed}
-          onToggle={onToggle}
-          fullWidth={fullWidth}
-          collapsedWidth={collapsedWidth}
+          fullWidth={SIDER_WIDTH}
+          collapsedWidth={SIDER_COLLAPSED_WIDTH}
         />
         <Menu
           subMenuOpenDelay={animationDelay}

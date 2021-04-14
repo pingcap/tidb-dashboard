@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react'
+import React, { useContext, useMemo, useRef } from 'react'
 import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons'
 import { useSize } from 'ahooks'
 import Flexbox from '@g07cha/flexbox-react'
@@ -8,6 +8,7 @@ import client, { InfoInfoResponse } from '@lib/client'
 
 import { ReactComponent as Logo } from './logo-icon-light.svg'
 import styles from './Banner.module.less'
+import { SiderService } from './SiderService'
 
 const toggleWidth = 40
 const toggleHeight = 50
@@ -39,14 +40,10 @@ function parseVersion(i: InfoInfoResponse) {
   }
 }
 
-export default function ToggleBanner({
-  fullWidth,
-  collapsedWidth,
-  collapsed,
-  onToggle,
-}) {
+export default function ToggleBanner({ fullWidth, collapsedWidth }) {
   const bannerRef = useRef(null)
   const bannerSize = useSize(bannerRef)
+  const { collapsed, toggleSider } = useContext(SiderService)
   const transBanner = useSpring({
     opacity: collapsed ? 0 : 1,
     height: collapsed ? toggleHeight : bannerSize.height || 0,
@@ -68,7 +65,7 @@ export default function ToggleBanner({
   }, [data])
 
   return (
-    <div className={styles.banner} onClick={onToggle}>
+    <div className={styles.banner} onClick={toggleSider}>
       <animated.div
         style={transBanner}
         className={styles.bannerLeftAnimationWrapper}

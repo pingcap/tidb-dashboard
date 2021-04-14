@@ -1,15 +1,18 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useContext } from 'react'
 import { Root } from '@lib/components'
-import { useLocalStorageState } from 'ahooks'
 import { HashRouter as Router } from 'react-router-dom'
 import { useSpring, animated } from 'react-spring'
 
 import Sider from './Sider'
 import styles from './index.module.less'
+import {
+  useSiderService,
+  SiderService,
+  SIDER_WIDTH,
+  SIDER_COLLAPSED_WIDTH,
+} from './Sider/SiderService'
 
-const siderWidth = 260
-const siderCollapsedWidth = 80
-const collapsedContentOffset = siderCollapsedWidth - siderWidth
+const collapsedContentOffset = SIDER_COLLAPSED_WIDTH - SIDER_WIDTH
 const contentOffsetTrigger = collapsedContentOffset * 0.99
 
 function triggerResizeEvent() {
@@ -19,16 +22,16 @@ function triggerResizeEvent() {
 }
 
 const useContentLeftOffset = (collapsed) => {
-  const [offset, setOffset] = useState(siderWidth)
+  const [offset, setOffset] = useState(SIDER_WIDTH)
   const onAnimationStart = useCallback(() => {
     if (!collapsed) {
-      setOffset(siderWidth)
+      setOffset(SIDER_WIDTH)
     }
   }, [collapsed])
   const onAnimationFrame = useCallback(
     ({ x }) => {
       if (collapsed && x < contentOffsetTrigger) {
-        setOffset(siderCollapsedWidth)
+        setOffset(SIDER_COLLAPSED_WIDTH)
       }
     },
     [collapsed]
@@ -41,12 +44,16 @@ const useContentLeftOffset = (collapsed) => {
   }
 }
 
-export default function App({ registry }) {
-  const [collapsed, setCollapsed] = useLocalStorageState(
-    'layout.sider.collapsed',
-    false
+export default function AppWithProviders({ registry }) {
+  return (
+    <SiderService.Provider value={useSiderService()}>
+      <App registry={registry} />
+    </SiderService.Provider>
   )
-  const [defaultCollapsed] = useState(collapsed)
+}
+
+function App({ registry }) {
+  const { collapsed } = useContext(SiderService)
   const {
     contentLeftOffset,
     onAnimationStart,
@@ -63,10 +70,6 @@ export default function App({ registry }) {
     delay: 100,
   })
 
-  const handleToggle = useCallback(() => {
-    setCollapsed((c) => !c)
-  }, [setCollapsed])
-
   const { appOptions } = registry
 
   return (
@@ -75,19 +78,11 @@ export default function App({ registry }) {
         <animated.div className={styles.container} style={transContainer}>
           {!appOptions.hideNav && (
             <>
-              <Sider
-                registry={registry}
-                fullWidth={siderWidth}
-                onToggle={handleToggle}
-                defaultCollapsed={defaultCollapsed}
-                collapsed={collapsed}
-                collapsedWidth={siderCollapsedWidth}
-                animationDelay={0}
-              />
+              <Sider registry={registry} animationDelay={0} />
               <animated.div
                 className={styles.contentBack}
                 style={{
-                  left: `${siderWidth}px`,
+                  left: `${SIDER_WIDTH}px`,
                   transform: transContentBack.x.interpolate(
                     (x) => `translate3d(${x}px, 0, 0)`
                   ),

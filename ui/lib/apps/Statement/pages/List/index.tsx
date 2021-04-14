@@ -15,9 +15,9 @@ import { useLocalStorageState } from 'ahooks'
 import {
   ReloadOutlined,
   LoadingOutlined,
-  MenuOutlined,
   SettingOutlined,
   ExportOutlined,
+  MenuOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { useTranslation } from 'react-i18next'
@@ -31,6 +31,8 @@ import TimeRangeSelector from './TimeRangeSelector'
 import useStatementTableController, {
   DEF_STMT_COLUMN_KEYS,
 } from '../../utils/useStatementTableController'
+
+import styles from './List.module.less'
 
 const { Search } = Input
 
@@ -82,9 +84,6 @@ export default function StatementsOverview() {
 
   function menuItemClick({ key }) {
     switch (key) {
-      case 'settings':
-        setShowSettings(true)
-        break
       case 'export':
         exportCSV()
         break
@@ -93,9 +92,6 @@ export default function StatementsOverview() {
 
   const dropdownMenu = (
     <Menu onClick={menuItemClick}>
-      <Menu.Item key="settings" icon={<SettingOutlined />}>
-        {t('statement.settings.title')}
-      </Menu.Item>
       <Menu.Item key="export" disabled={downloading} icon={<ExportOutlined />}>
         {downloading
           ? t('statement.pages.overview.toolbar.exporting')
@@ -105,9 +101,9 @@ export default function StatementsOverview() {
   )
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className={styles.list_container}>
       <Card>
-        <Toolbar>
+        <Toolbar className={styles.list_toolbar}>
           <Space>
             <TimeRangeSelector
               value={queryOptions.timeRange}
@@ -188,6 +184,9 @@ export default function StatementsOverview() {
               ) : (
                 <ReloadOutlined onClick={refresh} />
               )}
+            </Tooltip>
+            <Tooltip title={t('statement.settings.title')}>
+              <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">
               <div style={{ cursor: 'pointer' }}>

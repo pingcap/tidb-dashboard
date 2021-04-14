@@ -2,7 +2,7 @@
 
 This document describes how the simple DI function works in React.
 
-And we can organize the code in a more SOLID way through the SOA arch.
+And we can organize the code in a more SOLID way through the SOA.
 
 ## Usage
 

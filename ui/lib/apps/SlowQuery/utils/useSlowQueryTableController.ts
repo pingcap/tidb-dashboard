@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
-import client, { ErrorStrategy, SlowquerySlowQuery } from '@lib/client'
+import client, { ErrorStrategy, SlowqueryModel } from '@lib/client'
 import {
   calcTimeRange,
   TimeRange,
@@ -60,7 +60,7 @@ export interface ISlowQueryTableController {
 
   allSchemas: string[]
   loadingSlowQueries: boolean
-  slowQueries: SlowquerySlowQuery[]
+  slowQueries: SlowqueryModel[]
   queryTimeRange: { beginTime: number; endTime: number }
 
   errors: Error[]
@@ -106,7 +106,7 @@ export default function useSlowQueryTableController(
 
   const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(false)
-  const [slowQueries, setSlowQueries] = useState<SlowquerySlowQuery[]>([])
+  const [slowQueries, setSlowQueries] = useState<SlowqueryModel[]>([])
   const [refreshTimes, setRefreshTimes] = useState(0)
 
   function setQueryOptions(newOptions: ISlowQueryOptions) {
@@ -164,12 +164,27 @@ export default function useSlowQueryTableController(
     querySchemas()
   }, [])
 
+  const [tableSchemaColumns, setTableSchemaColumns] = useState<string[]>([])
+
   const tableColumns = useMemo(
-    () => slowQueryColumns(slowQueries, showFullSQL),
-    [slowQueries, showFullSQL]
+    () => slowQueryColumns(slowQueries, tableSchemaColumns, showFullSQL),
+    [slowQueries, tableSchemaColumns, showFullSQL]
   )
 
   useEffect(() => {
+    if (!selectedFields.length) {
+      setSlowQueries([])
+      setLoadingSlowQueries(false)
+      return
+    }
+
+    async function queryTableSchema() {
+      const {
+        data: schema,
+      } = await client.getInstance().slowQueryTableColumnsGet()
+      setTableSchemaColumns(schema)
+    }
+
     async function getSlowQueryList() {
       const cacheItem = cacheMgr?.get(cacheKey)
       if (cacheItem) {
@@ -179,6 +194,7 @@ export default function useSlowQueryTableController(
 
       setLoadingSlowQueries(true)
       try {
+        await queryTableSchema()
         const res = await client
           .getInstance()
           .slowQueryListGet(

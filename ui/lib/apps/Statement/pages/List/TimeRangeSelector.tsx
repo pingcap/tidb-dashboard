@@ -124,6 +124,17 @@ export function calcValidStatementTimeRange(
   }
 }
 
+function calcCommonTimeRange(
+  minServerDataTime: number,
+  maxServerDataTime: number
+): { enabled: boolean; value: number }[] {
+  if (!maxServerDataTime) {
+    return RECENT_SECONDS.map((s) => ({ enabled: false, value: s }))
+  }
+  const validTimeRange = maxServerDataTime - minServerDataTime
+  return RECENT_SECONDS.map((s) => ({ enabled: s <= validTimeRange, value: s }))
+}
+
 export interface ITimeRangeSelectorProps {
   value: TimeRange
   timeRanges: StatementTimeRange[]
@@ -143,6 +154,10 @@ export default function TimeRangeSelector({
     () => calcValidStatementTimeRange(curTimeRange, timeRanges)
   )
   const [dropdownVisible, setDropdownVisible] = useState(false)
+  const commonTimeRange = useMemo(
+    () => calcCommonTimeRange(minBeginTime, maxEndTime),
+    [minBeginTime, maxEndTime]
+  )
 
   useEffect(() => {
     setSliderTimeRange(calcValidStatementTimeRange(curTimeRange, timeRanges))
@@ -159,13 +174,8 @@ export default function TimeRangeSelector({
     setDropdownVisible(false)
   }
 
-  function handleSliderChange(values) {
-    // when disable statements, values will become [0, 0]
-    // weird, why this writing doesn't work
-    // if (values === [0, 0]) {
-    //   return
-    // }
-    if (values[0] === 0 && values[1] === 0) {
+  function handleSliderChange(values: [number, number]) {
+    if (values.every((v) => v === 0)) {
       return
     }
 
@@ -192,16 +202,17 @@ export default function TimeRangeSelector({
           )}
         </span>
         <div className={styles.time_range_items}>
-          {RECENT_SECONDS.map((seconds) => (
+          {commonTimeRange.map(({ enabled, value: seconds }) => (
             <div
               tabIndex={-1}
               key={seconds}
               className={cx(styles.time_range_item, {
+                [styles.time_range_item_disabled]: !enabled,
                 [styles.time_range_item_active]:
                   curTimeRange.type === 'recent' &&
                   curTimeRange.value === seconds,
               })}
-              onClick={() => handleRecentChange(seconds)}
+              onClick={() => enabled && handleRecentChange(seconds)}
             >
               {t('statement.pages.overview.toolbar.time_range_selector.recent')}{' '}
               {getValueFormat('s')(seconds, 0)}

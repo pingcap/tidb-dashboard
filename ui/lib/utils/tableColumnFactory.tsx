@@ -34,56 +34,113 @@ export function formatVal(val: number, unit: string, decimals: number = 1) {
   return unit === 'short' ? formatFn(val, 0, decimals) : formatFn(val, decimals)
 }
 
-export function commonColumnName(transPrefix: string, fieldName: string): any {
+export function TranslatedColumnName(
+  transPrefix: string,
+  fieldName: string
+): any {
   const fullTransKey = `${transPrefix}.${fieldName}`
   return <TextWithInfo.TransKey transKey={fullTransKey} />
 }
 
-export class TableColumnFactory {
-  transPrefix: string
-  bar: BarColumn
+export class Column {
+  constructor(
+    private config: IColumn,
+    private options: { transPrefix?: string } = {}
+  ) {}
 
-  constructor(transKeyPrefix: string) {
-    this.transPrefix = transKeyPrefix
-    this.bar = new BarColumn(this)
-  }
-
-  columnName(fieldName: string): any {
-    return commonColumnName(this.transPrefix, fieldName)
-  }
-
-  columnFromField(fieldName: string) {
+  getConfig(): IColumn {
+    const { transPrefix } = this.options
     return {
-      name: this.columnName(fieldName),
-      key: fieldName,
-      fieldName: fieldName,
+      ...this.config,
+      name: transPrefix
+        ? TranslatedColumnName(transPrefix, this.config.name)
+        : this.config.name,
     }
+  }
+
+  setConfig(config: IColumn) {
+    this.config = config
+    return this
+  }
+
+  patchConfig(config: Partial<IColumn>) {
+    this.config = { ...this.config, ...config }
+    return this
+  }
+}
+
+export class ColumnArray {
+  controls: Column[]
+
+  // could be IColumn or Column mixed array type, not (IColumn | Column)[] type
+  constructor(controlsConfig: any[]) {
+    this.controls = controlsConfig.map((c) =>
+      c instanceof Column ? c : new Column(c)
+    )
+  }
+
+  getConfig(): IColumn[] {
+    return this.controls.map((c) => c.getConfig())
+  }
+}
+
+export class TableColumnFactory {
+  bar: BarColumn = new BarColumn(this)
+
+  private allowColumnsMap: { [f: string]: boolean }
+
+  constructor(
+    private transPrefix: string,
+    private allowColumns: string[] = []
+  ) {
+    this.allowColumnsMap = allowColumns
+      .map((f) => f.toLowerCase())
+      .reduce((prev, f) => {
+        prev[f] = true
+        return prev
+      }, {} as { [f: string]: boolean })
+  }
+
+  control(config: IColumn): Column {
+    return new Column(config, { transPrefix: this.transPrefix })
+  }
+
+  array(controlsConfig: any[]): ColumnArray {
+    return new ColumnArray(controlsConfig)
+  }
+
+  columns(controlsConfig: any[]): IColumn[] {
+    const columns = this.array(controlsConfig).getConfig()
+    const needFilterColumn = this.allowColumns.length
+    if (!needFilterColumn) {
+      return columns
+    }
+    return columns.filter((c) => this.allowColumnsMap[c.fieldName!])
   }
 
   textWithTooltip<T extends string, U extends { [K in T]?: any }>(
     fieldName: T,
     _rows?: U[]
-  ): IColumn {
-    return {
-      ...this.columnFromField(fieldName),
-      minWidth: 100,
+  ): Column {
+    return this.control({
+      ...this.getDefaultColumnConfig(fieldName),
       maxWidth: 150,
       onRender: (rec: U) => (
         <Tooltip title={rec[fieldName]}>
           <TextWrap>{rec[fieldName]}</TextWrap>
         </Tooltip>
       ),
-    }
+    })
   }
 
   singleBar<T extends string, U extends { [K in T]?: number }>(
     fieldName: T,
     unit: string,
     rows?: U[]
-  ): IColumn {
+  ): Column {
     const capacity = rows ? _max(rows.map((v) => v[fieldName])) ?? 0 : 0
-    return {
-      ...this.columnFromField(fieldName),
+    return this.control({
+      ...this.getDefaultColumnConfig(fieldName),
       minWidth: 140,
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
@@ -95,10 +152,10 @@ export class TableColumnFactory {
           </Bar>
         )
       },
-    }
+    })
   }
 
-  multipleBar<T>(barsConfig: DerivedBar, unit: string, rows?: T[]): IColumn {
+  multipleBar<T>(barsConfig: DerivedBar, unit: string, rows?: T[]): Column {
     const {
       displayTransKey,
       sources: [avg, max, min],
@@ -116,9 +173,9 @@ export class TableColumnFactory {
 
     const capacity = rows ? _max(rows.map((v) => v[max.fieldName])) ?? 0 : 0
 
-    return {
-      ...this.columnFromField(avg.fieldName),
-      name: this.columnName(displayTransKey || avg.fieldName),
+    return this.control({
+      ...this.getDefaultColumnConfig(avg.fieldName),
+      name: displayTransKey || avg.fieldName,
       minWidth: 140,
       maxWidth: 200,
       columnActionsMode: ColumnActionsMode.clickable,
@@ -150,16 +207,15 @@ export class TableColumnFactory {
           </Tooltip>
         )
       },
-    }
+    })
   }
 
   timestamp<T extends string, U extends { [K in T]?: number }>(
     fieldName: T,
     _rows?: U[]
-  ): IColumn {
-    return {
-      ...this.columnFromField(fieldName),
-      minWidth: 100,
+  ): Column {
+    return this.control({
+      ...this.getDefaultColumnConfig(fieldName),
       maxWidth: 150,
       columnActionsMode: ColumnActionsMode.clickable,
       onRender: (rec: U) => (
@@ -167,17 +223,16 @@ export class TableColumnFactory {
           <DateTime.Calendar unixTimestampMs={rec[fieldName]! * 1000} />
         </TextWrap>
       ),
-    }
+    })
   }
 
   sqlText<T extends string, U extends { [K in T]?: string }>(
     fieldName: T,
     showFullSQL?: boolean,
     _rows?: U[]
-  ): IColumn {
-    return {
-      ...this.columnFromField(fieldName),
-      minWidth: 100,
+  ): Column {
+    return this.control({
+      ...this.getDefaultColumnConfig(fieldName),
       maxWidth: 500,
       isMultiline: showFullSQL,
       onRender: (rec: U) =>
@@ -195,6 +250,15 @@ export class TableColumnFactory {
             </TextWrap>
           </Tooltip>
         ),
+    })
+  }
+
+  private getDefaultColumnConfig(fieldName: string) {
+    return {
+      name: fieldName,
+      key: fieldName,
+      fieldName: fieldName,
+      minWidth: 100,
     }
   }
 }

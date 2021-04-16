@@ -28,6 +28,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	commonUtils "github.com/pingcap/tidb-dashboard/pkg/utils"
 )
 
 var (
@@ -38,17 +39,18 @@ var (
 type ServiceParams struct {
 	fx.In
 	TiDBClient *tidb.Client
+	SysSchema  *commonUtils.SysSchema
 }
 
 type Service struct {
 	params ServiceParams
 }
 
-func NewService(p ServiceParams) *Service {
+func newService(p ServiceParams) *Service {
 	return &Service{params: p}
 }
 
-func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/statements")
 	{
 		endpoint.GET("/download", s.downloadHandler)
@@ -65,6 +67,8 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 			endpoint.GET("/plan/detail", s.planDetailHandler)
 
 			endpoint.POST("/download/token", s.downloadTokenHandler)
+
+			endpoint.GET("/table_columns", s.queryTableColumns)
 		}
 	}
 }
@@ -76,7 +80,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) configHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	cfg, err := QueryStmtConfig(db)
+	cfg, err := queryStmtConfig(db)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -97,7 +101,7 @@ func (s *Service) modifyConfigHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	err := UpdateStmtConfig(db, &req)
+	err := updateStmtConfig(db, &req)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -112,7 +116,7 @@ func (s *Service) modifyConfigHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) timeRangesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	timeRanges, err := QueryTimeRanges(db)
+	timeRanges, err := queryTimeRanges(db)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -127,7 +131,7 @@ func (s *Service) timeRangesHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) stmtTypesHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	stmtTypes, err := QueryStmtTypes(db)
+	stmtTypes, err := queryStmtTypes(db)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -149,6 +153,7 @@ type GetStatementsRequest struct {
 // @Success 200 {array} Model
 // @Router /statements/list [get]
 // @Security JwtAuth
+// @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) listHandler(c *gin.Context) {
 	var req GetStatementsRequest
@@ -161,7 +166,7 @@ func (s *Service) listHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	overviews, err := QueryStatements(
+	overviews, err := s.queryStatements(
 		db,
 		req.BeginTime, req.EndTime,
 		req.Schemas,
@@ -169,7 +174,7 @@ func (s *Service) listHandler(c *gin.Context) {
 		req.Text,
 		fields)
 	if err != nil {
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, overviews)
@@ -195,7 +200,7 @@ func (s *Service) plansHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	plans, err := QueryPlans(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest)
+	plans, err := s.queryPlans(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -221,7 +226,7 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	result, err := QueryPlanDetail(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans)
+	result, err := s.queryPlanDetail(db, req.BeginTime, req.EndTime, req.SchemaName, req.Digest, req.Plans)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -235,6 +240,7 @@ func (s *Service) planDetailHandler(c *gin.Context) {
 // @Param request body GetStatementsRequest true "Request body"
 // @Success 200 {string} string "xxx"
 // @Security JwtAuth
+// @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) downloadTokenHandler(c *gin.Context) {
 	var req GetStatementsRequest
@@ -247,7 +253,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	overviews, err := QueryStatements(
+	overviews, err := s.queryStatements(
 		db,
 		req.BeginTime, req.EndTime,
 		req.Schemas,
@@ -255,7 +261,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 		req.Text,
 		fields)
 	if err != nil {
-		_ = c.Error(err)
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	if len(overviews) == 0 {
@@ -296,4 +302,20 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 func (s *Service) downloadHandler(c *gin.Context) {
 	token := c.Query("token")
 	utils.DownloadByToken(token, "statements/download", c)
+}
+
+// @Summary Query table columns
+// @Description Query statements table columns
+// @Success 200 {array} string
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Security JwtAuth
+// @Router /statements/table_columns [get]
+func (s *Service) queryTableColumns(c *gin.Context) {
+	db := utils.GetTiDBConnection(c)
+	cs, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, cs)
 }

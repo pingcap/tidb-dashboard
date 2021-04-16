@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   Form,
   InputNumber,
@@ -22,9 +22,8 @@ interface Props {
 }
 
 type InternalStatementConfig = StatementConfig & {
-  keep_duration: number
   max_refresh_interval: number
-  max_keep_duration: number
+  max_history_size: number
 }
 
 const convertArrToObj = (arr: number[]) =>
@@ -34,11 +33,21 @@ const convertArrToObj = (arr: number[]) =>
   }, {})
 
 const REFRESH_INTERVAL_MARKS = convertArrToObj([1, 5, 15, 30, 60])
-const KEEP_DURATION_MARKS = convertArrToObj([1, 2, 5, 10, 20, 30])
+const HISTORY_SIZE_MARKS = convertArrToObj([1, 64, 128, 192, 255])
 
 function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const { t } = useTranslation()
+
+  const [curRefreshInterval, setCurRefreshInterval] = useState(0)
+  const [curHistorySize, setCurHistorySize] = useState(0)
+  const dataRetainDuration = useMemo(() => {
+    const totalMins = curRefreshInterval * curHistorySize
+    const day = Math.floor(totalMins / (24 * 60))
+    const hour = Math.floor((totalMins - day * 24 * 60) / 60)
+    const min = totalMins - day * 24 * 60 - hour * 60
+    return `${day} day ${hour} hour ${min} min`
+  }, [curRefreshInterval, curHistorySize])
 
   const {
     data: oriConfig,
@@ -52,29 +61,30 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
     if (oriConfig) {
       const refresh_interval = Math.ceil(oriConfig.refresh_interval! / 60)
       const max_refresh_interval = Math.max(refresh_interval, 60)
-      const keep_duration = Math.ceil(
-        (oriConfig.refresh_interval! * oriConfig.history_size!) / (24 * 60 * 60)
-      )
-      const max_keep_duration = Math.max(keep_duration, 30)
+      const max_history_size = Math.max(oriConfig.history_size!, 255)
 
       return {
         ...oriConfig,
         refresh_interval,
-        keep_duration,
         max_refresh_interval,
-        max_keep_duration,
+        max_history_size,
       } as InternalStatementConfig
     }
     return null
   }, [oriConfig])
 
+  useEffect(() => {
+    if (config) {
+      setCurRefreshInterval(config.refresh_interval!)
+      setCurHistorySize(config.history_size!)
+    }
+  }, [config])
+
   async function updateConfig(values) {
     const newConfig: StatementConfig = {
       enable: values.enable,
       refresh_interval: values.refresh_interval * 60,
-      history_size: Math.ceil(
-        (values.keep_duration * 24 * 60) / values.refresh_interval
-      ),
+      history_size: values.history_size,
     }
     try {
       setSubmitting(true)
@@ -134,6 +144,9 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                             parser={(value) =>
                               value?.replace(/[^\d]/g, '') || ''
                             }
+                            onChange={(val) =>
+                              setCurRefreshInterval(val as number)
+                            }
                           />
                         </Form.Item>
                         <Form.Item noStyle name="refresh_interval">
@@ -144,33 +157,37 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                               ...REFRESH_INTERVAL_MARKS,
                               [config.max_refresh_interval]: `${config.max_refresh_interval}`,
                             }}
+                            onChange={(val) => setCurRefreshInterval(val)}
+                          />
+                        </Form.Item>
+                      </Input.Group>
+                    </Form.Item>
+                    <Form.Item label={t('statement.settings.history_size')}>
+                      <Input.Group>
+                        <Form.Item noStyle name="history_size">
+                          <InputNumber
+                            min={1}
+                            max={config.max_history_size}
+                            onChange={(val) => setCurHistorySize(val as number)}
+                          />
+                        </Form.Item>
+                        <Form.Item noStyle name="history_size">
+                          <Slider
+                            min={1}
+                            max={config.max_history_size}
+                            marks={{
+                              ...HISTORY_SIZE_MARKS,
+                              [config.max_history_size]: `${config.max_history_size}`,
+                            }}
+                            onChange={(val) => setCurHistorySize(val)}
                           />
                         </Form.Item>
                       </Input.Group>
                     </Form.Item>
                     <Form.Item label={t('statement.settings.keep_duration')}>
-                      <Input.Group>
-                        <Form.Item noStyle name="keep_duration">
-                          <InputNumber
-                            min={1}
-                            max={config.max_keep_duration}
-                            formatter={(value) => `${value} day`}
-                            parser={(value) =>
-                              value?.replace(/[^\d]/g, '') || ''
-                            }
-                          />
-                        </Form.Item>
-                        <Form.Item noStyle name="keep_duration">
-                          <Slider
-                            min={1}
-                            max={config.max_keep_duration}
-                            marks={{
-                              ...KEEP_DURATION_MARKS,
-                              [config.max_keep_duration]: `${config.max_keep_duration}`,
-                            }}
-                          />
-                        </Form.Item>
-                      </Input.Group>
+                      <span style={{ color: '#555' }}>
+                        {dataRetainDuration}
+                      </span>
                     </Form.Item>
                   </Form.Item>
                 )

@@ -151,8 +151,8 @@ func (f *fetcher) getProfile(target *model.RequestTargetNode, source string) (*p
 
 func profileAndWriteSVG(ctx context.Context, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, httpClient *httpc.Client, httpScheme string) (string, error) {
 	switch target.Kind {
-	case model.NodeKindTiKV:
-		return fetchTiKVFlameGraphSVG(ctx, httpClient, target, fileNameWithoutExt, profileDurationSecs, httpScheme)
+	case model.NodeKindTiKV, model.NodeKindTiFlash:
+		return fetchFlameGraphSVG(ctx, httpClient, target, fileNameWithoutExt, profileDurationSecs, httpScheme)
 	case model.NodeKindPD, model.NodeKindTiDB:
 		return fetchPprofSVG(ctx, httpClient, target, fileNameWithoutExt, profileDurationSecs, httpScheme)
 	default:
@@ -160,8 +160,8 @@ func profileAndWriteSVG(ctx context.Context, target *model.RequestTargetNode, fi
 	}
 }
 
-func fetchTiKVFlameGraphSVG(ctx context.Context, httpClient *httpc.Client, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, httpScheme string) (string, error) {
-	// TODO: Switch to use tikv.Client
+func fetchFlameGraphSVG(ctx context.Context, httpClient *httpc.Client, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint, httpScheme string) (string, error) {
+	// TODO: Switch to use tikv.Client or tiflash.Client
 	uri := fmt.Sprintf("%s://%s:%d/debug/pprof/profile?seconds=%d", httpScheme, target.IP, target.Port, profileDurationSecs)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
 	if err != nil {

@@ -203,12 +203,27 @@ export default function useStatementTableController(
     queryStmtTypes()
   }, [refreshTimes])
 
+  const [tableSchemaColumns, setTableSchemaColumns] = useState<string[]>([])
+
   const tableColumns = useMemo(
-    () => statementColumns(statements, showFullSQL),
-    [statements, showFullSQL]
+    () => statementColumns(statements, tableSchemaColumns, showFullSQL),
+    [statements, tableSchemaColumns, showFullSQL]
   )
 
   useEffect(() => {
+    if (!selectedFields.length) {
+      setStatements([])
+      setLoadingStatements(false)
+      return
+    }
+
+    async function queryTableSchema() {
+      const {
+        data: schema,
+      } = await client.getInstance().statementsTableColumnsGet()
+      setTableSchemaColumns(schema)
+    }
+
     async function queryStatementList() {
       const cacheItem = cacheMgr?.get(cacheKey)
       if (cacheItem) {
@@ -222,6 +237,7 @@ export default function useStatementTableController(
       }
       setLoadingStatements(true)
       try {
+        await queryTableSchema()
         const res = await client
           .getInstance()
           .statementsListGet(

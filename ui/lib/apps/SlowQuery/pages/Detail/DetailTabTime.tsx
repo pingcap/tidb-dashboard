@@ -1,12 +1,12 @@
 import React from 'react'
-import { SlowquerySlowQuery } from '@lib/client'
+import { SlowqueryModel } from '@lib/client'
 import { CardTable } from '@lib/components'
 import { timeValueColumns } from '@lib/utils/tableColumns'
 import { useTranslation } from 'react-i18next'
 import { Typography } from 'antd'
 
 export interface ITabTimeProps {
-  data: SlowquerySlowQuery
+  data: SlowqueryModel
 }
 
 export default function TabBasic({ data }: ITabTimeProps) {

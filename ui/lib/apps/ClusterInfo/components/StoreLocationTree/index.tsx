@@ -47,7 +47,7 @@ export function getShortStrMap(
         labelValues.push(val)
       }
     })
-    const shortStrMap = getArrShortStrMap(labelValues)
+    const shortStrMap = trimDuplicate(labelValues)
     allShortStrMap = Object.assign(allShortStrMap, shortStrMap)
   })
 
@@ -72,7 +72,7 @@ export function getShortStrMap(
 //   "aaa-222a.abc.123":"222a",
 //   "aaa-333a.abc.123":"333a"
 // }
-export function getArrShortStrMap(strArr: string[]): ShortStrMap {
+export function trimDuplicate(strArr: string[]): ShortStrMap {
   const shortStrMap: ShortStrMap = {}
   const strSet = new Set(strArr)
   if (strSet.size < 2) {
@@ -145,6 +145,10 @@ export function getArrShortStrMap(strArr: string[]): ShortStrMap {
 
 //////////////////////////////////////
 
+const NODE_STORES = 'Stores'
+const NODE_TIFLASH = 'TiFlash'
+const NODE_TIKV = 'TiKV'
+
 type TreeNode = {
   name: string
   value: string
@@ -154,7 +158,7 @@ type TreeNode = {
 export function buildTreeData(
   data: TopologyStoreLocation | undefined
 ): TreeNode {
-  const treeData: TreeNode = { name: 'Stores', value: '', children: [] }
+  const treeData: TreeNode = { name: NODE_STORES, value: '', children: [] }
 
   if ((data?.location_labels?.length || 0) > 0) {
     const locationLabels: string[] = data?.location_labels || []
@@ -178,7 +182,7 @@ export function buildTreeData(
         curNode = subNode
       }
       const storeType =
-        store.labels!['engine'] === 'tiflash' ? 'TiFlash' : 'TiKV'
+        store.labels!['engine'] === 'tiflash' ? NODE_TIFLASH : NODE_TIKV
       curNode.children.push({
         name: storeType,
         value: store.address!,
@@ -190,6 +194,12 @@ export function buildTreeData(
 }
 
 //////////////////////////////////////
+
+interface ITooltipConfig {
+  enable: boolean
+  offsetX: number
+  offsetY: number
+}
 
 export interface IStoreLocationProps {
   dataSource: any
@@ -227,8 +237,12 @@ export default function StoreLocationTree({
   const divRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
 
-  const enableTooltip = useRef<boolean>()
-  enableTooltip.current = true
+  const tooltipConfig = useRef<ITooltipConfig>()
+  tooltipConfig.current = {
+    enable: true,
+    offsetX: 0,
+    offsetY: 0,
+  }
 
   useEffect(() => {
     let divWidth = divRef.current?.clientWidth || 0
@@ -265,6 +279,8 @@ export default function StoreLocationTree({
       .attr('cursor', 'pointer')
       .attr('pointer-events', 'all')
 
+    // tooltip
+    const tooltip = d3.select('#store-location-tooltip')
     // zoom
     const zoom = d3
       .zoom()
@@ -275,18 +291,27 @@ export default function StoreLocationTree({
         const isWheelEvent = d3.event instanceof WheelEvent
         return !isWheelEvent || (isWheelEvent && d3.event.ctrlKey)
       })
+      .on('start', () => {
+        // hide tooltip if it shows
+        tooltip.style('opacity', 0)
+        tooltipConfig.current!.enable = false
+      })
       .on('zoom', () => {
         const t = d3.event.transform
         bound.attr(
           'transform',
           `translate(${t.x + margin.left}, ${t.y + margin.top}) scale(${t.k})`
         )
-
-        // don't show tooltip if zoom or drag
-        enableTooltip.current = t.x === 0 && t.y === 0 && t.k === 1
-
         // this will cause unexpected result when dragging
         // svg.attr('transform', d3.event.transform)
+      })
+      .on('end', () => {
+        const t = d3.event.transform
+        tooltipConfig.current = {
+          enable: t.k === 1, // disable tooltip if zoom
+          offsetX: t.x,
+          offsetY: t.y,
+        }
       })
     svg.call(zoom as any)
 
@@ -354,10 +379,8 @@ export default function StoreLocationTree({
         .on('mouseenter', onMouseEnter)
         .on('mouseleave', onMouseLeave)
 
-      // tooltip
-      const tooltip = d3.select('#store-location-tooltip')
       function onMouseEnter(datum) {
-        if (enableTooltip.current === false) {
+        if (!tooltipConfig.current?.enable) {
           return
         }
 
@@ -372,8 +395,8 @@ export default function StoreLocationTree({
         tooltip.select('#store-location-tooltip-name').text(name)
         tooltip.select('#store-location-tooltip-value').text(value)
 
-        const x = datum.y + margin.left
-        const y = datum.x + margin.top - 20
+        const x = datum.y + margin.left + tooltipConfig.current.offsetX
+        const y = datum.x + margin.top - 20 + tooltipConfig.current.offsetY
         tooltip.style(
           'transform',
           `translate(calc(-50% + ${x}px), calc(-100% + ${y}px))`
@@ -394,7 +417,7 @@ export default function StoreLocationTree({
           if (d._children) {
             return grey[1]
           }
-          if (d.data.name === 'TiFlash') {
+          if (d.data.name === NODE_TIFLASH) {
             return magenta[4]
           }
           return cyan[5]
@@ -403,7 +426,7 @@ export default function StoreLocationTree({
 
       // text for root node
       nodeEnter
-        .filter(({ data: { name } }: any) => name === 'Stores')
+        .filter(({ data: { name } }: any) => name === NODE_STORES)
         .append('text')
         .attr('dy', '0.31em')
         .attr('x', -15)
@@ -414,7 +437,7 @@ export default function StoreLocationTree({
       const middleNodeText = nodeEnter
         .filter(
           ({ data: { name } }: any) =>
-            name !== 'Stores' && name !== 'TiFlash' && name !== 'TiKV'
+            name !== NODE_STORES && name !== NODE_TIFLASH && name !== NODE_TIKV
         )
         .append('text')
       middleNodeText
@@ -446,7 +469,8 @@ export default function StoreLocationTree({
       // text for leaf nodes
       const leafNodeText = nodeEnter
         .filter(
-          ({ data: { name } }: any) => name === 'TiFlash' || name === 'TiKV'
+          ({ data: { name } }: any) =>
+            name === NODE_TIFLASH || name === NODE_TIKV
         )
         .append('text')
       leafNodeText

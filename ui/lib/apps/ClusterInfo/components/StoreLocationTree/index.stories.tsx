@@ -1,7 +1,7 @@
 import React from 'react'
 import StoreLocationTree, {
   buildTreeData,
-  getArrShortStrMap,
+  trimDuplicate,
   getShortStrMap,
 } from '.'
 
@@ -171,11 +171,11 @@ const arr2 = ['aaa-111a.abc.123', 'aaa-222a.abc.123', 'aaa-333a.abc.123']
 const arr3 = []
 const arr4 = ['abc']
 const arr5 = ['abcd', 'abce']
-console.log(getArrShortStrMap(arr1))
-console.log(getArrShortStrMap(arr2))
-console.log(getArrShortStrMap(arr3))
-console.log(getArrShortStrMap(arr4))
-console.log(getArrShortStrMap(arr5))
+console.log(trimDuplicate(arr1))
+console.log(trimDuplicate(arr2))
+console.log(trimDuplicate(arr3))
+console.log(trimDuplicate(arr4))
+console.log(trimDuplicate(arr5))
 
 /////////////////////////////
 

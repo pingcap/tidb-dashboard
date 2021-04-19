@@ -1,0 +1,107 @@
+import * as url from 'url'
+import { AxiosInstance } from 'axios'
+import * as Sentry from '@sentry/react'
+
+const firstMountTransaction = Sentry.startTransaction({ name: 'first mount' })
+const transactionHub = new Map<string, typeof firstMountTransaction>()
+
+export const sentryEnabled = process.env.REACT_APP_SENTRY_ENABLED === 'true'
+
+export function markStart(name: string, op?: string) {
+  const transaction = Sentry.startTransaction({ name, op })
+  transactionHub.set(transaction.name, transaction)
+  transactionHub.set(transaction.traceId, transaction)
+  return transaction
+}
+
+export function markEnd(name: string, traceId?: string) {
+  const transaction = traceId
+    ? transactionHub.get(traceId)
+    : transactionHub.get(name)
+  if (transaction) {
+    transaction.finish()
+    transactionHub.delete(name)
+    if (traceId) {
+      transactionHub.delete(traceId)
+    }
+  }
+}
+
+export function markTag(key: string, value: string | number, traceId: string) {
+  const transaction = transactionHub.get(traceId)
+  if (transaction) {
+    transaction.setTag(key, value)
+  }
+}
+
+export const reportError: typeof Sentry.captureException = (...args) => {
+  if (sentryEnabled) {
+    return Sentry.captureException(...args)
+  }
+  return ''
+}
+
+export function initSentryRoutingInstrument() {
+  window.addEventListener('single-spa:first-mount', () => {
+    firstMountTransaction.finish()
+  })
+
+  window.addEventListener('single-spa:before-routing-event', (e: any) => {
+    const { pathname: newUrlPath, hash: newUrlHash } = url.parse(
+      e.detail.newUrl
+    )
+    const { pathname: oldUrlPath, hash: oldUrlHash } = url.parse(
+      e.detail.oldUrl
+    )
+    const transaction = markStart(`${newUrlPath}${newUrlHash}`, 'routing')
+    transaction.setTag('routing.from', `${oldUrlPath}${oldUrlHash}`)
+    transaction.setTag('routing.to', `${newUrlPath}${newUrlHash}`)
+    transaction.setTag(
+      'routing.mount',
+      e.detail.appsByNewStatus.MOUNTED.join(',')
+    )
+    transaction.setTag(
+      'routing.unmount',
+      e.detail.appsByNewStatus.NOT_MOUNTED.join(',')
+    )
+  })
+
+  window.addEventListener('single-spa:routing-event', (e: any) => {
+    const { pathname: newUrlPath, hash: newUrlHash } = url.parse(
+      e.detail.newUrl
+    )
+    markEnd(`${newUrlPath}${newUrlHash}`)
+  })
+}
+
+export function applySentryTracingInterceptor(instance: AxiosInstance) {
+  instance.interceptors.request.use(function (config) {
+    if (config.url && config.method) {
+      const { pathname } = url.parse(config.url)
+      const transaction = markStart(pathname!, 'http')
+      transaction.setTag('http.method', config.method.toUpperCase())
+      config.headers['x-sentry-trace'] = transaction.traceId
+    }
+    return config
+  })
+
+  instance.interceptors.response.use(
+    function (response) {
+      const id = response.config.headers['x-sentry-trace']
+      if (id) {
+        const { pathname } = url.parse(response.config.url!)
+        markTag('http.status', response.status, id)
+        markEnd(pathname!, id)
+      }
+      return response
+    },
+    function (error) {
+      const id = error.config.headers['x-sentry-trace']
+      if (id) {
+        const { pathname } = url.parse(error.config.url)
+        markTag(id, 'error', error.message)
+        markEnd(pathname!, id)
+      }
+    }
+  )
+}

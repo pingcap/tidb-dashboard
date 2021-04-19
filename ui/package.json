@@ -10,6 +10,8 @@
     "@baurine/grafana-value-formats": "^1.0.0",
     "@fortawesome/fontawesome-free": "^5.14.0",
     "@g07cha/flexbox-react": "^5.0.0",
+    "@sentry/react": "^6.2.5",
+    "@sentry/tracing": "^6.2.5",
     "@welldone-software/why-did-you-render": "^4.2.7",
     "ace-builds": "^1.4.12",
     "ahooks": "^2.9.2",
@@ -41,7 +43,7 @@
     "react-spring": "^8.0.27",
     "react-syntax-highlighter": "^13.0.0",
     "react-use": "^15.3.3",
-    "single-spa": "^5.5.5",
+    "single-spa": "^5.9.2",
     "single-spa-react": "^3.0.1",
     "sql-formatter-plus-plus": "^1.4.0",
     "string-template": "^1.0.0"

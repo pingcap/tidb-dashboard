@@ -2452,6 +2452,81 @@
     prop-types "^15.6.1"
     react-lifecycles-compat "^3.0.4"
 
+"@sentry/browser@6.2.5":
+  version "6.2.5"
+  resolved "https://registry.npm.taobao.org/@sentry/browser/download/@sentry/browser-6.2.5.tgz?cache=0&sync_timestamp=1618325442127&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40sentry%2Fbrowser%2Fdownload%2F%40sentry%2Fbrowser-6.2.5.tgz#35e259e16521d26f348a06b31eb495e0033111d6"
+  integrity sha1-NeJZ4WUh0m80igazHrSV4AMxEdY=
+  dependencies:
+    "@sentry/core" "6.2.5"
+    "@sentry/types" "6.2.5"
+    "@sentry/utils" "6.2.5"
+    tslib "^1.9.3"
+
+"@sentry/core@6.2.5":
+  version "6.2.5"
+  resolved "https://registry.npm.taobao.org/@sentry/core/download/@sentry/core-6.2.5.tgz?cache=0&sync_timestamp=1618325445362&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40sentry%2Fcore%2Fdownload%2F%40sentry%2Fcore-6.2.5.tgz#e75093f8598becc0a4a0be927f32f7ac49e8588f"
+  integrity sha1-51CT+FmL7MCkoL6SfzL3rEnoWI8=
+  dependencies:
+    "@sentry/hub" "6.2.5"
+    "@sentry/minimal" "6.2.5"
+    "@sentry/types" "6.2.5"
+    "@sentry/utils" "6.2.5"
+    tslib "^1.9.3"
+
+"@sentry/hub@6.2.5":
+  version "6.2.5"
+  resolved "https://registry.npm.taobao.org/@sentry/hub/download/@sentry/hub-6.2.5.tgz?cache=0&sync_timestamp=1618325447507&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40sentry%2Fhub%2Fdownload%2F%40sentry%2Fhub-6.2.5.tgz#324cae0c90d736cd1032e94104bf3f18becec4d6"
+  integrity sha1-MkyuDJDXNs0QMulBBL8/GL7OxNY=
+  dependencies:
+    "@sentry/types" "6.2.5"
+    "@sentry/utils" "6.2.5"
+    tslib "^1.9.3"
+
+"@sentry/minimal@6.2.5":
+  version "6.2.5"
+  resolved "https://registry.npm.taobao.org/@sentry/minimal/download/@sentry/minimal-6.2.5.tgz?cache=0&sync_timestamp=1618325447950&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40sentry%2Fminimal%2Fdownload%2F%40sentry%2Fminimal-6.2.5.tgz#3e963e868bfa68e97581403521fd4e09a8965b02"
+  integrity sha1-PpY+hov6aOl1gUA1If1OCaiWWwI=
+  dependencies:
+    "@sentry/hub" "6.2.5"
+    "@sentry/types" "6.2.5"
+    tslib "^1.9.3"
+
+"@sentry/react@^6.2.5":
+  version "6.2.5"
+  resolved "https://registry.npm.taobao.org/@sentry/react/download/@sentry/react-6.2.5.tgz#c9bc01332ac5f75eb76937ae7d91b6bb43d5b996"
+  integrity sha1-ybwBMyrF9163aTeufZG2u0PVuZY=
+  dependencies:
+    "@sentry/browser" "6.2.5"
+    "@sentry/minimal" "6.2.5"
+    "@sentry/types" "6.2.5"
+    "@sentry/utils" "6.2.5"
+    hoist-non-react-statics "^3.3.2"
+    tslib "^1.9.3"
+
+"@sentry/tracing@^6.2.5":
+  version "6.2.5"
+  resolved "https://registry.npm.taobao.org/@sentry/tracing/download/@sentry/tracing-6.2.5.tgz?cache=0&sync_timestamp=1618326025891&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40sentry%2Ftracing%2Fdownload%2F%40sentry%2Ftracing-6.2.5.tgz#3f5dadfdccdb5c1fb2eef68458c7c34329b0a34a"
+  integrity sha1-P12t/czbXB+y7vaEWMfDQymwo0o=
+  dependencies:
+    "@sentry/hub" "6.2.5"
+    "@sentry/minimal" "6.2.5"
+    "@sentry/types" "6.2.5"
+    "@sentry/utils" "6.2.5"
+    tslib "^1.9.3"
+
+"@sentry/types@6.2.5":
+  version "6.2.5"
+  resolved "https://registry.npm.taobao.org/@sentry/types/download/@sentry/types-6.2.5.tgz?cache=0&sync_timestamp=1618325445836&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40sentry%2Ftypes%2Fdownload%2F%40sentry%2Ftypes-6.2.5.tgz#34b75285b149e0b9bc5fd54fcc2c445d978c7f2e"
+  integrity sha1-NLdShbFJ4Lm8X9VPzCxEXZeMfy4=
+
+"@sentry/utils@6.2.5":
+  version "6.2.5"
+  resolved "https://registry.npm.taobao.org/@sentry/utils/download/@sentry/utils-6.2.5.tgz?cache=0&sync_timestamp=1618326037517&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40sentry%2Futils%2Fdownload%2F%40sentry%2Futils-6.2.5.tgz#be90d056b09ed1216097d7a29e3e81ba39238e1b"
+  integrity sha1-vpDQVrCe0SFgl9einj6Bujkjjhs=
+  dependencies:
+    "@sentry/types" "6.2.5"
+    tslib "^1.9.3"
+
 "@storybook/addon-actions@^6.0.0-rc.3":
   version "6.0.0-rc.3"
   resolved "https://registry.yarnpkg.com/@storybook/addon-actions/-/addon-actions-6.0.0-rc.3.tgz#2c8d6230bf15c5fcced5b4291a366cc3d8aec631"
@@ -15651,10 +15726,10 @@ single-spa-react@^3.0.1:
   resolved "https://registry.yarnpkg.com/single-spa-react/-/single-spa-react-3.0.1.tgz#7e67eaec47bc15b5716d6af6f83f5fbf1a1c05df"
   integrity sha512-/toJWeG0UgJuN2CnvP5CewDR5IsH3GYXsFuOQgqkjY3BPUNDFYy4NiEAZE3OWpW+FjTbziGlrqy/u67WtE7tCw==
 
-single-spa@^5.5.5:
-  version "5.5.5"
-  resolved "https://registry.yarnpkg.com/single-spa/-/single-spa-5.5.5.tgz#77a947516874d50b1e1a43aa6c316b550605d4fb"
-  integrity sha512-10YHGwETkAT6k9dkOTClig2h/R6yA5qvLdvk6i7Z4/PK8A2iD/pVvYKIud0aZVA69OzO1lrQOHB4VgT4t8/kXw==
+single-spa@^5.9.2:
+  version "5.9.2"
+  resolved "https://registry.npm.taobao.org/single-spa/download/single-spa-5.9.2.tgz#4bb9a6eb6c90e3198b1549d8cdeb03241401b15b"
+  integrity sha1-S7mm62yQ4xmLFUnYzesDJBQBsVs=
 
 sisteransi@^1.0.4:
   version "1.0.5"
@@ -16724,6 +16799,11 @@ tslib@^1.10.0, tslib@^1.8.1, tslib@^1.9.0:
   version "1.13.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.13.0.tgz#c881e13cc7015894ed914862d276436fa9a47043"
   integrity sha512-i/6DQjL8Xf3be4K/E6Wgpekn5Qasl1usyw++dAA35Ue5orEn65VIxOA+YvNNl9HV3qv70T7CNwjODHZrLwvd1Q==
+
+tslib@^1.9.3:
+  version "1.14.1"
+  resolved "https://registry.npm.taobao.org/tslib/download/tslib-1.14.1.tgz?cache=0&sync_timestamp=1617647074515&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Ftslib%2Fdownload%2Ftslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
+  integrity sha1-zy04vcNKE0vK8QkcQfZhni9nLQA=
 
 tslib@^2.0.0:
   version "2.0.0"

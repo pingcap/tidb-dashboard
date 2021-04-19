@@ -24,6 +24,7 @@ import TabTime from './PlanDetailTabTime'
 import TabCopr from './PlanDetailTabCopr'
 import TabTxn from './PlanDetailTabTxn'
 import SlowQueryTab from './SlowQueryTab'
+import { useSchemaColumns } from '../../utils/useSchemaColumns'
 
 export interface IQuery extends IPageQuery {
   plans: string[]
@@ -38,7 +39,11 @@ const STMT_DETAIL_PLAN_EXPAND = 'statement.detail_plan_expand'
 
 function PlanDetail({ query }: IPlanDetailProps) {
   const { t } = useTranslation()
-  const { data, isLoading, error } = useClientRequest((reqConfig) =>
+  const {
+    data,
+    isLoading: isDataLoading,
+    error,
+  } = useClientRequest((reqConfig) =>
     client
       .getInstance()
       .statementsPlanDetailGet(
@@ -50,6 +55,8 @@ function PlanDetail({ query }: IPlanDetailProps) {
         reqConfig
       )
   )
+  const { isLoading: isSchemaLoading } = useSchemaColumns()
+  const isLoading = isDataLoading || isSchemaLoading
 
   const [detailExpand, setDetailExpand] = useLocalStorageState(
     STMT_DETAIL_PLAN_EXPAND,

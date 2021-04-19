@@ -152,3 +152,13 @@ statement:
     rocksdb_block_read_count_tooltip: RocksDB 从文件系统中读数据的次数 (block_read_count)
     rocksdb_block_read_byte: RocksDB 文件系统读数据量
     rocksdb_block_read_byte_tooltip: RocksDB 从文件系统中读数据的数据量 (block_read_byte)
+    avg_rocksdb_delete_skipped_count: RocksDB 已删除 Key 平均扫描数
+    max_rocksdb_delete_skipped_count: RocksDB 已删除 Key 最大扫描数
+    avg_rocksdb_key_skipped_count: RocksDB Key 平均扫描数
+    max_rocksdb_key_skipped_count: RocksDB Key 最大扫描数
+    avg_rocksdb_block_cache_hit_count: RocksDB 缓存平均读次数
+    max_rocksdb_block_cache_hit_count: RocksDB 缓存最大读次数
+    avg_rocksdb_block_read_count: RocksDB 文件系统平均读次数
+    max_rocksdb_block_read_count: RocksDB 文件系统最大读次数
+    avg_rocksdb_block_read_byte: RocksDB 文件系统平均读数据量
+    max_rocksdb_block_read_byte: RocksDB 文件系统最大读数据量

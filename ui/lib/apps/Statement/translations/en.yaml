@@ -144,3 +144,13 @@ statement:
     rocksdb_block_read_count_tooltip: Total number of blocks RocksDB read from file (RocksDB block_read_count)
     rocksdb_block_read_byte: RocksDB FS Read Size
     rocksdb_block_read_byte_tooltip: Total number of bytes RocksDB read from file (RocksDB block_read_byte)
+    avg_rocksdb_delete_skipped_count: Mean RocksDB Skipped Deletions
+    max_rocksdb_delete_skipped_count: Max RocksDB Skipped Deletions
+    avg_rocksdb_key_skipped_count: Mean RocksDB Skipped Keys
+    max_rocksdb_key_skipped_count: Max RocksDB Skipped Keys
+    avg_rocksdb_block_cache_hit_count: Mean RocksDB Block Cache Hits
+    max_rocksdb_block_cache_hit_count: Max RocksDB Block Cache Hits
+    avg_rocksdb_block_read_count: Mean RocksDB Block Reads
+    max_rocksdb_block_read_count: Max RocksDB Block Reads
+    avg_rocksdb_block_read_byte: Mean RocksDB FS Read Size
+    max_rocksdb_block_read_byte: Max RocksDB FS Read Size

@@ -77,23 +77,23 @@ export const derivedFields = {
   avg_disk: genDerivedBarSources('avg_disk', 'max_disk'),
   sum_errors: ['sum_errors', 'sum_warnings'],
   related_schemas: ['table_names'],
-  rocksdb_delete_skipped_count: genDerivedBarSources(
+  avg_rocksdb_delete_skipped_count: genDerivedBarSources(
     'avg_rocksdb_delete_skipped_count',
     'max_rocksdb_delete_skipped_count'
   ),
-  rocksdb_key_skipped_count: genDerivedBarSources(
+  avg_rocksdb_key_skipped_count: genDerivedBarSources(
     'avg_rocksdb_key_skipped_count',
     'max_rocksdb_key_skipped_count'
   ),
-  rocksdb_block_cache_hit_count: genDerivedBarSources(
+  avg_rocksdb_block_cache_hit_count: genDerivedBarSources(
     'avg_rocksdb_block_cache_hit_count',
     'max_rocksdb_block_cache_hit_count'
   ),
-  rocksdb_block_read_count: genDerivedBarSources(
+  avg_rocksdb_block_read_count: genDerivedBarSources(
     'avg_rocksdb_block_read_count',
     'max_rocksdb_block_read_count'
   ),
-  rocksdb_block_read_byte: genDerivedBarSources(
+  avg_rocksdb_block_read_byte: genDerivedBarSources(
     'avg_rocksdb_block_read_byte',
     'max_rocksdb_block_read_byte'
   ),
@@ -232,34 +232,46 @@ export function statementColumns(
     // rocksdb
     avgMaxColumn(
       tcf,
-      'rocksdb_delete_skipped_count',
+      'avg_rocksdb_delete_skipped_count',
       'short',
       rows
     ).patchConfig({
-      minWidth: 220,
-      maxWidth: 250,
-    }),
-    avgMaxColumn(tcf, 'rocksdb_key_skipped_count', 'short', rows).patchConfig({
       minWidth: 220,
       maxWidth: 250,
     }),
     avgMaxColumn(
       tcf,
-      'rocksdb_block_cache_hit_count',
+      'avg_rocksdb_key_skipped_count',
       'short',
       rows
     ).patchConfig({
       minWidth: 220,
       maxWidth: 250,
     }),
-    avgMaxColumn(tcf, 'rocksdb_block_read_count', 'short', rows).patchConfig({
+    avgMaxColumn(
+      tcf,
+      'avg_rocksdb_block_cache_hit_count',
+      'short',
+      rows
+    ).patchConfig({
       minWidth: 220,
       maxWidth: 250,
     }),
-    avgMaxColumn(tcf, 'rocksdb_block_read_byte', 'short', rows).patchConfig({
+    avgMaxColumn(
+      tcf,
+      'avg_rocksdb_block_read_count',
+      'short',
+      rows
+    ).patchConfig({
       minWidth: 220,
       maxWidth: 250,
     }),
+    avgMaxColumn(tcf, 'avg_rocksdb_block_read_byte', 'short', rows).patchConfig(
+      {
+        minWidth: 220,
+        maxWidth: 250,
+      }
+    ),
   ])
 }
 

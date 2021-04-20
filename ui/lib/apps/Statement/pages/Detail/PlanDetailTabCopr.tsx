@@ -37,9 +37,12 @@ export default function TabCopr({ data }: ITabCoprProps) {
 }
 
 // TODO: refactor items code gen for all DetailsList
-function genShortValueTooltipValueItem(data: StatementModel, key: string) {
+function genShortValueTooltipValueItem(
+  data: StatementModel,
+  key: keyof StatementModel
+) {
   return {
     key,
-    value: <ShortValueWithTooltip value={data[key]} />,
+    value: <ShortValueWithTooltip value={Number(data[key])} />,
   }
 }

@@ -19,7 +19,6 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/ReneKroon/ttlcache/v2"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -66,7 +65,6 @@ var (
 type Service struct {
 	app    *fx.App
 	status *utils.ServiceStatus
-	cache  *ttlcache.Cache
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -110,7 +108,6 @@ func (s *Service) Start(ctx context.Context) error {
 		fx.Logger(utils.NewFxPrinter()),
 		fx.Provide(
 			newAPIHandlerEngine,
-			newTTLCache,
 			s.provideLocals,
 			dbstore.NewDBStore,
 			httpc.NewHTTPClient,
@@ -136,7 +133,7 @@ func (s *Service) Start(ctx context.Context) error {
 		profiling.Module,
 		statement.Module,
 		slowquery.Module,
-		fx.Populate(&s.apiHandlerEngine, &s.cache),
+		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			user.RegisterRouter,
 			info.RegisterRouter,
@@ -167,12 +164,10 @@ func (s *Service) Start(ctx context.Context) error {
 
 func (s *Service) cleanAfterError() {
 	s.cancel()
-	s.cache.Close()
 
 	// drop
 	s.app = nil
 	s.apiHandlerEngine = nil
-	s.cache = nil
 	s.ctx = nil
 	s.cancel = nil
 }
@@ -183,13 +178,11 @@ func (s *Service) Stop(ctx context.Context) error {
 	}
 
 	s.cancel()
-	s.cache.Close()
 	err := s.app.Stop(ctx)
 
 	// drop
 	s.app = nil
 	s.apiHandlerEngine = nil
-	s.cache = nil
 	s.ctx = nil
 	s.cancel = nil
 
@@ -218,12 +211,6 @@ func newAPIHandlerEngine() (apiHandlerEngine *gin.Engine, endpoint *gin.RouterGr
 	endpoint = apiHandlerEngine.Group("/dashboard/api")
 
 	return
-}
-
-func newTTLCache() *ttlcache.Cache {
-	cache := ttlcache.NewCache()
-	cache.SkipTTLExtensionOnHit(true)
-	return cache
 }
 
 var StoppedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

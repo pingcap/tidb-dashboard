@@ -29,9 +29,11 @@ type SysSchema struct {
 	cache *ttlcache.Cache
 }
 
-func NewSysSchema(cache *ttlcache.Cache) *SysSchema {
+func NewSysSchema() *SysSchema {
+	c := ttlcache.NewCache()
+	c.SkipTTLExtensionOnHit(true)
 	return &SysSchema{
-		cache: cache,
+		cache: c,
 	}
 }
 

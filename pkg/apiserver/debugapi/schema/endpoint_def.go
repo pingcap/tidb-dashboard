@@ -185,6 +185,7 @@ var EndpointAPIList []EndpointAPI = []EndpointAPI{
 	tidbConfig,
 	tidbSchema,
 	tidbSchemaWithDB,
+	tidbSchemaWithDBTable,
 	tidbSchemaWithTableID,
 	tidbDDLHistory,
 	tidbInfo,

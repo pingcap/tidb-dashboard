@@ -18,6 +18,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/schema"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 )

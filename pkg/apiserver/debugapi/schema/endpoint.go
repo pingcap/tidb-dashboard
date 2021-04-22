@@ -20,6 +20,7 @@ import (
 	"regexp"
 
 	"github.com/joomcode/errorx"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 

@@ -20,6 +20,7 @@ import (
 	"regexp"
 
 	"github.com/elazarl/goproxy"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/schema"
 )
 

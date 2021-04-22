@@ -1,51 +1,96 @@
-import React from 'react'
-import { Collapse, Tag, Space } from 'antd'
+import React, { useMemo } from 'react'
+import { Collapse, Space } from 'antd'
+import { useTranslation } from 'react-i18next'
+import { TFunction } from 'i18next'
 
-import { Card } from '@lib/components'
+import { AnimatedSkeleton, Card } from '@lib/components'
+import { useClientRequest } from '@lib/utils/useClientRequest'
+import client, { SchemaEndpointAPI } from '@lib/client'
+
 import style from './ApiList.module.less'
-import metadataGroups, { Metadata } from './metadata'
 import ApiForm from './ApiForm'
 
-const isStrArr = (s: any): s is string[] => Array.isArray(s) && !!s.length
-
-const CustomHeader = (m: Metadata) => (
-  <div className={style.header}>
-    <Space direction="vertical">
-      <Space>
-        <h4>{m.name}</h4>
-        <span>
-          {(m.tags?.length || '') && m.tags!.map((t) => <Tag key={t}>{t}</Tag>)}
-        </span>
+const CustomHeader = ({
+  endpoint,
+  t,
+}: {
+  endpoint: SchemaEndpointAPI
+  t: TFunction
+}) => {
+  return (
+    <div className={style.header}>
+      <Space direction="vertical">
+        <Space>
+          <h4>
+            {t(`debug_api.${endpoint.component}.endpoint_ids.${endpoint.id}`)}
+          </h4>
+        </Space>
+        <Schema endpoint={endpoint} />
       </Space>
-      {isStrArr(m.schema) ? m.schema.map((s) => Schema(s)) : Schema(m.schema)}
-    </Space>
-  </div>
-)
+    </div>
+  )
+}
 
-const Schema = (schema: string) => (
-  <p key={schema} className={style.schema}>
-    {schema}
-  </p>
-)
+// e.g. http://{tidb_ip}/stats/dump/{db}/{table}?queryName={queryName}
+const Schema = ({ endpoint }: { endpoint: SchemaEndpointAPI }) => {
+  const query =
+    endpoint.query?.reduce((prev, { name }, i) => {
+      if (i === 0) {
+        prev += '?'
+      }
+      prev += `${name}={${name}}`
+      return prev
+    }, '') || ''
+  return (
+    <p className={style.schema}>
+      {`http://${endpoint.host?.prefix}${endpoint.host?.name}${endpoint.host?.suffix}${endpoint.path}${query}`}
+    </p>
+  )
+}
+
+const groupSorts = ['tidb', 'tikv', 'tiflash', 'pd']
 
 export default function Page() {
+  const { t } = useTranslation()
+  const { data, isLoading } = useClientRequest((reqConfig) =>
+    client.getInstance().debugapiEndpointGet(reqConfig)
+  )
+  const groups = useMemo(
+    () =>
+      data?.reduce((prev, endpoint) => {
+        const groupName = endpoint.component!
+        if (!prev[groupName]) {
+          prev[groupName] = []
+        }
+        prev[groupName].push(endpoint)
+        return prev
+      }, {} as { [group: string]: SchemaEndpointAPI[] }),
+    [data]
+  )
+
   return (
-    <>
-      {metadataGroups.map((g) => (
-        <Card key={g.name} title={g.name}>
-          <Collapse ghost>
-            {g.children.map((m, i) => (
-              <Collapse.Panel
-                className={style.collapse_panel}
-                header={CustomHeader(m)}
-                key={i}
-              >
-                <ApiForm />
-              </Collapse.Panel>
-            ))}
-          </Collapse>
-        </Card>
-      ))}
-    </>
+    <AnimatedSkeleton showSkeleton={isLoading}>
+      {groups &&
+        groupSorts
+          .filter((sortKey) => groups[sortKey])
+          .map((sortKey) => {
+            const g = groups[sortKey]
+            return (
+              <Card key={sortKey} title={t(`debug_api.${sortKey}.name`)}>
+                <Collapse ghost>
+                  {g.map((endpoint) => (
+                    <Collapse.Panel
+                      className={style.collapse_panel}
+                      header={<CustomHeader endpoint={endpoint} t={t} />}
+                      key={endpoint.id!}
+                    >
+                      <ApiForm endpoint={endpoint} />
+                    </Collapse.Panel>
+                  ))}
+                </Collapse>
+              </Card>
+            )
+          })}
+    </AnimatedSkeleton>
   )
 }

@@ -7,9 +7,10 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/schema"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
-	"github.com/stretchr/testify/assert"
 )
 
 var endpointAPI schema.EndpointAPI = schema.EndpointAPI{

@@ -1,4 +1,18 @@
 debug_api:
-  nav_title: Debugging API
+  nav_title: 信息查询接口
   form:
     download: 下载
+  tidb:
+    name: TiDB
+    endpoint_ids:
+      tidb_stats_dump: Stats Dump
+      tidb_stats_dump_timestamp: Stats Dump With Timestamp
+      tidb_config: Current TiDB Config
+      tidb_schema: TiDB Schema
+      tidb_schema_db: DB Schema
+      tidb_schema_db_table: Table Schema
+      tidb_schema_tableid: Table Schema By Table ID
+      tidb_ddl_history: DDL History
+      tidb_info: Info
+      tidb_info_all: All Info
+      tidb_regions_meta: Regions Meta

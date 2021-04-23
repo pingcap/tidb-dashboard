@@ -46,7 +46,6 @@ var tidbStatsDump EndpointAPI = EndpointAPI{
 			Model: EndpointAPIModelText,
 		}),
 	},
-	Query: []EndpointAPIParam{},
 }
 
 var tidbStatsDumpWithTimestamp EndpointAPI = EndpointAPI{
@@ -69,7 +68,6 @@ var tidbStatsDumpWithTimestamp EndpointAPI = EndpointAPI{
 			Model: EndpointAPIModelText,
 		}),
 	},
-	Query: []EndpointAPIParam{},
 }
 
 var tidbConfig EndpointAPI = EndpointAPI{
@@ -78,8 +76,6 @@ var tidbConfig EndpointAPI = EndpointAPI{
 	Path:      "/settings",
 	Method:    http.MethodGet,
 	Host:      tidbIPParam,
-	Segment:   []EndpointAPISegmentParam{},
-	Query:     []EndpointAPIParam{},
 }
 
 var tidbSchema EndpointAPI = EndpointAPI{
@@ -102,7 +98,6 @@ var tidbSchemaWithDB EndpointAPI = EndpointAPI{
 			Model: EndpointAPIModelText,
 		}),
 	},
-	Query: []EndpointAPIParam{},
 }
 
 var tidbSchemaWithDBTable EndpointAPI = EndpointAPI{
@@ -121,7 +116,6 @@ var tidbSchemaWithDBTable EndpointAPI = EndpointAPI{
 			Model: EndpointAPIModelText,
 		}),
 	},
-	Query: []EndpointAPIParam{},
 }
 
 var tidbSchemaWithTableID EndpointAPI = EndpointAPI{
@@ -136,7 +130,6 @@ var tidbSchemaWithTableID EndpointAPI = EndpointAPI{
 			Model: EndpointAPIModelText,
 		}),
 	},
-	Query: []EndpointAPIParam{},
 }
 
 var tidbDDLHistory EndpointAPI = EndpointAPI{
@@ -145,8 +138,6 @@ var tidbDDLHistory EndpointAPI = EndpointAPI{
 	Path:      "/ddl/history",
 	Method:    http.MethodGet,
 	Host:      tidbIPParam,
-	Segment:   []EndpointAPISegmentParam{},
-	Query:     []EndpointAPIParam{},
 }
 
 var tidbInfo EndpointAPI = EndpointAPI{
@@ -155,8 +146,6 @@ var tidbInfo EndpointAPI = EndpointAPI{
 	Path:      "/info",
 	Method:    http.MethodGet,
 	Host:      tidbIPParam,
-	Segment:   []EndpointAPISegmentParam{},
-	Query:     []EndpointAPIParam{},
 }
 
 var tidbInfoAll EndpointAPI = EndpointAPI{
@@ -165,8 +154,6 @@ var tidbInfoAll EndpointAPI = EndpointAPI{
 	Path:      "/info/all",
 	Method:    http.MethodGet,
 	Host:      tidbIPParam,
-	Segment:   []EndpointAPISegmentParam{},
-	Query:     []EndpointAPIParam{},
 }
 
 var tidbRegionsMeta EndpointAPI = EndpointAPI{
@@ -175,8 +162,6 @@ var tidbRegionsMeta EndpointAPI = EndpointAPI{
 	Path:      "/regions/meta",
 	Method:    http.MethodGet,
 	Host:      tidbIPParam,
-	Segment:   []EndpointAPISegmentParam{},
-	Query:     []EndpointAPIParam{},
 }
 
 var EndpointAPIList []EndpointAPI = []EndpointAPI{

@@ -7,31 +7,50 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/schema"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
-var endpointAPI schema.EndpointAPI = schema.EndpointAPI{
-	ID:        "test_endpoint",
-	Component: model.NodeKindTiDB,
-	Path:      "/stats/dump/{db}/{table}",
-	Method:    http.MethodGet,
-	Host: schema.EndpointAPIParam{
-		Name: "host",
+var tidbIPParam schema.EndpointAPIParam = schema.EndpointAPIParam{
+	Name:   "tidb_ip",
+	Prefix: "{",
+	Suffix: "}:10080",
+	Model:  schema.EndpointAPIModelIP,
+	PostModelTransformer: func(value string) (string, error) {
+		return fmt.Sprintf("%s:10080", value), nil
 	},
-	Segment: []schema.EndpointAPISegmentParam{
-		schema.NewEndpointAPISegmentParam(schema.EndpointAPIParam{
-			Name:  "db",
-			Model: schema.EndpointAPIModelText,
-		}),
-		schema.NewEndpointAPISegmentParam(schema.EndpointAPIParam{
-			Name:  "table",
-			Model: schema.EndpointAPIModelText,
-		}),
+}
+
+var endpointAPI []schema.EndpointAPI = []schema.EndpointAPI{
+	{
+		ID:        "tidb_config",
+		Component: model.NodeKindTiDB,
+		Path:      "/settings",
+		Method:    http.MethodGet,
+		Host:      tidbIPParam,
+		Segment:   []schema.EndpointAPISegmentParam{},
+		Query:     []schema.EndpointAPIParam{},
 	},
-	Query: []schema.EndpointAPIParam{},
+	{
+		ID:        "test_endpoint",
+		Component: model.NodeKindTiDB,
+		Path:      "/stats/dump/{db}/{table}",
+		Method:    http.MethodGet,
+		Host: schema.EndpointAPIParam{
+			Name: "host",
+		},
+		Segment: []schema.EndpointAPISegmentParam{
+			schema.NewEndpointAPISegmentParam(schema.EndpointAPIParam{
+				Name:  "db",
+				Model: schema.EndpointAPIModelText,
+			}),
+			schema.NewEndpointAPISegmentParam(schema.EndpointAPIParam{
+				Name:  "table",
+				Model: schema.EndpointAPIModelText,
+			}),
+		},
+	},
 }
 
 func Test_proxy_query_ok(t *testing.T) {
@@ -39,18 +58,17 @@ func Test_proxy_query_ok(t *testing.T) {
 	proxy := newProxy()
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", fmt.Sprintf("http://%s", endpointAPI.ID), nil)
+	r, _ := http.NewRequest("GET", fmt.Sprintf("http://%s", endpointAPI[0].ID), nil)
 	q := r.URL.Query()
-	q.Add("id", endpointAPI.ID)
-	q.Add("host", "127.0.0.1:10080")
-	q.Add("db", "test")
-	q.Add("table", "users")
+	q.Add("id", endpointAPI[0].ID)
+	q.Add("tidb_ip", "127.0.0.1")
 	r.URL.RawQuery = q.Encode()
 
-	proxy.setupEndpoint(endpointAPI)
+	for _, e := range endpointAPI {
+		proxy.setupEndpoint(e)
+	}
 	proxy.server.ServeHTTP(w, r)
 
-	assert.Equal(t, 200, w.Code)
 	// assert.Equal(t, "", w.Body.String())
 }
 

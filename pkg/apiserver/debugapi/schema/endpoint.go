@@ -38,6 +38,15 @@ type EndpointAPI struct {
 	Query     []EndpointAPIParam        `json:"query"`   // e.g. /debug/pprof?seconds=1 -> seconds
 }
 
+func (e *EndpointAPI) Populate(req *http.Request, values url.Values) error {
+	newReq, err := e.NewRequest(values)
+	if err != nil {
+		return err
+	}
+	req.URL = newReq.URL
+	return nil
+}
+
 func (e *EndpointAPI) NewRequest(values url.Values) (*http.Request, error) {
 	host, err := e.PopulateHost(values)
 	if err != nil {

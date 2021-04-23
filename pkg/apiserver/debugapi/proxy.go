@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"regexp"
 
 	"github.com/elazarl/goproxy"
 
@@ -26,8 +25,8 @@ import (
 
 var (
 	ErrEndpointConfig = ErrNS.NewType("invalid_endpoint_config")
-	ErrRequestQuery   = ErrNS.NewType("invalid_request_query")
-	ErrProxyRequest   = ErrNS.NewType("transform_proxy_request")
+	ErrQueryValue     = ErrNS.NewType("invalid_query_value")
+	ErrRequestParam   = ErrNS.NewType("invalid_request_param")
 )
 
 type proxy struct {
@@ -35,30 +34,28 @@ type proxy struct {
 }
 
 func newProxy() *proxy {
-	p := &proxy{server: goproxy.NewProxyHttpServer()}
-	return p
+	proxyServer := goproxy.NewProxyHttpServer()
+	proxyServer.KeepDestinationHeaders = true
+	return &proxy{server: proxyServer}
 }
 
 func (p *proxy) setupEndpoint(endpoint schema.EndpointAPI) {
 	p.server.OnRequest(goproxy.DstHostIs(endpoint.ID)).DoFunc(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 		qValues, err := url.ParseQuery(req.URL.RawQuery)
 		if err != nil {
-			fmt.Printf("%s", err.Error())
-			return req, goproxy.NewResponse(req, goproxy.ContentTypeText, http.StatusBadRequest, ErrRequestQuery.New(req.URL.RawQuery).Error())
+			return req, goproxy.NewResponse(req, goproxy.ContentTypeText, http.StatusBadRequest, ErrQueryValue.New(req.URL.RawQuery).Error())
 		}
 
-		newReq, err := endpoint.NewRequest(qValues)
+		// because of the strange impl of goproxy:
+		// https://github.com/elazarl/goproxy/blob/master/proxy.go#L62
+		// https://github.com/elazarl/goproxy/blob/master/dispatcher.go#L213
+		// we need to update URL in the previous response reference instead of return a new response
+		err = endpoint.Populate(req, qValues)
 		if err != nil {
-			fmt.Printf("%s", err.Error())
-			return req, goproxy.NewResponse(req, goproxy.ContentTypeText, http.StatusBadRequest, ErrProxyRequest.WrapWithNoMessage(err).Error())
+			return req, goproxy.NewResponse(req, goproxy.ContentTypeText, http.StatusBadRequest, ErrRequestParam.WrapWithNoMessage(err).Error())
 		}
 
-		return newReq, nil
-	})
-	p.server.OnResponse(goproxy.UrlMatches(regexp.MustCompile("."))).DoFunc(func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-		resp.Header.Add("Access-Control-Allow-Origin", "*")
-		resp.Header.Set("Content-type", "application/json; charset=utf-8")
-		return resp
+		return req, nil
 	})
 }
 

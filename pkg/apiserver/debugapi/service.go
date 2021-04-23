@@ -24,7 +24,8 @@ import (
 )
 
 var (
-	ErrNS = errorx.NewNamespace("error.api.debugapi")
+	ErrNS      = errorx.NewNamespace("error.api.debugapi")
+	ErrFromDst = ErrNS.NewType("err_from_dst")
 )
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {

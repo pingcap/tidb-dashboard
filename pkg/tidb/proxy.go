@@ -98,24 +98,7 @@ func (p *proxy) updateRemotes(remotes map[string]struct{}) {
 }
 
 func (p *proxy) serve(in net.Conn) {
-	var (
-		err    error
-		out    net.Conn
-		picked *remote
-	)
-	for {
-		picked = p.pick()
-		if picked == nil {
-			break
-		}
-		out, err = net.DialTimeout("tcp", picked.addr, p.dialTimeout)
-		if err == nil {
-			break
-		}
-		p.current = ""
-		picked.becomeInactive()
-		log.Warn("remote become inactive", zap.String("remote", picked.addr))
-	}
+	out := p.pickActiveConn()
 	if out == nil {
 		log.Warn("no alive remote, drop incoming conn")
 		// Do we need issue a error here?
@@ -133,6 +116,27 @@ func (p *proxy) serve(in net.Conn) {
 	io.Copy(out, in)
 	out.Close()
 	in.Close()
+}
+
+func (p *proxy) pickActiveConn() (out net.Conn) {
+	var (
+		err    error
+		picked *remote
+	)
+	for {
+		picked = p.pick()
+		if picked == nil {
+			break
+		}
+		out, err = net.DialTimeout("tcp", picked.addr, p.dialTimeout)
+		if err == nil {
+			break
+		}
+		p.current = ""
+		picked.becomeInactive()
+		log.Warn("remote become inactive", zap.String("remote", picked.addr))
+	}
+	return
 }
 
 // pick returns an active remote if there is any

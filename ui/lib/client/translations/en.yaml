@@ -16,4 +16,5 @@ error:
     no_alive_tidb: No live TiDB instance in the cluster
     pd_access_failed: Failed to access PD node
     tidb_conn_failed: Failed to connect to TiDB
+    tidb_no_active: No active TiDB instance
     tidb_auth_failed: TiDB authentication failed

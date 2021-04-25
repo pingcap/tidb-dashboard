@@ -27,6 +27,7 @@ import (
 
 var (
 	ErrTiDBConnFailed          = ErrNS.NewType("tidb_conn_failed")
+	ErrNoActiveTiDB            = ErrNS.NewType("tidb_no_active")
 	ErrTiDBAuthFailed          = ErrNS.NewType("tidb_auth_failed")
 	ErrTiDBClientRequestFailed = ErrNS.NewType("client_request_failed")
 )
@@ -110,6 +111,9 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	if addr == "" {
 		if overrideEndpoint != "" {
 			addr = overrideEndpoint
+		} else if c.forwarder.sqlProxy.pickActiveConn() == nil {
+			log.Warn("Reject to establish a target specified TiDB SQL connection since no active TiDB instance")
+			return nil, ErrNoActiveTiDB.New("no active TiDB instance")
 		} else {
 			addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.sqlPort)
 		}
@@ -157,6 +161,9 @@ func (c *Client) SendGetRequest(path string) ([]byte, error) {
 	if addr == "" {
 		if overrideEndpoint != "" {
 			addr = overrideEndpoint
+		} else if c.forwarder.statusProxy.pickActiveConn() == nil {
+			log.Warn("Reject to establish a target specified TiDB status connection since no active TiDB instance")
+			return nil, ErrNoActiveTiDB.New("no active TiDB instance")
 		} else {
 			addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.statusPort)
 		}

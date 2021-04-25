@@ -30,17 +30,17 @@ var (
 )
 
 type proxy struct {
-	server *goproxy.ProxyHttpServer
+	Server *goproxy.ProxyHttpServer
 }
 
 func newProxy() *proxy {
 	proxyServer := goproxy.NewProxyHttpServer()
 	proxyServer.KeepDestinationHeaders = true
-	return &proxy{server: proxyServer}
+	return &proxy{Server: proxyServer}
 }
 
-func (p *proxy) setupEndpoint(endpoint schema.EndpointAPI) {
-	p.server.OnRequest(goproxy.DstHostIs(endpoint.ID)).DoFunc(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+func (p *proxy) SetupEndpoint(endpoint schema.EndpointAPI) {
+	p.Server.OnRequest(goproxy.DstHostIs(endpoint.ID)).DoFunc(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 		qValues, err := url.ParseQuery(req.URL.RawQuery)
 		if err != nil {
 			return req, goproxy.NewResponse(req, goproxy.ContentTypeText, http.StatusBadRequest, ErrQueryValue.New(req.URL.RawQuery).Error())
@@ -59,7 +59,7 @@ func (p *proxy) setupEndpoint(endpoint schema.EndpointAPI) {
 	})
 }
 
-func (p *proxy) request(req *http.Request) (*http.Request, error) {
+func (p *proxy) Request(req *http.Request) (*http.Request, error) {
 	proxyID := req.URL.Query().Get("id")
 	if proxyID == "" {
 		return nil, ErrEndpointConfig.New("invalid proxy id: %s", proxyID)

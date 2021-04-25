@@ -16,15 +16,8 @@ package schema
 import "net"
 
 var (
-	ErrIPFormat = ErrNS.NewType("invalid_ip_format")
+	ErrIPFormat = ErrValueTransformed.NewSubtype("invalid_ip_format")
 )
-
-type ModelTransformer func(value string) (string, error)
-
-type EndpointAPIModel struct {
-	Type        string           `json:"type"`
-	Transformer ModelTransformer `json:"-"`
-}
 
 var EndpointAPIModelText EndpointAPIModel = EndpointAPIModel{
 	Type: "text",

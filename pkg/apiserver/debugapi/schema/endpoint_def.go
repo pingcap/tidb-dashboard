@@ -14,7 +14,6 @@
 package schema
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
@@ -22,12 +21,9 @@ import (
 
 var tidbIPParam EndpointAPIParam = EndpointAPIParam{
 	Name:   "tidb_ip",
-	Prefix: "{",
-	Suffix: "}:10080",
+	Prefix: "http://",
+	Suffix: ":10080",
 	Model:  EndpointAPIModelIP,
-	PostModelTransformer: func(value string) (string, error) {
-		return fmt.Sprintf("%s:10080", value), nil
-	},
 }
 
 var tidbStatsDump EndpointAPI = EndpointAPI{
@@ -36,15 +32,15 @@ var tidbStatsDump EndpointAPI = EndpointAPI{
 	Path:      "/stats/dump/{db}/{table}",
 	Method:    http.MethodGet,
 	Host:      tidbIPParam,
-	Segment: []EndpointAPISegmentParam{
-		NewEndpointAPISegmentParam(EndpointAPIParam{
+	Segment: []EndpointAPIParam{
+		{
 			Name:  "db",
 			Model: EndpointAPIModelText,
-		}),
-		NewEndpointAPISegmentParam(EndpointAPIParam{
+		},
+		{
 			Name:  "table",
 			Model: EndpointAPIModelText,
-		}),
+		},
 	},
 }
 
@@ -54,19 +50,19 @@ var tidbStatsDumpWithTimestamp EndpointAPI = EndpointAPI{
 	Path:      "/stats/dump/{db}/{table}/{yyyyMMddHHmmss}",
 	Method:    http.MethodGet,
 	Host:      tidbIPParam,
-	Segment: []EndpointAPISegmentParam{
-		NewEndpointAPISegmentParam(EndpointAPIParam{
+	Segment: []EndpointAPIParam{
+		{
 			Name:  "db",
 			Model: EndpointAPIModelText,
-		}),
-		NewEndpointAPISegmentParam(EndpointAPIParam{
+		},
+		{
 			Name:  "table",
 			Model: EndpointAPIModelText,
-		}),
-		NewEndpointAPISegmentParam(EndpointAPIParam{
+		},
+		{
 			Name:  "yyyyMMddHHmmss",
 			Model: EndpointAPIModelText,
-		}),
+		},
 	},
 }
 
@@ -92,11 +88,11 @@ var tidbSchemaWithDB EndpointAPI = EndpointAPI{
 	Path:      "/schema/{db}",
 	Method:    http.MethodGet,
 	Host:      tidbIPParam,
-	Segment: []EndpointAPISegmentParam{
-		NewEndpointAPISegmentParam(EndpointAPIParam{
+	Segment: []EndpointAPIParam{
+		{
 			Name:  "db",
 			Model: EndpointAPIModelText,
-		}),
+		},
 	},
 }
 
@@ -106,15 +102,15 @@ var tidbSchemaWithDBTable EndpointAPI = EndpointAPI{
 	Path:      "/schema/{db}/{table}",
 	Method:    http.MethodGet,
 	Host:      tidbIPParam,
-	Segment: []EndpointAPISegmentParam{
-		NewEndpointAPISegmentParam(EndpointAPIParam{
+	Segment: []EndpointAPIParam{
+		{
 			Name:  "db",
 			Model: EndpointAPIModelText,
-		}),
-		NewEndpointAPISegmentParam(EndpointAPIParam{
+		},
+		{
 			Name:  "table",
 			Model: EndpointAPIModelText,
-		}),
+		},
 	},
 }
 
@@ -124,11 +120,11 @@ var tidbSchemaWithTableID EndpointAPI = EndpointAPI{
 	Path:      "/db-table/{tableID}",
 	Method:    http.MethodGet,
 	Host:      tidbIPParam,
-	Segment: []EndpointAPISegmentParam{
-		NewEndpointAPISegmentParam(EndpointAPIParam{
+	Segment: []EndpointAPIParam{
+		{
 			Name:  "tableID",
 			Model: EndpointAPIModelText,
-		}),
+		},
 	},
 }
 

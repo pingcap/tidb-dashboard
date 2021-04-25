@@ -43,7 +43,7 @@ const Schema = ({ endpoint }: { endpoint: SchemaEndpointAPI }) => {
     }, '') || ''
   return (
     <p className={style.schema}>
-      {`http://${endpoint.host?.prefix}${endpoint.host?.name}${endpoint.host?.suffix}${endpoint.path}${query}`}
+      {`${endpoint.host?.prefix}{${endpoint.host?.name}}${endpoint.host?.suffix}${endpoint.path}${query}`}
     </p>
   )
 }

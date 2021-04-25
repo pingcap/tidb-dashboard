@@ -43,7 +43,7 @@ type Service struct {
 func newService() *Service {
 	p := newProxy()
 	for _, endpoint := range schema.EndpointAPIList {
-		p.setupEndpoint(endpoint)
+		p.SetupEndpoint(endpoint)
 	}
 
 	return &Service{proxy: p}
@@ -57,12 +57,12 @@ func newService() *Service {
 // @Failure 500 {object} utils.APIError
 // @Router /debugapi/proxy [get]
 func (s *Service) Proxy(c *gin.Context) {
-	proxyReq, err := s.proxy.request(c.Request)
+	proxyReq, err := s.proxy.Request(c.Request)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	s.proxy.server.ServeHTTP(c.Writer, proxyReq)
+	s.proxy.Server.ServeHTTP(c.Writer, proxyReq)
 }
 
 // @Summary Get all endpoint configs

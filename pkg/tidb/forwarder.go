@@ -101,8 +101,10 @@ func (f *Forwarder) pollingForTiDB() {
 			statusEndpoints := make(map[string]struct{}, len(allTiDB))
 			tidbEndpoints := make(map[string]struct{}, len(allTiDB))
 			for _, server := range allTiDB {
-				tidbEndpoints[fmt.Sprintf("%s:%d", server.IP, server.Port)] = struct{}{}
-				statusEndpoints[fmt.Sprintf("%s:%d", server.IP, server.StatusPort)] = struct{}{}
+				if server.Status == topology.ComponentStatusUp {
+					tidbEndpoints[fmt.Sprintf("%s:%d", server.IP, server.Port)] = struct{}{}
+					statusEndpoints[fmt.Sprintf("%s:%d", server.IP, server.StatusPort)] = struct{}{}
+				}
 			}
 			f.sqlProxy.updateRemotes(tidbEndpoints)
 			f.statusProxy.updateRemotes(statusEndpoints)

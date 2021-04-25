@@ -39,8 +39,8 @@ func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDB
 		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from PD etcd", tidbTopologyKeyPrefix)
 	}
 
-	nodesAlive := map[string]bool{}
-	nodesInfo := map[string]*TiDBInfo{}
+	nodesAlive := make(map[string]struct{}, len(resp.Kvs))
+	nodesInfo := make(map[string]*TiDBInfo, len(resp.Kvs))
 
 	for _, kv := range resp.Kvs {
 		key := string(kv.Key)
@@ -69,7 +69,12 @@ func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDB
 		case "ttl":
 			alive, err := parseTiDBAliveness(kv.Value)
 			if err == nil {
-				nodesAlive[keyParts[0]] = alive
+				nodesAlive[keyParts[0]] = struct{}{}
+				if !alive {
+					log.Warn("Alive of TiDB has expired, maybe local time in different hosts are not synchronized",
+						zap.String("key", key),
+						zap.String("value", string(kv.Value)))
+				}
 			} else {
 				log.Warn("Ignored invalid TiDB topology TTL entry",
 					zap.String("key", key),
@@ -82,10 +87,8 @@ func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDB
 	nodes := make([]TiDBInfo, 0)
 
 	for addr, info := range nodesInfo {
-		if alive, ok := nodesAlive[addr]; ok {
-			if alive {
-				info.Status = ComponentStatusUp
-			}
+		if _, ok := nodesAlive[addr]; ok {
+			info.Status = ComponentStatusUp
 		}
 		nodes = append(nodes, *info)
 	}

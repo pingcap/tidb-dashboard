@@ -71,7 +71,7 @@ func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDB
 			if err == nil {
 				nodesAlive[keyParts[0]] = struct{}{}
 				if !alive {
-					log.Debug("Alive of TiDB has expired, maybe time is incorrect",
+					log.Warn("Alive of TiDB has expired, maybe local time in different hosts are not synchronized",
 						zap.String("key", key),
 						zap.String("value", string(kv.Value)))
 				}

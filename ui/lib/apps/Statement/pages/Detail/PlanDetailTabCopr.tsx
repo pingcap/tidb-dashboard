@@ -1,7 +1,11 @@
 import React from 'react'
 
 import { StatementModel } from '@lib/client'
-import { CardTable, ShortValueWithTooltip } from '@lib/components'
+import {
+  CardTable,
+  ShortValueWithTooltip,
+  ScaledBytesWithTooltip,
+} from '@lib/components'
 import { valueColumns } from '@lib/utils/tableColumns'
 
 import { useSchemaColumns } from '../../utils/useSchemaColumns'
@@ -21,8 +25,8 @@ export default function TabCopr({ data }: ITabCoprProps) {
     genShortValueTooltipValueItem(data, 'max_total_keys'),
     genShortValueTooltipValueItem(data, 'avg_rocksdb_block_cache_hit_count'),
     genShortValueTooltipValueItem(data, 'max_rocksdb_block_cache_hit_count'),
-    genShortValueTooltipValueItem(data, 'avg_rocksdb_block_read_byte'),
-    genShortValueTooltipValueItem(data, 'max_rocksdb_block_read_byte'),
+    genScaledBytesTooltipValueItem(data, 'avg_rocksdb_block_read_byte'),
+    genScaledBytesTooltipValueItem(data, 'max_rocksdb_block_read_byte'),
     genShortValueTooltipValueItem(data, 'avg_rocksdb_block_read_count'),
     genShortValueTooltipValueItem(data, 'max_rocksdb_block_read_count'),
     genShortValueTooltipValueItem(data, 'avg_rocksdb_delete_skipped_count'),
@@ -44,5 +48,15 @@ function genShortValueTooltipValueItem(
   return {
     key,
     value: <ShortValueWithTooltip value={Number(data[key])} />,
+  }
+}
+
+function genScaledBytesTooltipValueItem(
+  data: StatementModel,
+  key: keyof StatementModel
+) {
+  return {
+    key,
+    value: <ScaledBytesWithTooltip value={Number(data[key])} />,
   }
 }

@@ -266,7 +266,7 @@ export function statementColumns(
       minWidth: 220,
       maxWidth: 250,
     }),
-    avgMaxColumn(tcf, 'avg_rocksdb_block_read_byte', 'short', rows).patchConfig(
+    avgMaxColumn(tcf, 'avg_rocksdb_block_read_byte', 'bytes', rows).patchConfig(
       {
         minWidth: 220,
         maxWidth: 250,

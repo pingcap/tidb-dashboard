@@ -1,7 +1,11 @@
 import React from 'react'
 
 import { SlowqueryModel } from '@lib/client'
-import { CardTable, ShortValueWithTooltip } from '@lib/components'
+import {
+  CardTable,
+  ShortValueWithTooltip,
+  ScaledBytesWithTooltip,
+} from '@lib/components'
 import { valueColumns } from '@lib/utils/tableColumns'
 
 export interface ITabCoprProps {
@@ -22,7 +26,7 @@ export default function TabCopr({ data }: ITabCoprProps) {
       value: data.cop_wait_addr,
     },
     genShortValueTooltipValueItem(data, 'rocksdb_block_cache_hit_count'),
-    genShortValueTooltipValueItem(data, 'rocksdb_block_read_byte'),
+    genScaledBytesTooltipValueItem(data, 'rocksdb_block_read_byte'),
     genShortValueTooltipValueItem(data, 'rocksdb_block_read_count'),
     genShortValueTooltipValueItem(data, 'rocksdb_delete_skipped_count'),
     genShortValueTooltipValueItem(data, 'rocksdb_key_skipped_count'),
@@ -41,5 +45,15 @@ function genShortValueTooltipValueItem(
   return {
     key,
     value: <ShortValueWithTooltip value={Number(data[key])} />,
+  }
+}
+
+function genScaledBytesTooltipValueItem(
+  data: SlowqueryModel,
+  key: keyof SlowqueryModel
+) {
+  return {
+    key,
+    value: <ScaledBytesWithTooltip value={Number(data[key])} />,
   }
 }

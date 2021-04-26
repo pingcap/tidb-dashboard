@@ -26,6 +26,7 @@ keyviz:
     close_keyviz: 关闭流量可视化功能
     close_keyviz_warning: 确认要关闭该功能吗？关闭后现有历史记录也将被清空！
     switch: 总开关
+    switch_tooltip: 开启流量可视化将会增加少量资源开销
     policy: 模式
     policy_db: TiDB
     policy_kv: 原生 KV

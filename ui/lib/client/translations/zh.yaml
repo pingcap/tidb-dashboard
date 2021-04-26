@@ -13,8 +13,7 @@ error:
       export_no_data: 没有可导出的语句
     other: 其他错误
   tidb:
-    no_alive_tidb: 集群未启动 TiDB 实例
+    no_alive_tidb: 没有正在运行的 TiDB 实例
     pd_access_failed: 无法访问 PD 节点
     tidb_conn_failed: 无法连接到 TiDB
-    tidb_no_active: 没有正在运行的 TiDB 实例
     tidb_auth_failed: TiDB 登录验证失败

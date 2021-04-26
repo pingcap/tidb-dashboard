@@ -20,11 +20,10 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	"github.com/joomcode/errorx"
+	"github.com/pingcap/log"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
-
-	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
 var (
@@ -93,10 +92,8 @@ func (f *Forwarder) pollingForTiDB() {
 			return err
 		}, bo)
 		if err != nil {
-			if errorx.IsOfType(err, ErrNoAliveTiDB) {
-				f.sqlProxy.updateRemotes(nil)
-				f.statusProxy.updateRemotes(nil)
-			}
+			f.sqlProxy.updateRemotes(nil)
+			f.statusProxy.updateRemotes(nil)
 		} else {
 			statusEndpoints := make(map[string]struct{}, len(allTiDB))
 			tidbEndpoints := make(map[string]struct{}, len(allTiDB))
@@ -114,6 +111,28 @@ func (f *Forwarder) pollingForTiDB() {
 		case <-time.After(f.config.TiDBPollInterval):
 		}
 	}
+}
+
+func (f *Forwarder) resolveSqlAddr(override string) (string, error) {
+	if override != "" {
+		return override, nil
+	}
+	if f.sqlProxy.noAliveRemote.Load() {
+		log.Warn("Unable to resolve sql connection address since no alive TiDB instance")
+		return "", ErrNoAliveTiDB.NewWithNoMessage()
+	}
+	return fmt.Sprintf("127.0.0.1:%d", f.sqlPort), nil
+}
+
+func (f *Forwarder) resolveStatusAddr(override string) (string, error) {
+	if override != "" {
+		return override, nil
+	}
+	if f.statusProxy.noAliveRemote.Load() {
+		log.Warn("Unable to resolve status connection address since no alive TiDB instance")
+		return "", ErrNoAliveTiDB.NewWithNoMessage()
+	}
+	return fmt.Sprintf("127.0.0.1:%d", f.statusPort), nil
 }
 
 func newForwarder(lc fx.Lifecycle, etcdClient *clientv3.Client) *Forwarder {

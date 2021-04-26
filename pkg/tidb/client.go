@@ -108,9 +108,13 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 
 	addr := c.sqlAPIAddress
 	if addr == "" {
-		var err error
-		if addr, err = c.forwarder.resolveSqlAddr(overrideEndpoint); err != nil {
-			return nil, err
+		if overrideEndpoint != "" {
+			addr = overrideEndpoint
+		} else {
+			var err error
+			if addr, err = c.forwarder.getEndpointAddr(c.forwarder.sqlPort); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -157,9 +161,13 @@ func (c *Client) SendGetRequest(path string) ([]byte, error) {
 
 	addr := c.statusAPIAddress
 	if addr == "" {
-		var err error
-		if addr, err = c.forwarder.resolveStatusAddr(overrideEndpoint); err != nil {
-			return nil, err
+		if overrideEndpoint != "" {
+			addr = overrideEndpoint
+		} else {
+			var err error
+			if addr, err = c.forwarder.getEndpointAddr(c.forwarder.statusPort); err != nil {
+				return nil, err
+			}
 		}
 	}
 

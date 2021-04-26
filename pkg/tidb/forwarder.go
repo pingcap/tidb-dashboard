@@ -91,10 +91,7 @@ func (f *Forwarder) pollingForTiDB() {
 			allTiDB, err = topology.FetchTiDBTopology(bo.Context(), f.etcdClient)
 			return err
 		}, bo)
-		if err != nil {
-			f.sqlProxy.updateRemotes(nil)
-			f.statusProxy.updateRemotes(nil)
-		} else {
+		if err == nil {
 			statusEndpoints := make(map[string]struct{}, len(allTiDB))
 			tidbEndpoints := make(map[string]struct{}, len(allTiDB))
 			for _, server := range allTiDB {
@@ -115,26 +112,12 @@ func (f *Forwarder) pollingForTiDB() {
 	}
 }
 
-func (f *Forwarder) resolveSqlAddr(override string) (string, error) {
-	if override != "" {
-		return override, nil
-	}
-	if f.sqlProxy.noAliveRemote.Load() {
-		log.Warn("Unable to resolve sql connection address since no alive TiDB instance")
-		return "", ErrNoAliveTiDB.NewWithNoMessage()
-	}
-	return fmt.Sprintf("127.0.0.1:%d", f.sqlPort), nil
-}
-
-func (f *Forwarder) resolveStatusAddr(override string) (string, error) {
-	if override != "" {
-		return override, nil
-	}
+func (f *Forwarder) getEndpointAddr(port int) (string, error) {
 	if f.statusProxy.noAliveRemote.Load() {
-		log.Warn("Unable to resolve status connection address since no alive TiDB instance")
+		log.Warn("Unable to resolve connection address since no alive TiDB instance")
 		return "", ErrNoAliveTiDB.NewWithNoMessage()
 	}
-	return fmt.Sprintf("127.0.0.1:%d", f.statusPort), nil
+	return fmt.Sprintf("127.0.0.1:%d", port), nil
 }
 
 func newForwarder(lc fx.Lifecycle, etcdClient *clientv3.Client) *Forwarder {

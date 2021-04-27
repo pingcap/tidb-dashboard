@@ -45,12 +45,20 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	resp, err := s.EtcdClient.Get(ectx, schemaVersionPath)
 	cancel()
 	if err != nil || len(resp.Kvs) != 1 {
-		log.Warn("failed to get tidb schema version", zap.Error(err))
+		if s.SchemaVersion != -1 {
+			log.Warn("failed to get tidb schema version", zap.Error(err))
+		} else {
+			log.Debug("failed to get tidb schema version, maybe not a TiDB cluster", zap.Error(err))
+		}
 		return
 	}
 	schemaVersion, err := strconv.ParseInt(string(resp.Kvs[0].Value), 10, 64)
 	if err != nil {
-		log.Warn("failed to get tidb schema version", zap.Error(err))
+		if s.SchemaVersion != -1 {
+			log.Warn("failed to get tidb schema version", zap.Error(err))
+		} else {
+			log.Debug("failed to get tidb schema version, maybe not a TiDB cluster", zap.Error(err))
+		}
 		return
 	}
 	if schemaVersion == s.SchemaVersion {

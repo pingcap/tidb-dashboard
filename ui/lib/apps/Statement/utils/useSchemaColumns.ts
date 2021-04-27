@@ -1,28 +1,29 @@
 import { useEffect, useState } from 'react'
+import { useRequest } from 'ahooks'
 
 import client from '@lib/client'
-import { cache } from '@lib/utils/callableCache'
 
 const statementsTableColumnsGet = client
   .getInstance()
   .statementsTableColumnsGet.bind(client.getInstance())
 
 export const useSchemaColumns = () => {
-  const [isLoading, setLoading] = useState(true)
   const [schemaColumns, setSchemaColumns] = useState<string[]>([])
+  const { data: resp, loading } = useRequest(statementsTableColumnsGet, {
+    cacheKey: 'stmt_schema',
+    staleTime: 300000,
+  })
 
   useEffect(() => {
-    const fetchSchemaColumns = async () => {
-      const { data } = await cache(statementsTableColumnsGet).call()
-      setSchemaColumns(data.map((d) => d.toLowerCase()))
-      setLoading(false)
+    if (!resp) {
+      return
     }
-
-    fetchSchemaColumns()
-  }, [])
+    const { data } = resp
+    setSchemaColumns(data.map((d) => d.toLowerCase()))
+  }, [resp])
 
   return {
     schemaColumns,
-    isLoading,
+    isLoading: loading,
   }
 }

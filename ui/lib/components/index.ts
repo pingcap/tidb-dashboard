@@ -45,10 +45,6 @@ export { default as InstanceSelect } from './InstanceSelect'
 export * from './MultiSelect'
 export { default as MultiSelect } from './MultiSelect'
 export * from './ValueWithTooltip'
-export {
-  default as ShortValueWithTooltip,
-  ScaledBytesWithTooltip,
-} from './ValueWithTooltip'
 export * from './DatePicker'
 export { default as DatePicker } from './DatePicker'
 export * from './ErrorBar'

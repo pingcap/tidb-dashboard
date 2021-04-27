@@ -2,12 +2,30 @@ import React from 'react'
 import { Tooltip } from 'antd'
 import { getValueFormat, scaledUnits } from '@baurine/grafana-value-formats'
 
+interface IValueWithTooltip extends IInternalValueWithTooltip {
+  Short: typeof ShortValueWithTooltip
+  ScaledBytes: typeof ScaledBytesWithTooltip
+}
+
+interface IInternalValueWithTooltip {
+  title: string
+  value: any
+}
+
+function InternalValueWithTooltip({ title, value }: IValueWithTooltip) {
+  return (
+    <Tooltip title={title}>
+      <span>{value}</span>
+    </Tooltip>
+  )
+}
+
 export interface IValueWithTooltipProps {
   value?: number
   scaledDecimal?: number
 }
 
-export default function ShortValueWithTooltip({
+function ShortValueWithTooltip({
   value = 0,
   scaledDecimal = 1,
 }: IValueWithTooltipProps) {
@@ -20,7 +38,7 @@ export default function ShortValueWithTooltip({
 
 const bytesScaler = scaledUnits(1024, ['', 'K', 'M', 'B', 'T'])
 
-export function ScaledBytesWithTooltip({
+function ScaledBytesWithTooltip({
   value = 0,
   scaledDecimal = 2,
 }: IValueWithTooltipProps) {
@@ -30,3 +48,10 @@ export function ScaledBytesWithTooltip({
     </Tooltip>
   )
 }
+
+const ValueWithTooltip = (InternalValueWithTooltip as unknown) as IValueWithTooltip
+
+ValueWithTooltip.Short = ShortValueWithTooltip
+ValueWithTooltip.ScaledBytes = ScaledBytesWithTooltip
+
+export { ValueWithTooltip }

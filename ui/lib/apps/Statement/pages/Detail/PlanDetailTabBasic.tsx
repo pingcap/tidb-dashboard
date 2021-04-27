@@ -7,7 +7,7 @@ import {
   CardTable,
   DateTime,
   Pre,
-  ShortValueWithTooltip,
+  ValueWithTooltip,
   TextWrap,
 } from '@lib/components'
 import { valueColumns } from '@lib/utils/tableColumns'
@@ -43,7 +43,7 @@ export default function TabBasic({ data }: ITabBasicProps) {
     },
     {
       key: 'exec_count',
-      value: <ShortValueWithTooltip value={data.exec_count} />,
+      value: <ValueWithTooltip.Short value={data.exec_count} />,
     },
     {
       key: 'sum_latency',
@@ -52,11 +52,11 @@ export default function TabBasic({ data }: ITabBasicProps) {
     { key: 'sample_user', value: data.sample_user },
     {
       key: 'sum_errors',
-      value: <ShortValueWithTooltip value={data.sum_errors} />,
+      value: <ValueWithTooltip.Short value={data.sum_errors} />,
     },
     {
       key: 'sum_warnings',
-      value: <ShortValueWithTooltip value={data.sum_warnings} />,
+      value: <ValueWithTooltip.Short value={data.sum_warnings} />,
     },
     {
       key: 'avg_mem',

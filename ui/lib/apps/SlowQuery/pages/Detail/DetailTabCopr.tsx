@@ -1,22 +1,30 @@
 import React from 'react'
 
 import { SlowqueryModel } from '@lib/client'
-import {
-  CardTable,
-  ShortValueWithTooltip,
-  ScaledBytesWithTooltip,
-} from '@lib/components'
+import { CardTable, ValueWithTooltip } from '@lib/components'
 import { valueColumns } from '@lib/utils/tableColumns'
+import { useSchemaColumns } from '../../utils/useSchemaColumns'
 
 export interface ITabCoprProps {
   data: SlowqueryModel
 }
 
 export default function TabCopr({ data }: ITabCoprProps) {
+  const { schemaColumns } = useSchemaColumns()
+  const columnsSet = new Set(schemaColumns)
   const items = [
-    genShortValueTooltipValueItem(data, 'request_count'),
-    genShortValueTooltipValueItem(data, 'process_keys'),
-    genShortValueTooltipValueItem(data, 'total_keys'),
+    {
+      key: 'request_count',
+      value: <ValueWithTooltip.Short value={data.request_count} />,
+    },
+    {
+      key: 'process_keys',
+      value: <ValueWithTooltip.Short value={data.process_keys} />,
+    },
+    {
+      key: 'total_keys',
+      value: <ValueWithTooltip.Short value={data.total_keys} />,
+    },
     {
       key: 'cop_proc_addr',
       value: data.cop_proc_addr,
@@ -25,35 +33,35 @@ export default function TabCopr({ data }: ITabCoprProps) {
       key: 'cop_wait_addr',
       value: data.cop_wait_addr,
     },
-    genShortValueTooltipValueItem(data, 'rocksdb_block_cache_hit_count'),
-    genScaledBytesTooltipValueItem(data, 'rocksdb_block_read_byte'),
-    genShortValueTooltipValueItem(data, 'rocksdb_block_read_count'),
-    genShortValueTooltipValueItem(data, 'rocksdb_delete_skipped_count'),
-    genShortValueTooltipValueItem(data, 'rocksdb_key_skipped_count'),
-  ]
+    {
+      key: 'rocksdb_block_cache_hit_count',
+      value: (
+        <ValueWithTooltip.Short value={data.rocksdb_block_cache_hit_count} />
+      ),
+    },
+    {
+      key: 'rocksdb_block_read_byte',
+      value: (
+        <ValueWithTooltip.ScaledBytes value={data.rocksdb_block_read_byte} />
+      ),
+    },
+    {
+      key: 'rocksdb_block_read_count',
+      value: <ValueWithTooltip.Short value={data.rocksdb_block_read_count} />,
+    },
+    {
+      key: 'rocksdb_delete_skipped_count',
+      value: (
+        <ValueWithTooltip.Short value={data.rocksdb_delete_skipped_count} />
+      ),
+    },
+    {
+      key: 'rocksdb_key_skipped_count',
+      value: <ValueWithTooltip.Short value={data.rocksdb_key_skipped_count} />,
+    },
+  ].filter((item) => columnsSet.has(item.key))
   const columns = valueColumns('slow_query.fields.')
   return (
     <CardTable cardNoMargin columns={columns} items={items} extendLastColumn />
   )
-}
-
-// TODO: refactor items code gen for all DetailsList
-function genShortValueTooltipValueItem(
-  data: SlowqueryModel,
-  key: keyof SlowqueryModel
-) {
-  return {
-    key,
-    value: <ShortValueWithTooltip value={Number(data[key])} />,
-  }
-}
-
-function genScaledBytesTooltipValueItem(
-  data: SlowqueryModel,
-  key: keyof SlowqueryModel
-) {
-  return {
-    key,
-    value: <ScaledBytesWithTooltip value={Number(data[key])} />,
-  }
 }

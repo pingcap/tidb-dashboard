@@ -1,29 +1,23 @@
 import { useState, useEffect } from 'react'
-import { useRequest } from 'ahooks'
 
 import client from '@lib/client'
-
-const slowQueryTableColumnsGet = client
-  .getInstance()
-  .slowQueryTableColumnsGet.bind(client.getInstance())
+import { useClientRequest } from '@lib/utils/useClientRequest'
 
 export const useSchemaColumns = () => {
   const [schemaColumns, setSchemaColumns] = useState<string[]>([])
-  const { data: resp, loading } = useRequest(slowQueryTableColumnsGet, {
-    cacheKey: 'slowquery_schema',
-    staleTime: 300000,
+  const { data, isLoading } = useClientRequest((options) => {
+    return client.getInstance().slowQueryTableColumnsGet(options)
   })
 
   useEffect(() => {
-    if (!resp) {
+    if (!data) {
       return
     }
-    const { data } = resp
     setSchemaColumns(data.map((d) => d.toLowerCase()))
-  }, [resp])
+  }, [data])
 
   return {
     schemaColumns,
-    isLoading: loading,
+    isLoading,
   }
 }

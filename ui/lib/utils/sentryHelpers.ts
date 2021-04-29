@@ -1,6 +1,7 @@
 import * as url from 'url'
 import { AxiosInstance } from 'axios'
 import * as Sentry from '@sentry/react'
+import { stripQueryString } from './query'
 
 const firstMountTransaction = Sentry.startTransaction({ name: 'first mount' })
 const transactionHub = new Map<string, typeof firstMountTransaction>()
@@ -47,15 +48,16 @@ export function initSentryRoutingInstrument() {
   })
 
   window.addEventListener('single-spa:before-routing-event', (e: any) => {
-    const { pathname: newUrlPath, hash: newUrlHash } = url.parse(
-      e.detail.newUrl
-    )
-    const { pathname: oldUrlPath, hash: oldUrlHash } = url.parse(
-      e.detail.oldUrl
-    )
-    const transaction = markStart(`${newUrlPath}${newUrlHash}`, 'routing')
-    transaction.setTag('routing.from', `${oldUrlPath}${oldUrlHash}`)
-    transaction.setTag('routing.to', `${newUrlPath}${newUrlHash}`)
+    const { hash: newUrlHash } = url.parse(e.detail.newUrl)
+    const { hash: oldUrlHash } = url.parse(e.detail.oldUrl)
+
+    if (!newUrlHash) return
+
+    const from = stripQueryString(oldUrlHash || '/')
+    const to = stripQueryString(newUrlHash)
+    const transaction = markStart(to, 'routing')
+    transaction.setTag('routing.from', from)
+    transaction.setTag('routing.to', to)
     transaction.setTag(
       'routing.mount',
       e.detail.appsByNewStatus.MOUNTED.join(',')
@@ -67,10 +69,8 @@ export function initSentryRoutingInstrument() {
   })
 
   window.addEventListener('single-spa:routing-event', (e: any) => {
-    const { pathname: newUrlPath, hash: newUrlHash } = url.parse(
-      e.detail.newUrl
-    )
-    markEnd(`${newUrlPath}${newUrlHash}`)
+    const { hash: newUrlHash } = url.parse(e.detail.newUrl)
+    markEnd(stripQueryString(newUrlHash!))
   })
 }
 

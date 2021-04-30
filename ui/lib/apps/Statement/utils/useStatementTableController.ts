@@ -19,6 +19,7 @@ import {
   TimeRange,
 } from '../pages/List/TimeRangeSelector'
 import { derivedFields, statementColumns } from './tableColumns'
+import { useSchemaColumns } from './useSchemaColumns'
 
 export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
   digest_text: true,
@@ -203,11 +204,11 @@ export default function useStatementTableController(
     queryStmtTypes()
   }, [refreshTimes])
 
-  const [tableSchemaColumns, setTableSchemaColumns] = useState<string[]>([])
+  const { schemaColumns, isLoading: isSchemaLoading } = useSchemaColumns()
 
   const tableColumns = useMemo(
-    () => statementColumns(statements, tableSchemaColumns, showFullSQL),
-    [statements, tableSchemaColumns, showFullSQL]
+    () => statementColumns(statements, schemaColumns, showFullSQL),
+    [statements, schemaColumns, showFullSQL]
   )
 
   useEffect(() => {
@@ -215,13 +216,6 @@ export default function useStatementTableController(
       setStatements([])
       setLoadingStatements(false)
       return
-    }
-
-    async function queryTableSchema() {
-      const {
-        data: schema,
-      } = await client.getInstance().statementsTableColumnsGet()
-      setTableSchemaColumns(schema)
     }
 
     async function queryStatementList() {
@@ -237,7 +231,6 @@ export default function useStatementTableController(
       }
       setLoadingStatements(true)
       try {
-        await queryTableSchema()
         const res = await client
           .getInstance()
           .statementsListGet(
@@ -260,6 +253,9 @@ export default function useStatementTableController(
       setLoadingStatements(false)
     }
 
+    if (isSchemaLoading) {
+      return
+    }
     queryStatementList()
   }, [
     queryOptions,
@@ -268,6 +264,7 @@ export default function useStatementTableController(
     selectedFields,
     cacheKey,
     cacheMgr,
+    isSchemaLoading,
   ])
 
   const [downloading, setDownloading] = useState(false)

@@ -16,6 +16,7 @@ import { CacheMgr } from '@lib/utils/useCache'
 import useCacheItemIndex from '@lib/utils/useCacheItemIndex'
 
 import { derivedFields, slowQueryColumns } from './tableColumns'
+import { useSchemaColumns } from './useSchemaColumns'
 
 export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
   query: true,
@@ -164,11 +165,11 @@ export default function useSlowQueryTableController(
     querySchemas()
   }, [])
 
-  const [tableSchemaColumns, setTableSchemaColumns] = useState<string[]>([])
+  const { schemaColumns, isLoading: isSchemaLoading } = useSchemaColumns()
 
   const tableColumns = useMemo(
-    () => slowQueryColumns(slowQueries, tableSchemaColumns, showFullSQL),
-    [slowQueries, tableSchemaColumns, showFullSQL]
+    () => slowQueryColumns(slowQueries, schemaColumns, showFullSQL),
+    [slowQueries, schemaColumns, showFullSQL]
   )
 
   useEffect(() => {
@@ -176,13 +177,6 @@ export default function useSlowQueryTableController(
       setSlowQueries([])
       setLoadingSlowQueries(false)
       return
-    }
-
-    async function queryTableSchema() {
-      const {
-        data: schema,
-      } = await client.getInstance().slowQueryTableColumnsGet()
-      setTableSchemaColumns(schema)
     }
 
     async function getSlowQueryList() {
@@ -194,7 +188,6 @@ export default function useSlowQueryTableController(
 
       setLoadingSlowQueries(true)
       try {
-        await queryTableSchema()
         const res = await client
           .getInstance()
           .slowQueryListGet(
@@ -220,6 +213,10 @@ export default function useSlowQueryTableController(
       }
       setLoadingSlowQueries(false)
     }
+
+    if (isSchemaLoading) {
+      return
+    }
     getSlowQueryList()
   }, [
     queryOptions,
@@ -229,6 +226,7 @@ export default function useSlowQueryTableController(
     refreshTimes,
     cacheKey,
     cacheMgr,
+    isSchemaLoading,
   ])
 
   const [downloading, setDownloading] = useState(false)

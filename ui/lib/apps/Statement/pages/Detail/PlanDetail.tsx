@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import {
   AnimatedSkeleton,
   Card,
-  CardTabs,
   CopyLink,
   Descriptions,
   ErrorBar,
@@ -18,12 +17,9 @@ import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
 import formatSql from '@lib/utils/sqlFormatter'
 
-import { IPageQuery } from '.'
-import TabBasic from './PlanDetailTabBasic'
-import TabTime from './PlanDetailTabTime'
-import TabCopr from './PlanDetailTabCopr'
-import TabTxn from './PlanDetailTabTxn'
-import SlowQueryTab from './SlowQueryTab'
+import type { IPageQuery } from '.'
+import DetailTabs from './PlanDetailTabs'
+import { useSchemaColumns } from '../../utils/useSchemaColumns'
 
 export interface IQuery extends IPageQuery {
   plans: string[]
@@ -38,7 +34,11 @@ const STMT_DETAIL_PLAN_EXPAND = 'statement.detail_plan_expand'
 
 function PlanDetail({ query }: IPlanDetailProps) {
   const { t } = useTranslation()
-  const { data, isLoading, error } = useClientRequest((reqConfig) =>
+  const {
+    data,
+    isLoading: isDataLoading,
+    error,
+  } = useClientRequest((reqConfig) =>
     client
       .getInstance()
       .statementsPlanDetailGet(
@@ -50,6 +50,8 @@ function PlanDetail({ query }: IPlanDetailProps) {
         reqConfig
       )
   )
+  const { isLoading: isSchemaLoading } = useSchemaColumns()
+  const isLoading = isDataLoading || isSchemaLoading
 
   const [detailExpand, setDetailExpand] = useLocalStorageState(
     STMT_DETAIL_PLAN_EXPAND,
@@ -75,34 +77,6 @@ function PlanDetail({ query }: IPlanDetailProps) {
   } else {
     titleKey = 'some'
   }
-
-  const tabs = [
-    {
-      key: 'basic',
-      title: t('statement.pages.detail.tabs.basic'),
-      content: () => <TabBasic data={data!} />,
-    },
-    {
-      key: 'time',
-      title: t('statement.pages.detail.tabs.time'),
-      content: () => <TabTime data={data!} />,
-    },
-    {
-      key: 'copr',
-      title: t('statement.pages.detail.tabs.copr'),
-      content: () => <TabCopr data={data!} />,
-    },
-    {
-      key: 'txn',
-      title: t('statement.pages.detail.tabs.txn'),
-      content: () => <TabTxn data={data!} />,
-    },
-    {
-      key: 'slow_query',
-      title: t('statement.pages.detail.tabs.slow_query'),
-      content: () => <SlowQueryTab query={query} />,
-    },
-  ]
 
   return (
     <Card
@@ -197,7 +171,7 @@ function PlanDetail({ query }: IPlanDetailProps) {
               </Descriptions.Item>
             </Descriptions>
 
-            <CardTabs animated={false} tabs={tabs} />
+            <DetailTabs data={data} query={query} />
           </>
         )}
       </AnimatedSkeleton>

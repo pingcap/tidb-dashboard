@@ -11,25 +11,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package schema
+package tidb
 
-import "net"
+type EnforcedSetting uint16
 
-var (
-	ErrIPFormat = ErrValueTransformed.NewSubtype("invalid_ip_format")
+const (
+	EnforcedSettingStatusAPIAddress EnforcedSetting = 1 << iota
+	EnforcedSettingSQLAPIAddress
 )
 
-var EndpointAPIModelText EndpointAPIModel = EndpointAPIModel{
-	Type: "text",
+func (es *EnforcedSetting) Add(s EnforcedSetting) {
+	*es |= s
 }
 
-var EndpointAPIModelIP EndpointAPIModel = EndpointAPIModel{
-	Type: "ip",
-	Transformer: func(value string) (string, error) {
-		ip := net.ParseIP(value)
-		if ip == nil {
-			return "", ErrIPFormat.New("input: %s", value)
-		}
-		return value, nil
-	},
+func (es *EnforcedSetting) Delete(s EnforcedSetting) {
+	*es &^= s
+}
+
+func (es *EnforcedSetting) Clear() {
+	*es = 0
+}
+
+func (es EnforcedSetting) Has(s EnforcedSetting) bool {
+	return es&s > 0
 }

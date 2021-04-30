@@ -5,7 +5,7 @@ import { TFunction } from 'i18next'
 
 import { AnimatedSkeleton, Card } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import client, { SchemaEndpointAPI } from '@lib/client'
+import client, { DebugapiEndpointAPI } from '@lib/client'
 
 import style from './ApiList.module.less'
 import ApiForm from './ApiForm'
@@ -14,7 +14,7 @@ const CustomHeader = ({
   endpoint,
   t,
 }: {
-  endpoint: SchemaEndpointAPI
+  endpoint: DebugapiEndpointAPI
   t: TFunction
 }) => {
   return (
@@ -32,7 +32,7 @@ const CustomHeader = ({
 }
 
 // e.g. http://{tidb_ip}/stats/dump/{db}/{table}?queryName={queryName}
-const Schema = ({ endpoint }: { endpoint: SchemaEndpointAPI }) => {
+const Schema = ({ endpoint }: { endpoint: DebugapiEndpointAPI }) => {
   const query =
     endpoint.query?.reduce((prev, { name }, i) => {
       if (i === 0) {
@@ -43,7 +43,7 @@ const Schema = ({ endpoint }: { endpoint: SchemaEndpointAPI }) => {
     }, '') || ''
   return (
     <p className={style.schema}>
-      {`${endpoint.host?.prefix}{${endpoint.host?.name}}${endpoint.host?.suffix}${endpoint.path}${query}`}
+      {`http://{${endpoint.host?.name}}${endpoint.path}${query}`}
     </p>
   )
 }
@@ -53,7 +53,7 @@ const groupSorts = ['tidb', 'tikv', 'tiflash', 'pd']
 export default function Page() {
   const { t } = useTranslation()
   const { data, isLoading } = useClientRequest((reqConfig) =>
-    client.getInstance().debugapiEndpointGet(reqConfig)
+    client.getInstance().debugapiEndpointsGet(reqConfig)
   )
   const groups = useMemo(
     () =>
@@ -64,7 +64,7 @@ export default function Page() {
         }
         prev[groupName].push(endpoint)
         return prev
-      }, {} as { [group: string]: SchemaEndpointAPI[] }),
+      }, {} as { [group: string]: DebugapiEndpointAPI[] }),
     [data]
   )
 

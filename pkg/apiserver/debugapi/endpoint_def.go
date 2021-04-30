@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package schema
+package debugapi
 
 import (
 	"net/http"
@@ -20,10 +20,8 @@ import (
 )
 
 var tidbIPParam EndpointAPIParam = EndpointAPIParam{
-	Name:   "tidb_ip",
-	Prefix: "http://",
-	Suffix: ":10080",
-	Model:  EndpointAPIModelIP,
+	Name:  "tidb_ip:port",
+	Model: EndpointAPIModelIPPort,
 }
 
 var tidbStatsDump EndpointAPI = EndpointAPI{
@@ -160,7 +158,7 @@ var tidbRegionsMeta EndpointAPI = EndpointAPI{
 	Host:      tidbIPParam,
 }
 
-var EndpointAPIList []EndpointAPI = []EndpointAPI{
+var endpointAPIList []EndpointAPI = []EndpointAPI{
 	tidbStatsDump,
 	tidbStatsDumpWithTimestamp,
 	tidbConfig,

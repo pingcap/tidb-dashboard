@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package schema
+package debugapi
 
 import (
 	"fmt"
@@ -35,10 +35,8 @@ var _ = Suite(&testSchemaSuite{})
 type testSchemaSuite struct{}
 
 var testTiDBIPParam EndpointAPIParam = EndpointAPIParam{
-	Name:   "tidb_ip",
-	Prefix: "http://",
-	Suffix: ":10080",
-	Model:  EndpointAPIModelIP,
+	Name:  "tidb_ip",
+	Model: EndpointAPIModelIPPort,
 }
 
 var testTiDBStatsDump EndpointAPI = EndpointAPI{
@@ -46,7 +44,7 @@ var testTiDBStatsDump EndpointAPI = EndpointAPI{
 	Component: model.NodeKindTiDB,
 	Path:      "/stats/dump/{db}/{table}",
 	Method:    http.MethodGet,
-	Host:      tidbIPParam,
+	Host:      testTiDBIPParam,
 	Segment: []EndpointAPIParam{
 		{
 			Name:  "db",
@@ -66,7 +64,7 @@ var testTiDBStatsDump EndpointAPI = EndpointAPI{
 }
 
 func (t *testSchemaSuite) Test_new_request_success(c *C) {
-	ip := "127.0.0.1"
+	ip := "127.0.0.1:10080"
 	db := "test"
 	table := "users"
 	debugFlag := "1"
@@ -76,9 +74,13 @@ func (t *testSchemaSuite) Test_new_request_success(c *C) {
 	vals.Set("db", db)
 	vals.Set("table", table)
 	vals.Set("debug", debugFlag)
-	req, _ := testTiDBStatsDump.NewRequest(vals)
+	req, err := testTiDBStatsDump.NewRequest(vals)
 
-	c.Assert(req.URL.String(), Equals, fmt.Sprintf("%s%s%s/stats/dump/%s/%s?debug=%s", testTiDBIPParam.Prefix, ip, testTiDBIPParam.Suffix, db, table, debugFlag))
+	if err == nil {
+		c.Assert(req.URL.String(), Equals, fmt.Sprintf("//%s/stats/dump/%s/%s?debug=%s", ip, db, table, debugFlag))
+	} else {
+		c.ExpectFailure(err.Error())
+	}
 }
 
 func (t *testSchemaSuite) Test_new_request_err_param_value_transformed(c *C) {
@@ -93,31 +95,4 @@ func (t *testSchemaSuite) Test_new_request_err_param_value_transformed(c *C) {
 	_, err := testTiDBStatsDump.NewRequest(vals)
 
 	c.Assert(errorx.IsOfType(err, ErrValueTransformed), Equals, true)
-}
-
-func (t *testSchemaSuite) Test_new_request_path_param_not_matched(c *C) {
-	var testTiDBStatsDump EndpointAPI = EndpointAPI{
-		ID:        "tidb_stats_dump",
-		Component: model.NodeKindTiDB,
-		Path:      "/stats/dump/{db}/{table2}",
-		Method:    http.MethodGet,
-		Host:      tidbIPParam,
-		Segment: []EndpointAPIParam{
-			{
-				Name:  "db",
-				Model: EndpointAPIModelText,
-			},
-			{
-				Name:  "table",
-				Model: EndpointAPIModelText,
-			},
-		},
-	}
-	vals := url.Values{}
-	vals.Set("tidb_ip", "127.0.0.1")
-	vals.Set("db", "test")
-	vals.Set("table", "users")
-	_, err := testTiDBStatsDump.NewRequest(vals)
-
-	c.Assert(errorx.IsOfType(err, ErrPathParamNotMatched), Equals, true)
 }

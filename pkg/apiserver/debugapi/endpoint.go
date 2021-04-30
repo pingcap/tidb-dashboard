@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package schema
+package debugapi
 
 import (
 	"fmt"
@@ -19,16 +19,17 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/joomcode/errorx"
-
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
 var (
-	ErrNS                  = errorx.NewNamespace("error.api.debugapi.endpoint")
 	ErrPathParamNotMatched = ErrNS.NewType("path_param_not_matched")
 	ErrValueTransformed    = ErrNS.NewType("error_value_transformed")
 )
+
+type ValueGetter interface {
+	Get(key string) string
+}
 
 type EndpointAPI struct {
 	ID        string             `json:"id"`
@@ -40,46 +41,37 @@ type EndpointAPI struct {
 	Query     []EndpointAPIParam `json:"query"`   // e.g. /debug/pprof?seconds=1 -> seconds
 }
 
-func (e *EndpointAPI) Populate(req *http.Request, values url.Values) error {
-	newReq, err := e.NewRequest(values)
+func (e *EndpointAPI) NewRequest(value ValueGetter) (*http.Request, error) {
+	host, err := e.PopulateHost(value)
 	if err != nil {
-		return err
-	}
-	req.URL = newReq.URL
-	return nil
-}
-
-func (e *EndpointAPI) NewRequest(values url.Values) (*http.Request, error) {
-	host, err := e.PopulateHost(values)
-	if err != nil {
-		return nil, err
+		return nil, ErrValueTransformed.Wrap(err, "populate host")
 	}
 
-	r, err := http.NewRequest(e.Method, host, nil)
+	r, err := http.NewRequest(e.Method, fmt.Sprintf("//%s", host), nil)
 	if err != nil {
-		return nil, err
+		return nil, ErrValueTransformed.Wrap(err, "new request")
 	}
 
 	// we can put param and value together at first
-	pValues := newParamValues(e.Segment, values)
+	pValues := newParamValues(e.Segment, value)
 	path, err := e.PopulatePath(pValues)
 	if err != nil {
-		return nil, err
+		return nil, ErrValueTransformed.Wrap(err, "populate path")
 	}
 	r.URL.Path = path
 
-	qValues := newParamValues(e.Query, values)
+	qValues := newParamValues(e.Query, value)
 	rawQuery, err := e.EncodeQuery(qValues)
 	if err != nil {
-		return nil, err
+		return nil, ErrValueTransformed.Wrap(err, "encode queries")
 	}
 	r.URL.RawQuery = rawQuery
 
 	return r, nil
 }
 
-func (e *EndpointAPI) PopulateHost(values url.Values) (string, error) {
-	return e.Host.Transform(values.Get(e.Host.Name))
+func (e *EndpointAPI) PopulateHost(value ValueGetter) (string, error) {
+	return e.Host.Transform(value.Get(e.Host.Name))
 }
 
 var ParamRegexp *regexp.Regexp = regexp.MustCompile(`\{(\w+)\}`)
@@ -127,10 +119,10 @@ func (e *EndpointAPI) EncodeQuery(pvs paramValues) (string, error) {
 
 type paramValues map[string]paramValue
 
-func newParamValues(params []EndpointAPIParam, values url.Values) paramValues {
+func newParamValues(params []EndpointAPIParam, value ValueGetter) paramValues {
 	pvs := paramValues{}
 	for _, p := range params {
-		pvs[p.Name] = paramValue{Param: p, RawValue: values.Get(p.Name)}
+		pvs[p.Name] = paramValue{Param: p, RawValue: value.Get(p.Name)}
 	}
 	return pvs
 }
@@ -150,9 +142,7 @@ func (pv *paramValue) TransformedValue() (string, error) {
 }
 
 type EndpointAPIParam struct {
-	Name   string `json:"name"`
-	Prefix string `json:"prefix"`
-	Suffix string `json:"suffix"`
+	Name string `json:"name"`
 	// represents what param is
 	Model                EndpointAPIModel `json:"model"`
 	PreModelTransformer  ModelTransformer `json:"-"`
@@ -177,7 +167,7 @@ func (p *EndpointAPIParam) Transform(value string) (string, error) {
 		value = v
 	}
 
-	return fmt.Sprintf("%s%s%s", p.Prefix, value, p.Suffix), nil
+	return value, nil
 }
 
 type ModelTransformer func(value string) (string, error)

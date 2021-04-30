@@ -1,10 +1,12 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Button } from 'antd'
-import { useRequest } from 'ahooks'
 import { DownloadOutlined } from '@ant-design/icons'
-import client, { SchemaEndpointAPI, SchemaEndpointAPIParam } from '@lib/client'
-import { widgetsMap } from './ApiFormWidgets'
+import client, {
+  DebugapiEndpointAPI,
+  DebugapiEndpointAPIParam,
+} from '@lib/client'
+import { IApiFormWidgetFactoryConfig, widgetsMap } from './ApiFormWidgets'
 
 const formItemLayout = {
   labelCol: { offset: 1 },
@@ -15,27 +17,32 @@ const buttonItemLayout = {
   wrapperCol: { offset: 1 },
 }
 
-export default function ApiForm({ endpoint }: { endpoint: SchemaEndpointAPI }) {
+export default function ApiForm({
+  endpoint,
+}: {
+  endpoint: DebugapiEndpointAPI
+}) {
   const [form] = Form.useForm()
   const { t } = useTranslation()
   const { id, host, segment, query } = endpoint
   const params = [host!, ...(segment ?? []), ...(query ?? [])]
+  const [loading, setLoading] = useState(false)
 
-  const {
-    data,
-    loading,
-    error,
-    run,
-  } = useRequest(
-    client.getInstance().debugapiProxyGet.bind(client.getInstance()),
-    { manual: true }
-  )
   const download = useCallback(
     async (values: any) => {
-      const { data, headers } = await run({
-        responseType: 'blob',
-        query: { ...values, id },
-      })
+      let data: string
+      let headers: any
+      try {
+        setLoading(true)
+        const resp = await client.getInstance().debugapiEndpointPost({
+          query: { ...values, id },
+        })
+        data = resp.data
+        headers = resp.headers
+      } catch (e) {
+        setLoading(false)
+        return
+      }
 
       const blob = new Blob([data], { type: headers['content-type'] })
       const link = document.createElement('a')
@@ -48,16 +55,21 @@ export default function ApiForm({ endpoint }: { endpoint: SchemaEndpointAPI }) {
       link.download = fileName
       link.click()
       window.URL.revokeObjectURL(link.href)
+
+      setLoading(false)
     },
-    [id, run]
+    [id]
   )
 
   return (
     <Form {...formItemLayout} layout="vertical" form={form} onFinish={download}>
       {params.map((param) => (
-        <ApiFormItem key={param.name} param={param}></ApiFormItem>
+        <ApiFormItem
+          key={param.name}
+          endpoint={endpoint}
+          param={param}
+        ></ApiFormItem>
       ))}
-      <p>{error?.message && data}</p>
       <Form.Item {...buttonItemLayout}>
         <Button
           type="primary"
@@ -72,14 +84,14 @@ export default function ApiForm({ endpoint }: { endpoint: SchemaEndpointAPI }) {
   )
 }
 
-function ApiFormItem({ param }: { param: SchemaEndpointAPIParam }) {
+function ApiFormItem({ param, endpoint }: IApiFormWidgetFactoryConfig) {
   return (
     <Form.Item
       rules={[{ required: true }]}
       name={param.name}
       label={param.name}
     >
-      {widgetsMap[param.model?.type!] || widgetsMap.text}
+      {(widgetsMap[param.model?.type!] || widgetsMap.text)({ param, endpoint })}
     </Form.Item>
   )
 }

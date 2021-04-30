@@ -19,34 +19,43 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
 
-	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/schema"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 )
 
 var (
-	ErrNS      = errorx.NewNamespace("error.api.debugapi")
-	ErrFromDst = ErrNS.NewType("err_from_dst")
+	ErrNS              = errorx.NewNamespace("error.api.debugapi")
+	ErrComponentClient = ErrNS.NewType("invalid_component_client")
+	ErrEndpointConfig  = ErrNS.NewType("invalid_endpoint_config")
 )
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/debugapi")
 	endpoint.Use(auth.MWAuthRequired())
 
-	endpoint.GET("/proxy", s.Proxy)
-	endpoint.GET("/endpoint", s.GetEndpointList)
+	endpoint.POST("/endpoint", s.RequestEndpoint)
+	endpoint.GET("/endpoints", s.GetEndpointList)
+}
+
+type endpoint struct {
+	EndpointAPI
+	Client Client
 }
 
 type Service struct {
-	proxy *proxy
+	endpointMap map[string]endpoint
 }
 
-func newService() *Service {
-	p := newProxy()
-	for _, endpoint := range schema.EndpointAPIList {
-		p.SetupEndpoint(endpoint)
+func newService(clientMap *ClientMap) (*Service, error) {
+	s := &Service{endpointMap: map[string]endpoint{}}
+	for _, e := range endpointAPIList {
+		client, ok := clientMap.Get(e.Component)
+		if !ok {
+			return nil, ErrComponentClient.New("client not found, type: %s", e.Component)
+		}
+		s.endpointMap[e.ID] = endpoint{EndpointAPI: e, Client: client}
 	}
 
-	return &Service{proxy: p}
+	return s, nil
 }
 
 // @Summary Proxy request to tidb/tikv/tiflash/pd http api
@@ -55,23 +64,38 @@ func newService() *Service {
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /debugapi/proxy [get]
-func (s *Service) Proxy(c *gin.Context) {
-	proxyReq, err := s.proxy.Request(c.Request)
+// @Router /debugapi/endpoint [post]
+func (s *Service) RequestEndpoint(c *gin.Context) {
+	query := c.Request.URL.Query()
+	id := query.Get("id")
+	endpoint, ok := s.endpointMap[id]
+	if !ok {
+		_ = c.Error(ErrEndpointConfig.New("invalid endpoint id: %s", id))
+		return
+	}
+
+	endpointReq, err := endpoint.NewRequest(query)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	s.proxy.Server.ServeHTTP(c.Writer, proxyReq)
+
+	resp, err := endpoint.Client.Get(endpointReq)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(200, string(resp))
 }
 
 // @Summary Get all endpoint configs
 // @Security JwtAuth
-// @Success 200 {array} schema.EndpointAPI
+// @Success 200 {array} EndpointAPI
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /debugapi/endpoint [get]
+// @Router /debugapi/endpoints [get]
 func (s *Service) GetEndpointList(c *gin.Context) {
-	c.JSON(http.StatusOK, schema.EndpointAPIList)
+	c.JSON(http.StatusOK, endpointAPIList)
 }

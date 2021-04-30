@@ -49,8 +49,9 @@ type Client struct {
 	statusAPIAddress    string // Empty means to use address provided by forwarder
 	statusAPIHTTPClient *httpc.Client
 	statusAPITimeout    time.Duration
-	sqlAPITLSKey        string // Non empty means use this key as MySQL TLS config
-	sqlAPIAddress       string // Empty means to use address provided by forwarder
+	sqlAPITLSKey        string          // Non empty means use this key as MySQL TLS config
+	sqlAPIAddress       string          // Empty means to use address provided by forwarder
+	enforcedSettings    EnforcedSetting // Record whether settings need to be enforced
 }
 
 func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.Client, httpClient *httpc.Client) *Client {
@@ -69,6 +70,7 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		statusAPITimeout:    defaultTiDBStatusAPITimeout,
 		sqlAPITLSKey:        sqlAPITLSKey,
 		sqlAPIAddress:       "",
+		enforcedSettings:    0,
 	}
 
 	lc.Append(fx.Hook{
@@ -81,38 +83,47 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 	return client
 }
 
-func (c *Client) WithStatusAPITimeout(timeout time.Duration) *Client {
-	c2 := *c
-	c2.statusAPITimeout = timeout
-	return &c2
+func (c Client) WithStatusAPITimeout(timeout time.Duration) *Client {
+	c.statusAPITimeout = timeout
+	return &c
 }
 
-func (c *Client) WithStatusAPIAddress(host string, statusPort int) *Client {
-	c2 := *c
-	c2.statusAPIAddress = fmt.Sprintf("%s:%d", host, statusPort)
-	return &c2
+func (c Client) WithStatusAPIAddress(host string, statusPort int) *Client {
+	c.statusAPIAddress = fmt.Sprintf("%s:%d", host, statusPort)
+	return &c
 }
 
-func (c *Client) WithSQLAPIAddress(host string, sqlPort int) *Client {
-	c2 := *c
-	c2.sqlAPIAddress = fmt.Sprintf("%s:%d", host, sqlPort)
-	return &c2
+func (c Client) WithEnforced(settings ...EnforcedSetting) *Client {
+	for _, s := range settings {
+		c.enforcedSettings.Add(s)
+	}
+	return &c
+}
+
+func (c Client) WithSQLAPIAddress(host string, sqlPort int) *Client {
+	c.sqlAPIAddress = fmt.Sprintf("%s:%d", host, sqlPort)
+	return &c
 }
 
 func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	overrideEndpoint := os.Getenv(tidbOverrideSQLEndpointEnvVar)
-	if overrideEndpoint != "" && c.sqlAPIAddress != "" {
+	hasEnforcedSettingSQLAPIAddress := c.enforcedSettings.Has(EnforcedSettingSQLAPIAddress)
+	// the `tidbOverrideSQLEndpointEnvVar` and the `Client.sqlAPIAddress` have the same override priority, if both exist and have not enforced `Client.sqlAPIAddress` then an error is returned
+	if overrideEndpoint != "" && c.sqlAPIAddress != "" && !hasEnforcedSettingSQLAPIAddress {
 		log.Warn(fmt.Sprintf("Reject to establish a target specified TiDB SQL connection since `%s` is set", tidbOverrideSQLEndpointEnvVar))
 		return nil, ErrTiDBConnFailed.New("TiDB Dashboard is configured to only connect to specified TiDB host")
 	}
 
-	addr := c.sqlAPIAddress
+	var addr string
+	if hasEnforcedSettingSQLAPIAddress {
+		addr = c.sqlAPIAddress
+	} else if overrideEndpoint != "" {
+		addr = overrideEndpoint
+	} else {
+		addr = c.sqlAPIAddress
+	}
 	if addr == "" {
-		if overrideEndpoint != "" {
-			addr = overrideEndpoint
-		} else {
-			addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.sqlPort)
-		}
+		addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.sqlPort)
 	}
 
 	dsnConfig := mysql.NewConfig()
@@ -148,18 +159,23 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 
 func (c *Client) SendGetRequest(path string) ([]byte, error) {
 	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
-	if overrideEndpoint != "" && c.statusAPIAddress != "" {
+	hasEnforcedSettingStatusAPIAddress := c.enforcedSettings.Has(EnforcedSettingStatusAPIAddress)
+	// the `tidbOverrideStatusEndpointEnvVar` and the `Client.statusAPIAddress` have the same override priority, if both exist and have not enforced `Client.statusAPIAddress` then an error is returned
+	if overrideEndpoint != "" && c.statusAPIAddress != "" && !hasEnforcedSettingStatusAPIAddress {
 		log.Warn(fmt.Sprintf("Reject to establish a target specified TiDB status connection since `%s` is set", tidbOverrideStatusEndpointEnvVar))
 		return nil, ErrTiDBConnFailed.New("TiDB Dashboard is configured to only connect to specified TiDB host")
 	}
 
-	addr := c.statusAPIAddress
+	var addr string
+	if hasEnforcedSettingStatusAPIAddress {
+		addr = c.statusAPIAddress
+	} else if overrideEndpoint != "" {
+		addr = overrideEndpoint
+	} else {
+		addr = c.statusAPIAddress
+	}
 	if addr == "" {
-		if overrideEndpoint != "" {
-			addr = overrideEndpoint
-		} else {
-			addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.statusPort)
-		}
+		addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.statusPort)
 	}
 
 	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, path)

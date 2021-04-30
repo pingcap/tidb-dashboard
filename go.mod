@@ -10,7 +10,6 @@ require (
 	github.com/appleboy/gin-jwt/v2 v2.6.3
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/elazarl/goproxy v0.0.0-20210110162100-a92cc753f88e
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-sql-driver/mysql v1.5.0

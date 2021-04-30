@@ -2,11 +2,8 @@ import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Button } from 'antd'
 import { DownloadOutlined } from '@ant-design/icons'
-import client, {
-  DebugapiEndpointAPI,
-  DebugapiEndpointAPIParam,
-} from '@lib/client'
-import { IApiFormWidgetFactoryConfig, widgetsMap } from './ApiFormWidgets'
+import client, { DebugapiEndpointAPI } from '@lib/client'
+import { IApiFormWidgetConfig, widgetsMap } from './ApiFormWidgets'
 
 const formItemLayout = {
   labelCol: { offset: 1 },
@@ -84,7 +81,7 @@ export default function ApiForm({
   )
 }
 
-function ApiFormItem({ param, endpoint }: IApiFormWidgetFactoryConfig) {
+function ApiFormItem({ param, endpoint }: IApiFormWidgetConfig) {
   return (
     <Form.Item
       rules={[{ required: true }]}

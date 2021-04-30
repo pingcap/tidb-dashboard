@@ -50,7 +50,7 @@ func newService(clientMap *ClientMap) (*Service, error) {
 	for _, e := range endpointAPIList {
 		client, ok := clientMap.Get(e.Component)
 		if !ok {
-			return nil, ErrComponentClient.New("client not found, type: %s", e.Component)
+			return nil, ErrComponentClient.New("%s type client not found, id: %s", e.Component, e.ID)
 		}
 		s.endpointMap[e.ID] = endpoint{EndpointAPI: e, Client: client}
 	}
@@ -58,7 +58,7 @@ func newService(clientMap *ClientMap) (*Service, error) {
 	return s, nil
 }
 
-// @Summary Proxy request to tidb/tikv/tiflash/pd http api
+// @Summary RequestEndpoint send request to tidb/tikv/tiflash/pd http api
 // @Security JwtAuth
 // @Success 200 {object} string
 // @Failure 400 {object} utils.APIError "Bad request"

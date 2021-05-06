@@ -12,17 +12,18 @@ import client, { DebugapiEndpointAPI } from '@lib/client'
 import style from './ApiList.module.less'
 import ApiForm from './ApiForm'
 
-const useFilterEndpoints = (endpoints: DebugapiEndpointAPI[]) => {
+const useFilterEndpoints = (endpoints?: DebugapiEndpointAPI[]) => {
   const [keywords, setKeywords] = useState('')
+  const nonNullEndpoints = useMemo(() => endpoints || [], [endpoints])
   const [filteredEndpoints, setFilteredEndpoints] = useState<
     DebugapiEndpointAPI[]
-  >(endpoints)
+  >(nonNullEndpoints)
 
   useEffect(() => {
     const k = keywords.trim()
     if (!!k) {
       setFilteredEndpoints(
-        endpoints.filter(
+        nonNullEndpoints.filter(
           (e) =>
             e.id?.includes(k) ||
             e.host?.name?.includes(k) ||
@@ -30,9 +31,9 @@ const useFilterEndpoints = (endpoints: DebugapiEndpointAPI[]) => {
         )
       )
     } else {
-      setFilteredEndpoints(endpoints)
+      setFilteredEndpoints(nonNullEndpoints)
     }
-  }, [endpoints, keywords])
+  }, [nonNullEndpoints, keywords])
 
   return {
     endpoints: filteredEndpoints,
@@ -46,7 +47,7 @@ export default function Page() {
   const { data, isLoading } = useClientRequest((reqConfig) =>
     client.getInstance().debugapiEndpointsGet(reqConfig)
   )
-  const { endpoints, filterBy } = useFilterEndpoints(data || [])
+  const { endpoints, filterBy } = useFilterEndpoints(data)
 
   const groups = useMemo(
     () =>

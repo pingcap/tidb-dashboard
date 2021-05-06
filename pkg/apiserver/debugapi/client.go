@@ -20,7 +20,10 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
+	"github.com/pingcap/tidb-dashboard/pkg/tikv"
 )
 
 type Client interface {
@@ -38,9 +41,12 @@ func (c *ClientMap) Set(kind model.NodeKind, client Client) {
 	(*c)[kind] = client
 }
 
-func newClientMap(tidbImpl tidbImplement) *ClientMap {
+func newClientMap(tidbImpl tidbImplement, tikvImpl tikvImplement, tiflashImpl tiflashImplement, pdImpl pdImplement) *ClientMap {
 	clientMap := ClientMap{
-		model.NodeKindTiDB: &tidbImpl,
+		model.NodeKindTiDB:    &tidbImpl,
+		model.NodeKindTiKV:    &tikvImpl,
+		model.NodeKindTiFlash: &tiflashImpl,
+		model.NodeKindPD:      &pdImpl,
 	}
 	return &clientMap
 }
@@ -58,4 +64,45 @@ func (impl *tidbImplement) Get(request *http.Request) ([]byte, error) {
 	}
 
 	return impl.Client.WithEnforced(tidb.EnforcedSettingStatusAPIAddress).WithStatusAPIAddress(host, port).SendGetRequest(request.URL.Path)
+}
+
+// TODO: tikv/tiflash/pd forwarder impl
+
+type tikvImplement struct {
+	fx.In
+	Client *tikv.Client
+}
+
+func (impl *tikvImplement) Get(request *http.Request) ([]byte, error) {
+	host := request.URL.Hostname()
+	port, err := strconv.Atoi(request.URL.Port())
+	if err != nil {
+		return nil, err
+	}
+
+	return impl.Client.SendGetRequest(host, port, request.URL.Path)
+}
+
+type tiflashImplement struct {
+	fx.In
+	Client *tiflash.Client
+}
+
+func (impl *tiflashImplement) Get(request *http.Request) ([]byte, error) {
+	host := request.URL.Hostname()
+	port, err := strconv.Atoi(request.URL.Port())
+	if err != nil {
+		return nil, err
+	}
+
+	return impl.Client.SendGetRequest(host, port, request.URL.Path)
+}
+
+type pdImplement struct {
+	fx.In
+	Client *pd.Client
+}
+
+func (impl *pdImplement) Get(request *http.Request) ([]byte, error) {
+	return impl.Client.SendGetRequest(request.URL.Path)
 }

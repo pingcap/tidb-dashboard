@@ -1,5 +1,7 @@
 debug_api:
   nav_title: Debugging API
+  keyword_search: Keyword Search
+  endpoints_not_found: Endpoints not found
   form:
     download: Download
   tidb:

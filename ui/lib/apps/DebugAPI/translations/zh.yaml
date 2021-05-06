@@ -1,5 +1,7 @@
 debug_api:
   nav_title: 信息查询接口
+  keyword_search: 关键词搜索
+  endpoints_not_found: 找不到对应接口
   form:
     download: 下载
   tidb:

@@ -47,6 +47,7 @@ type Service struct {
 
 func newService(clientMap *ClientMap) (*Service, error) {
 	s := &Service{endpointMap: map[string]endpoint{}}
+
 	for _, e := range endpointAPIList {
 		client, ok := clientMap.Get(e.Component)
 		if !ok {

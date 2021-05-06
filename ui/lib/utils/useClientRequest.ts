@@ -171,10 +171,12 @@ export function useBatchClientRequest<T>(
 
     const p = reqFactories.map((_, idx) => sendRequestEach(idx))
     await Promise.all(p)
-    setState((s) => ({
-      ...s,
-      isLoading: false,
-    }))
+    if (mounted.current) {
+      setState((s) => ({
+        ...s,
+        isLoading: false,
+      }))
+    }
 
     cancelTokenSource.current = null
 

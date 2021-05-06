@@ -102,6 +102,8 @@ export function applySentryTracingInterceptor(instance: AxiosInstance) {
         markTag(id, 'error', error.message)
         markEnd(pathname!, id)
       }
+
+      return Promise.reject(error)
     }
   )
 }

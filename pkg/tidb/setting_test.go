@@ -35,19 +35,19 @@ const (
 )
 
 func (t *testSettingSuite) Test_EnforcedSetting(c *C) {
-	var setting EnforcedSetting = 0
+	setting := EnforcedSetting(0)
 	setting.Add(enforcedSettingTest1)
+	c.Assert(setting.Has(enforcedSettingTest1), Equals, true)
+	c.Assert(setting.Has(enforcedSettingTest2), Equals, false)
+
 	setting.Add(enforcedSettingTest2)
-	c.Assert(setting, Equals, enforcedSettingTest1|enforcedSettingTest2)
-	setting.Add(enforcedSettingTest2)
-	c.Assert(setting, Equals, enforcedSettingTest1|enforcedSettingTest2)
+	c.Assert(setting.Has(enforcedSettingTest1), Equals, true)
+	c.Assert(setting.Has(enforcedSettingTest2), Equals, true)
 
 	setting.Delete(enforcedSettingTest2)
-	c.Assert(setting, Equals, enforcedSettingTest1)
-
 	c.Assert(setting.Has(enforcedSettingTest1), Equals, true)
+	c.Assert(setting.Has(enforcedSettingTest2), Equals, false)
 
-	setting.Add(enforcedSettingTest2)
 	setting.Add(enforcedSettingTest4)
 	setting.Clear()
 	c.Assert(setting.Has(enforcedSettingTest1), Equals, false)

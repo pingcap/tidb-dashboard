@@ -70,7 +70,7 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		statusAPITimeout:    defaultTiDBStatusAPITimeout,
 		sqlAPITLSKey:        sqlAPITLSKey,
 		sqlAPIAddress:       "",
-		enforcedSettings:    0,
+		enforcedSettings:    EnforcedSetting(0),
 	}
 
 	lc.Append(fx.Hook{

@@ -41,8 +41,9 @@ type proxy struct {
 	checkInterval time.Duration
 	dialTimeout   time.Duration
 
-	remotes sync.Map
-	current string
+	noAliveRemote *atomic.Bool
+	remotes       sync.Map
+	current       string
 }
 
 func newProxy(l net.Listener, endpoints map[string]string, checkInterval time.Duration, timeout time.Duration) *proxy {
@@ -57,6 +58,7 @@ func newProxy(l net.Listener, endpoints map[string]string, checkInterval time.Du
 		remotes:       sync.Map{},
 		dialTimeout:   timeout,
 		checkInterval: checkInterval,
+		noAliveRemote: atomic.NewBool(len(endpoints) == 0),
 	}
 	for key, e := range endpoints {
 		p.remotes.Store(key, &remote{addr: e, inactive: atomic.NewBool(true)})
@@ -74,6 +76,7 @@ func (p *proxy) updateRemotes(remotes map[string]struct{}) {
 			p.remotes.Delete(key)
 			return true
 		})
+		p.noAliveRemote.Store(true)
 		return
 	}
 	// update or create new remote
@@ -95,12 +98,32 @@ func (p *proxy) updateRemotes(remotes map[string]struct{}) {
 		}
 		return true
 	})
+	p.noAliveRemote.Store(false)
 }
 
 func (p *proxy) serve(in net.Conn) {
+	out := p.pickActiveConn()
+	if out == nil {
+		log.Warn("no alive remote, drop incoming conn")
+		in.Close()
+		return
+	}
+	// bidirectional copy
+	go func() {
+		//nolint
+		io.Copy(in, out)
+		in.Close()
+		out.Close()
+	}()
+	//nolint
+	io.Copy(out, in)
+	out.Close()
+	in.Close()
+}
+
+func (p *proxy) pickActiveConn() (out net.Conn) {
 	var (
 		err    error
-		out    net.Conn
 		picked *remote
 	)
 	for {
@@ -116,23 +139,8 @@ func (p *proxy) serve(in net.Conn) {
 		picked.becomeInactive()
 		log.Warn("remote become inactive", zap.String("remote", picked.addr))
 	}
-	if out == nil {
-		log.Warn("no alive remote, drop incoming conn")
-		// Do we need issue a error here?
-		in.Close()
-		return
-	}
-	// bidirectional copy
-	go func() {
-		//nolint
-		io.Copy(in, out)
-		in.Close()
-		out.Close()
-	}()
-	//nolint
-	io.Copy(out, in)
-	out.Close()
-	in.Close()
+	p.noAliveRemote.Store(out == nil)
+	return
 }
 
 // pick returns an active remote if there is any

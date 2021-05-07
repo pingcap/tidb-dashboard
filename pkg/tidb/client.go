@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -104,7 +105,10 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 		if overrideEndpoint != "" {
 			addr = overrideEndpoint
 		} else {
-			addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.sqlPort)
+			var err error
+			if addr, err = c.forwarder.getEndpointAddr(c.forwarder.sqlPort); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -125,6 +129,9 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 		if _, ok := err.(*net.OpError); ok || err == driver.ErrBadConn {
 			if strings.HasPrefix(addr, "0.0.0.0:") {
 				log.Warn("TiDB reported its address to be 0.0.0.0. Please specify `-advertise-address` command line parameter when running TiDB")
+			}
+			if c.forwarder.sqlProxy.noAliveRemote.Load() {
+				return nil, ErrNoAliveTiDB.NewWithNoMessage()
 			}
 			return nil, ErrTiDBConnFailed.Wrap(err, "failed to connect to TiDB")
 		} else if mysqlErr, ok := err.(*mysql.MySQLError); ok {
@@ -151,10 +158,19 @@ func (c *Client) SendGetRequest(path string) ([]byte, error) {
 		if overrideEndpoint != "" {
 			addr = overrideEndpoint
 		} else {
-			addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.statusPort)
+			var err error
+			if addr, err = c.forwarder.getEndpointAddr(c.forwarder.statusPort); err != nil {
+				return nil, err
+			}
 		}
 	}
 
 	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, path)
-	return c.statusAPIHTTPClient.WithTimeout(c.statusAPITimeout).SendRequest(c.lifecycleCtx, uri, "GET", nil, ErrTiDBClientRequestFailed, "TiDB")
+	result, err := c.statusAPIHTTPClient.
+		WithTimeout(c.statusAPITimeout).
+		SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, "TiDB")
+	if err != nil && c.forwarder.statusProxy.noAliveRemote.Load() {
+		return nil, ErrNoAliveTiDB.NewWithNoMessage()
+	}
+	return result, err
 }

@@ -36,29 +36,29 @@ type testSchemaSuite struct{}
 
 var testTiDBIPParam EndpointAPIParam = EndpointAPIParam{
 	Name:  "tidb_ip",
-	Model: EndpointAPIModelIPPort,
+	Model: EndpointAPIParamModelIPPort,
 }
 
-var testTiDBStatsDump EndpointAPI = EndpointAPI{
+var testTiDBStatsDump EndpointAPIModel = EndpointAPIModel{
 	ID:        "tidb_stats_dump",
 	Component: model.NodeKindTiDB,
 	Path:      "/stats/dump/{db}/{table}",
 	Method:    http.MethodGet,
 	Host:      testTiDBIPParam,
-	Segment: []EndpointAPIParam{
+	PathParams: []EndpointAPIParam{
 		{
 			Name:  "db",
-			Model: EndpointAPIModelText,
+			Model: EndpointAPIParamModelText,
 		},
 		{
 			Name:  "table",
-			Model: EndpointAPIModelText,
+			Model: EndpointAPIParamModelText,
 		},
 	},
-	Query: []EndpointAPIParam{
+	QueryParams: []EndpointAPIParam{
 		{
 			Name:  "debug",
-			Model: EndpointAPIModelText,
+			Model: EndpointAPIParamModelText,
 		},
 	},
 }

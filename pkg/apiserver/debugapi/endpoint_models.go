@@ -18,11 +18,11 @@ import (
 	"net"
 )
 
-var EndpointAPIModelText EndpointAPIModel = EndpointAPIModel{
+var EndpointAPIParamModelText EndpointAPIParamModel = EndpointAPIParamModel{
 	Type: "text",
 }
 
-var EndpointAPIModelIPPort EndpointAPIModel = EndpointAPIModel{
+var EndpointAPIParamModelIPPort EndpointAPIParamModel = EndpointAPIParamModel{
 	Type: "ip_port",
 	Transformer: func(value string) (string, error) {
 		ip, _, err := net.SplitHostPort(value)

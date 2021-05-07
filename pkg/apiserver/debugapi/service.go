@@ -37,7 +37,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 }
 
 type endpoint struct {
-	EndpointAPI
+	EndpointAPIModel
 	Client Client
 }
 
@@ -53,7 +53,7 @@ func newService(clientMap *ClientMap) (*Service, error) {
 		if !ok {
 			return nil, ErrComponentClient.New("%s type client not found, id: %s", e.Component, e.ID)
 		}
-		s.endpointMap[e.ID] = endpoint{EndpointAPI: e, Client: client}
+		s.endpointMap[e.ID] = endpoint{EndpointAPIModel: e, Client: client}
 	}
 
 	return s, nil

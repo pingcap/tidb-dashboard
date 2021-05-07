@@ -93,10 +93,9 @@ func (c Client) WithStatusAPIAddress(host string, statusPort int) *Client {
 	return &c
 }
 
-func (c Client) WithEnforced(settings ...EnforcedSetting) *Client {
-	for _, s := range settings {
-		c.enforcedSettings.Add(s)
-	}
+func (c Client) WithEnforcedStatusAPIAddress(host string, statusPort int) *Client {
+	c.statusAPIAddress = fmt.Sprintf("%s:%d", host, statusPort)
+	c.enforcedSettings.Add(EnforcedSettingStatusAPIAddress)
 	return &c
 }
 

@@ -63,7 +63,7 @@ func (impl *tidbImplement) Get(request *http.Request) ([]byte, error) {
 		return nil, err
 	}
 
-	return impl.Client.WithEnforced(tidb.EnforcedSettingStatusAPIAddress).WithStatusAPIAddress(host, port).SendGetRequest(request.URL.Path)
+	return impl.Client.WithEnforcedStatusAPIAddress(host, port).SendGetRequest(request.URL.Path)
 }
 
 // TODO: tikv/tiflash/pd forwarder impl

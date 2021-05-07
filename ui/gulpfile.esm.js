@@ -21,9 +21,19 @@ task('swagger:watch', () =>
   watch(['../cmd/**/*.go', '../pkg/**/*.go'], series('swagger:generate'))
 )
 
-task('webpack:dev', shell.task('yarn react-app-rewired start'))
+task(
+  'webpack:dev',
+  shell.task(
+    'REACT_APP_COMMIT_HASH=$(git rev-parse --short HEAD) yarn react-app-rewired start'
+  )
+)
 
-task('webpack:build', shell.task('yarn react-app-rewired build'))
+task(
+  'webpack:build',
+  shell.task(
+    'REACT_APP_COMMIT_HASH=$(git rev-parse --short HEAD) yarn react-app-rewired build'
+  )
+)
 
 task('build', series('swagger:generate', 'webpack:build'))
 

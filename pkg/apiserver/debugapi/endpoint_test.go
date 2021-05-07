@@ -84,15 +84,11 @@ func (t *testSchemaSuite) Test_new_request_success(c *C) {
 }
 
 func (t *testSchemaSuite) Test_new_request_err_param_value_transformed(c *C) {
-	ip := "invalidIP"
-	db := "test"
-	table := "users"
-
 	vals := url.Values{}
-	vals.Set("tidb_ip", ip)
-	vals.Set("db", db)
-	vals.Set("table", table)
+	vals.Set("tidb_ip", "invalidIP")
+	vals.Set("db", "test")
+	vals.Set("table", "users")
 	_, err := testTiDBStatsDump.NewRequest(vals)
 
-	c.Assert(errorx.IsOfType(err, ErrValueTransformed), Equals, true)
+	c.Assert(errorx.IsOfType(err, ErrInvalidParam), Equals, true)
 }

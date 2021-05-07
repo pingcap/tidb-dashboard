@@ -13,10 +13,9 @@
 
 package debugapi
 
-import "net"
-
-var (
-	ErrIPPortFormat = ErrValueTransformed.NewSubtype("invalid_ip_port_format")
+import (
+	"fmt"
+	"net"
 )
 
 var EndpointAPIModelText EndpointAPIModel = EndpointAPIModel{
@@ -28,12 +27,12 @@ var EndpointAPIModelIPPort EndpointAPIModel = EndpointAPIModel{
 	Transformer: func(value string) (string, error) {
 		ip, _, err := net.SplitHostPort(value)
 		if err != nil {
-			return "", ErrIPPortFormat.Wrap(err, "host: %s", value)
+			return "", err
 		}
 
 		ip2 := net.ParseIP(ip)
 		if ip2 == nil {
-			return "", ErrIPPortFormat.New("input: %s", value)
+			return "", fmt.Errorf("invalid ip: %s", value)
 		}
 
 		return value, nil

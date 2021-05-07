@@ -23,8 +23,8 @@ import (
 )
 
 var (
-	ErrPathParamNotMatched = ErrNS.NewType("path_param_not_matched")
-	ErrValueTransformed    = ErrNS.NewType("error_value_transformed")
+	ErrMissingRequiredParam = ErrNS.NewType("missing_require_parameter")
+	ErrInvalidParam         = ErrNS.NewType("invalid_parameter")
 )
 
 type ValueGetter interface {
@@ -35,35 +35,41 @@ type EndpointAPI struct {
 	ID        string             `json:"id"`
 	Component model.NodeKind     `json:"component"`
 	Path      string             `json:"path"`
-	Method    string             `json:"method"`
+	Method    EndpointMethod     `json:"method"`
 	Host      EndpointAPIParam   `json:"host"`
 	Segment   []EndpointAPIParam `json:"segment"` // e.g. /stats/dump/{db}/{table} -> db, table
 	Query     []EndpointAPIParam `json:"query"`   // e.g. /debug/pprof?seconds=1 -> seconds
 }
 
+type EndpointMethod string
+
+const (
+	EndpointMethodGet EndpointMethod = http.MethodGet
+)
+
 func (e *EndpointAPI) NewRequest(value ValueGetter) (*http.Request, error) {
 	host, err := e.PopulateHost(value)
 	if err != nil {
-		return nil, ErrValueTransformed.Wrap(err, "populate host")
+		return nil, ErrInvalidParam.Wrap(err, "populate host")
 	}
 
-	r, err := http.NewRequest(e.Method, fmt.Sprintf("//%s", host), nil)
+	r, err := http.NewRequest(string(e.Method), fmt.Sprintf("//%s", host), nil)
 	if err != nil {
-		return nil, ErrValueTransformed.Wrap(err, "new request")
+		return nil, ErrInvalidParam.Wrap(err, "new request")
 	}
 
 	// we can put param and value together at first
 	pValues := newParamValues(e.Segment, value)
 	path, err := e.PopulatePath(pValues)
 	if err != nil {
-		return nil, ErrValueTransformed.Wrap(err, "populate path")
+		return nil, ErrInvalidParam.Wrap(err, "populate path")
 	}
 	r.URL.Path = path
 
 	qValues := newParamValues(e.Query, value)
 	rawQuery, err := e.EncodeQuery(qValues)
 	if err != nil {
-		return nil, ErrValueTransformed.Wrap(err, "encode queries")
+		return nil, ErrInvalidParam.Wrap(err, "encode queries")
 	}
 	r.URL.RawQuery = rawQuery
 
@@ -88,7 +94,7 @@ func (e *EndpointAPI) PopulatePath(pvs paramValues) (string, error) {
 		pv, ok := pvs.Find(key)
 		// means the param can be found in the endpoint path, but not in the endpoint param
 		if !ok {
-			returnErr = ErrPathParamNotMatched.New("path: %s, param: %s", e.Path, key)
+			returnErr = ErrMissingRequiredParam.New("path: %s, param: %s", e.Path, key)
 			return s
 		}
 

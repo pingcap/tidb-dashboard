@@ -13,7 +13,7 @@ error:
       export_no_data: No statements can be exported
     other: Other error
   tidb:
-    no_alive_tidb: No live TiDB instance in the cluster
+    no_alive_tidb: No alive TiDB instance
     pd_access_failed: Failed to access PD node
     tidb_conn_failed: Failed to connect to TiDB
     tidb_auth_failed: TiDB authentication failed

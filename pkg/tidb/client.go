@@ -105,6 +105,8 @@ func (c Client) WithSQLAPIAddress(host string, sqlPort int) *Client {
 }
 
 func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
+	var err error
+
 	overrideEndpoint := os.Getenv(tidbOverrideSQLEndpointEnvVar)
 	hasEnforcedSettingSQLAPIAddress := c.enforcedSettings.Has(EnforcedSettingSQLAPIAddress)
 	// the `tidbOverrideSQLEndpointEnvVar` and the `Client.sqlAPIAddress` have the same override priority, if both exist and have not enforced `Client.sqlAPIAddress` then an error is returned
@@ -114,15 +116,18 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	}
 
 	var addr string
-	if hasEnforcedSettingSQLAPIAddress {
+	switch {
+	case hasEnforcedSettingSQLAPIAddress:
 		addr = c.sqlAPIAddress
-	} else if overrideEndpoint != "" {
+	case overrideEndpoint != "":
 		addr = overrideEndpoint
-	} else {
+	default:
 		addr = c.sqlAPIAddress
 	}
 	if addr == "" {
-		addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.sqlPort)
+		if addr, err = c.forwarder.getEndpointAddr(c.forwarder.sqlPort); err != nil {
+			return nil, err
+		}
 	}
 
 	dsnConfig := mysql.NewConfig()
@@ -143,6 +148,9 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 			if strings.HasPrefix(addr, "0.0.0.0:") {
 				log.Warn("TiDB reported its address to be 0.0.0.0. Please specify `-advertise-address` command line parameter when running TiDB")
 			}
+			if c.forwarder.sqlProxy.noAliveRemote.Load() {
+				return nil, ErrNoAliveTiDB.NewWithNoMessage()
+			}
 			return nil, ErrTiDBConnFailed.Wrap(err, "failed to connect to TiDB")
 		} else if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == mysqlerr.ER_ACCESS_DENIED_ERROR {
@@ -157,6 +165,8 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 }
 
 func (c *Client) SendGetRequest(path string) ([]byte, error) {
+	var err error
+
 	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
 	hasEnforcedSettingStatusAPIAddress := c.enforcedSettings.Has(EnforcedSettingStatusAPIAddress)
 	// the `tidbOverrideStatusEndpointEnvVar` and the `Client.statusAPIAddress` have the same override priority, if both exist and have not enforced `Client.statusAPIAddress` then an error is returned
@@ -166,17 +176,26 @@ func (c *Client) SendGetRequest(path string) ([]byte, error) {
 	}
 
 	var addr string
-	if hasEnforcedSettingStatusAPIAddress {
-		addr = c.statusAPIAddress
-	} else if overrideEndpoint != "" {
+	switch {
+	case hasEnforcedSettingStatusAPIAddress:
+		addr = c.sqlAPIAddress
+	case overrideEndpoint != "":
 		addr = overrideEndpoint
-	} else {
-		addr = c.statusAPIAddress
+	default:
+		addr = c.sqlAPIAddress
 	}
 	if addr == "" {
-		addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.statusPort)
+		if addr, err = c.forwarder.getEndpointAddr(c.forwarder.statusPort); err != nil {
+			return nil, err
+		}
 	}
 
 	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, path)
-	return c.statusAPIHTTPClient.WithTimeout(c.statusAPITimeout).SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, "TiDB")
+	result, err := c.statusAPIHTTPClient.
+		WithTimeout(c.statusAPITimeout).
+		SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, "TiDB")
+	if err != nil && c.forwarder.statusProxy.noAliveRemote.Load() {
+		return nil, ErrNoAliveTiDB.NewWithNoMessage()
+	}
+	return result, err
 }

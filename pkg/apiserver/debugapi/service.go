@@ -20,12 +20,14 @@ import (
 	"github.com/joomcode/errorx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
 var (
-	ErrNS              = errorx.NewNamespace("error.api.debugapi")
-	ErrComponentClient = ErrNS.NewType("invalid_component_client")
-	ErrEndpointConfig  = ErrNS.NewType("invalid_endpoint_config")
+	ErrNS                = errorx.NewNamespace("error.api.debugapi")
+	ErrComponentClient   = ErrNS.NewType("invalid_component_client")
+	ErrEndpointConfig    = ErrNS.NewType("invalid_endpoint_config")
+	ErrInvalidStatusPort = ErrNS.NewType("invalid_status_port")
 )
 
 func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
@@ -59,29 +61,41 @@ func newService(clientMap *ClientMap) (*Service, error) {
 	return s, nil
 }
 
+type EndpointRequest struct {
+	ID     string            `json:"id"`
+	Host   string            `json:"host"`
+	Port   int               `json:"port"`
+	Params map[string]string `json:"params"`
+}
+
 // @Summary RequestEndpoint send request to tidb/tikv/tiflash/pd http api
 // @Security JwtAuth
+// @Param req body EndpointRequest true "endpoint request param"
 // @Success 200 {object} string
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /debugapi/endpoint [post]
 func (s *Service) RequestEndpoint(c *gin.Context) {
-	query := c.Request.URL.Query()
-	id := query.Get("id")
-	endpoint, ok := s.endpointMap[id]
-	if !ok {
-		_ = c.Error(ErrEndpointConfig.New("invalid endpoint id: %s", id))
+	var req EndpointRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
-	endpointReq, err := endpoint.NewRequest(query)
+	endpoint, ok := s.endpointMap[req.ID]
+	if !ok {
+		_ = c.Error(ErrEndpointConfig.New("invalid endpoint id: %s", req.ID))
+		return
+	}
+
+	endpointReq, err := endpoint.NewRequest(req.Host, req.Port, req.Params)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	resp, err := endpoint.Client.Get(endpointReq)
+	resp, err := endpoint.Client.Send(endpointReq)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -92,7 +106,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 
 // @Summary Get all endpoint configs
 // @Security JwtAuth
-// @Success 200 {array} EndpointAPI
+// @Success 200 {array} EndpointAPIModel
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError

@@ -7,28 +7,23 @@ import { debounce } from 'lodash'
 
 import { AnimatedSkeleton, Card } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import client, { DebugapiEndpointAPI } from '@lib/client'
+import client, { DebugapiEndpointAPIModel } from '@lib/client'
 
 import style from './ApiList.module.less'
-import ApiForm from './ApiForm'
+import ApiForm, { Topology } from './ApiForm'
 
-const useFilterEndpoints = (endpoints?: DebugapiEndpointAPI[]) => {
+const useFilterEndpoints = (endpoints?: DebugapiEndpointAPIModel[]) => {
   const [keywords, setKeywords] = useState('')
   const nonNullEndpoints = useMemo(() => endpoints || [], [endpoints])
   const [filteredEndpoints, setFilteredEndpoints] = useState<
-    DebugapiEndpointAPI[]
+    DebugapiEndpointAPIModel[]
   >(nonNullEndpoints)
 
   useEffect(() => {
     const k = keywords.trim()
     if (!!k) {
       setFilteredEndpoints(
-        nonNullEndpoints.filter(
-          (e) =>
-            e.id?.includes(k) ||
-            e.host?.name?.includes(k) ||
-            e.path?.includes(k)
-        )
+        nonNullEndpoints.filter((e) => e.id?.includes(k) || e.path?.includes(k))
       )
     } else {
       setFilteredEndpoints(nonNullEndpoints)
@@ -43,11 +38,13 @@ const useFilterEndpoints = (endpoints?: DebugapiEndpointAPI[]) => {
 
 export default function Page() {
   const { t } = useTranslation()
-  const sortingOfGroups = useMemo(() => ['tidb', 'tikv', 'tiflash', 'pd'], [])
-  const { data, isLoading } = useClientRequest((reqConfig) =>
+  const {
+    data: endpointData,
+    isLoading: isEndpointLoading,
+  } = useClientRequest((reqConfig) =>
     client.getInstance().debugapiEndpointsGet(reqConfig)
   )
-  const { endpoints, filterBy } = useFilterEndpoints(data)
+  const { endpoints, filterBy } = useFilterEndpoints(endpointData)
 
   const groups = useMemo(
     () =>
@@ -58,9 +55,21 @@ export default function Page() {
         }
         prev[groupName].push(endpoint)
         return prev
-      }, {} as { [group: string]: DebugapiEndpointAPI[] }),
+      }, {} as { [group: string]: DebugapiEndpointAPIModel[] }),
     [endpoints]
   )
+  const sortingOfGroups = useMemo(() => ['tidb', 'tikv', 'tiflash', 'pd'], [])
+  // TODO: other components topology
+  const {
+    data: tidbTopology = [],
+    isLoading: isTopologyLoading,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getTiDBTopology(reqConfig)
+  )
+  const topology: Topology = {
+    tidb: tidbTopology!,
+  }
+
   const EndpointGroups = () =>
     endpoints.length ? (
       <>
@@ -77,7 +86,7 @@ export default function Page() {
                       header={<CustomHeader endpoint={endpoint} t={t} />}
                       key={endpoint.id!}
                     >
-                      <ApiForm endpoint={endpoint} />
+                      <ApiForm endpoint={endpoint} topology={topology} />
                     </Collapse.Panel>
                   ))}
                 </Collapse>
@@ -90,7 +99,7 @@ export default function Page() {
     )
 
   return (
-    <AnimatedSkeleton showSkeleton={isLoading}>
+    <AnimatedSkeleton showSkeleton={isEndpointLoading || isTopologyLoading}>
       <Card>
         <Space>
           <Input
@@ -105,13 +114,13 @@ export default function Page() {
   )
 }
 
-const CustomHeader = ({
+function CustomHeader({
   endpoint,
   t,
 }: {
-  endpoint: DebugapiEndpointAPI
+  endpoint: DebugapiEndpointAPIModel
   t: TFunction
-}) => {
+}) {
   return (
     <div className={style.header}>
       <Space direction="vertical">
@@ -127,9 +136,9 @@ const CustomHeader = ({
 }
 
 // e.g. http://{tidb_ip}/stats/dump/{db}/{table}?queryName={queryName}
-const Schema = ({ endpoint }: { endpoint: DebugapiEndpointAPI }) => {
+function Schema({ endpoint }: { endpoint: DebugapiEndpointAPIModel }) {
   const query =
-    endpoint.query?.reduce((prev, { name }, i) => {
+    endpoint.query_params?.reduce((prev, { name }, i) => {
       if (i === 0) {
         prev += '?'
       }
@@ -138,7 +147,7 @@ const Schema = ({ endpoint }: { endpoint: DebugapiEndpointAPI }) => {
     }, '') || ''
   return (
     <p className={style.schema}>
-      {`http://{${endpoint.host?.name}}${endpoint.path}${query}`}
+      {`http://{${endpoint.component}_host}${endpoint.path}${query}`}
     </p>
   )
 }

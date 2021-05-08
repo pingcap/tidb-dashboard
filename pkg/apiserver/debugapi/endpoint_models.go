@@ -13,28 +13,6 @@
 
 package debugapi
 
-import (
-	"fmt"
-	"net"
-)
-
 var EndpointAPIParamModelText EndpointAPIParamModel = EndpointAPIParamModel{
 	Type: "text",
-}
-
-var EndpointAPIParamModelIPPort EndpointAPIParamModel = EndpointAPIParamModel{
-	Type: "ip_port",
-	Transformer: func(value string) (string, error) {
-		ip, _, err := net.SplitHostPort(value)
-		if err != nil {
-			return "", err
-		}
-
-		ip2 := net.ParseIP(ip)
-		if ip2 == nil {
-			return "", fmt.Errorf("invalid ip: %s", value)
-		}
-
-		return value, nil
-	},
 }

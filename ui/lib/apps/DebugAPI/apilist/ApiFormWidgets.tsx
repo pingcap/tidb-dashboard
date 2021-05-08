@@ -1,56 +1,50 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { Input, Select } from 'antd'
-import client, {
-  DebugapiEndpointAPI,
-  DebugapiEndpointAPIParam,
-} from '@lib/client'
-import { useClientRequest } from '@lib/utils/useClientRequest'
+import { useTranslation } from 'react-i18next'
+import { DebugapiEndpointAPIModel, DebugapiEndpointAPIParam } from '@lib/client'
+import type { Topology } from './ApiForm'
 
-export interface IApiFormWidget {
-  (config: IApiFormWidgetConfig): JSX.Element
+export interface ApiFormWidget {
+  (config: ApiFormWidgetConfig): JSX.Element
 }
 
-export interface IApiFormWidgetConfig {
+export interface ApiFormWidgetConfig {
   param: DebugapiEndpointAPIParam
-  endpoint: DebugapiEndpointAPI
+  endpoint: DebugapiEndpointAPIModel
+  topology: Topology
 }
 
-// TODO: multi component type support
-const IPPortSelect: IApiFormWidget = ({ endpoint }) => {
-  // TODO: cache maybe
-  const { data, error, isLoading } = useClientRequest((reqConfig) =>
-    client.getInstance().getTiDBTopology(reqConfig)
+const TextWidget: ApiFormWidget = ({ param }) => {
+  const { t } = useTranslation()
+  return (
+    <Input placeholder={t(`debug_api.widgets.text`, { param: param.name })} />
   )
+}
 
-  // TODO: restrict to one option only
-  const handleChange = useCallback((val: string[]) => {
-    // console.log(val)
-    // if (val.length > 1) {
-    //   return
-    // }
-  }, [])
+const HostSelectWidget: ApiFormWidget = ({ endpoint, topology }) => {
+  const { t } = useTranslation()
+  const componentEndpoints = topology[endpoint.component!]
 
   return (
     <Select
-      mode="tags"
-      loading={isLoading}
-      placeholder={`Please select or enter the ${endpoint.component} ip with status port`}
-      onChange={handleChange}
+      showSearch
+      placeholder={t(`debug_api.widgets.host_select_placeholder`, {
+        endpointType: endpoint.component,
+      })}
     >
-      {!error &&
-        data?.map((d) => {
-          const val = `${d.ip}:${d.status_port}`
-          return (
-            <Select.Option key={val} value={val}>
-              {val}
-            </Select.Option>
-          )
-        })}
+      {componentEndpoints.map((d) => {
+        const val = `${d.ip}:${d.status_port}`
+        return (
+          <Select.Option key={val} value={val}>
+            {val}
+          </Select.Option>
+        )
+      })}
     </Select>
   )
 }
 
-export const widgetsMap: { [type: string]: IApiFormWidget } = {
-  text: ({ param }) => <Input placeholder={`Please enter the ${param.name}`} />,
-  ip_port: IPPortSelect,
+export const widgetsMap: { [type: string]: ApiFormWidget } = {
+  text: TextWidget,
+  host: HostSelectWidget,
 }

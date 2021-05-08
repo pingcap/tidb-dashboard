@@ -16,7 +16,6 @@ package debugapi
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 	"testing"
 
 	"github.com/joomcode/errorx"
@@ -34,17 +33,11 @@ var _ = Suite(&testSchemaSuite{})
 
 type testSchemaSuite struct{}
 
-var testTiDBIPParam EndpointAPIParam = EndpointAPIParam{
-	Name:  "tidb_ip",
-	Model: EndpointAPIParamModelIPPort,
-}
-
 var testTiDBStatsDump EndpointAPIModel = EndpointAPIModel{
 	ID:        "tidb_stats_dump",
 	Component: model.NodeKindTiDB,
 	Path:      "/stats/dump/{db}/{table}",
 	Method:    http.MethodGet,
-	Host:      testTiDBIPParam,
 	PathParams: []EndpointAPIParam{
 		{
 			Name:  "db",
@@ -57,38 +50,51 @@ var testTiDBStatsDump EndpointAPIModel = EndpointAPIModel{
 	},
 	QueryParams: []EndpointAPIParam{
 		{
-			Name:  "debug",
-			Model: EndpointAPIParamModelText,
+			Name:     "debug",
+			Required: true,
+			Model:    EndpointAPIParamModelText,
 		},
 	},
 }
 
 func (t *testSchemaSuite) Test_new_request_success(c *C) {
-	ip := "127.0.0.1:10080"
 	db := "test"
 	table := "users"
 	debugFlag := "1"
 
-	vals := url.Values{}
-	vals.Set("tidb_ip", ip)
-	vals.Set("db", db)
-	vals.Set("table", table)
-	vals.Set("debug", debugFlag)
-	req, err := testTiDBStatsDump.NewRequest(vals)
+	vals := map[string]string{
+		"db":    db,
+		"table": table,
+		"debug": debugFlag,
+	}
+	req, err := testTiDBStatsDump.NewRequest("127.0.0.1", 10080, vals)
 
 	if err == nil {
-		c.Assert(req.URL.String(), Equals, fmt.Sprintf("//%s/stats/dump/%s/%s?debug=%s", ip, db, table, debugFlag))
+		c.Assert(req.Path, Equals, fmt.Sprintf("/stats/dump/%s/%s", db, table))
+		c.Assert(req.Query, Equals, fmt.Sprintf("debug=%s", debugFlag))
 	} else {
 		c.ExpectFailure(err.Error())
 	}
 }
 
-func (t *testSchemaSuite) Test_new_request_err_param_value_transformed(c *C) {
-	vals := url.Values{}
-	vals.Set("tidb_ip", "invalidIP")
-	vals.Set("db", "test")
-	vals.Set("table", "users")
-	_, err := testTiDBStatsDump.NewRequest(vals)
+func (t *testSchemaSuite) Test_new_request_err_missing_required_path_params(c *C) {
+	vals := map[string]string{
+		"db":    "test",
+		"debug": "1",
+	}
+	_, err := testTiDBStatsDump.NewRequest("127.0.0.1", 10080, vals)
 
-	c.Assert(errorx.IsOfType(err, ErrInvalidParam), Equals, true)
+	c.Log(err)
+	c.Assert(errorx.IsOfType(err, ErrMissingRequiredParam), Equals, true)
+}
+
+func (t *testSchemaSuite) Test_new_request_err_missing_required_query_params(c *C) {
+	vals := map[string]string{
+		"db":    "test",
+		"table": "users",
+	}
+	_, err := testTiDBStatsDump.NewRequest("127.0.0.1", 10080, vals)
+
+	c.Log(err)
+	c.Assert(errorx.IsOfType(err, ErrMissingRequiredParam), Equals, true)
 }

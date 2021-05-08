@@ -14,8 +14,7 @@
 package debugapi
 
 import (
-	"net/http"
-	"strconv"
+	"fmt"
 
 	"go.uber.org/fx"
 
@@ -27,7 +26,8 @@ import (
 )
 
 type Client interface {
-	Get(request *http.Request) ([]byte, error)
+	Send(request *Request) ([]byte, error)
+	Get(request *Request) ([]byte, error)
 }
 
 type ClientMap map[model.NodeKind]Client
@@ -51,19 +51,26 @@ func newClientMap(tidbImpl tidbImplement, tikvImpl tikvImplement, tiflashImpl ti
 	return &clientMap
 }
 
+func defaultSendRequest(client Client, req *Request) ([]byte, error) {
+	switch req.Method {
+	case EndpointMethodGet:
+		return client.Get(req)
+	default:
+		return nil, fmt.Errorf("invalid request method `%s`, host: %s, path: %s", req.Method, req.Host, req.Path)
+	}
+}
+
 type tidbImplement struct {
 	fx.In
 	Client *tidb.Client
 }
 
-func (impl *tidbImplement) Get(request *http.Request) ([]byte, error) {
-	host := request.URL.Hostname()
-	port, err := strconv.Atoi(request.URL.Port())
-	if err != nil {
-		return nil, err
-	}
+func (impl *tidbImplement) Get(req *Request) ([]byte, error) {
+	return impl.Client.WithEnforcedStatusAPIAddress(req.Host, req.Port).SendGetRequest(req.Path)
+}
 
-	return impl.Client.WithEnforcedStatusAPIAddress(host, port).SendGetRequest(request.URL.Path)
+func (impl *tidbImplement) Send(req *Request) ([]byte, error) {
+	return defaultSendRequest(impl, req)
 }
 
 // TODO: tikv/tiflash/pd forwarder impl
@@ -73,14 +80,12 @@ type tikvImplement struct {
 	Client *tikv.Client
 }
 
-func (impl *tikvImplement) Get(request *http.Request) ([]byte, error) {
-	host := request.URL.Hostname()
-	port, err := strconv.Atoi(request.URL.Port())
-	if err != nil {
-		return nil, err
-	}
+func (impl *tikvImplement) Get(req *Request) ([]byte, error) {
+	return impl.Client.SendGetRequest(req.Host, req.Port, req.Path)
+}
 
-	return impl.Client.SendGetRequest(host, port, request.URL.Path)
+func (impl *tikvImplement) Send(req *Request) ([]byte, error) {
+	return defaultSendRequest(impl, req)
 }
 
 type tiflashImplement struct {
@@ -88,14 +93,12 @@ type tiflashImplement struct {
 	Client *tiflash.Client
 }
 
-func (impl *tiflashImplement) Get(request *http.Request) ([]byte, error) {
-	host := request.URL.Hostname()
-	port, err := strconv.Atoi(request.URL.Port())
-	if err != nil {
-		return nil, err
-	}
+func (impl *tiflashImplement) Get(req *Request) ([]byte, error) {
+	return impl.Client.SendGetRequest(req.Host, req.Port, req.Path)
+}
 
-	return impl.Client.SendGetRequest(host, port, request.URL.Path)
+func (impl *tiflashImplement) Send(req *Request) ([]byte, error) {
+	return defaultSendRequest(impl, req)
 }
 
 type pdImplement struct {
@@ -103,6 +106,10 @@ type pdImplement struct {
 	Client *pd.Client
 }
 
-func (impl *pdImplement) Get(request *http.Request) ([]byte, error) {
-	return impl.Client.SendGetRequest(request.URL.Path)
+func (impl *pdImplement) Get(req *Request) ([]byte, error) {
+	return impl.Client.SendGetRequest(req.Path)
+}
+
+func (impl *pdImplement) Send(req *Request) ([]byte, error) {
+	return defaultSendRequest(impl, req)
 }

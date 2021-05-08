@@ -4,6 +4,9 @@ debug_api:
   endpoints_not_found: 找不到对应接口
   form:
     download: 下载
+  widgets:
+    text: 请输入 {{param}}
+    host_select_placeholder: 请选择对应的 {{endpointType}} host
   tidb:
     name: TiDB
     endpoint_ids:

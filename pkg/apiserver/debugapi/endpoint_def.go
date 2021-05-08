@@ -17,17 +17,11 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
-var tidbHostParam EndpointAPIParam = EndpointAPIParam{
-	Name:  "tidb_ip:port",
-	Model: EndpointAPIParamModelIPPort,
-}
-
 var tidbStatsDump EndpointAPIModel = EndpointAPIModel{
 	ID:        "tidb_stats_dump",
 	Component: model.NodeKindTiDB,
 	Path:      "/stats/dump/{db}/{table}",
 	Method:    EndpointMethodGet,
-	Host:      tidbHostParam,
 	PathParams: []EndpointAPIParam{
 		{
 			Name:  "db",
@@ -45,7 +39,6 @@ var tidbStatsDumpWithTimestamp EndpointAPIModel = EndpointAPIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/stats/dump/{db}/{table}/{yyyyMMddHHmmss}",
 	Method:    EndpointMethodGet,
-	Host:      tidbHostParam,
 	PathParams: []EndpointAPIParam{
 		{
 			Name:  "db",
@@ -67,7 +60,6 @@ var tidbConfig EndpointAPIModel = EndpointAPIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/settings",
 	Method:    EndpointMethodGet,
-	Host:      tidbHostParam,
 }
 
 var tidbSchema EndpointAPIModel = EndpointAPIModel{
@@ -75,7 +67,6 @@ var tidbSchema EndpointAPIModel = EndpointAPIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/schema",
 	Method:    EndpointMethodGet,
-	Host:      tidbHostParam,
 }
 
 var tidbSchemaWithDB EndpointAPIModel = EndpointAPIModel{
@@ -83,7 +74,6 @@ var tidbSchemaWithDB EndpointAPIModel = EndpointAPIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/schema/{db}",
 	Method:    EndpointMethodGet,
-	Host:      tidbHostParam,
 	PathParams: []EndpointAPIParam{
 		{
 			Name:  "db",
@@ -97,7 +87,6 @@ var tidbSchemaWithDBTable EndpointAPIModel = EndpointAPIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/schema/{db}/{table}",
 	Method:    EndpointMethodGet,
-	Host:      tidbHostParam,
 	PathParams: []EndpointAPIParam{
 		{
 			Name:  "db",
@@ -115,7 +104,6 @@ var tidbSchemaWithTableID EndpointAPIModel = EndpointAPIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/db-table/{tableID}",
 	Method:    EndpointMethodGet,
-	Host:      tidbHostParam,
 	PathParams: []EndpointAPIParam{
 		{
 			Name:  "tableID",
@@ -129,7 +117,6 @@ var tidbDDLHistory EndpointAPIModel = EndpointAPIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/ddl/history",
 	Method:    EndpointMethodGet,
-	Host:      tidbHostParam,
 }
 
 var tidbInfo EndpointAPIModel = EndpointAPIModel{
@@ -137,7 +124,6 @@ var tidbInfo EndpointAPIModel = EndpointAPIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/info",
 	Method:    EndpointMethodGet,
-	Host:      tidbHostParam,
 }
 
 var tidbInfoAll EndpointAPIModel = EndpointAPIModel{
@@ -145,7 +131,6 @@ var tidbInfoAll EndpointAPIModel = EndpointAPIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/info/all",
 	Method:    EndpointMethodGet,
-	Host:      tidbHostParam,
 }
 
 var tidbRegionsMeta EndpointAPIModel = EndpointAPIModel{
@@ -153,7 +138,6 @@ var tidbRegionsMeta EndpointAPIModel = EndpointAPIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/regions/meta",
 	Method:    EndpointMethodGet,
-	Host:      tidbHostParam,
 }
 
 var endpointAPIList []EndpointAPIModel = []EndpointAPIModel{

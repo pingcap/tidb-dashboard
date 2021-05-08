@@ -93,12 +93,10 @@ export class TableColumnFactory {
     private transPrefix: string,
     private allowColumns: string[] = []
   ) {
-    this.allowColumnsMap = allowColumns
-      .map((f) => f.toLowerCase())
-      .reduce((prev, f) => {
-        prev[f] = true
-        return prev
-      }, {} as { [f: string]: boolean })
+    this.allowColumnsMap = allowColumns.reduce((prev, f) => {
+      prev[f] = true
+      return prev
+    }, {} as { [f: string]: boolean })
   }
 
   control(config: IColumn): Column {

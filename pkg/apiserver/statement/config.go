@@ -80,5 +80,5 @@ func buildConfigUpdateSQL(config interface{}, extract ...string) string {
 	}
 
 	// skip `SQL string formatting (gosec)` lint
-	return "SET " + strings.Join(stmts, ",") // nolints
+	return "SET " + strings.Join(stmts, ", ") // nolints
 }

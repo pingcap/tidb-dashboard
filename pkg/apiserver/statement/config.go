@@ -46,7 +46,7 @@ func buildConfigQuerySQL(config interface{}) string {
 	}
 
 	// skip `SQL string formatting (gosec)` lint
-	return "SELECT " + strings.Join(stmts, ",") // nolints
+	return "SELECT " + strings.Join(stmts, ", ") // nolints
 }
 
 // sql will be built like this, gorm:"column:some_global_var" -> @@GLOBAL.some_global_var = some_global_var_value

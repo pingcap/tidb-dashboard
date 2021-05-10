@@ -12,7 +12,7 @@ import {
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
-import client, { StatementConfig } from '@lib/client'
+import client, { StatementEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { ErrorBar } from '@lib/components'
 
@@ -21,7 +21,7 @@ interface Props {
   onConfigUpdated: () => any
 }
 
-type InternalStatementConfig = StatementConfig & {
+type InternalStatementConfig = StatementEditableConfig & {
   max_refresh_interval: number
   max_history_size: number
 }
@@ -81,8 +81,9 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
   }, [config])
 
   async function updateConfig(values) {
-    const newConfig: StatementConfig = {
+    const newConfig: StatementEditableConfig = {
       enable: values.enable,
+      max_size: values.max_size,
       refresh_interval: values.refresh_interval * 60,
       history_size: values.history_size,
     }
@@ -134,6 +135,12 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
               return (
                 getFieldValue('enable') && (
                   <Form.Item noStyle>
+                    <Form.Item
+                      name="max_size"
+                      label={t('statement.settings.max_size')}
+                    >
+                      <InputNumber min={1} />
+                    </Form.Item>
                     <Form.Item label={t('statement.settings.refresh_interval')}>
                       <Input.Group>
                         <Form.Item noStyle name="refresh_interval">

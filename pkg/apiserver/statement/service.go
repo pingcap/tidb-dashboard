@@ -73,14 +73,22 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	}
 }
 
+type EditableConfig struct {
+	Enable          bool `json:"enable" gorm:"column:tidb_enable_stmt_summary"`
+	RefreshInterval int  `json:"refresh_interval" gorm:"column:tidb_stmt_summary_refresh_interval"`
+	HistorySize     int  `json:"history_size" gorm:"column:tidb_stmt_summary_history_size"`
+	MaxSize         int  `json:"max_size" gorm:"column:tidb_stmt_summary_max_stmt_count"`
+}
+
 // @Summary Get statement configurations
-// @Success 200 {object} statement.Config
+// @Success 200 {object} statement.EditableConfig
 // @Router /statements/config [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) configHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	cfg, err := queryStmtConfig(db)
+	cfg := &EditableConfig{}
+	err := db.Raw(buildConfigQuerySQL(cfg)).Find(cfg).Error
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -89,23 +97,30 @@ func (s *Service) configHandler(c *gin.Context) {
 }
 
 // @Summary Update statement configurations
-// @Param request body statement.Config true "Request body"
+// @Param request body statement.EditableConfig true "Request body"
 // @Success 204 {object} string
 // @Router /statements/config [post]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) modifyConfigHandler(c *gin.Context) {
-	var req Config
-	if err := c.ShouldBindJSON(&req); err != nil {
+	var err error
+	var config EditableConfig
+	if err = c.ShouldBindJSON(&config); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	err := updateStmtConfig(db, &req)
+
+	if !config.Enable {
+		err = db.Exec(buildConfigUpdateSQL(&config, "Enable")).Error
+	} else {
+		err = db.Exec(buildConfigUpdateSQL(&config)).Error
+	}
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
+
 	c.Status(http.StatusNoContent)
 }
 

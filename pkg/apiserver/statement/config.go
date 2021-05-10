@@ -42,7 +42,7 @@ func buildConfigQuerySQL(config interface{}) string {
 			continue
 		}
 		column := utils.GetGormColumnName(gormTag)
-		stmts = append(stmts, fmt.Sprintf("@@GLOBAL.%s as %s", column, column))
+		stmts = append(stmts, fmt.Sprintf("@@GLOBAL.%s AS %s", column, column))
 	}
 
 	// skip `SQL string formatting (gosec)` lint

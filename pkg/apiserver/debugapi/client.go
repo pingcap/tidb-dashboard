@@ -32,15 +32,6 @@ type Client interface {
 
 type ClientMap map[model.NodeKind]Client
 
-func (c *ClientMap) Get(kind model.NodeKind) (Client, bool) {
-	client, ok := (*c)[kind]
-	return client, ok
-}
-
-func (c *ClientMap) Set(kind model.NodeKind, client Client) {
-	(*c)[kind] = client
-}
-
 func newClientMap(tidbImpl tidbImplement, tikvImpl tikvImplement, tiflashImpl tiflashImplement, pdImpl pdImplement) *ClientMap {
 	clientMap := ClientMap{
 		model.NodeKindTiDB:    &tidbImpl,

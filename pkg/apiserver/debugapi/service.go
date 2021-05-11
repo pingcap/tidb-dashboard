@@ -51,9 +51,9 @@ func newService(clientMap *ClientMap) (*Service, error) {
 	s := &Service{endpointMap: map[string]endpoint{}}
 
 	for _, e := range endpointAPIList {
-		client, ok := clientMap.Get(e.Component)
+		client, ok := (*clientMap)[e.Component]
 		if !ok {
-			return nil, ErrComponentClient.New("%s type client not found, id: %s", e.Component, e.ID)
+			panic(ErrComponentClient.New("%s type client not found, id: %s", e.Component, e.ID))
 		}
 		s.endpointMap[e.ID] = endpoint{EndpointAPIModel: e, Client: client}
 	}

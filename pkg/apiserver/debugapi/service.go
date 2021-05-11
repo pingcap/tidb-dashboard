@@ -34,7 +34,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/debugapi")
 	endpoint.Use(auth.MWAuthRequired())
 
-	endpoint.POST("/endpoint", s.RequestEndpoint)
+	endpoint.POST("/request_endpoint", s.RequestEndpoint)
 	endpoint.GET("/endpoints", s.GetEndpointList)
 }
 
@@ -75,7 +75,7 @@ type EndpointRequest struct {
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
-// @Router /debugapi/endpoint [post]
+// @Router /debugapi/request_endpoint [post]
 func (s *Service) RequestEndpoint(c *gin.Context) {
 	var req EndpointRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

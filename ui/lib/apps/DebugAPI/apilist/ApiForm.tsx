@@ -44,7 +44,7 @@ export default function ApiForm({
         setLoading(true)
         const { [endpointHostParamKey]: host, ...params } = values
         const [hostname, port] = host.split(':')
-        const resp = await client.getInstance().debugapiEndpointPost({
+        const resp = await client.getInstance().debugapiRequestEndpointPost({
           id,
           host: hostname,
           port: Number(port),

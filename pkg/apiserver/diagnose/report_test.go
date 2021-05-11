@@ -18,8 +18,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jinzhu/gorm"
 	. "github.com/pingcap/check"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 func TestT(t *testing.T) {
@@ -46,10 +47,8 @@ type testReportSuite struct{}
 //}
 
 func (t *testReportSuite) TestGetTable(c *C) {
-	//cli, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:4000)/test?charset=utf8&parseTime=True&loc=Local")
-	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
+	cli, err := gorm.Open(mysql.Open("root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local"))
 	c.Assert(err, IsNil)
-	defer cli.Close()
 
 	startTime := "2020-03-25 23:00:00"
 	endTime := "2020-03-25 23:05:00"
@@ -61,9 +60,8 @@ func (t *testReportSuite) TestGetTable(c *C) {
 }
 
 func (t *testReportSuite) TestGetCompareTable(c *C) {
-	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
+	cli, err := gorm.Open(mysql.Open("root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local"))
 	c.Assert(err, IsNil)
-	defer cli.Close()
 
 	//startTime1 := "2020-03-12 20:17:00"
 	//endTime1 := "2020-03-12 20:39:00"
@@ -84,9 +82,8 @@ func (t *testReportSuite) TestGetCompareTable(c *C) {
 }
 
 func (t *testReportSuite) TestInspection(c *C) {
-	cli, err := gorm.Open("mysql", "root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local")
+	cli, err := gorm.Open(mysql.Open("root:@tcp(172.16.5.40:4009)/test?charset=utf8&parseTime=True&loc=Local"))
 	c.Assert(err, IsNil)
-	defer cli.Close()
 
 	// affect by big query join
 	startTime1 := "2020-03-08 01:36:00"

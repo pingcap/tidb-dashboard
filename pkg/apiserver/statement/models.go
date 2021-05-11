@@ -16,7 +16,8 @@ package statement
 import (
 	"strings"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
@@ -132,7 +133,7 @@ func extractSchemasFromTableNames(tableNames string) string {
 	return strings.Join(keys, ", ")
 }
 
-func (m *Model) AfterFind() error {
+func (m *Model) AfterFind(db *gorm.DB) error {
 	if len(m.AggTableNames) > 0 {
 		m.RelatedSchemas = extractSchemasFromTableNames(m.AggTableNames)
 	}
@@ -147,12 +148,14 @@ type Field struct {
 	Aggregation string
 }
 
+var gormDefaultNamingStrategy = schema.NamingStrategy{}
+
 func getFieldsAndTags() (stmtFields []Field) {
 	fields := utils.GetFieldsAndTags(Model{}, []string{"related", "agg", "json"})
 
 	for _, f := range fields {
 		sf := Field{
-			ColumnName:  gorm.ToColumnName(f.Name),
+			ColumnName:  gormDefaultNamingStrategy.ColumnName("", f.Name),
 			JSONName:    f.Tags["json"],
 			Related:     []string{},
 			Aggregation: f.Tags["agg"],

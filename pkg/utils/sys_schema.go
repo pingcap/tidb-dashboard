@@ -19,8 +19,8 @@ import (
 	"time"
 
 	"github.com/ReneKroon/ttlcache/v2"
-	"github.com/jinzhu/gorm"
 	"go.uber.org/fx"
+	"gorm.io/gorm"
 )
 
 const (

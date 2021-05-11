@@ -19,7 +19,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 const (
@@ -29,16 +29,20 @@ const (
 	stmtHistorySizeVar     = "tidb_stmt_summary_history_size"
 )
 
+type globalVariable struct {
+	Value string `gorm:"column:value"`
+}
+
 // How to get sql variables by GORM
 // https://github.com/jinzhu/gorm/issues/2616
 func querySQLIntVariable(db *gorm.DB, name string) (int, error) {
-	var values []string
+	var variable globalVariable
 	sql := fmt.Sprintf("SELECT @@GLOBAL.%s as value", name) // nolints
-	err := db.Raw(sql).Pluck("value", &values).Error
+	err := db.Raw(sql).Scan(&variable).Error
 	if err != nil {
 		return 0, err
 	}
-	strVal := values[0]
+	strVal := variable.Value
 	if strVal == "" {
 		return -1, nil
 	}

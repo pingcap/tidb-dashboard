@@ -27,6 +27,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/configuration"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/diagnose"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/logsearch"
@@ -133,6 +134,7 @@ func (s *Service) Start(ctx context.Context) error {
 		profiling.Module,
 		statement.Module,
 		slowquery.Module,
+		debugapi.Module,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			user.RegisterRouter,

@@ -31,7 +31,7 @@ task('webpack:dev', shell.task('yarn react-app-rewired start', { env }))
 
 task('webpack:build', shell.task('yarn react-app-rewired build', { env }))
 
-task('test', shell.task('node -e "console.log(process.env)"', { env }))
+task('test', shell.task('node -e "console.log(process.env)"'))
 
 task('build', series('test'))
 

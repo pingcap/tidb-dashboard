@@ -24,7 +24,8 @@ import (
 )
 
 // incoming configuration field should have the gorm tag `column` used to specify global variables
-// sql will be built like this, gorm:"column:some_global_var" -> @@GLOBAL.some_global_var as some_global_var
+// sql will be built like this,
+// struct { FieldName `gorm:"column:some_global_var"` } -> @@GLOBAL.some_global_var AS some_global_var
 func buildConfigQuerySQL(config interface{}) string {
 	var configType reflect.Type
 	if reflect.ValueOf(config).Kind() == reflect.Ptr {
@@ -45,20 +46,18 @@ func buildConfigQuerySQL(config interface{}) string {
 		stmts = append(stmts, fmt.Sprintf("@@GLOBAL.%s AS %s", column, column))
 	}
 
-	// skip `SQL string formatting (gosec)` lint
-	return "SELECT " + strings.Join(stmts, ", ") // nolints
+	return "SELECT " + strings.Join(stmts, ", ") //nolint:gosec
 }
 
-// sql will be built like this, gorm:"column:some_global_var" -> @@GLOBAL.some_global_var = some_global_var_value
+// sql will be built like this,
+// struct { FieldName `gorm:"column:some_global_var"` } -> @@GLOBAL.some_global_var = @FieldName
+// `extract` means allowed fields' keys, only allowed fields can be kept in built SQL.
 func buildConfigUpdateSQL(config interface{}, extract ...string) string {
 	var configType reflect.Type
-	var configValue reflect.Value
 	if reflect.ValueOf(config).Kind() == reflect.Ptr {
 		configType = reflect.TypeOf(config).Elem()
-		configValue = reflect.ValueOf(config).Elem()
 	} else {
 		configType = reflect.TypeOf(config)
-		configValue = reflect.ValueOf(config)
 	}
 
 	stmts := []string{}
@@ -74,11 +73,9 @@ func buildConfigUpdateSQL(config interface{}, extract ...string) string {
 			continue
 		}
 
-		val := configValue.Field(i)
 		column := utils.GetGormColumnName(gormTag)
-		stmts = append(stmts, fmt.Sprintf("@@GLOBAL.%s = %v", column, val))
+		stmts = append(stmts, fmt.Sprintf("@@GLOBAL.%s = @%s", column, f.Name))
 	}
 
-	// skip `SQL string formatting (gosec)` lint
-	return "SET " + strings.Join(stmts, ", ") // nolints
+	return "SET " + strings.Join(stmts, ", ") //nolint:gosec
 }

@@ -113,9 +113,9 @@ func (s *Service) modifyConfigHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 
 	if !config.Enable {
-		err = db.Exec(buildConfigUpdateSQL(&config, "Enable")).Error
+		err = db.Exec(buildConfigUpdateSQL(&config, "Enable"), &config).Error
 	} else {
-		err = db.Exec(buildConfigUpdateSQL(&config)).Error
+		err = db.Exec(buildConfigUpdateSQL(&config), &config).Error
 	}
 	if err != nil {
 		_ = c.Error(err)

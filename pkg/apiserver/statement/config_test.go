@@ -54,21 +54,21 @@ func (t *testConfigSuite) Test_buildConfigQuerySQL_without_gorm_tag(c *C) {
 }
 
 func (t *testConfigSuite) Test_buildConfigUpdateSQL_struct_success(c *C) {
-	testConfigStmt := "SET @@GLOBAL.tidb_enable_stmt_summary = true, @@GLOBAL.tidb_stmt_summary_refresh_interval = 1800"
+	testConfigStmt := "SET @@GLOBAL.tidb_enable_stmt_summary = @Enable, @@GLOBAL.tidb_stmt_summary_refresh_interval = @RefreshInterval"
 	c.Assert(buildConfigUpdateSQL(testConfig{Enable: true, RefreshInterval: 1800}), Equals, testConfigStmt)
 }
 
 func (t *testConfigSuite) Test_buildConfigUpdateSQL_ptr_success(c *C) {
-	testConfigStmt := "SET @@GLOBAL.tidb_enable_stmt_summary = true, @@GLOBAL.tidb_stmt_summary_refresh_interval = 1800"
+	testConfigStmt := "SET @@GLOBAL.tidb_enable_stmt_summary = @Enable, @@GLOBAL.tidb_stmt_summary_refresh_interval = @RefreshInterval"
 	c.Assert(buildConfigUpdateSQL(&testConfig{Enable: true, RefreshInterval: 1800}), Equals, testConfigStmt)
 }
 
 func (t *testConfigSuite) Test_buildConfigUpdateSQL_without_gorm_tag(c *C) {
-	testConfigStmt := "SET @@GLOBAL.tidb_enable_stmt_summary = true"
+	testConfigStmt := "SET @@GLOBAL.tidb_enable_stmt_summary = @Enable"
 	c.Assert(buildConfigUpdateSQL(&testConfig2{Enable: true, RefreshInterval: 1800}), Equals, testConfigStmt)
 }
 
 func (t *testConfigSuite) Test_buildConfigUpdateSQL_extract_fields(c *C) {
-	testConfigStmt := "SET @@GLOBAL.tidb_enable_stmt_summary = true"
+	testConfigStmt := "SET @@GLOBAL.tidb_enable_stmt_summary = @Enable"
 	c.Assert(buildConfigUpdateSQL(&testConfig{Enable: true, RefreshInterval: 1800}, "Enable"), Equals, testConfigStmt)
 }

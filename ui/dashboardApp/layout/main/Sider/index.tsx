@@ -57,7 +57,10 @@ function Sider({
     client.getInstance().infoGet(reqConfig)
   )
 
-  const debugSubMenuItems = [useAppMenuItem(registry, 'instance_profiling')]
+  const debugSubMenuItems = [
+    useAppMenuItem(registry, 'instance_profiling'),
+    useAppMenuItem(registry, 'debug_api'),
+  ]
   const debugSubMenu = (
     <Menu.SubMenu
       key="debug"

@@ -25,7 +25,7 @@ keyviz:
     open_setting: Open Settings
     close_keyviz: Disable Key Visualizer Feature
     close_keyviz_warning: Are you sure want to disable this feature? Current visual reports will be cleared.
-    switch: Enable
+    switch: Enable Feature
     switch_tooltip: Whether Key Visualizer feature is enabled. When enabled, there will be small overhead.
     policy: Policy
     policy_db: TiDB

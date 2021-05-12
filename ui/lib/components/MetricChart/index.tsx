@@ -241,9 +241,10 @@ export default function MetricChart({
       animation: false,
       grid: {
         top: 10,
-        left: 60,
+        left: 10,
         right: 0,
         bottom: 60,
+        containLabel: true,
       },
       series: s,
     }

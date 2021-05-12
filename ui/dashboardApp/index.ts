@@ -32,6 +32,7 @@ import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
 import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
 import AppConfiguration from '@lib/apps/Configuration/index.meta'
+import AppDebugAPI from '@lib/apps/DebugAPI/index.meta'
 // import __APP_NAME__ from '@lib/apps/__APP_NAME__/index.meta'
 // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
@@ -118,6 +119,7 @@ async function main() {
     .register(AppInstanceProfiling)
     .register(AppQueryEditor)
     .register(AppConfiguration)
+    .register(AppDebugAPI)
   // .register(__APP_NAME__)
   // NOTE: Don't remove above comment line, it is a placeholder for code generator
 

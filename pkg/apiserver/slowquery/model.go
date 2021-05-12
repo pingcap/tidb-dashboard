@@ -14,8 +14,6 @@
 package slowquery
 
 import (
-	"gorm.io/gorm/schema"
-
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
@@ -111,7 +109,7 @@ func getFieldsAndTags() (slowQueryFields []Field) {
 
 	for _, f := range fields {
 		sqf := Field{
-			ColumnName: getGormColumnName(f.Tags["gorm"]),
+			ColumnName: utils.GetGormColumnName(f.Tags["gorm"]),
 			JSONName:   f.Tags["json"],
 			Projection: f.Tags["proj"],
 		}
@@ -120,11 +118,4 @@ func getFieldsAndTags() (slowQueryFields []Field) {
 	}
 
 	return
-}
-
-func getGormColumnName(gormStr string) string {
-	gormStrMap := schema.ParseTagSetting(gormStr, ";")
-	// The key will be converted to uppercase in:
-	// https://github.com/go-gorm/gorm/blob/master/schema/utils.go#L33
-	return gormStrMap["COLUMN"]
 }

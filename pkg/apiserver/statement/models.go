@@ -22,12 +22,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
-type Config struct {
-	Enable          bool `json:"enable"`
-	RefreshInterval int  `json:"refresh_interval"`
-	HistorySize     int  `json:"history_size"`
-}
-
 // TimeRange represents a range of time
 type TimeRange struct {
 	BeginTime int64 `json:"begin_time"`

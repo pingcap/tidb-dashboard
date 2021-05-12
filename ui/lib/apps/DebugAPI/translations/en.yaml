@@ -1,7 +1,10 @@
 debug_api:
-  nav_title: Debugging API
-  keyword_search: Keyword Search
+  nav_title: Debug Data
+  keyword_search: Filter by keyword
   endpoints_not_found: Endpoints not found
+  warning_header:
+    title: Warning
+    body: These debug endpoints and data are largely internal and intended for use by TiDB developers. Please use this feature under the guidance of TiDB technical support.
   form:
     download: Download
   widgets:

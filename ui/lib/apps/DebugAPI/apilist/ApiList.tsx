@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Collapse, Space, Input, Empty } from 'antd'
+import { Collapse, Space, Input, Empty, Alert } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { SearchOutlined } from '@ant-design/icons'
@@ -101,13 +101,19 @@ export default function Page() {
   return (
     <AnimatedSkeleton showSkeleton={isEndpointLoading || isTopologyLoading}>
       <Card>
-        <Space>
-          <Input
-            placeholder={t(`debug_api.keyword_search`)}
-            prefix={<SearchOutlined />}
-            onChange={(e) => filterBy(e.target.value)}
-          />
-        </Space>
+        <Alert
+          message={t(`debug_api.warning_header.title`)}
+          description={t(`debug_api.warning_header.body`)}
+          type="warning"
+          showIcon
+        />
+      </Card>
+      <Card>
+        <Input
+          placeholder={t(`debug_api.keyword_search`)}
+          prefix={<SearchOutlined />}
+          onChange={(e) => filterBy(e.target.value)}
+        />
       </Card>
       <EndpointGroups />
     </AnimatedSkeleton>

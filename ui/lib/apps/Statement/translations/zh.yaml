@@ -59,6 +59,8 @@ statement:
     history_size_tooltip: 扩大时间窗个数可以保留更长时间的执行历史，但也会引入更大的内存开销。
     keep_duration: SQL 语句历史保留时长
     keep_duration_tooltip: 时间窗大小 × 时间窗个数
+    internal_query: 收集内部查询
+    internal_query_tooltip: 开启后 TiDB 内部执行的 SQL 语句信息也将被收集。
     actions:
       save: 保存
       close: 关闭

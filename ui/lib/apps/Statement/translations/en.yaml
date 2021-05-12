@@ -59,6 +59,8 @@ statement:
     history_size_tooltip: By enlarging this setting more statement history will be preserved, with larger memory cost.
     keep_duration: SQL Statement History Size
     keep_duration_tooltip: Window Size × Number of Windows
+    internal_query: Collect Internal Queries
+    internal_query_tooltip: After enabled, TiDB internal queries will be collected as well.
     actions:
       save: Save
       close: Close

@@ -46,6 +46,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
           max_size: values.max_size,
           refresh_interval: values.refresh_interval * 60,
           history_size: values.history_size,
+          internal_query: values.internal_query,
         }
         try {
           setSubmitting(true)
@@ -83,12 +84,10 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
         <Form
           layout="vertical"
           initialValues={{
-            enable: initialConfig.enable ?? false,
-            max_size: initialConfig.max_size ?? 0,
+            ...initialConfig,
             refresh_interval: Math.floor(
               (initialConfig.refresh_interval ?? 0) / 60
             ),
-            history_size: initialConfig.history_size ?? 0,
           }}
           onFinish={handleSubmit}
         >
@@ -170,6 +169,14 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                       const min = totalMins - day * 24 * 60 - hour * 60
                       return `${day} day ${hour} hour ${min} min`
                     }}
+                  </Form.Item>
+                  <Form.Item
+                    label={t('statement.settings.internal_query')}
+                    extra={t('statement.settings.internal_query_tooltip')}
+                    name="internal_query"
+                    valuePropName="checked"
+                  >
+                    <Switch />
                   </Form.Item>
                 </>
               )

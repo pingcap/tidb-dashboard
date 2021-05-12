@@ -78,6 +78,7 @@ type EditableConfig struct {
 	RefreshInterval int  `json:"refresh_interval" gorm:"column:tidb_stmt_summary_refresh_interval"`
 	HistorySize     int  `json:"history_size" gorm:"column:tidb_stmt_summary_history_size"`
 	MaxSize         int  `json:"max_size" gorm:"column:tidb_stmt_summary_max_stmt_count"`
+	InternalQuery   bool `json:"internal_query" gorm:"column:tidb_stmt_summary_internal_query"`
 }
 
 // @Summary Get statement configurations

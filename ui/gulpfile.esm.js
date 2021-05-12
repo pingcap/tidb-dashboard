@@ -6,7 +6,7 @@ import { getUserAgentRegExp } from 'browserslist-useragent-regexp'
 
 const env = {
   REACT_APP_COMMIT_HASH:
-    execSync('git rev-parse --short HEAD').toString() || 'unknown',
+    execSync('git rev-parse --short HEAD').toString().trim() || 'unknown',
 }
 
 task('swagger:generate_spec', shell.task('../scripts/generate_swagger_spec.sh'))
@@ -27,11 +27,13 @@ task('swagger:watch', () =>
   watch(['../cmd/**/*.go', '../pkg/**/*.go'], series('swagger:generate'))
 )
 
-task('webpack:dev', shell.task('yarn react-app-rewired start'))
+task('webpack:dev', shell.task('yarn react-app-rewired start', { env }))
 
-task('webpack:build', shell.task('yarn react-app-rewired build'))
+task('webpack:build', shell.task('yarn react-app-rewired build', { env }))
 
-task('build', series('swagger:generate', 'webpack:build'))
+task('build', series('swagger:generate', 'webpack:build', 'test'))
+
+task('test', shell.task('node -e "console.log(process.env)"', { env }))
 
 task(
   'dev',

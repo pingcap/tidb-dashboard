@@ -178,13 +178,15 @@ export default function StatementsOverview() {
                 }
               />
             )}
-            <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-              {loadingStatements ? (
-                <LoadingOutlined />
-              ) : (
-                <ReloadOutlined onClick={refresh} />
-              )}
-            </Tooltip>
+            {enable && (
+              <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
+                {loadingStatements ? (
+                  <LoadingOutlined />
+                ) : (
+                  <ReloadOutlined onClick={refresh} />
+                )}
+              </Tooltip>
+            )}
             <Tooltip title={t('statement.settings.title')}>
               <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>

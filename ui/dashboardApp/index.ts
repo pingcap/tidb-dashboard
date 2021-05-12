@@ -11,7 +11,10 @@ import * as routing from '@lib/utils/routing'
 import * as auth from '@lib/utils/auth'
 import * as i18n from '@lib/utils/i18n'
 import { saveAppOptions, loadAppOptions } from '@lib/utils/appOptions'
-import * as telemetry from '@lib/utils/telemetry'
+import {
+  initSentryRoutingInstrument,
+  applySentryTracingInterceptor,
+} from '@lib/utils/sentryHelpers'
 import client, { ErrorStrategy, InfoInfoResponse } from '@lib/client'
 
 import LayoutMain from '@dashboard/layout/main'
@@ -28,6 +31,7 @@ import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
 import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
 import AppConfiguration from '@lib/apps/Configuration/index.meta'
+import AppDebugAPI from '@lib/apps/DebugAPI/index.meta'
 // import __APP_NAME__ from '@lib/apps/__APP_NAME__/index.meta'
 // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
@@ -65,7 +69,11 @@ async function main() {
     return
   }
 
-  await telemetry.init(info)
+  if (info?.enable_telemetry) {
+    initSentryRoutingInstrument()
+    const instance = client.getAxiosInstance()
+    applySentryTracingInterceptor(instance)
+  }
 
   const registry = new AppRegistry(options)
 
@@ -109,6 +117,7 @@ async function main() {
     .register(AppInstanceProfiling)
     .register(AppQueryEditor)
     .register(AppConfiguration)
+    .register(AppDebugAPI)
   // .register(__APP_NAME__)
   // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
@@ -124,18 +133,8 @@ async function main() {
     }
   })
 
-  let preRoute = ''
-  window.addEventListener('single-spa:routing-event', () => {
+  window.addEventListener('single-spa:first-mount', () => {
     removeSpinner()
-
-    const curRoute = routing.getPathInLocationHash()
-    if (curRoute !== preRoute) {
-      telemetry.mixpanel.register({
-        $current_url: curRoute,
-      })
-      telemetry.mixpanel.track('PageChange')
-      preRoute = curRoute
-    }
   })
 
   singleSpa.start()

@@ -144,6 +144,7 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
                   <Form.Item
                     name="auto_collection_disabled"
                     label={t('keyviz.settings.switch')}
+                    extra={t('keyviz.settings.switch_tooltip')}
                     {...negateSwitchProps}
                   >
                     <Switch />

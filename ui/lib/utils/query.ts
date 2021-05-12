@@ -25,3 +25,7 @@ export function buildQueryFn<T = IQueryParams>() {
     return p.toString()
   }
 }
+
+export function stripQueryString(url: string) {
+  return url.split('?')[0]
+}

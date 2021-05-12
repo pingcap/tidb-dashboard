@@ -26,7 +26,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
-	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
 const (
@@ -53,10 +52,8 @@ type StartRequestSession struct {
 
 type ServiceParams struct {
 	fx.In
-	Config        *config.Config
 	ConfigManager *config.DynamicConfigManager
 	LocalStore    *dbstore.DB
-	HTTPClient    *httpc.Client
 }
 
 type Service struct {
@@ -65,13 +62,14 @@ type Service struct {
 	sessionCh     chan *StartRequestSession
 	lastTaskGroup *TaskGroup
 	tasks         sync.Map
+	fetchers      *fetchers
 }
 
-func NewService(lc fx.Lifecycle, p ServiceParams) (*Service, error) {
+var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers) (*Service, error) {
 	if err := autoMigrate(p.LocalStore); err != nil {
 		return nil, err
 	}
-	s := &Service{params: p}
+	s := &Service{params: p, fetchers: fts}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.wg.Add(1)
@@ -88,7 +86,7 @@ func NewService(lc fx.Lifecycle, p ServiceParams) (*Service, error) {
 	})
 
 	return s, nil
-}
+})
 
 func (s *Service) serviceLoop(ctx context.Context) {
 	cfgCh := s.params.ConfigManager.NewPushChannel()
@@ -161,7 +159,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 
 	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		t := NewTask(ctx, taskGroup, target, s.params.Config.GetClusterHTTPScheme())
+		t := NewTask(ctx, taskGroup, target, s.fetchers)
 		s.params.LocalStore.Create(t.TaskModel)
 		s.tasks.Store(t.ID, t)
 		tasks = append(tasks, t)
@@ -175,7 +173,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 			wg.Add(1)
 			go func(idx int) {
 				defer wg.Done()
-				tasks[idx].run(s.params.HTTPClient)
+				tasks[idx].run()
 				s.tasks.Delete(tasks[idx].ID)
 			}(i)
 		}

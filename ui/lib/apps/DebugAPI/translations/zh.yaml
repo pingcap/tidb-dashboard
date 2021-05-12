@@ -1,0 +1,26 @@
+debug_api:
+  nav_title: 内部调试数据
+  keyword_search: 按关键字过滤接口
+  endpoints_not_found: 找不到对应接口
+  warning_header:
+    title: 警告
+    body: 本页面提供的调试接口主要面向 TiDB 开发者、提供数据库内部运行数据。请在 TiDB 技术支持的指导下使用本功能。
+  form:
+    download: 下载
+  widgets:
+    text: 请输入 {{param}}
+    host_select_placeholder: 请选择对应的 {{endpointType}} host
+  tidb:
+    name: TiDB
+    endpoint_ids:
+      tidb_stats_dump: Stats Dump
+      tidb_stats_dump_timestamp: Stats Dump With Timestamp
+      tidb_config: Current TiDB Config
+      tidb_schema: TiDB Schema
+      tidb_schema_db: DB Schema
+      tidb_schema_db_table: Table Schema
+      tidb_schema_tableid: Table Schema By Table ID
+      tidb_ddl_history: DDL History
+      tidb_info: Info
+      tidb_info_all: All Info
+      tidb_regions_meta: Regions Meta

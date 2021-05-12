@@ -17,6 +17,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"time"
 
 	"go.uber.org/fx"
@@ -66,10 +67,10 @@ func (c *Client) WithTimeout(timeout time.Duration) *Client {
 
 func (c *Client) SendGetRequest(host string, statusPort int, path string) ([]byte, error) {
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, path)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, "GET", nil, ErrTiKVClientRequestFailed, "TiKV")
+	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiKVClientRequestFailed, "TiKV")
 }
 
 func (c *Client) SendPostRequest(host string, statusPort int, path string, body io.Reader) ([]byte, error) {
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, path)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, "POST", body, ErrTiKVClientRequestFailed, "TiKV")
+	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrTiKVClientRequestFailed, "TiKV")
 }

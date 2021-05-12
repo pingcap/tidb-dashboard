@@ -49,11 +49,18 @@ statement:
     open_setting: 打开设置
     close_statement: 关闭 SQL 语句分析功能
     close_statement_warning: 确认要关闭该功能吗？关闭后现有历史记录也将被清空！
-    switch: 总开关
-    max_size: LRU 容量
-    refresh_interval: 收集的时间窗口长度
-    history_size: 保留的时间窗口个数
-    keep_duration: 数据保留总时长
+    switch: 启用功能
+    switch_tooltip: 是否启用 SQL 语句分析功能，关闭后将不能使用 SQL 语句分析功能，但能提升少量 TiDB 性能。
+    max_size: 最大收集 SQL 语句个数
+    max_size_tooltip: 收集的 SQL 语句个数上限，当实际执行的 SQL 语句种类超过设定个数后最早执行的 SQL 语句信息将被丢弃。若您发现界面上呈现的 SQL 语句信息不完整，建议在内存允许的情况下调大本参数。
+    refresh_interval: 时间窗大小 (min)
+    refresh_interval_tooltip: 缩小时间窗大小可以使得选择的时间范围更精细。
+    history_size: 时间窗个数
+    history_size_tooltip: 扩大时间窗个数可以保留更长时间的执行历史，但也会引入更大的内存开销。
+    keep_duration: SQL 语句历史保留时长
+    keep_duration_tooltip: 时间窗大小 × 时间窗个数
+    internal_query: 收集内部查询
+    internal_query_tooltip: 开启后 TiDB 内部执行的 SQL 语句信息也将被收集。
     actions:
       save: 保存
       close: 关闭

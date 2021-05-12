@@ -86,6 +86,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
       max_size: values.max_size,
       refresh_interval: values.refresh_interval * 60,
       history_size: values.history_size,
+      internal_query: values.internal_query,
     }
     try {
       setSubmitting(true)
@@ -126,6 +127,13 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
             label={t('statement.settings.switch')}
           >
             <Switch />
+          </Form.Item>
+          <Form.Item
+            name="internal_query"
+            valuePropName="checked"
+            label={t('statement.settings.internal_query')}
+          >
+            <Switch size="small" />
           </Form.Item>
           <Form.Item
             noStyle

@@ -50,6 +50,7 @@ statement:
     close_statement: Disable Statement Feature
     close_statement_warning: Are you sure want to disable this feature? Current statement history will be cleared.
     switch: Enable
+    internal_query: Internal Query
     max_size: Max LRU Size
     refresh_interval: Collect Time Window Size
     history_size: Retain Time Window Counts

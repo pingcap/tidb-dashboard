@@ -50,6 +50,7 @@ statement:
     close_statement: 关闭 SQL 语句分析功能
     close_statement_warning: 确认要关闭该功能吗？关闭后现有历史记录也将被清空！
     switch: 总开关
+    internal_query: 内部查询
     max_size: LRU 容量
     refresh_interval: 收集的时间窗口长度
     history_size: 保留的时间窗口个数

@@ -61,10 +61,7 @@ func (TaskGroupModel) TableName() string {
 }
 
 func autoMigrate(db *dbstore.DB) error {
-	if err := db.AutoMigrate(&TaskModel{}); err != nil {
-		return err
-	}
-	if err := db.AutoMigrate(&TaskGroupModel{}); err != nil {
+	if err := db.AutoMigrate(&TaskModel{}, &TaskGroupModel{}); err != nil {
 		return err
 	}
 	return nil

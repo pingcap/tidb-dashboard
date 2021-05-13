@@ -224,10 +224,12 @@ func (s *AuthService) authSQLForm(f *authenticateForm) (*utils.SessionUser, erro
 		// tidb.ErrTiDBAuthFailed
 		return nil, err
 	}
-	sqlDB, err := db.DB()
-	if err == nil {
-		defer sqlDB.Close() //nolint:errcheck
-	}
+	defer func() {
+		sqlDB, err := db.DB()
+		if err == nil {
+			sqlDB.Close()
+		}
+	}()
 
 	return &utils.SessionUser{
 		HasTiDBAuth:  true,

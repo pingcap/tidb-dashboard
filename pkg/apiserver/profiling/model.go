@@ -61,10 +61,7 @@ func (TaskGroupModel) TableName() string {
 }
 
 func autoMigrate(db *dbstore.DB) error {
-	if err := db.AutoMigrate(&TaskModel{}, &TaskGroupModel{}); err != nil {
-		return err
-	}
-	return nil
+	return db.AutoMigrate(&TaskModel{}, &TaskGroupModel{})
 }
 
 // Task is the unit to fetch profiling information.

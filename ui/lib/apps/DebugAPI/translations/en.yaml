@@ -7,6 +7,7 @@ debug_api:
     body: These debug endpoints and data are largely internal and intended for use by TiDB developers. Please use this feature under the guidance of TiDB technical support.
   form:
     download: Download
+    reset: Reset
   widgets:
     text: Please enter the {{param}}
     host_select_placeholder: Please select the {{endpointType}} host

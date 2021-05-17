@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Form, Button } from 'antd'
-import { DownloadOutlined } from '@ant-design/icons'
+import { Form, Button, Space, Tooltip, Row, Col } from 'antd'
+import { DownloadOutlined, UndoOutlined } from '@ant-design/icons'
 import client, {
   DebugapiEndpointAPIModel,
   DebugapiEndpointAPIParam,
@@ -11,15 +11,6 @@ import { ApiFormWidgetConfig, widgetsMap } from './ApiFormWidgets'
 
 export interface Topology {
   tidb: TopologyTiDBInfo[]
-}
-
-const formItemLayout = {
-  labelCol: { offset: 1 },
-  wrapperCol: { offset: 1 },
-}
-
-const buttonItemLayout = {
-  wrapperCol: { offset: 1 },
 }
 
 export default function ApiForm({
@@ -94,27 +85,50 @@ export default function ApiForm({
   )
 
   return (
-    <Form {...formItemLayout} layout="vertical" form={form} onFinish={download}>
-      <EndpointHost />
-      {params.map((param) => (
-        <ApiFormItem
-          key={param.name}
-          endpoint={endpoint}
-          param={param}
-          topology={topology}
-        ></ApiFormItem>
-      ))}
-      <Form.Item {...buttonItemLayout}>
-        <Button
-          type="primary"
-          loading={loading}
-          icon={<DownloadOutlined />}
-          htmlType="submit"
-        >
-          {t('debug_api.form.download')}
-        </Button>
+    <Form layout="vertical" form={form} onFinish={download}>
+      <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+        <FormItemCol>
+          <EndpointHost />
+        </FormItemCol>
+        {params.map((param) => (
+          <FormItemCol>
+            <ApiFormItem
+              key={param.name}
+              endpoint={endpoint}
+              param={param}
+              topology={topology}
+            ></ApiFormItem>
+          </FormItemCol>
+        ))}
+      </Row>
+      <Form.Item>
+        <Space>
+          <Button
+            type="primary"
+            loading={loading}
+            icon={<DownloadOutlined />}
+            htmlType="submit"
+          >
+            {t('debug_api.form.download')}
+          </Button>
+          <Tooltip title={t('debug_api.form.reset')}>
+            <Button
+              icon={<UndoOutlined />}
+              htmlType="button"
+              onClick={() => form.resetFields()}
+            />
+          </Tooltip>
+        </Space>
       </Form.Item>
     </Form>
+  )
+}
+
+function FormItemCol(props: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <Col span={24} md={12} xl={8} xxl={6}>
+      {props.children}
+    </Col>
   )
 }
 

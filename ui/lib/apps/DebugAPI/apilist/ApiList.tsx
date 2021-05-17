@@ -78,7 +78,12 @@ export default function Page() {
           .map((sortKey) => {
             const g = groups[sortKey]
             return (
-              <Card key={sortKey} title={t(`debug_api.${sortKey}.name`)}>
+              <Card
+                noMarginLeft
+                noMarginRight
+                key={sortKey}
+                title={t(`debug_api.${sortKey}.name`)}
+              >
                 <Collapse ghost>
                   {g.map((endpoint) => (
                     <Collapse.Panel
@@ -99,7 +104,7 @@ export default function Page() {
     )
 
   return (
-    <AnimatedSkeleton showSkeleton={isEndpointLoading || isTopologyLoading}>
+    <>
       <Card>
         <Alert
           message={t(`debug_api.warning_header.title`)}
@@ -110,13 +115,18 @@ export default function Page() {
       </Card>
       <Card>
         <Input
+          style={{ maxWidth: 450 }}
           placeholder={t(`debug_api.keyword_search`)}
           prefix={<SearchOutlined />}
           onChange={(e) => filterBy(e.target.value)}
         />
       </Card>
-      <EndpointGroups />
-    </AnimatedSkeleton>
+      <Card>
+        <AnimatedSkeleton showSkeleton={isEndpointLoading || isTopologyLoading}>
+          <EndpointGroups />
+        </AnimatedSkeleton>
+      </Card>
+    </>
   )
 }
 

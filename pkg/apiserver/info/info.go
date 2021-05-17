@@ -93,10 +93,6 @@ func (s *Service) whoamiHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-type databaseResponse struct {
-	Databases string `gorm:"column:Databases"`
-}
-
 // @ID infoListDatabases
 // @Summary List all databases
 // @Success 200 {object} []string
@@ -104,8 +100,11 @@ type databaseResponse struct {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) databasesHandler(c *gin.Context) {
+	type databaseSchemas struct {
+		Databases string `gorm:"column:Databases"`
+	}
+	var result []databaseSchemas
 	db := utils.GetTiDBConnection(c)
-	var result []databaseResponse
 	err := db.Raw("SHOW DATABASES").Scan(&result).Error
 	if err != nil {
 		_ = c.Error(err)

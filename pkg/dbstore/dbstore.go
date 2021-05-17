@@ -26,6 +26,7 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
@@ -53,11 +54,7 @@ func NewDBStore(lc fx.Lifecycle, config *config.Config) (*DB, error) {
 
 	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {
-			sqlDB, err := db.DB.DB()
-			if err != nil {
-				return err
-			}
-			return sqlDB.Close()
+			return utils.CloseTiDBConnection(db.DB)
 		},
 	})
 

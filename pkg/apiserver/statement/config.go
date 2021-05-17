@@ -26,56 +26,54 @@ import (
 // incoming configuration field should have the gorm tag `column` used to specify global variables
 // sql will be built like this,
 // struct { FieldName `gorm:"column:some_global_var"` } -> @@GLOBAL.some_global_var AS some_global_var
-func buildConfigQuerySQL(config interface{}) string {
-	var configType reflect.Type
-	if reflect.ValueOf(config).Kind() == reflect.Ptr {
-		configType = reflect.TypeOf(config).Elem()
-	} else {
-		configType = reflect.TypeOf(config)
-	}
-
-	stmts := []string{}
-	fNum := configType.NumField()
-	for i := 0; i < fNum; i++ {
-		f := configType.Field(i)
+func buildGlobalConfigProjectionSelectSQL(config interface{}) string {
+	str := buildStringByStructField(config, func(f reflect.StructField) (string, bool) {
 		gormTag, ok := f.Tag.Lookup("gorm")
 		if !ok {
-			continue
+			return "", false
 		}
 		column := utils.GetGormColumnName(gormTag)
-		stmts = append(stmts, fmt.Sprintf("@@GLOBAL.%s AS %s", column, column))
-	}
-
-	return "SELECT " + strings.Join(stmts, ", ") //nolint:gosec
+		return fmt.Sprintf("@@GLOBAL.%s AS %s", column, column), true
+	}, ", ")
+	return "SELECT " + str //nolint:gosec
 }
 
 // sql will be built like this,
 // struct { FieldName `gorm:"column:some_global_var"` } -> @@GLOBAL.some_global_var = @FieldName
-// `extract` means allowed fields' keys, only allowed fields can be kept in built SQL.
-func buildConfigUpdateSQL(config interface{}, extract ...string) string {
-	var configType reflect.Type
-	if reflect.ValueOf(config).Kind() == reflect.Ptr {
-		configType = reflect.TypeOf(config).Elem()
+// `allowedFields` means only allowed fields can be kept in built SQL.
+func buildGlobalConfigNamedArgsUpdateSQL(config interface{}, allowedFields ...string) string {
+	str := buildStringByStructField(config, func(f reflect.StructField) (string, bool) {
+		// extract fields on demand
+		if len(allowedFields) != 0 && !funk.ContainsString(allowedFields, f.Name) {
+			return "", false
+		}
+
+		gormTag, ok := f.Tag.Lookup("gorm")
+		if !ok {
+			return "", false
+		}
+		column := utils.GetGormColumnName(gormTag)
+		return fmt.Sprintf("@@GLOBAL.%s = @%s", column, f.Name), true
+	}, ", ")
+	return "SET " + str //nolint:gosec
+}
+
+func buildStringByStructField(i interface{}, buildFunc func(f reflect.StructField) (string, bool), sep string) string {
+	var t reflect.Type
+	if reflect.ValueOf(i).Kind() == reflect.Ptr {
+		t = reflect.TypeOf(i).Elem()
 	} else {
-		configType = reflect.TypeOf(config)
+		t = reflect.TypeOf(i)
 	}
 
-	stmts := []string{}
-	fNum := configType.NumField()
+	strs := []string{}
+	fNum := t.NumField()
 	for i := 0; i < fNum; i++ {
-		f := configType.Field(i)
-		// extract fields on demand
-		if len(extract) != 0 && !funk.ContainsString(extract, f.Name) {
-			continue
-		}
-		gormTag, ok := f.Tag.Lookup("gorm")
+		str, ok := buildFunc(t.Field(i))
 		if !ok {
 			continue
 		}
-
-		column := utils.GetGormColumnName(gormTag)
-		stmts = append(stmts, fmt.Sprintf("@@GLOBAL.%s = @%s", column, f.Name))
+		strs = append(strs, str)
 	}
-
-	return "SET " + strings.Join(stmts, ", ") //nolint:gosec
+	return strings.Join(strs, sep)
 }

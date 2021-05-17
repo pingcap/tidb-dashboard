@@ -134,7 +134,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 	db := utils.TakeTiDBConnection(c)
 
 	go func() {
-		defer utils.RemoveAndCloseTiDBConnFrom(c) //nolint:errcheck
+		defer utils.CloseTiDBConnection(db) //nolint:errcheck
 
 		var tables []*TableDef
 		if compareStartTime == nil || compareEndTime == nil {
@@ -241,7 +241,7 @@ func (s *Service) genDiagnosisHandler(c *gin.Context) {
 	}
 
 	db := utils.TakeTiDBConnection(c)
-	defer utils.RemoveAndCloseTiDBConnFrom(c) //nolint:errcheck
+	defer utils.CloseTiDBConnection(db) //nolint:errcheck
 	table, err := GetDiagnoseReport(startTime.Format(timeLayout), endTime.Format(timeLayout), db, rules)
 	if err != nil {
 		tableErr := TableRowDef{Values: []string{CategoryDiagnose, "diagnose", err.Error()}}

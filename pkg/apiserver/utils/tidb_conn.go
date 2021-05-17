@@ -71,10 +71,7 @@ func MWConnectTiDB(tidbClient *tidb.Client) gin.HandlerFunc {
 			if dbInContext != nil {
 				dbInContext2 := dbInContext.(*gorm.DB)
 				if dbInContext2 != nil {
-					sqlDB, err := dbInContext2.DB()
-					if err == nil {
-						_ = sqlDB.Close()
-					}
+					_ = CloseTiDBConnection(dbInContext2)
 				}
 			}
 		}()
@@ -95,8 +92,7 @@ func TakeTiDBConnection(c *gin.Context) *gorm.DB {
 	return db
 }
 
-func RemoveAndCloseTiDBConnFrom(c *gin.Context) error {
-	db := TakeTiDBConnection(c)
+func CloseTiDBConnection(db *gorm.DB) error {
 	sqlDB, err := db.DB()
 	if err != nil {
 		return err

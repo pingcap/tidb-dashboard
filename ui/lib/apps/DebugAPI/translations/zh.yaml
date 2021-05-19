@@ -9,8 +9,10 @@ debug_api:
     download: 下载
     reset: 重置表单
   widgets:
-    text: 请输入 {{param}}
     host_select_placeholder: 请选择对应的 {{endpointType}} host
+    text: 请输入 {{param}}
+    db: 请从列表中选择 database 或输入完整的 database 名称
+    table: 请从列表中选择 table 或输入完整的 table 名称
   tidb:
     name: TiDB
     endpoint_ids:

@@ -49,7 +49,10 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/info", s.infoHandler)
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/whoami", s.whoamiHandler)
-	endpoint.GET("/databases", utils.MWConnectTiDB(s.params.TiDBClient), s.databasesHandler)
+
+	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
+	endpoint.GET("/databases", s.databasesHandler)
+	endpoint.GET("/tables", s.tablesHandler)
 }
 
 type InfoResponse struct { //nolint:golint
@@ -114,4 +117,31 @@ func (s *Service) databasesHandler(c *gin.Context) {
 	}
 	sort.Strings(result)
 	c.JSON(http.StatusOK, result)
+}
+
+// @ID infoListTables
+// @Summary List tables by database name
+// @Success 200 {object} []string
+// @Router /info/tables [get]
+// @Param database_name query string true "Database name"
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) tablesHandler(c *gin.Context) {
+	type tableSchema struct {
+		TableName string `gorm:"column:TABLE_NAME"`
+	}
+	var result []tableSchema
+	db := utils.GetTiDBConnection(c)
+	databaseName := c.Query("database_name")
+	err := db.Select("TABLE_NAME").Table("INFORMATION_SCHEMA.TABLES").Where("TABLE_SCHEMA = ?", databaseName).Scan(&result).Error
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	strs := []string{}
+	for _, v := range result {
+		strs = append(strs, strings.ToLower(v.TableName))
+	}
+	sort.Strings(strs)
+	c.JSON(http.StatusOK, strs)
 }

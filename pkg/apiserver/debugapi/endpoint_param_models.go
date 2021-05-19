@@ -16,3 +16,15 @@ package debugapi
 var EndpointAPIParamModelText EndpointAPIParamModel = EndpointAPIParamModel{
 	Type: "text",
 }
+
+var EndpointAPIParamModelDB EndpointAPIParamModel = EndpointAPIParamModel{
+	Type: "db",
+}
+
+var EndpointAPIParamModelTable EndpointAPIParamModel = EndpointAPIParamModel{
+	Type: "table",
+}
+
+var EndpointAPIParamModelTableID EndpointAPIParamModel = EndpointAPIParamModel{
+	Type: "table_id",
+}

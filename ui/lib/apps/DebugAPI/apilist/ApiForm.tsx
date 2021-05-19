@@ -7,11 +7,7 @@ import client, {
   DebugapiEndpointAPIParam,
   TopologyTiDBInfo,
 } from '@lib/client'
-import {
-  ApiFormWidgetConfig,
-  paramWidgets,
-  paramModelWidgets,
-} from './ApiFormWidgets'
+import { ApiFormWidgetConfig, paramWidgets, paramModelWidgets } from './widgets'
 
 export interface Topology {
   tidb: TopologyTiDBInfo[]
@@ -82,6 +78,7 @@ export default function ApiForm({
   const EndpointHost = () => (
     <ApiFormItem
       key={endpointParam.name}
+      form={form}
       endpoint={endpoint}
       param={endpointParam}
       topology={topology}
@@ -95,9 +92,9 @@ export default function ApiForm({
           <EndpointHost />
         </FormItemCol>
         {params.map((param) => (
-          <FormItemCol>
+          <FormItemCol key={param.name}>
             <ApiFormItem
-              key={param.name}
+              form={form}
               endpoint={endpoint}
               param={param}
               topology={topology}
@@ -136,7 +133,8 @@ function FormItemCol(props: React.HTMLAttributes<HTMLDivElement>) {
   )
 }
 
-function ApiFormItem({ param, endpoint, topology }: ApiFormWidgetConfig) {
+function ApiFormItem(widgetConfig: ApiFormWidgetConfig) {
+  const { param } = widgetConfig
   let widget =
     paramWidgets[param.name!] ||
     paramModelWidgets[param.model?.type!] ||
@@ -148,11 +146,7 @@ function ApiFormItem({ param, endpoint, topology }: ApiFormWidgetConfig) {
       name={param.name}
       label={param.name}
     >
-      {widget({
-        param,
-        endpoint,
-        topology,
-      })}
+      {widget(widgetConfig)}
     </Form.Item>
   )
 }

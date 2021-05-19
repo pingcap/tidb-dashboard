@@ -25,11 +25,11 @@ var tidbStatsDump EndpointAPIModel = EndpointAPIModel{
 	PathParams: []EndpointAPIParam{
 		{
 			Name:  "db",
-			Model: EndpointAPIParamModelText,
+			Model: EndpointAPIParamModelDB,
 		},
 		{
 			Name:  "table",
-			Model: EndpointAPIParamModelText,
+			Model: EndpointAPIParamModelTable,
 		},
 	},
 }
@@ -42,11 +42,11 @@ var tidbStatsDumpWithTimestamp EndpointAPIModel = EndpointAPIModel{
 	PathParams: []EndpointAPIParam{
 		{
 			Name:  "db",
-			Model: EndpointAPIParamModelText,
+			Model: EndpointAPIParamModelDB,
 		},
 		{
 			Name:  "table",
-			Model: EndpointAPIParamModelText,
+			Model: EndpointAPIParamModelTable,
 		},
 		{
 			Name:  "yyyyMMddHHmmss",
@@ -77,7 +77,7 @@ var tidbSchemaWithDB EndpointAPIModel = EndpointAPIModel{
 	PathParams: []EndpointAPIParam{
 		{
 			Name:  "db",
-			Model: EndpointAPIParamModelText,
+			Model: EndpointAPIParamModelDB,
 		},
 	},
 }
@@ -90,11 +90,11 @@ var tidbSchemaWithDBTable EndpointAPIModel = EndpointAPIModel{
 	PathParams: []EndpointAPIParam{
 		{
 			Name:  "db",
-			Model: EndpointAPIParamModelText,
+			Model: EndpointAPIParamModelDB,
 		},
 		{
 			Name:  "table",
-			Model: EndpointAPIParamModelText,
+			Model: EndpointAPIParamModelTable,
 		},
 	},
 }
@@ -107,7 +107,7 @@ var tidbSchemaWithTableID EndpointAPIModel = EndpointAPIModel{
 	PathParams: []EndpointAPIParam{
 		{
 			Name:  "tableID",
-			Model: EndpointAPIParamModelText,
+			Model: EndpointAPIParamModelTableID,
 		},
 	},
 }

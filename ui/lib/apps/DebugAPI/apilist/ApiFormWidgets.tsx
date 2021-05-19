@@ -4,6 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { DebugapiEndpointAPIModel, DebugapiEndpointAPIParam } from '@lib/client'
 import type { Topology } from './ApiForm'
 
+export interface Widgets {
+  [type: string]: ApiFormWidget
+}
+
 export interface ApiFormWidget {
   (config: ApiFormWidgetConfig): JSX.Element
 }
@@ -44,7 +48,9 @@ const HostSelectWidget: ApiFormWidget = ({ endpoint, topology }) => {
   )
 }
 
-export const widgetsMap: { [type: string]: ApiFormWidget } = {
+export const paramModelWidgets: Widgets = {
   text: TextWidget,
   host: HostSelectWidget,
 }
+
+export const paramWidgets: Widgets = {}

@@ -7,7 +7,11 @@ import client, {
   DebugapiEndpointAPIParam,
   TopologyTiDBInfo,
 } from '@lib/client'
-import { ApiFormWidgetConfig, widgetsMap } from './ApiFormWidgets'
+import {
+  ApiFormWidgetConfig,
+  paramWidgets,
+  paramModelWidgets,
+} from './ApiFormWidgets'
 
 export interface Topology {
   tidb: TopologyTiDBInfo[]
@@ -133,13 +137,18 @@ function FormItemCol(props: React.HTMLAttributes<HTMLDivElement>) {
 }
 
 function ApiFormItem({ param, endpoint, topology }: ApiFormWidgetConfig) {
+  let widget =
+    paramWidgets[param.name!] ||
+    paramModelWidgets[param.model?.type!] ||
+    paramModelWidgets.text
+
   return (
     <Form.Item
       rules={[{ required: true }]}
       name={param.name}
       label={param.name}
     >
-      {(widgetsMap[param.model?.type!] || widgetsMap.text)({
+      {widget({
         param,
         endpoint,
         topology,

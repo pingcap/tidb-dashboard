@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Collapse, Space, Input, Empty, Alert } from 'antd'
+import { Collapse, Space, Input, Empty, Alert, Tooltip } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { TFunction } from 'i18next'
-import { SearchOutlined } from '@ant-design/icons'
+import { TFunction, i18n as Ii18n } from 'i18next'
+import { SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { debounce } from 'lodash'
 
 import { AnimatedSkeleton, Card } from '@lib/components'
@@ -37,7 +37,7 @@ const useFilterEndpoints = (endpoints?: DebugapiEndpointAPIModel[]) => {
 }
 
 export default function Page() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const {
     data: endpointData,
     isLoading: isEndpointLoading,
@@ -88,7 +88,12 @@ export default function Page() {
                   {g.map((endpoint) => (
                     <Collapse.Panel
                       className={style.collapse_panel}
-                      header={<CustomHeader endpoint={endpoint} t={t} />}
+                      header={
+                        <CustomHeader
+                          endpoint={endpoint}
+                          translation={{ t, i18n }}
+                        />
+                      }
                       key={endpoint.id!}
                     >
                       <ApiForm endpoint={endpoint} topology={topology} />
@@ -132,18 +137,29 @@ export default function Page() {
 
 function CustomHeader({
   endpoint,
-  t,
+  translation,
 }: {
   endpoint: DebugapiEndpointAPIModel
-  t: TFunction
+  translation: {
+    t: TFunction
+    i18n: Ii18n
+  }
 }) {
+  const { t, i18n } = translation
+  const descTranslationKey = `debug_api.${endpoint.component}.endpoints.${endpoint.id}_desc`
+  const descExists = i18n.exists(descTranslationKey)
   return (
     <div className={style.header}>
       <Space direction="vertical">
         <Space>
           <h4>
-            {t(`debug_api.${endpoint.component}.endpoint_ids.${endpoint.id}`)}
+            {t(`debug_api.${endpoint.component}.endpoints.${endpoint.id}`)}
           </h4>
+          {descExists && (
+            <Tooltip title={t(descTranslationKey)}>
+              <QuestionCircleOutlined />
+            </Tooltip>
+          )}
         </Space>
         <Schema endpoint={endpoint} />
       </Space>

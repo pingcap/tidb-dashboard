@@ -16,6 +16,7 @@ debug_api:
     endpoint_ids:
       tidb_stats_dump: Stats Dump
       tidb_stats_dump_timestamp: Stats Dump With Timestamp
+      tidb_stats_dump_timestamp_desc: 获取特定时刻的 stats dump，该时刻应该在当前时间与 GC 时间节点之间
       tidb_config: Current TiDB Config
       tidb_schema: TiDB Schema
       tidb_schema_db: DB Schema

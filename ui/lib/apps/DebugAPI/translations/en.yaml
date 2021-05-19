@@ -13,9 +13,10 @@ debug_api:
     host_select_placeholder: Please select the {{endpointType}} host
   tidb:
     name: TiDB
-    endpoint_ids:
+    endpoints:
       tidb_stats_dump: Stats Dump
       tidb_stats_dump_timestamp: Stats Dump With Timestamp
+      tidb_stats_dump_timestamp_desc: Fetch stats dump with timestamp, and timestamp needs to be set within the GC safe point
       tidb_config: Current TiDB Config
       tidb_schema: TiDB Schema
       tidb_schema_db: DB Schema

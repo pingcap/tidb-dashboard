@@ -16,7 +16,7 @@ debug_api:
     table: 请从列表中选择 table 或输入完整的 table 名称
   tidb:
     name: TiDB
-    endpoint_ids:
+    endpoints:
       tidb_stats_dump: Stats Dump
       tidb_stats_dump_timestamp: Stats Dump With Timestamp
       tidb_stats_dump_timestamp_desc: 获取特定时刻的 stats dump，该时刻应该在当前时间与 GC 时间节点之间

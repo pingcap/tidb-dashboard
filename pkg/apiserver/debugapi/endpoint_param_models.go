@@ -26,7 +26,7 @@ var EndpointAPIParamModelInt EndpointAPIParamModel = EndpointAPIParamModel{
 	Type: "int",
 	Transformer: func(value string) (string, error) {
 		if _, err := strconv.Atoi(value); err != nil {
-			return "", fmt.Errorf("limit should be a number")
+			return "", fmt.Errorf("param should be a number")
 		}
 		return value, nil
 	},

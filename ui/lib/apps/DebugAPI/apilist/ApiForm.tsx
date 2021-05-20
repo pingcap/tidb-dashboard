@@ -1,16 +1,22 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Button, Space, Tooltip, Row, Col } from 'antd'
+import { isNull, isUndefined } from 'lodash'
 import { DownloadOutlined, UndoOutlined } from '@ant-design/icons'
 import client, {
   DebugapiEndpointAPIModel,
   DebugapiEndpointAPIParam,
+  TopologyPDInfo,
+  TopologyStoreInfo,
   TopologyTiDBInfo,
 } from '@lib/client'
 import { ApiFormWidgetConfig, paramWidgets, paramModelWidgets } from './widgets'
 
 export interface Topology {
   tidb: TopologyTiDBInfo[]
+  tikv: TopologyStoreInfo[]
+  tiflash: TopologyStoreInfo[]
+  pd: TopologyPDInfo[]
 }
 
 export default function ApiForm({
@@ -24,7 +30,11 @@ export default function ApiForm({
   const { t } = useTranslation()
   const { id, path_params, query_params, component } = endpoint
   const endpointHostParamKey = useMemo(() => `${component}_host`, [component])
-  const params = [...(path_params ?? []), ...(query_params ?? [])]
+  const pathParams = (path_params ?? []).map((p) => {
+    p.required = true
+    return p
+  })
+  const params = [...pathParams, ...(query_params ?? [])]
   const [loading, setLoading] = useState(false)
 
   const download = useCallback(
@@ -33,8 +43,14 @@ export default function ApiForm({
       let headers: any
       try {
         setLoading(true)
-        const { [endpointHostParamKey]: host, ...params } = values
+        const { [endpointHostParamKey]: host, ...p } = values
         const [hostname, port] = host.split(':')
+        const params = Object.entries(p).reduce((prev, [k, v]) => {
+          if (!(isUndefined(v) || isNull(v) || v === '')) {
+            prev[k] = v
+          }
+          return prev
+        }, {})
         const resp = await client.getInstance().debugapiRequestEndpointPost({
           id,
           host: hostname,
@@ -69,6 +85,7 @@ export default function ApiForm({
   const endpointParam = useMemo<DebugapiEndpointAPIParam>(
     () => ({
       name: endpointHostParamKey,
+      required: true,
       model: {
         type: 'host',
       },
@@ -142,7 +159,7 @@ function ApiFormItem(widgetConfig: ApiFormWidgetConfig) {
 
   return (
     <Form.Item
-      rules={[{ required: true }]}
+      rules={[{ required: !!param.required }]}
       name={param.name}
       label={param.name}
     >

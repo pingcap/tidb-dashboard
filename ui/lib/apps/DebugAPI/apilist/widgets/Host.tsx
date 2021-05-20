@@ -4,9 +4,17 @@ import { useTranslation } from 'react-i18next'
 
 import type { ApiFormWidget } from './index'
 
+const portKeys: { [k: string]: string } = {
+  tidb: 'status_port',
+  tikv: 'status_port',
+  tiflash: 'status_port',
+  pd: 'port',
+}
+
 export const HostSelectWidget: ApiFormWidget = ({ endpoint, topology }) => {
   const { t } = useTranslation()
   const componentEndpoints = topology[endpoint.component!]
+  const portKey = portKeys[endpoint.component!]
 
   return (
     <Select
@@ -16,7 +24,7 @@ export const HostSelectWidget: ApiFormWidget = ({ endpoint, topology }) => {
       })}
     >
       {componentEndpoints.map((d) => {
-        const val = `${d.ip}:${d.status_port}`
+        const val = `${d.ip}:${d[portKey]}`
         return (
           <Select.Option key={val} value={val}>
             {val}

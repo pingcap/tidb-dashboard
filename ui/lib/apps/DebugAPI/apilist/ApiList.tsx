@@ -5,7 +5,7 @@ import { TFunction, i18n as Ii18n } from 'i18next'
 import { SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { debounce } from 'lodash'
 
-import { AnimatedSkeleton, Card } from '@lib/components'
+import { AnimatedSkeleton, Card, Root } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client, { DebugapiEndpointAPIModel } from '@lib/client'
 
@@ -46,6 +46,33 @@ export default function Page() {
   )
   const { endpoints, filterBy } = useFilterEndpoints(endpointData)
 
+  // TODO: refine with components/InstanceSelect
+  const {
+    data: tidbTopology = [],
+    isLoading: isTiDBTopology,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getTiDBTopology(reqConfig)
+  )
+  const {
+    data: pdTopology = [],
+    isLoading: isPDLoading,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getPDTopology(reqConfig)
+  )
+  const {
+    data: storeTopology,
+    isLoading: isStoreLoading,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getStoreTopology(reqConfig)
+  )
+  const topology: Topology = {
+    tidb: tidbTopology!,
+    tikv: storeTopology?.tikv || [],
+    tiflash: storeTopology?.tiflash || [],
+    pd: pdTopology!,
+  }
+  const isTopologyLoading = isTiDBTopology || isPDLoading || isStoreLoading
+
   const groups = useMemo(
     () =>
       endpoints.reduce((prev, endpoint) => {
@@ -58,58 +85,40 @@ export default function Page() {
       }, {} as { [group: string]: DebugapiEndpointAPIModel[] }),
     [endpoints]
   )
-  const sortingOfGroups = useMemo(() => ['tidb', 'tikv', 'tiflash', 'pd'], [])
-  // TODO: other components topology
-  const {
-    data: tidbTopology = [],
-    isLoading: isTopologyLoading,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getTiDBTopology(reqConfig)
+  const sortedGroups = useMemo(
+    () =>
+      ['tidb', 'tikv', 'tiflash', 'pd']
+        .filter((sortKey) => groups[sortKey])
+        .map((sortKey) => groups[sortKey]),
+    [groups]
   )
-  const topology: Topology = {
-    tidb: tidbTopology!,
+
+  function EndpointGroup({ group }: { group: DebugapiEndpointAPIModel[] }) {
+    return (
+      <Card
+        noMarginLeft
+        noMarginRight
+        title={t(`debug_api.${group[0].component!}.name`)}
+      >
+        <Collapse ghost>
+          {group.map((endpoint) => (
+            <Collapse.Panel
+              className={style.collapse_panel}
+              header={
+                <CustomHeader endpoint={endpoint} translation={{ t, i18n }} />
+              }
+              key={endpoint.id!}
+            >
+              <ApiForm endpoint={endpoint} topology={topology} />
+            </Collapse.Panel>
+          ))}
+        </Collapse>
+      </Card>
+    )
   }
 
-  const EndpointGroups = () =>
-    endpoints.length ? (
-      <>
-        {sortingOfGroups
-          .filter((sortKey) => groups[sortKey])
-          .map((sortKey) => {
-            const g = groups[sortKey]
-            return (
-              <Card
-                noMarginLeft
-                noMarginRight
-                key={sortKey}
-                title={t(`debug_api.${sortKey}.name`)}
-              >
-                <Collapse ghost>
-                  {g.map((endpoint) => (
-                    <Collapse.Panel
-                      className={style.collapse_panel}
-                      header={
-                        <CustomHeader
-                          endpoint={endpoint}
-                          translation={{ t, i18n }}
-                        />
-                      }
-                      key={endpoint.id!}
-                    >
-                      <ApiForm endpoint={endpoint} topology={topology} />
-                    </Collapse.Panel>
-                  ))}
-                </Collapse>
-              </Card>
-            )
-          })}
-      </>
-    ) : (
-      <Empty description={t('debug_api.endpoints_not_found')} />
-    )
-
   return (
-    <>
+    <Root>
       <Card>
         <Alert
           message={t(`debug_api.warning_header.title`)}
@@ -128,10 +137,16 @@ export default function Page() {
       </Card>
       <Card>
         <AnimatedSkeleton showSkeleton={isEndpointLoading || isTopologyLoading}>
-          <EndpointGroups />
+          {endpoints.length ? (
+            sortedGroups.map((g) => (
+              <EndpointGroup key={g[0].component!} group={g} />
+            ))
+          ) : (
+            <Empty description={t('debug_api.endpoints_not_found')} />
+          )}
         </AnimatedSkeleton>
       </Card>
-    </>
+    </Root>
   )
 }
 

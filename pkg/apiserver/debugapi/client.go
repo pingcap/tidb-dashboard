@@ -98,7 +98,7 @@ type pdImplement struct {
 }
 
 func (impl *pdImplement) Get(req *Request) ([]byte, error) {
-	return impl.Client.SendGetRequest(req.Path)
+	return impl.Client.WithHost(req.Host, req.Port).SendGetRequest(req.Path)
 }
 
 func (impl *pdImplement) Send(req *Request) ([]byte, error) {

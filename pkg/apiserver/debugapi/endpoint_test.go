@@ -52,7 +52,7 @@ var testTiDBStatsDump EndpointAPIModel = EndpointAPIModel{
 		{
 			Name:     "debug",
 			Required: true,
-			Model:    EndpointAPIParamModelText,
+			Model:    EndpointAPIParamModelInt,
 		},
 	},
 }

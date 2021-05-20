@@ -119,14 +119,21 @@ func transformValues(params []EndpointAPIParam, values map[string]string) (map[s
 	pvMap := map[string]string{}
 	for _, p := range params {
 		v, ok := values[p.Name]
-		if !ok {
-			continue
-		}
-		tVal, err := p.Transform(v)
+		v, err := transform(v, p.PreModelTransformer)
 		if err != nil {
 			return nil, ErrInvalidParam.WrapWithNoMessage(err)
 		}
-		pvMap[p.Name] = tVal
+		// there's no value from the client or default value generate from the pre-transformer
+		if !ok || (v == "") {
+			continue
+		}
+
+		v, err = transform(v, p.Model.Transformer, p.PostModelTransformer)
+		if err != nil {
+			return nil, ErrInvalidParam.WrapWithNoMessage(err)
+		}
+
+		pvMap[p.Name] = v
 	}
 	return pvMap, nil
 }
@@ -141,14 +148,8 @@ type EndpointAPIParam struct {
 }
 
 // Transform incoming param's value by transformer at endpoint / model definition
-func (p *EndpointAPIParam) Transform(value string) (string, error) {
-	transfomers := []ModelTransformer{
-		p.PreModelTransformer,
-		p.Model.Transformer,
-		p.PostModelTransformer,
-	}
-
-	for _, t := range transfomers {
+func transform(value string, transformers ...ModelTransformer) (string, error) {
+	for _, t := range transformers {
 		if t == nil {
 			continue
 		}

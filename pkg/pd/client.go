@@ -59,22 +59,24 @@ func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Confi
 	return client
 }
 
-func (c *Client) WithBaseURL(baseURL string) *Client {
-	c2 := *c
-	c2.baseURL = baseURL
-	return &c2
+func (c Client) WithBaseURL(baseURL string) *Client {
+	c.baseURL = baseURL
+	return &c
 }
 
-func (c *Client) WithTimeout(timeout time.Duration) *Client {
-	c2 := *c
-	c2.timeout = timeout
-	return &c2
+func (c Client) WithHost(hostname string, port int) *Client {
+	c.baseURL = fmt.Sprintf("http://%s:%d", hostname, port)
+	return &c
 }
 
-func (c *Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
-	c2 := *c
-	c2.httpClient.BeforeRequest = callback
-	return &c2
+func (c Client) WithTimeout(timeout time.Duration) *Client {
+	c.timeout = timeout
+	return &c
+}
+
+func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
+	c.httpClient.BeforeRequest = callback
+	return &c
 }
 
 func (c *Client) SendGetRequest(path string) ([]byte, error) {

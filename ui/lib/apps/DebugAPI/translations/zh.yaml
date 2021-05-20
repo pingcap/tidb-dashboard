@@ -11,6 +11,7 @@ debug_api:
   widgets:
     host_select_placeholder: 请选择对应的 {{endpointType}} host
     text: 请输入 {{param}}
+    int: 请输入 {{param}}
     db: 请从列表中选择 database 或输入完整的 database 名称
     table: 请从列表中选择 table 或输入完整的 table 名称
   tidb:
@@ -23,8 +24,51 @@ debug_api:
       tidb_schema: TiDB Schema
       tidb_schema_db: DB Schema
       tidb_schema_db_table: Table Schema
-      tidb_schema_tableid: Table Schema By Table ID
+      tidb_dbtable_tableid: Table Schema By Table ID
       tidb_ddl_history: DDL History
       tidb_info: Info
       tidb_info_all: All Info
       tidb_regions_meta: Regions Meta
+      tidb_hot_regions: Hot Regions
+      tidb_region_id: Specific Region
+      tidb_table_regions: Table Regions
+      tidb_pprof_alloc: Pprof Alloc
+      tidb_pprof_block: Pprof Block
+      tidb_pprof_goroutine: Pprof Goroutine
+      tidb_pprof_heap: Pprof Heap
+      tidb_pprof_mutex: Pprof Mutex
+  pd:
+    name: PD
+    endpoints:
+      pd_cluster: Cluster
+      pd_cluster_status: Cluster Status
+      pd_health: Health Check
+      pd_hot_read: Hot Read
+      pd_hot_write: Hot Write
+      pd_hot_stores: Hot Stores
+      pd_labels: Labels
+      pd_label_stores: Label List Stores
+      pd_members_show: Show Members
+      pd_leader_show: Show Leader
+      pd_operator_show: Show Operator
+      pd_regions: Regions
+      pd_region_id: Region ID
+      pd_region_key: Region Key
+      pd_region_scan: Region Scan
+      pd_region_sibling: Region Sibling
+      pd_region_start_key: Region Start Key
+      pd_regions_store: Regions Store
+      pd_region_top_read: Region Top Read
+      pd_region_top_write: Region Top Write
+      pd_region_top_conf_ver: Region Top ConfVer
+      pd_region_top_version: Region Top Version
+      pd_region_top_size: Region Top Size
+      pd_region_check: Region Check
+      pd_scheduler_show: Show Scheduler
+      pd_stores: Stores
+      pd_store_id: Store ID
+      pd_pprof_alloc: Pprof Alloc
+      pd_pprof_block: Pprof Block
+      pd_pprof_goroutine: Pprof Goroutine
+      pd_pprof_heap: Pprof Heap
+      pd_pprof_mutex: Pprof Mutex

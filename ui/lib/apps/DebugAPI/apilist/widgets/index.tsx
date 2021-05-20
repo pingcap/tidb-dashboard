@@ -4,6 +4,7 @@ import type { FormInstance } from 'antd/es/form/Form'
 import { DebugapiEndpointAPIModel, DebugapiEndpointAPIParam } from '@lib/client'
 import type { Topology } from '../ApiForm'
 import { TextWidget } from './Text'
+import { IntWidget } from './Int'
 import { HostSelectWidget } from './Host'
 import { DatabaseWidget } from './Database'
 import { TableWidget } from './Table'
@@ -33,6 +34,7 @@ const createJSXElementWrapper = (WidgetDef: ApiFormWidget) => (
 export const paramModelWidgets: Widgets = {
   host: HostSelectWidget,
   text: TextWidget,
+  int: IntWidget,
   db: createJSXElementWrapper(DatabaseWidget),
   table: createJSXElementWrapper(TableWidget),
 }

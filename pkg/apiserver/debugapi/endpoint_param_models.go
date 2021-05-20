@@ -13,8 +13,23 @@
 
 package debugapi
 
+import (
+	"fmt"
+	"strconv"
+)
+
 var EndpointAPIParamModelText EndpointAPIParamModel = EndpointAPIParamModel{
 	Type: "text",
+}
+
+var EndpointAPIParamModelInt EndpointAPIParamModel = EndpointAPIParamModel{
+	Type: "int",
+	Transformer: func(value string) (string, error) {
+		if _, err := strconv.Atoi(value); err != nil {
+			return "", fmt.Errorf("limit should be a number")
+		}
+		return value, nil
+	},
 }
 
 var EndpointAPIParamModelDB EndpointAPIParamModel = EndpointAPIParamModel{

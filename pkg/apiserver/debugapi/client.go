@@ -98,7 +98,8 @@ type pdImplement struct {
 }
 
 func (impl *pdImplement) Get(req *Request) ([]byte, error) {
-	return impl.Client.WithHost(req.Host, req.Port).SendGetRequest(req.Path)
+	url := fmt.Sprintf("http://%s:%d", req.Host, req.Port)
+	return impl.Client.WithBaseURL(url).SendGetRequest(req.Path)
 }
 
 func (impl *pdImplement) Send(req *Request) ([]byte, error) {

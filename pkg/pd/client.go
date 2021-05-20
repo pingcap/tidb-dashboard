@@ -64,11 +64,6 @@ func (c Client) WithBaseURL(baseURL string) *Client {
 	return &c
 }
 
-func (c Client) WithHost(hostname string, port int) *Client {
-	c.baseURL = fmt.Sprintf("http://%s:%d", hostname, port)
-	return &c
-}
-
 func (c Client) WithTimeout(timeout time.Duration) *Client {
 	c.timeout = timeout
 	return &c

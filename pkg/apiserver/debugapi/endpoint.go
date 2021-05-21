@@ -123,16 +123,16 @@ func transformValues(params []EndpointAPIParam, values map[string]string) (map[s
 		v, ok := values[p.Name]
 		v, err := transform(v, p.PreModelTransformer)
 		if err != nil {
-			return nil, ErrInvalidParam.WrapWithNoMessage(err)
+			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
 		}
 		// there's no value from the client or default value generate from the pre-transformer
-		if !ok || (v == "") {
+		if !ok && (v == "") {
 			continue
 		}
 
 		v, err = transform(v, p.Model.Transformer, p.PostModelTransformer)
 		if err != nil {
-			return nil, ErrInvalidParam.WrapWithNoMessage(err)
+			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
 		}
 
 		pvMap[p.Name] = v

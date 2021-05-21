@@ -16,6 +16,7 @@ package debugapi
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/joomcode/errorx"
@@ -134,4 +135,115 @@ func (t *testSchemaSuite) Test_NewRequest_missing_required_params_err(c *C) {
 	})
 	c.Log(err)
 	c.Assert(errorx.IsOfType(err, ErrMissingRequiredParam), Equals, true)
+}
+
+func (t *testSchemaSuite) Test_NewRequest_transformer_validation(c *C) {
+	testParamModel := EndpointAPIParamModel{
+		Type: "test",
+		Transformer: func(value string) (string, error) {
+			return "", fmt.Errorf("test error")
+		},
+	}
+	testEndpoint := EndpointAPIModel{
+		ID:        "test_endpoint",
+		Component: model.NodeKindTiDB,
+		Path:      "/test/{param1}",
+		Method:    http.MethodGet,
+		PathParams: []EndpointAPIParam{
+			{
+				Name:  "param1",
+				Model: testParamModel,
+			},
+		},
+	}
+
+	param1 := "param1"
+
+	_, err := testEndpoint.NewRequest("127.0.0.1", 10080, map[string]string{
+		"param1": param1,
+	})
+	c.Log(err)
+	c.Assert(errorx.IsOfType(err, ErrInvalidParam), Equals, true)
+}
+
+func (t *testSchemaSuite) Test_NewRequest_transformer_transform(c *C) {
+	testValue := "test_value"
+	testParamModel := EndpointAPIParamModel{
+		Type: "test",
+		Transformer: func(value string) (string, error) {
+			return testValue, nil
+		},
+	}
+	testEndpoint := EndpointAPIModel{
+		ID:        "test_endpoint",
+		Component: model.NodeKindTiDB,
+		Path:      "/test/{param1}",
+		Method:    http.MethodGet,
+		PathParams: []EndpointAPIParam{
+			{
+				Name:  "param1",
+				Model: testParamModel,
+			},
+		},
+	}
+
+	param1 := "param1"
+
+	req, err := testEndpoint.NewRequest("127.0.0.1", 10080, map[string]string{
+		"param1": param1,
+	})
+	if err == nil {
+		c.Assert(req.Path, Equals, fmt.Sprintf("/test/%s", testValue))
+	} else {
+		c.Error(err)
+	}
+}
+
+func (t *testSchemaSuite) Test_NewRequest_default_query_value(c *C) {
+	testEndpoint := EndpointAPIModel{
+		ID:        "test_endpoint",
+		Component: model.NodeKindTiDB,
+		Path:      "/test",
+		Method:    http.MethodGet,
+		QueryParams: []EndpointAPIParam{
+			{
+				Name:  "param1",
+				Model: EndpointAPIParamModelText,
+			},
+		},
+	}
+	req, err := testEndpoint.NewRequest("127.0.0.1", 10080, map[string]string{})
+	if err == nil {
+		c.Assert(req.Query, Equals, "")
+	} else {
+		c.Error(err)
+	}
+
+	defaultValue := "default value"
+	testEndpoint2 := EndpointAPIModel{
+		ID:        "test_endpoint",
+		Component: model.NodeKindTiDB,
+		Path:      "/test",
+		Method:    http.MethodGet,
+		QueryParams: []EndpointAPIParam{
+			{
+				Name:  "param1",
+				Model: EndpointAPIParamModelText,
+				PreModelTransformer: func(value string) (string, error) {
+					if value == "" {
+						return defaultValue, nil
+					}
+					return value, nil
+				},
+			},
+		},
+	}
+	req2, err := testEndpoint2.NewRequest("127.0.0.1", 10080, map[string]string{})
+	if err == nil {
+		values, _ := url.ParseQuery(req2.Query)
+		values2, _ := url.ParseQuery(fmt.Sprintf("param1=%s", defaultValue))
+		c.Assert(values, DeepEquals, values2)
+	} else {
+		c.Error(err)
+	}
 }

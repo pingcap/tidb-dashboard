@@ -14,6 +14,7 @@ debug_api:
     int: Please enter the {{param}}
     db: Please select the database or enter the full database name
     table: Please select the table or enter the full table name
+    table_id: Please select the table ID or enter the full table ID
   tidb:
     name: TiDB
     endpoints:

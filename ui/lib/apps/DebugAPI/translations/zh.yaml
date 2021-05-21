@@ -14,6 +14,7 @@ debug_api:
     int: 请输入 {{param}}
     db: 请从列表中选择 database 或输入完整的 database 名称
     table: 请从列表中选择 table 或输入完整的 table 名称
+    table_id: 请从列表中选择 table ID 或输入完整的 table ID
   tidb:
     name: TiDB
     endpoints:

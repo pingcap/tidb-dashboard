@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/thoas/go-funk"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -119,29 +120,37 @@ func (s *Service) databasesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+type tableSchema struct {
+	TableName string `gorm:"column:TABLE_NAME" json:"table_name"`
+	TableID   string `gorm:"column:TIDB_TABLE_ID" json:"table_id"`
+}
+
 // @ID infoListTables
 // @Summary List tables by database name
-// @Success 200 {object} []string
+// @Success 200 {object} []tableSchema
 // @Router /info/tables [get]
-// @Param database_name query string true "Database name"
+// @Param database_name query string false "Database name"
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) tablesHandler(c *gin.Context) {
-	type tableSchema struct {
-		TableName string `gorm:"column:TABLE_NAME"`
-	}
 	var result []tableSchema
 	db := utils.GetTiDBConnection(c)
+	tx := db.Select([]string{"TABLE_NAME", "TIDB_TABLE_ID"}).Table("INFORMATION_SCHEMA.TABLES")
 	databaseName := c.Query("database_name")
-	err := db.Select("TABLE_NAME").Table("INFORMATION_SCHEMA.TABLES").Where("TABLE_SCHEMA = ?", databaseName).Scan(&result).Error
+
+	if databaseName != "" {
+		tx = tx.Where("TABLE_SCHEMA = ?", databaseName)
+	}
+
+	err := tx.Order("TABLE_NAME").Scan(&result).Error
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	strs := []string{}
-	for _, v := range result {
-		strs = append(strs, strings.ToLower(v.TableName))
-	}
-	sort.Strings(strs)
-	c.JSON(http.StatusOK, strs)
+
+	result = funk.Map(result, func(item tableSchema) tableSchema {
+		item.TableName = strings.ToLower(item.TableName)
+		return item
+	}).([]tableSchema)
+	c.JSON(http.StatusOK, result)
 }

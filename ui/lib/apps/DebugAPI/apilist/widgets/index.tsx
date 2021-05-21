@@ -8,6 +8,7 @@ import { IntWidget } from './Int'
 import { HostSelectWidget } from './Host'
 import { DatabaseWidget } from './Database'
 import { TableWidget } from './Table'
+import { TableIDWidget } from './TableID'
 
 export interface Widgets {
   [type: string]: ApiFormWidget
@@ -37,6 +38,7 @@ export const paramModelWidgets: Widgets = {
   int: IntWidget,
   db: createJSXElementWrapper(DatabaseWidget),
   table: createJSXElementWrapper(TableWidget),
+  table_id: createJSXElementWrapper(TableIDWidget),
 }
 
 export const paramWidgets: Widgets = {}

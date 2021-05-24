@@ -4,8 +4,8 @@ import { Form, Button, Space, Tooltip, Row, Col } from 'antd'
 import { isNull, isUndefined } from 'lodash'
 import { DownloadOutlined, UndoOutlined } from '@ant-design/icons'
 import client, {
-  DebugapiEndpointAPIModel,
-  DebugapiEndpointAPIParam,
+  EndpointAPIModel,
+  EndpointAPIParam,
   TopologyPDInfo,
   TopologyStoreInfo,
   TopologyTiDBInfo,
@@ -23,7 +23,7 @@ export default function ApiForm({
   endpoint,
   topology,
 }: {
-  endpoint: DebugapiEndpointAPIModel
+  endpoint: EndpointAPIModel
   topology: Topology
 }) {
   const [form] = Form.useForm()
@@ -82,7 +82,7 @@ export default function ApiForm({
     [id, endpointHostParamKey]
   )
 
-  const endpointParam = useMemo<DebugapiEndpointAPIParam>(
+  const endpointParam = useMemo<EndpointAPIParam>(
     () => ({
       name: endpointHostParamKey,
       required: true,

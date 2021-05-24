@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package debugapi
+package endpoint
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
-func TestT(t *testing.T) {
+func TestSchema(t *testing.T) {
 	CustomVerboseFlag = true
 	TestingT(t)
 }
@@ -34,16 +34,20 @@ var _ = Suite(&testSchemaSuite{})
 
 type testSchemaSuite struct{}
 
+var testAPIParamModel APIParamModel = APIParamModel{
+	Type: "text",
+}
+
 func (t *testSchemaSuite) Test_NewRequest_with_path_param_success(c *C) {
-	testEndpoint := EndpointAPIModel{
+	testEndpoint := APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test/{param1}",
 		Method:    http.MethodGet,
-		PathParams: []EndpointAPIParam{
+		PathParams: []APIParam{
 			{
 				Name:  "param1",
-				Model: EndpointAPIParamModelText,
+				Model: testAPIParamModel,
 			},
 		},
 	}
@@ -60,19 +64,19 @@ func (t *testSchemaSuite) Test_NewRequest_with_path_param_success(c *C) {
 }
 
 func (t *testSchemaSuite) Test_NewRequest_with_query_param_success(c *C) {
-	testEndpoint := EndpointAPIModel{
+	testEndpoint := APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
 		Method:    http.MethodGet,
-		QueryParams: []EndpointAPIParam{
+		QueryParams: []APIParam{
 			{
 				Name:  "param1",
-				Model: EndpointAPIParamModelText,
+				Model: testAPIParamModel,
 			},
 			{
 				Name:  "param2",
-				Model: EndpointAPIParamModelText,
+				Model: testAPIParamModel,
 			},
 		},
 	}
@@ -100,21 +104,21 @@ func (t *testSchemaSuite) Test_NewRequest_with_query_param_success(c *C) {
 }
 
 func (t *testSchemaSuite) Test_NewRequest_missing_required_params_err(c *C) {
-	testEndpoint := EndpointAPIModel{
+	testEndpoint := APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test/{param1}",
 		Method:    http.MethodGet,
-		PathParams: []EndpointAPIParam{
+		PathParams: []APIParam{
 			{
 				Name:  "param1",
-				Model: EndpointAPIParamModelText,
+				Model: testAPIParamModel,
 			},
 		},
-		QueryParams: []EndpointAPIParam{
+		QueryParams: []APIParam{
 			{
 				Name:     "param2",
-				Model:    EndpointAPIParamModelText,
+				Model:    testAPIParamModel,
 				Required: true,
 			},
 		},
@@ -138,18 +142,18 @@ func (t *testSchemaSuite) Test_NewRequest_missing_required_params_err(c *C) {
 }
 
 func (t *testSchemaSuite) Test_NewRequest_transformer_validation(c *C) {
-	testParamModel := EndpointAPIParamModel{
+	testParamModel := APIParamModel{
 		Type: "test",
-		Transformer: func(value string) (string, error) {
-			return "", fmt.Errorf("test error")
+		Transformer: func(ctx *Context) error {
+			return fmt.Errorf("test error")
 		},
 	}
-	testEndpoint := EndpointAPIModel{
+	testEndpoint := APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test/{param1}",
 		Method:    http.MethodGet,
-		PathParams: []EndpointAPIParam{
+		PathParams: []APIParam{
 			{
 				Name:  "param1",
 				Model: testParamModel,
@@ -168,18 +172,19 @@ func (t *testSchemaSuite) Test_NewRequest_transformer_validation(c *C) {
 
 func (t *testSchemaSuite) Test_NewRequest_transformer_transform(c *C) {
 	testValue := "test_value"
-	testParamModel := EndpointAPIParamModel{
+	testParamModel := APIParamModel{
 		Type: "test",
-		Transformer: func(value string) (string, error) {
-			return testValue, nil
+		Transformer: func(ctx *Context) error {
+			ctx.SetValue(testValue)
+			return nil
 		},
 	}
-	testEndpoint := EndpointAPIModel{
+	testEndpoint := APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test/{param1}",
 		Method:    http.MethodGet,
-		PathParams: []EndpointAPIParam{
+		PathParams: []APIParam{
 			{
 				Name:  "param1",
 				Model: testParamModel,
@@ -200,15 +205,15 @@ func (t *testSchemaSuite) Test_NewRequest_transformer_transform(c *C) {
 }
 
 func (t *testSchemaSuite) Test_NewRequest_default_query_value(c *C) {
-	testEndpoint := EndpointAPIModel{
+	testEndpoint := APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
 		Method:    http.MethodGet,
-		QueryParams: []EndpointAPIParam{
+		QueryParams: []APIParam{
 			{
 				Name:  "param1",
-				Model: EndpointAPIParamModelText,
+				Model: testAPIParamModel,
 			},
 		},
 	}
@@ -220,20 +225,20 @@ func (t *testSchemaSuite) Test_NewRequest_default_query_value(c *C) {
 	}
 
 	defaultValue := "default value"
-	testEndpoint2 := EndpointAPIModel{
+	testEndpoint2 := APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
 		Method:    http.MethodGet,
-		QueryParams: []EndpointAPIParam{
+		QueryParams: []APIParam{
 			{
 				Name:  "param1",
-				Model: EndpointAPIParamModelText,
-				PreModelTransformer: func(value string) (string, error) {
-					if value == "" {
-						return defaultValue, nil
+				Model: testAPIParamModel,
+				PreModelTransformer: func(ctx *Context) error {
+					if ctx.Value() == "" {
+						ctx.SetValue(defaultValue)
 					}
-					return value, nil
+					return nil
 				},
 			},
 		},

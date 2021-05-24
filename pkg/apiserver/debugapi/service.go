@@ -19,6 +19,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joomcode/errorx"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
@@ -38,24 +39,24 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/endpoints", s.GetEndpointList)
 }
 
-type endpoint struct {
-	EndpointAPIModel
+type endpointModel struct {
+	endpoint.APIModel
 	Client Client
 }
 
 type Service struct {
-	endpointMap map[string]endpoint
+	endpointMap map[string]endpointModel
 }
 
 func newService(clientMap *ClientMap) (*Service, error) {
-	s := &Service{endpointMap: map[string]endpoint{}}
+	s := &Service{endpointMap: map[string]endpointModel{}}
 
-	for _, e := range endpointAPIList {
+	for _, e := range endpoint.APIListDef {
 		client, ok := (*clientMap)[e.Component]
 		if !ok {
 			panic(ErrComponentClient.New("%s type client not found, id: %s", e.Component, e.ID))
 		}
-		s.endpointMap[e.ID] = endpoint{EndpointAPIModel: e, Client: client}
+		s.endpointMap[e.ID] = endpointModel{APIModel: e, Client: client}
 	}
 
 	return s, nil
@@ -106,11 +107,11 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 
 // @Summary Get all endpoint configs
 // @Security JwtAuth
-// @Success 200 {array} EndpointAPIModel
+// @Success 200 {array} endpoint.APIModel
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /debugapi/endpoints [get]
 func (s *Service) GetEndpointList(c *gin.Context) {
-	c.JSON(http.StatusOK, endpointAPIList)
+	c.JSON(http.StatusOK, endpoint.APIListDef)
 }

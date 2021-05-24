@@ -1,9 +1,10 @@
 import React from 'react'
 import type { FormInstance } from 'antd/es/form/Form'
 
-import { DebugapiEndpointAPIModel, DebugapiEndpointAPIParam } from '@lib/client'
+import { EndpointAPIModel, EndpointAPIParam } from '@lib/client'
 import type { Topology } from '../ApiForm'
 import { TextWidget } from './Text'
+import { TagsWidget } from './Tags'
 import { IntWidget } from './Int'
 import { HostSelectWidget } from './Host'
 import { DatabaseWidget } from './Database'
@@ -20,8 +21,8 @@ export interface ApiFormWidget {
 
 export interface ApiFormWidgetConfig {
   form: FormInstance
-  param: DebugapiEndpointAPIParam
-  endpoint: DebugapiEndpointAPIModel
+  param: EndpointAPIParam
+  endpoint: EndpointAPIModel
   topology: Topology
   value?: string
   onChange?: (v: string) => void
@@ -35,6 +36,7 @@ const createJSXElementWrapper = (WidgetDef: ApiFormWidget) => (
 export const paramModelWidgets: Widgets = {
   host: HostSelectWidget,
   text: TextWidget,
+  tags: createJSXElementWrapper(TagsWidget),
   int: IntWidget,
   db: createJSXElementWrapper(DatabaseWidget),
   table: createJSXElementWrapper(TableWidget),

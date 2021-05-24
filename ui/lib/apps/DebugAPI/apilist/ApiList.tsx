@@ -7,16 +7,16 @@ import { debounce } from 'lodash'
 
 import { AnimatedSkeleton, Card, Root } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import client, { DebugapiEndpointAPIModel } from '@lib/client'
+import client, { EndpointAPIModel } from '@lib/client'
 
 import style from './ApiList.module.less'
 import ApiForm, { Topology } from './ApiForm'
 
-const useFilterEndpoints = (endpoints?: DebugapiEndpointAPIModel[]) => {
+const useFilterEndpoints = (endpoints?: EndpointAPIModel[]) => {
   const [keywords, setKeywords] = useState('')
   const nonNullEndpoints = useMemo(() => endpoints || [], [endpoints])
   const [filteredEndpoints, setFilteredEndpoints] = useState<
-    DebugapiEndpointAPIModel[]
+    EndpointAPIModel[]
   >(nonNullEndpoints)
 
   useEffect(() => {
@@ -82,7 +82,7 @@ export default function Page() {
         }
         prev[groupName].push(endpoint)
         return prev
-      }, {} as { [group: string]: DebugapiEndpointAPIModel[] }),
+      }, {} as { [group: string]: EndpointAPIModel[] }),
     [endpoints]
   )
   const sortedGroups = useMemo(
@@ -93,7 +93,7 @@ export default function Page() {
     [groups]
   )
 
-  function EndpointGroup({ group }: { group: DebugapiEndpointAPIModel[] }) {
+  function EndpointGroup({ group }: { group: EndpointAPIModel[] }) {
     return (
       <Card
         noMarginLeft
@@ -154,7 +154,7 @@ function CustomHeader({
   endpoint,
   translation,
 }: {
-  endpoint: DebugapiEndpointAPIModel
+  endpoint: EndpointAPIModel
   translation: {
     t: TFunction
     i18n: Ii18n
@@ -183,7 +183,7 @@ function CustomHeader({
 }
 
 // e.g. http://{tidb_ip}/stats/dump/{db}/{table}?queryName={queryName}
-function Schema({ endpoint }: { endpoint: DebugapiEndpointAPIModel }) {
+function Schema({ endpoint }: { endpoint: EndpointAPIModel }) {
   const query =
     endpoint.query_params?.reduce((prev, { name }, i) => {
       if (i === 0) {

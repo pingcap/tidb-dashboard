@@ -140,3 +140,7 @@ function init() {
 }
 
 init()
+
+export function download(token: string) {
+  window.location.href = `${basePath}/files/${token}`
+}

@@ -113,16 +113,15 @@ export default function Page() {
                 }
                 key={endpoint.id!}
               >
-                <Space direction="vertical">
-                  {descExists && (
-                    <Alert
-                      message={t(descTranslationKey)}
-                      type="info"
-                      showIcon
-                    />
-                  )}
-                  <ApiForm endpoint={endpoint} topology={topology} />
-                </Space>
+                {descExists && (
+                  <Alert
+                    style={{ marginBottom: 8 }}
+                    message={t(descTranslationKey)}
+                    type="info"
+                    showIcon
+                  />
+                )}
+                <ApiForm endpoint={endpoint} topology={topology} />
               </Collapse.Panel>
             )
           })}

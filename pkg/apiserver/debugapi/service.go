@@ -106,7 +106,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 		return
 	}
 
-	c.Data(200, res.Header.Get("Content-type"), body)
+	c.Data(200, res.Header.Get("Content-Type"), body)
 }
 
 // @Summary Get all endpoint configs

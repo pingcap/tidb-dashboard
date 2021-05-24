@@ -89,20 +89,24 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 		_ = c.Error(ErrEndpointConfig.New("invalid endpoint id: %s", req.ID))
 		return
 	}
-
 	endpointReq, err := endpoint.NewRequest(req.Host, req.Port, req.Params)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	resp, err := endpoint.Client.Send(endpointReq)
+	res, err := endpoint.Client.Send(endpointReq)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	body, err := res.Body()
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	c.JSON(200, string(resp))
+	c.Data(200, res.Header.Get("Content-type"), body)
 }
 
 // @Summary Get all endpoint configs

@@ -20,6 +20,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
@@ -27,8 +28,8 @@ import (
 )
 
 type Client interface {
-	Send(request *endpoint.Request) ([]byte, error)
-	Get(request *endpoint.Request) ([]byte, error)
+	Send(request *endpoint.Request) (*httpc.Response, error)
+	Get(request *endpoint.Request) (*httpc.Response, error)
 }
 
 type ClientMap map[model.NodeKind]Client
@@ -43,7 +44,7 @@ func newClientMap(tidbImpl tidbImplement, tikvImpl tikvImplement, tiflashImpl ti
 	return &clientMap
 }
 
-func defaultSendRequest(client Client, req *endpoint.Request) ([]byte, error) {
+func defaultSendRequest(client Client, req *endpoint.Request) (*httpc.Response, error) {
 	switch req.Method {
 	case endpoint.MethodGet:
 		return client.Get(req)
@@ -57,11 +58,11 @@ type tidbImplement struct {
 	Client *tidb.Client
 }
 
-func (impl *tidbImplement) Get(req *endpoint.Request) ([]byte, error) {
-	return impl.Client.WithEnforcedStatusAPIAddress(req.Host, req.Port).SendGetRequest(req.Path)
+func (impl *tidbImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
+	return impl.Client.WithEnforcedStatusAPIAddress(req.Host, req.Port).Get(req.Path)
 }
 
-func (impl *tidbImplement) Send(req *endpoint.Request) ([]byte, error) {
+func (impl *tidbImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
 	return defaultSendRequest(impl, req)
 }
 
@@ -70,11 +71,11 @@ type tikvImplement struct {
 	Client *tikv.Client
 }
 
-func (impl *tikvImplement) Get(req *endpoint.Request) ([]byte, error) {
-	return impl.Client.SendGetRequest(req.Host, req.Port, req.Path)
+func (impl *tikvImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
+	return impl.Client.Get(req.Host, req.Port, req.Path)
 }
 
-func (impl *tikvImplement) Send(req *endpoint.Request) ([]byte, error) {
+func (impl *tikvImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
 	return defaultSendRequest(impl, req)
 }
 
@@ -83,11 +84,11 @@ type tiflashImplement struct {
 	Client *tiflash.Client
 }
 
-func (impl *tiflashImplement) Get(req *endpoint.Request) ([]byte, error) {
-	return impl.Client.SendGetRequest(req.Host, req.Port, req.Path)
+func (impl *tiflashImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
+	return impl.Client.Get(req.Host, req.Port, req.Path)
 }
 
-func (impl *tiflashImplement) Send(req *endpoint.Request) ([]byte, error) {
+func (impl *tiflashImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
 	return defaultSendRequest(impl, req)
 }
 
@@ -96,11 +97,11 @@ type pdImplement struct {
 	Client *pd.Client
 }
 
-func (impl *pdImplement) Get(req *endpoint.Request) ([]byte, error) {
+func (impl *pdImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	url := fmt.Sprintf("http://%s:%d", req.Host, req.Port)
-	return impl.Client.WithBaseURL(url).SendGetRequest(req.Path)
+	return impl.Client.WithBaseURL(url).Get(req.Path)
 }
 
-func (impl *pdImplement) Send(req *endpoint.Request) ([]byte, error) {
+func (impl *pdImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
 	return defaultSendRequest(impl, req)
 }

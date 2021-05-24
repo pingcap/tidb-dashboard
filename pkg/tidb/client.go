@@ -161,7 +161,7 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func (c *Client) SendGetRequest(path string) ([]byte, error) {
+func (c *Client) Get(path string) (*httpc.Response, error) {
 	var err error
 
 	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
@@ -187,11 +187,19 @@ func (c *Client) SendGetRequest(path string) ([]byte, error) {
 	}
 
 	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, path)
-	result, err := c.statusAPIHTTPClient.
+	res, err := c.statusAPIHTTPClient.
 		WithTimeout(c.statusAPITimeout).
-		SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, "TiDB")
+		Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, "TiDB")
 	if err != nil && c.forwarder.statusProxy.noAliveRemote.Load() {
 		return nil, ErrNoAliveTiDB.NewWithNoMessage()
 	}
-	return result, err
+	return res, err
+}
+
+func (c *Client) SendGetRequest(path string) ([]byte, error) {
+	res, err := c.Get(path)
+	if err != nil {
+		return nil, err
+	}
+	return res.Body()
 }

@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { Form, Button, Space, Tooltip, Row, Col } from 'antd'
 import { isNull, isUndefined } from 'lodash'
 import { DownloadOutlined, UndoOutlined } from '@ant-design/icons'
+import mime from 'mime-types'
+
 import client, {
   EndpointAPIModel,
   EndpointAPIParam,
@@ -51,12 +53,18 @@ export default function ApiForm({
           }
           return prev
         }, {})
-        const resp = await client.getInstance().debugapiRequestEndpointPost({
-          id,
-          host: hostname,
-          port: Number(port),
-          params,
-        })
+        const resp = await client.getInstance().debugapiRequestEndpointPost(
+          {
+            id,
+            host: hostname,
+            port: Number(port),
+            params,
+          },
+          {
+            // need the raw response body, so we can unify the transform process
+            transformResponse: (r) => r,
+          }
+        )
         data = resp.data
         headers = resp.headers
       } catch (e) {
@@ -65,12 +73,16 @@ export default function ApiForm({
         return
       }
 
+      if (headers['content-type'] === mime.lookup('json')) {
+        // quick view backdoor
+        console.log(data)
+      }
+
       const blob = new Blob([data], { type: headers['content-type'] })
       const link = document.createElement('a')
-      const fileName = `${id}_${Date.now()}.json`
-
-      // quick view backdoor
-      blob.text().then((t) => console.log(t))
+      const fileName = `${id}_${Date.now()}.${mime.extension(
+        headers['content-type']
+      )}`
 
       link.href = window.URL.createObjectURL(blob)
       link.download = fileName

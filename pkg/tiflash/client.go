@@ -65,9 +65,17 @@ func (c *Client) WithTimeout(timeout time.Duration) *Client {
 	return &c2
 }
 
-func (c *Client) SendGetRequest(host string, statusPort int, path string) ([]byte, error) {
+func (c *Client) Get(host string, statusPort int, path string) (*httpc.Response, error) {
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, path)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrFlashClientRequestFailed, "TiFlash")
+	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrFlashClientRequestFailed, "TiFlash")
+}
+
+func (c *Client) SendGetRequest(host string, statusPort int, path string) ([]byte, error) {
+	res, err := c.Get(host, statusPort, path)
+	if err != nil {
+		return nil, err
+	}
+	return res.Body()
 }
 
 func (c *Client) SendPostRequest(host string, statusPort int, path string, body io.Reader) ([]byte, error) {

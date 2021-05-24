@@ -150,10 +150,7 @@ func (PreviewModel) TableName() string {
 }
 
 func autoMigrate(db *dbstore.DB) error {
-	return db.AutoMigrate(&TaskModel{}).
-		AutoMigrate(&TaskGroupModel{}).
-		AutoMigrate(&PreviewModel{}).
-		Error
+	return db.AutoMigrate(&TaskModel{}, &TaskGroupModel{}, &PreviewModel{})
 }
 
 func cleanupAllTasks(db *dbstore.DB) {

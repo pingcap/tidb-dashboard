@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type clusterInspection struct {
@@ -422,7 +422,7 @@ func (s *queryTotal) appendRow(row []string) error {
 }
 
 func (c *clusterInspection) queryBigQueryInSlowLog() (string, error) {
-	sql := fmt.Sprintf(`select count(*) from 
+	sql := fmt.Sprintf(`select count(*) from
     (select sum(Process_time) as sum_process_time,
          digest
     from information_schema.CLUSTER_SLOW_QUERY
@@ -430,7 +430,7 @@ func (c *clusterInspection) queryBigQueryInSlowLog() (string, error) {
             AND time < '%s'
 			AND Is_internal = false
     group by  digest) AS t1
-	where t1.digest NOT IN 
+	where t1.digest NOT IN
     (select digest
     from information_schema.CLUSTER_SLOW_QUERY
     where time >= '%s'
@@ -450,7 +450,7 @@ func (c *clusterInspection) queryBigQueryInSlowLog() (string, error) {
 	if count == 0 {
 		return "", nil
 	}
-	return fmt.Sprintf(`select * from 
+	return fmt.Sprintf(`select * from
     (select count(*),
          min(time),
          sum(query_time) AS sum_query_time,
@@ -468,7 +468,7 @@ func (c *clusterInspection) queryBigQueryInSlowLog() (string, error) {
             and time < '%s'
             and Is_internal = false
     group by  digest) AS t1
-	where t1.digest NOT IN 
+	where t1.digest NOT IN
     (select digest
     from information_schema.CLUSTER_SLOW_QUERY
     where time >= '%s'

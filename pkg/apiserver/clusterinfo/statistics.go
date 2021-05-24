@@ -17,8 +17,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/jinzhu/gorm"
 	"github.com/thoas/go-funk"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo/hostinfo"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"

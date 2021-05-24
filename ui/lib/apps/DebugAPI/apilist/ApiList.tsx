@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Collapse, Space, Input, Empty, Alert, Tooltip } from 'antd'
+import { Collapse, Space, Input, Empty, Alert } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { TFunction, i18n as Ii18n } from 'i18next'
-import { SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { TFunction } from 'i18next'
+import { SearchOutlined } from '@ant-design/icons'
 import { debounce } from 'lodash'
 
 import { AnimatedSkeleton, Card, Root } from '@lib/components'
@@ -101,17 +101,31 @@ export default function Page() {
         title={t(`debug_api.${group[0].component!}.name`)}
       >
         <Collapse ghost>
-          {group.map((endpoint) => (
-            <Collapse.Panel
-              className={style.collapse_panel}
-              header={
-                <CustomHeader endpoint={endpoint} translation={{ t, i18n }} />
-              }
-              key={endpoint.id!}
-            >
-              <ApiForm endpoint={endpoint} topology={topology} />
-            </Collapse.Panel>
-          ))}
+          {group.map((endpoint) => {
+            const descTranslationKey = `debug_api.${endpoint.component}.endpoints.${endpoint.id}_desc`
+            const descExists = i18n.exists(descTranslationKey)
+
+            return (
+              <Collapse.Panel
+                className={style.collapse_panel}
+                header={
+                  <CustomHeader endpoint={endpoint} translation={{ t }} />
+                }
+                key={endpoint.id!}
+              >
+                <Space direction="vertical">
+                  {descExists && (
+                    <Alert
+                      message={t(descTranslationKey)}
+                      type="info"
+                      showIcon
+                    />
+                  )}
+                  <ApiForm endpoint={endpoint} topology={topology} />
+                </Space>
+              </Collapse.Panel>
+            )
+          })}
         </Collapse>
       </Card>
     )
@@ -157,12 +171,9 @@ function CustomHeader({
   endpoint: EndpointAPIModel
   translation: {
     t: TFunction
-    i18n: Ii18n
   }
 }) {
-  const { t, i18n } = translation
-  const descTranslationKey = `debug_api.${endpoint.component}.endpoints.${endpoint.id}_desc`
-  const descExists = i18n.exists(descTranslationKey)
+  const { t } = translation
   return (
     <div className={style.header}>
       <Space direction="vertical">
@@ -170,11 +181,6 @@ function CustomHeader({
           <h4>
             {t(`debug_api.${endpoint.component}.endpoints.${endpoint.id}`)}
           </h4>
-          {descExists && (
-            <Tooltip title={t(descTranslationKey)}>
-              <QuestionCircleOutlined />
-            </Tooltip>
-          )}
         </Space>
         <Schema endpoint={endpoint} />
       </Space>

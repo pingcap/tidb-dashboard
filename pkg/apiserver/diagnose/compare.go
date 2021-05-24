@@ -10,8 +10,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/jinzhu/gorm"
 	"github.com/pingcap/errors"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 )
@@ -50,7 +50,7 @@ func GetCompareReportTablesForDisplay(startTime1, endTime1, startTime2, endTime2
 
 	go func() {
 		// Get compare tables
-		tables3, errRows3 = getCompareTables(startTime2, endTime2, db.New(), sqliteDB, reportID, &progress, &totalTableCount)
+		tables3, errRows3 = getCompareTables(startTime2, endTime2, db.Session(&gorm.Session{NewDB: true}), sqliteDB, reportID, &progress, &totalTableCount)
 		errRows = append(errRows, errRows3...)
 		wg.Done()
 	}()

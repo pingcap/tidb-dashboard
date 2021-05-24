@@ -70,10 +70,10 @@ func (a *AxisModel) Delete(db *dbstore.DB) error {
 // If the table `AxisModel` exists, return true, nil
 // or create table `AxisModel`
 func CreateTableAxisModelIfNotExists(db *dbstore.DB) (bool, error) {
-	if db.HasTable(&AxisModel{}) {
+	if db.Migrator().HasTable(&AxisModel{}) {
 		return true, nil
 	}
-	return false, db.CreateTable(&AxisModel{}).Error
+	return false, db.Migrator().CreateTable(&AxisModel{})
 }
 
 func ClearTableAxisModel(db *dbstore.DB) error {

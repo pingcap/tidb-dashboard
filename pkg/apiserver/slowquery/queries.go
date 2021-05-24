@@ -16,7 +16,7 @@ package slowquery
 import (
 	"strings"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 const (
@@ -27,7 +27,7 @@ type GetListRequest struct {
 	BeginTime int      `json:"begin_time" form:"begin_time"`
 	EndTime   int      `json:"end_time" form:"end_time"`
 	DB        []string `json:"db" form:"db"`
-	Limit     uint     `json:"limit" form:"limit"`
+	Limit     int      `json:"limit" form:"limit"`
 	Text      string   `json:"text" form:"text"`
 	OrderBy   string   `json:"orderBy" form:"orderBy"`
 	IsDesc    bool     `json:"desc" form:"desc"`

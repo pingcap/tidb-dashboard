@@ -89,7 +89,7 @@ type EditableConfig struct {
 func (s *Service) configHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
 	cfg := &EditableConfig{}
-	err := db.Raw(buildConfigQuerySQL(cfg)).Find(cfg).Error
+	err := db.Raw(buildGlobalConfigProjectionSelectSQL(cfg)).Find(cfg).Error
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -104,19 +104,20 @@ func (s *Service) configHandler(c *gin.Context) {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) modifyConfigHandler(c *gin.Context) {
-	var err error
 	var config EditableConfig
-	if err = c.ShouldBindJSON(&config); err != nil {
+	if err := c.ShouldBindJSON(&config); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	db := utils.GetTiDBConnection(c)
 
+	var sqlWithNamedArgument string
 	if !config.Enable {
-		err = db.Exec(buildConfigUpdateSQL(&config, "Enable")).Error
+		sqlWithNamedArgument = buildGlobalConfigNamedArgsUpdateSQL(&config, "Enable")
 	} else {
-		err = db.Exec(buildConfigUpdateSQL(&config)).Error
+		sqlWithNamedArgument = buildGlobalConfigNamedArgsUpdateSQL(&config)
 	}
+	err := db.Exec(sqlWithNamedArgument, &config).Error
 	if err != nil {
 		_ = c.Error(err)
 		return

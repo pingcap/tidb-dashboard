@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/jinzhu/gorm"
 	"github.com/joomcode/errorx"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"

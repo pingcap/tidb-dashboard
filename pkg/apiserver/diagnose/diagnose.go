@@ -240,7 +240,7 @@ func (s *Service) genReportHandler(c *gin.Context) {
 	db := utils.TakeTiDBConnection(c)
 
 	go func() {
-		defer db.Close()
+		defer utils.CloseTiDBConnection(db) //nolint:errcheck
 
 		var tables []*TableDef
 		if compareStartTime == nil || compareEndTime == nil {

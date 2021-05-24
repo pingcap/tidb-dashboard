@@ -13,11 +13,23 @@
 
 package utils
 
-import "gorm.io/gorm/schema"
+import (
+	"testing"
 
-func GetGormColumnName(gormStr string) string {
-	gormStrMap := schema.ParseTagSetting(gormStr, ";")
-	// The key will be converted to uppercase in:
-	// https://github.com/go-gorm/gorm/blob/master/schema/utils.go#L33
-	return gormStrMap["COLUMN"]
+	. "github.com/pingcap/check"
+)
+
+func TestT(t *testing.T) {
+	CustomVerboseFlag = true
+	TestingT(t)
+}
+
+var _ = Suite(&testGormSuite{})
+
+type testGormSuite struct{}
+
+func (t *testGormSuite) Test_GetGormColumnName(c *C) {
+	c.Assert(GetGormColumnName(`column:db`), Equals, `db`)
+	c.Assert(GetGormColumnName(`primaryKey;index`), Equals, ``)
+	c.Assert(GetGormColumnName(`column:db;primaryKey;index`), Equals, `db`)
 }

@@ -18,8 +18,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jinzhu/gorm"
 	. "github.com/pingcap/check"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
 	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/matrix"
@@ -38,15 +39,11 @@ type testDbstoreSuite struct {
 
 func (t *testDbstoreSuite) SetUpTest(c *C) {
 	t.dir = c.MkDir()
-	gormDB, err := gorm.Open("sqlite3", path.Join(t.dir, "test.sqlite.db"))
+	gormDB, err := gorm.Open(sqlite.Open(path.Join(t.dir, "test.sqlite.db")))
 	if err != nil {
 		c.Errorf("Open %s error: %v", path.Join(t.dir, "test.sqlite.db"), err)
 	}
 	t.db = &dbstore.DB{DB: gormDB}
-}
-
-func (t *testDbstoreSuite) TearDownTest(c *C) {
-	_ = t.db.Close()
 }
 
 func (t *testDbstoreSuite) TestCreateTableAxisModelIfNotExists(c *C) {
@@ -71,7 +68,7 @@ func (t *testDbstoreSuite) TestClearTableAxisModel(c *C) {
 	if err != nil {
 		c.Fatalf("AxisModel Insert error: %v", err)
 	}
-	var count int
+	var count int64
 
 	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
@@ -121,7 +118,7 @@ func (t *testDbstoreSuite) TestAxisModelFunc(c *C) {
 	err = axisModel.Delete(t.db)
 	c.Assert(err, IsNil)
 
-	var count int
+	var count int64
 	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
 		c.Fatalf("Count table AxisModel error: %v", err)
@@ -155,7 +152,7 @@ func (t *testDbstoreSuite) TestAxisModelsFindAndDelete(c *C) {
 		}
 	}
 
-	var count int
+	var count int64
 	err = t.db.Table(tableAxisModelName).Count(&count).Error
 	if err != nil {
 		c.Fatalf("Count table AxisModel error: %v", err)

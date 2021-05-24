@@ -18,7 +18,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 const (

@@ -18,15 +18,15 @@ import (
 	"os"
 	"path"
 
-	"github.com/hypnoglow/gormzap"
-	"github.com/jinzhu/gorm"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"moul.io/zapgorm2"
 
-	// Sqlite3 driver used by gorm
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/pingcap/log"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
@@ -42,18 +42,19 @@ func NewDBStore(lc fx.Lifecycle, config *config.Config) (*DB, error) {
 
 	p := path.Join(config.DataDir, "dashboard.sqlite.db")
 	log.Info("Dashboard initializing local storage file", zap.String("path", p))
-	gormDB, err := gorm.Open("sqlite3", p)
+	gormDB, err := gorm.Open(sqlite.Open(p), &gorm.Config{
+		Logger: zapgorm2.New(log.L()),
+	})
 	if err != nil {
 		log.Error("Failed to open Dashboard storage file", zap.Error(err))
 		return nil, err
 	}
 
 	db := &DB{gormDB}
-	db.SetLogger(gormzap.New(log.L(), gormzap.WithLevel(zap.WarnLevel)))
 
 	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {
-			return db.Close()
+			return utils.CloseTiDBConnection(db.DB)
 		},
 	})
 

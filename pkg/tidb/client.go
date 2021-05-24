@@ -12,14 +12,12 @@ import (
 
 	"github.com/VividCortex/mysqlerr"
 	"github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-
-	// MySQL driver used by gorm
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	mysqlDriver "gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
@@ -139,7 +137,7 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	dsnConfig.TLSConfig = c.sqlAPITLSKey
 	dsn := dsnConfig.FormatDSN()
 
-	db, err := gorm.Open("mysql", dsn)
+	db, err := gorm.Open(mysqlDriver.Open(dsn))
 	if err != nil {
 		if _, ok := err.(*net.OpError); ok || err == driver.ErrBadConn {
 			if strings.HasPrefix(addr, "0.0.0.0:") {

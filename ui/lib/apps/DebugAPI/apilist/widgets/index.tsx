@@ -10,6 +10,7 @@ import { HostSelectWidget } from './Host'
 import { DatabaseWidget } from './Database'
 import { TableWidget } from './Table'
 import { TableIDWidget } from './TableID'
+import { StoresStateWidget } from './StoresState'
 
 export interface Widgets {
   [type: string]: ApiFormWidget
@@ -43,4 +44,6 @@ export const paramModelWidgets: Widgets = {
   table_id: createJSXElementWrapper(TableIDWidget),
 }
 
-export const paramWidgets: Widgets = {}
+export const paramWidgets: Widgets = {
+  'pd_stores/state': createJSXElementWrapper(StoresStateWidget),
+}

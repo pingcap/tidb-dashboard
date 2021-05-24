@@ -73,7 +73,10 @@ export default function ApiForm({
         return
       }
 
-      if (headers['content-type'] === mime.lookup('json')) {
+      if (
+        mime.extension(headers['content-type']) ===
+        mime.extension(mime.lookup('json'))
+      ) {
         // quick view backdoor
         console.log(data)
       }
@@ -163,9 +166,9 @@ function FormItemCol(props: React.HTMLAttributes<HTMLDivElement>) {
 }
 
 function ApiFormItem(widgetConfig: ApiFormWidgetConfig) {
-  const { param } = widgetConfig
+  const { param, endpoint } = widgetConfig
   let widget =
-    paramWidgets[param.name!] ||
+    paramWidgets[`${endpoint.id}/${param.name!}`] ||
     paramModelWidgets[param.model?.type!] ||
     paramModelWidgets.text
 

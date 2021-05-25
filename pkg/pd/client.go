@@ -35,6 +35,7 @@ const (
 )
 
 type Client struct {
+	httpScheme   string
 	baseURL      string
 	httpClient   *httpc.Client
 	lifecycleCtx context.Context
@@ -44,6 +45,7 @@ type Client struct {
 func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
 	client := &Client{
 		httpClient:   httpClient,
+		httpScheme:   config.GetClusterHTTPScheme(),
 		baseURL:      config.PDEndPoint,
 		lifecycleCtx: nil,
 		timeout:      defaultPDTimeout,
@@ -61,6 +63,11 @@ func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Confi
 
 func (c Client) WithBaseURL(baseURL string) *Client {
 	c.baseURL = baseURL
+	return &c
+}
+
+func (c Client) WithAddress(host string, port int) *Client {
+	c.baseURL = fmt.Sprintf("%s://%s:%d", c.httpScheme, host, port)
 	return &c
 }
 

@@ -59,10 +59,9 @@ func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Con
 	return client
 }
 
-func (c *Client) WithTimeout(timeout time.Duration) *Client {
-	c2 := *c
-	c2.timeout = timeout
-	return &c2
+func (c Client) WithTimeout(timeout time.Duration) *Client {
+	c.timeout = timeout
+	return &c
 }
 
 func (c *Client) Get(host string, statusPort int, path string) (*httpc.Response, error) {

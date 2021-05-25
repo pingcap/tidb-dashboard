@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/pingcap/kvproto/pkg/metapb"
 
@@ -388,7 +389,7 @@ var pdRegionScan APIModel = APIModel{
 var pdRegionSibling APIModel = APIModel{
 	ID:        "pd_region_sibling",
 	Component: model.NodeKindPD,
-	Path:      "/regions/sibling/${regionID}",
+	Path:      "/regions/sibling/{regionID}",
 	Method:    MethodGet,
 	PathParams: []APIParam{
 		{
@@ -424,7 +425,7 @@ var pdRegionStartKey APIModel = APIModel{
 var pdRegionsStore APIModel = APIModel{
 	ID:        "pd_regions_store",
 	Component: model.NodeKindPD,
-	Path:      "/regions/store/${storeID}",
+	Path:      "/regions/store/{storeID}",
 	Method:    MethodGet,
 	PathParams: []APIParam{
 		{
@@ -518,22 +519,12 @@ var pdRegionCheck APIModel = APIModel{
 				state := ctx.ParamValue("state")
 				val := ctx.Value()
 
-				if state == "hist-size" {
-					if val != "" {
-						if _, err := strconv.Atoi(val); err != nil {
-							return fmt.Errorf("region size histogram bound should be a number")
-						}
-						ctx.SetValue(val)
+				if val == "" {
+					if strings.EqualFold(state, "hist-size") {
+						ctx.SetValue("10")
+					} else if strings.EqualFold(state, "hist-keys") {
+						ctx.SetValue("10000")
 					}
-					ctx.SetValue("10")
-				} else if state == "hist-keys" {
-					if val != "" {
-						if _, err := strconv.Atoi(val); err != nil {
-							return fmt.Errorf("region keys histogram bound should be a number")
-						}
-						ctx.SetValue(val)
-					}
-					ctx.SetValue("10000")
 				}
 				return nil
 			},

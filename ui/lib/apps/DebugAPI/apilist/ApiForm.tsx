@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { Form, Button, Space, Tooltip, Row, Col } from 'antd'
 import { isNull, isUndefined } from 'lodash'
 import { DownloadOutlined, UndoOutlined } from '@ant-design/icons'
-import mime from 'mime-types'
 
 import client, {
   EndpointAPIModel,
@@ -13,6 +12,7 @@ import client, {
   TopologyTiDBInfo,
 } from '@lib/client'
 import { ApiFormWidgetConfig, paramWidgets, paramModelWidgets } from './widgets'
+import { isJSONContentType, download as downloadFile } from './file'
 
 export interface Topology {
   tidb: TopologyTiDBInfo[]
@@ -53,18 +53,12 @@ export default function ApiForm({
           }
           return prev
         }, {})
-        const resp = await client.getInstance().debugapiRequestEndpointPost(
-          {
-            id,
-            host: hostname,
-            port: Number(port),
-            params,
-          },
-          {
-            // need the raw response body, so we can unify the transform process
-            transformResponse: (r) => r,
-          }
-        )
+        const resp = await client.getInstance().debugapiRequestEndpointPost({
+          id,
+          host: hostname,
+          port: Number(port),
+          params,
+        })
         data = resp.data
         headers = resp.headers
       } catch (e) {
@@ -73,25 +67,12 @@ export default function ApiForm({
         return
       }
 
-      if (
-        mime.extension(headers['content-type']) ===
-        mime.extension(mime.lookup('json'))
-      ) {
+      if (isJSONContentType(headers['content-type'])) {
         // quick view backdoor
         console.log(data)
+        data = JSON.stringify(data)
       }
-
-      const blob = new Blob([data], { type: headers['content-type'] })
-      const link = document.createElement('a')
-      const fileName = `${id}_${Date.now()}.${mime.extension(
-        headers['content-type']
-      )}`
-
-      link.href = window.URL.createObjectURL(blob)
-      link.download = fileName
-      link.click()
-      window.URL.revokeObjectURL(link.href)
-
+      downloadFile(data, `${id}_${Date.now()}`, headers['content-type'])
       setLoading(false)
     },
     [id, endpointHostParamKey]

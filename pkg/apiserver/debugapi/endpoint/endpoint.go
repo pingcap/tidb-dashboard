@@ -53,7 +53,7 @@ type APIParamModel struct {
 	Transformer ModelTransformer `json:"-"`
 }
 
-// Transformer can transform the incoming param's value in special scenarios
+// ModelTransformer can transform the incoming param's value in special scenarios
 // Also, now are used as validation function
 type ModelTransformer func(ctx *Context) error
 

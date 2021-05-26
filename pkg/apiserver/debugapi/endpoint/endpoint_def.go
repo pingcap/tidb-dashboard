@@ -24,9 +24,24 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
+var pprofKindsParam = APIParam{
+	Name: "kind",
+	Model: CreateAPIParamModelEnum([]EnumItem{
+		{Name: "allocs"},
+		{Name: "block"},
+		{Name: "cmdline"},
+		{Name: "goroutine"},
+		{Name: "heap"},
+		{Name: "mutex"},
+		{Name: "profile"},
+		{Name: "threadcreate"},
+		{Name: "trace"},
+	}),
+}
+
 // tidb endpoints
 
-var tidbStatsDump APIModel = APIModel{
+var tidbStatsDump = APIModel{
 	ID:        "tidb_stats_dump",
 	Component: model.NodeKindTiDB,
 	Path:      "/stats/dump/{db}/{table}",
@@ -43,7 +58,7 @@ var tidbStatsDump APIModel = APIModel{
 	},
 }
 
-var tidbStatsDumpWithTimestamp APIModel = APIModel{
+var tidbStatsDumpWithTimestamp = APIModel{
 	ID:        "tidb_stats_dump_timestamp",
 	Component: model.NodeKindTiDB,
 	Path:      "/stats/dump/{db}/{table}/{yyyyMMddHHmmss}",
@@ -64,14 +79,14 @@ var tidbStatsDumpWithTimestamp APIModel = APIModel{
 	},
 }
 
-var tidbConfig APIModel = APIModel{
+var tidbConfig = APIModel{
 	ID:        "tidb_config",
 	Component: model.NodeKindTiDB,
 	Path:      "/settings",
 	Method:    MethodGet,
 }
 
-var tidbSchema APIModel = APIModel{
+var tidbSchema = APIModel{
 	ID:        "tidb_schema",
 	Component: model.NodeKindTiDB,
 	Path:      "/schema",
@@ -84,7 +99,7 @@ var tidbSchema APIModel = APIModel{
 	},
 }
 
-var tidbSchemaWithDB APIModel = APIModel{
+var tidbSchemaWithDB = APIModel{
 	ID:        "tidb_schema_db",
 	Component: model.NodeKindTiDB,
 	Path:      "/schema/{db}",
@@ -97,7 +112,7 @@ var tidbSchemaWithDB APIModel = APIModel{
 	},
 }
 
-var tidbSchemaWithDBTable APIModel = APIModel{
+var tidbSchemaWithDBTable = APIModel{
 	ID:        "tidb_schema_db_table",
 	Component: model.NodeKindTiDB,
 	Path:      "/schema/{db}/{table}",
@@ -114,7 +129,7 @@ var tidbSchemaWithDBTable APIModel = APIModel{
 	},
 }
 
-var tidbDBTableWithTableID APIModel = APIModel{
+var tidbDBTableWithTableID = APIModel{
 	ID:        "tidb_dbtable_tableid",
 	Component: model.NodeKindTiDB,
 	Path:      "/db-table/{tableID}",
@@ -127,42 +142,35 @@ var tidbDBTableWithTableID APIModel = APIModel{
 	},
 }
 
-var tidbDDLHistory APIModel = APIModel{
+var tidbDDLHistory = APIModel{
 	ID:        "tidb_ddl_history",
 	Component: model.NodeKindTiDB,
 	Path:      "/ddl/history",
 	Method:    MethodGet,
 }
 
-var tidbInfo APIModel = APIModel{
+var tidbInfo = APIModel{
 	ID:        "tidb_info",
 	Component: model.NodeKindTiDB,
 	Path:      "/info",
 	Method:    MethodGet,
 }
 
-var tidbInfoAll APIModel = APIModel{
+var tidbInfoAll = APIModel{
 	ID:        "tidb_info_all",
 	Component: model.NodeKindTiDB,
 	Path:      "/info/all",
 	Method:    MethodGet,
 }
 
-var tidbRegionsMeta APIModel = APIModel{
+var tidbRegionsMeta = APIModel{
 	ID:        "tidb_regions_meta",
 	Component: model.NodeKindTiDB,
 	Path:      "/regions/meta",
 	Method:    MethodGet,
 }
 
-var tidbHotRegions APIModel = APIModel{
-	ID:        "tidb_hot_regions",
-	Component: model.NodeKindTiDB,
-	Path:      "/regions/hot",
-	Method:    MethodGet,
-}
-
-var tidbRegionID APIModel = APIModel{
+var tidbRegionID = APIModel{
 	ID:        "tidb_region_id",
 	Component: model.NodeKindTiDB,
 	Path:      "/regions/{regionID}",
@@ -175,7 +183,7 @@ var tidbRegionID APIModel = APIModel{
 	},
 }
 
-var tidbTableRegions APIModel = APIModel{
+var tidbTableRegions = APIModel{
 	ID:        "tidb_table_regions",
 	Component: model.NodeKindTiDB,
 	Path:      "/tables/{db}/{table}/regions",
@@ -192,93 +200,83 @@ var tidbTableRegions APIModel = APIModel{
 	},
 }
 
-var tidbPprofAlloc APIModel = APIModel{
-	ID:        "tidb_pprof_alloc",
+var tidbHotRegions = APIModel{
+	ID:        "tidb_hot_regions",
 	Component: model.NodeKindTiDB,
-	Path:      "/debug/pprof/allocs",
+	Path:      "/regions/hot",
 	Method:    MethodGet,
 }
 
-var tidbPprofBlock APIModel = APIModel{
-	ID:        "tidb_pprof_block",
+var tidbPprof = APIModel{
+	ID:        "tidb_pprof",
 	Component: model.NodeKindTiDB,
-	Path:      "/debug/pprof/block",
+	Path:      "/debug/pprof/{kind}?debug=1",
 	Method:    MethodGet,
-}
-
-var tidbPprofGoroutine APIModel = APIModel{
-	ID:        "tidb_pprof_goroutine",
-	Component: model.NodeKindTiDB,
-	Path:      "/debug/pprof/goroutine",
-	Method:    MethodGet,
-}
-
-var tidbPprofHeap APIModel = APIModel{
-	ID:        "tidb_pprof_heap",
-	Component: model.NodeKindTiDB,
-	Path:      "/debug/pprof/heap",
-	Method:    MethodGet,
-}
-
-var tidbPprofMutex APIModel = APIModel{
-	ID:        "tidb_pprof_mutex",
-	Component: model.NodeKindTiDB,
-	Path:      "/debug/pprof/mutex",
-	Method:    MethodGet,
+	PathParams: []APIParam{
+		pprofKindsParam,
+	},
+	// TODO: We should allow user to specify `seconds` parameter.
 }
 
 // pd endpoints
 
-var pdCluster APIModel = APIModel{
+var pdCluster = APIModel{
 	ID:        "pd_cluster",
 	Component: model.NodeKindPD,
 	Path:      "/cluster",
 	Method:    MethodGet,
 }
 
-var pdClusterStatus APIModel = APIModel{
+var pdClusterStatus = APIModel{
 	ID:        "pd_cluster_status",
 	Component: model.NodeKindPD,
 	Path:      "/cluster/status",
 	Method:    MethodGet,
 }
 
-var pdHealth APIModel = APIModel{
+var pdConfigShowAll = APIModel{
+	ID:        "pd_config_show_all",
+	Component: model.NodeKindPD,
+	Path:      "/config",
+	Method:    MethodGet,
+}
+
+var pdHealth = APIModel{
 	ID:        "pd_health",
 	Component: model.NodeKindPD,
 	Path:      "/health",
 	Method:    MethodGet,
 }
 
-var pdHotRead APIModel = APIModel{
+var pdHotRead = APIModel{
 	ID:        "pd_hot_read",
 	Component: model.NodeKindPD,
 	Path:      "/hotspot/regions/read",
 	Method:    MethodGet,
 }
 
-var pdHotWrite APIModel = APIModel{
+var pdHotWrite = APIModel{
 	ID:        "pd_hot_write",
 	Component: model.NodeKindPD,
 	Path:      "/hotspot/regions/write",
 	Method:    MethodGet,
 }
 
-var pdHotStores APIModel = APIModel{
+var pdHotStores = APIModel{
 	ID:        "pd_hot_stores",
 	Component: model.NodeKindPD,
 	Path:      "/hotspot/stores",
 	Method:    MethodGet,
 }
 
-var pdLabels APIModel = APIModel{
+var pdLabels = APIModel{
 	ID:        "pd_labels",
 	Component: model.NodeKindPD,
 	Path:      "/labels",
 	Method:    MethodGet,
 }
 
-var pdLabelStores APIModel = APIModel{
+var pdLabelStores = APIModel{
 	ID:        "pd_label_stores",
 	Component: model.NodeKindPD,
 	Path:      "/labels/stores",
@@ -297,21 +295,21 @@ var pdLabelStores APIModel = APIModel{
 	},
 }
 
-var pdMembersShow APIModel = APIModel{
+var pdMembersShow = APIModel{
 	ID:        "pd_members_show",
 	Component: model.NodeKindPD,
 	Path:      "/members",
 	Method:    MethodGet,
 }
 
-var pdLeaderShow APIModel = APIModel{
+var pdLeaderShow = APIModel{
 	ID:        "pd_leader_show",
 	Component: model.NodeKindPD,
 	Path:      "/leader",
 	Method:    MethodGet,
 }
 
-var pdOperatorShow APIModel = APIModel{
+var pdOperatorShow = APIModel{
 	ID:        "pd_operator_show",
 	Component: model.NodeKindPD,
 	Path:      "/operators",
@@ -324,14 +322,14 @@ var pdOperatorShow APIModel = APIModel{
 	},
 }
 
-var pdRegions APIModel = APIModel{
+var pdRegions = APIModel{
 	ID:        "pd_regions",
 	Component: model.NodeKindPD,
 	Path:      "/regions",
 	Method:    MethodGet,
 }
 
-var pdRegionID APIModel = APIModel{
+var pdRegionID = APIModel{
 	ID:        "pd_region_id",
 	Component: model.NodeKindPD,
 	Path:      "/region/id/{regionID}",
@@ -344,7 +342,7 @@ var pdRegionID APIModel = APIModel{
 	},
 }
 
-var pdRegionKey APIModel = APIModel{
+var pdRegionKey = APIModel{
 	ID:        "pd_region_key",
 	Component: model.NodeKindPD,
 	Path:      "/region/key/{regionKey}",
@@ -362,7 +360,7 @@ var pdRegionKey APIModel = APIModel{
 	},
 }
 
-var pdRegionScan APIModel = APIModel{
+var pdRegionScan = APIModel{
 	ID:        "pd_region_scan",
 	Component: model.NodeKindPD,
 	Path:      "/regions/key",
@@ -386,7 +384,7 @@ var pdRegionScan APIModel = APIModel{
 	},
 }
 
-var pdRegionSibling APIModel = APIModel{
+var pdRegionSibling = APIModel{
 	ID:        "pd_region_sibling",
 	Component: model.NodeKindPD,
 	Path:      "/regions/sibling/{regionID}",
@@ -399,7 +397,7 @@ var pdRegionSibling APIModel = APIModel{
 	},
 }
 
-var pdRegionStartKey APIModel = APIModel{
+var pdRegionStartKey = APIModel{
 	ID:        "pd_region_start_key",
 	Component: model.NodeKindPD,
 	Path:      "/regions/key",
@@ -422,7 +420,7 @@ var pdRegionStartKey APIModel = APIModel{
 	},
 }
 
-var pdRegionsStore APIModel = APIModel{
+var pdRegionsStore = APIModel{
 	ID:        "pd_regions_store",
 	Component: model.NodeKindPD,
 	Path:      "/regions/store/{storeID}",
@@ -435,7 +433,7 @@ var pdRegionsStore APIModel = APIModel{
 	},
 }
 
-var pdRegionTopRead APIModel = APIModel{
+var pdRegionTopRead = APIModel{
 	ID:        "pd_region_top_read",
 	Component: model.NodeKindPD,
 	Path:      "/regions/readflow",
@@ -448,7 +446,7 @@ var pdRegionTopRead APIModel = APIModel{
 	},
 }
 
-var pdRegionTopWrite APIModel = APIModel{
+var pdRegionTopWrite = APIModel{
 	ID:        "pd_region_top_write",
 	Component: model.NodeKindPD,
 	Path:      "/regions/writeflow",
@@ -461,7 +459,7 @@ var pdRegionTopWrite APIModel = APIModel{
 	},
 }
 
-var pdRegionTopConfVer APIModel = APIModel{
+var pdRegionTopConfVer = APIModel{
 	ID:        "pd_region_top_conf_ver",
 	Component: model.NodeKindPD,
 	Path:      "/regions/confver",
@@ -474,7 +472,7 @@ var pdRegionTopConfVer APIModel = APIModel{
 	},
 }
 
-var pdRegionTopVersion APIModel = APIModel{
+var pdRegionTopVersion = APIModel{
 	ID:        "pd_region_top_version",
 	Component: model.NodeKindPD,
 	Path:      "/regions/version",
@@ -487,7 +485,7 @@ var pdRegionTopVersion APIModel = APIModel{
 	},
 }
 
-var pdRegionTopSize APIModel = APIModel{
+var pdRegionTopSize = APIModel{
 	ID:        "pd_region_top_size",
 	Component: model.NodeKindPD,
 	Path:      "/regions/size",
@@ -500,7 +498,7 @@ var pdRegionTopSize APIModel = APIModel{
 	},
 }
 
-var pdRegionCheck APIModel = APIModel{
+var pdRegionCheck = APIModel{
 	ID:        "pd_region_check",
 	Component: model.NodeKindPD,
 	Path:      "/regions/check/{state}",
@@ -541,7 +539,7 @@ var pdRegionCheck APIModel = APIModel{
 	},
 }
 
-var pdSchedulerShow APIModel = APIModel{
+var pdSchedulerShow = APIModel{
 	ID:        "pd_scheduler_show",
 	Component: model.NodeKindPD,
 	Path:      "/schedulers",
@@ -554,7 +552,7 @@ var pdSchedulerShow APIModel = APIModel{
 	},
 }
 
-var pdStores APIModel = APIModel{
+var pdStores = APIModel{
 	ID:        "pd_stores",
 	Component: model.NodeKindPD,
 	Path:      "/stores",
@@ -566,7 +564,7 @@ var pdStores APIModel = APIModel{
 			PostModelTransformer: func(ctx *Context) error {
 				vals := ctx.Values()
 				if len(vals) != 0 {
-					stateValues := []string{}
+					var stateValues []string
 					for _, state := range vals {
 						stateValue, ok := metapb.StoreState_value[state]
 						if !ok {
@@ -582,7 +580,7 @@ var pdStores APIModel = APIModel{
 	},
 }
 
-var pdStoreID APIModel = APIModel{
+var pdStoreID = APIModel{
 	ID:        "pd_store_id",
 	Component: model.NodeKindPD,
 	Path:      "/store/{storeID}",
@@ -595,42 +593,18 @@ var pdStoreID APIModel = APIModel{
 	},
 }
 
-var pdPprofAlloc APIModel = APIModel{
-	ID:        "pd_pprof_alloc",
+var pdPprof = APIModel{
+	ID:        "pd_pprof",
 	Component: model.NodeKindPD,
-	Path:      "/debug/pprof/allocs",
+	Path:      "/debug/pprof/{kind}?debug=1",
 	Method:    MethodGet,
+	PathParams: []APIParam{
+		pprofKindsParam,
+	},
+	// TODO: We should allow user to specify `seconds` parameter.
 }
 
-var pdPprofBlock APIModel = APIModel{
-	ID:        "pd_pprof_block",
-	Component: model.NodeKindPD,
-	Path:      "/debug/pprof/block",
-	Method:    MethodGet,
-}
-
-var pdPprofGoroutine APIModel = APIModel{
-	ID:        "pd_pprof_goroutine",
-	Component: model.NodeKindPD,
-	Path:      "/debug/pprof/goroutine",
-	Method:    MethodGet,
-}
-
-var pdPprofHeap APIModel = APIModel{
-	ID:        "pd_pprof_heap",
-	Component: model.NodeKindPD,
-	Path:      "/debug/pprof/heap",
-	Method:    MethodGet,
-}
-
-var pdPprofMutex APIModel = APIModel{
-	ID:        "pd_pprof_mutex",
-	Component: model.NodeKindPD,
-	Path:      "/debug/pprof/mutex",
-	Method:    MethodGet,
-}
-
-var APIListDef []APIModel = []APIModel{
+var APIListDef = []APIModel{
 	tidbStatsDump,
 	tidbStatsDumpWithTimestamp,
 	tidbConfig,
@@ -642,16 +616,13 @@ var APIListDef []APIModel = []APIModel{
 	tidbInfo,
 	tidbInfoAll,
 	tidbRegionsMeta,
-	tidbHotRegions,
 	tidbRegionID,
 	tidbTableRegions,
-	tidbPprofAlloc,
-	tidbPprofBlock,
-	tidbPprofGoroutine,
-	tidbPprofHeap,
-	tidbPprofMutex,
+	tidbHotRegions,
+	tidbPprof,
 	pdCluster,
 	pdClusterStatus,
+	pdConfigShowAll,
 	pdHealth,
 	pdHotRead,
 	pdHotWrite,
@@ -677,9 +648,5 @@ var APIListDef []APIModel = []APIModel{
 	pdSchedulerShow,
 	pdStores,
 	pdStoreID,
-	pdPprofAlloc,
-	pdPprofBlock,
-	pdPprofGoroutine,
-	pdPprofHeap,
-	pdPprofMutex,
+	pdPprof,
 }

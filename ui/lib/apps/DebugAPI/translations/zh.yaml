@@ -7,7 +7,7 @@ debug_api:
     body: 本页面提供的调试接口主要面向 TiDB 开发者、提供数据库内部运行数据。请在 TiDB 技术支持的指导下使用本功能。
   form:
     download: 下载
-    reset: 重置表单
+    reset: 重置
   widgets:
     host_select_placeholder: 请选择对应的 {{endpointType}} host
     text: 请输入 {{param}}
@@ -18,60 +18,5 @@ debug_api:
     table: 请从列表中选择 table 或输入完整的 table 名称
     table_id: 请从列表中选择 table ID 或输入完整的 table ID
   tidb:
-    name: TiDB
     endpoints:
-      tidb_stats_dump: Stats Dump
-      tidb_stats_dump_timestamp: Stats Dump With Timestamp
-      tidb_stats_dump_timestamp_desc: 获取特定时刻的 stats dump，该时刻应该在当前时间与 GC 时间节点之间
-      tidb_config: Current TiDB Config
-      tidb_schema: TiDB Schema
-      tidb_schema_db: DB Schema
-      tidb_schema_db_table: Table Schema
-      tidb_dbtable_tableid: Table Schema By Table ID
-      tidb_ddl_history: DDL History
-      tidb_info: Info
-      tidb_info_all: All Info
-      tidb_regions_meta: Regions Meta
-      tidb_hot_regions: Hot Regions
-      tidb_region_id: Specific Region
-      tidb_table_regions: Table Regions
-      tidb_pprof_alloc: Pprof Alloc
-      tidb_pprof_block: Pprof Block
-      tidb_pprof_goroutine: Pprof Goroutine
-      tidb_pprof_heap: Pprof Heap
-      tidb_pprof_mutex: Pprof Mutex
-  pd:
-    name: PD
-    endpoints:
-      pd_cluster: Cluster
-      pd_cluster_status: Cluster Status
-      pd_health: Health Check
-      pd_hot_read: Hot Read
-      pd_hot_write: Hot Write
-      pd_hot_stores: Hot Stores
-      pd_labels: Labels
-      pd_label_stores: Label List Stores
-      pd_members_show: Show Members
-      pd_leader_show: Show Leader
-      pd_operator_show: Show Operator
-      pd_regions: Regions
-      pd_region_id: Region ID
-      pd_region_key: Region Key
-      pd_region_scan: Region Scan
-      pd_region_sibling: Region Sibling
-      pd_region_start_key: Region Start Key
-      pd_regions_store: Regions Store
-      pd_region_top_read: Region Top Read
-      pd_region_top_write: Region Top Write
-      pd_region_top_conf_ver: Region Top ConfVer
-      pd_region_top_version: Region Top Version
-      pd_region_top_size: Region Top Size
-      pd_region_check: Region Check
-      pd_scheduler_show: Show Scheduler
-      pd_stores: Stores
-      pd_store_id: Store ID
-      pd_pprof_alloc: Pprof Alloc
-      pd_pprof_block: Pprof Block
-      pd_pprof_goroutine: Pprof Goroutine
-      pd_pprof_heap: Pprof Heap
-      pd_pprof_mutex: Pprof Mutex
+      tidb_stats_dump_timestamp_desc: 时间戳应当在 GC Safe Point 以后

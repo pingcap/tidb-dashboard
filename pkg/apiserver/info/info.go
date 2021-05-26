@@ -141,7 +141,7 @@ func (s *Service) tablesHandler(c *gin.Context) {
 	databaseName := c.Query("database_name")
 
 	if databaseName != "" {
-		tx = tx.Where("TABLE_SCHEMA = ?", databaseName)
+		tx = tx.Where("LOWER(TABLE_SCHEMA) = ?", strings.ToLower(databaseName))
 	}
 
 	err := tx.Order("TABLE_NAME").Scan(&result).Error

@@ -20,58 +20,50 @@ debug_api:
   tidb:
     name: TiDB
     endpoints:
-      tidb_stats_dump: Stats Dump
-      tidb_stats_dump_timestamp: Stats Dump With Timestamp
-      tidb_stats_dump_timestamp_desc: Fetch stats dump with timestamp, and timestamp needs to be set within the GC safe point
+      tidb_stats_dump: Statistics Data - of a Table
+      tidb_stats_dump_timestamp: Statistics Data - of a Table and Timestamp
+      tidb_stats_dump_timestamp_desc: The timestamp needs to be set within the GC safe point
       tidb_config: Current TiDB Config
-      tidb_schema: TiDB Schema
-      tidb_schema_db: DB Schema
-      tidb_schema_db_table: Table Schema
-      tidb_dbtable_tableid: Table Schema By Table ID
-      tidb_ddl_history: DDL History
-      tidb_info: Info
-      tidb_info_all: All Info
-      tidb_regions_meta: Regions Meta
+      tidb_schema: Schema Information - All / by TableID
+      tidb_schema_db: Schema Information - by Database
+      tidb_schema_db_table: Schema Information - by Database + Table
+      tidb_dbtable_tableid: schema and Table Information - by TableID
+      tidb_ddl_history: DDL History - All
+      tidb_info: TiDB Server Information - Current
+      tidb_info_all: TiDB Server Information - All TiDB Servers
+      tidb_regions_meta: Region - All
+      tidb_region_id: Region - by RegionID
+      tidb_table_regions: Region - by Database + Table
       tidb_hot_regions: Hot Regions
-      tidb_region_id: Specific Region
-      tidb_table_regions: Table Regions
-      tidb_pprof_alloc: Pprof Alloc
-      tidb_pprof_block: Pprof Block
-      tidb_pprof_goroutine: Pprof Goroutine
-      tidb_pprof_heap: Pprof Heap
-      tidb_pprof_mutex: Pprof Mutex
+      tidb_pprof: TiDB pprof
   pd:
     name: PD
     endpoints:
-      pd_cluster: PD Cluster
-      pd_cluster_status: PD Cluster Status
-      pd_health: Health Check
-      pd_hot_read: Hot Read
-      pd_hot_write: Hot Write
-      pd_hot_stores: Hot Stores
-      pd_labels: Labels
-      pd_label_stores: Label List Stores
-      pd_members_show: Show Members
-      pd_leader_show: Show Leader
-      pd_operator_show: Show Operator
-      pd_regions: Regions
-      pd_region_id: Region ID
-      pd_region_key: Region Key
-      pd_region_scan: Region Scan
-      pd_region_sibling: Region Sibling
-      pd_region_start_key: Region Start Key
-      pd_regions_store: Regions Store
-      pd_region_top_read: Region Top Read
-      pd_region_top_write: Region Top Write
-      pd_region_top_conf_ver: Region Top ConfVer
-      pd_region_top_version: Region Top Version
-      pd_region_top_size: Region Top Size
-      pd_region_check: Region Check
-      pd_scheduler_show: Show Scheduler
-      pd_stores: Stores
-      pd_store_id: Store ID
-      pd_pprof_alloc: Pprof Alloc
-      pd_pprof_block: Pprof Block
-      pd_pprof_goroutine: Pprof Goroutine
-      pd_pprof_heap: Pprof Heap
-      pd_pprof_mutex: Pprof Mutex
+      pd_cluster: Cluster Information (pd-ctl cluster)
+      pd_cluster_status: Cluster Status
+      pd_health: Cluster Health Information (pd-ctl health)
+      pd_hot_read: Hot - Read (pd-ctl hot read)
+      pd_hot_write: Hot - Write (pd-ctl hot write)
+      pd_hot_stores: Hot - Stores (pd-ctl hot store)
+      pd_labels: All Labels (pd-ctl label)
+      pd_label_stores: List Stores by Label (pd-ctl label store [name] [value])
+      pd_members_show: All Members Information (pd-ctl member)
+      pd_leader_show: Leader Information (pd-ctl member leader show)
+      pd_operator_show: All Operators (pd-ctl operator show)
+      pd_regions: Regions - All (pd-ctl region)
+      pd_region_id: Region - by RegionID (pd-ctl region [id])
+      pd_region_key: Region - by Key Reside in (pd-ctl region key [key])
+      pd_region_scan: Regions - Scan All (pd-ctl region scan)
+      pd_region_sibling: Regions - Sibling Regions by RegionID (pd-ctl region sibling [id])
+      pd_region_start_key: Regions - All Regions Starting from a Key (pd-ctl region startkey [key])
+      pd_regions_store: Regions - All Regions of a Store (pd-ctl region store [store-id])
+      pd_region_top_read: Regions - Top Read Flow (pd-ctl region topread)
+      pd_region_top_write: Regions - Top Write Flow (pd-ctl region topread)
+      pd_region_top_conf_ver: Regions - Top Conf Version (pd-ctl region topconfver)
+      pd_region_top_version: Regions - Top Version (pd-ctl region topversion)
+      pd_region_top_size: Regions - Top Size (pd-ctl region topsize)
+      pd_region_check: Regions - Check Regions in Abnormal Conditions (region check [state])
+      pd_scheduler_show: All Schedulers (pd-ctl scheduler show)
+      pd_stores: Stores - All (pd-ctl store)
+      pd_store_id: Store - by StoreID (pd-ctl store [id])
+      pd_pprof: PD pprof

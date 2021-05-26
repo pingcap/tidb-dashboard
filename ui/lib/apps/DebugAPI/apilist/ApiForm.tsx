@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Form, Button, Space, Tooltip, Row, Col } from 'antd'
+import { Form, Button, Space, Row, Col } from 'antd'
 import { isNull, isUndefined } from 'lodash'
 import { DownloadOutlined, UndoOutlined } from '@ant-design/icons'
 
@@ -125,13 +125,13 @@ export default function ApiForm({
           >
             {t('debug_api.form.download')}
           </Button>
-          <Tooltip title={t('debug_api.form.reset')}>
-            <Button
-              icon={<UndoOutlined />}
-              htmlType="button"
-              onClick={() => form.resetFields()}
-            />
-          </Tooltip>
+          <Button
+            icon={<UndoOutlined />}
+            htmlType="button"
+            onClick={() => form.resetFields()}
+          >
+            {t('debug_api.form.reset')}
+          </Button>
         </Space>
       </Form.Item>
     </Form>

@@ -11,7 +11,7 @@ import client, {
   TopologyStoreInfo,
   TopologyTiDBInfo,
 } from '@lib/client'
-import { ApiFormWidgetConfig, paramWidgets, paramModelWidgets } from './widgets'
+import { ApiFormWidgetConfig, createFormWidget } from './widgets'
 import { isJSONContentType, download as downloadFile } from './file'
 
 export interface Topology {
@@ -104,16 +104,19 @@ export default function ApiForm({
         <FormItemCol>
           <EndpointHost />
         </FormItemCol>
-        {params.map((param) => (
-          <FormItemCol key={param.name}>
-            <ApiFormItem
-              form={form}
-              endpoint={endpoint}
-              param={param}
-              topology={topology}
-            ></ApiFormItem>
-          </FormItemCol>
-        ))}
+        {params
+          // hide constant param model widget
+          .filter((param) => param.model?.type !== 'constant')
+          .map((param) => (
+            <FormItemCol key={param.name}>
+              <ApiFormItem
+                form={form}
+                endpoint={endpoint}
+                param={param}
+                topology={topology}
+              ></ApiFormItem>
+            </FormItemCol>
+          ))}
       </Row>
       <Form.Item>
         <Space>
@@ -147,19 +150,14 @@ function FormItemCol(props: React.HTMLAttributes<HTMLDivElement>) {
 }
 
 function ApiFormItem(widgetConfig: ApiFormWidgetConfig) {
-  const { param, endpoint } = widgetConfig
-  let widget =
-    paramWidgets[`${endpoint.id}/${param.name!}`] ||
-    paramModelWidgets[param.model?.type!] ||
-    paramModelWidgets.text
-
+  const { param } = widgetConfig
   return (
     <Form.Item
       rules={[{ required: !!param.required }]}
       name={param.name}
       label={param.name}
     >
-      {widget(widgetConfig)}
+      {createFormWidget(widgetConfig)}
     </Form.Item>
   )
 }

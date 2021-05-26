@@ -11,6 +11,7 @@ import client, { EndpointAPIModel } from '@lib/client'
 
 import style from './ApiList.module.less'
 import ApiForm, { Topology } from './ApiForm'
+import { buildQueryString } from './widgets'
 
 const useFilterEndpoints = (endpoints?: EndpointAPIModel[]) => {
   const [keywords, setKeywords] = useState('')
@@ -189,14 +190,7 @@ function CustomHeader({
 
 // e.g. http://{tidb_ip}/stats/dump/{db}/{table}?queryName={queryName}
 function Schema({ endpoint }: { endpoint: EndpointAPIModel }) {
-  const query =
-    endpoint.query_params?.reduce((prev, { name }, i) => {
-      if (i === 0) {
-        prev += '?'
-      }
-      prev += `${name}={${name}}`
-      return prev
-    }, '') || ''
+  const query = buildQueryString(endpoint.query_params ?? [])
   return (
     <p className={style.schema}>
       {`http://{${endpoint.component}_host}${endpoint.path}${query}`}

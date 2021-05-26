@@ -210,12 +210,21 @@ var tidbHotRegions = APIModel{
 var tidbPprof = APIModel{
 	ID:        "tidb_pprof",
 	Component: model.NodeKindTiDB,
-	Path:      "/debug/pprof/{kind}?debug=1",
+	Path:      "/debug/pprof/{kind}",
 	Method:    MethodGet,
 	PathParams: []APIParam{
 		pprofKindsParam,
 	},
-	// TODO: We should allow user to specify `seconds` parameter.
+	QueryParams: []APIParam{
+		{
+			Name:  "debug",
+			Model: CreateAPIParamModelConstant("1"),
+		},
+		{
+			Name:  "seconds",
+			Model: APIParamModelInt,
+		},
+	},
 }
 
 // pd endpoints
@@ -596,12 +605,21 @@ var pdStoreID = APIModel{
 var pdPprof = APIModel{
 	ID:        "pd_pprof",
 	Component: model.NodeKindPD,
-	Path:      "/debug/pprof/{kind}?debug=1",
+	Path:      "/debug/pprof/{kind}",
 	Method:    MethodGet,
 	PathParams: []APIParam{
 		pprofKindsParam,
 	},
-	// TODO: We should allow user to specify `seconds` parameter.
+	QueryParams: []APIParam{
+		{
+			Name:  "debug",
+			Model: CreateAPIParamModelConstant("1"),
+		},
+		{
+			Name:  "seconds",
+			Model: APIParamModelInt,
+		},
+	},
 }
 
 var APIListDef = []APIModel{

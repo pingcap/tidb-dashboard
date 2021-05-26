@@ -22,11 +22,11 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-var APIParamModelText APIParamModel = APIParamModel{
+var APIParamModelText = APIParamModel{
 	Type: "text",
 }
 
-var APIParamModelMultiTags APIParamModel = APIParamModel{
+var APIParamModelMultiTags = APIParamModel{
 	Type: "tags",
 	Transformer: func(ctx *Context) error {
 		vals := strings.Split(ctx.Value(), ",")
@@ -38,7 +38,7 @@ var APIParamModelMultiTags APIParamModel = APIParamModel{
 	},
 }
 
-var APIParamModelInt APIParamModel = APIParamModel{
+var APIParamModelInt = APIParamModel{
 	Type: "int",
 	Transformer: func(ctx *Context) error {
 		if _, err := strconv.Atoi(ctx.Value()); err != nil {
@@ -66,14 +66,25 @@ func CreateAPIParamModelEnum(items []EnumItem) APIParamModel {
 	}
 }
 
-var APIParamModelDB APIParamModel = APIParamModel{
+func CreateAPIParamModelConstant(constVal string) APIParamModel {
+	return APIParamModel{
+		Type: "constant",
+		Data: constVal,
+		Transformer: func(ctx *Context) error {
+			ctx.SetValue(constVal)
+			return nil
+		},
+	}
+}
+
+var APIParamModelDB = APIParamModel{
 	Type: "db",
 }
 
-var APIParamModelTable APIParamModel = APIParamModel{
+var APIParamModelTable = APIParamModel{
 	Type: "table",
 }
 
-var APIParamModelTableID APIParamModel = APIParamModel{
+var APIParamModelTableID = APIParamModel{
 	Type: "table_id",
 }

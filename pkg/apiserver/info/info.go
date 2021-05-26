@@ -105,7 +105,7 @@ func (s *Service) whoamiHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) databasesHandler(c *gin.Context) {
 	type databaseSchemas struct {
-		Databases string `gorm:"column:Databases"`
+		Databases string `gorm:"column:Database"`
 	}
 	var result []databaseSchemas
 	db := utils.GetTiDBConnection(c)

@@ -1,5 +1,5 @@
 const path = require('path')
-const fs = require('fs')
+const { execSync } = require('child_process')
 const {
   override,
   fixBabelImports,
@@ -106,6 +106,23 @@ const supportDynamicPublicPathPrefix = () => (config) => {
   return config
 }
 
+const overrideProcessEnv = value => config => {
+  const plugin = config.plugins.find(plugin => plugin.constructor.name === 'DefinePlugin');
+  const processEnv = plugin.definitions['process.env'] || {};
+
+  plugin.definitions['process.env'] = {
+    ...processEnv,
+    ...value,
+  };
+
+  return config;
+};
+
+const getInternalVersion = () => {
+  const out = execSync(`grep -v '^\#' ../release-version`)
+  return out.toString()
+}
+
 module.exports = override(
   fixBabelImports('import', {
     libraryName: 'antd',
@@ -152,5 +169,8 @@ module.exports = override(
   ),
   disableMinimizeByEnv(),
   addExtraEntries(),
-  supportDynamicPublicPathPrefix()
+  supportDynamicPublicPathPrefix(),
+  overrideProcessEnv({
+    INTERNAL_VERSION: JSON.stringify(getInternalVersion())
+  }),
 )

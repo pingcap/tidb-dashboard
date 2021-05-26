@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next'
 
 import { CacheContext } from '@lib/utils/useCache'
 import { Card, ColumnsSelector, Toolbar, MultiSelect } from '@lib/components'
+import { useCompatibilityLocalstorage } from '@lib/utils/useCompatibilityLocalstorage'
 
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
@@ -45,7 +46,10 @@ export default function StatementsOverview() {
   const statementCacheMgr = useContext(CacheContext)
 
   const [showSettings, setShowSettings] = useState(false)
-  const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
+  const [
+    visibleColumnKeys,
+    setVisibleColumnKeys,
+  ] = useCompatibilityLocalstorage(
     STMT_VISIBLE_COLUMN_KEYS,
     DEF_STMT_COLUMN_KEYS
   )

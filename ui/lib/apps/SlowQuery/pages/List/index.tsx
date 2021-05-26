@@ -27,6 +27,7 @@ import {
   MultiSelect,
 } from '@lib/components'
 import { CacheContext } from '@lib/utils/useCache'
+import { useCompatibilityLocalstorage } from '@lib/utils/useCompatibilityLocalstorage'
 
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQueryTableController, {
@@ -47,7 +48,10 @@ function List() {
 
   const slowQueryCacheMgr = useContext(CacheContext)
 
-  const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
+  const [
+    visibleColumnKeys,
+    setVisibleColumnKeys,
+  ] = useCompatibilityLocalstorage(
     SLOW_QUERY_VISIBLE_COLUMN_KEYS,
     DEF_SLOW_QUERY_COLUMN_KEYS
   )

@@ -49,6 +49,7 @@ type APIParam struct {
 
 type APIParamModel struct {
 	Type        string           `json:"type"`
+	Data        interface{}      `json:"data"`
 	Transformer ModelTransformer `json:"-"`
 }
 

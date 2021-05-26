@@ -13,6 +13,7 @@ debug_api:
     text: Please enter the {{param}}
     tags: Please enter the {{param}}
     int: Please enter the {{param}}
+    enum: Please select the {{param}}
     db: Please select the database or enter the full database name
     table: Please select the table or enter the full table name
     table_id: Please select the table ID or enter the full table ID

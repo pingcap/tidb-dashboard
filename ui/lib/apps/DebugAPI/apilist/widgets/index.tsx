@@ -6,6 +6,7 @@ import type { Topology } from '../ApiForm'
 import { TextWidget } from './Text'
 import { TagsWidget } from './Tags'
 import { IntWidget } from './Int'
+import { EnumWidget } from './Enum'
 import { HostSelectWidget } from './Host'
 import { DatabaseWidget } from './Database'
 import { TableWidget } from './Table'
@@ -39,6 +40,7 @@ export const paramModelWidgets: Widgets = {
   text: TextWidget,
   tags: createJSXElementWrapper(TagsWidget),
   int: IntWidget,
+  enum: EnumWidget,
   db: createJSXElementWrapper(DatabaseWidget),
   table: createJSXElementWrapper(TableWidget),
   table_id: createJSXElementWrapper(TableIDWidget),

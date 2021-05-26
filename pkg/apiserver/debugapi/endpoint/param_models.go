@@ -48,6 +48,24 @@ var APIParamModelInt APIParamModel = APIParamModel{
 	},
 }
 
+type EnumItem struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+func CreateAPIParamModelEnum(items []EnumItem) APIParamModel {
+	items = funk.Map(items, func(item EnumItem) EnumItem {
+		if item.Value == "" {
+			item.Value = item.Name
+		}
+		return item
+	}).([]EnumItem)
+	return APIParamModel{
+		Type: "enum",
+		Data: items,
+	}
+}
+
 var APIParamModelDB APIParamModel = APIParamModel{
 	Type: "db",
 }

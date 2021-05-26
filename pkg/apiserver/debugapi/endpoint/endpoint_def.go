@@ -507,8 +507,17 @@ var pdRegionCheck APIModel = APIModel{
 	Method:    MethodGet,
 	PathParams: []APIParam{
 		{
-			Name:  "state",
-			Model: APIParamModelText,
+			Name: "state",
+			Model: CreateAPIParamModelEnum([]EnumItem{
+				{Name: "miss-peer"},
+				{Name: "extra-peer"},
+				{Name: "down-peer"},
+				{Name: "pending-peer"},
+				{Name: "offline-peer"},
+				{Name: "empty-peer"},
+				{Name: "hist-peer"},
+				{Name: "hist-keys"},
+			}),
 		},
 	},
 	QueryParams: []APIParam{

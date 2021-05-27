@@ -61,9 +61,8 @@ func defaultSendRequest(client Client, req *endpoint.Request) (*httpc.Response, 
 func buildRelativeURI(path string, query string) string {
 	if len(query) == 0 {
 		return path
-	} else {
-		return fmt.Sprintf("%s?%s", path, query)
 	}
+	return fmt.Sprintf("%s?%s", path, query)
 }
 
 type tidbImplement struct {

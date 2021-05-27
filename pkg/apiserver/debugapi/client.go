@@ -58,7 +58,7 @@ func defaultSendRequest(client Client, req *endpoint.Request) (*httpc.Response, 
 	}
 }
 
-func buildRelativeUri(path string, query string) string {
+func buildRelativeURI(path string, query string) string {
 	if len(query) == 0 {
 		return path
 	} else {
@@ -75,7 +75,7 @@ func (impl *tidbImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
 		WithEnforcedStatusAPIAddress(req.Host, req.Port).
 		WithStatusAPITimeout(defaultTimeout).
-		Get(buildRelativeUri(req.Path, req.Query))
+		Get(buildRelativeURI(req.Path, req.Query))
 }
 
 func (impl *tidbImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
@@ -90,7 +90,7 @@ type tikvImplement struct {
 func (impl *tikvImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
 		WithTimeout(defaultTimeout).
-		Get(req.Host, req.Port, buildRelativeUri(req.Path, req.Query))
+		Get(req.Host, req.Port, buildRelativeURI(req.Path, req.Query))
 }
 
 // FIXME: Deduplicate default implementation.
@@ -106,7 +106,7 @@ type tiflashImplement struct {
 func (impl *tiflashImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
 		WithTimeout(defaultTimeout).
-		Get(req.Host, req.Port, buildRelativeUri(req.Path, req.Query))
+		Get(req.Host, req.Port, buildRelativeURI(req.Path, req.Query))
 }
 
 func (impl *tiflashImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
@@ -122,7 +122,7 @@ func (impl *pdImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
 		WithAddress(req.Host, req.Port).
 		WithTimeout(defaultTimeout).
-		Get(buildRelativeUri(req.Path, req.Query))
+		Get(buildRelativeURI(req.Path, req.Query))
 }
 
 func (impl *pdImplement) Send(req *endpoint.Request) (*httpc.Response, error) {

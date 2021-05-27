@@ -81,20 +81,20 @@ func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
 	return &c
 }
 
-func (c *Client) Get(relativeUri string) (*httpc.Response, error) {
-	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeUri)
+func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
+	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrPDClientRequestFailed, "PD")
 }
 
-func (c *Client) SendGetRequest(relativeUri string) ([]byte, error) {
-	res, err := c.Get(relativeUri)
+func (c *Client) SendGetRequest(relativeURI string) ([]byte, error) {
+	res, err := c.Get(relativeURI)
 	if err != nil {
 		return nil, err
 	}
 	return res.Body()
 }
 
-func (c *Client) SendPostRequest(relativeUri string, body io.Reader) ([]byte, error) {
-	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeUri)
+func (c *Client) SendPostRequest(relativeURI string, body io.Reader) ([]byte, error) {
+	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrPDClientRequestFailed, "PD")
 }

@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { SearchOutlined } from '@ant-design/icons'
 import { debounce } from 'lodash'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
 import { AnimatedSkeleton, Card, Root } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
@@ -99,6 +101,7 @@ export default function Page() {
       <Card
         noMarginLeft
         noMarginRight
+        noMarginTop
         title={t(`debug_api.${group[0].component!}.name`)}
       >
         <Collapse ghost>
@@ -133,33 +136,41 @@ export default function Page() {
 
   return (
     <Root>
-      <Card>
-        <Alert
-          message={t(`debug_api.warning_header.title`)}
-          description={t(`debug_api.warning_header.body`)}
-          type="warning"
-          showIcon
-        />
-      </Card>
-      <Card>
-        <Input
-          style={{ maxWidth: 450 }}
-          placeholder={t(`debug_api.keyword_search`)}
-          prefix={<SearchOutlined />}
-          onChange={(e) => filterBy(e.target.value)}
-        />
-      </Card>
-      <Card>
-        <AnimatedSkeleton showSkeleton={isEndpointLoading || isTopologyLoading}>
-          {endpoints.length ? (
-            sortedGroups.map((g) => (
-              <EndpointGroup key={g[0].component!} group={g} />
-            ))
-          ) : (
-            <Empty description={t('debug_api.endpoints_not_found')} />
-          )}
-        </AnimatedSkeleton>
-      </Card>
+      <ScrollablePane style={{ height: '100vh' }}>
+        <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
+          <div style={{ display: 'flow-root' }}>
+            <Card>
+              <Space direction="vertical" size="large">
+                <Alert
+                  message={t(`debug_api.warning_header.title`)}
+                  description={t(`debug_api.warning_header.body`)}
+                  type="warning"
+                  showIcon
+                />
+                <Input
+                  style={{ maxWidth: 450 }}
+                  placeholder={t(`debug_api.keyword_search`)}
+                  prefix={<SearchOutlined />}
+                  onChange={(e) => filterBy(e.target.value)}
+                />
+              </Space>
+            </Card>
+          </div>
+        </Sticky>
+        <Card noMarginTop>
+          <AnimatedSkeleton
+            showSkeleton={isEndpointLoading || isTopologyLoading}
+          >
+            {endpoints.length ? (
+              sortedGroups.map((g) => (
+                <EndpointGroup key={g[0].component!} group={g} />
+              ))
+            ) : (
+              <Empty description={t('debug_api.endpoints_not_found')} />
+            )}
+          </AnimatedSkeleton>
+        </Card>
+      </ScrollablePane>
     </Root>
   )
 }

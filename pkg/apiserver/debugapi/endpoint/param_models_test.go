@@ -74,8 +74,8 @@ func (t *testParamModelsSuite) Test_APIParamModelInt(c *C) {
 			},
 		},
 	}
-	value1 := "value1"
 
+	value1 := "value1"
 	_, err := testEndpoint.NewRequest("127.0.0.1", 10080, map[string]string{
 		"param1": value1,
 	})
@@ -83,12 +83,34 @@ func (t *testParamModelsSuite) Test_APIParamModelInt(c *C) {
 	c.Assert(errorx.IsOfType(err, ErrInvalidParam), Equals, true)
 
 	value2 := "2"
-
 	req2, err := testEndpoint.NewRequest("127.0.0.1", 10080, map[string]string{
 		"param1": value2,
 	})
 	if err == nil {
 		c.Assert(req2.Query, Equals, fmt.Sprintf("param1=%s", value2))
+	} else {
+		c.Error(err)
+	}
+}
+
+func (t *testParamModelsSuite) Test_APIParamModelConstant(c *C) {
+	value1 := "value1"
+	testEndpoint := APIModel{
+		ID:        "test_endpoint",
+		Component: model.NodeKindTiDB,
+		Path:      "/test",
+		Method:    http.MethodGet,
+		QueryParams: []APIParam{
+			{
+				Name:  "param1",
+				Model: CreateAPIParamModelConstant(value1),
+			},
+		},
+	}
+
+	req2, err := testEndpoint.NewRequest("127.0.0.1", 10080, map[string]string{})
+	if err == nil {
+		c.Assert(req2.Query, Equals, fmt.Sprintf("param1=%s", value1))
 	} else {
 		c.Error(err)
 	}

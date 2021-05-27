@@ -34,7 +34,7 @@ var _ = Suite(&testSchemaSuite{})
 
 type testSchemaSuite struct{}
 
-var testAPIParamModel APIParamModel = APIParamModel{
+var testAPIParamModel = &DefaultAPIParamModel{
 	Type: "text",
 }
 
@@ -142,7 +142,7 @@ func (t *testSchemaSuite) Test_NewRequest_missing_required_params_err(c *C) {
 }
 
 func (t *testSchemaSuite) Test_NewRequest_transformer_validation(c *C) {
-	testParamModel := APIParamModel{
+	testParamModel := &DefaultAPIParamModel{
 		Type: "test",
 		Transformer: func(ctx *Context) error {
 			return fmt.Errorf("test error")
@@ -172,7 +172,7 @@ func (t *testSchemaSuite) Test_NewRequest_transformer_validation(c *C) {
 
 func (t *testSchemaSuite) Test_NewRequest_transformer_transform(c *C) {
 	testValue := "test_value"
-	testParamModel := APIParamModel{
+	testParamModel := &DefaultAPIParamModel{
 		Type: "test",
 		Transformer: func(ctx *Context) error {
 			ctx.SetValue(testValue)

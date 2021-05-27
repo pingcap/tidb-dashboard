@@ -22,11 +22,33 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-var APIParamModelText = APIParamModel{
+type DefaultAPIParamModel struct {
+	Type           string           `json:"type"`
+	PreTransformer ModelTransformer `json:"-"`
+	Transformer    ModelTransformer `json:"-"`
+}
+
+func (m *DefaultAPIParamModel) PreTransform(ctx *Context) error {
+	if m.PreTransformer != nil {
+		return m.PreTransformer(ctx)
+	}
+	return nil
+}
+
+func (m *DefaultAPIParamModel) Transform(ctx *Context) error {
+	if m.Transformer != nil {
+		return m.Transformer(ctx)
+	}
+	return nil
+}
+
+var _ APIParamModel = (*DefaultAPIParamModel)(nil)
+
+var APIParamModelText = &DefaultAPIParamModel{
 	Type: "text",
 }
 
-var APIParamModelMultiTags = APIParamModel{
+var APIParamModelMultiTags = &DefaultAPIParamModel{
 	Type: "tags",
 	Transformer: func(ctx *Context) error {
 		vals := strings.Split(ctx.Value(), ",")
@@ -38,7 +60,7 @@ var APIParamModelMultiTags = APIParamModel{
 	},
 }
 
-var APIParamModelInt = APIParamModel{
+var APIParamModelInt = &DefaultAPIParamModel{
 	Type: "int",
 	Transformer: func(ctx *Context) error {
 		if _, err := strconv.Atoi(ctx.Value()); err != nil {
@@ -48,43 +70,57 @@ var APIParamModelInt = APIParamModel{
 	},
 }
 
+type EnumAPIParamModel struct {
+	DefaultAPIParamModel
+	Data []EnumItem `json:"data"`
+}
+
 type EnumItem struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
 
-func CreateAPIParamModelEnum(items []EnumItem) APIParamModel {
+func CreateAPIParamModelEnum(items []EnumItem) *EnumAPIParamModel {
 	items = funk.Map(items, func(item EnumItem) EnumItem {
 		if item.Value == "" {
 			item.Value = item.Name
 		}
 		return item
 	}).([]EnumItem)
-	return APIParamModel{
-		Type: "enum",
-		Data: items,
-	}
-}
-
-func CreateAPIParamModelConstant(constVal string) APIParamModel {
-	return APIParamModel{
-		Type: "constant",
-		Data: constVal,
-		Transformer: func(ctx *Context) error {
-			ctx.SetValue(constVal)
-			return nil
+	return &EnumAPIParamModel{
+		DefaultAPIParamModel{
+			Type: "enum",
 		},
+		items,
 	}
 }
 
-var APIParamModelDB = APIParamModel{
+type ConstantAPIParamModel struct {
+	DefaultAPIParamModel
+	Data string `json:"data"`
+}
+
+func CreateAPIParamModelConstant(constVal string) *ConstantAPIParamModel {
+	return &ConstantAPIParamModel{
+		DefaultAPIParamModel{
+			Type: "constant",
+			PreTransformer: func(ctx *Context) error {
+				ctx.SetValue(constVal)
+				return nil
+			},
+		},
+		constVal,
+	}
+}
+
+var APIParamModelDB = &DefaultAPIParamModel{
 	Type: "db",
 }
 
-var APIParamModelTable = APIParamModel{
+var APIParamModelTable = &DefaultAPIParamModel{
 	Type: "table",
 }
 
-var APIParamModelTableID = APIParamModel{
+var APIParamModelTableID = &DefaultAPIParamModel{
 	Type: "table_id",
 }

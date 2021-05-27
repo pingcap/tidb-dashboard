@@ -31,6 +31,11 @@ export interface ApiFormWidgetConfig {
   onChange?: (v: string) => void
 }
 
+export interface ParamModelType {
+  type: string
+  data: any
+}
+
 // For customized form controls. https://ant.design/components/form-cn/#components-form-demo-customized-form-controls
 const createJSXElementWrapper = (WidgetDef: ApiFormWidget) => (
   config: ApiFormWidgetConfig
@@ -56,7 +61,7 @@ export const createFormWidget = (config: ApiFormWidgetConfig) => {
   const { param, endpoint } = config
   const widget =
     paramWidgets[`${endpoint.id}/${param.name!}`] ||
-    paramModelWidgets[param.model?.type!] ||
+    paramModelWidgets[(param.model as any).type] ||
     paramModelWidgets.text
   return widget(config)
 }
@@ -80,7 +85,8 @@ export const buildQueryString = (params: EndpointAPIParam[]) => {
       prev += '&'
     }
 
-    const builder = queryBuilders[param.model?.type!] || queryBuilders.text
+    const builder =
+      queryBuilders[(param.model as ParamModelType).type] || queryBuilders.text
     prev += builder(param)
 
     return prev

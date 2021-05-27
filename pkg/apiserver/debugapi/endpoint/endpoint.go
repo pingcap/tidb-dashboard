@@ -42,15 +42,14 @@ type APIParam struct {
 	Name     string `json:"name"`
 	Required bool   `json:"required"`
 	// represents what param is
-	Model                APIParamModel    `json:"model"`
+	Model                APIParamModel    `json:"model" swaggertype:"object,string"`
 	PreModelTransformer  ModelTransformer `json:"-"`
 	PostModelTransformer ModelTransformer `json:"-"`
 }
 
-type APIParamModel struct {
-	Type        string           `json:"type"`
-	Data        interface{}      `json:"data"`
-	Transformer ModelTransformer `json:"-"`
+type APIParamModel interface {
+	Transform(ctx *Context) error
+	PreTransform(ctx *Context) error
 }
 
 // ModelTransformer can transform the incoming param's value in special scenarios
@@ -150,6 +149,10 @@ func transformValues(params []APIParam, values map[string]string, forceRequired 
 		if err != nil {
 			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
 		}
+		err = transform(ctx, p.Model.PreTransform)
+		if err != nil {
+			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
+		}
 		if ctx.Value() == "" {
 			if forceRequired || p.Required {
 				return nil, ErrMissingRequiredParam.New("missing required param: %s", p.Name)
@@ -159,7 +162,7 @@ func transformValues(params []APIParam, values map[string]string, forceRequired 
 			continue
 		}
 
-		err = transform(ctx, p.Model.Transformer)
+		err = transform(ctx, p.Model.Transform)
 		if err != nil {
 			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
 		}

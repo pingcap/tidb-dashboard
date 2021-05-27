@@ -11,7 +11,11 @@ import client, {
   TopologyStoreInfo,
   TopologyTiDBInfo,
 } from '@lib/client'
-import { ApiFormWidgetConfig, createFormWidget } from './widgets'
+import {
+  ApiFormWidgetConfig,
+  createFormWidget,
+  ParamModelType,
+} from './widgets'
 import { isJSONContentType, download as downloadFile } from './file'
 
 export interface Topology {
@@ -106,7 +110,9 @@ export default function ApiForm({
         </FormItemCol>
         {params
           // hide constant param model widget
-          .filter((param) => param.model?.type !== 'constant')
+          .filter(
+            (param) => (param.model as ParamModelType).type !== 'constant'
+          )
           .map((param) => (
             <FormItemCol key={param.name}>
               <ApiFormItem

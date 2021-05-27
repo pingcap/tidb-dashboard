@@ -15,23 +15,33 @@ import style from './ApiList.module.less'
 import ApiForm, { Topology } from './ApiForm'
 import { buildQueryString } from './widgets'
 
+const getEndpointTranslationKey = (endpoint: EndpointAPIModel) =>
+  `debug_api.${endpoint.component}.endpoints.${endpoint.id}`
+
 const useFilterEndpoints = (endpoints?: EndpointAPIModel[]) => {
   const [keywords, setKeywords] = useState('')
   const nonNullEndpoints = useMemo(() => endpoints || [], [endpoints])
   const [filteredEndpoints, setFilteredEndpoints] = useState<
     EndpointAPIModel[]
   >(nonNullEndpoints)
+  const { t } = useTranslation()
 
   useEffect(() => {
     const k = keywords.trim()
     if (!!k) {
       setFilteredEndpoints(
-        nonNullEndpoints.filter((e) => e.id?.includes(k) || e.path?.includes(k))
+        nonNullEndpoints.filter((e) => {
+          return (
+            e.id?.includes(k) ||
+            e.path?.includes(k) ||
+            t(getEndpointTranslationKey(e)).includes(k)
+          )
+        })
       )
     } else {
       setFilteredEndpoints(nonNullEndpoints)
     }
-  }, [nonNullEndpoints, keywords])
+  }, [nonNullEndpoints, keywords, t])
 
   return {
     endpoints: filteredEndpoints,
@@ -189,9 +199,7 @@ function CustomHeader({
     <div className={style.header}>
       <Space direction="vertical">
         <Space>
-          <h4>
-            {t(`debug_api.${endpoint.component}.endpoints.${endpoint.id}`)}
-          </h4>
+          <h4>{t(getEndpointTranslationKey(endpoint))}</h4>
         </Space>
         <Schema endpoint={endpoint} />
       </Space>

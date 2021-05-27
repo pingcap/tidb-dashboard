@@ -36,6 +36,7 @@ debug_api:
       tidb_table_regions: Region - by Database + Table
       tidb_hot_regions: Hot Regions
       tidb_pprof: TiDB pprof
+      tidb_pprof_desc: The `seconds` parameter is only effective to `kind=profile` and `kind=trace`.
   pd:
     name: PD
     endpoints:
@@ -67,3 +68,4 @@ debug_api:
       pd_stores: Stores - All (pd-ctl store)
       pd_store_id: Store - by StoreID (pd-ctl store [id])
       pd_pprof: PD pprof
+      pd_pprof_desc: The `seconds` parameter is only effective to `kind=profile` and `kind=trace`.

@@ -99,7 +99,7 @@ export default function ApiForm({
       endpoint={endpoint}
       param={endpointParam}
       topology={topology}
-    ></ApiFormItem>
+    />
   )
 
   return (

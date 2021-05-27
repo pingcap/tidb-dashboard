@@ -20,3 +20,7 @@ debug_api:
   tidb:
     endpoints:
       tidb_stats_dump_timestamp_desc: 时间戳应当在 GC Safe Point 以后
+      tidb_pprof_desc: seconds 参数仅对 kind=profile 和 kind=trace 生效
+  pd:
+    endpoints:
+      pd_pprof_desc: seconds 参数仅对 kind=profile 和 kind=trace 生效

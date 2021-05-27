@@ -159,7 +159,7 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func (c *Client) Get(path string) (*httpc.Response, error) {
+func (c *Client) Get(relativeUri string) (*httpc.Response, error) {
 	var err error
 
 	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
@@ -184,7 +184,7 @@ func (c *Client) Get(path string) (*httpc.Response, error) {
 		}
 	}
 
-	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, path)
+	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, relativeUri)
 	res, err := c.statusAPIHTTPClient.
 		WithTimeout(c.statusAPITimeout).
 		Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, "TiDB")
@@ -194,8 +194,9 @@ func (c *Client) Get(path string) (*httpc.Response, error) {
 	return res, err
 }
 
-func (c *Client) SendGetRequest(path string) ([]byte, error) {
-	res, err := c.Get(path)
+// FIXME: SendGetRequest should be extracted, as a common method.
+func (c *Client) SendGetRequest(relativeUri string) ([]byte, error) {
+	res, err := c.Get(relativeUri)
 	if err != nil {
 		return nil, err
 	}

@@ -129,7 +129,7 @@ export default function Page() {
               >
                 {descExists && (
                   <Alert
-                    style={{ marginBottom: 8 }}
+                    style={{ marginBottom: 16 }}
                     message={t(descTranslationKey)}
                     type="info"
                     showIcon
@@ -147,23 +147,22 @@ export default function Page() {
   return (
     <Root>
       <ScrollablePane style={{ height: '100vh' }}>
+        <Card noMarginBottom>
+          <Alert
+            message={t(`debug_api.warning_header.title`)}
+            description={t(`debug_api.warning_header.body`)}
+            type="warning"
+            showIcon
+          />
+        </Card>
         <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
           <div style={{ display: 'flow-root' }}>
             <Card>
-              <Space direction="vertical" size="large">
-                <Alert
-                  message={t(`debug_api.warning_header.title`)}
-                  description={t(`debug_api.warning_header.body`)}
-                  type="warning"
-                  showIcon
-                />
-                <Input
-                  style={{ maxWidth: 450 }}
-                  placeholder={t(`debug_api.keyword_search`)}
-                  prefix={<SearchOutlined />}
-                  onChange={(e) => filterBy(e.target.value)}
-                />
-              </Space>
+              <Input
+                placeholder={t(`debug_api.keyword_search`)}
+                prefix={<SearchOutlined />}
+                onChange={(e) => filterBy(e.target.value)}
+              />
             </Card>
           </div>
         </Sticky>

@@ -84,18 +84,18 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 		return
 	}
 
-	endpoint, ok := s.endpointMap[req.ID]
+	ep, ok := s.endpointMap[req.ID]
 	if !ok {
 		_ = c.Error(ErrEndpointConfig.New("invalid endpoint id: %s", req.ID))
 		return
 	}
-	endpointReq, err := endpoint.NewRequest(req.Host, req.Port, req.Params)
+	endpointReq, err := ep.NewRequest(req.Host, req.Port, req.Params)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	res, err := endpoint.Client.Send(endpointReq)
+	res, err := ep.Client.Send(endpointReq)
 	if err != nil {
 		_ = c.Error(err)
 		return

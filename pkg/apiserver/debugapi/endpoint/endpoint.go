@@ -19,7 +19,6 @@ import (
 	"regexp"
 
 	"github.com/joomcode/errorx"
-
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
@@ -70,28 +69,28 @@ const (
 	MethodGet Method = http.MethodGet
 )
 
-func (e *APIModel) NewRequest(host string, port int, data map[string]string) (*Request, error) {
+func (m *APIModel) NewRequest(host string, port int, data map[string]string) (*Request, error) {
 	req := &Request{
-		Method: e.Method,
+		Method: m.Method,
 		Host:   host,
 		Port:   port,
 	}
 
-	pathValues, err := transformValues(e.PathParams, data, true)
+	pathValues, err := transformValues(m.PathParams, data, true)
 	if err != nil {
 		return nil, err
 	}
-	path, err := populatePath(e.Path, pathValues)
+	path, err := populatePath(m.Path, pathValues)
 	if err != nil {
 		return nil, err
 	}
 	req.Path = path
 
-	queryValues, err := transformValues(e.QueryParams, data, false)
+	queryValues, err := transformValues(m.QueryParams, data, false)
 	if err != nil {
 		return nil, err
 	}
-	query, err := encodeQuery(e.QueryParams, queryValues)
+	query, err := encodeQuery(m.QueryParams, queryValues)
 	if err != nil {
 		return nil, err
 	}

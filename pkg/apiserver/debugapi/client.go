@@ -15,6 +15,7 @@ package debugapi
 
 import (
 	"fmt"
+	"time"
 
 	"go.uber.org/fx"
 
@@ -25,6 +26,10 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
+)
+
+const (
+	defaultTimeout = time.Second * 45 // Default profiling can be as long as 30s.
 )
 
 type Client interface {
@@ -53,13 +58,24 @@ func defaultSendRequest(client Client, req *endpoint.Request) (*httpc.Response, 
 	}
 }
 
+func buildRelativeUri(path string, query string) string {
+	if len(query) == 0 {
+		return path
+	} else {
+		return fmt.Sprintf("%s?%s", path, query)
+	}
+}
+
 type tidbImplement struct {
 	fx.In
 	Client *tidb.Client
 }
 
 func (impl *tidbImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
-	return impl.Client.WithEnforcedStatusAPIAddress(req.Host, req.Port).Get(req.Path)
+	return impl.Client.
+		WithEnforcedStatusAPIAddress(req.Host, req.Port).
+		WithStatusAPITimeout(defaultTimeout).
+		Get(buildRelativeUri(req.Path, req.Query))
 }
 
 func (impl *tidbImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
@@ -72,9 +88,12 @@ type tikvImplement struct {
 }
 
 func (impl *tikvImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
-	return impl.Client.Get(req.Host, req.Port, req.Path)
+	return impl.Client.
+		WithTimeout(defaultTimeout).
+		Get(req.Host, req.Port, buildRelativeUri(req.Path, req.Query))
 }
 
+// FIXME: Deduplicate default implementation.
 func (impl *tikvImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
 	return defaultSendRequest(impl, req)
 }
@@ -85,7 +104,9 @@ type tiflashImplement struct {
 }
 
 func (impl *tiflashImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
-	return impl.Client.Get(req.Host, req.Port, req.Path)
+	return impl.Client.
+		WithTimeout(defaultTimeout).
+		Get(req.Host, req.Port, buildRelativeUri(req.Path, req.Query))
 }
 
 func (impl *tiflashImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
@@ -98,7 +119,10 @@ type pdImplement struct {
 }
 
 func (impl *pdImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
-	return impl.Client.WithAddress(req.Host, req.Port).Get(req.Path)
+	return impl.Client.
+		WithAddress(req.Host, req.Port).
+		WithTimeout(defaultTimeout).
+		Get(buildRelativeUri(req.Path, req.Query))
 }
 
 func (impl *pdImplement) Send(req *endpoint.Request) (*httpc.Response, error) {

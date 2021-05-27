@@ -8,7 +8,9 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"reflect"
 	"strings"
+	"time"
 
 	"github.com/Xeoncross/go-aesctr-with-hmac"
 	"github.com/gin-gonic/gin"
@@ -16,9 +18,6 @@ import (
 	"github.com/oleiade/reflections"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
-
-	"reflect"
-	"time"
 )
 
 func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []string) (data [][]string) {

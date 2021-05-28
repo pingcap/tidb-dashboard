@@ -106,17 +106,19 @@ const supportDynamicPublicPathPrefix = () => (config) => {
   return config
 }
 
-const overrideProcessEnv = value => config => {
-  const plugin = config.plugins.find(plugin => plugin.constructor.name === 'DefinePlugin');
-  const processEnv = plugin.definitions['process.env'] || {};
+const overrideProcessEnv = (value) => (config) => {
+  const plugin = config.plugins.find(
+    (plugin) => plugin.constructor.name === 'DefinePlugin'
+  )
+  const processEnv = plugin.definitions['process.env'] || {}
 
   plugin.definitions['process.env'] = {
     ...processEnv,
     ...value,
-  };
+  }
 
-  return config;
-};
+  return config
+}
 
 const getInternalVersion = () => {
   const out = execSync(`grep -v '^\#' ../release-version`)
@@ -171,6 +173,6 @@ module.exports = override(
   addExtraEntries(),
   supportDynamicPublicPathPrefix(),
   overrideProcessEnv({
-    INTERNAL_VERSION: JSON.stringify(getInternalVersion())
-  }),
+    RELEASE_VERSION: JSON.stringify(getInternalVersion()),
+  })
 )

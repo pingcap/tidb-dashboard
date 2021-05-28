@@ -4,7 +4,7 @@ import { Integrations } from '@sentry/tracing'
 import { sentryEnabled } from '@lib/utils/sentryHelpers'
 
 if (sentryEnabled) {
-  const version = process.env.REACT_APP_VERSION
+  const version = process.env.RELEASE_VERSION
   const name = process.env.REACT_APP_NAME
   const hash = process.env.REACT_APP_COMMIT_HASH
   const release = `${name}@${version}+${hash}`

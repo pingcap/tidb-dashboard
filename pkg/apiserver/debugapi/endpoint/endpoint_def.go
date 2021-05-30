@@ -39,6 +39,20 @@ var pprofKindsParam = APIParam{
 	}),
 }
 
+// TODO: After http client refactor.
+// Recorvery the second options as same as profiling module or just not limit it.
+// Now limit the seconds according to `defaultTimeout` in debugapi/client.go
+var pprofSecondsParam = APIParam{
+	Name: "seconds",
+	Model: CreateAPIParamModelEnum([]EnumItem{
+		{Name: "10s", Value: "10"},
+		{Name: "30s", Value: "30"},
+		{Name: "45s", Value: "45"},
+		// {Name: "60s", Value: "60"},
+		// {Name: "120s", Value: "120"},
+	}),
+}
+
 // tidb endpoints
 
 var tidbStatsDump = APIModel{
@@ -220,10 +234,7 @@ var tidbPprof = APIModel{
 			Name:  "debug",
 			Model: CreateAPIParamModelConstant("1"),
 		},
-		{
-			Name:  "seconds",
-			Model: APIParamModelInt,
-		},
+		pprofSecondsParam,
 	},
 }
 
@@ -615,10 +626,7 @@ var pdPprof = APIModel{
 			Name:  "debug",
 			Model: CreateAPIParamModelConstant("1"),
 		},
-		{
-			Name:  "seconds",
-			Model: APIParamModelInt,
-		},
+		pprofSecondsParam,
 	},
 }
 

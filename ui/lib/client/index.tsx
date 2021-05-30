@@ -54,10 +54,15 @@ export enum ErrorStrategy {
 const ERR_CODE_OTHER = 'error.api.other'
 
 function applyErrorHandlerInterceptor(instance: AxiosInstance) {
-  instance.interceptors.response.use(undefined, function (err) {
+  instance.interceptors.response.use(undefined, async function (err) {
     const { response, config } = err
     const errorStrategy = config.errorStrategy as ErrorStrategy
     const method = (config.method as string).toLowerCase()
+
+    if (err.response.data instanceof Blob) {
+      const d = await err.response.data.text()
+      err.response.data = JSON.parse(d)
+    }
 
     let errCode: string
     let content: string

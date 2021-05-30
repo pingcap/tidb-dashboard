@@ -16,7 +16,11 @@ import {
   createFormWidget,
   ParamModelType,
 } from './widgets'
-import { isJSONContentType, download as downloadFile } from './file'
+import {
+  isJSONContentType,
+  isBinaryContentType,
+  download as downloadFile,
+} from './file'
 
 export interface Topology {
   tidb: TopologyTiDBInfo[]
@@ -45,38 +49,43 @@ export default function ApiForm({
 
   const download = useCallback(
     async (values: any) => {
-      let data: string
-      let headers: any
+      let data: Blob
       try {
         setLoading(true)
         const { [endpointHostParamKey]: host, ...p } = values
         const [hostname, port] = host.split(':')
+        // filter the null value params
         const params = Object.entries(p).reduce((prev, [k, v]) => {
           if (!(isUndefined(v) || isNull(v) || v === '')) {
             prev[k] = v
           }
           return prev
         }, {})
-        const resp = await client.getInstance().debugapiRequestEndpointPost({
-          id,
-          host: hostname,
-          port: Number(port),
-          params,
-        })
-        data = resp.data
-        headers = resp.headers
+        const resp = await client.getInstance().debugapiRequestEndpointPost(
+          {
+            id,
+            host: hostname,
+            port: Number(port),
+            params,
+          },
+          {
+            responseType: 'blob',
+          }
+        )
+        data = (resp.data as unknown) as Blob
       } catch (e) {
         setLoading(false)
         console.error(e)
         return
       }
 
-      if (isJSONContentType(headers['content-type'])) {
+      if (isJSONContentType(data.type)) {
         // quick view backdoor
-        console.log(data)
-        data = JSON.stringify(data)
+        data.text().then((d) => console.log(d))
       }
-      downloadFile(data, `${id}_${Date.now()}`, headers['content-type'])
+      isBinaryContentType(data.type)
+        ? downloadFile(data, `${id}_${Date.now()}`, 'pb.gz')
+        : downloadFile(data, `${id}_${Date.now()}`)
       setLoading(false)
     },
     [id, endpointHostParamKey]

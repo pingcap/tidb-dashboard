@@ -33,7 +33,6 @@ const (
 )
 
 type Client interface {
-	Send(request *endpoint.Request) (*httpc.Response, error)
 	Get(request *endpoint.Request) (*httpc.Response, error)
 }
 
@@ -49,7 +48,7 @@ func newClientMap(tidbImpl tidbImplement, tikvImpl tikvImplement, tiflashImpl ti
 	return &clientMap
 }
 
-func defaultSendRequest(client Client, req *endpoint.Request) (*httpc.Response, error) {
+func SendRequest(client Client, req *endpoint.Request) (*httpc.Response, error) {
 	switch req.Method {
 	case endpoint.MethodGet:
 		return client.Get(req)
@@ -77,10 +76,6 @@ func (impl *tidbImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 		Get(buildRelativeURI(req.Path, req.Query))
 }
 
-func (impl *tidbImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
-	return defaultSendRequest(impl, req)
-}
-
 type tikvImplement struct {
 	fx.In
 	Client *tikv.Client
@@ -90,11 +85,6 @@ func (impl *tikvImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
 		WithTimeout(defaultTimeout).
 		Get(req.Host, req.Port, buildRelativeURI(req.Path, req.Query))
-}
-
-// FIXME: Deduplicate default implementation.
-func (impl *tikvImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
-	return defaultSendRequest(impl, req)
 }
 
 type tiflashImplement struct {
@@ -108,10 +98,6 @@ func (impl *tiflashImplement) Get(req *endpoint.Request) (*httpc.Response, error
 		Get(req.Host, req.Port, buildRelativeURI(req.Path, req.Query))
 }
 
-func (impl *tiflashImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
-	return defaultSendRequest(impl, req)
-}
-
 type pdImplement struct {
 	fx.In
 	Client *pd.Client
@@ -122,8 +108,4 @@ func (impl *pdImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 		WithAddress(req.Host, req.Port).
 		WithTimeout(defaultTimeout).
 		Get(buildRelativeURI(req.Path, req.Query))
-}
-
-func (impl *pdImplement) Send(req *endpoint.Request) (*httpc.Response, error) {
-	return defaultSendRequest(impl, req)
 }

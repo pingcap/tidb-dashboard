@@ -95,7 +95,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 		return
 	}
 
-	res, err := ep.Client.Send(endpointReq)
+	res, err := SendRequest(ep.Client, endpointReq)
 	if err != nil {
 		_ = c.Error(err)
 		return

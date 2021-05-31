@@ -98,7 +98,7 @@ func (c *Client) Send(
 	req, err := http.NewRequestWithContext(ctx, method, uri, body)
 	if err != nil {
 		e := errType.Wrap(err, "Failed to build %s API request", errOriginComponent)
-		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(e))
+		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
 		return nil, e
 	}
 

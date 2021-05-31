@@ -55,7 +55,7 @@ export default function Page() {
     data: endpointData,
     isLoading: isEndpointLoading,
   } = useClientRequest((reqConfig) =>
-    client.getInstance().debugapiEndpointsGet(reqConfig)
+    client.getInstance().debugAPIGetEndpoints(reqConfig)
   )
   const { endpoints, filterBy } = useFilterEndpoints(endpointData)
 

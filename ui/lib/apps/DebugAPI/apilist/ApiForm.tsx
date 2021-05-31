@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { Form, Button, Space, Row, Col } from 'antd'
 import { isNull, isUndefined } from 'lodash'
 import { DownloadOutlined, UndoOutlined } from '@ant-design/icons'
-
 import client, {
   EndpointAPIModel,
   EndpointAPIParam,
@@ -16,11 +15,6 @@ import {
   createFormWidget,
   ParamModelType,
 } from './widgets'
-import {
-  isJSONContentType,
-  isBinaryContentType,
-  download as downloadFile,
-} from './file'
 
 export interface Topology {
   tidb: TopologyTiDBInfo[]
@@ -49,7 +43,6 @@ export default function ApiForm({
 
   const download = useCallback(
     async (values: any) => {
-      let data: Blob
       try {
         setLoading(true)
         const { [endpointHostParamKey]: host, ...p } = values
@@ -61,32 +54,19 @@ export default function ApiForm({
           }
           return prev
         }, {})
-        const resp = await client.getInstance().debugapiRequestEndpointPost(
-          {
-            id,
-            host: hostname,
-            port: Number(port),
-            params,
-          },
-          {
-            responseType: 'blob',
-          }
-        )
-        data = (resp.data as unknown) as Blob
+        const resp = await client.getInstance().debugAPIRequestEndpoint({
+          id,
+          host: hostname,
+          port: Number(port),
+          params,
+        })
+        const token = resp.data
+        window.location.href = `${client.getBasePath()}/debug_api/download?token=${token}`
       } catch (e) {
-        setLoading(false)
         console.error(e)
-        return
+      } finally {
+        setLoading(false)
       }
-
-      if (isJSONContentType(data.type)) {
-        // quick view backdoor
-        data.text().then((d) => console.log(d))
-      }
-      isBinaryContentType(data.type)
-        ? downloadFile(data, `${id}_${Date.now()}`, 'pb.gz')
-        : downloadFile(data, `${id}_${Date.now()}`)
-      setLoading(false)
     },
     [id, endpointHostParamKey]
   )

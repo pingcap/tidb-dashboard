@@ -59,11 +59,6 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
     const errorStrategy = config.errorStrategy as ErrorStrategy
     const method = (config.method as string).toLowerCase()
 
-    if (err.response.data instanceof Blob) {
-      const d = await err.response.data.text()
-      err.response.data = JSON.parse(d)
-    }
-
     let errCode: string
     let content: string
     if (err.message === 'Network Error') {

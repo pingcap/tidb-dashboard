@@ -48,6 +48,10 @@ var APIParamModelText = &DefaultAPIParamModel{
 	Type: "text",
 }
 
+var APIParamModelBool = &DefaultAPIParamModel{
+	Type: "bool",
+}
+
 var APIParamModelMultiTags = &DefaultAPIParamModel{
 	Type: "tags",
 	Transformer: func(ctx *Context) error {

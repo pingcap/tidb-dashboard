@@ -630,7 +630,22 @@ var pdPprof = APIModel{
 	},
 }
 
+// tikv
+var tikvConfig = APIModel{
+	ID:        "tikv_config",
+	Component: model.NodeKindTiKV,
+	Path:      "/config",
+	Method:    MethodGet,
+	QueryParams: []APIParam{
+		{
+			Name:  "full",
+			Model: APIParamModelBool,
+		},
+	},
+}
+
 var APIListDef = []APIModel{
+	// tidb
 	tidbStatsDump,
 	tidbStatsDumpWithTimestamp,
 	tidbConfig,
@@ -646,6 +661,7 @@ var APIListDef = []APIModel{
 	tidbTableRegions,
 	tidbHotRegions,
 	tidbPprof,
+	// pd
 	pdCluster,
 	pdClusterStatus,
 	pdConfigShowAll,
@@ -675,4 +691,6 @@ var APIListDef = []APIModel{
 	pdStores,
 	pdStoreID,
 	pdPprof,
+	// tikv
+	tikvConfig,
 }

@@ -37,11 +37,16 @@ debug_api:
       tidb_hot_regions: Hot Regions
       tidb_pprof: TiDB pprof
       tidb_pprof_desc: The `seconds` parameter is only effective to `kind=profile` and `kind=trace`.
+  tikv:
+    name: TiKV
+    endpoints:
+      tikv_config: Current TiKV Config
   pd:
     name: PD
     endpoints:
       pd_cluster: Cluster Information (pd-ctl cluster)
       pd_cluster_status: Cluster Status
+      pd_config_show_all: Current PD Config
       pd_health: Cluster Health Information (pd-ctl health)
       pd_hot_read: Hot - Read (pd-ctl hot read)
       pd_hot_write: Hot - Write (pd-ctl hot write)

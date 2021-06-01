@@ -13,6 +13,7 @@ import { DatabaseWidget } from './Database'
 import { TableWidget } from './Table'
 import { TableIDWidget } from './TableID'
 import { StoresStateWidget } from './StoresState'
+import { BoolWidget } from './Bool'
 
 export interface Widgets {
   [type: string]: ApiFormWidget
@@ -44,6 +45,7 @@ const createJSXElementWrapper = (WidgetDef: ApiFormWidget) => (
 const paramModelWidgets: Widgets = {
   host: HostSelectWidget,
   text: TextWidget,
+  bool: createJSXElementWrapper(BoolWidget),
   tags: createJSXElementWrapper(TagsWidget),
   int: createJSXElementWrapper(IntWidget),
   enum: EnumWidget,

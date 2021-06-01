@@ -59,18 +59,25 @@ func NewTiFlashClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.
 	return client
 }
 
-func (c *Client) WithTimeout(timeout time.Duration) *Client {
-	c2 := *c
-	c2.timeout = timeout
-	return &c2
+func (c Client) WithTimeout(timeout time.Duration) *Client {
+	c.timeout = timeout
+	return &c
 }
 
-func (c *Client) SendGetRequest(host string, statusPort int, path string) ([]byte, error) {
-	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, path)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrFlashClientRequestFailed, "TiFlash")
+func (c *Client) Get(host string, statusPort int, relativeURI string) (*httpc.Response, error) {
+	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
+	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrFlashClientRequestFailed, "TiFlash")
 }
 
-func (c *Client) SendPostRequest(host string, statusPort int, path string, body io.Reader) ([]byte, error) {
-	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, path)
+func (c *Client) SendGetRequest(host string, statusPort int, relativeURI string) ([]byte, error) {
+	res, err := c.Get(host, statusPort, relativeURI)
+	if err != nil {
+		return nil, err
+	}
+	return res.Body()
+}
+
+func (c *Client) SendPostRequest(host string, statusPort int, relativeURI string, body io.Reader) ([]byte, error) {
+	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrFlashClientRequestFailed, "TiFlash")
 }

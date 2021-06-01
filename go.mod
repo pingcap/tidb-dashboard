@@ -19,6 +19,7 @@ require (
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
 	github.com/joho/godotenv v1.3.0
 	github.com/joomcode/errorx v1.0.1
+	github.com/minio/sio v0.3.0
 	github.com/oleiade/reflections v1.0.1
 	github.com/pingcap/check v0.0.0-20191216031241-8a5a85928f12
 	github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d

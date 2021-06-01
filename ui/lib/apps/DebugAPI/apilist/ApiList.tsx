@@ -4,31 +4,44 @@ import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { SearchOutlined } from '@ant-design/icons'
 import { debounce } from 'lodash'
+import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
+import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky'
 
-import { AnimatedSkeleton, Card } from '@lib/components'
+import { AnimatedSkeleton, Card, Root } from '@lib/components'
 import { useClientRequest } from '@lib/utils/useClientRequest'
-import client, { DebugapiEndpointAPIModel } from '@lib/client'
+import client, { EndpointAPIModel } from '@lib/client'
 
 import style from './ApiList.module.less'
 import ApiForm, { Topology } from './ApiForm'
+import { buildQueryString } from './widgets'
 
-const useFilterEndpoints = (endpoints?: DebugapiEndpointAPIModel[]) => {
+const getEndpointTranslationKey = (endpoint: EndpointAPIModel) =>
+  `debug_api.${endpoint.component}.endpoints.${endpoint.id}`
+
+const useFilterEndpoints = (endpoints?: EndpointAPIModel[]) => {
   const [keywords, setKeywords] = useState('')
   const nonNullEndpoints = useMemo(() => endpoints || [], [endpoints])
   const [filteredEndpoints, setFilteredEndpoints] = useState<
-    DebugapiEndpointAPIModel[]
+    EndpointAPIModel[]
   >(nonNullEndpoints)
+  const { t } = useTranslation()
 
   useEffect(() => {
     const k = keywords.trim()
     if (!!k) {
       setFilteredEndpoints(
-        nonNullEndpoints.filter((e) => e.id?.includes(k) || e.path?.includes(k))
+        nonNullEndpoints.filter((e) => {
+          return (
+            e.id?.includes(k) ||
+            e.path?.includes(k) ||
+            t(getEndpointTranslationKey(e)).includes(k)
+          )
+        })
       )
     } else {
       setFilteredEndpoints(nonNullEndpoints)
     }
-  }, [nonNullEndpoints, keywords])
+  }, [nonNullEndpoints, keywords, t])
 
   return {
     endpoints: filteredEndpoints,
@@ -37,14 +50,41 @@ const useFilterEndpoints = (endpoints?: DebugapiEndpointAPIModel[]) => {
 }
 
 export default function Page() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const {
     data: endpointData,
     isLoading: isEndpointLoading,
   } = useClientRequest((reqConfig) =>
-    client.getInstance().debugapiEndpointsGet(reqConfig)
+    client.getInstance().debugAPIGetEndpoints(reqConfig)
   )
   const { endpoints, filterBy } = useFilterEndpoints(endpointData)
+
+  // TODO: refine with components/InstanceSelect
+  const {
+    data: tidbTopology = [],
+    isLoading: isTiDBTopology,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getTiDBTopology(reqConfig)
+  )
+  const {
+    data: pdTopology = [],
+    isLoading: isPDLoading,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getPDTopology(reqConfig)
+  )
+  const {
+    data: storeTopology,
+    isLoading: isStoreLoading,
+  } = useClientRequest((reqConfig) =>
+    client.getInstance().getStoreTopology(reqConfig)
+  )
+  const topology: Topology = {
+    tidb: tidbTopology!,
+    tikv: storeTopology?.tikv || [],
+    tiflash: storeTopology?.tiflash || [],
+    pd: pdTopology!,
+  }
+  const isTopologyLoading = isTiDBTopology || isPDLoading || isStoreLoading
 
   const groups = useMemo(
     () =>
@@ -55,85 +95,110 @@ export default function Page() {
         }
         prev[groupName].push(endpoint)
         return prev
-      }, {} as { [group: string]: DebugapiEndpointAPIModel[] }),
+      }, {} as { [group: string]: EndpointAPIModel[] }),
     [endpoints]
   )
-  const sortingOfGroups = useMemo(() => ['tidb', 'tikv', 'tiflash', 'pd'], [])
-  // TODO: other components topology
-  const {
-    data: tidbTopology = [],
-    isLoading: isTopologyLoading,
-  } = useClientRequest((reqConfig) =>
-    client.getInstance().getTiDBTopology(reqConfig)
+  const sortedGroups = useMemo(
+    () =>
+      ['tidb', 'tikv', 'tiflash', 'pd']
+        .filter((sortKey) => groups[sortKey])
+        .map((sortKey) => groups[sortKey]),
+    [groups]
   )
-  const topology: Topology = {
-    tidb: tidbTopology!,
-  }
 
-  const EndpointGroups = () =>
-    endpoints.length ? (
-      <>
-        {sortingOfGroups
-          .filter((sortKey) => groups[sortKey])
-          .map((sortKey) => {
-            const g = groups[sortKey]
+  function EndpointGroup({ group }: { group: EndpointAPIModel[] }) {
+    return (
+      <Card
+        noMarginLeft
+        noMarginRight
+        noMarginTop
+        title={t(`debug_api.${group[0].component!}.name`)}
+      >
+        <Collapse ghost>
+          {group.map((endpoint) => {
+            const descTranslationKey = `debug_api.${endpoint.component}.endpoints.${endpoint.id}_desc`
+            const descExists = i18n.exists(descTranslationKey)
+
             return (
-              <Card key={sortKey} title={t(`debug_api.${sortKey}.name`)}>
-                <Collapse ghost>
-                  {g.map((endpoint) => (
-                    <Collapse.Panel
-                      className={style.collapse_panel}
-                      header={<CustomHeader endpoint={endpoint} t={t} />}
-                      key={endpoint.id!}
-                    >
-                      <ApiForm endpoint={endpoint} topology={topology} />
-                    </Collapse.Panel>
-                  ))}
-                </Collapse>
-              </Card>
+              <Collapse.Panel
+                className={style.collapse_panel}
+                header={
+                  <CustomHeader endpoint={endpoint} translation={{ t }} />
+                }
+                key={endpoint.id!}
+              >
+                {descExists && (
+                  <Alert
+                    style={{ marginBottom: 16 }}
+                    message={t(descTranslationKey)}
+                    type="info"
+                    showIcon
+                  />
+                )}
+                <ApiForm endpoint={endpoint} topology={topology} />
+              </Collapse.Panel>
             )
           })}
-      </>
-    ) : (
-      <Empty description={t('debug_api.endpoints_not_found')} />
+        </Collapse>
+      </Card>
     )
+  }
 
   return (
-    <AnimatedSkeleton showSkeleton={isEndpointLoading || isTopologyLoading}>
-      <Card>
-        <Alert
-          message={t(`debug_api.warning_header.title`)}
-          description={t(`debug_api.warning_header.body`)}
-          type="warning"
-          showIcon
-        />
-      </Card>
-      <Card>
-        <Input
-          placeholder={t(`debug_api.keyword_search`)}
-          prefix={<SearchOutlined />}
-          onChange={(e) => filterBy(e.target.value)}
-        />
-      </Card>
-      <EndpointGroups />
-    </AnimatedSkeleton>
+    <Root>
+      <ScrollablePane style={{ height: '100vh' }}>
+        <Card noMarginBottom>
+          <Alert
+            message={t(`debug_api.warning_header.title`)}
+            description={t(`debug_api.warning_header.body`)}
+            type="warning"
+            showIcon
+          />
+        </Card>
+        <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
+          <div style={{ display: 'flow-root' }}>
+            <Card>
+              <Input
+                placeholder={t(`debug_api.keyword_search`)}
+                prefix={<SearchOutlined />}
+                onChange={(e) => filterBy(e.target.value)}
+              />
+            </Card>
+          </div>
+        </Sticky>
+        <Card noMarginTop>
+          <AnimatedSkeleton
+            showSkeleton={isEndpointLoading || isTopologyLoading}
+          >
+            {endpoints.length ? (
+              sortedGroups.map((g) => (
+                <EndpointGroup key={g[0].component!} group={g} />
+              ))
+            ) : (
+              <Empty description={t('debug_api.endpoints_not_found')} />
+            )}
+          </AnimatedSkeleton>
+        </Card>
+      </ScrollablePane>
+    </Root>
   )
 }
 
 function CustomHeader({
   endpoint,
-  t,
+  translation,
 }: {
-  endpoint: DebugapiEndpointAPIModel
-  t: TFunction
+  endpoint: EndpointAPIModel
+  translation: {
+    t: TFunction
+  }
 }) {
+  const { t } = translation
   return (
     <div className={style.header}>
       <Space direction="vertical">
         <Space>
-          <h4>
-            {t(`debug_api.${endpoint.component}.endpoint_ids.${endpoint.id}`)}
-          </h4>
+          <h4>{t(getEndpointTranslationKey(endpoint))}</h4>
         </Space>
         <Schema endpoint={endpoint} />
       </Space>
@@ -142,15 +207,8 @@ function CustomHeader({
 }
 
 // e.g. http://{tidb_ip}/stats/dump/{db}/{table}?queryName={queryName}
-function Schema({ endpoint }: { endpoint: DebugapiEndpointAPIModel }) {
-  const query =
-    endpoint.query_params?.reduce((prev, { name }, i) => {
-      if (i === 0) {
-        prev += '?'
-      }
-      prev += `${name}={${name}}`
-      return prev
-    }, '') || ''
+function Schema({ endpoint }: { endpoint: EndpointAPIModel }) {
+  const query = buildQueryString(endpoint.query_params ?? [])
   return (
     <p className={style.schema}>
       {`http://{${endpoint.component}_host}${endpoint.path}${query}`}

@@ -8,7 +8,9 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"reflect"
 	"strings"
+	"time"
 
 	"github.com/Xeoncross/go-aesctr-with-hmac"
 	"github.com/gin-gonic/gin"
@@ -16,11 +18,9 @@ import (
 	"github.com/oleiade/reflections"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
-
-	"reflect"
-	"time"
 )
 
+// TODO: Better to be a streaming interface.
 func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []string) (data [][]string) {
 	timeFieldsMap := make(map[string]struct{})
 	for _, f := range timeFields {
@@ -69,6 +69,7 @@ func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []str
 	return
 }
 
+// TODO: Better to be a streaming interface.
 func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, err error) {
 	csvFile, err := ioutil.TempFile("", filename)
 	if err != nil {
@@ -96,6 +97,7 @@ func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, 
 	return
 }
 
+// FIXME: Remove or refine this function, as it is not general.
 func DownloadByToken(token, tokenNamespace string, c *gin.Context) {
 	tokenPlain, err := ParseJWTString(tokenNamespace, token)
 	if err != nil {

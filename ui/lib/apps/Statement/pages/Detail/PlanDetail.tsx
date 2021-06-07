@@ -1,6 +1,5 @@
 import React from 'react'
 import { Space } from 'antd'
-import { useLocalStorageState } from 'ahooks'
 import { useTranslation } from 'react-i18next'
 import {
   AnimatedSkeleton,
@@ -16,6 +15,7 @@ import {
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
 import formatSql from '@lib/utils/sqlFormatter'
+import { useLocalStorageState } from '@lib/utils/useLocalstorage'
 
 import type { IPageQuery } from '.'
 import DetailTabs from './PlanDetailTabs'

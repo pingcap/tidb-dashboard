@@ -17,7 +17,6 @@ import {
   MenuOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import { useLocalStorageState } from 'ahooks'
 
 import {
   Card,
@@ -27,7 +26,7 @@ import {
   MultiSelect,
 } from '@lib/components'
 import { CacheContext } from '@lib/utils/useCache'
-import { useCompatibilityLocalstorage } from '@lib/utils/useCompatibilityLocalstorage'
+import { useLocalStorageState } from '@lib/utils/useLocalstorage'
 
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQueryTableController, {
@@ -48,12 +47,10 @@ function List() {
 
   const slowQueryCacheMgr = useContext(CacheContext)
 
-  const [
-    visibleColumnKeys,
-    setVisibleColumnKeys,
-  ] = useCompatibilityLocalstorage(
+  const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     SLOW_QUERY_VISIBLE_COLUMN_KEYS,
-    DEF_SLOW_QUERY_COLUMN_KEYS
+    DEF_SLOW_QUERY_COLUMN_KEYS,
+    true
   )
   const [showFullSQL, setShowFullSQL] = useLocalStorageState(
     SLOW_QUERY_SHOW_FULL_SQL,

@@ -15,7 +15,7 @@ import {
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client from '@lib/client'
 import formatSql from '@lib/utils/sqlFormatter'
-import { useLocalStorageState } from '@lib/utils/useLocalstorage'
+import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 
 import type { IPageQuery } from '.'
 import DetailTabs from './PlanDetailTabs'

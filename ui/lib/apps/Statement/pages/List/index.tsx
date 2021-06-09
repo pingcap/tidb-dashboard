@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next'
 
 import { CacheContext } from '@lib/utils/useCache'
 import { Card, ColumnsSelector, Toolbar, MultiSelect } from '@lib/components'
-import { useLocalStorageState } from '@lib/utils/useLocalstorage'
+import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'

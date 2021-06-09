@@ -26,7 +26,7 @@ import {
   MultiSelect,
 } from '@lib/components'
 import { CacheContext } from '@lib/utils/useCache'
-import { useLocalStorageState } from '@lib/utils/useLocalstorage'
+import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQueryTableController, {

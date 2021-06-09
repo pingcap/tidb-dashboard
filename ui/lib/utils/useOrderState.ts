@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 
-import { useLocalStorageState } from './useLocalstorage'
+import { useLocalStorageState } from './useLocalStorageState'
 
 export interface IOrderOptions {
   orderBy: string

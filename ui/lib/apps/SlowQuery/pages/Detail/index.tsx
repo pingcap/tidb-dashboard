@@ -19,7 +19,7 @@ import {
   Pre,
   TextWithInfo,
 } from '@lib/components'
-import { useLocalStorageState } from '@lib/utils/useLocalstorage'
+import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 
 import DetailTabs from './DetailTabs'
 

@@ -125,18 +125,20 @@ const getInternalVersion = () => {
   // react-app-rewired does not support async override config method right now,
   // subscribe: https://github.com/timarney/react-app-rewired/pull/543
   const data = fs.readFileSync('../release-version').toString().split(os.EOL)
-  let version = ""
+  let version = ''
   for (let i = 0; i < data.length; i++) {
     const l = data[i].trim()
-    if (l.startsWith("#") || (l === "")) {
+    if (l.startsWith('#') || l === '') {
       continue
     }
     version = l
     break
   }
 
-  if (version === "") {
-    throw new Error(`invalid release version`)
+  if (version === '') {
+    throw new Error(
+      `invalid release version, please check the release-version @tidb-dashboard/root`
+    )
   }
 
   return version

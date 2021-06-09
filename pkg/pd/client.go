@@ -16,10 +16,9 @@ package pd
 import (
 	"context"
 	"fmt"
-	"io"
-	"net/http"
 	"time"
 
+	"github.com/go-resty/resty/v2"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
@@ -35,21 +34,22 @@ const (
 )
 
 type Client struct {
-	httpScheme   string
-	baseURL      string
-	httpClient   *httpc.Client
-	lifecycleCtx context.Context
-	timeout      time.Duration
+	defaultClient *resty.Client
+	httpClient    *httpc.Client
+	lifecycleCtx  context.Context
+
+	defaultEndpoint string
+	clusterScheme   string
 }
 
 func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
 	client := &Client{
-		httpClient:   httpClient,
-		httpScheme:   config.GetClusterHTTPScheme(),
-		baseURL:      config.PDEndPoint,
-		lifecycleCtx: nil,
-		timeout:      defaultPDTimeout,
+		httpClient:      httpClient,
+		lifecycleCtx:    nil,
+		defaultEndpoint: config.PDEndPoint,
+		clusterScheme:   config.GetClusterHTTPScheme(),
 	}
+	client.defaultClient = client.New()
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -61,40 +61,27 @@ func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Confi
 	return client
 }
 
-func (c Client) WithBaseURL(baseURL string) *Client {
-	c.baseURL = baseURL
-	return &c
+func (c *Client) newClient() *resty.Client {
+	return c.httpClient.New().
+		SetTimeout(defaultPDTimeout).
+		OnBeforeRequest(func(rc *resty.Client, r *resty.Request) error {
+			if r.Context() == nil {
+				r.SetContext(c.lifecycleCtx)
+			}
+			return nil
+		})
 }
 
-func (c Client) WithAddress(host string, port int) *Client {
-	c.baseURL = fmt.Sprintf("%s://%s:%d", c.httpScheme, host, port)
-	return &c
+func (c *Client) New() *resty.Client {
+	return c.newClient().
+		SetHostURL(fmt.Sprintf("%s/pd/api/v1", c.defaultEndpoint))
 }
 
-func (c Client) WithTimeout(timeout time.Duration) *Client {
-	c.timeout = timeout
-	return &c
+func (c *Client) NewClientWithHost(host string) *resty.Client {
+	return c.newClient().
+		SetHostURL(fmt.Sprintf("%s://%s", c.clusterScheme, host))
 }
 
-func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
-	c.httpClient.BeforeRequest = callback
-	return &c
-}
-
-func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
-	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
-	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrPDClientRequestFailed, "PD")
-}
-
-func (c *Client) SendGetRequest(relativeURI string) ([]byte, error) {
-	res, err := c.Get(relativeURI)
-	if err != nil {
-		return nil, err
-	}
-	return res.Body()
-}
-
-func (c *Client) SendPostRequest(relativeURI string, body io.Reader) ([]byte, error) {
-	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrPDClientRequestFailed, "PD")
+func (c *Client) NewRequest() *resty.Request {
+	return c.defaultClient.R()
 }

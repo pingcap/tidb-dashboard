@@ -18,6 +18,7 @@ package clusterinfo
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -226,12 +227,21 @@ func (s *Service) getGrafanaTopology(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) getAlertManagerCounts(c *gin.Context) {
 	address := c.Param("address")
-	cnt, err := fetchAlertManagerCounts(s.lifecycleCtx, address, s.params.HTTPClient)
+	uri := fmt.Sprintf("http://%s/api/v2/alerts", address)
+	resp, err := s.params.HTTPClient.NewRequest().SetContext(s.lifecycleCtx).Get(uri)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, cnt)
+
+	var alerts []struct{}
+	err = json.Unmarshal(resp.Body(), &alerts)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, len(alerts))
 }
 
 type GetHostsInfoResponse struct {

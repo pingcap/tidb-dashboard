@@ -15,13 +15,13 @@ package debugapi
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
-	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
@@ -33,7 +33,7 @@ const (
 )
 
 type Client interface {
-	Get(request *endpoint.Request) (*httpc.Response, error)
+	Get(request *endpoint.Request) (*http.Response, error)
 }
 
 type ClientMap map[model.NodeKind]Client
@@ -48,7 +48,7 @@ func newClientMap(tidbImpl tidbImplement, tikvImpl tikvImplement, tiflashImpl ti
 	return &clientMap
 }
 
-func SendRequest(client Client, req *endpoint.Request) (*httpc.Response, error) {
+func SendRequest(client Client, req *endpoint.Request) (*http.Response, error) {
 	switch req.Method {
 	case endpoint.MethodGet:
 		return client.Get(req)
@@ -57,23 +57,23 @@ func SendRequest(client Client, req *endpoint.Request) (*httpc.Response, error) 
 	}
 }
 
-func buildRelativeURI(path string, query string) string {
-	if len(query) == 0 {
-		return path
-	}
-	return fmt.Sprintf("%s?%s", path, query)
-}
-
 type tidbImplement struct {
 	fx.In
 	Client *tidb.Client
 }
 
-func (impl *tidbImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
-	return impl.Client.
-		WithEnforcedStatusAPIAddress(req.Host, req.Port).
-		WithStatusAPITimeout(defaultTimeout).
-		Get(buildRelativeURI(req.Path, req.Query))
+func (impl *tidbImplement) Get(req *endpoint.Request) (*http.Response, error) {
+	resp, err := impl.Client.NewStatusAPIClientWithEnforceHost(fmt.Sprintf("%s:%d", req.Host, req.Port)).
+		// prevent closing body by resty. https://github.com/go-resty/resty/issues/369
+		SetDoNotParseResponse(true).
+		SetTimeout(defaultTimeout).
+		R().
+		SetQueryString(req.Query).
+		Get(req.Path)
+	if err != nil {
+		return nil, err
+	}
+	return resp.RawResponse, nil
 }
 
 type tikvImplement struct {
@@ -81,10 +81,17 @@ type tikvImplement struct {
 	Client *tikv.Client
 }
 
-func (impl *tikvImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
-	return impl.Client.
-		WithTimeout(defaultTimeout).
-		Get(req.Host, req.Port, buildRelativeURI(req.Path, req.Query))
+func (impl *tikvImplement) Get(req *endpoint.Request) (*http.Response, error) {
+	resp, err := impl.Client.NewClientWithHost(fmt.Sprintf("%s:%d", req.Host, req.Port)).
+		SetDoNotParseResponse(true).
+		SetTimeout(defaultTimeout).
+		R().
+		SetQueryString(req.Query).
+		Get(req.Path)
+	if err != nil {
+		return nil, err
+	}
+	return resp.RawResponse, nil
 }
 
 type tiflashImplement struct {
@@ -92,10 +99,17 @@ type tiflashImplement struct {
 	Client *tiflash.Client
 }
 
-func (impl *tiflashImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
-	return impl.Client.
-		WithTimeout(defaultTimeout).
-		Get(req.Host, req.Port, buildRelativeURI(req.Path, req.Query))
+func (impl *tiflashImplement) Get(req *endpoint.Request) (*http.Response, error) {
+	resp, err := impl.Client.NewClientWithHost(fmt.Sprintf("%s:%d", req.Host, req.Port)).
+		SetDoNotParseResponse(true).
+		SetTimeout(defaultTimeout).
+		R().
+		SetQueryString(req.Query).
+		Get(req.Path)
+	if err != nil {
+		return nil, err
+	}
+	return resp.RawResponse, nil
 }
 
 type pdImplement struct {
@@ -103,9 +117,16 @@ type pdImplement struct {
 	Client *pd.Client
 }
 
-func (impl *pdImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
-	return impl.Client.
-		WithAddress(req.Host, req.Port).
-		WithTimeout(defaultTimeout).
-		Get(buildRelativeURI(req.Path, req.Query))
+func (impl *pdImplement) Get(req *endpoint.Request) (*http.Response, error) {
+	resp, err := impl.Client.NewClientWithHost(fmt.Sprintf("%s:%d", req.Host, req.Port)).
+		SetDoNotParseResponse(true).
+		SetTimeout(defaultTimeout).
+		R().
+		SetHeader("PD-Allow-follower-handle", "true").
+		SetQueryString(req.Query).
+		Get(req.Path)
+	if err != nil {
+		return nil, err
+	}
+	return resp.RawResponse, nil
 }

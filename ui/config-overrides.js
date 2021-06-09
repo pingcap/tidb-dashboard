@@ -1,5 +1,6 @@
 const path = require('path')
-const { execSync } = require('child_process')
+const fs = require('fs')
+const os = require('os')
 const {
   override,
   fixBabelImports,
@@ -121,8 +122,24 @@ const overrideProcessEnv = (value) => (config) => {
 }
 
 const getInternalVersion = () => {
-  const out = execSync(`grep -v '^\#' ../release-version`)
-  return out.toString()
+  // react-app-rewired does not support async override config method right now,
+  // subscribe: https://github.com/timarney/react-app-rewired/pull/543
+  const data = fs.readFileSync('../release-version').toString().split(os.EOL)
+  let version = ""
+  for (let i = 0; i < data.length; i++) {
+    const l = data[i].trim()
+    if (l.startsWith("#") || (l === "")) {
+      continue
+    }
+    version = l
+    break
+  }
+
+  if (version === "") {
+    throw new Error(`invalid release version`)
+  }
+
+  return version
 }
 
 module.exports = override(

@@ -11,7 +11,6 @@ import {
   Menu,
   message,
 } from 'antd'
-import { useLocalStorageState } from 'ahooks'
 import {
   ReloadOutlined,
   LoadingOutlined,
@@ -24,6 +23,7 @@ import { useTranslation } from 'react-i18next'
 
 import { CacheContext } from '@lib/utils/useCache'
 import { Card, ColumnsSelector, Toolbar, MultiSelect } from '@lib/components'
+import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 
 import { StatementsTable } from '../../components'
 import StatementSettingForm from './StatementSettingForm'
@@ -47,7 +47,8 @@ export default function StatementsOverview() {
   const [showSettings, setShowSettings] = useState(false)
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     STMT_VISIBLE_COLUMN_KEYS,
-    DEF_STMT_COLUMN_KEYS
+    DEF_STMT_COLUMN_KEYS,
+    true
   )
   const [showFullSQL, setShowFullSQL] = useLocalStorageState(
     STMT_SHOW_FULL_SQL,

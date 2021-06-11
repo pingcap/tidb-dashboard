@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/thoas/go-funk"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -49,7 +50,10 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/info", s.infoHandler)
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/whoami", s.whoamiHandler)
-	endpoint.GET("/databases", utils.MWConnectTiDB(s.params.TiDBClient), s.databasesHandler)
+
+	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
+	endpoint.GET("/databases", s.databasesHandler)
+	endpoint.GET("/tables", s.tablesHandler)
 }
 
 type InfoResponse struct { //nolint:golint
@@ -101,7 +105,7 @@ func (s *Service) whoamiHandler(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) databasesHandler(c *gin.Context) {
 	type databaseSchemas struct {
-		Databases string `gorm:"column:Databases"`
+		Databases string `gorm:"column:Database"`
 	}
 	var result []databaseSchemas
 	db := utils.GetTiDBConnection(c)
@@ -116,4 +120,39 @@ func (s *Service) databasesHandler(c *gin.Context) {
 	}
 	sort.Strings(strs)
 	c.JSON(http.StatusOK, strs)
+}
+
+type tableSchema struct {
+	TableName string `gorm:"column:TABLE_NAME" json:"table_name"`
+	TableID   string `gorm:"column:TIDB_TABLE_ID" json:"table_id"`
+}
+
+// @ID infoListTables
+// @Summary List tables by database name
+// @Success 200 {object} []tableSchema
+// @Router /info/tables [get]
+// @Param database_name query string false "Database name"
+// @Security JwtAuth
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+func (s *Service) tablesHandler(c *gin.Context) {
+	var result []tableSchema
+	db := utils.GetTiDBConnection(c)
+	tx := db.Select([]string{"TABLE_NAME", "TIDB_TABLE_ID"}).Table("INFORMATION_SCHEMA.TABLES")
+	databaseName := c.Query("database_name")
+
+	if databaseName != "" {
+		tx = tx.Where("LOWER(TABLE_SCHEMA) = ?", strings.ToLower(databaseName))
+	}
+
+	err := tx.Order("TABLE_NAME").Scan(&result).Error
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	result = funk.Map(result, func(item tableSchema) tableSchema {
+		item.TableName = strings.ToLower(item.TableName)
+		return item
+	}).([]tableSchema)
+	c.JSON(http.StatusOK, result)
 }

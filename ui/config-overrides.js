@@ -124,16 +124,11 @@ const overrideProcessEnv = (value) => (config) => {
 const getInternalVersion = () => {
   // react-app-rewired does not support async override config method right now,
   // subscribe: https://github.com/timarney/react-app-rewired/pull/543
-  const data = fs.readFileSync('../release-version').toString().split(os.EOL)
-  let version = ''
-  for (let i = 0; i < data.length; i++) {
-    const l = data[i].trim()
-    if (l.startsWith('#') || l === '') {
-      continue
-    }
-    version = l
-    break
-  }
+  const version = fs
+    .readFileSync('../release-version', 'utf8')
+    .split(os.EOL)
+    .map((l) => l.trim())
+    .filter((l) => !l.startsWith('#') && l !== '')[0]
 
   if (version === '') {
     throw new Error(
@@ -192,6 +187,6 @@ module.exports = override(
   addExtraEntries(),
   supportDynamicPublicPathPrefix(),
   overrideProcessEnv({
-    RELEASE_VERSION: JSON.stringify(getInternalVersion()),
+    REACT_APP_RELEASE_VERSION: JSON.stringify(getInternalVersion()),
   })
 )

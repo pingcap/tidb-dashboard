@@ -13,10 +13,11 @@
 
 package utils
 
-import "strings"
+import "gorm.io/gorm/schema"
 
 func GetGormColumnName(gormStr string) string {
-	// TODO: use go-gorm/gorm/schema ParseTagSetting. Prerequisite: Upgrade to the latest version
-	columnName := strings.Split(gormStr, ":")[1]
-	return columnName
+	gormStrMap := schema.ParseTagSetting(gormStr, ";")
+	// The key will be converted to uppercase in:
+	// https://github.com/go-gorm/gorm/blob/master/schema/utils.go#L33
+	return gormStrMap["COLUMN"]
 }

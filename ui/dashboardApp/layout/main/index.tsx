@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Root } from '@lib/components'
-import { useLocalStorageState } from 'ahooks'
 import { HashRouter as Router } from 'react-router-dom'
 import { useSpring, animated } from 'react-spring'
+
+import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 
 import Sider from './Sider'
 import styles from './index.module.less'

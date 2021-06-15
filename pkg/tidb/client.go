@@ -12,14 +12,12 @@ import (
 
 	"github.com/VividCortex/mysqlerr"
 	"github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-
-	// MySQL driver used by gorm
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	mysqlDriver "gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
@@ -139,7 +137,7 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	dsnConfig.TLSConfig = c.sqlAPITLSKey
 	dsn := dsnConfig.FormatDSN()
 
-	db, err := gorm.Open("mysql", dsn)
+	db, err := gorm.Open(mysqlDriver.Open(dsn))
 	if err != nil {
 		if _, ok := err.(*net.OpError); ok || err == driver.ErrBadConn {
 			if strings.HasPrefix(addr, "0.0.0.0:") {
@@ -161,7 +159,7 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func (c *Client) SendGetRequest(path string) ([]byte, error) {
+func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 	var err error
 
 	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
@@ -186,12 +184,21 @@ func (c *Client) SendGetRequest(path string) ([]byte, error) {
 		}
 	}
 
-	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, path)
-	result, err := c.statusAPIHTTPClient.
+	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, relativeURI)
+	res, err := c.statusAPIHTTPClient.
 		WithTimeout(c.statusAPITimeout).
-		SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, "TiDB")
+		Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, "TiDB")
 	if err != nil && c.forwarder.statusProxy.noAliveRemote.Load() {
 		return nil, ErrNoAliveTiDB.NewWithNoMessage()
 	}
-	return result, err
+	return res, err
+}
+
+// FIXME: SendGetRequest should be extracted, as a common method.
+func (c *Client) SendGetRequest(relativeURI string) ([]byte, error) {
+	res, err := c.Get(relativeURI)
+	if err != nil {
+		return nil, err
+	}
+	return res.Body()
 }

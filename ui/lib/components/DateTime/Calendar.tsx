@@ -7,23 +7,27 @@ import i18next from 'i18next'
 import { format as longFormat } from './Long'
 import { IDateTimeProps } from '.'
 
-import calendar from 'dayjs/plugin/calendar'
+import calendar from './calendarPlugin'
+import weekOfYear from 'dayjs/plugin/weekOfYear'
 import localizedFormat from 'dayjs/plugin/localizedFormat'
 
 dayjs.extend(calendar)
+dayjs.extend(weekOfYear)
 dayjs.extend(localizedFormat)
 
 const translations = {
   en: {
     sameDay: '[Today at] h:mm A',
+    sameWeek: 'dddd h:mm A',
     nextDay: '[Tomorrow] h:mm A',
-    nextWeek: 'dddd h:mm A',
+    nextWeek: '[Next] dddd h:mm A',
     lastDay: '[Yesterday] h:mm A',
     lastWeek: '[Last] dddd h:mm A',
     sameElse: 'lll',
   },
   zh: {
     sameDay: '[今天] HH:mm',
+    sameWeek: 'dddd HH:mm',
     nextDay: '[明天] HH:mm',
     nextWeek: '[下]dddd HH:mm',
     lastDay: '[昨天] HH:mm',
@@ -54,6 +58,7 @@ function Calendar({ unixTimestampMs, ...rest }: IDateTimeProps) {
 export function format(unixTimestampMs: number) {
   return dayjs(unixTimestampMs).calendar(undefined, {
     sameDay: i18next.t('component.dateTime.calendar.sameDay'),
+    sameWeek: i18next.t('component.dateTime.calendar.sameWeek'),
     nextDay: i18next.t('component.dateTime.calendar.nextDay'),
     nextWeek: i18next.t('component.dateTime.calendar.nextWeek'),
     lastDay: i18next.t('component.dateTime.calendar.lastDay'),

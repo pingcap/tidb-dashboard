@@ -58,7 +58,6 @@ export default (o, c, d) => {
         : weekDiff === 0
         ? 'sameWeek'
         : 'nextWeek'
-    debugger
     /* eslint-enable no-nested-ternary */
     const currentFormat = format[retVal] || calendarFormat[retVal]
     if (typeof currentFormat === 'function') {

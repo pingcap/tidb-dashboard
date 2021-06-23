@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/joomcode/errorx"
+	"github.com/thoas/go-funk"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
@@ -190,5 +191,5 @@ func (s *Service) queryTableColumns(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, cs)
+	c.JSON(http.StatusOK, funk.UniqString(append(cs, getVirtualFields()...)))
 }

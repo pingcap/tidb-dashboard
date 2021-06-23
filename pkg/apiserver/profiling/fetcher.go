@@ -15,12 +15,10 @@ package profiling
 
 import (
 	"fmt"
-	"net/http"
 	"time"
 
 	"go.uber.org/fx"
 
-	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
@@ -53,7 +51,6 @@ var newFetchers = fx.Provide(func(
 	tidbClient *tidb.Client,
 	pdClient *pd.Client,
 	tiflashClient *tiflash.Client,
-	config *config.Config,
 ) *fetchers {
 	return &fetchers{
 		tikv: &tikvFetcher{
@@ -66,8 +63,7 @@ var newFetchers = fx.Provide(func(
 			client: tidbClient,
 		},
 		pd: &pdFetcher{
-			client:              pdClient,
-			statusAPIHTTPScheme: config.GetClusterHTTPScheme(),
+			client: pdClient,
 		},
 	}
 })
@@ -77,7 +73,11 @@ type tikvFetcher struct {
 }
 
 func (f *tikvFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithTimeout(maxProfilingTimeout).SendGetRequest(op.ip, op.port, op.path)
+	resp, err := f.client.NewClientWithHost(fmt.Sprintf("%s:%d", op.ip, op.port)).
+		SetTimeout(maxProfilingTimeout).
+		R().
+		Get(op.path)
+	return resp.Body(), err
 }
 
 type tiflashFetcher struct {
@@ -85,7 +85,11 @@ type tiflashFetcher struct {
 }
 
 func (f *tiflashFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithTimeout(maxProfilingTimeout).SendGetRequest(op.ip, op.port, op.path)
+	resp, err := f.client.NewClientWithHost(fmt.Sprintf("%s:%d", op.ip, op.port)).
+		SetTimeout(maxProfilingTimeout).
+		R().
+		Get(op.path)
+	return resp.Body(), err
 }
 
 type tidbFetcher struct {
@@ -93,18 +97,22 @@ type tidbFetcher struct {
 }
 
 func (f *tidbFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	return f.client.WithStatusAPIAddress(op.ip, op.port).WithStatusAPITimeout(maxProfilingTimeout).SendGetRequest(op.path)
+	resp, err := f.client.NewStatusAPIClientWithEnforceHost(fmt.Sprintf("%s:%d", op.ip, op.port)).
+		SetTimeout(maxProfilingTimeout).
+		R().
+		Get(op.path)
+	return resp.Body(), err
 }
 
 type pdFetcher struct {
-	client              *pd.Client
-	statusAPIHTTPScheme string
+	client *pd.Client
 }
 
 func (f *pdFetcher) fetch(op *fetchOptions) ([]byte, error) {
-	baseURL := fmt.Sprintf("%s://%s:%d", f.statusAPIHTTPScheme, op.ip, op.port)
-	f.client.WithBeforeRequest(func(req *http.Request) {
-		req.Header.Add("PD-Allow-follower-handle", "true")
-	})
-	return f.client.WithTimeout(maxProfilingTimeout).WithBaseURL(baseURL).SendGetRequest(op.path)
+	resp, err := f.client.NewClientWithHost(fmt.Sprintf("%s:%d", op.ip, op.port)).
+		SetTimeout(maxProfilingTimeout).
+		R().
+		SetHeader("PD-Allow-follower-handle", "true").
+		Get(op.path)
+	return resp.Body(), err
 }

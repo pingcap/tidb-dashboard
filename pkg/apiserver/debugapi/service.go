@@ -112,14 +112,13 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 		return
 	}
 
-	res, err := SendRequest(ep.Client, endpointReq)
+	resp, err := SendRequest(ep.Client, endpointReq)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	defer res.Response.Body.Close() //nolint:errcheck
 
-	ext := getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
+	ext := getExtFromContentTypeHeader(resp.Header.Get("Content-Type"))
 	fileName := fmt.Sprintf("%s_%d%s", req.ID, time.Now().Unix(), ext)
 
 	writer, token, err := utils.FSPersist(utils.FSPersistConfig{
@@ -133,7 +132,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 		return
 	}
 	defer writer.Close() //nolint:errcheck
-	_, err = io.Copy(writer, res.Response.Body)
+	_, err = io.Copy(writer, resp.Body)
 	if err != nil {
 		_ = c.Error(err)
 		return

@@ -121,11 +121,11 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 }
 
 func (s *tidbLabelStrategy) request(path string, v interface{}) error {
-	data, err := s.tidbClient.SendGetRequest(path)
+	resp, err := s.tidbClient.NewStatusAPIRequest().Get(path)
 	if err != nil {
 		return err
 	}
-	if err = json.Unmarshal(data, v); err != nil {
+	if err = json.Unmarshal(resp.Body(), v); err != nil {
 		return ErrInvalidData.Wrap(err, "TiDB schema API unmarshal failed")
 	}
 	return nil

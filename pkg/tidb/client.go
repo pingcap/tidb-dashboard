@@ -5,12 +5,12 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"net"
-	"net/http"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/VividCortex/mysqlerr"
+	"github.com/go-resty/resty/v2"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
@@ -41,15 +41,14 @@ const (
 )
 
 type Client struct {
-	lifecycleCtx             context.Context
-	forwarder                *Forwarder
-	statusAPIHTTPScheme      string
-	statusAPIAddress         string // Empty means to use address provided by forwarder
-	enforceStatusAPIAddresss bool   // enforced status api address and ignore env override config
-	statusAPIHTTPClient      *httpc.Client
-	statusAPITimeout         time.Duration
-	sqlAPITLSKey             string // Non empty means use this key as MySQL TLS config
-	sqlAPIAddress            string // Empty means to use address provided by forwarder
+	lifecycleCtx           context.Context
+	forwarder              *Forwarder
+	httpClient             *httpc.Client
+	defaultStatusAPIClient *resty.Client
+
+	clusterScheme string
+	sqlAPITLSKey  string // Non empty means use this key as MySQL TLS config
+	sqlAPIAddress string // Empty means to use address provided by forwarder
 }
 
 func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.Client, httpClient *httpc.Client) *Client {
@@ -60,16 +59,14 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 	}
 
 	client := &Client{
-		lifecycleCtx:             nil,
-		forwarder:                newForwarder(lc, etcdClient),
-		statusAPIHTTPScheme:      config.GetClusterHTTPScheme(),
-		statusAPIAddress:         "",
-		enforceStatusAPIAddresss: false,
-		statusAPIHTTPClient:      httpClient,
-		statusAPITimeout:         defaultTiDBStatusAPITimeout,
-		sqlAPITLSKey:             sqlAPITLSKey,
-		sqlAPIAddress:            "",
+		lifecycleCtx:  nil,
+		forwarder:     newForwarder(lc, etcdClient),
+		httpClient:    httpClient,
+		clusterScheme: config.GetClusterHTTPScheme(),
+		sqlAPITLSKey:  sqlAPITLSKey,
+		sqlAPIAddress: "",
 	}
+	client.defaultStatusAPIClient = client.NewStatusAPIClient()
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -81,20 +78,29 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 	return client
 }
 
-func (c Client) WithStatusAPITimeout(timeout time.Duration) *Client {
-	c.statusAPITimeout = timeout
-	return &c
+func (c *Client) newStatusAPIClient() *resty.Client {
+	return c.httpClient.New().
+		SetTimeout(defaultTiDBStatusAPITimeout).
+		OnBeforeRequest(func(rc *resty.Client, r *resty.Request) error {
+			if r.Context() == nil {
+				r.SetContext(c.lifecycleCtx)
+			}
+			return nil
+		})
 }
 
-func (c Client) WithStatusAPIAddress(host string, statusPort int) *Client {
-	c.statusAPIAddress = fmt.Sprintf("%s:%d", host, statusPort)
-	return &c
+func (c *Client) NewStatusAPIClient() *resty.Client {
+	return c.newStatusAPIClient().
+		OnBeforeRequest(createBeforeRequestEndpointOverrideMiddleware(c))
 }
 
-func (c Client) WithEnforcedStatusAPIAddress(host string, statusPort int) *Client {
-	c.enforceStatusAPIAddresss = true
-	c.statusAPIAddress = fmt.Sprintf("%s:%d", host, statusPort)
-	return &c
+func (c *Client) NewStatusAPIClientWithEnforceHost(host string) *resty.Client {
+	return c.newStatusAPIClient().
+		SetHostURL(normalizeScheme(c.clusterScheme, host))
+}
+
+func (c *Client) NewStatusAPIRequest() *resty.Request {
+	return c.defaultStatusAPIClient.R()
 }
 
 func (c Client) WithSQLAPIAddress(host string, sqlPort int) *Client {
@@ -159,46 +165,39 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
-	var err error
-
-	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
-	// the `tidbOverrideStatusEndpointEnvVar` and the `Client.statusAPIAddress` have the same override priority, if both exist and have not enforced `Client.statusAPIAddress` then an error is returned
-	if overrideEndpoint != "" && c.statusAPIAddress != "" && !c.enforceStatusAPIAddresss {
-		log.Warn(fmt.Sprintf("Reject to establish a target specified TiDB status connection since `%s` is set", tidbOverrideStatusEndpointEnvVar))
-		return nil, ErrTiDBConnFailed.New("TiDB Dashboard is configured to only connect to specified TiDB host")
-	}
-
-	var addr string
-	switch {
-	case c.enforceStatusAPIAddresss:
-		addr = c.sqlAPIAddress
-	case overrideEndpoint != "":
-		addr = overrideEndpoint
-	default:
-		addr = c.sqlAPIAddress
-	}
-	if addr == "" {
-		if addr, err = c.forwarder.getEndpointAddr(c.forwarder.statusPort); err != nil {
-			return nil, err
+func createBeforeRequestEndpointOverrideMiddleware(c *Client) resty.RequestMiddleware {
+	return func(rc *resty.Client, r *resty.Request) error {
+		overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
+		// the `tidbOverrideStatusEndpointEnvVar` and the `Client.HostURL` have the same override priority, if both exist, an error is returned
+		if overrideEndpoint != "" && rc.HostURL != "" {
+			log.Warn(fmt.Sprintf("Reject to establish a target specified TiDB status connection since `%s` is set", tidbOverrideStatusEndpointEnvVar))
+			return ErrTiDBConnFailed.New("TiDB Dashboard is configured to only connect to specified TiDB host")
 		}
-	}
 
-	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, relativeURI)
-	res, err := c.statusAPIHTTPClient.
-		WithTimeout(c.statusAPITimeout).
-		Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, "TiDB")
-	if err != nil && c.forwarder.statusProxy.noAliveRemote.Load() {
-		return nil, ErrNoAliveTiDB.NewWithNoMessage()
+		var addr string
+		var err error
+		switch {
+		case overrideEndpoint != "":
+			addr = overrideEndpoint
+		default:
+			addr = rc.HostURL
+		}
+		if addr == "" {
+			if addr, err = c.forwarder.getEndpointAddr(c.forwarder.statusPort); err != nil {
+				return err
+			}
+		}
+
+		rc.SetHostURL(normalizeScheme(c.clusterScheme, addr))
+		return nil
 	}
-	return res, err
 }
 
-// FIXME: SendGetRequest should be extracted, as a common method.
-func (c *Client) SendGetRequest(relativeURI string) ([]byte, error) {
-	res, err := c.Get(relativeURI)
-	if err != nil {
-		return nil, err
+// there's a bug in resty when mix `SetScheme` and `SetHostURL`: https://github.com/go-resty/resty/issues/407
+// so we need normalized scheme for now
+func normalizeScheme(scheme, host string) string {
+	if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {
+		return host
 	}
-	return res.Body()
+	return fmt.Sprintf("%s://%s", scheme, host)
 }

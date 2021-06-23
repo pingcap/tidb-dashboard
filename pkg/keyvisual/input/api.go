@@ -120,10 +120,10 @@ func read(data []byte) (*RegionsInfo, error) {
 
 func NewAPIPeriodicGetter(pdClient *pd.Client) regionpkg.RegionsInfoGenerator {
 	return func() (regionpkg.RegionsInfo, error) {
-		data, err := pdClient.SendGetRequest("/regions")
+		resp, err := pdClient.NewRequest().Get("/regions")
 		if err != nil {
 			return nil, err
 		}
-		return read(data)
+		return read(resp.Body())
 	}
 }

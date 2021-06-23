@@ -15,7 +15,6 @@ package metrics
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -77,31 +76,17 @@ func (s *Service) queryMetrics(c *gin.Context) {
 	params.Add("step", strconv.Itoa(req.StepSec))
 
 	uri := fmt.Sprintf("%s/api/v1/query_range?%s", addr, params.Encode())
-	promReq, err := http.NewRequestWithContext(s.lifecycleCtx, http.MethodGet, uri, nil)
-	if err != nil {
-		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to build Prometheus request"))
-		return
-	}
-
-	promResp, err := s.params.HTTPClient.WithTimeout(defaultPromQueryTimeout).Do(promReq)
+	resp, err := s.params.HTTPClient.New().
+		SetTimeout(defaultPromQueryTimeout).
+		R().
+		SetContext(s.lifecycleCtx).
+		Get(uri)
 	if err != nil {
 		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to send requests to Prometheus"))
 		return
 	}
 
-	defer promResp.Body.Close()
-	if promResp.StatusCode != http.StatusOK {
-		_ = c.Error(ErrPrometheusQueryFailed.New("failed to query Prometheus"))
-		return
-	}
-
-	body, err := ioutil.ReadAll(promResp.Body)
-	if err != nil {
-		_ = c.Error(ErrPrometheusQueryFailed.Wrap(err, "failed to read Prometheus query result"))
-		return
-	}
-
-	c.Data(promResp.StatusCode, promResp.Header.Get("content-type"), body)
+	c.Data(resp.StatusCode(), resp.Header().Get("content-type"), resp.Body())
 }
 
 type GetPromAddressConfigResponse struct {

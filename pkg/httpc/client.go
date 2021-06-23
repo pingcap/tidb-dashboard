@@ -16,16 +16,16 @@ package httpc
 import (
 	"context"
 	"crypto/tls"
-	"io"
-	"io/ioutil"
+	"fmt"
 	"net"
 	"net/http"
 	"time"
 
-	"github.com/joomcode/errorx"
-	"github.com/pingcap/log"
+	"github.com/go-resty/resty/v2"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+
+	"github.com/pingcap/log"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
@@ -35,100 +35,46 @@ const (
 )
 
 type Client struct {
-	http.Client
-	BeforeRequest func(req *http.Request)
+	defaultClient *resty.Client
+	transport     *http.Transport
 }
 
 func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
-	cli := http.Client{
-		Transport: &http.Transport{
-			DialTLS: func(network, addr string) (net.Conn, error) {
-				conn, err := tls.Dial(network, addr, config.ClusterTLSConfig)
-				return conn, err
-			},
-			TLSClientConfig: config.ClusterTLSConfig,
+	transport := &http.Transport{
+		DialTLS: func(network, addr string) (net.Conn, error) {
+			conn, err := tls.Dial(network, addr, config.ClusterTLSConfig)
+			return conn, err
 		},
-		Timeout: defaultTimeout,
+		TLSClientConfig: config.ClusterTLSConfig,
 	}
+	client := &Client{transport: transport}
+	client.defaultClient = client.New()
 
 	lc.Append(fx.Hook{
-		OnStop: func(context.Context) error {
-			cli.CloseIdleConnections()
+		OnStop: func(c context.Context) error {
+			transport.CloseIdleConnections()
 			return nil
 		},
 	})
 
-	return &Client{
-		Client: cli,
-	}
+	return client
 }
 
-func (c Client) WithTimeout(timeout time.Duration) *Client {
-	c.Timeout = timeout
-	return &c
+func (c *Client) New() *resty.Client {
+	client := resty.New().
+		SetTransport(c.transport).
+		SetTimeout(defaultTimeout).
+		OnAfterResponse(func(c *resty.Client, r *resty.Response) error {
+			if r.IsError() {
+				err := fmt.Errorf(string(r.Body()))
+				log.Warn("SendRequest failed", zap.Strings("Request", []string{r.Request.Method, r.Request.URL}), zap.Error(err))
+				return err
+			}
+			return nil
+		})
+	return client
 }
 
-func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
-	c.BeforeRequest = callback
-	return &c
-}
-
-// TODO: Replace using go-resty
-func (c *Client) SendRequest(
-	ctx context.Context,
-	uri string,
-	method string,
-	body io.Reader,
-	errType *errorx.Type,
-	errOriginComponent string) ([]byte, error) {
-	res, err := c.Send(ctx, uri, method, body, errType, errOriginComponent)
-	if err != nil {
-		return nil, err
-	}
-	return res.Body()
-}
-
-func (c *Client) Send(
-	ctx context.Context,
-	uri string,
-	method string,
-	body io.Reader,
-	errType *errorx.Type,
-	errOriginComponent string) (*Response, error) {
-	req, err := http.NewRequestWithContext(ctx, method, uri, body)
-	if err != nil {
-		e := errType.Wrap(err, "Failed to build %s API request", errOriginComponent)
-		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
-		return nil, e
-	}
-
-	if c.BeforeRequest != nil {
-		c.BeforeRequest(req)
-	}
-
-	resp, err := c.Do(req)
-	if err != nil {
-		e := errType.Wrap(err, "Failed to send %s API request", errOriginComponent)
-		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
-		return nil, e
-	}
-
-	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		defer resp.Body.Close()
-		data, _ := ioutil.ReadAll(resp.Body)
-		e := errType.New("Request failed with status code %d from %s API: %s", resp.StatusCode, errOriginComponent, string(data))
-		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
-		return nil, e
-	}
-
-	return &Response{resp}, nil
-}
-
-type Response struct {
-	*http.Response
-}
-
-func (r *Response) Body() ([]byte, error) {
-	defer r.Response.Body.Close()
-	return ioutil.ReadAll(r.Response.Body)
+func (c *Client) NewRequest() *resty.Request {
+	return c.defaultClient.R()
 }

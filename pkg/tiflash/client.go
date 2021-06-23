@@ -16,11 +16,11 @@ package tiflash
 import (
 	"context"
 	"fmt"
-	"io"
-	"net/http"
 	"time"
 
 	"go.uber.org/fx"
+
+	"github.com/go-resty/resty/v2"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
@@ -35,19 +35,20 @@ const (
 )
 
 type Client struct {
-	httpClient   *httpc.Client
-	httpScheme   string
-	lifecycleCtx context.Context
-	timeout      time.Duration
+	defaultClient *resty.Client
+	httpClient    *httpc.Client
+	lifecycleCtx  context.Context
+
+	clusterScheme string
 }
 
 func NewTiFlashClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
 	client := &Client{
-		httpClient:   httpClient,
-		httpScheme:   config.GetClusterHTTPScheme(),
-		lifecycleCtx: nil,
-		timeout:      defaultTiFlashStatusAPITimeout,
+		httpClient:    httpClient,
+		lifecycleCtx:  nil,
+		clusterScheme: config.GetClusterHTTPScheme(),
 	}
+	client.defaultClient = client.New()
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -59,25 +60,22 @@ func NewTiFlashClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.
 	return client
 }
 
-func (c Client) WithTimeout(timeout time.Duration) *Client {
-	c.timeout = timeout
-	return &c
+func (c *Client) New() *resty.Client {
+	return c.httpClient.New().
+		SetTimeout(defaultTiFlashStatusAPITimeout).
+		OnBeforeRequest(func(rc *resty.Client, r *resty.Request) error {
+			if r.Context() == nil {
+				r.SetContext(c.lifecycleCtx)
+			}
+			return nil
+		})
 }
 
-func (c *Client) Get(host string, statusPort int, relativeURI string) (*httpc.Response, error) {
-	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
-	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrFlashClientRequestFailed, "TiFlash")
+func (c *Client) NewClientWithHost(host string) *resty.Client {
+	return c.New().
+		SetHostURL(fmt.Sprintf("%s://%s", c.clusterScheme, host))
 }
 
-func (c *Client) SendGetRequest(host string, statusPort int, relativeURI string) ([]byte, error) {
-	res, err := c.Get(host, statusPort, relativeURI)
-	if err != nil {
-		return nil, err
-	}
-	return res.Body()
-}
-
-func (c *Client) SendPostRequest(host string, statusPort int, relativeURI string, body io.Reader) ([]byte, error) {
-	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrFlashClientRequestFailed, "TiFlash")
+func (c *Client) NewRequest() *resty.Request {
+	return c.defaultClient.R()
 }

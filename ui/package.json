@@ -52,6 +52,7 @@
     "start": "gulp dev",
     "build": "gulp build",
     "test": "react-app-rewired test",
+    "test:cypress": "cypress open",
     "fmt": "prettier --write .",
     "gen:browserlist": "gulp gen:browserlist",
     "storybook": "start-storybook -p 9009 -s public"
@@ -92,6 +93,7 @@
     "babel-plugin-import": "^1.13.0",
     "browserslist-useragent-regexp": "^2.1.0",
     "customize-cra": "^1.0.0",
+    "cypress": "^7.6.0",
     "esm": "^3.2.25",
     "gulp": "^4.0.2",
     "gulp-cli": "^2.3.0",

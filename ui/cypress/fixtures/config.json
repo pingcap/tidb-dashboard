@@ -1,0 +1,8 @@
+{
+  "uri": {
+    "root": "/",
+    "login": "/signin",
+    "overview": "/overview",
+    "search_logs": "/search_logs"
+  }
+}

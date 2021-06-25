@@ -14,7 +14,7 @@ search_logs:
     start_time: 起始时间
     end_time: 结束时间
     log_level: 日志等级
-    components: 选择实例
+    components: 请选择实例
     keywords: 关键字
     keywords_placeholder: 搜索关键字，可选，以空格分割
     search: 搜索

@@ -14,7 +14,7 @@ search_logs:
     start_time: Start Time
     end_time: End Time
     log_level: Log Level
-    components: instances
+    components: Please select instances
     keywords: Keywords
     keywords_placeholder: Keywords, Optional, separated by spaces
     search: Search

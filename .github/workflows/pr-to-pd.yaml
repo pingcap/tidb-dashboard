@@ -1,0 +1,21 @@
+name: Create Pull Request to PD
+
+on:
+  release:
+    type: [released]
+
+jobs:
+  create_pr_to_pd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create pull request
+        uses: ./.github/actions/release-pr-to-another-repo
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          destination_repo: "tikv/pd"
+          destination_base_branch: "master"
+          destination_head_branch_prefix: "update-dashboard"
+          user_email: "dashboard-release-bot@pingcap.com"
+          user_name: "dashboard-release-bot"
+          pull_request_reviewers: "breeswish"

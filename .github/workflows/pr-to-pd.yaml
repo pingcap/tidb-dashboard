@@ -39,6 +39,7 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         if: steps.update_dashboard.outputs.committed == 1
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           signoff: true
           branch: update-dashboard-${{ env.GITHUB_REF }}
           title: Update TiDB Dashboard to ${{ env.GITHUB_REF }}

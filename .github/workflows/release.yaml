@@ -107,7 +107,7 @@ jobs:
           git add go.mod go.sum
           if git status | grep -q "Changes to be committed"
           then
-            git commit --message "Update from https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA, release version: ${{ needs.release.outputs.release_version }}"
+            git commit --message --signoff "Update from `https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA`, release version: ${{ needs.release.outputs.release_version }}"
             echo "::set-output name=committed::1"
           else
             echo "No changes detected"
@@ -117,8 +117,28 @@ jobs:
         if: steps.git_commit.outputs.committed == 1
         with:
           token: ${{ secrets.BOT_PAT }}
-          signoff: true
           branch: update-dashboard-${{ needs.release.outputs.release_version }}
           title: Update TiDB Dashboard to ${{ needs.release.outputs.release_version }}
-          body: Update TiDB dashboard from https://github.com/${{ env.GITHUB_REPOSITORY }}/commit/${{ env.GITHUB_SHA }}, release version is ${{ needs.release.outputs.release_version }}
+          body: |
+            ### What problem does this PR solve?
+            Signed-off-by: tidb-dashboard-bot tidb-dashboard-bot@pingcap.com
+
+            ### What is changed and how it works?
+
+            ### Check List
+
+            Update to TiDB Dashboard ${{ needs.release.outputs.release_version }}
+
+            Tests
+
+            - Manual test (add detailed scripts or steps below)
+
+            Related changes
+
+            - Need to cherry-pick to the release branch
+            ### Release note
+
+            ```release-note
+            Update TiDB Dashboard to ${{ needs.release.outputs.release_version }}
+            ```
           push-to-fork: tidb-dashboard-bot/pd

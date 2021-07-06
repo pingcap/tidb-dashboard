@@ -12,21 +12,22 @@ jobs:
         uses: actions/checkout@master
         with:
           repository: tikv/pd
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@pingcap.com"
+          token: ${{ secrets.BOT_PAT }}
       - name: Setup go
         uses: actions/setup-go@v2
         with:
           go-version: "1.16.5"
       - name: Update dashboard
-        id: update_dashboard
         run: |
           go get -d "github.com/pingcap/tidb-dashboard@$GITHUB_REF"
           go mod tidy
           make pd-server
           go mod tidy
+      - name: Git commit
+        id: git_commit
+        run: |
+          git config user.name "tidb-dashboard-bot"
+          git config user.email "tidb-dashboard-bot@pingcap.com"
           git add go.mod go.sum
           if git status | grep -q "Changes to be committed"
           then
@@ -37,11 +38,11 @@ jobs:
           fi
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
-        if: steps.update_dashboard.outputs.committed == 1
+        if: steps.git_commit.outputs.committed == 1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.BOT_PAT }}
           signoff: true
           branch: update-dashboard-${{ env.GITHUB_REF }}
           title: Update TiDB Dashboard to ${{ env.GITHUB_REF }}
           body: Update TiDB dashboard from https://github.com/${{ env.GITHUB_REPOSITORY }}/commit/${{ env.GITHUB_SHA }}, release version is ${{ env.GITHUB_REF }}
-          push-to-fork: ${{ env.GITHUB_ACTOR }}/pd
+          push-to-fork: tidb-dashboard-bot/pd

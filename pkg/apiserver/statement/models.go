@@ -19,6 +19,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
+	"github.com/thoas/go-funk"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
 
@@ -163,4 +165,14 @@ func getFieldsAndTags() (stmtFields []Field) {
 	}
 
 	return
+}
+
+func getVirtualFields(tableFields []string) []string {
+	fields := getFieldsAndTags()
+	vFields := funk.Filter(fields, func(f Field) bool {
+		return len(f.Related) != 0 && utils.IsSubsets(tableFields, f.Related)
+	}).([]Field)
+	return funk.Map(vFields, func(f Field) string {
+		return f.JSONName
+	}).([]string)
 }

@@ -172,11 +172,11 @@ func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 	var addr string
 	switch {
 	case c.enforceStatusAPIAddresss:
-		addr = c.sqlAPIAddress
+		addr = c.statusAPIAddress
 	case overrideEndpoint != "":
 		addr = overrideEndpoint
 	default:
-		addr = c.sqlAPIAddress
+		addr = c.statusAPIAddress
 	}
 	if addr == "" {
 		if addr, err = c.forwarder.getEndpointAddr(c.forwarder.statusPort); err != nil {

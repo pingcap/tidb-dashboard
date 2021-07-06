@@ -121,21 +121,19 @@ jobs:
           title: Update TiDB Dashboard to ${{ needs.release.outputs.release_version }}
           body: |
             ### What problem does this PR solve?
-            Signed-off-by: tidb-dashboard-bot tidb-dashboard-bot@pingcap.com
+            
+            Update TiDB Dashboard to ${{ needs.release.outputs.release_version }}. 
+            
+            Upstream commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }} .
 
             ### What is changed and how it works?
 
             ### Check List
 
-            Update to TiDB Dashboard ${{ needs.release.outputs.release_version }}
-
-            Tests
-
-            - Manual test (add detailed scripts or steps below)
-
             Related changes
 
             - Need to cherry-pick to the release branch
+            
             ### Release note
 
             ```release-note

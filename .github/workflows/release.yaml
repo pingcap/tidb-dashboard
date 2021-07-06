@@ -9,7 +9,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     outputs:
-      release_version: ${{ steps.lookup_release_version.outputs.release_version }}
+      release_version: v${{ steps.lookup_release_version.outputs.release_version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2

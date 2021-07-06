@@ -16,7 +16,7 @@ This GitHub Action copies a folder from the current repository to a location in 
           uses: actions/checkout@v2
 
         - name: Create pull request
-          uses: paygoc6/action-pull-request-another-repo@v1.0.1
+          uses: ./.github/actions/release-pr-to-another-repo
           env:
             API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
           with:

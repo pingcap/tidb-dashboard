@@ -1,0 +1,46 @@
+name: Create Pull Request to PD
+
+on:
+  release:
+    type: [released]
+
+jobs:
+  create_pr_to_pd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out to pd
+        uses: actions/checkout@master
+        with:
+          repository: tikv/pd
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@pingcap.com"
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.16.5"
+      - name: Update dashboard
+        id: update_dashboard
+        run: |
+          go get -d "github.com/pingcap/tidb-dashboard@$GITHUB_REF"
+          go mod tidy
+          make pd-server
+          go mod tidy
+          git add go.mod go.sum
+          if git status | grep -q "Changes to be committed"
+          then
+            git commit --message "Update from https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA, release version: $GITHUB_REF"
+            echo "::set-output name=committed::1"
+          else
+            echo "No changes detected"
+          fi
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        if: steps.update_dashboard.outputs.committed == 1
+        with:
+          signoff: true
+          branch: update-dashboard-${{ env.GITHUB_REF }}
+          title: Update TiDB Dashboard to ${{ env.GITHUB_REF }}
+          body: Update TiDB dashboard from https://github.com/${{ env.GITHUB_REPOSITORY }}/commit/${{ env.GITHUB_SHA }}, release version is ${{ env.GITHUB_REF }}
+          push-to-fork: ${{ env.GITHUB_ACTOR }}/pd

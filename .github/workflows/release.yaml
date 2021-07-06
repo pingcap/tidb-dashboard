@@ -107,7 +107,7 @@ jobs:
           git add go.mod go.sum
           if git status | grep -q "Changes to be committed"
           then
-            git commit --message --signoff "Update from `https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA`, release version: ${{ needs.release.outputs.release_version }}"
+            git commit --message --signoff "Update TiDB Dashboard to ${{ needs.release.outputs.release_version }}"
             echo "::set-output name=committed::1"
           else
             echo "No changes detected"

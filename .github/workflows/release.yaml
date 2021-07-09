@@ -123,7 +123,7 @@ jobs:
         if: steps.git_commit.outputs.committed == 1
         with:
           token: ${{ secrets.BOT_PAT }}
-          branch: update-tidb-dashboard/${{ needs.release.outputs.release_version }}-${{ steps.build_id.outputs.id }}
+          branch: update-tidb-dashboard/${{ matrix.branch }}-${{ needs.release.outputs.release_version }}-${{ steps.build_id.outputs.id }}
           title: Update TiDB Dashboard to ${{ needs.release.outputs.release_version }}
           body: |
             ### What problem does this PR solve?

@@ -124,7 +124,7 @@ jobs:
         with:
           token: ${{ secrets.BOT_PAT }}
           branch: update-tidb-dashboard/${{ matrix.branch }}-${{ needs.release.outputs.release_version }}-${{ steps.build_id.outputs.id }}
-          title: Update TiDB Dashboard to ${{ needs.release.outputs.release_version }}
+          title: Update TiDB Dashboard to ${{ needs.release.outputs.release_version }} [${{ matrix.branch }}]
           body: |
             ### What problem does this PR solve?
 
@@ -132,15 +132,9 @@ jobs:
 
             Upstream commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }} .
 
-            ### Check List
-
-            Related changes
-
-            - Need to cherry-pick to the release branch
-
             ### Release note
 
             ```release-note
-            Update TiDB Dashboard to ${{ needs.release.outputs.release_version }}
+            None
             ```
           push-to-fork: tidb-dashboard-bot/pd

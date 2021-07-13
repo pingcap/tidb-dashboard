@@ -22,7 +22,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )

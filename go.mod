@@ -1,6 +1,6 @@
 module github.com/pingcap/tidb-dashboard
 
-go 1.14
+go 1.15
 
 require (
 	github.com/ReneKroon/ttlcache/v2 v2.3.0

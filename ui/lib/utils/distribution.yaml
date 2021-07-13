@@ -1,0 +1,4 @@
+tidb: TiDB
+tikv: TiKV
+tiflash: TiFlash
+pd: PD

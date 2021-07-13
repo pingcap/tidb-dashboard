@@ -5,6 +5,7 @@ import Flexbox from '@g07cha/flexbox-react'
 import { useSpring, animated } from 'react-spring'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import client, { InfoInfoResponse } from '@lib/client'
+import { useTranslation } from 'react-i18next'
 
 import { ReactComponent as Logo } from './logo-icon-light.svg'
 import styles from './Banner.module.less'
@@ -45,6 +46,7 @@ export default function ToggleBanner({
   collapsed,
   onToggle,
 }) {
+  const { t } = useTranslation()
   const bannerRef = useRef(null)
   const bannerSize = useSize(bannerRef)
   const transBanner = useSpring({
@@ -83,7 +85,9 @@ export default function ToggleBanner({
               <Logo height={30} />
             </div>
             <div className={styles.bannerContent}>
-              <div className={styles.bannerTitle}>TiDB Dashboard</div>
+              <div className={styles.bannerTitle}>
+                {t('distro.tidb')} Dashboard
+              </div>
               <div className={styles.bannerVersion}>
                 {isLoading && '...'}
                 {!isLoading && (version || 'Version unknown')}

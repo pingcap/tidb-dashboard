@@ -21,7 +21,7 @@ user_profile:
     share_unavailable_tooltip: 当前会话是一个被分享的会话，因此无法再次分享
   share_session:
     text: >
-      您可以生成一个**授权码**来将您当前的会话分享给其他人、邀请他们使用该 TiDB Dashboard：
+      您可以生成一个**授权码**来将您当前的会话分享给其他人、邀请他们使用该 {{distro.tidb}} Dashboard：
 
       - 授权码可以被重复使用。
 
@@ -40,8 +40,8 @@ user_profile:
       copied: 已复制
   version:
     title: 版本信息
-    internal_version: TiDB Dashboard 内部版本号
-    build_git_hash: TiDB Dashboard 编译 Git Hash
-    build_time: TiDB Dashboard 编译时间
-    standalone: TiDB Dashboard 运行于独立模式
-    pd_version: PD 版本号
+    internal_version: '{{distro.tidb}} Dashboard 内部版本号'
+    build_git_hash: '{{distro.tidb}} Dashboard 编译 Git Hash'
+    build_time: '{{distro.tidb}} Dashboard 编译时间'
+    standalone: '{{distro.tidb}} Dashboard 运行于独立模式'
+    pd_version: '{{distro.pd}} 版本号'

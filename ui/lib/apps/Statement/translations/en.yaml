@@ -60,7 +60,7 @@ statement:
     keep_duration: SQL Statement History Size
     keep_duration_tooltip: Window Size × Number of Windows
     internal_query: Collect Internal Queries
-    internal_query_tooltip: After enabled, TiDB internal queries will be collected as well.
+    internal_query_tooltip: After enabled, {{distro.tidb}} internal queries will be collected as well.
     actions:
       save: Save
       close: Close

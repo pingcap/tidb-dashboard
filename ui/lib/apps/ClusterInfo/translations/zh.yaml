@@ -13,7 +13,7 @@ cluster_info:
       actions:
         hide_db:
           tooltip: 隐藏
-          confirm: 您确认要隐藏该 TiDB 实例吗?
+          confirm: 您确认要隐藏该 {{distro.tidb}} 实例吗?
     host_table:
       title: 主机
       columns:

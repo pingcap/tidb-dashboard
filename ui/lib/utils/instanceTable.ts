@@ -5,6 +5,7 @@ import {
 } from '@lib/client'
 import { IGroup } from 'office-ui-fabric-react/lib/DetailsList'
 import _ from 'lodash'
+import i18next from 'i18next'
 
 export type InstanceKind = 'pd' | 'tidb' | 'tikv' | 'tiflash'
 
@@ -17,10 +18,10 @@ export const InstanceStatus = {
 }
 
 export const InstanceKindName: { [key in InstanceKind]: string } = {
-  pd: 'PD',
-  tidb: 'TiDB',
-  tikv: 'TiKV',
-  tiflash: 'TiFlash',
+  pd: i18next.t('distro.pd'),
+  tidb: i18next.t('distro.tidb'),
+  tikv: i18next.t('distro.tikv'),
+  tiflash: i18next.t('distro.tiflash'),
 }
 
 export const InstanceKinds = Object.keys(InstanceKindName) as InstanceKind[]

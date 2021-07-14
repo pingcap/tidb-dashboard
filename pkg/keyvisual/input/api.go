@@ -22,6 +22,7 @@ import (
 
 	regionpkg "github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 var (
@@ -95,18 +96,18 @@ func (rs *RegionsInfo) GetValues(tag regionpkg.StatTag) []uint64 {
 func read(data []byte) (*RegionsInfo, error) {
 	regions := &RegionsInfo{}
 	if err := json.Unmarshal(data, regions); err != nil {
-		return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed")
+		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed", distro.Data.PD)
 	}
 
 	for _, region := range regions.Regions {
 		startBytes, err := hex.DecodeString(region.StartKey)
 		if err != nil {
-			return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed")
+			return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed", distro.Data.PD)
 		}
 		region.StartKey = regionpkg.String(startBytes)
 		endBytes, err := hex.DecodeString(region.EndKey)
 		if err != nil {
-			return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed")
+			return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed", distro.Data.PD)
 		}
 		region.EndKey = regionpkg.String(endBytes)
 	}

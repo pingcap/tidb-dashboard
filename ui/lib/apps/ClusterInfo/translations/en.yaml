@@ -13,7 +13,7 @@ cluster_info:
       actions:
         hide_db:
           tooltip: Hide
-          confirm: Do you want to hide this TiDB instance?
+          confirm: Do you want to hide this {{distro.tidb}} instance?
     host_table:
       title: Hosts
       columns:

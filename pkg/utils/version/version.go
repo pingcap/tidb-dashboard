@@ -15,8 +15,10 @@ package version
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pingcap/log"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"go.uber.org/zap"
 )
 
@@ -38,10 +40,10 @@ var (
 )
 
 func Print() {
-	log.Info("TiDB Dashboard started",
+	log.Info(fmt.Sprintf("%s Dashboard started", distro.Data.Tidb),
 		zap.String("internal-version", InternalVersion),
 		zap.String("standalone", Standalone),
-		zap.String("pd-version", PDVersion),
+		zap.String(fmt.Sprintf("%s-version", strings.ToLower(distro.Data.PD)), PDVersion),
 		zap.String("build-time", BuildTime),
 		zap.String("build-git-hash", BuildGitHash))
 }

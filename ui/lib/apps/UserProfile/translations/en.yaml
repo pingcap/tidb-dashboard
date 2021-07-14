@@ -21,7 +21,7 @@ user_profile:
     share_unavailable_tooltip: Current session is a shared session and it cannot be shared again
   share_session:
     text: >
-      You can invite others to access this TiDB Dashboard by sharing your
+      You can invite others to access this {{distro.tidb}} Dashboard by sharing your
       current session via an **Authorization Code**:
 
       - The Authorization Code can be used multiple times.
@@ -42,8 +42,8 @@ user_profile:
       copied: Copied
   version:
     title: Version Information
-    internal_version: TiDB Dashboard Internal Version
-    build_git_hash: TiDB Dashboard Build Git Hash
-    build_time: TiDB Dashboard Build Time
-    standalone: TiDB Dashboard Run in Standalone Mode
-    pd_version: PD Version
+    internal_version: '{{distro.tidb}} Dashboard Internal Version'
+    build_git_hash: '{{distro.tidb}} Dashboard Build Git Hash'
+    build_time: '{{distro.tidb}} Dashboard Build Time'
+    standalone: '{{distro.tidb}} Dashboard Run in Standalone Mode'
+    pd_version: '{{distro.pd}} Version'

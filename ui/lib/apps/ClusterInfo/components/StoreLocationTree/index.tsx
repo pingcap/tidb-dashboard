@@ -8,6 +8,7 @@ import {
 import { Space } from 'antd'
 import { cyan, magenta, grey } from '@ant-design/colors'
 import { useTranslation } from 'react-i18next'
+import i18next from 'i18next'
 
 import { TopologyStoreLocation } from '@lib/client'
 
@@ -146,8 +147,8 @@ export function trimDuplicate(strArr: string[]): ShortStrMap {
 //////////////////////////////////////
 
 const NODE_STORES = 'Stores'
-const NODE_TIFLASH = 'TiFlash'
-const NODE_TIKV = 'TiKV'
+const NODE_TIFLASH = i18next.t('distro.tiflash')
+const NODE_TIKV = i18next.t('distro.tikv')
 
 type TreeNode = {
   name: string

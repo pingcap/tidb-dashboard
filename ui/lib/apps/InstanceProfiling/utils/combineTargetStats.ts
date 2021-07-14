@@ -1,10 +1,12 @@
+import i18next from 'i18next'
+
 import { ModelRequestTargetStatistics } from '@lib/client'
 
 const targetNameMap = {
-  num_tidb_nodes: 'TiDB',
-  num_tikv_nodes: 'TiKV',
-  num_pd_nodes: 'PD',
-  num_tiflash_nodes: 'TiFlash',
+  num_tidb_nodes: i18next.t('distro.tidb'),
+  num_tikv_nodes: i18next.t('distro.tikv'),
+  num_pd_nodes: i18next.t('distro.pd'),
+  num_tiflash_nodes: i18next.t('distro.tiflash'),
 }
 
 export const combineTargetStats = (stats: ModelRequestTargetStatistics) =>

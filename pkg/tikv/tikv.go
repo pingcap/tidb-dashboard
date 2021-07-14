@@ -14,9 +14,13 @@
 package tikv
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/joomcode/errorx"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 var (
-	ErrNS = errorx.NewNamespace("error.tikv")
+	ErrNS = errorx.NewNamespace(fmt.Sprintf("error.%s", strings.ToLower(distro.Data.Tikv)))
 )

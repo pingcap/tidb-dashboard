@@ -24,6 +24,7 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 var (
@@ -83,7 +84,7 @@ func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
 
 func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
-	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrPDClientRequestFailed, "PD")
+	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrPDClientRequestFailed, distro.Data.PD)
 }
 
 func (c *Client) SendGetRequest(relativeURI string) ([]byte, error) {
@@ -96,5 +97,5 @@ func (c *Client) SendGetRequest(relativeURI string) ([]byte, error) {
 
 func (c *Client) SendPostRequest(relativeURI string, body io.Reader) ([]byte, error) {
 	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
-	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrPDClientRequestFailed, "PD")
+	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrPDClientRequestFailed, distro.Data.PD)
 }

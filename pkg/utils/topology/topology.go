@@ -16,17 +16,20 @@ package topology
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 )
 
 var (
 	ErrNS                  = errorx.NewNamespace("error.topology")
-	ErrEtcdRequestFailed   = ErrNS.NewType("pd_etcd_request_failed")
+	ErrEtcdRequestFailed   = ErrNS.NewType(fmt.Sprintf("%s_etcd_request_failed", strings.ToLower(distro.Data.PD)))
 	ErrInvalidTopologyData = ErrNS.NewType("invalid_topology_data")
 )
 
@@ -39,7 +42,7 @@ func fetchStandardComponentTopology(ctx context.Context, componentName string, e
 	key := "/topology/" + componentName
 	resp, err := etcdClient.Get(ctx2, key, clientv3.WithPrefix())
 	if err != nil {
-		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from PD etcd", key)
+		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", key, distro.Data.PD)
 	}
 	if resp.Count == 0 {
 		return nil, nil

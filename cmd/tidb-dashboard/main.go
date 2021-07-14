@@ -38,7 +38,7 @@ import (
 
 	"github.com/pingcap/log"
 	flag "github.com/spf13/pflag"
-	"go.etcd.io/etcd/pkg/transport"
+	"go.etcd.io/etcd/client/pkg/v3/transport"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 

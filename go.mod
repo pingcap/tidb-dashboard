@@ -1,6 +1,6 @@
 module github.com/pingcap/tidb-dashboard
 
-go 1.13
+go 1.15
 
 require (
 	github.com/ReneKroon/ttlcache/v2 v2.3.0
@@ -15,7 +15,7 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-graphviz v0.0.5
 	github.com/google/pprof v0.0.0-20200407044318-7d83b28da2e9
-	github.com/google/uuid v1.0.0
+	github.com/google/uuid v1.1.2
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
 	github.com/joho/godotenv v1.3.0
 	github.com/joomcode/errorx v1.0.1
@@ -36,12 +36,13 @@ require (
 	github.com/swaggo/swag v1.6.6-0.20200529100950-7c765ddd0476
 	github.com/thoas/go-funk v0.8.0
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.1
-	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
-	go.uber.org/atomic v1.6.0
+	go.etcd.io/etcd/client/pkg/v3 v3.5.0
+	go.etcd.io/etcd/client/v3 v3.5.0
+	go.uber.org/atomic v1.7.0
 	go.uber.org/fx v1.10.0
-	go.uber.org/zap v1.16.0
+	go.uber.org/zap v1.17.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	google.golang.org/grpc v1.25.1
+	google.golang.org/grpc v1.38.0
 	gorm.io/driver/mysql v1.0.6
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.9

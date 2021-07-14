@@ -30,8 +30,8 @@ type DistroInfo struct {
 
 var Data = &DistroInfo{}
 
-func init() {
-	err := yaml.Unmarshal(DistroYAML, Data)
+func PopulateDistro(distroYAML []byte) {
+	err := yaml.Unmarshal(distroYAML, Data)
 	if err != nil {
 		log.Fatal("Incorrect yaml format", zap.Error(err))
 	}

@@ -26,12 +26,14 @@ import (
 )
 
 func main() {
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Fatalln(err)
+	var distroPath string
+	if len(os.Args) > 1 {
+		distroPath = os.Args[1]
+	} else {
+		log.Fatalln("Require distribution yaml path")
 	}
 
-	content, err := ioutil.ReadFile(pwd + "/ui/lib/utils/distribution.yaml")
+	content, err := ioutil.ReadFile(distroPath)
 	if err != nil {
 		log.Fatalln(err)
 	}

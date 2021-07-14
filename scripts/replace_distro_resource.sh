@@ -17,6 +17,6 @@ echo "+ Replace distro resource"
 
 cp -f "${DISTRIBUTION_DIR}/logo.svg" "${PROJECT_DIR}/ui/dashboardApp/layout/signin/logo.svg"
 cp -f "${DISTRIBUTION_DIR}/favicon.ico" "${PROJECT_DIR}/ui/public/favicon.ico"
-cp -f "${DISTRIBUTION_DIR}/distribution.yaml" "${PROJECT_DIR}/ui/lib/utils/distribution.yaml"
+cp -f "${DISTRIBUTION_DIR}/distribution.yaml" "${PROJECT_DIR}/ui/lib/distribution.yaml"
 
 echo "  - Success!"

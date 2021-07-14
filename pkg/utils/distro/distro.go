@@ -21,14 +21,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type DistroInfo struct {
+type Info struct {
 	Tidb    string
 	Tikv    string
 	Tiflash string
 	PD      string
 }
 
-var Data = &DistroInfo{}
+var Data = &Info{}
 
 func PopulateDistro(distroYAML []byte) {
 	err := yaml.Unmarshal(distroYAML, Data)

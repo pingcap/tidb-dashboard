@@ -44,7 +44,7 @@ func main() {
 
 	buf := new(bytes.Buffer)
 
-	t.Execute(buf, struct {
+	err = t.Execute(buf, struct {
 		PackageName  string
 		VariableName string
 		FileContent  string
@@ -53,8 +53,14 @@ func main() {
 		VariableName: "DistroYAML",
 		FileContent:  "`" + string(content) + "`",
 	})
+	if err != nil {
+		log.Fatalln(zap.Error(err))
+	}
 
-	_ = ioutil.WriteFile("distro_info.go", buf.Bytes(), 0644)
+	err = ioutil.WriteFile("distro_info.go", buf.Bytes(), 0644)
+	if err != nil {
+		log.Fatalln(zap.Error(err))
+	}
 }
 
 var t = template.Must(template.New("").Parse(`// Code generate by distro_info_generate; DO NOT EDIT.

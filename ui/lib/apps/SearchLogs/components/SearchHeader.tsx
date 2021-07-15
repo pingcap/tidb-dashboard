@@ -156,7 +156,12 @@ export default function SearchHeader({ taskGroupID }: Props) {
           ))}
         </Select>
       </Form.Item>
-      <Form.Item name="instances" rules={[{ required: true }]}>
+      <Form.Item
+        name="instances"
+        rules={[
+          { required: true, message: t('search_logs.common.components') },
+        ]}
+      >
         <InstanceSelect
           ref={instanceSelect}
           defaultSelectAll

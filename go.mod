@@ -12,6 +12,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/gin v1.5.0
+	github.com/go-resty/resty/v2 v2.6.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-graphviz v0.0.5
 	github.com/google/pprof v0.0.0-20200407044318-7d83b28da2e9
@@ -40,6 +41,7 @@ require (
 	go.uber.org/atomic v1.6.0
 	go.uber.org/fx v1.10.0
 	go.uber.org/zap v1.16.0
+	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.25.1
 	gorm.io/driver/mysql v1.0.6

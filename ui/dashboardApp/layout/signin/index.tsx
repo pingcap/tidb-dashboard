@@ -12,7 +12,7 @@ import {
   ArrowRightOutlined,
   CloseOutlined,
 } from '@ant-design/icons'
-import { Form, Input, Button, message, Typography } from 'antd'
+import { Form, Input, Button, message, Typography, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 import LanguageDropdown from '@lib/components/LanguageDropdown'
 import client, { ErrorStrategy, UserAuthenticateForm } from '@lib/client'
@@ -20,13 +20,17 @@ import * as auth from '@lib/utils/auth'
 import { useMount } from 'react-use'
 import Flexbox from '@g07cha/flexbox-react'
 import { usePersistFn } from 'ahooks'
-
 import { ReactComponent as Logo } from './logo.svg'
 import styles from './index.module.less'
+import { useEffect } from 'react'
+import { getAuthURL } from '@lib/utils/authSSO'
+import { AuthTypes } from '@lib/utils/auth'
 
 enum DisplayFormType {
+  uninitialized,
   tidbCredential,
   shareCode,
+  sso,
 }
 
 function AlternativeAuthLink({ onClick }) {
@@ -84,6 +88,7 @@ function AlternativeAuthForm({
   className,
   onClose,
   onSwitchForm,
+  supportedAuthTypes,
   ...restProps
 }) {
   const { t } = useTranslation()
@@ -124,6 +129,15 @@ function AlternativeAuthForm({
                 onClick={() => onSwitchForm(DisplayFormType.shareCode)}
               />
             </Form.Item>
+            {Boolean(supportedAuthTypes.indexOf(AuthTypes.SSO) > -1) && (
+              <Form.Item>
+                <AlternativeFormButton
+                  title={t('signin.form.sso.switch.title')}
+                  description={t('signin.form.sso.switch.description')}
+                  onClick={() => onSwitchForm(DisplayFormType.sso)}
+                />
+              </Form.Item>
+            )}
             <LanguageDrop />
           </Form>
         </div>
@@ -179,7 +193,7 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
     (form) => ({
       username: form.username,
       password: form.password,
-      type: 0,
+      type: AuthTypes.SQLUser,
     }),
     () => {
       refForm.setFieldsValue({ password: '' })
@@ -263,7 +277,7 @@ function CodeSignInForm({ successRoute, onClickAlternative }) {
     successRoute,
     (form) => ({
       password: form.code,
-      type: 1,
+      type: AuthTypes.SharingCode,
     }),
     () => {
       refForm.setFieldsValue({ code: '' })
@@ -322,12 +336,56 @@ function CodeSignInForm({ successRoute, onClickAlternative }) {
   )
 }
 
+function SSOSignInForm({ successRoute, onClickAlternative }) {
+  const { t } = useTranslation()
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSignIn = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const url = await getAuthURL()
+      window.location.href = url
+      // Do not hide loading status when url is resolved, since we are now jumping
+    } catch (e) {
+      setIsLoading(false)
+    }
+  }, [])
+
+  return (
+    <div className={styles.dialogContainer}>
+      <div className={styles.dialog}>
+        <Form>
+          <Logo className={styles.logo} />
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              size="large"
+              loading={isLoading}
+              className={styles.signInButton}
+              block
+              onClick={handleSignIn}
+            >
+              {t('signin.form.sso.button')}
+            </Button>
+          </Form.Item>
+          <AlternativeAuthLink onClick={onClickAlternative} />
+          <LanguageDrop />
+        </Form>
+      </div>
+    </div>
+  )
+}
+
 function App({ registry }) {
   const successRoute = useMemo(() => `#${registry.getDefaultRouter()}`, [
     registry,
   ])
   const [alternativeVisible, setAlternativeVisible] = useState(false)
-  const [formType, setFormType] = useState(DisplayFormType.tidbCredential)
+  const [formType, setFormType] = useState(DisplayFormType.uninitialized)
+  const [supportedAuthTypes, setSupportedAuthTypes] = useState<Array<number>>([
+    0,
+  ])
 
   const handleClickAlternative = useCallback(() => {
     setAlternativeVisible(true)
@@ -340,6 +398,31 @@ function App({ registry }) {
   const handleSwitchForm = useCallback((k: DisplayFormType) => {
     setFormType(k)
     setAlternativeVisible(false)
+  }, [])
+
+  useEffect(() => {
+    async function run() {
+      try {
+        const resp = await client.getInstance().userGetLoginInfo()
+        const loginInfo = resp.data
+        if (
+          (loginInfo.supported_auth_types?.indexOf(AuthTypes.SSO) ?? -1) > -1
+        ) {
+          setFormType(DisplayFormType.sso)
+        } else {
+          setFormType(DisplayFormType.tidbCredential)
+        }
+        setSupportedAuthTypes(loginInfo.supported_auth_types ?? [])
+      } catch (e) {
+        Modal.error({
+          title: 'Initialize Sign in failed',
+          content: '' + e,
+          okText: 'Reload',
+          onOk: () => window.location.reload(),
+        })
+      }
+    }
+    run()
   }, [])
 
   return (
@@ -356,6 +439,7 @@ function App({ registry }) {
                 className={className}
                 onClose={handleAlternativeClose}
                 onSwitchForm={handleSwitchForm}
+                supportedAuthTypes={supportedAuthTypes}
               />
             )}
           </CSSMotion>
@@ -367,6 +451,12 @@ function App({ registry }) {
           )}
           {formType === DisplayFormType.shareCode && (
             <CodeSignInForm
+              successRoute={successRoute}
+              onClickAlternative={handleClickAlternative}
+            />
+          )}
+          {formType === DisplayFormType.sso && (
+            <SSOSignInForm
               successRoute={successRoute}
               onClickAlternative={handleClickAlternative}
             />

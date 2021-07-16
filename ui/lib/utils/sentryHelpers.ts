@@ -75,7 +75,7 @@ export function initSentryRoutingInstrument() {
 }
 
 export function applySentryTracingInterceptor(instance: AxiosInstance) {
-  instance.interceptors.request.use(function (config) {
+  instance.interceptors.request.use((config) => {
     if (config.url && config.method) {
       const { pathname } = url.parse(config.url)
       const transaction = markStart(pathname!, 'http')
@@ -86,8 +86,8 @@ export function applySentryTracingInterceptor(instance: AxiosInstance) {
   })
 
   instance.interceptors.response.use(
-    function (response) {
-      const id = response.config.headers['x-sentry-trace']
+    (response) => {
+      const id = response.config?.headers['x-sentry-trace']
       if (id) {
         const { pathname } = url.parse(response.config.url!)
         markTag('http.status', response.status, id)
@@ -95,8 +95,8 @@ export function applySentryTracingInterceptor(instance: AxiosInstance) {
       }
       return response
     },
-    function (error) {
-      const id = error.config.headers['x-sentry-trace']
+    (error) => {
+      const id = error?.config?.headers['x-sentry-trace']
       if (id) {
         const { pathname } = url.parse(error.config.url)
         markTag(id, 'error', error.message)

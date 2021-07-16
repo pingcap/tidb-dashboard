@@ -17,6 +17,11 @@ signin:
         title: Authorization Code
         description: I was invited by others with an authorization code
       code: Code
+    sso:
+      button: Sign In via Company Account (SSO)
+      switch:
+        title: SSO
+        description: I want to sign in use my company account
     use_alternative: Use Alternative Authentication
     alternative:
       title: Select Authentication

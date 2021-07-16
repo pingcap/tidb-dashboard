@@ -60,7 +60,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 		{
 			endpoint.GET("/config", s.configHandler)
-			endpoint.POST("/config", s.modifyConfigHandler)
+			endpoint.POST("/config", auth.MWRequireWritePriv(), s.modifyConfigHandler)
 			endpoint.GET("/time_ranges", s.timeRangesHandler)
 			endpoint.GET("/stmt_types", s.stmtTypesHandler)
 			endpoint.GET("/list", s.listHandler)

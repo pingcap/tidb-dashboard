@@ -56,7 +56,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/tables", s.tablesHandler)
 }
 
-type InfoResponse struct { //nolint:golint
+type InfoResponse struct {
 	Version            *version.Info `json:"version"`
 	EnableTelemetry    bool          `json:"enable_telemetry"`
 	EnableExperimental bool          `json:"enable_experimental"`
@@ -78,8 +78,9 @@ func (s *Service) infoHandler(c *gin.Context) {
 }
 
 type WhoAmIResponse struct {
-	Username string `json:"username"`
-	IsShared bool   `json:"is_shared"`
+	DisplayName string `json:"display_name"`
+	IsShareable bool   `json:"is_shareable"`
+	IsWriteable bool   `json:"is_writeable"`
 }
 
 // @ID infoWhoami
@@ -89,10 +90,11 @@ type WhoAmIResponse struct {
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) whoamiHandler(c *gin.Context) {
-	sessionUser := c.MustGet(utils.SessionUserKey).(*utils.SessionUser)
+	sessionUser := utils.GetSession(c)
 	resp := WhoAmIResponse{
-		Username: sessionUser.TiDBUsername,
-		IsShared: sessionUser.IsShared,
+		DisplayName: sessionUser.DisplayName,
+		IsShareable: sessionUser.IsShareable,
+		IsWriteable: sessionUser.IsWriteable,
 	}
 	c.JSON(http.StatusOK, resp)
 }

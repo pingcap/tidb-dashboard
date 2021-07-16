@@ -17,6 +17,11 @@ signin:
         title: 授权码
         description: 其他人通过授权码邀请我使用
       code: 授权码
+    sso:
+      button: 使用公司账号 SSO 登录
+      switch:
+        title: SSO
+        description: 使用公司账号登录
     use_alternative: 使用其他登录方式
     alternative:
       title: 选择登录方式

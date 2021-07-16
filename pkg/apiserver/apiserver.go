@@ -34,6 +34,11 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/metrics"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/queryeditor"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code/codeauth"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sqlauth"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
@@ -131,6 +136,11 @@ func (s *Service) Start(ctx context.Context) error {
 			// __APP_NAME__.NewService,
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 		),
+		codeauth.Module,
+		sqlauth.Module,
+		ssoauth.Module,
+		code.Module,
+		sso.Module,
 		profiling.Module,
 		statement.Module,
 		slowquery.Module,

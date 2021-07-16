@@ -6,6 +6,7 @@ BUILD_TAGS ?=
 
 LDFLAGS ?=
 
+BUILD_TAGS += distro
 ifeq ($(UI),1)
 	BUILD_TAGS += ui_server
 endif
@@ -22,7 +23,6 @@ install_tools:
 	scripts/install_go_tools.sh
 
 lint:
-	scripts/generate_distro_info.sh
 	scripts/lint.sh
 
 dev: lint default

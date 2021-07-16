@@ -228,7 +228,5 @@ func main() {
 }
 
 func init() {
-	if string(distro.YAMLData) != "" {
-		distro.PopulateDistro(distro.YAMLData)
-	}
+	distro.PopulateDistro(distro.YAMLData)
 }

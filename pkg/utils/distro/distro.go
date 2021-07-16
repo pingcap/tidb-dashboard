@@ -22,10 +22,10 @@ import (
 )
 
 type Info struct {
-	Tidb    string
-	Tikv    string
-	Tiflash string
-	PD      string
+	Tidb    string `yaml:"tidb"`
+	Tikv    string `yaml:"tikv"`
+	Tiflash string `yaml:"tiflash"`
+	PD      string `yaml:"pd"`
 }
 
 var Data = &Info{
@@ -36,6 +36,10 @@ var Data = &Info{
 }
 
 func PopulateDistro(distroYAML []byte) {
+	if string(distroYAML) == "" {
+		return
+	}
+
 	err := yaml.Unmarshal(distroYAML, Data)
 	if err != nil {
 		log.Fatal("Incorrect yaml format", zap.Error(err))

@@ -16,10 +16,10 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"html/template"
 	"io/ioutil"
 	"log"
-	"os"
 	"strconv"
 
 	"go.uber.org/zap"
@@ -27,9 +27,13 @@ import (
 )
 
 func main() {
+	buildTagFlag := flag.String("buildTag", "", "Distro build tag")
+	flag.Parse()
+	args := flag.Args()
+
 	var distroPath string
-	if len(os.Args) > 1 {
-		distroPath = os.Args[1]
+	if len(args) > 0 {
+		distroPath = args[0]
 	} else {
 		log.Fatalln("Require distribution yaml path")
 	}
@@ -48,6 +52,7 @@ func main() {
 	err = t.Execute(buf, map[string]string{
 		"PackageName":  "distro",
 		"VariableName": "YAMLData",
+		"BuildTag":     *buildTagFlag,
 		"FileContent":  string(content),
 	})
 	if err != nil {
@@ -66,9 +71,9 @@ var t = template.Must(template.New("").Funcs(template.FuncMap{
 		return template.HTML(strconv.Quote(s)), nil
 	},
 }).Parse(`// Code generate by distro_info_generate; DO NOT EDIT.
-// +build {{.PackageName}}
+{{with .BuildTag}}// +build {{.}}
 
-package {{.PackageName}}
+{{end}}package {{.PackageName}}
 
 var {{.VariableName}} = []byte({{quote .FileContent}})
 `))

@@ -80,6 +80,22 @@ jobs:
           asset_path: ./embedded-assets-golang.zip
           asset_name: embedded-assets-golang.zip
           asset_content_type: application/zip
+      - name: Generate distro resource
+        run: |
+          NO_DISTRO_BUILD_TAG=1 scripts/generate_distro_info.sh
+          cp pkg/utils/distro/distro_info.go distro_info.go
+      - name: Pack distro resource for release
+        run: |
+          zip -r distro-resource-golang.zip ./distro_info.go
+      - name: Upload distro resource
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./distro-resource-golang.zip
+          asset_name: distro-resource-golang.zip
+          asset_content_type: application/zip
   pd_pr:
     name: Create PD PR
     runs-on: ubuntu-latest

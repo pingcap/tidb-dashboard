@@ -14,95 +14,50 @@
 package utils
 
 import (
-	"encoding/hex"
 	"time"
 
-	"github.com/gtank/cryptopasta"
-	"github.com/vmihailenco/msgpack/v5"
+	"github.com/gin-gonic/gin"
 )
 
+type AuthType int
+
+const SessionVersion = 2
+
+// The content of this structure will be encrypted and stored as both Session Token and Sharing Token.
+// For fields that don't need to be cloned during session sharing, mark fields as `msgpack:"-"`.
 type SessionUser struct {
+	// Must be 2. This field is used to invalidate outdated sessions after schema change.
+	Version int
+
+	DisplayName string
+
 	HasTiDBAuth  bool
 	TiDBUsername string
 	TiDBPassword string
 
-	// Whether this session is shared, i.e. built from another existing session.
-	// For security consideration, we do not allow shared session to be shared again
-	// since sharing can extend session lifetime.
-	IsShared              bool      `msgpack:"-"`
-	SharedSessionExpireAt time.Time `msgpack:"-"`
+	// This field only exists for CodeAuth.
+	SharedSessionExpireAt time.Time `msgpack:"-" json:",omitempty"`
 
-	// TODO: Add privilege table fields
+	// This field only exists for SSOAuth
+	OIDCIDToken string `json:",omitempty"`
+
+	// These fields should not be updated by individual authenticators.
+	AuthFrom AuthType `msgpack:"-" json:",omitempty"`
+
+	// TODO: Make them table fields
+	IsShareable bool
+	IsWriteable bool
 }
 
 const (
 	// The key that attached the SessionUser in the gin Context.
 	SessionUserKey = "user"
-
-	// Max permitted lifetime of a shared session.
-	MaxSessionShareExpiry = time.Hour * 24 * 30
 )
 
-// The secret is always regenerated each time starting TiDB Dashboard.
-var sharingCodeSecret = cryptopasta.NewEncryptionKey()
-
-type sharedSession struct {
-	Session  *SessionUser
-	ExpireAt time.Time
-}
-
-func (session *SessionUser) ToSharingCode(expireIn time.Duration) *string {
-	if session.IsShared {
+func GetSession(c *gin.Context) *SessionUser {
+	i, ok := c.Get(SessionUserKey)
+	if !ok {
 		return nil
 	}
-	if expireIn < 0 {
-		return nil
-	}
-	if expireIn > MaxSessionShareExpiry {
-		return nil
-	}
-
-	shared := sharedSession{
-		Session:  session,
-		ExpireAt: time.Now().Add(expireIn),
-	}
-
-	b, err := msgpack.Marshal(&shared)
-	if err != nil {
-		// Do not output anything about how serialization is failed to avoid potential leaks.
-		return nil
-	}
-
-	encrypted, err := cryptopasta.Encrypt(b, sharingCodeSecret)
-	if err != nil {
-		return nil
-	}
-
-	codeInHex := hex.EncodeToString(encrypted)
-	return &codeInHex
-}
-
-func NewSessionFromSharingCode(codeInHex string) *SessionUser {
-	encrypted, err := hex.DecodeString(codeInHex)
-	if err != nil {
-		return nil
-	}
-
-	b, err := cryptopasta.Decrypt(encrypted, sharingCodeSecret)
-	if err != nil {
-		return nil
-	}
-
-	var shared sharedSession
-	if err := msgpack.Unmarshal(b, &shared); err != nil {
-		return nil
-	}
-
-	if time.Now().After(shared.ExpireAt) {
-		return nil
-	}
-
-	shared.Session.IsShared = true
-	shared.Session.SharedSessionExpireAt = shared.ExpireAt
-	return shared.Session
+	return i.(*SessionUser)
 }

@@ -29,14 +29,14 @@ var (
 var ErrUnauthorized = ErrNS.NewType("unauthorized")
 
 func MakeUnauthorizedError(c *gin.Context) {
-	_ = c.Error(ErrUnauthorized.NewWithNoMessage())
+	_ = c.Error(ErrUnauthorized.New("Sign in is required"))
 	c.Status(http.StatusUnauthorized)
 }
 
 var ErrInsufficientPrivilege = ErrNS.NewType("insufficient_privilege")
 
 func MakeInsufficientPrivilegeError(c *gin.Context) {
-	_ = c.Error(ErrInsufficientPrivilege.NewWithNoMessage())
+	_ = c.Error(ErrInsufficientPrivilege.New("Insufficient privilege"))
 	c.Status(http.StatusForbidden)
 }
 

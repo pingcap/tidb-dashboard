@@ -15,4 +15,9 @@
 
 package distro
 
-var DistroYAML = []byte("tidb: TiDB\ntikv: TiKV\ntiflash: TiFlash\npd: PD\n")
+var Data = &Info{
+	Tidb:    "TiDB",
+	Tikv:    "TiKV",
+	Tiflash: "TiFlash",
+	PD:      "PD",
+}

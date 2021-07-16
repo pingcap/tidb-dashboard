@@ -14,25 +14,9 @@
 
 package distro
 
-import (
-	"log"
-
-	"go.uber.org/zap"
-	"gopkg.in/yaml.v2"
-)
-
 type Info struct {
 	Tidb    string
 	Tikv    string
 	Tiflash string
 	PD      string
-}
-
-var Data = &Info{}
-
-func init() {
-	err := yaml.Unmarshal(DistroYAML, Data)
-	if err != nil {
-		log.Fatal("Incorrect yaml format", zap.Error(err))
-	}
 }

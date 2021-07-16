@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
@@ -44,14 +45,10 @@ func main() {
 
 	buf := new(bytes.Buffer)
 
-	err = t.Execute(buf, struct {
-		PackageName  string
-		VariableName string
-		FileContent  string
-	}{
-		PackageName:  "distro",
-		VariableName: "DistroYAML",
-		FileContent:  "`" + string(content) + "`",
+	err = t.Execute(buf, map[string]string{
+		"PackageName":  "distro",
+		"VariableName": "DistroYAML",
+		"FileContent":  string(content),
 	})
 	if err != nil {
 		log.Fatalln(zap.Error(err))
@@ -63,8 +60,15 @@ func main() {
 	}
 }
 
-var t = template.Must(template.New("").Parse(`// Code generate by distro_info_generate; DO NOT EDIT.
+var t = template.Must(template.New("").Funcs(template.FuncMap{
+	"quote": func(s string) (template.HTML, error) {
+		//nolint
+		return template.HTML(strconv.Quote(s)), nil
+	},
+}).Parse(`// Code generate by distro_info_generate; DO NOT EDIT.
+// +build {{.PackageName}}
+
 package {{.PackageName}}
 
-var {{.VariableName}} = []byte({{.FileContent}})
+var {{.VariableName}} = []byte({{quote .FileContent}})
 `))

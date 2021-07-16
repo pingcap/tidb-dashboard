@@ -18,16 +18,18 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const rewireHtmlWebpackPlugin = require('react-app-rewire-html-webpack-plugin')
 const YAML = require('yaml')
 
-function replaceDistroToHTML(config, env) {
+function injectDistroToHTML(config, env) {
   const distroYAML = fs.readFileSync('./lib/distribution.yaml', 'utf8')
-  const distroInfo = Object.entries(YAML.parse(distroYAML)).reduce((prev, [k, v]) => {
-    return {
-      ...prev,
-      [`distro_${k}`]: v,
-    }
-  }, ({}))
-  config = rewireHtmlWebpackPlugin(config, env, distroInfo)
-  return config
+  const distroInfo = Object.entries(YAML.parse(distroYAML)).reduce(
+    (prev, [k, v]) => {
+      return {
+        ...prev,
+        [`distro_${k}`]: v,
+      }
+    },
+    {}
+  )
+  return rewireHtmlWebpackPlugin(config, env, distroInfo)
 }
 
 function isBuildAsDevServer() {
@@ -203,5 +205,5 @@ module.exports = override(
   overrideProcessEnv({
     REACT_APP_RELEASE_VERSION: JSON.stringify(getInternalVersion()),
   }),
-  replaceDistroToHTML,
+  injectDistroToHTML
 )

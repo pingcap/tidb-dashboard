@@ -6,6 +6,7 @@ BUILD_TAGS ?=
 
 LDFLAGS ?=
 
+BUILD_TAGS += distro
 ifeq ($(UI),1)
 	BUILD_TAGS += ui_server
 endif

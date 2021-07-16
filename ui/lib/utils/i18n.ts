@@ -51,7 +51,7 @@ i18next
           distro,
         },
       },
-    }, // oh! this line is a big pitfall, we can't remove it, else it will cause strange crash!
+    },
     fallbackLng: 'en', // fallbackLng won't change the detected language
     whitelist: ['zh', 'en'], // whitelist will change the detected lanuage
     interpolation: {

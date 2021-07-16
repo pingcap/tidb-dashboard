@@ -23,7 +23,7 @@ import (
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 )
 

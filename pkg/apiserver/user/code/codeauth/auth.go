@@ -45,8 +45,5 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 }
 
 func (a *Authenticator) ProcessSession(user *utils.SessionUser) bool {
-	if time.Now().After(user.SharedSessionExpireAt) {
-		return false
-	}
-	return true
+	return !time.Now().After(user.SharedSessionExpireAt)
 }

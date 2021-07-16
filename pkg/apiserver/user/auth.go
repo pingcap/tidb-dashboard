@@ -179,10 +179,7 @@ func NewAuthService() *AuthService {
 				return false
 			}
 			user := data.(*utils.SessionUser)
-			if user == nil {
-				return false
-			}
-			return true
+			return user != nil
 		},
 		HTTPStatusMessageFunc: func(e error, c *gin.Context) string {
 			var err error

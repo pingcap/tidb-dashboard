@@ -190,12 +190,11 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				_ = s.updateImpersonationStatus(user, ImpersonateStatusAuthFail)
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
-			} else {
-				return nil, err
 			}
-		} else {
-			_ = s.updateImpersonationStatus(user, ImpersonateStatusSuccess)
+			return nil, err
 		}
+
+		_ = s.updateImpersonationStatus(user, ImpersonateStatusSuccess)
 		_ = utils.CloseTiDBConnection(db)
 	}
 	return &utils.SessionUser{
@@ -220,9 +219,8 @@ func (s *Service) createImpersonation(user string, password string) (*SSOImperso
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
-			} else {
-				return nil, err
 			}
+			return nil, err
 		}
 		_ = utils.CloseTiDBConnection(db)
 	}
@@ -250,7 +248,7 @@ func (s *Service) createImpersonation(user string, password string) (*SSOImperso
 
 func (s *Service) revokeAllImpersonations() error {
 	return s.params.LocalStore.
-		Exec(fmt.Sprintf("DELETE FROM `%s`", SSOImpersonationModel{}.TableName())).
+		Exec(fmt.Sprintf("DELETE FROM `%s`", SSOImpersonationModel{}.TableName())). //nolint:gosec
 		Error
 }
 
@@ -338,7 +336,7 @@ func (s *Service) buildOAuthURL(redirectURL string, state string, codeVerifier s
 
 	// generate PKCE code challenge, which is base64(sha256(codeVerifier)).
 	h := sha256.New()
-	h.Write([]byte(codeVerifier))
+	_, _ = h.Write([]byte(codeVerifier))
 	codeChallenge := base64.RawURLEncoding.EncodeToString(h.Sum(nil))
 
 	authURL := oauthConfig.AuthCodeURL(state,

@@ -17,7 +17,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -30,7 +29,7 @@ import (
 )
 
 var (
-	ErrNoAliveTiDB = ErrNS.NewType(fmt.Sprintf("no_alive_%s", strings.ToLower(distro.Data.Tidb)))
+	ErrNoAliveTiDB = ErrNS.NewType("no_alive_tidb")
 )
 
 type forwarderConfig struct {

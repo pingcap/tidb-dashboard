@@ -25,9 +25,8 @@ import (
 )
 
 var (
-	tidbText                   = strings.ToLower(distro.Data.Tidb)
-	ErrTiDBConnFailed          = ErrNS.NewType(fmt.Sprintf("%s_conn_failed", tidbText))
-	ErrTiDBAuthFailed          = ErrNS.NewType(fmt.Sprintf("%s_auth_failed", tidbText))
+	ErrTiDBConnFailed          = ErrNS.NewType("tidb_conn_failed")
+	ErrTiDBAuthFailed          = ErrNS.NewType("tidb_auth_failed")
 	ErrTiDBClientRequestFailed = ErrNS.NewType("client_request_failed")
 )
 

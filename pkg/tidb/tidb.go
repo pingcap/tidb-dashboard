@@ -14,13 +14,9 @@
 package tidb
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/joomcode/errorx"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 var (
-	ErrNS = errorx.NewNamespace(fmt.Sprintf("error.%s", strings.ToLower(distro.Data.Tidb)))
+	ErrNS = errorx.NewNamespace("error.tidb")
 )

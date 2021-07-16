@@ -16,8 +16,6 @@ package topology
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/joomcode/errorx"
@@ -29,7 +27,7 @@ import (
 
 var (
 	ErrNS                  = errorx.NewNamespace("error.topology")
-	ErrEtcdRequestFailed   = ErrNS.NewType(fmt.Sprintf("%s_etcd_request_failed", strings.ToLower(distro.Data.PD)))
+	ErrEtcdRequestFailed   = ErrNS.NewType("pd_etcd_request_failed")
 	ErrInvalidTopologyData = ErrNS.NewType("invalid_topology_data")
 )
 

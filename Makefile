@@ -23,7 +23,6 @@ install_tools:
 	scripts/install_go_tools.sh
 
 lint:
-	scripts/generate_distro_info.sh
 	scripts/lint.sh
 
 dev: lint default

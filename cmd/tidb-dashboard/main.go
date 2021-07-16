@@ -47,6 +47,7 @@ import (
 	keyvisualregion "github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
@@ -224,4 +225,10 @@ func main() {
 	}
 	wg.Wait()
 	log.Info("Stop dashboard server")
+}
+
+func init() {
+	if string(distro.YAMLData) != "" {
+		distro.PopulateDistro(distro.YAMLData)
+	}
 }

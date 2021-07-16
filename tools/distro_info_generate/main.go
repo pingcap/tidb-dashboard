@@ -47,7 +47,7 @@ func main() {
 
 	err = t.Execute(buf, map[string]string{
 		"PackageName":  "distro",
-		"VariableName": "Data",
+		"VariableName": "YAMLData",
 		"FileContent":  string(content),
 	})
 	if err != nil {
@@ -70,17 +70,5 @@ var t = template.Must(template.New("").Funcs(template.FuncMap{
 
 package {{.PackageName}}
 
-import (
-	"gopkg.in/yaml.v2"
-)
-
-var distroYAML = []byte({{quote .FileContent}})
-var {{.VariableName}} = &Info{}
-
-func init() {
-	err := yaml.Unmarshal(DistroYAML, Data)
-	if err != nil {
-		log.Fatal("Incorrect yaml format", zap.Error(err))
-	}
-}
+var {{.VariableName}} = []byte({{quote .FileContent}})
 `))

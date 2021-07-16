@@ -8,7 +8,7 @@ PROJECT_DIR="$(dirname "$DIR")"
 cd $PROJECT_DIR
 
 echo "+ Preflight check"
-if [ -z "${DISTRIBUTION_DIR}" ] || [ ! -d ${DISTRIBUTION_DIR} ]; then
+if [ -z "${DISTRIBUTION_DIR}" ] || [ ! -d "${DISTRIBUTION_DIR}" ]; then
   echo "  - Error: DISTRIBUTION_DIR must be specified"
   exit 1
 fi

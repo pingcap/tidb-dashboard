@@ -31,9 +31,6 @@ yarn_dependencies: install_tools
 	cd ui &&\
 	yarn install --frozen-lockfile
 
-replace_distro_resource:
-	scripts/replace_distro_resource.sh
-
 ui: yarn_dependencies
 	cd ui &&\
 	yarn build

@@ -15,60 +15,25 @@
 package main
 
 import (
-	"bytes"
-	"html/template"
+	"flag"
 	"io/ioutil"
 	"log"
-	"os"
-	"strconv"
 
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
+
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 func main() {
-	var distroPath string
-	if len(os.Args) > 1 {
-		distroPath = os.Args[1]
-	} else {
-		log.Fatalln("Require distribution yaml path")
-	}
+	yamlOutputPath := flag.String("o", "", "Distro yaml output path")
+	flag.Parse()
 
-	content, err := ioutil.ReadFile(distroPath)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	err = yaml.Unmarshal(content, struct{}{})
-	if err != nil {
-		log.Fatal("Incorrect yaml format", zap.Error(err))
-	}
-
-	buf := new(bytes.Buffer)
-
-	err = t.Execute(buf, map[string]string{
-		"PackageName":  "distro",
-		"VariableName": "DistroYAML",
-		"FileContent":  string(content),
-	})
+	d, err := yaml.Marshal(distro.Resource)
 	if err != nil {
 		log.Fatalln(zap.Error(err))
 	}
-
-	err = ioutil.WriteFile("distro_info.go", buf.Bytes(), 0644)
-	if err != nil {
+	if err := ioutil.WriteFile(*yamlOutputPath, d, 0666); err != nil {
 		log.Fatalln(zap.Error(err))
 	}
 }
-
-var t = template.Must(template.New("").Funcs(template.FuncMap{
-	"quote": func(s string) (template.HTML, error) {
-		//nolint
-		return template.HTML(strconv.Quote(s)), nil
-	},
-}).Parse(`// Code generate by distro_info_generate; DO NOT EDIT.
-// +build {{.PackageName}}
-
-package {{.PackageName}}
-
-var {{.VariableName}} = []byte({{quote .FileContent}})
-`))

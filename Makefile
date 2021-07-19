@@ -6,7 +6,6 @@ BUILD_TAGS ?=
 
 LDFLAGS ?=
 
-BUILD_TAGS += distro
 ifeq ($(UI),1)
 	BUILD_TAGS += ui_server
 endif
@@ -31,16 +30,12 @@ yarn_dependencies: install_tools
 	cd ui &&\
 	yarn install --frozen-lockfile
 
-replace_distro_resource:
-	scripts/replace_distro_resource.sh
-
 ui: yarn_dependencies
 	cd ui &&\
 	yarn build
 
 server: install_tools
 	scripts/generate_swagger_spec.sh
-	scripts/generate_distro_info.sh
 ifeq ($(UI),1)
 	scripts/embed_ui_assets.sh
 endif

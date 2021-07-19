@@ -3,7 +3,7 @@ error:
   network: Network connection error
   api:
     unauthorized: Session is expired. Please sign in again.
-    invalid_request: Bad Request
+    insufficient_privilege: You don't have sufficient privilege to perform this action.
     user:
       signin:
         invalid_code: Authorization Code is invalid or expired

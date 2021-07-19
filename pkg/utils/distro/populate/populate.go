@@ -11,8 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// +build !distro
 
-package distro
+package populate
 
-var DistroYAML = []byte("tidb: TiDB\ntikv: TiKV\ntiflash: TiFlash\npd: PD\n")
+import "github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+
+func init() {
+	distro.Replace(distro.Resource)
+}

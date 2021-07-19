@@ -1,17 +1,24 @@
 #!/usr/bin/env bash
 
 # This script generate distribution info from the unified yaml to Golang code.
+#
+# Available flags:
+# DISTRO_BUILD_TAG=1
+#   Will use distro build tag source code.
 
 set -euo pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PROJECT_DIR="$(dirname "$DIR")"
 
-echo "+ Generate distro info"
-DISTRO_FILENAME=distro_info.go
+if [ "${DISTRO_BUILD_TAG:-}" = "1" ]; then
+  BUILD_TAG_PARAMETER=distro
+else
+  BUILD_TAG_PARAMETER=""
+fi
 
-go run tools/distro_info_generate/main.go ${PROJECT_DIR}/ui/lib/distribution.yaml
+echo "+ Generate distro info yaml"
 
-DISTRO_PATH=pkg/utils/distro/${DISTRO_FILENAME}
-mv $DISTRO_FILENAME $DISTRO_PATH
-echo "  - Distro info written to $DISTRO_PATH"
+go run -tags=$BUILD_TAG_PARAMETER ${PROJECT_DIR}/tools/distro_info_generate/main.go -o=${PROJECT_DIR}/ui/lib/distribution.yaml
+
+echo "  - Success!"

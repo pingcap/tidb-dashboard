@@ -20,3 +20,13 @@ type Info struct {
 	Tiflash string `yaml:"tiflash"`
 	PD      string `yaml:"pd"`
 }
+
+var data map[interface{}]interface{}
+
+func Replace(distro map[interface{}]interface{}) {
+	data = distro
+}
+
+func Data(k string) string {
+	return data[k].(string)
+}

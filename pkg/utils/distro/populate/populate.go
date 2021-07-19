@@ -12,28 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package populate
 
-import (
-	"flag"
-	"io/ioutil"
-	"log"
+import "github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 
-	"go.uber.org/zap"
-	"gopkg.in/yaml.v2"
-
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
-)
-
-func main() {
-	yamlOutputPath := flag.String("o", "", "Distro yaml output path")
-	flag.Parse()
-
-	d, err := yaml.Marshal(distro.Resource)
-	if err != nil {
-		log.Fatalln(zap.Error(err))
-	}
-	if err := ioutil.WriteFile(*yamlOutputPath, d, 0666); err != nil {
-		log.Fatalln(zap.Error(err))
-	}
+func init() {
+	distro.Replace(distro.Resource)
 }

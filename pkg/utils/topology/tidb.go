@@ -38,7 +38,7 @@ func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDB
 
 	resp, err := etcdClient.Get(ctx2, tidbTopologyKeyPrefix, clientv3.WithPrefix())
 	if err != nil {
-		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", tidbTopologyKeyPrefix, distro.Data.PD)
+		return nil, ErrEtcdRequestFailed.Wrap(err, "failed to get key %s from %s etcd", tidbTopologyKeyPrefix, distro.Data("pd"))
 	}
 
 	nodesAlive := make(map[string]struct{}, len(resp.Kvs))
@@ -53,7 +53,7 @@ func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDB
 		remainingKey := key[len(tidbTopologyKeyPrefix):]
 		keyParts := strings.Split(remainingKey, "/")
 		if len(keyParts) != 2 {
-			log.Warn(fmt.Sprintf("Ignored invalid %s topology key", distro.Data.Tidb), zap.String("key", key))
+			log.Warn(fmt.Sprintf("Ignored invalid %s topology key", distro.Data("tidb")), zap.String("key", key))
 			continue
 		}
 
@@ -63,7 +63,7 @@ func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDB
 			if err == nil {
 				nodesInfo[keyParts[0]] = node
 			} else {
-				log.Warn(fmt.Sprintf("Ignored invalid %s topology info entry", distro.Data.Tidb),
+				log.Warn(fmt.Sprintf("Ignored invalid %s topology info entry", distro.Data("tidb")),
 					zap.String("key", key),
 					zap.String("value", string(kv.Value)),
 					zap.Error(err))
@@ -73,12 +73,12 @@ func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDB
 			if err == nil {
 				nodesAlive[keyParts[0]] = struct{}{}
 				if !alive {
-					log.Warn(fmt.Sprintf("Alive of %s has expired, maybe local time in different hosts are not synchronized", distro.Data.Tidb),
+					log.Warn(fmt.Sprintf("Alive of %s has expired, maybe local time in different hosts are not synchronized", distro.Data("tidb")),
 						zap.String("key", key),
 						zap.String("value", string(kv.Value)))
 				}
 			} else {
-				log.Warn(fmt.Sprintf("Ignored invalid %s topology TTL entry", distro.Data.Tidb),
+				log.Warn(fmt.Sprintf("Ignored invalid %s topology TTL entry", distro.Data("tidb")),
 					zap.String("key", key),
 					zap.String("value", string(kv.Value)),
 					zap.Error(err))
@@ -119,11 +119,11 @@ func parseTiDBInfo(address string, value []byte) (*TiDBInfo, error) {
 
 	err := json.Unmarshal(value, &ds)
 	if err != nil {
-		return nil, ErrInvalidTopologyData.Wrap(err, "%s info unmarshal failed", distro.Data.Tidb)
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s info unmarshal failed", distro.Data("tidb"))
 	}
 	hostname, port, err := host.ParseHostAndPortFromAddress(address)
 	if err != nil {
-		return nil, ErrInvalidTopologyData.Wrap(err, "%s info address parse failed", distro.Data.Tidb)
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s info address parse failed", distro.Data("tidb"))
 	}
 
 	return &TiDBInfo{
@@ -141,7 +141,7 @@ func parseTiDBInfo(address string, value []byte) (*TiDBInfo, error) {
 func parseTiDBAliveness(value []byte) (bool, error) {
 	unixTimestampNano, err := strconv.ParseUint(string(value), 10, 64)
 	if err != nil {
-		return false, ErrInvalidTopologyData.Wrap(err, "%s TTL info parse failed", distro.Data.Tidb)
+		return false, ErrInvalidTopologyData.Wrap(err, "%s TTL info parse failed", distro.Data("tidb"))
 	}
 	t := time.Unix(0, int64(unixTimestampNano))
 	if time.Since(t) > time.Second*45 {

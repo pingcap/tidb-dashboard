@@ -66,7 +66,7 @@ export default function ToggleBanner({
       return parseVersion(appInfo, t)
     }
     return null
-  }, [appInfo])
+  }, [appInfo, t])
 
   return (
     <div className={styles.banner} onClick={onToggle}>

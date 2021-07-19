@@ -120,7 +120,7 @@ func (s *Service) getConfigItemsFromTiDBToChannel(tidb *topology.TiDBInfo, ch ch
 
 	r, err := s.getConfigItemsFromTiDB(tidb.IP, int(tidb.StatusPort))
 	if err != nil {
-		ch <- channelItem{Err: ErrListConfigItemsFailed.Wrap(err, "Failed to list %s config items of %s", distro.Data.Tidb, displayAddress)}
+		ch <- channelItem{Err: ErrListConfigItemsFailed.Wrap(err, "Failed to list %s config items of %s", distro.Data("tidb"), displayAddress)}
 		return
 	}
 	ch <- channelItem{
@@ -171,7 +171,7 @@ type ShowVariableItem struct {
 func (s *Service) getGlobalVariablesFromTiDBToChannel(db *gorm.DB, ch chan<- channelItem) {
 	r, err := s.getGlobalVariablesFromTiDB(db)
 	if err != nil {
-		ch <- channelItem{Err: ErrListConfigItemsFailed.Wrap(err, "Failed to list %s variables", distro.Data.Tidb)}
+		ch <- channelItem{Err: ErrListConfigItemsFailed.Wrap(err, "Failed to list %s variables", distro.Data("tidb"))}
 		return
 	}
 	ch <- channelItem{
@@ -213,7 +213,7 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 
 	tidbInfo, err := topology.FetchTiDBTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
-		return nil, ErrListTopologyFailed.Wrap(err, "Failed to list %s instances", distro.Data.Tidb)
+		return nil, ErrListTopologyFailed.Wrap(err, "Failed to list %s instances", distro.Data("tidb"))
 	}
 
 	ch := make(chan channelItem)

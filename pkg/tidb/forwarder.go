@@ -116,7 +116,7 @@ func (f *Forwarder) pollingForTiDB() {
 
 func (f *Forwarder) getEndpointAddr(port int) (string, error) {
 	if f.statusProxy.noAliveRemote.Load() {
-		log.Warn(fmt.Sprintf("Unable to resolve connection address since no alive %s instance", distro.Data.Tidb))
+		log.Warn(fmt.Sprintf("Unable to resolve connection address since no alive %s instance", distro.Data("tidb")))
 		return "", ErrNoAliveTiDB.NewWithNoMessage()
 	}
 	return fmt.Sprintf("127.0.0.1:%d", port), nil

@@ -62,12 +62,12 @@ func readFile(fileTime time.Time) (*RegionsInfo, error) {
 	fileName := fileTime.Format("./data/20060102-15-04.json")
 	file, err := os.Open(fileName)
 	if err != nil {
-		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed, from file %s", distro.Data.PD, fileName)
+		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed, from file %s", distro.Data("pd"), fileName)
 	}
 	defer file.Close()
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed, from file %s", distro.Data.PD, fileName)
+		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed, from file %s", distro.Data("pd"), fileName)
 	}
 	return read(data)
 }

@@ -52,7 +52,7 @@ func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) 
 	}).([]Field)
 
 	if len(fields) == 0 {
-		return "", ErrUnknownColumn.New("all columns are not included in the current version %s schema, columns: %q", distro.Data.Tidb, reqJSONColumns)
+		return "", ErrUnknownColumn.New("all columns are not included in the current version %s schema, columns: %q", distro.Data("tidb"), reqJSONColumns)
 	}
 
 	stmt := funk.Map(fields, func(f Field) string {

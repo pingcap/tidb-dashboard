@@ -151,7 +151,7 @@ func fetchStores(pdClient *pd.Client) ([]store, error) {
 	}{}
 	err = json.Unmarshal(data, &storeResp)
 	if err != nil {
-		return nil, ErrInvalidTopologyData.Wrap(err, "%s stores API unmarshal failed", distro.Data.PD)
+		return nil, ErrInvalidTopologyData.Wrap(err, "%s stores API unmarshal failed", distro.Data("pd"))
 	}
 
 	ret := make([]store, 0, storeResp.Count)

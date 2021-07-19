@@ -96,18 +96,18 @@ func (rs *RegionsInfo) GetValues(tag regionpkg.StatTag) []uint64 {
 func read(data []byte) (*RegionsInfo, error) {
 	regions := &RegionsInfo{}
 	if err := json.Unmarshal(data, regions); err != nil {
-		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed", distro.Data.PD)
+		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed", distro.Data("pd"))
 	}
 
 	for _, region := range regions.Regions {
 		startBytes, err := hex.DecodeString(region.StartKey)
 		if err != nil {
-			return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed", distro.Data.PD)
+			return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed", distro.Data("pd"))
 		}
 		region.StartKey = regionpkg.String(startBytes)
 		endBytes, err := hex.DecodeString(region.EndKey)
 		if err != nil {
-			return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed", distro.Data.PD)
+			return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed", distro.Data("pd"))
 		}
 		region.EndKey = regionpkg.String(endBytes)
 	}

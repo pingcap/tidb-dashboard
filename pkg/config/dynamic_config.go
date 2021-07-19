@@ -55,9 +55,25 @@ type ProfilingConfig struct {
 	AutoCollectionIntervalSecs uint                      `json:"auto_collection_interval_secs"`
 }
 
+type SSOCoreConfig struct {
+	Enabled      bool   `json:"enabled"`
+	ClientID     string `json:"client_id"`
+	DiscoveryURL string `json:"discovery_url"`
+	IsReadOnly   bool   `json:"is_read_only"`
+}
+
+type SSOConfig struct {
+	CoreConfig  SSOCoreConfig `json:"core_config"`
+	AuthURL     string        `json:"auth_url"`
+	TokenURL    string        `json:"token_url"`
+	UserInfoURL string        `json:"user_info_url"`
+	SignOutURL  string        `json:"sign_out_url"`
+}
+
 type DynamicConfig struct {
 	KeyVisual KeyVisualConfig `json:"keyvisual"`
 	Profiling ProfilingConfig `json:"profiling"`
+	SSO       SSOConfig       `json:"sso"`
 }
 
 func (c *DynamicConfig) Clone() *DynamicConfig {

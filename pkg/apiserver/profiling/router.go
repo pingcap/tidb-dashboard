@@ -44,7 +44,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.GET("/single/view", s.viewSingle)
 
 	endpoint.GET("/config", auth.MWAuthRequired(), s.getDynamicConfig)
-	endpoint.PUT("/config", auth.MWAuthRequired(), s.setDynamicConfig)
+	endpoint.PUT("/config", auth.MWAuthRequired(), auth.MWRequireWritePriv(), s.setDynamicConfig)
 }
 
 // @ID startProfiling

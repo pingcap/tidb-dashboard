@@ -19,9 +19,10 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
+
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 func main() {

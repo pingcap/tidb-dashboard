@@ -28,7 +28,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	endpoint.Use(utils.MWForbidByExperimentalFlag(s.params.Config.EnableExperimental))
 	endpoint.GET("/all", s.getHandler)
-	endpoint.POST("/edit", s.editHandler)
+	endpoint.POST("/edit", auth.MWRequireWritePriv(), s.editHandler)
 }
 
 // @ID configurationGetAll

@@ -3,12 +3,12 @@ import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons'
 import { useSize } from 'ahooks'
 import Flexbox from '@g07cha/flexbox-react'
 import { useSpring, animated } from 'react-spring'
-import { useClientRequest } from '@lib/utils/useClientRequest'
-import client, { InfoInfoResponse } from '@lib/client'
+import { InfoInfoResponse } from '@lib/client'
 import { useTranslation } from 'react-i18next'
 
 import { ReactComponent as Logo } from './logo-icon-light.svg'
 import styles from './Banner.module.less'
+import { store } from '@lib/utils/store'
 
 const toggleWidth = 40
 const toggleHeight = 50
@@ -58,16 +58,14 @@ export default function ToggleBanner({
     width: collapsed ? collapsedWidth : toggleWidth,
   })
 
-  const { data, isLoading } = useClientRequest((reqConfig) =>
-    client.getInstance().infoGet(reqConfig)
-  )
+  const appInfo = store.useState((s) => s.appInfo)
 
   const version = useMemo(() => {
-    if (data) {
-      return parseVersion(data)
+    if (appInfo) {
+      return parseVersion(appInfo)
     }
     return null
-  }, [data])
+  }, [appInfo])
 
   return (
     <div className={styles.banner} onClick={onToggle}>
@@ -89,8 +87,7 @@ export default function ToggleBanner({
                 {t('distro.tidb')} Dashboard
               </div>
               <div className={styles.bannerVersion}>
-                {isLoading && '...'}
-                {!isLoading && (version || 'Version unknown')}
+                {version || 'Version unknown'}
               </div>
             </div>
           </Flexbox>

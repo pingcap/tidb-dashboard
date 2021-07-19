@@ -15,7 +15,7 @@ import {
   initSentryRoutingInstrument,
   applySentryTracingInterceptor,
 } from '@lib/utils/sentryHelpers'
-import client, { ErrorStrategy, InfoInfoResponse } from '@lib/client'
+import client, { InfoInfoResponse } from '@lib/client'
 
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
@@ -33,6 +33,8 @@ import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
 import AppConfiguration from '@lib/apps/Configuration/index.meta'
 import AppDebugAPI from '@lib/apps/DebugAPI/index.meta'
+import { handleSSOCallback, isSSOCallback } from '@lib/utils/authSSO'
+import { mustLoadAppInfo, reloadWhoAmI } from '@lib/utils/store'
 // import __APP_NAME__ from '@lib/apps/__APP_NAME__/index.meta'
 // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
@@ -43,7 +45,7 @@ function removeSpinner() {
   }
 }
 
-async function main() {
+async function webPageStart() {
   const options = loadAppOptions()
   if (options.lang) {
     i18next.changeLanguage(options.lang)
@@ -55,10 +57,7 @@ async function main() {
   let info: InfoInfoResponse
 
   try {
-    const i = await client.getInstance().infoGet({
-      errorStrategy: ErrorStrategy.Custom,
-    })
-    info = i.data
+    info = await mustLoadAppInfo()
   } catch (e) {
     Modal.error({
       title: 'Failed to connect to TiDB Dashboard server',
@@ -123,8 +122,14 @@ async function main() {
   // .register(__APP_NAME__)
   // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
-  if (routing.isLocationMatch('/')) {
-    singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
+  try {
+    await reloadWhoAmI()
+
+    if (routing.isLocationMatch('/')) {
+      singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
+    }
+  } catch (e) {
+    // If there are auth errors, redirection will happen any way. So we continue.
   }
 
   window.addEventListener('single-spa:app-change', () => {
@@ -142,21 +147,29 @@ async function main() {
   singleSpa.start()
 }
 
-/////////////////////////////////////
+async function main() {
+  if (routing.isPortalPage()) {
+    // the portal page is only used to receive options
+    window.addEventListener(
+      'message',
+      (event) => {
+        const { token, lang, hideNav, redirectPath } = event.data
+        auth.setAuthToken(token)
+        saveAppOptions({ hideNav, lang })
+        window.location.hash = `#${redirectPath}`
+        window.location.reload()
+      },
+      { once: true }
+    )
+    return
+  }
 
-if (routing.isPortalPage()) {
-  // the portal page is only used to receive options
-  window.addEventListener(
-    'message',
-    (event) => {
-      const { token, lang, hideNav, redirectPath } = event.data
-      auth.setAuthToken(token)
-      saveAppOptions({ hideNav, lang })
-      window.location.hash = `#${redirectPath}`
-      window.location.reload()
-    },
-    { once: true }
-  )
-} else {
-  main()
+  if (isSSOCallback()) {
+    await handleSSOCallback()
+    return
+  }
+
+  await webPageStart()
 }
+
+main()

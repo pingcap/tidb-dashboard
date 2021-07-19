@@ -4,7 +4,7 @@
 #
 # Available flags:
 # DISTRO_BUILD_TAG=1
-#   Distro build tags will be included in the generated source code.
+#   Will use distro build tag source code.
 
 set -euo pipefail
 

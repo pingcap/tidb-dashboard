@@ -41,11 +41,17 @@ task(
   )
 )
 
-task('build', series(parallel('swagger:generate', 'distro:generate'), 'webpack:build'))
+task(
+  'build',
+  series(parallel('swagger:generate', 'distro:generate'), 'webpack:build')
+)
 
 task(
   'dev',
-  series(parallel('swagger:generate', 'distro:generate'), parallel('swagger:watch', 'distro:watch', 'webpack:dev'))
+  series(
+    parallel('swagger:generate', 'distro:generate'),
+    parallel('swagger:watch', 'distro:watch', 'webpack:dev')
+  )
 )
 
 /////////////////////////////////

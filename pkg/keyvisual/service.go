@@ -118,7 +118,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.Use(auth.MWAuthRequired())
 
 	endpoint.GET("/config", s.getDynamicConfig)
-	endpoint.PUT("/config", s.setDynamicConfig)
+	endpoint.PUT("/config", auth.MWRequireWritePriv(), s.setDynamicConfig)
 
 	endpoint.Use(s.status.MWHandleStopped(stoppedHandler))
 	endpoint.GET("/heatmaps", s.heatmaps)

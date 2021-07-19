@@ -35,7 +35,7 @@ const (
 // This middleware must be placed after the `MWAuthRequired()` middleware, otherwise it will panic.
 func MWConnectTiDB(tidbClient *tidb.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sessionUser := c.MustGet(SessionUserKey).(*SessionUser)
+		sessionUser := GetSession(c)
 		if sessionUser == nil {
 			panic("invalid sessionUser")
 		}

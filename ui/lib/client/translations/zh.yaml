@@ -3,7 +3,7 @@ error:
   network: 网络连接失败
   api:
     unauthorized: 会话已过期，请重新登录
-    invalid_request: 请求出错
+    insufficient_privilege: 您没有足够的权限进行该操作
     user:
       signin:
         invalid_code: 授权码无效或已过期

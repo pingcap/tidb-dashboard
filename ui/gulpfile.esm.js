@@ -21,6 +21,12 @@ task('swagger:watch', () =>
   watch(['../cmd/**/*.go', '../pkg/**/*.go'], series('swagger:generate'))
 )
 
+task('distro:generate', shell.task('../scripts/generate_distro_info.sh'))
+
+task('distro:watch', () =>
+  watch(['../pkg/utils/distro/*.go'], series('distro:generate'))
+)
+
 task(
   'webpack:dev',
   shell.task(
@@ -35,11 +41,11 @@ task(
   )
 )
 
-task('build', series('swagger:generate', 'webpack:build'))
+task('build', series(parallel('swagger:generate', 'distro:generate'), 'webpack:build'))
 
 task(
   'dev',
-  series('swagger:generate', parallel('swagger:watch', 'webpack:dev'))
+  series(parallel('swagger:generate', 'distro:generate'), parallel('swagger:watch', 'distro:watch', 'webpack:dev'))
 )
 
 /////////////////////////////////

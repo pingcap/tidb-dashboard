@@ -15,4 +15,9 @@
 
 package distro
 
-var YAMLData = []byte("")
+var Data = &Info{
+	Tidb:    "TiDB",
+	Tikv:    "TiKV",
+	Tiflash: "TiFlash",
+	PD:      "PD",
+}

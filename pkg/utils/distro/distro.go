@@ -14,34 +14,9 @@
 
 package distro
 
-import (
-	"log"
-
-	"go.uber.org/zap"
-	"gopkg.in/yaml.v2"
-)
-
 type Info struct {
 	Tidb    string `yaml:"tidb"`
 	Tikv    string `yaml:"tikv"`
 	Tiflash string `yaml:"tiflash"`
 	PD      string `yaml:"pd"`
-}
-
-var Data = &Info{
-	Tidb:    "TiDB",
-	Tikv:    "TiKV",
-	Tiflash: "TiFlash",
-	PD:      "PD",
-}
-
-func PopulateDistro(distroYAML []byte) {
-	if string(distroYAML) == "" {
-		return
-	}
-
-	err := yaml.Unmarshal(distroYAML, Data)
-	if err != nil {
-		log.Fatal("Incorrect yaml format", zap.Error(err))
-	}
 }

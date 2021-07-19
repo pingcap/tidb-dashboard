@@ -15,65 +15,24 @@
 package main
 
 import (
-	"bytes"
 	"flag"
-	"html/template"
 	"io/ioutil"
 	"log"
-	"strconv"
 
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 )
 
 func main() {
-	buildTagFlag := flag.String("buildTag", "", "Distro build tag")
+	yamlOutputPath := flag.String("o", "", "Distro yaml output path")
 	flag.Parse()
-	args := flag.Args()
 
-	var distroPath string
-	if len(args) > 0 {
-		distroPath = args[0]
-	} else {
-		log.Fatalln("Require distribution yaml path")
-	}
-
-	content, err := ioutil.ReadFile(distroPath)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	err = yaml.Unmarshal(content, struct{}{})
-	if err != nil {
-		log.Fatal("Incorrect yaml format", zap.Error(err))
-	}
-
-	buf := new(bytes.Buffer)
-
-	err = t.Execute(buf, map[string]string{
-		"PackageName":  "distro",
-		"VariableName": "YAMLData",
-		"BuildTag":     *buildTagFlag,
-		"FileContent":  string(content),
-	})
+	d, err := yaml.Marshal(distro.Data)
 	if err != nil {
 		log.Fatalln(zap.Error(err))
 	}
-
-	err = ioutil.WriteFile("distro_info.go", buf.Bytes(), 0644)
-	if err != nil {
+	if err := ioutil.WriteFile(*yamlOutputPath, d, 0666); err != nil {
 		log.Fatalln(zap.Error(err))
 	}
 }
-
-var t = template.Must(template.New("").Funcs(template.FuncMap{
-	"quote": func(s string) (template.HTML, error) {
-		//nolint
-		return template.HTML(strconv.Quote(s)), nil
-	},
-}).Parse(`// Code generate by distro_info_generate; DO NOT EDIT.
-{{with .BuildTag}}// +build {{.}}
-
-{{end}}package {{.PackageName}}
-
-var {{.VariableName}} = []byte({{quote .FileContent}})
-`))

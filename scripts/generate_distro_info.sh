@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script generate distribution info from the unified yaml to Golang code.
+# This script generate distribution info resource for fe from Golang code.
 #
 # Available flags:
 # DISTRO_BUILD_TAG=1
@@ -17,8 +17,8 @@ else
   BUILD_TAG_PARAMETER=""
 fi
 
-echo "+ Generate distro info yaml"
+echo "+ Generate distro info resource"
 
-go run -tags=$BUILD_TAG_PARAMETER ${PROJECT_DIR}/tools/distro_info_generate/main.go -o=${PROJECT_DIR}/ui/lib/distribution.yaml
+go run -tags=$BUILD_TAG_PARAMETER ${PROJECT_DIR}/tools/distro_info_generate/main.go -o=${PROJECT_DIR}/ui/lib/distribution.json
 
 echo "  - Success!"

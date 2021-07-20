@@ -14,16 +14,9 @@
 
 package distro
 
-type Info struct {
-	Tidb    string `yaml:"tidb"`
-	Tikv    string `yaml:"tikv"`
-	Tiflash string `yaml:"tiflash"`
-	PD      string `yaml:"pd"`
-}
+var data map[string]interface{}
 
-var data map[interface{}]interface{}
-
-func Replace(distro map[interface{}]interface{}) {
+func Replace(distro map[string]interface{}) {
 	data = distro
 }
 

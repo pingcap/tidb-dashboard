@@ -16,11 +16,9 @@ const webpack = require('webpack')
 const WebpackBar = require('webpackbar')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const rewireHtmlWebpackPlugin = require('react-app-rewire-html-webpack-plugin')
-const YAML = require('yaml')
 
 function injectDistroToHTML(config, env) {
-  const distroYAML = fs.readFileSync('./lib/distribution.yaml', 'utf8')
-  const distroInfo = Object.entries(YAML.parse(distroYAML)).reduce(
+  const distroInfo = Object.entries(require('./lib/distribution.json')).reduce(
     (prev, [k, v]) => {
       return {
         ...prev,

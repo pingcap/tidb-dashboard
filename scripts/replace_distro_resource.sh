@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# This script replaces the resources in the project with specific distribution resources.
+#
+# Required params:
+# DISTRIBUTION_DIR
+#   Specify the resource directory to be used for replacement.
+
 set -euo pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"

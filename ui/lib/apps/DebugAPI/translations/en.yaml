@@ -4,7 +4,7 @@ debug_api:
   endpoints_not_found: Endpoints not found
   warning_header:
     title: Warning
-    body: These debug endpoints and data are largely internal and intended for use by TiDB developers. Please use this feature under the guidance of TiDB technical support.
+    body: These debug endpoints and data are largely internal and intended for use by {{ distro.tidb }} developers. Please use this feature under the guidance of {{ distro.tidb }} technical support.
   form:
     download: Download
     reset: Reset

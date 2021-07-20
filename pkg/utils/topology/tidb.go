@@ -53,7 +53,7 @@ func FetchTiDBTopology(ctx context.Context, etcdClient *clientv3.Client) ([]TiDB
 		remainingKey := key[len(tidbTopologyKeyPrefix):]
 		keyParts := strings.Split(remainingKey, "/")
 		if len(keyParts) != 2 {
-			log.Warn(fmt.Sprintf("Ignored invalid %s topology key", distro.Data("tidb")), zap.String("key", key))
+			log.Warn("Ignored invalid topology key", zap.String("component", distro.Data("tidb")), zap.String("key", key))
 			continue
 		}
 

@@ -60,9 +60,7 @@ async function webPageStart() {
     info = await mustLoadAppInfo()
   } catch (e) {
     Modal.error({
-      title: `Failed to connect to ${i18next.t(
-        'distro.tidb'
-      )} Dashboard server`,
+      title: `Failed to connect to server`,
       content: '' + e,
       okText: 'Reload',
       onOk: () => window.location.reload(),

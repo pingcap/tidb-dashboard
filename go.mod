@@ -44,7 +44,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.25.1
-	gopkg.in/yaml.v2 v2.3.0
 	gorm.io/driver/mysql v1.0.6
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.9

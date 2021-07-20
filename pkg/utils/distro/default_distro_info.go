@@ -2,7 +2,7 @@
 
 package distro
 
-var Resource = map[interface{}]interface{}{
+var Resource = map[string]interface{}{
 	"tidb":    "TiDB",
 	"tikv":    "TiKV",
 	"tiflash": "TiFlash",

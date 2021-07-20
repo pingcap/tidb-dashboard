@@ -15,25 +15,25 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"log"
 
 	"go.uber.org/zap"
-	"gopkg.in/yaml.v2"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 func main() {
-	yamlOutputPath := flag.String("o", "", "Distro yaml output path")
+	outputPath := flag.String("o", "", "Distro resource output path")
 	flag.Parse()
 
-	d, err := yaml.Marshal(distro.Resource)
+	d, err := json.Marshal(distro.Resource)
 	if err != nil {
 		log.Fatalln(zap.Error(err))
 	}
-	if err := ioutil.WriteFile(*yamlOutputPath, d, 0666); err != nil {
+	if err := ioutil.WriteFile(*outputPath, d, 0666); err != nil {
 		log.Fatalln(zap.Error(err))
 	}
 }

@@ -49,7 +49,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 		if s.SchemaVersion != -1 {
 			log.Warn("failed to get tidb schema version", zap.Error(err))
 		} else {
-			log.Debug(fmt.Sprintf("failed to get tidb schema version, maybe not a %s cluster", distro.Data("tidb")), zap.Error(err))
+			log.Debug("failed to get tidb schema version, maybe not a db cluster", zap.Error(err))
 		}
 		return
 	}
@@ -58,7 +58,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 		if s.SchemaVersion != -1 {
 			log.Warn("failed to get tidb schema version", zap.Error(err))
 		} else {
-			log.Debug(fmt.Sprintf("failed to get tidb schema version, maybe not a %s cluster", distro.Data("tidb")), zap.Error(err))
+			log.Debug("failed to get tidb schema version, maybe not a db cluster", zap.Error(err))
 		}
 		return
 	}
@@ -72,7 +72,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	// get all database info
 	var dbInfos []*model.DBInfo
 	if err := s.request("/schema", &dbInfos); err != nil {
-		log.Error(fmt.Sprintf("fail to send schema request to %s", distro.Data("tidb")), zap.Error(err))
+		log.Error("fail to send schema request", zap.String("component", distro.Data("tidb")), zap.Error(err))
 		return
 	}
 
@@ -85,7 +85,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 		var tableInfos []*model.TableInfo
 		encodeName := url.PathEscape(db.Name.O)
 		if err := s.request(fmt.Sprintf("/schema/%s", encodeName), &tableInfos); err != nil {
-			log.Error(fmt.Sprintf("fail to send schema request to %s", distro.Data("tidb")), zap.Error(err))
+			log.Error("fail to send schema request", zap.String("component", distro.Data("tidb")), zap.Error(err))
 			updateSuccess = false
 			continue
 		}

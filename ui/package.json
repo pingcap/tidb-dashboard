@@ -106,6 +106,7 @@
     "prettier": "^2.0.4",
     "pretty-quick": "^2.0.1",
     "react-app-rewire-alias": "^0.1.6",
+    "react-app-rewire-html-webpack-plugin": "^1.0.3",
     "react-app-rewire-multiple-entry": "^2.1.0",
     "react-app-rewire-yaml": "^1.1.0",
     "react-app-rewired": "^2.1.5",

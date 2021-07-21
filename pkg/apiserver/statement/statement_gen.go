@@ -20,6 +20,7 @@ import (
 	"github.com/thoas/go-funk"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 var (
@@ -51,7 +52,7 @@ func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) 
 	}).([]Field)
 
 	if len(fields) == 0 {
-		return "", ErrUnknownColumn.New("all columns are not included in the current version TiDB schema, columns: %q", reqJSONColumns)
+		return "", ErrUnknownColumn.New("all columns are not included in the current version %s schema, columns: %q", distro.Data("tidb"), reqJSONColumns)
 	}
 
 	stmt := funk.Map(fields, func(f Field) string {

@@ -28,7 +28,7 @@ keyviz:
     switch: Enable Feature
     switch_tooltip: Whether Key Visualizer feature is enabled. When enabled, there will be small overhead.
     policy: Policy
-    policy_db: TiDB
+    policy_db: '{{distro.tidb}}'
     policy_kv: Raw KV
     separator: Separator
     separator_placeholder: The separator used to split Key

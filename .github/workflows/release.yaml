@@ -81,6 +81,7 @@ jobs:
           asset_name: embedded-assets-golang.zip
           asset_content_type: application/zip
   pd_pr:
+    if: "!contains(github.event.head_commit.message, 'skip pd_pr')"
     name: Create PD PR
     runs-on: ubuntu-latest
     needs: release

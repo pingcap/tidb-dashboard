@@ -11,16 +11,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package profiling
+package fetcher
 
-import (
-	"go.uber.org/fx"
-)
+type ClientFetchOptions struct {
+	IP   string
+	Port int
+	Path string
+}
 
-var Module = fx.Options(
-	fx.Provide(
-		newClientMap,
-		newService,
-	),
-	fx.Invoke(registerRouter),
-)
+type Client interface {
+	Fetch(op *ClientFetchOptions) ([]byte, error)
+}

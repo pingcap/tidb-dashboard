@@ -32,9 +32,7 @@ function mapData(data) {
   return data
 }
 
-function isFinished(data) {
-  return data?.task_group_status?.state === 2
-}
+const isFinished = (state: number) => state === 2
 
 export default function Page() {
   const { t } = useTranslation()
@@ -43,7 +41,7 @@ export default function Page() {
   const { data: respData, isLoading, error } = useClientRequestWithPolling(
     (reqConfig) => client.getInstance().getProfilingGroupDetail(id, reqConfig),
     {
-      shouldPoll: (data) => !isFinished(data),
+      shouldPoll: (data) => !isFinished(data?.task_group_status?.state!),
     }
   )
 
@@ -101,6 +99,9 @@ export default function Page() {
 
   const handleRowClick = usePersistFn(
     async (rec, _idx, _ev: React.MouseEvent<HTMLElement>) => {
+      if (!isFinished(rec.state)) {
+        return
+      }
       const res = await client
         .getInstance()
         .getActionToken(rec.id, 'single_view')

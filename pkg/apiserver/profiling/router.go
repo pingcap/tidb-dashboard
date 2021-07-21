@@ -30,7 +30,7 @@ import (
 )
 
 // Register register the handlers to the service.
-func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
+func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint := r.Group("/profiling")
 	endpoint.GET("/group/list", auth.MWAuthRequired(), s.getGroupList)
 	endpoint.POST("/group/start", auth.MWAuthRequired(), s.handleStartGroup)

@@ -62,14 +62,14 @@ type Service struct {
 	sessionCh     chan *StartRequestSession
 	lastTaskGroup *TaskGroup
 	tasks         sync.Map
-	fetchers      *fetchers
+	clientMap     *clientMap
 }
 
-var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers) (*Service, error) {
+func newService(lc fx.Lifecycle, p ServiceParams, cm *clientMap) (*Service, error) {
 	if err := autoMigrate(p.LocalStore); err != nil {
 		return nil, err
 	}
-	s := &Service{params: p, fetchers: fts}
+	s := &Service{params: p, clientMap: cm}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			s.wg.Add(1)
@@ -86,7 +86,7 @@ var newService = fx.Provide(func(lc fx.Lifecycle, p ServiceParams, fts *fetchers
 	})
 
 	return s, nil
-})
+}
 
 func (s *Service) serviceLoop(ctx context.Context) {
 	cfgCh := s.params.ConfigManager.NewPushChannel()
@@ -159,7 +159,7 @@ func (s *Service) startGroup(ctx context.Context, req *StartRequest) (*TaskGroup
 
 	tasks := make([]*Task, 0, len(req.Targets))
 	for _, target := range req.Targets {
-		t := NewTask(ctx, taskGroup, target, s.fetchers)
+		t := NewTask(ctx, taskGroup, target, s.clientMap)
 		s.params.LocalStore.Create(t.TaskModel)
 		s.tasks.Store(t.ID, t)
 		tasks = append(tasks, t)

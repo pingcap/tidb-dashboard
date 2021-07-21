@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package profiling
+package fetcher
 
 import (
 	"flag"
@@ -20,10 +20,8 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 
-	"github.com/goccy/go-graphviz"
 	"github.com/google/pprof/driver"
 	"github.com/google/pprof/profile"
 
@@ -31,86 +29,56 @@ import (
 )
 
 var (
-	_  driver.Fetcher = (*fetcher)(nil)
-	mu sync.Mutex
+	_ driver.Fetcher = (*pprofFetcher)(nil)
+	_ Fetcher        = (*Pprof)(nil)
 )
 
-type pprofOptions struct {
-	duration uint
-	// frequency          uint
-	fileNameWithoutExt string
-
-	target  *model.RequestTargetNode
-	fetcher *profileFetcher
+type Pprof struct {
+	FileNameWithoutExt string
 }
 
-func fetchPprofSVG(op *pprofOptions) (string, error) {
-	f, err := fetchPprof(op, "dot")
+func (p *Pprof) Fetch(client Client, target *model.RequestTargetNode, op *ProfileFetchOptions) (d []byte, err error) {
+	tmpfile, err := ioutil.TempFile("", p.FileNameWithoutExt)
 	if err != nil {
-		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
-	}
-
-	b, err := ioutil.ReadFile(f)
-	if err != nil {
-		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
-	}
-
-	tmpfile, err := ioutil.TempFile("", op.fileNameWithoutExt)
-	if err != nil {
-		return "", fmt.Errorf("failed to create temp file: %v", err)
+		return d, fmt.Errorf("failed to create temp file: %v", err)
 	}
 	defer tmpfile.Close()
-	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), "svg")
 
-	g := graphviz.New()
-	mu.Lock()
-	defer mu.Unlock()
-	graph, err := graphviz.ParseBytes(b)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse DOT file: %v", err)
-	}
-
-	if err := g.RenderFilename(graph, graphviz.SVG, tmpPath); err != nil {
-		return "", fmt.Errorf("failed to render SVG: %v", err)
-	}
-
-	return tmpPath, nil
-}
-
-type flagSet struct {
-	*flag.FlagSet
-	args []string
-}
-
-func fetchPprof(op *pprofOptions, format string) (string, error) {
-	tmpfile, err := ioutil.TempFile("", op.fileNameWithoutExt)
-	if err != nil {
-		return "", fmt.Errorf("failed to create temp file: %v", err)
-	}
-	defer tmpfile.Close()
+	format := "dot"
 	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), format)
 	format = "-" + format
 	args := []string{
 		format,
 		// prevent printing stdout
 		"-output", "dummy",
-		"-seconds", strconv.Itoa(int(op.duration)),
+		"-seconds", strconv.Itoa(int(op.Duration)),
 	}
-	address := fmt.Sprintf("%s:%d", op.target.IP, op.target.Port)
+	address := fmt.Sprintf("%s:%d", target.IP, target.Port)
 	args = append(args, address)
 	f := &flagSet{
 		FlagSet: flag.NewFlagSet("pprof", flag.PanicOnError),
 		args:    args,
 	}
 	if err := driver.PProf(&driver.Options{
-		Fetch:   &fetcher{profileFetcher: op.fetcher, target: op.target},
+		Fetch:   &pprofFetcher{client: client, target: target},
 		Flagset: f,
 		UI:      &blankPprofUI{},
 		Writer:  &oswriter{output: tmpPath},
 	}); err != nil {
-		return "", fmt.Errorf("failed to generate profile report: %v", err)
+		return d, fmt.Errorf("failed to generate profile report: %v", err)
 	}
-	return tmpPath, nil
+
+	d, err = ioutil.ReadFile(tmpPath)
+	if err != nil {
+		return d, fmt.Errorf("failed to get DOT output from file: %v", err)
+	}
+
+	return
+}
+
+type flagSet struct {
+	*flag.FlagSet
+	args []string
 }
 
 func (f *flagSet) StringList(o, d, c string) *[]*string {
@@ -139,16 +107,16 @@ func (o *oswriter) Open(name string) (io.WriteCloser, error) {
 	return f, err
 }
 
-type fetcher struct {
-	target         *model.RequestTargetNode
-	profileFetcher *profileFetcher
+type pprofFetcher struct {
+	client Client
+	target *model.RequestTargetNode
 }
 
-func (f *fetcher) Fetch(src string, duration, timeout time.Duration) (*profile.Profile, string, error) {
+func (f *pprofFetcher) Fetch(src string, duration, timeout time.Duration) (*profile.Profile, string, error) {
 	secs := strconv.Itoa(int(duration / time.Second))
 	url := "/debug/pprof/profile?seconds=" + secs
 
-	resp, err := (*f.profileFetcher).fetch(&fetchOptions{ip: f.target.IP, port: f.target.Port, path: url})
+	resp, err := f.client.Fetch(&ClientFetchOptions{IP: f.target.IP, Port: f.target.Port, Path: url})
 	if err != nil {
 		return nil, url, err
 	}

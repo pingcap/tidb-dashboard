@@ -16,21 +16,35 @@ package profiling
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/goccy/go-graphviz"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling/fetcher"
 )
 
-func profileAndWriteSVG(ctx context.Context, fts *fetchers, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
+func profileAndWriteSVG(ctx context.Context, cm *clientMap, target *model.RequestTargetNode, fileNameWithoutExt string, profileDurationSecs uint) (string, error) {
+	c, err := cm.Get(target.Kind)
+	if err != nil {
+		return "", err
+	}
+
+	ff := fetcher.NewFetcherFactory(c, target)
+
+	var f fetcher.ProfilerFetcher
+	var w Writer
 	switch target.Kind {
-	case model.NodeKindTiKV:
-		return fetchFlameGraphSVG(&flameGraphOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tikv})
-	case model.NodeKindTiFlash:
-		return fetchFlameGraphSVG(&flameGraphOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tiflash})
-	case model.NodeKindTiDB:
-		return fetchPprofSVG(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.tidb})
-	case model.NodeKindPD:
-		return fetchPprofSVG(&pprofOptions{duration: profileDurationSecs, fileNameWithoutExt: fileNameWithoutExt, target: target, fetcher: &fts.pd})
+	case model.NodeKindTiKV, model.NodeKindTiFlash:
+		f = ff.Create(&fetcher.FlameGraph{})
+		w = &fileWriter{fileNameWithoutExt: fileNameWithoutExt, ext: "svg"}
+	case model.NodeKindTiDB, model.NodeKindPD:
+		f = ff.Create(&fetcher.Pprof{FileNameWithoutExt: fileNameWithoutExt})
+		w = &graphvizWriter{fileNameWithoutExt: fileNameWithoutExt, ext: graphviz.SVG}
 	default:
 		return "", fmt.Errorf("unsupported target %s", target)
 	}
+
+	p := newProfiler(f, w)
+	return p.Profile(&profileOptions{Duration: time.Duration(profileDurationSecs)})
 }

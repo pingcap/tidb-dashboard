@@ -15,6 +15,20 @@ const { alias, configPaths } = require('react-app-rewire-alias')
 const webpack = require('webpack')
 const WebpackBar = require('webpackbar')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const rewireHtmlWebpackPlugin = require('react-app-rewire-html-webpack-plugin')
+
+function injectDistroToHTML(config, env) {
+  const distroInfo = Object.entries(require('./lib/distribution.json')).reduce(
+    (prev, [k, v]) => {
+      return {
+        ...prev,
+        [`distro_${k}`]: v,
+      }
+    },
+    {}
+  )
+  return rewireHtmlWebpackPlugin(config, env, distroInfo)
+}
 
 function isBuildAsDevServer() {
   return process.env.NODE_ENV !== 'production'
@@ -188,5 +202,6 @@ module.exports = override(
   supportDynamicPublicPathPrefix(),
   overrideProcessEnv({
     REACT_APP_RELEASE_VERSION: JSON.stringify(getInternalVersion()),
-  })
+  }),
+  injectDistroToHTML
 )

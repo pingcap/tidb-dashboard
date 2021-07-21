@@ -1,15 +1,29 @@
+import { EventEmitter2 } from 'eventemitter2'
+
 const tokenKey = 'dashboard_auth_token'
+
+export const authEvents = new EventEmitter2()
+
+export const EVENT_TOKEN_CHANGED = 'tokenChanged'
 
 export function getAuthToken() {
   return localStorage.getItem(tokenKey)
 }
 
 export function setAuthToken(token) {
-  localStorage.setItem(tokenKey, token)
+  const lastToken = getAuthToken()
+  if (lastToken !== token) {
+    localStorage.setItem(tokenKey, token)
+    authEvents.emit(EVENT_TOKEN_CHANGED, token)
+  }
 }
 
 export function clearAuthToken() {
-  localStorage.removeItem(tokenKey)
+  const lastToken = getAuthToken()
+  if (lastToken) {
+    localStorage.removeItem(tokenKey)
+    authEvents.emit(EVENT_TOKEN_CHANGED, null)
+  }
 }
 
 export function getAuthTokenAsBearer() {
@@ -18,4 +32,10 @@ export function getAuthTokenAsBearer() {
     return null
   }
   return `Bearer ${token}`
+}
+
+export enum AuthTypes {
+  SQLUser = 0,
+  SharingCode = 1,
+  SSO = 2,
 }

@@ -4,7 +4,7 @@ debug_api:
   endpoints_not_found: 找不到对应接口
   warning_header:
     title: 警告
-    body: 本页面提供的调试接口主要面向 TiDB 开发者、提供数据库内部运行数据。请在 TiDB 技术支持的指导下使用本功能。
+    body: 本页面提供的调试接口主要面向 {{ distro.tidb }} 开发者、提供数据库内部运行数据。请在 {{ distro.tidb }} 技术支持的指导下使用本功能。
   form:
     download: 下载
     reset: 重置

@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import client from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { ErrorBar } from '@lib/components'
+import { useIsWriteable } from '@lib/utils/store'
 
 const policyConfigurable = process.env.NODE_ENV === 'development'
 
@@ -64,6 +65,7 @@ function getPolicyOptions(t) {
 function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const { t } = useTranslation()
+  const isWriteable = useIsWriteable()
 
   const {
     data: config,
@@ -147,7 +149,7 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
                     extra={t('keyviz.settings.switch_tooltip')}
                     {...negateSwitchProps}
                   >
-                    <Switch />
+                    <Switch disabled={!isWriteable} />
                   </Form.Item>
                   <Form.Item
                     name="policy"
@@ -157,7 +159,9 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
                         !policyConfigurable || !enabled ? 'none' : undefined,
                     }}
                   >
-                    <Radio.Group>{policyOptions}</Radio.Group>
+                    <Radio.Group disabled={!isWriteable}>
+                      {policyOptions}
+                    </Radio.Group>
                   </Form.Item>
                   <Form.Item
                     name="policy_kv_separator"
@@ -172,6 +176,7 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
                   >
                     <Input
                       placeholder={t('keyviz.settings.separator_placeholder')}
+                      disabled={!isWriteable}
                     />
                   </Form.Item>
                 </>
@@ -180,7 +185,12 @@ function KeyVizSettingForm({ onClose, onConfigUpdated }: Props) {
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit" loading={submitting}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={submitting}
+                disabled={!isWriteable}
+              >
                 {t('keyviz.settings.actions.save')}
               </Button>
               <Button onClick={onClose}>

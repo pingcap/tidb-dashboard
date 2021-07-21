@@ -3,7 +3,7 @@ error:
   network: Network connection error
   api:
     unauthorized: Session is expired. Please sign in again.
-    invalid_request: Bad Request
+    insufficient_privilege: You don't have sufficient privilege to perform this action.
     user:
       signin:
         invalid_code: Authorization Code is invalid or expired
@@ -13,7 +13,7 @@ error:
       export_no_data: No statements can be exported
     other: Other error
   tidb:
-    no_alive_tidb: No alive TiDB instance
-    pd_access_failed: Failed to access PD node
-    tidb_conn_failed: Failed to connect to TiDB
-    tidb_auth_failed: TiDB authentication failed
+    no_alive_tidb: No alive {{distro.tidb}} instance
+    pd_access_failed: Failed to access {{distro.pd}} node
+    tidb_conn_failed: Failed to connect to {{distro.tidb}}
+    tidb_auth_failed: '{{distro.tidb}} authentication failed'

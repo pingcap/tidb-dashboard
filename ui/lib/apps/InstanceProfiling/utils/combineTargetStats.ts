@@ -1,10 +1,11 @@
 import { ModelRequestTargetStatistics } from '@lib/client'
+import { InstanceKindName } from '@lib/utils/instanceTable'
 
 const targetNameMap = {
-  num_tidb_nodes: 'TiDB',
-  num_tikv_nodes: 'TiKV',
-  num_pd_nodes: 'PD',
-  num_tiflash_nodes: 'TiFlash',
+  num_tidb_nodes: InstanceKindName.tidb,
+  num_tikv_nodes: InstanceKindName.tikv,
+  num_pd_nodes: InstanceKindName.pd,
+  num_tiflash_nodes: InstanceKindName.tiflash,
 }
 
 export const combineTargetStats = (stats: ModelRequestTargetStatistics) =>

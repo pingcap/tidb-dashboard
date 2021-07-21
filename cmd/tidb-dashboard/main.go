@@ -38,7 +38,7 @@ import (
 
 	"github.com/pingcap/log"
 	flag "github.com/spf13/pflag"
-	"go.etcd.io/etcd/client/pkg/v3/transport"
+	"go.etcd.io/etcd/pkg/transport"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
@@ -47,6 +47,7 @@ import (
 	keyvisualregion "github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
+	_ "github.com/pingcap/tidb-dashboard/pkg/utils/distro/populate"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 

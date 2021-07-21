@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import client, { StatementEditableConfig } from '@lib/client'
 import { useClientRequest } from '@lib/utils/useClientRequest'
 import { ErrorBar } from '@lib/components'
+import { useIsWriteable } from '@lib/utils/store'
 
 interface Props {
   onClose: () => void
@@ -29,6 +30,7 @@ const convertArrToObj = (arr: number[]) =>
 function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const { t } = useTranslation()
+  const isWriteable = useIsWriteable()
 
   const {
     data: initialConfig,
@@ -97,7 +99,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
             extra={t('statement.settings.switch_tooltip')}
           >
             <Form.Item noStyle name="enable" valuePropName="checked">
-              <Switch />
+              <Switch disabled={!isWriteable} />
             </Form.Item>
           </Form.Item>
           <Form.Item
@@ -114,6 +116,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                     <Input.Group>
                       <Form.Item noStyle name="max_size">
                         <Slider
+                          disabled={!isWriteable}
                           min={0}
                           max={5000}
                           step={100}
@@ -129,6 +132,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                     <Input.Group>
                       <Form.Item noStyle name="refresh_interval">
                         <Slider
+                          disabled={!isWriteable}
                           min={1}
                           max={60}
                           step={null}
@@ -144,6 +148,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                     <Input.Group>
                       <Form.Item noStyle name="history_size">
                         <Slider
+                          disabled={!isWriteable}
                           min={1}
                           max={255}
                           marks={convertArrToObj([1, 255])}
@@ -176,7 +181,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                     name="internal_query"
                     valuePropName="checked"
                   >
-                    <Switch />
+                    <Switch disabled={!isWriteable} />
                   </Form.Item>
                 </>
               )
@@ -184,7 +189,12 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit" loading={submitting}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={submitting}
+                disabled={!isWriteable}
+              >
                 {t('statement.settings.actions.save')}
               </Button>
               <Button onClick={onClose}>

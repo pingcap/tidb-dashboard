@@ -26,9 +26,9 @@ keyviz:
     close_keyviz: 关闭流量可视化功能
     close_keyviz_warning: 确认要关闭该功能吗？关闭后现有历史记录也将被清空！
     switch: 启用功能
-    switch_tooltip: 是否启用流量可视化功能，关闭后将不能使用流量可视化功能，但能减少一些 PD 的 CPU 资源开销。
+    switch_tooltip: 是否启用流量可视化功能，关闭后将不能使用流量可视化功能，但能减少一些 {{distro.pd}} 的 CPU 资源开销。
     policy: 模式
-    policy_db: TiDB
+    policy_db: '{{distro.tidb}}'
     policy_kv: 原生 KV
     separator: 分隔符
     separator_placeholder: 用于切分 Key 的分隔符

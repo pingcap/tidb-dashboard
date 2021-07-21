@@ -22,7 +22,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -182,7 +182,7 @@ func (m *DynamicConfigManager) load() (*DynamicConfig, error) {
 		}
 		return &dc, nil
 	default:
-		log.Error("UNREACHABLE")
+		log.Error("etcd is unreachable")
 		return nil, backoff.Permanent(ErrUnableToLoad.New("unreachable"))
 	}
 }

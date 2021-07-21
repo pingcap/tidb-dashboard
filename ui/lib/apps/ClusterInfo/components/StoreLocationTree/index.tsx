@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { TopologyStoreLocation } from '@lib/client'
 
 import styles from './index.module.less'
+import { InstanceKindName } from '@lib/utils/instanceTable'
 
 //////////////////////////////////////
 
@@ -146,8 +147,8 @@ export function trimDuplicate(strArr: string[]): ShortStrMap {
 //////////////////////////////////////
 
 const NODE_STORES = 'Stores'
-const NODE_TIFLASH = 'TiFlash'
-const NODE_TIKV = 'TiKV'
+const NODE_TIFLASH = InstanceKindName.tiflash
+const NODE_TIKV = InstanceKindName.tikv
 
 type TreeNode = {
   name: string

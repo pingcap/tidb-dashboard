@@ -66,7 +66,7 @@ function applyErrorHandlerInterceptor(instance: AxiosInstance) {
     } else {
       errCode = response?.data?.code
     }
-    if (errCode !== ERR_CODE_OTHER && i18next.exists(errCode)) {
+    if (errCode !== ERR_CODE_OTHER && i18next.exists(errCode ?? '')) {
       content = i18next.t(errCode)
     } else {
       content =

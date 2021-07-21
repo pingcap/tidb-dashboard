@@ -15,23 +15,15 @@
 package distro
 
 import (
-	"sync"
 	"sync/atomic"
 )
 
 type introData map[string]interface{}
 
 var data atomic.Value
-var mu sync.Mutex
 
 func Replace(distro introData) {
-	mu.Lock()
-	defer mu.Unlock()
-	d := make(introData)
-	for k, v := range distro {
-		d[k] = v
-	}
-	data.Store(d)
+	data.Store(distro)
 }
 
 func Data(k string) string {

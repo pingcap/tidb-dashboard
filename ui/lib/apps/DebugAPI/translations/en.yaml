@@ -18,35 +18,35 @@ debug_api:
     table: Please select the table or enter the full table name
     table_id: Please select the table ID or enter the full table ID
   tidb:
-    name: TiDB
+    name: '{{distro.tidb}}'
     endpoints:
       tidb_stats_dump: Statistics Data - of a Table
       tidb_stats_dump_timestamp: Statistics Data - of a Table and Timestamp
       tidb_stats_dump_timestamp_desc: The timestamp needs to be set within the GC safe point
-      tidb_config: Current TiDB Config
+      tidb_config: Current {{distro.tidb}} Config
       tidb_schema: Schema Information - All / by TableID
       tidb_schema_db: Schema Information - by Database
       tidb_schema_db_table: Schema Information - by Database + Table
       tidb_dbtable_tableid: schema and Table Information - by TableID
       tidb_ddl_history: DDL History - All
-      tidb_info: TiDB Server Information - Current
-      tidb_info_all: TiDB Server Information - All TiDB Servers
+      tidb_info: '{{distro.tidb}} Server Information - Current'
+      tidb_info_all: '{{distro.tidb}} Server Information - All {{distro.tidb}} Servers'
       tidb_regions_meta: Region - All
       tidb_region_id: Region - by RegionID
       tidb_table_regions: Region - by Database + Table
       tidb_hot_regions: Hot Regions
-      tidb_pprof: TiDB pprof
+      tidb_pprof: '{{distro.tidb}} pprof'
       tidb_pprof_desc: The `seconds` parameter is only effective to `kind=profile` and `kind=trace`.
   tikv:
-    name: TiKV
+    name: '{{distro.tikv}}'
     endpoints:
-      tikv_config: Current TiKV Config
+      tikv_config: Current {{distro.tikv}} Config
   pd:
-    name: PD
+    name: '{{distro.pd}}'
     endpoints:
       pd_cluster: Cluster Information (pd-ctl cluster)
       pd_cluster_status: Cluster Status
-      pd_config_show_all: Current PD Config
+      pd_config_show_all: Current {{distro.pd}} Config
       pd_health: Cluster Health Information (pd-ctl health)
       pd_hot_read: Hot - Read (pd-ctl hot read)
       pd_hot_write: Hot - Write (pd-ctl hot write)
@@ -72,5 +72,5 @@ debug_api:
       pd_scheduler_show: All Schedulers (pd-ctl scheduler show)
       pd_stores: Stores - All (pd-ctl store)
       pd_store_id: Store - by StoreID (pd-ctl store [id])
-      pd_pprof: PD pprof
+      pd_pprof: '{{distro.pd}} pprof'
       pd_pprof_desc: The `seconds` parameter is only effective to `kind=profile` and `kind=trace`.

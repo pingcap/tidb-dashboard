@@ -34,9 +34,7 @@ var _ = Suite(&testSchemaSuite{})
 
 type testSchemaSuite struct{}
 
-var testAPIParamModel = &DefaultAPIParamModel{
-	Type: "text",
-}
+var testAPIParamModel = NewAPIParamModel("text")
 
 func (t *testSchemaSuite) Test_NewRequest_with_path_param_success(c *C) {
 	testEndpoint := APIModel{
@@ -142,12 +140,9 @@ func (t *testSchemaSuite) Test_NewRequest_missing_required_params_err(c *C) {
 }
 
 func (t *testSchemaSuite) Test_NewRequest_transformer_validation(c *C) {
-	testParamModel := &DefaultAPIParamModel{
-		Type: "test",
-		Transformer: func(ctx *Context) error {
-			return fmt.Errorf("test error")
-		},
-	}
+	testParamModel := NewAPIParamModel("test").Transformer(func(ctx *Context) error {
+		return fmt.Errorf("test error")
+	})
 	testEndpoint := APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
@@ -172,13 +167,10 @@ func (t *testSchemaSuite) Test_NewRequest_transformer_validation(c *C) {
 
 func (t *testSchemaSuite) Test_NewRequest_transformer_transform(c *C) {
 	testValue := "test_value"
-	testParamModel := &DefaultAPIParamModel{
-		Type: "test",
-		Transformer: func(ctx *Context) error {
-			ctx.SetValue(testValue)
-			return nil
-		},
-	}
+	testParamModel := NewAPIParamModel("test").Transformer(func(ctx *Context) error {
+		ctx.SetValue(testValue)
+		return nil
+	})
 	testEndpoint := APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
@@ -248,6 +240,42 @@ func (t *testSchemaSuite) Test_NewRequest_default_query_value(c *C) {
 		values, _ := url.ParseQuery(req2.Query)
 		values2, _ := url.ParseQuery(fmt.Sprintf("param1=%s", defaultValue))
 		c.Assert(values, DeepEquals, values2)
+	} else {
+		c.Error(err)
+	}
+}
+
+func (t *testSchemaSuite) Test_NewRequest_with_hooks(c *C) {
+	testErr := fmt.Errorf("test error")
+	testEndpoint := APIModel{
+		ID:        "test_endpoint",
+		Component: model.NodeKindTiDB,
+		Path:      "/test",
+		Method:    http.MethodGet,
+		PreHooks: []APIModelPreHooks{
+			func(req *Request, data map[string]string, m *APIModel) error {
+				return testErr
+			},
+		},
+	}
+	_, err := testEndpoint.NewRequest("127.0.0.1", 10080, map[string]string{})
+	c.Assert(err, Equals, testErr)
+
+	testEndpoint2 := APIModel{
+		ID:        "test_endpoint",
+		Component: model.NodeKindTiDB,
+		Path:      "/test",
+		Method:    http.MethodGet,
+		PostHooks: []APIModelPostHooks{
+			func(req *Request, path, query Values, m *APIModel) error {
+				req.Path = "/test2"
+				return nil
+			},
+		},
+	}
+	req2, err := testEndpoint2.NewRequest("127.0.0.1", 10080, map[string]string{})
+	if err == nil {
+		c.Assert(req2.Path, DeepEquals, "/test2")
 	} else {
 		c.Error(err)
 	}

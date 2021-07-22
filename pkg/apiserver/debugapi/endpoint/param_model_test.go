@@ -43,7 +43,7 @@ func (t *testParamModelsSuite) Test_APIParamModelMultiTags(c *C) {
 		QueryParams: []APIParam{
 			{
 				Name:  "param1",
-				Model: APIParamModelMultiTags,
+				Model: APIParamModelTags,
 			},
 		},
 	}
@@ -103,7 +103,7 @@ func (t *testParamModelsSuite) Test_APIParamModelConstant(c *C) {
 		QueryParams: []APIParam{
 			{
 				Name:  "param1",
-				Model: CreateAPIParamModelConstant(value1),
+				Model: APIParamModelConstant(value1),
 			},
 		},
 	}

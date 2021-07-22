@@ -18,6 +18,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pingcap/kvproto/pkg/metapb"
 
@@ -26,7 +27,7 @@ import (
 
 var pprofKindsParam = APIParam{
 	Name: "kind",
-	Model: CreateAPIParamModelEnum([]EnumItem{
+	Model: APIParamModelEnum([]EnumItem{
 		{Name: "allocs"},
 		{Name: "block"},
 		{Name: "cmdline"},
@@ -39,18 +40,24 @@ var pprofKindsParam = APIParam{
 	}),
 }
 
-// TODO: After http client refactor.
-// Recorvery the second options as same as profiling module or just not limit it.
-// Now limit the seconds according to `defaultTimeout` in debugapi/client.go
 var pprofSecondsParam = APIParam{
 	Name: "seconds",
-	Model: CreateAPIParamModelEnum([]EnumItem{
+	Model: APIParamModelEnum([]EnumItem{
 		{Name: "10s", Value: "10"},
 		{Name: "30s", Value: "30"},
-		{Name: "45s", Value: "45"},
-		// {Name: "60s", Value: "60"},
-		// {Name: "120s", Value: "120"},
+		{Name: "60s", Value: "60"},
+		{Name: "120s", Value: "120"},
 	}),
+}
+
+func timeoutHook(req *Request, sec string) error {
+	i, err := strconv.ParseInt(sec, 10, 64)
+	if err != nil {
+		return err
+	}
+	duration := time.Duration(i) * time.Second
+	req.Timeout = duration + duration/2
+	return nil
 }
 
 // tidb endpoints
@@ -232,9 +239,14 @@ var tidbPprof = APIModel{
 	QueryParams: []APIParam{
 		{
 			Name:  "debug",
-			Model: CreateAPIParamModelConstant("1"),
+			Model: APIParamModelConstant("1"),
 		},
 		pprofSecondsParam,
+	},
+	PostHooks: []APIModelPostHooks{
+		func(req *Request, path, query Values, m *APIModel) error {
+			return timeoutHook(req, query.Get("seconds"))
+		},
 	},
 }
 
@@ -526,7 +538,7 @@ var pdRegionCheck = APIModel{
 	PathParams: []APIParam{
 		{
 			Name: "state",
-			Model: CreateAPIParamModelEnum([]EnumItem{
+			Model: APIParamModelEnum([]EnumItem{
 				{Name: "miss-peer"},
 				{Name: "extra-peer"},
 				{Name: "down-peer"},
@@ -580,7 +592,7 @@ var pdStores = APIModel{
 	QueryParams: []APIParam{
 		{
 			Name:  "state",
-			Model: APIParamModelMultiTags,
+			Model: APIParamModelTags,
 			PostModelTransformer: func(ctx *Context) error {
 				vals := ctx.Values()
 				if len(vals) != 0 {
@@ -624,9 +636,14 @@ var pdPprof = APIModel{
 	QueryParams: []APIParam{
 		{
 			Name:  "debug",
-			Model: CreateAPIParamModelConstant("1"),
+			Model: APIParamModelConstant("1"),
 		},
 		pprofSecondsParam,
+	},
+	PostHooks: []APIModelPostHooks{
+		func(req *Request, path, query Values, m *APIModel) error {
+			return timeoutHook(req, query.Get("seconds"))
+		},
 	},
 }
 

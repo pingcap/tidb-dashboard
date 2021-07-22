@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"time"
 
 	"github.com/joomcode/errorx"
 
@@ -29,6 +30,9 @@ var (
 	ErrInvalidParam         = ErrNS.NewType("invalid_parameter")
 )
 
+type APIModelPreHooks func(req *Request, data map[string]string, m *APIModel) error
+type APIModelPostHooks func(req *Request, path Values, query Values, m *APIModel) error
+
 type APIModel struct {
 	ID          string         `json:"id"`
 	Component   model.NodeKind `json:"component"`
@@ -36,8 +40,13 @@ type APIModel struct {
 	Method      Method         `json:"method"`
 	PathParams  []APIParam     `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table
 	QueryParams []APIParam     `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
+
+	PreHooks  []APIModelPreHooks  `json:"-"`
+	PostHooks []APIModelPostHooks `json:"-"`
 }
 
+// Transformers execution order:
+// APIParam.PreModelTransformer -> APIParamModel.PreTransformer -> required check -> APIParamModel.Transformer -> APIParam.PostModelTransfomer
 type APIParam struct {
 	Name     string `json:"name"`
 	Required bool   `json:"required"`
@@ -47,21 +56,27 @@ type APIParam struct {
 	PostModelTransformer ModelTransformer `json:"-"`
 }
 
-type APIParamModel interface {
-	Transform(ctx *Context) error
-	PreTransform(ctx *Context) error
+func (p *APIParam) PreTransform(ctx *Context) error {
+	if p.PreModelTransformer == nil {
+		return nil
+	}
+	return p.PreModelTransformer(ctx)
 }
 
-// ModelTransformer can transform the incoming param's value in special scenarios
-// Also, now are used as validation function
-type ModelTransformer func(ctx *Context) error
+func (p *APIParam) PostTransform(ctx *Context) error {
+	if p.PostModelTransformer == nil {
+		return nil
+	}
+	return p.PostModelTransformer(ctx)
+}
 
 type Request struct {
-	Method Method
-	Host   string
-	Port   int
-	Path   string
-	Query  string
+	Method  Method
+	Timeout time.Duration
+	Host    string
+	Port    int
+	Path    string
+	Query   string
 }
 
 type Method string
@@ -75,6 +90,15 @@ func (m *APIModel) NewRequest(host string, port int, data map[string]string) (*R
 		Method: m.Method,
 		Host:   host,
 		Port:   port,
+	}
+
+	if m.PreHooks != nil {
+		for _, h := range m.PreHooks {
+			err := h(req, data, m)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	pathValues, err := transformValues(m.PathParams, data, true)
@@ -96,6 +120,15 @@ func (m *APIModel) NewRequest(host string, port int, data map[string]string) (*R
 		return nil, err
 	}
 	req.Query = query
+
+	if m.PostHooks != nil {
+		for _, h := range m.PostHooks {
+			err := h(req, pathValues, queryValues, m)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 
 	return req, nil
 }
@@ -145,11 +178,11 @@ func transformValues(params []APIParam, values map[string]string, forceRequired 
 		}
 
 		// PreModelTransformer can be used to set default value
-		err := transform(ctx, p.PreModelTransformer)
+		err := p.PreTransform(ctx)
 		if err != nil {
 			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
 		}
-		err = transform(ctx, p.Model.PreTransform)
+		err = p.Model.PreTransform(ctx)
 		if err != nil {
 			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
 		}
@@ -162,23 +195,16 @@ func transformValues(params []APIParam, values map[string]string, forceRequired 
 			continue
 		}
 
-		err = transform(ctx, p.Model.Transform)
+		err = p.Model.Transform(ctx)
 		if err != nil {
 			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
 		}
 
-		err = transform(ctx, p.PostModelTransformer)
+		err = p.PostTransform(ctx)
 		if err != nil {
 			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
 		}
 	}
 
 	return vs, nil
-}
-
-func transform(ctx *Context, transformer ModelTransformer) error {
-	if transformer == nil {
-		return nil
-	}
-	return transformer(ctx)
 }

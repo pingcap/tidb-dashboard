@@ -243,7 +243,7 @@ var tidbPprof = APIModel{
 		},
 		pprofSecondsParam,
 	},
-	PostHooks: []APIModelPostHooks{
+	PostHooks: []APIModelPostHook{
 		func(req *Request, path, query Values, m *APIModel) error {
 			return timeoutHook(req, query.Get("seconds"))
 		},
@@ -640,7 +640,7 @@ var pdPprof = APIModel{
 		},
 		pprofSecondsParam,
 	},
-	PostHooks: []APIModelPostHooks{
+	PostHooks: []APIModelPostHook{
 		func(req *Request, path, query Values, m *APIModel) error {
 			return timeoutHook(req, query.Get("seconds"))
 		},

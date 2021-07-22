@@ -252,7 +252,7 @@ func (t *testSchemaSuite) Test_NewRequest_with_hooks(c *C) {
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
 		Method:    http.MethodGet,
-		PreHooks: []APIModelPreHooks{
+		PreHooks: []APIModelPreHook{
 			func(req *Request, data map[string]string, m *APIModel) error {
 				return testErr
 			},
@@ -266,7 +266,7 @@ func (t *testSchemaSuite) Test_NewRequest_with_hooks(c *C) {
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
 		Method:    http.MethodGet,
-		PostHooks: []APIModelPostHooks{
+		PostHooks: []APIModelPostHook{
 			func(req *Request, path, query Values, m *APIModel) error {
 				req.Path = "/test2"
 				return nil

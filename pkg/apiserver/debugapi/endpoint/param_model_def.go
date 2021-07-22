@@ -25,7 +25,16 @@ import (
 
 var APIParamModelText = NewAPIParamModel("text")
 
-var APIParamModelBool = NewAPIParamModel("bool")
+var falselyValues = []string{"false", "0", "null", "undefined", ""}
+
+var APIParamModelBool = NewAPIParamModel("bool").Transformer(func(ctx *Context) error {
+	if funk.Contains(falselyValues, ctx.Value()) {
+		ctx.SetValue("false")
+	} else {
+		ctx.SetValue("true")
+	}
+	return nil
+})
 
 var APIParamModelTags = NewAPIParamModel("tags").Transformer(func(ctx *Context) error {
 	vals := strings.Split(ctx.Value(), ",")

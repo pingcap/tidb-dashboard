@@ -30,8 +30,8 @@ var (
 	ErrInvalidParam         = ErrNS.NewType("invalid_parameter")
 )
 
-type APIModelPreHooks func(req *Request, data map[string]string, m *APIModel) error
-type APIModelPostHooks func(req *Request, path Values, query Values, m *APIModel) error
+type APIModelPreHook func(req *Request, data map[string]string, m *APIModel) error
+type APIModelPostHook func(req *Request, path Values, query Values, m *APIModel) error
 
 type APIModel struct {
 	ID          string         `json:"id"`
@@ -41,8 +41,8 @@ type APIModel struct {
 	PathParams  []APIParam     `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table
 	QueryParams []APIParam     `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
 
-	PreHooks  []APIModelPreHooks  `json:"-"`
-	PostHooks []APIModelPostHooks `json:"-"`
+	PreHooks  []APIModelPreHook  `json:"-"`
+	PostHooks []APIModelPostHook `json:"-"`
 }
 
 // Transformers execution order:

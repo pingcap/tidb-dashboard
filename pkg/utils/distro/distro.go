@@ -32,7 +32,6 @@ func Replace(distro introData) {
 func Data(k string) string {
 	d := data.Load().(introData)
 	if d[k] == nil {
-		log.Info("Distro information doesn't exist", zap.String("key", k))
 		return k
 	}
 	return d[k].(string)

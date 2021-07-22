@@ -16,6 +16,9 @@ package distro
 
 import (
 	"sync/atomic"
+
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 )
 
 type introData map[string]interface{}
@@ -28,5 +31,9 @@ func Replace(distro introData) {
 
 func Data(k string) string {
 	d := data.Load().(introData)
+	if d[k] == nil {
+		log.Info("Distro information doesn't exist", zap.String("key", k))
+		return ""
+	}
 	return d[k].(string)
 }

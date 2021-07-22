@@ -16,9 +16,6 @@ package distro
 
 import (
 	"sync/atomic"
-
-	"github.com/pingcap/log"
-	"go.uber.org/zap"
 )
 
 type introData map[string]interface{}

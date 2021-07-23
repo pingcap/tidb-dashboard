@@ -1,4 +1,4 @@
-// +build !distro
+// +build !dashboard_distro
 
 package distro
 

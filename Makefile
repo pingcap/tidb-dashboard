@@ -10,6 +10,10 @@ ifeq ($(UI),1)
 	BUILD_TAGS += ui_server
 endif
 
+ifeq ($(DISTRO_BUILD_TAG),1)
+	BUILD_TAGS += dashboard_distro
+endif
+
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(shell grep -v '^\#' ./release-version)"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.Standalone=Yes"
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.PDVersion=N/A"

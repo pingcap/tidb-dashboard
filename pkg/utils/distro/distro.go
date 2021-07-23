@@ -14,12 +14,22 @@
 
 package distro
 
-var data map[string]interface{}
+import (
+	"sync/atomic"
+)
 
-func Replace(distro map[string]interface{}) {
-	data = distro
+type introData map[string]interface{}
+
+var data atomic.Value
+
+func Replace(distro introData) {
+	data.Store(distro)
 }
 
 func Data(k string) string {
-	return data[k].(string)
+	d := data.Load().(introData)
+	if d[k] == nil {
+		return k
+	}
+	return d[k].(string)
 }

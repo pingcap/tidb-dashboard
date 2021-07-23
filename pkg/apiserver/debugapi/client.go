@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	defaultTimeout = time.Second * 45 // Default profiling can be as long as 30s.
+	defaultTimeout = time.Second * 35 // Default profiling can be as long as 30s. Add 5 seconds for other overheads.
 )
 
 type Client interface {
@@ -49,6 +49,10 @@ func newClientMap(tidbImpl tidbImplement, tikvImpl tikvImplement, tiflashImpl ti
 }
 
 func SendRequest(client Client, req *endpoint.Request) (*httpc.Response, error) {
+	if req.Timeout <= 0 {
+		req.Timeout = defaultTimeout
+	}
+
 	switch req.Method {
 	case endpoint.MethodGet:
 		return client.Get(req)
@@ -72,7 +76,7 @@ type tidbImplement struct {
 func (impl *tidbImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
 		WithEnforcedStatusAPIAddress(req.Host, req.Port).
-		WithStatusAPITimeout(defaultTimeout).
+		WithStatusAPITimeout(req.Timeout).
 		Get(buildRelativeURI(req.Path, req.Query))
 }
 
@@ -83,7 +87,7 @@ type tikvImplement struct {
 
 func (impl *tikvImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
-		WithTimeout(defaultTimeout).
+		WithTimeout(req.Timeout).
 		Get(req.Host, req.Port, buildRelativeURI(req.Path, req.Query))
 }
 
@@ -94,7 +98,7 @@ type tiflashImplement struct {
 
 func (impl *tiflashImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
-		WithTimeout(defaultTimeout).
+		WithTimeout(req.Timeout).
 		Get(req.Host, req.Port, buildRelativeURI(req.Path, req.Query))
 }
 
@@ -106,6 +110,6 @@ type pdImplement struct {
 func (impl *pdImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
 		WithAddress(req.Host, req.Port).
-		WithTimeout(defaultTimeout).
+		WithTimeout(req.Timeout).
 		Get(buildRelativeURI(req.Path, req.Query))
 }

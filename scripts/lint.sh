@@ -32,4 +32,4 @@ echo "+ Clean up go mod"
 go mod tidy
 
 echo "+ Run lints for docs"
-npm_config_yes=true npx markdownlint-cli docs/**/*.md
+npm_config_yes=true npx markdownlint-cli@0.27.0 docs/**/*.md

@@ -18,7 +18,7 @@ import (
 	"sync/atomic"
 )
 
-type introData map[string]interface{}
+type introData map[string]string
 
 var data atomic.Value
 
@@ -28,8 +28,8 @@ func Replace(distro introData) {
 
 func Data(k string) string {
 	d := data.Load().(introData)
-	if d[k] == nil {
+	if d[k] == "" {
 		return k
 	}
-	return d[k].(string)
+	return d[k]
 }

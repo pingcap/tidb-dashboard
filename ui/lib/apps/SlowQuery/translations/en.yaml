@@ -123,7 +123,7 @@ slow_query:
       txn: Transaction
   toolbar:
     schemas:
-      placeholder: All Databases
+      placeholder: Execution Databases
       selected: '{{ n }} Databases'
       columnTitle: Database Name
     select_columns:

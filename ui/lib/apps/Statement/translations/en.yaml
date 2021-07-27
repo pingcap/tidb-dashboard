@@ -22,7 +22,7 @@ statement:
     overview:
       toolbar:
         schemas:
-          placeholder: All Databases
+          placeholder: Execution Databases
           selected: '{{ n }} Databases'
           columnTitle: Database Name
         statement_types:

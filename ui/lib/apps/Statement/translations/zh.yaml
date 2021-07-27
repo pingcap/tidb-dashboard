@@ -22,7 +22,7 @@ statement:
     overview:
       toolbar:
         schemas:
-          placeholder: 所有数据库
+          placeholder: 执行数据库
           selected: '{{ n }} 数据库'
           columnTitle: 数据库名
         statement_types:

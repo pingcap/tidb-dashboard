@@ -2,7 +2,7 @@ user_profile:
   sso:
     title: 单点登录 (SSO)
     switch:
-      label: 允许使用 SSO 登录到 TiDB Dashboard
+      label: 允许使用 SSO 登录到 {{distro.tidb}} Dashboard
       extra: 支持基于 OIDC 的 SSO 登录
     form:
       client_id: OIDC Client ID
@@ -10,7 +10,7 @@ user_profile:
       is_read_only: 以只读权限登录
       user:
         label: 实际登录 SQL 用户
-        extra: SSO 登录成功后将被视为使用该 SQL 用户登录使用 TiDB Dashboard，并具有该用户对应的操作权限。
+        extra: SSO 登录成功后将被视为使用该 SQL 用户登录使用 {{distro.tidb}} Dashboard，并具有该用户对应的操作权限。
         must_auth: 必须完成授权后才能继续
         authn_button: 授权登录为该用户
         authn_dialog:

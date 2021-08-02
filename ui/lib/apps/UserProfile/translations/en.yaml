@@ -2,7 +2,7 @@ user_profile:
   sso:
     title: Single Sign-On (SSO)
     switch:
-      label: Enable to use SSO when sign into TiDB Dashboard
+      label: Enable to use SSO when sign into {{distro.tidb}} Dashboard
       extra: OIDC based SSO is supported
     form:
       client_id: OIDC Client ID
@@ -10,7 +10,7 @@ user_profile:
       is_read_only: Sign in as read-only privilege
       user:
         label: Impersonate SQL User
-        extra: The SSO signed-in user will be using TiDB Dashboard on behalf of this SQL user and shares its permissions.
+        extra: The SSO signed-in user will be using {{distro.tidb}} Dashboard on behalf of this SQL user and shares its permissions.
         must_auth: You must authorize to continue
         authn_button: Authorize Impersonation
         authn_dialog:

@@ -126,9 +126,9 @@ slow_query:
       txn: 事务
   toolbar:
     schemas:
-      placeholder: 执行数据库
+      placeholder: 所有数据库
       selected: '{{ n }} 数据库'
-      columnTitle: 数据库名
+      columnTitle: 执行数据库名
     select_columns:
       show_full_sql: 显示完整 SQL 文本
     refresh: 刷新

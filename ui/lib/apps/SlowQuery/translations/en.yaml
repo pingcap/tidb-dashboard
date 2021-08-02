@@ -123,9 +123,9 @@ slow_query:
       txn: Transaction
   toolbar:
     schemas:
-      placeholder: Execution Databases
+      placeholder: All Databases
       selected: '{{ n }} Databases'
-      columnTitle: Database Name
+      columnTitle: Execution Database Name
     select_columns:
       show_full_sql: Show Full Query Text
     refresh: Refresh

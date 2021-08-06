@@ -10,29 +10,31 @@ import { IDateTimeProps } from '.'
 import calendar from './calendarPlugin'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import localizedFormat from 'dayjs/plugin/localizedFormat'
+import timezone from 'dayjs/plugin/timezone'
 
 dayjs.extend(calendar)
 dayjs.extend(weekOfYear)
 dayjs.extend(localizedFormat)
+dayjs.extend(timezone)
 
 const translations = {
   en: {
-    sameDay: '[Today at] h:mm A',
-    sameWeek: 'dddd h:mm A',
-    nextDay: '[Tomorrow] h:mm A',
-    nextWeek: '[Next] dddd h:mm A',
-    lastDay: '[Yesterday] h:mm A',
-    lastWeek: '[Last] dddd h:mm A',
-    sameElse: 'lll',
+    sameDay: '[Today at] h:mm A (z)',
+    sameWeek: 'dddd h:mm A (z)',
+    nextDay: '[Tomorrow] h:mm A (z)',
+    nextWeek: '[Next] dddd h:mm A (z)',
+    lastDay: '[Yesterday] h:mm A (z)',
+    lastWeek: '[Last] dddd h:mm A (z)',
+    sameElse: 'lll (z)',
   },
   zh: {
-    sameDay: '[今天] HH:mm',
-    sameWeek: 'dddd HH:mm',
-    nextDay: '[明天] HH:mm',
-    nextWeek: '[下]dddd HH:mm',
-    lastDay: '[昨天] HH:mm',
-    lastWeek: '[上]dddd HH:mm',
-    sameElse: 'lll',
+    sameDay: '[今天] HH:mm (z)',
+    sameWeek: 'dddd HH:mm (z)',
+    nextDay: '[明天] HH:mm (z)',
+    nextWeek: '[下]dddd HH:mm (z)',
+    lastDay: '[昨天] HH:mm (z)',
+    lastWeek: '[上]dddd HH:mm (z)',
+    sameElse: 'lll (z)',
   },
 }
 

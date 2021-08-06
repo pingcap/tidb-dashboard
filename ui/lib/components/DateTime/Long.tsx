@@ -18,7 +18,7 @@ function Long({ unixTimestampMs, ...rest }: IDateTimeProps) {
 }
 
 export function format(unixTimestampMs: number) {
-  return dayjs(unixTimestampMs).format('ll LTS')
+  return dayjs(unixTimestampMs).format('ll LTS (z)')
 }
 
 export default React.memo(Long)

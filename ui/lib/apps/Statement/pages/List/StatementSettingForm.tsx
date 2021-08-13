@@ -117,7 +117,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
                       <Form.Item noStyle name="max_size">
                         <Slider
                           disabled={!isWriteable}
-                          min={0}
+                          min={200}
                           max={5000}
                           step={100}
                           marks={convertArrToObj([200, 1000, 2000, 5000])}

@@ -27,7 +27,16 @@ func Replace(distro introData) {
 }
 
 func Data(k string) string {
-	d := data.Load().(introData)
+	var d introData
+	atomd := data.Load()
+	// we need a fallback to keep compatibility in scenarios without inject distro info
+	// related issue: https://github.com/pingcap/tidb-dashboard/issues/975
+	if d == nil {
+		d = Resource
+	} else {
+		d = atomd.(introData)
+	}
+
 	if d[k] == "" {
 		return k
 	}

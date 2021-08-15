@@ -20,6 +20,7 @@ import {
 } from '../pages/List/TimeRangeSelector'
 import { derivedFields, statementColumns } from './tableColumns'
 import { useSchemaColumns } from './useSchemaColumns'
+import { useStatements } from './useStatements'
 
 export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
   digest_text: true,
@@ -62,7 +63,7 @@ export interface IStatementTableController {
   allTimeRanges: StatementTimeRange[]
   allSchemas: string[]
   allStmtTypes: string[]
-  validTimeRange: StatementTimeRange
+  statementsTimeRange: StatementTimeRange
   loadingStatements: boolean
   statements: StatementModel[]
 
@@ -113,8 +114,7 @@ export default function useStatementTableController(
     [queryOptions, allTimeRanges]
   )
 
-  const [loadingStatements, setLoadingStatements] = useState(true)
-  const [statements, setStatements] = useState<StatementModel[]>([])
+  const [loading, setLoading] = useState(true)
 
   const [refreshTimes, setRefreshTimes] = useState(0)
 
@@ -129,7 +129,7 @@ export default function useStatementTableController(
   const [errors, setErrors] = useState<any[]>([])
 
   useEffect(() => {
-    errors.length && setLoadingStatements(false)
+    errors.length && setLoading(false)
   }, [errors])
 
   const selectedFields = useMemo(
@@ -149,7 +149,7 @@ export default function useStatementTableController(
     cacheMgr?.remove(cacheKey)
 
     setErrors([])
-    setLoadingStatements(true)
+    setLoading(true)
     setRefreshTimes((prev) => prev + 1)
   }
 
@@ -204,66 +204,58 @@ export default function useStatementTableController(
     queryStmtTypes()
   }, [refreshTimes])
 
+  const {
+    statements,
+    setStatements,
+    statementsTimeRange,
+    queryStatements,
+  } = useStatements(cacheKey)
   const { schemaColumns, isLoading: isSchemaLoading } = useSchemaColumns()
-
   const tableColumns = useMemo(
     () => statementColumns(statements, schemaColumns, showFullSQL),
     [statements, schemaColumns, showFullSQL]
   )
 
   useEffect(() => {
-    if (!selectedFields.length) {
-      setStatements([])
-      setLoadingStatements(false)
-      return
-    }
-
     async function queryStatementList() {
-      const cacheItem = cacheMgr?.get(cacheKey)
-      if (cacheItem) {
-        setStatements(cacheItem)
-        setLoadingStatements(false)
+      if (
+        !selectedFields.length ||
+        isSchemaLoading ||
+        allTimeRanges.length === 0
+      ) {
+        setStatements([])
+        setLoading(false)
         return
       }
 
-      if (allTimeRanges.length === 0) {
-        return
-      }
-      setLoadingStatements(true)
+      setLoading(true)
       try {
-        const res = await client
-          .getInstance()
-          .statementsListGet(
-            validTimeRange.begin_time!,
-            validTimeRange.end_time!,
-            selectedFields,
-            queryOptions.schemas,
-            queryOptions.stmtTypes,
-            queryOptions.searchText,
-            {
-              errorStrategy: ErrorStrategy.Custom,
-            }
-          )
-        setStatements(res?.data || [])
-        cacheMgr?.set(cacheKey, res?.data || [])
-        setErrors([])
+        await queryStatements(
+          validTimeRange.begin_time!,
+          validTimeRange.end_time!,
+          selectedFields,
+          queryOptions.schemas,
+          queryOptions.stmtTypes,
+          queryOptions.searchText,
+          {
+            errorStrategy: ErrorStrategy.Custom,
+          }
+        )
       } catch (e) {
         setErrors((prev) => prev.concat(e))
+      } finally {
+        setLoading(false)
       }
-      setLoadingStatements(false)
     }
 
-    if (isSchemaLoading) {
-      return
-    }
     queryStatementList()
+    // eslint-disable-next-line
   }, [
     queryOptions,
     allTimeRanges,
     validTimeRange,
     selectedFields,
     cacheKey,
-    cacheMgr,
     isSchemaLoading,
   ])
 
@@ -304,8 +296,8 @@ export default function useStatementTableController(
     allTimeRanges,
     allSchemas,
     allStmtTypes,
-    validTimeRange,
-    loadingStatements,
+    statementsTimeRange,
+    loadingStatements: loading,
     statements,
 
     errors,

@@ -34,7 +34,6 @@ export function useStatements(cacheKey: string) {
   >({})
   const queryStatements = useCallback(
     async (...params: Parameters<DefaultApi['statementsListGet']>) => {
-      const [begin_time, end_time] = params
       const cache = getCache(cacheKey)
       if (cache) {
         setStatements(cache.data)
@@ -42,12 +41,13 @@ export function useStatements(cacheKey: string) {
         return
       }
 
-      const res = await client.getInstance().statementsListGet(...params)
-      const data = res?.data || []
+      const [begin_time, end_time] = params
       const timeRange = { begin_time, end_time }
-      setStatements(data)
       setStatementsTimeRange(timeRange)
 
+      const res = await client.getInstance().statementsListGet(...params)
+      const data = res?.data || []
+      setStatements(data)
       setCache(cacheKey, { data, timeRange })
     },
     [cacheKey, getCache, setCache]

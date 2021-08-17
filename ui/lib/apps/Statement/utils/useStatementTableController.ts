@@ -66,6 +66,7 @@ export interface IStatementTableController {
   statementsTimeRange: StatementTimeRange
   loadingStatements: boolean
   statements: StatementModel[]
+  isTimeRangeOutdated: boolean
 
   errors: Error[]
 
@@ -285,6 +286,12 @@ export default function useStatementTableController(
     cacheMgr
   )
 
+  const isTimeRangeOutdated =
+    !!statementsTimeRange.begin_time &&
+    !!statementsTimeRange.end_time &&
+    (validTimeRange.begin_time !== statementsTimeRange.begin_time ||
+      validTimeRange.end_time !== statementsTimeRange.end_time)
+
   return {
     queryOptions,
     setQueryOptions,
@@ -299,6 +306,7 @@ export default function useStatementTableController(
     statementsTimeRange,
     loadingStatements: loading,
     statements,
+    isTimeRangeOutdated,
 
     errors,
 

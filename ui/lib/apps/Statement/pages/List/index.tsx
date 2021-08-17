@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import {
   Space,
   Tooltip,
@@ -70,10 +70,28 @@ export default function StatementsOverview() {
     allStmtTypes,
     loadingStatements,
     tableColumns,
+    isTimeRangeOutdated,
 
     downloadCSV,
     downloading,
   } = controller
+
+  const [showTimeRangeOutdatedTip, setShowTimeRangeOutdatedTip] = useState(
+    false
+  )
+  useEffect(() => {
+    let timer
+    if (isTimeRangeOutdated) {
+      setShowTimeRangeOutdatedTip(true)
+      timer = setTimeout(() => {
+        setShowTimeRangeOutdatedTip(false)
+      }, 3000)
+    } else {
+      setShowTimeRangeOutdatedTip(false)
+    }
+
+    return () => clearTimeout(timer)
+  }, [isTimeRangeOutdated])
 
   function exportCSV() {
     const hide = message.loading(
@@ -181,11 +199,18 @@ export default function StatementsOverview() {
             )}
             {enable && (
               <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-                {loadingStatements ? (
-                  <LoadingOutlined />
-                ) : (
-                  <ReloadOutlined onClick={refresh} />
-                )}
+                <Tooltip
+                  arrowPointAtCenter
+                  title={t('statement.pages.overview.toolbar.refresh_outdated')}
+                  visible={showTimeRangeOutdatedTip}
+                  placement="bottomLeft"
+                >
+                  {loadingStatements ? (
+                    <LoadingOutlined />
+                  ) : (
+                    <ReloadOutlined onClick={refresh} />
+                  )}
+                </Tooltip>
               </Tooltip>
             )}
             <Tooltip title={t('statement.settings.title')}>

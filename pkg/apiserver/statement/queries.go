@@ -57,10 +57,12 @@ func queryStmtTypes(db *gorm.DB) (result []string, err error) {
 // fields: ["digest_text", "sum_latency"]
 func (s *Service) queryStatements(
 	db *gorm.DB,
-	beginTime, endTime int,
-	schemas, stmtTypes []string,
-	text string,
+	req *GetStatementsRequest,
+	// beginTime, endTime int,
+	// schemas, stmtTypes []string,
+	// text string,
 	reqFields []string,
+	// limit int,
 ) (result []Model, err error) {
 	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
 	if err != nil {
@@ -75,25 +77,29 @@ func (s *Service) queryStatements(
 	query := db.
 		Select(selectStmt).
 		Table(statementsTable).
-		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
+		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", req.BeginTime, req.EndTime).
 		Group("schema_name, digest").
 		Order("agg_sum_latency DESC")
 
-	if len(schemas) > 0 {
-		regex := make([]string, 0, len(schemas))
-		for _, schema := range schemas {
+	if req.Limit > 0 {
+		query = query.Limit(req.Limit)
+	}
+
+	if len(req.Schemas) > 0 {
+		regex := make([]string, 0, len(req.Schemas))
+		for _, schema := range req.Schemas {
 			regex = append(regex, fmt.Sprintf("\\b%s\\.", regexp.QuoteMeta(schema)))
 		}
 		regexAll := strings.Join(regex, "|")
 		query = query.Where("table_names REGEXP ?", regexAll)
 	}
 
-	if len(stmtTypes) > 0 {
-		query = query.Where("stmt_type in (?)", stmtTypes)
+	if len(req.StmtTypes) > 0 {
+		query = query.Where("stmt_type in (?)", req.StmtTypes)
 	}
 
-	if len(text) > 0 {
-		lowerText := strings.ToLower(text)
+	if len(req.Text) > 0 {
+		lowerText := strings.ToLower(req.Text)
 		arr := strings.Fields(lowerText)
 		for _, v := range arr {
 			query = query.Where(

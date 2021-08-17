@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSessionStorageState } from 'ahooks'
+import { usePersistFn, useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
 import client, {
@@ -42,13 +42,17 @@ export interface IStatementQueryOptions {
   schemas: string[]
   stmtTypes: string[]
   searchText: string
+  limit: number
 }
 
+const DEFAULT_LIMIT = 200
+const LIMITS = [100, 200, 500, 1000, 2000, 5000]
 export const DEF_STMT_QUERY_OPTIONS: IStatementQueryOptions = {
   timeRange: DEFAULT_TIME_RANGE,
   schemas: [],
   stmtTypes: [],
   searchText: '',
+  limit: DEFAULT_LIMIT,
 }
 
 export interface IStatementTableController {
@@ -57,11 +61,13 @@ export interface IStatementTableController {
   orderOptions: IOrderOptions
   changeOrder: (orderBy: string, desc: boolean) => void
   refresh: () => void
+  updateLimitOptions: (maxSize: number) => void
 
   enable: boolean
   allTimeRanges: StatementTimeRange[]
   allSchemas: string[]
   allStmtTypes: string[]
+  limitOptions: number[]
   validTimeRange: StatementTimeRange
   loadingStatements: boolean
   statements: StatementModel[]
@@ -107,6 +113,7 @@ export default function useStatementTableController(
   const [allTimeRanges, setAllTimeRanges] = useState<StatementTimeRange[]>([])
   const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [allStmtTypes, setAllStmtTypes] = useState<string[]>([])
+  const [limitOptions, _setLimitOptions] = useState(LIMITS)
 
   const validTimeRange = useMemo(
     () => calcValidStatementTimeRange(queryOptions.timeRange, allTimeRanges),
@@ -126,6 +133,11 @@ export default function useStatementTableController(
     }
   }
 
+  const updateLimitOptions = usePersistFn((maxSize: number) => {
+    _setLimitOptions(LIMITS.filter((l) => l <= maxSize))
+    setQueryOptions({ ...queryOptions, limit: DEFAULT_LIMIT })
+  })
+
   const [errors, setErrors] = useState<any[]>([])
 
   useEffect(() => {
@@ -138,10 +150,12 @@ export default function useStatementTableController(
   )
 
   const cacheKey = useMemo(() => {
-    const { schemas, stmtTypes, searchText, timeRange } = queryOptions
+    const { schemas, stmtTypes, searchText, timeRange, limit } = queryOptions
     const cacheKey = `${schemas.join(',')}_${stmtTypes.join(
       ','
-    )}_${searchText}_${stringifyTimeRange(timeRange)}_${selectedFields}`
+    )}_${searchText}_${stringifyTimeRange(
+      timeRange
+    )}_${limit}_${selectedFields}`
     return cacheKey
   }, [queryOptions, selectedFields])
 
@@ -160,6 +174,7 @@ export default function useStatementTableController(
           errorStrategy: ErrorStrategy.Custom,
         })
         setEnable(res?.data.enable!)
+        updateLimitOptions(res?.data.max_size!)
       } catch (e) {
         setErrors((prev) => prev.concat(e))
       }
@@ -202,7 +217,7 @@ export default function useStatementTableController(
     querySchemas()
     queryTimeRanges()
     queryStmtTypes()
-  }, [refreshTimes])
+  }, [refreshTimes, updateLimitOptions])
 
   const { schemaColumns, isLoading: isSchemaLoading } = useSchemaColumns()
 
@@ -237,6 +252,7 @@ export default function useStatementTableController(
             validTimeRange.begin_time!,
             validTimeRange.end_time!,
             selectedFields,
+            queryOptions.limit,
             queryOptions.schemas,
             queryOptions.stmtTypes,
             queryOptions.searchText,
@@ -304,6 +320,8 @@ export default function useStatementTableController(
     allTimeRanges,
     allSchemas,
     allStmtTypes,
+    limitOptions,
+    updateLimitOptions,
     validTimeRange,
     loadingStatements,
     statements,

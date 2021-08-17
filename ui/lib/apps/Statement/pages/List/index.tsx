@@ -10,6 +10,7 @@ import {
   Dropdown,
   Menu,
   message,
+  Select,
 } from 'antd'
 import {
   ReloadOutlined,
@@ -70,6 +71,8 @@ export default function StatementsOverview() {
     allStmtTypes,
     loadingStatements,
     tableColumns,
+    limitOptions,
+    updateLimitOptions,
 
     downloadCSV,
     downloading,
@@ -158,6 +161,17 @@ export default function StatementsOverview() {
                 setQueryOptions({ ...queryOptions, searchText })
               }
             />
+            <Select
+              value={queryOptions.limit}
+              style={{ width: 150 }}
+              onChange={(limit) => setQueryOptions({ ...queryOptions, limit })}
+            >
+              {limitOptions.map((item) => (
+                <Select.Option value={item} key={item}>
+                  Limit {item}
+                </Select.Option>
+              ))}
+            </Select>
           </Space>
 
           <Space>
@@ -228,7 +242,10 @@ export default function StatementsOverview() {
       >
         <StatementSettingForm
           onClose={() => setShowSettings(false)}
-          onConfigUpdated={refresh}
+          onConfigUpdated={(config) => {
+            updateLimitOptions(config.max_size!)
+            refresh()
+          }}
         />
       </Drawer>
     </div>

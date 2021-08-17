@@ -18,7 +18,7 @@ import { useIsWriteable } from '@lib/utils/store'
 
 interface Props {
   onClose: () => void
-  onConfigUpdated: () => any
+  onConfigUpdated: (newConfig: StatementEditableConfig) => any
 }
 
 const convertArrToObj = (arr: number[]) =>
@@ -54,7 +54,7 @@ function StatementSettingForm({ onClose, onConfigUpdated }: Props) {
           setSubmitting(true)
           await client.getInstance().statementsConfigPost(newConfig)
           onClose()
-          onConfigUpdated()
+          onConfigUpdated(newConfig)
         } finally {
           setSubmitting(false)
         }

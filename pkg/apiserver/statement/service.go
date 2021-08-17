@@ -164,6 +164,7 @@ type GetStatementsRequest struct {
 	EndTime   int      `json:"end_time" form:"end_time"`
 	Text      string   `json:"text" form:"text"`
 	Fields    string   `json:"fields" form:"fields"`
+	Limit     int      `json:"limit" form:"limit"`
 }
 
 // @Summary Get a list of statements
@@ -184,13 +185,7 @@ func (s *Service) listHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	overviews, err := s.queryStatements(
-		db,
-		req.BeginTime, req.EndTime,
-		req.Schemas,
-		req.StmtTypes,
-		req.Text,
-		fields)
+	overviews, err := s.queryStatements(db, &req, fields)
 	if err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
@@ -271,13 +266,7 @@ func (s *Service) downloadTokenHandler(c *gin.Context) {
 	if strings.TrimSpace(req.Fields) != "" {
 		fields = strings.Split(req.Fields, ",")
 	}
-	overviews, err := s.queryStatements(
-		db,
-		req.BeginTime, req.EndTime,
-		req.Schemas,
-		req.StmtTypes,
-		req.Text,
-		fields)
+	overviews, err := s.queryStatements(db, &req, fields)
 	if err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return

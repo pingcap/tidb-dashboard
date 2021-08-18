@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState, useContext } from 'react'
 import {
   Space,
   Tooltip,
@@ -75,23 +75,6 @@ export default function StatementsOverview() {
     downloadCSV,
     downloading,
   } = controller
-
-  const [showTimeRangeOutdatedTip, setShowTimeRangeOutdatedTip] = useState(
-    false
-  )
-  useEffect(() => {
-    let timer
-    if (isTimeRangeOutdated) {
-      setShowTimeRangeOutdatedTip(true)
-      timer = setTimeout(() => {
-        setShowTimeRangeOutdatedTip(false)
-      }, 3000)
-    } else {
-      setShowTimeRangeOutdatedTip(false)
-    }
-
-    return () => clearTimeout(timer)
-  }, [isTimeRangeOutdated])
 
   function exportCSV() {
     const hide = message.loading(
@@ -198,22 +181,15 @@ export default function StatementsOverview() {
               />
             )}
             {enable && (
-              <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
-                <Tooltip
-                  arrowPointAtCenter
-                  title={t('statement.pages.overview.toolbar.refresh_outdated')}
-                  visible={showTimeRangeOutdatedTip}
-                  placement="bottomLeft"
-                >
-                  {loadingStatements ? (
-                    <LoadingOutlined />
-                  ) : (
-                    <ReloadOutlined onClick={refresh} />
-                  )}
-                </Tooltip>
-              </Tooltip>
+              <RefreshTooltip isOutedated={isTimeRangeOutdated}>
+                {loadingStatements ? (
+                  <LoadingOutlined />
+                ) : (
+                  <ReloadOutlined onClick={refresh} />
+                )}
+              </RefreshTooltip>
             )}
-            <Tooltip title={t('statement.settings.title')}>
+            <Tooltip title={t('statement.settings.title')} placement="bottom">
               <SettingOutlined onClick={() => setShowSettings(true)} />
             </Tooltip>
             <Dropdown overlay={dropdownMenu} placement="bottomRight">
@@ -257,5 +233,26 @@ export default function StatementsOverview() {
         />
       </Drawer>
     </div>
+  )
+}
+
+function RefreshTooltip({ isOutedated, children }) {
+  const { t } = useTranslation()
+  return isOutedated ? (
+    <Tooltip
+      arrowPointAtCenter
+      title={t('statement.pages.overview.toolbar.refresh_outdated')}
+      visible={isOutedated}
+      placement="bottomLeft"
+    >
+      {children}
+    </Tooltip>
+  ) : (
+    <Tooltip
+      title={t('statement.pages.overview.toolbar.refresh')}
+      placement="bottom"
+    >
+      {children}
+    </Tooltip>
   )
 }

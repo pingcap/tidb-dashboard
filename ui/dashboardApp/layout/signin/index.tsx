@@ -226,7 +226,7 @@ function TiDBSignInForm({ successRoute, onClickAlternative }) {
             label={t('signin.form.username')}
             rules={[{ required: true }]}
           >
-            <Input onInput={clearErrorMsg} prefix={<UserOutlined />} disabled />
+            <Input onInput={clearErrorMsg} prefix={<UserOutlined />} />
           </Form.Item>
           <Form.Item
             data-e2e="signin_password_form_item"

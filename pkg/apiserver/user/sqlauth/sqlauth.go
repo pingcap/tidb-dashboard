@@ -13,21 +13,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 )
 
-const (
-	typeID utils.AuthType = 0
-
-	// Base privileges
-	privAll             string = "ALL PRIVILEGES"
-	privProcess         string = "PROCESS"
-	privShowDB          string = "SHOW DATABASES"
-	privSystemVarAdmin  string = "SYSTEM_VARIABLES_ADMIN"
-	privSuper           string = "SUPER"
-	privConfig          string = "CONFIG"
-	privDashboardClient string = "DASHBOARD_CLIENT"
-	// Extra privileges when TiDB SEM is enabled
-	privRestrictedTablesAdmin string = "RESTRICTED_TABLES_ADMIN"
-	privRestrictedStatusAdmin string = "RESTRICTED_STATUS_ADMIN"
-)
+const typeID utils.AuthType = 0
 
 // TiDB config response
 //
@@ -96,7 +82,7 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	if err != nil {
 		return nil, user.ErrSignInOther.WrapWithNoMessage(err)
 	}
-	grants := parseGrants(grantRows)
+	grants := parseCurUserGrants(grantRows)
 	// 3. Check
 	// Following base privileges are required
 	// - ALL PRIVILEGES
@@ -107,32 +93,43 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	// - CONFIG
 	// - DASHBOARD_CLIENT
 	// When TiDB SEM is enabled, following extra privileges are required
+	// - RESTRICTED_VARIABLES_ADMIN
 	// - RESTRICTED_TABLES_ADMIN
 	// - RESTRICTED_STATUS_ADMIN
-	basePrivileges := 0
-	extraPrivileges := 0
-	for _, priv := range grants {
-		switch priv {
-		case privProcess:
-			basePrivileges = basePrivileges | 1
-		case privShowDB:
-			basePrivileges = basePrivileges | (1 << 1)
-		case privSystemVarAdmin, privSuper:
-			basePrivileges = basePrivileges | (1 << 2)
-		case privConfig:
-			basePrivileges = basePrivileges | (1 << 3)
-		case privDashboardClient:
-			basePrivileges = basePrivileges | (1 << 4)
-		case privAll:
-			basePrivileges = 0b11111
-		// Extra privileges
-		case privRestrictedTablesAdmin:
-			extraPrivileges = extraPrivileges | 1
-		case privRestrictedStatusAdmin:
-			extraPrivileges = extraPrivileges | (1 << 1)
+	hasPriv := func(priv string) bool {
+		for _, grant := range grants {
+			if priv == grant {
+				return true
+			}
+		}
+		return false
+	}
+	fullfillPrivileges := false
+	if hasPriv("ALL PRIVILEGES") {
+		fullfillPrivileges = true
+	} else {
+		if !hasPriv("PROCESS") {
+			fullfillPrivileges = false
+		} else if !hasPriv("SHOW DATABASES") {
+			fullfillPrivileges = false
+		} else if !hasPriv("SYSTEM_VARIABLES_ADMIN") && !hasPriv("SUPER") {
+			fullfillPrivileges = false
+		} else if !hasPriv("CONFIG") {
+			fullfillPrivileges = false
+		} else if !hasPriv("DASHBOARD_CLIENT") {
+			fullfillPrivileges = false
+		} else {
+			fullfillPrivileges = true
 		}
 	}
-	if basePrivileges != 0b11111 || (config.Security.EnableSem && extraPrivileges != 0b11) {
+	if config.Security.EnableSem {
+		fullfillPrivileges =
+			fullfillPrivileges &&
+				hasPriv("RESTRICTED_VARIABLES_ADMIN") &&
+				hasPriv("RESTRICTED_TABLES_ADMIN") &&
+				hasPriv("RESTRICTED_STATUS_ADMIN")
+	}
+	if !fullfillPrivileges {
 		return nil, user.ErrMissPrivileges.NewWithNoMessage()
 	}
 
@@ -147,11 +144,15 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	}, nil
 }
 
-// grantRows examples:
+// Currently, There are 2 kinds of grant output format in TiDB:
+// - GRANT [grants] ON [db.table] TO [user]
+// - GRANT [roles] TO [user]
+// Examples:
 // - GRANT PROCESS,SHOW DATABASES,CONFIG ON *.* TO 'dashboardAdmin'@'%'
 // - GRANT SYSTEM_VARIABLES_ADMIN,RESTRICTED_VARIABLES_ADMIN,RESTRICTED_STATUS_ADMIN,RESTRICTED_TABLES_ADMIN ON *.* TO 'dashboardAdmin'@'%'
 // - GRANT ALL PRIVILEGES ON *.* TO 'dashboardAdmin'@'%'
-func parseGrants(grantRows []string) []string {
+// - GRANT `app_read`@`%` TO `test`@`%`
+func parseCurUserGrants(grantRows []string) []string {
 	grants := make([]string, 0)
 	grantRegex := regexp.MustCompile(`GRANT (.+) ON`)
 

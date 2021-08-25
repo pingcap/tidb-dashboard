@@ -89,9 +89,9 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	// - or
 	// - PROCESS
 	// - SHOW DATABASES
-	// - SYSTEM_VARIABLES_ADMIN or SUPER (SUPER includes SYSTEM_VARIABLES_ADMIN)
 	// - CONFIG
-	// - DASHBOARD_CLIENT
+	// - SYSTEM_VARIABLES_ADMIN or SUPER (SUPER includes SYSTEM_VARIABLES_ADMIN)
+	// - DASHBOARD_CLIENT or SUPER (SUPER includes DASHBOARD_CLIENT)
 	// When TiDB SEM is enabled, following extra privileges are required
 	// - RESTRICTED_VARIABLES_ADMIN
 	// - RESTRICTED_TABLES_ADMIN
@@ -112,14 +112,20 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 			fullfillPrivileges = false
 		} else if !hasPriv("SHOW DATABASES") {
 			fullfillPrivileges = false
-		} else if !hasPriv("SYSTEM_VARIABLES_ADMIN") && !hasPriv("SUPER") {
-			fullfillPrivileges = false
 		} else if !hasPriv("CONFIG") {
 			fullfillPrivileges = false
-		} else if !hasPriv("DASHBOARD_CLIENT") {
-			fullfillPrivileges = false
 		} else {
-			fullfillPrivileges = true
+			if hasPriv("SUPER") {
+				fullfillPrivileges = true
+			} else {
+				if !hasPriv("SYSTEM_VARIABLES_ADMIN") {
+					fullfillPrivileges = false
+				} else if !hasPriv("DASHBOARD_CLIENT") {
+					fullfillPrivileges = false
+				} else {
+					fullfillPrivileges = true
+				}
+			}
 		}
 	}
 	if config.Security.EnableSem {

@@ -25,30 +25,24 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
-var pprofKindsParam = APIParam{
-	Name: "kind",
-	Model: APIParamModelEnum([]EnumItem{
-		{Name: "allocs"},
-		{Name: "block"},
-		{Name: "cmdline"},
-		{Name: "goroutine"},
-		{Name: "heap"},
-		{Name: "mutex"},
-		{Name: "profile"},
-		{Name: "threadcreate"},
-		{Name: "trace"},
-	}),
-}
+var pprofKindsParam = NewAPIParam(APIParamModelEnum([]EnumItem{
+	{Name: "allocs"},
+	{Name: "block"},
+	{Name: "cmdline"},
+	{Name: "goroutine"},
+	{Name: "heap"},
+	{Name: "mutex"},
+	{Name: "profile"},
+	{Name: "threadcreate"},
+	{Name: "trace"},
+}), "kind", true)
 
-var pprofSecondsParam = APIParam{
-	Name: "seconds",
-	Model: APIParamModelEnum([]EnumItem{
-		{Name: "10s", Value: "10"},
-		{Name: "30s", Value: "30"},
-		{Name: "60s", Value: "60"},
-		{Name: "120s", Value: "120"},
-	}),
-}
+var pprofSecondsParam = NewAPIParam(APIParamModelEnum([]EnumItem{
+	{Name: "10s", Value: "10"},
+	{Name: "30s", Value: "30"},
+	{Name: "60s", Value: "60"},
+	{Name: "120s", Value: "120"},
+}), "seconds", false)
 
 func timeoutHook(req *Request, sec string) error {
 	i, err := strconv.ParseInt(sec, 10, 64)
@@ -67,15 +61,9 @@ var tidbStatsDump = APIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/stats/dump/{db}/{table}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name:  "db",
-			Model: APIParamModelDB,
-		},
-		{
-			Name:  "table",
-			Model: APIParamModelTable,
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelDB, "db", true),
+		NewAPIParam(APIParamModelTable, "table", true),
 	},
 }
 
@@ -84,19 +72,10 @@ var tidbStatsDumpWithTimestamp = APIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/stats/dump/{db}/{table}/{yyyyMMddHHmmss}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name:  "db",
-			Model: APIParamModelDB,
-		},
-		{
-			Name:  "table",
-			Model: APIParamModelTable,
-		},
-		{
-			Name:  "yyyyMMddHHmmss",
-			Model: APIParamModelText,
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelDB, "db", true),
+		NewAPIParam(APIParamModelTable, "table", true),
+		NewAPIParam(APIParamModelText, "yyyyMMddHHmmss", true),
 	},
 }
 
@@ -112,11 +91,8 @@ var tidbSchema = APIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/schema",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:  "table_id",
-			Model: APIParamModelTableID,
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelTableID, "table_id", false),
 	},
 }
 
@@ -125,11 +101,8 @@ var tidbSchemaWithDB = APIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/schema/{db}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name:  "db",
-			Model: APIParamModelDB,
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelDB, "db", true),
 	},
 }
 
@@ -138,15 +111,9 @@ var tidbSchemaWithDBTable = APIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/schema/{db}/{table}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name:  "db",
-			Model: APIParamModelDB,
-		},
-		{
-			Name:  "table",
-			Model: APIParamModelTable,
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelDB, "db", true),
+		NewAPIParam(APIParamModelTable, "table", true),
 	},
 }
 
@@ -155,11 +122,8 @@ var tidbDBTableWithTableID = APIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/db-table/{tableID}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name:  "tableID",
-			Model: APIParamModelTableID,
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelTableID, "tableID", true),
 	},
 }
 
@@ -196,11 +160,8 @@ var tidbRegionID = APIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/regions/{regionID}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name:  "regionID",
-			Model: APIParamModelText,
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelText, "regionID", true),
 	},
 }
 
@@ -209,15 +170,9 @@ var tidbTableRegions = APIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/tables/{db}/{table}/regions",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name:  "db",
-			Model: APIParamModelDB,
-		},
-		{
-			Name:  "table",
-			Model: APIParamModelTable,
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelDB, "db", true),
+		NewAPIParam(APIParamModelTable, "table", true),
 	},
 }
 
@@ -233,20 +188,15 @@ var tidbPprof = APIModel{
 	Component: model.NodeKindTiDB,
 	Path:      "/debug/pprof/{kind}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
+	PathParams: []*APIParam{
 		pprofKindsParam,
 	},
-	QueryParams: []APIParam{
-		{
-			Name:  "debug",
-			Model: APIParamModelConstant("1"),
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelConstant("1"), "debug", false),
 		pprofSecondsParam,
 	},
-	PostHooks: []APIModelPostHook{
-		func(req *Request, path, query Values, m *APIModel) error {
-			return timeoutHook(req, query.Get("seconds"))
-		},
+	UpdateRequestHandler: func(req *Request, path, query Values, m *APIModel) error {
+		return timeoutHook(req, query.Get("seconds"))
 	},
 }
 
@@ -313,17 +263,9 @@ var pdLabelStores = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/labels/stores",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:     "name",
-			Model:    APIParamModelText,
-			Required: true,
-		},
-		{
-			Name:     "value",
-			Model:    APIParamModelText,
-			Required: true,
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelText, "name", true),
+		NewAPIParam(APIParamModelText, "value", true),
 	},
 }
 
@@ -346,11 +288,8 @@ var pdOperatorShow = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/operators",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:  "kind",
-			Model: APIParamModelText,
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelText, "kind", false),
 	},
 }
 
@@ -366,11 +305,8 @@ var pdRegionID = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/region/id/{regionID}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name:  "regionID",
-			Model: APIParamModelText,
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelText, "regionID", true),
 	},
 }
 
@@ -379,16 +315,12 @@ var pdRegionKey = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/region/key/{regionKey}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name:  "regionKey",
-			Model: APIParamModelText,
-			PreModelTransformer: func(ctx *Context) error {
-				val := ctx.Value()
-				ctx.SetValue(url.QueryEscape(val))
-				return nil
-			},
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelText, "regionKey", true).AddTransformer(func(ctx *Context) error {
+			val := ctx.Value()
+			ctx.SetValue(url.QueryEscape(val))
+			return nil
+		}),
 	},
 }
 
@@ -397,22 +329,13 @@ var pdRegionScan = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/regions/key",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:     "key",
-			Model:    APIParamModelText,
-			Required: true,
-			PreModelTransformer: func(ctx *Context) error {
-				val := ctx.Value()
-				ctx.SetValue(url.QueryEscape(val))
-				return nil
-			},
-		},
-		{
-			Name:     "limit",
-			Model:    APIParamModelInt,
-			Required: true,
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelText, "key", true).AddTransformer(func(ctx *Context) error {
+			val := ctx.Value()
+			ctx.SetValue(url.QueryEscape(val))
+			return nil
+		}),
+		NewAPIParam(APIParamModelInt, "limit", true),
 	},
 }
 
@@ -421,11 +344,8 @@ var pdRegionSibling = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/regions/sibling/{regionID}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name:  "regionID",
-			Model: APIParamModelText,
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelText, "regionID", true),
 	},
 }
 
@@ -434,21 +354,13 @@ var pdRegionStartKey = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/regions/key",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:     "key",
-			Model:    APIParamModelText,
-			Required: true,
-			PreModelTransformer: func(ctx *Context) error {
-				val := ctx.Value()
-				ctx.SetValue(url.QueryEscape(val))
-				return nil
-			},
-		},
-		{
-			Name:  "limit",
-			Model: APIParamModelInt,
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelText, "key", true).AddTransformer(func(ctx *Context) error {
+			val := ctx.Value()
+			ctx.SetValue(url.QueryEscape(val))
+			return nil
+		}),
+		NewAPIParam(APIParamModelInt, "limit", false),
 	},
 }
 
@@ -457,11 +369,8 @@ var pdRegionsStore = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/regions/store/{storeID}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name:  "storeID",
-			Model: APIParamModelText,
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelText, "storeID", true),
 	},
 }
 
@@ -470,11 +379,8 @@ var pdRegionTopRead = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/regions/readflow",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:  "limit",
-			Model: APIParamModelInt,
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelInt, "limit", false),
 	},
 }
 
@@ -483,11 +389,8 @@ var pdRegionTopWrite = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/regions/writeflow",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:  "limit",
-			Model: APIParamModelInt,
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelInt, "limit", false),
 	},
 }
 
@@ -496,11 +399,8 @@ var pdRegionTopConfVer = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/regions/confver",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:  "limit",
-			Model: APIParamModelInt,
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelInt, "limit", false),
 	},
 }
 
@@ -509,11 +409,8 @@ var pdRegionTopVersion = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/regions/version",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:  "limit",
-			Model: APIParamModelInt,
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelInt, "limit", false),
 	},
 }
 
@@ -522,11 +419,8 @@ var pdRegionTopSize = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/regions/size",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:  "limit",
-			Model: APIParamModelInt,
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelInt, "limit", false),
 	},
 }
 
@@ -535,39 +429,32 @@ var pdRegionCheck = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/regions/check/{state}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name: "state",
-			Model: APIParamModelEnum([]EnumItem{
-				{Name: "miss-peer"},
-				{Name: "extra-peer"},
-				{Name: "down-peer"},
-				{Name: "pending-peer"},
-				{Name: "offline-peer"},
-				{Name: "empty-peer"},
-				{Name: "hist-peer"},
-				{Name: "hist-keys"},
-			}),
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelEnum([]EnumItem{
+			{Name: "miss-peer"},
+			{Name: "extra-peer"},
+			{Name: "down-peer"},
+			{Name: "pending-peer"},
+			{Name: "offline-peer"},
+			{Name: "empty-peer"},
+			{Name: "hist-peer"},
+			{Name: "hist-keys"},
+		}), "state", true),
 	},
-	QueryParams: []APIParam{
-		{
-			Name:  "bound",
-			Model: APIParamModelInt,
-			PreModelTransformer: func(ctx *Context) error {
-				state := ctx.ParamValue("state")
-				val := ctx.Value()
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelInt, "bound", false).AddTransformer(func(ctx *Context) error {
+			state := ctx.ParamValue("state")
+			val := ctx.Value()
 
-				if val == "" {
-					if strings.EqualFold(state, "hist-size") {
-						ctx.SetValue("10")
-					} else if strings.EqualFold(state, "hist-keys") {
-						ctx.SetValue("10000")
-					}
+			if val == "" {
+				if strings.EqualFold(state, "hist-size") {
+					ctx.SetValue("10")
+				} else if strings.EqualFold(state, "hist-keys") {
+					ctx.SetValue("10000")
 				}
-				return nil
-			},
-		},
+			}
+			return nil
+		}),
 	},
 }
 
@@ -576,11 +463,8 @@ var pdSchedulerShow = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/schedulers",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:  "status",
-			Model: APIParamModelText,
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelText, "status", false),
 	},
 }
 
@@ -589,26 +473,22 @@ var pdStores = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/stores",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:  "state",
-			Model: APIParamModelTags,
-			PostModelTransformer: func(ctx *Context) error {
-				vals := ctx.Values()
-				if len(vals) != 0 {
-					var stateValues []string
-					for _, state := range vals {
-						stateValue, ok := metapb.StoreState_value[state]
-						if !ok {
-							return fmt.Errorf("unknown state: %s", state)
-						}
-						stateValues = append(stateValues, strconv.Itoa(int(stateValue)))
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelTags, "state", false).AddTransformer(func(ctx *Context) error {
+			vals := ctx.Values()
+			if len(vals) != 0 {
+				var stateValues []string
+				for _, state := range vals {
+					stateValue, ok := metapb.StoreState_value[state]
+					if !ok {
+						return fmt.Errorf("unknown state: %s", state)
 					}
-					ctx.SetValues(stateValues)
+					stateValues = append(stateValues, strconv.Itoa(int(stateValue)))
 				}
-				return nil
-			},
-		},
+				ctx.SetValues(stateValues)
+			}
+			return nil
+		}),
 	},
 }
 
@@ -617,11 +497,8 @@ var pdStoreID = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/store/{storeID}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
-		{
-			Name:  "storeID",
-			Model: APIParamModelText,
-		},
+	PathParams: []*APIParam{
+		NewAPIParam(APIParamModelText, "storeID", true),
 	},
 }
 
@@ -630,20 +507,15 @@ var pdPprof = APIModel{
 	Component: model.NodeKindPD,
 	Path:      "/debug/pprof/{kind}",
 	Method:    MethodGet,
-	PathParams: []APIParam{
+	PathParams: []*APIParam{
 		pprofKindsParam,
 	},
-	QueryParams: []APIParam{
-		{
-			Name:  "debug",
-			Model: APIParamModelConstant("1"),
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelConstant("1"), "debug", false),
 		pprofSecondsParam,
 	},
-	PostHooks: []APIModelPostHook{
-		func(req *Request, path, query Values, m *APIModel) error {
-			return timeoutHook(req, query.Get("seconds"))
-		},
+	UpdateRequestHandler: func(req *Request, path, query Values, m *APIModel) error {
+		return timeoutHook(req, query.Get("seconds"))
 	},
 }
 
@@ -653,11 +525,8 @@ var tikvConfig = APIModel{
 	Component: model.NodeKindTiKV,
 	Path:      "/config",
 	Method:    MethodGet,
-	QueryParams: []APIParam{
-		{
-			Name:  "full",
-			Model: APIParamModelBool,
-		},
+	QueryParams: []*APIParam{
+		NewAPIParam(APIParamModelBool, "full", false),
 	},
 }
 

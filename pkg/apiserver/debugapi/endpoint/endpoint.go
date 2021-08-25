@@ -25,50 +25,11 @@ import (
 )
 
 var (
-	ErrNS                   = errorx.NewNamespace("error.api.debugapi.endpoint")
-	ErrMissingRequiredParam = ErrNS.NewType("missing_require_parameter")
-	ErrInvalidParam         = ErrNS.NewType("invalid_parameter")
+	ErrNS           = errorx.NewNamespace("error.api.debugapi.endpoint")
+	ErrInvalidParam = ErrNS.NewType("invalid_parameter")
 )
 
-type APIModelPreHook func(req *Request, data map[string]string, m *APIModel) error
-type APIModelPostHook func(req *Request, path Values, query Values, m *APIModel) error
-
-type APIModel struct {
-	ID          string         `json:"id"`
-	Component   model.NodeKind `json:"component"`
-	Path        string         `json:"path"`
-	Method      Method         `json:"method"`
-	PathParams  []APIParam     `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table
-	QueryParams []APIParam     `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
-
-	PreHooks  []APIModelPreHook  `json:"-"`
-	PostHooks []APIModelPostHook `json:"-"`
-}
-
-// Transformers execution order:
-// APIParam.PreModelTransformer -> APIParamModel.PreTransformer -> required check -> APIParamModel.Transformer -> APIParam.PostModelTransfomer
-type APIParam struct {
-	Name     string `json:"name"`
-	Required bool   `json:"required"`
-	// represents what param is
-	Model                APIParamModel    `json:"model" swaggertype:"object,string"`
-	PreModelTransformer  ModelTransformer `json:"-"`
-	PostModelTransformer ModelTransformer `json:"-"`
-}
-
-func (p *APIParam) PreTransform(ctx *Context) error {
-	if p.PreModelTransformer == nil {
-		return nil
-	}
-	return p.PreModelTransformer(ctx)
-}
-
-func (p *APIParam) PostTransform(ctx *Context) error {
-	if p.PostModelTransformer == nil {
-		return nil
-	}
-	return p.PostModelTransformer(ctx)
-}
+type UpdateRequestFunc func(req *Request, path Values, query Values, m *APIModel) error
 
 type Request struct {
 	Method  Method
@@ -85,6 +46,16 @@ const (
 	MethodGet Method = http.MethodGet
 )
 
+type APIModel struct {
+	ID                   string            `json:"id"`
+	Component            model.NodeKind    `json:"component"`
+	Path                 string            `json:"path"`
+	Method               Method            `json:"method"`
+	PathParams           []*APIParam       `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table
+	QueryParams          []*APIParam       `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
+	UpdateRequestHandler UpdateRequestFunc `json:"-"`
+}
+
 func (m *APIModel) NewRequest(host string, port int, data map[string]string) (*Request, error) {
 	req := &Request{
 		Method: m.Method,
@@ -92,65 +63,53 @@ func (m *APIModel) NewRequest(host string, port int, data map[string]string) (*R
 		Port:   port,
 	}
 
-	if m.PreHooks != nil {
-		for _, h := range m.PreHooks {
-			err := h(req, data, m)
-			if err != nil {
-				return nil, err
-			}
-		}
+	pathValues, err := transformAndValidateParams(m.PathParams, data)
+	if err != nil {
+		return nil, err
+	}
+	if err := m.populatePath(req, pathValues); err != nil {
+		return nil, err
 	}
 
-	pathValues, err := transformValues(m.PathParams, data, true)
+	queryValues, err := transformAndValidateParams(m.QueryParams, data)
 	if err != nil {
 		return nil, err
 	}
-	path, err := populatePath(m.Path, pathValues)
-	if err != nil {
+	if err := m.encodeQuery(req, queryValues); err != nil {
 		return nil, err
 	}
-	req.Path = path
 
-	queryValues, err := transformValues(m.QueryParams, data, false)
-	if err != nil {
-		return nil, err
-	}
-	query, err := encodeQuery(m.QueryParams, queryValues)
-	if err != nil {
-		return nil, err
-	}
-	req.Query = query
-
-	if m.PostHooks != nil {
-		for _, h := range m.PostHooks {
-			err := h(req, pathValues, queryValues, m)
-			if err != nil {
-				return nil, err
-			}
+	if m.UpdateRequestHandler != nil {
+		if err := m.UpdateRequestHandler(req, pathValues, queryValues, m); err != nil {
+			return nil, err
 		}
 	}
 
 	return req, nil
 }
 
-var paramRegexp *regexp.Regexp = regexp.MustCompile(`\{(\w+)\}`)
+var paramRegexp = regexp.MustCompile(`\{(\w+)\}`)
 
-func populatePath(path string, values Values) (string, error) {
-	var returnErr error
-	replacedPath := paramRegexp.ReplaceAllStringFunc(path, func(s string) string {
-		if returnErr != nil {
+func (m *APIModel) populatePath(req *Request, values Values) error {
+	var err error
+	path := paramRegexp.ReplaceAllStringFunc(m.Path, func(s string) string {
+		if err != nil {
 			return s
 		}
 		key := paramRegexp.ReplaceAllString(s, "${1}")
 		val := values.Get(key)
 		return val
 	})
-	return replacedPath, returnErr
+	if err != nil {
+		return err
+	}
+	req.Path = path
+	return nil
 }
 
-func encodeQuery(queryParams []APIParam, values Values) (string, error) {
+func (m *APIModel) encodeQuery(req *Request, values Values) error {
 	query := url.Values{}
-	for _, q := range queryParams {
+	for _, q := range m.QueryParams {
 		vals := values[q.Name]
 		if len(vals) == 0 {
 			continue
@@ -159,50 +118,44 @@ func encodeQuery(queryParams []APIParam, values Values) (string, error) {
 			query.Add(q.Name, val)
 		}
 	}
-	return query.Encode(), nil
+
+	req.Query = query.Encode()
+	return nil
 }
 
-// Transform incoming param's value by transformer at endpoint / model definition
-func transformValues(params []APIParam, values map[string]string, forceRequired bool) (Values, error) {
+func transformAndValidateParams(params []*APIParam, data map[string]string) (Values, error) {
+	return travelParamsWithValues(params, data, func(p *APIParam, ctx *Context) error {
+		if err := p.Model.Transform(ctx); err != nil {
+			return ErrInvalidParam.Wrap(err, "model transform error, param name: %s", p.Name)
+		}
+		if err := p.Transform(ctx); err != nil {
+			return ErrInvalidParam.Wrap(err, "param transform error, param: %s", p.Name)
+		}
+		if err := p.Model.Validate(ctx); err != nil {
+			return ErrInvalidParam.Wrap(err, "model validate error, param name: %s", p.Name)
+		}
+		if err := p.Validate(ctx); err != nil {
+			return ErrInvalidParam.Wrap(err, "param validate error, param: %s", p.Name)
+		}
+		return nil
+	})
+}
+
+func travelParamsWithValues(params []*APIParam, data map[string]string, cb func(p *APIParam, ctx *Context) error) (Values, error) {
 	vs := Values{}
 	for _, p := range params {
-		if v, ok := values[p.Name]; ok {
+		if v, ok := data[p.Name]; ok {
 			vs.Set(p.Name, v)
 		}
 	}
 
 	for _, p := range params {
 		ctx := &Context{
+			ParamName:   p.Name,
 			paramValues: vs,
-			paramName:   p.Name,
 		}
-
-		// PreModelTransformer can be used to set default value
-		err := p.PreTransform(ctx)
-		if err != nil {
-			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
-		}
-		err = p.Model.PreTransform(ctx)
-		if err != nil {
-			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
-		}
-		if ctx.Value() == "" {
-			if forceRequired || p.Required {
-				return nil, ErrMissingRequiredParam.New("missing required param: %s", p.Name)
-			}
-			// There's no value from the client or default value generate from the pre-transformer,
-			// so we can skip the model transformer and the post-transformer
-			continue
-		}
-
-		err = p.Model.Transform(ctx)
-		if err != nil {
-			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
-		}
-
-		err = p.PostTransform(ctx)
-		if err != nil {
-			return nil, ErrInvalidParam.Wrap(err, "param: %s", p.Name)
+		if err := cb(p, ctx); err != nil {
+			return nil, err
 		}
 	}
 

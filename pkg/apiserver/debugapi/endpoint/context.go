@@ -15,28 +15,28 @@ package endpoint
 
 // Context is design for request transform process
 type Context struct {
+	ParamName   string
 	paramValues Values
-	paramName   string
 }
 
 // Value return current param's value
 func (c *Context) Value() string {
-	return c.paramValues.Get(c.paramName)
+	return c.paramValues.Get(c.ParamName)
 }
 
 func (c *Context) SetValue(val string) {
-	c.paramValues.Set(c.paramName, val)
+	c.paramValues.Set(c.ParamName, val)
 }
 
 // Values return current param's multiple values
 func (c *Context) Values() []string {
-	return c.paramValues[c.paramName]
+	return c.paramValues[c.ParamName]
 }
 
 func (c *Context) SetValues(vals []string) {
-	c.paramValues.Del(c.paramName)
+	c.paramValues.Del(c.ParamName)
 	for _, v := range vals {
-		c.paramValues.Add(c.paramName, v)
+		c.paramValues.Add(c.ParamName, v)
 	}
 }
 
@@ -47,7 +47,7 @@ func (c *Context) ParamValue(key string) string {
 
 // ParamValues return param's multiple values with the given key
 func (c *Context) ParamValues(key string) []string {
-	return c.paramValues[c.paramName]
+	return c.paramValues[c.ParamName]
 }
 
 // Values maps a string key to a list of values.

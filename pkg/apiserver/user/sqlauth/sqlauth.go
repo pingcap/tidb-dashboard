@@ -117,8 +117,7 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 			basePrivileges = basePrivileges | 1
 		case privShowDB:
 			basePrivileges = basePrivileges | (1 << 1)
-		case privSystemVarAdmin:
-		case privSuper:
+		case privSystemVarAdmin, privSuper:
 			basePrivileges = basePrivileges | (1 << 2)
 		case privConfig:
 			basePrivileges = basePrivileges | (1 << 3)

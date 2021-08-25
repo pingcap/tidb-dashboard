@@ -7,7 +7,7 @@ error:
     user:
       signin:
         invalid_code: 授权码无效或已过期
-      miss_required_privileges: 此用户缺少访问 Dashboard 所需的权限
+      miss_required_privileges: 此用户缺少访问 TiDB Dashboard 所需的权限
     slow_query:
       export_no_data: 没有可导出的慢查询日志
     statement:

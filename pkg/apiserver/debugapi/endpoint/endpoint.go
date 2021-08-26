@@ -51,6 +51,7 @@ type APIModel struct {
 	Component            model.NodeKind    `json:"component"`
 	Path                 string            `json:"path"`
 	Method               Method            `json:"method"`
+	Ext                  string            `json:"-"`            // response file ext
 	PathParams           []*APIParam       `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table
 	QueryParams          []*APIParam       `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
 	UpdateRequestHandler UpdateRequestFunc `json:"-"`

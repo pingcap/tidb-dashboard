@@ -525,8 +525,41 @@ var tikvConfig = APIModel{
 	Component: model.NodeKindTiKV,
 	Path:      "/config",
 	Method:    MethodGet,
+}
+
+var tikvPprof = APIModel{
+	ID:        "tikv_profile",
+	Component: model.NodeKindTiKV,
+	Path:      "/debug/pprof/profile",
+	Method:    MethodGet,
+	Ext:       ".svg",
 	QueryParams: []*APIParam{
-		NewAPIParam(APIParamModelBool, "full", false),
+		pprofSecondsParam,
+	},
+	UpdateRequestHandler: func(req *Request, path, query Values, m *APIModel) error {
+		return timeoutHook(req, query.Get("seconds"))
+	},
+}
+
+// tiflash
+var tiflashConfig = APIModel{
+	ID:        "tiflash_config",
+	Component: model.NodeKindTiFlash,
+	Path:      "/config",
+	Method:    MethodGet,
+}
+
+var tiflashPprof = APIModel{
+	ID:        "tiflash_profile",
+	Component: model.NodeKindTiFlash,
+	Path:      "/debug/pprof/profile",
+	Method:    MethodGet,
+	Ext:       ".svg",
+	QueryParams: []*APIParam{
+		pprofSecondsParam,
+	},
+	UpdateRequestHandler: func(req *Request, path, query Values, m *APIModel) error {
+		return timeoutHook(req, query.Get("seconds"))
 	},
 }
 
@@ -579,4 +612,8 @@ var APIListDef = []APIModel{
 	pdPprof,
 	// tikv
 	tikvConfig,
+	tikvPprof,
+	// tiflash
+	tiflashConfig,
+	tiflashPprof,
 }

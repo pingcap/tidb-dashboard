@@ -41,6 +41,12 @@ debug_api:
     name: '{{distro.tikv}}'
     endpoints:
       tikv_config: Current {{distro.tikv}} Config
+      tikv_profile: '{{distro.tikv}} Profile'
+  tiflash:
+    name: '{{distro.tiflash}}'
+    endpoints:
+      tiflash_config: Current {{distro.tiflash}} Config
+      tiflash_profile: '{{distro.tiflash}} Profile'
   pd:
     name: '{{distro.pd}}'
     endpoints:

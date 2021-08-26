@@ -112,6 +112,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 		return
 	}
 
+	// TODO: needs to be more cohesion
 	res, err := SendRequest(ep.Client, endpointReq)
 	if err != nil {
 		_ = c.Error(err)
@@ -119,7 +120,13 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 	}
 	defer res.Response.Body.Close() //nolint:errcheck
 
-	ext := getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
+	// TODO: needs to be more cohesion
+	var ext string
+	if ep.Ext != "" {
+		ext = ep.Ext
+	} else {
+		ext = getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
+	}
 	fileName := fmt.Sprintf("%s_%d%s", req.ID, time.Now().Unix(), ext)
 
 	writer, token, err := utils.FSPersist(utils.FSPersistConfig{

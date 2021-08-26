@@ -100,7 +100,7 @@ func (m *APIModel) NewRequest(host string, port int, data map[string]string) (*R
 	return req, nil
 }
 
-var paramRegexp *regexp.Regexp = regexp.MustCompile(`\{(\w+)\}`)
+var paramRegexp = regexp.MustCompile(`\{(\w+)\}`)
 
 func populatePath(path string, values Values) (string, error) {
 	var returnErr error

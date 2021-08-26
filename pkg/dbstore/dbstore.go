@@ -35,7 +35,8 @@ type DB struct {
 }
 
 func NewDBStore(lc fx.Lifecycle, config *config.Config) (*DB, error) {
-	if err := os.MkdirAll(config.DataDir, 0777); err != nil {
+	err := os.MkdirAll(config.DataDir, 0777) // #nosec
+	if err != nil {
 		log.Error("Failed to create Dashboard storage directory", zap.Error(err))
 		return nil, err
 	}

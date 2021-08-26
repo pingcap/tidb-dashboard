@@ -247,8 +247,9 @@ func (s *Service) createImpersonation(user string, password string) (*SSOImperso
 }
 
 func (s *Service) revokeAllImpersonations() error {
+	sqlStr := fmt.Sprintf("DELETE FROM `%s`", SSOImpersonationModel{}.TableName()) // #nosec
 	return s.params.LocalStore.
-		Exec(fmt.Sprintf("DELETE FROM `%s`", SSOImpersonationModel{}.TableName())). //nolint:gosec
+		Exec(sqlStr).
 		Error
 }
 

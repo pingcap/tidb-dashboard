@@ -10,6 +10,14 @@ linters-settings:
   golint:
     min-confidence: 0
 
+issues:
+  include:
+    - EXC0006
+    - EXC0007
+    - EXC0008
+    - EXC0009
+    - EXC0010
+
 linters:
   disable-all: true
   enable:
@@ -23,11 +31,11 @@ linters:
     - ineffassign
     - deadcode
     - typecheck
-    - golint
+    - revive
     - gosec
     - unconvert
     - goimports
     - depguard
     - prealloc
-    - scopelint
+    - exportloopref
     - whitespace

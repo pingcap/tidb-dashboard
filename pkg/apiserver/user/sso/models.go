@@ -24,7 +24,7 @@ const (
 	ImpersonateStatusAuthFail ImpersonateStatus = "auth_fail"
 )
 
-type SSOImpersonationModel struct { //nolint:golint
+type SSOImpersonationModel struct { //nolint
 	SQLUser string `gorm:"primary_key;size:128" json:"sql_user"`
 	// The encryption key is placed somewhere else in the FS, to avoid being collected by diagnostics collecting tools.
 	EncryptedPass         string             `gorm:"type:text" json:"-"`

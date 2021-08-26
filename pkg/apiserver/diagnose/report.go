@@ -1483,7 +1483,7 @@ func GetTiKVErrorTable(startTime, endTime string, db *gorm.DB) (TableDef, error)
 }
 
 func GetTiDBCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, error) {
-	sql := fmt.Sprintf("select `key`,`value` from information_schema.CLUSTER_CONFIG where type='tidb' group by `key`,`value` order by `key`;")
+	sql := "select `key`,`value` from information_schema.CLUSTER_CONFIG where type='tidb' group by `key`,`value` order by `key`;"
 	table := TableDef{
 		Category: []string{CategoryConfig},
 		Title:    "tidb_current_config",
@@ -1499,7 +1499,7 @@ func GetTiDBCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, err
 }
 
 func GetPDCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, error) {
-	sql := fmt.Sprintf("select `key`,`value` from information_schema.CLUSTER_CONFIG where type='pd' group by `key`,`value` order by `key`;")
+	sql := "select `key`,`value` from information_schema.CLUSTER_CONFIG where type='pd' group by `key`,`value` order by `key`;"
 	table := TableDef{
 		Category: []string{CategoryConfig},
 		Title:    "pd_current_config",
@@ -1515,7 +1515,7 @@ func GetPDCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, error
 }
 
 func GetTiKVCurrentConfig(startTime, endTime string, db *gorm.DB) (TableDef, error) {
-	sql := fmt.Sprintf("select `key`,`value` from information_schema.CLUSTER_CONFIG where type='tikv' group by `key`,`value` order by `key`;")
+	sql := "select `key`,`value` from information_schema.CLUSTER_CONFIG where type='tikv' group by `key`,`value` order by `key`;"
 	table := TableDef{
 		Category: []string{CategoryConfig},
 		Title:    "tikv_current_config",
@@ -2042,7 +2042,7 @@ func GetPDEtcdStatusTable(startTime, endTime string, db *gorm.DB) (TableDef, err
 }
 
 func GetClusterInfoTable(startTime, endTime string, db *gorm.DB) (TableDef, error) {
-	sql := fmt.Sprintf("select * from information_schema.cluster_info order by type,start_time desc")
+	sql := "select * from information_schema.cluster_info order by type,start_time desc"
 	table := TableDef{
 		Category:    []string{CategoryHeader},
 		Title:       "cluster_info",
@@ -2142,11 +2142,7 @@ func GetClusterHardwareInfoTable(startTime, endTime string, db *gorm.DB) (TableD
 		if !ok {
 			m[s] = &hardWare{s, map[string]int{row[1]: 1}, make(map[string]int), 0, make(map[string]float64), ""}
 		}
-		if _, ok := m[s].Type[row[1]]; ok {
-			m[s].Type[row[1]]++
-		} else {
-			m[s].Type[row[1]] = 1
-		}
+		m[s].Type[row[1]]++
 		if _, ok := m[s].cpu[row[2]]; !ok {
 			m[s].cpu[row[2]] = cpuCnt
 		}

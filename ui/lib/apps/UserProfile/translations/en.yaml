@@ -13,6 +13,7 @@ user_profile:
         extra: The SSO signed-in user will be using {{distro.tidb}} Dashboard on behalf of this SQL user and shares its permissions.
         must_auth: You must authorize to continue
         authn_button: Authorize Impersonation
+        modify_authn_button: Modify Authorization
         authn_dialog:
           title: Authorize Impersonation
           user: SQL User to Impersonate

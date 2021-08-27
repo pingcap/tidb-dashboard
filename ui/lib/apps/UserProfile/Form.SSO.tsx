@@ -63,7 +63,6 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
     <>
       {Boolean(!value) && (
         <Space>
-          <Input style={DEFAULT_FORM_ITEM_STYLE} disabled value="root" />
           <Button onClick={handleAuthnClick} disabled={!isWriteable}>
             {t('user_profile.sso.form.user.authn_button')}
           </Button>
@@ -71,30 +70,25 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
       )}
       {isImpersonationNotFailed(value) && (
         <Space>
-          <Input
-            style={DEFAULT_FORM_ITEM_STYLE}
-            disabled
-            value={value!.sql_user}
-          />
+          <span>{value!.sql_user}</span>
           <Typography.Text type="success">
             <CheckCircleFilled />{' '}
             {t('user_profile.sso.form.user.authn_status.ok')}
           </Typography.Text>
+          <Button onClick={handleAuthnClick} disabled={!isWriteable}>
+            {t('user_profile.sso.form.user.modify_authn_button')}
+          </Button>
         </Space>
       )}
       {Boolean(value && !isImpersonationNotFailed(value)) && (
         <Space>
-          <Input
-            style={DEFAULT_FORM_ITEM_STYLE}
-            disabled
-            value={value!.sql_user}
-          />
+          <span>{value!.sql_user}</span>
           <Typography.Text type="danger">
             <CheckCircleFilled />{' '}
             {t('user_profile.sso.form.user.authn_status.auth_failed')}
           </Typography.Text>
           <Button onClick={handleAuthnClick} disabled={!isWriteable}>
-            {t('user_profile.sso.form.user.authn_button')}
+            {t('user_profile.sso.form.user.modify_authn_button')}
           </Button>
         </Space>
       )}
@@ -109,13 +103,13 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
         <Form
           layout="vertical"
           onFinish={handleFinish}
-          initialValues={{ user: 'root', password: '' }}
+          initialValues={{ user: value?.sql_user || 'root', password: '' }}
         >
           <Form.Item
             name="user"
             label={t('user_profile.sso.form.user.authn_dialog.user')}
           >
-            <Input style={DEFAULT_FORM_ITEM_STYLE} disabled />
+            <Input style={DEFAULT_FORM_ITEM_STYLE} />
           </Form.Item>
           <Form.Item
             name="password"
@@ -184,13 +178,7 @@ export function SSOForm() {
 
   useEffect(() => {
     if (impData) {
-      let rootImp: SsoSSOImpersonationModel | undefined = undefined
-      for (const imp of impData) {
-        if (imp.sql_user === 'root') {
-          rootImp = imp
-          break
-        }
-      }
+      let rootImp: SsoSSOImpersonationModel | undefined = impData[0]
       const update = { user_authenticated: rootImp }
       form.setFieldsValue(update)
       initialForm.current = {

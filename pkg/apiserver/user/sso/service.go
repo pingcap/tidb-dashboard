@@ -34,7 +34,6 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
-	"gorm.io/gorm/clause"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
@@ -139,9 +138,7 @@ func (s *Service) getOrCreateMasterEncKey() (*[32]byte, error) {
 // plain SQL password. Currently this function only reads `root` user impersonation.
 func (s *Service) getAndDecryptImpersonation() (string, string, error) {
 	var imp SSOImpersonationModel
-	// TODO: Support different users
 	err := s.params.LocalStore.
-		Where("sql_user = ?", "root").
 		First(&imp).Error
 	if err != nil {
 		return "", "", fmt.Errorf("bad record: %v", err)
@@ -210,9 +207,6 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 }
 
 func (s *Service) createImpersonation(user string, password string) (*SSOImpersonationModel, error) {
-	if user != "root" {
-		return nil, ErrUnsupportedUser.New("User must be root")
-	}
 	{
 		// First try to establish a connection to verify the user and password.
 		db, err := s.params.TiDBClient.OpenSQLConn(user, password)
@@ -239,7 +233,12 @@ func (s *Service) createImpersonation(user string, password string) (*SSOImperso
 		EncryptedPass:         encryptedInHex,
 		LastImpersonateStatus: nil,
 	}
-	err = s.params.LocalStore.Clauses(clause.Insert{Modifier: "OR REPLACE"}).Create(&record).Error
+	// currently, we only support to authorize one sql user
+	err = s.revokeAllImpersonations()
+	if err != nil {
+		return nil, err
+	}
+	err = s.params.LocalStore.Create(&record).Error
 	if err != nil {
 		return nil, err
 	}

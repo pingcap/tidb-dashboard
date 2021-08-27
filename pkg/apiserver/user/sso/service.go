@@ -182,7 +182,8 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 	}
 	{
 		// Try to establish a connection to verify the user and password.
-		db, err := s.params.TiDBClient.OpenSQLConn(user, password)
+		// db, err := s.params.TiDBClient.OpenSQLConn(user, password)
+		err := utils.VerifySQLUser(s.params.TiDBClient, user, password)
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				_ = s.updateImpersonationStatus(user, ImpersonateStatusAuthFail)
@@ -192,7 +193,7 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 		}
 
 		_ = s.updateImpersonationStatus(user, ImpersonateStatusSuccess)
-		_ = utils.CloseTiDBConnection(db)
+		// _ = utils.CloseTiDBConnection(db)
 	}
 	return &utils.SessionUser{
 		Version:      utils.SessionVersion,
@@ -209,14 +210,14 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 func (s *Service) createImpersonation(user string, password string) (*SSOImpersonationModel, error) {
 	{
 		// First try to establish a connection to verify the user and password.
-		db, err := s.params.TiDBClient.OpenSQLConn(user, password)
+		// db, err := s.params.TiDBClient.OpenSQLConn(user, password)
+		err := utils.VerifySQLUser(s.params.TiDBClient, user, password)
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
 			}
 			return nil, err
 		}
-		_ = utils.CloseTiDBConnection(db)
 	}
 	key, err := s.getOrCreateMasterEncKey()
 	if err != nil {

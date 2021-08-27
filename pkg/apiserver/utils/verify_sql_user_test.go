@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package sqlauth
+package utils
 
 import (
 	"testing"
@@ -24,11 +24,11 @@ func TestT(t *testing.T) {
 	TestingT(t)
 }
 
-var _ = Suite(&testSQLAuthSuite{})
+var _ = Suite(&testVerifySQLUserSuite{})
 
-type testSQLAuthSuite struct{}
+type testVerifySQLUserSuite struct{}
 
-func (t *testSQLAuthSuite) Test_parseGrants(c *C) {
+func (t *testVerifySQLUserSuite) Test_parseGrants(c *C) {
 	cases := []struct {
 		desc     string
 		input    []string

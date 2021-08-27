@@ -15,21 +15,6 @@ import (
 
 const typeID utils.AuthType = 0
 
-// TiDB config response
-//
-// "security": {
-//   ...
-//   "enable-sem": true/false,
-//   ...
-// },
-type tidbSecurityConfig struct {
-	Security tidbSEMConfig `json:"security"`
-}
-
-type tidbSEMConfig struct {
-	EnableSem bool `json:"enable-sem"`
-}
-
 type Authenticator struct {
 	user.BaseAuthenticator
 	tidbClient *tidb.Client
@@ -51,7 +36,7 @@ var Module = fx.Options(
 )
 
 func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUser, error) {
-	db, err := a.tidbClient.OpenSQLConn(f.Username, f.Password)
+	err := utils.VerifySQLUser(a.tidbClient, f.Username, f.Password)
 	if err != nil {
 		if errorx.Cast(err) == nil {
 			return nil, user.ErrSignInOther.WrapWithNoMessage(err)

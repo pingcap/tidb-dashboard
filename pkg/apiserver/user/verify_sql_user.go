@@ -11,15 +11,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package utils
+package user
 
 import (
 	"encoding/json"
-	"errors"
 	"regexp"
 	"strings"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+)
+
+var (
+	ErrLackPrivileges = ErrNS.NewType("lack_required_privileges")
 )
 
 // TiDB config response
@@ -42,7 +46,7 @@ func VerifySQLUser(tidbClient *tidb.Client, user, password string) error {
 	if err != nil {
 		return err
 	}
-	defer CloseTiDBConnection(db) //nolint:errcheck
+	defer utils.CloseTiDBConnection(db) //nolint:errcheck
 
 	// Check privileges
 	// 1. Check whether TiDB SEM is enabled
@@ -64,7 +68,7 @@ func VerifySQLUser(tidbClient *tidb.Client, user, password string) error {
 	grants := parseCurUserGrants(grantRows)
 	// 3. Check
 	if !checkDashboardPrivileges(grants, config.Security.EnableSem) {
-		return errors.New("miss required privileges")
+		return ErrLackPrivileges.NewWithNoMessage()
 	}
 	return nil
 }

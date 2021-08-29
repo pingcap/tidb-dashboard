@@ -32,7 +32,7 @@ var Module = fx.Options(
 )
 
 func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUser, error) {
-	err := utils.VerifySQLUser(a.tidbClient, f.Username, f.Password)
+	err := user.VerifySQLUser(a.tidbClient, f.Username, f.Password)
 	if err != nil {
 		if errorx.Cast(err) == nil {
 			return nil, user.ErrSignInOther.WrapWithNoMessage(err)
@@ -42,6 +42,7 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 		// tidb.ErrPDAccessFailed
 		// tidb.ErrTiDBConnFailed
 		// tidb.ErrTiDBAuthFailed
+		// user.ErrLackPrivileges
 		return nil, err
 	}
 

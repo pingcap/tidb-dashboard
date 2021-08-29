@@ -24,6 +24,7 @@ user_profile:
         authn_status:
           ok: Authorized
           auth_failed: 'Cannot impersonate: SQL user password is changed.'
+          lack_privileges: 'Cannot impersonate: lack required privileges to accsss dashboard'
       update: Update
       cancel: Cancel
   service_endpoints:

@@ -35,6 +35,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
@@ -176,29 +177,31 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 		return nil, err
 	}
 
-	user, password, err := s.getAndDecryptImpersonation()
+	userName, password, err := s.getAndDecryptImpersonation()
 	if err != nil {
 		return nil, err
 	}
 	{
-		// Try to establish a connection to verify the user and password.
-		// db, err := s.params.TiDBClient.OpenSQLConn(user, password)
-		err := utils.VerifySQLUser(s.params.TiDBClient, user, password)
+		// Check whether this user can access dashboard
+		err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
-				_ = s.updateImpersonationStatus(user, ImpersonateStatusAuthFail)
+				_ = s.updateImpersonationStatus(userName, ImpersonateStatusAuthFail)
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
+			}
+			if errorx.IsOfType(err, user.ErrLackPrivileges) {
+				_ = s.updateImpersonationStatus(userName, ImpersonateStatusLackPrivs)
+				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Lack required privileges")
 			}
 			return nil, err
 		}
 
-		_ = s.updateImpersonationStatus(user, ImpersonateStatusSuccess)
-		// _ = utils.CloseTiDBConnection(db)
+		_ = s.updateImpersonationStatus(userName, ImpersonateStatusSuccess)
 	}
 	return &utils.SessionUser{
 		Version:      utils.SessionVersion,
 		HasTiDBAuth:  true,
-		TiDBUsername: user,
+		TiDBUsername: userName,
 		TiDBPassword: password,
 		DisplayName:  userInfo.Email,
 		IsShareable:  true,
@@ -207,11 +210,10 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 	}, nil
 }
 
-func (s *Service) createImpersonation(user string, password string) (*SSOImpersonationModel, error) {
+func (s *Service) createImpersonation(userName string, password string) (*SSOImpersonationModel, error) {
 	{
-		// First try to establish a connection to verify the user and password.
-		// db, err := s.params.TiDBClient.OpenSQLConn(user, password)
-		err := utils.VerifySQLUser(s.params.TiDBClient, user, password)
+		// Check whether this user can access dashboard
+		err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
@@ -230,7 +232,7 @@ func (s *Service) createImpersonation(user string, password string) (*SSOImperso
 	encryptedInHex := hex.EncodeToString(encrypted)
 
 	record := &SSOImpersonationModel{
-		SQLUser:               user,
+		SQLUser:               userName,
 		EncryptedPass:         encryptedInHex,
 		LastImpersonateStatus: nil,
 	}

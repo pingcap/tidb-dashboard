@@ -26,7 +26,11 @@ interface IUserAuthInputProps {
 }
 
 function isImpersonationNotFailed(imp?: SsoSSOImpersonationModel) {
-  return Boolean(imp && imp.last_impersonate_status !== 'auth_fail')
+  return Boolean(
+    imp &&
+      imp.last_impersonate_status !== 'auth_fail' &&
+      imp.last_impersonate_status !== 'lack_privileges'
+  )
 }
 
 function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
@@ -68,25 +72,30 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
           </Button>
         </Space>
       )}
-      {isImpersonationNotFailed(value) && (
+
+      {Boolean(value) && (
         <Space>
           <span>{value!.sql_user}</span>
-          <Typography.Text type="success">
-            <CheckCircleFilled />{' '}
-            {t('user_profile.sso.form.user.authn_status.ok')}
-          </Typography.Text>
-          <Button onClick={handleAuthnClick} disabled={!isWriteable}>
-            {t('user_profile.sso.form.user.modify_authn_button')}
-          </Button>
-        </Space>
-      )}
-      {Boolean(value && !isImpersonationNotFailed(value)) && (
-        <Space>
-          <span>{value!.sql_user}</span>
-          <Typography.Text type="danger">
-            <CheckCircleFilled />{' '}
-            {t('user_profile.sso.form.user.authn_status.auth_failed')}
-          </Typography.Text>
+
+          {isImpersonationNotFailed(value) && (
+            <Typography.Text type="success">
+              <CheckCircleFilled />{' '}
+              {t('user_profile.sso.form.user.authn_status.ok')}
+            </Typography.Text>
+          )}
+          {value?.last_impersonate_status === 'auth_fail' && (
+            <Typography.Text type="danger">
+              <CheckCircleFilled />{' '}
+              {t('user_profile.sso.form.user.authn_status.auth_failed')}
+            </Typography.Text>
+          )}
+          {value?.last_impersonate_status === 'lack_privileges' && (
+            <Typography.Text type="danger">
+              <CheckCircleFilled />{' '}
+              {t('user_profile.sso.form.user.authn_status.lack_privileges')}
+            </Typography.Text>
+          )}
+
           <Button onClick={handleAuthnClick} disabled={!isWriteable}>
             {t('user_profile.sso.form.user.modify_authn_button')}
           </Button>

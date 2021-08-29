@@ -24,6 +24,7 @@ user_profile:
         authn_status:
           ok: 已授权
           auth_failed: 授权失败：SQL 用户密码已变更
+          lack_privileges: 授权失败：缺少访问 DashBoard 必须的权限
       update: 更新
       cancel: 取消
   service_endpoints:

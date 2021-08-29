@@ -35,7 +35,6 @@ import (
 var (
 	ErrNS                  = errorx.NewNamespace("error.api.user")
 	ErrUnsupportedAuthType = ErrNS.NewType("unsupported_auth_type")
-	ErrLackPrivileges      = ErrNS.NewType("lack_required_privileges")
 	ErrNSSignIn            = ErrNS.NewSubNamespace("signin")
 	ErrSignInOther         = ErrNSSignIn.NewType("other")
 )

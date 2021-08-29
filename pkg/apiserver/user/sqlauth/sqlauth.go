@@ -65,7 +65,7 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	}
 	defer utils.CloseTiDBConnection(db) //nolint:errcheck
 
-	// Check privileges
+	// Check dashboard privileges
 	// 1. Check whether TiDB SEM is enabled
 	resData, err := a.tidbClient.SendGetRequest("/config")
 	if err != nil {
@@ -84,59 +84,8 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	}
 	grants := parseCurUserGrants(grantRows)
 	// 3. Check
-	// Following base privileges are required
-	// - ALL PRIVILEGES
-	// - or
-	// - PROCESS
-	// - SHOW DATABASES
-	// - CONFIG
-	// - SYSTEM_VARIABLES_ADMIN or SUPER (SUPER includes SYSTEM_VARIABLES_ADMIN)
-	// - DASHBOARD_CLIENT or SUPER (SUPER includes DASHBOARD_CLIENT)
-	// When TiDB SEM is enabled, following extra privileges are required
-	// - RESTRICTED_VARIABLES_ADMIN
-	// - RESTRICTED_TABLES_ADMIN
-	// - RESTRICTED_STATUS_ADMIN
-	hasPriv := func(priv string) bool {
-		for _, grant := range grants {
-			if priv == grant {
-				return true
-			}
-		}
-		return false
-	}
-	fullfillPrivileges := false
-	if hasPriv("ALL PRIVILEGES") {
-		fullfillPrivileges = true
-	} else {
-		if !hasPriv("PROCESS") {
-			fullfillPrivileges = false
-		} else if !hasPriv("SHOW DATABASES") {
-			fullfillPrivileges = false
-		} else if !hasPriv("CONFIG") {
-			fullfillPrivileges = false
-		} else {
-			if hasPriv("SUPER") {
-				fullfillPrivileges = true
-			} else {
-				if !hasPriv("SYSTEM_VARIABLES_ADMIN") {
-					fullfillPrivileges = false
-				} else if !hasPriv("DASHBOARD_CLIENT") {
-					fullfillPrivileges = false
-				} else {
-					fullfillPrivileges = true
-				}
-			}
-		}
-	}
-	if config.Security.EnableSem {
-		fullfillPrivileges =
-			fullfillPrivileges &&
-				hasPriv("RESTRICTED_VARIABLES_ADMIN") &&
-				hasPriv("RESTRICTED_TABLES_ADMIN") &&
-				hasPriv("RESTRICTED_STATUS_ADMIN")
-	}
-	if !fullfillPrivileges {
-		return nil, user.ErrMissPrivileges.NewWithNoMessage()
+	if !checkDashboardPrivileges(grants, config.Security.EnableSem) {
+		return nil, user.ErrLackPrivileges.NewWithNoMessage()
 	}
 
 	return &utils.SessionUser{
@@ -171,4 +120,61 @@ func parseCurUserGrants(grantRows []string) []string {
 	}
 
 	return grants
+}
+
+// Following base privileges are required
+// - ALL PRIVILEGES
+// - or
+// - PROCESS
+// - SHOW DATABASES
+// - CONFIG
+// - SYSTEM_VARIABLES_ADMIN or SUPER (SUPER includes SYSTEM_VARIABLES_ADMIN)
+// - DASHBOARD_CLIENT or SUPER (SUPER includes DASHBOARD_CLIENT)
+// When TiDB SEM is enabled, following extra privileges are required
+// - RESTRICTED_VARIABLES_ADMIN
+// - RESTRICTED_TABLES_ADMIN
+// - RESTRICTED_STATUS_ADMIN
+func checkDashboardPrivileges(grants []string, enableSEM bool) bool {
+	hasPriv := func(priv string) bool {
+		for _, grant := range grants {
+			if priv == grant {
+				return true
+			}
+		}
+		return false
+	}
+
+	hasAllPriv := hasPriv("ALL PRIVILEGES")
+	if !hasAllPriv {
+		if !hasPriv("PROCESS") {
+			return false
+		}
+		if !hasPriv("SHOW DATABASES") {
+			return false
+		}
+		if !hasPriv("CONFIG") {
+			return false
+		}
+		hasSuperPriv := hasPriv("SUPER")
+		if !hasSuperPriv {
+			if !hasPriv("SYSTEM_VARIABLES_ADMIN") {
+				return false
+			}
+			if !hasPriv("DASHBOARD_CLIENT") {
+				return false
+			}
+		}
+	}
+	if enableSEM {
+		if !hasPriv("RESTRICTED_VARIABLES_ADMIN") {
+			return false
+		}
+		if !hasPriv("RESTRICTED_TABLES_ADMIN") {
+			return false
+		}
+		if !hasPriv("RESTRICTED_TABLES_ADMIN") {
+			return false
+		}
+	}
+	return true
 }

@@ -74,3 +74,87 @@ func (t *testSQLAuthSuite) Test_parseGrants(c *C) {
 		c.Assert(actual, DeepEquals, v.expected, Commentf("parse %s (index: %d) failed", v.desc, i))
 	}
 }
+
+func (t *testSQLAuthSuite) Test_checkDashboardPrivileges(c *C) {
+	cases := []struct {
+		desc                string
+		inputParamGrants    []string
+		inputParamEnableSEM bool
+		expected            bool
+	}{
+		// 0
+		{
+			desc:                "all privileges with enableSEM false",
+			inputParamGrants:    []string{"ALL PRIVILEGES"},
+			inputParamEnableSEM: false,
+			expected:            true,
+		},
+		// 1
+		{
+			desc:                "all privileges with enableSEM true",
+			inputParamGrants:    []string{"ALL PRIVILEGES"},
+			inputParamEnableSEM: true,
+			expected:            false,
+		},
+		// 2
+		{
+			desc:                "super privileges with enableSEM false",
+			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SUPER"},
+			inputParamEnableSEM: false,
+			expected:            true,
+		},
+		// 3
+		{
+			desc:                "super privileges with enableSEM true",
+			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SUPER"},
+			inputParamEnableSEM: true,
+			expected:            false,
+		},
+		// 4
+		{
+			desc:                "base privileges with enableSEM false",
+			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SYSTEM_VARIABLES_ADMIN", "DASHBOARD_CLIENT"},
+			inputParamEnableSEM: false,
+			expected:            true,
+		},
+		// 5
+		{
+			desc:                "base privileges with enableSEM true",
+			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SYSTEM_VARIABLES_ADMIN", "DASHBOARD_CLIENT"},
+			inputParamEnableSEM: true,
+			expected:            false,
+		},
+		// 6
+		{
+			desc:                "lack PROCESS privilege",
+			inputParamGrants:    []string{"SHOW DATABASES", "CONFIG", "SYSTEM_VARIABLES_ADMIN", "DASHBOARD_CLIENT"},
+			inputParamEnableSEM: false,
+			expected:            false,
+		},
+		// 7
+		{
+			desc:                "lack SYSTEM_VARIABLES_ADMIN privilege",
+			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT"},
+			inputParamEnableSEM: false,
+			expected:            false,
+		},
+		// 8
+		{
+			desc:                "extra privileges",
+			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SYSTEM_VARIABLES_ADMIN", "DASHBOARD_CLIENT", "RESTRICTED_VARIABLES_ADMIN", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
+			inputParamEnableSEM: true,
+			expected:            true,
+		},
+		// 9
+		{
+			desc:                "lack RESTRICTED_VARIABLES_ADMIN extra privileges",
+			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SYSTEM_VARIABLES_ADMIN", "DASHBOARD_CLIENT", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
+			inputParamEnableSEM: true,
+			expected:            false,
+		},
+	}
+	for i, v := range cases {
+		actual := checkDashboardPrivileges(v.inputParamGrants, v.inputParamEnableSEM)
+		c.Assert(actual, DeepEquals, v.expected, Commentf("parse %s (index: %d) failed", v.desc, i))
+	}
+}

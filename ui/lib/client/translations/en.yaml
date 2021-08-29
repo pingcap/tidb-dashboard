@@ -7,7 +7,7 @@ error:
     user:
       signin:
         invalid_code: Authorization Code is invalid or expired
-      miss_required_privileges: The User misses required privileges to access dashboard
+      lack_required_privileges: The User lacks required privileges to access dashboard
     slow_query:
       export_no_data: No slow queires can be exported
     statement:

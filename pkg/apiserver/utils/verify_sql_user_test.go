@@ -14,15 +14,8 @@
 package utils
 
 import (
-	"testing"
-
 	. "github.com/pingcap/check"
 )
-
-func TestT(t *testing.T) {
-	CustomVerboseFlag = true
-	TestingT(t)
-}
 
 var _ = Suite(&testVerifySQLUserSuite{})
 
@@ -75,7 +68,7 @@ func (t *testVerifySQLUserSuite) Test_parseGrants(c *C) {
 	}
 }
 
-func (t *testSQLAuthSuite) Test_checkDashboardPrivileges(c *C) {
+func (t *testVerifySQLUserSuite) Test_checkDashboardPrivileges(c *C) {
 	cases := []struct {
 		desc                string
 		inputParamGrants    []string

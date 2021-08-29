@@ -150,17 +150,22 @@ async function webPageStart() {
 async function main() {
   if (routing.isPortalPage()) {
     // the portal page is only used to receive options
-    window.addEventListener(
-      'message',
-      (event) => {
-        const { token, lang, hideNav, redirectPath } = event.data
-        auth.setAuthToken(token)
-        saveAppOptions({ hideNav, lang })
-        window.location.hash = `#${redirectPath}`
-        window.location.reload()
-      },
-      { once: true }
-    )
+    function handlePortalEvent(event) {
+      const { type, token, lang, hideNav, redirectPath } = event.data
+      // the event type must be "DASHBOARD_PORTAL_EVENT"
+      if (type !== 'DASHBOARD_PORTAL_EVENT') {
+        return
+      }
+
+      auth.setAuthToken(token)
+      saveAppOptions({ hideNav, lang })
+      window.location.hash = `#${redirectPath}`
+      window.location.reload()
+
+      window.removeEventListener('message', handlePortalEvent)
+    }
+
+    window.addEventListener('message', handlePortalEvent)
     return
   }
 

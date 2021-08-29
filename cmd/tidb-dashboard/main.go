@@ -29,7 +29,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	_ "net/http/pprof" //nolint:gosec
+	_ "net/http/pprof" // #nosec
 	"os"
 	"os/signal"
 	"strings"

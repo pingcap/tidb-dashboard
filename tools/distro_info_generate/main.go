@@ -33,7 +33,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(zap.Error(err))
 	}
-	if err := ioutil.WriteFile(*outputPath, d, 0666); err != nil {
+	if err := ioutil.WriteFile(*outputPath, d, 0600); err != nil {
 		log.Fatalln(zap.Error(err))
 	}
 }

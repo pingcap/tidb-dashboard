@@ -47,7 +47,9 @@ func BenchmarkGenerateScale(b *testing.B) {
 	var data testDisData
 	fin, err := os.Open("../testdata/dis.json.gzip")
 	perr(err)
-	defer fin.Close()
+	defer func() {
+		_ = fin.Close()
+	}()
 	ifs, err := gzip.NewReader(fin)
 	perr(err)
 	err = json.NewDecoder(ifs).Decode(&data)

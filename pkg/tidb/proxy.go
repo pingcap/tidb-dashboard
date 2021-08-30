@@ -31,7 +31,7 @@ func (r *remote) checkAlive(timeout time.Duration) error {
 	if err != nil {
 		return err
 	}
-	conn.Close()
+	_ = conn.Close()
 	r.inactive.Store(false)
 	return nil
 }
@@ -105,20 +105,20 @@ func (p *proxy) serve(in net.Conn) {
 	out := p.pickActiveConn()
 	if out == nil {
 		log.Warn("no alive remote, drop incoming conn")
-		in.Close()
+		_ = in.Close()
 		return
 	}
 	// bidirectional copy
 	go func() {
 		//nolint
 		io.Copy(in, out)
-		in.Close()
-		out.Close()
+		_ = in.Close()
+		_ = out.Close()
 	}()
 	//nolint
 	io.Copy(out, in)
-	out.Close()
-	in.Close()
+	_ = out.Close()
+	_ = in.Close()
 }
 
 func (p *proxy) pickActiveConn() (out net.Conn) {

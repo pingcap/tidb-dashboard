@@ -39,6 +39,27 @@ func NewAPIModelWithMiddleware(endpoint *APIModel) *APIModelWithMiddleware {
 	}
 }
 
+// AllMiddlewares includes endpoint middlewares & param model middlewares
+func (m *APIModelWithMiddleware) AllMiddlewares() []MiddlewareHandler {
+	middlewares := []MiddlewareHandler{}
+
+	// param model middlewares
+	params := m.GetParams()
+	pathParamLen := len(m.PathParams)
+	for i, p := range params {
+		isPathParam := i < pathParamLen
+		modelMiddlewares := p.Model.GetMiddlewares(p, isPathParam)
+		if len(modelMiddlewares) != 0 {
+			middlewares = append(middlewares, modelMiddlewares...)
+		}
+	}
+
+	// endpoint middlewares
+	middlewares = append(middlewares, m.Middlewares...)
+
+	return middlewares
+}
+
 type Client struct {
 	endpointMap  map[string]*APIModelWithMiddleware
 	endpointList []APIModel
@@ -69,9 +90,9 @@ func (c *Client) AddEndpoint(endpoint *APIModel, middlewares ...MiddlewareHandle
 	if c.endpointMap[endpoint.ID] != nil {
 		return fmt.Errorf("duplicated endpoint: %s", endpoint.ID)
 	}
-	ew := NewAPIModelWithMiddleware(endpoint)
-	ew.Use(middlewares...)
-	c.endpointMap[endpoint.ID] = ew
+	m := NewAPIModelWithMiddleware(endpoint)
+	m.Use(middlewares...)
+	c.endpointMap[endpoint.ID] = m
 	c.endpointList = append(c.endpointList, *endpoint)
 	return nil
 }
@@ -100,10 +121,9 @@ func (c *Client) setValues(endpoint *APIModelWithMiddleware, params map[string]s
 }
 
 // required validate middleware -> param model middlewares -> endpoint middlewares
-func (c *Client) execMiddlewares(endpoint *APIModelWithMiddleware, req *Request) error {
-	middlewares := []MiddlewareHandler{requiredMiddlewareAdapter(endpoint.APIModel)}
-	middlewares = append(middlewares, getParamModelMiddlewares(endpoint.APIModel)...)
-	middlewares = append(middlewares, endpoint.Middlewares...)
+func (c *Client) execMiddlewares(m *APIModelWithMiddleware, req *Request) error {
+	middlewares := []MiddlewareHandler{requiredMiddlewareAdapter(m.APIModel)}
+	middlewares = append(middlewares, m.AllMiddlewares()...)
 	for _, m := range middlewares {
 		if m == nil {
 			continue
@@ -113,20 +133,6 @@ func (c *Client) execMiddlewares(endpoint *APIModelWithMiddleware, req *Request)
 		}
 	}
 	return nil
-}
-
-func getParamModelMiddlewares(endpoint *APIModel) []MiddlewareHandler {
-	middlewares := []MiddlewareHandler{}
-	params := endpoint.GetParams()
-	pathParamLen := len(endpoint.PathParams)
-	for i, p := range params {
-		isPathParam := i < pathParamLen
-		modelMiddlewares := p.Model.GetMiddlewares(p, isPathParam)
-		if len(modelMiddlewares) != 0 {
-			middlewares = append(middlewares, modelMiddlewares...)
-		}
-	}
-	return middlewares
 }
 
 // check all required params in endpoint

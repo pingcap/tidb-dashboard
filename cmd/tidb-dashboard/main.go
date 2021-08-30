@@ -29,7 +29,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	_ "net/http/pprof" //nolint:gosec
+	_ "net/http/pprof" // #nosec
 	"os"
 	"os/signal"
 	"strings"
@@ -47,7 +47,6 @@ import (
 	keyvisualregion "github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
-	_ "github.com/pingcap/tidb-dashboard/pkg/utils/distro/populate"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
 )
 
@@ -99,9 +98,6 @@ func NewCLIConfig() *DashboardCLIConfig {
 	}
 
 	cfg.CoreConfig.NormalizePublicPathPrefix()
-	if err := cfg.CoreConfig.NormalizePDEndPoint(); err != nil {
-		log.Fatal("Invalid PD Endpoint", zap.Error(err))
-	}
 
 	// setup TLS config for TiDB components
 	if len(*clusterCaPath) != 0 && len(*clusterCertPath) != 0 && len(*clusterKeyPath) != 0 {
@@ -112,6 +108,10 @@ func NewCLIConfig() *DashboardCLIConfig {
 	// See https://github.com/pingcap/docs/blob/7a62321b3ce9318cbda8697503c920b2a01aeb3d/how-to/secure/enable-tls-clients.md#enable-authentication
 	if (len(*tidbCertPath) != 0 && len(*tidbKeyPath) != 0) || len(*tidbCaPath) != 0 {
 		cfg.CoreConfig.TiDBTLSConfig = buildTLSConfig(tidbCaPath, tidbKeyPath, tidbCertPath)
+	}
+
+	if err := cfg.CoreConfig.NormalizePDEndPoint(); err != nil {
+		log.Fatal("Invalid PD Endpoint", zap.Error(err))
 	}
 
 	// keyvisual check

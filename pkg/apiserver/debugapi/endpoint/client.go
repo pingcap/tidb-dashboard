@@ -44,15 +44,13 @@ func (m *APIModelWithMiddleware) AllMiddlewares() []MiddlewareHandler {
 	middlewares := []MiddlewareHandler{}
 
 	// param model middlewares
-	params := m.GetParams()
-	pathParamLen := len(m.PathParams)
-	for i, p := range params {
-		isPathParam := i < pathParamLen
+	m.ForEachParam(func(p *APIParam, isPathParam bool) error {
 		modelMiddlewares := p.Model.GetMiddlewares(p, isPathParam)
 		if len(modelMiddlewares) != 0 {
 			middlewares = append(middlewares, modelMiddlewares...)
 		}
-	}
+		return nil
+	})
 
 	// endpoint middlewares
 	middlewares = append(middlewares, m.Middlewares...)
@@ -138,10 +136,7 @@ func (c *Client) execMiddlewares(m *APIModelWithMiddleware, req *Request) error 
 // check all required params in endpoint
 func requiredMiddlewareAdapter(endpoint *APIModel) MiddlewareHandler {
 	return MiddlewareHandlerFunc(func(req *Request) error {
-		params := endpoint.GetParams()
-		pathParamLen := len(endpoint.PathParams)
-		for i, p := range params {
-			isPathParam := i < pathParamLen
+		return endpoint.ForEachParam(func(p *APIParam, isPathParam bool) error {
 			var values url.Values
 			if isPathParam {
 				values = req.PathValues
@@ -153,8 +148,6 @@ func requiredMiddlewareAdapter(endpoint *APIModel) MiddlewareHandler {
 			} else {
 				return nil
 			}
-		}
-
-		return nil
+		})
 	})
 }

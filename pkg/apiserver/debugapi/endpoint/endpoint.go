@@ -34,7 +34,9 @@ type APIModel struct {
 	QueryParams []*APIParam    `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
 }
 
-func (m *APIModel) GetParams() []*APIParam {
+// EachParams simplifies the process of iterating over path & query params
+// and ends the iteration when return error
+func (m *APIModel) ForEachParam(fn func(p *APIParam, isPathParam bool) error) error {
 	params := make([]*APIParam, len(m.PathParams)+len(m.QueryParams))
 	if m.PathParams != nil {
 		params = append(params, m.PathParams...)
@@ -42,5 +44,13 @@ func (m *APIModel) GetParams() []*APIParam {
 	if m.QueryParams != nil {
 		params = append(params, m.QueryParams...)
 	}
-	return params
+
+	pathParamLen := len(m.PathParams)
+	for i, p := range params {
+		isPathParam := i < pathParamLen
+		if err := fn(p, isPathParam); err != nil {
+			return err
+		}
+	}
+	return nil
 }

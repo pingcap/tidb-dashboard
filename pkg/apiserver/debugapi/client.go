@@ -32,33 +32,39 @@ const (
 	defaultTimeout = time.Second * 35 // Default profiling can be as long as 30s. Add 5 seconds for other overheads.
 )
 
-type Client interface {
-	Get(request *endpoint.Request) (*httpc.Response, error)
+type Dispatcher struct {
+	endpoint.Dispatcher
+	clients ClientMap
 }
 
 type ClientMap map[model.NodeKind]Client
 
-func newClientMap(tidbImpl tidbImplement, tikvImpl tikvImplement, tiflashImpl tiflashImplement, pdImpl pdImplement) *ClientMap {
-	clientMap := ClientMap{
-		model.NodeKindTiDB:    &tidbImpl,
-		model.NodeKindTiKV:    &tikvImpl,
-		model.NodeKindTiFlash: &tiflashImpl,
-		model.NodeKindPD:      &pdImpl,
-	}
-	return &clientMap
-}
-
-func SendRequest(client Client, req *endpoint.Request) (*httpc.Response, error) {
+func (d *Dispatcher) Send(req *endpoint.Request) (*httpc.Response, error) {
 	if req.Timeout <= 0 {
 		req.Timeout = defaultTimeout
 	}
 
 	switch req.Method {
 	case endpoint.MethodGet:
-		return client.Get(req)
+		return d.clients[req.Component].Get(req)
 	default:
 		return nil, fmt.Errorf("invalid request method `%s`, host: %s, path: %s", req.Method, req.Host, req.Path)
 	}
+}
+
+func newDispatcher(tidbImpl tidbImplement, tikvImpl tikvImplement, tiflashImpl tiflashImplement, pdImpl pdImplement) *Dispatcher {
+	return &Dispatcher{
+		clients: ClientMap{
+			model.NodeKindTiDB:    &tidbImpl,
+			model.NodeKindTiKV:    &tikvImpl,
+			model.NodeKindTiFlash: &tiflashImpl,
+			model.NodeKindPD:      &pdImpl,
+		},
+	}
+}
+
+type Client interface {
+	Get(request *endpoint.Request) (*httpc.Response, error)
 }
 
 func buildRelativeURI(path string, query string) string {
@@ -77,7 +83,7 @@ func (impl *tidbImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
 		WithEnforcedStatusAPIAddress(req.Host, req.Port).
 		WithStatusAPITimeout(req.Timeout).
-		Get(buildRelativeURI(req.Path, req.Query))
+		Get(buildRelativeURI(req.Path(), req.Query()))
 }
 
 type tikvImplement struct {
@@ -88,7 +94,7 @@ type tikvImplement struct {
 func (impl *tikvImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
 		WithTimeout(req.Timeout).
-		Get(req.Host, req.Port, buildRelativeURI(req.Path, req.Query))
+		Get(req.Host, req.Port, buildRelativeURI(req.Path(), req.Query()))
 }
 
 type tiflashImplement struct {
@@ -99,7 +105,7 @@ type tiflashImplement struct {
 func (impl *tiflashImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
 		WithTimeout(req.Timeout).
-		Get(req.Host, req.Port, buildRelativeURI(req.Path, req.Query))
+		Get(req.Host, req.Port, buildRelativeURI(req.Path(), req.Query()))
 }
 
 type pdImplement struct {
@@ -111,5 +117,5 @@ func (impl *pdImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
 	return impl.Client.
 		WithAddress(req.Host, req.Port).
 		WithTimeout(req.Timeout).
-		Get(buildRelativeURI(req.Path, req.Query))
+		Get(buildRelativeURI(req.Path(), req.Query()))
 }

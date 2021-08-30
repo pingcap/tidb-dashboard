@@ -41,27 +41,14 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	}
 }
 
-type endpointModel struct {
-	endpoint.APIModel
-	Client Client
-}
-
 type Service struct {
-	endpointMap map[string]endpointModel
+	Client *endpoint.Client
 }
 
-func newService(clientMap *ClientMap) (*Service, error) {
-	s := &Service{endpointMap: map[string]endpointModel{}}
-
-	for _, e := range endpoint.APIListDef {
-		client, ok := (*clientMap)[e.Component]
-		if !ok {
-			panic(fmt.Sprintf("%s type client not found, id: %s", e.Component, e.ID))
-		}
-		s.endpointMap[e.ID] = endpointModel{APIModel: e, Client: client}
-	}
-
-	return s, nil
+func newService(dispatcher *Dispatcher) *Service {
+	c := endpoint.NewClient(dispatcher)
+	registerEndpoints(c)
+	return &Service{Client: c}
 }
 
 type RequestPayload struct {
@@ -101,19 +88,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 		return
 	}
 
-	ep, ok := s.endpointMap[req.ID]
-	if !ok {
-		utils.MakeInvalidRequestErrorWithMessage(c, "Invalid endpoint id: %s", req.ID)
-		return
-	}
-	endpointReq, err := ep.NewRequest(req.Host, req.Port, req.Params)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	// TODO: needs to be more cohesion
-	res, err := SendRequest(ep.Client, endpointReq)
+	res, err := s.Client.Send(req.ID, req.Host, req.Port, req.Params)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -122,8 +97,8 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 
 	// TODO: needs to be more cohesion
 	var ext string
-	if ep.Ext != "" {
-		ext = ep.Ext
+	if s.Client.Endpoint(req.ID).Ext != "" {
+		ext = s.Client.Endpoint(req.ID).Ext
 	} else {
 		ext = getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
 	}
@@ -167,5 +142,5 @@ func (s *Service) Download(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /debug_api/endpoints [get]
 func (s *Service) GetEndpoints(c *gin.Context) {
-	c.JSON(http.StatusOK, endpoint.APIListDef)
+	c.JSON(http.StatusOK, s.Client.Endpoints())
 }

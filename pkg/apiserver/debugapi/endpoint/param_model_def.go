@@ -27,26 +27,26 @@ var APIParamModelText = NewAPIParamModel("text")
 
 var falselyValues = []string{"false", "0", "null", "undefined", ""}
 
-var APIParamModelBool = NewAPIParamModel("bool").AddTransformer(func(ctx *Context) error {
-	if funk.Contains(falselyValues, ctx.Value()) {
-		ctx.SetValue("false")
+var APIParamModelBool = NewAPIParamModel("bool").AddMiddleware(func(p *ModelParam) error {
+	if funk.Contains(falselyValues, p.Value()) {
+		p.SetValue("false")
 	} else {
-		ctx.SetValue("true")
+		p.SetValue("true")
 	}
 	return nil
 })
 
-var APIParamModelTags = NewAPIParamModel("tags").AddTransformer(func(ctx *Context) error {
-	vals := strings.Split(ctx.Value(), ",")
-	ctx.SetValues(funk.Map(vals, func(str string) string {
+var APIParamModelTags = NewAPIParamModel("tags").AddMiddleware(func(p *ModelParam) error {
+	vals := strings.Split(p.Value(), ",")
+	p.SetValues(funk.Map(vals, func(str string) string {
 		v, _ := url.QueryUnescape(str)
 		return v
 	}).([]string))
 	return nil
 })
 
-var APIParamModelInt = NewAPIParamModel("int").AddValidator(func(ctx *Context) error {
-	if _, err := strconv.Atoi(ctx.Value()); err != nil {
+var APIParamModelInt = NewAPIParamModel("int").AddMiddleware(func(p *ModelParam) error {
+	if _, err := strconv.Atoi(p.Value()); err != nil {
 		return fmt.Errorf("param not a number")
 	}
 	return nil
@@ -72,13 +72,13 @@ func APIParamModelEnum(items []EnumItem) APIParamModel {
 		return item
 	}).([]EnumItem)
 	enumModel := &enumAPIParamModel{*apiParamModelEnum, items}
-	enumModel.AddValidator(func(ctx *Context) error {
+	enumModel.AddMiddleware(func(p *ModelParam) error {
 		isValid := funk.Contains(items, func(item EnumItem) bool {
-			v := ctx.Value()
+			v := p.Value()
 			return item.Value == v
 		})
 		if !isValid {
-			return fmt.Errorf("param is not a valid enum type, value: %s", ctx.Value())
+			return fmt.Errorf("param is not a valid enum type, value: %s", p.Value())
 		}
 		return nil
 	})
@@ -95,8 +95,8 @@ var apiParamModelConstant = NewAPIParamModel("constant")
 
 func APIParamModelConstant(value string) APIParamModel {
 	m := &constantAPIParamModel{apiParamModelConstant, value}
-	m.AddTransformer(func(ctx *Context) error {
-		ctx.SetValue(value)
+	m.AddMiddleware(func(p *ModelParam) error {
+		p.SetValue(value)
 		return nil
 	})
 	return m

@@ -14,54 +14,72 @@
 
 package endpoint
 
-var (
-	ErrMissingRequiredParam = ErrNS.NewType("missing_require_parameter")
-)
+import "net/url"
 
 type APIParamModel interface {
-	AddTransformer(fun HookHandlerFunc) APIParamModel
-	Transform(c *Context) error
-	AddValidator(fun HookHandlerFunc) APIParamModel
-	Validate(c *Context) error
+	AddMiddleware(handler ...ModelMiddlewareHandlerFunc) APIParamModel
+	GetMiddlewares(param *APIParam, isPathParam bool) []MiddlewareHandler
 }
 
-// ModelTransformer can transform the incoming param's value in special scenarios
-// Also, now are used as validation function
-type ModelTransformer func(ctx *Context) error
+// ModelMiddlewareHandlerFunc can only get the value of the current param
+type ModelMiddlewareHandlerFunc func(p *ModelParam) error
 
 type BaseAPIParamModel struct {
-	transformer Hook
-	validator   Hook
+	middlewares []ModelMiddlewareHandlerFunc
 
 	Type string `json:"type"`
 }
 
 func NewAPIParamModel(t string) *BaseAPIParamModel {
-	return &BaseAPIParamModel{Type: t}
+	return &BaseAPIParamModel{Type: t, middlewares: []ModelMiddlewareHandlerFunc{}}
 }
 
-func (m *BaseAPIParamModel) AddTransformer(fun HookHandlerFunc) APIParamModel {
-	m.transformer.HandlerFunc(fun)
+func (m *BaseAPIParamModel) AddMiddleware(handler ...ModelMiddlewareHandlerFunc) APIParamModel {
+	m.middlewares = append(m.middlewares, handler...)
 	return m
 }
 
-func (m *BaseAPIParamModel) Transform(ctx *Context) error {
-	return m.transformer.Exec(ctx)
+// GetMiddlewares do some adapter works, limit model middleware can only get the value of the current param
+func (m *BaseAPIParamModel) GetMiddlewares(param *APIParam, isPathParam bool) []MiddlewareHandler {
+	middlewares := make([]MiddlewareHandler, len(m.middlewares))
+	for _, mi := range m.middlewares {
+		middlewares = append(middlewares, MiddlewareHandlerFunc(func(req *Request) error {
+			var values url.Values
+			if isPathParam {
+				values = req.PathValues
+			} else {
+				values = req.QueryValues
+			}
+			return mi(&ModelParam{values: values, param: param})
+		}))
+	}
+	return middlewares
 }
 
-func (m *BaseAPIParamModel) AddValidator(fun HookHandlerFunc) APIParamModel {
-	m.validator.HandlerFunc(fun)
-	return m
+type ModelParam struct {
+	values url.Values
+	param  *APIParam
 }
 
-func (m *BaseAPIParamModel) Validate(ctx *Context) error {
-	return m.validator.Exec(ctx)
+func (mc *ModelParam) Value() string {
+	return mc.values.Get(mc.param.Name)
+}
+
+func (mc *ModelParam) SetValue(val string) {
+	mc.values.Set(mc.param.Name, val)
+}
+
+func (mc *ModelParam) Values() []string {
+	return mc.values[mc.param.Name]
+}
+
+func (mc *ModelParam) SetValues(val []string) {
+	for _, v := range val {
+		mc.values.Add(mc.param.Name, v)
+	}
 }
 
 type APIParam struct {
-	transformer Hook
-	validator   Hook
-
 	Name     string `json:"name"`
 	Required bool   `json:"required"`
 	// represents what param is
@@ -69,34 +87,5 @@ type APIParam struct {
 }
 
 func NewAPIParam(model APIParamModel, name string, required bool) *APIParam {
-	p := &APIParam{Name: name, Model: model, Required: required}
-	if required {
-		p.AddValidator(requiredValidator)
-	}
-	return p
-}
-
-func requiredValidator(c *Context) error {
-	if c.Value() == "" {
-		return ErrMissingRequiredParam.New("missing required param: %s", c.ParamName)
-	}
-	return nil
-}
-
-func (p *APIParam) AddTransformer(fun HookHandlerFunc) *APIParam {
-	p.transformer.HandlerFunc(fun)
-	return p
-}
-
-func (p *APIParam) Transform(ctx *Context) error {
-	return p.transformer.Exec(ctx)
-}
-
-func (p *APIParam) AddValidator(fun HookHandlerFunc) *APIParam {
-	p.validator.HandlerFunc(fun)
-	return p
-}
-
-func (p *APIParam) Validate(ctx *Context) error {
-	return p.validator.Exec(ctx)
+	return &APIParam{Name: name, Model: model, Required: required}
 }

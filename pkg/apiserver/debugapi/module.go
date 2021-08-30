@@ -16,6 +16,6 @@ package debugapi
 import "go.uber.org/fx"
 
 var Module = fx.Options(
-	fx.Provide(newService, newClientMap),
+	fx.Provide(newService, newDispatcher),
 	fx.Invoke(registerRouter),
 )

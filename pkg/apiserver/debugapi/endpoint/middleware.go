@@ -14,34 +14,30 @@
 
 package endpoint
 
-type HookHandlerFunc func(ctx *Context) error
-
-func (h HookHandlerFunc) Handle(ctx *Context) error {
-	return h(ctx)
+type Middlewarer interface {
+	AddMiddleware(handler ...MiddlewareHandler)
+	GetMiddlewares() []MiddlewareHandler
 }
 
-type HookHandler interface {
-	Handle(ctx *Context) error
+type MiddlewareHub struct {
+	Middlewares []MiddlewareHandler
 }
 
-type Hook struct {
-	handlers []HookHandler
+func NewMiddlewareHub() *MiddlewareHub {
+	return &MiddlewareHub{Middlewares: []MiddlewareHandler{}}
 }
 
-func (h *Hook) Handler(handler HookHandler) {
-	h.handlers = append(h.handlers, handler)
+// TODO: middleware context & next
+type MiddlewareHandlerFunc func(req *Request) error
+
+func (h MiddlewareHandlerFunc) Handle(req *Request) error {
+	return h(req)
 }
 
-func (h *Hook) HandlerFunc(fun HookHandlerFunc) {
-	h.handlers = append(h.handlers, fun)
+type MiddlewareHandler interface {
+	Handle(req *Request) error
 }
 
-func (h *Hook) Exec(ctx *Context) error {
-	for _, handler := range h.handlers {
-		err := handler.Handle(ctx)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+func (h *MiddlewareHub) Use(handler ...MiddlewareHandler) {
+	h.Middlewares = append(h.Middlewares, handler...)
 }

@@ -144,8 +144,7 @@ func checkDashboardPrivileges(grants []string, enableSEM bool) bool {
 		return false
 	}
 
-	hasAllPriv := hasPriv("ALL PRIVILEGES")
-	if !hasAllPriv {
+	if !hasPriv("ALL PRIVILEGES") {
 		if !hasPriv("PROCESS") {
 			return false
 		}
@@ -155,8 +154,7 @@ func checkDashboardPrivileges(grants []string, enableSEM bool) bool {
 		if !hasPriv("CONFIG") {
 			return false
 		}
-		hasSuperPriv := hasPriv("SUPER")
-		if !hasSuperPriv {
+		if !hasPriv("SUPER") {
 			if !hasPriv("SYSTEM_VARIABLES_ADMIN") {
 				return false
 			}

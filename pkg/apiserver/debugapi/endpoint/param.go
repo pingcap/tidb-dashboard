@@ -41,7 +41,7 @@ func (m *BaseAPIParamModel) AddMiddleware(handler ...ModelMiddlewareHandlerFunc)
 
 // GetMiddlewares do some adapter works, limit model middleware can only get the value of the current param
 func (m *BaseAPIParamModel) GetMiddlewares(param *APIParam, isPathParam bool) []MiddlewareHandler {
-	middlewares := make([]MiddlewareHandler, len(m.middlewares))
+	middlewares := make([]MiddlewareHandler, 0, len(m.middlewares))
 	for _, mi := range m.middlewares {
 		middlewares = append(middlewares, MiddlewareHandlerFunc(func(req *Request) error {
 			var values url.Values
@@ -74,9 +74,7 @@ func (mc *ModelParam) Values() []string {
 }
 
 func (mc *ModelParam) SetValues(val []string) {
-	for _, v := range val {
-		mc.values.Add(mc.param.Name, v)
-	}
+	mc.values[mc.param.Name] = val
 }
 
 type APIParam struct {
@@ -84,8 +82,4 @@ type APIParam struct {
 	Required bool   `json:"required"`
 	// represents what param is
 	Model APIParamModel `json:"model" swaggertype:"object,string"`
-}
-
-func NewAPIParam(model APIParamModel, name string, required bool) *APIParam {
-	return &APIParam{Name: name, Model: model, Required: required}
 }

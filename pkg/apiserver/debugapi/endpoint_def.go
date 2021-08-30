@@ -26,24 +26,30 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
-var pprofKindsParam = endpoint.NewAPIParam(endpoint.APIParamModelEnum([]endpoint.EnumItem{
-	{Name: "allocs"},
-	{Name: "block"},
-	{Name: "cmdline"},
-	{Name: "goroutine"},
-	{Name: "heap"},
-	{Name: "mutex"},
-	{Name: "profile"},
-	{Name: "threadcreate"},
-	{Name: "trace"},
-}), "kind", true)
+var pprofKindsParam = &endpoint.APIParam{
+	Model: endpoint.APIParamModelEnum([]endpoint.EnumItem{
+		{Name: "allocs"},
+		{Name: "block"},
+		{Name: "cmdline"},
+		{Name: "goroutine"},
+		{Name: "heap"},
+		{Name: "mutex"},
+		{Name: "profile"},
+		{Name: "threadcreate"},
+		{Name: "trace"},
+	}),
+	Name: "kind", Required: true,
+}
 
-var pprofSecondsParam = endpoint.NewAPIParam(endpoint.APIParamModelEnum([]endpoint.EnumItem{
-	{Name: "10s", Value: "10"},
-	{Name: "30s", Value: "30"},
-	{Name: "60s", Value: "60"},
-	{Name: "120s", Value: "120"},
-}), "seconds", false)
+var pprofSecondsParam = &endpoint.APIParam{
+	Model: endpoint.APIParamModelEnum([]endpoint.EnumItem{
+		{Name: "10s", Value: "10"},
+		{Name: "30s", Value: "30"},
+		{Name: "60s", Value: "60"},
+		{Name: "120s", Value: "120"},
+	}),
+	Name: "seconds",
+}
 
 func timeoutMiddleware(req *endpoint.Request, sec string) error {
 	i, err := strconv.ParseInt(sec, 10, 64)
@@ -63,8 +69,8 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/stats/dump/{db}/{table}",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelDB, "db", true),
-			endpoint.NewAPIParam(endpoint.APIParamModelTable, "table", true),
+			{Model: endpoint.APIParamModelDB, Name: "db", Required: true},
+			{Model: endpoint.APIParamModelTable, Name: "table", Required: true},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -73,9 +79,9 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/stats/dump/{db}/{table}/{yyyyMMddHHmmss}",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelDB, "db", true),
-			endpoint.NewAPIParam(endpoint.APIParamModelTable, "table", true),
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "yyyyMMddHHmmss", true),
+			{Model: endpoint.APIParamModelDB, Name: "db", Required: true},
+			{Model: endpoint.APIParamModelTable, Name: "table", Required: true},
+			{Model: endpoint.APIParamModelText, Name: "yyyyMMddHHmmss", Required: true},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -90,7 +96,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/schema",
 		Method:    endpoint.MethodGet,
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelTableID, "table_id", false),
+			{Model: endpoint.APIParamModelTableID, Name: "table_id"},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -99,7 +105,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/schema/{db}",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelDB, "db", true),
+			{Model: endpoint.APIParamModelDB, Name: "db", Required: true},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -108,8 +114,8 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/schema/{db}/{table}",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelDB, "db", true),
-			endpoint.NewAPIParam(endpoint.APIParamModelTable, "table", true),
+			{Model: endpoint.APIParamModelDB, Name: "db", Required: true},
+			{Model: endpoint.APIParamModelTable, Name: "table", Required: true},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -118,7 +124,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/db-table/{tableID}",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelTableID, "tableID", true),
+			{Model: endpoint.APIParamModelTableID, Name: "tableID", Required: true},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -151,7 +157,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/regions/{regionID}",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "regionID", true),
+			{Model: endpoint.APIParamModelText, Name: "regionID", Required: true},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -160,8 +166,8 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/tables/{db}/{table}/regions",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelDB, "db", true),
-			endpoint.NewAPIParam(endpoint.APIParamModelTable, "table", true),
+			{Model: endpoint.APIParamModelDB, Name: "db", Required: true},
+			{Model: endpoint.APIParamModelTable, Name: "table", Required: true},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -179,7 +185,7 @@ func registerEndpoints(c *endpoint.Client) {
 			pprofKindsParam,
 		},
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelConstant("1"), "debug", false),
+			{Model: endpoint.APIParamModelConstant("1"), Name: "debug"},
 			pprofSecondsParam,
 		},
 	}, endpoint.MiddlewareHandlerFunc(func(req *endpoint.Request) error {
@@ -241,8 +247,8 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/labels/stores",
 		Method:    endpoint.MethodGet,
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "name", true),
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "value", true),
+			{Model: endpoint.APIParamModelText, Name: "name", Required: true},
+			{Model: endpoint.APIParamModelText, Name: "value", Required: true},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -263,7 +269,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/operators",
 		Method:    endpoint.MethodGet,
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "kind", false),
+			{Model: endpoint.APIParamModelText, Name: "kind"},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -278,7 +284,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/region/id/{regionID}",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "regionID", true),
+			{Model: endpoint.APIParamModelText, Name: "regionID", Required: true},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -287,7 +293,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/region/key/{regionKey}",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "regionKey", true),
+			{Model: endpoint.APIParamModelText, Name: "regionKey", Required: true},
 		},
 	}, endpoint.MiddlewareHandlerFunc(func(req *endpoint.Request) error {
 		req.PathValues.Set("regionKey", url.QueryEscape(req.PathValues.Get("regionKey")))
@@ -299,8 +305,8 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/regions/key",
 		Method:    endpoint.MethodGet,
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "key", true),
-			endpoint.NewAPIParam(endpoint.APIParamModelInt, "limit", true),
+			{Model: endpoint.APIParamModelText, Name: "key", Required: true},
+			{Model: endpoint.APIParamModelInt, Name: "limit", Required: true},
 		},
 	}, endpoint.MiddlewareHandlerFunc(func(req *endpoint.Request) error {
 		req.PathValues.Set("key", url.QueryEscape(req.PathValues.Get("key")))
@@ -312,7 +318,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/regions/sibling/{regionID}",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "regionID", true),
+			{Model: endpoint.APIParamModelText, Name: "regionID", Required: true},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -321,8 +327,8 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/regions/key",
 		Method:    endpoint.MethodGet,
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "key", true),
-			endpoint.NewAPIParam(endpoint.APIParamModelInt, "limit", false),
+			{Model: endpoint.APIParamModelText, Name: "key", Required: true},
+			{Model: endpoint.APIParamModelInt, Name: "limit"},
 		},
 	}, endpoint.MiddlewareHandlerFunc(func(req *endpoint.Request) error {
 		req.PathValues.Set("key", url.QueryEscape(req.PathValues.Get("key")))
@@ -334,7 +340,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/regions/store/{storeID}",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "storeID", true),
+			{Model: endpoint.APIParamModelText, Name: "storeID", Required: true},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -343,7 +349,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/regions/readflow",
 		Method:    endpoint.MethodGet,
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelInt, "limit", false),
+			{Model: endpoint.APIParamModelInt, Name: "limit"},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -352,7 +358,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/regions/writeflow",
 		Method:    endpoint.MethodGet,
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelInt, "limit", false),
+			{Model: endpoint.APIParamModelInt, Name: "limit"},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -361,7 +367,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/regions/confver",
 		Method:    endpoint.MethodGet,
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelInt, "limit", false),
+			{Model: endpoint.APIParamModelInt, Name: "limit"},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -370,7 +376,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/regions/version",
 		Method:    endpoint.MethodGet,
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelInt, "limit", false),
+			{Model: endpoint.APIParamModelInt, Name: "limit"},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -379,7 +385,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/regions/size",
 		Method:    endpoint.MethodGet,
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelInt, "limit", false),
+			{Model: endpoint.APIParamModelInt, Name: "limit"},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -388,19 +394,21 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/regions/check/{state}",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelEnum([]endpoint.EnumItem{
-				{Name: "miss-peer"},
-				{Name: "extra-peer"},
-				{Name: "down-peer"},
-				{Name: "pending-peer"},
-				{Name: "offline-peer"},
-				{Name: "empty-peer"},
-				{Name: "hist-peer"},
-				{Name: "hist-keys"},
-			}), "state", true),
+			{
+				Model: endpoint.APIParamModelEnum([]endpoint.EnumItem{
+					{Name: "miss-peer"},
+					{Name: "extra-peer"},
+					{Name: "down-peer"},
+					{Name: "pending-peer"},
+					{Name: "offline-peer"},
+					{Name: "empty-peer"},
+					{Name: "hist-peer"},
+					{Name: "hist-keys"},
+				}),
+				Name: "state", Required: true},
 		},
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelInt, "bound", false),
+			{Model: endpoint.APIParamModelInt, Name: "bound"},
 		},
 	}, endpoint.MiddlewareHandlerFunc(func(req *endpoint.Request) error {
 		state := req.PathValues.Get("state")
@@ -421,7 +429,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/schedulers",
 		Method:    endpoint.MethodGet,
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "status", false),
+			{Model: endpoint.APIParamModelText, Name: "status"},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -430,7 +438,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/stores",
 		Method:    endpoint.MethodGet,
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelTags, "state", false),
+			{Model: endpoint.APIParamModelTags, Name: "state"},
 		},
 	}, endpoint.MiddlewareHandlerFunc(func(req *endpoint.Request) error {
 		vals := req.QueryValues["state"]
@@ -452,7 +460,7 @@ func registerEndpoints(c *endpoint.Client) {
 		Path:      "/store/{storeID}",
 		Method:    endpoint.MethodGet,
 		PathParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelText, "storeID", true),
+			{Model: endpoint.APIParamModelText, Name: "storeID", Required: true},
 		},
 	})
 	c.AddEndpoint(&endpoint.APIModel{
@@ -464,7 +472,7 @@ func registerEndpoints(c *endpoint.Client) {
 			pprofKindsParam,
 		},
 		QueryParams: []*endpoint.APIParam{
-			endpoint.NewAPIParam(endpoint.APIParamModelConstant("1"), "debug", false),
+			{Model: endpoint.APIParamModelConstant("1"), Name: "debug"},
 			pprofSecondsParam,
 		},
 	}, endpoint.MiddlewareHandlerFunc(func(req *endpoint.Request) error {

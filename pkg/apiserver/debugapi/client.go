@@ -48,7 +48,7 @@ func (d *Dispatcher) Send(req *endpoint.Request) (*httpc.Response, error) {
 	case endpoint.MethodGet:
 		return d.clients[req.Component].Get(req)
 	default:
-		return nil, fmt.Errorf("invalid request method `%s`, host: %s, path: %s", req.Method, req.Host, req.Path)
+		return nil, fmt.Errorf("invalid request method `%s`, host: %s, path: %s", req.Method, req.Host, req.Path())
 	}
 }
 

@@ -35,7 +35,8 @@ var _ = Suite(&testParamModelsSuite{})
 type testParamModelsSuite struct{}
 
 func (t *testParamModelsSuite) Test_APIParamModelMultiTags(c *C) {
-	testEndpoint := APIModel{
+	client := NewClient(&testDispatcher{})
+	testEndpoint := &APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
@@ -47,22 +48,25 @@ func (t *testParamModelsSuite) Test_APIParamModelMultiTags(c *C) {
 			},
 		},
 	}
+	client.AddEndpoint(testEndpoint)
 	value1 := url.QueryEscape("value1,,, ")
 	value2 := url.QueryEscape("value2")
 	param1 := fmt.Sprintf("%s,%s", value1, value2)
 
-	req, err := testEndpoint.NewRequest("127.0.0.1", 10080, map[string]string{
+	req, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{
 		"param1": param1,
 	})
-	if err == nil {
-		c.Assert(req.Query, Equals, fmt.Sprintf("param1=%s&param1=%s", value1, value2))
-	} else {
+	if err != nil {
 		c.Error(err)
 	}
+	data, _ := req.Body()
+
+	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test", fmt.Sprintf("param1=%s&param1=%s", value1, value2)))
 }
 
 func (t *testParamModelsSuite) Test_APIParamModelInt(c *C) {
-	testEndpoint := APIModel{
+	client := NewClient(&testDispatcher{})
+	testEndpoint := &APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
@@ -74,28 +78,27 @@ func (t *testParamModelsSuite) Test_APIParamModelInt(c *C) {
 			},
 		},
 	}
+	client.AddEndpoint(testEndpoint)
 
-	value1 := "value1"
-	_, err := testEndpoint.NewRequest("127.0.0.1", 10080, map[string]string{
-		"param1": value1,
+	_, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{
+		"param1": "value1",
 	})
 	c.Log(err)
 	c.Assert(errorx.IsOfType(err, ErrInvalidParam), Equals, true)
 
-	value2 := "2"
-	req2, err := testEndpoint.NewRequest("127.0.0.1", 10080, map[string]string{
-		"param1": value2,
+	req2, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{
+		"param1": "2",
 	})
-	if err == nil {
-		c.Assert(req2.Query, Equals, fmt.Sprintf("param1=%s", value2))
-	} else {
+	if err != nil {
 		c.Error(err)
 	}
+	data, _ := req2.Body()
+	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test", "param1=2"))
 }
 
 func (t *testParamModelsSuite) Test_APIParamModelConstant(c *C) {
-	value1 := "value1"
-	testEndpoint := APIModel{
+	client := NewClient(&testDispatcher{})
+	testEndpoint := &APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
@@ -103,22 +106,24 @@ func (t *testParamModelsSuite) Test_APIParamModelConstant(c *C) {
 		QueryParams: []*APIParam{
 			{
 				Name:  "param1",
-				Model: APIParamModelConstant(value1),
+				Model: APIParamModelConstant("value1"),
 			},
 		},
 	}
+	client.AddEndpoint(testEndpoint)
 
-	req2, err := testEndpoint.NewRequest("127.0.0.1", 10080, map[string]string{})
-	if err == nil {
-		c.Assert(req2.Query, Equals, fmt.Sprintf("param1=%s", value1))
-	} else {
+	req, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{})
+	if err != nil {
 		c.Error(err)
 	}
+	data, _ := req.Body()
+	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test", "param1=value1"))
 }
 
 func (t *testParamModelsSuite) Test_APIParamModelEnum(c *C) {
+	client := NewClient(&testDispatcher{})
 	value1 := "value1"
-	testEndpoint := APIModel{
+	testEndpoint := &APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
@@ -130,11 +135,18 @@ func (t *testParamModelsSuite) Test_APIParamModelEnum(c *C) {
 			},
 		},
 	}
+	client.AddEndpoint(testEndpoint)
 
-	req2, err := testEndpoint.NewRequest("127.0.0.1", 10080, map[string]string{"param1": value1})
-	if err == nil {
-		c.Assert(req2.Query, Equals, fmt.Sprintf("param1=%s", value1))
-	} else {
+	req, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{"param1": value1})
+	if err != nil {
 		c.Error(err)
 	}
+	data, _ := req.Body()
+
+	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test", "param1=value1"))
+
+	// enum validate
+	_, err = client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{"param1": "value2"})
+
+	c.Assert(errorx.IsOfType(err, ErrInvalidParam), Equals, true)
 }

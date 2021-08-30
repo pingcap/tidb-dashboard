@@ -37,7 +37,7 @@ type APIModel struct {
 // EachParams simplifies the process of iterating over path & query params
 // and ends the iteration when return error
 func (m *APIModel) ForEachParam(fn func(p *APIParam, isPathParam bool) error) error {
-	params := make([]*APIParam, len(m.PathParams)+len(m.QueryParams))
+	params := make([]*APIParam, 0, len(m.PathParams)+len(m.QueryParams))
 	if m.PathParams != nil {
 		params = append(params, m.PathParams...)
 	}

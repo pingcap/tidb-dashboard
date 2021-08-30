@@ -78,7 +78,7 @@ func (c *Client) Send(eID string, host string, port int, params map[string]strin
 	c.setValues(endpoint, params, req)
 
 	if err := c.execMiddlewares(endpoint, req); err != nil {
-		return nil, err
+		return nil, ErrInvalidParam.Wrap(err, "exec middleware error")
 	}
 
 	return c.dispatcher.Send(req)
@@ -89,7 +89,9 @@ func (c *Client) AddEndpoint(endpoint *APIModel, middlewares ...MiddlewareHandle
 		return fmt.Errorf("duplicated endpoint: %s", endpoint.ID)
 	}
 	m := NewAPIModelWithMiddleware(endpoint)
-	m.Use(middlewares...)
+	if middlewares != nil {
+		m.Use(middlewares...)
+	}
 	c.endpointMap[endpoint.ID] = m
 	c.endpointList = append(c.endpointList, *endpoint)
 	return nil
@@ -123,9 +125,6 @@ func (c *Client) execMiddlewares(m *APIModelWithMiddleware, req *Request) error 
 	middlewares := []MiddlewareHandler{requiredMiddlewareAdapter(m.APIModel)}
 	middlewares = append(middlewares, m.AllMiddlewares()...)
 	for _, m := range middlewares {
-		if m == nil {
-			continue
-		}
 		if err := m.Handle(req); err != nil {
 			return err
 		}
@@ -143,8 +142,8 @@ func requiredMiddlewareAdapter(endpoint *APIModel) MiddlewareHandler {
 			} else {
 				values = req.QueryValues
 			}
-			if values.Get(p.Name) == "" {
-				return fmt.Errorf("missing required param: %s", p.Name)
+			if p.Required && values.Get(p.Name) == "" {
+				return ErrInvalidParam.New("missing required param: %s", p.Name)
 			} else {
 				return nil
 			}

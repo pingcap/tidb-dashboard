@@ -45,9 +45,10 @@ type Service struct {
 	Client *endpoint.Client
 }
 
-func newService(dispatcher *Dispatcher) *Service {
-	c := endpoint.NewClient(dispatcher)
-	registerEndpoints(c)
+func newService(fp fetcherParam) *Service {
+	f := newFetcher(fp)
+	c := endpoint.NewClient(f)
+	registerEndpoint(c)
 	return &Service{Client: c}
 }
 
@@ -95,13 +96,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 	}
 	defer res.Response.Body.Close() //nolint:errcheck
 
-	// TODO: needs to be more cohesion
-	var ext string
-	if s.Client.Endpoint(req.ID).Ext != "" {
-		ext = s.Client.Endpoint(req.ID).Ext
-	} else {
-		ext = getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
-	}
+	ext := getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
 	fileName := fmt.Sprintf("%s_%d%s", req.ID, time.Now().Unix(), ext)
 
 	writer, token, err := utils.FSPersist(utils.FSPersistConfig{

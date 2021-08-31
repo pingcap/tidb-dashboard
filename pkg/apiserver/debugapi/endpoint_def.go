@@ -26,7 +26,7 @@ import (
 )
 
 var pprofKindsParam = &endpoint.APIParam{
-	Model: endpoint.APIParamModelEnum([]endpoint.EnumItem{
+	Model: APIParamModelEnum([]EnumItem{
 		{Value: "allocs"},
 		{Value: "block"},
 		{Value: "cmdline"},
@@ -41,7 +41,7 @@ var pprofKindsParam = &endpoint.APIParam{
 }
 
 var pprofSecondsParam = &endpoint.APIParam{
-	Model: endpoint.APIParamModelEnum([]endpoint.EnumItem{
+	Model: APIParamModelEnum([]EnumItem{
 		{Name: "10s", Value: "10"},
 		{Name: "30s", Value: "30"},
 		{Name: "60s", Value: "60"},
@@ -60,122 +60,123 @@ func timeoutMiddleware(req *endpoint.Request, sec string) error {
 	return nil
 }
 
-func registerEndpoints(c *endpoint.Client) {
+func registerEndpoint(c *endpoint.Client) {
 	// tidb
-	c.AddEndpoint(&endpoint.APIModel{
-		ID:        "tidb_stats_dump",
-		Component: model.NodeKindTiDB,
-		Path:      "/stats/dump/{db}/{table}",
-		Method:    endpoint.MethodGet,
-		PathParams: []*endpoint.APIParam{
-			{Model: endpoint.APIParamModelDB, Name: "db", Required: true},
-			{Model: endpoint.APIParamModelTable, Name: "table", Required: true},
+	c.RegisterEndpoint([]*endpoint.APIModel{
+		{
+			ID:        "tidb_stats_dump",
+			Component: model.NodeKindTiDB,
+			Path:      "/stats/dump/{db}/{table}",
+			Method:    endpoint.MethodGet,
+			PathParams: []*endpoint.APIParam{
+				{Model: APIParamModelDB, Name: "db", Required: true},
+				{Model: APIParamModelTable, Name: "table", Required: true},
+			},
 		},
-	}).
-		AddEndpoint(&endpoint.APIModel{
+		{
 			ID:        "tidb_stats_dump_timestamp",
 			Component: model.NodeKindTiDB,
 			Path:      "/stats/dump/{db}/{table}/{yyyyMMddHHmmss}",
 			Method:    endpoint.MethodGet,
 			PathParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelDB, Name: "db", Required: true},
-				{Model: endpoint.APIParamModelTable, Name: "table", Required: true},
-				{Model: endpoint.APIParamModelText, Name: "yyyyMMddHHmmss", Required: true},
+				{Model: APIParamModelDB, Name: "db", Required: true},
+				{Model: APIParamModelTable, Name: "table", Required: true},
+				{Model: APIParamModelText, Name: "yyyyMMddHHmmss", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_config",
 			Component: model.NodeKindTiDB,
 			Path:      "/settings",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_schema",
 			Component: model.NodeKindTiDB,
 			Path:      "/schema",
 			Method:    endpoint.MethodGet,
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelTableID, Name: "table_id"},
+				{Model: APIParamModelTableID, Name: "table_id"},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_schema_db",
 			Component: model.NodeKindTiDB,
 			Path:      "/schema/{db}",
 			Method:    endpoint.MethodGet,
 			PathParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelDB, Name: "db", Required: true},
+				{Model: APIParamModelDB, Name: "db", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_schema_db_table",
 			Component: model.NodeKindTiDB,
 			Path:      "/schema/{db}/{table}",
 			Method:    endpoint.MethodGet,
 			PathParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelDB, Name: "db", Required: true},
-				{Model: endpoint.APIParamModelTable, Name: "table", Required: true},
+				{Model: APIParamModelDB, Name: "db", Required: true},
+				{Model: APIParamModelTable, Name: "table", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_dbtable_tableid",
 			Component: model.NodeKindTiDB,
 			Path:      "/db-table/{tableID}",
 			Method:    endpoint.MethodGet,
 			PathParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelTableID, Name: "tableID", Required: true},
+				{Model: APIParamModelTableID, Name: "tableID", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_ddl_history",
 			Component: model.NodeKindTiDB,
 			Path:      "/ddl/history",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_info",
 			Component: model.NodeKindTiDB,
 			Path:      "/info",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_info_all",
 			Component: model.NodeKindTiDB,
 			Path:      "/info/all",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_regions_meta",
 			Component: model.NodeKindTiDB,
 			Path:      "/regions/meta",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_region_id",
 			Component: model.NodeKindTiDB,
 			Path:      "/regions/{regionID}",
 			Method:    endpoint.MethodGet,
 			PathParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelText, Name: "regionID", Required: true},
+				{Model: APIParamModelText, Name: "regionID", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_table_regions",
 			Component: model.NodeKindTiDB,
 			Path:      "/tables/{db}/{table}/regions",
 			Method:    endpoint.MethodGet,
 			PathParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelDB, Name: "db", Required: true},
-				{Model: endpoint.APIParamModelTable, Name: "table", Required: true},
+				{Model: APIParamModelDB, Name: "db", Required: true},
+				{Model: APIParamModelTable, Name: "table", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_hot_regions",
 			Component: model.NodeKindTiDB,
 			Path:      "/regions/hot",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "tidb_pprof",
 			Component: model.NodeKindTiDB,
 			Path:      "/debug/pprof/{kind}",
@@ -184,209 +185,212 @@ func registerEndpoints(c *endpoint.Client) {
 				pprofKindsParam,
 			},
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelConstant("1"), Name: "debug"},
+				{Model: APIParamModelConstant("1"), Name: "debug"},
 				pprofSecondsParam,
 			},
-			OnReceiveRequest: func(req *endpoint.Request) error {
-				return timeoutMiddleware(req, req.QueryValues.Get("seconds"))
+			Middleware: func(ctx *endpoint.Context) {
+				if err := timeoutMiddleware(ctx.Request, ctx.Request.QueryValues.Get("seconds")); err != nil {
+					ctx.Abort(err)
+					return
+				}
+				ctx.Next()
 			},
-		})
-
-	// pd endpoints
-	c.AddEndpoint(&endpoint.APIModel{
-		ID:        "pd_cluster",
-		Component: model.NodeKindPD,
-		Path:      "/cluster",
-		Method:    endpoint.MethodGet,
-	}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		// pd endpoints
+		{
+			ID:        "pd_cluster",
+			Component: model.NodeKindPD,
+			Path:      "/cluster",
+			Method:    endpoint.MethodGet,
+		},
+		{
 			ID:        "pd_cluster_status",
 			Component: model.NodeKindPD,
 			Path:      "/cluster/status",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_config_show_all",
 			Component: model.NodeKindPD,
 			Path:      "/config",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_health",
 			Component: model.NodeKindPD,
 			Path:      "/health",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_hot_read",
 			Component: model.NodeKindPD,
 			Path:      "/hotspot/regions/read",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_hot_write",
 			Component: model.NodeKindPD,
 			Path:      "/hotspot/regions/write",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_hot_stores",
 			Component: model.NodeKindPD,
 			Path:      "/hotspot/stores",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_labels",
 			Component: model.NodeKindPD,
 			Path:      "/labels",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_label_stores",
 			Component: model.NodeKindPD,
 			Path:      "/labels/stores",
 			Method:    endpoint.MethodGet,
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelText, Name: "name", Required: true},
-				{Model: endpoint.APIParamModelText, Name: "value", Required: true},
+				{Model: APIParamModelText, Name: "name", Required: true},
+				{Model: APIParamModelText, Name: "value", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_members_show",
 			Component: model.NodeKindPD,
 			Path:      "/members",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_leader_show",
 			Component: model.NodeKindPD,
 			Path:      "/leader",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_operator_show",
 			Component: model.NodeKindPD,
 			Path:      "/operators",
 			Method:    endpoint.MethodGet,
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelText, Name: "kind"},
+				{Model: APIParamModelText, Name: "kind"},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_regions",
 			Component: model.NodeKindPD,
 			Path:      "/regions",
 			Method:    endpoint.MethodGet,
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_region_id",
 			Component: model.NodeKindPD,
 			Path:      "/region/id/{regionID}",
 			Method:    endpoint.MethodGet,
 			PathParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelText, Name: "regionID", Required: true},
+				{Model: APIParamModelText, Name: "regionID", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_region_key",
 			Component: model.NodeKindPD,
 			Path:      "/region/key/{regionKey}",
 			Method:    endpoint.MethodGet,
 			PathParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelEscapeText, Name: "regionKey", Required: true},
+				{Model: APIParamModelEscapeText, Name: "regionKey", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_region_scan",
 			Component: model.NodeKindPD,
 			Path:      "/regions/key",
 			Method:    endpoint.MethodGet,
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelEscapeText, Name: "key", Required: true},
-				{Model: endpoint.APIParamModelInt, Name: "limit", Required: true},
+				{Model: APIParamModelEscapeText, Name: "key", Required: true},
+				{Model: APIParamModelInt, Name: "limit", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_region_sibling",
 			Component: model.NodeKindPD,
 			Path:      "/regions/sibling/{regionID}",
 			Method:    endpoint.MethodGet,
 			PathParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelText, Name: "regionID", Required: true},
+				{Model: APIParamModelText, Name: "regionID", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_region_start_key",
 			Component: model.NodeKindPD,
 			Path:      "/regions/key",
 			Method:    endpoint.MethodGet,
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelEscapeText, Name: "key", Required: true},
-				{Model: endpoint.APIParamModelInt, Name: "limit"},
+				{Model: APIParamModelEscapeText, Name: "key", Required: true},
+				{Model: APIParamModelInt, Name: "limit"},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_regions_store",
 			Component: model.NodeKindPD,
 			Path:      "/regions/store/{storeID}",
 			Method:    endpoint.MethodGet,
 			PathParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelText, Name: "storeID", Required: true},
+				{Model: APIParamModelText, Name: "storeID", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_region_top_read",
 			Component: model.NodeKindPD,
 			Path:      "/regions/readflow",
 			Method:    endpoint.MethodGet,
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelInt, Name: "limit"},
+				{Model: APIParamModelInt, Name: "limit"},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_region_top_write",
 			Component: model.NodeKindPD,
 			Path:      "/regions/writeflow",
 			Method:    endpoint.MethodGet,
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelInt, Name: "limit"},
+				{Model: APIParamModelInt, Name: "limit"},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_region_top_conf_ver",
 			Component: model.NodeKindPD,
 			Path:      "/regions/confver",
 			Method:    endpoint.MethodGet,
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelInt, Name: "limit"},
+				{Model: APIParamModelInt, Name: "limit"},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_region_top_version",
 			Component: model.NodeKindPD,
 			Path:      "/regions/version",
 			Method:    endpoint.MethodGet,
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelInt, Name: "limit"},
+				{Model: APIParamModelInt, Name: "limit"},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_region_top_size",
 			Component: model.NodeKindPD,
 			Path:      "/regions/size",
 			Method:    endpoint.MethodGet,
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelInt, Name: "limit"},
+				{Model: APIParamModelInt, Name: "limit"},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_region_check",
 			Component: model.NodeKindPD,
 			Path:      "/regions/check/{state}",
 			Method:    endpoint.MethodGet,
 			PathParams: []*endpoint.APIParam{
 				{
-					Model: endpoint.APIParamModelEnum([]endpoint.EnumItem{
+					Model: APIParamModelEnum([]EnumItem{
 						{Value: "miss-peer"},
 						{Value: "extra-peer"},
 						{Value: "down-peer"},
@@ -399,64 +403,65 @@ func registerEndpoints(c *endpoint.Client) {
 					Name: "state", Required: true},
 			},
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelInt, Name: "bound"},
+				{Model: APIParamModelInt, Name: "bound"},
 			},
-			OnReceiveRequest: func(req *endpoint.Request) error {
-				state := req.PathValues.Get("state")
-				val := req.QueryValues.Get("bound")
+			Middleware: func(ctx *endpoint.Context) {
+				state := ctx.Request.PathValues.Get("state")
+				val := ctx.Request.QueryValues.Get("bound")
 
 				if val == "" {
 					if strings.EqualFold(state, "hist-size") {
-						req.QueryValues.Set("bound", "10")
+						ctx.Request.QueryValues.Set("bound", "10")
 					} else if strings.EqualFold(state, "hist-keys") {
-						req.QueryValues.Set("bound", "10000")
+						ctx.Request.QueryValues.Set("bound", "10000")
 					}
 				}
-				return nil
+				ctx.Next()
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_scheduler_show",
 			Component: model.NodeKindPD,
 			Path:      "/schedulers",
 			Method:    endpoint.MethodGet,
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelText, Name: "status"},
+				{Model: APIParamModelText, Name: "status"},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_stores",
 			Component: model.NodeKindPD,
 			Path:      "/stores",
 			Method:    endpoint.MethodGet,
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelTags, Name: "state"},
+				{Model: APIParamModelTags, Name: "state"},
 			},
-			OnReceiveRequest: func(req *endpoint.Request) error {
-				vals := req.QueryValues["state"]
-				req.QueryValues.Del("state")
+			Middleware: func(ctx *endpoint.Context) {
+				vals := ctx.Request.QueryValues["state"]
+				ctx.Request.QueryValues.Del("state")
 				if len(vals) != 0 {
 					for _, state := range vals {
 						stateValue, ok := metapb.StoreState_value[state]
 						if !ok {
-							return fmt.Errorf("unknown state: %s", state)
+							ctx.Abort(fmt.Errorf("unknown state: %s", state))
+							return
 						}
-						req.QueryValues.Add("state", strconv.Itoa(int(stateValue)))
+						ctx.Request.QueryValues.Add("state", strconv.Itoa(int(stateValue)))
 					}
 				}
-				return nil
+				ctx.Next()
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_store_id",
 			Component: model.NodeKindPD,
 			Path:      "/store/{storeID}",
 			Method:    endpoint.MethodGet,
 			PathParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelText, Name: "storeID", Required: true},
+				{Model: APIParamModelText, Name: "storeID", Required: true},
 			},
-		}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		{
 			ID:        "pd_pprof",
 			Component: model.NodeKindPD,
 			Path:      "/debug/pprof/{kind}",
@@ -465,53 +470,68 @@ func registerEndpoints(c *endpoint.Client) {
 				pprofKindsParam,
 			},
 			QueryParams: []*endpoint.APIParam{
-				{Model: endpoint.APIParamModelConstant("1"), Name: "debug"},
+				{Model: APIParamModelConstant("1"), Name: "debug"},
 				pprofSecondsParam,
 			},
-			OnReceiveRequest: func(req *endpoint.Request) error {
-				return timeoutMiddleware(req, req.QueryValues.Get("seconds"))
+			Middleware: func(ctx *endpoint.Context) {
+				if err := timeoutMiddleware(ctx.Request, ctx.Request.QueryValues.Get("seconds")); err != nil {
+					ctx.Abort(err)
+					return
+				}
+				ctx.Next()
 			},
-		})
-
-	// tikv
-	c.AddEndpoint(&endpoint.APIModel{
-		ID:        "tikv_config",
-		Component: model.NodeKindTiKV,
-		Path:      "/config",
-		Method:    endpoint.MethodGet,
-	}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		// tikv
+		{
+			ID:        "tikv_config",
+			Component: model.NodeKindTiKV,
+			Path:      "/config",
+			Method:    endpoint.MethodGet,
+		},
+		{
 			ID:        "tikv_profile",
 			Component: model.NodeKindTiKV,
 			Path:      "/debug/pprof/profile",
 			Method:    endpoint.MethodGet,
-			Ext:       ".svg",
 			QueryParams: []*endpoint.APIParam{
 				pprofSecondsParam,
 			},
-			OnReceiveRequest: func(req *endpoint.Request) error {
-				return timeoutMiddleware(req, req.QueryValues.Get("seconds"))
+			Middleware: func(ctx *endpoint.Context) {
+				if err := timeoutMiddleware(ctx.Request, ctx.Request.QueryValues.Get("seconds")); err != nil {
+					ctx.Abort(err)
+					return
+				}
+				ctx.Next(func() error {
+					ctx.Response.Header.Set("Content-Type", "image/svg+xml")
+					return nil
+				})
 			},
-		})
-
-	// tiflash
-	c.AddEndpoint(&endpoint.APIModel{
-		ID:        "tiflash_config",
-		Component: model.NodeKindTiFlash,
-		Path:      "/config",
-		Method:    endpoint.MethodGet,
-	}).
-		AddEndpoint(&endpoint.APIModel{
+		},
+		// tiflash
+		{
+			ID:        "tiflash_config",
+			Component: model.NodeKindTiFlash,
+			Path:      "/config",
+			Method:    endpoint.MethodGet,
+		},
+		{
 			ID:        "tiflash_profile",
 			Component: model.NodeKindTiFlash,
 			Path:      "/debug/pprof/profile",
 			Method:    endpoint.MethodGet,
-			Ext:       ".svg",
 			QueryParams: []*endpoint.APIParam{
 				pprofSecondsParam,
 			},
-			OnReceiveRequest: func(req *endpoint.Request) error {
-				return timeoutMiddleware(req, req.QueryValues.Get("seconds"))
+			Middleware: func(ctx *endpoint.Context) {
+				if err := timeoutMiddleware(ctx.Request, ctx.Request.QueryValues.Get("seconds")); err != nil {
+					ctx.Abort(err)
+					return
+				}
+				ctx.Next(func() error {
+					ctx.Response.Header.Set("Content-Type", "image/svg+xml")
+					return nil
+				})
 			},
-		})
+		},
+	})
 }

@@ -30,8 +30,8 @@ var _ = Suite(&testParamSuite{})
 type testParamSuite struct{}
 
 func (t *testParamSuite) Test_Copy(c *C) {
-	testParamModel := NewAPIParamModel("text").Use(func(p *ModelParam) error { return nil })
-	testParamModel2 := testParamModel.Copy().Use(func(p *ModelParam) error { return nil })
+	testParamModel := NewAPIParamModel("text").Use(func(p *ModelParam, ctx *Context) { ctx.Next() })
+	testParamModel2 := testParamModel.Copy().Use(func(p *ModelParam, ctx *Context) { ctx.Next() })
 
 	c.Assert(len(testParamModel.Middlewares(nil, false)), Equals, 1)
 	c.Assert(len(testParamModel2.Middlewares(nil, false)), Equals, 2)

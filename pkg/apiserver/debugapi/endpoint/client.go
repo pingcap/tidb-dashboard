@@ -23,19 +23,19 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
-// Dispatcher impl how to send requests
-type Dispatcher interface {
-	Send(req *Request) (*httpc.Response, error)
+// Fetcher impl how to send requests
+type Fetcher interface {
+	Fetch(req *Request) (*httpc.Response, error)
 }
 
 type Client struct {
 	endpointMap  map[string]*APIModel
 	endpointList []APIModel
-	dispatcher   Dispatcher
+	fetcher      Fetcher
 }
 
-func NewClient(d Dispatcher) *Client {
-	return &Client{endpointMap: map[string]*APIModel{}, endpointList: []APIModel{}, dispatcher: d}
+func NewClient(fetcher Fetcher) *Client {
+	return &Client{endpointMap: map[string]*APIModel{}, endpointList: []APIModel{}, fetcher: fetcher}
 }
 
 func (c *Client) Send(eID string, host string, port int, params map[string]string) (*httpc.Response, error) {
@@ -47,21 +47,24 @@ func (c *Client) Send(eID string, host string, port int, params map[string]strin
 	req := NewRequest(endpoint.Component, endpoint.Method, host, port, endpoint.Path)
 	c.setValues(endpoint, params, req)
 
-	if err := c.execMiddlewares(endpoint, req); err != nil {
+	ctx, err := c.execMiddlewares(endpoint, req)
+	if err != nil {
 		return nil, ErrInvalidParam.Wrap(err, "exec middleware error")
 	}
 
-	return c.dispatcher.Send(req)
+	return ctx.Response, nil
 }
 
-func (c *Client) AddEndpoint(endpoint *APIModel) *Client {
-	if c.endpointMap[endpoint.ID] != nil {
-		c.endpointList = funk.Filter(c.endpointList, func(e APIModel) bool {
-			return e.ID != endpoint.ID
-		}).([]APIModel)
+func (c *Client) RegisterEndpoint(endpoints []*APIModel) *Client {
+	for _, e := range endpoints {
+		if c.endpointMap[e.ID] != nil {
+			c.endpointList = funk.Filter(c.endpointList, func(item APIModel) bool {
+				return item.ID != e.ID
+			}).([]APIModel)
+		}
+		c.endpointMap[e.ID] = e
+		c.endpointList = append(c.endpointList, *e)
 	}
-	c.endpointMap[endpoint.ID] = endpoint
-	c.endpointList = append(c.endpointList, *endpoint)
 	return c
 }
 
@@ -88,32 +91,53 @@ func (c *Client) setValues(endpoint *APIModel, params map[string]string, req *Re
 	}
 }
 
-// required validate middleware -> param model middlewares -> endpoint middlewares
-func (c *Client) execMiddlewares(m *APIModel, req *Request) error {
+// before next: required validate middleware -> param model middlewares -> endpoint middlewares -> send request middleware
+// after next: send request middleware -> endpoint middlewares -> param model middlewares -> required validate middleware
+func (c *Client) execMiddlewares(m *APIModel, req *Request) (*Context, error) {
 	middlewares := []MiddlewareHandler{requiredMiddlewareAdapter(m)}
 	middlewares = append(middlewares, m.Middlewares()...)
-	for _, m := range middlewares {
-		if err := m.Handle(req); err != nil {
-			return err
-		}
+	middlewares = append(middlewares, fetchMiddlewareAdapter(c.fetcher))
+
+	ctx := newContext(req, middlewares)
+	ctx.Next()
+	if ctx.Error != nil {
+		return nil, ctx.Error
 	}
-	return nil
+
+	return ctx, nil
 }
 
 // check all required params in endpoint
 func requiredMiddlewareAdapter(endpoint *APIModel) MiddlewareHandler {
-	return MiddlewareHandlerFunc(func(req *Request) error {
-		return endpoint.ForEachParam(func(p *APIParam, isPathParam bool) error {
+	return MiddlewareHandlerFunc(func(ctx *Context) {
+		err := endpoint.ForEachParam(func(p *APIParam, isPathParam bool) error {
 			var values url.Values
 			if isPathParam {
-				values = req.PathValues
+				values = ctx.Request.PathValues
 			} else {
-				values = req.QueryValues
+				values = ctx.Request.QueryValues
 			}
 			if p.Required && values.Get(p.Name) == "" {
 				return ErrInvalidParam.New("missing required param: %s", p.Name)
 			}
 			return nil
 		})
+		if err != nil {
+			ctx.Abort(err)
+			return
+		}
+		ctx.Next()
+	})
+}
+
+func fetchMiddlewareAdapter(fetcher Fetcher) MiddlewareHandler {
+	return MiddlewareHandlerFunc(func(ctx *Context) {
+		res, err := fetcher.Fetch(ctx.Request)
+		if err != nil {
+			ctx.Abort(err)
+			return
+		}
+		ctx.Response = res
+		ctx.Next()
 	})
 }

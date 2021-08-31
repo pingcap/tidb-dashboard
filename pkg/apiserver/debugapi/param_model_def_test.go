@@ -11,18 +11,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package endpoint
+package debugapi
 
 import (
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
 	"github.com/joomcode/errorx"
 	. "github.com/pingcap/check"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
+	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
 func TestParamModels(t *testing.T) {
@@ -34,21 +37,33 @@ var _ = Suite(&testParamModelsSuite{})
 
 type testParamModelsSuite struct{}
 
+type testFetcher struct{}
+
+func (d *testFetcher) Fetch(req *endpoint.Request) (*httpc.Response, error) {
+	r := httptest.NewRecorder()
+	_, _ = r.WriteString(testCombineReq(req.Host, req.Port, req.Path(), req.Query()))
+	return &httpc.Response{Response: r.Result()}, nil
+}
+
+func testCombineReq(host string, port int, path, query string) string {
+	return fmt.Sprintf("%s:%d%s?%s", host, port, path, query)
+}
+
 func (t *testParamModelsSuite) Test_APIParamModelMultiTags(c *C) {
-	client := NewClient(&testDispatcher{})
-	testEndpoint := &APIModel{
+	client := endpoint.NewClient(&testFetcher{})
+	testEndpoint := &endpoint.APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
 		Method:    http.MethodGet,
-		QueryParams: []*APIParam{
+		QueryParams: []*endpoint.APIParam{
 			{
 				Name:  "param1",
 				Model: APIParamModelTags,
 			},
 		},
 	}
-	client.AddEndpoint(testEndpoint)
+	client.RegisterEndpoint([]*endpoint.APIModel{testEndpoint})
 	value1 := url.QueryEscape("value1,,, ")
 	value2 := url.QueryEscape("value2")
 	param1 := fmt.Sprintf("%s,%s", value1, value2)
@@ -65,26 +80,26 @@ func (t *testParamModelsSuite) Test_APIParamModelMultiTags(c *C) {
 }
 
 func (t *testParamModelsSuite) Test_APIParamModelInt(c *C) {
-	client := NewClient(&testDispatcher{})
-	testEndpoint := &APIModel{
+	client := endpoint.NewClient(&testFetcher{})
+	testEndpoint := &endpoint.APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
 		Method:    http.MethodGet,
-		QueryParams: []*APIParam{
+		QueryParams: []*endpoint.APIParam{
 			{
 				Name:  "param1",
 				Model: APIParamModelInt,
 			},
 		},
 	}
-	client.AddEndpoint(testEndpoint)
+	client.RegisterEndpoint([]*endpoint.APIModel{testEndpoint})
 
 	_, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{
 		"param1": "value1",
 	})
 	c.Log(err)
-	c.Assert(errorx.IsOfType(err, ErrInvalidParam), Equals, true)
+	c.Assert(errorx.IsOfType(err, endpoint.ErrInvalidParam), Equals, true)
 
 	req2, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{
 		"param1": "2",
@@ -97,20 +112,20 @@ func (t *testParamModelsSuite) Test_APIParamModelInt(c *C) {
 }
 
 func (t *testParamModelsSuite) Test_APIParamModelConstant(c *C) {
-	client := NewClient(&testDispatcher{})
-	testEndpoint := &APIModel{
+	client := endpoint.NewClient(&testFetcher{})
+	testEndpoint := &endpoint.APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
 		Method:    http.MethodGet,
-		QueryParams: []*APIParam{
+		QueryParams: []*endpoint.APIParam{
 			{
 				Name:  "param1",
 				Model: APIParamModelConstant("value1"),
 			},
 		},
 	}
-	client.AddEndpoint(testEndpoint)
+	client.RegisterEndpoint([]*endpoint.APIModel{testEndpoint})
 
 	req, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{})
 	if err != nil {
@@ -121,21 +136,21 @@ func (t *testParamModelsSuite) Test_APIParamModelConstant(c *C) {
 }
 
 func (t *testParamModelsSuite) Test_APIParamModelEnum(c *C) {
-	client := NewClient(&testDispatcher{})
+	client := endpoint.NewClient(&testFetcher{})
 	value1 := "value1"
-	testEndpoint := &APIModel{
+	testEndpoint := &endpoint.APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
 		Path:      "/test",
 		Method:    http.MethodGet,
-		QueryParams: []*APIParam{
+		QueryParams: []*endpoint.APIParam{
 			{
 				Name:  "param1",
 				Model: APIParamModelEnum([]EnumItem{{Value: value1}}),
 			},
 		},
 	}
-	client.AddEndpoint(testEndpoint)
+	client.RegisterEndpoint([]*endpoint.APIModel{testEndpoint})
 
 	req, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{"param1": value1})
 	if err != nil {
@@ -148,5 +163,5 @@ func (t *testParamModelsSuite) Test_APIParamModelEnum(c *C) {
 	// enum validate
 	_, err = client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{"param1": "value2"})
 
-	c.Assert(errorx.IsOfType(err, ErrInvalidParam), Equals, true)
+	c.Assert(errorx.IsOfType(err, endpoint.ErrInvalidParam), Equals, true)
 }

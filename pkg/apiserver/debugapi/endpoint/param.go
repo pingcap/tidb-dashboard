@@ -23,7 +23,7 @@ type APIParamModel interface {
 }
 
 // ModelMiddlewareHandlerFunc can only get the value of the current param
-type ModelMiddlewareHandlerFunc func(p *ModelParam) error
+type ModelMiddlewareHandlerFunc func(p *ModelParam, ctx *Context)
 
 type BaseAPIParamModel struct {
 	middlewares []ModelMiddlewareHandlerFunc
@@ -51,14 +51,14 @@ func (m *BaseAPIParamModel) Use(handler ...ModelMiddlewareHandlerFunc) APIParamM
 func (m *BaseAPIParamModel) Middlewares(param *APIParam, isPathParam bool) []MiddlewareHandler {
 	middlewares := make([]MiddlewareHandler, 0, len(m.middlewares))
 	for _, mi := range m.middlewares {
-		middlewares = append(middlewares, MiddlewareHandlerFunc(func(req *Request) error {
+		middlewares = append(middlewares, MiddlewareHandlerFunc(func(ctx *Context) {
 			var values url.Values
 			if isPathParam {
-				values = req.PathValues
+				values = ctx.Request.PathValues
 			} else {
-				values = req.QueryValues
+				values = ctx.Request.QueryValues
 			}
-			return mi(&ModelParam{values: values, param: param})
+			mi(&ModelParam{values: values, param: param}, ctx)
 		}))
 	}
 	return middlewares

@@ -19,20 +19,28 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
+// Process flow
+//
+// (send path/query params' value)
+// browser side -|
+//               |   (validate/transform/send request middlewares)
+//               |-> server side -|
+//                                |   (the actual {host}:{port}/{path}?{query})
+//                                |-> specific endpoint host
+
 var (
 	ErrNS           = errorx.NewNamespace("error.api.debugapi.endpoint")
 	ErrInvalidParam = ErrNS.NewType("invalid_parameter")
 )
 
 type APIModel struct {
-	ID               string                `json:"id"`
-	Component        model.NodeKind        `json:"component"`
-	Path             string                `json:"path"`
-	Method           Method                `json:"method"`
-	Ext              string                `json:"-"`            // response file ext
-	PathParams       []*APIParam           `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table
-	QueryParams      []*APIParam           `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
-	OnReceiveRequest MiddlewareHandlerFunc `json:"-"`
+	ID          string                `json:"id"`
+	Component   model.NodeKind        `json:"component"`
+	Path        string                `json:"path"`
+	Method      Method                `json:"method"`
+	PathParams  []*APIParam           `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table
+	QueryParams []*APIParam           `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
+	Middleware  MiddlewareHandlerFunc `json:"-"`
 }
 
 // EachParams simplifies the process of iterating over path & query params
@@ -68,8 +76,8 @@ func (m *APIModel) Middlewares() []MiddlewareHandler {
 	})
 
 	// endpoint middlewares
-	if m.OnReceiveRequest != nil {
-		middlewares = append(middlewares, m.OnReceiveRequest)
+	if m.Middleware != nil {
+		middlewares = append(middlewares, m.Middleware)
 	}
 
 	return middlewares

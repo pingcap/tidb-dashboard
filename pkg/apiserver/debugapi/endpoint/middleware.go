@@ -14,18 +14,54 @@
 
 package endpoint
 
-type Middlewarer interface {
-	AddMiddleware(handler ...MiddlewareHandler)
-	GetMiddlewares() []MiddlewareHandler
-}
+import "github.com/pingcap/tidb-dashboard/pkg/httpc"
 
-// TODO: middleware context & next
-type MiddlewareHandlerFunc func(req *Request) error
+type MiddlewareHandlerFunc func(ctx *Context)
 
-func (h MiddlewareHandlerFunc) Handle(req *Request) error {
-	return h(req)
+func (h MiddlewareHandlerFunc) Handle(ctx *Context) {
+	h(ctx)
 }
 
 type MiddlewareHandler interface {
-	Handle(req *Request) error
+	Handle(ctx *Context)
+}
+
+type Context struct {
+	Request  *Request
+	Response *httpc.Response
+	Error    error
+
+	index       int
+	middlewares []MiddlewareHandler
+}
+
+func newContext(req *Request, ms []MiddlewareHandler) *Context {
+	return &Context{Request: req, index: -1, middlewares: ms}
+}
+
+// We need afterNext callback to check if it has been aborted
+// Otherwise, the code after next of the previous recursive call after abort will still execute
+//
+// afterNext is designed as an optional parameter on purpose
+func (c *Context) Next(afterNext ...func() error) {
+	c.index++
+	if (c.index == len(c.middlewares)) || (c.Error != nil) {
+		return
+	}
+
+	c.middlewares[c.index].Handle(c)
+	// if aborted in recursive calls, should not continue exec afterNext function
+	if c.Error != nil || (len(afterNext) == 0) {
+		return
+	}
+	for _, fn := range afterNext {
+		err := fn()
+		if err != nil {
+			c.Abort(err)
+		}
+	}
+}
+
+func (c *Context) Abort(err error) {
+	c.Error = err
 }

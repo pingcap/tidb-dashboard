@@ -36,9 +36,9 @@ var _ = Suite(&testClientSuite{})
 
 type testClientSuite struct{}
 
-type testDispatcher struct{}
+type testFetcher struct{}
 
-func (d *testDispatcher) Send(req *Request) (*httpc.Response, error) {
+func (d *testFetcher) Fetch(req *Request) (*httpc.Response, error) {
 	r := httptest.NewRecorder()
 	_, _ = r.WriteString(testCombineReq(req.Host, req.Port, req.Path(), req.Query()))
 	return &httpc.Response{Response: r.Result()}, nil
@@ -63,8 +63,8 @@ var ep = &APIModel{
 }
 
 func (t *testClientSuite) Test_Send(c *C) {
-	client := NewClient(&testDispatcher{})
-	client.AddEndpoint(ep)
+	client := NewClient(&testFetcher{})
+	client.RegisterEndpoint([]*APIModel{ep})
 	req, err := client.Send(ep.ID, "127.0.0.1", 10080, map[string]string{
 		"pathParam":  "foo",
 		"queryParam": "bar",
@@ -78,34 +78,33 @@ func (t *testClientSuite) Test_Send(c *C) {
 }
 
 func (t *testClientSuite) Test_AddEndpoint(c *C) {
-	client := NewClient(&testDispatcher{})
+	client := NewClient(&testFetcher{})
 
 	c.Assert(len(client.endpointList), Equals, 0)
 	c.Assert(len(client.endpointMap), Equals, 0)
 
-	client.AddEndpoint(ep)
-	client.AddEndpoint(ep)
+	client.RegisterEndpoint([]*APIModel{ep, ep})
 
 	c.Assert(len(client.endpointList), Equals, 1)
 	c.Assert(len(client.endpointMap), Equals, 1)
 }
 
 func (t *testClientSuite) Test_Endpoint(c *C) {
-	client := NewClient(&testDispatcher{})
-	client.AddEndpoint(ep)
+	client := NewClient(&testFetcher{})
+	client.RegisterEndpoint([]*APIModel{ep})
 
 	c.Assert(client.Endpoint(ep.ID), Equals, ep)
 }
 
 func (t *testClientSuite) Test_Endpoints(c *C) {
-	client := NewClient(&testDispatcher{})
-	client.AddEndpoint(ep)
+	client := NewClient(&testFetcher{})
+	client.RegisterEndpoint([]*APIModel{ep})
 
 	c.Assert(client.Endpoints()[0].ID, Equals, ep.ID)
 }
 
 func (t *testClientSuite) Test_setValues(c *C) {
-	client := NewClient(&testDispatcher{})
+	client := NewClient(&testFetcher{})
 	req := NewRequest(ep.Component, ep.Method, "127.0.0.1", 10080, ep.Path)
 	params := map[string]string{
 		"pathParam":  "foo",
@@ -119,7 +118,7 @@ func (t *testClientSuite) Test_setValues(c *C) {
 }
 
 func (t *testClientSuite) Test_execMiddlewares(c *C) {
-	client := NewClient(&testDispatcher{})
+	client := NewClient(&testFetcher{})
 	ep := &APIModel{
 		ID:        "test_endpoint",
 		Component: model.NodeKindTiDB,
@@ -131,12 +130,12 @@ func (t *testClientSuite) Test_execMiddlewares(c *C) {
 		QueryParams: []*APIParam{
 			{Model: testParamModel, Name: "queryParam", Required: true},
 		},
-		OnReceiveRequest: func(req *Request) error {
-			req.QueryValues.Set("queryParam", "bar2")
-			return nil
+		Middleware: func(ctx *Context) {
+			ctx.Request.QueryValues.Set("queryParam", "bar2")
+			ctx.Next()
 		},
 	}
-	client.AddEndpoint(ep)
+	client.RegisterEndpoint([]*APIModel{ep})
 	req, err := client.Send(ep.ID, "127.0.0.1", 10080, map[string]string{
 		"pathParam":  "foo",
 		"queryParam": "bar",

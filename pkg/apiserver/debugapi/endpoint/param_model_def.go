@@ -59,7 +59,8 @@ var APIParamModelInt = NewAPIParamModel("int").Use(func(p *ModelParam) error {
 
 // enum
 type enumAPIParamModel struct {
-	APIParamModel
+	// we need use BaseAPIParamModel point to avoid nested json struct
+	*BaseAPIParamModel
 	Data []EnumItem `json:"data"`
 }
 type EnumItem struct {
@@ -77,7 +78,7 @@ func APIParamModelEnum(items []EnumItem) APIParamModel {
 		}
 		return item
 	}).([]EnumItem)
-	enumModel := &enumAPIParamModel{NewAPIParamModel("enum"), items}
+	enumModel := &enumAPIParamModel{NewAPIParamModel("enum").(*BaseAPIParamModel), items}
 	enumModel.Use(func(p *ModelParam) error {
 		isValid := funk.Contains(items, func(item EnumItem) bool {
 			v := p.Value()
@@ -93,12 +94,13 @@ func APIParamModelEnum(items []EnumItem) APIParamModel {
 
 // const
 type constantAPIParamModel struct {
-	APIParamModel
+	// we need use BaseAPIParamModel point to avoid nested json struct
+	*BaseAPIParamModel
 	Data string `json:"data"`
 }
 
 func APIParamModelConstant(value string) APIParamModel {
-	m := &constantAPIParamModel{NewAPIParamModel("constant"), value}
+	m := &constantAPIParamModel{NewAPIParamModel("constant").(*BaseAPIParamModel), value}
 	m.Use(func(p *ModelParam) error {
 		p.SetValue(value)
 		return nil

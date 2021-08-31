@@ -22,6 +22,7 @@ import (
 
 	"github.com/joomcode/errorx"
 	. "github.com/pingcap/check"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
@@ -39,7 +40,7 @@ type testDispatcher struct{}
 
 func (d *testDispatcher) Send(req *Request) (*httpc.Response, error) {
 	r := httptest.NewRecorder()
-	r.WriteString(testCombineReq(req.Host, req.Port, req.Path(), req.Query()))
+	_, _ = r.WriteString(testCombineReq(req.Host, req.Port, req.Path(), req.Query()))
 	return &httpc.Response{Response: r.Result()}, nil
 }
 
@@ -48,7 +49,7 @@ func testCombineReq(host string, port int, path, query string) string {
 }
 
 var testParamModel = NewAPIParamModel("text")
-var ep = &APIModelWithMiddleware{APIModel: &APIModel{
+var ep = &APIModel{
 	ID:        "test_endpoint",
 	Component: model.NodeKindTiDB,
 	Path:      "/test/{pathParam}",
@@ -59,11 +60,11 @@ var ep = &APIModelWithMiddleware{APIModel: &APIModel{
 	QueryParams: []*APIParam{
 		{Model: testParamModel, Name: "queryParam", Required: true},
 	},
-}}
+}
 
 func (t *testClientSuite) Test_Send(c *C) {
 	client := NewClient(&testDispatcher{})
-	client.AddEndpoint(ep.APIModel)
+	client.AddEndpoint(ep)
 	req, err := client.Send(ep.ID, "127.0.0.1", 10080, map[string]string{
 		"pathParam":  "foo",
 		"queryParam": "bar",
@@ -82,7 +83,8 @@ func (t *testClientSuite) Test_AddEndpoint(c *C) {
 	c.Assert(len(client.endpointList), Equals, 0)
 	c.Assert(len(client.endpointMap), Equals, 0)
 
-	client.AddEndpoint(ep.APIModel, MiddlewareHandlerFunc(func(req *Request) error { return nil }))
+	client.AddEndpoint(ep)
+	client.AddEndpoint(ep)
 
 	c.Assert(len(client.endpointList), Equals, 1)
 	c.Assert(len(client.endpointMap), Equals, 1)
@@ -90,14 +92,14 @@ func (t *testClientSuite) Test_AddEndpoint(c *C) {
 
 func (t *testClientSuite) Test_Endpoint(c *C) {
 	client := NewClient(&testDispatcher{})
-	client.AddEndpoint(ep.APIModel)
+	client.AddEndpoint(ep)
 
-	c.Assert(client.Endpoint(ep.ID), Equals, ep.APIModel)
+	c.Assert(client.Endpoint(ep.ID), Equals, ep)
 }
 
 func (t *testClientSuite) Test_Endpoints(c *C) {
 	client := NewClient(&testDispatcher{})
-	client.AddEndpoint(ep.APIModel)
+	client.AddEndpoint(ep)
 
 	c.Assert(client.Endpoints()[0].ID, Equals, ep.ID)
 }
@@ -118,10 +120,23 @@ func (t *testClientSuite) Test_setValues(c *C) {
 
 func (t *testClientSuite) Test_execMiddlewares(c *C) {
 	client := NewClient(&testDispatcher{})
-	client.AddEndpoint(ep.APIModel, MiddlewareHandlerFunc(func(req *Request) error {
-		req.QueryValues.Set("queryParam", "bar2")
-		return nil
-	}))
+	ep := &APIModel{
+		ID:        "test_endpoint",
+		Component: model.NodeKindTiDB,
+		Path:      "/test/{pathParam}",
+		Method:    http.MethodGet,
+		PathParams: []*APIParam{
+			{Model: testParamModel, Name: "pathParam", Required: true},
+		},
+		QueryParams: []*APIParam{
+			{Model: testParamModel, Name: "queryParam", Required: true},
+		},
+		OnReceiveRequest: func(req *Request) error {
+			req.QueryValues.Set("queryParam", "bar2")
+			return nil
+		},
+	}
+	client.AddEndpoint(ep)
 	req, err := client.Send(ep.ID, "127.0.0.1", 10080, map[string]string{
 		"pathParam":  "foo",
 		"queryParam": "bar",

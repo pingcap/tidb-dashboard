@@ -131,7 +131,7 @@ func (t *testParamModelsSuite) Test_APIParamModelEnum(c *C) {
 		QueryParams: []*APIParam{
 			{
 				Name:  "param1",
-				Model: APIParamModelEnum([]EnumItem{{Name: value1}}),
+				Model: APIParamModelEnum([]EnumItem{{Value: value1}}),
 			},
 		},
 	}

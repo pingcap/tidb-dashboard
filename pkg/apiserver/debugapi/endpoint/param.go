@@ -17,8 +17,9 @@ package endpoint
 import "net/url"
 
 type APIParamModel interface {
-	AddMiddleware(handler ...ModelMiddlewareHandlerFunc) APIParamModel
-	GetMiddlewares(param *APIParam, isPathParam bool) []MiddlewareHandler
+	Copy() APIParamModel
+	Use(handler ...ModelMiddlewareHandlerFunc) APIParamModel
+	Middlewares(param *APIParam, isPathParam bool) []MiddlewareHandler
 }
 
 // ModelMiddlewareHandlerFunc can only get the value of the current param
@@ -30,17 +31,24 @@ type BaseAPIParamModel struct {
 	Type string `json:"type"`
 }
 
-func NewAPIParamModel(t string) *BaseAPIParamModel {
+func NewAPIParamModel(t string) APIParamModel {
 	return &BaseAPIParamModel{Type: t, middlewares: []ModelMiddlewareHandlerFunc{}}
 }
 
-func (m *BaseAPIParamModel) AddMiddleware(handler ...ModelMiddlewareHandlerFunc) APIParamModel {
+func (m BaseAPIParamModel) Copy() APIParamModel {
+	middlewares := m.middlewares
+	m.middlewares = []ModelMiddlewareHandlerFunc{}
+	m.middlewares = append(m.middlewares, middlewares...)
+	return &m
+}
+
+func (m *BaseAPIParamModel) Use(handler ...ModelMiddlewareHandlerFunc) APIParamModel {
 	m.middlewares = append(m.middlewares, handler...)
 	return m
 }
 
-// GetMiddlewares do some adapter works, limit model middleware can only get the value of the current param
-func (m *BaseAPIParamModel) GetMiddlewares(param *APIParam, isPathParam bool) []MiddlewareHandler {
+// Middlewares do some adapter works, that limit model middleware can only get the value of the current param
+func (m *BaseAPIParamModel) Middlewares(param *APIParam, isPathParam bool) []MiddlewareHandler {
 	middlewares := make([]MiddlewareHandler, 0, len(m.middlewares))
 	for _, mi := range m.middlewares {
 		middlewares = append(middlewares, MiddlewareHandlerFunc(func(req *Request) error {
@@ -59,6 +67,10 @@ func (m *BaseAPIParamModel) GetMiddlewares(param *APIParam, isPathParam bool) []
 type ModelParam struct {
 	values url.Values
 	param  *APIParam
+}
+
+func (mc *ModelParam) Name() string {
+	return mc.param.Name
 }
 
 func (mc *ModelParam) Value() string {

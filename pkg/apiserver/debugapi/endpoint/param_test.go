@@ -14,18 +14,25 @@
 
 package endpoint
 
-type Middlewarer interface {
-	AddMiddleware(handler ...MiddlewareHandler)
-	GetMiddlewares() []MiddlewareHandler
+import (
+	"testing"
+
+	. "github.com/pingcap/check"
+)
+
+func TestParam(t *testing.T) {
+	CustomVerboseFlag = true
+	TestingT(t)
 }
 
-// TODO: middleware context & next
-type MiddlewareHandlerFunc func(req *Request) error
+var _ = Suite(&testParamSuite{})
 
-func (h MiddlewareHandlerFunc) Handle(req *Request) error {
-	return h(req)
-}
+type testParamSuite struct{}
 
-type MiddlewareHandler interface {
-	Handle(req *Request) error
+func (t *testParamSuite) Test_Copy(c *C) {
+	testParamModel := NewAPIParamModel("text").Use(func(p *ModelParam) error { return nil })
+	testParamModel2 := testParamModel.Copy().Use(func(p *ModelParam) error { return nil })
+
+	c.Assert(len(testParamModel.Middlewares(nil, false)), Equals, 1)
+	c.Assert(len(testParamModel2.Middlewares(nil, false)), Equals, 2)
 }

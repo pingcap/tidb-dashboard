@@ -25,9 +25,14 @@ import (
 
 var APIParamModelText = NewAPIParamModel("text")
 
+var APIParamModelEscapeText = APIParamModelText.Copy().Use(func(p *ModelParam) error {
+	p.SetValue(url.QueryEscape(p.Value()))
+	return nil
+})
+
 var falselyValues = []string{"false", "0", "null", "undefined", ""}
 
-var APIParamModelBool = NewAPIParamModel("bool").AddMiddleware(func(p *ModelParam) error {
+var APIParamModelBool = NewAPIParamModel("bool").Use(func(p *ModelParam) error {
 	if funk.Contains(falselyValues, p.Value()) {
 		p.SetValue("false")
 	} else {
@@ -36,7 +41,7 @@ var APIParamModelBool = NewAPIParamModel("bool").AddMiddleware(func(p *ModelPara
 	return nil
 })
 
-var APIParamModelTags = NewAPIParamModel("tags").AddMiddleware(func(p *ModelParam) error {
+var APIParamModelTags = NewAPIParamModel("tags").Use(func(p *ModelParam) error {
 	vals := strings.Split(p.Value(), ",")
 	p.SetValues(funk.Map(vals, func(str string) string {
 		v, _ := url.QueryUnescape(str)
@@ -45,16 +50,16 @@ var APIParamModelTags = NewAPIParamModel("tags").AddMiddleware(func(p *ModelPara
 	return nil
 })
 
-var APIParamModelInt = NewAPIParamModel("int").AddMiddleware(func(p *ModelParam) error {
+var APIParamModelInt = NewAPIParamModel("int").Use(func(p *ModelParam) error {
 	if _, err := strconv.Atoi(p.Value()); err != nil {
-		return fmt.Errorf("param not a number")
+		return fmt.Errorf("[%s] %s is not a number", p.Name(), p.Value())
 	}
 	return nil
 })
 
 // enum
 type enumAPIParamModel struct {
-	BaseAPIParamModel
+	APIParamModel
 	Data []EnumItem `json:"data"`
 }
 type EnumItem struct {
@@ -62,23 +67,24 @@ type EnumItem struct {
 	Value string `json:"value"`
 }
 
-var apiParamModelEnum = NewAPIParamModel("enum")
-
 func APIParamModelEnum(items []EnumItem) APIParamModel {
 	items = funk.Map(items, func(item EnumItem) EnumItem {
 		if item.Value == "" {
-			item.Value = item.Name
+			panic("enum item requires a valid value")
+		}
+		if item.Name == "" {
+			item.Name = item.Value
 		}
 		return item
 	}).([]EnumItem)
-	enumModel := &enumAPIParamModel{*apiParamModelEnum, items}
-	enumModel.AddMiddleware(func(p *ModelParam) error {
+	enumModel := &enumAPIParamModel{NewAPIParamModel("enum"), items}
+	enumModel.Use(func(p *ModelParam) error {
 		isValid := funk.Contains(items, func(item EnumItem) bool {
 			v := p.Value()
 			return item.Value == v
 		})
 		if !isValid {
-			return fmt.Errorf("param is not a valid enum type, value: %s", p.Value())
+			return fmt.Errorf("[%s] %s is not a valid value", p.Name(), p.Value())
 		}
 		return nil
 	})
@@ -87,15 +93,13 @@ func APIParamModelEnum(items []EnumItem) APIParamModel {
 
 // const
 type constantAPIParamModel struct {
-	*BaseAPIParamModel
+	APIParamModel
 	Data string `json:"data"`
 }
 
-var apiParamModelConstant = NewAPIParamModel("constant")
-
 func APIParamModelConstant(value string) APIParamModel {
-	m := &constantAPIParamModel{apiParamModelConstant, value}
-	m.AddMiddleware(func(p *ModelParam) error {
+	m := &constantAPIParamModel{NewAPIParamModel("constant"), value}
+	m.Use(func(p *ModelParam) error {
 		p.SetValue(value)
 		return nil
 	})

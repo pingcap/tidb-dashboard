@@ -25,13 +25,14 @@ var (
 )
 
 type APIModel struct {
-	ID          string         `json:"id"`
-	Component   model.NodeKind `json:"component"`
-	Path        string         `json:"path"`
-	Method      Method         `json:"method"`
-	Ext         string         `json:"-"`            // response file ext
-	PathParams  []*APIParam    `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table
-	QueryParams []*APIParam    `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
+	ID               string                `json:"id"`
+	Component        model.NodeKind        `json:"component"`
+	Path             string                `json:"path"`
+	Method           Method                `json:"method"`
+	Ext              string                `json:"-"`            // response file ext
+	PathParams       []*APIParam           `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table
+	QueryParams      []*APIParam           `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
+	OnReceiveRequest MiddlewareHandlerFunc `json:"-"`
 }
 
 // EachParams simplifies the process of iterating over path & query params
@@ -53,4 +54,23 @@ func (m *APIModel) ForEachParam(fn func(p *APIParam, isPathParam bool) error) er
 		}
 	}
 	return nil
+}
+
+// Middlewares includes endpoint middlewares & param model middlewares
+func (m *APIModel) Middlewares() []MiddlewareHandler {
+	middlewares := []MiddlewareHandler{}
+
+	// param model middlewares
+	_ = m.ForEachParam(func(p *APIParam, isPathParam bool) error {
+		modelMiddlewares := p.Model.Middlewares(p, isPathParam)
+		middlewares = append(middlewares, modelMiddlewares...)
+		return nil
+	})
+
+	// endpoint middlewares
+	if m.OnReceiveRequest != nil {
+		middlewares = append(middlewares, m.OnReceiveRequest)
+	}
+
+	return middlewares
 }

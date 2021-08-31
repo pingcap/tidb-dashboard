@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/thoas/go-funk"
+
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 )
 
@@ -26,46 +28,14 @@ type Dispatcher interface {
 	Send(req *Request) (*httpc.Response, error)
 }
 
-// APIModelWithMiddleware middlewares are used as validator and transformer
-type APIModelWithMiddleware struct {
-	*APIModel
-	MiddlewareHub
-}
-
-func NewAPIModelWithMiddleware(endpoint *APIModel) *APIModelWithMiddleware {
-	return &APIModelWithMiddleware{
-		endpoint,
-		*NewMiddlewareHub(),
-	}
-}
-
-// AllMiddlewares includes endpoint middlewares & param model middlewares
-func (m *APIModelWithMiddleware) AllMiddlewares() []MiddlewareHandler {
-	middlewares := []MiddlewareHandler{}
-
-	// param model middlewares
-	m.ForEachParam(func(p *APIParam, isPathParam bool) error {
-		modelMiddlewares := p.Model.GetMiddlewares(p, isPathParam)
-		if len(modelMiddlewares) != 0 {
-			middlewares = append(middlewares, modelMiddlewares...)
-		}
-		return nil
-	})
-
-	// endpoint middlewares
-	middlewares = append(middlewares, m.Middlewares...)
-
-	return middlewares
-}
-
 type Client struct {
-	endpointMap  map[string]*APIModelWithMiddleware
+	endpointMap  map[string]*APIModel
 	endpointList []APIModel
 	dispatcher   Dispatcher
 }
 
 func NewClient(d Dispatcher) *Client {
-	return &Client{endpointMap: map[string]*APIModelWithMiddleware{}, endpointList: []APIModel{}, dispatcher: d}
+	return &Client{endpointMap: map[string]*APIModel{}, endpointList: []APIModel{}, dispatcher: d}
 }
 
 func (c *Client) Send(eID string, host string, port int, params map[string]string) (*httpc.Response, error) {
@@ -84,28 +54,26 @@ func (c *Client) Send(eID string, host string, port int, params map[string]strin
 	return c.dispatcher.Send(req)
 }
 
-func (c *Client) AddEndpoint(endpoint *APIModel, middlewares ...MiddlewareHandler) error {
+func (c *Client) AddEndpoint(endpoint *APIModel) *Client {
 	if c.endpointMap[endpoint.ID] != nil {
-		return fmt.Errorf("duplicated endpoint: %s", endpoint.ID)
+		c.endpointList = funk.Filter(c.endpointList, func(e APIModel) bool {
+			return e.ID != endpoint.ID
+		}).([]APIModel)
 	}
-	m := NewAPIModelWithMiddleware(endpoint)
-	if middlewares != nil {
-		m.Use(middlewares...)
-	}
-	c.endpointMap[endpoint.ID] = m
+	c.endpointMap[endpoint.ID] = endpoint
 	c.endpointList = append(c.endpointList, *endpoint)
-	return nil
+	return c
 }
 
 func (c *Client) Endpoint(id string) *APIModel {
-	return c.endpointMap[id].APIModel
+	return c.endpointMap[id]
 }
 
 func (c *Client) Endpoints() []APIModel {
 	return c.endpointList
 }
 
-func (c *Client) setValues(endpoint *APIModelWithMiddleware, params map[string]string, req *Request) {
+func (c *Client) setValues(endpoint *APIModel, params map[string]string, req *Request) {
 	for _, p := range endpoint.QueryParams {
 		if params[p.Name] == "" {
 			continue
@@ -121,9 +89,9 @@ func (c *Client) setValues(endpoint *APIModelWithMiddleware, params map[string]s
 }
 
 // required validate middleware -> param model middlewares -> endpoint middlewares
-func (c *Client) execMiddlewares(m *APIModelWithMiddleware, req *Request) error {
-	middlewares := []MiddlewareHandler{requiredMiddlewareAdapter(m.APIModel)}
-	middlewares = append(middlewares, m.AllMiddlewares()...)
+func (c *Client) execMiddlewares(m *APIModel, req *Request) error {
+	middlewares := []MiddlewareHandler{requiredMiddlewareAdapter(m)}
+	middlewares = append(middlewares, m.Middlewares()...)
 	for _, m := range middlewares {
 		if err := m.Handle(req); err != nil {
 			return err
@@ -144,9 +112,8 @@ func requiredMiddlewareAdapter(endpoint *APIModel) MiddlewareHandler {
 			}
 			if p.Required && values.Get(p.Name) == "" {
 				return ErrInvalidParam.New("missing required param: %s", p.Name)
-			} else {
-				return nil
 			}
+			return nil
 		})
 	})
 }

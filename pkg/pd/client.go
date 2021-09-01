@@ -23,6 +23,7 @@ import (
 
 	"go.uber.org/fx"
 
+	"github.com/ReneKroon/ttlcache/v2"
 	"github.com/thoas/go-funk"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
@@ -47,6 +48,7 @@ type Client struct {
 	httpClient   *httpc.Client
 	lifecycleCtx context.Context
 	timeout      time.Duration
+	cache        *ttlcache.Cache
 }
 
 func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
@@ -57,6 +59,7 @@ func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Confi
 		specificURL:  "",
 		lifecycleCtx: nil,
 		timeout:      defaultPDTimeout,
+		cache:        ttlcache.NewCache(),
 	}
 
 	lc.Append(fx.Hook{
@@ -151,6 +154,21 @@ func (c *Client) FetchMembers() (*InfoMembers, error) {
 	return ds, nil
 }
 
+func (c *Client) getMemebers() (*InfoMembers, error) {
+	cached, _ := c.cache.Get("pd_members")
+	if cached != nil {
+		return cached.(*InfoMembers), nil
+	}
+
+	mem, err := c.FetchMembers()
+	if err != nil {
+		return nil, err
+	}
+	_ = c.cache.SetWithTTL("pd_members", mem, 10*time.Second)
+
+	return mem, nil
+}
+
 func (c *Client) checkValidHost() error {
 	requestIP, requestPort, err := host.ParseHostAndPortFromAddressURL(c.getURL())
 	if err != nil {
@@ -162,7 +180,7 @@ func (c *Client) checkValidHost() error {
 		return nil
 	}
 
-	ds, err := c.FetchMembers()
+	ds, err := c.getMemebers()
 	if err != nil {
 		return err
 	}

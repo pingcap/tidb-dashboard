@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ReneKroon/ttlcache/v2"
 	"github.com/VividCortex/mysqlerr"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pingcap/log"
@@ -55,6 +56,7 @@ type Client struct {
 	statusAPITimeout         time.Duration
 	sqlAPITLSKey             string // Non empty means use this key as MySQL TLS config
 	sqlAPIAddress            string // Empty means to use address provided by forwarder
+	cache                    *ttlcache.Cache
 }
 
 func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.Client, httpClient *httpc.Client) *Client {
@@ -74,6 +76,7 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		statusAPITimeout:         defaultTiDBStatusAPITimeout,
 		sqlAPITLSKey:             sqlAPITLSKey,
 		sqlAPIAddress:            "",
+		cache:                    ttlcache.NewCache(),
 	}
 
 	lc.Append(fx.Hook{
@@ -204,17 +207,32 @@ func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 	return res, err
 }
 
+func (c *Client) getMemebers() ([]topology.TiDBInfo, error) {
+	cached, _ := c.cache.Get("tidb_members")
+	if cached != nil {
+		return cached.([]topology.TiDBInfo), nil
+	}
+
+	mem, err := topology.FetchTiDBTopology(c.lifecycleCtx, c.forwarder.etcdClient)
+	if err != nil {
+		return nil, err
+	}
+	_ = c.cache.SetWithTTL("tidb_members", mem, 10*time.Second)
+
+	return mem, nil
+}
+
 func (c *Client) checkValidAddress(addr string) error {
 	wl := c.addrWhitelist()
 	if funk.Contains(wl, addr) {
 		return nil
 	}
 
-	info, err := topology.FetchTiDBTopology(c.lifecycleCtx, c.forwarder.etcdClient)
+	mem, err := c.getMemebers()
 	if err != nil {
 		return err
 	}
-	isValid := funk.Contains(info, func(item topology.TiDBInfo) bool {
+	isValid := funk.Contains(mem, func(item topology.TiDBInfo) bool {
 		return fmt.Sprintf("%s:%d", item.IP, item.StatusPort) == addr
 	})
 	if !isValid {
@@ -226,7 +244,6 @@ func (c *Client) checkValidAddress(addr string) error {
 func (c *Client) addrWhitelist() []string {
 	forwardIP, forwardPort, _ := host.ParseHostAndPortFromAddressURL("http://" + c.forwarder.statusProxy.listener.Addr().String())
 	forwardAddr := fmt.Sprintf("%s:%d", forwardIP, forwardPort)
-	log.Info(c.forwarder.statusProxy.listener.Addr().String())
 	return []string{forwardAddr}
 }
 

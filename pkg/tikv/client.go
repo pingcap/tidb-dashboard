@@ -22,6 +22,7 @@ import (
 
 	"go.uber.org/fx"
 
+	"github.com/ReneKroon/ttlcache/v2"
 	"github.com/thoas/go-funk"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
@@ -46,6 +47,7 @@ type Client struct {
 	httpScheme   string
 	lifecycleCtx context.Context
 	timeout      time.Duration
+	cache        *ttlcache.Cache
 }
 
 func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Client, config *config.Config) *Client {
@@ -55,6 +57,7 @@ func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Clien
 		httpScheme:   config.GetClusterHTTPScheme(),
 		lifecycleCtx: nil,
 		timeout:      defaultTiKVStatusAPITimeout,
+		cache:        ttlcache.NewCache(),
 	}
 
 	lc.Append(fx.Hook{
@@ -100,12 +103,27 @@ func (c *Client) SendPostRequest(host string, statusPort int, relativeURI string
 	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrTiKVClientRequestFailed, distro.Data("tikv"))
 }
 
+func (c *Client) getMemebers() ([]topology.StoreInfo, error) {
+	cached, _ := c.cache.Get("tikv_members")
+	if cached != nil {
+		return cached.([]topology.StoreInfo), nil
+	}
+
+	mem, _, err := topology.FetchStoreTopology(c.pdClient)
+	if err != nil {
+		return nil, err
+	}
+	_ = c.cache.SetWithTTL("tikv_members", mem, 10*time.Second)
+
+	return mem, nil
+}
+
 func (c *Client) checkValidAddress(addr string) error {
-	info, _, err := topology.FetchStoreTopology(c.pdClient)
+	mem, err := c.getMemebers()
 	if err != nil {
 		return err
 	}
-	isValid := funk.Contains(info, func(item topology.StoreInfo) bool {
+	isValid := funk.Contains(mem, func(item topology.StoreInfo) bool {
 		return fmt.Sprintf("%s:%d", item.IP, item.StatusPort) == addr
 	})
 	if !isValid {

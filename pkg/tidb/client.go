@@ -224,8 +224,9 @@ func (c *Client) checkValidAddress(addr string) error {
 }
 
 func (c *Client) addrWhitelist() []string {
-	forwardIP, forwardPort, _ := host.ParseHostAndPortFromAddressURL(c.forwarder.statusProxy.listener.Addr().String())
+	forwardIP, forwardPort, _ := host.ParseHostAndPortFromAddressURL("http://" + c.forwarder.statusProxy.listener.Addr().String())
 	forwardAddr := fmt.Sprintf("%s:%d", forwardIP, forwardPort)
+	log.Info(c.forwarder.statusProxy.listener.Addr().String())
 	return []string{forwardAddr}
 }
 

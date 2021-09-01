@@ -96,7 +96,7 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 		TiDBPassword: f.Password,
 		DisplayName:  f.Username,
 		IsShareable:  true,
-		IsWriteable:  true,
+		IsWriteable:  checkWriteablePriv(grants),
 	}, nil
 }
 
@@ -173,4 +173,22 @@ func checkDashboardPrivileges(grants []string, enableSEM bool) bool {
 		}
 	}
 	return true
+}
+
+func checkWriteablePriv(grants []string) bool {
+	privsMap := funk.Map(grants, func(priv string) (string, bool) {
+		return priv, true
+	}).(map[string]bool)
+	hasPriv := func(priv string) bool {
+		_, ok := privsMap[priv]
+		return ok
+	}
+
+	if hasPriv("SUPER") {
+		return true
+	}
+	if hasPriv("SYSTEM_VARIABLES_ADMIN") {
+		return true
+	}
+	return false
 }

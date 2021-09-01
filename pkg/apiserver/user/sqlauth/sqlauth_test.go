@@ -28,7 +28,7 @@ var _ = Suite(&testSQLAuthSuite{})
 
 type testSQLAuthSuite struct{}
 
-func (t *testSQLAuthSuite) Test_parseGrants(c *C) {
+func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 	cases := []struct {
 		desc     string
 		input    []string
@@ -155,6 +155,52 @@ func (t *testSQLAuthSuite) Test_checkDashboardPrivileges(c *C) {
 	}
 	for i, v := range cases {
 		actual := checkDashboardPrivileges(v.inputParamGrants, v.inputParamEnableSEM)
-		c.Assert(actual, DeepEquals, v.expected, Commentf("parse %s (index: %d) failed", v.desc, i))
+		c.Assert(actual, DeepEquals, v.expected, Commentf("check %s (index: %d) failed", v.desc, i))
+	}
+}
+
+func (t *testSQLAuthSuite) Test_checkWriteablePriv(c *C) {
+	cases := []struct {
+		desc     string
+		input    []string
+		expected bool
+	}{
+		// 0
+		{
+			desc: "SUPER privileges",
+			input: []string{
+				"SUPER",
+			},
+			expected: true,
+		},
+		// 1
+		{
+			desc: "SYSTEM_VARIABLES_ADMIN privileges",
+			input: []string{
+				"SYSTEM_VARIABLES_ADMIN",
+			},
+			expected: true,
+		},
+		// 2
+		{
+			desc: "both privileges",
+			input: []string{
+				"SUPER", "SYSTEM_VARIABLES_ADMIN",
+			},
+			expected: true,
+		},
+		// 3
+		{
+			desc: "other privileges",
+			input: []string{
+				"PROCESS", "CONFIG",
+			},
+			expected: false,
+		},
+	}
+
+	for i, v := range cases {
+		actual := checkWriteablePriv(v.input)
+		c.Assert(actual, DeepEquals, v.expected, Commentf("check %s (index: %d) failed", v.desc, i))
 	}
 }

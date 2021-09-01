@@ -22,12 +22,13 @@ import (
 
 	"go.uber.org/fx"
 
+	"github.com/thoas/go-funk"
+
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
-	"github.com/thoas/go-funk"
 )
 
 var (

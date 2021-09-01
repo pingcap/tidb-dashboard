@@ -23,11 +23,12 @@ import (
 
 	"go.uber.org/fx"
 
+	"github.com/thoas/go-funk"
+
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
-	"github.com/thoas/go-funk"
 )
 
 var (
@@ -123,12 +124,12 @@ func (c *Client) SendPostRequest(relativeURI string, body io.Reader) ([]byte, er
 	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrPDClientRequestFailed, distro.Data("pd"))
 }
 
-type PDMembers struct {
-	Count   int        `json:"count"`
-	Members []PDMember `json:"members"`
+type InfoMembers struct {
+	Count   int          `json:"count"`
+	Members []InfoMember `json:"members"`
 }
 
-type PDMember struct {
+type InfoMember struct {
 	GitHash       string   `json:"git_hash"`
 	ClientUrls    []string `json:"client_urls"`
 	DeployPath    string   `json:"deploy_path"`
@@ -136,13 +137,13 @@ type PDMember struct {
 	MemberID      uint64   `json:"member_id"`
 }
 
-func (c *Client) FetchMembers() (*PDMembers, error) {
+func (c *Client) FetchMembers() (*InfoMembers, error) {
 	data, err := c.SendGetRequest("/members")
 	if err != nil {
 		return nil, err
 	}
 
-	ds := &PDMembers{}
+	ds := &InfoMembers{}
 	err = json.Unmarshal(data, ds)
 	if err != nil {
 		return nil, ErrPDClientRequestFailed.Wrap(err, "%s members API unmarshal failed", distro.Data("pd"))
@@ -165,7 +166,7 @@ func (c *Client) checkValidHost() error {
 	if err != nil {
 		return err
 	}
-	isValid := funk.Contains(ds, func(item PDMember) bool {
+	isValid := funk.Contains(ds, func(item InfoMember) bool {
 		ip, port, _ := host.ParseHostAndPortFromAddressURL(item.ClientUrls[0])
 		return fmt.Sprintf("%s:%d", ip, port) == addr
 	})

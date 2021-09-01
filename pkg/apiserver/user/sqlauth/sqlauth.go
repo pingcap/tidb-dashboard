@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/joomcode/errorx"
+	"github.com/thoas/go-funk"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -135,13 +136,13 @@ func parseCurUserGrants(grantRows []string) []string {
 // - RESTRICTED_TABLES_ADMIN
 // - RESTRICTED_STATUS_ADMIN
 func checkDashboardPrivileges(grants []string, enableSEM bool) bool {
+	privsMap := funk.Map(grants, func(priv string) (string, bool) {
+		return priv, true
+	}).(map[string]bool)
 	hasPriv := func(priv string) bool {
-		for _, grant := range grants {
-			if priv == grant {
-				return true
-			}
-		}
-		return false
+		// return funk.Contains(privsMap, priv) // funk.Contains(map, key) is O(N), not O(1)
+		_, ok := privsMap[priv]
+		return ok
 	}
 
 	if !hasPriv("ALL PRIVILEGES") {
@@ -155,9 +156,6 @@ func checkDashboardPrivileges(grants []string, enableSEM bool) bool {
 			return false
 		}
 		if !hasPriv("SUPER") {
-			if !hasPriv("SYSTEM_VARIABLES_ADMIN") {
-				return false
-			}
 			if !hasPriv("DASHBOARD_CLIENT") {
 				return false
 			}

@@ -113,42 +113,42 @@ func (t *testSQLAuthSuite) Test_checkDashboardPrivileges(c *C) {
 		// 4
 		{
 			desc:                "base privileges with enableSEM false",
-			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SYSTEM_VARIABLES_ADMIN", "DASHBOARD_CLIENT"},
+			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT"},
 			inputParamEnableSEM: false,
 			expected:            true,
 		},
 		// 5
 		{
 			desc:                "base privileges with enableSEM true",
-			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SYSTEM_VARIABLES_ADMIN", "DASHBOARD_CLIENT"},
+			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT"},
 			inputParamEnableSEM: true,
 			expected:            false,
 		},
 		// 6
 		{
 			desc:                "lack PROCESS privilege",
-			inputParamGrants:    []string{"SHOW DATABASES", "CONFIG", "SYSTEM_VARIABLES_ADMIN", "DASHBOARD_CLIENT"},
+			inputParamGrants:    []string{"SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT"},
 			inputParamEnableSEM: false,
 			expected:            false,
 		},
 		// 7
 		{
-			desc:                "lack SYSTEM_VARIABLES_ADMIN privilege",
-			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT"},
+			desc:                "lack DASHBOARD_CLIENT privilege",
+			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG"},
 			inputParamEnableSEM: false,
 			expected:            false,
 		},
 		// 8
 		{
 			desc:                "extra privileges",
-			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SYSTEM_VARIABLES_ADMIN", "DASHBOARD_CLIENT", "RESTRICTED_VARIABLES_ADMIN", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
+			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_VARIABLES_ADMIN", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
 			inputParamEnableSEM: true,
 			expected:            true,
 		},
 		// 9
 		{
 			desc:                "lack RESTRICTED_VARIABLES_ADMIN extra privileges",
-			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SYSTEM_VARIABLES_ADMIN", "DASHBOARD_CLIENT", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
+			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
 			inputParamEnableSEM: true,
 			expected:            false,
 		},

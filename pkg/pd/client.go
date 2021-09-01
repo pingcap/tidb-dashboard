@@ -151,7 +151,6 @@ func (c *Client) FetchMembers() (*PDMembers, error) {
 }
 
 func (c *Client) checkValidHost() error {
-	// aviod circular invoke when fetch memebers
 	requestIP, requestPort, err := host.ParseHostAndPortFromAddressURL(c.getURL())
 	if err != nil {
 		return err
@@ -177,6 +176,7 @@ func (c *Client) checkValidHost() error {
 }
 
 func (c *Client) addrWhitelist() []string {
+	// baseURL should be placed in the whitelist to aviod circular invoke when fetch memebers
 	baseIP, basePort, _ := host.ParseHostAndPortFromAddressURL(c.baseURL)
 	baseAddr := fmt.Sprintf("%s:%d", baseIP, basePort)
 	return []string{baseAddr}

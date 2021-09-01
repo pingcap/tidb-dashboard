@@ -13,6 +13,7 @@ import (
 	"github.com/VividCortex/mysqlerr"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pingcap/log"
+	"github.com/thoas/go-funk"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -22,12 +23,15 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
 var (
 	ErrTiDBConnFailed          = ErrNS.NewType("tidb_conn_failed")
 	ErrTiDBAuthFailed          = ErrNS.NewType("tidb_auth_failed")
 	ErrTiDBClientRequestFailed = ErrNS.NewType("client_request_failed")
+	ErrInvalidTiDBAddr         = ErrNS.NewType("invalid_tidb_addr")
 )
 
 const (
@@ -185,6 +189,11 @@ func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 		}
 	}
 
+	err = c.checkValidAddress(addr)
+	if err != nil {
+		return nil, err
+	}
+
 	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, relativeURI)
 	res, err := c.statusAPIHTTPClient.
 		WithTimeout(c.statusAPITimeout).
@@ -193,6 +202,31 @@ func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 		return nil, ErrNoAliveTiDB.NewWithNoMessage()
 	}
 	return res, err
+}
+
+func (c *Client) checkValidAddress(addr string) error {
+	wl := c.addrWhitelist()
+	if funk.Contains(wl, addr) {
+		return nil
+	}
+
+	info, err := topology.FetchTiDBTopology(c.lifecycleCtx, c.forwarder.etcdClient)
+	if err != nil {
+		return err
+	}
+	isValid := funk.Contains(info, func(item topology.TiDBInfo) bool {
+		return fmt.Sprintf("%s:%d", item.IP, item.StatusPort) == addr
+	})
+	if !isValid {
+		return ErrInvalidTiDBAddr.New("request address %s is invalid", addr)
+	}
+	return nil
+}
+
+func (c *Client) addrWhitelist() []string {
+	forwardIP, forwardPort, _ := host.ParseHostAndPortFromAddressURL(c.forwarder.statusProxy.listener.Addr().String())
+	forwardAddr := fmt.Sprintf("%s:%d", forwardIP, forwardPort)
+	return []string{forwardAddr}
 }
 
 // FIXME: SendGetRequest should be extracted, as a common method.

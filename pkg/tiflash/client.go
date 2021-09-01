@@ -24,11 +24,15 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
+	"github.com/thoas/go-funk"
 )
 
 var (
 	ErrFlashClientRequestFailed = ErrNS.NewType("client_request_failed")
+	ErrInvalidTiFlashAddr       = ErrNS.NewType("invalid_tiflash_addr")
 )
 
 const (
@@ -37,14 +41,16 @@ const (
 
 type Client struct {
 	httpClient   *httpc.Client
+	pdClient     *pd.Client
 	httpScheme   string
 	lifecycleCtx context.Context
 	timeout      time.Duration
 }
 
-func NewTiFlashClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
+func NewTiFlashClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Client, config *config.Config) *Client {
 	client := &Client{
 		httpClient:   httpClient,
+		pdClient:     pdClient,
 		httpScheme:   config.GetClusterHTTPScheme(),
 		lifecycleCtx: nil,
 		timeout:      defaultTiFlashStatusAPITimeout,
@@ -66,6 +72,11 @@ func (c Client) WithTimeout(timeout time.Duration) *Client {
 }
 
 func (c *Client) Get(host string, statusPort int, relativeURI string) (*httpc.Response, error) {
+	err := c.checkValidAddress(fmt.Sprintf("%s:%d", host, statusPort))
+	if err != nil {
+		return nil, err
+	}
+
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrFlashClientRequestFailed, distro.Data("tiflash"))
 }
@@ -79,6 +90,25 @@ func (c *Client) SendGetRequest(host string, statusPort int, relativeURI string)
 }
 
 func (c *Client) SendPostRequest(host string, statusPort int, relativeURI string, body io.Reader) ([]byte, error) {
+	err := c.checkValidAddress(fmt.Sprintf("%s:%d", host, statusPort))
+	if err != nil {
+		return nil, err
+	}
+
 	uri := fmt.Sprintf("%s://%s:%d%s", c.httpScheme, host, statusPort, relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrFlashClientRequestFailed, distro.Data("tiflash"))
+}
+
+func (c *Client) checkValidAddress(addr string) error {
+	_, info, err := topology.FetchStoreTopology(c.pdClient)
+	if err != nil {
+		return err
+	}
+	isValid := funk.Contains(info, func(item topology.StoreInfo) bool {
+		return fmt.Sprintf("%s:%d", item.IP, item.StatusPort) == addr
+	})
+	if !isValid {
+		return ErrInvalidTiFlashAddr.New("request address %s is invalid", addr)
+	}
+	return nil
 }

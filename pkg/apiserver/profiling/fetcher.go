@@ -106,5 +106,5 @@ func (f *pdFetcher) fetch(op *fetchOptions) ([]byte, error) {
 	f.client.WithBeforeRequest(func(req *http.Request) {
 		req.Header.Add("PD-Allow-follower-handle", "true")
 	})
-	return f.client.WithTimeout(maxProfilingTimeout).WithBaseURL(baseURL).SendGetRequest(op.path)
+	return f.client.WithTimeout(maxProfilingTimeout).WithURL(baseURL).SendGetRequest(op.path)
 }

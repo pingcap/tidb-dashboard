@@ -15,6 +15,7 @@ package pd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -25,10 +26,13 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
+	"github.com/thoas/go-funk"
 )
 
 var (
 	ErrPDClientRequestFailed = ErrNS.NewType("client_request_failed")
+	ErrInvalidPDAddr         = ErrNS.NewType("invalid_pd_addr")
 )
 
 const (
@@ -38,6 +42,7 @@ const (
 type Client struct {
 	httpScheme   string
 	baseURL      string
+	specificURL  string
 	httpClient   *httpc.Client
 	lifecycleCtx context.Context
 	timeout      time.Duration
@@ -48,6 +53,7 @@ func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Confi
 		httpClient:   httpClient,
 		httpScheme:   config.GetClusterHTTPScheme(),
 		baseURL:      config.PDEndPoint,
+		specificURL:  "",
 		lifecycleCtx: nil,
 		timeout:      defaultPDTimeout,
 	}
@@ -62,14 +68,21 @@ func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Confi
 	return client
 }
 
-func (c Client) WithBaseURL(baseURL string) *Client {
-	c.baseURL = baseURL
+func (c Client) WithURL(url string) *Client {
+	c.specificURL = url
 	return &c
 }
 
 func (c Client) WithAddress(host string, port int) *Client {
-	c.baseURL = fmt.Sprintf("%s://%s:%d", c.httpScheme, host, port)
+	c.specificURL = fmt.Sprintf("%s://%s:%d", c.httpScheme, host, port)
 	return &c
+}
+
+func (c *Client) getURL() string {
+	if c.specificURL != "" {
+		return c.specificURL
+	}
+	return c.baseURL
 }
 
 func (c Client) WithTimeout(timeout time.Duration) *Client {
@@ -83,7 +96,12 @@ func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
 }
 
 func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
-	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
+	err := c.checkValidHost()
+	if err != nil {
+		return nil, err
+	}
+
+	uri := fmt.Sprintf("%s/pd/api/v1%s", c.getURL(), relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrPDClientRequestFailed, distro.Data("pd"))
 }
 
@@ -96,6 +114,70 @@ func (c *Client) SendGetRequest(relativeURI string) ([]byte, error) {
 }
 
 func (c *Client) SendPostRequest(relativeURI string, body io.Reader) ([]byte, error) {
-	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
+	err := c.checkValidHost()
+	if err != nil {
+		return nil, err
+	}
+
+	uri := fmt.Sprintf("%s/pd/api/v1%s", c.getURL(), relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrPDClientRequestFailed, distro.Data("pd"))
+}
+
+type PDMembers struct {
+	Count   int        `json:"count"`
+	Members []PDMember `json:"members"`
+}
+
+type PDMember struct {
+	GitHash       string   `json:"git_hash"`
+	ClientUrls    []string `json:"client_urls"`
+	DeployPath    string   `json:"deploy_path"`
+	BinaryVersion string   `json:"binary_version"`
+	MemberID      uint64   `json:"member_id"`
+}
+
+func (c *Client) FetchMembers() (*PDMembers, error) {
+	data, err := c.SendGetRequest("/members")
+	if err != nil {
+		return nil, err
+	}
+
+	ds := &PDMembers{}
+	err = json.Unmarshal(data, ds)
+	if err != nil {
+		return nil, ErrPDClientRequestFailed.Wrap(err, "%s members API unmarshal failed", distro.Data("pd"))
+	}
+	return ds, nil
+}
+
+func (c *Client) checkValidHost() error {
+	// aviod circular invoke when fetch memebers
+	requestIP, requestPort, err := host.ParseHostAndPortFromAddressURL(c.getURL())
+	if err != nil {
+		return err
+	}
+	addr := fmt.Sprintf("%s:%d", requestIP, requestPort)
+	wl := c.addrWhitelist()
+	if funk.Contains(wl, addr) {
+		return nil
+	}
+
+	ds, err := c.FetchMembers()
+	if err != nil {
+		return err
+	}
+	isValid := funk.Contains(ds, func(item PDMember) bool {
+		ip, port, _ := host.ParseHostAndPortFromAddressURL(item.ClientUrls[0])
+		return fmt.Sprintf("%s:%d", ip, port) == addr
+	})
+	if !isValid {
+		return ErrInvalidPDAddr.New("request address %s is invalid", addr)
+	}
+	return nil
+}
+
+func (c *Client) addrWhitelist() []string {
+	baseIP, basePort, _ := host.ParseHostAndPortFromAddressURL(c.baseURL)
+	baseAddr := fmt.Sprintf("%s:%d", baseIP, basePort)
+	return []string{baseAddr}
 }

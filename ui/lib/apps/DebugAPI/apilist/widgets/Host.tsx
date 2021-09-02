@@ -21,7 +21,7 @@ export const HostSelectWidget: ApiFormWidget = ({ endpoint, topology }) => {
     <Select
       showSearch
       placeholder={t(`debug_api.widgets.host_select_placeholder`, {
-        endpointType: distro[endpoint.component!],
+        endpointType: distro[endpoint.component!]?.toLowerCase(),
       })}
     >
       {componentEndpoints.map((d) => {

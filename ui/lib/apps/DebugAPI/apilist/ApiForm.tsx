@@ -34,9 +34,10 @@ export default function ApiForm({
   const [form] = Form.useForm()
   const { t } = useTranslation()
   const { id, path_params, query_params, component } = endpoint
-  const endpointHostParamKey = useMemo(() => `${distro[component!]}_host`, [
-    component,
-  ])
+  const endpointHostParamKey = useMemo(
+    () => `${distro[component!]?.toLowerCase()}_host`,
+    [component]
+  )
   const pathParams = (path_params ?? []).map((p) => {
     p.required = true
     return p

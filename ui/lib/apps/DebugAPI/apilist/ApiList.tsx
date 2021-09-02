@@ -212,7 +212,9 @@ function Schema({ endpoint }: { endpoint: EndpointAPIModel }) {
   const query = buildQueryString(endpoint.query_params ?? [])
   return (
     <p className={style.schema}>
-      {`http://{${distro[endpoint.component!]}_host}${endpoint.path}${query}`}
+      {`http://{${distro[endpoint.component!]?.toLowerCase()}_host}${
+        endpoint.path
+      }${query}`}
     </p>
   )
 }

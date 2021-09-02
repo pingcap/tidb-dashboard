@@ -35,7 +35,7 @@ func buildGlobalConfigProjectionSelectSQL(config interface{}) string {
 		column := utils.GetGormColumnName(gormTag)
 		return fmt.Sprintf("@@GLOBAL.%s AS %s", column, column), true
 	}, ", ")
-	return "SELECT " + str //nolint:gosec
+	return "SELECT " + str // #nosec
 }
 
 // sql will be built like this,
@@ -55,7 +55,7 @@ func buildGlobalConfigNamedArgsUpdateSQL(config interface{}, allowedFields ...st
 		column := utils.GetGormColumnName(gormTag)
 		return fmt.Sprintf("@@GLOBAL.%s = @%s", column, f.Name), true
 	}, ", ")
-	return "SET " + str //nolint:gosec
+	return "SET " + str // #nosec
 }
 
 func buildStringByStructField(i interface{}, buildFunc func(f reflect.StructField) (string, bool), sep string) string {

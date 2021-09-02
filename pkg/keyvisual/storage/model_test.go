@@ -91,7 +91,7 @@ func (t *testDbstoreSuite) TestAxisModelFunc(c *C) {
 	if err != nil {
 		c.Fatalf("Create table AxisModel error: %v", err)
 	}
-	var layerNum uint8 = 0
+	var layerNum uint8
 	endTime := time.Now()
 	axis := matrix.Axis{
 		Keys:       []string{"a", "b"},

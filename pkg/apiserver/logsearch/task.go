@@ -74,7 +74,8 @@ func (tg *TaskGroup) SyncRun() {
 
 	// Create log directory
 	dir := path.Join(tg.service.logStoreDirectory, strconv.Itoa(int(tg.model.ID)))
-	if err := os.MkdirAll(dir, 0777); err == nil {
+	err := os.MkdirAll(dir, 0777) // #nosec
+	if err == nil {
 		tg.model.LogStoreDir = &dir
 		tg.service.db.Save(tg.model)
 	}
@@ -223,7 +224,7 @@ func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diag
 		t.setError(err)
 		return
 	}
-	defer f.Close()
+	defer f.Close() // #nosec
 
 	// TODO: Could we use a memory buffer for this and flush the writer regularly to avoid OOM.
 	// This might perform an faster processing. This could also avoid creating an empty .zip
@@ -260,7 +261,7 @@ func (t *Task) searchLog(client diagnosticspb.DiagnosticsClient, targetType diag
 		}
 		for _, msg := range res.Messages {
 			line := logMessageToString(msg)
-			_, err := bufWriter.Write(*(*[]byte)(unsafe.Pointer(&line)))
+			_, err := bufWriter.Write(*(*[]byte)(unsafe.Pointer(&line))) // #nosec
 			if err != nil {
 				t.setError(err)
 				return

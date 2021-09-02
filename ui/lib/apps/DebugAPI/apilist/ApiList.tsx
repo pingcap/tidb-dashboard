@@ -14,6 +14,7 @@ import client, { EndpointAPIModel } from '@lib/client'
 import style from './ApiList.module.less'
 import ApiForm, { Topology } from './ApiForm'
 import { buildQueryString } from './widgets'
+import { distro } from '@lib/utils/i18n'
 
 const getEndpointTranslationKey = (endpoint: EndpointAPIModel) =>
   `debug_api.${endpoint.component}.endpoints.${endpoint.id}`
@@ -211,7 +212,9 @@ function Schema({ endpoint }: { endpoint: EndpointAPIModel }) {
   const query = buildQueryString(endpoint.query_params ?? [])
   return (
     <p className={style.schema}>
-      {`http://{${endpoint.component}_host}${endpoint.path}${query}`}
+      {`http://{${distro[endpoint.component!]?.toLowerCase()}_host}${
+        endpoint.path
+      }${query}`}
     </p>
   )
 }

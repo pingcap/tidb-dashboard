@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -172,7 +173,7 @@ func (s *Service) metricsRelationViewHandler(c *gin.Context) {
 		return
 	}
 
-	data, err := ioutil.ReadFile(path)
+	data, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		_ = c.Error(err)
 		return

@@ -129,7 +129,6 @@ func parseCurUserGrants(grantRows []string) []string {
 // - PROCESS
 // - SHOW DATABASES
 // - CONFIG
-// - SYSTEM_VARIABLES_ADMIN or SUPER (SUPER includes SYSTEM_VARIABLES_ADMIN)
 // - DASHBOARD_CLIENT or SUPER (SUPER includes DASHBOARD_CLIENT)
 // When TiDB SEM is enabled, following extra privileges are required
 // - RESTRICTED_VARIABLES_ADMIN

@@ -18,11 +18,9 @@ import (
 	"sync/atomic"
 )
 
-type introData map[string]string
-
 var (
 	data            atomic.Value
-	defaultResource introData = map[string]string{
+	defaultResource = map[string]string{
 		"tidb":    "TiDB",
 		"tikv":    "TiKV",
 		"tiflash": "TiFlash",
@@ -34,12 +32,16 @@ func init() {
 	Replace(defaultResource)
 }
 
-func Replace(distro introData) {
+func Resource() map[string]string {
+	return data.Load().(map[string]string)
+}
+
+func Replace(distro map[string]string) {
 	data.Store(distro)
 }
 
 func Data(k string) string {
-	d := data.Load().(introData)
+	d := Resource()
 	if v, ok := d[k]; ok {
 		return v
 	}

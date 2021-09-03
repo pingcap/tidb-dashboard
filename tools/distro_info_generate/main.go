@@ -23,7 +23,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
-	_ "github.com/pingcap/tidb-dashboard/pkg/utils/distro/populate"
+	_ "github.com/pingcap/tidb-dashboard/populate/distro"
 )
 
 func main() {

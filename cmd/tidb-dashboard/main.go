@@ -47,8 +47,8 @@ import (
 	keyvisualregion "github.com/pingcap/tidb-dashboard/pkg/keyvisual/region"
 	"github.com/pingcap/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
-	_ "github.com/pingcap/tidb-dashboard/pkg/utils/distro/populate"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	_ "github.com/pingcap/tidb-dashboard/populate/distro"
 )
 
 type DashboardCLIConfig struct {

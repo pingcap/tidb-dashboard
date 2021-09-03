@@ -25,6 +25,6 @@ echo "+ Replace distro resource"
 \cp -f "${DISTRIBUTION_DIR}/landing.svg" "${PROJECT_DIR}/ui/dashboardApp/layout/signin/landing.svg" || true
 \cp -f "${DISTRIBUTION_DIR}/logo-icon-light.svg" "${PROJECT_DIR}/ui/dashboardApp/layout/main/Sider/logo-icon-light.svg" || true
 \cp -f "${DISTRIBUTION_DIR}/favicon.ico" "${PROJECT_DIR}/ui/public/favicon.ico" || true
-\cp -f "${DISTRIBUTION_DIR}/distro_info.go" "${PROJECT_DIR}/pkg/utils/distro/populate/distro_info.go"
+\cp -f "${DISTRIBUTION_DIR}/distro_info.go" "${PROJECT_DIR}/populate/distro/distro_info.go"
 
 echo "  - Success!"

@@ -11,7 +11,7 @@ ifeq ($(UI),1)
 endif
 
 ifeq ($(DISTRO_BUILD_TAG),1)
-	BUILD_TAGS += dashboard_distro
+	BUILD_TAGS += distro
 endif
 
 LDFLAGS += -X "$(DASHBOARD_PKG)/pkg/utils/version.InternalVersion=$(shell grep -v '^\#' ./release-version)"

@@ -12,36 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package distro
+//go:build dashboard_distro
+// +build dashboard_distro
+
+package populate
 
 import (
-	"sync/atomic"
-)
-
-type introData map[string]string
-
-var (
-	data            atomic.Value
-	defaultResource introData = map[string]string{
-		"tidb":    "TiDB",
-		"tikv":    "TiKV",
-		"tiflash": "TiFlash",
-		"pd":      "PD",
-	}
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 func init() {
-	Replace(defaultResource)
-}
-
-func Replace(distro introData) {
-	data.Store(distro)
-}
-
-func Data(k string) string {
-	d := data.Load().(introData)
-	if v, ok := d[k]; ok {
-		return v
-	}
-	return k
+	distro.Replace(Resource)
 }

@@ -48,6 +48,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	_ "github.com/pingcap/tidb-dashboard/populate/distro"
 )
 
 type DashboardCLIConfig struct {

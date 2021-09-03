@@ -21,10 +21,10 @@ fi
 
 echo "+ Replace distro resource"
 
-cp -f "${DISTRIBUTION_DIR}/logo.svg" "${PROJECT_DIR}/ui/dashboardApp/layout/signin/logo.svg" 2>/dev/null
-cp -f "${DISTRIBUTION_DIR}/landing.svg" "${PROJECT_DIR}/ui/dashboardApp/layout/signin/landing.svg" 2>/dev/null
-cp -f "${DISTRIBUTION_DIR}/logo-icon-light.svg" "${PROJECT_DIR}/ui/dashboardApp/layout/main/Sider/logo-icon-light.svg" 2>/dev/null
-cp -f "${DISTRIBUTION_DIR}/favicon.ico" "${PROJECT_DIR}/ui/public/favicon.ico" 2>/dev/null
-cp -f "${DISTRIBUTION_DIR}/distro_info.go" "${PROJECT_DIR}/pkg/utils/distro/distro_info.go"
+\cp -f "${DISTRIBUTION_DIR}/logo.svg" "${PROJECT_DIR}/ui/dashboardApp/layout/signin/logo.svg" || true
+\cp -f "${DISTRIBUTION_DIR}/landing.svg" "${PROJECT_DIR}/ui/dashboardApp/layout/signin/landing.svg" || true
+\cp -f "${DISTRIBUTION_DIR}/logo-icon-light.svg" "${PROJECT_DIR}/ui/dashboardApp/layout/main/Sider/logo-icon-light.svg" || true
+\cp -f "${DISTRIBUTION_DIR}/favicon.ico" "${PROJECT_DIR}/ui/public/favicon.ico" || true
+\cp -f "${DISTRIBUTION_DIR}/distro_info.go" "${PROJECT_DIR}/pkg/utils/distro/distro_info.go"
 
 echo "  - Success!"

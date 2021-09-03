@@ -15,7 +15,7 @@
 //go:build dashboard_distro
 // +build dashboard_distro
 
-package populate
+package distro
 
 import (
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"

@@ -17,7 +17,6 @@ import (
 	"testing"
 
 	. "github.com/pingcap/check"
-	"github.com/thoas/go-funk"
 )
 
 func TestT(t *testing.T) {
@@ -33,7 +32,7 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 	cases := []struct {
 		desc     string
 		input    []string
-		expected map[string]struct{}
+		expected set
 	}{
 		// 0
 		{
@@ -41,7 +40,7 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 			input: []string{
 				"GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION",
 			},
-			expected: map[string]struct{}{
+			expected: set{
 				"ALL PRIVILEGES": {},
 			},
 		},
@@ -51,7 +50,7 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 			input: []string{
 				"GRANT SELECT,INSERT ON mysql.* TO 'dashboardAdmin'@'%'",
 			},
-			expected: map[string]struct{}{
+			expected: set{
 				"SELECT": {},
 				"INSERT": {},
 			},
@@ -63,7 +62,7 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 				"GRANT PROCESS,SHOW DATABASES,CONFIG ON *.* TO 'dashboardAdmin'@'%'",
 				"GRANT SYSTEM_VARIABLES_ADMIN ON *.* TO 'dashboardAdmin'@'%'",
 			},
-			expected: map[string]struct{}{
+			expected: set{
 				"PROCESS":                {},
 				"SHOW DATABASES":         {},
 				"CONFIG":                 {},
@@ -76,7 +75,7 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 			input: []string{
 				"GRANT `app_read`@`%` TO `test`@`%`",
 			},
-			expected: map[string]struct{}{},
+			expected: set{},
 		},
 	}
 
@@ -165,10 +164,11 @@ func (t *testSQLAuthSuite) Test_checkDashboardPriv(c *C) {
 		},
 	}
 	for i, v := range cases {
-		grantsSet := funk.Map(v.grants, func(priv string) (string, struct{}) {
-			return priv, struct{}{}
-		}).(map[string]struct{})
-		actual := checkDashboardPriv(grantsSet, v.enableSEM)
+		grants := set{}
+		for _, grant := range v.grants {
+			grants[grant] = struct{}{}
+		}
+		actual := checkDashboardPriv(grants, v.enableSEM)
 		c.Assert(actual, DeepEquals, v.expected, Commentf("check %s (index: %d) failed", v.desc, i))
 	}
 }
@@ -214,10 +214,11 @@ func (t *testSQLAuthSuite) Test_checkWriteablePriv(c *C) {
 	}
 
 	for i, v := range cases {
-		grantsSet := funk.Map(v.grants, func(priv string) (string, struct{}) {
-			return priv, struct{}{}
-		}).(map[string]struct{})
-		actual := checkWriteablePriv(grantsSet)
+		grants := set{}
+		for _, grant := range v.grants {
+			grants[grant] = struct{}{}
+		}
+		actual := checkWriteablePriv(grants)
 		c.Assert(actual, DeepEquals, v.expected, Commentf("check %s (index: %d) failed", v.desc, i))
 	}
 }

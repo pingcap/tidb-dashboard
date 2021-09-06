@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/joomcode/errorx"
-	"github.com/thoas/go-funk"
 	"go.uber.org/fx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -30,6 +29,8 @@ type tidbSecurityConfig struct {
 type tidbSEMConfig struct {
 	EnableSem bool `json:"enable-sem"`
 }
+
+type set map[string]struct{}
 
 type Authenticator struct {
 	user.BaseAuthenticator
@@ -83,9 +84,9 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	if err != nil {
 		return nil, user.ErrSignInOther.WrapWithNoMessage(err)
 	}
-	privsSet := parseCurUserGrants(grantRows)
+	grants := parseCurUserGrants(grantRows)
 	// 3. Check
-	if !checkDashboardPriv(privsSet, config.Security.EnableSem) {
+	if !checkDashboardPriv(grants, config.Security.EnableSem) {
 		return nil, user.ErrLackPrivileges.NewWithNoMessage()
 	}
 
@@ -96,7 +97,7 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 		TiDBPassword: f.Password,
 		DisplayName:  f.Username,
 		IsShareable:  true,
-		IsWriteable:  checkWriteablePriv(privsSet),
+		IsWriteable:  checkWriteablePriv(grants),
 	}, nil
 }
 
@@ -108,23 +109,21 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 // - GRANT SYSTEM_VARIABLES_ADMIN,RESTRICTED_VARIABLES_ADMIN,RESTRICTED_STATUS_ADMIN,RESTRICTED_TABLES_ADMIN ON *.* TO 'dashboardAdmin'@'%'
 // - GRANT ALL PRIVILEGES ON *.* TO 'dashboardAdmin'@'%'
 // - GRANT `app_read`@`%` TO `test`@`%`
-func parseCurUserGrants(grantRows []string) map[string]struct{} {
-	grants := make([]string, 0)
+func parseCurUserGrants(grantRows []string) set {
+	grants := set{}
 	grantRegex := regexp.MustCompile(`GRANT (.+) ON`)
 
 	for _, row := range grantRows {
 		m := grantRegex.FindStringSubmatch(row)
 		if len(m) == 2 {
 			curRowGrants := strings.Split(m[1], ",")
-			grants = append(grants, curRowGrants...)
+			for _, grant := range curRowGrants {
+				grants[grant] = struct{}{}
+			}
 		}
 	}
 
-	privsSet := funk.Map(grants, func(priv string) (string, struct{}) {
-		return priv, struct{}{}
-	}).(map[string]struct{})
-
-	return privsSet
+	return grants
 }
 
 // To access TiDB Dashboard, following base privileges are required
@@ -138,7 +137,7 @@ func parseCurUserGrants(grantRows []string) map[string]struct{} {
 // - RESTRICTED_VARIABLES_ADMIN
 // - RESTRICTED_TABLES_ADMIN
 // - RESTRICTED_STATUS_ADMIN
-func checkDashboardPriv(privs map[string]struct{}, enableSEM bool) bool {
+func checkDashboardPriv(privs set, enableSEM bool) bool {
 	hasPriv := func(priv string) bool {
 		_, ok := privs[priv]
 		return ok
@@ -174,7 +173,7 @@ func checkDashboardPriv(privs map[string]struct{}, enableSEM bool) bool {
 	return true
 }
 
-func checkWriteablePriv(privs map[string]struct{}) bool {
+func checkWriteablePriv(privs set) bool {
 	hasPriv := func(priv string) bool {
 		_, ok := privs[priv]
 		return ok

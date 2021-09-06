@@ -185,7 +185,7 @@ function useSignInSubmit(
 function TiDBSignInForm({
   successRoute,
   onClickAlternative,
-  allowNonRootLogin = false,
+  enableNonRootLogin = false,
 }) {
   const { t } = useTranslation()
 
@@ -233,7 +233,7 @@ function TiDBSignInForm({
             <Input
               onInput={clearErrorMsg}
               prefix={<UserOutlined />}
-              disabled={!allowNonRootLogin}
+              disabled={!enableNonRootLogin}
             />
           </Form.Item>
           <Form.Item
@@ -457,7 +457,7 @@ function App({ registry }) {
             <TiDBSignInForm
               successRoute={successRoute}
               onClickAlternative={handleClickAlternative}
-              allowNonRootLogin={enableNonRootLogin}
+              enableNonRootLogin={enableNonRootLogin}
             />
           )}
           {formType === DisplayFormType.shareCode && (

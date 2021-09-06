@@ -34,8 +34,8 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
-	"gorm.io/gorm/clause"
 
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/dbstore"
@@ -139,9 +139,7 @@ func (s *Service) getOrCreateMasterEncKey() (*[32]byte, error) {
 // plain SQL password. Currently this function only reads `root` user impersonation.
 func (s *Service) getAndDecryptImpersonation() (string, string, error) {
 	var imp SSOImpersonationModel
-	// TODO: Support different users
 	err := s.params.LocalStore.
-		Where("sql_user = ?", "root").
 		First(&imp).Error
 	if err != nil {
 		return "", "", fmt.Errorf("bad record: %v", err)
@@ -179,28 +177,31 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 		return nil, err
 	}
 
-	user, password, err := s.getAndDecryptImpersonation()
+	userName, password, err := s.getAndDecryptImpersonation()
 	if err != nil {
 		return nil, err
 	}
 	{
-		// Try to establish a connection to verify the user and password.
-		db, err := s.params.TiDBClient.OpenSQLConn(user, password)
+		// Check whether this user can access dashboard
+		err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
-				_ = s.updateImpersonationStatus(user, ImpersonateStatusAuthFail)
+				_ = s.updateImpersonationStatus(userName, ImpersonateStatusAuthFail)
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
+			}
+			if errorx.IsOfType(err, user.ErrInsufficientPriv) {
+				_ = s.updateImpersonationStatus(userName, ImpersonateStatusInsufficientPrivs)
+				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Insufficient privileges")
 			}
 			return nil, err
 		}
 
-		_ = s.updateImpersonationStatus(user, ImpersonateStatusSuccess)
-		_ = utils.CloseTiDBConnection(db)
+		_ = s.updateImpersonationStatus(userName, ImpersonateStatusSuccess)
 	}
 	return &utils.SessionUser{
 		Version:      utils.SessionVersion,
 		HasTiDBAuth:  true,
-		TiDBUsername: user,
+		TiDBUsername: userName,
 		TiDBPassword: password,
 		DisplayName:  userInfo.Email,
 		IsShareable:  true,
@@ -209,20 +210,16 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 	}, nil
 }
 
-func (s *Service) createImpersonation(user string, password string) (*SSOImpersonationModel, error) {
-	if user != "root" {
-		return nil, ErrUnsupportedUser.New("User must be root")
-	}
+func (s *Service) createImpersonation(userName string, password string) (*SSOImpersonationModel, error) {
 	{
-		// First try to establish a connection to verify the user and password.
-		db, err := s.params.TiDBClient.OpenSQLConn(user, password)
+		// Check whether this user can access dashboard
+		err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
 			}
 			return nil, err
 		}
-		_ = utils.CloseTiDBConnection(db)
 	}
 	key, err := s.getOrCreateMasterEncKey()
 	if err != nil {
@@ -235,11 +232,16 @@ func (s *Service) createImpersonation(user string, password string) (*SSOImperso
 	encryptedInHex := hex.EncodeToString(encrypted)
 
 	record := &SSOImpersonationModel{
-		SQLUser:               user,
+		SQLUser:               userName,
 		EncryptedPass:         encryptedInHex,
 		LastImpersonateStatus: nil,
 	}
-	err = s.params.LocalStore.Clauses(clause.Insert{Modifier: "OR REPLACE"}).Create(&record).Error
+	// currently, we only support to authorize one sql user
+	err = s.revokeAllImpersonations()
+	if err != nil {
+		return nil, err
+	}
+	err = s.params.LocalStore.Create(&record).Error
 	if err != nil {
 		return nil, err
 	}

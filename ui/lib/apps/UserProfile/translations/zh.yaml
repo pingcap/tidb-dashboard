@@ -13,6 +13,7 @@ user_profile:
         extra: SSO 登录成功后将被视为使用该 SQL 用户登录使用 {{distro.tidb}} Dashboard，并具有该用户对应的操作权限。
         must_auth: 必须完成授权后才能继续
         authn_button: 授权登录为该用户
+        modify_authn_button: 修改授权
         authn_dialog:
           title: SSO 登录授权
           user: 实际被登录的 SQL 用户
@@ -23,6 +24,7 @@ user_profile:
         authn_status:
           ok: 已授权
           auth_failed: 授权失败：SQL 用户密码已变更
+          insufficient_privileges: 授权失败：缺少访问 {{distro.tidb}} Dashboard 所需的权限
       update: 更新
       cancel: 取消
   service_endpoints:

@@ -181,13 +181,21 @@ func (t *testSQLAuthSuite) Test_checkWriteablePriv(c *C) {
 	}{
 		// 0
 		{
+			desc: "ALL privileges",
+			grants: []string{
+				"ALL PRIVILEGES",
+			},
+			expected: true,
+		},
+		// 1
+		{
 			desc: "SUPER privileges",
 			grants: []string{
 				"SUPER",
 			},
 			expected: true,
 		},
-		// 1
+		// 2
 		{
 			desc: "SYSTEM_VARIABLES_ADMIN privileges",
 			grants: []string{
@@ -195,15 +203,15 @@ func (t *testSQLAuthSuite) Test_checkWriteablePriv(c *C) {
 			},
 			expected: true,
 		},
-		// 2
+		// 3
 		{
-			desc: "both privileges",
+			desc: "all privileges",
 			grants: []string{
-				"SUPER", "SYSTEM_VARIABLES_ADMIN",
+				"ALL PRIVILEGES", "SUPER", "SYSTEM_VARIABLES_ADMIN",
 			},
 			expected: true,
 		},
-		// 3
+		// 4
 		{
 			desc: "other privileges",
 			grants: []string{

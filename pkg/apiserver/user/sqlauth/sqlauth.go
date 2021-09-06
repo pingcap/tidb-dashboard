@@ -176,6 +176,9 @@ func checkDashboardPriv(privs map[string]struct{}, enableSEM bool) bool {
 }
 
 func checkWriteablePriv(privs map[string]struct{}) bool {
+	if hasPriv("ALL PRIVILEGES", privs) {
+		return true
+	}
 	if hasPriv("SUPER", privs) {
 		return true
 	}

@@ -394,7 +394,7 @@ function App({ registry }) {
   const [supportedAuthTypes, setSupportedAuthTypes] = useState<Array<number>>([
     0,
   ])
-  const [allowNonRootLogin, setAllowNonoRootLogin] = useState(false)
+  const [enableNonRootLogin, setEnableNonoRootLogin] = useState(false)
 
   const handleClickAlternative = useCallback(() => {
     setAlternativeVisible(true)
@@ -422,7 +422,7 @@ function App({ registry }) {
           setFormType(DisplayFormType.tidbCredential)
         }
         setSupportedAuthTypes(loginInfo.supported_auth_types ?? [])
-        setAllowNonoRootLogin(loginInfo.allow_non_root_login ?? false)
+        setEnableNonoRootLogin(loginInfo.enable_non_root_login ?? false)
       } catch (e) {
         Modal.error({
           title: 'Initialize Sign in failed',
@@ -457,7 +457,7 @@ function App({ registry }) {
             <TiDBSignInForm
               successRoute={successRoute}
               onClickAlternative={handleClickAlternative}
-              allowNonRootLogin={allowNonRootLogin}
+              allowNonRootLogin={enableNonRootLogin}
             />
           )}
           {formType === DisplayFormType.shareCode && (

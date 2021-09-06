@@ -85,7 +85,6 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	grants := parseUserGrants(grantRows)
 	// 3. Check
 	if !checkDashboardPriv(grants, config.Security.EnableSEM) {
-		// TODO: add doc link that explains what privileges are needed
 		return nil, user.ErrInsufficientPriv.NewWithNoMessage()
 	}
 

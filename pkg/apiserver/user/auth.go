@@ -296,7 +296,7 @@ func (s *AuthService) RegisterAuthenticator(typeID utils.AuthType, a Authenticat
 
 type GetLoginInfoResponse struct {
 	SupportedAuthTypes []int `json:"supported_auth_types"`
-	AllowNonRootLogin  bool  `json:"allow_non_root_login"`
+	EnableNonRootLogin bool  `json:"enable_non_root_login"`
 }
 
 // @ID userGetLoginInfo
@@ -318,7 +318,7 @@ func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
 	sort.Ints(supportedAuth)
 	resp := GetLoginInfoResponse{
 		SupportedAuthTypes: supportedAuth,
-		AllowNonRootLogin:  s.params.Config.AllowNonRootLogin,
+		EnableNonRootLogin: s.params.Config.EnableNonRootLogin,
 	}
 	c.JSON(http.StatusOK, resp)
 }

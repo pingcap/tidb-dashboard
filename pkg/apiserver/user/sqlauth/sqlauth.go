@@ -27,10 +27,8 @@ type tidbSecurityConfig struct {
 }
 
 type tidbSEMConfig struct {
-	EnableSem bool `json:"enable-sem"`
+	EnableSEM bool `json:"enable-sem"`
 }
-
-type set map[string]struct{}
 
 type Authenticator struct {
 	user.BaseAuthenticator
@@ -84,10 +82,11 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	if err != nil {
 		return nil, user.ErrSignInOther.WrapWithNoMessage(err)
 	}
-	grants := parseCurUserGrants(grantRows)
+	grants := parseUserGrants(grantRows)
 	// 3. Check
-	if !checkDashboardPriv(grants, config.Security.EnableSem) {
-		return nil, user.ErrLackPrivileges.NewWithNoMessage()
+	if !checkDashboardPriv(grants, config.Security.EnableSEM) {
+		// TODO: add doc link that explains what privileges are needed
+		return nil, user.ErrInsufficientPriv.NewWithNoMessage()
 	}
 
 	return &utils.SessionUser{
@@ -101,6 +100,8 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	}, nil
 }
 
+var grantRegex = regexp.MustCompile(`GRANT (.+) ON`)
+
 // Currently, There are 2 kinds of grant output format in TiDB:
 // - GRANT [grants] ON [db.table] TO [user]
 // - GRANT [roles] TO [user]
@@ -109,9 +110,8 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 // - GRANT SYSTEM_VARIABLES_ADMIN,RESTRICTED_VARIABLES_ADMIN,RESTRICTED_STATUS_ADMIN,RESTRICTED_TABLES_ADMIN ON *.* TO 'dashboardAdmin'@'%'
 // - GRANT ALL PRIVILEGES ON *.* TO 'dashboardAdmin'@'%'
 // - GRANT `app_read`@`%` TO `test`@`%`
-func parseCurUserGrants(grantRows []string) set {
-	grants := set{}
-	grantRegex := regexp.MustCompile(`GRANT (.+) ON`)
+func parseUserGrants(grantRows []string) map[string]struct{} {
+	grants := map[string]struct{}{}
 
 	for _, row := range grantRows {
 		m := grantRegex.FindStringSubmatch(row)
@@ -137,53 +137,56 @@ func parseCurUserGrants(grantRows []string) set {
 // - RESTRICTED_VARIABLES_ADMIN
 // - RESTRICTED_TABLES_ADMIN
 // - RESTRICTED_STATUS_ADMIN
-func checkDashboardPriv(privs set, enableSEM bool) bool {
-	hasPriv := func(priv string) bool {
-		_, ok := privs[priv]
-		return ok
+func checkDashboardPriv(privs map[string]struct{}, enableSEM bool) bool {
+	if enableSEM {
+		// Note: When SEM is enabled, these additional privileges need to be checked even if "ALL PRIVILEGES" is granted.
+		if !hasPriv("RESTRICTED_VARIABLES_ADMIN", privs) {
+			return false
+		}
+		if !hasPriv("RESTRICTED_TABLES_ADMIN", privs) {
+			return false
+		}
+		if !hasPriv("RESTRICTED_TABLES_ADMIN", privs) {
+			return false
+		}
 	}
 
-	if !hasPriv("ALL PRIVILEGES") {
-		if !hasPriv("PROCESS") {
-			return false
-		}
-		if !hasPriv("SHOW DATABASES") {
-			return false
-		}
-		if !hasPriv("CONFIG") {
-			return false
-		}
-		if !hasPriv("SUPER") {
-			if !hasPriv("DASHBOARD_CLIENT") {
-				return false
-			}
-		}
+	if hasPriv("ALL PRIVILEGES", privs) {
+		// ALL PRIVILEGES contains privileges below. If it is set, privilege requirement is met.
+		return true
 	}
-	if enableSEM {
-		if !hasPriv("RESTRICTED_VARIABLES_ADMIN") {
-			return false
-		}
-		if !hasPriv("RESTRICTED_TABLES_ADMIN") {
-			return false
-		}
-		if !hasPriv("RESTRICTED_TABLES_ADMIN") {
-			return false
-		}
+	if !hasPriv("PROCESS", privs) {
+		return false
 	}
+	if !hasPriv("SHOW DATABASES", privs) {
+		return false
+	}
+	if !hasPriv("CONFIG", privs) {
+		return false
+	}
+
+	if hasPriv("SUPER", privs) {
+		// SUPER contains privileges below. If it is set, privilege requirement is met.
+		return true
+	}
+	if !hasPriv("DASHBOARD_CLIENT", privs) {
+		return false
+	}
+
 	return true
 }
 
-func checkWriteablePriv(privs set) bool {
-	hasPriv := func(priv string) bool {
-		_, ok := privs[priv]
-		return ok
-	}
-
-	if hasPriv("SUPER") {
+func checkWriteablePriv(privs map[string]struct{}) bool {
+	if hasPriv("SUPER", privs) {
 		return true
 	}
-	if hasPriv("SYSTEM_VARIABLES_ADMIN") {
+	if hasPriv("SYSTEM_VARIABLES_ADMIN", privs) {
 		return true
 	}
 	return false
+}
+
+func hasPriv(priv string, privs map[string]struct{}) bool {
+	_, ok := privs[priv]
+	return ok
 }

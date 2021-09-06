@@ -28,11 +28,11 @@ var _ = Suite(&testSQLAuthSuite{})
 
 type testSQLAuthSuite struct{}
 
-func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
+func (t *testSQLAuthSuite) Test_parseUserGrants(c *C) {
 	cases := []struct {
 		desc     string
 		input    []string
-		expected set
+		expected map[string]struct{}
 	}{
 		// 0
 		{
@@ -40,7 +40,7 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 			input: []string{
 				"GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION",
 			},
-			expected: set{
+			expected: map[string]struct{}{
 				"ALL PRIVILEGES": {},
 			},
 		},
@@ -50,7 +50,7 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 			input: []string{
 				"GRANT SELECT,INSERT ON mysql.* TO 'dashboardAdmin'@'%'",
 			},
-			expected: set{
+			expected: map[string]struct{}{
 				"SELECT": {},
 				"INSERT": {},
 			},
@@ -62,7 +62,7 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 				"GRANT PROCESS,SHOW DATABASES,CONFIG ON *.* TO 'dashboardAdmin'@'%'",
 				"GRANT SYSTEM_VARIABLES_ADMIN ON *.* TO 'dashboardAdmin'@'%'",
 			},
-			expected: set{
+			expected: map[string]struct{}{
 				"PROCESS":                {},
 				"SHOW DATABASES":         {},
 				"CONFIG":                 {},
@@ -75,12 +75,12 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 			input: []string{
 				"GRANT `app_read`@`%` TO `test`@`%`",
 			},
-			expected: set{},
+			expected: map[string]struct{}{},
 		},
 	}
 
 	for i, v := range cases {
-		actual := parseCurUserGrants(v.input)
+		actual := parseUserGrants(v.input)
 		c.Assert(actual, DeepEquals, v.expected, Commentf("parse %s (index: %d) failed", v.desc, i))
 	}
 }
@@ -164,7 +164,7 @@ func (t *testSQLAuthSuite) Test_checkDashboardPriv(c *C) {
 		},
 	}
 	for i, v := range cases {
-		grants := set{}
+		grants := map[string]struct{}{}
 		for _, grant := range v.grants {
 			grants[grant] = struct{}{}
 		}
@@ -214,7 +214,7 @@ func (t *testSQLAuthSuite) Test_checkWriteablePriv(c *C) {
 	}
 
 	for i, v := range cases {
-		grants := set{}
+		grants := map[string]struct{}{}
 		for _, grant := range v.grants {
 			grants[grant] = struct{}{}
 		}

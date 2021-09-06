@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	. "github.com/pingcap/check"
+	"github.com/thoas/go-funk"
 )
 
 func TestT(t *testing.T) {
@@ -32,7 +33,7 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 	cases := []struct {
 		desc     string
 		input    []string
-		expected []string
+		expected map[string]struct{}
 	}{
 		// 0
 		{
@@ -40,7 +41,9 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 			input: []string{
 				"GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION",
 			},
-			expected: []string{"ALL PRIVILEGES"},
+			expected: map[string]struct{}{
+				"ALL PRIVILEGES": {},
+			},
 		},
 		// 1
 		{
@@ -48,7 +51,10 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 			input: []string{
 				"GRANT SELECT,INSERT ON mysql.* TO 'dashboardAdmin'@'%'",
 			},
-			expected: []string{"SELECT", "INSERT"},
+			expected: map[string]struct{}{
+				"SELECT": {},
+				"INSERT": {},
+			},
 		},
 		// 2
 		{
@@ -57,7 +63,12 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 				"GRANT PROCESS,SHOW DATABASES,CONFIG ON *.* TO 'dashboardAdmin'@'%'",
 				"GRANT SYSTEM_VARIABLES_ADMIN ON *.* TO 'dashboardAdmin'@'%'",
 			},
-			expected: []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SYSTEM_VARIABLES_ADMIN"},
+			expected: map[string]struct{}{
+				"PROCESS":                {},
+				"SHOW DATABASES":         {},
+				"CONFIG":                 {},
+				"SYSTEM_VARIABLES_ADMIN": {},
+			},
 		},
 		// 3
 		{
@@ -65,7 +76,7 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 			input: []string{
 				"GRANT `app_read`@`%` TO `test`@`%`",
 			},
-			expected: []string{},
+			expected: map[string]struct{}{},
 		},
 	}
 
@@ -75,86 +86,89 @@ func (t *testSQLAuthSuite) Test_parseCurUserGrants(c *C) {
 	}
 }
 
-func (t *testSQLAuthSuite) Test_checkDashboardPrivileges(c *C) {
+func (t *testSQLAuthSuite) Test_checkDashboardPriv(c *C) {
 	cases := []struct {
-		desc                string
-		inputParamGrants    []string
-		inputParamEnableSEM bool
-		expected            bool
+		desc      string
+		grants    []string
+		enableSEM bool
+		expected  bool
 	}{
 		// 0
 		{
-			desc:                "all privileges with enableSEM false",
-			inputParamGrants:    []string{"ALL PRIVILEGES"},
-			inputParamEnableSEM: false,
-			expected:            true,
+			desc:      "all privileges with enableSEM false",
+			grants:    []string{"ALL PRIVILEGES"},
+			enableSEM: false,
+			expected:  true,
 		},
 		// 1
 		{
-			desc:                "all privileges with enableSEM true",
-			inputParamGrants:    []string{"ALL PRIVILEGES"},
-			inputParamEnableSEM: true,
-			expected:            false,
+			desc:      "all privileges with enableSEM true",
+			grants:    []string{"ALL PRIVILEGES"},
+			enableSEM: true,
+			expected:  false,
 		},
 		// 2
 		{
-			desc:                "super privileges with enableSEM false",
-			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SUPER"},
-			inputParamEnableSEM: false,
-			expected:            true,
+			desc:      "super privileges with enableSEM false",
+			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SUPER"},
+			enableSEM: false,
+			expected:  true,
 		},
 		// 3
 		{
-			desc:                "super privileges with enableSEM true",
-			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SUPER"},
-			inputParamEnableSEM: true,
-			expected:            false,
+			desc:      "super privileges with enableSEM true",
+			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "SUPER"},
+			enableSEM: true,
+			expected:  false,
 		},
 		// 4
 		{
-			desc:                "base privileges with enableSEM false",
-			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT"},
-			inputParamEnableSEM: false,
-			expected:            true,
+			desc:      "base privileges with enableSEM false",
+			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT"},
+			enableSEM: false,
+			expected:  true,
 		},
 		// 5
 		{
-			desc:                "base privileges with enableSEM true",
-			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT"},
-			inputParamEnableSEM: true,
-			expected:            false,
+			desc:      "base privileges with enableSEM true",
+			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT"},
+			enableSEM: true,
+			expected:  false,
 		},
 		// 6
 		{
-			desc:                "lack PROCESS privilege",
-			inputParamGrants:    []string{"SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT"},
-			inputParamEnableSEM: false,
-			expected:            false,
+			desc:      "lack PROCESS privilege",
+			grants:    []string{"SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT"},
+			enableSEM: false,
+			expected:  false,
 		},
 		// 7
 		{
-			desc:                "lack DASHBOARD_CLIENT privilege",
-			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG"},
-			inputParamEnableSEM: false,
-			expected:            false,
+			desc:      "lack DASHBOARD_CLIENT privilege",
+			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG"},
+			enableSEM: false,
+			expected:  false,
 		},
 		// 8
 		{
-			desc:                "extra privileges",
-			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_VARIABLES_ADMIN", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
-			inputParamEnableSEM: true,
-			expected:            true,
+			desc:      "extra privileges",
+			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_VARIABLES_ADMIN", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
+			enableSEM: true,
+			expected:  true,
 		},
 		// 9
 		{
-			desc:                "lack RESTRICTED_VARIABLES_ADMIN extra privileges",
-			inputParamGrants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
-			inputParamEnableSEM: true,
-			expected:            false,
+			desc:      "lack RESTRICTED_VARIABLES_ADMIN extra privileges",
+			grants:    []string{"PROCESS", "SHOW DATABASES", "CONFIG", "DASHBOARD_CLIENT", "RESTRICTED_TABLES_ADMIN", "RESTRICTED_TABLES_ADMIN"},
+			enableSEM: true,
+			expected:  false,
 		},
 	}
 	for i, v := range cases {
-		actual := checkDashboardPrivileges(v.inputParamGrants, v.inputParamEnableSEM)
+		grantsSet := funk.Map(v.grants, func(priv string) (string, struct{}) {
+			return priv, struct{}{}
+		}).(map[string]struct{})
+		actual := checkDashboardPriv(grantsSet, v.enableSEM)
 		c.Assert(actual, DeepEquals, v.expected, Commentf("check %s (index: %d) failed", v.desc, i))
 	}
 }
@@ -162,13 +176,13 @@ func (t *testSQLAuthSuite) Test_checkDashboardPrivileges(c *C) {
 func (t *testSQLAuthSuite) Test_checkWriteablePriv(c *C) {
 	cases := []struct {
 		desc     string
-		input    []string
+		grants   []string
 		expected bool
 	}{
 		// 0
 		{
 			desc: "SUPER privileges",
-			input: []string{
+			grants: []string{
 				"SUPER",
 			},
 			expected: true,
@@ -176,7 +190,7 @@ func (t *testSQLAuthSuite) Test_checkWriteablePriv(c *C) {
 		// 1
 		{
 			desc: "SYSTEM_VARIABLES_ADMIN privileges",
-			input: []string{
+			grants: []string{
 				"SYSTEM_VARIABLES_ADMIN",
 			},
 			expected: true,
@@ -184,7 +198,7 @@ func (t *testSQLAuthSuite) Test_checkWriteablePriv(c *C) {
 		// 2
 		{
 			desc: "both privileges",
-			input: []string{
+			grants: []string{
 				"SUPER", "SYSTEM_VARIABLES_ADMIN",
 			},
 			expected: true,
@@ -192,7 +206,7 @@ func (t *testSQLAuthSuite) Test_checkWriteablePriv(c *C) {
 		// 3
 		{
 			desc: "other privileges",
-			input: []string{
+			grants: []string{
 				"PROCESS", "CONFIG",
 			},
 			expected: false,
@@ -200,7 +214,10 @@ func (t *testSQLAuthSuite) Test_checkWriteablePriv(c *C) {
 	}
 
 	for i, v := range cases {
-		actual := checkWriteablePriv(v.input)
+		grantsSet := funk.Map(v.grants, func(priv string) (string, struct{}) {
+			return priv, struct{}{}
+		}).(map[string]struct{})
+		actual := checkWriteablePriv(grantsSet)
 		c.Assert(actual, DeepEquals, v.expected, Commentf("check %s (index: %d) failed", v.desc, i))
 	}
 }

@@ -83,9 +83,9 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 	if err != nil {
 		return nil, user.ErrSignInOther.WrapWithNoMessage(err)
 	}
-	grants := parseCurUserGrants(grantRows)
+	privsSet := parseCurUserGrants(grantRows)
 	// 3. Check
-	if !checkDashboardPrivileges(grants, config.Security.EnableSem) {
+	if !checkDashboardPriv(privsSet, config.Security.EnableSem) {
 		return nil, user.ErrLackPrivileges.NewWithNoMessage()
 	}
 
@@ -96,7 +96,7 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 		TiDBPassword: f.Password,
 		DisplayName:  f.Username,
 		IsShareable:  true,
-		IsWriteable:  checkWriteablePriv(grants),
+		IsWriteable:  checkWriteablePriv(privsSet),
 	}, nil
 }
 
@@ -108,7 +108,7 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 // - GRANT SYSTEM_VARIABLES_ADMIN,RESTRICTED_VARIABLES_ADMIN,RESTRICTED_STATUS_ADMIN,RESTRICTED_TABLES_ADMIN ON *.* TO 'dashboardAdmin'@'%'
 // - GRANT ALL PRIVILEGES ON *.* TO 'dashboardAdmin'@'%'
 // - GRANT `app_read`@`%` TO `test`@`%`
-func parseCurUserGrants(grantRows []string) []string {
+func parseCurUserGrants(grantRows []string) map[string]struct{} {
 	grants := make([]string, 0)
 	grantRegex := regexp.MustCompile(`GRANT (.+) ON`)
 
@@ -120,10 +120,14 @@ func parseCurUserGrants(grantRows []string) []string {
 		}
 	}
 
-	return grants
+	privsSet := funk.Map(grants, func(priv string) (string, struct{}) {
+		return priv, struct{}{}
+	}).(map[string]struct{})
+
+	return privsSet
 }
 
-// Following base privileges are required
+// To access TiDB Dashboard, following base privileges are required
 // - ALL PRIVILEGES
 // - or
 // - PROCESS
@@ -134,13 +138,9 @@ func parseCurUserGrants(grantRows []string) []string {
 // - RESTRICTED_VARIABLES_ADMIN
 // - RESTRICTED_TABLES_ADMIN
 // - RESTRICTED_STATUS_ADMIN
-func checkDashboardPrivileges(grants []string, enableSEM bool) bool {
-	privsMap := funk.Map(grants, func(priv string) (string, bool) {
-		return priv, true
-	}).(map[string]bool)
+func checkDashboardPriv(privs map[string]struct{}, enableSEM bool) bool {
 	hasPriv := func(priv string) bool {
-		// return funk.Contains(privsMap, priv) // funk.Contains(map, key) is O(N), not O(1)
-		_, ok := privsMap[priv]
+		_, ok := privs[priv]
 		return ok
 	}
 
@@ -174,12 +174,9 @@ func checkDashboardPrivileges(grants []string, enableSEM bool) bool {
 	return true
 }
 
-func checkWriteablePriv(grants []string) bool {
-	privsMap := funk.Map(grants, func(priv string) (string, bool) {
-		return priv, true
-	}).(map[string]bool)
+func checkWriteablePriv(privs map[string]struct{}) bool {
 	hasPriv := func(priv string) bool {
-		_, ok := privsMap[priv]
+		_, ok := privs[priv]
 		return ok
 	}
 

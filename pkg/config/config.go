@@ -37,6 +37,7 @@ type Config struct {
 
 	EnableTelemetry    bool
 	EnableExperimental bool
+	AllowNonRootLogin  bool
 }
 
 func Default() *Config {
@@ -48,6 +49,7 @@ func Default() *Config {
 		TiDBTLSConfig:      nil,
 		EnableTelemetry:    true,
 		EnableExperimental: false,
+		AllowNonRootLogin:  true,
 	}
 }
 

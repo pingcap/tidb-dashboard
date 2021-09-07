@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	ErrInsufficientPriv = ErrNS.NewType("insufficient_privileges")
+	ErrInsufficientPrivs = ErrNS.NewType("insufficient_privileges")
 )
 
 // TiDB config response
@@ -68,7 +68,7 @@ func VerifySQLUser(tidbClient *tidb.Client, userName, password string) error {
 	grants := parseUserGrants(grantRows)
 	// 3. Check
 	if !checkDashboardPriv(grants, config.Security.EnableSEM) {
-		return ErrInsufficientPriv.NewWithNoMessage()
+		return ErrInsufficientPrivs.NewWithNoMessage()
 	}
 
 	return nil

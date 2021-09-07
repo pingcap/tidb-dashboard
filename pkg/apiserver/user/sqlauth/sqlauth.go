@@ -42,7 +42,7 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 		// tidb.ErrPDAccessFailed
 		// tidb.ErrTiDBConnFailed
 		// tidb.ErrTiDBAuthFailed
-		// user.ErrInsufficientPriv
+		// user.ErrInsufficientPrivs
 		return nil, err
 	}
 

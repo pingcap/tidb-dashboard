@@ -189,7 +189,7 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 				_ = s.updateImpersonationStatus(userName, ImpersonateStatusAuthFail)
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
 			}
-			if errorx.IsOfType(err, user.ErrInsufficientPriv) {
+			if errorx.IsOfType(err, user.ErrInsufficientPrivs) {
 				_ = s.updateImpersonationStatus(userName, ImpersonateStatusInsufficientPrivs)
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Insufficient privileges")
 			}
@@ -217,6 +217,9 @@ func (s *Service) createImpersonation(userName string, password string) (*SSOImp
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
+			}
+			if errorx.IsOfType(err, user.ErrInsufficientPrivs) {
+				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Insufficient privileges")
 			}
 			return nil, err
 		}

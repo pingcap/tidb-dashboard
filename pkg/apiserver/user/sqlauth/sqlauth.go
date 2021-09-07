@@ -32,7 +32,7 @@ var Module = fx.Options(
 )
 
 func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUser, error) {
-	err := user.VerifySQLUser(a.tidbClient, f.Username, f.Password)
+	writeable, err := user.VerifySQLUser(a.tidbClient, f.Username, f.Password)
 	if err != nil {
 		if errorx.Cast(err) == nil {
 			return nil, user.ErrSignInOther.WrapWithNoMessage(err)
@@ -53,6 +53,6 @@ func (a *Authenticator) Authenticate(f user.AuthenticateForm) (*utils.SessionUse
 		TiDBPassword: f.Password,
 		DisplayName:  f.Username,
 		IsShareable:  true,
-		IsWriteable:  true, // TODO
+		IsWriteable:  writeable,
 	}, nil
 }

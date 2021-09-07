@@ -181,23 +181,22 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 	if err != nil {
 		return nil, err
 	}
-	{
-		// Check whether this user can access dashboard
-		err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
-		if err != nil {
-			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
-				_ = s.updateImpersonationStatus(userName, ImpersonateStatusAuthFail)
-				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
-			}
-			if errorx.IsOfType(err, user.ErrInsufficientPrivs) {
-				_ = s.updateImpersonationStatus(userName, ImpersonateStatusInsufficientPrivs)
-				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Insufficient privileges")
-			}
-			return nil, err
-		}
 
-		_ = s.updateImpersonationStatus(userName, ImpersonateStatusSuccess)
+	// Check whether this user can access dashboard
+	writeable, err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
+	if err != nil {
+		if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
+			_ = s.updateImpersonationStatus(userName, ImpersonateStatusAuthFail)
+			return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")
+		}
+		if errorx.IsOfType(err, user.ErrInsufficientPrivs) {
+			_ = s.updateImpersonationStatus(userName, ImpersonateStatusInsufficientPrivs)
+			return nil, ErrInvalidImpersonateCredential.Wrap(err, "Insufficient privileges")
+		}
+		return nil, err
 	}
+	_ = s.updateImpersonationStatus(userName, ImpersonateStatusSuccess)
+
 	return &utils.SessionUser{
 		Version:      utils.SessionVersion,
 		HasTiDBAuth:  true,
@@ -205,7 +204,7 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 		TiDBPassword: password,
 		DisplayName:  userInfo.Email,
 		IsShareable:  true,
-		IsWriteable:  !dc.SSO.CoreConfig.IsReadOnly,
+		IsWriteable:  writeable && !dc.SSO.CoreConfig.IsReadOnly,
 		OIDCIDToken:  idToken,
 	}, nil
 }
@@ -213,7 +212,7 @@ func (s *Service) newSessionFromImpersonation(userInfo *oAuthUserInfo, idToken s
 func (s *Service) createImpersonation(userName string, password string) (*SSOImpersonationModel, error) {
 	{
 		// Check whether this user can access dashboard
-		err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
+		_, err := user.VerifySQLUser(s.params.TiDBClient, userName, password)
 		if err != nil {
 			if errorx.IsOfType(err, tidb.ErrTiDBAuthFailed) {
 				return nil, ErrInvalidImpersonateCredential.Wrap(err, "Invalid SQL credential")

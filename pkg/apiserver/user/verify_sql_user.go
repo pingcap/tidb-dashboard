@@ -41,10 +41,10 @@ type tidbSEMConfig struct {
 	EnableSEM bool `json:"enable-sem"`
 }
 
-func VerifySQLUser(tidbClient *tidb.Client, userName, password string) error {
+func VerifySQLUser(tidbClient *tidb.Client, userName, password string) (writeable bool, err error) {
 	db, err := tidbClient.OpenSQLConn(userName, password)
 	if err != nil {
-		return err
+		return false, err
 	}
 	defer utils.CloseTiDBConnection(db) //nolint:errcheck
 
@@ -52,26 +52,26 @@ func VerifySQLUser(tidbClient *tidb.Client, userName, password string) error {
 	// 1. Check whether TiDB SEM is enabled
 	resData, err := tidbClient.SendGetRequest("/config")
 	if err != nil {
-		return err
+		return false, err
 	}
 	var config tidbSecurityConfig
 	err = json.Unmarshal(resData, &config)
 	if err != nil {
-		return err
+		return false, err
 	}
 	// 2. Get grants
 	var grantRows []string
 	err = db.Raw("show grants for current_user()").Find(&grantRows).Error
 	if err != nil {
-		return err
+		return false, err
 	}
 	grants := parseUserGrants(grantRows)
 	// 3. Check
 	if !checkDashboardPriv(grants, config.Security.EnableSEM) {
-		return ErrInsufficientPrivs.NewWithNoMessage()
+		return false, ErrInsufficientPrivs.NewWithNoMessage()
 	}
 
-	return nil
+	return checkWriteablePriv(grants), nil
 }
 
 var grantRegex = regexp.MustCompile(`GRANT (.+) ON`)

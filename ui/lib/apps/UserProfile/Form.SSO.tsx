@@ -92,10 +92,12 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
               {t('user_profile.sso.form.user.authn_status.auth_failed')}
             </Typography.Text>
           )}
-          {value?.last_impersonate_status === 'lack_privileges' && (
+          {value?.last_impersonate_status === 'insufficient_privileges' && (
             <Typography.Text type="danger">
               <CheckCircleFilled />{' '}
-              {t('user_profile.sso.form.user.authn_status.lack_privileges')}
+              {t(
+                'user_profile.sso.form.user.authn_status.insufficient_privileges'
+              )}
             </Typography.Text>
           )}
 

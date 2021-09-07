@@ -46,6 +46,10 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
     setModalVisible(true)
   }, [])
 
+  const { data: loginInfo } = useClientRequest((reqConfig) =>
+    client.getInstance().userGetLoginInfo(reqConfig)
+  )
+
   const handleFinish = useCallback(
     async (data) => {
       setIsPosting(true)
@@ -117,7 +121,10 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
             name="user"
             label={t('user_profile.sso.form.user.authn_dialog.user')}
           >
-            <Input style={DEFAULT_FORM_ITEM_STYLE} />
+            <Input
+              style={DEFAULT_FORM_ITEM_STYLE}
+              disabled={!loginInfo?.enable_non_root_login}
+            />
           </Form.Item>
           <Form.Item
             name="password"

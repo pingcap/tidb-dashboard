@@ -53,6 +53,15 @@ var pprofSecondsParam = APIParam{
 	}),
 }
 
+var pprofDebugParam = APIParam{
+	Name: "debug",
+	Model: CreateAPIParamModelEnum([]EnumItem{
+		{Name: "0", Value: "0"},
+		{Name: "1", Value: "1"},
+		{Name: "2", Value: "2"},
+	}),
+}
+
 // tidb endpoints
 
 var tidbStatsDump = APIModel{
@@ -230,11 +239,8 @@ var tidbPprof = APIModel{
 		pprofKindsParam,
 	},
 	QueryParams: []APIParam{
-		{
-			Name:  "debug",
-			Model: CreateAPIParamModelConstant("1"),
-		},
 		pprofSecondsParam,
+		pprofDebugParam,
 	},
 }
 
@@ -622,11 +628,8 @@ var pdPprof = APIModel{
 		pprofKindsParam,
 	},
 	QueryParams: []APIParam{
-		{
-			Name:  "debug",
-			Model: CreateAPIParamModelConstant("1"),
-		},
 		pprofSecondsParam,
+		pprofDebugParam,
 	},
 }
 

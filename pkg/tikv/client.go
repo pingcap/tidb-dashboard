@@ -51,13 +51,15 @@ type Client struct {
 }
 
 func NewTiKVClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Client, config *config.Config) *Client {
+	cache := ttlcache.NewCache()
+	cache.SkipTTLExtensionOnHit(true)
 	client := &Client{
 		httpClient:   httpClient,
 		pdClient:     pdClient,
 		httpScheme:   config.GetClusterHTTPScheme(),
 		lifecycleCtx: nil,
 		timeout:      defaultTiKVStatusAPITimeout,
-		cache:        ttlcache.NewCache(),
+		cache:        cache,
 	}
 
 	lc.Append(fx.Hook{
@@ -103,28 +105,33 @@ func (c *Client) SendPostRequest(host string, statusPort int, relativeURI string
 	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrTiKVClientRequestFailed, distro.Data("tikv"))
 }
 
-func (c *Client) getMemebers() ([]topology.StoreInfo, error) {
-	cached, _ := c.cache.Get("tikv_members")
+func (c *Client) getMemberAddrs() ([]string, error) {
+	cached, _ := c.cache.Get("tikv_member_addrs")
 	if cached != nil {
-		return cached.([]topology.StoreInfo), nil
+		return cached.([]string), nil
 	}
 
-	mem, _, err := topology.FetchStoreTopology(c.pdClient)
+	tikvTopos, _, err := topology.FetchStoreTopology(c.pdClient)
 	if err != nil {
 		return nil, err
 	}
-	_ = c.cache.SetWithTTL("tikv_members", mem, 10*time.Second)
+	addrs := []string{}
+	for _, topo := range tikvTopos {
+		addrs = append(addrs, fmt.Sprintf("%s:%d", topo.IP, topo.StatusPort))
+	}
 
-	return mem, nil
+	_ = c.cache.SetWithTTL("tikv_member_addrs", tikvTopos, 10*time.Second)
+
+	return addrs, nil
 }
 
 func (c *Client) checkValidAddress(addr string) error {
-	mem, err := c.getMemebers()
+	addrs, err := c.getMemberAddrs()
 	if err != nil {
 		return err
 	}
-	isValid := funk.Contains(mem, func(item topology.StoreInfo) bool {
-		return fmt.Sprintf("%s:%d", item.IP, item.StatusPort) == addr
+	isValid := funk.Contains(addrs, func(mAddr string) bool {
+		return mAddr == addr
 	})
 	if !isValid {
 		return ErrInvalidTiKVAddr.New("request address %s is invalid", addr)

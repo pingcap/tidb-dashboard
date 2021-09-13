@@ -51,13 +51,15 @@ type Client struct {
 }
 
 func NewTiFlashClient(lc fx.Lifecycle, httpClient *httpc.Client, pdClient *pd.Client, config *config.Config) *Client {
+	cache := ttlcache.NewCache()
+	cache.SkipTTLExtensionOnHit(true)
 	client := &Client{
 		httpClient:   httpClient,
 		pdClient:     pdClient,
 		httpScheme:   config.GetClusterHTTPScheme(),
 		lifecycleCtx: nil,
 		timeout:      defaultTiFlashStatusAPITimeout,
-		cache:        ttlcache.NewCache(),
+		cache:        cache,
 	}
 
 	lc.Append(fx.Hook{
@@ -103,28 +105,33 @@ func (c *Client) SendPostRequest(host string, statusPort int, relativeURI string
 	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrFlashClientRequestFailed, distro.Data("tiflash"))
 }
 
-func (c *Client) getMemebers() ([]topology.StoreInfo, error) {
-	cached, _ := c.cache.Get("tiflash_members")
+func (c *Client) getMemberAddrs() ([]string, error) {
+	cached, _ := c.cache.Get("tiflash_member_addrs")
 	if cached != nil {
-		return cached.([]topology.StoreInfo), nil
+		return cached.([]string), nil
 	}
 
-	_, mem, err := topology.FetchStoreTopology(c.pdClient)
+	_, tiflashTopos, err := topology.FetchStoreTopology(c.pdClient)
 	if err != nil {
 		return nil, err
 	}
-	_ = c.cache.SetWithTTL("tiflash_members", mem, 10*time.Second)
+	addrs := []string{}
+	for _, topo := range tiflashTopos {
+		addrs = append(addrs, fmt.Sprintf("%s:%d", topo.IP, topo.StatusPort))
+	}
 
-	return mem, nil
+	_ = c.cache.SetWithTTL("tiflash_member_addrs", addrs, 10*time.Second)
+
+	return addrs, nil
 }
 
 func (c *Client) checkValidAddress(addr string) error {
-	mem, err := c.getMemebers()
+	addrs, err := c.getMemberAddrs()
 	if err != nil {
 		return err
 	}
-	isValid := funk.Contains(mem, func(item topology.StoreInfo) bool {
-		return fmt.Sprintf("%s:%d", item.IP, item.StatusPort) == addr
+	isValid := funk.Contains(addrs, func(mAddr string) bool {
+		return mAddr == addr
 	})
 	if !isValid {
 		return ErrInvalidTiFlashAddr.New("request address %s is invalid", addr)

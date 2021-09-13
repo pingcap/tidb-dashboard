@@ -49,6 +49,7 @@ const (
 type Client struct {
 	lifecycleCtx             context.Context
 	forwarder                *Forwarder
+	endpointAllowlist        []string // Endpoint addrs in the whitelist can skip the checkValidAddress check
 	statusAPIHTTPScheme      string
 	statusAPIAddress         string // Empty means to use address provided by forwarder
 	enforceStatusAPIAddresss bool   // enforced status api address and ignore env override config
@@ -66,9 +67,12 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		_ = mysql.RegisterTLSConfig(sqlAPITLSKey, config.TiDBTLSConfig)
 	}
 
+	cache := ttlcache.NewCache()
+	cache.SkipTTLExtensionOnHit(true)
 	client := &Client{
 		lifecycleCtx:             nil,
 		forwarder:                newForwarder(lc, etcdClient),
+		endpointAllowlist:        []string{},
 		statusAPIHTTPScheme:      config.GetClusterHTTPScheme(),
 		statusAPIAddress:         "",
 		enforceStatusAPIAddresss: false,
@@ -76,12 +80,15 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 		statusAPITimeout:         defaultTiDBStatusAPITimeout,
 		sqlAPITLSKey:             sqlAPITLSKey,
 		sqlAPIAddress:            "",
-		cache:                    ttlcache.NewCache(),
+		cache:                    cache,
 	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			client.lifecycleCtx = ctx
+			statusProxyIP, statusProxyPort, _ := host.ParseHostAndPortFromAddressURL("http://" + client.forwarder.statusProxy.listener.Addr().String())
+			client.endpointAllowlist = append(client.endpointAllowlist, fmt.Sprintf("%s:%d", statusProxyIP, statusProxyPort))
+
 			return nil
 		},
 	})
@@ -207,44 +214,42 @@ func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 	return res, err
 }
 
-func (c *Client) getMemebers() ([]topology.TiDBInfo, error) {
-	cached, _ := c.cache.Get("tidb_members")
+func (c *Client) getMemberAddrs() ([]string, error) {
+	cached, _ := c.cache.Get("tidb_member_addrs")
 	if cached != nil {
-		return cached.([]topology.TiDBInfo), nil
+		return cached.([]string), nil
 	}
 
-	mem, err := topology.FetchTiDBTopology(c.lifecycleCtx, c.forwarder.etcdClient)
+	topos, err := topology.FetchTiDBTopology(c.lifecycleCtx, c.forwarder.etcdClient)
 	if err != nil {
 		return nil, err
 	}
-	_ = c.cache.SetWithTTL("tidb_members", mem, 10*time.Second)
+	addrs := []string{}
+	for _, topo := range topos {
+		addrs = append(addrs, fmt.Sprintf("%s:%d", topo.IP, topo.StatusPort))
+	}
 
-	return mem, nil
+	_ = c.cache.SetWithTTL("tidb_member_addrs", addrs, 10*time.Second)
+
+	return addrs, nil
 }
 
 func (c *Client) checkValidAddress(addr string) error {
-	wl := c.addrWhitelist()
-	if funk.Contains(wl, addr) {
+	if funk.Contains(c.endpointAllowlist, addr) {
 		return nil
 	}
 
-	mem, err := c.getMemebers()
+	addrs, err := c.getMemberAddrs()
 	if err != nil {
 		return err
 	}
-	isValid := funk.Contains(mem, func(item topology.TiDBInfo) bool {
-		return fmt.Sprintf("%s:%d", item.IP, item.StatusPort) == addr
+	isValid := funk.Contains(addrs, func(mAddr string) bool {
+		return mAddr == addr
 	})
 	if !isValid {
 		return ErrInvalidTiDBAddr.New("request address %s is invalid", addr)
 	}
 	return nil
-}
-
-func (c *Client) addrWhitelist() []string {
-	forwardIP, forwardPort, _ := host.ParseHostAndPortFromAddressURL("http://" + c.forwarder.statusProxy.listener.Addr().String())
-	forwardAddr := fmt.Sprintf("%s:%d", forwardIP, forwardPort)
-	return []string{forwardAddr}
 }
 
 // FIXME: SendGetRequest should be extracted, as a common method.

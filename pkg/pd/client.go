@@ -42,24 +42,30 @@ const (
 )
 
 type Client struct {
-	httpScheme   string
-	baseURL      string
-	specificURL  string
-	httpClient   *httpc.Client
-	lifecycleCtx context.Context
-	timeout      time.Duration
-	cache        *ttlcache.Cache
+	httpScheme        string
+	endpointAllowlist []string // Endpoint addrs in the whitelist can skip the checkValidAddress check
+	baseURL           string
+	httpClient        *httpc.Client
+	lifecycleCtx      context.Context
+	timeout           time.Duration
+	cache             *ttlcache.Cache
 }
 
 func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Config) *Client {
+	cache := ttlcache.NewCache()
+	cache.SkipTTLExtensionOnHit(true)
+	// config.PDEndPoint should be placed in the whitelist to aviod circular invoke when fetch memebers
+	baseIP, basePort, _ := host.ParseHostAndPortFromAddressURL(config.PDEndPoint)
+	al := []string{fmt.Sprintf("%s:%d", baseIP, basePort)}
+
 	client := &Client{
-		httpClient:   httpClient,
-		httpScheme:   config.GetClusterHTTPScheme(),
-		baseURL:      config.PDEndPoint,
-		specificURL:  "",
-		lifecycleCtx: nil,
-		timeout:      defaultPDTimeout,
-		cache:        ttlcache.NewCache(),
+		httpClient:        httpClient,
+		httpScheme:        config.GetClusterHTTPScheme(),
+		endpointAllowlist: al,
+		baseURL:           config.PDEndPoint,
+		lifecycleCtx:      nil,
+		timeout:           defaultPDTimeout,
+		cache:             cache,
 	}
 
 	lc.Append(fx.Hook{
@@ -72,21 +78,14 @@ func NewPDClient(lc fx.Lifecycle, httpClient *httpc.Client, config *config.Confi
 	return client
 }
 
-func (c Client) WithURL(url string) *Client {
-	c.specificURL = url
+func (c Client) WithBaseURL(baseURL string) *Client {
+	c.baseURL = baseURL
 	return &c
 }
 
 func (c Client) WithAddress(host string, port int) *Client {
-	c.specificURL = fmt.Sprintf("%s://%s:%d", c.httpScheme, host, port)
+	c.baseURL = fmt.Sprintf("%s://%s:%d", c.httpScheme, host, port)
 	return &c
-}
-
-func (c *Client) getURL() string {
-	if c.specificURL != "" {
-		return c.specificURL
-	}
-	return c.baseURL
 }
 
 func (c Client) WithTimeout(timeout time.Duration) *Client {
@@ -105,7 +104,7 @@ func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
 		return nil, err
 	}
 
-	uri := fmt.Sprintf("%s/pd/api/v1%s", c.getURL(), relativeURI)
+	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrPDClientRequestFailed, distro.Data("pd"))
 }
 
@@ -123,7 +122,7 @@ func (c *Client) SendPostRequest(relativeURI string, body io.Reader) ([]byte, er
 		return nil, err
 	}
 
-	uri := fmt.Sprintf("%s/pd/api/v1%s", c.getURL(), relativeURI)
+	uri := fmt.Sprintf("%s/pd/api/v1%s", c.baseURL, relativeURI)
 	return c.httpClient.WithTimeout(c.timeout).SendRequest(c.lifecycleCtx, uri, http.MethodPost, body, ErrPDClientRequestFailed, distro.Data("pd"))
 }
 
@@ -154,49 +153,46 @@ func (c *Client) FetchMembers() (*InfoMembers, error) {
 	return ds, nil
 }
 
-func (c *Client) getMemebers() (*InfoMembers, error) {
-	cached, _ := c.cache.Get("pd_members")
+func (c *Client) getMemberAddrs() ([]string, error) {
+	cached, _ := c.cache.Get("pd_member_addrs")
 	if cached != nil {
-		return cached.(*InfoMembers), nil
+		return cached.([]string), nil
 	}
 
-	mem, err := c.FetchMembers()
+	ds, err := c.FetchMembers()
 	if err != nil {
 		return nil, err
 	}
-	_ = c.cache.SetWithTTL("pd_members", mem, 10*time.Second)
+	addrs := []string{}
+	for _, mem := range ds.Members {
+		ip, port, _ := host.ParseHostAndPortFromAddressURL(mem.ClientUrls[0])
+		addrs = append(addrs, fmt.Sprintf("%s:%d", ip, port))
+	}
 
-	return mem, nil
+	_ = c.cache.SetWithTTL("pd_member_addrs", addrs, 10*time.Second)
+
+	return addrs, nil
 }
 
 func (c *Client) checkValidHost() error {
-	requestIP, requestPort, err := host.ParseHostAndPortFromAddressURL(c.getURL())
+	requestIP, requestPort, err := host.ParseHostAndPortFromAddressURL(c.baseURL)
 	if err != nil {
 		return err
 	}
 	addr := fmt.Sprintf("%s:%d", requestIP, requestPort)
-	wl := c.addrWhitelist()
-	if funk.Contains(wl, addr) {
+	if funk.Contains(c.endpointAllowlist, addr) {
 		return nil
 	}
 
-	ds, err := c.getMemebers()
+	addrs, err := c.getMemberAddrs()
 	if err != nil {
 		return err
 	}
-	isValid := funk.Contains(ds, func(item InfoMember) bool {
-		ip, port, _ := host.ParseHostAndPortFromAddressURL(item.ClientUrls[0])
-		return fmt.Sprintf("%s:%d", ip, port) == addr
+	isValid := funk.Contains(addrs, func(mAddr string) bool {
+		return mAddr == addr
 	})
 	if !isValid {
 		return ErrInvalidPDAddr.New("request address %s is invalid", addr)
 	}
 	return nil
-}
-
-func (c *Client) addrWhitelist() []string {
-	// baseURL should be placed in the whitelist to aviod circular invoke when fetch memebers
-	baseIP, basePort, _ := host.ParseHostAndPortFromAddressURL(c.baseURL)
-	baseAddr := fmt.Sprintf("%s:%d", baseIP, basePort)
-	return []string{baseAddr}
 }

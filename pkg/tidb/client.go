@@ -24,7 +24,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/host"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
@@ -86,8 +85,7 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			client.lifecycleCtx = ctx
-			statusProxyIP, statusProxyPort, _ := host.ParseHostAndPortFromAddressURL("http://" + client.forwarder.statusProxy.listener.Addr().String())
-			client.endpointAllowlist = append(client.endpointAllowlist, fmt.Sprintf("%s:%d", statusProxyIP, statusProxyPort))
+			client.endpointAllowlist = append(client.endpointAllowlist, client.forwarder.statusProxy.listener.Addr().String())
 
 			return nil
 		},

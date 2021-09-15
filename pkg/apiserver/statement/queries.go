@@ -137,15 +137,24 @@ func (s *Service) queryPlans(
 		return nil, err
 	}
 
-	err = db.
+	query := db.
 		Select(selectStmt).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
-		Where("schema_name = ?", schemaName).
-		Where("digest = ?", digest).
-		Group("plan_digest").
-		Find(&result).
-		Error
+		Group("plan_digest")
+
+	if schemaName != "" {
+		query.Where("schema_name = ?", schemaName)
+	}
+	if digest == "" {
+		// the evicted record's digest will be NULL
+		query.Where("digest IS NULL")
+	} else {
+		query.Where("digest = ?", digest)
+	}
+
+	err = query.Find(&result).Error
+
 	return
 }
 
@@ -168,12 +177,21 @@ func (s *Service) queryPlanDetail(
 	query := db.
 		Select(selectStmt).
 		Table(statementsTable).
-		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
-		Where("schema_name = ?", schemaName).
-		Where("digest = ?", digest)
+		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime)
+
 	if len(plans) > 0 {
 		query = query.Where("plan_digest in (?)", plans)
 	}
+	if schemaName != "" {
+		query.Where("schema_name = ?", schemaName)
+	}
+	if digest == "" {
+		// the evicted record's digest will be NULL
+		query.Where("digest IS NULL")
+	} else {
+		query.Where("digest = ?", digest)
+	}
+
 	err = query.Scan(&result).Error
 	return
 }

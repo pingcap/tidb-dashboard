@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joomcode/errorx"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -84,6 +85,9 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 	res, err := s.Client.Send(&req)
 	if err != nil {
 		_ = c.Error(err)
+		if errorx.IsOfType(err, endpoint.ErrInvalidParam) {
+			c.Status(http.StatusBadRequest)
+		}
 		return
 	}
 	defer res.Response.Body.Close() //nolint:errcheck

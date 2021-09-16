@@ -39,7 +39,7 @@ type testParamModelsSuite struct{}
 
 type testFetcher struct{}
 
-func (d *testFetcher) Fetch(req *endpoint.Request) (*httpc.Response, error) {
+func (d *testFetcher) Fetch(req *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
 	r := httptest.NewRecorder()
 	_, _ = r.WriteString(testCombineReq(req.Host, req.Port, req.Path(), req.Query()))
 	return &httpc.Response{Response: r.Result()}, nil
@@ -50,26 +50,31 @@ func testCombineReq(host string, port int, path, query string) string {
 }
 
 func (t *testParamModelsSuite) Test_APIParamModelMultiTags(c *C) {
-	client := endpoint.NewClient(&testFetcher{})
-	testEndpoint := &endpoint.APIModel{
-		ID:        "test_endpoint",
-		Component: model.NodeKindTiDB,
-		Path:      "/test",
-		Method:    http.MethodGet,
-		QueryParams: []*endpoint.APIParam{
-			{
-				Name:  "param1",
-				Model: APIParamModelTags,
+	client := endpoint.NewClient(&testFetcher{}, []*endpoint.APIModel{
+		{
+			ID:        "test_endpoint",
+			Component: model.NodeKindTiDB,
+			Path:      "/test",
+			Method:    http.MethodGet,
+			QueryParams: []*endpoint.APIParam{
+				{
+					Name:  "param1",
+					Model: APIParamModelMultiValue,
+				},
 			},
 		},
-	}
-	client.RegisterEndpoint([]*endpoint.APIModel{testEndpoint})
+	})
 	value1 := url.QueryEscape("value1,,, ")
 	value2 := url.QueryEscape("value2")
 	param1 := fmt.Sprintf("%s,%s", value1, value2)
 
-	req, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{
-		"param1": param1,
+	req, err := client.Send(&endpoint.RequestPayload{
+		EndpointID: "test_endpoint",
+		Host:       "127.0.0.1",
+		Port:       10080,
+		Params: map[string]string{
+			"param1": param1,
+		},
 	})
 	if err != nil {
 		c.Error(err)
@@ -80,29 +85,39 @@ func (t *testParamModelsSuite) Test_APIParamModelMultiTags(c *C) {
 }
 
 func (t *testParamModelsSuite) Test_APIParamModelInt(c *C) {
-	client := endpoint.NewClient(&testFetcher{})
-	testEndpoint := &endpoint.APIModel{
-		ID:        "test_endpoint",
-		Component: model.NodeKindTiDB,
-		Path:      "/test",
-		Method:    http.MethodGet,
-		QueryParams: []*endpoint.APIParam{
-			{
-				Name:  "param1",
-				Model: APIParamModelInt,
+	client := endpoint.NewClient(&testFetcher{}, []*endpoint.APIModel{
+		{
+			ID:        "test_endpoint",
+			Component: model.NodeKindTiDB,
+			Path:      "/test",
+			Method:    http.MethodGet,
+			QueryParams: []*endpoint.APIParam{
+				{
+					Name:  "param1",
+					Model: APIParamModelInt,
+				},
 			},
 		},
-	}
-	client.RegisterEndpoint([]*endpoint.APIModel{testEndpoint})
+	})
 
-	_, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{
-		"param1": "value1",
+	_, err := client.Send(&endpoint.RequestPayload{
+		EndpointID: "test_endpoint",
+		Host:       "127.0.0.1",
+		Port:       10080,
+		Params: map[string]string{
+			"param1": "value1",
+		},
 	})
 	c.Log(err)
 	c.Assert(errorx.IsOfType(err, endpoint.ErrInvalidParam), Equals, true)
 
-	req2, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{
-		"param1": "2",
+	req2, err := client.Send(&endpoint.RequestPayload{
+		EndpointID: "test_endpoint",
+		Host:       "127.0.0.1",
+		Port:       10080,
+		Params: map[string]string{
+			"param1": "2",
+		},
 	})
 	if err != nil {
 		c.Error(err)
@@ -112,22 +127,27 @@ func (t *testParamModelsSuite) Test_APIParamModelInt(c *C) {
 }
 
 func (t *testParamModelsSuite) Test_APIParamModelConstant(c *C) {
-	client := endpoint.NewClient(&testFetcher{})
-	testEndpoint := &endpoint.APIModel{
-		ID:        "test_endpoint",
-		Component: model.NodeKindTiDB,
-		Path:      "/test",
-		Method:    http.MethodGet,
-		QueryParams: []*endpoint.APIParam{
-			{
-				Name:  "param1",
-				Model: APIParamModelConstant("value1"),
+	client := endpoint.NewClient(&testFetcher{}, []*endpoint.APIModel{
+		{
+			ID:        "test_endpoint",
+			Component: model.NodeKindTiDB,
+			Path:      "/test",
+			Method:    http.MethodGet,
+			QueryParams: []*endpoint.APIParam{
+				{
+					Name:  "param1",
+					Model: APIParamModelConstant("value1"),
+				},
 			},
 		},
-	}
-	client.RegisterEndpoint([]*endpoint.APIModel{testEndpoint})
+	})
 
-	req, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{})
+	req, err := client.Send(&endpoint.RequestPayload{
+		EndpointID: "test_endpoint",
+		Host:       "127.0.0.1",
+		Port:       10080,
+		Params:     map[string]string{"param1": "value2"},
+	})
 	if err != nil {
 		c.Error(err)
 	}
@@ -136,23 +156,28 @@ func (t *testParamModelsSuite) Test_APIParamModelConstant(c *C) {
 }
 
 func (t *testParamModelsSuite) Test_APIParamModelEnum(c *C) {
-	client := endpoint.NewClient(&testFetcher{})
 	value1 := "value1"
-	testEndpoint := &endpoint.APIModel{
-		ID:        "test_endpoint",
-		Component: model.NodeKindTiDB,
-		Path:      "/test",
-		Method:    http.MethodGet,
-		QueryParams: []*endpoint.APIParam{
-			{
-				Name:  "param1",
-				Model: APIParamModelEnum([]EnumItem{{Value: value1}}),
+	client := endpoint.NewClient(&testFetcher{}, []*endpoint.APIModel{
+		{
+			ID:        "test_endpoint",
+			Component: model.NodeKindTiDB,
+			Path:      "/test",
+			Method:    http.MethodGet,
+			QueryParams: []*endpoint.APIParam{
+				{
+					Name:  "param1",
+					Model: APIParamModelEnum([]EnumItem{{Value: value1}}),
+				},
 			},
 		},
-	}
-	client.RegisterEndpoint([]*endpoint.APIModel{testEndpoint})
+	})
 
-	req, err := client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{"param1": value1})
+	req, err := client.Send(&endpoint.RequestPayload{
+		EndpointID: "test_endpoint",
+		Host:       "127.0.0.1",
+		Port:       10080,
+		Params:     map[string]string{"param1": value1},
+	})
 	if err != nil {
 		c.Error(err)
 	}
@@ -161,7 +186,12 @@ func (t *testParamModelsSuite) Test_APIParamModelEnum(c *C) {
 	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test", "param1=value1"))
 
 	// enum validate
-	_, err = client.Send(testEndpoint.ID, "127.0.0.1", 10080, map[string]string{"param1": "value2"})
+	_, err = client.Send(&endpoint.RequestPayload{
+		EndpointID: "test_endpoint",
+		Host:       "127.0.0.1",
+		Port:       10080,
+		Params:     map[string]string{"param1": "value2"},
+	})
 
 	c.Assert(errorx.IsOfType(err, endpoint.ErrInvalidParam), Equals, true)
 }

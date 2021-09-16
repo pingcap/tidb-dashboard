@@ -47,16 +47,8 @@ type Service struct {
 
 func newService(fp fetcherParam) *Service {
 	f := newFetcher(fp)
-	c := endpoint.NewClient(f)
-	registerEndpoint(c)
+	c := endpoint.NewClient(f, endpointDefs)
 	return &Service{Client: c}
-}
-
-type RequestPayload struct {
-	ID     string            `json:"id"`
-	Host   string            `json:"host"`
-	Port   int               `json:"port"`
-	Params map[string]string `json:"params"`
 }
 
 func getExtFromContentTypeHeader(contentType string) string {
@@ -76,20 +68,20 @@ func getExtFromContentTypeHeader(contentType string) string {
 // @Summary Send request remote endpoint and return a token for downloading results
 // @Security JwtAuth
 // @ID debugAPIRequestEndpoint
-// @Param req body RequestPayload true "request payload"
+// @Param req body endpoint.RequestPayload true "request payload"
 // @Success 200 {object} string
 // @Failure 400 {object} utils.APIError "Bad request"
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Failure 500 {object} utils.APIError
 // @Router /debug_api/endpoint [post]
 func (s *Service) RequestEndpoint(c *gin.Context) {
-	var req RequestPayload
+	var req endpoint.RequestPayload
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
-	res, err := s.Client.Send(req.ID, req.Host, req.Port, req.Params)
+	res, err := s.Client.Send(&req)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -97,7 +89,7 @@ func (s *Service) RequestEndpoint(c *gin.Context) {
 	defer res.Response.Body.Close() //nolint:errcheck
 
 	ext := getExtFromContentTypeHeader(res.Header.Get("Content-Type"))
-	fileName := fmt.Sprintf("%s_%d%s", req.ID, time.Now().Unix(), ext)
+	fileName := fmt.Sprintf("%s_%d%s", req.EndpointID, time.Now().Unix(), ext)
 
 	writer, token, err := utils.FSPersist(utils.FSPersistConfig{
 		TokenIssuer:      tokenIssuer,
@@ -137,5 +129,5 @@ func (s *Service) Download(c *gin.Context) {
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 // @Router /debug_api/endpoints [get]
 func (s *Service) GetEndpoints(c *gin.Context) {
-	c.JSON(http.StatusOK, s.Client.Endpoints())
+	c.JSON(http.StatusOK, s.Client.GetAllAPIModels())
 }

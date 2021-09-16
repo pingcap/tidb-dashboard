@@ -1,4 +1,4 @@
-// Copyright 2021 PingCAP, Inc.
+// Copyright 2021 PingCAP, Inv.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,77 +16,56 @@ package endpoint
 
 import "net/url"
 
-type APIParamModel interface {
-	Copy() APIParamModel
-	Use(handler ...ModelMiddlewareHandlerFunc) APIParamModel
-	Middlewares(param *APIParam, isPathParam bool) []MiddlewareHandler
+type ParamResolveFn func(v *ResolvedValues) error
+
+type ResolvedValues struct {
+	url.Values
+	param *APIParam
 }
 
-// ModelMiddlewareHandlerFunc can only get the value of the current param
-type ModelMiddlewareHandlerFunc func(p *ModelParam, ctx *Context)
+func (v *ResolvedValues) Name() string {
+	return v.param.Name
+}
+
+func (v *ResolvedValues) GetValue() string {
+	return v.Values.Get(v.param.Name)
+}
+
+func (v *ResolvedValues) SetValue(val string) {
+	v.Values.Set(v.param.Name, val)
+}
+
+func (v *ResolvedValues) GetValues() []string {
+	return v.Values[v.param.Name]
+}
+
+func (v *ResolvedValues) SetValues(val []string) {
+	v.Values[v.param.Name] = val
+}
+
+type APIParamModel interface {
+	Resolve(param *APIParam, value string) (*ResolvedValues, error)
+}
 
 type BaseAPIParamModel struct {
-	middlewares []ModelMiddlewareHandlerFunc
-
-	Type string `json:"type"`
+	Type      string         `json:"type"`
+	OnResolve ParamResolveFn `json:"-"`
 }
 
-func NewAPIParamModel(t string) APIParamModel {
-	return &BaseAPIParamModel{Type: t, middlewares: []ModelMiddlewareHandlerFunc{}}
-}
-
-func (m BaseAPIParamModel) Copy() APIParamModel {
-	middlewares := m.middlewares
-	m.middlewares = []ModelMiddlewareHandlerFunc{}
-	m.middlewares = append(m.middlewares, middlewares...)
-	return &m
-}
-
-func (m *BaseAPIParamModel) Use(handler ...ModelMiddlewareHandlerFunc) APIParamModel {
-	m.middlewares = append(m.middlewares, handler...)
-	return m
-}
-
-// Middlewares do some adapter works, that limit model middleware can only get the value of the current param
-func (m *BaseAPIParamModel) Middlewares(param *APIParam, isPathParam bool) []MiddlewareHandler {
-	middlewares := make([]MiddlewareHandler, 0, len(m.middlewares))
-	for _, mi := range m.middlewares {
-		middlewares = append(middlewares, MiddlewareHandlerFunc(func(ctx *Context) {
-			var values url.Values
-			if isPathParam {
-				values = ctx.Request.PathValues
-			} else {
-				values = ctx.Request.QueryValues
-			}
-			mi(&ModelParam{values: values, param: param}, ctx)
-		}))
+func (m *BaseAPIParamModel) Resolve(param *APIParam, value string) (*ResolvedValues, error) {
+	resolvedValues := &ResolvedValues{
+		Values: url.Values{param.Name: []string{value}},
+		param:  param,
 	}
-	return middlewares
-}
+	if m.OnResolve == nil {
+		return resolvedValues, nil
+	}
 
-type ModelParam struct {
-	values url.Values
-	param  *APIParam
-}
+	if err := m.OnResolve(resolvedValues); err != nil {
+		return nil, err
+	}
 
-func (mc *ModelParam) Name() string {
-	return mc.param.Name
-}
-
-func (mc *ModelParam) Value() string {
-	return mc.values.Get(mc.param.Name)
-}
-
-func (mc *ModelParam) SetValue(val string) {
-	mc.values.Set(mc.param.Name, val)
-}
-
-func (mc *ModelParam) Values() []string {
-	return mc.values[mc.param.Name]
-}
-
-func (mc *ModelParam) SetValues(val []string) {
-	mc.values[mc.param.Name] = val
+	return resolvedValues, nil
 }
 
 type APIParam struct {

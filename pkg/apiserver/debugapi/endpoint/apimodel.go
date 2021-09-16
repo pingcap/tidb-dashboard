@@ -21,7 +21,7 @@ import (
 
 // Process flow
 //
-// (send path/query params' value)
+// (send path/query params payload)
 // browser side -|
 //               |   (validate/transform/send request middlewares)
 //               |-> server side -|
@@ -29,18 +29,19 @@ import (
 //                                |-> specific endpoint host
 
 var (
-	ErrNS           = errorx.NewNamespace("error.api.debugapi.endpoint")
-	ErrInvalidParam = ErrNS.NewType("invalid_parameter")
+	ErrNS = errorx.NewNamespace("error.api.debugapi.endpoint")
 )
 
+type APIResolveFn func(resolvedPayload *ResolvedRequestPayload) error
+
 type APIModel struct {
-	ID          string                `json:"id"`
-	Component   model.NodeKind        `json:"component"`
-	Path        string                `json:"path"`
-	Method      Method                `json:"method"`
-	PathParams  []*APIParam           `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table
-	QueryParams []*APIParam           `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
-	Middleware  MiddlewareHandlerFunc `json:"-"`
+	ID          string         `json:"id"`
+	Component   model.NodeKind `json:"component"`
+	Path        string         `json:"path"`
+	Method      Method         `json:"method"`
+	PathParams  []*APIParam    `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table
+	QueryParams []*APIParam    `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
+	OnResolve   APIResolveFn   `json:"-"`
 }
 
 // EachParams simplifies the process of iterating over path & query params
@@ -64,21 +65,9 @@ func (m *APIModel) ForEachParam(fn func(p *APIParam, isPathParam bool) error) er
 	return nil
 }
 
-// Middlewares includes endpoint middlewares & param model middlewares
-func (m *APIModel) Middlewares() []MiddlewareHandler {
-	middlewares := []MiddlewareHandler{}
-
-	// param model middlewares
-	_ = m.ForEachParam(func(p *APIParam, isPathParam bool) error {
-		modelMiddlewares := p.Model.Middlewares(p, isPathParam)
-		middlewares = append(middlewares, modelMiddlewares...)
+func (m *APIModel) Resolve(resolvedPayload *ResolvedRequestPayload) error {
+	if m.OnResolve == nil {
 		return nil
-	})
-
-	// endpoint middlewares
-	if m.Middleware != nil {
-		middlewares = append(middlewares, m.Middleware)
 	}
-
-	return middlewares
+	return m.OnResolve(resolvedPayload)
 }

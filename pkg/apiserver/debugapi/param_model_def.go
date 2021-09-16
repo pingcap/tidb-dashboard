@@ -25,40 +25,51 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 )
 
-var APIParamModelText = endpoint.NewAPIParamModel("text")
+var APIParamModelText = &endpoint.BaseAPIParamModel{Type: "text"}
 
-var APIParamModelEscapeText = APIParamModelText.Copy().Use(func(p *endpoint.ModelParam, ctx *endpoint.Context) {
-	p.SetValue(url.QueryEscape(p.Value()))
-	ctx.Next()
-})
+var APIParamModelEscapeText = &endpoint.BaseAPIParamModel{
+	Type: "escape_text",
+	OnResolve: func(v *endpoint.ResolvedValues) error {
+		v.SetValue(url.QueryEscape(v.GetValue()))
+		return nil
+	},
+}
 
 var falselyValues = []string{"false", "0", "null", "undefined", ""}
 
-var APIParamModelBool = endpoint.NewAPIParamModel("bool").Use(func(p *endpoint.ModelParam, ctx *endpoint.Context) {
-	if funk.Contains(falselyValues, p.Value()) {
-		p.SetValue("false")
-	} else {
-		p.SetValue("true")
-	}
-	ctx.Next()
-})
+var APIParamModelBool = &endpoint.BaseAPIParamModel{
+	Type: "bool",
+	OnResolve: func(v *endpoint.ResolvedValues) error {
+		if funk.Contains(falselyValues, v.GetValue()) {
+			v.SetValue("false")
+		} else {
+			v.SetValue("true")
+		}
+		return nil
+	},
+}
 
-var APIParamModelTags = endpoint.NewAPIParamModel("tags").Use(func(p *endpoint.ModelParam, ctx *endpoint.Context) {
-	vals := strings.Split(p.Value(), ",")
-	p.SetValues(funk.Map(vals, func(str string) string {
-		v, _ := url.QueryUnescape(str)
-		return v
-	}).([]string))
-	ctx.Next()
-})
+var APIParamModelMultiValue = &endpoint.BaseAPIParamModel{
+	Type: "multi_value",
+	OnResolve: func(v *endpoint.ResolvedValues) error {
+		vals := strings.Split(v.GetValue(), ",")
+		v.SetValues(funk.Map(vals, func(str string) string {
+			v, _ := url.QueryUnescape(str)
+			return v
+		}).([]string))
+		return nil
+	},
+}
 
-var APIParamModelInt = endpoint.NewAPIParamModel("int").Use(func(p *endpoint.ModelParam, ctx *endpoint.Context) {
-	if _, err := strconv.Atoi(p.Value()); err != nil {
-		ctx.Abort(fmt.Errorf("[%s] %s is not a number", p.Name(), p.Value()))
-		return
-	}
-	ctx.Next()
-})
+var APIParamModelInt = &endpoint.BaseAPIParamModel{
+	Type: "int",
+	OnResolve: func(v *endpoint.ResolvedValues) error {
+		if _, err := strconv.Atoi(v.GetValue()); err != nil {
+			return fmt.Errorf("%s: %s is not a valid int value", v.Name(), v.GetValue())
+		}
+		return nil
+	},
+}
 
 // enum
 type enumAPIParamModel struct {
@@ -78,18 +89,22 @@ func APIParamModelEnum(items []EnumItem) endpoint.APIParamModel {
 		}
 		return item
 	}).([]EnumItem)
-	enumModel := &enumAPIParamModel{endpoint.NewAPIParamModel("enum").(*endpoint.BaseAPIParamModel), items}
-	enumModel.Use(func(p *endpoint.ModelParam, ctx *endpoint.Context) {
-		isValid := funk.Contains(items, func(item EnumItem) bool {
-			v := p.Value()
-			return item.Value == v
-		})
-		if !isValid {
-			ctx.Abort(fmt.Errorf("[%s] %s is not a valid value", p.Name(), p.Value()))
-			return
-		}
-		ctx.Next()
-	})
+	enumModel := &enumAPIParamModel{
+		&endpoint.BaseAPIParamModel{
+			Type: "enum",
+			OnResolve: func(v *endpoint.ResolvedValues) error {
+				isValid := funk.Contains(items, func(item EnumItem) bool {
+					v := v.GetValue()
+					return item.Value == v
+				})
+				if !isValid {
+					return fmt.Errorf("[%s] %s is not a valid value", v.Name(), v.GetValue())
+				}
+				return nil
+			},
+		},
+		items,
+	}
 	return enumModel
 }
 
@@ -101,16 +116,21 @@ type constantAPIParamModel struct {
 }
 
 func APIParamModelConstant(value string) endpoint.APIParamModel {
-	m := &constantAPIParamModel{endpoint.NewAPIParamModel("constant").(*endpoint.BaseAPIParamModel), value}
-	m.Use(func(p *endpoint.ModelParam, ctx *endpoint.Context) {
-		p.SetValue(value)
-		ctx.Next()
-	})
+	m := &constantAPIParamModel{
+		&endpoint.BaseAPIParamModel{
+			Type: "constant",
+			OnResolve: func(v *endpoint.ResolvedValues) error {
+				v.SetValue(value)
+				return nil
+			},
+		},
+		value,
+	}
 	return m
 }
 
-var APIParamModelDB = endpoint.NewAPIParamModel("db")
+var APIParamModelDB = &endpoint.BaseAPIParamModel{Type: "db"}
 
-var APIParamModelTable = endpoint.NewAPIParamModel("table")
+var APIParamModelTable = &endpoint.BaseAPIParamModel{Type: "table"}
 
-var APIParamModelTableID = endpoint.NewAPIParamModel("table_id")
+var APIParamModelTableID = &endpoint.BaseAPIParamModel{Type: "table_id"}

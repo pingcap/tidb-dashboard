@@ -16,128 +16,144 @@ package endpoint
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
+	"regexp"
+	"time"
 
-	"github.com/thoas/go-funk"
-
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
+	"github.com/thoas/go-funk"
 )
+
+var (
+	ErrInvalidParam = ErrNS.NewType("invalid_parameter")
+)
+
+type RequestPayload struct {
+	EndpointID string            `json:"id"`
+	Host       string            `json:"host"`
+	Port       int               `json:"port"`
+	Params     map[string]string `json:"params"`
+}
+
+type Method string
+
+const (
+	MethodGet Method = http.MethodGet
+)
+
+type ResolvedRequestPayload struct {
+	originalPayload *RequestPayload
+	pathSchema      string
+
+	Host        string
+	Port        int
+	Component   model.NodeKind
+	Method      Method
+	Header      http.Header
+	Timeout     time.Duration
+	PathParams  map[string]string
+	QueryParams url.Values
+}
+
+var pathReplaceRegexp = regexp.MustCompile(`\{(\w+)\}`)
+
+func (p *ResolvedRequestPayload) Path() string {
+	path := pathReplaceRegexp.ReplaceAllStringFunc(p.pathSchema, func(s string) string {
+		key := pathReplaceRegexp.ReplaceAllString(s, "${1}")
+		val := p.PathParams[key]
+		return val
+	})
+	return path
+}
+
+func (p *ResolvedRequestPayload) Query() string {
+	return p.QueryParams.Encode()
+}
 
 // Fetcher impl how to send requests
 type Fetcher interface {
-	Fetch(req *Request) (*httpc.Response, error)
+	Fetch(payload *ResolvedRequestPayload) (*httpc.Response, error)
 }
 
 type Client struct {
-	endpointMap  map[string]*APIModel
-	endpointList []APIModel
-	fetcher      Fetcher
+	apiMap  map[string]*APIModel
+	apiList []*APIModel
+	fetcher Fetcher
 }
 
-func NewClient(fetcher Fetcher) *Client {
-	return &Client{endpointMap: map[string]*APIModel{}, endpointList: []APIModel{}, fetcher: fetcher}
-}
-
-func (c *Client) Send(eID string, host string, port int, params map[string]string) (*httpc.Response, error) {
-	endpoint, ok := c.endpointMap[eID]
-	if !ok {
-		return nil, fmt.Errorf("invalid endpoint id: %s", eID)
+func NewClient(fetcher Fetcher, models []*APIModel) *Client {
+	apiMap := map[string]*APIModel{}
+	for _, m := range models {
+		apiMap[m.ID] = m
 	}
 
-	req := NewRequest(endpoint.Component, endpoint.Method, host, port, endpoint.Path)
-	c.setValues(endpoint, params, req)
+	return &Client{apiMap: apiMap, apiList: models, fetcher: fetcher}
+}
 
-	ctx, err := c.execMiddlewares(endpoint, req)
+func (c *Client) Send(payload *RequestPayload) (*httpc.Response, error) {
+	resolvedPayload, err := c.resolve(payload)
 	if err != nil {
-		return nil, ErrInvalidParam.Wrap(err, "exec middleware error")
+		return nil, err
 	}
 
-	return ctx.Response, nil
+	return c.fetcher.Fetch(resolvedPayload)
 }
 
-func (c *Client) RegisterEndpoint(endpoints []*APIModel) *Client {
-	for _, e := range endpoints {
-		if c.endpointMap[e.ID] != nil {
-			c.endpointList = funk.Filter(c.endpointList, func(item APIModel) bool {
-				return item.ID != e.ID
-			}).([]APIModel)
-		}
-		c.endpointMap[e.ID] = e
-		c.endpointList = append(c.endpointList, *e)
-	}
-	return c
+func (c *Client) GetAPIModel(id string) *APIModel {
+	return c.apiMap[id]
 }
 
-func (c *Client) Endpoint(id string) *APIModel {
-	return c.endpointMap[id]
+func (c *Client) GetAllAPIModels() []APIModel {
+	return funk.Map(c.apiList, func(m *APIModel) APIModel {
+		return *m
+	}).([]APIModel)
 }
 
-func (c *Client) Endpoints() []APIModel {
-	return c.endpointList
-}
-
-func (c *Client) setValues(endpoint *APIModel, params map[string]string, req *Request) {
-	for _, p := range endpoint.QueryParams {
-		if params[p.Name] == "" {
-			continue
-		}
-		req.QueryValues.Set(p.Name, params[p.Name])
-	}
-	for _, p := range endpoint.PathParams {
-		if params[p.Name] == "" {
-			continue
-		}
-		req.PathValues.Set(p.Name, params[p.Name])
-	}
-}
-
-// before next: required validate middleware -> param model middlewares -> endpoint middlewares -> send request middleware
-// after next: send request middleware -> endpoint middlewares -> param model middlewares -> required validate middleware
-func (c *Client) execMiddlewares(m *APIModel, req *Request) (*Context, error) {
-	middlewares := []MiddlewareHandler{requiredMiddlewareAdapter(m)}
-	middlewares = append(middlewares, m.Middlewares()...)
-	middlewares = append(middlewares, fetchMiddlewareAdapter(c.fetcher))
-
-	ctx := newContext(req, middlewares)
-	ctx.Next()
-	if ctx.Error != nil {
-		return nil, ctx.Error
+func (c *Client) resolve(payload *RequestPayload) (*ResolvedRequestPayload, error) {
+	api, ok := c.apiMap[payload.EndpointID]
+	if !ok {
+		return nil, fmt.Errorf("invalid endpoint id: %s", payload.EndpointID)
 	}
 
-	return ctx, nil
-}
+	resolvedPayload := &ResolvedRequestPayload{
+		originalPayload: payload,
+		pathSchema:      api.Path,
+		Host:            payload.Host,
+		Port:            payload.Port,
+		Component:       api.Component,
+		Method:          api.Method,
+		PathParams:      map[string]string{},
+		QueryParams:     url.Values{},
+	}
 
-// check all required params in endpoint
-func requiredMiddlewareAdapter(endpoint *APIModel) MiddlewareHandler {
-	return MiddlewareHandlerFunc(func(ctx *Context) {
-		err := endpoint.ForEachParam(func(p *APIParam, isPathParam bool) error {
-			var values url.Values
-			if isPathParam {
-				values = ctx.Request.PathValues
-			} else {
-				values = ctx.Request.QueryValues
-			}
-			if p.Required && values.Get(p.Name) == "" {
-				return ErrInvalidParam.New("missing required param: %s", p.Name)
+	// resolve param values by api/param model definition
+	err := api.ForEachParam(func(param *APIParam, isPathParam bool) error {
+		if payload.Params[param.Name] == "" {
+			if param.Required {
+				return fmt.Errorf("missing required param: %s", param.Name)
 			}
 			return nil
-		})
-		if err != nil {
-			ctx.Abort(err)
-			return
 		}
-		ctx.Next()
-	})
-}
 
-func fetchMiddlewareAdapter(fetcher Fetcher) MiddlewareHandler {
-	return MiddlewareHandlerFunc(func(ctx *Context) {
-		res, err := fetcher.Fetch(ctx.Request)
+		resolvedValues, err := param.Model.Resolve(param, payload.Params[param.Name])
 		if err != nil {
-			ctx.Abort(err)
-			return
+			return err
 		}
-		ctx.Response = res
-		ctx.Next()
+
+		if isPathParam {
+			resolvedPayload.PathParams[param.Name] = resolvedValues.Get(param.Name)
+		} else {
+			resolvedPayload.QueryParams[param.Name] = resolvedValues.Values[param.Name]
+		}
+		return nil
 	})
+	if err != nil {
+		return nil, ErrInvalidParam.WrapWithNoMessage(err)
+	}
+
+	api.Resolve(resolvedPayload)
+
+	return resolvedPayload, nil
 }

@@ -1,7 +1,7 @@
 // Copyright 2021 PingCAP, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// you may not use this file exctestAPIt in compliance with the License.
 // You may obtain a copy of the License at
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
@@ -20,7 +20,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/joomcode/errorx"
 	. "github.com/pingcap/check"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
@@ -38,7 +37,7 @@ type testClientSuite struct{}
 
 type testFetcher struct{}
 
-func (d *testFetcher) Fetch(req *Request) (*httpc.Response, error) {
+func (d *testFetcher) Fetch(req *ResolvedRequestPayload) (*httpc.Response, error) {
 	r := httptest.NewRecorder()
 	_, _ = r.WriteString(testCombineReq(req.Host, req.Port, req.Path(), req.Query()))
 	return &httpc.Response{Response: r.Result()}, nil
@@ -48,8 +47,8 @@ func testCombineReq(host string, port int, path, query string) string {
 	return fmt.Sprintf("%s:%d%s?%s", host, port, path, query)
 }
 
-var testParamModel = NewAPIParamModel("text")
-var ep = &APIModel{
+var testParamModel = &BaseAPIParamModel{Type: "text"}
+var testAPI = &APIModel{
 	ID:        "test_endpoint",
 	Component: model.NodeKindTiDB,
 	Path:      "/test/{pathParam}",
@@ -63,11 +62,15 @@ var ep = &APIModel{
 }
 
 func (t *testClientSuite) Test_Send(c *C) {
-	client := NewClient(&testFetcher{})
-	client.RegisterEndpoint([]*APIModel{ep})
-	req, err := client.Send(ep.ID, "127.0.0.1", 10080, map[string]string{
-		"pathParam":  "foo",
-		"queryParam": "bar",
+	client := NewClient(&testFetcher{}, []*APIModel{testAPI})
+	req, err := client.Send(&RequestPayload{
+		testAPI.ID,
+		"127.0.0.1",
+		10080,
+		map[string]string{
+			"pathParam":  "foo",
+			"queryParam": "bar",
+		},
 	})
 	if err != nil {
 		c.Error(err)
@@ -77,80 +80,31 @@ func (t *testClientSuite) Test_Send(c *C) {
 	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test/foo", "queryParam=bar"))
 }
 
-func (t *testClientSuite) Test_AddEndpoint(c *C) {
-	client := NewClient(&testFetcher{})
-
-	c.Assert(len(client.endpointList), Equals, 0)
-	c.Assert(len(client.endpointMap), Equals, 0)
-
-	client.RegisterEndpoint([]*APIModel{ep, ep})
-
-	c.Assert(len(client.endpointList), Equals, 1)
-	c.Assert(len(client.endpointMap), Equals, 1)
+func (t *testClientSuite) Test_GetAPIModel(c *C) {
+	client := NewClient(&testFetcher{}, []*APIModel{testAPI})
+	c.Assert(client.GetAPIModel(testAPI.ID), Equals, testAPI)
 }
 
-func (t *testClientSuite) Test_Endpoint(c *C) {
-	client := NewClient(&testFetcher{})
-	client.RegisterEndpoint([]*APIModel{ep})
-
-	c.Assert(client.Endpoint(ep.ID), Equals, ep)
+func (t *testClientSuite) Test_GetAllAPIModels(c *C) {
+	client := NewClient(&testFetcher{}, []*APIModel{testAPI})
+	c.Assert(client.GetAllAPIModels()[0].ID, Equals, testAPI.ID)
 }
 
-func (t *testClientSuite) Test_Endpoints(c *C) {
-	client := NewClient(&testFetcher{})
-	client.RegisterEndpoint([]*APIModel{ep})
-
-	c.Assert(client.Endpoints()[0].ID, Equals, ep.ID)
-}
-
-func (t *testClientSuite) Test_setValues(c *C) {
-	client := NewClient(&testFetcher{})
-	req := NewRequest(ep.Component, ep.Method, "127.0.0.1", 10080, ep.Path)
-	params := map[string]string{
-		"pathParam":  "foo",
-		"queryParam": "bar",
-	}
-
-	client.setValues(ep, params, req)
-
-	c.Assert(req.PathValues.Get("pathParam"), Equals, params["pathParam"])
-	c.Assert(req.QueryValues.Get("queryParam"), Equals, params["queryParam"])
-}
-
-func (t *testClientSuite) Test_execMiddlewares(c *C) {
-	client := NewClient(&testFetcher{})
-	ep := &APIModel{
-		ID:        "test_endpoint",
-		Component: model.NodeKindTiDB,
-		Path:      "/test/{pathParam}",
-		Method:    http.MethodGet,
-		PathParams: []*APIParam{
-			{Model: testParamModel, Name: "pathParam", Required: true},
+func (t *testClientSuite) Test_resolve(c *C) {
+	client := NewClient(&testFetcher{}, []*APIModel{testAPI})
+	req, err := client.resolve(&RequestPayload{
+		testAPI.ID,
+		"127.0.0.1",
+		10080,
+		map[string]string{
+			"pathParam":  "foo",
+			"queryParam": "bar",
 		},
-		QueryParams: []*APIParam{
-			{Model: testParamModel, Name: "queryParam", Required: true},
-		},
-		Middleware: func(ctx *Context) {
-			ctx.Request.QueryValues.Set("queryParam", "bar2")
-			ctx.Next()
-		},
-	}
-	client.RegisterEndpoint([]*APIModel{ep})
-	req, err := client.Send(ep.ID, "127.0.0.1", 10080, map[string]string{
-		"pathParam":  "foo",
-		"queryParam": "bar",
 	})
 	if err != nil {
 		c.Error(err)
 	}
-	data, _ := req.Body()
 
-	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test/foo", "queryParam=bar2"))
-
-	// check required middleware
-	_, err = client.Send(ep.ID, "127.0.0.1", 10080, map[string]string{
-		"pathParam": "foo",
-	})
-
-	c.Assert(errorx.IsOfType(err, ErrInvalidParam), Equals, true)
+	c.Assert(req.Path(), Equals, "/test/foo")
+	c.Assert(req.Query(), Equals, "queryParam=bar")
 }

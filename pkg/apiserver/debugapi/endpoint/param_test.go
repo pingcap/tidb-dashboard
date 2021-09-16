@@ -15,9 +15,11 @@
 package endpoint
 
 import (
+	"net/http"
 	"testing"
 
 	. "github.com/pingcap/check"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 
 func TestParam(t *testing.T) {
@@ -29,10 +31,41 @@ var _ = Suite(&testParamSuite{})
 
 type testParamSuite struct{}
 
-func (t *testParamSuite) Test_Copy(c *C) {
-	testParamModel := NewAPIParamModel("text").Use(func(p *ModelParam, ctx *Context) { ctx.Next() })
-	testParamModel2 := testParamModel.Copy().Use(func(p *ModelParam, ctx *Context) { ctx.Next() })
+func (t *testParamSuite) Test_Resolve(c *C) {
+	testParamModel := &BaseAPIParamModel{
+		Type: "test",
+		OnResolve: func(v *ResolvedValues) error {
+			v.SetValue("test")
+			return nil
+		},
+	}
+	client := NewClient(&testFetcher{}, []*APIModel{
+		{
+			ID:        "test_endpoint",
+			Component: model.NodeKindTiDB,
+			Path:      "/test/{pathParam}",
+			Method:    http.MethodGet,
+			PathParams: []*APIParam{
+				{Model: testParamModel, Name: "pathParam", Required: true},
+			},
+			QueryParams: []*APIParam{
+				{Model: testParamModel, Name: "queryParam", Required: true},
+			},
+		},
+	})
+	req, err := client.Send(&RequestPayload{
+		testAPI.ID,
+		"127.0.0.1",
+		10080,
+		map[string]string{
+			"pathParam":  "foo",
+			"queryParam": "bar",
+		},
+	})
+	if err != nil {
+		c.Error(err)
+	}
+	data, _ := req.Body()
 
-	c.Assert(len(testParamModel.Middlewares(nil, false)), Equals, 1)
-	c.Assert(len(testParamModel2.Middlewares(nil, false)), Equals, 2)
+	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test/test", "queryParam=test"))
 }

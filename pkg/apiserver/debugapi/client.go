@@ -19,8 +19,6 @@ import (
 
 	"go.uber.org/fx"
 
-	"github.com/thoas/go-funk"
-
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi/endpoint"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
@@ -28,7 +26,6 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
-	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
 const (
@@ -44,7 +41,7 @@ type Fetcher struct {
 type ClientMap map[model.NodeKind]Client
 
 type Client interface {
-	Get(request *endpoint.Request) (*httpc.Response, error)
+	Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error)
 }
 
 type fetcherParam struct {
@@ -66,17 +63,17 @@ func newFetcher(p fetcherParam) *Fetcher {
 	}
 }
 
-func (d *Fetcher) Fetch(req *endpoint.Request) (*httpc.Response, error) {
-	if req.Timeout <= 0 {
-		req.Timeout = defaultTimeout
+func (d *Fetcher) Fetch(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
+	if payload.Timeout <= 0 {
+		payload.Timeout = defaultTimeout
 	}
-	c := d.clients[req.Component]
+	c := d.clients[payload.Component]
 
-	switch req.Method {
+	switch payload.Method {
 	case endpoint.MethodGet:
-		return c.Get(req)
+		return c.Get(payload)
 	default:
-		return nil, fmt.Errorf("invalid request method `%s`, host: %s, path: %s", req.Method, req.Host, req.Path())
+		return nil, fmt.Errorf("invalid request method `%s`, host: %s, path: %s", payload.Method, payload.Host, payload.Path())
 	}
 }
 
@@ -92,11 +89,11 @@ type tidbImplement struct {
 	Client *tidb.Client
 }
 
-func (impl *tidbImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
+func (impl *tidbImplement) Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
 	return impl.Client.
-		WithEnforcedStatusAPIAddress(req.Host, req.Port).
-		WithStatusAPITimeout(req.Timeout).
-		Get(buildRelativeURI(req.Path(), req.Query()))
+		WithEnforcedStatusAPIAddress(payload.Host, payload.Port).
+		WithStatusAPITimeout(payload.Timeout).
+		Get(buildRelativeURI(payload.Path(), payload.Query()))
 }
 
 type tikvImplement struct {
@@ -104,10 +101,10 @@ type tikvImplement struct {
 	Client *tikv.Client
 }
 
-func (impl *tikvImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
+func (impl *tikvImplement) Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
 	return impl.Client.
-		WithTimeout(req.Timeout).
-		Get(req.Host, req.Port, buildRelativeURI(req.Path(), req.Query()))
+		WithTimeout(payload.Timeout).
+		Get(payload.Host, payload.Port, buildRelativeURI(payload.Path(), payload.Query()))
 }
 
 type tiflashImplement struct {
@@ -115,10 +112,10 @@ type tiflashImplement struct {
 	Client *tiflash.Client
 }
 
-func (impl *tiflashImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
+func (impl *tiflashImplement) Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
 	return impl.Client.
-		WithTimeout(req.Timeout).
-		Get(req.Host, req.Port, buildRelativeURI(req.Path(), req.Query()))
+		WithTimeout(payload.Timeout).
+		Get(payload.Host, payload.Port, buildRelativeURI(payload.Path(), payload.Query()))
 }
 
 type pdImplement struct {
@@ -126,19 +123,9 @@ type pdImplement struct {
 	Client *pd.Client
 }
 
-func (impl *pdImplement) Get(req *endpoint.Request) (*httpc.Response, error) {
+func (impl *pdImplement) Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
 	return impl.Client.
-		WithAddress(req.Host, req.Port).
-		WithTimeout(req.Timeout).
-		Get(buildRelativeURI(req.Path(), req.Query()))
-}
-
-func (impl *pdImplement) CheckDest(host string, port int) (bool, error) {
-	info, err := topology.FetchPDTopology(impl.Client)
-	if err != nil {
-		return false, err
-	}
-	return funk.Contains(info, func(item topology.PDInfo) bool {
-		return item.IP == host && item.Port == uint(port)
-	}), nil
+		WithAddress(payload.Host, payload.Port).
+		WithTimeout(payload.Timeout).
+		Get(buildRelativeURI(payload.Path(), payload.Query()))
 }

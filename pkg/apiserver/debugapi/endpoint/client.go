@@ -72,24 +72,23 @@ func (p *ResolvedRequestPayload) Query() string {
 	return p.QueryParams.Encode()
 }
 
-// Fetcher impl how to send requests
-type Fetcher interface {
+type HttpClient interface {
 	Fetch(payload *ResolvedRequestPayload) (*httpc.Response, error)
 }
 
 type Client struct {
-	apiMap  map[string]*APIModel
-	apiList []*APIModel
-	fetcher Fetcher
+	apiMap     map[string]*APIModel
+	apiList    []*APIModel
+	httpClient HttpClient
 }
 
-func NewClient(fetcher Fetcher, models []*APIModel) *Client {
+func NewClient(httpClient HttpClient, models []*APIModel) *Client {
 	apiMap := map[string]*APIModel{}
 	for _, m := range models {
 		apiMap[m.ID] = m
 	}
 
-	return &Client{apiMap: apiMap, apiList: models, fetcher: fetcher}
+	return &Client{apiMap: apiMap, apiList: models, httpClient: httpClient}
 }
 
 func (c *Client) Send(payload *RequestPayload) (*httpc.Response, error) {
@@ -98,7 +97,7 @@ func (c *Client) Send(payload *RequestPayload) (*httpc.Response, error) {
 		return nil, err
 	}
 
-	return c.fetcher.Fetch(resolvedPayload)
+	return c.httpClient.Fetch(resolvedPayload)
 }
 
 func (c *Client) GetAPIModel(id string) *APIModel {

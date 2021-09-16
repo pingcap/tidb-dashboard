@@ -32,9 +32,8 @@ const (
 	defaultTimeout = time.Second * 35 // Default profiling can be as long as 30s. Add 5 seconds for other overheads.
 )
 
-// Fetcher impl how to send requests
-type Fetcher struct {
-	endpoint.Fetcher
+type HttpClient struct {
+	endpoint.HttpClient
 	clients ClientMap
 }
 
@@ -44,7 +43,7 @@ type Client interface {
 	Get(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error)
 }
 
-type fetcherParam struct {
+type httpClientParam struct {
 	fx.In
 	TidbImpl    tidbImplement
 	TikvImpl    tikvImplement
@@ -52,8 +51,8 @@ type fetcherParam struct {
 	PDImpl      pdImplement
 }
 
-func newFetcher(p fetcherParam) *Fetcher {
-	return &Fetcher{
+func newHttpClient(p httpClientParam) *HttpClient {
+	return &HttpClient{
 		clients: ClientMap{
 			model.NodeKindTiDB:    &p.TidbImpl,
 			model.NodeKindTiKV:    &p.TikvImpl,
@@ -63,7 +62,7 @@ func newFetcher(p fetcherParam) *Fetcher {
 	}
 }
 
-func (d *Fetcher) Fetch(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
+func (d *HttpClient) Fetch(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
 	if payload.Timeout <= 0 {
 		payload.Timeout = defaultTimeout
 	}

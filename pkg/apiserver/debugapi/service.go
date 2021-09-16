@@ -45,8 +45,8 @@ type Service struct {
 	Client *endpoint.Client
 }
 
-func newService(fp fetcherParam) *Service {
-	f := newFetcher(fp)
+func newService(hp httpClientParam) *Service {
+	f := newHttpClient(hp)
 	c := endpoint.NewClient(f, endpointDefs)
 	return &Service{Client: c}
 }

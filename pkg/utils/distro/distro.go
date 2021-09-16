@@ -18,27 +18,32 @@ import (
 	"sync/atomic"
 )
 
-type introData map[string]string
+var (
+	data            atomic.Value
+	defaultResource = map[string]string{
+		"tidb":    "TiDB",
+		"tikv":    "TiKV",
+		"tiflash": "TiFlash",
+		"pd":      "PD",
+	}
+)
 
-var data atomic.Value
+func init() {
+	Replace(defaultResource)
+}
 
-func Replace(distro introData) {
+func Resource() map[string]string {
+	return data.Load().(map[string]string)
+}
+
+func Replace(distro map[string]string) {
 	data.Store(distro)
 }
 
 func Data(k string) string {
-	var d introData
-	atomd := data.Load()
-	// we need a fallback to keep compatibility in scenarios without inject distro info
-	// related issue: https://github.com/pingcap/tidb-dashboard/issues/975
-	if d == nil {
-		d = Resource
-	} else {
-		d = atomd.(introData)
+	d := Resource()
+	if v, ok := d[k]; ok {
+		return v
 	}
-
-	if d[k] == "" {
-		return k
-	}
-	return d[k]
+	return k
 }

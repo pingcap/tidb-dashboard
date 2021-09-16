@@ -50,6 +50,15 @@ var pprofSecondsParam = &endpoint.APIParam{
 	Name: "seconds",
 }
 
+var pprofDebugParam = &endpoint.APIParam{
+	Name: "debug",
+	Model: APIParamModelEnum([]EnumItem{
+		{Name: "0", Value: "0"},
+		{Name: "1", Value: "1"},
+		{Name: "2", Value: "2"},
+	}),
+}
+
 func timeoutMiddleware(payload *endpoint.ResolvedRequestPayload, sec string) error {
 	i, err := strconv.ParseInt(sec, 10, 64)
 	if err != nil {
@@ -184,8 +193,8 @@ var endpointDefs = []*endpoint.APIModel{
 			pprofKindsParam,
 		},
 		QueryParams: []*endpoint.APIParam{
-			{Model: APIParamModelConstant("1"), Name: "debug"},
 			pprofSecondsParam,
+			pprofDebugParam,
 		},
 		OnResolve: func(resolvedPayload *endpoint.ResolvedRequestPayload) error {
 			if err := timeoutMiddleware(resolvedPayload, resolvedPayload.QueryParams.Get("seconds")); err != nil {
@@ -467,8 +476,8 @@ var endpointDefs = []*endpoint.APIModel{
 			pprofKindsParam,
 		},
 		QueryParams: []*endpoint.APIParam{
-			{Model: APIParamModelConstant("1"), Name: "debug"},
 			pprofSecondsParam,
+			pprofDebugParam,
 		},
 		OnResolve: func(resolvedPayload *endpoint.ResolvedRequestPayload) error {
 			if err := timeoutMiddleware(resolvedPayload, resolvedPayload.QueryParams.Get("seconds")); err != nil {
@@ -492,6 +501,7 @@ var endpointDefs = []*endpoint.APIModel{
 	// 	Method:    endpoint.MethodGet,
 	// 	QueryParams: []*endpoint.APIParam{
 	// 		pprofSecondsParam,
+	//    pprofDebugParam,
 	// 	},
 	// 	OnResolve: func(resolvedPayload *endpoint.ResolvedRequestPayload) error {
 	// 		resolvedPayload.Header.Add("Content-Type", "application/protobuf")
@@ -516,6 +526,7 @@ var endpointDefs = []*endpoint.APIModel{
 	// 	Method:    endpoint.MethodGet,
 	// 	QueryParams: []*endpoint.APIParam{
 	// 		pprofSecondsParam,
+	//    pprofDebugParam,
 	// 	},
 	// 	OnResolve: func(resolvedPayload *endpoint.ResolvedRequestPayload) error {
 	// 		resolvedPayload.Header.Add("Content-Type", "application/protobuf")

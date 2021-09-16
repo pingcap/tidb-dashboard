@@ -48,6 +48,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	_ "github.com/pingcap/tidb-dashboard/populate/distro"
 )
 
 type DashboardCLIConfig struct {
@@ -73,6 +74,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", cfg.CoreConfig.PDEndPoint, "PD endpoint address that Dashboard Server connects to")
 	flag.BoolVar(&cfg.CoreConfig.EnableTelemetry, "telemetry", cfg.CoreConfig.EnableTelemetry, "allow telemetry")
 	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", cfg.CoreConfig.EnableExperimental, "allow experimental features")
+	flag.BoolVar(&cfg.CoreConfig.EnableNonRootLogin, "non-root-login", cfg.CoreConfig.EnableNonRootLogin, "allow non root sql user login")
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 

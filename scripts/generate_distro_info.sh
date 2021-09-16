@@ -12,7 +12,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PROJECT_DIR="$(dirname "$DIR")"
 
 if [ "${DISTRO_BUILD_TAG:-}" = "1" ]; then
-  BUILD_TAG_PARAMETER=dashboard_distro
+  BUILD_TAG_PARAMETER=distro
 else
   BUILD_TAG_PARAMETER=""
 fi

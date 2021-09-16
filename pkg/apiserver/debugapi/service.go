@@ -47,7 +47,7 @@ type Service struct {
 }
 
 func newService(hp httpClientParam) *Service {
-	f := newHttpClient(hp)
+	f := newHTTPClient(hp)
 	c := endpoint.NewClient(f, endpointDefs)
 	return &Service{Client: c}
 }

@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	. "github.com/pingcap/check"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 )
 

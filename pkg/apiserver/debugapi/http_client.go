@@ -32,8 +32,8 @@ const (
 	defaultTimeout = time.Second * 35 // Default profiling can be as long as 30s. Add 5 seconds for other overheads.
 )
 
-type HttpClient struct {
-	endpoint.HttpClient
+type HTTPClient struct {
+	endpoint.HTTPClient
 	clients ClientMap
 }
 
@@ -51,8 +51,8 @@ type httpClientParam struct {
 	PDImpl      pdImplement
 }
 
-func newHttpClient(p httpClientParam) *HttpClient {
-	return &HttpClient{
+func newHTTPClient(p httpClientParam) *HTTPClient {
+	return &HTTPClient{
 		clients: ClientMap{
 			model.NodeKindTiDB:    &p.TidbImpl,
 			model.NodeKindTiKV:    &p.TikvImpl,
@@ -62,7 +62,7 @@ func newHttpClient(p httpClientParam) *HttpClient {
 	}
 }
 
-func (d *HttpClient) Fetch(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
+func (d *HTTPClient) Fetch(payload *endpoint.ResolvedRequestPayload) (*httpc.Response, error) {
 	if payload.Timeout <= 0 {
 		payload.Timeout = defaultTimeout
 	}

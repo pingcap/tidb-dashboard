@@ -21,9 +21,10 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/thoas/go-funk"
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
-	"github.com/thoas/go-funk"
 )
 
 var (
@@ -51,7 +52,6 @@ type ResolvedRequestPayload struct {
 	Port        int
 	Component   model.NodeKind
 	Method      Method
-	Header      http.Header
 	Timeout     time.Duration
 	PathParams  map[string]string
 	QueryParams url.Values
@@ -72,17 +72,17 @@ func (p *ResolvedRequestPayload) Query() string {
 	return p.QueryParams.Encode()
 }
 
-type HttpClient interface {
+type HTTPClient interface {
 	Fetch(payload *ResolvedRequestPayload) (*httpc.Response, error)
 }
 
 type Client struct {
 	apiMap     map[string]*APIModel
 	apiList    []*APIModel
-	httpClient HttpClient
+	httpClient HTTPClient
 }
 
-func NewClient(httpClient HttpClient, models []*APIModel) *Client {
+func NewClient(httpClient HTTPClient, models []*APIModel) *Client {
 	apiMap := map[string]*APIModel{}
 	for _, m := range models {
 		apiMap[m.ID] = m
@@ -152,7 +152,10 @@ func (c *Client) resolve(payload *RequestPayload) (*ResolvedRequestPayload, erro
 		return nil, ErrInvalidParam.WrapWithNoMessage(err)
 	}
 
-	api.Resolve(resolvedPayload)
+	err = api.Resolve(resolvedPayload)
+	if err != nil {
+		return nil, ErrInvalidParam.WrapWithNoMessage(err)
+	}
 
 	return resolvedPayload, nil
 }

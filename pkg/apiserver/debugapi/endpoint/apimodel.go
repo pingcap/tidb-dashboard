@@ -23,7 +23,7 @@ import (
 //
 // (send path/query params payload)
 // browser side -|
-//               |   (validate/transform/send request middlewares)
+//               |   (resolve request by api/param model OnResolve function)
 //               |-> server side -|
 //                                |   (the actual {host}:{port}/{path}?{query})
 //                                |-> specific endpoint host
@@ -42,6 +42,13 @@ type APIModel struct {
 	PathParams  []*APIParam    `json:"path_params"`  // e.g. /stats/dump/{db}/{table} -> db, table
 	QueryParams []*APIParam    `json:"query_params"` // e.g. /debug/pprof?seconds=1 -> seconds
 	OnResolve   APIResolveFn   `json:"-"`
+}
+
+func (m *APIModel) Resolve(resolvedPayload *ResolvedRequestPayload) error {
+	if m.OnResolve == nil {
+		return nil
+	}
+	return m.OnResolve(resolvedPayload)
 }
 
 // EachParams simplifies the process of iterating over path & query params
@@ -63,11 +70,4 @@ func (m *APIModel) ForEachParam(fn func(p *APIParam, isPathParam bool) error) er
 		}
 	}
 	return nil
-}
-
-func (m *APIModel) Resolve(resolvedPayload *ResolvedRequestPayload) error {
-	if m.OnResolve == nil {
-		return nil
-	}
-	return m.OnResolve(resolvedPayload)
 }

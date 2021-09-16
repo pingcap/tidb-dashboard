@@ -16,8 +16,6 @@ package endpoint
 
 import "net/url"
 
-type ParamResolveFn func(v *ResolvedValues) error
-
 type ResolvedValues struct {
 	url.Values
 	param *APIParam
@@ -42,6 +40,8 @@ func (v *ResolvedValues) GetValues() []string {
 func (v *ResolvedValues) SetValues(val []string) {
 	v.Values[v.param.Name] = val
 }
+
+type ParamResolveFn func(v *ResolvedValues) error
 
 type APIParamModel interface {
 	Resolve(param *APIParam, value string) (*ResolvedValues, error)

@@ -41,7 +41,7 @@ export default function ApiForm({
   const params = [...pathParams, ...(query_params ?? [])]
   const [loading, setLoading] = useState(false)
   const [form] = Form.useForm()
-  const formPathWithoutConstant = params
+  const formPathsWithoutConstant = params
     .filter((p) => !isConstantModel(p))
     .map((p) => p.name!)
 
@@ -95,7 +95,7 @@ export default function ApiForm({
     />
   )
   useEffect(() => {
-    formPathWithoutConstant.push(endpointHostParamKey)
+    formPathsWithoutConstant.push(endpointHostParamKey)
   })
 
   return (
@@ -131,7 +131,7 @@ export default function ApiForm({
           <Button
             icon={<UndoOutlined />}
             htmlType="button"
-            onClick={() => form.resetFields(formPathWithoutConstant)}
+            onClick={() => form.resetFields(formPathsWithoutConstant)}
           >
             {t('debug_api.form.reset')}
           </Button>

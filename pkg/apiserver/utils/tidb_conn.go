@@ -17,8 +17,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"github.com/joomcode/errorx"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 )
@@ -35,7 +35,7 @@ const (
 // This middleware must be placed after the `MWAuthRequired()` middleware, otherwise it will panic.
 func MWConnectTiDB(tidbClient *tidb.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sessionUser := c.MustGet(SessionUserKey).(*SessionUser)
+		sessionUser := GetSession(c)
 		if sessionUser == nil {
 			panic("invalid sessionUser")
 		}
@@ -71,7 +71,7 @@ func MWConnectTiDB(tidbClient *tidb.Client) gin.HandlerFunc {
 			if dbInContext != nil {
 				dbInContext2 := dbInContext.(*gorm.DB)
 				if dbInContext2 != nil {
-					_ = dbInContext2.Close()
+					_ = CloseTiDBConnection(dbInContext2)
 				}
 			}
 		}()
@@ -90,6 +90,14 @@ func TakeTiDBConnection(c *gin.Context) *gorm.DB {
 	db := GetTiDBConnection(c)
 	c.Set(tiDBConnectionKey, nil)
 	return db
+}
+
+func CloseTiDBConnection(db *gorm.DB) error {
+	sqlDB, err := db.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Close()
 }
 
 // GetTiDBConnection gets the TiDB connection stored in the gin context by `MWConnectTiDB` middleware.

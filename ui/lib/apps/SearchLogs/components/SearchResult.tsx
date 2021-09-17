@@ -78,7 +78,7 @@ export default function SearchResult({ patterns, taskGroupID, tasks }: Props) {
             (value, index): LogPreview => {
               return {
                 key: index,
-                time: dayjs(value.time).format('YYYY-MM-DD HH:mm:ss'),
+                time: dayjs(value.time).format('YYYY-MM-DD HH:mm:ss (z)'),
                 level: LogLevelText[value.level ?? 0],
                 component: getComponent(value.task_id),
                 log: value.message,

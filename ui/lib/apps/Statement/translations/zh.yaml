@@ -24,7 +24,7 @@ statement:
         schemas:
           placeholder: 所有数据库
           selected: '{{ n }} 数据库'
-          columnTitle: 数据库名
+          columnTitle: 执行数据库名
         statement_types:
           placeholder: 所有类型
           selected: '{{ n }} 类型'
@@ -49,9 +49,18 @@ statement:
     open_setting: 打开设置
     close_statement: 关闭 SQL 语句分析功能
     close_statement_warning: 确认要关闭该功能吗？关闭后现有历史记录也将被清空！
-    switch: 总开关
-    refresh_interval: 数据收集周期
-    keep_duration: 数据保留时间
+    switch: 启用功能
+    switch_tooltip: 是否启用 SQL 语句分析功能，关闭后将不能使用 SQL 语句分析功能，但能提升少量 {{distro.tidb}} 性能。
+    max_size: 最大收集 SQL 语句个数
+    max_size_tooltip: 收集的 SQL 语句个数上限，当实际执行的 SQL 语句种类超过设定个数后最早执行的 SQL 语句信息将被丢弃。若您发现界面上呈现的 SQL 语句信息不完整，建议在内存允许的情况下调大本参数。
+    refresh_interval: 时间窗大小 (min)
+    refresh_interval_tooltip: 缩小时间窗大小可以使得选择的时间范围更精细。
+    history_size: 时间窗个数
+    history_size_tooltip: 扩大时间窗个数可以保留更长时间的执行历史，但也会引入更大的内存开销。
+    keep_duration: SQL 语句历史保留时长
+    keep_duration_tooltip: 时间窗大小 × 时间窗个数
+    internal_query: 收集内部查询
+    internal_query_tooltip: 开启后 {{distro.tidb}} 内部执行的 SQL 语句信息也将被收集。
     actions:
       save: 保存
       close: 关闭
@@ -95,19 +104,19 @@ statement:
     compile_latency: 优化耗时
     compile_latency_tooltip: 编译并优化 SQL 查询的耗时
     wait_time: Coprocessor 等待耗时
-    wait_time_tooltip: SQL 查询在 TiKV Coprocessor 上被等待执行的耗时，单个 SQL 查询所有 Coprocessor 任务累计后计算
+    wait_time_tooltip: SQL 查询在 {{distro.tikv}} Coprocessor 上被等待执行的耗时，单个 SQL 查询所有 Coprocessor 任务累计后计算
     process_time: Coprocessor 执行耗时
-    process_time_tooltip: SQL 查询在 TiKV Coprocessor 上的执行耗时，单个 SQL 查询所有 Coprocessor 任务累计后计算
+    process_time_tooltip: SQL 查询在 {{distro.tikv}} Coprocessor 上的执行耗时，单个 SQL 查询所有 Coprocessor 任务累计后计算
     total_process_time: 所有执行耗时
     total_wait_time: 所有等待耗时
     backoff_time: 重试等待耗时
     backoff_time_tooltip: 单个 SQL 查询所有重试累计后计算
     get_commit_ts_time: 取 Commit Ts 耗时
-    get_commit_ts_time_tooltip: 从 PD 取递交时间戳（事务号）步骤的耗时
+    get_commit_ts_time_tooltip: 从 {{distro.pd}} 取递交时间戳（事务号）步骤的耗时
     local_latch_wait_time: Local Latch Wait 耗时
-    local_latch_wait_time_tooltip: 事务在 TiDB 本地与其他事务产生了锁冲突并等待的耗时
+    local_latch_wait_time_tooltip: 事务在 {{distro.tidb}} 本地与其他事务产生了锁冲突并等待的耗时
     resolve_lock_time: Resolve Lock 耗时
-    resolve_lock_time_tooltip: 事务在 TiKV 与其他事务产生了锁冲突并处理锁冲突的耗时
+    resolve_lock_time_tooltip: 事务在 {{distro.tikv}} 与其他事务产生了锁冲突并处理锁冲突的耗时
     prewrite_time: Prewrite 阶段耗时
     commit_time: Commit 阶段耗时
     commit_backoff_time: Commit 重试等待耗时
@@ -140,3 +149,19 @@ statement:
     prev_sample_text: 前一条 SQL 查询样例
     prev_sample_text_tooltip: 一般来说你可能只需要看 COMMIT 语句的前一条 SQL 查询
     plan: 执行计划
+
+    avg_rocksdb_delete_skipped_count: RocksDB 已删除 Key 平均扫描数
+    avg_rocksdb_delete_skipped_count_tooltip: RocksDB 扫数据时遇到的已删除 (tombstone) Key 数量 (delete_skipped_count)
+    max_rocksdb_delete_skipped_count: RocksDB 已删除 Key 最大扫描数
+    avg_rocksdb_key_skipped_count: RocksDB Key 平均扫描数
+    avg_rocksdb_key_skipped_count_tooltip: RocksDB 扫数据时所有遇到的 Key 数量 (key_skipped_count)
+    max_rocksdb_key_skipped_count: RocksDB Key 最大扫描数
+    avg_rocksdb_block_cache_hit_count: RocksDB 缓存平均读次数
+    avg_rocksdb_block_cache_hit_count_tooltip: RocksDB 从 Block Cache 缓存中读数据的次数 (block_cache_hit_count)
+    max_rocksdb_block_cache_hit_count: RocksDB 缓存最大读次数
+    avg_rocksdb_block_read_count: RocksDB 文件系统平均读次数
+    avg_rocksdb_block_read_count_tooltip: RocksDB 从文件系统中读数据的次数 (block_read_count)
+    max_rocksdb_block_read_count: RocksDB 文件系统最大读次数
+    avg_rocksdb_block_read_byte: RocksDB 文件系统平均读数据量
+    avg_rocksdb_block_read_byte_tooltip: RocksDB 从文件系统中读数据的数据量 (block_read_byte)
+    max_rocksdb_block_read_byte: RocksDB 文件系统最大读数据量

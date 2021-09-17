@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSessionStorageState } from 'ahooks'
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList'
 
-import client, { ErrorStrategy, SlowquerySlowQuery } from '@lib/client'
+import client, { ErrorStrategy, SlowqueryModel } from '@lib/client'
 import {
   calcTimeRange,
   TimeRange,
@@ -16,6 +16,7 @@ import { CacheMgr } from '@lib/utils/useCache'
 import useCacheItemIndex from '@lib/utils/useCacheItemIndex'
 
 import { derivedFields, slowQueryColumns } from './tableColumns'
+import { useSchemaColumns } from './useSchemaColumns'
 
 export const DEF_SLOW_QUERY_COLUMN_KEYS: IColumnKeys = {
   query: true,
@@ -60,7 +61,7 @@ export interface ISlowQueryTableController {
 
   allSchemas: string[]
   loadingSlowQueries: boolean
-  slowQueries: SlowquerySlowQuery[]
+  slowQueries: SlowqueryModel[]
   queryTimeRange: { beginTime: number; endTime: number }
 
   errors: Error[]
@@ -106,7 +107,7 @@ export default function useSlowQueryTableController(
 
   const [allSchemas, setAllSchemas] = useState<string[]>([])
   const [loadingSlowQueries, setLoadingSlowQueries] = useState(false)
-  const [slowQueries, setSlowQueries] = useState<SlowquerySlowQuery[]>([])
+  const [slowQueries, setSlowQueries] = useState<SlowqueryModel[]>([])
   const [refreshTimes, setRefreshTimes] = useState(0)
 
   function setQueryOptions(newOptions: ISlowQueryOptions) {
@@ -164,12 +165,20 @@ export default function useSlowQueryTableController(
     querySchemas()
   }, [])
 
+  const { schemaColumns, isLoading: isSchemaLoading } = useSchemaColumns()
+
   const tableColumns = useMemo(
-    () => slowQueryColumns(slowQueries, showFullSQL),
-    [slowQueries, showFullSQL]
+    () => slowQueryColumns(slowQueries, schemaColumns, showFullSQL),
+    [slowQueries, schemaColumns, showFullSQL]
   )
 
   useEffect(() => {
+    if (!selectedFields.length) {
+      setSlowQueries([])
+      setLoadingSlowQueries(false)
+      return
+    }
+
     async function getSlowQueryList() {
       const cacheItem = cacheMgr?.get(cacheKey)
       if (cacheItem) {
@@ -204,6 +213,10 @@ export default function useSlowQueryTableController(
       }
       setLoadingSlowQueries(false)
     }
+
+    if (isSchemaLoading) {
+      return
+    }
     getSlowQueryList()
   }, [
     queryOptions,
@@ -213,6 +226,7 @@ export default function useSlowQueryTableController(
     refreshTimes,
     cacheKey,
     cacheMgr,
+    isSchemaLoading,
   ])
 
   const [downloading, setDownloading] = useState(false)

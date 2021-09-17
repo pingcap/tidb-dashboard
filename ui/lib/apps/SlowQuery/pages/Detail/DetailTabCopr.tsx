@@ -1,38 +1,51 @@
 import React from 'react'
 
-import { SlowquerySlowQuery } from '@lib/client'
-import { CardTable, ShortValueWithTooltip } from '@lib/components'
-import { valueColumns } from '@lib/utils/tableColumns'
+import { SlowqueryModel } from '@lib/client'
+import { ValueWithTooltip } from '@lib/components'
 
-export interface ITabCoprProps {
-  data: SlowquerySlowQuery
-}
-
-export default function TabCopr({ data }: ITabCoprProps) {
-  const items = [
-    {
-      key: 'request_count',
-      value: <ShortValueWithTooltip value={data.request_count} />,
-    },
-    {
-      key: 'process_keys',
-      value: <ShortValueWithTooltip value={data.process_keys} />,
-    },
-    {
-      key: 'total_keys',
-      value: <ShortValueWithTooltip value={data.total_keys} />,
-    },
-    {
-      key: 'cop_proc_addr',
-      value: data.cop_proc_addr,
-    },
-    {
-      key: 'cop_wait_addr',
-      value: data.cop_wait_addr,
-    },
-  ]
-  const columns = valueColumns('slow_query.fields.')
-  return (
-    <CardTable cardNoMargin columns={columns} items={items} extendLastColumn />
-  )
-}
+export const tabCoprItems = (data: SlowqueryModel) => [
+  {
+    key: 'request_count',
+    value: <ValueWithTooltip.Short value={data.request_count} />,
+  },
+  {
+    key: 'process_keys',
+    value: <ValueWithTooltip.Short value={data.process_keys} />,
+  },
+  {
+    key: 'total_keys',
+    value: <ValueWithTooltip.Short value={data.total_keys} />,
+  },
+  {
+    key: 'cop_proc_addr',
+    value: data.cop_proc_addr,
+  },
+  {
+    key: 'cop_wait_addr',
+    value: data.cop_wait_addr,
+  },
+  {
+    key: 'rocksdb_block_cache_hit_count',
+    value: (
+      <ValueWithTooltip.Short value={data.rocksdb_block_cache_hit_count} />
+    ),
+  },
+  {
+    key: 'rocksdb_block_read_byte',
+    value: (
+      <ValueWithTooltip.ScaledBytes value={data.rocksdb_block_read_byte} />
+    ),
+  },
+  {
+    key: 'rocksdb_block_read_count',
+    value: <ValueWithTooltip.Short value={data.rocksdb_block_read_count} />,
+  },
+  {
+    key: 'rocksdb_delete_skipped_count',
+    value: <ValueWithTooltip.Short value={data.rocksdb_delete_skipped_count} />,
+  },
+  {
+    key: 'rocksdb_key_skipped_count',
+    value: <ValueWithTooltip.Short value={data.rocksdb_key_skipped_count} />,
+  },
+]

@@ -1,4 +1,30 @@
 user_profile:
+  sso:
+    title: 单点登录 (SSO)
+    switch:
+      label: 允许使用 SSO 登录到 {{distro.tidb}} Dashboard
+      extra: 支持基于 OIDC 的 SSO 登录
+    form:
+      client_id: OIDC Client ID
+      discovery_url: OIDC Discovery URL
+      is_read_only: 以只读权限登录
+      user:
+        label: 实际登录 SQL 用户
+        extra: SSO 登录成功后将被视为使用该 SQL 用户登录使用 {{distro.tidb}} Dashboard，并具有该用户对应的操作权限。
+        must_auth: 必须完成授权后才能继续
+        authn_button: 授权登录为该用户
+        authn_dialog:
+          title: SSO 登录授权
+          user: 实际被登录的 SQL 用户
+          password: SQL 用户的登录密码
+          info: 登录密码将被加密存储；在 SQL 用户修改密码后 SSO 登录将失败（可重新进行登录授权）。
+          submit: 授权并保存
+          close: 取消
+        authn_status:
+          ok: 已授权
+          auth_failed: 授权失败：SQL 用户密码已变更
+      update: 更新
+      cancel: 取消
   service_endpoints:
     title: 服务端点
     prometheus:
@@ -18,10 +44,10 @@ user_profile:
     title: 会话
     sign_out: 登出
     share: 分享当前会话
-    share_unavailable_tooltip: 当前会话是一个被分享的会话，因此无法再次分享
+    share_unavailable_tooltip: 当前会话被禁止分享
   share_session:
     text: >
-      您可以生成一个**授权码**来将您当前的会话分享给其他人、邀请他们使用该 TiDB Dashboard：
+      您可以生成一个**授权码**来将您当前的会话分享给其他人、邀请他们使用该 {{distro.tidb}} Dashboard：
 
       - 授权码可以被重复使用。
 
@@ -32,6 +58,7 @@ user_profile:
       警告：已分享的会话无法被提前注销，将保持有效直到有效时间过期，因此请妥善保管授权码。
     form:
       expire: 有效时间
+      read_only: 以只读权限分享
       submit: 生成授权码
     close: 关闭
     success_dialog:
@@ -40,8 +67,8 @@ user_profile:
       copied: 已复制
   version:
     title: 版本信息
-    internal_version: TiDB Dashboard 内部版本号
-    build_git_hash: TiDB Dashboard 编译 Git Hash
-    build_time: TiDB Dashboard 编译时间
-    standalone: TiDB Dashboard 运行于独立模式
-    pd_version: PD 版本号
+    internal_version: '{{distro.tidb}} Dashboard 内部版本号'
+    build_git_hash: '{{distro.tidb}} Dashboard 编译 Git Hash'
+    build_time: '{{distro.tidb}} Dashboard 编译时间'
+    standalone: '{{distro.tidb}} Dashboard 运行于独立模式'
+    pd_version: '{{distro.pd}} 版本号'

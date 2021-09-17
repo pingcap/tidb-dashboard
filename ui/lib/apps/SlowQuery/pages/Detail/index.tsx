@@ -2,7 +2,6 @@ import React from 'react'
 import { Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
-import { useLocalStorageState } from 'ahooks'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
 import client from '@lib/client'
@@ -11,7 +10,6 @@ import { buildQueryFn, parseQueryFn } from '@lib/utils/query'
 import formatSql from '@lib/utils/sqlFormatter'
 import {
   AnimatedSkeleton,
-  CardTabs,
   CopyLink,
   Descriptions,
   ErrorBar,
@@ -21,10 +19,9 @@ import {
   Pre,
   TextWithInfo,
 } from '@lib/components'
-import TabBasic from './DetailTabBasic'
-import TabTime from './DetailTabTime'
-import TabCopr from './DetailTabCopr'
-import TabTxn from './DetailTabTxn'
+import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
+
+import DetailTabs from './DetailTabs'
 
 export interface IPageQuery {
   connectId?: string
@@ -65,29 +62,6 @@ function DetailPage() {
     setDetailExpand((prev) => ({ ...prev, query: !prev.query }))
   const togglePlan = () =>
     setDetailExpand((prev) => ({ ...prev, plan: !prev.plan }))
-
-  const tabs = [
-    {
-      key: 'basic',
-      title: t('slow_query.detail.tabs.basic'),
-      content: () => <TabBasic data={data!} />,
-    },
-    {
-      key: 'time',
-      title: t('slow_query.detail.tabs.time'),
-      content: () => <TabTime data={data!} />,
-    },
-    {
-      key: 'copr',
-      title: t('slow_query.detail.tabs.copr'),
-      content: () => <TabCopr data={data!} />,
-    },
-    {
-      key: 'txn',
-      title: t('slow_query.detail.tabs.txn'),
-      content: () => <TabTxn data={data!} />,
-    },
-  ]
 
   return (
     <div>
@@ -189,7 +163,7 @@ function DetailPage() {
                 </Descriptions.Item>
               </Descriptions>
 
-              <CardTabs animated={false} tabs={tabs} />
+              <DetailTabs data={data} />
             </>
           )}
         </AnimatedSkeleton>

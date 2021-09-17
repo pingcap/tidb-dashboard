@@ -2,7 +2,7 @@ configuration:
   nav_title: Configurations
   common:
     kind:
-      tidb_variable: TiDB Variables
-      pd_config: PD Configurations
-      tikv_config: TiKV Configurations
-      tidb_config: TiDB Configurations
+      tidb_variable: '{{distro.tidb}} Variables'
+      pd_config: '{{distro.pd}} Configurations'
+      tikv_config: '{{distro.tikv}} Configurations'
+      tidb_config: '{{distro.tidb}} Configurations'

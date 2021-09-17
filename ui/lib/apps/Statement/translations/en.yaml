@@ -24,7 +24,7 @@ statement:
         schemas:
           placeholder: All Databases
           selected: '{{ n }} Databases'
-          columnTitle: Database Name
+          columnTitle: Execution Database Name
         statement_types:
           placeholder: All Kinds
           selected: '{{ n }} Kinds'
@@ -49,9 +49,18 @@ statement:
     open_setting: Open Settings
     close_statement: Disable Statement Feature
     close_statement_warning: Are you sure want to disable this feature? Current statement history will be cleared.
-    switch: Enable
-    refresh_interval: Collect interval
-    keep_duration: Data retain duration
+    switch: Enable Feature
+    switch_tooltip: Whether Statement feature is enabled. When enabled, there will be a small SQL statement execution overhead.
+    max_size: 'Max # Statement'
+    max_size_tooltip: Max number of statement to collect. After exceeding, old statement information will be dropped. You may enlarge this setting when memory is sufficient and you discovered that data displayed in UI is incomplete.
+    refresh_interval: Window Size (min)
+    refresh_interval_tooltip: By reducing this setting you can select time range more precisely.
+    history_size: '# Windows'
+    history_size_tooltip: By enlarging this setting more statement history will be preserved, with larger memory cost.
+    keep_duration: SQL Statement History Size
+    keep_duration_tooltip: Window Size × Number of Windows
+    internal_query: Collect Internal Queries
+    internal_query_tooltip: After enabled, {{distro.tidb}} internal queries will be collected as well.
     actions:
       save: Save
       close: Close
@@ -132,3 +141,19 @@ statement:
     query_sample_text: Query Sample
     prev_sample_text: Previous Query Sample
     plan: Execution Plan
+
+    avg_rocksdb_delete_skipped_count: Mean RocksDB Skipped Deletions
+    avg_rocksdb_delete_skipped_count_tooltip: Total number of deleted (a.k.a. tombstone) key versions that are skipped during iteration (RocksDB delete_skipped_count)
+    max_rocksdb_delete_skipped_count: Max RocksDB Skipped Deletions
+    avg_rocksdb_key_skipped_count: Mean RocksDB Skipped Keys
+    avg_rocksdb_key_skipped_count_tooltip: Total number of keys skipped during iteration (RocksDB key_skipped_count)
+    max_rocksdb_key_skipped_count: Max RocksDB Skipped Keys
+    avg_rocksdb_block_cache_hit_count: Mean RocksDB Block Cache Hits
+    avg_rocksdb_block_cache_hit_count_tooltip: Total number of hits from the block cache (RocksDB block_cache_hit_count)
+    max_rocksdb_block_cache_hit_count: Max RocksDB Block Cache Hits
+    avg_rocksdb_block_read_count: Mean RocksDB Block Reads
+    avg_rocksdb_block_read_count_tooltip: Total number of blocks RocksDB read from file (RocksDB block_read_count)
+    max_rocksdb_block_read_count: Max RocksDB Block Reads
+    avg_rocksdb_block_read_byte: Mean RocksDB FS Read Size
+    avg_rocksdb_block_read_byte_tooltip: Total number of bytes RocksDB read from file (RocksDB block_read_byte)
+    max_rocksdb_block_read_byte: Max RocksDB FS Read Size

@@ -43,7 +43,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.GET("/query", s.queryMetrics)
 	endpoint.GET("/prom_address", s.getPromAddressConfig)
-	endpoint.PUT("/prom_address", s.putCustomPromAddress)
+	endpoint.PUT("/prom_address", auth.MWRequireWritePriv(), s.putCustomPromAddress)
 }
 
 // @Summary Query metrics

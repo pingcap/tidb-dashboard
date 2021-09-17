@@ -17,6 +17,7 @@ import (
 	"archive/zip"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 func StreamZipPack(w io.Writer, files []string, needCompress bool) error {
@@ -34,11 +35,11 @@ func StreamZipPack(w io.Writer, files []string, needCompress bool) error {
 }
 
 func streamZipFile(zipPack *zip.Writer, file string, needCompress bool) error {
-	f, err := os.Open(file)
+	f, err := os.Open(filepath.Clean(file))
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer f.Close() // #nosec
 
 	fileInfo, err := f.Stat()
 	if err != nil {

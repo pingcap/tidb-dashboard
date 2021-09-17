@@ -17,12 +17,14 @@ import (
 	"context"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/keyvisual/storage"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 type fileInput struct {
@@ -59,14 +61,14 @@ func (input *fileInput) Background(ctx context.Context, stat *storage.Stat) {
 
 func readFile(fileTime time.Time) (*RegionsInfo, error) {
 	fileName := fileTime.Format("./data/20060102-15-04.json")
-	file, err := os.Open(fileName)
+	file, err := os.Open(filepath.Clean(fileName))
 	if err != nil {
-		return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed, from file %s", fileName)
+		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed, from file %s", distro.Data("pd"), fileName)
 	}
-	defer file.Close()
+	defer file.Close() // #nosec
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		return nil, ErrInvalidData.Wrap(err, "PD regions API unmarshal failed, from file %s", fileName)
+		return nil, ErrInvalidData.Wrap(err, "%s regions API unmarshal failed, from file %s", distro.Data("pd"), fileName)
 	}
 	return read(data)
 }

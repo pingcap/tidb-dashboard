@@ -16,91 +16,16 @@ package statement
 import (
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 
-	"github.com/jinzhu/gorm"
-	"github.com/thoas/go-funk"
+	"gorm.io/gorm"
 )
 
 const (
-	statementsTable        = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
-	stmtEnableVar          = "tidb_enable_stmt_summary"
-	stmtRefreshIntervalVar = "tidb_stmt_summary_refresh_interval"
-	stmtHistorySizeVar     = "tidb_stmt_summary_history_size"
+	statementsTable = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
 )
 
-// How to get sql variables by GORM
-// https://github.com/jinzhu/gorm/issues/2616
-func querySQLIntVariable(db *gorm.DB, name string) (int, error) {
-	var values []string
-	sql := fmt.Sprintf("SELECT @@GLOBAL.%s as value", name) // nolints
-	err := db.Raw(sql).Pluck("value", &values).Error
-	if err != nil {
-		return 0, err
-	}
-	strVal := values[0]
-	if strVal == "" {
-		return -1, nil
-	}
-	intVal, err := strconv.Atoi(strVal)
-	if err != nil {
-		return 0, err
-	}
-	return intVal, nil
-}
-
-func QueryStmtConfig(db *gorm.DB) (*Config, error) {
-	config := Config{}
-
-	enable, err := querySQLIntVariable(db, stmtEnableVar)
-	if err != nil {
-		return nil, err
-	}
-	config.Enable = enable != 0
-
-	refreshInterval, err := querySQLIntVariable(db, stmtRefreshIntervalVar)
-	if err != nil {
-		return nil, err
-	}
-	if refreshInterval == -1 {
-		config.RefreshInterval = 1800
-	} else {
-		config.RefreshInterval = refreshInterval
-	}
-
-	historySize, err := querySQLIntVariable(db, stmtHistorySizeVar)
-	if err != nil {
-		return nil, err
-	}
-	if historySize == -1 {
-		config.HistorySize = 24
-	} else {
-		config.HistorySize = historySize
-	}
-
-	return &config, err
-}
-
-func UpdateStmtConfig(db *gorm.DB, config *Config) (err error) {
-	var sql string
-	sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtEnableVar)
-	err = db.Exec(sql, config.Enable).Error
-
-	if config.Enable {
-		// update other configurations
-		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtRefreshIntervalVar)
-		err = db.Exec(sql, config.RefreshInterval).Error
-		if err != nil {
-			return
-		}
-		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtHistorySizeVar)
-		err = db.Exec(sql, config.HistorySize).Error
-	}
-	return
-}
-
-func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
+func queryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 	err = db.
 		Select(`
 			DISTINCT
@@ -113,7 +38,7 @@ func QueryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 	return
 }
 
-func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
+func queryStmtTypes(db *gorm.DB) (result []string, err error) {
 	// why should put DISTINCT inside the `Pluck()` method, see here:
 	// https://github.com/jinzhu/gorm/issues/496
 	err = db.
@@ -130,23 +55,25 @@ func QueryStmtTypes(db *gorm.DB) (result []string, err error) {
 // schemas: ["tpcc", "test"]
 // stmtTypes: ["select", "update"]
 // fields: ["digest_text", "sum_latency"]
-func QueryStatements(
+func (s *Service) queryStatements(
 	db *gorm.DB,
 	beginTime, endTime int,
 	schemas, stmtTypes []string,
 	text string,
-	fields []string,
+	reqFields []string,
 ) (result []Model, err error) {
-	var aggrFields []string
-	if len(fields) == 1 && fields[0] == "*" {
-		aggrFields = getAllAggrFields()
-	} else {
-		fields = funk.UniqString(append(fields, "schema_name", "digest", "sum_latency")) // "schema_name", "digest" for group, "sum_latency" for order
-		aggrFields = getAggrFields(fields...)
+	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
+	if err != nil {
+		return nil, err
+	}
+
+	selectStmt, err := s.genSelectStmt(tableColumns, reqFields)
+	if err != nil {
+		return nil, err
 	}
 
 	query := db.
-		Select(strings.Join(aggrFields, ", ")).
+		Select(selectStmt).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Group("schema_name, digest").
@@ -184,11 +111,17 @@ func QueryStatements(
 	return
 }
 
-func QueryPlans(
+func (s *Service) queryPlans(
 	db *gorm.DB,
 	beginTime, endTime int,
-	schemaName, digest string) (result []Model, err error) {
-	fields := getAggrFields(
+	schemaName, digest string,
+) (result []Model, err error) {
+	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
+	if err != nil {
+		return nil, err
+	}
+
+	selectStmt, err := s.genSelectStmt(tableColumns, []string{
 		"plan_digest",
 		"schema_name",
 		"digest_text",
@@ -199,9 +132,13 @@ func QueryPlans(
 		"avg_latency",
 		"exec_count",
 		"avg_mem",
-		"max_mem")
+		"max_mem"})
+	if err != nil {
+		return nil, err
+	}
+
 	err = db.
-		Select(strings.Join(fields, ", ")).
+		Select(selectStmt).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Where("schema_name = ?", schemaName).
@@ -212,14 +149,24 @@ func QueryPlans(
 	return
 }
 
-func QueryPlanDetail(
+func (s *Service) queryPlanDetail(
 	db *gorm.DB,
 	beginTime, endTime int,
 	schemaName, digest string,
-	plans []string) (result Model, err error) {
-	fields := getAllAggrFields()
+	plans []string,
+) (result Model, err error) {
+	tableColumns, err := s.params.SysSchema.GetTableColumnNames(db, statementsTable)
+	if err != nil {
+		return
+	}
+
+	selectStmt, err := s.genSelectStmt(tableColumns, []string{"*"})
+	if err != nil {
+		return
+	}
+
 	query := db.
-		Select(strings.Join(fields, ", ")).
+		Select(selectStmt).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Where("schema_name = ?", schemaName).

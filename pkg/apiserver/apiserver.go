@@ -27,16 +27,23 @@ import (
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/configuration"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/debugapi"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/diagnose"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/info"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/logsearch"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/metrics"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/profiling"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/queryeditor"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/code/codeauth"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sqlauth"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso"
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user/sso/ssoauth"
 	"github.com/pingcap/tidb-dashboard/pkg/tiflash"
 
 	// "github.com/pingcap/tidb-dashboard/pkg/apiserver/__APP_NAME__"
 	// NOTE: Don't remove above comment line, it is a placeholder for code generator
+
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/slowquery"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/statement"
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/user"
@@ -116,12 +123,11 @@ func (s *Service) Start(ctx context.Context) error {
 			tidb.NewTiDBClient,
 			tikv.NewTiKVClient,
 			tiflash.NewTiFlashClient,
+			utils.NewSysSchema,
 			user.NewAuthService,
 			info.NewService,
 			clusterinfo.NewService,
 			logsearch.NewService,
-			slowquery.NewService,
-			statement.NewService,
 			diagnose.NewService,
 			keyvisual.NewService,
 			metrics.NewService,
@@ -130,7 +136,15 @@ func (s *Service) Start(ctx context.Context) error {
 			// __APP_NAME__.NewService,
 			// NOTE: Don't remove above comment line, it is a placeholder for code generator
 		),
+		codeauth.Module,
+		sqlauth.Module,
+		ssoauth.Module,
+		code.Module,
+		sso.Module,
 		profiling.Module,
+		statement.Module,
+		slowquery.Module,
+		debugapi.Module,
 		fx.Populate(&s.apiHandlerEngine),
 		fx.Invoke(
 			user.RegisterRouter,
@@ -138,8 +152,6 @@ func (s *Service) Start(ctx context.Context) error {
 			clusterinfo.RegisterRouter,
 			profiling.RegisterRouter,
 			logsearch.RegisterRouter,
-			slowquery.RegisterRouter,
-			statement.RegisterRouter,
 			diagnose.RegisterRouter,
 			keyvisual.RegisterRouter,
 			metrics.RegisterRouter,

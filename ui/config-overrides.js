@@ -1,5 +1,6 @@
 const path = require('path')
 const fs = require('fs')
+const os = require('os')
 const {
   override,
   fixBabelImports,
@@ -14,6 +15,20 @@ const { alias, configPaths } = require('react-app-rewire-alias')
 const webpack = require('webpack')
 const WebpackBar = require('webpackbar')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const rewireHtmlWebpackPlugin = require('react-app-rewire-html-webpack-plugin')
+
+function injectDistroToHTML(config, env) {
+  const distroInfo = Object.entries(require('./lib/distribution.json')).reduce(
+    (prev, [k, v]) => {
+      return {
+        ...prev,
+        [`distro_${k}`]: v,
+      }
+    },
+    {}
+  )
+  return rewireHtmlWebpackPlugin(config, env, distroInfo)
+}
 
 function isBuildAsDevServer() {
   return process.env.NODE_ENV !== 'production'
@@ -106,6 +121,38 @@ const supportDynamicPublicPathPrefix = () => (config) => {
   return config
 }
 
+const overrideProcessEnv = (value) => (config) => {
+  const plugin = config.plugins.find(
+    (plugin) => plugin.constructor.name === 'DefinePlugin'
+  )
+  const processEnv = plugin.definitions['process.env'] || {}
+
+  plugin.definitions['process.env'] = {
+    ...processEnv,
+    ...value,
+  }
+
+  return config
+}
+
+const getInternalVersion = () => {
+  // react-app-rewired does not support async override config method right now,
+  // subscribe: https://github.com/timarney/react-app-rewired/pull/543
+  const version = fs
+    .readFileSync('../release-version', 'utf8')
+    .split(os.EOL)
+    .map((l) => l.trim())
+    .filter((l) => !l.startsWith('#') && l !== '')[0]
+
+  if (version === '') {
+    throw new Error(
+      `invalid release version, please check the release-version @tidb-dashboard/root`
+    )
+  }
+
+  return version
+}
+
 module.exports = override(
   fixBabelImports('import', {
     libraryName: 'antd',
@@ -152,5 +199,9 @@ module.exports = override(
   ),
   disableMinimizeByEnv(),
   addExtraEntries(),
-  supportDynamicPublicPathPrefix()
+  supportDynamicPublicPathPrefix(),
+  overrideProcessEnv({
+    REACT_APP_RELEASE_VERSION: JSON.stringify(getInternalVersion()),
+  }),
+  injectDistroToHTML
 )

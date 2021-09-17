@@ -14,18 +14,15 @@
 package statement
 
 import (
-	"fmt"
-	"reflect"
 	"strings"
 
-	"github.com/jinzhu/gorm"
-)
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 
-type Config struct {
-	Enable          bool `json:"enable"`
-	RefreshInterval int  `json:"refresh_interval"`
-	HistorySize     int  `json:"history_size"`
-}
+	"github.com/thoas/go-funk"
+
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+)
 
 // TimeRange represents a range of time
 type TimeRange struct {
@@ -96,57 +93,22 @@ type Model struct {
 	AggSchemaName            string `json:"schema_name" agg:"ANY_VALUE(schema_name)"`
 	AggTableNames            string `json:"table_names" agg:"ANY_VALUE(table_names)"`
 	AggIndexNames            string `json:"index_names" agg:"ANY_VALUE(index_names)"`
-	AggPlanCount             int    `json:"plan_count" agg:"COUNT(DISTINCT plan_digest)"`
+	AggPlanCount             int    `json:"plan_count" agg:"COUNT(DISTINCT plan_digest)" related:"plan_digest"`
 	AggPlan                  string `json:"plan" agg:"ANY_VALUE(plan)"`
 	AggPlanDigest            string `json:"plan_digest" agg:"ANY_VALUE(plan_digest)"`
+	// RocksDB
+	AggMaxRocksdbDeleteSkippedCount uint `json:"max_rocksdb_delete_skipped_count" agg:"MAX(max_rocksdb_delete_skipped_count)"`
+	AggAvgRocksdbDeleteSkippedCount uint `json:"avg_rocksdb_delete_skipped_count" agg:"CAST(SUM(exec_count * avg_rocksdb_delete_skipped_count) / SUM(exec_count) as SIGNED)"`
+	AggMaxRocksdbKeySkippedCount    uint `json:"max_rocksdb_key_skipped_count" agg:"MAX(max_rocksdb_key_skipped_count)"`
+	AggAvgRocksdbKeySkippedCount    uint `json:"avg_rocksdb_key_skipped_count" agg:"CAST(SUM(exec_count * avg_rocksdb_key_skipped_count) / SUM(exec_count) as SIGNED)"`
+	AggMaxRocksdbBlockCacheHitCount uint `json:"max_rocksdb_block_cache_hit_count" agg:"MAX(max_rocksdb_block_cache_hit_count)"`
+	AggAvgRocksdbBlockCacheHitCount uint `json:"avg_rocksdb_block_cache_hit_count" agg:"CAST(SUM(exec_count * avg_rocksdb_block_cache_hit_count) / SUM(exec_count) as SIGNED)"`
+	AggMaxRocksdbBlockReadCount     uint `json:"max_rocksdb_block_read_count" agg:"MAX(max_rocksdb_block_read_count)"`
+	AggAvgRocksdbBlockReadCount     uint `json:"avg_rocksdb_block_read_count" agg:"CAST(SUM(exec_count * avg_rocksdb_block_read_count) / SUM(exec_count) as SIGNED)"`
+	AggMaxRocksdbBlockReadByte      uint `json:"max_rocksdb_block_read_byte" agg:"MAX(max_rocksdb_block_read_byte)"`
+	AggAvgRocksdbBlockReadByte      uint `json:"avg_rocksdb_block_read_byte" agg:"CAST(SUM(exec_count * avg_rocksdb_block_read_byte) / SUM(exec_count) as SIGNED)"`
 	// Computed fields
 	RelatedSchemas string `json:"related_schemas"`
-}
-
-var cachedAggrMap map[string]string // jsonFieldName => aggr
-
-func getAggrMap() map[string]string {
-	if cachedAggrMap == nil {
-		t := reflect.TypeOf(Model{})
-		fieldsNum := t.NumField()
-		ret := map[string]string{}
-		for i := 0; i < fieldsNum; i++ {
-			field := t.Field(i)
-			jsonField := strings.ToLower(field.Tag.Get("json"))
-			if agg, ok := field.Tag.Lookup("agg"); ok {
-				ret[jsonField] = fmt.Sprintf("%s AS %s", agg, gorm.ToColumnName(field.Name))
-			}
-		}
-		cachedAggrMap = ret
-	}
-	return cachedAggrMap
-}
-
-func getAggrFields(sqlFields ...string) []string {
-	aggrMap := getAggrMap()
-	ret := make([]string, 0, len(sqlFields))
-	for _, fieldName := range sqlFields {
-		if aggr, ok := aggrMap[strings.ToLower(fieldName)]; ok {
-			ret = append(ret, aggr)
-		} else {
-			panic(fmt.Sprintf("unknown aggregation field %s", fieldName))
-		}
-	}
-	return ret
-}
-
-var cachedAllAggrFields []string
-
-func getAllAggrFields() []string {
-	if cachedAllAggrFields == nil {
-		aggrMap := getAggrMap()
-		ret := make([]string, 0, len(aggrMap))
-		for _, aggr := range aggrMap {
-			ret = append(ret, aggr)
-		}
-		cachedAllAggrFields = ret
-	}
-	return cachedAllAggrFields
 }
 
 // tableNames example: "d1.a1,d2.a2,d1.a1,d3.a3"
@@ -167,9 +129,50 @@ func extractSchemasFromTableNames(tableNames string) string {
 	return strings.Join(keys, ", ")
 }
 
-func (m *Model) AfterFind() error {
+func (m *Model) AfterFind(db *gorm.DB) error {
 	if len(m.AggTableNames) > 0 {
 		m.RelatedSchemas = extractSchemasFromTableNames(m.AggTableNames)
 	}
 	return nil
+}
+
+type Field struct {
+	ColumnName string
+	JSONName   string
+	// `related` tag is used to verify a non-existent column, which is aggregated from the columns represented by related.
+	Related     []string
+	Aggregation string
+}
+
+var gormDefaultNamingStrategy = schema.NamingStrategy{}
+
+func getFieldsAndTags() (stmtFields []Field) {
+	fields := utils.GetFieldsAndTags(Model{}, []string{"related", "agg", "json"})
+
+	for _, f := range fields {
+		sf := Field{
+			ColumnName:  gormDefaultNamingStrategy.ColumnName("", f.Name),
+			JSONName:    f.Tags["json"],
+			Related:     []string{},
+			Aggregation: f.Tags["agg"],
+		}
+
+		if f.Tags["related"] != "" {
+			sf.Related = strings.Split(f.Tags["related"], ",")
+		}
+
+		stmtFields = append(stmtFields, sf)
+	}
+
+	return
+}
+
+func getVirtualFields(tableFields []string) []string {
+	fields := getFieldsAndTags()
+	vFields := funk.Filter(fields, func(f Field) bool {
+		return len(f.Related) != 0 && utils.IsSubsets(tableFields, f.Related)
+	}).([]Field)
+	return funk.Map(vFields, func(f Field) string {
+		return f.JSONName
+	}).([]string)
 }

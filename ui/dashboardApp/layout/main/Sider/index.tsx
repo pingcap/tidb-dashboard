@@ -5,11 +5,9 @@ import { Link } from 'react-router-dom'
 import { useEventListener } from 'ahooks'
 import { useTranslation } from 'react-i18next'
 import { useSpring, animated } from 'react-spring'
-import client from '@lib/client'
-
 import Banner from './Banner'
 import styles from './index.module.less'
-import { useClientRequest } from '@lib/utils/useClientRequest'
+import { store } from '@lib/utils/store'
 
 function useAppMenuItem(registry, appId, title?: string) {
   const { t } = useTranslation()
@@ -50,14 +48,13 @@ function Sider({
   const { t } = useTranslation()
   const activeAppId = useActiveAppId(registry)
 
-  const { data: currentLogin } = useClientRequest((reqConfig) =>
-    client.getInstance().infoWhoami(reqConfig)
-  )
-  const { data: info } = useClientRequest((reqConfig) =>
-    client.getInstance().infoGet(reqConfig)
-  )
+  const whoAmI = store.useState((s) => s.whoAmI)
+  const appInfo = store.useState((s) => s.appInfo)
 
-  const debugSubMenuItems = [useAppMenuItem(registry, 'instance_profiling')]
+  const debugSubMenuItems = [
+    useAppMenuItem(registry, 'instance_profiling'),
+    useAppMenuItem(registry, 'debug_api'),
+  ]
   const debugSubMenu = (
     <Menu.SubMenu
       key="debug"
@@ -104,14 +101,11 @@ function Sider({
     debugSubMenu,
   ]
 
-  if (info?.enable_experimental) {
+  if (appInfo?.enable_experimental) {
     menuItems.push(experimentalSubMenu)
   }
 
-  let displayName = currentLogin?.username ?? '...'
-  if (currentLogin?.is_shared) {
-    displayName += ' (Shared)'
-  }
+  let displayName = whoAmI?.display_name || '...'
 
   const extraMenuItems = [
     useAppMenuItem(registry, 'dashboard_settings'),

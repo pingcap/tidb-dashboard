@@ -10,6 +10,8 @@
     "@baurine/grafana-value-formats": "^1.0.0",
     "@fortawesome/fontawesome-free": "^5.14.0",
     "@g07cha/flexbox-react": "^5.0.0",
+    "@sentry/react": "^6.3.2",
+    "@sentry/tracing": "^6.3.2",
     "@welldone-software/why-did-you-render": "^4.2.7",
     "ace-builds": "^1.4.12",
     "ahooks": "^2.9.2",
@@ -21,13 +23,15 @@
     "dayjs": "^1.9.6",
     "echarts": "^4.8.0",
     "echarts-for-react": "^2.0.16",
+    "eventemitter2": "^6.4.4",
     "history": "^5.0.0",
     "i18next": "^19.6.3",
     "i18next-browser-languagedetector": "^5.0.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "moize": "^5.4.7",
     "nprogress": "^0.2.0",
     "office-ui-fabric-react": "^7.123.10",
+    "pullstate": "^1.22.1",
     "rc-animate": "^3.1.0",
     "react": "^16.13.1",
     "react-ace": "^9.1.1",
@@ -41,7 +45,7 @@
     "react-spring": "^8.0.27",
     "react-syntax-highlighter": "^13.0.0",
     "react-use": "^15.3.3",
-    "single-spa": "^5.5.5",
+    "single-spa": "^5.9.2",
     "single-spa-react": "^3.0.1",
     "sql-formatter-plus-plus": "^1.4.0",
     "string-template": "^1.0.0"
@@ -56,7 +60,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --staged --bail"
+      "pre-commit": "pretty-quick --staged"
     }
   },
   "homepage": "/dashboard",
@@ -84,6 +88,7 @@
     "@types/lodash": "^4.14.158",
     "@types/node": "^14.0.27",
     "@types/react": "^16.9.43",
+    "@types/react-copy-to-clipboard": "^5.0.1",
     "@types/react-dom": "^16.9.8",
     "@types/webpack-env": "^1.15.2",
     "babel-plugin-dynamic-import-node": "^2.3.0",
@@ -98,10 +103,10 @@
     "husky": "^4.2.5",
     "less": "^3.12.2",
     "less-loader": "^5.0.0",
-    "mixpanel-browser": "^2.38.0",
     "prettier": "^2.0.4",
     "pretty-quick": "^2.0.1",
     "react-app-rewire-alias": "^0.1.6",
+    "react-app-rewire-html-webpack-plugin": "^1.0.3",
     "react-app-rewire-multiple-entry": "^2.1.0",
     "react-app-rewire-yaml": "^1.1.0",
     "react-app-rewired": "^2.1.5",

@@ -11,8 +11,11 @@ import * as routing from '@lib/utils/routing'
 import * as auth from '@lib/utils/auth'
 import * as i18n from '@lib/utils/i18n'
 import { saveAppOptions, loadAppOptions } from '@lib/utils/appOptions'
-import * as telemetry from '@lib/utils/telemetry'
-import client, { ErrorStrategy, InfoInfoResponse } from '@lib/client'
+import {
+  initSentryRoutingInstrument,
+  applySentryTracingInterceptor,
+} from '@lib/utils/sentryHelpers'
+import client, { InfoInfoResponse } from '@lib/client'
 
 import LayoutMain from '@dashboard/layout/main'
 import LayoutSignIn from '@dashboard/layout/signin'
@@ -29,6 +32,9 @@ import AppSearchLogs from '@lib/apps/SearchLogs/index.meta'
 import AppInstanceProfiling from '@lib/apps/InstanceProfiling/index.meta'
 import AppQueryEditor from '@lib/apps/QueryEditor/index.meta'
 import AppConfiguration from '@lib/apps/Configuration/index.meta'
+import AppDebugAPI from '@lib/apps/DebugAPI/index.meta'
+import { handleSSOCallback, isSSOCallback } from '@lib/utils/authSSO'
+import { mustLoadAppInfo, reloadWhoAmI } from '@lib/utils/store'
 // import __APP_NAME__ from '@lib/apps/__APP_NAME__/index.meta'
 // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
@@ -39,7 +45,7 @@ function removeSpinner() {
   }
 }
 
-async function main() {
+async function webPageStart() {
   const options = loadAppOptions()
   if (options.lang) {
     i18next.changeLanguage(options.lang)
@@ -51,13 +57,10 @@ async function main() {
   let info: InfoInfoResponse
 
   try {
-    const i = await client.getInstance().infoGet({
-      errorStrategy: ErrorStrategy.Custom,
-    })
-    info = i.data
+    info = await mustLoadAppInfo()
   } catch (e) {
     Modal.error({
-      title: 'Failed to connect to TiDB Dashboard server',
+      title: `Failed to connect to server`,
       content: '' + e,
       okText: 'Reload',
       onOk: () => window.location.reload(),
@@ -66,7 +69,11 @@ async function main() {
     return
   }
 
-  await telemetry.init(info)
+  if (info?.enable_telemetry) {
+    initSentryRoutingInstrument()
+    const instance = client.getAxiosInstance()
+    applySentryTracingInterceptor(instance)
+  }
 
   const registry = new AppRegistry(options)
 
@@ -111,11 +118,18 @@ async function main() {
     .register(AppInstanceProfiling)
     .register(AppQueryEditor)
     .register(AppConfiguration)
+    .register(AppDebugAPI)
   // .register(__APP_NAME__)
   // NOTE: Don't remove above comment line, it is a placeholder for code generator
 
-  if (routing.isLocationMatch('/')) {
-    singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
+  try {
+    await reloadWhoAmI()
+
+    if (routing.isLocationMatch('/')) {
+      singleSpa.navigateToUrl('#' + registry.getDefaultRouter())
+    }
+  } catch (e) {
+    // If there are auth errors, redirection will happen any way. So we continue.
   }
 
   window.addEventListener('single-spa:app-change', () => {
@@ -126,38 +140,41 @@ async function main() {
     }
   })
 
-  let preRoute = ''
-  window.addEventListener('single-spa:routing-event', () => {
+  window.addEventListener('single-spa:first-mount', () => {
     removeSpinner()
-
-    const curRoute = routing.getPathInLocationHash()
-    if (curRoute !== preRoute) {
-      telemetry.mixpanel.register({
-        $current_url: curRoute,
-      })
-      telemetry.mixpanel.track('PageChange')
-      preRoute = curRoute
-    }
   })
 
   singleSpa.start()
 }
 
-/////////////////////////////////////
+async function main() {
+  if (routing.isPortalPage()) {
+    // the portal page is only used to receive options
+    function handlePortalEvent(event) {
+      const { type, token, lang, hideNav, redirectPath } = event.data
+      // the event type must be "DASHBOARD_PORTAL_EVENT"
+      if (type !== 'DASHBOARD_PORTAL_EVENT') {
+        return
+      }
 
-if (routing.isPortalPage()) {
-  // the portal page is only used to receive options
-  window.addEventListener(
-    'message',
-    (event) => {
-      const { token, lang, hideNav, redirectPath } = event.data
       auth.setAuthToken(token)
       saveAppOptions({ hideNav, lang })
       window.location.hash = `#${redirectPath}`
       window.location.reload()
-    },
-    { once: true }
-  )
-} else {
-  main()
+
+      window.removeEventListener('message', handlePortalEvent)
+    }
+
+    window.addEventListener('message', handlePortalEvent)
+    return
+  }
+
+  if (isSSOCallback()) {
+    await handleSSOCallback()
+    return
+  }
+
+  await webPageStart()
 }
+
+main()

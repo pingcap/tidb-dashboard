@@ -58,7 +58,7 @@ func RegisterRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	endpoint.Use(auth.MWAuthRequired())
 	endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 	endpoint.Use(utils.MWForbidByExperimentalFlag(s.params.Config.EnableExperimental))
-	endpoint.POST("/run", s.runHandler)
+	endpoint.POST("/run", auth.MWRequireWritePriv(), s.runHandler)
 }
 
 type RunRequest struct {
@@ -141,7 +141,11 @@ func (s *Service) runHandler(c *gin.Context) {
 	defer cancel()
 
 	startTime := time.Now()
-	colNames, rows, err := executeStatements(ctx, utils.GetTiDBConnection(c).DB(), req.Statements)
+	sqlDB, err := utils.GetTiDBConnection(c).DB()
+	if err != nil {
+		panic(err)
+	}
+	colNames, rows, err := executeStatements(ctx, sqlDB, req.Statements)
 	elapsedTime := time.Since(startTime)
 
 	if err != nil {

@@ -1,4 +1,30 @@
 user_profile:
+  sso:
+    title: Single Sign-On (SSO)
+    switch:
+      label: Enable to use SSO when sign into {{distro.tidb}} Dashboard
+      extra: OIDC based SSO is supported
+    form:
+      client_id: OIDC Client ID
+      discovery_url: OIDC Discovery URL
+      is_read_only: Sign in as read-only privilege
+      user:
+        label: Impersonate SQL User
+        extra: The SSO signed-in user will be using {{distro.tidb}} Dashboard on behalf of this SQL user and shares its permissions.
+        must_auth: You must authorize to continue
+        authn_button: Authorize Impersonation
+        authn_dialog:
+          title: Authorize Impersonation
+          user: SQL User to Impersonate
+          password: SQL User Password
+          info: The password of the SQL user will be stored encrypted. The impersonation will fail after SQL user changes the password.
+          submit: Authorize and Save
+          close: Cancel
+        authn_status:
+          ok: Authorized
+          auth_failed: 'Cannot impersonate: SQL user password is changed.'
+      update: Update
+      cancel: Cancel
   service_endpoints:
     title: Service Endpoints
     prometheus:
@@ -18,10 +44,10 @@ user_profile:
     title: Session
     sign_out: Sign Out
     share: Share Current Session
-    share_unavailable_tooltip: Current session is a shared session and it cannot be shared again
+    share_unavailable_tooltip: Current session is not allowed to be shared
   share_session:
     text: >
-      You can invite others to access this TiDB Dashboard by sharing your
+      You can invite others to access this {{distro.tidb}} Dashboard by sharing your
       current session via an **Authorization Code**:
 
       - The Authorization Code can be used multiple times.
@@ -34,6 +60,7 @@ user_profile:
       Keep the Authorization Code safe!
     form:
       expire: Expire in
+      read_only: Share as read-only privilege
       submit: Generate Authorization Code
     close: Close
     success_dialog:
@@ -42,8 +69,8 @@ user_profile:
       copied: Copied
   version:
     title: Version Information
-    internal_version: TiDB Dashboard Internal Version
-    build_git_hash: TiDB Dashboard Build Git Hash
-    build_time: TiDB Dashboard Build Time
-    standalone: TiDB Dashboard Run in Standalone Mode
-    pd_version: PD Version
+    internal_version: '{{distro.tidb}} Dashboard Internal Version'
+    build_git_hash: '{{distro.tidb}} Dashboard Build Git Hash'
+    build_time: '{{distro.tidb}} Dashboard Build Time'
+    standalone: '{{distro.tidb}} Dashboard Run in Standalone Mode'
+    pd_version: '{{distro.pd}} Version'

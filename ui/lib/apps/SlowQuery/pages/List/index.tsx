@@ -13,11 +13,10 @@ import {
 import {
   ReloadOutlined,
   LoadingOutlined,
-  MenuOutlined,
   ExportOutlined,
+  MenuOutlined,
 } from '@ant-design/icons'
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
-import { useLocalStorageState } from 'ahooks'
 
 import {
   Card,
@@ -27,11 +26,14 @@ import {
   MultiSelect,
 } from '@lib/components'
 import { CacheContext } from '@lib/utils/useCache'
+import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
 
 import SlowQueriesTable from '../../components/SlowQueriesTable'
 import useSlowQueryTableController, {
   DEF_SLOW_QUERY_COLUMN_KEYS,
 } from '../../utils/useSlowQueryTableController'
+
+import styles from './List.module.less'
 
 const { Option } = Select
 const { Search } = Input
@@ -47,7 +49,8 @@ function List() {
 
   const [visibleColumnKeys, setVisibleColumnKeys] = useLocalStorageState(
     SLOW_QUERY_VISIBLE_COLUMN_KEYS,
-    DEF_SLOW_QUERY_COLUMN_KEYS
+    DEF_SLOW_QUERY_COLUMN_KEYS,
+    true
   )
   const [showFullSQL, setShowFullSQL] = useLocalStorageState(
     SLOW_QUERY_SHOW_FULL_SQL,
@@ -71,10 +74,7 @@ function List() {
   } = controller
 
   function exportCSV() {
-    const hide = message.loading(
-      t('statement.pages.overview.toolbar.exporting') + '...',
-      0
-    )
+    const hide = message.loading(t('slow_query.toolbar.exporting') + '...', 0)
     downloadCSV().finally(hide)
   }
 
@@ -90,16 +90,16 @@ function List() {
     <Menu onClick={menuItemClick}>
       <Menu.Item key="export" disabled={downloading} icon={<ExportOutlined />}>
         {downloading
-          ? t('statement.pages.overview.toolbar.exporting')
-          : t('statement.pages.overview.toolbar.export')}
+          ? t('slow_query.toolbar.exporting')
+          : t('slow_query.toolbar.export')}
       </Menu.Item>
     </Menu>
   )
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className={styles.list_container}>
       <Card>
-        <Toolbar>
+        <Toolbar className={styles.list_toolbar}>
           <Space>
             <TimeRangeSelector
               value={queryOptions.timeRange}
@@ -111,13 +111,9 @@ function List() {
               }
             />
             <MultiSelect.Plain
-              placeholder={t(
-                'statement.pages.overview.toolbar.schemas.placeholder'
-              )}
-              selectedValueTransKey="statement.pages.overview.toolbar.schemas.selected"
-              columnTitle={t(
-                'statement.pages.overview.toolbar.schemas.columnTitle'
-              )}
+              placeholder={t('slow_query.toolbar.schemas.placeholder')}
+              selectedValueTransKey="slow_query.toolbar.schemas.selected"
+              columnTitle={t('slow_query.toolbar.schemas.columnTitle')}
               value={queryOptions.schemas}
               style={{ width: 150 }}
               onChange={(schemas) =>
@@ -159,14 +155,12 @@ function List() {
                     checked={showFullSQL}
                     onChange={(e) => setShowFullSQL(e.target.checked)}
                   >
-                    {t(
-                      'statement.pages.overview.toolbar.select_columns.show_full_sql'
-                    )}
+                    {t('slow_query.toolbar.select_columns.show_full_sql')}
                   </Checkbox>
                 }
               />
             )}
-            <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
+            <Tooltip title={t('slow_query.toolbar.refresh')}>
               {loadingSlowQueries ? (
                 <LoadingOutlined />
               ) : (

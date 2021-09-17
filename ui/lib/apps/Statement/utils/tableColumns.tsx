@@ -13,6 +13,7 @@ import {
   formatVal,
   genDerivedBarSources,
   TableColumnFactory,
+  Column,
 } from '@lib/utils/tableColumnFactory'
 
 ///////////////////////////////////////
@@ -76,6 +77,26 @@ export const derivedFields = {
   avg_disk: genDerivedBarSources('avg_disk', 'max_disk'),
   sum_errors: ['sum_errors', 'sum_warnings'],
   related_schemas: ['table_names'],
+  avg_rocksdb_delete_skipped_count: genDerivedBarSources(
+    'avg_rocksdb_delete_skipped_count',
+    'max_rocksdb_delete_skipped_count'
+  ),
+  avg_rocksdb_key_skipped_count: genDerivedBarSources(
+    'avg_rocksdb_key_skipped_count',
+    'max_rocksdb_key_skipped_count'
+  ),
+  avg_rocksdb_block_cache_hit_count: genDerivedBarSources(
+    'avg_rocksdb_block_cache_hit_count',
+    'max_rocksdb_block_cache_hit_count'
+  ),
+  avg_rocksdb_block_read_count: genDerivedBarSources(
+    'avg_rocksdb_block_read_count',
+    'max_rocksdb_block_read_count'
+  ),
+  avg_rocksdb_block_read_byte: genDerivedBarSources(
+    'avg_rocksdb_block_read_byte',
+    'max_rocksdb_block_read_byte'
+  ),
 }
 
 //////////////////////////////////////////
@@ -83,20 +104,20 @@ export const derivedFields = {
 function avgMinMaxLatencyColumn(
   tcf: TableColumnFactory,
   rows?: { max_latency?: number; min_latency?: number; avg_latency?: number }[]
-): IColumn {
+): Column {
   return tcf.bar.multiple({ sources: derivedFields.avg_latency }, 'ns', rows)
 }
 
 function errorsWarningsColumn(
   tcf: TableColumnFactory,
   rows?: { sum_errors?: number; sum_warnings?: number }[]
-): IColumn {
+): Column {
   const capacity = rows
     ? max(rows.map((v) => v.sum_errors! + v.sum_warnings!)) ?? 0
     : 0
   const key = 'sum_errors'
-  return {
-    name: tcf.columnName('errors_warnings'),
+  return tcf.control({
+    name: 'errors_warnings',
     key,
     fieldName: key,
     minWidth: 140,
@@ -121,7 +142,7 @@ Warnings: ${warningsFmtVal}`
         </Tooltip>
       )
     },
-  }
+  })
 }
 
 ////////////////////////////////////////////////
@@ -132,7 +153,7 @@ function avgMaxColumn<T>(
   displayTransKey: string,
   unit: string,
   rows?: T[]
-): IColumn {
+): Column {
   return tcf.bar.multiple(
     {
       displayTransKey,
@@ -147,22 +168,22 @@ function avgMaxColumn<T>(
 
 export function statementColumns(
   rows: StatementModel[],
+  tableSchemaColumns: string[],
   showFullSQL?: boolean
 ): IColumn[] {
-  const tcf = new TableColumnFactory(TRANS_KEY_PREFIX)
+  const tcf = new TableColumnFactory(TRANS_KEY_PREFIX, tableSchemaColumns)
 
-  return [
+  return tcf.columns([
     tcf.sqlText('digest_text', showFullSQL, rows),
     tcf.textWithTooltip('digest', rows),
     tcf.bar.single('sum_latency', 'ns', rows),
     avgMinMaxLatencyColumn(tcf, rows),
     tcf.bar.single('exec_count', 'short', rows),
-    {
-      ...tcf.textWithTooltip('plan_count', rows),
+    tcf.textWithTooltip('plan_count', rows).patchConfig({
       minWidth: 100,
       maxWidth: 300,
       columnActionsMode: ColumnActionsMode.clickable,
-    },
+    }),
     avgMaxColumn(tcf, 'avg_mem', 'bytes', rows),
     avgMaxColumn(tcf, 'avg_disk', 'bytes', rows),
     errorsWarningsColumn(tcf, rows),
@@ -203,26 +224,68 @@ export function statementColumns(
 
     tcf.textWithTooltip('plan_digest', rows),
 
-    {
-      ...tcf.textWithTooltip('related_schemas', rows),
+    tcf.textWithTooltip('related_schemas', rows).patchConfig({
       minWidth: 160,
       maxWidth: 240,
-    },
-  ]
+    }),
+
+    // rocksdb
+    avgMaxColumn(
+      tcf,
+      'avg_rocksdb_delete_skipped_count',
+      'short',
+      rows
+    ).patchConfig({
+      minWidth: 220,
+      maxWidth: 250,
+    }),
+    avgMaxColumn(
+      tcf,
+      'avg_rocksdb_key_skipped_count',
+      'short',
+      rows
+    ).patchConfig({
+      minWidth: 220,
+      maxWidth: 250,
+    }),
+    avgMaxColumn(
+      tcf,
+      'avg_rocksdb_block_cache_hit_count',
+      'short',
+      rows
+    ).patchConfig({
+      minWidth: 220,
+      maxWidth: 250,
+    }),
+    avgMaxColumn(
+      tcf,
+      'avg_rocksdb_block_read_count',
+      'short',
+      rows
+    ).patchConfig({
+      minWidth: 220,
+      maxWidth: 250,
+    }),
+    avgMaxColumn(tcf, 'avg_rocksdb_block_read_byte', 'bytes', rows).patchConfig(
+      {
+        minWidth: 220,
+        maxWidth: 250,
+      }
+    ),
+  ])
 }
 
 export function planColumns(rows: StatementModel[]): IColumn[] {
   const tcf = new TableColumnFactory(TRANS_KEY_PREFIX)
 
-  return [
-    {
-      ...tcf.textWithTooltip('plan_digest'),
+  return tcf.columns([
+    tcf.textWithTooltip('plan_digest').patchConfig({
       minWidth: 100,
       maxWidth: 300,
-    },
+    }),
     tcf.bar.single('sum_latency', 'ns', rows),
     avgMinMaxLatencyColumn(tcf, rows),
     tcf.bar.single('exec_count', 'short', rows),
     avgMaxColumn(tcf, 'avg_mem', 'bytes', rows),
-  ]
+  ])
 }

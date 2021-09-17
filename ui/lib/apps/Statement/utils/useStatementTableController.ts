@@ -19,6 +19,7 @@ import {
   TimeRange,
 } from '../pages/List/TimeRangeSelector'
 import { derivedFields, statementColumns } from './tableColumns'
+import { useSchemaColumns } from './useSchemaColumns'
 
 export const DEF_STMT_COLUMN_KEYS: IColumnKeys = {
   digest_text: true,
@@ -203,12 +204,20 @@ export default function useStatementTableController(
     queryStmtTypes()
   }, [refreshTimes])
 
+  const { schemaColumns, isLoading: isSchemaLoading } = useSchemaColumns()
+
   const tableColumns = useMemo(
-    () => statementColumns(statements, showFullSQL),
-    [statements, showFullSQL]
+    () => statementColumns(statements, schemaColumns, showFullSQL),
+    [statements, schemaColumns, showFullSQL]
   )
 
   useEffect(() => {
+    if (!selectedFields.length) {
+      setStatements([])
+      setLoadingStatements(false)
+      return
+    }
+
     async function queryStatementList() {
       const cacheItem = cacheMgr?.get(cacheKey)
       if (cacheItem) {
@@ -244,6 +253,9 @@ export default function useStatementTableController(
       setLoadingStatements(false)
     }
 
+    if (isSchemaLoading) {
+      return
+    }
     queryStatementList()
   }, [
     queryOptions,
@@ -252,6 +264,7 @@ export default function useStatementTableController(
     selectedFields,
     cacheKey,
     cacheMgr,
+    isSchemaLoading,
   ])
 
   const [downloading, setDownloading] = useState(false)

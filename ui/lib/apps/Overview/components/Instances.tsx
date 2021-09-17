@@ -95,18 +95,18 @@ export default function Nodes() {
       <Stack tokens={{ childrenGap: 16 }}>
         <Row>
           <Col span={12}>
-            <ComponentItem name="PD" resp={pdResp} />
+            <ComponentItem name={t('distro.pd')} resp={pdResp} />
           </Col>
           <Col span={12}>
-            <ComponentItem name="TiDB" resp={tidbResp} />
+            <ComponentItem name={t('distro.tidb')} resp={tidbResp} />
           </Col>
         </Row>
         <Row>
           <Col span={12}>
-            <ComponentItem name="TiKV" resp={tiKVResp} />
+            <ComponentItem name={t('distro.tikv')} resp={tiKVResp} />
           </Col>
           <Col span={12}>
-            <ComponentItem name="TiFlash" resp={tiFlashResp} />
+            <ComponentItem name={t('distro.tiflash')} resp={tiFlashResp} />
           </Col>
         </Row>
       </Stack>

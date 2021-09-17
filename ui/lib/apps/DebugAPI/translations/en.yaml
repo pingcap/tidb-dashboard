@@ -1,0 +1,76 @@
+debug_api:
+  nav_title: Debug Data
+  keyword_search: Filter by keyword
+  endpoints_not_found: Endpoints not found
+  warning_header:
+    title: Warning
+    body: These debug endpoints and data are largely internal and intended for use by {{ distro.tidb }} developers. Please use this feature under the guidance of {{ distro.tidb }} technical support.
+  form:
+    download: Download
+    reset: Reset
+  widgets:
+    host_select_placeholder: Please select the {{endpointType}} host
+    text: Please enter the {{param}}
+    tags: Please enter the {{param}}
+    int: Please enter the {{param}}
+    enum: Please select the {{param}}
+    db: Please select the database or enter the full database name
+    table: Please select the table or enter the full table name
+    table_id: Please select the table ID or enter the full table ID
+  tidb:
+    name: '{{distro.tidb}}'
+    endpoints:
+      tidb_stats_dump: Statistics Data - of a Table
+      tidb_stats_dump_timestamp: Statistics Data - of a Table and Timestamp
+      tidb_stats_dump_timestamp_desc: The timestamp needs to be set within the GC safe point
+      tidb_config: Current {{distro.tidb}} Config
+      tidb_schema: Schema Information - All / by TableID
+      tidb_schema_db: Schema Information - by Database
+      tidb_schema_db_table: Schema Information - by Database + Table
+      tidb_dbtable_tableid: schema and Table Information - by TableID
+      tidb_ddl_history: DDL History - All
+      tidb_info: '{{distro.tidb}} Server Information - Current'
+      tidb_info_all: '{{distro.tidb}} Server Information - All {{distro.tidb}} Servers'
+      tidb_regions_meta: Region - All
+      tidb_region_id: Region - by RegionID
+      tidb_table_regions: Region - by Database + Table
+      tidb_hot_regions: Hot Regions
+      tidb_pprof: '{{distro.tidb}} pprof'
+      tidb_pprof_desc: The `seconds` parameter is only effective to `kind=profile` and `kind=trace`.
+  tikv:
+    name: '{{distro.tikv}}'
+    endpoints:
+      tikv_config: Current {{distro.tikv}} Config
+  pd:
+    name: '{{distro.pd}}'
+    endpoints:
+      pd_cluster: Cluster Information (pd-ctl cluster)
+      pd_cluster_status: Cluster Status
+      pd_config_show_all: Current {{distro.pd}} Config
+      pd_health: Cluster Health Information (pd-ctl health)
+      pd_hot_read: Hot - Read (pd-ctl hot read)
+      pd_hot_write: Hot - Write (pd-ctl hot write)
+      pd_hot_stores: Hot - Stores (pd-ctl hot store)
+      pd_labels: All Labels (pd-ctl label)
+      pd_label_stores: List Stores by Label (pd-ctl label store [name] [value])
+      pd_members_show: All Members Information (pd-ctl member)
+      pd_leader_show: Leader Information (pd-ctl member leader show)
+      pd_operator_show: All Operators (pd-ctl operator show)
+      pd_regions: Regions - All (pd-ctl region)
+      pd_region_id: Region - by RegionID (pd-ctl region [id])
+      pd_region_key: Region - by Key Reside in (pd-ctl region key [key])
+      pd_region_scan: Regions - Scan All (pd-ctl region scan)
+      pd_region_sibling: Regions - Sibling Regions by RegionID (pd-ctl region sibling [id])
+      pd_region_start_key: Regions - All Regions Starting from a Key (pd-ctl region startkey [key])
+      pd_regions_store: Regions - All Regions of a Store (pd-ctl region store [store-id])
+      pd_region_top_read: Regions - Top Read Flow (pd-ctl region topread)
+      pd_region_top_write: Regions - Top Write Flow (pd-ctl region topread)
+      pd_region_top_conf_ver: Regions - Top Conf Version (pd-ctl region topconfver)
+      pd_region_top_version: Regions - Top Version (pd-ctl region topversion)
+      pd_region_top_size: Regions - Top Size (pd-ctl region topsize)
+      pd_region_check: Regions - Check Regions in Abnormal Conditions (region check [state])
+      pd_scheduler_show: All Schedulers (pd-ctl scheduler show)
+      pd_stores: Stores - All (pd-ctl store)
+      pd_store_id: Store - by StoreID (pd-ctl store [id])
+      pd_pprof: '{{distro.pd}} pprof'
+      pd_pprof_desc: The `seconds` parameter is only effective to `kind=profile` and `kind=trace`.

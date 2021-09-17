@@ -12,7 +12,7 @@ user_profile:
         label: 实际登录 SQL 用户
         extra: SSO 登录成功后将被视为使用该 SQL 用户登录使用 {{distro.tidb}} Dashboard，并具有该用户对应的操作权限。
         must_auth: 必须完成授权后才能继续
-        authn_button: 授权登录为该用户
+        authn_button: 授权登录
         modify_authn_button: 修改授权
         authn_dialog:
           title: SSO 登录授权

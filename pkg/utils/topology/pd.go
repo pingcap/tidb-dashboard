@@ -34,24 +34,9 @@ func FetchPDTopology(pdClient *pd.Client) ([]PDInfo, error) {
 		return nil, err
 	}
 
-	data, err := pdClient.SendGetRequest("/members")
+	ds, err := pdClient.FetchMembers()
 	if err != nil {
 		return nil, err
-	}
-	ds := struct {
-		Count   int `json:"count"`
-		Members []struct {
-			GitHash       string   `json:"git_hash"`
-			ClientUrls    []string `json:"client_urls"`
-			DeployPath    string   `json:"deploy_path"`
-			BinaryVersion string   `json:"binary_version"`
-			MemberID      uint64   `json:"member_id"`
-		} `json:"members"`
-	}{}
-
-	err = json.Unmarshal(data, &ds)
-	if err != nil {
-		return nil, ErrInvalidTopologyData.Wrap(err, "%s members API unmarshal failed", distro.Data("pd"))
 	}
 
 	for _, ds := range ds.Members {

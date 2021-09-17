@@ -12,21 +12,21 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-gonic/gin v1.5.0
-	github.com/go-sql-driver/mysql v1.5.0
+	github.com/go-resty/resty/v2 v2.6.0
+	github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-graphviz v0.0.5
 	github.com/google/pprof v0.0.0-20200407044318-7d83b28da2e9
 	github.com/google/uuid v1.0.0
 	github.com/gtank/cryptopasta v0.0.0-20170601214702-1f550f6f2f69
-	github.com/hypnoglow/gormzap v0.3.0
-	github.com/jinzhu/gorm v1.9.12
 	github.com/joho/godotenv v1.3.0
 	github.com/joomcode/errorx v1.0.1
+	github.com/minio/sio v0.3.0
 	github.com/oleiade/reflections v1.0.1
 	github.com/pingcap/check v0.0.0-20191216031241-8a5a85928f12
 	github.com/pingcap/errors v0.11.5-0.20200917111840-a15ef68f753d
 	github.com/pingcap/kvproto v0.0.0-20200411081810-b85805c9476c
 	github.com/pingcap/log v0.0.0-20210317133921-96f4fcab92a4
-	github.com/pingcap/sysutil v0.0.0-20200206130906-2bfa6dc40bcd
+	github.com/pingcap/sysutil v0.0.0-20210315073920-cc0985d983a3
 	github.com/rs/cors v1.7.0
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/shurcooL/httpgzip v0.0.0-20190720172056-320755c1c1b0
@@ -40,7 +40,12 @@ require (
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	go.uber.org/atomic v1.6.0
 	go.uber.org/fx v1.10.0
-	go.uber.org/zap v1.15.0
+	go.uber.org/zap v1.16.0
+	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.25.1
+	gorm.io/driver/mysql v1.0.6
+	gorm.io/driver/sqlite v1.1.4
+	gorm.io/gorm v1.21.9
+	moul.io/zapgorm2 v1.1.0
 )

@@ -12,17 +12,16 @@ import (
 
 	"github.com/VividCortex/mysqlerr"
 	"github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
 	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-
-	// MySQL driver used by gorm
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	mysqlDriver "gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 var (
@@ -43,14 +42,15 @@ const (
 )
 
 type Client struct {
-	lifecycleCtx        context.Context
-	forwarder           *Forwarder
-	statusAPIHTTPScheme string
-	statusAPIAddress    string // Empty means to use address provided by forwarder
-	statusAPIHTTPClient *httpc.Client
-	statusAPITimeout    time.Duration
-	sqlAPITLSKey        string // Non empty means use this key as MySQL TLS config
-	sqlAPIAddress       string // Empty means to use address provided by forwarder
+	lifecycleCtx             context.Context
+	forwarder                *Forwarder
+	statusAPIHTTPScheme      string
+	statusAPIAddress         string // Empty means to use address provided by forwarder
+	enforceStatusAPIAddresss bool   // enforced status api address and ignore env override config
+	statusAPIHTTPClient      *httpc.Client
+	statusAPITimeout         time.Duration
+	sqlAPITLSKey             string // Non empty means use this key as MySQL TLS config
+	sqlAPIAddress            string // Empty means to use address provided by forwarder
 }
 
 func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.Client, httpClient *httpc.Client) *Client {
@@ -61,14 +61,15 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 	}
 
 	client := &Client{
-		lifecycleCtx:        nil,
-		forwarder:           newForwarder(lc, etcdClient),
-		statusAPIHTTPScheme: config.GetClusterHTTPScheme(),
-		statusAPIAddress:    "",
-		statusAPIHTTPClient: httpClient,
-		statusAPITimeout:    defaultTiDBStatusAPITimeout,
-		sqlAPITLSKey:        sqlAPITLSKey,
-		sqlAPIAddress:       "",
+		lifecycleCtx:             nil,
+		forwarder:                newForwarder(lc, etcdClient),
+		statusAPIHTTPScheme:      config.GetClusterHTTPScheme(),
+		statusAPIAddress:         "",
+		enforceStatusAPIAddresss: false,
+		statusAPIHTTPClient:      httpClient,
+		statusAPITimeout:         defaultTiDBStatusAPITimeout,
+		sqlAPITLSKey:             sqlAPITLSKey,
+		sqlAPIAddress:            "",
 	}
 
 	lc.Append(fx.Hook{
@@ -81,37 +82,47 @@ func NewTiDBClient(lc fx.Lifecycle, config *config.Config, etcdClient *clientv3.
 	return client
 }
 
-func (c *Client) WithStatusAPITimeout(timeout time.Duration) *Client {
-	c2 := *c
-	c2.statusAPITimeout = timeout
-	return &c2
+func (c Client) WithStatusAPITimeout(timeout time.Duration) *Client {
+	c.statusAPITimeout = timeout
+	return &c
 }
 
-func (c *Client) WithStatusAPIAddress(host string, statusPort int) *Client {
-	c2 := *c
-	c2.statusAPIAddress = fmt.Sprintf("%s:%d", host, statusPort)
-	return &c2
+func (c Client) WithStatusAPIAddress(host string, statusPort int) *Client {
+	c.statusAPIAddress = fmt.Sprintf("%s:%d", host, statusPort)
+	return &c
 }
 
-func (c *Client) WithSQLAPIAddress(host string, sqlPort int) *Client {
-	c2 := *c
-	c2.sqlAPIAddress = fmt.Sprintf("%s:%d", host, sqlPort)
-	return &c2
+func (c Client) WithEnforcedStatusAPIAddress(host string, statusPort int) *Client {
+	c.enforceStatusAPIAddresss = true
+	c.statusAPIAddress = fmt.Sprintf("%s:%d", host, statusPort)
+	return &c
+}
+
+func (c Client) WithSQLAPIAddress(host string, sqlPort int) *Client {
+	c.sqlAPIAddress = fmt.Sprintf("%s:%d", host, sqlPort)
+	return &c
 }
 
 func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
+	var err error
+
 	overrideEndpoint := os.Getenv(tidbOverrideSQLEndpointEnvVar)
+	// the `tidbOverrideSQLEndpointEnvVar` and the `Client.sqlAPIAddress` have the same override priority, if both exist, an error is returned
 	if overrideEndpoint != "" && c.sqlAPIAddress != "" {
-		log.Warn(fmt.Sprintf("Reject to establish a target specified TiDB SQL connection since `%s` is set", tidbOverrideSQLEndpointEnvVar))
-		return nil, ErrTiDBConnFailed.New("TiDB Dashboard is configured to only connect to specified TiDB host")
+		log.Warn(fmt.Sprintf("Reject to establish a target specified %s SQL connection since `%s` is set", distro.Data("tidb"), tidbOverrideSQLEndpointEnvVar))
+		return nil, ErrTiDBConnFailed.New("%s Dashboard is configured to only connect to specified %s host", distro.Data("tidb"), distro.Data("tidb"))
 	}
 
-	addr := c.sqlAPIAddress
+	var addr string
+	switch {
+	case overrideEndpoint != "":
+		addr = overrideEndpoint
+	default:
+		addr = c.sqlAPIAddress
+	}
 	if addr == "" {
-		if overrideEndpoint != "" {
-			addr = overrideEndpoint
-		} else {
-			addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.sqlPort)
+		if addr, err = c.forwarder.getEndpointAddr(c.forwarder.sqlPort); err != nil {
+			return nil, err
 		}
 	}
 
@@ -127,41 +138,68 @@ func (c *Client) OpenSQLConn(user string, pass string) (*gorm.DB, error) {
 	dsnConfig.TLSConfig = c.sqlAPITLSKey
 	dsn := dsnConfig.FormatDSN()
 
-	db, err := gorm.Open("mysql", dsn)
+	db, err := gorm.Open(mysqlDriver.Open(dsn))
 	if err != nil {
 		if _, ok := err.(*net.OpError); ok || err == driver.ErrBadConn {
 			if strings.HasPrefix(addr, "0.0.0.0:") {
-				log.Warn("TiDB reported its address to be 0.0.0.0. Please specify `-advertise-address` command line parameter when running TiDB")
+				log.Warn(fmt.Sprintf("%s reported its address to be 0.0.0.0. Please specify `-advertise-address` command line parameter when running %s", distro.Data("tidb"), distro.Data("tidb")))
 			}
-			return nil, ErrTiDBConnFailed.Wrap(err, "failed to connect to TiDB")
+			if c.forwarder.sqlProxy.noAliveRemote.Load() {
+				return nil, ErrNoAliveTiDB.NewWithNoMessage()
+			}
+			return nil, ErrTiDBConnFailed.Wrap(err, "failed to connect to %s", distro.Data("tidb"))
 		} else if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == mysqlerr.ER_ACCESS_DENIED_ERROR {
-				return nil, ErrTiDBAuthFailed.New("bad TiDB username or password")
+				return nil, ErrTiDBAuthFailed.New("bad %s username or password", distro.Data("tidb"))
 			}
 		}
-		log.Warn("Unknown error occurred while opening TiDB connection", zap.Error(err))
+		log.Warn(fmt.Sprintf("Unknown error occurred while opening %s connection", distro.Data("tidb")), zap.Error(err))
 		return nil, err
 	}
 
 	return db, nil
 }
 
-func (c *Client) SendGetRequest(path string) ([]byte, error) {
+func (c *Client) Get(relativeURI string) (*httpc.Response, error) {
+	var err error
+
 	overrideEndpoint := os.Getenv(tidbOverrideStatusEndpointEnvVar)
-	if overrideEndpoint != "" && c.statusAPIAddress != "" {
-		log.Warn(fmt.Sprintf("Reject to establish a target specified TiDB status connection since `%s` is set", tidbOverrideStatusEndpointEnvVar))
-		return nil, ErrTiDBConnFailed.New("TiDB Dashboard is configured to only connect to specified TiDB host")
+	// the `tidbOverrideStatusEndpointEnvVar` and the `Client.statusAPIAddress` have the same override priority, if both exist and have not enforced `Client.statusAPIAddress` then an error is returned
+	if overrideEndpoint != "" && c.statusAPIAddress != "" && !c.enforceStatusAPIAddresss {
+		log.Warn(fmt.Sprintf("Reject to establish a target specified %s status connection since `%s` is set", distro.Data("tidb"), tidbOverrideStatusEndpointEnvVar))
+		return nil, ErrTiDBConnFailed.New("%s Dashboard is configured to only connect to specified %s host", distro.Data("tidb"), distro.Data("tidb"))
 	}
 
-	addr := c.statusAPIAddress
+	var addr string
+	switch {
+	case c.enforceStatusAPIAddresss:
+		addr = c.statusAPIAddress
+	case overrideEndpoint != "":
+		addr = overrideEndpoint
+	default:
+		addr = c.statusAPIAddress
+	}
 	if addr == "" {
-		if overrideEndpoint != "" {
-			addr = overrideEndpoint
-		} else {
-			addr = fmt.Sprintf("127.0.0.1:%d", c.forwarder.statusPort)
+		if addr, err = c.forwarder.getEndpointAddr(c.forwarder.statusPort); err != nil {
+			return nil, err
 		}
 	}
 
-	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, path)
-	return c.statusAPIHTTPClient.WithTimeout(c.statusAPITimeout).SendRequest(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, "TiDB")
+	uri := fmt.Sprintf("%s://%s%s", c.statusAPIHTTPScheme, addr, relativeURI)
+	res, err := c.statusAPIHTTPClient.
+		WithTimeout(c.statusAPITimeout).
+		Send(c.lifecycleCtx, uri, http.MethodGet, nil, ErrTiDBClientRequestFailed, distro.Data("tidb"))
+	if err != nil && c.forwarder.statusProxy.noAliveRemote.Load() {
+		return nil, ErrNoAliveTiDB.NewWithNoMessage()
+	}
+	return res, err
+}
+
+// FIXME: SendGetRequest should be extracted, as a common method.
+func (c *Client) SendGetRequest(relativeURI string) ([]byte, error) {
+	res, err := c.Get(relativeURI)
+	if err != nil {
+		return nil, err
+	}
+	return res.Body()
 }

@@ -20,10 +20,11 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	"github.com/joomcode/errorx"
+	"github.com/pingcap/log"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
 
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
@@ -92,17 +93,14 @@ func (f *Forwarder) pollingForTiDB() {
 			allTiDB, err = topology.FetchTiDBTopology(bo.Context(), f.etcdClient)
 			return err
 		}, bo)
-		if err != nil {
-			if errorx.IsOfType(err, ErrNoAliveTiDB) {
-				f.sqlProxy.updateRemotes(nil)
-				f.statusProxy.updateRemotes(nil)
-			}
-		} else {
+		if err == nil {
 			statusEndpoints := make(map[string]struct{}, len(allTiDB))
 			tidbEndpoints := make(map[string]struct{}, len(allTiDB))
 			for _, server := range allTiDB {
-				tidbEndpoints[fmt.Sprintf("%s:%d", server.IP, server.Port)] = struct{}{}
-				statusEndpoints[fmt.Sprintf("%s:%d", server.IP, server.StatusPort)] = struct{}{}
+				if server.Status == topology.ComponentStatusUp {
+					tidbEndpoints[fmt.Sprintf("%s:%d", server.IP, server.Port)] = struct{}{}
+					statusEndpoints[fmt.Sprintf("%s:%d", server.IP, server.StatusPort)] = struct{}{}
+				}
 			}
 			f.sqlProxy.updateRemotes(tidbEndpoints)
 			f.statusProxy.updateRemotes(statusEndpoints)
@@ -114,6 +112,14 @@ func (f *Forwarder) pollingForTiDB() {
 		case <-time.After(f.config.TiDBPollInterval):
 		}
 	}
+}
+
+func (f *Forwarder) getEndpointAddr(port int) (string, error) {
+	if f.statusProxy.noAliveRemote.Load() {
+		log.Warn(fmt.Sprintf("Unable to resolve connection address since no alive %s instance", distro.Data("tidb")))
+		return "", ErrNoAliveTiDB.NewWithNoMessage()
+	}
+	return fmt.Sprintf("127.0.0.1:%d", port), nil
 }
 
 func newForwarder(lc fx.Lifecycle, etcdClient *clientv3.Client) *Forwarder {

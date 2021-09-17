@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/joomcode/errorx"
+	"github.com/thoas/go-funk"
 
 	"github.com/gin-gonic/gin"
 
@@ -59,7 +60,7 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 		endpoint.Use(utils.MWConnectTiDB(s.params.TiDBClient))
 		{
 			endpoint.GET("/config", s.configHandler)
-			endpoint.POST("/config", s.modifyConfigHandler)
+			endpoint.POST("/config", auth.MWRequireWritePriv(), s.modifyConfigHandler)
 			endpoint.GET("/time_ranges", s.timeRangesHandler)
 			endpoint.GET("/stmt_types", s.stmtTypesHandler)
 			endpoint.GET("/list", s.listHandler)
@@ -73,14 +74,23 @@ func registerRouter(r *gin.RouterGroup, auth *user.AuthService, s *Service) {
 	}
 }
 
+type EditableConfig struct {
+	Enable          bool `json:"enable" gorm:"column:tidb_enable_stmt_summary"`
+	RefreshInterval int  `json:"refresh_interval" gorm:"column:tidb_stmt_summary_refresh_interval"`
+	HistorySize     int  `json:"history_size" gorm:"column:tidb_stmt_summary_history_size"`
+	MaxSize         int  `json:"max_size" gorm:"column:tidb_stmt_summary_max_stmt_count"`
+	InternalQuery   bool `json:"internal_query" gorm:"column:tidb_stmt_summary_internal_query"`
+}
+
 // @Summary Get statement configurations
-// @Success 200 {object} statement.Config
+// @Success 200 {object} statement.EditableConfig
 // @Router /statements/config [get]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) configHandler(c *gin.Context) {
 	db := utils.GetTiDBConnection(c)
-	cfg, err := queryStmtConfig(db)
+	cfg := &EditableConfig{}
+	err := db.Raw(buildGlobalConfigProjectionSelectSQL(cfg)).Find(cfg).Error
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -89,23 +99,31 @@ func (s *Service) configHandler(c *gin.Context) {
 }
 
 // @Summary Update statement configurations
-// @Param request body statement.Config true "Request body"
+// @Param request body statement.EditableConfig true "Request body"
 // @Success 204 {object} string
 // @Router /statements/config [post]
 // @Security JwtAuth
 // @Failure 401 {object} utils.APIError "Unauthorized failure"
 func (s *Service) modifyConfigHandler(c *gin.Context) {
-	var req Config
-	if err := c.ShouldBindJSON(&req); err != nil {
+	var config EditableConfig
+	if err := c.ShouldBindJSON(&config); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 	db := utils.GetTiDBConnection(c)
-	err := updateStmtConfig(db, &req)
+
+	var sqlWithNamedArgument string
+	if !config.Enable {
+		sqlWithNamedArgument = buildGlobalConfigNamedArgsUpdateSQL(&config, "Enable")
+	} else {
+		sqlWithNamedArgument = buildGlobalConfigNamedArgsUpdateSQL(&config)
+	}
+	err := db.Exec(sqlWithNamedArgument, &config).Error
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
+
 	c.Status(http.StatusNoContent)
 }
 
@@ -317,5 +335,5 @@ func (s *Service) queryTableColumns(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, cs)
+	c.JSON(http.StatusOK, funk.UniqString(append(cs, getVirtualFields(cs)...)))
 }

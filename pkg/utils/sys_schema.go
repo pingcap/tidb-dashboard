@@ -14,11 +14,13 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/ReneKroon/ttlcache/v2"
-	"github.com/jinzhu/gorm"
+	"go.uber.org/fx"
+	"gorm.io/gorm"
 )
 
 const (
@@ -29,9 +31,16 @@ type SysSchema struct {
 	cache *ttlcache.Cache
 }
 
-func NewSysSchema() *SysSchema {
+func NewSysSchema(lc fx.Lifecycle) *SysSchema {
 	c := ttlcache.NewCache()
 	c.SkipTTLExtensionOnHit(true)
+
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			return c.Close()
+		},
+	})
+
 	return &SysSchema{
 		cache: c,
 	}

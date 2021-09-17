@@ -13,17 +13,17 @@ import {
 import { ScrollablePane } from 'office-ui-fabric-react/lib/ScrollablePane'
 import { LogLevelText } from '../utils'
 
-function componentRender({ target_stats: stats }) {
+function componentRender({ target_stats: stats, t }) {
   // FIXME: Extract common util
   const r: Array<string> = []
   if (stats?.num_tidb_nodes) {
-    r.push(`${stats.num_tidb_nodes} TiDB`)
+    r.push(`${stats.num_tidb_nodes} ${t('distro.tidb')}`)
   }
   if (stats?.num_tikv_nodes) {
-    r.push(`${stats.num_tikv_nodes} TiKV`)
+    r.push(`${stats.num_tikv_nodes} ${t('distro.tikv')}`)
   }
   if (stats?.num_pd_nodes) {
-    r.push(`${stats.num_pd_nodes} PD`)
+    r.push(`${stats.num_pd_nodes} ${t('distro.pd')}`)
   }
   return <span>{r.join(', ')}</span>
 }
@@ -158,7 +158,7 @@ export default function LogSearchingHistory() {
       key: 'target_stats',
       minWidth: 100,
       maxWidth: 250,
-      onRender: componentRender,
+      onRender: (p) => componentRender({ ...p, t }),
     },
     {
       name: t('search_logs.common.keywords'),

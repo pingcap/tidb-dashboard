@@ -8,7 +8,10 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"reflect"
 	"strings"
+	"time"
 
 	"github.com/Xeoncross/go-aesctr-with-hmac"
 	"github.com/gin-gonic/gin"
@@ -16,11 +19,9 @@ import (
 	"github.com/oleiade/reflections"
 	"github.com/pingcap/log"
 	"go.uber.org/zap"
-
-	"reflect"
-	"time"
 )
 
+// TODO: Better to be a streaming interface.
 func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []string) (data [][]string) {
 	timeFieldsMap := make(map[string]struct{})
 	for _, f := range timeFields {
@@ -69,12 +70,13 @@ func GenerateCSVFromRaw(rawData []interface{}, fields []string, timeFields []str
 	return
 }
 
+// TODO: Better to be a streaming interface.
 func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, err error) {
 	csvFile, err := ioutil.TempFile("", filename)
 	if err != nil {
 		return
 	}
-	defer csvFile.Close()
+	defer csvFile.Close() // #nosec
 
 	// generate encryption key
 	secretKey := *cryptopasta.NewEncryptionKey()
@@ -83,7 +85,7 @@ func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, 
 	go func() {
 		csvwriter := csv.NewWriter(pw)
 		_ = csvwriter.WriteAll(data)
-		pw.Close()
+		_ = pw.Close()
 	}()
 	err = aesctr.Encrypt(pr, csvFile, secretKey[0:16], secretKey[16:])
 	if err != nil {
@@ -96,6 +98,7 @@ func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, 
 	return
 }
 
+// FIXME: Remove or refine this function, as it is not general.
 func DownloadByToken(token, tokenNamespace string, c *gin.Context) {
 	tokenPlain, err := ParseJWTString(tokenNamespace, token)
 	if err != nil {
@@ -119,7 +122,7 @@ func DownloadByToken(token, tokenNamespace string, c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	f, err := os.Open(filePath)
+	f, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -132,6 +135,6 @@ func DownloadByToken(token, tokenNamespace string, c *gin.Context) {
 		log.Error("decrypt csv failed", zap.Error(err))
 	}
 	// delete it anyway
-	f.Close()
+	_ = f.Close()
 	_ = os.Remove(filePath)
 }

@@ -16,16 +16,13 @@ package statement
 import (
 	"strings"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
+
+	"github.com/thoas/go-funk"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
-
-type Config struct {
-	Enable          bool `json:"enable"`
-	RefreshInterval int  `json:"refresh_interval"`
-	HistorySize     int  `json:"history_size"`
-}
 
 // TimeRange represents a range of time
 type TimeRange struct {
@@ -132,7 +129,7 @@ func extractSchemasFromTableNames(tableNames string) string {
 	return strings.Join(keys, ", ")
 }
 
-func (m *Model) AfterFind() error {
+func (m *Model) AfterFind(db *gorm.DB) error {
 	if len(m.AggTableNames) > 0 {
 		m.RelatedSchemas = extractSchemasFromTableNames(m.AggTableNames)
 	}
@@ -147,12 +144,14 @@ type Field struct {
 	Aggregation string
 }
 
+var gormDefaultNamingStrategy = schema.NamingStrategy{}
+
 func getFieldsAndTags() (stmtFields []Field) {
 	fields := utils.GetFieldsAndTags(Model{}, []string{"related", "agg", "json"})
 
 	for _, f := range fields {
 		sf := Field{
-			ColumnName:  gorm.ToColumnName(f.Name),
+			ColumnName:  gormDefaultNamingStrategy.ColumnName("", f.Name),
 			JSONName:    f.Tags["json"],
 			Related:     []string{},
 			Aggregation: f.Tags["agg"],
@@ -166,4 +165,14 @@ func getFieldsAndTags() (stmtFields []Field) {
 	}
 
 	return
+}
+
+func getVirtualFields(tableFields []string) []string {
+	fields := getFieldsAndTags()
+	vFields := funk.Filter(fields, func(f Field) bool {
+		return len(f.Related) != 0 && utils.IsSubsets(tableFields, f.Related)
+	}).([]Field)
+	return funk.Map(vFields, func(f Field) string {
+		return f.JSONName
+	}).([]string)
 }

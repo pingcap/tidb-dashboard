@@ -19,6 +19,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
@@ -50,7 +51,7 @@ func fetchPprofSVG(op *pprofOptions) (string, error) {
 		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
 	}
 
-	b, err := ioutil.ReadFile(f)
+	b, err := ioutil.ReadFile(filepath.Clean(f))
 	if err != nil {
 		return "", fmt.Errorf("failed to get DOT output from file: %v", err)
 	}
@@ -59,7 +60,7 @@ func fetchPprofSVG(op *pprofOptions) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %v", err)
 	}
-	defer tmpfile.Close()
+	defer tmpfile.Close() // #nosec
 	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), "svg")
 
 	g := graphviz.New()
@@ -87,7 +88,7 @@ func fetchPprof(op *pprofOptions, format string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %v", err)
 	}
-	defer tmpfile.Close()
+	defer tmpfile.Close() // #nosec
 	tmpPath := fmt.Sprintf("%s.%s", tmpfile.Name(), format)
 	format = "-" + format
 	args := []string{

@@ -1,15 +1,16 @@
 import React from 'react'
 import i18next from 'i18next'
-import axios from 'axios'
+import axios, { AxiosInstance } from 'axios'
 import { message, Modal, notification } from 'antd'
 import * as singleSpa from 'single-spa'
 
 import * as auth from '@lib/utils/auth'
 import * as routing from '@lib/utils/routing'
 import * as i18n from '@lib/utils/i18n'
-import publicPathPrefix from '@lib/utils/publicPathPrefix'
+import { reportError } from '@lib/utils/sentryHelpers'
 
 import { DefaultApi } from './api'
+import { getApiBasePath } from './baseUrl'
 
 export * from './api'
 
@@ -17,10 +18,16 @@ export * from './api'
 
 let basePath: string
 let apiClientInstance: DefaultApi
+let rawAxiosInstance: AxiosInstance
 
-function save(instanceBasePath: string, instance: DefaultApi) {
+function save(
+  instanceBasePath: string,
+  instance: DefaultApi,
+  axiosInstace: AxiosInstance
+) {
   basePath = instanceBasePath
   apiClientInstance = instance
+  rawAxiosInstance = axiosInstace
 }
 
 function getInstance(): DefaultApi {
@@ -31,7 +38,11 @@ function getBasePath(): string {
   return basePath
 }
 
-export default { getInstance, getBasePath }
+function getAxiosInstance(): AxiosInstance {
+  return rawAxiosInstance
+}
+
+export default { getInstance, getBasePath, getAxiosInstance }
 
 //////////////////////////////
 
@@ -39,13 +50,11 @@ export enum ErrorStrategy {
   Default = 'default',
   Custom = 'custom',
 }
+
 const ERR_CODE_OTHER = 'error.api.other'
 
-function initAxios() {
-  i18n.addTranslations(require.context('./translations/', false, /\.yaml$/))
-
-  const instance = axios.create()
-  instance.interceptors.response.use(undefined, function (err) {
+function applyErrorHandlerInterceptor(instance: AxiosInstance) {
+  instance.interceptors.response.use(undefined, async function (err) {
     const { response, config } = err
     const errorStrategy = config.errorStrategy as ErrorStrategy
     const method = (config.method as string).toLowerCase()
@@ -57,7 +66,7 @@ function initAxios() {
     } else {
       errCode = response?.data?.code
     }
-    if (errCode !== ERR_CODE_OTHER && i18next.exists(errCode)) {
+    if (errCode !== ERR_CODE_OTHER && i18next.exists(errCode ?? '')) {
       content = i18next.t(errCode)
     } else {
       content =
@@ -98,38 +107,36 @@ function initAxios() {
       err.handled = true
     }
 
+    reportError(err)
     return Promise.reject(err)
   })
+}
+
+function initAxios() {
+  i18n.addTranslations(require.context('./translations/', false, /\.yaml$/))
+
+  const instance = axios.create()
+  applyErrorHandlerInterceptor(instance)
 
   return instance
 }
 
 function init() {
-  let apiPrefix
-  if (process.env.NODE_ENV === 'development') {
-    if (process.env.REACT_APP_DASHBOARD_API_URL) {
-      apiPrefix = `${process.env.REACT_APP_DASHBOARD_API_URL}/dashboard`
-    } else {
-      apiPrefix = 'http://127.0.0.1:12333/dashboard'
-    }
-  } else {
-    apiPrefix = publicPathPrefix
-  }
-  const apiUrl = `${apiPrefix}/api`
-
+  const basePath = getApiBasePath()
+  const axiosInstance = initAxios()
   const dashboardClient = new DefaultApi(
     {
-      basePath: apiUrl,
+      basePath,
       apiKey: () => auth.getAuthTokenAsBearer() || '',
       baseOptions: {
         errorStrategy: ErrorStrategy.Default,
       },
     },
     undefined,
-    initAxios()
+    axiosInstance
   )
 
-  save(apiUrl, dashboardClient)
+  save(basePath, dashboardClient, axiosInstance)
 }
 
 init()

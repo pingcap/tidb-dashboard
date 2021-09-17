@@ -16,88 +16,14 @@ package statement
 import (
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 const (
-	statementsTable        = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
-	stmtEnableVar          = "tidb_enable_stmt_summary"
-	stmtRefreshIntervalVar = "tidb_stmt_summary_refresh_interval"
-	stmtHistorySizeVar     = "tidb_stmt_summary_history_size"
+	statementsTable = "INFORMATION_SCHEMA.CLUSTER_STATEMENTS_SUMMARY_HISTORY"
 )
-
-// How to get sql variables by GORM
-// https://github.com/jinzhu/gorm/issues/2616
-func querySQLIntVariable(db *gorm.DB, name string) (int, error) {
-	var values []string
-	sql := fmt.Sprintf("SELECT @@GLOBAL.%s as value", name) // nolints
-	err := db.Raw(sql).Pluck("value", &values).Error
-	if err != nil {
-		return 0, err
-	}
-	strVal := values[0]
-	if strVal == "" {
-		return -1, nil
-	}
-	intVal, err := strconv.Atoi(strVal)
-	if err != nil {
-		return 0, err
-	}
-	return intVal, nil
-}
-
-func queryStmtConfig(db *gorm.DB) (*Config, error) {
-	config := Config{}
-
-	enable, err := querySQLIntVariable(db, stmtEnableVar)
-	if err != nil {
-		return nil, err
-	}
-	config.Enable = enable != 0
-
-	refreshInterval, err := querySQLIntVariable(db, stmtRefreshIntervalVar)
-	if err != nil {
-		return nil, err
-	}
-	if refreshInterval == -1 {
-		config.RefreshInterval = 1800
-	} else {
-		config.RefreshInterval = refreshInterval
-	}
-
-	historySize, err := querySQLIntVariable(db, stmtHistorySizeVar)
-	if err != nil {
-		return nil, err
-	}
-	if historySize == -1 {
-		config.HistorySize = 24
-	} else {
-		config.HistorySize = historySize
-	}
-
-	return &config, err
-}
-
-func updateStmtConfig(db *gorm.DB, config *Config) (err error) {
-	var sql string
-	sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtEnableVar)
-	err = db.Exec(sql, config.Enable).Error
-
-	if config.Enable {
-		// update other configurations
-		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtRefreshIntervalVar)
-		err = db.Exec(sql, config.RefreshInterval).Error
-		if err != nil {
-			return
-		}
-		sql = fmt.Sprintf("SET GLOBAL %s = ?", stmtHistorySizeVar)
-		err = db.Exec(sql, config.HistorySize).Error
-	}
-	return
-}
 
 func queryTimeRanges(db *gorm.DB) (result []*TimeRange, err error) {
 	err = db.

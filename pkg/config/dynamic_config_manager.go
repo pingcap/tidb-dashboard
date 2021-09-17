@@ -182,7 +182,7 @@ func (m *DynamicConfigManager) load() (*DynamicConfig, error) {
 		}
 		return &dc, nil
 	default:
-		log.Error("UNREACHABLE")
+		log.Error("etcd is unreachable")
 		return nil, backoff.Permanent(ErrUnableToLoad.New("unreachable"))
 	}
 }

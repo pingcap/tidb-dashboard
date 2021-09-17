@@ -63,16 +63,14 @@ func NewHTTPClient(lc fx.Lifecycle, config *config.Config) *Client {
 	}
 }
 
-func (c *Client) WithTimeout(timeout time.Duration) *Client {
-	c2 := *c
-	c2.Timeout = timeout
-	return &c2
+func (c Client) WithTimeout(timeout time.Duration) *Client {
+	c.Timeout = timeout
+	return &c
 }
 
-func (c *Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
-	c2 := *c
-	c2.BeforeRequest = callback
-	return &c2
+func (c Client) WithBeforeRequest(callback func(req *http.Request)) *Client {
+	c.BeforeRequest = callback
+	return &c
 }
 
 // TODO: Replace using go-resty
@@ -83,10 +81,24 @@ func (c *Client) SendRequest(
 	body io.Reader,
 	errType *errorx.Type,
 	errOriginComponent string) ([]byte, error) {
+	res, err := c.Send(ctx, uri, method, body, errType, errOriginComponent)
+	if err != nil {
+		return nil, err
+	}
+	return res.Body()
+}
+
+func (c *Client) Send(
+	ctx context.Context,
+	uri string,
+	method string,
+	body io.Reader,
+	errType *errorx.Type,
+	errOriginComponent string) (*Response, error) {
 	req, err := http.NewRequestWithContext(ctx, method, uri, body)
 	if err != nil {
 		e := errType.Wrap(err, "Failed to build %s API request", errOriginComponent)
-		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(e))
+		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
 		return nil, e
 	}
 
@@ -100,20 +112,23 @@ func (c *Client) SendRequest(
 		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
 		return nil, e
 	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		e := errType.Wrap(err, "Failed to read %s API response", errOriginComponent)
-		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
-		return nil, e
-	}
 
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		defer resp.Body.Close()
+		data, _ := ioutil.ReadAll(resp.Body)
 		e := errType.New("Request failed with status code %d from %s API: %s", resp.StatusCode, errOriginComponent, string(data))
 		log.Warn("SendRequest failed", zap.String("uri", uri), zap.Error(err))
 		return nil, e
 	}
 
-	return data, nil
+	return &Response{resp}, nil
+}
+
+type Response struct {
+	*http.Response
+}
+
+func (r *Response) Body() ([]byte, error) {
+	defer r.Response.Body.Close()
+	return ioutil.ReadAll(r.Response.Body)
 }

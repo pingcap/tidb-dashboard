@@ -19,6 +19,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"sort"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -26,38 +27,37 @@ import (
 	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
-	"github.com/pingcap/tidb-dashboard/pkg/tidb"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
 var (
-	ErrNS                        = errorx.NewNamespace("error.api.user")
-	ErrNSSignIn                  = ErrNS.NewSubNamespace("signin")
-	ErrSignInUnsupportedAuthType = ErrNSSignIn.NewType("unsupported_auth_type")
-	ErrSignInOther               = ErrNSSignIn.NewType("other")
-	ErrSignInInvalidCode         = ErrNSSignIn.NewType("invalid_code") // Invalid or expired
-	ErrShareFailed               = ErrNS.NewType("share_failed")
+	ErrNS                  = errorx.NewNamespace("error.api.user")
+	ErrUnsupportedAuthType = ErrNS.NewType("unsupported_auth_type")
+	ErrInsufficientPriv    = ErrNS.NewType("insufficient_privileges")
+	ErrNSSignIn            = ErrNS.NewSubNamespace("signin")
+	ErrSignInOther         = ErrNSSignIn.NewType("other")
 )
 
-type AuthService struct {
-	middleware *jwt.GinJWTMiddleware
-	tidbClient *tidb.Client
+type ServiceParams struct {
+	fx.In
+	Config *config.Config
 }
 
-type AuthType int
+type AuthService struct {
+	params         ServiceParams
+	middleware     *jwt.GinJWTMiddleware
+	authenticators map[utils.AuthType]Authenticator
+}
 
-const (
-	AuthTypeSQLUser AuthType = iota
-	AuthTypeSharingCode
-	// TODO: Add more auth type
-)
-
-type authenticateForm struct {
-	Type     AuthType `json:"type" example:"0"`
-	Username string   `json:"username" example:"root"` // Does not present for AuthTypeSharingCode
-	Password string   `json:"password"`
+type AuthenticateForm struct {
+	Type     utils.AuthType `json:"type" example:"0"`
+	Username string         `json:"username" example:"root"` // Does not present for AuthTypeSharingCode
+	Password string         `json:"password"`
+	Extra    string         `json:"extra"` // FIXME: Use strong type
 }
 
 type TokenResponse struct {
@@ -65,7 +65,32 @@ type TokenResponse struct {
 	Expire time.Time `json:"expire"`
 }
 
-func NewAuthService(tidbClient *tidb.Client) *AuthService {
+type SignOutInfo struct {
+	EndSessionURL string `json:"end_session_url"`
+}
+
+type Authenticator interface {
+	IsEnabled() (bool, error)
+	Authenticate(form AuthenticateForm) (*utils.SessionUser, error)
+	ProcessSession(u *utils.SessionUser) bool
+	SignOutInfo(u *utils.SessionUser, redirectURL string) (*SignOutInfo, error)
+}
+
+type BaseAuthenticator struct{}
+
+func (a BaseAuthenticator) IsEnabled() (bool, error) {
+	return true, nil
+}
+
+func (a BaseAuthenticator) ProcessSession(u *utils.SessionUser) bool {
+	return true
+}
+
+func (a BaseAuthenticator) SignOutInfo(u *utils.SessionUser, redirectURL string) (*SignOutInfo, error) {
+	return &SignOutInfo{}, nil
+}
+
+func NewAuthService(p ServiceParams) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -82,8 +107,9 @@ func NewAuthService(tidbClient *tidb.Client) *AuthService {
 	}
 
 	service := &AuthService{
-		middleware: nil,
-		tidbClient: tidbClient,
+		params:         p,
+		middleware:     nil,
+		authenticators: map[utils.AuthType]Authenticator{},
 	}
 
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
@@ -93,11 +119,11 @@ func NewAuthService(tidbClient *tidb.Client) *AuthService {
 		Timeout:     time.Hour * 24,
 		MaxRefresh:  time.Hour * 24,
 		Authenticator: func(c *gin.Context) (interface{}, error) {
-			var form authenticateForm
+			var form AuthenticateForm
 			if err := c.ShouldBindJSON(&form); err != nil {
 				return nil, utils.ErrInvalidRequest.WrapWithNoMessage(err)
 			}
-			u, err := service.authForm(&form)
+			u, err := service.authForm(form)
 			if err != nil {
 				return nil, errorx.Decorate(err, "authenticate failed")
 			}
@@ -141,6 +167,20 @@ func NewAuthService(tidbClient *tidb.Client) *AuthService {
 			if err := json.Unmarshal(decrypted, &user); err != nil {
 				return nil
 			}
+
+			// Force expire schema outdated sessions.
+			if user.Version != utils.SessionVersion {
+				return nil
+			}
+
+			a, ok := service.authenticators[user.AuthFrom]
+			if !ok {
+				return nil
+			}
+			if !a.ProcessSession(&user) {
+				return nil
+			}
+
 			return &user
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
@@ -149,13 +189,7 @@ func NewAuthService(tidbClient *tidb.Client) *AuthService {
 				return false
 			}
 			user := data.(*utils.SessionUser)
-			if user == nil {
-				return false
-			}
-			if user.IsShared && time.Now().After(user.SharedSessionExpireAt) {
-				return false
-			}
-			return true
+			return user != nil
 		},
 		HTTPStatusMessageFunc: func(e error, c *gin.Context) string {
 			var err error
@@ -193,62 +227,24 @@ func NewAuthService(tidbClient *tidb.Client) *AuthService {
 	return service
 }
 
-func (s *AuthService) authForm(f *authenticateForm) (*utils.SessionUser, error) {
-	switch f.Type {
-	case AuthTypeSQLUser:
-		return s.authSQLForm(f)
-	case AuthTypeSharingCode:
-		return s.authSharingCodeForm(f)
-	default:
-		return nil, ErrSignInUnsupportedAuthType.NewWithNoMessage()
+func (s *AuthService) authForm(f AuthenticateForm) (*utils.SessionUser, error) {
+	a, ok := s.authenticators[f.Type]
+	if !ok {
+		return nil, ErrUnsupportedAuthType.NewWithNoMessage()
 	}
-}
-
-func (s *AuthService) authSQLForm(f *authenticateForm) (*utils.SessionUser, error) {
-	if f.Type != AuthTypeSQLUser {
-		panic("Expect AuthTypeSQLUser")
-	}
-	// Currently we don't support privileges, so only root user is allowed to sign in.
-	if f.Username != "root" {
-		return nil, ErrSignInOther.New("non root user is not allowed")
-	}
-	db, err := s.tidbClient.OpenSQLConn(f.Username, f.Password)
+	u, err := a.Authenticate(f)
 	if err != nil {
-		if errorx.Cast(err) == nil {
-			return nil, ErrSignInOther.WrapWithNoMessage(err)
-		}
-		// Possible errors could be:
-		// tidb.ErrNoAliveTiDB
-		// tidb.ErrPDAccessFailed
-		// tidb.ErrTiDBConnFailed
-		// tidb.ErrTiDBAuthFailed
 		return nil, err
 	}
-	defer db.Close() //nolint:errcheck
-
-	return &utils.SessionUser{
-		HasTiDBAuth:  true,
-		TiDBUsername: f.Username,
-		TiDBPassword: f.Password,
-		IsShared:     false,
-	}, nil
-}
-
-func (s *AuthService) authSharingCodeForm(f *authenticateForm) (*utils.SessionUser, error) {
-	if f.Type != AuthTypeSharingCode {
-		panic("Expect AuthTypeSharingCode")
-	}
-	session := utils.NewSessionFromSharingCode(f.Password)
-	if session == nil {
-		return nil, ErrSignInInvalidCode.NewWithNoMessage()
-	}
-	return session, nil
+	u.AuthFrom = f.Type
+	return u, nil
 }
 
 func RegisterRouter(r *gin.RouterGroup, s *AuthService) {
 	endpoint := r.Group("/user")
+	endpoint.GET("/login_info", s.getLoginInfoHandler)
 	endpoint.POST("/login", s.loginHandler)
-	endpoint.POST("/share", s.MWAuthRequired(), s.shareSessionHandler)
+	endpoint.GET("/sign_out_info", s.MWAuthRequired(), s.getSignOutInfoHandler)
 }
 
 // MWAuthRequired creates a middleware that verifies the authentication token (JWT) in the request. If the token
@@ -258,9 +254,78 @@ func (s *AuthService) MWAuthRequired() gin.HandlerFunc {
 	return s.middleware.MiddlewareFunc()
 }
 
+// TODO: Make these MWRequireXxxPriv more general to use.
+func (s *AuthService) MWRequireSharePriv() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u := utils.GetSession(c)
+		if u == nil {
+			utils.MakeUnauthorizedError(c)
+			c.Abort()
+			return
+		}
+		if !u.IsShareable {
+			utils.MakeInsufficientPrivilegeError(c)
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+func (s *AuthService) MWRequireWritePriv() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u := utils.GetSession(c)
+		if u == nil {
+			utils.MakeUnauthorizedError(c)
+			c.Abort()
+			return
+		}
+		if !u.IsWriteable {
+			utils.MakeInsufficientPrivilegeError(c)
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+// RegisterAuthenticator registers an authenticator in the authenticate pipeline.
+func (s *AuthService) RegisterAuthenticator(typeID utils.AuthType, a Authenticator) {
+	s.authenticators[typeID] = a
+}
+
+type GetLoginInfoResponse struct {
+	SupportedAuthTypes []int `json:"supported_auth_types"`
+	EnableNonRootLogin bool  `json:"enable_non_root_login"`
+}
+
+// @ID userGetLoginInfo
+// @Summary Get log in information, like supported authenticate types.
+// @Success 200 {object} GetLoginInfoResponse
+// @Router /user/login_info [get]
+func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
+	supportedAuth := make([]int, 0)
+	for typeID, a := range s.authenticators {
+		enabled, err := a.IsEnabled()
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+		if enabled {
+			supportedAuth = append(supportedAuth, int(typeID))
+		}
+	}
+	sort.Ints(supportedAuth)
+	resp := GetLoginInfoResponse{
+		SupportedAuthTypes: supportedAuth,
+		EnableNonRootLogin: s.params.Config.EnableNonRootLogin,
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
 // @ID userLogin
 // @Summary Log in
-// @Param message body authenticateForm true "Credentials"
+// @Param message body AuthenticateForm true "Credentials"
 // @Success 200 {object} TokenResponse
 // @Failure 401 {object} utils.APIError
 // @Router /user/login [post]
@@ -268,45 +333,35 @@ func (s *AuthService) loginHandler(c *gin.Context) {
 	s.middleware.LoginHandler(c)
 }
 
-type ShareRequest struct {
-	ExpireInSeconds int64 `json:"expire_in_sec"`
+type GetSignOutInfoRequest struct {
+	RedirectURL string `json:"redirect_url" form:"redirect_url"`
 }
 
-type ShareResponse struct {
-	Code string `json:"code"`
-}
-
-// @ID userShareSession
-// @Summary Share current session and generate a sharing code
-// @Param request body ShareRequest true "Request body"
+// @ID userGetSignOutInfo
+// @Summary Get sign out info
+// @Success 200 {object} SignOutInfo
+// @Param q query GetSignOutInfoRequest true "Query"
+// @Router /user/sign_out_info [get]
 // @Security JwtAuth
-// @Success 200 {object} ShareResponse
-// @Router /user/share [post]
-func (s *AuthService) shareSessionHandler(c *gin.Context) {
-	var req ShareRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+// @Failure 401 {object} utils.APIError "Unauthorized failure"
+// @Failure 500 {object} utils.APIError "Internal error"
+func (s *AuthService) getSignOutInfoHandler(c *gin.Context) {
+	var req GetSignOutInfoRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
 		utils.MakeInvalidRequestErrorFromError(c, err)
 		return
 	}
 
-	expiry := time.Second * time.Duration(req.ExpireInSeconds)
-
-	if expiry > utils.MaxSessionShareExpiry || expiry < 0 {
-		utils.MakeInvalidRequestErrorWithMessage(c, "Invalid share expiry")
+	u := utils.GetSession(c)
+	a, ok := s.authenticators[u.AuthFrom]
+	if !ok {
+		_ = c.Error(ErrUnsupportedAuthType.NewWithNoMessage())
 		return
 	}
-
-	sessionUser := c.MustGet(utils.SessionUserKey).(*utils.SessionUser)
-	if sessionUser.IsShared {
-		utils.MakeInvalidRequestErrorWithMessage(c, "Shared session cannot be shared again")
+	si, err := a.SignOutInfo(u, req.RedirectURL)
+	if err != nil {
+		_ = c.Error(err)
 		return
 	}
-
-	code := sessionUser.ToSharingCode(expiry)
-	if code == nil {
-		_ = c.Error(ErrShareFailed.NewWithNoMessage())
-		return
-	}
-
-	c.JSON(http.StatusOK, ShareResponse{Code: *code})
+	c.JSON(http.StatusOK, si)
 }

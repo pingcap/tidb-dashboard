@@ -9,11 +9,207 @@ import { Space } from 'antd'
 import { cyan, magenta, grey } from '@ant-design/colors'
 import { useTranslation } from 'react-i18next'
 
+import { TopologyStoreLocation } from '@lib/client'
+
+import styles from './index.module.less'
+import { InstanceKindName } from '@lib/utils/instanceTable'
+
+//////////////////////////////////////
+
+type ShortStrMap = Record<string, string>
+
+export function getShortStrMap(
+  data: TopologyStoreLocation | undefined
+): ShortStrMap {
+  let allShortStrMap: ShortStrMap = {}
+
+  if (data === undefined) {
+    return allShortStrMap
+  }
+
+  // location labels
+  // failure-domain.beta.kubernetes.io/region => region
+  data.location_labels?.forEach((label) => {
+    if (label.indexOf('/') >= 0) {
+      const shortStr = label.split('/').pop()
+      if (shortStr) {
+        allShortStrMap[label] = shortStr
+      }
+    }
+  })
+
+  // location labels value
+  data.location_labels?.forEach((label) => {
+    // get label values
+    const labelValues: string[] = []
+    data.stores?.forEach((store) => {
+      const val = store.labels?.[label]
+      if (val) {
+        labelValues.push(val)
+      }
+    })
+    const shortStrMap = trimDuplicate(labelValues)
+    allShortStrMap = Object.assign(allShortStrMap, shortStrMap)
+  })
+
+  // tikv & tiflash nodes address
+  const addresses = (data.stores || []).map((s) => s.address!)
+  addresses.forEach((addr) => {
+    if (addr.startsWith('db-')) {
+      const shortStr = addr.split('.').shift()
+      if (shortStr) {
+        allShortStrMap[addr] = shortStr
+      }
+    }
+  })
+
+  return allShortStrMap
+}
+
+// input: ['aaa-111a.abc.123', 'aaa-222a.abc.123', 'aaa-333a.abc.123'], items in the array have either the same prefix or suffix, or both.
+// output:
+// {
+//   "aaa-111a.abc.123":"111a",
+//   "aaa-222a.abc.123":"222a",
+//   "aaa-333a.abc.123":"333a"
+// }
+export function trimDuplicate(strArr: string[]): ShortStrMap {
+  const shortStrMap: ShortStrMap = {}
+  const strSet = new Set(strArr)
+  if (strSet.size < 2) {
+    return shortStrMap
+  }
+
+  let i = 0
+  let c
+  const charSet = new Set()
+  // calc the prefix length
+  let headDotOrMinusPos = -1
+  while (true) {
+    charSet.clear()
+    for (let str of strSet) {
+      c = str[i]
+      if (c === undefined) {
+        break
+      }
+      charSet.add(c)
+    }
+    if (c === undefined) {
+      break
+    }
+    if (charSet.size > 1) {
+      break
+    }
+    if (c === '.' || c === '-') {
+      headDotOrMinusPos = i
+    }
+    i++
+  }
+
+  // calc the suffix length
+  i = 0
+  let tailDotOrMinusPos = -1
+  while (true) {
+    charSet.clear()
+    for (let str of strSet) {
+      c = str[str.length - 1 - i]
+      if (c === undefined) {
+        break
+      }
+      charSet.add(c)
+    }
+    if (c === undefined) {
+      break
+    }
+    if (charSet.size > 1) {
+      break
+    }
+    if (c === '.' || c === '-') {
+      tailDotOrMinusPos = i
+    }
+    i++
+  }
+
+  if (headDotOrMinusPos === -1 && tailDotOrMinusPos === -1) {
+    return shortStrMap
+  }
+  strSet.forEach((s) => {
+    const startIdx = headDotOrMinusPos + 1
+    const endIdx =
+      tailDotOrMinusPos === -1 ? s.length : s.length - 1 - tailDotOrMinusPos
+    const short = s.slice(startIdx, endIdx)
+    shortStrMap[s] = short
+  })
+
+  return shortStrMap
+}
+
+//////////////////////////////////////
+
+const NODE_STORES = 'Stores'
+const NODE_TIFLASH = InstanceKindName.tiflash
+const NODE_TIKV = InstanceKindName.tikv
+
+type TreeNode = {
+  name: string
+  value: string
+  children: TreeNode[]
+}
+
+export function buildTreeData(
+  data: TopologyStoreLocation | undefined
+): TreeNode {
+  const treeData: TreeNode = { name: NODE_STORES, value: '', children: [] }
+
+  if ((data?.location_labels?.length || 0) > 0) {
+    const locationLabels: string[] = data?.location_labels || []
+
+    for (const store of data?.stores || []) {
+      // reset curNode, point to tree nodes beginning
+      let curNode = treeData
+      for (const curLabel of locationLabels) {
+        const curLabelVal = store.labels![curLabel]
+        if (curLabelVal === undefined) {
+          continue
+        }
+        let subNode: TreeNode | undefined = curNode.children.find(
+          (el) => el.name === curLabel && el.value === curLabelVal
+        )
+        if (subNode === undefined) {
+          subNode = { name: curLabel, value: curLabelVal, children: [] }
+          curNode.children.push(subNode)
+        }
+        // make curNode point to subNode
+        curNode = subNode
+      }
+      const storeType =
+        store.labels!['engine'] === 'tiflash' ? NODE_TIFLASH : NODE_TIKV
+      curNode.children.push({
+        name: storeType,
+        value: store.address!,
+        children: [],
+      })
+    }
+  }
+  return treeData
+}
+
+//////////////////////////////////////
+
+interface ITooltipConfig {
+  enable: boolean
+  offsetX: number
+  offsetY: number
+}
+
 export interface IStoreLocationProps {
   dataSource: any
+  shortStrMap?: ShortStrMap
   getMinHeight?: () => number
   onReload?: () => void
 }
+
+const MAX_STR_LENGTH = 16
 
 const margin = { left: 60, right: 40, top: 80, bottom: 100 }
 const dx = 40
@@ -35,11 +231,19 @@ function calcHeight(root) {
 
 export default function StoreLocationTree({
   dataSource,
+  shortStrMap = {},
   getMinHeight,
   onReload,
 }: IStoreLocationProps) {
   const divRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
+
+  const tooltipConfig = useRef<ITooltipConfig>()
+  tooltipConfig.current = {
+    enable: true,
+    offsetX: 0,
+    offsetY: 0,
+  }
 
   useEffect(() => {
     let divWidth = divRef.current?.clientWidth || 0
@@ -76,6 +280,8 @@ export default function StoreLocationTree({
       .attr('cursor', 'pointer')
       .attr('pointer-events', 'all')
 
+    // tooltip
+    const tooltip = d3.select('#store-location-tooltip')
     // zoom
     const zoom = d3
       .zoom()
@@ -86,15 +292,27 @@ export default function StoreLocationTree({
         const isWheelEvent = d3.event instanceof WheelEvent
         return !isWheelEvent || (isWheelEvent && d3.event.ctrlKey)
       })
+      .on('start', () => {
+        // hide tooltip if it shows
+        tooltip.style('opacity', 0)
+        tooltipConfig.current!.enable = false
+      })
       .on('zoom', () => {
         const t = d3.event.transform
         bound.attr(
           'transform',
           `translate(${t.x + margin.left}, ${t.y + margin.top}) scale(${t.k})`
         )
-
         // this will cause unexpected result when dragging
         // svg.attr('transform', d3.event.transform)
+      })
+      .on('end', () => {
+        const t = d3.event.transform
+        tooltipConfig.current = {
+          enable: t.k === 1, // disable tooltip if zoom
+          offsetX: t.x,
+          offsetY: t.y,
+        }
       })
     svg.call(zoom as any)
 
@@ -159,7 +377,39 @@ export default function StoreLocationTree({
           d.children = d.children ? null : d._children
           update(d)
         })
+        .on('mouseenter', onMouseEnter)
+        .on('mouseleave', onMouseLeave)
 
+      function onMouseEnter(datum) {
+        if (!tooltipConfig.current?.enable) {
+          return
+        }
+
+        const { name, value } = datum.data
+        if (
+          shortStrMap[name] === undefined &&
+          shortStrMap[value] === undefined
+        ) {
+          return
+        }
+
+        tooltip.select('#store-location-tooltip-name').text(name)
+        tooltip.select('#store-location-tooltip-value').text(value)
+
+        const x = datum.y + margin.left + tooltipConfig.current.offsetX
+        const y = datum.x + margin.top - 20 + tooltipConfig.current.offsetY
+        tooltip.style(
+          'transform',
+          `translate(calc(-50% + ${x}px), calc(-100% + ${y}px))`
+        )
+
+        tooltip.style('opacity', 1)
+      }
+      function onMouseLeave() {
+        tooltip.style('opacity', 0)
+      }
+
+      // circle
       nodeEnter
         .append('circle')
         .attr('r', 8)
@@ -168,38 +418,70 @@ export default function StoreLocationTree({
           if (d._children) {
             return grey[1]
           }
-          if (d.data.value === 'TiFlash') {
+          if (d.data.name === NODE_TIFLASH) {
             return magenta[4]
           }
           return cyan[5]
         })
         .attr('stroke-width', 3)
 
-      // text for non-leaf nodes
+      // text for root node
       nodeEnter
-        .filter((d: any) => d._children !== undefined)
+        .filter(({ data: { name } }: any) => name === NODE_STORES)
         .append('text')
         .attr('dy', '0.31em')
         .attr('x', -15)
         .attr('text-anchor', 'end')
-        .text(({ data: { name, value } }: any) => `${name}: ${value}`)
-        .clone(true)
-        .lower()
-        .attr('stroke-linejoin', 'round')
-        .attr('stroke-width', 3)
-        .attr('stroke', 'white')
+        .text(({ data: { name } }: any) => name)
+
+      // text for non-root and non-leaf nodes
+      const middleNodeText = nodeEnter
+        .filter(
+          ({ data: { name } }: any) =>
+            name !== NODE_STORES && name !== NODE_TIFLASH && name !== NODE_TIKV
+        )
+        .append('text')
+      middleNodeText
+        .append('tspan')
+        .text(({ data: { name } }: any) => shortStrMap[name] ?? name)
+        .attr('x', -15)
+        .attr('dy', '-0.2em')
+        .attr('text-anchor', 'end')
+      middleNodeText
+        .append('tspan')
+        .text(({ data: { value } }: any) => {
+          if (value.length <= MAX_STR_LENGTH) {
+            return value
+          }
+          let shortStr = shortStrMap[value] ?? value
+          if (shortStr.length > MAX_STR_LENGTH) {
+            const midIdx = Math.round(MAX_STR_LENGTH / 2) - 1
+            shortStr =
+              shortStr.slice(0, midIdx) +
+              '..' +
+              shortStr.slice(shortStr.length - midIdx, shortStr.length)
+          }
+          return shortStr
+        })
+        .attr('x', -15)
+        .attr('dy', '1em')
+        .attr('text-anchor', 'end')
+
       // text for leaf nodes
       const leafNodeText = nodeEnter
-        .filter((d: any) => d._children === undefined)
+        .filter(
+          ({ data: { name } }: any) =>
+            name === NODE_TIFLASH || name === NODE_TIKV
+        )
         .append('text')
       leafNodeText
         .append('tspan')
-        .text(({ data: { value } }: any) => value)
+        .text(({ data: { name } }: any) => name)
         .attr('x', 15)
         .attr('dy', '-0.2em')
       leafNodeText
         .append('tspan')
-        .text(({ data: { name } }: any) => name)
+        .text(({ data: { value } }: any) => shortStrMap[value] ?? value)
         .attr('x', 15)
         .attr('dy', '1em')
 
@@ -266,7 +548,7 @@ export default function StoreLocationTree({
     return () => {
       window.removeEventListener('resize', resizeHandler)
     }
-  }, [dataSource, getMinHeight, onReload])
+  }, [dataSource, getMinHeight, onReload, shortStrMap])
 
   return (
     <div ref={divRef} style={{ position: 'relative' }}>
@@ -291,6 +573,11 @@ export default function StoreLocationTree({
           *{t('cluster_info.list.store_topology.tooltip')}
         </span>
       </Space>
+
+      <div id="store-location-tooltip" className={styles.tooltip}>
+        <div id="store-location-tooltip-name"></div>
+        <div id="store-location-tooltip-value"></div>
+      </div>
     </div>
   )
 }

@@ -26,6 +26,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/tidb/model"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 const (
@@ -45,12 +46,20 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	resp, err := s.EtcdClient.Get(ectx, schemaVersionPath)
 	cancel()
 	if err != nil || len(resp.Kvs) != 1 {
-		log.Warn("failed to get tidb schema version", zap.Error(err))
+		if s.SchemaVersion != -1 {
+			log.Warn("failed to get tidb schema version", zap.Error(err))
+		} else {
+			log.Debug("failed to get tidb schema version, maybe not a db cluster", zap.Error(err))
+		}
 		return
 	}
 	schemaVersion, err := strconv.ParseInt(string(resp.Kvs[0].Value), 10, 64)
 	if err != nil {
-		log.Warn("failed to get tidb schema version", zap.Error(err))
+		if s.SchemaVersion != -1 {
+			log.Warn("failed to get tidb schema version", zap.Error(err))
+		} else {
+			log.Debug("failed to get tidb schema version, maybe not a db cluster", zap.Error(err))
+		}
 		return
 	}
 	if schemaVersion == s.SchemaVersion {
@@ -63,7 +72,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 	// get all database info
 	var dbInfos []*model.DBInfo
 	if err := s.request("/schema", &dbInfos); err != nil {
-		log.Error("fail to send schema request to TiDB", zap.Error(err))
+		log.Error("fail to send schema request", zap.String("component", distro.Data("tidb")), zap.Error(err))
 		return
 	}
 
@@ -76,7 +85,7 @@ func (s *tidbLabelStrategy) updateMap(ctx context.Context) {
 		var tableInfos []*model.TableInfo
 		encodeName := url.PathEscape(db.Name.O)
 		if err := s.request(fmt.Sprintf("/schema/%s", encodeName), &tableInfos); err != nil {
-			log.Error("fail to send schema request to TiDB", zap.Error(err))
+			log.Error("fail to send schema request", zap.String("component", distro.Data("tidb")), zap.Error(err))
 			updateSuccess = false
 			continue
 		}
@@ -118,7 +127,7 @@ func (s *tidbLabelStrategy) request(path string, v interface{}) error {
 		return err
 	}
 	if err = json.Unmarshal(data, v); err != nil {
-		return ErrInvalidData.Wrap(err, "TiDB schema API unmarshal failed")
+		return ErrInvalidData.Wrap(err, "%s schema API unmarshal failed", distro.Data("tidb"))
 	}
 	return nil
 }

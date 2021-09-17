@@ -20,16 +20,17 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/jinzhu/gorm"
 	"github.com/joomcode/errorx"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/fx"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 	"github.com/pingcap/tidb-dashboard/pkg/config"
 	"github.com/pingcap/tidb-dashboard/pkg/pd"
 	"github.com/pingcap/tidb-dashboard/pkg/tidb"
 	"github.com/pingcap/tidb-dashboard/pkg/tikv"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"
 )
 
@@ -119,7 +120,7 @@ func (s *Service) getConfigItemsFromTiDBToChannel(tidb *topology.TiDBInfo, ch ch
 
 	r, err := s.getConfigItemsFromTiDB(tidb.IP, int(tidb.StatusPort))
 	if err != nil {
-		ch <- channelItem{Err: ErrListConfigItemsFailed.Wrap(err, "Failed to list TiDB config items of %s", displayAddress)}
+		ch <- channelItem{Err: ErrListConfigItemsFailed.Wrap(err, "Failed to list %s config items of %s", distro.Data("tidb"), displayAddress)}
 		return
 	}
 	ch <- channelItem{
@@ -170,7 +171,7 @@ type ShowVariableItem struct {
 func (s *Service) getGlobalVariablesFromTiDBToChannel(db *gorm.DB, ch chan<- channelItem) {
 	r, err := s.getGlobalVariablesFromTiDB(db)
 	if err != nil {
-		ch <- channelItem{Err: ErrListConfigItemsFailed.Wrap(err, "Failed to list TiDB variables")}
+		ch <- channelItem{Err: ErrListConfigItemsFailed.Wrap(err, "Failed to list %s variables", distro.Data("tidb"))}
 		return
 	}
 	ch <- channelItem{
@@ -212,7 +213,7 @@ func (s *Service) getAllConfigItems(db *gorm.DB) (*AllConfigItems, error) {
 
 	tidbInfo, err := topology.FetchTiDBTopology(s.lifecycleCtx, s.params.EtcdClient)
 	if err != nil {
-		return nil, ErrListTopologyFailed.Wrap(err, "Failed to list TiDB instances")
+		return nil, ErrListTopologyFailed.Wrap(err, "Failed to list %s instances", distro.Data("tidb"))
 	}
 
 	ch := make(chan channelItem)

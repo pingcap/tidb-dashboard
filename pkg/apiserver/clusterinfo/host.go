@@ -16,10 +16,10 @@ package clusterinfo
 import (
 	"sort"
 
-	"github.com/jinzhu/gorm"
 	"github.com/pingcap/log"
 	"github.com/thoas/go-funk"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/clusterinfo/hostinfo"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/topology"

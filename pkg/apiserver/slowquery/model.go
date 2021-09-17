@@ -14,7 +14,7 @@
 package slowquery
 
 import (
-	"strings"
+	"github.com/thoas/go-funk"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
 )
@@ -111,7 +111,7 @@ func getFieldsAndTags() (slowQueryFields []Field) {
 
 	for _, f := range fields {
 		sqf := Field{
-			ColumnName: getGormColumnName(f.Tags["gorm"]),
+			ColumnName: utils.GetGormColumnName(f.Tags["gorm"]),
 			JSONName:   f.Tags["json"],
 			Projection: f.Tags["proj"],
 		}
@@ -122,8 +122,12 @@ func getFieldsAndTags() (slowQueryFields []Field) {
 	return
 }
 
-func getGormColumnName(gormStr string) string {
-	// TODO: use go-gorm/gorm/schema ParseTagSetting. Prerequisite: Upgrade to the latest version
-	columnName := strings.Split(gormStr, ":")[1]
-	return columnName
+func getVirtualFields() []string {
+	fields := getFieldsAndTags()
+	vFields := funk.Filter(fields, func(f Field) bool {
+		return f.Projection != ""
+	}).([]Field)
+	return funk.Map(vFields, func(f Field) string {
+		return f.ColumnName
+	}).([]string)
 }

@@ -64,10 +64,10 @@ func ParseJWTString(requiredIssuer string, tokenStr string) (string, error) {
 		return "", err
 	}
 	if !token.Valid {
-		return "", fmt.Errorf("token is invalid")
+		return "", fmt.Errorf("token is invalid or expired")
 	}
 	if claims.Issuer != requiredIssuer {
-		return "", fmt.Errorf("invalid issuer")
+		return "", fmt.Errorf("token is invalid (invalid issuer)")
 	}
 	return claims.Data, nil
 }

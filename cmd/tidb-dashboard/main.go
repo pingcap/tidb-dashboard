@@ -29,7 +29,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	_ "net/http/pprof" //nolint:gosec
+	_ "net/http/pprof" // #nosec
 	"os"
 	"os/signal"
 	"strings"
@@ -48,6 +48,7 @@ import (
 	"github.com/pingcap/tidb-dashboard/pkg/swaggerserver"
 	"github.com/pingcap/tidb-dashboard/pkg/uiserver"
 	"github.com/pingcap/tidb-dashboard/pkg/utils/version"
+	_ "github.com/pingcap/tidb-dashboard/populate/distro"
 )
 
 type DashboardCLIConfig struct {
@@ -73,6 +74,7 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", cfg.CoreConfig.PDEndPoint, "PD endpoint address that Dashboard Server connects to")
 	flag.BoolVar(&cfg.CoreConfig.EnableTelemetry, "telemetry", cfg.CoreConfig.EnableTelemetry, "allow telemetry")
 	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", cfg.CoreConfig.EnableExperimental, "allow experimental features")
+	flag.BoolVar(&cfg.CoreConfig.EnableNonRootLogin, "non-root-login", cfg.CoreConfig.EnableNonRootLogin, "allow non root sql user login")
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 
@@ -98,9 +100,6 @@ func NewCLIConfig() *DashboardCLIConfig {
 	}
 
 	cfg.CoreConfig.NormalizePublicPathPrefix()
-	if err := cfg.CoreConfig.NormalizePDEndPoint(); err != nil {
-		log.Fatal("Invalid PD Endpoint", zap.Error(err))
-	}
 
 	// setup TLS config for TiDB components
 	if len(*clusterCaPath) != 0 && len(*clusterCertPath) != 0 && len(*clusterKeyPath) != 0 {
@@ -111,6 +110,10 @@ func NewCLIConfig() *DashboardCLIConfig {
 	// See https://github.com/pingcap/docs/blob/7a62321b3ce9318cbda8697503c920b2a01aeb3d/how-to/secure/enable-tls-clients.md#enable-authentication
 	if (len(*tidbCertPath) != 0 && len(*tidbKeyPath) != 0) || len(*tidbCaPath) != 0 {
 		cfg.CoreConfig.TiDBTLSConfig = buildTLSConfig(tidbCaPath, tidbKeyPath, tidbCertPath)
+	}
+
+	if err := cfg.CoreConfig.NormalizePDEndPoint(); err != nil {
+		log.Fatal("Invalid PD Endpoint", zap.Error(err))
 	}
 
 	// keyvisual check

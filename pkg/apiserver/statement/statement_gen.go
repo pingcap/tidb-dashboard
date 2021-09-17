@@ -18,6 +18,9 @@ import (
 	"strings"
 
 	"github.com/thoas/go-funk"
+
+	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/utils/distro"
 )
 
 var (
@@ -45,11 +48,11 @@ func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) 
 			representedColumns = []string{f.JSONName}
 		}
 
-		return isSubsets(tableColumns, representedColumns)
+		return utils.IsSubsets(tableColumns, representedColumns)
 	}).([]Field)
 
 	if len(fields) == 0 {
-		return "", ErrUnknownColumn.New("all columns are not included in the current version TiDB schema, columns: %q", reqJSONColumns)
+		return "", ErrUnknownColumn.New("all columns are not included in the current version %s schema, columns: %q", distro.Data("tidb"), reqJSONColumns)
 	}
 
 	stmt := funk.Map(fields, func(f Field) string {
@@ -59,15 +62,4 @@ func (s *Service) genSelectStmt(tableColumns []string, reqJSONColumns []string) 
 		return fmt.Sprintf("%s AS %s", f.Aggregation, f.ColumnName)
 	}).([]string)
 	return strings.Join(stmt, ", "), nil
-}
-
-func isSubsets(a []string, b []string) bool {
-	lowercaseA := funk.Map(a, func(x string) string {
-		return strings.ToLower(x)
-	}).([]string)
-	lowercaseB := funk.Map(b, func(x string) string {
-		return strings.ToLower(x)
-	}).([]string)
-
-	return len(funk.Join(lowercaseA, lowercaseB, funk.InnerJoin).([]string)) == len(lowercaseB)
 }

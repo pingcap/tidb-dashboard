@@ -37,8 +37,7 @@ func (Report) TableName() string {
 }
 
 func autoMigrate(db *dbstore.DB) error {
-	return db.AutoMigrate(&Report{}).
-		Error
+	return db.AutoMigrate(&Report{})
 }
 
 func NewReport(db *dbstore.DB, startTime, endTime time.Time, compareStartTime, compareEndTime *time.Time) (string, error) {

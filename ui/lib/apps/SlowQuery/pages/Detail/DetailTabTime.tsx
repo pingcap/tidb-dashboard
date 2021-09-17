@@ -1,17 +1,10 @@
 import React from 'react'
 import { SlowqueryModel } from '@lib/client'
-import { CardTable } from '@lib/components'
-import { timeValueColumns } from '@lib/utils/tableColumns'
-import { useTranslation } from 'react-i18next'
 import { Typography } from 'antd'
+import { TFunction } from 'i18next'
 
-export interface ITabTimeProps {
-  data: SlowqueryModel
-}
-
-export default function TabBasic({ data }: ITabTimeProps) {
-  const { t } = useTranslation()
-  const items = [
+export const tabTimeItems = (data: SlowqueryModel, t: TFunction) => {
+  return [
     {
       key: 'query_time2',
       keyDisplay: (
@@ -123,8 +116,4 @@ export default function TabBasic({ data }: ITabTimeProps) {
       indentLevel: 1,
     },
   ]
-  const columns = timeValueColumns('slow_query.fields.', items)
-  return (
-    <CardTable cardNoMargin columns={columns} items={items} extendLastColumn />
-  )
 }

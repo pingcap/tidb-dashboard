@@ -1,8 +1,8 @@
 slow_query:
   nav_title: 慢查询
   fields:
-    instance: TiDB 实例
-    instance_tooltip: 处理该 SQL 查询的 TiDB 实例地址
+    instance: '{{distro.tidb}} 实例'
+    instance_tooltip: 处理该 SQL 查询的 {{distro.tidb}} 实例地址
     connection_id: 连接号
     connection_id_tooltip: SQL 查询客户端连接 ID
     sql: SQL
@@ -46,21 +46,21 @@ slow_query:
     optimize_time: 优化执行计划耗时
     optimize_time_tooltip: 优化器寻找执行计划的耗时，包括规则优化和物理优化的耗时
     wait_ts: 取事务 Start Ts 耗时
-    wait_ts_tooltip: 从 PD 取事务开始时间戳步骤的耗时
+    wait_ts_tooltip: 从 {{distro.pd}} 取事务开始时间戳步骤的耗时
     cop_time: Coprocessor 执行耗时
-    cop_time_tooltip: TiDB Coprocessor 算子等待所有任务在 TiKV 上并行执行完毕耗费的自然时间（注：当 SQL 语句中包含 JOIN 时，多个 TiDB Coprocessor 算子可能会并行执行，此时不再等同于自然时间）
+    cop_time_tooltip: '{{distro.tidb}} Coprocessor 算子等待所有任务在 {{distro.tikv}} 上并行执行完毕耗费的自然时间（注：当 SQL 语句中包含 JOIN 时，多个 {{distro.tidb}} Coprocessor 算子可能会并行执行，此时不再等同于自然时间）'
     wait_time: Coprocessor 累计等待耗时
-    wait_time_tooltip: TiKV 准备并等待 Coprocessor 任务执行的累计时间，等待过程中包括通过 Raft 一致性协议取快照等（注：TiKV 会并行等待任务，因此该时间不是自然流逝时间）
+    wait_time_tooltip: '{{distro.tikv}} 准备并等待 Coprocessor 任务执行的累计时间，等待过程中包括通过 Raft 一致性协议取快照等（注：{{distro.tikv}} 会并行等待任务，因此该时间不是自然流逝时间）'
     process_time: Coprocessor 累计执行耗时
-    process_time_tooltip: TiKV 执行 Coprocessor 任务的累计处理时间（注：TiKV 会并行处理任务，因此该时间不是自然流逝时间）
+    process_time_tooltip: '{{distro.tikv}} 执行 Coprocessor 任务的累计处理时间（注：{{distro.tikv}} 会并行处理任务，因此该时间不是自然流逝时间）'
     lock_keys_time: 上锁耗时
     lock_keys_time_tooltip: 悲观事务中对相关行数据进行上锁的耗时
     backoff_time: 执行阶段累计 Backoff 耗时
     backoff_time_tooltip: 在执行失败时，Backoff 机制等待一段时间再重试时的 Backoff 累计耗时（注：可能同时存在多个 Backoff，因此该时间可能不是自然流逝时间）
     get_commit_ts_time: 取事务 Commit Ts 耗时
-    get_commit_ts_time_tooltip: 从 PD 取提交时间戳（事务号）步骤的耗时
-    local_latch_wait_time: TiDB 本地等锁耗时
-    local_latch_wait_time_tooltip: 事务在 TiDB 本地与其他事务产生了锁冲突并等待的耗时
+    get_commit_ts_time_tooltip: 从 {{distro.pd}} 取提交时间戳（事务号）步骤的耗时
+    local_latch_wait_time: '{{distro.tidb}} 本地等锁耗时'
+    local_latch_wait_time_tooltip: 事务在 {{distro.tidb}} 本地与其他事务产生了锁冲突并等待的耗时
     resolve_lock_time: 解锁耗时
     resolve_lock_time_tooltip: 事务在提交过程中与其他事务产生了锁冲突并处理锁冲突的耗时
     prewrite_time: Prewrite 阶段耗时
@@ -81,9 +81,9 @@ slow_query:
     total_keys: 遇到版本数
     total_keys_tooltip: 含已删除或覆盖但未 GC 的版本
     cop_proc_addr: 最长处理时间实例
-    cop_proc_addr_tooltip: 耗费最长时间处理 Coprocessor 请求的 TiKV 实例地址
+    cop_proc_addr_tooltip: 耗费最长时间处理 Coprocessor 请求的 {{distro.tikv}} 实例地址
     cop_wait_addr: 最长等待时间实例
-    cop_wait_addr_tooltip: 耗费最长时间等待 Coprocessor 请求的 TiKV 实例地址
+    cop_wait_addr_tooltip: 耗费最长时间等待 Coprocessor 请求的 {{distro.tikv}} 实例地址
 
     txn_start_ts: 事务号
     txn_start_ts_tooltip: 事务开始的时间戳，也即是事务号
@@ -128,7 +128,7 @@ slow_query:
     schemas:
       placeholder: 所有数据库
       selected: '{{ n }} 数据库'
-      columnTitle: 数据库名
+      columnTitle: 执行数据库名
     select_columns:
       show_full_sql: 显示完整 SQL 文本
     refresh: 刷新

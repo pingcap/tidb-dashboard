@@ -7,11 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { useSpring, animated } from 'react-spring'
 import Banner from './Banner'
 import styles from './index.module.less'
-import {
-  SiderService,
-  SIDER_WIDTH,
-  SIDER_COLLAPSED_WIDTH,
-} from './SiderService'
+import { SiderContext, SIDER_WIDTH, SIDER_COLLAPSED_WIDTH } from './useSider'
 import { store } from '@lib/utils/store'
 
 function useAppMenuItem(registry, appId, title?: string) {
@@ -114,7 +110,7 @@ function Sider({ registry, animationDelay }) {
     defaultCollapsed,
 
     setCollapsedOnce,
-  } = useContext(SiderService)
+  } = useContext(SiderContext)
   const transSider = useSpring({
     width: collapsed ? SIDER_COLLAPSED_WIDTH : SIDER_WIDTH,
   })

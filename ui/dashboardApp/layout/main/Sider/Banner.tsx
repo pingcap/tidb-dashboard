@@ -9,7 +9,7 @@ import { TFunction } from 'i18next'
 
 import { ReactComponent as Logo } from './logo-icon-light.svg'
 import styles from './Banner.module.less'
-import { SiderService } from './SiderService'
+import { SiderContext } from './useSider'
 import { store } from '@lib/utils/store'
 
 const toggleWidth = 40
@@ -46,7 +46,7 @@ export default function ToggleBanner({ fullWidth, collapsedWidth }) {
   const { t } = useTranslation()
   const bannerRef = useRef(null)
   const bannerSize = useSize(bannerRef)
-  const { collapsed, toggleSider } = useContext(SiderService)
+  const { collapsed, toggleSider } = useContext(SiderContext)
   const transBanner = useSpring({
     opacity: collapsed ? 0 : 1,
     height: collapsed ? toggleHeight : bannerSize.height || 0,

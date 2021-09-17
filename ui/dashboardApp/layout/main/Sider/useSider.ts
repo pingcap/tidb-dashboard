@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useState, createContext } from 'react'
 import { useLocalStorageState } from 'ahooks'
-
-import { useToken } from '@lib/utils/di'
 
 export const SIDER_WIDTH = 260
 export const SIDER_COLLAPSED_WIDTH = 80
 
-export const useSiderService = () => {
+export const SiderContext = createContext<ReturnType<typeof useSider>>(
+  null as any
+)
+
+export const useSider = () => {
   const [collapsed, setCollapsed] = useLocalStorageState(
     'layout.sider.collapsed',
     false
@@ -32,5 +34,3 @@ export const useSiderService = () => {
     toggleSider,
   }
 }
-
-export const SiderService = useToken(useSiderService)

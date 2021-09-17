@@ -3,16 +3,14 @@ import { Root } from '@lib/components'
 import { HashRouter as Router } from 'react-router-dom'
 import { useSpring, animated } from 'react-spring'
 
-import { useLocalStorageState } from '@lib/utils/useLocalStorageState'
-
 import Sider from './Sider'
 import styles from './index.module.less'
 import {
-  useSiderService,
-  SiderService,
+  useSider,
+  SiderContext,
   SIDER_WIDTH,
   SIDER_COLLAPSED_WIDTH,
-} from './Sider/SiderService'
+} from './Sider/useSider'
 
 const collapsedContentOffset = SIDER_COLLAPSED_WIDTH - SIDER_WIDTH
 const contentOffsetTrigger = collapsedContentOffset * 0.99
@@ -48,14 +46,14 @@ const useContentLeftOffset = (collapsed) => {
 
 export default function AppWithProviders({ registry }) {
   return (
-    <SiderService.Provider value={useSiderService()}>
+    <SiderContext.Provider value={useSider()}>
       <App registry={registry} />
-    </SiderService.Provider>
+    </SiderContext.Provider>
   )
 }
 
 function App({ registry }) {
-  const { collapsed } = useContext(SiderService)
+  const { collapsed } = useContext(SiderContext)
   const {
     contentLeftOffset,
     onAnimationStart,

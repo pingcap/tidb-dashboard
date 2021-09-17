@@ -283,9 +283,6 @@ func (s *Service) discoverOIDC(issuer string) (*oidcWellKnownConfig, error) {
 		return nil, ErrDiscoverFailed.Wrap(err, "Failed to discover OIDC endpoints")
 	}
 	wellKnownConfig := resp.Result().(*oidcWellKnownConfig)
-	if wellKnownConfig.Issuer != issuer {
-		return nil, ErrDiscoverFailed.New("Issuer did not match in the OIDC provider, expect %s, got %s", issuer, wellKnownConfig.Issuer)
-	}
 	if len(wellKnownConfig.TokenURL) == 0 {
 		return nil, ErrDiscoverFailed.New("TokenURL is not provided in the OIDC provider")
 	}

@@ -27,19 +27,28 @@ import (
 	"github.com/gtank/cryptopasta"
 	"github.com/joomcode/errorx"
 	"github.com/pingcap/log"
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/utils"
+	"github.com/pingcap/tidb-dashboard/pkg/config"
 )
 
 var (
 	ErrNS                  = errorx.NewNamespace("error.api.user")
 	ErrUnsupportedAuthType = ErrNS.NewType("unsupported_auth_type")
+	ErrInsufficientPriv    = ErrNS.NewType("insufficient_privileges")
 	ErrNSSignIn            = ErrNS.NewSubNamespace("signin")
 	ErrSignInOther         = ErrNSSignIn.NewType("other")
 )
 
+type ServiceParams struct {
+	fx.In
+	Config *config.Config
+}
+
 type AuthService struct {
+	params         ServiceParams
 	middleware     *jwt.GinJWTMiddleware
 	authenticators map[utils.AuthType]Authenticator
 }
@@ -81,7 +90,7 @@ func (a BaseAuthenticator) SignOutInfo(u *utils.SessionUser, redirectURL string)
 	return &SignOutInfo{}, nil
 }
 
-func NewAuthService() *AuthService {
+func NewAuthService(p ServiceParams) *AuthService {
 	var secret *[32]byte
 
 	secretStr := os.Getenv("DASHBOARD_SESSION_SECRET")
@@ -98,6 +107,7 @@ func NewAuthService() *AuthService {
 	}
 
 	service := &AuthService{
+		params:         p,
 		middleware:     nil,
 		authenticators: map[utils.AuthType]Authenticator{},
 	}
@@ -286,6 +296,7 @@ func (s *AuthService) RegisterAuthenticator(typeID utils.AuthType, a Authenticat
 
 type GetLoginInfoResponse struct {
 	SupportedAuthTypes []int `json:"supported_auth_types"`
+	EnableNonRootLogin bool  `json:"enable_non_root_login"`
 }
 
 // @ID userGetLoginInfo
@@ -307,6 +318,7 @@ func (s *AuthService) getLoginInfoHandler(c *gin.Context) {
 	sort.Ints(supportedAuth)
 	resp := GetLoginInfoResponse{
 		SupportedAuthTypes: supportedAuth,
+		EnableNonRootLogin: s.params.Config.EnableNonRootLogin,
 	}
 	c.JSON(http.StatusOK, resp)
 }

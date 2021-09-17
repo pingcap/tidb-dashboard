@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
@@ -75,7 +76,7 @@ func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, 
 	if err != nil {
 		return
 	}
-	defer csvFile.Close()
+	defer csvFile.Close() // #nosec
 
 	// generate encryption key
 	secretKey := *cryptopasta.NewEncryptionKey()
@@ -84,7 +85,7 @@ func ExportCSV(data [][]string, filename, tokenNamespace string) (token string, 
 	go func() {
 		csvwriter := csv.NewWriter(pw)
 		_ = csvwriter.WriteAll(data)
-		pw.Close()
+		_ = pw.Close()
 	}()
 	err = aesctr.Encrypt(pr, csvFile, secretKey[0:16], secretKey[16:])
 	if err != nil {
@@ -121,7 +122,7 @@ func DownloadByToken(token, tokenNamespace string, c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	f, err := os.Open(filePath)
+	f, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -134,6 +135,6 @@ func DownloadByToken(token, tokenNamespace string, c *gin.Context) {
 		log.Error("decrypt csv failed", zap.Error(err))
 	}
 	// delete it anyway
-	f.Close()
+	_ = f.Close()
 	_ = os.Remove(filePath)
 }

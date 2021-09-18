@@ -165,7 +165,7 @@ func (s *Service) queryPlanDetail(
 		return
 	}
 
-	query := db.Debug().
+	query := db.
 		Select(selectStmt).
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).

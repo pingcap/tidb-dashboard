@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
 	"github.com/joomcode/errorx"
@@ -64,16 +63,13 @@ func (t *testParamModelsSuite) Test_APIParamModelMultiTags(c *C) {
 			},
 		},
 	})
-	value1 := url.QueryEscape("value1,,, ")
-	value2 := url.QueryEscape("value2")
-	param1 := fmt.Sprintf("%s,%s", value1, value2)
 
 	req, err := client.Send(&endpoint.RequestPayload{
 		EndpointID: "test_endpoint",
 		Host:       "127.0.0.1",
 		Port:       10080,
 		Params: map[string]string{
-			"param1": param1,
+			"param1": "value1,value2",
 		},
 	})
 	if err != nil {
@@ -81,7 +77,7 @@ func (t *testParamModelsSuite) Test_APIParamModelMultiTags(c *C) {
 	}
 	data, _ := req.Body()
 
-	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test", fmt.Sprintf("param1=%s&param1=%s", value1, value2)))
+	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test", fmt.Sprintf("param1=%s&param1=%s", "value1", "value2")))
 }
 
 func (t *testParamModelsSuite) Test_APIParamModelInt(c *C) {

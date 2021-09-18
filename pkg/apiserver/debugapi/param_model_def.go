@@ -29,9 +29,8 @@ var APIParamModelText = &endpoint.BaseAPIParamModel{Type: "text"}
 
 var APIParamModelEscapeText = &endpoint.BaseAPIParamModel{
 	Type: "escape_text",
-	OnResolve: func(v *endpoint.ResolvedValues) error {
-		v.SetValue(url.QueryEscape(v.GetValue()))
-		return nil
+	OnResolve: func(value string) ([]string, error) {
+		return []string{url.QueryEscape(value)}, nil
 	},
 }
 
@@ -39,35 +38,30 @@ var falselyValues = []string{"false", "0", "null", "undefined", ""}
 
 var APIParamModelBool = &endpoint.BaseAPIParamModel{
 	Type: "bool",
-	OnResolve: func(v *endpoint.ResolvedValues) error {
-		if funk.Contains(falselyValues, v.GetValue()) {
-			v.SetValue("false")
-		} else {
-			v.SetValue("true")
+	OnResolve: func(value string) ([]string, error) {
+		for _, falselyValue := range falselyValues {
+			if falselyValue == value {
+				return []string{"false"}, nil
+			}
 		}
-		return nil
+		return []string{"true"}, nil
 	},
 }
 
 var APIParamModelMultiValue = &endpoint.BaseAPIParamModel{
 	Type: "multi_value",
-	OnResolve: func(v *endpoint.ResolvedValues) error {
-		vals := strings.Split(v.GetValue(), ",")
-		v.SetValues(funk.Map(vals, func(str string) string {
-			v, _ := url.QueryUnescape(str)
-			return v
-		}).([]string))
-		return nil
+	OnResolve: func(value string) ([]string, error) {
+		return strings.Split(value, ","), nil
 	},
 }
 
 var APIParamModelInt = &endpoint.BaseAPIParamModel{
 	Type: "int",
-	OnResolve: func(v *endpoint.ResolvedValues) error {
-		if _, err := strconv.Atoi(v.GetValue()); err != nil {
-			return fmt.Errorf("%s: %s is not a valid int value", v.Name(), v.GetValue())
+	OnResolve: func(value string) ([]string, error) {
+		if _, err := strconv.Atoi(value); err != nil {
+			return nil, fmt.Errorf("%s is not a valid int value", value)
 		}
-		return nil
+		return []string{value}, nil
 	},
 }
 
@@ -92,15 +86,13 @@ func APIParamModelEnum(items []EnumItem) endpoint.APIParamModel {
 	enumModel := &enumAPIParamModel{
 		&endpoint.BaseAPIParamModel{
 			Type: "enum",
-			OnResolve: func(v *endpoint.ResolvedValues) error {
-				isValid := funk.Contains(items, func(item EnumItem) bool {
-					v := v.GetValue()
-					return item.Value == v
-				})
-				if !isValid {
-					return fmt.Errorf("[%s] %s is not a valid value", v.Name(), v.GetValue())
+			OnResolve: func(value string) ([]string, error) {
+				for _, item := range items {
+					if item.Value == value {
+						return []string{value}, nil
+					}
 				}
-				return nil
+				return nil, fmt.Errorf("%s is not a valid enum value", value)
 			},
 		},
 		items,
@@ -119,9 +111,8 @@ func APIParamModelConstant(value string) endpoint.APIParamModel {
 	m := &constantAPIParamModel{
 		&endpoint.BaseAPIParamModel{
 			Type: "constant",
-			OnResolve: func(v *endpoint.ResolvedValues) error {
-				v.SetValue(value)
-				return nil
+			OnResolve: func(_ string) ([]string, error) {
+				return []string{value}, nil
 			},
 		},
 		value,

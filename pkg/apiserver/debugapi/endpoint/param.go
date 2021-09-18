@@ -14,37 +14,10 @@
 
 package endpoint
 
-import "net/url"
-
-type ResolvedValues struct {
-	url.Values
-	param *APIParam
-}
-
-func (v *ResolvedValues) Name() string {
-	return v.param.Name
-}
-
-func (v *ResolvedValues) GetValue() string {
-	return v.Values.Get(v.param.Name)
-}
-
-func (v *ResolvedValues) SetValue(val string) {
-	v.Values.Set(v.param.Name, val)
-}
-
-func (v *ResolvedValues) GetValues() []string {
-	return v.Values[v.param.Name]
-}
-
-func (v *ResolvedValues) SetValues(val []string) {
-	v.Values[v.param.Name] = val
-}
-
-type ParamResolveFn func(v *ResolvedValues) error
+type ParamResolveFn func(value string) ([]string, error)
 
 type APIParamModel interface {
-	Resolve(param *APIParam, value string) (*ResolvedValues, error)
+	Resolve(value string) ([]string, error)
 }
 
 type BaseAPIParamModel struct {
@@ -52,20 +25,11 @@ type BaseAPIParamModel struct {
 	OnResolve ParamResolveFn `json:"-"`
 }
 
-func (m *BaseAPIParamModel) Resolve(param *APIParam, value string) (*ResolvedValues, error) {
-	resolvedValues := &ResolvedValues{
-		Values: url.Values{param.Name: []string{value}},
-		param:  param,
-	}
+func (m *BaseAPIParamModel) Resolve(value string) ([]string, error) {
 	if m.OnResolve == nil {
-		return resolvedValues, nil
+		return []string{value}, nil
 	}
-
-	if err := m.OnResolve(resolvedValues); err != nil {
-		return nil, err
-	}
-
-	return resolvedValues, nil
+	return m.OnResolve(value)
 }
 
 type APIParam struct {

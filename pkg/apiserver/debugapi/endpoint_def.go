@@ -26,6 +26,7 @@ import (
 )
 
 var pprofKindsParam = &endpoint.APIParam{
+	Name: "kind", Required: true,
 	Model: APIParamModelEnum([]EnumItem{
 		{Value: "allocs"},
 		{Value: "block"},
@@ -37,17 +38,16 @@ var pprofKindsParam = &endpoint.APIParam{
 		{Value: "threadcreate"},
 		{Value: "trace"},
 	}),
-	Name: "kind", Required: true,
 }
 
 var pprofSecondsParam = &endpoint.APIParam{
+	Name: "seconds",
 	Model: APIParamModelEnum([]EnumItem{
 		{Name: "10s", Value: "10"},
 		{Name: "30s", Value: "30"},
 		{Name: "60s", Value: "60"},
 		{Name: "120s", Value: "120"},
 	}),
-	Name: "seconds",
 }
 
 var pprofDebugParam = &endpoint.APIParam{
@@ -59,14 +59,21 @@ var pprofDebugParam = &endpoint.APIParam{
 	}),
 }
 
-func timeoutMiddleware(payload *endpoint.ResolvedRequestPayload, sec string) error {
-	i, err := strconv.ParseInt(sec, 10, 64)
-	if err != nil {
-		return err
+func resolveTimeoutFromQuery(key string) func(*endpoint.ResolvedRequestPayload) error {
+	return func(payload *endpoint.ResolvedRequestPayload) error {
+		timeout := payload.QueryParams.Get(key)
+		if timeout == "" {
+			return nil
+		}
+		i, err := strconv.ParseInt(timeout, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		duration := time.Duration(i) * time.Second
+		payload.Timeout = duration + duration/2
+		return nil
 	}
-	duration := time.Duration(i) * time.Second
-	payload.Timeout = duration + duration/2
-	return nil
 }
 
 // tidb
@@ -196,12 +203,7 @@ var endpointDefs = []*endpoint.APIModel{
 			pprofSecondsParam,
 			pprofDebugParam,
 		},
-		OnResolve: func(resolvedPayload *endpoint.ResolvedRequestPayload) error {
-			if err := timeoutMiddleware(resolvedPayload, resolvedPayload.QueryParams.Get("seconds")); err != nil {
-				return err
-			}
-			return nil
-		},
+		OnResolve: resolveTimeoutFromQuery("seconds"),
 	},
 	// pd endpoints
 	{
@@ -446,14 +448,15 @@ var endpointDefs = []*endpoint.APIModel{
 		OnResolve: func(resolvedPayload *endpoint.ResolvedRequestPayload) error {
 			vals := resolvedPayload.QueryParams["state"]
 			resolvedPayload.QueryParams.Del("state")
-			if len(vals) != 0 {
-				for _, state := range vals {
-					stateValue, ok := metapb.StoreState_value[state]
-					if !ok {
-						return fmt.Errorf("unknown state: %s", state)
-					}
-					resolvedPayload.QueryParams.Add("state", strconv.Itoa(int(stateValue)))
+			if len(vals) == 0 {
+				return nil
+			}
+			for _, state := range vals {
+				stateValue, ok := metapb.StoreState_value[state]
+				if !ok {
+					return fmt.Errorf("unknown state: %s", state)
 				}
+				resolvedPayload.QueryParams.Add("state", strconv.Itoa(int(stateValue)))
 			}
 			return nil
 		},
@@ -479,12 +482,7 @@ var endpointDefs = []*endpoint.APIModel{
 			pprofSecondsParam,
 			pprofDebugParam,
 		},
-		OnResolve: func(resolvedPayload *endpoint.ResolvedRequestPayload) error {
-			if err := timeoutMiddleware(resolvedPayload, resolvedPayload.QueryParams.Get("seconds")); err != nil {
-				return err
-			}
-			return nil
-		},
+		OnResolve: resolveTimeoutFromQuery("seconds"),
 	},
 	// tikv
 	{
@@ -494,6 +492,11 @@ var endpointDefs = []*endpoint.APIModel{
 		Method:    endpoint.MethodGet,
 	},
 	// TODO: open after http client refactor
+	// Here we need http client support to add the header to fetch the pprof data:
+	// resolvedPayload.Header.Add("Content-Type", "application/protobuf")
+	// or we need to override response header to fetch the svg data:
+	// xxx.Response.Header.Set("Content-Type", "image/svg+xml")
+
 	// {
 	// 	ID:        "tikv_profile",
 	// 	Component: model.NodeKindTiKV,
@@ -519,6 +522,11 @@ var endpointDefs = []*endpoint.APIModel{
 		Method:    endpoint.MethodGet,
 	},
 	// TODO: open after http client refactor
+	// Here we need http client support to add the header to fetch the pprof data:
+	// resolvedPayload.Header.Add("Content-Type", "application/protobuf")
+	// or we need to override response header to fetch the svg data:
+	// xxx.Response.Header.Set("Content-Type", "image/svg+xml")
+
 	// {
 	// 	ID:        "tiflash_profile",
 	// 	Component: model.NodeKindTiFlash,

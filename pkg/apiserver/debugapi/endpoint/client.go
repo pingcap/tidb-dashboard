@@ -15,13 +15,10 @@
 package endpoint
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
 	"time"
-
-	"github.com/thoas/go-funk"
 
 	"github.com/pingcap/tidb-dashboard/pkg/apiserver/model"
 	"github.com/pingcap/tidb-dashboard/pkg/httpc"
@@ -45,8 +42,7 @@ const (
 )
 
 type ResolvedRequestPayload struct {
-	originalPayload *RequestPayload
-	pathSchema      string
+	apiModel *APIModel
 
 	Host        string
 	Port        int
@@ -60,7 +56,7 @@ type ResolvedRequestPayload struct {
 var pathReplaceRegexp = regexp.MustCompile(`\{(\w+)\}`)
 
 func (p *ResolvedRequestPayload) Path() string {
-	path := pathReplaceRegexp.ReplaceAllStringFunc(p.pathSchema, func(s string) string {
+	path := pathReplaceRegexp.ReplaceAllStringFunc(p.apiModel.Path, func(s string) string {
 		key := pathReplaceRegexp.ReplaceAllString(s, "${1}")
 		val := p.PathParams[key]
 		return val
@@ -100,60 +96,58 @@ func (c *Client) Send(payload *RequestPayload) (*httpc.Response, error) {
 	return c.httpClient.Fetch(resolvedPayload)
 }
 
-func (c *Client) GetAPIModel(id string) *APIModel {
-	return c.apiMap[id]
-}
-
-func (c *Client) GetAllAPIModels() []APIModel {
-	return funk.Map(c.apiList, func(m *APIModel) APIModel {
-		return *m
-	}).([]APIModel)
+func (c *Client) GetAllAPIModels() []*APIModel {
+	return c.apiList
 }
 
 func (c *Client) resolve(payload *RequestPayload) (*ResolvedRequestPayload, error) {
 	api, ok := c.apiMap[payload.EndpointID]
 	if !ok {
-		return nil, fmt.Errorf("invalid endpoint id: %s", payload.EndpointID)
+		return nil, ErrInvalidParam.New("invalid endpoint id: %s", payload.EndpointID)
 	}
 
 	resolvedPayload := &ResolvedRequestPayload{
-		originalPayload: payload,
-		pathSchema:      api.Path,
-		Host:            payload.Host,
-		Port:            payload.Port,
-		Component:       api.Component,
-		Method:          api.Method,
-		PathParams:      map[string]string{},
-		QueryParams:     url.Values{},
+		apiModel:    api,
+		Host:        payload.Host,
+		Port:        payload.Port,
+		Component:   api.Component,
+		Method:      api.Method,
+		PathParams:  map[string]string{},
+		QueryParams: url.Values{},
 	}
 
-	// resolve param values by api/param model definition
-	err := api.ForEachParam(func(param *APIParam, isPathParam bool) error {
-		if payload.Params[param.Name] == "" {
-			if param.Required {
-				return fmt.Errorf("missing required param: %s", param.Name)
-			}
-			return nil
+	// resolve param values by param model definitions
+	for _, pathParam := range api.PathParams {
+		// path param should always be required
+		if payload.Params[pathParam.Name] == "" {
+			return nil, ErrInvalidParam.New("missing required param: %s", pathParam.Name)
 		}
 
-		resolvedValues, err := param.Model.Resolve(param, payload.Params[param.Name])
+		resolvedValue, err := pathParam.Model.Resolve(payload.Params[pathParam.Name])
 		if err != nil {
-			return err
+			return nil, ErrInvalidParam.WrapWithNoMessage(err)
 		}
 
-		if isPathParam {
-			resolvedPayload.PathParams[param.Name] = resolvedValues.Get(param.Name)
-		} else {
-			resolvedPayload.QueryParams[param.Name] = resolvedValues.Values[param.Name]
+		resolvedPayload.PathParams[pathParam.Name] = resolvedValue[0]
+	}
+	for _, queryParam := range api.QueryParams {
+		if payload.Params[queryParam.Name] == "" {
+			if queryParam.Required {
+				return nil, ErrInvalidParam.New("missing required param: %s", queryParam.Name)
+			}
+			continue
 		}
-		return nil
-	})
-	if err != nil {
-		return nil, ErrInvalidParam.WrapWithNoMessage(err)
+
+		resolvedValue, err := queryParam.Model.Resolve(payload.Params[queryParam.Name])
+		if err != nil {
+			return nil, ErrInvalidParam.WrapWithNoMessage(err)
+		}
+
+		resolvedPayload.QueryParams[queryParam.Name] = resolvedValue
 	}
 
-	err = api.Resolve(resolvedPayload)
-	if err != nil {
+	// resolve param values by api model definitions
+	if err := api.Resolve(resolvedPayload); err != nil {
 		return nil, ErrInvalidParam.WrapWithNoMessage(err)
 	}
 

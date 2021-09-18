@@ -35,9 +35,8 @@ type testParamSuite struct{}
 func (t *testParamSuite) Test_Resolve(c *C) {
 	testParamModel := &BaseAPIParamModel{
 		Type: "test",
-		OnResolve: func(v *ResolvedValues) error {
-			v.SetValue("test")
-			return nil
+		OnResolve: func(value string) ([]string, error) {
+			return []string{"test"}, nil
 		},
 	}
 	client := NewClient(&testFetcher{}, []*APIModel{

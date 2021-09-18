@@ -58,6 +58,7 @@ var testAPI = &APIModel{
 	},
 	QueryParams: []*APIParam{
 		{Model: testParamModel, Name: "queryParam", Required: true},
+		{Model: testParamModel, Name: "queryParam2"},
 	},
 }
 
@@ -78,11 +79,6 @@ func (t *testClientSuite) Test_Send(c *C) {
 	data, _ := req.Body()
 
 	c.Assert(string(data), Equals, testCombineReq("127.0.0.1", 10080, "/test/foo", "queryParam=bar"))
-}
-
-func (t *testClientSuite) Test_GetAPIModel(c *C) {
-	client := NewClient(&testFetcher{}, []*APIModel{testAPI})
-	c.Assert(client.GetAPIModel(testAPI.ID), Equals, testAPI)
 }
 
 func (t *testClientSuite) Test_GetAllAPIModels(c *C) {

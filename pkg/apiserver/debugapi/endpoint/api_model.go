@@ -50,24 +50,3 @@ func (m *APIModel) Resolve(resolvedPayload *ResolvedRequestPayload) error {
 	}
 	return m.OnResolve(resolvedPayload)
 }
-
-// EachParams simplifies the process of iterating over path & query params
-// and ends the iteration when return error
-func (m *APIModel) ForEachParam(fn func(p *APIParam, isPathParam bool) error) error {
-	params := make([]*APIParam, 0, len(m.PathParams)+len(m.QueryParams))
-	if m.PathParams != nil {
-		params = append(params, m.PathParams...)
-	}
-	if m.QueryParams != nil {
-		params = append(params, m.QueryParams...)
-	}
-
-	pathParamLen := len(m.PathParams)
-	for i, p := range params {
-		isPathParam := i < pathParamLen
-		if err := fn(p, isPathParam); err != nil {
-			return err
-		}
-	}
-	return nil
-}

@@ -29,6 +29,7 @@ const (
 
 type Config struct {
 	DataDir          string
+	TempDir          string
 	PDEndPoint       string
 	PublicPathPrefix string
 
@@ -43,6 +44,7 @@ type Config struct {
 func Default() *Config {
 	return &Config{
 		DataDir:            "/tmp/dashboard-data",
+		TempDir:            "",
 		PDEndPoint:         "http://127.0.0.1:2379",
 		PublicPathPrefix:   defaultPublicPathPrefix,
 		ClusterTLSConfig:   nil,

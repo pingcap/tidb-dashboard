@@ -47,9 +47,9 @@ type Service struct {
 }
 
 func newService(hp httpClientParam) *Service {
-	f := newHTTPClient(hp)
-	c := endpoint.NewClient(f, endpointDefs)
-	return &Service{Client: c}
+	return &Service{
+		Client: endpoint.NewClient(newHTTPClient(hp), endpointDefs),
+	}
 }
 
 func getExtFromContentTypeHeader(contentType string) string {

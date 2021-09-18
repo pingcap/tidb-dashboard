@@ -71,6 +71,8 @@ type Service struct {
 
 	encKeyPath string
 	encKeyLock sync.Mutex
+
+	createImpersonationLock sync.Mutex
 }
 
 func newService(p ServiceParams, lc fx.Lifecycle, config *config.Config) (*Service, error) {
@@ -78,10 +80,11 @@ func newService(p ServiceParams, lc fx.Lifecycle, config *config.Config) (*Servi
 		return nil, err
 	}
 	s := &Service{
-		params:           p,
-		oauthStateSecret: cryptopasta.NewHMACKey()[:],
-		encKeyPath:       path.Join(config.DataDir, "dbek.bin"),
-		encKeyLock:       sync.Mutex{},
+		params:                  p,
+		oauthStateSecret:        cryptopasta.NewHMACKey()[:],
+		encKeyPath:              path.Join(config.DataDir, "dbek.bin"),
+		encKeyLock:              sync.Mutex{},
+		createImpersonationLock: sync.Mutex{},
 	}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -239,6 +242,9 @@ func (s *Service) createImpersonation(userName string, password string) (*SSOImp
 		LastImpersonateStatus: nil,
 	}
 	// currently, we only support to authorize one sql user
+	s.createImpersonationLock.Lock()
+	defer s.createImpersonationLock.Unlock()
+
 	err = s.revokeAllImpersonations()
 	if err != nil {
 		return nil, err

@@ -26,7 +26,11 @@ interface IUserAuthInputProps {
 }
 
 function isImpersonationNotFailed(imp?: SsoSSOImpersonationModel) {
-  return Boolean(imp && imp.last_impersonate_status !== 'auth_fail')
+  return Boolean(
+    imp &&
+      imp.last_impersonate_status !== 'auth_fail' &&
+      imp.last_impersonate_status !== 'insufficient_privileges'
+  )
 }
 
 function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
@@ -41,6 +45,10 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
   const handleAuthnClick = useCallback(() => {
     setModalVisible(true)
   }, [])
+
+  const { data: loginInfo } = useClientRequest((reqConfig) =>
+    client.getInstance().userGetLoginInfo(reqConfig)
+  )
 
   const handleFinish = useCallback(
     async (data) => {
@@ -63,38 +71,38 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
     <>
       {Boolean(!value) && (
         <Space>
-          <Input style={DEFAULT_FORM_ITEM_STYLE} disabled value="root" />
           <Button onClick={handleAuthnClick} disabled={!isWriteable}>
             {t('user_profile.sso.form.user.authn_button')}
           </Button>
         </Space>
       )}
-      {isImpersonationNotFailed(value) && (
+      {Boolean(value) && (
         <Space>
-          <Input
-            style={DEFAULT_FORM_ITEM_STYLE}
-            disabled
-            value={value!.sql_user}
-          />
-          <Typography.Text type="success">
-            <CheckCircleFilled />{' '}
-            {t('user_profile.sso.form.user.authn_status.ok')}
-          </Typography.Text>
-        </Space>
-      )}
-      {Boolean(value && !isImpersonationNotFailed(value)) && (
-        <Space>
-          <Input
-            style={DEFAULT_FORM_ITEM_STYLE}
-            disabled
-            value={value!.sql_user}
-          />
-          <Typography.Text type="danger">
-            <CheckCircleFilled />{' '}
-            {t('user_profile.sso.form.user.authn_status.auth_failed')}
-          </Typography.Text>
+          <span>{value!.sql_user}</span>
+
+          {isImpersonationNotFailed(value) && (
+            <Typography.Text type="success">
+              <CheckCircleFilled />{' '}
+              {t('user_profile.sso.form.user.authn_status.ok')}
+            </Typography.Text>
+          )}
+          {value?.last_impersonate_status === 'auth_fail' && (
+            <Typography.Text type="danger">
+              <CheckCircleFilled />{' '}
+              {t('user_profile.sso.form.user.authn_status.auth_failed')}
+            </Typography.Text>
+          )}
+          {value?.last_impersonate_status === 'insufficient_privileges' && (
+            <Typography.Text type="danger">
+              <CheckCircleFilled />{' '}
+              {t(
+                'user_profile.sso.form.user.authn_status.insufficient_privileges'
+              )}
+            </Typography.Text>
+          )}
+
           <Button onClick={handleAuthnClick} disabled={!isWriteable}>
-            {t('user_profile.sso.form.user.authn_button')}
+            {t('user_profile.sso.form.user.modify_authn_button')}
           </Button>
         </Space>
       )}
@@ -109,13 +117,16 @@ function UserAuthInput({ value, onChange }: IUserAuthInputProps) {
         <Form
           layout="vertical"
           onFinish={handleFinish}
-          initialValues={{ user: 'root', password: '' }}
+          initialValues={{ user: value?.sql_user || 'root', password: '' }}
         >
           <Form.Item
             name="user"
             label={t('user_profile.sso.form.user.authn_dialog.user')}
           >
-            <Input style={DEFAULT_FORM_ITEM_STYLE} disabled />
+            <Input
+              style={DEFAULT_FORM_ITEM_STYLE}
+              disabled={!loginInfo?.enable_non_root_login}
+            />
           </Form.Item>
           <Form.Item
             name="password"
@@ -184,13 +195,7 @@ export function SSOForm() {
 
   useEffect(() => {
     if (impData) {
-      let rootImp: SsoSSOImpersonationModel | undefined = undefined
-      for (const imp of impData) {
-        if (imp.sql_user === 'root') {
-          rootImp = imp
-          break
-        }
-      }
+      let rootImp: SsoSSOImpersonationModel | undefined = impData[0]
       const update = { user_authenticated: rootImp }
       form.setFieldsValue(update)
       initialForm.current = {

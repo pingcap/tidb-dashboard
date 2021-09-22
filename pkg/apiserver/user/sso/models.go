@@ -20,8 +20,9 @@ import (
 type ImpersonateStatus string
 
 const (
-	ImpersonateStatusSuccess  ImpersonateStatus = "success"
-	ImpersonateStatusAuthFail ImpersonateStatus = "auth_fail"
+	ImpersonateStatusSuccess           ImpersonateStatus = "success"
+	ImpersonateStatusAuthFail          ImpersonateStatus = "auth_fail"
+	ImpersonateStatusInsufficientPrivs ImpersonateStatus = "insufficient_privileges"
 )
 
 type SSOImpersonationModel struct { //nolint

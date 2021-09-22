@@ -181,7 +181,7 @@ export default function StatementsOverview() {
               />
             )}
             {enable && (
-              <RefreshTooltip isOutedated={isTimeRangeOutdated}>
+              <RefreshTooltip isOutdated={isTimeRangeOutdated}>
                 {loadingStatements ? (
                   <LoadingOutlined />
                 ) : (
@@ -236,13 +236,13 @@ export default function StatementsOverview() {
   )
 }
 
-function RefreshTooltip({ isOutedated, children }) {
+function RefreshTooltip({ isOutdated, children }) {
   const { t } = useTranslation()
   return isOutdated ? (
     <Tooltip
       arrowPointAtCenter
       title={t('statement.pages.overview.toolbar.refresh_outdated')}
-      visible={isOutedated}
+      visible={isOutdated}
       placement="bottomLeft"
     >
       {children}

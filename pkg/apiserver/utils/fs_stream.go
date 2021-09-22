@@ -93,8 +93,8 @@ func FSServe(c *gin.Context, token string, requiredIssuer string) {
 		}
 		return
 	}
-	defer file.Close()                      //nolint:errcheck
-	defer os.Remove(tokenBody.TempFileName) //nolint:errcheck
+	defer file.Close()                      // #nosec
+	defer os.Remove(tokenBody.TempFileName) // #nosec
 
 	key, err := hex.DecodeString(tokenBody.TempFileKeyInHex)
 	if err != nil {

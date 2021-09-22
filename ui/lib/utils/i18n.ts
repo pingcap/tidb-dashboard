@@ -59,3 +59,5 @@ i18next
       defaultVariables: { distro },
     },
   })
+
+export { distro }

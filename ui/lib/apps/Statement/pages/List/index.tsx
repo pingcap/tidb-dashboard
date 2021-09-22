@@ -238,7 +238,7 @@ export default function StatementsOverview() {
 
 function RefreshTooltip({ isOutedated, children }) {
   const { t } = useTranslation()
-  return isOutedated ? (
+  return isOutdated ? (
     <Tooltip
       arrowPointAtCenter
       title={t('statement.pages.overview.toolbar.refresh_outdated')}

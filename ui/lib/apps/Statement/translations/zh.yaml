@@ -32,6 +32,7 @@ statement:
         select_columns:
           show_full_sql: 显示完整 SQL 文本
         refresh: 刷新
+        refresh_outdated: 列表数据已非最近数据，刷新以查看最新数据
         time_range_selector:
           name: 选择时间段
           recent: 最近

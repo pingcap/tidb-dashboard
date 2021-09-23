@@ -51,7 +51,7 @@ func Default() *Config {
 		TiDBTLSConfig:      nil,
 		EnableTelemetry:    true,
 		EnableExperimental: false,
-		EnableNonRootLogin: true,
+		EnableNonRootLogin: false,
 	}
 }
 

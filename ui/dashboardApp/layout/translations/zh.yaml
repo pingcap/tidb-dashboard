@@ -4,6 +4,7 @@ signin:
     success: 登录成功
   form:
     username: 用户名
+    username_tooltip: 升级到 TiDB 5.3 及更高版本后可自定义登录用户
     password: 密码
     button: 登录
     tidb_auth:

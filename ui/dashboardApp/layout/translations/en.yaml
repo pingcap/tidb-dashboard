@@ -4,6 +4,7 @@ signin:
     success: Sign in successfully
   form:
     username: Username
+    username_tooltip: You can login with any users by upgrading to TiDB 5.3 and higher versions
     password: Password
     button: Sign In
     tidb_auth:

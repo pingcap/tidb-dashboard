@@ -4,6 +4,7 @@ signin:
     success: Sign in successfully
   form:
     username: Username
+    username_tooltip: Sign in user can be customized in TiDB 5.3 or later versions
     password: Password
     button: Sign In
     tidb_auth:

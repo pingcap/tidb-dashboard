@@ -229,6 +229,7 @@ function TiDBSignInForm({
             name="username"
             label={t('signin.form.username')}
             rules={[{ required: true }]}
+            tooltip={!enableNonRootLogin && t('signin.form.username_tooltip')}
           >
             <Input
               onInput={clearErrorMsg}

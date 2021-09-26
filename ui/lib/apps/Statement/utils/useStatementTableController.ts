@@ -245,17 +245,6 @@ export default function useStatementTableController(
             }
           )
         const data = res?.data || []
-
-        // the evicted record's digest will be empty string
-        const evictTips = 'Others(Aggregates all the evicted statements)'
-        data.forEach((d) => {
-          if (d.digest !== '') {
-            return
-          }
-          d.digest = evictTips
-          d.digest_text = evictTips
-        })
-
         setStatements(data)
         cacheMgr?.set(cacheKey, data)
         setErrors([])

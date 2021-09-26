@@ -143,13 +143,13 @@ func (s *Service) queryPlans(
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime).
 		Group("plan_digest")
 
-	if schemaName != "" {
-		query.Where("schema_name = ?", schemaName)
-	}
 	if digest == "" {
 		// the evicted record's digest will be NULL
 		query.Where("digest IS NULL")
 	} else {
+		if schemaName != "" {
+			query.Where("schema_name = ?", schemaName)
+		}
 		query.Where("digest = ?", digest)
 	}
 
@@ -179,16 +179,16 @@ func (s *Service) queryPlanDetail(
 		Table(statementsTable).
 		Where("summary_begin_time >= FROM_UNIXTIME(?) AND summary_end_time <= FROM_UNIXTIME(?)", beginTime, endTime)
 
-	if len(plans) > 0 {
-		query = query.Where("plan_digest in (?)", plans)
-	}
-	if schemaName != "" {
-		query.Where("schema_name = ?", schemaName)
-	}
 	if digest == "" {
 		// the evicted record's digest will be NULL
 		query.Where("digest IS NULL")
 	} else {
+		if schemaName != "" {
+			query.Where("schema_name = ?", schemaName)
+		}
+		if len(plans) > 0 {
+			query = query.Where("plan_digest in (?)", plans)
+		}
 		query.Where("digest = ?", digest)
 	}
 

@@ -2,8 +2,11 @@ signin:
   message:
     error: 'Sign in failed: {{ msg }}'
     success: Sign in successfully
+    access_doc: Help
+    access_doc_link: https://docs.pingcap.com/tidb/stable/dashboard-user
   form:
     username: Username
+    username_tooltip: Sign in user can be customized in TiDB 5.3 or later versions
     password: Password
     button: Sign In
     tidb_auth:

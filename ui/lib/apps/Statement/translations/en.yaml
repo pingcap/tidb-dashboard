@@ -32,6 +32,7 @@ statement:
         select_columns:
           show_full_sql: Show Full Query Text
         refresh: Refresh
+        refresh_outdated: This list is outdated. To see latest data, click "Refresh".
         time_range_selector:
           name: Select Time Range
           recent: Recent

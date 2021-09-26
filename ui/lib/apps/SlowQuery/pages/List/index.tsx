@@ -169,7 +169,7 @@ function List() {
                 }
               />
             )}
-            <Tooltip title={t('statement.pages.overview.toolbar.refresh')}>
+            <Tooltip title={t('slow_query.toolbar.refresh')} placement="bottom">
               {loadingSlowQueries ? (
                 <LoadingOutlined />
               ) : (

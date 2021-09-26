@@ -70,10 +70,12 @@ func NewCLIConfig() *DashboardCLIConfig {
 	flag.IntVarP(&cfg.ListenPort, "port", "p", 12333, "listen port of the Dashboard Server")
 	flag.BoolVarP(&cfg.EnableDebugLog, "debug", "d", false, "enable debug logs")
 	flag.StringVar(&cfg.CoreConfig.DataDir, "data-dir", cfg.CoreConfig.DataDir, "path to the Dashboard Server data directory")
+	flag.StringVar(&cfg.CoreConfig.TempDir, "temp-dir", cfg.CoreConfig.TempDir, "path to the Dashboard Server temporary directory, used to store the searched logs")
 	flag.StringVar(&cfg.CoreConfig.PublicPathPrefix, "path-prefix", cfg.CoreConfig.PublicPathPrefix, "public URL path prefix for reverse proxies")
 	flag.StringVar(&cfg.CoreConfig.PDEndPoint, "pd", cfg.CoreConfig.PDEndPoint, "PD endpoint address that Dashboard Server connects to")
 	flag.BoolVar(&cfg.CoreConfig.EnableTelemetry, "telemetry", cfg.CoreConfig.EnableTelemetry, "allow telemetry")
 	flag.BoolVar(&cfg.CoreConfig.EnableExperimental, "experimental", cfg.CoreConfig.EnableExperimental, "allow experimental features")
+	flag.BoolVar(&cfg.CoreConfig.EnableNonRootLogin, "non-root-login", cfg.CoreConfig.EnableNonRootLogin, "allow non root sql user login")
 
 	showVersion := flag.BoolP("version", "v", false, "print version information and exit")
 
